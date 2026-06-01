@@ -120,6 +120,29 @@ describe("schemas/clarify tool result", () => {
   });
 });
 
+describe("schemas/message", () => {
+  it("parseSessionLine 接受 pos", async () => {
+    const { parseSessionLine } = await import("../../src/schemas/message.js");
+    const parsed = parseSessionLine(
+      JSON.stringify({ role: "user", content: "hi", pos: 3, timestamp: "t" }),
+    );
+    expect(parsed?.role).toBe("user");
+    if (parsed?.role !== "user") return;
+    expect(parsed.pos).toBe(3);
+  });
+
+  it("parseSessionLine 将 legacy id 映射为 pos", async () => {
+    const { parseSessionLine } = await import("../../src/schemas/message.js");
+    const parsed = parseSessionLine(
+      JSON.stringify({ role: "user", content: "hi", id: 5, timestamp: "t" }),
+    );
+    expect(parsed?.role).toBe("user");
+    if (parsed?.role !== "user") return;
+    expect(parsed.pos).toBe(5);
+    expect("id" in parsed).toBe(false);
+  });
+});
+
 describe("integrations schemas", () => {
   it("parses jsonrpc message loosely", () => {
     const result = jsonRpcMessageSchema.safeParse({

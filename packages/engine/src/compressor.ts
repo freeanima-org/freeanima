@@ -15,25 +15,25 @@ export type { CompressionState };
 export { parseCompressionState };
 
 export const SUMMARY_USER_PREFIX = "[会话摘要]";
-/** 运行时合成摘要 user 的 id（≠ l4） */
-export const SUMMARY_SYNTHETIC_ID = 1;
+/** 运行时合成摘要 user 的 pos（≠ l4） */
+export const SUMMARY_SYNTHETIC_POS = 1;
 
 export function isCompressed(state: CompressionState | null | undefined): boolean {
   if (!state) return false;
   return state.l2 > 0 || state.l3 > 0;
 }
 
-function messageId(msg: SessionMessage): number {
+function messagePos(msg: SessionMessage): number {
   if (msg.role === "session_meta") return 0;
-  return msg.id ?? 0;
+  return msg.pos ?? 0;
 }
 
 export function getL4(messages: SessionMessage[]): number {
   let max = 0;
   for (const m of messages) {
     if (m.role === "system" || m.role === "session_meta") continue;
-    const id = messageId(m);
-    if (id > max) max = id;
+    const pos = messagePos(m);
+    if (pos > max) max = pos;
   }
   return max;
 }
@@ -55,7 +55,7 @@ export function slimMessage(msg: SessionMessage): SessionMessage | null {
   if (role === "tool") return null;
   if (role === "user") {
     const out: Extract<SessionMessage, { role: "user" }> = { role: "user", content: msg.content };
-    if (msg.id !== undefined) out.id = msg.id;
+    if (msg.pos !== undefined) out.pos = msg.pos;
     if (msg.timestamp !== undefined) out.timestamp = msg.timestamp;
     if (msg.name !== undefined) out.name = msg.name;
     return out;
@@ -70,7 +70,7 @@ export function slimMessage(msg: SessionMessage): SessionMessage | null {
       role: "assistant",
       content: text || null,
     };
-    if (msg.id !== undefined) out.id = msg.id;
+    if (msg.pos !== undefined) out.pos = msg.pos;
     if (msg.name !== undefined) out.name = msg.name;
     return out;
   }
@@ -79,15 +79,15 @@ export function slimMessage(msg: SessionMessage): SessionMessage | null {
 
 function rawSegment(rest: SessionMessage[], l3: number, l4: number): SessionMessage[] {
   return rest.filter((m) => {
-    const id = messageId(m);
-    return id > l3 && id <= l4;
+    const pos = messagePos(m);
+    return pos > l3 && pos <= l4;
   });
 }
 
 function slimSegment(rest: SessionMessage[], l2: number, l3: number): SessionMessage[] {
   const seg = rest.filter((m) => {
-    const id = messageId(m);
-    return id > l2 && id <= l3;
+    const pos = messagePos(m);
+    return pos > l2 && pos <= l3;
   });
   const out: SessionMessage[] = [];
   for (const m of seg) {
@@ -100,13 +100,13 @@ function slimSegment(rest: SessionMessage[], l2: number, l3: number): SessionMes
 function rawSegmentValid(seg: SessionMessage[], rawMinMessages: number): boolean {
   if (seg.length < rawMinMessages) return false;
   if (!seg.some((m) => m.role === "user")) return false;
-  let minId = Infinity;
+  let minPos = Infinity;
   for (const m of seg) {
-    const id = messageId(m);
-    if (id < minId) minId = id;
+    const pos = messagePos(m);
+    if (pos < minPos) minPos = pos;
   }
-  if (!Number.isFinite(minId)) return false;
-  const first = seg.find((m) => messageId(m) === minId);
+  if (!Number.isFinite(minPos)) return false;
+  const first = seg.find((m) => messagePos(m) === minPos);
   return first?.role === "user";
 }
 
@@ -133,12 +133,12 @@ export function deriveBoundariesFromL4(
   const oldL2 = prev?.l2 ?? 0;
   const oldL3 = prev?.l3 ?? 0;
 
-  const idSet = new Set<number>([0]);
+  const posSet = new Set<number>([0]);
   for (const m of rest) {
-    const id = messageId(m);
-    if (!Number.isNaN(id) && id < l4) idSet.add(id);
+    const pos = messagePos(m);
+    if (!Number.isNaN(pos) && pos < l4) posSet.add(pos);
   }
-  const l3Candidates = [...idSet].filter((x) => x < l4).sort((a, b) => b - a);
+  const l3Candidates = [...posSet].filter((x) => x < l4).sort((a, b) => b - a);
 
   let bestL3: number | null = null;
   for (const l3 of l3Candidates) {
@@ -150,7 +150,7 @@ export function deriveBoundariesFromL4(
   }
   if (bestL3 == null) return null;
 
-  const l2Candidates = [...idSet].filter((x) => x < bestL3).sort((a, b) => b - a);
+  const l2Candidates = [...posSet].filter((x) => x < bestL3).sort((a, b) => b - a);
   let bestL2: number | null = null;
   for (const l2 of l2Candidates) {
     const slim = slimSegment(rest, l2, bestL3);
@@ -204,7 +204,7 @@ export function shouldAdvance(opts: {
   return { advance: false, emergency: false };
 }
 
-/** 四段运行时视图（不含 JSONL 内 system；摘要为合成 id=1） */
+/** 四段运行时视图（不含 JSONL 内 system；摘要为合成 pos=1） */
 export function buildRuntimeFromLPoints(
   messages: SessionMessage[],
   state: CompressionState | null,
@@ -223,7 +223,7 @@ export function buildRuntimeFromLPoints(
     out.push({
       role: "user",
       content: `${SUMMARY_USER_PREFIX}\n${state.summary.trim()}`,
-      id: SUMMARY_SYNTHETIC_ID,
+      pos: SUMMARY_SYNTHETIC_POS,
     });
   }
   out.push(...slimSegment(rest, l2, l3));
@@ -429,8 +429,8 @@ export function sliceForSummary(
   const rest = restMessages(messages);
   const lo = prevL2 ?? 0;
   return rest.filter((m) => {
-    const id = messageId(m);
-    return !Number.isNaN(id) && id > lo && id <= newL2;
+    const pos = messagePos(m);
+    return !Number.isNaN(pos) && pos > lo && pos <= newL2;
   });
 }
 

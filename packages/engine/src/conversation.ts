@@ -52,7 +52,7 @@ import {
   pgShiftMessagePositions,
   postgresAvailable,
   sessionExistsWithRouting,
-  nextMessageIdWithRouting,
+  nextMessagePosWithRouting,
 } from "./session-store-pg-bridge.js";
 
 export type Message = SessionMessage;
@@ -203,8 +203,8 @@ export async function loadForRuntime(
 export async function appendMessage(msg: SessionMessage, session: string): Promise<void> {
   const out: SessionMessage & { timestamp?: string; id?: number } = { ...msg };
   if (!out.timestamp) out.timestamp = nowIso();
-  if (out.id === undefined && out.role !== "session_meta") {
-    out.id = await nextMessageIdWithRouting(session);
+  if (out.pos === undefined && out.role !== "session_meta") {
+    out.pos = await nextMessagePosWithRouting(session);
   }
   if (out.role !== "session_meta") {
     await pgWriteMessage(session, out);
@@ -580,19 +580,19 @@ export async function repairAndPersistToolLoop(
   if (!corruptions.length) return false;
 
   const ordered = [...corruptions].sort(
-    (a, b) => (b.assistantId ?? 0) - (a.assistantId ?? 0),
+    (a, b) => (b.assistantPos ?? 0) - (a.assistantPos ?? 0),
   );
 
   let inserted = 0;
   for (const c of ordered) {
-    if (c.assistantId === undefined) continue;
+    if (c.assistantPos === undefined) continue;
 
     const current = await load(session);
-    const idx = current.findIndex((m) => m.id === c.assistantId);
+    const idx = current.findIndex((m) => m.pos === c.assistantPos);
     if (idx < 0) continue;
 
     const following = countFollowingToolMessages(current, idx);
-    const insertAtPos = c.assistantId + 1 + following;
+    const insertAtPos = c.assistantPos + 1 + following;
     const n = c.missingCalls.length;
     if (n === 0) continue;
 
@@ -602,7 +602,7 @@ export async function repairAndPersistToolLoop(
       const call = c.missingCalls[i]!;
       await pgWriteMessage(session, {
         role: "tool",
-        id: insertAtPos + i,
+        pos: insertAtPos + i,
         tool_call_id: call.id,
         name: call.name,
         content: syntheticToolContent(reason),
@@ -810,11 +810,11 @@ export async function rollbackToLastUser(session: string): Promise<string> {
 
   const kept = parsed.slice(0, lastUserIdx + 1);
   const lastUser = kept[lastUserIdx]!;
-  const keepThroughId = lastUser.id;
-  if (keepThroughId === undefined) {
+  const keepThroughPos = lastUser.pos;
+  if (keepThroughPos === undefined) {
     throw new Error("没有可重试的伙伴消息");
   }
-  await pgWriteTruncate(session, Number(keepThroughId));
+  await pgWriteTruncate(session, Number(keepThroughPos));
 
   return lastUser.role === "user" ? lastUser.content : "";
 }

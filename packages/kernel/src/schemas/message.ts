@@ -48,9 +48,20 @@ function parseOpenAiTools(raw: unknown): z.infer<typeof openAiToolSchema>[] {
 
 export const messageUsageSchema = z.record(z.string(), z.number());
 
+/** 兼容旧 JSONL / payload 中的 id 字段 → pos */
+export function normalizeLegacyMessagePos(raw: unknown): unknown {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
+  const o = { ...(raw as Record<string, unknown>) };
+  if (o.pos === undefined && typeof o.id === "number") {
+    o.pos = o.id;
+  }
+  delete o.id;
+  return o;
+}
+
 const messageBaseSchema = z.object({
   timestamp: z.string().optional(),
-  id: z.number().optional(),
+  pos: z.number().optional(),
 });
 
 export const sessionMetaSchema = z
@@ -110,23 +121,43 @@ export const toolMessageSchema = messageBaseSchema.extend({
   name: z.string().optional(),
 });
 
-export const sessionMessageSchema = z.discriminatedUnion("role", [
-  sessionMetaSchema,
+const conversationRoles = z.discriminatedUnion("role", [
   userMessageSchema,
   systemMessageSchema,
   assistantMessageSchema,
   toolMessageSchema,
 ]);
 
-/** 对话消息（不含 session_meta），供 PG messages 表与 compressor 使用 */
-export const conversationMessageSchema = z.discriminatedUnion("role", [
-  userMessageSchema,
-  systemMessageSchema,
-  assistantMessageSchema,
-  toolMessageSchema,
-]);
+/** 对话消息（不含 session_meta），供 compressor / LLM 使用 */
+export const conversationMessageSchema = z.preprocess(
+  normalizeLegacyMessagePos,
+  conversationRoles,
+);
+
+/** PG messages.payload（不含 pos；pos 由列维护） */
+export const conversationPayloadSchema = z.preprocess(
+  normalizeLegacyMessagePos,
+  z.discriminatedUnion("role", [
+    userMessageSchema.omit({ pos: true }),
+    systemMessageSchema.omit({ pos: true }),
+    assistantMessageSchema.omit({ pos: true }),
+    toolMessageSchema.omit({ pos: true }),
+  ]),
+);
+
+export const sessionMessageSchema = z.preprocess(
+  normalizeLegacyMessagePos,
+  z.discriminatedUnion("role", [
+    sessionMetaSchema,
+    userMessageSchema,
+    systemMessageSchema,
+    assistantMessageSchema,
+    toolMessageSchema,
+  ]),
+);
 
 export type ConversationMessage = z.infer<typeof conversationMessageSchema>;
+export type ConversationPayload = z.infer<typeof conversationPayloadSchema>;
 
 export type OpenAiFunctionSchema = z.infer<typeof openAiFunctionSchema>;
 export type OpenAiToolSchema = z.infer<typeof openAiToolSchema>;

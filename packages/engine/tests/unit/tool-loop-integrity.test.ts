@@ -13,17 +13,17 @@ import type { SessionMessage } from "@freeanima/kernel";
 describe("tool-loop-integrity", () => {
   it("detectToolLoopCorruption 发现 dangling assistant", () => {
     const msgs: SessionMessage[] = [
-      { role: "user", content: "hi", id: 1 },
+      { role: "user", content: "hi", pos: 1 },
       {
         role: "assistant",
         content: null,
-        id: 2,
+        pos: 2,
         tool_calls: [
           { id: "call_1", type: "function", function: { name: "read_file", arguments: "{}" } },
           { id: "call_2", type: "function", function: { name: "grep", arguments: "{}" } },
         ],
       },
-      { role: "tool", tool_call_id: "call_1", name: "read_file", content: '{"ok":true}', id: 3 },
+      { role: "tool", tool_call_id: "call_1", name: "read_file", content: '{"ok":true}', pos: 3 },
     ];
     const issues = detectToolLoopCorruption(msgs);
     expect(issues).toHaveLength(1);
@@ -32,16 +32,16 @@ describe("tool-loop-integrity", () => {
 
   it("repairToolLoopMessages 补 synthetic tool 并剔除 orphan", () => {
     const msgs: SessionMessage[] = [
-      { role: "user", content: "hi", id: 1 },
+      { role: "user", content: "hi", pos: 1 },
       {
         role: "assistant",
         content: null,
-        id: 2,
+        pos: 2,
         tool_calls: [
           { id: "call_1", type: "function", function: { name: "read_file", arguments: "{}" } },
         ],
       },
-      { role: "tool", tool_call_id: "orphan", name: "x", content: "bad", id: 3 },
+      { role: "tool", tool_call_id: "orphan", name: "x", content: "bad", pos: 3 },
     ];
     const repaired = repairToolLoopMessages(msgs);
     expect(repaired).toHaveLength(3);
@@ -58,17 +58,17 @@ describe("tool-loop-integrity", () => {
 
   it("planToolLoopInserts 在中间 assistant 后插入而非末尾", () => {
     const msgs: SessionMessage[] = [
-      { role: "user", content: "u1", id: 489 },
+      { role: "user", content: "u1", pos: 489 },
       {
         role: "assistant",
         content: null,
-        id: 490,
+        pos: 490,
         tool_calls: [
           { id: "call_1", type: "function", function: { name: "read_file", arguments: "{}" } },
         ],
       },
-      { role: "user", content: "u2", id: 491 },
-      { role: "assistant", content: "ok", id: 500 },
+      { role: "user", content: "u2", pos: 491 },
+      { role: "assistant", content: "ok", pos: 500 },
     ];
     const plans = planToolLoopInserts(msgs);
     expect(plans).toHaveLength(1);

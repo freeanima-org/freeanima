@@ -12,7 +12,7 @@ export type MissingToolCall = {
 
 export type ToolLoopCorruption = {
   assistantIndex: number;
-  assistantId?: number;
+  assistantPos?: number;
   missingCalls: MissingToolCall[];
 };
 
@@ -57,7 +57,7 @@ export function detectToolLoopCorruption(messages: SessionMessage[]): ToolLoopCo
     if (missingCalls.length) {
       out.push({
         assistantIndex: i,
-        assistantId: msg.id,
+        assistantPos: msg.pos,
         missingCalls,
       });
     }
@@ -66,7 +66,7 @@ export function detectToolLoopCorruption(messages: SessionMessage[]): ToolLoopCo
 }
 
 export type ToolLoopInsertPlan = {
-  assistantId: number;
+  assistantPos: number;
   insertAtPos: number;
   missingCalls: MissingToolCall[];
 };
@@ -84,21 +84,21 @@ export function countFollowingToolMessages(
   return n;
 }
 
-/** 计算 synthetic tool 应插入的 pos（按 assistantId 降序处理，与 PG repair 一致） */
+/** 计算 synthetic tool 应插入的 pos（按 assistantPos 降序处理，与 PG repair 一致） */
 export function planToolLoopInserts(messages: SessionMessage[]): ToolLoopInsertPlan[] {
   const corruptions = detectToolLoopCorruption(messages);
   const ordered = [...corruptions].sort(
-    (a, b) => (b.assistantId ?? 0) - (a.assistantId ?? 0),
+    (a, b) => (b.assistantPos ?? 0) - (a.assistantPos ?? 0),
   );
   const plans: ToolLoopInsertPlan[] = [];
   for (const c of ordered) {
-    if (c.assistantId === undefined) continue;
-    const idx = messages.findIndex((m) => m.id === c.assistantId);
+    if (c.assistantPos === undefined) continue;
+    const idx = messages.findIndex((m) => m.pos === c.assistantPos);
     if (idx < 0) continue;
     const following = countFollowingToolMessages(messages, idx);
     plans.push({
-      assistantId: c.assistantId,
-      insertAtPos: c.assistantId + 1 + following,
+      assistantPos: c.assistantPos,
+      insertAtPos: c.assistantPos + 1 + following,
       missingCalls: c.missingCalls,
     });
   }

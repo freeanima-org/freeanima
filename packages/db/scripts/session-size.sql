@@ -3,9 +3,7 @@
 
 SELECT session_id,
        count(*) AS message_count,
-       pg_size_pretty(
-         sum(pg_column_size(role_payload) + coalesce(length(content), 0))::bigint
-       ) AS approx_payload
+       pg_size_pretty(sum(pg_column_size(payload))::bigint) AS approx_payload
 FROM messages
 GROUP BY session_id
 ORDER BY count(*) DESC

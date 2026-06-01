@@ -85,13 +85,13 @@ describePg("server memory API", () => {
           role: "user",
           timestamp: "2026-05-26T13:00:00+08:00",
           content: "L2 重建关键词 alpha",
-          id: 1,
+          pos: 1,
         },
         {
           role: "assistant",
           timestamp: "2026-05-26T13:00:01+08:00",
           content: "收到",
-          id: 2,
+          pos: 2,
         },
       ],
     );
@@ -122,7 +122,7 @@ describePg("server memory API", () => {
           role: "user",
           timestamp: "2026-05-26T14:00:00+08:00",
           content: "split distill keyword",
-          id: 1,
+          pos: 1,
         },
       ],
     );

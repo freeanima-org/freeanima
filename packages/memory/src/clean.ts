@@ -203,7 +203,7 @@ export async function distillFromPg(
 }
 
 /**
- * @deprecated 仅 migrate-jsonl / 离线脚本；运行时请用 distillFromPg
+ * @deprecated 离线脚本；运行时请用 distillFromPg
  */
 export async function distill(
   sessionId: string,

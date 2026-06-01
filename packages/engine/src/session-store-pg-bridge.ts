@@ -12,11 +12,11 @@ import {
   lastMessageTimestamp as dbLastMessageTimestamp,
   listDebugSessionIds as dbListDebugSessionIds,
   listMessages as dbListMessages,
-  listMessagesByIdRange as dbListMessagesByIdRange,
+  listMessagesByPosRange as dbListMessagesByPosRange,
   listMessagesPage as dbListMessagesPage,
   listSessionIds as dbListSessionIds,
   listSessionSummaries as dbListSessionSummaries,
-  nextMessageId as dbNextMessageId,
+  nextMessagePos as dbNextMessagePos,
   patchSessionMeta as dbPatchSessionMeta,
   pgProfileWrap,
   sessionExists as dbSessionExists,
@@ -51,9 +51,9 @@ export async function pgWriteMessage(sessionId: string, msg: SessionMessage): Pr
   await dbAppendMessage(sessionId, msg);
 }
 
-export async function pgWriteTruncate(sessionId: string, keepThroughId: number): Promise<void> {
+export async function pgWriteTruncate(sessionId: string, keepThroughPos: number): Promise<void> {
   if (!postgresAvailable()) return;
-  await dbTruncateMessagesAfter(sessionId, keepThroughId);
+  await dbTruncateMessagesAfter(sessionId, keepThroughPos);
 }
 
 export async function pgShiftMessagePositions(
@@ -102,7 +102,7 @@ export async function loadMessagesWithRouting(sessionId: string): Promise<Sessio
   );
 }
 
-/** 已有压缩边界时，运行时只拉 id > l2 的消息窗口 */
+/** 已有压缩边界时，运行时只拉 pos > l2 的消息窗口 */
 export async function loadMessagesForRuntimeWithRouting(
   sessionId: string,
   meta: SessionMetaMessage | Record<string, never>,
@@ -113,10 +113,10 @@ export async function loadMessagesForRuntimeWithRouting(
   const compression = "compression" in meta ? meta.compression : undefined;
   const state = parseCompressionState(compression);
   if (state != null && isCompressed(state) && state.l2 > 0) {
-    const fromId = state.l2 + 1;
+    const fromPos = state.l2 + 1;
     return pgProfileWrap(
-      "listMessagesByIdRange",
-      () => dbListMessagesByIdRange(sessionId, fromId),
+      "listMessagesByPosRange",
+      () => dbListMessagesByPosRange(sessionId, fromPos),
       {
         sessionId,
         resultBytes: (rows) => JSON.stringify(rows).length,
@@ -162,11 +162,11 @@ export async function listSessionsWithRouting(platform?: string | null): Promise
   return dbListSessionIds(platform);
 }
 
-export async function nextMessageIdWithRouting(sessionId: string): Promise<number> {
+export async function nextMessagePosWithRouting(sessionId: string): Promise<number> {
   if (!postgresAvailable()) {
     throw new Error("database.url 未配置");
   }
-  return dbNextMessageId(sessionId);
+  return dbNextMessagePos(sessionId);
 }
 
 export async function pgCountSessionsByPlatform(): Promise<Record<string, number>> {

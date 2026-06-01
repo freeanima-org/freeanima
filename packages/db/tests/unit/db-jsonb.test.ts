@@ -77,31 +77,32 @@ describe("db jsonb mappers", () => {
     });
   });
 
-  it("rolePayload 往返 user / tool", () => {
+  it("message payload 往返 user / tool", () => {
     const userInsert = messageToInsert("sess", {
       role: "user",
       content: "hi",
-      id: 1,
+      pos: 1,
       timestamp: "2026-01-01T00:00:00.000Z",
     });
     expect(userInsert.pos).toBe(1);
     expect(userInsert.id).toMatch(
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
     );
-    expect(userInsert.rolePayload).toEqual({ role: "user" });
+    expect(userInsert.payload).toMatchObject({ role: "user", content: "hi" });
+    expect(userInsert.payload).not.toHaveProperty("pos");
     const user = rowToMessage(userInsert);
-    expect(user.id).toBe(1);
+    expect(user.pos).toBe(1);
 
     const toolInsert = messageToInsert("sess", {
       role: "tool",
       tool_call_id: "call_1",
       content: '{"ok":true}',
-      id: 2,
+      pos: 2,
       timestamp: "2026-01-01T00:00:01.000Z",
     });
     expect(toolInsert.pos).toBe(2);
-    expect(toolInsert.rolePayload.role).toBe("tool");
+    expect(toolInsert.payload.role).toBe("tool");
     const tool = rowToMessage(toolInsert);
-    expect(tool.id).toBe(2);
+    expect(tool.pos).toBe(2);
   });
 });

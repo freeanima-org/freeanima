@@ -2,9 +2,9 @@ import { join } from "node:path";
 import { PATHS } from "./paths.js";
 
 /**
- * 历史 L1 JSONL 路径（`migrate:jsonl` 等离线工具仍可读该目录）。
+ * 历史 L1 归档路径（`~/.anima/sessions/*.jsonl`，运行时不再读写）。
  *
- * @deprecated 运行时 L1 在 PostgreSQL；勿用于读写 session。请用 engine `load` / `sessionExists` 等 API。
+ * @deprecated 运行时 L1 在 PostgreSQL；请用 engine `load` / `sessionExists` 等 API。
  */
 export function sessionPath(sessionId: string): string {
   return join(PATHS.sessions, `${sessionId}.jsonl`);

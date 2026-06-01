@@ -41,8 +41,8 @@ describePg("memory handlers", () => {
         platform: "parlor",
       },
       [
-        { role: "user", timestamp: "t1", content: "记一条", id: 1 },
-        { role: "assistant", timestamp: "t2", content: "好的", id: 2 },
+        { role: "user", timestamp: "t1", content: "记一条", pos: 1 },
+        { role: "assistant", timestamp: "t2", content: "好的", pos: 2 },
       ],
     );
 

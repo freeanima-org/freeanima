@@ -18,11 +18,11 @@
 
 ### 设计原则
 
-- `sessions` **一行 = JSONL 第一行 `session_meta`**（含 compression、todos、clarify、tools 等）
-- `messages` **只追加**；扩展字段进 `payload` JSONB，**Slice A 不升列**
-- 领域类型复用 kernel Zod `discriminatedUnion`；Drizzle 管 DDL + migration
-- JSONB 列：`schema/jsonb/` 定义 Zod + `$type<>`（`rolePayload` discriminated union、`platformInfo` 等）；`drizzle-orm/zod` 生成表级 schema（`schema/zod-schemas.ts`）
-- 类型桥接：`rowToMessage` / `messageToInsert` / `rowToSessionMeta`
+- `sessions` **一行 = `session_meta`**（含 compression、todos、clarify、tools 等）
+- `messages` **只追加**；`payload` JSONB 存 `ConversationPayload`（无 `pos`）；`pos` 列是会话内序号真相源
+- 领域类型复用 kernel Zod；Drizzle 管 DDL + migration
+- `sessions` 仍列化常用 meta 字段
+- 读写：`messageToInsert` / `rowToMessage`（`pos` 列 + payload 合并为 `ConversationMessage`）
 
 ### 表结构
 
@@ -30,7 +30,7 @@
 
 | 列 | 类型 | 说明 |
 |----|------|------|
-| `id` | TEXT PK | 会话名（= JSONL 文件名） |
+| `id` | TEXT PK | 会话名 |
 | `model` | TEXT NOT NULL | |
 | `title` | TEXT | |
 | `cwd` | TEXT | |
@@ -50,14 +50,12 @@
 
 | 列 | 类型 | 说明 |
 |----|------|------|
-| `id` | TEXT PK | 全局唯一行 id（UUID；PG 主键） |
+| `id` | TEXT PK | 全局唯一行 id（UUID） |
 | `session_id` | TEXT FK → sessions.id | |
-| `pos` | BIGINT | 会话内单调序号（平替 JSONL `id`；compression l2/l3 指向此值） |
-| `content` | TEXT | |
-| `ts` | TIMESTAMPTZ | 原 timestamp |
-| `role_payload` | JSONB | `discriminatedUnion("role")`：user / assistant / tool 及差异字段 |
+| `pos` | BIGINT | 会话内单调序号（compression l2/l3 指向此值；领域层 `Message.pos`） |
+| `payload` | JSONB | `ConversationPayload`（role/content/tool_calls 等，**不含 pos**） |
 
-唯一索引：`(session_id, pos)`。领域层读写时 `id` 仍指 session 内 pos，与 JSONL 一致。
+唯一索引：`(session_id, pos)`。
 
 ### 配置
 
@@ -67,12 +65,11 @@ database:
   # 或 pass:services/postgres/anima
 ```
 
-生产环境必须配置 `database.url`。历史 `sessions/*.jsonl` 用 `migrate:jsonl` 导入，运行时不再读写 L1 JSONL。
+生产环境必须配置 `database.url`。
 
 ### 迁移
 
-1. `pnpm --filter @freeanima/db db:migrate` — schema（含 `messages.id` 全局 UUID + `messages.pos` 会话序号）
-2. `DATABASE_URL=… pnpm --filter @freeanima/db migrate:jsonl` — 历史 JSONL 导入（可重复执行；仅进度 + 末行统计，失败才打印明细）
+`pnpm --filter @freeanima/db db:migrate` — 应用 Drizzle migration（含列化 → payload JSONB 的数据回填）。
 
 ### 运维
 

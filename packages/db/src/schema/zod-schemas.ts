@@ -5,8 +5,8 @@ import {
   acpSessionsSchema,
   awaitingClarifySchema,
   compressionStateSchema,
+  messagePayloadSchema,
   platformInfoSchema,
-  rolePayloadSchema,
   sessionFunctionsSchema,
   sessionTodoStoreSchema,
   sessionToolsSchema,
@@ -28,7 +28,7 @@ export const sessionSelectSchema = createSelectSchema(sessions, sessionJsonbRefi
 export const sessionInsertSchema = createInsertSchema(sessions, sessionJsonbRefine);
 
 const messageJsonbRefine = {
-  rolePayload: rolePayloadSchema,
+  payload: messagePayloadSchema,
 };
 
 export const messageSelectSchema = createSelectSchema(messages, messageJsonbRefine);

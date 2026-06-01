@@ -3,23 +3,23 @@ import { describe, it, expect } from "vitest";
 
 
 function ua(i: number): Record<string, unknown> {
-  return { role: "user", content: `u${i}`, id: i * 2 + 1 };
+  return { role: "user", content: `u${i}`, pos: i * 2 + 1 };
 }
 
 function aa(i: number): Record<string, unknown> {
-  return { role: "assistant", content: `a${i}`, id: i * 2 + 2 };
+  return { role: "assistant", content: `a${i}`, pos: i * 2 + 2 };
 }
 
-function toolMsg(id: number, callId: string): Record<string, unknown> {
-  return { role: "tool", tool_call_id: callId, content: "ok", id };
+function toolMsg(pos: number, callId: string): Record<string, unknown> {
+  return { role: "tool", tool_call_id: callId, content: "ok", pos };
 }
 
-function assistantToolCall(id: number, callId: string): Record<string, unknown> {
+function assistantToolCall(pos: number, callId: string): Record<string, unknown> {
   return {
     role: "assistant",
     content: null,
     tool_calls: [{ id: callId, type: "function", function: { name: "x", arguments: "{}" } }],
-    id,
+    pos,
   };
 }
 
@@ -80,11 +80,11 @@ describe("compressor", () => {
       msgs.push(ua(i), aa(i));
     }
     msgs.push(
-      { role: "user", content: "u54", id: 109 },
+      { role: "user", content: "u54", pos: 109 },
       assistantToolCall(110, "c1"),
       toolMsg(111, "c1"),
-      { role: "user", content: "u55", id: 112 },
-      { role: "assistant", content: "a55", id: 113 },
+      { role: "user", content: "u55", pos: 112 },
+      { role: "assistant", content: "a55", pos: 113 },
     );
     const [out, state] = compress(msgs, {
       maxRounds: 50,
@@ -93,7 +93,7 @@ describe("compressor", () => {
       boundaryOverrides: testBoundary,
     });
     const rest = out.filter((m) => m.role !== "system");
-    const raw = rest.filter((m) => Number(m.id) > (state?.l3 ?? 0));
+    const raw = rest.filter((m) => Number(m.pos) > (state?.l3 ?? 0));
     expect(raw[0]?.role).toBe("user");
     expect(state!.l3).toBeGreaterThan(100);
   });

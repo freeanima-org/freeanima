@@ -54,7 +54,7 @@ describePg("conversation-stats", () => {
       {
         role: "user",
         content: "hi",
-        id: 1,
+        pos: 1,
         timestamp: "2026-05-01T10:00:00+08:00",
       },
       sid,
@@ -101,7 +101,7 @@ describePg("conversation-stats", () => {
       {
         role: "user",
         content: "hi",
-        id: 1,
+        pos: 1,
         timestamp: "2026-05-01T10:00:00+08:00",
       },
       sid,
@@ -110,7 +110,7 @@ describePg("conversation-stats", () => {
       {
         role: "assistant",
         content: "hello world",
-        id: 2,
+        pos: 2,
         timestamp: "2026-05-01T10:00:05+08:00",
       },
       sid,

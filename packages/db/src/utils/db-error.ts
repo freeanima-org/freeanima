@@ -1,4 +1,4 @@
-/** 展开 Drizzle / postgres 错误，便于 migrate-jsonl 等 CLI 日志 */
+/** 展开 Drizzle / postgres 错误，便于 CLI 日志 */
 import { formatZodError } from "@freeanima/kernel";
 import { ZodError } from "zod";
 

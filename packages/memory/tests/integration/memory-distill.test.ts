@@ -52,13 +52,13 @@ describePg("memory distill", () => {
           role: "user",
           timestamp: "2026-05-26T12:00:00+08:00",
           content: "你好",
-          id: 1,
+          pos: 1,
         },
         {
           role: "assistant",
           timestamp: "2026-05-26T12:00:01+08:00",
           content: "你好呀",
-          id: 2,
+          pos: 2,
         },
       ],
     );
@@ -90,7 +90,7 @@ describePg("memory distill", () => {
         timestamp: "2026-05-26T10:00:00+08:00",
         platform: "parlor",
       },
-      [{ role: "user", timestamp: "2026-05-26T10:00:00+08:00", content: "a", id: 1 }],
+      [{ role: "user", timestamp: "2026-05-26T10:00:00+08:00", content: "a", pos: 1 }],
     );
     const l2 = l2SessionPath(sid);
     writeFileSync(

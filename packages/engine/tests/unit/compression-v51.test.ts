@@ -1,25 +1,25 @@
-import { compress, deriveBoundariesFromL4, getL4, isInToolLoop, shouldAdvance, slimMessage, SUMMARY_SYNTHETIC_ID, buildRuntimeFromLPoints } from "@freeanima/engine";
+import { compress, deriveBoundariesFromL4, getL4, isInToolLoop, shouldAdvance, slimMessage, SUMMARY_SYNTHETIC_POS, buildRuntimeFromLPoints } from "@freeanima/engine";
 import { parseCompressionState } from "@freeanima/kernel";
 import { describe, it, expect } from "vitest";
 
 
-function ua(id: number, text = "u"): Record<string, unknown> {
-  return { role: "user", content: text, id };
+function ua(pos: number, text = "u"): Record<string, unknown> {
+  return { role: "user", content: text, pos };
 }
 
-function aa(id: number, text = "a"): Record<string, unknown> {
-  return { role: "assistant", content: text, id };
+function aa(pos: number, text = "a"): Record<string, unknown> {
+  return { role: "assistant", content: text, pos };
 }
 
-function toolMsg(id: number): Record<string, unknown> {
-  return { role: "tool", tool_call_id: "c1", content: "ok", id };
+function toolMsg(pos: number): Record<string, unknown> {
+  return { role: "tool", tool_call_id: "c1", content: "ok", pos };
 }
 
-function buildHistory(n: number, startId = 1): Record<string, unknown>[] {
+function buildHistory(n: number, startPos = 1): Record<string, unknown>[] {
   const msgs: Record<string, unknown>[] = [];
-  let id = startId;
+  let pos = startPos;
   for (let i = 0; i < n; i++) {
-    msgs.push(ua(id++, `u${i}`), aa(id++, `a${i}`));
+    msgs.push(ua(pos++, `u${i}`), aa(pos++, `a${i}`));
   }
   return msgs;
 }
@@ -43,7 +43,7 @@ describe("compression v5.1", () => {
       content: null,
       reasoning: "think",
       tool_calls: [{ id: "1", type: "function", function: { name: "x", arguments: "{}" } }],
-      id: 2,
+      pos: 2,
     });
     expect(slim?.content).toBe("think");
     expect(slim?.tool_calls).toBeUndefined();
@@ -57,7 +57,7 @@ describe("compression v5.1", () => {
         role: "assistant",
         content: null,
         tool_calls: [{ id: "c1", type: "function", function: { name: "x", arguments: "{}" } }],
-        id: 42,
+        pos: 42,
       },
       toolMsg(43),
     ];
@@ -66,8 +66,8 @@ describe("compression v5.1", () => {
     if (derived) {
       const rest = msgs.filter((m) => m.role !== "system" && m.role !== "session_meta");
       const rawStart = rest
-        .filter((m) => typeof m.id === "number" && m.id > derived.l3 && m.id <= l4)
-        .sort((a, b) => Number(a.id) - Number(b.id))[0];
+        .filter((m) => typeof m.pos === "number" && m.pos > derived.l3 && m.pos <= l4)
+        .sort((a, b) => Number(a.pos) - Number(b.pos))[0];
       expect(rawStart?.role).toBe("user");
     }
   });
@@ -85,7 +85,7 @@ describe("compression v5.1", () => {
         role: "assistant",
         content: null,
         tool_calls: [{ id: "c1", type: "function", function: { name: "x", arguments: "{}" } }],
-        id: 82,
+        pos: 82,
       },
       toolMsg(83),
     ];
@@ -136,7 +136,7 @@ describe("compression v5.1", () => {
       l3: 14,
       summary: "此前聊过压缩",
     });
-    expect(view[0]?.id).toBe(SUMMARY_SYNTHETIC_ID);
+    expect(view[0]?.pos).toBe(SUMMARY_SYNTHETIC_POS);
     expect(String(view[0]?.content)).toContain("此前聊过压缩");
   });
 

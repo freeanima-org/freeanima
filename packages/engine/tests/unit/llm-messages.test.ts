@@ -41,8 +41,8 @@ describe("mergeStreamingToolCalls", () => {
 describe("messagesForApi", () => {
   it("adds name to tool messages from preceding assistant tool_calls", () => {
     const out = messagesForApi([
-      { role: "system", content: "sys", timestamp: "x", id: 1 },
-      { role: "user", content: "hi", id: 2 },
+      { role: "system", content: "sys", timestamp: "x", pos: 1 },
+      { role: "user", content: "hi", pos: 2 },
       {
         role: "assistant",
         content: null,

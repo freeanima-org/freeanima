@@ -40,8 +40,8 @@ compression:
       system_prompt: "SOUL block here\n\n## 常驻记忆\n- fact",
       tools: [bigTool],
     });
-    await appendMessage({ role: "user", content: "hi", id: 1 }, sid);
-    await appendMessage({ role: "assistant", content: "ok", id: 2 }, sid);
+    await appendMessage({ role: "user", content: "hi", pos: 1 }, sid);
+    await appendMessage({ role: "assistant", content: "ok", pos: 2 }, sid);
 
     const stats = await computeStats(sid);
     expect(stats.context_breakdown.tools).toBeGreaterThan(stats.context_breakdown.messages);

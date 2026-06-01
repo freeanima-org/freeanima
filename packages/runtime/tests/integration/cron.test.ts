@@ -80,7 +80,7 @@ describePg("cron", () => {
         {
           role: "user",
           content: "x",
-          id: 1,
+          pos: 1,
           timestamp: new Date().toISOString(),
         },
       ],

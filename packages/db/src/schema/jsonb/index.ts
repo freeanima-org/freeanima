@@ -1,4 +1,4 @@
-export * from "./role-payload.js";
+export { messagePayloadSchema, type MessagePayload } from "./message-payload.js";
 export {
   PLATFORMS,
   platformSchema,

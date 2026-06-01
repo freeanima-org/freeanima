@@ -7,7 +7,7 @@ import {
   updateCompression,
   appendMessage,
   listMessages,
-  nextMessageId,
+  nextMessagePos,
   shiftMessagePositions,
 } from "@freeanima/db";
 
@@ -45,13 +45,13 @@ describePg("db session (PostgreSQL)", () => {
     await appendMessage(sessionId, {
       role: "user",
       content: "hello",
-      id: 1,
+      pos: 1,
       timestamp: new Date().toISOString(),
     });
     await appendMessage(sessionId, {
       role: "assistant",
       content: "hi",
-      id: 2,
+      pos: 2,
       timestamp: new Date().toISOString(),
     });
 
@@ -60,7 +60,7 @@ describePg("db session (PostgreSQL)", () => {
     expect(msgs[0]?.role).toBe("user");
     expect(msgs[1]?.content).toBe("hi");
 
-    const next = await nextMessageId(sessionId);
+    const next = await nextMessagePos(sessionId);
     expect(next).toBe(3);
 
     await updateCompression(sessionId, { l2: 1, l3: 2 });
@@ -82,13 +82,13 @@ describePg("db session (PostgreSQL)", () => {
     await appendMessage(sessionId, {
       role: "user",
       content: "u1",
-      id: 489,
+      pos: 489,
       timestamp: new Date().toISOString(),
     });
     await appendMessage(sessionId, {
       role: "assistant",
       content: null,
-      id: 490,
+      pos: 490,
       timestamp: new Date().toISOString(),
       tool_calls: [
         { id: "call_1", type: "function", function: { name: "read_file", arguments: "{}" } },
@@ -97,13 +97,13 @@ describePg("db session (PostgreSQL)", () => {
     await appendMessage(sessionId, {
       role: "user",
       content: "u2",
-      id: 491,
+      pos: 491,
       timestamp: new Date().toISOString(),
     });
     await appendMessage(sessionId, {
       role: "assistant",
       content: "done",
-      id: 500,
+      pos: 500,
       timestamp: new Date().toISOString(),
     });
 
@@ -113,12 +113,12 @@ describePg("db session (PostgreSQL)", () => {
       tool_call_id: "call_1",
       name: "read_file",
       content: '{"error":"repair"}',
-      id: 491,
+      pos: 491,
       timestamp: new Date().toISOString(),
     });
 
     const msgs = await listMessages(sessionId);
-    expect(msgs.map((m) => m.id)).toEqual([489, 490, 491, 492, 501]);
+    expect(msgs.map((m) => m.pos)).toEqual([489, 490, 491, 492, 501]);
     expect(msgs[2]?.role).toBe("tool");
     expect(msgs[3]?.role).toBe("user");
   });

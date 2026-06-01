@@ -89,8 +89,8 @@ describePg("slash commands", () => {
         platform: "parlor",
       },
       [
-        { role: "user", content: "你好", id: 1, timestamp: "t1" },
-        { role: "assistant", content: "旧回复", id: 2, timestamp: "t2" },
+        { role: "user", content: "你好", pos: 1, timestamp: "t1" },
+        { role: "assistant", content: "旧回复", pos: 2, timestamp: "t2" },
       ],
     );
 

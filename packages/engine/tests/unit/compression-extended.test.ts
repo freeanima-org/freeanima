@@ -3,12 +3,12 @@ import { parseCompressionState } from "@freeanima/kernel";
 import { describe, it, expect } from "vitest";
 
 
-function ua(id: number, text = "u"): Record<string, unknown> {
-  return { role: "user", content: text, id };
+function ua(pos: number, text = "u"): Record<string, unknown> {
+  return { role: "user", content: text, pos };
 }
 
-function aa(id: number): Record<string, unknown> {
-  return { role: "assistant", content: "a", id };
+function aa(pos: number): Record<string, unknown> {
+  return { role: "assistant", content: "a", pos };
 }
 
 const testBoundary = { rawMinMessages: 2, slimMinMessages: 2 };

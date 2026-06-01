@@ -23,7 +23,7 @@
 ├── config.yaml         # 运行时配置（模型、firecrawl、discord 等）
 ├── active              # 当前活跃 session 名
 ├── SOUL.md             # 身份种子（注入 system prompt）
-├── sessions/           # L1 历史 JSONL 归档（运行时主存为 PostgreSQL）
+├── sessions/           # L1 历史归档目录（运行时主存为 PostgreSQL）
 ├── processed/          # L2 蒸馏 JSONL
 ├── memory/             # L3 事实文件 (*.md)
 ├── functions/          # 职能 TOML
@@ -42,9 +42,9 @@
 
 ## 对话日志格式（L1）
 
-L1 Session 主存为 PostgreSQL（`config.yaml` → `database.url`）。`sessions/*.jsonl` 仅作历史归档与 `migrate:jsonl` 导入源；表设计见 [database.md](../database.md)。
+L1 Session 主存为 PostgreSQL（`config.yaml` → `database.url`）。表设计见 [database.md](../database.md)。
 
-**L1 PostgreSQL（Slice A，可选）**：`packages/db/` — `sessions`（一行 = JSONL 首行 `session_meta`）+ `messages`；`anima service` 启动时 `getDb()` 连接池，engine/memory 进程内直调 repo（无 `sync-op` 子进程）；热路径 `getSessionMetaLite`（不读 `tools` JSONB）、压缩后 `listMessagesByIdRange`、API `offset`/`limit` 走 `listMessagesPage`；诊断：`ANIMA_L1_PG_PROFILE=1` 打 stderr 汇总、`packages/db/scripts/session-size.sql` 查大 session；`pnpm --filter @freeanima/db db:migrate`；历史数据 `DATABASE_URL=… pnpm --filter @freeanima/db migrate:jsonl`（可重复跑）。
+**L1 PostgreSQL（Slice A）**：`packages/db/` — `sessions`（一行 = `session_meta`）+ `messages`（`payload` JSONB = `ConversationMessage`）；`anima service` 启动时 `getDb()` 连接池，engine/memory 进程内直调 repo；热路径 `getSessionMetaLite`（不读 `tools` JSONB）、压缩后 `listMessagesByIdRange`、API `offset`/`limit` 走 `listMessagesPage`；诊断：`ANIMA_L1_PG_PROFILE=1`、`packages/db/scripts/session-size.sql`；`pnpm --filter @freeanima/db db:migrate`。
 
 `NestService` 与 cron 引擎路径在 `engine.run` / `engine.runStream` 落盘：**最终 assistant** 即时 `appendMessage`；**tool loop 一轮**（assistant+tool_calls + 全部 tool 响应）**原子批量**落盘；`finishTurn(..., skipMessageAppend=true)` 只做 `session_meta` 更新。历史若出现 dangling `tool_calls`，`beginTurn`/`prepareMessages` 会在 **assistant 原位** 补 synthetic tool（后续 pos 后移）并修复；伙伴新消息可 **AbortController 抢占** 进行中的 tool loop。
 
@@ -74,7 +74,7 @@ L1 Session 主存为 PostgreSQL（`config.yaml` → `database.url`）。`session
 - raw data 完整存档，不裁剪任何字段
 - model 在消息级，换模型语义清晰
 - `load()` 跳过 session_meta
-- **运行时压缩 v5.1**（`compressor.ts` + `compression-summary.ts`）：四段视图 l0–l4；meta `{ l2, l3, summary? }`；`deriveBoundariesFromL4`（`raw_min_messages` / `slim_min_messages`）；`trigger_low` 0.60 外 / `trigger_high` 0.80 内；`isInToolLoop` 仅影响 `shouldAdvance`；摘要增量 `(旧 l2, 新 l2]`；合成 `id=1` 摘要 user；emergency 就地裁切；`/compress`；JSONL 永不删
+- **运行时压缩 v5.1**（`compressor.ts` + `compression-summary.ts`）：四段视图 l0–l4；meta `{ l2, l3, summary? }`；`deriveBoundariesFromL4`（`raw_min_messages` / `slim_min_messages`）；`trigger_low` 0.60 外 / `trigger_high` 0.80 内；`isInToolLoop` 仅影响 `shouldAdvance`；摘要增量 `(旧 l2, 新 l2]`；合成 `pos=1` 摘要 user；emergency 就地裁切；`/compress`；L1 全量存档不删
 - **`/stats`**：`conversation-stats` + `runtime-context-stats`；压缩状态按 **token 占用率**（或条数回退）；**当前上下文**从 `buildRuntimeMessages` + `meta.tools` 分项（SOUL/AGENTS/常驻/技能/摘要/消息/tools schema）
 - L1 原始 JSONL → L2 蒸馏 → L3 事实 → L4 检索，详见 [memory.md](../memory.md)
 - **TypeScript 类型**：`packages/kernel/src/schemas/` 为 Zod 单一真相源（L1 `message.ts`、EventBus `events.ts` 等）；HTTP 入站/出站契约在 `@freeanima/api`（Zod）；`packages/server/src/api-mappers.ts` 将内部类型映射为 API DTO；工具返回约定见 `json-util.parseToolResult`
@@ -89,8 +89,8 @@ apps/
 packages/
 ├── api/            # HTTP 契约（Zod schema + 类型）；仅依赖 zod
 ├── kernel/         # paths、config、credential、registry、event-bus、hooks、schemas/*、session-path
-├── db/             # @freeanima/db：L1 Session PG（sessions + messages）、Drizzle migrate、JSONL 迁移脚本
-├── engine/         # conversation、session-store（JSONL/PG 路由）、compressor、llm、engine 回合
+├── db/             # @freeanima/db：L1 Session PG（sessions + messages.payload JSONB）、Drizzle migrate
+├── engine/         # conversation、session-store（PG）、compressor、llm、engine 回合
 ├── memory/         # L1–L4 存储/检索、reflect、registerMemoryPipeline（+ registerMemoryHandlers 别名）
 ├── runtime/        # NestService、commands、cron、studio、platforms 辅助、conversation-stats
 ├── clarify/        # clarify 工具与 hook 注册

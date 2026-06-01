@@ -31,7 +31,7 @@ export async function appendMessage(
   return rowToMessage(rows[0]!);
 }
 
-export async function nextMessageId(sessionId: string): Promise<number> {
+export async function nextMessagePos(sessionId: string): Promise<number> {
   const db = getDb();
   const rows = await db
     .select({ maxPos: sql<number>`coalesce(max(${messages.pos}), 0)` })
@@ -50,15 +50,15 @@ export async function listMessages(sessionId: string): Promise<ConversationMessa
   return rows.map((r) => rowToMessage(r));
 }
 
-export async function listMessagesByIdRange(
+export async function listMessagesByPosRange(
   sessionId: string,
-  fromId: number,
-  toId?: number,
+  fromPos: number,
+  toPos?: number,
 ): Promise<ConversationMessage[]> {
   const db = getDb();
-  const conditions = [eq(messages.sessionId, sessionId), gte(messages.pos, fromId)];
-  if (toId !== undefined) {
-    conditions.push(lte(messages.pos, toId));
+  const conditions = [eq(messages.sessionId, sessionId), gte(messages.pos, fromPos)];
+  if (toPos !== undefined) {
+    conditions.push(lte(messages.pos, toPos));
   }
   const rows = await db
     .select()
@@ -100,7 +100,9 @@ export async function listMessagesPage(
 export async function lastMessageTimestamp(sessionId: string): Promise<string | null> {
   const db = getDb();
   const rows = await db
-    .select({ ts: sql<string | null>`max(${messages.ts})` })
+    .select({
+      ts: sql<string | null>`max((${messages.payload}->>'timestamp')::timestamptz)::text`,
+    })
     .from(messages)
     .where(eq(messages.sessionId, sessionId));
   return rows[0]?.ts ?? null;
@@ -108,12 +110,12 @@ export async function lastMessageTimestamp(sessionId: string): Promise<string | 
 
 export async function truncateMessagesAfter(
   sessionId: string,
-  keepThroughId: number,
+  keepThroughPos: number,
 ): Promise<void> {
   const db = getDb();
   await db
     .delete(messages)
-    .where(and(eq(messages.sessionId, sessionId), sql`${messages.pos} > ${keepThroughId}`));
+    .where(and(eq(messages.sessionId, sessionId), sql`${messages.pos} > ${keepThroughPos}`));
 }
 
 /**
