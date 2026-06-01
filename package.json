@@ -1,6 +1,6 @@
 {
   "name": "freeanima",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "逸灵风 Free Anima (TypeScript)",
   "packageManager": "pnpm@11.4.0",
