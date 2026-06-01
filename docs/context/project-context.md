@@ -94,7 +94,7 @@ packages/
 ├── memory/         # L1–L4 存储/检索、reflect、registerMemoryPipeline（+ registerMemoryHandlers 别名）
 ├── runtime/        # NestService、commands、cron、studio、platforms 辅助、conversation-stats
 ├── clarify/        # clarify 工具与 hook 注册
-├── core/           # 兼容门面：re-export kernel/clarify/engine/memory/runtime + semver/network-error
+├── core/           # 兼容门面：re-export kernel/clarify/engine/memory/runtime + network-error
 ├── server/         # Hono /api + serve()；registerMemoryPipeline + registerReflectChat；SIGTERM 优雅关闭
 ├── tools/          # 本地工具注册
 └── integrations/   # MCP、platforms(Discord/微信)、ACP
