@@ -1,4 +1,5 @@
-import { NEST_VERSION } from "@freeanima/core";
+import { NEST_VERSION } from "@freeanima/runtime";
+
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import {
   SSEClientTransport,

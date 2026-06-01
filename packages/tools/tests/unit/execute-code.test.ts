@@ -1,49 +1,44 @@
 import { describe, it, expect } from "vitest";
+import { parseRuntime, clampTimeout, runExecuteCode } from "../../src/execute-code-runtimes.ts";
+import { registerAllTools } from "@freeanima/tools";
+import { openaiSchemas } from "@freeanima/kernel";
 
 describe("execute_code runtimes", () => {
-  it("parseRuntime defaults to nodejs", async () => {
-    const { parseRuntime } = await import("../../src/execute-code-runtimes.ts");
+  it("parseRuntime defaults to nodejs", () => {
     expect(parseRuntime(undefined)).toBe("nodejs");
     expect(parseRuntime("nodejs")).toBe("nodejs");
   });
 
-  it("parseRuntime falls back for unknown values", async () => {
-    const { parseRuntime } = await import("../../src/execute-code-runtimes.ts");
+  it("parseRuntime falls back for unknown values", () => {
     expect(parseRuntime("ruby")).toBe("nodejs");
   });
 
-  it("clampTimeout respects bounds", async () => {
-    const { clampTimeout } = await import("../../src/execute-code-runtimes.ts");
+  it("clampTimeout respects bounds", () => {
     expect(clampTimeout(undefined)).toBe(300);
     expect(clampTimeout(9999)).toBe(600);
     expect(clampTimeout(0)).toBe(1);
   });
 
-  it("runs nodejs code", async () => {
-    const { runExecuteCode } = await import("../../src/execute-code-runtimes.ts");
+  it("runs nodejs code", () => {
     const out = runExecuteCode('console.log("anima-exec-ok");', "nodejs", 30);
     expect(out.trim()).toBe("anima-exec-ok");
   });
 
-  it("returns error JSON for disabled python runtime", async () => {
-    const { runExecuteCode } = await import("../../src/execute-code-runtimes.ts");
+  it("returns error JSON for disabled python runtime", () => {
     const out = runExecuteCode('print("hi")', "python", 30);
     const parsed = JSON.parse(out) as { error: string };
     expect(parsed.error).toContain("python");
     expect(parsed.error).toContain("nodejs");
   });
 
-  it("returns error JSON for disabled deno runtime", async () => {
-    const { runExecuteCode } = await import("../../src/execute-code-runtimes.ts");
+  it("returns error JSON for disabled deno runtime", () => {
     const out = runExecuteCode('console.log("hi")', "deno", 30);
     expect(JSON.parse(out)).toMatchObject({ error: expect.stringContaining("deno") });
   });
 });
 
 describe("openaiSchemas", () => {
-  it("tools use flat parameters and top-level description", async () => {
-    const { registerAllTools } = await import("@freeanima/tools");
-    const { openaiSchemas } = await import("@freeanima/core");
+  it("tools use flat parameters and top-level description", () => {
     registerAllTools();
 
     const schemas = openaiSchemas();

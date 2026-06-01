@@ -3,14 +3,24 @@ import { describePg } from "../../../db/tests/helpers/pg-test-gate.ts";
 import { beginIntegrationCase } from "../../../db/tests/helpers/integration-case.ts";
 import { endIntegrationCase } from "../../../db/tests/helpers/integration-case.ts";
 
+import { registerAllTools } from "@freeanima/tools";
+import { initSession } from "@freeanima/engine";
+import {
+  setAwaitingClarify,
+  readAwaitingClarify,
+  clearAwaitingClarify,
+  resolveUserContent,
+  guardAwaitingClarify,
+  findAwaitingClarifyInMessages,
+  executeCommand,
+  getCommand,
+} from "@freeanima/clarify";
+
 describePg("clarify session", () => {
-  let home: string;
   const prevHome = process.env.FREEANIMA_HOME;
 
   beforeEach(async () => {
-    const ctx = await beginIntegrationCase("anima-clarify-");
-    home = ctx.home;
-    const { registerAllTools } = await import("@freeanima/tools");
+    await beginIntegrationCase("anima-clarify-");
     registerAllTools();
   });
 
@@ -20,13 +30,10 @@ describePg("clarify session", () => {
   });
 
   async function createSession(id: string): Promise<void> {
-    const { initSession } = await import("@freeanima/core");
     await initSession(id, "test-model", { platform: "parlor" });
   }
 
   it("session A/B awaiting_clarify isolated", async () => {
-    const { setAwaitingClarify, readAwaitingClarify, clearAwaitingClarify } =
-      await import("@freeanima/core");
     await createSession("session_a");
     await createSession("session_b");
 
@@ -43,8 +50,6 @@ describePg("clarify session", () => {
   });
 
   it("resolveUserContent merges batch questions", async () => {
-    const { setAwaitingClarify, resolveUserContent, readAwaitingClarify } =
-      await import("@freeanima/core");
     await createSession("s1");
 
     await setAwaitingClarify("s1", {
@@ -60,7 +65,6 @@ describePg("clarify session", () => {
   });
 
   it("guard blocks slash commands while awaiting", async () => {
-    const { setAwaitingClarify, guardAwaitingClarify } = await import("@freeanima/core");
     await createSession("s1");
 
     await setAwaitingClarify("s1", {
@@ -74,8 +78,6 @@ describePg("clarify session", () => {
   });
 
   it("expire clears pending and resolve prepends hint", async () => {
-    const { setAwaitingClarify, resolveUserContent, readAwaitingClarify } =
-      await import("@freeanima/core");
     await createSession("s1");
 
     await setAwaitingClarify(
@@ -90,8 +92,7 @@ describePg("clarify session", () => {
     expect(await readAwaitingClarify("s1")).toBeNull();
   });
 
-  it("findAwaitingClarifyInMessages reads last clarify tool", async () => {
-    const { findAwaitingClarifyInMessages } = await import("@freeanima/core");
+  it("findAwaitingClarifyInMessages reads last clarify tool", () => {
     const msgs = [
       {
         role: "tool",
@@ -108,8 +109,6 @@ describePg("clarify session", () => {
   });
 
   it("/cancel command clears awaiting", async () => {
-    const { setAwaitingClarify, readAwaitingClarify, executeCommand, getCommand } =
-      await import("@freeanima/core");
     await createSession("s1");
     await setAwaitingClarify("s1", {
       items: [{ question: "Q?" }],

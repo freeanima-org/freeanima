@@ -5,6 +5,7 @@ import { endIntegrationCase } from "../../../db/tests/helpers/integration-case.t
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { NestService } from "@freeanima/runtime";
 
 const ROOT_VERSION = (
   JSON.parse(
@@ -16,7 +17,7 @@ describePg("server status API", () => {
   const prev = process.env.FREEANIMA_HOME;
 
   beforeEach(async () => {
-    const ctx = await beginIntegrationCase("freeanima-status-");
+    await beginIntegrationCase("freeanima-status-");
   });
 
   afterEach(async () => {
@@ -25,7 +26,6 @@ describePg("server status API", () => {
   });
 
   it("buildStatus matches WebUI / 卧室 contract", async () => {
-    const { NestService } = await import("@freeanima/core");
     const svc = new NestService();
     svc.markStarted();
     const body = await svc.buildStatus("127.0.0.1", 8080);
@@ -52,8 +52,7 @@ describePg("server status API", () => {
     expect(body.platforms).toBeTypeOf("object");
   });
 
-  it("health returns status ok", async () => {
-    const { NestService } = await import("@freeanima/core");
+  it("health returns status ok", () => {
     expect(new NestService().health()).toEqual({
       status: "ok",
       version: ROOT_VERSION,

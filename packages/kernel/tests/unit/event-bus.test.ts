@@ -3,6 +3,8 @@ import { mkdtempSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { waitFor } from "../helpers/wait.js";
+import { EventBus } from "@freeanima/kernel";
+import { seedLegacyPythonStyleEvent } from "@freeanima/kernel/test-helpers";
 
 describe("event-bus schema", () => {
   let home: string;
@@ -22,12 +24,8 @@ describe("event-bus schema", () => {
     mkdirSync(join(home, "runtime"), { recursive: true });
     const dbPath = join(home, "runtime", "events.db");
 
-    const { seedLegacyPythonStyleEvent } = await import(
-      "@freeanima/core/test-helpers"
-    );
     seedLegacyPythonStyleEvent(dbPath, "test:ping", { n: 1 });
 
-    const { EventBus } = await import("@freeanima/core");
     const bus = new EventBus(dbPath);
     const seen: number[] = [];
     bus.on("test:ping", (p) => {

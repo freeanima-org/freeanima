@@ -1,6 +1,7 @@
+import { loadConfig, homePath, toolError, toolResult } from "@freeanima/kernel";
 import { createHash, randomUUID } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
-import { loadConfig, homePath, toolError, toolResult } from "@freeanima/core";
+
 
 const DEFAULT_TIMEOUT_MS = 30_000;
 const NAVIGATE_TIMEOUT_MS = 60_000;

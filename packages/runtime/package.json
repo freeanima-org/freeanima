@@ -7,6 +7,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./system-prompt-wire": {
+      "types": "./dist/system-prompt-wire.d.ts",
+      "import": "./dist/system-prompt-wire.js"
     }
   },
   "scripts": {

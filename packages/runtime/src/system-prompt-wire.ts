@@ -1,5 +1,4 @@
-import { registerSystemPromptBuilder } from "@freeanima/engine";
-import { getActiveSkillsContent } from "@freeanima/engine";
+import { registerSystemPromptBuilder, getActiveSkillsContent } from "@freeanima/engine";
 import {
   composeSystemPrompt,
   decomposeSystemPromptParts as decomposeBase,

@@ -1,5 +1,6 @@
+import { runWithToolContext, getToolSessionId } from "@freeanima/engine";
 import { describe, it, expect } from "vitest";
-import { runWithToolContext, getToolSessionId } from "@freeanima/core";
+
 
 describe("runWithToolContext", () => {
   it("propagates session through async generator iteration", async () => {

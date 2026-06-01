@@ -1,4 +1,5 @@
-import { toolError } from "@freeanima/core";
+import { toolError } from "@freeanima/kernel";
+
 
 /** MCP tools/list 的 inputSchema → OpenAI function parameters（扁平 JSON Schema） */
 export function mcpToolParameters(mcpTool: {

@@ -29,7 +29,6 @@
   "devDependencies": {
     "@freeanima/api": "workspace:*",
     "@freeanima/clarify": "workspace:*",
-    "@freeanima/core": "workspace:*",
     "@freeanima/db": "workspace:*",
     "@freeanima/integrations": "workspace:*",
     "@freeanima/kernel": "workspace:*",

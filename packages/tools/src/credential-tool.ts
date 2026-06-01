@@ -1,4 +1,5 @@
-import { listCredentials, registerTool, toolResult } from "@freeanima/core";
+import { listCredentials, registerTool, toolResult } from "@freeanima/kernel";
+
 
 export function registerCredentialTools(): void {
   registerTool({

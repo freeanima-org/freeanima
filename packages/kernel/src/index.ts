@@ -87,3 +87,10 @@ export {
   type TodoItem,
   type SessionTodoStore,
 } from "./schemas/session-meta.js";
+export {
+  bumpSemver,
+  formatSemver,
+  parseSemver,
+  type SemverBump,
+  type SemverParts,
+} from "./semver.js";

@@ -14,3 +14,5 @@ export * from "./conversation-stats.js";
 export * from "./runtime-context-stats.js";
 export * from "./time-perception.js";
 export * from "./clarify.js";
+export { NEST_VERSION } from "./version.js";
+export { getRepoRoot, readRootVersion, writeRootVersion } from "./root-version.js";

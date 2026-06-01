@@ -2,18 +2,28 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import {
+  resetStoreForTests,
+  registerMemoryTools,
+  MemoryStore,
+  indexL3Fact,
+  searchL3,
+  searchL3Fts,
+  indexL3Facts,
+  indexL2Session,
+} from "@freeanima/memory";
+import { getTool } from "@freeanima/kernel";
+import { runWithToolContext } from "@freeanima/engine";
 
 describe("memory search", () => {
   let home: string;
   const prev = process.env.FREEANIMA_HOME;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     home = mkdtempSync(join(tmpdir(), "freeanima-search-"));
     process.env.FREEANIMA_HOME = home;
-    const { resetStoreForTests } = await import("@freeanima/core");
     resetStoreForTests();
-    const { registerAllTools } = await import("@freeanima/tools");
-    registerAllTools();
+    registerMemoryTools();
   });
 
   afterEach(() => {
@@ -22,7 +32,6 @@ describe("memory search", () => {
   });
 
   it("FTS finds indexed L3 fact", async () => {
-    const { MemoryStore, indexL3Fact, searchL3 } = await import("@freeanima/core");
     const store = new MemoryStore(join(home, "memory"));
     const id = store.create({
       content: "逸灵风使用 TypeScript 实现记忆管道",
@@ -41,7 +50,6 @@ describe("memory search", () => {
   });
 
   it("remember indexes only the new fact", async () => {
-    const { MemoryStore, searchL3Fts, getTool, runWithToolContext } = await import("@freeanima/core");
     const store = new MemoryStore(join(home, "memory"));
     store.create({
       content: "占位事实 alpha",
@@ -63,7 +71,6 @@ describe("memory search", () => {
   });
 
   it("indexL3Facts indexes batch by id", async () => {
-    const { MemoryStore, indexL3Facts, searchL3Fts } = await import("@freeanima/core");
     const store = new MemoryStore(join(home, "memory"));
     const id = store.create({
       content: "批量索引 gamma",
@@ -76,7 +83,6 @@ describe("memory search", () => {
   });
 
   it("recall returns L3 facts and L2 dialogue", async () => {
-    const { MemoryStore, indexL3Fact, indexL2Session, getTool } = await import("@freeanima/core");
     const store = new MemoryStore(join(home, "memory"));
     const id = store.create({
       content: "逸灵风记忆管道使用 compression 压缩",

@@ -8,6 +8,17 @@ import { endIntegrationCase } from "../../../db/tests/helpers/integration-case.t
 import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import {
+  buildFileTree,
+  readStudioFile,
+  searchStudio,
+  resolveStudioPath,
+  patchStudioConfig,
+  getStudioConfig,
+  parseGitignore,
+  isIgnored,
+} from "@freeanima/runtime";
+import { clearConfigCache } from "@freeanima/kernel";
 
 describePg("studio", () => {
   let home: string;
@@ -37,8 +48,7 @@ describePg("studio", () => {
     else process.env.FREEANIMA_HOME = prev;
   });
 
-  it("buildFileTree returns workspace files", async () => {
-    const { buildFileTree } = await import("@freeanima/core");
+  it("buildFileTree returns workspace files", () => {
     const { tree, workspace: ws } = buildFileTree();
     expect(ws).toBe(workspace);
     const names = tree.map((n) => n.name);
@@ -48,28 +58,24 @@ describePg("studio", () => {
     expect(src?.children?.some((c) => c.name === "main.ts")).toBe(true);
   });
 
-  it("readStudioFile returns content and language", async () => {
-    const { readStudioFile } = await import("@freeanima/core");
+  it("readStudioFile returns content and language", () => {
     const f = readStudioFile("src/main.ts");
     expect(f.content).toContain("foo");
     expect(f.language).toBe("typescript");
     expect(f.path).toBe("src/main.ts");
   });
 
-  it("searchStudio finds text in files", async () => {
-    const { searchStudio } = await import("@freeanima/core");
+  it("searchStudio finds text in files", () => {
     const { results } = searchStudio("foo");
     expect(results.length).toBeGreaterThan(0);
     expect(results[0]!.file).toContain("main.ts");
   });
 
-  it("resolveStudioPath rejects path traversal", async () => {
-    const { resolveStudioPath } = await import("@freeanima/core");
+  it("resolveStudioPath rejects path traversal", () => {
     expect(() => resolveStudioPath("../../etc/passwd")).toThrow(/workspace/);
   });
 
-  it("patchStudioConfig updates workspace", async () => {
-    const { patchStudioConfig, getStudioConfig, clearConfigCache } = await import("@freeanima/core");
+  it("patchStudioConfig updates workspace", () => {
     const other = mkdtempSync(join(tmpdir(), "anima-ws2-"));
     patchStudioConfig({ workspace: other });
     clearConfigCache();
@@ -78,8 +84,7 @@ describePg("studio", () => {
 });
 
 describePg("studio-gitignore", () => {
-  it("parseGitignore handles negation and dir-only", async () => {
-    const { parseGitignore, isIgnored } = await import("@freeanima/core");
+  it("parseGitignore handles negation and dir-only", () => {
     const rules = parseGitignore("*.log\n!important.log\nbuild/\n");
     expect(rules).toHaveLength(3);
     expect(isIgnored("debug.log", false, [rules])).toBe(true);
@@ -88,8 +93,7 @@ describePg("studio-gitignore", () => {
     expect(isIgnored("build/app.js", false, [rules])).toBe(false);
   });
 
-  it("root-anchored /tmp/cursor-* does not ignore apps", async () => {
-    const { parseGitignore, isIgnored } = await import("@freeanima/core");
+  it("root-anchored /tmp/cursor-* does not ignore apps", () => {
     const rules = parseGitignore("/tmp/cursor-*/\n");
     expect(isIgnored("apps", true, [rules])).toBe(false);
     expect(isIgnored("packages", true, [rules])).toBe(false);

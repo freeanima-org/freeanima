@@ -1,21 +1,19 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { describePg } from "../../../db/tests/helpers/pg-test-gate.ts";
 
-import { clearConfigCache } from "@freeanima/kernel";
+import { clearConfigCache, registerTool, listTools } from "@freeanima/kernel";
+import { registerAcpTools } from "@freeanima/integrations";
 
 beforeEach(() => clearConfigCache());
 afterEach(() => clearConfigCache());
 
 describePg("acp manager", () => {
-  it("registerAcpTools returns 0 when no agents configured", async () => {
-    const { registerAcpTools } = await import("@freeanima/integrations");
+  it("registerAcpTools returns 0 when no agents configured", () => {
     const count = registerAcpTools({});
     expect(count).toBe(0);
   });
 
-  it("registerAcpTools registers tools from config", async () => {
-    const { registerTool, listTools } = await import("@freeanima/core");
-    const { registerAcpTools } = await import("@freeanima/integrations");
+  it("registerAcpTools registers tools from config", () => {
     // 清理可能已有的 acp 工具计数基线
     const before = listTools().filter((t) => t.name.startsWith("acp_")).length;
     const count = registerAcpTools({

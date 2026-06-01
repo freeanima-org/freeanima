@@ -1,9 +1,6 @@
+import { credential, insertCredential, listCredentials } from "@freeanima/kernel";
 import type { Command } from "commander";
-import {
-  credential,
-  insertCredential,
-  listCredentials,
-} from "@freeanima/core";
+
 import { printCliError } from "../output/errors.js";
 import { renderTable } from "../output/table.js";
 import { writeStatusLine } from "../output/status.js";

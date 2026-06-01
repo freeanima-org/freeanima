@@ -6,7 +6,18 @@ import {
   endIntegrationCase,
 } from "../../../db/tests/helpers/integration-case.ts";
 
-import { isSessionMeta } from "@freeanima/kernel";
+import { isSessionMeta, openaiSchemas } from "@freeanima/kernel";
+import { registerAllTools } from "@freeanima/tools";
+import {
+  newSession,
+  load,
+  beginTurn,
+  sessionExists,
+  loadSessionMeta,
+  loadSessionTools,
+  appendMessage,
+  finishTurn,
+} from "@freeanima/engine";
 
 describePg("conversation", () => {
   const prev = process.env.FREEANIMA_HOME;
@@ -27,7 +38,6 @@ describePg("conversation", () => {
   });
 
   it("creates session and appends user message", async () => {
-    const { newSession, load, beginTurn, sessionExists } = await import("@freeanima/core");
     const sid = await newSession("parlor");
     expect(await sessionExists(sid)).toBe(true);
     await beginTurn(sid, "hello");
@@ -36,7 +46,6 @@ describePg("conversation", () => {
   });
 
   it("new session cwd is isolated temp dir, not process.cwd()", async () => {
-    const { newSession, loadSessionMeta } = await import("@freeanima/core");
     const sid = await newSession("weixin");
     const meta = await loadSessionMeta(sid);
     const cwd = isSessionMeta(meta) ? String(meta.cwd ?? "") : "";
@@ -46,9 +55,7 @@ describePg("conversation", () => {
   });
 
   it("new session writes tools snapshot and loadSessionTools uses cache", async () => {
-    const { registerAllTools } = await import("@freeanima/tools");
     registerAllTools();
-    const { newSession, loadSessionTools, openaiSchemas } = await import("@freeanima/core");
     const sid = await newSession("parlor");
     const tools = await loadSessionTools(sid);
     expect(Array.isArray(tools)).toBe(true);
@@ -82,9 +89,6 @@ describePg("conversation compression", () => {
   });
 
   it("finishTurn keeps full history under compression", async () => {
-    const { newSession, load, appendMessage, beginTurn, finishTurn, loadSessionMeta } =
-      await import("@freeanima/core");
-
     const sid = await newSession("test");
     for (let i = 0; i < 55; i++) {
       await appendMessage({ role: "user", content: `u${i}`, id: i * 2 + 1 }, sid);

@@ -1,7 +1,8 @@
+import { credentialRaw } from "@freeanima/kernel";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { credentialRaw } from "@freeanima/core";
+
 import { ILINK_BASE_URL } from "./ilink-api.js";
 
 export type WeixinCredentials = {

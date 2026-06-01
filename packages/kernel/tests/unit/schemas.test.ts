@@ -12,6 +12,7 @@ import {
   memorySearchBodySchema,
 } from "../../../api/src/schemas.js";
 import { parseCompressionState } from "../../src/schemas/session-meta.js";
+import { parseClarifyToolResult } from "@freeanima/clarify";
 import { jsonRpcMessageSchema } from "../../../integrations/src/schemas/acp-jsonrpc.js";
 import {
   weixinSyncSchema,
@@ -107,8 +108,7 @@ describe("schemas/session-meta compression", () => {
 });
 
 describe("schemas/clarify tool result", () => {
-  it("parses awaiting clarify tool output", async () => {
-    const { parseClarifyToolResult } = await import("@freeanima/clarify");
+  it("parses awaiting clarify tool output", () => {
     const result = parseClarifyToolResult(
       JSON.stringify({
         status: "awaiting",

@@ -1,3 +1,4 @@
+import { installErrorLogHandlers, logStartupError } from "@freeanima/kernel";
 import {
   existsSync,
   mkdirSync,
@@ -19,10 +20,7 @@ import {
   readRecentErrorLogTail,
   writeStatusLine,
 } from "./service-common.js";
-import {
-  installErrorLogHandlers,
-  logStartupError,
-} from "@freeanima/core";
+
 import { parseBindHosts } from "@freeanima/server/bind-hosts";
 import { renderSystemdUnit, systemdUserAvailable, SYSTEMD_UNIT } from "./systemd-unit.js";
 

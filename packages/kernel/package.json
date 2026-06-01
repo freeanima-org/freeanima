@@ -43,6 +43,10 @@
     "./schemas/*": {
       "types": "./dist/schemas/*.d.ts",
       "import": "./dist/schemas/*.js"
+    },
+    "./test-helpers": {
+      "types": "./dist/test-helpers/legacy-events-db.d.ts",
+      "import": "./dist/test-helpers/legacy-events-db.js"
     }
   },
   "scripts": {

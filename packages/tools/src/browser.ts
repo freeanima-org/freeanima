@@ -1,4 +1,6 @@
-import { getToolSessionId, registerTool, toolError } from "@freeanima/core";
+import { getToolSessionId } from "@freeanima/engine";
+import { registerTool, toolError } from "@freeanima/kernel";
+
 import {
   camofoxBack,
   camofoxClick,

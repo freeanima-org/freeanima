@@ -5,12 +5,17 @@ import { endIntegrationCase } from "../../../db/tests/helpers/integration-case.t
 
 import {
   normalizeUsage,
+  estimateTokens,
+  estimateMessagesTokens,
+  newSession,
+  appendMessage,
+  updateSessionMetaField,
+} from "@freeanima/engine";
+import {
   computeStats,
   mergeStats,
   statsReport,
-  estimateTokens,
-  estimateMessagesTokens,
-} from "@freeanima/core";
+} from "@freeanima/runtime";
 
 describePg("conversation-stats", () => {
   const prev = process.env.FREEANIMA_HOME;
@@ -44,7 +49,6 @@ describePg("conversation-stats", () => {
   });
 
   it("computeStats with usage and latency", async () => {
-    const { newSession, appendMessage } = await import("@freeanima/core");
     const sid = await newSession("parlor");
     await appendMessage(
       {
@@ -91,9 +95,6 @@ describePg("conversation-stats", () => {
   });
 
   it("computeStats estimates when no usage in messages", async () => {
-    const { newSession, appendMessage, updateSessionMetaField } = await import(
-      "@freeanima/core"
-    );
     const sid = await newSession("parlor");
     await updateSessionMetaField(sid, { compression: { l2: 0, l3: 2 } });
     await appendMessage(

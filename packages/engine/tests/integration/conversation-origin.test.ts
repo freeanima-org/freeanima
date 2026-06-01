@@ -4,6 +4,7 @@ import { beginIntegrationCase } from "../../../db/tests/helpers/integration-case
 import { endIntegrationCase } from "../../../db/tests/helpers/integration-case.ts";
 
 import { isSessionMeta } from "@freeanima/kernel";
+import * as conv from "@freeanima/engine";
 
 describePg("conversation origin", () => {
   let home: string;
@@ -20,7 +21,6 @@ describePg("conversation origin", () => {
   });
 
   it("findSessionByOrigin matches platform_extra keys", async () => {
-    const conv = await import("@freeanima/core");
     const sid = await conv.newSession("discord", undefined, {
       guild_id: "g1",
       channel_id: "c1",

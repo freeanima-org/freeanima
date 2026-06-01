@@ -1,23 +1,12 @@
+import "@freeanima/runtime/system-prompt-wire.js";
+import { cleanupDebugSessions } from "@freeanima/engine";
+import { EventBus, PATHS, hooks, installErrorLogHandlers, logStartupError, markStartupPhase } from "@freeanima/kernel";
+import { registerMemoryPipeline } from "@freeanima/memory";
+import { NestService, Scheduler, enqueueRunJob, ensureBuiltinCronJobs, NEST_VERSION, seedHomeChannelsFromHermes, WEBUI_DIST } from "@freeanima/runtime";
 import { writeFileSync, unlinkSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import { serve as honoServe, type ServerType } from "@hono/node-server";
-import {
-  EventBus,
-  NestService,
-  PATHS,
-  cleanupDebugSessions,
-  hooks,
-  installErrorLogHandlers,
-  logStartupError,
-  markStartupPhase,
-  registerMemoryPipeline,
-  Scheduler,
-  enqueueRunJob,
-  ensureBuiltinCronJobs,
-  NEST_VERSION,
-  seedHomeChannelsFromHermes,
-  WEBUI_DIST,
-} from "@freeanima/core";
+
 import { registerClarifyHooks } from "@freeanima/clarify";
 import { registerReflectChat } from "@freeanima/memory";
 import { chat } from "@freeanima/engine";

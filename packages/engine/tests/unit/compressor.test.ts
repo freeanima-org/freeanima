@@ -1,5 +1,6 @@
+import { compress } from "@freeanima/engine";
 import { describe, it, expect } from "vitest";
-import { compress } from "@freeanima/core";
+
 
 function ua(i: number): Record<string, unknown> {
   return { role: "user", content: `u${i}`, id: i * 2 + 1 };

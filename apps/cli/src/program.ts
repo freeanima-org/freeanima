@@ -1,5 +1,6 @@
+import { NEST_VERSION } from "@freeanima/runtime";
 import { Command } from "commander";
-import { NEST_VERSION } from "@freeanima/core";
+
 import { registerServiceCommand } from "./commands/service.js";
 import { registerCredentialCommand } from "./commands/credential.js";
 import { registerCompletionCommand } from "./commands/completion.js";

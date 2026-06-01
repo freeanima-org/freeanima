@@ -10,7 +10,6 @@ function tsc(project: string): void {
 
 tsc("packages/db/tsconfig.json");
 tsc("packages/runtime/tsconfig.json");
-tsc("packages/core/tsconfig.json");
 execSync("pnpm exec vitest run --config vitest.integration.mts", {
   cwd: repoRoot,
   stdio: "inherit",

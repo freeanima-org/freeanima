@@ -77,7 +77,7 @@ L1 Session 主存为 PostgreSQL（`config.yaml` → `database.url`）。`session
 - **运行时压缩 v5.1**（`compressor.ts` + `compression-summary.ts`）：四段视图 l0–l4；meta `{ l2, l3, summary? }`；`deriveBoundariesFromL4`（`raw_min_messages` / `slim_min_messages`）；`trigger_low` 0.60 外 / `trigger_high` 0.80 内；`isInToolLoop` 仅影响 `shouldAdvance`；摘要增量 `(旧 l2, 新 l2]`；合成 `id=1` 摘要 user；emergency 就地裁切；`/compress`；JSONL 永不删
 - **`/stats`**：`conversation-stats` + `runtime-context-stats`；压缩状态按 **token 占用率**（或条数回退）；**当前上下文**从 `buildRuntimeMessages` + `meta.tools` 分项（SOUL/AGENTS/常驻/技能/摘要/消息/tools schema）
 - L1 原始 JSONL → L2 蒸馏 → L3 事实 → L4 检索，详见 [memory.md](../memory.md)
-- **TypeScript 类型**：`packages/kernel/src/schemas/` 为 Zod 单一真相源；`packages/core/src/schemas/` 再导出 kernel（L1 `message.ts`、EventBus `events.ts` 等）；HTTP 入站/出站契约在 `@freeanima/api`（Zod）；`packages/server/src/api-mappers.ts` 将 core 内部类型映射为 API DTO；工具返回约定见 `json-util.parseToolResult`
+- **TypeScript 类型**：`packages/kernel/src/schemas/` 为 Zod 单一真相源（L1 `message.ts`、EventBus `events.ts` 等）；HTTP 入站/出站契约在 `@freeanima/api`（Zod）；`packages/server/src/api-mappers.ts` 将内部类型映射为 API DTO；工具返回约定见 `json-util.parseToolResult`
 - **L3 FTS**：热路径 `remember` / reflect 写入后 `indexL3Fact` / `indexL3Facts` 增量索引；全量 `indexL3All` 仅卧室「重建 L3 索引」或兼容旧 `l3:updated` 无 `fact_ids` 时
 
 ## 架构速览

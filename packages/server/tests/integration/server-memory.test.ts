@@ -5,6 +5,9 @@ import { endIntegrationCase } from "../../../db/tests/helpers/integration-case.t
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { MemoryStore, indexL3Fact, indexL2Session } from "@freeanima/memory";
+import { NestService } from "@freeanima/runtime";
+import { seedSession } from "@freeanima/db/test-helpers";
 
 describePg("server memory API", () => {
   let home: string;
@@ -23,8 +26,7 @@ describePg("server memory API", () => {
     else process.env.FREEANIMA_HOME = prev;
   });
 
-  it("listMemoryFiles returns objects with name and content", async () => {
-    const { NestService } = await import("@freeanima/core");
+  it("listMemoryFiles returns objects with name and content", () => {
     const { files } = new NestService().listMemoryFiles();
     expect(files.length).toBeGreaterThan(0);
     const soul = files.find((f) => f.name === "SOUL.md");
@@ -34,8 +36,7 @@ describePg("server memory API", () => {
     expect(files.some((f) => f.name.startsWith("f-"))).toBe(true);
   });
 
-  it("memorySearch returns structured L3 and L2 hits", async () => {
-    const { MemoryStore, indexL3Fact, indexL2Session, NestService } = await import("@freeanima/core");
+  it("memorySearch returns structured L3 and L2 hits", () => {
     const store = new MemoryStore(join(home, "memory"));
     const id = store.create({
       content: "逸灵风记忆管道使用 compression 压缩",
@@ -67,8 +68,6 @@ describePg("server memory API", () => {
   });
 
   it("rebuildL2All distills L1 and reindexes FTS", async () => {
-    const { NestService } = await import("@freeanima/core");
-    const { seedSession } = await import("@freeanima/db/test-helpers");
     const sid = "20260526_130000_efgh";
     await seedSession(
       sid,
@@ -106,8 +105,6 @@ describePg("server memory API", () => {
   });
 
   it("distillL2All and reindexL2All are separate", async () => {
-    const { NestService } = await import("@freeanima/core");
-    const { seedSession } = await import("@freeanima/db/test-helpers");
     const sid = "20260526_140000_split";
     await seedSession(
       sid,
@@ -143,8 +140,7 @@ describePg("server memory API", () => {
     expect(after.l2.some((h) => h.session_id === sid)).toBe(true);
   });
 
-  it("reindexL3All rebuilds FTS from memory files", async () => {
-    const { MemoryStore, NestService } = await import("@freeanima/core");
+  it("reindexL3All rebuilds FTS from memory files", () => {
     const store = new MemoryStore(join(home, "memory"));
     store.create({
       content: "L3 全量重建探针 gamma",

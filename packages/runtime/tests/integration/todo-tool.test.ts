@@ -2,6 +2,11 @@ import { describe, it, expect, beforeEach, afterEach, afterAll } from "vitest";
 import { describePg } from "../../../db/tests/helpers/pg-test-gate.ts";
 import { beginIntegrationCase, endIntegrationCase } from "../../../db/tests/helpers/integration-case.ts";
 
+import { initSession, loadSessionMeta, runWithToolContext } from "@freeanima/engine";
+import { loadConfig, getTool } from "@freeanima/kernel";
+import { addTodo, listTodos } from "@freeanima/runtime";
+import { registerAllTools } from "@freeanima/tools";
+
 describePg("session todo", () => {
   const prev = process.env.FREEANIMA_HOME;
 
@@ -19,8 +24,6 @@ describePg("session todo", () => {
   });
 
   it("two sessions isolated in session_meta.todos", async () => {
-    const { initSession, loadConfig, loadSessionMeta } = await import("@freeanima/core");
-    const { addTodo, listTodos, runWithToolContext } = await import("@freeanima/core");
     const cfg = loadConfig();
     const model = cfg.model ?? "test-model";
 
@@ -45,8 +48,6 @@ describePg("session todo", () => {
   });
 
   it("todo handler sees session when invoked inside bound runStream iteration", async () => {
-    const { initSession, loadConfig, runWithToolContext, getTool } = await import("@freeanima/core");
-    const { registerAllTools } = await import("@freeanima/tools");
     registerAllTools();
 
     const cfg = loadConfig();

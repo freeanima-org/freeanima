@@ -1,3 +1,4 @@
+import { registerTool, toolError, toolResult } from "@freeanima/kernel";
 import {
   existsSync,
   mkdirSync,
@@ -10,7 +11,7 @@ import {
 import { spawnSync } from "node:child_process";
 import { dirname, extname, join, resolve } from "node:path";
 import { homedir } from "node:os";
-import { registerTool, toolError, toolResult } from "@freeanima/core";
+
 
 const BINARY_EXT = new Set([
   ".png", ".jpg", ".jpeg", ".gif", ".webp", ".exe", ".dll", ".so", ".zip", ".pdf", ".db", ".sqlite",

@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtempSync, readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { logError, logApiError, logStartupError, PATHS } from "@freeanima/kernel";
 
 describe("error-log", () => {
   let home: string;
@@ -17,8 +18,7 @@ describe("error-log", () => {
     else process.env.FREEANIMA_HOME = prev;
   });
 
-  it("writes to error.log under home", async () => {
-    const { logError, logApiError, PATHS } = await import("@freeanima/core");
+  it("writes to error.log under home", () => {
     logError("test message", { source: "test" });
     logApiError("POST", "/api/sessions/x/messages/stream", 503, "LLM failed", {
       session_id: "x",
@@ -31,8 +31,7 @@ describe("error-log", () => {
     expect(text).toContain("LLM failed");
   });
 
-  it("writes startup failure with source tag", async () => {
-    const { logStartupError, PATHS } = await import("@freeanima/core");
+  it("writes startup failure with source tag", () => {
     logStartupError("服务启动失败", new Error("database.url 未配置"));
 
     const text = readFileSync(PATHS.errorLog, "utf-8");

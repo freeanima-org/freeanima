@@ -3,6 +3,7 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { sanitizeMcpConfig, isMcpServerEnabled } from "../../src/mcp/status.js";
+import { MCPManager } from "../../src/mcp/manager.js";
 
 describe("sanitizeMcpConfig", () => {
   it("脱敏 env 值，仅保留键名", () => {
@@ -57,7 +58,6 @@ describe("MCPManager.getStatus", () => {
   });
 
   it("未启动时返回配置与 not_started 状态", async () => {
-    const { MCPManager } = await import("../../src/mcp/manager.js");
     const mgr = new MCPManager();
     const status = await mgr.getStatus();
 
@@ -79,7 +79,6 @@ describe("MCPManager.getStatus", () => {
   });
 
   it("startAllAsync 立即返回且不阻塞 getStatus", async () => {
-    const { MCPManager } = await import("../../src/mcp/manager.js");
     const mgr = new MCPManager();
     mgr.startAllAsync();
     const status = await mgr.getStatus();

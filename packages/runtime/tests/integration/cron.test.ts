@@ -6,6 +6,27 @@ import { endIntegrationCase } from "../../../db/tests/helpers/integration-case.t
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { waitFor } from "../../../kernel/tests/helpers/wait.js";
+import {
+  parseSchedule,
+  ScheduleType,
+  createJob,
+  listJobs,
+  getJob,
+  pauseJob,
+  resumeJob,
+  ensureBuiltinCronJobs,
+  runL2GapFill,
+  resolveDeliverTargets,
+  CronJob,
+  deliverCronResult,
+  registerCronDeliverer,
+  unregisterCronDeliverer,
+  enqueueRunJob,
+  Scheduler,
+  cronStore,
+} from "@freeanima/runtime";
+import { patchConfigSection } from "@freeanima/kernel";
+import { seedSession } from "@freeanima/db/test-helpers";
 
 describePg("cron", () => {
   let home: string;
@@ -21,16 +42,13 @@ describePg("cron", () => {
     else process.env.FREEANIMA_HOME = prev;
   });
 
-  it("parseSchedule interval", async () => {
-    const { parseSchedule, ScheduleType } = await import("@freeanima/core");
+  it("parseSchedule interval", () => {
     const [t, v] = parseSchedule("30m");
     expect(t).toBe(ScheduleType.INTERVAL);
     expect(v).toBe(1800);
   });
 
-  it("createJob and listJobs", async () => {
-    const { createJob, listJobs, getJob, pauseJob, resumeJob, ensureBuiltinCronJobs } =
-      await import("@freeanima/core");
+  it("createJob and listJobs", () => {
     const j = createJob({
       name: "test",
       schedule: "1h",
@@ -48,8 +66,6 @@ describePg("cron", () => {
   });
 
   it("runL2GapFill distills PG session without L2", async () => {
-    const { runL2GapFill } = await import("@freeanima/core");
-    const { seedSession } = await import("@freeanima/db/test-helpers");
     await seedSession(
       "20260531_gapfill_a",
       {
@@ -73,8 +89,7 @@ describePg("cron", () => {
     expect(out).toContain("L2 gap-fill");
   });
 
-  it("resolveDeliverTargets", async () => {
-    const { resolveDeliverTargets, patchConfigSection } = await import("@freeanima/core");
+  it("resolveDeliverTargets", () => {
     expect(resolveDeliverTargets("local")).toEqual([]);
     expect(resolveDeliverTargets("discord:123")).toEqual([
       { platform: "discord", chat_id: "123" },
@@ -89,12 +104,6 @@ describePg("cron", () => {
   });
 
   it("deliverCronResult invokes registered handler", async () => {
-    const {
-      CronJob,
-      deliverCronResult,
-      registerCronDeliverer,
-      unregisterCronDeliverer,
-    } = await import("@freeanima/core");
     const delivered: string[] = [];
     registerCronDeliverer("discord", async (_target, text) => {
       delivered.push(text);
@@ -116,7 +125,6 @@ describePg("cron", () => {
     writeFileSync(scriptPath, "#!/usr/bin/env bash\nsleep 0.05\necho slow-ok\n", {
       mode: 0o755,
     });
-    const { createJob, enqueueRunJob, getJob } = await import("@freeanima/core");
     const j = createJob({
       name: "slow",
       schedule: "1h",
@@ -134,7 +142,6 @@ describePg("cron", () => {
   });
 
   it("scheduler skips concurrent runs for same job", async () => {
-    const { Scheduler, CronJob, cronStore } = await import("@freeanima/core");
     mkdirSync(join(home, "cron"), { recursive: true });
     const job = new CronJob({
       id: "slow-job",
@@ -164,8 +171,7 @@ describePg("cron", () => {
     expect(maxActive).toBe(1);
   });
 
-  it("createJob stores timeout_sec", async () => {
-    const { createJob, getJob } = await import("@freeanima/core");
+  it("createJob stores timeout_sec", () => {
     const j = createJob({
       name: "long",
       schedule: "1h",

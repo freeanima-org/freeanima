@@ -1,5 +1,6 @@
+import { bumpSemver, parseSemver } from "@freeanima/kernel";
 import { describe, it, expect } from "vitest";
-import { bumpSemver, parseSemver } from "@freeanima/core";
+
 
 describe("semver", () => {
   it("parseSemver 解析三位版本", () => {

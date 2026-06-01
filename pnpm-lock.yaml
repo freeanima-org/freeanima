@@ -35,9 +35,6 @@ importers:
       '@freeanima/clarify':
         specifier: workspace:*
         version: link:packages/clarify
-      '@freeanima/core':
-        specifier: workspace:*
-        version: link:packages/core
       '@freeanima/db':
         specifier: workspace:*
         version: link:packages/db
@@ -98,9 +95,12 @@ importers:
 
   apps/cli:
     dependencies:
-      '@freeanima/core':
+      '@freeanima/kernel':
         specifier: workspace:*
-        version: link:../../packages/core
+        version: link:../../packages/kernel
+      '@freeanima/runtime':
+        specifier: workspace:*
+        version: link:../../packages/runtime
       '@freeanima/server':
         specifier: workspace:*
         version: link:../../packages/server
@@ -205,34 +205,6 @@ importers:
         specifier: 'catalog:'
         version: 4.1.7(@types/node@25.9.1)(vite@8.0.14(@types/node@25.9.1)(jiti@2.7.0)(yaml@2.9.0))
 
-  packages/core:
-    dependencies:
-      '@freeanima/clarify':
-        specifier: workspace:*
-        version: link:../clarify
-      '@freeanima/engine':
-        specifier: workspace:*
-        version: link:../engine
-      '@freeanima/kernel':
-        specifier: workspace:*
-        version: link:../kernel
-      '@freeanima/memory':
-        specifier: workspace:*
-        version: link:../memory
-      '@freeanima/runtime':
-        specifier: workspace:*
-        version: link:../runtime
-    devDependencies:
-      '@types/better-sqlite3':
-        specifier: ^7.6.13
-        version: 7.6.13
-      better-sqlite3:
-        specifier: ^11.10.0
-        version: 11.10.0
-      typescript:
-        specifier: 'catalog:'
-        version: 5.9.3
-
   packages/db:
     dependencies:
       '@freeanima/kernel':
@@ -282,9 +254,15 @@ importers:
 
   packages/integrations:
     dependencies:
-      '@freeanima/core':
+      '@freeanima/engine':
         specifier: workspace:*
-        version: link:../core
+        version: link:../engine
+      '@freeanima/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+      '@freeanima/runtime':
+        specifier: workspace:*
+        version: link:../runtime
       '@modelcontextprotocol/sdk':
         specifier: ^1.29.0
         version: 1.29.0(zod@4.4.3)
@@ -295,12 +273,6 @@ importers:
         specifier: 'catalog:'
         version: 4.4.3
     devDependencies:
-      '@freeanima/engine':
-        specifier: workspace:*
-        version: link:../engine
-      '@freeanima/kernel':
-        specifier: workspace:*
-        version: link:../kernel
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -345,6 +317,9 @@ importers:
         specifier: ^2.9.0
         version: 2.9.0
     devDependencies:
+      '@freeanima/engine':
+        specifier: workspace:*
+        version: link:../engine
       '@types/better-sqlite3':
         specifier: ^7.6.13
         version: 7.6.13
@@ -391,9 +366,6 @@ importers:
       '@freeanima/clarify':
         specifier: workspace:*
         version: link:../clarify
-      '@freeanima/core':
-        specifier: workspace:*
-        version: link:../core
       '@freeanima/db':
         specifier: workspace:*
         version: link:../db
@@ -403,9 +375,15 @@ importers:
       '@freeanima/integrations':
         specifier: workspace:*
         version: link:../integrations
+      '@freeanima/kernel':
+        specifier: workspace:*
+        version: link:../kernel
       '@freeanima/memory':
         specifier: workspace:*
         version: link:../memory
+      '@freeanima/runtime':
+        specifier: workspace:*
+        version: link:../runtime
       '@freeanima/tools':
         specifier: workspace:*
         version: link:../tools
@@ -437,9 +415,18 @@ importers:
       '@freeanima/clarify':
         specifier: workspace:*
         version: link:../clarify
-      '@freeanima/core':
+      '@freeanima/engine':
         specifier: workspace:*
-        version: link:../core
+        version: link:../engine
+      '@freeanima/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+      '@freeanima/memory':
+        specifier: workspace:*
+        version: link:../memory
+      '@freeanima/runtime':
+        specifier: workspace:*
+        version: link:../runtime
     devDependencies:
       typescript:
         specifier: 'catalog:'

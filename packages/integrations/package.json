@@ -16,7 +16,9 @@
     "test:integration": "vitest run --project integration --passWithNoTests"
   },
   "dependencies": {
-    "@freeanima/core": "workspace:*",
+    "@freeanima/engine": "workspace:*",
+    "@freeanima/kernel": "workspace:*",
+    "@freeanima/runtime": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "discord.js": "^14.26.4",
     "zod": "catalog:"

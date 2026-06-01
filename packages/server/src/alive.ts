@@ -1,5 +1,6 @@
+import { PATHS } from "@freeanima/kernel";
 import { existsSync, readFileSync, unlinkSync } from "node:fs";
-import { PATHS } from "@freeanima/core";
+
 
 export function readStatusFile(): Record<string, unknown> | null {
   if (!existsSync(PATHS.statusFile)) return null;

@@ -5,12 +5,10 @@ import { tmpdir } from "node:os";
 import { renderSystemdUnit } from "../../src/systemd-unit.js";
 import { ensureUnitFile } from "../../src/service-cmd.js";
 import * as serviceCommon from "../../src/service-common.js";
+import { parseBindHosts, resolveProbeHost, DEFAULT_BIND_HOST } from "@freeanima/server/bind-hosts";
 
 describe("bind hosts", () => {
-  it("parseBindHosts splits comma-separated addresses", async () => {
-    const { parseBindHosts, resolveProbeHost, DEFAULT_BIND_HOST } = await import(
-      "@freeanima/server/bind-hosts"
-    );
+  it("parseBindHosts splits comma-separated addresses", () => {
     expect(parseBindHosts("127.0.0.1,0.0.0.0")).toEqual(["127.0.0.1", "0.0.0.0"]);
     expect(resolveProbeHost("127.0.0.1,0.0.0.0")).toBe("127.0.0.1");
     expect(resolveProbeHost("0.0.0.0")).toBe("127.0.0.1");

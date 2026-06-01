@@ -1,5 +1,6 @@
+import type { NestService } from "@freeanima/runtime";
 import type { ServerType } from "@hono/node-server";
-import type { NestService } from "@freeanima/core";
+
 
 type NodeHttpServer = ServerType & {
   closeIdleConnections?: () => void;

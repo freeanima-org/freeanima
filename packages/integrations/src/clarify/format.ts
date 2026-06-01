@@ -1,4 +1,5 @@
-import type { ClarifyItem } from "@freeanima/core";
+import type { ClarifyItem } from "@freeanima/kernel";
+
 import type { ClarifyPayload } from "./types.js";
 
 export function formatClarifyPlain(items: ClarifyItem[]): string {

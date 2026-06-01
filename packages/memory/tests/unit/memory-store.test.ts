@@ -2,15 +2,15 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { resetStoreForTests, MemoryStore, parseFact, factToFileText } from "@freeanima/memory";
 
 describe("memory store", () => {
   let home: string;
   const prev = process.env.FREEANIMA_HOME;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     home = mkdtempSync(join(tmpdir(), "freeanima-store-"));
     process.env.FREEANIMA_HOME = home;
-    const { resetStoreForTests } = await import("@freeanima/core");
     resetStoreForTests();
   });
 
@@ -19,8 +19,7 @@ describe("memory store", () => {
     else process.env.FREEANIMA_HOME = prev;
   });
 
-  it("creates fact with id and round-trips frontmatter", async () => {
-    const { MemoryStore, parseFact, factToFileText } = await import("@freeanima/core");
+  it("creates fact with id and round-trips frontmatter", () => {
     const store = new MemoryStore(join(home, "memory"));
     const id = store.create({
       content: "逸灵风是数字生命的容器",

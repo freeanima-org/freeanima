@@ -1,6 +1,7 @@
+import { safeParseOrNull } from "@freeanima/kernel";
 import { ITEM_TEXT, MSG_TYPE_BOT, MSG_TYPE_USER, type IlinkMessage } from "./ilink-api.js";
 import { ilinkMessageSchema } from "../schemas/weixin.js";
-import { safeParseOrNull } from "@freeanima/core";
+
 
 export type WeixinPlatformExtra = {
   weixin_user_id: string;

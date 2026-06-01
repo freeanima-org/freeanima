@@ -163,7 +163,7 @@ LLM 视角 — flat tool list:
 
 ### 第一层：本地工具（Local）
 
-本地工具写在 `packages/tools/`，通过 `registerTool()` 注册到 `@freeanima/core` 的 registry。
+本地工具写在 `packages/tools/`，通过 `registerTool()` 注册到 `@freeanima/kernel` 的 registry。
 
 **特征：**
 - 代码在逸灵风进程内直接执行
@@ -383,7 +383,7 @@ conversation.py  emit("session:updated")
 
 ### Hooks（`@freeanima/kernel`）
 
-**同步 interceptor 模式。** 注册表与 `hooks.run()` 在 `@freeanima/kernel`；`@freeanima/core` 再导出以兼容旧 import。
+**同步 interceptor 模式。** 注册表与 `hooks.run()` 在 `@freeanima/kernel`。
 
 已接入点（见 `packages/kernel/src/hooks.ts`）：
 - `message:incoming` — `NestService` 入站消息（可改写内容、短路回合）

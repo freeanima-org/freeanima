@@ -1,15 +1,7 @@
+import { compress, deriveBoundariesFromL4, getL4, isInToolLoop, shouldAdvance, slimMessage, SUMMARY_SYNTHETIC_ID, buildRuntimeFromLPoints } from "@freeanima/engine";
+import { parseCompressionState } from "@freeanima/kernel";
 import { describe, it, expect } from "vitest";
-import {
-  compress,
-  deriveBoundariesFromL4,
-  getL4,
-  isInToolLoop,
-  parseCompressionState,
-  shouldAdvance,
-  slimMessage,
-  SUMMARY_SYNTHETIC_ID,
-  buildRuntimeFromLPoints,
-} from "@freeanima/core";
+
 
 function ua(id: number, text = "u"): Record<string, unknown> {
   return { role: "user", content: text, id };

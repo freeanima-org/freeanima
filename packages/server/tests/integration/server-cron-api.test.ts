@@ -5,6 +5,8 @@ import { endIntegrationCase } from "../../../db/tests/helpers/integration-case.t
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { createJob, NestService } from "@freeanima/runtime";
+import { createApp } from "@freeanima/server";
 
 describePg("server cron API", () => {
   let home: string;
@@ -16,7 +18,6 @@ describePg("server cron API", () => {
     home = ctx.home;
     mkdirSync(join(home, "cron", "scripts"), { recursive: true });
     writeFileSync(join(home, "cron", "scripts", "noop.js"), "console.log('ok');\n", "utf-8");
-    const { createJob } = await import("@freeanima/core");
     const j = createJob({
       name: "api-test",
       schedule: "1h",
@@ -32,8 +33,7 @@ describePg("server cron API", () => {
     else process.env.FREEANIMA_HOME = prev;
   });
 
-  it("NestService pause and resume cron job", async () => {
-    const { NestService } = await import("@freeanima/core");
+  it("NestService pause and resume cron job", () => {
     const svc = new NestService();
 
     const paused = svc.pauseCronJob(jobId);
@@ -47,8 +47,7 @@ describePg("server cron API", () => {
     expect(resumed!.next_run_at).toBeGreaterThan(0);
   });
 
-  it("NestService runCronJobNow returns message for existing job", async () => {
-    const { NestService } = await import("@freeanima/core");
+  it("NestService runCronJobNow returns message for existing job", () => {
     const svc = new NestService();
     const result = svc.runCronJobNow(jobId);
     expect(result).not.toBeNull();
@@ -56,8 +55,7 @@ describePg("server cron API", () => {
     expect(result!.job.id).toBe(jobId);
   });
 
-  it("NestService returns null for unknown job id", async () => {
-    const { NestService } = await import("@freeanima/core");
+  it("NestService returns null for unknown job id", () => {
     const svc = new NestService();
     expect(svc.pauseCronJob("missing-id")).toBeNull();
     expect(svc.resumeCronJob("missing-id")).toBeNull();
@@ -65,8 +63,6 @@ describePg("server cron API", () => {
   });
 
   it("HTTP POST pause/resume/run and 404", async () => {
-    const { NestService } = await import("@freeanima/core");
-    const { createApp } = await import("@freeanima/server");
     const svc = new NestService();
     const { app } = createApp(svc, "", "", 0, null, null);
 
@@ -94,8 +90,6 @@ describePg("server cron API", () => {
   });
 
   it("GET /api/cron lists jobs", async () => {
-    const { NestService } = await import("@freeanima/core");
-    const { createApp } = await import("@freeanima/server");
     const svc = new NestService();
     const { app } = createApp(svc, "", "", 0, null, null);
 

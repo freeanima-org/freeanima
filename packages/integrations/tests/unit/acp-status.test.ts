@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { clearConfigCache } from "@freeanima/kernel";
 import { sanitizeAcpConfig, shortSessionId, isAcpAgentEnabled } from "../../src/acp/status.js";
+import { AcpManager } from "../../src/acp/manager.js";
 
 describe("isAcpAgentEnabled", () => {
   it("缺省或为 true 时启用", () => {
@@ -70,8 +71,7 @@ describe.sequential("AcpManager.getStatus", () => {
     else process.env.FREEANIMA_HOME = prev;
   });
 
-  it("未连接时返回配置与 not_started 状态", async () => {
-    const { AcpManager } = await import("../../src/acp/manager.js");
+  it("未连接时返回配置与 not_started 状态", () => {
     const mgr = new AcpManager();
     mgr.registerTools();
     const status = mgr.getStatus();
@@ -86,7 +86,6 @@ describe.sequential("AcpManager.getStatus", () => {
   });
 
   it("startAll 聚合失败", async () => {
-    const { AcpManager } = await import("../../src/acp/manager.js");
     const mgr = new AcpManager();
     const result = await mgr.startAll();
     expect(result.ok).toBe(false);
@@ -104,7 +103,6 @@ describe.sequential("AcpManager.getStatus", () => {
       ].join("\n"),
     );
     clearConfigCache();
-    const { AcpManager } = await import("../../src/acp/manager.js");
     const mgr = new AcpManager();
     const status = mgr.getStatus();
     expect(status.agents[0]?.status).toBe("disabled");

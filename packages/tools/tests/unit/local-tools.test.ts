@@ -1,3 +1,4 @@
+import { getTool, listTools } from "@freeanima/kernel";
 import { describe, it, expect, beforeAll, beforeEach, afterEach } from "vitest";
 import {
   mkdtempSync,
@@ -7,7 +8,7 @@ import {
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { spawnSync } from "node:child_process";
-import { getTool, listTools } from "@freeanima/core";
+
 import { registerAllTools } from "@freeanima/tools";
 
 const hasRg = spawnSync("rg", ["--version"], { encoding: "utf-8" }).status === 0;

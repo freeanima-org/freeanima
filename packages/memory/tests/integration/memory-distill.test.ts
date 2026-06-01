@@ -7,11 +7,17 @@ import {
   existsSync,
   mkdirSync,
   readFileSync,
-  statSync,
   utimesSync,
   writeFileSync,
 } from "node:fs";
 import { join } from "node:path";
+import {
+  resetStoreForTests,
+  distillFromPg,
+  l2SessionPath,
+  processedDir,
+} from "@freeanima/memory";
+import { seedSession } from "@freeanima/db/test-helpers";
 
 describePg("memory distill", () => {
   let home: string;
@@ -20,7 +26,6 @@ describePg("memory distill", () => {
   beforeEach(async () => {
     const ctx = await beginIntegrationCase("freeanima-mem-");
     home = ctx.home;
-    const { resetStoreForTests } = await import("@freeanima/core");
     resetStoreForTests();
   });
 
@@ -30,8 +35,6 @@ describePg("memory distill", () => {
   });
 
   it("distills L1 to L2 format", async () => {
-    const { distillFromPg, l2SessionPath } = await import("@freeanima/core");
-    const { seedSession } = await import("@freeanima/db/test-helpers");
     const sid = "20260526_120000_abcd";
     await seedSession(
       sid,
@@ -75,8 +78,6 @@ describePg("memory distill", () => {
   });
 
   it("if_newer skips when L2 is newer", async () => {
-    const { distillFromPg, l2SessionPath, processedDir } = await import("@freeanima/core");
-    const { seedSession } = await import("@freeanima/db/test-helpers");
     const sid = "20260526_130000_ef01";
     mkdirSync(processedDir(), { recursive: true });
     await seedSession(

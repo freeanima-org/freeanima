@@ -7,3 +7,4 @@ export * from "./search.js";
 export * from "./reflect.js";
 export * from "./pipeline.js";
 export * from "./reflect-llm.js";
+export { registerMemoryTools } from "./register-tools.js";

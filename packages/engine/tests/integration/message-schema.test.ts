@@ -3,6 +3,7 @@ import { describePg } from "../../../db/tests/helpers/pg-test-gate.ts";
 import { beginIntegrationCase, endIntegrationCase } from "../../../db/tests/helpers/integration-case.ts";
 
 import { parseSessionLine } from "@freeanima/kernel";
+import { initSession, loadSessionMeta, updateSessionMetaField } from "@freeanima/engine";
 
 describePg("schemas/message", () => {
   const prev = process.env.FREEANIMA_HOME;
@@ -54,7 +55,6 @@ describePg("schemas/message", () => {
   });
 
   it("updateSessionMetaField preserves acp_sessions", async () => {
-    const { initSession, loadSessionMeta, updateSessionMetaField } = await import("@freeanima/core");
     const sid = "schema_test";
     await initSession(sid, "m", { platform: "parlor" });
     await updateSessionMetaField(sid, { acp_sessions: { cursor: "uuid-1" } });

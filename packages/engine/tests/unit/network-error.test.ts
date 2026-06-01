@@ -1,9 +1,6 @@
+import { isTransientNetworkError, isEngineStreamError, networkErrorUserHint } from "@freeanima/engine";
 import { describe, it, expect } from "vitest";
-import {
-  isTransientNetworkError,
-  isEngineStreamError,
-  networkErrorUserHint,
-} from "@freeanima/core";
+
 
 describe("network-error", () => {
   it("detects ConnectTimeoutError", () => {

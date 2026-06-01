@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
+import { buildPlatformInfo, splitPlatformInfo } from "../../dist/schema/jsonb/platform-info.js";
+import { sessionMetaToInsert } from "../../dist/mappers/session-mapper.js";
+import { messageToInsert, rowToMessage } from "../../dist/mappers/message-mapper.js";
 
 describe("db jsonb mappers", () => {
-  it("platformInfo 合并 platform 与 platform_extra", async () => {
-    const { buildPlatformInfo, splitPlatformInfo } = await import(
-      "../../dist/schema/jsonb/platform-info.js"
-    );
+  it("platformInfo 合并 platform 与 platform_extra", () => {
     const info = buildPlatformInfo("discord", {
       channel_id: "c1",
       guild_id: "123",
@@ -19,35 +19,23 @@ describe("db jsonb mappers", () => {
     expect(split.platform_extra).toEqual({ channel_id: "c1", guild_id: "123" });
   });
 
-  it("parlor platformInfo 无 extra", async () => {
-    const { buildPlatformInfo, splitPlatformInfo } = await import(
-      "../../dist/schema/jsonb/platform-info.js"
-    );
+  it("parlor platformInfo 无 extra", () => {
     const info = buildPlatformInfo("parlor");
     expect(info).toEqual({ platform: "parlor" });
     expect(splitPlatformInfo(info)).toEqual({ platform: "parlor" });
   });
 
-  it("未知 platform 返回 null", async () => {
-    const { buildPlatformInfo } = await import(
-      "../../dist/schema/jsonb/platform-info.js"
-    );
+  it("未知 platform 返回 null", () => {
     expect(buildPlatformInfo("test")).toBeNull();
   });
 
-  it("cron platformInfo", async () => {
-    const { buildPlatformInfo, splitPlatformInfo } = await import(
-      "../../dist/schema/jsonb/platform-info.js"
-    );
+  it("cron platformInfo", () => {
     const info = buildPlatformInfo("cron");
     expect(info).toEqual({ platform: "cron" });
     expect(splitPlatformInfo(info)).toEqual({ platform: "cron" });
   });
 
-  it("sessionMetaToInsert 规范化 timestamp", async () => {
-    const { sessionMetaToInsert } = await import(
-      "../../dist/mappers/session-mapper.js"
-    );
+  it("sessionMetaToInsert 规范化 timestamp", () => {
     const row = sessionMetaToInsert("cron_test", {
       role: "session_meta",
       model: "m",
@@ -60,10 +48,7 @@ describe("db jsonb mappers", () => {
     expect(row.platformInfo).toEqual({ platform: "cron" });
   });
 
-  it("cron ended_at 规范化进 platform_info", async () => {
-    const { sessionMetaToInsert } = await import(
-      "../../dist/mappers/session-mapper.js"
-    );
+  it("cron ended_at 规范化进 platform_info", () => {
     const row = sessionMetaToInsert("cron_test", {
       role: "session_meta",
       model: "m",
@@ -79,10 +64,7 @@ describe("db jsonb mappers", () => {
     });
   });
 
-  it("discord/weixin 缺必填 extra 时用 nothing 占位", async () => {
-    const { buildPlatformInfo } = await import(
-      "../../dist/schema/jsonb/platform-info.js"
-    );
+  it("discord/weixin 缺必填 extra 时用 nothing 占位", () => {
     expect(buildPlatformInfo("discord", {})).toEqual({
       platform: "discord",
       channel_id: "nothing",
@@ -95,10 +77,7 @@ describe("db jsonb mappers", () => {
     });
   });
 
-  it("rolePayload 往返 user / tool", async () => {
-    const { messageToInsert, rowToMessage } = await import(
-      "../../dist/mappers/message-mapper.js"
-    );
+  it("rolePayload 往返 user / tool", () => {
     const userInsert = messageToInsert("sess", {
       role: "user",
       content: "hi",

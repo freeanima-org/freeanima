@@ -1,4 +1,6 @@
-import { credential, loadConfig, NEST_VERSION, registerTool, toolError, toolResult } from "@freeanima/core";
+import { credential, loadConfig, registerTool, toolError, toolResult } from "@freeanima/kernel";
+import { NEST_VERSION } from "@freeanima/runtime";
+
 
 const USER_AGENT = `anima/${NEST_VERSION}`;
 const HTTP_TIMEOUT_MS = 60_000;

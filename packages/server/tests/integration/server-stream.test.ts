@@ -3,13 +3,14 @@ import { describePg } from "../../../db/tests/helpers/pg-test-gate.ts";
 import { beginIntegrationCase } from "../../../db/tests/helpers/integration-case.ts";
 import { endIntegrationCase } from "../../../db/tests/helpers/integration-case.ts";
 
+import { NestService } from "@freeanima/runtime";
+import { seedSession } from "@freeanima/db/test-helpers";
+
 describePg("sendMessageStream", () => {
-  let home: string;
   const prev = process.env.FREEANIMA_HOME;
 
   beforeEach(async () => {
-    const ctx = await beginIntegrationCase("freeanima-stream-");
-    home = ctx.home;
+    await beginIntegrationCase("freeanima-stream-");
   });
 
   afterEach(async () => {
@@ -18,8 +19,6 @@ describePg("sendMessageStream", () => {
   });
 
   it("unknown slash command yields token and done without LLM", async () => {
-    const { NestService } = await import("@freeanima/core");
-    const { seedSession } = await import("@freeanima/db/test-helpers");
     const sid = "20260526_150000_test";
     await seedSession(sid, {
       role: "session_meta",

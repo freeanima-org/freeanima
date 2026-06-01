@@ -1,9 +1,7 @@
+import { compress, SUMMARY_USER_PREFIX } from "@freeanima/engine";
+import { parseCompressionState } from "@freeanima/kernel";
 import { describe, it, expect } from "vitest";
-import {
-  compress,
-  parseCompressionState,
-  SUMMARY_USER_PREFIX,
-} from "@freeanima/core";
+
 
 function ua(id: number, text = "u"): Record<string, unknown> {
   return { role: "user", content: text, id };

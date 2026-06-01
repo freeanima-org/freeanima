@@ -1,6 +1,7 @@
+import { resolveWorkspace } from "@freeanima/runtime";
 import { existsSync } from "node:fs";
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
-import { resolveWorkspace } from "@freeanima/core";
+
 
 type PtyProcess = {
   write: (data: string) => void;

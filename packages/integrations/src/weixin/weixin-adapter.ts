@@ -1,7 +1,9 @@
+import { safeParseOrNull, PATHS, logError } from "@freeanima/kernel";
+import type { NestService } from "@freeanima/runtime";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
-import type { NestService } from "@freeanima/core";
-import { PATHS, logError } from "@freeanima/core";
+
+
 import type { PlatformAdapter } from "../platforms.js";
 import { collectGatewayStreamReply } from "../collect-gateway-stream-reply.js";
 import {
@@ -26,7 +28,7 @@ import {
   weixinSyncSchema,
   ilinkMessageSchema,
 } from "../schemas/weixin.js";
-import { safeParseOrNull } from "@freeanima/core";
+
 
 function safeId(value: string | undefined, keep = 8): string {
   const raw = (value ?? "").trim();

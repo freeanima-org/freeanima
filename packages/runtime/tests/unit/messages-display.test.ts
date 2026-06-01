@@ -1,8 +1,6 @@
+import { buildMessagesDisplay, paginateMessagesDisplay } from "@freeanima/runtime";
 import { describe, expect, it } from "vitest";
-import {
-  buildMessagesDisplay,
-  paginateMessagesDisplay,
-} from "@freeanima/core";
+
 import type { SessionMessage } from "@freeanima/kernel";
 
 describe("buildMessagesDisplay", () => {

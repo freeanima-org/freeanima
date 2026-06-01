@@ -1,15 +1,15 @@
+import { computeStats, statsReport } from "@freeanima/runtime";
 import { describe, it, expect, beforeEach, afterEach, afterAll } from "vitest";
 import { describePg } from "../../../db/tests/helpers/pg-test-gate.ts";
 import { beginIntegrationCaseWithConfig } from "../../../db/tests/helpers/integration-case.ts";
 import { endIntegrationCase } from "../../../db/tests/helpers/integration-case.ts";
-
-import { computeStats, statsReport } from "@freeanima/core";
+import { newSession, appendMessage, updateSessionMetaField } from "@freeanima/engine";
 
 describePg("runtime context stats", () => {
   const prev = process.env.FREEANIMA_HOME;
 
   beforeEach(async () => {
-    const ctx = await beginIntegrationCaseWithConfig(
+    await beginIntegrationCaseWithConfig(
       "anima-ctx-stats-",
       `models:
   m:
@@ -26,8 +26,6 @@ compression:
   });
 
   it("breakdown includes tools and system parts from runtime view", async () => {
-    const { newSession, appendMessage, updateSessionMetaField } = await import("@freeanima/core");
-
     const bigTool = {
       type: "function" as const,
       function: {

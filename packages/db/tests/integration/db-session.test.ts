@@ -1,6 +1,15 @@
 import { describe, it, expect, beforeEach, afterEach, afterAll } from "vitest";
 import { describePg } from "../helpers/pg-test-gate.js";
 import { beginIntegrationCase, endIntegrationCase } from "../helpers/integration-case.js";
+import {
+  upsertSessionMeta,
+  getSessionMeta,
+  updateCompression,
+  appendMessage,
+  listMessages,
+  nextMessageId,
+  shiftMessagePositions,
+} from "@freeanima/db";
 
 describePg("db session (PostgreSQL)", () => {
   const prevHome = process.env.FREEANIMA_HOME;
@@ -19,11 +28,6 @@ describePg("db session (PostgreSQL)", () => {
   });
 
   it("append/read session meta and messages", async () => {
-    const { upsertSessionMeta, getSessionMeta, updateCompression } = await import(
-      "@freeanima/db"
-    );
-    const { appendMessage, listMessages, nextMessageId } = await import("@freeanima/db");
-
     const sessionId = "20260530_test_db";
     await upsertSessionMeta(sessionId, {
       role: "session_meta",
@@ -65,9 +69,6 @@ describePg("db session (PostgreSQL)", () => {
   });
 
   it("shiftMessagePositions 为中间插入腾出 pos", async () => {
-    const { appendMessage, listMessages, shiftMessagePositions } = await import("@freeanima/db");
-    const { upsertSessionMeta } = await import("@freeanima/db");
-
     const sessionId = "20260531_shift_test";
     await upsertSessionMeta(sessionId, {
       role: "session_meta",

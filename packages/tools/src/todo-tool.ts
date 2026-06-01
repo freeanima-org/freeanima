@@ -1,4 +1,7 @@
-import { getToolSessionId, handleSessionTodo, registerTool, toolError } from "@freeanima/core";
+import { getToolSessionId } from "@freeanima/engine";
+import { registerTool, toolError } from "@freeanima/kernel";
+import { handleSessionTodo } from "@freeanima/runtime";
+
 
 async function handleTodo(args: Record<string, unknown>): Promise<string> {
   const sessionId = getToolSessionId();

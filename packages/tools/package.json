@@ -16,7 +16,10 @@
   },
   "dependencies": {
     "@freeanima/clarify": "workspace:*",
-    "@freeanima/core": "workspace:*"
+    "@freeanima/engine": "workspace:*",
+    "@freeanima/kernel": "workspace:*",
+    "@freeanima/memory": "workspace:*",
+    "@freeanima/runtime": "workspace:*"
   },
   "devDependencies": {
     "typescript": "catalog:",

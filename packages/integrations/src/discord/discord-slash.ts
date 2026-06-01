@@ -1,3 +1,5 @@
+import { logError } from "@freeanima/kernel";
+import type { NestService } from "@freeanima/runtime";
 import {
   REST,
   Routes,
@@ -5,8 +7,8 @@ import {
   type ChatInputCommandInteraction,
   type Client,
 } from "discord.js";
-import type { NestService } from "@freeanima/core";
-import { logError } from "@freeanima/core";
+
+
 import type { DiscordConfig } from "./discord-policy.js";
 import { extractOrigin, type PlatformOrigin } from "./discord-policy.js";
 

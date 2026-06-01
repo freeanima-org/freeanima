@@ -1,7 +1,8 @@
+import { logApiError, formatZodError } from "@freeanima/kernel";
 import { zValidator as zv } from "@hono/zod-validator";
 import type { ValidationTargets } from "hono";
 import type { z } from "zod";
-import { logApiError, formatZodError } from "@freeanima/core";
+
 
 export const zValidator = <
   T extends z.ZodType,

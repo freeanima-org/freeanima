@@ -10,7 +10,8 @@
     "test": "vitest run --project unit --passWithNoTests"
   },
   "dependencies": {
-    "@freeanima/core": "workspace:*",
+    "@freeanima/kernel": "workspace:*",
+    "@freeanima/runtime": "workspace:*",
     "@freeanima/server": "workspace:*",
     "commander": "^12.1.0"
   },

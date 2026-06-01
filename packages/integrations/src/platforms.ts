@@ -1,4 +1,6 @@
-import { credential, loadConfig, type NestService } from "@freeanima/core";
+import { credential, loadConfig } from "@freeanima/kernel";
+import type { NestService } from "@freeanima/runtime";
+
 import { loadWeixinCredentials } from "./weixin/weixin-credentials.js";
 
 export type PlatformAdapter = {

@@ -1,10 +1,8 @@
+import { logError } from "@freeanima/kernel";
+import type { CronDeliverTarget } from "@freeanima/runtime";
+import { registerCronDeliverer, unregisterCronDeliverer } from "@freeanima/runtime";
 import type { Client, TextBasedChannel } from "discord.js";
-import {
-  logError,
-  registerCronDeliverer,
-  unregisterCronDeliverer,
-  type CronDeliverTarget,
-} from "@freeanima/core";
+
 import { sendText } from "./weixin/ilink-api.js";
 
 const DISCORD_MAX_LEN = 2000;

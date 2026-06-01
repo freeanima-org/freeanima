@@ -6,7 +6,7 @@ export type SystemPromptBuilder = (
 
 let builder: SystemPromptBuilder | null = null;
 
-/** 由 @freeanima/core 启动时注入（避免 engine 依赖 memory） */
+/** 由 runtime/system-prompt-wire 启动时注入（避免 engine 依赖 memory） */
 export function registerSystemPromptBuilder(fn: SystemPromptBuilder): void {
   builder = fn;
 }
@@ -18,7 +18,7 @@ export function buildSystemPrompt(
 ): string {
   if (!builder) {
     throw new Error(
-      "SystemPromptBuilder 未注册：请通过 @freeanima/core 加载，或调用 registerSystemPromptBuilder",
+      "SystemPromptBuilder 未注册：请 import @freeanima/runtime/system-prompt-wire，或调用 registerSystemPromptBuilder",
     );
   }
   return builder(functionNames, soulContent, cwd);

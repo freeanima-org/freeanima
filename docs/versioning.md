@@ -3,7 +3,7 @@
 逸灵风采用 [语义化版本 2.0.0](https://semver.org/lang/zh-CN/)（`MAJOR.MINOR.PATCH`）。
 **唯一写入源**是仓库根目录 [`package.json`](../package.json) 中的 `"version"`；
 workspace 内其它 `package.json`（`packages/*`、`apps/*`）**不含** `version` 字段。
-运行时通过 `@freeanima/core` 的 `NEST_VERSION` 读取根版本。
+运行时通过 `@freeanima/runtime` 的 `NEST_VERSION` 读取根版本。
 
 发版由 **[semantic-release](https://semantic-release.gitbook.io/)** 在 GitHub Actions 中自动完成（见 [`.github/workflows/release.yml`](../.github/workflows/release.yml)）。
 
@@ -84,7 +84,7 @@ git push origin v0.1.0
 
 ## 禁止事项
 
-- 不要在业务代码中硬编码 `X.Y.Z`；统一 `import { NEST_VERSION } from "@freeanima/core"`（或经 health/status 暴露）。
+- 不要在业务代码中硬编码 `X.Y.Z`；统一 `import { NEST_VERSION } from "@freeanima/runtime"`（或经 health/status 暴露）。
 - 不要在 workspace 子包 `package.json` 中维护 `version`。
 - 不要手改 `[Unreleased]` 或本地 `pnpm release patch`（已废弃）；发布说明来自 commit，不是手写 CHANGELOG 节。
 
@@ -95,5 +95,5 @@ git push origin v0.1.0
 | `package.json` | 版本唯一写入源（CI 更新） |
 | `.releaserc.json` | semantic-release 插件配置 |
 | `.github/workflows/release.yml` | 发版 CI |
-| `packages/core/src/version.ts` | 运行时读取根版本 |
+| `packages/runtime/src/version.ts` | 运行时读取根版本 |
 | `CHANGELOG.md` | 自动追加新版本节 + 历史条目 |

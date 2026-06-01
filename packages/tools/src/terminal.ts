@@ -1,5 +1,6 @@
+import { registerTool } from "@freeanima/kernel";
 import { spawn, spawnSync, type ChildProcess } from "node:child_process";
-import { registerTool } from "@freeanima/core";
+
 
 const MAX_OUTPUT = 50 * 1024;
 const MAX_FOREGROUND_TIMEOUT = 600;

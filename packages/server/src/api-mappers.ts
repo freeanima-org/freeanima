@@ -1,3 +1,12 @@
+import type { StreamEvent } from "@freeanima/engine";
+import type {
+  HealthSnapshot,
+  MessagesDisplay,
+  SafeConfigSnapshot,
+  ServiceSnapshot,
+  SessionSummary,
+} from "@freeanima/kernel";
+import type { CronJobData } from "@freeanima/runtime";
 import type {
   CronJobsResponse,
   HealthResponse,
@@ -7,15 +16,6 @@ import type {
   SessionListItem,
   StreamApiEvent,
 } from "@freeanima/api";
-import type {
-  HealthSnapshot,
-  SafeConfigSnapshot,
-  ServiceSnapshot,
-  SessionSummary,
-} from "@freeanima/core";
-import type { StreamEvent } from "@freeanima/core";
-import type { MessagesDisplay } from "@freeanima/core";
-import type { CronJobData } from "@freeanima/core";
 
 export function mapStreamEventToApi(ev: StreamEvent): StreamApiEvent {
   switch (ev.event) {

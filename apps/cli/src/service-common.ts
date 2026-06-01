@@ -1,8 +1,10 @@
+import { PATHS } from "@freeanima/kernel";
+import { WEBUI_DIST_INDEX } from "@freeanima/runtime";
 import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
-import { PATHS, WEBUI_DIST_INDEX } from "@freeanima/core";
+
 import { isServerAlive } from "@freeanima/server/alive";
 import { prettyDuration, writeStatusLine } from "./output/status.js";
 
