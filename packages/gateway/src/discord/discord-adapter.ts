@@ -41,6 +41,8 @@ import {
 } from "./discord-slash.js";
 
 const DISCORD_MAX_LEN = 2000;
+/** Discord login 失败后自动重试间隔 */
+export const DISCORD_LOGIN_RETRY_MS = 5 * 60 * 1000;
 /** 流式回复开始时的占位；收尾编辑会移除，仅展示模型正文与工具行。 */
 const DISCORD_STREAM_PLACEHOLDER = "⏳ 思考中…";
 
@@ -259,6 +261,7 @@ export class DiscordAdapter implements PlatformAdapter {
   private readonly cfg: DiscordConfig;
   private readonly client: Client;
   private started = false;
+  private loginRetryTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     private readonly service: NestService,
@@ -300,6 +303,7 @@ export class DiscordAdapter implements PlatformAdapter {
     });
 
     this.client.on("ready", () => {
+      this.clearLoginRetry();
       const user = this.client.user;
       const botName = user?.tag ?? "?";
       const botId = user?.id ?? "?";
@@ -329,24 +333,51 @@ export class DiscordAdapter implements PlatformAdapter {
     if (this.started) return;
     this.started = true;
     this.service.registerPlatform("discord");
-    this.service.updatePlatformStatus("discord", "starting");
     // Cron 调度器先于平台启动；deliver 不依赖 gateway ready，仅发送时需已连接
     registerDiscordCronDeliverer(this.client);
+    await this.attemptLogin();
+  }
+
+  private clearLoginRetry(): void {
+    if (this.loginRetryTimer === null) return;
+    clearTimeout(this.loginRetryTimer);
+    this.loginRetryTimer = null;
+  }
+
+  private scheduleLoginRetry(): void {
+    if (!this.started || this.loginRetryTimer !== null || this.client.isReady()) return;
+    const retryMin = Math.round(DISCORD_LOGIN_RETRY_MS / 60_000);
+    console.warn(`[discord] ${retryMin} 分钟后重试登录…`);
+    this.service.updatePlatformStatus("discord", "disconnected", {
+      retry_in_sec: DISCORD_LOGIN_RETRY_MS / 1000,
+    });
+    this.loginRetryTimer = setTimeout(() => {
+      this.loginRetryTimer = null;
+      void this.attemptLogin();
+    }, DISCORD_LOGIN_RETRY_MS);
+  }
+
+  private async attemptLogin(): Promise<void> {
+    if (!this.started || this.client.isReady()) return;
+    this.service.updatePlatformStatus("discord", "starting");
     try {
       await this.client.login(this.token);
     } catch (e) {
       logError("Discord login failed", { source: "discord", error: e });
       this.service.updatePlatformStatus("discord", "disconnected", {
         error: e instanceof Error ? e.message : String(e),
+        retry_in_sec: DISCORD_LOGIN_RETRY_MS / 1000,
       });
+      this.scheduleLoginRetry();
     }
   }
 
   async stop(): Promise<void> {
     console.log("[shutdown] Discord 断开网关…");
+    this.started = false;
+    this.clearLoginRetry();
     unregisterDiscordCronDeliverer();
     this.client.destroy();
-    this.started = false;
     console.log("[shutdown] Discord 已断开");
   }
 

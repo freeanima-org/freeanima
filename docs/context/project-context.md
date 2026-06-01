@@ -127,7 +127,7 @@ tests/           # Vitest 回归
 
 待补工具/命令：`send_push`、`help`（工具全景）、更多 slash（如 `/reset` 等）。见 [TODOS.md](../../TODOS.md)。
 
-**Gateway**：Discord / 微信 iLink 已接入（`service start` 时按 pass 自动发现）；Discord 启动时同步 **Application Slash Commands**（输入 `/` 出现候选，与消息内 `/cmd` 并存；`config.yaml` → `discord.slash_commands` / `slash_commands_guild_id`）；普通对话走 `sendMessageStream` 时先发「思考中」占位并按事件流节流编辑，收尾去掉占位；`tool_begin` 仅展示工具名，`tool_result` 不展示返回正文；微信状态目录 `~/.anima/weixin/`（`sync.json`、`context-tokens.json`）。
+**Gateway**：Discord / 微信 iLink 已接入（`service start` 时按 pass 自动发现）；Discord 登录失败时每 **5 分钟**自动重试（`DISCORD_LOGIN_RETRY_MS`）；Discord 启动时同步 **Application Slash Commands**（输入 `/` 出现候选，与消息内 `/cmd` 并存；`config.yaml` → `discord.slash_commands` / `slash_commands_guild_id`）；普通对话走 `sendMessageStream` 时先发「思考中」占位并按事件流节流编辑，收尾去掉占位；`tool_begin` 仅展示工具名，`tool_result` 不展示返回正文；微信状态目录 `~/.anima/weixin/`（`sync.json`、`context-tokens.json`）。
 
 **Slash 命令（Gateway）**：`/new`、`/sethome`（alias `/set-home`）仅 Discord / 微信；`/sethome` 将当前聊天写入 `config.yaml` 对应平台的 `home_channel`（cron 等主动通知的默认投递目标）。
 
