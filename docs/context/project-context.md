@@ -215,7 +215,7 @@ anima service status                            # 改 TS 后需重新 link:globa
 # 构建前端: pnpm --filter @freeanima/webui build
 # WebUI 类型检查: pnpm --filter @freeanima/webui typecheck
 
-pnpm install                      # Husky：提交前 typecheck + vitest（Node 24+）
+pnpm install                      # Husky：提交前 typecheck + vitest；commit-msg 校验 Conventional Commits
 pnpm run check                    # 手动全量检查（同 pre-commit 钩子）
 ```
 

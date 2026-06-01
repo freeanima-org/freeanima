@@ -49,7 +49,9 @@ pnpm run anima -- service status   # 读 status 文件 / health API 中的 versi
 [optional footer: BREAKING CHANGE: ...]
 ```
 
-常用 type：`feat`、`fix`、`perf`、`docs`、`chore`、`refactor`、`test`、`ci`。
+常用 type：`feat`、`fix`、`perf`、`docs`、`chore`、`refactor`、`test`、`ci`、`build`、`revert`。
+
+本地 **`git commit` 会强制校验**（Husky `commit-msg` + [commitlint](https://commitlint.js.org/)，配置见根目录 `commitlint.config.mjs`）。格式不符时提交会被拒绝；可用 `HUSKY=0 git commit …` 临时跳过（semantic-release 的 release commit 在 CI 中已设 `HUSKY=0`）。
 
 示例：
 
