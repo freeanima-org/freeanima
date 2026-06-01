@@ -32,6 +32,7 @@
     "@freeanima/db": "workspace:*",
     "@freeanima/clarify": "workspace:*",
     "@freeanima/engine": "workspace:*",
+    "@freeanima/gateway": "workspace:*",
     "@freeanima/integrations": "workspace:*",
     "@freeanima/kernel": "workspace:*",
     "@freeanima/memory": "workspace:*",

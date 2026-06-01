@@ -17,7 +17,7 @@ import { jsonRpcMessageSchema } from "../../../integrations/src/schemas/acp-json
 import {
   weixinSyncSchema,
   weixinContextTokensSchema,
-} from "../../../integrations/src/schemas/weixin.js";
+} from "../../../gateway/src/schemas/weixin.js";
 
 describe("schemas/cron", () => {
   it("parses minimal cron job", () => {

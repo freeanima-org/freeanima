@@ -31,7 +31,7 @@ const cronPlatformInfoSchema = z.looseObject({
   platform: z.literal("cron"),
 });
 
-/** Discord session 绑定频道/线程（见 integrations/discord-policy extractOrigin） */
+/** Discord session 绑定频道/线程（见 gateway/discord-policy extractOrigin） */
 const discordPlatformInfoSchema = z.object({
   platform: z.literal("discord"),
   channel_id: z.string(),
@@ -39,7 +39,7 @@ const discordPlatformInfoSchema = z.object({
   thread_id: z.string().optional(),
 });
 
-/** 微信 session 绑定 peer（见 integrations/weixin/weixin-message） */
+/** 微信 session 绑定 peer（见 gateway/weixin/weixin-message） */
 const weixinPlatformInfoSchema = z.object({
   platform: z.literal("weixin"),
   weixin_user_id: z.string(),

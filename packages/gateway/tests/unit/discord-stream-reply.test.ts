@@ -2,7 +2,7 @@ import type { StreamEvent } from "@freeanima/engine";
 
 import type { Message, TextBasedChannel } from "discord.js";
 import { describe, expect, it, vi } from "vitest";
-import { streamReplyToChannel } from "../../src/discord/discord-adapter.js";
+import { streamReplyToChannel } from "@freeanima/gateway";
 
 describe("streamReplyToChannel", () => {
   function fakeChannel(): {

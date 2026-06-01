@@ -12,13 +12,12 @@ import { registerReflectChat } from "@freeanima/memory";
 import { chat } from "@freeanima/engine";
 import { registerAllTools } from "@freeanima/tools";
 import {
-  MCPManager,
-  getAcpManager,
   discoverPlatforms,
   startPlatforms,
   stopPlatforms,
   type PlatformAdapter,
-} from "@freeanima/integrations";
+} from "@freeanima/gateway";
+import { MCPManager, getAcpManager } from "@freeanima/integrations";
 import { closeDb, getDb, isPostgresPrimary } from "@freeanima/db";
 import { createApp } from "./http-app.js";
 import { DEFAULT_BIND_HOST, parseBindHosts } from "./bind-hosts.js";
