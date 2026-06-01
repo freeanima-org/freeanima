@@ -19,6 +19,58 @@ import {
 
 const CHINESE_WEEKDAYS = ["日", "一", "二", "三", "四", "五", "六"];
 
+/** 展示用固定时区：与 session timestamp 的 +08:00 约定一致 */
+const DISPLAY_TZ = "Asia/Shanghai";
+
+function calendarDateKey(date: Date): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: DISPLAY_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+}
+
+function weekdayIndexInTz(date: Date): number {
+  const weekday = new Intl.DateTimeFormat("en-US", {
+    timeZone: DISPLAY_TZ,
+    weekday: "short",
+  }).format(date);
+  const map: Record<string, number> = {
+    Sun: 0,
+    Mon: 1,
+    Tue: 2,
+    Wed: 3,
+    Thu: 4,
+    Fri: 5,
+    Sat: 6,
+  };
+  return map[weekday] ?? 0;
+}
+
+function datePartsInTz(date: Date): { year: string; month: string; day: string; hour: string; minute: string } {
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat("en-GB", {
+      timeZone: DISPLAY_TZ,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    })
+      .formatToParts(date)
+      .map((p) => [p.type, p.value]),
+  );
+  return {
+    year: parts.year!,
+    month: parts.month!,
+    day: parts.day!,
+    hour: parts.hour!,
+    minute: parts.minute!,
+  };
+}
+
 export type TimePerceptionConfig = {
   /** 全局开关 */
   enabled: boolean;
@@ -47,30 +99,23 @@ function getMessageTimestamp(msg: UserMessage): Date | null {
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
-/** 格式化 HH:MM */
+/** 格式化 HH:MM（Asia/Shanghai） */
 function formatTime(date: Date): string {
-  const h = String(date.getHours()).padStart(2, "0");
-  const m = String(date.getMinutes()).padStart(2, "0");
-  return `${h}:${m}`;
+  const { hour, minute } = datePartsInTz(date);
+  return `${hour}:${minute}`;
 }
 
-/** 格式化完整日期 + 中文星期 + 时间：`2026-05-20 周四 08:02` */
+/** 格式化完整日期 + 中文星期 + 时间：`2026-05-20 周三 08:02` */
 function formatFullDate(date: Date): string {
-  const y = date.getFullYear();
-  const mo = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  const w = CHINESE_WEEKDAYS[date.getDay()];
+  const { year, month, day } = datePartsInTz(date);
+  const w = CHINESE_WEEKDAYS[weekdayIndexInTz(date)];
   const t = formatTime(date);
-  return `${y}-${mo}-${d} 周${w} ${t}`;
+  return `${year}-${month}-${day} 周${w} ${t}`;
 }
 
-/** 两个日期是否在不同日历日（按本地时间比较） */
+/** 两个日期是否在不同日历日（按 Asia/Shanghai 比较） */
 function isDifferentDay(a: Date, b: Date): boolean {
-  return (
-    a.getFullYear() !== b.getFullYear() ||
-    a.getMonth() !== b.getMonth() ||
-    a.getDate() !== b.getDate()
-  );
+  return calendarDateKey(a) !== calendarDateKey(b);
 }
 
 /**

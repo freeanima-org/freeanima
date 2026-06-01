@@ -1,4 +1,4 @@
-import "@freeanima/runtime/system-prompt-wire.js";
+import "@freeanima/runtime/system-prompt-wire";
 import { cleanupDebugSessions } from "@freeanima/engine";
 import { EventBus, PATHS, hooks, installErrorLogHandlers, logStartupError, markStartupPhase } from "@freeanima/kernel";
 import { registerMemoryPipeline } from "@freeanima/memory";
