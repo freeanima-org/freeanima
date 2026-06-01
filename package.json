@@ -1,0 +1,53 @@
+{
+  "name": "freeanima",
+  "version": "0.0.0",
+  "private": true,
+  "description": "逸灵风 Free Anima (TypeScript)",
+  "packageManager": "pnpm@11.4.0",
+  "bin": {
+    "anima": "./apps/cli/dist/cli.js"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "check": "pnpm run typecheck && pnpm test",
+    "typecheck": "turbo run typecheck",
+    "release": "semantic-release",
+    "release:dry-run": "semantic-release --dry-run",
+    "test": "turbo run test",
+    "test:integration": "node --experimental-strip-types scripts/run-integration-tests.mts",
+    "test:all": "vitest run --workspace vitest.workspace.mts",
+    "test:watch": "vitest --workspace vitest.workspace.mts",
+    "preservice": "turbo run build",
+    "service": "node apps/cli/dist/cli.js service",
+    "anima": "node apps/cli/dist/cli.js",
+    "link:global": "pnpm --filter @freeanima/cli build && pnpm --filter @freeanima/cli exec pnpm add -g .",
+    "prepare": "husky"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "devDependencies": {
+    "@freeanima/api": "workspace:*",
+    "@freeanima/clarify": "workspace:*",
+    "@freeanima/core": "workspace:*",
+    "@freeanima/db": "workspace:*",
+    "@freeanima/integrations": "workspace:*",
+    "@freeanima/kernel": "workspace:*",
+    "@freeanima/server": "workspace:*",
+    "@freeanima/tools": "workspace:*",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^13.0.1",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^12.0.8",
+    "@semantic-release/npm": "^13.1.5",
+    "@semantic-release/release-notes-generator": "^14.1.1",
+    "@testcontainers/postgresql": "^11.0.3",
+    "@types/node": "catalog:",
+    "husky": "^9.1.7",
+    "semantic-release": "^25.0.3",
+    "testcontainers": "^11.0.3",
+    "turbo": "^2.9.16",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

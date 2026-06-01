@@ -1,0 +1,36 @@
+# Environment
+.env
+.env.*
+
+# Local runtime config (never commit)
+config.yaml
+*.local.yaml
+
+# Cryptographic keys
+*.pem
+*.key
+id_rsa
+id_ed25519
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Cursor worktrees (created by cursor_agent tool)
+/tmp/cursor-*/
+
+# Node.js
+node_modules/
+.pnpm-store/
+.turbo/
+**/dist/
+**/.tsbuildinfo
+pnpm-debug.log*
+
+# WebUI Vue projects
+apps/webui/*/node_modules/
+apps/webui/dist/

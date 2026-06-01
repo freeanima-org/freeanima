@@ -1,0 +1,17 @@
+packages:
+  - "packages/*"
+  - "apps/*"
+allowBuilds:
+  better-sqlite3: true
+  cpu-features: true
+  esbuild: true
+  protobufjs: true
+  ssh2: true
+
+catalog:
+  zod: ^4.4.3
+  typescript: ^5.9.3
+  vitest: ^4.1.7
+  "@types/node": ^24.12.4
+  drizzle-orm: 1.0.0-rc.3
+  drizzle-kit: 1.0.0-rc.3

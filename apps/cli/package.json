@@ -1,0 +1,21 @@
+{
+  "name": "@freeanima/cli",
+  "type": "module",
+  "bin": {
+    "anima": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && chmod +x dist/cli.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run --project unit --passWithNoTests"
+  },
+  "dependencies": {
+    "@freeanima/core": "workspace:*",
+    "@freeanima/server": "workspace:*",
+    "commander": "^12.1.0"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

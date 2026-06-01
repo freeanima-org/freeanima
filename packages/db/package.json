@@ -1,0 +1,40 @@
+{
+  "name": "@freeanima/db",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./migrate-jsonl": {
+      "types": "./dist/migrate-jsonl.d.ts",
+      "import": "./dist/migrate-jsonl.js"
+    },
+    "./test-helpers": {
+      "types": "./dist/test-helpers/pg.d.ts",
+      "import": "./dist/test-helpers/pg.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "migrate:jsonl": "node dist/migrate-jsonl.js",
+    "test": "vitest run --project unit --passWithNoTests",
+    "test:integration": "vitest run --project integration --passWithNoTests"
+  },
+  "dependencies": {
+    "@freeanima/kernel": "workspace:*",
+    "drizzle-orm": "catalog:",
+    "postgres": "^3.4.9",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "drizzle-kit": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "name": "@freeanima/kernel",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./paths": {
+      "types": "./dist/paths.d.ts",
+      "import": "./dist/paths.js"
+    },
+    "./config": {
+      "types": "./dist/config.d.ts",
+      "import": "./dist/config.js"
+    },
+    "./credential": {
+      "types": "./dist/credential.d.ts",
+      "import": "./dist/credential.js"
+    },
+    "./json-util": {
+      "types": "./dist/json-util.d.ts",
+      "import": "./dist/json-util.js"
+    },
+    "./registry": {
+      "types": "./dist/registry.d.ts",
+      "import": "./dist/registry.js"
+    },
+    "./event-bus": {
+      "types": "./dist/event-bus.d.ts",
+      "import": "./dist/event-bus.js"
+    },
+    "./error-log": {
+      "types": "./dist/error-log.d.ts",
+      "import": "./dist/error-log.js"
+    },
+    "./hooks": {
+      "types": "./dist/hooks.d.ts",
+      "import": "./dist/hooks.js"
+    },
+    "./schemas/*": {
+      "types": "./dist/schemas/*.d.ts",
+      "import": "./dist/schemas/*.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run --project unit --passWithNoTests"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.10.0",
+    "yaml": "^2.9.0",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

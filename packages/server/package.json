@@ -1,0 +1,49 @@
+{
+  "name": "@freeanima/server",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./alive": {
+      "types": "./dist/alive.d.ts",
+      "import": "./dist/alive.js"
+    },
+    "./bind-hosts": {
+      "types": "./dist/bind-hosts.d.ts",
+      "import": "./dist/bind-hosts.js"
+    },
+    "./api": {
+      "types": "./dist/api-types.d.ts",
+      "import": "./dist/api-types.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run --project unit --passWithNoTests",
+    "test:integration": "vitest run --project integration --passWithNoTests"
+  },
+  "dependencies": {
+    "@freeanima/api": "workspace:*",
+    "@freeanima/db": "workspace:*",
+    "@freeanima/clarify": "workspace:*",
+    "@freeanima/core": "workspace:*",
+    "@freeanima/integrations": "workspace:*",
+    "@freeanima/tools": "workspace:*",
+    "@hono/node-server": "^1.19.14",
+    "@hono/node-ws": "^1.3.1",
+    "@hono/zod-validator": "^0.8.0",
+    "hono": "^4.12.23",
+    "zod": "catalog:",
+    "@freeanima/engine": "workspace:*",
+    "@freeanima/memory": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

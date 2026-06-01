@@ -1,0 +1,85 @@
+import { existsSync, readFileSync, realpathSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
+import { spawnSync } from "node:child_process";
+import { PATHS, WEBUI_DIST_INDEX } from "@freeanima/core";
+import { isServerAlive } from "@freeanima/server/alive";
+import { prettyDuration, writeStatusLine } from "./output/status.js";
+
+export { prettyDuration, writeStatusLine };
+
+export const LOG_FILE = join(PATHS.home, "error.log");
+
+export { resolveProbeHost } from "@freeanima/server/bind-hosts";
+
+export function readRecentErrorLogTail(maxLines = 10): string[] {
+  if (!existsSync(LOG_FILE)) return [];
+  try {
+    const text = readFileSync(LOG_FILE, "utf-8").trim();
+    if (!text) return [];
+    return text.split("\n").slice(-maxLines);
+  } catch {
+    return [];
+  }
+}
+
+
+function userConfigDir(): string {
+  const xdg = process.env.XDG_CONFIG_HOME;
+  if (xdg) return xdg;
+  return join(homedir(), ".config");
+}
+
+export function serviceUnitDir(): string {
+  return join(userConfigDir(), "systemd", "user");
+}
+
+export function serviceUnitPath(): string {
+  return join(serviceUnitDir(), "anima.service");
+}
+
+export async function apiGet(
+  host: string,
+  port: number,
+  path: string,
+  timeoutMs = 3000,
+): Promise<Record<string, unknown> | null> {
+  const url = `http://${host}:${port}${path}`;
+  try {
+    const resp = await fetch(url, { signal: AbortSignal.timeout(timeoutMs) });
+    if (!resp.ok) return null;
+    return (await resp.json()) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+export function checkServerAlive(): number | null {
+  return isServerAlive();
+}
+
+export function ensureWebuiBuilt(): void {
+  if (existsSync(WEBUI_DIST_INDEX)) return;
+  console.warn(
+    "  ⚠ WebUI 未构建 (no dist/)。运行: pnpm install && pnpm --filter @freeanima/webui build",
+  );
+}
+
+/** systemd ExecStart 使用的可执行路径（shebang 脚本或 node + cli.js） */
+export function animaBin(): string {
+  const script = process.argv[1];
+  // 当前进程即 TS CLI 时优先用它，避免 PATH 上遗留的旧 freeanima / Python 入口
+  if (script?.endsWith("cli.js")) {
+    return `${process.execPath} ${realpathSync(script)}`;
+  }
+
+  try {
+    const r = spawnSync("sh", ["-c", "command -v anima"], { encoding: "utf-8" });
+    const found = r.stdout?.trim();
+    if (r.status === 0 && found) return found;
+  } catch {
+    /* ignore */
+  }
+
+  return script ? realpathSync(script) : "anima";
+}

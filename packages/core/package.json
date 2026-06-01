@@ -1,0 +1,32 @@
+{
+  "name": "@freeanima/core",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./test-helpers": {
+      "types": "./dist/test-helpers/legacy-events-db.d.ts",
+      "import": "./dist/test-helpers/legacy-events-db.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@freeanima/clarify": "workspace:*",
+    "@freeanima/engine": "workspace:*",
+    "@freeanima/kernel": "workspace:*",
+    "@freeanima/memory": "workspace:*",
+    "@freeanima/runtime": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "better-sqlite3": "^11.10.0",
+    "@types/better-sqlite3": "^7.6.13"
+  }
+}

@@ -1,0 +1,321 @@
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { randomBytes } from "node:crypto";
+import type { NestService } from "@freeanima/core";
+import { PATHS, logError } from "@freeanima/core";
+import type { PlatformAdapter } from "../platforms.js";
+import { collectGatewayStreamReply } from "../collect-gateway-stream-reply.js";
+import {
+  registerWeixinCronDeliverer,
+  unregisterWeixinCronDeliverer,
+} from "../cron-deliver.js";
+import {
+  BACKOFF_DELAY_MS,
+  MAX_CONSECUTIVE_FAILURES,
+  RETRY_DELAY_MS,
+  getUpdates,
+  sendText,
+} from "./ilink-api.js";
+import {
+  buildWeixinOrigin,
+  normalizeInboundMessage,
+  parseUserTextMessage,
+} from "./weixin-message.js";
+import type { WeixinCredentials } from "./weixin-credentials.js";
+import {
+  weixinContextTokensSchema,
+  weixinSyncSchema,
+  ilinkMessageSchema,
+} from "../schemas/weixin.js";
+import { safeParseOrNull } from "@freeanima/core";
+
+function safeId(value: string | undefined, keep = 8): string {
+  const raw = (value ?? "").trim();
+  if (!raw || raw.length <= keep) return raw || "?";
+  return raw.slice(0, keep);
+}
+
+function sleep(ms: number, signal: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (signal.aborted) {
+      reject(new DOMException("Aborted", "AbortError"));
+      return;
+    }
+    const t = setTimeout(resolve, ms);
+    signal.addEventListener(
+      "abort",
+      () => {
+        clearTimeout(t);
+        reject(new DOMException("Aborted", "AbortError"));
+      },
+      { once: true },
+    );
+  });
+}
+
+export class WeixinAdapter implements PlatformAdapter {
+  readonly name = "weixin";
+
+  private syncBuf = "";
+  private contextTokens: Record<string, string> = {};
+  private readonly seen = new Set<string>();
+  private failures = 0;
+  private readonly clientId: string;
+  private abort: AbortController | null = null;
+  private loopPromise: Promise<void> | null = null;
+
+  constructor(
+    private readonly service: NestService,
+    private readonly creds: WeixinCredentials,
+  ) {
+    this.clientId = `anima-${randomBytes(4).toString("hex")}`;
+    this.restoreState();
+  }
+
+  async start(): Promise<void> {
+    this.service.registerPlatform("weixin");
+    this.service.updatePlatformStatus("weixin", "starting");
+    this.abort = new AbortController();
+    this.loopPromise = this.runLoop(this.abort.signal);
+    void this.loopPromise.catch((e) => {
+      if (this.abort?.signal.aborted) return;
+      logError("WeChat adapter loop exited", { source: "weixin", error: e });
+    });
+  }
+
+  async stop(): Promise<void> {
+    console.log("[shutdown] 微信 adapter 中止轮询…");
+    unregisterWeixinCronDeliverer();
+    this.abort?.abort();
+    const loop = this.loopPromise;
+    if (loop) {
+      try {
+        await Promise.race([
+          loop,
+          new Promise<void>((r) => setTimeout(r, 5000)),
+        ]);
+      } catch {
+        /* aborted */
+      }
+    }
+    this.persistState();
+    this.abort = null;
+    this.loopPromise = null;
+    console.log("[shutdown] 微信 adapter 已停止");
+  }
+
+  private async runLoop(signal: AbortSignal): Promise<void> {
+    console.log(
+      `WeChat adapter started (account=${safeId(this.creds.account_id)} linked_user=${safeId(this.creds.user_id)})`,
+    );
+    this.service.updatePlatformStatus("weixin", "connected", {
+      account_id: safeId(this.creds.account_id),
+      linked_user_id: safeId(this.creds.user_id),
+    });
+    registerWeixinCronDeliverer({
+      baseUrl: this.creds.base_url,
+      token: this.creds.token,
+      clientId: this.clientId,
+      contextTokens: this.contextTokens,
+    });
+
+    while (!signal.aborted) {
+      try {
+        await this.pollOnce(signal);
+        this.failures = 0;
+      } catch (e) {
+        if (signal.aborted) break;
+        this.failures += 1;
+        const msg = e instanceof Error ? e.message : String(e);
+        console.warn(
+          `WeChat poll error (attempt ${this.failures}/${MAX_CONSECUTIVE_FAILURES}): ${msg}`,
+        );
+        if (this.failures >= MAX_CONSECUTIVE_FAILURES) {
+          logError("WeChat poll error", {
+            source: "weixin",
+            error: e,
+            context: { failures: this.failures },
+          });
+        }
+        if (this.failures >= MAX_CONSECUTIVE_FAILURES) {
+          const delay = BACKOFF_DELAY_MS * Math.min(this.failures, 5);
+          console.warn(`WeChat backing off for ${delay}ms`);
+          this.service.updatePlatformStatus("weixin", "backoff", { delay_ms: delay });
+          try {
+            await sleep(delay, signal);
+          } catch {
+            break;
+          }
+        }
+        try {
+          await sleep(RETRY_DELAY_MS, signal);
+        } catch {
+          break;
+        }
+      }
+    }
+  }
+
+  private async pollOnce(signal: AbortSignal): Promise<void> {
+    const resp = await getUpdates(
+      this.creds.base_url,
+      this.creds.token,
+      this.syncBuf,
+      signal,
+    );
+
+    const newBuf = String(resp.get_updates_buf ?? "");
+    if (newBuf) {
+      this.syncBuf = newBuf;
+      this.persistSyncBuf();
+    }
+
+    const msgs = resp.msgs;
+    if (!Array.isArray(msgs)) return;
+
+    for (const raw of msgs) {
+      const inbound = safeParseOrNull(ilinkMessageSchema, raw);
+      if (!inbound) continue;
+      const msg = normalizeInboundMessage(inbound);
+      const msgId = String(msg.msg_id ?? msg.message_id ?? msg.seq_id ?? "");
+      if (msgId && this.seen.has(msgId)) continue;
+
+      if (msgId) {
+        this.seen.add(msgId);
+        if (this.seen.size > 1000) this.seen.clear();
+      }
+
+      const parsed = parseUserTextMessage(msg, this.creds.account_id);
+      if (!parsed) continue;
+
+      if (process.env.DEBUG?.includes("weixin")) {
+        console.log(
+          `WeChat inbound from ${safeId(parsed.fromUserId)}: ${parsed.text.slice(0, 60)}`,
+        );
+      }
+
+      if (parsed.contextToken) {
+        this.contextTokens[parsed.peerId] = parsed.contextToken;
+      }
+
+      void this.routeToRuntime(parsed).catch((e) => {
+        logError("WeChat message routing error", { source: "weixin", error: e });
+      });
+    }
+  }
+
+  private async routeToRuntime(
+    parsed: NonNullable<ReturnType<typeof parseUserTextMessage>>,
+  ): Promise<void> {
+    const origin = buildWeixinOrigin(parsed);
+    let sid = "";
+
+    try {
+      const session = await this.service.findOrCreateSession("weixin", origin.platform_extra);
+      sid = session.session_id;
+
+      const cmdResult = await this.service.executeCommand({
+        session_id: sid,
+        text: parsed.text,
+        platform: "weixin",
+        origin_extra: origin.platform_extra,
+      });
+
+      if (cmdResult.found) {
+        if (cmdResult.text) await this.sendReply(parsed.peerId, cmdResult.text);
+        return;
+      }
+
+      const reply = await collectGatewayStreamReply(
+        this.service.sendMessageStream(sid, parsed.text, "weixin"),
+      );
+      if (reply) await this.sendReply(parsed.peerId, reply);
+    } catch (e) {
+      logError(`WeChat session ${safeId(sid)} routing error`, {
+        source: "weixin",
+        error: e,
+        context: { session_id: sid || undefined },
+      });
+      await this.sendReply(parsed.peerId, "⚠️ 引擎出错，请稍后再试");
+    }
+  }
+
+  private async sendReply(peerId: string, text: string): Promise<void> {
+    const contextToken = this.contextTokens[peerId];
+    try {
+      const result = await sendText(
+        this.creds.base_url,
+        this.creds.token,
+        peerId,
+        text,
+        this.clientId,
+        contextToken,
+      );
+      if (process.env.DEBUG?.includes("weixin")) {
+        console.log(`WeChat reply sent to ${safeId(peerId)}: ret=${String(result.ret ?? "?")}`);
+      }
+    } catch (e) {
+      logError("WeChat send reply failed", { source: "weixin", error: e });
+    }
+  }
+
+  private restoreState(): void {
+    try {
+      if (existsSync(PATHS.weixinSyncFile)) {
+        const raw: unknown = JSON.parse(readFileSync(PATHS.weixinSyncFile, "utf-8"));
+        const data = safeParseOrNull(weixinSyncSchema, raw);
+        this.syncBuf = data?.sync_buf ?? "";
+      }
+    } catch {
+      /* no state */
+    }
+
+    try {
+      if (existsSync(PATHS.weixinContextTokensFile)) {
+        const raw: unknown = JSON.parse(
+          readFileSync(PATHS.weixinContextTokensFile, "utf-8"),
+        );
+        this.contextTokens = safeParseOrNull(weixinContextTokensSchema, raw) ?? {};
+      }
+    } catch {
+      this.contextTokens = {};
+    }
+  }
+
+  private persistSyncBuf(): void {
+    try {
+      mkdirSync(PATHS.weixinDir, { recursive: true });
+      writeFileSync(
+        PATHS.weixinSyncFile,
+        JSON.stringify({ sync_buf: this.syncBuf }, null, 0),
+        "utf-8",
+      );
+    } catch (e) {
+      logError("WeChat: failed to persist sync buffer", { source: "weixin", error: e });
+    }
+  }
+
+  private persistContextTokens(): void {
+    try {
+      mkdirSync(PATHS.weixinDir, { recursive: true });
+      writeFileSync(
+        PATHS.weixinContextTokensFile,
+        JSON.stringify(this.contextTokens, null, 0),
+        "utf-8",
+      );
+    } catch (e) {
+      logError("WeChat: failed to persist context tokens", { source: "weixin", error: e });
+    }
+  }
+
+  private persistState(): void {
+    this.persistSyncBuf();
+    this.persistContextTokens();
+  }
+}
+
+export function createWeixinAdapter(
+  service: NestService,
+  creds: WeixinCredentials,
+): WeixinAdapter {
+  return new WeixinAdapter(service, creds);
+}

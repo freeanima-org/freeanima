@@ -1,0 +1,30 @@
+{
+  "name": "@freeanima/integrations",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run --project unit --passWithNoTests",
+    "test:integration": "vitest run --project integration --passWithNoTests"
+  },
+  "dependencies": {
+    "@freeanima/core": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "discord.js": "^14.26.4",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "vitest": "catalog:",
+    "@freeanima/engine": "workspace:*",
+    "@freeanima/kernel": "workspace:*"
+  }
+}

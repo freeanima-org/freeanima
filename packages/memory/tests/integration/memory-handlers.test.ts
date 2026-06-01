@@ -1,0 +1,64 @@
+import { describe, it, expect, beforeEach, afterEach, afterAll } from "vitest";
+import { describePg } from "../../../db/tests/helpers/pg-test-gate.ts";
+import { beginIntegrationCaseWithConfig } from "../../../db/tests/helpers/integration-case.ts";
+import { endIntegrationCase } from "../../../db/tests/helpers/integration-case.ts";
+
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+import { waitFor } from "../../../kernel/tests/helpers/wait.js";
+
+describePg("memory handlers", () => {
+  let home: string;
+  const prev = process.env.FREEANIMA_HOME;
+
+  beforeEach(async () => {
+    const ctx = await beginIntegrationCaseWithConfig(
+      "freeanima-handlers-",
+      "memory:\n  reflect:\n    enabled: false\n",
+    );
+    home = ctx.home;
+    const { resetStoreForTests } = await import("@freeanima/core");
+    resetStoreForTests();
+  });
+
+  afterEach(async () => {
+    if (prev === undefined) delete process.env.FREEANIMA_HOME;
+    else process.env.FREEANIMA_HOME = prev;
+  });
+
+  it("session:updated creates processed file when reflect disabled", async () => {
+    const { EventBus, registerMemoryHandlers, l2SessionPath } = await import("@freeanima/core");
+    const { seedSession } = await import("@freeanima/db/test-helpers");
+
+    const sid = "20260526_140000_aaaa";
+    await seedSession(
+      sid,
+      {
+        role: "session_meta",
+        model: "test-model",
+        tools: [],
+        functions: [],
+        timestamp: new Date().toISOString(),
+        platform: "parlor",
+      },
+      [
+        { role: "user", timestamp: "t1", content: "记一条", id: 1 },
+        { role: "assistant", timestamp: "t2", content: "好的", id: 2 },
+      ],
+    );
+
+    const bus = new EventBus(join(home, "runtime", "events.db"));
+    registerMemoryHandlers(bus);
+    bus.start(20);
+    bus.emit("session:updated", { session_id: sid });
+
+    await waitFor(() => existsSync(l2SessionPath(sid)), { timeoutMs: 3000 });
+
+    expect(existsSync(l2SessionPath(sid))).toBe(true);
+    bus.stop();
+  });
+
+  afterAll(async () => {
+    await endIntegrationCase();
+  });
+});

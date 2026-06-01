@@ -1,0 +1,82 @@
+# 逸灵风 config.yaml 示例
+# 复制到 ~/.anima/config.yaml 并根据需要修改
+
+# 模型配置
+api_base: https://api.openai.com/v1
+model: deepseek-v4-flash
+
+# Firecrawl（web_search / web_extract）
+# API Key 走 pass：anima credential add services/firecrawl token=xxx
+firecrawl:
+  api_url: http://127.0.0.1:3002
+
+# 浏览器工具（browser_*，V1 仅 Camofox REST 后端）
+# browser:
+#   camofox:
+#     base_url: http://127.0.0.1:9377
+#     timeout_ms: 30000
+#     managed_persistence: false
+#     adopt_existing_tab: false
+# Docker: docker run -p 9377:9377 -e CAMOFOX_PORT=9377 jo-inc/camofox-browser
+
+# === 推送通知（手机推送） ===
+# push:
+#   provider: pushdeer
+#   pushdeer:
+#     pushkey: xxxxxxxx
+#     api_base: https://api2.pushdeer.com
+
+# MCP 服务器（stdio / SSE，工具名注册为 mcp_{server}_{tool}）
+# enabled 默认 true；设为 false 时逸灵风启动不会自动连接，可在卧室（WebUI Chamber）手动启动
+# stdio 建议 command: node + args: [脚本路径]
+# mcp_servers:
+#   database:
+#     command: npx
+#     args: ["-y", "@modelcontextprotocol/server-postgres", "--connection", "postgresql://..."]
+#     transport: stdio
+#     enabled: true
+#   test-http:
+#     url: http://127.0.0.1:3456/mcp
+#     transport: sse
+#     enabled: false
+#     # 需先单独启动：node ~/.anima/mcp-test-http.mjs
+
+# Firecrawl（web_search / web_extract）
+# firecrawl:
+#   api_url: http://127.0.0.1:3003
+
+# ACP 代理（Cursor CLI：`agent acp`，见 https://cursor.com/docs/cli/acp）
+# enabled 默认 true；设为 false 时逸灵风启动不会自动连接，可在卧室（WebUI Chamber）手动连接
+# acp_agents:
+#   cursor:
+#     command: ~/.local/bin/agent
+#     args: ["--force", "acp"]
+#     adapter: cursor
+#     cwd: /path/to/your/project
+#     description: "委托 Cursor Agent 执行编码任务"
+#     plan_mode: false
+#     agent_mode: agent
+#     enabled: true
+#     connect_timeout_ms: 15000
+#     prompt_timeout_ms: 120000
+
+# 模型上下文窗口（用于 token 占用率压缩；未配置则回退 max_rounds 条数模式）
+models:
+  deepseek-v4-flash:
+    context_window: 1000000
+
+# 运行时压缩（L1 JSONL 不删，仅裁切发给 LLM 的视图）
+compression:
+  enabled: true
+  max_rounds: 50
+  reserved_tokens: 8192
+  trigger_high: 0.80
+  trigger_low: 0.60
+  emergency_ratio: 0.92
+  raw_min_messages: 5
+  slim_min_messages: 50
+  summary_max_tokens: 4000
+
+# L1 Session PostgreSQL（Slice A，生产必填）
+# database:
+#   url: pass:services/postgres/anima
