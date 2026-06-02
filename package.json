@@ -1,29 +1,6 @@
 {
   "name": "freeanima",
   "version": "0.1.1",
-  "private": true,
-  "description": "逸灵风 Free Anima (TypeScript)",
-  "packageManager": "pnpm@11.4.0",
-  "bin": {
-    "anima": "./apps/cli/dist/cli.js"
-  },
-  "scripts": {
-    "build": "turbo run build",
-    "check": "pnpm run typecheck && pnpm test",
-    "typecheck": "turbo run typecheck",
-    "release": "semantic-release",
-    "release:dry-run": "semantic-release --dry-run",
-    "test": "pnpm -r test",
-    "test:integration": "node --experimental-strip-types scripts/run-integration-tests.mts",
-    "preservice": "turbo run build",
-    "service": "node apps/cli/dist/cli.js service",
-    "anima": "node apps/cli/dist/cli.js",
-    "link:global": "pnpm --filter @freeanima/legacy-cli build && pnpm --filter @freeanima/legacy-cli exec pnpm add -g .",
-    "prepare": "husky"
-  },
-  "engines": {
-    "node": ">=24"
-  },
   "devDependencies": {
     "@commitlint/cli": "^21.0.2",
     "@commitlint/config-conventional": "^21.0.2",
@@ -48,5 +25,49 @@
     "testcontainers": "^11.0.3",
     "turbo": "^2.9.16",
     "typescript": "catalog:"
+  },
+  "bin": {
+    "anima": "./apps/cli/dist/cli.js"
+  },
+  "description": "逸灵风 Free Anima (TypeScript)",
+  "engines": {
+    "bun": ">=1.3.14"
+  },
+  "packageManager": "bun@1.3.14",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "check": "bun run typecheck && bun test",
+    "typecheck": "turbo run typecheck",
+    "release": "semantic-release",
+    "release:dry-run": "semantic-release --dry-run",
+    "test": "bun run --parallel --filter '*' --if-present test",
+    "test:integration": "bun scripts/run-integration-tests.mts",
+    "preservice": "turbo run build",
+    "service": "bun apps/cli/dist/cli.js service",
+    "anima": "bun apps/cli/dist/cli.js",
+    "link:global": "bash scripts/link-global-cli.sh",
+    "prepare": "husky"
+  },
+  "trustedDependencies": [
+    "better-sqlite3",
+    "cpu-features",
+    "esbuild",
+    "protobufjs",
+    "ssh2"
+  ],
+  "workspaces": {
+    "packages": [
+      "kernel/*",
+      "packages/*",
+      "apps/*"
+    ],
+    "catalog": {
+      "zod": "^4.4.3",
+      "typescript": "^5.9.3",
+      "@types/node": "^24.12.4",
+      "drizzle-orm": "1.0.0-rc.3",
+      "drizzle-kit": "1.0.0-rc.3"
+    }
   }
 }

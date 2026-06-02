@@ -1,7 +1,6 @@
-import Database from "better-sqlite3";
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { PATHS } from "@freeanima/legacy-kernel";
+import { PATHS, openSqlite, type SqliteDatabase } from "@freeanima/legacy-kernel";
 import { buildFtsQuery } from "./fts-query.js";
 import { l2SessionPath } from "./clean.js";
 import { l2LineSchema } from "@freeanima/legacy-kernel";
@@ -27,9 +26,9 @@ function dbPath(): string {
   return join(PATHS.index, "l2.db");
 }
 
-function getConn(): Database.Database {
+function getConn(): SqliteDatabase {
   mkdirSync(PATHS.index, { recursive: true });
-  const conn = new Database(dbPath());
+  const conn = openSqlite(dbPath());
   conn.pragma("journal_mode = WAL");
   conn.exec(SCHEMA);
   return conn;

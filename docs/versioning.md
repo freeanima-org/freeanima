@@ -25,9 +25,9 @@ workspace 内其它 `package.json`（`packages/*`、`apps/*`）**不含** `versi
 ## 日常查看版本
 
 ```bash
-node -p "require('./package.json').version"
+bun -p "require('./package.json').version"
 # 或已 build 后：
-pnpm run anima -- service status   # 读 status 文件 / health API 中的 version
+bun run anima -- service status   # 读 status 文件 / health API 中的 version
 ```
 
 ## 发版流程（自动）
@@ -66,7 +66,7 @@ BREAKING CHANGE: POST /api/sessions/:id/messages 已删除
 ### 本地预览（可选）
 
 ```bash
-HUSKY=0 pnpm release:dry-run
+HUSKY=0 bun run release:dry-run
 ```
 
 需要完整 git 历史（`fetch-depth: 0`）；本地无 `GITHUB_TOKEN` 时会在 GitHub Release 步骤前停止，仍可看算出的版本与 changelog 草稿。
@@ -88,7 +88,7 @@ git push origin v0.1.0
 
 - 不要在业务代码中硬编码 `X.Y.Z`；统一 `import { NEST_VERSION } from "@freeanima/legacy-runtime"`（或经 health/status 暴露）。
 - 不要在 workspace 子包 `package.json` 中维护 `version`。
-- 不要手改 `[Unreleased]` 或本地 `pnpm release patch`（已废弃）；发布说明来自 commit，不是手写 CHANGELOG 节。
+- 不要手改 `[Unreleased]` 或本地 `bun run release patch`（已废弃）；发布说明来自 commit，不是手写 CHANGELOG 节。
 
 ## 相关文件
 

@@ -17,9 +17,10 @@ Agent 运行时基础设施：记忆分层（L1–L4）、工具注册（本地 
 ## 快速开始
 
 ```bash
-pnpm install
-pnpm turbo run typecheck build
-pnpm test
+bun install
+bun run typecheck
+bun run build
+bun test
 
 # 复制示例配置
 mkdir -p ~/.anima

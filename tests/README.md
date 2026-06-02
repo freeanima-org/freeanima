@@ -21,15 +21,15 @@ tests/
 
 ```bash
 # 需 Docker（Testcontainers 起临时 PostgreSQL 17 + migrate）
-pnpm test:integration
+bun test:integration
 
 # 单元测试（各 package，bun:test）
-pnpm test
+bun test
 ```
 
 `test:integration` 使用 `bun test` + `scripts/bunfig.integration.toml`；PG 由 `scripts/integration-pg-setup.ts` 在 runner 启动前注入 `ANIMA_TEST_PG_URL`。
 
-依赖 **better-sqlite3**（EventBus、L2/L3 FTS）的用例在 Bun 下自动 `skip`（与单元测试 `memory-search` 一致）；在 Node 原生模块可用时可跑全量。
+依赖 **SQLite**（EventBus、L2/L3 FTS）：Bun 下用 `bun:sqlite`，Node 下用 `better-sqlite3`。
 
 勿对集成测试使用生产 `DATABASE_URL`。
 

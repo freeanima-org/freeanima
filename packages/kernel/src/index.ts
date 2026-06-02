@@ -24,6 +24,7 @@ export * from "./config.js";
 export * from "./credential.js";
 export * from "./json-util.js";
 export * from "./registry.js";
+export { openSqlite, type SqliteDatabase } from "./sqlite.js";
 export * from "./event-bus.js";
 export type { EventMap, EventTopic } from "./schemas/events.js";
 export { formatZodError, safeParseOrNull } from "./schemas/util.js";

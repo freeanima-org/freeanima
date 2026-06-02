@@ -88,11 +88,28 @@ describe("systemd unit", () => {
       process.argv[1] = prev;
     }
   });
+  it("resolveAnimaSpawn splits execPath + script from animaBin", () => {
+    vi.spyOn(serviceCommon, "animaBin").mockReturnValue("/usr/bin/bun /opt/anima/cli.js");
+    expect(serviceCommon.resolveAnimaSpawn(["service", "start"])).toEqual({
+      command: "/usr/bin/bun",
+      args: ["/opt/anima/cli.js", "service", "start"],
+    });
+    vi.restoreAllMocks();
+  });
+
+  it("resolveAnimaSpawn passes through single-path bin", () => {
+    vi.spyOn(serviceCommon, "animaBin").mockReturnValue("/home/feng/.bun/bin/anima");
+    expect(serviceCommon.resolveAnimaSpawn(["status"])).toEqual({
+      command: "/home/feng/.bun/bin/anima",
+      args: ["status"],
+    });
+    vi.restoreAllMocks();
+  });
 });
 
-// Bun 暂不支持 vi.doMock / resetModules 动态 mock 模块
+// Bun 暂不支持 vi.doMock / resetModules 动态 mock detached 启动
 describe.skipIf(typeof Bun !== "undefined")("service start without systemd", () => {
-  it("exits when systemd unavailable", async () => {
+  it("falls back to detached start when systemd unavailable", async () => {
     vi.resetModules();
     vi.doMock("../../src/systemd-unit.js", () => ({
       SERVICE_UNIT_NAME: "anima.service",
@@ -105,7 +122,6 @@ describe.skipIf(typeof Bun !== "undefined")("service start without systemd", () 
     const exit = vi.spyOn(process, "exit").mockImplementation((() => {
       throw new Error("exit");
     }) as (code?: number) => never);
-    const err = vi.spyOn(console, "error").mockImplementation(() => {});
 
     await expect(
       runServiceCommand({
@@ -117,7 +133,6 @@ describe.skipIf(typeof Bun !== "undefined")("service start without systemd", () 
     ).rejects.toThrow("exit");
 
     expect(exit).toHaveBeenCalledWith(1);
-    expect(err.mock.calls.some((c) => String(c[0]).includes("--foreground"))).toBe(true);
 
     vi.resetModules();
     vi.doUnmock("../apps/cli/src/systemd-unit.js");

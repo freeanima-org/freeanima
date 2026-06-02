@@ -44,7 +44,7 @@
 
 L1 Session 主存为 PostgreSQL（`config.yaml` → `database.url`）。表设计见 [database.md](../database.md)。
 
-**L1 PostgreSQL（Slice A）**：`packages/db/` — `sessions`（一行 = `session_meta`）+ `messages`（`payload` JSONB = `ConversationMessage`）；`anima service` 启动时 `getDb()` 连接池，engine/memory 进程内直调 repo；热路径 `getSessionMetaLite`（不读 `tools` JSONB）、压缩后 `listMessagesByIdRange`、API `offset`/`limit` 走 `listMessagesPage`；诊断：`ANIMA_L1_PG_PROFILE=1`、`packages/db/scripts/session-size.sql`；`pnpm --filter @freeanima/legacy-db db:migrate`。
+**L1 PostgreSQL（Slice A）**：`packages/db/` — `sessions`（一行 = `session_meta`）+ `messages`（`payload` JSONB = `ConversationMessage`）；`anima service` 启动时 `getDb()` 连接池，engine/memory 进程内直调 repo；热路径 `getSessionMetaLite`（不读 `tools` JSONB）、压缩后 `listMessagesByIdRange`、API `offset`/`limit` 走 `listMessagesPage`；诊断：`ANIMA_L1_PG_PROFILE=1`、`packages/db/scripts/session-size.sql`；`bun run --filter @freeanima/legacy-db db:migrate`。
 
 `NestService` 与 cron 引擎路径在 `engine.run` / `engine.runStream` 落盘：**最终 assistant** 即时 `appendMessage`；**tool loop 一轮**（assistant+tool_calls + 全部 tool 响应）**原子批量**落盘；`finishTurn(..., skipMessageAppend=true)` 只做 `session_meta` 更新。历史若出现 dangling `tool_calls`，`beginTurn`/`prepareMessages` 会在 **assistant 原位** 补 synthetic tool（后续 pos 后移）并修复；伙伴新消息可 **AbortController 抢占** 进行中的 tool loop。
 
@@ -202,45 +202,44 @@ ACP：`integrations/src/acp/`；`acp_{name}` 返回 JSON（`session_id`、`outpu
 ## 开发命令
 
 ```bash
-pnpm install                      # 依赖；需 Node 24+（见 .node-version）
-pnpm run build                    # turbo run build（未变更包可命中缓存）
-pnpm test                         # 全仓单元测试（packages/<pkg>/tests/unit/）
-pnpm test:integration             # 根目录 tests/integration/（bun:test + Testcontainers PG；需 Docker；不进 pre-commit）
-pnpm run typecheck
-pnpm release:dry-run              # 本地预览下一版（需 HUSKY=0；见 versioning.md）
+bun install                       # 依赖；需 Bun 1.3+（见 .bun-version）
+bun run build                     # turbo run build（未变更包可命中缓存）
+bun test                          # 全仓单元测试（packages/<pkg>/tests/unit/）
+bun test:integration              # 根目录 tests/integration/（bun:test + Testcontainers PG；需 Docker；不进 pre-commit）
+bun run typecheck
+bun run release:dry-run           # 本地预览下一版（需 HUSKY=0；见 versioning.md）
 
-# CLI（`pnpm service` 会先 turbo build；已构建过则命中缓存）
-pnpm service start                              # systemd --user（默认）
-pnpm service start --foreground                 # 前台调试
-pnpm service stop | restart | status
-pnpm run anima -- service start             # 不经 preservice，需已 build
-pnpm run anima -- credential list
-pnpm run anima -- credential get services/discord token
-pnpm run anima -- credential add services/foo token=xxx desc=说明
+# CLI（`bun run service` 会先 turbo build；已构建过则命中缓存）
+bun run service start                              # 有 systemd → user unit；无 → detached 后台
+bun run service start --foreground                 # 前台调试（阻塞终端）
+bun run service stop | restart | status
+bun run anima -- service start             # 不经 preservice，需已 build
+bun run anima -- credential list
+bun run anima -- credential get services/discord token
+bun run anima -- credential add services/foo token=xxx desc=说明
 
 # shell 补全（写入 ~/.bashrc 或 ~/.zshrc 一次）
 eval "$(anima completion bash)"
 # source <(anima completion zsh)
 
 # 全局 CLI（本机一次；任意目录可用 anima）
-# pnpm 11 已移除 `pnpm link -g`，改用 `pnpm add -g .`（见根脚本 link:global）
-pnpm run link:global                            # = build @freeanima/legacy-cli + pnpm add -g .
-# 若报 global bin 不在 PATH：确认 ~/.bashrc 含 `export PATH="$PNPM_HOME/bin:$PATH"`（pnpm setup），并重开终端
-anima service status                            # 改 TS 后需重新 link:global 或 build 后再 add -g
+bun run link:global                               # build + symlink → ~/.bun/bin/anima
+# PATH：~/.bun/bin 须在旧 pnpm 全局 bin 之前，否则 which anima 仍指向旧版
+anima service status                              # 改 TS 后需重新 link:global
 
 # unit：~/.config/systemd/user/anima.service（`service start` 自动生成，勿手抄仓库内模板）
 #   Restart=always；崩溃后 180s 再拉起；StartLimitIntervalSec=0（不因连续失败放弃）
 
 # WebUI: http://127.0.0.1:8080/webui/parlor/chat
 # 卧室: …/webui/chamber/dashboard  创作室: …/webui/studio/pair-programming
-# 构建前端: pnpm --filter @freeanima/legacy-webui build
-# WebUI 类型检查: pnpm --filter @freeanima/legacy-webui typecheck
+# 构建前端: bun run --filter @freeanima/legacy-webui build
+# WebUI 类型检查: bun run --filter @freeanima/legacy-webui typecheck
 
-pnpm install                      # Husky：提交前 typecheck + bun test；commit-msg 校验 Conventional Commits
-pnpm run check                    # 手动全量检查（同 pre-commit 钩子）
+bun install                       # Husky：提交前 typecheck + bun test；commit-msg 校验 Conventional Commits
+bun run check                     # 手动全量检查（同 pre-commit 钩子）
 ```
 
-**构建缓存**：`pnpm` content-addressable store；任务编排与产物缓存见根目录 `turbo.json`；各 TS 包 `tsc --incremental`（`dist/.tsbuildinfo`）。
+**构建缓存**：Bun 安装缓存 + 根目录 `turbo.json` 任务缓存；各 TS 包 `tsc --incremental`（`dist/.tsbuildinfo`）。
 
 版本号：根 `package.json`（运行时 `NEST_VERSION`）。发版见 [versioning.md](../versioning.md)。
 

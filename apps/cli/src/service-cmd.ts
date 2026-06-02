@@ -5,13 +5,14 @@ import {
   readFileSync,
   writeFileSync,
 } from "node:fs";
-import { spawnSync } from "node:child_process";
+import { spawnSync, spawn } from "node:child_process";
 import { isServerAlive, readStatusFile } from "@freeanima/legacy-server/alive";
 import {
   apiGet,
   checkServerAlive,
   ensureWebuiBuilt,
   animaBin,
+  resolveAnimaSpawn,
   LOG_FILE,
   prettyDuration,
   serviceUnitPath,
@@ -186,6 +187,47 @@ function printDeadStatus(statusFile: Record<string, unknown>): void {
   printStartupErrorHints();
 }
 
+async function startDetachedWithoutSystemd(args: ServiceArgs): Promise<void> {
+  const alive = isServerAlive();
+  if (alive != null) {
+    console.log(`逸灵风已在运行 (PID ${alive})`);
+    process.exit(1);
+  }
+  ensureWebuiBuilt();
+
+  const { command, args: spawnArgs } = resolveAnimaSpawn([
+    "service",
+    "start",
+    "--foreground",
+    "--host",
+    args.host,
+    "--port",
+    String(args.port),
+  ]);
+  const child = spawn(command, spawnArgs, {
+    detached: true,
+    stdio: "ignore",
+    env: process.env,
+  });
+  child.unref();
+
+  for (let i = 0; i < 30; i++) {
+    await new Promise((res) => setTimeout(res, 500));
+    const pid = isServerAlive();
+    if (pid != null) {
+      writeStatusLine("ok", `已后台启动 (PID ${pid})`);
+      writeStatusLine("info", "未检测到 systemd --user，使用 detached 进程");
+      console.log(`  地址: http://${args.host}:${args.port}`);
+      console.log("  查看: anima service status");
+      console.log("  停止: anima service stop");
+      return;
+    }
+  }
+
+  console.error("启动超时：未检测到 PID，请查看 error.log 或改用 --foreground 排查");
+  process.exit(1);
+}
+
 async function cmdServiceStatus(args: ServiceArgs): Promise<void> {
   const statusFile = readStatusFile() ?? {};
   const [host, port] = hostPort(statusFile, args);
@@ -270,10 +312,8 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
     }
 
     if (!systemdUserAvailable()) {
-      console.error("错误: 未检测到 systemd --user。");
-      console.error("  日常启动请配置 systemd user session。");
-      console.error("  本地调试请用: anima service start --foreground");
-      process.exit(1);
+      await startDetachedWithoutSystemd(args);
+      return;
     }
 
     ensureWebuiBuilt();

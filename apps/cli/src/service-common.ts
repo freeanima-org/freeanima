@@ -63,11 +63,11 @@ export function checkServerAlive(): number | null {
 export function ensureWebuiBuilt(): void {
   if (existsSync(WEBUI_DIST_INDEX)) return;
   console.warn(
-    "  ⚠ WebUI 未构建 (no dist/)。运行: pnpm install && pnpm --filter @freeanima/legacy-webui build",
+    "  ⚠ WebUI 未构建 (no dist/)。运行: bun install && bun run --filter @freeanima/legacy-webui build",
   );
 }
 
-/** systemd ExecStart 使用的可执行路径（shebang 脚本或 node + cli.js） */
+/** systemd ExecStart 使用的可执行路径（shebang 脚本或 bun + cli.js） */
 export function animaBin(): string {
   const script = process.argv[1];
   // 当前进程即 TS CLI 时优先用它，避免 PATH 上遗留的旧 freeanima / Python 入口
@@ -84,4 +84,17 @@ export function animaBin(): string {
   }
 
   return script ? realpathSync(script) : "anima";
+}
+
+/** 解析 animaBin() 为 spawn(command, args) 形态 */
+export function resolveAnimaSpawn(extraArgs: string[]): { command: string; args: string[] } {
+  const bin = animaBin();
+  if (bin.includes(" ")) {
+    const space = bin.indexOf(" ");
+    return {
+      command: bin.slice(0, space),
+      args: [bin.slice(space + 1), ...extraArgs],
+    };
+  }
+  return { command: bin, args: extraArgs };
 }

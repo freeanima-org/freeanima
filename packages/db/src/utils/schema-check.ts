@@ -18,7 +18,7 @@ export async function assertMessagesSchema(
   if (pkCols.length !== 1 || pkCols[0] !== "id") {
     throw new Error(
       `messages 表主键应为 (id)，当前为 (${pkCols.join(", ") || "未知"})。` +
-        "请先执行: pnpm --filter @freeanima/legacy-db db:migrate",
+        "请先执行: bun run --filter @freeanima/legacy-db db:migrate",
     );
   }
 
@@ -30,7 +30,7 @@ export async function assertMessagesSchema(
   `);
   if (!posCol[0]?.exists) {
     throw new Error(
-      "messages 表缺少 pos 列（会话内序号）。请先执行: pnpm --filter @freeanima/legacy-db db:migrate",
+      "messages 表缺少 pos 列（会话内序号）。请先执行: bun run --filter @freeanima/legacy-db db:migrate",
     );
   }
 
@@ -42,7 +42,7 @@ export async function assertMessagesSchema(
   `);
   if (!payloadCol[0]?.exists) {
     throw new Error(
-      "messages 表缺少 payload 列。请先执行: pnpm --filter @freeanima/legacy-db db:migrate",
+      "messages 表缺少 payload 列。请先执行: bun run --filter @freeanima/legacy-db db:migrate",
     );
   }
 
@@ -57,7 +57,7 @@ export async function assertMessagesSchema(
   `);
   if (Number(uqRows[0]?.cnt ?? 0) < 1) {
     throw new Error(
-      "messages 表缺少 (session_id, pos) 唯一索引。请先执行: pnpm --filter @freeanima/legacy-db db:migrate",
+      "messages 表缺少 (session_id, pos) 唯一索引。请先执行: bun run --filter @freeanima/legacy-db db:migrate",
     );
   }
 }

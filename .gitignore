@@ -23,13 +23,14 @@ Thumbs.db
 # Cursor worktrees (created by cursor_agent tool)
 /tmp/cursor-*/
 
-# Node.js
+# Node.js / Bun
 node_modules/
 .pnpm-store/
 .turbo/
 **/dist/
 **/.tsbuildinfo
 pnpm-debug.log*
+bun-debug.log*
 
 # WebUI Vue projects
 apps/webui/*/node_modules/
