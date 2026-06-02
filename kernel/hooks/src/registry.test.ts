@@ -1,6 +1,6 @@
-import { describe, expect, it, vi } from "vitest";
-import { createHook } from "../../src/hook.js";
-import { HookRegistry } from "../../src/registry.js";
+import { describe, expect, it, vi } from "bun:test";
+import { createHook } from "./hook.js";
+import { HookRegistry } from "./registry.js";
 
 type TestPayload = {
   value: number;
@@ -44,7 +44,7 @@ describe("HookRegistry", () => {
 
   it("未指定 priority 时默认为 100", async () => {
     const registry = new HookRegistry();
-    const order: number[] = [];
+    const order: string[] = [];
     registry.on(testHook, () => {
       order.push("default");
     });
@@ -158,7 +158,7 @@ describe("HookRegistry", () => {
     off();
     await registry.run(testHook, { value: 1 });
     expect(removed).not.toHaveBeenCalled();
-    expect(kept).toHaveBeenCalledOnce();
+    expect(kept).toHaveBeenCalledTimes(1);
   });
 
   it("重复 unregister 安全", async () => {
@@ -181,7 +181,7 @@ describe("HookRegistry", () => {
     off();
     await registry.run(testHook, { value: 1 });
     expect(removed).not.toHaveBeenCalled();
-    expect(kept).toHaveBeenCalledOnce();
+    expect(kept).toHaveBeenCalledTimes(1);
   });
 
   it("同一 handler 注册两次会执行两次", async () => {
@@ -202,7 +202,7 @@ describe("HookRegistry", () => {
     registry.on(testHook, second);
     await registry.run(testHook, { value: 1 });
     expect(first).not.toHaveBeenCalled();
-    expect(second).toHaveBeenCalledOnce();
+    expect(second).toHaveBeenCalledTimes(1);
   });
 
   it("不同 qualifiedId 的 hook 互不干扰", async () => {
@@ -214,7 +214,7 @@ describe("HookRegistry", () => {
     registry.on(hookA, onA);
     registry.on(hookB, onB);
     await registry.run(hookA, { n: 1 });
-    expect(onA).toHaveBeenCalledOnce();
+    expect(onA).toHaveBeenCalledTimes(1);
     expect(onB).not.toHaveBeenCalled();
   });
 
@@ -226,7 +226,7 @@ describe("HookRegistry", () => {
     registryA.on(testHook, handlerA);
     registryB.on(testHook, handlerB);
     await registryA.run(testHook, { value: 1 });
-    expect(handlerA).toHaveBeenCalledOnce();
+    expect(handlerA).toHaveBeenCalledTimes(1);
     expect(handlerB).not.toHaveBeenCalled();
   });
 

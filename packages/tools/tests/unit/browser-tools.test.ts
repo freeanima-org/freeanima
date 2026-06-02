@@ -1,6 +1,6 @@
 import { runWithToolContext } from "@freeanima/legacy-engine";
 import { getTool, listTools, clearConfigCache } from "@freeanima/legacy-kernel";
-import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from "bun:test";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
@@ -28,6 +28,20 @@ const BROWSER_TOOLS = [
   "browser_vision",
 ];
 
+let savedFetch: typeof fetch | undefined;
+
+function stubFetch(impl: typeof fetch): void {
+  savedFetch = globalThis.fetch;
+  globalThis.fetch = impl;
+}
+
+function restoreFetch(): void {
+  if (savedFetch !== undefined) {
+    globalThis.fetch = savedFetch;
+    savedFetch = undefined;
+  }
+}
+
 function writeBrowserConfig(home: string, baseUrl?: string): void {
   const body =
     baseUrl === undefined
@@ -54,6 +68,7 @@ describe("browser tools", () => {
   });
 
   afterEach(() => {
+    restoreFetch();
     resetCamofoxSessionsForTests();
     clearConfigCache();
     if (prevHome === undefined) delete process.env.FREEANIMA_HOME;
@@ -129,7 +144,7 @@ describe("browser tools", () => {
       }
       return new Response("{}", { status: 404 });
     });
-    vi.stubGlobal("fetch", fetchMock);
+    stubFetch(fetchMock as typeof fetch);
 
     const out = JSON.parse(await camofoxNavigate("sess-a", "https://example.com"));
     expect(out.success).toBe(true);
@@ -156,7 +171,7 @@ describe("browser tools", () => {
       }
       return new Response("{}", { status: 404 });
     });
-    vi.stubGlobal("fetch", fetchMock);
+    stubFetch(fetchMock as typeof fetch);
 
     await camofoxNavigate("sess-b", "https://a.com");
     const out = JSON.parse(await camofoxNavigate("sess-b", "https://b.com"));
@@ -184,7 +199,7 @@ describe("browser tools", () => {
       }
       return new Response("{}", { status: 404 });
     });
-    vi.stubGlobal("fetch", fetchMock);
+    stubFetch(fetchMock as typeof fetch);
 
     await runWithToolContext("ctx-session-123", async () => {
       const out = JSON.parse(
@@ -199,9 +214,8 @@ describe("browser tools", () => {
   });
 
   it("checkCamofoxAvailable probes /health", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => new Response(JSON.stringify({ ok: true }), { status: 200 })),
+    stubFetch(
+      vi.fn(async () => new Response(JSON.stringify({ ok: true }), { status: 200 })) as typeof fetch,
     );
     await expect(checkCamofoxAvailable()).resolves.toBe(true);
     expect(getCamofoxUrl()).toBe("http://localhost:9377");

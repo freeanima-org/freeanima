@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "bun:test";
 import { injectTimePrefixes } from "../../src/time-perception.js";
 import type { SessionMessage, UserMessage } from "../../src/schemas/message.js";
 

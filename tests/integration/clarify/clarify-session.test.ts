@@ -1,4 +1,4 @@
-import { it, expect, beforeEach, afterEach, afterAll } from "vitest";
+import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import { beginIntegrationCase } from "../../helpers/integration-case.ts";
 import { endIntegrationCase } from "../../helpers/integration-case.ts";
@@ -12,9 +12,8 @@ import {
   resolveUserContent,
   guardAwaitingClarify,
   findAwaitingClarifyInMessages,
-  executeCommand,
-  getCommand,
 } from "@freeanima/legacy-clarify";
+import { executeCommand, getCommand } from "@freeanima/legacy-runtime";
 
 describePg("clarify session", () => {
   const prevHome = process.env.FREEANIMA_HOME;

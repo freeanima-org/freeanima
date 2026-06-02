@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi } from "bun:test";
 import { EventEmitter } from "node:events";
 import type { ServerType } from "@hono/node-server";
 import { closeHttpServer, waitForDrainWithTimeout } from "../../src/http-shutdown.js";
@@ -39,7 +39,7 @@ describe("http-shutdown", () => {
     vi.useFakeTimers();
     const server = mockServer({ closeDelayMs: 10_000 });
     const p = closeHttpServer(server, 100);
-    await vi.advanceTimersByTimeAsync(100);
+    vi.advanceTimersByTime(100);
     await p;
     expect(server.closeAllConnections).toHaveBeenCalled();
     vi.useRealTimers();
@@ -52,7 +52,7 @@ describe("http-shutdown", () => {
       waitForDrain: () => new Promise<void>(() => {}),
     };
     const p = waitForDrainWithTimeout(nest as never, 1000);
-    await vi.advanceTimersByTimeAsync(1000);
+    vi.advanceTimersByTime(1000);
     await p;
     vi.useRealTimers();
   });

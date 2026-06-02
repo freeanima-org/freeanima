@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach, afterAll } from "vitest";
-import { describePg } from "../../helpers/pg-test-gate.ts";
+import { describe, it, expect, beforeEach, afterEach, afterAll } from "bun:test";
+import { describePgSqlite } from "../../helpers/sqlite-gate.ts";
 import { beginIntegrationCaseWithConfig } from "../../helpers/integration-case.ts";
 import { endIntegrationCase } from "../../helpers/integration-case.ts";
 
@@ -10,7 +10,7 @@ import { EventBus } from "@freeanima/legacy-kernel";
 import { resetStoreForTests, registerMemoryHandlers, l2SessionPath } from "@freeanima/legacy-memory";
 import { seedSession } from "@freeanima/legacy-db/test-helpers";
 
-describePg("memory handlers", () => {
+describePgSqlite("memory handlers", () => {
   let home: string;
   const prev = process.env.FREEANIMA_HOME;
 

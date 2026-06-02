@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
-import { createHook, Hook, HookRegistry } from "../../src/index.js";
-import type { HookHandler, PayloadOf } from "../../src/index.js";
+import { describe, expect, it } from "bun:test";
+import { createHook, Hook, HookRegistry } from "./index.js";
+import type { HookHandler, PayloadOf } from "./index.js";
 
 describe("index 导出", () => {
   it("导出 Hook、createHook、HookRegistry", () => {

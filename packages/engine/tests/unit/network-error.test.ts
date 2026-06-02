@@ -1,5 +1,5 @@
 import { isTransientNetworkError, isEngineStreamError, networkErrorUserHint } from "@freeanima/legacy-engine";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "bun:test";
 
 
 describe("network-error", () => {

@@ -1,3 +1,9 @@
+export {
+  bindAcpSession,
+  getBoundAcpSession,
+  readAcpSessions,
+  unbindAcpSession,
+} from "./nest-binding.js";
 export { ACPClient, ACPError } from "./client.js";
 export { AcpManager, getAcpManager, registerAcpTools } from "./manager.js";
 export {

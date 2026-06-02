@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "bun:test";
 import {
   ACPClient,
   ACPError,
@@ -24,11 +24,15 @@ describe("ACPClient 健壮性", () => {
     const client = new ACPClient("test-exit", "/bin/false", [], undefined, {
       connect_timeout_ms: 5_000,
     });
-    await expect(client.start()).rejects.toSatisfy((err: unknown) => {
-      expect(err).toBeInstanceOf(ACPError);
-      const msg = (err as ACPError).message;
-      return msg.includes("exited with code") || msg.includes("stdin closed");
-    });
+    let err: unknown;
+    try {
+      await client.start();
+    } catch (e) {
+      err = e;
+    }
+    expect(err).toBeInstanceOf(ACPError);
+    const msg = (err as ACPError).message;
+    expect(msg.includes("exited with code") || msg.includes("stdin closed")).toBe(true);
   }, 10_000);
 
   it("无响应时在 connect 超时内失败", async () => {
@@ -39,10 +43,14 @@ describe("ACPClient 健壮性", () => {
       undefined,
       { connect_timeout_ms: 200 },
     );
-    await expect(client.start()).rejects.toSatisfy((err: unknown) => {
-      expect(err).toBeInstanceOf(ACPError);
-      return (err as ACPError).message.includes("timed out after 200ms");
-    });
+    let err: unknown;
+    try {
+      await client.start();
+    } catch (e) {
+      err = e;
+    }
+    expect(err).toBeInstanceOf(ACPError);
+    expect((err as ACPError).message.includes("timed out after 200ms")).toBe(true);
   }, 10_000);
 
   it("cwd 不存在时在 spawn 前失败", async () => {
@@ -53,9 +61,13 @@ describe("ACPClient 健壮性", () => {
       "/path/does/not/exist",
       { connect_timeout_ms: 1_000 },
     );
-    await expect(client.start()).rejects.toSatisfy((err: unknown) => {
-      expect(err).toBeInstanceOf(ACPError);
-      return (err as ACPError).message.includes("cwd does not exist");
-    });
+    let err: unknown;
+    try {
+      await client.start();
+    } catch (e) {
+      err = e;
+    }
+    expect(err).toBeInstanceOf(ACPError);
+    expect((err as ACPError).message.includes("cwd does not exist")).toBe(true);
   });
 });

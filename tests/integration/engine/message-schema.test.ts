@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll } from "bun:test";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import { beginIntegrationCase, endIntegrationCase } from "../../helpers/integration-case.ts";
 

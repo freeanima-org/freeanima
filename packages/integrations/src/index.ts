@@ -17,6 +17,10 @@ export {
   getAcpManager,
   registerAcpTools,
   sanitizeAcpConfig,
+  bindAcpSession,
+  getBoundAcpSession,
+  readAcpSessions,
+  unbindAcpSession,
   type AcpControlResult,
   type AcpStatusResponse,
 } from "./acp/index.js";

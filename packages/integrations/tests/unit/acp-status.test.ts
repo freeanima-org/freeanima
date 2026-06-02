@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
@@ -44,7 +44,7 @@ describe("shortSessionId", () => {
   });
 });
 
-describe.sequential("AcpManager.getStatus", () => {
+describe("AcpManager.getStatus", () => {
   let home: string;
   const prev = process.env.FREEANIMA_HOME;
 

@@ -16,7 +16,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run --project unit --passWithNoTests"
+    "test": "bun test tests/unit --pass-with-no-tests"
   },
   "dependencies": {
     "@freeanima/legacy-db": "workspace:*",
@@ -28,6 +28,6 @@
     "@freeanima/legacy-engine": "workspace:*",
     "@types/better-sqlite3": "^7.6.13",
     "typescript": "catalog:",
-    "vitest": "catalog:"
+    "bun-types": "^1.3.14"
   }
 }

@@ -1,5 +1,5 @@
 import { getTool, listTools } from "@freeanima/legacy-kernel";
-import { describe, it, expect, beforeAll, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeAll, beforeEach, afterEach } from "bun:test";
 import {
   mkdtempSync,
   writeFileSync,

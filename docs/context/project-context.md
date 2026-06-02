@@ -205,7 +205,7 @@ ACP：`integrations/src/acp/`；`acp_{name}` 返回 JSON（`session_id`、`outpu
 pnpm install                      # 依赖；需 Node 24+（见 .node-version）
 pnpm run build                    # turbo run build（未变更包可命中缓存）
 pnpm test                         # 全仓单元测试（packages/<pkg>/tests/unit/）
-pnpm test:integration             # 根目录 tests/integration/（Testcontainers PG；需 Docker；不进 pre-commit）
+pnpm test:integration             # 根目录 tests/integration/（bun:test + Testcontainers PG；需 Docker；不进 pre-commit）
 pnpm run typecheck
 pnpm release:dry-run              # 本地预览下一版（需 HUSKY=0；见 versioning.md）
 
@@ -236,7 +236,7 @@ anima service status                            # 改 TS 后需重新 link:globa
 # 构建前端: pnpm --filter @freeanima/legacy-webui build
 # WebUI 类型检查: pnpm --filter @freeanima/legacy-webui typecheck
 
-pnpm install                      # Husky：提交前 typecheck + vitest；commit-msg 校验 Conventional Commits
+pnpm install                      # Husky：提交前 typecheck + bun test；commit-msg 校验 Conventional Commits
 pnpm run check                    # 手动全量检查（同 pre-commit 钩子）
 ```
 

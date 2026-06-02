@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, afterAll } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import { beginIntegrationCase } from "../../helpers/integration-case.ts";
 import { endIntegrationCase } from "../../helpers/integration-case.ts";
@@ -10,7 +10,7 @@ import {
   getBoundAcpSession,
   readAcpSessions,
   unbindAcpSession,
-} from "../../src/acp/nest-binding.js";
+} from "@freeanima/legacy-integrations";
 
 describePg("acp nest-binding", () => {
   let nestSid: string;

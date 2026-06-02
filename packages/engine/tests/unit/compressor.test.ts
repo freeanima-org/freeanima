@@ -1,5 +1,5 @@
 import { compress } from "@freeanima/legacy-engine";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "bun:test";
 
 
 function ua(i: number): Record<string, unknown> {

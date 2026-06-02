@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "bun:test";
 import { buildPlatformInfo, splitPlatformInfo } from "../../dist/schema/jsonb/platform-info.js";
 import { sessionMetaToInsert } from "../../dist/mappers/session-mapper.js";
 import { messageToInsert, rowToMessage } from "../../dist/mappers/message-mapper.js";
