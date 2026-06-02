@@ -12,7 +12,7 @@ import {
   studioSearch,
 } from "../../api/client";
 
-import type { SessionListItem } from "@freeanima/api";
+import type { SessionListItem } from "@freeanima/legacy-api";
 
 export const usePairProgrammingStore = defineStore("pair-programming", () => {
   const sessions = ref<SessionListItem[]>([]);

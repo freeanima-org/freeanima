@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import type { SessionListItem } from "@freeanima/api";
+import type { SessionListItem } from "@freeanima/legacy-api";
 import {
   listSessions,
   createSession,

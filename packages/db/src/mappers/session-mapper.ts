@@ -7,7 +7,7 @@ import {
   sessionTodoStoreSchema,
   openAiToolSchema,
   awaitingClarifySchema,
-} from "@freeanima/kernel";
+} from "@freeanima/legacy-kernel";
 import { z } from "zod";
 
 import {

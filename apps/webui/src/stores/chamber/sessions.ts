@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
-import type { DisplayItem, SessionListItem } from "@freeanima/api";
+import type { DisplayItem, SessionListItem } from "@freeanima/legacy-api";
 import { getMessages, listAllSessions } from "../../api/client";
 
 export const MESSAGES_PAGE_SIZE = 100;

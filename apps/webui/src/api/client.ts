@@ -1,12 +1,12 @@
 import { hc } from "hono/client";
-import type { ApiRoutes } from "@freeanima/server/api";
+import type { ApiRoutes } from "@freeanima/legacy-server/api";
 import type {
   MemorySearchBody,
   MessagesResponse,
   SessionListItem,
   StudioConfigPatch,
   StudioSearchBody,
-} from "@freeanima/api";
+} from "@freeanima/legacy-api";
 
 /** 业务 API 统一前缀，与 WebUI 静态路径 /webui 分离 */
 const BASE = "/api";

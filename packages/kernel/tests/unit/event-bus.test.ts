@@ -3,8 +3,8 @@ import { mkdtempSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { waitFor } from "../helpers/wait.js";
-import { EventBus } from "@freeanima/kernel";
-import { seedLegacyPythonStyleEvent } from "@freeanima/kernel/test-helpers";
+import { EventBus } from "@freeanima/legacy-kernel";
+import { seedLegacyPythonStyleEvent } from "@freeanima/legacy-kernel/test-helpers";
 
 describe("event-bus schema", () => {
   let home: string;

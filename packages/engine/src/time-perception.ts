@@ -15,7 +15,7 @@ import {
   isUserMessage,
   type SessionMessage,
   type UserMessage,
-} from "@freeanima/kernel";
+} from "@freeanima/legacy-kernel";
 
 const CHINESE_WEEKDAYS = ["日", "一", "二", "三", "四", "五", "六"];
 

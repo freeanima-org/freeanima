@@ -5,7 +5,7 @@ import {
   statSync,
 } from "node:fs";
 import { join } from "node:path";
-import { loadConfig, sanitizeConfigForApi } from "@freeanima/kernel";
+import { loadConfig, sanitizeConfigForApi } from "@freeanima/legacy-kernel";
 import {
   executeCommand as runSlashCommand,
   resolveCommand,
@@ -14,27 +14,27 @@ import {
   isRetryResult,
 } from "./commands/index.js";
 import type { CommandResult } from "./commands/registry.js";
-import { logError, logSseError } from "@freeanima/kernel";
-import * as conv from "@freeanima/engine";
+import { logError, logSseError } from "@freeanima/legacy-kernel";
+import * as conv from "@freeanima/legacy-engine";
 import {
   buildMessagesDisplay,
   paginateMessagesDisplay,
 } from "./build-messages-display.js";
-import type { MessagesDisplay } from "@freeanima/kernel";
+import type { MessagesDisplay } from "@freeanima/legacy-kernel";
 import type {
   HealthSnapshot,
   PlatformStatusSnapshot,
   SafeConfigSnapshot,
   ServiceSnapshot,
   SessionSummary,
-} from "@freeanima/kernel";
-import type { StreamEvent } from "@freeanima/engine";
-import type { Message } from "@freeanima/engine";
-import { LLMError } from "@freeanima/engine";
-import type { EventBus } from "@freeanima/kernel";
-import { listTools, openaiSchemas } from "@freeanima/kernel";
+} from "@freeanima/legacy-kernel";
+import type { StreamEvent } from "@freeanima/legacy-engine";
+import type { Message } from "@freeanima/legacy-engine";
+import { LLMError } from "@freeanima/legacy-engine";
+import type { EventBus } from "@freeanima/legacy-kernel";
+import { listTools, openaiSchemas } from "@freeanima/legacy-kernel";
 import { statsReport } from "./conversation-stats.js";
-import { runWithToolContext } from "@freeanima/engine";
+import { runWithToolContext } from "@freeanima/legacy-engine";
 import {
   ensureBuiltinCronJobs,
   getJob,
@@ -44,22 +44,22 @@ import {
   enqueueRunJob,
 } from "./cron/index.js";
 import type { CronJobData } from "./cron/models.js";
-import { hooks } from "@freeanima/kernel";
-import { applyClarifyStreamAwaiting } from "@freeanima/clarify";
-import { PATHS, CST_OFFSET_MS } from "@freeanima/kernel";
-import { distillAll } from "@freeanima/memory/clean";
-import { countL2FtsRows, reindexL2All as reindexL2FtsAll } from "@freeanima/memory/l2-indexer";
-import { indexL3All as reindexL3FtsAll } from "@freeanima/memory/l3-indexer";
-import { getStore } from "@freeanima/memory/store";
-import { memorySearchDetailed, type MemorySearchResult } from "@freeanima/memory/search";
+import { hooks } from "@freeanima/legacy-kernel";
+import { applyClarifyStreamAwaiting } from "@freeanima/legacy-clarify";
+import { PATHS, CST_OFFSET_MS } from "@freeanima/legacy-kernel";
+import { distillAll } from "@freeanima/legacy-memory/clean";
+import { countL2FtsRows, reindexL2All as reindexL2FtsAll } from "@freeanima/legacy-memory/l2-indexer";
+import { indexL3All as reindexL3FtsAll } from "@freeanima/legacy-memory/l3-indexer";
+import { getStore } from "@freeanima/legacy-memory/store";
+import { memorySearchDetailed, type MemorySearchResult } from "@freeanima/legacy-memory/search";
 import { PARLOR_PLATFORM } from "./platforms.js";
 import { NEST_VERSION } from "./version.js";
 import {
   isInsufficientToolMessagesError,
   repairAndPersistToolLoop,
   collectStreamReply,
-} from "@freeanima/engine";
-import * as engine from "@freeanima/engine";
+} from "@freeanima/legacy-engine";
+import * as engine from "@freeanima/legacy-engine";
 import type { CommandDef } from "./commands/registry.js";
 
 function streamErrorEvent(
@@ -95,7 +95,7 @@ export type MemoryFileEntry = {
   content: string;
 };
 
-export type { StreamEvent } from "@freeanima/engine";
+export type { StreamEvent } from "@freeanima/legacy-engine";
 
 export class SessionManager {
   private chains = new Map<string, Promise<unknown>>();

@@ -268,7 +268,7 @@ import {
   listCronJobs,
   restartService,
 } from '../../api/client'
-import type { ServiceStatus } from '@freeanima/api'
+import type { ServiceStatus } from '@freeanima/legacy-api'
 
 const loading = ref(true)
 const error = ref('')

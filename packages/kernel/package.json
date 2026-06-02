@@ -1,5 +1,5 @@
 {
-  "name": "@freeanima/kernel",
+  "name": "@freeanima/legacy-kernel",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

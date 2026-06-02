@@ -1,8 +1,8 @@
-import { registerSystemPromptBuilder, getActiveSkillsContent } from "@freeanima/engine";
+import { registerSystemPromptBuilder, getActiveSkillsContent } from "@freeanima/legacy-engine";
 import {
   composeSystemPrompt,
   decomposeSystemPromptParts as decomposeBase,
-} from "@freeanima/memory/system-prompt";
+} from "@freeanima/legacy-memory/system-prompt";
 
 registerSystemPromptBuilder((_functionNames, soulContent, cwd) => {
   const skills = getActiveSkillsContent(5);

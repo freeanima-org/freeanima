@@ -1,7 +1,7 @@
 import Database from "better-sqlite3";
 import { existsSync, mkdirSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { PATHS } from "@freeanima/kernel";
+import { PATHS } from "@freeanima/legacy-kernel";
 import { buildFtsQuery } from "./fts-query.js";
 import { getStore } from "./store.js";
 import type { FactData } from "./fact.js";
@@ -9,8 +9,8 @@ import {
   l3DomainsSchema,
   l3EntitiesSchema,
   l3SourcesSchema,
-} from "@freeanima/kernel";
-import { safeParseOrNull } from "@freeanima/kernel";
+} from "@freeanima/legacy-kernel";
+import { safeParseOrNull } from "@freeanima/legacy-kernel";
 
 const SCHEMA = `
 CREATE VIRTUAL TABLE IF NOT EXISTS l3_facts_fts USING fts5(

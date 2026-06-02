@@ -1,4 +1,4 @@
-import { PATHS } from "@freeanima/kernel";
+import { PATHS } from "@freeanima/legacy-kernel";
 import { existsSync, readFileSync, unlinkSync } from "node:fs";
 
 

@@ -1,5 +1,5 @@
 import { and, asc, desc, eq, gte, lte, sql } from "drizzle-orm";
-import type { ConversationMessage, SessionMessage } from "@freeanima/kernel";
+import type { ConversationMessage, SessionMessage } from "@freeanima/legacy-kernel";
 
 import { getDb } from "../client.js";
 import { messageToInsert, rowToMessage } from "../mappers/message-mapper.js";

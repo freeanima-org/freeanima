@@ -1,4 +1,4 @@
-import { installErrorLogHandlers, logStartupError } from "@freeanima/kernel";
+import { installErrorLogHandlers, logStartupError } from "@freeanima/legacy-kernel";
 import {
   existsSync,
   mkdirSync,
@@ -6,7 +6,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { spawnSync } from "node:child_process";
-import { isServerAlive, readStatusFile } from "@freeanima/server/alive";
+import { isServerAlive, readStatusFile } from "@freeanima/legacy-server/alive";
 import {
   apiGet,
   checkServerAlive,
@@ -21,7 +21,7 @@ import {
   writeStatusLine,
 } from "./service-common.js";
 
-import { parseBindHosts } from "@freeanima/server/bind-hosts";
+import { parseBindHosts } from "@freeanima/legacy-server/bind-hosts";
 import { renderSystemdUnit, systemdUserAvailable, SYSTEMD_UNIT } from "./systemd-unit.js";
 
 export type ServiceArgs = {
@@ -259,7 +259,7 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
       try {
         console.log("[startup] 加载服务模块…");
         const t0 = performance.now();
-        const { serve } = await import("@freeanima/server");
+        const { serve } = await import("@freeanima/legacy-server");
         console.log(`[startup] 模块就绪 (${(performance.now() - t0).toFixed(0)}ms)`);
         await serve(args.host, args.port);
       } catch (e) {

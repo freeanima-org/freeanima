@@ -1,9 +1,9 @@
 import OpenAI from "openai";
 import type { ChatCompletionMessageParam, ChatCompletionTool } from "openai/resources/chat/completions";
-import { loadConfig } from "@freeanima/kernel";
-import { logError } from "@freeanima/kernel";
-import type { SessionMessage, ToolMessage } from "@freeanima/kernel";
-import type { OpenAiToolSchema } from "@freeanima/kernel";
+import { loadConfig } from "@freeanima/legacy-kernel";
+import { logError } from "@freeanima/legacy-kernel";
+import type { SessionMessage, ToolMessage } from "@freeanima/legacy-kernel";
+import type { OpenAiToolSchema } from "@freeanima/legacy-kernel";
 import { repairToolLoopMessages } from "./tool-loop-integrity.js";
 
 export class LLMError extends Error {

@@ -7,15 +7,15 @@ import {
   Partials,
   type TextBasedChannel,
 } from "discord.js";
-import type { StreamEvent } from "@freeanima/engine";
+import type { StreamEvent } from "@freeanima/legacy-engine";
 import {
   isEngineStreamError,
   isTransientNetworkError,
   loadSessionMeta,
   networkErrorUserHint,
-} from "@freeanima/engine";
-import { logError } from "@freeanima/kernel";
-import type { NestService } from "@freeanima/runtime";
+} from "@freeanima/legacy-engine";
+import { logError } from "@freeanima/legacy-kernel";
+import type { NestService } from "@freeanima/legacy-runtime";
 import type { PlatformAdapter } from "../platforms.js";
 import { formatClarifyForPlatform, parseClarifyStreamEvent } from "../clarify/index.js";
 import {

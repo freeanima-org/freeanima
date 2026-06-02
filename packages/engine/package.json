@@ -1,5 +1,5 @@
 {
-  "name": "@freeanima/engine",
+  "name": "@freeanima/legacy-engine",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -16,8 +16,8 @@
     "test:integration": "vitest run --project integration --passWithNoTests"
   },
   "dependencies": {
-    "@freeanima/kernel": "workspace:*",
-    "@freeanima/db": "workspace:*",
+    "@freeanima/legacy-kernel": "workspace:*",
+    "@freeanima/legacy-db": "workspace:*",
     "openai": "^4.104.0",
     "zod": "catalog:"
   },

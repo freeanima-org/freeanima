@@ -1,5 +1,5 @@
-import { getToolSessionId } from "@freeanima/engine";
-import { listTools, loadConfig, registerTool, toolError } from "@freeanima/kernel";
+import { getToolSessionId } from "@freeanima/legacy-engine";
+import { listTools, loadConfig, registerTool, toolError } from "@freeanima/legacy-kernel";
 
 import { AcpAgentQueue } from "./agent-queue.js";
 import { resolveAcpAdapter } from "./adapters/registry.js";

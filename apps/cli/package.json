@@ -1,5 +1,5 @@
 {
-  "name": "@freeanima/cli",
+  "name": "@freeanima/legacy-cli",
   "type": "module",
   "bin": {
     "anima": "./dist/cli.js"
@@ -10,9 +10,9 @@
     "test": "vitest run --project unit --passWithNoTests"
   },
   "dependencies": {
-    "@freeanima/kernel": "workspace:*",
-    "@freeanima/runtime": "workspace:*",
-    "@freeanima/server": "workspace:*",
+    "@freeanima/legacy-kernel": "workspace:*",
+    "@freeanima/legacy-runtime": "workspace:*",
+    "@freeanima/legacy-server": "workspace:*",
     "commander": "^12.1.0"
   },
   "devDependencies": {

@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import { marked } from "marked";
-import { streamApiEventSchema, type StreamApiEvent } from "@freeanima/api";
+import { streamApiEventSchema, type StreamApiEvent } from "@freeanima/legacy-api";
 import { sendMessageStream } from "../../api/client";
 
 type SendCallbacks = {

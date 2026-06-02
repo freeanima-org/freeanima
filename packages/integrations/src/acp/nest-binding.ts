@@ -1,5 +1,5 @@
-import { loadSessionMeta, updateSessionMetaField } from "@freeanima/engine";
-import { isSessionMeta } from "@freeanima/kernel";
+import { loadSessionMeta, updateSessionMetaField } from "@freeanima/legacy-engine";
+import { isSessionMeta } from "@freeanima/legacy-kernel";
 
 
 

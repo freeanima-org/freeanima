@@ -1,5 +1,5 @@
-import { loadConfig } from "@freeanima/kernel";
-import type { NestConfig } from "@freeanima/kernel";
+import { loadConfig } from "@freeanima/legacy-kernel";
+import type { NestConfig } from "@freeanima/legacy-kernel";
 
 export type ModelConfig = {
   context_window?: number;

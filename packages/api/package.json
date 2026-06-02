@@ -1,5 +1,5 @@
 {
-  "name": "@freeanima/api",
+  "name": "@freeanima/legacy-api",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

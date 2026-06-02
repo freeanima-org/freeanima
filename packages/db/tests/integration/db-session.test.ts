@@ -9,7 +9,7 @@ import {
   listMessages,
   nextMessagePos,
   shiftMessagePositions,
-} from "@freeanima/db";
+} from "@freeanima/legacy-db";
 
 describePg("db session (PostgreSQL)", () => {
   const prevHome = process.env.FREEANIMA_HOME;

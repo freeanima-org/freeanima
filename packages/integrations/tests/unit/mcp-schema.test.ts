@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { extractMcpResult, mcpToolParameters } from "@freeanima/integrations";
+import { extractMcpResult, mcpToolParameters } from "@freeanima/legacy-integrations";
 
 describe("mcpToolParameters", () => {
   it("returns flat JSON Schema from inputSchema", () => {

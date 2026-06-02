@@ -11,8 +11,8 @@ import {
   clarifyToolAwaitingResultSchema,
   clarifyToolResolvedResultSchema,
   isSessionMeta,
-} from "@freeanima/kernel";
-import { loadSessionMeta, updateSessionMetaField } from "@freeanima/engine";
+} from "@freeanima/legacy-kernel";
+import { loadSessionMeta, updateSessionMetaField } from "@freeanima/legacy-engine";
 
 export type { ClarifyItem, AwaitingClarify };
 export type ClarifyAwaitingResult = ClarifyToolAwaitingResult;

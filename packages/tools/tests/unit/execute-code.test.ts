@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { parseRuntime, clampTimeout, runExecuteCode } from "../../src/execute-code-runtimes.ts";
-import { registerAllTools } from "@freeanima/tools";
-import { openaiSchemas } from "@freeanima/kernel";
+import { registerAllTools } from "@freeanima/legacy-tools";
+import { openaiSchemas } from "@freeanima/legacy-kernel";
 
 describe("execute_code runtimes", () => {
   it("parseRuntime defaults to nodejs", () => {

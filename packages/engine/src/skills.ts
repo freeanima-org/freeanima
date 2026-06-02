@@ -7,7 +7,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { join } from "node:path";
-import { PATHS, CST_OFFSET_MS } from "@freeanima/kernel";
+import { PATHS, CST_OFFSET_MS } from "@freeanima/legacy-kernel";
 import { z } from "zod";
 
 const activeSkillsSchema = z.array(z.string());

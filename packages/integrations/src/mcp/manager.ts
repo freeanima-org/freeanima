@@ -1,4 +1,4 @@
-import { listTools, loadConfig, registerTool, toolError, unregisterToolsByToolset } from "@freeanima/kernel";
+import { listTools, loadConfig, registerTool, toolError, unregisterToolsByToolset } from "@freeanima/legacy-kernel";
 
 import { McpClientSession, type McpServerConfig } from "./client.js";
 import { extractMcpResult, mcpToolParameters } from "./schema.js";

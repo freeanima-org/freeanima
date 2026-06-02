@@ -1,7 +1,7 @@
-import { buildMessagesDisplay, paginateMessagesDisplay } from "@freeanima/runtime";
+import { buildMessagesDisplay, paginateMessagesDisplay } from "@freeanima/legacy-runtime";
 import { describe, expect, it } from "vitest";
 
-import type { SessionMessage } from "@freeanima/kernel";
+import type { SessionMessage } from "@freeanima/legacy-kernel";
 
 describe("buildMessagesDisplay", () => {
   it("聚合 assistant tool_calls 与 tool 结果为 tool_block", () => {

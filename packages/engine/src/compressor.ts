@@ -5,11 +5,11 @@ import {
   estimateTokens,
   estimateToolsTokens,
 } from "./token-estimate.js";
-import type { OpenAiToolSchema, SessionMessage } from "@freeanima/kernel";
+import type { OpenAiToolSchema, SessionMessage } from "@freeanima/legacy-kernel";
 import {
   type CompressionState,
   parseCompressionState,
-} from "@freeanima/kernel";
+} from "@freeanima/legacy-kernel";
 
 export type { CompressionState };
 export { parseCompressionState };

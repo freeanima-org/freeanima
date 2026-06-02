@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { PATHS } from "@freeanima/kernel";
+import { PATHS } from "@freeanima/legacy-kernel";
 import { callReflectChat } from "./reflect-llm.js";
 import { createFact, type FactData } from "./fact.js";
 import { l2SessionPath } from "./clean.js";
@@ -10,8 +10,8 @@ import {
   l2LineSchema,
   reflectStateSchema,
   type L2Line,
-} from "@freeanima/kernel";
-import { parseJsonLine, safeParseOrNull } from "@freeanima/kernel";
+} from "@freeanima/legacy-kernel";
+import { parseJsonLine, safeParseOrNull } from "@freeanima/legacy-kernel";
 
 const EXTRACT_SYSTEM_PROMPT = `你是一位专业的记忆提取助手。你的任务是从一段对话中提取重要信息，存入长期记忆系统。
 

@@ -1,6 +1,6 @@
 import type { Command } from "commander";
 import { Argument } from "commander";
-import { DEFAULT_BIND_HOST } from "@freeanima/server/bind-hosts";
+import { DEFAULT_BIND_HOST } from "@freeanima/legacy-server/bind-hosts";
 import { runServiceCommand, type ServiceArgs } from "../service-cmd.js";
 
 const SERVICE_ACTIONS = ["start", "stop", "restart", "status"] as const;

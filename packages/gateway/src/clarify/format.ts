@@ -1,4 +1,4 @@
-import type { ClarifyItem } from "@freeanima/kernel";
+import type { ClarifyItem } from "@freeanima/legacy-kernel";
 
 import type { ClarifyPayload } from "./types.js";
 

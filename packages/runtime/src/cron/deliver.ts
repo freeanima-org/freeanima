@@ -1,4 +1,4 @@
-import { logError } from "@freeanima/kernel";
+import { logError } from "@freeanima/legacy-kernel";
 import { getHomeChannel } from "../home-channel.js";
 import type { CronJob } from "./models.js";
 

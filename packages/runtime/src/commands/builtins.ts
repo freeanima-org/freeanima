@@ -15,12 +15,12 @@ import {
   setSessionTitle,
   newSession,
   recompressSession,
-} from "@freeanima/engine";
+} from "@freeanima/legacy-engine";
 import { statsReport } from "../conversation-stats.js";
-import { isSessionMeta, listTools } from "@freeanima/kernel";
-import { distillFromPg } from "@freeanima/memory/clean";
-import { isReflectEnabled } from "@freeanima/memory";
-import { reflectSession } from "@freeanima/memory/reflect";
+import { isSessionMeta, listTools } from "@freeanima/legacy-kernel";
+import { distillFromPg } from "@freeanima/legacy-memory/clean";
+import { isReflectEnabled } from "@freeanima/legacy-memory";
+import { reflectSession } from "@freeanima/legacy-memory/reflect";
 import { setHomeChannel } from "../home-channel.js";
 
 function cmdHelp(ctx: CommandContext): string {

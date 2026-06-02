@@ -1,24 +1,24 @@
-import "@freeanima/runtime/system-prompt-wire";
-import { cleanupDebugSessions } from "@freeanima/engine";
-import { EventBus, PATHS, hooks, installErrorLogHandlers, logStartupError, markStartupPhase } from "@freeanima/kernel";
-import { registerMemoryPipeline } from "@freeanima/memory";
-import { NestService, Scheduler, enqueueRunJob, ensureBuiltinCronJobs, NEST_VERSION, seedHomeChannelsFromHermes, WEBUI_DIST } from "@freeanima/runtime";
+import "@freeanima/legacy-runtime/system-prompt-wire";
+import { cleanupDebugSessions } from "@freeanima/legacy-engine";
+import { EventBus, PATHS, hooks, installErrorLogHandlers, logStartupError, markStartupPhase } from "@freeanima/legacy-kernel";
+import { registerMemoryPipeline } from "@freeanima/legacy-memory";
+import { NestService, Scheduler, enqueueRunJob, ensureBuiltinCronJobs, NEST_VERSION, seedHomeChannelsFromHermes, WEBUI_DIST } from "@freeanima/legacy-runtime";
 import { writeFileSync, unlinkSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import { serve as honoServe, type ServerType } from "@hono/node-server";
 
-import { registerClarifyHooks } from "@freeanima/clarify";
-import { registerReflectChat } from "@freeanima/memory";
-import { chat } from "@freeanima/engine";
-import { registerAllTools } from "@freeanima/tools";
+import { registerClarifyHooks } from "@freeanima/legacy-clarify";
+import { registerReflectChat } from "@freeanima/legacy-memory";
+import { chat } from "@freeanima/legacy-engine";
+import { registerAllTools } from "@freeanima/legacy-tools";
 import {
   discoverPlatforms,
   startPlatforms,
   stopPlatforms,
   type PlatformAdapter,
-} from "@freeanima/gateway";
-import { MCPManager, getAcpManager } from "@freeanima/integrations";
-import { closeDb, getDb, isPostgresPrimary } from "@freeanima/db";
+} from "@freeanima/legacy-gateway";
+import { MCPManager, getAcpManager } from "@freeanima/legacy-integrations";
+import { closeDb, getDb, isPostgresPrimary } from "@freeanima/legacy-db";
 import { createApp } from "./http-app.js";
 import { DEFAULT_BIND_HOST, parseBindHosts } from "./bind-hosts.js";
 import { closeHttpServers, waitForDrainWithTimeout } from "./http-shutdown.js";

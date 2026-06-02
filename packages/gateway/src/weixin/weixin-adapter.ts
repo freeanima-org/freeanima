@@ -1,5 +1,5 @@
-import { safeParseOrNull, PATHS, logError } from "@freeanima/kernel";
-import type { NestService } from "@freeanima/runtime";
+import { safeParseOrNull, PATHS, logError } from "@freeanima/legacy-kernel";
+import type { NestService } from "@freeanima/legacy-runtime";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
 

@@ -16,7 +16,7 @@ import {
   nowIso,
   type FactData,
 } from "./fact.js";
-import { PATHS } from "@freeanima/kernel";
+import { PATHS } from "@freeanima/legacy-kernel";
 
 const COUNTER_FILE = ".counter";
 const FACT_PREFIX = "f-";

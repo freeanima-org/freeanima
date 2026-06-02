@@ -1,11 +1,11 @@
 import Database from "better-sqlite3";
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { PATHS } from "@freeanima/kernel";
+import { PATHS } from "@freeanima/legacy-kernel";
 import { buildFtsQuery } from "./fts-query.js";
 import { l2SessionPath } from "./clean.js";
-import { l2LineSchema } from "@freeanima/kernel";
-import { parseJsonLine } from "@freeanima/kernel";
+import { l2LineSchema } from "@freeanima/legacy-kernel";
+import { parseJsonLine } from "@freeanima/legacy-kernel";
 
 const SCHEMA = `
 CREATE VIRTUAL TABLE IF NOT EXISTS l2_messages_fts USING fts5(

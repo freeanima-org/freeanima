@@ -10,12 +10,12 @@ import {
   newSession,
   appendMessage,
   updateSessionMetaField,
-} from "@freeanima/engine";
+} from "@freeanima/legacy-engine";
 import {
   computeStats,
   mergeStats,
   statsReport,
-} from "@freeanima/runtime";
+} from "@freeanima/legacy-runtime";
 
 describePg("conversation-stats", () => {
   const prev = process.env.FREEANIMA_HOME;

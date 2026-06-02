@@ -1,6 +1,6 @@
-import { logError } from "@freeanima/kernel";
-import type { CronDeliverTarget } from "@freeanima/runtime";
-import { registerCronDeliverer, unregisterCronDeliverer } from "@freeanima/runtime";
+import { logError } from "@freeanima/legacy-kernel";
+import type { CronDeliverTarget } from "@freeanima/legacy-runtime";
+import { registerCronDeliverer, unregisterCronDeliverer } from "@freeanima/legacy-runtime";
 import type { Client, TextBasedChannel } from "discord.js";
 
 import { sendText } from "./weixin/ilink-api.js";

@@ -2,10 +2,10 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir, homedir } from "node:os";
 import { join, resolve } from "node:path";
 import { randomBytes } from "node:crypto";
-import { PATHS, CST_OFFSET_MS } from "@freeanima/kernel";
-import { loadConfig } from "@freeanima/kernel";
+import { PATHS, CST_OFFSET_MS } from "@freeanima/legacy-kernel";
+import { loadConfig } from "@freeanima/legacy-kernel";
 import { buildSystemPrompt } from "./system-prompt-registry.js";
-import { openaiSchemas } from "@freeanima/kernel";
+import { openaiSchemas } from "@freeanima/legacy-kernel";
 import { getCompressionConfig } from "./compression-config.js";
 import { generateSessionSummary } from "./compression-summary.js";
 import { clearToolLoopSuppression, isInToolLoop } from "./compression-tool-loop.js";
@@ -16,7 +16,7 @@ import {
   type CompressionState,
 } from "./compressor.js";
 import { injectTimePrefixes } from "./time-perception.js";
-import { logError } from "@freeanima/kernel";
+import { logError } from "@freeanima/legacy-kernel";
 import {
   detectToolLoopCorruption,
   countFollowingToolMessages,
@@ -29,7 +29,7 @@ import {
   type SessionMetaMessage,
   type SessionMetaLoadResult,
   type OpenAiToolSchema,
-} from "@freeanima/kernel";
+} from "@freeanima/legacy-kernel";
 import {
   loadMetaWithRouting,
   loadMessagesForRuntimeWithRouting,
@@ -59,7 +59,7 @@ export type Message = SessionMessage;
 export {
   isSessionMeta,
   parseSessionLine,
-} from "@freeanima/kernel";
+} from "@freeanima/legacy-kernel";
 
 function nowIso(): string {
   return new Date(Date.now() + CST_OFFSET_MS)

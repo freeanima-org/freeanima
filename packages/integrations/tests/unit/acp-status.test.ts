@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { clearConfigCache } from "@freeanima/kernel";
+import { clearConfigCache } from "@freeanima/legacy-kernel";
 import { sanitizeAcpConfig, shortSessionId, isAcpAgentEnabled } from "../../src/acp/status.js";
 import { AcpManager } from "../../src/acp/manager.js";
 

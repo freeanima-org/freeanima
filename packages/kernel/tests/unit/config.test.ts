@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { clearConfigCache, loadConfig } from "@freeanima/kernel";
+import { clearConfigCache, loadConfig } from "@freeanima/legacy-kernel";
 
 describe("config", () => {
   let home: string;

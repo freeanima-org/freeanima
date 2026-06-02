@@ -10,11 +10,9 @@
 
 * 增加discord的自动重连机制 ([a5c5dd5](https://github.com/freeanima-org/freeanima/commit/a5c5dd59150c696d169d0e87fee47f9acb5a9895))
 
-## [Unreleased]
+## 0.1.0 (2026-06-01)
 
-对应根 `package.json` **0.1.0**，尚未打 git tag。
-
-### Added
+### Features
 
 - **Agent 运行时**：`anima service`（systemd）、Hono HTTP / SSE、WebUI（会客厅 / 卧室 / 创作室）
 - **Gateway**：Discord、微信 iLink；按 platform / thread / peer 路由会话

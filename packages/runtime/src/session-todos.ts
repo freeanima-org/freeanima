@@ -1,12 +1,12 @@
-import { loadSessionMeta, updateSessionMetaField } from "@freeanima/engine";
-import { isSessionMeta } from "@freeanima/kernel";
+import { loadSessionMeta, updateSessionMetaField } from "@freeanima/legacy-engine";
+import { isSessionMeta } from "@freeanima/legacy-kernel";
 import {
   type SessionTodoStore,
   type TodoItem,
   type TodoStatus,
   parseSessionTodoStore,
   todoStatusSchema,
-} from "@freeanima/kernel";
+} from "@freeanima/legacy-kernel";
 
 export type { TodoStatus, TodoItem, SessionTodoStore };
 

@@ -2,8 +2,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { buildProgram } from "../../src/program.js";
 import { renderTable } from "../../src/output/table.js";
 
-vi.mock("@freeanima/kernel", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@freeanima/kernel")>();
+vi.mock("@freeanima/legacy-kernel", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@freeanima/legacy-kernel")>();
   return {
     ...actual,
     listCredentials: vi.fn(() => [
@@ -23,7 +23,7 @@ vi.mock("@freeanima/kernel", async (importOriginal) => {
   };
 });
 
-import * as core from "@freeanima/kernel";
+import * as core from "@freeanima/legacy-kernel";
 
 function runCredential(argv: string[]): Promise<void> {
   const program = buildProgram();

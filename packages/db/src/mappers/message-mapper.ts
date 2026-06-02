@@ -8,7 +8,7 @@ import {
   isAssistantMessage,
   isToolMessage,
   isUserMessage,
-} from "@freeanima/kernel";
+} from "@freeanima/legacy-kernel";
 
 import {
   type MessageInsert,

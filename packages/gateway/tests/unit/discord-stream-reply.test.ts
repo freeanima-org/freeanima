@@ -1,8 +1,8 @@
-import type { StreamEvent } from "@freeanima/engine";
+import type { StreamEvent } from "@freeanima/legacy-engine";
 
 import type { Message, TextBasedChannel } from "discord.js";
 import { describe, expect, it, vi } from "vitest";
-import { streamReplyToChannel } from "@freeanima/gateway";
+import { streamReplyToChannel } from "@freeanima/legacy-gateway";
 
 describe("streamReplyToChannel", () => {
   function fakeChannel(): {

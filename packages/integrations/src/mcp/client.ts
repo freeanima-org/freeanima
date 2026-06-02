@@ -1,4 +1,4 @@
-import { NEST_VERSION } from "@freeanima/runtime";
+import { NEST_VERSION } from "@freeanima/legacy-runtime";
 
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import {

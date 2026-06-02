@@ -3,8 +3,8 @@ import { describePg } from "../../../db/tests/helpers/pg-test-gate.ts";
 import { beginIntegrationCase } from "../../../db/tests/helpers/integration-case.ts";
 import { endIntegrationCase } from "../../../db/tests/helpers/integration-case.ts";
 
-import { isSessionMeta } from "@freeanima/kernel";
-import * as conv from "@freeanima/engine";
+import { isSessionMeta } from "@freeanima/legacy-kernel";
+import * as conv from "@freeanima/legacy-engine";
 
 describePg("conversation origin", () => {
   let home: string;

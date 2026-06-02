@@ -1,11 +1,11 @@
-import { runWithToolContext } from "@freeanima/engine";
-import { getTool, listTools, clearConfigCache } from "@freeanima/kernel";
+import { runWithToolContext } from "@freeanima/legacy-engine";
+import { getTool, listTools, clearConfigCache } from "@freeanima/legacy-kernel";
 import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from "vitest";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
-import { registerAllTools } from "@freeanima/tools";
+import { registerAllTools } from "@freeanima/legacy-tools";
 import {
   camofoxNavigate,
   camofoxSnapshot,

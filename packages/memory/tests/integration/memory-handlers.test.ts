@@ -6,9 +6,9 @@ import { endIntegrationCase } from "../../../db/tests/helpers/integration-case.t
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { waitFor } from "../../../kernel/tests/helpers/wait.js";
-import { EventBus } from "@freeanima/kernel";
-import { resetStoreForTests, registerMemoryHandlers, l2SessionPath } from "@freeanima/memory";
-import { seedSession } from "@freeanima/db/test-helpers";
+import { EventBus } from "@freeanima/legacy-kernel";
+import { resetStoreForTests, registerMemoryHandlers, l2SessionPath } from "@freeanima/legacy-memory";
+import { seedSession } from "@freeanima/legacy-db/test-helpers";
 
 describePg("memory handlers", () => {
   let home: string;

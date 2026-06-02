@@ -24,9 +24,9 @@ import {
   enqueueRunJob,
   Scheduler,
   cronStore,
-} from "@freeanima/runtime";
-import { patchConfigSection } from "@freeanima/kernel";
-import { seedSession } from "@freeanima/db/test-helpers";
+} from "@freeanima/legacy-runtime";
+import { patchConfigSection } from "@freeanima/legacy-kernel";
+import { seedSession } from "@freeanima/legacy-db/test-helpers";
 
 describePg("cron", () => {
   let home: string;

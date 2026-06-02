@@ -131,7 +131,7 @@ const renameSessionId = ref(null)
 const commandList = ref([])
 const sessionListVisible = ref(true)
 
-import type { SessionListItem } from '@freeanima/api'
+import type { SessionListItem } from '@freeanima/legacy-api'
 
 function sessionLabel(item: SessionListItem) {
   const id = item.id

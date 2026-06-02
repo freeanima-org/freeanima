@@ -6,8 +6,8 @@ import {
   endIntegrationCase,
 } from "../../../db/tests/helpers/integration-case.ts";
 
-import { isSessionMeta, openaiSchemas } from "@freeanima/kernel";
-import { registerAllTools } from "@freeanima/tools";
+import { isSessionMeta, openaiSchemas } from "@freeanima/legacy-kernel";
+import { registerAllTools } from "@freeanima/legacy-tools";
 import {
   newSession,
   load,
@@ -17,7 +17,7 @@ import {
   loadSessionTools,
   appendMessage,
   finishTurn,
-} from "@freeanima/engine";
+} from "@freeanima/legacy-engine";
 
 describePg("conversation", () => {
   const prev = process.env.FREEANIMA_HOME;

@@ -16,8 +16,8 @@ import {
   distillFromPg,
   l2SessionPath,
   processedDir,
-} from "@freeanima/memory";
-import { seedSession } from "@freeanima/db/test-helpers";
+} from "@freeanima/legacy-memory";
+import { seedSession } from "@freeanima/legacy-db/test-helpers";
 
 describePg("memory distill", () => {
   let home: string;

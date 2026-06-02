@@ -1,5 +1,5 @@
 {
-  "name": "@freeanima/tools",
+  "name": "@freeanima/legacy-tools",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -15,11 +15,11 @@
     "test": "vitest run --project unit --passWithNoTests"
   },
   "dependencies": {
-    "@freeanima/clarify": "workspace:*",
-    "@freeanima/engine": "workspace:*",
-    "@freeanima/kernel": "workspace:*",
-    "@freeanima/memory": "workspace:*",
-    "@freeanima/runtime": "workspace:*"
+    "@freeanima/legacy-clarify": "workspace:*",
+    "@freeanima/legacy-engine": "workspace:*",
+    "@freeanima/legacy-kernel": "workspace:*",
+    "@freeanima/legacy-memory": "workspace:*",
+    "@freeanima/legacy-runtime": "workspace:*"
   },
   "devDependencies": {
     "typescript": "catalog:",

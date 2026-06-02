@@ -5,8 +5,8 @@ import { endIntegrationCase } from "../../../db/tests/helpers/integration-case.t
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { createJob, NestService } from "@freeanima/runtime";
-import { createApp } from "@freeanima/server";
+import { createJob, NestService } from "@freeanima/legacy-runtime";
+import { createApp } from "@freeanima/legacy-server";
 
 describePg("server cron API", () => {
   let home: string;

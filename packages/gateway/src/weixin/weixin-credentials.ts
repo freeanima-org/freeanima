@@ -1,4 +1,4 @@
-import { credentialRaw } from "@freeanima/kernel";
+import { credentialRaw } from "@freeanima/legacy-kernel";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";

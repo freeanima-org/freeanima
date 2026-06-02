@@ -1,5 +1,5 @@
 {
-  "name": "@freeanima/memory",
+  "name": "@freeanima/legacy-memory",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -20,13 +20,13 @@
     "test:integration": "vitest run --project integration --passWithNoTests"
   },
   "dependencies": {
-    "@freeanima/db": "workspace:*",
-    "@freeanima/kernel": "workspace:*",
+    "@freeanima/legacy-db": "workspace:*",
+    "@freeanima/legacy-kernel": "workspace:*",
     "better-sqlite3": "^11.10.0",
     "yaml": "^2.9.0"
   },
   "devDependencies": {
-    "@freeanima/engine": "workspace:*",
+    "@freeanima/legacy-engine": "workspace:*",
     "@types/better-sqlite3": "^7.6.13",
     "typescript": "catalog:",
     "vitest": "catalog:"

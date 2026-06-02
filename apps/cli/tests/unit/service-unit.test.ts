@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { renderSystemdUnit } from "../../src/systemd-unit.js";
 import { ensureUnitFile } from "../../src/service-cmd.js";
 import * as serviceCommon from "../../src/service-common.js";
-import { parseBindHosts, resolveProbeHost, DEFAULT_BIND_HOST } from "@freeanima/server/bind-hosts";
+import { parseBindHosts, resolveProbeHost, DEFAULT_BIND_HOST } from "@freeanima/legacy-server/bind-hosts";
 
 describe("bind hosts", () => {
   it("parseBindHosts splits comma-separated addresses", () => {

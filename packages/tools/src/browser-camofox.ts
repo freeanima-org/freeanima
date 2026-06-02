@@ -1,4 +1,4 @@
-import { loadConfig, homePath, toolError, toolResult } from "@freeanima/kernel";
+import { loadConfig, homePath, toolError, toolResult } from "@freeanima/legacy-kernel";
 import { createHash, randomUUID } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
 

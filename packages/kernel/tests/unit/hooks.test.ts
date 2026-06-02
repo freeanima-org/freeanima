@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { createHookRegistry } from "@freeanima/kernel";
+import { createHookRegistry } from "@freeanima/legacy-kernel";
 
 describe("HookRegistry", () => {
   it("按 priority 顺序执行 handler", async () => {

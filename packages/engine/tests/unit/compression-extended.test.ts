@@ -1,5 +1,5 @@
-import { compress, SUMMARY_USER_PREFIX } from "@freeanima/engine";
-import { parseCompressionState } from "@freeanima/kernel";
+import { compress, SUMMARY_USER_PREFIX } from "@freeanima/legacy-engine";
+import { parseCompressionState } from "@freeanima/legacy-kernel";
 import { describe, it, expect } from "vitest";
 
 
