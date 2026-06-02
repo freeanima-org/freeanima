@@ -108,9 +108,9 @@ apps/
 └── webui/          # Vue 3 + TypeScript WebUI；API 经 `src/api/client.ts`（Hono `hc<ApiRoutes>`）；静态 dist 由 server 挂载
 packages/
 ├── api/            # HTTP 契约（Zod schema + 类型）；仅依赖 zod
-├── kernel/         # paths、config、credential、registry、event-bus、hooks、schemas/*、session-path
+├── kernel/         # @freeanima/legacy-kernel：paths、config、credential、registry、event-bus、hook token、schemas/*
 ├── db/             # @freeanima/legacy-db：L1 Session PG（sessions + messages.payload JSONB）、Drizzle migrate
-├── engine/         # conversation、session-store（PG）、compressor、llm、engine 回合
+├── engine/         # conversation、session-store（PG）、compressor、llm、engine 回合；export kernel（含 hookRegistry 端口）
 ├── memory/         # L1–L4 存储/检索、reflect、registerMemoryPipeline（+ registerMemoryHandlers 别名）
 ├── runtime/        # NestService、commands、cron、studio、platforms 辅助、conversation-stats
 ├── clarify/        # clarify 工具与 hook 注册

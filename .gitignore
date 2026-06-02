@@ -34,3 +34,6 @@ pnpm-debug.log*
 # WebUI Vue projects
 apps/webui/*/node_modules/
 apps/webui/dist/
+
+# Coverage
+coverage/

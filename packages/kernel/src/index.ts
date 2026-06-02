@@ -1,17 +1,22 @@
 export {
-  createHookRegistry,
-  hooks,
   HookRegistry,
-  type HookClarifyItem,
-  type HookHandler,
-  type HookMap,
-  type HookName,
-  type HookStreamEvent,
-  type MessageIncomingContext,
-  type ToolAfterCallContext,
-  type TurnAfterCompleteContext,
-  type TurnControl,
+  createHook,
+  Hook,
+  messageIncoming,
+  toolAfterCall,
+  turnAfterComplete,
 } from "./hooks.js";
+export type {
+  HookHandler,
+  PayloadOf,
+  MessageIncomingPayload,
+  ToolAfterCallPayload,
+  TurnAfterCompletePayload,
+  MessageIncomingContext,
+  ToolAfterCallContext,
+  TurnAfterCompleteContext,
+} from "./hooks.js";
+export type { HookClarifyItem, HookStreamEvent, TurnControl } from "./hook-stream.js";
 export * from "./paths.js";
 export { sessionPath, isDebugSession } from "./session-path.js";
 export * from "./error-log.js";

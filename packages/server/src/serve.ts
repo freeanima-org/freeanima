@@ -1,6 +1,6 @@
 import "@freeanima/legacy-runtime/system-prompt-wire";
-import { cleanupDebugSessions } from "@freeanima/legacy-engine";
-import { EventBus, PATHS, hooks, installErrorLogHandlers, logStartupError, markStartupPhase } from "@freeanima/legacy-kernel";
+import { cleanupDebugSessions, kernel } from "@freeanima/legacy-engine";
+import { EventBus, PATHS, installErrorLogHandlers, logStartupError, markStartupPhase } from "@freeanima/legacy-kernel";
 import { registerMemoryPipeline } from "@freeanima/legacy-memory";
 import { NestService, Scheduler, enqueueRunJob, ensureBuiltinCronJobs, NEST_VERSION, seedHomeChannelsFromHermes, WEBUI_DIST } from "@freeanima/legacy-runtime";
 import { writeFileSync, unlinkSync, mkdirSync } from "node:fs";
@@ -91,7 +91,7 @@ export async function serve(host = DEFAULT_BIND_HOST, port = 8080): Promise<void
   try {
     startupLog("注册工具…");
     registerAllTools();
-    registerClarifyHooks(hooks);
+    registerClarifyHooks(kernel);
     acp.registerTools();
 
     mkdirSync(dirname(PATHS.pidFile), { recursive: true });

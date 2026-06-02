@@ -1,4 +1,9 @@
-import type { HookRegistry } from "@freeanima/legacy-kernel";
+import type { Kernel } from "@freeanima/kernel";
+import {
+  messageIncoming,
+  toolAfterCall,
+  turnAfterComplete,
+} from "@freeanima/legacy-kernel";
 import {
   findAwaitingClarifyInMessages,
   formatClarifyText,
@@ -8,8 +13,10 @@ import {
   setAwaitingClarify,
 } from "./clarify.js";
 
-export function registerClarifyHooks(registry: HookRegistry): void {
-  registry.on("message:incoming", async (ctx) => {
+export function registerClarifyHooks(kernel: Kernel): void {
+  const registry = kernel.hookRegistry;
+
+  registry.on(messageIncoming, async (ctx) => {
     const guard = await guardAwaitingClarify(ctx.sessionId, ctx.message);
     if (!guard.ok) {
       ctx.blocked = { reason: guard.reason };
@@ -21,7 +28,7 @@ export function registerClarifyHooks(registry: HookRegistry): void {
     ctx.transformedMessage = await resolveUserContent(ctx.sessionId, ctx.message);
   });
 
-  registry.on("tool:after_call", (ctx) => {
+  registry.on(toolAfterCall, (ctx) => {
     if (ctx.toolName !== "clarify") return;
     const parsed = parseClarifyToolResult(ctx.result);
     if (!parsed || !("status" in parsed) || parsed.status !== "awaiting") return;
@@ -37,7 +44,7 @@ export function registerClarifyHooks(registry: HookRegistry): void {
     };
   });
 
-  registry.on("turn:after_complete", async (ctx) => {
+  registry.on(turnAfterComplete, async (ctx) => {
     const pending = findAwaitingClarifyInMessages(ctx.messages);
     if (!pending) return;
     await setAwaitingClarify(ctx.sessionId, {
