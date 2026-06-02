@@ -204,8 +204,8 @@ ACP：`integrations/src/acp/`；`acp_{name}` 返回 JSON（`session_id`、`outpu
 ```bash
 pnpm install                      # 依赖；需 Node 24+（见 .node-version）
 pnpm run build                    # turbo run build（未变更包可命中缓存）
-pnpm test                         # 全仓单元测试（各 package tests/unit/）
-pnpm test:integration             # 集成测试（Testcontainers PG；需 Docker；不进 pre-commit）
+pnpm test                         # 全仓单元测试（packages/<pkg>/tests/unit/）
+pnpm test:integration             # 根目录 tests/integration/（Testcontainers PG；需 Docker；不进 pre-commit）
 pnpm run typecheck
 pnpm release:dry-run              # 本地预览下一版（需 HUSKY=0；见 versioning.md）
 

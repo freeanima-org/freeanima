@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtempSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { waitFor } from "../helpers/wait.js";
+import { waitFor } from "../../../../tests/helpers/wait.ts";
 import { EventBus } from "@freeanima/legacy-kernel";
 import { seedLegacyPythonStyleEvent } from "@freeanima/legacy-kernel/test-helpers";
 

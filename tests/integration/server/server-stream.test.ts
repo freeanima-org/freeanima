@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, afterAll } from "vitest";
-import { describePg } from "../../../db/tests/helpers/pg-test-gate.ts";
-import { beginIntegrationCase } from "../../../db/tests/helpers/integration-case.ts";
-import { endIntegrationCase } from "../../../db/tests/helpers/integration-case.ts";
+import { describePg } from "../../helpers/pg-test-gate.js";
+import { beginIntegrationCase } from "../../helpers/integration-case.js";
+import { endIntegrationCase } from "../../helpers/integration-case.js";
 
 import { NestService } from "@freeanima/legacy-runtime";
 import { seedSession } from "@freeanima/legacy-db/test-helpers";

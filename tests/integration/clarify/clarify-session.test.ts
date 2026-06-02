@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach, afterEach, afterAll } from "vitest";
-import { describePg } from "../../../db/tests/helpers/pg-test-gate.ts";
-import { beginIntegrationCase } from "../../../db/tests/helpers/integration-case.ts";
-import { endIntegrationCase } from "../../../db/tests/helpers/integration-case.ts";
+import { it, expect, beforeEach, afterEach, afterAll } from "vitest";
+import { describePg } from "../../helpers/pg-test-gate.ts";
+import { beginIntegrationCase } from "../../helpers/integration-case.ts";
+import { endIntegrationCase } from "../../helpers/integration-case.ts";
 
 import { registerAllTools } from "@freeanima/legacy-tools";
 import { initSession } from "@freeanima/legacy-engine";

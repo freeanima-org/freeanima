@@ -11,8 +11,7 @@ import {
   sendMessageBodySchema,
   memorySearchBodySchema,
 } from "../../../api/src/schemas.js";
-import { parseCompressionState } from "../../src/schemas/session-meta.js";
-import { parseClarifyToolResult } from "@freeanima/legacy-clarify";
+import { parseCompressionState, clarifyToolAwaitingResultSchema } from "../../src/schemas/session-meta.js";
 import { jsonRpcMessageSchema } from "../../../integrations/src/schemas/acp-jsonrpc.js";
 import {
   weixinSyncSchema,
@@ -109,14 +108,14 @@ describe("schemas/session-meta compression", () => {
 
 describe("schemas/clarify tool result", () => {
   it("parses awaiting clarify tool output", () => {
-    const result = parseClarifyToolResult(
-      JSON.stringify({
-        status: "awaiting",
-        items: [{ question: "选哪个？" }],
-        timeout_sec: 120,
-      }),
-    );
-    expect(result).toMatchObject({ status: "awaiting", timeout_sec: 120 });
+    const result = clarifyToolAwaitingResultSchema.safeParse({
+      status: "awaiting",
+      items: [{ question: "选哪个？" }],
+      timeout_sec: 120,
+    });
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.data).toMatchObject({ status: "awaiting", timeout_sec: 120 });
   });
 });
 

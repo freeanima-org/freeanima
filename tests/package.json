@@ -1,0 +1,21 @@
+{
+  "name": "@freeanima/integration-tests",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "@freeanima/legacy-clarify": "workspace:*",
+    "@freeanima/legacy-db": "workspace:*",
+    "@freeanima/legacy-engine": "workspace:*",
+    "@freeanima/legacy-integrations": "workspace:*",
+    "@freeanima/legacy-kernel": "workspace:*",
+    "@freeanima/legacy-memory": "workspace:*",
+    "@freeanima/legacy-runtime": "workspace:*",
+    "@freeanima/legacy-server": "workspace:*",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

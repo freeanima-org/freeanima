@@ -97,7 +97,7 @@ DATABASE_URL="$(anima credential get services/postgres/anima url)" \
 
 #### 集成测试（本机，非 pre-commit）
 
-需 **Docker** 运行中。`pnpm test:integration` 会通过 Testcontainers 起临时 PostgreSQL 17、跑 migration，并执行全仓 `packages/**/tests/integration/`。
+需 **Docker** 运行中。`pnpm test:integration` 会通过 Testcontainers 起临时 PostgreSQL 17、跑 migration，并执行根目录 `tests/integration/`。
 
 ```bash
 pnpm test:integration

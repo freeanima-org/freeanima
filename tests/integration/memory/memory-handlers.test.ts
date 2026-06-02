@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach, afterAll } from "vitest";
-import { describePg } from "../../../db/tests/helpers/pg-test-gate.ts";
-import { beginIntegrationCaseWithConfig } from "../../../db/tests/helpers/integration-case.ts";
-import { endIntegrationCase } from "../../../db/tests/helpers/integration-case.ts";
+import { describePg } from "../../helpers/pg-test-gate.ts";
+import { beginIntegrationCaseWithConfig } from "../../helpers/integration-case.ts";
+import { endIntegrationCase } from "../../helpers/integration-case.ts";
 
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { waitFor } from "../../../kernel/tests/helpers/wait.js";
+import { waitFor } from "../../helpers/wait.ts";
 import { EventBus } from "@freeanima/legacy-kernel";
 import { resetStoreForTests, registerMemoryHandlers, l2SessionPath } from "@freeanima/legacy-memory";
 import { seedSession } from "@freeanima/legacy-db/test-helpers";

@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, afterAll } from "vitest";
-import { describePg } from "../../../db/tests/helpers/pg-test-gate.ts";
+import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
   beginIntegrationCase,
   beginIntegrationCaseWithConfig,
   endIntegrationCase,
-} from "../../../db/tests/helpers/integration-case.ts";
+} from "../../helpers/integration-case.ts";
 
 import { isSessionMeta, openaiSchemas } from "@freeanima/legacy-kernel";
 import { registerAllTools } from "@freeanima/legacy-tools";

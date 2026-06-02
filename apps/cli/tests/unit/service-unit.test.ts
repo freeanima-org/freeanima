@@ -1,5 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { mkdtempSync, readFileSync, existsSync, mkdirSync } from "node:fs";
+import {
+  mkdtempSync,
+  readFileSync,
+  existsSync,
+  mkdirSync,
+  writeFileSync,
+  realpathSync,
+} from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { renderSystemdUnit } from "../../src/systemd-unit.js";
@@ -68,12 +75,14 @@ describe("systemd unit", () => {
 
   it("animaBin prefers current TS cli.js over PATH", () => {
     vi.restoreAllMocks();
-    const cliPath = join(process.cwd(), "dist/cli.js");
+    const dir = mkdtempSync(join(tmpdir(), "freeanima-cli-"));
+    const cliPath = join(dir, "cli.js");
+    writeFileSync(cliPath, "#!/usr/bin/env node\n");
     const prev = process.argv[1];
     process.argv[1] = cliPath;
     try {
       const bin = serviceCommon.animaBin();
-      expect(bin).toContain("cli.js");
+      expect(bin).toBe(`${process.execPath} ${realpathSync(cliPath)}`);
       expect(bin).not.toContain(".venv");
     } finally {
       process.argv[1] = prev;

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, afterAll } from "vitest";
-import { describePg } from "../helpers/pg-test-gate.js";
-import { beginIntegrationCase, endIntegrationCase } from "../helpers/integration-case.js";
+import { describePg } from "../../helpers/pg-test-gate.ts";
+import { beginIntegrationCase, endIntegrationCase } from "../../helpers/integration-case.ts";
 import {
   upsertSessionMeta,
   getSessionMeta,
