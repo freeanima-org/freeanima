@@ -15,7 +15,7 @@ function assertDockerAvailable(): void {
     execSync("docker info", { stdio: "ignore" });
   } catch {
     throw new Error(
-      "集成测试需要 Docker 运行中。请启动 Docker 后重试：pnpm test:integration",
+      "集成测试需要 Docker 运行中。请启动 Docker 后重试：bun test:integration",
     );
   }
 }

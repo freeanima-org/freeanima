@@ -15,8 +15,7 @@ import {
 import { getTool } from "@freeanima/legacy-kernel";
 import { runWithToolContext } from "@freeanima/legacy-engine";
 
-// better-sqlite3 尚不支持 Bun；L3 索引相关用例依赖 sqlite
-describe.skipIf(typeof Bun !== "undefined")("memory search", () => {
+describe("memory search", () => {
   let home: string;
   const prev = process.env.FREEANIMA_HOME;
 

@@ -6,7 +6,7 @@ import { setupIntegrationPg } from "./integration-pg-setup.ts";
 
 const repoRoot = join(fileURLToPath(new URL(".", import.meta.url)), "..");
 
-execSync("pnpm exec turbo run build", { cwd: repoRoot, stdio: "inherit" });
+execSync("bun run build", { cwd: repoRoot, stdio: "inherit" });
 
 const teardown = await setupIntegrationPg();
 try {

@@ -1,6 +1,7 @@
-import Database from "better-sqlite3";
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
+
+import { openSqlite } from "../sqlite.js";
 
 /** 测试用：写入 Python 时代 events 表（data 列）的一条 pending 事件 */
 export function seedLegacyPythonStyleEvent(
@@ -9,7 +10,7 @@ export function seedLegacyPythonStyleEvent(
   payload: Record<string, unknown>,
 ): void {
   mkdirSync(dirname(dbPath), { recursive: true });
-  const db = new Database(dbPath);
+  const db = openSqlite(dbPath);
   db.exec(`
     CREATE TABLE events (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

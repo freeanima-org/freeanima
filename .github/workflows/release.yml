@@ -21,21 +21,17 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - uses: pnpm/action-setup@v4
+      - uses: oven-sh/setup-bun@v2
         with:
-          version: 11.4.0
+          bun-version: "1.3.14"
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "24"
-          cache: pnpm
-
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm turbo run typecheck build
-      - run: pnpm test
+      - run: bun install --frozen-lockfile
+      - run: bun run typecheck
+      - run: bun run build
+      - run: bun test
 
       - name: semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HUSKY: "0"
-        run: pnpm exec semantic-release
+        run: bunx semantic-release

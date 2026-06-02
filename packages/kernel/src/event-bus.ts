@@ -1,10 +1,10 @@
-import Database from "better-sqlite3";
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import { logError } from "./error-log.js";
 import { PATHS } from "./paths.js";
 import type { EventMap, EventTopic } from "./schemas/events.js";
 import { eventPayloadSchemas } from "./schemas/events.js";
+import { openSqlite, type SqliteDatabase } from "./sqlite.js";
 
 type Handler<T> = (payload: T) => void | Promise<void>;
 
@@ -23,13 +23,13 @@ CREATE INDEX IF NOT EXISTS idx_events_pending ON events(status, id);
 
 const MAX_RETRIES = 3;
 
-function tableColumns(db: Database.Database): Set<string> {
+function tableColumns(db: SqliteDatabase): Set<string> {
   const rows = db.prepare("PRAGMA table_info(events)").all() as { name: string }[];
   return new Set(rows.map((r) => r.name));
 }
 
 /** 与 Python EventBus 共用 ~/.anima/runtime/events.db */
-function migrateEventsSchema(db: Database.Database): void {
+function migrateEventsSchema(db: SqliteDatabase): void {
   db.exec(SCHEMA);
   const cols = tableColumns(db);
   if (!cols.size) return;
@@ -58,14 +58,14 @@ function parseEventPayload(topic: string, raw: string): unknown | null {
 }
 
 export class EventBus {
-  private db: Database.Database;
+  private db: SqliteDatabase;
   private handlers = new Map<string, Handler<unknown>[]>();
   private running = false;
   private timer: ReturnType<typeof setInterval> | null = null;
 
   constructor(dbPath = PATHS.eventsDb) {
     mkdirSync(dirname(dbPath), { recursive: true });
-    this.db = new Database(dbPath);
+    this.db = openSqlite(dbPath);
     this.db.pragma("journal_mode = WAL");
     migrateEventsSchema(this.db);
   }

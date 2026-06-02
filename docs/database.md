@@ -69,7 +69,7 @@ database:
 
 ### 迁移
 
-`pnpm --filter @freeanima/legacy-db db:migrate` — 应用 Drizzle migration（含列化 → payload JSONB 的数据回填）。
+`bun run --filter @freeanima/legacy-db db:migrate` — 应用 Drizzle migration（含列化 → payload JSONB 的数据回填）。
 
 ### 运维
 
@@ -87,7 +87,7 @@ anima credential add services/postgres/anima url=… host=… password=… datab
 
 # Schema
 DATABASE_URL="$(anima credential get services/postgres/anima url)" \
-  pnpm --filter @freeanima/legacy-db db:migrate
+  bun run --filter @freeanima/legacy-db db:migrate
 
 # database:
 #   url: pass:services/postgres/anima
@@ -97,13 +97,13 @@ DATABASE_URL="$(anima credential get services/postgres/anima url)" \
 
 #### 集成测试（本机，非 pre-commit）
 
-需 **Docker** 运行中。`pnpm test:integration` 会通过 Testcontainers 起临时 PostgreSQL 17、跑 migration，并执行根目录 `tests/integration/`。
+需 **Docker** 运行中。`bun test:integration` 会通过 Testcontainers 起临时 PostgreSQL 17、跑 migration，并执行根目录 `tests/integration/`。
 
 ```bash
-pnpm test:integration
+bun test:integration
 ```
 
-单元测试（mapper，不连 PG）：`pnpm --filter @freeanima/legacy-db test`
+单元测试（mapper，不连 PG）：`bun run --filter @freeanima/legacy-db test`
 
 ## Slice B（规划中）
 
