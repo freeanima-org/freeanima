@@ -1,5 +1,5 @@
-import { logError } from "@freeanima/kernel";
-import type { NestService } from "@freeanima/runtime";
+import { logError } from "@freeanima/legacy-kernel";
+import type { NestService } from "@freeanima/legacy-runtime";
 import {
   REST,
   Routes,

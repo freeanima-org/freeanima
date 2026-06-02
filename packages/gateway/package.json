@@ -1,5 +1,5 @@
 {
-  "name": "@freeanima/gateway",
+  "name": "@freeanima/legacy-gateway",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -19,9 +19,9 @@
     "test": "vitest run --project unit --passWithNoTests"
   },
   "dependencies": {
-    "@freeanima/engine": "workspace:*",
-    "@freeanima/kernel": "workspace:*",
-    "@freeanima/runtime": "workspace:*",
+    "@freeanima/legacy-engine": "workspace:*",
+    "@freeanima/legacy-kernel": "workspace:*",
+    "@freeanima/legacy-runtime": "workspace:*",
     "discord.js": "^14.26.4",
     "zod": "catalog:"
   },

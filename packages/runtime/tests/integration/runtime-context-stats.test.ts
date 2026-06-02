@@ -1,9 +1,9 @@
-import { computeStats, statsReport } from "@freeanima/runtime";
+import { computeStats, statsReport } from "@freeanima/legacy-runtime";
 import { describe, it, expect, beforeEach, afterEach, afterAll } from "vitest";
 import { describePg } from "../../../db/tests/helpers/pg-test-gate.ts";
 import { beginIntegrationCaseWithConfig } from "../../../db/tests/helpers/integration-case.ts";
 import { endIntegrationCase } from "../../../db/tests/helpers/integration-case.ts";
-import { newSession, appendMessage, updateSessionMetaField } from "@freeanima/engine";
+import { newSession, appendMessage, updateSessionMetaField } from "@freeanima/legacy-engine";
 
 describePg("runtime context stats", () => {
   const prev = process.env.FREEANIMA_HOME;

@@ -1,5 +1,5 @@
-import { registerTool } from "@freeanima/kernel";
-import { createJob, getJob, listJobs, pauseJob, removeJob, resumeJob, enqueueRunJob } from "@freeanima/runtime";
+import { registerTool } from "@freeanima/legacy-kernel";
+import { createJob, getJob, listJobs, pauseJob, removeJob, resumeJob, enqueueRunJob } from "@freeanima/legacy-runtime";
 
 
 function tsHuman(ts: number): string {

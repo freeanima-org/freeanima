@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   buildDiscordSlashCommands,
   interactionToCommandText,
-} from "@freeanima/gateway";
+} from "@freeanima/legacy-gateway";
 
 describe("discord slash commands", () => {
   it("buildDiscordSlashCommands includes cwd options", () => {

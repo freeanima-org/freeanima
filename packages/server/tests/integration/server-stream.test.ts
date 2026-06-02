@@ -3,8 +3,8 @@ import { describePg } from "../../../db/tests/helpers/pg-test-gate.ts";
 import { beginIntegrationCase } from "../../../db/tests/helpers/integration-case.ts";
 import { endIntegrationCase } from "../../../db/tests/helpers/integration-case.ts";
 
-import { NestService } from "@freeanima/runtime";
-import { seedSession } from "@freeanima/db/test-helpers";
+import { NestService } from "@freeanima/legacy-runtime";
+import { seedSession } from "@freeanima/legacy-db/test-helpers";
 
 describePg("sendMessageStream", () => {
   const prev = process.env.FREEANIMA_HOME;

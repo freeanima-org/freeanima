@@ -1,5 +1,5 @@
 {
-  "name": "@freeanima/integrations",
+  "name": "@freeanima/legacy-integrations",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -16,16 +16,16 @@
     "test:integration": "vitest run --project integration --passWithNoTests"
   },
   "dependencies": {
-    "@freeanima/engine": "workspace:*",
-    "@freeanima/kernel": "workspace:*",
-    "@freeanima/runtime": "workspace:*",
+    "@freeanima/legacy-engine": "workspace:*",
+    "@freeanima/legacy-kernel": "workspace:*",
+    "@freeanima/legacy-runtime": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "zod": "catalog:"
   },
   "devDependencies": {
     "typescript": "catalog:",
     "vitest": "catalog:",
-    "@freeanima/engine": "workspace:*",
-    "@freeanima/kernel": "workspace:*"
+    "@freeanima/legacy-engine": "workspace:*",
+    "@freeanima/legacy-kernel": "workspace:*"
   }
 }

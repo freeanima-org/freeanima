@@ -2,8 +2,8 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { describePg } from "../../../db/tests/helpers/pg-test-gate.ts";
 import { beginIntegrationCase, endIntegrationCase } from "../../../db/tests/helpers/integration-case.ts";
 
-import { parseSessionLine } from "@freeanima/kernel";
-import { initSession, loadSessionMeta, updateSessionMetaField } from "@freeanima/engine";
+import { parseSessionLine } from "@freeanima/legacy-kernel";
+import { initSession, loadSessionMeta, updateSessionMetaField } from "@freeanima/legacy-engine";
 
 describePg("schemas/message", () => {
   const prev = process.env.FREEANIMA_HOME;

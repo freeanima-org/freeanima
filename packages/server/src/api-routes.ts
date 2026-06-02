@@ -1,7 +1,7 @@
-import { loadSessionMeta } from "@freeanima/engine";
-import { logApiError, logSseError, isSessionMeta } from "@freeanima/kernel";
-import type { NestService } from "@freeanima/runtime";
-import { PARLOR_PLATFORM, buildFileTree, getStudioConfig, patchStudioConfig, readStudioFile, searchStudio } from "@freeanima/runtime";
+import { loadSessionMeta } from "@freeanima/legacy-engine";
+import { logApiError, logSseError, isSessionMeta } from "@freeanima/legacy-kernel";
+import type { NestService } from "@freeanima/legacy-runtime";
+import { PARLOR_PLATFORM, buildFileTree, getStudioConfig, patchStudioConfig, readStudioFile, searchStudio } from "@freeanima/legacy-runtime";
 import { Hono } from "hono";
 import { streamSSE } from "hono/streaming";
 import type { Context } from "hono";
@@ -14,8 +14,8 @@ import {
   sendMessageBodySchema,
   studioConfigPatchSchema,
   studioSearchBodySchema,
-} from "@freeanima/api";
-import type { AcpManager, MCPManager } from "@freeanima/integrations";
+} from "@freeanima/legacy-api";
+import type { AcpManager, MCPManager } from "@freeanima/legacy-integrations";
 import { studioTerminalHandler } from "./studio-terminal.js";
 import { zValidator } from "./zod-validator.js";
 import {

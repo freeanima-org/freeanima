@@ -2,10 +2,10 @@ import { describe, it, expect, beforeEach, afterEach, afterAll } from "vitest";
 import { describePg } from "../../../db/tests/helpers/pg-test-gate.ts";
 import { beginIntegrationCase, endIntegrationCase } from "../../../db/tests/helpers/integration-case.ts";
 
-import { initSession, loadSessionMeta, runWithToolContext } from "@freeanima/engine";
-import { loadConfig, getTool } from "@freeanima/kernel";
-import { addTodo, listTodos } from "@freeanima/runtime";
-import { registerAllTools } from "@freeanima/tools";
+import { initSession, loadSessionMeta, runWithToolContext } from "@freeanima/legacy-engine";
+import { loadConfig, getTool } from "@freeanima/legacy-kernel";
+import { addTodo, listTodos } from "@freeanima/legacy-runtime";
+import { registerAllTools } from "@freeanima/legacy-tools";
 
 describePg("session todo", () => {
   const prev = process.env.FREEANIMA_HOME;

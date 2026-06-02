@@ -5,15 +5,15 @@ import {
   loadSessionTools,
   loadSoul,
   SUMMARY_USER_PREFIX,
-} from "@freeanima/engine";
-import { isSessionMeta } from "@freeanima/kernel";
-import { decomposeSystemPromptParts } from "@freeanima/memory/system-prompt";
-import type { SessionMessage } from "@freeanima/kernel";
+} from "@freeanima/legacy-engine";
+import { isSessionMeta } from "@freeanima/legacy-kernel";
+import { decomposeSystemPromptParts } from "@freeanima/legacy-memory/system-prompt";
+import type { SessionMessage } from "@freeanima/legacy-kernel";
 import {
   estimateMessagesTokens,
   estimateTokens,
   estimateToolsTokens,
-} from "@freeanima/engine";
+} from "@freeanima/legacy-engine";
 
 export type RuntimeContextBreakdown = {
   /** 发给 LLM 的视图（压缩后 + 摘要注入），非 JSONL 全量 */

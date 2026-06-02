@@ -1,4 +1,4 @@
-import { acpAgentSchema } from "@freeanima/kernel";
+import { acpAgentSchema } from "@freeanima/legacy-kernel";
 import type { z } from "zod";
 
 

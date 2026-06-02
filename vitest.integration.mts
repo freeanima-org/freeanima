@@ -6,7 +6,7 @@ export default defineConfig({
   },
   server: {
     deps: {
-      inline: ["discord.js", "@freeanima/db", "postgres", "drizzle-orm"],
+      inline: ["discord.js", "@freeanima/legacy-db", "postgres", "drizzle-orm"],
     },
   },
   test: {

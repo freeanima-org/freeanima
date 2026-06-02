@@ -1,11 +1,11 @@
-import { logError } from "@freeanima/kernel";
-import { loadConfig } from "@freeanima/kernel";
-import { hooks, type HookClarifyItem, type HookStreamEvent } from "@freeanima/kernel";
-import { parseToolArgs, toolError, toolResult } from "@freeanima/kernel";
+import { logError } from "@freeanima/legacy-kernel";
+import { loadConfig } from "@freeanima/legacy-kernel";
+import { hooks, type HookClarifyItem, type HookStreamEvent } from "@freeanima/legacy-kernel";
+import { parseToolArgs, toolError, toolResult } from "@freeanima/legacy-kernel";
 import * as llm from "./llm.js";
 import { cleanToolCallsForApi } from "./llm.js";
 import { markToolLoopActivity } from "./compression-tool-loop.js";
-import { checkEnvRequirements, getTool, openaiSchemas } from "@freeanima/kernel";
+import { checkEnvRequirements, getTool, openaiSchemas } from "@freeanima/legacy-kernel";
 import { getToolSessionId } from "./tool-context.js";
 import { maybeApplyEmergencyCompression } from "./conversation.js";
 import { REPAIR_REASON_INTERRUPT } from "./tool-loop-integrity.js";
@@ -13,8 +13,8 @@ import type {
   AssistantMessage,
   SessionMessage,
   ToolMessage,
-} from "@freeanima/kernel";
-import type { OpenAiToolSchema } from "@freeanima/kernel";
+} from "@freeanima/legacy-kernel";
+import type { OpenAiToolSchema } from "@freeanima/legacy-kernel";
 
 export class MaxTurnsExceeded extends Error {
   override name = "MaxTurnsExceeded";

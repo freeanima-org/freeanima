@@ -2,7 +2,7 @@ import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import type { PgTestContext } from "@freeanima/db/test-helpers";
+import type { PgTestContext } from "@freeanima/legacy-db/test-helpers";
 
 import { pgTestUrl } from "./pg-test-gate.js";
 
@@ -16,7 +16,7 @@ export async function beginIntegrationCase(prefix: string): Promise<{
   }
   const home = mkdtempSync(join(tmpdir(), prefix));
   process.env.FREEANIMA_HOME = home;
-  const { setupIntegrationHome } = await import("@freeanima/db/test-helpers");
+  const { setupIntegrationHome } = await import("@freeanima/legacy-db/test-helpers");
   const pg = await setupIntegrationHome({ url: pgTestUrl, home });
   return { home, pg };
 }
@@ -30,12 +30,12 @@ export async function beginIntegrationCaseWithConfig(
   }
   const home = mkdtempSync(join(tmpdir(), prefix));
   process.env.FREEANIMA_HOME = home;
-  const { setupIntegrationHome } = await import("@freeanima/db/test-helpers");
+  const { setupIntegrationHome } = await import("@freeanima/legacy-db/test-helpers");
   const pg = await setupIntegrationHome({ url: pgTestUrl, home, configYaml });
   return { home, pg };
 }
 
 export async function endIntegrationCase(): Promise<void> {
-  const { teardownIntegrationHome } = await import("@freeanima/db/test-helpers");
+  const { teardownIntegrationHome } = await import("@freeanima/legacy-db/test-helpers");
   await teardownIntegrationHome();
 }

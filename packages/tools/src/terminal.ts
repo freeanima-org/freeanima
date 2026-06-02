@@ -1,4 +1,4 @@
-import { registerTool } from "@freeanima/kernel";
+import { registerTool } from "@freeanima/legacy-kernel";
 import { spawn, spawnSync, type ChildProcess } from "node:child_process";
 
 

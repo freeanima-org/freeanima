@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { resetStoreForTests, MemoryStore, parseFact, factToFileText } from "@freeanima/memory";
+import { resetStoreForTests, MemoryStore, parseFact, factToFileText } from "@freeanima/legacy-memory";
 
 describe("memory store", () => {
   let home: string;

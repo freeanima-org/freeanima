@@ -1,5 +1,5 @@
-import { toolResult } from "@freeanima/kernel";
-import type { SessionMessage, ToolMessage } from "@freeanima/kernel";
+import { toolResult } from "@freeanima/legacy-kernel";
+import type { SessionMessage, ToolMessage } from "@freeanima/legacy-kernel";
 import { cleanToolCallsForApi, type StreamToolCall } from "./llm.js";
 
 export const REPAIR_REASON_LOST = "tool response lost (session repair)";

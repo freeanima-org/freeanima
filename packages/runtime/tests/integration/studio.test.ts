@@ -17,8 +17,8 @@ import {
   getStudioConfig,
   parseGitignore,
   isIgnored,
-} from "@freeanima/runtime";
-import { clearConfigCache } from "@freeanima/kernel";
+} from "@freeanima/legacy-runtime";
+import { clearConfigCache } from "@freeanima/legacy-kernel";
 
 describePg("studio", () => {
   let home: string;

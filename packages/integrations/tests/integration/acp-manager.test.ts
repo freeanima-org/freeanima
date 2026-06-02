@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { describePg } from "../../../db/tests/helpers/pg-test-gate.ts";
 
-import { clearConfigCache, registerTool, listTools } from "@freeanima/kernel";
-import { registerAcpTools } from "@freeanima/integrations";
+import { clearConfigCache, registerTool, listTools } from "@freeanima/legacy-kernel";
+import { registerAcpTools } from "@freeanima/legacy-integrations";
 
 beforeEach(() => clearConfigCache());
 afterEach(() => clearConfigCache());

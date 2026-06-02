@@ -1,5 +1,5 @@
-import { credential, loadConfig } from "@freeanima/kernel";
-import type { NestService } from "@freeanima/runtime";
+import { credential, loadConfig } from "@freeanima/legacy-kernel";
+import type { NestService } from "@freeanima/legacy-runtime";
 
 import { loadWeixinCredentials } from "./weixin/weixin-credentials.js";
 

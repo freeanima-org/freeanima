@@ -1,4 +1,4 @@
-import { registerTool } from "@freeanima/kernel";
+import { registerTool } from "@freeanima/legacy-kernel";
 import type { L2SearchRow } from "./l2-indexer.js";
 import { searchL2 } from "./l2-indexer.js";
 import { indexL3Fact, removeL3Fact } from "./l3-indexer.js";

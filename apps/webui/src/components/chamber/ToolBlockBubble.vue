@@ -50,7 +50,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { DisplayToolCall } from '@freeanima/api'
+import type { DisplayToolCall } from '@freeanima/legacy-api'
 
 defineProps<{
   calls: DisplayToolCall[]

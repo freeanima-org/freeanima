@@ -1,18 +1,18 @@
-import { PATHS } from "@freeanima/kernel";
-import { WEBUI_DIST_INDEX } from "@freeanima/runtime";
+import { PATHS } from "@freeanima/legacy-kernel";
+import { WEBUI_DIST_INDEX } from "@freeanima/legacy-runtime";
 import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 
-import { isServerAlive } from "@freeanima/server/alive";
+import { isServerAlive } from "@freeanima/legacy-server/alive";
 import { prettyDuration, writeStatusLine } from "./output/status.js";
 
 export { prettyDuration, writeStatusLine };
 
 export const LOG_FILE = join(PATHS.home, "error.log");
 
-export { resolveProbeHost } from "@freeanima/server/bind-hosts";
+export { resolveProbeHost } from "@freeanima/legacy-server/bind-hosts";
 
 export function readRecentErrorLogTail(maxLines = 10): string[] {
   if (!existsSync(LOG_FILE)) return [];
@@ -63,7 +63,7 @@ export function checkServerAlive(): number | null {
 export function ensureWebuiBuilt(): void {
   if (existsSync(WEBUI_DIST_INDEX)) return;
   console.warn(
-    "  ⚠ WebUI 未构建 (no dist/)。运行: pnpm install && pnpm --filter @freeanima/webui build",
+    "  ⚠ WebUI 未构建 (no dist/)。运行: pnpm install && pnpm --filter @freeanima/legacy-webui build",
   );
 }
 

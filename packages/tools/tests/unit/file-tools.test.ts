@@ -3,8 +3,8 @@ import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { tmpdir } from "node:os";
 import { chdir } from "node:process";
-import { registerAllTools } from "@freeanima/tools";
-import { getTool, listTools } from "@freeanima/kernel";
+import { registerAllTools } from "@freeanima/legacy-tools";
+import { getTool, listTools } from "@freeanima/legacy-kernel";
 
 describe("file tools", () => {
   let home: string;

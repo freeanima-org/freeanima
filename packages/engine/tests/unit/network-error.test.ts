@@ -1,4 +1,4 @@
-import { isTransientNetworkError, isEngineStreamError, networkErrorUserHint } from "@freeanima/engine";
+import { isTransientNetworkError, isEngineStreamError, networkErrorUserHint } from "@freeanima/legacy-engine";
 import { describe, it, expect } from "vitest";
 
 

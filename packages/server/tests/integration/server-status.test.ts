@@ -5,7 +5,7 @@ import { endIntegrationCase } from "../../../db/tests/helpers/integration-case.t
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { NestService } from "@freeanima/runtime";
+import { NestService } from "@freeanima/legacy-runtime";
 
 const ROOT_VERSION = (
   JSON.parse(

@@ -1,5 +1,5 @@
 {
-  "name": "@freeanima/clarify",
+  "name": "@freeanima/legacy-clarify",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -16,8 +16,8 @@
     "test:integration": "vitest run --project integration --passWithNoTests"
   },
   "dependencies": {
-    "@freeanima/engine": "workspace:*",
-    "@freeanima/kernel": "workspace:*"
+    "@freeanima/legacy-engine": "workspace:*",
+    "@freeanima/legacy-kernel": "workspace:*"
   },
   "devDependencies": {
     "typescript": "catalog:",

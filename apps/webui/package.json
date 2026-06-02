@@ -1,5 +1,5 @@
 {
-  "name": "@freeanima/webui",
+  "name": "@freeanima/legacy-webui",
   "private": true,
   "scripts": {
     "dev": "vite",
@@ -19,8 +19,8 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@freeanima/api": "workspace:*",
-    "@freeanima/server": "workspace:*",
+    "@freeanima/legacy-api": "workspace:*",
+    "@freeanima/legacy-server": "workspace:*",
     "@tailwindcss/vite": "^4.3.0",
     "@types/node": "catalog:",
     "@vitejs/plugin-vue": "^6.0.7",

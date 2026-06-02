@@ -69,7 +69,7 @@ database:
 
 ### 迁移
 
-`pnpm --filter @freeanima/db db:migrate` — 应用 Drizzle migration（含列化 → payload JSONB 的数据回填）。
+`pnpm --filter @freeanima/legacy-db db:migrate` — 应用 Drizzle migration（含列化 → payload JSONB 的数据回填）。
 
 ### 运维
 
@@ -87,7 +87,7 @@ anima credential add services/postgres/anima url=… host=… password=… datab
 
 # Schema
 DATABASE_URL="$(anima credential get services/postgres/anima url)" \
-  pnpm --filter @freeanima/db db:migrate
+  pnpm --filter @freeanima/legacy-db db:migrate
 
 # database:
 #   url: pass:services/postgres/anima
@@ -103,7 +103,7 @@ DATABASE_URL="$(anima credential get services/postgres/anima url)" \
 pnpm test:integration
 ```
 
-单元测试（mapper，不连 PG）：`pnpm --filter @freeanima/db test`
+单元测试（mapper，不连 PG）：`pnpm --filter @freeanima/legacy-db test`
 
 ## Slice B（规划中）
 

@@ -1,5 +1,5 @@
-import { createSkill, deleteSkill, loadSkill, listSkills, unloadSkill, viewSkill } from "@freeanima/engine";
-import { registerTool } from "@freeanima/kernel";
+import { createSkill, deleteSkill, loadSkill, listSkills, unloadSkill, viewSkill } from "@freeanima/legacy-engine";
+import { registerTool } from "@freeanima/legacy-kernel";
 
 
 export function registerSkillsTools(): void {

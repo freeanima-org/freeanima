@@ -1,4 +1,4 @@
-import type { HookRegistry } from "@freeanima/kernel";
+import type { HookRegistry } from "@freeanima/legacy-kernel";
 import {
   findAwaitingClarifyInMessages,
   formatClarifyText,

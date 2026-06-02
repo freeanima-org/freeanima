@@ -23,9 +23,9 @@ import {
   truncateMessagesAfter as dbTruncateMessagesAfter,
   shiftMessagePositions as dbShiftMessagePositions,
   upsertSessionMeta as dbUpsertSessionMeta,
-} from "@freeanima/db";
+} from "@freeanima/legacy-db";
 import { parseCompressionState, isCompressed } from "./compressor.js";
-import type { SessionMessage, SessionMetaMessage } from "@freeanima/kernel";
+import type { SessionMessage, SessionMetaMessage } from "@freeanima/legacy-kernel";
 
 export function postgresAvailable(): boolean {
   return isPostgresPrimary();

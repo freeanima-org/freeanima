@@ -11,9 +11,9 @@ import {
   searchL3Fts,
   indexL3Facts,
   indexL2Session,
-} from "@freeanima/memory";
-import { getTool } from "@freeanima/kernel";
-import { runWithToolContext } from "@freeanima/engine";
+} from "@freeanima/legacy-memory";
+import { getTool } from "@freeanima/legacy-kernel";
+import { runWithToolContext } from "@freeanima/legacy-engine";
 
 describe("memory search", () => {
   let home: string;

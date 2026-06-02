@@ -44,7 +44,7 @@
 
 L1 Session 主存为 PostgreSQL（`config.yaml` → `database.url`）。表设计见 [database.md](../database.md)。
 
-**L1 PostgreSQL（Slice A）**：`packages/db/` — `sessions`（一行 = `session_meta`）+ `messages`（`payload` JSONB = `ConversationMessage`）；`anima service` 启动时 `getDb()` 连接池，engine/memory 进程内直调 repo；热路径 `getSessionMetaLite`（不读 `tools` JSONB）、压缩后 `listMessagesByIdRange`、API `offset`/`limit` 走 `listMessagesPage`；诊断：`ANIMA_L1_PG_PROFILE=1`、`packages/db/scripts/session-size.sql`；`pnpm --filter @freeanima/db db:migrate`。
+**L1 PostgreSQL（Slice A）**：`packages/db/` — `sessions`（一行 = `session_meta`）+ `messages`（`payload` JSONB = `ConversationMessage`）；`anima service` 启动时 `getDb()` 连接池，engine/memory 进程内直调 repo；热路径 `getSessionMetaLite`（不读 `tools` JSONB）、压缩后 `listMessagesByIdRange`、API `offset`/`limit` 走 `listMessagesPage`；诊断：`ANIMA_L1_PG_PROFILE=1`、`packages/db/scripts/session-size.sql`；`pnpm --filter @freeanima/legacy-db db:migrate`。
 
 `NestService` 与 cron 引擎路径在 `engine.run` / `engine.runStream` 落盘：**最终 assistant** 即时 `appendMessage`；**tool loop 一轮**（assistant+tool_calls + 全部 tool 响应）**原子批量**落盘；`finishTurn(..., skipMessageAppend=true)` 只做 `session_meta` 更新。历史若出现 dangling `tool_calls`，`beginTurn`/`prepareMessages` 会在 **assistant 原位** 补 synthetic tool（后续 pos 后移）并修复；伙伴新消息可 **AbortController 抢占** 进行中的 tool loop。
 
@@ -77,10 +77,30 @@ L1 Session 主存为 PostgreSQL（`config.yaml` → `database.url`）。表设�
 - **运行时压缩 v5.1**（`compressor.ts` + `compression-summary.ts`）：四段视图 l0–l4；meta `{ l2, l3, summary? }`；`deriveBoundariesFromL4`（`raw_min_messages` / `slim_min_messages`）；`trigger_low` 0.60 外 / `trigger_high` 0.80 内；`isInToolLoop` 仅影响 `shouldAdvance`；摘要增量 `(旧 l2, 新 l2]`；合成 `pos=1` 摘要 user；emergency 就地裁切；`/compress`；L1 全量存档不删
 - **`/stats`**：`conversation-stats` + `runtime-context-stats`；压缩状态按 **token 占用率**（或条数回退）；**当前上下文**从 `buildRuntimeMessages` + `meta.tools` 分项（SOUL/AGENTS/常驻/技能/摘要/消息/tools schema）
 - L1 原始 JSONL → L2 蒸馏 → L3 事实 → L4 检索，详见 [memory.md](../memory.md)
-- **TypeScript 类型**：`packages/kernel/src/schemas/` 为 Zod 单一真相源（L1 `message.ts`、EventBus `events.ts` 等）；HTTP 入站/出站契约在 `@freeanima/api`（Zod）；`packages/server/src/api-mappers.ts` 将内部类型映射为 API DTO；工具返回约定见 `json-util.parseToolResult`
+- **TypeScript 类型**：`packages/kernel/src/schemas/` 为 Zod 单一真相源（L1 `message.ts`、EventBus `events.ts` 等）；HTTP 入站/出站契约在 `@freeanima/legacy-api`（Zod）；`packages/server/src/api-mappers.ts` 将内部类型映射为 API DTO；工具返回约定见 `json-util.parseToolResult`
 - **L3 FTS**：热路径 `remember` / reflect 写入后 `indexL3Fact` / `indexL3Facts` 增量索引；全量 `indexL3All` 仅卧室「重建 L3 索引」或兼容旧 `l3:updated` 无 `fact_ids` 时
 
 ## 架构速览
+
+> **RFC #1 步骤 0（2026-06-02）**：`packages/*`、`apps/*` 已 rename 为 `@freeanima/legacy-*`（见下方映射表）。新栈包名将占用 `@freeanima/kernel` 等目标名，见 [`docs/designs/issue-1-migration-plan.md`](../designs/issue-1-migration-plan.md)。
+
+**Legacy 包名映射：**
+
+| 目录 | npm 包名 |
+|------|----------|
+| `packages/kernel` | `@freeanima/legacy-kernel` |
+| `packages/engine` | `@freeanima/legacy-engine` |
+| `packages/runtime` | `@freeanima/legacy-runtime` |
+| `packages/memory` | `@freeanima/legacy-memory` |
+| `packages/db` | `@freeanima/legacy-db` |
+| `packages/server` | `@freeanima/legacy-server` |
+| `packages/gateway` | `@freeanima/legacy-gateway` |
+| `packages/tools` | `@freeanima/legacy-tools` |
+| `packages/integrations` | `@freeanima/legacy-integrations` |
+| `packages/clarify` | `@freeanima/legacy-clarify` |
+| `packages/api` | `@freeanima/legacy-api` |
+| `apps/cli` | `@freeanima/legacy-cli` |
+| `apps/webui` | `@freeanima/legacy-webui` |
 
 ```
 apps/
@@ -89,7 +109,7 @@ apps/
 packages/
 ├── api/            # HTTP 契约（Zod schema + 类型）；仅依赖 zod
 ├── kernel/         # paths、config、credential、registry、event-bus、hooks、schemas/*、session-path
-├── db/             # @freeanima/db：L1 Session PG（sessions + messages.payload JSONB）、Drizzle migrate
+├── db/             # @freeanima/legacy-db：L1 Session PG（sessions + messages.payload JSONB）、Drizzle migrate
 ├── engine/         # conversation、session-store（PG）、compressor、llm、engine 回合
 ├── memory/         # L1–L4 存储/检索、reflect、registerMemoryPipeline（+ registerMemoryHandlers 别名）
 ├── runtime/        # NestService、commands、cron、studio、platforms 辅助、conversation-stats
@@ -139,7 +159,7 @@ ACP：`integrations/src/acp/`；`acp_{name}` 返回 JSON（`session_id`、`outpu
 
 ## HTTP API（WebUI / 卧室）
 
-**WebUI 客户端**：[`apps/webui/src/api/client.ts`](../../apps/webui/src/api/client.ts) 使用 Hono RPC 客户端 `hc<ApiRoutes>`，路由类型来自 [`packages/server/src/api-routes.ts`](../../packages/server/src/api-routes.ts)（`@freeanima/server/api`）；DTO / SSE schema 来自 `@freeanima/api`。卧室与客厅/创作室视图统一从 client 导入，禁止内联 `fetch('/api/...')`。
+**WebUI 客户端**：[`apps/webui/src/api/client.ts`](../../apps/webui/src/api/client.ts) 使用 Hono RPC 客户端 `hc<ApiRoutes>`，路由类型来自 [`packages/server/src/api-routes.ts`](../../packages/server/src/api-routes.ts)（`@freeanima/legacy-server/api`）；DTO / SSE schema 来自 `@freeanima/legacy-api`。卧室与客厅/创作室视图统一从 client 导入，禁止内联 `fetch('/api/...')`。
 
 | 端点 | 响应要点 |
 |------|----------|
@@ -204,7 +224,7 @@ eval "$(anima completion bash)"
 
 # 全局 CLI（本机一次；任意目录可用 anima）
 # pnpm 11 已移除 `pnpm link -g`，改用 `pnpm add -g .`（见根脚本 link:global）
-pnpm run link:global                            # = build @freeanima/cli + pnpm add -g .
+pnpm run link:global                            # = build @freeanima/legacy-cli + pnpm add -g .
 # 若报 global bin 不在 PATH：确认 ~/.bashrc 含 `export PATH="$PNPM_HOME/bin:$PATH"`（pnpm setup），并重开终端
 anima service status                            # 改 TS 后需重新 link:global 或 build 后再 add -g
 
@@ -213,8 +233,8 @@ anima service status                            # 改 TS 后需重新 link:globa
 
 # WebUI: http://127.0.0.1:8080/webui/parlor/chat
 # 卧室: …/webui/chamber/dashboard  创作室: …/webui/studio/pair-programming
-# 构建前端: pnpm --filter @freeanima/webui build
-# WebUI 类型检查: pnpm --filter @freeanima/webui typecheck
+# 构建前端: pnpm --filter @freeanima/legacy-webui build
+# WebUI 类型检查: pnpm --filter @freeanima/legacy-webui typecheck
 
 pnpm install                      # Husky：提交前 typecheck + vitest；commit-msg 校验 Conventional Commits
 pnpm run check                    # 手动全量检查（同 pre-commit 钩子）

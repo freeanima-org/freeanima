@@ -1,4 +1,4 @@
-import { NEST_VERSION } from "@freeanima/runtime";
+import { NEST_VERSION } from "@freeanima/legacy-runtime";
 import { Command } from "commander";
 
 import { registerServiceCommand } from "./commands/service.js";

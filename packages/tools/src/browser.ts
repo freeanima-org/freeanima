@@ -1,5 +1,5 @@
-import { getToolSessionId } from "@freeanima/engine";
-import { registerTool, toolError } from "@freeanima/kernel";
+import { getToolSessionId } from "@freeanima/legacy-engine";
+import { registerTool, toolError } from "@freeanima/legacy-kernel";
 
 import {
   camofoxBack,

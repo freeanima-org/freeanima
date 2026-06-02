@@ -1,5 +1,5 @@
 {
-  "name": "@freeanima/db",
+  "name": "@freeanima/legacy-db",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -22,7 +22,7 @@
     "test:integration": "vitest run --project integration --passWithNoTests"
   },
   "dependencies": {
-    "@freeanima/kernel": "workspace:*",
+    "@freeanima/legacy-kernel": "workspace:*",
     "drizzle-orm": "catalog:",
     "postgres": "^3.4.9",
     "zod": "catalog:"

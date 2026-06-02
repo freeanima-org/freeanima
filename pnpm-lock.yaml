@@ -35,25 +35,25 @@ importers:
       '@commitlint/config-conventional':
         specifier: ^21.0.2
         version: 21.0.2
-      '@freeanima/api':
+      '@freeanima/legacy-api':
         specifier: workspace:*
         version: link:packages/api
-      '@freeanima/clarify':
+      '@freeanima/legacy-clarify':
         specifier: workspace:*
         version: link:packages/clarify
-      '@freeanima/db':
+      '@freeanima/legacy-db':
         specifier: workspace:*
         version: link:packages/db
-      '@freeanima/integrations':
+      '@freeanima/legacy-integrations':
         specifier: workspace:*
         version: link:packages/integrations
-      '@freeanima/kernel':
+      '@freeanima/legacy-kernel':
         specifier: workspace:*
         version: link:packages/kernel
-      '@freeanima/server':
+      '@freeanima/legacy-server':
         specifier: workspace:*
         version: link:packages/server
-      '@freeanima/tools':
+      '@freeanima/legacy-tools':
         specifier: workspace:*
         version: link:packages/tools
       '@semantic-release/changelog':
@@ -104,13 +104,13 @@ importers:
 
   apps/cli:
     dependencies:
-      '@freeanima/kernel':
+      '@freeanima/legacy-kernel':
         specifier: workspace:*
         version: link:../../packages/kernel
-      '@freeanima/runtime':
+      '@freeanima/legacy-runtime':
         specifier: workspace:*
         version: link:../../packages/runtime
-      '@freeanima/server':
+      '@freeanima/legacy-server':
         specifier: workspace:*
         version: link:../../packages/server
       commander:
@@ -154,10 +154,10 @@ importers:
         specifier: 'catalog:'
         version: 4.4.3
     devDependencies:
-      '@freeanima/api':
+      '@freeanima/legacy-api':
         specifier: workspace:*
         version: link:../../packages/api
-      '@freeanima/server':
+      '@freeanima/legacy-server':
         specifier: workspace:*
         version: link:../../packages/server
       '@tailwindcss/vite':
@@ -200,10 +200,10 @@ importers:
 
   packages/clarify:
     dependencies:
-      '@freeanima/engine':
+      '@freeanima/legacy-engine':
         specifier: workspace:*
         version: link:../engine
-      '@freeanima/kernel':
+      '@freeanima/legacy-kernel':
         specifier: workspace:*
         version: link:../kernel
     devDependencies:
@@ -216,7 +216,7 @@ importers:
 
   packages/db:
     dependencies:
-      '@freeanima/kernel':
+      '@freeanima/legacy-kernel':
         specifier: workspace:*
         version: link:../kernel
       drizzle-orm:
@@ -241,10 +241,10 @@ importers:
 
   packages/engine:
     dependencies:
-      '@freeanima/db':
+      '@freeanima/legacy-db':
         specifier: workspace:*
         version: link:../db
-      '@freeanima/kernel':
+      '@freeanima/legacy-kernel':
         specifier: workspace:*
         version: link:../kernel
       openai:
@@ -263,13 +263,13 @@ importers:
 
   packages/gateway:
     dependencies:
-      '@freeanima/engine':
+      '@freeanima/legacy-engine':
         specifier: workspace:*
         version: link:../engine
-      '@freeanima/kernel':
+      '@freeanima/legacy-kernel':
         specifier: workspace:*
         version: link:../kernel
-      '@freeanima/runtime':
+      '@freeanima/legacy-runtime':
         specifier: workspace:*
         version: link:../runtime
       discord.js:
@@ -288,13 +288,13 @@ importers:
 
   packages/integrations:
     dependencies:
-      '@freeanima/engine':
+      '@freeanima/legacy-engine':
         specifier: workspace:*
         version: link:../engine
-      '@freeanima/kernel':
+      '@freeanima/legacy-kernel':
         specifier: workspace:*
         version: link:../kernel
-      '@freeanima/runtime':
+      '@freeanima/legacy-runtime':
         specifier: workspace:*
         version: link:../runtime
       '@modelcontextprotocol/sdk':
@@ -335,10 +335,10 @@ importers:
 
   packages/memory:
     dependencies:
-      '@freeanima/db':
+      '@freeanima/legacy-db':
         specifier: workspace:*
         version: link:../db
-      '@freeanima/kernel':
+      '@freeanima/legacy-kernel':
         specifier: workspace:*
         version: link:../kernel
       better-sqlite3:
@@ -348,7 +348,7 @@ importers:
         specifier: ^2.9.0
         version: 2.9.0
     devDependencies:
-      '@freeanima/engine':
+      '@freeanima/legacy-engine':
         specifier: workspace:*
         version: link:../engine
       '@types/better-sqlite3':
@@ -363,16 +363,16 @@ importers:
 
   packages/runtime:
     dependencies:
-      '@freeanima/clarify':
+      '@freeanima/legacy-clarify':
         specifier: workspace:*
         version: link:../clarify
-      '@freeanima/engine':
+      '@freeanima/legacy-engine':
         specifier: workspace:*
         version: link:../engine
-      '@freeanima/kernel':
+      '@freeanima/legacy-kernel':
         specifier: workspace:*
         version: link:../kernel
-      '@freeanima/memory':
+      '@freeanima/legacy-memory':
         specifier: workspace:*
         version: link:../memory
       cron-parser:
@@ -391,34 +391,34 @@ importers:
 
   packages/server:
     dependencies:
-      '@freeanima/api':
+      '@freeanima/legacy-api':
         specifier: workspace:*
         version: link:../api
-      '@freeanima/clarify':
+      '@freeanima/legacy-clarify':
         specifier: workspace:*
         version: link:../clarify
-      '@freeanima/db':
+      '@freeanima/legacy-db':
         specifier: workspace:*
         version: link:../db
-      '@freeanima/engine':
+      '@freeanima/legacy-engine':
         specifier: workspace:*
         version: link:../engine
-      '@freeanima/gateway':
+      '@freeanima/legacy-gateway':
         specifier: workspace:*
         version: link:../gateway
-      '@freeanima/integrations':
+      '@freeanima/legacy-integrations':
         specifier: workspace:*
         version: link:../integrations
-      '@freeanima/kernel':
+      '@freeanima/legacy-kernel':
         specifier: workspace:*
         version: link:../kernel
-      '@freeanima/memory':
+      '@freeanima/legacy-memory':
         specifier: workspace:*
         version: link:../memory
-      '@freeanima/runtime':
+      '@freeanima/legacy-runtime':
         specifier: workspace:*
         version: link:../runtime
-      '@freeanima/tools':
+      '@freeanima/legacy-tools':
         specifier: workspace:*
         version: link:../tools
       '@hono/node-server':
@@ -446,19 +446,19 @@ importers:
 
   packages/tools:
     dependencies:
-      '@freeanima/clarify':
+      '@freeanima/legacy-clarify':
         specifier: workspace:*
         version: link:../clarify
-      '@freeanima/engine':
+      '@freeanima/legacy-engine':
         specifier: workspace:*
         version: link:../engine
-      '@freeanima/kernel':
+      '@freeanima/legacy-kernel':
         specifier: workspace:*
         version: link:../kernel
-      '@freeanima/memory':
+      '@freeanima/legacy-memory':
         specifier: workspace:*
         version: link:../memory
-      '@freeanima/runtime':
+      '@freeanima/legacy-runtime':
         specifier: workspace:*
         version: link:../runtime
     devDependencies:

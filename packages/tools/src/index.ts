@@ -4,7 +4,7 @@ import { registerExecuteCodeTool } from "./execute-code.js";
 import { registerMemoryTools } from "./memory-tools.js";
 import { registerTerminalTools } from "./terminal.js";
 import { registerWebTools } from "./web.js";
-import { registerClarifyTool } from "@freeanima/clarify";
+import { registerClarifyTool } from "@freeanima/legacy-clarify";
 import { registerCronjobTool } from "./cronjob.js";
 import { registerSkillsTools } from "./skills-tools.js";
 import { registerTodoTool } from "./todo-tool.js";

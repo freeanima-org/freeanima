@@ -8,7 +8,7 @@ import {
   syntheticToolContent,
 } from "../../src/tool-loop-integrity.js";
 import { messagesForApi } from "../../src/llm.js";
-import type { SessionMessage } from "@freeanima/kernel";
+import type { SessionMessage } from "@freeanima/legacy-kernel";
 
 describe("tool-loop-integrity", () => {
   it("detectToolLoopCorruption 发现 dangling assistant", () => {

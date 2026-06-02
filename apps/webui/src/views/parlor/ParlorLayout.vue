@@ -66,7 +66,7 @@
 </template>
 
 <script setup lang="ts">
-import type { SessionListItem } from '@freeanima/api'
+import type { SessionListItem } from '@freeanima/legacy-api'
 import { ref, reactive, onMounted, nextTick, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ResponsiveSidebarLayout from '../../components/ResponsiveSidebarLayout.vue'

@@ -1,4 +1,4 @@
-import { toolResult } from "@freeanima/kernel";
+import { toolResult } from "@freeanima/legacy-kernel";
 
 
 export type AcpPromptResult = {

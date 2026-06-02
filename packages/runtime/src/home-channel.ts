@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { loadConfig, patchConfigSection } from "@freeanima/kernel";
+import { loadConfig, patchConfigSection } from "@freeanima/legacy-kernel";
 
 export type HomeChannel = {
   chat_id: string;

@@ -5,7 +5,7 @@ import {
   shouldCreateThread,
   shouldRespond,
   stripBotMention,
-} from "@freeanima/gateway";
+} from "@freeanima/legacy-gateway";
 
 describe("discord-policy", () => {
   const base = {

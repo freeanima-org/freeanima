@@ -53,7 +53,7 @@
 
 <script setup lang="ts">
 import { marked } from 'marked'
-import type { DisplayItem } from '@freeanima/api'
+import type { DisplayItem } from '@freeanima/legacy-api'
 import ToolBlockBubble from './ToolBlockBubble.vue'
 
 defineProps<{

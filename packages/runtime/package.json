@@ -1,5 +1,5 @@
 {
-  "name": "@freeanima/runtime",
+  "name": "@freeanima/legacy-runtime",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -20,10 +20,10 @@
     "test:integration": "vitest run --project integration --passWithNoTests"
   },
   "dependencies": {
-    "@freeanima/clarify": "workspace:*",
-    "@freeanima/engine": "workspace:*",
-    "@freeanima/kernel": "workspace:*",
-    "@freeanima/memory": "workspace:*",
+    "@freeanima/legacy-clarify": "workspace:*",
+    "@freeanima/legacy-engine": "workspace:*",
+    "@freeanima/legacy-kernel": "workspace:*",
+    "@freeanima/legacy-memory": "workspace:*",
     "cron-parser": "^5.5.0",
     "zod": "catalog:"
   },

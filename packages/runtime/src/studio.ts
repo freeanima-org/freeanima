@@ -7,7 +7,7 @@ import {
 } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { extname, join, relative, resolve } from "node:path";
-import { patchConfigSection, loadConfig } from "@freeanima/kernel";
+import { patchConfigSection, loadConfig } from "@freeanima/legacy-kernel";
 import {
   DEFAULT_SKIP_DIRS,
   isIgnored,

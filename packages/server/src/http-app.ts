@@ -1,12 +1,12 @@
-import { logApiError } from "@freeanima/kernel";
-import type { NestService } from "@freeanima/runtime";
+import { logApiError } from "@freeanima/legacy-kernel";
+import type { NestService } from "@freeanima/legacy-runtime";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 
 
-import type { AcpManager, MCPManager } from "@freeanima/integrations";
+import type { AcpManager, MCPManager } from "@freeanima/legacy-integrations";
 import { createNodeWebSocket } from "@hono/node-ws";
 import type { ServerType } from "@hono/node-server";
 import { createApiRoutes } from "./api-routes.js";

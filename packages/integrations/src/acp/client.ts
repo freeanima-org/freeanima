@@ -1,4 +1,4 @@
-import { NEST_VERSION } from "@freeanima/runtime";
+import { NEST_VERSION } from "@freeanima/legacy-runtime";
 
 import { existsSync } from "node:fs";
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";

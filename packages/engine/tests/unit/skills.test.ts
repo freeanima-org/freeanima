@@ -8,7 +8,7 @@ import {
   listSkills,
   deleteSkill,
   getActiveSkillsContent,
-} from "@freeanima/engine";
+} from "@freeanima/legacy-engine";
 
 describe("skills", () => {
   let home: string;

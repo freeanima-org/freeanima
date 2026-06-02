@@ -1,4 +1,4 @@
-import type { NestService } from "@freeanima/runtime";
+import type { NestService } from "@freeanima/legacy-runtime";
 import type { ServerType } from "@hono/node-server";
 
 

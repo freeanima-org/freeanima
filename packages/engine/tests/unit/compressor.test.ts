@@ -1,4 +1,4 @@
-import { compress } from "@freeanima/engine";
+import { compress } from "@freeanima/legacy-engine";
 import { describe, it, expect } from "vitest";
 
 

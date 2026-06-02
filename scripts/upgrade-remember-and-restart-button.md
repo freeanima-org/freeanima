@@ -24,8 +24,8 @@
   - `delete`：store.delete(fact_id) + removeL3Fact(fact_id)
 
 ### 需要导出的函数
-- `@freeanima/memory` 需要导出 `removeL3Fact`（在 `packages/memory/src/index.ts` 中添加导出）
-- `@freeanima/core` 需要重新导出（它 re-exports `@freeanima/memory`）
+- `@freeanima/legacy-memory` 需要导出 `removeL3Fact`（在 `packages/memory/src/index.ts` 中添加导出）
+- `@freeanima/core` 需要重新导出（它 re-exports `@freeanima/legacy-memory`）
 
 ## 任务 2：WebUI 卧室仪表盘增加重启服务按钮
 

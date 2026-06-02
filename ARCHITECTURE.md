@@ -163,7 +163,7 @@ LLM 视角 — flat tool list:
 
 ### 第一层：本地工具（Local）
 
-本地工具写在 `packages/tools/`，通过 `registerTool()` 注册到 `@freeanima/kernel` 的 registry。
+本地工具写在 `packages/tools/`，通过 `registerTool()` 注册到 `@freeanima/legacy-kernel` 的 registry。
 
 **特征：**
 - 代码在逸灵风进程内直接执行
@@ -381,16 +381,16 @@ conversation.py  emit("session:updated")
 - 失败重试（最多 3 次），不会丢失事件
 - 用于**发生后该做什么**的场景：蒸馏、反射、索引
 
-### Hooks（`@freeanima/kernel`）
+### Hooks（`@freeanima/legacy-kernel`）
 
-**同步 interceptor 模式。** 注册表与 `hooks.run()` 在 `@freeanima/kernel`。
+**同步 interceptor 模式。** 注册表与 `hooks.run()` 在 `@freeanima/legacy-kernel`。
 
 已接入点（见 `packages/kernel/src/hooks.ts`）：
 - `message:incoming` — `NestService` 入站消息（可改写内容、短路回合）
 - `turn:after_complete` — 单轮结束后（clarify 等扩展）
 - `tool:after_call` — 工具返回后（审计/统计扩展位）
 
-`@freeanima/clarify` 在 `serve()` 里通过 `registerClarifyHooks(hooks)` 挂载 clarify 相关 handler。
+`@freeanima/legacy-clarify` 在 `serve()` 里通过 `registerClarifyHooks(hooks)` 挂载 clarify 相关 handler。
 
 与 EventBus 的关系：
 
@@ -402,7 +402,7 @@ conversation.py  emit("session:updated")
 | 错误语义 | 链中断 | 可短路/可降级 |
 | 实现状态 | ✅ `registerMemoryPipeline` 等 | ✅ kernel + runtime/engine |
 
-记忆管道入口为 `registerMemoryPipeline`（`@freeanima/memory`）；`registerMemoryHandlers` 为兼容别名。Hooks 不是 EventBus 的替代品，两者互补。
+记忆管道入口为 `registerMemoryPipeline`（`@freeanima/legacy-memory`）；`registerMemoryHandlers` 为兼容别名。Hooks 不是 EventBus 的替代品，两者互补。
 
 ## 版本与发布
 

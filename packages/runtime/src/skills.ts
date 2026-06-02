@@ -6,4 +6,4 @@ export {
   viewSkill,
   deleteSkill,
   getActiveSkillsContent,
-} from "@freeanima/engine";
+} from "@freeanima/legacy-engine";

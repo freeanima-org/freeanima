@@ -1,16 +1,16 @@
-import { listSessions, load, loadSessionMeta, sessionExists } from "@freeanima/engine";
-import { isSessionMeta } from "@freeanima/kernel";
-import type { SessionMessage } from "@freeanima/kernel";
-import { getCompressionConfig, getContextWindow } from "@freeanima/engine";
-import { analyzeCompression, isCompressed, parseCompressionState } from "@freeanima/engine";
-import { loadConfig } from "@freeanima/kernel";
+import { listSessions, load, loadSessionMeta, sessionExists } from "@freeanima/legacy-engine";
+import { isSessionMeta } from "@freeanima/legacy-kernel";
+import type { SessionMessage } from "@freeanima/legacy-kernel";
+import { getCompressionConfig, getContextWindow } from "@freeanima/legacy-engine";
+import { analyzeCompression, isCompressed, parseCompressionState } from "@freeanima/legacy-engine";
+import { loadConfig } from "@freeanima/legacy-kernel";
 import {
   computeRuntimeContextBreakdown,
   formatTokenK,
   type RuntimeContextBreakdown,
 } from "./runtime-context-stats.js";
-import { estimateTokens, messageTextForEstimate } from "@freeanima/engine";
-import { normalizeUsage } from "@freeanima/engine";
+import { estimateTokens, messageTextForEstimate } from "@freeanima/legacy-engine";
+import { normalizeUsage } from "@freeanima/legacy-engine";
 
 export type SessionStats = {
   session: string;
@@ -66,7 +66,7 @@ function usageFromMessage(msg: SessionMessage): Record<string, number> | null {
   return null;
 }
 
-export { estimateMessagesTokens, estimateTokens, messageTextForEstimate } from "@freeanima/engine";
+export { estimateMessagesTokens, estimateTokens, messageTextForEstimate } from "@freeanima/legacy-engine";
 
 function emptyBreakdown(): RuntimeContextBreakdown {
   return {

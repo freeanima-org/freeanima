@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtempSync, readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { logError, logApiError, logStartupError, PATHS } from "@freeanima/kernel";
+import { logError, logApiError, logStartupError, PATHS } from "@freeanima/legacy-kernel";
 
 describe("error-log", () => {
   let home: string;

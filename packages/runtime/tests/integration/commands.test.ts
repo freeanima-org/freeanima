@@ -5,15 +5,15 @@ import { endIntegrationCase } from "../../../db/tests/helpers/integration-case.t
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { patchSessionMeta } from "@freeanima/db";
-import { seedSession, appendIntegrationConfig } from "@freeanima/db/test-helpers";
+import { patchSessionMeta } from "@freeanima/legacy-db";
+import { seedSession, appendIntegrationConfig } from "@freeanima/legacy-db/test-helpers";
 import {
   findCommand,
   executeCommand,
   isRetryResult,
   resolveCommand,
   NestService,
-} from "@freeanima/runtime";
+} from "@freeanima/legacy-runtime";
 import {
   load,
   newSession,
@@ -23,8 +23,8 @@ import {
   rollbackToLastUser,
   getSessionTitle,
   getSessionCwd,
-} from "@freeanima/engine";
-import { registerTool } from "@freeanima/kernel";
+} from "@freeanima/legacy-engine";
+import { registerTool } from "@freeanima/legacy-kernel";
 
 async function patchMetaForTest(
   sessionId: string,

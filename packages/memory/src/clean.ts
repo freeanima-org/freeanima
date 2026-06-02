@@ -6,15 +6,15 @@ import {
   writeFileSync,
 } from "node:fs";
 import { join } from "node:path";
-import { getHomeDir } from "@freeanima/kernel";
-import { l2LineSchema, isSessionMeta, type SessionMessage } from "@freeanima/kernel";
-import { parseJsonLine } from "@freeanima/kernel";
+import { getHomeDir } from "@freeanima/legacy-kernel";
+import { l2LineSchema, isSessionMeta, type SessionMessage } from "@freeanima/legacy-kernel";
+import { parseJsonLine } from "@freeanima/legacy-kernel";
 import {
   getSessionMeta,
   isPostgresPrimary,
   listMessages,
   listSessionIds,
-} from "@freeanima/db";
+} from "@freeanima/legacy-db";
 
 export function processedDir(): string {
   return join(getHomeDir(), "processed");

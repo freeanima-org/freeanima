@@ -3,8 +3,8 @@ import { describePg } from "../../../db/tests/helpers/pg-test-gate.ts";
 import { beginIntegrationCase } from "../../../db/tests/helpers/integration-case.ts";
 import { endIntegrationCase } from "../../../db/tests/helpers/integration-case.ts";
 
-import { registerAllTools } from "@freeanima/tools";
-import { initSession } from "@freeanima/engine";
+import { registerAllTools } from "@freeanima/legacy-tools";
+import { initSession } from "@freeanima/legacy-engine";
 import {
   setAwaitingClarify,
   readAwaitingClarify,
@@ -14,7 +14,7 @@ import {
   findAwaitingClarifyInMessages,
   executeCommand,
   getCommand,
-} from "@freeanima/clarify";
+} from "@freeanima/legacy-clarify";
 
 describePg("clarify session", () => {
   const prevHome = process.env.FREEANIMA_HOME;

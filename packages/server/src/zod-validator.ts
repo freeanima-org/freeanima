@@ -1,4 +1,4 @@
-import { logApiError, formatZodError } from "@freeanima/kernel";
+import { logApiError, formatZodError } from "@freeanima/legacy-kernel";
 import { zValidator as zv } from "@hono/zod-validator";
 import type { ValidationTargets } from "hono";
 import type { z } from "zod";

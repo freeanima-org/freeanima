@@ -12,7 +12,7 @@ import {
   memorySearchBodySchema,
 } from "../../../api/src/schemas.js";
 import { parseCompressionState } from "../../src/schemas/session-meta.js";
-import { parseClarifyToolResult } from "@freeanima/clarify";
+import { parseClarifyToolResult } from "@freeanima/legacy-clarify";
 import { jsonRpcMessageSchema } from "../../../integrations/src/schemas/acp-jsonrpc.js";
 import {
   weixinSyncSchema,
