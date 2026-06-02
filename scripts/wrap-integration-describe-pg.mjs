@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const gateImport = (fromDir) => {
-  const rel = path.relative(fromDir, "packages/db/tests/helpers/pg-test-gate.ts");
+  const rel = path.relative(fromDir, "tests/helpers/pg-test-gate.ts");
   return `import { describePg } from "${rel.startsWith(".") ? rel : "./" + rel}";\n`;
 };
 
@@ -31,6 +31,6 @@ for (const pkg of [
   "packages/server",
   "packages/integrations",
 ]) {
-  const d = `${pkg}/tests/integration`;
+  const d = `tests/integration/${pkg.replace("packages/", "")}`;
   if (fs.existsSync(d)) walk(d);
 }

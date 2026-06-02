@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, afterAll } from "vitest";
-import { describePg } from "../../../db/tests/helpers/pg-test-gate.ts";
+import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
   beginIntegrationCaseWithConfig,
-} from "../../../db/tests/helpers/integration-case.ts";
-import { endIntegrationCase } from "../../../db/tests/helpers/integration-case.ts";
+} from "../../helpers/integration-case.ts";
+import { endIntegrationCase } from "../../helpers/integration-case.ts";
 
 import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";

@@ -12,8 +12,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run --project unit --passWithNoTests",
-    "test:integration": "vitest run --project integration --passWithNoTests"
+    "test": "vitest run --project unit --passWithNoTests"
   },
   "dependencies": {
     "@freeanima/kernel": "workspace:*",

@@ -14,15 +14,6 @@ export default mergeConfig(
             passWithNoTests: true,
           },
         },
-    {
-      extends: true,
-      test: {
-            name: "integration",
-            include: ["tests/integration/**/*.test.ts"],
-            testTimeout: 30_000,
-            passWithNoTests: true,
-          },
-        }
       ],
     },
   }),

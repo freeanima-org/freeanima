@@ -13,7 +13,7 @@ export default mergeConfig(
             include: ["tests/unit/**/*.test.ts"],
             passWithNoTests: true,
           },
-        }
+        },
       ],
     },
   }),

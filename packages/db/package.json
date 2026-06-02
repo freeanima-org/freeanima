@@ -18,8 +18,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "test": "vitest run --project unit --passWithNoTests",
-    "test:integration": "vitest run --project integration --passWithNoTests"
+    "test": "vitest run --project unit --passWithNoTests"
   },
   "dependencies": {
     "@freeanima/legacy-kernel": "workspace:*",

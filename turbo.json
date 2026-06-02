@@ -6,6 +6,7 @@
       "inputs": [
         "src/**",
         "tsconfig.json",
+        "tsconfig.build.json",
         "package.json",
         "vite.config.*",
         "index.html",
@@ -18,11 +19,11 @@
       "inputs": ["src/**", "tsconfig.json", "package.json"]
     },
     "test": {
-      "dependsOn": [],
+      "dependsOn": ["^build", "build"],
       "cache": false
     },
     "test:integration": {
-      "dependsOn": [],
+      "dependsOn": ["^build", "build"],
       "cache": false
     }
   }
