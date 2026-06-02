@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "bun:test";
 import { parseSessionUpdateChunk } from "../../src/acp/adapters/generic.js";
 import { cursorAcpAdapter } from "../../src/acp/adapters/cursor.js";
 import { resolveAcpAdapter } from "../../src/acp/adapters/registry.js";

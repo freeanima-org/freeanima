@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, afterAll } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import { beginIntegrationCase } from "../../helpers/integration-case.ts";
 import { endIntegrationCase } from "../../helpers/integration-case.ts";
@@ -65,7 +65,7 @@ describePg("cron", () => {
     expect(listJobs().some((x) => x.id === "l2-gap-fill")).toBe(true);
   });
 
-  it("runL2GapFill distills PG session without L2", async () => {
+  it.skipIf(typeof Bun !== "undefined")("runL2GapFill distills PG session without L2", async () => {
     await seedSession(
       "20260531_gapfill_a",
       {

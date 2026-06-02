@@ -1,0 +1,6 @@
+[test]
+root = "src"
+coverage = true
+coverageReporter = ["text"]
+coverageDir = "coverage"
+coverageThreshold = { lines = 1, functions = 1, statements = 1 }

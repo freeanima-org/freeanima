@@ -13,8 +13,6 @@ allowBuilds:
 catalog:
   zod: ^4.4.3
   typescript: ^5.9.3
-  vitest: ^4.1.7
-  "@vitest/coverage-v8": ^4.1.7
   "@types/node": ^24.12.4
   drizzle-orm: 1.0.0-rc.3
   drizzle-kit: 1.0.0-rc.3

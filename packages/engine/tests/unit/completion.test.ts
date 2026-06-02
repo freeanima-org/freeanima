@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "bun:test";
 import { buildProgram } from "../../../../apps/cli/src/program.js";
 import { generateCompletion, SUPPORTED_SHELLS } from "../../../../apps/cli/src/completion/generate.js";
 

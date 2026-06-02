@@ -1,6 +1,6 @@
 import { compress, SUMMARY_USER_PREFIX } from "@freeanima/legacy-engine";
 import { parseCompressionState } from "@freeanima/legacy-kernel";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "bun:test";
 
 
 function ua(pos: number, text = "u"): Record<string, unknown> {

@@ -17,14 +17,6 @@
     "typecheck": {
       "dependsOn": ["^build"],
       "inputs": ["src/**", "tsconfig.json", "package.json"]
-    },
-    "test": {
-      "dependsOn": ["^build", "build"],
-      "cache": false
-    },
-    "test:integration": {
-      "dependsOn": ["^build", "build"],
-      "cache": false
     }
   }
 }

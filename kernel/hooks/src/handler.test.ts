@@ -1,6 +1,6 @@
-import { describe, expectTypeOf, it } from "vitest";
-import type { HookHandler, PayloadOf } from "../../src/handler.js";
-import { createHook } from "../../src/hook.js";
+import { describe, expectTypeOf, it } from "bun:test";
+import type { HookHandler, PayloadOf } from "./handler.js";
+import { createHook } from "./hook.js";
 
 describe("Handler 类型", () => {
   it("PayloadOf 从 Hook 实例推断负载类型", () => {

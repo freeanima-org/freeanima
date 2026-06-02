@@ -1,7 +1,7 @@
 import type { StreamEvent } from "@freeanima/legacy-engine";
 
 import type { Message, TextBasedChannel } from "discord.js";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "bun:test";
 import { streamReplyToChannel } from "@freeanima/legacy-gateway";
 
 describe("streamReplyToChannel", () => {

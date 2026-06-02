@@ -1,5 +1,5 @@
 import { computeStats, statsReport } from "@freeanima/legacy-runtime";
-import { describe, it, expect, beforeEach, afterEach, afterAll } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import { beginIntegrationCaseWithConfig } from "../../helpers/integration-case.ts";
 import { endIntegrationCase } from "../../helpers/integration-case.ts";

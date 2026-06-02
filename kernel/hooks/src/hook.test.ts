@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { createHook, Hook } from "../../src/hook.js";
+import { describe, expect, it } from "bun:test";
+import { createHook, Hook } from "./hook.js";
 
 describe("createHook", () => {
   it("设置 qualifiedId 与 description", () => {

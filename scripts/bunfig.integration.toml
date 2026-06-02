@@ -1,0 +1,3 @@
+# 根目录集成测试（tests/integration/）
+[test]
+timeout = 30000

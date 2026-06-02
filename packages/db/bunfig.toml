@@ -1,0 +1,4 @@
+# 各 package 单元测试共用（tests/unit 不移动目录）
+[test]
+root = "."
+coveragePathIgnorePatterns = ["**/node_modules/**"]

@@ -13,9 +13,9 @@ function walk(dir) {
     else if (ent.name.endsWith(".test.ts")) {
       let s = fs.readFileSync(p, "utf-8");
       if (s.includes("describePg")) continue;
-      if (!s.includes('from "vitest"')) continue;
+      if (!s.includes('from "bun:test"')) continue;
       const gate = gateImport(path.dirname(p));
-      s = s.replace(/import \{([^}]+)\} from "vitest";/, `import {$1} from "vitest";\n${gate}`);
+      s = s.replace(/import \{([^}]+)\} from "bun:test";/, `import {$1} from "bun:test";\n${gate}`);
       s = s.replace(/^describe\(/m, "describePg(");
       fs.writeFileSync(p, s);
       console.log("updated", p);

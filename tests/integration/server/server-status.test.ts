@@ -1,17 +1,11 @@
-import { describe, it, expect, beforeEach, afterEach, afterAll } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import { describePg } from "../../helpers/pg-test-gate.js";
 import { beginIntegrationCase } from "../../helpers/integration-case.js";
 import { endIntegrationCase } from "../../helpers/integration-case.js";
 
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
-import { NestService } from "@freeanima/legacy-runtime";
+import { NestService, readRootVersion } from "@freeanima/legacy-runtime";
 
-const ROOT_VERSION = (
-  JSON.parse(
-    readFileSync(join(import.meta.dirname, "../../../../package.json"), "utf8"),
-  ) as { version: string }
-).version;
+const ROOT_VERSION = readRootVersion();
 
 describePg("server status API", () => {
   const prev = process.env.FREEANIMA_HOME;

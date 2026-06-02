@@ -13,9 +13,8 @@
     "typecheck": "turbo run typecheck",
     "release": "semantic-release",
     "release:dry-run": "semantic-release --dry-run",
-    "test": "turbo run test",
+    "test": "pnpm -r test",
     "test:integration": "node --experimental-strip-types scripts/run-integration-tests.mts",
-    "test:watch": "vitest",
     "preservice": "turbo run build",
     "service": "node apps/cli/dist/cli.js service",
     "anima": "node apps/cli/dist/cli.js",
@@ -48,7 +47,6 @@
     "semantic-release": "^25.0.3",
     "testcontainers": "^11.0.3",
     "turbo": "^2.9.16",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
+    "typescript": "catalog:"
   }
 }

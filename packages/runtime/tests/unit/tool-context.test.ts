@@ -1,5 +1,5 @@
 import { runWithToolContext, getToolSessionId } from "@freeanima/legacy-engine";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "bun:test";
 
 
 describe("runWithToolContext", () => {

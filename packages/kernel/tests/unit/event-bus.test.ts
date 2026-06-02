@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 import { mkdtempSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
@@ -6,7 +6,8 @@ import { waitFor } from "../../../../tests/helpers/wait.ts";
 import { EventBus } from "@freeanima/legacy-kernel";
 import { seedLegacyPythonStyleEvent } from "@freeanima/legacy-kernel/test-helpers";
 
-describe("event-bus schema", () => {
+// better-sqlite3 尚不支持 Bun 运行时；见 https://github.com/oven-sh/bun/issues/4290
+describe.skipIf(typeof Bun !== "undefined")("event-bus schema", () => {
   let home: string;
   const prev = process.env.FREEANIMA_HOME;
 

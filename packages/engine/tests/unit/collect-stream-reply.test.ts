@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "bun:test";
 import { collectStreamReply } from "../../src/collect-stream-reply.js";
 import type { StreamEvent } from "../../src/engine.js";
 

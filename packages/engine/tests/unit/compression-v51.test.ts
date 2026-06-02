@@ -1,6 +1,6 @@
 import { compress, deriveBoundariesFromL4, getL4, isInToolLoop, shouldAdvance, slimMessage, SUMMARY_SYNTHETIC_POS, buildRuntimeFromLPoints } from "@freeanima/legacy-engine";
 import { parseCompressionState } from "@freeanima/legacy-kernel";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "bun:test";
 
 
 function ua(pos: number, text = "u"): Record<string, unknown> {

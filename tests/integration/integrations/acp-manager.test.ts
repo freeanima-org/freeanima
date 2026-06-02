@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 
 import { clearConfigCache, registerTool, listTools } from "@freeanima/legacy-kernel";
