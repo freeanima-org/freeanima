@@ -8,7 +8,7 @@ import {
   type Client,
 } from "discord.js";
 
-
+import { deliverDiscordFinalContent, withDiscordRetry } from "./discord-retry.js";
 import type { DiscordConfig } from "./discord-policy.js";
 import { extractOrigin, type PlatformOrigin } from "./discord-policy.js";
 
@@ -121,11 +121,19 @@ export async function replyDiscordInteraction(
 ): Promise<void> {
   const chunks = splitMessage(text);
   if (!chunks.length) {
-    await interaction.editReply({ content: "（无输出）" });
+    await withDiscordRetry(() => interaction.editReply({ content: "（无输出）" }));
     return;
   }
-  await interaction.editReply({ content: chunks[0] });
+  await deliverDiscordFinalContent(
+    async () => {
+      await interaction.editReply({ content: chunks[0]! });
+    },
+    async () => {
+      await interaction.followUp({ content: chunks[0]! });
+    },
+    { kind: "slash", chunk: 0 },
+  );
   for (const chunk of chunks.slice(1)) {
-    await interaction.followUp({ content: chunk });
+    await withDiscordRetry(() => interaction.followUp({ content: chunk }));
   }
 }

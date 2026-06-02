@@ -1,4 +1,5 @@
 import { logError } from "@freeanima/legacy-kernel";
+import { withDiscordRetry } from "./discord/discord-retry.js";
 import type { CronDeliverTarget } from "@freeanima/legacy-runtime";
 import { registerCronDeliverer, unregisterCronDeliverer } from "@freeanima/legacy-runtime";
 import type { Client, TextBasedChannel } from "discord.js";
@@ -32,7 +33,9 @@ async function sendDiscord(client: Client, target: CronDeliverTarget, text: stri
     throw new Error(`Discord channel ${channelId} cannot send messages`);
   }
   for (const chunk of splitMessage(text)) {
-    await textChannel.send(chunk);
+    await withDiscordRetry(async () => {
+      await textChannel.send(chunk);
+    });
   }
 }
 
