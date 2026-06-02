@@ -1,6 +1,7 @@
 import { logError } from "@freeanima/legacy-kernel";
 import { loadConfig } from "@freeanima/legacy-kernel";
-import { hooks, type HookClarifyItem, type HookStreamEvent } from "@freeanima/legacy-kernel";
+import type { HookClarifyItem, HookStreamEvent, TurnControl } from "@freeanima/legacy-kernel";
+import { toolAfterCall } from "@freeanima/legacy-kernel";
 import { parseToolArgs, toolError, toolResult } from "@freeanima/legacy-kernel";
 import * as llm from "./llm.js";
 import { cleanToolCallsForApi } from "./llm.js";
@@ -15,6 +16,7 @@ import type {
   ToolMessage,
 } from "@freeanima/legacy-kernel";
 import type { OpenAiToolSchema } from "@freeanima/legacy-kernel";
+import { kernel } from "./kernel.js";
 
 export class MaxTurnsExceeded extends Error {
   override name = "MaxTurnsExceeded";
@@ -164,15 +166,16 @@ async function runToolAfterCallHooks(
   toolName: string,
   args: Record<string, unknown>,
   result: string,
-): Promise<{ pause: boolean; streamEvents: HookStreamEvent[] } | null> {
-  const ctx = await hooks.run("tool:after_call", {
+): Promise<TurnControl | null> {
+  const ctx = await kernel.hookRegistry.run(toolAfterCall, {
     sessionId,
     toolName,
     args,
     result,
   });
-  if (!ctx.turnControl?.pause) return null;
-  return ctx.turnControl;
+  const tc = ctx.turnControl;
+  if (!tc?.pause || !Array.isArray(tc.streamEvents)) return null;
+  return tc as TurnControl;
 }
 
 export async function run(
@@ -315,7 +318,7 @@ export async function* runStream(
       streamMeta,
     );
 
-    let turnControl: { pause: boolean; streamEvents: HookStreamEvent[] } | null = null;
+    let turnControl: TurnControl | null = null;
     messages.push(withTools);
     const toolMsgs: ToolMessage[] = [];
 

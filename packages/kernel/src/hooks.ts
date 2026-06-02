@@ -1,20 +1,10 @@
-/** Hook 流式事件子集（与 engine StreamEvent 对齐，kernel 不依赖 engine） */
-export type HookClarifyItem = {
-  question: string;
-  choices?: string[];
-  default?: string;
-};
+import { createHook } from "@freeanima/hooks";
+import type { TurnControl } from "./hook-stream.js";
 
-export type HookStreamEvent =
-  | { event: "awaiting_clarify"; data: { items: HookClarifyItem[]; timeout_sec: number } }
-  | { event: "done"; data: { reason?: "awaiting_clarify" } };
+export { Hook, HookRegistry, createHook } from "@freeanima/hooks";
+export type { HookHandler, PayloadOf } from "@freeanima/hooks";
 
-export type TurnControl = {
-  pause: true;
-  streamEvents: HookStreamEvent[];
-};
-
-export type MessageIncomingContext = {
+export type MessageIncomingPayload = {
   sessionId: string;
   message: string;
   platform: string;
@@ -23,7 +13,7 @@ export type MessageIncomingContext = {
   expiredHint?: string;
 };
 
-export type ToolAfterCallContext = {
+export type ToolAfterCallPayload = {
   sessionId: string;
   toolName: string;
   args: Record<string, unknown>;
@@ -31,62 +21,32 @@ export type ToolAfterCallContext = {
   turnControl?: TurnControl;
 };
 
-export type TurnAfterCompleteContext = {
+export type TurnAfterCompletePayload = {
   sessionId: string;
   messages: Record<string, unknown>[];
   displayContent?: string;
 };
 
-export type HookMap = {
-  "message:incoming": MessageIncomingContext;
-  "tool:after_call": ToolAfterCallContext;
-  "turn:after_complete": TurnAfterCompleteContext;
-};
+/** @deprecated 使用 MessageIncomingPayload */
+export type MessageIncomingContext = MessageIncomingPayload;
 
-export type HookName = keyof HookMap;
+/** @deprecated 使用 ToolAfterCallPayload */
+export type ToolAfterCallContext = ToolAfterCallPayload;
 
-export type HookHandler<C> = (ctx: C) => void | Promise<void>;
+/** @deprecated 使用 TurnAfterCompletePayload */
+export type TurnAfterCompleteContext = TurnAfterCompletePayload;
 
-type RegisteredHandler = {
-  handler: HookHandler<unknown>;
-  priority: number;
-};
+export const messageIncoming = createHook<MessageIncomingPayload>(
+  "@freeanima/legacy-kernel/hooks/message-incoming",
+  "入站消息拦截",
+);
 
-export class HookRegistry {
-  private handlers = new Map<string, RegisteredHandler[]>();
+export const toolAfterCall = createHook<ToolAfterCallPayload>(
+  "@freeanima/legacy-kernel/hooks/tool-after-call",
+  "工具调用返回后",
+);
 
-  on<K extends HookName>(
-    name: K,
-    handler: HookHandler<HookMap[K]>,
-    opts?: { priority?: number },
-  ): () => void {
-    const priority = opts?.priority ?? 100;
-    const list = this.handlers.get(name) ?? [];
-    const entry: RegisteredHandler = { handler: handler as HookHandler<unknown>, priority };
-    list.push(entry);
-    list.sort((a, b) => a.priority - b.priority);
-    this.handlers.set(name, list);
-    return () => {
-      const current = this.handlers.get(name);
-      if (!current) return;
-      const idx = current.indexOf(entry);
-      if (idx >= 0) current.splice(idx, 1);
-      if (!current.length) this.handlers.delete(name);
-    };
-  }
-
-  async run<K extends HookName>(name: K, ctx: HookMap[K]): Promise<HookMap[K]> {
-    const list = this.handlers.get(name) ?? [];
-    for (const { handler } of list) {
-      await handler(ctx);
-    }
-    return ctx;
-  }
-}
-
-export function createHookRegistry(): HookRegistry {
-  return new HookRegistry();
-}
-
-/** 进程内默认 Hook 注册表（serve 启动时由扩展包注册 handler） */
-export const hooks = createHookRegistry();
+export const turnAfterComplete = createHook<TurnAfterCompletePayload>(
+  "@freeanima/legacy-kernel/hooks/turn-after-complete",
+  "单轮对话结束后",
+);

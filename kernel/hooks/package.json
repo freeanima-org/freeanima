@@ -1,5 +1,5 @@
 {
-  "name": "@freeanima/legacy-clarify",
+  "name": "@freeanima/hooks",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -12,15 +12,10 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run --project unit --passWithNoTests",
-    "test:integration": "vitest run --project integration --passWithNoTests"
-  },
-  "dependencies": {
-    "@freeanima/kernel": "workspace:*",
-    "@freeanima/legacy-engine": "workspace:*",
-    "@freeanima/legacy-kernel": "workspace:*"
+    "test": "vitest run --project unit --coverage --passWithNoTests"
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   }

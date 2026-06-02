@@ -381,26 +381,26 @@ conversation.py  emit("session:updated")
 - 失败重试（最多 3 次），不会丢失事件
 - 用于**发生后该做什么**的场景：蒸馏、反射、索引
 
-### Hooks（`@freeanima/legacy-kernel`）
+### Hooks（`@freeanima/hooks` + legacy 组装）
 
-**同步 interceptor 模式。** 注册表与 `hooks.run()` 在 `@freeanima/legacy-kernel`。
+**同步 interceptor 模式。** 注册表实现位于 `@freeanima/hooks`；hook token 与 Payload 类型定义在 `@freeanima/legacy-kernel`（[`packages/kernel/src/hooks.ts`](packages/kernel/src/hooks.ts)）；`kernel` 单例在 [`packages/engine/src/kernel.ts`](packages/engine/src/kernel.ts)（`new Kernel(new HookRegistry())`），上层统一经 `kernel.hookRegistry` 访问注册表。
 
-已接入点（见 `packages/kernel/src/hooks.ts`）：
-- `message:incoming` — `NestService` 入站消息（可改写内容、短路回合）
-- `turn:after_complete` — 单轮结束后（clarify 等扩展）
-- `tool:after_call` — 工具返回后（审计/统计扩展位）
+已接入点（hook token）：
+- `messageIncoming` — `NestService` 入站消息（可改写内容、短路回合）
+- `turnAfterComplete` — 单轮结束后（clarify 等扩展）
+- `toolAfterCall` — 工具返回后（审计/统计扩展位）
 
-`@freeanima/legacy-clarify` 在 `serve()` 里通过 `registerClarifyHooks(hooks)` 挂载 clarify 相关 handler。
+`@freeanima/legacy-clarify` 在 `serve()` 里通过 `registerClarifyHooks(kernel)` 挂载 clarify 相关 handler。
 
 与 EventBus 的关系：
 
 | 维度 | EventBus | Hooks |
 |------|----------|-------|
 | 时序 | 发生后 | 发生前/中/后 |
-| 调用方式 | 异步（轮询） | 同步（`await hooks.run`） |
-| 能否修改数据 | 不能 | 能（修改入参/结果） |
+| 调用方式 | 异步（轮询） | 同步（`await kernel.hookRegistry.run`） |
+| 能否修改数据 | 不能 | 能（修改 payload） |
 | 错误语义 | 链中断 | 可短路/可降级 |
-| 实现状态 | ✅ `registerMemoryPipeline` 等 | ✅ kernel + runtime/engine |
+| 实现状态 | ✅ `registerMemoryPipeline` 等 | ✅ hooks 包 + legacy-kernel token + engine Kernel |
 
 记忆管道入口为 `registerMemoryPipeline`（`@freeanima/legacy-memory`）；`registerMemoryHandlers` 为兼容别名。Hooks 不是 EventBus 的替代品，两者互补。
 

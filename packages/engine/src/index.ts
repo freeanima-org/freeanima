@@ -8,6 +8,7 @@ export * from "./token-estimate.js";
 export { registerSystemPromptBuilder } from "./system-prompt-registry.js";
 export * from "./llm.js";
 export * from "./engine.js";
+export { kernel } from "./kernel.js";
 export * from "./collect-stream-reply.js";
 export * from "./tool-context.js";
 export * from "./time-perception.js";

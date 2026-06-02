@@ -44,7 +44,11 @@ import {
   enqueueRunJob,
 } from "./cron/index.js";
 import type { CronJobData } from "./cron/models.js";
-import { hooks } from "@freeanima/legacy-kernel";
+import { kernel } from "@freeanima/legacy-engine";
+import {
+  messageIncoming,
+  turnAfterComplete,
+} from "@freeanima/legacy-kernel";
 import { applyClarifyStreamAwaiting } from "@freeanima/legacy-clarify";
 import { PATHS, CST_OFFSET_MS } from "@freeanima/legacy-kernel";
 import { distillAll } from "@freeanima/legacy-memory/clean";
@@ -308,7 +312,7 @@ export class NestService {
     | { ok: true; message: string; expiredHint?: string }
     | { ok: false; reason: string }
   > {
-    const ctx = await hooks.run("message:incoming", {
+    const ctx = await kernel.hookRegistry.run(messageIncoming, {
       sessionId,
       message,
       platform,
@@ -326,7 +330,7 @@ export class NestService {
     messages: Message[],
     defaultContent: string,
   ): Promise<string> {
-    const ctx = await hooks.run("turn:after_complete", {
+    const ctx = await kernel.hookRegistry.run(turnAfterComplete, {
       sessionId,
       messages: messages as Record<string, unknown>[],
     });

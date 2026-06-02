@@ -1,17 +1,42 @@
-import { describe, it, expect } from "vitest";
-import { createHookRegistry } from "@freeanima/legacy-kernel";
+import { describe, expect, it } from "vitest";
+import { HookRegistry } from "@freeanima/hooks";
+import {
+  messageIncoming,
+  toolAfterCall,
+  turnAfterComplete,
+} from "@freeanima/legacy-kernel";
 
-describe("HookRegistry", () => {
+describe("legacy-kernel hooks", () => {
+  it("hook token 设置 qualifiedId", () => {
+    expect(messageIncoming.qualifiedId).toBe(
+      "@freeanima/legacy-kernel/hooks/message-incoming",
+    );
+    expect(toolAfterCall.qualifiedId).toBe(
+      "@freeanima/legacy-kernel/hooks/tool-after-call",
+    );
+    expect(turnAfterComplete.qualifiedId).toBe(
+      "@freeanima/legacy-kernel/hooks/turn-after-complete",
+    );
+  });
+
   it("按 priority 顺序执行 handler", async () => {
-    const registry = createHookRegistry();
+    const registry = new HookRegistry();
     const order: number[] = [];
-    registry.on("message:incoming", () => {
-      order.push(2);
-    }, { priority: 200 });
-    registry.on("message:incoming", () => {
-      order.push(1);
-    }, { priority: 50 });
-    await registry.run("message:incoming", {
+    registry.on(
+      messageIncoming,
+      () => {
+        order.push(2);
+      },
+      { priority: 200 },
+    );
+    registry.on(
+      messageIncoming,
+      () => {
+        order.push(1);
+      },
+      { priority: 50 },
+    );
+    await registry.run(messageIncoming, {
       sessionId: "s1",
       message: "hi",
       platform: "parlor",
@@ -19,12 +44,12 @@ describe("HookRegistry", () => {
     expect(order).toEqual([1, 2]);
   });
 
-  it("handler 可变更 ctx", async () => {
-    const registry = createHookRegistry();
-    registry.on("message:incoming", (ctx) => {
+  it("handler 可变更 payload", async () => {
+    const registry = new HookRegistry();
+    registry.on(messageIncoming, (ctx) => {
       ctx.transformedMessage = `[${ctx.message}]`;
     });
-    const ctx = await registry.run("message:incoming", {
+    const ctx = await registry.run(messageIncoming, {
       sessionId: "s1",
       message: "hi",
       platform: "parlor",
@@ -33,13 +58,13 @@ describe("HookRegistry", () => {
   });
 
   it("unregister 后不再执行", async () => {
-    const registry = createHookRegistry();
+    const registry = new HookRegistry();
     let called = false;
-    const off = registry.on("tool:after_call", () => {
+    const off = registry.on(toolAfterCall, () => {
       called = true;
     });
     off();
-    await registry.run("tool:after_call", {
+    await registry.run(toolAfterCall, {
       sessionId: "s1",
       toolName: "clarify",
       args: {},
@@ -48,9 +73,9 @@ describe("HookRegistry", () => {
     expect(called).toBe(false);
   });
 
-  it("tool:after_call 可设置 turnControl", async () => {
-    const registry = createHookRegistry();
-    registry.on("tool:after_call", (ctx) => {
+  it("toolAfterCall 可设置 turnControl", async () => {
+    const registry = new HookRegistry();
+    registry.on(toolAfterCall, (ctx) => {
       if (ctx.toolName === "clarify") {
         ctx.turnControl = {
           pause: true,
@@ -64,7 +89,7 @@ describe("HookRegistry", () => {
         };
       }
     });
-    const ctx = await registry.run("tool:after_call", {
+    const ctx = await registry.run(toolAfterCall, {
       sessionId: "s1",
       toolName: "clarify",
       args: {},
