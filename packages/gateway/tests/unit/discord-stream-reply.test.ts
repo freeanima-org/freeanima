@@ -60,4 +60,31 @@ describe("streamReplyToChannel", () => {
     expect(edits[edits.length - 1]!.length).toBeLessThanOrEqual(2000);
     expect(sends.length).toBeGreaterThanOrEqual(2);
   });
+
+  it("最终 edit 失败时 fallback 新发正文", async () => {
+    const edits: string[] = [];
+    const sends: string[] = [];
+    const sentMsg = {
+      edit: vi.fn(async (opts: { content: string }) => {
+        edits.push(opts.content);
+        if (!opts.content.includes("思考中")) {
+          throw { status: 403 };
+        }
+      }),
+    } as Pick<Message, "edit">;
+
+    const channel = {
+      send: vi.fn(async (arg: unknown) => {
+        const text = typeof arg === "string" ? arg : "";
+        sends.push(text);
+        return sentMsg as Message;
+      }),
+    };
+
+    async function* gen(): AsyncGenerator<StreamEvent> {
+      yield { event: "token", data: { content: "hello discord" } };
+    }
+    await streamReplyToChannel(channel as unknown as TextBasedChannel, gen());
+    expect(sends.some((s) => s === "hello discord")).toBe(true);
+  });
 });

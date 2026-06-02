@@ -40,29 +40,17 @@ import {
   syncDiscordSlashCommands,
 } from "./discord-slash.js";
 
+import {
+  deliverDiscordFinalContent,
+  tryDiscordInterimEdit,
+  withDiscordRetry,
+} from "./discord-retry.js";
+
 const DISCORD_MAX_LEN = 2000;
 /** Discord login 失败后自动重试间隔 */
 export const DISCORD_LOGIN_RETRY_MS = 5 * 60 * 1000;
 /** 流式回复开始时的占位；收尾编辑会移除，仅展示模型正文与工具行。 */
 const DISCORD_STREAM_PLACEHOLDER = "⏳ 思考中…";
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-async function withDiscordRetry<T>(fn: () => Promise<T>, attempts = 3): Promise<T> {
-  let last: unknown;
-  for (let i = 0; i < attempts; i++) {
-    try {
-      return await fn();
-    } catch (e) {
-      last = e;
-      if (!isTransientNetworkError(e) || i >= attempts - 1) throw e;
-      await sleep(1000 * (i + 1));
-    }
-  }
-  throw last;
-}
 
 function splitDiscordMessage(text: string): string[] {
   if (text.length <= DISCORD_MAX_LEN) return [text];
@@ -155,9 +143,12 @@ export async function streamReplyToChannel(
       const raw = getContent();
       const content =
         raw.length <= DISCORD_MAX_LEN ? raw : raw.slice(-DISCORD_MAX_LEN);
-      await withDiscordRetry(async (): Promise<void> => {
-        await sentMsg.edit({ content });
-      });
+      await tryDiscordInterimEdit(
+        async () => {
+          await sentMsg.edit({ content });
+        },
+        { content_len: content.length },
+      );
     });
   }
 
@@ -227,9 +218,15 @@ export async function streamReplyToChannel(
   const discordEmptyFallback = "\u3164"; // 避免最终 edit 为空串被 Discord 拒绝
   const chunks = splitDiscordMessage(trimmed.length > 0 ? trimmed : discordEmptyFallback);
 
-  await withDiscordRetry(async (): Promise<void> => {
-    await sentMsg.edit({ content: chunks[0]! });
-  });
+  await deliverDiscordFinalContent(
+    async () => {
+      await sentMsg.edit({ content: chunks[0]! });
+    },
+    async () => {
+      await channel.send(chunks[0]!);
+    },
+    { chunk: 0, total: chunks.length },
+  );
   for (let i = 1; i < chunks.length; i++) {
     const chunk = chunks[i]!;
     await withDiscordRetry(async (): Promise<void> => {
