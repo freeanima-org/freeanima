@@ -4,6 +4,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./sinks/console": "./src/sinks/console.ts",
+    "./sinks/file": "./src/sinks/file.ts",
     "./sinks/memory": "./src/sinks/memory.ts",
     "./sinks/null": "./src/sinks/null.ts"
   },
