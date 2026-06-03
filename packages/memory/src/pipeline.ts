@@ -1,8 +1,9 @@
 import { logComponent } from "@freeanima/legacy-kernel";
-import type { EventBus } from "@freeanima/legacy-kernel";
+import type { EventBus } from "@freeanima/event-bus";
 import { isDebugSession } from "@freeanima/legacy-kernel";
 import { loadConfig } from "@freeanima/legacy-kernel";
 import { distillFromPg } from "./clean";
+import { l2Updated, l3Updated, sessionUpdated } from "./events";
 import { indexL2Session } from "./l2-indexer";
 import { indexL3All, indexL3Facts } from "./l3-indexer";
 import { reflectSession } from "./reflect";
@@ -16,7 +17,7 @@ export function isReflectEnabled(): boolean {
 }
 
 export function registerMemoryPipeline(bus: EventBus): void {
-  bus.on("session:updated", async (payload) => {
+  bus.on(sessionUpdated, async (payload) => {
     const sessionId = payload.session_id;
     if (!sessionId || isDebugSession(sessionId)) return;
 
@@ -30,7 +31,7 @@ export function registerMemoryPipeline(bus: EventBus): void {
           try {
             const result = await distillFromPg(sessionId, { ifNewer: true });
             if (result !== null) {
-              bus.emit("l2:updated", { session_id: sessionId });
+              bus.emit(l2Updated, { session_id: sessionId });
             }
           } catch (err) {
             logComponent("memory").error(`L2 distill failed for ${sessionId}`, { err });
@@ -40,7 +41,7 @@ export function registerMemoryPipeline(bus: EventBus): void {
     );
   });
 
-  bus.on("session:updated", async (payload) => {
+  bus.on(sessionUpdated, async (payload) => {
     if (!isReflectEnabled()) return;
     const sessionId = payload.session_id;
     if (!sessionId || isDebugSession(sessionId)) return;
@@ -48,14 +49,14 @@ export function registerMemoryPipeline(bus: EventBus): void {
     try {
       const { fact_ids } = await reflectSession(sessionId);
       if (fact_ids.length > 0) {
-        bus.emit("l3:updated", { fact_ids });
+        bus.emit(l3Updated, { fact_ids });
       }
     } catch (err) {
       logComponent("memory").error(`Reflection failed for ${sessionId}`, { err });
     }
   });
 
-  bus.on("l2:updated", async (payload) => {
+  bus.on(l2Updated, async (payload) => {
     const sessionId = payload.session_id;
     if (!sessionId) return;
     try {
@@ -65,7 +66,7 @@ export function registerMemoryPipeline(bus: EventBus): void {
     }
   });
 
-  bus.on("l3:updated", async (payload) => {
+  bus.on(l3Updated, async (payload) => {
     try {
       const raw = payload.fact_ids;
       if (Array.isArray(raw) && raw.length > 0) {

@@ -1,12 +1,12 @@
 {
-  "name": "@freeanima/kernel",
+  "name": "@freeanima/event-bus",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./memory": "./src/adapters/memory.ts",
+    "./null": "./src/adapters/null.ts"
   },
   "dependencies": {
-    "@freeanima/event-bus": "workspace:*",
-    "@freeanima/hooks": "workspace:*",
     "@freeanima/logging": "workspace:*"
   },
   "devDependencies": {

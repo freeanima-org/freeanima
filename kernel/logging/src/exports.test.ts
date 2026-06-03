@@ -1,9 +1,9 @@
 import { describe, expect, it } from "bun:test";
 import { createLogger } from "@freeanima/logging";
-import { createConsoleSink } from "@freeanima/logging/sinks/console";
-import { createFileSink } from "@freeanima/logging/sinks/file";
-import { createMemorySink } from "@freeanima/logging/sinks/memory";
-import { createNullSink } from "@freeanima/logging/sinks/null";
+import { createConsoleSink } from "@freeanima/logging/console";
+import { createFileSink } from "@freeanima/logging/file";
+import { createMemorySink } from "@freeanima/logging/memory";
+import { createNullSink } from "@freeanima/logging/null";
 
 describe("@freeanima/logging 子路径导出", () => {
   it("sinks 子路径可组合使用", () => {

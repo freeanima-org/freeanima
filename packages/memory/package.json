@@ -6,14 +6,13 @@
     "./*": "./src/*.ts"
   },
   "dependencies": {
+    "@freeanima/event-bus": "workspace:*",
     "@freeanima/legacy-db": "workspace:*",
     "@freeanima/legacy-kernel": "workspace:*",
-    "better-sqlite3": "^11.10.0",
     "yaml": "^2.9.0"
   },
   "devDependencies": {
     "@freeanima/legacy-engine": "workspace:*",
-    "@types/better-sqlite3": "^7.6.13",
     "bun-types": "catalog:"
   }
 }

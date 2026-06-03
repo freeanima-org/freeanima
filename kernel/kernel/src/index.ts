@@ -1,10 +1,24 @@
 import type { HookRegistry } from "@freeanima/hooks";
+import type { EventBus } from "@freeanima/event-bus";
 import type { Logger } from "@freeanima/logging";
 
-/** 内核组合视图（逐步扩展 eventBus / tools 等端口） */
+/** 内核组合视图 */
 export class Kernel {
+  private _eventBus: EventBus;
+
   constructor(
     readonly hookRegistry: HookRegistry,
     readonly logger: Logger,
-  ) {}
+    eventBus: EventBus,
+  ) {
+    this._eventBus = eventBus;
+  }
+
+  get eventBus(): EventBus {
+    return this._eventBus;
+  }
+
+  setEventBus(bus: EventBus): void {
+    this._eventBus = bus;
+  }
 }

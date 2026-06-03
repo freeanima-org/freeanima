@@ -7,4 +7,5 @@ export * from "./search";
 export * from "./reflect";
 export * from "./pipeline";
 export * from "./reflect-llm";
+export * from "./events";
 export { registerMemoryTools } from "./register-tools";

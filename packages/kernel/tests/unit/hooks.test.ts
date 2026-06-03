@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import { headOkStepData, HookRegistry } from "@freeanima/hooks";
 import { createLogger } from "@freeanima/logging";
-import { createNullSink } from "@freeanima/logging/sinks/null";
+import { createNullSink } from "@freeanima/logging/null";
 import { messageIncoming, toolAfterCall } from "../../src/index";
 
 describe("legacy-kernel hooks", () => {

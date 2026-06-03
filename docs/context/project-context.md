@@ -104,23 +104,25 @@ L1 Session 主存为 PostgreSQL（`config.yaml` → `database.url`）。表设�
 
 ```
 kernel/             # RFC #1 新栈（与 legacy packages/ 并行）
+├── event-bus/      # @freeanima/event-bus：EventTopic + EventBus + EventQueueAdapter；子路径 memory / null
 ├── hooks/          # @freeanima/hooks：Hook token + HookRegistry（run→HookRunResult 结果链 prev）
-├── logging/        # @freeanima/logging：Logger / LogSink / createLogger；内置 sink 子路径 sinks/{console,file,memory,null}
-└── kernel/         # @freeanima/kernel：Kernel 组合端口（HookRegistry + Logger）
+├── logging/        # @freeanima/logging：Logger / LogSink / createLogger；子路径 console / file / memory / null
+└── kernel/         # @freeanima/kernel：Kernel 组合端口（HookRegistry + EventBus + Logger）
 apps/
 ├── cli/            # anima 入口：service / credential / completion
 └── webui/          # Vue 3 + TypeScript WebUI；API 经 `src/api/client.ts`（Hono `hc<ApiRoutes>`）；静态 dist 由 server 挂载
 packages/
+├── event-bus-sqlite/ # @freeanima/event-bus-sqlite：SqliteEventQueue（bun:sqlite，实现 EventQueueAdapter）
 ├── api/            # HTTP 契约（Zod schema + 类型）；仅依赖 zod
-├── kernel/         # @freeanima/legacy-kernel：paths、config、hook token/context、event-bus、schemas/*
+├── kernel/         # @freeanima/legacy-kernel：paths、config、hook token/context、schemas/*（openSqlite 仅 bun:sqlite）
 ├── db/             # @freeanima/legacy-db：L1 Session PG（sessions + messages.payload JSONB）、Drizzle migrate
 ├── engine/         # conversation、session-store（PG）、compressor、llm、engine 回合；export kernel（含 hookRegistry 端口）
-├── memory/         # L1–L4 存储/检索、reflect、registerMemoryPipeline（+ registerMemoryHandlers 别名）
+├── memory/         # L1–L4 存储/检索、reflect、events token、registerMemoryPipeline（+ registerMemoryHandlers 别名）
 ├── runtime/        # NestService、commands、cron、studio、platforms 辅助、conversation-stats
 ├── clarify/        # clarify 工具与 hook 注册
 ├── gateway/        # 入站消息通道：Discord、微信；cron deliver；流式回复收集
 ├── core/           # 兼容门面：re-export kernel/clarify/engine/memory/runtime + network-error
-├── server/         # Hono /api + serve()；WebUI/parlor 经 HTTP 调 NestService（不在 gateway）
+├── server/         # Hono /api + serve()；组装 EventBus + SqliteEventQueue；WebUI/parlor 经 HTTP 调 NestService（不在 gateway）
 ├── tools/          # 本地工具注册
 └── integrations/   # MCP、ACP
 tests/           # Vitest 回归

@@ -1,6 +1,4 @@
-import { createRequire } from "node:module";
-
-const require = createRequire(import.meta.url);
+import { openBunSqlite } from "./sqlite-bun.js";
 
 export type SqliteRunResult = { changes: number };
 
@@ -17,12 +15,7 @@ export type SqliteDatabase = {
   close(): void;
 };
 
-/** Bun 用 bun:sqlite，Node 用 better-sqlite3（避免 Bun 加载原生模块） */
+/** 打开 SQLite（bun:sqlite；运行时要求 Bun） */
 export function openSqlite(path: string): SqliteDatabase {
-  if (typeof Bun !== "undefined") {
-    const { openBunSqlite } = require("./sqlite-bun") as typeof import("./sqlite-bun");
-    return openBunSqlite(path);
-  }
-  const { openNodeSqlite } = require("./sqlite-node") as typeof import("./sqlite-node");
-  return openNodeSqlite(path);
+  return openBunSqlite(path);
 }

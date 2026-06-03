@@ -57,6 +57,7 @@ function parseEventPayload(topic: string, raw: string): unknown | null {
   }
 }
 
+/** @deprecated 使用 @freeanima/event-bus + SqliteEventQueue */
 export class EventBus {
   private db: SqliteDatabase;
   private handlers = new Map<string, Handler<unknown>[]>();

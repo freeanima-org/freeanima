@@ -1,0 +1,14 @@
+{
+  "name": "@freeanima/event-bus-sqlite",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@freeanima/event-bus": "workspace:*"
+  },
+  "devDependencies": {
+    "@freeanima/logging": "workspace:*",
+    "bun-types": "catalog:"
+  }
+}
