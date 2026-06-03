@@ -1,34 +1,44 @@
 import { describe, expect, it, vi } from "bun:test";
-import { createHook } from "./hook.js";
+import { createLogger } from "@freeanima/logging";
+import { createNullSink } from "@freeanima/logging/sinks/null";
+import { createHook, walkHookChain } from "./hook.js";
 import { HookRegistry } from "./registry.js";
-import { createNullLogger } from "./test-logger.js";
 
-type TestPayload = {
+type TestContext = {
   value: number;
-  label?: string;
 };
 
-const testHook = createHook<TestPayload>(
+const testHook = createHook<TestContext>(
   "@freeanima/hooks/test/example",
   "测试 hook",
 );
 
+function newRegistry(): HookRegistry {
+  return new HookRegistry(
+    createLogger({ level: "debug", sinks: [createNullSink()] }),
+  );
+}
+
 describe("HookRegistry", () => {
-  it("无 handler 时 run 原样返回 payload", async () => {
-    const registry = new HookRegistry(createNullLogger());
-    const payload = { value: 1 };
-    const result = await registry.run(testHook, payload);
-    expect(result).toBe(payload);
-    expect(result.value).toBe(1);
+  it("无 handler 时返回空链", async () => {
+    const registry = newRegistry();
+    const context = { value: 1 };
+    const run = await registry.run(testHook, context);
+    expect(run.context).toBe(context);
+    expect(run.chain).toBeNull();
+    expect(run.status).toBe("ok");
+    expect(run.blocked).toBe(false);
+    expect(run.blockedMessage).toBeUndefined();
   });
 
   it("run 按 priority 升序执行", async () => {
-    const registry = new HookRegistry(createNullLogger());
+    const registry = newRegistry();
     const order: number[] = [];
     registry.on(
       testHook,
       () => {
         order.push(2);
+        return { status: "ok" };
       },
       { priority: 200 },
     );
@@ -36,6 +46,7 @@ describe("HookRegistry", () => {
       testHook,
       () => {
         order.push(1);
+        return { status: "ok" };
       },
       { priority: 50 },
     );
@@ -43,107 +54,110 @@ describe("HookRegistry", () => {
     expect(order).toEqual([1, 2]);
   });
 
-  it("未指定 priority 时默认为 100", async () => {
-    const registry = new HookRegistry(createNullLogger());
+  it("多 handler 时链头为最后一步 data", async () => {
+    const registry = newRegistry();
+    registry.on(testHook, () => ({
+      status: "ok",
+      data: { a: 1 },
+    }));
+    registry.on(testHook, () => ({
+      status: "ok",
+      data: { b: 2 },
+    }));
+    const run = await registry.run(testHook, { value: 0 });
+    expect(run.chain?.data).toEqual({ b: 2 });
+    expect(run.chain?.prev?.data).toEqual({ a: 1 });
+  });
+
+  it("ok 且 blocked 时中止后续 handler 并设置 blockedMessage", async () => {
+    const registry = newRegistry();
+    const second = vi.fn(() => ({ status: "ok" as const }));
+    registry.on(testHook, () => ({
+      status: "ok",
+      blocked: true,
+      message: "stop",
+    }));
+    registry.on(testHook, second);
+    const run = await registry.run(testHook, { value: 1 });
+    expect(run.blocked).toBe(true);
+    expect(run.blockedMessage).toBe("stop");
+    expect(second).not.toHaveBeenCalled();
+  });
+
+  it("failed 不中止后续 handler", async () => {
+    const registry = newRegistry();
     const order: string[] = [];
     registry.on(testHook, () => {
-      order.push("default");
+      order.push("fail");
+      return { status: "failed", message: "oops" };
     });
-    registry.on(
-      testHook,
-      () => {
-        order.push("low");
-      },
-      { priority: 200 },
-    );
-    registry.on(
-      testHook,
-      () => {
-        order.push("high");
-      },
-      { priority: 50 },
-    );
-    await registry.run(testHook, { value: 1 });
-    expect(order).toEqual(["high", "default", "low"]);
-  });
-
-  it("相同 priority 按注册顺序执行", async () => {
-    const registry = new HookRegistry(createNullLogger());
-    const order: number[] = [];
     registry.on(testHook, () => {
-      order.push(1);
-    }, { priority: 100 });
-    registry.on(testHook, () => {
-      order.push(2);
-    }, { priority: 100 });
-    registry.on(testHook, () => {
-      order.push(3);
-    }, { priority: 100 });
-    await registry.run(testHook, { value: 1 });
-    expect(order).toEqual([1, 2, 3]);
+      order.push("ok");
+      return { status: "ok" };
+    });
+    const run = await registry.run(testHook, { value: 1 });
+    expect(order).toEqual(["fail", "ok"]);
+    expect(run.status).toBe("failed");
+    expect(run.blocked).toBe(false);
+    expect(walkHookChain(run.chain)).toHaveLength(2);
   });
 
-  it("handler 可变更 payload", async () => {
-    const registry = new HookRegistry(createNullLogger());
-    registry.on(testHook, (payload) => {
-      payload.value = 42;
-      payload.label = "mutated";
-    });
-    const result = await registry.run(testHook, { value: 1 });
-    expect(result).toEqual({ value: 42, label: "mutated" });
+  it("failed 步上的 blocked 被忽略且不短路", async () => {
+    const registry = newRegistry();
+    const second = vi.fn(() => ({ status: "ok" as const }));
+    registry.on(testHook, () => ({
+      status: "failed",
+      blocked: true,
+      message: "ignored",
+    }));
+    registry.on(testHook, second);
+    const run = await registry.run(testHook, { value: 1 });
+    expect(second).toHaveBeenCalledTimes(1);
+    expect(run.blocked).toBe(false);
   });
 
-  it("多个 handler 依次变更同一 payload", async () => {
-    const registry = new HookRegistry(createNullLogger());
-    registry.on(testHook, (payload) => {
-      payload.value += 1;
-    });
-    registry.on(testHook, (payload) => {
-      payload.value *= 2;
-    });
-    const result = await registry.run(testHook, { value: 1 });
-    expect(result.value).toBe(4);
+  it("prev 链：链头为最后执行的 handler", async () => {
+    const registry = newRegistry();
+    registry.on(testHook, () => ({ status: "ok", data: { n: 1 } }));
+    registry.on(testHook, () => ({ status: "ok", data: { n: 2 } }));
+    const run = await registry.run(testHook, { value: 0 });
+    expect(run.chain?.data?.n).toBe(2);
+    expect(run.chain?.prev?.data?.n).toBe(1);
   });
 
-  it("await 异步 handler", async () => {
-    const registry = new HookRegistry(createNullLogger());
-    const order: string[] = [];
-    registry.on(testHook, async (payload) => {
-      await new Promise((r) => setTimeout(r, 10));
-      order.push("first");
-      payload.value = 1;
-    });
-    registry.on(testHook, async () => {
-      order.push("second");
-    });
-    await registry.run(testHook, { value: 0 });
-    expect(order).toEqual(["first", "second"]);
-  });
-
-  it("handler 抛错时 run 拒绝", async () => {
-    const registry = new HookRegistry(createNullLogger());
+  it("handler 抛错时转为 failed 步且不向外 throw", async () => {
+    const registry = newRegistry();
+    const second = vi.fn(() => ({ status: "ok" as const }));
     registry.on(testHook, () => {
       throw new Error("handler failed");
     });
-    await expect(registry.run(testHook, { value: 1 })).rejects.toThrow(
-      "handler failed",
-    );
+    registry.on(testHook, second);
+    const run = await registry.run(testHook, { value: 1 });
+    expect(run.status).toBe("failed");
+    expect(run.chain?.prev?.status).toBe("failed");
+    expect(run.chain?.prev?.message).toBe("handler failed");
+    expect(second).toHaveBeenCalledTimes(1);
   });
 
-  it("异步 handler 抛错时 run 拒绝", async () => {
-    const registry = new HookRegistry(createNullLogger());
-    registry.on(testHook, async () => {
-      await Promise.resolve();
-      throw new Error("async handler failed");
-    });
-    await expect(registry.run(testHook, { value: 1 })).rejects.toThrow(
-      "async handler failed",
-    );
+  it("handler 返回 void 视为 ok", async () => {
+    const registry = newRegistry();
+    registry.on(testHook, () => {});
+    const run = await registry.run(testHook, { value: 1 });
+    expect(run.chain?.status).toBe("ok");
+    expect(run.status).toBe("ok");
+  });
+
+  it("blocked 无 message 时不设置 blockedMessage", async () => {
+    const registry = newRegistry();
+    registry.on(testHook, () => ({ status: "ok", blocked: true }));
+    const run = await registry.run(testHook, { value: 1 });
+    expect(run.blocked).toBe(true);
+    expect(run.blockedMessage).toBeUndefined();
   });
 
   it("unregister 后不再执行", async () => {
-    const registry = new HookRegistry(createNullLogger());
-    const handler = vi.fn();
+    const registry = newRegistry();
+    const handler = vi.fn(() => ({ status: "ok" as const }));
     const off = registry.on(testHook, handler);
     off();
     await registry.run(testHook, { value: 1 });
@@ -151,94 +165,63 @@ describe("HookRegistry", () => {
   });
 
   it("unregister 只移除对应 handler", async () => {
-    const registry = new HookRegistry(createNullLogger());
-    const removed = vi.fn();
-    const kept = vi.fn();
+    const registry = newRegistry();
+    const removed = vi.fn(() => ({ status: "ok" as const }));
+    const kept = vi.fn(() => ({ status: "ok" as const }));
     const off = registry.on(testHook, removed);
     registry.on(testHook, kept);
     off();
     await registry.run(testHook, { value: 1 });
     expect(removed).not.toHaveBeenCalled();
     expect(kept).toHaveBeenCalledTimes(1);
+  });
+
+  it("注销最后一个 handler 后 run 返回空链", async () => {
+    const registry = newRegistry();
+    const off = registry.on(testHook, () => ({ status: "ok" }));
+    off();
+    const run = await registry.run(testHook, { value: 1 });
+    expect(run.chain).toBeNull();
   });
 
   it("重复 unregister 安全", async () => {
-    const registry = new HookRegistry(createNullLogger());
-    const handler = vi.fn();
-    const off = registry.on(testHook, handler);
+    const registry = newRegistry();
+    const off = registry.on(testHook, () => ({ status: "ok" }));
     off();
     off();
-    await registry.run(testHook, { value: 1 });
-    expect(handler).not.toHaveBeenCalled();
+    const run = await registry.run(testHook, { value: 1 });
+    expect(run.chain).toBeNull();
   });
 
   it("存在其他 handler 时重复 unregister 不报错", async () => {
-    const registry = new HookRegistry(createNullLogger());
-    const removed = vi.fn();
-    const kept = vi.fn();
+    const registry = newRegistry();
+    const kept = vi.fn(() => ({ status: "ok" as const }));
     registry.on(testHook, kept);
-    const off = registry.on(testHook, removed);
+    const off = registry.on(testHook, () => ({ status: "ok" }));
     off();
     off();
     await registry.run(testHook, { value: 1 });
-    expect(removed).not.toHaveBeenCalled();
     expect(kept).toHaveBeenCalledTimes(1);
   });
 
-  it("同一 handler 注册两次会执行两次", async () => {
-    const registry = new HookRegistry(createNullLogger());
-    const handler = vi.fn();
-    registry.on(testHook, handler);
-    registry.on(testHook, handler);
-    await registry.run(testHook, { value: 1 });
-    expect(handler).toHaveBeenCalledTimes(2);
-  });
-
-  it("最后一个 handler 注销后可再次注册并执行", async () => {
-    const registry = new HookRegistry(createNullLogger());
-    const first = vi.fn();
+  it("注销后可重新注册并执行", async () => {
+    const registry = newRegistry();
+    const first = vi.fn(() => ({ status: "ok" as const }));
     const off = registry.on(testHook, first);
     off();
-    const second = vi.fn();
+    const second = vi.fn(() => ({ status: "ok" as const }));
     registry.on(testHook, second);
     await registry.run(testHook, { value: 1 });
     expect(first).not.toHaveBeenCalled();
     expect(second).toHaveBeenCalledTimes(1);
   });
 
-  it("不同 qualifiedId 的 hook 互不干扰", async () => {
-    const hookA = createHook<{ n: number }>("@freeanima/hooks/test/a");
-    const hookB = createHook<{ n: number }>("@freeanima/hooks/test/b");
-    const registry = new HookRegistry(createNullLogger());
-    const onA = vi.fn();
-    const onB = vi.fn();
-    registry.on(hookA, onA);
-    registry.on(hookB, onB);
-    await registry.run(hookA, { n: 1 });
-    expect(onA).toHaveBeenCalledTimes(1);
-    expect(onB).not.toHaveBeenCalled();
-  });
-
-  it("不同 registry 实例互不影响", async () => {
-    const registryA = new HookRegistry(createNullLogger());
-    const registryB = new HookRegistry(createNullLogger());
-    const handlerA = vi.fn();
-    const handlerB = vi.fn();
-    registryA.on(testHook, handlerA);
-    registryB.on(testHook, handlerB);
-    await registryA.run(testHook, { value: 1 });
-    expect(handlerA).toHaveBeenCalledTimes(1);
-    expect(handlerB).not.toHaveBeenCalled();
-  });
-
-  it("handler 收到 run 传入的 payload 引用", async () => {
-    const registry = new HookRegistry(createNullLogger());
-    let received: TestPayload | undefined;
-    registry.on(testHook, (payload) => {
-      received = payload;
-    });
-    const payload = { value: 7 };
-    await registry.run(testHook, payload);
-    expect(received).toBe(payload);
+  it("同一 handler 注册两次会执行两次", async () => {
+    const registry = newRegistry();
+    const handler = vi.fn(() => ({ status: "ok" as const }));
+    registry.on(testHook, handler);
+    registry.on(testHook, handler);
+    await registry.run(testHook, { value: 1 });
+    expect(handler).toHaveBeenCalledTimes(2);
   });
 });

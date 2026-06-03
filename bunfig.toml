@@ -3,6 +3,7 @@
 [test]
 coverageReporter = ["text"]
 coverageDir = "coverage"
+coverageThreshold = 0.6
 
 # 不发现、不运行集成测试（见 tests/bunfig.toml + bun run test:integration）
 pathIgnorePatterns = ["tests/integration/**"]

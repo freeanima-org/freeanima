@@ -1,7 +1,9 @@
 import { logComponent } from "@freeanima/legacy-kernel";
 import { loadConfig } from "@freeanima/legacy-kernel";
 import type { HookClarifyItem, HookStreamEvent, TurnControl } from "@freeanima/legacy-kernel";
+import { headOkStepData } from "@freeanima/hooks";
 import { toolAfterCall } from "@freeanima/legacy-kernel";
+import type { ToolAfterCallEffect } from "@freeanima/legacy-kernel";
 import { parseToolArgs, toolError, toolResult } from "@freeanima/legacy-kernel";
 import * as llm from "./llm";
 import { cleanToolCallsForApi } from "./llm";
@@ -167,13 +169,14 @@ async function runToolAfterCallHooks(
   args: Record<string, unknown>,
   result: string,
 ): Promise<TurnControl | null> {
-  const ctx = await kernel.hookRegistry.run(toolAfterCall, {
+  const run = await kernel.hookRegistry.run(toolAfterCall, {
     sessionId,
     toolName,
     args,
     result,
   });
-  const tc = ctx.turnControl;
+  const effect = (headOkStepData(run.chain) ?? {}) as ToolAfterCallEffect;
+  const tc = effect.turnControl;
   if (!tc?.pause || !Array.isArray(tc.streamEvents)) return null;
   return tc as TurnControl;
 }
