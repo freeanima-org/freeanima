@@ -1,0 +1,3 @@
+# 集成测试专用：bun test --config tests/bunfig.toml tests/integration
+[test]
+timeout = 30000

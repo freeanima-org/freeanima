@@ -1,4 +1,4 @@
-import { Hook } from "./hook.js";
+import { Hook } from "./hook";
 
 export type PayloadOf<H> = H extends Hook<infer P> ? P : never;
 

@@ -2,10 +2,9 @@
   "name": "@freeanima/legacy-cli",
   "type": "module",
   "bin": {
-    "anima": "./dist/cli.js"
+    "anima": "./src/cli.ts"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json && chmod +x dist/cli.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "bun test tests/unit --pass-with-no-tests"
   },

@@ -20,10 +20,10 @@ import {
   resolveProbeHost,
   readRecentErrorLogTail,
   writeStatusLine,
-} from "./service-common.js";
+} from "./service-common";
 
 import { parseBindHosts } from "@freeanima/legacy-server/bind-hosts";
-import { renderSystemdUnit, systemdUserAvailable, SYSTEMD_UNIT } from "./systemd-unit.js";
+import { renderSystemdUnit, systemdUserAvailable, SYSTEMD_UNIT } from "./systemd-unit";
 
 export type ServiceArgs = {
   action: string;

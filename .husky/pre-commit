@@ -1,2 +1,2 @@
 bun run typecheck
-bun test
+bun test --pass-with-no-tests

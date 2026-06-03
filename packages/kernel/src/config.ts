@@ -1,8 +1,8 @@
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
-import { CREDENTIAL_MAP, PATHS } from "./paths.js";
-import { nestConfigSchema, type NestConfig } from "./schemas/config.js";
-import { credential } from "./credential.js";
+import { CREDENTIAL_MAP, PATHS } from "./paths";
+import { nestConfigSchema, type NestConfig } from "./schemas/config";
+import { credential } from "./credential";
 
 let cache: NestConfig | null = null;
 
@@ -51,7 +51,7 @@ export function clearConfigCache(): void {
   cache = null;
 }
 
-export { sanitizeConfigForApi } from "./config-sanitize.js";
+export { sanitizeConfigForApi } from "./config-sanitize";
 
 /** 合并写入 config.yaml 某一段（如 discord / weixin） */
 export function patchConfigSection(

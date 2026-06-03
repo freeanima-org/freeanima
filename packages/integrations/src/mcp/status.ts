@@ -1,4 +1,4 @@
-import type { McpServerConfig } from "./client.js";
+import type { McpServerConfig } from "./client";
 
 export type McpServerConfigView = {
   transport: "stdio" | "sse";

@@ -1,20 +1,11 @@
 {
   "name": "@freeanima/legacy-runtime",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    },
-    "./system-prompt-wire": {
-      "types": "./dist/system-prompt-wire.d.ts",
-      "import": "./dist/system-prompt-wire.js"
-    }
+    ".": "./src/index.ts",
+    "./system-prompt-wire": "./src/system-prompt-wire.ts"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "bun test tests/unit --pass-with-no-tests"
   },

@@ -1,17 +1,14 @@
 #!/usr/bin/env bash
-# 将 apps/cli/dist/cli.js 链接到 ~/.bun/bin/anima（shebang 为 bun，无需 bun link -g）
+# 将 apps/cli/src/cli.ts 链接到 ~/.bun/bin/anima（shebang 为 bun，无需 bun link -g）
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-CLI="${ROOT}/apps/cli/dist/cli.js"
+CLI="${ROOT}/apps/cli/src/cli.ts"
 BIN_DIR="${BUN_INSTALL:-${HOME}/.bun}/bin"
 LINK="${BIN_DIR}/anima"
 
-echo "→ 构建 @freeanima/legacy-cli …"
-bun run --filter @freeanima/legacy-cli build
-
 if [[ ! -f "$CLI" ]]; then
-  echo "error: 未找到 ${CLI}，build 可能失败" >&2
+  echo "error: 未找到 ${CLI}" >&2
   exit 1
 fi
 

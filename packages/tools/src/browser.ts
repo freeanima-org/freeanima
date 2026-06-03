@@ -13,7 +13,7 @@ import {
   camofoxType,
   camofoxVision,
   isCamofoxConfigured,
-} from "./browser-camofox.js";
+} from "./browser-camofox";
 
 function sessionKey(): string {
   return getToolSessionId() ?? "default";

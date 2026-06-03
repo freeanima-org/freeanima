@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { HookRegistry } from "@freeanima/hooks";
-import { Kernel } from "./index.js";
+import { Kernel } from "./index";
 
 describe("Kernel", () => {
   it("组合 hooks 端口", () => {

@@ -1,4 +1,4 @@
-import type { StreamEvent } from "./engine.js";
+import type { StreamEvent } from "./engine";
 
 /** 将引擎/Rruntime 流式事件收集为最终回复文本（供非 SSE 消费方使用）。 */
 export async function collectStreamReply(events: AsyncIterable<StreamEvent>): Promise<string> {

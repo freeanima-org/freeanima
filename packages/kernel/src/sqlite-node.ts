@@ -1,6 +1,6 @@
 import Database from "better-sqlite3";
 
-import type { SqliteDatabase } from "./sqlite.js";
+import type { SqliteDatabase } from "./sqlite";
 
 export function openNodeSqlite(path: string): SqliteDatabase {
   const db = new Database(path);

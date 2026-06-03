@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { getStore } from "./store.js";
+import { getStore } from "./store";
 
 const MAX_AGENTS_CHARS = 8000;
 

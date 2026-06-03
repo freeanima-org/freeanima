@@ -4,7 +4,7 @@ import { loadConfig } from "@freeanima/legacy-kernel";
 import { logError } from "@freeanima/legacy-kernel";
 import type { SessionMessage, ToolMessage } from "@freeanima/legacy-kernel";
 import type { OpenAiToolSchema } from "@freeanima/legacy-kernel";
-import { repairToolLoopMessages } from "./tool-loop-integrity.js";
+import { repairToolLoopMessages } from "./tool-loop-integrity";
 
 export class LLMError extends Error {
   constructor(

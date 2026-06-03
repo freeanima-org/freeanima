@@ -5,7 +5,7 @@ import {
   DEFAULT_CONNECT_TIMEOUT_MS,
   DEFAULT_PROMPT_TIMEOUT_MS,
   resolveAcpRequestTimeoutMs,
-} from "../../src/acp/client.js";
+} from "../../src/acp/client";
 
 describe("resolveAcpRequestTimeoutMs", () => {
   it("session/prompt 使用 prompt 超时", () => {

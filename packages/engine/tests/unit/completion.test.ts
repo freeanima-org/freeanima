@@ -1,6 +1,6 @@
 import { describe, it, expect } from "bun:test";
-import { buildProgram } from "../../../../apps/cli/src/program.js";
-import { generateCompletion, SUPPORTED_SHELLS } from "../../../../apps/cli/src/completion/generate.js";
+import { buildProgram } from "../../../../apps/cli/src/program";
+import { generateCompletion, SUPPORTED_SHELLS } from "../../../../apps/cli/src/completion/generate";
 
 describe("shell completion", () => {
   it("supported shells", () => {

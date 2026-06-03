@@ -3,8 +3,8 @@ import {
   awaitingClarifySchema,
   compressionStateSchema,
   sessionTodoStoreSchema,
-} from "./session-meta.js";
-import { parseJsonLine } from "./util.js";
+} from "./session-meta";
+import { parseJsonLine } from "./util";
 
 export const openAiFunctionSchema = z.object({
   name: z.string(),

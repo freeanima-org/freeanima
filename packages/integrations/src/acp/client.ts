@@ -3,14 +3,14 @@ import { NEST_VERSION } from "@freeanima/legacy-runtime";
 import { existsSync } from "node:fs";
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { createInterface, type Interface } from "node:readline";
-import { genericAcpAdapter, parseSessionUpdateChunk } from "./adapters/generic.js";
-import { resolveAcpAdapter } from "./adapters/registry.js";
-import type { AcpAgentAdapter } from "./adapters/types.js";
-import type { AcpAgentConfig } from "./status.js";
+import { genericAcpAdapter, parseSessionUpdateChunk } from "./adapters/generic";
+import { resolveAcpAdapter } from "./adapters/registry";
+import type { AcpAgentAdapter } from "./adapters/types";
+import type { AcpAgentConfig } from "./status";
 import {
   jsonRpcMessageSchema,
   type JsonRpcMessage,
-} from "../schemas/acp-jsonrpc.js";
+} from "../schemas/acp-jsonrpc";
 
 export const DEFAULT_CONNECT_TIMEOUT_MS = 15_000;
 export const DEFAULT_PROMPT_TIMEOUT_MS = 120_000;

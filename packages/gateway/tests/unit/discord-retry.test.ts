@@ -4,7 +4,7 @@ import {
   isDiscordRetryableError,
   tryDiscordInterimEdit,
   withDiscordRetry,
-} from "../../src/discord/discord-retry.js";
+} from "../../src/discord/discord-retry";
 
 describe("isDiscordRetryableError", () => {
   it("429 与 5xx 可重试", () => {

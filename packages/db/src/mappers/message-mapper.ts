@@ -13,7 +13,7 @@ import {
 import {
   type MessageInsert,
   messageSelectSchema,
-} from "../schema/zod-schemas.js";
+} from "../schema/zod-schemas";
 
 export function newMessageGlobalId(): string {
   return randomUUID();

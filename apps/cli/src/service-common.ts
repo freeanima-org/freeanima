@@ -6,7 +6,7 @@ import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 
 import { isServerAlive } from "@freeanima/legacy-server/alive";
-import { prettyDuration, writeStatusLine } from "./output/status.js";
+import { prettyDuration, writeStatusLine } from "./output/status";
 
 export { prettyDuration, writeStatusLine };
 
@@ -71,7 +71,7 @@ export function ensureWebuiBuilt(): void {
 export function animaBin(): string {
   const script = process.argv[1];
   // 当前进程即 TS CLI 时优先用它，避免 PATH 上遗留的旧 freeanima / Python 入口
-  if (script?.endsWith("cli.js")) {
+  if (script?.endsWith("cli.js") || script?.endsWith("cli.ts")) {
     return `${process.execPath} ${realpathSync(script)}`;
   }
 

@@ -2,7 +2,7 @@ import { execFileSync, spawnSync } from "node:child_process";
 import { readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { parse as parseYaml, stringify as yamlStringify } from "yaml";
-import { PATHS } from "./paths.js";
+import { PATHS } from "./paths";
 
 export interface CredentialMeta {
   path: string;

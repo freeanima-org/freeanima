@@ -4,25 +4,25 @@ import { join, resolve } from "node:path";
 import { randomBytes } from "node:crypto";
 import { PATHS, CST_OFFSET_MS } from "@freeanima/legacy-kernel";
 import { loadConfig } from "@freeanima/legacy-kernel";
-import { buildSystemPrompt } from "./system-prompt-registry.js";
+import { buildSystemPrompt } from "./system-prompt-registry";
 import { openaiSchemas } from "@freeanima/legacy-kernel";
-import { getCompressionConfig } from "./compression-config.js";
-import { generateSessionSummary } from "./compression-summary.js";
-import { clearToolLoopSuppression, isInToolLoop } from "./compression-tool-loop.js";
+import { getCompressionConfig } from "./compression-config";
+import { generateSessionSummary } from "./compression-summary";
+import { clearToolLoopSuppression, isInToolLoop } from "./compression-tool-loop";
 import {
   analyzeCompression,
   compress,
   parseCompressionState,
   type CompressionState,
-} from "./compressor.js";
-import { injectTimePrefixes } from "./time-perception.js";
+} from "./compressor";
+import { injectTimePrefixes } from "./time-perception";
 import { logError } from "@freeanima/legacy-kernel";
 import {
   detectToolLoopCorruption,
   countFollowingToolMessages,
   syntheticToolContent,
   REPAIR_REASON_LOST,
-} from "./tool-loop-integrity.js";
+} from "./tool-loop-integrity";
 import {
   isSessionMeta,
   type SessionMessage,
@@ -53,7 +53,7 @@ import {
   postgresAvailable,
   sessionExistsWithRouting,
   nextMessagePosWithRouting,
-} from "./session-store-pg-bridge.js";
+} from "./session-store-pg-bridge";
 
 export type Message = SessionMessage;
 export {

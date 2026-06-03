@@ -1,5 +1,5 @@
-export * from "./registry.js";
-export { registerBuiltins } from "./builtins.js";
-import { registerBuiltins } from "./builtins.js";
+export * from "./registry";
+export { registerBuiltins } from "./builtins";
+import { registerBuiltins } from "./builtins";
 
 registerBuiltins();

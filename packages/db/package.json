@@ -1,20 +1,11 @@
 {
   "name": "@freeanima/legacy-db",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    },
-    "./test-helpers": {
-      "types": "./dist/test-helpers/pg.d.ts",
-      "import": "./dist/test-helpers/pg.js"
-    }
+    ".": "./src/index.ts",
+    "./test-helpers": "./src/test-helpers/pg.ts"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",

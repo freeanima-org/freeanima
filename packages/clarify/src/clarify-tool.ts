@@ -1,6 +1,6 @@
 import { registerTool, toolError, toolResult } from "@freeanima/legacy-kernel";
-import { getClarifyConfig } from "./clarify.js";
-import type { ClarifyItem as ClarifyItemType } from "./clarify.js";
+import { getClarifyConfig } from "./clarify";
+import type { ClarifyItem as ClarifyItemType } from "./clarify";
 
 type ClarifyArgs = {
   items?: unknown;

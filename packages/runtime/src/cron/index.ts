@@ -1,8 +1,8 @@
 import { randomBytes } from "node:crypto";
 import { CST_OFFSET_MS } from "@freeanima/legacy-kernel";
-import { CronJob } from "./models.js";
-import * as store from "./store.js";
-import { computeNextRun } from "./schedule.js";
+import { CronJob } from "./models";
+import * as store from "./store";
+import { computeNextRun } from "./schedule";
 
 function nowIso(): string {
   return new Date(Date.now() + CST_OFFSET_MS).toISOString().replace("Z", "+08:00");
@@ -110,10 +110,10 @@ export function ensureBuiltinCronJobs(): void {
   store.saveAll(jobs);
 }
 
-export { CronJob } from "./models.js";
-export { Scheduler, POLL_INTERVAL_MS } from "./scheduler.js";
-export { enqueueRunJob, runJob, runL2GapFill } from "./runner.js";
-export { computeNextRun, parseSchedule, ScheduleType } from "./schedule.js";
+export { CronJob } from "./models";
+export { Scheduler, POLL_INTERVAL_MS } from "./scheduler";
+export { enqueueRunJob, runJob, runL2GapFill } from "./runner";
+export { computeNextRun, parseSchedule, ScheduleType } from "./schedule";
 export {
   deliverCronResult,
   registerCronDeliverer,
@@ -122,5 +122,5 @@ export {
   type CronDeliverFn,
   type CronDeliverPayload,
   type CronDeliverTarget,
-} from "./deliver.js";
-export * as cronStore from "./store.js";
+} from "./deliver";
+export * as cronStore from "./store";

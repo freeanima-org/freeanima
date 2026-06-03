@@ -6,10 +6,10 @@ import type { SessionMessage, SessionMetaMessage } from "@freeanima/legacy-kerne
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
-import { closeDb, type Db, setDbForTest } from "../client.js";
-import { appendMessage } from "../repos/message-repo.js";
-import { upsertSessionMeta } from "../repos/session-repo.js";
-import { relations } from "../schema/index.js";
+import { closeDb, type Db, setDbForTest } from "../client";
+import { appendMessage } from "../repos/message-repo";
+import { upsertSessionMeta } from "../repos/session-repo";
+import { relations } from "../schema/index";
 
 export type PgTestContext = {
   sql: postgres.Sql;

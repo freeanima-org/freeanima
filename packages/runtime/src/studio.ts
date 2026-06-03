@@ -12,7 +12,7 @@ import {
   DEFAULT_SKIP_DIRS,
   isIgnored,
   loadGitignoreStack,
-} from "./studio-gitignore.js";
+} from "./studio-gitignore";
 
 export const MAX_FILE_BYTES = 1024 * 1024;
 export const MAX_SEARCH_RESULTS = 200;

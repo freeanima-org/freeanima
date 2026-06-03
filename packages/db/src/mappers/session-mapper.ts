@@ -13,13 +13,13 @@ import { z } from "zod";
 import {
   buildPlatformInfo,
   splitPlatformInfo,
-} from "../schema/jsonb/platform-info.js";
-import { acpSessionsSchema } from "../schema/jsonb/session-jsonb.js";
+} from "../schema/jsonb/platform-info";
+import { acpSessionsSchema } from "../schema/jsonb/session-jsonb";
 import {
   type SessionInsert,
   sessionSelectSchema,
-} from "../schema/zod-schemas.js";
-import { normalizePgTimestamp, pgJsonbOrNull, pgTextOrNull } from "../utils/timestamp.js";
+} from "../schema/zod-schemas";
+import { normalizePgTimestamp, pgJsonbOrNull, pgTextOrNull } from "../utils/timestamp";
 
 function nowIso(): string {
   return normalizePgTimestamp(new Date());

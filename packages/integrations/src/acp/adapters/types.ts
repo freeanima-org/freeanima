@@ -1,4 +1,4 @@
-import type { ACPClient } from "../client.js";
+import type { ACPClient } from "../client";
 
 /** ACP Agent 方言适配：解析通知、应答服务端 RPC */
 export interface AcpAgentAdapter {

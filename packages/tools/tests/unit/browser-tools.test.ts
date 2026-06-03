@@ -13,7 +13,7 @@ import {
   getCamofoxUrl,
   isCamofoxConfigured,
   resetCamofoxSessionsForTests,
-} from "../../src/browser-camofox.js";
+} from "../../src/browser-camofox";
 
 const BROWSER_TOOLS = [
   "browser_navigate",

@@ -1,9 +1,9 @@
 import { NEST_VERSION } from "@freeanima/legacy-runtime";
 import { Command } from "commander";
 
-import { registerServiceCommand } from "./commands/service.js";
-import { registerCredentialCommand } from "./commands/credential.js";
-import { registerCompletionCommand } from "./commands/completion.js";
+import { registerServiceCommand } from "./commands/service";
+import { registerCredentialCommand } from "./commands/credential";
+import { registerCompletionCommand } from "./commands/completion";
 
 /** 构建 CLI 程序（供 parse 与 completion 生成共用） */
 export function buildProgram(): Command {

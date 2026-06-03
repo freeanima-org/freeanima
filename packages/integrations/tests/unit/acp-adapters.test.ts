@@ -1,7 +1,7 @@
 import { describe, it, expect } from "bun:test";
-import { parseSessionUpdateChunk } from "../../src/acp/adapters/generic.js";
-import { cursorAcpAdapter } from "../../src/acp/adapters/cursor.js";
-import { resolveAcpAdapter } from "../../src/acp/adapters/registry.js";
+import { parseSessionUpdateChunk } from "../../src/acp/adapters/generic";
+import { cursorAcpAdapter } from "../../src/acp/adapters/cursor";
+import { resolveAcpAdapter } from "../../src/acp/adapters/registry";
 
 describe("parseSessionUpdateChunk", () => {
   it("解析 Cursor sessionUpdate 蛇形命名", () => {

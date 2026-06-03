@@ -1,4 +1,4 @@
-import type { AcpAgentAdapter } from "./types.js";
+import type { AcpAgentAdapter } from "./types";
 
 function normalizeUpdateKind(update: Record<string, unknown>): string {
   const raw = update.sessionUpdate ?? update.type ?? "";

@@ -1,5 +1,5 @@
-import { HookHandler, PayloadOf } from "./handler.js";
-import { Hook } from "./hook.js";
+import { HookHandler, PayloadOf } from "./handler";
+import { Hook } from "./hook";
 
 
 type RegisteredHandler = {

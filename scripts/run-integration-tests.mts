@@ -10,7 +10,7 @@ execSync("bun run build", { cwd: repoRoot, stdio: "inherit" });
 
 const teardown = await setupIntegrationPg();
 try {
-  execSync("bun test --config scripts/bunfig.integration.toml tests/integration", {
+  execSync("bun test --config tests/bunfig.toml tests/integration", {
     cwd: repoRoot,
     stdio: "inherit",
     env: process.env,

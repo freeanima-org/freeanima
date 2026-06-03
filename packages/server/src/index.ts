@@ -1,3 +1,3 @@
-export { createApp } from "./http-app.js";
-export { isServerAlive, readStatusFile } from "./alive.js";
-export { serve, getService } from "./serve.js";
+export { createApp } from "./http-app";
+export { isServerAlive, readStatusFile } from "./alive";
+export { serve, getService } from "./serve";

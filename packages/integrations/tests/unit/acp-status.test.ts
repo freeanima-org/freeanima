@@ -3,8 +3,8 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { clearConfigCache } from "@freeanima/legacy-kernel";
-import { sanitizeAcpConfig, shortSessionId, isAcpAgentEnabled } from "../../src/acp/status.js";
-import { AcpManager } from "../../src/acp/manager.js";
+import { sanitizeAcpConfig, shortSessionId, isAcpAgentEnabled } from "../../src/acp/status";
+import { AcpManager } from "../../src/acp/manager";
 
 describe("isAcpAgentEnabled", () => {
   it("缺省或为 true 时启用", () => {

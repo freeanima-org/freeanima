@@ -19,12 +19,12 @@ import {
 } from "@freeanima/legacy-gateway";
 import { MCPManager, getAcpManager } from "@freeanima/legacy-integrations";
 import { closeDb, getDb, isPostgresPrimary } from "@freeanima/legacy-db";
-import { createApp } from "./http-app.js";
-import { DEFAULT_BIND_HOST, parseBindHosts } from "./bind-hosts.js";
-import { closeHttpServers, waitForDrainWithTimeout } from "./http-shutdown.js";
+import { createApp } from "./http-app";
+import { DEFAULT_BIND_HOST, parseBindHosts } from "./bind-hosts";
+import { closeHttpServers, waitForDrainWithTimeout } from "./http-shutdown";
 
-export { isServerAlive, readStatusFile } from "./alive.js";
-export { DEFAULT_BIND_HOST, DEFAULT_BIND_HOSTS, parseBindHosts, resolveProbeHost } from "./bind-hosts.js";
+export { isServerAlive, readStatusFile } from "./alive";
+export { DEFAULT_BIND_HOST, DEFAULT_BIND_HOSTS, parseBindHosts, resolveProbeHost } from "./bind-hosts";
 
 let service: NestService | null = null;
 let bus: EventBus | null = null;

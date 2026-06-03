@@ -2,8 +2,8 @@ import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { sanitizeMcpConfig, isMcpServerEnabled } from "../../src/mcp/status.js";
-import { MCPManager } from "../../src/mcp/manager.js";
+import { sanitizeMcpConfig, isMcpServerEnabled } from "../../src/mcp/status";
+import { MCPManager } from "../../src/mcp/manager";
 
 describe("sanitizeMcpConfig", () => {
   it("脱敏 env 值，仅保留键名", () => {
