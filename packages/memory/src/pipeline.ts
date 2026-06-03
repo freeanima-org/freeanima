@@ -1,4 +1,4 @@
-import { logError } from "@freeanima/legacy-kernel";
+import { logComponent } from "@freeanima/legacy-kernel";
 import type { EventBus } from "@freeanima/legacy-kernel";
 import { isDebugSession } from "@freeanima/legacy-kernel";
 import { loadConfig } from "@freeanima/legacy-kernel";
@@ -33,7 +33,7 @@ export function registerMemoryPipeline(bus: EventBus): void {
               bus.emit("l2:updated", { session_id: sessionId });
             }
           } catch (err) {
-            logError(`L2 distill failed for ${sessionId}`, { source: "memory", error: err });
+            logComponent("memory").error(`L2 distill failed for ${sessionId}`, { err });
           }
         })();
       }, DISTILL_DEBOUNCE_MS),
@@ -51,7 +51,7 @@ export function registerMemoryPipeline(bus: EventBus): void {
         bus.emit("l3:updated", { fact_ids });
       }
     } catch (err) {
-      logError(`Reflection failed for ${sessionId}`, { source: "memory", error: err });
+      logComponent("memory").error(`Reflection failed for ${sessionId}`, { err });
     }
   });
 
@@ -61,7 +61,7 @@ export function registerMemoryPipeline(bus: EventBus): void {
     try {
       indexL2Session(sessionId);
     } catch (err) {
-      logError(`L2 index failed for ${sessionId}`, { source: "memory", error: err });
+      logComponent("memory").error(`L2 index failed for ${sessionId}`, { err });
     }
   });
 
@@ -75,7 +75,7 @@ export function registerMemoryPipeline(bus: EventBus): void {
         indexL3All();
       }
     } catch (err) {
-      logError("L3 index refresh failed", { source: "memory", error: err });
+      logComponent("memory").error("L3 index refresh failed", { err });
     }
   });
 }

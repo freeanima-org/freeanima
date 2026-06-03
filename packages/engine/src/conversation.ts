@@ -16,7 +16,7 @@ import {
   type CompressionState,
 } from "./compressor";
 import { injectTimePrefixes } from "./time-perception";
-import { logError } from "@freeanima/legacy-kernel";
+import { logComponent } from "@freeanima/legacy-kernel";
 import {
   detectToolLoopCorruption,
   countFollowingToolMessages,
@@ -467,16 +467,15 @@ async function finalizeCompressionSummary(
   if (gen.ok) {
     merged.summary = gen.summary;
   } else {
-    logError(`会话摘要生成失败: ${session}`, { source: "compression", error: gen.error });
+    logComponent("compression").error(`会话摘要生成失败: ${session}`, { err: gen.error });
   }
 
   await updateSessionMetaField(session, { compression: merged });
   try {
     await rebuildSessionSystemPrompt(session);
   } catch (e) {
-    logError(`压缩后重建 system_prompt 失败: ${session}`, {
-      source: "compression",
-      error: String(e),
+    logComponent("compression").error(`压缩后重建 system_prompt 失败: ${session}`, {
+      err: String(e),
     });
   }
 }
@@ -497,7 +496,7 @@ function scheduleCompressionSummary(
     systemPromptSnapshot,
     model,
   ).catch((e) => {
-    logError(`会话摘要流水线异常: ${session}`, { source: "compression", error: String(e) });
+    logComponent("compression").error(`会话摘要流水线异常: ${session}`, { err: String(e) });
   });
 }
 
@@ -612,9 +611,9 @@ export async function repairAndPersistToolLoop(
     }
   }
 
-  logError(`tool loop 历史已修复: session=${session} 原位插入 ${inserted} 条 synthetic tool`, {
-    source: "tool-loop-integrity",
-  });
+  logComponent("tool-loop-integrity").error(
+    `tool loop 历史已修复: session=${session} 原位插入 ${inserted} 条 synthetic tool`,
+  );
   return true;
 }
 

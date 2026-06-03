@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@freeanima/hooks": "workspace:*",
+    "@freeanima/logging": "workspace:*",
     "better-sqlite3": "^11.10.0",
     "yaml": "^2.9.0",
     "zod": "catalog:"

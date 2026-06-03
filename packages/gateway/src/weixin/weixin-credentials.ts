@@ -1,4 +1,4 @@
-import { credentialRaw } from "@freeanima/legacy-kernel";
+import { credentialRaw, logComponent } from "@freeanima/legacy-kernel";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
@@ -25,7 +25,7 @@ function buildCredentials(data: Record<string, unknown>, source: string): Weixin
   const token = String(data.token ?? "");
   const accountId =
     String(data.account_id ?? "").trim() || botAccountIdFromToken(token);
-  console.log(`WeChat credentials loaded from ${source}`);
+  logComponent("weixin").info(`WeChat credentials loaded from ${source}`, { source });
   return {
     token,
     base_url: String(data.base_url ?? ILINK_BASE_URL),

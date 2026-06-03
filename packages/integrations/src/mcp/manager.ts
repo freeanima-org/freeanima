@@ -1,4 +1,4 @@
-import { listTools, loadConfig, registerTool, toolError, unregisterToolsByToolset } from "@freeanima/legacy-kernel";
+import { listTools, loadConfig, logComponent, registerTool, toolError, unregisterToolsByToolset } from "@freeanima/legacy-kernel";
 
 import { McpClientSession, type McpServerConfig } from "./client";
 import { extractMcpResult, mcpToolParameters } from "./schema";
@@ -29,7 +29,7 @@ export class MCPManager {
       this.startTask = null;
     });
     void this.startTask.catch((err) => {
-      console.error(`MCP background startup failed: ${err}`);
+      logComponent("mcp").error("MCP background startup failed", { err });
     });
   }
 
@@ -80,7 +80,7 @@ export class MCPManager {
       try {
         await session.close();
       } catch (err) {
-        console.warn(`MCP '${name}': close error: ${err}`);
+        logComponent("mcp").warn(`MCP '${name}': close error`, { err, server: name });
       }
       this.clients.delete(name);
     }
@@ -156,7 +156,10 @@ export class MCPManager {
 
     this.recountTools();
     if (total > 0) {
-      console.log(`MCP: ${total} tool(s) registered from ${entries.length} server(s)`);
+      logComponent("mcp").info(`MCP: ${total} tool(s) registered from ${entries.length} server(s)`, {
+        tool_count: total,
+        server_count: entries.length,
+      });
     }
     return total;
   }
@@ -172,7 +175,7 @@ export class MCPManager {
       return registered;
     } catch (err) {
       this.serverErrors.set(name, String(err));
-      console.error(`Failed to start MCP server '${name}': ${err}`);
+      logComponent("mcp").error(`Failed to start MCP server '${name}'`, { err, server: name });
       return 0;
     } finally {
       this.connecting.delete(name);
@@ -218,7 +221,10 @@ export class MCPManager {
     }
 
     if (registered > 0) {
-      console.log(`MCP '${name}': ${registered} tool(s) registered`);
+      logComponent("mcp").info(`MCP '${name}': ${registered} tool(s) registered`, {
+        server: name,
+        tool_count: registered,
+      });
     }
     return registered;
   }
@@ -260,7 +266,7 @@ export class MCPManager {
             input_schema: t.inputSchema,
           }));
         } catch (err) {
-          console.warn(`MCP '${name}': listTools failed: ${err}`);
+          logComponent("mcp").warn(`MCP '${name}': listTools failed`, { err, server: name });
         }
         try {
           const listed = await session.listResources();
@@ -320,25 +326,26 @@ export class MCPManager {
     const t0 = Date.now();
     const clientCount = this.clients.size;
     const connectingCount = this.connecting.size;
-    console.log(
-      `[shutdown] MCP 关闭 ${clientCount} 个连接` +
+    logComponent("shutdown").info(
+      `MCP 关闭 ${clientCount} 个连接` +
         (connectingCount ? `（另有 ${connectingCount} 个仍在连接中）` : "") +
         "…",
+      { client_count: clientCount, connecting_count: connectingCount },
     );
     this.closed = true;
     if (this.startTask) {
-      console.log("[shutdown] MCP 等待后台 startAll 结束…");
+      logComponent("shutdown").info("MCP 等待后台 startAll 结束…");
       await this.startTask.catch(() => {});
-      console.log(`[shutdown] MCP 后台 startAll 已结束 (+${Date.now() - t0}ms)`);
+      logComponent("shutdown").info("MCP 后台 startAll 已结束", { ms: Date.now() - t0 });
     }
 
     for (const [name, session] of this.clients) {
       const ts = Date.now();
       try {
         await session.close();
-        console.log(`[shutdown] MCP '${name}' 已关闭 (+${Date.now() - ts}ms)`);
+        logComponent("shutdown").info(`MCP '${name}' 已关闭`, { ms: Date.now() - ts, server: name });
       } catch (err) {
-        console.warn(`[shutdown] MCP '${name}' 关闭失败: ${err}`);
+        logComponent("shutdown").warn(`MCP '${name}' 关闭失败`, { err, server: name });
       }
     }
     for (const name of [...this.clients.keys()]) {
@@ -350,7 +357,7 @@ export class MCPManager {
     this.connecting.clear();
     this.toolCount = 0;
     this.closed = false;
-    console.log(`[shutdown] MCP 全部关闭完成 (+${Date.now() - t0}ms)`);
+    logComponent("shutdown").info("MCP 全部关闭完成", { ms: Date.now() - t0 });
   }
 
   serverCount(): number {

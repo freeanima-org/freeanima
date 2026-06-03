@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { logComponent } from "@freeanima/legacy-kernel";
 
 /** systemctl 单元名（不含 `.service` 后缀） */
 export const SYSTEMD_UNIT = "anima";
@@ -30,13 +31,13 @@ export async function triggerServiceRestart(): Promise<void> {
       child.unref();
       return;
     } catch (e) {
-      console.error("[restart] systemctl restart failed:", e);
+      logComponent("server").error("systemctl restart failed", { err: e });
     }
   }
 
   try {
     process.kill(process.pid, "SIGTERM");
   } catch (e) {
-    console.error("[restart] failed to send SIGTERM:", e);
+    logComponent("server").error("failed to send SIGTERM", { err: e });
   }
 }

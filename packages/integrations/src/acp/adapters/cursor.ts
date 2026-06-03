@@ -1,3 +1,4 @@
+import { logComponent } from "@freeanima/legacy-kernel";
 import { permissionAllowOnce, parseSessionUpdateChunk } from "./generic";
 import type { AcpAgentAdapter } from "./types";
 
@@ -9,8 +10,7 @@ export const cursorAcpAdapter: AcpAgentAdapter = {
     try {
       await client.call("authenticate", { methodId: "cursor_login" });
     } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      console.warn(`[acp:cursor] authenticate failed (可能需要 agent login): ${msg}`);
+      logComponent("acp").warn("authenticate failed (可能需要 agent login)", { err: e });
     }
   },
 

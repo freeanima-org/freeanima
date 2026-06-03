@@ -1,4 +1,4 @@
-import { logError } from "@freeanima/legacy-kernel";
+import { logComponent } from "@freeanima/legacy-kernel";
 import { getHomeChannel } from "../home-channel";
 import type { CronJob } from "./models";
 
@@ -75,16 +75,14 @@ export async function deliverCronResult(job: CronJob, payload: CronDeliverPayloa
     const fn = deliverers.get(target.platform);
     if (!fn) {
       const msg = `Cron deliver: no handler for platform '${target.platform}' (job ${job.id})`;
-      console.warn(msg);
-      logError(msg, { source: "cron-deliver" });
+      logComponent("cron-deliver").warn(msg);
       continue;
     }
     try {
       await fn(target, text);
     } catch (e) {
       const msg = `Cron deliver failed (${target.platform}:${target.chat_id}): ${e}`;
-      console.warn(msg);
-      logError(msg, { source: "cron-deliver", error: e });
+      logComponent("cron-deliver").error(msg, { err: e });
     }
   }
 }

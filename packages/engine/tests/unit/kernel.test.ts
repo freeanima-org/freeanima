@@ -6,4 +6,8 @@ describe("legacy-engine kernel", () => {
   it("kernel.hookRegistry 为 HookRegistry 实例", () => {
     expect(kernel.hookRegistry).toBeInstanceOf(HookRegistry);
   });
+
+  it("kernel.logger 为 Logger 实例", () => {
+    expect(kernel.logger.info).toBeFunction();
+  });
 });

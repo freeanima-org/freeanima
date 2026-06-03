@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 import { mkdtempSync, readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { logError, logApiError, logStartupError, PATHS } from "@freeanima/legacy-kernel";
+import { logError, logApiError, logStartupError, PATHS, resetServiceLogger } from "@freeanima/legacy-kernel";
 
 describe("error-log", () => {
   let home: string;
@@ -11,6 +11,7 @@ describe("error-log", () => {
   beforeEach(() => {
     home = mkdtempSync(join(tmpdir(), "freeanima-errlog-"));
     process.env.FREEANIMA_HOME = home;
+    resetServiceLogger();
   });
 
   afterEach(() => {
@@ -35,7 +36,7 @@ describe("error-log", () => {
     logStartupError("服务启动失败", new Error("database.url 未配置"));
 
     const text = readFileSync(PATHS.errorLog, "utf-8");
-    expect(text).toContain("[startup]");
+    expect(text).toContain("startup");
     expect(text).toContain("服务启动失败");
     expect(text).toContain("database.url 未配置");
   });

@@ -1,4 +1,4 @@
-import { logError } from "@freeanima/legacy-kernel";
+import { logComponent } from "@freeanima/legacy-kernel";
 import { withDiscordRetry } from "./discord/discord-retry";
 import type { CronDeliverTarget } from "@freeanima/legacy-runtime";
 import { registerCronDeliverer, unregisterCronDeliverer } from "@freeanima/legacy-runtime";
@@ -71,12 +71,11 @@ export function unregisterWeixinCronDeliverer(): void {
 }
 
 export function logCronDeliverRegistration(platform: string): void {
-  console.log(`Cron deliverer registered: ${platform}`);
+  logComponent("cron").info(`Cron deliverer registered: ${platform}`, { platform });
 }
 
 export function warnCronDeliverFailure(platform: string, e: unknown): void {
-  logError(`Cron deliver registration failed for ${platform}`, {
-    source: "cron-deliver",
-    error: e,
+  logComponent("cron-deliver").error(`Cron deliver registration failed for ${platform}`, {
+    err: e,
   });
 }

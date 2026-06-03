@@ -1,7 +1,7 @@
 import OpenAI from "openai";
 import type { ChatCompletionMessageParam, ChatCompletionTool } from "openai/resources/chat/completions";
 import { loadConfig } from "@freeanima/legacy-kernel";
-import { logError } from "@freeanima/legacy-kernel";
+import { logComponent } from "@freeanima/legacy-kernel";
 import type { SessionMessage, ToolMessage } from "@freeanima/legacy-kernel";
 import type { OpenAiToolSchema } from "@freeanima/legacy-kernel";
 import { repairToolLoopMessages } from "./tool-loop-integrity";
@@ -177,12 +177,12 @@ function sanitizeMessageForApi(
       } as ChatCompletionMessageParam;
     }
     case "session_meta": {
-      logError("session_meta 消息不应进入 LLM 上下文", { source: "llm" });
+      logComponent("llm").error("session_meta 消息不应进入 LLM 上下文");
       return { role: "system", content: "" };
     }
     default: {
       const _exhaustive: never = msg;
-      logError(`未知消息 role，已跳过: ${JSON.stringify(_exhaustive)}`, { source: "llm" });
+      logComponent("llm").error(`未知消息 role，已跳过: ${JSON.stringify(_exhaustive)}`);
       throw new LLMError(`未知消息 role，无法发送给 LLM`);
     }
   }

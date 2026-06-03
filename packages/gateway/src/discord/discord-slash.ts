@@ -1,4 +1,4 @@
-import { logError } from "@freeanima/legacy-kernel";
+import { logComponent } from "@freeanima/legacy-kernel";
 import type { NestService } from "@freeanima/legacy-runtime";
 import {
   REST,
@@ -104,13 +104,19 @@ export async function syncDiscordSlashCommands(
   try {
     if (guildId) {
       await rest.put(Routes.applicationGuildCommands(appId, guildId), { body });
-      console.log(`Discord slash commands synced to guild ${guildId} (${body.length} commands)`);
+      logComponent("discord").info(
+        `Discord slash commands synced to guild ${guildId} (${body.length} commands)`,
+        { guild_id: guildId, command_count: body.length },
+      );
     } else {
       await rest.put(Routes.applicationCommands(appId), { body });
-      console.log(`Discord slash commands synced globally (${body.length} commands)`);
+      logComponent("discord").info(
+        `Discord slash commands synced globally (${body.length} commands)`,
+        { command_count: body.length },
+      );
     }
   } catch (e) {
-    logError("Discord slash command sync failed", { source: "discord", error: e });
+    logComponent("discord").error("Discord slash command sync failed", { err: e });
   }
 }
 
