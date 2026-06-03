@@ -103,6 +103,10 @@ L1 Session 主存为 PostgreSQL（`config.yaml` → `database.url`）。表设�
 | `apps/webui` | `@freeanima/legacy-webui` |
 
 ```
+kernel/             # RFC #1 新栈（与 legacy packages/ 并行）
+├── hooks/          # @freeanima/hooks：Hook token + HookRegistry
+├── logging/        # @freeanima/logging：Logger / LogSink / createLogger；内置 sink 子路径 sinks/{console,memory,null}
+└── kernel/         # @freeanima/kernel：Kernel 组合端口（HookRegistry）
 apps/
 ├── cli/            # anima 入口：service / credential / completion
 └── webui/          # Vue 3 + TypeScript WebUI；API 经 `src/api/client.ts`（Hono `hc<ApiRoutes>`）；静态 dist 由 server 挂载
