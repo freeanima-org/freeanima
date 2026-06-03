@@ -103,7 +103,7 @@ DATABASE_URL="$(anima credential get services/postgres/anima url)" \
 bun test:integration
 ```
 
-单元测试（mapper，不连 PG）：`bun run --filter @freeanima/legacy-db test`
+单元测试（mapper，不连 PG）：`bun test packages/db`
 
 ## Slice B（规划中）
 

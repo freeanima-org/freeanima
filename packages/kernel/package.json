@@ -14,10 +14,6 @@
     "./schemas/*": "./src/schemas/*.ts",
     "./test-helpers": "./src/test-helpers/legacy-events-db.ts"
   },
-  "scripts": {
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "bun test tests/unit --pass-with-no-tests"
-  },
   "dependencies": {
     "@freeanima/hooks": "workspace:*",
     "@freeanima/logging": "workspace:*",
@@ -27,7 +23,6 @@
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
-    "typescript": "catalog:",
-    "bun-types": "^1.3.14"
+    "bun-types": "catalog:"
   }
 }
