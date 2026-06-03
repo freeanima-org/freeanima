@@ -166,7 +166,7 @@ function nodeRequestToWebRequest(req: IncomingMessage, body?: Buffer): Request {
   return new Request(url, {
     method,
     headers,
-    body: body?.length ? body : undefined,
+    body: body?.length ? Uint8Array.from(body) : undefined,
   });
 }
 

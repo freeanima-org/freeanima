@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach, afterEach, afterAll } from "bun:test";
-import { describePg } from "../../helpers/pg-test-gate.ts";
+import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
+import { describePg } from "../../helpers/pg-test-gate";
 import {
   beginIntegrationCaseWithConfig,
-} from "../../helpers/integration-case.ts";
-import { endIntegrationCase } from "../../helpers/integration-case.ts";
+} from "../../helpers/integration-case";
+import { endIntegrationCase } from "../../helpers/integration-case";
 
 import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -21,13 +21,12 @@ import {
 import { clearConfigCache } from "@freeanima/legacy-kernel";
 
 describePg("studio", () => {
-  let home: string;
   let workspace: string;
   const prev = process.env.FREEANIMA_HOME;
 
   beforeEach(async () => {
     workspace = mkdtempSync(join(tmpdir(), "anima-ws-"));
-    const ctx = await beginIntegrationCaseWithConfig(
+    await beginIntegrationCaseWithConfig(
       "anima-studio-",
       `studio:
   workspace: ${JSON.stringify(workspace)}
@@ -35,7 +34,7 @@ describePg("studio", () => {
   showHidden: false
 `,
     );
-    home = ctx.home;
+    clearConfigCache();
 
     mkdirSync(join(workspace, "src"), { recursive: true });
     writeFileSync(join(workspace, "src", "main.ts"), "export const foo = 42\n", "utf-8");

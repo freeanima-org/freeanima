@@ -3,7 +3,6 @@ import { describe, it, expect, beforeAll, beforeEach, afterEach } from "bun:test
 import {
   mkdtempSync,
   writeFileSync,
-  mkdirSync,
 } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
@@ -162,13 +161,13 @@ describe("local tools", () => {
 
   it("web_search calls Firecrawl API", async () => {
     const origFetch = globalThis.fetch;
-    globalThis.fetch = async () =>
+    globalThis.fetch = (async () =>
       new Response(
         JSON.stringify({
           data: [{ title: "T", url: "https://example.com", description: "D" }],
         }),
         { status: 200, headers: { "Content-Type": "application/json" } },
-      );
+      )) as unknown as typeof fetch;
 
     try {
       const out = await getTool("web_search")!.handler({ query: "anima nest" });

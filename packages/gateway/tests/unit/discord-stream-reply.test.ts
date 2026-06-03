@@ -16,7 +16,7 @@ describe("streamReplyToChannel", () => {
       edit: vi.fn(async (opts: { content: string }) => {
         edits.push(opts.content);
       }),
-    } as Pick<Message, "edit">;
+    } as unknown as Pick<Message, "edit">;
 
     const channel = {
       send: vi.fn(async (arg: unknown) => {
@@ -71,7 +71,7 @@ describe("streamReplyToChannel", () => {
           throw { status: 403 };
         }
       }),
-    } as Pick<Message, "edit">;
+    } as unknown as Pick<Message, "edit">;
 
     const channel = {
       send: vi.fn(async (arg: unknown) => {

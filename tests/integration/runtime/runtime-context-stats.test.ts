@@ -1,8 +1,8 @@
 import { computeStats, statsReport } from "@freeanima/legacy-runtime";
-import { describe, it, expect, beforeEach, afterEach, afterAll } from "bun:test";
-import { describePg } from "../../helpers/pg-test-gate.ts";
-import { beginIntegrationCaseWithConfig } from "../../helpers/integration-case.ts";
-import { endIntegrationCase } from "../../helpers/integration-case.ts";
+import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
+import { describePg } from "../../helpers/pg-test-gate";
+import { beginIntegrationCaseWithConfig } from "../../helpers/integration-case";
+import { endIntegrationCase } from "../../helpers/integration-case";
 import { newSession, appendMessage, updateSessionMetaField } from "@freeanima/legacy-engine";
 
 describePg("runtime context stats", () => {

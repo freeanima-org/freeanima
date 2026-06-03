@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach, afterAll } from "bun:test";
-import { describePg } from "../../helpers/pg-test-gate.ts";
-import { beginIntegrationCase, endIntegrationCase } from "../../helpers/integration-case.ts";
+import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
+import { describePg } from "../../helpers/pg-test-gate";
+import { beginIntegrationCase, endIntegrationCase } from "../../helpers/integration-case";
 
 import { initSession, loadSessionMeta, runWithToolContext } from "@freeanima/legacy-engine";
 import { loadConfig, getTool } from "@freeanima/legacy-kernel";
@@ -44,7 +44,8 @@ describePg("session todo", () => {
     const metaA = await loadSessionMeta("sess-a");
     expect(metaA.role).toBe("session_meta");
     if (metaA.role !== "session_meta") return;
-    expect(metaA.todos?.items[0]?.content).toBe("任务 A");
+    const todos = metaA.todos as { items?: { content?: string }[] } | undefined;
+    expect(todos?.items?.[0]?.content).toBe("任务 A");
   });
 
   it("todo handler sees session when invoked inside bound runStream iteration", async () => {

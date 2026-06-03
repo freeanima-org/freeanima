@@ -36,7 +36,7 @@
   "private": true,
   "scripts": {
     "check": "bun run typecheck && bun run test",
-    "typecheck": "bun scripts/typecheck-fast.mts",
+    "typecheck": "bunx tsgo -p tsconfig.json --noEmit",
     "release": "semantic-release",
     "release:dry-run": "semantic-release --dry-run",
     "test": "bun scripts/run-tests.mts",

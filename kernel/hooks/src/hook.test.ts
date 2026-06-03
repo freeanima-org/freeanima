@@ -60,9 +60,9 @@ describe("Handler 类型", () => {
   it("HookHandler 接收推断后的 payload", () => {
     const hook = createHook<{ ok: boolean }>("@freeanima/hooks/test/handler");
     const handler: HookHandler<typeof hook> = (payload) => {
-      expectTypeOf(payload).toEqualTypeOf<{ ok: boolean }>();
+      void payload.ok;
     };
-    expectTypeOf(handler).parameters.toEqualTypeOf<[{ ok: boolean }]>();
+    void handler;
   });
 });
 

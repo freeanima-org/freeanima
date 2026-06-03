@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, afterAll } from "bun:test";
+import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import { describePg } from "../../helpers/pg-test-gate";
 import { beginIntegrationCase } from "../../helpers/integration-case";
 import { endIntegrationCase } from "../../helpers/integration-case";

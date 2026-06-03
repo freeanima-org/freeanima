@@ -1,18 +1,16 @@
-import { describe, it, expect, beforeEach, afterEach, afterAll } from "bun:test";
-import { describePg } from "../../helpers/pg-test-gate.ts";
-import { beginIntegrationCase } from "../../helpers/integration-case.ts";
-import { endIntegrationCase } from "../../helpers/integration-case.ts";
+import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
+import { describePg } from "../../helpers/pg-test-gate";
+import { beginIntegrationCase } from "../../helpers/integration-case";
+import { endIntegrationCase } from "../../helpers/integration-case";
 
 import { isSessionMeta } from "@freeanima/legacy-kernel";
 import * as conv from "@freeanima/legacy-engine";
 
 describePg("conversation origin", () => {
-  let home: string;
   const prev = process.env.FREEANIMA_HOME;
 
   beforeEach(async () => {
-    const ctx = await beginIntegrationCase("freeanima-origin-");
-    home = ctx.home;
+    await beginIntegrationCase("freeanima-origin-");
   });
 
   afterEach(async () => {

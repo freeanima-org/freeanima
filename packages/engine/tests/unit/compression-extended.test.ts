@@ -1,15 +1,7 @@
 import { compress, SUMMARY_USER_PREFIX } from "@freeanima/legacy-engine";
-import { parseCompressionState } from "@freeanima/legacy-kernel";
+import { parseCompressionState, type SessionMessage } from "@freeanima/legacy-kernel";
 import { describe, it, expect } from "bun:test";
-
-
-function ua(pos: number, text = "u"): Record<string, unknown> {
-  return { role: "user", content: text, pos };
-}
-
-function aa(pos: number): Record<string, unknown> {
-  return { role: "assistant", content: "a", pos };
-}
+import { aa, ua } from "../helpers/session-fixtures";
 
 const testBoundary = { rawMinMessages: 2, slimMinMessages: 2 };
 
@@ -28,7 +20,7 @@ describe("compression extended", () => {
 
   it("token mode triggers on estimated tokens", () => {
     const big = "x".repeat(400_000);
-    const msgs = [
+    const msgs: SessionMessage[] = [
       ...Array.from({ length: 12 }, (_, i) => [ua(i * 2 + 1, "u"), aa(i * 2 + 2)]).flat(),
       ua(25, big),
       aa(26),
@@ -54,7 +46,7 @@ describe("compression extended", () => {
 
   it("token mode does not re-compress when runtime view is below trigger after compress", () => {
     const history = "h".repeat(300_000);
-    const msgs: Record<string, unknown>[] = [
+    const msgs: SessionMessage[] = [
       ua(1, history),
       aa(2),
       ua(3, "old turn"),
@@ -63,7 +55,7 @@ describe("compression extended", () => {
       aa(6),
     ];
     const budget = 2000;
-    const [out1, state1] = compress(msgs, {
+    const [, state1] = compress(msgs, {
       maxRounds: 50,
       model: "test",
       systemPrompt: "sys",

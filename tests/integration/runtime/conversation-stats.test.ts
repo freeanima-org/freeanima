@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach, afterEach, afterAll } from "bun:test";
-import { describePg } from "../../helpers/pg-test-gate.ts";
-import { beginIntegrationCase } from "../../helpers/integration-case.ts";
-import { endIntegrationCase } from "../../helpers/integration-case.ts";
+import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
+import { describePg } from "../../helpers/pg-test-gate";
+import { beginIntegrationCase } from "../../helpers/integration-case";
+import { endIntegrationCase } from "../../helpers/integration-case";
 
 import {
   normalizeUsage,
@@ -21,7 +21,7 @@ describePg("conversation-stats", () => {
   const prev = process.env.FREEANIMA_HOME;
 
   beforeEach(async () => {
-    const ctx = await beginIntegrationCase("anima-stats-");
+    await beginIntegrationCase("anima-stats-");
   });
 
   afterEach(async () => {

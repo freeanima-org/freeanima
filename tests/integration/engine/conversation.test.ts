@@ -1,10 +1,10 @@
-import { describe, it, expect, beforeEach, afterEach, afterAll } from "bun:test";
-import { describePg } from "../../helpers/pg-test-gate.ts";
+import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
+import { describePg } from "../../helpers/pg-test-gate";
 import {
   beginIntegrationCase,
   beginIntegrationCaseWithConfig,
   endIntegrationCase,
-} from "../../helpers/integration-case.ts";
+} from "../../helpers/integration-case";
 
 import { isSessionMeta, openaiSchemas } from "@freeanima/legacy-kernel";
 import { registerAllTools } from "@freeanima/legacy-tools";
@@ -21,11 +21,8 @@ import {
 
 describePg("conversation", () => {
   const prev = process.env.FREEANIMA_HOME;
-  let home: string;
-
   beforeEach(async () => {
-    const ctx = await beginIntegrationCase("anima-conv-");
-    home = ctx.home;
+    await beginIntegrationCase("anima-conv-");
   });
 
   afterEach(() => {
@@ -91,8 +88,8 @@ describePg("conversation compression", () => {
   it("finishTurn keeps full history under compression", async () => {
     const sid = await newSession("test");
     for (let i = 0; i < 55; i++) {
-      await appendMessage({ role: "user", content: `u${i}`, id: i * 2 + 1 }, sid);
-      await appendMessage({ role: "assistant", content: `a${i}`, id: i * 2 + 2 }, sid);
+      await appendMessage({ role: "user", content: `u${i}`, pos: i * 2 + 1 }, sid);
+      await appendMessage({ role: "assistant", content: `a${i}`, pos: i * 2 + 2 }, sid);
     }
 
     const countBefore = (await load(sid)).length;

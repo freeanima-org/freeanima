@@ -1,28 +1,16 @@
-import { compress, deriveBoundariesFromL4, getL4, isInToolLoop, shouldAdvance, slimMessage, SUMMARY_SYNTHETIC_POS, buildRuntimeFromLPoints } from "@freeanima/legacy-engine";
-import { parseCompressionState } from "@freeanima/legacy-kernel";
+import {
+  compress,
+  deriveBoundariesFromL4,
+  getL4,
+  isInToolLoop,
+  shouldAdvance,
+  slimMessage,
+  SUMMARY_SYNTHETIC_POS,
+  buildRuntimeFromLPoints,
+} from "@freeanima/legacy-engine";
+import { isAssistantMessage, parseCompressionState } from "@freeanima/legacy-kernel";
 import { describe, it, expect } from "bun:test";
-
-
-function ua(pos: number, text = "u"): Record<string, unknown> {
-  return { role: "user", content: text, pos };
-}
-
-function aa(pos: number, text = "a"): Record<string, unknown> {
-  return { role: "assistant", content: text, pos };
-}
-
-function toolMsg(pos: number): Record<string, unknown> {
-  return { role: "tool", tool_call_id: "c1", content: "ok", pos };
-}
-
-function buildHistory(n: number, startPos = 1): Record<string, unknown>[] {
-  const msgs: Record<string, unknown>[] = [];
-  let pos = startPos;
-  for (let i = 0; i < n; i++) {
-    msgs.push(ua(pos++, `u${i}`), aa(pos++, `a${i}`));
-  }
-  return msgs;
-}
+import { aa, assistantToolCall, buildHistory, toolMsg, ua } from "../helpers/session-fixtures";
 
 const smallBoundary = { rawMinMessages: 3, slimMinMessages: 4 };
 
@@ -46,19 +34,17 @@ describe("compression v5.1", () => {
       pos: 2,
     });
     expect(slim?.content).toBe("think");
-    expect(slim?.tool_calls).toBeUndefined();
+    expect(isAssistantMessage(slim!)).toBe(true);
+    if (slim && isAssistantMessage(slim)) {
+      expect(slim.tool_calls).toBeUndefined();
+    }
   });
 
   it("deriveBoundariesFromL4 rejects l3 when raw segment does not start with user", () => {
     const msgs = [
       ...buildHistory(20),
       ua(41, "tail-user"),
-      {
-        role: "assistant",
-        content: null,
-        tool_calls: [{ id: "c1", type: "function", function: { name: "x", arguments: "{}" } }],
-        pos: 42,
-      },
+      assistantToolCall(42, "c1"),
       toolMsg(43),
     ];
     const l4 = getL4(msgs);
@@ -81,12 +67,7 @@ describe("compression v5.1", () => {
     const withLoop = [
       ...msgs,
       ua(81, "tail-user"),
-      {
-        role: "assistant",
-        content: null,
-        tool_calls: [{ id: "c1", type: "function", function: { name: "x", arguments: "{}" } }],
-        pos: 82,
-      },
+      assistantToolCall(82, "c1"),
       toolMsg(83),
     ];
     expect(isInToolLoop(withLoop)).toBe(true);
