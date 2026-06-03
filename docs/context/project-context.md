@@ -224,7 +224,7 @@ ACP：`integrations/src/acp/`；`acp_{name}` 返回 JSON（`session_id`、`outpu
 bun install                       # 依赖；需 Bun 1.3+（见 .bun-version）
 bun run test                      # 全仓测试（单元 + 集成；有 Docker 时自动起 PG）
 bun run test:changed              # 增量 + pre-commit；命中集成用例时自动起 PG
-bun run typecheck                 # tsgo backend + tsgo webui，并行
+bun run typecheck                 # tsgo 全仓（根 tsconfig.json）
 
 # CLI（直接跑 TS 源码）
 bun run service start                              # systemd / detached
@@ -256,7 +256,7 @@ bun run check                     # 手动全量：typecheck + 全量测试（�
 
 **构建**：TS 包由 Bun 直接加载 `src`（无 emit）；WebUI 由 Bun fullstack 按需编译，**无**单独 `vite build` 步骤。
 
-**类型检查**：仅根目录 `bun run typecheck`（[`scripts/typecheck-fast.mts`](../../scripts/typecheck-fast.mts)）：`tsgo` 查 backend（[`tsconfig.backend.json`](../../tsconfig.backend.json)）与 WebUI（[`apps/webui/tsconfig.json`](../../apps/webui/tsconfig.json)），并行。
+**类型检查**：`bun run typecheck` → `bunx tsgo -p tsconfig.json --noEmit`（根 [`tsconfig.json`](../../tsconfig.json)，含 `src` + 全仓 `*.test.ts` / `tests/`）。
 
 **测试**：`bun run test`（[`scripts/run-tests.mts`](../../scripts/run-tests.mts)）先尝试 Docker 起临时 PG，再根目录 `bun test`。**本地与 pre-commit** 用 `bun run test:changed`；**CI** 全量 `bun run test`；推 PR 前可 `bun run check`。
 
@@ -267,7 +267,7 @@ bun run check                     # 手动全量：typecheck + 全量测试（�
 
 **WebUI Tailwind**：`anima service start` 从仓库根启动内嵌 `Bun.serve`，须根 `bunfig.toml` 的 `[serve.static] plugins = ["bun-plugin-tailwind"]` 且根 `devDependencies` 含 `bun-plugin-tailwind`；`serve()` 会 `chdir(REPO_ROOT)`，systemd unit 含 `WorkingDirectory`/`FREEANIMA_REPO_ROOT`，否则 CSS 无 utility 类。
 
-**TS 配置**：根 [`tsconfig.json`](../../tsconfig.json)（IDE：backend `src` + 各包 `tests/unit` + `tests/helpers`）；门禁 [`tsconfig.backend.json`](../../tsconfig.backend.json)（backend `src`，排除测试）；WebUI 见 [`apps/webui/tsconfig.json`](../../apps/webui/tsconfig.json)；集成测试见 [`tests/tsconfig.json`](../../tests/tsconfig.json)。backend 子包**无**单独 `tsconfig.json`。
+**TS 配置**：根 [`tsconfig.json`](../../tsconfig.json)（门禁 + IDE：全仓 `src`、WebUI、单元/集成测试）；[`apps/webui/tsconfig.json`](../../apps/webui/tsconfig.json) 继承根配置并覆写 `@/*` paths（单独打开 webui 目录时用）。
 
 版本号：根 `package.json`（运行时 `NEST_VERSION`）。发版见 [versioning.md](../versioning.md)。
 

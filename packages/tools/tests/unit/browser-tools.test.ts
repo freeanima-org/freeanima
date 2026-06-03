@@ -144,7 +144,7 @@ describe("browser tools", () => {
       }
       return new Response("{}", { status: 404 });
     });
-    stubFetch(fetchMock as typeof fetch);
+    stubFetch(fetchMock as unknown as typeof fetch);
 
     const out = JSON.parse(await camofoxNavigate("sess-a", "https://example.com"));
     expect(out.success).toBe(true);
@@ -171,7 +171,7 @@ describe("browser tools", () => {
       }
       return new Response("{}", { status: 404 });
     });
-    stubFetch(fetchMock as typeof fetch);
+    stubFetch(fetchMock as unknown as typeof fetch);
 
     await camofoxNavigate("sess-b", "https://a.com");
     const out = JSON.parse(await camofoxNavigate("sess-b", "https://b.com"));
@@ -199,7 +199,7 @@ describe("browser tools", () => {
       }
       return new Response("{}", { status: 404 });
     });
-    stubFetch(fetchMock as typeof fetch);
+    stubFetch(fetchMock as unknown as typeof fetch);
 
     await runWithToolContext("ctx-session-123", async () => {
       const out = JSON.parse(
@@ -215,7 +215,7 @@ describe("browser tools", () => {
 
   it("checkCamofoxAvailable probes /health", async () => {
     stubFetch(
-      vi.fn(async () => new Response(JSON.stringify({ ok: true }), { status: 200 })) as typeof fetch,
+      vi.fn(async () => new Response(JSON.stringify({ ok: true }), { status: 200 })) as unknown as typeof fetch,
     );
     await expect(checkCamofoxAvailable()).resolves.toBe(true);
     expect(getCamofoxUrl()).toBe("http://localhost:9377");

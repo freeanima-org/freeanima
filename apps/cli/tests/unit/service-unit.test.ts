@@ -108,35 +108,3 @@ describe("systemd unit", () => {
     vi.restoreAllMocks();
   });
 });
-
-// Bun 暂不支持 vi.doMock / resetModules 动态 mock detached 启动
-describe.skipIf(typeof Bun !== "undefined")("service start without systemd", () => {
-  it("falls back to detached start when systemd unavailable", async () => {
-    vi.resetModules();
-    vi.doMock("../../src/systemd-unit", () => ({
-      SERVICE_UNIT_NAME: "anima.service",
-      renderSystemdUnit,
-      systemdUserAvailable: () => false,
-    }));
-
-    const { runServiceCommand } = await import("../../src/service-cmd");
-
-    const exit = vi.spyOn(process, "exit").mockImplementation((() => {
-      throw new Error("exit");
-    }) as (code?: number) => never);
-
-    await expect(
-      runServiceCommand({
-        action: "start",
-        foreground: false,
-        host: "127.0.0.1",
-        port: 8080,
-      }),
-    ).rejects.toThrow("exit");
-
-    expect(exit).toHaveBeenCalledWith(1);
-
-    vi.resetModules();
-    vi.doUnmock("../../src/systemd-unit");
-  });
-});

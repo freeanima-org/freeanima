@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach } from "bun:test";
-import { describePg } from "../../helpers/pg-test-gate.ts";
+import { it, expect, beforeEach, afterEach } from "bun:test";
+import { describePg } from "../../helpers/pg-test-gate";
 
 import { clearConfigCache, registerTool, listTools } from "@freeanima/legacy-kernel";
 import { registerAcpTools } from "@freeanima/legacy-integrations";

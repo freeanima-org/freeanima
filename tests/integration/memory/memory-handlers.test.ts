@@ -1,14 +1,14 @@
-import { describe, it, expect, beforeEach, afterEach, afterAll } from "bun:test";
-import { describePgSqlite } from "../../helpers/sqlite-gate.ts";
-import { beginIntegrationCaseWithConfig } from "../../helpers/integration-case.ts";
-import { endIntegrationCase } from "../../helpers/integration-case.ts";
+import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
+import { describePgSqlite } from "../../helpers/sqlite-gate";
+import { beginIntegrationCaseWithConfig } from "../../helpers/integration-case";
+import { endIntegrationCase } from "../../helpers/integration-case";
 
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { createLogger } from "@freeanima/logging";
 import { createNullSink } from "@freeanima/logging/null";
 import { EventBus } from "@freeanima/event-bus";
-import { waitFor } from "../../helpers/wait.ts";
+import { waitFor } from "../../helpers/wait";
 import { SqliteEventQueue } from "@freeanima/event-bus-sqlite";
 import { resetStoreForTests, registerMemoryHandlers, l2SessionPath, sessionUpdated } from "@freeanima/legacy-memory";
 import { seedSession } from "@freeanima/legacy-db/test-helpers";

@@ -5,6 +5,7 @@ import type { WebuiServerHandle } from "../../src/webui-server";
 function mockHandle(): WebuiServerHandle {
   return {
     server: {} as WebuiServerHandle["server"],
+    bunDev: null,
     close: vi.fn(),
   };
 }

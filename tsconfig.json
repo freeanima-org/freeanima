@@ -1,10 +1,21 @@
 {
   "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "paths": {
+      "@/*": ["./apps/webui/src/*"]
+    }
+  },
   "include": [
     "kernel/**/*.ts",
     "packages/**/*.ts",
     "apps/**/*.ts",
+    "apps/**/*.tsx",
+    "apps/webui/index.html",
+    "scripts/**/*.ts",
+    "scripts/**/*.mts",
     "tests/**/*.ts"
   ],
-  "exclude": ["node_modules", "apps/webui", "**/dist/**", "**/.turbo/**"]
+  "exclude": ["node_modules", "**/dist/**", "**/.turbo/**"]
 }

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "bun:test";
 import { injectTimePrefixes } from "../../src/time-perception";
-import type { SessionMessage, UserMessage } from "../../src/schemas/message";
+import type { SessionMessage, UserMessage } from "@freeanima/legacy-kernel";
 
 /** 生成 ISO+08 时间戳字符串 */
 function ts(isoLocal: string): string {

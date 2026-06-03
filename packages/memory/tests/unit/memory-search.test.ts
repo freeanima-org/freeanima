@@ -58,7 +58,7 @@ describe("memory search", () => {
       recall: 0.5,
     });
     const sid = "20260527_160000_test";
-    await runWithToolContext({ sessionId: sid }, async () => {
+    await runWithToolContext(sid, async () => {
       await getTool("remember")!.handler({
         content: "增量索引探针 beta",
         confidence: 0.9,

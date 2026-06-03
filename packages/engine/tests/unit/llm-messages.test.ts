@@ -4,7 +4,7 @@ import {
   mergeStreamingToolCalls,
   messagesForApi,
 } from "../../src/llm";
-import type { SessionMessage } from "../../src/schemas/message";
+import type { SessionMessage } from "@freeanima/legacy-kernel";
 
 describe("mergeStreamingToolCalls", () => {
   it("merges deltas by index into one tool call with name", () => {
@@ -99,12 +99,12 @@ describe("messagesForApi", () => {
       role: "assistant",
       reasoning_content: "思考过程",
     });
-    expect((out[0] as Record<string, unknown>).reasoning).toBeUndefined();
+    expect((out[0] as unknown as Record<string, unknown>).reasoning).toBeUndefined();
   });
 
   it("unknown role throws instead of silently degrading to user", () => {
     expect(() =>
-      messagesForApi([{ role: "bogus", content: "x" } as SessionMessage]),
+      messagesForApi([{ role: "bogus", content: "x" } as unknown as SessionMessage]),
     ).toThrow(/未知消息 role/);
   });
 });

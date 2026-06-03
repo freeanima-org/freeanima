@@ -7,7 +7,7 @@ describe("shell completion", () => {
     expect(SUPPORTED_SHELLS).toEqual(["bash", "zsh"]);
   });
 
-  it.each(SUPPORTED_SHELLS)("generate %s smoke", (shell) => {
+  it.each([...SUPPORTED_SHELLS])("generate %s smoke", (shell: string) => {
     const program = buildProgram();
     const script = generateCompletion(shell, program);
     expect(script.length).toBeGreaterThan(50);

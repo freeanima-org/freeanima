@@ -3,7 +3,7 @@ import { renderTable } from "../../src/output/table";
 
 // credential 子命令需 mock @freeanima/legacy-kernel；Bun mock.module 当前会卡住，先跳过
 describe.skip("credential CLI", () => {
-  it.todo("list / get / add 待 mock.module 稳定后恢复");
+  it.todo("list / get / add 待 mock.module 稳定后恢复", () => {});
 });
 
 describe("renderTable", () => {

@@ -1,11 +1,11 @@
-import { describe, it, expect, beforeEach, afterEach, afterAll } from "bun:test";
-import { describePg } from "../../helpers/pg-test-gate.ts";
-import { beginIntegrationCase } from "../../helpers/integration-case.ts";
-import { endIntegrationCase } from "../../helpers/integration-case.ts";
+import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
+import { describePg } from "../../helpers/pg-test-gate";
+import { beginIntegrationCase } from "../../helpers/integration-case";
+import { endIntegrationCase } from "../../helpers/integration-case";
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { waitFor } from "../../helpers/wait.ts";
+import { waitFor } from "../../helpers/wait";
 import {
   parseSchedule,
   ScheduleType,

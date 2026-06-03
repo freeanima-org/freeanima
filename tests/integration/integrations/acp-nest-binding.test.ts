@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach, afterEach, afterAll } from "bun:test";
-import { describePg } from "../../helpers/pg-test-gate.ts";
-import { beginIntegrationCase } from "../../helpers/integration-case.ts";
-import { endIntegrationCase } from "../../helpers/integration-case.ts";
+import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
+import { describePg } from "../../helpers/pg-test-gate";
+import { beginIntegrationCase } from "../../helpers/integration-case";
+import { endIntegrationCase } from "../../helpers/integration-case";
 
 import { clearConfigCache } from "@freeanima/legacy-kernel";
 import { initSession } from "@freeanima/legacy-engine";
@@ -18,7 +18,7 @@ describePg("acp nest-binding", () => {
 
   beforeEach(async () => {
     clearConfigCache();
-    const ctx = await beginIntegrationCase("freeanima-acp-bind-");
+    await beginIntegrationCase("freeanima-acp-bind-");
     nestSid = "20260527_test_bind";
     await initSession(nestSid, "test-model", { platform: "parlor" });
   });
