@@ -1,6 +1,7 @@
 import "@freeanima/legacy-runtime/system-prompt-wire";
 import { cleanupDebugSessions, kernel } from "@freeanima/legacy-engine";
 import {
+  EventBus,
   PATHS,
   installErrorLogHandlers,
   logComponent,
@@ -8,10 +9,17 @@ import {
   markStartupPhase,
 } from "@freeanima/legacy-kernel";
 import { registerMemoryPipeline } from "@freeanima/legacy-memory";
-import { NestService, Scheduler, enqueueRunJob, ensureBuiltinCronJobs, NEST_VERSION, seedHomeChannelsFromHermes, WEBUI_DIST } from "@freeanima/legacy-runtime";
+import {
+  NestService,
+  Scheduler,
+  enqueueRunJob,
+  ensureBuiltinCronJobs,
+  NEST_VERSION,
+  seedHomeChannelsFromHermes,
+  REPO_ROOT,
+} from "@freeanima/legacy-runtime";
 import { writeFileSync, unlinkSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
-import { serve as honoServe, type ServerType } from "@hono/node-server";
 
 import { registerClarifyHooks } from "@freeanima/legacy-clarify";
 import { registerReflectChat } from "@freeanima/legacy-memory";
@@ -25,14 +33,16 @@ import {
 } from "@freeanima/legacy-gateway";
 import { MCPManager, getAcpManager } from "@freeanima/legacy-integrations";
 import { closeDb, getDb, isPostgresPrimary } from "@freeanima/legacy-db";
-import { createApp } from "./http-app";
 import { DEFAULT_BIND_HOST, parseBindHosts } from "./bind-hosts";
 import { closeHttpServers, waitForDrainWithTimeout } from "./http-shutdown";
+import { initServiceContext } from "./service-context";
+import { startWebuiHttpServers, type WebuiServerHandle } from "./webui-server";
 
 export { isServerAlive, readStatusFile } from "./alive";
 export { DEFAULT_BIND_HOST, DEFAULT_BIND_HOSTS, parseBindHosts, resolveProbeHost } from "./bind-hosts";
 
 let service: NestService | null = null;
+let bus: EventBus | null = null;
 let mcp: MCPManager | null = null;
 const acp = getAcpManager();
 let cronScheduler: Scheduler | null = null;
@@ -44,7 +54,6 @@ export function getService(): NestService {
   }
   return service;
 }
-
 
 function scheduleDebugSessionCleanup(): void {
   void Promise.resolve()
@@ -88,13 +97,29 @@ function cleanStatusFile(): void {
   }
 }
 
-export async function serve(host = DEFAULT_BIND_HOST, port = 8080): Promise<void> {
+export type ServeOptions = {
+  /** CLI 前台阻塞运行（systemd/detached 子进程亦会传 true，不等于 WebUI dev） */
+  foreground?: boolean;
+};
+
+function useWebuiDevMode(foreground: boolean): boolean {
+  if (process.env.ANIMA_WEBUI_DEV === "1") return true;
+  if (process.env.ANIMA_WEBUI_DEV === "0") return false;
+  return foreground;
+}
+
+export async function serve(
+  host = DEFAULT_BIND_HOST,
+  port = 2658,
+  opts: ServeOptions = {},
+): Promise<void> {
+  process.env.FREEANIMA_REPO_ROOT = REPO_ROOT;
   const bindHosts = parseBindHosts(host);
   const statusHost = bindHosts.join(",");
   installErrorLogHandlers();
   markStartupPhase(true);
   writeStatusFile(statusHost, port, "starting");
-  let servers: ServerType[];
+  let servers: WebuiServerHandle[];
   try {
     startupLog("注册工具…");
     registerAllTools();
@@ -114,14 +139,15 @@ export async function serve(host = DEFAULT_BIND_HOST, port = 8080): Promise<void
     service.markStarted();
     const nest = service;
 
-    const bus = kernel.eventBus;
+    bus = new EventBus();
+    bus.resetStuck();
     registerReflectChat(async (messages) => {
       const resp = await chat(messages);
       return { content: resp.content ?? null };
     });
-    registerMemoryPipeline(bus);
+    registerMemoryPipeline(bus as unknown as Parameters<NestService["setEventBus"]>[0]);
     bus.start();
-    service.setEventBus(bus);
+    service.setEventBus(bus as unknown as Parameters<NestService["setEventBus"]>[0]);
 
     ensureBuiltinCronJobs();
     seedHomeChannelsFromHermes();
@@ -132,9 +158,11 @@ export async function serve(host = DEFAULT_BIND_HOST, port = 8080): Promise<void
 
     mcp = new MCPManager();
 
-    startupLog("创建 HTTP 应用…");
+    initServiceContext({ service: nest, mcp, acp, host: statusHost, port });
 
-    const { app, injectWebSocket } = createApp(nest, WEBUI_DIST, statusHost, port, mcp, acp);
+    const webuiDev = useWebuiDevMode(Boolean(opts.foreground));
+    startupLog(webuiDev ? "启动 WebUI HTTP（Bun fullstack dev）…" : "启动 WebUI HTTP…");
+    servers = await startWebuiHttpServers(bindHosts, port, { development: webuiDev });
 
     writeStatusFile(statusHost, port, "ready");
     for (const bindHost of bindHosts) {
@@ -143,12 +171,6 @@ export async function serve(host = DEFAULT_BIND_HOST, port = 8080): Promise<void
         port,
       });
     }
-
-    servers = bindHosts.map((bindHost) => {
-      const s = honoServe({ fetch: app.fetch, hostname: bindHost, port });
-      injectWebSocket(s);
-      return s;
-    });
     startupLog("HTTP 监听就绪");
     markStartupPhase(false);
     scheduleDebugSessionCleanup();
@@ -207,7 +229,7 @@ export async function serve(host = DEFAULT_BIND_HOST, port = 8080): Promise<void
 
     {
       const s = Date.now();
-      kernel.eventBus.stop();
+      bus?.stop();
       step("EventBus 已停止", Date.now() - s);
     }
 

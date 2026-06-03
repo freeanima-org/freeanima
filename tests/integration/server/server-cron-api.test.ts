@@ -6,7 +6,15 @@ import { endIntegrationCase } from "../../helpers/integration-case";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { createJob, NestService } from "@freeanima/legacy-runtime";
-import { createApp } from "@freeanima/legacy-server";
+import { getAcpManager } from "@freeanima/legacy-integrations";
+import {
+  listCronJobs,
+  pauseCronJob,
+  resumeCronJob,
+  runCronJobNow,
+  ApiHandlerError,
+} from "@freeanima/legacy-server/handlers";
+import { initServiceContext } from "@freeanima/legacy-server/context";
 
 describePg("server cron API", () => {
   let home: string;
@@ -62,40 +70,29 @@ describePg("server cron API", () => {
     expect(svc.runCronJobNow("missing-id")).toBeNull();
   });
 
-  it("HTTP POST pause/resume/run and 404", async () => {
+  it("handler pause/resume/run and 404", () => {
     const svc = new NestService();
-    const { app } = createApp(svc, "", "", 0, null, null);
+    initServiceContext({ service: svc, mcp: null, acp: getAcpManager(), host: "127.0.0.1", port: 2658 });
 
-    const pauseRes = await app.request(`/api/cron/${jobId}/pause`, { method: "POST" });
-    expect(pauseRes.status).toBe(200);
-    const pauseBody = await pauseRes.json();
+    const pauseBody = pauseCronJob(jobId);
     expect(pauseBody.ok).toBe(true);
     expect(pauseBody.job.paused).toBe(true);
 
-    const resumeRes = await app.request(`/api/cron/${jobId}/resume`, { method: "POST" });
-    expect(resumeRes.status).toBe(200);
-    const resumeBody = await resumeRes.json();
+    const resumeBody = resumeCronJob(jobId);
     expect(resumeBody.job.paused).toBe(false);
 
-    const runRes = await app.request(`/api/cron/${jobId}/run`, { method: "POST" });
-    expect(runRes.status).toBe(200);
-    const runBody = await runRes.json();
+    const runBody = runCronJobNow(jobId);
     expect(runBody.ok).toBe(true);
     expect(runBody.message).toContain("api-test");
 
-    const missing = await app.request("/api/cron/no-such-job/pause", { method: "POST" });
-    expect(missing.status).toBe(404);
-    const errBody = await missing.json();
-    expect(errBody.error).toBeTruthy();
+    expect(() => pauseCronJob("no-such-job")).toThrow(ApiHandlerError);
   });
 
-  it("GET /api/cron lists jobs", async () => {
+  it("listCronJobs lists jobs", () => {
     const svc = new NestService();
-    const { app } = createApp(svc, "", "", 0, null, null);
+    initServiceContext({ service: svc, mcp: null, acp: getAcpManager(), host: "127.0.0.1", port: 2658 });
 
-    const res = await app.request("/api/cron");
-    expect(res.status).toBe(200);
-    const body = await res.json();
+    const body = listCronJobs();
     expect(body.jobs.some((j: { id: string }) => j.id === jobId)).toBe(true);
   });
 

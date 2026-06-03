@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * 全仓类型检查（唯一入口）：backend tsgo solution + WebUI vue-tsc，并行。
+ * 全仓类型检查（唯一入口）：backend tsgo + WebUI tsgo，并行。
  */
 import { spawn } from "node:child_process";
 import { dirname, join } from "node:path";
@@ -29,9 +29,9 @@ const jobs: Job[] = [
     args: ["bunx", "tsgo", "-p", "tsconfig.backend.json", "--noEmit"],
   },
   {
-    label: "webui: vue-tsc",
+    label: "webui (tsgo)",
     cwd: WEBUI,
-    args: ["bunx", "vue-tsc", "--noEmit"],
+    args: ["bunx", "tsgo", "-p", "tsconfig.json", "--noEmit"],
   },
 ];
 

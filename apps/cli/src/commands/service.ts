@@ -16,7 +16,7 @@ export function registerServiceCommand(program: Command): void {
     )
     .option("--foreground", "前台运行 serve()（调试）")
     .option("--host <host>", "监听地址（逗号分隔可多 bind）", DEFAULT_BIND_HOST)
-    .option("--port <port>", "监听端口", "8080")
+    .option("--port <port>", "监听端口", "2658")
     .addHelpText(
       "after",
       `

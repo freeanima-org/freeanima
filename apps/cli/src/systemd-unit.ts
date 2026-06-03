@@ -16,7 +16,7 @@ export const SYSTEMD_START_LIMIT_INTERVAL_SEC = 0;
 export function renderSystemdUnit(
   binPath: string,
   host = DEFAULT_BIND_HOST,
-  port = 8080,
+  port = 2658,
 ): string {
   const execStart = `${binPath} service start --foreground --host ${host} --port ${port}`;
   return `[Unit]

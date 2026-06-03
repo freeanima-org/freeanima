@@ -135,7 +135,7 @@ Agent 的行为输出
 
 - **service**：持续运行 — HTTP（WebUI / 卧室 API）、Discord / 微信 Gateway、EventBus、Cron
 - **chat**：单次非交互对话（CLI 或管道 stdin）
-- **WebUI**：浏览器访问 `http://127.0.0.1:8080/webui/*`（由 service 挂载静态资源）
+- **WebUI**：浏览器访问 `http://127.0.0.1:2658/webui/*`（Bun fullstack CSR + tRPC）
 
 已移除（随 Python 栈退役）：Textual TUI、`print` 流水线模式。
 
@@ -310,16 +310,19 @@ LLM 自己决定用什么工具、什么顺序。逸灵风只负责注册和路�
 
 ## WebUI 架构
 
-WebUI 是单一 Vue 3 SPA（`apps/webui/`），由 `anima service` 在同一 HTTP 端口提供 API 与静态资源。
+WebUI 是 React 19 CSR 应用（`apps/webui/`），由 `anima service` 在同一 HTTP 端口（默认 **2658**）提供页面与 tRPC API。
 
 ### 服务拓扑
 
 ```
-浏览器 ──HTTP/SSE──→ anima service (Hono, `packages/server`)
-                         │
-                         ├─ NestService（进程内）
-                         ├─ Discord / 微信 适配器（进程内线程）
-                         └─ apps/webui/dist/（Vue SPA）
+浏览器 ──HTTP/SSE/WS──→ node:http（2658，API + WS 升级）
+                              │
+                              ├─ /api/trpc/*（HTTP batch + SSE subscription）
+                              ├─ /api/trpc/ws（终端 WebSocket）
+                              ├─ /api/health
+                              ├─ /webui/*、/_bun/* → 内嵌 Bun fullstack dev（HTML/TSX/CSS HMR）
+                              └─ tRPC router → NestService（进程内）
+                         NestService / EventBus / Gateway（同进程）
 ```
 
 ### 前端三态
@@ -332,34 +335,24 @@ WebUI 是单一 Vue 3 SPA（`apps/webui/`），由 `anima service` 在同一 HTT
 | 卧室 | `/webui/chamber/*` | 记忆、配置、工具与系统维护（旧 `/workshop` 重定向） |
 | 创作室 | `/webui/studio/*` | 协同工作台：结对编程（占位）、长篇/短视频（即将推出） |
 
-### API 路由
+### API 层
 
-| 前端调用 | 说明 |
-|---------|------|
-| `GET /api/health` | 存活检查 |
-| `GET /api/status` | 运行时状态 |
-| `GET /api/sessions` | 会话列表 |
-| `POST /api/sessions` | 创建会话 |
-| `GET /api/sessions/{id}/messages` | 消息历史 |
-| `POST /api/sessions/{id}/messages/stream` | SSE 流式对话 |
-| `GET /api/memory` | SOUL.md 等核心文件 |
-| `GET /api/config` | 安全配置 |
-| `GET /api/tools` | 工具列表 |
-| `GET /api/cron` | 定时任务列表 |
-| `POST /api/cron/:id/pause` | 暂停定时任务 |
-| `POST /api/cron/:id/resume` | 恢复定时任务 |
-| `POST /api/cron/:id/run` | 立即运行定时任务 |
-
-WebUI 静态资源与 history 路由在 `/webui/*`（未知路径回退 `index.html`）。
+| 机制 | 说明 |
+|------|------|
+| tRPC | 主要 JSON API（会话、状态、记忆、MCP/ACP、studio 等）；聊天流用 SSE subscription |
+| REST | `GET /api/health`（CLI 探针） |
+| WebSocket | `WS /api/trpc/ws`（创作室 xterm `studio.terminal.*`） |
 
 ### 启动
 
 ```bash
 anima service start              # systemd --user（默认）
-anima service start --foreground # 本地调试
+anima service start --foreground # 本地调试（Bun fullstack HMR）
 anima service status
-# 浏览器访问 http://127.0.0.1:8080/webui/parlor/chat
+# 浏览器访问 http://127.0.0.1:2658/webui/parlor/chat
 ```
+
+WebUI 由 [`packages/server/src/webui-server.ts`](packages/server/src/webui-server.ts) 在 `serve()` 内启动：对外 `node:http`，内嵌 Bun fullstack 编译 `apps/webui/index.html`（Tailwind 依赖根 `bunfig.toml` 的 `bun-plugin-tailwind`）。
 
 ## 事件系统
 

@@ -5,17 +5,16 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "noEmit": true,
     "isolatedModules": true,
     "strict": false,
+    "strictNullChecks": true,
     "noImplicitAny": false,
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "types": ["bun-types"]
   },
-  "include": ["src/**/*.vue", "src/env.d.ts", "src/api/**/*.ts"],
-  "vueCompilerOptions": {
-    "strictTemplates": false
-  }
+  "include": ["src/**/*.ts", "src/**/*.tsx", "index.html"]
 }

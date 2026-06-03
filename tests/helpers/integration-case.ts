@@ -12,7 +12,7 @@ export async function beginIntegrationCase(prefix: string): Promise<{
   pg: PgTestContext;
 }> {
   if (!pgTestUrl) {
-    throw new Error("ANIMA_TEST_PG_URL 未设置；请用 bun test:integration");
+    throw new Error("ANIMA_TEST_PG_URL 未设置；请用 bun test");
   }
   const home = mkdtempSync(join(tmpdir(), prefix));
   process.env.FREEANIMA_HOME = home;
@@ -26,7 +26,7 @@ export async function beginIntegrationCaseWithConfig(
   configYaml: string,
 ): Promise<{ home: string; pg: PgTestContext }> {
   if (!pgTestUrl) {
-    throw new Error("ANIMA_TEST_PG_URL 未设置；请用 bun test:integration");
+    throw new Error("ANIMA_TEST_PG_URL 未设置；请用 bun test");
   }
   const home = mkdtempSync(join(tmpdir(), prefix));
   process.env.FREEANIMA_HOME = home;

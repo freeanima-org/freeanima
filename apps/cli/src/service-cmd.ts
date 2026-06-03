@@ -10,7 +10,6 @@ import { isServerAlive, readStatusFile } from "@freeanima/legacy-server/alive";
 import {
   apiGet,
   checkServerAlive,
-  ensureWebuiBuilt,
   animaBin,
   resolveAnimaSpawn,
   LOG_FILE,
@@ -193,7 +192,6 @@ async function startDetachedWithoutSystemd(args: ServiceArgs): Promise<void> {
     console.log(`逸灵风已在运行 (PID ${alive})`);
     process.exit(1);
   }
-  ensureWebuiBuilt();
 
   const { command, args: spawnArgs } = resolveAnimaSpawn([
     "service",
@@ -295,15 +293,11 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
         console.log(`逸灵风已在运行 (PID ${isServerAlive()})`);
         process.exit(1);
       }
-      ensureWebuiBuilt();
-      console.log("逸灵风 · 前台启动…");
+      console.log("逸灵风 · 前台启动（WebUI dev 模式）…");
       installErrorLogHandlers();
       try {
-        console.log("[startup] 加载服务模块…");
-        const t0 = performance.now();
         const { serve } = await import("@freeanima/legacy-server");
-        console.log(`[startup] 模块就绪 (${(performance.now() - t0).toFixed(0)}ms)`);
-        await serve(args.host, args.port);
+        await serve(args.host, args.port, { foreground: true });
       } catch (e) {
         logStartupError("服务启动失败", e);
         process.exit(1);
@@ -316,8 +310,7 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
       return;
     }
 
-    ensureWebuiBuilt();
-    ensureUnitFile(args.host, args.port);
+  ensureUnitFile(args.host, args.port);
     systemctl("daemon-reload");
     const r = systemctl("enable", "--now", SYSTEMD_UNIT);
     if (r.status !== 0) {

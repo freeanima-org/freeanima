@@ -1,5 +1,4 @@
 import { PATHS } from "@freeanima/legacy-kernel";
-import { WEBUI_DIST_INDEX } from "@freeanima/legacy-runtime";
 import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
@@ -58,13 +57,6 @@ export async function apiGet(
 
 export function checkServerAlive(): number | null {
   return isServerAlive();
-}
-
-export function ensureWebuiBuilt(): void {
-  if (existsSync(WEBUI_DIST_INDEX)) return;
-  console.warn(
-    "  ⚠ WebUI 未构建 (no dist/)。运行: bun install && bun run --filter @freeanima/legacy-webui build",
-  );
 }
 
 /** systemd ExecStart 使用的可执行路径（shebang 脚本或 bun + cli.js） */
