@@ -265,7 +265,7 @@ bun run check                     # 手动全量：typecheck + 全量测试（�
 
 **`bunfig.toml` 与 cwd（Bun 1.3.14）**：根目录 `bun test` / `bun test kernel/hooks` 的 **cwd 在仓库根**，会加载根 [`bunfig.toml`](../../bunfig.toml)（`coverageThreshold`、`pathIgnorePatterns` 等）。**`cd kernel/hooks && bun test` 不会**继承根 `bunfig`（子目录无本地 `bunfig.toml` 时相当于默认配置）。单包调试若要用根上的阈值/忽略规则，应在根执行 `bun test kernel/hooks --coverage`，或在子包放本地 `bunfig.toml` / `BUN_CONFIG`。
 
-**WebUI Tailwind**：`anima service start` 从仓库根启动内嵌 `Bun.serve`，须根 `bunfig.toml` 的 `[serve.static] plugins = ["bun-plugin-tailwind"]` 且根 `devDependencies` 含 `bun-plugin-tailwind`；否则 CSS 仅有 theme/@apply 未展开、无 `.btn`/`.flex` 等 utility。`apps/webui/bunfig.toml` 仅 `cd apps/webui && bun …` 时生效。
+**WebUI Tailwind**：`anima service start` 从仓库根启动内嵌 `Bun.serve`，须根 `bunfig.toml` 的 `[serve.static] plugins = ["bun-plugin-tailwind"]` 且根 `devDependencies` 含 `bun-plugin-tailwind`；`serve()` 会 `chdir(REPO_ROOT)`，systemd unit 含 `WorkingDirectory`/`FREEANIMA_REPO_ROOT`，否则 CSS 无 utility 类。
 
 **TS 配置**：根 [`tsconfig.json`](../../tsconfig.json)（IDE：backend `src` + 各包 `tests/unit` + `tests/helpers`）；门禁 [`tsconfig.backend.json`](../../tsconfig.backend.json)（backend `src`，排除测试）；WebUI 见 [`apps/webui/tsconfig.json`](../../apps/webui/tsconfig.json)；集成测试见 [`tests/tsconfig.json`](../../tests/tsconfig.json)。backend 子包**无**单独 `tsconfig.json`。
 

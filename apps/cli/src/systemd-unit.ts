@@ -1,5 +1,6 @@
 import { spawnSync } from "node:child_process";
 import { DEFAULT_BIND_HOST } from "@freeanima/legacy-server/bind-hosts";
+import { REPO_ROOT } from "@freeanima/legacy-runtime";
 
 export const SERVICE_UNIT_NAME = "anima.service";
 
@@ -17,6 +18,7 @@ export function renderSystemdUnit(
   binPath: string,
   host = DEFAULT_BIND_HOST,
   port = 2658,
+  workingDirectory = REPO_ROOT,
 ): string {
   const execStart = `${binPath} service start --foreground --host ${host} --port ${port}`;
   return `[Unit]
@@ -25,6 +27,8 @@ After=network.target
 
 [Service]
 Type=simple
+WorkingDirectory=${workingDirectory}
+Environment=FREEANIMA_REPO_ROOT=${workingDirectory}
 ExecStart=${execStart}
 # 除 systemctl stop 外始终重启；崩溃后等待 ${SYSTEMD_RESTART_SEC}s 再拉起
 Restart=always

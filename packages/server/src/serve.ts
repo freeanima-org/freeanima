@@ -20,6 +20,7 @@ import {
 } from "@freeanima/legacy-runtime";
 import { writeFileSync, unlinkSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
+import { chdir } from "node:process";
 
 import { registerClarifyHooks } from "@freeanima/legacy-clarify";
 import { registerReflectChat } from "@freeanima/legacy-memory";
@@ -114,6 +115,12 @@ export async function serve(
   opts: ServeOptions = {},
 ): Promise<void> {
   process.env.FREEANIMA_REPO_ROOT = REPO_ROOT;
+  try {
+    chdir(REPO_ROOT);
+  } catch (err) {
+    logStartupError("无法切换到仓库根目录", err);
+    throw err;
+  }
   const bindHosts = parseBindHosts(host);
   const statusHost = bindHosts.join(",");
   installErrorLogHandlers();

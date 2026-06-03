@@ -39,10 +39,12 @@ describe("systemd unit", () => {
   });
 
   it("ExecStart uses foreground and host/port", () => {
-    const unit = renderSystemdUnit("/usr/bin/anima", "127.0.0.1", 8080);
+    const unit = renderSystemdUnit("/usr/bin/anima", "127.0.0.1", 8080, "/opt/freeanima");
     expect(unit).toContain("ExecStart=/usr/bin/anima service start --foreground");
     expect(unit).toContain("--host 127.0.0.1");
     expect(unit).toContain("--port 8080");
+    expect(unit).toContain("WorkingDirectory=/opt/freeanima");
+    expect(unit).toContain("Environment=FREEANIMA_REPO_ROOT=/opt/freeanima");
   });
 
   it("default host binds loopback", () => {
