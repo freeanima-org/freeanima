@@ -3,10 +3,10 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./sinks/console": "./src/sinks/console.ts",
-    "./sinks/file": "./src/sinks/file.ts",
-    "./sinks/memory": "./src/sinks/memory.ts",
-    "./sinks/null": "./src/sinks/null.ts"
+    "./console": "./src/sinks/console.ts",
+    "./file": "./src/sinks/file.ts",
+    "./memory": "./src/sinks/memory.ts",
+    "./null": "./src/sinks/null.ts"
   },
   "devDependencies": {
     "bun-types": "catalog:"

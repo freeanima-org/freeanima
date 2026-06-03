@@ -1,9 +1,7 @@
 {
   "extends": "./tsconfig.base.json",
   "include": [
-    "kernel/kernel/src/**/*.ts",
-    "kernel/hooks/src/**/*.ts",
-    "kernel/logging/src/**/*.ts",
+    "kernel/*/src/**/*.ts",
     "packages/*/src/**/*.ts",
     "apps/cli/src/**/*.ts"
   ],

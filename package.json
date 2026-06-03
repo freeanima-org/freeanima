@@ -51,7 +51,6 @@
     "prepare": "husky"
   },
   "trustedDependencies": [
-    "better-sqlite3",
     "cpu-features",
     "esbuild",
     "protobufjs",

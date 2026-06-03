@@ -31,7 +31,8 @@ import type {
 import type { StreamEvent } from "@freeanima/legacy-engine";
 import type { Message } from "@freeanima/legacy-engine";
 import { LLMError } from "@freeanima/legacy-engine";
-import type { EventBus } from "@freeanima/legacy-kernel";
+import type { EventBus } from "@freeanima/event-bus";
+import { sessionUpdated } from "@freeanima/legacy-memory";
 import { listTools, openaiSchemas } from "@freeanima/legacy-kernel";
 import { statsReport } from "./conversation-stats";
 import { runWithToolContext } from "@freeanima/legacy-engine";
@@ -348,7 +349,7 @@ export class NestService {
   }
 
   private emitSessionUpdated(sessionId: string): void {
-    this.bus?.emit("session:updated", { session_id: sessionId });
+    this.bus?.emit(sessionUpdated, { session_id: sessionId });
     this.onSessionUpdated?.(sessionId);
   }
 

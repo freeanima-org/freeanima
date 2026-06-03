@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { createLogger } from "@freeanima/logging";
-import { createNullSink } from "@freeanima/logging/sinks/null";
+import { createNullSink } from "@freeanima/logging/null";
 import { createHook, Hook, HookRegistry } from "./index";
 import type { HookHandler, PayloadOf } from "./index";
 

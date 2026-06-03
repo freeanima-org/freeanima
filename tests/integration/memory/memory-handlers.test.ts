@@ -5,9 +5,12 @@ import { endIntegrationCase } from "../../helpers/integration-case.ts";
 
 import { existsSync } from "node:fs";
 import { join } from "node:path";
+import { createLogger } from "@freeanima/logging";
+import { createNullSink } from "@freeanima/logging/null";
+import { EventBus } from "@freeanima/event-bus";
 import { waitFor } from "../../helpers/wait.ts";
-import { EventBus } from "@freeanima/legacy-kernel";
-import { resetStoreForTests, registerMemoryHandlers, l2SessionPath } from "@freeanima/legacy-memory";
+import { SqliteEventQueue } from "@freeanima/event-bus-sqlite";
+import { resetStoreForTests, registerMemoryHandlers, l2SessionPath, sessionUpdated } from "@freeanima/legacy-memory";
 import { seedSession } from "@freeanima/legacy-db/test-helpers";
 
 describePgSqlite("memory handlers", () => {
@@ -46,10 +49,13 @@ describePgSqlite("memory handlers", () => {
       ],
     );
 
-    const bus = new EventBus(join(home, "runtime", "events.db"));
+    const bus = new EventBus(
+      createLogger({ sinks: [createNullSink()] }),
+      new SqliteEventQueue(join(home, "runtime", "events.db"), { pollMs: 20 }),
+    );
     registerMemoryHandlers(bus);
-    bus.start(20);
-    bus.emit("session:updated", { session_id: sid });
+    bus.start();
+    bus.emit(sessionUpdated, { session_id: sid });
 
     await waitFor(() => existsSync(l2SessionPath(sid)), { timeoutMs: 3000 });
 

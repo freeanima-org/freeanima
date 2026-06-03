@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "bun:test";
 import { createLogger } from "@freeanima/logging";
-import { createNullSink } from "@freeanima/logging/sinks/null";
+import { createNullSink } from "@freeanima/logging/null";
 import { createHook, walkHookChain } from "./hook.js";
 import { HookRegistry } from "./registry.js";
 

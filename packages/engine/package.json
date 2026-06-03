@@ -5,6 +5,8 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "@freeanima/event-bus": "workspace:*",
+    "@freeanima/event-bus-sqlite": "workspace:*",
     "@freeanima/hooks": "workspace:*",
     "@freeanima/kernel": "workspace:*",
     "@freeanima/legacy-kernel": "workspace:*",
