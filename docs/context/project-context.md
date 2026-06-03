@@ -163,7 +163,7 @@ ACP：`integrations/src/acp/`；`acp_{name}` 返回 JSON（`session_id`、`outpu
 
 ## HTTP API（WebUI / 卧室）
 
-**WebUI 客户端**：[`apps/webui/src/api/client.ts`](../../apps/webui/src/api/client.ts) 使用 Hono RPC `hc`（文件顶 `@ts-nocheck`，避免 vue-tsc 拉取 server 全依赖图；路由契约由 `@freeanima/legacy-server` 包 typecheck 保证）。DTO / SSE schema 来自 `@freeanima/legacy-api`。卧室与客厅/创作室视图统一从 client 导入，禁止内联 `fetch('/api/...')`。
+**WebUI 客户端**：[`apps/webui/src/api/client.ts`](../../apps/webui/src/api/client.ts) 使用 Hono RPC `hc`（文件顶 `@ts-nocheck`，避免 vue-tsc 拉取 server 全依赖图；路由契约由根目录 `bun run typecheck` 中的 backend tsgo 保证）。DTO / SSE schema 来自 `@freeanima/legacy-api`。卧室与客厅/创作室视图统一从 client 导入，禁止内联 `fetch('/api/...')`。
 
 | 端点 | 响应要点 |
 |------|----------|
@@ -213,7 +213,7 @@ bun test --coverage               # 同上并输出覆盖率（bunfig 勿写 cov
 bun run test:coverage             # 脚本封装 --coverage
 bun run test                      # 同 bun test（无测试文件时 exit 0）
 bun test:integration              # 根目录 tests/integration/（bun:test + Testcontainers PG；需 Docker；不进 pre-commit）
-bun run typecheck
+bun run typecheck                 # tsgo backend + vue-tsc + tsgo(webui api)，并行
 bun run release:dry-run           # 本地预览下一版（需 HUSKY=0；见 versioning.md）
 
 # CLI（直接跑 TS 源码；WebUI 需先 bun run build）
@@ -230,9 +230,10 @@ eval "$(anima completion bash)"
 # source <(anima completion zsh)
 
 # 全局 CLI（本机一次；任意目录可用 anima）
-bun run link:global                               # symlink apps/cli/src/cli.ts → ~/.bun/bin/anima
+bun run link:global                               # symlink cli.ts → ~/.bun/bin/anima（workspace 包勿用 bun link -g，不会装 bin）
+# bun link -g 仅登记 linkable，不写 ~/.bun/bin；bun install -g 也无法解析 workspace:*
 # PATH：~/.bun/bin 须在旧 pnpm 全局 bin 之前，否则 which anima 仍指向旧版
-anima service status                              # 改 TS 后需重新 link:global
+anima service status
 
 # unit：~/.config/systemd/user/anima.service（`service start` 自动生成，勿手抄仓库内模板）
 #   Restart=always；崩溃后 180s 再拉起；StartLimitIntervalSec=0（不因连续失败放弃）
@@ -240,13 +241,17 @@ anima service status                              # 改 TS 后需重新 link:glo
 # WebUI: http://127.0.0.1:8080/webui/parlor/chat
 # 卧室: …/webui/chamber/dashboard  创作室: …/webui/studio/pair-programming
 # 构建前端: bun run --filter @freeanima/legacy-webui build
-# WebUI 类型检查: bun run --filter @freeanima/legacy-webui typecheck
-
 bun install                       # Husky：提交前 typecheck + bun test；commit-msg 校验 Conventional Commits
 bun run check                     # 手动全量检查（同 pre-commit 钩子）
 ```
 
-**构建**：TS 包由 Bun 直接加载 `src`（无全仓 `tsc emit`）；`bun run build` 仅打 WebUI。类型检查：`bun run typecheck`（各包 `tsc --noEmit`）。
+**构建**：TS 包由 Bun 直接加载 `src`（无 emit）；`bun run build` 仅打 WebUI。
+
+**类型检查**：仅根目录 `bun run typecheck`（[`scripts/typecheck-fast.mts`](../../scripts/typecheck-fast.mts)）：`tsgo` 查 backend（[`tsconfig.backend.json`](../../tsconfig.backend.json)）；**`vue-tsc`** 查 WebUI（`.vue` + `src/api`，`typescript@5.9` 仅 webui）。子包无单独 `typecheck` 脚本。
+
+**单元测试**：仅根目录 `bun test` / `bun run test`（[`bunfig.toml`](../../bunfig.toml)）。子包无 `test` 脚本；单包调试示例：`bun test packages/server`、`bun test kernel/logging`。
+
+**TS 配置**：根 [`tsconfig.json`](../../tsconfig.json)（IDE：backend `src` + 各包 `tests/unit` + `tests/helpers`）；门禁 [`tsconfig.backend.json`](../../tsconfig.backend.json)（backend `src`，排除测试）；WebUI 见 [`apps/webui/tsconfig.json`](../../apps/webui/tsconfig.json)（含 `src/api`）；集成测试见 [`tests/tsconfig.json`](../../tests/tsconfig.json)。backend 子包**无**单独 `tsconfig.json`。
 
 版本号：根 `package.json`（运行时 `NEST_VERSION`）。发版见 [versioning.md](../versioning.md)。
 

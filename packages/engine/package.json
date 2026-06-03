@@ -4,10 +4,6 @@
   "exports": {
     ".": "./src/index.ts"
   },
-  "scripts": {
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "bun test tests/unit --pass-with-no-tests"
-  },
   "dependencies": {
     "@freeanima/hooks": "workspace:*",
     "@freeanima/kernel": "workspace:*",
@@ -17,7 +13,6 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "typescript": "catalog:",
-    "bun-types": "^1.3.14"
+    "bun-types": "catalog:"
   }
 }

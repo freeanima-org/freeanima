@@ -8,12 +8,7 @@
     "./sinks/memory": "./src/sinks/memory.ts",
     "./sinks/null": "./src/sinks/null.ts"
   },
-  "scripts": {
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "bun test src"
-  },
   "devDependencies": {
-    "bun-types": "^1.3.14",
-    "typescript": "catalog:"
+    "bun-types": "catalog:"
   }
 }

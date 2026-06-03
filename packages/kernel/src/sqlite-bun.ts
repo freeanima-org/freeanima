@@ -1,4 +1,3 @@
-/// <reference types="bun-types" />
 import { Database, type SQLQueryBindings } from "bun:sqlite";
 
 import type { SqliteDatabase } from "./sqlite";
