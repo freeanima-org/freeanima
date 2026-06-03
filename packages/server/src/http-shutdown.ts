@@ -1,3 +1,4 @@
+import { logComponent } from "@freeanima/legacy-kernel";
 import type { NestService } from "@freeanima/legacy-runtime";
 import type { ServerType } from "@hono/node-server";
 
@@ -18,7 +19,10 @@ export async function waitForDrainWithTimeout(
       setTimeout(() => {
         const n = nest.getInFlightCount();
         if (n > 0) {
-          console.warn(`[shutdown] 请求排空超时（${maxMs}ms），仍有 ${n} 个进行中请求`);
+          logComponent("shutdown").warn(`请求排空超时，仍有 ${n} 个进行中请求`, {
+            max_ms: maxMs,
+            in_flight: n,
+          });
         }
         resolve();
       }, maxMs);
@@ -43,7 +47,9 @@ export async function closeHttpServer(
       resolve();
     };
     const forceTimer = setTimeout(() => {
-      console.log(`[shutdown] HTTP close 超时（${timeoutMs}ms），强制断开剩余连接`);
+      logComponent("shutdown").info("HTTP close 超时，强制断开剩余连接", {
+        timeout_ms: timeoutMs,
+      });
       http.closeIdleConnections?.();
       http.closeAllConnections?.();
       done();

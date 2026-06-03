@@ -1,5 +1,5 @@
 import { getToolSessionId } from "@freeanima/legacy-engine";
-import { listTools, loadConfig, registerTool, toolError } from "@freeanima/legacy-kernel";
+import { listTools, loadConfig, logComponent, registerTool, toolError } from "@freeanima/legacy-kernel";
 
 import { AcpAgentQueue } from "./agent-queue";
 import { resolveAcpAdapter } from "./adapters/registry";
@@ -254,7 +254,7 @@ export class AcpManager {
       this.startTask = null;
     });
     void this.startTask.catch((err) => {
-      console.error(`ACP background startup failed: ${err}`);
+      logComponent("acp").error("ACP background startup failed", { err });
     });
   }
 
@@ -273,9 +273,15 @@ export class AcpManager {
       const result = results[i]!;
       const agentName = names[i]!;
       if (result.status === "rejected") {
-        console.error(`ACP agent '${agentName}' startup failed: ${result.reason}`);
+        logComponent("acp").error(`ACP agent '${agentName}' startup failed`, {
+          err: result.reason,
+          agent: agentName,
+        });
       } else if (!result.value.ok) {
-        console.error(`ACP agent '${agentName}' startup failed: ${result.value.error ?? "unknown"}`);
+        logComponent("acp").error(`ACP agent '${agentName}' startup failed`, {
+          error: result.value.error ?? "unknown",
+          agent: agentName,
+        });
       }
     }
   }
@@ -303,12 +309,15 @@ export class AcpManager {
     this.closed = true;
     const names = [...this.clients.keys()];
     if (names.length) {
-      console.log(`[shutdown] ACP 停止 ${names.length} 个 agent: ${names.join(", ")}…`);
+      logComponent("shutdown").info(`ACP 停止 ${names.length} 个 agent: ${names.join(", ")}…`, {
+        count: names.length,
+        agents: names,
+      });
     }
     for (const name of names) {
       const ts = Date.now();
       await this.stopAgent(name);
-      console.log(`[shutdown] ACP '${name}' 已停止 (+${Date.now() - ts}ms)`);
+      logComponent("shutdown").info(`ACP '${name}' 已停止`, { ms: Date.now() - ts, agent: name });
     }
     return { ok: true, action: "stop" };
   }

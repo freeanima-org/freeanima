@@ -104,9 +104,9 @@ L1 Session 主存为 PostgreSQL（`config.yaml` → `database.url`）。表设�
 
 ```
 kernel/             # RFC #1 新栈（与 legacy packages/ 并行）
-├── hooks/          # @freeanima/hooks：Hook token + HookRegistry
+├── hooks/          # @freeanima/hooks：Hook token + HookRegistry（注入 Logger，run 关键路径分级日志）
 ├── logging/        # @freeanima/logging：Logger / LogSink / createLogger；内置 sink 子路径 sinks/{console,file,memory,null}
-└── kernel/         # @freeanima/kernel：Kernel 组合端口（HookRegistry）
+└── kernel/         # @freeanima/kernel：Kernel 组合端口（HookRegistry + Logger）
 apps/
 ├── cli/            # anima 入口：service / credential / completion
 └── webui/          # Vue 3 + TypeScript WebUI；API 经 `src/api/client.ts`（Hono `hc<ApiRoutes>`）；静态 dist 由 server 挂载

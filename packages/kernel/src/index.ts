@@ -18,6 +18,13 @@ export type {
 } from "./hooks";
 export type { HookClarifyItem, HookStreamEvent, TurnControl } from "./hook-stream";
 export * from "./paths";
+export {
+  createServiceLogger,
+  getServiceLogger,
+  logComponent,
+  resetServiceLogger,
+  setServiceLogger,
+} from "./service-logging";
 export { sessionPath, isDebugSession } from "./session-path";
 export * from "./error-log";
 export * from "./config";

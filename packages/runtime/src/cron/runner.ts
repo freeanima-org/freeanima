@@ -3,7 +3,7 @@ import { spawnSync } from "node:child_process";
 import { listSessions } from "@freeanima/legacy-engine";
 import { distillFromPg, l2SessionPath } from "@freeanima/legacy-memory/clean";
 import { indexL2Session } from "@freeanima/legacy-memory/l2-indexer";
-import { loadConfig } from "@freeanima/legacy-kernel";
+import { loadConfig, logComponent } from "@freeanima/legacy-kernel";
 import * as conv from "@freeanima/legacy-engine";
 import * as engine from "@freeanima/legacy-engine";
 import { loadSkill } from "@freeanima/legacy-engine";
@@ -117,7 +117,7 @@ async function notifyDeliver(job: CronJob, success: boolean, output: string, err
   try {
     await deliverCronResult(job, { jobName: job.name, success, output, error });
   } catch (e) {
-    console.warn(`Cron deliver error for ${job.id}: ${e}`);
+    logComponent("cron").warn(`Cron deliver error for ${job.id}`, { err: e, job_id: job.id });
   }
 }
 

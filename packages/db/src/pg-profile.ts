@@ -1,5 +1,7 @@
 /** 进程内 L1 PG 诊断：`ANIMA_L1_PG_PROFILE=1` 时统计 op 次数与耗时 */
 
+import { logComponent } from "@freeanima/legacy-kernel";
+
 type ProfileEntry = {
   op: string;
   count: number;
@@ -30,9 +32,15 @@ export function pgProfileRecord(
   e.maxMs = Math.max(e.maxMs, durationMs);
   if (extra?.bytes != null) e.lastBytes = extra.bytes;
   if (extra?.sessionId) {
-    console.error(
-      `[l1-pg-profile] ${op} ${durationMs.toFixed(1)}ms session=${extra.sessionId}` +
+    logComponent("db").info(
+      `${op} ${durationMs.toFixed(1)}ms session=${extra.sessionId}` +
         (extra.bytes != null ? ` bytes=${extra.bytes}` : ""),
+      {
+        op,
+        ms: durationMs,
+        session_id: extra.sessionId,
+        ...(extra.bytes != null ? { bytes: extra.bytes } : {}),
+      },
     );
   }
 }
@@ -70,5 +78,5 @@ export function pgProfileLogSummary(): void {
         `${e.op}: count=${e.count} total=${e.totalMs.toFixed(0)}ms max=${e.maxMs.toFixed(0)}ms` +
         (e.lastBytes != null ? ` lastBytes=${e.lastBytes}` : ""),
     );
-  console.error(`[l1-pg-profile] summary\n${lines.join("\n")}`);
+  logComponent("db").info(`summary\n${lines.join("\n")}`, { op_count: stats.size });
 }

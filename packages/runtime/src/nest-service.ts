@@ -14,7 +14,7 @@ import {
   isRetryResult,
 } from "./commands/index";
 import type { CommandResult } from "./commands/registry";
-import { logError, logSseError } from "@freeanima/legacy-kernel";
+import { logComponent, logSseError } from "@freeanima/legacy-kernel";
 import * as conv from "@freeanima/legacy-engine";
 import {
   buildMessagesDisplay,
@@ -75,7 +75,7 @@ function streamErrorEvent(
     session_id: sessionId,
   });
   if (err !== undefined) {
-    logError(message, { source: "nest-service", error: err, context: { session_id: sessionId } });
+    logComponent("nest-service").error(message, { err, session_id: sessionId });
   }
   return { event: "error", data: { error: message } };
 }
@@ -208,11 +208,12 @@ export class NestService {
 
   async waitForDrain(): Promise<void> {
     if (this.inFlightCount <= 0) {
-      console.log("[shutdown] 无进行中请求，跳过 drain");
+      logComponent("shutdown").info("无进行中请求，跳过 drain");
       return;
     }
-    console.log(
-      `[shutdown] 等待 ${this.inFlightCount} 个进行中的对话/工具请求落盘（engine.run/runStream）…`,
+    logComponent("shutdown").info(
+      `等待 ${this.inFlightCount} 个进行中的对话/工具请求落盘（engine.run/runStream）…`,
+      { in_flight: this.inFlightCount },
     );
     await new Promise<void>((resolve) => {
       this.inFlightResolve = resolve;
@@ -221,7 +222,7 @@ export class NestService {
         resolve();
       }
     });
-    console.log("[shutdown] 进行中请求已排空");
+    logComponent("shutdown").info("进行中请求已排空");
   }
 
   startShutdown(): void {
@@ -576,17 +577,17 @@ export class NestService {
         }
         if (e instanceof engine.MaxTurnsExceeded) {
           const msg = `tool loop exceeded: ${e.message}`;
-          logError(msg, { source: "nest-service", error: e });
+          logComponent("nest-service").error(msg, { err: e });
           yield { event: "error", data: { error: msg } };
           return;
         }
         if (e instanceof LLMError) {
-          logError(e.message, { source: "nest-service", error: e });
+          logComponent("nest-service").error(e.message, { err: e });
           yield { event: "error", data: { error: e.message } };
           return;
         }
         const msg = String(e);
-        logError(msg, { source: "nest-service", error: e });
+        logComponent("nest-service").error(msg, { err: e });
         yield { event: "error", data: { error: msg } };
       }
     } finally {

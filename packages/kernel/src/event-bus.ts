@@ -1,6 +1,6 @@
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
-import { logError } from "./error-log";
+import { logComponent } from "./service-logging";
 import { PATHS } from "./paths";
 import type { EventMap, EventTopic } from "./schemas/events";
 import { eventPayloadSchemas } from "./schemas/events";
@@ -127,10 +127,10 @@ export class EventBus {
       this.db.prepare(`UPDATE events SET status = 'done' WHERE id = ?`).run(row.id);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      logError(`Event handler failed for topic ${row.topic}`, {
-        source: "event-bus",
-        context: { event_id: row.id, topic: row.topic },
-        error: err,
+      logComponent("event-bus").error(`Event handler failed for topic ${row.topic}`, {
+        event_id: row.id,
+        topic: row.topic,
+        err,
       });
       if (row.retries >= MAX_RETRIES) {
         this.db

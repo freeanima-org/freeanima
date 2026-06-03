@@ -1,6 +1,13 @@
 import "@freeanima/legacy-runtime/system-prompt-wire";
 import { cleanupDebugSessions, kernel } from "@freeanima/legacy-engine";
-import { EventBus, PATHS, installErrorLogHandlers, logStartupError, markStartupPhase } from "@freeanima/legacy-kernel";
+import {
+  EventBus,
+  PATHS,
+  installErrorLogHandlers,
+  logComponent,
+  logStartupError,
+  markStartupPhase,
+} from "@freeanima/legacy-kernel";
 import { registerMemoryPipeline } from "@freeanima/legacy-memory";
 import { NestService, Scheduler, enqueueRunJob, ensureBuiltinCronJobs, NEST_VERSION, seedHomeChannelsFromHermes, WEBUI_DIST } from "@freeanima/legacy-runtime";
 import { writeFileSync, unlinkSync, mkdirSync } from "node:fs";
@@ -46,13 +53,15 @@ function scheduleDebugSessionCleanup(): void {
     .then(async () => {
       startupLog("后台清理 debug 会话…");
       const cleaned = await cleanupDebugSessions(12);
-      if (cleaned > 0) console.log(`Cleaned ${cleaned} debug session(s)`);
+      if (cleaned > 0) {
+        logComponent("startup").info(`Cleaned ${cleaned} debug session(s)`, { count: cleaned });
+      }
     })
     .catch((e) => logStartupError("debug 会话清理失败", e));
 }
 
 function startupLog(message: string): void {
-  console.log(`[startup] ${message}`);
+  logComponent("startup").info(message);
 }
 
 function writeStatusFile(host: string, port: number, phase: "starting" | "ready" = "ready"): void {
@@ -132,7 +141,10 @@ export async function serve(host = DEFAULT_BIND_HOST, port = 8080): Promise<void
 
     writeStatusFile(statusHost, port, "ready");
     for (const bindHost of bindHosts) {
-      console.log(`逸灵风 listening on http://${bindHost}:${port}`);
+      logComponent("startup").info(`逸灵风 listening on http://${bindHost}:${port}`, {
+        host: bindHost,
+        port,
+      });
     }
 
     servers = bindHosts.map((bindHost) => {
@@ -154,10 +166,12 @@ export async function serve(host = DEFAULT_BIND_HOST, port = 8080): Promise<void
   const shutdown = async (signal: string) => {
     const t0 = Date.now();
     const step = (label: string, ms: number) => {
-      console.log(`[shutdown] ${label} (+${ms}ms, 累计 ${Date.now() - t0}ms)`);
+      logComponent("shutdown").info(label, { ms, elapsed_ms: Date.now() - t0 });
     };
 
-    console.log(`[shutdown] 收到 ${signal}，开始优雅关停（优先等待未落盘消息）`);
+    logComponent("shutdown").info(`收到 ${signal}，开始优雅关停（优先等待未落盘消息）`, {
+      signal,
+    });
 
     nest.startShutdown();
     step("已拒绝新请求", Date.now() - t0);
@@ -170,7 +184,7 @@ export async function serve(host = DEFAULT_BIND_HOST, port = 8080): Promise<void
 
     {
       const s = Date.now();
-      console.log("[shutdown] 关闭 HTTP/WebSocket 监听…");
+      logComponent("shutdown").info("关闭 HTTP/WebSocket 监听…");
       await closeHttpServers(servers, 3000);
       step("HTTP/WebSocket 监听已关闭", Date.now() - s);
     }
@@ -184,9 +198,11 @@ export async function serve(host = DEFAULT_BIND_HOST, port = 8080): Promise<void
     {
       const s = Date.now();
       if (platforms.length) {
-        console.log(`[shutdown] 停止 ${platforms.length} 个 Gateway 平台…`);
+        logComponent("shutdown").info(`停止 ${platforms.length} 个 Gateway 平台…`, {
+          count: platforms.length,
+        });
       } else {
-        console.log("[shutdown] 无 Gateway 平台");
+        logComponent("shutdown").info("无 Gateway 平台");
       }
       await stopPlatforms(platforms);
       step("Gateway 平台已停止", Date.now() - s);
@@ -217,7 +233,7 @@ export async function serve(host = DEFAULT_BIND_HOST, port = 8080): Promise<void
     }
 
     cleanStatusFile();
-    console.log(`[shutdown] 关停完成，总耗时 ${Date.now() - t0}ms`);
+    logComponent("shutdown").info("关停完成", { elapsed_ms: Date.now() - t0 });
     process.exit(0);
   };
 
@@ -232,6 +248,6 @@ export async function serve(host = DEFAULT_BIND_HOST, port = 8080): Promise<void
       await startPlatforms(adapters);
     })
     .catch((err) => {
-      console.error(`Platform startup failed: ${err}`);
+      logComponent("gateway").error("Platform startup failed", { err });
     });
 }

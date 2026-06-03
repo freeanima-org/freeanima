@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "bun:test";
-import { createHook } from "./hook";
-import { HookRegistry } from "./registry";
+import { createHook } from "./hook.js";
+import { HookRegistry } from "./registry.js";
+import { createNullLogger } from "./test-logger.js";
 
 type TestPayload = {
   value: number;
@@ -14,7 +15,7 @@ const testHook = createHook<TestPayload>(
 
 describe("HookRegistry", () => {
   it("无 handler 时 run 原样返回 payload", async () => {
-    const registry = new HookRegistry();
+    const registry = new HookRegistry(createNullLogger());
     const payload = { value: 1 };
     const result = await registry.run(testHook, payload);
     expect(result).toBe(payload);
@@ -22,7 +23,7 @@ describe("HookRegistry", () => {
   });
 
   it("run 按 priority 升序执行", async () => {
-    const registry = new HookRegistry();
+    const registry = new HookRegistry(createNullLogger());
     const order: number[] = [];
     registry.on(
       testHook,
@@ -43,7 +44,7 @@ describe("HookRegistry", () => {
   });
 
   it("未指定 priority 时默认为 100", async () => {
-    const registry = new HookRegistry();
+    const registry = new HookRegistry(createNullLogger());
     const order: string[] = [];
     registry.on(testHook, () => {
       order.push("default");
@@ -67,7 +68,7 @@ describe("HookRegistry", () => {
   });
 
   it("相同 priority 按注册顺序执行", async () => {
-    const registry = new HookRegistry();
+    const registry = new HookRegistry(createNullLogger());
     const order: number[] = [];
     registry.on(testHook, () => {
       order.push(1);
@@ -83,7 +84,7 @@ describe("HookRegistry", () => {
   });
 
   it("handler 可变更 payload", async () => {
-    const registry = new HookRegistry();
+    const registry = new HookRegistry(createNullLogger());
     registry.on(testHook, (payload) => {
       payload.value = 42;
       payload.label = "mutated";
@@ -93,7 +94,7 @@ describe("HookRegistry", () => {
   });
 
   it("多个 handler 依次变更同一 payload", async () => {
-    const registry = new HookRegistry();
+    const registry = new HookRegistry(createNullLogger());
     registry.on(testHook, (payload) => {
       payload.value += 1;
     });
@@ -105,7 +106,7 @@ describe("HookRegistry", () => {
   });
 
   it("await 异步 handler", async () => {
-    const registry = new HookRegistry();
+    const registry = new HookRegistry(createNullLogger());
     const order: string[] = [];
     registry.on(testHook, async (payload) => {
       await new Promise((r) => setTimeout(r, 10));
@@ -120,7 +121,7 @@ describe("HookRegistry", () => {
   });
 
   it("handler 抛错时 run 拒绝", async () => {
-    const registry = new HookRegistry();
+    const registry = new HookRegistry(createNullLogger());
     registry.on(testHook, () => {
       throw new Error("handler failed");
     });
@@ -130,7 +131,7 @@ describe("HookRegistry", () => {
   });
 
   it("异步 handler 抛错时 run 拒绝", async () => {
-    const registry = new HookRegistry();
+    const registry = new HookRegistry(createNullLogger());
     registry.on(testHook, async () => {
       await Promise.resolve();
       throw new Error("async handler failed");
@@ -141,7 +142,7 @@ describe("HookRegistry", () => {
   });
 
   it("unregister 后不再执行", async () => {
-    const registry = new HookRegistry();
+    const registry = new HookRegistry(createNullLogger());
     const handler = vi.fn();
     const off = registry.on(testHook, handler);
     off();
@@ -150,7 +151,7 @@ describe("HookRegistry", () => {
   });
 
   it("unregister 只移除对应 handler", async () => {
-    const registry = new HookRegistry();
+    const registry = new HookRegistry(createNullLogger());
     const removed = vi.fn();
     const kept = vi.fn();
     const off = registry.on(testHook, removed);
@@ -162,7 +163,7 @@ describe("HookRegistry", () => {
   });
 
   it("重复 unregister 安全", async () => {
-    const registry = new HookRegistry();
+    const registry = new HookRegistry(createNullLogger());
     const handler = vi.fn();
     const off = registry.on(testHook, handler);
     off();
@@ -172,7 +173,7 @@ describe("HookRegistry", () => {
   });
 
   it("存在其他 handler 时重复 unregister 不报错", async () => {
-    const registry = new HookRegistry();
+    const registry = new HookRegistry(createNullLogger());
     const removed = vi.fn();
     const kept = vi.fn();
     registry.on(testHook, kept);
@@ -185,7 +186,7 @@ describe("HookRegistry", () => {
   });
 
   it("同一 handler 注册两次会执行两次", async () => {
-    const registry = new HookRegistry();
+    const registry = new HookRegistry(createNullLogger());
     const handler = vi.fn();
     registry.on(testHook, handler);
     registry.on(testHook, handler);
@@ -194,7 +195,7 @@ describe("HookRegistry", () => {
   });
 
   it("最后一个 handler 注销后可再次注册并执行", async () => {
-    const registry = new HookRegistry();
+    const registry = new HookRegistry(createNullLogger());
     const first = vi.fn();
     const off = registry.on(testHook, first);
     off();
@@ -208,7 +209,7 @@ describe("HookRegistry", () => {
   it("不同 qualifiedId 的 hook 互不干扰", async () => {
     const hookA = createHook<{ n: number }>("@freeanima/hooks/test/a");
     const hookB = createHook<{ n: number }>("@freeanima/hooks/test/b");
-    const registry = new HookRegistry();
+    const registry = new HookRegistry(createNullLogger());
     const onA = vi.fn();
     const onB = vi.fn();
     registry.on(hookA, onA);
@@ -219,8 +220,8 @@ describe("HookRegistry", () => {
   });
 
   it("不同 registry 实例互不影响", async () => {
-    const registryA = new HookRegistry();
-    const registryB = new HookRegistry();
+    const registryA = new HookRegistry(createNullLogger());
+    const registryB = new HookRegistry(createNullLogger());
     const handlerA = vi.fn();
     const handlerB = vi.fn();
     registryA.on(testHook, handlerA);
@@ -231,7 +232,7 @@ describe("HookRegistry", () => {
   });
 
   it("handler 收到 run 传入的 payload 引用", async () => {
-    const registry = new HookRegistry();
+    const registry = new HookRegistry(createNullLogger());
     let received: TestPayload | undefined;
     registry.on(testHook, (payload) => {
       received = payload;

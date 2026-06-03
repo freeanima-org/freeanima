@@ -1,4 +1,5 @@
 import { NEST_VERSION } from "@freeanima/legacy-runtime";
+import { logComponent } from "@freeanima/legacy-kernel";
 
 import { existsSync } from "node:fs";
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
@@ -111,7 +112,7 @@ export class ACPClient {
       if (this.stderrLines.length > MAX_STDERR_LINES) {
         this.stderrLines.shift();
       }
-      console.error(`[acp:${this.name} stderr] ${line}`);
+      logComponent("acp").error(`[${this.name} stderr] ${line}`, { agent: this.name, line });
     });
 
     this.proc.on("exit", (code, signal) => {

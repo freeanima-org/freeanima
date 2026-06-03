@@ -1,4 +1,4 @@
-import { safeParseOrNull, PATHS, logError } from "@freeanima/legacy-kernel";
+import { safeParseOrNull, PATHS, logComponent } from "@freeanima/legacy-kernel";
 import type { NestService } from "@freeanima/legacy-runtime";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
@@ -80,12 +80,12 @@ export class WeixinAdapter implements PlatformAdapter {
     this.loopPromise = this.runLoop(this.abort.signal);
     void this.loopPromise.catch((e) => {
       if (this.abort?.signal.aborted) return;
-      logError("WeChat adapter loop exited", { source: "weixin", error: e });
+      logComponent("weixin").error("WeChat adapter loop exited", { err: e });
     });
   }
 
   async stop(): Promise<void> {
-    console.log("[shutdown] 微信 adapter 中止轮询…");
+    logComponent("shutdown").info("微信 adapter 中止轮询…");
     unregisterWeixinCronDeliverer();
     this.abort?.abort();
     const loop = this.loopPromise;
@@ -102,12 +102,16 @@ export class WeixinAdapter implements PlatformAdapter {
     this.persistState();
     this.abort = null;
     this.loopPromise = null;
-    console.log("[shutdown] 微信 adapter 已停止");
+    logComponent("shutdown").info("微信 adapter 已停止");
   }
 
   private async runLoop(signal: AbortSignal): Promise<void> {
-    console.log(
+    logComponent("weixin").info(
       `WeChat adapter started (account=${safeId(this.creds.account_id)} linked_user=${safeId(this.creds.user_id)})`,
+      {
+        account_id: safeId(this.creds.account_id),
+        linked_user_id: safeId(this.creds.user_id),
+      },
     );
     this.service.updatePlatformStatus("weixin", "connected", {
       account_id: safeId(this.creds.account_id),
@@ -127,20 +131,19 @@ export class WeixinAdapter implements PlatformAdapter {
       } catch (e) {
         if (signal.aborted) break;
         this.failures += 1;
-        const msg = e instanceof Error ? e.message : String(e);
-        console.warn(
-          `WeChat poll error (attempt ${this.failures}/${MAX_CONSECUTIVE_FAILURES}): ${msg}`,
+        logComponent("weixin").warn(
+          `WeChat poll error (attempt ${this.failures}/${MAX_CONSECUTIVE_FAILURES})`,
+          { attempt: this.failures, max_attempts: MAX_CONSECUTIVE_FAILURES, err: e },
         );
         if (this.failures >= MAX_CONSECUTIVE_FAILURES) {
-          logError("WeChat poll error", {
-            source: "weixin",
-            error: e,
-            context: { failures: this.failures },
+          logComponent("weixin").error("WeChat poll error", {
+            err: e,
+            failures: this.failures,
           });
         }
         if (this.failures >= MAX_CONSECUTIVE_FAILURES) {
           const delay = BACKOFF_DELAY_MS * Math.min(this.failures, 5);
-          console.warn(`WeChat backing off for ${delay}ms`);
+          logComponent("weixin").warn(`WeChat backing off for ${delay}ms`, { delay_ms: delay });
           this.service.updatePlatformStatus("weixin", "backoff", { delay_ms: delay });
           try {
             await sleep(delay, signal);
@@ -190,8 +193,9 @@ export class WeixinAdapter implements PlatformAdapter {
       if (!parsed) continue;
 
       if (process.env.DEBUG?.includes("weixin")) {
-        console.log(
+        logComponent("weixin").info(
           `WeChat inbound from ${safeId(parsed.fromUserId)}: ${parsed.text.slice(0, 60)}`,
+          { from_user_id: safeId(parsed.fromUserId) },
         );
       }
 
@@ -200,7 +204,7 @@ export class WeixinAdapter implements PlatformAdapter {
       }
 
       void this.routeToRuntime(parsed).catch((e) => {
-        logError("WeChat message routing error", { source: "weixin", error: e });
+        logComponent("weixin").error("WeChat message routing error", { err: e });
       });
     }
   }
@@ -232,10 +236,9 @@ export class WeixinAdapter implements PlatformAdapter {
       );
       if (reply) await this.sendReply(parsed.peerId, reply);
     } catch (e) {
-      logError(`WeChat session ${safeId(sid)} routing error`, {
-        source: "weixin",
-        error: e,
-        context: { session_id: sid || undefined },
+      logComponent("weixin").error(`WeChat session ${safeId(sid)} routing error`, {
+        err: e,
+        session_id: sid || undefined,
       });
       await this.sendReply(parsed.peerId, "⚠️ 引擎出错，请稍后再试");
     }
@@ -253,10 +256,13 @@ export class WeixinAdapter implements PlatformAdapter {
         contextToken,
       );
       if (process.env.DEBUG?.includes("weixin")) {
-        console.log(`WeChat reply sent to ${safeId(peerId)}: ret=${String(result.ret ?? "?")}`);
+        logComponent("weixin").info(`WeChat reply sent to ${safeId(peerId)}`, {
+          peer_id: safeId(peerId),
+          ret: String(result.ret ?? "?"),
+        });
       }
     } catch (e) {
-      logError("WeChat send reply failed", { source: "weixin", error: e });
+      logComponent("weixin").error("WeChat send reply failed", { err: e });
     }
   }
 
@@ -292,7 +298,7 @@ export class WeixinAdapter implements PlatformAdapter {
         "utf-8",
       );
     } catch (e) {
-      logError("WeChat: failed to persist sync buffer", { source: "weixin", error: e });
+      logComponent("weixin").error("WeChat: failed to persist sync buffer", { err: e });
     }
   }
 
@@ -305,7 +311,7 @@ export class WeixinAdapter implements PlatformAdapter {
         "utf-8",
       );
     } catch (e) {
-      logError("WeChat: failed to persist context tokens", { source: "weixin", error: e });
+      logComponent("weixin").error("WeChat: failed to persist context tokens", { err: e });
     }
   }
 

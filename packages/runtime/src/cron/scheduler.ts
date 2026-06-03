@@ -1,4 +1,5 @@
 import type { CronJob } from "./models";
+import { logComponent } from "@freeanima/legacy-kernel";
 import * as store from "./store";
 import { computeNextRun } from "./schedule";
 
@@ -87,7 +88,10 @@ export class Scheduler {
         this.runningIds.add(job.id);
         void Promise.resolve(this.runJob(job))
           .catch((err) => {
-            console.error(`Cron job ${job.id.slice(0, 12)} failed:`, err);
+            logComponent("cron").error(`Cron job ${job.id.slice(0, 12)} failed`, {
+              err,
+              job_id: job.id,
+            });
           })
           .finally(() => {
             this.runningIds.delete(job.id);

@@ -1,5 +1,5 @@
 import { isTransientNetworkError } from "@freeanima/legacy-engine";
-import { logError } from "@freeanima/legacy-kernel";
+import { logComponent } from "@freeanima/legacy-kernel";
 
 const DEFAULT_ATTEMPTS = 5;
 const MAX_BACKOFF_MS = 30_000;
@@ -61,10 +61,10 @@ export async function tryDiscordInterimEdit(
   try {
     await withDiscordRetry(edit);
   } catch (e) {
-    logError("Discord interim edit failed", {
-      source: "discord",
-      error: e,
-      context: { ...context, phase: "interim" },
+    logComponent("discord").error("Discord interim edit failed", {
+      err: e,
+      ...context,
+      phase: "interim",
     });
   }
 }
@@ -78,10 +78,10 @@ export async function deliverDiscordFinalContent(
   try {
     await withDiscordRetry(edit);
   } catch (e) {
-    logError("Discord final edit failed, sending fallback message", {
-      source: "discord",
-      error: e,
-      context: { ...context, phase: "final" },
+    logComponent("discord").error("Discord final edit failed, sending fallback message", {
+      err: e,
+      ...context,
+      phase: "final",
     });
     await withDiscordRetry(sendFallback);
   }

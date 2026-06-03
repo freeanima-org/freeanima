@@ -14,7 +14,7 @@ import {
   loadSessionMeta,
   networkErrorUserHint,
 } from "@freeanima/legacy-engine";
-import { logError } from "@freeanima/legacy-kernel";
+import { logComponent } from "@freeanima/legacy-kernel";
 import type { NestService } from "@freeanima/legacy-runtime";
 import type { PlatformAdapter } from "../platforms";
 import { formatClarifyForPlatform, parseClarifyStreamEvent } from "../clarify/index";
@@ -239,16 +239,14 @@ function logDiscordSessionError(sid: string, e: unknown): void {
   const short = sid.slice(0, 12);
   const context = { session_id: sid };
   if (isTransientNetworkError(e) && !isEngineStreamError(e)) {
-    logError(`Discord session ${short} network error`, {
-      source: "discord",
-      error: e,
-      context,
+    logComponent("discord").error(`Discord session ${short} network error`, {
+      err: e,
+      ...context,
     });
   } else {
-    logError(`Discord session ${short} engine error`, {
-      source: "discord",
-      error: e,
-      context,
+    logComponent("discord").error(`Discord session ${short} engine error`, {
+      err: e,
+      ...context,
     });
   }
 }
@@ -279,20 +277,22 @@ export class DiscordAdapter implements PlatformAdapter {
     });
 
     this.client.on("error", (e) => {
-      logError("Discord client error", { source: "discord", error: e });
+      logComponent("discord").error("Discord client error", { err: e });
     });
 
     this.client.on("shardError", (error, shardId) => {
-      logError("Discord shard error", {
-        source: "discord",
-        error,
-        context: { shard_id: shardId },
+      logComponent("discord").error("Discord shard error", {
+        err: error,
+        shard_id: shardId,
       });
       this.service.updatePlatformStatus("discord", "degraded", { shard_id: shardId });
     });
 
     this.client.on("shardDisconnect", (event, shardId) => {
-      console.warn(`Discord shard ${shardId} disconnected (code=${event.code})`);
+      logComponent("discord").warn(`Discord shard ${shardId} disconnected`, {
+        shard_id: shardId,
+        code: event.code,
+      });
       this.service.updatePlatformStatus("discord", "disconnected", {
         shard_id: shardId,
         code: event.code,
@@ -304,7 +304,10 @@ export class DiscordAdapter implements PlatformAdapter {
       const user = this.client.user;
       const botName = user?.tag ?? "?";
       const botId = user?.id ?? "?";
-      console.log(`Discord bot logged in as ${botName} (ID: ${botId})`);
+      logComponent("discord").info(`Discord bot logged in as ${botName}`, {
+        bot_name: botName,
+        bot_id: botId,
+      });
       this.service.updatePlatformStatus("discord", "connected", {
         bot_name: botName,
         bot_id: botId,
@@ -315,13 +318,13 @@ export class DiscordAdapter implements PlatformAdapter {
     this.client.on("interactionCreate", (interaction) => {
       if (!interaction.isChatInputCommand()) return;
       void this.onSlashCommand(interaction).catch((e) => {
-        logError("Discord slash command failed", { source: "discord", error: e });
+        logComponent("discord").error("Discord slash command failed", { err: e });
       });
     });
 
     this.client.on("messageCreate", (msg) => {
       void this.onMessage(msg).catch((e) => {
-        logError("Discord on_message failed", { source: "discord", error: e });
+        logComponent("discord").error("Discord on_message failed", { err: e });
       });
     });
   }
@@ -344,7 +347,7 @@ export class DiscordAdapter implements PlatformAdapter {
   private scheduleLoginRetry(): void {
     if (!this.started || this.loginRetryTimer !== null || this.client.isReady()) return;
     const retryMin = Math.round(DISCORD_LOGIN_RETRY_MS / 60_000);
-    console.warn(`[discord] ${retryMin} 分钟后重试登录…`);
+    logComponent("discord").warn(`${retryMin} 分钟后重试登录…`, { retry_in_min: retryMin });
     this.service.updatePlatformStatus("discord", "disconnected", {
       retry_in_sec: DISCORD_LOGIN_RETRY_MS / 1000,
     });
@@ -360,7 +363,7 @@ export class DiscordAdapter implements PlatformAdapter {
     try {
       await this.client.login(this.token);
     } catch (e) {
-      logError("Discord login failed", { source: "discord", error: e });
+      logComponent("discord").error("Discord login failed", { err: e });
       this.service.updatePlatformStatus("discord", "disconnected", {
         error: e instanceof Error ? e.message : String(e),
         retry_in_sec: DISCORD_LOGIN_RETRY_MS / 1000,
@@ -370,12 +373,12 @@ export class DiscordAdapter implements PlatformAdapter {
   }
 
   async stop(): Promise<void> {
-    console.log("[shutdown] Discord 断开网关…");
+    logComponent("shutdown").info("Discord 断开网关…");
     this.started = false;
     this.clearLoginRetry();
     unregisterDiscordCronDeliverer();
     this.client.destroy();
-    console.log("[shutdown] Discord 已断开");
+    logComponent("shutdown").info("Discord 已断开");
   }
 
   private async onSlashCommand(interaction: ChatInputCommandInteraction): Promise<void> {
@@ -546,12 +549,15 @@ export class DiscordAdapter implements PlatformAdapter {
           autoArchiveDuration: 60,
         }),
       );
-      console.log(`Created thread ${thread.name} (${thread.id}) for ${message.author.tag}`);
+      logComponent("discord").info(`Created thread ${thread.name} for ${message.author.tag}`, {
+        thread_id: thread.id,
+        thread_name: thread.name,
+        author: message.author.tag,
+      });
       return thread;
     } catch (e) {
-      logError("Discord create thread failed, fallback to channel", {
-        source: "discord",
-        error: e,
+      logComponent("discord").error("Discord create thread failed, fallback to channel", {
+        err: e,
       });
       if (!message.channel.isTextBased()) {
         throw new Error("Channel is not text-based");

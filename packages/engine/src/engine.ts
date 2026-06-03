@@ -1,4 +1,4 @@
-import { logError } from "@freeanima/legacy-kernel";
+import { logComponent } from "@freeanima/legacy-kernel";
 import { loadConfig } from "@freeanima/legacy-kernel";
 import type { HookClarifyItem, HookStreamEvent, TurnControl } from "@freeanima/legacy-kernel";
 import { toolAfterCall } from "@freeanima/legacy-kernel";
@@ -271,7 +271,7 @@ export async function* runStream(
         return;
       }
       const msg = `LLM 调用失败: ${e}`;
-      logError(msg, { source: "engine", error: e });
+      logComponent("engine").error(msg, { err: e });
       yield { event: "error", data: { error: msg } };
       return;
     }
@@ -401,6 +401,6 @@ export async function* runStream(
   }
 
   const msg = `Tool loop exceeded ${maxTurns} turns`;
-  logError(msg, { source: "engine" });
+  logComponent("engine").error(msg);
   yield { event: "error", data: { error: msg } };
 }
