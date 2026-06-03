@@ -1,6 +1,6 @@
 import { appendFileSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
-import { PATHS, CST_OFFSET_MS } from "./paths.js";
+import { PATHS, CST_OFFSET_MS } from "./paths";
 
 export type ErrorLogDetail = {
   error?: unknown;

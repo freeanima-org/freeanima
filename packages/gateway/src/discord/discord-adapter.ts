@@ -16,12 +16,12 @@ import {
 } from "@freeanima/legacy-engine";
 import { logError } from "@freeanima/legacy-kernel";
 import type { NestService } from "@freeanima/legacy-runtime";
-import type { PlatformAdapter } from "../platforms.js";
-import { formatClarifyForPlatform, parseClarifyStreamEvent } from "../clarify/index.js";
+import type { PlatformAdapter } from "../platforms";
+import { formatClarifyForPlatform, parseClarifyStreamEvent } from "../clarify/index";
 import {
   registerDiscordCronDeliverer,
   unregisterDiscordCronDeliverer,
-} from "../cron-deliver.js";
+} from "../cron-deliver";
 import {
   extractOrigin,
   mergeDiscordConfig,
@@ -32,19 +32,19 @@ import {
   type DiscordConfig,
   type DiscordMessageContext,
   type PlatformOrigin,
-} from "./discord-policy.js";
+} from "./discord-policy";
 import {
   interactionToCommandText,
   originFromInteraction,
   replyDiscordInteraction,
   syncDiscordSlashCommands,
-} from "./discord-slash.js";
+} from "./discord-slash";
 
 import {
   deliverDiscordFinalContent,
   tryDiscordInterimEdit,
   withDiscordRetry,
-} from "./discord-retry.js";
+} from "./discord-retry";
 
 const DISCORD_MAX_LEN = 2000;
 /** Discord login 失败后自动重试间隔 */

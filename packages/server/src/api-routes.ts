@@ -16,8 +16,8 @@ import {
   studioSearchBodySchema,
 } from "@freeanima/legacy-api";
 import type { AcpManager, MCPManager } from "@freeanima/legacy-integrations";
-import { studioTerminalHandler } from "./studio-terminal.js";
-import { zValidator } from "./zod-validator.js";
+import { studioTerminalHandler } from "./studio-terminal";
+import { zValidator } from "./zod-validator";
 import {
   mapConfigToApi,
   mapCronJobsToApi,
@@ -26,8 +26,8 @@ import {
   mapSessionsToApi,
   mapStatusToApi,
   mapStreamEventToApi,
-} from "./api-mappers.js";
-import { scheduleServiceRestart } from "./service-restart.js";
+} from "./api-mappers";
+import { scheduleServiceRestart } from "./service-restart";
 
 export type ApiDeps = {
   service: NestService;

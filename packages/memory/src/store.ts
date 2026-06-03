@@ -15,7 +15,7 @@ import {
   parseFact,
   nowIso,
   type FactData,
-} from "./fact.js";
+} from "./fact";
 import { PATHS } from "@freeanima/legacy-kernel";
 
 const COUNTER_FILE = ".counter";

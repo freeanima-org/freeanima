@@ -1,5 +1,5 @@
-import { permissionAllowOnce, parseSessionUpdateChunk } from "./generic.js";
-import type { AcpAgentAdapter } from "./types.js";
+import { permissionAllowOnce, parseSessionUpdateChunk } from "./generic";
+import type { AcpAgentAdapter } from "./types";
 
 /** Cursor CLI `agent acp` — https://cursor.com/docs/cli/acp */
 export const cursorAcpAdapter: AcpAgentAdapter = {

@@ -3,7 +3,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
-import { ILINK_BASE_URL } from "./ilink-api.js";
+import { ILINK_BASE_URL } from "./ilink-api";
 
 export type WeixinCredentials = {
   token: string;

@@ -1,1 +1,1 @@
-export type { ApiRoutes } from "./api-routes.js";
+export type { ApiRoutes } from "./api-routes";

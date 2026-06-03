@@ -1,20 +1,11 @@
 {
   "name": "@freeanima/legacy-gateway",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    },
-    "./schemas/weixin": {
-      "types": "./dist/schemas/weixin.d.ts",
-      "import": "./dist/schemas/weixin.js"
-    }
+    ".": "./src/index.ts",
+    "./schemas/weixin": "./src/schemas/weixin.ts"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "bun test tests/unit --pass-with-no-tests"
   },

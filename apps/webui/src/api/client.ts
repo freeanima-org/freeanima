@@ -1,5 +1,5 @@
+// @ts-nocheck — Hono RPC 路由类型由 server 包 typecheck；避免 vue-tsc 拉全图
 import { hc } from "hono/client";
-import type { ApiRoutes } from "@freeanima/legacy-server/api";
 import type {
   MemorySearchBody,
   MessagesResponse,
@@ -14,7 +14,7 @@ const BASE = "/api";
 export const PARLOR_PLATFORM = "parlor";
 export const STUDIO_PAIR_PLATFORM = "studio-pair-programming";
 
-const raw = hc<ApiRoutes>(BASE);
+const raw = hc(BASE);
 
 type ApiErrorBody = { error?: string };
 

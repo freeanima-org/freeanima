@@ -1,8 +1,8 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { PATHS, openSqlite, type SqliteDatabase } from "@freeanima/legacy-kernel";
-import { buildFtsQuery } from "./fts-query.js";
-import { l2SessionPath } from "./clean.js";
+import { buildFtsQuery } from "./fts-query";
+import { l2SessionPath } from "./clean";
 import { l2LineSchema } from "@freeanima/legacy-kernel";
 import { parseJsonLine } from "@freeanima/legacy-kernel";
 

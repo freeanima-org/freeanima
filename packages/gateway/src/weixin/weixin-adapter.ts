@@ -4,30 +4,30 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
 
 
-import type { PlatformAdapter } from "../platforms.js";
-import { collectGatewayStreamReply } from "../collect-gateway-stream-reply.js";
+import type { PlatformAdapter } from "../platforms";
+import { collectGatewayStreamReply } from "../collect-gateway-stream-reply";
 import {
   registerWeixinCronDeliverer,
   unregisterWeixinCronDeliverer,
-} from "../cron-deliver.js";
+} from "../cron-deliver";
 import {
   BACKOFF_DELAY_MS,
   MAX_CONSECUTIVE_FAILURES,
   RETRY_DELAY_MS,
   getUpdates,
   sendText,
-} from "./ilink-api.js";
+} from "./ilink-api";
 import {
   buildWeixinOrigin,
   normalizeInboundMessage,
   parseUserTextMessage,
-} from "./weixin-message.js";
-import type { WeixinCredentials } from "./weixin-credentials.js";
+} from "./weixin-message";
+import type { WeixinCredentials } from "./weixin-credentials";
 import {
   weixinContextTokensSchema,
   weixinSyncSchema,
   ilinkMessageSchema,
-} from "../schemas/weixin.js";
+} from "../schemas/weixin";
 
 
 function safeId(value: string | undefined, keep = 8): string {

@@ -11,7 +11,7 @@ export {
   type McpServerStatusView,
   type McpStatusResponse,
   type McpToolView,
-} from "./mcp/index.js";
+} from "./mcp/index";
 export {
   AcpManager,
   getAcpManager,
@@ -23,4 +23,4 @@ export {
   unbindAcpSession,
   type AcpControlResult,
   type AcpStatusResponse,
-} from "./acp/index.js";
+} from "./acp/index";

@@ -2,7 +2,7 @@ import { credential, loadConfig } from "@freeanima/legacy-kernel";
 import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
-import { relations, type DbRelations } from "./schema/index.js";
+import { relations, type DbRelations } from "./schema/index";
 
 export interface DatabaseConfig {
   url: string;

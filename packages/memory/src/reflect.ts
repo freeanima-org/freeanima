@@ -1,10 +1,10 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { PATHS } from "@freeanima/legacy-kernel";
-import { callReflectChat } from "./reflect-llm.js";
-import { createFact, type FactData } from "./fact.js";
-import { l2SessionPath } from "./clean.js";
-import { getStore } from "./store.js";
+import { callReflectChat } from "./reflect-llm";
+import { createFact, type FactData } from "./fact";
+import { l2SessionPath } from "./clean";
+import { getStore } from "./store";
 import {
   factExtractionSchema,
   l2LineSchema,

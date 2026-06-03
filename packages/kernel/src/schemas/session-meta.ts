@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { safeParseOrNull } from "./util.js";
+import { safeParseOrNull } from "./util";
 
 export const todoStatusSchema = z.enum([
   "pending",

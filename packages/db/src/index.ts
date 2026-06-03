@@ -1,11 +1,11 @@
-export * from "./client.js";
-export * from "./repos/session-repo.js";
-export * from "./repos/message-repo.js";
-export * from "./queries/messages-for-compress.js";
-export * from "./pg-profile.js";
+export * from "./client";
+export * from "./repos/session-repo";
+export * from "./repos/message-repo";
+export * from "./queries/messages-for-compress";
+export * from "./pg-profile";
 export {
   resolveDatabaseUrl,
   getDatabaseConfig,
   isPostgresPrimary,
   type DatabaseConfig,
-} from "./client.js";
+} from "./client";

@@ -1,6 +1,6 @@
 import { safeParseOrNull } from "@freeanima/legacy-kernel";
-import { ITEM_TEXT, MSG_TYPE_BOT, MSG_TYPE_USER, type IlinkMessage } from "./ilink-api.js";
-import { ilinkMessageSchema } from "../schemas/weixin.js";
+import { ITEM_TEXT, MSG_TYPE_BOT, MSG_TYPE_USER, type IlinkMessage } from "./ilink-api";
+import { ilinkMessageSchema } from "../schemas/weixin";
 
 
 export type WeixinPlatformExtra = {

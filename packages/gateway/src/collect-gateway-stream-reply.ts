@@ -1,5 +1,5 @@
 import type { StreamEvent } from "@freeanima/legacy-engine";
-import { formatClarifyForPlatform, parseClarifyStreamEvent } from "./clarify/index.js";
+import { formatClarifyForPlatform, parseClarifyStreamEvent } from "./clarify/index";
 
 /** 网关消费流式事件并拼接为平台可见的最终回复（含工具/clarify 格式化）。 */
 export async function collectGatewayStreamReply(

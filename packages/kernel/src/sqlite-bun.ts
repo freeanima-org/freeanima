@@ -1,7 +1,7 @@
 /// <reference types="bun-types" />
 import { Database, type SQLQueryBindings } from "bun:sqlite";
 
-import type { SqliteDatabase } from "./sqlite.js";
+import type { SqliteDatabase } from "./sqlite";
 
 function bindParams(params: unknown[]): SQLQueryBindings[] {
   return params as SQLQueryBindings[];

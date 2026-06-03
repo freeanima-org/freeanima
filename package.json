@@ -23,11 +23,10 @@
     "husky": "^9.1.7",
     "semantic-release": "^25.0.3",
     "testcontainers": "^11.0.3",
-    "turbo": "^2.9.16",
     "typescript": "catalog:"
   },
   "bin": {
-    "anima": "./apps/cli/dist/cli.js"
+    "anima": "./apps/cli/src/cli.ts"
   },
   "description": "逸灵风 Free Anima (TypeScript)",
   "engines": {
@@ -36,16 +35,16 @@
   "packageManager": "bun@1.3.14",
   "private": true,
   "scripts": {
-    "build": "turbo run build",
-    "check": "bun run typecheck && bun test",
-    "typecheck": "turbo run typecheck",
+    "build": "bun run --filter @freeanima/legacy-webui build",
+    "check": "bun run typecheck && bun test --pass-with-no-tests",
+    "typecheck": "bun run --filter '*' --if-present typecheck",
     "release": "semantic-release",
     "release:dry-run": "semantic-release --dry-run",
-    "test": "bun run --parallel --filter '*' --if-present test",
+    "test": "bun test --pass-with-no-tests",
+    "test:coverage": "bun test --coverage --pass-with-no-tests",
     "test:integration": "bun scripts/run-integration-tests.mts",
-    "preservice": "turbo run build",
-    "service": "bun apps/cli/dist/cli.js service",
-    "anima": "bun apps/cli/dist/cli.js",
+    "service": "bun apps/cli/src/cli.ts service",
+    "anima": "bun apps/cli/src/cli.ts",
     "link:global": "bash scripts/link-global-cli.sh",
     "prepare": "husky"
   },

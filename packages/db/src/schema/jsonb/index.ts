@@ -1,4 +1,4 @@
-export { messagePayloadSchema, type MessagePayload } from "./message-payload.js";
+export { messagePayloadSchema, type MessagePayload } from "./message-payload";
 export {
   PLATFORMS,
   platformSchema,
@@ -8,5 +8,5 @@ export {
   type PlatformInfo,
   buildPlatformInfo,
   splitPlatformInfo,
-} from "./platform-info.js";
-export * from "./session-jsonb.js";
+} from "./platform-info";
+export * from "./session-jsonb";

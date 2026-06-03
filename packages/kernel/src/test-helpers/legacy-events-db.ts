@@ -1,7 +1,7 @@
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 
-import { openSqlite } from "../sqlite.js";
+import { openSqlite } from "../sqlite";
 
 /** 测试用：写入 Python 时代 events 表（data 列）的一条 pending 事件 */
 export function seedLegacyPythonStyleEvent(

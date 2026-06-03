@@ -27,7 +27,7 @@ bun test:integration
 bun test
 ```
 
-`test:integration` 使用 `bun test` + `scripts/bunfig.integration.toml`；PG 由 `scripts/integration-pg-setup.ts` 在 runner 启动前注入 `ANIMA_TEST_PG_URL`。
+`test:integration` 使用 `bun test --config tests/bunfig.toml tests/integration`（见 `scripts/run-integration-tests.mts`）；PG 由 `scripts/integration-pg-setup.ts` 注入 `ANIMA_TEST_PG_URL`。单元测试：根目录 `bun test`（`bunfig.toml`，默认无覆盖率；`bun test --coverage` 或 `bun run test:coverage` 开启，并排除 `tests/integration/**`）。
 
 依赖 **SQLite**（EventBus、L2/L3 FTS）：Bun 下用 `bun:sqlite`，Node 下用 `better-sqlite3`。
 

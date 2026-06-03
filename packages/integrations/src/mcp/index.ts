@@ -1,5 +1,5 @@
-export { MCPManager } from "./manager.js";
-export { extractMcpResult, mcpToolParameters } from "./schema.js";
+export { MCPManager } from "./manager";
+export { extractMcpResult, mcpToolParameters } from "./schema";
 export {
   sanitizeMcpConfig,
   isMcpServerEnabled,
@@ -10,5 +10,5 @@ export {
   type McpServerStatusView,
   type McpStatusResponse,
   type McpToolView,
-} from "./status.js";
-export { McpClientSession, type McpServerConfig, type McpToolDef } from "./client.js";
+} from "./status";
+export { McpClientSession, type McpServerConfig, type McpToolDef } from "./client";

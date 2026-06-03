@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { renderTable } from "../../src/output/table.js";
+import { renderTable } from "../../src/output/table";
 
 // credential 子命令需 mock @freeanima/legacy-kernel；Bun mock.module 当前会卡住，先跳过
 describe.skip("credential CLI", () => {

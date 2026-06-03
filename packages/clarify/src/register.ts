@@ -11,7 +11,7 @@ import {
   parseClarifyToolResult,
   resolveUserContent,
   setAwaitingClarify,
-} from "./clarify.js";
+} from "./clarify";
 
 export function registerClarifyHooks(kernel: Kernel): void {
   const registry = kernel.hookRegistry;

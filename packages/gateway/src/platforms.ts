@@ -1,7 +1,7 @@
 import { credential, loadConfig } from "@freeanima/legacy-kernel";
 import type { NestService } from "@freeanima/legacy-runtime";
 
-import { loadWeixinCredentials } from "./weixin/weixin-credentials.js";
+import { loadWeixinCredentials } from "./weixin/weixin-credentials";
 
 export type PlatformAdapter = {
   name: string;
@@ -16,7 +16,7 @@ export async function discoverPlatforms(service: NestService): Promise<PlatformA
     const token = credential("services/discord", "token");
     const cfg = loadConfig() as Record<string, unknown>;
     const discordCfg = (cfg.discord ?? {}) as Record<string, unknown>;
-    const { createDiscordAdapter } = await import("./discord/discord-adapter.js");
+    const { createDiscordAdapter } = await import("./discord/discord-adapter");
     adapters.push(createDiscordAdapter(service, token, discordCfg));
     console.log("Discovered platform: discord");
   } catch (e) {
@@ -26,7 +26,7 @@ export async function discoverPlatforms(service: NestService): Promise<PlatformA
 
   const weixinCreds = loadWeixinCredentials();
   if (weixinCreds) {
-    const { createWeixinAdapter } = await import("./weixin/weixin-adapter.js");
+    const { createWeixinAdapter } = await import("./weixin/weixin-adapter");
     adapters.push(createWeixinAdapter(service, weixinCreds));
     console.log("Discovered platform: weixin");
   } else {

@@ -12,14 +12,14 @@ import {
   listCommandDefs,
   listCommandDefsForPlatform,
   isRetryResult,
-} from "./commands/index.js";
-import type { CommandResult } from "./commands/registry.js";
+} from "./commands/index";
+import type { CommandResult } from "./commands/registry";
 import { logError, logSseError } from "@freeanima/legacy-kernel";
 import * as conv from "@freeanima/legacy-engine";
 import {
   buildMessagesDisplay,
   paginateMessagesDisplay,
-} from "./build-messages-display.js";
+} from "./build-messages-display";
 import type { MessagesDisplay } from "@freeanima/legacy-kernel";
 import type {
   HealthSnapshot,
@@ -33,7 +33,7 @@ import type { Message } from "@freeanima/legacy-engine";
 import { LLMError } from "@freeanima/legacy-engine";
 import type { EventBus } from "@freeanima/legacy-kernel";
 import { listTools, openaiSchemas } from "@freeanima/legacy-kernel";
-import { statsReport } from "./conversation-stats.js";
+import { statsReport } from "./conversation-stats";
 import { runWithToolContext } from "@freeanima/legacy-engine";
 import {
   ensureBuiltinCronJobs,
@@ -42,8 +42,8 @@ import {
   pauseJob,
   resumeJob,
   enqueueRunJob,
-} from "./cron/index.js";
-import type { CronJobData } from "./cron/models.js";
+} from "./cron/index";
+import type { CronJobData } from "./cron/models";
 import { kernel } from "@freeanima/legacy-engine";
 import {
   messageIncoming,
@@ -56,15 +56,15 @@ import { countL2FtsRows, reindexL2All as reindexL2FtsAll } from "@freeanima/lega
 import { indexL3All as reindexL3FtsAll } from "@freeanima/legacy-memory/l3-indexer";
 import { getStore } from "@freeanima/legacy-memory/store";
 import { memorySearchDetailed, type MemorySearchResult } from "@freeanima/legacy-memory/search";
-import { PARLOR_PLATFORM } from "./platforms.js";
-import { NEST_VERSION } from "./version.js";
+import { PARLOR_PLATFORM } from "./platforms";
+import { NEST_VERSION } from "./version";
 import {
   isInsufficientToolMessagesError,
   repairAndPersistToolLoop,
   collectStreamReply,
 } from "@freeanima/legacy-engine";
 import * as engine from "@freeanima/legacy-engine";
-import type { CommandDef } from "./commands/registry.js";
+import type { CommandDef } from "./commands/registry";
 
 function streamErrorEvent(
   sessionId: string,

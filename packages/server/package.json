@@ -1,28 +1,13 @@
 {
   "name": "@freeanima/legacy-server",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    },
-    "./alive": {
-      "types": "./dist/alive.d.ts",
-      "import": "./dist/alive.js"
-    },
-    "./bind-hosts": {
-      "types": "./dist/bind-hosts.d.ts",
-      "import": "./dist/bind-hosts.js"
-    },
-    "./api": {
-      "types": "./dist/api-types.d.ts",
-      "import": "./dist/api-types.js"
-    }
+    ".": "./src/index.ts",
+    "./alive": "./src/alive.ts",
+    "./bind-hosts": "./src/bind-hosts.ts",
+    "./api": "./src/api-types.ts"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "bun test tests/unit --pass-with-no-tests"
   },

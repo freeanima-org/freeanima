@@ -1,10 +1,10 @@
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
-import { logError } from "./error-log.js";
-import { PATHS } from "./paths.js";
-import type { EventMap, EventTopic } from "./schemas/events.js";
-import { eventPayloadSchemas } from "./schemas/events.js";
-import { openSqlite, type SqliteDatabase } from "./sqlite.js";
+import { logError } from "./error-log";
+import { PATHS } from "./paths";
+import type { EventMap, EventTopic } from "./schemas/events";
+import { eventPayloadSchemas } from "./schemas/events";
+import { openSqlite, type SqliteDatabase } from "./sqlite";
 
 type Handler<T> = (payload: T) => void | Promise<void>;
 
@@ -159,4 +159,4 @@ export class EventBus {
   }
 }
 
-export type { EventMap, EventTopic } from "./schemas/events.js";
+export type { EventMap, EventTopic } from "./schemas/events";

@@ -1,56 +1,20 @@
 {
   "name": "@freeanima/legacy-kernel",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    },
-    "./paths": {
-      "types": "./dist/paths.d.ts",
-      "import": "./dist/paths.js"
-    },
-    "./config": {
-      "types": "./dist/config.d.ts",
-      "import": "./dist/config.js"
-    },
-    "./credential": {
-      "types": "./dist/credential.d.ts",
-      "import": "./dist/credential.js"
-    },
-    "./json-util": {
-      "types": "./dist/json-util.d.ts",
-      "import": "./dist/json-util.js"
-    },
-    "./registry": {
-      "types": "./dist/registry.d.ts",
-      "import": "./dist/registry.js"
-    },
-    "./event-bus": {
-      "types": "./dist/event-bus.d.ts",
-      "import": "./dist/event-bus.js"
-    },
-    "./error-log": {
-      "types": "./dist/error-log.d.ts",
-      "import": "./dist/error-log.js"
-    },
-    "./hooks": {
-      "types": "./dist/hooks.d.ts",
-      "import": "./dist/hooks.js"
-    },
-    "./schemas/*": {
-      "types": "./dist/schemas/*.d.ts",
-      "import": "./dist/schemas/*.js"
-    },
-    "./test-helpers": {
-      "types": "./dist/test-helpers/legacy-events-db.d.ts",
-      "import": "./dist/test-helpers/legacy-events-db.js"
-    }
+    ".": "./src/index.ts",
+    "./paths": "./src/paths.ts",
+    "./config": "./src/config.ts",
+    "./credential": "./src/credential.ts",
+    "./json-util": "./src/json-util.ts",
+    "./registry": "./src/registry.ts",
+    "./event-bus": "./src/event-bus.ts",
+    "./error-log": "./src/error-log.ts",
+    "./hooks": "./src/hooks.ts",
+    "./schemas/*": "./src/schemas/*.ts",
+    "./test-helpers": "./src/test-helpers/legacy-events-db.ts"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "bun test tests/unit --pass-with-no-tests"
   },

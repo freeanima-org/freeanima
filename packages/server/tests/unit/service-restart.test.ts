@@ -11,7 +11,7 @@ import {
   isSystemdManaged,
   triggerServiceRestart,
   scheduleServiceRestart,
-} from "../../src/service-restart.js";
+} from "../../src/service-restart";
 
 describe("service-restart", () => {
   const prevInvocation = process.env.INVOCATION_ID;

@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import type { PgTestContext } from "@freeanima/legacy-db/test-helpers";
 
-import { pgTestUrl } from "./pg-test-gate.js";
+import { pgTestUrl } from "./pg-test-gate";
 
 /** 集成测试用例标准开头：临时 home + PG harness */
 export async function beginIntegrationCase(prefix: string): Promise<{

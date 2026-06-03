@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "bun:test";
-import { createHook } from "./hook.js";
-import { HookRegistry } from "./registry.js";
+import { createHook } from "./hook";
+import { HookRegistry } from "./registry";
 
 type TestPayload = {
   value: number;

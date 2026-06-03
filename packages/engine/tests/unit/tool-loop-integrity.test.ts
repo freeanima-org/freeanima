@@ -6,8 +6,8 @@ import {
   isInsufficientToolMessagesError,
   REPAIR_REASON_LOST,
   syntheticToolContent,
-} from "../../src/tool-loop-integrity.js";
-import { messagesForApi } from "../../src/llm.js";
+} from "../../src/tool-loop-integrity";
+import { messagesForApi } from "../../src/llm";
 import type { SessionMessage } from "@freeanima/legacy-kernel";
 
 describe("tool-loop-integrity", () => {

@@ -9,9 +9,9 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { renderSystemdUnit } from "../../src/systemd-unit.js";
-import { ensureUnitFile } from "../../src/service-cmd.js";
-import * as serviceCommon from "../../src/service-common.js";
+import { renderSystemdUnit } from "../../src/systemd-unit";
+import { ensureUnitFile } from "../../src/service-cmd";
+import * as serviceCommon from "../../src/service-common";
 import { parseBindHosts, resolveProbeHost, DEFAULT_BIND_HOST } from "@freeanima/legacy-server/bind-hosts";
 
 describe("bind hosts", () => {
@@ -73,11 +73,11 @@ describe("systemd unit", () => {
     expect(ensureUnitFile("127.0.0.1", 9090)).toBe(false);
   });
 
-  it("animaBin prefers current TS cli.js over PATH", () => {
+  it("animaBin prefers current TS cli.ts over PATH", () => {
     vi.restoreAllMocks();
     const dir = mkdtempSync(join(tmpdir(), "freeanima-cli-"));
-    const cliPath = join(dir, "cli.js");
-    writeFileSync(cliPath, "#!/usr/bin/env node\n");
+    const cliPath = join(dir, "cli.ts");
+    writeFileSync(cliPath, "#!/usr/bin/env bun\n");
     const prev = process.argv[1];
     process.argv[1] = cliPath;
     try {
@@ -111,13 +111,13 @@ describe("systemd unit", () => {
 describe.skipIf(typeof Bun !== "undefined")("service start without systemd", () => {
   it("falls back to detached start when systemd unavailable", async () => {
     vi.resetModules();
-    vi.doMock("../../src/systemd-unit.js", () => ({
+    vi.doMock("../../src/systemd-unit", () => ({
       SERVICE_UNIT_NAME: "anima.service",
       renderSystemdUnit,
       systemdUserAvailable: () => false,
     }));
 
-    const { runServiceCommand } = await import("../../src/service-cmd.js");
+    const { runServiceCommand } = await import("../../src/service-cmd");
 
     const exit = vi.spyOn(process, "exit").mockImplementation((() => {
       throw new Error("exit");
@@ -135,6 +135,6 @@ describe.skipIf(typeof Bun !== "undefined")("service start without systemd", () 
     expect(exit).toHaveBeenCalledWith(1);
 
     vi.resetModules();
-    vi.doUnmock("../apps/cli/src/systemd-unit.js");
+    vi.doUnmock("../../src/systemd-unit");
   });
 });

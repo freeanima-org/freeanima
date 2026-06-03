@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { normalizePgTimestamp } from "../../utils/timestamp.js";
+import { normalizePgTimestamp } from "../../utils/timestamp";
 
 /** 已知 Gateway / 通道（与 runtime/platforms.ts 保持一致） */
 export const PLATFORMS = [

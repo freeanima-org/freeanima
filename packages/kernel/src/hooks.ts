@@ -1,5 +1,5 @@
 import { createHook } from "@freeanima/hooks";
-import type { TurnControl } from "./hook-stream.js";
+import type { TurnControl } from "./hook-stream";
 
 export { Hook, HookRegistry, createHook } from "@freeanima/hooks";
 export type { HookHandler, PayloadOf } from "@freeanima/hooks";

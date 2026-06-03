@@ -1,15 +1,15 @@
 import { getToolSessionId } from "@freeanima/legacy-engine";
 import { listTools, loadConfig, registerTool, toolError } from "@freeanima/legacy-kernel";
 
-import { AcpAgentQueue } from "./agent-queue.js";
-import { resolveAcpAdapter } from "./adapters/registry.js";
-import { ACPClient } from "./client.js";
+import { AcpAgentQueue } from "./agent-queue";
+import { resolveAcpAdapter } from "./adapters/registry";
+import { ACPClient } from "./client";
 import {
   bindAcpSession,
   getBoundAcpSession,
   unbindAcpSession,
-} from "./nest-binding.js";
-import { formatAcpPromptResult, type AcpPromptResult } from "./prompt-result.js";
+} from "./nest-binding";
+import { formatAcpPromptResult, type AcpPromptResult } from "./prompt-result";
 import {
   sanitizeAcpConfig,
   shortSessionId,
@@ -18,7 +18,7 @@ import {
   type AcpControlResult,
   type AcpAgentStatusView,
   type AcpStatusResponse,
-} from "./status.js";
+} from "./status";
 
 type AcpPromptOptions = {
   nestSessionId?: string;
@@ -532,5 +532,5 @@ export function registerAcpTools(agentsCfg?: Record<string, AcpAgentConfig>): nu
   return getAcpManager().registerTools(agentsCfg);
 }
 
-export { ACPClient, ACPError } from "./client.js";
+export { ACPClient, ACPError } from "./client";
 export { ACPSessionStore };

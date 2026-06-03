@@ -159,7 +159,7 @@ ACP：`integrations/src/acp/`；`acp_{name}` 返回 JSON（`session_id`、`outpu
 
 ## HTTP API（WebUI / 卧室）
 
-**WebUI 客户端**：[`apps/webui/src/api/client.ts`](../../apps/webui/src/api/client.ts) 使用 Hono RPC 客户端 `hc<ApiRoutes>`，路由类型来自 [`packages/server/src/api-routes.ts`](../../packages/server/src/api-routes.ts)（`@freeanima/legacy-server/api`）；DTO / SSE schema 来自 `@freeanima/legacy-api`。卧室与客厅/创作室视图统一从 client 导入，禁止内联 `fetch('/api/...')`。
+**WebUI 客户端**：[`apps/webui/src/api/client.ts`](../../apps/webui/src/api/client.ts) 使用 Hono RPC `hc`（文件顶 `@ts-nocheck`，避免 vue-tsc 拉取 server 全依赖图；路由契约由 `@freeanima/legacy-server` 包 typecheck 保证）。DTO / SSE schema 来自 `@freeanima/legacy-api`。卧室与客厅/创作室视图统一从 client 导入，禁止内联 `fetch('/api/...')`。
 
 | 端点 | 响应要点 |
 |------|----------|
@@ -203,17 +203,20 @@ ACP：`integrations/src/acp/`；`acp_{name}` 返回 JSON（`session_id`、`outpu
 
 ```bash
 bun install                       # 依赖；需 Bun 1.3+（见 .bun-version）
-bun run build                     # turbo run build（未变更包可命中缓存）
-bun test                          # 全仓单元测试（packages/<pkg>/tests/unit/）
+bun run build                     # 仅构建 WebUI（vite → apps/webui/dist）
+bun test                          # 全仓单元测试（根 bunfig.toml，排除 tests/integration）
+bun test --coverage               # 同上并输出覆盖率（bunfig 勿写 coverage = false，见 #12216）
+bun run test:coverage             # 脚本封装 --coverage
+bun run test                      # 同 bun test（无测试文件时 exit 0）
 bun test:integration              # 根目录 tests/integration/（bun:test + Testcontainers PG；需 Docker；不进 pre-commit）
 bun run typecheck
 bun run release:dry-run           # 本地预览下一版（需 HUSKY=0；见 versioning.md）
 
-# CLI（`bun run service` 会先 turbo build；已构建过则命中缓存）
+# CLI（直接跑 TS 源码；WebUI 需先 bun run build）
 bun run service start                              # 有 systemd → user unit；无 → detached 后台
 bun run service start --foreground                 # 前台调试（阻塞终端）
 bun run service stop | restart | status
-bun run anima -- service start             # 不经 preservice，需已 build
+bun run anima -- service start
 bun run anima -- credential list
 bun run anima -- credential get services/discord token
 bun run anima -- credential add services/foo token=xxx desc=说明
@@ -223,7 +226,7 @@ eval "$(anima completion bash)"
 # source <(anima completion zsh)
 
 # 全局 CLI（本机一次；任意目录可用 anima）
-bun run link:global                               # build + symlink → ~/.bun/bin/anima
+bun run link:global                               # symlink apps/cli/src/cli.ts → ~/.bun/bin/anima
 # PATH：~/.bun/bin 须在旧 pnpm 全局 bin 之前，否则 which anima 仍指向旧版
 anima service status                              # 改 TS 后需重新 link:global
 
@@ -239,7 +242,7 @@ bun install                       # Husky：提交前 typecheck + bun test；com
 bun run check                     # 手动全量检查（同 pre-commit 钩子）
 ```
 
-**构建缓存**：Bun 安装缓存 + 根目录 `turbo.json` 任务缓存；各 TS 包 `tsc --incremental`（`dist/.tsbuildinfo`）。
+**构建**：TS 包由 Bun 直接加载 `src`（无全仓 `tsc emit`）；`bun run build` 仅打 WebUI。类型检查：`bun run typecheck`（各包 `tsc --noEmit`）。
 
 版本号：根 `package.json`（运行时 `NEST_VERSION`）。发版见 [versioning.md](../versioning.md)。
 

@@ -1,20 +1,11 @@
 {
   "name": "@freeanima/legacy-memory",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    },
-    "./*": {
-      "types": "./dist/*.d.ts",
-      "import": "./dist/*.js"
-    }
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "bun test tests/unit --pass-with-no-tests"
   },

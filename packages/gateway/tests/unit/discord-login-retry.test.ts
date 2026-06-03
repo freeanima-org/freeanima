@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
 
-import { DISCORD_LOGIN_RETRY_MS } from "../../src/discord/discord-adapter.js";
+import { DISCORD_LOGIN_RETRY_MS } from "../../src/discord/discord-adapter";
 
 describe("discord login retry", () => {
   beforeEach(() => {

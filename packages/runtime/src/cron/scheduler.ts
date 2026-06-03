@@ -1,6 +1,6 @@
-import type { CronJob } from "./models.js";
-import * as store from "./store.js";
-import { computeNextRun } from "./schedule.js";
+import type { CronJob } from "./models";
+import * as store from "./store";
+import { computeNextRun } from "./schedule";
 
 export const POLL_INTERVAL_MS = 10_000;
 

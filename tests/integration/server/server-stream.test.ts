@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, afterAll } from "bun:test";
-import { describePg } from "../../helpers/pg-test-gate.js";
-import { beginIntegrationCase } from "../../helpers/integration-case.js";
-import { endIntegrationCase } from "../../helpers/integration-case.js";
+import { describePg } from "../../helpers/pg-test-gate";
+import { beginIntegrationCase } from "../../helpers/integration-case";
+import { endIntegrationCase } from "../../helpers/integration-case";
 
 import { NestService } from "@freeanima/legacy-runtime";
 import { seedSession } from "@freeanima/legacy-db/test-helpers";

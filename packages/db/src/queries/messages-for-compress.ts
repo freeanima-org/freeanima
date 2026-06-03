@@ -1,6 +1,6 @@
 import type { ConversationMessage } from "@freeanima/legacy-kernel";
 
-import { listMessages, listMessagesByPosRange } from "../repos/message-repo.js";
+import { listMessages, listMessagesByPosRange } from "../repos/message-repo";
 
 export async function messagesForCompress(
   sessionId: string,

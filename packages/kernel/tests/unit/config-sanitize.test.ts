@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { sanitizeConfigForApi } from "../../src/config-sanitize.js";
+import { sanitizeConfigForApi } from "../../src/config-sanitize";
 
 describe("sanitizeConfigForApi", () => {
   it("脱敏顶层 api_key", () => {

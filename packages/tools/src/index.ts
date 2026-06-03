@@ -1,14 +1,14 @@
-import { registerFileTools } from "./file.js";
-import { registerCredentialTools } from "./credential-tool.js";
-import { registerExecuteCodeTool } from "./execute-code.js";
-import { registerMemoryTools } from "./memory-tools.js";
-import { registerTerminalTools } from "./terminal.js";
-import { registerWebTools } from "./web.js";
+import { registerFileTools } from "./file";
+import { registerCredentialTools } from "./credential-tool";
+import { registerExecuteCodeTool } from "./execute-code";
+import { registerMemoryTools } from "./memory-tools";
+import { registerTerminalTools } from "./terminal";
+import { registerWebTools } from "./web";
 import { registerClarifyTool } from "@freeanima/legacy-clarify";
-import { registerCronjobTool } from "./cronjob.js";
-import { registerSkillsTools } from "./skills-tools.js";
-import { registerTodoTool } from "./todo-tool.js";
-import { registerBrowserTools } from "./browser.js";
+import { registerCronjobTool } from "./cronjob";
+import { registerSkillsTools } from "./skills-tools";
+import { registerTodoTool } from "./todo-tool";
+import { registerBrowserTools } from "./browser";
 
 let registered = false;
 
@@ -28,5 +28,5 @@ export function registerAllTools(): void {
   registered = true;
 }
 
-export { registerFileTools } from "./file.js";
-export { registerCredentialTools } from "./credential-tool.js";
+export { registerFileTools } from "./file";
+export { registerCredentialTools } from "./credential-tool";

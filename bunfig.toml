@@ -1,0 +1,15 @@
+# 默认：根目录 bun test（单元测试；覆盖率用 bun test --coverage）
+# 勿写 coverage = false：Bun #12216 会导致 --coverage 失效
+[test]
+coverageReporter = ["text"]
+coverageDir = "coverage"
+
+# 不发现、不运行集成测试（见 tests/bunfig.toml + bun run test:integration）
+pathIgnorePatterns = ["tests/integration/**"]
+
+coveragePathIgnorePatterns = [
+  "**/node_modules/**",
+  "tests/integration/**",
+  "**/*.test.ts",
+  "**/*.spec.ts",
+]

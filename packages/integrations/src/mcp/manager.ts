@@ -1,14 +1,14 @@
 import { listTools, loadConfig, registerTool, toolError, unregisterToolsByToolset } from "@freeanima/legacy-kernel";
 
-import { McpClientSession, type McpServerConfig } from "./client.js";
-import { extractMcpResult, mcpToolParameters } from "./schema.js";
+import { McpClientSession, type McpServerConfig } from "./client";
+import { extractMcpResult, mcpToolParameters } from "./schema";
 import {
   isMcpServerEnabled,
   sanitizeMcpConfig,
   type McpControlResult,
   type McpServerStatusView,
   type McpStatusResponse,
-} from "./status.js";
+} from "./status";
 
 type McpServersConfig = NonNullable<ReturnType<typeof loadConfig>["mcp_servers"]>;
 

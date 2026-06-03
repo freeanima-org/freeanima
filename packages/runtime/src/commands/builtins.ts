@@ -3,8 +3,8 @@ import {
   type CommandResult,
   listCommandDefsForPlatform,
   registerCommand,
-} from "./registry.js";
-import { clearAwaitingClarify, readAwaitingClarify } from "../clarify.js";
+} from "./registry";
+import { clearAwaitingClarify, readAwaitingClarify } from "../clarify";
 import {
   rebuildSessionSystemPrompt,
   loadSessionMeta,
@@ -16,12 +16,12 @@ import {
   newSession,
   recompressSession,
 } from "@freeanima/legacy-engine";
-import { statsReport } from "../conversation-stats.js";
+import { statsReport } from "../conversation-stats";
 import { isSessionMeta, listTools } from "@freeanima/legacy-kernel";
 import { distillFromPg } from "@freeanima/legacy-memory/clean";
 import { isReflectEnabled } from "@freeanima/legacy-memory";
 import { reflectSession } from "@freeanima/legacy-memory/reflect";
-import { setHomeChannel } from "../home-channel.js";
+import { setHomeChannel } from "../home-channel";
 
 function cmdHelp(ctx: CommandContext): string {
   const available = listCommandDefsForPlatform(ctx.platform);

@@ -1,22 +1,22 @@
 import { describe, it, expect } from "bun:test";
-import { cronJobDataSchema } from "../../src/schemas/cron.js";
+import { cronJobDataSchema } from "../../src/schemas/cron";
 import {
   eventPayloadSchemas,
   sessionUpdatedPayloadSchema,
-} from "../../src/schemas/events.js";
-import { l2LineSchema, factExtractionSchema } from "../../src/schemas/l2.js";
-import { toolArgsSchema, toolErrorSchema } from "../../src/schemas/tool-json.js";
+} from "../../src/schemas/events";
+import { l2LineSchema, factExtractionSchema } from "../../src/schemas/l2";
+import { toolArgsSchema, toolErrorSchema } from "../../src/schemas/tool-json";
 import {
   createSessionBodySchema,
   sendMessageBodySchema,
   memorySearchBodySchema,
-} from "../../../api/src/schemas.js";
-import { parseCompressionState, clarifyToolAwaitingResultSchema } from "../../src/schemas/session-meta.js";
-import { jsonRpcMessageSchema } from "../../../integrations/src/schemas/acp-jsonrpc.js";
+} from "../../../api/src/schemas";
+import { parseCompressionState, clarifyToolAwaitingResultSchema } from "../../src/schemas/session-meta";
+import { jsonRpcMessageSchema } from "../../../integrations/src/schemas/acp-jsonrpc";
 import {
   weixinSyncSchema,
   weixinContextTokensSchema,
-} from "../../../gateway/src/schemas/weixin.js";
+} from "../../../gateway/src/schemas/weixin";
 
 describe("schemas/cron", () => {
   it("parses minimal cron job", () => {
@@ -121,7 +121,7 @@ describe("schemas/clarify tool result", () => {
 
 describe("schemas/message", () => {
   it("parseSessionLine 接受 pos", async () => {
-    const { parseSessionLine } = await import("../../src/schemas/message.js");
+    const { parseSessionLine } = await import("../../src/schemas/message");
     const parsed = parseSessionLine(
       JSON.stringify({ role: "user", content: "hi", pos: 3, timestamp: "t" }),
     );
@@ -131,7 +131,7 @@ describe("schemas/message", () => {
   });
 
   it("parseSessionLine 将 legacy id 映射为 pos", async () => {
-    const { parseSessionLine } = await import("../../src/schemas/message.js");
+    const { parseSessionLine } = await import("../../src/schemas/message");
     const parsed = parseSessionLine(
       JSON.stringify({ role: "user", content: "hi", id: 5, timestamp: "t" }),
     );

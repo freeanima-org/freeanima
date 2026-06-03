@@ -9,7 +9,7 @@ import { cors } from "hono/cors";
 import type { AcpManager, MCPManager } from "@freeanima/legacy-integrations";
 import { createNodeWebSocket } from "@hono/node-ws";
 import type { ServerType } from "@hono/node-server";
-import { createApiRoutes } from "./api-routes.js";
+import { createApiRoutes } from "./api-routes";
 
 const WEBUI_MOUNT = "/webui";
 

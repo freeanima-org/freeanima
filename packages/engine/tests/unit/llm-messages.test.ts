@@ -3,8 +3,8 @@ import {
   finalizeStreamingToolCalls,
   mergeStreamingToolCalls,
   messagesForApi,
-} from "../../src/llm.js";
-import type { SessionMessage } from "../../src/schemas/message.js";
+} from "../../src/llm";
+import type { SessionMessage } from "../../src/schemas/message";
 
 describe("mergeStreamingToolCalls", () => {
   it("merges deltas by index into one tool call with name", () => {

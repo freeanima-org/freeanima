@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "bun:test";
 import { EventEmitter } from "node:events";
 import type { ServerType } from "@hono/node-server";
-import { closeHttpServer, waitForDrainWithTimeout } from "../../src/http-shutdown.js";
+import { closeHttpServer, waitForDrainWithTimeout } from "../../src/http-shutdown";
 
 function mockServer(opts?: { closeDelayMs?: number }): ServerType & {
   closeIdleConnections: ReturnType<typeof vi.fn>;

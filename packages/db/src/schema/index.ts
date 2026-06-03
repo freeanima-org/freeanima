@@ -1,12 +1,12 @@
 import { defineRelations } from "drizzle-orm";
 
-export * from "./jsonb/index.js";
-export * from "./sessions.js";
-export * from "./messages.js";
-export * from "./zod-schemas.js";
+export * from "./jsonb/index";
+export * from "./sessions";
+export * from "./messages";
+export * from "./zod-schemas";
 
-import { messages } from "./messages.js";
-import { sessions } from "./sessions.js";
+import { messages } from "./messages";
+import { sessions } from "./sessions";
 
 /** Drizzle 1.0：relations 为 drizzle() 必需配置 */
 export const relations = defineRelations({ sessions, messages }, (r) => ({

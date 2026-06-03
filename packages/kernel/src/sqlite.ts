@@ -20,9 +20,9 @@ export type SqliteDatabase = {
 /** Bun 用 bun:sqlite，Node 用 better-sqlite3（避免 Bun 加载原生模块） */
 export function openSqlite(path: string): SqliteDatabase {
   if (typeof Bun !== "undefined") {
-    const { openBunSqlite } = require("./sqlite-bun.js") as typeof import("./sqlite-bun.js");
+    const { openBunSqlite } = require("./sqlite-bun") as typeof import("./sqlite-bun");
     return openBunSqlite(path);
   }
-  const { openNodeSqlite } = require("./sqlite-node.js") as typeof import("./sqlite-node.js");
+  const { openNodeSqlite } = require("./sqlite-node") as typeof import("./sqlite-node");
   return openNodeSqlite(path);
 }
