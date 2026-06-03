@@ -38,3 +38,5 @@ apps/webui/dist/
 
 # Coverage
 coverage/
+
+.tanstack/

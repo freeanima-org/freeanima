@@ -1,0 +1,44 @@
+import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
+import { ResponsiveSidebarLayout } from "@/components/ResponsiveSidebarLayout";
+
+const navItems = [
+  { to: "/chamber/dashboard", label: "📊 仪表盘" },
+  { to: "/chamber/memory-files", label: "📁 记忆文件" },
+  { to: "/chamber/sessions", label: "💬 会话列表" },
+  { to: "/chamber/memory", label: "🧠 记忆台" },
+  { to: "/chamber/config", label: "⚙️ 配置" },
+  { to: "/chamber/tools", label: "🔧 工具" },
+  { to: "/chamber/commands", label: "⌨️ 命令" },
+  { to: "/chamber/mcp", label: "🔌 MCP" },
+  { to: "/chamber/acp", label: "🤝 ACP" },
+  { to: "/chamber/cron", label: "⏰ 定时任务" },
+] as const;
+
+export const Route = createFileRoute("/chamber")({
+  component: ChamberLayout,
+});
+
+function ChamberLayout() {
+  return (
+    <ResponsiveSidebarLayout
+      title="卧室"
+      subtitle="Chamber"
+      sidebar={() => (
+        <nav className="flex-1 px-2 pb-3 space-y-1 overflow-y-auto">
+          {navItems.map((item) => (
+            <Link
+              key={item.to}
+              to={item.to}
+              className="nav-link"
+              activeProps={{ className: "nav-link sidebar-nav-active" }}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+      )}
+    >
+      <Outlet />
+    </ResponsiveSidebarLayout>
+  );
+}

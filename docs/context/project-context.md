@@ -3,7 +3,7 @@
 > 会变的项目细节。根 [AGENTS.md](../../AGENTS.md) 保留 boot 协议；工具清单、命令、目录结构见本文件。
 > 文档地图与维护规约见 [AGENTS.md](../../AGENTS.md#文档地图)。
 
-**运行状态（2026-05-27）**：**TypeScript 单栈**；生产形态为 `anima service`（Hono WebUI BFF）。Python 实现已从仓库移除，历史见 Git 提交记录与 [CHANGELOG.md](../../CHANGELOG.md)。
+**运行状态（2026-05-27）**：**TypeScript 单栈**；生产形态为 `anima service`（Bun fullstack WebUI + tRPC，由 `packages/server` 同进程启动）。Python 实现已从仓库移除，历史见 Git 提交记录与 [CHANGELOG.md](../../CHANGELOG.md)。
 
 ## 工具使用策略（当前工作方式）
 
@@ -110,7 +110,7 @@ kernel/             # RFC #1 新栈（与 legacy packages/ 并行）
 └── kernel/         # @freeanima/kernel：Kernel 组合端口（HookRegistry + EventBus + Logger）
 apps/
 ├── cli/            # anima 入口：service / credential / completion
-└── webui/          # Vue 3 + TypeScript WebUI；API 经 `src/api/client.ts`（Hono `hc<ApiRoutes>`）；静态 dist 由 server 挂载
+└── webui/          # React 19 CSR + TanStack Router；Bun fullstack HTML entry；tRPC client → packages/server
 packages/
 ├── event-bus-sqlite/ # @freeanima/event-bus-sqlite：SqliteEventQueue（bun:sqlite，实现 EventQueueAdapter）
 ├── api/            # HTTP 契约（Zod schema + 类型）；仅依赖 zod
@@ -122,7 +122,7 @@ packages/
 ├── clarify/        # clarify 工具与 hook 注册
 ├── gateway/        # 入站消息通道：Discord、微信；cron deliver；流式回复收集
 ├── core/           # 兼容门面：re-export kernel/clarify/engine/memory/runtime + network-error
-├── server/         # Hono /api + serve()；组装 EventBus + SqliteEventQueue；WebUI/parlor 经 HTTP 调 NestService（不在 gateway）
+├── server/         # serve() + handlers/ + trpc/；Bun fullstack WebUI + node:http（tRPC WS）；EventBus + SqliteEventQueue
 ├── tools/          # 本地工具注册
 └── integrations/   # MCP、ACP
 tests/           # Vitest 回归
@@ -163,9 +163,22 @@ MCP：`integrations/src/mcp/`（`@modelcontextprotocol/sdk`）；**HTTP listen �
 
 ACP：`integrations/src/acp/`；`acp_{name}` 返回 JSON（`session_id`、`output`、`new_session`、`reused_binding`）。**HTTP listen 后后台并行连接** `enabled !== false` 的 agent（`connect_timeout_ms` 默认 15s，`prompt_timeout_ms` 默认 120s）；卧室 `/webui/chamber/acp` 可手动启停。**Session 策略（混合 C）**：默认当前逸灵风 L1 session ↔ 每 agent 一个 ACP session（`session_meta.acp_sessions`）；`new_session: true` 强制新建并更新绑定；显式 `session_id` 优先。同 agent 请求经 `AcpAgentQueue` 串行。适配器见 `adapters/cursor`（[Cursor ACP](https://cursor.com/docs/cli/acp)）。
 
-## HTTP API（WebUI / 卧室）
+## HTTP / tRPC API（WebUI）
 
-**WebUI 客户端**：[`apps/webui/src/api/client.ts`](../../apps/webui/src/api/client.ts) 使用 Hono RPC `hc`（文件顶 `@ts-nocheck`，避免 vue-tsc 拉取 server 全依赖图；路由契约由根目录 `bun run typecheck` 中的 backend tsgo 保证）。DTO / SSE schema 来自 `@freeanima/legacy-api`。卧室与客厅/创作室视图统一从 client 导入，禁止内联 `fetch('/api/...')`。
+**WebUI RPC**：[`packages/server/src/trpc/router.ts`](../../packages/server/src/trpc/router.ts) 导出 `AppRouter`；WebUI 用 [`apps/webui/src/lib/trpc.ts`](../../apps/webui/src/lib/trpc.ts)（`httpBatchLink` + `httpSubscriptionLink` + 终端 `wsLink`）。Zod 约束复用 `@freeanima/legacy-api`。
+
+| 传输 | 路径 | 用途 |
+|------|------|------|
+| HTTP batch | `POST /api/trpc/*` | query / mutation |
+| SSE subscription | `GET /api/trpc/*`（EventSource） | 聊天流 `messages.sendStream` 等 |
+| WebSocket | `WS /api/trpc/ws` | `studio.terminal.*`（write/resize mutation + stream subscription） |
+| REST（可选） | `GET /api/health` | 探活 |
+
+**启动**：`packages/server/webui-server.ts` — 对外 `node:http`（API + WS）；内嵌 Bun fullstack dev server（`127.0.0.1:随机端口`）代理 `/webui/*` HTML/TSX/CSS（HMR）。**无需** `vite build` / `dist/server`。
+
+**WebUI 前端**：[`apps/webui/index.html`](../../apps/webui/index.html) + CSR [`main.tsx`](../../apps/webui/src/main.tsx)；TanStack Router（保留）；已移除 TanStack Start / Vite / `server/fns`。
+
+旧 REST 端点（`/api/sessions/...` 等）由 tRPC procedure 替代；下表保留语义对照。
 
 | 端点 | 响应要点 |
 |------|----------|
@@ -209,19 +222,13 @@ ACP：`integrations/src/acp/`；`acp_{name}` 返回 JSON（`session_id`、`outpu
 
 ```bash
 bun install                       # 依赖；需 Bun 1.3+（见 .bun-version）
-bun run build                     # 仅构建 WebUI（vite → apps/webui/dist）
-bun test                          # 全仓单元测试（根 bunfig.toml，排除 tests/integration）；CI 用此
-bun run test:changed              # 本地增量 + pre-commit：相对 HEAD 的 git 变更 + import 图筛测试（须在仓库根）
-bun test --coverage               # 同上并输出覆盖率（bunfig 勿写 coverage = false，见 #12216）
-bun run test:coverage             # 脚本封装 --coverage
-bun run test                      # 同 bun test（无测试文件时 exit 0）
-bun test:integration              # 根目录 tests/integration/（bun:test + Testcontainers PG；需 Docker；不进 pre-commit）
-bun run typecheck                 # tsgo backend + vue-tsc + tsgo(webui api)，并行
-bun run release:dry-run           # 本地预览下一版（需 HUSKY=0；见 versioning.md）
+bun run test                      # 全仓测试（单元 + 集成；有 Docker 时自动起 PG）
+bun run test:changed              # 增量 + pre-commit；命中集成用例时自动起 PG
+bun run typecheck                 # tsgo backend + tsgo webui，并行
 
-# CLI（直接跑 TS 源码；WebUI 需先 bun run build）
-bun run service start                              # 有 systemd → user unit；无 → detached 后台
-bun run service start --foreground                 # 前台调试（阻塞终端）
+# CLI（直接跑 TS 源码）
+bun run service start                              # systemd / detached
+bun run service start --foreground                 # 前台 dev：Bun fullstack HMR，无需 build
 bun run service stop | restart | status
 bun run anima -- service start
 bun run anima -- credential list
@@ -241,24 +248,26 @@ anima service status
 # unit：~/.config/systemd/user/anima.service（`service start` 自动生成，勿手抄仓库内模板）
 #   Restart=always；崩溃后 180s 再拉起；StartLimitIntervalSec=0（不因连续失败放弃）
 
-# WebUI: http://127.0.0.1:8080/webui/parlor/chat
+# WebUI: http://127.0.0.1:2658/webui/parlor/chat
 # 卧室: …/webui/chamber/dashboard  创作室: …/webui/studio/pair-programming
-# 构建前端: bun run --filter @freeanima/legacy-webui build
 bun install                       # Husky：提交前 typecheck + test:changed；commit-msg 校验 Conventional Commits
-bun run check                     # 手动全量：typecheck + 全量 bun test（推 PR 前建议）
+bun run check                     # 手动全量：typecheck + 全量测试（推 PR 前建议）
 ```
 
-**构建**：TS 包由 Bun 直接加载 `src`（无 emit）；`bun run build` 仅打 WebUI。
+**构建**：TS 包由 Bun 直接加载 `src`（无 emit）；WebUI 由 Bun fullstack 按需编译，**无**单独 `vite build` 步骤。
 
-**类型检查**：仅根目录 `bun run typecheck`（[`scripts/typecheck-fast.mts`](../../scripts/typecheck-fast.mts)）：`tsgo` 查 backend（[`tsconfig.backend.json`](../../tsconfig.backend.json)）；**`vue-tsc`** 查 WebUI（`.vue` + `src/api`，`typescript@5.9` 仅 webui）。子包无单独 `typecheck` 脚本。
+**类型检查**：仅根目录 `bun run typecheck`（[`scripts/typecheck-fast.mts`](../../scripts/typecheck-fast.mts)）：`tsgo` 查 backend（[`tsconfig.backend.json`](../../tsconfig.backend.json)）与 WebUI（[`apps/webui/tsconfig.json`](../../apps/webui/tsconfig.json)），并行。
 
-**单元测试**：仅根目录 `bun test` / `bun run test`（[`bunfig.toml`](../../bunfig.toml)）。**本地与 pre-commit** 用 `bun run test:changed`（[`--changed`](https://bun.com/docs/cli/test) 按 git 变更与依赖图只跑相关 `*.test.ts`）；**CI** 全量 `bun test`；推 PR 前可 `bun run check` 做 typecheck + 全量单测。子包路径过滤示例：`bun test kernel/hooks`。改 clarify/runtime 等无单测 import 链的模块时，`--changed` 可能几乎不跑测试，提交前宜 `bun run test` 或 `test:integration`。
+**测试**：`bun run test`（[`scripts/run-tests.mts`](../../scripts/run-tests.mts)）先尝试 Docker 起临时 PG，再根目录 `bun test`。**本地与 pre-commit** 用 `bun run test:changed`；**CI** 全量 `bun run test`；推 PR 前可 `bun run check`。
 
+**WebUI 启动**：`anima service start --foreground` → `development: true`（Bun fullstack + tRPC）；systemd/detached 同进程 TS 直跑，无需预构建。
 **覆盖率范围**：Bun 会统计**测试执行过程中被 import 到的所有源码**（含 workspace 依赖），与「只跑了哪个目录的 `*.test.ts`」无关。因此在 `kernel/hooks` 跑覆盖率仍会出现 `../logging/...`，在 `kernel` 跑则会合并 hooks + logging + kernel 的 src。Bun 暂无「只统计 cwd 下 src」的内置开关。
 
 **`bunfig.toml` 与 cwd（Bun 1.3.14）**：根目录 `bun test` / `bun test kernel/hooks` 的 **cwd 在仓库根**，会加载根 [`bunfig.toml`](../../bunfig.toml)（`coverageThreshold`、`pathIgnorePatterns` 等）。**`cd kernel/hooks && bun test` 不会**继承根 `bunfig`（子目录无本地 `bunfig.toml` 时相当于默认配置）。单包调试若要用根上的阈值/忽略规则，应在根执行 `bun test kernel/hooks --coverage`，或在子包放本地 `bunfig.toml` / `BUN_CONFIG`。
 
-**TS 配置**：根 [`tsconfig.json`](../../tsconfig.json)（IDE：backend `src` + 各包 `tests/unit` + `tests/helpers`）；门禁 [`tsconfig.backend.json`](../../tsconfig.backend.json)（backend `src`，排除测试）；WebUI 见 [`apps/webui/tsconfig.json`](../../apps/webui/tsconfig.json)（含 `src/api`）；集成测试见 [`tests/tsconfig.json`](../../tests/tsconfig.json)。backend 子包**无**单独 `tsconfig.json`。
+**WebUI Tailwind**：`anima service start` 从仓库根启动内嵌 `Bun.serve`，须根 `bunfig.toml` 的 `[serve.static] plugins = ["bun-plugin-tailwind"]` 且根 `devDependencies` 含 `bun-plugin-tailwind`；否则 CSS 仅有 theme/@apply 未展开、无 `.btn`/`.flex` 等 utility。`apps/webui/bunfig.toml` 仅 `cd apps/webui && bun …` 时生效。
+
+**TS 配置**：根 [`tsconfig.json`](../../tsconfig.json)（IDE：backend `src` + 各包 `tests/unit` + `tests/helpers`）；门禁 [`tsconfig.backend.json`](../../tsconfig.backend.json)（backend `src`，排除测试）；WebUI 见 [`apps/webui/tsconfig.json`](../../apps/webui/tsconfig.json)；集成测试见 [`tests/tsconfig.json`](../../tests/tsconfig.json)。backend 子包**无**单独 `tsconfig.json`。
 
 版本号：根 `package.json`（运行时 `NEST_VERSION`）。发版见 [versioning.md](../versioning.md)。
 

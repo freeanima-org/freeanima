@@ -1,33 +1,29 @@
 {
   "name": "@freeanima/legacy-webui",
   "private": true,
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
-  },
+  "type": "module",
   "dependencies": {
-    "@xterm/addon-fit": "^0.10.0",
-    "highlight.js": "^11.11.1",
-    "hono": "^4.12.23",
-    "marked": "^18.0.4",
-    "pinia": "^3.0.4",
-    "vue": "^3.5.35",
-    "vue-router": "^5.1.0",
-    "xterm": "^5.3.0",
-    "zod": "catalog:"
-  },
-  "devDependencies": {
     "@freeanima/legacy-api": "workspace:*",
     "@freeanima/legacy-server": "workspace:*",
-    "@tailwindcss/vite": "^4.3.0",
-    "@types/node": "catalog:",
+    "@tanstack/react-router": "^1.170.11",
+    "@trpc/client": "^11",
+    "@xterm/addon-fit": "^0.11.0",
+    "highlight.js": "^11.11.1",
+    "marked": "^18.0.4",
+    "react": "19",
+    "react-dom": "19",
+    "xterm": "^5.3.0",
+    "zod": "^4.4.3",
+    "zustand": "^5.0.14"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "@types/react": "^19.2.16",
+    "@types/react-dom": "^19.2.3",
     "bun-types": "catalog:",
-    "@vitejs/plugin-vue": "^6.0.7",
+    "bun-plugin-tailwind": "^0.1.2",
     "daisyui": "^5.5.20",
     "tailwindcss": "^4.3.0",
-    "typescript": "catalog:",
-    "vite": "^8.0.14",
-    "vue-tsc": "^2.2.12"
+    "typescript": "^6.0.3"
   }
 }

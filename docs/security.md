@@ -49,7 +49,7 @@
 
 | 措施 | 说明 |
 |------|------|
-| CORS 白名单 | `packages/server/src/http-app.ts` 限制来源（localhost + 私有网段） |
+| 同域 RPC | TanStack Start server functions 默认同源，无需 CORS 白名单 |
 | 配置密钥脱敏 | `NestService.getConfig()` → `sanitizeConfigForApi()`（`api_key`、`database.url`、嵌套 `pushkey`、`mcp env` 等） |
 | MCP 配置脱敏 | `sanitizeMcpConfig`：`env` 仅暴露 `env_keys` |
 | 写路径安全 | `write_file` deny list（部分 `/etc/*`、`.ssh` 私钥等） |

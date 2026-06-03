@@ -1,12 +1,10 @@
 {
   "extends": "./tsconfig.base.json",
   "include": [
-    "kernel/*/src/**/*.ts",
-    "packages/*/src/**/*.ts",
-    "packages/*/tests/**/*.ts",
-    "apps/cli/src/**/*.ts",
-    "apps/cli/tests/**/*.ts",
-    "tests/helpers/**/*.ts"
+    "kernel/**/*.ts",
+    "packages/**/*.ts",
+    "apps/**/*.ts",
+    "tests/**/*.ts"
   ],
   "exclude": ["node_modules", "apps/webui", "**/dist/**", "**/.turbo/**"]
 }

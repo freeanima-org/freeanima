@@ -9,7 +9,11 @@ export * from "./home-channel";
 export * from "./platforms";
 export * from "./studio";
 export * from "./studio-gitignore";
-export { REPO_ROOT, WEBUI_DIST, WEBUI_DIST_INDEX } from "./repo-paths";
+export {
+  REPO_ROOT,
+  WEBUI_ROOT,
+  WEBUI_BASE_PATH,
+} from "./repo-paths";
 export * from "./conversation-stats";
 export * from "./runtime-context-stats";
 export * from "./time-perception";

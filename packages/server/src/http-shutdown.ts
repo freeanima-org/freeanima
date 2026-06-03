@@ -1,12 +1,6 @@
 import { logComponent } from "@freeanima/legacy-kernel";
 import type { NestService } from "@freeanima/legacy-runtime";
-import type { ServerType } from "@hono/node-server";
-
-
-type NodeHttpServer = ServerType & {
-  closeIdleConnections?: () => void;
-  closeAllConnections?: () => void;
-};
+import type { WebuiServerHandle } from "./webui-server";
 
 /** 等待进行中的 engine 请求落盘；超时后继续关停，避免 systemd SIGKILL */
 export async function waitForDrainWithTimeout(
@@ -30,41 +24,9 @@ export async function waitForDrainWithTimeout(
   ]);
 }
 
-/**
- * 关闭 HTTP 监听。空闲 WebSocket（如 Studio 终端）会阻塞 server.close()；
- * 超时后强制断开剩余连接。
- */
-export async function closeHttpServer(
-  server: ServerType,
-  timeoutMs = 3000,
-): Promise<void> {
-  const http = server as NodeHttpServer;
-  await new Promise<void>((resolve) => {
-    let settled = false;
-    const done = () => {
-      if (settled) return;
-      settled = true;
-      resolve();
-    };
-    const forceTimer = setTimeout(() => {
-      logComponent("shutdown").info("HTTP close 超时，强制断开剩余连接", {
-        timeout_ms: timeoutMs,
-      });
-      http.closeIdleConnections?.();
-      http.closeAllConnections?.();
-      done();
-    }, timeoutMs);
-    http.closeIdleConnections?.();
-    server.close(() => {
-      clearTimeout(forceTimer);
-      done();
-    });
-  });
-}
-
 export async function closeHttpServers(
-  servers: ServerType[],
-  timeoutMs = 3000,
+  handles: WebuiServerHandle[],
+  _timeoutMs = 3000,
 ): Promise<void> {
-  await Promise.all(servers.map((s) => closeHttpServer(s, timeoutMs)));
+  await Promise.all(handles.map((h) => Promise.resolve(h.close())));
 }

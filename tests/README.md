@@ -20,14 +20,9 @@ tests/
 ## 运行
 
 ```bash
-# 需 Docker（Testcontainers 起临时 PostgreSQL 17 + migrate）
-bun test:integration
-
-# 单元测试（各 package，bun:test）
+# 单元 + 集成（有 Docker 时自动起临时 PostgreSQL 17 + migrate；无 Docker 时 PG 用例 skip）
 bun test
 ```
-
-`test:integration` 使用 `bun test --config tests/bunfig.toml tests/integration`（见 `scripts/run-integration-tests.mts`）；PG 由 `scripts/integration-pg-setup.ts` 注入 `ANIMA_TEST_PG_URL`。单元测试：根目录 `bun test`（`bunfig.toml`，默认无覆盖率；`bun test --coverage` 或 `bun run test:coverage` 开启，并排除 `tests/integration/**`）。
 
 依赖 **SQLite**（EventBus、L2/L3 FTS）：仅 **bun:sqlite**（运行时要求 Bun）。
 
