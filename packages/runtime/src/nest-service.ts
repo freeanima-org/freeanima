@@ -46,8 +46,13 @@ import {
 import type { CronJobData } from "./cron/models";
 import { kernel } from "@freeanima/legacy-engine";
 import {
+  headOkStepData,
   messageIncoming,
   turnAfterComplete,
+} from "@freeanima/legacy-kernel";
+import type {
+  MessageIncomingEffect,
+  TurnAfterCompleteEffect,
 } from "@freeanima/legacy-kernel";
 import { applyClarifyStreamAwaiting } from "@freeanima/legacy-clarify";
 import { PATHS, CST_OFFSET_MS } from "@freeanima/legacy-kernel";
@@ -313,16 +318,19 @@ export class NestService {
     | { ok: true; message: string; expiredHint?: string }
     | { ok: false; reason: string }
   > {
-    const ctx = await kernel.hookRegistry.run(messageIncoming, {
+    const run = await kernel.hookRegistry.run(messageIncoming, {
       sessionId,
       message,
       platform,
     });
-    if (ctx.blocked) return { ok: false, reason: ctx.blocked.reason };
+    if (run.blocked) {
+      return { ok: false, reason: run.blockedMessage ?? "" };
+    }
+    const effect = (headOkStepData(run.chain) ?? {}) as MessageIncomingEffect;
     return {
       ok: true,
-      message: ctx.transformedMessage ?? message,
-      expiredHint: ctx.expiredHint,
+      message: effect.transformedMessage ?? message,
+      expiredHint: effect.expiredHint,
     };
   }
 
@@ -331,11 +339,12 @@ export class NestService {
     messages: Message[],
     defaultContent: string,
   ): Promise<string> {
-    const ctx = await kernel.hookRegistry.run(turnAfterComplete, {
+    const run = await kernel.hookRegistry.run(turnAfterComplete, {
       sessionId,
       messages: messages as Record<string, unknown>[],
     });
-    return ctx.displayContent ?? defaultContent;
+    const effect = (headOkStepData(run.chain) ?? {}) as TurnAfterCompleteEffect;
+    return effect.displayContent ?? defaultContent;
   }
 
   private emitSessionUpdated(sessionId: string): void {

@@ -1,12 +1,56 @@
 import type { Logger } from "@freeanima/logging";
-import { HookHandler, PayloadOf } from "./handler.js";
-import { Hook } from "./hook.js";
-import { logHookRunOutcome } from "./run-log.js";
+import {
+  blockedMessageFromChain,
+  Hook,
+  type HookHandler,
+  type HookRunMeta,
+  type HookRunResult,
+  type HookStepLink,
+  type HookStepResult,
+  type PayloadOf,
+} from "./hook.js";
 
 type RegisteredHandler = {
   handler: HookHandler<Hook<unknown>>;
   priority: number;
 };
+
+function normalizeStep(raw: HookStepResult | void): HookStepResult {
+  if (!raw) return { status: "ok" };
+  return raw;
+}
+
+function linkStep(step: HookStepResult, prev: HookStepLink | null): HookStepLink {
+  return prev ? { ...step, prev } : { ...step };
+}
+
+function shouldStopChain(step: HookStepResult): boolean {
+  return step.status === "ok" && step.blocked === true;
+}
+
+function errMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
+}
+
+function buildRunResult<P>(
+  context: P,
+  chain: HookStepLink | null,
+  anyFailed: boolean,
+  stoppedByBlocked: boolean,
+  meta: HookRunMeta,
+): HookRunResult<P> {
+  const blockedMessage = stoppedByBlocked
+    ? blockedMessageFromChain(chain)
+    : undefined;
+  return {
+    context,
+    chain,
+    status: anyFailed ? "failed" : "ok",
+    blocked: stoppedByBlocked,
+    ...(blockedMessage !== undefined ? { blockedMessage } : {}),
+    meta,
+  };
+}
 
 /** 同步 Hook 注册表；由 kernel / service 实例化，不提供全局单例 */
 export class HookRegistry {
@@ -45,8 +89,8 @@ export class HookRegistry {
 
   async run<H extends Hook<unknown>>(
     hook: H,
-    payload: PayloadOf<H>,
-  ): Promise<PayloadOf<H>> {
+    context: PayloadOf<H>,
+  ): Promise<HookRunResult<PayloadOf<H>>> {
     const list = this.handlers.get(hook.id) ?? [];
     const started = performance.now();
 
@@ -55,32 +99,61 @@ export class HookRegistry {
       handlers: list.length,
     });
 
+    const emptyMeta: HookRunMeta = { duration_ms: 0, handlers: 0 };
     if (!list.length) {
       this.log.debug("hook run 跳过（无 handler）", { hook: hook.qualifiedId });
-      return payload;
+      return buildRunResult(context, null, false, false, emptyMeta);
     }
+
+    let chain: HookStepLink | null = null;
+    let anyFailed = false;
+    let stoppedByBlocked = false;
 
     let index = 0;
     for (const { handler } of list) {
       try {
-        await (handler as HookHandler<H>)(payload);
+        const raw = await (handler as HookHandler<H>)(context);
+        const step = normalizeStep(raw);
+        chain = linkStep(step, chain);
+        if (step.status === "failed") anyFailed = true;
         this.log.debug("hook handler 完成", {
           hook: hook.qualifiedId,
           index,
+          step_status: step.status,
+          blocked: shouldStopChain(step),
         });
+        if (shouldStopChain(step)) {
+          stoppedByBlocked = true;
+          break;
+        }
       } catch (err) {
-        this.log.error("hook handler 失败", {
+        const step: HookStepResult = {
+          status: "failed",
+          message: errMessage(err),
+        };
+        chain = linkStep(step, chain);
+        anyFailed = true;
+        this.log.error("hook handler 未处理异常", {
           hook: hook.qualifiedId,
           index,
           err,
+          message: step.message,
         });
-        throw err;
       }
       index++;
     }
 
-    const meta = { duration_ms: performance.now() - started, handlers: list.length };
-    logHookRunOutcome(this.log, hook, payload, meta);
-    return payload;
+    const meta: HookRunMeta = {
+      duration_ms: performance.now() - started,
+      handlers: list.length,
+    };
+    this.log.debug("hook run 结束", {
+      hook: hook.qualifiedId,
+      ...meta,
+      run_status: anyFailed ? "failed" : "ok",
+      blocked: stoppedByBlocked,
+    });
+
+    return buildRunResult(context, chain, anyFailed, stoppedByBlocked, meta);
   }
 }

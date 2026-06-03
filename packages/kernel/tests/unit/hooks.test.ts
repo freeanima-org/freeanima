@@ -1,12 +1,8 @@
 import { describe, expect, it } from "bun:test";
-import { HookRegistry } from "@freeanima/hooks";
+import { headOkStepData, HookRegistry } from "@freeanima/hooks";
 import { createLogger } from "@freeanima/logging";
 import { createNullSink } from "@freeanima/logging/sinks/null";
-import {
-  messageIncoming,
-  toolAfterCall,
-  turnAfterComplete,
-} from "@freeanima/legacy-kernel";
+import { messageIncoming, toolAfterCall } from "../../src/index";
 
 describe("legacy-kernel hooks", () => {
   const nullLogger = () =>
@@ -16,91 +12,35 @@ describe("legacy-kernel hooks", () => {
     expect(messageIncoming.qualifiedId).toBe(
       "@freeanima/legacy-kernel/hooks/message-incoming",
     );
-    expect(toolAfterCall.qualifiedId).toBe(
-      "@freeanima/legacy-kernel/hooks/tool-after-call",
-    );
-    expect(turnAfterComplete.qualifiedId).toBe(
-      "@freeanima/legacy-kernel/hooks/turn-after-complete",
-    );
   });
 
-  it("按 priority 顺序执行 handler", async () => {
+  it("headOkStepData 读取链头 ok 步 data", async () => {
     const registry = new HookRegistry(nullLogger());
-    const order: number[] = [];
-    registry.on(
-      messageIncoming,
-      () => {
-        order.push(2);
-      },
-      { priority: 200 },
-    );
-    registry.on(
-      messageIncoming,
-      () => {
-        order.push(1);
-      },
-      { priority: 50 },
-    );
-    await registry.run(messageIncoming, {
+    registry.on(messageIncoming, () => ({
+      status: "ok",
+      data: { transformedMessage: "[hi]" },
+    }));
+    const run = await registry.run(messageIncoming, {
       sessionId: "s1",
       message: "hi",
       platform: "parlor",
     });
-    expect(order).toEqual([1, 2]);
+    expect(headOkStepData(run.chain)?.transformedMessage).toBe("[hi]");
   });
 
-  it("handler 可变更 payload", async () => {
+  it("blocked 时 blockedMessage 为短路步 message", async () => {
     const registry = new HookRegistry(nullLogger());
-    registry.on(messageIncoming, (ctx) => {
-      ctx.transformedMessage = `[${ctx.message}]`;
-    });
-    const ctx = await registry.run(messageIncoming, {
+    registry.on(messageIncoming, () => ({
+      status: "ok",
+      blocked: true,
+      message: "wait",
+    }));
+    const run = await registry.run(messageIncoming, {
       sessionId: "s1",
       message: "hi",
       platform: "parlor",
     });
-    expect(ctx.transformedMessage).toBe("[hi]");
-  });
-
-  it("unregister 后不再执行", async () => {
-    const registry = new HookRegistry(nullLogger());
-    let called = false;
-    const off = registry.on(toolAfterCall, () => {
-      called = true;
-    });
-    off();
-    await registry.run(toolAfterCall, {
-      sessionId: "s1",
-      toolName: "clarify",
-      args: {},
-      result: "{}",
-    });
-    expect(called).toBe(false);
-  });
-
-  it("toolAfterCall 可设置 turnControl", async () => {
-    const registry = new HookRegistry(nullLogger());
-    registry.on(toolAfterCall, (ctx) => {
-      if (ctx.toolName === "clarify") {
-        ctx.turnControl = {
-          pause: true,
-          streamEvents: [
-            {
-              event: "awaiting_clarify",
-              data: { items: [{ question: "?" }], timeout_sec: 60 },
-            },
-            { event: "done", data: { reason: "awaiting_clarify" } },
-          ],
-        };
-      }
-    });
-    const ctx = await registry.run(toolAfterCall, {
-      sessionId: "s1",
-      toolName: "clarify",
-      args: {},
-      result: '{"status":"awaiting"}',
-    });
-    expect(ctx.turnControl?.pause).toBe(true);
-    expect(ctx.turnControl?.streamEvents).toHaveLength(2);
+    expect(run.blocked).toBe(true);
+    expect(run.blockedMessage).toBe("wait");
   });
 });

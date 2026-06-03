@@ -9,12 +9,25 @@ export {
 export type {
   HookHandler,
   PayloadOf,
+  HookStepResult,
+  HookStepLink,
+  HookRunResult,
+  HookRunMeta,
+  MessageIncomingContext,
+  MessageIncomingEffect,
+  ToolAfterCallContext,
+  ToolAfterCallEffect,
+  TurnAfterCompleteContext,
+  TurnAfterCompleteEffect,
   MessageIncomingPayload,
   ToolAfterCallPayload,
   TurnAfterCompletePayload,
-  MessageIncomingContext,
-  ToolAfterCallContext,
-  TurnAfterCompleteContext,
+} from "./hooks";
+export {
+  walkHookChain,
+  walkHookChainOldestFirst,
+  blockedMessageFromChain,
+  headOkStepData,
 } from "./hooks";
 export type { HookClarifyItem, HookStreamEvent, TurnControl } from "./hook-stream";
 export * from "./paths";

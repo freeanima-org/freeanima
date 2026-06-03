@@ -17,14 +17,16 @@ describe("index 导出", () => {
       createLogger({ level: "debug", sinks: [createNullSink()] }),
     );
 
-    const handler: HookHandler<typeof hook> = (payload) => {
-      payload.count += 1;
-    };
+    const handler: HookHandler<typeof hook> = () => ({
+      status: "ok",
+      data: { count: 1 },
+    });
     type Payload = PayloadOf<typeof hook>;
     const initial: Payload = { count: 0 };
 
     registry.on(hook, handler);
-    const result = await registry.run(hook, initial);
-    expect(result.count).toBe(1);
+    const run = await registry.run(hook, initial);
+    expect(run.context.count).toBe(0);
+    expect(run.chain?.data).toEqual({ count: 1 });
   });
 });

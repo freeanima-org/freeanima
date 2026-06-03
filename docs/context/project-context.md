@@ -104,7 +104,7 @@ L1 Session 主存为 PostgreSQL（`config.yaml` → `database.url`）。表设�
 
 ```
 kernel/             # RFC #1 新栈（与 legacy packages/ 并行）
-├── hooks/          # @freeanima/hooks：Hook token + HookRegistry（注入 Logger，run 关键路径分级日志）
+├── hooks/          # @freeanima/hooks：Hook token + HookRegistry（run→HookRunResult 结果链 prev）
 ├── logging/        # @freeanima/logging：Logger / LogSink / createLogger；内置 sink 子路径 sinks/{console,file,memory,null}
 └── kernel/         # @freeanima/kernel：Kernel 组合端口（HookRegistry + Logger）
 apps/
@@ -112,7 +112,7 @@ apps/
 └── webui/          # Vue 3 + TypeScript WebUI；API 经 `src/api/client.ts`（Hono `hc<ApiRoutes>`）；静态 dist 由 server 挂载
 packages/
 ├── api/            # HTTP 契约（Zod schema + 类型）；仅依赖 zod
-├── kernel/         # @freeanima/legacy-kernel：paths、config、credential、registry、event-bus、hook token、schemas/*
+├── kernel/         # @freeanima/legacy-kernel：paths、config、hook token/context、event-bus、schemas/*
 ├── db/             # @freeanima/legacy-db：L1 Session PG（sessions + messages.payload JSONB）、Drizzle migrate
 ├── engine/         # conversation、session-store（PG）、compressor、llm、engine 回合；export kernel（含 hookRegistry 端口）
 ├── memory/         # L1–L4 存储/检索、reflect、registerMemoryPipeline（+ registerMemoryHandlers 别名）
@@ -208,7 +208,8 @@ ACP：`integrations/src/acp/`；`acp_{name}` 返回 JSON（`session_id`、`outpu
 ```bash
 bun install                       # 依赖；需 Bun 1.3+（见 .bun-version）
 bun run build                     # 仅构建 WebUI（vite → apps/webui/dist）
-bun test                          # 全仓单元测试（根 bunfig.toml，排除 tests/integration）
+bun test                          # 全仓单元测试（根 bunfig.toml，排除 tests/integration）；CI 用此
+bun run test:changed              # 本地增量 + pre-commit：相对 HEAD 的 git 变更 + import 图筛测试（须在仓库根）
 bun test --coverage               # 同上并输出覆盖率（bunfig 勿写 coverage = false，见 #12216）
 bun run test:coverage             # 脚本封装 --coverage
 bun run test                      # 同 bun test（无测试文件时 exit 0）
@@ -241,15 +242,19 @@ anima service status
 # WebUI: http://127.0.0.1:8080/webui/parlor/chat
 # 卧室: …/webui/chamber/dashboard  创作室: …/webui/studio/pair-programming
 # 构建前端: bun run --filter @freeanima/legacy-webui build
-bun install                       # Husky：提交前 typecheck + bun test；commit-msg 校验 Conventional Commits
-bun run check                     # 手动全量检查（同 pre-commit 钩子）
+bun install                       # Husky：提交前 typecheck + test:changed；commit-msg 校验 Conventional Commits
+bun run check                     # 手动全量：typecheck + 全量 bun test（推 PR 前建议）
 ```
 
 **构建**：TS 包由 Bun 直接加载 `src`（无 emit）；`bun run build` 仅打 WebUI。
 
 **类型检查**：仅根目录 `bun run typecheck`（[`scripts/typecheck-fast.mts`](../../scripts/typecheck-fast.mts)）：`tsgo` 查 backend（[`tsconfig.backend.json`](../../tsconfig.backend.json)）；**`vue-tsc`** 查 WebUI（`.vue` + `src/api`，`typescript@5.9` 仅 webui）。子包无单独 `typecheck` 脚本。
 
-**单元测试**：仅根目录 `bun test` / `bun run test`（[`bunfig.toml`](../../bunfig.toml)）。子包无 `test` 脚本；单包调试示例：`bun test packages/server`、`bun test kernel/logging`。
+**单元测试**：仅根目录 `bun test` / `bun run test`（[`bunfig.toml`](../../bunfig.toml)）。**本地与 pre-commit** 用 `bun run test:changed`（[`--changed`](https://bun.com/docs/cli/test) 按 git 变更与依赖图只跑相关 `*.test.ts`）；**CI** 全量 `bun test`；推 PR 前可 `bun run check` 做 typecheck + 全量单测。子包路径过滤示例：`bun test kernel/hooks`。改 clarify/runtime 等无单测 import 链的模块时，`--changed` 可能几乎不跑测试，提交前宜 `bun run test` 或 `test:integration`。
+
+**覆盖率范围**：Bun 会统计**测试执行过程中被 import 到的所有源码**（含 workspace 依赖），与「只跑了哪个目录的 `*.test.ts`」无关。因此在 `kernel/hooks` 跑覆盖率仍会出现 `../logging/...`，在 `kernel` 跑则会合并 hooks + logging + kernel 的 src。Bun 暂无「只统计 cwd 下 src」的内置开关。
+
+**`bunfig.toml` 与 cwd（Bun 1.3.14）**：根目录 `bun test` / `bun test kernel/hooks` 的 **cwd 在仓库根**，会加载根 [`bunfig.toml`](../../bunfig.toml)（`coverageThreshold`、`pathIgnorePatterns` 等）。**`cd kernel/hooks && bun test` 不会**继承根 `bunfig`（子目录无本地 `bunfig.toml` 时相当于默认配置）。单包调试若要用根上的阈值/忽略规则，应在根执行 `bun test kernel/hooks --coverage`，或在子包放本地 `bunfig.toml` / `BUN_CONFIG`。
 
 **TS 配置**：根 [`tsconfig.json`](../../tsconfig.json)（IDE：backend `src` + 各包 `tests/unit` + `tests/helpers`）；门禁 [`tsconfig.backend.json`](../../tsconfig.backend.json)（backend `src`，排除测试）；WebUI 见 [`apps/webui/tsconfig.json`](../../apps/webui/tsconfig.json)（含 `src/api`）；集成测试见 [`tests/tsconfig.json`](../../tests/tsconfig.json)。backend 子包**无**单独 `tsconfig.json`。
 

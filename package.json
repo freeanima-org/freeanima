@@ -42,6 +42,7 @@
     "release": "semantic-release",
     "release:dry-run": "semantic-release --dry-run",
     "test": "bun test --pass-with-no-tests",
+    "test:changed": "bun test --changed --pass-with-no-tests",
     "test:coverage": "bun test --coverage --pass-with-no-tests",
     "test:integration": "bun scripts/run-integration-tests.mts",
     "service": "bun apps/cli/src/cli.ts service",

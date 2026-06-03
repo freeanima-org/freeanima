@@ -1,2 +1,2 @@
 bun run typecheck
-bun test --pass-with-no-tests
+bun run test:changed
