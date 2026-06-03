@@ -22,6 +22,7 @@ import {
 } from "./service-common";
 
 import { parseBindHosts } from "@freeanima/legacy-server/bind-hosts";
+import { REPO_ROOT } from "@freeanima/legacy-runtime";
 import { renderSystemdUnit, systemdUserAvailable, SYSTEMD_UNIT } from "./systemd-unit";
 
 export type ServiceArgs = {
@@ -205,7 +206,8 @@ async function startDetachedWithoutSystemd(args: ServiceArgs): Promise<void> {
   const child = spawn(command, spawnArgs, {
     detached: true,
     stdio: "ignore",
-    env: process.env,
+    env: { ...process.env, FREEANIMA_REPO_ROOT: REPO_ROOT },
+    cwd: REPO_ROOT,
   });
   child.unref();
 
