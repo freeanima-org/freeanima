@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "bun:test";
-import { createLogger } from "@freeanima/logging";
-import { createNullSink } from "@freeanima/logging/null";
+import { createLogger } from "@freeanima/kernel-logging";
+import { createNullSink } from "@freeanima/kernel-logging/null";
 import { createHook, walkHookChain } from "./hook.js";
 import { HookRegistry } from "./registry.js";
 
@@ -9,7 +9,7 @@ type TestContext = {
 };
 
 const testHook = createHook<TestContext>(
-  "@freeanima/hooks/test/example",
+  "@freeanima/kernel-hooks/test/example",
   "测试 hook",
 );
 

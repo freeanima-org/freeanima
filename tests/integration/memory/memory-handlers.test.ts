@@ -5,11 +5,11 @@ import { endIntegrationCase } from "../../helpers/integration-case";
 
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { createLogger } from "@freeanima/logging";
-import { createNullSink } from "@freeanima/logging/null";
-import { EventBus } from "@freeanima/event-bus";
+import { createLogger } from "@freeanima/kernel-logging";
+import { createNullSink } from "@freeanima/kernel-logging/null";
+import { EventBus } from "@freeanima/kernel-eventbus";
 import { waitFor } from "../../helpers/wait";
-import { SqliteEventQueue } from "@freeanima/event-bus-sqlite";
+import { SqliteEventQueue } from "@freeanima/connectors-eventbus-sqlite";
 import { resetStoreForTests, registerMemoryHandlers, l2SessionPath, sessionUpdated } from "@freeanima/legacy-memory";
 import { seedSession } from "@freeanima/legacy-db/test-helpers";
 

@@ -104,12 +104,12 @@ L1 Session 主存为 PostgreSQL（`config.yaml` → `database.url`）。表设�
 
 ```
 kernel/             # RFC #1 新栈（与 legacy packages/ 并行）
-├── event-bus/      # @freeanima/event-bus：EventTopic + EventBus + EventQueueAdapter；子路径 memory / null
-├── hooks/          # @freeanima/hooks：Hook token + HookRegistry（run→HookRunResult 结果链 prev）
-├── logging/        # @freeanima/logging：Logger / LogSink / createLogger；子路径 console / file / memory / null
+├── eventbus/       # @freeanima/kernel-eventbus：EventTopic + EventBus + EventQueueAdapter；子路径 memory / null
+├── hooks/          # @freeanima/kernel-hooks：Hook token + HookRegistry（run→HookRunResult 结果链 prev）
+├── logging/        # @freeanima/kernel-logging：Logger / LogSink / createLogger；子路径 console / file / memory / null
 └── kernel/         # @freeanima/kernel：Kernel 组合端口（HookRegistry + EventBus + Logger）
 connectors/
-└── event-bus-sqlite/ # @freeanima/event-bus-sqlite：SqliteEventQueue（bun:sqlite，实现 EventQueueAdapter）
+└── eventbus-sqlite/ # @freeanima/connectors-eventbus-sqlite：SqliteEventQueue（bun:sqlite，实现 EventQueueAdapter）
 apps/
 ├── cli/            # anima 入口：service / credential / completion
 └── webui/          # React 19 CSR + TanStack Router；Bun fullstack HTML entry；tRPC client → packages/server

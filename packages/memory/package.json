@@ -6,7 +6,7 @@
     "./*": "./src/*.ts"
   },
   "dependencies": {
-    "@freeanima/event-bus": "workspace:*",
+    "@freeanima/kernel-eventbus": "workspace:*",
     "@freeanima/legacy-db": "workspace:*",
     "@freeanima/legacy-kernel": "workspace:*",
     "yaml": "^2.9.0"

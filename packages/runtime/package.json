@@ -6,7 +6,7 @@
     "./system-prompt-wire": "./src/system-prompt-wire.ts"
   },
   "dependencies": {
-    "@freeanima/event-bus": "workspace:*",
+    "@freeanima/kernel-eventbus": "workspace:*",
     "@freeanima/legacy-clarify": "workspace:*",
     "@freeanima/legacy-engine": "workspace:*",
     "@freeanima/legacy-kernel": "workspace:*",

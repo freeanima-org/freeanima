@@ -5,7 +5,7 @@ import type {
   DispatchOutcome,
   EventQueueAdapter,
   StoredEvent,
-} from "@freeanima/event-bus";
+} from "@freeanima/kernel-eventbus";
 
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS events (

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "bun:test";
-import { createLogger } from "@freeanima/logging";
-import { createNullSink } from "@freeanima/logging/null";
+import { createLogger } from "@freeanima/kernel-logging";
+import { createNullSink } from "@freeanima/kernel-logging/null";
 import { MemoryEventQueue } from "./adapters/memory.js";
 import { NullEventQueue } from "./adapters/null.js";
 import { EventBus } from "./event-bus.js";
@@ -8,7 +8,7 @@ import { createEventTopic } from "./topic.js";
 
 type PingPayload = { n: number };
 
-const ping = createEventTopic<PingPayload>("@freeanima/event-bus/test/ping");
+const ping = createEventTopic<PingPayload>("@freeanima/kernel-eventbus/test/ping");
 
 function newBus(queue: MemoryEventQueue | NullEventQueue): EventBus {
   return new EventBus(createLogger({ level: "debug", sinks: [createNullSink()] }), queue);

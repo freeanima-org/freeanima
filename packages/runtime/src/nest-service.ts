@@ -31,7 +31,7 @@ import type {
 import type { StreamEvent } from "@freeanima/legacy-engine";
 import type { Message } from "@freeanima/legacy-engine";
 import { LLMError } from "@freeanima/legacy-engine";
-import type { EventBus } from "@freeanima/event-bus";
+import type { EventBus } from "@freeanima/kernel-eventbus";
 import { sessionUpdated } from "@freeanima/legacy-memory";
 import { listTools, openaiSchemas } from "@freeanima/legacy-kernel";
 import { statsReport } from "./conversation-stats";

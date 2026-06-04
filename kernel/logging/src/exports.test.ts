@@ -1,11 +1,11 @@
 import { describe, expect, it } from "bun:test";
-import { createLogger } from "@freeanima/logging";
-import { createConsoleSink } from "@freeanima/logging/console";
-import { createFileSink } from "@freeanima/logging/file";
-import { createMemorySink } from "@freeanima/logging/memory";
-import { createNullSink } from "@freeanima/logging/null";
+import { createLogger } from "@freeanima/kernel-logging";
+import { createConsoleSink } from "@freeanima/kernel-logging/console";
+import { createFileSink } from "@freeanima/kernel-logging/file";
+import { createMemorySink } from "@freeanima/kernel-logging/memory";
+import { createNullSink } from "@freeanima/kernel-logging/null";
 
-describe("@freeanima/logging 子路径导出", () => {
+describe("@freeanima/kernel-logging 子路径导出", () => {
   it("sinks 子路径可组合使用", () => {
     const memory = createMemorySink();
     const logger = createLogger({

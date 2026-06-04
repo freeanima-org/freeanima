@@ -1,5 +1,5 @@
 {
-  "name": "@freeanima/logging",
+  "name": "@freeanima/kernel-logging",
   "type": "module",
   "exports": {
     ".": "./src/index.ts",

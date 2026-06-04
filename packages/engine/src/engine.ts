@@ -1,7 +1,7 @@
 import { logComponent } from "@freeanima/legacy-kernel";
 import { loadConfig } from "@freeanima/legacy-kernel";
 import type { HookClarifyItem, HookStreamEvent, TurnControl } from "@freeanima/legacy-kernel";
-import { headOkStepData } from "@freeanima/hooks";
+import { headOkStepData } from "@freeanima/kernel-hooks";
 import { toolAfterCall } from "@freeanima/legacy-kernel";
 import type { ToolAfterCallEffect } from "@freeanima/legacy-kernel";
 import { parseToolArgs, toolError, toolResult } from "@freeanima/legacy-kernel";

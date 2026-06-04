@@ -20,45 +20,45 @@ function link(
 
 describe("createHook", () => {
   it("设置 qualifiedId 与 description", () => {
-    const hook = createHook("@freeanima/hooks/test/id", "展示文案");
-    expect(hook.qualifiedId).toBe("@freeanima/hooks/test/id");
+    const hook = createHook("@freeanima/kernel-hooks/test/id", "展示文案");
+    expect(hook.qualifiedId).toBe("@freeanima/kernel-hooks/test/id");
     expect(hook.description).toBe("展示文案");
-    expect(hook.id.description).toBe("@freeanima/hooks/test/id");
+    expect(hook.id.description).toBe("@freeanima/kernel-hooks/test/id");
   });
 
   it("未传 description 时为 undefined", () => {
-    const hook = createHook("@freeanima/hooks/test/no-desc");
+    const hook = createHook("@freeanima/kernel-hooks/test/no-desc");
     expect(hook.description).toBeUndefined();
   });
 
   it("每次创建产生独立的 Symbol id", () => {
-    const a = createHook("@freeanima/hooks/test/same-id");
-    const b = createHook("@freeanima/hooks/test/same-id");
+    const a = createHook("@freeanima/kernel-hooks/test/same-id");
+    const b = createHook("@freeanima/kernel-hooks/test/same-id");
     expect(a.id).not.toBe(b.id);
     expect(a.id.description).toBe(b.id.description);
   });
 
   it("不同 qualifiedId 产生不同 Symbol", () => {
-    const a = createHook("@freeanima/hooks/test/a");
-    const b = createHook("@freeanima/hooks/test/b");
+    const a = createHook("@freeanima/kernel-hooks/test/a");
+    const b = createHook("@freeanima/kernel-hooks/test/b");
     expect(a.id).not.toBe(b.id);
   });
 
   it("返回 Hook 实例", () => {
-    const hook = createHook<{ n: number }>("@freeanima/hooks/test/instance");
+    const hook = createHook<{ n: number }>("@freeanima/kernel-hooks/test/instance");
     expect(hook).toBeInstanceOf(Hook);
   });
 });
 
 describe("Handler 类型", () => {
   it("PayloadOf 从 Hook 实例推断负载类型", () => {
-    const hook = createHook<{ value: number }>("@freeanima/hooks/test/payload-of");
+    const hook = createHook<{ value: number }>("@freeanima/kernel-hooks/test/payload-of");
     type Payload = PayloadOf<typeof hook>;
     expectTypeOf<Payload>().toEqualTypeOf<{ value: number }>();
   });
 
   it("HookHandler 接收推断后的 payload", () => {
-    const hook = createHook<{ ok: boolean }>("@freeanima/hooks/test/handler");
+    const hook = createHook<{ ok: boolean }>("@freeanima/kernel-hooks/test/handler");
     const handler: HookHandler<typeof hook> = (payload) => {
       void payload.ok;
     };

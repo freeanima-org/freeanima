@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import { createLogger } from "@freeanima/logging";
-import { createNullSink } from "@freeanima/logging/null";
+import { createLogger } from "@freeanima/kernel-logging";
+import { createNullSink } from "@freeanima/kernel-logging/null";
 import { createHook, Hook, HookRegistry } from "./index";
 import type { HookHandler, PayloadOf } from "./index";
 
@@ -12,7 +12,7 @@ describe("index 导出", () => {
   });
 
   it("公开 API 可组合使用", async () => {
-    const hook = createHook<{ count: number }>("@freeanima/hooks/test/index");
+    const hook = createHook<{ count: number }>("@freeanima/kernel-hooks/test/index");
     const registry = new HookRegistry(
       createLogger({ level: "debug", sinks: [createNullSink()] }),
     );
