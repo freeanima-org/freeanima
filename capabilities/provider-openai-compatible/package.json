@@ -1,0 +1,15 @@
+{
+  "name": "@freeanima/capabilities-provider-openai-compatible",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@freeanima/engine-provider-llm": "workspace:*",
+    "openai": "^4.104.0",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "bun-types": "catalog:"
+  }
+}
