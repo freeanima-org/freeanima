@@ -112,6 +112,8 @@ engine/
 └── provider-llm/   # ChatRequest（LlmTurnMessage+systemPrompt，model 在 Profile）；直委托 Backend
 capabilities/
 └── provider-openai-compatible/  # OpenAiCompatibleBackend + yaml parse（OPENAI_COMPATIBLE_BACKEND_ID）
+
+**config.yaml `llm` 块**（取代顶层 `api_base` / `api_key` / `model`）：`llm.providers`（`openai_compatible`）+ `llm.profiles`（`chat` / `reflect` / `summary`）。`anima service` 启动时 `initLlmRuntime(loadConfig())`；主对话经 `legacy-engine` `llm.chatStream` → `LlmProfile`。
 connectors/
 └── eventbus-sqlite/ # @freeanima/connectors-eventbus-sqlite：SqliteEventQueue（bun:sqlite，实现 EventQueueAdapter）
 apps/

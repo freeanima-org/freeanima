@@ -67,5 +67,7 @@ export const PATHS = {
 } as const;
 
 export const CREDENTIAL_MAP: Record<string, string> = {
+  /** @deprecated 使用 llm.providers.*.api_key；注入时仍读此 pass 路径 */
   api_key: "api/opencode-go",
+  llm_api_key: "api/opencode-go",
 };

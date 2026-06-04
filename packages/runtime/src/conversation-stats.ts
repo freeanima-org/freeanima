@@ -3,7 +3,8 @@ import { isSessionMeta } from "@freeanima/legacy-kernel";
 import type { SessionMessage } from "@freeanima/legacy-kernel";
 import { getCompressionConfig, getContextWindow } from "@freeanima/legacy-engine";
 import { analyzeCompression, isCompressed, parseCompressionState } from "@freeanima/legacy-engine";
-import { loadConfig } from "@freeanima/legacy-kernel";
+import { getProfileHopModel, loadConfig } from "@freeanima/legacy-kernel";
+import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
 import {
   computeRuntimeContextBreakdown,
   formatTokenK,
@@ -112,7 +113,7 @@ async function readCompressionAndContextFields(session: string): Promise<Pick<
   const l3 = isCompressed(state) ? (state?.l3 ?? null) : null;
   const systemPrompt = isSessionMeta(meta) ? (meta.system_prompt ?? "") : "";
   const tools = isSessionMeta(meta) ? meta.tools : [];
-  const model = isSessionMeta(meta) ? meta.model : String(loadConfig().model ?? "");
+  const model = isSessionMeta(meta) ? meta.model : getProfileHopModel(loadConfig(), PROFILE_CHAT);
   const analysis = analyzeCompression(allMsgs, {
     maxRounds: cfg.maxRounds,
     state,

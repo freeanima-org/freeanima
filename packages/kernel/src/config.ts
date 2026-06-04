@@ -2,6 +2,7 @@ import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import { CREDENTIAL_MAP, PATHS } from "./paths";
 import { nestConfigSchema, type NestConfig } from "./schemas/config";
+import { OPENAI_COMPATIBLE_BACKEND_ID } from "./schemas/llm-config";
 import { credential } from "./credential";
 
 let cache: NestConfig | null = null;
@@ -19,20 +20,38 @@ function loadYamlFile(path: string): Record<string, unknown> {
   }
 }
 
+function injectLlmProviderCredentials(merged: Record<string, unknown>): void {
+  const llm = merged.llm;
+  if (!llm || typeof llm !== "object" || Array.isArray(llm)) return;
+
+  const providers = (llm as Record<string, unknown>).providers;
+  if (!providers || typeof providers !== "object" || Array.isArray(providers)) return;
+
+  const passPath = CREDENTIAL_MAP.llm_api_key ?? CREDENTIAL_MAP.api_key;
+  if (!passPath) return;
+
+  let token: string | undefined;
+  try {
+    token = credential(passPath, "token");
+  } catch {
+    return;
+  }
+
+  for (const raw of Object.values(providers as Record<string, unknown>)) {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) continue;
+    const prov = raw as Record<string, unknown>;
+    if (prov.backend !== OPENAI_COMPATIBLE_BACKEND_ID) continue;
+    const key = prov.api_key;
+    if (typeof key === "string" && key.trim()) continue;
+    prov.api_key = token;
+  }
+}
+
 export function loadConfig(): NestConfig {
   if (cache) return cache;
 
   const merged: Record<string, unknown> = { ...loadYamlFile(PATHS.configYaml) };
-
-  if (!merged.api_key && CREDENTIAL_MAP.api_key) {
-    try {
-      merged.api_key = credential(CREDENTIAL_MAP.api_key, "token");
-    } catch {
-      // optional at startup
-    }
-  }
-
-  if (!merged.model) merged.model = "deepseek-v4-flash";
+  injectLlmProviderCredentials(merged);
 
   const parsed = nestConfigSchema.safeParse(merged);
   if (!parsed.success) {

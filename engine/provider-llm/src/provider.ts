@@ -1,6 +1,6 @@
 import type { BackendContext, BackendRegistry, LlmBackend } from "./backend.js";
 import { clampCallParams, mergeCallParams, type LlmCallParams, type ModelInfo } from "./model.js";
-import type { ProviderError } from "./errors.js";
+import { isProviderError, type ProviderError } from "./errors.js";
 
 export type ProviderSpec = {
   id: string;
@@ -38,7 +38,7 @@ export class LlmProvider {
 
   /** 记录失败并标记不健康；返回映射后的 ProviderError */
   reportFailure(err: unknown): ProviderError {
-    const mapped = this.mapError(err);
+    const mapped = isProviderError(err) ? err : this.mapError(err);
     this.health = { healthy: false, lastError: mapped, updatedAt: Date.now() };
     return mapped;
   }

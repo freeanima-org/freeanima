@@ -40,8 +40,31 @@ export async function setupPgTestDb(url: string): Promise<PgTestContext> {
   };
 }
 
+const INTEGRATION_LLM_YAML = `
+llm:
+  default_profile: chat
+  providers:
+    main:
+      backend: openai_compatible
+      base_url: https://api.openai.com/v1
+      api_key: test-key
+  profiles:
+    chat:
+      chain:
+        - provider: main
+          model: test-model
+    reflect:
+      chain:
+        - provider: main
+          model: test-model
+    summary:
+      chain:
+        - provider: main
+          model: test-model
+`;
+
 function writeDatabaseConfig(home: string, url: string, extraYaml?: string): void {
-  const base = `database:\n  url: ${JSON.stringify(url)}\n`;
+  const base = `database:\n  url: ${JSON.stringify(url)}\n${INTEGRATION_LLM_YAML}`;
   writeFileSync(join(home, "config.yaml"), extraYaml ? `${base}${extraYaml}` : base, "utf-8");
 }
 

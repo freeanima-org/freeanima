@@ -2,7 +2,8 @@ import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { clearConfigCache, loadConfig } from "@freeanima/legacy-kernel";
+import { clearConfigCache, getProfileHopModel, loadConfig } from "@freeanima/legacy-kernel";
+import { MINIMAL_LLM_YAML } from "../helpers/llm-config-fixture";
 
 describe("config", () => {
   let home: string;
@@ -19,17 +20,18 @@ describe("config", () => {
     else process.env.FREEANIMA_HOME = prev;
   });
 
-  it("loads yaml and defaults model", () => {
-    writeFileSync(join(home, "config.yaml"), "model: test-model\n", "utf-8");
+  it("loads llm profiles and resolves default model", () => {
+    writeFileSync(join(home, "config.yaml"), MINIMAL_LLM_YAML, "utf-8");
     clearConfigCache();
     const cfg = loadConfig();
-    expect(cfg.model).toBe("test-model");
+    expect(getProfileHopModel(cfg, "chat")).toBe("test-model");
+    expect(cfg.llm.default_profile).toBe("chat");
   });
 
-  it("loads firecrawl from yaml only", () => {
+  it("loads firecrawl with llm block", () => {
     writeFileSync(
       join(home, "config.yaml"),
-      "firecrawl:\n  api_url: http://127.0.0.1:3002\n",
+      `${MINIMAL_LLM_YAML}\nfirecrawl:\n  api_url: http://127.0.0.1:3002\n`,
       "utf-8",
     );
     clearConfigCache();

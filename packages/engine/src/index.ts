@@ -7,6 +7,7 @@ export * from "./compression-tool-loop";
 export * from "./token-estimate";
 export { registerSystemPromptBuilder } from "./system-prompt-registry";
 export * from "./llm";
+export { initLlmRuntime, getLlmRuntime, resetLlmRuntimeForTests } from "./llm-stack";
 export * from "./engine";
 export { kernel } from "./kernel";
 export * from "./collect-stream-reply";

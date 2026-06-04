@@ -8,6 +8,7 @@
   "dependencies": {
     "@freeanima/kernel-eventbus": "workspace:*",
     "@freeanima/legacy-clarify": "workspace:*",
+    "@freeanima/engine-provider-llm": "workspace:*",
     "@freeanima/legacy-engine": "workspace:*",
     "@freeanima/legacy-kernel": "workspace:*",
     "@freeanima/legacy-memory": "workspace:*",

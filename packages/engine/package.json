@@ -5,13 +5,14 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@freeanima/kernel-eventbus": "workspace:*",
+    "@freeanima/capabilities-provider-openai-compatible": "workspace:*",
     "@freeanima/connectors-eventbus-sqlite": "workspace:*",
-    "@freeanima/kernel-hooks": "workspace:*",
+    "@freeanima/engine-provider-llm": "workspace:*",
     "@freeanima/kernel": "workspace:*",
-    "@freeanima/legacy-kernel": "workspace:*",
+    "@freeanima/kernel-eventbus": "workspace:*",
+    "@freeanima/kernel-hooks": "workspace:*",
     "@freeanima/legacy-db": "workspace:*",
-    "openai": "^4.104.0",
+    "@freeanima/legacy-kernel": "workspace:*",
     "zod": "catalog:"
   },
   "devDependencies": {

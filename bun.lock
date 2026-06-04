@@ -172,13 +172,14 @@
     "packages/engine": {
       "name": "@freeanima/legacy-engine",
       "dependencies": {
+        "@freeanima/capabilities-provider-openai-compatible": "workspace:*",
         "@freeanima/connectors-eventbus-sqlite": "workspace:*",
+        "@freeanima/engine-provider-llm": "workspace:*",
         "@freeanima/kernel": "workspace:*",
         "@freeanima/kernel-eventbus": "workspace:*",
         "@freeanima/kernel-hooks": "workspace:*",
         "@freeanima/legacy-db": "workspace:*",
         "@freeanima/legacy-kernel": "workspace:*",
-        "openai": "^4.104.0",
         "zod": "catalog:",
       },
       "devDependencies": {
@@ -241,6 +242,7 @@
     "packages/runtime": {
       "name": "@freeanima/legacy-runtime",
       "dependencies": {
+        "@freeanima/engine-provider-llm": "workspace:*",
         "@freeanima/kernel-eventbus": "workspace:*",
         "@freeanima/legacy-clarify": "workspace:*",
         "@freeanima/legacy-engine": "workspace:*",
