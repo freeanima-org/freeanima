@@ -108,6 +108,10 @@ kernel/             # RFC #1 新栈（与 legacy packages/ 并行）
 ├── hooks/          # @freeanima/kernel-hooks：Hook token + HookRegistry（run→HookRunResult 结果链 prev）
 ├── logging/        # @freeanima/kernel-logging：Logger / LogSink / createLogger；子路径 console / file / memory / null
 └── kernel/         # @freeanima/kernel：Kernel 组合端口（HookRegistry + EventBus + Logger）
+engine/
+└── provider-llm/   # ChatRequest（LlmTurnMessage+systemPrompt，model 在 Profile）；直委托 Backend
+capabilities/
+└── provider-openai-compatible/  # OpenAiCompatibleBackend + yaml parse（OPENAI_COMPATIBLE_BACKEND_ID）
 connectors/
 └── eventbus-sqlite/ # @freeanima/connectors-eventbus-sqlite：SqliteEventQueue（bun:sqlite，实现 EventQueueAdapter）
 apps/

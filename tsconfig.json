@@ -9,6 +9,8 @@
   },
   "include": [
     "kernel/**/*.ts",
+    "engine/**/*.ts",
+    "capabilities/**/*.ts",
     "connectors/**/*.ts",
     "packages/**/*.ts",
     "apps/**/*.ts",

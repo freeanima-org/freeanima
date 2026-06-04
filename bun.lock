@@ -71,6 +71,17 @@
         "typescript": "^6.0.3",
       },
     },
+    "capabilities/provider-openai-compatible": {
+      "name": "@freeanima/capabilities-provider-openai-compatible",
+      "dependencies": {
+        "@freeanima/engine-provider-llm": "workspace:*",
+        "openai": "^4.104.0",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "bun-types": "catalog:",
+      },
+    },
     "connectors/eventbus-sqlite": {
       "name": "@freeanima/connectors-eventbus-sqlite",
       "dependencies": {
@@ -78,6 +89,15 @@
       },
       "devDependencies": {
         "@freeanima/kernel-logging": "workspace:*",
+        "bun-types": "catalog:",
+      },
+    },
+    "engine/provider-llm": {
+      "name": "@freeanima/engine-provider-llm",
+      "dependencies": {
+        "@freeanima/legacy-db": "workspace:*",
+      },
+      "devDependencies": {
         "bun-types": "catalog:",
       },
     },
@@ -420,7 +440,11 @@
 
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.25.12", "", { "os": "win32", "cpu": "x64" }, "sha512-alJC0uCZpTFrSL0CCDjcgleBXPnCrEAhTBILpeAp7M/OFgoqtAetfBzX0xM00MUsVVPpVjlPuMbREqnZCXaTnA=="],
 
+    "@freeanima/capabilities-provider-openai-compatible": ["@freeanima/capabilities-provider-openai-compatible@workspace:capabilities/provider-openai-compatible"],
+
     "@freeanima/connectors-eventbus-sqlite": ["@freeanima/connectors-eventbus-sqlite@workspace:connectors/eventbus-sqlite"],
+
+    "@freeanima/engine-provider-llm": ["@freeanima/engine-provider-llm@workspace:engine/provider-llm"],
 
     "@freeanima/integration-tests": ["@freeanima/integration-tests@workspace:tests"],
 
