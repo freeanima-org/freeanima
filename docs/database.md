@@ -5,10 +5,10 @@
 
 ## 状态
 
-| 阶段 | 范围 | 状态 |
-|------|------|------|
-| **Slice A** | `sessions` + `messages`（L1 主存 PG） | **已完成** |
-| **Slice B** | semantic / limbic / procedural（memory v2） | 规划中 |
+| 阶段        | 范围                                        | 状态       |
+| ----------- | ------------------------------------------- | ---------- |
+| **Slice A** | `sessions` + `messages`（L1 主存 PG）       | **已完成** |
+| **Slice B** | semantic / limbic / procedural（memory v2） | 规划中     |
 
 代码真相源：[`packages/db/src/schema/`](../packages/db/src/schema/)。
 
@@ -28,32 +28,32 @@
 
 #### `sessions`
 
-| 列 | 类型 | 说明 |
-|----|------|------|
-| `id` | TEXT PK | 会话名 |
-| `model` | TEXT NOT NULL | |
-| `title` | TEXT | |
-| `cwd` | TEXT | |
-| `system_prompt` | TEXT | |
-| `platform_info` | JSONB | `discriminatedUnion("platform")`：parlor / discord / weixin / studio-pair-programming / cron |
-| `compression` | JSONB | `{ l2, l3, summary?, summary_at? }` |
-| `todos` | JSONB | `{ items, next_id }` |
-| `awaiting_clarify` | JSONB | clarify 暂停状态 |
-| `acp_sessions` | JSONB | ACP session uuid 映射 |
-| `tools` | JSONB | OpenAI tools 快照 |
-| `functions` | JSONB | string[] |
-| `debug` | BOOLEAN | |
-| `created_at` | TIMESTAMPTZ | |
-| `updated_at` | TIMESTAMPTZ | |
+| 列                 | 类型          | 说明                                                                                         |
+| ------------------ | ------------- | -------------------------------------------------------------------------------------------- |
+| `id`               | TEXT PK       | 会话名                                                                                       |
+| `model`            | TEXT NOT NULL |                                                                                              |
+| `title`            | TEXT          |                                                                                              |
+| `cwd`              | TEXT          |                                                                                              |
+| `system_prompt`    | TEXT          |                                                                                              |
+| `platform_info`    | JSONB         | `discriminatedUnion("platform")`：parlor / discord / weixin / studio-pair-programming / cron |
+| `compression`      | JSONB         | `{ l2, l3, summary?, summary_at? }`                                                          |
+| `todos`            | JSONB         | `{ items, next_id }`                                                                         |
+| `awaiting_clarify` | JSONB         | clarify 暂停状态                                                                             |
+| `acp_sessions`     | JSONB         | ACP session uuid 映射                                                                        |
+| `tools`            | JSONB         | OpenAI tools 快照                                                                            |
+| `functions`        | JSONB         | string[]                                                                                     |
+| `debug`            | BOOLEAN       |                                                                                              |
+| `created_at`       | TIMESTAMPTZ   |                                                                                              |
+| `updated_at`       | TIMESTAMPTZ   |                                                                                              |
 
 #### `messages`
 
-| 列 | 类型 | 说明 |
-|----|------|------|
-| `id` | TEXT PK | 全局唯一行 id（UUID） |
-| `session_id` | TEXT FK → sessions.id | |
-| `pos` | BIGINT | 会话内单调序号（compression l2/l3 指向此值；领域层 `Message.pos`） |
-| `payload` | JSONB | `ConversationPayload`（role/content/tool_calls 等，**不含 pos**） |
+| 列           | 类型                  | 说明                                                               |
+| ------------ | --------------------- | ------------------------------------------------------------------ |
+| `id`         | TEXT PK               | 全局唯一行 id（UUID）                                              |
+| `session_id` | TEXT FK → sessions.id |                                                                    |
+| `pos`        | BIGINT                | 会话内单调序号（compression l2/l3 指向此值；领域层 `Message.pos`） |
+| `payload`    | JSONB                 | `ConversationPayload`（role/content/tool_calls 等，**不含 pos**）  |
 
 唯一索引：`(session_id, pos)`。
 

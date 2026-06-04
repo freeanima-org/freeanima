@@ -253,7 +253,9 @@ function ChatPage() {
           if (item.type === "message" && item.role === "user") {
             return (
               <div key={`d${i}`} className="chat chat-end">
-                <div className="chat-bubble chat-bubble-primary whitespace-pre-wrap">{item.content}</div>
+                <div className="chat-bubble chat-bubble-primary whitespace-pre-wrap">
+                  {item.content}
+                </div>
               </div>
             );
           }

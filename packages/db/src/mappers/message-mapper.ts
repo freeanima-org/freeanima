@@ -10,10 +10,7 @@ import {
   isUserMessage,
 } from "@freeanima/legacy-kernel";
 
-import {
-  type MessageInsert,
-  messageSelectSchema,
-} from "../schema/zod-schemas";
+import { type MessageInsert, messageSelectSchema } from "../schema/zod-schemas";
 
 export function newMessageGlobalId(): string {
   return randomUUID();

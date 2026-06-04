@@ -2,8 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { trpc } from "@/lib/trpc";
 
 export const Route = createFileRoute("/chamber/commands")({
-  loader: () =>
-    trpc.sessions.commands.query({ all: true }).catch(() => ({ commands: [] })),
+  loader: () => trpc.sessions.commands.query({ all: true }).catch(() => ({ commands: [] })),
   component: CommandsPage,
 });
 
@@ -80,7 +79,9 @@ function CommandsPage() {
                   <tr key={cmd.name}>
                     <td className="font-mono text-sm">/{cmd.name}</td>
                     <td className="text-sm text-base-content/80">{cmd.description}</td>
-                    <td className="text-xs text-base-content/60">{formatPlatforms(cmd.platforms)}</td>
+                    <td className="text-xs text-base-content/60">
+                      {formatPlatforms(cmd.platforms)}
+                    </td>
                   </tr>
                 ))}
               </tbody>

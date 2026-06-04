@@ -1,7 +1,6 @@
 import { registerTool } from "@freeanima/legacy-kernel";
 import { spawn, spawnSync, type ChildProcess } from "node:child_process";
 
-
 const MAX_OUTPUT = 50 * 1024;
 const MAX_FOREGROUND_TIMEOUT = 600;
 
@@ -11,17 +10,10 @@ const backgroundOutput = new Map<string, string>();
 function appendOutput(sessionId: string, chunk: Buffer): void {
   const prev = backgroundOutput.get(sessionId) ?? "";
   const next = prev + chunk.toString("utf-8");
-  backgroundOutput.set(
-    sessionId,
-    next.length > MAX_OUTPUT ? next.slice(0, MAX_OUTPUT) : next,
-  );
+  backgroundOutput.set(sessionId, next.length > MAX_OUTPUT ? next.slice(0, MAX_OUTPUT) : next);
 }
 
-function runForeground(
-  command: string,
-  timeout: number,
-  workdir?: string | null,
-): string {
+function runForeground(command: string, timeout: number, workdir?: string | null): string {
   const safeTimeout = Math.min(Math.max(1, timeout), MAX_FOREGROUND_TIMEOUT);
   try {
     const result = spawnSync(command, {

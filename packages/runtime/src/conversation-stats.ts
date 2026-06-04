@@ -67,7 +67,11 @@ function usageFromMessage(msg: SessionMessage): Record<string, number> | null {
   return null;
 }
 
-export { estimateMessagesTokens, estimateTokens, messageTextForEstimate } from "@freeanima/legacy-engine";
+export {
+  estimateMessagesTokens,
+  estimateTokens,
+  messageTextForEstimate,
+} from "@freeanima/legacy-engine";
 
 function emptyBreakdown(): RuntimeContextBreakdown {
   return {
@@ -82,29 +86,33 @@ function emptyBreakdown(): RuntimeContextBreakdown {
   };
 }
 
-async function readCompressionAndContextFields(session: string): Promise<Pick<
-  SessionStats,
-  | "compression_enabled"
-  | "compression_mode"
-  | "compression_l2"
-  | "compression_l3"
-  | "compression_total_messages"
-  | "compression_visible_messages"
-  | "compression_hidden"
-  | "compression_has_summary"
-  | "compression_context_window"
-  | "compression_effective_budget"
-  | "compression_usage_ratio"
-  | "compression_trigger_high"
-  | "compression_trigger_low"
-  | "compression_max_rounds"
-  | "compression_threshold"
-  | "compression_recompress_at"
-  | "compression_messages_until_recompress"
-  | "compression_rounds_until_recompress"
-  | "context_breakdown"
-  | "context_tokens_est"
->> {
+async function readCompressionAndContextFields(
+  session: string,
+): Promise<
+  Pick<
+    SessionStats,
+    | "compression_enabled"
+    | "compression_mode"
+    | "compression_l2"
+    | "compression_l3"
+    | "compression_total_messages"
+    | "compression_visible_messages"
+    | "compression_hidden"
+    | "compression_has_summary"
+    | "compression_context_window"
+    | "compression_effective_budget"
+    | "compression_usage_ratio"
+    | "compression_trigger_high"
+    | "compression_trigger_low"
+    | "compression_max_rounds"
+    | "compression_threshold"
+    | "compression_recompress_at"
+    | "compression_messages_until_recompress"
+    | "compression_rounds_until_recompress"
+    | "context_breakdown"
+    | "context_tokens_est"
+  >
+> {
   const cfg = getCompressionConfig();
   const allMsgs = await load(session);
   const meta = await loadSessionMeta(session);
@@ -157,9 +165,10 @@ async function readCompressionAndContextFields(session: string): Promise<Pick<
   };
 }
 
-function estimateUsageFromMessages(
-  assistantMsgs: Record<string, unknown>[],
-): { input_tokens: number; output_tokens: number } {
+function estimateUsageFromMessages(assistantMsgs: Record<string, unknown>[]): {
+  input_tokens: number;
+  output_tokens: number;
+} {
   let output = 0;
   for (const msg of assistantMsgs) {
     output += estimateTokens(messageTextForEstimate(msg));
@@ -497,8 +506,7 @@ function formatCompression(stats: SessionStats): string {
 
 function formatContextBreakdown(stats: SessionStats): string[] {
   const b = stats.context_breakdown;
-  const systemTotal =
-    b.system_soul + b.system_agents + b.system_resident + b.system_skills;
+  const systemTotal = b.system_soul + b.system_agents + b.system_resident + b.system_skills;
   const lines = [
     `当前上下文（运行时视图，压缩后）: ~${formatTokenK(stats.context_tokens_est)} tokens`,
     `  系统提示词合计: ~${formatTokenK(systemTotal)}`,

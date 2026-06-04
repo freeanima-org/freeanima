@@ -1,4 +1,9 @@
-import { createLogger, type LogAttributes, type LogLevel, type Logger } from "@freeanima/kernel-logging";
+import {
+  createLogger,
+  type LogAttributes,
+  type LogLevel,
+  type Logger,
+} from "@freeanima/kernel-logging";
 import { createConsoleSink } from "@freeanima/kernel-logging/console";
 import { createFileSink } from "@freeanima/kernel-logging/file";
 import { PATHS } from "./paths";
@@ -65,7 +70,7 @@ export type ErrorLogDetail = {
 };
 
 function detailToAttributes(detail?: ErrorLogDetail): LogAttributes {
-  const attributes: LogAttributes = { ...(detail?.context ?? {}) };
+  const attributes: LogAttributes = { ...detail?.context };
   if (detail?.error !== undefined) {
     attributes.err = detail.error;
   }
@@ -100,8 +105,7 @@ export function logApiError(
   error: unknown,
   context?: Record<string, unknown>,
 ): void {
-  const summary =
-    typeof error === "string" ? error : formatError(error).split("\n")[0];
+  const summary = typeof error === "string" ? error : formatError(error).split("\n")[0];
   const attributes: LogAttributes = { method, path, status, ...context };
   if (typeof error !== "string") {
     attributes.err = error;
@@ -110,11 +114,7 @@ export function logApiError(
 }
 
 /** SSE event:error 时记录 */
-export function logSseError(
-  path: string,
-  error: unknown,
-  context?: Record<string, unknown>,
-): void {
+export function logSseError(path: string, error: unknown, context?: Record<string, unknown>): void {
   const msg = typeof error === "string" ? error : formatError(error);
   const attributes: LogAttributes = { path, ...context };
   if (typeof error !== "string") {

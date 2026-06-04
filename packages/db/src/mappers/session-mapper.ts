@@ -10,15 +10,9 @@ import {
 } from "@freeanima/legacy-kernel";
 import { z } from "zod";
 
-import {
-  buildPlatformInfo,
-  splitPlatformInfo,
-} from "../schema/jsonb/platform-info";
+import { buildPlatformInfo, splitPlatformInfo } from "../schema/jsonb/platform-info";
 import { acpSessionsSchema } from "../schema/jsonb/session-jsonb";
-import {
-  type SessionInsert,
-  sessionSelectSchema,
-} from "../schema/zod-schemas";
+import { type SessionInsert, sessionSelectSchema } from "../schema/zod-schemas";
 import { normalizePgTimestamp, pgJsonbOrNull, pgTextOrNull } from "../utils/timestamp";
 
 function nowIso(): string {
@@ -53,9 +47,7 @@ export function sessionMetaToInsert(sessionId: string, meta: SessionMetaMessage)
   }
 
   const extra: Record<string, unknown> = {
-    ...(meta.platform_extra && typeof meta.platform_extra === "object"
-      ? meta.platform_extra
-      : {}),
+    ...(meta.platform_extra && typeof meta.platform_extra === "object" ? meta.platform_extra : {}),
     ...passthrough,
   };
 
@@ -63,13 +55,9 @@ export function sessionMetaToInsert(sessionId: string, meta: SessionMetaMessage)
   const todos = sessionTodoStoreSchema.parse(meta.todos ?? { items: [], next_id: 1 });
   const functions = z.array(z.string()).parse(meta.functions ?? []);
   const compressionRaw = pgJsonbOrNull(meta.compression);
-  const compressionParsed = compressionRaw
-    ? compressionStateSchema.parse(compressionRaw)
-    : null;
+  const compressionParsed = compressionRaw ? compressionStateSchema.parse(compressionRaw) : null;
   const awaitingRaw = pgJsonbOrNull(meta.awaiting_clarify);
-  const awaitingParsed = awaitingRaw
-    ? awaitingClarifySchema.parse(awaitingRaw)
-    : null;
+  const awaitingParsed = awaitingRaw ? awaitingClarifySchema.parse(awaitingRaw) : null;
   const acpRaw = pgJsonbOrNull(meta.acp_sessions);
   const acpParsed = acpRaw ? acpSessionsSchema.parse(acpRaw) : null;
 

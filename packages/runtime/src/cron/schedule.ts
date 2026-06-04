@@ -6,8 +6,7 @@ export enum ScheduleType {
   ONESHOT = "oneshot",
 }
 
-const INTERVAL_RE =
-  /^(?:every\s+)?(\d+)\s*(m|min|minute|minutes|h|hr|hour|hours)?$/i;
+const INTERVAL_RE = /^(?:every\s+)?(\d+)\s*(m|min|minute|minutes|h|hr|hour|hours)?$/i;
 
 export function parseSchedule(expr: string): [ScheduleType, number | string] {
   const trimmed = expr.trim();
@@ -29,7 +28,7 @@ export function parseSchedule(expr: string): [ScheduleType, number | string] {
       CronExpressionParser.parse(trimmed);
       return [ScheduleType.CRON, trimmed];
     } catch (e) {
-      throw new Error(`Invalid cron expression '${trimmed}': ${e}`);
+      throw new Error(`Invalid cron expression '${trimmed}': ${e}`, { cause: e });
     }
   }
 

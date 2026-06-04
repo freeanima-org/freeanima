@@ -106,10 +106,7 @@ export class McpClientSession {
     let timer: ReturnType<typeof setTimeout> | undefined;
     const timeoutTask = new Promise<never>((_, reject) => {
       timer = setTimeout(
-        () =>
-          reject(
-            new Error(`MCP server '${serverName}': connect timeout after ${timeoutMs}ms`),
-          ),
+        () => reject(new Error(`MCP server '${serverName}': connect timeout after ${timeoutMs}ms`)),
         timeoutMs,
       );
     });
@@ -153,7 +150,10 @@ export class McpClientSession {
     }));
   }
 
-  async callTool(toolName: string, args: Record<string, unknown>): Promise<{
+  async callTool(
+    toolName: string,
+    args: Record<string, unknown>,
+  ): Promise<{
     content?: Array<{ type: string; text?: string }>;
     isError?: boolean;
   }> {

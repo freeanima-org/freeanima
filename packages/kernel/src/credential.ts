@@ -133,7 +133,10 @@ function readCredentialMeta(gpgPath: string): CredentialMeta {
       const tagsRaw = dict.tags;
       if (Array.isArray(tagsRaw)) tags = tagsRaw.map(String);
       else if (typeof tagsRaw === "string")
-        tags = tagsRaw.split(",").map((t) => t.trim()).filter(Boolean);
+        tags = tagsRaw
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean);
       desc = String(dict.desc ?? dict.description ?? "");
     }
   } catch {
@@ -148,9 +151,7 @@ export function listCredentials(): CredentialMeta[] {
   } catch {
     return [];
   }
-  return walkGpg(PATHS.passStore)
-    .sort()
-    .map(readCredentialMeta);
+  return walkGpg(PATHS.passStore).toSorted().map(readCredentialMeta);
 }
 
 export function clearCredentialCache(): void {

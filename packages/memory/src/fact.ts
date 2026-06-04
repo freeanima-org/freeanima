@@ -12,9 +12,7 @@ export const FRONTMATTER_DELIM = "---";
 export type { FactType, FactSource, FactData };
 
 export function nowIso(): string {
-  return new Date(Date.now() + 8 * 60 * 60 * 1000)
-    .toISOString()
-    .replace("Z", "+08:00");
+  return new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().replace("Z", "+08:00");
 }
 
 export function factScore(f: FactData): number {

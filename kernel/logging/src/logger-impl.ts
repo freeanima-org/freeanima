@@ -31,7 +31,7 @@ export class LoggerImpl implements Logger {
     scope: LogAttributes = {},
   ) {
     this.configuredLevel = options.level ?? "info";
-    this.base = { ...(options.base ?? {}) };
+    this.base = { ...options.base };
     this.scope = { ...scope };
     this.sinks = options.sinks;
   }

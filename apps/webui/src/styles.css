@@ -7,11 +7,23 @@
 }
 
 /* Markdown content inside chat bubbles */
-.md-content { line-height: 1.6; }
-.md-content p { margin: 0.3em 0; }
-.md-content p:first-child { margin-top: 0; }
-.md-content p:last-child { margin-bottom: 0; }
-.md-content table { @apply table table-sm; margin: 0.5em 0; max-width: 100%; }
+.md-content {
+  line-height: 1.6;
+}
+.md-content p {
+  margin: 0.3em 0;
+}
+.md-content p:first-child {
+  margin-top: 0;
+}
+.md-content p:last-child {
+  margin-bottom: 0;
+}
+.md-content table {
+  @apply table table-sm;
+  margin: 0.5em 0;
+  max-width: 100%;
+}
 .md-content pre {
   overflow-x: auto;
   max-width: 100%;
@@ -24,7 +36,10 @@
   @apply block p-3 overflow-x-auto;
   background: oklch(var(--b2));
 }
-.md-content ul, .md-content ol { padding-left: 1.5em; }
+.md-content ul,
+.md-content ol {
+  padding-left: 1.5em;
+}
 .md-content blockquote {
   @apply border-l-4 border-base-300 pl-3 italic;
   opacity: 0.85;
@@ -34,13 +49,17 @@
 html.studio-chromeless .app-header {
   display: none;
 }
-#message-area { scroll-behavior: smooth; }
+#message-area {
+  scroll-behavior: smooth;
+}
 
 /* Transition for mode switch */
-.mode-enter-active, .mode-leave-active {
+.mode-enter-active,
+.mode-leave-active {
   transition: opacity 0.2s ease;
 }
-.mode-enter-from, .mode-leave-to {
+.mode-enter-from,
+.mode-leave-to {
   opacity: 0;
 }
 

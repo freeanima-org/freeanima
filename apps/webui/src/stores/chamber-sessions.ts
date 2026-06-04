@@ -33,7 +33,7 @@ export const useChamberSessionsStore = create<ChamberSessionsState>((set, get) =
   error: "",
 
   sortedSessions() {
-    return [...get().sessions].sort((a, b) => (b.created || "").localeCompare(a.created || ""));
+    return [...get().sessions].toSorted((a, b) => (b.created || "").localeCompare(a.created || ""));
   },
 
   pageCount() {

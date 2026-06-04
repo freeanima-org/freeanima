@@ -125,7 +125,9 @@ function MemoryPage() {
               )
             }
           >
-            {busyAction === "l2-distill" ? <span className="loading loading-spinner loading-xs" /> : null}
+            {busyAction === "l2-distill" ? (
+              <span className="loading loading-spinner loading-xs" />
+            ) : null}
             L2 蒸馏
           </button>
           <button
@@ -140,7 +142,9 @@ function MemoryPage() {
               )
             }
           >
-            {busyAction === "l2-reindex" ? <span className="loading loading-spinner loading-xs" /> : null}
+            {busyAction === "l2-reindex" ? (
+              <span className="loading loading-spinner loading-xs" />
+            ) : null}
             重建 L2 索引
           </button>
           <button
@@ -155,13 +159,17 @@ function MemoryPage() {
               )
             }
           >
-            {busyAction === "l3-reindex" ? <span className="loading loading-spinner loading-xs" /> : null}
+            {busyAction === "l3-reindex" ? (
+              <span className="loading loading-spinner loading-xs" />
+            ) : null}
             重建 L3 索引
           </button>
         </div>
       </div>
 
-      {statusMessage ? <div className="alert alert-success text-sm mb-4">{statusMessage}</div> : null}
+      {statusMessage ? (
+        <div className="alert alert-success text-sm mb-4">{statusMessage}</div>
+      ) : null}
 
       <form
         className="card bg-base-200 mb-4"
@@ -225,7 +233,11 @@ function MemoryPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button type="submit" className="btn btn-sm btn-primary" disabled={searching || !query.trim()}>
+            <button
+              type="submit"
+              className="btn btn-sm btn-primary"
+              disabled={searching || !query.trim()}
+            >
               {searching ? <span className="loading loading-spinner loading-xs" /> : null}
               检索
             </button>
@@ -286,7 +298,10 @@ function MemoryPage() {
               </h3>
               <div className="space-y-2">
                 {result.l2.map((hit, idx) => (
-                  <div key={`${hit.session_id}-${hit.timestamp}-${idx}`} className="card bg-base-200">
+                  <div
+                    key={`${hit.session_id}-${hit.timestamp}-${idx}`}
+                    className="card bg-base-200"
+                  >
                     <div className="card-body py-3 px-4 gap-2">
                       <div className="flex flex-wrap items-center gap-2 text-xs">
                         <span className="font-mono font-bold">{idx + 1}.</span>

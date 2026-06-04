@@ -42,9 +42,9 @@ function commandTree(cmd: Command, path = ""): CommandTree {
 
   return {
     path,
-    subcommands: [...new Set(subcommands)].sort(),
+    subcommands: [...new Set(subcommands)].toSorted(),
     children,
-    options: [...new Set(optionFlags(cmd))].sort(),
+    options: [...new Set(optionFlags(cmd))].toSorted(),
   };
 }
 

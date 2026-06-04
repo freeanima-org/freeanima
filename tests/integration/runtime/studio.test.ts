@@ -1,8 +1,6 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import { describePg } from "../../helpers/pg-test-gate";
-import {
-  beginIntegrationCaseWithConfig,
-} from "../../helpers/integration-case";
+import { beginIntegrationCaseWithConfig } from "../../helpers/integration-case";
 import { endIntegrationCase } from "../../helpers/integration-case";
 
 import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";

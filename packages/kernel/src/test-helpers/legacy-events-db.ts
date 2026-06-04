@@ -22,10 +22,8 @@ export function seedLegacyPythonStyleEvent(
       last_error TEXT
     );
   `);
-  db
-    .prepare(
-      `INSERT INTO events (topic, data, created_at, status) VALUES (?, ?, ?, 'pending')`,
-    )
-    .run(topic, JSON.stringify(payload), new Date().toISOString());
+  db.prepare(
+    `INSERT INTO events (topic, data, created_at, status) VALUES (?, ?, ?, 'pending')`,
+  ).run(topic, JSON.stringify(payload), new Date().toISOString());
   db.close();
 }

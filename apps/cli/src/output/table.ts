@@ -23,8 +23,7 @@ export function renderTable(rows: string[][], headers: string[]): string {
 
   const cell = (text: string, i: number): string => {
     const w = widths[i]!;
-    const clipped =
-      text.length > w ? `${text.slice(0, w - 1)}…` : text;
+    const clipped = text.length > w ? `${text.slice(0, w - 1)}…` : text;
     return i > 0 ? clipped.padEnd(w) : clipped.padEnd(w);
   };
 

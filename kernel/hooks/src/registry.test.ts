@@ -8,15 +8,10 @@ type TestContext = {
   value: number;
 };
 
-const testHook = createHook<TestContext>(
-  "@freeanima/kernel-hooks/test/example",
-  "测试 hook",
-);
+const testHook = createHook<TestContext>("@freeanima/kernel-hooks/test/example", "测试 hook");
 
 function newRegistry(): HookRegistry {
-  return new HookRegistry(
-    createLogger({ level: "debug", sinks: [createNullSink()] }),
-  );
+  return new HookRegistry(createLogger({ level: "debug", sinks: [createNullSink()] }));
 }
 
 describe("HookRegistry", () => {

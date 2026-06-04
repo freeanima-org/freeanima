@@ -73,7 +73,7 @@ function DashboardPage() {
 
   const sessionPlatformRows = Object.entries(sessionByPlatform)
     .map(([platform, count]) => ({ platform, count: count as number }))
-    .sort((a, b) => b.count - a.count);
+    .toSorted((a, b) => b.count - a.count);
 
   const processMemoryKb = svc?.memory_kb ?? 0;
   const processMemoryLabel = !processMemoryKb
@@ -199,7 +199,9 @@ function DashboardPage() {
               管理
             </Link>
           </div>
-          {mcpError ? <div className="alert alert-warning text-sm mb-2 py-2">{mcpError}</div> : null}
+          {mcpError ? (
+            <div className="alert alert-warning text-sm mb-2 py-2">{mcpError}</div>
+          ) : null}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard title="已配置">
               <p className="text-2xl font-mono mt-1">{mcp.server_count}</p>
@@ -223,7 +225,9 @@ function DashboardPage() {
               管理
             </Link>
           </div>
-          {acpError ? <div className="alert alert-warning text-sm mb-2 py-2">{acpError}</div> : null}
+          {acpError ? (
+            <div className="alert alert-warning text-sm mb-2 py-2">{acpError}</div>
+          ) : null}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard title="已配置">
               <p className="text-2xl font-mono mt-1">{acp.agent_count}</p>

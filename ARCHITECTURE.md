@@ -67,6 +67,7 @@
 场景感知是"软"的——它调节 Agent 的语气、距离、记忆召回倾向、主动性高低。它不是权限机制，是存在状态的调节器。
 
 **分类维度（示例，非穷举）：**
+
 - 话题：情感 / 职场 / 科技 / 哲学 / 历史 / 文学 / 日常
 - 活动：角色扮演 / 游戏 / 创作 / 编程 / 阅读
 - 氛围：轻松 / 专注 / 深夜 / 亲密 / 紧急
@@ -80,6 +81,7 @@
 能力面罩是"硬"的——它决定一组工具、数据范围、凭证权限的绑定。同一数字生命在不同 session 或不同任务下使用不同的面罩，防止权限泄露和工具污染。
 
 **分类维度（示例）：**
+
 - 开发者面罩：terminal、代码读写、ACP Cursor
 - 维护者面罩：FreeAnima 配置、部署、数据库
 - 创作者面罩：文件读写、笔记、多媒体生成
@@ -111,12 +113,12 @@ Agent 的行为输出
 
 ## 记忆分层（摘要）
 
-| 层 | 位置 | 职责 |
-|----|------|------|
-| L1 | PostgreSQL `sessions` + `messages` | 原始对话存档（`sessions/*.jsonl` 仅迁移/归档） |
-| L2 | `processed/*.jsonl` | L1 蒸馏精简 |
-| L3 | `memory/*.md` | 原子事实 |
-| L4 | `index/` | FTS 检索（L3 优先，L2 兜底） |
+| 层  | 位置                               | 职责                                           |
+| --- | ---------------------------------- | ---------------------------------------------- |
+| L1  | PostgreSQL `sessions` + `messages` | 原始对话存档（`sessions/*.jsonl` 仅迁移/归档） |
+| L2  | `processed/*.jsonl`                | L1 蒸馏精简                                    |
+| L3  | `memory/*.md`                      | 原子事实                                       |
+| L4  | `index/`                           | FTS 检索（L3 优先，L2 兜底）                   |
 
 管道：`distill → reflect → index`，由 EventBus 异步驱动。细节见 [`docs/memory.md`](docs/memory.md)。
 
@@ -166,6 +168,7 @@ LLM 视角 — flat tool list:
 本地工具写在 `packages/tools/`，通过 `registerTool()` 注册到 `@freeanima/legacy-kernel` 的 registry。
 
 **特征：**
+
 - 代码在逸灵风进程内直接执行
 - 启动时 `registerAllTools()` 统一注册
 - 最可靠、最低延迟
@@ -188,6 +191,7 @@ registerTool({
 MCP 工具通过 MCP Client 连接外部 MCP Server，每个 Server 可以注册多个细粒度工具。
 
 **特征：**
+
 - 每个 MCP Server 是独立进程（stdio 或 SSE 传输）
 - 每个 Server 自声明它的 tool schema 列表
 - MCP Client 收集所有 Server 的 schema，批量注册到逸灵风 registry
@@ -234,6 +238,7 @@ LLM 调 query_database(sql)
 ACP 工具连接外部 ACP Agent 实例，**每个实例**注册为**一个**任务级工具。
 
 **特征：**
+
 - 配置负责启动命令；**适配器**（`adapter: cursor` 等）负责方言（流式通知、权限、扩展 RPC），见 `integrations/src/acp/adapters/`
 - 每个 ACP 实例是一个独立 Agent（子进程或远程服务）
 - 每个实例只注册**一个**工具：`acp_{name}(goal, context)` → 结果
@@ -284,16 +289,16 @@ LLM 调 acp_cursor(goal="重构 auth 模块", context="...")
 
 ### 三层对比
 
-| 维度 | 本地工具 | MCP 工具 | ACP 工具 |
-|------|---------|----------|---------|
-| 执行位置 | 逸灵风进程内 | 外部 Server 子进程 | 外部 Agent 子进程 |
-| 粒度 | 单次函数 | 单次函数 | 完整任务 |
-| 延迟 | 毫秒级 | 毫秒~秒级 | 秒~分钟级 |
-| 注册方式 | 自动发现 | 配置 + 协议发现 | 配置 + 固定签名 |
-| 名称前缀 | 原名（由 Server 声明） | 原生 `mcp_{server}_{tool}` | 固定 `acp_` |
-| 实例/工具比 | 1:1 | 1:N | 1:1 |
-| 独立身份？ | 否 | 否 | 可（透明） |
-| 生命周期 | 逸灵风启动/关闭 | Client 管理 | Client 管理 |
+| 维度        | 本地工具               | MCP 工具                   | ACP 工具          |
+| ----------- | ---------------------- | -------------------------- | ----------------- |
+| 执行位置    | 逸灵风进程内           | 外部 Server 子进程         | 外部 Agent 子进程 |
+| 粒度        | 单次函数               | 单次函数                   | 完整任务          |
+| 延迟        | 毫秒级                 | 毫秒~秒级                  | 秒~分钟级         |
+| 注册方式    | 自动发现               | 配置 + 协议发现            | 配置 + 固定签名   |
+| 名称前缀    | 原名（由 Server 声明） | 原生 `mcp_{server}_{tool}` | 固定 `acp_`       |
+| 实例/工具比 | 1:1                    | 1:N                        | 1:1               |
+| 独立身份？  | 否                     | 否                         | 可（透明）        |
+| 生命周期    | 逸灵风启动/关闭        | Client 管理                | Client 管理       |
 
 ### 混合场景
 
@@ -329,19 +334,19 @@ WebUI 是 React 19 CSR 应用（`apps/webui/`），由 `anima service` 在同一
 
 同一 SPA 内三个独立态，可切换，不共享布局与本地状态：
 
-| 态 | 路由前缀 | 角色 |
-|----|----------|------|
-| 会客厅 | `/webui/parlor/*` | 与 Agent 对话 |
-| 卧室 | `/webui/chamber/*` | 记忆、配置、工具与系统维护（旧 `/workshop` 重定向） |
-| 创作室 | `/webui/studio/*` | 协同工作台：结对编程（占位）、长篇/短视频（即将推出） |
+| 态     | 路由前缀           | 角色                                                  |
+| ------ | ------------------ | ----------------------------------------------------- |
+| 会客厅 | `/webui/parlor/*`  | 与 Agent 对话                                         |
+| 卧室   | `/webui/chamber/*` | 记忆、配置、工具与系统维护（旧 `/workshop` 重定向）   |
+| 创作室 | `/webui/studio/*`  | 协同工作台：结对编程（占位）、长篇/短视频（即将推出） |
 
 ### API 层
 
-| 机制 | 说明 |
-|------|------|
-| tRPC | 主要 JSON API（会话、状态、记忆、MCP/ACP、studio 等）；聊天流用 SSE subscription |
-| REST | `GET /api/health`（CLI 探针） |
-| WebSocket | `WS /api/trpc/ws`（创作室 xterm `studio.terminal.*`） |
+| 机制      | 说明                                                                             |
+| --------- | -------------------------------------------------------------------------------- |
+| tRPC      | 主要 JSON API（会话、状态、记忆、MCP/ACP、studio 等）；聊天流用 SSE subscription |
+| REST      | `GET /api/health`（CLI 探针）                                                    |
+| WebSocket | `WS /api/trpc/ws`（创作室 xterm `studio.terminal.*`）                            |
 
 ### 启动
 
@@ -369,6 +374,7 @@ conversation.py  emit("session:updated")
 ```
 
 特征：
+
 - 同步写入 SQLite 表（微秒级），后台线程轮询执行
 - 处理器链在同一次轮询中顺序执行，前一个失败则中断链
 - 失败重试（最多 3 次），不会丢失事件
@@ -379,12 +385,14 @@ conversation.py  emit("session:updated")
 **同步 interceptor 模式。** 注册表在 `@freeanima/kernel-hooks`：`run(context)` 返回 `HookRunResult`（`context` 只读、`chain` 经 `prev` 串联；聚合 `blocked` / `blockedMessage`）。领域 **context 类型** 在 [`packages/kernel/src/hooks.ts`](packages/kernel/src/hooks.ts)；`kernel` 单例见 [`packages/engine/src/kernel.ts`](packages/engine/src/kernel.ts)。
 
 语义要点：
+
 - handler 返回 `{ status, blocked?: boolean, message?, data? }`；**不**原地改 context；业务日志在 handler 注册处自行记录。
 - **短路**：仅 `status: "ok"` 且 `blocked === true`；原因写在 `message`，聚合为 `HookRunResult.blockedMessage`。
 - **`status: "failed"`**：入链但**不**挡后续 handler；`run()` **不** throw。
 - 调用方读 `run.blocked` / `run.blockedMessage`；效应用 `headOkStepData(run.chain)`（链头方向第一个 ok 步的 `data`，多 handler 时以最后执行的为准）。
 
 已接入点（hook token）：
+
 - `messageIncoming` — `NestService` 入站
 - `turnAfterComplete` — 单轮结束
 - `toolAfterCall` — 工具返回后
@@ -393,13 +401,13 @@ conversation.py  emit("session:updated")
 
 与 EventBus 的关系：
 
-| 维度 | EventBus | Hooks |
-|------|----------|-------|
-| 时序 | 发生后 | 发生前/中/后 |
-| 调用方式 | 异步（轮询） | 同步（`await kernel.hookRegistry.run`） |
-| 能否修改数据 | 不能 | 经 `data` 返回效应，由 fold 合并 |
-| 错误语义 | 链中断 | failed 步可继续；`ok`+`blocked` 短路 |
-| 实现状态 | ✅ `registerMemoryPipeline` 等 | ✅ hooks 包 + legacy-kernel fold/log |
+| 维度         | EventBus                       | Hooks                                   |
+| ------------ | ------------------------------ | --------------------------------------- |
+| 时序         | 发生后                         | 发生前/中/后                            |
+| 调用方式     | 异步（轮询）                   | 同步（`await kernel.hookRegistry.run`） |
+| 能否修改数据 | 不能                           | 经 `data` 返回效应，由 fold 合并        |
+| 错误语义     | 链中断                         | failed 步可继续；`ok`+`blocked` 短路    |
+| 实现状态     | ✅ `registerMemoryPipeline` 等 | ✅ hooks 包 + legacy-kernel fold/log    |
 
 记忆管道入口为 `registerMemoryPipeline`（`@freeanima/legacy-memory`）；`registerMemoryHandlers` 为兼容别名。Hooks 不是 EventBus 的替代品，两者互补。
 

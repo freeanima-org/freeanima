@@ -1,12 +1,7 @@
 import { z } from "zod";
 import { safeParseOrNull } from "./util";
 
-export const todoStatusSchema = z.enum([
-  "pending",
-  "in_progress",
-  "completed",
-  "cancelled",
-]);
+export const todoStatusSchema = z.enum(["pending", "in_progress", "completed", "cancelled"]);
 
 export const todoItemSchema = z.object({
   id: z.number(),

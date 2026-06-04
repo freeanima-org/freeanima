@@ -1,6 +1,12 @@
-import { createSkill, deleteSkill, loadSkill, listSkills, unloadSkill, viewSkill } from "@freeanima/legacy-engine";
+import {
+  createSkill,
+  deleteSkill,
+  loadSkill,
+  listSkills,
+  unloadSkill,
+  viewSkill,
+} from "@freeanima/legacy-engine";
 import { registerTool } from "@freeanima/legacy-kernel";
-
 
 export function registerSkillsTools(): void {
   registerTool({
@@ -16,7 +22,11 @@ export function registerSkillsTools(): void {
       required: ["name", "description", "content"],
     },
     handler: (args) =>
-      createSkill(String(args.name ?? ""), String(args.description ?? ""), String(args.content ?? "")),
+      createSkill(
+        String(args.name ?? ""),
+        String(args.description ?? ""),
+        String(args.content ?? ""),
+      ),
   });
 
   registerTool({

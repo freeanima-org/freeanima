@@ -14,7 +14,13 @@ type StudioConfig = {
 
 type FileTreeNode = Record<string, unknown>;
 
-type SearchHit = { path?: string; file?: string; line?: number; preview?: string; content?: string };
+type SearchHit = {
+  path?: string;
+  file?: string;
+  line?: number;
+  preview?: string;
+  content?: string;
+};
 
 type PairProgrammingState = {
   sessions: SessionListItem[];
@@ -100,9 +106,7 @@ export const usePairProgrammingStore = create<PairProgrammingState>((set, get) =
     try {
       await trpc.sessions.setTitle.mutate({ sessionId, title: newTitle });
       set({
-        sessions: get().sessions.map((s) =>
-          s.id === sessionId ? { ...s, title: newTitle } : s,
-        ),
+        sessions: get().sessions.map((s) => (s.id === sessionId ? { ...s, title: newTitle } : s)),
       });
     } catch (e) {
       console.error("renameSession:", e);

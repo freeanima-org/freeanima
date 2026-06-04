@@ -10,7 +10,9 @@ import {
 describe("resolveAcpRequestTimeoutMs", () => {
   it("session/prompt 使用 prompt 超时", () => {
     expect(resolveAcpRequestTimeoutMs("session/prompt")).toBe(DEFAULT_PROMPT_TIMEOUT_MS);
-    expect(resolveAcpRequestTimeoutMs("session/prompt", { prompt_timeout_ms: 60_000 })).toBe(60_000);
+    expect(resolveAcpRequestTimeoutMs("session/prompt", { prompt_timeout_ms: 60_000 })).toBe(
+      60_000,
+    );
   });
 
   it("其他方法使用 connect 超时", () => {
@@ -54,13 +56,9 @@ describe("ACPClient 健壮性", () => {
   }, 10_000);
 
   it("cwd 不存在时在 spawn 前失败", async () => {
-    const client = new ACPClient(
-      "test-cwd",
-      "/bin/echo",
-      [],
-      "/path/does/not/exist",
-      { connect_timeout_ms: 1_000 },
-    );
+    const client = new ACPClient("test-cwd", "/bin/echo", [], "/path/does/not/exist", {
+      connect_timeout_ms: 1_000,
+    });
     let err: unknown;
     try {
       await client.start();

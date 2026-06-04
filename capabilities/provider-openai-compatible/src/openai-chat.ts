@@ -6,14 +6,8 @@ import type {
   ToolCall,
 } from "@freeanima/engine-provider-llm";
 import { createOpenAiClient } from "./client";
-import {
-  buildChatCompletionParams,
-  buildStreamingChatCompletionParams,
-} from "./request-params";
-import {
-  finalizeStreamingToolCalls,
-  mergeStreamingToolCalls,
-} from "./stream-tools";
+import { buildChatCompletionParams, buildStreamingChatCompletionParams } from "./request-params";
+import { finalizeStreamingToolCalls, mergeStreamingToolCalls } from "./stream-tools";
 import { normalizeUsage } from "./usage";
 
 export async function runOpenAiChat(
@@ -23,7 +17,9 @@ export async function runOpenAiChat(
 ): Promise<ChatCompletion> {
   const client = createOpenAiClient(context);
   const started = performance.now();
-  const completion = await client.chat.completions.create(buildChatCompletionParams(model, request));
+  const completion = await client.chat.completions.create(
+    buildChatCompletionParams(model, request),
+  );
 
   const latency_ms = Math.round(performance.now() - started);
   const choice = completion.choices[0];

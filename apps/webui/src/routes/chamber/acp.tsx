@@ -69,16 +69,20 @@ function AcpPage() {
     setActing((a) => ({ ...a, [name]: action }));
     try {
       const req =
-        action === "start"
-          ? trpc.acp.start.mutate({ name })
-          : trpc.acp.stop.mutate({ name });
+        action === "start" ? trpc.acp.start.mutate({ name }) : trpc.acp.stop.mutate({ name });
       const result =
         action === "start"
-          ? await withTimeout(req, ACP_START_TIMEOUT_MS, "连接超时（30s），请检查 agent 是否已 login、command 路径是否正确")
+          ? await withTimeout(
+              req,
+              ACP_START_TIMEOUT_MS,
+              "连接超时（30s），请检查 agent 是否已 login、command 路径是否正确",
+            )
           : await req;
       setStatus(result as AcpStatus);
     } catch (e) {
-      setError(`${name} ${action === "start" ? "连接" : "断开"}失败: ${e instanceof Error ? e.message : String(e)}`);
+      setError(
+        `${name} ${action === "start" ? "连接" : "断开"}失败: ${e instanceof Error ? e.message : String(e)}`,
+      );
     } finally {
       setActing((a) => {
         const next = { ...a };
@@ -95,7 +99,11 @@ function AcpPage() {
       const req = action === "start-all" ? trpc.acp.startAll.mutate() : trpc.acp.stopAll.mutate();
       const result =
         action === "start-all"
-          ? await withTimeout(req, ACP_START_TIMEOUT_MS, "全部连接超时（30s），请检查各 agent 配置与 login 状态")
+          ? await withTimeout(
+              req,
+              ACP_START_TIMEOUT_MS,
+              "全部连接超时（30s），请检查各 agent 配置与 login 状态",
+            )
           : await req;
       setStatus(result as AcpStatus);
     } catch (e) {
@@ -199,10 +207,14 @@ function AcpPage() {
                   ) : null}
                 </div>
               </div>
-              {agent.error ? <div className="alert alert-error text-xs py-2 mb-3">{agent.error}</div> : null}
+              {agent.error ? (
+                <div className="alert alert-error text-xs py-2 mb-3">{agent.error}</div>
+              ) : null}
               <details open>
                 <summary className="text-sm font-medium cursor-pointer mb-2">配置</summary>
-                <pre className="text-xs overflow-x-auto">{JSON.stringify(agent.config, null, 2)}</pre>
+                <pre className="text-xs overflow-x-auto">
+                  {JSON.stringify(agent.config, null, 2)}
+                </pre>
               </details>
             </div>
           </div>

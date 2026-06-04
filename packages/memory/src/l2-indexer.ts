@@ -121,9 +121,7 @@ export function countL2FtsRows(): number {
   if (!existsSync(dbPath())) return 0;
   const conn = getConn();
   try {
-    const row = conn
-      .prepare("SELECT COUNT(*) AS n FROM l2_messages_fts")
-      .get() as { n: number };
+    const row = conn.prepare("SELECT COUNT(*) AS n FROM l2_messages_fts").get() as { n: number };
     return row?.n ?? 0;
   } catch {
     return 0;
@@ -148,7 +146,7 @@ export function reindexL2All(opts?: { dropFirst?: boolean }): number {
   }
 
   let total = 0;
-  for (const name of readdirSync(processedDir).sort()) {
+  for (const name of readdirSync(processedDir).toSorted()) {
     if (!name.endsWith(".jsonl")) continue;
     const sid = name.slice(0, -".jsonl".length);
     const n = indexL2Session(sid);

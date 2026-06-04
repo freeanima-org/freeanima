@@ -81,8 +81,7 @@ async function cmdReloadTools(ctx: CommandContext): Promise<string> {
   try {
     const count = await reloadSessionTools(ctx.sessionId);
     const names = listTools().map((t) => t.name);
-    const preview =
-      names.length <= 8 ? names.join(", ") : `${names.slice(0, 8).join(", ")}…`;
+    const preview = names.length <= 8 ? names.join(", ") : `${names.slice(0, 8).join(", ")}…`;
     return `✅ 已更新 session 工具列表：${count} 个（此前 ${before} 个）。下次对话将携带最新工具。\n${preview}`;
   } catch (e) {
     return `⚠️ 更新工具列表失败：${String(e)}`;
@@ -217,7 +216,8 @@ export function registerBuiltins(): void {
   });
   registerCommand({
     name: "reload_system_prompt",
-    description: "重建 system prompt（SOUL、常驻记忆、session cwd 下 AGENTS.md），仅写回 system_prompt",
+    description:
+      "重建 system prompt（SOUL、常驻记忆、session cwd 下 AGENTS.md），仅写回 system_prompt",
     handler: cmdReloadSystemPrompt,
     aliases: ["reload-system-prompt"],
     scope: "session",

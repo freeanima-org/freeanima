@@ -61,9 +61,7 @@ export const useSessionsStore = create<SessionsState>((set, get) => ({
     try {
       await trpc.sessions.setTitle.mutate({ sessionId, title: newTitle });
       set({
-        sessions: get().sessions.map((s) =>
-          s.id === sessionId ? { ...s, title: newTitle } : s,
-        ),
+        sessions: get().sessions.map((s) => (s.id === sessionId ? { ...s, title: newTitle } : s)),
       });
     } catch (e) {
       console.error("renameSession:", e);

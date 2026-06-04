@@ -87,7 +87,7 @@ export function countFollowingToolMessages(
 /** 计算 synthetic tool 应插入的 pos（按 assistantPos 降序处理，与 PG repair 一致） */
 export function planToolLoopInserts(messages: SessionMessage[]): ToolLoopInsertPlan[] {
   const corruptions = detectToolLoopCorruption(messages);
-  const ordered = [...corruptions].sort(
+  const ordered = [...corruptions].toSorted(
     (a, b) => (b.assistantPos ?? 0) - (a.assistantPos ?? 0),
   );
   const plans: ToolLoopInsertPlan[] = [];

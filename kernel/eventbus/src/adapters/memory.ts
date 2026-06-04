@@ -1,8 +1,4 @@
-import type {
-  DispatchOutcome,
-  EventQueueAdapter,
-  StoredEvent,
-} from "../queue";
+import type { DispatchOutcome, EventQueueAdapter, StoredEvent } from "../queue";
 
 /** 进程内内存队列；start 后 drain，无持久化与重试 */
 export class MemoryEventQueue implements EventQueueAdapter {
@@ -47,4 +43,3 @@ export class MemoryEventQueue implements EventQueueAdapter {
     }
   }
 }
-

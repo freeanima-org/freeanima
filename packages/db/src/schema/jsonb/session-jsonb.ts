@@ -28,9 +28,4 @@ export type SessionToolsJson = z.infer<typeof sessionToolsSchema>;
 export const sessionFunctionsSchema = z.array(z.string());
 export type SessionFunctionsJson = z.infer<typeof sessionFunctionsSchema>;
 
-export {
-  awaitingClarifySchema,
-  compressionStateSchema,
-  openAiToolSchema,
-  sessionTodoStoreSchema,
-};
+export { awaitingClarifySchema, compressionStateSchema, openAiToolSchema, sessionTodoStoreSchema };

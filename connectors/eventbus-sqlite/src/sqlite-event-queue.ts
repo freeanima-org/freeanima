@@ -1,11 +1,7 @@
 import { Database } from "bun:sqlite";
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
-import type {
-  DispatchOutcome,
-  EventQueueAdapter,
-  StoredEvent,
-} from "@freeanima/kernel-eventbus";
+import type { DispatchOutcome, EventQueueAdapter, StoredEvent } from "@freeanima/kernel-eventbus";
 
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS events (
@@ -74,9 +70,7 @@ export class SqliteEventQueue implements EventQueueAdapter {
 
   enqueue(topicQualifiedId: string, payload: unknown): void {
     this.db
-      .prepare(
-        `INSERT INTO events (topic, data, created_at, status) VALUES (?, ?, ?, 'pending')`,
-      )
+      .prepare(`INSERT INTO events (topic, data, created_at, status) VALUES (?, ?, ?, 'pending')`)
       .run(topicQualifiedId, JSON.stringify(payload), new Date().toISOString());
   }
 

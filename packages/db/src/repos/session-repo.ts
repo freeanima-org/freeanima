@@ -107,7 +107,7 @@ export async function upsertSessionMeta(
     }
     await db.insert(sessions).values(row);
   } catch (e) {
-    throw new Error(formatDbError(e));
+    throw new Error(formatDbError(e), { cause: e });
   }
 }
 
@@ -182,7 +182,7 @@ export async function patchSessionMeta(
       await db.update(sessions).set(set).where(eq(sessions.id, sessionId));
       return;
     } catch (e) {
-      throw new Error(formatDbError(e));
+      throw new Error(formatDbError(e), { cause: e });
     }
   }
 
@@ -197,10 +197,7 @@ export async function updateCompression(
   compression: CompressionState,
 ): Promise<void> {
   const db = getDb();
-  await db
-    .update(sessions)
-    .set(patchCompression(compression))
-    .where(eq(sessions.id, sessionId));
+  await db.update(sessions).set(patchCompression(compression)).where(eq(sessions.id, sessionId));
 }
 
 export async function updateTodos(sessionId: string, todos: SessionTodoStore): Promise<void> {
@@ -225,18 +222,14 @@ export async function listSessionIds(platform?: string | null): Promise<string[]
       return p === platform;
     })
     .map((r) => r.id)
-    .reverse();
+    .toReversed();
 }
 
 export async function listDebugSessionIds(): Promise<string[]> {
   const db = getDb();
-  const rows = await db
-    .select({ id: sessions.id })
-    .from(sessions)
-    .where(eq(sessions.debug, true));
+  const rows = await db.select({ id: sessions.id }).from(sessions).where(eq(sessions.debug, true));
   return rows.map((r) => r.id);
 }
-
 
 export async function countSessionsByPlatform(): Promise<Record<string, number>> {
   const db = getDb();
@@ -282,7 +275,7 @@ export async function listSessionSummaries(platform?: string | null): Promise<Se
         platform: typeof raw === "string" ? raw : "",
       };
     })
-    .reverse();
+    .toReversed();
 }
 
 export async function deleteDebugSessions(): Promise<number> {

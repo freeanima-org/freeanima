@@ -92,14 +92,10 @@ export async function loadMessagesWithRouting(sessionId: string): Promise<Sessio
   if (!postgresAvailable()) {
     return [];
   }
-  return pgProfileWrap(
-    "listMessages",
-    () => dbListMessages(sessionId),
-    {
-      sessionId,
-      resultBytes: (rows) => JSON.stringify(rows).length,
-    },
-  );
+  return pgProfileWrap("listMessages", () => dbListMessages(sessionId), {
+    sessionId,
+    resultBytes: (rows) => JSON.stringify(rows).length,
+  });
 }
 
 /** 已有压缩边界时，运行时只拉 pos > l2 的消息窗口 */
@@ -134,11 +130,9 @@ export async function loadMessagesPageWithRouting(
   if (!postgresAvailable()) {
     return [];
   }
-  return pgProfileWrap(
-    "listMessagesPage",
-    () => dbListMessagesPage(sessionId, offset, limit),
-    { sessionId },
-  );
+  return pgProfileWrap("listMessagesPage", () => dbListMessagesPage(sessionId, offset, limit), {
+    sessionId,
+  });
 }
 
 export async function countMessagesWithRouting(sessionId: string): Promise<number> {
@@ -148,7 +142,9 @@ export async function countMessagesWithRouting(sessionId: string): Promise<numbe
   return dbCountMessages(sessionId);
 }
 
-export async function loadSessionToolsWithRouting(sessionId: string): Promise<SessionMetaMessage["tools"]> {
+export async function loadSessionToolsWithRouting(
+  sessionId: string,
+): Promise<SessionMetaMessage["tools"]> {
   if (!postgresAvailable()) {
     return [];
   }

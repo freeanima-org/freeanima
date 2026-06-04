@@ -2,7 +2,12 @@ import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { resetStoreForTests, MemoryStore, parseFact, factToFileText } from "@freeanima/legacy-memory";
+import {
+  resetStoreForTests,
+  MemoryStore,
+  parseFact,
+  factToFileText,
+} from "@freeanima/legacy-memory";
 
 describe("memory store", () => {
   let home: string;

@@ -209,7 +209,10 @@ function parseExtraction(raw: string): Record<string, unknown>[] {
   return normalized;
 }
 
-async function extractWithLlm(l2Text: string, incremental: boolean): Promise<Record<string, unknown>[]> {
+async function extractWithLlm(
+  l2Text: string,
+  incremental: boolean,
+): Promise<Record<string, unknown>[]> {
   const maxChars = 8000;
   let input = l2Text;
   if (input.length > maxChars) input = `${input.slice(0, maxChars)}\n\n[... 截断]`;
@@ -249,10 +252,7 @@ function normalizeContent(text: string): string {
 }
 
 /** 若合并到已有事实则返回其 id，否则 null */
-function dedupBeforeWrite(
-  store: ReturnType<typeof getStore>,
-  newFact: FactData,
-): string | null {
+function dedupBeforeWrite(store: ReturnType<typeof getStore>, newFact: FactData): string | null {
   const existing = store.search(newFact.content);
   for (const ef of existing) {
     if (contentEqual(ef.content, newFact.content)) {

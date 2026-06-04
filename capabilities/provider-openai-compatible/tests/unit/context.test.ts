@@ -33,8 +33,6 @@ describe("parseOpenAiCompatibleContext", () => {
 
 describe("contextCacheKey", () => {
   it("由 baseUrl 与 apiKey 组成稳定键", () => {
-    expect(
-      contextCacheKey({ baseUrl: "https://a.com", apiKey: "k1" }),
-    ).toBe("https://a.com\0k1");
+    expect(contextCacheKey({ baseUrl: "https://a.com", apiKey: "k1" })).toBe("https://a.com\0k1");
   });
 });

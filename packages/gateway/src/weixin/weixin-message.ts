@@ -2,7 +2,6 @@ import { safeParseOrNull } from "@freeanima/legacy-kernel";
 import { ITEM_TEXT, MSG_TYPE_BOT, MSG_TYPE_USER, type IlinkMessage } from "./ilink-api";
 import { ilinkMessageSchema } from "../schemas/weixin";
 
-
 export type WeixinPlatformExtra = {
   weixin_user_id: string;
   weixin_peer_id: string;
@@ -18,11 +17,7 @@ export type ParsedUserTextMessage = {
   msgId: string;
 };
 
-function readField(
-  msg: Record<string, unknown>,
-  snake: string,
-  camel: string,
-): unknown {
+function readField(msg: Record<string, unknown>, snake: string, camel: string): unknown {
   if (msg[snake] !== undefined && msg[snake] !== null) return msg[snake];
   return msg[camel];
 }
@@ -125,9 +120,7 @@ export function parseUserTextMessage(
   const isGroup = Boolean(roomId);
   const peerId = String(roomId ?? fromUser);
 
-  const msgId = String(
-    normalized.msg_id ?? normalized.message_id ?? normalized.seq_id ?? "",
-  );
+  const msgId = String(normalized.msg_id ?? normalized.message_id ?? normalized.seq_id ?? "");
 
   return {
     text,

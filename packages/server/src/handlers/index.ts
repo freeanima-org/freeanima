@@ -27,20 +27,8 @@ export {
   memoryL3Reindex,
   memoryL2Rebuild,
 } from "./memory";
-export {
-  getMcpStatus,
-  mcpStartAll,
-  mcpStopAll,
-  mcpStartServer,
-  mcpStopServer,
-} from "./mcp";
-export {
-  getAcpStatus,
-  acpStartAll,
-  acpStopAll,
-  acpStartAgent,
-  acpStopAgent,
-} from "./acp";
+export { getMcpStatus, mcpStartAll, mcpStopAll, mcpStartServer, mcpStopServer } from "./mcp";
+export { getAcpStatus, acpStartAll, acpStopAll, acpStartAgent, acpStopAgent } from "./acp";
 export {
   studioGetConfig,
   studioPatchConfig,

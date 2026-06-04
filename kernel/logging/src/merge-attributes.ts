@@ -1,8 +1,6 @@
 import type { LogAttributes } from "./types";
 
-export function mergeAttributes(
-  ...parts: (LogAttributes | undefined)[]
-): LogAttributes {
+export function mergeAttributes(...parts: (LogAttributes | undefined)[]): LogAttributes {
   const merged: LogAttributes = {};
   for (const part of parts) {
     if (!part) continue;

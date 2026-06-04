@@ -11,11 +11,7 @@
  * - 不破坏缓存（时间戳是历史固定值）
  */
 
-import {
-  isUserMessage,
-  type SessionMessage,
-  type UserMessage,
-} from "@freeanima/legacy-kernel";
+import { isUserMessage, type SessionMessage, type UserMessage } from "@freeanima/legacy-kernel";
 
 const CHINESE_WEEKDAYS = ["日", "一", "二", "三", "四", "五", "六"];
 
@@ -48,7 +44,13 @@ function weekdayIndexInTz(date: Date): number {
   return map[weekday] ?? 0;
 }
 
-function datePartsInTz(date: Date): { year: string; month: string; day: string; hour: string; minute: string } {
+function datePartsInTz(date: Date): {
+  year: string;
+  month: string;
+  day: string;
+  hour: string;
+  minute: string;
+} {
   const parts = Object.fromEntries(
     new Intl.DateTimeFormat("en-GB", {
       timeZone: DISPLAY_TZ,

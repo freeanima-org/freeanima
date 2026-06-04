@@ -2,7 +2,6 @@ import { getToolSessionId } from "@freeanima/legacy-engine";
 import { registerTool, toolError } from "@freeanima/legacy-kernel";
 import { handleSessionTodo } from "@freeanima/legacy-runtime";
 
-
 async function handleTodo(args: Record<string, unknown>): Promise<string> {
   const sessionId = getToolSessionId();
   if (!sessionId) return toolError("无 session 上下文");
@@ -18,14 +17,16 @@ async function handleTodo(args: Record<string, unknown>): Promise<string> {
 export function registerTodoTool(): void {
   registerTool({
     name: "todo",
-    description: "管理当前对话 session 的待办清单（与其他 session 隔离）。支持 list/add/update/delete",
+    description:
+      "管理当前对话 session 的待办清单（与其他 session 隔离）。支持 list/add/update/delete",
     parameters: {
       type: "object",
       properties: {
         action: {
           type: "string",
           enum: ["list", "add", "update", "delete"],
-          description: "list — 列出；add — 添加（需 content）；update — 更新状态（需 id+status）；delete — 删除（需 id）",
+          description:
+            "list — 列出；add — 添加（需 content）；update — 更新状态（需 id+status）；delete — 删除（需 id）",
         },
         content: { type: "string", description: "待办内容（add 必需）" },
         id: { type: "integer", description: "待办 ID（update/delete 必需）" },

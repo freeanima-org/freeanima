@@ -18,7 +18,9 @@ describe("mergeStreamingToolCalls", () => {
     mergeStreamingToolCalls(acc, [
       { index: 0, id: "c1", type: "function", function: { name: "read", arguments: '{"a":' } },
     ] as StreamToolDelta[]);
-    mergeStreamingToolCalls(acc, [{ index: 0, function: { arguments: "1}" } }] as StreamToolDelta[]);
+    mergeStreamingToolCalls(acc, [
+      { index: 0, function: { arguments: "1}" } },
+    ] as StreamToolDelta[]);
     expect(acc[0]?.function.arguments).toBe('{"a":1}');
     expect(acc[0]?.function.name).toBe("read");
     expect(acc[0]?.id).toBe("c1");
@@ -43,8 +45,6 @@ describe("cleanToolCallsForApi", () => {
       { id: "x", function: { name: " run ", arguments: "" } },
       { id: "y", function: { name: "", arguments: "{}" } },
     ] as ToolCall[]);
-    expect(out).toEqual([
-      { id: "x", type: "function", function: { name: "run", arguments: "" } },
-    ]);
+    expect(out).toEqual([{ id: "x", type: "function", function: { name: "run", arguments: "" } }]);
   });
 });

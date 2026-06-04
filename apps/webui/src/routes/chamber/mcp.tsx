@@ -62,7 +62,9 @@ function McpPage() {
       const fn = action === "start" ? trpc.mcp.start : trpc.mcp.stop;
       setStatus((await fn.mutate({ name })) as McpStatus);
     } catch (e) {
-      setError(`${name} ${action === "start" ? "启动" : "停止"}失败: ${e instanceof Error ? e.message : String(e)}`);
+      setError(
+        `${name} ${action === "start" ? "启动" : "停止"}失败: ${e instanceof Error ? e.message : String(e)}`,
+      );
     } finally {
       setActing((a) => {
         const next = { ...a };
@@ -187,7 +189,9 @@ function McpPage() {
                   ) : null}
                 </div>
               </div>
-              {srv.error ? <div className="alert alert-error text-xs py-2 mb-3">{srv.error}</div> : null}
+              {srv.error ? (
+                <div className="alert alert-error text-xs py-2 mb-3">{srv.error}</div>
+              ) : null}
               <details open className="mb-3">
                 <summary className="text-sm font-medium cursor-pointer mb-2">配置</summary>
                 <pre className="text-xs overflow-x-auto">{JSON.stringify(srv.config, null, 2)}</pre>
@@ -196,7 +200,9 @@ function McpPage() {
                 <summary className="text-sm font-medium cursor-pointer">
                   工具 ({srv.tools.length})
                 </summary>
-                <pre className="text-xs mt-2 overflow-x-auto">{JSON.stringify(srv.tools, null, 2)}</pre>
+                <pre className="text-xs mt-2 overflow-x-auto">
+                  {JSON.stringify(srv.tools, null, 2)}
+                </pre>
               </details>
             </div>
           </div>

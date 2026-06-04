@@ -37,11 +37,11 @@
 
 新栈 workspace 包名 **一律以 RFC 层名为首段前缀**（完整规约见 [`docs/designs/issue-1-migration-plan.md`](docs/designs/issue-1-migration-plan.md)）：
 
-| 形态 | 模式 | 示例 |
-|------|------|------|
-| 层聚合 | `@freeanima/{layer}` | `kernel`、`engine`、`service` |
-| 层内组件 | `@freeanima/{layer}-{slug}` | `kernel-eventbus`、`engine-tool`、`life-memory`、`capabilities-tools` |
-| 层内实现 | `@freeanima/{layer}-{slug}-{impl}` | `connectors-eventbus-sqlite`、`capabilities-provider-openai` |
+| 形态     | 模式                               | 示例                                                                  |
+| -------- | ---------------------------------- | --------------------------------------------------------------------- |
+| 层聚合   | `@freeanima/{layer}`               | `kernel`、`engine`、`service`                                         |
+| 层内组件 | `@freeanima/{layer}-{slug}`        | `kernel-eventbus`、`engine-tool`、`life-memory`、`capabilities-tools` |
+| 层内实现 | `@freeanima/{layer}-{slug}-{impl}` | `connectors-eventbus-sqlite`、`capabilities-provider-openai`          |
 
 - slug 合成词不加内连字符（`eventbus` 非 `event-bus`）。
 - legacy 包仍为 `@freeanima/legacy-*`。
@@ -53,27 +53,27 @@
 
 **根目录**
 
-| 文件 | 职责 |
-|------|------|
-| [`AGENTS.md`](AGENTS.md) | Agent 启动协议（本文件） |
-| [`TODOS.md`](TODOS.md) | 当前可执行任务 |
+| 文件                                 | 职责                     |
+| ------------------------------------ | ------------------------ |
+| [`AGENTS.md`](AGENTS.md)             | Agent 启动协议（本文件） |
+| [`TODOS.md`](TODOS.md)               | 当前可执行任务           |
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | 架构原则、结构、方向规划 |
-| [`CHANGELOG.md`](CHANGELOG.md) | 版本变更 |
-| [`README.md`](README.md) | 项目介绍与快速开始 |
+| [`CHANGELOG.md`](CHANGELOG.md)       | 版本变更                 |
+| [`README.md`](README.md)             | 项目介绍与快速开始       |
 
 **docs/**
 
-| 文件 | 职责 |
-|------|------|
-| [`docs/context/project-context.md`](docs/context/project-context.md) | 命令、测试、模块树、工具表 |
-| [`docs/database.md`](docs/database.md) | PostgreSQL schema 与迁移 |
-| [`docs/memory.md`](docs/memory.md) | 记忆管道 L1–L4 |
-| [`docs/self-layer.md`](docs/self-layer.md) | 自我层 L1–L4 |
-| [`docs/identity.md`](docs/identity.md) | 数字生命定位与 SOUL 约定 |
-| [`docs/sleep.md`](docs/sleep.md) | 睡眠机制（微睡/深睡） |
-| [`docs/security.md`](docs/security.md) | 安全矩阵与部署须知 |
-| [`docs/versioning.md`](docs/versioning.md) | SemVer 发版 |
-| [`docs/designs/`](docs/designs/) | 专题设计（Probe、桌面伴侣、结对编程等） |
+| 文件                                                                 | 职责                                    |
+| -------------------------------------------------------------------- | --------------------------------------- |
+| [`docs/context/project-context.md`](docs/context/project-context.md) | 命令、测试、模块树、工具表              |
+| [`docs/database.md`](docs/database.md)                               | PostgreSQL schema 与迁移                |
+| [`docs/memory.md`](docs/memory.md)                                   | 记忆管道 L1–L4                          |
+| [`docs/self-layer.md`](docs/self-layer.md)                           | 自我层 L1–L4                            |
+| [`docs/identity.md`](docs/identity.md)                               | 数字生命定位与 SOUL 约定                |
+| [`docs/sleep.md`](docs/sleep.md)                                     | 睡眠机制（微睡/深睡）                   |
+| [`docs/security.md`](docs/security.md)                               | 安全矩阵与部署须知                      |
+| [`docs/versioning.md`](docs/versioning.md)                           | SemVer 发版                             |
+| [`docs/designs/`](docs/designs/)                                     | 专题设计（Probe、桌面伴侣、结对编程等） |
 
 ### 冲突优先级
 
@@ -84,17 +84,17 @@
 
 ### 改代码必须改哪份 doc
 
-| 变更类型 | 更新 |
-|----------|------|
-| 新工具 / 工具行为 | `docs/context/project-context.md` 工具表 |
-| 新模块 / 目录结构 | `docs/context/project-context.md` 架构速览 |
-| 新建 RFC 新栈包 / 包 rename | 本文件（命名规约）+ `docs/context/project-context.md` |
-| L1 Session / PG schema | `docs/database.md` + `packages/db/src/schema/` |
-| 记忆管道 / 注入 / 检索 | `docs/memory.md` + ARCHITECTURE |
-| 安全规则 / 威胁面 | `docs/security.md` + ARCHITECTURE |
-| 架构原则 / 方向 | ARCHITECTURE.md |
-| 发版 | `docs/versioning.md`（Conventional Commits；CI 自动 bump） |
-| 任务完成 | 从 TODOS 删除；用户可见变更用 `feat:`/`fix:` commit，由 semantic-release 写入 CHANGELOG |
+| 变更类型                    | 更新                                                                                    |
+| --------------------------- | --------------------------------------------------------------------------------------- |
+| 新工具 / 工具行为           | `docs/context/project-context.md` 工具表                                                |
+| 新模块 / 目录结构           | `docs/context/project-context.md` 架构速览                                              |
+| 新建 RFC 新栈包 / 包 rename | 本文件（命名规约）+ `docs/context/project-context.md`                                   |
+| L1 Session / PG schema      | `docs/database.md` + `packages/db/src/schema/`                                          |
+| 记忆管道 / 注入 / 检索      | `docs/memory.md` + ARCHITECTURE                                                         |
+| 安全规则 / 威胁面           | `docs/security.md` + ARCHITECTURE                                                       |
+| 架构原则 / 方向             | ARCHITECTURE.md                                                                         |
+| 发版                        | `docs/versioning.md`（Conventional Commits；CI 自动 bump）                              |
+| 任务完成                    | 从 TODOS 删除；用户可见变更用 `feat:`/`fix:` commit，由 semantic-release 写入 CHANGELOG |
 
 ### 维护规约
 
@@ -106,12 +106,12 @@
 
 ### 各文件禁止写什么
 
-| 文件 | 禁止 |
-|------|------|
-| AGENTS.md（本文件） | 工具表、目录树、命令、SemVer 步骤 |
-| docs/context/project-context.md | 身份叙事、SemVer 细则 |
-| ARCHITECTURE.md | 具体待办、会周变的工具表 |
-| TODOS.md | 已完成项、架构长篇、废弃考古 |
+| 文件                            | 禁止                              |
+| ------------------------------- | --------------------------------- |
+| AGENTS.md（本文件）             | 工具表、目录树、命令、SemVer 步骤 |
+| docs/context/project-context.md | 身份叙事、SemVer 细则             |
+| ARCHITECTURE.md                 | 具体待办、会周变的工具表          |
+| TODOS.md                        | 已完成项、架构长篇、废弃考古      |
 
 ---
 

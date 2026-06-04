@@ -1,8 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import {
-  buildDiscordSlashCommands,
-  interactionToCommandText,
-} from "@freeanima/legacy-gateway";
+import { buildDiscordSlashCommands, interactionToCommandText } from "@freeanima/legacy-gateway";
 
 describe("discord slash commands", () => {
   it("buildDiscordSlashCommands includes cwd options", () => {

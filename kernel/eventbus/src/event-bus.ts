@@ -17,10 +17,7 @@ export class EventBus {
     this.queue = queue;
   }
 
-  on<T extends EventTopic<unknown>>(
-    topic: T,
-    handler: EventHandler<T>,
-  ): () => void {
+  on<T extends EventTopic<unknown>>(topic: T, handler: EventHandler<T>): () => void {
     const list = this.handlers.get(topic.qualifiedId) ?? [];
     const entry = handler as EventHandler<EventTopic<unknown>>;
     list.push(entry);

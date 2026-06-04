@@ -1,7 +1,6 @@
 import { PATHS } from "@freeanima/legacy-kernel";
 import { existsSync, readFileSync, unlinkSync } from "node:fs";
 
-
 export function readStatusFile(): Record<string, unknown> | null {
   if (!existsSync(PATHS.statusFile)) return null;
   try {

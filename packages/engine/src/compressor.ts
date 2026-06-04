@@ -1,15 +1,8 @@
 import { getCompressionConfig, getEffectiveTokenBudget } from "./compression-config";
 import { isInToolLoop } from "./compression-tool-loop";
-import {
-  estimateMessagesTokens,
-  estimateTokens,
-  estimateToolsTokens,
-} from "./token-estimate";
+import { estimateMessagesTokens, estimateTokens, estimateToolsTokens } from "./token-estimate";
 import type { OpenAiToolSchema, SessionMessage } from "@freeanima/legacy-kernel";
-import {
-  type CompressionState,
-  parseCompressionState,
-} from "@freeanima/legacy-kernel";
+import { type CompressionState, parseCompressionState } from "@freeanima/legacy-kernel";
 
 export type { CompressionState };
 export { parseCompressionState };
@@ -138,7 +131,7 @@ export function deriveBoundariesFromL4(
     const pos = messagePos(m);
     if (!Number.isNaN(pos) && pos < l4) posSet.add(pos);
   }
-  const l3Candidates = [...posSet].filter((x) => x < l4).sort((a, b) => b - a);
+  const l3Candidates = [...posSet].filter((x) => x < l4).toSorted((a, b) => b - a);
 
   let bestL3: number | null = null;
   for (const l3 of l3Candidates) {
@@ -150,7 +143,7 @@ export function deriveBoundariesFromL4(
   }
   if (bestL3 == null) return null;
 
-  const l2Candidates = [...posSet].filter((x) => x < bestL3).sort((a, b) => b - a);
+  const l2Candidates = [...posSet].filter((x) => x < bestL3).toSorted((a, b) => b - a);
   let bestL2: number | null = null;
   for (const l2 of l2Candidates) {
     const slim = slimSegment(rest, l2, bestL3);
@@ -290,9 +283,7 @@ export function analyzeCompression(
   const maxRounds = opts?.maxRounds ?? cfg.maxRounds;
   const model = opts?.model ?? "";
   const { threshold, recompressAt } = messageThreshold(maxRounds);
-  const budget =
-    opts?.effectiveBudgetOverride ??
-    (model ? getEffectiveTokenBudget(model) : null);
+  const budget = opts?.effectiveBudgetOverride ?? (model ? getEffectiveTokenBudget(model) : null);
   const tokenMode = budget != null;
   const state = opts?.state ?? null;
   const rest = restMessages(messages);
@@ -358,9 +349,7 @@ export function compress(
   const state = opts?.state ?? null;
   const model = opts?.model ?? "";
   const { threshold, recompressAt } = messageThreshold(maxRounds);
-  const budget =
-    opts?.effectiveBudgetOverride ??
-    (model ? getEffectiveTokenBudget(model) : null);
+  const budget = opts?.effectiveBudgetOverride ?? (model ? getEffectiveTokenBudget(model) : null);
   const tokenMode = budget != null;
 
   const system = messages.filter((m) => m.role === "system");

@@ -49,7 +49,7 @@ function channelInList(channelId: string, parentChannelId: string, csv: string):
 }
 
 export function mergeDiscordConfig(config?: Record<string, unknown>): DiscordConfig {
-  return { ...DISCORD_CONFIG_DEFAULTS, ...(config ?? {}) } as DiscordConfig;
+  return { ...DISCORD_CONFIG_DEFAULTS, ...config } as DiscordConfig;
 }
 
 export function shouldRespond(ctx: DiscordMessageContext, cfg: DiscordConfig): boolean {

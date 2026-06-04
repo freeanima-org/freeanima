@@ -53,7 +53,7 @@ describe("compression v5.1", () => {
       const rest = msgs.filter((m) => m.role !== "system" && m.role !== "session_meta");
       const rawStart = rest
         .filter((m) => typeof m.pos === "number" && m.pos > derived.l3 && m.pos <= l4)
-        .sort((a, b) => Number(a.pos) - Number(b.pos))[0];
+        .toSorted((a, b) => Number(a.pos) - Number(b.pos))[0];
       expect(rawStart?.role).toBe("user");
     }
   });
@@ -64,12 +64,7 @@ describe("compression v5.1", () => {
     const a = deriveBoundariesFromL4(msgs, l4, null, smallBoundary);
     const b = deriveBoundariesFromL4(msgs, l4, null, smallBoundary);
     expect(a).toEqual(b);
-    const withLoop = [
-      ...msgs,
-      ua(81, "tail-user"),
-      assistantToolCall(82, "c1"),
-      toolMsg(83),
-    ];
+    const withLoop = [...msgs, ua(81, "tail-user"), assistantToolCall(82, "c1"), toolMsg(83)];
     expect(isInToolLoop(withLoop)).toBe(true);
     expect(isInToolLoop(msgs)).toBe(false);
   });

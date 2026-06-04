@@ -3,7 +3,7 @@
 /** 事件类型 token；仅通过 createEventTopic 创建 */
 export abstract class EventTopic<Payload> {
   /** @internal 携带 Payload 泛型，运行时不使用 */
-  protected declare readonly _payloadBrand?: Payload;
+  declare protected readonly _payloadBrand?: Payload;
 
   readonly id: symbol;
   readonly qualifiedId: string;

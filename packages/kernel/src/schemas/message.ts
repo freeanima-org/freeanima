@@ -97,14 +97,14 @@ export const systemMessageSchema = messageBaseSchema.extend({
 
 export const assistantMessageSchema = messageBaseSchema.extend({
   role: z.literal("assistant"),
-  content: z.union([z.string(), z.null()]).optional().transform((v) => v ?? null),
-  tool_calls: z.preprocess(
-    (v) => {
-      const calls = parseToolCalls(v);
-      return calls.length ? calls : undefined;
-    },
-    z.array(toolCallSchema).optional(),
-  ),
+  content: z
+    .union([z.string(), z.null()])
+    .optional()
+    .transform((v) => v ?? null),
+  tool_calls: z.preprocess((v) => {
+    const calls = parseToolCalls(v);
+    return calls.length ? calls : undefined;
+  }, z.array(toolCallSchema).optional()),
   model: z.string().optional(),
   finish_reason: z.string().optional(),
   reasoning: z.string().optional(),
@@ -129,10 +129,7 @@ const conversationRoles = z.discriminatedUnion("role", [
 ]);
 
 /** 对话消息（不含 session_meta），供 compressor / LLM 使用 */
-export const conversationMessageSchema = z.preprocess(
-  normalizeLegacyMessagePos,
-  conversationRoles,
-);
+export const conversationMessageSchema = z.preprocess(normalizeLegacyMessagePos, conversationRoles);
 
 /** PG messages.payload（不含 pos；pos 由列维护） */
 export const conversationPayloadSchema = z.preprocess(
@@ -197,8 +194,4 @@ export function isSystemMessage(msg: SessionMessage): msg is SystemMessage {
   return msg.role === "system";
 }
 
-export {
-  awaitingClarifySchema,
-  compressionStateSchema,
-  sessionTodoStoreSchema,
-};
+export { awaitingClarifySchema, compressionStateSchema, sessionTodoStoreSchema };

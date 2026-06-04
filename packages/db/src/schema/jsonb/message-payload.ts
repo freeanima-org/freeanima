@@ -10,7 +10,4 @@ export type LlmTurnMessage =
   | Extract<MessagePayload, { role: "assistant" }>
   | Extract<MessagePayload, { role: "tool" }>;
 
-export type {
-  OpenAiToolSchema,
-  ToolCall,
-} from "@freeanima/legacy-kernel";
+export type { OpenAiToolSchema, ToolCall } from "@freeanima/legacy-kernel";

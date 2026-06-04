@@ -49,11 +49,7 @@ export class OpenAiCompatibleBackend extends LlmBackend {
     return findModelInCatalog(catalog, model) ?? defaultModelInfo(model);
   }
 
-  mapError(
-    err: unknown,
-    _context: BackendContext,
-    meta?: { providerId?: string },
-  ): ProviderError {
+  mapError(err: unknown, _context: BackendContext, meta?: { providerId?: string }): ProviderError {
     return mapOpenAiCompatibleError(err, meta);
   }
 

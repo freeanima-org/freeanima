@@ -1,22 +1,18 @@
 import { describe, expect, it } from "bun:test";
-import {
-  clampCallParams,
-  mergeCallParams,
-  modelSupports,
-  type ModelInfo,
-} from "../../src/model";
+import { clampCallParams, mergeCallParams, modelSupports, type ModelInfo } from "../../src/model";
 
 describe("mergeCallParams", () => {
   it("later layers override earlier keys", () => {
-    expect(
-      mergeCallParams({ temperature: 0.2 }, { temperature: 0.8 }, { topP: 0.9 }),
-    ).toEqual({ temperature: 0.8, topP: 0.9 });
+    expect(mergeCallParams({ temperature: 0.2 }, { temperature: 0.8 }, { topP: 0.9 })).toEqual({
+      temperature: 0.8,
+      topP: 0.9,
+    });
   });
 
   it("merges extra objects shallowly", () => {
-    expect(
-      mergeCallParams({ extra: { a: 1 } }, { extra: { b: 2 } }),
-    ).toEqual({ extra: { a: 1, b: 2 } });
+    expect(mergeCallParams({ extra: { a: 1 } }, { extra: { b: 2 } })).toEqual({
+      extra: { a: 1, b: 2 },
+    });
   });
 
   it("skips undefined layers", () => {
@@ -52,9 +48,10 @@ describe("clampCallParams", () => {
       maxOutputTokens: 4096,
       supportedParams: ["stop", "extra"],
     };
-    expect(
-      clampCallParams({ stop: ["END"], extra: { seed: 1 }, temperature: 0.5 }, info),
-    ).toEqual({ stop: ["END"], extra: { seed: 1 } });
+    expect(clampCallParams({ stop: ["END"], extra: { seed: 1 }, temperature: 0.5 }, info)).toEqual({
+      stop: ["END"],
+      extra: { seed: 1 },
+    });
   });
 
   it("passes through all params when supportedParams is empty", () => {

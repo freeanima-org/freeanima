@@ -2,7 +2,6 @@ import { loadConfig, homePath, toolError, toolResult } from "@freeanima/legacy-k
 import { createHash, randomUUID } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
 
-
 const DEFAULT_TIMEOUT_MS = 30_000;
 const NAVIGATE_TIMEOUT_MS = 60_000;
 const SNAPSHOT_SUMMARIZE_THRESHOLD = 8_000;
@@ -112,7 +111,11 @@ async function camofoxFetch(
   return resp;
 }
 
-async function postJson(path: string, body: Record<string, unknown>, timeoutMs?: number): Promise<Record<string, unknown>> {
+async function postJson(
+  path: string,
+  body: Record<string, unknown>,
+  timeoutMs?: number,
+): Promise<Record<string, unknown>> {
   const resp = await camofoxFetch(path, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -141,7 +144,11 @@ async function deleteJson(path: string, timeoutMs?: number): Promise<Record<stri
   return (await resp.json()) as Record<string, unknown>;
 }
 
-async function getRaw(path: string, params?: Record<string, string>, timeoutMs?: number): Promise<ArrayBuffer> {
+async function getRaw(
+  path: string,
+  params?: Record<string, string>,
+  timeoutMs?: number,
+): Promise<ArrayBuffer> {
   const url = new URL(`${resolveConfig().baseUrl}${path}`);
   if (params) {
     for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
@@ -204,14 +211,14 @@ async function adoptExistingTab(session: CamofoxSession): Promise<CamofoxSession
     if (!Array.isArray(tabs) || tabs.length === 0) return session;
     const matching = tabs.filter(
       (tab): tab is Record<string, unknown> =>
-        typeof tab === "object" &&
-        tab !== null &&
-        tab.listItemId === session.sessionKey,
+        typeof tab === "object" && tab !== null && tab.listItemId === session.sessionKey,
     );
     const candidates =
       matching.length > 0
         ? matching
-        : tabs.filter((tab): tab is Record<string, unknown> => typeof tab === "object" && tab !== null);
+        : tabs.filter(
+            (tab): tab is Record<string, unknown> => typeof tab === "object" && tab !== null,
+          );
     const latest = candidates[candidates.length - 1];
     const tabId = latest?.tabId;
     if (typeof tabId === "string" && tabId) {
@@ -485,8 +492,7 @@ export async function camofoxConsole(_sessionId: string, _clear = false): Promis
     js_errors: [],
     total_messages: 0,
     total_errors: 0,
-    note:
-      "Camofox 后端暂不支持浏览器 console 日志捕获。请使用 browser_snapshot 或 browser_vision 检查页面状态。",
+    note: "Camofox 后端暂不支持浏览器 console 日志捕获。请使用 browser_snapshot 或 browser_vision 检查页面状态。",
   });
 }
 
@@ -536,8 +542,7 @@ export async function camofoxVision(
       screenshot_path: screenshotPath,
       question,
       analysis: null,
-      note:
-        "逸灵风暂未接入 auxiliary vision LLM；已保存截图到 screenshot_path。可将路径交给伙伴或在后续版本启用视觉分析。",
+      note: "逸灵风暂未接入 auxiliary vision LLM；已保存截图到 screenshot_path。可将路径交给伙伴或在后续版本启用视觉分析。",
     };
 
     if (annotate) {

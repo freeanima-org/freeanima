@@ -1,9 +1,4 @@
-import {
-  existsSync,
-  readFileSync,
-  readdirSync,
-  statSync,
-} from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import {
   getDefaultProviderBaseUrl,
@@ -23,10 +18,7 @@ import {
 import type { CommandResult } from "./commands/registry";
 import { logComponent, logSseError } from "@freeanima/legacy-kernel";
 import * as conv from "@freeanima/legacy-engine";
-import {
-  buildMessagesDisplay,
-  paginateMessagesDisplay,
-} from "./build-messages-display";
+import { buildMessagesDisplay, paginateMessagesDisplay } from "./build-messages-display";
 import type { MessagesDisplay } from "@freeanima/legacy-kernel";
 import type {
   HealthSnapshot,
@@ -53,19 +45,15 @@ import {
 } from "./cron/index";
 import type { CronJobData } from "./cron/models";
 import { kernel } from "@freeanima/legacy-engine";
-import {
-  headOkStepData,
-  messageIncoming,
-  turnAfterComplete,
-} from "@freeanima/legacy-kernel";
-import type {
-  MessageIncomingEffect,
-  TurnAfterCompleteEffect,
-} from "@freeanima/legacy-kernel";
+import { headOkStepData, messageIncoming, turnAfterComplete } from "@freeanima/legacy-kernel";
+import type { MessageIncomingEffect, TurnAfterCompleteEffect } from "@freeanima/legacy-kernel";
 import { applyClarifyStreamAwaiting } from "@freeanima/legacy-clarify";
 import { PATHS, CST_OFFSET_MS } from "@freeanima/legacy-kernel";
 import { distillAll } from "@freeanima/legacy-memory/clean";
-import { countL2FtsRows, reindexL2All as reindexL2FtsAll } from "@freeanima/legacy-memory/l2-indexer";
+import {
+  countL2FtsRows,
+  reindexL2All as reindexL2FtsAll,
+} from "@freeanima/legacy-memory/l2-indexer";
 import { indexL3All as reindexL3FtsAll } from "@freeanima/legacy-memory/l3-indexer";
 import { getStore } from "@freeanima/legacy-memory/store";
 import { memorySearchDetailed, type MemorySearchResult } from "@freeanima/legacy-memory/search";
@@ -79,11 +67,7 @@ import {
 import * as engine from "@freeanima/legacy-engine";
 import type { CommandDef } from "./commands/registry";
 
-function streamErrorEvent(
-  sessionId: string,
-  message: string,
-  err?: unknown,
-): StreamEvent {
+function streamErrorEvent(sessionId: string, message: string, err?: unknown): StreamEvent {
   logSseError(`/sessions/${sessionId}/messages/stream`, message, {
     session_id: sessionId,
   });
@@ -278,9 +262,7 @@ export class NestService {
     };
   }
 
-  private async reloadRuntimeAfterRepair(
-    sessionId: string,
-  ): Promise<[Message[], string[]]> {
+  private async reloadRuntimeAfterRepair(sessionId: string): Promise<[Message[], string[]]> {
     await repairAndPersistToolLoop(sessionId, await conv.load(sessionId));
     return conv.buildRuntimeMessages(sessionId);
   }
@@ -322,10 +304,7 @@ export class NestService {
     sessionId: string,
     message: string,
     platform: string,
-  ): Promise<
-    | { ok: true; message: string; expiredHint?: string }
-    | { ok: false; reason: string }
-  > {
+  ): Promise<{ ok: true; message: string; expiredHint?: string } | { ok: false; reason: string }> {
     const run = await kernel.hookRegistry.run(messageIncoming, {
       sessionId,
       message,
@@ -366,8 +345,7 @@ export class NestService {
 
   async buildStatus(host: string, port: number): Promise<ServiceSnapshot> {
     const cfg = loadConfig();
-    const uptime =
-      this.startTime > 0 ? Math.round(Date.now() / 1000 - this.startTime) : null;
+    const uptime = this.startTime > 0 ? Math.round(Date.now() / 1000 - this.startTime) : null;
 
     const byPlatform = await buildSessionsByPlatform();
     const sessionCount = Object.values(byPlatform).reduce((a, b) => a + b, 0);
@@ -617,9 +595,7 @@ export class NestService {
     message: string,
     platform = PARLOR_PLATFORM,
   ): Promise<{ session_id: string; content: string }> {
-    const content = await collectStreamReply(
-      this.sendMessageStream(sessionId, message, platform),
-    );
+    const content = await collectStreamReply(this.sendMessageStream(sessionId, message, platform));
     return { session_id: sessionId, content };
   }
 
@@ -713,10 +689,7 @@ export class NestService {
     yield* this.runExclusiveEngineStream(sessionId, async () => conv.retryTurn(sessionId));
   }
 
-  private async *runTurnStream(
-    sessionId: string,
-    message: string,
-  ): AsyncGenerator<StreamEvent> {
+  private async *runTurnStream(sessionId: string, message: string): AsyncGenerator<StreamEvent> {
     this.preemptSessionEngine(sessionId);
     yield* this.runExclusiveEngineStream(sessionId, async () => conv.beginTurn(sessionId, message));
   }
@@ -758,10 +731,7 @@ export class NestService {
             signalReady();
             if (ev.event === "error") {
               hadError = true;
-              if (
-                !retried &&
-                isInsufficientToolMessagesError(ev.data.error)
-              ) {
+              if (!retried && isInsufficientToolMessagesError(ev.data.error)) {
                 const [runtimeMsgs, fn] = await this.reloadRuntimeAfterRepair(sessionId);
                 msgs = runtimeMsgs;
                 functions = fn;
@@ -873,7 +843,7 @@ export class NestService {
 
     try {
       if (existsSync(PATHS.memory)) {
-        for (const name of readdirSync(PATHS.memory).sort()) {
+        for (const name of readdirSync(PATHS.memory).toSorted()) {
           if (!name.startsWith("f-") || !name.endsWith(".md")) continue;
           const path = join(PATHS.memory, name);
           const entry = readMemoryEntry(path, name);

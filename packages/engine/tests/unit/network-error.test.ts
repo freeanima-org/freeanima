@@ -1,6 +1,9 @@
-import { isTransientNetworkError, isEngineStreamError, networkErrorUserHint } from "@freeanima/legacy-engine";
+import {
+  isTransientNetworkError,
+  isEngineStreamError,
+  networkErrorUserHint,
+} from "@freeanima/legacy-engine";
 import { describe, it, expect } from "bun:test";
-
 
 describe("network-error", () => {
   it("detects ConnectTimeoutError", () => {
@@ -14,9 +17,7 @@ describe("network-error", () => {
   });
 
   it("detects handshake timeout", () => {
-    expect(
-      isTransientNetworkError(new Error("Opening handshake has timed out")),
-    ).toBe(true);
+    expect(isTransientNetworkError(new Error("Opening handshake has timed out"))).toBe(true);
   });
 
   it("detects cause chain", () => {

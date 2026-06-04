@@ -1,10 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import {
-  BackendRegistry,
-  LlmProvider,
-  ProviderError,
-  ProviderRegistry,
-} from "../../src/index";
+import { BackendRegistry, LlmProvider, ProviderError, ProviderRegistry } from "../../src/index";
 import { MockBackend } from "../helpers/mock-backend";
 
 function setupProvider(backend = new MockBackend()) {
@@ -27,7 +22,11 @@ describe("LlmProvider", () => {
       },
     });
     const { provider } = setupProvider(backend);
-    const params = await provider.prepareParams("m", { temperature: 0.3 }, { maxOutputTokens: 999 });
+    const params = await provider.prepareParams(
+      "m",
+      { temperature: 0.3 },
+      { maxOutputTokens: 999 },
+    );
     expect(params).toEqual({ temperature: 0.3, maxOutputTokens: 100 });
   });
 
@@ -84,9 +83,9 @@ describe("ProviderRegistry", () => {
     backends.register(backend);
     const providers = new ProviderRegistry(backends);
     providers.registerSpec({ id: "x", backendId: backend.id, context: {} });
-    expect(() =>
-      providers.register(new LlmProvider("x", backend.id, {}, backend)),
-    ).toThrow('provider "x" 已有待实例化 spec，不能重复 register');
+    expect(() => providers.register(new LlmProvider("x", backend.id, {}, backend))).toThrow(
+      'provider "x" 已有待实例化 spec，不能重复 register',
+    );
 
     providers.register(new LlmProvider("y", backend.id, {}, backend));
     expect(() => providers.registerSpec({ id: "y", backendId: backend.id, context: {} })).toThrow(

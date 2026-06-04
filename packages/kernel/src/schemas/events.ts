@@ -1,12 +1,8 @@
 import { z } from "zod";
 
-export const sessionUpdatedPayloadSchema = z
-  .object({ session_id: z.string() })
-  .passthrough();
+export const sessionUpdatedPayloadSchema = z.object({ session_id: z.string() }).passthrough();
 
-export const l2UpdatedPayloadSchema = z
-  .object({ session_id: z.string() })
-  .passthrough();
+export const l2UpdatedPayloadSchema = z.object({ session_id: z.string() }).passthrough();
 
 export const l3UpdatedPayloadSchema = z
   .object({ fact_ids: z.array(z.string()).optional() })

@@ -18,7 +18,11 @@ describePg("server memory API", () => {
     home = ctx.home;
     writeFileSync(join(home, "SOUL.md"), "# Agent\n", "utf-8");
     mkdirSync(join(home, "memory"), { recursive: true });
-    writeFileSync(join(home, "memory", "f-000001-abcd.md"), "---\nid: f-000001-abcd\n---\nbody\n", "utf-8");
+    writeFileSync(
+      join(home, "memory", "f-000001-abcd.md"),
+      "---\nid: f-000001-abcd\n---\nbody\n",
+      "utf-8",
+    );
   });
 
   afterEach(async () => {

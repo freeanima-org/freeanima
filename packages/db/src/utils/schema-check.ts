@@ -4,9 +4,7 @@ import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type { DbRelations } from "../schema/index";
 
 /** 确认 messages：PK=id(TEXT)、pos 列、payload JSONB、(session_id, pos) 唯一 */
-export async function assertMessagesSchema(
-  db: PostgresJsDatabase<DbRelations>,
-): Promise<void> {
+export async function assertMessagesSchema(db: PostgresJsDatabase<DbRelations>): Promise<void> {
   const pkRows = await db.execute<{ cols: string[] | null }>(drizzleSql`
     SELECT array_agg(a.attname ORDER BY k.ord) AS cols
     FROM pg_index i

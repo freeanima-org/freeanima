@@ -4,9 +4,7 @@ import type { LogRecord } from "./types";
 export function formatPrettyRecord(record: LogRecord): string {
   const ts = new Date(record.timestamp).toISOString();
   const component =
-    typeof record.attributes.component === "string"
-      ? `[${record.attributes.component}] `
-      : "";
+    typeof record.attributes.component === "string" ? `[${record.attributes.component}] ` : "";
   const { message, level, attributes } = record;
   const { component: _c, ...rest } = attributes;
   const restKeys = Object.keys(rest);

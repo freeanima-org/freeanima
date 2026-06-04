@@ -13,11 +13,7 @@ import { checkEnvRequirements, getTool, openaiSchemas } from "@freeanima/legacy-
 import { getToolSessionId } from "./tool-context";
 import { maybeApplyEmergencyCompression } from "./conversation";
 import { REPAIR_REASON_INTERRUPT } from "./tool-loop-integrity";
-import type {
-  AssistantMessage,
-  SessionMessage,
-  ToolMessage,
-} from "@freeanima/legacy-kernel";
+import type { AssistantMessage, SessionMessage, ToolMessage } from "@freeanima/legacy-kernel";
 import type { OpenAiToolSchema } from "@freeanima/legacy-kernel";
 import { kernel } from "./kernel";
 
@@ -38,7 +34,10 @@ type EngineOpts = {
   signal?: AbortSignal;
 };
 
-function withReasoning(msg: AssistantMessage, reasoning: string | null | undefined): AssistantMessage {
+function withReasoning(
+  msg: AssistantMessage,
+  reasoning: string | null | undefined,
+): AssistantMessage {
   if (reasoning) {
     return { ...msg, reasoning, reasoning_content: reasoning };
   }
@@ -170,22 +169,19 @@ async function runToolAfterCallHooks(
   args: Record<string, unknown>,
   result: string,
 ): Promise<TurnControl | null> {
-  const run = await kernel.hookRegistry.run(toolAfterCall, {
+  const hookRun = await kernel.hookRegistry.run(toolAfterCall, {
     sessionId,
     toolName,
     args,
     result,
   });
-  const effect = (headOkStepData(run.chain) ?? {}) as ToolAfterCallEffect;
+  const effect = (headOkStepData(hookRun.chain) ?? {}) as ToolAfterCallEffect;
   const tc = effect.turnControl;
   if (!tc?.pause || !Array.isArray(tc.streamEvents)) return null;
   return tc as TurnControl;
 }
 
-export async function run(
-  messages: SessionMessage[],
-  opts?: EngineOpts,
-): Promise<string> {
+export async function run(messages: SessionMessage[], opts?: EngineOpts): Promise<string> {
   const parts: string[] = [];
   for await (const ev of runStream(messages, opts)) {
     switch (ev.event) {
@@ -349,7 +345,10 @@ export async function* runStream(
             const count = (failureCounts.get(fnName) ?? 0) + 1;
             failureCounts.set(fnName, count);
             if (count >= HARD) {
-              throw new Error(`Tool '${fnName}' failed ${count} times consecutively. Last: ${exc}`);
+              throw new Error(
+                `Tool '${fnName}' failed ${count} times consecutively. Last: ${exc}`,
+                { cause: exc },
+              );
             }
           }
         }

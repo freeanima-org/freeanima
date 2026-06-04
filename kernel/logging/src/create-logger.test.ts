@@ -93,10 +93,7 @@ describe("createLogger", () => {
   it("with 可显式覆盖 component", () => {
     const sink = createMemorySink();
     const root = createLogger({ sinks: [sink] });
-    root
-      .with({ component: "gateway" })
-      .with({ component: "gateway.discord" })
-      .info("ok");
+    root.with({ component: "gateway" }).with({ component: "gateway.discord" }).info("ok");
     expect(sink.records[0]?.attributes.component).toBe("gateway.discord");
   });
 

@@ -91,9 +91,7 @@ describePg("cron", () => {
 
   it("resolveDeliverTargets", () => {
     expect(resolveDeliverTargets("local")).toEqual([]);
-    expect(resolveDeliverTargets("discord:123")).toEqual([
-      { platform: "discord", chat_id: "123" },
-    ]);
+    expect(resolveDeliverTargets("discord:123")).toEqual([{ platform: "discord", chat_id: "123" }]);
     expect(resolveDeliverTargets("discord:123:456")).toEqual([
       { platform: "discord", chat_id: "123", thread_id: "456" },
     ]);

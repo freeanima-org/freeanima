@@ -10,7 +10,11 @@ export function normalizeUsage(
   if (cached == null) {
     for (const key of ["prompt_tokens_details", "input_tokens_details"] as const) {
       const details = raw[key];
-      if (details && typeof details === "object" && (details as Record<string, unknown>).cached_tokens != null) {
+      if (
+        details &&
+        typeof details === "object" &&
+        (details as Record<string, unknown>).cached_tokens != null
+      ) {
         cached = (details as Record<string, unknown>).cached_tokens;
         break;
       }

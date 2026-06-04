@@ -122,7 +122,10 @@ export function TerminalPanel() {
           重连
         </button>
       </div>
-      <div ref={termElRef} className="flex-1 min-h-0 overflow-hidden [&_.xterm]:h-full [&_.xterm]:p-1" />
+      <div
+        ref={termElRef}
+        className="flex-1 min-h-0 overflow-hidden [&_.xterm]:h-full [&_.xterm]:p-1"
+      />
       {statusMsg ? (
         <div className="px-2 py-1 text-xs text-error shrink-0 bg-base-200/30">{statusMsg}</div>
       ) : null}
