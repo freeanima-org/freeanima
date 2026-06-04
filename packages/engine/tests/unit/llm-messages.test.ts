@@ -1,10 +1,19 @@
-import { describe, it, expect } from "bun:test";
+import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 import {
   finalizeStreamingToolCalls,
   mergeStreamingToolCalls,
   messagesForApi,
 } from "../../src/llm";
 import type { SessionMessage } from "@freeanima/legacy-kernel";
+import { beginLogIsolation, endLogIsolation } from "../../../../tests/helpers/log-isolation";
+
+const prevHome = process.env.FREEANIMA_HOME;
+beforeEach(() => {
+  beginLogIsolation("freeanima-llm-msg-");
+});
+afterEach(() => {
+  endLogIsolation(prevHome);
+});
 
 describe("mergeStreamingToolCalls", () => {
   it("merges deltas by index into one tool call with name", () => {

@@ -1,6 +1,15 @@
-import { describe, it, expect, vi } from "bun:test";
+import { describe, it, expect, vi, beforeEach, afterEach } from "bun:test";
 import { closeHttpServers, waitForDrainWithTimeout } from "../../src/http-shutdown";
 import type { WebuiServerHandle } from "../../src/webui-server";
+import { beginLogIsolation, endLogIsolation } from "../../../../tests/helpers/log-isolation";
+
+const prevHome = process.env.FREEANIMA_HOME;
+beforeEach(() => {
+  beginLogIsolation("freeanima-http-shutdown-");
+});
+afterEach(() => {
+  endLogIsolation(prevHome);
+});
 
 function mockHandle(): WebuiServerHandle {
   return {

@@ -1,4 +1,4 @@
-import { describe, it, expect } from "bun:test";
+import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 import {
   detectToolLoopCorruption,
   repairToolLoopMessages,
@@ -9,6 +9,15 @@ import {
 } from "../../src/tool-loop-integrity";
 import { messagesForApi } from "../../src/llm";
 import type { SessionMessage } from "@freeanima/legacy-kernel";
+import { beginLogIsolation, endLogIsolation } from "../../../../tests/helpers/log-isolation";
+
+const prevHome = process.env.FREEANIMA_HOME;
+beforeEach(() => {
+  beginLogIsolation("freeanima-tool-loop-");
+});
+afterEach(() => {
+  endLogIsolation(prevHome);
+});
 
 describe("tool-loop-integrity", () => {
   it("detectToolLoopCorruption 发现 dangling assistant", () => {

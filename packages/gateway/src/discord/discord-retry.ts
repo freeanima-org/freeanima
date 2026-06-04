@@ -14,6 +14,20 @@ function errorStatus(err: unknown): number | null {
   return typeof status === "number" ? status : null;
 }
 
+/** 从 discord.js / REST 错误提取 HTTP status 与 Discord API code（如 50005） */
+export function discordErrorDetails(err: unknown): Record<string, unknown> {
+  if (!err || typeof err !== "object") return {};
+  const rec = err as Record<string, unknown>;
+  const out: Record<string, unknown> = {};
+  const status = errorStatus(err);
+  if (status != null) out.http_status = status;
+  const code = rec.code;
+  if (typeof code === "number" || typeof code === "string") out.discord_code = code;
+  const message = rec.message;
+  if (typeof message === "string" && message) out.discord_message = message;
+  return out;
+}
+
 /** Discord REST / 网关瞬态错误（含 429、5xx、底层网络） */
 export function isDiscordRetryableError(err: unknown): boolean {
   if (isTransientNetworkError(err)) return true;
@@ -63,6 +77,7 @@ export async function tryDiscordInterimEdit(
   } catch (e) {
     logComponent("discord").error("Discord interim edit failed", {
       err: e,
+      ...discordErrorDetails(e),
       ...context,
       phase: "interim",
     });
@@ -80,6 +95,7 @@ export async function deliverDiscordFinalContent(
   } catch (e) {
     logComponent("discord").error("Discord final edit failed, sending fallback message", {
       err: e,
+      ...discordErrorDetails(e),
       ...context,
       phase: "final",
     });

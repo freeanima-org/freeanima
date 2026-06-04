@@ -139,6 +139,26 @@ export function parseUserTextMessage(
   };
 }
 
+/** 入站消息被 parseUserTextMessage 跳过时的人类可读原因（诊断用） */
+export function explainInboundSkip(msg: IlinkMessage, botAccountId: string): string {
+  const normalized = normalizeInboundMessage(msg);
+
+  const fromUser = String(normalized.from_user_id ?? "").trim();
+  if (!fromUser) return "missing from_user_id";
+
+  const msgType = coerceMessageType(normalized.message_type);
+  if (msgType === MSG_TYPE_BOT) return "message_type is BOT";
+
+  if (botAccountId && fromUser === botAccountId) {
+    return "from_user_id matches bot account_id";
+  }
+
+  const text = extractTextFromMessage(normalized).trim();
+  if (!text) return "no extractable text in item_list";
+
+  return "unknown";
+}
+
 export function buildWeixinOrigin(parsed: ParsedUserTextMessage): {
   platform: "weixin";
   platform_extra: WeixinPlatformExtra;

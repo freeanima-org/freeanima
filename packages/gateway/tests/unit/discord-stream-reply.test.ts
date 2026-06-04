@@ -1,8 +1,17 @@
 import type { StreamEvent } from "@freeanima/legacy-engine";
 
 import type { Message, TextBasedChannel } from "discord.js";
-import { describe, expect, it, vi } from "bun:test";
+import { describe, expect, it, vi, beforeEach, afterEach } from "bun:test";
 import { streamReplyToChannel } from "@freeanima/legacy-gateway";
+import { beginLogIsolation, endLogIsolation } from "../../../../tests/helpers/log-isolation";
+
+const prevHome = process.env.FREEANIMA_HOME;
+beforeEach(() => {
+  beginLogIsolation("freeanima-discord-stream-");
+});
+afterEach(() => {
+  endLogIsolation(prevHome);
+});
 
 describe("streamReplyToChannel", () => {
   function fakeChannel(): {

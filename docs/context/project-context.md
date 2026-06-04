@@ -31,7 +31,7 @@
 ├── active_skills.json  # 全局已加载技能列表
 ├── index/              # L4 SQLite FTS 索引
 ├── cron/               # 定时任务（jobs.json、scripts/、output/）
-├── error.log           # 运行时错误日志（API/SSE/LLM/EventBus/平台/服务启动失败）；`anima service start --foreground` 启动异常写入 `[startup]`；微信 poll 单次失败仅 console.warn，连续失败才写入；Discord 网关错误经 client/shard 事件记录
+├── error.log           # 运行时错误日志（API/SSE/LLM/EventBus/平台/服务启动失败）；`anima service start --foreground` 启动异常写入 `[startup]`；微信 poll 单次失败 warn、连续失败 error；Discord edit 403 日志含 `discord_code`（如 50005）；单测须 `tests/helpers/log-isolation` 隔离，避免污染本文件
 ├── weixin/             # 微信 iLink 同步游标与 context_token
 └── ...
 ```
@@ -154,7 +154,7 @@ tests/           # Vitest 回归
 
 待补工具/命令：`send_push`、`help`（工具全景）、更多 slash（如 `/reset` 等）。见 [TODOS.md](../../TODOS.md)。
 
-**Gateway**：Discord / 微信 iLink 已接入（`service start` 时按 pass 自动发现）；Discord 登录失败时每 **5 分钟**自动重试（`DISCORD_LOGIN_RETRY_MS`）；Discord API 发送/编辑遇 **429、5xx 或瞬态网络** 时指数退避重试（最多 5 次，尊重 `retryAfter`）；流式回复最终 edit 仍失败则 **fallback 新发一条**，避免卡在「思考中」；Discord 启动时同步 **Application Slash Commands**（输入 `/` 出现候选，与消息内 `/cmd` 并存；`config.yaml` → `discord.slash_commands` / `slash_commands_guild_id`）；普通对话走 `sendMessageStream` 时先发「思考中」占位并按事件流节流编辑，收尾去掉占位；`tool_begin` 仅展示工具名，`tool_result` 不展示返回正文；微信状态目录 `~/.anima/weixin/`（`sync.json`、`context-tokens.json`）。
+**Gateway**：Discord / 微信 iLink 已接入（`service start` 时按 pass 自动发现）；Discord 登录失败时每 **5 分钟**自动重试（`DISCORD_LOGIN_RETRY_MS`）；Discord API 发送/编辑遇 **429、5xx 或瞬态网络** 时指数退避重试（最多 5 次，尊重 `retryAfter`）；流式回复最终 edit 仍失败则 **fallback 新发一条**（403 等非重试错误记 `http_status` / `discord_code`），避免卡在「思考中」；Discord 启动时同步 **Application Slash Commands**（输入 `/` 出现候选，与消息内 `/cmd` 并存；`config.yaml` → `discord.slash_commands` / `slash_commands_guild_id`）；普通对话走 `sendMessageStream` 时先发「思考中」占位并按事件流节流编辑，收尾去掉占位；`tool_begin` 仅展示工具名，`tool_result` 不展示返回正文；微信状态目录 `~/.anima/weixin/`（`sync.json`、`context-tokens.json`）；入站可路由消息写 info，被过滤写 warn（`explainInboundSkip` 原因）；探活 `bun scripts/weixin-probe.mts`。
 
 **Slash 命令（Gateway）**：`/new`、`/sethome`（alias `/set-home`）仅 Discord / 微信；`/sethome` 将当前聊天写入 `config.yaml` 对应平台的 `home_channel`（cron 等主动通知的默认投递目标）。
 
@@ -259,7 +259,7 @@ bun run check                     # 手动全量：typecheck + 全量测试（�
 
 **类型检查**：`bun run typecheck` → `bunx tsgo -p tsconfig.json --noEmit`（根 [`tsconfig.json`](../../tsconfig.json)，含 `src` + 全仓 `*.test.ts` / `tests/`）。
 
-**测试**：`bun run test`（[`scripts/run-tests.mts`](../../scripts/run-tests.mts)）先尝试 Docker 起临时 PG，再根目录 `bun test`。**本地与 pre-commit** 用 `bun run test:changed`；**CI** 全量 `bun run test`；推 PR 前可 `bun run check`。
+**测试**：`bun run test`（[`scripts/run-tests.mts`](../../scripts/run-tests.mts)）先尝试 Docker 起临时 PG，再根目录 `bun test`。**本地与 pre-commit** 用 `bun run test:changed`；**CI** 全量 `bun run test`；推 PR 前可 `bun run check`。会写 `error.log` 的单测/集成测须用 [`tests/helpers/log-isolation.ts`](../../tests/helpers/log-isolation.ts)（`FREEANIMA_HOME` + `resetServiceLogger`）。
 
 **WebUI 启动**：`anima service start --foreground` → `development: true`（Bun fullstack + tRPC）；systemd/detached 同进程 TS 直跑，无需预构建。
 **覆盖率范围**：Bun 会统计**测试执行过程中被 import 到的所有源码**（含 workspace 依赖），与「只跑了哪个目录的 `*.test.ts`」无关。因此在 `kernel/hooks` 跑覆盖率仍会出现 `../logging/...`，在 `kernel` 跑则会合并 hooks + logging + kernel 的 src。Bun 暂无「只统计 cwd 下 src」的内置开关。
