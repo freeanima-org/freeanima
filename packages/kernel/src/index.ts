@@ -41,6 +41,14 @@ export {
 export { sessionPath, isDebugSession } from "./session-path";
 export * from "./error-log";
 export * from "./config";
+export {
+  getDefaultProfileId,
+  getDefaultProviderBaseUrl,
+  getLlmConfig,
+  getProfileHopModel,
+  getProfileHopProviderId,
+  getProviderBaseUrl,
+} from "./llm-config";
 export * from "./credential";
 export * from "./json-util";
 export * from "./registry";

@@ -5,7 +5,14 @@ import {
   statSync,
 } from "node:fs";
 import { join } from "node:path";
-import { loadConfig, sanitizeConfigForApi } from "@freeanima/legacy-kernel";
+import {
+  getDefaultProviderBaseUrl,
+  getProfileHopModel,
+  loadConfig,
+  openaiSchemas,
+  sanitizeConfigForApi,
+} from "@freeanima/legacy-kernel";
+import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
 import {
   executeCommand as runSlashCommand,
   resolveCommand,
@@ -30,10 +37,10 @@ import type {
 } from "@freeanima/legacy-kernel";
 import type { StreamEvent } from "@freeanima/legacy-engine";
 import type { Message } from "@freeanima/legacy-engine";
-import { LLMError } from "@freeanima/legacy-engine";
+import { ProviderError } from "@freeanima/engine-provider-llm";
 import type { EventBus } from "@freeanima/kernel-eventbus";
 import { sessionUpdated } from "@freeanima/legacy-memory";
-import { listTools, openaiSchemas } from "@freeanima/legacy-kernel";
+import { listTools } from "@freeanima/legacy-kernel";
 import { statsReport } from "./conversation-stats";
 import { runWithToolContext } from "@freeanima/legacy-engine";
 import {
@@ -406,8 +413,8 @@ export class NestService {
       uptime_seconds: uptime,
       start_time_iso: startTimeIso(this.startTime),
       config: {
-        model: cfg.model,
-        api_base: cfg.api_base,
+        model: getProfileHopModel(cfg, PROFILE_CHAT),
+        api_base: getDefaultProviderBaseUrl(cfg),
       },
       sessions: { total: sessionCount, by_platform: byPlatform },
       tools: toolCount,
@@ -591,7 +598,7 @@ export class NestService {
           yield { event: "error", data: { error: msg } };
           return;
         }
-        if (e instanceof LLMError) {
+        if (e instanceof ProviderError) {
           logComponent("nest-service").error(e.message, { err: e });
           yield { event: "error", data: { error: e.message } };
           return;
@@ -729,7 +736,7 @@ export class NestService {
     const work = this.sessionManager.runExclusive(sessionId, async () => {
       let [msgs, functions, effective] = await prepare();
       const cfg = loadConfig();
-      const model = cfg.model ?? "deepseek-v4-flash";
+      const model = getProfileHopModel(cfg, PROFILE_CHAT);
       let hadError = false;
       let sawDone = false;
       let retried = false;
@@ -950,7 +957,7 @@ export async function appendSessionMetaForEngine(session: string): Promise<void>
   await conv.appendSessionMeta(
     session,
     tools.length ? tools : openaiSchemas(),
-    cfg.model ?? "",
+    getProfileHopModel(cfg, PROFILE_CHAT),
     {},
   );
 }

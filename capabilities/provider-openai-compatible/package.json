@@ -2,7 +2,10 @@
   "name": "@freeanima/capabilities-provider-openai-compatible",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./stream-tools": "./src/stream-tools.ts",
+    "./messages": "./src/messages.ts",
+    "./usage": "./src/usage.ts"
   },
   "dependencies": {
     "@freeanima/engine-provider-llm": "workspace:*",

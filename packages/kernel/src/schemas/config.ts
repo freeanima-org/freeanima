@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { llmConfigSchema } from "./llm-config.js";
 
 export const mcpServerSchema = z
   .object({
@@ -104,9 +105,7 @@ export const modelsConfigSchema = z.record(z.string(), modelEntrySchema);
 
 export const nestConfigSchema = z
   .object({
-    model: z.string().optional(),
-    api_base: z.string().optional(),
-    api_key: z.string().optional(),
+    llm: llmConfigSchema,
     firecrawl: firecrawlSchema.optional(),
     browser: browserSchema.optional(),
     clarify: clarifySchema.optional(),
@@ -122,3 +121,11 @@ export const nestConfigSchema = z
   .passthrough();
 
 export type NestConfig = z.infer<typeof nestConfigSchema>;
+export type { LlmConfig } from "./llm-config.js";
+export {
+  llmConfigSchema,
+  llmProfileSchema,
+  llmProviderOpenAiSchema,
+  llmRouteHopSchema,
+  OPENAI_COMPATIBLE_BACKEND_ID,
+} from "./llm-config.js";

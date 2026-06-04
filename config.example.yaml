@@ -1,9 +1,27 @@
 # 逸灵风 config.yaml 示例
 # 复制到 ~/.anima/config.yaml 并根据需要修改
 
-# 模型配置
-api_base: https://api.openai.com/v1
-model: deepseek-v4-flash
+# LLM（provider + profile）；API Key 可省略，由 pass api/opencode-go 注入
+llm:
+  default_profile: chat
+  providers:
+    main:
+      backend: openai_compatible
+      base_url: https://api.openai.com/v1
+      # api_key:  # pass: anima credential add api/opencode-go token=xxx
+  profiles:
+    chat:
+      chain:
+        - provider: main
+          model: deepseek-v4-flash
+    reflect:
+      chain:
+        - provider: main
+          model: deepseek-v4-flash
+    summary:
+      chain:
+        - provider: main
+          model: deepseek-v4-flash
 
 # Firecrawl（web_search / web_extract）
 # API Key 走 pass：anima credential add services/firecrawl token=xxx

@@ -4,7 +4,7 @@ import {
   formatMessagesForSummary,
   sliceForSummary,
 } from "./compressor";
-import { chat } from "./llm";
+import { chat, PROFILE_SUMMARY } from "./llm";
 import type { SessionMessage } from "@freeanima/legacy-kernel";
 
 const SUMMARY_INSTRUCTION = `你是运行在逸灵风中的数字生命。请将以下对话历史压缩为简洁的会话摘要（第一人称「我」），保留：
@@ -62,7 +62,7 @@ export async function generateSessionSummary(
         { role: "system", content: systemPromptSnapshot },
         { role: "user", content: userContent },
       ],
-      { model },
+      { model, profileId: PROFILE_SUMMARY },
     );
     const summary = (resp.content ?? "").trim();
     if (!summary) return { ok: false, error: "摘要 LLM 返回空" };

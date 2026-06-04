@@ -23,10 +23,12 @@ export type LlmProfileDef = {
 };
 
 export type ProfileBindOptions = {
+  /** 覆盖 chain[0].model（如 session meta.model） */
+  model?: string;
   requestParams?: Partial<LlmCallParams>;
 };
 
-export type ProfileChatOptions = {
+export type ProfileChatOptions = ProfileBindOptions & {
   systemPrompt?: string;
   tools?: OpenAiToolSchema[];
 };
@@ -112,8 +114,6 @@ export class LlmProfile {
   private _provider: LlmProvider | null = null;
   private _model = "";
   private _params: LlmCallParams = {};
-  private _bound = false;
-
   constructor(
     readonly def: LlmProfileDef,
     private readonly providers: ProviderRegistry,
@@ -145,24 +145,18 @@ export class LlmProfile {
       throw new Error(`profile "${this.def.id}" chain 不能为空`);
     }
 
+    const model = options.model ?? hopSpec.model;
     const provider = this.providers.get(hopSpec.provider);
     const params = await provider.prepareParams(
-      hopSpec.model,
+      model,
       this.def.params ?? {},
       hopSpec.params ?? {},
       options.requestParams ?? {},
     );
 
     this._provider = provider;
-    this._model = hopSpec.model;
+    this._model = model;
     this._params = params;
-    this._bound = true;
-  }
-
-  private async ensureBound(): Promise<void> {
-    if (!this._bound) {
-      await this.bind();
-    }
   }
 
   private buildRequest(messages: LlmTurnMessage[], opts?: ProfileChatOptions): ChatRequest {
@@ -175,7 +169,7 @@ export class LlmProfile {
   }
 
   async chat(messages: LlmTurnMessage[], opts?: ProfileChatOptions): Promise<ChatCompletion> {
-    await this.ensureBound();
+    await this.bind(opts);
     const p = this.provider;
     const request = this.buildRequest(messages, opts);
     try {
@@ -191,7 +185,7 @@ export class LlmProfile {
     messages: LlmTurnMessage[],
     opts?: ProfileChatOptions,
   ): AsyncIterable<ChatStreamEvent> {
-    await this.ensureBound();
+    await this.bind(opts);
     const p = this.provider;
     const request = this.buildRequest(messages, opts);
     try {

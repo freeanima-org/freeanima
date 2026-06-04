@@ -3,7 +3,8 @@ import { tmpdir, homedir } from "node:os";
 import { join, resolve } from "node:path";
 import { randomBytes } from "node:crypto";
 import { PATHS, CST_OFFSET_MS } from "@freeanima/legacy-kernel";
-import { loadConfig } from "@freeanima/legacy-kernel";
+import { getProfileHopModel, loadConfig } from "@freeanima/legacy-kernel";
+import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
 import { buildSystemPrompt } from "./system-prompt-registry";
 import { openaiSchemas } from "@freeanima/legacy-kernel";
 import { getCompressionConfig } from "./compression-config";
@@ -259,7 +260,7 @@ export async function newSession(
 ): Promise<string> {
   const cfg = loadConfig();
   const sid = generateSessionId();
-  await initSession(sid, model ?? cfg.model ?? "deepseek-v4-flash", {
+  await initSession(sid, model ?? getProfileHopModel(cfg, PROFILE_CHAT), {
     platform,
     platform_extra: platformExtra,
   });
@@ -430,7 +431,7 @@ function compressOptsForSession(
   },
 ): Parameters<typeof compress>[1] {
   const cfg = getCompressionConfig();
-  const model = isSessionMeta(meta) ? meta.model : String(loadConfig().model ?? "");
+  const model = isSessionMeta(meta) ? meta.model : getProfileHopModel(loadConfig(), PROFILE_CHAT);
   const systemPrompt = isSessionMeta(meta) ? (meta.system_prompt ?? "") : "";
   const tools = isSessionMeta(meta) ? meta.tools : [];
   return {
@@ -549,7 +550,7 @@ export async function recompressSession(
   if (updated && newState) {
     if (boundariesChanged) {
       const systemSnapshot = isSessionMeta(meta) ? (meta.system_prompt ?? "") : "";
-      const model = isSessionMeta(meta) ? meta.model : String(loadConfig().model ?? "");
+      const model = isSessionMeta(meta) ? meta.model : getProfileHopModel(loadConfig(), PROFILE_CHAT);
       await updateSessionMetaField(session, { compression: newState });
       scheduleCompressionSummary(session, msgs, prevState, newState, systemSnapshot, model);
     } else {

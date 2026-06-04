@@ -325,7 +325,7 @@ export class DiscordAdapter implements PlatformAdapter {
       });
     });
 
-    this.client.on("ready", () => {
+    this.client.on("clientReady", () => {
       this.clearLoginRetry();
       const user = this.client.user;
       const botName = user?.tag ?? "?";

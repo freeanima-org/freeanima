@@ -1,5 +1,6 @@
 import { logComponent } from "@freeanima/legacy-kernel";
-import { loadConfig } from "@freeanima/legacy-kernel";
+import { getProfileHopModel, loadConfig } from "@freeanima/legacy-kernel";
+import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
 import type { HookClarifyItem, HookStreamEvent, TurnControl } from "@freeanima/legacy-kernel";
 import { headOkStepData } from "@freeanima/kernel-hooks";
 import { toolAfterCall } from "@freeanima/legacy-kernel";
@@ -76,7 +77,7 @@ function prepareEngine(opts?: {
   const schemas: OpenAiToolSchema[] =
     opts?.tools && opts.tools.length > 0 ? opts.tools : openaiSchemas();
   const cfg = loadConfig();
-  const resolved = opts?.model ?? cfg.model ?? "deepseek-v4-flash";
+  const resolved = opts?.model ?? getProfileHopModel(cfg, PROFILE_CHAT);
   return [schemas, resolved];
 }
 

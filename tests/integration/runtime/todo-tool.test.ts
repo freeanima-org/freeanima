@@ -3,7 +3,7 @@ import { describePg } from "../../helpers/pg-test-gate";
 import { beginIntegrationCase, endIntegrationCase } from "../../helpers/integration-case";
 
 import { initSession, loadSessionMeta, runWithToolContext } from "@freeanima/legacy-engine";
-import { loadConfig, getTool } from "@freeanima/legacy-kernel";
+import { getProfileHopModel, loadConfig, getTool } from "@freeanima/legacy-kernel";
 import { addTodo, listTodos } from "@freeanima/legacy-runtime";
 import { registerAllTools } from "@freeanima/legacy-tools";
 
@@ -25,7 +25,7 @@ describePg("session todo", () => {
 
   it("two sessions isolated in session_meta.todos", async () => {
     const cfg = loadConfig();
-    const model = cfg.model ?? "test-model";
+    const model = getProfileHopModel(cfg);
 
     await initSession("sess-a", model, { platform: "test" });
     await initSession("sess-b", model, { platform: "test" });
@@ -53,7 +53,7 @@ describePg("session todo", () => {
 
     const cfg = loadConfig();
     const sid = "sess-todo-stream";
-    await initSession(sid, cfg.model ?? "test-model", { platform: "parlor" });
+    await initSession(sid, getProfileHopModel(cfg), { platform: "parlor" });
 
     async function* fakeStream() {
       const tool = getTool("todo")!;

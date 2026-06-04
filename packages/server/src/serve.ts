@@ -1,6 +1,7 @@
 import "@freeanima/legacy-runtime/system-prompt-wire";
-import { cleanupDebugSessions, kernel } from "@freeanima/legacy-engine";
+import { chat, cleanupDebugSessions, initLlmRuntime, kernel, PROFILE_REFLECT } from "@freeanima/legacy-engine";
 import {
+  loadConfig,
   PATHS,
   installErrorLogHandlers,
   logComponent,
@@ -23,7 +24,6 @@ import { chdir } from "node:process";
 
 import { registerClarifyHooks } from "@freeanima/legacy-clarify";
 import { registerReflectChat } from "@freeanima/legacy-memory";
-import { chat } from "@freeanima/legacy-engine";
 import { registerAllTools } from "@freeanima/legacy-tools";
 import {
   discoverPlatforms,
@@ -139,13 +139,16 @@ export async function serve(
       getDb();
     }
 
+    startupLog("初始化 LLM runtime…");
+    initLlmRuntime(loadConfig());
+
     startupLog("初始化 NestService / EventBus…");
     service = new NestService();
     service.markStarted();
     const nest = service;
 
     registerReflectChat(async (messages) => {
-      const resp = await chat(messages);
+      const resp = await chat(messages, { profileId: PROFILE_REFLECT });
       return { content: resp.content ?? null };
     });
     registerMemoryPipeline(kernel.eventBus);

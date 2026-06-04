@@ -3,7 +3,8 @@ import { spawnSync } from "node:child_process";
 import { listSessions } from "@freeanima/legacy-engine";
 import { distillFromPg, l2SessionPath } from "@freeanima/legacy-memory/clean";
 import { indexL2Session } from "@freeanima/legacy-memory/l2-indexer";
-import { loadConfig, logComponent } from "@freeanima/legacy-kernel";
+import { getProfileHopModel, loadConfig, logComponent } from "@freeanima/legacy-kernel";
+import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
 import * as conv from "@freeanima/legacy-engine";
 import * as engine from "@freeanima/legacy-engine";
 import { loadSkill } from "@freeanima/legacy-engine";
@@ -53,7 +54,7 @@ function runScript(scriptPath: string, timeoutSec: number): string {
 
 async function runEngine(job: CronJob, prompt: string): Promise<string> {
   const cfg = loadConfig();
-  const model = job.model_name ?? cfg.model ?? "deepseek-v4-flash";
+  const model = job.model_name ?? getProfileHopModel(cfg, PROFILE_CHAT);
   const sid = conv.generateSessionId();
   await conv.initSession(sid, model, { platform: "cron" });
 

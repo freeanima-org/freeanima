@@ -7,7 +7,8 @@ import {
   REPAIR_REASON_LOST,
   syntheticToolContent,
 } from "../../src/tool-loop-integrity";
-import { messagesForApi } from "../../src/llm";
+import { messagesForApi } from "@freeanima/capabilities-provider-openai-compatible/messages";
+import { sessionMessagesToInvokeInput } from "../../src/llm-adapt";
 import type { SessionMessage } from "@freeanima/legacy-kernel";
 import { beginLogIsolation, endLogIsolation } from "../../../../tests/helpers/log-isolation";
 
@@ -59,7 +60,7 @@ describe("tool-loop-integrity", () => {
       expect(repaired[2].tool_call_id).toBe("call_1");
       expect(repaired[2].content).toBe(syntheticToolContent(REPAIR_REASON_LOST));
     }
-    const api = messagesForApi(repaired);
+    const api = messagesForApi(sessionMessagesToInvokeInput(repaired).turns);
     expect(api.some((m) => m.role === "assistant" && "tool_calls" in m && m.tool_calls?.length)).toBe(
       true,
     );
