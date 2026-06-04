@@ -9,6 +9,7 @@ coveragePathIgnorePatterns = [
   "**/node_modules/**",
   "**/*.test.ts",
   "**/*.spec.ts",
+  "**/tests/helpers/**",
 ]
 
 [serve.static]

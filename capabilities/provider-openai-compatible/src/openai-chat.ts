@@ -5,16 +5,16 @@ import type {
   ChatStreamEvent,
   ToolCall,
 } from "@freeanima/engine-provider-llm";
-import { createOpenAiClient } from "./client.js";
+import { createOpenAiClient } from "./client";
 import {
   buildChatCompletionParams,
   buildStreamingChatCompletionParams,
-} from "./request-params.js";
+} from "./request-params";
 import {
   finalizeStreamingToolCalls,
   mergeStreamingToolCalls,
-} from "./stream-tools.js";
-import { normalizeUsage } from "./usage.js";
+} from "./stream-tools";
+import { normalizeUsage } from "./usage";
 
 export async function runOpenAiChat(
   model: string,

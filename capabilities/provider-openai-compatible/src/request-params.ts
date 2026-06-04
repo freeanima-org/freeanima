@@ -4,7 +4,7 @@ import type {
 } from "openai/resources/chat/completions";
 import type { ChatCompletionTool } from "openai/resources/chat/completions";
 import type { ChatRequest } from "@freeanima/engine-provider-llm";
-import { messagesForApi } from "./messages.js";
+import { messagesForApi } from "./messages";
 
 const DEFAULT_MAX_OUTPUT_TOKENS = 100 * 1024;
 

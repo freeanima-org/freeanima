@@ -32,6 +32,6 @@
     "@types/http-proxy": "^1.17.17",
     "@types/ws": "^8.18.1",
     "bun-plugin-tailwind": "^0.1.2",
-    "bun-types": "catalog:"
+    "@types/bun": "catalog:"
   }
 }

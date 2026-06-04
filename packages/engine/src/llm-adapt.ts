@@ -1,6 +1,6 @@
 import type { LlmTurnMessage } from "@freeanima/legacy-db";
 import type { SessionMessage } from "@freeanima/legacy-kernel";
-import { repairToolLoopMessages } from "./tool-loop-integrity.js";
+import { repairToolLoopMessages } from "./tool-loop-integrity";
 
 export type InvokeMessageInput = {
   turns: LlmTurnMessage[];

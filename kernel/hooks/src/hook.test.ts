@@ -9,7 +9,7 @@ import {
   type PayloadOf,
   walkHookChain,
   walkHookChainOldestFirst,
-} from "./hook.js";
+} from "./hook";
 
 function link(
   step: Omit<HookStepLink, "prev">,

@@ -1,6 +1,6 @@
-import type { BackendContext, BackendRegistry, LlmBackend } from "./backend.js";
-import { clampCallParams, mergeCallParams, type LlmCallParams, type ModelInfo } from "./model.js";
-import { isProviderError, type ProviderError } from "./errors.js";
+import type { BackendContext, BackendRegistry, LlmBackend } from "./backend";
+import { clampCallParams, mergeCallParams, type LlmCallParams, type ModelInfo } from "./model";
+import { isProviderError, type ProviderError } from "./errors";
 
 export type ProviderSpec = {
   id: string;

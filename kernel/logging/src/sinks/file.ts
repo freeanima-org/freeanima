@@ -1,7 +1,7 @@
 import { appendFileSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
-import { formatJsonRecord, formatPrettyRecord } from "../format-record.js";
-import type { LogRecord, LogSink } from "../types.js";
+import { formatJsonRecord, formatPrettyRecord } from "../format-record";
+import type { LogRecord, LogSink } from "../types";
 
 export type FileSinkOptions = {
   path: string;

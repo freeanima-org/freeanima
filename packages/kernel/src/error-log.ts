@@ -1,4 +1,4 @@
-export type { ErrorLogDetail } from "./service-logging.js";
+export type { ErrorLogDetail } from "./service-logging";
 export {
   formatError,
   installErrorLogHandlers,
@@ -7,4 +7,4 @@ export {
   logSseError,
   logStartupError,
   markStartupPhase,
-} from "./service-logging.js";
+} from "./service-logging";

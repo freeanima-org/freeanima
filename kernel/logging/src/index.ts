@@ -1,4 +1,4 @@
-export { createLogger } from "./create-logger.js";
+export { createLogger } from "./create-logger";
 export type {
   CreateLoggerOptions,
   LogAttributes,
@@ -7,4 +7,4 @@ export type {
   LogScope,
   LogSink,
   Logger,
-} from "./types.js";
+} from "./types";

@@ -2,7 +2,7 @@ import type {
   DispatchOutcome,
   EventQueueAdapter,
   StoredEvent,
-} from "../queue.js";
+} from "../queue";
 
 /** 进程内内存队列；start 后 drain，无持久化与重试 */
 export class MemoryEventQueue implements EventQueueAdapter {

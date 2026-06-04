@@ -14,6 +14,6 @@
   "devDependencies": {
     "@freeanima/legacy-engine": "workspace:*",
     "@freeanima/legacy-kernel": "workspace:*",
-    "bun-types": "catalog:"
+    "@types/bun": "catalog:"
   }
 }

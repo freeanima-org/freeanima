@@ -3,6 +3,7 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { clearConfigCache } from "@freeanima/legacy-kernel";
+import { MINIMAL_LLM_YAML } from "../../../../tests/helpers/minimal-llm-config";
 import { sanitizeAcpConfig, shortSessionId, isAcpAgentEnabled } from "../../src/acp/status";
 import { AcpManager } from "../../src/acp/manager";
 
@@ -55,6 +56,7 @@ describe("AcpManager.getStatus", () => {
     writeFileSync(
       join(home, "config.yaml"),
       [
+        MINIMAL_LLM_YAML.trim(),
         "acp_agents:",
         "  cursor:",
         "    command: echo",
@@ -95,12 +97,9 @@ describe("AcpManager.getStatus", () => {
   it("disabled agent 显示 disabled 状态", async () => {
     writeFileSync(
       join(home, "config.yaml"),
-      [
-        "acp_agents:",
-        "  cursor:",
-        "    command: echo",
-        "    enabled: false",
-      ].join("\n"),
+      [MINIMAL_LLM_YAML.trim(), "acp_agents:", "  cursor:", "    command: echo", "    enabled: false"].join(
+        "\n",
+      ),
     );
     clearConfigCache();
     const mgr = new AcpManager();

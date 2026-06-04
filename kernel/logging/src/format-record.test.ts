@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import { formatJsonRecord, formatPrettyRecord } from "./format-record.js";
-import type { LogRecord } from "./types.js";
+import { formatJsonRecord, formatPrettyRecord } from "./format-record";
+import type { LogRecord } from "./types";
 
 describe("format-record", () => {
   const record: LogRecord = {

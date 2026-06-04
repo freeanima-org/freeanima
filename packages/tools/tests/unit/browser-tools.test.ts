@@ -4,6 +4,7 @@ import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from "bun:
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { MINIMAL_LLM_YAML } from "../../../../tests/helpers/minimal-llm-config";
 
 import { registerAllTools } from "@freeanima/legacy-tools";
 import {
@@ -43,11 +44,11 @@ function restoreFetch(): void {
 }
 
 function writeBrowserConfig(home: string, baseUrl?: string): void {
-  const body =
+  const browser =
     baseUrl === undefined
       ? "browser:\n  camofox: {}\n"
       : `browser:\n  camofox:\n    base_url: ${baseUrl}\n`;
-  writeFileSync(join(home, "config.yaml"), body, "utf-8");
+  writeFileSync(join(home, "config.yaml"), `${MINIMAL_LLM_YAML}\n${browser}`, "utf-8");
   clearConfigCache();
 }
 

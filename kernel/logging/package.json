@@ -9,6 +9,6 @@
     "./null": "./src/sinks/null.ts"
   },
   "devDependencies": {
-    "bun-types": "catalog:"
+    "@types/bun": "catalog:"
   }
 }

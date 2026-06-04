@@ -1,4 +1,4 @@
-import { openBunSqlite } from "./sqlite-bun.js";
+import { openBunSqlite } from "./sqlite-bun";
 
 export type SqliteRunResult = { changes: number };
 

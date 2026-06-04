@@ -12,6 +12,6 @@
     "@freeanima/legacy-runtime": "workspace:*"
   },
   "devDependencies": {
-    "bun-types": "catalog:"
+    "@types/bun": "catalog:"
   }
 }
