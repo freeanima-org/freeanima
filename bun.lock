@@ -71,6 +71,16 @@
         "typescript": "^6.0.3",
       },
     },
+    "connectors/event-bus-sqlite": {
+      "name": "@freeanima/event-bus-sqlite",
+      "dependencies": {
+        "@freeanima/event-bus": "workspace:*",
+      },
+      "devDependencies": {
+        "@freeanima/logging": "workspace:*",
+        "bun-types": "catalog:",
+      },
+    },
     "kernel/event-bus": {
       "name": "@freeanima/event-bus",
       "dependencies": {
@@ -152,16 +162,6 @@
         "zod": "catalog:",
       },
       "devDependencies": {
-        "bun-types": "catalog:",
-      },
-    },
-    "packages/event-bus-sqlite": {
-      "name": "@freeanima/event-bus-sqlite",
-      "dependencies": {
-        "@freeanima/event-bus": "workspace:*",
-      },
-      "devDependencies": {
-        "@freeanima/logging": "workspace:*",
         "bun-types": "catalog:",
       },
     },
@@ -422,7 +422,7 @@
 
     "@freeanima/event-bus": ["@freeanima/event-bus@workspace:kernel/event-bus"],
 
-    "@freeanima/event-bus-sqlite": ["@freeanima/event-bus-sqlite@workspace:packages/event-bus-sqlite"],
+    "@freeanima/event-bus-sqlite": ["@freeanima/event-bus-sqlite@workspace:connectors/event-bus-sqlite"],
 
     "@freeanima/hooks": ["@freeanima/hooks@workspace:kernel/hooks"],
 
