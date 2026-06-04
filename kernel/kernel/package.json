@@ -5,9 +5,9 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@freeanima/event-bus": "workspace:*",
-    "@freeanima/hooks": "workspace:*",
-    "@freeanima/logging": "workspace:*"
+    "@freeanima/kernel-eventbus": "workspace:*",
+    "@freeanima/kernel-hooks": "workspace:*",
+    "@freeanima/kernel-logging": "workspace:*"
   },
   "devDependencies": {
     "bun-types": "catalog:"

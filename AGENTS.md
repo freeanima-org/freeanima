@@ -33,6 +33,22 @@
 - 新功能必须补测试（最小化但可用）
 - 功能变更和架构调整必须同步更新相关文档
 
+### 新栈包命名（RFC #1）
+
+新栈 workspace 包名 **一律以 RFC 层名为首段前缀**（完整规约见 [`docs/designs/issue-1-migration-plan.md`](docs/designs/issue-1-migration-plan.md)）：
+
+| 形态 | 模式 | 示例 |
+|------|------|------|
+| 层聚合 | `@freeanima/{layer}` | `kernel`、`engine`、`service` |
+| 层内组件 | `@freeanima/{layer}-{slug}` | `kernel-eventbus`、`engine-tool`、`life-memory`、`capabilities-tools` |
+| 层内实现 | `@freeanima/{layer}-{slug}-{impl}` | `connectors-eventbus-sqlite`、`capabilities-provider-openai` |
+
+- slug 合成词不加内连字符（`eventbus` 非 `event-bus`）。
+- legacy 包仍为 `@freeanima/legacy-*`。
+- Hook / EventTopic 的 qualifiedId 与 npm 包名独立。
+
+新建或 rename 包时必须遵循上表；模块路径见 [`docs/context/project-context.md`](docs/context/project-context.md)。
+
 ### 文档地图
 
 **根目录**
@@ -72,6 +88,7 @@
 |----------|------|
 | 新工具 / 工具行为 | `docs/context/project-context.md` 工具表 |
 | 新模块 / 目录结构 | `docs/context/project-context.md` 架构速览 |
+| 新建 RFC 新栈包 / 包 rename | 本文件（命名规约）+ `docs/context/project-context.md` |
 | L1 Session / PG schema | `docs/database.md` + `packages/db/src/schema/` |
 | 记忆管道 / 注入 / 检索 | `docs/memory.md` + ARCHITECTURE |
 | 安全规则 / 威胁面 | `docs/security.md` + ARCHITECTURE |

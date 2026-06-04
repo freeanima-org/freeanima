@@ -3,9 +3,9 @@
   "private": true,
   "type": "module",
   "devDependencies": {
-    "@freeanima/event-bus": "workspace:*",
-    "@freeanima/event-bus-sqlite": "workspace:*",
-    "@freeanima/logging": "workspace:*",
+    "@freeanima/kernel-eventbus": "workspace:*",
+    "@freeanima/connectors-eventbus-sqlite": "workspace:*",
+    "@freeanima/kernel-logging": "workspace:*",
     "@freeanima/legacy-clarify": "workspace:*",
     "@freeanima/legacy-db": "workspace:*",
     "@freeanima/legacy-engine": "workspace:*",

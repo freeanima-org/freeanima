@@ -9,29 +9,46 @@
 **已确认决策：**
 
 - **目录布局**：根目录平铺 — `kernel/`、`engine/`、`life/`、`capabilities/`、`connectors/`、`service/`、`cli/`
-- **包名共存**：旧包 → `@freeanima/legacy-*`；新包 → 目标名
+- **包名共存**：旧包 → `@freeanima/legacy-*`；新包 → 目标名（见下方命名规约）
+
+### 新栈包命名（2026-06-04）
+
+命名单一真相源：[`AGENTS.md`](../../AGENTS.md#新栈包命名rfc-1)。
+
+| 形态 | 模式 | 示例 |
+|------|------|------|
+| 层聚合 | `@freeanima/{layer}` | `kernel`、`engine`、`service` |
+| 层内组件 | `@freeanima/{layer}-{slug}` | `kernel-eventbus`、`engine-tool`、`life-memory` |
+| 层内实现 | `@freeanima/{layer}-{slug}-{impl}` | `connectors-eventbus-sqlite`、`capabilities-provider-openai` |
+
+slug 合成词不加内连字符（`eventbus` 非 `event-bus`）。
 
 ### 目标目录结构
 
 ```
 freeanima/
-├── kernel/                    # @freeanima/kernel
-├── engine/                    # @freeanima/engine
+├── kernel/
+│   ├── eventbus/              # @freeanima/kernel-eventbus
+│   ├── hooks/                 # @freeanima/kernel-hooks
+│   ├── logging/               # @freeanima/kernel-logging
+│   └── kernel/                # @freeanima/kernel（聚合）
+├── engine/                    # @freeanima/engine（聚合）；子包 engine-tool、engine-provider 等
 ├── life/
-│   ├── memory/                # @freeanima/memory
-│   ├── self/                  # @freeanima/self
-│   └── estate/                # @freeanima/estate
+│   ├── memory/                # @freeanima/life-memory
+│   ├── self/                  # @freeanima/life-self
+│   └── estate/                # @freeanima/life-estate
 ├── capabilities/
-│   ├── tools/                 # @freeanima/tools
-│   ├── provider/              # @freeanima/provider
-│   ├── mcp/                   # @freeanima/mcp
-│   ├── acp/                   # @freeanima/acp
-│   └── clarify/               # @freeanima/clarify
+│   ├── tools/                 # @freeanima/capabilities-tools
+│   ├── provider/              # @freeanima/capabilities-provider（或 capabilities-provider-openai）
+│   ├── mcp/                   # @freeanima/capabilities-mcp
+│   ├── acp/                   # @freeanima/capabilities-acp
+│   └── clarify/               # @freeanima/capabilities-clarify
 ├── connectors/
-│   ├── gateway/               # @freeanima/gateway
-│   ├── webui/                 # @freeanima/webui（HTTP server + Vue SPA）
-│   ├── cron/                  # @freeanima/cron
-│   └── commands/              # @freeanima/commands
+│   ├── eventbus-sqlite/       # @freeanima/connectors-eventbus-sqlite
+│   ├── gateway/               # @freeanima/connectors-gateway
+│   ├── webui/                 # @freeanima/connectors-webui（HTTP server + Vue SPA）
+│   ├── cron/                  # @freeanima/connectors-cron
+│   └── commands/              # @freeanima/connectors-commands
 ├── service/                   # @freeanima/service
 ├── cli/                       # @freeanima/cli
 ├── packages/                  # 过渡期 legacy（最终删除）

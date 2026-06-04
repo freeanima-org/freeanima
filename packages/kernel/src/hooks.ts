@@ -1,7 +1,7 @@
-import { createHook } from "@freeanima/hooks";
+import { createHook } from "@freeanima/kernel-hooks";
 import type { TurnControl } from "./hook-stream";
 
-export { Hook, HookRegistry, createHook } from "@freeanima/hooks";
+export { Hook, HookRegistry, createHook } from "@freeanima/kernel-hooks";
 export type {
   HookHandler,
   PayloadOf,
@@ -9,13 +9,13 @@ export type {
   HookStepLink,
   HookRunResult,
   HookRunMeta,
-} from "@freeanima/hooks";
+} from "@freeanima/kernel-hooks";
 export {
   walkHookChain,
   walkHookChainOldestFirst,
   blockedMessageFromChain,
   headOkStepData,
-} from "@freeanima/hooks";
+} from "@freeanima/kernel-hooks";
 
 export type MessageIncomingContext = {
   sessionId: string;

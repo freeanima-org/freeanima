@@ -1,5 +1,5 @@
 {
-  "name": "@freeanima/event-bus",
+  "name": "@freeanima/kernel-eventbus",
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
@@ -7,7 +7,7 @@
     "./null": "./src/adapters/null.ts"
   },
   "dependencies": {
-    "@freeanima/logging": "workspace:*"
+    "@freeanima/kernel-logging": "workspace:*"
   },
   "devDependencies": {
     "bun-types": "catalog:"

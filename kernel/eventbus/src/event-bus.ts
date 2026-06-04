@@ -1,4 +1,4 @@
-import type { Logger } from "@freeanima/logging";
+import type { Logger } from "@freeanima/kernel-logging";
 import type { DispatchOutcome, EventQueueAdapter, StoredEvent } from "./queue.js";
 import type { EventHandler, EventTopic, PayloadOf } from "./topic.js";
 

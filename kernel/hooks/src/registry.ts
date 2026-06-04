@@ -1,4 +1,4 @@
-import type { Logger } from "@freeanima/logging";
+import type { Logger } from "@freeanima/kernel-logging";
 import {
   blockedMessageFromChain,
   Hook,

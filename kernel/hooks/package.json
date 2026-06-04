@@ -1,11 +1,11 @@
 {
-  "name": "@freeanima/hooks",
+  "name": "@freeanima/kernel-hooks",
   "type": "module",
   "exports": {
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@freeanima/logging": "workspace:*"
+    "@freeanima/kernel-logging": "workspace:*"
   },
   "devDependencies": {
     "bun-types": "catalog:"

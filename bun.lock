@@ -71,29 +71,29 @@
         "typescript": "^6.0.3",
       },
     },
-    "connectors/event-bus-sqlite": {
-      "name": "@freeanima/event-bus-sqlite",
+    "connectors/eventbus-sqlite": {
+      "name": "@freeanima/connectors-eventbus-sqlite",
       "dependencies": {
-        "@freeanima/event-bus": "workspace:*",
+        "@freeanima/kernel-eventbus": "workspace:*",
       },
       "devDependencies": {
-        "@freeanima/logging": "workspace:*",
+        "@freeanima/kernel-logging": "workspace:*",
         "bun-types": "catalog:",
       },
     },
-    "kernel/event-bus": {
-      "name": "@freeanima/event-bus",
+    "kernel/eventbus": {
+      "name": "@freeanima/kernel-eventbus",
       "dependencies": {
-        "@freeanima/logging": "workspace:*",
+        "@freeanima/kernel-logging": "workspace:*",
       },
       "devDependencies": {
         "bun-types": "catalog:",
       },
     },
     "kernel/hooks": {
-      "name": "@freeanima/hooks",
+      "name": "@freeanima/kernel-hooks",
       "dependencies": {
-        "@freeanima/logging": "workspace:*",
+        "@freeanima/kernel-logging": "workspace:*",
       },
       "devDependencies": {
         "bun-types": "catalog:",
@@ -102,16 +102,16 @@
     "kernel/kernel": {
       "name": "@freeanima/kernel",
       "dependencies": {
-        "@freeanima/event-bus": "workspace:*",
-        "@freeanima/hooks": "workspace:*",
-        "@freeanima/logging": "workspace:*",
+        "@freeanima/kernel-eventbus": "workspace:*",
+        "@freeanima/kernel-hooks": "workspace:*",
+        "@freeanima/kernel-logging": "workspace:*",
       },
       "devDependencies": {
         "bun-types": "catalog:",
       },
     },
     "kernel/logging": {
-      "name": "@freeanima/logging",
+      "name": "@freeanima/kernel-logging",
       "devDependencies": {
         "bun-types": "catalog:",
       },
@@ -152,10 +152,10 @@
     "packages/engine": {
       "name": "@freeanima/legacy-engine",
       "dependencies": {
-        "@freeanima/event-bus": "workspace:*",
-        "@freeanima/event-bus-sqlite": "workspace:*",
-        "@freeanima/hooks": "workspace:*",
+        "@freeanima/connectors-eventbus-sqlite": "workspace:*",
         "@freeanima/kernel": "workspace:*",
+        "@freeanima/kernel-eventbus": "workspace:*",
+        "@freeanima/kernel-hooks": "workspace:*",
         "@freeanima/legacy-db": "workspace:*",
         "@freeanima/legacy-kernel": "workspace:*",
         "openai": "^4.104.0",
@@ -196,8 +196,8 @@
     "packages/kernel": {
       "name": "@freeanima/legacy-kernel",
       "dependencies": {
-        "@freeanima/hooks": "workspace:*",
-        "@freeanima/logging": "workspace:*",
+        "@freeanima/kernel-hooks": "workspace:*",
+        "@freeanima/kernel-logging": "workspace:*",
         "yaml": "^2.9.0",
         "zod": "catalog:",
       },
@@ -208,7 +208,7 @@
     "packages/memory": {
       "name": "@freeanima/legacy-memory",
       "dependencies": {
-        "@freeanima/event-bus": "workspace:*",
+        "@freeanima/kernel-eventbus": "workspace:*",
         "@freeanima/legacy-db": "workspace:*",
         "@freeanima/legacy-kernel": "workspace:*",
         "yaml": "^2.9.0",
@@ -221,7 +221,7 @@
     "packages/runtime": {
       "name": "@freeanima/legacy-runtime",
       "dependencies": {
-        "@freeanima/event-bus": "workspace:*",
+        "@freeanima/kernel-eventbus": "workspace:*",
         "@freeanima/legacy-clarify": "workspace:*",
         "@freeanima/legacy-engine": "workspace:*",
         "@freeanima/legacy-kernel": "workspace:*",
@@ -236,8 +236,8 @@
     "packages/server": {
       "name": "@freeanima/legacy-server",
       "dependencies": {
-        "@freeanima/event-bus": "workspace:*",
-        "@freeanima/event-bus-sqlite": "workspace:*",
+        "@freeanima/connectors-eventbus-sqlite": "workspace:*",
+        "@freeanima/kernel-eventbus": "workspace:*",
         "@freeanima/legacy-api": "workspace:*",
         "@freeanima/legacy-clarify": "workspace:*",
         "@freeanima/legacy-db": "workspace:*",
@@ -276,8 +276,9 @@
     "tests": {
       "name": "@freeanima/integration-tests",
       "devDependencies": {
-        "@freeanima/event-bus": "workspace:*",
-        "@freeanima/event-bus-sqlite": "workspace:*",
+        "@freeanima/connectors-eventbus-sqlite": "workspace:*",
+        "@freeanima/kernel-eventbus": "workspace:*",
+        "@freeanima/kernel-logging": "workspace:*",
         "@freeanima/legacy-clarify": "workspace:*",
         "@freeanima/legacy-db": "workspace:*",
         "@freeanima/legacy-engine": "workspace:*",
@@ -286,7 +287,6 @@
         "@freeanima/legacy-memory": "workspace:*",
         "@freeanima/legacy-runtime": "workspace:*",
         "@freeanima/legacy-server": "workspace:*",
-        "@freeanima/logging": "workspace:*",
         "@types/node": "catalog:",
       },
     },
@@ -420,15 +420,17 @@
 
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.25.12", "", { "os": "win32", "cpu": "x64" }, "sha512-alJC0uCZpTFrSL0CCDjcgleBXPnCrEAhTBILpeAp7M/OFgoqtAetfBzX0xM00MUsVVPpVjlPuMbREqnZCXaTnA=="],
 
-    "@freeanima/event-bus": ["@freeanima/event-bus@workspace:kernel/event-bus"],
-
-    "@freeanima/event-bus-sqlite": ["@freeanima/event-bus-sqlite@workspace:connectors/event-bus-sqlite"],
-
-    "@freeanima/hooks": ["@freeanima/hooks@workspace:kernel/hooks"],
+    "@freeanima/connectors-eventbus-sqlite": ["@freeanima/connectors-eventbus-sqlite@workspace:connectors/eventbus-sqlite"],
 
     "@freeanima/integration-tests": ["@freeanima/integration-tests@workspace:tests"],
 
     "@freeanima/kernel": ["@freeanima/kernel@workspace:kernel/kernel"],
+
+    "@freeanima/kernel-eventbus": ["@freeanima/kernel-eventbus@workspace:kernel/eventbus"],
+
+    "@freeanima/kernel-hooks": ["@freeanima/kernel-hooks@workspace:kernel/hooks"],
+
+    "@freeanima/kernel-logging": ["@freeanima/kernel-logging@workspace:kernel/logging"],
 
     "@freeanima/legacy-api": ["@freeanima/legacy-api@workspace:packages/api"],
 
@@ -455,8 +457,6 @@
     "@freeanima/legacy-tools": ["@freeanima/legacy-tools@workspace:packages/tools"],
 
     "@freeanima/legacy-webui": ["@freeanima/legacy-webui@workspace:apps/webui"],
-
-    "@freeanima/logging": ["@freeanima/logging@workspace:kernel/logging"],
 
     "@hono/node-server": ["@hono/node-server@1.19.14", "", { "peerDependencies": { "hono": "^4" } }, "sha512-GwtvgtXxnWsucXvbQXkRgqksiH2Qed37H9xHZocE5sA3N8O8O8/8FA3uclQXxXVzc9XBZuEOMK7+r02FmSpHtw=="],
 

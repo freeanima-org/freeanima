@@ -1,6 +1,6 @@
-import type { HookRegistry } from "@freeanima/hooks";
-import type { EventBus } from "@freeanima/event-bus";
-import type { Logger } from "@freeanima/logging";
+import type { HookRegistry } from "@freeanima/kernel-hooks";
+import type { EventBus } from "@freeanima/kernel-eventbus";
+import type { Logger } from "@freeanima/kernel-logging";
 
 /** 内核组合视图 */
 export class Kernel {

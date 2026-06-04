@@ -374,9 +374,9 @@ conversation.py  emit("session:updated")
 - 失败重试（最多 3 次），不会丢失事件
 - 用于**发生后该做什么**的场景：蒸馏、反射、索引
 
-### Hooks（`@freeanima/hooks` + legacy 组装）
+### Hooks（`@freeanima/kernel-hooks` + legacy 组装）
 
-**同步 interceptor 模式。** 注册表在 `@freeanima/hooks`：`run(context)` 返回 `HookRunResult`（`context` 只读、`chain` 经 `prev` 串联；聚合 `blocked` / `blockedMessage`）。领域 **context 类型** 在 [`packages/kernel/src/hooks.ts`](packages/kernel/src/hooks.ts)；`kernel` 单例见 [`packages/engine/src/kernel.ts`](packages/engine/src/kernel.ts)。
+**同步 interceptor 模式。** 注册表在 `@freeanima/kernel-hooks`：`run(context)` 返回 `HookRunResult`（`context` 只读、`chain` 经 `prev` 串联；聚合 `blocked` / `blockedMessage`）。领域 **context 类型** 在 [`packages/kernel/src/hooks.ts`](packages/kernel/src/hooks.ts)；`kernel` 单例见 [`packages/engine/src/kernel.ts`](packages/engine/src/kernel.ts)。
 
 语义要点：
 - handler 返回 `{ status, blocked?: boolean, message?, data? }`；**不**原地改 context；业务日志在 handler 注册处自行记录。

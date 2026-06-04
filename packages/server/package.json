@@ -11,8 +11,8 @@
     "./trpc": "./src/trpc/router.ts"
   },
   "dependencies": {
-    "@freeanima/event-bus": "workspace:*",
-    "@freeanima/event-bus-sqlite": "workspace:*",
+    "@freeanima/kernel-eventbus": "workspace:*",
+    "@freeanima/connectors-eventbus-sqlite": "workspace:*",
     "@freeanima/legacy-api": "workspace:*",
     "@freeanima/legacy-clarify": "workspace:*",
     "@freeanima/legacy-db": "workspace:*",

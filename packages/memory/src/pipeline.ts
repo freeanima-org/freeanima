@@ -1,5 +1,5 @@
 import { logComponent } from "@freeanima/legacy-kernel";
-import type { EventBus } from "@freeanima/event-bus";
+import type { EventBus } from "@freeanima/kernel-eventbus";
 import { isDebugSession } from "@freeanima/legacy-kernel";
 import { loadConfig } from "@freeanima/legacy-kernel";
 import { distillFromPg } from "./clean";

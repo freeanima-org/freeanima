@@ -2,9 +2,9 @@ import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 import { mkdtempSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { createLogger } from "@freeanima/logging";
-import { createNullSink } from "@freeanima/logging/null";
-import { EventBus, createEventTopic } from "@freeanima/event-bus";
+import { createLogger } from "@freeanima/kernel-logging";
+import { createNullSink } from "@freeanima/kernel-logging/null";
+import { EventBus, createEventTopic } from "@freeanima/kernel-eventbus";
 import { SqliteEventQueue } from "./sqlite-event-queue.js";
 import { seedLegacyPythonStyleEvent } from "./test-helpers.js";
 

@@ -1,6 +1,6 @@
-import { HookRegistry } from "@freeanima/hooks";
-import { EventBus } from "@freeanima/event-bus";
-import { SqliteEventQueue } from "@freeanima/event-bus-sqlite";
+import { HookRegistry } from "@freeanima/kernel-hooks";
+import { EventBus } from "@freeanima/kernel-eventbus";
+import { SqliteEventQueue } from "@freeanima/connectors-eventbus-sqlite";
 import { Kernel } from "@freeanima/kernel";
 import { createServiceLogger, PATHS, setServiceLogger } from "@freeanima/legacy-kernel";
 
