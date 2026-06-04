@@ -36,7 +36,7 @@ export function modelSupports(info: ModelInfo, key: SupportedParam): boolean {
   return info.supportedParams.includes(key);
 }
 
-export function mergeCallParams(...layers: Partial<LlmCallParams>[]): LlmCallParams {
+export function mergeCallParams(...layers: (Partial<LlmCallParams> | undefined)[]): LlmCallParams {
   const result: LlmCallParams = {};
   for (const layer of layers) {
     if (!layer) continue;

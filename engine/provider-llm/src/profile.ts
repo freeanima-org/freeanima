@@ -1,7 +1,7 @@
 import type { LlmTurnMessage, OpenAiToolSchema } from "@freeanima/legacy-db";
-import type { ChatCompletion, ChatRequest, ChatStreamEvent } from "./invoke.js";
-import type { LlmCallParams } from "./model.js";
-import type { LlmProvider, ProviderRegistry } from "./provider.js";
+import type { ChatCompletion, ChatRequest, ChatStreamEvent } from "./invoke";
+import type { LlmCallParams } from "./model";
+import type { LlmProvider, ProviderRegistry } from "./provider";
 
 export const PROFILE_CHAT = "chat";
 export const PROFILE_REFLECT = "reflect";

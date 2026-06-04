@@ -1,6 +1,6 @@
-import type { ChatCompletion, ChatRequest, ChatStreamEvent } from "./invoke.js";
-import type { ModelInfo } from "./model.js";
-import { ProviderError } from "./errors.js";
+import type { ChatCompletion, ChatRequest, ChatStreamEvent } from "./invoke";
+import type { ModelInfo } from "./model";
+import { ProviderError } from "./errors";
 
 /** Backend adapter 持有的连接上下文；capabilities 从 config parse 后填入 */
 export type BackendContext = Record<string, unknown>;
@@ -36,6 +36,9 @@ export abstract class LlmBackend {
 }
 
 export class BackendRegistry {
+  /** 显式构造函数：避免 Bun coverage 将隐式构造计为未覆盖（oven-sh/bun#7025） */
+  constructor() {}
+
   private readonly backends = new Map<string, LlmBackend>();
 
   register(backend: LlmBackend): void {

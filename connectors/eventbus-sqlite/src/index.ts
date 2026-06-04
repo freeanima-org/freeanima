@@ -1,1 +1,1 @@
-export { SqliteEventQueue, type SqliteEventQueueOptions } from "./sqlite-event-queue.js";
+export { SqliteEventQueue, type SqliteEventQueueOptions } from "./sqlite-event-queue";

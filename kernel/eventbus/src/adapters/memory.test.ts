@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "bun:test";
-import { MemoryEventQueue } from "./memory.js";
+import { MemoryEventQueue } from "./memory";
 
 async function waitUntil(predicate: () => boolean, timeoutMs = 500): Promise<void> {
   const deadline = Date.now() + timeoutMs;

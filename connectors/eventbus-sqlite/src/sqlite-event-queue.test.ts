@@ -5,8 +5,8 @@ import { tmpdir } from "node:os";
 import { createLogger } from "@freeanima/kernel-logging";
 import { createNullSink } from "@freeanima/kernel-logging/null";
 import { EventBus, createEventTopic } from "@freeanima/kernel-eventbus";
-import { SqliteEventQueue } from "./sqlite-event-queue.js";
-import { seedLegacyPythonStyleEvent } from "./test-helpers.js";
+import { SqliteEventQueue } from "./sqlite-event-queue";
+import { seedLegacyPythonStyleEvent } from "./test-helpers";
 
 const testPing = createEventTopic<{ n: number }>("test:ping");
 

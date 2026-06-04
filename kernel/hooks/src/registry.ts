@@ -8,7 +8,7 @@ import {
   type HookStepLink,
   type HookStepResult,
   type PayloadOf,
-} from "./hook.js";
+} from "./hook";
 
 type RegisteredHandler = {
   handler: HookHandler<Hook<unknown>>;

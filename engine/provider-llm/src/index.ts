@@ -11,30 +11,30 @@ export type {
   LlmParamKey,
   ModelInfo,
   SupportedParam,
-} from "./model.js";
+} from "./model";
 export {
   EXTENDED_PARAM_KEYS,
   LLM_PARAM_KEYS,
   clampCallParams,
   mergeCallParams,
   modelSupports,
-} from "./model.js";
+} from "./model";
 
 export {
   ProviderError,
   classifyProviderError,
   isProviderError,
   providerErrorFromHttpStatus,
-} from "./errors.js";
-export type { ErrorClassification, ProviderErrorCode } from "./errors.js";
+} from "./errors";
+export type { ErrorClassification, ProviderErrorCode } from "./errors";
 
-export type { ChatCompletion, ChatRequest, ChatStreamEvent } from "./invoke.js";
+export type { ChatCompletion, ChatRequest, ChatStreamEvent } from "./invoke";
 
-export type { BackendContext } from "./backend.js";
-export { BackendRegistry, LlmBackend } from "./backend.js";
+export type { BackendContext } from "./backend";
+export { BackendRegistry, LlmBackend } from "./backend";
 
-export type { ProviderHealth, ProviderSpec } from "./provider.js";
-export { LlmProvider, ProviderRegistry } from "./provider.js";
+export type { ProviderHealth, ProviderSpec } from "./provider";
+export { LlmProvider, ProviderRegistry } from "./provider";
 
 export type {
   LlmProfileDef,
@@ -43,7 +43,7 @@ export type {
   ProfileValidationIssue,
   ProfileValidationResult,
   RouteHopSpec,
-} from "./profile.js";
+} from "./profile";
 export {
   BUILTIN_PROFILE_IDS,
   LlmProfile,
@@ -56,4 +56,4 @@ export {
   hop,
   profileDef,
   validateProfiles,
-} from "./profile.js";
+} from "./profile";

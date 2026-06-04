@@ -12,12 +12,12 @@ import {
   finalizeStreamingToolCalls,
   mergeStreamingToolCalls,
 } from "@freeanima/capabilities-provider-openai-compatible/stream-tools";
-import { getLlmRuntime } from "./llm-stack.js";
+import { getLlmRuntime } from "./llm-stack";
 import {
   sessionMessagesToInvokeInput,
   simpleMessagesToInvokeInput,
   type SimpleChatMessage,
-} from "./llm-adapt.js";
+} from "./llm-adapt";
 
 export type LlmResponse = ChatCompletion;
 

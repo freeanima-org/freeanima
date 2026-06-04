@@ -109,7 +109,7 @@ kernel/             # RFC #1 新栈（与 legacy packages/ 并行）
 ├── logging/        # @freeanima/kernel-logging：Logger / LogSink / createLogger；子路径 console / file / memory / null
 └── kernel/         # @freeanima/kernel：Kernel 组合端口（HookRegistry + EventBus + Logger）
 engine/
-└── provider-llm/   # ChatRequest（LlmTurnMessage+systemPrompt，model 在 Profile）；直委托 Backend
+└── provider-llm/   # ChatRequest + LlmProfile 直委托 Backend；单测 engine/provider-llm/tests/
 capabilities/
 └── provider-openai-compatible/  # OpenAiCompatibleBackend + yaml parse（OPENAI_COMPATIBLE_BACKEND_ID）
 
@@ -160,7 +160,7 @@ tests/           # Vitest 回归
 
 待补工具/命令：`send_push`、`help`（工具全景）、更多 slash（如 `/reset` 等）。见 [TODOS.md](../../TODOS.md)。
 
-**Gateway**：Discord / 微信 iLink 已接入（`service start` 时按 pass 自动发现）；Discord 登录失败时每 **5 分钟**自动重试（`DISCORD_LOGIN_RETRY_MS`）；Discord API 发送/编辑遇 **429、5xx 或瞬态网络** 时指数退避重试（最多 5 次，尊重 `retryAfter`）；流式回复最终 edit 仍失败则 **fallback 新发一条**（403 等非重试错误记 `http_status` / `discord_code`），避免卡在「思考中」；Discord 启动时同步 **Application Slash Commands**（输入 `/` 出现候选，与消息内 `/cmd` 并存；`config.yaml` → `discord.slash_commands` / `slash_commands_guild_id`）；普通对话走 `sendMessageStream` 时先发「思考中」占位并按事件流节流编辑，收尾去掉占位；`tool_begin` 仅展示工具名，`tool_result` 不展示返回正文；微信状态目录 `~/.anima/weixin/`（`sync.json`、`context-tokens.json`）；入站可路由消息写 info，被过滤写 warn（`explainInboundSkip` 原因）；探活 `bun scripts/weixin-probe.mts`。
+**Gateway**：Discord / 微信 iLink 已接入（`service start` 时按 pass 自动发现）；Discord 登录失败时每 **5 分钟**自动重试（`DISCORD_LOGIN_RETRY_MS`）；Discord API 发送/编辑遇 **429、5xx 或瞬态网络** 时指数退避重试（最多 5 次，尊重 `retryAfter`）；流式回复最终 edit 仍失败则 **fallback 新发一条**（403 等非重试错误记 `http_status` / `discord_code`），避免卡在「思考中」；Discord 启动时同步 **Application Slash Commands**（输入 `/` 出现候选，与消息内 `/cmd` 并存；`config.yaml` → `discord.slash_commands` / `slash_commands_guild_id`）；普通对话走 `sendMessageStream` 时先发「思考中」占位并按事件流节流编辑，收尾去掉占位；`tool_begin` 仅展示工具名，`tool_result` 不展示返回正文；微信状态目录 `~/.anima/weixin/`（`sync.json`、`context-tokens.json`）；入站可路由消息写 info，被过滤写 warn（`explainInboundSkip` 原因）；探活 `bun scripts/weixin-probe.ts`。
 
 **Slash 命令（Gateway）**：`/new`、`/sethome`（alias `/set-home`）仅 Discord / 微信；`/sethome` 将当前聊天写入 `config.yaml` 对应平台的 `home_channel`（cron 等主动通知的默认投递目标）。
 
@@ -232,6 +232,7 @@ bun install                       # 依赖；需 Bun 1.3+（见 .bun-version）
 bun run test                      # 全仓测试（单元 + 集成；有 Docker 时自动起 PG）
 bun run test:changed              # 增量 + pre-commit；命中集成用例时自动起 PG
 bun run typecheck                 # tsgo 全仓（根 tsconfig.json）
+bun run check:imports             # 相对 import 不得带 .js 后缀
 
 # CLI（直接跑 TS 源码）
 bun run service start                              # systemd / detached
@@ -265,7 +266,7 @@ bun run check                     # 手动全量：typecheck + 全量测试（�
 
 **类型检查**：`bun run typecheck` → `bunx tsgo -p tsconfig.json --noEmit`（根 [`tsconfig.json`](../../tsconfig.json)，含 `src` + 全仓 `*.test.ts` / `tests/`）。
 
-**测试**：`bun run test`（[`scripts/run-tests.mts`](../../scripts/run-tests.mts)）先尝试 Docker 起临时 PG，再根目录 `bun test`。**本地与 pre-commit** 用 `bun run test:changed`；**CI** 全量 `bun run test`；推 PR 前可 `bun run check`。会写 `error.log` 的单测/集成测须用 [`tests/helpers/log-isolation.ts`](../../tests/helpers/log-isolation.ts)（`FREEANIMA_HOME` + `resetServiceLogger`）。
+**测试**：`bun run test`（[`scripts/run-tests.ts`](../../scripts/run-tests.ts)）先尝试 Docker 起临时 PG，再根目录 `bun test`。**本地与 pre-commit** 用 `bun run test:changed`；**CI** 全量 `bun run test`；推 PR 前可 `bun run check`。会写 `error.log` 的单测/集成测须用 [`tests/helpers/log-isolation.ts`](../../tests/helpers/log-isolation.ts)（`FREEANIMA_HOME` + `resetServiceLogger`）。
 
 **WebUI 启动**：`anima service start --foreground` → `development: true`（Bun fullstack + tRPC）；systemd/detached 同进程 TS 直跑，无需预构建。
 **覆盖率范围**：Bun 会统计**测试执行过程中被 import 到的所有源码**（含 workspace 依赖），与「只跑了哪个目录的 `*.test.ts`」无关。因此在 `kernel/hooks` 跑覆盖率仍会出现 `../logging/...`，在 `kernel` 跑则会合并 hooks + logging + kernel 的 src。Bun 暂无「只统计 cwd 下 src」的内置开关。
@@ -274,7 +275,7 @@ bun run check                     # 手动全量：typecheck + 全量测试（�
 
 **WebUI Tailwind**：`anima service start` 从仓库根启动内嵌 `Bun.serve`，须根 `bunfig.toml` 的 `[serve.static] plugins = ["bun-plugin-tailwind"]` 且根 `devDependencies` 含 `bun-plugin-tailwind`；`serve()` 会 `chdir(REPO_ROOT)`，systemd unit 含 `WorkingDirectory`/`FREEANIMA_REPO_ROOT`，否则 CSS 无 utility 类。
 
-**TS 配置**：根 [`tsconfig.json`](../../tsconfig.json)（门禁 + IDE：全仓 `src`、WebUI、单元/集成测试）；[`apps/webui/tsconfig.json`](../../apps/webui/tsconfig.json) 继承根配置并覆写 `@/*` paths（单独打开 webui 目录时用）。
+**TS 配置**：根 [`tsconfig.base.json`](../../tsconfig.base.json) 继承 [Bun TS 6+ 推荐项](https://bun.com/docs/typescript-6)（`types: ["bun"]`，依赖 `@types/bun`）；[`tsconfig.json`](../../tsconfig.json) 为门禁 + IDE（全仓 `src`、WebUI、单元/集成测试）；[`apps/webui/tsconfig.json`](../../apps/webui/tsconfig.json) 继承根配置并覆写 `@/*` paths（单独打开 webui 目录时用）。**相对 import 不带后缀**（`./foo` 而非 `./foo.js`），`bun run check:imports` 校验。
 
 版本号：根 `package.json`（运行时 `NEST_VERSION`）。发版见 [versioning.md](../versioning.md)。
 

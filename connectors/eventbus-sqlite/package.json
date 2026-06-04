@@ -9,6 +9,6 @@
   },
   "devDependencies": {
     "@freeanima/kernel-logging": "workspace:*",
-    "bun-types": "catalog:"
+    "@types/bun": "catalog:"
   }
 }

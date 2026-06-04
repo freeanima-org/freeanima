@@ -8,6 +8,6 @@
     "@freeanima/legacy-db": "workspace:*"
   },
   "devDependencies": {
-    "bun-types": "catalog:"
+    "@types/bun": "catalog:"
   }
 }

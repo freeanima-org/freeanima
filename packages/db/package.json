@@ -17,6 +17,6 @@
   },
   "devDependencies": {
     "drizzle-kit": "catalog:",
-    "bun-types": "catalog:"
+    "@types/bun": "catalog:"
   }
 }

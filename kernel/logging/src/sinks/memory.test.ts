@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { createMemorySink } from "./memory.js";
+import { createMemorySink } from "./memory";
 
 describe("createMemorySink", () => {
   it("初始 records 为空", () => {

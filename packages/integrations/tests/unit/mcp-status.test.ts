@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { sanitizeMcpConfig, isMcpServerEnabled } from "../../src/mcp/status";
 import { MCPManager } from "../../src/mcp/manager";
 import { beginLogIsolation, endLogIsolation } from "../../../../tests/helpers/log-isolation";
+import { MINIMAL_LLM_YAML } from "../../../../tests/helpers/minimal-llm-config";
 
 describe("sanitizeMcpConfig", () => {
   it("脱敏 env 值，仅保留键名", () => {
@@ -37,6 +38,7 @@ describe("MCPManager.getStatus", () => {
     writeFileSync(
       join(home, "config.yaml"),
       [
+        MINIMAL_LLM_YAML.trim(),
         "mcp_servers:",
         "  db:",
         "    command: echo",

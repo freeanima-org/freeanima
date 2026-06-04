@@ -17,7 +17,6 @@
     "apps/**/*.tsx",
     "apps/webui/index.html",
     "scripts/**/*.ts",
-    "scripts/**/*.mts",
     "tests/**/*.ts"
   ],
   "exclude": ["node_modules", "**/dist/**", "**/.turbo/**"]
