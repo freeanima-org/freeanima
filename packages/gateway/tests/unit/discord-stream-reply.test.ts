@@ -87,4 +87,39 @@ describe("streamReplyToChannel", () => {
     await streamReplyToChannel(channel as unknown as TextBasedChannel, gen());
     expect(sends.some((s) => s === "hello discord")).toBe(true);
   });
+
+  it("done 事件立即收尾并去掉占位符", async () => {
+    const { channel, edits, sends } = fakeChannel();
+    async function* gen(): AsyncGenerator<StreamEvent> {
+      yield { event: "token", data: { content: "final answer" } };
+      yield { event: "done", data: {} };
+    }
+    await streamReplyToChannel(channel, gen());
+    expect(sends[0]).toContain("思考中");
+    const lastEdit = edits[edits.length - 1];
+    expect(lastEdit).toBe("final answer");
+    expect(lastEdit).not.toContain("思考中");
+  });
+
+  it("done 后 generator 仍挂起时不阻塞 finalize", async () => {
+    const { channel, edits } = fakeChannel();
+    let hangResolve: () => void = () => {};
+    const hangGate = new Promise<void>((resolve) => {
+      hangResolve = resolve;
+    });
+
+    async function* gen(): AsyncGenerator<StreamEvent> {
+      yield { event: "token", data: { content: "quick" } };
+      yield { event: "done", data: {} };
+      await hangGate;
+    }
+
+    const done = streamReplyToChannel(channel, gen());
+    await Promise.race([
+      done,
+      new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 500)),
+    ]);
+    expect(edits[edits.length - 1]).toBe("quick");
+    hangResolve();
+  });
 });

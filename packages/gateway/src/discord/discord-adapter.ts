@@ -121,9 +121,10 @@ export async function streamReplyToChannel(
   events: AsyncIterable<StreamEvent>,
 ): Promise<void> {
   if (!("send" in channel) || typeof channel.send !== "function") return;
+  const channelSend = channel.send.bind(channel) as (content: string) => Promise<Message>;
 
   const sentMsg = await withDiscordRetry(async (): Promise<Message> => {
-    return (await channel.send(DISCORD_STREAM_PLACEHOLDER)) as Message;
+    return await channelSend(DISCORD_STREAM_PLACEHOLDER);
   });
 
   let buffer = "";
@@ -164,6 +165,31 @@ export async function streamReplyToChannel(
       throttleTimer = null;
       flushInterimNow();
     }, 500);
+  }
+
+  async function finalizeDiscordStream(): Promise<void> {
+    clearThrottleTimer();
+    await editTail;
+
+    const trimmed = buffer.trim();
+    const discordEmptyFallback = "\u3164"; // 避免最终 edit 为空串被 Discord 拒绝
+    const chunks = splitDiscordMessage(trimmed.length > 0 ? trimmed : discordEmptyFallback);
+
+    await deliverDiscordFinalContent(
+      async () => {
+        await sentMsg.edit({ content: chunks[0]! });
+      },
+      async () => {
+        await channelSend(chunks[0]!);
+      },
+      { chunk: 0, total: chunks.length },
+    );
+    for (let i = 1; i < chunks.length; i++) {
+      const chunk = chunks[i]!;
+      await withDiscordRetry(async (): Promise<void> => {
+        await channelSend(chunk);
+      });
+    }
   }
 
   for await (const event of events) {
@@ -207,31 +233,31 @@ export async function streamReplyToChannel(
         clearThrottleTimer();
         throw new Error(event.data.error);
       case "done":
-        break;
+        await finalizeDiscordStream();
+        return;
     }
   }
 
-  clearThrottleTimer();
-  await editTail;
+  await finalizeDiscordStream();
+}
 
-  const trimmed = buffer.trim();
-  const discordEmptyFallback = "\u3164"; // 避免最终 edit 为空串被 Discord 拒绝
-  const chunks = splitDiscordMessage(trimmed.length > 0 ? trimmed : discordEmptyFallback);
-
-  await deliverDiscordFinalContent(
-    async () => {
-      await sentMsg.edit({ content: chunks[0]! });
-    },
-    async () => {
-      await channel.send(chunks[0]!);
-    },
-    { chunk: 0, total: chunks.length },
-  );
-  for (let i = 1; i < chunks.length; i++) {
-    const chunk = chunks[i]!;
-    await withDiscordRetry(async (): Promise<void> => {
-      await channel.send(chunk);
-    });
+async function finalizeUserReaction(
+  message: Message,
+  eyeReaction: import("discord.js").MessageReaction | undefined,
+  ok: boolean,
+): Promise<void> {
+  const botId = message.client.user?.id;
+  if (eyeReaction && botId) {
+    try {
+      await eyeReaction.users.remove(botId);
+    } catch (e) {
+      logComponent("discord").warn("Discord 移除 👀 反应失败", { err: e });
+    }
+  }
+  try {
+    await message.react(ok ? "✅" : "❌");
+  } catch (e) {
+    logComponent("discord").warn(`Discord 添加 ${ok ? "✅" : "❌"} 反应失败`, { err: e });
   }
 }
 
@@ -462,6 +488,8 @@ export class DiscordAdapter implements PlatformAdapter {
         this.service.sendMessageStream(sid, cleanContent, "discord"),
       );
 
+      await finalizeUserReaction(message, eyeReaction, true);
+
       // 流式回复完成：用 auto-title 重命名子线程
       if (channel.isThread()) {
         try {
@@ -474,23 +502,9 @@ export class DiscordAdapter implements PlatformAdapter {
           /* 重命名失败不影响主流程 */
         }
       }
-
-      // 回复完成：👀 → ✅
-      try {
-        if (eyeReaction) await eyeReaction.users.remove(message.client.user!.id);
-        await message.react("✅");
-      } catch {
-        /* 反应失败不影响主流程 */
-      }
     } catch (e) {
       logDiscordSessionError(sid, e);
-      // 回复失败：👀 → ❌
-      try {
-        if (eyeReaction) await eyeReaction.users.remove(message.client.user!.id);
-        await message.react("❌");
-      } catch {
-        /* 反应失败不影响主流程 */
-      }
+      await finalizeUserReaction(message, eyeReaction, false);
       try {
         await this.sendToChannel(channel, networkErrorUserHint(e));
       } catch {
