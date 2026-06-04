@@ -3,7 +3,6 @@ import { safeParseOrNull } from "@freeanima/legacy-kernel";
 
 import { ilinkMessageSchema, type IlinkMessage } from "../schemas/weixin";
 
-
 export { type IlinkMessage };
 export const ILINK_BASE_URL = "https://ilinkai.weixin.qq.com";
 export const ILINK_APP_ID = "bot";

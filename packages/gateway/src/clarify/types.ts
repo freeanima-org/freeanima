@@ -1,6 +1,5 @@
 import type { ClarifyItem } from "@freeanima/legacy-kernel";
 
-
 export type ClarifyPayload = {
   items: ClarifyItem[];
   timeout_sec: number;

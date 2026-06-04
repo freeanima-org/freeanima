@@ -23,8 +23,7 @@ export function botAccountIdFromToken(token: string): string {
 
 function buildCredentials(data: Record<string, unknown>, source: string): WeixinCredentials {
   const token = String(data.token ?? "");
-  const accountId =
-    String(data.account_id ?? "").trim() || botAccountIdFromToken(token);
+  const accountId = String(data.account_id ?? "").trim() || botAccountIdFromToken(token);
   logComponent("weixin").info(`WeChat credentials loaded from ${source}`, { source });
   return {
     token,
@@ -42,7 +41,7 @@ function loadFromHermesFallback(): WeixinCredentials | null {
     .filter((n) => n.endsWith(".json"))
     .filter((n) => !n.endsWith("context-tokens.json"))
     .filter((n) => !n.startsWith("."))
-    .sort();
+    .toSorted();
 
   for (const name of files) {
     try {

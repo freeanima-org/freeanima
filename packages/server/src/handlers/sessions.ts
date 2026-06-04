@@ -57,11 +57,7 @@ export async function setSessionTitle(sessionId: string, body: PatchTitleBody) {
   const { title } = patchTitleBodySchema.parse(body);
   const { service } = getServiceContext();
   try {
-    return await service.setSessionTitle(
-      sessionId,
-      title,
-      await resolveSessionPlatform(sessionId),
-    );
+    return await service.setSessionTitle(sessionId, title, await resolveSessionPlatform(sessionId));
   } catch (e) {
     throw new ApiHandlerError(503, String(e), { session_id: sessionId });
   }

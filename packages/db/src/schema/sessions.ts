@@ -18,10 +18,7 @@ export const sessions = pgTable("sessions", {
   systemPrompt: text("system_prompt"),
   platformInfo: jsonb("platform_info").$type<PlatformInfo | null>(),
   compression: jsonb("compression").$type<CompressionJson | null>(),
-  todos: jsonb("todos")
-    .$type<SessionTodosJson>()
-    .notNull()
-    .default({ items: [], next_id: 1 }),
+  todos: jsonb("todos").$type<SessionTodosJson>().notNull().default({ items: [], next_id: 1 }),
   awaitingClarify: jsonb("awaiting_clarify").$type<AwaitingClarifyJson | null>(),
   acpSessions: jsonb("acp_sessions").$type<AcpSessionsJson | null>(),
   tools: jsonb("tools").$type<SessionToolsJson>().notNull().default([]),

@@ -1,0 +1,58 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn"
+  },
+  "plugins": ["typescript", "oxc", "import", "unicorn"],
+  "env": {
+    "node": true
+  },
+  "globals": {
+    "Bun": "readonly"
+  },
+  "ignorePatterns": ["**/dist/**", "**/coverage/**", "apps/webui/src/routeTree.gen.ts"],
+  "rules": {
+    "import/extensions": [
+      "error",
+      {
+        "js": "ignorePackages",
+        "jsx": "never",
+        "mjs": "never",
+        "cjs": "never",
+        "ts": "never",
+        "tsx": "never",
+        "ignorePackages": true,
+        "checkTypeImports": true
+      }
+    ],
+    "typescript/no-unused-vars": "off",
+    "react/react-in-jsx-scope": "off",
+    "unicorn/no-useless-spread": "off",
+    "unicorn/consistent-function-scoping": "off",
+    "eslint/no-control-regex": "off",
+    "eslint/no-underscore-dangle": "off",
+    "eslint/no-useless-constructor": "off",
+    "eslint/no-unmodified-loop-condition": "off",
+    "import/no-unassigned-import": "off"
+  },
+  "overrides": [
+    {
+      "files": ["apps/webui/**/*.{ts,tsx}"],
+      "plugins": ["react"],
+      "env": {
+        "browser": true
+      },
+      "rules": {
+        "react/react-in-jsx-scope": "off",
+        "react/no-unstable-nested-components": "off"
+      }
+    },
+    {
+      "files": ["**/*.{test,spec}.ts", "tests/**/*.ts"],
+      "env": {
+        "jest": true
+      }
+    }
+  ]
+}

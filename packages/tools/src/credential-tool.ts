@@ -1,6 +1,5 @@
 import { listCredentials, registerTool, toolResult } from "@freeanima/legacy-kernel";
 
-
 export function registerCredentialTools(): void {
   registerTool({
     name: "list_credentials",

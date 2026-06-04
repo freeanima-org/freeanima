@@ -56,7 +56,9 @@ function CronPage() {
         : await trpc.status.pauseCron.mutate({ id: job.id });
       if ((data as { job?: CronJob }).job) updateJob((data as { job: CronJob }).job);
     } catch (e) {
-      setError(`${job.name} ${enable ? "启用" : "暂停"}失败: ${e instanceof Error ? e.message : String(e)}`);
+      setError(
+        `${job.name} ${enable ? "启用" : "暂停"}失败: ${e instanceof Error ? e.message : String(e)}`,
+      );
     } finally {
       setToggling((t) => {
         const next = { ...t };
@@ -101,10 +103,16 @@ function CronPage() {
         <div>
           <h2 className="text-lg font-bold">⏰ 定时任务</h2>
           <p className="text-sm text-base-content/60 mt-1">
-            查看调度任务、启用/暂停与手动触发。新建或删除请使用 <code className="text-xs">cronjob</code> 工具。
+            查看调度任务、启用/暂停与手动触发。新建或删除请使用{" "}
+            <code className="text-xs">cronjob</code> 工具。
           </p>
         </div>
-        <button type="button" className="btn btn-sm btn-ghost" disabled={loading} onClick={() => void reload()}>
+        <button
+          type="button"
+          className="btn btn-sm btn-ghost"
+          disabled={loading}
+          onClick={() => void reload()}
+        >
           刷新
         </button>
       </div>
@@ -145,7 +153,9 @@ function CronPage() {
                   <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                     <div className="flex flex-wrap items-center gap-2">
                       <h3 className="font-bold">{job.name}</h3>
-                      <span className={`badge badge-sm ${job.paused ? "badge-ghost" : "badge-success"}`}>
+                      <span
+                        className={`badge badge-sm ${job.paused ? "badge-ghost" : "badge-success"}`}
+                      >
                         {job.paused ? "已暂停" : "运行中"}
                       </span>
                     </div>
@@ -166,7 +176,9 @@ function CronPage() {
                         disabled={!!toggling[job.id] || !!running[job.id]}
                         onClick={() => void runNow(job)}
                       >
-                        {running[job.id] ? <span className="loading loading-spinner loading-xs" /> : null}
+                        {running[job.id] ? (
+                          <span className="loading loading-spinner loading-xs" />
+                        ) : null}
                         立即运行
                       </button>
                     </div>
@@ -187,7 +199,9 @@ function CronPage() {
                       </tr>
                     </tbody>
                   </table>
-                  {toast[job.id] ? <p className="text-xs text-success mt-2">{toast[job.id]}</p> : null}
+                  {toast[job.id] ? (
+                    <p className="text-xs text-success mt-2">{toast[job.id]}</p>
+                  ) : null}
                 </div>
               </div>
             ))

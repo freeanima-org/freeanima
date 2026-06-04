@@ -12,13 +12,27 @@ import { spawnSync } from "node:child_process";
 import { dirname, extname, join, resolve } from "node:path";
 import { homedir } from "node:os";
 
-
 const BINARY_EXT = new Set([
-  ".png", ".jpg", ".jpeg", ".gif", ".webp", ".exe", ".dll", ".so", ".zip", ".pdf", ".db", ".sqlite",
+  ".png",
+  ".jpg",
+  ".jpeg",
+  ".gif",
+  ".webp",
+  ".exe",
+  ".dll",
+  ".so",
+  ".zip",
+  ".pdf",
+  ".db",
+  ".sqlite",
 ]);
 
 const BLOCKED_DEVICES = new Set([
-  "/dev/random", "/dev/urandom", "/dev/zero", "/dev/null", "/dev/full",
+  "/dev/random",
+  "/dev/urandom",
+  "/dev/zero",
+  "/dev/null",
+  "/dev/full",
 ]);
 
 function home(): string {
@@ -133,7 +147,10 @@ function resolveSearchPath(path: string): string {
 const REGEX_ONLY_METACHAR = /[()[\]{}^$+]/;
 
 function looksLikeGlobPattern(pattern: string): boolean {
-  const parts = pattern.split("|").map((p) => p.trim()).filter(Boolean);
+  const parts = pattern
+    .split("|")
+    .map((p) => p.trim())
+    .filter(Boolean);
   if (parts.length === 0) return false;
   return parts.every((part) => {
     if (REGEX_ONLY_METACHAR.test(part)) return false;
@@ -141,17 +158,16 @@ function looksLikeGlobPattern(pattern: string): boolean {
   });
 }
 
-function shouldSearchByFilename(
-  pattern: string,
-  target: string,
-  outputMode: string,
-): boolean {
+function shouldSearchByFilename(pattern: string, target: string, outputMode: string): boolean {
   if (target === "files") return true;
   return target === "content" && outputMode === "files_only" && looksLikeGlobPattern(pattern);
 }
 
 function globNameMatch(name: string, pattern: string): boolean {
-  const escaped = pattern.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*").replace(/\?/g, ".");
+  const escaped = pattern
+    .replace(/[.+^${}()|[\]\\]/g, "\\$&")
+    .replace(/\*/g, ".*")
+    .replace(/\?/g, ".");
   return new RegExp(`^${escaped}$`).test(name);
 }
 
@@ -188,12 +204,7 @@ function globPatternsFrom(pattern: string): string[] {
   return [pattern];
 }
 
-function searchFilesByGlob(
-  pattern: string,
-  path: string,
-  limit: number,
-  offset: number,
-): string {
+function searchFilesByGlob(pattern: string, path: string, limit: number, offset: number): string {
   const base = resolveSearchPath(path);
   if (!existsSync(base)) return toolError(`路径不存在: ${path}`);
   const cap = Math.max(1, Math.min(limit, 5000));
@@ -321,7 +332,9 @@ function handlePatch(
     const count = content.split(old_string).length - 1;
     if (!replace_all && count !== 1) {
       return toolError(
-        count === 0 ? "old_string not found" : `old_string 出现 ${count} 次，需唯一或改用 replace_all`,
+        count === 0
+          ? "old_string not found"
+          : `old_string 出现 ${count} 次，需唯一或改用 replace_all`,
       );
     }
     content = replace_all
@@ -371,7 +384,10 @@ export function registerFileTools(): void {
     parameters: {
       type: "object",
       properties: {
-        pattern: { type: "string", description: "glob（target=files）或搜索文字/正则（target=content）" },
+        pattern: {
+          type: "string",
+          description: "glob（target=files）或搜索文字/正则（target=content）",
+        },
         target: {
           type: "string",
           enum: ["content", "files"],

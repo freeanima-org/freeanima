@@ -86,8 +86,6 @@ export function checkEnvRequirements(): string[] {
 }
 
 /** 校验并解析工具参数 */
-export function resolveToolArgs(
-  raw: string | undefined | null,
-): ParsedToolResult<ToolArgs> {
+export function resolveToolArgs(raw: string | undefined | null): ParsedToolResult<ToolArgs> {
   return parseToolArgs(raw);
 }

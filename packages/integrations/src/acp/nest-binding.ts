@@ -1,8 +1,6 @@
 import { loadSessionMeta, updateSessionMetaField } from "@freeanima/legacy-engine";
 import { isSessionMeta } from "@freeanima/legacy-kernel";
 
-
-
 export type AcpSessionsMeta = Record<string, string>;
 
 /** 从逸灵风 L1 session_meta 读取 acp_sessions */

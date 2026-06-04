@@ -1,10 +1,4 @@
-import {
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  statSync,
-  writeFileSync,
-} from "node:fs";
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { getHomeDir } from "@freeanima/legacy-kernel";
 import { l2LineSchema, isSessionMeta, type SessionMessage } from "@freeanima/legacy-kernel";
@@ -101,8 +95,7 @@ async function extractMeta(
 
   for (const rec of records) {
     if (rec.role === "session_meta") {
-      meta.session_id =
-        String(rec.session ?? rec.session_id ?? sessionId) || sessionId;
+      meta.session_id = String(rec.session ?? rec.session_id ?? sessionId) || sessionId;
       if (!meta.platform && rec.platform) meta.platform = rec.platform;
       if (rec.platform_extra) meta.platform_extra = rec.platform_extra;
       if (!meta.title && rec.title) meta.title = rec.title;

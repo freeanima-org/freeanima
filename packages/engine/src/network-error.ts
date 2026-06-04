@@ -14,11 +14,7 @@ const TRANSIENT_PATTERNS = [
   /abort/i,
 ];
 
-const TRANSIENT_NAMES = new Set([
-  "ConnectTimeoutError",
-  "TimeoutError",
-  "AbortError",
-]);
+const TRANSIENT_NAMES = new Set(["ConnectTimeoutError", "TimeoutError", "AbortError"]);
 
 function errorText(err: unknown): string {
   if (err instanceof Error) {

@@ -1,27 +1,43 @@
-import {
-  existsSync,
-  readFileSync,
-  readdirSync,
-  realpathSync,
-  statSync,
-} from "node:fs";
+import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { extname, join, relative, resolve } from "node:path";
 import { patchConfigSection, loadConfig } from "@freeanima/legacy-kernel";
-import {
-  DEFAULT_SKIP_DIRS,
-  isIgnored,
-  loadGitignoreStack,
-} from "./studio-gitignore";
+import { DEFAULT_SKIP_DIRS, isIgnored, loadGitignoreStack } from "./studio-gitignore";
 
 export const MAX_FILE_BYTES = 1024 * 1024;
 export const MAX_SEARCH_RESULTS = 200;
 
 const BINARY_EXT = new Set([
-  ".png", ".jpg", ".jpeg", ".gif", ".webp", ".ico", ".bmp",
-  ".exe", ".dll", ".so", ".dylib", ".zip", ".tar", ".gz", ".bz2",
-  ".pdf", ".db", ".sqlite", ".wasm", ".mp3", ".mp4", ".avi", ".mov",
-  ".woff", ".woff2", ".ttf", ".eot", ".bin", ".o", ".a",
+  ".png",
+  ".jpg",
+  ".jpeg",
+  ".gif",
+  ".webp",
+  ".ico",
+  ".bmp",
+  ".exe",
+  ".dll",
+  ".so",
+  ".dylib",
+  ".zip",
+  ".tar",
+  ".gz",
+  ".bz2",
+  ".pdf",
+  ".db",
+  ".sqlite",
+  ".wasm",
+  ".mp3",
+  ".mp4",
+  ".avi",
+  ".mov",
+  ".woff",
+  ".woff2",
+  ".ttf",
+  ".eot",
+  ".bin",
+  ".o",
+  ".a",
 ]);
 
 const EXT_TO_LANG: Record<string, string> = {
@@ -167,7 +183,7 @@ function buildTreeDir(absDir: string, relDir: string, cfg: StudioConfig): TreeNo
   }
 
   const nodes: TreeNode[] = [];
-  for (const ent of entries.sort((a, b) => a.name.localeCompare(b.name))) {
+  for (const ent of entries.toSorted((a, b) => a.name.localeCompare(b.name))) {
     if (shouldSkipName(ent.name, cfg.showHidden)) continue;
     const relPath = relDir ? `${relDir}/${ent.name}` : ent.name;
     if (cfg.gitignore && isIgnored(relPath, ent.isDirectory(), giStack)) continue;
@@ -222,7 +238,7 @@ export function readStudioFile(relPath: string): {
   try {
     content = readFileSync(abs, "utf-8");
   } catch (e) {
-    throw new Error(`读取失败: ${e}`);
+    throw new Error(`读取失败: ${e}`, { cause: e });
   }
   return {
     path: relPath.replace(/^\/+/, ""),
@@ -235,7 +251,15 @@ export function readStudioFile(relPath: string): {
 function searchWithRipgrep(query: string, root: string): SearchHit[] | null {
   const proc = spawnSync(
     "rg",
-    ["--no-heading", "--line-number", "--fixed-strings", "--max-count", String(MAX_SEARCH_RESULTS), query, root],
+    [
+      "--no-heading",
+      "--line-number",
+      "--fixed-strings",
+      "--max-count",
+      String(MAX_SEARCH_RESULTS),
+      query,
+      root,
+    ],
     { encoding: "utf-8", timeout: 60_000, maxBuffer: 8 * 1024 * 1024 },
   );
   if (proc.error?.message?.includes("ENOENT")) return null;
@@ -265,7 +289,13 @@ function searchWithRipgrep(query: string, root: string): SearchHit[] | null {
   return hits;
 }
 
-function searchWalk(query: string, absDir: string, relDir: string, cfg: StudioConfig, hits: SearchHit[]): void {
+function searchWalk(
+  query: string,
+  absDir: string,
+  relDir: string,
+  cfg: StudioConfig,
+  hits: SearchHit[],
+): void {
   if (hits.length >= MAX_SEARCH_RESULTS) return;
   const root = resolveWorkspace();
   const giStack = cfg.gitignore ? loadGitignoreStack(root, absDir) : [];

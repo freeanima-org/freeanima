@@ -103,5 +103,4 @@ export class ProviderRegistry {
     this.materialized.set(id, provider);
     return provider;
   }
-
 }

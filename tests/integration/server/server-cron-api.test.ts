@@ -72,7 +72,13 @@ describePg("server cron API", () => {
 
   it("handler pause/resume/run and 404", () => {
     const svc = new NestService();
-    initServiceContext({ service: svc, mcp: null, acp: getAcpManager(), host: "127.0.0.1", port: 2658 });
+    initServiceContext({
+      service: svc,
+      mcp: null,
+      acp: getAcpManager(),
+      host: "127.0.0.1",
+      port: 2658,
+    });
 
     const pauseBody = pauseCronJob(jobId);
     expect(pauseBody.ok).toBe(true);
@@ -90,7 +96,13 @@ describePg("server cron API", () => {
 
   it("listCronJobs lists jobs", () => {
     const svc = new NestService();
-    initServiceContext({ service: svc, mcp: null, acp: getAcpManager(), host: "127.0.0.1", port: 2658 });
+    initServiceContext({
+      service: svc,
+      mcp: null,
+      acp: getAcpManager(),
+      host: "127.0.0.1",
+      port: 2658,
+    });
 
     const body = listCronJobs();
     expect(body.jobs.some((j: { id: string }) => j.id === jobId)).toBe(true);

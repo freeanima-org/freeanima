@@ -36,7 +36,9 @@ export function registerBrowserTools(): void {
       const url = String(args.url ?? "").trim();
       if (!url) return toolError("url is required");
       if (!isCamofoxConfigured()) {
-        return toolError("未配置 Camofox。请在 ~/.anima/config.yaml 设置 browser.camofox.base_url。");
+        return toolError(
+          "未配置 Camofox。请在 ~/.anima/config.yaml 设置 browser.camofox.base_url。",
+        );
       }
       return camofoxNavigate(sessionKey(), url);
     },

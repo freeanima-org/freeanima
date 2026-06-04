@@ -27,9 +27,7 @@ const DEFAULT_TIMEOUT_SEC = 1800;
 const DEFAULT_MAX_ITEMS = 5;
 
 function nowIso(): string {
-  return new Date(Date.now() + CST_OFFSET_MS)
-    .toISOString()
-    .replace("Z", "+08:00");
+  return new Date(Date.now() + CST_OFFSET_MS).toISOString().replace("Z", "+08:00");
 }
 
 function parseAwaiting(raw: unknown): AwaitingClarify | null {

@@ -18,10 +18,7 @@ import { logComponent } from "@freeanima/legacy-kernel";
 import type { NestService } from "@freeanima/legacy-runtime";
 import type { PlatformAdapter } from "../platforms";
 import { formatClarifyForPlatform, parseClarifyStreamEvent } from "../clarify/index";
-import {
-  registerDiscordCronDeliverer,
-  unregisterDiscordCronDeliverer,
-} from "../cron-deliver";
+import { registerDiscordCronDeliverer, unregisterDiscordCronDeliverer } from "../cron-deliver";
 import {
   extractOrigin,
   mergeDiscordConfig,
@@ -75,10 +72,7 @@ function messageContext(message: Message, botUserId: string | undefined): Discor
 
   const isMentioned =
     Boolean(botUserId && message.mentions.users.has(botUserId)) ||
-    Boolean(
-      message.client.user &&
-        message.content.startsWith(message.client.user.displayName),
-    );
+    Boolean(message.client.user && message.content.startsWith(message.client.user.displayName));
 
   return {
     content: message.content,
@@ -142,8 +136,7 @@ export async function streamReplyToChannel(
   function enqueueEdit(getContent: () => string): void {
     editTail = editTail.then(async () => {
       const raw = getContent();
-      const content =
-        raw.length <= DISCORD_MAX_LEN ? raw : raw.slice(-DISCORD_MAX_LEN);
+      const content = raw.length <= DISCORD_MAX_LEN ? raw : raw.slice(-DISCORD_MAX_LEN);
       await tryDiscordInterimEdit(
         async () => {
           await sentMsg.edit({ content });
@@ -574,7 +567,7 @@ export class DiscordAdapter implements PlatformAdapter {
         err: e,
       });
       if (!message.channel.isTextBased()) {
-        throw new Error("Channel is not text-based");
+        throw new Error("Channel is not text-based", { cause: e });
       }
       return message.channel;
     }

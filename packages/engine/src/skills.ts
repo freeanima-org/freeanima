@@ -65,7 +65,10 @@ function stripFrontmatter(text: string): string {
   if (lines[0]?.trim() !== "---") return text.trim();
   for (let i = 1; i < lines.length; i++) {
     if (lines[i]?.trim() === "---") {
-      return lines.slice(i + 1).join("\n").trim();
+      return lines
+        .slice(i + 1)
+        .join("\n")
+        .trim();
     }
   }
   return text.trim();
@@ -127,7 +130,7 @@ export function listSkills(): string {
   ensureSkillsDir();
   const files = readdirSync(SKILLS_DIR())
     .filter((f) => f.endsWith(".md"))
-    .sort();
+    .toSorted();
   if (!files.length) return "📭 还没有创建任何技能。";
 
   const active = getActive();

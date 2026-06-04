@@ -19,7 +19,8 @@ export type MockBackendOptions = {
 
 export class MockBackend extends LlmBackend {
   readonly chatCalls: Array<{ model: string; request: ChatRequest; context: BackendContext }> = [];
-  readonly streamCalls: Array<{ model: string; request: ChatRequest; context: BackendContext }> = [];
+  readonly streamCalls: Array<{ model: string; request: ChatRequest; context: BackendContext }> =
+    [];
   private readonly defaultModelInfo: ModelInfo;
   private readonly chatResult: ChatCompletion;
   private readonly chatError?: unknown;
@@ -52,11 +53,7 @@ export class MockBackend extends LlmBackend {
     return { ...this.defaultModelInfo, model };
   }
 
-  mapError(
-    err: unknown,
-    _context: BackendContext,
-    meta?: { providerId?: string },
-  ): ProviderError {
+  mapError(err: unknown, _context: BackendContext, meta?: { providerId?: string }): ProviderError {
     if (err instanceof ProviderError) return err;
     return new ProviderError(String(err), "unknown", false, { providerId: meta?.providerId });
   }

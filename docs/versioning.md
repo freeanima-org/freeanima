@@ -11,12 +11,12 @@ workspace 内其它 `package.json`（`packages/*`、`apps/*`）**不含** `versi
 
 由 **Conventional Commits** 决定。当前处于 **0.x.y 初始开发阶段**，采用 0.x 约定：**x = 破坏性变更，y = 兼容新增/修复**（与 1.0.0 后的 MAJOR/MINOR/PATCH 语义不同）。
 
-| Commit | 版本位 | 示例 |
-|--------|--------|------|
-| `feat:` | **PATCH（y）** | `0.1.0` → `0.1.1` |
-| `fix:` / `perf:` / `revert:` | **PATCH（y）** | `0.1.1` → `0.1.2` |
-| `BREAKING CHANGE:` 或 `feat!:` | **MINOR（x）** | `0.1.2` → `0.2.0` |
-| `chore:` / `docs:` / `refactor:` / `test:` / `ci:` | **不发版** | — |
+| Commit                                             | 版本位         | 示例              |
+| -------------------------------------------------- | -------------- | ----------------- |
+| `feat:`                                            | **PATCH（y）** | `0.1.0` → `0.1.1` |
+| `fix:` / `perf:` / `revert:`                       | **PATCH（y）** | `0.1.1` → `0.1.2` |
+| `BREAKING CHANGE:` 或 `feat!:`                     | **MINOR（x）** | `0.1.2` → `0.2.0` |
+| `chore:` / `docs:` / `refactor:` / `test:` / `ci:` | **不发版**     | —                 |
 
 **1.0.0** 不在 breaking commit 时自动发布；API 稳定后由维护者显式决定（例如专门 commit 或手动发版）。
 
@@ -92,10 +92,10 @@ git push origin v0.1.0
 
 ## 相关文件
 
-| 文件 | 作用 |
-|------|------|
-| `package.json` | 版本唯一写入源（CI 更新） |
-| `.releaserc.json` | semantic-release 插件配置 |
-| `.github/workflows/release.yml` | 发版 CI |
-| `packages/runtime/src/version.ts` | 运行时读取根版本 |
-| `CHANGELOG.md` | 自动追加新版本节 + 历史条目 |
+| 文件                              | 作用                        |
+| --------------------------------- | --------------------------- |
+| `package.json`                    | 版本唯一写入源（CI 更新）   |
+| `.releaserc.json`                 | semantic-release 插件配置   |
+| `.github/workflows/release.yml`   | 发版 CI                     |
+| `packages/runtime/src/version.ts` | 运行时读取根版本            |
+| `CHANGELOG.md`                    | 自动追加新版本节 + 历史条目 |

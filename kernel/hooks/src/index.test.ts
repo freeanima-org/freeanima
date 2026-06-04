@@ -13,9 +13,7 @@ describe("index 导出", () => {
 
   it("公开 API 可组合使用", async () => {
     const hook = createHook<{ count: number }>("@freeanima/kernel-hooks/test/index");
-    const registry = new HookRegistry(
-      createLogger({ level: "debug", sinks: [createNullSink()] }),
-    );
+    const registry = new HookRegistry(createLogger({ level: "debug", sinks: [createNullSink()] }));
 
     const handler: HookHandler<typeof hook> = () => ({
       status: "ok",

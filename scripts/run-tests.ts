@@ -30,9 +30,7 @@ if (needsPg) {
     teardown = await setupIntegrationPg();
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    console.warn(
-      `[${label}] ${msg}\n[${label}] 继续运行测试（PG 集成用例将 skip）`,
-    );
+    console.warn(`[${label}] ${msg}\n[${label}] 继续运行测试（PG 集成用例将 skip）`);
   }
 }
 

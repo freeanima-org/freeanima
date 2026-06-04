@@ -35,7 +35,7 @@ export function mergeStreamingToolCalls(
 export function finalizeStreamingToolCalls(acc: Record<number, ToolCall>): ToolCall[] {
   return Object.keys(acc)
     .map((k) => Number(k))
-    .sort((a, b) => a - b)
+    .toSorted((a, b) => a - b)
     .map((i) => acc[i]!)
     .filter((tc) => tc.id && tc.function?.name);
 }

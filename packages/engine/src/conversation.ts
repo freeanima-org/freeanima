@@ -57,15 +57,10 @@ import {
 } from "./session-store-pg-bridge";
 
 export type Message = SessionMessage;
-export {
-  isSessionMeta,
-  parseSessionLine,
-} from "@freeanima/legacy-kernel";
+export { isSessionMeta, parseSessionLine } from "@freeanima/legacy-kernel";
 
 function nowIso(): string {
-  return new Date(Date.now() + CST_OFFSET_MS)
-    .toISOString()
-    .replace("Z", "+08:00");
+  return new Date(Date.now() + CST_OFFSET_MS).toISOString().replace("Z", "+08:00");
 }
 
 /** 新 session 默认工作目录（与 Python `init_session` 一致，隔离于 service 启动目录） */
@@ -519,8 +514,7 @@ export async function recompressSession(
   const msgs = preloaded?.msgs ?? (await load(session));
   const meta = preloaded?.meta ?? (await loadSessionMeta(session));
   const prevState = parseCompressionState(isSessionMeta(meta) ? meta.compression : undefined);
-  const state =
-    !opts?.force && prevState ? prevState : opts?.force ? null : prevState;
+  const state = !opts?.force && prevState ? prevState : opts?.force ? null : prevState;
 
   if (!cfg.enabled) {
     return {
@@ -550,7 +544,9 @@ export async function recompressSession(
   if (updated && newState) {
     if (boundariesChanged) {
       const systemSnapshot = isSessionMeta(meta) ? (meta.system_prompt ?? "") : "";
-      const model = isSessionMeta(meta) ? meta.model : getProfileHopModel(loadConfig(), PROFILE_CHAT);
+      const model = isSessionMeta(meta)
+        ? meta.model
+        : getProfileHopModel(loadConfig(), PROFILE_CHAT);
       await updateSessionMetaField(session, { compression: newState });
       scheduleCompressionSummary(session, msgs, prevState, newState, systemSnapshot, model);
     } else {
@@ -579,7 +575,7 @@ export async function repairAndPersistToolLoop(
   const corruptions = detectToolLoopCorruption(msgs);
   if (!corruptions.length) return false;
 
-  const ordered = [...corruptions].sort(
+  const ordered = [...corruptions].toSorted(
     (a, b) => (b.assistantPos ?? 0) - (a.assistantPos ?? 0),
   );
 
@@ -618,7 +614,10 @@ export async function repairAndPersistToolLoop(
   return true;
 }
 
-async function ensureSessionToolIntegrity(session: string, msgs: SessionMessage[]): Promise<Message[]> {
+async function ensureSessionToolIntegrity(
+  session: string,
+  msgs: SessionMessage[],
+): Promise<Message[]> {
   const repaired = await repairAndPersistToolLoop(session, msgs);
   return repaired ? load(session) : msgs;
 }
@@ -658,14 +657,7 @@ export async function maybeApplyEmergencyCompression(
     await updateSessionMetaField(session, { compression: newState });
     const systemSnapshot = systemPrompt;
     const allMsgs = await load(session);
-    scheduleCompressionSummary(
-      session,
-      allMsgs,
-      prev,
-      newState,
-      systemSnapshot,
-      opts.model,
-    );
+    scheduleCompressionSummary(session, allMsgs, prev, newState, systemSnapshot, opts.model);
   }
   return true;
 }
@@ -692,9 +684,7 @@ function buildRuntimeMessagesFrom(
   return [runtimeMsgs, functions];
 }
 
-export async function buildRuntimeMessages(
-  session: string,
-): Promise<[SessionMessage[], string[]]> {
+export async function buildRuntimeMessages(session: string): Promise<[SessionMessage[], string[]]> {
   const meta = await loadSessionMeta(session);
   const msgs = await loadForRuntime(session, meta);
   return buildRuntimeMessagesFrom(session, meta, msgs);
@@ -820,9 +810,7 @@ export async function rollbackToLastUser(session: string): Promise<string> {
 }
 
 /** 重试回合：回滚末条 user，不追加新 user，返回运行时 messages */
-export async function retryTurn(
-  session: string,
-): Promise<[SessionMessage[], string[], string]> {
+export async function retryTurn(session: string): Promise<[SessionMessage[], string[], string]> {
   const effective = await rollbackToLastUser(session);
   let msgs = await load(session);
   msgs = await ensureSessionToolIntegrity(session, msgs);

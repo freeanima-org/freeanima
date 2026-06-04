@@ -138,7 +138,7 @@ describe("browser tools", () => {
         });
       }
       if (url.includes("/snapshot")) {
-        return new Response(JSON.stringify({ snapshot: "- button \"Go\" [e1]", refsCount: 1 }), {
+        return new Response(JSON.stringify({ snapshot: '- button "Go" [e1]', refsCount: 1 }), {
           status: 200,
           headers: { "Content-Type": "application/json" },
         });
@@ -216,7 +216,9 @@ describe("browser tools", () => {
 
   it("checkCamofoxAvailable probes /health", async () => {
     stubFetch(
-      vi.fn(async () => new Response(JSON.stringify({ ok: true }), { status: 200 })) as unknown as typeof fetch,
+      vi.fn(
+        async () => new Response(JSON.stringify({ ok: true }), { status: 200 }),
+      ) as unknown as typeof fetch,
     );
     await expect(checkCamofoxAvailable()).resolves.toBe(true);
     expect(getCamofoxUrl()).toBe("http://localhost:9377");

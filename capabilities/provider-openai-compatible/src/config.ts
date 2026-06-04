@@ -16,10 +16,7 @@ export const openAiCompatibleProviderConfigSchema = z
 export type OpenAiCompatibleProviderConfig = z.infer<typeof openAiCompatibleProviderConfigSchema>;
 
 /** 解析为 engine-provider-llm 的 ProviderSpec（id 由 yaml key 传入） */
-export function parseOpenAiCompatibleProviderSpec(
-  id: string,
-  raw: unknown,
-): ProviderSpec {
+export function parseOpenAiCompatibleProviderSpec(id: string, raw: unknown): ProviderSpec {
   const cfg = openAiCompatibleProviderConfigSchema.parse(raw);
   return {
     id,

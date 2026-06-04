@@ -1,14 +1,16 @@
 import { getToolSessionId } from "@freeanima/legacy-engine";
-import { listTools, loadConfig, logComponent, registerTool, toolError } from "@freeanima/legacy-kernel";
+import {
+  listTools,
+  loadConfig,
+  logComponent,
+  registerTool,
+  toolError,
+} from "@freeanima/legacy-kernel";
 
 import { AcpAgentQueue } from "./agent-queue";
 import { resolveAcpAdapter } from "./adapters/registry";
 import { ACPClient } from "./client";
-import {
-  bindAcpSession,
-  getBoundAcpSession,
-  unbindAcpSession,
-} from "./nest-binding";
+import { bindAcpSession, getBoundAcpSession, unbindAcpSession } from "./nest-binding";
 import { formatAcpPromptResult, type AcpPromptResult } from "./prompt-result";
 import {
   sanitizeAcpConfig,
@@ -93,8 +95,7 @@ export class AcpManager {
   registerTools(agentsCfg?: Record<string, AcpAgentConfig>): number {
     if (this.toolsRegistered && !agentsCfg) return 0;
     const cfg = loadConfig();
-    const agents =
-      agentsCfg ?? cfg.acp_agents ?? {};
+    const agents = agentsCfg ?? cfg.acp_agents ?? {};
     if (!Object.keys(agents).length) return 0;
 
     let count = 0;
@@ -177,9 +178,7 @@ export class AcpManager {
         config: sanitizeAcpConfig(agentCfg),
         status,
         error: this.agentErrors.get(name),
-        tool: registered
-          ? { name: registered.name, description: registered.description }
-          : null,
+        tool: registered ? { name: registered.name, description: registered.description } : null,
         sessions: sessionIds.map((session_id) => ({
           session_id,
           session_id_short: shortSessionId(session_id),
@@ -201,7 +200,12 @@ export class AcpManager {
   async startAgent(name: string): Promise<AcpControlResult> {
     const agentCfg = this.getAgentConfig(name);
     if (!agentCfg) {
-      return { ok: false, error: `ACP agent '${name}' not configured`, agent: name, action: "start" };
+      return {
+        ok: false,
+        error: `ACP agent '${name}' not configured`,
+        agent: name,
+        action: "start",
+      };
     }
     if (!isAcpAgentEnabled(agentCfg)) {
       return { ok: false, error: `ACP agent '${name}' is disabled`, agent: name, action: "start" };

@@ -34,12 +34,7 @@ export function registerCredentialCommand(program: Command): void {
         console.log("(无凭证)");
         return;
       }
-      const rows = creds.map((c) => [
-        c.path,
-        c.tags.join(", "),
-        c.desc,
-        c.fields.join(", "),
-      ]);
+      const rows = creds.map((c) => [c.path, c.tags.join(", "), c.desc, c.fields.join(", ")]);
       console.log(renderTable(rows, ["Path", "Tags", "Description", "Fields"]));
     });
 

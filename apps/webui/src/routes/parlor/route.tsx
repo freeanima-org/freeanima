@@ -114,7 +114,11 @@ function ParlorLayout() {
       sidebar={({ close }) => (
         <>
           <div className="p-2">
-            <button type="button" className="btn btn-primary btn-sm w-full" onClick={() => void newSession()}>
+            <button
+              type="button"
+              className="btn btn-primary btn-sm w-full"
+              onClick={() => void newSession()}
+            >
               ＋ 新会话
             </button>
           </div>
@@ -151,7 +155,10 @@ function ParlorLayout() {
           className="fixed z-50 bg-base-100 border border-base-300 rounded-lg shadow-xl py-1 min-w-[140px]"
           style={{ top: contextMenu.y, left: contextMenu.x }}
         >
-          <div className="px-3 py-1.5 hover:bg-base-300 cursor-pointer text-sm" onClick={startRename}>
+          <div
+            className="px-3 py-1.5 hover:bg-base-300 cursor-pointer text-sm"
+            onClick={startRename}
+          >
             ✏️ 重命名
           </div>
         </div>
@@ -180,10 +187,18 @@ function ParlorLayout() {
               }}
             />
             <div className="flex justify-end gap-2 mt-3">
-              <button type="button" className="btn btn-ghost btn-sm" onClick={() => setShowRenameDialog(false)}>
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm"
+                onClick={() => setShowRenameDialog(false)}
+              >
                 取消
               </button>
-              <button type="button" className="btn btn-primary btn-sm" onClick={() => void confirmRename()}>
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                onClick={() => void confirmRename()}
+              >
                 确定
               </button>
             </div>

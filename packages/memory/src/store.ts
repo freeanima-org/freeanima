@@ -8,14 +8,7 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 import { randomBytes } from "node:crypto";
-import {
-  createFact,
-  factScore,
-  factToFileText,
-  parseFact,
-  nowIso,
-  type FactData,
-} from "./fact";
+import { createFact, factScore, factToFileText, parseFact, nowIso, type FactData } from "./fact";
 import { PATHS } from "@freeanima/legacy-kernel";
 
 const COUNTER_FILE = ".counter";
@@ -67,7 +60,7 @@ export class MemoryStore {
   private iterAll(): FactData[] {
     const facts: FactData[] = [];
     try {
-      for (const name of readdirSync(this.path).sort()) {
+      for (const name of readdirSync(this.path).toSorted()) {
         if (!name.startsWith(FACT_PREFIX) || !name.endsWith(".md")) continue;
         const f = parseFact(readFileSync(join(this.path, name), "utf-8"));
         if (f) facts.push(f);
@@ -161,9 +154,8 @@ export class MemoryStore {
 
   count(): number {
     try {
-      return readdirSync(this.path).filter(
-        (n) => n.startsWith(FACT_PREFIX) && n.endsWith(".md"),
-      ).length;
+      return readdirSync(this.path).filter((n) => n.startsWith(FACT_PREFIX) && n.endsWith(".md"))
+        .length;
     } catch {
       return 0;
     }

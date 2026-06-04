@@ -37,7 +37,7 @@ export type HookRunResult<P> = {
 /** Hook 身份 token；仅通过 createHook 创建 */
 export abstract class Hook<Payload> {
   /** @internal 携带 Payload 泛型，运行时不使用 */
-  protected declare readonly _payloadBrand?: Payload;
+  declare protected readonly _payloadBrand?: Payload;
 
   readonly id: symbol;
   readonly qualifiedId: string;
@@ -59,10 +59,7 @@ class HookToken<Payload> extends Hook<Payload> {
 }
 
 /** 创建 Hook token；qualifiedId 为唯一标识，description 仅用于展示或文档 */
-export function createHook<Payload>(
-  qualifiedId: string,
-  description?: string,
-): Hook<Payload> {
+export function createHook<Payload>(qualifiedId: string, description?: string): Hook<Payload> {
   return new HookToken(qualifiedId, description);
 }
 
@@ -87,13 +84,11 @@ export function walkHookChain(chain: HookStepLink | null): HookStepLink[] {
 
 /** 从最先执行的 handler 到链头 */
 export function walkHookChainOldestFirst(chain: HookStepLink | null): HookStepLink[] {
-  return walkHookChain(chain).reverse();
+  return walkHookChain(chain).toReversed();
 }
 
 /** 链头方向第一个 ok 且 blocked 的步的 message */
-export function blockedMessageFromChain(
-  chain: HookStepLink | null,
-): string | undefined {
+export function blockedMessageFromChain(chain: HookStepLink | null): string | undefined {
   if (!chain) return undefined;
   for (const step of walkHookChain(chain)) {
     if (step.status === "ok" && step.blocked) {
@@ -104,9 +99,7 @@ export function blockedMessageFromChain(
 }
 
 /** 链头方向第一个带 data 的 ok 步（通常为最后执行的 handler） */
-export function headOkStepData(
-  chain: HookStepLink | null,
-): Record<string, unknown> | undefined {
+export function headOkStepData(chain: HookStepLink | null): Record<string, unknown> | undefined {
   for (const step of walkHookChain(chain)) {
     if (step.status === "ok" && step.data) {
       return step.data;

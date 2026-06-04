@@ -12,7 +12,11 @@ import { tmpdir } from "node:os";
 import { renderSystemdUnit } from "../../src/systemd-unit";
 import { ensureUnitFile } from "../../src/service-cmd";
 import * as serviceCommon from "../../src/service-common";
-import { parseBindHosts, resolveProbeHost, DEFAULT_BIND_HOST } from "@freeanima/legacy-server/bind-hosts";
+import {
+  parseBindHosts,
+  resolveProbeHost,
+  DEFAULT_BIND_HOST,
+} from "@freeanima/legacy-server/bind-hosts";
 
 describe("bind hosts", () => {
   it("parseBindHosts splits comma-separated addresses", () => {

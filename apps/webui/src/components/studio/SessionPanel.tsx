@@ -295,7 +295,11 @@ export function SessionPanel() {
       {sessionListVisible ? (
         <div className="w-48 shrink-0 flex flex-col min-h-0 bg-base-200/30">
           <div className="p-2 border-b border-base-300 shrink-0">
-            <button type="button" className="btn btn-primary btn-sm w-full" onClick={() => void newSession()}>
+            <button
+              type="button"
+              className="btn btn-primary btn-sm w-full"
+              onClick={() => void newSession()}
+            >
               ＋ 新会话
             </button>
           </div>
@@ -341,10 +345,18 @@ export function SessionPanel() {
               }}
             />
             <div className="flex justify-end gap-2 mt-3">
-              <button type="button" className="btn btn-ghost btn-sm" onClick={() => setShowRename(false)}>
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm"
+                onClick={() => setShowRename(false)}
+              >
                 取消
               </button>
-              <button type="button" className="btn btn-primary btn-sm" onClick={() => void confirmRename()}>
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                onClick={() => void confirmRename()}
+              >
                 确定
               </button>
             </div>

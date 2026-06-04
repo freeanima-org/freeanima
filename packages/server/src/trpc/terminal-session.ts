@@ -70,7 +70,7 @@ export function createTerminalSession(): { sessionId: string; pty: PtyProcess } 
       throw new Error("studio.workspace 未配置或不存在");
     }
   } catch (e) {
-    throw new Error(String(e));
+    throw new Error(String(e), { cause: e });
   }
 
   const sessionId = crypto.randomUUID();

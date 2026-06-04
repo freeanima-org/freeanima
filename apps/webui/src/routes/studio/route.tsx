@@ -28,10 +28,7 @@ function StudioLayout() {
   }, []);
 
   useEffect(() => {
-    document.documentElement.classList.toggle(
-      "studio-chromeless",
-      isPairProgramming && chromeless,
-    );
+    document.documentElement.classList.toggle("studio-chromeless", isPairProgramming && chromeless);
   }, [isPairProgramming, chromeless]);
 
   const toggleChromeless = () => {

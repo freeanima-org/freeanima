@@ -41,7 +41,15 @@ export function loadAll(): CronJob[] {
 
 export function saveAll(jobs: CronJob[]): void {
   ensureDirs();
-  writeFileSync(JOBS_FILE(), JSON.stringify(jobs.map((j) => j.toJSON()), null, 2), "utf-8");
+  writeFileSync(
+    JOBS_FILE(),
+    JSON.stringify(
+      jobs.map((j) => j.toJSON()),
+      null,
+      2,
+    ),
+    "utf-8",
+  );
 }
 
 export function find(jobId: string): CronJob | null {

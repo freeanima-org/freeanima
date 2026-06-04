@@ -55,9 +55,7 @@ export const healthResponseSchema = z.object({
   version: z.string(),
 });
 
-export const platformStatusSchema = z
-  .object({ status: z.string() })
-  .passthrough();
+export const platformStatusSchema = z.object({ status: z.string() }).passthrough();
 
 export const serviceStatusSchema = z.object({
   status: z.literal("running"),

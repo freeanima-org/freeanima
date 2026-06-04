@@ -12,9 +12,7 @@ export function createConsoleSink(options: ConsoleSinkOptions = {}): LogSink {
 
   return {
     emit(record: LogRecord): void {
-      write(
-        format === "json" ? formatJsonRecord(record) : formatPrettyRecord(record),
-      );
+      write(format === "json" ? formatJsonRecord(record) : formatPrettyRecord(record));
     },
   };
 }

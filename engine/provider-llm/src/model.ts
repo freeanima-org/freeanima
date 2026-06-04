@@ -21,7 +21,11 @@ export const LLM_PARAM_KEYS = [
   "extra",
 ] as const satisfies readonly LlmParamKey[];
 
-export const EXTENDED_PARAM_KEYS = ["tools", "reasoning", "streaming"] as const satisfies readonly ExtendedParamKey[];
+export const EXTENDED_PARAM_KEYS = [
+  "tools",
+  "reasoning",
+  "streaming",
+] as const satisfies readonly ExtendedParamKey[];
 
 export type ModelInfo = {
   model: string;

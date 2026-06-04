@@ -68,7 +68,9 @@ async function handleHealth(): Promise<Response> {
 }
 
 /** 对外 HTTP：/api/*；/webui/* 由 proxyWebui 处理 */
-export function createHttpRoutes(proxyWebui: (req: Request) => Response | Promise<Response>): HttpRoutesHandle {
+export function createHttpRoutes(
+  proxyWebui: (req: Request) => Response | Promise<Response>,
+): HttpRoutesHandle {
   const fetch = async (req: Request): Promise<Response | undefined> => {
     const url = new URL(req.url);
 

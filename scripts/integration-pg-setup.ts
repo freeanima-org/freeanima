@@ -11,9 +11,7 @@ function assertDockerAvailable(): void {
   try {
     execSync("docker info", { stdio: "ignore" });
   } catch {
-    throw new Error(
-      "集成测试需要 Docker 运行中。请启动 Docker 后重试：bun test",
-    );
+    throw new Error("集成测试需要 Docker 运行中。请启动 Docker 后重试：bun test");
   }
 }
 
@@ -23,7 +21,7 @@ function runMigrations(url: string): void {
   const dirs = readdirSync(migrationsDir, { withFileTypes: true })
     .filter((d) => d.isDirectory())
     .map((d) => d.name)
-    .sort();
+    .toSorted();
   for (const dir of dirs) {
     const migrationPath = join(migrationsDir, dir, "migration.sql");
     execSync(`psql "${url}" -v ON_ERROR_STOP=1 -f "${migrationPath}"`, {

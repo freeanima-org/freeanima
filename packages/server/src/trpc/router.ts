@@ -93,9 +93,7 @@ export const appRouter = router({
       ),
     setTitle: publicProcedure
       .input(z.object({ sessionId: z.string(), title: z.string().min(1) }))
-      .mutation(({ input }) =>
-        setSessionTitle(input.sessionId, { title: input.title.trim() }),
-      ),
+      .mutation(({ input }) => setSessionTitle(input.sessionId, { title: input.title.trim() })),
     commands: publicProcedure
       .input(
         z
@@ -125,10 +123,7 @@ export const appRouter = router({
           .refine((v) => v.message.length > 0, { message: "message is required" }),
       )
       .subscription(async function* ({ input, signal }) {
-        for await (const chunk of iterateMessageStream(
-          input.sessionId,
-          input.message,
-        )) {
+        for await (const chunk of iterateMessageStream(input.sessionId, input.message)) {
           const event = streamApiEventSchema.parse({
             event: chunk.event,
             data: JSON.parse(chunk.data),
@@ -247,12 +242,10 @@ export const appRouter = router({
           pty.resize(input.cols, input.rows);
           return { ok: true as const };
         }),
-      close: publicProcedure
-        .input(z.object({ sessionId: z.string() }))
-        .mutation(({ input }) => {
-          closeTerminalSession(input.sessionId);
-          return { ok: true as const };
-        }),
+      close: publicProcedure.input(z.object({ sessionId: z.string() })).mutation(({ input }) => {
+        closeTerminalSession(input.sessionId);
+        return { ok: true as const };
+      }),
     }),
   }),
 });

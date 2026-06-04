@@ -53,7 +53,7 @@ export function listCommandDefs(): CommandDef[] {
     seen.add(cmd);
     result.push(cmd);
   }
-  return result.sort((a, b) => a.name.localeCompare(b.name));
+  return result.toSorted((a, b) => a.name.localeCompare(b.name));
 }
 
 export function commandAvailableForPlatform(cmd: CommandDef, platform: string): boolean {
@@ -76,20 +76,14 @@ export function findCommand(text: string): [CommandDef | null, string[]] {
 }
 
 /** 匹配命令并校验当前平台是否可用 */
-export function resolveCommand(
-  text: string,
-  platform: string,
-): [CommandDef | null, string[]] {
+export function resolveCommand(text: string, platform: string): [CommandDef | null, string[]] {
   const [cmd, args] = findCommand(text);
   if (!cmd) return [null, []];
   if (!commandAvailableForPlatform(cmd, platform)) return [null, []];
   return [cmd, args];
 }
 
-export async function executeCommand(
-  cmd: CommandDef,
-  ctx: CommandContext,
-): Promise<CommandResult> {
+export async function executeCommand(cmd: CommandDef, ctx: CommandContext): Promise<CommandResult> {
   const raw = await cmd.handler(ctx);
   if (typeof raw === "string") return { text: raw };
   return raw;

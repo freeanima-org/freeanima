@@ -97,9 +97,13 @@ describe("AcpManager.getStatus", () => {
   it("disabled agent 显示 disabled 状态", async () => {
     writeFileSync(
       join(home, "config.yaml"),
-      [MINIMAL_LLM_YAML.trim(), "acp_agents:", "  cursor:", "    command: echo", "    enabled: false"].join(
-        "\n",
-      ),
+      [
+        MINIMAL_LLM_YAML.trim(),
+        "acp_agents:",
+        "  cursor:",
+        "    command: echo",
+        "    enabled: false",
+      ].join("\n"),
     );
     clearConfigCache();
     const mgr = new AcpManager();

@@ -4,11 +4,7 @@ import type {
   ToolAfterCallEffect,
   TurnAfterCompleteEffect,
 } from "@freeanima/legacy-kernel";
-import {
-  messageIncoming,
-  toolAfterCall,
-  turnAfterComplete,
-} from "@freeanima/legacy-kernel";
+import { messageIncoming, toolAfterCall, turnAfterComplete } from "@freeanima/legacy-kernel";
 import {
   findAwaitingClarifyInMessages,
   formatClarifyText,

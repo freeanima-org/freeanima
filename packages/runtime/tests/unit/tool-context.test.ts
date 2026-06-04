@@ -1,7 +1,6 @@
 import { runWithToolContext, getToolSessionId } from "@freeanima/legacy-engine";
 import { describe, it, expect } from "bun:test";
 
-
 describe("runWithToolContext", () => {
   it("propagates session through async generator iteration", async () => {
     async function* inner() {

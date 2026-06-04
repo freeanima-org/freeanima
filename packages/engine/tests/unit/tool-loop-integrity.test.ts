@@ -61,9 +61,9 @@ describe("tool-loop-integrity", () => {
       expect(repaired[2].content).toBe(syntheticToolContent(REPAIR_REASON_LOST));
     }
     const api = messagesForApi(sessionMessagesToInvokeInput(repaired).turns);
-    expect(api.some((m) => m.role === "assistant" && "tool_calls" in m && m.tool_calls?.length)).toBe(
-      true,
-    );
+    expect(
+      api.some((m) => m.role === "assistant" && "tool_calls" in m && m.tool_calls?.length),
+    ).toBe(true);
   });
 
   it("planToolLoopInserts 在中间 assistant 后插入而非末尾", () => {

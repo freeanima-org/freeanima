@@ -83,7 +83,9 @@ function isMissingExtraValue(value: unknown): boolean {
   return value === undefined || value === null || value === "";
 }
 
-function normalizePlatformExtra(extra?: Record<string, unknown>): Record<string, unknown> | undefined {
+function normalizePlatformExtra(
+  extra?: Record<string, unknown>,
+): Record<string, unknown> | undefined {
   if (!extra) return undefined;
   const out = { ...extra };
   for (const key of PLATFORM_EXTRA_TIMESTAMP_KEYS) {
@@ -119,7 +121,7 @@ export function buildPlatformInfo(
     return null;
   }
   const extra = normalizePlatformExtra(platformExtra);
-  const withDefaults = applyLegacyPlatformDefaults(platform, { ...(extra ?? {}) });
+  const withDefaults = applyLegacyPlatformDefaults(platform, { ...extra });
   const merged: Record<string, unknown> = {
     platform,
     ...withDefaults,

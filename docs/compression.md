@@ -7,12 +7,12 @@
 
 ## 设计原则
 
-| 原则 | 说明 |
-|------|------|
-| JSONL 不删 | L1 永远保留完整对话；压缩只改**运行时视图**与 `session_meta.compression` |
-| l4 实时 | `l4 = max(id)`，随 append 增长，**不写入 meta** |
-| 边界单调 | 压缩成功时 `新 l2 > 旧 l2`、`新 l3 ≥ 旧 l3`；否则放弃本次压缩 |
-| 职责分离 | **定界**（`deriveBoundariesFromL4`）与 **触发**（`shouldAdvance`）解耦；仅触发区分 tool loop |
+| 原则       | 说明                                                                                         |
+| ---------- | -------------------------------------------------------------------------------------------- |
+| JSONL 不删 | L1 永远保留完整对话；压缩只改**运行时视图**与 `session_meta.compression`                     |
+| l4 实时    | `l4 = max(id)`，随 append 增长，**不写入 meta**                                              |
+| 边界单调   | 压缩成功时 `新 l2 > 旧 l2`、`新 l3 ≥ 旧 l3`；否则放弃本次压缩                                |
+| 职责分离   | **定界**（`deriveBoundariesFromL4`）与 **触发**（`shouldAdvance`）解耦；仅触发区分 tool loop |
 
 ---
 
@@ -45,13 +45,13 @@ flowchart LR
 
 ## 边界点 l0–l4
 
-| 点 | 含义 | 何时变 | 持久化 |
-|----|------|--------|--------|
-| **l0** | 系统提示词锚点，恒 **0** | 不变 | 否 |
-| **l1** | 运行时合成摘要 user 的 **id**，恒 **1**（**≠ l4**） | 不变 | 否 |
-| **l2** | 摘要段右界（`id ≤ l2` 已进入摘要） | **仅压缩成功** | 是 |
-| **l3** | 精简段右界 | **仅压缩成功** | 是 |
-| **l4** | 消息列表最右 id，`max(id)` | **实时** append | 否 |
+| 点     | 含义                                                | 何时变          | 持久化 |
+| ------ | --------------------------------------------------- | --------------- | ------ |
+| **l0** | 系统提示词锚点，恒 **0**                            | 不变            | 否     |
+| **l1** | 运行时合成摘要 user 的 **id**，恒 **1**（**≠ l4**） | 不变            | 否     |
+| **l2** | 摘要段右界（`id ≤ l2` 已进入摘要）                  | **仅压缩成功**  | 是     |
+| **l3** | 精简段右界                                          | **仅压缩成功**  | 是     |
+| **l4** | 消息列表最右 id，`max(id)`                          | **实时** append | 否     |
 
 ### 硬性约定
 
@@ -80,11 +80,11 @@ flowchart LR
   archived --> slimZone --> rawZone
 ```
 
-| JSONL 区间 | 运行时去向 |
-|------------|------------|
-| `id ≤ l2` | 不进消息列表 → 合成 `id=1` 摘要 user（`meta.summary`） |
-| `(l2, l3]` | 精简段（`slimMessage` 后 UA） |
-| `(l3, l4]` | 原始段（全量，含 tool） |
+| JSONL 区间 | 运行时去向                                             |
+| ---------- | ------------------------------------------------------ |
+| `id ≤ l2`  | 不进消息列表 → 合成 `id=1` 摘要 user（`meta.summary`） |
+| `(l2, l3]` | 精简段（`slimMessage` 后 UA）                          |
+| `(l3, l4]` | 原始段（全量，含 tool）                                |
 
 两次压缩之间：**l2 / l3 / summary 冻结**，仅 **`(l3, l4]`** 随 append 变长。
 
@@ -101,12 +101,12 @@ flowchart TB
   sys --> sum --> slim --> raw
 ```
 
-| 段 | 原始 id | 说明 |
-|----|---------|------|
-| system | l0 | `session_meta.system_prompt`，不在 JSONL 对话行里 |
-| 摘要 | `≤ l2` | 合成 `id=1` + `summary` 文本；**不写 JSONL** |
-| 精简 | `(l2, l3]` | slim 后 user/assistant（tool 丢弃） |
-| 原始 | `(l3, l4]` | 全量消息，**不 slim** |
+| 段     | 原始 id    | 说明                                              |
+| ------ | ---------- | ------------------------------------------------- |
+| system | l0         | `session_meta.system_prompt`，不在 JSONL 对话行里 |
+| 摘要   | `≤ l2`     | 合成 `id=1` + `summary` 文本；**不写 JSONL**      |
+| 精简   | `(l2, l3]` | slim 后 user/assistant（tool 丢弃）               |
+| 原始   | `(l3, l4]` | 全量消息，**不 slim**                             |
 
 实现：`buildRuntimeFromLPoints` → `buildRuntimeMessages` 前置 `system`。
 
@@ -124,23 +124,23 @@ models:
 compression:
   enabled: true
   reserved_tokens: 8192
-  trigger_low: 0.60       # 工具循环外：达到可压
-  trigger_high: 0.80      # 工具循环内：达到可压
-  emergency_ratio: 0.92   # 工具循环内硬顶
-  raw_min_messages: 5     # 原始段 (l3, l4] 最少条数
-  slim_min_messages: 50   # 精简段 (l2, l3] slim 后最少条数
+  trigger_low: 0.60 # 工具循环外：达到可压
+  trigger_high: 0.80 # 工具循环内：达到可压
+  emergency_ratio: 0.92 # 工具循环内硬顶
+  raw_min_messages: 5 # 原始段 (l3, l4] 最少条数
+  slim_min_messages: 50 # 精简段 (l2, l3] slim 后最少条数
   summary_max_tokens: 4000
-  max_rounds: 50          # 未配置 context_window 时回退条数模式
+  max_rounds: 50 # 未配置 context_window 时回退条数模式
 ```
 
-| 项 | 默认 | 说明 |
-|----|------|------|
-| 有效预算 | `context_window - reserved_tokens`（下限 4096） | token 模式占用率分母 |
-| `trigger_low` | 0.60 | 循环**外**首次/再次压缩阈 |
-| `trigger_high` | 0.80 | 循环**内**压缩阈 |
-| `emergency_ratio` | 0.92 | 循环内硬顶 + emergency 路径 |
-| `raw_min_messages` | 5 | 定 l3 时原始段下限 |
-| `slim_min_messages` | 50 | 定 l2 时精简段 slim 后下限 |
+| 项                  | 默认                                            | 说明                        |
+| ------------------- | ----------------------------------------------- | --------------------------- |
+| 有效预算            | `context_window - reserved_tokens`（下限 4096） | token 模式占用率分母        |
+| `trigger_low`       | 0.60                                            | 循环**外**首次/再次压缩阈   |
+| `trigger_high`      | 0.80                                            | 循环**内**压缩阈            |
+| `emergency_ratio`   | 0.92                                            | 循环内硬顶 + emergency 路径 |
+| `raw_min_messages`  | 5                                               | 定 l3 时原始段下限          |
+| `slim_min_messages` | 50                                              | 定 l2 时精简段 slim 后下限  |
 
 **已删除**（v5.1 不再读取）：`tool_loop_suppress_sec`、`slim_user_shift`、`tool_loop_user_shift`、`l2l`。
 
@@ -166,11 +166,11 @@ flowchart TD
 
 ### 职责分离
 
-| 模块 | 是否关心 tool loop |
-|------|-------------------|
-| `deriveBoundariesFromL4` | **否** — 同一套自右向左算法 |
-| `shouldAdvance` | **是** — 内外不同阈值 |
-| `buildRuntimeFromLPoints` | **否** |
+| 模块                      | 是否关心 tool loop          |
+| ------------------------- | --------------------------- |
+| `deriveBoundariesFromL4`  | **否** — 同一套自右向左算法 |
+| `shouldAdvance`           | **是** — 内外不同阈值       |
+| `buildRuntimeFromLPoints` | **否**                      |
 
 ---
 
@@ -193,10 +193,10 @@ flowchart TD
 
 取**最大的** `l3`（右推，原始段尽量窄、靠右），使 **`(l3, l4]`** 满足：
 
-| 约束 | 说明 |
-|------|------|
-| 条数 | ≥ `raw_min_messages`（默认 5） |
-| 含 user | 至少 1 条 `role=user` |
+| 约束     | 说明                                                       |
+| -------- | ---------------------------------------------------------- |
+| 条数     | ≥ `raw_min_messages`（默认 5）                             |
+| 含 user  | 至少 1 条 `role=user`                                      |
 | 热尾起点 | **`min{ id \| id > l3 }`** 必须是 `user`（兼容 id 不连续） |
 
 > **注意**：L3 保证 raw 热尾以 `user` **起笔**，不保证热尾以完整 tool loop **收笔**；尾部 dangling `tool_calls` 由 engine `tool-loop-integrity` 在出站/落盘前 repair。
@@ -207,10 +207,10 @@ flowchart TD
 
 取**最大的** `l2`，使 **`(l2, l3]`** 经 `slimMessage` 后条数 ≥ `slim_min_messages`（默认 50）。
 
-| 检查 | 说明 |
-|------|------|
-| `l2 < l3` | 否则无效 |
-| `新 l3 ≥ 旧 l3` | 单调 |
+| 检查            | 说明               |
+| --------------- | ------------------ |
+| `l2 < l3`       | 否则无效           |
+| `新 l3 ≥ 旧 l3` | 单调               |
 | `新 l2 > 旧 l2` | 严格右移，否则放弃 |
 
 ### Step 3：摘要
@@ -244,11 +244,11 @@ flowchart TD
   high -->|否| hold
 ```
 
-| 场景 | 是否推进压缩 |
-|------|-------------|
-| **工具循环外** | `usage ≥ trigger_low`（0.60）；`< trigger_low` 不压 |
-| **工具循环内** | 仅 `usage ≥ trigger_high`（0.80）或 `≥ emergency_ratio`（0.92） |
-| **工具循环内** 其余 | 不压 |
+| 场景                | 是否推进压缩                                                    |
+| ------------------- | --------------------------------------------------------------- |
+| **工具循环外**      | `usage ≥ trigger_low`（0.60）；`< trigger_low` 不压             |
+| **工具循环内**      | 仅 `usage ≥ trigger_high`（0.80）或 `≥ emergency_ratio`（0.92） |
+| **工具循环内** 其余 | 不压                                                            |
 
 占用率按当前 **l4** 下四段 runtime 视图（system + 摘要 + 精简 + 原始 + tools）估算，**不用 JSONL 全量**。
 
@@ -260,12 +260,12 @@ flowchart TD
 
 原始段 **不** slim。
 
-| role | 行为 |
-|------|------|
-| `tool` | **丢弃** |
-| `user` | 保留（去掉 `reasoning` / `tool_calls` 字段） |
+| role                       | 行为                                                                              |
+| -------------------------- | --------------------------------------------------------------------------------- |
+| `tool`                     | **丢弃**                                                                          |
+| `user`                     | 保留（去掉 `reasoning` / `tool_calls` 字段）                                      |
 | `assistant` + `tool_calls` | `content` 非空用 content，**否则用 `reasoning`**；去掉 `tool_calls` / `reasoning` |
-| `assistant` 无 tool_calls | 保留 `content`，去 `reasoning` |
+| `assistant` 无 tool_calls  | 保留 `content`，去 `reasoning`                                                    |
 
 ---
 
@@ -304,20 +304,20 @@ sequenceDiagram
   RC->>SP: 刷新 system_prompt
 ```
 
-| 步骤 | 说明 |
-|------|------|
+| 步骤 | 说明                                                                 |
+| ---- | -------------------------------------------------------------------- |
 | 触发 | `beginTurn` → `advanceCompressionMeta`；或 `/compress`；或 emergency |
-| 切片 | `sliceForSummary(messages, prevL2, newL2)` |
-| LLM | `system` = 压缩前 `system_prompt` **快照**；不传 tools |
-| 写回 | 覆盖 `summary` + `summary_at`；`rebuildSessionSystemPrompt()` |
+| 切片 | `sliceForSummary(messages, prevL2, newL2)`                           |
+| LLM  | `system` = 压缩前 `system_prompt` **快照**；不传 tools               |
+| 写回 | 覆盖 `summary` + `summary_at`；`rebuildSessionSystemPrompt()`        |
 
 旧 meta **读时迁移**（`parseCompressionState`）：
 
-| 旧字段 | → 新字段 |
-|--------|----------|
-| `anchor_id` | `l3` |
-| `cut_id`（无 anchor） | `l3` |
-| `last_summarized_cut_id` | `l2` |
+| 旧字段                   | → 新字段 |
+| ------------------------ | -------- |
+| `anchor_id`              | `l3`     |
+| `cut_id`（无 anchor）    | `l3`     |
+| `last_summarized_cut_id` | `l2`     |
 
 ---
 
@@ -353,26 +353,26 @@ stateDiagram-v2
   已压缩 --> 已压缩: emergency 就地裁切
 ```
 
-| 时机 | 行为 |
-|------|------|
-| `beginTurn` | `clearToolLoopSuppression` → append user → `advanceCompressionMeta` → `buildRuntimeMessages` |
-| 每轮 tool/assistant | engine `markToolLoopActivity`（不影响 v5.1 压缩阈） |
-| `buildRuntimeMessages` | `compress` 只读 meta，除非 `shouldAdvance` 为真 |
-| `/compress --force` | 忽略滞回，从 `l2=l3=0` 重算边界 |
+| 时机                   | 行为                                                                                         |
+| ---------------------- | -------------------------------------------------------------------------------------------- |
+| `beginTurn`            | `clearToolLoopSuppression` → append user → `advanceCompressionMeta` → `buildRuntimeMessages` |
+| 每轮 tool/assistant    | engine `markToolLoopActivity`（不影响 v5.1 压缩阈）                                          |
+| `buildRuntimeMessages` | `compress` 只读 meta，除非 `shouldAdvance` 为真                                              |
+| `/compress --force`    | 忽略滞回，从 `l2=l3=0` 重算边界                                                              |
 
 ---
 
 ## 实现入口
 
-| 模块 | 职责 |
-|------|------|
-| `packages/engine/src/compressor.ts` | l 点、`deriveBoundariesFromL4`、`shouldAdvance`、`buildRuntimeFromLPoints`、`slimMessage` |
-| `packages/engine/src/compression-config.ts` | 配置与 `context_window` / 有效预算 |
-| `packages/engine/src/compression-summary.ts` | 摘要 LLM |
-| `packages/engine/src/compression-tool-loop.ts` | `isInToolLoop` |
-| `packages/engine/src/conversation.ts` | `recompressSession`、`buildRuntimeMessages`、`maybeApplyEmergencyCompression` |
-| `packages/engine/src/engine.ts` | emergency 调用点 |
-| `packages/runtime/src/conversation-stats.ts` | `/stats` 展示 `l2`/`l3`/占用率 |
+| 模块                                           | 职责                                                                                      |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `packages/engine/src/compressor.ts`            | l 点、`deriveBoundariesFromL4`、`shouldAdvance`、`buildRuntimeFromLPoints`、`slimMessage` |
+| `packages/engine/src/compression-config.ts`    | 配置与 `context_window` / 有效预算                                                        |
+| `packages/engine/src/compression-summary.ts`   | 摘要 LLM                                                                                  |
+| `packages/engine/src/compression-tool-loop.ts` | `isInToolLoop`                                                                            |
+| `packages/engine/src/conversation.ts`          | `recompressSession`、`buildRuntimeMessages`、`maybeApplyEmergencyCompression`             |
+| `packages/engine/src/engine.ts`                | emergency 调用点                                                                          |
+| `packages/runtime/src/conversation-stats.ts`   | `/stats` 展示 `l2`/`l3`/占用率                                                            |
 
 手动：`/compress`（`--force` 忽略滞回）。
 

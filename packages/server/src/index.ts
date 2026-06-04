@@ -1,5 +1,10 @@
 export { isServerAlive, readStatusFile } from "./alive";
-export { DEFAULT_BIND_HOST, DEFAULT_BIND_HOSTS, parseBindHosts, resolveProbeHost } from "./bind-hosts";
+export {
+  DEFAULT_BIND_HOST,
+  DEFAULT_BIND_HOSTS,
+  parseBindHosts,
+  resolveProbeHost,
+} from "./bind-hosts";
 export { serve, getService } from "./serve";
 export {
   initServiceContext,

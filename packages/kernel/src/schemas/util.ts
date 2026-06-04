@@ -2,10 +2,7 @@ import { readFileSync } from "node:fs";
 import type { z } from "zod";
 
 /** JSONL 单行 safeParse；无效行返回 null */
-export function parseJsonLine<T extends z.ZodType>(
-  line: string,
-  schema: T,
-): z.infer<T> | null {
+export function parseJsonLine<T extends z.ZodType>(line: string, schema: T): z.infer<T> | null {
   const trimmed = line.trim();
   if (!trimmed) return null;
   try {
@@ -18,10 +15,7 @@ export function parseJsonLine<T extends z.ZodType>(
 }
 
 /** 读取 JSON 文件并 safeParse；失败返回 null */
-export function parseJsonFile<T extends z.ZodType>(
-  path: string,
-  schema: T,
-): z.infer<T> | null {
+export function parseJsonFile<T extends z.ZodType>(path: string, schema: T): z.infer<T> | null {
   try {
     const raw: unknown = JSON.parse(readFileSync(path, "utf-8"));
     const result = schema.safeParse(raw);
@@ -32,10 +26,7 @@ export function parseJsonFile<T extends z.ZodType>(
 }
 
 /** unknown 输入 safeParse；失败返回 null */
-export function safeParseOrNull<T extends z.ZodType>(
-  schema: T,
-  raw: unknown,
-): z.infer<T> | null {
+export function safeParseOrNull<T extends z.ZodType>(schema: T, raw: unknown): z.infer<T> | null {
   const result = schema.safeParse(raw);
   return result.success ? result.data : null;
 }

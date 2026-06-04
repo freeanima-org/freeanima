@@ -7,9 +7,7 @@ export type ReflectChatResponse = {
   content: string | null;
 };
 
-export type ReflectChatFn = (
-  messages: ReflectChatMessage[],
-) => Promise<ReflectChatResponse>;
+export type ReflectChatFn = (messages: ReflectChatMessage[]) => Promise<ReflectChatResponse>;
 
 let reflectChat: ReflectChatFn | null = null;
 
@@ -22,9 +20,7 @@ export async function callReflectChat(
   messages: ReflectChatMessage[],
 ): Promise<ReflectChatResponse> {
   if (!reflectChat) {
-    throw new Error(
-      "memory reflect LLM 未配置：请在服务启动时调用 registerReflectChat()",
-    );
+    throw new Error("memory reflect LLM 未配置：请在服务启动时调用 registerReflectChat()");
   }
   return reflectChat(messages);
 }

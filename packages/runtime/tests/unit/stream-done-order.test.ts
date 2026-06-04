@@ -34,10 +34,12 @@ describe("sendMessageStream done 顺序", () => {
     );
 
     restores.push(
-      spyOn(engine, "runStream").mockImplementation(async function* (): AsyncGenerator<StreamEvent> {
-        yield { event: "token", data: { content: "reply" } };
-        yield { event: "done", data: {} };
-      }),
+      spyOn(engine, "runStream").mockImplementation(
+        async function* (): AsyncGenerator<StreamEvent> {
+          yield { event: "token", data: { content: "reply" } };
+          yield { event: "done", data: {} };
+        },
+      ),
     );
 
     const svc = new NestService();

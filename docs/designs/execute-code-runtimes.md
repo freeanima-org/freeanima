@@ -15,12 +15,12 @@
 
 ## 与 terminal 的分工
 
-| | `execute_code` | `terminal` |
-|--|----------------|------------|
-| 执行方式 | 无 shell，固定运行时 | shell=true |
-| 适合 | 短脚本、数据处理、逻辑验证 | 系统命令、管道、git、长期任务 |
-| 输出 | 50KB 上限，超时可控 | 同样有限制但更自由 |
-| 安全 | 攻击面小（无 shell 注入） | 攻击面较大 |
+|          | `execute_code`             | `terminal`                    |
+| -------- | -------------------------- | ----------------------------- |
+| 执行方式 | 无 shell，固定运行时       | shell=true                    |
+| 适合     | 短脚本、数据处理、逻辑验证 | 系统命令、管道、git、长期任务 |
+| 输出     | 50KB 上限，超时可控        | 同样有限制但更自由            |
+| 安全     | 攻击面小（无 shell 注入）  | 攻击面较大                    |
 
 Python 批处理应走 `execute_code(runtime="python")`，而非 `python3 -c "..."` 塞进 terminal。
 
@@ -45,27 +45,27 @@ execute_code({
 interface CodeRuntime {
   id: "nodejs" | "python" | "deno";
   enabled: boolean;
-  extension: string;       // .mts / .py / .ts
-  preamble?: string;       // 写入文件前的 bootstrap
-  command: string[];       // spawn 命令与参数（末项为文件路径占位）
+  extension: string; // .mts / .py / .ts
+  preamble?: string; // 写入文件前的 bootstrap
+  command: string[]; // spawn 命令与参数（末项为文件路径占位）
 }
 ```
 
-| runtime | 命令 | 文件 | preamble | 状态 |
-|---------|------|------|----------|------|
+| runtime    | 命令                              | 文件   | preamble                | 状态      |
+| ---------- | --------------------------------- | ------ | ----------------------- | --------- |
 | **nodejs** | `node --experimental-strip-types` | `.mts` | `node:fs` 等常用 import | ✅ 已实现 |
-| **python** | `python3` | `.py` | 可选 `os`/`pathlib` | 🔲 预留 |
-| **deno** | `deno run --allow-read=...` | `.ts` | Deno 标准库 | 🔲 预留 |
+| **python** | `python3`                         | `.py`  | 可选 `os`/`pathlib`     | 🔲 预留   |
+| **deno**   | `deno run --allow-read=...`       | `.ts`  | Deno 标准库             | 🔲 预留   |
 
 ### 阶段计划
 
-| 阶段 | 内容 |
-|------|------|
+| 阶段           | 内容                                          |
+| -------------- | --------------------------------------------- |
 | **P0**（当前） | 扁平 schema + `runtime` 参数 + 仅 nodejs 启用 |
-| **P1** | 实现 python runtime |
-| **P2** | `config.yaml` 运行时开关 |
-| **P3** | deno + 权限策略 |
-| **P4** | 跨 runtime 的 `credential()` 注入 |
+| **P1**         | 实现 python runtime                           |
+| **P2**         | `config.yaml` 运行时开关                      |
+| **P3**         | deno + 权限策略                               |
+| **P4**         | 跨 runtime 的 `credential()` 注入             |
 
 ## 配置（P2 预留）
 
@@ -86,7 +86,7 @@ execute_code:
 未启用的 runtime 返回：
 
 ```json
-{"error": "runtime 'python' 尚未启用；当前可用: nodejs"}
+{ "error": "runtime 'python' 尚未启用；当前可用: nodejs" }
 ```
 
 ## 执行流程

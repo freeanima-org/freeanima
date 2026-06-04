@@ -72,7 +72,7 @@ export function pgProfileReset(): void {
 export function pgProfileLogSummary(): void {
   if (!pgProfileEnabled() || stats.size === 0) return;
   const lines = [...stats.values()]
-    .sort((a, b) => b.totalMs - a.totalMs)
+    .toSorted((a, b) => b.totalMs - a.totalMs)
     .map(
       (e) =>
         `${e.op}: count=${e.count} total=${e.totalMs.toFixed(0)}ms max=${e.maxMs.toFixed(0)}ms` +

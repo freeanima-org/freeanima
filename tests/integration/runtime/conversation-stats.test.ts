@@ -11,11 +11,7 @@ import {
   appendMessage,
   updateSessionMetaField,
 } from "@freeanima/legacy-engine";
-import {
-  computeStats,
-  mergeStats,
-  statsReport,
-} from "@freeanima/legacy-runtime";
+import { computeStats, mergeStats, statsReport } from "@freeanima/legacy-runtime";
 
 describePg("conversation-stats", () => {
   const prev = process.env.FREEANIMA_HOME;
@@ -89,9 +85,7 @@ describePg("conversation-stats", () => {
   it("estimateTokens and estimateMessagesTokens", () => {
     expect(estimateTokens("")).toBe(0);
     expect(estimateTokens("abcd")).toBeGreaterThan(0);
-    expect(
-      estimateMessagesTokens([{ role: "user", content: "你好世界" }]),
-    ).toBeGreaterThan(0);
+    expect(estimateMessagesTokens([{ role: "user", content: "你好世界" }])).toBeGreaterThan(0);
   });
 
   it("computeStats estimates when no usage in messages", async () => {

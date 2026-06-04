@@ -4,11 +4,7 @@ import { PATHS, openSqlite, type SqliteDatabase } from "@freeanima/legacy-kernel
 import { buildFtsQuery } from "./fts-query";
 import { getStore } from "./store";
 import type { FactData } from "./fact";
-import {
-  l3DomainsSchema,
-  l3EntitiesSchema,
-  l3SourcesSchema,
-} from "@freeanima/legacy-kernel";
+import { l3DomainsSchema, l3EntitiesSchema, l3SourcesSchema } from "@freeanima/legacy-kernel";
 import { safeParseOrNull } from "@freeanima/legacy-kernel";
 
 const SCHEMA = `

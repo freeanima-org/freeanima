@@ -1,7 +1,6 @@
 import { acpAgentSchema } from "@freeanima/legacy-kernel";
 import type { z } from "zod";
 
-
 export type AcpAgentConfig = z.infer<typeof acpAgentSchema>;
 
 export type AcpAgentConfigView = {

@@ -10,7 +10,12 @@ import { createNullSink } from "@freeanima/kernel-logging/null";
 import { EventBus } from "@freeanima/kernel-eventbus";
 import { waitFor } from "../../helpers/wait";
 import { SqliteEventQueue } from "@freeanima/connectors-eventbus-sqlite";
-import { resetStoreForTests, registerMemoryHandlers, l2SessionPath, sessionUpdated } from "@freeanima/legacy-memory";
+import {
+  resetStoreForTests,
+  registerMemoryHandlers,
+  l2SessionPath,
+  sessionUpdated,
+} from "@freeanima/legacy-memory";
 import { seedSession } from "@freeanima/legacy-db/test-helpers";
 
 describePgSqlite("memory handlers", () => {

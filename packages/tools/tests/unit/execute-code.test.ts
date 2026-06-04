@@ -62,7 +62,8 @@ describe("openaiSchemas", () => {
     expect(desc).toContain("nodejs");
     expect(desc).not.toBe("Run code");
 
-    const params = (exec!.function as { parameters: { properties: Record<string, unknown> } }).parameters;
+    const params = (exec!.function as { parameters: { properties: Record<string, unknown> } })
+      .parameters;
     expect(params.properties.runtime).toBeDefined();
     expect(params.properties.code).toBeDefined();
   });

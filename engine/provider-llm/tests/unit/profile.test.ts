@@ -34,7 +34,7 @@ describe("profile helpers", () => {
       profileDef("a", [hop("p1", "m1"), hop("p2", "m2")]),
       profileDef("b", [hop("p1", "m3")]),
     ]);
-    expect(ids.sort()).toEqual(["p1", "p2"]);
+    expect(ids.toSorted()).toEqual(["p1", "p2"]);
   });
 
   it("validateProfiles reports structural issues", () => {
@@ -88,7 +88,7 @@ describe("ProfileRegistry", () => {
           "chat",
           providers,
         ),
-    ).toThrow('重复的 profile id: chat');
+    ).toThrow("重复的 profile id: chat");
 
     expect(
       () => new ProfileRegistry([profileDef("chat", [hop("main", "m")])], "missing", providers),
@@ -102,7 +102,12 @@ describe("ProfileRegistry", () => {
 
   it("list returns all registered profiles", () => {
     const { profiles } = setupProfileStack();
-    expect(profiles.list().map((p) => p.id).sort()).toEqual(["chat", "reflect"]);
+    expect(
+      profiles
+        .list()
+        .map((p) => p.id)
+        .toSorted(),
+    ).toEqual(["chat", "reflect"]);
   });
 });
 
@@ -148,7 +153,10 @@ describe("LlmProfile", () => {
     const backend = new MockBackend({
       streamEvents: [
         { type: "content", content: "a" },
-        { type: "tool_calls", tool_calls: [{ id: "c1", function: { name: "t", arguments: "{}" } }] },
+        {
+          type: "tool_calls",
+          tool_calls: [{ id: "c1", function: { name: "t", arguments: "{}" } }],
+        },
         { type: "done", model: "test-model", finish_reason: "tool_calls" },
       ],
     });

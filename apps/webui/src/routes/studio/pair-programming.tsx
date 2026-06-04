@@ -93,7 +93,8 @@ function PairProgrammingPage() {
         <div className="max-w-md text-center space-y-4">
           <h3 className="text-lg font-bold">配置工作目录</h3>
           <p className="text-sm text-base-content/60">
-            结对编程需要先设置 <code className="text-xs bg-base-300 px-1 rounded">studio.workspace</code>。
+            结对编程需要先设置{" "}
+            <code className="text-xs bg-base-300 px-1 rounded">studio.workspace</code>。
           </p>
           <form
             className="flex gap-2"

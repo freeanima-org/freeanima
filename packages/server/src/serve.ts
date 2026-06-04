@@ -1,5 +1,11 @@
 import "@freeanima/legacy-runtime/system-prompt-wire";
-import { chat, cleanupDebugSessions, initLlmRuntime, kernel, PROFILE_REFLECT } from "@freeanima/legacy-engine";
+import {
+  chat,
+  cleanupDebugSessions,
+  initLlmRuntime,
+  kernel,
+  PROFILE_REFLECT,
+} from "@freeanima/legacy-engine";
 import {
   loadConfig,
   PATHS,
@@ -39,7 +45,12 @@ import { initServiceContext } from "./service-context";
 import { startWebuiHttpServers, type WebuiServerHandle } from "./webui-server";
 
 export { isServerAlive, readStatusFile } from "./alive";
-export { DEFAULT_BIND_HOST, DEFAULT_BIND_HOSTS, parseBindHosts, resolveProbeHost } from "./bind-hosts";
+export {
+  DEFAULT_BIND_HOST,
+  DEFAULT_BIND_HOSTS,
+  parseBindHosts,
+  resolveProbeHost,
+} from "./bind-hosts";
 
 let service: NestService | null = null;
 let mcp: MCPManager | null = null;

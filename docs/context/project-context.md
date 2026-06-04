@@ -7,12 +7,12 @@
 
 ## 工具使用策略（当前工作方式）
 
-| 场景 | 推荐方式 | 原因 |
-|------|---------|------|
-| 读 1-2 个文件 | 直接 `read_file` | 最快，零开销 |
-| 单文件小修改 | `patch` | 精确，可追溯 |
-| 跨多文件代码分析/实现 | Cursor Agent | 委托 IDE，比 delegate_task 更直接 |
-| 设计决策 / 架构判断 | Cursor Agent 出多方案，由部署者或主 Agent 做判断 | 素材来自 Cursor，选择权在运行实例 |
+| 场景                  | 推荐方式                                         | 原因                              |
+| --------------------- | ------------------------------------------------ | --------------------------------- |
+| 读 1-2 个文件         | 直接 `read_file`                                 | 最快，零开销                      |
+| 单文件小修改          | `patch`                                          | 精确，可追溯                      |
+| 跨多文件代码分析/实现 | Cursor Agent                                     | 委托 IDE，比 delegate_task 更直接 |
+| 设计决策 / 架构判断   | Cursor Agent 出多方案，由部署者或主 Agent 做判断 | 素材来自 Cursor，选择权在运行实例 |
 
 ## 家目录 `~/.anima/`
 
@@ -49,6 +49,7 @@ L1 Session 主存为 PostgreSQL（`config.yaml` → `database.url`）。表设�
 `NestService` 与 cron 引擎路径在 `engine.run` / `engine.runStream` 落盘：**最终 assistant** 即时 `appendMessage`；**tool loop 一轮**（assistant+tool_calls + 全部 tool 响应）**原子批量**落盘；`finishTurn(..., skipMessageAppend=true)` 只做 `session_meta` 更新。历史若出现 dangling `tool_calls`，`beginTurn`/`prepareMessages` 会在 **assistant 原位** 补 synthetic tool（后续 pos 后移）并修复；伙伴新消息可 **AbortController 抢占** 进行中的 tool loop。
 
 第一行是 `session_meta`：
+
 ```json
 {"role": "session_meta", "model": "...", "tools": [...], "cwd": "...", "title": "...", "todos": {"items": [], "next_id": 1}, "acp_sessions": {"cursor": "<acp-session-uuid>"}, "timestamp": "..."}
 ```
@@ -57,20 +58,21 @@ L1 Session 主存为 PostgreSQL（`config.yaml` → `database.url`）。表设�
 
 后续行是 OpenAI 格式消息 + 扩展字段：
 
-| 字段 | 适用范围 | 说明 |
-|------|---------|------|
-| `role` | 全部 | user / assistant / tool |
-| `content` | 全部 | 消息正文 |
-| `timestamp` | 全部 | UTC ISO8601，由 `append_message` 自动注入 |
-| `model` | assistant | 实际使用的模型名 |
-| `tool_calls` | assistant | 工具调用列表（完整 payload） |
-| `tool_call_id` | tool | 对应调用的 ID |
-| `reasoning` | assistant | 标准化推理文本（如有则保留） |
+| 字段            | 适用范围  | 说明                                      |
+| --------------- | --------- | ----------------------------------------- |
+| `role`          | 全部      | user / assistant / tool                   |
+| `content`       | 全部      | 消息正文                                  |
+| `timestamp`     | 全部      | UTC ISO8601，由 `append_message` 自动注入 |
+| `model`         | assistant | 实际使用的模型名                          |
+| `tool_calls`    | assistant | 工具调用列表（完整 payload）              |
+| `tool_call_id`  | tool      | 对应调用的 ID                             |
+| `reasoning`     | assistant | 标准化推理文本（如有则保留）              |
 | `finish_reason` | assistant | 结束原因（stop / tool_calls / length 等） |
-| `usage` | assistant | LLM 返回的 token 用量 |
-| `latency_ms` | assistant | 单次 LLM 请求耗时（毫秒） |
+| `usage`         | assistant | LLM 返回的 token 用量                     |
+| `latency_ms`    | assistant | 单次 LLM 请求耗时（毫秒）                 |
 
 设计原则：
+
 - raw data 完整存档，不裁剪任何字段
 - model 在消息级，换模型语义清晰
 - `load()` 跳过 session_meta
@@ -86,21 +88,21 @@ L1 Session 主存为 PostgreSQL（`config.yaml` → `database.url`）。表设�
 
 **Legacy 包名映射：**
 
-| 目录 | npm 包名 |
-|------|----------|
-| `packages/kernel` | `@freeanima/legacy-kernel` |
-| `packages/engine` | `@freeanima/legacy-engine` |
-| `packages/runtime` | `@freeanima/legacy-runtime` |
-| `packages/memory` | `@freeanima/legacy-memory` |
-| `packages/db` | `@freeanima/legacy-db` |
-| `packages/server` | `@freeanima/legacy-server` |
-| `packages/gateway` | `@freeanima/legacy-gateway` |
-| `packages/tools` | `@freeanima/legacy-tools` |
+| 目录                    | npm 包名                         |
+| ----------------------- | -------------------------------- |
+| `packages/kernel`       | `@freeanima/legacy-kernel`       |
+| `packages/engine`       | `@freeanima/legacy-engine`       |
+| `packages/runtime`      | `@freeanima/legacy-runtime`      |
+| `packages/memory`       | `@freeanima/legacy-memory`       |
+| `packages/db`           | `@freeanima/legacy-db`           |
+| `packages/server`       | `@freeanima/legacy-server`       |
+| `packages/gateway`      | `@freeanima/legacy-gateway`      |
+| `packages/tools`        | `@freeanima/legacy-tools`        |
 | `packages/integrations` | `@freeanima/legacy-integrations` |
-| `packages/clarify` | `@freeanima/legacy-clarify` |
-| `packages/api` | `@freeanima/legacy-api` |
-| `apps/cli` | `@freeanima/legacy-cli` |
-| `apps/webui` | `@freeanima/legacy-webui` |
+| `packages/clarify`      | `@freeanima/legacy-clarify`      |
+| `packages/api`          | `@freeanima/legacy-api`          |
+| `apps/cli`              | `@freeanima/legacy-cli`          |
+| `apps/webui`            | `@freeanima/legacy-webui`        |
 
 ```
 kernel/             # RFC #1 新栈（与 legacy packages/ 并行）
@@ -137,26 +139,26 @@ tests/           # Vitest 回归
 
 ## 已注册工具（TS 首版）
 
-| 工具 | 来源 | 说明 |
-|------|------|------|
-| `read_file` | `packages/tools/src/file.ts` | 读文本文件，行号+分页，阻塞设备/二进制 |
-| `write_file` | `packages/tools/src/file.ts` | 覆写文件，路径安全 |
-| `search_files` | `packages/tools/src/file.ts` | `target=files`：glob 文件名（支持 `a\|b`）；`target=content`：默认字面量（`regex=true` 为正则）；`files_only`+glob 形态 pattern 自动按文件名 |
-| `patch` | `packages/tools/src/file.ts` | 字符串替换 |
-| `terminal` | `packages/tools/src/terminal.ts` | shell 前台/后台，超时、workdir |
-| `process` | `packages/tools/src/terminal.ts` | 管理 `terminal(background=true)` 进程 |
-| `web_search` | `packages/tools/src/web.ts` | Firecrawl 搜索（`services/firecrawl`） |
-| `web_extract` | `packages/tools/src/web.ts` | Firecrawl 抓取 URL |
-| `browser_navigate` / `browser_snapshot` / `browser_click` / `browser_type` / `browser_scroll` / `browser_back` / `browser_press` / `browser_console` / `browser_get_images` / `browser_vision` | `packages/tools/src/browser.ts` | 浏览器交互（V1 仅 **Camofox REST** 后端）；`config.yaml` → `browser.camofox.base_url`；按 L1 session 隔离 tab；`browser_vision` 暂存截图路径（auxiliary vision 未接入） |
-| `clarify` | `packages/tools/src/clarify-tool.ts` | 批量提问（`items`）；`required=true` 时暂停 tool loop，状态存 session meta `awaiting_clarify`；`required=false` 需 `default` 自动续跑；`/cancel` 取消 |
-| `list_credentials` | `packages/tools/src/credential-tool.ts` | 列出 pass 凭证（无值） |
-| `execute_code` | `packages/tools/src/execute-code.ts` | 子进程执行代码；`runtime` 默认 `nodejs`（TS/JS）；`python`/`deno` 预留未启用。设计见 [`docs/designs/execute-code-runtimes.md`](../designs/execute-code-runtimes.md) |
-| `remember` | `packages/tools/src/memory-tools.ts` | 写入 L3 事实并增量更新 `index/l3.db` |
-| `recall` | `packages/tools/src/memory-tools.ts` | L3 事实 FTS + L2 历史对话 FTS（`index/l2.db`） |
-| `todo` | `packages/tools/src/todo-tool.ts` | 当前 session 待办（`session_meta.todos`） |
-| `cronjob` | `packages/tools/src/cronjob.ts` | 定时任务 CRUD / 立即运行 |
-| `create_skill` / `load_skill` / `unload_skill` / `list_skills` / `view_skill` / `delete_skill` | `packages/tools/src/skills-tools.ts` | 技能文件 + 全局 active 列表 |
-| `acp_{agent}` | `integrations/src/acp/manager.ts` | ACP 委托；默认绑定逸灵风 session；参数 `goal`、`context`、`new_session`、`session_id` |
+| 工具                                                                                                                                                                                           | 来源                                    | 说明                                                                                                                                                                    |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `read_file`                                                                                                                                                                                    | `packages/tools/src/file.ts`            | 读文本文件，行号+分页，阻塞设备/二进制                                                                                                                                  |
+| `write_file`                                                                                                                                                                                   | `packages/tools/src/file.ts`            | 覆写文件，路径安全                                                                                                                                                      |
+| `search_files`                                                                                                                                                                                 | `packages/tools/src/file.ts`            | `target=files`：glob 文件名（支持 `a\|b`）；`target=content`：默认字面量（`regex=true` 为正则）；`files_only`+glob 形态 pattern 自动按文件名                            |
+| `patch`                                                                                                                                                                                        | `packages/tools/src/file.ts`            | 字符串替换                                                                                                                                                              |
+| `terminal`                                                                                                                                                                                     | `packages/tools/src/terminal.ts`        | shell 前台/后台，超时、workdir                                                                                                                                          |
+| `process`                                                                                                                                                                                      | `packages/tools/src/terminal.ts`        | 管理 `terminal(background=true)` 进程                                                                                                                                   |
+| `web_search`                                                                                                                                                                                   | `packages/tools/src/web.ts`             | Firecrawl 搜索（`services/firecrawl`）                                                                                                                                  |
+| `web_extract`                                                                                                                                                                                  | `packages/tools/src/web.ts`             | Firecrawl 抓取 URL                                                                                                                                                      |
+| `browser_navigate` / `browser_snapshot` / `browser_click` / `browser_type` / `browser_scroll` / `browser_back` / `browser_press` / `browser_console` / `browser_get_images` / `browser_vision` | `packages/tools/src/browser.ts`         | 浏览器交互（V1 仅 **Camofox REST** 后端）；`config.yaml` → `browser.camofox.base_url`；按 L1 session 隔离 tab；`browser_vision` 暂存截图路径（auxiliary vision 未接入） |
+| `clarify`                                                                                                                                                                                      | `packages/tools/src/clarify-tool.ts`    | 批量提问（`items`）；`required=true` 时暂停 tool loop，状态存 session meta `awaiting_clarify`；`required=false` 需 `default` 自动续跑；`/cancel` 取消                   |
+| `list_credentials`                                                                                                                                                                             | `packages/tools/src/credential-tool.ts` | 列出 pass 凭证（无值）                                                                                                                                                  |
+| `execute_code`                                                                                                                                                                                 | `packages/tools/src/execute-code.ts`    | 子进程执行代码；`runtime` 默认 `nodejs`（TS/JS）；`python`/`deno` 预留未启用。设计见 [`docs/designs/execute-code-runtimes.md`](../designs/execute-code-runtimes.md)     |
+| `remember`                                                                                                                                                                                     | `packages/tools/src/memory-tools.ts`    | 写入 L3 事实并增量更新 `index/l3.db`                                                                                                                                    |
+| `recall`                                                                                                                                                                                       | `packages/tools/src/memory-tools.ts`    | L3 事实 FTS + L2 历史对话 FTS（`index/l2.db`）                                                                                                                          |
+| `todo`                                                                                                                                                                                         | `packages/tools/src/todo-tool.ts`       | 当前 session 待办（`session_meta.todos`）                                                                                                                               |
+| `cronjob`                                                                                                                                                                                      | `packages/tools/src/cronjob.ts`         | 定时任务 CRUD / 立即运行                                                                                                                                                |
+| `create_skill` / `load_skill` / `unload_skill` / `list_skills` / `view_skill` / `delete_skill`                                                                                                 | `packages/tools/src/skills-tools.ts`    | 技能文件 + 全局 active 列表                                                                                                                                             |
+| `acp_{agent}`                                                                                                                                                                                  | `integrations/src/acp/manager.ts`       | ACP 委托；默认绑定逸灵风 session；参数 `goal`、`context`、`new_session`、`session_id`                                                                                   |
 
 待补工具/命令：`send_push`、`help`（工具全景）、更多 slash（如 `/reset` 等）。见 [TODOS.md](../../TODOS.md)。
 
@@ -174,12 +176,12 @@ ACP：`integrations/src/acp/`；`acp_{name}` 返回 JSON（`session_id`、`outpu
 
 **WebUI RPC**：[`packages/server/src/trpc/router.ts`](../../packages/server/src/trpc/router.ts) 导出 `AppRouter`；WebUI 用 [`apps/webui/src/lib/trpc.ts`](../../apps/webui/src/lib/trpc.ts)（`httpBatchLink` + `httpSubscriptionLink` + 终端 `wsLink`）。Zod 约束复用 `@freeanima/legacy-api`。
 
-| 传输 | 路径 | 用途 |
-|------|------|------|
-| HTTP batch | `POST /api/trpc/*` | query / mutation |
-| SSE subscription | `GET /api/trpc/*`（EventSource） | 聊天流 `messages.sendStream` 等 |
-| WebSocket | `WS /api/trpc/ws` | `studio.terminal.*`（write/resize mutation + stream subscription） |
-| REST（可选） | `GET /api/health` | 探活 |
+| 传输             | 路径                             | 用途                                                               |
+| ---------------- | -------------------------------- | ------------------------------------------------------------------ |
+| HTTP batch       | `POST /api/trpc/*`               | query / mutation                                                   |
+| SSE subscription | `GET /api/trpc/*`（EventSource） | 聊天流 `messages.sendStream` 等                                    |
+| WebSocket        | `WS /api/trpc/ws`                | `studio.terminal.*`（write/resize mutation + stream subscription） |
+| REST（可选）     | `GET /api/health`                | 探活                                                               |
 
 **启动**：`packages/server/webui-server.ts` — 对外 `node:http`（API + WS）；内嵌 Bun fullstack dev server（`127.0.0.1:随机端口`）代理 `/webui/*` HTML/TSX/CSS（HMR）。**无需** `vite build` / `dist/server`。
 
@@ -187,43 +189,43 @@ ACP：`integrations/src/acp/`；`acp_{name}` 返回 JSON（`session_id`、`outpu
 
 旧 REST 端点（`/api/sessions/...` 等）由 tRPC procedure 替代；下表保留语义对照。
 
-| 端点 | 响应要点 |
-|------|----------|
-| `GET /api/health` | `{ status: "ok", version }` |
-| `GET /api/status` | `status`, `version`, `pid`, `tools`, `cron_jobs`, `uptime_seconds`, `start_time_iso`, `memory_kb`, `config`（`model`, `api_base`）, `platforms`, `sessions`（`total`, `by_platform`）, `memory`（`files_count`, `files_bytes`, `facts_count`, `l2_index_rows`）；卧室 `/webui/chamber/dashboard` |
-| `GET /api/memory` | `{ files: [{ name, path, size, mtime, content }] }`（SOUL/MEMORY/USER + `memory/f-*.md`；卧室 `/webui/chamber/memory-files`） |
-| `POST /api/memory/search` | `{ query, l3[], l2[] }` — 同 `recall` 参数：`query`（必填）、`limit`、`session_limit`、`session`；每条含 FTS `rank` 与归一化 `score` |
-| `POST /api/memory/l2-distill` | `{ ok, sessions, message }` — 仅从 L1 重蒸馏 `processed/`（卧室记忆台） |
-| `POST /api/memory/l2-reindex` | `{ ok, index_rows, message }` — 清空并重建 `index/l2.db`（不蒸馏） |
-| `POST /api/memory/l3-reindex` | `{ ok, index_rows, message }` — 清空并重建 `index/l3.db` |
-| `POST /api/memory/l2-rebuild` | `{ ok, sessions, index_rows, message }` — 蒸馏 + L2 索引组合（兼容旧脚本） |
-| `POST /api/sessions/:id/messages/stream` | SSE：`token` / `content_replace` / `tool_*` / `error` / `done`（`tool_begin` 的 data 含 `tool`、`args`）；`event:error` 写入 `error.log`；platform 从 session meta 自动解析；**唯一**消息发送端点（非 SSE `POST .../messages` 已移除） |
-| `GET /api/sessions` | `{ sessions[] }`；`?platform=` 过滤（省略则全 platform）；会客厅默认 `parlor`；卧室会话列表拉全量 |
-| `GET /api/sessions/:id/messages` | `{ session_id, display[], total?, offset?, limit? }`；`display` 含 `message` / `tool_block`（tool_calls+tool 聚合）；`?offset=&limit=` 分页（默认卧室每页 100；不传 limit 则全量，兼容会客厅） |
-| `POST /api/sessions` | `{ session_id }`；body `{ platform? }`（默认 `parlor`） |
-| `GET /api/studio/config` | `{ workspace, gitignore, showHidden }` — `config.yaml` → `studio` 段；创作室 `/webui/studio/pair-programming` |
-| `PUT /api/studio/config` | 合并写入 `studio` 段 |
-| `GET /api/studio/tree` | `{ tree[], workspace }` — workspace 文件树（`.gitignore` 过滤） |
-| `GET /api/studio/file` | `?path=` → `{ path, content, language, size }`（1MB 上限，workspace 内） |
-| `POST /api/studio/search` | `{ query }` → `{ results[{ file, line, column, content, match }] }`（优先 rg） |
-| `WS /api/studio/terminal` | xterm 终端；JSON `{ type: input\|output\|resize\|ready\|error\|exit }`；cwd = `studio.workspace` |
-| `GET /api/commands` | 已注册 slash 命令；默认按 `parlor` 平台过滤（`?platform=discord`、`?all=1` 查全量）。响应含 `scope`（`session` / `global`）、`platforms`（`null` 表示全平台）。`/new` 仅 `discord`、`weixin`；卧室 `/webui/chamber/commands` |
-| `GET /api/cron` | 定时任务列表（`cron/jobs.json`）；卧室 `/webui/chamber/cron` |
-| `POST /api/cron/:id/pause` | 暂停任务，返回 `{ ok, job }` |
-| `POST /api/cron/:id/resume` | 恢复任务并重算 `next_run_at`，返回 `{ ok, job }` |
-| `POST /api/cron/:id/run` | 立即触发（异步），返回 `{ ok, message, job }` |
-| `GET /api/sessions/:id` | 含 `stats` 文本（对话 token 消耗统计） |
-| `GET /api/mcp` | MCP 配置与状态：`server_count`、`connected_count`、`connecting_count`、`tool_count`、`servers[]`（每 server：`config`（含 `enabled`）、`status`（含 `connecting`/`disabled`）、`tools`、`resources`、`prompts`、`registered_tools`） |
-| `POST /api/mcp/start-all` | 启动所有 `enabled` 且未连接的 server，返回最新 status |
-| `POST /api/mcp/stop-all` | 停止全部已连接 server，返回最新 status |
-| `POST /api/mcp/:name/start` | 手动启动单个 server |
-| `POST /api/mcp/:name/stop` | 手动停止单个 server 并注销工具 |
-| `GET /api/acp` | ACP 配置与状态：`agent_count`、`connected_count`、`session_count`、`tool_count`、`agents[]`（`config`、`status`、`tool`、`sessions`） |
-| `POST /api/acp/start-all` | 连接全部 `enabled !== false` 的 agent（`initialize`）；任一失败返回 400 + 聚合 error |
-| `POST /api/acp/stop-all` | 断开全部 agent 并清空进程内 session 登记（`session_meta.acp_sessions` 绑定保留） |
-| `POST /api/acp/:name/start` | 连接单个 agent |
-| `POST /api/acp/:name/stop` | 断开单个 agent |
-| `POST /api/service/restart` | `{ ok, message }` — 卧室仪表盘「重启服务」；systemd 托管时 `systemctl --user restart anima`，否则 SIGTERM 优雅关停 |
+| 端点                                     | 响应要点                                                                                                                                                                                                                                                                                         |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `GET /api/health`                        | `{ status: "ok", version }`                                                                                                                                                                                                                                                                      |
+| `GET /api/status`                        | `status`, `version`, `pid`, `tools`, `cron_jobs`, `uptime_seconds`, `start_time_iso`, `memory_kb`, `config`（`model`, `api_base`）, `platforms`, `sessions`（`total`, `by_platform`）, `memory`（`files_count`, `files_bytes`, `facts_count`, `l2_index_rows`）；卧室 `/webui/chamber/dashboard` |
+| `GET /api/memory`                        | `{ files: [{ name, path, size, mtime, content }] }`（SOUL/MEMORY/USER + `memory/f-*.md`；卧室 `/webui/chamber/memory-files`）                                                                                                                                                                    |
+| `POST /api/memory/search`                | `{ query, l3[], l2[] }` — 同 `recall` 参数：`query`（必填）、`limit`、`session_limit`、`session`；每条含 FTS `rank` 与归一化 `score`                                                                                                                                                             |
+| `POST /api/memory/l2-distill`            | `{ ok, sessions, message }` — 仅从 L1 重蒸馏 `processed/`（卧室记忆台）                                                                                                                                                                                                                          |
+| `POST /api/memory/l2-reindex`            | `{ ok, index_rows, message }` — 清空并重建 `index/l2.db`（不蒸馏）                                                                                                                                                                                                                               |
+| `POST /api/memory/l3-reindex`            | `{ ok, index_rows, message }` — 清空并重建 `index/l3.db`                                                                                                                                                                                                                                         |
+| `POST /api/memory/l2-rebuild`            | `{ ok, sessions, index_rows, message }` — 蒸馏 + L2 索引组合（兼容旧脚本）                                                                                                                                                                                                                       |
+| `POST /api/sessions/:id/messages/stream` | SSE：`token` / `content_replace` / `tool_*` / `error` / `done`（`tool_begin` 的 data 含 `tool`、`args`）；`event:error` 写入 `error.log`；platform 从 session meta 自动解析；**唯一**消息发送端点（非 SSE `POST .../messages` 已移除）                                                           |
+| `GET /api/sessions`                      | `{ sessions[] }`；`?platform=` 过滤（省略则全 platform）；会客厅默认 `parlor`；卧室会话列表拉全量                                                                                                                                                                                                |
+| `GET /api/sessions/:id/messages`         | `{ session_id, display[], total?, offset?, limit? }`；`display` 含 `message` / `tool_block`（tool_calls+tool 聚合）；`?offset=&limit=` 分页（默认卧室每页 100；不传 limit 则全量，兼容会客厅）                                                                                                   |
+| `POST /api/sessions`                     | `{ session_id }`；body `{ platform? }`（默认 `parlor`）                                                                                                                                                                                                                                          |
+| `GET /api/studio/config`                 | `{ workspace, gitignore, showHidden }` — `config.yaml` → `studio` 段；创作室 `/webui/studio/pair-programming`                                                                                                                                                                                    |
+| `PUT /api/studio/config`                 | 合并写入 `studio` 段                                                                                                                                                                                                                                                                             |
+| `GET /api/studio/tree`                   | `{ tree[], workspace }` — workspace 文件树（`.gitignore` 过滤）                                                                                                                                                                                                                                  |
+| `GET /api/studio/file`                   | `?path=` → `{ path, content, language, size }`（1MB 上限，workspace 内）                                                                                                                                                                                                                         |
+| `POST /api/studio/search`                | `{ query }` → `{ results[{ file, line, column, content, match }] }`（优先 rg）                                                                                                                                                                                                                   |
+| `WS /api/studio/terminal`                | xterm 终端；JSON `{ type: input\|output\|resize\|ready\|error\|exit }`；cwd = `studio.workspace`                                                                                                                                                                                                 |
+| `GET /api/commands`                      | 已注册 slash 命令；默认按 `parlor` 平台过滤（`?platform=discord`、`?all=1` 查全量）。响应含 `scope`（`session` / `global`）、`platforms`（`null` 表示全平台）。`/new` 仅 `discord`、`weixin`；卧室 `/webui/chamber/commands`                                                                     |
+| `GET /api/cron`                          | 定时任务列表（`cron/jobs.json`）；卧室 `/webui/chamber/cron`                                                                                                                                                                                                                                     |
+| `POST /api/cron/:id/pause`               | 暂停任务，返回 `{ ok, job }`                                                                                                                                                                                                                                                                     |
+| `POST /api/cron/:id/resume`              | 恢复任务并重算 `next_run_at`，返回 `{ ok, job }`                                                                                                                                                                                                                                                 |
+| `POST /api/cron/:id/run`                 | 立即触发（异步），返回 `{ ok, message, job }`                                                                                                                                                                                                                                                    |
+| `GET /api/sessions/:id`                  | 含 `stats` 文本（对话 token 消耗统计）                                                                                                                                                                                                                                                           |
+| `GET /api/mcp`                           | MCP 配置与状态：`server_count`、`connected_count`、`connecting_count`、`tool_count`、`servers[]`（每 server：`config`（含 `enabled`）、`status`（含 `connecting`/`disabled`）、`tools`、`resources`、`prompts`、`registered_tools`）                                                             |
+| `POST /api/mcp/start-all`                | 启动所有 `enabled` 且未连接的 server，返回最新 status                                                                                                                                                                                                                                            |
+| `POST /api/mcp/stop-all`                 | 停止全部已连接 server，返回最新 status                                                                                                                                                                                                                                                           |
+| `POST /api/mcp/:name/start`              | 手动启动单个 server                                                                                                                                                                                                                                                                              |
+| `POST /api/mcp/:name/stop`               | 手动停止单个 server 并注销工具                                                                                                                                                                                                                                                                   |
+| `GET /api/acp`                           | ACP 配置与状态：`agent_count`、`connected_count`、`session_count`、`tool_count`、`agents[]`（`config`、`status`、`tool`、`sessions`）                                                                                                                                                            |
+| `POST /api/acp/start-all`                | 连接全部 `enabled !== false` 的 agent（`initialize`）；任一失败返回 400 + 聚合 error                                                                                                                                                                                                             |
+| `POST /api/acp/stop-all`                 | 断开全部 agent 并清空进程内 session 登记（`session_meta.acp_sessions` 绑定保留）                                                                                                                                                                                                                 |
+| `POST /api/acp/:name/start`              | 连接单个 agent                                                                                                                                                                                                                                                                                   |
+| `POST /api/acp/:name/stop`               | 断开单个 agent                                                                                                                                                                                                                                                                                   |
+| `POST /api/service/restart`              | `{ ok, message }` — 卧室仪表盘「重启服务」；systemd 托管时 `systemctl --user restart anima`，否则 SIGTERM 优雅关停                                                                                                                                                                               |
 
 ## 开发命令
 
@@ -232,7 +234,10 @@ bun install                       # 依赖；需 Bun 1.3+（见 .bun-version）
 bun run test                      # 全仓测试（单元 + 集成；有 Docker 时自动起 PG）
 bun run test:changed              # 增量 + pre-commit；命中集成用例时自动起 PG
 bun run typecheck                 # tsgo 全仓（根 tsconfig.json）
-bun run check:imports             # 相对 import 不得带 .js 后缀
+bun run lint                      # oxlint（含 import/extensions：相对 import 不得带 .js 后缀）
+bun run lint:fix                  # oxlint 自动修复
+bun run format                    # oxfmt --check
+bun run format:fix                # oxfmt 写回
 
 # CLI（直接跑 TS 源码）
 bun run service start                              # systemd / detached
@@ -258,8 +263,8 @@ anima service status
 
 # WebUI: http://127.0.0.1:2658/webui/parlor/chat
 # 卧室: …/webui/chamber/dashboard  创作室: …/webui/studio/pair-programming
-bun install                       # Husky：提交前 typecheck + test:changed；commit-msg 校验 Conventional Commits
-bun run check                     # 手动全量：typecheck + 全量测试（推 PR 前建议）
+bun install                       # Husky：提交前 typecheck + lint + format + test:changed；commit-msg 校验 Conventional Commits
+bun run check                     # 手动全量：typecheck + lint + format + 全量测试（推 PR 前建议）
 ```
 
 **构建**：TS 包由 Bun 直接加载 `src`（无 emit）；WebUI 由 Bun fullstack 按需编译，**无**单独 `vite build` 步骤。
@@ -275,7 +280,9 @@ bun run check                     # 手动全量：typecheck + 全量测试（�
 
 **WebUI Tailwind**：`anima service start` 从仓库根启动内嵌 `Bun.serve`，须根 `bunfig.toml` 的 `[serve.static] plugins = ["bun-plugin-tailwind"]` 且根 `devDependencies` 含 `bun-plugin-tailwind`；`serve()` 会 `chdir(REPO_ROOT)`，systemd unit 含 `WorkingDirectory`/`FREEANIMA_REPO_ROOT`，否则 CSS 无 utility 类。
 
-**TS 配置**：根 [`tsconfig.base.json`](../../tsconfig.base.json) 继承 [Bun TS 6+ 推荐项](https://bun.com/docs/typescript-6)（`types: ["bun"]`，依赖 `@types/bun`）；[`tsconfig.json`](../../tsconfig.json) 为门禁 + IDE（全仓 `src`、WebUI、单元/集成测试）；[`apps/webui/tsconfig.json`](../../apps/webui/tsconfig.json) 继承根配置并覆写 `@/*` paths（单独打开 webui 目录时用）。**相对 import 不带后缀**（`./foo` 而非 `./foo.js`），`bun run check:imports` 校验。
+**TS 配置**：根 [`tsconfig.base.json`](../../tsconfig.base.json) 继承 [Bun TS 6+ 推荐项](https://bun.com/docs/typescript-6)（`types: ["bun"]`，依赖 `@types/bun`）；[`tsconfig.json`](../../tsconfig.json) 为门禁 + IDE（全仓 `src`、WebUI、单元/集成测试）；[`apps/webui/tsconfig.json`](../../apps/webui/tsconfig.json) 继承根配置并覆写 `@/*` paths（单独打开 webui 目录时用）。**相对 import 不带后缀**（`./foo` 而非 `./foo.js`），由根 [`.oxlintrc.json`](../../.oxlintrc.json) 的 `import/extensions` 规则校验（npm 包 subpath 如 `@modelcontextprotocol/sdk/.../index.js` 除外）。
+
+**Lint / Format**：根 [`.oxlintrc.json`](../../.oxlintrc.json)（oxlint）、[`.oxfmtrc.jsonc`](../../.oxfmtrc.jsonc)（oxfmt）；生成物 `apps/webui/src/routeTree.gen.ts` 已 ignore。
 
 版本号：根 `package.json`（运行时 `NEST_VERSION`）。发版见 [versioning.md](../versioning.md)。
 
@@ -299,10 +306,10 @@ bun run check                     # 手动全量：typecheck + 全量测试（�
 
 ## 工具注册约定
 
-| 方式 | 适用场景 | 示例 |
-|------|---------|------|
-| `@tool(description=...)` | 简单工具，自动生成 schema | `send_push`, `remember` |
-| `@tool(schema=...)` | 需要长描述/精准参数 | 部分 memory 工具 |
+| 方式                     | 适用场景                         | 示例                    |
+| ------------------------ | -------------------------------- | ----------------------- |
+| `@tool(description=...)` | 简单工具，自动生成 schema        | `send_push`, `remember` |
+| `@tool(schema=...)`      | 需要长描述/精准参数              | 部分 memory 工具        |
 | `registry.register(...)` | 显式 schema / check_fn / toolset | `read_file`, `terminal` |
 
 危险/受限工具用 `check_fn` 做前置条件检查。

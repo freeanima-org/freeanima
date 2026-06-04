@@ -1,4 +1,11 @@
-import { listTools, loadConfig, logComponent, registerTool, toolError, unregisterToolsByToolset } from "@freeanima/legacy-kernel";
+import {
+  listTools,
+  loadConfig,
+  logComponent,
+  registerTool,
+  toolError,
+  unregisterToolsByToolset,
+} from "@freeanima/legacy-kernel";
 
 import { McpClientSession, type McpServerConfig } from "./client";
 import { extractMcpResult, mcpToolParameters } from "./schema";
@@ -49,7 +56,12 @@ export class MCPManager {
   async startServer(name: string): Promise<McpControlResult> {
     const serverCfg = this.resolveServerConfig(name);
     if (!serverCfg) {
-      return { ok: false, error: `MCP server '${name}' not configured`, server: name, action: "start" };
+      return {
+        ok: false,
+        error: `MCP server '${name}' not configured`,
+        server: name,
+        action: "start",
+      };
     }
     if (this.clients.has(name)) {
       return { ok: true, server: name, action: "start" };
@@ -156,10 +168,13 @@ export class MCPManager {
 
     this.recountTools();
     if (total > 0) {
-      logComponent("mcp").info(`MCP: ${total} tool(s) registered from ${entries.length} server(s)`, {
-        tool_count: total,
-        server_count: entries.length,
-      });
+      logComponent("mcp").info(
+        `MCP: ${total} tool(s) registered from ${entries.length} server(s)`,
+        {
+          tool_count: total,
+          server_count: entries.length,
+        },
+      );
     }
     return total;
   }
@@ -236,17 +251,12 @@ export class MCPManager {
   async getStatus(): Promise<McpStatusResponse> {
     const cfg = loadConfig();
     const serversCfg = cfg.mcp_servers ?? {};
-    const serverNames = new Set([
-      ...Object.keys(serversCfg),
-      ...this.serverConfigs.keys(),
-    ]);
+    const serverNames = new Set([...Object.keys(serversCfg), ...this.serverConfigs.keys()]);
 
     const servers: McpServerStatusView[] = [];
-    for (const name of [...serverNames].sort()) {
+    for (const name of [...serverNames].toSorted()) {
       const rawCfg =
-        this.serverConfigs.get(name) ??
-        (serversCfg[name] as McpServerConfig | undefined) ??
-        {};
+        this.serverConfigs.get(name) ?? (serversCfg[name] as McpServerConfig | undefined) ?? {};
       const enabled = isMcpServerEnabled(rawCfg);
       const session = this.clients.get(name);
       const error = this.serverErrors.get(name);
@@ -343,7 +353,10 @@ export class MCPManager {
       const ts = Date.now();
       try {
         await session.close();
-        logComponent("shutdown").info(`MCP '${name}' 已关闭`, { ms: Date.now() - ts, server: name });
+        logComponent("shutdown").info(`MCP '${name}' 已关闭`, {
+          ms: Date.now() - ts,
+          server: name,
+        });
       } catch (err) {
         logComponent("shutdown").warn(`MCP '${name}' 关闭失败`, { err, server: name });
       }

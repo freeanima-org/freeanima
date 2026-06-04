@@ -35,9 +35,7 @@ export function createMessageStreamResponse(sessionId: string, message: string):
     async start(controller) {
       const encoder = new TextEncoder();
       for await (const chunk of iterateMessageStream(sessionId, message)) {
-        controller.enqueue(
-          encoder.encode(`event: ${chunk.event}\ndata: ${chunk.data}\n\n`),
-        );
+        controller.enqueue(encoder.encode(`event: ${chunk.event}\ndata: ${chunk.data}\n\n`));
       }
       controller.close();
     },

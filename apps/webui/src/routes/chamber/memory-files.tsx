@@ -32,7 +32,9 @@ function MemoryFilesPage() {
               {memoryFiles.map((f) => (
                 <div key={f.name} className="flex items-center justify-between text-sm">
                   <span className="font-mono">{f.name}</span>
-                  <span className="text-xs text-base-content/50">{(f.size / 1024).toFixed(1)} KB</span>
+                  <span className="text-xs text-base-content/50">
+                    {(f.size / 1024).toFixed(1)} KB
+                  </span>
                 </div>
               ))}
             </div>

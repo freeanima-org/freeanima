@@ -8,10 +8,7 @@ import { genericAcpAdapter, parseSessionUpdateChunk } from "./adapters/generic";
 import { resolveAcpAdapter } from "./adapters/registry";
 import type { AcpAgentAdapter } from "./adapters/types";
 import type { AcpAgentConfig } from "./status";
-import {
-  jsonRpcMessageSchema,
-  type JsonRpcMessage,
-} from "../schemas/acp-jsonrpc";
+import { jsonRpcMessageSchema, type JsonRpcMessage } from "../schemas/acp-jsonrpc";
 
 export const DEFAULT_CONNECT_TIMEOUT_MS = 15_000;
 export const DEFAULT_PROMPT_TIMEOUT_MS = 120_000;
@@ -125,10 +122,7 @@ export class ACPClient {
 
     this.proc.on("error", (err) => {
       this.connected = false;
-      const hint =
-        procCwd && !existsSync(procCwd)
-          ? ` (cwd does not exist: ${procCwd})`
-          : "";
+      const hint = procCwd && !existsSync(procCwd) ? ` (cwd does not exist: ${procCwd})` : "";
       this.rejectAllPending(`ACP agent '${this.name}' spawn error: ${err.message}${hint}`);
     });
 
@@ -304,7 +298,10 @@ export class ACPClient {
     return ` stderr: ${this.stderrLines.slice(-5).join(" | ")}`;
   }
 
-  private request(method: string, params?: Record<string, unknown>): Promise<Record<string, unknown>> {
+  private request(
+    method: string,
+    params?: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> {
     const timeoutMs = resolveAcpRequestTimeoutMs(method, this.agentCfg);
     return new Promise((resolve, reject) => {
       if (!this.proc?.stdin) {
@@ -362,7 +359,11 @@ function appendMessageContent(parts: string[], row: Record<string, unknown>): vo
   const content = row.content;
   if (Array.isArray(content)) {
     for (const block of content) {
-      if (block && typeof block === "object" && (block as Record<string, unknown>).type === "text") {
+      if (
+        block &&
+        typeof block === "object" &&
+        (block as Record<string, unknown>).type === "text"
+      ) {
         parts.push(String((block as Record<string, unknown>).text ?? ""));
       }
     }

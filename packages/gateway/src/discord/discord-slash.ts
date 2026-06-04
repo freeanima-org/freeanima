@@ -64,9 +64,7 @@ export function interactionToCommandText(interaction: ChatInputCommandInteractio
   return parts.length ? `/${name} ${parts.join(" ")}` : `/${name}`;
 }
 
-export function originFromInteraction(
-  interaction: ChatInputCommandInteraction,
-): PlatformOrigin {
+export function originFromInteraction(interaction: ChatInputCommandInteraction): PlatformOrigin {
   const channel = interaction.channel;
   if (!channel) {
     throw new Error("interaction has no channel");
@@ -74,9 +72,7 @@ export function originFromInteraction(
   const isThread = "isThread" in channel && channel.isThread();
   const channelId = channel.id;
   const parentChannelId =
-    isThread && "parentId" in channel && channel.parentId
-      ? String(channel.parentId)
-      : channelId;
+    isThread && "parentId" in channel && channel.parentId ? String(channel.parentId) : channelId;
   return extractOrigin({
     channelId,
     parentChannelId,

@@ -114,7 +114,12 @@ function finalizeJob(job: CronJob, success: boolean): void {
   store.update(job);
 }
 
-async function notifyDeliver(job: CronJob, success: boolean, output: string, error?: string): Promise<void> {
+async function notifyDeliver(
+  job: CronJob,
+  success: boolean,
+  output: string,
+  error?: string,
+): Promise<void> {
   try {
     await deliverCronResult(job, { jobName: job.name, success, output, error });
   } catch (e) {
@@ -158,9 +163,7 @@ async function runJobInternal(job: CronJob): Promise<void> {
       throw new Error("no_agent=True requires a script");
     }
     const output =
-      job.id === "l2-gap-fill"
-        ? await runL2GapFill()
-        : runScript(job.script!, job.timeout_sec);
+      job.id === "l2-gap-fill" ? await runL2GapFill() : runScript(job.script!, job.timeout_sec);
     job.last_output = output;
     saveOutput(job, output);
     await notifyDeliver(job, true, output);

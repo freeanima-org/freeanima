@@ -1,10 +1,5 @@
 import { installErrorLogHandlers, logStartupError } from "@freeanima/legacy-kernel";
-import {
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  writeFileSync,
-} from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { spawnSync, spawn } from "node:child_process";
 import { isServerAlive, readStatusFile } from "@freeanima/legacy-server/alive";
 import {
@@ -32,7 +27,6 @@ export type ServiceArgs = {
   port: number;
 };
 
-
 function systemdFailed(): boolean {
   if (!systemdUserAvailable() || !existsSync(serviceUnitPath())) return false;
   const r = systemctl("is-failed", SYSTEMD_UNIT);
@@ -41,7 +35,12 @@ function systemdFailed(): boolean {
 
 function printStartupErrorHints(): void {
   const lines = readRecentErrorLogTail(12);
-  const startupLines = lines.filter((l) => l.includes("[startup]") || l.includes("uncaughtException") || l.includes("unhandledRejection"));
+  const startupLines = lines.filter(
+    (l) =>
+      l.includes("[startup]") ||
+      l.includes("uncaughtException") ||
+      l.includes("unhandledRejection"),
+  );
   if (startupLines.length) {
     writeStatusLine("warning", "最近启动错误（error.log）:");
     for (const line of startupLines.slice(-4)) console.log(`    ${line}`);
@@ -75,14 +74,8 @@ function systemdState(): string | null {
   return String(r.stdout ?? "").trim() || null;
 }
 
-function hostPort(
-  statusFile: Record<string, unknown>,
-  args: ServiceArgs,
-): [string, number] {
-  return [
-    String(statusFile.host ?? args.host),
-    Number(statusFile.port ?? args.port),
-  ];
+function hostPort(statusFile: Record<string, unknown>, args: ServiceArgs): [string, number] {
+  return [String(statusFile.host ?? args.host), Number(statusFile.port ?? args.port)];
 }
 
 async function fetchHttpStatus(
@@ -131,7 +124,9 @@ function printRunning(
     .join("    ");
   console.log(`逸灵风 · 运行中`);
   console.log(`  ${headline}`);
-  const addrs = parseBindHosts(host).map((h) => `http://${h}:${port}`).join("  ");
+  const addrs = parseBindHosts(host)
+    .map((h) => `http://${h}:${port}`)
+    .join("  ");
   console.log(`  地址: ${addrs}`);
 
   const config = (api.config as Record<string, unknown>) ?? {};
@@ -312,7 +307,7 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
       return;
     }
 
-  ensureUnitFile(args.host, args.port);
+    ensureUnitFile(args.host, args.port);
     systemctl("daemon-reload");
     const r = systemctl("enable", "--now", SYSTEMD_UNIT);
     if (r.status !== 0) {

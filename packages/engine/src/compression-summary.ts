@@ -1,9 +1,5 @@
 import { getCompressionConfig } from "./compression-config";
-import {
-  type CompressionState,
-  formatMessagesForSummary,
-  sliceForSummary,
-} from "./compressor";
+import { type CompressionState, formatMessagesForSummary, sliceForSummary } from "./compressor";
 import { chat, PROFILE_SUMMARY } from "./llm";
 import type { SessionMessage } from "@freeanima/legacy-kernel";
 
@@ -34,9 +30,7 @@ function buildSummaryUserContent(
   return parts.join("\n");
 }
 
-export type GenerateSummaryResult =
-  | { ok: true; summary: string }
-  | { ok: false; error: string };
+export type GenerateSummaryResult = { ok: true; summary: string } | { ok: false; error: string };
 
 /** 使用压缩前的 system_prompt 快照生成/增量合并摘要（无 IO） */
 export async function generateSessionSummary(

@@ -85,7 +85,11 @@ export function validateProfiles(
       if (!hopSpec.provider) {
         issues.push({ profileId: profile.id, hopIndex, message: "hop.provider 不能为空" });
       } else if (!providers.has(hopSpec.provider)) {
-        issues.push({ profileId: profile.id, hopIndex, message: `provider "${hopSpec.provider}" 未注册` });
+        issues.push({
+          profileId: profile.id,
+          hopIndex,
+          message: `provider "${hopSpec.provider}" 未注册`,
+        });
       }
       if (!hopSpec.model) {
         issues.push({ profileId: profile.id, hopIndex, message: "hop.model 不能为空" });
@@ -96,13 +100,12 @@ export function validateProfiles(
   return { ok: issues.length === 0, issues };
 }
 
-export function assertProfilesValid(
-  profiles: LlmProfileDef[],
-  providers: ProviderRegistry,
-): void {
+export function assertProfilesValid(profiles: LlmProfileDef[], providers: ProviderRegistry): void {
   const result = validateProfiles(profiles, providers);
   if (!result.ok) {
-    const detail = result.issues.map((i) => `${i.profileId}[${i.hopIndex}]: ${i.message}`).join("; ");
+    const detail = result.issues
+      .map((i) => `${i.profileId}[${i.hopIndex}]: ${i.message}`)
+      .join("; ");
     throw new Error(`profile 配置无效: ${detail}`);
   }
 }
@@ -197,7 +200,6 @@ export class LlmProfile {
       throw p.reportFailure(err);
     }
   }
-
 }
 
 /** 仅负责解析并返回 LlmProfile 实体 */

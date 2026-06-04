@@ -11,10 +11,7 @@ import {
   walkHookChainOldestFirst,
 } from "./hook";
 
-function link(
-  step: Omit<HookStepLink, "prev">,
-  prev?: HookStepLink,
-): HookStepLink {
+function link(step: Omit<HookStepLink, "prev">, prev?: HookStepLink): HookStepLink {
   return prev ? { ...step, prev } : { ...step };
 }
 
@@ -91,10 +88,7 @@ describe("walkHookChainOldestFirst", () => {
   it("与 walkHookChain 顺序相反", () => {
     const first = link({ status: "ok", data: { n: 1 } });
     const head = link({ status: "failed", message: "x" }, first);
-    expect(walkHookChainOldestFirst(head).map((s) => s.status)).toEqual([
-      "ok",
-      "failed",
-    ]);
+    expect(walkHookChainOldestFirst(head).map((s) => s.status)).toEqual(["ok", "failed"]);
   });
 });
 

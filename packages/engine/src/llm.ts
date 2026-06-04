@@ -1,9 +1,5 @@
 import type { ChatCompletion } from "@freeanima/engine-provider-llm";
-import {
-  PROFILE_CHAT,
-  PROFILE_REFLECT,
-  PROFILE_SUMMARY,
-} from "@freeanima/engine-provider-llm";
+import { PROFILE_CHAT, PROFILE_REFLECT, PROFILE_SUMMARY } from "@freeanima/engine-provider-llm";
 import type { OpenAiToolSchema, ToolCall } from "@freeanima/legacy-kernel";
 import type { LlmCallParams } from "@freeanima/engine-provider-llm";
 import type { SessionMessage } from "@freeanima/legacy-kernel";
@@ -23,11 +19,7 @@ export type LlmResponse = ChatCompletion;
 
 export type StreamToolCall = ToolCall;
 
-export {
-  cleanToolCallsForApi,
-  finalizeStreamingToolCalls,
-  mergeStreamingToolCalls,
-};
+export { cleanToolCallsForApi, finalizeStreamingToolCalls, mergeStreamingToolCalls };
 
 export type LlmInvokeOpts = {
   model?: string;
@@ -40,10 +32,7 @@ function resolveProfileId(profileId?: string): string {
   return profileId ?? PROFILE_CHAT;
 }
 
-export async function chat(
-  messages: SessionMessage[],
-  opts?: LlmInvokeOpts,
-): Promise<LlmResponse>;
+export async function chat(messages: SessionMessage[], opts?: LlmInvokeOpts): Promise<LlmResponse>;
 export async function chat(
   messages: SimpleChatMessage[],
   opts?: LlmInvokeOpts,
@@ -93,9 +82,7 @@ export async function* chatStream(
 }
 
 function isSimpleChatOnly(messages: SessionMessage[] | SimpleChatMessage[]): boolean {
-  return messages.every(
-    (m) => m.role === "system" || m.role === "user" || m.role === "assistant",
-  );
+  return messages.every((m) => m.role === "system" || m.role === "user" || m.role === "assistant");
 }
 
 export { PROFILE_REFLECT, PROFILE_SUMMARY };

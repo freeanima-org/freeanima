@@ -53,7 +53,11 @@ function ChamberSessionsPage() {
                 {store.sortedSessions().map((s) => (
                   <div
                     key={s.id}
-                    className={store.selectedId === s.id ? "bg-base-300/30 transition-colors" : "transition-colors"}
+                    className={
+                      store.selectedId === s.id
+                        ? "bg-base-300/30 transition-colors"
+                        : "transition-colors"
+                    }
                   >
                     <button
                       type="button"
@@ -63,7 +67,9 @@ function ChamberSessionsPage() {
                       <span className="shrink-0 text-base-content/50 w-4">
                         {store.selectedId === s.id ? "▼" : "▶"}
                       </span>
-                      <span className="badge badge-ghost badge-xs shrink-0">{s.platform || "legacy"}</span>
+                      <span className="badge badge-ghost badge-xs shrink-0">
+                        {s.platform || "legacy"}
+                      </span>
                       <span className="flex-1 truncate text-sm">{s.title || "（无标题）"}</span>
                       <span className="font-mono text-[10px] text-base-content/40 shrink-0 hidden sm:inline">
                         {s.id}

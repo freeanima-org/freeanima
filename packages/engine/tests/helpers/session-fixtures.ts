@@ -1,4 +1,9 @@
-import type { AssistantMessage, SessionMessage, ToolMessage, UserMessage } from "@freeanima/legacy-kernel";
+import type {
+  AssistantMessage,
+  SessionMessage,
+  ToolMessage,
+  UserMessage,
+} from "@freeanima/legacy-kernel";
 
 export function ua(pos: number, text = "u"): UserMessage {
   return { role: "user", content: text, pos };

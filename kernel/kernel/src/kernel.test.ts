@@ -21,7 +21,11 @@ describe("Kernel", () => {
 
   it("setEventBus 可替换 eventBus 实例", () => {
     const logger: Logger = createLogger({ sinks: [createMemorySink()] });
-    const kernel = new Kernel(new HookRegistry(logger), logger, new EventBus(logger, new NullEventQueue()));
+    const kernel = new Kernel(
+      new HookRegistry(logger),
+      logger,
+      new EventBus(logger, new NullEventQueue()),
+    );
     const next = new EventBus(logger, new NullEventQueue());
     kernel.setEventBus(next);
     expect(kernel.eventBus).toBe(next);

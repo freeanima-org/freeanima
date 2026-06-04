@@ -26,10 +26,7 @@ import {
 } from "@freeanima/legacy-engine";
 import { registerTool } from "@freeanima/legacy-kernel";
 
-async function patchMetaForTest(
-  sessionId: string,
-  patch: Record<string, unknown>,
-): Promise<void> {
+async function patchMetaForTest(sessionId: string, patch: Record<string, unknown>): Promise<void> {
   await patchSessionMeta(sessionId, patch as never);
 }
 
@@ -102,13 +99,17 @@ describePg("slash commands", () => {
   });
 
   it("listCommands includes help and retry", async () => {
-    const parlor = new NestService().listCommands({ platform: "parlor" }).commands.map((c) => c.name);
+    const parlor = new NestService()
+      .listCommands({ platform: "parlor" })
+      .commands.map((c) => c.name);
     expect(parlor).toContain("help");
     expect(parlor).toContain("retry");
     expect(parlor).toContain("reload_tools");
     expect(parlor).not.toContain("new");
 
-    const discord = new NestService().listCommands({ platform: "discord" }).commands.map((c) => c.name);
+    const discord = new NestService()
+      .listCommands({ platform: "discord" })
+      .commands.map((c) => c.name);
     expect(discord).toContain("new");
     expect(discord).toContain("sethome");
   });
@@ -137,7 +138,9 @@ describePg("slash commands", () => {
   it("reload_tools updates session_meta tools", async () => {
     const sid = await newSession("parlor");
     await patchMetaForTest(sid, {
-      tools: [{ type: "function", function: { name: "stale_tool", parameters: { type: "object" } } }],
+      tools: [
+        { type: "function", function: { name: "stale_tool", parameters: { type: "object" } } },
+      ],
     });
 
     registerTool({
@@ -188,7 +191,7 @@ describePg("slash commands", () => {
     });
     expect(result.text).toContain("system prompt");
     const spMeta = await loadSessionMeta(sid);
-    const sp = String(spMeta.role === "session_meta" ? spMeta.system_prompt ?? "" : "");
+    const sp = String(spMeta.role === "session_meta" ? (spMeta.system_prompt ?? "") : "");
     expect(sp).toContain("你是测试 Agent");
     expect(sp).not.toBe("旧 prompt");
   });

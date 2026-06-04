@@ -71,7 +71,10 @@ export function registerMemoryTools(): void {
           description: "操作类型：create（默认）/ update / delete",
           enum: ["create", "update", "delete"],
         },
-        content: { type: "string", description: "事实内容（一句话精炼描述），create 和 update 时必需" },
+        content: {
+          type: "string",
+          description: "事实内容（一句话精炼描述），create 和 update 时必需",
+        },
         fact_id: { type: "string", description: "事实 ID，update 或 delete 时必需" },
         domains: { type: "string", description: "逗号分隔的领域标签" },
         entities: { type: "string", description: "逗号分隔的关联实体" },
@@ -121,7 +124,8 @@ export function registerMemoryTools(): void {
               ? Math.min(Math.max(asFloat(args.recall, existing.recall), 0), 1)
               : existing.recall,
           domains: args.domains !== undefined ? parseCsv(String(args.domains)) : existing.domains,
-          entities: args.entities !== undefined ? parseCsv(String(args.entities)) : existing.entities,
+          entities:
+            args.entities !== undefined ? parseCsv(String(args.entities)) : existing.entities,
         };
         store.update(updated);
         try {
@@ -157,7 +161,7 @@ export function registerMemoryTools(): void {
   registerTool({
     name: "recall",
     description:
-      "搜索记忆：L3 持久化事实（FTS）+ L2 索引中的历史对话（已蒸馏 session，非原始 JSONL）。一次调用返回两处结果。\n\nFTS5 查询语法：\n- **空格**分隔的词默认 **OR**（任一匹配即可，宁可多不可漏）\n- **AND** 显式指定与：`Free AND Anima`\n- **OR** 显式指定或：`Free OR Anima`（空格已经是 OR，一般不需要显式写）\n- **NOT** 排除：`Free NOT Anima`\n- **NEAR** 邻近：`Free NEAR Anima`\n- **双引号** 短语精确匹配：`\"逸灵风\"`\n- **星号** 前缀匹配：`逸*`\n- 可用括号分组：`(Free OR Anima) AND 逸灵风`\n\n示例：`Free Anima 重命名`（任一出现即可）",
+      '搜索记忆：L3 持久化事实（FTS）+ L2 索引中的历史对话（已蒸馏 session，非原始 JSONL）。一次调用返回两处结果。\n\nFTS5 查询语法：\n- **空格**分隔的词默认 **OR**（任一匹配即可，宁可多不可漏）\n- **AND** 显式指定与：`Free AND Anima`\n- **OR** 显式指定或：`Free OR Anima`（空格已经是 OR，一般不需要显式写）\n- **NOT** 排除：`Free NOT Anima`\n- **NEAR** 邻近：`Free NEAR Anima`\n- **双引号** 短语精确匹配：`"逸灵风"`\n- **星号** 前缀匹配：`逸*`\n- 可用括号分组：`(Free OR Anima) AND 逸灵风`\n\n示例：`Free Anima 重命名`（任一出现即可）',
     parameters: {
       type: "object",
       properties: {

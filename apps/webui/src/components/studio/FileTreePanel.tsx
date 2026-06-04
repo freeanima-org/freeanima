@@ -48,10 +48,7 @@ export function FileTreePanel() {
   const [expandedPaths, setExpandedPaths] = useState<string[]>([]);
   const [selectedPath, setSelectedPath] = useState("");
 
-  const treeNodes = useMemo(
-    () => fileTree as unknown as TreeNodeData[],
-    [fileTree],
-  );
+  const treeNodes = useMemo(() => fileTree as unknown as TreeNodeData[], [fileTree]);
 
   const filteredTree = useMemo(() => {
     const q = filterText.trim().toLowerCase();
@@ -178,11 +175,7 @@ export function FileTreePanel() {
                 className="input input-sm input-bordered flex-1"
                 placeholder="搜索文件内容…"
               />
-              <button
-                type="submit"
-                className="btn btn-sm btn-ghost"
-                disabled={!globalQuery.trim()}
-              >
+              <button type="submit" className="btn btn-sm btn-ghost" disabled={!globalQuery.trim()}>
                 搜
               </button>
             </form>

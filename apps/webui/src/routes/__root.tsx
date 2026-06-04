@@ -1,9 +1,4 @@
-import {
-  Outlet,
-  createRootRoute,
-  useRouterState,
-  useNavigate,
-} from "@tanstack/react-router";
+import { Outlet, createRootRoute, useRouterState, useNavigate } from "@tanstack/react-router";
 
 export const Route = createRootRoute({
   component: RootComponent,
@@ -28,7 +23,8 @@ function AppShell() {
 
   const switchMode = (target: AppMode) => {
     if (target === "parlor") {
-      if (!pathname.startsWith("/parlor")) navigate({ to: "/parlor/chat", search: { session: undefined } });
+      if (!pathname.startsWith("/parlor"))
+        navigate({ to: "/parlor/chat", search: { session: undefined } });
     } else if (target === "chamber") {
       if (!pathname.startsWith("/chamber") && !pathname.startsWith("/workshop")) {
         navigate({ to: "/chamber/dashboard" });

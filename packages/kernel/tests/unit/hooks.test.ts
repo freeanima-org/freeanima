@@ -5,13 +5,10 @@ import { createNullSink } from "@freeanima/kernel-logging/null";
 import { messageIncoming } from "../../src/index";
 
 describe("legacy-kernel hooks", () => {
-  const nullLogger = () =>
-    createLogger({ level: "debug", sinks: [createNullSink()] });
+  const nullLogger = () => createLogger({ level: "debug", sinks: [createNullSink()] });
 
   it("hook token 设置 qualifiedId", () => {
-    expect(messageIncoming.qualifiedId).toBe(
-      "@freeanima/legacy-kernel/hooks/message-incoming",
-    );
+    expect(messageIncoming.qualifiedId).toBe("@freeanima/legacy-kernel/hooks/message-incoming");
   });
 
   it("headOkStepData 读取链头 ok 步 data", async () => {

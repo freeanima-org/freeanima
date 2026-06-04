@@ -3,13 +3,7 @@ import { describePg } from "../../helpers/pg-test-gate";
 import { beginIntegrationCase } from "../../helpers/integration-case";
 import { endIntegrationCase } from "../../helpers/integration-case";
 
-import {
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  utimesSync,
-  writeFileSync,
-} from "node:fs";
+import { existsSync, mkdirSync, readFileSync, utimesSync, writeFileSync } from "node:fs";
 import {
   resetStoreForTests,
   distillFromPg,

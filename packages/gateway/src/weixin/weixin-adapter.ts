@@ -3,13 +3,9 @@ import type { NestService } from "@freeanima/legacy-runtime";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
 
-
 import type { PlatformAdapter } from "../platforms";
 import { collectGatewayStreamReply } from "../collect-gateway-stream-reply";
-import {
-  registerWeixinCronDeliverer,
-  unregisterWeixinCronDeliverer,
-} from "../cron-deliver";
+import { registerWeixinCronDeliverer, unregisterWeixinCronDeliverer } from "../cron-deliver";
 import {
   BACKOFF_DELAY_MS,
   MAX_CONSECUTIVE_FAILURES,
@@ -24,12 +20,7 @@ import {
   parseUserTextMessage,
 } from "./weixin-message";
 import type { WeixinCredentials } from "./weixin-credentials";
-import {
-  weixinContextTokensSchema,
-  weixinSyncSchema,
-  ilinkMessageSchema,
-} from "../schemas/weixin";
-
+import { weixinContextTokensSchema, weixinSyncSchema, ilinkMessageSchema } from "../schemas/weixin";
 
 function safeId(value: string | undefined, keep = 8): string {
   const raw = (value ?? "").trim();
@@ -92,10 +83,7 @@ export class WeixinAdapter implements PlatformAdapter {
     const loop = this.loopPromise;
     if (loop) {
       try {
-        await Promise.race([
-          loop,
-          new Promise<void>((r) => setTimeout(r, 5000)),
-        ]);
+        await Promise.race([loop, new Promise<void>((r) => setTimeout(r, 5000))]);
       } catch {
         /* aborted */
       }
@@ -162,12 +150,7 @@ export class WeixinAdapter implements PlatformAdapter {
   }
 
   private async pollOnce(signal: AbortSignal): Promise<void> {
-    const resp = await getUpdates(
-      this.creds.base_url,
-      this.creds.token,
-      this.syncBuf,
-      signal,
-    );
+    const resp = await getUpdates(this.creds.base_url, this.creds.token, this.syncBuf, signal);
 
     const newBuf = String(resp.get_updates_buf ?? "");
     if (newBuf) {
@@ -316,9 +299,7 @@ export class WeixinAdapter implements PlatformAdapter {
 
     try {
       if (existsSync(PATHS.weixinContextTokensFile)) {
-        const raw: unknown = JSON.parse(
-          readFileSync(PATHS.weixinContextTokensFile, "utf-8"),
-        );
+        const raw: unknown = JSON.parse(readFileSync(PATHS.weixinContextTokensFile, "utf-8"));
         this.contextTokens = safeParseOrNull(weixinContextTokensSchema, raw) ?? {};
       }
     } catch {
@@ -358,9 +339,6 @@ export class WeixinAdapter implements PlatformAdapter {
   }
 }
 
-export function createWeixinAdapter(
-  service: NestService,
-  creds: WeixinCredentials,
-): WeixinAdapter {
+export function createWeixinAdapter(service: NestService, creds: WeixinCredentials): WeixinAdapter {
   return new WeixinAdapter(service, creds);
 }

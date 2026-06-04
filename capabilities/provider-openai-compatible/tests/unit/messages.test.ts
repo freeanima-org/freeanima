@@ -29,9 +29,7 @@ describe("messagesForApi", () => {
   });
 
   it("assistant 写入 reasoning_content", () => {
-    const api = messagesForApi([
-      { role: "assistant", content: "ans", reasoning: "think" },
-    ]);
+    const api = messagesForApi([{ role: "assistant", content: "ans", reasoning: "think" }]);
     expect(api[0]).toMatchObject({
       role: "assistant",
       content: "ans",

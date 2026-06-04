@@ -39,9 +39,7 @@ function buildRunResult<P>(
   stoppedByBlocked: boolean,
   meta: HookRunMeta,
 ): HookRunResult<P> {
-  const blockedMessage = stoppedByBlocked
-    ? blockedMessageFromChain(chain)
-    : undefined;
+  const blockedMessage = stoppedByBlocked ? blockedMessageFromChain(chain) : undefined;
   return {
     context,
     chain,

@@ -8,4 +8,3 @@ export class NullEventQueue implements EventQueueAdapter {
 
   stop(): void {}
 }
-

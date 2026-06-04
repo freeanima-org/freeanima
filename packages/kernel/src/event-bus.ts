@@ -79,9 +79,7 @@ export class EventBus {
 
   emit<K extends EventTopic>(topic: K, payload: EventMap[K]): void {
     this.db
-      .prepare(
-        `INSERT INTO events (topic, data, created_at, status) VALUES (?, ?, ?, 'pending')`,
-      )
+      .prepare(`INSERT INTO events (topic, data, created_at, status) VALUES (?, ?, ?, 'pending')`)
       .run(topic, JSON.stringify(payload), new Date().toISOString());
   }
 

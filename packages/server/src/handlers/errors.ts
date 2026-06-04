@@ -4,11 +4,7 @@ export class ApiHandlerError extends Error {
   readonly status: 400 | 404 | 500 | 503;
   readonly context?: Record<string, unknown>;
 
-  constructor(
-    status: 400 | 404 | 500 | 503,
-    message: string,
-    context?: Record<string, unknown>,
-  ) {
+  constructor(status: 400 | 404 | 500 | 503, message: string, context?: Record<string, unknown>) {
     super(message);
     this.name = "ApiHandlerError";
     this.status = status;

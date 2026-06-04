@@ -24,7 +24,6 @@ export function readRecentErrorLogTail(maxLines = 10): string[] {
   }
 }
 
-
 function userConfigDir(): string {
   const xdg = process.env.XDG_CONFIG_HOME;
   if (xdg) return xdg;

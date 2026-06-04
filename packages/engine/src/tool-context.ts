@@ -14,10 +14,7 @@ function isAsyncIterable(value: unknown): value is AsyncIterable<unknown> {
 }
 
 /** 每次 next() 在 session 上下文中执行，供 runStream 等 async generator 使用 */
-async function* bindToolContext<T>(
-  sessionId: string,
-  source: AsyncIterable<T>,
-): AsyncGenerator<T> {
+async function* bindToolContext<T>(sessionId: string, source: AsyncIterable<T>): AsyncGenerator<T> {
   const it = source[Symbol.asyncIterator]();
   while (true) {
     const step = await storage.run({ sessionId }, () => it.next());

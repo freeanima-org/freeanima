@@ -1,9 +1,6 @@
 import { describe, it, expect } from "bun:test";
 import { cronJobDataSchema } from "../../src/schemas/cron";
-import {
-  eventPayloadSchemas,
-  sessionUpdatedPayloadSchema,
-} from "../../src/schemas/events";
+import { eventPayloadSchemas, sessionUpdatedPayloadSchema } from "../../src/schemas/events";
 import { l2LineSchema, factExtractionSchema } from "../../src/schemas/l2";
 import { toolArgsSchema, toolErrorSchema } from "../../src/schemas/tool-json";
 import {
@@ -11,12 +8,12 @@ import {
   sendMessageBodySchema,
   memorySearchBodySchema,
 } from "../../../api/src/schemas";
-import { parseCompressionState, clarifyToolAwaitingResultSchema } from "../../src/schemas/session-meta";
-import { jsonRpcMessageSchema } from "../../../integrations/src/schemas/acp-jsonrpc";
 import {
-  weixinSyncSchema,
-  weixinContextTokensSchema,
-} from "../../../gateway/src/schemas/weixin";
+  parseCompressionState,
+  clarifyToolAwaitingResultSchema,
+} from "../../src/schemas/session-meta";
+import { jsonRpcMessageSchema } from "../../../integrations/src/schemas/acp-jsonrpc";
+import { weixinSyncSchema, weixinContextTokensSchema } from "../../../gateway/src/schemas/weixin";
 
 describe("schemas/cron", () => {
   it("parses minimal cron job", () => {
