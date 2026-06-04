@@ -108,11 +108,12 @@ kernel/             # RFC #1 新栈（与 legacy packages/ 并行）
 ├── hooks/          # @freeanima/hooks：Hook token + HookRegistry（run→HookRunResult 结果链 prev）
 ├── logging/        # @freeanima/logging：Logger / LogSink / createLogger；子路径 console / file / memory / null
 └── kernel/         # @freeanima/kernel：Kernel 组合端口（HookRegistry + EventBus + Logger）
+connectors/
+└── event-bus-sqlite/ # @freeanima/event-bus-sqlite：SqliteEventQueue（bun:sqlite，实现 EventQueueAdapter）
 apps/
 ├── cli/            # anima 入口：service / credential / completion
 └── webui/          # React 19 CSR + TanStack Router；Bun fullstack HTML entry；tRPC client → packages/server
 packages/
-├── event-bus-sqlite/ # @freeanima/event-bus-sqlite：SqliteEventQueue（bun:sqlite，实现 EventQueueAdapter）
 ├── api/            # HTTP 契约（Zod schema + 类型）；仅依赖 zod
 ├── kernel/         # @freeanima/legacy-kernel：paths、config、hook token/context、schemas/*（openSqlite 仅 bun:sqlite）
 ├── db/             # @freeanima/legacy-db：L1 Session PG（sessions + messages.payload JSONB）、Drizzle migrate
@@ -122,7 +123,7 @@ packages/
 ├── clarify/        # clarify 工具与 hook 注册
 ├── gateway/        # 入站消息通道：Discord、微信；cron deliver；流式回复收集
 ├── core/           # 兼容门面：re-export kernel/clarify/engine/memory/runtime + network-error
-├── server/         # serve() + handlers/ + trpc/；Bun fullstack WebUI + node:http（tRPC WS）；EventBus + SqliteEventQueue
+├── server/         # serve() + handlers/ + trpc/；Bun fullstack WebUI + node:http（tRPC WS）；kernel.eventBus + SqliteEventQueue
 ├── tools/          # 本地工具注册
 └── integrations/   # MCP、ACP
 tests/           # Vitest 回归

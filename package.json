@@ -55,6 +55,7 @@
   "workspaces": {
     "packages": [
       "kernel/*",
+      "connectors/*",
       "packages/*",
       "apps/*",
       "tests"

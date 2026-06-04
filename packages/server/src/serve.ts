@@ -1,7 +1,6 @@
 import "@freeanima/legacy-runtime/system-prompt-wire";
 import { cleanupDebugSessions, kernel } from "@freeanima/legacy-engine";
 import {
-  EventBus,
   PATHS,
   installErrorLogHandlers,
   logComponent,
@@ -43,7 +42,6 @@ export { isServerAlive, readStatusFile } from "./alive";
 export { DEFAULT_BIND_HOST, DEFAULT_BIND_HOSTS, parseBindHosts, resolveProbeHost } from "./bind-hosts";
 
 let service: NestService | null = null;
-let bus: EventBus | null = null;
 let mcp: MCPManager | null = null;
 const acp = getAcpManager();
 let cronScheduler: Scheduler | null = null;
@@ -146,15 +144,13 @@ export async function serve(
     service.markStarted();
     const nest = service;
 
-    bus = new EventBus();
-    bus.resetStuck();
     registerReflectChat(async (messages) => {
       const resp = await chat(messages);
       return { content: resp.content ?? null };
     });
-    registerMemoryPipeline(bus as unknown as Parameters<NestService["setEventBus"]>[0]);
-    bus.start();
-    service.setEventBus(bus as unknown as Parameters<NestService["setEventBus"]>[0]);
+    registerMemoryPipeline(kernel.eventBus);
+    kernel.eventBus.start();
+    service.setEventBus(kernel.eventBus);
 
     ensureBuiltinCronJobs();
     seedHomeChannelsFromHermes();
@@ -236,7 +232,7 @@ export async function serve(
 
     {
       const s = Date.now();
-      bus?.stop();
+      kernel.eventBus.stop();
       step("EventBus 已停止", Date.now() - s);
     }
 
