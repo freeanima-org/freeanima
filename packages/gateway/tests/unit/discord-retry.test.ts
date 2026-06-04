@@ -1,10 +1,40 @@
-import { describe, expect, it, vi } from "bun:test";
+import { describe, expect, it, vi, beforeEach, afterEach } from "bun:test";
 import {
   deliverDiscordFinalContent,
+  discordErrorDetails,
   isDiscordRetryableError,
   tryDiscordInterimEdit,
   withDiscordRetry,
 } from "../../src/discord/discord-retry";
+import { beginLogIsolation, endLogIsolation } from "../../../../tests/helpers/log-isolation";
+
+const prevHome = process.env.FREEANIMA_HOME;
+beforeEach(() => {
+  beginLogIsolation("freeanima-discord-retry-");
+});
+afterEach(() => {
+  endLogIsolation(prevHome);
+});
+
+describe("discordErrorDetails", () => {
+  it("提取 http status 与 discord code", () => {
+    expect(
+      discordErrorDetails({
+        status: 403,
+        code: 50005,
+        message: "Cannot edit a message authored by another user",
+      }),
+    ).toEqual({
+      http_status: 403,
+      discord_code: 50005,
+      discord_message: "Cannot edit a message authored by another user",
+    });
+  });
+
+  it("非对象返回空", () => {
+    expect(discordErrorDetails(null)).toEqual({});
+  });
+});
 
 describe("isDiscordRetryableError", () => {
   it("429 与 5xx 可重试", () => {

@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach } from "bun:test";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { tmpdir } from "node:os";
 import { sanitizeMcpConfig, isMcpServerEnabled } from "../../src/mcp/status";
 import { MCPManager } from "../../src/mcp/manager";
+import { beginLogIsolation, endLogIsolation } from "../../../../tests/helpers/log-isolation";
 
 describe("sanitizeMcpConfig", () => {
   it("脱敏 env 值，仅保留键名", () => {
@@ -33,8 +33,7 @@ describe("MCPManager.getStatus", () => {
   const prev = process.env.FREEANIMA_HOME;
 
   beforeEach(() => {
-    home = mkdtempSync(join(tmpdir(), "freeanima-mcp-status-"));
-    process.env.FREEANIMA_HOME = home;
+    home = beginLogIsolation("freeanima-mcp-status-");
     writeFileSync(
       join(home, "config.yaml"),
       [
@@ -53,8 +52,7 @@ describe("MCPManager.getStatus", () => {
   });
 
   afterEach(() => {
-    if (prev === undefined) delete process.env.FREEANIMA_HOME;
-    else process.env.FREEANIMA_HOME = prev;
+    endLogIsolation(prev);
   });
 
   it("未启动时返回配置与 not_started 状态", async () => {

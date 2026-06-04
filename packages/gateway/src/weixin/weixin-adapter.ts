@@ -19,6 +19,7 @@ import {
 } from "./ilink-api";
 import {
   buildWeixinOrigin,
+  explainInboundSkip,
   normalizeInboundMessage,
   parseUserTextMessage,
 } from "./weixin-message";
@@ -177,9 +178,22 @@ export class WeixinAdapter implements PlatformAdapter {
     const msgs = resp.msgs;
     if (!Array.isArray(msgs)) return;
 
+    if (msgs.length > 0) {
+      logComponent("weixin").info(`WeChat poll received ${msgs.length} message(s)`, {
+        count: msgs.length,
+      });
+    }
+
+    let routed = 0;
+    let skipped = 0;
+
     for (const raw of msgs) {
       const inbound = safeParseOrNull(ilinkMessageSchema, raw);
-      if (!inbound) continue;
+      if (!inbound) {
+        skipped += 1;
+        logComponent("weixin").warn("WeChat inbound skipped: schema parse failed");
+        continue;
+      }
       const msg = normalizeInboundMessage(inbound);
       const msgId = String(msg.msg_id ?? msg.message_id ?? msg.seq_id ?? "");
       if (msgId && this.seen.has(msgId)) continue;
@@ -190,12 +204,28 @@ export class WeixinAdapter implements PlatformAdapter {
       }
 
       const parsed = parseUserTextMessage(msg, this.creds.account_id);
-      if (!parsed) continue;
+      if (!parsed) {
+        skipped += 1;
+        const reason = explainInboundSkip(msg, this.creds.account_id);
+        logComponent("weixin").warn(`WeChat inbound skipped: ${reason}`, {
+          reason,
+          from_user_id: safeId(String(msg.from_user_id ?? "")),
+          message_type: msg.message_type ?? null,
+        });
+        continue;
+      }
+
+      routed += 1;
 
       if (process.env.DEBUG?.includes("weixin")) {
         logComponent("weixin").info(
           `WeChat inbound from ${safeId(parsed.fromUserId)}: ${parsed.text.slice(0, 60)}`,
           { from_user_id: safeId(parsed.fromUserId) },
+        );
+      } else {
+        logComponent("weixin").info(
+          `WeChat inbound from ${safeId(parsed.fromUserId)}: ${parsed.text.slice(0, 60)}`,
+          { from_user_id: safeId(parsed.fromUserId), peer_id: safeId(parsed.peerId) },
         );
       }
 
@@ -205,6 +235,13 @@ export class WeixinAdapter implements PlatformAdapter {
 
       void this.routeToRuntime(parsed).catch((e) => {
         logComponent("weixin").error("WeChat message routing error", { err: e });
+      });
+    }
+
+    if (msgs.length > 0 && routed === 0 && skipped > 0) {
+      logComponent("weixin").warn("WeChat poll batch had no routable messages", {
+        total: msgs.length,
+        skipped,
       });
     }
   }

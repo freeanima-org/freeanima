@@ -1,22 +1,17 @@
 import { describe, it, expect, beforeEach, afterEach } from "bun:test";
-import { mkdtempSync, readFileSync, existsSync } from "node:fs";
-import { join } from "node:path";
-import { tmpdir } from "node:os";
-import { logError, logApiError, logStartupError, PATHS, resetServiceLogger } from "@freeanima/legacy-kernel";
+import { readFileSync, existsSync } from "node:fs";
+import { logError, logApiError, logStartupError, PATHS } from "@freeanima/legacy-kernel";
+import { beginLogIsolation, endLogIsolation } from "../../../../tests/helpers/log-isolation";
 
 describe("error-log", () => {
-  let home: string;
   const prev = process.env.FREEANIMA_HOME;
 
   beforeEach(() => {
-    home = mkdtempSync(join(tmpdir(), "freeanima-errlog-"));
-    process.env.FREEANIMA_HOME = home;
-    resetServiceLogger();
+    beginLogIsolation("freeanima-errlog-");
   });
 
   afterEach(() => {
-    if (prev === undefined) delete process.env.FREEANIMA_HOME;
-    else process.env.FREEANIMA_HOME = prev;
+    endLogIsolation(prev);
   });
 
   it("writes to error.log under home", () => {

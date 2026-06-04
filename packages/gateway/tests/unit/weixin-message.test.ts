@@ -4,6 +4,7 @@ import {
   ITEM_TEXT,
   MSG_TYPE_BOT,
   buildWeixinOrigin,
+  explainInboundSkip,
   extractTextFromMessage,
   normalizeInboundMessage,
   parseUserTextMessage,
@@ -94,6 +95,28 @@ describe("weixin-message", () => {
       "",
     );
     expect(parsed).toBeNull();
+  });
+
+  it("explainInboundSkip 给出跳过原因", () => {
+    expect(
+      explainInboundSkip(
+        {
+          message_type: MSG_TYPE_BOT,
+          from_user_id: "u1",
+          item_list: [{ type: ITEM_TEXT, text_item: { text: "x" } }],
+        },
+        "bot@im.bot",
+      ),
+    ).toBe("message_type is BOT");
+    expect(
+      explainInboundSkip(
+        { from_user_id: "bot@im.bot", item_list: [] },
+        "bot@im.bot",
+      ),
+    ).toBe("from_user_id matches bot account_id");
+    expect(explainInboundSkip({ from_user_id: "u1", item_list: [] }, "")).toBe(
+      "no extractable text in item_list",
+    );
   });
 
   it("unwraps nested msg and camelCase fields", () => {
