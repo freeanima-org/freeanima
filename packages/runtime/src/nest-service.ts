@@ -768,7 +768,6 @@ export class NestService {
             continue;
           }
           if (!hadError) {
-            await conv.finishTurn(sessionId, msgs, effective, model, functions, true);
             const reply = lastAssistantText(msgs);
             const displayContent = await this.runTurnAfterCompleteHooks(sessionId, msgs, reply);
             if (displayContent !== reply) {
@@ -782,6 +781,9 @@ export class NestService {
               buffer.push({ event: "done", data: {} });
               signalReady();
             }
+            // 让 generator 先把 done yield 给消费者，再执行持久化
+            await new Promise<void>((resolve) => setImmediate(resolve));
+            await conv.finishTurn(sessionId, msgs, effective, model, functions, true);
           }
           break;
         } catch (e) {
