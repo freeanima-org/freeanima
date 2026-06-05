@@ -29,7 +29,7 @@ import { writeFileSync, unlinkSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import { chdir } from "node:process";
 
-import { registerClarifyHooks } from "@freeanima/legacy-clarify";
+import { registerClarifyHooks } from "@freeanima/capabilities-clarify";
 import { registerReflectChat } from "@freeanima/legacy-memory";
 import { registerAllTools } from "@freeanima/legacy-tools";
 import {

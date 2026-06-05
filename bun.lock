@@ -7,9 +7,9 @@
       "devDependencies": {
         "@commitlint/cli": "^21.0.2",
         "@commitlint/config-conventional": "^21.0.2",
+        "@freeanima/capabilities-clarify": "workspace:*",
         "@freeanima/kernel-db": "workspace:*",
         "@freeanima/legacy-api": "workspace:*",
-        "@freeanima/legacy-clarify": "workspace:*",
         "@freeanima/legacy-integrations": "workspace:*",
         "@freeanima/legacy-server": "workspace:*",
         "@freeanima/legacy-tools": "workspace:*",
@@ -72,6 +72,20 @@
         "daisyui": "^5.5.20",
         "tailwindcss": "^4.3.0",
         "typescript": "^6.0.3",
+      },
+    },
+    "capabilities/clarify": {
+      "name": "@freeanima/capabilities-clarify",
+      "dependencies": {
+        "@freeanima/engine-conversation": "workspace:*",
+        "@freeanima/engine-tool": "workspace:*",
+        "@freeanima/kernel": "workspace:*",
+        "@freeanima/kernel-hooks": "workspace:*",
+        "@freeanima/kernel-schemas": "workspace:*",
+        "@freeanima/service-config": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
       },
     },
     "capabilities/provider-openai-compatible": {
@@ -293,20 +307,6 @@
         "@types/bun": "catalog:",
       },
     },
-    "packages/clarify": {
-      "name": "@freeanima/legacy-clarify",
-      "dependencies": {
-        "@freeanima/engine-conversation": "workspace:*",
-        "@freeanima/engine-tool": "workspace:*",
-        "@freeanima/kernel": "workspace:*",
-        "@freeanima/kernel-hooks": "workspace:*",
-        "@freeanima/kernel-schemas": "workspace:*",
-        "@freeanima/service-config": "workspace:*",
-      },
-      "devDependencies": {
-        "@types/bun": "catalog:",
-      },
-    },
     "packages/gateway": {
       "name": "@freeanima/legacy-gateway",
       "dependencies": {
@@ -365,6 +365,7 @@
     "packages/runtime": {
       "name": "@freeanima/legacy-runtime",
       "dependencies": {
+        "@freeanima/capabilities-clarify": "workspace:*",
         "@freeanima/engine": "workspace:*",
         "@freeanima/engine-compress": "workspace:*",
         "@freeanima/engine-conversation": "workspace:*",
@@ -376,7 +377,6 @@
         "@freeanima/kernel-eventbus": "workspace:*",
         "@freeanima/kernel-hooks": "workspace:*",
         "@freeanima/kernel-schemas": "workspace:*",
-        "@freeanima/legacy-clarify": "workspace:*",
         "@freeanima/legacy-memory": "workspace:*",
         "@freeanima/life-memory": "workspace:*",
         "@freeanima/service-bootstrap": "workspace:*",
@@ -392,6 +392,7 @@
     "packages/server": {
       "name": "@freeanima/legacy-server",
       "dependencies": {
+        "@freeanima/capabilities-clarify": "workspace:*",
         "@freeanima/connectors-eventbus-sqlite": "workspace:*",
         "@freeanima/engine": "workspace:*",
         "@freeanima/engine-conversation": "workspace:*",
@@ -400,7 +401,6 @@
         "@freeanima/kernel-eventbus": "workspace:*",
         "@freeanima/kernel-schemas": "workspace:*",
         "@freeanima/legacy-api": "workspace:*",
-        "@freeanima/legacy-clarify": "workspace:*",
         "@freeanima/legacy-gateway": "workspace:*",
         "@freeanima/legacy-integrations": "workspace:*",
         "@freeanima/legacy-memory": "workspace:*",
@@ -424,9 +424,9 @@
     "packages/tools": {
       "name": "@freeanima/legacy-tools",
       "dependencies": {
+        "@freeanima/capabilities-clarify": "workspace:*",
         "@freeanima/engine-loop": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
-        "@freeanima/legacy-clarify": "workspace:*",
         "@freeanima/legacy-memory": "workspace:*",
         "@freeanima/legacy-runtime": "workspace:*",
         "@freeanima/life-memory": "workspace:*",
@@ -474,6 +474,7 @@
     "tests": {
       "name": "@freeanima/integration-tests",
       "devDependencies": {
+        "@freeanima/capabilities-clarify": "workspace:*",
         "@freeanima/connectors-eventbus-sqlite": "workspace:*",
         "@freeanima/engine": "workspace:*",
         "@freeanima/engine-conversation": "workspace:*",
@@ -482,7 +483,6 @@
         "@freeanima/kernel-eventbus": "workspace:*",
         "@freeanima/kernel-logging": "workspace:*",
         "@freeanima/kernel-schemas": "workspace:*",
-        "@freeanima/legacy-clarify": "workspace:*",
         "@freeanima/legacy-integrations": "workspace:*",
         "@freeanima/legacy-memory": "workspace:*",
         "@freeanima/legacy-runtime": "workspace:*",
@@ -622,6 +622,8 @@
 
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.25.12", "", { "os": "win32", "cpu": "x64" }, "sha512-alJC0uCZpTFrSL0CCDjcgleBXPnCrEAhTBILpeAp7M/OFgoqtAetfBzX0xM00MUsVVPpVjlPuMbREqnZCXaTnA=="],
 
+    "@freeanima/capabilities-clarify": ["@freeanima/capabilities-clarify@workspace:capabilities/clarify"],
+
     "@freeanima/capabilities-provider-openai-compatible": ["@freeanima/capabilities-provider-openai-compatible@workspace:capabilities/provider-openai-compatible"],
 
     "@freeanima/connectors-eventbus-sqlite": ["@freeanima/connectors-eventbus-sqlite@workspace:connectors/eventbus-sqlite"],
@@ -661,8 +663,6 @@
     "@freeanima/kernel-schemas": ["@freeanima/kernel-schemas@workspace:kernel/schemas"],
 
     "@freeanima/legacy-api": ["@freeanima/legacy-api@workspace:packages/api"],
-
-    "@freeanima/legacy-clarify": ["@freeanima/legacy-clarify@workspace:packages/clarify"],
 
     "@freeanima/legacy-cli": ["@freeanima/legacy-cli@workspace:apps/cli"],
 

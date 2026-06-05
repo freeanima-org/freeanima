@@ -397,7 +397,7 @@ conversation.py  emit("session:updated")
 - `turnAfterComplete` — 单轮结束
 - `toolAfterCall` — 工具返回后
 
-`@freeanima/legacy-clarify` 在 `serve()` 里通过 `registerClarifyHooks(kernel)` 挂载 handler。
+`@freeanima/capabilities-clarify` 在 `serve()` 里通过 `registerClarifyHooks(kernel)` 挂载 handler。
 
 与 EventBus 的关系：
 

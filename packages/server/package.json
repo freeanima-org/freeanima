@@ -18,7 +18,7 @@
     "@freeanima/kernel-eventbus": "workspace:*",
     "@freeanima/kernel-schemas": "workspace:*",
     "@freeanima/legacy-api": "workspace:*",
-    "@freeanima/legacy-clarify": "workspace:*",
+    "@freeanima/capabilities-clarify": "workspace:*",
     "@freeanima/kernel-db": "workspace:*",
     "@freeanima/legacy-gateway": "workspace:*",
     "@freeanima/legacy-integrations": "workspace:*",

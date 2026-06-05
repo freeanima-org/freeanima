@@ -1,5 +1,5 @@
 {
-  "name": "@freeanima/legacy-clarify",
+  "name": "@freeanima/capabilities-clarify",
   "type": "module",
   "exports": {
     ".": "./src/index.ts"

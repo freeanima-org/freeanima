@@ -1,1 +1,1 @@
-export * from "@freeanima/legacy-clarify";
+export * from "@freeanima/capabilities-clarify";

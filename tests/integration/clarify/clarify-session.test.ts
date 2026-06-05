@@ -15,7 +15,7 @@ import {
   resolveUserContent,
   guardAwaitingClarify,
   findAwaitingClarifyInMessages,
-} from "@freeanima/legacy-clarify";
+} from "@freeanima/capabilities-clarify";
 import { executeCommand, getCommand } from "@freeanima/legacy-runtime";
 
 describePg("clarify session", () => {

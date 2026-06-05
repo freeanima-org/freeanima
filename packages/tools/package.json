@@ -8,7 +8,7 @@
     "@freeanima/engine-loop": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",
     "@freeanima/life-memory": "workspace:*",
-    "@freeanima/legacy-clarify": "workspace:*",
+    "@freeanima/capabilities-clarify": "workspace:*",
     "@freeanima/legacy-memory": "workspace:*",
     "@freeanima/legacy-runtime": "workspace:*",
     "@freeanima/service-config": "workspace:*"
