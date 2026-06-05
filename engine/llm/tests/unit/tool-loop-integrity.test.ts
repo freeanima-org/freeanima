@@ -6,9 +6,9 @@ import {
   isInsufficientToolMessagesError,
   REPAIR_REASON_LOST,
   syntheticToolContent,
-} from "../../src/tool-loop-integrity.ts";
+  sessionMessagesToInvokeInput,
+} from "../../src/index.ts";
 import { messagesForApi } from "@freeanima/capabilities-provider-openai-compatible/messages";
-import { sessionMessagesToInvokeInput } from "../../src/llm-adapt.ts";
 import type { SessionMessage } from "@freeanima/legacy-kernel";
 import { beginLogIsolation, endLogIsolation } from "../../../../tests/helpers/log-isolation.ts";
 

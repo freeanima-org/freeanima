@@ -1,6 +1,6 @@
 import { getCompressionConfig } from "./compression-config.ts";
 import { type CompressionState, formatMessagesForSummary, sliceForSummary } from "./compressor.ts";
-import { chat, PROFILE_SUMMARY } from "./llm.ts";
+import { chat, PROFILE_SUMMARY } from "@freeanima/engine-llm";
 import type { SessionMessage } from "@freeanima/legacy-kernel";
 
 const SUMMARY_INSTRUCTION = `你是运行在逸灵风中的数字生命。请将以下对话历史压缩为简洁的会话摘要（第一人称「我」），保留：

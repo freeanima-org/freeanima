@@ -1,4 +1,4 @@
-import { compress, SUMMARY_USER_PREFIX } from "@freeanima/legacy-engine";
+import { compress, SUMMARY_USER_PREFIX } from "@freeanima/engine-compress";
 import { parseCompressionState, type SessionMessage } from "@freeanima/legacy-kernel";
 import { describe, it, expect } from "bun:test";
 import { aa, ua } from "../helpers/session-fixtures.ts";

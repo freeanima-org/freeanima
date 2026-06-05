@@ -1,5 +1,5 @@
 {
-  "name": "@freeanima/engine",
+  "name": "@freeanima/engine-loop",
   "type": "module",
   "exports": {
     ".": "./src/index.ts"
@@ -8,10 +8,11 @@
     "@freeanima/engine-compress": "workspace:*",
     "@freeanima/engine-conversation": "workspace:*",
     "@freeanima/engine-llm": "workspace:*",
-    "@freeanima/engine-loop": "workspace:*",
-    "@freeanima/engine-prompt": "workspace:*",
     "@freeanima/engine-provider-llm": "workspace:*",
-    "@freeanima/engine-tool": "workspace:*"
+    "@freeanima/engine-tool": "workspace:*",
+    "@freeanima/kernel-hooks": "workspace:*",
+    "@freeanima/legacy-engine": "workspace:*",
+    "@freeanima/legacy-kernel": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "catalog:"
