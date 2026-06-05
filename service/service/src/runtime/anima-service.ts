@@ -1,25 +1,4 @@
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
-import { join } from "node:path";
-import {
-  getDefaultProviderBaseUrl,
-  getProfileHopModel,
-  loadConfig,
-  sanitizeConfigForApi,
-} from "@freeanima/service-config";
-import { openaiSchemas, listTools } from "@freeanima/engine-tool";
-import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
-import {
-  executeCommand as runSlashCommand,
-  resolveCommand,
-  listCommandDefs,
-  listCommandDefsForPlatform,
-  isRetryResult,
-} from "@freeanima/connectors-commands";
-import type { CommandResult, CommandDef } from "@freeanima/connectors-commands";
-import { logComponent, logSseError } from "@freeanima/service-logging";
-import * as conv from "@freeanima/engine-conversation";
-import { buildMessagesDisplay, paginateMessagesDisplay } from "./build-messages-display.ts";
-import type { MessagesDisplay } from "@freeanima/kernel-schemas";
+import type { EventBus } from "@freeanima/kernel-eventbus";
 import type {
   HealthSnapshot,
   PlatformStatusSnapshot,
@@ -29,220 +8,63 @@ import type {
 } from "@freeanima/kernel-schemas";
 import type { StreamEvent } from "@freeanima/engine-loop";
 import type { Message } from "@freeanima/engine-conversation";
-import { ProviderError } from "@freeanima/engine-provider-llm";
-import type { EventBus } from "@freeanima/kernel-eventbus";
-import { sessionUpdated } from "@freeanima/life-memory";
-import { statsReport } from "./conversation-stats.ts";
-import { runWithToolContext } from "@freeanima/engine-loop";
-import { createTurnMessageCallbacks, finalizeTurn } from "./turn-lifecycle.ts";
-import {
-  ensureBuiltinCronJobs,
-  getJob,
-  listJobs,
-  pauseJob,
-  resumeJob,
-  enqueueRunJob,
-} from "@freeanima/connectors-cron";
 import type { CronJobData } from "@freeanima/connectors-cron";
 import { kernel } from "@freeanima/service-bootstrap";
-import { headOkStepData, messageIncoming, turnAfterComplete } from "@freeanima/kernel-hooks";
-import type { MessageIncomingEffect, TurnAfterCompleteEffect } from "@freeanima/kernel-hooks";
-import { applyClarifyStreamAwaiting } from "@freeanima/capabilities-clarify";
-import { CST_OFFSET_MS, PATHS } from "@freeanima/service-config";
-import { distillAll } from "@freeanima/life-memory/clean";
-import { countL2FtsRows, reindexL2All as reindexL2FtsAll } from "@freeanima/life-memory/l2-indexer";
-import { indexL3All as reindexL3FtsAll } from "@freeanima/life-memory/l3-indexer";
-import { getStore } from "@freeanima/life-memory/store";
-import { memorySearchDetailed, type MemorySearchResult } from "@freeanima/life-memory/search";
-import { PARLOR_PLATFORM } from "./platforms.ts";
-import { ANIMA_VERSION } from "./version.ts";
 import { repairAndPersistToolLoop } from "@freeanima/engine-conversation";
-import { isInsufficientToolMessagesError } from "@freeanima/engine-llm";
+import * as conv from "@freeanima/engine-conversation";
 import { collectStreamReply } from "@freeanima/engine-loop";
-import * as engine from "@freeanima/engine-loop";
+import { createTurnMessageCallbacks, type StreamTurnHost } from "./turn-lifecycle.ts";
+import { EngineRunControl } from "./engine-run-control.ts";
+import { SessionManager } from "./session-manager.ts";
+import * as status from "./service-status.ts";
+import * as sessions from "./service-sessions.ts";
+import * as memory from "./service-memory.ts";
+import * as messaging from "./service-messaging.ts";
+import { PARLOR_PLATFORM } from "./platforms.ts";
 
-function streamErrorEvent(sessionId: string, message: string, err?: unknown): StreamEvent {
-  logSseError(`/sessions/${sessionId}/messages/stream`, message, {
-    session_id: sessionId,
-  });
-  if (err !== undefined) {
-    logComponent("anima-service").error(message, { err, session_id: sessionId });
-  }
-  return { event: "error", data: { error: message } };
-}
-
-function lastAssistantText(msgs: Message[]): string {
-  for (let i = msgs.length - 1; i >= 0; i--) {
-    const m = msgs[i];
-    if (m?.role === "assistant") {
-      const content = m.content;
-      return typeof content === "string" ? content : "";
-    }
-  }
-  return "";
-}
-
-export type MemoryFileEntry = {
-  name: string;
-  path: string;
-  size: number;
-  mtime: number;
-  content: string;
-};
-
+export type { MemoryFileEntry } from "./service-memory.ts";
 export type { StreamEvent } from "@freeanima/engine-loop";
+export { SessionManager } from "./session-manager.ts";
 
-export class SessionManager {
-  private chains = new Map<string, Promise<unknown>>();
-
-  runExclusive<T>(sessionId: string, fn: () => Promise<T>): Promise<T> {
-    const prev = this.chains.get(sessionId) ?? Promise.resolve();
-    const next = prev.then(() => fn());
-    this.chains.set(
-      sessionId,
-      next.catch(() => undefined),
-    );
-    return next;
-  }
-}
-
-function startTimeIso(epochSec: number): string {
-  if (epochSec <= 0) return "";
-  return new Date(epochSec * 1000 + CST_OFFSET_MS)
-    .toISOString()
-    .replace("Z", "+08:00")
-    .slice(0, 19);
-}
-
-function buildMemoryFileStats(): { files_count: number; files_bytes: number } {
-  let files_count = 0;
-  let files_bytes = 0;
-  const add = (path: string) => {
-    if (!existsSync(path)) return;
-    try {
-      files_count++;
-      files_bytes += statSync(path).size;
-    } catch {
-      /* ignore */
-    }
-  };
-
-  add(PATHS.soul);
-  add(join(PATHS.home, "MEMORY.md"));
-  add(join(PATHS.home, "USER.md"));
-
-  try {
-    if (existsSync(PATHS.memory)) {
-      for (const name of readdirSync(PATHS.memory)) {
-        if (!name.startsWith("f-") || !name.endsWith(".md")) continue;
-        add(join(PATHS.memory, name));
-      }
-    }
-  } catch {
-    /* empty */
-  }
-
-  return { files_count, files_bytes };
-}
-
-async function buildSessionsByPlatform(): Promise<Record<string, number>> {
-  try {
-    return await conv.countSessionsByPlatform();
-  } catch {
-    return {};
-  }
-}
-
-function readMemoryEntry(path: string, displayName: string): MemoryFileEntry | null {
-  if (!existsSync(path)) return null;
-  try {
-    const st = statSync(path);
-    return {
-      name: displayName,
-      path,
-      size: st.size,
-      mtime: st.mtimeMs / 1000,
-      content: readFileSync(path, "utf-8"),
-    };
-  } catch {
-    return null;
-  }
-}
-
-export class AnimaService {
+export class AnimaService implements StreamTurnHost {
   private startTime = 0;
   private platformStatus: Record<string, PlatformStatusSnapshot> = {};
-  private sessionManager = new SessionManager();
+  private readonly runControl = new EngineRunControl();
+  private readonly sessionManager = new SessionManager();
   private bus: EventBus | null = null;
   private onSessionUpdated: ((sid: string) => void) | null = null;
-  private shuttingDown = false;
-  private inFlightCount = 0;
-  private inFlightResolve: (() => void) | null = null;
-  private sessionAbortControllers = new Map<string, AbortController>();
 
-  isShuttingDown(): boolean {
-    return this.shuttingDown;
+  private messagingDeps(): messaging.MessagingDeps {
+    return {
+      runControl: this.runControl,
+      sessionManager: this.sessionManager,
+      bus: this.bus,
+      onSessionUpdated: this.onSessionUpdated,
+      streamHost: this,
+    };
+  }
+
+  runExclusive<T>(sessionId: string, fn: () => Promise<T>): Promise<T> {
+    return this.sessionManager.runExclusive(sessionId, fn);
+  }
+
+  beginEngineRun(sessionId: string): { signal: AbortSignal; controller: AbortController } {
+    return this.runControl.beginEngineRun(sessionId);
+  }
+
+  endEngineRun(sessionId: string, controller: AbortController): void {
+    this.runControl.endEngineRun(sessionId, controller);
   }
 
   acquireInFlight(): void {
-    this.inFlightCount++;
+    this.runControl.acquireInFlight();
   }
 
   releaseInFlight(): void {
-    this.inFlightCount--;
-    if (this.inFlightCount === 0 && this.inFlightResolve !== null) {
-      const r = this.inFlightResolve;
-      this.inFlightResolve = null;
-      r();
-    }
+    this.runControl.releaseInFlight();
   }
 
-  async waitForDrain(): Promise<void> {
-    if (this.inFlightCount <= 0) {
-      logComponent("shutdown").debug("无进行中请求，跳过 drain");
-      return;
-    }
-    logComponent("shutdown").debug(
-      `等待 ${this.inFlightCount} 个进行中的对话/工具请求落盘（engine.run/runStream）…`,
-      { in_flight: this.inFlightCount },
-    );
-    await new Promise<void>((resolve) => {
-      this.inFlightResolve = resolve;
-      if (this.inFlightCount <= 0) {
-        this.inFlightResolve = null;
-        resolve();
-      }
-    });
-    logComponent("shutdown").debug("进行中请求已排空");
-  }
-
-  startShutdown(): void {
-    this.shuttingDown = true;
-  }
-
-  /** 关停诊断：当前未结束的 engine.run / runStream 数量 */
-  getInFlightCount(): number {
-    return this.inFlightCount;
-  }
-
-  private preemptSessionEngine(sessionId: string): void {
-    this.sessionAbortControllers.get(sessionId)?.abort();
-  }
-
-  private beginEngineRun(sessionId: string): { signal: AbortSignal; controller: AbortController } {
-    this.preemptSessionEngine(sessionId);
-    const controller = new AbortController();
-    this.sessionAbortControllers.set(sessionId, controller);
-    return { signal: controller.signal, controller };
-  }
-
-  private endEngineRun(sessionId: string, controller: AbortController): void {
-    if (this.sessionAbortControllers.get(sessionId) === controller) {
-      this.sessionAbortControllers.delete(sessionId);
-    }
-  }
-
-  private engineStreamOpts(sessionId: string, signal: AbortSignal) {
+  engineStreamOpts(sessionId: string, signal: AbortSignal) {
     return {
       hookRegistry: kernel.hookRegistry,
       ...createTurnMessageCallbacks(sessionId),
@@ -250,9 +72,36 @@ export class AnimaService {
     };
   }
 
-  private async reloadRuntimeAfterRepair(sessionId: string): Promise<[Message[], string[]]> {
+  async reloadRuntimeAfterRepair(sessionId: string): Promise<[Message[], string[]]> {
     await repairAndPersistToolLoop(sessionId, await conv.load(sessionId));
     return conv.buildRuntimeMessages(sessionId);
+  }
+
+  async onTurnAfterComplete(sessionId: string, msgs: Message[], reply: string): Promise<string> {
+    return messaging.runTurnAfterCompleteHooks(sessionId, msgs, reply);
+  }
+
+  emitSessionUpdated(sessionId: string): void {
+    messaging.emitSessionUpdated(
+      { bus: this.bus, onSessionUpdated: this.onSessionUpdated },
+      sessionId,
+    );
+  }
+
+  isShuttingDown(): boolean {
+    return this.runControl.isShuttingDown();
+  }
+
+  async waitForDrain(): Promise<void> {
+    return this.runControl.waitForDrain();
+  }
+
+  startShutdown(): void {
+    this.runControl.startShutdown();
+  }
+
+  getInFlightCount(): number {
+    return this.runControl.getInFlightCount();
   }
 
   setEventBus(bus: EventBus): void {
@@ -275,307 +124,74 @@ export class AnimaService {
     this.platformStatus[name] = { status: "starting", since: Date.now() / 1000 };
   }
 
-  updatePlatformStatus(name: string, status: string, extra: Record<string, unknown> = {}): void {
-    this.platformStatus[name] = { status, ...extra };
+  updatePlatformStatus(
+    name: string,
+    statusText: string,
+    extra: Record<string, unknown> = {},
+  ): void {
+    this.platformStatus[name] = { status: statusText, ...extra };
   }
 
   getPlatformStatus(): Record<string, PlatformStatusSnapshot> {
     return { ...this.platformStatus };
   }
 
-  private async checkPlatform(params: { platform?: string }, sid: string): Promise<void> {
-    const platform = (params.platform ?? "").trim();
-    if (platform) await conv.assertSessionPlatform(sid, platform);
-  }
-
-  private async runIncomingMessageHooks(
-    sessionId: string,
-    message: string,
-    platform: string,
-  ): Promise<{ ok: true; message: string; expiredHint?: string } | { ok: false; reason: string }> {
-    const run = await kernel.hookRegistry.run(messageIncoming, {
-      sessionId,
-      message,
-      platform,
-    });
-    if (run.blocked) {
-      return { ok: false, reason: run.blockedMessage ?? "" };
-    }
-    const effect = (headOkStepData(run.chain) ?? {}) as MessageIncomingEffect;
-    return {
-      ok: true,
-      message: effect.transformedMessage ?? message,
-      expiredHint: effect.expiredHint,
-    };
-  }
-
-  private async runTurnAfterCompleteHooks(
-    sessionId: string,
-    messages: Message[],
-    defaultContent: string,
-  ): Promise<string> {
-    const run = await kernel.hookRegistry.run(turnAfterComplete, {
-      sessionId,
-      messages: messages as Record<string, unknown>[],
-    });
-    const effect = (headOkStepData(run.chain) ?? {}) as TurnAfterCompleteEffect;
-    return effect.displayContent ?? defaultContent;
-  }
-
-  private emitSessionUpdated(sessionId: string): void {
-    this.bus?.emit(sessionUpdated, { session_id: sessionId });
-    this.onSessionUpdated?.(sessionId);
-  }
-
   health(): HealthSnapshot {
-    return { status: "ok", version: ANIMA_VERSION };
+    return status.health();
   }
 
   async buildStatus(host: string, port: number): Promise<ServiceSnapshot> {
-    const cfg = loadConfig();
-    const uptime = this.startTime > 0 ? Math.round(Date.now() / 1000 - this.startTime) : null;
-
-    const byPlatform = await buildSessionsByPlatform();
-    const sessionCount = Object.values(byPlatform).reduce((a, b) => a + b, 0);
-
-    let toolCount = 0;
-    try {
-      toolCount = listTools().length;
-    } catch {
-      toolCount = 0;
-    }
-
-    let memoryKb = 0;
-    try {
-      const statusText = readFileSync(`/proc/${process.pid}/status`, "utf-8");
-      for (const line of statusText.split("\n")) {
-        if (line.startsWith("VmRSS:")) {
-          memoryKb = parseInt(line.split(/\s+/)[1] ?? "0", 10);
-          break;
-        }
-      }
-    } catch {
-      /* non-Linux */
-    }
-
-    const fileStats = buildMemoryFileStats();
-    let factsCount = 0;
-    let l2IndexRows = 0;
-    try {
-      factsCount = getStore().count();
-    } catch {
-      factsCount = 0;
-    }
-    try {
-      l2IndexRows = countL2FtsRows();
-    } catch {
-      l2IndexRows = 0;
-    }
-
-    const status: ServiceSnapshot = {
-      status: "running",
-      pid: process.pid,
-      version: ANIMA_VERSION,
-      uptime_seconds: uptime,
-      start_time_iso: startTimeIso(this.startTime),
-      config: {
-        model: getProfileHopModel(cfg, PROFILE_CHAT),
-        api_base: getDefaultProviderBaseUrl(cfg),
-      },
-      sessions: { total: sessionCount, by_platform: byPlatform },
-      tools: toolCount,
-      cron_jobs: this.listCronJobs().jobs.length,
-      platforms: { ...this.platformStatus },
-      memory_kb: memoryKb,
-      memory: {
-        files_count: fileStats.files_count,
-        files_bytes: fileStats.files_bytes,
-        facts_count: factsCount,
-        l2_index_rows: l2IndexRows,
-      },
-    };
-    if (host) status.host = host;
-    if (port) status.port = port;
-    return status;
+    return status.buildStatus(
+      this.startTime,
+      this.platformStatus,
+      status.listCronJobs().jobs.length,
+      host,
+      port,
+    );
   }
 
-  async listSessions(platform?: string | null): Promise<{ sessions: SessionSummary[] }> {
-    const p = platform === "" ? null : platform;
-    return { sessions: await conv.listSessionSummaries(p ?? undefined) };
+  listSessions(platform?: string | null): Promise<{ sessions: SessionSummary[] }> {
+    return sessions.listSessions(platform);
   }
 
-  async createSession(platform = PARLOR_PLATFORM): Promise<{ session_id: string }> {
-    const sid = await conv.newSession(platform);
-    return { session_id: sid };
+  createSession(platform = PARLOR_PLATFORM): Promise<{ session_id: string }> {
+    return sessions.createSession(platform);
   }
 
-  async findOrCreateSession(
+  findOrCreateSession(
     platform: string,
     platform_extra: Record<string, unknown> = {},
   ): Promise<{ session_id: string }> {
-    let sid = await conv.findSessionByOrigin(platform, platform_extra);
-    if (!sid) {
-      sid = await conv.newSession(platform, undefined, platform_extra);
-    } else {
-      await conv.refreshSystemPromptOnResume(sid);
-    }
-    return { session_id: sid };
+    return sessions.findOrCreateSession(platform, platform_extra);
   }
 
-  async patchSessionOrigin(
+  patchSessionOrigin(
     session_id: string,
     platform: string,
     platform_extra?: Record<string, unknown>,
   ): Promise<{ ok: boolean }> {
-    await conv.patchSessionOrigin(session_id, platform, platform_extra);
-    return { ok: true };
+    return sessions.patchSessionOrigin(session_id, platform, platform_extra);
   }
 
-  private async applyCommandSessionEffects(
-    result: CommandResult,
-    _sessionId: string,
-    platform: string,
-    originExtra?: Record<string, unknown>,
-  ): Promise<void> {
-    const data = result.data as { new_session_id?: string } | undefined;
-    if (data?.new_session_id && originExtra !== undefined) {
-      await conv.patchSessionOrigin(data.new_session_id, platform, originExtra);
-    }
-  }
-
-  async executeCommand(params: {
+  executeCommand(params: {
     session_id: string;
     text: string;
     platform?: string;
     origin_extra?: Record<string, unknown>;
   }): Promise<{ text: string; data: unknown; found: boolean }> {
-    const sessionId = params.session_id;
-    const platform = params.platform ?? "gateway";
-    const text = params.text.trim();
-    const [cmd, args] = resolveCommand(text, platform);
-
-    if (!cmd) {
-      if (text.startsWith("/")) {
-        const cmdName = text.split(/\s/)[0] ?? "/?";
-        return {
-          text: `❌ 未知命令: ${cmdName}。输入 /help 查看可用命令。`,
-          data: null,
-          found: true,
-        };
-      }
-      return { text: "", data: null, found: false };
-    }
-
-    const result = await runSlashCommand(cmd, {
-      sessionId,
-      platform,
-      args,
-      raw: text,
-      origin_extra: params.origin_extra,
-    });
-    await this.applyCommandSessionEffects(result, sessionId, platform, params.origin_extra);
-
-    if (isRetryResult(result)) {
-      try {
-        const reply = await collectStreamReply(this.runRetryStream(sessionId));
-        return { text: reply, data: result.data, found: true };
-      } catch (e) {
-        return { text: `⚠️ ${e}`, data: result.data, found: true };
-      }
-    }
-
-    return { text: result.text, data: result.data ?? null, found: true };
+    return messaging.executeCommand(this.messagingDeps(), params);
   }
 
-  async getSessionInfo(sessionId: string, platform = ""): Promise<Record<string, unknown>> {
-    if (!(await conv.sessionExists(sessionId))) {
-      throw new Error(`Session not found: ${sessionId}`);
-    }
-    await this.checkPlatform({ platform }, sessionId);
-    return { session_id: sessionId, stats: await statsReport(sessionId) };
+  getSessionInfo(sessionId: string, platform = ""): Promise<Record<string, unknown>> {
+    return sessions.getSessionInfo(sessionId, platform);
   }
 
-  async getMessages(
-    sessionId: string,
-    platform = "",
-    opts?: { offset?: number; limit?: number | null },
-  ): Promise<MessagesDisplay> {
-    if (!(await conv.sessionExists(sessionId))) {
-      throw new Error(`Session not found: ${sessionId}`);
-    }
-    await this.checkPlatform({ platform }, sessionId);
-    if (opts?.limit != null) {
-      const offset = Math.max(0, opts.offset ?? 0);
-      const limit = Math.max(1, opts.limit);
-      const [total, page] = await Promise.all([
-        conv.countMessages(sessionId),
-        conv.loadMessagePage(sessionId, offset, limit),
-      ]);
-      const full = buildMessagesDisplay(page);
-      return {
-        session_id: sessionId,
-        display: full,
-        total,
-        offset,
-        limit,
-      };
-    }
-    const all = await conv.load(sessionId);
-    return paginateMessagesDisplay(sessionId, all, opts);
+  getMessages(sessionId: string, platform = "", opts?: { offset?: number; limit?: number | null }) {
+    return sessions.getMessages(sessionId, platform, opts);
   }
 
-  async setSessionTitle(sessionId: string, title: string, platform = ""): Promise<{ ok: boolean }> {
-    await this.checkPlatform({ platform }, sessionId);
-    await conv.setSessionTitle(sessionId, title.slice(0, 50));
-    return { ok: true };
-  }
-
-  private async *yieldEngineStream(
-    sessionId: string,
-    msgs: Message[],
-    model: string,
-    signal: AbortSignal,
-  ): AsyncGenerator<StreamEvent> {
-    const tools = await conv.loadSessionTools(sessionId);
-    this.acquireInFlight();
-    try {
-      try {
-        for await (const ev of runWithToolContext(sessionId, () =>
-          engine.runStream(msgs, {
-            model,
-            tools,
-            ...this.engineStreamOpts(sessionId, signal),
-          }),
-        )) {
-          if (ev.event === "awaiting_clarify") {
-            await applyClarifyStreamAwaiting(sessionId, ev.data.items, ev.data.timeout_sec);
-          }
-          yield ev;
-        }
-      } catch (e) {
-        if (e instanceof engine.EngineTurnInterrupted) {
-          yield { event: "interrupted", data: { reason: e.message } };
-          yield { event: "done", data: { reason: "interrupted" } };
-          return;
-        }
-        if (e instanceof engine.MaxTurnsExceeded) {
-          const msg = `tool loop exceeded: ${e.message}`;
-          logComponent("anima-service").error(msg, { err: e });
-          yield { event: "error", data: { error: msg } };
-          return;
-        }
-        if (e instanceof ProviderError) {
-          logComponent("anima-service").error(e.message, { err: e });
-          yield { event: "error", data: { error: e.message } };
-          return;
-        }
-        const msg = String(e);
-        logComponent("anima-service").error(msg, { err: e });
-        yield { event: "error", data: { error: msg } };
-      }
-    } finally {
-      this.releaseInFlight();
-    }
+  setSessionTitle(sessionId: string, title: string, platform = ""): Promise<{ ok: boolean }> {
+    return sessions.setSessionTitle(sessionId, title, platform);
   }
 
   async sendMessage(
@@ -583,325 +199,74 @@ export class AnimaService {
     message: string,
     platform = PARLOR_PLATFORM,
   ): Promise<{ session_id: string; content: string }> {
-    const content = await collectStreamReply(this.sendMessageStream(sessionId, message, platform));
+    const content = await collectStreamReply(
+      messaging.sendMessageStream(this.messagingDeps(), sessionId, message, platform),
+    );
     return { session_id: sessionId, content };
   }
 
-  async *sendMessageStream(
+  sendMessageStream(
     sessionId: string,
     message: string,
     platform = PARLOR_PLATFORM,
   ): AsyncGenerator<StreamEvent> {
-    message = message.trim();
-    if (this.shuttingDown) {
-      yield streamErrorEvent(sessionId, "Server is shutting down");
-      return;
-    }
-    if (!(await conv.sessionExists(sessionId))) {
-      yield streamErrorEvent(sessionId, `Session not found: ${sessionId}`);
-      return;
-    }
-    if (!message) {
-      yield streamErrorEvent(sessionId, "message is required");
-      return;
-    }
-    await this.checkPlatform({ platform }, sessionId);
-
-    const [cmd, args] = resolveCommand(message, platform);
-    if (cmd) {
-      yield* this.dispatchCommandStream(sessionId, platform, message, cmd, args);
-      return;
-    }
-    if (message.startsWith("/")) {
-      yield {
-        event: "token",
-        data: {
-          content: `❌ 未知命令: ${message.split(/\s/)[0]}。输入 /help 查看可用命令。`,
-        },
-      };
-      yield { event: "done", data: {} };
-      return;
-    }
-
-    const guard = await this.runIncomingMessageHooks(sessionId, message, platform);
-    if (!guard.ok) {
-      yield { event: "token", data: { content: guard.reason } };
-      yield { event: "done", data: {} };
-      return;
-    }
-    if (guard.expiredHint) {
-      yield { event: "token", data: { content: `${guard.expiredHint}\n\n` } };
-    }
-
-    yield* this.runTurnStream(sessionId, guard.message);
+    return messaging.sendMessageStream(this.messagingDeps(), sessionId, message, platform);
   }
 
-  private async *dispatchCommandStream(
-    sessionId: string,
-    platform: string,
-    raw: string,
-    cmd: CommandDef,
-    args: string[],
-  ): AsyncGenerator<StreamEvent> {
-    if (cmd.name !== "cancel") {
-      const guard = await this.runIncomingMessageHooks(sessionId, raw, platform);
-      if (!guard.ok) {
-        yield { event: "token", data: { content: guard.reason } };
-        yield { event: "done", data: {} };
-        return;
-      }
-    }
-    const result = await runSlashCommand(cmd, {
-      sessionId,
-      platform,
-      args,
-      raw,
-    });
-    if (isRetryResult(result)) {
-      try {
-        yield* this.runRetryStream(sessionId);
-      } catch (e) {
-        yield { event: "token", data: { content: `⚠️ ${e}` } };
-        yield { event: "done", data: {} };
-      }
-      return;
-    }
-    if (result.text) {
-      yield { event: "token", data: { content: result.text } };
-    }
-    yield { event: "done", data: {} };
+  memorySearch(args: { query: string; limit?: number; session_limit?: number; session?: string }) {
+    return memory.memorySearch(args);
   }
 
-  private async *runRetryStream(sessionId: string): AsyncGenerator<StreamEvent> {
-    this.preemptSessionEngine(sessionId);
-    yield* this.runExclusiveEngineStream(sessionId, async () => conv.retryTurn(sessionId));
+  distillL2All(): Promise<{ sessions: number }> {
+    return memory.distillL2All();
   }
 
-  private async *runTurnStream(sessionId: string, message: string): AsyncGenerator<StreamEvent> {
-    this.preemptSessionEngine(sessionId);
-    yield* this.runExclusiveEngineStream(sessionId, async () => conv.beginTurn(sessionId, message));
-  }
-
-  private async *runExclusiveEngineStream(
-    sessionId: string,
-    prepare: () => Promise<[Message[], string[], string]>,
-  ): AsyncGenerator<StreamEvent> {
-    const buffer: StreamEvent[] = [];
-    let closed = false;
-    let wake: (() => void) | null = null;
-    const signalReady = () => {
-      wake?.();
-      wake = null;
-    };
-
-    const work = this.sessionManager.runExclusive(sessionId, async () => {
-      let [msgs, functions, effective] = await prepare();
-      const cfg = loadConfig();
-      const model = getProfileHopModel(cfg, PROFILE_CHAT);
-      let hadError = false;
-      let sawDone = false;
-      let retried = false;
-
-      while (true) {
-        hadError = false;
-        sawDone = false;
-        let pendingDone: StreamEvent | null = null;
-        const { signal, controller } = this.beginEngineRun(sessionId);
-
-        try {
-          for await (const ev of this.yieldEngineStream(sessionId, msgs, model, signal)) {
-            if (ev.event === "done") {
-              pendingDone = ev;
-              sawDone = true;
-              continue;
-            }
-            buffer.push(ev);
-            signalReady();
-            if (ev.event === "error") {
-              hadError = true;
-              if (!retried && isInsufficientToolMessagesError(ev.data.error)) {
-                const [runtimeMsgs, fn] = await this.reloadRuntimeAfterRepair(sessionId);
-                msgs = runtimeMsgs;
-                functions = fn;
-                retried = true;
-                hadError = false;
-                break;
-              }
-            }
-          }
-          if (retried && !sawDone && !hadError) {
-            continue;
-          }
-          if (!hadError) {
-            const reply = lastAssistantText(msgs);
-            const displayContent = await this.runTurnAfterCompleteHooks(sessionId, msgs, reply);
-            if (displayContent !== reply) {
-              buffer.push({ event: "content_replace", data: { content: displayContent } });
-              signalReady();
-            }
-            if (pendingDone) {
-              buffer.push(pendingDone);
-              signalReady();
-            } else if (!sawDone) {
-              buffer.push({ event: "done", data: {} });
-              signalReady();
-            }
-            // 让 generator 先把 done yield 给消费者，再执行持久化
-            await new Promise<void>((resolve) => setImmediate(resolve));
-            await finalizeTurn(sessionId, msgs, effective, model, functions);
-          }
-          break;
-        } catch (e) {
-          hadError = true;
-          buffer.push(streamErrorEvent(sessionId, String(e), e));
-          signalReady();
-          break;
-        } finally {
-          this.endEngineRun(sessionId, controller);
-        }
-      }
-
-      if (!hadError) {
-        this.emitSessionUpdated(sessionId);
-      }
-      closed = true;
-      signalReady();
-    });
-
-    while (!closed || buffer.length > 0) {
-      while (buffer.length > 0) {
-        yield buffer.shift()!;
-      }
-      if (closed) break;
-      await new Promise<void>((resolve) => {
-        wake = resolve;
-        setTimeout(resolve, 50);
-      });
-    }
-
-    await work;
-  }
-
-  memorySearch(args: {
-    query: string;
-    limit?: number;
-    session_limit?: number;
-    session?: string;
-  }): MemorySearchResult {
-    const query = args.query.trim();
-    if (!query) throw new Error("query is required");
-    return memorySearchDetailed(query, {
-      l3Limit: args.limit,
-      l2Limit: args.session_limit,
-      sessionId: args.session?.trim() || undefined,
-    });
-  }
-
-  /** 从 L1 全量重蒸馏 L2（不写 FTS）。 */
-  async distillL2All(): Promise<{ sessions: number }> {
-    return { sessions: await distillAll({ overwrite: true }) };
-  }
-
-  /** 清空并重建 L2 FTS 索引（不蒸馏）。 */
   reindexL2All(): { index_rows: number } {
-    return { index_rows: reindexL2FtsAll({ dropFirst: true }) };
+    return memory.reindexL2All();
   }
 
-  /** 清空并重建 L3 FTS 索引。 */
   reindexL3All(): { index_rows: number } {
-    return { index_rows: reindexL3FtsAll({ dropFirst: true }) };
+    return memory.reindexL3All();
   }
 
-  /** 蒸馏 + 重建 L2 索引（组合，供脚本/测试）。 */
-  async rebuildL2All(): Promise<{ sessions: number; index_rows: number }> {
-    const sessions = await distillAll({ overwrite: true });
-    const index_rows = reindexL2FtsAll({ dropFirst: true });
-    return { sessions, index_rows };
+  rebuildL2All(): Promise<{ sessions: number; index_rows: number }> {
+    return memory.rebuildL2All();
   }
 
-  listMemoryFiles(): { files: MemoryFileEntry[] } {
-    const files: MemoryFileEntry[] = [];
-    const home = PATHS.home;
-
-    for (const name of ["SOUL.md", "MEMORY.md", "USER.md"]) {
-      const path = name === "SOUL.md" ? PATHS.soul : join(home, name);
-      const entry = readMemoryEntry(path, name);
-      if (entry) files.push(entry);
-    }
-
-    try {
-      if (existsSync(PATHS.memory)) {
-        for (const name of readdirSync(PATHS.memory).toSorted()) {
-          if (!name.startsWith("f-") || !name.endsWith(".md")) continue;
-          const path = join(PATHS.memory, name);
-          const entry = readMemoryEntry(path, name);
-          if (entry) files.push(entry);
-        }
-      }
-    } catch {
-      /* empty */
-    }
-
-    return { files };
+  listMemoryFiles(): { files: memory.MemoryFileEntry[] } {
+    return memory.listMemoryFiles();
   }
 
   getConfig(): SafeConfigSnapshot {
-    const cfg = loadConfig();
-    return { config: sanitizeConfigForApi(cfg) as SafeConfigSnapshot["config"] };
+    return status.getConfig();
   }
 
   listToolsApi(): { tools: { name: string; description: string }[] } {
-    return { tools: listTools().map((t) => ({ name: t.name, description: t.description })) };
+    return status.listToolsApi();
   }
 
   listCronJobs(): { jobs: CronJobData[] } {
-    return { jobs: listJobs().map((j) => j.toJSON()) };
+    return status.listCronJobs();
   }
 
   pauseCronJob(jobId: string): CronJobData | null {
-    if (!pauseJob(jobId)) return null;
-    return getJob(jobId)?.toJSON() ?? null;
+    return status.pauseCronJob(jobId);
   }
 
   resumeCronJob(jobId: string): CronJobData | null {
-    if (!resumeJob(jobId)) return null;
-    return getJob(jobId)?.toJSON() ?? null;
+    return status.resumeCronJob(jobId);
   }
 
   runCronJobNow(jobId: string): { job: CronJobData; message: string } | null {
-    const job = getJob(jobId);
-    if (!job) return null;
-    enqueueRunJob(job);
-    return {
-      job: job.toJSON(),
-      message: `已触发立即运行: ${job.name}`,
-    };
+    return status.runCronJobNow(jobId);
   }
 
   ensureBuiltinCronJobs(): void {
-    ensureBuiltinCronJobs();
+    status.ensureBuiltinCronJobsRegistered();
   }
 
-  listCommands(opts?: { platform?: string; all?: boolean }): {
-    commands: {
-      name: string;
-      description: string;
-      scope: string;
-      platforms: string[] | null;
-    }[];
-    platform?: string;
-  } {
-    const platform = opts?.platform ?? PARLOR_PLATFORM;
-    const defs = opts?.all ? listCommandDefs() : listCommandDefsForPlatform(platform);
-    return {
-      commands: defs.map((c) => ({
-        name: c.name,
-        description: c.description,
-        scope: c.scope ?? "session",
-        platforms: c.platforms?.length ? [...c.platforms] : null,
-      })),
-      ...(opts?.all ? {} : { platform }),
-    };
+  listCommands(opts?: { platform?: string; all?: boolean }) {
+    return status.listCommands(opts);
   }
 
   getStatus(): Record<string, unknown> {
@@ -910,12 +275,5 @@ export class AnimaService {
 }
 
 export async function appendSessionMetaForEngine(session: string): Promise<void> {
-  const cfg = loadConfig();
-  const tools = await conv.loadSessionTools(session);
-  await conv.appendSessionMeta(
-    session,
-    tools.length ? tools : openaiSchemas(),
-    getProfileHopModel(cfg, PROFILE_CHAT),
-    {},
-  );
+  return sessions.appendSessionMetaForEngine(session);
 }
