@@ -40,7 +40,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "bun run typecheck && bun run lint && bun run format && bun run test:changed",
+    "check": "bun run typecheck && bun run lint && bun run dep-check && bun run format && bun run test:changed",
+    "dep-check": "bun scripts/check-layer-deps.ts",
     "format": "oxfmt --check .",
     "format:fix": "oxfmt .",
     "lint": "oxlint .",
