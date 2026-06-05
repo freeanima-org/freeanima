@@ -24,7 +24,7 @@ import {
   shiftMessagePositions as dbShiftMessagePositions,
   upsertSessionMeta as dbUpsertSessionMeta,
 } from "@freeanima/legacy-db";
-import { parseCompressionState, isCompressed } from "./compressor.ts";
+import { parseCompressionState, isCompressed } from "@freeanima/engine-compress";
 import type { SessionMessage, SessionMetaMessage } from "@freeanima/legacy-kernel";
 
 export function postgresAvailable(): boolean {

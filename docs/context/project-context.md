@@ -111,9 +111,14 @@ kernel/             # RFC #1 新栈（与 legacy packages/ 并行）
 ├── logging/        # @freeanima/kernel-logging：Logger / LogSink / createLogger；子路径 console / file / memory / null
 └── kernel/         # @freeanima/kernel：Kernel 组合端口（HookRegistry + EventBus + Logger）
 engine/
-├── tool/           # @freeanima/engine-tool：ToolDef + ToolRegistry + tool JSON 约定（legacy-kernel/json-util 兼容 re-export）
-├── provider-llm/   # @freeanima/engine-provider-llm：Backend/Provider/Profile Registry + LlmTurnMessage 类型
-└── engine/         # @freeanima/engine：Engine 组合端口（tools + llm）+ 组件 re-export
+├── tool/           # @freeanima/engine-tool：ToolDef + ToolRegistry + tool JSON 约定
+├── provider-llm/   # @freeanima/engine-provider-llm：Backend/Provider/Profile Registry + LlmTurnMessage
+├── prompt/         # @freeanima/engine-prompt：SystemPromptBuilder 注入点
+├── compress/       # @freeanima/engine-compress：上下文压缩 v5.1
+├── llm/            # @freeanima/engine-llm：chat/chatStream 门面 + llm-stack + tool-loop-integrity
+├── conversation/   # @freeanima/engine-conversation：turn 生命周期 + Session PG 桥接
+├── loop/           # @freeanima/engine-loop：run/runStream 工具循环
+└── engine/         # @freeanima/engine：Engine 组合端口 + 组件 re-export
 capabilities/
 └── provider-openai-compatible/  # OpenAiCompatibleBackend + yaml parse（OPENAI_COMPATIBLE_BACKEND_ID）
 
@@ -127,7 +132,7 @@ packages/
 ├── api/            # HTTP 契约（Zod schema + 类型）；仅依赖 zod
 ├── kernel/         # @freeanima/legacy-kernel：paths、config、hook token/context、schemas/*（registry → engine-tool re-export）
 ├── db/             # @freeanima/legacy-db：L1 Session PG（sessions + messages.payload JSONB）、Drizzle migrate
-├── engine/         # conversation、session-store（PG）、compressor、llm、engine 回合；export kernel（含 hookRegistry 端口）
+├── engine/         # @freeanima/legacy-engine：门面 re-export 新栈 engine-*；暂留 kernel.ts、skills.ts
 ├── memory/         # L1–L4 存储/检索、reflect、events token、registerMemoryPipeline（+ registerMemoryHandlers 别名）
 ├── runtime/        # NestService、commands、cron、studio、platforms 辅助、conversation-stats
 ├── clarify/        # clarify 工具与 hook 注册

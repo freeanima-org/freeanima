@@ -5,16 +5,17 @@ import { randomBytes } from "node:crypto";
 import { openaiSchemas } from "@freeanima/engine-tool";
 import { PATHS, CST_OFFSET_MS, getProfileHopModel, loadConfig } from "@freeanima/legacy-kernel";
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
-import { buildSystemPrompt } from "./system-prompt-registry.ts";
-import { getCompressionConfig } from "./compression-config.ts";
-import { generateSessionSummary } from "./compression-summary.ts";
-import { clearToolLoopSuppression, isInToolLoop } from "./compression-tool-loop.ts";
+import { buildSystemPrompt } from "@freeanima/engine-prompt";
 import {
+  getCompressionConfig,
+  generateSessionSummary,
+  clearToolLoopSuppression,
+  isInToolLoop,
   analyzeCompression,
   compress,
   parseCompressionState,
   type CompressionState,
-} from "./compressor.ts";
+} from "@freeanima/engine-compress";
 import { injectTimePrefixes } from "./time-perception.ts";
 import { logComponent } from "@freeanima/legacy-kernel";
 import {
@@ -22,7 +23,7 @@ import {
   countFollowingToolMessages,
   syntheticToolContent,
   REPAIR_REASON_LOST,
-} from "./tool-loop-integrity.ts";
+} from "@freeanima/engine-llm";
 import {
   isSessionMeta,
   type SessionMessage,

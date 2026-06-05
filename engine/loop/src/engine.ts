@@ -12,15 +12,15 @@ import type { HookClarifyItem, HookStreamEvent, TurnControl } from "@freeanima/l
 import { headOkStepData } from "@freeanima/kernel-hooks";
 import { toolAfterCall } from "@freeanima/legacy-kernel";
 import type { ToolAfterCallEffect } from "@freeanima/legacy-kernel";
-import * as llm from "./llm.ts";
-import { cleanToolCallsForApi } from "./llm.ts";
-import { markToolLoopActivity } from "./compression-tool-loop.ts";
+import * as llm from "@freeanima/engine-llm";
+import { cleanToolCallsForApi } from "@freeanima/engine-llm";
+import { markToolLoopActivity } from "@freeanima/engine-compress";
 import { getToolSessionId } from "./tool-context.ts";
-import { maybeApplyEmergencyCompression } from "./conversation.ts";
-import { REPAIR_REASON_INTERRUPT } from "./tool-loop-integrity.ts";
+import { maybeApplyEmergencyCompression } from "@freeanima/engine-conversation";
+import { REPAIR_REASON_INTERRUPT } from "@freeanima/engine-llm";
 import type { AssistantMessage, SessionMessage, ToolMessage } from "@freeanima/legacy-kernel";
 import type { OpenAiToolSchema } from "@freeanima/legacy-kernel";
-import { kernel } from "./kernel.ts";
+import { kernel } from "@freeanima/legacy-engine/kernel";
 
 export class MaxTurnsExceeded extends Error {
   override name = "MaxTurnsExceeded";

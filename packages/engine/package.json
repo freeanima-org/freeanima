@@ -2,13 +2,20 @@
   "name": "@freeanima/legacy-engine",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./kernel": "./src/kernel.ts",
+    "./skills": "./src/skills.ts"
   },
   "dependencies": {
-    "@freeanima/engine-tool": "workspace:*",
     "@freeanima/capabilities-provider-openai-compatible": "workspace:*",
     "@freeanima/connectors-eventbus-sqlite": "workspace:*",
+    "@freeanima/engine-compress": "workspace:*",
+    "@freeanima/engine-conversation": "workspace:*",
+    "@freeanima/engine-llm": "workspace:*",
+    "@freeanima/engine-loop": "workspace:*",
+    "@freeanima/engine-prompt": "workspace:*",
     "@freeanima/engine-provider-llm": "workspace:*",
+    "@freeanima/engine-tool": "workspace:*",
     "@freeanima/kernel": "workspace:*",
     "@freeanima/kernel-eventbus": "workspace:*",
     "@freeanima/kernel-hooks": "workspace:*",

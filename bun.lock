@@ -94,12 +94,77 @@
         "@types/bun": "catalog:",
       },
     },
+    "engine/compress": {
+      "name": "@freeanima/engine-compress",
+      "dependencies": {
+        "@freeanima/engine-llm": "workspace:*",
+        "@freeanima/legacy-kernel": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
+    "engine/conversation": {
+      "name": "@freeanima/engine-conversation",
+      "dependencies": {
+        "@freeanima/engine-compress": "workspace:*",
+        "@freeanima/engine-llm": "workspace:*",
+        "@freeanima/engine-prompt": "workspace:*",
+        "@freeanima/engine-provider-llm": "workspace:*",
+        "@freeanima/engine-tool": "workspace:*",
+        "@freeanima/legacy-db": "workspace:*",
+        "@freeanima/legacy-kernel": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
     "engine/engine": {
       "name": "@freeanima/engine",
       "dependencies": {
+        "@freeanima/engine-compress": "workspace:*",
+        "@freeanima/engine-conversation": "workspace:*",
+        "@freeanima/engine-llm": "workspace:*",
+        "@freeanima/engine-loop": "workspace:*",
+        "@freeanima/engine-prompt": "workspace:*",
         "@freeanima/engine-provider-llm": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
       },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
+    "engine/llm": {
+      "name": "@freeanima/engine-llm",
+      "dependencies": {
+        "@freeanima/capabilities-provider-openai-compatible": "workspace:*",
+        "@freeanima/engine-provider-llm": "workspace:*",
+        "@freeanima/engine-tool": "workspace:*",
+        "@freeanima/legacy-db": "workspace:*",
+        "@freeanima/legacy-kernel": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
+    "engine/loop": {
+      "name": "@freeanima/engine-loop",
+      "dependencies": {
+        "@freeanima/engine-compress": "workspace:*",
+        "@freeanima/engine-conversation": "workspace:*",
+        "@freeanima/engine-llm": "workspace:*",
+        "@freeanima/engine-provider-llm": "workspace:*",
+        "@freeanima/engine-tool": "workspace:*",
+        "@freeanima/kernel-hooks": "workspace:*",
+        "@freeanima/legacy-engine": "workspace:*",
+        "@freeanima/legacy-kernel": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
+    "engine/prompt": {
+      "name": "@freeanima/engine-prompt",
       "devDependencies": {
         "@types/bun": "catalog:",
       },
@@ -197,6 +262,11 @@
       "dependencies": {
         "@freeanima/capabilities-provider-openai-compatible": "workspace:*",
         "@freeanima/connectors-eventbus-sqlite": "workspace:*",
+        "@freeanima/engine-compress": "workspace:*",
+        "@freeanima/engine-conversation": "workspace:*",
+        "@freeanima/engine-llm": "workspace:*",
+        "@freeanima/engine-loop": "workspace:*",
+        "@freeanima/engine-prompt": "workspace:*",
         "@freeanima/engine-provider-llm": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
         "@freeanima/kernel": "workspace:*",
@@ -477,6 +547,16 @@
     "@freeanima/connectors-eventbus-sqlite": ["@freeanima/connectors-eventbus-sqlite@workspace:connectors/eventbus-sqlite"],
 
     "@freeanima/engine": ["@freeanima/engine@workspace:engine/engine"],
+
+    "@freeanima/engine-compress": ["@freeanima/engine-compress@workspace:engine/compress"],
+
+    "@freeanima/engine-conversation": ["@freeanima/engine-conversation@workspace:engine/conversation"],
+
+    "@freeanima/engine-llm": ["@freeanima/engine-llm@workspace:engine/llm"],
+
+    "@freeanima/engine-loop": ["@freeanima/engine-loop@workspace:engine/loop"],
+
+    "@freeanima/engine-prompt": ["@freeanima/engine-prompt@workspace:engine/prompt"],
 
     "@freeanima/engine-provider-llm": ["@freeanima/engine-provider-llm@workspace:engine/provider-llm"],
 

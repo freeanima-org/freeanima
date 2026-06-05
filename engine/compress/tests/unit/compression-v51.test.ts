@@ -7,7 +7,7 @@ import {
   slimMessage,
   SUMMARY_SYNTHETIC_POS,
   buildRuntimeFromLPoints,
-} from "@freeanima/legacy-engine";
+} from "@freeanima/engine-compress";
 import { isAssistantMessage, parseCompressionState } from "@freeanima/legacy-kernel";
 import { describe, it, expect } from "bun:test";
 import { aa, assistantToolCall, buildHistory, toolMsg, ua } from "../helpers/session-fixtures.ts";

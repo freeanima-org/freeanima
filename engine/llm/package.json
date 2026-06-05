@@ -1,0 +1,17 @@
+{
+  "name": "@freeanima/engine-llm",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@freeanima/capabilities-provider-openai-compatible": "workspace:*",
+    "@freeanima/engine-provider-llm": "workspace:*",
+    "@freeanima/engine-tool": "workspace:*",
+    "@freeanima/legacy-db": "workspace:*",
+    "@freeanima/legacy-kernel": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:"
+  }
+}

@@ -1,6 +1,7 @@
 import { toolResult } from "@freeanima/engine-tool";
 import type { SessionMessage, ToolMessage } from "@freeanima/legacy-kernel";
-import { cleanToolCallsForApi, type StreamToolCall } from "./llm.ts";
+import { cleanToolCallsForApi } from "@freeanima/capabilities-provider-openai-compatible/stream-tools";
+import type { ToolCall } from "@freeanima/engine-provider-llm";
 
 export const REPAIR_REASON_LOST = "tool response lost (session repair)";
 export const REPAIR_REASON_INTERRUPT = "interrupted by user";
@@ -35,7 +36,7 @@ export function detectToolLoopCorruption(messages: SessionMessage[]): ToolLoopCo
     const msg = messages[i];
     if (msg?.role !== "assistant" || !msg.tool_calls?.length) continue;
 
-    const cleaned = cleanToolCallsForApi(msg.tool_calls as StreamToolCall[]);
+    const cleaned = cleanToolCallsForApi(msg.tool_calls as ToolCall[]);
     if (!cleaned.length) continue;
 
     const responded = new Set<string>();
@@ -120,7 +121,7 @@ export function repairToolLoopMessages(
       continue;
     }
 
-    const cleaned = cleanToolCallsForApi(msg.tool_calls as StreamToolCall[]);
+    const cleaned = cleanToolCallsForApi(msg.tool_calls as ToolCall[]);
     if (!cleaned.length) {
       const { tool_calls: _removed, ...rest } = msg;
       out.push(rest as SessionMessage);

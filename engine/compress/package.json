@@ -1,0 +1,14 @@
+{
+  "name": "@freeanima/engine-compress",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@freeanima/engine-llm": "workspace:*",
+    "@freeanima/legacy-kernel": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:"
+  }
+}
