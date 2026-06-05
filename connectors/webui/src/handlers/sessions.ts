@@ -8,7 +8,7 @@ import {
   type PatchTitleBody,
 } from "@freeanima/legacy-api";
 import { mapMessagesToApi, mapSessionsToApi } from "../api-mappers.ts";
-import { getServiceContext } from "../service-context.ts";
+import { getServiceContext } from "@freeanima/service";
 import { ApiHandlerError } from "./errors.ts";
 
 export async function resolveSessionPlatform(sessionId: string): Promise<string> {

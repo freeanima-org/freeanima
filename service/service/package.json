@@ -6,6 +6,8 @@
   },
   "dependencies": {
     "@freeanima/capabilities-acp": "workspace:*",
+    "@freeanima/capabilities-mcp": "workspace:*",
+    "@freeanima/legacy-runtime": "workspace:*",
     "@freeanima/capabilities-clarify": "workspace:*",
     "@freeanima/capabilities-tools": "workspace:*",
     "@freeanima/connectors-cron": "workspace:*",

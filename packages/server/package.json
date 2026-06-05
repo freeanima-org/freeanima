@@ -8,6 +8,7 @@
     "./message-stream": "./src/handlers/message-stream.ts",
     "./alive": "./src/alive.ts",
     "./bind-hosts": "./src/bind-hosts.ts",
+    "./service-restart": "./src/service-restart.ts",
     "./trpc": "./src/trpc/router.ts"
   },
   "dependencies": {
@@ -17,6 +18,7 @@
     "@freeanima/engine-loop": "workspace:*",
     "@freeanima/kernel-eventbus": "workspace:*",
     "@freeanima/kernel-schemas": "workspace:*",
+    "@freeanima/connectors-webui": "workspace:*",
     "@freeanima/legacy-api": "workspace:*",
     "@freeanima/capabilities-clarify": "workspace:*",
     "@freeanima/kernel-db": "workspace:*",

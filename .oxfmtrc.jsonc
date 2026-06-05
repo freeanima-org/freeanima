@@ -8,5 +8,5 @@
   "trailingComma": "all",
   "endOfLine": "lf",
   "sortPackageJson": false,
-  "ignorePatterns": ["**/dist/**", "**/coverage/**", "apps/webui/src/routeTree.gen.ts"],
+  "ignorePatterns": ["**/dist/**", "**/coverage/**", "connectors/webui/app/src/routeTree.gen.ts"],
 }

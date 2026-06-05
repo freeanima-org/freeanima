@@ -11,7 +11,7 @@
   "globals": {
     "Bun": "readonly"
   },
-  "ignorePatterns": ["**/dist/**", "**/coverage/**", "apps/webui/src/routeTree.gen.ts"],
+  "ignorePatterns": ["**/dist/**", "**/coverage/**", "connectors/webui/app/src/routeTree.gen.ts"],
   "rules": {
     "import/extensions": [
       "error",
@@ -33,7 +33,7 @@
   },
   "overrides": [
     {
-      "files": ["apps/webui/**/*.{ts,tsx}"],
+      "files": ["connectors/webui/app/**/*.{ts,tsx}"],
       "plugins": ["react"],
       "env": {
         "browser": true

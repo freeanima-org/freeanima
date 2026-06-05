@@ -20,6 +20,10 @@ function mockHandle(): WebuiServerHandle {
 }
 
 describe("http-shutdown", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("closeHttpServers 关闭全部 WebUI 句柄", async () => {
     const a = mockHandle();
     const b = mockHandle();

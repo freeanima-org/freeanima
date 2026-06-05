@@ -4,7 +4,7 @@ import {
   mapHealthToApi,
   mapStatusToApi,
 } from "../api-mappers.ts";
-import { getServiceContext } from "../service-context.ts";
+import { getServiceContext } from "@freeanima/service";
 import { scheduleServiceRestart } from "../service-restart.ts";
 import { ApiHandlerError } from "./errors.ts";
 
