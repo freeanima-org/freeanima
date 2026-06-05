@@ -106,17 +106,26 @@ packages:
 | 3   | 能力层注册方式     | 各包独立 export，**service 层统一 register 入口** |
 | 4   | 迁移策略           | **并行新包 + legacy rename**（本文方案）          |
 
-### 新栈必做改进（legacy 不修）
+### 新栈必做改进
 
-1. **TurnLifecycle 统一** — 消除 nest-service / engine conversation / cron runner 三处拷贝
-2. **SessionStore 接口注入** — 新 engine 不直调 db；接口定义在 kernel，service 注入实现
-3. **NestService 在新 service/ 按 RFC 职责重写** — legacy 仅作行为参考与 acceptance tests 来源
+1. **TurnLifecycle 统一** — ✅ `turn-lifecycle.ts`（非流式 + 流式）
+2. **engine 直调 db** — ✅ `engine-conversation` → `@freeanima/kernel-db`（不做 SessionStore 注入）
+3. **AnimaService 拆分** — ✅ `anima-service` + status/sessions/memory/messaging 模块
 
-### 层边界 CI enforce（目录就绪后）
+### 层边界 dep-check
 
-- `kernel/**` 不得 import workspace 包
-- `engine/**`、`life/**`、`capabilities/**` 不得互 import
-- `capabilities/**` 不得 import engine/service/connectors
+脚本：[`scripts/check-layer-deps.ts`](../../scripts/check-layer-deps.ts)，`bun run dep-check`（已挂入 `bun run check`）。
+
+| 层                | 允许 `@freeanima/*`                                                                           | 禁止                                 |
+| ----------------- | --------------------------------------------------------------------------------------------- | ------------------------------------ |
+| `kernel/**`       | `kernel-*`                                                                                    | 其他 workspace 包                    |
+| `engine/**`       | `kernel-*`、`engine-*`、`service-config`、`service-logging`、`capabilities-provider-*`        | `connectors-*`、`service`（runtime） |
+| `life/**`         | `kernel-*`、`life-*`、`engine-tool`、`connectors-sqlite`、`service-config`、`service-logging` | 其他 `connectors-*`、`service`       |
+| `capabilities/**` | `kernel-*`、`engine-*`、`capabilities-*`、`life-memory`、`service-config`、`service-logging`  | `connectors-*`、`service`            |
+| `connectors/**`   | 各下层 + `service`                                                                            | —                                    |
+| `service/**`      | 全部                                                                                          | —                                    |
+
+测试文件（`**/*.{test,spec}.ts`、`**/tests/**`）与 `cli/**` 豁免。
 
 ### PR 拆分原则
 
