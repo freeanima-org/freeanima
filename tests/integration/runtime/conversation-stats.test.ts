@@ -1,7 +1,10 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import { describePg } from "../../helpers/pg-test-gate.ts";
-import { beginIntegrationCase } from "../../helpers/integration-case.ts";
-import { endIntegrationCase } from "../../helpers/integration-case.ts";
+import {
+  beginIntegrationCase,
+  endIntegrationCase,
+  restoreIntegrationHome,
+} from "../../helpers/integration-case.ts";
 
 import {
   normalizeUsage,
@@ -21,8 +24,7 @@ describePg("conversation-stats", () => {
   });
 
   afterEach(async () => {
-    if (prev === undefined) delete process.env.FREEANIMA_HOME;
-    else process.env.FREEANIMA_HOME = prev;
+    await restoreIntegrationHome(prev);
   });
 
   it("normalizeUsage handles cached tokens", () => {

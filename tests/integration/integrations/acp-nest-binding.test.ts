@@ -1,7 +1,10 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import { describePg } from "../../helpers/pg-test-gate.ts";
-import { beginIntegrationCase } from "../../helpers/integration-case.ts";
-import { endIntegrationCase } from "../../helpers/integration-case.ts";
+import {
+  beginIntegrationCase,
+  endIntegrationCase,
+  restoreIntegrationHome,
+} from "../../helpers/integration-case.ts";
 
 import { clearConfigCache } from "@freeanima/legacy-kernel";
 import { initSession } from "@freeanima/legacy-engine";
@@ -24,9 +27,7 @@ describePg("acp nest-binding", () => {
   });
 
   afterEach(async () => {
-    clearConfigCache();
-    if (prev === undefined) delete process.env.FREEANIMA_HOME;
-    else process.env.FREEANIMA_HOME = prev;
+    await restoreIntegrationHome(prev);
   });
 
   it("bind / read / unbind acp_sessions on session_meta", async () => {

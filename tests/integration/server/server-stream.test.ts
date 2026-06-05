@@ -1,7 +1,10 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import { describePg } from "../../helpers/pg-test-gate.ts";
-import { beginIntegrationCase } from "../../helpers/integration-case.ts";
-import { endIntegrationCase } from "../../helpers/integration-case.ts";
+import {
+  beginIntegrationCase,
+  endIntegrationCase,
+  restoreIntegrationHome,
+} from "../../helpers/integration-case.ts";
 
 import { NestService } from "@freeanima/legacy-runtime";
 import { seedSession } from "@freeanima/legacy-db/test-helpers";
@@ -14,8 +17,7 @@ describePg("sendMessageStream", () => {
   });
 
   afterEach(async () => {
-    if (prev === undefined) delete process.env.FREEANIMA_HOME;
-    else process.env.FREEANIMA_HOME = prev;
+    await restoreIntegrationHome(prev);
   });
 
   it("unknown slash command yields token and done without LLM", async () => {

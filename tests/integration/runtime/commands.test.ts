@@ -1,7 +1,10 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import { describePg } from "../../helpers/pg-test-gate.ts";
-import { beginIntegrationCase } from "../../helpers/integration-case.ts";
-import { endIntegrationCase } from "../../helpers/integration-case.ts";
+import {
+  beginIntegrationCase,
+  endIntegrationCase,
+  restoreIntegrationHome,
+} from "../../helpers/integration-case.ts";
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -40,8 +43,7 @@ describePg("slash commands", () => {
   });
 
   afterEach(async () => {
-    if (prev === undefined) delete process.env.FREEANIMA_HOME;
-    else process.env.FREEANIMA_HOME = prev;
+    await restoreIntegrationHome(prev);
   });
 
   it("help lists retry and help", async () => {

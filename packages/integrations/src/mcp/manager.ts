@@ -335,7 +335,7 @@ export class MCPManager {
     const t0 = Date.now();
     const clientCount = this.clients.size;
     const connectingCount = this.connecting.size;
-    logComponent("shutdown").info(
+    logComponent("shutdown").debug(
       `MCP 关闭 ${clientCount} 个连接` +
         (connectingCount ? `（另有 ${connectingCount} 个仍在连接中）` : "") +
         "…",
@@ -343,16 +343,16 @@ export class MCPManager {
     );
     this.closed = true;
     if (this.startTask) {
-      logComponent("shutdown").info("MCP 等待后台 startAll 结束…");
+      logComponent("shutdown").debug("MCP 等待后台 startAll 结束…");
       await this.startTask.catch(() => {});
-      logComponent("shutdown").info("MCP 后台 startAll 已结束", { ms: Date.now() - t0 });
+      logComponent("shutdown").debug("MCP 后台 startAll 已结束", { ms: Date.now() - t0 });
     }
 
     for (const [name, session] of this.clients) {
       const ts = Date.now();
       try {
         await session.close();
-        logComponent("shutdown").info(`MCP '${name}' 已关闭`, {
+        logComponent("shutdown").debug(`MCP '${name}' 已关闭`, {
           ms: Date.now() - ts,
           server: name,
         });
@@ -369,7 +369,7 @@ export class MCPManager {
     this.connecting.clear();
     this.toolCount = 0;
     this.closed = false;
-    logComponent("shutdown").info("MCP 全部关闭完成", { ms: Date.now() - t0 });
+    logComponent("shutdown").debug("MCP 全部关闭完成", { ms: Date.now() - t0 });
   }
 
   serverCount(): number {

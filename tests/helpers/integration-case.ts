@@ -1,7 +1,18 @@
 import type { PgTestContext } from "@freeanima/legacy-db/test-helpers";
+import { flushCompressionSummaries } from "@freeanima/engine-conversation";
 
-import { beginLogIsolation } from "./log-isolation.ts";
+import { beginLogIsolation, resetServiceLogger } from "./log-isolation.ts";
+import { clearConfigCache } from "@freeanima/legacy-kernel";
 import { pgTestUrl } from "./pg-test-gate.ts";
+
+/** 集成测 afterEach：先等待异步压缩摘要，再恢复 FREEANIMA_HOME */
+export async function restoreIntegrationHome(prevHome?: string): Promise<void> {
+  await flushCompressionSummaries();
+  if (prevHome === undefined) delete process.env.FREEANIMA_HOME;
+  else process.env.FREEANIMA_HOME = prevHome;
+  resetServiceLogger();
+  clearConfigCache();
+}
 
 /** 集成测试用例标准开头：临时 home + PG harness */
 export async function beginIntegrationCase(prefix: string): Promise<{
@@ -31,6 +42,7 @@ export async function beginIntegrationCaseWithConfig(
 }
 
 export async function endIntegrationCase(): Promise<void> {
+  await flushCompressionSummaries();
   const { teardownIntegrationHome } = await import("@freeanima/legacy-db/test-helpers");
   await teardownIntegrationHome();
 }

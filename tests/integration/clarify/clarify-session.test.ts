@@ -1,7 +1,10 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import { describePg } from "../../helpers/pg-test-gate.ts";
-import { beginIntegrationCase } from "../../helpers/integration-case.ts";
-import { endIntegrationCase } from "../../helpers/integration-case.ts";
+import {
+  beginIntegrationCase,
+  endIntegrationCase,
+  restoreIntegrationHome,
+} from "../../helpers/integration-case.ts";
 
 import { registerAllTools } from "@freeanima/legacy-tools";
 import { initSession } from "@freeanima/legacy-engine";
@@ -24,8 +27,7 @@ describePg("clarify session", () => {
   });
 
   afterEach(async () => {
-    if (prevHome === undefined) delete process.env.FREEANIMA_HOME;
-    else process.env.FREEANIMA_HOME = prevHome;
+    await restoreIntegrationHome(prevHome);
   });
 
   async function createSession(id: string): Promise<void> {

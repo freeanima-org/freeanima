@@ -2,7 +2,7 @@
 
 只放当前活跃、可执行、需要近期处理的任务。**完成后直接删除，不保留已完成项。**
 
-> 当前运行于 `anima service`（TypeScript）；全局命令见 [docs/context/project-context.md](docs/context/project-context.md)。
+> 当前运行于 `anima service`（TypeScript）；Agent 协议见 [AGENTS.md](AGENTS.md)。
 
 ## 估算约定
 

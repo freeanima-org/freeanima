@@ -1,7 +1,10 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import { describePg } from "../../helpers/pg-test-gate.ts";
-import { beginIntegrationCase } from "../../helpers/integration-case.ts";
-import { endIntegrationCase } from "../../helpers/integration-case.ts";
+import {
+  beginIntegrationCase,
+  endIntegrationCase,
+  restoreIntegrationHome,
+} from "../../helpers/integration-case.ts";
 
 import { existsSync, mkdirSync, readFileSync, utimesSync, writeFileSync } from "node:fs";
 import {
@@ -21,8 +24,7 @@ describePg("memory distill", () => {
   });
 
   afterEach(async () => {
-    if (prev === undefined) delete process.env.FREEANIMA_HOME;
-    else process.env.FREEANIMA_HOME = prev;
+    await restoreIntegrationHome(prev);
   });
 
   it("distills L1 to L2 format", async () => {

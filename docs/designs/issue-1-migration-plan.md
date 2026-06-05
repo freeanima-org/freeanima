@@ -130,7 +130,7 @@ packages:
 2. 全 repo 所有 import / workspace 依赖 / turbo 配置同步更新
 3. 根 `package.json` devDependencies、bin 路径等指向 legacy 包名
 4. 跑全量 CI（typecheck + test），必须全绿
-5. 更新 `docs/context/project-context.md` 标注 legacy 包名映射
+5. 必要时更新 `AGENTS.md` / 本文件标注 legacy 包名映射（不维护独立模块树文档）
 
 **legacy 包名映射（示例）：**
 

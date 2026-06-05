@@ -204,10 +204,10 @@ export class NestService {
 
   async waitForDrain(): Promise<void> {
     if (this.inFlightCount <= 0) {
-      logComponent("shutdown").info("无进行中请求，跳过 drain");
+      logComponent("shutdown").debug("无进行中请求，跳过 drain");
       return;
     }
-    logComponent("shutdown").info(
+    logComponent("shutdown").debug(
       `等待 ${this.inFlightCount} 个进行中的对话/工具请求落盘（engine.run/runStream）…`,
       { in_flight: this.inFlightCount },
     );
@@ -218,7 +218,7 @@ export class NestService {
         resolve();
       }
     });
-    logComponent("shutdown").info("进行中请求已排空");
+    logComponent("shutdown").debug("进行中请求已排空");
   }
 
   startShutdown(): void {

@@ -71,14 +71,14 @@ function scheduleDebugSessionCleanup(): void {
       startupLog("后台清理 debug 会话…");
       const cleaned = await cleanupDebugSessions(12);
       if (cleaned > 0) {
-        logComponent("startup").info(`Cleaned ${cleaned} debug session(s)`, { count: cleaned });
+        logComponent("startup").debug(`Cleaned ${cleaned} debug session(s)`, { count: cleaned });
       }
     })
     .catch((e) => logStartupError("debug 会话清理失败", e));
 }
 
 function startupLog(message: string): void {
-  logComponent("startup").info(message);
+  logComponent("startup").debug(message);
 }
 
 function writeStatusFile(host: string, port: number, phase: "starting" | "ready" = "ready"): void {
@@ -202,7 +202,7 @@ export async function serve(
   const shutdown = async (signal: string) => {
     const t0 = Date.now();
     const step = (label: string, ms: number) => {
-      logComponent("shutdown").info(label, { ms, elapsed_ms: Date.now() - t0 });
+      logComponent("shutdown").debug(label, { ms, elapsed_ms: Date.now() - t0 });
     };
 
     logComponent("shutdown").info(`收到 ${signal}，开始优雅关停（优先等待未落盘消息）`, {
@@ -220,7 +220,7 @@ export async function serve(
 
     {
       const s = Date.now();
-      logComponent("shutdown").info("关闭 HTTP/WebSocket 监听…");
+      logComponent("shutdown").debug("关闭 HTTP/WebSocket 监听…");
       await closeHttpServers(servers, 3000);
       step("HTTP/WebSocket 监听已关闭", Date.now() - s);
     }
@@ -234,11 +234,11 @@ export async function serve(
     {
       const s = Date.now();
       if (platforms.length) {
-        logComponent("shutdown").info(`停止 ${platforms.length} 个 Gateway 平台…`, {
+        logComponent("shutdown").debug(`停止 ${platforms.length} 个 Gateway 平台…`, {
           count: platforms.length,
         });
       } else {
-        logComponent("shutdown").info("无 Gateway 平台");
+        logComponent("shutdown").debug("无 Gateway 平台");
       }
       await stopPlatforms(platforms);
       step("Gateway 平台已停止", Date.now() - s);
