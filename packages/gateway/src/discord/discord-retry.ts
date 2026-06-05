@@ -1,4 +1,4 @@
-import { isTransientNetworkError } from "@freeanima/legacy-engine";
+import { isTransientNetworkError } from "@freeanima/engine-loop";
 import { logComponent } from "@freeanima/legacy-kernel";
 
 const DEFAULT_ATTEMPTS = 5;

@@ -7,7 +7,7 @@ import {
 } from "../../helpers/integration-case.ts";
 
 import { clearConfigCache } from "@freeanima/legacy-kernel";
-import { initSession } from "@freeanima/legacy-engine";
+import { initSession } from "@freeanima/engine";
 import {
   bindAcpSession,
   getBoundAcpSession,

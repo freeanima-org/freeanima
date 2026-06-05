@@ -382,7 +382,7 @@ conversation.py  emit("session:updated")
 
 ### Hooks（`@freeanima/kernel-hooks` + legacy 组装）
 
-**同步 interceptor 模式。** 注册表在 `@freeanima/kernel-hooks`：`run(context)` 返回 `HookRunResult`（`context` 只读、`chain` 经 `prev` 串联；聚合 `blocked` / `blockedMessage`）。领域 **context 类型** 在 [`packages/kernel/src/hooks.ts`](packages/kernel/src/hooks.ts)；`kernel` 单例见 [`packages/engine/src/kernel.ts`](packages/engine/src/kernel.ts)。
+**同步 interceptor 模式。** 注册表在 `@freeanima/kernel-hooks`：`run(context)` 返回 `HookRunResult`（`context` 只读、`chain` 经 `prev` 串联；聚合 `blocked` / `blockedMessage`）。领域 **context 类型** 在 [`packages/kernel/src/hooks.ts`](packages/kernel/src/hooks.ts)；`kernel` 单例见 [`service/bootstrap/src/kernel.ts`](service/bootstrap/src/kernel.ts)。
 
 语义要点：
 

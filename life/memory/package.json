@@ -1,0 +1,14 @@
+{
+  "name": "@freeanima/life-memory",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@freeanima/legacy-kernel": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:"
+  }
+}

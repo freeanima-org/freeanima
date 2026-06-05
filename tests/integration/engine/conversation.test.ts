@@ -19,7 +19,7 @@ import {
   loadSessionTools,
   appendMessage,
   finishTurn,
-} from "@freeanima/legacy-engine";
+} from "@freeanima/engine";
 
 describePg("conversation", () => {
   const prev = process.env.FREEANIMA_HOME;

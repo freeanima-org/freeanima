@@ -1,4 +1,4 @@
-import { loadSessionMeta } from "@freeanima/legacy-engine";
+import { loadSessionMeta } from "@freeanima/engine-conversation";
 import { isSessionMeta } from "@freeanima/legacy-kernel";
 import { PARLOR_PLATFORM } from "@freeanima/legacy-runtime";
 import {

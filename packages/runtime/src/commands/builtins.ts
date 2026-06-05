@@ -15,7 +15,7 @@ import {
   setSessionTitle,
   newSession,
   recompressSession,
-} from "@freeanima/legacy-engine";
+} from "@freeanima/engine-conversation";
 import { statsReport } from "../conversation-stats.ts";
 import { listTools } from "@freeanima/engine-tool";
 import { isSessionMeta } from "@freeanima/legacy-kernel";

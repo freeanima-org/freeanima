@@ -1,4 +1,4 @@
-import type { StreamEvent } from "@freeanima/legacy-engine";
+import type { StreamEvent } from "@freeanima/engine-loop";
 import type {
   HealthSnapshot,
   MessagesDisplay,

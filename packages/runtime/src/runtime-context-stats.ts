@@ -1,11 +1,11 @@
 import {
   buildRuntimeMessages,
-  getActiveSkillsContent,
   loadSessionMeta,
   loadSessionTools,
   loadSoul,
-  SUMMARY_USER_PREFIX,
-} from "@freeanima/legacy-engine";
+} from "@freeanima/engine-conversation";
+import { SUMMARY_USER_PREFIX } from "@freeanima/engine-compress";
+import { getActiveSkillsContent } from "@freeanima/life-memory";
 import { isSessionMeta } from "@freeanima/legacy-kernel";
 import { decomposeSystemPromptParts } from "@freeanima/legacy-memory/system-prompt";
 import type { SessionMessage } from "@freeanima/legacy-kernel";
@@ -13,7 +13,7 @@ import {
   estimateMessagesTokens,
   estimateTokens,
   estimateToolsTokens,
-} from "@freeanima/legacy-engine";
+} from "@freeanima/engine-compress";
 
 export type RuntimeContextBreakdown = {
   /** 发给 LLM 的视图（压缩后 + 摘要注入），非 JSONL 全量 */

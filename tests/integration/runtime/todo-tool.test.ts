@@ -6,7 +6,7 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { initSession, loadSessionMeta, runWithToolContext } from "@freeanima/legacy-engine";
+import { initSession, loadSessionMeta, runWithToolContext } from "@freeanima/engine";
 import { getTool } from "@freeanima/engine-tool";
 import { getProfileHopModel, loadConfig } from "@freeanima/legacy-kernel";
 import { addTodo, listTodos } from "@freeanima/legacy-runtime";

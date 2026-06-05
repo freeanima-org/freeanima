@@ -1,4 +1,4 @@
-import { getToolSessionId } from "@freeanima/legacy-engine";
+import { getToolSessionId } from "@freeanima/engine-loop";
 import { listTools, registerTool, toolError } from "@freeanima/engine-tool";
 import { loadConfig, logComponent } from "@freeanima/legacy-kernel";
 

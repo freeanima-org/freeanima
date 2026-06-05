@@ -9,7 +9,7 @@ import {
 import { logComponent, getProfileHopModel, loadConfig } from "@freeanima/legacy-kernel";
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
 import type { HookClarifyItem, HookStreamEvent, TurnControl } from "@freeanima/legacy-kernel";
-import { headOkStepData } from "@freeanima/kernel-hooks";
+import { headOkStepData, type HookRegistry } from "@freeanima/kernel-hooks";
 import { toolAfterCall } from "@freeanima/legacy-kernel";
 import type { ToolAfterCallEffect } from "@freeanima/legacy-kernel";
 import * as llm from "@freeanima/engine-llm";
@@ -20,7 +20,6 @@ import { maybeApplyEmergencyCompression } from "@freeanima/engine-conversation";
 import { REPAIR_REASON_INTERRUPT } from "@freeanima/engine-llm";
 import type { AssistantMessage, SessionMessage, ToolMessage } from "@freeanima/legacy-kernel";
 import type { OpenAiToolSchema } from "@freeanima/legacy-kernel";
-import { kernel } from "@freeanima/legacy-engine/kernel";
 
 export class MaxTurnsExceeded extends Error {
   override name = "MaxTurnsExceeded";
@@ -34,6 +33,7 @@ type EngineOpts = {
   max_turns?: number;
   model?: string;
   tools?: OpenAiToolSchema[];
+  hookRegistry?: HookRegistry;
   onMessageAppended?: (msg: SessionMessage) => void | Promise<void>;
   onToolRoundComplete?: (msgs: SessionMessage[]) => void | Promise<void>;
   signal?: AbortSignal;
@@ -169,12 +169,14 @@ async function afterToolRoundBatch(
 }
 
 async function runToolAfterCallHooks(
+  hookRegistry: HookRegistry | undefined,
   sessionId: string,
   toolName: string,
   args: Record<string, unknown>,
   result: string,
 ): Promise<TurnControl | null> {
-  const hookRun = await kernel.hookRegistry.run(toolAfterCall, {
+  if (!hookRegistry) return null;
+  const hookRun = await hookRegistry.run(toolAfterCall, {
     sessionId,
     toolName,
     args,
@@ -358,7 +360,13 @@ export async function* runStream(
           }
         }
         const sessionId = getToolSessionId() ?? "";
-        const control = await runToolAfterCallHooks(sessionId, fnName, fnArgs, result);
+        const control = await runToolAfterCallHooks(
+          opts?.hookRegistry,
+          sessionId,
+          fnName,
+          fnArgs,
+          result,
+        );
         if (control) turnControl = control;
         const toolMsg: ToolMessage = {
           role: "tool",

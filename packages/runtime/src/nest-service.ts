@@ -17,7 +17,7 @@ import {
 } from "./commands/index.ts";
 import type { CommandResult } from "./commands/registry.ts";
 import { logComponent, logSseError } from "@freeanima/legacy-kernel";
-import * as conv from "@freeanima/legacy-engine";
+import * as conv from "@freeanima/engine-conversation";
 import { buildMessagesDisplay, paginateMessagesDisplay } from "./build-messages-display.ts";
 import type { MessagesDisplay } from "@freeanima/legacy-kernel";
 import type {
@@ -27,13 +27,13 @@ import type {
   ServiceSnapshot,
   SessionSummary,
 } from "@freeanima/legacy-kernel";
-import type { StreamEvent } from "@freeanima/legacy-engine";
-import type { Message } from "@freeanima/legacy-engine";
+import type { StreamEvent } from "@freeanima/engine-loop";
+import type { Message } from "@freeanima/engine-conversation";
 import { ProviderError } from "@freeanima/engine-provider-llm";
 import type { EventBus } from "@freeanima/kernel-eventbus";
 import { sessionUpdated } from "@freeanima/legacy-memory";
 import { statsReport } from "./conversation-stats.ts";
-import { runWithToolContext } from "@freeanima/legacy-engine";
+import { runWithToolContext } from "@freeanima/engine-loop";
 import {
   ensureBuiltinCronJobs,
   getJob,
@@ -43,7 +43,7 @@ import {
   enqueueRunJob,
 } from "./cron/index.ts";
 import type { CronJobData } from "./cron/models.ts";
-import { kernel } from "@freeanima/legacy-engine";
+import { kernel } from "@freeanima/service-bootstrap";
 import { headOkStepData, messageIncoming, turnAfterComplete } from "@freeanima/legacy-kernel";
 import type { MessageIncomingEffect, TurnAfterCompleteEffect } from "@freeanima/legacy-kernel";
 import { applyClarifyStreamAwaiting } from "@freeanima/legacy-clarify";
@@ -58,12 +58,10 @@ import { getStore } from "@freeanima/legacy-memory/store";
 import { memorySearchDetailed, type MemorySearchResult } from "@freeanima/legacy-memory/search";
 import { PARLOR_PLATFORM } from "./platforms.ts";
 import { NEST_VERSION } from "./version.ts";
-import {
-  isInsufficientToolMessagesError,
-  repairAndPersistToolLoop,
-  collectStreamReply,
-} from "@freeanima/legacy-engine";
-import * as engine from "@freeanima/legacy-engine";
+import { repairAndPersistToolLoop } from "@freeanima/engine-conversation";
+import { isInsufficientToolMessagesError } from "@freeanima/engine-llm";
+import { collectStreamReply } from "@freeanima/engine-loop";
+import * as engine from "@freeanima/engine-loop";
 import type { CommandDef } from "./commands/registry.ts";
 
 function streamErrorEvent(sessionId: string, message: string, err?: unknown): StreamEvent {
@@ -95,7 +93,7 @@ export type MemoryFileEntry = {
   content: string;
 };
 
-export type { StreamEvent } from "@freeanima/legacy-engine";
+export type { StreamEvent } from "@freeanima/engine-loop";
 
 export class SessionManager {
   private chains = new Map<string, Promise<unknown>>();
@@ -249,6 +247,7 @@ export class NestService {
 
   private engineStreamOpts(sessionId: string, signal: AbortSignal) {
     return {
+      hookRegistry: kernel.hookRegistry,
       onMessageAppended: async (msg: Message) => {
         await conv.appendMessage(msg, sessionId);
       },

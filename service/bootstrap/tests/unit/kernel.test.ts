@@ -1,9 +1,9 @@
 import { describe, expect, it } from "bun:test";
 import { EventBus } from "@freeanima/kernel-eventbus";
 import { HookRegistry } from "@freeanima/kernel-hooks";
-import { kernel } from "../../src/kernel.ts";
+import { kernel } from "../../src/index.ts";
 
-describe("legacy-engine kernel", () => {
+describe("service-bootstrap kernel", () => {
   it("kernel.hookRegistry 为 HookRegistry 实例", () => {
     expect(kernel.hookRegistry).toBeInstanceOf(HookRegistry);
   });

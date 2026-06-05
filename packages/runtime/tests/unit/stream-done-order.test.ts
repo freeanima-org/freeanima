@@ -1,6 +1,7 @@
 import { describe, it, expect, spyOn, afterEach } from "bun:test";
-import * as engine from "@freeanima/legacy-engine";
-import type { StreamEvent } from "@freeanima/legacy-engine";
+import * as conv from "@freeanima/engine-conversation";
+import * as engine from "@freeanima/engine-loop";
+import type { StreamEvent } from "@freeanima/engine-loop";
 import { NestService } from "../../src/nest-service.ts";
 
 describe("sendMessageStream done 顺序", () => {
@@ -13,21 +14,21 @@ describe("sendMessageStream done 顺序", () => {
 
   it("done 在 finishTurn 开始之前 yield 给消费者", async () => {
     restores.push(
-      spyOn(engine, "sessionExists").mockResolvedValue(true),
-      spyOn(engine, "assertSessionPlatform").mockResolvedValue(undefined),
-      spyOn(engine, "beginTurn").mockResolvedValue([
+      spyOn(conv, "sessionExists").mockResolvedValue(true),
+      spyOn(conv, "assertSessionPlatform").mockResolvedValue(undefined),
+      spyOn(conv, "beginTurn").mockResolvedValue([
         [{ role: "user", content: "hello" }],
         [],
         "hello",
       ]),
-      spyOn(engine, "loadSessionTools").mockResolvedValue([]),
+      spyOn(conv, "loadSessionTools").mockResolvedValue([]),
     );
 
     let finishTurnStarted = false;
     let doneSeenBeforeFinishTurn = false;
 
     restores.push(
-      spyOn(engine, "finishTurn").mockImplementation(async () => {
+      spyOn(conv, "finishTurn").mockImplementation(async () => {
         finishTurnStarted = true;
         await new Promise((r) => setTimeout(r, 50));
       }),

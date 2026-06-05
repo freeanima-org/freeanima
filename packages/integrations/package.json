@@ -6,14 +6,16 @@
   },
   "dependencies": {
     "@freeanima/engine-tool": "workspace:*",
-    "@freeanima/legacy-engine": "workspace:*",
+    "@freeanima/engine-conversation": "workspace:*",
+    "@freeanima/engine-loop": "workspace:*",
     "@freeanima/legacy-kernel": "workspace:*",
     "@freeanima/legacy-runtime": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@freeanima/legacy-engine": "workspace:*",
+    "@freeanima/engine-conversation": "workspace:*",
+    "@freeanima/engine-loop": "workspace:*",
     "@freeanima/legacy-kernel": "workspace:*",
     "@types/bun": "catalog:"
   }

@@ -1,13 +1,14 @@
 {
-  "name": "@freeanima/legacy-clarify",
+  "name": "@freeanima/service-bootstrap",
   "type": "module",
   "exports": {
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@freeanima/engine-tool": "workspace:*",
+    "@freeanima/connectors-eventbus-sqlite": "workspace:*",
     "@freeanima/kernel": "workspace:*",
-    "@freeanima/engine-conversation": "workspace:*",
+    "@freeanima/kernel-eventbus": "workspace:*",
+    "@freeanima/kernel-hooks": "workspace:*",
     "@freeanima/legacy-kernel": "workspace:*"
   },
   "devDependencies": {
