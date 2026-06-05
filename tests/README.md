@@ -1,6 +1,6 @@
 # 集成测试套件
 
-根目录 `tests/` 为 workspace 成员 `@freeanima/integration-tests`，仅承载**集成测试**与共享 helpers。各子包单元测试仍在 `packages/<pkg>/tests/unit/`（`bun:test`）。
+根目录 `tests/` 为 workspace 成员 `@freeanima/integration-tests`，仅承载**集成测试**与共享 helpers。各子包单元测试在 `{layer}/{pkg}/tests/unit/`（`bun:test`）。
 
 ## 目录
 

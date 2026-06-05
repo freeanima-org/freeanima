@@ -151,7 +151,7 @@ registerTool({
 ## 文件布局
 
 ```
-packages/tools/src/
+capabilities/tools/src/
   execute-code.ts          # 工具注册 + 路由
   execute-code-runtimes.ts # 运行时注册表与 spawn 逻辑（P1 起扩展）
 ```

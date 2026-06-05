@@ -7,13 +7,13 @@
 
 `freeanima`（逸灵风）是 **TypeScript 单栈** Agent 运行时：`anima service` 启动 Bun 服务（WebUI + tRPC + Gateway + 引擎）。
 
-| 能力     | 要点                                                                                                                                                                                                              |
-| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 记忆     | L1 对话（PG）→ L2 蒸馏 → L3 事实 → L4 检索；见 [`docs/memory.md`](docs/memory.md)                                                                                                                                 |
-| 工具     | 本地 / MCP / ACP 扁平注册；实现于 `packages/tools/`、`packages/integrations/`                                                                                                                                     |
-| 凭证     | pass GPG；运行时注入；LLM **只见路径不见值**                                                                                                                                                                      |
-| 数据目录 | `~/.anima/`（`FREEANIMA_HOME` 可覆盖）；备份打包此目录即可                                                                                                                                                        |
-| 代码布局 | 新栈 `kernel/`、`engine/`、`capabilities/`、`connectors/` 与过渡期 `packages/*`、`apps/*`（`@freeanima/legacy-*`）并行；详图见 [`docs/designs/issue-1-migration-plan.md`](docs/designs/issue-1-migration-plan.md) |
+| 能力     | 要点                                                                                                                                                                         |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 记忆     | L1 对话（PG）→ L2 蒸馏 → L3 事实 → L4 检索；见 [`docs/memory.md`](docs/memory.md)                                                                                            |
+| 工具     | 本地 / MCP / ACP 扁平注册；实现于 `capabilities/tools/`、`capabilities/mcp/`、`capabilities/acp/`                                                                            |
+| 凭证     | pass GPG；运行时注入；LLM **只见路径不见值**                                                                                                                                 |
+| 数据目录 | `~/.anima/`（`FREEANIMA_HOME` 可覆盖）；备份打包此目录即可                                                                                                                   |
+| 代码布局 | `kernel/`、`engine/`、`life/`、`capabilities/`、`connectors/`、`service/`、`cli/`；详图见 [`docs/designs/issue-1-migration-plan.md`](docs/designs/issue-1-migration-plan.md) |
 
 **细节以代码为准**；勿凭文档臆造工具名、端点或目录。需要时直接读源码或 `grep`。
 
@@ -49,7 +49,6 @@
 | 层内实现 | `@freeanima/{layer}-{slug}-{impl}` | `connectors-eventbus-sqlite`     |
 
 - slug 合成词不加内连字符（`eventbus` 非 `event-bus`）
-- legacy 包仍为 `@freeanima/legacy-*`
 - Hook / EventTopic 的 `qualifiedId` 与 npm 包名独立
 
 ### 安全与连续性

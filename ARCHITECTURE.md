@@ -165,7 +165,7 @@ LLM 视角 — flat tool list:
 
 ### 第一层：本地工具（Local）
 
-本地工具写在 `packages/tools/`，通过 `registerTool()` 注册到 `@freeanima/engine-tool` 的 registry。
+本地工具写在 `capabilities/tools/`，通过 `registerTool()` 注册到 `@freeanima/engine-tool` 的 registry。
 
 **特征：**
 
@@ -184,7 +184,7 @@ registerTool({
 });
 ```
 
-**目录约定：** `packages/tools/src/*.ts`，由 `registerAllTools()` 导入。
+**目录约定：** `capabilities/tools/src/*.ts`，由 `registerAllTools()` 导入。
 
 ### 第二层：MCP 工具（Model Context Protocol）
 
@@ -315,7 +315,7 @@ LLM 自己决定用什么工具、什么顺序。逸灵风只负责注册和路�
 
 ## WebUI 架构
 
-WebUI 是 React 19 CSR 应用（`apps/webui/`），由 `anima service` 在同一 HTTP 端口（默认 **2658**）提供页面与 tRPC API。
+WebUI 是 React 19 CSR 应用（`connectors/webui/`），由 `anima service` 在同一 HTTP 端口（默认 **2658**）提供页面与 tRPC API。
 
 ### 服务拓扑
 
@@ -326,8 +326,8 @@ WebUI 是 React 19 CSR 应用（`apps/webui/`），由 `anima service` 在同一
                               ├─ /api/trpc/ws（终端 WebSocket）
                               ├─ /api/health
                               ├─ /webui/*、/_bun/* → 内嵌 Bun fullstack dev（HTML/TSX/CSS HMR）
-                              └─ tRPC router → NestService（进程内）
-                         NestService / EventBus / Gateway（同进程）
+                              └─ tRPC router → AnimaService（进程内）
+                         AnimaService / EventBus / Gateway（同进程）
 ```
 
 ### 前端三态
@@ -357,7 +357,7 @@ anima service status
 # 浏览器访问 http://127.0.0.1:2658/webui/parlor/chat
 ```
 
-WebUI 由 [`packages/server/src/webui-server.ts`](packages/server/src/webui-server.ts) 在 `serve()` 内启动：对外 `node:http`，内嵌 Bun fullstack 编译 `apps/webui/index.html`（Tailwind 依赖根 `bunfig.toml` 的 `bun-plugin-tailwind`）。
+WebUI 由 [`connectors/webui/src/webui-server.ts`](connectors/webui/src/webui-server.ts) 在 `serve()` 内启动：对外 `node:http`，内嵌 Bun fullstack 编译 `connectors/webui/index.html`（Tailwind 依赖根 `bunfig.toml` 的 `bun-plugin-tailwind`）。
 
 ## 事件系统
 
@@ -393,7 +393,7 @@ conversation.py  emit("session:updated")
 
 已接入点（hook token）：
 
-- `messageIncoming` — `NestService` 入站
+- `messageIncoming` — `AnimaService` 入站
 - `turnAfterComplete` — 单轮结束
 - `toolAfterCall` — 工具返回后
 
