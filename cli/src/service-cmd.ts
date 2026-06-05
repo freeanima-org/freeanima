@@ -294,7 +294,16 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
       installErrorLogHandlers();
       try {
         const { serve } = await import("@freeanima/service");
-        await serve(args.host, args.port, { foreground: true });
+        const { startWebuiHttpServers, closeHttpServers, waitForDrainWithTimeout } =
+          await import("@freeanima/connectors-webui");
+        await serve(args.host, args.port, {
+          foreground: true,
+          webui: {
+            start: startWebuiHttpServers,
+            close: closeHttpServers,
+            waitForDrain: waitForDrainWithTimeout,
+          },
+        });
       } catch (e) {
         logStartupError("服务启动失败", e);
         process.exit(1);

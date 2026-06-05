@@ -3,11 +3,6 @@ import { cronJobDataSchema } from "../../src/cron.ts";
 import { eventPayloadSchemas, sessionUpdatedPayloadSchema } from "../../src/events.ts";
 import { l2LineSchema, factExtractionSchema } from "../../src/l2.ts";
 import { toolArgsSchema, toolErrorSchema } from "@freeanima/engine-tool";
-import {
-  createSessionBodySchema,
-  sendMessageBodySchema,
-  memorySearchBodySchema,
-} from "@freeanima/api";
 import { parseCompressionState, clarifyToolAwaitingResultSchema } from "../../src/session-meta.ts";
 import { jsonRpcMessageSchema } from "@freeanima/capabilities-acp/schemas/acp-jsonrpc";
 import {
@@ -71,28 +66,6 @@ describe("schemas/tool-json", () => {
   it("requires object tool args", () => {
     expect(toolArgsSchema.safeParse({ a: 1 }).success).toBe(true);
     expect(toolArgsSchema.safeParse([]).success).toBe(false);
-  });
-});
-
-describe("schemas/api", () => {
-  it("trims and validates send message body", () => {
-    const ok = sendMessageBodySchema.safeParse({ message: "  hello  " });
-    expect(ok.success).toBe(true);
-    if (ok.success) expect(ok.data.message).toBe("hello");
-
-    const bad = sendMessageBodySchema.safeParse({ message: "   " });
-    expect(bad.success).toBe(false);
-  });
-
-  it("validates memory search query", () => {
-    const ok = memorySearchBodySchema.safeParse({ query: "  test  ", limit: 5 });
-    expect(ok.success).toBe(true);
-    if (ok.success) expect(ok.data.query).toBe("test");
-  });
-
-  it("accepts optional platform on create session", () => {
-    expect(createSessionBodySchema.safeParse({}).success).toBe(true);
-    expect(createSessionBodySchema.safeParse({ platform: "parlor" }).success).toBe(true);
   });
 });
 

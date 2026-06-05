@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { SessionListItem } from "@freeanima/api";
+import type { SessionListItem } from "@freeanima/connectors-webui/api";
 import { useChatStore } from "@/stores/chat.ts";
 import { usePairProgrammingStore } from "@/stores/pair-programming.ts";
 

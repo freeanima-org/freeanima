@@ -43,12 +43,7 @@ import {
 import { MCPManager } from "@freeanima/capabilities-mcp";
 import { getAcpManager } from "@freeanima/capabilities-acp";
 import { DEFAULT_BIND_HOST, parseBindHosts } from "./bind-hosts.ts";
-import {
-  closeHttpServers,
-  waitForDrainWithTimeout,
-} from "@freeanima/connectors-webui/http-shutdown";
 import { initServiceContext } from "./context.ts";
-import { startWebuiHttpServers, type WebuiServerHandle } from "@freeanima/connectors-webui";
 
 let service: AnimaService | null = null;
 let mcp: MCPManager | null = null;
@@ -105,15 +100,48 @@ function cleanStatusFile(): void {
   }
 }
 
+export type WebuiServerHandle = {
+  close: () => void | Promise<void>;
+};
+
+export type WebuiHooks = {
+  start: (
+    hosts: string[],
+    port: number,
+    opts?: { development?: boolean },
+  ) => Promise<WebuiServerHandle[]>;
+  close: (handles: WebuiServerHandle[], timeoutMs?: number) => Promise<void>;
+  waitForDrain: (anima: AnimaService, maxMs: number) => Promise<void>;
+};
+
 export type ServeOptions = {
   /** CLI 前台阻塞运行（systemd/detached 子进程亦会传 true，不等于 WebUI dev） */
   foreground?: boolean;
+  webui?: WebuiHooks;
 };
 
 function useWebuiDevMode(foreground: boolean): boolean {
   if (process.env.ANIMA_WEBUI_DEV === "1") return true;
   if (process.env.ANIMA_WEBUI_DEV === "0") return false;
   return foreground;
+}
+
+async function defaultWaitForDrain(anima: AnimaService, maxMs: number): Promise<void> {
+  await Promise.race([
+    anima.waitForDrain(),
+    new Promise<void>((resolve) => {
+      setTimeout(() => {
+        const n = anima.getInFlightCount();
+        if (n > 0) {
+          logComponent("shutdown").warn(`请求排空超时，仍有 ${n} 个进行中请求`, {
+            max_ms: maxMs,
+            in_flight: n,
+          });
+        }
+        resolve();
+      }, maxMs);
+    }),
+  ]);
 }
 
 export async function serve(
@@ -133,7 +161,7 @@ export async function serve(
   installErrorLogHandlers();
   markStartupPhase(true);
   writeStatusFile(statusHost, port, "starting");
-  let servers: WebuiServerHandle[];
+  let servers: WebuiServerHandle[] = [];
   try {
     startupLog("注册工具…");
     registerServiceTools();
@@ -177,8 +205,12 @@ export async function serve(
     initServiceContext({ service: nest, mcp, acp, host: statusHost, port });
 
     const webuiDev = useWebuiDevMode(Boolean(opts.foreground));
-    startupLog(webuiDev ? "启动 WebUI HTTP（Bun fullstack dev）…" : "启动 WebUI HTTP…");
-    servers = await startWebuiHttpServers(bindHosts, port, { development: webuiDev });
+    if (opts.webui) {
+      startupLog(webuiDev ? "启动 WebUI HTTP（Bun fullstack dev）…" : "启动 WebUI HTTP…");
+      servers = await opts.webui.start(bindHosts, port, { development: webuiDev });
+    } else {
+      startupLog("未注入 WebUI hooks，跳过 HTTP 监听");
+    }
 
     writeStatusFile(statusHost, port, "ready");
     for (const bindHost of bindHosts) {
@@ -213,14 +245,14 @@ export async function serve(
 
     {
       const s = Date.now();
-      await waitForDrainWithTimeout(nest, 90_000);
+      await (opts.webui?.waitForDrain ?? defaultWaitForDrain)(nest, 90_000);
       step("请求排空完成", Date.now() - s);
     }
 
-    {
+    if (opts.webui && servers.length > 0) {
       const s = Date.now();
       logComponent("shutdown").debug("关闭 HTTP/WebSocket 监听…");
-      await closeHttpServers(servers, 3000);
+      await opts.webui.close(servers, 3000);
       step("HTTP/WebSocket 监听已关闭", Date.now() - s);
     }
 

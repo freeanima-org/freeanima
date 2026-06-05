@@ -1,8 +1,9 @@
-import type { DisplayItem, SessionListItem } from "@freeanima/api";
+import type { DisplayItem, SessionListItem } from "@freeanima/connectors-webui/api";
+import { PARLOR_PLATFORM } from "@freeanima/connectors-webui/api";
 import { create } from "zustand";
 import { trpc } from "@/lib/trpc.ts";
 
-export const PARLOR_PLATFORM = "parlor";
+export { PARLOR_PLATFORM };
 
 type SessionsState = {
   sessions: SessionListItem[];

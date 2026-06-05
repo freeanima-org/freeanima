@@ -3,6 +3,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./api": "./src/api/index.ts",
     "./handlers": "./src/handlers/index.ts",
     "./trpc": "./src/trpc/router.ts",
     "./http-shutdown": "./src/http-shutdown.ts",
@@ -18,9 +19,8 @@
     "@freeanima/engine-loop": "workspace:*",
     "@freeanima/kernel-db": "workspace:*",
     "@freeanima/kernel-schemas": "workspace:*",
-    "@freeanima/api": "workspace:*",
-    "@freeanima/service": "workspace:*",
     "@freeanima/life-memory": "workspace:*",
+    "@freeanima/service": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "@freeanima/service-logging": "workspace:*",
     "@tanstack/react-router": "^1.170.11",

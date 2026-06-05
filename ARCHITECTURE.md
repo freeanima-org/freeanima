@@ -357,7 +357,7 @@ anima service status
 # 浏览器访问 http://127.0.0.1:2658/webui/parlor/chat
 ```
 
-WebUI 由 [`connectors/webui/src/webui-server.ts`](connectors/webui/src/webui-server.ts) 在 `serve()` 内启动：对外 `node:http`，内嵌 Bun fullstack 编译 `connectors/webui/index.html`（Tailwind 依赖根 `bunfig.toml` 的 `bun-plugin-tailwind`）。
+WebUI 由 [`connectors/webui/src/webui-server.ts`](connectors/webui/src/webui-server.ts) 在 `serve()` 内启动：对外 `node:http`，内嵌 Bun fullstack 编译 `connectors/webui/app/index.html`（Tailwind 依赖根 `bunfig.toml` 的 `bun-plugin-tailwind`）。
 
 ## 事件系统
 

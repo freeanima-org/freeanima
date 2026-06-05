@@ -5,7 +5,7 @@ export * from "./home-channel.ts";
 export * from "./platforms.ts";
 export * from "./studio.ts";
 export * from "./studio-gitignore.ts";
-export { REPO_ROOT, WEBUI_ROOT, WEBUI_BASE_PATH } from "./repo-paths.ts";
+export { REPO_ROOT, WEBUI_BASE_PATH } from "./repo-paths.ts";
 export * from "./conversation-stats.ts";
 export * from "./runtime-context-stats.ts";
 export { ANIMA_VERSION } from "./version.ts";

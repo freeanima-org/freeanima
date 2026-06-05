@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import type { ServiceStatus } from "@freeanima/api";
+import type { ServiceStatus } from "@freeanima/connectors-webui/api";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc.ts";
 

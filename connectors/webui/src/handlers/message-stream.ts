@@ -29,22 +29,3 @@ export async function* iterateMessageStream(
     yield { event: "done", data: JSON.stringify({}) };
   }
 }
-
-export function createMessageStreamResponse(sessionId: string, message: string): Response {
-  const stream = new ReadableStream({
-    async start(controller) {
-      const encoder = new TextEncoder();
-      for await (const chunk of iterateMessageStream(sessionId, message)) {
-        controller.enqueue(encoder.encode(`event: ${chunk.event}\ndata: ${chunk.data}\n\n`));
-      }
-      controller.close();
-    },
-  });
-  return new Response(stream, {
-    headers: {
-      "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache",
-      Connection: "keep-alive",
-    },
-  });
-}
