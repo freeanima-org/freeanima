@@ -8,7 +8,8 @@
     "./runtime": "./src/runtime/index.ts",
     "./runtime/system-prompt-wire": "./src/runtime/system-prompt-wire.ts",
     "./runtime/home-channel": "./src/runtime/home-channel.ts",
-    "./runtime/conversation-stats": "./src/runtime/conversation-stats.ts"
+    "./runtime/conversation-stats": "./src/runtime/conversation-stats.ts",
+    "./runtime/turn-lifecycle": "./src/runtime/turn-lifecycle.ts"
   },
   "dependencies": {
     "@freeanima/capabilities-acp": "workspace:*",

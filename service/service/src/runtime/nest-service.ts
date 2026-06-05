@@ -34,6 +34,7 @@ import type { EventBus } from "@freeanima/kernel-eventbus";
 import { sessionUpdated } from "@freeanima/life-memory";
 import { statsReport } from "./conversation-stats.ts";
 import { runWithToolContext } from "@freeanima/engine-loop";
+import { createTurnMessageCallbacks, finalizeTurn } from "./turn-lifecycle.ts";
 import {
   ensureBuiltinCronJobs,
   getJob,
@@ -244,14 +245,7 @@ export class NestService {
   private engineStreamOpts(sessionId: string, signal: AbortSignal) {
     return {
       hookRegistry: kernel.hookRegistry,
-      onMessageAppended: async (msg: Message) => {
-        await conv.appendMessage(msg, sessionId);
-      },
-      onToolRoundComplete: async (batch: Message[]) => {
-        for (const msg of batch) {
-          await conv.appendMessage(msg, sessionId);
-        }
-      },
+      ...createTurnMessageCallbacks(sessionId),
       signal,
     };
   }
@@ -754,7 +748,7 @@ export class NestService {
             }
             // 让 generator 先把 done yield 给消费者，再执行持久化
             await new Promise<void>((resolve) => setImmediate(resolve));
-            await conv.finishTurn(sessionId, msgs, effective, model, functions, true);
+            await finalizeTurn(sessionId, msgs, effective, model, functions);
           }
           break;
         } catch (e) {
