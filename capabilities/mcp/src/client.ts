@@ -1,4 +1,4 @@
-import { NEST_VERSION } from "@freeanima/legacy-runtime";
+import { readAppVersion } from "@freeanima/service-config";
 
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import {
@@ -98,7 +98,7 @@ export class McpClientSession {
     const timeoutMs = cfg.connect_timeout_ms ?? DEFAULT_CONNECT_TIMEOUT_MS;
     const connectTask = (async () => {
       const transport = createTransport(serverName, cfg);
-      const client = new Client({ name: "anima", version: NEST_VERSION });
+      const client = new Client({ name: "anima", version: readAppVersion() });
       await client.connect(transport);
       return new McpClientSession(serverName, client);
     })();

@@ -9,7 +9,7 @@ import {
   memorySearchBodySchema,
 } from "../../../../packages/api/src/schemas.ts";
 import { parseCompressionState, clarifyToolAwaitingResultSchema } from "../../src/session-meta.ts";
-import { jsonRpcMessageSchema } from "../../../../packages/integrations/src/schemas/acp-jsonrpc.ts";
+import { jsonRpcMessageSchema } from "@freeanima/capabilities-acp/schemas/acp-jsonrpc";
 import {
   weixinSyncSchema,
   weixinContextTokensSchema,

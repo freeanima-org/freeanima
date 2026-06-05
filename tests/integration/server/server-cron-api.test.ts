@@ -9,7 +9,7 @@ import {
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { createJob, NestService } from "@freeanima/legacy-runtime";
-import { getAcpManager } from "@freeanima/legacy-integrations";
+import { getAcpManager } from "@freeanima/capabilities-acp";
 import {
   listCronJobs,
   pauseCronJob,

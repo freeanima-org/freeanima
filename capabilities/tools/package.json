@@ -2,10 +2,14 @@
   "name": "@freeanima/capabilities-tools",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
   },
   "dependencies": {
+    "@freeanima/engine-conversation": "workspace:*",
+    "@freeanima/engine-loop": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",
+    "@freeanima/life-memory": "workspace:*",
     "@freeanima/service-config": "workspace:*"
   },
   "devDependencies": {

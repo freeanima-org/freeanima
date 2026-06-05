@@ -1,23 +1,18 @@
 {
-  "name": "@freeanima/legacy-integrations",
+  "name": "@freeanima/capabilities-mcp",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
   },
   "dependencies": {
-    "@freeanima/engine-conversation": "workspace:*",
-    "@freeanima/engine-loop": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",
-    "@freeanima/kernel-schemas": "workspace:*",
-    "@freeanima/legacy-runtime": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "@freeanima/service-logging": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@freeanima/engine-conversation": "workspace:*",
-    "@freeanima/engine-loop": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "@types/bun": "catalog:"
   }

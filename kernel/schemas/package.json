@@ -20,7 +20,7 @@
     "@freeanima/engine-tool": "workspace:*",
     "@freeanima/legacy-api": "workspace:*",
     "@freeanima/connectors-gateway": "workspace:*",
-    "@freeanima/legacy-integrations": "workspace:*",
+    "@freeanima/capabilities-acp": "workspace:*",
     "@types/bun": "catalog:"
   }
 }

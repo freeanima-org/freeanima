@@ -3,7 +3,7 @@ import { describePg } from "../../helpers/pg-test-gate.ts";
 
 import { registerTool, listTools } from "@freeanima/engine-tool";
 import { clearConfigCache } from "@freeanima/service-config";
-import { registerAcpTools } from "@freeanima/legacy-integrations";
+import { registerAcpTools } from "@freeanima/capabilities-acp";
 
 beforeEach(() => clearConfigCache());
 afterEach(() => clearConfigCache());
