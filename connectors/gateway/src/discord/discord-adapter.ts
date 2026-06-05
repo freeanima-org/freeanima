@@ -119,6 +119,8 @@ export async function streamReplyToChannel(
   let throttleTimer: ReturnType<typeof setTimeout> | null = null;
   let editTail: Promise<void> = Promise.resolve();
 
+  const discordEmptyFallback = "\u3164";
+
   const clearThrottleTimer = (): void => {
     if (throttleTimer !== null) {
       clearTimeout(throttleTimer);
@@ -126,9 +128,40 @@ export async function streamReplyToChannel(
     }
   };
 
+  /** 固化当前答案段，避免后续 tool send 插在已发出的占位消息之后 */
+  const commitAnswerSegment = async (): Promise<void> => {
+    clearThrottleTimer();
+    await editTail;
+    if (!answerMsg) return;
+
+    const trimmed = answerBuffer.trim();
+    if (trimmed) {
+      const content = trimmed.length <= DISCORD_MAX_LEN ? trimmed : trimmed.slice(-DISCORD_MAX_LEN);
+      await deliverDiscordFinalContent(
+        async () => {
+          await answerMsg!.edit({ content });
+        },
+        async () => {
+          await channelSend(content);
+        },
+        { phase: "commit-segment" },
+      );
+    } else {
+      await tryDiscordInterimEdit(
+        async () => {
+          await answerMsg!.edit({ content: discordEmptyFallback });
+        },
+        { phase: "commit-empty" },
+      );
+    }
+    answerMsg = null;
+    answerBuffer = "";
+  };
+
   const flushToolRound = async (): Promise<void> => {
     const text = toolRound.take();
     if (!text) return;
+    await commitAnswerSegment();
     await withDiscordRetry(async (): Promise<void> => {
       await channelSend(text);
     });
@@ -178,7 +211,6 @@ export async function streamReplyToChannel(
     if (!trimmed) return;
 
     const chunks = splitDiscordMessage(trimmed, DISCORD_ANSWER_SPLIT_AT);
-    const discordEmptyFallback = "\u3164";
 
     if (!answerMsg) {
       for (const chunk of chunks) {
@@ -232,7 +264,7 @@ export async function streamReplyToChannel(
         break;
       }
       case "tool_begin":
-        answerBuffer = "";
+        clearThrottleTimer();
         toolRound.addBegin(event.data.name, event.data.args);
         break;
       case "tool_result":

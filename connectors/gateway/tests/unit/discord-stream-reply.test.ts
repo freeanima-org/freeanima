@@ -13,24 +13,30 @@ afterEach(() => {
   endLogIsolation(prevHome);
 });
 
+type TimelineEntry = { kind: "send" | "edit"; text: string };
+
 describe("streamReplyToChannel", () => {
   function fakeChannel(): {
     channel: TextBasedChannel;
     edits: string[];
     sends: string[];
     sentMessages: Array<Pick<Message, "edit">>;
+    timeline: TimelineEntry[];
   } {
     const edits: string[] = [];
     const sends: string[] = [];
     const sentMessages: Array<Pick<Message, "edit">> = [];
+    const timeline: TimelineEntry[] = [];
 
     const channel = {
       send: vi.fn(async (arg: unknown) => {
         const text = typeof arg === "string" ? arg : "";
         sends.push(text);
+        timeline.push({ kind: "send", text });
         const sentMsg = {
           edit: vi.fn(async (opts: { content: string }) => {
             edits.push(opts.content);
+            timeline.push({ kind: "edit", text: opts.content });
           }),
         } as unknown as Pick<Message, "edit">;
         sentMessages.push(sentMsg);
@@ -42,7 +48,12 @@ describe("streamReplyToChannel", () => {
       edits,
       sends,
       sentMessages,
+      timeline,
     };
+  }
+
+  function timelineIndex(timeline: TimelineEntry[], pred: (e: TimelineEntry) => boolean): number {
+    return timeline.findIndex(pred);
   }
 
   it("tool 轮单独 send，含参数与结果摘要", async () => {
@@ -68,7 +79,7 @@ describe("streamReplyToChannel", () => {
   });
 
   it("两轮 tool + 最终答案分多条消息", async () => {
-    const { channel, sends } = fakeChannel();
+    const { channel, sends, timeline } = fakeChannel();
     async function* gen(): AsyncGenerator<StreamEvent> {
       yield { event: "tool_begin", data: { name: "read", args: {} } };
       yield { event: "tool_result", data: { name: "read", content: "ok" } };
@@ -82,8 +93,67 @@ describe("streamReplyToChannel", () => {
 
     expect(sends.length).toBeGreaterThanOrEqual(3);
     expect(sends[0]).toContain("read");
-    expect(sends[1]).toContain("思考中");
-    expect(sends[2]).toContain("grep");
+    expect(sends.some((s) => s.includes("grep"))).toBe(true);
+
+    const grepSendIdx = timelineIndex(
+      timeline,
+      (e) => e.kind === "send" && e.text.includes("grep"),
+    );
+    const answerEditIdx = timelineIndex(timeline, (e) => e.kind === "edit" && e.text === "answer");
+    const part1CommitIdx = timelineIndex(timeline, (e) => e.kind === "edit" && e.text === "x");
+    expect(part1CommitIdx).toBeGreaterThanOrEqual(0);
+    expect(grepSendIdx).toBeGreaterThan(part1CommitIdx);
+    expect(answerEditIdx).toBeGreaterThan(grepSendIdx);
+  });
+
+  it("答案中途插入 tool 时 tool 在已固化片段之后、续答之前", async () => {
+    const { channel, timeline } = fakeChannel();
+    async function* gen(): AsyncGenerator<StreamEvent> {
+      yield { event: "token", data: { content: "part1" } };
+      yield { event: "tool_begin", data: { name: "search", args: { q: "x" } } };
+      yield { event: "tool_result", data: { name: "search", content: "hit" } };
+      yield { event: "token", data: { content: "part2" } };
+      yield { event: "done", data: {} };
+    }
+    await streamReplyToChannel(channel, gen());
+
+    const part1CommitIdx = timelineIndex(timeline, (e) => e.kind === "edit" && e.text === "part1");
+    const toolSendIdx = timelineIndex(
+      timeline,
+      (e) => e.kind === "send" && e.text.includes("search"),
+    );
+    const part2EditIdx = timelineIndex(timeline, (e) => e.kind === "edit" && e.text === "part2");
+    expect(part1CommitIdx).toBeGreaterThanOrEqual(0);
+    expect(toolSendIdx).toBeGreaterThan(part1CommitIdx);
+    expect(part2EditIdx).toBeGreaterThan(toolSendIdx);
+  });
+
+  it("长答案拆段时 tool 不插在段落中间", async () => {
+    const { channel, timeline } = fakeChannel();
+    const head = "a".repeat(1500);
+    async function* gen(): AsyncGenerator<StreamEvent> {
+      yield { event: "token", data: { content: head } };
+      yield { event: "tool_begin", data: { name: "lookup", args: {} } };
+      yield { event: "tool_result", data: { name: "lookup", content: "ok" } };
+      yield { event: "token", data: { content: "tail" } };
+      yield { event: "done", data: {} };
+    }
+    await streamReplyToChannel(channel, gen());
+
+    const toolSendIdx = timelineIndex(
+      timeline,
+      (e) => e.kind === "send" && e.text.includes("lookup"),
+    );
+    const tailEditIdx = timelineIndex(timeline, (e) => e.kind === "edit" && e.text === "tail");
+    const extraChunkSendIdx = timelineIndex(
+      timeline,
+      (e) => e.kind === "send" && e.text.length === 500 && e.text.startsWith("a"),
+    );
+    expect(toolSendIdx).toBeGreaterThanOrEqual(0);
+    expect(tailEditIdx).toBeGreaterThan(toolSendIdx);
+    if (extraChunkSendIdx >= 0) {
+      expect(extraChunkSendIdx).toBeGreaterThan(tailEditIdx);
+    }
   });
 
   it("超长正文按 1000 字阈值拆条", async () => {
