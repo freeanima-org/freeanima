@@ -25,7 +25,7 @@ import {
   upsertSessionMeta as dbUpsertSessionMeta,
 } from "@freeanima/legacy-db";
 import { parseCompressionState, isCompressed } from "@freeanima/engine-compress";
-import type { SessionMessage, SessionMetaMessage } from "@freeanima/legacy-kernel";
+import type { SessionMessage, SessionMetaMessage } from "@freeanima/kernel-schemas";
 
 export function postgresAvailable(): boolean {
   return isPostgresPrimary();

@@ -1,0 +1,17 @@
+{
+  "name": "@freeanima/kernel-schemas",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./message": "./src/message.ts",
+    "./session-meta": "./src/session-meta.ts",
+    "./display": "./src/display.ts",
+    "./util": "./src/util.ts"
+  },
+  "dependencies": {
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:"
+  }
+}

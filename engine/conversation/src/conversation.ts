@@ -30,7 +30,7 @@ import {
   type SessionMetaMessage,
   type SessionMetaLoadResult,
   type OpenAiToolSchema,
-} from "@freeanima/legacy-kernel";
+} from "@freeanima/kernel-schemas";
 import {
   loadMetaWithRouting,
   loadMessagesForRuntimeWithRouting,
@@ -57,7 +57,7 @@ import {
 } from "./session-store-pg-bridge.ts";
 
 export type Message = SessionMessage;
-export { isSessionMeta, parseSessionLine } from "@freeanima/legacy-kernel";
+export { isSessionMeta, parseSessionLine } from "@freeanima/kernel-schemas";
 
 function nowIso(): string {
   return new Date(Date.now() + CST_OFFSET_MS).toISOString().replace("Z", "+08:00");
