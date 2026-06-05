@@ -16,7 +16,7 @@ import {
 import { loadSessionMeta } from "@freeanima/engine-conversation";
 import { RateLimitedLogger } from "@freeanima/kernel-retry";
 import { logComponent } from "@freeanima/service-logging";
-import type { NestService } from "@freeanima/service";
+import type { AnimaService } from "@freeanima/service";
 import type { PlatformAdapter } from "../platforms.ts";
 import { formatClarifyForPlatform, parseClarifyStreamEvent } from "../clarify/index.ts";
 import { registerDiscordCronDeliverer, unregisterDiscordCronDeliverer } from "../cron-deliver.ts";
@@ -280,7 +280,7 @@ export class DiscordAdapter implements PlatformAdapter {
   private readonly shardErrorLogLimiter = new RateLimitedLogger();
 
   constructor(
-    private readonly service: NestService,
+    private readonly service: AnimaService,
     private readonly token: string,
     config?: Record<string, unknown>,
   ) {
@@ -589,7 +589,7 @@ export class DiscordAdapter implements PlatformAdapter {
 }
 
 export function createDiscordAdapter(
-  service: NestService,
+  service: AnimaService,
   token: string,
   config?: Record<string, unknown>,
 ): DiscordAdapter {

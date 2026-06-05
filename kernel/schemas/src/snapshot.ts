@@ -1,4 +1,4 @@
-/** NestService 内部快照类型（非 HTTP 契约） */
+/** AnimaService 内部快照类型（非 HTTP 契约） */
 
 export type HealthSnapshot = {
   status: "ok";

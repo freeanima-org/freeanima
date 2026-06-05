@@ -16,11 +16,11 @@ import {
   markStartupPhase,
 } from "@freeanima/service-logging";
 import {
-  NestService,
+  AnimaService,
   Scheduler,
   enqueueRunJob,
   ensureBuiltinCronJobs,
-  NEST_VERSION,
+  ANIMA_VERSION,
   seedHomeChannelsFromHermes,
   REPO_ROOT,
 } from "./runtime/index.ts";
@@ -50,14 +50,14 @@ import {
 import { initServiceContext } from "./context.ts";
 import { startWebuiHttpServers, type WebuiServerHandle } from "@freeanima/connectors-webui";
 
-let service: NestService | null = null;
+let service: AnimaService | null = null;
 let mcp: MCPManager | null = null;
 const acp = getAcpManager();
 let cronScheduler: Scheduler | null = null;
 
-export function getService(): NestService {
+export function getService(): AnimaService {
   if (!service) {
-    service = new NestService();
+    service = new AnimaService();
     service.markStarted();
   }
   return service;
@@ -82,7 +82,7 @@ function startupLog(message: string): void {
 function writeStatusFile(host: string, port: number, phase: "starting" | "ready" = "ready"): void {
   const status = {
     pid: process.pid,
-    version: NEST_VERSION,
+    version: ANIMA_VERSION,
     start_time: Date.now() / 1000,
     host,
     port,
@@ -153,8 +153,8 @@ export async function serve(
     startupLog("初始化 LLM runtime…");
     initLlmRuntime(loadConfig());
 
-    startupLog("初始化 NestService / EventBus…");
-    service = new NestService();
+    startupLog("初始化 AnimaService / EventBus…");
+    service = new AnimaService();
     service.markStarted();
     const nest = service;
 

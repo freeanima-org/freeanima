@@ -1,5 +1,5 @@
 import { logComponent } from "@freeanima/service-logging";
-import type { NestService } from "@freeanima/service";
+import type { AnimaService } from "@freeanima/service";
 import {
   REST,
   Routes,
@@ -35,7 +35,7 @@ const OPTION_APPLIERS: Record<string, (builder: SlashCommandBuilder) => void> = 
   },
 };
 
-/** 由 NestService 命令列表生成 Discord Application Commands 定义 */
+/** 由 AnimaService 命令列表生成 Discord Application Commands 定义 */
 export function buildDiscordSlashCommands(
   commands: DiscordSlashCommandMeta[],
 ): ReturnType<SlashCommandBuilder["toJSON"]>[] {
@@ -84,7 +84,7 @@ export function originFromInteraction(interaction: ChatInputCommandInteraction):
 export async function syncDiscordSlashCommands(
   client: Client,
   token: string,
-  service: NestService,
+  service: AnimaService,
   cfg: DiscordConfig,
 ): Promise<void> {
   if (cfg.slash_commands === false) return;

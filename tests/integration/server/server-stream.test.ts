@@ -6,7 +6,7 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { NestService } from "@freeanima/service";
+import { AnimaService } from "@freeanima/service";
 import { seedSession } from "@freeanima/kernel-db/test-helpers";
 
 describePg("sendMessageStream", () => {
@@ -31,7 +31,7 @@ describePg("sendMessageStream", () => {
       platform: "parlor",
     });
 
-    const svc = new NestService();
+    const svc = new AnimaService();
     const events: { event: string; data: Record<string, unknown> }[] = [];
     for await (const ev of svc.sendMessageStream(sid, "/unknown-cmd", "parlor")) {
       events.push(ev);

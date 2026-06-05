@@ -55,7 +55,7 @@ import { indexL3All as reindexL3FtsAll } from "@freeanima/life-memory/l3-indexer
 import { getStore } from "@freeanima/life-memory/store";
 import { memorySearchDetailed, type MemorySearchResult } from "@freeanima/life-memory/search";
 import { PARLOR_PLATFORM } from "./platforms.ts";
-import { NEST_VERSION } from "./version.ts";
+import { ANIMA_VERSION } from "./version.ts";
 import { repairAndPersistToolLoop } from "@freeanima/engine-conversation";
 import { isInsufficientToolMessagesError } from "@freeanima/engine-llm";
 import { collectStreamReply } from "@freeanima/engine-loop";
@@ -66,7 +66,7 @@ function streamErrorEvent(sessionId: string, message: string, err?: unknown): St
     session_id: sessionId,
   });
   if (err !== undefined) {
-    logComponent("nest-service").error(message, { err, session_id: sessionId });
+    logComponent("anima-service").error(message, { err, session_id: sessionId });
   }
   return { event: "error", data: { error: message } };
 }
@@ -169,7 +169,7 @@ function readMemoryEntry(path: string, displayName: string): MemoryFileEntry | n
   }
 }
 
-export class NestService {
+export class AnimaService {
   private startTime = 0;
   private platformStatus: Record<string, PlatformStatusSnapshot> = {};
   private sessionManager = new SessionManager();
@@ -328,7 +328,7 @@ export class NestService {
   }
 
   health(): HealthSnapshot {
-    return { status: "ok", version: NEST_VERSION };
+    return { status: "ok", version: ANIMA_VERSION };
   }
 
   async buildStatus(host: string, port: number): Promise<ServiceSnapshot> {
@@ -375,7 +375,7 @@ export class NestService {
     const status: ServiceSnapshot = {
       status: "running",
       pid: process.pid,
-      version: NEST_VERSION,
+      version: ANIMA_VERSION,
       uptime_seconds: uptime,
       start_time_iso: startTimeIso(this.startTime),
       config: {
@@ -560,17 +560,17 @@ export class NestService {
         }
         if (e instanceof engine.MaxTurnsExceeded) {
           const msg = `tool loop exceeded: ${e.message}`;
-          logComponent("nest-service").error(msg, { err: e });
+          logComponent("anima-service").error(msg, { err: e });
           yield { event: "error", data: { error: msg } };
           return;
         }
         if (e instanceof ProviderError) {
-          logComponent("nest-service").error(e.message, { err: e });
+          logComponent("anima-service").error(e.message, { err: e });
           yield { event: "error", data: { error: e.message } };
           return;
         }
         const msg = String(e);
-        logComponent("nest-service").error(msg, { err: e });
+        logComponent("anima-service").error(msg, { err: e });
         yield { event: "error", data: { error: msg } };
       }
     } finally {

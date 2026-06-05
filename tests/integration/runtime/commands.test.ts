@@ -15,7 +15,7 @@ import {
   executeCommand,
   isRetryResult,
   resolveCommand,
-  NestService,
+  AnimaService,
 } from "@freeanima/service";
 import {
   load,
@@ -101,7 +101,7 @@ describePg("slash commands", () => {
   });
 
   it("listCommands includes help and retry", async () => {
-    const parlor = new NestService()
+    const parlor = new AnimaService()
       .listCommands({ platform: "parlor" })
       .commands.map((c) => c.name);
     expect(parlor).toContain("help");
@@ -109,7 +109,7 @@ describePg("slash commands", () => {
     expect(parlor).toContain("reload_tools");
     expect(parlor).not.toContain("new");
 
-    const discord = new NestService()
+    const discord = new AnimaService()
       .listCommands({ platform: "discord" })
       .commands.map((c) => c.name);
     expect(discord).toContain("new");

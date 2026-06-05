@@ -44,7 +44,7 @@ export type RunSimpleTurnOpts = {
 
 /**
  * 非流式整轮：beginTurn → engine.run → finishTurn。
- * cron / 脚本等无 SSE 场景使用；nest-service 流式路径复用 callbacks + finalizeTurn。
+ * cron / 脚本等无 SSE 场景使用；AnimaService 流式路径复用 callbacks + finalizeTurn。
  */
 export async function runSimpleTurn(opts: RunSimpleTurnOpts): Promise<string> {
   const { sessionId, prompt, model, prepare = conv.beginTurn } = opts;

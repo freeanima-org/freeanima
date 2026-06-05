@@ -8,7 +8,7 @@ import {
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { createJob, NestService } from "@freeanima/service";
+import { createJob, AnimaService } from "@freeanima/service";
 import { getAcpManager } from "@freeanima/capabilities-acp";
 import {
   listCronJobs,
@@ -43,8 +43,8 @@ describePg("server cron API", () => {
     await restoreIntegrationHome(prev);
   });
 
-  it("NestService pause and resume cron job", () => {
-    const svc = new NestService();
+  it("AnimaService pause and resume cron job", () => {
+    const svc = new AnimaService();
 
     const paused = svc.pauseCronJob(jobId);
     expect(paused).not.toBeNull();
@@ -57,23 +57,23 @@ describePg("server cron API", () => {
     expect(resumed!.next_run_at).toBeGreaterThan(0);
   });
 
-  it("NestService runCronJobNow returns message for existing job", () => {
-    const svc = new NestService();
+  it("AnimaService runCronJobNow returns message for existing job", () => {
+    const svc = new AnimaService();
     const result = svc.runCronJobNow(jobId);
     expect(result).not.toBeNull();
     expect(result!.message).toContain("api-test");
     expect(result!.job.id).toBe(jobId);
   });
 
-  it("NestService returns null for unknown job id", () => {
-    const svc = new NestService();
+  it("AnimaService returns null for unknown job id", () => {
+    const svc = new AnimaService();
     expect(svc.pauseCronJob("missing-id")).toBeNull();
     expect(svc.resumeCronJob("missing-id")).toBeNull();
     expect(svc.runCronJobNow("missing-id")).toBeNull();
   });
 
   it("handler pause/resume/run and 404", () => {
-    const svc = new NestService();
+    const svc = new AnimaService();
     initServiceContext({
       service: svc,
       mcp: null,
@@ -97,7 +97,7 @@ describePg("server cron API", () => {
   });
 
   it("listCronJobs lists jobs", () => {
-    const svc = new NestService();
+    const svc = new AnimaService();
     initServiceContext({
       service: svc,
       mcp: null,

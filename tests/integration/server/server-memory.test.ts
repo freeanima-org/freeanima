@@ -9,7 +9,7 @@ import {
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { MemoryStore, indexL3Fact, indexL2Session } from "@freeanima/life-memory";
-import { NestService } from "@freeanima/service";
+import { AnimaService } from "@freeanima/service";
 import { seedSession } from "@freeanima/kernel-db/test-helpers";
 
 describePg("server memory API", () => {
@@ -33,7 +33,7 @@ describePg("server memory API", () => {
   });
 
   it("listMemoryFiles returns objects with name and content", () => {
-    const { files } = new NestService().listMemoryFiles();
+    const { files } = new AnimaService().listMemoryFiles();
     expect(files.length).toBeGreaterThan(0);
     const soul = files.find((f) => f.name === "SOUL.md");
     expect(soul).toBeDefined();
@@ -66,7 +66,7 @@ describePg("server memory API", () => {
     writeFileSync(join(processedDir, `${sid}.jsonl`), `${l2Lines.join("\n")}\n`, "utf-8");
     indexL2Session(sid);
 
-    const out = new NestService().memorySearch({ query: "compression" });
+    const out = new AnimaService().memorySearch({ query: "compression" });
     expect(out.l3.length).toBeGreaterThan(0);
     expect(out.l2.length).toBeGreaterThan(0);
     expect(out.l3[0]!.score).toBeGreaterThan(0);
@@ -102,11 +102,11 @@ describePg("server memory API", () => {
       ],
     );
 
-    const out = await new NestService().rebuildL2All();
+    const out = await new AnimaService().rebuildL2All();
     expect(out.sessions).toBeGreaterThan(0);
     expect(out.index_rows).toBeGreaterThan(0);
 
-    const hits = new NestService().memorySearch({ query: "alpha" });
+    const hits = new AnimaService().memorySearch({ query: "alpha" });
     expect(hits.l2.some((h) => h.session_id === sid)).toBe(true);
   });
 
@@ -133,7 +133,7 @@ describePg("server memory API", () => {
       ],
     );
 
-    const svc = new NestService();
+    const svc = new AnimaService();
     const { sessions } = await svc.distillL2All();
     expect(sessions).toBeGreaterThan(0);
 
@@ -155,9 +155,9 @@ describePg("server memory API", () => {
       recall: 0.5,
     });
 
-    const { index_rows } = new NestService().reindexL3All();
+    const { index_rows } = new AnimaService().reindexL3All();
     expect(index_rows).toBeGreaterThan(0);
-    const hits = new NestService().memorySearch({ query: "gamma" });
+    const hits = new AnimaService().memorySearch({ query: "gamma" });
     expect(hits.l3.length).toBeGreaterThan(0);
   });
 

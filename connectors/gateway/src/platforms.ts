@@ -1,6 +1,6 @@
 import { credential, loadConfig } from "@freeanima/service-config";
 import { logComponent } from "@freeanima/service-logging";
-import type { NestService } from "@freeanima/service";
+import type { AnimaService } from "@freeanima/service";
 
 import { loadWeixinCredentials } from "./weixin/weixin-credentials.ts";
 
@@ -10,7 +10,7 @@ export type PlatformAdapter = {
   stop: () => Promise<void>;
 };
 
-export async function discoverPlatforms(service: NestService): Promise<PlatformAdapter[]> {
+export async function discoverPlatforms(service: AnimaService): Promise<PlatformAdapter[]> {
   const adapters: PlatformAdapter[] = [];
 
   try {
