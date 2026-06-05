@@ -1,11 +1,6 @@
 import "@freeanima/legacy-runtime/system-prompt-wire";
-import {
-  chat,
-  cleanupDebugSessions,
-  initLlmRuntime,
-  kernel,
-  PROFILE_REFLECT,
-} from "@freeanima/legacy-engine";
+import { chat, cleanupDebugSessions, initLlmRuntime, PROFILE_REFLECT } from "@freeanima/engine";
+import { kernel } from "@freeanima/service-bootstrap";
 import {
   loadConfig,
   PATHS,

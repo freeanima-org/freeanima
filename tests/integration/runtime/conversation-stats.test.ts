@@ -13,7 +13,7 @@ import {
   newSession,
   appendMessage,
   updateSessionMetaField,
-} from "@freeanima/legacy-engine";
+} from "@freeanima/engine";
 import { computeStats, mergeStats, statsReport } from "@freeanima/legacy-runtime";
 
 describePg("conversation-stats", () => {

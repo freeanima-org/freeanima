@@ -7,7 +7,7 @@ import {
 } from "../../helpers/integration-case.ts";
 
 import { registerAllTools } from "@freeanima/legacy-tools";
-import { initSession } from "@freeanima/legacy-engine";
+import { initSession } from "@freeanima/engine";
 import {
   setAwaitingClarify,
   readAwaitingClarify,

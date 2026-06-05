@@ -1,4 +1,4 @@
-import { getToolSessionId } from "@freeanima/legacy-engine";
+import { getToolSessionId } from "@freeanima/engine-loop";
 import { registerTool, toolError } from "@freeanima/engine-tool";
 import { handleSessionTodo } from "@freeanima/legacy-runtime";
 

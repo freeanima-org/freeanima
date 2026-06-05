@@ -13,7 +13,7 @@ import {
   indexL2Session,
 } from "@freeanima/legacy-memory";
 import { getTool } from "@freeanima/engine-tool";
-import { runWithToolContext } from "@freeanima/legacy-engine";
+import { runWithToolContext } from "@freeanima/engine-loop";
 
 describe("memory search", () => {
   let home: string;

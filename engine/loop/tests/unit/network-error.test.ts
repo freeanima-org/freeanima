@@ -2,7 +2,7 @@ import {
   isTransientNetworkError,
   isEngineStreamError,
   networkErrorUserHint,
-} from "@freeanima/legacy-engine";
+} from "@freeanima/engine-loop";
 import { describe, it, expect } from "bun:test";
 
 describe("network-error", () => {

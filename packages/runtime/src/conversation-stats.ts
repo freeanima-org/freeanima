@@ -1,8 +1,13 @@
-import { listSessions, load, loadSessionMeta, sessionExists } from "@freeanima/legacy-engine";
+import { listSessions, load, loadSessionMeta, sessionExists } from "@freeanima/engine-conversation";
 import { isSessionMeta } from "@freeanima/legacy-kernel";
 import type { SessionMessage } from "@freeanima/legacy-kernel";
-import { getCompressionConfig, getContextWindow } from "@freeanima/legacy-engine";
-import { analyzeCompression, isCompressed, parseCompressionState } from "@freeanima/legacy-engine";
+import {
+  analyzeCompression,
+  getCompressionConfig,
+  getContextWindow,
+  isCompressed,
+  parseCompressionState,
+} from "@freeanima/engine-compress";
 import { getProfileHopModel, loadConfig } from "@freeanima/legacy-kernel";
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
 import {
@@ -10,8 +15,8 @@ import {
   formatTokenK,
   type RuntimeContextBreakdown,
 } from "./runtime-context-stats.ts";
-import { estimateTokens, messageTextForEstimate } from "@freeanima/legacy-engine";
-import { normalizeUsage } from "@freeanima/legacy-engine";
+import { estimateTokens, messageTextForEstimate } from "@freeanima/engine-compress";
+import { normalizeUsage } from "@freeanima/engine-llm";
 
 export type SessionStats = {
   session: string;
@@ -71,7 +76,7 @@ export {
   estimateMessagesTokens,
   estimateTokens,
   messageTextForEstimate,
-} from "@freeanima/legacy-engine";
+} from "@freeanima/engine-compress";
 
 function emptyBreakdown(): RuntimeContextBreakdown {
   return {

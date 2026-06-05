@@ -1,9 +1,6 @@
 import { describe, it, expect } from "bun:test";
-import { buildProgram } from "../../../../apps/cli/src/program.ts";
-import {
-  generateCompletion,
-  SUPPORTED_SHELLS,
-} from "../../../../apps/cli/src/completion/generate.ts";
+import { buildProgram } from "../../src/program.ts";
+import { generateCompletion, SUPPORTED_SHELLS } from "../../src/completion/generate.ts";
 
 describe("shell completion", () => {
   it("supported shells", () => {

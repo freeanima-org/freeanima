@@ -7,13 +7,13 @@ import {
   Partials,
   type TextBasedChannel,
 } from "discord.js";
-import type { StreamEvent } from "@freeanima/legacy-engine";
+import type { StreamEvent } from "@freeanima/engine-loop";
 import {
   isEngineStreamError,
   isTransientNetworkError,
-  loadSessionMeta,
   networkErrorUserHint,
-} from "@freeanima/legacy-engine";
+} from "@freeanima/engine-loop";
+import { loadSessionMeta } from "@freeanima/engine-conversation";
 import { RateLimitedLogger } from "@freeanima/kernel-retry";
 import { logComponent } from "@freeanima/legacy-kernel";
 import type { NestService } from "@freeanima/legacy-runtime";

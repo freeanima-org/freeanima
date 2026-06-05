@@ -5,7 +5,7 @@ import {
   listSkills,
   unloadSkill,
   viewSkill,
-} from "@freeanima/legacy-engine";
+} from "@freeanima/life-memory";
 import { registerTool } from "@freeanima/engine-tool";
 
 export function registerSkillsTools(): void {

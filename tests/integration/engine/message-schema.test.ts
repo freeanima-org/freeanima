@@ -3,7 +3,7 @@ import { describePg } from "../../helpers/pg-test-gate.ts";
 import { beginIntegrationCase, endIntegrationCase } from "../../helpers/integration-case.ts";
 
 import { parseSessionLine } from "@freeanima/legacy-kernel";
-import { initSession, loadSessionMeta, updateSessionMetaField } from "@freeanima/legacy-engine";
+import { initSession, loadSessionMeta, updateSessionMetaField } from "@freeanima/engine";
 
 describePg("schemas/message", () => {
   const prev = process.env.FREEANIMA_HOME;

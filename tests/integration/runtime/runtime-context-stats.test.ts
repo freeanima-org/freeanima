@@ -6,7 +6,7 @@ import {
   endIntegrationCase,
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
-import { newSession, appendMessage, updateSessionMetaField } from "@freeanima/legacy-engine";
+import { newSession, appendMessage, updateSessionMetaField } from "@freeanima/engine";
 
 describePg("runtime context stats", () => {
   const prev = process.env.FREEANIMA_HOME;

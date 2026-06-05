@@ -1,4 +1,4 @@
-import type { StreamEvent } from "@freeanima/legacy-engine";
+import type { StreamEvent } from "@freeanima/engine-loop";
 
 import type { Message, TextBasedChannel } from "discord.js";
 import { describe, expect, it, vi, beforeEach, afterEach } from "bun:test";

@@ -63,6 +63,8 @@
     "packages": [
       "kernel/*",
       "engine/*",
+      "life/*",
+      "service/*",
       "capabilities/*",
       "connectors/*",
       "packages/*",

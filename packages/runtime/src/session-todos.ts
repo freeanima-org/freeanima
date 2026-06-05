@@ -1,4 +1,4 @@
-import { loadSessionMeta, updateSessionMetaField } from "@freeanima/legacy-engine";
+import { loadSessionMeta, updateSessionMetaField } from "@freeanima/engine-conversation";
 import { isSessionMeta } from "@freeanima/legacy-kernel";
 import {
   type SessionTodoStore,

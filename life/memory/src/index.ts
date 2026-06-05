@@ -6,4 +6,4 @@ export {
   viewSkill,
   deleteSkill,
   getActiveSkillsContent,
-} from "@freeanima/life-memory";
+} from "./skills.ts";

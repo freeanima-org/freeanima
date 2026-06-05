@@ -1,4 +1,4 @@
-import { runWithToolContext } from "@freeanima/legacy-engine";
+import { runWithToolContext } from "@freeanima/engine-loop";
 import { getTool, listTools } from "@freeanima/engine-tool";
 import { clearConfigCache } from "@freeanima/legacy-kernel";
 import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from "bun:test";

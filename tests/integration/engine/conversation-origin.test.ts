@@ -7,7 +7,7 @@ import {
 } from "../../helpers/integration-case.ts";
 
 import { isSessionMeta } from "@freeanima/legacy-kernel";
-import * as conv from "@freeanima/legacy-engine";
+import * as conv from "@freeanima/engine-conversation";
 
 describePg("conversation origin", () => {
   const prev = process.env.FREEANIMA_HOME;

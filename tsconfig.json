@@ -10,6 +10,8 @@
   "include": [
     "kernel/**/*.ts",
     "engine/**/*.ts",
+    "life/**/*.ts",
+    "service/**/*.ts",
     "capabilities/**/*.ts",
     "connectors/**/*.ts",
     "packages/**/*.ts",
