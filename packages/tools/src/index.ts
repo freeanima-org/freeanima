@@ -1,25 +1,17 @@
-import { registerFileTools } from "./file.ts";
-import { registerCredentialTools } from "./credential-tool.ts";
-import { registerExecuteCodeTool } from "./execute-code.ts";
-import { registerMemoryTools } from "./memory-tools.ts";
-import { registerTerminalTools } from "./terminal.ts";
-import { registerWebTools } from "./web.ts";
+import { registerCoreTools } from "@freeanima/capabilities-tools";
 import { registerClarifyTool } from "@freeanima/capabilities-clarify";
+import { registerMemoryTools } from "@freeanima/life-memory";
+import { registerBrowserTools } from "./browser.ts";
 import { registerCronjobTool } from "./cronjob.ts";
 import { registerSkillsTools } from "./skills-tools.ts";
 import { registerTodoTool } from "./todo-tool.ts";
-import { registerBrowserTools } from "./browser.ts";
 
 let registered = false;
 
 export function registerAllTools(): void {
   if (registered) return;
-  registerFileTools();
-  registerCredentialTools();
-  registerExecuteCodeTool();
+  registerCoreTools();
   registerMemoryTools();
-  registerTerminalTools();
-  registerWebTools();
   registerBrowserTools();
   registerClarifyTool();
   registerCronjobTool();
@@ -28,5 +20,11 @@ export function registerAllTools(): void {
   registered = true;
 }
 
-export { registerFileTools } from "./file.ts";
-export { registerCredentialTools } from "./credential-tool.ts";
+export {
+  registerCoreTools,
+  registerFileTools,
+  registerCredentialTools,
+  registerExecuteCodeTool,
+  registerTerminalTools,
+  registerWebTools,
+} from "@freeanima/capabilities-tools";

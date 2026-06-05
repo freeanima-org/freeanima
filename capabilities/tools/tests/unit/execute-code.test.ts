@@ -1,6 +1,6 @@
 import { describe, it, expect } from "bun:test";
-import { clampTimeout, parseRuntime, runExecuteCode } from "@freeanima/capabilities-tools";
-import { registerAllTools } from "@freeanima/legacy-tools";
+import { parseRuntime, clampTimeout, runExecuteCode } from "../../src/execute-code-runtimes.ts";
+import { registerCoreTools } from "@freeanima/capabilities-tools";
 import { openaiSchemas } from "@freeanima/engine-tool";
 
 describe("execute_code runtimes", () => {
@@ -39,7 +39,7 @@ describe("execute_code runtimes", () => {
 
 describe("openaiSchemas", () => {
   it("tools use flat parameters and top-level description", () => {
-    registerAllTools();
+    registerCoreTools();
 
     const schemas = openaiSchemas();
     expect(schemas.length).toBeGreaterThan(0);

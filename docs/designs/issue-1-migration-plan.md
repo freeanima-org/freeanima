@@ -134,21 +134,21 @@ packages:
 
 **legacy 包名映射（示例）：**
 
-| 现名（步骤 0 前）         | legacy 名（步骤 0 后）                                               |
-| ------------------------- | -------------------------------------------------------------------- |
-| `@freeanima/kernel`       | ~~`@freeanima/legacy-kernel`~~（已删，拆至 kernel-_ / service-_）    |
-| `@freeanima/engine`       | ~~`@freeanima/legacy-engine`~~（已删，拆至 engine-\* / life-memory） |
-| `@freeanima/runtime`      | `@freeanima/legacy-runtime`                                          |
-| `@freeanima/memory`       | ~~`@freeanima/legacy-memory`~~ → `@freeanima/life-memory`            |
-| `@freeanima/db`           | ~~`@freeanima/legacy-db`~~ → `@freeanima/kernel-db`（`kernel/db`）   |
-| `@freeanima/server`       | `@freeanima/legacy-server`                                           |
-| `@freeanima/gateway`      | ~~`@freeanima/legacy-gateway`~~ → `@freeanima/connectors-gateway`    |
-| `@freeanima/tools`        | `@freeanima/legacy-tools`                                            |
-| `@freeanima/integrations` | `@freeanima/legacy-integrations`                                     |
-| `@freeanima/clarify`      | ~~`@freeanima/legacy-clarify`~~ → `@freeanima/capabilities-clarify`  |
-| `@freeanima/api`          | `@freeanima/legacy-api`                                              |
-| `@freeanima/cli`          | `@freeanima/legacy-cli`                                              |
-| `@freeanima/webui`        | `@freeanima/legacy-webui`                                            |
+| 现名（步骤 0 前）         | legacy 名（步骤 0 后）                                                   |
+| ------------------------- | ------------------------------------------------------------------------ |
+| `@freeanima/kernel`       | ~~`@freeanima/legacy-kernel`~~（已删，拆至 kernel-_ / service-_）        |
+| `@freeanima/engine`       | ~~`@freeanima/legacy-engine`~~（已删，拆至 engine-\* / life-memory）     |
+| `@freeanima/runtime`      | `@freeanima/legacy-runtime`                                              |
+| `@freeanima/memory`       | ~~`@freeanima/legacy-memory`~~ → `@freeanima/life-memory`                |
+| `@freeanima/db`           | ~~`@freeanima/legacy-db`~~ → `@freeanima/kernel-db`（`kernel/db`）       |
+| `@freeanima/server`       | `@freeanima/legacy-server`                                               |
+| `@freeanima/gateway`      | ~~`@freeanima/legacy-gateway`~~ → `@freeanima/connectors-gateway`        |
+| `@freeanima/tools`        | `@freeanima/legacy-tools`（core 已拆至 `@freeanima/capabilities-tools`） |
+| `@freeanima/integrations` | `@freeanima/legacy-integrations`                                         |
+| `@freeanima/clarify`      | ~~`@freeanima/legacy-clarify`~~ → `@freeanima/capabilities-clarify`      |
+| `@freeanima/api`          | `@freeanima/legacy-api`                                                  |
+| `@freeanima/cli`          | `@freeanima/legacy-cli`                                                  |
+| `@freeanima/webui`        | `@freeanima/legacy-webui`                                                |
 
 **已删除 legacy 包（2026-06-05）：** `@freeanima/legacy-kernel`、`@freeanima/legacy-engine`。`@freeanima/legacy-db` 已迁入 `kernel/db`（`@freeanima/kernel-db`）。职责分别迁入 `kernel/{schemas,hooks,logging,eventbus,db}`、`engine/*`、`service/{config,logging,bootstrap}`、`connectors/sqlite`、`life/memory`。
 

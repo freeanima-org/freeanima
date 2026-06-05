@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { spawnSync } from "node:child_process";
 
-import { registerAllTools } from "@freeanima/legacy-tools";
+import { registerCoreTools } from "@freeanima/capabilities-tools";
 import { clearConfigCache } from "@freeanima/service-config";
 
 const MIN_CONFIG = `
@@ -31,7 +31,7 @@ describe("local tools", () => {
   const prevHome = process.env.FREEANIMA_HOME;
 
   beforeAll(() => {
-    registerAllTools();
+    registerCoreTools();
   });
 
   beforeEach(() => {
@@ -48,17 +48,19 @@ describe("local tools", () => {
     else process.env.FREEANIMA_HOME = prevHome;
   });
 
-  it("registers restored tools", () => {
+  it("registers core tools", () => {
     const names = new Set(listTools().map((t) => t.name));
     for (const n of [
+      "read_file",
+      "write_file",
       "search_files",
+      "patch",
+      "list_credentials",
+      "execute_code",
       "terminal",
+      "process",
       "web_search",
       "web_extract",
-      "clarify",
-      "recall",
-      "remember",
-      "process",
     ]) {
       expect(names.has(n), n).toBe(true);
     }
@@ -144,34 +146,6 @@ describe("local tools", () => {
   it("terminal runs echo", async () => {
     const out = await getTool("terminal")!.handler({ command: "echo hello-anima" });
     expect(out).toContain("hello-anima");
-  });
-
-  it("clarify required returns awaiting JSON", async () => {
-    const out = await getTool("clarify")!.handler({
-      items: [{ question: "选哪个？", choices: ["A", "B"] }],
-      required: true,
-    });
-    const data = JSON.parse(out);
-    expect(data.status).toBe("awaiting");
-    expect(data.items).toHaveLength(1);
-    expect(data.items[0].question).toBe("选哪个？");
-  });
-
-  it("clarify optional with defaults returns resolved", async () => {
-    const out = await getTool("clarify")!.handler({
-      items: [{ question: "风格？", default: "简洁" }],
-      required: false,
-    });
-    const data = JSON.parse(out);
-    expect(data.status).toBe("resolved");
-    expect(data.answers[0].answer).toBe("简洁");
-  });
-
-  it("clarify backward compatible single question", async () => {
-    const out = await getTool("clarify")!.handler({ question: "test?" });
-    const data = JSON.parse(out);
-    expect(data.status).toBe("awaiting");
-    expect(data.items[0].question).toBe("test?");
   });
 
   it("web_search calls Firecrawl API", async () => {

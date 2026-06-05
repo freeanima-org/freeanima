@@ -5,6 +5,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "@freeanima/capabilities-tools": "workspace:*",
     "@freeanima/engine-loop": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",
     "@freeanima/life-memory": "workspace:*",
