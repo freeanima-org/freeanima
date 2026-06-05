@@ -99,6 +99,40 @@
         "@types/bun": "catalog:",
       },
     },
+    "connectors/commands": {
+      "name": "@freeanima/connectors-commands",
+      "dependencies": {
+        "@freeanima/capabilities-clarify": "workspace:*",
+        "@freeanima/engine-conversation": "workspace:*",
+        "@freeanima/engine-tool": "workspace:*",
+        "@freeanima/kernel-schemas": "workspace:*",
+        "@freeanima/legacy-memory": "workspace:*",
+        "@freeanima/legacy-runtime": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
+    "connectors/cron": {
+      "name": "@freeanima/connectors-cron",
+      "dependencies": {
+        "@freeanima/engine": "workspace:*",
+        "@freeanima/engine-conversation": "workspace:*",
+        "@freeanima/engine-loop": "workspace:*",
+        "@freeanima/engine-provider-llm": "workspace:*",
+        "@freeanima/kernel-schemas": "workspace:*",
+        "@freeanima/legacy-memory": "workspace:*",
+        "@freeanima/legacy-runtime": "workspace:*",
+        "@freeanima/life-memory": "workspace:*",
+        "@freeanima/service-config": "workspace:*",
+        "@freeanima/service-logging": "workspace:*",
+        "cron-parser": "^5.5.0",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
     "connectors/eventbus-sqlite": {
       "name": "@freeanima/connectors-eventbus-sqlite",
       "dependencies": {
@@ -106,6 +140,23 @@
       },
       "devDependencies": {
         "@freeanima/kernel-logging": "workspace:*",
+        "@types/bun": "catalog:",
+      },
+    },
+    "connectors/gateway": {
+      "name": "@freeanima/connectors-gateway",
+      "dependencies": {
+        "@freeanima/engine-conversation": "workspace:*",
+        "@freeanima/engine-loop": "workspace:*",
+        "@freeanima/kernel-retry": "workspace:*",
+        "@freeanima/kernel-schemas": "workspace:*",
+        "@freeanima/legacy-runtime": "workspace:*",
+        "@freeanima/service-config": "workspace:*",
+        "@freeanima/service-logging": "workspace:*",
+        "discord.js": "^14.26.4",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
         "@types/bun": "catalog:",
       },
     },
@@ -274,9 +325,9 @@
         "zod": "catalog:",
       },
       "devDependencies": {
+        "@freeanima/connectors-gateway": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
         "@freeanima/legacy-api": "workspace:*",
-        "@freeanima/legacy-gateway": "workspace:*",
         "@freeanima/legacy-integrations": "workspace:*",
         "@types/bun": "catalog:",
       },
@@ -301,23 +352,6 @@
     "packages/api": {
       "name": "@freeanima/legacy-api",
       "dependencies": {
-        "zod": "catalog:",
-      },
-      "devDependencies": {
-        "@types/bun": "catalog:",
-      },
-    },
-    "packages/gateway": {
-      "name": "@freeanima/legacy-gateway",
-      "dependencies": {
-        "@freeanima/engine-conversation": "workspace:*",
-        "@freeanima/engine-loop": "workspace:*",
-        "@freeanima/kernel-retry": "workspace:*",
-        "@freeanima/kernel-schemas": "workspace:*",
-        "@freeanima/legacy-runtime": "workspace:*",
-        "@freeanima/service-config": "workspace:*",
-        "@freeanima/service-logging": "workspace:*",
-        "discord.js": "^14.26.4",
         "zod": "catalog:",
       },
       "devDependencies": {
@@ -366,6 +400,8 @@
       "name": "@freeanima/legacy-runtime",
       "dependencies": {
         "@freeanima/capabilities-clarify": "workspace:*",
+        "@freeanima/connectors-commands": "workspace:*",
+        "@freeanima/connectors-cron": "workspace:*",
         "@freeanima/engine": "workspace:*",
         "@freeanima/engine-compress": "workspace:*",
         "@freeanima/engine-conversation": "workspace:*",
@@ -394,6 +430,7 @@
       "dependencies": {
         "@freeanima/capabilities-clarify": "workspace:*",
         "@freeanima/connectors-eventbus-sqlite": "workspace:*",
+        "@freeanima/connectors-gateway": "workspace:*",
         "@freeanima/engine": "workspace:*",
         "@freeanima/engine-conversation": "workspace:*",
         "@freeanima/engine-loop": "workspace:*",
@@ -401,7 +438,6 @@
         "@freeanima/kernel-eventbus": "workspace:*",
         "@freeanima/kernel-schemas": "workspace:*",
         "@freeanima/legacy-api": "workspace:*",
-        "@freeanima/legacy-gateway": "workspace:*",
         "@freeanima/legacy-integrations": "workspace:*",
         "@freeanima/legacy-memory": "workspace:*",
         "@freeanima/legacy-runtime": "workspace:*",
@@ -626,7 +662,13 @@
 
     "@freeanima/capabilities-provider-openai-compatible": ["@freeanima/capabilities-provider-openai-compatible@workspace:capabilities/provider-openai-compatible"],
 
+    "@freeanima/connectors-commands": ["@freeanima/connectors-commands@workspace:connectors/commands"],
+
+    "@freeanima/connectors-cron": ["@freeanima/connectors-cron@workspace:connectors/cron"],
+
     "@freeanima/connectors-eventbus-sqlite": ["@freeanima/connectors-eventbus-sqlite@workspace:connectors/eventbus-sqlite"],
+
+    "@freeanima/connectors-gateway": ["@freeanima/connectors-gateway@workspace:connectors/gateway"],
 
     "@freeanima/connectors-sqlite": ["@freeanima/connectors-sqlite@workspace:connectors/sqlite"],
 
@@ -665,8 +707,6 @@
     "@freeanima/legacy-api": ["@freeanima/legacy-api@workspace:packages/api"],
 
     "@freeanima/legacy-cli": ["@freeanima/legacy-cli@workspace:apps/cli"],
-
-    "@freeanima/legacy-gateway": ["@freeanima/legacy-gateway@workspace:packages/gateway"],
 
     "@freeanima/legacy-integrations": ["@freeanima/legacy-integrations@workspace:packages/integrations"],
 

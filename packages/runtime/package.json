@@ -3,7 +3,9 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./system-prompt-wire": "./src/system-prompt-wire.ts"
+    "./system-prompt-wire": "./src/system-prompt-wire.ts",
+    "./home-channel": "./src/home-channel.ts",
+    "./conversation-stats": "./src/conversation-stats.ts"
   },
   "dependencies": {
     "@freeanima/engine": "workspace:*",
@@ -19,6 +21,8 @@
     "@freeanima/kernel-schemas": "workspace:*",
     "@freeanima/life-memory": "workspace:*",
     "@freeanima/capabilities-clarify": "workspace:*",
+    "@freeanima/connectors-commands": "workspace:*",
+    "@freeanima/connectors-cron": "workspace:*",
     "@freeanima/legacy-memory": "workspace:*",
     "@freeanima/service-bootstrap": "workspace:*",
     "@freeanima/service-config": "workspace:*",

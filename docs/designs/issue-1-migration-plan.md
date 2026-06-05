@@ -142,7 +142,7 @@ packages:
 | `@freeanima/memory`       | `@freeanima/legacy-memory`                                           |
 | `@freeanima/db`           | ~~`@freeanima/legacy-db`~~ → `@freeanima/kernel-db`（`kernel/db`）   |
 | `@freeanima/server`       | `@freeanima/legacy-server`                                           |
-| `@freeanima/gateway`      | `@freeanima/legacy-gateway`                                          |
+| `@freeanima/gateway`      | ~~`@freeanima/legacy-gateway`~~ → `@freeanima/connectors-gateway`    |
 | `@freeanima/tools`        | `@freeanima/legacy-tools`                                            |
 | `@freeanima/integrations` | `@freeanima/legacy-integrations`                                     |
 | `@freeanima/clarify`      | ~~`@freeanima/legacy-clarify`~~ → `@freeanima/capabilities-clarify`  |

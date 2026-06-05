@@ -2,7 +2,7 @@ import type { StreamEvent } from "@freeanima/engine-loop";
 
 import type { Message, TextBasedChannel } from "discord.js";
 import { describe, expect, it, vi, beforeEach, afterEach } from "bun:test";
-import { streamReplyToChannel } from "@freeanima/legacy-gateway";
+import { streamReplyToChannel } from "@freeanima/connectors-gateway";
 import { beginLogIsolation, endLogIsolation } from "../../../../tests/helpers/log-isolation.ts";
 
 const prevHome = process.env.FREEANIMA_HOME;
