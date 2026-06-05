@@ -19,3 +19,4 @@ export {
   resolveProbeHost,
 } from "./bind-hosts.ts";
 export { serve, getService, type ServeOptions } from "./serve.ts";
+export * from "./runtime/index.ts";

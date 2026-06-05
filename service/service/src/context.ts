@@ -1,4 +1,4 @@
-import type { NestService } from "@freeanima/legacy-runtime";
+import type { NestService } from "./runtime/nest-service.ts";
 import type { AcpManager } from "@freeanima/capabilities-acp";
 import type { MCPManager } from "@freeanima/capabilities-mcp";
 
