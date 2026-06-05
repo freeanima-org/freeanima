@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "devDependencies": {
+    "@freeanima/engine-tool": "workspace:*",
     "@freeanima/kernel-eventbus": "workspace:*",
     "@freeanima/connectors-eventbus-sqlite": "workspace:*",
     "@freeanima/kernel-logging": "workspace:*",

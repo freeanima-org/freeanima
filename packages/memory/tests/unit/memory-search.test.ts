@@ -12,7 +12,7 @@ import {
   indexL3Facts,
   indexL2Session,
 } from "@freeanima/legacy-memory";
-import { getTool } from "@freeanima/legacy-kernel";
+import { getTool } from "@freeanima/engine-tool";
 import { runWithToolContext } from "@freeanima/legacy-engine";
 
 describe("memory search", () => {

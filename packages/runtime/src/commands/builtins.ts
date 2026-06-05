@@ -17,7 +17,8 @@ import {
   recompressSession,
 } from "@freeanima/legacy-engine";
 import { statsReport } from "../conversation-stats.ts";
-import { isSessionMeta, listTools } from "@freeanima/legacy-kernel";
+import { listTools } from "@freeanima/engine-tool";
+import { isSessionMeta } from "@freeanima/legacy-kernel";
 import { distillFromPg } from "@freeanima/legacy-memory/clean";
 import { isReflectEnabled } from "@freeanima/legacy-memory";
 import { reflectSession } from "@freeanima/legacy-memory/reflect";

@@ -1,4 +1,4 @@
-import { toolResult } from "@freeanima/legacy-kernel";
+import { toolResult } from "@freeanima/engine-tool";
 
 export type AcpPromptResult = {
   session_id: string;

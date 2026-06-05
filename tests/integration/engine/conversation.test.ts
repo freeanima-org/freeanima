@@ -6,7 +6,8 @@ import {
   endIntegrationCase,
 } from "../../helpers/integration-case.ts";
 
-import { isSessionMeta, openaiSchemas } from "@freeanima/legacy-kernel";
+import { openaiSchemas } from "@freeanima/engine-tool";
+import { isSessionMeta } from "@freeanima/legacy-kernel";
 import { registerAllTools } from "@freeanima/legacy-tools";
 import {
   newSession,

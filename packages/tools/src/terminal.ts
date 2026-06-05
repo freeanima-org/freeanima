@@ -1,4 +1,4 @@
-import { registerTool } from "@freeanima/legacy-kernel";
+import { registerTool } from "@freeanima/engine-tool";
 import { spawn, spawnSync, type ChildProcess } from "node:child_process";
 
 const MAX_OUTPUT = 50 * 1024;

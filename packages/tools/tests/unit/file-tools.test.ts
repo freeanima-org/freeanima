@@ -4,7 +4,7 @@ import { dirname, join } from "node:path";
 import { tmpdir } from "node:os";
 import { chdir } from "node:process";
 import { registerAllTools } from "@freeanima/legacy-tools";
-import { getTool, listTools } from "@freeanima/legacy-kernel";
+import { getTool, listTools } from "@freeanima/engine-tool";
 
 describe("file tools", () => {
   let home: string;

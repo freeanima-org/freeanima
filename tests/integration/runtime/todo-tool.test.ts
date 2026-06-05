@@ -3,7 +3,8 @@ import { describePg } from "../../helpers/pg-test-gate.ts";
 import { beginIntegrationCase, endIntegrationCase } from "../../helpers/integration-case.ts";
 
 import { initSession, loadSessionMeta, runWithToolContext } from "@freeanima/legacy-engine";
-import { getProfileHopModel, loadConfig, getTool } from "@freeanima/legacy-kernel";
+import { getTool } from "@freeanima/engine-tool";
+import { getProfileHopModel, loadConfig } from "@freeanima/legacy-kernel";
 import { addTodo, listTodos } from "@freeanima/legacy-runtime";
 import { registerAllTools } from "@freeanima/legacy-tools";
 

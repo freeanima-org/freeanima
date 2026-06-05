@@ -5,6 +5,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "@freeanima/engine-tool": "workspace:*",
     "@freeanima/kernel": "workspace:*",
     "@freeanima/legacy-engine": "workspace:*",
     "@freeanima/legacy-kernel": "workspace:*"

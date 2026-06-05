@@ -1,5 +1,5 @@
 import { getToolSessionId } from "@freeanima/legacy-engine";
-import { registerTool, toolError } from "@freeanima/legacy-kernel";
+import { registerTool, toolError } from "@freeanima/engine-tool";
 import { handleSessionTodo } from "@freeanima/legacy-runtime";
 
 async function handleTodo(args: Record<string, unknown>): Promise<string> {

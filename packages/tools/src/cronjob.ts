@@ -1,4 +1,4 @@
-import { registerTool } from "@freeanima/legacy-kernel";
+import { registerTool } from "@freeanima/engine-tool";
 import {
   createJob,
   getJob,

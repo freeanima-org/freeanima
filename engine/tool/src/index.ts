@@ -17,3 +17,14 @@ export type {
   ToolDef,
   OpenAiToolEntry,
 } from "./registry.ts";
+export {
+  isToolError,
+  parseToolArgs,
+  parseToolResult,
+  toolError,
+  toolResult,
+  toolArgsSchema,
+  toolErrorSchema,
+} from "./json-util.ts";
+export type { ParsedToolResult, ToolErrorResult } from "./json-util.ts";
+export type { ToolArgsRecord } from "./tool-json.ts";
