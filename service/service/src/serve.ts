@@ -1,4 +1,4 @@
-import "@freeanima/legacy-runtime/system-prompt-wire";
+import "@freeanima/service/runtime/system-prompt-wire";
 import { chat, cleanupDebugSessions, initLlmRuntime, PROFILE_REFLECT } from "@freeanima/engine";
 import { kernel } from "@freeanima/service-bootstrap";
 import {
@@ -23,7 +23,7 @@ import {
   NEST_VERSION,
   seedHomeChannelsFromHermes,
   REPO_ROOT,
-} from "@freeanima/legacy-runtime";
+} from "./runtime/index.ts";
 import { writeFileSync, unlinkSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import { chdir } from "node:process";

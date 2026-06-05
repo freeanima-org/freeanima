@@ -14,7 +14,7 @@ import {
   listCommandDefs,
   listCommandDefsForPlatform,
   isRetryResult,
-} from "./commands/index.ts";
+} from "@freeanima/connectors-commands";
 import type { CommandResult, CommandDef } from "@freeanima/connectors-commands";
 import { logComponent, logSseError } from "@freeanima/service-logging";
 import * as conv from "@freeanima/engine-conversation";
@@ -41,7 +41,7 @@ import {
   pauseJob,
   resumeJob,
   enqueueRunJob,
-} from "./cron/index.ts";
+} from "@freeanima/connectors-cron";
 import type { CronJobData } from "@freeanima/connectors-cron";
 import { kernel } from "@freeanima/service-bootstrap";
 import { headOkStepData, messageIncoming, turnAfterComplete } from "@freeanima/kernel-hooks";

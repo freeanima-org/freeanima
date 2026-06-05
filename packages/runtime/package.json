@@ -8,26 +8,12 @@
     "./conversation-stats": "./src/conversation-stats.ts"
   },
   "dependencies": {
-    "@freeanima/engine": "workspace:*",
-    "@freeanima/engine-conversation": "workspace:*",
-    "@freeanima/engine-loop": "workspace:*",
-    "@freeanima/engine-compress": "workspace:*",
-    "@freeanima/engine-llm": "workspace:*",
-    "@freeanima/engine-prompt": "workspace:*",
-    "@freeanima/engine-tool": "workspace:*",
-    "@freeanima/engine-provider-llm": "workspace:*",
-    "@freeanima/kernel-eventbus": "workspace:*",
-    "@freeanima/kernel-hooks": "workspace:*",
-    "@freeanima/kernel-schemas": "workspace:*",
-    "@freeanima/life-memory": "workspace:*",
     "@freeanima/capabilities-clarify": "workspace:*",
     "@freeanima/connectors-commands": "workspace:*",
     "@freeanima/connectors-cron": "workspace:*",
-    "@freeanima/service-bootstrap": "workspace:*",
-    "@freeanima/service-config": "workspace:*",
-    "@freeanima/service-logging": "workspace:*",
-    "cron-parser": "^5.5.0",
-    "zod": "catalog:"
+    "@freeanima/engine-conversation": "workspace:*",
+    "@freeanima/life-memory": "workspace:*",
+    "@freeanima/service": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "catalog:"

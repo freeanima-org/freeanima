@@ -4,25 +4,40 @@
   "exports": {
     ".": "./src/index.ts",
     "./alive": "./src/alive.ts",
-    "./bind-hosts": "./src/bind-hosts.ts"
+    "./bind-hosts": "./src/bind-hosts.ts",
+    "./runtime": "./src/runtime/index.ts",
+    "./runtime/system-prompt-wire": "./src/runtime/system-prompt-wire.ts",
+    "./runtime/home-channel": "./src/runtime/home-channel.ts",
+    "./runtime/conversation-stats": "./src/runtime/conversation-stats.ts"
   },
   "dependencies": {
     "@freeanima/capabilities-acp": "workspace:*",
     "@freeanima/capabilities-clarify": "workspace:*",
     "@freeanima/capabilities-mcp": "workspace:*",
     "@freeanima/capabilities-tools": "workspace:*",
+    "@freeanima/connectors-commands": "workspace:*",
     "@freeanima/connectors-cron": "workspace:*",
     "@freeanima/connectors-gateway": "workspace:*",
     "@freeanima/connectors-webui": "workspace:*",
     "@freeanima/engine": "workspace:*",
+    "@freeanima/engine-compress": "workspace:*",
+    "@freeanima/engine-conversation": "workspace:*",
+    "@freeanima/engine-llm": "workspace:*",
+    "@freeanima/engine-loop": "workspace:*",
+    "@freeanima/engine-prompt": "workspace:*",
+    "@freeanima/engine-provider-llm": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",
     "@freeanima/kernel": "workspace:*",
     "@freeanima/kernel-db": "workspace:*",
-    "@freeanima/legacy-runtime": "workspace:*",
+    "@freeanima/kernel-eventbus": "workspace:*",
+    "@freeanima/kernel-hooks": "workspace:*",
+    "@freeanima/kernel-schemas": "workspace:*",
     "@freeanima/life-memory": "workspace:*",
     "@freeanima/service-bootstrap": "workspace:*",
     "@freeanima/service-config": "workspace:*",
-    "@freeanima/service-logging": "workspace:*"
+    "@freeanima/service-logging": "workspace:*",
+    "cron-parser": "^5.5.0",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@freeanima/engine-tool": "workspace:*",

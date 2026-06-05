@@ -1,4 +1,7 @@
-import { buildMessagesDisplay, paginateMessagesDisplay } from "@freeanima/legacy-runtime";
+import {
+  buildMessagesDisplay,
+  paginateMessagesDisplay,
+} from "../../../src/runtime/build-messages-display.ts";
 import { describe, expect, it } from "bun:test";
 
 import type { SessionMessage } from "@freeanima/kernel-schemas";

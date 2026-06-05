@@ -1,9 +1,1 @@
-export {
-  createSkill,
-  loadSkill,
-  unloadSkill,
-  listSkills,
-  viewSkill,
-  deleteSkill,
-  getActiveSkillsContent,
-} from "@freeanima/life-memory";
+export * from "@freeanima/life-memory";
