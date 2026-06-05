@@ -6,12 +6,21 @@
     "./message": "./src/message.ts",
     "./session-meta": "./src/session-meta.ts",
     "./display": "./src/display.ts",
-    "./util": "./src/util.ts"
+    "./util": "./src/util.ts",
+    "./events": "./src/events.ts",
+    "./l2": "./src/l2.ts",
+    "./cron": "./src/cron.ts",
+    "./snapshot": "./src/snapshot.ts",
+    "./fact": "./src/fact.ts"
   },
   "dependencies": {
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@freeanima/engine-tool": "workspace:*",
+    "@freeanima/legacy-api": "workspace:*",
+    "@freeanima/legacy-gateway": "workspace:*",
+    "@freeanima/legacy-integrations": "workspace:*",
     "@types/bun": "catalog:"
   }
 }

@@ -3,6 +3,7 @@ export * from "./credential.ts";
 export * from "./config.ts";
 export * from "./config-sanitize.ts";
 export * from "./llm-config.ts";
+export * from "./session-path.ts";
 export {
   nestConfigSchema,
   acpAgentSchema,

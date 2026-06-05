@@ -1,0 +1,10 @@
+{
+  "name": "@freeanima/connectors-sqlite",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:"
+  }
+}
