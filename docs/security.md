@@ -47,17 +47,17 @@
 
 ## 已覆盖措施
 
-| 措施           | 说明                                                                                                            |
-| -------------- | --------------------------------------------------------------------------------------------------------------- |
-| 同域 RPC       | TanStack Start server functions 默认同源，无需 CORS 白名单                                                      |
-| 配置密钥脱敏   | `NestService.getConfig()` → `sanitizeConfigForApi()`（`api_key`、`database.url`、嵌套 `pushkey`、`mcp env` 等） |
-| MCP 配置脱敏   | `sanitizeMcpConfig`：`env` 仅暴露 `env_keys`                                                                    |
-| 写路径安全     | `write_file` deny list（部分 `/etc/*`、`.ssh` 私钥等）                                                          |
-| Slash 命令     | 白名单路由                                                                                                      |
-| MCP 默认 stdio | 减少端口暴露                                                                                                    |
-| 凭证隔离       | LLM 只见 pass 路径，不见值                                                                                      |
-| CI 密钥扫描    | `.github/workflows/ts.yml` 含 gitleaks                                                                          |
-| `.gitignore`   | `.env.*`、`config.yaml`、私钥后缀                                                                               |
+| 措施           | 说明                                                                                                             |
+| -------------- | ---------------------------------------------------------------------------------------------------------------- |
+| 同域 RPC       | TanStack Start server functions 默认同源，无需 CORS 白名单                                                       |
+| 配置密钥脱敏   | `AnimaService.getConfig()` → `sanitizeConfigForApi()`（`api_key`、`database.url`、嵌套 `pushkey`、`mcp env` 等） |
+| MCP 配置脱敏   | `sanitizeMcpConfig`：`env` 仅暴露 `env_keys`                                                                     |
+| 写路径安全     | `write_file` deny list（部分 `/etc/*`、`.ssh` 私钥等）                                                           |
+| Slash 命令     | 白名单路由                                                                                                       |
+| MCP 默认 stdio | 减少端口暴露                                                                                                     |
+| 凭证隔离       | LLM 只见 pass 路径，不见值                                                                                       |
+| CI 密钥扫描    | `.github/workflows/ts.yml` 含 gitleaks                                                                           |
+| `.gitignore`   | `.env.*`、`config.yaml`、私钥后缀                                                                                |
 
 ## 已知缺口（文档 ≠ 已全部落地）
 

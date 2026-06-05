@@ -17,8 +17,7 @@ Agent 运行时基础设施：记忆分层（L1–L4）、工具注册（本地 
 
 ```bash
 bun install
-bun run typecheck
-bun run build
+bun run check   # typecheck + lint + dep-check + format + 测试
 bun test
 
 # 复制示例配置

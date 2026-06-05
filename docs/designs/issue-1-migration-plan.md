@@ -4,12 +4,12 @@
 
 ### 策略选型：并行新包 + 自底向上逐包迁移（Strangler Fig）
 
-不在旧 `packages/*` 内渐进重构，而是在仓库根目录**按 RFC 层级新建目录**，从 **kernel 起逐包向上迁移**。旧包 rename 为 `@freeanima/legacy-*`，新包直接使用目标名 `@freeanima/kernel` 等。
+不在旧目录内渐进重构，而是在仓库根目录**按 RFC 层级平铺目录**，从 **kernel 起逐包向上迁移**。**迁移已于 2026-06-05 完成**（`packages/`、`apps/` 已删除）。
 
 **已确认决策：**
 
 - **目录布局**：根目录平铺 — `kernel/`、`engine/`、`life/`、`capabilities/`、`connectors/`、`service/`、`cli/`
-- **包名共存**：旧包 → `@freeanima/legacy-*`；新包 → 目标名（见下方命名规约）
+- **包命名**：`@freeanima/{layer}-{slug}`（见 [`AGENTS.md`](../../AGENTS.md)）
 
 ### 新栈包命名（2026-06-04）
 
@@ -49,53 +49,55 @@ freeanima/
 │   ├── webui/                 # @freeanima/connectors-webui（HTTP server + Vue SPA）
 │   ├── cron/                  # @freeanima/connectors-cron
 │   └── commands/              # @freeanima/connectors-commands
-├── service/                   # @freeanima/service
+├── service/                   # @freeanima/service（AnimaService + serve）
 ├── cli/                       # @freeanima/cli
-├── packages/                  # 过渡期 legacy（最终删除）
-└── apps/                      # 过渡期 legacy（最终删除）
+└── tests/                     # @freeanima/integration-tests
 ```
 
-### pnpm-workspace 扩展
+### workspace（bun）
 
 ```yaml
 packages:
-  - "kernel"
-  - "engine"
+  - "kernel/*"
+  - "engine/*"
   - "life/*"
   - "capabilities/*"
   - "connectors/*"
-  - "service"
+  - "service/*"
   - "cli"
-  - "packages/*" # legacy，逐步清空
-  - "apps/*" # legacy，逐步清空
+  - "tests"
 ```
 
 ### 迁移步骤
 
-| 步骤 | 包                       | 完成标准                                                | 旧栈影响                |
-| ---- | ------------------------ | ------------------------------------------------------- | ----------------------- |
-| 0    | legacy rename            | 全 repo import 指向 `@freeanima/legacy-*`；CI 绿        | 仅机械 rename，行为不变 |
-| 1    | `kernel/`                | 纯接口+schema；零 legacy 依赖                           | 无                      |
-| 2    | `capabilities/provider/` | LLM Provider 实现；仅依赖 kernel                        | 无                      |
-| 3    | `engine/`                | 主循环+工具循环；SessionStore 接口注入；零 registerTool | 无                      |
-| 4    | `life/memory/`           | 从 legacy-memory 移植；仅 kernel + db                   | 无                      |
-| 5    | `life/self/`             | SOUL + HOOK_BUILD_SYSTEM_PROMPT；从 memory 拆出         | 无                      |
-| 6    | `life/estate/`           | 可先空壳（凭证列表 API 占位）                           | 无                      |
-| 7    | `capabilities/*`         | tools/mcp/acp/clarify；禁止 import engine/runtime       | 无                      |
-| 8    | `connectors/*`           | gateway/cron/commands/webui；依赖 kernel+engine         | 无                      |
-| 9    | `service/`               | 替代 serve.ts + NestService；组装全栈                   | **切换日**              |
-| 10   | `cli/`                   | `anima` bin 指向新 service                              | **切换日**              |
-| 11   | 删 legacy                | 移除 `packages/`、`apps/` legacy                        | 完成                    |
+| 步骤 | 包     | 状态                    |
+| ---- | ------ | ----------------------- |
+| 0–11 | 见下表 | ✅ 已完成（2026-06-05） |
 
-切换日前 production 始终跑 legacy 栈；步骤 1–8 新栈独立构建测试。
+| 步骤 | 包                       | 完成标准                                            |
+| ---- | ------------------------ | --------------------------------------------------- |
+| 0    | legacy rename            | 全 repo import 切 legacy；后已删 legacy 壳          |
+| 1    | `kernel/`                | hooks / eventbus / schemas / db                     |
+| 2    | `capabilities/provider/` | LLM Provider 实现                                   |
+| 3    | `engine/`                | 主循环+工具循环；engine 直调 `@freeanima/kernel-db` |
+| 4    | `life/memory/`           | 记忆管道、skills、检索                              |
+| 5    | `life/self/`             | 空壳（`@freeanima/life-self`）                      |
+| 6    | `life/estate/`           | 空壳（`@freeanima/life-estate`）                    |
+| 7    | `capabilities/*`         | tools / mcp / acp / clarify                         |
+| 8    | `connectors/*`           | gateway / cron / commands / webui                   |
+| 9    | `service/`               | `serve` + `AnimaService` 组装全栈                   |
+| 10   | `cli/`                   | `anima` bin → `@freeanima/service`                  |
+| 11   | 删 legacy                | 移除 `packages/`、`apps/`                           |
+
+生产入口：`anima service` → [`service/service/src/serve.ts`](../../service/service/src/serve.ts)。
 
 ### 横切模块
 
-| 模块                          | 过渡期                                              | 最终归属                            |
-| ----------------------------- | --------------------------------------------------- | ----------------------------------- |
-| `@freeanima/kernel-db`        | **已迁入** `kernel/db`；life/memory 与 service 共用 | 长期持久化层；类型在 kernel-schemas |
-| EventBus/registry/config 实现 | 新 kernel 只留接口                                  | service                             |
-| Turbo/CI                      | 新栈加独立 `test:next` job                          | 切换后合并                          |
+| 模块                          | 过渡期                                               | 最终归属                            |
+| ----------------------------- | ---------------------------------------------------- | ----------------------------------- |
+| `@freeanima/kernel-db`        | **已迁入** `kernel/db`；life/memory 与 service 共用  | 长期持久化层；类型在 kernel-schemas |
+| EventBus/registry/config 实现 | 新 kernel 只留接口                                   | service                             |
+| Turbo/CI                      | 已合并入主 CI（typecheck / lint / dep-check / test） |
 
 ### 关键设计决策（回应待讨论项）
 
@@ -169,8 +171,9 @@ packages:
 2. 创建 `kernel/package.json`（`@freeanima/kernel`），纯接口骨架 + schemas
 3. 新 kernel 单测；legacy 栈 CI 仍绿
 
-### 现状评估摘要
+### 现状评估摘要（2026-06-05）
 
-- RFC 架构方向与 ARCHITECTURE.md 一致，**建议采纳**
-- 现状契合度提升：kernel / engine legacy 包已删，新栈 `kernel/*`、`engine/*`、`service/*` 已承载主路径 import；runtime NestService ~940 行 ✗；能力层逆向依赖 runtime/engine ✗
-- 并行新包方案优于在 legacy 内拆 NestService，生产风险推迟至 service/cli 切换日
+- RFC 迁移步骤 0–11 **已完成**
+- 运行时入口：`AnimaService`（[`service/service/src/runtime/`](../../service/service/src/runtime/) 模块化拆分）
+- 层边界：`bun run dep-check`（[`scripts/check-layer-deps.ts`](../../scripts/check-layer-deps.ts)）
+- 待迁入：`life-self`（SOUL / 自我层）、`life-estate`（资源层）由空壳包承接
