@@ -19,3 +19,5 @@ export {
   type FactSource,
   type FactData,
 } from "./fact.ts";
+export { MemoryStore, generateId, getStore, resetStoreForTests } from "./store.ts";
+export { processedDir, l2SessionPath, distillFromPg, distill, distillAll } from "./clean.ts";
