@@ -12,35 +12,10 @@
     "./trpc": "./src/trpc/router.ts"
   },
   "dependencies": {
-    "@freeanima/connectors-eventbus-sqlite": "workspace:*",
-    "@freeanima/engine": "workspace:*",
-    "@freeanima/engine-conversation": "workspace:*",
-    "@freeanima/engine-loop": "workspace:*",
-    "@freeanima/kernel-eventbus": "workspace:*",
-    "@freeanima/kernel-schemas": "workspace:*",
     "@freeanima/connectors-webui": "workspace:*",
-    "@freeanima/legacy-api": "workspace:*",
-    "@freeanima/capabilities-clarify": "workspace:*",
-    "@freeanima/kernel-db": "workspace:*",
-    "@freeanima/connectors-gateway": "workspace:*",
-    "@freeanima/capabilities-acp": "workspace:*",
-    "@freeanima/capabilities-mcp": "workspace:*",
-    "@freeanima/life-memory": "workspace:*",
-    "@freeanima/legacy-runtime": "workspace:*",
-    "@freeanima/legacy-tools": "workspace:*",
-    "@freeanima/service": "workspace:*",
-    "@freeanima/service-bootstrap": "workspace:*",
-    "@freeanima/service-config": "workspace:*",
-    "@freeanima/service-logging": "workspace:*",
-    "@trpc/server": "^11",
-    "http-proxy": "^1.18.1",
-    "ws": "^8.21.0",
-    "zod": "catalog:"
+    "@freeanima/service": "workspace:*"
   },
   "devDependencies": {
-    "@types/http-proxy": "^1.17.17",
-    "@types/ws": "^8.18.1",
-    "bun-plugin-tailwind": "^0.1.2",
     "@types/bun": "catalog:"
   }
 }
