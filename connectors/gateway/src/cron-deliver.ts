@@ -7,7 +7,7 @@ import {
 } from "@freeanima/connectors-cron";
 import type { Client, TextBasedChannel } from "discord.js";
 
-import { sendText } from "./weixin/ilink-api.ts";
+import { sendTextChunked } from "./weixin/ilink-api.ts";
 
 const DISCORD_MAX_LEN = 2000;
 
@@ -58,7 +58,7 @@ export function registerWeixinCronDeliverer(params: {
 }): void {
   registerCronDeliverer("weixin", async (target, text) => {
     const contextToken = params.contextTokens[target.chat_id] ?? "";
-    await sendText(
+    await sendTextChunked(
       params.baseUrl,
       params.token,
       target.chat_id,

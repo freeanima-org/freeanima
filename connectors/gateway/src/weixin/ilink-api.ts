@@ -1,5 +1,7 @@
 import { safeParseOrNull } from "@freeanima/kernel-schemas";
-/** 腾讯 iLink Bot API（与 Python weixin_adapter 对齐） */
+/** 腾讯 iLink Bot API（参考 @tencent-weixin/openclaw-weixin src/api/api.ts） */
+
+import { randomBytes } from "node:crypto";
 
 import { ilinkMessageSchema, type IlinkMessage } from "../schemas/weixin.ts";
 
@@ -7,35 +9,110 @@ export { type IlinkMessage };
 export const ILINK_BASE_URL = "https://ilinkai.weixin.qq.com";
 export const ILINK_APP_ID = "bot";
 export const CHANNEL_VERSION = "2.2.0";
+/** 微信文本单条上限（Unicode 字符，协议建议 2000） */
+export const WEIXIN_TEXT_CHUNK_LIMIT = 2000;
 
 export const EP_GET_UPDATES = "ilink/bot/getupdates";
 export const EP_SEND_MESSAGE = "ilink/bot/sendmessage";
+export const EP_GET_CONFIG = "ilink/bot/getconfig";
+export const EP_SEND_TYPING = "ilink/bot/sendtyping";
+export const EP_NOTIFY_START = "ilink/bot/msg/notifystart";
+export const EP_NOTIFY_STOP = "ilink/bot/msg/notifystop";
 
 export const LONG_POLL_TIMEOUT_SEC = 35;
 export const API_TIMEOUT_MS = 15_000;
+export const CONFIG_TIMEOUT_MS = 10_000;
 export const MAX_CONSECUTIVE_FAILURES = 3;
 export const RETRY_DELAY_MS = 2_000;
 export const BACKOFF_DELAY_MS = 30_000;
+
+/** 会话过期错误码（官方 session-guard） */
+export const SESSION_EXPIRED_ERRCODE = -14;
+const SESSION_PAUSE_MS = 60 * 60 * 1000;
 
 export const MSG_TYPE_USER = 1;
 export const MSG_TYPE_BOT = 2;
 export const MSG_STATE_FINISH = 2;
 export const ITEM_TEXT = 1;
 
-const ilinkResponseSchema = ilinkMessageSchema;
+export const TYPING_STATUS_TYPING = 1;
 
-function baseInfo(): Record<string, unknown> {
-  return { channel_version: CHANNEL_VERSION };
+const BOT_AGENT = `freeanima/${CHANNEL_VERSION}`;
+const ILINK_APP_CLIENT_VERSION = buildClientVersion(CHANNEL_VERSION);
+
+const ilinkResponseSchema = ilinkMessageSchema;
+const sessionPauseUntil = new Map<string, number>();
+
+/** 版本号编码为 iLink-App-ClientVersion uint32（参考 openclaw-weixin） */
+function buildClientVersion(version: string): number {
+  const parts = version.split(".").map((p) => parseInt(p, 10));
+  const major = parts[0] ?? 0;
+  const minor = parts[1] ?? 0;
+  const patch = parts[2] ?? 0;
+  return ((major & 0xff) << 16) | ((minor & 0xff) << 8) | (patch & 0xff);
 }
 
-function headers(token: string, body: string): Record<string, string> {
+/** X-WECHAT-UIN：随机 uint32 → 十进制字符串 → base64 */
+function randomWechatUin(): string {
+  const uint32 = randomBytes(4).readUInt32BE(0);
+  return Buffer.from(String(uint32), "utf-8").toString("base64");
+}
+
+function baseInfo(): Record<string, unknown> {
   return {
+    channel_version: CHANNEL_VERSION,
+    bot_agent: BOT_AGENT,
+  };
+}
+
+function buildHeaders(token: string, body: string): Record<string, string> {
+  const routeTag = process.env.FREEANIMA_WEIXIN_ROUTE_TAG?.trim();
+  const headers: Record<string, string> = {
     "Content-Type": "application/json",
     AuthorizationType: "ilink_bot_token",
     "Content-Length": String(Buffer.byteLength(body, "utf-8")),
+    "X-WECHAT-UIN": randomWechatUin(),
     "iLink-App-Id": ILINK_APP_ID,
+    "iLink-App-ClientVersion": String(ILINK_APP_CLIENT_VERSION),
     Authorization: `Bearer ${token}`,
   };
+  if (routeTag) headers.SKRouteTag = routeTag;
+  return headers;
+}
+
+export function pauseWeixinSession(accountId: string): void {
+  const until = Date.now() + SESSION_PAUSE_MS;
+  sessionPauseUntil.set(accountId, until);
+}
+
+export function isWeixinSessionPaused(accountId: string): boolean {
+  const until = sessionPauseUntil.get(accountId);
+  if (until === undefined) return false;
+  if (Date.now() >= until) {
+    sessionPauseUntil.delete(accountId);
+    return false;
+  }
+  return true;
+}
+
+/** 将长文本切为 ≤limit 字符的多段（优先段落/换行边界） */
+export function chunkWeixinText(text: string, limit = WEIXIN_TEXT_CHUNK_LIMIT): string[] {
+  const trimmed = text.trim();
+  if (!trimmed) return [];
+  if (trimmed.length <= limit) return [trimmed];
+
+  const chunks: string[] = [];
+  let rest = trimmed;
+  while (rest.length > limit) {
+    let cut = rest.lastIndexOf("\n\n", limit);
+    if (cut < limit / 2) cut = rest.lastIndexOf("\n", limit);
+    if (cut < limit / 2) cut = rest.lastIndexOf(" ", limit);
+    if (cut < limit / 2) cut = limit;
+    chunks.push(rest.slice(0, cut).trimEnd());
+    rest = rest.slice(cut).trimStart();
+  }
+  if (rest) chunks.push(rest);
+  return chunks.filter((c) => c.length > 0);
 }
 
 export async function apiPost(
@@ -50,7 +127,7 @@ export async function apiPost(
   const url = `${baseUrl.replace(/\/$/, "")}/${endpoint}`;
   const res = await fetch(url, {
     method: "POST",
-    headers: headers(token, body),
+    headers: buildHeaders(token, body),
     body,
     signal: signal ?? AbortSignal.timeout(timeoutMs),
   });
@@ -64,7 +141,7 @@ export async function apiPost(
   } catch {
     throw new Error(`iLink POST ${endpoint}: invalid JSON`);
   }
-  return safeParseOrNull(ilinkResponseSchema, parsed) ?? {};
+  return safeParseOrNull(ilinkResponseSchema, parsed) ?? (parsed as Record<string, unknown>);
 }
 
 export function assertIlinkOk(resp: Record<string, unknown>, endpoint: string): void {
@@ -92,6 +169,8 @@ export async function getUpdates(
       (LONG_POLL_TIMEOUT_SEC + 5) * 1000,
       signal,
     );
+    const errNum = Number(resp.errcode ?? 0);
+    if (errNum === SESSION_EXPIRED_ERRCODE) return resp;
     assertIlinkOk(resp, EP_GET_UPDATES);
     return resp;
   } catch (e) {
@@ -129,4 +208,94 @@ export async function sendText(
   const resp = await apiPost(baseUrl, EP_SEND_MESSAGE, { msg: message }, token, API_TIMEOUT_MS);
   assertIlinkOk(resp, EP_SEND_MESSAGE);
   return resp;
+}
+
+export async function sendTextChunked(
+  baseUrl: string,
+  token: string,
+  toUserId: string,
+  text: string,
+  clientIdPrefix: string,
+  contextToken?: string,
+  limit = WEIXIN_TEXT_CHUNK_LIMIT,
+): Promise<{ chunks: number; lastRet: Record<string, unknown> }> {
+  const parts = chunkWeixinText(text, limit);
+  if (parts.length === 0) throw new Error("Cannot send empty message");
+
+  let lastRet: Record<string, unknown> = {};
+  for (let i = 0; i < parts.length; i += 1) {
+    const clientId = `${clientIdPrefix}-${randomBytes(4).toString("hex")}`;
+    lastRet = await sendText(baseUrl, token, toUserId, parts[i]!, clientId, contextToken);
+    if (i + 1 < parts.length) {
+      await new Promise<void>((r) => setTimeout(r, 100));
+    }
+  }
+  return { chunks: parts.length, lastRet };
+}
+
+export async function getConfig(
+  baseUrl: string,
+  token: string,
+  ilinkUserId: string,
+  contextToken?: string,
+): Promise<Record<string, unknown>> {
+  const payload: Record<string, unknown> = { ilink_user_id: ilinkUserId };
+  if (contextToken) payload.context_token = contextToken;
+  const resp = await apiPost(baseUrl, EP_GET_CONFIG, payload, token, CONFIG_TIMEOUT_MS);
+  assertIlinkOk(resp, EP_GET_CONFIG);
+  return resp;
+}
+
+export async function sendTyping(
+  baseUrl: string,
+  token: string,
+  ilinkUserId: string,
+  typingTicket: string,
+  status = TYPING_STATUS_TYPING,
+): Promise<void> {
+  const resp = await apiPost(
+    baseUrl,
+    EP_SEND_TYPING,
+    {
+      ilink_user_id: ilinkUserId,
+      typing_ticket: typingTicket,
+      status,
+    },
+    token,
+    CONFIG_TIMEOUT_MS,
+  );
+  assertIlinkOk(resp, EP_SEND_TYPING);
+}
+
+/** 获取 typing_ticket 并发送「正在输入」 */
+export async function sendTypingIndicator(
+  baseUrl: string,
+  token: string,
+  peerId: string,
+  contextToken?: string,
+): Promise<void> {
+  const cfg = await getConfig(baseUrl, token, peerId, contextToken);
+  const ticket = String(cfg.typing_ticket ?? "").trim();
+  if (!ticket) return;
+  await sendTyping(baseUrl, token, peerId, ticket);
+}
+
+export async function notifyStart(
+  baseUrl: string,
+  token: string,
+): Promise<Record<string, unknown>> {
+  const resp = await apiPost(baseUrl, EP_NOTIFY_START, {}, token, CONFIG_TIMEOUT_MS);
+  assertIlinkOk(resp, EP_NOTIFY_START);
+  return resp;
+}
+
+export async function notifyStop(baseUrl: string, token: string): Promise<Record<string, unknown>> {
+  const resp = await apiPost(baseUrl, EP_NOTIFY_STOP, {}, token, CONFIG_TIMEOUT_MS);
+  assertIlinkOk(resp, EP_NOTIFY_STOP);
+  return resp;
+}
+
+/** @internal 测试用：重置 session 暂停状态 */
+export function _resetWeixinSessionPauseForTest(): void {
+  sessionPauseUntil.clear();
 }
