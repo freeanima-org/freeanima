@@ -2,7 +2,7 @@ import { describe, it, expect, spyOn, afterEach } from "bun:test";
 import * as conv from "@freeanima/engine-conversation";
 import * as engine from "@freeanima/engine-loop";
 import type { StreamEvent } from "@freeanima/engine-loop";
-import { NestService } from "../../../src/runtime/nest-service.ts";
+import { AnimaService } from "../../../src/runtime/anima-service.ts";
 
 describe("sendMessageStream done 顺序", () => {
   const restores: Array<{ mockRestore: () => void }> = [];
@@ -43,7 +43,7 @@ describe("sendMessageStream done 顺序", () => {
       ),
     );
 
-    const svc = new NestService();
+    const svc = new AnimaService();
     for await (const ev of svc.sendMessageStream("test-sid", "hello", "parlor")) {
       if (ev.event === "done") {
         doneSeenBeforeFinishTurn = !finishTurnStarted;

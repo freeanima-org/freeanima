@@ -1,9 +1,9 @@
-import type { NestService } from "./runtime/nest-service.ts";
+import type { AnimaService } from "./runtime/anima-service.ts";
 import type { AcpManager } from "@freeanima/capabilities-acp";
 import type { MCPManager } from "@freeanima/capabilities-mcp";
 
 export type ServiceContext = {
-  service: NestService;
+  service: AnimaService;
   mcp: MCPManager | null;
   acp: AcpManager;
   host: string;

@@ -1,4 +1,4 @@
-import { NEST_VERSION } from "@freeanima/service";
+import { ANIMA_VERSION } from "@freeanima/service";
 import { Command } from "commander";
 
 import { registerServiceCommand } from "./commands/service.ts";
@@ -10,7 +10,7 @@ export function buildProgram(): Command {
   const program = new Command()
     .name("anima")
     .description("逸灵风 — 数字生命运行时")
-    .version(NEST_VERSION, "-V, --version", "显示版本号")
+    .version(ANIMA_VERSION, "-V, --version", "显示版本号")
     .showHelpAfterError("(使用 --help 查看用法)");
 
   registerServiceCommand(program);

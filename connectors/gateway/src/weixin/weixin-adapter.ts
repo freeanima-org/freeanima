@@ -2,7 +2,7 @@ import { SteppedBackoff } from "@freeanima/kernel-retry";
 import { safeParseOrNull } from "@freeanima/kernel-schemas";
 import { PATHS } from "@freeanima/service-config";
 import { logComponent } from "@freeanima/service-logging";
-import type { NestService } from "@freeanima/service";
+import type { AnimaService } from "@freeanima/service";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
 
@@ -60,7 +60,7 @@ export class WeixinAdapter implements PlatformAdapter {
   private loopPromise: Promise<void> | null = null;
 
   constructor(
-    private readonly service: NestService,
+    private readonly service: AnimaService,
     private readonly creds: WeixinCredentials,
   ) {
     this.clientId = `anima-${randomBytes(4).toString("hex")}`;
@@ -339,6 +339,9 @@ export class WeixinAdapter implements PlatformAdapter {
   }
 }
 
-export function createWeixinAdapter(service: NestService, creds: WeixinCredentials): WeixinAdapter {
+export function createWeixinAdapter(
+  service: AnimaService,
+  creds: WeixinCredentials,
+): WeixinAdapter {
   return new WeixinAdapter(service, creds);
 }

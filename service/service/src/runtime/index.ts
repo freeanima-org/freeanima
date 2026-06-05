@@ -1,5 +1,5 @@
 export * from "./build-messages-display.ts";
-export * from "./nest-service.ts";
+export * from "./anima-service.ts";
 export * from "./home-channel.ts";
 export * from "./platforms.ts";
 export * from "./studio.ts";
@@ -7,7 +7,7 @@ export * from "./studio-gitignore.ts";
 export { REPO_ROOT, WEBUI_ROOT, WEBUI_BASE_PATH } from "./repo-paths.ts";
 export * from "./conversation-stats.ts";
 export * from "./runtime-context-stats.ts";
-export { NEST_VERSION } from "./version.ts";
+export { ANIMA_VERSION } from "./version.ts";
 export { getRepoRoot, readRootVersion, writeRootVersion } from "./root-version.ts";
 
 export {
