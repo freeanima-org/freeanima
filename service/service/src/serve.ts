@@ -1,3 +1,4 @@
+import "./wire-api.ts";
 import "@freeanima/service/runtime/system-prompt-wire";
 import { chat, cleanupDebugSessions, initLlmRuntime, PROFILE_REFLECT } from "@freeanima/engine";
 import { kernel } from "@freeanima/service-bootstrap";

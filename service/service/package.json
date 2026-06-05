@@ -33,14 +33,13 @@
     "@freeanima/kernel-hooks": "workspace:*",
     "@freeanima/kernel-schemas": "workspace:*",
     "@freeanima/life-memory": "workspace:*",
+    "@freeanima/service-api": "workspace:*",
     "@freeanima/service-bootstrap": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "@freeanima/service-logging": "workspace:*",
-    "cron-parser": "^5.5.0",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@freeanima/engine-tool": "workspace:*",
     "@types/bun": "catalog:"
   }
 }

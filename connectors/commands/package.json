@@ -10,7 +10,7 @@
     "@freeanima/engine-tool": "workspace:*",
     "@freeanima/kernel-schemas": "workspace:*",
     "@freeanima/life-memory": "workspace:*",
-    "@freeanima/service": "workspace:*"
+    "@freeanima/service-api": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "catalog:"

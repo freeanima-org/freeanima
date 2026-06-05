@@ -5,10 +5,7 @@ import { l2LineSchema, factExtractionSchema } from "../../src/l2.ts";
 import { toolArgsSchema, toolErrorSchema } from "@freeanima/engine-tool";
 import { parseCompressionState, clarifyToolAwaitingResultSchema } from "../../src/session-meta.ts";
 import { jsonRpcMessageSchema } from "@freeanima/capabilities-acp/schemas/acp-jsonrpc";
-import {
-  weixinSyncSchema,
-  weixinContextTokensSchema,
-} from "../../../../connectors/gateway/src/schemas/weixin.ts";
+import { weixinContextTokensSchema, weixinSyncSchema } from "../../src/weixin.ts";
 
 describe("schemas/cron", () => {
   it("parses minimal cron job", () => {

@@ -11,14 +11,14 @@
     "./l2": "./src/l2.ts",
     "./cron": "./src/cron.ts",
     "./snapshot": "./src/snapshot.ts",
-    "./fact": "./src/fact.ts"
+    "./fact": "./src/fact.ts",
+    "./weixin": "./src/weixin.ts"
   },
   "dependencies": {
     "zod": "catalog:"
   },
   "devDependencies": {
     "@freeanima/engine-tool": "workspace:*",
-    "@freeanima/connectors-gateway": "workspace:*",
     "@freeanima/capabilities-acp": "workspace:*",
     "@types/bun": "catalog:"
   }

@@ -1,0 +1,19 @@
+{
+  "name": "@freeanima/service-api",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./anima-service": "./src/anima-service.ts",
+    "./home-channel": "./src/home-channel.ts",
+    "./turn-lifecycle": "./src/turn-lifecycle.ts",
+    "./conversation-stats": "./src/conversation-stats.ts"
+  },
+  "dependencies": {
+    "@freeanima/engine-loop": "workspace:*",
+    "@freeanima/kernel-schemas": "workspace:*",
+    "@freeanima/service-config": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:"
+  }
+}

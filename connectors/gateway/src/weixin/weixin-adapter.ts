@@ -2,7 +2,7 @@ import { SteppedBackoff } from "@freeanima/kernel-retry";
 import { safeParseOrNull } from "@freeanima/kernel-schemas";
 import { PATHS } from "@freeanima/service-config";
 import { logComponent } from "@freeanima/service-logging";
-import type { AnimaService } from "@freeanima/service";
+import type { AnimaService } from "@freeanima/service-api";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
 
