@@ -1,12 +1,12 @@
 import { loadSessionMeta } from "@freeanima/engine-conversation";
 import { isSessionMeta } from "@freeanima/kernel-schemas";
-import { PARLOR_PLATFORM } from "@freeanima/legacy-runtime";
+import { PARLOR_PLATFORM } from "@freeanima/service";
 import {
   createSessionBodySchema,
   patchTitleBodySchema,
   type CreateSessionBody,
   type PatchTitleBody,
-} from "@freeanima/legacy-api";
+} from "@freeanima/api";
 import { mapMessagesToApi, mapSessionsToApi } from "../api-mappers.ts";
 import { getServiceContext } from "@freeanima/service";
 import { ApiHandlerError } from "./errors.ts";

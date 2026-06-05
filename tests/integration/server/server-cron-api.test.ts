@@ -8,7 +8,7 @@ import {
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { createJob, NestService } from "@freeanima/legacy-runtime";
+import { createJob, NestService } from "@freeanima/service";
 import { getAcpManager } from "@freeanima/capabilities-acp";
 import {
   listCronJobs,
@@ -16,8 +16,8 @@ import {
   resumeCronJob,
   runCronJobNow,
   ApiHandlerError,
-} from "@freeanima/legacy-server/handlers";
-import { initServiceContext } from "@freeanima/legacy-server/context";
+} from "@freeanima/connectors-webui/handlers";
+import { initServiceContext } from "@freeanima/service";
 
 describePg("server cron API", () => {
   let home: string;

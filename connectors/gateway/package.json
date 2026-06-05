@@ -10,7 +10,7 @@
     "@freeanima/engine-loop": "workspace:*",
     "@freeanima/kernel-retry": "workspace:*",
     "@freeanima/kernel-schemas": "workspace:*",
-    "@freeanima/legacy-runtime": "workspace:*",
+    "@freeanima/service": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "@freeanima/service-logging": "workspace:*",
     "discord.js": "^14.26.4",

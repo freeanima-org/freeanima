@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, useNavigate, useSearch } from "@tanstack/react-router";
-import type { SessionListItem } from "@freeanima/legacy-api";
+import type { SessionListItem } from "@freeanima/api";
 import { useEffect, useRef, useState } from "react";
 import { ResponsiveSidebarLayout } from "@/components/ResponsiveSidebarLayout.tsx";
 import { useSessionsStore } from "@/stores/sessions.ts";

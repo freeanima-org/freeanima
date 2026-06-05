@@ -36,8 +36,8 @@ export function getRepoRoot(): string {
     dir = parent;
   }
 
-  // 源码 fallback：packages/runtime/src → 仓库根
-  cachedRepoRoot = join(dirname(fileURLToPath(import.meta.url)), "../../..");
+  // 源码 fallback：service/service/src/runtime → 仓库根
+  cachedRepoRoot = join(dirname(fileURLToPath(import.meta.url)), "../../../..");
   return cachedRepoRoot;
 }
 

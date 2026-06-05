@@ -14,7 +14,7 @@ import {
   appendMessage,
   updateSessionMetaField,
 } from "@freeanima/engine";
-import { computeStats, mergeStats, statsReport } from "@freeanima/legacy-runtime";
+import { computeStats, mergeStats, statsReport } from "@freeanima/service";
 
 describePg("conversation-stats", () => {
   const prev = process.env.FREEANIMA_HOME;

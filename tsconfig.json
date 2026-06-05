@@ -15,7 +15,6 @@
     "capabilities/**/*.ts",
     "connectors/**/*.ts",
     "cli/**/*.ts",
-    "packages/**/*.ts",
     "connectors/webui/app/index.html",
     "scripts/**/*.ts",
     "tests/**/*.ts"

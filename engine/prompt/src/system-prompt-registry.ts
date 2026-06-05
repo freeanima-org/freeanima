@@ -18,7 +18,7 @@ export function buildSystemPrompt(
 ): string {
   if (!builder) {
     throw new Error(
-      "SystemPromptBuilder 未注册：请 import @freeanima/legacy-runtime/system-prompt-wire，或调用 registerSystemPromptBuilder",
+      "SystemPromptBuilder 未注册：请 import @freeanima/service/runtime/system-prompt-wire，或调用 registerSystemPromptBuilder",
     );
   }
   return builder(functionNames, soulContent, cwd);

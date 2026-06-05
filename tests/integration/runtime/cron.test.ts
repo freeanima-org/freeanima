@@ -27,7 +27,7 @@ import {
   enqueueRunJob,
   Scheduler,
   cronStore,
-} from "@freeanima/legacy-runtime";
+} from "@freeanima/service";
 import { patchConfigSection } from "@freeanima/service-config";
 import { seedSession } from "@freeanima/kernel-db/test-helpers";
 

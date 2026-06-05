@@ -7,7 +7,7 @@ import {
   createSessionBodySchema,
   sendMessageBodySchema,
   memorySearchBodySchema,
-} from "../../../../packages/api/src/schemas.ts";
+} from "@freeanima/api";
 import { parseCompressionState, clarifyToolAwaitingResultSchema } from "../../src/session-meta.ts";
 import { jsonRpcMessageSchema } from "@freeanima/capabilities-acp/schemas/acp-jsonrpc";
 import {

@@ -16,7 +16,7 @@ import {
   isRetryResult,
   resolveCommand,
   NestService,
-} from "@freeanima/legacy-runtime";
+} from "@freeanima/service";
 import {
   load,
   newSession,

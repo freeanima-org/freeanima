@@ -4,8 +4,8 @@ import {
   patchStudioConfig,
   readStudioFile,
   searchStudio,
-} from "@freeanima/legacy-runtime";
-import { studioConfigPatchSchema, studioSearchBodySchema } from "@freeanima/legacy-api";
+} from "@freeanima/service";
+import { studioConfigPatchSchema, studioSearchBodySchema } from "@freeanima/api";
 import { ApiHandlerError } from "./errors.ts";
 
 export function studioGetConfig() {

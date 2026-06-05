@@ -1,4 +1,4 @@
-import { computeStats, statsReport } from "@freeanima/legacy-runtime";
+import { computeStats, statsReport } from "@freeanima/service";
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {

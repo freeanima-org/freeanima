@@ -1,5 +1,5 @@
 import { logComponent } from "@freeanima/service-logging";
-import type { NestService } from "@freeanima/legacy-runtime";
+import type { NestService } from "@freeanima/service";
 import {
   REST,
   Routes,
