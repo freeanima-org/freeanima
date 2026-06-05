@@ -9,7 +9,7 @@ import {
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { MemoryStore, indexL3Fact, indexL2Session } from "@freeanima/life-memory";
-import { NestService } from "@freeanima/legacy-runtime";
+import { NestService } from "@freeanima/service";
 import { seedSession } from "@freeanima/kernel-db/test-helpers";
 
 describePg("server memory API", () => {

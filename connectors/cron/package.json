@@ -13,7 +13,7 @@
     "@freeanima/engine-provider-llm": "workspace:*",
     "@freeanima/kernel-schemas": "workspace:*",
     "@freeanima/life-memory": "workspace:*",
-    "@freeanima/legacy-runtime": "workspace:*",
+    "@freeanima/service": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "@freeanima/service-logging": "workspace:*",
     "cron-parser": "^5.5.0",

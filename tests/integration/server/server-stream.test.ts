@@ -6,7 +6,7 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { NestService } from "@freeanima/legacy-runtime";
+import { NestService } from "@freeanima/service";
 import { seedSession } from "@freeanima/kernel-db/test-helpers";
 
 describePg("sendMessageStream", () => {

@@ -150,7 +150,7 @@ packages:
 | `@freeanima/cli`          | `@freeanima/legacy-cli`                                                  |
 | `@freeanima/webui`        | `@freeanima/legacy-webui`                                                |
 
-**已删除 legacy 包（2026-06-05）：** `@freeanima/legacy-kernel`、`@freeanima/legacy-engine`。`@freeanima/legacy-db` 已迁入 `kernel/db`（`@freeanima/kernel-db`）。职责分别迁入 `kernel/{schemas,hooks,logging,eventbus,db}`、`engine/*`、`service/{config,logging,bootstrap}`、`connectors/sqlite`、`life/memory`。
+**已删除 legacy 包（2026-06-05）：** `@freeanima/legacy-kernel`、`@freeanima/legacy-engine`、`@freeanima/legacy-db`、`@freeanima/legacy-memory`、`@freeanima/legacy-integrations`。`packages/*` 与 `apps/*` legacy 壳已清空（2026-06-05 L2）；`@freeanima/runtime/server/tools/api/cli` 等职责分别迁入 `service/`、`kernel/api`、`cli/` 等新栈包。
 
 **步骤 0 不做：** 不建 `kernel/` 等新目录；不改 `pnpm-workspace.yaml` 新层 glob；不改运行时行为。
 

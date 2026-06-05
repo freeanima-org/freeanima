@@ -1,4 +1,4 @@
-import { resolveWorkspace } from "@freeanima/legacy-runtime";
+import { resolveWorkspace } from "@freeanima/service";
 import { existsSync } from "node:fs";
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { EventEmitter } from "node:events";

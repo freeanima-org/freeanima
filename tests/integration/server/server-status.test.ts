@@ -6,7 +6,7 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { NestService, readRootVersion } from "@freeanima/legacy-runtime";
+import { NestService, readRootVersion } from "@freeanima/service";
 
 const ROOT_VERSION = readRootVersion();
 

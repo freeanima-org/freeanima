@@ -16,13 +16,13 @@ import {
   newSession,
   recompressSession,
 } from "@freeanima/engine-conversation";
-import { statsReport } from "@freeanima/legacy-runtime/conversation-stats";
+import { statsReport } from "@freeanima/service/runtime/conversation-stats";
 import { listTools } from "@freeanima/engine-tool";
 import { isSessionMeta } from "@freeanima/kernel-schemas";
 import { distillFromPg } from "@freeanima/life-memory/clean";
 import { isReflectEnabled } from "@freeanima/life-memory";
 import { reflectSession } from "@freeanima/life-memory/reflect";
-import { setHomeChannel } from "@freeanima/legacy-runtime/home-channel";
+import { setHomeChannel } from "@freeanima/service/runtime/home-channel";
 
 function cmdHelp(ctx: CommandContext): string {
   const available = listCommandDefsForPlatform(ctx.platform);

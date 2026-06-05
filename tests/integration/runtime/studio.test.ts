@@ -18,7 +18,7 @@ import {
   getStudioConfig,
   parseGitignore,
   isIgnored,
-} from "@freeanima/legacy-runtime";
+} from "@freeanima/service";
 import { clearConfigCache } from "@freeanima/service-config";
 
 describePg("studio", () => {

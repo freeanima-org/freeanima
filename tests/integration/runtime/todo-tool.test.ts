@@ -9,8 +9,8 @@ import {
 import { initSession, loadSessionMeta, runWithToolContext } from "@freeanima/engine";
 import { getTool } from "@freeanima/engine-tool";
 import { getProfileHopModel, loadConfig } from "@freeanima/service-config";
-import { addTodo, listTodos } from "@freeanima/legacy-runtime";
-import { registerAllTools } from "@freeanima/legacy-tools";
+import { addTodo, listTodos } from "@freeanima/service";
+import { registerAllTools } from "@freeanima/service";
 
 describePg("session todo", () => {
   const prev = process.env.FREEANIMA_HOME;

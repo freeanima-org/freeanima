@@ -1,4 +1,4 @@
-import type { DisplayItem, SessionListItem } from "@freeanima/legacy-api";
+import type { DisplayItem, SessionListItem } from "@freeanima/api";
 import { create } from "zustand";
 import { trpc } from "@/lib/trpc.ts";
 

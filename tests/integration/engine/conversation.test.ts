@@ -9,7 +9,7 @@ import {
 
 import { openaiSchemas } from "@freeanima/engine-tool";
 import { isSessionMeta } from "@freeanima/kernel-schemas";
-import { registerAllTools } from "@freeanima/legacy-tools";
+import { registerAllTools } from "@freeanima/service";
 import {
   newSession,
   load,

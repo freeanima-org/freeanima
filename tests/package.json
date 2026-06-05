@@ -3,7 +3,9 @@
   "private": true,
   "type": "module",
   "devDependencies": {
+    "@freeanima/api": "workspace:*",
     "@freeanima/connectors-eventbus-sqlite": "workspace:*",
+    "@freeanima/connectors-webui": "workspace:*",
     "@freeanima/engine": "workspace:*",
     "@freeanima/engine-conversation": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",
@@ -15,8 +17,7 @@
     "@freeanima/capabilities-acp": "workspace:*",
     "@freeanima/capabilities-mcp": "workspace:*",
     "@freeanima/life-memory": "workspace:*",
-    "@freeanima/legacy-runtime": "workspace:*",
-    "@freeanima/legacy-server": "workspace:*",
+    "@freeanima/service": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "@freeanima/service-logging": "workspace:*",
     "@types/node": "catalog:"

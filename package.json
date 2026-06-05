@@ -4,7 +4,7 @@
   "devDependencies": {
     "@commitlint/cli": "^21.0.2",
     "@commitlint/config-conventional": "^21.0.2",
-    "@freeanima/legacy-api": "workspace:*",
+    "@freeanima/api": "workspace:*",
     "@freeanima/capabilities-clarify": "workspace:*",
     "@freeanima/cli": "workspace:*",
     "@freeanima/connectors-webui": "workspace:*",
@@ -12,8 +12,6 @@
     "@freeanima/kernel-db": "workspace:*",
     "@freeanima/capabilities-acp": "workspace:*",
     "@freeanima/capabilities-mcp": "workspace:*",
-    "@freeanima/legacy-server": "workspace:*",
-    "@freeanima/legacy-tools": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/commit-analyzer": "^13.0.1",
@@ -72,7 +70,6 @@
       "capabilities/*",
       "connectors/*",
       "cli",
-      "packages/*",
       "tests"
     ],
     "catalog": {

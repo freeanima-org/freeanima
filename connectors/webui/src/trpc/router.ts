@@ -5,7 +5,7 @@ import {
   streamApiEventSchema,
   studioConfigPatchSchema,
   studioSearchBodySchema,
-} from "@freeanima/legacy-api";
+} from "@freeanima/api";
 import {
   acpStartAgent,
   acpStartAll,

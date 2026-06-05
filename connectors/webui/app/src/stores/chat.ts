@@ -1,4 +1,4 @@
-import type { StreamApiEvent } from "@freeanima/legacy-api";
+import type { StreamApiEvent } from "@freeanima/api";
 import { marked } from "marked";
 import { create } from "zustand";
 import { trpc } from "@/lib/trpc.ts";
