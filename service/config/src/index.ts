@@ -2,6 +2,8 @@ export * from "./paths.ts";
 export * from "./credential.ts";
 export * from "./config.ts";
 export * from "./database.ts";
+export * from "./repo-root.ts";
+export * from "./version.ts";
 export * from "./config-sanitize.ts";
 export * from "./llm-config.ts";
 export * from "./session-path.ts";

@@ -99,6 +99,16 @@
         "@types/bun": "catalog:",
       },
     },
+    "capabilities/tools": {
+      "name": "@freeanima/capabilities-tools",
+      "dependencies": {
+        "@freeanima/engine-tool": "workspace:*",
+        "@freeanima/service-config": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
     "connectors/commands": {
       "name": "@freeanima/connectors-commands",
       "dependencies": {
@@ -442,6 +452,7 @@
       "name": "@freeanima/legacy-tools",
       "dependencies": {
         "@freeanima/capabilities-clarify": "workspace:*",
+        "@freeanima/capabilities-tools": "workspace:*",
         "@freeanima/engine-loop": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
         "@freeanima/legacy-runtime": "workspace:*",
@@ -641,6 +652,8 @@
     "@freeanima/capabilities-clarify": ["@freeanima/capabilities-clarify@workspace:capabilities/clarify"],
 
     "@freeanima/capabilities-provider-openai-compatible": ["@freeanima/capabilities-provider-openai-compatible@workspace:capabilities/provider-openai-compatible"],
+
+    "@freeanima/capabilities-tools": ["@freeanima/capabilities-tools@workspace:capabilities/tools"],
 
     "@freeanima/connectors-commands": ["@freeanima/connectors-commands@workspace:connectors/commands"],
 
