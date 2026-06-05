@@ -10,6 +10,7 @@
     "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
+    "@freeanima/engine-provider-llm": "workspace:*",
     "@freeanima/legacy-kernel": "workspace:*",
     "drizzle-orm": "catalog:",
     "postgres": "^3.4.9",

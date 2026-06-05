@@ -1,5 +1,5 @@
 {
-  "name": "@freeanima/engine-provider-llm",
+  "name": "@freeanima/engine-tool",
   "type": "module",
   "exports": {
     ".": "./src/index.ts"

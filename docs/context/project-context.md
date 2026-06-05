@@ -111,7 +111,9 @@ kernel/             # RFC #1 新栈（与 legacy packages/ 并行）
 ├── logging/        # @freeanima/kernel-logging：Logger / LogSink / createLogger；子路径 console / file / memory / null
 └── kernel/         # @freeanima/kernel：Kernel 组合端口（HookRegistry + EventBus + Logger）
 engine/
-└── provider-llm/   # ChatRequest + LlmProfile 直委托 Backend；单测 engine/provider-llm/tests/
+├── tool/           # @freeanima/engine-tool：ToolDef + ToolRegistry（legacy-kernel/registry 为兼容 re-export）
+├── provider-llm/   # @freeanima/engine-provider-llm：Backend/Provider/Profile Registry + LlmTurnMessage 类型
+└── engine/         # @freeanima/engine：Engine 组合端口（tools + llm）+ 组件 re-export
 capabilities/
 └── provider-openai-compatible/  # OpenAiCompatibleBackend + yaml parse（OPENAI_COMPATIBLE_BACKEND_ID）
 
@@ -123,7 +125,7 @@ apps/
 └── webui/          # React 19 CSR + TanStack Router；Bun fullstack HTML entry；tRPC client → packages/server
 packages/
 ├── api/            # HTTP 契约（Zod schema + 类型）；仅依赖 zod
-├── kernel/         # @freeanima/legacy-kernel：paths、config、hook token/context、schemas/*（openSqlite 仅 bun:sqlite）
+├── kernel/         # @freeanima/legacy-kernel：paths、config、hook token/context、schemas/*（registry → engine-tool re-export）
 ├── db/             # @freeanima/legacy-db：L1 Session PG（sessions + messages.payload JSONB）、Drizzle migrate
 ├── engine/         # conversation、session-store（PG）、compressor、llm、engine 回合；export kernel（含 hookRegistry 端口）
 ├── memory/         # L1–L4 存储/检索、reflect、events token、registerMemoryPipeline（+ registerMemoryHandlers 别名）
