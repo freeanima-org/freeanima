@@ -99,7 +99,7 @@
       "dependencies": {
         "@freeanima/engine-llm": "workspace:*",
         "@freeanima/kernel-schemas": "workspace:*",
-        "@freeanima/legacy-kernel": "workspace:*",
+        "@freeanima/service-config": "workspace:*",
       },
       "devDependencies": {
         "@types/bun": "catalog:",
@@ -116,6 +116,7 @@
         "@freeanima/kernel-schemas": "workspace:*",
         "@freeanima/legacy-db": "workspace:*",
         "@freeanima/legacy-kernel": "workspace:*",
+        "@freeanima/service-config": "workspace:*",
       },
       "devDependencies": {
         "@types/bun": "catalog:",
@@ -144,7 +145,7 @@
         "@freeanima/engine-tool": "workspace:*",
         "@freeanima/kernel-schemas": "workspace:*",
         "@freeanima/legacy-db": "workspace:*",
-        "@freeanima/legacy-kernel": "workspace:*",
+        "@freeanima/service-config": "workspace:*",
       },
       "devDependencies": {
         "@types/bun": "catalog:",
@@ -161,6 +162,7 @@
         "@freeanima/kernel-hooks": "workspace:*",
         "@freeanima/kernel-schemas": "workspace:*",
         "@freeanima/legacy-kernel": "workspace:*",
+        "@freeanima/service-config": "workspace:*",
       },
       "devDependencies": {
         "@types/bun": "catalog:",
@@ -244,6 +246,7 @@
       "name": "@freeanima/life-memory",
       "dependencies": {
         "@freeanima/legacy-kernel": "workspace:*",
+        "@freeanima/service-config": "workspace:*",
         "zod": "catalog:",
       },
       "devDependencies": {
@@ -326,6 +329,7 @@
         "@freeanima/kernel-hooks": "workspace:*",
         "@freeanima/kernel-logging": "workspace:*",
         "@freeanima/kernel-schemas": "workspace:*",
+        "@freeanima/service-config": "workspace:*",
         "yaml": "^2.9.0",
         "zod": "catalog:",
       },
@@ -424,6 +428,17 @@
         "@freeanima/kernel-eventbus": "workspace:*",
         "@freeanima/kernel-hooks": "workspace:*",
         "@freeanima/legacy-kernel": "workspace:*",
+        "@freeanima/service-config": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
+    "service/config": {
+      "name": "@freeanima/service-config",
+      "dependencies": {
+        "yaml": "^2.9.0",
+        "zod": "catalog:",
       },
       "devDependencies": {
         "@types/bun": "catalog:",
@@ -639,6 +654,8 @@
     "@freeanima/life-memory": ["@freeanima/life-memory@workspace:life/memory"],
 
     "@freeanima/service-bootstrap": ["@freeanima/service-bootstrap@workspace:service/bootstrap"],
+
+    "@freeanima/service-config": ["@freeanima/service-config@workspace:service/config"],
 
     "@hono/node-server": ["@hono/node-server@1.19.14", "", { "peerDependencies": { "hono": "^4" } }, "sha512-GwtvgtXxnWsucXvbQXkRgqksiH2Qed37H9xHZocE5sA3N8O8O8/8FA3uclQXxXVzc9XBZuEOMK7+r02FmSpHtw=="],
 

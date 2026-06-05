@@ -1,6 +1,6 @@
 import { describe, it, expect } from "bun:test";
 import { createLlmRuntime } from "../../src/llm-stack.ts";
-import type { NestConfig } from "@freeanima/legacy-kernel";
+import type { NestConfig } from "@freeanima/service-config";
 
 const testCfg = {
   llm: {

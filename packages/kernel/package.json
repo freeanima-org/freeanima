@@ -19,6 +19,7 @@
     "@freeanima/kernel-hooks": "workspace:*",
     "@freeanima/kernel-logging": "workspace:*",
     "@freeanima/kernel-schemas": "workspace:*",
+    "@freeanima/service-config": "workspace:*",
     "yaml": "^2.9.0",
     "zod": "catalog:"
   },
