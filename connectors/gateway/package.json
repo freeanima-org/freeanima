@@ -5,6 +5,9 @@
     ".": "./src/index.ts",
     "./schemas/weixin": "./src/schemas/weixin.ts"
   },
+  "scripts": {
+    "weixin-probe": "bun scripts/weixin-probe.ts"
+  },
   "dependencies": {
     "@freeanima/connectors-cron": "workspace:*",
     "@freeanima/engine-conversation": "workspace:*",
