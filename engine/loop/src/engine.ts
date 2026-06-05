@@ -6,7 +6,8 @@ import {
   getTool,
   openaiSchemas,
 } from "@freeanima/engine-tool";
-import { logComponent, getProfileHopModel, loadConfig } from "@freeanima/legacy-kernel";
+import { getProfileHopModel, loadConfig } from "@freeanima/service-config";
+import { logComponent } from "@freeanima/legacy-kernel";
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
 import type { HookClarifyItem, HookStreamEvent, TurnControl } from "@freeanima/legacy-kernel";
 import { headOkStepData, type HookRegistry } from "@freeanima/kernel-hooks";

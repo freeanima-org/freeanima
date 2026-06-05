@@ -3,7 +3,7 @@ import { tmpdir, homedir } from "node:os";
 import { join, resolve } from "node:path";
 import { randomBytes } from "node:crypto";
 import { openaiSchemas } from "@freeanima/engine-tool";
-import { PATHS, CST_OFFSET_MS, getProfileHopModel, loadConfig } from "@freeanima/legacy-kernel";
+import { PATHS, CST_OFFSET_MS, getProfileHopModel, loadConfig } from "@freeanima/service-config";
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
 import { buildSystemPrompt } from "@freeanima/engine-prompt";
 import {

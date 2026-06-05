@@ -1,0 +1,21 @@
+{
+  "name": "@freeanima/service-config",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./paths": "./src/paths.ts",
+    "./credential": "./src/credential.ts",
+    "./config": "./src/config.ts",
+    "./config-sanitize": "./src/config-sanitize.ts",
+    "./llm-config": "./src/llm-config.ts",
+    "./schemas/config": "./src/schemas/config.ts",
+    "./schemas/llm-config": "./src/schemas/llm-config.ts"
+  },
+  "dependencies": {
+    "yaml": "^2.9.0",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:"
+  }
+}

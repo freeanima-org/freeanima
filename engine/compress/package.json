@@ -7,7 +7,7 @@
   "dependencies": {
     "@freeanima/engine-llm": "workspace:*",
     "@freeanima/kernel-schemas": "workspace:*",
-    "@freeanima/legacy-kernel": "workspace:*"
+    "@freeanima/service-config": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "catalog:"

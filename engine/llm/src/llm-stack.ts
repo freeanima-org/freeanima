@@ -1,5 +1,5 @@
-import type { NestConfig } from "@freeanima/legacy-kernel";
-import { getLlmConfig } from "@freeanima/legacy-kernel";
+import type { NestConfig } from "@freeanima/service-config";
+import { getLlmConfig } from "@freeanima/service-config";
 import {
   OpenAiCompatibleBackend,
   OPENAI_COMPATIBLE_BACKEND_ID,

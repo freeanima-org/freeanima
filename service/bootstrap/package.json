@@ -9,7 +9,8 @@
     "@freeanima/kernel": "workspace:*",
     "@freeanima/kernel-eventbus": "workspace:*",
     "@freeanima/kernel-hooks": "workspace:*",
-    "@freeanima/legacy-kernel": "workspace:*"
+    "@freeanima/legacy-kernel": "workspace:*",
+    "@freeanima/service-config": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "catalog:"
