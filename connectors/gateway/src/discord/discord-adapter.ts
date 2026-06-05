@@ -43,25 +43,33 @@ import {
   tryDiscordInterimEdit,
   withDiscordRetry,
 } from "./discord-retry.ts";
+import { ToolRoundCollector } from "../stream-tool-format.ts";
 
 const DISCORD_MAX_LEN = 2000;
+/** 最终答案 edit 节流间隔 */
+export const DISCORD_ANSWER_EDIT_MS = 3000;
+/** 最终答案分段阈值 */
+export const DISCORD_ANSWER_SPLIT_AT = 1000;
 /** Discord login 失败后自动重试间隔 */
 export const DISCORD_LOGIN_RETRY_MS = 5 * 60 * 1000;
-/** 流式回复开始时的占位；收尾编辑会移除，仅展示模型正文与工具行。 */
+/** 流式回复开始时的占位 */
 const DISCORD_STREAM_PLACEHOLDER = "⏳ 思考中…";
 
-function splitDiscordMessage(text: string): string[] {
-  if (text.length <= DISCORD_MAX_LEN) return [text];
+function splitDiscordMessage(text: string, limit = DISCORD_MAX_LEN): string[] {
+  if (text.length <= limit) return [text];
   const chunks: string[] = [];
   let rest = text;
-  while (rest.length > DISCORD_MAX_LEN) {
-    let cut = rest.lastIndexOf("\n", DISCORD_MAX_LEN);
-    if (cut < DISCORD_MAX_LEN / 2) cut = DISCORD_MAX_LEN;
-    chunks.push(rest.slice(0, cut));
+  while (rest.length > limit) {
+    let cut = rest.lastIndexOf("\n\n", limit);
+    if (cut < limit / 2) cut = rest.lastIndexOf("\n", limit);
+    if (cut < limit / 2) cut = rest.lastIndexOf(" ", limit);
+    if (cut < limit / 2) cut = limit;
+    cut = Math.min(cut, DISCORD_MAX_LEN);
+    chunks.push(rest.slice(0, cut).trimEnd());
     rest = rest.slice(cut).trimStart();
   }
   if (rest) chunks.push(rest);
-  return chunks;
+  return chunks.filter((c) => c.length > 0);
 }
 
 function messageContext(message: Message, botUserId: string | undefined): DiscordMessageContext {
@@ -97,20 +105,7 @@ async function resolveReplyToBot(message: Message, botUserId: string): Promise<b
   }
 }
 
-function composeDiscordStreamInterim(buffer: string): string {
-  if (!buffer) return DISCORD_STREAM_PLACEHOLDER;
-  const head = `${DISCORD_STREAM_PLACEHOLDER}\n`;
-  const full = head + buffer;
-  if (full.length <= DISCORD_MAX_LEN) return full;
-  const marker = "⋯\n";
-  let tail = buffer;
-  while (head.length + marker.length + tail.length > DISCORD_MAX_LEN && tail.length > 0) {
-    tail = tail.slice(1);
-  }
-  return `${DISCORD_STREAM_PLACEHOLDER}${marker}${tail}`;
-}
-
-/** Discord 网关：先发占位消息并按事件流实时编辑，收尾去掉占位并超长拆条。 */
+/** Discord 网关：每轮 tool 单独消息，最终答案单独消息（3s 节流 edit）。 */
 export async function streamReplyToChannel(
   channel: TextBasedChannel,
   events: AsyncIterable<StreamEvent>,
@@ -118,63 +113,89 @@ export async function streamReplyToChannel(
   if (!("send" in channel) || typeof channel.send !== "function") return;
   const channelSend = channel.send.bind(channel) as (content: string) => Promise<Message>;
 
-  const sentMsg = await withDiscordRetry(async (): Promise<Message> => {
-    return await channelSend(DISCORD_STREAM_PLACEHOLDER);
-  });
-
-  let buffer = "";
-  let burstTokens = 0;
+  const toolRound = new ToolRoundCollector();
+  let answerBuffer = "";
+  let answerMsg: Message | null = null;
   let throttleTimer: ReturnType<typeof setTimeout> | null = null;
   let editTail: Promise<void> = Promise.resolve();
 
-  function clearThrottleTimer(): void {
+  const clearThrottleTimer = (): void => {
     if (throttleTimer !== null) {
       clearTimeout(throttleTimer);
       throttleTimer = null;
     }
-  }
+  };
 
-  function enqueueEdit(getContent: () => string): void {
+  const flushToolRound = async (): Promise<void> => {
+    const text = toolRound.take();
+    if (!text) return;
+    await withDiscordRetry(async (): Promise<void> => {
+      await channelSend(text);
+    });
+  };
+
+  const ensureAnswerMsg = async (): Promise<Message> => {
+    if (answerMsg) return answerMsg;
+    answerMsg = await withDiscordRetry(async (): Promise<Message> => {
+      return await channelSend(DISCORD_STREAM_PLACEHOLDER);
+    });
+    return answerMsg;
+  };
+
+  const flushAnswerEdit = (): void => {
     editTail = editTail.then(async () => {
-      const raw = getContent();
-      const content = raw.length <= DISCORD_MAX_LEN ? raw : raw.slice(-DISCORD_MAX_LEN);
+      if (!answerMsg) return;
+      const trimmed = answerBuffer.trim();
+      const content =
+        trimmed.length > 0
+          ? trimmed.length <= DISCORD_MAX_LEN
+            ? trimmed
+            : trimmed.slice(-DISCORD_MAX_LEN)
+          : DISCORD_STREAM_PLACEHOLDER;
       await tryDiscordInterimEdit(
         async () => {
-          await sentMsg.edit({ content });
+          await answerMsg!.edit({ content });
         },
         { content_len: content.length },
       );
     });
-  }
+  };
 
-  function flushInterimNow(): void {
-    clearThrottleTimer();
-    burstTokens = 0;
-    enqueueEdit(() => composeDiscordStreamInterim(buffer));
-  }
-
-  function scheduleDebouncedFlush(): void {
+  const scheduleAnswerEdit = (): void => {
     clearThrottleTimer();
     throttleTimer = setTimeout(() => {
       throttleTimer = null;
-      flushInterimNow();
-    }, 500);
-  }
+      flushAnswerEdit();
+    }, DISCORD_ANSWER_EDIT_MS);
+  };
 
-  async function finalizeDiscordStream(): Promise<void> {
+  const finalizeDiscordStream = async (): Promise<void> => {
     clearThrottleTimer();
     await editTail;
+    await flushToolRound();
 
-    const trimmed = buffer.trim();
-    const discordEmptyFallback = "\u3164"; // 避免最终 edit 为空串被 Discord 拒绝
-    const chunks = splitDiscordMessage(trimmed.length > 0 ? trimmed : discordEmptyFallback);
+    const trimmed = answerBuffer.trim();
+    if (!trimmed) return;
 
+    const chunks = splitDiscordMessage(trimmed, DISCORD_ANSWER_SPLIT_AT);
+    const discordEmptyFallback = "\u3164";
+
+    if (!answerMsg) {
+      for (const chunk of chunks) {
+        await withDiscordRetry(async (): Promise<void> => {
+          await channelSend(chunk);
+        });
+      }
+      return;
+    }
+
+    const first = chunks[0] ?? discordEmptyFallback;
     await deliverDiscordFinalContent(
       async () => {
-        await sentMsg.edit({ content: chunks[0]! });
+        await answerMsg!.edit({ content: first });
       },
       async () => {
-        await channelSend(chunks[0]!);
+        await channelSend(first);
       },
       { chunk: 0, total: chunks.length },
     );
@@ -184,44 +205,41 @@ export async function streamReplyToChannel(
         await channelSend(chunk);
       });
     }
-  }
+  };
 
   for await (const event of events) {
     switch (event.event) {
       case "token":
-        buffer += event.data.content;
-        burstTokens++;
-        if (burstTokens >= 10) {
-          flushInterimNow();
-        } else {
-          scheduleDebouncedFlush();
-        }
+        await flushToolRound();
+        answerBuffer += event.data.content;
+        await ensureAnswerMsg();
+        scheduleAnswerEdit();
         break;
       case "content_replace":
-        buffer = event.data.content;
-        flushInterimNow();
+        await flushToolRound();
+        answerBuffer = event.data.content;
+        await ensureAnswerMsg();
+        flushAnswerEdit();
         break;
       case "awaiting_clarify": {
+        await flushToolRound();
         const payload = parseClarifyStreamEvent(event.data);
         if (payload) {
-          buffer += `\n${formatClarifyForPlatform("discord", payload)}`;
+          await withDiscordRetry(async (): Promise<void> => {
+            await channelSend(formatClarifyForPlatform("discord", payload));
+          });
         }
-        flushInterimNow();
         break;
       }
-      case "tool_begin": {
-        const tool = event.data.name;
-        if (tool !== "clarify") {
-          buffer += `\n🔧 ${tool}(...)\n`;
-        }
-        flushInterimNow();
+      case "tool_begin":
+        answerBuffer = "";
+        toolRound.addBegin(event.data.name, event.data.args);
         break;
-      }
       case "tool_result":
+        toolRound.addResult(event.data.name, event.data.content);
         break;
       case "tool_error":
-        buffer += `\n❌ ${event.data.content}`;
-        flushInterimNow();
+        toolRound.addError(event.data.content);
         break;
       case "error":
         clearThrottleTimer();

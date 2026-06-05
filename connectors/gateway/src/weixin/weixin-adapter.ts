@@ -7,9 +7,19 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
 
 import type { PlatformAdapter } from "../platforms.ts";
-import { collectGatewayStreamReply } from "../collect-gateway-stream-reply.ts";
+import { streamReplyToWeixin } from "./stream-reply-weixin.ts";
 import { registerWeixinCronDeliverer, unregisterWeixinCronDeliverer } from "../cron-deliver.ts";
-import { MAX_CONSECUTIVE_FAILURES, getUpdates, sendText } from "./ilink-api.ts";
+import {
+  MAX_CONSECUTIVE_FAILURES,
+  SESSION_EXPIRED_ERRCODE,
+  getUpdates,
+  isWeixinSessionPaused,
+  notifyStart,
+  notifyStop,
+  pauseWeixinSession,
+  sendTextChunked,
+  sendTypingIndicator,
+} from "./ilink-api.ts";
 import {
   buildWeixinOrigin,
   explainInboundSkip,
@@ -70,6 +80,9 @@ export class WeixinAdapter implements PlatformAdapter {
   async start(): Promise<void> {
     this.service.registerPlatform("weixin");
     this.service.updatePlatformStatus("weixin", "starting");
+    void notifyStart(this.creds.base_url, this.creds.token).catch((e) => {
+      logComponent("weixin").warn("WeChat notifyStart failed", { err: e });
+    });
     this.abort = new AbortController();
     this.loopPromise = this.runLoop(this.abort.signal);
     void this.loopPromise.catch((e) => {
@@ -81,6 +94,9 @@ export class WeixinAdapter implements PlatformAdapter {
   async stop(): Promise<void> {
     logComponent("shutdown").debug("微信 adapter 中止轮询…");
     unregisterWeixinCronDeliverer();
+    void notifyStop(this.creds.base_url, this.creds.token).catch((e) => {
+      logComponent("weixin").warn("WeChat notifyStop failed", { err: e });
+    });
     this.abort?.abort();
     const loop = this.loopPromise;
     if (loop) {
@@ -116,6 +132,14 @@ export class WeixinAdapter implements PlatformAdapter {
     });
 
     while (!signal.aborted) {
+      if (isWeixinSessionPaused(this.creds.account_id)) {
+        try {
+          await sleep(60_000, signal);
+        } catch {
+          break;
+        }
+        continue;
+      }
       try {
         await this.pollOnce(signal);
         this.failures = 0;
@@ -151,6 +175,16 @@ export class WeixinAdapter implements PlatformAdapter {
 
   private async pollOnce(signal: AbortSignal): Promise<void> {
     const resp = await getUpdates(this.creds.base_url, this.creds.token, this.syncBuf, signal);
+
+    const errcode = Number(resp.errcode ?? 0);
+    if (errcode === SESSION_EXPIRED_ERRCODE) {
+      pauseWeixinSession(this.creds.account_id);
+      logComponent("weixin").warn("WeChat session expired (errcode -14), pausing poll 1h", {
+        account_id: safeId(this.creds.account_id),
+      });
+      this.service.updatePlatformStatus("weixin", "backoff", { reason: "session_expired" });
+      return;
+    }
 
     const newBuf = String(resp.get_updates_buf ?? "");
     if (newBuf) {
@@ -214,6 +248,7 @@ export class WeixinAdapter implements PlatformAdapter {
 
       if (parsed.contextToken) {
         this.contextTokens[parsed.peerId] = parsed.contextToken;
+        this.persistContextTokens();
       }
 
       void this.routeToRuntime(parsed).catch((e) => {
@@ -251,10 +286,28 @@ export class WeixinAdapter implements PlatformAdapter {
         return;
       }
 
-      const reply = await collectGatewayStreamReply(
+      const contextToken = this.contextTokens[parsed.peerId];
+      const refreshTyping = (): Promise<void> =>
+        sendTypingIndicator(
+          this.creds.base_url,
+          this.creds.token,
+          parsed.peerId,
+          contextToken,
+        ).catch(() => undefined);
+
+      const { answerSent, progressSent } = await streamReplyToWeixin(
         this.service.sendMessageStream(sid, parsed.text, "weixin"),
+        {
+          send: (text) => this.sendReply(parsed.peerId, text),
+          refreshTyping,
+        },
       );
-      if (reply) await this.sendReply(parsed.peerId, reply);
+      if (!answerSent && !progressSent) {
+        logComponent("weixin").warn("WeChat empty reply, skip send", {
+          session_id: safeId(sid),
+          peer_id: safeId(parsed.peerId),
+        });
+      }
     } catch (e) {
       logComponent("weixin").error(`WeChat session ${safeId(sid)} routing error`, {
         err: e,
@@ -267,7 +320,7 @@ export class WeixinAdapter implements PlatformAdapter {
   private async sendReply(peerId: string, text: string): Promise<void> {
     const contextToken = this.contextTokens[peerId];
     try {
-      const result = await sendText(
+      const { chunks, lastRet } = await sendTextChunked(
         this.creds.base_url,
         this.creds.token,
         peerId,
@@ -275,12 +328,12 @@ export class WeixinAdapter implements PlatformAdapter {
         this.clientId,
         contextToken,
       );
-      if (process.env.DEBUG?.includes("weixin")) {
-        logComponent("weixin").info(`WeChat reply sent to ${safeId(peerId)}`, {
-          peer_id: safeId(peerId),
-          ret: String(result.ret ?? "?"),
-        });
-      }
+      logComponent("weixin").info(`WeChat reply sent to ${safeId(peerId)}`, {
+        peer_id: safeId(peerId),
+        text_len: text.length,
+        chunks,
+        ret: String(lastRet.ret ?? "?"),
+      });
     } catch (e) {
       logComponent("weixin").error("WeChat send reply failed", { err: e });
     }

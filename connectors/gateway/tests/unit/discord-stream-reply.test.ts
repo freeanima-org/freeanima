@@ -18,55 +18,84 @@ describe("streamReplyToChannel", () => {
     channel: TextBasedChannel;
     edits: string[];
     sends: string[];
+    sentMessages: Array<Pick<Message, "edit">>;
   } {
     const edits: string[] = [];
     const sends: string[] = [];
-    const sentMsg = {
-      edit: vi.fn(async (opts: { content: string }) => {
-        edits.push(opts.content);
-      }),
-    } as unknown as Pick<Message, "edit">;
+    const sentMessages: Array<Pick<Message, "edit">> = [];
 
     const channel = {
       send: vi.fn(async (arg: unknown) => {
         const text = typeof arg === "string" ? arg : "";
         sends.push(text);
+        const sentMsg = {
+          edit: vi.fn(async (opts: { content: string }) => {
+            edits.push(opts.content);
+          }),
+        } as unknown as Pick<Message, "edit">;
+        sentMessages.push(sentMsg);
         return sentMsg as Message;
       }),
     };
-    return { channel: channel as unknown as TextBasedChannel, edits, sends };
+    return {
+      channel: channel as unknown as TextBasedChannel,
+      edits,
+      sends,
+      sentMessages,
+    };
   }
 
-  it("收尾去掉占位符，仅 tool_begin 行，不包含 tool_result 正文", async () => {
-    const { channel, edits, sends } = fakeChannel();
+  it("tool 轮单独 send，含参数与结果摘要", async () => {
+    const { channel, sends, edits } = fakeChannel();
     async function* gen(): AsyncGenerator<StreamEvent> {
-      for (let i = 0; i < 10; i++) {
-        yield { event: "token", data: { content: "x" } };
-      }
-      yield { event: "tool_begin", data: { name: "demo_tool", args: {} } };
+      yield { event: "tool_begin", data: { name: "demo_tool", args: { q: "test" } } };
       yield {
         event: "tool_result",
-        data: { name: "demo_tool", content: "SECRET_SHOULD_NOT_APPEAR" },
+        data: { name: "demo_tool", content: "SECRET_SHOULD_APPEAR_TRUNCATED" },
       };
-      yield { event: "token", data: { content: "z" } };
+      yield { event: "token", data: { content: "final z" } };
+      yield { event: "done", data: {} };
     }
     await streamReplyToChannel(channel, gen());
-    expect(sends[0]).toContain("思考中");
+
+    expect(sends[0]).toContain("🔧 demo_tool");
+    expect(sends[0]).toContain("test");
+    expect(sends[0]).toContain("SECRET");
+    expect(sends[1]).toContain("思考中");
     const lastEdit = edits[edits.length - 1];
-    expect(lastEdit).not.toContain("SECRET");
-    expect(lastEdit).toContain("🔧 demo_tool");
-    expect(lastEdit).toContain("z");
+    expect(lastEdit).toBe("final z");
+    expect(lastEdit).not.toContain("思考中");
   });
 
-  it("超长正文收尾时首条 edit、后续 channel.send 拆条", async () => {
+  it("两轮 tool + 最终答案分多条消息", async () => {
+    const { channel, sends } = fakeChannel();
+    async function* gen(): AsyncGenerator<StreamEvent> {
+      yield { event: "tool_begin", data: { name: "read", args: {} } };
+      yield { event: "tool_result", data: { name: "read", content: "ok" } };
+      yield { event: "token", data: { content: "x" } };
+      yield { event: "tool_begin", data: { name: "grep", args: { p: "a" } } };
+      yield { event: "tool_result", data: { name: "grep", content: "hit" } };
+      yield { event: "token", data: { content: "answer" } };
+      yield { event: "done", data: {} };
+    }
+    await streamReplyToChannel(channel, gen());
+
+    expect(sends.length).toBeGreaterThanOrEqual(3);
+    expect(sends[0]).toContain("read");
+    expect(sends[1]).toContain("思考中");
+    expect(sends[2]).toContain("grep");
+  });
+
+  it("超长正文按 1000 字阈值拆条", async () => {
     const { channel, edits, sends } = fakeChannel();
-    const body = "a".repeat(2500);
+    const body = "a".repeat(1500);
     async function* gen(): AsyncGenerator<StreamEvent> {
       yield { event: "token", data: { content: body } };
+      yield { event: "done", data: {} };
     }
     await streamReplyToChannel(channel, gen());
     expect(edits.length).toBeGreaterThan(0);
-    expect(edits[edits.length - 1]!.length).toBeLessThanOrEqual(2000);
+    expect(edits[edits.length - 1]!.length).toBe(1000);
     expect(sends.length).toBeGreaterThanOrEqual(2);
   });
 
@@ -76,9 +105,7 @@ describe("streamReplyToChannel", () => {
     const sentMsg = {
       edit: vi.fn(async (opts: { content: string }) => {
         edits.push(opts.content);
-        if (!opts.content.includes("思考中")) {
-          throw { status: 403 };
-        }
+        if (!opts.content.includes("思考中")) throw { status: 403 };
       }),
     } as unknown as Pick<Message, "edit">;
 
@@ -92,12 +119,13 @@ describe("streamReplyToChannel", () => {
 
     async function* gen(): AsyncGenerator<StreamEvent> {
       yield { event: "token", data: { content: "hello discord" } };
+      yield { event: "done", data: {} };
     }
     await streamReplyToChannel(channel as unknown as TextBasedChannel, gen());
     expect(sends.some((s) => s === "hello discord")).toBe(true);
   });
 
-  it("done 事件立即收尾并去掉占位符", async () => {
+  it("done 事件立即收尾", async () => {
     const { channel, edits, sends } = fakeChannel();
     async function* gen(): AsyncGenerator<StreamEvent> {
       yield { event: "token", data: { content: "final answer" } };
@@ -107,7 +135,6 @@ describe("streamReplyToChannel", () => {
     expect(sends[0]).toContain("思考中");
     const lastEdit = edits[edits.length - 1];
     expect(lastEdit).toBe("final answer");
-    expect(lastEdit).not.toContain("思考中");
   });
 
   it("done 后 generator 仍挂起时不阻塞 finalize", async () => {
