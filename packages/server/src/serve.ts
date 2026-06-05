@@ -7,7 +7,7 @@ import {
   initDatabase,
   initPgProfile,
   isPostgresPrimary,
-} from "@freeanima/legacy-db";
+} from "@freeanima/kernel-db";
 import { getConfiguredDatabaseUrl, PATHS, loadConfig } from "@freeanima/service-config";
 import {
   installErrorLogHandlers,

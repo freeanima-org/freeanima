@@ -23,7 +23,7 @@ import {
   truncateMessagesAfter as dbTruncateMessagesAfter,
   shiftMessagePositions as dbShiftMessagePositions,
   upsertSessionMeta as dbUpsertSessionMeta,
-} from "@freeanima/legacy-db";
+} from "@freeanima/kernel-db";
 import { parseCompressionState, isCompressed } from "@freeanima/engine-compress";
 import type { SessionMessage, SessionMetaMessage } from "@freeanima/kernel-schemas";
 

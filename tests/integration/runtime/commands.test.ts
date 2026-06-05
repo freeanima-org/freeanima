@@ -8,8 +8,8 @@ import {
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { patchSessionMeta } from "@freeanima/legacy-db";
-import { seedSession, appendIntegrationConfig } from "@freeanima/legacy-db/test-helpers";
+import { patchSessionMeta } from "@freeanima/kernel-db";
+import { seedSession, appendIntegrationConfig } from "@freeanima/kernel-db/test-helpers";
 import {
   findCommand,
   executeCommand,

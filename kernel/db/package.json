@@ -1,5 +1,5 @@
 {
-  "name": "@freeanima/legacy-db",
+  "name": "@freeanima/kernel-db",
   "type": "module",
   "exports": {
     ".": "./src/index.ts",

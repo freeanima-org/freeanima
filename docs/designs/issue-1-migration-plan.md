@@ -91,11 +91,11 @@ packages:
 
 ### 横切模块
 
-| 模块                          | 过渡期                                                 | 最终归属                            |
-| ----------------------------- | ------------------------------------------------------ | ----------------------------------- |
-| `@freeanima/legacy-db`        | 暂留或 rename `legacy-db`，life/memory 与 service 共用 | 类型→kernel；repo 实现→service 注入 |
-| EventBus/registry/config 实现 | 新 kernel 只留接口                                     | service                             |
-| Turbo/CI                      | 新栈加独立 `test:next` job                             | 切换后合并                          |
+| 模块                          | 过渡期                                              | 最终归属                            |
+| ----------------------------- | --------------------------------------------------- | ----------------------------------- |
+| `@freeanima/kernel-db`        | **已迁入** `kernel/db`；life/memory 与 service 共用 | 长期持久化层；类型在 kernel-schemas |
+| EventBus/registry/config 实现 | 新 kernel 只留接口                                  | service                             |
+| Turbo/CI                      | 新栈加独立 `test:next` job                          | 切换后合并                          |
 
 ### 关键设计决策（回应待讨论项）
 
@@ -140,7 +140,7 @@ packages:
 | `@freeanima/engine`       | ~~`@freeanima/legacy-engine`~~（已删，拆至 engine-\* / life-memory） |
 | `@freeanima/runtime`      | `@freeanima/legacy-runtime`                                          |
 | `@freeanima/memory`       | `@freeanima/legacy-memory`                                           |
-| `@freeanima/db`           | `@freeanima/legacy-db`                                               |
+| `@freeanima/db`           | ~~`@freeanima/legacy-db`~~ → `@freeanima/kernel-db`（`kernel/db`）   |
 | `@freeanima/server`       | `@freeanima/legacy-server`                                           |
 | `@freeanima/gateway`      | `@freeanima/legacy-gateway`                                          |
 | `@freeanima/tools`        | `@freeanima/legacy-tools`                                            |
@@ -150,7 +150,7 @@ packages:
 | `@freeanima/cli`          | `@freeanima/legacy-cli`                                              |
 | `@freeanima/webui`        | `@freeanima/legacy-webui`                                            |
 
-**已删除 legacy 包（2026-06-05）：** `@freeanima/legacy-kernel`、`@freeanima/legacy-engine`。职责分别迁入 `kernel/{schemas,hooks,logging,eventbus}`、`engine/*`、`service/{config,logging,bootstrap}`、`connectors/sqlite`、`life/memory`。
+**已删除 legacy 包（2026-06-05）：** `@freeanima/legacy-kernel`、`@freeanima/legacy-engine`。`@freeanima/legacy-db` 已迁入 `kernel/db`（`@freeanima/kernel-db`）。职责分别迁入 `kernel/{schemas,hooks,logging,eventbus,db}`、`engine/*`、`service/{config,logging,bootstrap}`、`connectors/sqlite`、`life/memory`。
 
 **步骤 0 不做：** 不建 `kernel/` 等新目录；不改 `pnpm-workspace.yaml` 新层 glob；不改运行时行为。
 

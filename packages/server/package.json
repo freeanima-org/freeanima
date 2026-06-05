@@ -19,7 +19,7 @@
     "@freeanima/kernel-schemas": "workspace:*",
     "@freeanima/legacy-api": "workspace:*",
     "@freeanima/legacy-clarify": "workspace:*",
-    "@freeanima/legacy-db": "workspace:*",
+    "@freeanima/kernel-db": "workspace:*",
     "@freeanima/legacy-gateway": "workspace:*",
     "@freeanima/legacy-integrations": "workspace:*",
     "@freeanima/legacy-memory": "workspace:*",

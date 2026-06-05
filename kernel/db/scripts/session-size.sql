@@ -1,5 +1,5 @@
 -- Session 体量诊断（迁移 PG 后定位慢 session）
--- 用法: psql "$DATABASE_URL" -f packages/db/scripts/session-size.sql
+-- 用法: psql "$DATABASE_URL" -f kernel/db/scripts/session-size.sql
 
 SELECT session_id,
        count(*) AS message_count,

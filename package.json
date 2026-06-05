@@ -6,7 +6,7 @@
     "@commitlint/config-conventional": "^21.0.2",
     "@freeanima/legacy-api": "workspace:*",
     "@freeanima/legacy-clarify": "workspace:*",
-    "@freeanima/legacy-db": "workspace:*",
+    "@freeanima/kernel-db": "workspace:*",
     "@freeanima/legacy-integrations": "workspace:*",
     "@freeanima/legacy-server": "workspace:*",
     "@freeanima/legacy-tools": "workspace:*",

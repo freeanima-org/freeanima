@@ -7,9 +7,9 @@
       "devDependencies": {
         "@commitlint/cli": "^21.0.2",
         "@commitlint/config-conventional": "^21.0.2",
+        "@freeanima/kernel-db": "workspace:*",
         "@freeanima/legacy-api": "workspace:*",
         "@freeanima/legacy-clarify": "workspace:*",
-        "@freeanima/legacy-db": "workspace:*",
         "@freeanima/legacy-integrations": "workspace:*",
         "@freeanima/legacy-server": "workspace:*",
         "@freeanima/legacy-tools": "workspace:*",
@@ -120,8 +120,8 @@
         "@freeanima/engine-prompt": "workspace:*",
         "@freeanima/engine-provider-llm": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
+        "@freeanima/kernel-db": "workspace:*",
         "@freeanima/kernel-schemas": "workspace:*",
-        "@freeanima/legacy-db": "workspace:*",
         "@freeanima/service-config": "workspace:*",
         "@freeanima/service-logging": "workspace:*",
       },
@@ -150,8 +150,8 @@
         "@freeanima/capabilities-provider-openai-compatible": "workspace:*",
         "@freeanima/engine-provider-llm": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
+        "@freeanima/kernel-db": "workspace:*",
         "@freeanima/kernel-schemas": "workspace:*",
-        "@freeanima/legacy-db": "workspace:*",
         "@freeanima/service-config": "workspace:*",
       },
       "devDependencies": {
@@ -197,6 +197,20 @@
       },
       "devDependencies": {
         "@types/bun": "catalog:",
+      },
+    },
+    "kernel/db": {
+      "name": "@freeanima/kernel-db",
+      "dependencies": {
+        "@freeanima/kernel-schemas": "workspace:*",
+        "drizzle-orm": "catalog:",
+        "postgres": "^3.4.9",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@freeanima/service-config": "workspace:*",
+        "@types/bun": "catalog:",
+        "drizzle-kit": "catalog:",
       },
     },
     "kernel/eventbus": {
@@ -286,20 +300,6 @@
         "@types/bun": "catalog:",
       },
     },
-    "packages/db": {
-      "name": "@freeanima/legacy-db",
-      "dependencies": {
-        "@freeanima/kernel-schemas": "workspace:*",
-        "drizzle-orm": "catalog:",
-        "postgres": "^3.4.9",
-        "zod": "catalog:",
-      },
-      "devDependencies": {
-        "@freeanima/service-config": "workspace:*",
-        "@types/bun": "catalog:",
-        "drizzle-kit": "catalog:",
-      },
-    },
     "packages/gateway": {
       "name": "@freeanima/legacy-gateway",
       "dependencies": {
@@ -342,9 +342,9 @@
       "dependencies": {
         "@freeanima/connectors-sqlite": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
+        "@freeanima/kernel-db": "workspace:*",
         "@freeanima/kernel-eventbus": "workspace:*",
         "@freeanima/kernel-schemas": "workspace:*",
-        "@freeanima/legacy-db": "workspace:*",
         "@freeanima/service-config": "workspace:*",
         "@freeanima/service-logging": "workspace:*",
         "yaml": "^2.9.0",
@@ -388,11 +388,11 @@
         "@freeanima/engine": "workspace:*",
         "@freeanima/engine-conversation": "workspace:*",
         "@freeanima/engine-loop": "workspace:*",
+        "@freeanima/kernel-db": "workspace:*",
         "@freeanima/kernel-eventbus": "workspace:*",
         "@freeanima/kernel-schemas": "workspace:*",
         "@freeanima/legacy-api": "workspace:*",
         "@freeanima/legacy-clarify": "workspace:*",
-        "@freeanima/legacy-db": "workspace:*",
         "@freeanima/legacy-gateway": "workspace:*",
         "@freeanima/legacy-integrations": "workspace:*",
         "@freeanima/legacy-memory": "workspace:*",
@@ -470,11 +470,11 @@
         "@freeanima/engine": "workspace:*",
         "@freeanima/engine-conversation": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
+        "@freeanima/kernel-db": "workspace:*",
         "@freeanima/kernel-eventbus": "workspace:*",
         "@freeanima/kernel-logging": "workspace:*",
         "@freeanima/kernel-schemas": "workspace:*",
         "@freeanima/legacy-clarify": "workspace:*",
-        "@freeanima/legacy-db": "workspace:*",
         "@freeanima/legacy-integrations": "workspace:*",
         "@freeanima/legacy-memory": "workspace:*",
         "@freeanima/legacy-runtime": "workspace:*",
@@ -640,6 +640,8 @@
 
     "@freeanima/kernel": ["@freeanima/kernel@workspace:kernel/kernel"],
 
+    "@freeanima/kernel-db": ["@freeanima/kernel-db@workspace:kernel/db"],
+
     "@freeanima/kernel-eventbus": ["@freeanima/kernel-eventbus@workspace:kernel/eventbus"],
 
     "@freeanima/kernel-hooks": ["@freeanima/kernel-hooks@workspace:kernel/hooks"],
@@ -655,8 +657,6 @@
     "@freeanima/legacy-clarify": ["@freeanima/legacy-clarify@workspace:packages/clarify"],
 
     "@freeanima/legacy-cli": ["@freeanima/legacy-cli@workspace:apps/cli"],
-
-    "@freeanima/legacy-db": ["@freeanima/legacy-db@workspace:packages/db"],
 
     "@freeanima/legacy-gateway": ["@freeanima/legacy-gateway@workspace:packages/gateway"],
 

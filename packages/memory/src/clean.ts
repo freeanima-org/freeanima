@@ -8,7 +8,7 @@ import {
   isPostgresPrimary,
   listMessages,
   listSessionIds,
-} from "@freeanima/legacy-db";
+} from "@freeanima/kernel-db";
 
 export function processedDir(): string {
   return join(getHomeDir(), "processed");
