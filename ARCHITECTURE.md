@@ -165,7 +165,7 @@ LLM 视角 — flat tool list:
 
 ### 第一层：本地工具（Local）
 
-本地工具写在 `packages/tools/`，通过 `registerTool()` 注册到 `@freeanima/legacy-kernel` 的 registry。
+本地工具写在 `packages/tools/`，通过 `registerTool()` 注册到 `@freeanima/engine-tool` 的 registry。
 
 **特征：**
 
@@ -380,9 +380,9 @@ conversation.py  emit("session:updated")
 - 失败重试（最多 3 次），不会丢失事件
 - 用于**发生后该做什么**的场景：蒸馏、反射、索引
 
-### Hooks（`@freeanima/kernel-hooks` + legacy 组装）
+### Hooks（`@freeanima/kernel-hooks`）
 
-**同步 interceptor 模式。** 注册表在 `@freeanima/kernel-hooks`：`run(context)` 返回 `HookRunResult`（`context` 只读、`chain` 经 `prev` 串联；聚合 `blocked` / `blockedMessage`）。领域 **context 类型** 在 [`packages/kernel/src/hooks.ts`](packages/kernel/src/hooks.ts)；`kernel` 单例见 [`service/bootstrap/src/kernel.ts`](service/bootstrap/src/kernel.ts)。
+**同步 interceptor 模式。** 注册表在 `@freeanima/kernel-hooks`：`run(context)` 返回 `HookRunResult`（`context` 只读、`chain` 经 `prev` 串联；聚合 `blocked` / `blockedMessage`）。领域 **context 类型** 在 [`kernel/hooks/src/domain-hooks.ts`](kernel/hooks/src/domain-hooks.ts)；`kernel` 单例见 [`service/bootstrap/src/kernel.ts`](service/bootstrap/src/kernel.ts)。
 
 语义要点：
 
@@ -401,13 +401,13 @@ conversation.py  emit("session:updated")
 
 与 EventBus 的关系：
 
-| 维度         | EventBus                       | Hooks                                   |
-| ------------ | ------------------------------ | --------------------------------------- |
-| 时序         | 发生后                         | 发生前/中/后                            |
-| 调用方式     | 异步（轮询）                   | 同步（`await kernel.hookRegistry.run`） |
-| 能否修改数据 | 不能                           | 经 `data` 返回效应，由 fold 合并        |
-| 错误语义     | 链中断                         | failed 步可继续；`ok`+`blocked` 短路    |
-| 实现状态     | ✅ `registerMemoryPipeline` 等 | ✅ hooks 包 + legacy-kernel fold/log    |
+| 维度         | EventBus                       | Hooks                                                       |
+| ------------ | ------------------------------ | ----------------------------------------------------------- |
+| 时序         | 发生后                         | 发生前/中/后                                                |
+| 调用方式     | 异步（轮询）                   | 同步（`await kernel.hookRegistry.run`）                     |
+| 能否修改数据 | 不能                           | 经 `data` 返回效应，由 fold 合并                            |
+| 错误语义     | 链中断                         | failed 步可继续；`ok`+`blocked` 短路                        |
+| 实现状态     | ✅ `registerMemoryPipeline` 等 | ✅ `@freeanima/kernel-hooks` + `@freeanima/service-logging` |
 
 记忆管道入口为 `registerMemoryPipeline`（`@freeanima/legacy-memory`）；`registerMemoryHandlers` 为兼容别名。Hooks 不是 EventBus 的替代品，两者互补。
 

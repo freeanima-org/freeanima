@@ -146,7 +146,7 @@ compression:
 
 未配置 `models.*.context_window` 且无 `default_context_window` 时，回退**消息条数**模式：首次 `> max_rounds×2` 条触发，已压后原始段 `> max_rounds×4` 再压。
 
-Token 估算：`packages/engine/src/token-estimate.ts`（与 `conversation-stats` 共用）。
+Token 估算：`engine/compress/src/token-estimate.ts`（与 `conversation-stats` 共用）。
 
 ---
 
@@ -366,12 +366,12 @@ stateDiagram-v2
 
 | 模块                                           | 职责                                                                                      |
 | ---------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| `packages/engine/src/compressor.ts`            | l 点、`deriveBoundariesFromL4`、`shouldAdvance`、`buildRuntimeFromLPoints`、`slimMessage` |
-| `packages/engine/src/compression-config.ts`    | 配置与 `context_window` / 有效预算                                                        |
-| `packages/engine/src/compression-summary.ts`   | 摘要 LLM                                                                                  |
-| `packages/engine/src/compression-tool-loop.ts` | `isInToolLoop`                                                                            |
-| `packages/engine/src/conversation.ts`          | `recompressSession`、`buildRuntimeMessages`、`maybeApplyEmergencyCompression`             |
-| `packages/engine/src/engine.ts`                | emergency 调用点                                                                          |
+| `engine/compress/src/compressor.ts`            | l 点、`deriveBoundariesFromL4`、`shouldAdvance`、`buildRuntimeFromLPoints`、`slimMessage` |
+| `engine/compress/src/compression-config.ts`    | 配置与 `context_window` / 有效预算                                                        |
+| `engine/compress/src/compression-summary.ts`   | 摘要 LLM                                                                                  |
+| `engine/compress/src/compression-tool-loop.ts` | `isInToolLoop`                                                                            |
+| `engine/conversation/src/conversation.ts`      | `recompressSession`、`buildRuntimeMessages`、`maybeApplyEmergencyCompression`             |
+| `engine/loop/src/engine.ts`                    | emergency 调用点                                                                          |
 | `packages/runtime/src/conversation-stats.ts`   | `/stats` 展示 `l2`/`l3`/占用率                                                            |
 
 手动：`/compress`（`--force` 忽略滞回）。
