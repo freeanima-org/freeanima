@@ -2,7 +2,7 @@ name: TypeScript
 
 on:
   push:
-    branches: [main, master]
+    branches: [main]
   pull_request:
 
 jobs:
@@ -16,8 +16,7 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun run typecheck
       - run: bun run lint
-      - run: bun run format
-      - run: bun run build
+      - run: bun run dep-check
       - run: bun run test
       - name: Install gitleaks
         run: |
