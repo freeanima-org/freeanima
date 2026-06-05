@@ -37,7 +37,7 @@ import {
   startPlatforms,
   stopPlatforms,
   type PlatformAdapter,
-} from "@freeanima/legacy-gateway";
+} from "@freeanima/connectors-gateway";
 import { MCPManager, getAcpManager } from "@freeanima/legacy-integrations";
 import { DEFAULT_BIND_HOST, parseBindHosts } from "./bind-hosts.ts";
 import { closeHttpServers, waitForDrainWithTimeout } from "./http-shutdown.ts";

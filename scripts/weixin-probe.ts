@@ -3,13 +3,13 @@
 import { existsSync, readFileSync } from "node:fs";
 
 import { PATHS } from "@freeanima/service-config";
-import { getUpdates } from "../packages/gateway/src/weixin/ilink-api.ts";
-import { loadWeixinCredentials } from "../packages/gateway/src/weixin/weixin-credentials.ts";
+import { getUpdates } from "../connectors/gateway/src/weixin/ilink-api.ts";
+import { loadWeixinCredentials } from "../connectors/gateway/src/weixin/weixin-credentials.ts";
 import {
   explainInboundSkip,
   normalizeInboundMessage,
   parseUserTextMessage,
-} from "../packages/gateway/src/weixin/weixin-message.ts";
+} from "../connectors/gateway/src/weixin/weixin-message.ts";
 
 const creds = loadWeixinCredentials();
 if (!creds) {

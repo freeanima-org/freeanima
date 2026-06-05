@@ -1,0 +1,18 @@
+{
+  "name": "@freeanima/connectors-commands",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@freeanima/capabilities-clarify": "workspace:*",
+    "@freeanima/engine-conversation": "workspace:*",
+    "@freeanima/engine-tool": "workspace:*",
+    "@freeanima/kernel-schemas": "workspace:*",
+    "@freeanima/legacy-memory": "workspace:*",
+    "@freeanima/legacy-runtime": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:"
+  }
+}

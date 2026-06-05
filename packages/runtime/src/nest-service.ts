@@ -15,7 +15,7 @@ import {
   listCommandDefsForPlatform,
   isRetryResult,
 } from "./commands/index.ts";
-import type { CommandResult } from "./commands/registry.ts";
+import type { CommandResult, CommandDef } from "@freeanima/connectors-commands";
 import { logComponent, logSseError } from "@freeanima/service-logging";
 import * as conv from "@freeanima/engine-conversation";
 import { buildMessagesDisplay, paginateMessagesDisplay } from "./build-messages-display.ts";
@@ -42,7 +42,7 @@ import {
   resumeJob,
   enqueueRunJob,
 } from "./cron/index.ts";
-import type { CronJobData } from "./cron/models.ts";
+import type { CronJobData } from "@freeanima/connectors-cron";
 import { kernel } from "@freeanima/service-bootstrap";
 import { headOkStepData, messageIncoming, turnAfterComplete } from "@freeanima/kernel-hooks";
 import type { MessageIncomingEffect, TurnAfterCompleteEffect } from "@freeanima/kernel-hooks";
@@ -62,7 +62,6 @@ import { repairAndPersistToolLoop } from "@freeanima/engine-conversation";
 import { isInsufficientToolMessagesError } from "@freeanima/engine-llm";
 import { collectStreamReply } from "@freeanima/engine-loop";
 import * as engine from "@freeanima/engine-loop";
-import type { CommandDef } from "./commands/registry.ts";
 
 function streamErrorEvent(sessionId: string, message: string, err?: unknown): StreamEvent {
   logSseError(`/sessions/${sessionId}/messages/stream`, message, {

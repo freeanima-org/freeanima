@@ -2,7 +2,7 @@ export * from "./build-messages-display.ts";
 export * from "./nest-service.ts";
 export * from "./commands/index.ts";
 export * from "./cron/index.ts";
-export type { CronJobData } from "./cron/models.ts";
+export type { CronJobData } from "@freeanima/connectors-cron";
 export * from "./skills.ts";
 export * from "./session-todos.ts";
 export * from "./home-channel.ts";

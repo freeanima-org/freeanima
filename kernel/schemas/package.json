@@ -19,7 +19,7 @@
   "devDependencies": {
     "@freeanima/engine-tool": "workspace:*",
     "@freeanima/legacy-api": "workspace:*",
-    "@freeanima/legacy-gateway": "workspace:*",
+    "@freeanima/connectors-gateway": "workspace:*",
     "@freeanima/legacy-integrations": "workspace:*",
     "@types/bun": "catalog:"
   }

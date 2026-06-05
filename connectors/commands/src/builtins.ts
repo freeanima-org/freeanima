@@ -4,7 +4,7 @@ import {
   listCommandDefsForPlatform,
   registerCommand,
 } from "./registry.ts";
-import { clearAwaitingClarify, readAwaitingClarify } from "../clarify.ts";
+import { clearAwaitingClarify, readAwaitingClarify } from "@freeanima/capabilities-clarify";
 import {
   rebuildSessionSystemPrompt,
   loadSessionMeta,
@@ -16,13 +16,13 @@ import {
   newSession,
   recompressSession,
 } from "@freeanima/engine-conversation";
-import { statsReport } from "../conversation-stats.ts";
+import { statsReport } from "@freeanima/legacy-runtime/conversation-stats";
 import { listTools } from "@freeanima/engine-tool";
 import { isSessionMeta } from "@freeanima/kernel-schemas";
 import { distillFromPg } from "@freeanima/legacy-memory/clean";
 import { isReflectEnabled } from "@freeanima/legacy-memory";
 import { reflectSession } from "@freeanima/legacy-memory/reflect";
-import { setHomeChannel } from "../home-channel.ts";
+import { setHomeChannel } from "@freeanima/legacy-runtime/home-channel";
 
 function cmdHelp(ctx: CommandContext): string {
   const available = listCommandDefsForPlatform(ctx.platform);

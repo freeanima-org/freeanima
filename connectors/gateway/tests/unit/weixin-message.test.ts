@@ -8,7 +8,7 @@ import {
   extractTextFromMessage,
   normalizeInboundMessage,
   parseUserTextMessage,
-} from "@freeanima/legacy-gateway";
+} from "@freeanima/connectors-gateway";
 
 describe("weixin-message", () => {
   it("extracts text from item_list", () => {
