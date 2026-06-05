@@ -4,8 +4,8 @@ import {
   type FactData,
   type FactSource,
   type FactType,
-} from "@freeanima/legacy-kernel";
-import { safeParseOrNull } from "@freeanima/legacy-kernel";
+} from "@freeanima/kernel-schemas";
+import { safeParseOrNull } from "@freeanima/kernel-schemas";
 
 export const FRONTMATTER_DELIM = "---";
 

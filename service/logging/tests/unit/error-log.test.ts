@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 import { readFileSync, existsSync } from "node:fs";
-import { logError, logApiError, logStartupError, PATHS } from "@freeanima/legacy-kernel";
+import { logApiError, logError, logStartupError } from "@freeanima/service-logging";
+import { PATHS } from "@freeanima/service-config";
 import { beginLogIsolation, endLogIsolation } from "../../../../tests/helpers/log-isolation.ts";
 
 describe("error-log", () => {

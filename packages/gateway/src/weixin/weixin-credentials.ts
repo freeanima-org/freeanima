@@ -1,4 +1,5 @@
-import { credentialRaw, logComponent } from "@freeanima/legacy-kernel";
+import { credentialRaw } from "@freeanima/service-config";
+import { logComponent } from "@freeanima/service-logging";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";

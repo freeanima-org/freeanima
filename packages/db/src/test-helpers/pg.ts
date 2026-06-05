@@ -1,8 +1,8 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { clearConfigCache } from "@freeanima/legacy-kernel";
-import type { SessionMessage, SessionMetaMessage } from "@freeanima/legacy-kernel";
+import { clearConfigCache } from "@freeanima/service-config";
+import type { SessionMessage, SessionMetaMessage } from "@freeanima/kernel-schemas";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 

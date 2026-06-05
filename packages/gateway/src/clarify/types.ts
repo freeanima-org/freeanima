@@ -1,4 +1,4 @@
-import type { ClarifyItem } from "@freeanima/legacy-kernel";
+import type { ClarifyItem } from "@freeanima/kernel-schemas";
 
 export type ClarifyPayload = {
   items: ClarifyItem[];

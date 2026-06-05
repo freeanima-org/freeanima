@@ -5,7 +5,7 @@ import type {
   SafeConfigSnapshot,
   ServiceSnapshot,
   SessionSummary,
-} from "@freeanima/legacy-kernel";
+} from "@freeanima/kernel-schemas";
 import type { CronJobData } from "@freeanima/legacy-runtime";
 import type {
   CronJobsResponse,

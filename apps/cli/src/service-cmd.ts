@@ -1,4 +1,4 @@
-import { installErrorLogHandlers, logStartupError } from "@freeanima/legacy-kernel";
+import { installErrorLogHandlers, logStartupError } from "@freeanima/service-logging";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { spawnSync, spawn } from "node:child_process";
 import { isServerAlive, readStatusFile } from "@freeanima/legacy-server/alive";

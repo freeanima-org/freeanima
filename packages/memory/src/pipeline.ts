@@ -1,7 +1,7 @@
-import { logComponent } from "@freeanima/legacy-kernel";
+import { logComponent } from "@freeanima/service-logging";
 import type { EventBus } from "@freeanima/kernel-eventbus";
-import { isDebugSession } from "@freeanima/legacy-kernel";
-import { loadConfig } from "@freeanima/legacy-kernel";
+import { isDebugSession } from "@freeanima/service-config";
+import { loadConfig } from "@freeanima/service-config";
 import { distillFromPg } from "./clean.ts";
 import { l2Updated, l3Updated, sessionUpdated } from "./events.ts";
 import { indexL2Session } from "./l2-indexer.ts";

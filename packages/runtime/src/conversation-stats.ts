@@ -1,6 +1,6 @@
 import { listSessions, load, loadSessionMeta, sessionExists } from "@freeanima/engine-conversation";
-import { isSessionMeta } from "@freeanima/legacy-kernel";
-import type { SessionMessage } from "@freeanima/legacy-kernel";
+import { isSessionMeta } from "@freeanima/kernel-schemas";
+import type { SessionMessage } from "@freeanima/kernel-schemas";
 import {
   analyzeCompression,
   getCompressionConfig,
@@ -8,7 +8,7 @@ import {
   isCompressed,
   parseCompressionState,
 } from "@freeanima/engine-compress";
-import { getProfileHopModel, loadConfig } from "@freeanima/legacy-kernel";
+import { getProfileHopModel, loadConfig } from "@freeanima/service-config";
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
 import {
   computeRuntimeContextBreakdown,

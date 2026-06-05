@@ -1,4 +1,4 @@
-import { logComponent } from "@freeanima/legacy-kernel";
+import { logComponent } from "@freeanima/service-logging";
 import { withDiscordRetry } from "./discord/discord-retry.ts";
 import type { CronDeliverTarget } from "@freeanima/legacy-runtime";
 import { registerCronDeliverer, unregisterCronDeliverer } from "@freeanima/legacy-runtime";

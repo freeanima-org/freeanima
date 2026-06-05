@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { CST_OFFSET_MS } from "@freeanima/legacy-kernel";
+import { CST_OFFSET_MS } from "@freeanima/service-config";
 import { CronJob } from "./models.ts";
 import * as store from "./store.ts";
 import { computeNextRun } from "./schedule.ts";

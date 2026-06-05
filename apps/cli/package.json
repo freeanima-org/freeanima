@@ -5,9 +5,10 @@
     "anima": "./src/cli.ts"
   },
   "dependencies": {
-    "@freeanima/legacy-kernel": "workspace:*",
     "@freeanima/legacy-runtime": "workspace:*",
     "@freeanima/legacy-server": "workspace:*",
+    "@freeanima/service-config": "workspace:*",
+    "@freeanima/service-logging": "workspace:*",
     "commander": "^12.1.0"
   },
   "devDependencies": {

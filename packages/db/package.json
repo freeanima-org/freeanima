@@ -12,7 +12,8 @@
   "dependencies": {
     "@freeanima/engine-provider-llm": "workspace:*",
     "@freeanima/kernel-schemas": "workspace:*",
-    "@freeanima/legacy-kernel": "workspace:*",
+    "@freeanima/service-config": "workspace:*",
+    "@freeanima/service-logging": "workspace:*",
     "drizzle-orm": "catalog:",
     "postgres": "^3.4.9",
     "zod": "catalog:"

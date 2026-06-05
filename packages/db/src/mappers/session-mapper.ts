@@ -1,13 +1,13 @@
 import {
-  type CompressionState,
-  compressionStateSchema,
-  type SessionMetaMessage,
-  sessionMetaSchema,
-  type SessionTodoStore,
-  sessionTodoStoreSchema,
-  openAiToolSchema,
   awaitingClarifySchema,
-} from "@freeanima/legacy-kernel";
+  compressionStateSchema,
+  openAiToolSchema,
+  sessionMetaSchema,
+  sessionTodoStoreSchema,
+  type CompressionState,
+  type SessionMetaMessage,
+  type SessionTodoStore,
+} from "@freeanima/kernel-schemas";
 import { z } from "zod";
 
 import { buildPlatformInfo, splitPlatformInfo } from "../schema/jsonb/platform-info.ts";

@@ -3,19 +3,21 @@
   "private": true,
   "type": "module",
   "devDependencies": {
+    "@freeanima/connectors-eventbus-sqlite": "workspace:*",
+    "@freeanima/engine": "workspace:*",
     "@freeanima/engine-conversation": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",
     "@freeanima/kernel-eventbus": "workspace:*",
-    "@freeanima/connectors-eventbus-sqlite": "workspace:*",
     "@freeanima/kernel-logging": "workspace:*",
+    "@freeanima/kernel-schemas": "workspace:*",
     "@freeanima/legacy-clarify": "workspace:*",
     "@freeanima/legacy-db": "workspace:*",
-    "@freeanima/engine": "workspace:*",
     "@freeanima/legacy-integrations": "workspace:*",
-    "@freeanima/legacy-kernel": "workspace:*",
     "@freeanima/legacy-memory": "workspace:*",
     "@freeanima/legacy-runtime": "workspace:*",
     "@freeanima/legacy-server": "workspace:*",
+    "@freeanima/service-config": "workspace:*",
+    "@freeanima/service-logging": "workspace:*",
     "@types/node": "catalog:"
   }
 }

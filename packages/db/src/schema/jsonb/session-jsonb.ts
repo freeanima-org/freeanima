@@ -5,7 +5,7 @@ import {
   compressionStateSchema,
   openAiToolSchema,
   sessionTodoStoreSchema,
-} from "@freeanima/legacy-kernel";
+} from "@freeanima/kernel-schemas";
 
 /** sessions.compression */
 export type CompressionJson = z.infer<typeof compressionStateSchema>;

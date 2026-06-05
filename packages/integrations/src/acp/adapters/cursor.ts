@@ -1,4 +1,4 @@
-import { logComponent } from "@freeanima/legacy-kernel";
+import { logComponent } from "@freeanima/service-logging";
 import { permissionAllowOnce, parseSessionUpdateChunk } from "./generic.ts";
 import type { AcpAgentAdapter } from "./types.ts";
 

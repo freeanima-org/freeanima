@@ -1,4 +1,4 @@
-import { credential, insertCredential, listCredentials } from "@freeanima/legacy-kernel";
+import { credential, insertCredential, listCredentials } from "@freeanima/service-config";
 import type { Command } from "commander";
 
 import { printCliError } from "../output/errors.ts";

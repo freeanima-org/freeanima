@@ -5,7 +5,6 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@freeanima/legacy-kernel": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "zod": "catalog:"
   },

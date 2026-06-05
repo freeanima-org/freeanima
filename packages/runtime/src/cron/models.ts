@@ -1,5 +1,5 @@
-import { cronJobDataSchema, type CronJobData } from "@freeanima/legacy-kernel";
-import { safeParseOrNull } from "@freeanima/legacy-kernel";
+import { cronJobDataSchema, type CronJobData } from "@freeanima/kernel-schemas";
+import { safeParseOrNull } from "@freeanima/kernel-schemas";
 
 export type { CronJobData };
 

@@ -19,7 +19,7 @@ import {
   parseGitignore,
   isIgnored,
 } from "@freeanima/legacy-runtime";
-import { clearConfigCache } from "@freeanima/legacy-kernel";
+import { clearConfigCache } from "@freeanima/service-config";
 
 describePg("studio", () => {
   let workspace: string;

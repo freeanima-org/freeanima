@@ -1,4 +1,4 @@
-import { logComponent } from "@freeanima/legacy-kernel";
+import { logComponent } from "@freeanima/service-logging";
 import type { NestService } from "@freeanima/legacy-runtime";
 import type { WebuiServerHandle } from "./webui-server.ts";
 

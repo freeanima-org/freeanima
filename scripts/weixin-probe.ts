@@ -2,7 +2,7 @@
 /** 微信 iLink 探活：getupdates 一次，打印 ret / msgs 数量 / 首条摘要（需 pass services/weixin-ilink） */
 import { existsSync, readFileSync } from "node:fs";
 
-import { PATHS } from "../packages/kernel/src/paths.ts";
+import { PATHS } from "@freeanima/service-config";
 import { getUpdates } from "../packages/gateway/src/weixin/ilink-api.ts";
 import { loadWeixinCredentials } from "../packages/gateway/src/weixin/weixin-credentials.ts";
 import {

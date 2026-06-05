@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { extname, join, relative, resolve } from "node:path";
-import { patchConfigSection, loadConfig } from "@freeanima/legacy-kernel";
+import { loadConfig, patchConfigSection } from "@freeanima/service-config";
 import { DEFAULT_SKIP_DIRS, isIgnored, loadGitignoreStack } from "./studio-gitignore.ts";
 
 export const MAX_FILE_BYTES = 1024 * 1024;

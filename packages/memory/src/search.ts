@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { PATHS } from "@freeanima/legacy-kernel";
+import { PATHS } from "@freeanima/service-config";
 import { getStore } from "./store.ts";
 import { factScore } from "./fact.ts";
 import { searchL2 } from "./l2-indexer.ts";

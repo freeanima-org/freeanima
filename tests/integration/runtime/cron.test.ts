@@ -28,7 +28,7 @@ import {
   Scheduler,
   cronStore,
 } from "@freeanima/legacy-runtime";
-import { patchConfigSection } from "@freeanima/legacy-kernel";
+import { patchConfigSection } from "@freeanima/service-config";
 import { seedSession } from "@freeanima/legacy-db/test-helpers";
 
 describePg("cron", () => {

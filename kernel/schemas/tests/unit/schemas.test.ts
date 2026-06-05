@@ -1,22 +1,19 @@
 import { describe, it, expect } from "bun:test";
-import { cronJobDataSchema } from "../../src/schemas/cron.ts";
-import { eventPayloadSchemas, sessionUpdatedPayloadSchema } from "../../src/schemas/events.ts";
-import { l2LineSchema, factExtractionSchema } from "../../src/schemas/l2.ts";
-import { toolArgsSchema, toolErrorSchema } from "../../src/schemas/tool-json.ts";
+import { cronJobDataSchema } from "../../src/cron.ts";
+import { eventPayloadSchemas, sessionUpdatedPayloadSchema } from "../../src/events.ts";
+import { l2LineSchema, factExtractionSchema } from "../../src/l2.ts";
+import { toolArgsSchema, toolErrorSchema } from "@freeanima/engine-tool";
 import {
   createSessionBodySchema,
   sendMessageBodySchema,
   memorySearchBodySchema,
-} from "../../../api/src/schemas.ts";
-import {
-  parseCompressionState,
-  clarifyToolAwaitingResultSchema,
-} from "../../src/schemas/session-meta.ts";
-import { jsonRpcMessageSchema } from "../../../integrations/src/schemas/acp-jsonrpc.ts";
+} from "../../../../packages/api/src/schemas.ts";
+import { parseCompressionState, clarifyToolAwaitingResultSchema } from "../../src/session-meta.ts";
+import { jsonRpcMessageSchema } from "../../../../packages/integrations/src/schemas/acp-jsonrpc.ts";
 import {
   weixinSyncSchema,
   weixinContextTokensSchema,
-} from "../../../gateway/src/schemas/weixin.ts";
+} from "../../../../packages/gateway/src/schemas/weixin.ts";
 
 describe("schemas/cron", () => {
   it("parses minimal cron job", () => {
@@ -121,7 +118,7 @@ describe("schemas/clarify tool result", () => {
 
 describe("schemas/message", () => {
   it("parseSessionLine 接受 pos", async () => {
-    const { parseSessionLine } = await import("../../src/schemas/message.ts");
+    const { parseSessionLine } = await import("../../src/message.ts");
     const parsed = parseSessionLine(
       JSON.stringify({ role: "user", content: "hi", pos: 3, timestamp: "t" }),
     );
@@ -131,7 +128,7 @@ describe("schemas/message", () => {
   });
 
   it("parseSessionLine 将 legacy id 映射为 pos", async () => {
-    const { parseSessionLine } = await import("../../src/schemas/message.ts");
+    const { parseSessionLine } = await import("../../src/message.ts");
     const parsed = parseSessionLine(
       JSON.stringify({ role: "user", content: "hi", id: 5, timestamp: "t" }),
     );

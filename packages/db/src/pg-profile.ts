@@ -1,6 +1,6 @@
 /** 进程内 L1 PG 诊断：`ANIMA_L1_PG_PROFILE=1` 时统计 op 次数与耗时 */
 
-import { logComponent } from "@freeanima/legacy-kernel";
+import { logComponent } from "@freeanima/service-logging";
 
 type ProfileEntry = {
   op: string;

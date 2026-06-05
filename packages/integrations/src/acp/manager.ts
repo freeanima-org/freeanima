@@ -1,6 +1,7 @@
 import { getToolSessionId } from "@freeanima/engine-loop";
 import { listTools, registerTool, toolError } from "@freeanima/engine-tool";
-import { loadConfig, logComponent } from "@freeanima/legacy-kernel";
+import { loadConfig } from "@freeanima/service-config";
+import { logComponent } from "@freeanima/service-logging";
 
 import { AcpAgentQueue } from "./agent-queue.ts";
 import { resolveAcpAdapter } from "./adapters/registry.ts";

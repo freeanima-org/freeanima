@@ -1,4 +1,4 @@
-import { logApiError } from "@freeanima/legacy-kernel";
+import { logApiError } from "@freeanima/service-logging";
 
 export class ApiHandlerError extends Error {
   readonly status: 400 | 404 | 500 | 503;

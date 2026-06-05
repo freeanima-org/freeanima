@@ -1,8 +1,8 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
-import { PATHS, CST_OFFSET_MS } from "@freeanima/legacy-kernel";
+import { CST_OFFSET_MS, PATHS } from "@freeanima/service-config";
 import { CronJob } from "./models.ts";
-import { cronJobsFileSchema } from "@freeanima/legacy-kernel";
+import { cronJobsFileSchema } from "@freeanima/kernel-schemas";
 
 export const JOBS_FILE = () => join(PATHS.cronDir, "jobs.json");
 export const SCRIPTS_DIR = () => join(PATHS.cronDir, "scripts");

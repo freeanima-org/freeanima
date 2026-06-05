@@ -1,5 +1,7 @@
 import { SteppedBackoff } from "@freeanima/kernel-retry";
-import { safeParseOrNull, PATHS, logComponent } from "@freeanima/legacy-kernel";
+import { safeParseOrNull } from "@freeanima/kernel-schemas";
+import { PATHS } from "@freeanima/service-config";
+import { logComponent } from "@freeanima/service-logging";
 import type { NestService } from "@freeanima/legacy-runtime";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";

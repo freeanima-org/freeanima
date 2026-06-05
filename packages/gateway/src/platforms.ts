@@ -1,4 +1,5 @@
-import { credential, loadConfig, logComponent } from "@freeanima/legacy-kernel";
+import { credential, loadConfig } from "@freeanima/service-config";
+import { logComponent } from "@freeanima/service-logging";
 import type { NestService } from "@freeanima/legacy-runtime";
 
 import { loadWeixinCredentials } from "./weixin/weixin-credentials.ts";
