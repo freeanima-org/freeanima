@@ -6,11 +6,12 @@
     "./schemas/weixin": "./src/schemas/weixin.ts"
   },
   "dependencies": {
+    "@freeanima/connectors-cron": "workspace:*",
     "@freeanima/engine-conversation": "workspace:*",
     "@freeanima/engine-loop": "workspace:*",
     "@freeanima/kernel-retry": "workspace:*",
     "@freeanima/kernel-schemas": "workspace:*",
-    "@freeanima/service": "workspace:*",
+    "@freeanima/service-api": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "@freeanima/service-logging": "workspace:*",
     "discord.js": "^14.26.4",

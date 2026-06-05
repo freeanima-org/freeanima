@@ -6,14 +6,12 @@
     "./*": "./src/*.ts"
   },
   "dependencies": {
-    "@freeanima/engine": "workspace:*",
     "@freeanima/engine-conversation": "workspace:*",
-    "@freeanima/engine-loop": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",
     "@freeanima/engine-provider-llm": "workspace:*",
     "@freeanima/kernel-schemas": "workspace:*",
     "@freeanima/life-memory": "workspace:*",
-    "@freeanima/service": "workspace:*",
+    "@freeanima/service-api": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "@freeanima/service-logging": "workspace:*",
     "cron-parser": "^5.5.0",

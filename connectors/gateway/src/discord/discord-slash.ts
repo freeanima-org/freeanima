@@ -1,5 +1,5 @@
 import { logComponent } from "@freeanima/service-logging";
-import type { AnimaService } from "@freeanima/service";
+import type { AnimaService } from "@freeanima/service-api";
 import {
   REST,
   Routes,

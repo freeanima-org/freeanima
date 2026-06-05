@@ -1,5 +1,5 @@
 import { logComponent } from "@freeanima/service-logging";
-import { getHomeChannel } from "@freeanima/service/runtime/home-channel";
+import { getHomeChannel } from "@freeanima/service-api/home-channel";
 import type { CronJob } from "./models.ts";
 
 export type CronDeliverTarget = {

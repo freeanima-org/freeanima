@@ -16,7 +16,7 @@ import {
 import { loadSessionMeta } from "@freeanima/engine-conversation";
 import { RateLimitedLogger } from "@freeanima/kernel-retry";
 import { logComponent } from "@freeanima/service-logging";
-import type { AnimaService } from "@freeanima/service";
+import type { AnimaService } from "@freeanima/service-api";
 import type { PlatformAdapter } from "../platforms.ts";
 import { formatClarifyForPlatform, parseClarifyStreamEvent } from "../clarify/index.ts";
 import { registerDiscordCronDeliverer, unregisterDiscordCronDeliverer } from "../cron-deliver.ts";

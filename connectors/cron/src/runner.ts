@@ -8,7 +8,7 @@ import { logComponent } from "@freeanima/service-logging";
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
 import * as conv from "@freeanima/engine-conversation";
 import { loadSkill } from "@freeanima/life-memory";
-import { runSimpleTurn } from "@freeanima/service/runtime/turn-lifecycle";
+import { runSimpleTurn } from "@freeanima/service-api/turn-lifecycle";
 import type { CronJob } from "./models.ts";
 import * as store from "./store.ts";
 import { computeNextRun } from "./schedule.ts";

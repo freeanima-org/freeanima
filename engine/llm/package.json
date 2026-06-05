@@ -9,10 +9,10 @@
     "@freeanima/engine-provider-llm": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",
     "@freeanima/kernel-schemas": "workspace:*",
-    "@freeanima/service-config": "workspace:*",
-    "@freeanima/kernel-db": "workspace:*"
+    "@freeanima/service-config": "workspace:*"
   },
   "devDependencies": {
+    "@freeanima/kernel-db": "workspace:*",
     "@types/bun": "catalog:"
   }
 }

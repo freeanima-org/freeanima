@@ -1,6 +1,6 @@
 import { credential, loadConfig } from "@freeanima/service-config";
 import { logComponent } from "@freeanima/service-logging";
-import type { AnimaService } from "@freeanima/service";
+import type { AnimaService } from "@freeanima/service-api";
 
 import { loadWeixinCredentials } from "./weixin/weixin-credentials.ts";
 

@@ -1,7 +1,10 @@
 import { logComponent } from "@freeanima/service-logging";
 import { withDiscordRetry } from "./discord/discord-retry.ts";
-import type { CronDeliverTarget } from "@freeanima/service";
-import { registerCronDeliverer, unregisterCronDeliverer } from "@freeanima/service";
+import {
+  registerCronDeliverer,
+  unregisterCronDeliverer,
+  type CronDeliverTarget,
+} from "@freeanima/connectors-cron";
 import type { Client, TextBasedChannel } from "discord.js";
 
 import { sendText } from "./weixin/ilink-api.ts";

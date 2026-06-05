@@ -42,11 +42,11 @@
 
 新栈 workspace 包名 **以层名为首段前缀**：
 
-| 形态     | 模式                               | 示例                             |
-| -------- | ---------------------------------- | -------------------------------- |
-| 层聚合   | `@freeanima/{layer}`               | `kernel`、`engine`               |
-| 层内组件 | `@freeanima/{layer}-{slug}`        | `kernel-eventbus`、`engine-tool` |
-| 层内实现 | `@freeanima/{layer}-{slug}-{impl}` | `connectors-eventbus-sqlite`     |
+| 形态     | 模式                               | 示例                                            |
+| -------- | ---------------------------------- | ----------------------------------------------- |
+| 层聚合   | `@freeanima/{layer}`               | `kernel`、`engine`                              |
+| 层内组件 | `@freeanima/{layer}-{slug}`        | `kernel-eventbus`、`engine-tool`、`service-api` |
+| 层内实现 | `@freeanima/{layer}-{slug}-{impl}` | `connectors-eventbus-sqlite`                    |
 
 - slug 合成词不加内连字符（`eventbus` 非 `event-bus`）
 - Hook / EventTopic 的 `qualifiedId` 与 npm 包名独立
