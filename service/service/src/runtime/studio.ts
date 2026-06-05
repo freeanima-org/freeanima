@@ -262,8 +262,7 @@ function searchWithRipgrep(query: string, root: string): SearchHit[] | null {
     ],
     { encoding: "utf-8", timeout: 60_000, maxBuffer: 8 * 1024 * 1024 },
   );
-  if (proc.error?.message?.includes("ENOENT")) return null;
-  if (proc.error) throw new Error(proc.error.message);
+  if (proc.error) return null;
   const code = proc.status ?? 1;
   if (code !== 0 && code !== 1) {
     throw new Error(String(proc.stderr ?? proc.stdout ?? "rg 搜索失败"));
