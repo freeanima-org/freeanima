@@ -1,4 +1,4 @@
-import type { ConversationPayload, OpenAiToolSchema, ToolCall } from "@freeanima/legacy-kernel";
+import type { ConversationPayload, OpenAiToolSchema, ToolCall } from "@freeanima/kernel-schemas";
 
 /** messages.payload — ConversationMessage 去掉 pos（pos 由列维护） */
 export type MessagePayload = ConversationPayload;

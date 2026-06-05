@@ -6,6 +6,7 @@
   },
   "dependencies": {
     "@freeanima/engine-llm": "workspace:*",
+    "@freeanima/kernel-schemas": "workspace:*",
     "@freeanima/legacy-kernel": "workspace:*"
   },
   "devDependencies": {

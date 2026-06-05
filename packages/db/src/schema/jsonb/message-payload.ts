@@ -1,4 +1,4 @@
-import { conversationPayloadSchema, type ConversationPayload } from "@freeanima/legacy-kernel";
+import { conversationPayloadSchema, type ConversationPayload } from "@freeanima/kernel-schemas";
 export type {
   LlmTurnMessage,
   MessagePayload,

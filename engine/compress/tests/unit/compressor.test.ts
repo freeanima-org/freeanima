@@ -1,5 +1,5 @@
 import { compress } from "@freeanima/engine-compress";
-import type { SessionMessage } from "@freeanima/legacy-kernel";
+import type { SessionMessage } from "@freeanima/kernel-schemas";
 import { describe, it, expect } from "bun:test";
 import { aa, assistantToolCall, toolMsg, ua } from "../helpers/session-fixtures.ts";
 

@@ -18,8 +18,8 @@ import { markToolLoopActivity } from "@freeanima/engine-compress";
 import { getToolSessionId } from "./tool-context.ts";
 import { maybeApplyEmergencyCompression } from "@freeanima/engine-conversation";
 import { REPAIR_REASON_INTERRUPT } from "@freeanima/engine-llm";
-import type { AssistantMessage, SessionMessage, ToolMessage } from "@freeanima/legacy-kernel";
-import type { OpenAiToolSchema } from "@freeanima/legacy-kernel";
+import type { AssistantMessage, SessionMessage, ToolMessage } from "@freeanima/kernel-schemas";
+import type { OpenAiToolSchema } from "@freeanima/kernel-schemas";
 
 export class MaxTurnsExceeded extends Error {
   override name = "MaxTurnsExceeded";

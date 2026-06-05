@@ -8,6 +8,7 @@
     "@freeanima/capabilities-provider-openai-compatible": "workspace:*",
     "@freeanima/engine-provider-llm": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",
+    "@freeanima/kernel-schemas": "workspace:*",
     "@freeanima/legacy-db": "workspace:*",
     "@freeanima/legacy-kernel": "workspace:*"
   },

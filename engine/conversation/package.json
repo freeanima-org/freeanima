@@ -10,6 +10,7 @@
     "@freeanima/engine-prompt": "workspace:*",
     "@freeanima/engine-provider-llm": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",
+    "@freeanima/kernel-schemas": "workspace:*",
     "@freeanima/legacy-db": "workspace:*",
     "@freeanima/legacy-kernel": "workspace:*"
   },

@@ -1,8 +1,8 @@
 import type { ChatCompletion } from "@freeanima/engine-provider-llm";
 import { PROFILE_CHAT, PROFILE_REFLECT, PROFILE_SUMMARY } from "@freeanima/engine-provider-llm";
-import type { OpenAiToolSchema, ToolCall } from "@freeanima/legacy-kernel";
+import type { OpenAiToolSchema, ToolCall } from "@freeanima/kernel-schemas";
 import type { LlmCallParams } from "@freeanima/engine-provider-llm";
-import type { SessionMessage } from "@freeanima/legacy-kernel";
+import type { SessionMessage } from "@freeanima/kernel-schemas";
 import {
   cleanToolCallsForApi,
   finalizeStreamingToolCalls,
