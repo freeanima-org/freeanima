@@ -1,4 +1,4 @@
-import type { LlmTurnMessage } from "@freeanima/legacy-db";
+import type { LlmTurnMessage } from "@freeanima/kernel-schemas";
 import type { SessionMessage } from "@freeanima/kernel-schemas";
 import { repairToolLoopMessages } from "./tool-loop-integrity.ts";
 

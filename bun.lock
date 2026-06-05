@@ -289,15 +289,13 @@
     "packages/db": {
       "name": "@freeanima/legacy-db",
       "dependencies": {
-        "@freeanima/engine-provider-llm": "workspace:*",
         "@freeanima/kernel-schemas": "workspace:*",
-        "@freeanima/service-config": "workspace:*",
-        "@freeanima/service-logging": "workspace:*",
         "drizzle-orm": "catalog:",
         "postgres": "^3.4.9",
         "zod": "catalog:",
       },
       "devDependencies": {
+        "@freeanima/service-config": "workspace:*",
         "@types/bun": "catalog:",
         "drizzle-kit": "catalog:",
       },

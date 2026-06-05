@@ -4,7 +4,7 @@ import {
   mergeStreamingToolCalls,
 } from "@freeanima/capabilities-provider-openai-compatible/stream-tools";
 import { messagesForApi } from "@freeanima/capabilities-provider-openai-compatible/messages";
-import type { LlmTurnMessage } from "@freeanima/legacy-db";
+import type { LlmTurnMessage } from "@freeanima/kernel-schemas";
 
 describe("mergeStreamingToolCalls", () => {
   it("merges deltas by index into one tool call with name", () => {

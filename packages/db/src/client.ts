@@ -1,4 +1,3 @@
-import { credential, loadConfig } from "@freeanima/service-config";
 import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
@@ -8,31 +7,23 @@ export interface DatabaseConfig {
   url: string;
 }
 
+export type DatabaseUrlResolver = () => string | null;
+
 export type Db = PostgresJsDatabase<DbRelations>;
 
+let databaseUrlResolver: DatabaseUrlResolver | null = null;
 let sqlClient: postgres.Sql | null = null;
 let dbInstance: Db | null = null;
 
-/** 解析 pass: 前缀或直连 URL */
-export function resolveDatabaseUrl(raw: string): string {
-  if (raw.startsWith("pass:")) {
-    const passPath = raw.slice("pass:".length);
-    try {
-      return credential(passPath, "url");
-    } catch {
-      return credential(passPath);
-    }
-  }
-  return raw;
+/** 由 service 层注入 database.url 解析（启动时调用一次） */
+export function initDatabase(opts: { getDatabaseUrl: DatabaseUrlResolver }): void {
+  databaseUrlResolver = opts.getDatabaseUrl;
 }
 
 export function getDatabaseConfig(): DatabaseConfig | null {
-  const cfg = loadConfig();
-  const db = cfg.database;
-  if (!db?.url) return null;
-  return {
-    url: resolveDatabaseUrl(db.url),
-  };
+  const url = databaseUrlResolver?.() ?? null;
+  if (!url) return null;
+  return { url };
 }
 
 /** 已配置 database.url（L1 Session 使用 PostgreSQL） */
@@ -63,4 +54,11 @@ export async function closeDb(): Promise<void> {
 export function setDbForTest(db: Db, client?: postgres.Sql): void {
   dbInstance = db;
   if (client) sqlClient = client;
+}
+
+/** 测试 teardown：重置 resolver 与连接 */
+export function resetDatabaseForTest(): void {
+  databaseUrlResolver = null;
+  sqlClient = null;
+  dbInstance = null;
 }
