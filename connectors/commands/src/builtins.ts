@@ -19,9 +19,9 @@ import {
 import { statsReport } from "@freeanima/legacy-runtime/conversation-stats";
 import { listTools } from "@freeanima/engine-tool";
 import { isSessionMeta } from "@freeanima/kernel-schemas";
-import { distillFromPg } from "@freeanima/legacy-memory/clean";
-import { isReflectEnabled } from "@freeanima/legacy-memory";
-import { reflectSession } from "@freeanima/legacy-memory/reflect";
+import { distillFromPg } from "@freeanima/life-memory/clean";
+import { isReflectEnabled } from "@freeanima/life-memory";
+import { reflectSession } from "@freeanima/life-memory/reflect";
 import { setHomeChannel } from "@freeanima/legacy-runtime/home-channel";
 
 function cmdHelp(ctx: CommandContext): string {

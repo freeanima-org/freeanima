@@ -7,7 +7,7 @@ import {
 import { SUMMARY_USER_PREFIX } from "@freeanima/engine-compress";
 import { getActiveSkillsContent } from "@freeanima/life-memory";
 import { isSessionMeta } from "@freeanima/kernel-schemas";
-import { decomposeSystemPromptParts } from "@freeanima/legacy-memory/system-prompt";
+import { decomposeSystemPromptParts } from "@freeanima/life-memory/system-prompt";
 import type { SessionMessage } from "@freeanima/kernel-schemas";
 import {
   estimateMessagesTokens,

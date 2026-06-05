@@ -11,7 +11,7 @@ import {
   searchL3Fts,
   indexL3Facts,
   indexL2Session,
-} from "@freeanima/legacy-memory";
+} from "@freeanima/life-memory";
 import { getTool } from "@freeanima/engine-tool";
 import { runWithToolContext } from "@freeanima/engine-loop";
 

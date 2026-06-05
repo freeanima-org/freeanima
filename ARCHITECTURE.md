@@ -409,7 +409,7 @@ conversation.py  emit("session:updated")
 | 错误语义     | 链中断                         | failed 步可继续；`ok`+`blocked` 短路                        |
 | 实现状态     | ✅ `registerMemoryPipeline` 等 | ✅ `@freeanima/kernel-hooks` + `@freeanima/service-logging` |
 
-记忆管道入口为 `registerMemoryPipeline`（`@freeanima/legacy-memory`）；`registerMemoryHandlers` 为兼容别名。Hooks 不是 EventBus 的替代品，两者互补。
+记忆管道入口为 `registerMemoryPipeline`（`@freeanima/life-memory`）；`registerMemoryHandlers` 为兼容别名。Hooks 不是 EventBus 的替代品，两者互补。
 
 ## 版本与发布
 

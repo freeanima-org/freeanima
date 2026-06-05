@@ -1,1 +1,1 @@
-export { registerMemoryTools } from "@freeanima/legacy-memory";
+export { registerMemoryTools } from "@freeanima/life-memory";

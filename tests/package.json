@@ -13,7 +13,7 @@
     "@freeanima/capabilities-clarify": "workspace:*",
     "@freeanima/kernel-db": "workspace:*",
     "@freeanima/legacy-integrations": "workspace:*",
-    "@freeanima/legacy-memory": "workspace:*",
+    "@freeanima/life-memory": "workspace:*",
     "@freeanima/legacy-runtime": "workspace:*",
     "@freeanima/legacy-server": "workspace:*",
     "@freeanima/service-config": "workspace:*",

@@ -106,8 +106,8 @@
         "@freeanima/engine-conversation": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
         "@freeanima/kernel-schemas": "workspace:*",
-        "@freeanima/legacy-memory": "workspace:*",
         "@freeanima/legacy-runtime": "workspace:*",
+        "@freeanima/life-memory": "workspace:*",
       },
       "devDependencies": {
         "@types/bun": "catalog:",
@@ -121,7 +121,6 @@
         "@freeanima/engine-loop": "workspace:*",
         "@freeanima/engine-provider-llm": "workspace:*",
         "@freeanima/kernel-schemas": "workspace:*",
-        "@freeanima/legacy-memory": "workspace:*",
         "@freeanima/legacy-runtime": "workspace:*",
         "@freeanima/life-memory": "workspace:*",
         "@freeanima/service-config": "workspace:*",
@@ -346,6 +345,7 @@
         "zod": "catalog:",
       },
       "devDependencies": {
+        "@freeanima/engine-loop": "workspace:*",
         "@types/bun": "catalog:",
       },
     },
@@ -378,24 +378,6 @@
         "@types/bun": "catalog:",
       },
     },
-    "packages/memory": {
-      "name": "@freeanima/legacy-memory",
-      "dependencies": {
-        "@freeanima/connectors-sqlite": "workspace:*",
-        "@freeanima/engine-tool": "workspace:*",
-        "@freeanima/kernel-db": "workspace:*",
-        "@freeanima/kernel-eventbus": "workspace:*",
-        "@freeanima/kernel-schemas": "workspace:*",
-        "@freeanima/life-memory": "workspace:*",
-        "@freeanima/service-config": "workspace:*",
-        "@freeanima/service-logging": "workspace:*",
-        "yaml": "^2.9.0",
-      },
-      "devDependencies": {
-        "@freeanima/engine-loop": "workspace:*",
-        "@types/bun": "catalog:",
-      },
-    },
     "packages/runtime": {
       "name": "@freeanima/legacy-runtime",
       "dependencies": {
@@ -413,7 +395,6 @@
         "@freeanima/kernel-eventbus": "workspace:*",
         "@freeanima/kernel-hooks": "workspace:*",
         "@freeanima/kernel-schemas": "workspace:*",
-        "@freeanima/legacy-memory": "workspace:*",
         "@freeanima/life-memory": "workspace:*",
         "@freeanima/service-bootstrap": "workspace:*",
         "@freeanima/service-config": "workspace:*",
@@ -439,9 +420,9 @@
         "@freeanima/kernel-schemas": "workspace:*",
         "@freeanima/legacy-api": "workspace:*",
         "@freeanima/legacy-integrations": "workspace:*",
-        "@freeanima/legacy-memory": "workspace:*",
         "@freeanima/legacy-runtime": "workspace:*",
         "@freeanima/legacy-tools": "workspace:*",
+        "@freeanima/life-memory": "workspace:*",
         "@freeanima/service-bootstrap": "workspace:*",
         "@freeanima/service-config": "workspace:*",
         "@freeanima/service-logging": "workspace:*",
@@ -463,7 +444,6 @@
         "@freeanima/capabilities-clarify": "workspace:*",
         "@freeanima/engine-loop": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
-        "@freeanima/legacy-memory": "workspace:*",
         "@freeanima/legacy-runtime": "workspace:*",
         "@freeanima/life-memory": "workspace:*",
         "@freeanima/service-config": "workspace:*",
@@ -520,9 +500,9 @@
         "@freeanima/kernel-logging": "workspace:*",
         "@freeanima/kernel-schemas": "workspace:*",
         "@freeanima/legacy-integrations": "workspace:*",
-        "@freeanima/legacy-memory": "workspace:*",
         "@freeanima/legacy-runtime": "workspace:*",
         "@freeanima/legacy-server": "workspace:*",
+        "@freeanima/life-memory": "workspace:*",
         "@freeanima/service-config": "workspace:*",
         "@freeanima/service-logging": "workspace:*",
         "@types/node": "catalog:",
@@ -709,8 +689,6 @@
     "@freeanima/legacy-cli": ["@freeanima/legacy-cli@workspace:apps/cli"],
 
     "@freeanima/legacy-integrations": ["@freeanima/legacy-integrations@workspace:packages/integrations"],
-
-    "@freeanima/legacy-memory": ["@freeanima/legacy-memory@workspace:packages/memory"],
 
     "@freeanima/legacy-runtime": ["@freeanima/legacy-runtime@workspace:packages/runtime"],
 
