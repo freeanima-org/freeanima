@@ -13,7 +13,7 @@ import {
   getBoundAcpSession,
   readAcpSessions,
   unbindAcpSession,
-} from "@freeanima/legacy-integrations";
+} from "@freeanima/capabilities-acp";
 
 describePg("acp nest-binding", () => {
   let nestSid: string;

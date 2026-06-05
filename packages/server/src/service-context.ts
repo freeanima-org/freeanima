@@ -1,5 +1,6 @@
 import type { NestService } from "@freeanima/legacy-runtime";
-import type { AcpManager, MCPManager } from "@freeanima/legacy-integrations";
+import type { AcpManager } from "@freeanima/capabilities-acp";
+import type { MCPManager } from "@freeanima/capabilities-mcp";
 
 export type ServiceContext = {
   service: NestService;

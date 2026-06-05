@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { sanitizeMcpConfig, isMcpServerEnabled } from "../../src/mcp/status.ts";
-import { MCPManager } from "../../src/mcp/manager.ts";
+import { sanitizeMcpConfig, isMcpServerEnabled } from "../../src/status.ts";
+import { MCPManager } from "../../src/manager.ts";
 import { beginLogIsolation, endLogIsolation } from "../../../../tests/helpers/log-isolation.ts";
 import { MINIMAL_LLM_YAML } from "../../../../tests/helpers/minimal-llm-config.ts";
 

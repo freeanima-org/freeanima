@@ -1,25 +1,24 @@
 {
-  "name": "@freeanima/connectors-cron",
+  "name": "@freeanima/capabilities-acp",
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./schemas/acp-jsonrpc": "./src/schemas/acp-jsonrpc.ts",
     "./*": "./src/*.ts"
   },
   "dependencies": {
-    "@freeanima/engine": "workspace:*",
     "@freeanima/engine-conversation": "workspace:*",
     "@freeanima/engine-loop": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",
-    "@freeanima/engine-provider-llm": "workspace:*",
     "@freeanima/kernel-schemas": "workspace:*",
-    "@freeanima/life-memory": "workspace:*",
-    "@freeanima/legacy-runtime": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "@freeanima/service-logging": "workspace:*",
-    "cron-parser": "^5.5.0",
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@freeanima/engine-conversation": "workspace:*",
+    "@freeanima/engine-loop": "workspace:*",
+    "@freeanima/service-config": "workspace:*",
     "@types/bun": "catalog:"
   }
 }

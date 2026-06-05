@@ -1,4 +1,4 @@
-import { NEST_VERSION } from "@freeanima/legacy-runtime";
+import { readAppVersion } from "@freeanima/service-config";
 import { logComponent } from "@freeanima/service-logging";
 
 import { existsSync } from "node:fs";
@@ -8,7 +8,7 @@ import { genericAcpAdapter, parseSessionUpdateChunk } from "./adapters/generic.t
 import { resolveAcpAdapter } from "./adapters/registry.ts";
 import type { AcpAgentAdapter } from "./adapters/types.ts";
 import type { AcpAgentConfig } from "./status.ts";
-import { jsonRpcMessageSchema, type JsonRpcMessage } from "../schemas/acp-jsonrpc.ts";
+import { jsonRpcMessageSchema, type JsonRpcMessage } from "./schemas/acp-jsonrpc.ts";
 
 export const DEFAULT_CONNECT_TIMEOUT_MS = 15_000;
 export const DEFAULT_PROMPT_TIMEOUT_MS = 120_000;
@@ -138,7 +138,7 @@ export class ACPClient {
         fs: { readTextFile: false, writeTextFile: false },
         terminal: false,
       },
-      clientInfo: { name: "anima", version: NEST_VERSION },
+      clientInfo: { name: "anima", version: readAppVersion() },
     });
 
     if (this.adapter.afterInitialize) {

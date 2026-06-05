@@ -4,8 +4,8 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { clearConfigCache } from "@freeanima/service-config";
 import { MINIMAL_LLM_YAML } from "../../../../tests/helpers/minimal-llm-config.ts";
-import { sanitizeAcpConfig, shortSessionId, isAcpAgentEnabled } from "../../src/acp/status.ts";
-import { AcpManager } from "../../src/acp/manager.ts";
+import { sanitizeAcpConfig, shortSessionId, isAcpAgentEnabled } from "../../src/status.ts";
+import { AcpManager } from "../../src/manager.ts";
 
 describe("isAcpAgentEnabled", () => {
   it("缺省或为 true 时启用", () => {

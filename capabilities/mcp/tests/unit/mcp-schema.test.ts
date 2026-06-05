@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { extractMcpResult, mcpToolParameters } from "@freeanima/legacy-integrations";
+import { extractMcpResult, mcpToolParameters } from "@freeanima/capabilities-mcp";
 
 describe("mcpToolParameters", () => {
   it("returns flat JSON Schema from inputSchema", () => {
