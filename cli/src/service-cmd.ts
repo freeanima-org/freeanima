@@ -1,7 +1,7 @@
 import { installErrorLogHandlers, logStartupError } from "@freeanima/service-logging";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { spawnSync, spawn } from "node:child_process";
-import { isServerAlive, readStatusFile } from "@freeanima/legacy-server/alive";
+import { isServerAlive, readStatusFile } from "@freeanima/service/alive";
 import {
   apiGet,
   checkServerAlive,
@@ -16,8 +16,8 @@ import {
   writeStatusLine,
 } from "./service-common.ts";
 
-import { parseBindHosts } from "@freeanima/legacy-server/bind-hosts";
-import { REPO_ROOT } from "@freeanima/legacy-runtime";
+import { parseBindHosts } from "@freeanima/service/bind-hosts";
+import { REPO_ROOT } from "@freeanima/service";
 import { renderSystemdUnit, systemdUserAvailable, SYSTEMD_UNIT } from "./systemd-unit.ts";
 
 export type ServiceArgs = {
@@ -293,7 +293,7 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
       console.log("逸灵风 · 前台启动（WebUI dev 模式）…");
       installErrorLogHandlers();
       try {
-        const { serve } = await import("@freeanima/legacy-server");
+        const { serve } = await import("@freeanima/service");
         await serve(args.host, args.port, { foreground: true });
       } catch (e) {
         logStartupError("服务启动失败", e);

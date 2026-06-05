@@ -1,12 +1,14 @@
 {
-  "name": "@freeanima/legacy-cli",
+  "name": "@freeanima/cli",
   "type": "module",
   "bin": {
     "anima": "./src/cli.ts"
   },
+  "exports": {
+    ".": "./src/cli.ts"
+  },
   "dependencies": {
-    "@freeanima/legacy-runtime": "workspace:*",
-    "@freeanima/legacy-server": "workspace:*",
+    "@freeanima/service": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "@freeanima/service-logging": "workspace:*",
     "commander": "^12.1.0"
