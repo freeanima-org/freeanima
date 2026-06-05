@@ -1,9 +1,23 @@
 import { compress } from "@freeanima/engine-compress";
 import type { SessionMessage } from "@freeanima/kernel-schemas";
-import { describe, it, expect } from "bun:test";
+import { afterEach, beforeEach, describe, it, expect } from "bun:test";
 import { aa, assistantToolCall, toolMsg, ua } from "../helpers/session-fixtures.ts";
+import {
+  beginMinimalConfigHome,
+  endMinimalConfigHome,
+} from "../../../../tests/helpers/minimal-config-home.ts";
 
 const testBoundary = { rawMinMessages: 3, slimMinMessages: 4 };
+
+let prevHome: string | undefined;
+
+beforeEach(() => {
+  ({ prevHome } = beginMinimalConfigHome("anima-compress-"));
+});
+
+afterEach(() => {
+  endMinimalConfigHome(prevHome);
+});
 
 describe("compressor", () => {
   it("returns original when below threshold", () => {

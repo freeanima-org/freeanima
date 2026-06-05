@@ -2,11 +2,18 @@ import { it, expect, beforeEach, afterEach } from "bun:test";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 
 import { registerTool, listTools } from "@freeanima/engine-tool";
-import { clearConfigCache } from "@freeanima/service-config";
 import { registerAcpTools } from "@freeanima/capabilities-acp";
+import { beginMinimalConfigHome, endMinimalConfigHome } from "../../helpers/minimal-config-home.ts";
 
-beforeEach(() => clearConfigCache());
-afterEach(() => clearConfigCache());
+let prevHome: string | undefined;
+
+beforeEach(() => {
+  ({ prevHome } = beginMinimalConfigHome("anima-acp-mgr-"));
+});
+
+afterEach(() => {
+  endMinimalConfigHome(prevHome);
+});
 
 describePg("acp manager", () => {
   it("registerAcpTools returns 0 when no agents configured", () => {

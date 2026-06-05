@@ -9,10 +9,24 @@ import {
   buildRuntimeFromLPoints,
 } from "@freeanima/engine-compress";
 import { isAssistantMessage, parseCompressionState } from "@freeanima/kernel-schemas";
-import { describe, it, expect } from "bun:test";
+import { afterEach, beforeEach, describe, it, expect } from "bun:test";
 import { aa, assistantToolCall, buildHistory, toolMsg, ua } from "../helpers/session-fixtures.ts";
+import {
+  beginMinimalConfigHome,
+  endMinimalConfigHome,
+} from "../../../../tests/helpers/minimal-config-home.ts";
 
 const smallBoundary = { rawMinMessages: 3, slimMinMessages: 4 };
+
+let prevHome: string | undefined;
+
+beforeEach(() => {
+  ({ prevHome } = beginMinimalConfigHome("anima-compress-"));
+});
+
+afterEach(() => {
+  endMinimalConfigHome(prevHome);
+});
 
 describe("compression v5.1", () => {
   it("parseCompressionState migrates cut_id / last_summarized_cut_id", () => {
