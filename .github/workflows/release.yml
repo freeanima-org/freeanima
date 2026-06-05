@@ -27,7 +27,7 @@ jobs:
 
       - run: bun install --frozen-lockfile
       - run: bun run typecheck
-      - run: bun run build
+      - run: bun run dep-check
       - run: bun test
 
       - name: semantic-release
