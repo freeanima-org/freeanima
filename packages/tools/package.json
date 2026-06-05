@@ -7,11 +7,7 @@
   "dependencies": {
     "@freeanima/capabilities-tools": "workspace:*",
     "@freeanima/connectors-cron": "workspace:*",
-    "@freeanima/engine-loop": "workspace:*",
-    "@freeanima/engine-tool": "workspace:*",
-    "@freeanima/life-memory": "workspace:*",
-    "@freeanima/capabilities-clarify": "workspace:*",
-    "@freeanima/service-config": "workspace:*"
+    "@freeanima/service": "workspace:*"
   },
   "devDependencies": {
     "@freeanima/service-config": "workspace:*",

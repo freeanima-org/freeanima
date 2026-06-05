@@ -14,6 +14,7 @@
         "@freeanima/legacy-api": "workspace:*",
         "@freeanima/legacy-server": "workspace:*",
         "@freeanima/legacy-tools": "workspace:*",
+        "@freeanima/service": "workspace:*",
         "@freeanima/service-config": "workspace:*",
         "@semantic-release/changelog": "^6.0.3",
         "@semantic-release/commit-analyzer": "^13.0.1",
@@ -451,6 +452,7 @@
         "@freeanima/legacy-runtime": "workspace:*",
         "@freeanima/legacy-tools": "workspace:*",
         "@freeanima/life-memory": "workspace:*",
+        "@freeanima/service": "workspace:*",
         "@freeanima/service-bootstrap": "workspace:*",
         "@freeanima/service-config": "workspace:*",
         "@freeanima/service-logging": "workspace:*",
@@ -469,13 +471,9 @@
     "packages/tools": {
       "name": "@freeanima/legacy-tools",
       "dependencies": {
-        "@freeanima/capabilities-clarify": "workspace:*",
         "@freeanima/capabilities-tools": "workspace:*",
         "@freeanima/connectors-cron": "workspace:*",
-        "@freeanima/engine-loop": "workspace:*",
-        "@freeanima/engine-tool": "workspace:*",
-        "@freeanima/life-memory": "workspace:*",
-        "@freeanima/service-config": "workspace:*",
+        "@freeanima/service": "workspace:*",
       },
       "devDependencies": {
         "@freeanima/service-config": "workspace:*",
@@ -513,6 +511,22 @@
         "@freeanima/service-config": "workspace:*",
       },
       "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
+    "service/service": {
+      "name": "@freeanima/service",
+      "dependencies": {
+        "@freeanima/capabilities-acp": "workspace:*",
+        "@freeanima/capabilities-clarify": "workspace:*",
+        "@freeanima/capabilities-tools": "workspace:*",
+        "@freeanima/connectors-cron": "workspace:*",
+        "@freeanima/engine-tool": "workspace:*",
+        "@freeanima/kernel": "workspace:*",
+        "@freeanima/life-memory": "workspace:*",
+      },
+      "devDependencies": {
+        "@freeanima/engine-tool": "workspace:*",
         "@types/bun": "catalog:",
       },
     },
@@ -733,6 +747,8 @@
     "@freeanima/legacy-webui": ["@freeanima/legacy-webui@workspace:apps/webui"],
 
     "@freeanima/life-memory": ["@freeanima/life-memory@workspace:life/memory"],
+
+    "@freeanima/service": ["@freeanima/service@workspace:service/service"],
 
     "@freeanima/service-bootstrap": ["@freeanima/service-bootstrap@workspace:service/bootstrap"],
 

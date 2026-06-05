@@ -26,6 +26,7 @@
     "@freeanima/life-memory": "workspace:*",
     "@freeanima/legacy-runtime": "workspace:*",
     "@freeanima/legacy-tools": "workspace:*",
+    "@freeanima/service": "workspace:*",
     "@freeanima/service-bootstrap": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "@freeanima/service-logging": "workspace:*",
