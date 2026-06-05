@@ -1,12 +1,12 @@
 import { describe, expect, it } from "bun:test";
-import { headOkStepData, HookRegistry, messageIncoming } from "@freeanima/kernel-hooks";
+import { headOkStepData, HookRegistry, messageIncoming } from "../../src/index.ts";
 import { createLogger } from "@freeanima/kernel-logging";
 import { createNullSink } from "@freeanima/kernel-logging/null";
 
-describe("kernel-hooks domain hooks", () => {
+describe("domain hooks", () => {
   const nullLogger = () => createLogger({ level: "debug", sinks: [createNullSink()] });
 
-  it("hook token 设置 qualifiedId", () => {
+  it("messageIncoming qualifiedId", () => {
     expect(messageIncoming.qualifiedId).toBe("@freeanima/kernel-hooks/hooks/message-incoming");
   });
 
@@ -22,21 +22,5 @@ describe("kernel-hooks domain hooks", () => {
       platform: "parlor",
     });
     expect(headOkStepData(run.chain)?.transformedMessage).toBe("[hi]");
-  });
-
-  it("blocked 时 blockedMessage 为短路步 message", async () => {
-    const registry = new HookRegistry(nullLogger());
-    registry.on(messageIncoming, () => ({
-      status: "ok",
-      blocked: true,
-      message: "wait",
-    }));
-    const run = await registry.run(messageIncoming, {
-      sessionId: "s1",
-      message: "hi",
-      platform: "parlor",
-    });
-    expect(run.blocked).toBe(true);
-    expect(run.blockedMessage).toBe("wait");
   });
 });

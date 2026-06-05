@@ -17,7 +17,7 @@ import {
   type CompressionState,
 } from "@freeanima/engine-compress";
 import { injectTimePrefixes } from "./time-perception.ts";
-import { logComponent } from "@freeanima/legacy-kernel";
+import { logComponent } from "@freeanima/service-logging";
 import {
   detectToolLoopCorruption,
   countFollowingToolMessages,

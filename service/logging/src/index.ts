@@ -1,9 +1,9 @@
 export {
   createServiceLogger,
   getServiceLogger,
-  logComponent,
-  resetServiceLogger,
   setServiceLogger,
+  resetServiceLogger,
+  logComponent,
   formatError,
   logError,
   markStartupPhase,
@@ -11,5 +11,5 @@ export {
   logApiError,
   logSseError,
   installErrorLogHandlers,
-} from "@freeanima/service-logging";
-export type { ErrorLogDetail } from "@freeanima/service-logging";
+} from "./service-logging.ts";
+export type { ErrorLogDetail } from "./service-logging.ts";

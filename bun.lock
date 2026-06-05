@@ -115,8 +115,8 @@
         "@freeanima/engine-tool": "workspace:*",
         "@freeanima/kernel-schemas": "workspace:*",
         "@freeanima/legacy-db": "workspace:*",
-        "@freeanima/legacy-kernel": "workspace:*",
         "@freeanima/service-config": "workspace:*",
+        "@freeanima/service-logging": "workspace:*",
       },
       "devDependencies": {
         "@types/bun": "catalog:",
@@ -161,8 +161,8 @@
         "@freeanima/engine-tool": "workspace:*",
         "@freeanima/kernel-hooks": "workspace:*",
         "@freeanima/kernel-schemas": "workspace:*",
-        "@freeanima/legacy-kernel": "workspace:*",
         "@freeanima/service-config": "workspace:*",
+        "@freeanima/service-logging": "workspace:*",
       },
       "devDependencies": {
         "@types/bun": "catalog:",
@@ -268,6 +268,7 @@
         "@freeanima/engine-conversation": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
         "@freeanima/kernel": "workspace:*",
+        "@freeanima/kernel-hooks": "workspace:*",
         "@freeanima/legacy-kernel": "workspace:*",
       },
       "devDependencies": {
@@ -330,6 +331,7 @@
         "@freeanima/kernel-logging": "workspace:*",
         "@freeanima/kernel-schemas": "workspace:*",
         "@freeanima/service-config": "workspace:*",
+        "@freeanima/service-logging": "workspace:*",
         "yaml": "^2.9.0",
         "zod": "catalog:",
       },
@@ -427,8 +429,8 @@
         "@freeanima/kernel": "workspace:*",
         "@freeanima/kernel-eventbus": "workspace:*",
         "@freeanima/kernel-hooks": "workspace:*",
-        "@freeanima/legacy-kernel": "workspace:*",
         "@freeanima/service-config": "workspace:*",
+        "@freeanima/service-logging": "workspace:*",
       },
       "devDependencies": {
         "@types/bun": "catalog:",
@@ -439,6 +441,16 @@
       "dependencies": {
         "yaml": "^2.9.0",
         "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
+    "service/logging": {
+      "name": "@freeanima/service-logging",
+      "dependencies": {
+        "@freeanima/kernel-logging": "workspace:*",
+        "@freeanima/service-config": "workspace:*",
       },
       "devDependencies": {
         "@types/bun": "catalog:",
@@ -656,6 +668,8 @@
     "@freeanima/service-bootstrap": ["@freeanima/service-bootstrap@workspace:service/bootstrap"],
 
     "@freeanima/service-config": ["@freeanima/service-config@workspace:service/config"],
+
+    "@freeanima/service-logging": ["@freeanima/service-logging@workspace:service/logging"],
 
     "@hono/node-server": ["@hono/node-server@1.19.14", "", { "peerDependencies": { "hono": "^4" } }, "sha512-GwtvgtXxnWsucXvbQXkRgqksiH2Qed37H9xHZocE5sA3N8O8O8/8FA3uclQXxXVzc9XBZuEOMK7+r02FmSpHtw=="],
 

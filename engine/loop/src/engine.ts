@@ -7,12 +7,15 @@ import {
   openaiSchemas,
 } from "@freeanima/engine-tool";
 import { getProfileHopModel, loadConfig } from "@freeanima/service-config";
-import { logComponent } from "@freeanima/legacy-kernel";
+import { logComponent } from "@freeanima/service-logging";
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
-import type { HookClarifyItem, HookStreamEvent, TurnControl } from "@freeanima/legacy-kernel";
-import { headOkStepData, type HookRegistry } from "@freeanima/kernel-hooks";
-import { toolAfterCall } from "@freeanima/legacy-kernel";
-import type { ToolAfterCallEffect } from "@freeanima/legacy-kernel";
+import type { HookClarifyItem, HookStreamEvent, TurnControl } from "@freeanima/kernel-hooks";
+import {
+  headOkStepData,
+  toolAfterCall,
+  type HookRegistry,
+  type ToolAfterCallEffect,
+} from "@freeanima/kernel-hooks";
 import * as llm from "@freeanima/engine-llm";
 import { cleanToolCallsForApi } from "@freeanima/engine-llm";
 import { markToolLoopActivity } from "@freeanima/engine-compress";
