@@ -7,7 +7,7 @@ export {
   listCommands,
   getPlatforms,
   resolveSessionPlatform,
-} from "./sessions";
+} from "./sessions.ts";
 export {
   getHealth,
   getStatus,
@@ -18,7 +18,7 @@ export {
   resumeCronJob,
   runCronJobNow,
   restartService,
-} from "./status";
+} from "./status.ts";
 export {
   listMemoryFiles,
   memorySearch,
@@ -26,15 +26,15 @@ export {
   memoryL2Reindex,
   memoryL3Reindex,
   memoryL2Rebuild,
-} from "./memory";
-export { getMcpStatus, mcpStartAll, mcpStopAll, mcpStartServer, mcpStopServer } from "./mcp";
-export { getAcpStatus, acpStartAll, acpStopAll, acpStartAgent, acpStopAgent } from "./acp";
+} from "./memory.ts";
+export { getMcpStatus, mcpStartAll, mcpStopAll, mcpStartServer, mcpStopServer } from "./mcp.ts";
+export { getAcpStatus, acpStartAll, acpStopAll, acpStartAgent, acpStopAgent } from "./acp.ts";
 export {
   studioGetConfig,
   studioPatchConfig,
   studioGetTree,
   studioGetFile,
   studioSearch,
-} from "./studio";
-export { createMessageStreamResponse, iterateMessageStream } from "./message-stream";
-export { ApiHandlerError } from "./errors";
+} from "./studio.ts";
+export { createMessageStreamResponse, iterateMessageStream } from "./message-stream.ts";
+export { ApiHandlerError } from "./errors.ts";

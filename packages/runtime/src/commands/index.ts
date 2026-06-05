@@ -1,5 +1,5 @@
-export * from "./registry";
-export { registerBuiltins } from "./builtins";
-import { registerBuiltins } from "./builtins";
+export * from "./registry.ts";
+export { registerBuiltins } from "./builtins.ts";
+import { registerBuiltins } from "./builtins.ts";
 
 registerBuiltins();

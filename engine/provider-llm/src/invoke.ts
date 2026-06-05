@@ -1,5 +1,5 @@
 import type { LlmTurnMessage, OpenAiToolSchema, ToolCall } from "@freeanima/legacy-db";
-import type { LlmCallParams } from "./model";
+import type { LlmCallParams } from "./model.ts";
 
 /** Backend invoke 入参：model 由 Profile 绑定配置提供，不在此 DTO */
 export type ChatRequest = {

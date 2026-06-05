@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { PATHS } from "./paths";
+import { PATHS } from "./paths.ts";
 
 /**
  * 历史 L1 归档路径（`~/.anima/sessions/*.jsonl`，运行时不再读写）。

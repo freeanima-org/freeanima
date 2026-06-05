@@ -45,14 +45,14 @@ import {
   studioGetTree,
   studioPatchConfig,
   studioSearch,
-} from "../handlers";
-import { publicProcedure, router } from "./trpc";
+} from "../handlers/index.ts";
+import { publicProcedure, router } from "./trpc.ts";
 import {
   closeTerminalSession,
   createTerminalSession,
   getTerminalSession,
   streamTerminalEvents,
-} from "./terminal-session";
+} from "./terminal-session.ts";
 
 const terminalEventSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("ready"), sessionId: z.string() }),

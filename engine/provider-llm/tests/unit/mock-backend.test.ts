@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import { ProviderError } from "../../src/errors";
-import { MockBackend } from "../helpers/mock-backend";
+import { ProviderError } from "../../src/errors.ts";
+import { MockBackend } from "../helpers/mock-backend.ts";
 
 describe("MockBackend", () => {
   it("listModels returns default catalog entry", async () => {

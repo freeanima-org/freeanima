@@ -9,19 +9,19 @@ import {
 } from "@freeanima/legacy-kernel";
 import { z } from "zod";
 
-import { getDb } from "../client";
+import { getDb } from "../client.ts";
 import {
   patchCompression,
   patchTodos,
   rowToSessionMeta,
   sessionMetaToInsert,
-} from "../mappers/session-mapper";
-import { acpSessionsSchema, awaitingClarifySchema } from "../schema/jsonb/session-jsonb";
-import { buildPlatformInfo } from "../schema/jsonb/platform-info";
-import { sessions } from "../schema/sessions";
-import { sessionInsertSchema } from "../schema/zod-schemas";
-import { formatDbError } from "../utils/db-error";
-import { normalizePgTimestamp, pgJsonbOrNull, pgTextOrNull } from "../utils/timestamp";
+} from "../mappers/session-mapper.ts";
+import { acpSessionsSchema, awaitingClarifySchema } from "../schema/jsonb/session-jsonb.ts";
+import { buildPlatformInfo } from "../schema/jsonb/platform-info.ts";
+import { sessions } from "../schema/sessions.ts";
+import { sessionInsertSchema } from "../schema/zod-schemas.ts";
+import { formatDbError } from "../utils/db-error.ts";
+import { normalizePgTimestamp, pgJsonbOrNull, pgTextOrNull } from "../utils/timestamp.ts";
 
 function nowIso(): string {
   return normalizePgTimestamp(new Date());

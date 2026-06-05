@@ -3,7 +3,7 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { clearConfigCache, getProfileHopModel, loadConfig } from "@freeanima/legacy-kernel";
-import { MINIMAL_LLM_YAML } from "../helpers/llm-config-fixture";
+import { MINIMAL_LLM_YAML } from "../helpers/llm-config-fixture.ts";
 
 describe("config", () => {
   let home: string;

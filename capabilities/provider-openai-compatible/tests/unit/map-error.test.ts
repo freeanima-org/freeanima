@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import { APIError } from "openai";
 import { ProviderError } from "@freeanima/engine-provider-llm";
-import { mapOpenAiCompatibleError } from "../../src/map-error";
+import { mapOpenAiCompatibleError } from "../../src/map-error.ts";
 
 describe("mapOpenAiCompatibleError", () => {
   it("透传已有 ProviderError", () => {

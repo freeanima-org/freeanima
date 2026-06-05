@@ -1,7 +1,7 @@
-import type { CronJob } from "./models";
+import type { CronJob } from "./models.ts";
 import { logComponent } from "@freeanima/legacy-kernel";
-import * as store from "./store";
-import { computeNextRun } from "./schedule";
+import * as store from "./store.ts";
+import { computeNextRun } from "./schedule.ts";
 
 export const POLL_INTERVAL_MS = 10_000;
 

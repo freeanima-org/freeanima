@@ -1,10 +1,10 @@
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
-import { logComponent } from "./service-logging";
-import { PATHS } from "./paths";
-import type { EventMap, EventTopic } from "./schemas/events";
-import { eventPayloadSchemas } from "./schemas/events";
-import { openSqlite, type SqliteDatabase } from "./sqlite";
+import { logComponent } from "./service-logging.ts";
+import { PATHS } from "./paths.ts";
+import type { EventMap, EventTopic } from "./schemas/events.ts";
+import { eventPayloadSchemas } from "./schemas/events.ts";
+import { openSqlite, type SqliteDatabase } from "./sqlite.ts";
 
 type Handler<T> = (payload: T) => void | Promise<void>;
 
@@ -158,4 +158,4 @@ export class EventBus {
   }
 }
 
-export type { EventMap, EventTopic } from "./schemas/events";
+export type { EventMap, EventTopic } from "./schemas/events.ts";

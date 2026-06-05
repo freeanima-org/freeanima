@@ -6,7 +6,7 @@ import {
 } from "@freeanima/kernel-logging";
 import { createConsoleSink } from "@freeanima/kernel-logging/console";
 import { createFileSink } from "@freeanima/kernel-logging/file";
-import { PATHS } from "./paths";
+import { PATHS } from "./paths.ts";
 
 let serviceLogger: Logger | null = null;
 let handlersInstalled = false;

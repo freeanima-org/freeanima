@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import type { ServiceStatus } from "@freeanima/legacy-api";
 import { useState } from "react";
-import { trpc } from "@/lib/trpc";
+import { trpc } from "@/lib/trpc.ts";
 
 export const Route = createFileRoute("/chamber/dashboard")({
   loader: async () => {

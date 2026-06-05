@@ -1,5 +1,5 @@
-import { formatJsonRecord, formatPrettyRecord } from "../format-record";
-import type { LogRecord, LogSink } from "../types";
+import { formatJsonRecord, formatPrettyRecord } from "../format-record.ts";
+import type { LogRecord, LogSink } from "../types.ts";
 
 export type ConsoleSinkOptions = {
   format?: "pretty" | "json";

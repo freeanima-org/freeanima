@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import { createLogger } from "./index";
-import type { LogSink } from "./types";
+import { createLogger } from "./index.ts";
+import type { LogSink } from "./types.ts";
 
 describe("@freeanima/kernel-logging 主入口", () => {
   it("仅导出 createLogger 与类型，sink 走子路径", () => {

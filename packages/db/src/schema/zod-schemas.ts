@@ -10,9 +10,9 @@ import {
   sessionFunctionsSchema,
   sessionTodoStoreSchema,
   sessionToolsSchema,
-} from "./jsonb/index";
-import { messages } from "./messages";
-import { sessions } from "./sessions";
+} from "./jsonb/index.ts";
+import { messages } from "./messages.ts";
+import { sessions } from "./sessions.ts";
 
 const sessionJsonbRefine = {
   platformInfo: platformInfoSchema.nullable(),

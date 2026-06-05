@@ -1,22 +1,22 @@
-export { discoverPlatforms, startPlatforms, stopPlatforms } from "./platforms";
-export type { PlatformAdapter } from "./platforms";
-export * from "./discord/discord-policy";
+export { discoverPlatforms, startPlatforms, stopPlatforms } from "./platforms.ts";
+export type { PlatformAdapter } from "./platforms.ts";
+export * from "./discord/discord-policy.ts";
 export {
   buildDiscordSlashCommands,
   interactionToCommandText,
   originFromInteraction,
-} from "./discord/discord-slash";
-export { createDiscordAdapter, streamReplyToChannel } from "./discord/discord-adapter";
-export { loadWeixinCredentials } from "./weixin/weixin-credentials";
-export type { WeixinCredentials } from "./weixin/weixin-credentials";
-export * from "./weixin/weixin-message";
-export * from "./weixin/ilink-api";
-export { createWeixinAdapter } from "./weixin/weixin-adapter";
-export * from "./clarify/index";
-export { collectGatewayStreamReply } from "./collect-gateway-stream-reply";
+} from "./discord/discord-slash.ts";
+export { createDiscordAdapter, streamReplyToChannel } from "./discord/discord-adapter.ts";
+export { loadWeixinCredentials } from "./weixin/weixin-credentials.ts";
+export type { WeixinCredentials } from "./weixin/weixin-credentials.ts";
+export * from "./weixin/weixin-message.ts";
+export * from "./weixin/ilink-api.ts";
+export { createWeixinAdapter } from "./weixin/weixin-adapter.ts";
+export * from "./clarify/index.ts";
+export { collectGatewayStreamReply } from "./collect-gateway-stream-reply.ts";
 export {
   registerDiscordCronDeliverer,
   unregisterDiscordCronDeliverer,
   registerWeixinCronDeliverer,
   unregisterWeixinCronDeliverer,
-} from "./cron-deliver";
+} from "./cron-deliver.ts";

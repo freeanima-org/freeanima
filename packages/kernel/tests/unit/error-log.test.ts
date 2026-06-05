@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 import { readFileSync, existsSync } from "node:fs";
 import { logError, logApiError, logStartupError, PATHS } from "@freeanima/legacy-kernel";
-import { beginLogIsolation, endLogIsolation } from "../../../../tests/helpers/log-isolation";
+import { beginLogIsolation, endLogIsolation } from "../../../../tests/helpers/log-isolation.ts";
 
 describe("error-log", () => {
   const prev = process.env.FREEANIMA_HOME;

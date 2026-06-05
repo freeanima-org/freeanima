@@ -1,4 +1,4 @@
-import type { LlmConfig, NestConfig } from "./schemas/config";
+import type { LlmConfig, NestConfig } from "./schemas/config.ts";
 
 export function getLlmConfig(cfg: NestConfig): LlmConfig {
   if (!cfg.llm) {

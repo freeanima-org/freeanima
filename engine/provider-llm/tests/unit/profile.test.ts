@@ -12,8 +12,8 @@ import {
   hop,
   profileDef,
   validateProfiles,
-} from "../../src/index";
-import { MockBackend } from "../helpers/mock-backend";
+} from "../../src/index.ts";
+import { MockBackend } from "../helpers/mock-backend.ts";
 
 function setupProfileStack(backend = new MockBackend()) {
   const backends = new BackendRegistry();

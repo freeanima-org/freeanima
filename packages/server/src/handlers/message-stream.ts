@@ -1,7 +1,7 @@
 import { logSseError } from "@freeanima/legacy-kernel";
-import { mapStreamEventToApi } from "../api-mappers";
-import { getServiceContext } from "../service-context";
-import { resolveSessionPlatform } from "./sessions";
+import { mapStreamEventToApi } from "../api-mappers.ts";
+import { getServiceContext } from "../service-context.ts";
+import { resolveSessionPlatform } from "./sessions.ts";
 
 export async function* iterateMessageStream(
   sessionId: string,

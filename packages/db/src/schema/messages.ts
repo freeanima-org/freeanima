@@ -1,7 +1,7 @@
 import { bigint, jsonb, pgTable, text, uniqueIndex } from "drizzle-orm/pg-core";
 
-import type { MessagePayload } from "./jsonb/message-payload";
-import { sessions } from "./sessions";
+import type { MessagePayload } from "./jsonb/message-payload.ts";
+import { sessions } from "./sessions.ts";
 
 export const messages = pgTable(
   "messages",

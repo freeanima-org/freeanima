@@ -2,8 +2,8 @@ import { afterEach, describe, expect, it } from "bun:test";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { createFileSink } from "./file";
-import type { LogRecord } from "../types";
+import { createFileSink } from "./file.ts";
+import type { LogRecord } from "../types.ts";
 
 describe("createFileSink", () => {
   const tempDirs: string[] = [];
@@ -97,8 +97,8 @@ describe("createFileSink", () => {
 
   it("可与 createLogger 组合", async () => {
     const path = tempLogPath();
-    const { createLogger } = await import("../index");
-    const { createFileSink: createSink } = await import("./file");
+    const { createLogger } = await import("../index.ts");
+    const { createFileSink: createSink } = await import("./file.ts");
     const logger = createLogger({
       level: "info",
       sinks: [createSink({ path })],

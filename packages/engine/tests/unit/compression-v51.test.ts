@@ -10,7 +10,7 @@ import {
 } from "@freeanima/legacy-engine";
 import { isAssistantMessage, parseCompressionState } from "@freeanima/legacy-kernel";
 import { describe, it, expect } from "bun:test";
-import { aa, assistantToolCall, buildHistory, toolMsg, ua } from "../helpers/session-fixtures";
+import { aa, assistantToolCall, buildHistory, toolMsg, ua } from "../helpers/session-fixtures.ts";
 
 const smallBoundary = { rawMinMessages: 3, slimMinMessages: 4 };
 

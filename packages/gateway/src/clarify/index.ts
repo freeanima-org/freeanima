@@ -1,13 +1,13 @@
-export * from "./types";
-export * from "./format";
+export * from "./types.ts";
+export * from "./format.ts";
 
-import type { ClarifyPayload } from "./types";
+import type { ClarifyPayload } from "./types.ts";
 import {
   formatClarifyDiscord,
   formatClarifyPlain,
   formatClarifyWeixin,
   formatClarifyWebUi,
-} from "./format";
+} from "./format.ts";
 
 export function formatClarifyForPlatform(platform: string, payload: ClarifyPayload): string {
   switch (platform) {

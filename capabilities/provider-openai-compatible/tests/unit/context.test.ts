@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { contextCacheKey, parseOpenAiCompatibleContext } from "../../src/context";
+import { contextCacheKey, parseOpenAiCompatibleContext } from "../../src/context.ts";
 
 describe("parseOpenAiCompatibleContext", () => {
   it("接受 camelCase 与 snake_case 并规范化 baseUrl", () => {

@@ -1,7 +1,7 @@
-import type { AcpAgentConfig } from "../status";
-import { cursorAcpAdapter } from "./cursor";
-import { genericAcpAdapter } from "./generic";
-import type { AcpAgentAdapter } from "./types";
+import type { AcpAgentConfig } from "../status.ts";
+import { cursorAcpAdapter } from "./cursor.ts";
+import { genericAcpAdapter } from "./generic.ts";
+import type { AcpAgentAdapter } from "./types.ts";
 
 const ADAPTERS: Record<string, AcpAgentAdapter> = {
   generic: genericAcpAdapter,

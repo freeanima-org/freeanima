@@ -8,9 +8,9 @@ import {
   type Client,
 } from "discord.js";
 
-import { deliverDiscordFinalContent, withDiscordRetry } from "./discord-retry";
-import type { DiscordConfig } from "./discord-policy";
-import { extractOrigin, type PlatformOrigin } from "./discord-policy";
+import { deliverDiscordFinalContent, withDiscordRetry } from "./discord-retry.ts";
+import type { DiscordConfig } from "./discord-policy.ts";
+import { extractOrigin, type PlatformOrigin } from "./discord-policy.ts";
 
 export type DiscordSlashCommandMeta = {
   name: string;

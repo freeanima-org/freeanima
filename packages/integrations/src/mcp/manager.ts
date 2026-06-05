@@ -7,15 +7,15 @@ import {
   unregisterToolsByToolset,
 } from "@freeanima/legacy-kernel";
 
-import { McpClientSession, type McpServerConfig } from "./client";
-import { extractMcpResult, mcpToolParameters } from "./schema";
+import { McpClientSession, type McpServerConfig } from "./client.ts";
+import { extractMcpResult, mcpToolParameters } from "./schema.ts";
 import {
   isMcpServerEnabled,
   sanitizeMcpConfig,
   type McpControlResult,
   type McpServerStatusView,
   type McpStatusResponse,
-} from "./status";
+} from "./status.ts";
 
 type McpServersConfig = NonNullable<ReturnType<typeof loadConfig>["mcp_servers"]>;
 

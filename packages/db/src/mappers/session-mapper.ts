@@ -10,10 +10,10 @@ import {
 } from "@freeanima/legacy-kernel";
 import { z } from "zod";
 
-import { buildPlatformInfo, splitPlatformInfo } from "../schema/jsonb/platform-info";
-import { acpSessionsSchema } from "../schema/jsonb/session-jsonb";
-import { type SessionInsert, sessionSelectSchema } from "../schema/zod-schemas";
-import { normalizePgTimestamp, pgJsonbOrNull, pgTextOrNull } from "../utils/timestamp";
+import { buildPlatformInfo, splitPlatformInfo } from "../schema/jsonb/platform-info.ts";
+import { acpSessionsSchema } from "../schema/jsonb/session-jsonb.ts";
+import { type SessionInsert, sessionSelectSchema } from "../schema/zod-schemas.ts";
+import { normalizePgTimestamp, pgJsonbOrNull, pgTextOrNull } from "../utils/timestamp.ts";
 
 function nowIso(): string {
   return normalizePgTimestamp(new Date());

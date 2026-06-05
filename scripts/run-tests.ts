@@ -2,7 +2,7 @@ import { execSync } from "node:child_process";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { setupIntegrationPg } from "./integration-pg-setup";
+import { setupIntegrationPg } from "./integration-pg-setup.ts";
 
 const repoRoot = join(fileURLToPath(new URL(".", import.meta.url)), "..");
 const changed = process.argv.includes("--changed");

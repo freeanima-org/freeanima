@@ -1,6 +1,6 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
-import { describePg } from "../../helpers/pg-test-gate";
-import { beginIntegrationCase, endIntegrationCase } from "../../helpers/integration-case";
+import { describePg } from "../../helpers/pg-test-gate.ts";
+import { beginIntegrationCase, endIntegrationCase } from "../../helpers/integration-case.ts";
 import {
   upsertSessionMeta,
   getSessionMeta,

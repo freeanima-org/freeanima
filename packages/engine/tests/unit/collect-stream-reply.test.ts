@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import { collectStreamReply } from "../../src/collect-stream-reply";
-import type { StreamEvent } from "../../src/engine";
+import { collectStreamReply } from "../../src/collect-stream-reply.ts";
+import type { StreamEvent } from "../../src/engine.ts";
 
 describe("collectStreamReply", () => {
   it("拼接 token 并在 content_replace 时替换全文", async () => {

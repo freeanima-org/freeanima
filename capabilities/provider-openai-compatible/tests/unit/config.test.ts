@@ -1,5 +1,8 @@
 import { describe, expect, it } from "bun:test";
-import { OPENAI_COMPATIBLE_BACKEND_ID, parseOpenAiCompatibleProviderSpec } from "../../src/config";
+import {
+  OPENAI_COMPATIBLE_BACKEND_ID,
+  parseOpenAiCompatibleProviderSpec,
+} from "../../src/config.ts";
 
 describe("parseOpenAiCompatibleProviderSpec", () => {
   it("解析 yaml 配置并去掉 base_url 尾部斜杠", () => {

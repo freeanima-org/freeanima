@@ -1,4 +1,4 @@
-import type { DispatchOutcome, EventQueueAdapter, StoredEvent } from "../queue";
+import type { DispatchOutcome, EventQueueAdapter, StoredEvent } from "../queue.ts";
 
 /** 空队列适配器；emit 丢弃，永不 dispatch */
 export class NullEventQueue implements EventQueueAdapter {

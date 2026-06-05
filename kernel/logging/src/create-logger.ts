@@ -1,5 +1,5 @@
-import { LoggerImpl } from "./logger-impl";
-import type { CreateLoggerOptions, Logger } from "./types";
+import { LoggerImpl } from "./logger-impl.ts";
+import type { CreateLoggerOptions, Logger } from "./types.ts";
 
 export function createLogger(options: CreateLoggerOptions): Logger {
   if (options.sinks.length === 0) {

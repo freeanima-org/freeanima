@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import { BackendRegistry } from "../../src/backend";
-import { MockBackend } from "../helpers/mock-backend";
+import { BackendRegistry } from "../../src/backend.ts";
+import { MockBackend } from "../helpers/mock-backend.ts";
 
 describe("BackendRegistry", () => {
   it("registers and retrieves backends", () => {

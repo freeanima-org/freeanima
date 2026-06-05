@@ -6,11 +6,11 @@ import {
   isInsufficientToolMessagesError,
   REPAIR_REASON_LOST,
   syntheticToolContent,
-} from "../../src/tool-loop-integrity";
+} from "../../src/tool-loop-integrity.ts";
 import { messagesForApi } from "@freeanima/capabilities-provider-openai-compatible/messages";
-import { sessionMessagesToInvokeInput } from "../../src/llm-adapt";
+import { sessionMessagesToInvokeInput } from "../../src/llm-adapt.ts";
 import type { SessionMessage } from "@freeanima/legacy-kernel";
-import { beginLogIsolation, endLogIsolation } from "../../../../tests/helpers/log-isolation";
+import { beginLogIsolation, endLogIsolation } from "../../../../tests/helpers/log-isolation.ts";
 
 const prevHome = process.env.FREEANIMA_HOME;
 beforeEach(() => {

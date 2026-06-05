@@ -1,4 +1,4 @@
-import type { LogRecord, LogSink } from "../types";
+import type { LogRecord, LogSink } from "../types.ts";
 
 export type MemorySink = LogSink & {
   readonly records: LogRecord[];

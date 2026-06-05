@@ -2,7 +2,7 @@ import { describe, expect, it } from "bun:test";
 import { headOkStepData, HookRegistry } from "@freeanima/kernel-hooks";
 import { createLogger } from "@freeanima/kernel-logging";
 import { createNullSink } from "@freeanima/kernel-logging/null";
-import { messageIncoming } from "../../src/index";
+import { messageIncoming } from "../../src/index.ts";
 
 describe("legacy-kernel hooks", () => {
   const nullLogger = () => createLogger({ level: "debug", sinks: [createNullSink()] });

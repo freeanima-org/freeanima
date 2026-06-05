@@ -1,6 +1,6 @@
 import { registerTool } from "@freeanima/legacy-kernel";
 
-import { clampTimeout, parseRuntime, runExecuteCode } from "./execute-code-runtimes";
+import { clampTimeout, parseRuntime, runExecuteCode } from "./execute-code-runtimes.ts";
 
 export function registerExecuteCodeTool(): void {
   registerTool({

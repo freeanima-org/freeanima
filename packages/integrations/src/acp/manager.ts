@@ -7,11 +7,11 @@ import {
   toolError,
 } from "@freeanima/legacy-kernel";
 
-import { AcpAgentQueue } from "./agent-queue";
-import { resolveAcpAdapter } from "./adapters/registry";
-import { ACPClient } from "./client";
-import { bindAcpSession, getBoundAcpSession, unbindAcpSession } from "./nest-binding";
-import { formatAcpPromptResult, type AcpPromptResult } from "./prompt-result";
+import { AcpAgentQueue } from "./agent-queue.ts";
+import { resolveAcpAdapter } from "./adapters/registry.ts";
+import { ACPClient } from "./client.ts";
+import { bindAcpSession, getBoundAcpSession, unbindAcpSession } from "./nest-binding.ts";
+import { formatAcpPromptResult, type AcpPromptResult } from "./prompt-result.ts";
 import {
   sanitizeAcpConfig,
   shortSessionId,
@@ -20,7 +20,7 @@ import {
   type AcpControlResult,
   type AcpAgentStatusView,
   type AcpStatusResponse,
-} from "./status";
+} from "./status.ts";
 
 type AcpPromptOptions = {
   nestSessionId?: string;
@@ -545,5 +545,5 @@ export function registerAcpTools(agentsCfg?: Record<string, AcpAgentConfig>): nu
   return getAcpManager().registerTools(agentsCfg);
 }
 
-export { ACPClient, ACPError } from "./client";
+export { ACPClient, ACPError } from "./client.ts";
 export { ACPSessionStore };

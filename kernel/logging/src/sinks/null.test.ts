@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import { createNullSink } from "./null";
-import type { LogRecord } from "../types";
+import { createNullSink } from "./null.ts";
+import type { LogRecord } from "../types.ts";
 
 const sampleRecord: LogRecord = {
   level: "info",

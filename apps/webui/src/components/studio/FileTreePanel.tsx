@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { usePairProgrammingStore } from "@/stores/pair-programming";
-import { TreeNode, type TreeNodeData } from "./TreeNode";
+import { usePairProgrammingStore } from "@/stores/pair-programming.ts";
+import { TreeNode, type TreeNodeData } from "./TreeNode.tsx";
 
 function nodePath(node: TreeNodeData, parentPath: string) {
   return parentPath ? `${parentPath}/${node.name}` : node.name;

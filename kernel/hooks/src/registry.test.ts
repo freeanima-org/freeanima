@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "bun:test";
 import { createLogger } from "@freeanima/kernel-logging";
 import { createNullSink } from "@freeanima/kernel-logging/null";
-import { createHook, walkHookChain } from "./hook";
-import { HookRegistry } from "./registry";
+import { createHook, walkHookChain } from "./hook.ts";
+import { HookRegistry } from "./registry.ts";
 
 type TestContext = {
   value: number;

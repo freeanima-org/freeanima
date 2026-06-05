@@ -1,6 +1,6 @@
 import type { DisplayItem, SessionListItem } from "@freeanima/legacy-api";
 import { create } from "zustand";
-import { trpc } from "@/lib/trpc";
+import { trpc } from "@/lib/trpc.ts";
 
 export const STUDIO_PAIR_PLATFORM = "studio-pair-programming";
 

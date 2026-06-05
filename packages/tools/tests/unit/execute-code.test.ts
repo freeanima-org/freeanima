@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { parseRuntime, clampTimeout, runExecuteCode } from "../../src/execute-code-runtimes";
+import { parseRuntime, clampTimeout, runExecuteCode } from "../../src/execute-code-runtimes.ts";
 import { registerAllTools } from "@freeanima/legacy-tools";
 import { openaiSchemas } from "@freeanima/legacy-kernel";
 

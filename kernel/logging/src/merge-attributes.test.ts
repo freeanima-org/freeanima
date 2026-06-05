@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { hasComponent, mergeAttributes } from "./merge-attributes";
+import { hasComponent, mergeAttributes } from "./merge-attributes.ts";
 
 describe("mergeAttributes", () => {
   it("无参数时返回空对象", () => {

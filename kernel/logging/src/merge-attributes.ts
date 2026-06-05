@@ -1,4 +1,4 @@
-import type { LogAttributes } from "./types";
+import type { LogAttributes } from "./types.ts";
 
 export function mergeAttributes(...parts: (LogAttributes | undefined)[]): LogAttributes {
   const merged: LogAttributes = {};

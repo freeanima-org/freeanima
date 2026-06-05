@@ -1,5 +1,5 @@
-import { getServiceContext } from "../service-context";
-import { ApiHandlerError } from "./errors";
+import { getServiceContext } from "../service-context.ts";
+import { ApiHandlerError } from "./errors.ts";
 
 export async function getMcpStatus() {
   const { mcp } = getServiceContext();

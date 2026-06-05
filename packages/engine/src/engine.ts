@@ -6,16 +6,16 @@ import { headOkStepData } from "@freeanima/kernel-hooks";
 import { toolAfterCall } from "@freeanima/legacy-kernel";
 import type { ToolAfterCallEffect } from "@freeanima/legacy-kernel";
 import { parseToolArgs, toolError, toolResult } from "@freeanima/legacy-kernel";
-import * as llm from "./llm";
-import { cleanToolCallsForApi } from "./llm";
-import { markToolLoopActivity } from "./compression-tool-loop";
+import * as llm from "./llm.ts";
+import { cleanToolCallsForApi } from "./llm.ts";
+import { markToolLoopActivity } from "./compression-tool-loop.ts";
 import { checkEnvRequirements, getTool, openaiSchemas } from "@freeanima/legacy-kernel";
-import { getToolSessionId } from "./tool-context";
-import { maybeApplyEmergencyCompression } from "./conversation";
-import { REPAIR_REASON_INTERRUPT } from "./tool-loop-integrity";
+import { getToolSessionId } from "./tool-context.ts";
+import { maybeApplyEmergencyCompression } from "./conversation.ts";
+import { REPAIR_REASON_INTERRUPT } from "./tool-loop-integrity.ts";
 import type { AssistantMessage, SessionMessage, ToolMessage } from "@freeanima/legacy-kernel";
 import type { OpenAiToolSchema } from "@freeanima/legacy-kernel";
-import { kernel } from "./kernel";
+import { kernel } from "./kernel.ts";
 
 export class MaxTurnsExceeded extends Error {
   override name = "MaxTurnsExceeded";

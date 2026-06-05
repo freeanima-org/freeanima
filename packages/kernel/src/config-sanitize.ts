@@ -1,4 +1,4 @@
-import type { NestConfig } from "./schemas/config";
+import type { NestConfig } from "./schemas/config.ts";
 
 /** 键名匹配则整段值脱敏（不区分大小写） */
 const SECRET_KEY_PATTERN =

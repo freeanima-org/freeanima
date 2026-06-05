@@ -1,5 +1,5 @@
 import type { Command } from "commander";
-import { generateCompletion, SUPPORTED_SHELLS } from "../completion/generate";
+import { generateCompletion, SUPPORTED_SHELLS } from "../completion/generate.ts";
 
 export function registerCompletionCommand(root: Command): void {
   root

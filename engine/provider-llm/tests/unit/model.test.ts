@@ -1,5 +1,10 @@
 import { describe, expect, it } from "bun:test";
-import { clampCallParams, mergeCallParams, modelSupports, type ModelInfo } from "../../src/model";
+import {
+  clampCallParams,
+  mergeCallParams,
+  modelSupports,
+  type ModelInfo,
+} from "../../src/model.ts";
 
 describe("mergeCallParams", () => {
   it("later layers override earlier keys", () => {

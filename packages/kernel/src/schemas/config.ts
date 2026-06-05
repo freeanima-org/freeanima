@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { llmConfigSchema } from "./llm-config";
+import { llmConfigSchema } from "./llm-config.ts";
 
 export const mcpServerSchema = z
   .object({
@@ -121,11 +121,11 @@ export const nestConfigSchema = z
   .passthrough();
 
 export type NestConfig = z.infer<typeof nestConfigSchema>;
-export type { LlmConfig } from "./llm-config";
+export type { LlmConfig } from "./llm-config.ts";
 export {
   llmConfigSchema,
   llmProfileSchema,
   llmProviderOpenAiSchema,
   llmRouteHopSchema,
   OPENAI_COMPATIBLE_BACKEND_ID,
-} from "./llm-config";
+} from "./llm-config.ts";

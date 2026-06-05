@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from "bun:test";
 import { createLogger } from "@freeanima/kernel-logging";
 import { createNullSink } from "@freeanima/kernel-logging/null";
-import { MemoryEventQueue } from "./adapters/memory";
-import { NullEventQueue } from "./adapters/null";
-import { EventBus } from "./event-bus";
-import { createEventTopic } from "./topic";
+import { MemoryEventQueue } from "./adapters/memory.ts";
+import { NullEventQueue } from "./adapters/null.ts";
+import { EventBus } from "./event-bus.ts";
+import { createEventTopic } from "./topic.ts";
 
 type PingPayload = { n: number };
 

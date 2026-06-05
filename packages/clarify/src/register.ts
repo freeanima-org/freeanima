@@ -12,7 +12,7 @@ import {
   parseClarifyToolResult,
   resolveUserContent,
   setAwaitingClarify,
-} from "./clarify";
+} from "./clarify.ts";
 
 export function registerClarifyHooks(kernel: Kernel): void {
   const registry = kernel.hookRegistry;

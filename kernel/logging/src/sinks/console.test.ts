@@ -1,6 +1,6 @@
 import { describe, expect, it, spyOn } from "bun:test";
-import { createConsoleSink } from "./console";
-import type { LogRecord } from "../types";
+import { createConsoleSink } from "./console.ts";
+import type { LogRecord } from "../types.ts";
 
 describe("createConsoleSink", () => {
   it("pretty 格式包含 level、component 与 attributes suffix", () => {

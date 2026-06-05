@@ -1,12 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { FileTreePanel } from "@/components/studio/FileTreePanel";
-import { CodeViewerPanel } from "@/components/studio/CodeViewerPanel";
-import { TerminalPanel } from "@/components/studio/TerminalPanel";
-import { SessionPanel } from "@/components/studio/SessionPanel";
-import { useMediaQuery } from "@/hooks/useMediaQuery";
-import { usePairProgrammingStore } from "@/stores/pair-programming";
-import { trpc } from "@/lib/trpc";
+import { FileTreePanel } from "@/components/studio/FileTreePanel.tsx";
+import { CodeViewerPanel } from "@/components/studio/CodeViewerPanel.tsx";
+import { TerminalPanel } from "@/components/studio/TerminalPanel.tsx";
+import { SessionPanel } from "@/components/studio/SessionPanel.tsx";
+import { useMediaQuery } from "@/hooks/useMediaQuery.ts";
+import { usePairProgrammingStore } from "@/stores/pair-programming.ts";
+import { trpc } from "@/lib/trpc.ts";
 
 export const Route = createFileRoute("/studio/pair-programming")({
   component: PairProgrammingPage,

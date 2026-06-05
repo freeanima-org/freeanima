@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "bun:test";
-import { closeHttpServers, waitForDrainWithTimeout } from "../../src/http-shutdown";
-import type { WebuiServerHandle } from "../../src/webui-server";
-import { beginLogIsolation, endLogIsolation } from "../../../../tests/helpers/log-isolation";
+import { closeHttpServers, waitForDrainWithTimeout } from "../../src/http-shutdown.ts";
+import type { WebuiServerHandle } from "../../src/webui-server.ts";
+import { beginLogIsolation, endLogIsolation } from "../../../../tests/helpers/log-isolation.ts";
 
 const prevHome = process.env.FREEANIMA_HOME;
 beforeEach(() => {

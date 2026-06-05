@@ -1,7 +1,7 @@
 import { compress, SUMMARY_USER_PREFIX } from "@freeanima/legacy-engine";
 import { parseCompressionState, type SessionMessage } from "@freeanima/legacy-kernel";
 import { describe, it, expect } from "bun:test";
-import { aa, ua } from "../helpers/session-fixtures";
+import { aa, ua } from "../helpers/session-fixtures.ts";
 
 const testBoundary = { rawMinMessages: 2, slimMinMessages: 2 };
 

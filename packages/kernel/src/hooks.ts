@@ -1,5 +1,5 @@
 import { createHook } from "@freeanima/kernel-hooks";
-import type { TurnControl } from "./hook-stream";
+import type { TurnControl } from "./hook-stream.ts";
 
 export { Hook, HookRegistry, createHook } from "@freeanima/kernel-hooks";
 export type {

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { trpc } from "@/lib/trpc";
+import { trpc } from "@/lib/trpc.ts";
 
 export const Route = createFileRoute("/chamber/tools")({
   loader: () => trpc.status.tools.query().catch(() => ({ tools: [] as Record<string, unknown>[] })),

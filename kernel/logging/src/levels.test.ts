@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import { shouldLog } from "./levels";
-import type { LogLevel } from "./types";
+import { shouldLog } from "./levels.ts";
+import type { LogLevel } from "./types.ts";
 
 const LEVELS: LogLevel[] = ["debug", "info", "warn", "error"];
 

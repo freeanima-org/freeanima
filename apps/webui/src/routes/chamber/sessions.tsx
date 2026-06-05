@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { SessionMessagePanel } from "@/components/chamber/SessionMessagePanel";
-import { useChamberSessionsStore } from "@/stores/chamber-sessions";
+import { SessionMessagePanel } from "@/components/chamber/SessionMessagePanel.tsx";
+import { useChamberSessionsStore } from "@/stores/chamber-sessions.ts";
 
 export const Route = createFileRoute("/chamber/sessions")({
   component: ChamberSessionsPage,

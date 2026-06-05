@@ -3,7 +3,7 @@ import {
   DEFAULT_TIMEOUT_MS,
   parseOpenAiCompatibleContext,
   type OpenAiCompatibleContext,
-} from "./context";
+} from "./context.ts";
 import type { BackendContext } from "@freeanima/engine-provider-llm";
 
 export function createOpenAiClient(context: BackendContext): OpenAI {

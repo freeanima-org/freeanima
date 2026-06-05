@@ -3,7 +3,7 @@ import type { StreamEvent } from "@freeanima/legacy-engine";
 import type { Message, TextBasedChannel } from "discord.js";
 import { describe, expect, it, vi, beforeEach, afterEach } from "bun:test";
 import { streamReplyToChannel } from "@freeanima/legacy-gateway";
-import { beginLogIsolation, endLogIsolation } from "../../../../tests/helpers/log-isolation";
+import { beginLogIsolation, endLogIsolation } from "../../../../tests/helpers/log-isolation.ts";
 
 const prevHome = process.env.FREEANIMA_HOME;
 beforeEach(() => {

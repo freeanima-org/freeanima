@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Terminal } from "xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import "xterm/css/xterm.css";
-import { trpc } from "@/lib/trpc";
+import { trpc } from "@/lib/trpc.ts";
 
 export function TerminalPanel() {
   const termElRef = useRef<HTMLDivElement>(null);

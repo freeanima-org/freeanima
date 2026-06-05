@@ -1,7 +1,7 @@
 import type { StreamApiEvent } from "@freeanima/legacy-api";
 import { marked } from "marked";
 import { create } from "zustand";
-import { trpc } from "@/lib/trpc";
+import { trpc } from "@/lib/trpc.ts";
 
 type SendCallbacks = {
   onToken?: (text: string) => void;

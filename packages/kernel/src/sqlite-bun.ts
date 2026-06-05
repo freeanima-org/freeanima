@@ -1,6 +1,6 @@
 import { Database, type SQLQueryBindings } from "bun:sqlite";
 
-import type { SqliteDatabase } from "./sqlite";
+import type { SqliteDatabase } from "./sqlite.ts";
 
 function bindParams(params: unknown[]): SQLQueryBindings[] {
   return params as SQLQueryBindings[];

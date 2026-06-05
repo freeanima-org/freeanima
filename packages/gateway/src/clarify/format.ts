@@ -1,6 +1,6 @@
 import type { ClarifyItem } from "@freeanima/legacy-kernel";
 
-import type { ClarifyPayload } from "./types";
+import type { ClarifyPayload } from "./types.ts";
 
 export function formatClarifyPlain(items: ClarifyItem[]): string {
   const parts: string[] = [];

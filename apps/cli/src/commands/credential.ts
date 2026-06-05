@@ -1,9 +1,9 @@
 import { credential, insertCredential, listCredentials } from "@freeanima/legacy-kernel";
 import type { Command } from "commander";
 
-import { printCliError } from "../output/errors";
-import { renderTable } from "../output/table";
-import { writeStatusLine } from "../output/status";
+import { printCliError } from "../output/errors.ts";
+import { renderTable } from "../output/table.ts";
+import { writeStatusLine } from "../output/status.ts";
 
 function parseKeyValues(pairs: string[]): Record<string, string> {
   const data: Record<string, string> = {};
