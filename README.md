@@ -6,13 +6,12 @@ Agent 运行时基础设施：记忆分层（L1–L4）、工具注册（本地 
 
 ## 文档导航
 
-| 读者          | 入口                                                                 |
-| ------------- | -------------------------------------------------------------------- |
-| 部署者 / 访客 | 本页快速开始 + [`docs/security.md`](docs/security.md)                |
-| AI Agent      | [`AGENTS.md`](AGENTS.md)                                             |
-| 架构          | [`ARCHITECTURE.md`](ARCHITECTURE.md)                                 |
-| 命令与模块    | [`docs/context/project-context.md`](docs/context/project-context.md) |
-| 数字生命定位  | [`docs/identity.md`](docs/identity.md)                               |
+| 读者          | 入口                                                  |
+| ------------- | ----------------------------------------------------- |
+| 部署者 / 访客 | 本页快速开始 + [`docs/security.md`](docs/security.md) |
+| AI Agent      | [`AGENTS.md`](AGENTS.md)                              |
+| 架构          | [`ARCHITECTURE.md`](ARCHITECTURE.md)                  |
+| 数字生命定位  | [`docs/identity.md`](docs/identity.md)                |
 
 ## 快速开始
 

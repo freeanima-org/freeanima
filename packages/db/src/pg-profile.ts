@@ -32,7 +32,7 @@ export function pgProfileRecord(
   e.maxMs = Math.max(e.maxMs, durationMs);
   if (extra?.bytes != null) e.lastBytes = extra.bytes;
   if (extra?.sessionId) {
-    logComponent("db").info(
+    logComponent("db").debug(
       `${op} ${durationMs.toFixed(1)}ms session=${extra.sessionId}` +
         (extra.bytes != null ? ` bytes=${extra.bytes}` : ""),
       {
@@ -78,5 +78,5 @@ export function pgProfileLogSummary(): void {
         `${e.op}: count=${e.count} total=${e.totalMs.toFixed(0)}ms max=${e.maxMs.toFixed(0)}ms` +
         (e.lastBytes != null ? ` lastBytes=${e.lastBytes}` : ""),
     );
-  logComponent("db").info(`summary\n${lines.join("\n")}`, { op_count: stats.size });
+  logComponent("db").debug(`summary\n${lines.join("\n")}`, { op_count: stats.size });
 }

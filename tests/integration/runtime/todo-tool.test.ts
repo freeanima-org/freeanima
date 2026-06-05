@@ -1,6 +1,10 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import { describePg } from "../../helpers/pg-test-gate.ts";
-import { beginIntegrationCase, endIntegrationCase } from "../../helpers/integration-case.ts";
+import {
+  beginIntegrationCase,
+  endIntegrationCase,
+  restoreIntegrationHome,
+} from "../../helpers/integration-case.ts";
 
 import { initSession, loadSessionMeta, runWithToolContext } from "@freeanima/legacy-engine";
 import { getTool } from "@freeanima/engine-tool";
@@ -15,9 +19,8 @@ describePg("session todo", () => {
     await beginIntegrationCase("anima-todo-");
   });
 
-  afterEach(() => {
-    if (prev === undefined) delete process.env.FREEANIMA_HOME;
-    else process.env.FREEANIMA_HOME = prev;
+  afterEach(async () => {
+    await restoreIntegrationHome(prev);
   });
 
   afterAll(async () => {

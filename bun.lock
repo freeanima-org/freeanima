@@ -222,6 +222,12 @@
         "@types/bun": "catalog:",
       },
     },
+    "kernel/retry": {
+      "name": "@freeanima/kernel-retry",
+      "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
     "packages/api": {
       "name": "@freeanima/legacy-api",
       "dependencies": {
@@ -283,6 +289,7 @@
     "packages/gateway": {
       "name": "@freeanima/legacy-gateway",
       "dependencies": {
+        "@freeanima/kernel-retry": "workspace:*",
         "@freeanima/legacy-engine": "workspace:*",
         "@freeanima/legacy-kernel": "workspace:*",
         "@freeanima/legacy-runtime": "workspace:*",
@@ -398,6 +405,7 @@
       "name": "@freeanima/integration-tests",
       "devDependencies": {
         "@freeanima/connectors-eventbus-sqlite": "workspace:*",
+        "@freeanima/engine-conversation": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
         "@freeanima/kernel-eventbus": "workspace:*",
         "@freeanima/kernel-logging": "workspace:*",
@@ -571,6 +579,8 @@
     "@freeanima/kernel-hooks": ["@freeanima/kernel-hooks@workspace:kernel/hooks"],
 
     "@freeanima/kernel-logging": ["@freeanima/kernel-logging@workspace:kernel/logging"],
+
+    "@freeanima/kernel-retry": ["@freeanima/kernel-retry@workspace:kernel/retry"],
 
     "@freeanima/legacy-api": ["@freeanima/legacy-api@workspace:packages/api"],
 

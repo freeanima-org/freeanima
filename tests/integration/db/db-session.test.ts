@@ -1,6 +1,10 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import { describePg } from "../../helpers/pg-test-gate.ts";
-import { beginIntegrationCase, endIntegrationCase } from "../../helpers/integration-case.ts";
+import {
+  beginIntegrationCase,
+  endIntegrationCase,
+  restoreIntegrationHome,
+} from "../../helpers/integration-case.ts";
 import {
   upsertSessionMeta,
   getSessionMeta,
@@ -18,9 +22,8 @@ describePg("db session (PostgreSQL)", () => {
     await beginIntegrationCase("anima-db-");
   });
 
-  afterEach(() => {
-    if (prevHome === undefined) delete process.env.FREEANIMA_HOME;
-    else process.env.FREEANIMA_HOME = prevHome;
+  afterEach(async () => {
+    await restoreIntegrationHome(prevHome);
   });
 
   afterAll(async () => {

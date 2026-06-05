@@ -14,6 +14,7 @@ import {
   loadSessionMeta,
   networkErrorUserHint,
 } from "@freeanima/legacy-engine";
+import { RateLimitedLogger } from "@freeanima/kernel-retry";
 import { logComponent } from "@freeanima/legacy-kernel";
 import type { NestService } from "@freeanima/legacy-runtime";
 import type { PlatformAdapter } from "../platforms.ts";
@@ -276,6 +277,7 @@ export class DiscordAdapter implements PlatformAdapter {
   private readonly client: Client;
   private started = false;
   private loginRetryTimer: ReturnType<typeof setTimeout> | null = null;
+  private readonly shardErrorLogLimiter = new RateLimitedLogger();
 
   constructor(
     private readonly service: NestService,
@@ -300,10 +302,12 @@ export class DiscordAdapter implements PlatformAdapter {
     });
 
     this.client.on("shardError", (error, shardId) => {
-      logComponent("discord").error("Discord shard error", {
-        err: error,
-        shard_id: shardId,
-      });
+      if (this.shardErrorLogLimiter.shouldLog(`shard:${shardId}`)) {
+        logComponent("discord").warn("Discord shard error", {
+          err: error,
+          shard_id: shardId,
+        });
+      }
       this.service.updatePlatformStatus("discord", "degraded", { shard_id: shardId });
     });
 
@@ -319,6 +323,7 @@ export class DiscordAdapter implements PlatformAdapter {
     });
 
     this.client.on("clientReady", () => {
+      this.shardErrorLogLimiter.reset();
       this.clearLoginRetry();
       const user = this.client.user;
       const botName = user?.tag ?? "?";
@@ -392,12 +397,12 @@ export class DiscordAdapter implements PlatformAdapter {
   }
 
   async stop(): Promise<void> {
-    logComponent("shutdown").info("Discord 断开网关…");
+    logComponent("shutdown").debug("Discord 断开网关…");
     this.started = false;
     this.clearLoginRetry();
     unregisterDiscordCronDeliverer();
     this.client.destroy();
-    logComponent("shutdown").info("Discord 已断开");
+    logComponent("shutdown").debug("Discord 已断开");
   }
 
   private async onSlashCommand(interaction: ChatInputCommandInteraction): Promise<void> {

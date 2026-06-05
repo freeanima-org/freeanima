@@ -4,6 +4,8 @@ import { join } from "node:path";
 
 import { clearConfigCache, resetServiceLogger } from "@freeanima/legacy-kernel";
 
+export { resetServiceLogger };
+
 /** 测试隔离：临时 FREEANIMA_HOME + 重置 logger，避免污染 ~/.anima/error.log */
 export function beginLogIsolation(prefix: string): string {
   const home = mkdtempSync(join(tmpdir(), prefix));

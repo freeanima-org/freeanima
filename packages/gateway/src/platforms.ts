@@ -47,10 +47,10 @@ export async function startPlatforms(adapters: PlatformAdapter[]): Promise<void>
 export async function stopPlatforms(adapters: PlatformAdapter[]): Promise<void> {
   for (const a of adapters) {
     const t0 = Date.now();
-    logComponent("shutdown").info(`停止平台 ${a.name}…`);
+    logComponent("shutdown").debug(`停止平台 ${a.name}…`);
     try {
       await a.stop();
-      logComponent("shutdown").info(`平台 ${a.name} 已停止`, { ms: Date.now() - t0 });
+      logComponent("shutdown").debug(`平台 ${a.name} 已停止`, { ms: Date.now() - t0 });
     } catch (e) {
       logComponent("shutdown").warn(`平台 ${a.name} 停止失败`, {
         ms: Date.now() - t0,

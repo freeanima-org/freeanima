@@ -308,7 +308,7 @@ export class AcpManager {
     this.closed = true;
     const names = [...this.clients.keys()];
     if (names.length) {
-      logComponent("shutdown").info(`ACP 停止 ${names.length} 个 agent: ${names.join(", ")}…`, {
+      logComponent("shutdown").debug(`ACP 停止 ${names.length} 个 agent: ${names.join(", ")}…`, {
         count: names.length,
         agents: names,
       });
@@ -316,7 +316,7 @@ export class AcpManager {
     for (const name of names) {
       const ts = Date.now();
       await this.stopAgent(name);
-      logComponent("shutdown").info(`ACP '${name}' 已停止`, { ms: Date.now() - ts, agent: name });
+      logComponent("shutdown").debug(`ACP '${name}' 已停止`, { ms: Date.now() - ts, agent: name });
     }
     return { ok: true, action: "stop" };
   }

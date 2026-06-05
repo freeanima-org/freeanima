@@ -1,8 +1,11 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import { describePgSqlite } from "../../helpers/sqlite-gate.ts";
-import { beginIntegrationCaseWithConfig } from "../../helpers/integration-case.ts";
-import { endIntegrationCase } from "../../helpers/integration-case.ts";
 
+import {
+  beginIntegrationCaseWithConfig,
+  endIntegrationCase,
+  restoreIntegrationHome,
+} from "../../helpers/integration-case.ts";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { createLogger } from "@freeanima/kernel-logging";
@@ -32,8 +35,7 @@ describePgSqlite("memory handlers", () => {
   });
 
   afterEach(async () => {
-    if (prev === undefined) delete process.env.FREEANIMA_HOME;
-    else process.env.FREEANIMA_HOME = prev;
+    await restoreIntegrationHome(prev);
   });
 
   it("session:updated creates processed file when reflect disabled", async () => {

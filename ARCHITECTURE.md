@@ -431,6 +431,6 @@ conversation.py  emit("session:updated")
 ## 约束
 
 - 原则与结构写在本文件；不写具体待办
-- 会周变的实现细节进 `docs/context/project-context.md` 或专题 `docs/*.md`
+- 会周变的实现细节以代码为准；长期专题进 `docs/*.md`（见 `AGENTS.md` 文档地图）
 - 当前要做的事只进 `TODOS.md`；**完成后从 TODOS 删除**，不保留已完成项
 - 用户可见的发布级变更进 `CHANGELOG.md`（发版时）

@@ -1,8 +1,11 @@
 import { computeStats, statsReport } from "@freeanima/legacy-runtime";
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import { describePg } from "../../helpers/pg-test-gate.ts";
-import { beginIntegrationCaseWithConfig } from "../../helpers/integration-case.ts";
-import { endIntegrationCase } from "../../helpers/integration-case.ts";
+import {
+  beginIntegrationCaseWithConfig,
+  endIntegrationCase,
+  restoreIntegrationHome,
+} from "../../helpers/integration-case.ts";
 import { newSession, appendMessage, updateSessionMetaField } from "@freeanima/legacy-engine";
 
 describePg("runtime context stats", () => {
@@ -21,8 +24,7 @@ compression:
   });
 
   afterEach(async () => {
-    if (prev === undefined) delete process.env.FREEANIMA_HOME;
-    else process.env.FREEANIMA_HOME = prev;
+    await restoreIntegrationHome(prev);
   });
 
   it("breakdown includes tools and system parts from runtime view", async () => {

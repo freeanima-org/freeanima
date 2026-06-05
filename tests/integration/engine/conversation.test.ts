@@ -4,6 +4,7 @@ import {
   beginIntegrationCase,
   beginIntegrationCaseWithConfig,
   endIntegrationCase,
+  restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
 import { openaiSchemas } from "@freeanima/engine-tool";
@@ -26,9 +27,8 @@ describePg("conversation", () => {
     await beginIntegrationCase("anima-conv-");
   });
 
-  afterEach(() => {
-    if (prev === undefined) delete process.env.FREEANIMA_HOME;
-    else process.env.FREEANIMA_HOME = prev;
+  afterEach(async () => {
+    await restoreIntegrationHome(prev);
   });
 
   afterAll(async () => {
@@ -77,9 +77,8 @@ describePg("conversation compression", () => {
     );
   });
 
-  afterEach(() => {
-    if (prev === undefined) delete process.env.FREEANIMA_HOME;
-    else process.env.FREEANIMA_HOME = prev;
+  afterEach(async () => {
+    await restoreIntegrationHome(prev);
   });
 
   afterAll(async () => {

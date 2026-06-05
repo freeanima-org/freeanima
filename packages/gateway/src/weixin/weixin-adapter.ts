@@ -1,3 +1,4 @@
+import { SteppedBackoff } from "@freeanima/kernel-retry";
 import { safeParseOrNull, PATHS, logComponent } from "@freeanima/legacy-kernel";
 import type { NestService } from "@freeanima/legacy-runtime";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -6,13 +7,7 @@ import { randomBytes } from "node:crypto";
 import type { PlatformAdapter } from "../platforms.ts";
 import { collectGatewayStreamReply } from "../collect-gateway-stream-reply.ts";
 import { registerWeixinCronDeliverer, unregisterWeixinCronDeliverer } from "../cron-deliver.ts";
-import {
-  BACKOFF_DELAY_MS,
-  MAX_CONSECUTIVE_FAILURES,
-  RETRY_DELAY_MS,
-  getUpdates,
-  sendText,
-} from "./ilink-api.ts";
+import { MAX_CONSECUTIVE_FAILURES, getUpdates, sendText } from "./ilink-api.ts";
 import {
   buildWeixinOrigin,
   explainInboundSkip,
@@ -57,6 +52,7 @@ export class WeixinAdapter implements PlatformAdapter {
   private contextTokens: Record<string, string> = {};
   private readonly seen = new Set<string>();
   private failures = 0;
+  private readonly pollBackoff = new SteppedBackoff();
   private readonly clientId: string;
   private abort: AbortController | null = null;
   private loopPromise: Promise<void> | null = null;
@@ -81,7 +77,7 @@ export class WeixinAdapter implements PlatformAdapter {
   }
 
   async stop(): Promise<void> {
-    logComponent("shutdown").info("微信 adapter 中止轮询…");
+    logComponent("shutdown").debug("微信 adapter 中止轮询…");
     unregisterWeixinCronDeliverer();
     this.abort?.abort();
     const loop = this.loopPromise;
@@ -95,7 +91,7 @@ export class WeixinAdapter implements PlatformAdapter {
     this.persistState();
     this.abort = null;
     this.loopPromise = null;
-    logComponent("shutdown").info("微信 adapter 已停止");
+    logComponent("shutdown").debug("微信 adapter 已停止");
   }
 
   private async runLoop(signal: AbortSignal): Promise<void> {
@@ -121,31 +117,29 @@ export class WeixinAdapter implements PlatformAdapter {
       try {
         await this.pollOnce(signal);
         this.failures = 0;
+        this.pollBackoff.reset();
       } catch (e) {
         if (signal.aborted) break;
         this.failures += 1;
+        const delay = this.pollBackoff.nextDelayMs();
         logComponent("weixin").warn(
           `WeChat poll error (attempt ${this.failures}/${MAX_CONSECUTIVE_FAILURES})`,
-          { attempt: this.failures, max_attempts: MAX_CONSECUTIVE_FAILURES, err: e },
+          {
+            attempt: this.failures,
+            max_attempts: MAX_CONSECUTIVE_FAILURES,
+            delay_ms: delay,
+            err: e,
+          },
         );
         if (this.failures >= MAX_CONSECUTIVE_FAILURES) {
           logComponent("weixin").error("WeChat poll error", {
             err: e,
             failures: this.failures,
           });
-        }
-        if (this.failures >= MAX_CONSECUTIVE_FAILURES) {
-          const delay = BACKOFF_DELAY_MS * Math.min(this.failures, 5);
-          logComponent("weixin").warn(`WeChat backing off for ${delay}ms`, { delay_ms: delay });
           this.service.updatePlatformStatus("weixin", "backoff", { delay_ms: delay });
-          try {
-            await sleep(delay, signal);
-          } catch {
-            break;
-          }
         }
         try {
-          await sleep(RETRY_DELAY_MS, signal);
+          await sleep(delay, signal);
         } catch {
           break;
         }

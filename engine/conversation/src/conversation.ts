@@ -440,6 +440,18 @@ function compressOptsForSession(
   };
 }
 
+const pendingCompressionSummaries = new Map<string, Promise<void>>();
+
+/** 等待进行中的异步会话摘要（集成测 teardown 须在恢复 FREEANIMA_HOME 前调用） */
+export async function flushCompressionSummaries(session?: string): Promise<void> {
+  if (session !== undefined) {
+    const p = pendingCompressionSummaries.get(session);
+    if (p) await p;
+    return;
+  }
+  await Promise.all([...pendingCompressionSummaries.values()]);
+}
+
 async function finalizeCompressionSummary(
   session: string,
   allMsgs: Message[],
@@ -447,7 +459,12 @@ async function finalizeCompressionSummary(
   cutState: CompressionState,
   systemPromptSnapshot: string,
   model: string,
+  homeAtSchedule: string,
 ): Promise<void> {
+  if ((process.env.FREEANIMA_HOME ?? "") !== homeAtSchedule) {
+    logComponent("compression").warn(`跳过会话摘要（FREEANIMA_HOME 已切换）: ${session}`);
+    return;
+  }
   const gen = await generateSessionSummary(
     allMsgs,
     prevState,
@@ -484,16 +501,30 @@ function scheduleCompressionSummary(
   systemPromptSnapshot: string,
   model: string,
 ): void {
-  void finalizeCompressionSummary(
-    session,
-    allMsgs,
-    prevState,
-    cutState,
-    systemPromptSnapshot,
-    model,
-  ).catch((e) => {
-    logComponent("compression").error(`会话摘要流水线异常: ${session}`, { err: String(e) });
-  });
+  const homeAtSchedule = process.env.FREEANIMA_HOME ?? "";
+  const prev = pendingCompressionSummaries.get(session);
+  const run = async (): Promise<void> => {
+    if (prev) await prev;
+    await finalizeCompressionSummary(
+      session,
+      allMsgs,
+      prevState,
+      cutState,
+      systemPromptSnapshot,
+      model,
+      homeAtSchedule,
+    );
+  };
+  const p = run()
+    .catch((e) => {
+      logComponent("compression").error(`会话摘要流水线异常: ${session}`, { err: String(e) });
+    })
+    .finally(() => {
+      if (pendingCompressionSummaries.get(session) === p) {
+        pendingCompressionSummaries.delete(session);
+      }
+    });
+  pendingCompressionSummaries.set(session, p);
 }
 
 /** 根据完整历史维护 meta.compression（不删消息；cut 变更时异步生成摘要） */
