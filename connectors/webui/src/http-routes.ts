@@ -5,7 +5,7 @@ import type { ServerResponse } from "node:http";
 import type { Duplex } from "node:stream";
 import { createProxyServer, type ServerOptions } from "http-proxy";
 import { WebSocketServer } from "ws";
-import { WEBUI_BASE_PATH } from "@freeanima/service";
+import { WEBUI_BASE_PATH } from "./api/constants.ts";
 import { getHealth } from "./handlers/index.ts";
 import { createTrpcContext } from "./trpc/context.ts";
 import { appRouter } from "./trpc/router.ts";

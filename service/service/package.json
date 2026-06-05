@@ -19,7 +19,6 @@
     "@freeanima/connectors-commands": "workspace:*",
     "@freeanima/connectors-cron": "workspace:*",
     "@freeanima/connectors-gateway": "workspace:*",
-    "@freeanima/connectors-webui": "workspace:*",
     "@freeanima/engine": "workspace:*",
     "@freeanima/engine-compress": "workspace:*",
     "@freeanima/engine-conversation": "workspace:*",

@@ -7,7 +7,6 @@
       "devDependencies": {
         "@commitlint/cli": "^21.0.2",
         "@commitlint/config-conventional": "^21.0.2",
-        "@freeanima/api": "workspace:*",
         "@freeanima/capabilities-acp": "workspace:*",
         "@freeanima/capabilities-clarify": "workspace:*",
         "@freeanima/capabilities-mcp": "workspace:*",
@@ -109,6 +108,7 @@
         "anima": "./src/cli.ts",
       },
       "dependencies": {
+        "@freeanima/connectors-webui": "workspace:*",
         "@freeanima/service": "workspace:*",
         "@freeanima/service-config": "workspace:*",
         "@freeanima/service-logging": "workspace:*",
@@ -188,7 +188,6 @@
     "connectors/webui": {
       "name": "@freeanima/connectors-webui",
       "dependencies": {
-        "@freeanima/api": "workspace:*",
         "@freeanima/capabilities-acp": "workspace:*",
         "@freeanima/capabilities-clarify": "workspace:*",
         "@freeanima/capabilities-mcp": "workspace:*",
@@ -326,15 +325,6 @@
         "@types/bun": "catalog:",
       },
     },
-    "kernel/api": {
-      "name": "@freeanima/api",
-      "dependencies": {
-        "zod": "catalog:",
-      },
-      "devDependencies": {
-        "@types/bun": "catalog:",
-      },
-    },
     "kernel/db": {
       "name": "@freeanima/kernel-db",
       "dependencies": {
@@ -396,7 +386,6 @@
         "zod": "catalog:",
       },
       "devDependencies": {
-        "@freeanima/api": "workspace:*",
         "@freeanima/capabilities-acp": "workspace:*",
         "@freeanima/connectors-gateway": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
@@ -483,7 +472,6 @@
         "@freeanima/connectors-commands": "workspace:*",
         "@freeanima/connectors-cron": "workspace:*",
         "@freeanima/connectors-gateway": "workspace:*",
-        "@freeanima/connectors-webui": "workspace:*",
         "@freeanima/engine": "workspace:*",
         "@freeanima/engine-compress": "workspace:*",
         "@freeanima/engine-conversation": "workspace:*",
@@ -512,7 +500,6 @@
     "tests": {
       "name": "@freeanima/integration-tests",
       "devDependencies": {
-        "@freeanima/api": "workspace:*",
         "@freeanima/capabilities-acp": "workspace:*",
         "@freeanima/capabilities-clarify": "workspace:*",
         "@freeanima/capabilities-mcp": "workspace:*",
@@ -661,8 +648,6 @@
     "@esbuild/win32-ia32": ["@esbuild/win32-ia32@0.25.12", "", { "os": "win32", "cpu": "ia32" }, "sha512-HkqnmmBoCbCwxUKKNPBixiWDGCpQGVsrQfJoVGYLPT41XWF8lHuE5N6WhVia2n4o5QK5M4tYr21827fNhi4byQ=="],
 
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.25.12", "", { "os": "win32", "cpu": "x64" }, "sha512-alJC0uCZpTFrSL0CCDjcgleBXPnCrEAhTBILpeAp7M/OFgoqtAetfBzX0xM00MUsVVPpVjlPuMbREqnZCXaTnA=="],
-
-    "@freeanima/api": ["@freeanima/api@workspace:kernel/api"],
 
     "@freeanima/capabilities-acp": ["@freeanima/capabilities-acp@workspace:capabilities/acp"],
 

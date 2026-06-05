@@ -1,26 +1,20 @@
-import {
-  mapConfigToApi,
-  mapCronJobsToApi,
-  mapHealthToApi,
-  mapStatusToApi,
-} from "../api-mappers.ts";
 import { getServiceContext } from "@freeanima/service";
 import { scheduleServiceRestart } from "../service-restart.ts";
 import { ApiHandlerError } from "./errors.ts";
 
 export function getHealth() {
   const { service } = getServiceContext();
-  return mapHealthToApi(service.health());
+  return service.health();
 }
 
 export async function getStatus() {
   const { service, host, port } = getServiceContext();
-  return mapStatusToApi(await service.buildStatus(host, port));
+  return service.buildStatus(host, port);
 }
 
 export function getConfig() {
   const { service } = getServiceContext();
-  return mapConfigToApi(service.getConfig()).config;
+  return service.getConfig().config;
 }
 
 export function listTools() {
@@ -30,7 +24,7 @@ export function listTools() {
 
 export function listCronJobs() {
   const { service } = getServiceContext();
-  return mapCronJobsToApi(service.listCronJobs().jobs);
+  return { jobs: service.listCronJobs().jobs };
 }
 
 export function pauseCronJob(id: string) {

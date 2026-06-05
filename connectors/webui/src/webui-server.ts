@@ -1,6 +1,6 @@
 import type { Server as HttpServer } from "node:http";
 import { createServer } from "node:http";
-import { WEBUI_BASE_PATH } from "@freeanima/service";
+import { WEBUI_BASE_PATH } from "./api/constants.ts";
 import webuiHtml from "../app/index.html";
 import { createHttpRoutes, handleNodeHttpRequest } from "./http-routes.ts";
 
@@ -84,13 +84,4 @@ export async function startWebuiHttpServers(
   return Promise.all(hosts.map((host) => startWebuiHttpServer(host, port, options)));
 }
 
-export async function closeWebuiHttpServers(
-  handles: WebuiServerHandle[],
-  _timeoutMs = 3000,
-): Promise<void> {
-  for (const h of handles) {
-    await h.close();
-  }
-}
-
-export { WEBUI_BASE_PATH };
+export { WEBUI_BASE_PATH } from "./api/constants.ts";

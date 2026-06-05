@@ -36,5 +36,5 @@ export {
   studioGetFile,
   studioSearch,
 } from "./studio.ts";
-export { createMessageStreamResponse, iterateMessageStream } from "./message-stream.ts";
+export { iterateMessageStream } from "./message-stream.ts";
 export { ApiHandlerError } from "./errors.ts";

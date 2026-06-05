@@ -8,6 +8,7 @@
     ".": "./src/cli.ts"
   },
   "dependencies": {
+    "@freeanima/connectors-webui": "workspace:*",
     "@freeanima/service": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "@freeanima/service-logging": "workspace:*",

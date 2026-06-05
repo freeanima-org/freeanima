@@ -1,5 +1,5 @@
 import { marked } from "marked";
-import type { DisplayItem } from "@freeanima/api";
+import type { DisplayItem } from "@freeanima/connectors-webui/api";
 import { ToolBlockBubble } from "./ToolBlockBubble.tsx";
 
 type SessionMessagePanelProps = {

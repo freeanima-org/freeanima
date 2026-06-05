@@ -1,4 +1,4 @@
-import { memorySearchBodySchema, type MemorySearchBody } from "@freeanima/api";
+import { memorySearchBodySchema, type MemorySearchBody } from "@freeanima/connectors-webui/api";
 import { getServiceContext } from "@freeanima/service";
 
 export function listMemoryFiles() {

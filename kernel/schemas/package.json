@@ -18,7 +18,6 @@
   },
   "devDependencies": {
     "@freeanima/engine-tool": "workspace:*",
-    "@freeanima/api": "workspace:*",
     "@freeanima/connectors-gateway": "workspace:*",
     "@freeanima/capabilities-acp": "workspace:*",
     "@types/bun": "catalog:"

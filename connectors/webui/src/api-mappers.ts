@@ -1,21 +1,5 @@
 import type { StreamEvent } from "@freeanima/engine-loop";
-import type {
-  HealthSnapshot,
-  MessagesDisplay,
-  SafeConfigSnapshot,
-  ServiceSnapshot,
-  SessionSummary,
-} from "@freeanima/kernel-schemas";
-import type { CronJobData } from "@freeanima/service";
-import type {
-  CronJobsResponse,
-  HealthResponse,
-  MessagesResponse,
-  SafeConfigResponse,
-  ServiceStatus,
-  SessionListItem,
-  StreamApiEvent,
-} from "@freeanima/api";
+import type { StreamApiEvent } from "@freeanima/connectors-webui/api";
 
 export function mapStreamEventToApi(ev: StreamEvent): StreamApiEvent {
   switch (ev.event) {
@@ -61,28 +45,4 @@ export function mapStreamEventToApi(ev: StreamEvent): StreamApiEvent {
       return _exhaustive;
     }
   }
-}
-
-export function mapHealthToApi(snapshot: HealthSnapshot): HealthResponse {
-  return snapshot;
-}
-
-export function mapStatusToApi(snapshot: ServiceSnapshot): ServiceStatus {
-  return snapshot;
-}
-
-export function mapSessionsToApi(sessions: SessionSummary[]): SessionListItem[] {
-  return sessions;
-}
-
-export function mapMessagesToApi(display: MessagesDisplay): MessagesResponse {
-  return display;
-}
-
-export function mapConfigToApi(snapshot: SafeConfigSnapshot): SafeConfigResponse {
-  return snapshot as SafeConfigResponse;
-}
-
-export function mapCronJobsToApi(jobs: CronJobData[]): CronJobsResponse {
-  return { jobs: jobs as CronJobsResponse["jobs"] };
 }

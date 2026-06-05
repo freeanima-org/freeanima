@@ -1,13 +1,12 @@
 import { loadSessionMeta } from "@freeanima/engine-conversation";
 import { isSessionMeta } from "@freeanima/kernel-schemas";
-import { PARLOR_PLATFORM } from "@freeanima/service";
+import { PARLOR_PLATFORM } from "../api/constants.ts";
 import {
   createSessionBodySchema,
   patchTitleBodySchema,
   type CreateSessionBody,
   type PatchTitleBody,
-} from "@freeanima/api";
-import { mapMessagesToApi, mapSessionsToApi } from "../api-mappers.ts";
+} from "@freeanima/connectors-webui/api";
 import { getServiceContext } from "@freeanima/service";
 import { ApiHandlerError } from "./errors.ts";
 
@@ -20,7 +19,7 @@ export async function resolveSessionPlatform(sessionId: string): Promise<string>
 export async function listSessions(platform?: string) {
   const { service } = getServiceContext();
   const { sessions } = await service.listSessions(platform);
-  return { sessions: mapSessionsToApi(sessions) };
+  return { sessions };
 }
 
 export async function createSession(body: CreateSessionBody) {
@@ -45,9 +44,7 @@ export async function getSessionMessages(
 ) {
   const { service } = getServiceContext();
   try {
-    return mapMessagesToApi(
-      await service.getMessages(sessionId, await resolveSessionPlatform(sessionId), opts),
-    );
+    return service.getMessages(sessionId, await resolveSessionPlatform(sessionId), opts);
   } catch (e) {
     throw new ApiHandlerError(404, String(e), { session_id: sessionId });
   }
