@@ -403,6 +403,15 @@
         "@types/bun": "catalog:",
       },
     },
+    "life/estate": {
+      "name": "@freeanima/life-estate",
+      "dependencies": {
+        "@freeanima/kernel-schemas": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
     "life/memory": {
       "name": "@freeanima/life-memory",
       "dependencies": {
@@ -418,6 +427,15 @@
       },
       "devDependencies": {
         "@freeanima/engine-loop": "workspace:*",
+        "@types/bun": "catalog:",
+      },
+    },
+    "life/self": {
+      "name": "@freeanima/life-self",
+      "dependencies": {
+        "@freeanima/kernel-schemas": "workspace:*",
+      },
+      "devDependencies": {
         "@types/bun": "catalog:",
       },
     },
@@ -702,7 +720,11 @@
 
     "@freeanima/kernel-schemas": ["@freeanima/kernel-schemas@workspace:kernel/schemas"],
 
+    "@freeanima/life-estate": ["@freeanima/life-estate@workspace:life/estate"],
+
     "@freeanima/life-memory": ["@freeanima/life-memory@workspace:life/memory"],
+
+    "@freeanima/life-self": ["@freeanima/life-self@workspace:life/self"],
 
     "@freeanima/service": ["@freeanima/service@workspace:service/service"],
 
