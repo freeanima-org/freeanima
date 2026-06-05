@@ -5,7 +5,7 @@ import { setTimeout as sleep } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
-const dbRoot = join(repoRoot, "packages/db");
+const dbRoot = join(repoRoot, "kernel/db");
 
 function assertDockerAvailable(): void {
   try {

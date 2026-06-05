@@ -11,7 +11,7 @@
     "@freeanima/kernel-logging": "workspace:*",
     "@freeanima/kernel-schemas": "workspace:*",
     "@freeanima/legacy-clarify": "workspace:*",
-    "@freeanima/legacy-db": "workspace:*",
+    "@freeanima/kernel-db": "workspace:*",
     "@freeanima/legacy-integrations": "workspace:*",
     "@freeanima/legacy-memory": "workspace:*",
     "@freeanima/legacy-runtime": "workspace:*",

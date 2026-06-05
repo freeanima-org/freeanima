@@ -1,4 +1,4 @@
-import type { PgTestContext } from "@freeanima/legacy-db/test-helpers";
+import type { PgTestContext } from "@freeanima/kernel-db/test-helpers";
 import { flushCompressionSummaries } from "@freeanima/engine-conversation";
 
 import { beginLogIsolation, resetServiceLogger } from "./log-isolation.ts";
@@ -23,7 +23,7 @@ export async function beginIntegrationCase(prefix: string): Promise<{
     throw new Error("ANIMA_TEST_PG_URL 未设置；请用 bun test");
   }
   const home = beginLogIsolation(prefix);
-  const { setupIntegrationHome } = await import("@freeanima/legacy-db/test-helpers");
+  const { setupIntegrationHome } = await import("@freeanima/kernel-db/test-helpers");
   const pg = await setupIntegrationHome({ url: pgTestUrl, home });
   return { home, pg };
 }
@@ -36,13 +36,13 @@ export async function beginIntegrationCaseWithConfig(
     throw new Error("ANIMA_TEST_PG_URL 未设置；请用 bun test");
   }
   const home = beginLogIsolation(prefix);
-  const { setupIntegrationHome } = await import("@freeanima/legacy-db/test-helpers");
+  const { setupIntegrationHome } = await import("@freeanima/kernel-db/test-helpers");
   const pg = await setupIntegrationHome({ url: pgTestUrl, home, configYaml });
   return { home, pg };
 }
 
 export async function endIntegrationCase(): Promise<void> {
   await flushCompressionSummaries();
-  const { teardownIntegrationHome } = await import("@freeanima/legacy-db/test-helpers");
+  const { teardownIntegrationHome } = await import("@freeanima/kernel-db/test-helpers");
   await teardownIntegrationHome();
 }

@@ -10,7 +10,7 @@
     "@freeanima/engine-tool": "workspace:*",
     "@freeanima/kernel-eventbus": "workspace:*",
     "@freeanima/kernel-schemas": "workspace:*",
-    "@freeanima/legacy-db": "workspace:*",
+    "@freeanima/kernel-db": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "@freeanima/service-logging": "workspace:*",
     "yaml": "^2.9.0"

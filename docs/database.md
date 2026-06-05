@@ -10,7 +10,7 @@
 | **Slice A** | `sessions` + `messages`（L1 主存 PG）       | **已完成** |
 | **Slice B** | semantic / limbic / procedural（memory v2） | 规划中     |
 
-代码真相源：[`packages/db/src/schema/`](../packages/db/src/schema/)。
+代码真相源：[`kernel/db/src/schema/`](../kernel/db/src/schema/)。
 
 ---
 
@@ -69,7 +69,7 @@ database:
 
 ### 迁移
 
-`bun run --filter @freeanima/legacy-db db:migrate` — 应用 Drizzle migration（含列化 → payload JSONB 的数据回填）。
+`bun run --filter @freeanima/kernel-db db:migrate` — 应用 Drizzle migration（含列化 → payload JSONB 的数据回填）。
 
 ### 运维
 
@@ -87,7 +87,7 @@ anima credential add services/postgres/anima url=… host=… password=… datab
 
 # Schema
 DATABASE_URL="$(anima credential get services/postgres/anima url)" \
-  bun run --filter @freeanima/legacy-db db:migrate
+  bun run --filter @freeanima/kernel-db db:migrate
 
 # database:
 #   url: pass:services/postgres/anima
@@ -103,7 +103,7 @@ DATABASE_URL="$(anima credential get services/postgres/anima url)" \
 bun test
 ```
 
-单元测试（mapper，不连 PG）：`bun test packages/db`
+单元测试（mapper，不连 PG）：`bun test kernel/db`
 
 ## Slice B（规划中）
 

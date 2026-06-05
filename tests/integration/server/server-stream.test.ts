@@ -7,7 +7,7 @@ import {
 } from "../../helpers/integration-case.ts";
 
 import { NestService } from "@freeanima/legacy-runtime";
-import { seedSession } from "@freeanima/legacy-db/test-helpers";
+import { seedSession } from "@freeanima/kernel-db/test-helpers";
 
 describePg("sendMessageStream", () => {
   const prev = process.env.FREEANIMA_HOME;
