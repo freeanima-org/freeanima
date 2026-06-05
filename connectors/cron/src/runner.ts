@@ -7,9 +7,8 @@ import { getProfileHopModel, loadConfig } from "@freeanima/service-config";
 import { logComponent } from "@freeanima/service-logging";
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
 import * as conv from "@freeanima/engine-conversation";
-import * as engine from "@freeanima/engine-loop";
 import { loadSkill } from "@freeanima/life-memory";
-import { runWithToolContext } from "@freeanima/engine-loop";
+import { runSimpleTurn } from "@freeanima/service/runtime/turn-lifecycle";
 import type { CronJob } from "./models.ts";
 import * as store from "./store.ts";
 import { computeNextRun } from "./schedule.ts";
@@ -63,29 +62,7 @@ async function runEngine(job: CronJob, prompt: string): Promise<string> {
     loadSkill(skillName);
   }
 
-  const [msgs, functions, effective] = await conv.beginTurn(sid, prompt);
-  try {
-    return await runWithToolContext(sid, () =>
-      engine.run(msgs, {
-        model,
-        onMessageAppended: async (msg) => {
-          await conv.appendMessage(msg, sid);
-        },
-        onToolRoundComplete: async (batch) => {
-          for (const msg of batch) {
-            await conv.appendMessage(msg, sid);
-          }
-        },
-      }),
-    );
-  } catch (e) {
-    if (e instanceof engine.MaxTurnsExceeded) {
-      return `[工具循环超限] ${e.message}`;
-    }
-    return `[引擎错误] ${e}`;
-  } finally {
-    await conv.finishTurn(sid, msgs, effective, model, functions, true);
-  }
+  return runSimpleTurn({ sessionId: sid, prompt, model });
 }
 
 function saveOutput(job: CronJob, content: string): void {
