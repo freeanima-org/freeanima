@@ -4,7 +4,7 @@ import { registerExecuteCodeTool } from "./execute-code.ts";
 import { registerMemoryTools } from "./memory-tools.ts";
 import { registerTerminalTools } from "./terminal.ts";
 import { registerWebTools } from "./web.ts";
-import { registerClarifyTool } from "@freeanima/legacy-clarify";
+import { registerClarifyTool } from "@freeanima/capabilities-clarify";
 import { registerCronjobTool } from "./cronjob.ts";
 import { registerSkillsTools } from "./skills-tools.ts";
 import { registerTodoTool } from "./todo-tool.ts";

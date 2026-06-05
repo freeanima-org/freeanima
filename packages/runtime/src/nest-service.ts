@@ -46,7 +46,7 @@ import type { CronJobData } from "./cron/models.ts";
 import { kernel } from "@freeanima/service-bootstrap";
 import { headOkStepData, messageIncoming, turnAfterComplete } from "@freeanima/kernel-hooks";
 import type { MessageIncomingEffect, TurnAfterCompleteEffect } from "@freeanima/kernel-hooks";
-import { applyClarifyStreamAwaiting } from "@freeanima/legacy-clarify";
+import { applyClarifyStreamAwaiting } from "@freeanima/capabilities-clarify";
 import { CST_OFFSET_MS, PATHS } from "@freeanima/service-config";
 import { distillAll } from "@freeanima/legacy-memory/clean";
 import {

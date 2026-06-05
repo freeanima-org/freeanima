@@ -145,7 +145,7 @@ packages:
 | `@freeanima/gateway`      | `@freeanima/legacy-gateway`                                          |
 | `@freeanima/tools`        | `@freeanima/legacy-tools`                                            |
 | `@freeanima/integrations` | `@freeanima/legacy-integrations`                                     |
-| `@freeanima/clarify`      | `@freeanima/legacy-clarify`                                          |
+| `@freeanima/clarify`      | ~~`@freeanima/legacy-clarify`~~ → `@freeanima/capabilities-clarify`  |
 | `@freeanima/api`          | `@freeanima/legacy-api`                                              |
 | `@freeanima/cli`          | `@freeanima/legacy-cli`                                              |
 | `@freeanima/webui`        | `@freeanima/legacy-webui`                                            |
