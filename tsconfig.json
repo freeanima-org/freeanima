@@ -4,7 +4,7 @@
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
     "paths": {
-      "@/*": ["./apps/webui/src/*"]
+      "@/*": ["./connectors/webui/app/src/*"]
     }
   },
   "include": [
@@ -17,7 +17,7 @@
     "packages/**/*.ts",
     "apps/**/*.ts",
     "apps/**/*.tsx",
-    "apps/webui/index.html",
+    "connectors/webui/app/index.html",
     "scripts/**/*.ts",
     "tests/**/*.ts"
   ],

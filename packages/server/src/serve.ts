@@ -43,9 +43,12 @@ import {
 import { MCPManager } from "@freeanima/capabilities-mcp";
 import { getAcpManager } from "@freeanima/capabilities-acp";
 import { DEFAULT_BIND_HOST, parseBindHosts } from "./bind-hosts.ts";
-import { closeHttpServers, waitForDrainWithTimeout } from "./http-shutdown.ts";
+import {
+  closeHttpServers,
+  waitForDrainWithTimeout,
+} from "@freeanima/connectors-webui/http-shutdown";
 import { initServiceContext } from "./service-context.ts";
-import { startWebuiHttpServers, type WebuiServerHandle } from "./webui-server.ts";
+import { startWebuiHttpServers, type WebuiServerHandle } from "@freeanima/connectors-webui";
 
 export { isServerAlive, readStatusFile } from "./alive.ts";
 export {

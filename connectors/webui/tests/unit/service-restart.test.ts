@@ -1,10 +1,5 @@
 import { describe, it, expect, mock, beforeEach, afterEach, spyOn, vi } from "bun:test";
-
-const spawnMock = mock(() => ({ unref: mock(() => {}) }));
-
-mock.module("node:child_process", () => ({
-  spawn: spawnMock,
-}));
+import * as childProcess from "node:child_process";
 
 import {
   isSystemdManaged,
@@ -15,8 +10,11 @@ import {
 describe("service-restart", () => {
   const prevInvocation = process.env.INVOCATION_ID;
 
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   beforeEach(() => {
-    spawnMock.mockClear();
     delete process.env.INVOCATION_ID;
   });
 
@@ -34,39 +32,48 @@ describe("service-restart", () => {
   it("systemd 托管时调用 systemctl restart", async () => {
     process.env.INVOCATION_ID = "run-1";
     const unref = mock(() => {});
-    spawnMock.mockImplementation(() => ({ unref }));
+    const spawnSpy = spyOn(childProcess, "spawn").mockReturnValue({
+      unref,
+    } as never);
 
-    await triggerServiceRestart();
+    try {
+      await triggerServiceRestart();
 
-    expect(spawnMock).toHaveBeenCalledWith(
-      "systemctl",
-      ["--user", "restart", "anima"],
-      expect.objectContaining({ detached: true, stdio: "ignore" }),
-    );
-    expect(unref).toHaveBeenCalled();
+      expect(spawnSpy).toHaveBeenCalledWith(
+        "systemctl",
+        ["--user", "restart", "anima"],
+        expect.objectContaining({ detached: true, stdio: "ignore" }),
+      );
+      expect(unref).toHaveBeenCalled();
+    } finally {
+      spawnSpy.mockRestore();
+    }
   });
 
   it("非 systemd 时发送 SIGTERM", async () => {
     const killSpy = spyOn(process, "kill").mockImplementation(() => true);
 
-    await triggerServiceRestart();
+    try {
+      await triggerServiceRestart();
 
-    expect(spawnMock).not.toHaveBeenCalled();
-    expect(killSpy).toHaveBeenCalledWith(process.pid, "SIGTERM");
-    killSpy.mockRestore();
+      expect(killSpy).toHaveBeenCalledWith(process.pid, "SIGTERM");
+    } finally {
+      killSpy.mockRestore();
+    }
   });
 
   it("scheduleServiceRestart 延迟触发", async () => {
     vi.useFakeTimers();
     const killSpy = spyOn(process, "kill").mockImplementation(() => true);
 
-    scheduleServiceRestart(100);
-    expect(killSpy).not.toHaveBeenCalled();
+    try {
+      scheduleServiceRestart(100);
+      expect(killSpy).not.toHaveBeenCalled();
 
-    vi.advanceTimersByTime(100);
-    expect(killSpy).toHaveBeenCalledWith(process.pid, "SIGTERM");
-
-    killSpy.mockRestore();
-    vi.useRealTimers();
+      vi.advanceTimersByTime(100);
+      expect(killSpy).toHaveBeenCalledWith(process.pid, "SIGTERM");
+    } finally {
+      killSpy.mockRestore();
+    }
   });
 });

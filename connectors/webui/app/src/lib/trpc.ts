@@ -6,7 +6,7 @@ import {
   splitLink,
   wsLink,
 } from "@trpc/client";
-import type { AppRouter } from "@freeanima/legacy-server/trpc";
+import type { AppRouter } from "@freeanima/connectors-webui/trpc";
 import { apiPath, trpcWsUrl } from "./api-path.ts";
 
 const wsClient = createWSClient({

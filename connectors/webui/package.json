@@ -1,0 +1,53 @@
+{
+  "name": "@freeanima/connectors-webui",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./handlers": "./src/handlers/index.ts",
+    "./trpc": "./src/trpc/router.ts",
+    "./http-shutdown": "./src/http-shutdown.ts",
+    "./webui-server": "./src/webui-server.ts",
+    "./service-restart": "./src/service-restart.ts"
+  },
+  "dependencies": {
+    "@freeanima/capabilities-acp": "workspace:*",
+    "@freeanima/capabilities-clarify": "workspace:*",
+    "@freeanima/capabilities-mcp": "workspace:*",
+    "@freeanima/engine": "workspace:*",
+    "@freeanima/engine-conversation": "workspace:*",
+    "@freeanima/engine-loop": "workspace:*",
+    "@freeanima/kernel-db": "workspace:*",
+    "@freeanima/kernel-schemas": "workspace:*",
+    "@freeanima/legacy-api": "workspace:*",
+    "@freeanima/legacy-runtime": "workspace:*",
+    "@freeanima/service": "workspace:*",
+    "@freeanima/life-memory": "workspace:*",
+    "@freeanima/service-config": "workspace:*",
+    "@freeanima/service-logging": "workspace:*",
+    "@tanstack/react-router": "^1.170.11",
+    "@trpc/client": "^11",
+    "@trpc/server": "^11",
+    "@xterm/addon-fit": "^0.11.0",
+    "highlight.js": "^11.11.1",
+    "http-proxy": "^1.18.1",
+    "marked": "^18.0.4",
+    "react": "19",
+    "react-dom": "19",
+    "ws": "^8.21.0",
+    "xterm": "^5.3.0",
+    "zod": "catalog:",
+    "zustand": "^5.0.14"
+  },
+  "devDependencies": {
+    "@types/http-proxy": "^1.17.17",
+    "@types/node": "catalog:",
+    "@types/react": "^19.2.16",
+    "@types/react-dom": "^19.2.3",
+    "@types/ws": "^8.18.1",
+    "@types/bun": "catalog:",
+    "bun-plugin-tailwind": "^0.1.2",
+    "daisyui": "^5.5.20",
+    "tailwindcss": "^4.3.0",
+    "typescript": "^6.0.3"
+  }
+}
