@@ -1,8 +1,8 @@
 import { existsSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { listSessions } from "@freeanima/engine-conversation";
-import { distillFromPg, l2SessionPath } from "@freeanima/legacy-memory/clean";
-import { indexL2Session } from "@freeanima/legacy-memory/l2-indexer";
+import { distillFromPg, l2SessionPath } from "@freeanima/life-memory/clean";
+import { indexL2Session } from "@freeanima/life-memory/l2-indexer";
 import { getProfileHopModel, loadConfig } from "@freeanima/service-config";
 import { logComponent } from "@freeanima/service-logging";
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";

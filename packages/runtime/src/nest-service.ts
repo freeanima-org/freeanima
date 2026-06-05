@@ -31,7 +31,7 @@ import type { StreamEvent } from "@freeanima/engine-loop";
 import type { Message } from "@freeanima/engine-conversation";
 import { ProviderError } from "@freeanima/engine-provider-llm";
 import type { EventBus } from "@freeanima/kernel-eventbus";
-import { sessionUpdated } from "@freeanima/legacy-memory";
+import { sessionUpdated } from "@freeanima/life-memory";
 import { statsReport } from "./conversation-stats.ts";
 import { runWithToolContext } from "@freeanima/engine-loop";
 import {
@@ -48,14 +48,11 @@ import { headOkStepData, messageIncoming, turnAfterComplete } from "@freeanima/k
 import type { MessageIncomingEffect, TurnAfterCompleteEffect } from "@freeanima/kernel-hooks";
 import { applyClarifyStreamAwaiting } from "@freeanima/capabilities-clarify";
 import { CST_OFFSET_MS, PATHS } from "@freeanima/service-config";
-import { distillAll } from "@freeanima/legacy-memory/clean";
-import {
-  countL2FtsRows,
-  reindexL2All as reindexL2FtsAll,
-} from "@freeanima/legacy-memory/l2-indexer";
-import { indexL3All as reindexL3FtsAll } from "@freeanima/legacy-memory/l3-indexer";
-import { getStore } from "@freeanima/legacy-memory/store";
-import { memorySearchDetailed, type MemorySearchResult } from "@freeanima/legacy-memory/search";
+import { distillAll } from "@freeanima/life-memory/clean";
+import { countL2FtsRows, reindexL2All as reindexL2FtsAll } from "@freeanima/life-memory/l2-indexer";
+import { indexL3All as reindexL3FtsAll } from "@freeanima/life-memory/l3-indexer";
+import { getStore } from "@freeanima/life-memory/store";
+import { memorySearchDetailed, type MemorySearchResult } from "@freeanima/life-memory/search";
 import { PARLOR_PLATFORM } from "./platforms.ts";
 import { NEST_VERSION } from "./version.ts";
 import { repairAndPersistToolLoop } from "@freeanima/engine-conversation";

@@ -23,7 +23,6 @@
     "@freeanima/capabilities-clarify": "workspace:*",
     "@freeanima/connectors-commands": "workspace:*",
     "@freeanima/connectors-cron": "workspace:*",
-    "@freeanima/legacy-memory": "workspace:*",
     "@freeanima/service-bootstrap": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "@freeanima/service-logging": "workspace:*",

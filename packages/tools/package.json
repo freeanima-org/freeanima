@@ -9,7 +9,6 @@
     "@freeanima/engine-tool": "workspace:*",
     "@freeanima/life-memory": "workspace:*",
     "@freeanima/capabilities-clarify": "workspace:*",
-    "@freeanima/legacy-memory": "workspace:*",
     "@freeanima/legacy-runtime": "workspace:*",
     "@freeanima/service-config": "workspace:*"
   },

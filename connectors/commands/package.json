@@ -9,7 +9,7 @@
     "@freeanima/engine-conversation": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",
     "@freeanima/kernel-schemas": "workspace:*",
-    "@freeanima/legacy-memory": "workspace:*",
+    "@freeanima/life-memory": "workspace:*",
     "@freeanima/legacy-runtime": "workspace:*"
   },
   "devDependencies": {

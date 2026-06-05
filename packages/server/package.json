@@ -22,7 +22,7 @@
     "@freeanima/kernel-db": "workspace:*",
     "@freeanima/connectors-gateway": "workspace:*",
     "@freeanima/legacy-integrations": "workspace:*",
-    "@freeanima/legacy-memory": "workspace:*",
+    "@freeanima/life-memory": "workspace:*",
     "@freeanima/legacy-runtime": "workspace:*",
     "@freeanima/legacy-tools": "workspace:*",
     "@freeanima/service-bootstrap": "workspace:*",

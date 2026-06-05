@@ -139,7 +139,7 @@ packages:
 | `@freeanima/kernel`       | ~~`@freeanima/legacy-kernel`~~（已删，拆至 kernel-_ / service-_）    |
 | `@freeanima/engine`       | ~~`@freeanima/legacy-engine`~~（已删，拆至 engine-\* / life-memory） |
 | `@freeanima/runtime`      | `@freeanima/legacy-runtime`                                          |
-| `@freeanima/memory`       | `@freeanima/legacy-memory`                                           |
+| `@freeanima/memory`       | ~~`@freeanima/legacy-memory`~~ → `@freeanima/life-memory`            |
 | `@freeanima/db`           | ~~`@freeanima/legacy-db`~~ → `@freeanima/kernel-db`（`kernel/db`）   |
 | `@freeanima/server`       | `@freeanima/legacy-server`                                           |
 | `@freeanima/gateway`      | ~~`@freeanima/legacy-gateway`~~ → `@freeanima/connectors-gateway`    |

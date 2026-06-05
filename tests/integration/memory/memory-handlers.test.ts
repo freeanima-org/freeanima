@@ -18,7 +18,7 @@ import {
   registerMemoryHandlers,
   l2SessionPath,
   sessionUpdated,
-} from "@freeanima/legacy-memory";
+} from "@freeanima/life-memory";
 import { seedSession } from "@freeanima/kernel-db/test-helpers";
 
 describePgSqlite("memory handlers", () => {

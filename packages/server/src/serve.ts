@@ -15,7 +15,7 @@ import {
   logStartupError,
   markStartupPhase,
 } from "@freeanima/service-logging";
-import { registerMemoryPipeline } from "@freeanima/legacy-memory";
+import { registerMemoryPipeline } from "@freeanima/life-memory";
 import {
   NestService,
   Scheduler,
@@ -30,7 +30,7 @@ import { dirname } from "node:path";
 import { chdir } from "node:process";
 
 import { registerClarifyHooks } from "@freeanima/capabilities-clarify";
-import { registerReflectChat } from "@freeanima/legacy-memory";
+import { registerReflectChat } from "@freeanima/life-memory";
 import { registerAllTools } from "@freeanima/legacy-tools";
 import {
   discoverPlatforms,

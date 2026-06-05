@@ -12,7 +12,7 @@ import {
   distillFromPg,
   l2SessionPath,
   processedDir,
-} from "@freeanima/legacy-memory";
+} from "@freeanima/life-memory";
 import { seedSession } from "@freeanima/kernel-db/test-helpers";
 
 describePg("memory distill", () => {
