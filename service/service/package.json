@@ -1,0 +1,20 @@
+{
+  "name": "@freeanima/service",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@freeanima/capabilities-acp": "workspace:*",
+    "@freeanima/capabilities-clarify": "workspace:*",
+    "@freeanima/capabilities-tools": "workspace:*",
+    "@freeanima/connectors-cron": "workspace:*",
+    "@freeanima/engine-tool": "workspace:*",
+    "@freeanima/kernel": "workspace:*",
+    "@freeanima/life-memory": "workspace:*"
+  },
+  "devDependencies": {
+    "@freeanima/engine-tool": "workspace:*",
+    "@types/bun": "catalog:"
+  }
+}

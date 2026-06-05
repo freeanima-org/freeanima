@@ -15,7 +15,6 @@ import {
   logStartupError,
   markStartupPhase,
 } from "@freeanima/service-logging";
-import { registerMemoryPipeline } from "@freeanima/life-memory";
 import {
   NestService,
   Scheduler,
@@ -29,9 +28,12 @@ import { writeFileSync, unlinkSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import { chdir } from "node:process";
 
-import { registerClarifyHooks } from "@freeanima/capabilities-clarify";
-import { registerReflectChat } from "@freeanima/life-memory";
-import { registerAllTools } from "@freeanima/legacy-tools";
+import {
+  registerServiceIntegrations,
+  registerServiceMemoryBus,
+  registerServiceTools,
+} from "@freeanima/service";
+import type { ReflectChatFn } from "@freeanima/life-memory";
 import {
   discoverPlatforms,
   startPlatforms,
@@ -139,9 +141,8 @@ export async function serve(
   let servers: WebuiServerHandle[];
   try {
     startupLog("注册工具…");
-    registerAllTools();
-    registerClarifyHooks(kernel);
-    acp.registerTools();
+    registerServiceTools();
+    registerServiceIntegrations(kernel);
 
     mkdirSync(dirname(PATHS.pidFile), { recursive: true });
     writeFileSync(PATHS.pidFile, String(process.pid));
@@ -162,12 +163,11 @@ export async function serve(
     service.markStarted();
     const nest = service;
 
-    registerReflectChat(async (messages) => {
+    const reflectChat: ReflectChatFn = async (messages) => {
       const resp = await chat(messages, { profileId: PROFILE_REFLECT });
       return { content: resp.content ?? null };
-    });
-    registerMemoryPipeline(kernel.eventBus);
-    kernel.eventBus.start();
+    };
+    registerServiceMemoryBus({ kernel, reflectChat });
     service.setEventBus(kernel.eventBus);
 
     ensureBuiltinCronJobs();

@@ -37,7 +37,12 @@ export {
   registerMemoryHandlers,
   registerEventHandlers,
 } from "./pipeline.ts";
-export { registerReflectChat, callReflectChat } from "./reflect-llm.ts";
+export {
+  registerReflectChat,
+  callReflectChat,
+  type ReflectChatFn,
+  type ReflectChatMessage,
+} from "./reflect-llm.ts";
 export { reflectSession, type ReflectSessionResult } from "./reflect.ts";
 export {
   indexL2Session,
