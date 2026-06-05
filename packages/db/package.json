@@ -10,15 +10,13 @@
     "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
-    "@freeanima/engine-provider-llm": "workspace:*",
     "@freeanima/kernel-schemas": "workspace:*",
-    "@freeanima/service-config": "workspace:*",
-    "@freeanima/service-logging": "workspace:*",
     "drizzle-orm": "catalog:",
     "postgres": "^3.4.9",
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@freeanima/service-config": "workspace:*",
     "drizzle-kit": "catalog:",
     "@types/bun": "catalog:"
   }

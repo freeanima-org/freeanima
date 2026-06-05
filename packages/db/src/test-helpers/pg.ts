@@ -6,7 +6,7 @@ import type { SessionMessage, SessionMetaMessage } from "@freeanima/kernel-schem
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
-import { closeDb, type Db, setDbForTest } from "../client.ts";
+import { closeDb, initDatabase, type Db, setDbForTest } from "../client.ts";
 import { appendMessage } from "../repos/message-repo.ts";
 import { upsertSessionMeta } from "../repos/session-repo.ts";
 import { relations } from "../schema/index.ts";
@@ -26,6 +26,7 @@ async function clearPgTables(sql: postgres.Sql): Promise<void> {
 
 /** Vitest 等根目录测试：注入 PG 连接并清表 */
 export async function setupPgTestDb(url: string): Promise<PgTestContext> {
+  initDatabase({ getDatabaseUrl: () => url });
   const sql = postgres(url, { max: 5 });
   await clearPgTables(sql);
   const db = drizzle({ client: sql, relations });

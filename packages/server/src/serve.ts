@@ -1,7 +1,14 @@
 import "@freeanima/legacy-runtime/system-prompt-wire";
 import { chat, cleanupDebugSessions, initLlmRuntime, PROFILE_REFLECT } from "@freeanima/engine";
 import { kernel } from "@freeanima/service-bootstrap";
-import { PATHS, loadConfig } from "@freeanima/service-config";
+import {
+  closeDb,
+  getDb,
+  initDatabase,
+  initPgProfile,
+  isPostgresPrimary,
+} from "@freeanima/legacy-db";
+import { getConfiguredDatabaseUrl, PATHS, loadConfig } from "@freeanima/service-config";
 import {
   installErrorLogHandlers,
   logComponent,
@@ -32,7 +39,6 @@ import {
   type PlatformAdapter,
 } from "@freeanima/legacy-gateway";
 import { MCPManager, getAcpManager } from "@freeanima/legacy-integrations";
-import { closeDb, getDb, isPostgresPrimary } from "@freeanima/legacy-db";
 import { DEFAULT_BIND_HOST, parseBindHosts } from "./bind-hosts.ts";
 import { closeHttpServers, waitForDrainWithTimeout } from "./http-shutdown.ts";
 import { initServiceContext } from "./service-context.ts";
@@ -138,6 +144,9 @@ export async function serve(
 
     mkdirSync(dirname(PATHS.pidFile), { recursive: true });
     writeFileSync(PATHS.pidFile, String(process.pid));
+
+    initDatabase({ getDatabaseUrl: getConfiguredDatabaseUrl });
+    initPgProfile({ sink: logComponent("db") });
 
     if (isPostgresPrimary()) {
       startupLog("初始化 PostgreSQL 连接池…");

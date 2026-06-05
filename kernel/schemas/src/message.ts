@@ -156,6 +156,15 @@ export const sessionMessageSchema = z.preprocess(
 export type ConversationMessage = z.infer<typeof conversationMessageSchema>;
 export type ConversationPayload = z.infer<typeof conversationPayloadSchema>;
 
+/** messages.payload — ConversationMessage 去掉 pos（pos 由列维护） */
+export type MessagePayload = ConversationPayload;
+
+/** LLM invoke 对话轮次（不含 system；系统提示词单独传入） */
+export type LlmTurnMessage =
+  | Extract<MessagePayload, { role: "user" }>
+  | Extract<MessagePayload, { role: "assistant" }>
+  | Extract<MessagePayload, { role: "tool" }>;
+
 export type OpenAiFunctionSchema = z.infer<typeof openAiFunctionSchema>;
 export type OpenAiToolSchema = z.infer<typeof openAiToolSchema>;
 export type ToolCall = z.infer<typeof toolCallSchema>;

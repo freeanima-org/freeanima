@@ -1,4 +1,5 @@
 export type {
+  ConversationPayload,
   LlmTurnMessage,
   MessagePayload,
   OpenAiToolSchema,
@@ -12,8 +13,10 @@ export * from "./repos/message-repo.ts";
 export * from "./queries/messages-for-compress.ts";
 export * from "./pg-profile.ts";
 export {
-  resolveDatabaseUrl,
+  initDatabase,
   getDatabaseConfig,
   isPostgresPrimary,
+  resetDatabaseForTest,
   type DatabaseConfig,
+  type DatabaseUrlResolver,
 } from "./client.ts";
