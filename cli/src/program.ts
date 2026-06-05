@@ -1,4 +1,4 @@
-import { NEST_VERSION } from "@freeanima/legacy-runtime";
+import { NEST_VERSION } from "@freeanima/service";
 import { Command } from "commander";
 
 import { registerServiceCommand } from "./commands/service.ts";

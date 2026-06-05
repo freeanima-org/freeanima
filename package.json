@@ -6,6 +6,7 @@
     "@commitlint/config-conventional": "^21.0.2",
     "@freeanima/legacy-api": "workspace:*",
     "@freeanima/capabilities-clarify": "workspace:*",
+    "@freeanima/cli": "workspace:*",
     "@freeanima/connectors-webui": "workspace:*",
     "@freeanima/service": "workspace:*",
     "@freeanima/kernel-db": "workspace:*",
@@ -31,7 +32,7 @@
     "semantic-release": "^25.0.3"
   },
   "bin": {
-    "anima": "./apps/cli/src/cli.ts"
+    "anima": "./cli/src/cli.ts"
   },
   "description": "逸灵风 Free Anima (TypeScript)",
   "engines": {
@@ -52,9 +53,9 @@
     "test": "bun scripts/run-tests.ts",
     "test:changed": "bun scripts/run-tests.ts --changed",
     "test:coverage": "bun test --coverage --pass-with-no-tests",
-    "service": "bun apps/cli/src/cli.ts service",
-    "anima": "bun apps/cli/src/cli.ts",
-    "link:global": "mkdir -p \"${BUN_INSTALL:-$HOME/.bun}/bin\" && ln -sf \"$PWD/apps/cli/src/cli.ts\" \"${BUN_INSTALL:-$HOME/.bun}/bin/anima\" && chmod +x apps/cli/src/cli.ts",
+    "service": "bun cli/src/cli.ts service",
+    "anima": "bun cli/src/cli.ts",
+    "link:global": "mkdir -p \"${BUN_INSTALL:-$HOME/.bun}/bin\" && ln -sf \"$PWD/cli/src/cli.ts\" \"${BUN_INSTALL:-$HOME/.bun}/bin/anima\" && chmod +x cli/src/cli.ts",
     "prepare": "husky"
   },
   "trustedDependencies": [
@@ -70,8 +71,8 @@
       "service/*",
       "capabilities/*",
       "connectors/*",
+      "cli",
       "packages/*",
-      "apps/*",
       "tests"
     ],
     "catalog": {

@@ -10,6 +10,7 @@
         "@freeanima/capabilities-acp": "workspace:*",
         "@freeanima/capabilities-clarify": "workspace:*",
         "@freeanima/capabilities-mcp": "workspace:*",
+        "@freeanima/cli": "workspace:*",
         "@freeanima/connectors-webui": "workspace:*",
         "@freeanima/kernel-db": "workspace:*",
         "@freeanima/legacy-api": "workspace:*",
@@ -32,22 +33,6 @@
         "oxfmt": "^0.53.0",
         "oxlint": "^1.68.0",
         "semantic-release": "^25.0.3",
-      },
-    },
-    "apps/cli": {
-      "name": "@freeanima/legacy-cli",
-      "bin": {
-        "anima": "./src/cli.ts",
-      },
-      "dependencies": {
-        "@freeanima/legacy-runtime": "workspace:*",
-        "@freeanima/legacy-server": "workspace:*",
-        "@freeanima/service-config": "workspace:*",
-        "@freeanima/service-logging": "workspace:*",
-        "commander": "^12.1.0",
-      },
-      "devDependencies": {
-        "@types/bun": "catalog:",
       },
     },
     "capabilities/acp": {
@@ -115,6 +100,21 @@
         "@freeanima/engine-tool": "workspace:*",
         "@freeanima/life-memory": "workspace:*",
         "@freeanima/service-config": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
+    "cli": {
+      "name": "@freeanima/cli",
+      "bin": {
+        "anima": "./src/cli.ts",
+      },
+      "dependencies": {
+        "@freeanima/service": "workspace:*",
+        "@freeanima/service-config": "workspace:*",
+        "@freeanima/service-logging": "workspace:*",
+        "commander": "^12.1.0",
       },
       "devDependencies": {
         "@types/bun": "catalog:",
@@ -692,6 +692,8 @@
 
     "@freeanima/capabilities-tools": ["@freeanima/capabilities-tools@workspace:capabilities/tools"],
 
+    "@freeanima/cli": ["@freeanima/cli@workspace:cli"],
+
     "@freeanima/connectors-commands": ["@freeanima/connectors-commands@workspace:connectors/commands"],
 
     "@freeanima/connectors-cron": ["@freeanima/connectors-cron@workspace:connectors/cron"],
@@ -737,8 +739,6 @@
     "@freeanima/kernel-schemas": ["@freeanima/kernel-schemas@workspace:kernel/schemas"],
 
     "@freeanima/legacy-api": ["@freeanima/legacy-api@workspace:packages/api"],
-
-    "@freeanima/legacy-cli": ["@freeanima/legacy-cli@workspace:apps/cli"],
 
     "@freeanima/legacy-runtime": ["@freeanima/legacy-runtime@workspace:packages/runtime"],
 
