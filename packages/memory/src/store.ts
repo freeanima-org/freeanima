@@ -9,7 +9,7 @@ import {
 import { join } from "node:path";
 import { randomBytes } from "node:crypto";
 import { createFact, factScore, factToFileText, parseFact, nowIso, type FactData } from "./fact.ts";
-import { PATHS } from "@freeanima/legacy-kernel";
+import { PATHS } from "@freeanima/service-config";
 
 const COUNTER_FILE = ".counter";
 const FACT_PREFIX = "f-";

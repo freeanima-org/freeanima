@@ -1,5 +1,5 @@
 import { isTransientNetworkError } from "@freeanima/engine-loop";
-import { logComponent } from "@freeanima/legacy-kernel";
+import { logComponent } from "@freeanima/service-logging";
 
 const DEFAULT_ATTEMPTS = 5;
 const MAX_BACKOFF_MS = 30_000;

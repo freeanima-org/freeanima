@@ -1,10 +1,11 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { PATHS, openSqlite, type SqliteDatabase } from "@freeanima/legacy-kernel";
+import { PATHS } from "@freeanima/service-config";
+import { openSqlite, type SqliteDatabase } from "@freeanima/connectors-sqlite";
 import { buildFtsQuery } from "./fts-query.ts";
 import { l2SessionPath } from "./clean.ts";
-import { l2LineSchema } from "@freeanima/legacy-kernel";
-import { parseJsonLine } from "@freeanima/legacy-kernel";
+import { l2LineSchema } from "@freeanima/kernel-schemas";
+import { parseJsonLine } from "@freeanima/kernel-schemas";
 
 const SCHEMA = `
 CREATE VIRTUAL TABLE IF NOT EXISTS l2_messages_fts USING fts5(

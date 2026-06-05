@@ -2,7 +2,8 @@ import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { clearConfigCache, resetServiceLogger } from "@freeanima/legacy-kernel";
+import { clearConfigCache } from "@freeanima/service-config";
+import { resetServiceLogger } from "@freeanima/service-logging";
 
 export { resetServiceLogger };
 

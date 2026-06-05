@@ -18,7 +18,7 @@ import {
 } from "@freeanima/engine-conversation";
 import { statsReport } from "../conversation-stats.ts";
 import { listTools } from "@freeanima/engine-tool";
-import { isSessionMeta } from "@freeanima/legacy-kernel";
+import { isSessionMeta } from "@freeanima/kernel-schemas";
 import { distillFromPg } from "@freeanima/legacy-memory/clean";
 import { isReflectEnabled } from "@freeanima/legacy-memory";
 import { reflectSession } from "@freeanima/legacy-memory/reflect";

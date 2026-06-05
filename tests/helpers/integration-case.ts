@@ -2,7 +2,7 @@ import type { PgTestContext } from "@freeanima/legacy-db/test-helpers";
 import { flushCompressionSummaries } from "@freeanima/engine-conversation";
 
 import { beginLogIsolation, resetServiceLogger } from "./log-isolation.ts";
-import { clearConfigCache } from "@freeanima/legacy-kernel";
+import { clearConfigCache } from "@freeanima/service-config";
 import { pgTestUrl } from "./pg-test-gate.ts";
 
 /** 集成测 afterEach：先等待异步压缩摘要，再恢复 FREEANIMA_HOME */

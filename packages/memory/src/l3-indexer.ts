@@ -1,11 +1,12 @@
 import { existsSync, mkdirSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { PATHS, openSqlite, type SqliteDatabase } from "@freeanima/legacy-kernel";
+import { PATHS } from "@freeanima/service-config";
+import { openSqlite, type SqliteDatabase } from "@freeanima/connectors-sqlite";
 import { buildFtsQuery } from "./fts-query.ts";
 import { getStore } from "./store.ts";
 import type { FactData } from "./fact.ts";
-import { l3DomainsSchema, l3EntitiesSchema, l3SourcesSchema } from "@freeanima/legacy-kernel";
-import { safeParseOrNull } from "@freeanima/legacy-kernel";
+import { l3DomainsSchema, l3EntitiesSchema, l3SourcesSchema } from "@freeanima/kernel-schemas";
+import { safeParseOrNull } from "@freeanima/kernel-schemas";
 
 const SCHEMA = `
 CREATE VIRTUAL TABLE IF NOT EXISTS l3_facts_fts USING fts5(

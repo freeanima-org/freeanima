@@ -1,5 +1,5 @@
 import { NEST_VERSION } from "@freeanima/legacy-runtime";
-import { logComponent } from "@freeanima/legacy-kernel";
+import { logComponent } from "@freeanima/service-logging";
 
 import { existsSync } from "node:fs";
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";

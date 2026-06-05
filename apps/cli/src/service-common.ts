@@ -1,4 +1,4 @@
-import { PATHS } from "@freeanima/legacy-kernel";
+import { PATHS } from "@freeanima/service-config";
 import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";

@@ -1,8 +1,8 @@
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { getHomeDir } from "@freeanima/legacy-kernel";
-import { l2LineSchema, isSessionMeta, type SessionMessage } from "@freeanima/legacy-kernel";
-import { parseJsonLine } from "@freeanima/legacy-kernel";
+import { getHomeDir } from "@freeanima/service-config";
+import { isSessionMeta, l2LineSchema, type SessionMessage } from "@freeanima/kernel-schemas";
+import { parseJsonLine } from "@freeanima/kernel-schemas";
 import {
   getSessionMeta,
   isPostgresPrimary,

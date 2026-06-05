@@ -4,7 +4,8 @@ import {
   toolError,
   unregisterToolsByToolset,
 } from "@freeanima/engine-tool";
-import { loadConfig, logComponent } from "@freeanima/legacy-kernel";
+import { loadConfig } from "@freeanima/service-config";
+import { logComponent } from "@freeanima/service-logging";
 
 import { McpClientSession, type McpServerConfig } from "./client.ts";
 import { extractMcpResult, mcpToolParameters } from "./schema.ts";

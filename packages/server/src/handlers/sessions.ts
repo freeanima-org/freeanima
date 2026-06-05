@@ -1,5 +1,5 @@
 import { loadSessionMeta } from "@freeanima/engine-conversation";
-import { isSessionMeta } from "@freeanima/legacy-kernel";
+import { isSessionMeta } from "@freeanima/kernel-schemas";
 import { PARLOR_PLATFORM } from "@freeanima/legacy-runtime";
 import {
   createSessionBodySchema,

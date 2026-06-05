@@ -1,4 +1,4 @@
-import { credential, loadConfig } from "@freeanima/legacy-kernel";
+import { credential, loadConfig } from "@freeanima/service-config";
 import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 

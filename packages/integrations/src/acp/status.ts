@@ -1,4 +1,4 @@
-import { acpAgentSchema } from "@freeanima/legacy-kernel";
+import { acpAgentSchema } from "@freeanima/service-config";
 import type { z } from "zod";
 
 export type AcpAgentConfig = z.infer<typeof acpAgentSchema>;

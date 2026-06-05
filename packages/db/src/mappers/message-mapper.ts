@@ -1,14 +1,14 @@
 import { randomUUID } from "node:crypto";
 
 import {
-  type ConversationMessage,
   conversationMessageSchema,
   conversationPayloadSchema,
-  type SessionMessage,
   isAssistantMessage,
   isToolMessage,
   isUserMessage,
-} from "@freeanima/legacy-kernel";
+  type ConversationMessage,
+  type SessionMessage,
+} from "@freeanima/kernel-schemas";
 
 import { type MessageInsert, messageSelectSchema } from "../schema/zod-schemas.ts";
 

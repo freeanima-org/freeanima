@@ -1,5 +1,5 @@
 import { registerTool, toolError, toolResult } from "@freeanima/engine-tool";
-import { credential, loadConfig } from "@freeanima/legacy-kernel";
+import { credential, loadConfig } from "@freeanima/service-config";
 import { NEST_VERSION } from "@freeanima/legacy-runtime";
 
 const USER_AGENT = `anima/${NEST_VERSION}`;

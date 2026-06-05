@@ -1,4 +1,4 @@
-import { safeParseOrNull } from "@freeanima/legacy-kernel";
+import { safeParseOrNull } from "@freeanima/kernel-schemas";
 /** 腾讯 iLink Bot API（与 Python weixin_adapter 对齐） */
 
 import { ilinkMessageSchema, type IlinkMessage } from "../schemas/weixin.ts";

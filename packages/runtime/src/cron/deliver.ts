@@ -1,4 +1,4 @@
-import { logComponent } from "@freeanima/legacy-kernel";
+import { logComponent } from "@freeanima/service-logging";
 import { getHomeChannel } from "../home-channel.ts";
 import type { CronJob } from "./models.ts";
 

@@ -6,10 +6,13 @@
     "./*": "./src/*.ts"
   },
   "dependencies": {
+    "@freeanima/connectors-sqlite": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",
     "@freeanima/kernel-eventbus": "workspace:*",
+    "@freeanima/kernel-schemas": "workspace:*",
     "@freeanima/legacy-db": "workspace:*",
-    "@freeanima/legacy-kernel": "workspace:*",
+    "@freeanima/service-config": "workspace:*",
+    "@freeanima/service-logging": "workspace:*",
     "yaml": "^2.9.0"
   },
   "devDependencies": {

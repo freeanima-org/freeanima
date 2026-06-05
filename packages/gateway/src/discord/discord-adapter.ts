@@ -15,7 +15,7 @@ import {
 } from "@freeanima/engine-loop";
 import { loadSessionMeta } from "@freeanima/engine-conversation";
 import { RateLimitedLogger } from "@freeanima/kernel-retry";
-import { logComponent } from "@freeanima/legacy-kernel";
+import { logComponent } from "@freeanima/service-logging";
 import type { NestService } from "@freeanima/legacy-runtime";
 import type { PlatformAdapter } from "../platforms.ts";
 import { formatClarifyForPlatform, parseClarifyStreamEvent } from "../clarify/index.ts";

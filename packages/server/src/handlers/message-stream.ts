@@ -1,4 +1,4 @@
-import { logSseError } from "@freeanima/legacy-kernel";
+import { logSseError } from "@freeanima/service-logging";
 import { mapStreamEventToApi } from "../api-mappers.ts";
 import { getServiceContext } from "../service-context.ts";
 import { resolveSessionPlatform } from "./sessions.ts";

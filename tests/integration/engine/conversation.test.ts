@@ -8,7 +8,7 @@ import {
 } from "../../helpers/integration-case.ts";
 
 import { openaiSchemas } from "@freeanima/engine-tool";
-import { isSessionMeta } from "@freeanima/legacy-kernel";
+import { isSessionMeta } from "@freeanima/kernel-schemas";
 import { registerAllTools } from "@freeanima/legacy-tools";
 import {
   newSession,

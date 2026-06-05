@@ -5,7 +5,7 @@ import {
   getProfileHopModel,
   loadConfig,
   sanitizeConfigForApi,
-} from "@freeanima/legacy-kernel";
+} from "@freeanima/service-config";
 import { openaiSchemas, listTools } from "@freeanima/engine-tool";
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
 import {
@@ -16,17 +16,17 @@ import {
   isRetryResult,
 } from "./commands/index.ts";
 import type { CommandResult } from "./commands/registry.ts";
-import { logComponent, logSseError } from "@freeanima/legacy-kernel";
+import { logComponent, logSseError } from "@freeanima/service-logging";
 import * as conv from "@freeanima/engine-conversation";
 import { buildMessagesDisplay, paginateMessagesDisplay } from "./build-messages-display.ts";
-import type { MessagesDisplay } from "@freeanima/legacy-kernel";
+import type { MessagesDisplay } from "@freeanima/kernel-schemas";
 import type {
   HealthSnapshot,
   PlatformStatusSnapshot,
   SafeConfigSnapshot,
   ServiceSnapshot,
   SessionSummary,
-} from "@freeanima/legacy-kernel";
+} from "@freeanima/kernel-schemas";
 import type { StreamEvent } from "@freeanima/engine-loop";
 import type { Message } from "@freeanima/engine-conversation";
 import { ProviderError } from "@freeanima/engine-provider-llm";
@@ -44,10 +44,10 @@ import {
 } from "./cron/index.ts";
 import type { CronJobData } from "./cron/models.ts";
 import { kernel } from "@freeanima/service-bootstrap";
-import { headOkStepData, messageIncoming, turnAfterComplete } from "@freeanima/legacy-kernel";
-import type { MessageIncomingEffect, TurnAfterCompleteEffect } from "@freeanima/legacy-kernel";
+import { headOkStepData, messageIncoming, turnAfterComplete } from "@freeanima/kernel-hooks";
+import type { MessageIncomingEffect, TurnAfterCompleteEffect } from "@freeanima/kernel-hooks";
 import { applyClarifyStreamAwaiting } from "@freeanima/legacy-clarify";
-import { PATHS, CST_OFFSET_MS } from "@freeanima/legacy-kernel";
+import { CST_OFFSET_MS, PATHS } from "@freeanima/service-config";
 import { distillAll } from "@freeanima/legacy-memory/clean";
 import {
   countL2FtsRows,

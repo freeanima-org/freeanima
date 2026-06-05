@@ -1,17 +1,16 @@
+import { CST_OFFSET_MS, loadConfig } from "@freeanima/service-config";
 import {
-  CST_OFFSET_MS,
-  loadConfig,
+  clarifyToolAwaitingResultSchema,
+  clarifyToolResolvedResultSchema,
+  isSessionMeta,
   parseAwaitingClarify,
   safeParseOrNull,
-  toolErrorSchema,
   type AwaitingClarify,
   type ClarifyItem,
   type ClarifyToolAwaitingResult,
   type ClarifyToolResolvedResult,
-  clarifyToolAwaitingResultSchema,
-  clarifyToolResolvedResultSchema,
-  isSessionMeta,
-} from "@freeanima/legacy-kernel";
+} from "@freeanima/kernel-schemas";
+import { toolErrorSchema } from "@freeanima/engine-tool";
 import { loadSessionMeta, updateSessionMetaField } from "@freeanima/engine-conversation";
 
 export type { ClarifyItem, AwaitingClarify };

@@ -6,7 +6,7 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { clearConfigCache } from "@freeanima/legacy-kernel";
+import { clearConfigCache } from "@freeanima/service-config";
 import { initSession } from "@freeanima/engine";
 import {
   bindAcpSession,

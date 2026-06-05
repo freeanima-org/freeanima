@@ -1,5 +1,5 @@
 import type { CronJob } from "./models.ts";
-import { logComponent } from "@freeanima/legacy-kernel";
+import { logComponent } from "@freeanima/service-logging";
 import * as store from "./store.ts";
 import { computeNextRun } from "./schedule.ts";
 

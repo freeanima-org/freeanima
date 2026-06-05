@@ -1,4 +1,4 @@
-import { PATHS } from "@freeanima/legacy-kernel";
+import { PATHS } from "@freeanima/service-config";
 import { existsSync, readFileSync, unlinkSync } from "node:fs";
 
 export function readStatusFile(): Record<string, unknown> | null {

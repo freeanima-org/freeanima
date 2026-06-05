@@ -6,7 +6,7 @@ import {
   type CompressionState,
   type SessionMetaMessage,
   type SessionTodoStore,
-} from "@freeanima/legacy-kernel";
+} from "@freeanima/kernel-schemas";
 import { z } from "zod";
 
 import { getDb } from "../client.ts";

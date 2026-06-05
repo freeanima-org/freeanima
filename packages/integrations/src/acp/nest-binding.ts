@@ -1,5 +1,5 @@
 import { loadSessionMeta, updateSessionMetaField } from "@freeanima/engine-conversation";
-import { isSessionMeta } from "@freeanima/legacy-kernel";
+import { isSessionMeta } from "@freeanima/kernel-schemas";
 
 export type AcpSessionsMeta = Record<string, string>;
 
