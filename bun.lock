@@ -94,10 +94,29 @@
         "@types/bun": "catalog:",
       },
     },
+    "engine/engine": {
+      "name": "@freeanima/engine",
+      "dependencies": {
+        "@freeanima/engine-provider-llm": "workspace:*",
+        "@freeanima/engine-tool": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
     "engine/provider-llm": {
       "name": "@freeanima/engine-provider-llm",
       "dependencies": {
-        "@freeanima/legacy-db": "workspace:*",
+        "@freeanima/legacy-kernel": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
+    "engine/tool": {
+      "name": "@freeanima/engine-tool",
+      "dependencies": {
+        "@freeanima/legacy-kernel": "workspace:*",
       },
       "devDependencies": {
         "@types/bun": "catalog:",
@@ -161,6 +180,7 @@
     "packages/db": {
       "name": "@freeanima/legacy-db",
       "dependencies": {
+        "@freeanima/engine-provider-llm": "workspace:*",
         "@freeanima/legacy-kernel": "workspace:*",
         "drizzle-orm": "catalog:",
         "postgres": "^3.4.9",
@@ -219,6 +239,7 @@
     "packages/kernel": {
       "name": "@freeanima/legacy-kernel",
       "dependencies": {
+        "@freeanima/engine-tool": "workspace:*",
         "@freeanima/kernel-hooks": "workspace:*",
         "@freeanima/kernel-logging": "workspace:*",
         "yaml": "^2.9.0",
@@ -448,7 +469,11 @@
 
     "@freeanima/connectors-eventbus-sqlite": ["@freeanima/connectors-eventbus-sqlite@workspace:connectors/eventbus-sqlite"],
 
+    "@freeanima/engine": ["@freeanima/engine@workspace:engine/engine"],
+
     "@freeanima/engine-provider-llm": ["@freeanima/engine-provider-llm@workspace:engine/provider-llm"],
+
+    "@freeanima/engine-tool": ["@freeanima/engine-tool@workspace:engine/tool"],
 
     "@freeanima/integration-tests": ["@freeanima/integration-tests@workspace:tests"],
 

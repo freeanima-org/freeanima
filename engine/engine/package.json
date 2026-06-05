@@ -1,11 +1,12 @@
 {
-  "name": "@freeanima/engine-provider-llm",
+  "name": "@freeanima/engine",
   "type": "module",
   "exports": {
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@freeanima/legacy-kernel": "workspace:*"
+    "@freeanima/engine-provider-llm": "workspace:*",
+    "@freeanima/engine-tool": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "catalog:"

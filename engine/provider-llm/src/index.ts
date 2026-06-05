@@ -1,9 +1,4 @@
-export type {
-  LlmTurnMessage,
-  MessagePayload,
-  OpenAiToolSchema,
-  ToolCall,
-} from "@freeanima/legacy-db";
+export type { LlmTurnMessage, MessagePayload, OpenAiToolSchema, ToolCall } from "./messages.ts";
 
 export type {
   ExtendedParamKey,

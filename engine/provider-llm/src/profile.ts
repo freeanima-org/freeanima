@@ -1,4 +1,4 @@
-import type { LlmTurnMessage, OpenAiToolSchema } from "@freeanima/legacy-db";
+import type { LlmTurnMessage, OpenAiToolSchema } from "./messages.ts";
 import type { ChatCompletion, ChatRequest, ChatStreamEvent } from "./invoke.ts";
 import type { LlmCallParams } from "./model.ts";
 import type { LlmProvider, ProviderRegistry } from "./provider.ts";

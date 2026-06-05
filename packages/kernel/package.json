@@ -15,6 +15,7 @@
     "./test-helpers": "./src/test-helpers/legacy-events-db.ts"
   },
   "dependencies": {
+    "@freeanima/engine-tool": "workspace:*",
     "@freeanima/kernel-hooks": "workspace:*",
     "@freeanima/kernel-logging": "workspace:*",
     "yaml": "^2.9.0",
