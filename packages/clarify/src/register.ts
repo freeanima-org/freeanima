@@ -3,8 +3,8 @@ import type {
   MessageIncomingEffect,
   ToolAfterCallEffect,
   TurnAfterCompleteEffect,
-} from "@freeanima/legacy-kernel";
-import { messageIncoming, toolAfterCall, turnAfterComplete } from "@freeanima/legacy-kernel";
+} from "@freeanima/kernel-hooks";
+import { messageIncoming, toolAfterCall, turnAfterComplete } from "@freeanima/kernel-hooks";
 import {
   findAwaitingClarifyInMessages,
   formatClarifyText,
