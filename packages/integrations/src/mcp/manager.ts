@@ -1,11 +1,10 @@
 import {
   listTools,
-  loadConfig,
-  logComponent,
   registerTool,
   toolError,
   unregisterToolsByToolset,
-} from "@freeanima/legacy-kernel";
+} from "@freeanima/engine-tool";
+import { loadConfig, logComponent } from "@freeanima/legacy-kernel";
 
 import { McpClientSession, type McpServerConfig } from "./client.ts";
 import { extractMcpResult, mcpToolParameters } from "./schema.ts";

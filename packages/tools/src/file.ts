@@ -1,4 +1,4 @@
-import { registerTool, toolError, toolResult } from "@freeanima/legacy-kernel";
+import { registerTool, toolError, toolResult } from "@freeanima/engine-tool";
 import {
   existsSync,
   mkdirSync,

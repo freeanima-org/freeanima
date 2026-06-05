@@ -1,15 +1,20 @@
-import { logComponent } from "@freeanima/legacy-kernel";
-import { getProfileHopModel, loadConfig } from "@freeanima/legacy-kernel";
+import {
+  parseToolArgs,
+  toolError,
+  toolResult,
+  checkEnvRequirements,
+  getTool,
+  openaiSchemas,
+} from "@freeanima/engine-tool";
+import { logComponent, getProfileHopModel, loadConfig } from "@freeanima/legacy-kernel";
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
 import type { HookClarifyItem, HookStreamEvent, TurnControl } from "@freeanima/legacy-kernel";
 import { headOkStepData } from "@freeanima/kernel-hooks";
 import { toolAfterCall } from "@freeanima/legacy-kernel";
 import type { ToolAfterCallEffect } from "@freeanima/legacy-kernel";
-import { parseToolArgs, toolError, toolResult } from "@freeanima/legacy-kernel";
 import * as llm from "./llm.ts";
 import { cleanToolCallsForApi } from "./llm.ts";
 import { markToolLoopActivity } from "./compression-tool-loop.ts";
-import { checkEnvRequirements, getTool, openaiSchemas } from "@freeanima/legacy-kernel";
 import { getToolSessionId } from "./tool-context.ts";
 import { maybeApplyEmergencyCompression } from "./conversation.ts";
 import { REPAIR_REASON_INTERRUPT } from "./tool-loop-integrity.ts";

@@ -5,6 +5,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "@freeanima/engine-tool": "workspace:*",
     "@freeanima/capabilities-provider-openai-compatible": "workspace:*",
     "@freeanima/connectors-eventbus-sqlite": "workspace:*",
     "@freeanima/engine-provider-llm": "workspace:*",

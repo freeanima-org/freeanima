@@ -24,7 +24,7 @@ import {
   getSessionTitle,
   getSessionCwd,
 } from "@freeanima/legacy-engine";
-import { registerTool } from "@freeanima/legacy-kernel";
+import { registerTool } from "@freeanima/engine-tool";
 
 async function patchMetaForTest(sessionId: string, patch: Record<string, unknown>): Promise<void> {
   await patchSessionMeta(sessionId, patch as never);

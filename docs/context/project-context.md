@@ -111,7 +111,7 @@ kernel/             # RFC #1 新栈（与 legacy packages/ 并行）
 ├── logging/        # @freeanima/kernel-logging：Logger / LogSink / createLogger；子路径 console / file / memory / null
 └── kernel/         # @freeanima/kernel：Kernel 组合端口（HookRegistry + EventBus + Logger）
 engine/
-├── tool/           # @freeanima/engine-tool：ToolDef + ToolRegistry（legacy-kernel/registry 为兼容 re-export）
+├── tool/           # @freeanima/engine-tool：ToolDef + ToolRegistry + tool JSON 约定（legacy-kernel/json-util 兼容 re-export）
 ├── provider-llm/   # @freeanima/engine-provider-llm：Backend/Provider/Profile Registry + LlmTurnMessage 类型
 └── engine/         # @freeanima/engine：Engine 组合端口（tools + llm）+ 组件 re-export
 capabilities/

@@ -1,4 +1,4 @@
-import { getTool, listTools } from "@freeanima/legacy-kernel";
+import { getTool, listTools } from "@freeanima/engine-tool";
 import { describe, it, expect, beforeAll, beforeEach, afterEach } from "bun:test";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";

@@ -1,4 +1,4 @@
-import { toolResult } from "@freeanima/legacy-kernel";
+import { toolResult } from "@freeanima/engine-tool";
 import type { SessionMessage, ToolMessage } from "@freeanima/legacy-kernel";
 import { cleanToolCallsForApi, type StreamToolCall } from "./llm.ts";
 

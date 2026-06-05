@@ -116,7 +116,7 @@
     "engine/tool": {
       "name": "@freeanima/engine-tool",
       "dependencies": {
-        "@freeanima/legacy-kernel": "workspace:*",
+        "zod": "catalog:",
       },
       "devDependencies": {
         "@types/bun": "catalog:",
@@ -169,6 +169,7 @@
     "packages/clarify": {
       "name": "@freeanima/legacy-clarify",
       "dependencies": {
+        "@freeanima/engine-tool": "workspace:*",
         "@freeanima/kernel": "workspace:*",
         "@freeanima/legacy-engine": "workspace:*",
         "@freeanima/legacy-kernel": "workspace:*",
@@ -197,6 +198,7 @@
         "@freeanima/capabilities-provider-openai-compatible": "workspace:*",
         "@freeanima/connectors-eventbus-sqlite": "workspace:*",
         "@freeanima/engine-provider-llm": "workspace:*",
+        "@freeanima/engine-tool": "workspace:*",
         "@freeanima/kernel": "workspace:*",
         "@freeanima/kernel-eventbus": "workspace:*",
         "@freeanima/kernel-hooks": "workspace:*",
@@ -224,6 +226,7 @@
     "packages/integrations": {
       "name": "@freeanima/legacy-integrations",
       "dependencies": {
+        "@freeanima/engine-tool": "workspace:*",
         "@freeanima/legacy-engine": "workspace:*",
         "@freeanima/legacy-kernel": "workspace:*",
         "@freeanima/legacy-runtime": "workspace:*",
@@ -252,6 +255,7 @@
     "packages/memory": {
       "name": "@freeanima/legacy-memory",
       "dependencies": {
+        "@freeanima/engine-tool": "workspace:*",
         "@freeanima/kernel-eventbus": "workspace:*",
         "@freeanima/legacy-db": "workspace:*",
         "@freeanima/legacy-kernel": "workspace:*",
@@ -266,6 +270,7 @@
       "name": "@freeanima/legacy-runtime",
       "dependencies": {
         "@freeanima/engine-provider-llm": "workspace:*",
+        "@freeanima/engine-tool": "workspace:*",
         "@freeanima/kernel-eventbus": "workspace:*",
         "@freeanima/legacy-clarify": "workspace:*",
         "@freeanima/legacy-engine": "workspace:*",
@@ -308,6 +313,7 @@
     "packages/tools": {
       "name": "@freeanima/legacy-tools",
       "dependencies": {
+        "@freeanima/engine-tool": "workspace:*",
         "@freeanima/legacy-clarify": "workspace:*",
         "@freeanima/legacy-engine": "workspace:*",
         "@freeanima/legacy-kernel": "workspace:*",
@@ -322,6 +328,7 @@
       "name": "@freeanima/integration-tests",
       "devDependencies": {
         "@freeanima/connectors-eventbus-sqlite": "workspace:*",
+        "@freeanima/engine-tool": "workspace:*",
         "@freeanima/kernel-eventbus": "workspace:*",
         "@freeanima/kernel-logging": "workspace:*",
         "@freeanima/legacy-clarify": "workspace:*",

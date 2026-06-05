@@ -6,6 +6,7 @@
     "./*": "./src/*.ts"
   },
   "dependencies": {
+    "@freeanima/engine-tool": "workspace:*",
     "@freeanima/kernel-eventbus": "workspace:*",
     "@freeanima/legacy-db": "workspace:*",
     "@freeanima/legacy-kernel": "workspace:*",

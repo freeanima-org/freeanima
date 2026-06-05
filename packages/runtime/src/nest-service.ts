@@ -4,9 +4,9 @@ import {
   getDefaultProviderBaseUrl,
   getProfileHopModel,
   loadConfig,
-  openaiSchemas,
   sanitizeConfigForApi,
 } from "@freeanima/legacy-kernel";
+import { openaiSchemas, listTools } from "@freeanima/engine-tool";
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
 import {
   executeCommand as runSlashCommand,
@@ -32,7 +32,6 @@ import type { Message } from "@freeanima/legacy-engine";
 import { ProviderError } from "@freeanima/engine-provider-llm";
 import type { EventBus } from "@freeanima/kernel-eventbus";
 import { sessionUpdated } from "@freeanima/legacy-memory";
-import { listTools } from "@freeanima/legacy-kernel";
 import { statsReport } from "./conversation-stats.ts";
 import { runWithToolContext } from "@freeanima/legacy-engine";
 import {

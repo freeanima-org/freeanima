@@ -1,5 +1,6 @@
 import { runWithToolContext } from "@freeanima/legacy-engine";
-import { getTool, listTools, clearConfigCache } from "@freeanima/legacy-kernel";
+import { getTool, listTools } from "@freeanima/engine-tool";
+import { clearConfigCache } from "@freeanima/legacy-kernel";
 import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from "bun:test";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
