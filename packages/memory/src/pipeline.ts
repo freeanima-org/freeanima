@@ -2,11 +2,11 @@ import { logComponent } from "@freeanima/legacy-kernel";
 import type { EventBus } from "@freeanima/kernel-eventbus";
 import { isDebugSession } from "@freeanima/legacy-kernel";
 import { loadConfig } from "@freeanima/legacy-kernel";
-import { distillFromPg } from "./clean";
-import { l2Updated, l3Updated, sessionUpdated } from "./events";
-import { indexL2Session } from "./l2-indexer";
-import { indexL3All, indexL3Facts } from "./l3-indexer";
-import { reflectSession } from "./reflect";
+import { distillFromPg } from "./clean.ts";
+import { l2Updated, l3Updated, sessionUpdated } from "./events.ts";
+import { indexL2Session } from "./l2-indexer.ts";
+import { indexL3All, indexL3Facts } from "./l3-indexer.ts";
+import { reflectSession } from "./reflect.ts";
 
 const DISTILL_DEBOUNCE_MS = 800;
 const distillTimers = new Map<string, ReturnType<typeof setTimeout>>();

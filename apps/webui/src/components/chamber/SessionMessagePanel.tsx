@@ -1,6 +1,6 @@
 import { marked } from "marked";
 import type { DisplayItem } from "@freeanima/legacy-api";
-import { ToolBlockBubble } from "./ToolBlockBubble";
+import { ToolBlockBubble } from "./ToolBlockBubble.tsx";
 
 type SessionMessagePanelProps = {
   items: DisplayItem[];

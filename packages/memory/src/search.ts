@@ -1,9 +1,9 @@
 import { join } from "node:path";
 import { PATHS } from "@freeanima/legacy-kernel";
-import { getStore } from "./store";
-import { factScore } from "./fact";
-import { searchL2 } from "./l2-indexer";
-import { searchL3Fts } from "./l3-indexer";
+import { getStore } from "./store.ts";
+import { factScore } from "./fact.ts";
+import { searchL2 } from "./l2-indexer.ts";
+import { searchL3Fts } from "./l3-indexer.ts";
 
 export type SearchResult = {
   content: string;

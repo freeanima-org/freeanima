@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
-import { buildProgram } from "./program";
-import { printCliError } from "./output/errors";
+import { buildProgram } from "./program.ts";
+import { printCliError } from "./output/errors.ts";
 
 async function main(): Promise<void> {
   const program = buildProgram();

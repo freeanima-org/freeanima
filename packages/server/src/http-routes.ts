@@ -6,10 +6,10 @@ import type { Duplex } from "node:stream";
 import { createProxyServer, type ServerOptions } from "http-proxy";
 import { WebSocketServer } from "ws";
 import { WEBUI_BASE_PATH } from "@freeanima/legacy-runtime";
-import { getHealth } from "./handlers";
-import { createTrpcContext } from "./trpc/context";
-import { appRouter } from "./trpc/router";
-import { closeAllTerminalSessions } from "./trpc/terminal-session";
+import { getHealth } from "./handlers/index.ts";
+import { createTrpcContext } from "./trpc/context.ts";
+import { appRouter } from "./trpc/router.ts";
+import { closeAllTerminalSessions } from "./trpc/terminal-session.ts";
 
 export const TRPC_HTTP_PATH = "/api/trpc";
 export const TRPC_WS_PATH = "/api/trpc/ws";

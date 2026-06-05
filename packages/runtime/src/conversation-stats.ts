@@ -9,7 +9,7 @@ import {
   computeRuntimeContextBreakdown,
   formatTokenK,
   type RuntimeContextBreakdown,
-} from "./runtime-context-stats";
+} from "./runtime-context-stats.ts";
 import { estimateTokens, messageTextForEstimate } from "@freeanima/legacy-engine";
 import { normalizeUsage } from "@freeanima/legacy-engine";
 

@@ -1,6 +1,6 @@
 import { initTRPC, TRPCError } from "@trpc/server";
-import { ApiHandlerError } from "../handlers/errors";
-import type { TrpcContext } from "./context";
+import { ApiHandlerError } from "../handlers/errors.ts";
+import type { TrpcContext } from "./context.ts";
 
 const t = initTRPC.context<TrpcContext>().create();
 

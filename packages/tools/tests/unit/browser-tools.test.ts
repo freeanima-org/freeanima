@@ -4,7 +4,7 @@ import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from "bun:
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { MINIMAL_LLM_YAML } from "../../../../tests/helpers/minimal-llm-config";
+import { MINIMAL_LLM_YAML } from "../../../../tests/helpers/minimal-llm-config.ts";
 
 import { registerAllTools } from "@freeanima/legacy-tools";
 import {
@@ -14,7 +14,7 @@ import {
   getCamofoxUrl,
   isCamofoxConfigured,
   resetCamofoxSessionsForTests,
-} from "../../src/browser-camofox";
+} from "../../src/browser-camofox.ts";
 
 const BROWSER_TOOLS = [
   "browser_navigate",

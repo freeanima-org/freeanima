@@ -3,24 +3,28 @@ import type { NestService } from "@freeanima/legacy-runtime";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
 
-import type { PlatformAdapter } from "../platforms";
-import { collectGatewayStreamReply } from "../collect-gateway-stream-reply";
-import { registerWeixinCronDeliverer, unregisterWeixinCronDeliverer } from "../cron-deliver";
+import type { PlatformAdapter } from "../platforms.ts";
+import { collectGatewayStreamReply } from "../collect-gateway-stream-reply.ts";
+import { registerWeixinCronDeliverer, unregisterWeixinCronDeliverer } from "../cron-deliver.ts";
 import {
   BACKOFF_DELAY_MS,
   MAX_CONSECUTIVE_FAILURES,
   RETRY_DELAY_MS,
   getUpdates,
   sendText,
-} from "./ilink-api";
+} from "./ilink-api.ts";
 import {
   buildWeixinOrigin,
   explainInboundSkip,
   normalizeInboundMessage,
   parseUserTextMessage,
-} from "./weixin-message";
-import type { WeixinCredentials } from "./weixin-credentials";
-import { weixinContextTokensSchema, weixinSyncSchema, ilinkMessageSchema } from "../schemas/weixin";
+} from "./weixin-message.ts";
+import type { WeixinCredentials } from "./weixin-credentials.ts";
+import {
+  weixinContextTokensSchema,
+  weixinSyncSchema,
+  ilinkMessageSchema,
+} from "../schemas/weixin.ts";
 
 function safeId(value: string | undefined, keep = 8): string {
   const raw = (value ?? "").trim();

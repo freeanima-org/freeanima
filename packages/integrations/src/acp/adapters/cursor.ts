@@ -1,6 +1,6 @@
 import { logComponent } from "@freeanima/legacy-kernel";
-import { permissionAllowOnce, parseSessionUpdateChunk } from "./generic";
-import type { AcpAgentAdapter } from "./types";
+import { permissionAllowOnce, parseSessionUpdateChunk } from "./generic.ts";
+import type { AcpAgentAdapter } from "./types.ts";
 
 /** Cursor CLI `agent acp` — https://cursor.com/docs/cli/acp */
 export const cursorAcpAdapter: AcpAgentAdapter = {

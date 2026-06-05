@@ -1,6 +1,6 @@
 import { describe } from "bun:test";
 
-import { pgTestUrl } from "./pg-test-gate";
+import { pgTestUrl } from "./pg-test-gate.ts";
 
 /** EventBus / L2·L3 FTS 索引（bun:sqlite） */
 export const describeSqlite = describe;

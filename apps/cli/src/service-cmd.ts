@@ -14,11 +14,11 @@ import {
   resolveProbeHost,
   readRecentErrorLogTail,
   writeStatusLine,
-} from "./service-common";
+} from "./service-common.ts";
 
 import { parseBindHosts } from "@freeanima/legacy-server/bind-hosts";
 import { REPO_ROOT } from "@freeanima/legacy-runtime";
-import { renderSystemdUnit, systemdUserAvailable, SYSTEMD_UNIT } from "./systemd-unit";
+import { renderSystemdUnit, systemdUserAvailable, SYSTEMD_UNIT } from "./systemd-unit.ts";
 
 export type ServiceArgs = {
   action: string;

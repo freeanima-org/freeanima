@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { getRepoRoot } from "./root-version";
+import { getRepoRoot } from "./root-version.ts";
 
 /** monorepo 根目录 */
 export const REPO_ROOT = getRepoRoot();

@@ -1,4 +1,4 @@
-import type { CommandRetryData } from "./retry-data";
+import type { CommandRetryData } from "./retry-data.ts";
 
 export type CommandContext = {
   sessionId: string;

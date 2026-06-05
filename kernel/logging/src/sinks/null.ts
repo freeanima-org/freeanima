@@ -1,4 +1,4 @@
-import type { LogSink } from "../types";
+import type { LogSink } from "../types.ts";
 
 export function createNullSink(): LogSink {
   return {

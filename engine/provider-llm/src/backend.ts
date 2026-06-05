@@ -1,6 +1,6 @@
-import type { ChatCompletion, ChatRequest, ChatStreamEvent } from "./invoke";
-import type { ModelInfo } from "./model";
-import { ProviderError } from "./errors";
+import type { ChatCompletion, ChatRequest, ChatStreamEvent } from "./invoke.ts";
+import type { ModelInfo } from "./model.ts";
+import { ProviderError } from "./errors.ts";
 
 /** Backend adapter 持有的连接上下文；capabilities 从 config parse 后填入 */
 export type BackendContext = Record<string, unknown>;

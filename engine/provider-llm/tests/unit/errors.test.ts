@@ -4,7 +4,7 @@ import {
   classifyProviderError,
   isProviderError,
   providerErrorFromHttpStatus,
-} from "../../src/errors";
+} from "../../src/errors.ts";
 
 describe("ProviderError", () => {
   it("exposes providerId from options", () => {

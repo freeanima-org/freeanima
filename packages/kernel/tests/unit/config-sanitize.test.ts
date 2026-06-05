@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { sanitizeConfigForApi } from "../../src/config-sanitize";
+import { sanitizeConfigForApi } from "../../src/config-sanitize.ts";
 
 describe("sanitizeConfigForApi", () => {
   it("脱敏 llm.providers.api_key", () => {

@@ -6,7 +6,7 @@ import {
   type ChatRequest,
   type ChatStreamEvent,
   type ModelInfo,
-} from "../../src/index";
+} from "../../src/index.ts";
 
 export type MockBackendOptions = {
   id?: string;

@@ -7,7 +7,7 @@ import {
   wsLink,
 } from "@trpc/client";
 import type { AppRouter } from "@freeanima/legacy-server/trpc";
-import { apiPath, trpcWsUrl } from "./api-path";
+import { apiPath, trpcWsUrl } from "./api-path.ts";
 
 const wsClient = createWSClient({
   url: trpcWsUrl(),

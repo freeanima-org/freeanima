@@ -14,11 +14,11 @@ import {
   listCommandDefs,
   listCommandDefsForPlatform,
   isRetryResult,
-} from "./commands/index";
-import type { CommandResult } from "./commands/registry";
+} from "./commands/index.ts";
+import type { CommandResult } from "./commands/registry.ts";
 import { logComponent, logSseError } from "@freeanima/legacy-kernel";
 import * as conv from "@freeanima/legacy-engine";
-import { buildMessagesDisplay, paginateMessagesDisplay } from "./build-messages-display";
+import { buildMessagesDisplay, paginateMessagesDisplay } from "./build-messages-display.ts";
 import type { MessagesDisplay } from "@freeanima/legacy-kernel";
 import type {
   HealthSnapshot,
@@ -33,7 +33,7 @@ import { ProviderError } from "@freeanima/engine-provider-llm";
 import type { EventBus } from "@freeanima/kernel-eventbus";
 import { sessionUpdated } from "@freeanima/legacy-memory";
 import { listTools } from "@freeanima/legacy-kernel";
-import { statsReport } from "./conversation-stats";
+import { statsReport } from "./conversation-stats.ts";
 import { runWithToolContext } from "@freeanima/legacy-engine";
 import {
   ensureBuiltinCronJobs,
@@ -42,8 +42,8 @@ import {
   pauseJob,
   resumeJob,
   enqueueRunJob,
-} from "./cron/index";
-import type { CronJobData } from "./cron/models";
+} from "./cron/index.ts";
+import type { CronJobData } from "./cron/models.ts";
 import { kernel } from "@freeanima/legacy-engine";
 import { headOkStepData, messageIncoming, turnAfterComplete } from "@freeanima/legacy-kernel";
 import type { MessageIncomingEffect, TurnAfterCompleteEffect } from "@freeanima/legacy-kernel";
@@ -57,15 +57,15 @@ import {
 import { indexL3All as reindexL3FtsAll } from "@freeanima/legacy-memory/l3-indexer";
 import { getStore } from "@freeanima/legacy-memory/store";
 import { memorySearchDetailed, type MemorySearchResult } from "@freeanima/legacy-memory/search";
-import { PARLOR_PLATFORM } from "./platforms";
-import { NEST_VERSION } from "./version";
+import { PARLOR_PLATFORM } from "./platforms.ts";
+import { NEST_VERSION } from "./version.ts";
 import {
   isInsufficientToolMessagesError,
   repairAndPersistToolLoop,
   collectStreamReply,
 } from "@freeanima/legacy-engine";
 import * as engine from "@freeanima/legacy-engine";
-import type { CommandDef } from "./commands/registry";
+import type { CommandDef } from "./commands/registry.ts";
 
 function streamErrorEvent(sessionId: string, message: string, err?: unknown): StreamEvent {
   logSseError(`/sessions/${sessionId}/messages/stream`, message, {

@@ -15,13 +15,8 @@
   "rules": {
     "import/extensions": [
       "error",
+      "always",
       {
-        "js": "ignorePackages",
-        "jsx": "never",
-        "mjs": "never",
-        "cjs": "never",
-        "ts": "never",
-        "tsx": "never",
         "ignorePackages": true,
         "checkTypeImports": true
       }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import { BackendRegistry, LlmProvider, ProviderError, ProviderRegistry } from "../../src/index";
-import { MockBackend } from "../helpers/mock-backend";
+import { BackendRegistry, LlmProvider, ProviderError, ProviderRegistry } from "../../src/index.ts";
+import { MockBackend } from "../helpers/mock-backend.ts";
 
 function setupProvider(backend = new MockBackend()) {
   const backends = new BackendRegistry();

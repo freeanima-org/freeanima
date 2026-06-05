@@ -1,10 +1,10 @@
 import { registerTool } from "@freeanima/legacy-kernel";
-import type { L2SearchRow } from "./l2-indexer";
-import { searchL2 } from "./l2-indexer";
-import { indexL3Fact, removeL3Fact } from "./l3-indexer";
-import type { SearchResult } from "./search";
-import { searchL3 } from "./search";
-import { getStore } from "./store";
+import type { L2SearchRow } from "./l2-indexer.ts";
+import { searchL2 } from "./l2-indexer.ts";
+import { indexL3Fact, removeL3Fact } from "./l3-indexer.ts";
+import type { SearchResult } from "./search.ts";
+import { searchL3 } from "./search.ts";
+import { getStore } from "./store.ts";
 
 function asFloat(value: unknown, defaultVal: number): number {
   if (value === null || value === undefined) return defaultVal;

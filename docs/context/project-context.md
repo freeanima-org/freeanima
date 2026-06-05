@@ -234,7 +234,7 @@ bun install                       # 依赖；需 Bun 1.3+（见 .bun-version）
 bun run test                      # 全仓测试（单元 + 集成；有 Docker 时自动起 PG）
 bun run test:changed              # 增量 + pre-commit；命中集成用例时自动起 PG
 bun run typecheck                 # tsgo 全仓（根 tsconfig.json）
-bun run lint                      # oxlint（含 import/extensions：相对 import 不得带 .js 后缀）
+bun run lint                      # oxlint（含 import/extensions：相对 / @/ import 须带真实后缀 .ts/.tsx）
 bun run lint:fix                  # oxlint 自动修复
 bun run format                    # oxfmt --check
 bun run format:fix                # oxfmt 写回
@@ -280,7 +280,7 @@ bun run check                     # 手动全量：typecheck + lint + format + �
 
 **WebUI Tailwind**：`anima service start` 从仓库根启动内嵌 `Bun.serve`，须根 `bunfig.toml` 的 `[serve.static] plugins = ["bun-plugin-tailwind"]` 且根 `devDependencies` 含 `bun-plugin-tailwind`；`serve()` 会 `chdir(REPO_ROOT)`，systemd unit 含 `WorkingDirectory`/`FREEANIMA_REPO_ROOT`，否则 CSS 无 utility 类。
 
-**TS 配置**：根 [`tsconfig.base.json`](../../tsconfig.base.json) 继承 [Bun TS 6+ 推荐项](https://bun.com/docs/typescript-6)（`types: ["bun"]`，依赖 `@types/bun`）；[`tsconfig.json`](../../tsconfig.json) 为门禁 + IDE（全仓 `src`、WebUI、单元/集成测试）；[`apps/webui/tsconfig.json`](../../apps/webui/tsconfig.json) 继承根配置并覆写 `@/*` paths（单独打开 webui 目录时用）。**相对 import 不带后缀**（`./foo` 而非 `./foo.js`），由根 [`.oxlintrc.json`](../../.oxlintrc.json) 的 `import/extensions` 规则校验（npm 包 subpath 如 `@modelcontextprotocol/sdk/.../index.js` 除外）。
+**TS 配置**：根 [`tsconfig.base.json`](../../tsconfig.base.json) 继承 [Bun TS 6+ 推荐项](https://bun.com/docs/typescript-6)（`types: ["bun"]`，依赖 `@types/bun`）；[`tsconfig.json`](../../tsconfig.json) 为门禁 + IDE（全仓 `src`、WebUI、单元/集成测试）；[`apps/webui/tsconfig.json`](../../apps/webui/tsconfig.json) 继承根配置并覆写 `@/*` paths（单独打开 webui 目录时用）。**import 须带真实后缀**（`./foo.ts`、`@/lib/trpc.ts`，非 `./foo` / `@/lib/trpc`）；[`allowImportingTsExtensions`](../../tsconfig.base.json) + 根 [`.oxlintrc.json`](../../.oxlintrc.json) `import/extensions: always`（npm 包如 `react`、`@modelcontextprotocol/sdk/.../index.js` 豁免）。模块是否存在由 `bun run typecheck`（TS2307）校验。
 
 **Lint / Format**：根 [`.oxlintrc.json`](../../.oxlintrc.json)（oxlint）、[`.oxfmtrc.jsonc`](../../.oxfmtrc.jsonc)（oxfmt）；生成物 `apps/webui/src/routeTree.gen.ts` 已 ignore。
 

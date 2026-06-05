@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "bun:test";
-import { NullEventQueue } from "./null";
+import { NullEventQueue } from "./null.ts";
 
 describe("NullEventQueue", () => {
   it("enqueue / start / stop 均为 no-op", async () => {

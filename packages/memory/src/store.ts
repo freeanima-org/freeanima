@@ -8,7 +8,7 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 import { randomBytes } from "node:crypto";
-import { createFact, factScore, factToFileText, parseFact, nowIso, type FactData } from "./fact";
+import { createFact, factScore, factToFileText, parseFact, nowIso, type FactData } from "./fact.ts";
 import { PATHS } from "@freeanima/legacy-kernel";
 
 const COUNTER_FILE = ".counter";

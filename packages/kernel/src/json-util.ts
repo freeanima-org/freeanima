@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import { toolArgsSchema, toolErrorSchema, type ToolErrorResult } from "./schemas/tool-json";
+import { toolArgsSchema, toolErrorSchema, type ToolErrorResult } from "./schemas/tool-json.ts";
 
 /** 工具返回须为 JSON 字符串；错误格式 {"error":"..."} */
 export function toolResult(value: unknown): string {

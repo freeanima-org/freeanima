@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { defaultModelInfo, findModelInCatalog } from "../../src/catalog";
+import { defaultModelInfo, findModelInCatalog } from "../../src/catalog.ts";
 
 describe("defaultModelInfo", () => {
   it("为未知模型提供默认窗口与参数", () => {

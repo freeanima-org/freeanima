@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { AcpAgentQueue } from "../../src/acp/agent-queue";
+import { AcpAgentQueue } from "../../src/acp/agent-queue.ts";
 
 describe("AcpAgentQueue", () => {
   it("串行执行", async () => {

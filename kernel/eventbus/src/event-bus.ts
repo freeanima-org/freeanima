@@ -1,6 +1,6 @@
 import type { Logger } from "@freeanima/kernel-logging";
-import type { DispatchOutcome, EventQueueAdapter, StoredEvent } from "./queue";
-import type { EventHandler, EventTopic, PayloadOf } from "./topic";
+import type { DispatchOutcome, EventQueueAdapter, StoredEvent } from "./queue.ts";
+import type { EventHandler, EventTopic, PayloadOf } from "./topic.ts";
 
 function errMessage(err: unknown): string {
   return err instanceof Error ? err.message : String(err);

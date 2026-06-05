@@ -4,11 +4,11 @@ import { logComponent } from "@freeanima/legacy-kernel";
 import { existsSync } from "node:fs";
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { createInterface, type Interface } from "node:readline";
-import { genericAcpAdapter, parseSessionUpdateChunk } from "./adapters/generic";
-import { resolveAcpAdapter } from "./adapters/registry";
-import type { AcpAgentAdapter } from "./adapters/types";
-import type { AcpAgentConfig } from "./status";
-import { jsonRpcMessageSchema, type JsonRpcMessage } from "../schemas/acp-jsonrpc";
+import { genericAcpAdapter, parseSessionUpdateChunk } from "./adapters/generic.ts";
+import { resolveAcpAdapter } from "./adapters/registry.ts";
+import type { AcpAgentAdapter } from "./adapters/types.ts";
+import type { AcpAgentConfig } from "./status.ts";
+import { jsonRpcMessageSchema, type JsonRpcMessage } from "../schemas/acp-jsonrpc.ts";
 
 export const DEFAULT_CONNECT_TIMEOUT_MS = 15_000;
 export const DEFAULT_PROMPT_TIMEOUT_MS = 120_000;

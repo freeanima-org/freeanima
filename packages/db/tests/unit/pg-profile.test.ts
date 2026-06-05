@@ -6,7 +6,7 @@ import {
   pgProfileReset,
   pgProfileSummary,
   pgProfileWrap,
-} from "../../src/pg-profile";
+} from "../../src/pg-profile.ts";
 
 describe("pg-profile", () => {
   afterEach(() => {

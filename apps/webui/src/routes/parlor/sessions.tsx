@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useSessionsStore } from "@/stores/sessions";
+import { useSessionsStore } from "@/stores/sessions.ts";
 
 export const Route = createFileRoute("/parlor/sessions")({
   component: SessionsPage,

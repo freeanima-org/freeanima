@@ -9,10 +9,10 @@ import * as conv from "@freeanima/legacy-engine";
 import * as engine from "@freeanima/legacy-engine";
 import { loadSkill } from "@freeanima/legacy-engine";
 import { runWithToolContext } from "@freeanima/legacy-engine";
-import type { CronJob } from "./models";
-import * as store from "./store";
-import { computeNextRun } from "./schedule";
-import { deliverCronResult } from "./deliver";
+import type { CronJob } from "./models.ts";
+import * as store from "./store.ts";
+import { computeNextRun } from "./schedule.ts";
+import { deliverCronResult } from "./deliver.ts";
 
 /** 任务失败后最短重试间隔（秒），避免调度器每 10s 重复执行同一失败任务 */
 const FAILURE_RETRY_DELAY_SEC = 300;

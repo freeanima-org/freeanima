@@ -1,8 +1,8 @@
 import { createFileRoute, Outlet, useNavigate, useSearch } from "@tanstack/react-router";
 import type { SessionListItem } from "@freeanima/legacy-api";
 import { useEffect, useRef, useState } from "react";
-import { ResponsiveSidebarLayout } from "@/components/ResponsiveSidebarLayout";
-import { useSessionsStore } from "@/stores/sessions";
+import { ResponsiveSidebarLayout } from "@/components/ResponsiveSidebarLayout.tsx";
+import { useSessionsStore } from "@/stores/sessions.ts";
 
 export const Route = createFileRoute("/parlor")({
   component: ParlorLayout,

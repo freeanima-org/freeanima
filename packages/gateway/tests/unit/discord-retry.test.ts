@@ -5,8 +5,8 @@ import {
   isDiscordRetryableError,
   tryDiscordInterimEdit,
   withDiscordRetry,
-} from "../../src/discord/discord-retry";
-import { beginLogIsolation, endLogIsolation } from "../../../../tests/helpers/log-isolation";
+} from "../../src/discord/discord-retry.ts";
+import { beginLogIsolation, endLogIsolation } from "../../../../tests/helpers/log-isolation.ts";
 
 const prevHome = process.env.FREEANIMA_HOME;
 beforeEach(() => {

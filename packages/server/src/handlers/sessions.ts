@@ -7,9 +7,9 @@ import {
   type CreateSessionBody,
   type PatchTitleBody,
 } from "@freeanima/legacy-api";
-import { mapMessagesToApi, mapSessionsToApi } from "../api-mappers";
-import { getServiceContext } from "../service-context";
-import { ApiHandlerError } from "./errors";
+import { mapMessagesToApi, mapSessionsToApi } from "../api-mappers.ts";
+import { getServiceContext } from "../service-context.ts";
+import { ApiHandlerError } from "./errors.ts";
 
 export async function resolveSessionPlatform(sessionId: string): Promise<string> {
   const meta = await loadSessionMeta(sessionId);

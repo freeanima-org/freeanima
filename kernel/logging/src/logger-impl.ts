@@ -1,5 +1,5 @@
-import { shouldLog } from "./levels";
-import { hasComponent, mergeAttributes } from "./merge-attributes";
+import { shouldLog } from "./levels.ts";
+import { hasComponent, mergeAttributes } from "./merge-attributes.ts";
 import type {
   CreateLoggerOptions,
   LogAttributes,
@@ -8,7 +8,7 @@ import type {
   LogScope,
   LogSink,
   Logger,
-} from "./types";
+} from "./types.ts";
 
 function emitToSinks(sinks: LogSink[], record: LogRecord): void {
   for (const sink of sinks) {

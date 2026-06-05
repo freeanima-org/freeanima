@@ -1,5 +1,5 @@
-import { normalizeAttributes } from "./serialize-error";
-import type { LogRecord } from "./types";
+import { normalizeAttributes } from "./serialize-error.ts";
+import type { LogRecord } from "./types.ts";
 
 export function formatPrettyRecord(record: LogRecord): string {
   const ts = new Date(record.timestamp).toISOString();

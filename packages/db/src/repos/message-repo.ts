@@ -1,9 +1,9 @@
 import { and, asc, desc, eq, gte, lte, sql } from "drizzle-orm";
 import type { ConversationMessage, SessionMessage } from "@freeanima/legacy-kernel";
 
-import { getDb } from "../client";
-import { messageToInsert, rowToMessage } from "../mappers/message-mapper";
-import { messages } from "../schema/messages";
+import { getDb } from "../client.ts";
+import { messageToInsert, rowToMessage } from "../mappers/message-mapper.ts";
+import { messages } from "../schema/messages.ts";
 
 export async function appendMessage(
   sessionId: string,

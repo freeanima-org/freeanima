@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { trpc } from "@/lib/trpc";
+import { trpc } from "@/lib/trpc.ts";
 
 export const Route = createFileRoute("/chamber/mcp")({
   loader: () => trpc.mcp.status.query().catch(() => null),

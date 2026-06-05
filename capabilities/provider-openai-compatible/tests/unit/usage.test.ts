@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { normalizeUsage } from "../../src/usage";
+import { normalizeUsage } from "../../src/usage.ts";
 
 describe("normalizeUsage", () => {
   it("映射 OpenAI 风格字段", () => {

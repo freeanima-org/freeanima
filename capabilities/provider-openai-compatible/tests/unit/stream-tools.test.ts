@@ -4,7 +4,7 @@ import {
   cleanToolCallsForApi,
   finalizeStreamingToolCalls,
   mergeStreamingToolCalls,
-} from "../../src/stream-tools";
+} from "../../src/stream-tools.ts";
 
 /** OpenAI 流式 delta 在 ToolCall 上附带 index，且 function 字段可部分出现 */
 type StreamToolDelta = ToolCall & {

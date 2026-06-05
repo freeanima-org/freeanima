@@ -1,4 +1,4 @@
-import { parseToolArgs, type ParsedToolResult } from "./json-util";
+import { parseToolArgs, type ParsedToolResult } from "./json-util.ts";
 
 /** JSON Schema object 子集（OpenAI function parameters） */
 export type JsonSchemaObject = {

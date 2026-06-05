@@ -3,9 +3,9 @@ export {
   getBoundAcpSession,
   readAcpSessions,
   unbindAcpSession,
-} from "./nest-binding";
-export { ACPClient, ACPError } from "./client";
-export { AcpManager, getAcpManager, registerAcpTools } from "./manager";
+} from "./nest-binding.ts";
+export { ACPClient, ACPError } from "./client.ts";
+export { AcpManager, getAcpManager, registerAcpTools } from "./manager.ts";
 export {
   sanitizeAcpConfig,
   shortSessionId,
@@ -16,4 +16,4 @@ export {
   type AcpRegisteredToolView,
   type AcpSessionView,
   type AcpStatusResponse,
-} from "./status";
+} from "./status.ts";

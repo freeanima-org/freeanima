@@ -3,9 +3,9 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { clearConfigCache } from "@freeanima/legacy-kernel";
-import { MINIMAL_LLM_YAML } from "../../../../tests/helpers/minimal-llm-config";
-import { sanitizeAcpConfig, shortSessionId, isAcpAgentEnabled } from "../../src/acp/status";
-import { AcpManager } from "../../src/acp/manager";
+import { MINIMAL_LLM_YAML } from "../../../../tests/helpers/minimal-llm-config.ts";
+import { sanitizeAcpConfig, shortSessionId, isAcpAgentEnabled } from "../../src/acp/status.ts";
+import { AcpManager } from "../../src/acp/manager.ts";
 
 describe("isAcpAgentEnabled", () => {
   it("缺省或为 true 时启用", () => {

@@ -1,7 +1,7 @@
 import type { PgTestContext } from "@freeanima/legacy-db/test-helpers";
 
-import { beginLogIsolation } from "./log-isolation";
-import { pgTestUrl } from "./pg-test-gate";
+import { beginLogIsolation } from "./log-isolation.ts";
+import { pgTestUrl } from "./pg-test-gate.ts";
 
 /** 集成测试用例标准开头：临时 home + PG harness */
 export async function beginIntegrationCase(prefix: string): Promise<{

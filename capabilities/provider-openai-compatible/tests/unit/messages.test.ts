@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import type { LlmTurnMessage } from "@freeanima/engine-provider-llm";
-import { messagesForApi } from "../../src/messages";
+import { messagesForApi } from "../../src/messages.ts";
 
 describe("messagesForApi", () => {
   it("前置 system 并映射 user/assistant/tool", () => {

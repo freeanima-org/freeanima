@@ -39,18 +39,18 @@ import {
 } from "@freeanima/legacy-gateway";
 import { MCPManager, getAcpManager } from "@freeanima/legacy-integrations";
 import { closeDb, getDb, isPostgresPrimary } from "@freeanima/legacy-db";
-import { DEFAULT_BIND_HOST, parseBindHosts } from "./bind-hosts";
-import { closeHttpServers, waitForDrainWithTimeout } from "./http-shutdown";
-import { initServiceContext } from "./service-context";
-import { startWebuiHttpServers, type WebuiServerHandle } from "./webui-server";
+import { DEFAULT_BIND_HOST, parseBindHosts } from "./bind-hosts.ts";
+import { closeHttpServers, waitForDrainWithTimeout } from "./http-shutdown.ts";
+import { initServiceContext } from "./service-context.ts";
+import { startWebuiHttpServers, type WebuiServerHandle } from "./webui-server.ts";
 
-export { isServerAlive, readStatusFile } from "./alive";
+export { isServerAlive, readStatusFile } from "./alive.ts";
 export {
   DEFAULT_BIND_HOST,
   DEFAULT_BIND_HOSTS,
   parseBindHosts,
   resolveProbeHost,
-} from "./bind-hosts";
+} from "./bind-hosts.ts";
 
 let service: NestService | null = null;
 let mcp: MCPManager | null = null;

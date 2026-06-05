@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import { EventBus } from "@freeanima/kernel-eventbus";
 import { HookRegistry } from "@freeanima/kernel-hooks";
-import { kernel } from "../../src/kernel";
+import { kernel } from "../../src/kernel.ts";
 
 describe("legacy-engine kernel", () => {
   it("kernel.hookRegistry 为 HookRegistry 实例", () => {

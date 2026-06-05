@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { safeParseOrNull } from "./util";
+import { safeParseOrNull } from "./util.ts";
 
 export const todoStatusSchema = z.enum(["pending", "in_progress", "completed", "cancelled"]);
 

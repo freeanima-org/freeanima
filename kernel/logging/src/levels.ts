@@ -1,4 +1,4 @@
-import type { LogLevel } from "./types";
+import type { LogLevel } from "./types.ts";
 
 const LEVEL_RANK: Record<LogLevel, number> = {
   debug: 10,

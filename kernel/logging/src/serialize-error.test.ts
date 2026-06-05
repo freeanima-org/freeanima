@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { normalizeAttributes, serializeError } from "./serialize-error";
+import { normalizeAttributes, serializeError } from "./serialize-error.ts";
 
 describe("serializeError", () => {
   it("Error 实例序列化为 name/message/stack", () => {

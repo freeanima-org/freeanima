@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
-import { createLogger } from "./create-logger";
-import { createMemorySink } from "./sinks/memory";
-import { createNullSink } from "./sinks/null";
+import { createLogger } from "./create-logger.ts";
+import { createMemorySink } from "./sinks/memory.ts";
+import { createNullSink } from "./sinks/null.ts";
 
 describe("createLogger", () => {
   it("无 sink 时 throw", () => {

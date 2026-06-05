@@ -5,8 +5,8 @@ export {
   walkHookChainOldestFirst,
   blockedMessageFromChain,
   headOkStepData,
-} from "./hook";
-export { HookRegistry } from "./registry";
+} from "./hook.ts";
+export { HookRegistry } from "./registry.ts";
 export type {
   HookHandler,
   PayloadOf,
@@ -14,4 +14,4 @@ export type {
   HookStepLink,
   HookRunResult,
   HookRunMeta,
-} from "./hook";
+} from "./hook.ts";

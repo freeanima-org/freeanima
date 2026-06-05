@@ -2,6 +2,6 @@ export {
   OPENAI_COMPATIBLE_BACKEND_ID,
   openAiCompatibleProviderConfigSchema,
   parseOpenAiCompatibleProviderSpec,
-} from "./config";
-export type { OpenAiCompatibleProviderConfig } from "./config";
-export { OpenAiCompatibleBackend } from "./backend";
+} from "./config.ts";
+export type { OpenAiCompatibleProviderConfig } from "./config.ts";
+export { OpenAiCompatibleBackend } from "./backend.ts";

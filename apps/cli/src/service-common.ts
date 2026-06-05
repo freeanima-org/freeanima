@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 
 import { isServerAlive } from "@freeanima/legacy-server/alive";
-import { prettyDuration, writeStatusLine } from "./output/status";
+import { prettyDuration, writeStatusLine } from "./output/status.ts";
 
 export { prettyDuration, writeStatusLine };
 

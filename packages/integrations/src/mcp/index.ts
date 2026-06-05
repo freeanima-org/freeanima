@@ -1,5 +1,5 @@
-export { MCPManager } from "./manager";
-export { extractMcpResult, mcpToolParameters } from "./schema";
+export { MCPManager } from "./manager.ts";
+export { extractMcpResult, mcpToolParameters } from "./schema.ts";
 export {
   sanitizeMcpConfig,
   isMcpServerEnabled,
@@ -10,5 +10,5 @@ export {
   type McpServerStatusView,
   type McpStatusResponse,
   type McpToolView,
-} from "./status";
-export { McpClientSession, type McpServerConfig, type McpToolDef } from "./client";
+} from "./status.ts";
+export { McpClientSession, type McpServerConfig, type McpToolDef } from "./client.ts";

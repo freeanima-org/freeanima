@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { SessionListItem } from "@freeanima/legacy-api";
-import { useChatStore } from "@/stores/chat";
-import { usePairProgrammingStore } from "@/stores/pair-programming";
+import { useChatStore } from "@/stores/chat.ts";
+import { usePairProgrammingStore } from "@/stores/pair-programming.ts";
 
 function sessionLabel(item: SessionListItem) {
   const id = item.id;

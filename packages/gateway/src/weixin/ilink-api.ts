@@ -1,7 +1,7 @@
 import { safeParseOrNull } from "@freeanima/legacy-kernel";
 /** 腾讯 iLink Bot API（与 Python weixin_adapter 对齐） */
 
-import { ilinkMessageSchema, type IlinkMessage } from "../schemas/weixin";
+import { ilinkMessageSchema, type IlinkMessage } from "../schemas/weixin.ts";
 
 export { type IlinkMessage };
 export const ILINK_BASE_URL = "https://ilinkai.weixin.qq.com";

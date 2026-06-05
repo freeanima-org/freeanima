@@ -1,6 +1,6 @@
 import { logComponent } from "@freeanima/legacy-kernel";
 import type { NestService } from "@freeanima/legacy-runtime";
-import type { WebuiServerHandle } from "./webui-server";
+import type { WebuiServerHandle } from "./webui-server.ts";
 
 /** 等待进行中的 engine 请求落盘；超时后继续关停，避免 systemd SIGKILL */
 export async function waitForDrainWithTimeout(nest: NestService, maxMs: number): Promise<void> {

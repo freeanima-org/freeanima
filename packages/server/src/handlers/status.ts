@@ -1,7 +1,12 @@
-import { mapConfigToApi, mapCronJobsToApi, mapHealthToApi, mapStatusToApi } from "../api-mappers";
-import { getServiceContext } from "../service-context";
-import { scheduleServiceRestart } from "../service-restart";
-import { ApiHandlerError } from "./errors";
+import {
+  mapConfigToApi,
+  mapCronJobsToApi,
+  mapHealthToApi,
+  mapStatusToApi,
+} from "../api-mappers.ts";
+import { getServiceContext } from "../service-context.ts";
+import { scheduleServiceRestart } from "../service-restart.ts";
+import { ApiHandlerError } from "./errors.ts";
 
 export function getHealth() {
   const { service } = getServiceContext();

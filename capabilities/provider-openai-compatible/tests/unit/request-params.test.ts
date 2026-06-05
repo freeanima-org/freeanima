@@ -3,7 +3,7 @@ import type { ChatRequest } from "@freeanima/engine-provider-llm";
 import {
   buildChatCompletionParams,
   buildStreamingChatCompletionParams,
-} from "../../src/request-params";
+} from "../../src/request-params.ts";
 
 const baseRequest: ChatRequest = {
   messages: [{ role: "user", content: "ping" }],

@@ -9,9 +9,9 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { renderSystemdUnit } from "../../src/systemd-unit";
-import { ensureUnitFile } from "../../src/service-cmd";
-import * as serviceCommon from "../../src/service-common";
+import { renderSystemdUnit } from "../../src/systemd-unit.ts";
+import { ensureUnitFile } from "../../src/service-cmd.ts";
+import * as serviceCommon from "../../src/service-common.ts";
 import {
   parseBindHosts,
   resolveProbeHost,

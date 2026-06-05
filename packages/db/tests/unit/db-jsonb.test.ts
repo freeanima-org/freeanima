@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
-import { buildPlatformInfo, splitPlatformInfo } from "../../dist/schema/jsonb/platform-info";
-import { sessionMetaToInsert } from "../../dist/mappers/session-mapper";
-import { messageToInsert, rowToMessage } from "../../dist/mappers/message-mapper";
+import { buildPlatformInfo, splitPlatformInfo } from "../../src/schema/jsonb/platform-info.ts";
+import { messageToInsert, rowToMessage } from "../../src/mappers/message-mapper.ts";
+import { sessionMetaToInsert } from "../../src/mappers/session-mapper.ts";
 
 describe("db jsonb mappers", () => {
   it("platformInfo 合并 platform 与 platform_extra", () => {

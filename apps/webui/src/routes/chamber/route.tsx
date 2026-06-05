@@ -1,5 +1,5 @@
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
-import { ResponsiveSidebarLayout } from "@/components/ResponsiveSidebarLayout";
+import { ResponsiveSidebarLayout } from "@/components/ResponsiveSidebarLayout.tsx";
 
 const navItems = [
   { to: "/chamber/dashboard", label: "📊 仪表盘" },

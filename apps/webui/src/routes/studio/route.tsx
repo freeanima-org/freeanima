@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ResponsiveSidebarLayout } from "@/components/ResponsiveSidebarLayout";
+import { ResponsiveSidebarLayout } from "@/components/ResponsiveSidebarLayout.tsx";
 
 const CHROMELESS_KEY = "studio-chromeless";
 

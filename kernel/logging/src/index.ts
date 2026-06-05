@@ -1,4 +1,4 @@
-export { createLogger } from "./create-logger";
+export { createLogger } from "./create-logger.ts";
 export type {
   CreateLoggerOptions,
   LogAttributes,
@@ -7,4 +7,4 @@ export type {
   LogScope,
   LogSink,
   Logger,
-} from "./types";
+} from "./types.ts";

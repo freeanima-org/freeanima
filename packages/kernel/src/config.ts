@@ -1,9 +1,9 @@
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
-import { CREDENTIAL_MAP, PATHS } from "./paths";
-import { nestConfigSchema, type NestConfig } from "./schemas/config";
-import { OPENAI_COMPATIBLE_BACKEND_ID } from "./schemas/llm-config";
-import { credential } from "./credential";
+import { CREDENTIAL_MAP, PATHS } from "./paths.ts";
+import { nestConfigSchema, type NestConfig } from "./schemas/config.ts";
+import { OPENAI_COMPATIBLE_BACKEND_ID } from "./schemas/llm-config.ts";
+import { credential } from "./credential.ts";
 
 let cache: NestConfig | null = null;
 
@@ -70,7 +70,7 @@ export function clearConfigCache(): void {
   cache = null;
 }
 
-export { sanitizeConfigForApi } from "./config-sanitize";
+export { sanitizeConfigForApi } from "./config-sanitize.ts";
 
 /** 合并写入 config.yaml 某一段（如 discord / weixin） */
 export function patchConfigSection(

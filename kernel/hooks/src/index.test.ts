@@ -1,8 +1,8 @@
 import { describe, expect, it } from "bun:test";
 import { createLogger } from "@freeanima/kernel-logging";
 import { createNullSink } from "@freeanima/kernel-logging/null";
-import { createHook, Hook, HookRegistry } from "./index";
-import type { HookHandler, PayloadOf } from "./index";
+import { createHook, Hook, HookRegistry } from "./index.ts";
+import type { HookHandler, PayloadOf } from "./index.ts";
 
 describe("index 导出", () => {
   it("导出 Hook、createHook、HookRegistry", () => {

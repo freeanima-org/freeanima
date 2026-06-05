@@ -5,7 +5,7 @@ import { NullEventQueue } from "@freeanima/kernel-eventbus/null";
 import type { Logger } from "@freeanima/kernel-logging";
 import { createMemorySink } from "@freeanima/kernel-logging/memory";
 import { createLogger } from "@freeanima/kernel-logging";
-import { Kernel } from "./index";
+import { Kernel } from "./index.ts";
 
 describe("Kernel", () => {
   it("组合 hooks、eventBus 与 logger 端口", () => {

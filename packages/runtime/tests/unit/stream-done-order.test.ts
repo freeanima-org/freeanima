@@ -1,7 +1,7 @@
 import { describe, it, expect, spyOn, afterEach } from "bun:test";
 import * as engine from "@freeanima/legacy-engine";
 import type { StreamEvent } from "@freeanima/legacy-engine";
-import { NestService } from "../../src/nest-service";
+import { NestService } from "../../src/nest-service.ts";
 
 describe("sendMessageStream done 顺序", () => {
   const restores: Array<{ mockRestore: () => void }> = [];

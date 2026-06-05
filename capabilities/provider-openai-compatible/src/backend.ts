@@ -7,11 +7,11 @@ import {
   type ModelInfo,
   type ProviderError,
 } from "@freeanima/engine-provider-llm";
-import { contextCacheKey, parseOpenAiCompatibleContext } from "./context";
-import { createOpenAiClientFromParsed } from "./client";
-import { defaultModelInfo, fetchModelCatalog, findModelInCatalog } from "./catalog";
-import { mapOpenAiCompatibleError } from "./map-error";
-import { runOpenAiChat, runOpenAiChatStream } from "./openai-chat";
+import { contextCacheKey, parseOpenAiCompatibleContext } from "./context.ts";
+import { createOpenAiClientFromParsed } from "./client.ts";
+import { defaultModelInfo, fetchModelCatalog, findModelInCatalog } from "./catalog.ts";
+import { mapOpenAiCompatibleError } from "./map-error.ts";
+import { runOpenAiChat, runOpenAiChatStream } from "./openai-chat.ts";
 
 /** OpenAI Chat Completions 兼容 backend（DeepSeek、OpenRouter 兼容模式等）。 */
 export class OpenAiCompatibleBackend extends LlmBackend {

@@ -1,6 +1,6 @@
 import { safeParseOrNull } from "@freeanima/legacy-kernel";
-import { ITEM_TEXT, MSG_TYPE_BOT, MSG_TYPE_USER, type IlinkMessage } from "./ilink-api";
-import { ilinkMessageSchema } from "../schemas/weixin";
+import { ITEM_TEXT, MSG_TYPE_BOT, MSG_TYPE_USER, type IlinkMessage } from "./ilink-api.ts";
+import { ilinkMessageSchema } from "../schemas/weixin.ts";
 
 export type WeixinPlatformExtra = {
   weixin_user_id: string;

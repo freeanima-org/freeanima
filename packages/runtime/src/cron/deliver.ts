@@ -1,6 +1,6 @@
 import { logComponent } from "@freeanima/legacy-kernel";
-import { getHomeChannel } from "../home-channel";
-import type { CronJob } from "./models";
+import { getHomeChannel } from "../home-channel.ts";
+import type { CronJob } from "./models.ts";
 
 export type CronDeliverTarget = {
   platform: string;

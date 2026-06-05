@@ -1,6 +1,6 @@
 import { boolean, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
-import type { PlatformInfo } from "./jsonb/platform-info";
+import type { PlatformInfo } from "./jsonb/platform-info.ts";
 import type {
   AcpSessionsJson,
   AwaitingClarifyJson,
@@ -8,7 +8,7 @@ import type {
   SessionFunctionsJson,
   SessionTodosJson,
   SessionToolsJson,
-} from "./jsonb/session-jsonb";
+} from "./jsonb/session-jsonb.ts";
 
 export const sessions = pgTable("sessions", {
   id: text("id").primaryKey(),

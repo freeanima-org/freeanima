@@ -1,9 +1,9 @@
 import { existsSync, mkdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { PATHS, openSqlite, type SqliteDatabase } from "@freeanima/legacy-kernel";
-import { buildFtsQuery } from "./fts-query";
-import { getStore } from "./store";
-import type { FactData } from "./fact";
+import { buildFtsQuery } from "./fts-query.ts";
+import { getStore } from "./store.ts";
+import type { FactData } from "./fact.ts";
 import { l3DomainsSchema, l3EntitiesSchema, l3SourcesSchema } from "@freeanima/legacy-kernel";
 import { safeParseOrNull } from "@freeanima/legacy-kernel";
 

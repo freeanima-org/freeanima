@@ -5,10 +5,10 @@ import type {
   ChatStreamEvent,
   ToolCall,
 } from "@freeanima/engine-provider-llm";
-import { createOpenAiClient } from "./client";
-import { buildChatCompletionParams, buildStreamingChatCompletionParams } from "./request-params";
-import { finalizeStreamingToolCalls, mergeStreamingToolCalls } from "./stream-tools";
-import { normalizeUsage } from "./usage";
+import { createOpenAiClient } from "./client.ts";
+import { buildChatCompletionParams, buildStreamingChatCompletionParams } from "./request-params.ts";
+import { finalizeStreamingToolCalls, mergeStreamingToolCalls } from "./stream-tools.ts";
+import { normalizeUsage } from "./usage.ts";
 
 export async function runOpenAiChat(
   model: string,

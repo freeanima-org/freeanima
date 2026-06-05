@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { trpc } from "@/lib/trpc";
-import { useChatStore } from "@/stores/chat";
-import { useSessionsStore } from "@/stores/sessions";
+import { trpc } from "@/lib/trpc.ts";
+import { useChatStore } from "@/stores/chat.ts";
+import { useSessionsStore } from "@/stores/sessions.ts";
 
 type CommandItem = { name: string; description?: string };
 
