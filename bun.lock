@@ -270,7 +270,14 @@
     "life/memory": {
       "name": "@freeanima/life-memory",
       "dependencies": {
+        "@freeanima/connectors-sqlite": "workspace:*",
+        "@freeanima/engine-tool": "workspace:*",
+        "@freeanima/kernel-db": "workspace:*",
+        "@freeanima/kernel-eventbus": "workspace:*",
+        "@freeanima/kernel-schemas": "workspace:*",
         "@freeanima/service-config": "workspace:*",
+        "@freeanima/service-logging": "workspace:*",
+        "yaml": "^2.9.0",
         "zod": "catalog:",
       },
       "devDependencies": {
@@ -345,6 +352,7 @@
         "@freeanima/kernel-db": "workspace:*",
         "@freeanima/kernel-eventbus": "workspace:*",
         "@freeanima/kernel-schemas": "workspace:*",
+        "@freeanima/life-memory": "workspace:*",
         "@freeanima/service-config": "workspace:*",
         "@freeanima/service-logging": "workspace:*",
         "yaml": "^2.9.0",
