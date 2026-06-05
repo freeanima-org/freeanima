@@ -112,7 +112,7 @@
 
 ### P2 — 配置脱敏维护
 
-- 新增密钥字段时同步更新 `packages/kernel/src/config-sanitize.ts`
+- 新增密钥字段时同步更新 [`service/config/src/config-sanitize.ts`](../service/config/src/config-sanitize.ts)
 
 ## 首次部署安全清单
 

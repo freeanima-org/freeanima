@@ -134,21 +134,23 @@ packages:
 
 **legacy 包名映射（示例）：**
 
-| 现名（步骤 0 前）         | legacy 名（步骤 0 后）           |
-| ------------------------- | -------------------------------- |
-| `@freeanima/kernel`       | `@freeanima/legacy-kernel`       |
-| `@freeanima/engine`       | `@freeanima/legacy-engine`       |
-| `@freeanima/runtime`      | `@freeanima/legacy-runtime`      |
-| `@freeanima/memory`       | `@freeanima/legacy-memory`       |
-| `@freeanima/db`           | `@freeanima/legacy-db`           |
-| `@freeanima/server`       | `@freeanima/legacy-server`       |
-| `@freeanima/gateway`      | `@freeanima/legacy-gateway`      |
-| `@freeanima/tools`        | `@freeanima/legacy-tools`        |
-| `@freeanima/integrations` | `@freeanima/legacy-integrations` |
-| `@freeanima/clarify`      | `@freeanima/legacy-clarify`      |
-| `@freeanima/api`          | `@freeanima/legacy-api`          |
-| `@freeanima/cli`          | `@freeanima/legacy-cli`          |
-| `@freeanima/webui`        | `@freeanima/legacy-webui`        |
+| 现名（步骤 0 前）         | legacy 名（步骤 0 后）                                               |
+| ------------------------- | -------------------------------------------------------------------- |
+| `@freeanima/kernel`       | ~~`@freeanima/legacy-kernel`~~（已删，拆至 kernel-_ / service-_）    |
+| `@freeanima/engine`       | ~~`@freeanima/legacy-engine`~~（已删，拆至 engine-\* / life-memory） |
+| `@freeanima/runtime`      | `@freeanima/legacy-runtime`                                          |
+| `@freeanima/memory`       | `@freeanima/legacy-memory`                                           |
+| `@freeanima/db`           | `@freeanima/legacy-db`                                               |
+| `@freeanima/server`       | `@freeanima/legacy-server`                                           |
+| `@freeanima/gateway`      | `@freeanima/legacy-gateway`                                          |
+| `@freeanima/tools`        | `@freeanima/legacy-tools`                                            |
+| `@freeanima/integrations` | `@freeanima/legacy-integrations`                                     |
+| `@freeanima/clarify`      | `@freeanima/legacy-clarify`                                          |
+| `@freeanima/api`          | `@freeanima/legacy-api`                                              |
+| `@freeanima/cli`          | `@freeanima/legacy-cli`                                              |
+| `@freeanima/webui`        | `@freeanima/legacy-webui`                                            |
+
+**已删除 legacy 包（2026-06-05）：** `@freeanima/legacy-kernel`、`@freeanima/legacy-engine`。职责分别迁入 `kernel/{schemas,hooks,logging,eventbus}`、`engine/*`、`service/{config,logging,bootstrap}`、`connectors/sqlite`、`life/memory`。
 
 **步骤 0 不做：** 不建 `kernel/` 等新目录；不改 `pnpm-workspace.yaml` 新层 glob；不改运行时行为。
 
@@ -161,5 +163,5 @@ packages:
 ### 现状评估摘要
 
 - RFC 架构方向与 ARCHITECTURE.md 一致，**建议采纳**
-- 现状契合度约 40%：memory 不依赖 engine ✓；kernel 含实现 ✗；runtime NestService ~940 行 ✗；能力层逆向依赖 runtime/engine ✗
+- 现状契合度提升：kernel / engine legacy 包已删，新栈 `kernel/*`、`engine/*`、`service/*` 已承载主路径 import；runtime NestService ~940 行 ✗；能力层逆向依赖 runtime/engine ✗
 - 并行新包方案优于在 legacy 内拆 NestService，生产风险推迟至 service/cli 切换日
