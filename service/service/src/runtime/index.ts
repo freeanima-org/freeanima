@@ -1,4 +1,5 @@
 export * from "./build-messages-display.ts";
+export { SessionManager } from "./session-manager.ts";
 export * from "./anima-service.ts";
 export * from "./home-channel.ts";
 export * from "./platforms.ts";
