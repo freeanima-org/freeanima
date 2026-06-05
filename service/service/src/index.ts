@@ -11,3 +11,11 @@ export {
   isServiceContextReady,
   type ServiceContext,
 } from "./context.ts";
+export { isServerAlive, readStatusFile } from "./alive.ts";
+export {
+  DEFAULT_BIND_HOST,
+  DEFAULT_BIND_HOSTS,
+  parseBindHosts,
+  resolveProbeHost,
+} from "./bind-hosts.ts";
+export { serve, getService, type ServeOptions } from "./serve.ts";

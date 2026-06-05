@@ -2,18 +2,27 @@
   "name": "@freeanima/service",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./alive": "./src/alive.ts",
+    "./bind-hosts": "./src/bind-hosts.ts"
   },
   "dependencies": {
     "@freeanima/capabilities-acp": "workspace:*",
-    "@freeanima/capabilities-mcp": "workspace:*",
-    "@freeanima/legacy-runtime": "workspace:*",
     "@freeanima/capabilities-clarify": "workspace:*",
+    "@freeanima/capabilities-mcp": "workspace:*",
     "@freeanima/capabilities-tools": "workspace:*",
     "@freeanima/connectors-cron": "workspace:*",
+    "@freeanima/connectors-gateway": "workspace:*",
+    "@freeanima/connectors-webui": "workspace:*",
+    "@freeanima/engine": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",
     "@freeanima/kernel": "workspace:*",
-    "@freeanima/life-memory": "workspace:*"
+    "@freeanima/kernel-db": "workspace:*",
+    "@freeanima/legacy-runtime": "workspace:*",
+    "@freeanima/life-memory": "workspace:*",
+    "@freeanima/service-bootstrap": "workspace:*",
+    "@freeanima/service-config": "workspace:*",
+    "@freeanima/service-logging": "workspace:*"
   },
   "devDependencies": {
     "@freeanima/engine-tool": "workspace:*",
