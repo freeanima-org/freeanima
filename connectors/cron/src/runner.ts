@@ -1,6 +1,6 @@
 import { existsSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
-import { runCronEngineTurn, runCronL2GapFill } from "@freeanima/service-api/cron-use-cases";
+import { runCronEngineTurn } from "@freeanima/service-api/cron-use-cases";
 import { logComponent } from "@freeanima/service-logging";
 import type { CronJob } from "./models.ts";
 import * as store from "./store.ts";
@@ -9,8 +9,6 @@ import { deliverCronResult } from "./deliver.ts";
 
 /** 任务失败后最短重试间隔（秒），避免调度器每 10s 重复执行同一失败任务 */
 const FAILURE_RETRY_DELAY_SEC = 300;
-
-export { runCronL2GapFill as runL2GapFill };
 
 function runScript(scriptPath: string, timeoutSec: number): string {
   const path = store.resolveScriptPath(scriptPath);
@@ -106,11 +104,10 @@ async function runJobInternal(job: CronJob): Promise<void> {
   store.update(job);
 
   if (job.no_agent) {
-    if (!job.script && job.id !== "l2-gap-fill") {
+    if (!job.script) {
       throw new Error("no_agent=True requires a script");
     }
-    const output =
-      job.id === "l2-gap-fill" ? await runCronL2GapFill() : runScript(job.script!, job.timeout_sec);
+    const output = runScript(job.script, job.timeout_sec);
     job.last_output = output;
     saveOutput(job, output);
     await notifyDeliver(job, true, output);

@@ -61,14 +61,17 @@
 
 #### `messages`
 
-| 列           | 类型                  | 说明                                                               |
-| ------------ | --------------------- | ------------------------------------------------------------------ |
-| `id`         | TEXT PK               | 全局唯一行 id（UUID）                                              |
-| `session_id` | TEXT FK → sessions.id |                                                                    |
-| `pos`        | BIGINT                | 会话内单调序号（compression l2/l3 指向此值；领域层 `Message.pos`） |
-| `payload`    | JSONB                 | `ConversationPayload`（role/content/tool_calls 等，**不含 pos**）  |
+| 列            | 类型                  | 说明                                                                      |
+| ------------- | --------------------- | ------------------------------------------------------------------------- |
+| `id`          | TEXT PK               | 全局唯一行 id（UUID）                                                     |
+| `session_id`  | TEXT FK → sessions.id |                                                                           |
+| `pos`         | BIGINT                | 会话内单调序号（compression l2/l3 指向此值；领域层 `Message.pos`）        |
+| `payload`     | JSONB                 | `ConversationPayload`（role/content/tool_calls 等，**不含 pos**）         |
+| `content_fts` | TSVECTOR（生成列）    | STORED；`to_tsvector('simple', message_fts_input(content))`；CJK 按字切分 |
 
 唯一索引：`(session_id, pos)`。
+
+全文索引：`messages_content_fts_gin`（GIN on `content_fts`）。供 `recall` 历史对话检索；过滤规则与旧 L2 蒸馏一致（排除 tool 消息与空 content）。
 
 ### 配置
 

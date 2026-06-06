@@ -1,17 +1,13 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { PATHS } from "@freeanima/service-config";
+import type { SessionStorePort } from "@freeanima/engine-repos";
 import { callReflectChat } from "./reflect-llm.ts";
 import { createFact, type FactData } from "./fact.ts";
-import { l2SessionPath } from "./clean.ts";
 import { getStore } from "./store.ts";
-import {
-  factExtractionSchema,
-  l2LineSchema,
-  reflectStateSchema,
-  type L2Line,
-} from "./schemas/l2.ts";
-import { readJsonlText } from "./jsonl.ts";
+import { factExtractionSchema, reflectStateSchema } from "./schemas/l2.ts";
+import { filterRecallableMessages, type RecallableMessage } from "./message-filter.ts";
+import { getMemorySessionStore } from "./session-port.ts";
 import { safeParseOrNull } from "@freeanima/kernel-util";
 
 const EXTRACT_SYSTEM_PROMPT = `你是一位专业的记忆提取助手。你的任务是从一段对话中提取重要信息，存入长期记忆系统。
@@ -81,21 +77,16 @@ function writeReflectState(state: Record<string, { last_reflected_t?: string }>)
   writeFileSync(reflectStatePath(), JSON.stringify(state, null, 2), "utf-8");
 }
 
-function parseL2Messages(l2Text: string): L2Line[] {
-  return readJsonlText(l2Text, l2LineSchema).filter((record) => record.type !== "meta");
-}
-
-function formatFullInput(messages: L2Line[]): string {
+function formatFullInput(messages: RecallableMessage[]): string {
   return messages
     .map((m) => {
       const role = m.role === "user" ? "张三" : "Agent";
-      return `${role}: ${m.content ?? ""}`;
+      return `${role}: ${m.content}`;
     })
     .join("\n");
 }
 
-function buildIncrementalInput(sessionId: string, l2Text: string): string | null {
-  const messages = parseL2Messages(l2Text);
+function buildIncrementalInput(sessionId: string, messages: RecallableMessage[]): string | null {
   if (!messages.length) return null;
 
   const state = readReflectState();
@@ -103,12 +94,12 @@ function buildIncrementalInput(sessionId: string, l2Text: string): string | null
 
   if (!lastT) return formatFullInput(messages);
 
-  const newMsgs = messages.filter((m) => (m.t ?? "") > lastT);
+  const newMsgs = messages.filter((m) => m.t > lastT);
   if (newMsgs.length < 2) return null;
 
   let lastNewIdx = -1;
   for (let i = 0; i < messages.length; i++) {
-    if ((messages[i]!.t ?? "") > lastT) lastNewIdx = i;
+    if (messages[i]!.t > lastT) lastNewIdx = i;
   }
   const contextStart = Math.max(0, lastNewIdx - 6);
   const contextMsgs = messages.slice(contextStart, lastNewIdx + 1);
@@ -116,25 +107,23 @@ function buildIncrementalInput(sessionId: string, l2Text: string): string | null
   const parts = ["## 上下文（对话历史末尾）"];
   for (const m of contextMsgs) {
     const role = m.role === "user" ? "张三" : "Agent";
-    parts.push(`${role}: ${m.content ?? ""}`);
+    parts.push(`${role}: ${m.content}`);
   }
   if (contextMsgs.length < messages.length) {
     parts.push("");
     parts.push("## 新增对话（上次提取后的新内容，请从这里提取记忆）");
     for (const m of newMsgs) {
       const role = m.role === "user" ? "张三" : "Agent";
-      parts.push(`${role}: ${m.content ?? ""}`);
+      parts.push(`${role}: ${m.content}`);
     }
   }
   return parts.join("\n");
 }
 
-function updateReflectState(sessionId: string, l2Text: string): void {
+function updateReflectState(sessionId: string, messages: RecallableMessage[]): void {
   let lastT = "";
-  for (const record of readJsonlText(l2Text, l2LineSchema)) {
-    if (record.type === "meta") continue;
-    const ts = record.t ?? "";
-    if (ts) lastT = ts;
+  for (const m of messages) {
+    if (m.t) lastT = m.t;
   }
   if (!lastT) return;
   const state = readReflectState();
@@ -202,17 +191,17 @@ function parseExtraction(raw: string): Record<string, unknown>[] {
 }
 
 async function extractWithLlm(
-  l2Text: string,
+  input: string,
   incremental: boolean,
 ): Promise<Record<string, unknown>[]> {
   const maxChars = 8000;
-  let input = l2Text;
-  if (input.length > maxChars) input = `${input.slice(0, maxChars)}\n\n[... 截断]`;
+  let text = input;
+  if (text.length > maxChars) text = `${text.slice(0, maxChars)}\n\n[... 截断]`;
 
   const systemPrompt = incremental ? EXTRACT_INCREMENTAL_PROMPT : EXTRACT_SYSTEM_PROMPT;
   const userPrompt = incremental
-    ? `请从以下对话的「新增部分」中提取记忆：\n\n${input}`
-    : `请从以下对话中提取记忆：\n\n${input}`;
+    ? `请从以下对话的「新增部分」中提取记忆：\n\n${text}`
+    : `请从以下对话中提取记忆：\n\n${text}`;
 
   try {
     const resp = await callReflectChat([
@@ -283,27 +272,27 @@ export type ReflectSessionResult = { written: number; fact_ids: string[] };
 
 export async function reflectSession(
   sessionId: string,
-  l2Text?: string | null,
+  sessionStore?: SessionStorePort,
 ): Promise<ReflectSessionResult> {
-  let text = l2Text ?? null;
-  if (text === null || text === undefined) {
-    const path = l2SessionPath(sessionId);
-    if (!existsSync(path)) return { written: 0, fact_ids: [] };
-    text = readFileSync(path, "utf-8");
-  }
-  text = text.trim();
-  if (!text) return { written: 0, fact_ids: [] };
+  const store = sessionStore ?? getMemorySessionStore();
+  const messages = filterRecallableMessages(await store.listMessages(sessionId));
+  if (!messages.length) return { written: 0, fact_ids: [] };
 
-  const incrementalInput = buildIncrementalInput(sessionId, text);
+  const incrementalInput = buildIncrementalInput(sessionId, messages);
   if (!incrementalInput) return { written: 0, fact_ids: [] };
 
   const factsData = await extractWithLlm(incrementalInput, true);
+  const summarySnippet = messages
+    .map((m) => m.content)
+    .join(" ")
+    .slice(0, 100);
+
   if (!factsData.length) {
-    updateReflectState(sessionId, text);
+    updateReflectState(sessionId, messages);
     return { written: 0, fact_ids: [] };
   }
 
-  const store = getStore();
+  const factStore = getStore();
   let written = 0;
   const factIds: string[] = [];
   for (const item of factsData) {
@@ -315,19 +304,19 @@ export async function reflectSession(
       confidence: clamp01(Number(item.confidence ?? 0.6)),
       importance: clamp01(Number(item.importance ?? 0.5)),
       recall: clamp01(Number(item.recall ?? 0.3)),
-      sources: [{ session: sessionId, summary: text.slice(0, 100) }],
+      sources: [{ session: sessionId, summary: summarySnippet }],
     });
     if (!fact.content) continue;
-    const mergedId = dedupBeforeWrite(store, fact);
+    const mergedId = dedupBeforeWrite(factStore, fact);
     if (mergedId) {
       factIds.push(mergedId);
       continue;
     }
-    const id = store.create(fact);
+    const id = factStore.create(fact);
     factIds.push(id);
     written++;
   }
 
-  updateReflectState(sessionId, text);
+  updateReflectState(sessionId, messages);
   return { written, fact_ids: factIds };
 }

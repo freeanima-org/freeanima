@@ -18,7 +18,6 @@ import {
   pauseJob,
   resumeJob,
   ensureBuiltinCronJobs,
-  runL2GapFill,
   resolveDeliverTargets,
   CronJob,
   deliverCronResult,
@@ -29,7 +28,6 @@ import {
   cronStore,
 } from "@freeanima/connectors-cron";
 import { patchConfigSection } from "@freeanima/service-config";
-import { getTestEngine, seedSession } from "../../helpers/pg-test.ts";
 
 describePg("cron", () => {
   let home: string;
@@ -64,32 +62,6 @@ describePg("cron", () => {
     expect(resumeJob(j.id)).toBe(true);
     ensureBuiltinCronJobs();
     ensureBuiltinCronJobs();
-    expect(listJobs().some((x) => x.id === "l2-gap-fill")).toBe(true);
-  });
-
-  it.skipIf(typeof Bun !== "undefined")("runL2GapFill distills PG session without L2", async () => {
-    await seedSession(
-      getTestEngine(),
-      "20260531_gapfill_a",
-      {
-        role: "session_meta",
-        model: "test-model",
-        tools: [],
-        functions: [],
-        timestamp: new Date().toISOString(),
-        platform: "parlor",
-      },
-      [
-        {
-          role: "user",
-          content: "x",
-          pos: 1,
-          timestamp: new Date().toISOString(),
-        },
-      ],
-    );
-    const out = await runL2GapFill();
-    expect(out).toContain("L2 gap-fill");
   });
 
   it("resolveDeliverTargets", () => {

@@ -19,11 +19,8 @@ export type RuntimeService = AnimaService & {
   setSessionTitle(sessionId: string, title: string, platform: string): Promise<any>;
   getStatus(): Record<string, unknown>;
   listMemoryFiles(): any;
-  memorySearch(opts: any): any;
-  distillL2All(): Promise<any>;
-  reindexL2All(): any;
+  memorySearch(opts: any): Promise<any>;
   reindexL3All(): any;
-  rebuildL2All(): Promise<any>;
 };
 
 export type { AnimaService, ServiceCommandInfo } from "./anima-service.ts";

@@ -4,6 +4,7 @@ import { createConversationService } from "@freeanima/engine-conversation";
 import { createServiceKernel } from "@freeanima/service-bootstrap";
 import { AnimaService, initServiceContext } from "@freeanima/service";
 import { getAcpManager } from "@freeanima/capabilities-acp";
+import { registerMemorySessionStore, resetStoreForTests } from "@freeanima/life-memory";
 
 import { beginLogIsolation, resetServiceLogger } from "./log-isolation.ts";
 import { clearConfigCache } from "@freeanima/service-config";
@@ -33,6 +34,8 @@ export function wireIntegrationServiceContext(pg: PgTestContext): void {
     host: "127.0.0.1",
     port: 2658,
   });
+  resetStoreForTests();
+  registerMemorySessionStore(pg.engine.repos.session);
 }
 
 /** 集成测 afterEach：先等待异步压缩摘要，再恢复 FREEANIMA_HOME */

@@ -1,7 +1,4 @@
-import { existsSync } from "node:fs";
 import * as conv from "@freeanima/engine-conversation";
-import { distillFromPg, l2SessionPath } from "@freeanima/life-memory/clean";
-import { indexL2Session } from "@freeanima/life-memory/l2-indexer";
 import { prependSkillsToPrompt } from "@freeanima/engine-skill";
 import { getProfileHopModel, loadConfig } from "@freeanima/service-config";
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
@@ -13,21 +10,6 @@ export type CronEngineJobInput = {
   model_name?: string | null;
   skills: string[];
 };
-
-export async function runCronL2GapFill(): Promise<string> {
-  const { conversation } = getServiceContext();
-  let count = 0;
-  const sessionStore = conversation.repos.session;
-  for (const sid of await conversation.listSessions()) {
-    if (existsSync(l2SessionPath(sid))) continue;
-    const result = await distillFromPg(sessionStore, sid);
-    if (result) {
-      count += 1;
-      indexL2Session(sid);
-    }
-  }
-  return count ? `L2 gap-fill: ${count} session(s) distilled and indexed` : "";
-}
 
 export async function runCronEngineTurn(job: CronEngineJobInput, prompt: string): Promise<string> {
   const { conversation } = getServiceContext();

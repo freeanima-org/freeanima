@@ -3,14 +3,10 @@ import type { EventBus } from "@freeanima/kernel-eventbus";
 import type { SessionStorePort } from "@freeanima/engine-repos";
 import { isDebugSession } from "@freeanima/service-config";
 import { loadConfig } from "@freeanima/service-config";
-import { distillFromPg } from "./clean.ts";
-import { l2Updated, l3Updated, sessionUpdated } from "./events.ts";
-import { indexL2Session } from "./l2-indexer.ts";
+import { l3Updated, sessionUpdated } from "./events.ts";
 import { indexL3All, indexL3Facts } from "./l3-indexer.ts";
 import { reflectSession } from "./reflect.ts";
-
-const DISTILL_DEBOUNCE_MS = 800;
-const distillTimers = new Map<string, ReturnType<typeof setTimeout>>();
+import { registerMemorySessionStore } from "./session-port.ts";
 
 export function isReflectEnabled(): boolean {
   const cfg = loadConfig();
@@ -22,30 +18,7 @@ export function registerMemoryPipeline(opts: {
   sessionStore: SessionStorePort;
 }): void {
   const { bus, sessionStore } = opts;
-
-  bus.on(sessionUpdated, async (payload) => {
-    const sessionId = payload.session_id;
-    if (!sessionId || isDebugSession(sessionId)) return;
-
-    const existing = distillTimers.get(sessionId);
-    if (existing) clearTimeout(existing);
-    distillTimers.set(
-      sessionId,
-      setTimeout(() => {
-        distillTimers.delete(sessionId);
-        void (async () => {
-          try {
-            const result = await distillFromPg(sessionStore, sessionId, { ifNewer: true });
-            if (result !== null) {
-              bus.emit(l2Updated, { session_id: sessionId });
-            }
-          } catch (err) {
-            logComponent("memory").error(`L2 distill failed for ${sessionId}`, { err });
-          }
-        })();
-      }, DISTILL_DEBOUNCE_MS),
-    );
-  });
+  registerMemorySessionStore(sessionStore);
 
   bus.on(sessionUpdated, async (payload) => {
     if (!isReflectEnabled()) return;
@@ -53,22 +26,12 @@ export function registerMemoryPipeline(opts: {
     if (!sessionId || isDebugSession(sessionId)) return;
 
     try {
-      const { fact_ids } = await reflectSession(sessionId);
+      const { fact_ids } = await reflectSession(sessionId, sessionStore);
       if (fact_ids.length > 0) {
         bus.emit(l3Updated, { fact_ids });
       }
     } catch (err) {
       logComponent("memory").error(`Reflection failed for ${sessionId}`, { err });
-    }
-  });
-
-  bus.on(l2Updated, async (payload) => {
-    const sessionId = payload.session_id;
-    if (!sessionId) return;
-    try {
-      indexL2Session(sessionId);
-    } catch (err) {
-      logComponent("memory").error(`L2 index failed for ${sessionId}`, { err });
     }
   });
 

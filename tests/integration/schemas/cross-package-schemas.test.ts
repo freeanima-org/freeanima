@@ -4,7 +4,8 @@ import {
   eventPayloadSchemas,
   sessionUpdatedPayloadSchema,
 } from "@freeanima/life-memory/schemas/event-payloads";
-import { l2LineSchema, factExtractionSchema } from "@freeanima/life-memory/schemas/l2";
+import { factExtractionSchema } from "@freeanima/life-memory/schemas/l2";
+import { filterRecallableMessages } from "@freeanima/life-memory";
 import { toolArgsSchema, toolErrorSchema } from "@freeanima/engine-tool";
 import {
   parseCompressionState,
@@ -44,15 +45,13 @@ describe("schemas/events", () => {
 });
 
 describe("schemas/l2", () => {
-  it("parses l2 line with passthrough", () => {
-    const result = l2LineSchema.safeParse({
-      role: "user",
-      content: "hi",
-      custom: true,
-    });
-    expect(result.success).toBe(true);
-    if (!result.success) return;
-    expect(result.data.custom).toBe(true);
+  it("filterRecallableMessages keeps user messages", () => {
+    const filtered = filterRecallableMessages([
+      { role: "user", content: "hi", pos: 1, timestamp: "t" },
+      { role: "tool", tool_call_id: "x", content: "{}", pos: 2, timestamp: "t" },
+    ]);
+    expect(filtered).toHaveLength(1);
+    expect(filtered[0]!.content).toBe("hi");
   });
 
   it("parses fact extraction JSON", () => {

@@ -1,9 +1,6 @@
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { PATHS } from "@freeanima/service-config";
-import { getServiceContext } from "../context.ts";
-import { distillAll } from "@freeanima/life-memory/clean";
-import { reindexL2All as reindexL2FtsAll } from "@freeanima/life-memory/l2-indexer";
 import { indexL3All as reindexL3FtsAll } from "@freeanima/life-memory/l3-indexer";
 import { memorySearchDetailed, type MemorySearchResult } from "@freeanima/life-memory/search";
 
@@ -31,12 +28,12 @@ function readMemoryEntry(path: string, displayName: string): MemoryFileEntry | n
   }
 }
 
-export function memorySearch(args: {
+export async function memorySearch(args: {
   query: string;
   limit?: number;
   session_limit?: number;
   session?: string;
-}): MemorySearchResult {
+}): Promise<MemorySearchResult> {
   const query = args.query.trim();
   if (!query) throw new Error("query is required");
   return memorySearchDetailed(query, {
@@ -46,24 +43,8 @@ export function memorySearch(args: {
   });
 }
 
-export async function distillL2All(): Promise<{ sessions: number }> {
-  const store = getServiceContext().conversation.repos.session;
-  return { sessions: await distillAll(store, { overwrite: true }) };
-}
-
-export function reindexL2All(): { index_rows: number } {
-  return { index_rows: reindexL2FtsAll({ dropFirst: true }) };
-}
-
 export function reindexL3All(): { index_rows: number } {
   return { index_rows: reindexL3FtsAll({ dropFirst: true }) };
-}
-
-export async function rebuildL2All(): Promise<{ sessions: number; index_rows: number }> {
-  const store = getServiceContext().conversation.repos.session;
-  const sessions = await distillAll(store, { overwrite: true });
-  const index_rows = reindexL2FtsAll({ dropFirst: true });
-  return { sessions, index_rows };
 }
 
 export function listMemoryFiles(): { files: MemoryFileEntry[] } {

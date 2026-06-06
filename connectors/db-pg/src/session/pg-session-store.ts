@@ -1,5 +1,6 @@
 import type { SessionStorePort } from "@freeanima/engine-repos";
 import { pgProfileWrap } from "../pg-profile.ts";
+import * as messageFtsRepo from "./repos/message-fts-repo.ts";
 import * as messageRepo from "./repos/message-repo.ts";
 import * as sessionRepo from "./repos/session-repo.ts";
 
@@ -24,6 +25,15 @@ export class PgSessionStore implements SessionStorePort {
   findSessionIdByPlatformInfo = sessionRepo.findSessionIdByPlatformInfo;
   countMessages = messageRepo.countMessages;
   lastMessageTimestamp = messageRepo.lastMessageTimestamp;
+  async searchMessagesFts(query: string, opts?: { sessionId?: string; limit?: number }) {
+    return pgProfileWrap("searchMessagesFts", () => messageFtsRepo.searchMessagesFts(query, opts), {
+      resultBytes: (rows) => JSON.stringify(rows).length,
+    });
+  }
+
+  async countSearchableMessages() {
+    return pgProfileWrap("countSearchableMessages", () => messageFtsRepo.countSearchableMessages());
+  }
 
   async getSessionMetaLite(sessionId: string) {
     return pgProfileWrap("getSessionMetaLite", () => sessionRepo.getSessionMetaLite(sessionId), {

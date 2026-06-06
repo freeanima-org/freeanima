@@ -8,7 +8,7 @@ import {
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { MemoryStore, indexL3Fact, indexL2Session } from "@freeanima/life-memory";
+import { MemoryStore, indexL3Fact } from "@freeanima/life-memory";
 import { getServiceContext } from "@freeanima/service";
 import { getTestEngine, seedSession } from "../../helpers/pg-test.ts";
 
@@ -42,7 +42,7 @@ describePg("server memory API", () => {
     expect(files.some((f: { name: string }) => f.name.startsWith("f-"))).toBe(true);
   });
 
-  it.skipIf(typeof Bun !== "undefined")("memorySearch returns structured L3 and L2 hits", () => {
+  it("memorySearch returns structured L3 and PG dialogue hits", async () => {
     const store = new MemoryStore(join(home, "memory"));
     const id = store.create({
       content: "逸灵风记忆管道使用 compression 压缩",
@@ -53,28 +53,6 @@ describePg("server memory API", () => {
     indexL3Fact(store.get(id)!);
 
     const sid = "20260526_120000_abcd";
-    const processedDir = join(home, "processed");
-    mkdirSync(processedDir, { recursive: true });
-    const l2Lines = [
-      JSON.stringify({ type: "meta", session_id: sid, title: "t" }),
-      JSON.stringify({
-        t: "2026-05-26T12:00:00+08:00",
-        role: "user",
-        content: "讨论 compression 算法",
-      }),
-    ];
-    writeFileSync(join(processedDir, `${sid}.jsonl`), `${l2Lines.join("\n")}\n`, "utf-8");
-    indexL2Session(sid);
-
-    const out = getServiceContext().service.memorySearch({ query: "compression" });
-    expect(out.l3.length).toBeGreaterThan(0);
-    expect(out.l2.length).toBeGreaterThan(0);
-    expect(out.l3[0]!.score).toBeGreaterThan(0);
-    expect(out.l2[0]!.session_id).toBe(sid);
-  });
-
-  it.skipIf(typeof Bun !== "undefined")("rebuildL2All distills L1 and reindexes FTS", async () => {
-    const sid = "20260526_130000_efgh";
     await seedSession(
       getTestEngine(),
       sid,
@@ -83,72 +61,28 @@ describePg("server memory API", () => {
         model: "test-model",
         tools: [],
         functions: [],
-        timestamp: "2026-05-26T13:00:00+08:00",
-        platform: "parlor",
-        title: "测试",
-      },
-      [
-        {
-          role: "user",
-          timestamp: "2026-05-26T13:00:00+08:00",
-          content: "L2 重建关键词 alpha",
-          pos: 1,
-        },
-        {
-          role: "assistant",
-          timestamp: "2026-05-26T13:00:01+08:00",
-          content: "收到",
-          pos: 2,
-        },
-      ],
-    );
-
-    const out = await getServiceContext().service.rebuildL2All();
-    expect(out.sessions).toBeGreaterThan(0);
-    expect(out.index_rows).toBeGreaterThan(0);
-
-    const hits = getServiceContext().service.memorySearch({ query: "alpha" });
-    expect(hits.l2.some((h: { session_id: string }) => h.session_id === sid)).toBe(true);
-  });
-
-  it.skipIf(typeof Bun !== "undefined")("distillL2All and reindexL2All are separate", async () => {
-    const sid = "20260526_140000_split";
-    await seedSession(
-      getTestEngine(),
-      sid,
-      {
-        role: "session_meta",
-        model: "test-model",
-        tools: [],
-        functions: [],
-        timestamp: "2026-05-26T14:00:00+08:00",
+        timestamp: "2026-05-26T12:00:00+08:00",
         platform: "parlor",
         title: "t",
       },
       [
         {
           role: "user",
-          timestamp: "2026-05-26T14:00:00+08:00",
-          content: "split distill keyword",
+          timestamp: "2026-05-26T12:00:00+08:00",
+          content: "讨论 compression 算法",
           pos: 1,
         },
       ],
     );
 
-    const svc = getServiceContext().service;
-    const { sessions } = await svc.distillL2All();
-    expect(sessions).toBeGreaterThan(0);
-
-    const before = svc.memorySearch({ query: "split distill" });
-    expect(before.l2.length).toBe(0);
-
-    const { index_rows } = svc.reindexL2All();
-    expect(index_rows).toBeGreaterThan(0);
-    const after = svc.memorySearch({ query: "split distill" });
-    expect(after.l2.some((h: { session_id: string }) => h.session_id === sid)).toBe(true);
+    const out = await getServiceContext().service.memorySearch({ query: "compression" });
+    expect(out.l3.length).toBeGreaterThan(0);
+    expect(out.l2.length).toBeGreaterThan(0);
+    expect(out.l3[0]!.score).toBeGreaterThan(0);
+    expect(out.l2[0]!.session_id).toBe(sid);
   });
 
-  it.skipIf(typeof Bun !== "undefined")("reindexL3All rebuilds FTS from memory files", () => {
+  it("reindexL3All rebuilds FTS from memory files", async () => {
     const store = new MemoryStore(join(home, "memory"));
     store.create({
       content: "L3 全量重建探针 gamma",
@@ -159,7 +93,7 @@ describePg("server memory API", () => {
 
     const { index_rows } = getServiceContext().service.reindexL3All();
     expect(index_rows).toBeGreaterThan(0);
-    const hits = getServiceContext().service.memorySearch({ query: "gamma" });
+    const hits = await getServiceContext().service.memorySearch({ query: "gamma" });
     expect(hits.l3.length).toBeGreaterThan(0);
   });
 
