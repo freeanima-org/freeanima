@@ -9,7 +9,7 @@ import {
   type ClarifyItem,
   type ClarifyToolAwaitingResult,
   type ClarifyToolResolvedResult,
-} from "@freeanima/engine-conversation";
+} from "@freeanima/engine-db/domain";
 import { safeParseOrNull } from "@freeanima/kernel-util";
 import { parseToolResult } from "@freeanima/engine-tool";
 import type { ConversationService } from "@freeanima/engine-conversation";

@@ -1,4 +1,4 @@
-import type { ConversationMessage } from "@freeanima/engine-conversation";
+import type { ConversationMessage } from "@freeanima/engine-db/domain";
 
 import { listMessages, listMessagesByPosRange } from "../session/repos/message-repo.ts";
 

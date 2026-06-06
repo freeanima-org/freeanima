@@ -2,7 +2,7 @@ import { it, expect, beforeAll, afterAll } from "bun:test";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import { beginIntegrationCase, endIntegrationCase } from "../../helpers/integration-case.ts";
 
-import { parseSessionLine } from "@freeanima/engine-conversation";
+import { parseSessionLine } from "@freeanima/engine-db/domain";
 import { testConv } from "../../helpers/pg-test.ts";
 
 describePg("schemas/message", () => {

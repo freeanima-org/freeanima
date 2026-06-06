@@ -1,5 +1,5 @@
 import { and, asc, desc, eq, gte, lte, sql } from "drizzle-orm";
-import type { ConversationMessage, SessionMessage } from "@freeanima/engine-conversation";
+import type { ConversationMessage, SessionMessage } from "@freeanima/engine-db/domain";
 
 import { messages } from "@freeanima/engine-db/schema";
 

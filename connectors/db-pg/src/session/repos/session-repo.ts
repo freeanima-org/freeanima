@@ -6,7 +6,7 @@ import {
   type CompressionState,
   type SessionMetaMessage,
   type SessionTodoStore,
-} from "@freeanima/engine-conversation";
+} from "@freeanima/engine-db/domain";
 import { z } from "zod";
 
 import type { SessionSummaryRow } from "@freeanima/engine-repos";

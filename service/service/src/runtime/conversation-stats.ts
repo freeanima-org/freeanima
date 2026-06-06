@@ -1,6 +1,6 @@
 import { getServiceContext } from "../context.ts";
-import { isSessionMeta } from "@freeanima/engine-conversation";
-import type { SessionMessage } from "@freeanima/engine-conversation";
+import { isSessionMeta } from "@freeanima/engine-db/domain";
+import type { SessionMessage } from "@freeanima/engine-db/domain";
 import {
   analyzeCompression,
   getCompressionConfig,

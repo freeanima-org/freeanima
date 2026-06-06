@@ -8,7 +8,7 @@ import { clearAwaitingClarify, readAwaitingClarify } from "@freeanima/capabiliti
 import { statsReport } from "@freeanima/service-api/conversation-stats";
 import { onSessionCloseBeforeNew } from "@freeanima/service-api/session-close";
 import { listTools } from "@freeanima/engine-tool";
-import { isSessionMeta } from "@freeanima/engine-conversation";
+import { isSessionMeta } from "@freeanima/engine-db/domain";
 import { setHomeChannel } from "@freeanima/service-api/home-channel";
 import { getServiceContext } from "@freeanima/service-api";
 

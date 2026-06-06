@@ -22,7 +22,7 @@ import {
 } from "@freeanima/engine-conversation";
 import type { PgRepositories } from "@freeanima/engine-repos";
 import { clearConfigCache, loadConfig } from "@freeanima/service-config";
-import type { SessionMessage, SessionMetaMessage } from "@freeanima/engine-conversation";
+import type { SessionMessage, SessionMetaMessage } from "@freeanima/engine-db/domain";
 import { relations } from "@freeanima/engine-db/schema";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";

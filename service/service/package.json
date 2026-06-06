@@ -25,6 +25,7 @@
     "@freeanima/engine": "workspace:*",
     "@freeanima/engine-compress": "workspace:*",
     "@freeanima/engine-conversation": "workspace:*",
+    "@freeanima/engine-db": "workspace:*",
     "@freeanima/engine-llm": "workspace:*",
     "@freeanima/engine-loop": "workspace:*",
     "@freeanima/engine-prompt": "workspace:*",

@@ -1,5 +1,5 @@
 import type { PgRepositories } from "@freeanima/engine-repos";
-import type { SessionMessage } from "@freeanima/engine-conversation";
+import type { SessionMessage } from "./message.ts";
 import {
   advanceCompressionMeta,
   appendMessage,
