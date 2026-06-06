@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@freeanima/engine-provider-llm": "workspace:*",
+    "@freeanima/service-config": "workspace:*",
     "openai": "^4.104.0",
     "zod": "catalog:"
   },
