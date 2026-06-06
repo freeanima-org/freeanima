@@ -1,6 +1,6 @@
 import type { ConversationMessage } from "@freeanima/kernel-schemas";
 
-import { listMessages, listMessagesByPosRange } from "../repos/message-repo.ts";
+import { listMessages, listMessagesByPosRange } from "../session/repos/message-repo.ts";
 
 export async function messagesForCompress(
   sessionId: string,

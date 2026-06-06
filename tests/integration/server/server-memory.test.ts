@@ -10,7 +10,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { MemoryStore, indexL3Fact, indexL2Session } from "@freeanima/life-memory";
 import { AnimaService } from "@freeanima/service";
-import { seedSession } from "@freeanima/kernel-db/test-helpers";
+import { seedSession } from "../../helpers/pg-test.ts";
 
 describePg("server memory API", () => {
   let home: string;

@@ -9,19 +9,24 @@ import {
 } from "@freeanima/kernel-schemas";
 import { z } from "zod";
 
-import { getDb } from "../client.ts";
+import type { SessionSummaryRow } from "@freeanima/kernel";
+import {
+  acpSessionsSchema,
+  awaitingClarifySchema,
+  buildPlatformInfo,
+  sessionInsertSchema,
+  sessions,
+} from "@freeanima/kernel-db/schema";
+
+import { getDb } from "../../client.ts";
 import {
   patchCompression,
   patchTodos,
   rowToSessionMeta,
   sessionMetaToInsert,
 } from "../mappers/session-mapper.ts";
-import { acpSessionsSchema, awaitingClarifySchema } from "../schema/jsonb/session-jsonb.ts";
-import { buildPlatformInfo } from "../schema/jsonb/platform-info.ts";
-import { sessions } from "../schema/sessions.ts";
-import { sessionInsertSchema } from "../schema/zod-schemas.ts";
-import { formatDbError } from "../utils/db-error.ts";
-import { normalizePgTimestamp, pgJsonbOrNull, pgTextOrNull } from "../utils/timestamp.ts";
+import { formatDbError } from "../../utils/db-error.ts";
+import { normalizePgTimestamp, pgJsonbOrNull, pgTextOrNull } from "../../utils/timestamp.ts";
 
 function nowIso(): string {
   return normalizePgTimestamp(new Date());
@@ -242,13 +247,6 @@ export async function countSessionsByPlatform(): Promise<Record<string, number>>
   }
   return byPlatform;
 }
-
-export type SessionSummaryRow = {
-  id: string;
-  title: string;
-  created: string;
-  platform: string;
-};
 
 export async function listSessionSummaries(platform?: string | null): Promise<SessionSummaryRow[]> {
   const db = getDb();

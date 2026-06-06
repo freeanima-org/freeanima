@@ -10,7 +10,7 @@ import {
   type SessionMessage,
 } from "@freeanima/kernel-schemas";
 
-import { type MessageInsert, messageSelectSchema } from "../schema/zod-schemas.ts";
+import { type MessageInsert, messageSelectSchema } from "@freeanima/kernel-db/schema";
 
 export function newMessageGlobalId(): string {
   return randomUUID();

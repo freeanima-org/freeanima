@@ -1,41 +1,21 @@
-import {
-  isPostgresPrimary,
-  appendMessage as dbAppendMessage,
-  countMessages as dbCountMessages,
-  countSessionsByPlatform as dbCountSessionsByPlatform,
-  deleteDebugSessions as dbDeleteDebugSessions,
-  deleteSession as dbDeleteSession,
-  findSessionIdByPlatformInfo as dbFindSessionIdByPlatformInfo,
-  getSessionMeta as dbGetSessionMeta,
-  getSessionMetaLite as dbGetSessionMetaLite,
-  getSessionTools as dbGetSessionTools,
-  lastMessageTimestamp as dbLastMessageTimestamp,
-  listDebugSessionIds as dbListDebugSessionIds,
-  listMessages as dbListMessages,
-  listMessagesByPosRange as dbListMessagesByPosRange,
-  listMessagesPage as dbListMessagesPage,
-  listSessionIds as dbListSessionIds,
-  listSessionSummaries as dbListSessionSummaries,
-  nextMessagePos as dbNextMessagePos,
-  patchSessionMeta as dbPatchSessionMeta,
-  pgProfileWrap,
-  sessionExists as dbSessionExists,
-  truncateMessagesAfter as dbTruncateMessagesAfter,
-  shiftMessagePositions as dbShiftMessagePositions,
-  upsertSessionMeta as dbUpsertSessionMeta,
-} from "@freeanima/kernel-db";
+import { getKernel } from "@freeanima/kernel";
+import type { SessionStorePort } from "@freeanima/kernel";
 import { parseCompressionState, isCompressed } from "@freeanima/engine-compress";
 import type { SessionMessage, SessionMetaMessage } from "@freeanima/kernel-schemas";
 
+function store(): SessionStorePort {
+  return getKernel().repos.session;
+}
+
 export function postgresAvailable(): boolean {
-  return isPostgresPrimary();
+  return getKernel().repos.pgAvailable;
 }
 
 export const usePostgresRead = postgresAvailable;
 
 export async function pgWriteMeta(sessionId: string, meta: SessionMetaMessage): Promise<void> {
   if (!postgresAvailable()) return;
-  await dbUpsertSessionMeta(sessionId, meta);
+  await store().upsertSessionMeta(sessionId, meta);
 }
 
 export async function pgWritePatchMeta(
@@ -43,17 +23,17 @@ export async function pgWritePatchMeta(
   patch: Partial<SessionMetaMessage> & Record<string, unknown>,
 ): Promise<void> {
   if (!postgresAvailable()) return;
-  await dbPatchSessionMeta(sessionId, patch);
+  await store().patchSessionMeta(sessionId, patch);
 }
 
 export async function pgWriteMessage(sessionId: string, msg: SessionMessage): Promise<void> {
   if (!postgresAvailable()) return;
-  await dbAppendMessage(sessionId, msg);
+  await store().appendMessage(sessionId, msg);
 }
 
 export async function pgWriteTruncate(sessionId: string, keepThroughPos: number): Promise<void> {
   if (!postgresAvailable()) return;
-  await dbTruncateMessagesAfter(sessionId, keepThroughPos);
+  await store().truncateMessagesAfter(sessionId, keepThroughPos);
 }
 
 export async function pgShiftMessagePositions(
@@ -62,17 +42,17 @@ export async function pgShiftMessagePositions(
   delta: number,
 ): Promise<void> {
   if (!postgresAvailable()) return;
-  await dbShiftMessagePositions(sessionId, afterPos, delta);
+  await store().shiftMessagePositions(sessionId, afterPos, delta);
 }
 
 export async function pgWriteDeleteSession(sessionId: string): Promise<void> {
   if (!postgresAvailable()) return;
-  await dbDeleteSession(sessionId);
+  await store().deleteSession(sessionId);
 }
 
 export async function sessionExistsWithRouting(sessionId: string): Promise<boolean> {
   if (!postgresAvailable()) return false;
-  return dbSessionExists(sessionId);
+  return store().sessionExists(sessionId);
 }
 
 export async function loadMetaWithRouting(
@@ -81,21 +61,14 @@ export async function loadMetaWithRouting(
   if (!postgresAvailable()) {
     return {};
   }
-  return (
-    (await pgProfileWrap("getSessionMetaLite", () => dbGetSessionMetaLite(sessionId), {
-      sessionId,
-    })) ?? {}
-  );
+  return (await store().getSessionMetaLite(sessionId)) ?? {};
 }
 
 export async function loadMessagesWithRouting(sessionId: string): Promise<SessionMessage[]> {
   if (!postgresAvailable()) {
     return [];
   }
-  return pgProfileWrap("listMessages", () => dbListMessages(sessionId), {
-    sessionId,
-    resultBytes: (rows) => JSON.stringify(rows).length,
-  });
+  return store().listMessages(sessionId);
 }
 
 /** 已有压缩边界时，运行时只拉 pos > l2 的消息窗口 */
@@ -110,14 +83,7 @@ export async function loadMessagesForRuntimeWithRouting(
   const state = parseCompressionState(compression);
   if (state != null && isCompressed(state) && state.l2 > 0) {
     const fromPos = state.l2 + 1;
-    return pgProfileWrap(
-      "listMessagesByPosRange",
-      () => dbListMessagesByPosRange(sessionId, fromPos),
-      {
-        sessionId,
-        resultBytes: (rows) => JSON.stringify(rows).length,
-      },
-    );
+    return store().listMessagesByPosRange(sessionId, fromPos);
   }
   return loadMessagesWithRouting(sessionId);
 }
@@ -130,16 +96,14 @@ export async function loadMessagesPageWithRouting(
   if (!postgresAvailable()) {
     return [];
   }
-  return pgProfileWrap("listMessagesPage", () => dbListMessagesPage(sessionId, offset, limit), {
-    sessionId,
-  });
+  return store().listMessagesPage(sessionId, offset, limit);
 }
 
 export async function countMessagesWithRouting(sessionId: string): Promise<number> {
   if (!postgresAvailable()) {
     return 0;
   }
-  return dbCountMessages(sessionId);
+  return store().countMessages(sessionId);
 }
 
 export async function loadSessionToolsWithRouting(
@@ -148,62 +112,62 @@ export async function loadSessionToolsWithRouting(
   if (!postgresAvailable()) {
     return [];
   }
-  return pgProfileWrap("getSessionTools", () => dbGetSessionTools(sessionId), { sessionId });
+  return store().getSessionTools(sessionId);
 }
 
 export async function listSessionsWithRouting(platform?: string | null): Promise<string[]> {
   if (!postgresAvailable()) {
     return [];
   }
-  return dbListSessionIds(platform);
+  return store().listSessionIds(platform);
 }
 
 export async function nextMessagePosWithRouting(sessionId: string): Promise<number> {
   if (!postgresAvailable()) {
     throw new Error("database.url 未配置");
   }
-  return dbNextMessagePos(sessionId);
+  return store().nextMessagePos(sessionId);
 }
 
 export async function pgCountSessionsByPlatform(): Promise<Record<string, number>> {
-  return dbCountSessionsByPlatform();
+  return store().countSessionsByPlatform();
 }
 
 export async function pgListSessionSummaries(
   platform?: string | null,
 ): Promise<Array<{ id: string; title: string; created: string; platform: string }>> {
-  return dbListSessionSummaries(platform);
+  return store().listSessionSummaries(platform);
 }
 
 export async function pgDeleteDebugSessions(): Promise<number> {
-  return dbDeleteDebugSessions();
+  return store().deleteDebugSessions();
 }
 
 export async function pgListDebugSessionIds(): Promise<string[]> {
-  return dbListDebugSessionIds();
+  return store().listDebugSessionIds();
 }
 
 export async function pgLastMessageTimestamp(sessionId: string): Promise<string | null> {
-  return dbLastMessageTimestamp(sessionId);
+  return store().lastMessageTimestamp(sessionId);
 }
 
 export async function pgFindSessionIdByPlatformInfo(
   platform: string,
   platformExtra: Record<string, unknown> = {},
 ): Promise<string | null> {
-  return dbFindSessionIdByPlatformInfo(platform, platformExtra);
+  return store().findSessionIdByPlatformInfo(platform, platformExtra);
 }
 
 export async function pgGetSessionMeta(sessionId: string): Promise<SessionMetaMessage | null> {
-  return dbGetSessionMeta(sessionId);
+  return store().getSessionMeta(sessionId);
 }
 
 export async function pgGetSessionMetaLite(sessionId: string): Promise<SessionMetaMessage | null> {
-  return dbGetSessionMetaLite(sessionId);
+  return store().getSessionMetaLite(sessionId);
 }
 
 export async function pgListMessages(sessionId: string): Promise<SessionMessage[]> {
-  return dbListMessages(sessionId);
+  return store().listMessages(sessionId);
 }
 
 /** @deprecated 使用 pgWriteMeta */

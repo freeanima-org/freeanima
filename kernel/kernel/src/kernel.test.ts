@@ -19,6 +19,18 @@ describe("Kernel", () => {
     expect(kernel.logger).toBe(logger);
   });
 
+  it("setRepositories 可挂载 PG 仓储", () => {
+    const logger: Logger = createLogger({ sinks: [createMemorySink()] });
+    const kernel = new Kernel(
+      new HookRegistry(logger),
+      logger,
+      new EventBus(logger, new NullEventQueue()),
+    );
+    const custom = { pgAvailable: true, session: { getSessionMeta: async () => null } as never };
+    kernel.setRepositories(custom);
+    expect(kernel.repos).toBe(custom);
+  });
+
   it("setEventBus 可替换 eventBus 实例", () => {
     const logger: Logger = createLogger({ sinks: [createMemorySink()] });
     const kernel = new Kernel(

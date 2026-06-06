@@ -2,13 +2,15 @@ import "./wire-api.ts";
 import "@freeanima/service/runtime/system-prompt-wire";
 import { chat, cleanupDebugSessions, initLlmRuntime, PROFILE_REFLECT } from "@freeanima/engine";
 import { kernel } from "@freeanima/service-bootstrap";
+import { nullPgRepositories } from "@freeanima/kernel";
 import {
   closeDb,
+  createPgRepositories,
   getDb,
   initDatabase,
   initPgProfile,
   isPostgresPrimary,
-} from "@freeanima/kernel-db";
+} from "@freeanima/connectors-db-pg";
 import { getConfiguredDatabaseUrl, PATHS, loadConfig } from "@freeanima/service-config";
 import {
   installErrorLogHandlers,
@@ -177,6 +179,9 @@ export async function serve(
     if (isPostgresPrimary()) {
       startupLog("初始化 PostgreSQL 连接池…");
       getDb();
+      kernel.setRepositories(createPgRepositories({ getDb }));
+    } else {
+      kernel.setRepositories(nullPgRepositories);
     }
 
     startupLog("初始化 LLM runtime…");

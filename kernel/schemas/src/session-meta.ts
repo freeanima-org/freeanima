@@ -1,38 +1,26 @@
 import { z } from "zod";
+
+import {
+  awaitingClarifySchema,
+  compressionJsonSchema,
+  sessionTodoStoreSchema,
+  todoItemSchema,
+  todoStatusSchema,
+  clarifyItemSchema,
+} from "@freeanima/kernel-db/schema";
 import { safeParseOrNull } from "./util.ts";
 
-export const todoStatusSchema = z.enum(["pending", "in_progress", "completed", "cancelled"]);
-
-export const todoItemSchema = z.object({
-  id: z.number(),
-  content: z.string(),
-  status: todoStatusSchema,
-  created_at: z.string(),
-  updated_at: z.string().optional(),
-});
-
-export const sessionTodoStoreSchema = z.object({
-  items: z.array(todoItemSchema).default([]),
-  next_id: z.number().int().positive().default(1),
-});
+export {
+  awaitingClarifySchema,
+  sessionTodoStoreSchema,
+  todoItemSchema,
+  todoStatusSchema,
+  clarifyItemSchema,
+};
 
 export type TodoStatus = z.infer<typeof todoStatusSchema>;
 export type TodoItem = z.infer<typeof todoItemSchema>;
 export type SessionTodoStore = z.infer<typeof sessionTodoStoreSchema>;
-
-export const clarifyItemSchema = z.object({
-  question: z.string().min(1),
-  choices: z.array(z.string().min(1)).max(4).optional(),
-  default: z.string().optional(),
-});
-
-export const awaitingClarifySchema = z.object({
-  items: z.array(clarifyItemSchema).min(1),
-  required: z.literal(true),
-  asked_at: z.string().min(1),
-  timeout_sec: z.number().min(60),
-});
-
 export type ClarifyItem = z.infer<typeof clarifyItemSchema>;
 export type AwaitingClarify = z.infer<typeof awaitingClarifySchema>;
 
@@ -106,26 +94,15 @@ function migrateLegacyCompression(o: Record<string, unknown>): {
   return attachSummaryFields(o, { l2, l3 });
 }
 
-const compressionStateBaseSchema = z.object({
-  l2: z.number(),
-  l3: z.number(),
-  summary: z.string().optional(),
-  summary_at: z.string().optional(),
-});
-
+/** 领域层压缩状态：存储形状见 kernel-db compressionJsonSchema；legacy 仅读路径 */
 export const compressionStateSchema = z
   .unknown()
-  .transform((raw, ctx): z.infer<typeof compressionStateBaseSchema> | null => {
+  .transform((raw, ctx): z.infer<typeof compressionJsonSchema> | null => {
     if (!raw || typeof raw !== "object") return null;
     const o = raw as Record<string, unknown>;
 
-    if (o.l2 !== undefined && o.l3 !== undefined) {
-      const l2 = Number(o.l2);
-      const l3 = Number(o.l3);
-      if (!Number.isNaN(l2) && !Number.isNaN(l3)) {
-        return attachSummaryFields(o, { l2, l3 });
-      }
-    }
+    const direct = compressionJsonSchema.safeParse(raw);
+    if (direct.success) return direct.data;
 
     const migrated = migrateLegacyCompression(o);
     if (!migrated) {
@@ -137,19 +114,14 @@ export const compressionStateSchema = z
   .nullable()
   .catch(null);
 
-export type CompressionState = z.infer<typeof compressionStateBaseSchema>;
+export type CompressionState = z.infer<typeof compressionJsonSchema>;
 
 export function parseCompressionState(raw: unknown): CompressionState | null {
   if (!raw || typeof raw !== "object") return null;
   const o = raw as Record<string, unknown>;
 
-  if (o.l2 !== undefined && o.l3 !== undefined) {
-    const l2 = Number(o.l2);
-    const l3 = Number(o.l3);
-    if (!Number.isNaN(l2) && !Number.isNaN(l3)) {
-      return attachSummaryFields(o, { l2, l3 });
-    }
-  }
+  const direct = compressionJsonSchema.safeParse(raw);
+  if (direct.success) return direct.data;
 
   return migrateLegacyCompression(o);
 }

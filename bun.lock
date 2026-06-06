@@ -139,6 +139,20 @@
         "@types/bun": "catalog:",
       },
     },
+    "connectors/db-pg": {
+      "name": "@freeanima/connectors-db-pg",
+      "dependencies": {
+        "@freeanima/kernel": "workspace:*",
+        "@freeanima/kernel-db": "workspace:*",
+        "@freeanima/kernel-schemas": "workspace:*",
+        "drizzle-orm": "catalog:",
+        "postgres": "^3.4.9",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
     "connectors/eventbus-sqlite": {
       "name": "@freeanima/connectors-eventbus-sqlite",
       "dependencies": {
@@ -227,7 +241,7 @@
         "@freeanima/engine-prompt": "workspace:*",
         "@freeanima/engine-provider-llm": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
-        "@freeanima/kernel-db": "workspace:*",
+        "@freeanima/kernel": "workspace:*",
         "@freeanima/kernel-schemas": "workspace:*",
         "@freeanima/service-config": "workspace:*",
         "@freeanima/service-logging": "workspace:*",
@@ -261,7 +275,6 @@
         "@freeanima/service-config": "workspace:*",
       },
       "devDependencies": {
-        "@freeanima/kernel-db": "workspace:*",
         "@types/bun": "catalog:",
       },
     },
@@ -309,13 +322,10 @@
     "kernel/db": {
       "name": "@freeanima/kernel-db",
       "dependencies": {
-        "@freeanima/kernel-schemas": "workspace:*",
         "drizzle-orm": "catalog:",
-        "postgres": "^3.4.9",
         "zod": "catalog:",
       },
       "devDependencies": {
-        "@freeanima/service-config": "workspace:*",
         "@types/bun": "catalog:",
         "drizzle-kit": "catalog:",
       },
@@ -344,6 +354,7 @@
         "@freeanima/kernel-eventbus": "workspace:*",
         "@freeanima/kernel-hooks": "workspace:*",
         "@freeanima/kernel-logging": "workspace:*",
+        "@freeanima/kernel-schemas": "workspace:*",
       },
       "devDependencies": {
         "@types/bun": "catalog:",
@@ -364,6 +375,7 @@
     "kernel/schemas": {
       "name": "@freeanima/kernel-schemas",
       "dependencies": {
+        "@freeanima/kernel-db": "workspace:*",
         "zod": "catalog:",
       },
       "devDependencies": {
@@ -383,7 +395,7 @@
       "dependencies": {
         "@freeanima/connectors-sqlite": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
-        "@freeanima/kernel-db": "workspace:*",
+        "@freeanima/kernel": "workspace:*",
         "@freeanima/kernel-eventbus": "workspace:*",
         "@freeanima/kernel-schemas": "workspace:*",
         "@freeanima/service-config": "workspace:*",
@@ -456,6 +468,7 @@
         "@freeanima/capabilities-tools": "workspace:*",
         "@freeanima/connectors-commands": "workspace:*",
         "@freeanima/connectors-cron": "workspace:*",
+        "@freeanima/connectors-db-pg": "workspace:*",
         "@freeanima/connectors-gateway": "workspace:*",
         "@freeanima/engine": "workspace:*",
         "@freeanima/engine-compress": "workspace:*",
@@ -466,7 +479,6 @@
         "@freeanima/engine-provider-llm": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
         "@freeanima/kernel": "workspace:*",
-        "@freeanima/kernel-db": "workspace:*",
         "@freeanima/kernel-eventbus": "workspace:*",
         "@freeanima/kernel-hooks": "workspace:*",
         "@freeanima/kernel-schemas": "workspace:*",
@@ -486,20 +498,25 @@
       "devDependencies": {
         "@freeanima/capabilities-acp": "workspace:*",
         "@freeanima/capabilities-clarify": "workspace:*",
+        "@freeanima/connectors-db-pg": "workspace:*",
         "@freeanima/connectors-eventbus-sqlite": "workspace:*",
         "@freeanima/connectors-webui": "workspace:*",
         "@freeanima/engine": "workspace:*",
         "@freeanima/engine-conversation": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
+        "@freeanima/kernel": "workspace:*",
         "@freeanima/kernel-db": "workspace:*",
         "@freeanima/kernel-eventbus": "workspace:*",
         "@freeanima/kernel-logging": "workspace:*",
         "@freeanima/kernel-schemas": "workspace:*",
         "@freeanima/life-memory": "workspace:*",
         "@freeanima/service": "workspace:*",
+        "@freeanima/service-bootstrap": "workspace:*",
         "@freeanima/service-config": "workspace:*",
         "@freeanima/service-logging": "workspace:*",
         "@types/node": "catalog:",
+        "drizzle-orm": "catalog:",
+        "postgres": "^3.4.9",
       },
     },
   },
@@ -647,6 +664,8 @@
     "@freeanima/connectors-commands": ["@freeanima/connectors-commands@workspace:connectors/commands"],
 
     "@freeanima/connectors-cron": ["@freeanima/connectors-cron@workspace:connectors/cron"],
+
+    "@freeanima/connectors-db-pg": ["@freeanima/connectors-db-pg@workspace:connectors/db-pg"],
 
     "@freeanima/connectors-eventbus-sqlite": ["@freeanima/connectors-eventbus-sqlite@workspace:connectors/eventbus-sqlite"],
 

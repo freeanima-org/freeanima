@@ -3,20 +3,17 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./test-helpers": "./src/test-helpers/pg.ts"
+    "./schema": "./src/schema/index.ts"
   },
   "scripts": {
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
-    "@freeanima/kernel-schemas": "workspace:*",
     "drizzle-orm": "catalog:",
-    "postgres": "^3.4.9",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@freeanima/service-config": "workspace:*",
     "drizzle-kit": "catalog:",
     "@types/bun": "catalog:"
   }

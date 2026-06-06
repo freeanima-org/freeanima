@@ -45,12 +45,14 @@ function isAllowed(layer: string, pkg: string): boolean {
       if (pkg.startsWith("engine-") || pkg === "engine") return true;
       if (pkg === "service-config" || pkg === "service-logging") return true;
       if (pkg.startsWith("capabilities-provider")) return true;
+      if (pkg === "connectors-db-pg") return false;
       return false;
     case "life":
       if (pkg.startsWith("kernel-") || pkg === "kernel") return true;
       if (pkg.startsWith("life-") || pkg === "life") return true;
       if (pkg.startsWith("engine-tool")) return true;
       if (pkg === "connectors-sqlite") return true;
+      if (pkg === "connectors-db-pg") return false;
       if (pkg === "service-config" || pkg === "service-logging") return true;
       return false;
     case "capabilities":

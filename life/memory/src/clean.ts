@@ -3,12 +3,7 @@ import { join } from "node:path";
 import { getHomeDir } from "@freeanima/service-config";
 import { isSessionMeta, l2LineSchema, type SessionMessage } from "@freeanima/kernel-schemas";
 import { parseJsonLine } from "@freeanima/kernel-schemas";
-import {
-  getSessionMeta,
-  isPostgresPrimary,
-  listMessages,
-  listSessionIds,
-} from "@freeanima/kernel-db";
+import { getKernel } from "@freeanima/kernel";
 
 export function processedDir(): string {
   return join(getHomeDir(), "processed");
@@ -40,8 +35,8 @@ async function readSessionMetaForDistill(sessionId: string): Promise<{
   platform_extra?: Record<string, unknown>;
   title?: string;
 }> {
-  if (!isPostgresPrimary()) return {};
-  const meta = await getSessionMeta(sessionId);
+  if (!getKernel().repos.pgAvailable) return {};
+  const meta = await getKernel().repos.session.getSessionMeta(sessionId);
   if (!meta || !isSessionMeta(meta)) return {};
   return {
     platform: meta.platform != null ? String(meta.platform) : undefined,
@@ -188,8 +183,8 @@ export async function distillFromPg(
   sessionId: string,
   opts?: { overwrite?: boolean; ifNewer?: boolean },
 ): Promise<string | null> {
-  if (!isPostgresPrimary()) return null;
-  const msgs = await listMessages(sessionId);
+  if (!getKernel().repos.pgAvailable) return null;
+  const msgs = await getKernel().repos.session.listMessages(sessionId);
   if (!msgs.length) return null;
   const records = messagesToRecords(msgs);
   return writeL2FromRecords(sessionId, records, opts);
@@ -212,8 +207,8 @@ export async function distill(
 export async function distillAll(opts?: { overwrite?: boolean }): Promise<number> {
   const overwrite = opts?.overwrite ?? false;
   let count = 0;
-  if (!isPostgresPrimary()) return 0;
-  for (const sid of await listSessionIds(null)) {
+  if (!getKernel().repos.pgAvailable) return 0;
+  for (const sid of await getKernel().repos.session.listSessionIds(null)) {
     if ((await distillFromPg(sid, { overwrite })) !== null) count++;
   }
   return count;

@@ -28,7 +28,7 @@
     "@freeanima/engine-provider-llm": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",
     "@freeanima/kernel": "workspace:*",
-    "@freeanima/kernel-db": "workspace:*",
+    "@freeanima/connectors-db-pg": "workspace:*",
     "@freeanima/kernel-eventbus": "workspace:*",
     "@freeanima/kernel-hooks": "workspace:*",
     "@freeanima/kernel-schemas": "workspace:*",
