@@ -44,8 +44,11 @@ export function formatToolResultLine(
   return `${prefix}${truncateText(oneLine, budget)}`;
 }
 
-export function formatToolErrorLine(content: string): string {
-  return `❌ ${content}`;
+export function formatToolErrorLine(content: string, maxLen = TOOL_RESULT_MAX): string {
+  const prefix = "❌ ";
+  const budget = Math.max(1, maxLen - prefix.length);
+  const oneLine = content.replace(/\s+/g, " ").trim();
+  return `${prefix}${truncateText(oneLine, budget)}`;
 }
 
 export function formatToolRoundMessage(lines: string[]): string {
