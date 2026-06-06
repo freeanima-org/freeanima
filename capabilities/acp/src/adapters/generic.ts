@@ -27,7 +27,7 @@ export function parseSessionUpdateChunk(update: Record<string, unknown>): string
 export const genericAcpAdapter: AcpAgentAdapter = {
   id: "generic",
   parseSessionUpdate: parseSessionUpdateChunk,
-  handleServerRequest(method, params) {
+  handleServerRequest(method, params, _ctx?) {
     if (method === "session/request_permission") {
       return permissionAllowOnce(params);
     }

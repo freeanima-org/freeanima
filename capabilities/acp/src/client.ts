@@ -7,8 +7,11 @@ import { createInterface, type Interface } from "node:readline";
 import { genericAcpAdapter, parseSessionUpdateChunk } from "./adapters/generic.ts";
 import { resolveAcpAdapter } from "./adapters/registry.ts";
 import type { AcpAgentAdapter } from "./adapters/types.ts";
+import { handleClientMethod } from "./client-methods.ts";
+import { createPromptCapture, type PromptCapture } from "./cursor-decision.ts";
 import type { AcpAgentConfig } from "./status.ts";
 import { jsonRpcMessageSchema, type JsonRpcMessage } from "./schemas/acp-jsonrpc.ts";
+import { diagnoseStderr } from "./stderr-patterns.ts";
 
 export const DEFAULT_CONNECT_TIMEOUT_MS = 15_000;
 export const DEFAULT_PROMPT_TIMEOUT_MS = 120_000;
@@ -52,6 +55,10 @@ export class ACPClient {
   private readonly adapter: AcpAgentAdapter;
   private readonly agentCfg?: AcpAgentConfig;
   private readonly stderrLines: string[] = [];
+  private readonly sessionCwds = new Map<string, string>();
+  private activePromptSessionId: string | null = null;
+  private activeCapture: PromptCapture | null = null;
+  private lastStderrDiagnosis: ReturnType<typeof diagnoseStderr> = null;
 
   constructor(
     readonly name: string,
@@ -73,6 +80,27 @@ export class ACPClient {
     return this.connected;
   }
 
+  /** 子进程是否仍存活 */
+  isProcessAlive(): boolean {
+    if (!this.proc) return false;
+    if (this.proc.exitCode != null || this.proc.signalCode != null) return false;
+    return true;
+  }
+
+  getStderrDiagnosis(): ReturnType<typeof diagnoseStderr> {
+    return this.lastStderrDiagnosis;
+  }
+
+  getSessionCwd(sessionId: string): string {
+    return this.sessionCwds.get(sessionId) ?? this.defaultCwd ?? process.cwd();
+  }
+
+  takeLastPromptCapture(): PromptCapture | null {
+    const cap = this.activeCapture;
+    this.activeCapture = null;
+    return cap;
+  }
+
   async start(cwd?: string): Promise<void> {
     if (this.connected) return;
     const procCwd = cwd ?? this.defaultCwd;
@@ -85,6 +113,7 @@ export class ACPClient {
     const extraArgs = parts.slice(1);
 
     this.stderrLines.length = 0;
+    this.lastStderrDiagnosis = null;
     this.proc = spawn(bin, [...extraArgs, ...this.args], {
       cwd: procCwd,
       stdio: ["pipe", "pipe", "pipe"],
@@ -109,6 +138,7 @@ export class ACPClient {
       if (this.stderrLines.length > MAX_STDERR_LINES) {
         this.stderrLines.shift();
       }
+      this.lastStderrDiagnosis = diagnoseStderr(this.stderrLines);
       logComponent("acp").error(`[${this.name} stderr] ${line}`, { agent: this.name, line });
     });
 
@@ -135,7 +165,7 @@ export class ACPClient {
     await this.call("initialize", {
       protocolVersion: 1,
       clientCapabilities: {
-        fs: { readTextFile: false, writeTextFile: false },
+        fs: { readTextFile: true, writeTextFile: true },
         terminal: false,
       },
       clientInfo: { name: "anima", version: readAppVersion() },
@@ -154,6 +184,8 @@ export class ACPClient {
     this.stderrRl?.close();
     this.stdoutRl = null;
     this.stderrRl = null;
+    this.activePromptSessionId = null;
+    this.activeCapture = null;
     if (this.proc) {
       try {
         this.proc.kill("SIGTERM");
@@ -162,6 +194,7 @@ export class ACPClient {
       }
       this.proc = null;
     }
+    this.sessionCwds.clear();
   }
 
   /** 供适配器调用 JSON-RPC */
@@ -170,14 +203,16 @@ export class ACPClient {
   }
 
   async createSession(cwd?: string): Promise<string> {
+    const sessionCwd = cwd ?? this.defaultCwd ?? ".";
     const result = await this.call("session/new", {
-      cwd: cwd ?? this.defaultCwd ?? ".",
+      cwd: sessionCwd,
       mcpServers: [],
     });
     const sessionId = result.sessionId;
     if (typeof sessionId !== "string" || !sessionId) {
       throw new ACPError(-1, "session/new did not return sessionId");
     }
+    this.sessionCwds.set(sessionId, sessionCwd);
     return sessionId;
   }
 
@@ -190,7 +225,23 @@ export class ACPClient {
   }
 
   async sendPrompt(sessionId: string, text: string): Promise<string> {
+    const retryOnce = this.agentCfg?.prompt_retry_once !== false;
+    try {
+      return await this.runPrompt(sessionId, text);
+    } catch (e) {
+      if (!retryOnce || !(e instanceof ACPError) || !e.message.includes("timed out")) {
+        throw e;
+      }
+      logComponent("acp").warn(`prompt 超时，重试一次`, { agent: this.name, sessionId });
+      return await this.runPrompt(sessionId, text);
+    }
+  }
+
+  private async runPrompt(sessionId: string, text: string): Promise<string> {
     this.notificationQueue = [];
+    this.activePromptSessionId = sessionId;
+    this.activeCapture = createPromptCapture();
+
     const result = await this.call("session/prompt", {
       sessionId,
       prompt: [{ type: "text", text }],
@@ -205,6 +256,11 @@ export class ACPClient {
     const fromResult = extractTextFromResult(result);
     if (fromResult) parts.push(fromResult);
 
+    if (this.activeCapture.notes.length) {
+      parts.push("\n---\n" + this.activeCapture.notes.join("\n"));
+    }
+
+    this.activePromptSessionId = null;
     return parts.join("");
   }
 
@@ -214,6 +270,7 @@ export class ACPClient {
     } catch {
       /* ignore */
     }
+    this.sessionCwds.delete(sessionId);
   }
 
   private parseNotification(note: JsonRpcMessage): string | null {
@@ -248,9 +305,25 @@ export class ACPClient {
       const method = String(msg.method ?? "");
       if (method) {
         const params = (msg.params as Record<string, unknown>) ?? {};
+        const sessionId =
+          typeof params.sessionId === "string"
+            ? params.sessionId
+            : (this.activePromptSessionId ?? undefined);
+        const projectCwd = sessionId
+          ? this.getSessionCwd(sessionId)
+          : (this.defaultCwd ?? process.cwd());
+
+        const clientResult = handleClientMethod(method, params, { projectCwd });
+        if (clientResult !== null) {
+          this.sendResponse(id, clientResult);
+          return;
+        }
+
+        const ctx =
+          this.activeCapture != null ? { client: this, capture: this.activeCapture } : undefined;
         const result =
-          this.adapter.handleServerRequest(method, params) ??
-          genericAcpAdapter.handleServerRequest(method, params);
+          this.adapter.handleServerRequest(method, params, ctx) ??
+          genericAcpAdapter.handleServerRequest(method, params, ctx);
         this.sendResponse(id, result ?? null);
         return;
       }
@@ -285,7 +358,9 @@ export class ACPClient {
 
   private rejectAllPending(reason: string): void {
     const stderrHint = this.stderrSummary();
-    const message = stderrHint ? `${reason}${stderrHint}` : reason;
+    const diagnosis = this.lastStderrDiagnosis;
+    let message = stderrHint ? `${reason}${stderrHint}` : reason;
+    if (diagnosis) message += ` [${diagnosis.pattern}: ${diagnosis.hint}]`;
     for (const [, waiter] of this.pending) {
       clearTimeout(waiter.timeoutId);
       waiter.reject(new ACPError(-1, message));
@@ -371,3 +446,5 @@ function appendMessageContent(parts: string[], row: Record<string, unknown>): vo
     parts.push(content);
   }
 }
+
+export { extractTextFromResult };
