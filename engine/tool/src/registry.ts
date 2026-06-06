@@ -116,6 +116,19 @@ export function openaiSchemas(): OpenAiToolEntry[] {
   return defaultToolRegistry.openaiSchemas();
 }
 
+export function toolNames(): string[] {
+  return defaultToolRegistry.list().map((t) => t.name);
+}
+
+export function openaiSchemasFromNames(names: string[]): OpenAiToolEntry[] {
+  const out: OpenAiToolEntry[] = [];
+  for (const name of names) {
+    const def = defaultToolRegistry.get(name);
+    if (def) out.push(openaiFunctionSchema(def));
+  }
+  return out;
+}
+
 export function checkEnvRequirements(): string[] {
   return defaultToolRegistry.checkEnvRequirements();
 }

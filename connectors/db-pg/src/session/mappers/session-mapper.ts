@@ -1,7 +1,6 @@
 import {
   awaitingClarifySchema,
   compressionStateSchema,
-  openAiToolSchema,
   sessionMetaSchema,
   sessionTodoStoreSchema,
   type CompressionState,
@@ -54,7 +53,7 @@ export function sessionMetaToInsert(sessionId: string, meta: SessionMetaMessage)
     ...passthrough,
   };
 
-  const tools = z.array(openAiToolSchema).parse(meta.tools ?? []);
+  const tools = z.array(z.string()).parse(meta.tools ?? []);
   const todos = sessionTodoStoreSchema.parse(meta.todos ?? { items: [], next_id: 1 });
   const functions = z.array(z.string()).parse(meta.functions ?? []);
   const compressionRaw = pgJsonbOrNull(meta.compression);

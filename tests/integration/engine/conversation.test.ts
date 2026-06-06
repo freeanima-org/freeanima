@@ -7,7 +7,6 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { openaiSchemas } from "@freeanima/engine-tool";
 import { isSessionMeta } from "@freeanima/engine-db/domain";
 import { registerAllTools } from "@freeanima/service";
 import { testConv } from "../../helpers/pg-test.ts";
@@ -45,19 +44,20 @@ describePg("conversation", () => {
     expect(cwd).toContain(sid.slice(0, 8));
   });
 
-  it("new session writes tools snapshot and loadSessionTools uses cache", async () => {
+  it("new session writes tool names and loadSessionTools resolves schemas", async () => {
     registerAllTools();
     const c = testConv();
     const sid = await c.newSession("parlor");
-    const tools = await c.loadSessionTools(sid);
-    expect(Array.isArray(tools)).toBe(true);
-    expect(tools.length).toBeGreaterThan(0);
-    expect(tools[0]).toHaveProperty("type", "function");
+    const meta = await c.loadSessionMeta(sid);
+    expect(isSessionMeta(meta)).toBe(true);
+    if (!isSessionMeta(meta)) return;
+    expect(meta.tools.length).toBeGreaterThan(0);
+    expect(typeof meta.tools[0]).toBe("string");
 
-    const live = openaiSchemas();
-    const cached = await c.loadSessionTools(sid);
-    expect(cached).toEqual(tools);
-    expect(cached.length).toBe(live.length);
+    const tools = await c.loadSessionTools(sid);
+    expect(tools.length).toBe(meta.tools.length);
+    expect(tools[0]).toHaveProperty("type", "function");
+    expect(tools.every((t) => meta.tools.includes(t.function.name))).toBe(true);
   });
 });
 

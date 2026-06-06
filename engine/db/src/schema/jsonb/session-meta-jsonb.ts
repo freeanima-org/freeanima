@@ -1,7 +1,5 @@
 import { z } from "zod";
 
-import { openAiToolSchema } from "./message-payload.ts";
-
 export const todoStatusSchema = z.enum(["pending", "in_progress", "completed", "cancelled"]);
 
 export const todoItemSchema = z.object({
@@ -41,7 +39,7 @@ export const acpSessionsSchema = z.record(z.string(), z.string());
 export type AcpSessionsJson = z.infer<typeof acpSessionsSchema>;
 
 /** sessions.tools */
-export const sessionToolsSchema = z.array(openAiToolSchema);
+export const sessionToolsSchema = z.array(z.string());
 export type SessionToolsJson = z.infer<typeof sessionToolsSchema>;
 
 /** sessions.functions */

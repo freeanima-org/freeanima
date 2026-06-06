@@ -57,7 +57,7 @@ export const sessionMetaSchema = z
   .object({
     role: z.literal("session_meta"),
     model: z.string(),
-    tools: z.array(openAiToolSchema).default([]),
+    tools: z.array(z.string()).default([]),
     functions: z.array(z.string()).default([]),
     timestamp: z.string().default(""),
     platform: z.string().optional(),
