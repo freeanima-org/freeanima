@@ -31,6 +31,7 @@
     "@freeanima/engine-prompt": "workspace:*",
     "@freeanima/engine-provider-llm": "workspace:*",
     "@freeanima/engine-repos": "workspace:*",
+    "@freeanima/engine-skill": "workspace:*",
     "@freeanima/connectors-db-pg": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",
     "@freeanima/kernel": "workspace:*",

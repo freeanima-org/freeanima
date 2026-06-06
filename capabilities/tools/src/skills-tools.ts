@@ -1,17 +1,29 @@
 import {
-  createSkill,
-  deleteSkill,
-  loadSkill,
-  listSkills,
-  unloadSkill,
-  viewSkill,
-} from "@freeanima/life-memory";
+  createUserSkill,
+  deleteUserSkill,
+  listSkillsForTool,
+  loadSkillIntoContext,
+  registerUserSkillsFromHome,
+  searchSkillsForTool,
+  viewUserSkill,
+} from "@freeanima/engine-skill";
 import { registerTool } from "@freeanima/engine-tool";
 
+let userSkillsRegistered = false;
+
+/** 扫描 ~/.anima/skills 并注册用户技能（幂等） */
+export function registerUserSkills(): number {
+  if (userSkillsRegistered) return 0;
+  userSkillsRegistered = true;
+  return registerUserSkillsFromHome();
+}
+
 export function registerSkillsTools(): void {
+  registerUserSkills();
+
   registerTool({
     name: "create_skill",
-    description: "创建新技能（Markdown 文件，含 YAML frontmatter）",
+    description: "创建新技能（Markdown 文件，含 YAML frontmatter），写入 ~/.anima/skills 并注册",
     parameters: {
       type: "object",
       properties: {
@@ -22,7 +34,7 @@ export function registerSkillsTools(): void {
       required: ["name", "description", "content"],
     },
     handler: (args) =>
-      createSkill(
+      createUserSkill(
         String(args.name ?? ""),
         String(args.description ?? ""),
         String(args.content ?? ""),
@@ -31,52 +43,55 @@ export function registerSkillsTools(): void {
 
   registerTool({
     name: "load_skill",
-    description: "加载技能到活跃列表并注入 system prompt",
+    description:
+      "加载技能正文到当前对话上下文（通过 tool 消息返回，不写入 system prompt）。使用前可用 list_skills / search_skills 发现技能。",
     parameters: {
       type: "object",
-      properties: { name: { type: "string", description: "技能名称" } },
+      properties: { name: { type: "string", description: "已注册的技能名称" } },
       required: ["name"],
     },
-    handler: (args) => loadSkill(String(args.name ?? "")),
-  });
-
-  registerTool({
-    name: "unload_skill",
-    description: "从活跃列表卸载技能",
-    parameters: {
-      type: "object",
-      properties: { name: { type: "string", description: "技能名称" } },
-      required: ["name"],
-    },
-    handler: (args) => unloadSkill(String(args.name ?? "")),
+    handler: (args) => loadSkillIntoContext(String(args.name ?? "")),
   });
 
   registerTool({
     name: "list_skills",
-    description: "列出所有技能及加载状态",
+    description: "列出技能注册中心中所有已注册技能（名称、描述、来源、目录）",
     parameters: { type: "object", properties: {} },
-    handler: () => listSkills(),
+    handler: () => listSkillsForTool(),
+  });
+
+  registerTool({
+    name: "search_skills",
+    description: "在技能注册中心按名称、描述或来源搜索技能",
+    parameters: {
+      type: "object",
+      properties: {
+        query: { type: "string", description: "搜索关键词" },
+      },
+      required: ["query"],
+    },
+    handler: (args) => searchSkillsForTool(String(args.query ?? "")),
   });
 
   registerTool({
     name: "view_skill",
-    description: "查看技能完整内容",
+    description: "查看技能完整 Markdown 文件（含 frontmatter）",
     parameters: {
       type: "object",
       properties: { name: { type: "string", description: "技能名称" } },
       required: ["name"],
     },
-    handler: (args) => viewSkill(String(args.name ?? "")),
+    handler: (args) => viewUserSkill(String(args.name ?? "")),
   });
 
   registerTool({
     name: "delete_skill",
-    description: "删除技能文件",
+    description: "删除用户自建技能（~/.anima/skills）；内置技能不可删",
     parameters: {
       type: "object",
       properties: { name: { type: "string", description: "技能名称" } },
       required: ["name"],
     },
-    handler: (args) => deleteSkill(String(args.name ?? "")),
+    handler: (args) => deleteUserSkill(String(args.name ?? "")),
   });
 }

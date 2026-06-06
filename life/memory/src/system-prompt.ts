@@ -33,20 +33,17 @@ export type SystemPromptParts = {
   soul: string;
   agents: string;
   resident: string;
-  skills: string;
 };
 
-/** soul / agents / resident；skills 由 core 注入 engine.getActiveSkillsContent */
+/** soul / agents / resident；技能通过 load_skill 工具消息注入，不写入 system prompt */
 export function decomposeSystemPromptParts(
   soulContent: string,
   cwd?: string | null,
-  skills = "",
 ): SystemPromptParts {
   return {
     soul: soulContent.trim(),
     agents: readAgents(cwd),
     resident: renderResidentMemory(),
-    skills: skills.trim(),
   };
 }
 
@@ -55,6 +52,5 @@ export function composeSystemPrompt(parts: SystemPromptParts): string {
   if (parts.soul) chunks.push(parts.soul);
   if (parts.agents) chunks.push(parts.agents);
   if (parts.resident) chunks.push(parts.resident);
-  if (parts.skills) chunks.push(parts.skills);
   return chunks.join("\n\n");
 }
