@@ -1,6 +1,8 @@
 import { registerRunSimpleTurn } from "@freeanima/service-api/turn-lifecycle";
 import { registerStatsReport } from "@freeanima/service-api/conversation-stats";
 import { registerStudioPort } from "@freeanima/service-api/studio-port";
+import { registerLlmStackConfigurator } from "@freeanima/engine-llm";
+import { wireOpenAiCompatibleLlm } from "@freeanima/capabilities-provider-openai-compatible";
 import { runSimpleTurn } from "./runtime/turn-lifecycle.ts";
 import { statsReport } from "./runtime/conversation-stats.ts";
 import {
@@ -12,6 +14,7 @@ import {
   searchStudio,
 } from "./runtime/studio.ts";
 
+registerLlmStackConfigurator(wireOpenAiCompatibleLlm);
 registerRunSimpleTurn(runSimpleTurn);
 registerStatsReport(statsReport);
 registerStudioPort({

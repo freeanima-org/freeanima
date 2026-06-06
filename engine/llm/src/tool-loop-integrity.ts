@@ -1,6 +1,6 @@
 import { toolResult } from "@freeanima/engine-tool";
 import type { SessionMessage, ToolMessage } from "@freeanima/engine-db/domain";
-import { cleanToolCallsForApi } from "@freeanima/capabilities-provider-openai-compatible/stream-tools";
+import { cleanToolCallsForApi } from "@freeanima/engine-provider-llm/stream-tools";
 import type { ToolCall } from "@freeanima/engine-provider-llm";
 
 export const REPAIR_REASON_LOST = "tool response lost (session repair)";

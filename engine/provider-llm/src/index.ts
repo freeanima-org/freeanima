@@ -52,3 +52,10 @@ export {
   profileDef,
   validateProfiles,
 } from "./profile.ts";
+
+export {
+  cleanToolCallsForApi,
+  finalizeStreamingToolCalls,
+  mergeStreamingToolCalls,
+} from "./stream-tools.ts";
+export { normalizeUsage } from "./usage.ts";

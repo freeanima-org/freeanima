@@ -282,13 +282,13 @@
     "engine/llm": {
       "name": "@freeanima/engine-llm",
       "dependencies": {
-        "@freeanima/capabilities-provider-openai-compatible": "workspace:*",
         "@freeanima/engine-db": "workspace:*",
         "@freeanima/engine-provider-llm": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
         "@freeanima/service-config": "workspace:*",
       },
       "devDependencies": {
+        "@freeanima/capabilities-provider-openai-compatible": "workspace:*",
         "@types/bun": "catalog:",
       },
     },
@@ -476,6 +476,7 @@
         "@freeanima/capabilities-acp": "workspace:*",
         "@freeanima/capabilities-clarify": "workspace:*",
         "@freeanima/capabilities-mcp": "workspace:*",
+        "@freeanima/capabilities-provider-openai-compatible": "workspace:*",
         "@freeanima/capabilities-tools": "workspace:*",
         "@freeanima/connectors-commands": "workspace:*",
         "@freeanima/connectors-cron": "workspace:*",
@@ -507,6 +508,7 @@
       "devDependencies": {
         "@freeanima/capabilities-acp": "workspace:*",
         "@freeanima/capabilities-clarify": "workspace:*",
+        "@freeanima/capabilities-provider-openai-compatible": "workspace:*",
         "@freeanima/connectors-cron": "workspace:*",
         "@freeanima/connectors-db-pg": "workspace:*",
         "@freeanima/connectors-eventbus-sqlite": "workspace:*",
