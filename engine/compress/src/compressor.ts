@@ -1,8 +1,8 @@
 import { getCompressionConfig, getEffectiveTokenBudget } from "./compression-config.ts";
 import { isInToolLoop } from "./compression-tool-loop.ts";
 import { estimateMessagesTokens, estimateTokens, estimateToolsTokens } from "./token-estimate.ts";
-import type { OpenAiToolSchema, SessionMessage } from "@freeanima/kernel-schemas";
-import { type CompressionState, parseCompressionState } from "@freeanima/kernel-schemas";
+import type { OpenAiToolSchema, SessionMessage } from "@freeanima/engine-db/domain";
+import { type CompressionState, parseCompressionState } from "@freeanima/engine-db/domain";
 
 export type { CompressionState };
 export { parseCompressionState };

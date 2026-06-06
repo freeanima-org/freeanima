@@ -1,17 +1,19 @@
-import { getToolSessionId } from "@freeanima/engine-loop";
+import { getToolSessionId, getToolRepos } from "@freeanima/engine-loop";
 import { registerTool, toolError } from "@freeanima/engine-tool";
 import { handleSessionTodo } from "@freeanima/engine-conversation/session-todos";
 
 async function handleTodo(args: Record<string, unknown>): Promise<string> {
   const sessionId = getToolSessionId();
   if (!sessionId) return toolError("无 session 上下文");
+  const repos = getToolRepos();
+  if (!repos) return toolError("无 repos 上下文");
 
   const action = String(args.action ?? "list");
   const content = args.content != null ? String(args.content) : undefined;
   const id = typeof args.id === "number" ? args.id : args.id != null ? Number(args.id) : undefined;
   const status = args.status != null ? String(args.status) : undefined;
 
-  return handleSessionTodo(sessionId, action, { content, id, status });
+  return handleSessionTodo(repos, sessionId, action, { content, id, status });
 }
 
 export function registerTodoTool(): void {

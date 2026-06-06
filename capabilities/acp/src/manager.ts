@@ -3,6 +3,7 @@ import { listTools, registerTool, toolError } from "@freeanima/engine-tool";
 import { loadConfig } from "@freeanima/service-config";
 import { logComponent } from "@freeanima/service-logging";
 
+import type { ConversationService } from "@freeanima/engine-conversation";
 import { AcpAgentQueue } from "./agent-queue.ts";
 import { resolveAcpAdapter } from "./adapters/registry.ts";
 import { ACPClient } from "./client.ts";
@@ -78,6 +79,18 @@ export class AcpManager {
   private toolsRegistered = false;
   private closed = false;
   private startTask: Promise<void> | null = null;
+  private conversation: ConversationService | null = null;
+
+  wireConversation(conversation: ConversationService): void {
+    this.conversation = conversation;
+  }
+
+  private conv(): ConversationService {
+    if (!this.conversation) {
+      throw new Error("AcpManager: conversation 未绑定，请先 wireConversation");
+    }
+    return this.conversation;
+  }
 
   private queueFor(agentName: string): AcpAgentQueue {
     let q = this.agentQueues.get(agentName);
@@ -362,7 +375,7 @@ export class AcpManager {
     }
 
     if (opts.nestSessionId) {
-      const bound = await getBoundAcpSession(opts.nestSessionId, agentName);
+      const bound = await getBoundAcpSession(this.conv(), opts.nestSessionId, agentName);
       if (bound) {
         if (this.sessionStore.has(bound, agentName)) {
           return { id: bound, newSession: false, reusedBinding: true, explicit: false };
@@ -415,7 +428,7 @@ export class AcpManager {
     const sid = await client.createSession(agentCfg.cwd);
     this.sessionStore.add(sid, agentName);
     if (nestSessionId) {
-      await bindAcpSession(nestSessionId, agentName, sid);
+      await bindAcpSession(this.conv(), nestSessionId, agentName, sid);
     }
     return sid;
   }
@@ -439,7 +452,7 @@ export class AcpManager {
 
       const previousBound =
         opts.newSession && opts.nestSessionId
-          ? await getBoundAcpSession(opts.nestSessionId, agentName)
+          ? await getBoundAcpSession(this.conv(), opts.nestSessionId, agentName)
           : undefined;
 
       const resolved = await this.resolveAcpSession(client, agentName, agentCfg, opts);
@@ -487,7 +500,7 @@ export class AcpManager {
       const msg = e instanceof Error ? e.message : String(e);
       this.agentErrors.set(agentName, msg);
       if (opts.nestSessionId && !opts.acpSessionId) {
-        await unbindAcpSession(opts.nestSessionId, agentName);
+        await unbindAcpSession(this.conv(), opts.nestSessionId, agentName);
       }
       return toolError(msg);
     }

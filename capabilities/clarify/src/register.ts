@@ -1,4 +1,5 @@
 import type { Kernel } from "@freeanima/kernel";
+import type { ConversationService } from "@freeanima/engine-conversation";
 import type {
   MessageIncomingEffect,
   ToolAfterCallEffect,
@@ -14,16 +15,20 @@ import {
   setAwaitingClarify,
 } from "./clarify.ts";
 
-export function registerClarifyHooks(kernel: Kernel): void {
+export function registerClarifyHooks(opts: {
+  kernel: Kernel;
+  conversation: ConversationService;
+}): void {
+  const { kernel, conversation } = opts;
   const registry = kernel.hookRegistry;
 
   registry.on(messageIncoming, async (ctx) => {
-    const guard = await guardAwaitingClarify(ctx.sessionId, ctx.message);
+    const guard = await guardAwaitingClarify(conversation, ctx.sessionId, ctx.message);
     if (!guard.ok) {
       return { status: "ok", blocked: true, message: guard.reason };
     }
     const data: MessageIncomingEffect = {
-      transformedMessage: await resolveUserContent(ctx.sessionId, ctx.message),
+      transformedMessage: await resolveUserContent(conversation, ctx.sessionId, ctx.message),
     };
     if (guard.expired) {
       data.expiredHint = guard.hint;
@@ -53,7 +58,7 @@ export function registerClarifyHooks(kernel: Kernel): void {
   registry.on(turnAfterComplete, async (ctx) => {
     const pending = findAwaitingClarifyInMessages(ctx.messages);
     if (!pending) return;
-    await setAwaitingClarify(ctx.sessionId, {
+    await setAwaitingClarify(conversation, ctx.sessionId, {
       items: pending.items,
       timeout_sec: pending.timeout_sec,
     });
@@ -66,9 +71,10 @@ export function registerClarifyHooks(kernel: Kernel): void {
 
 /** stream 路径：收到 awaiting_clarify 事件时写入 session meta */
 export async function applyClarifyStreamAwaiting(
+  conversation: ConversationService,
   sessionId: string,
   items: { question: string; choices?: string[]; default?: string }[],
   timeoutSec: number,
 ): Promise<void> {
-  await setAwaitingClarify(sessionId, { items, timeout_sec: timeoutSec });
+  await setAwaitingClarify(conversation, sessionId, { items, timeout_sec: timeoutSec });
 }

@@ -9,8 +9,8 @@ import {
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { MemoryStore, indexL3Fact, indexL2Session } from "@freeanima/life-memory";
-import { AnimaService } from "@freeanima/service";
-import { seedSession } from "../../helpers/pg-test.ts";
+import { getServiceContext } from "@freeanima/service";
+import { getTestEngine, seedSession } from "../../helpers/pg-test.ts";
 
 describePg("server memory API", () => {
   let home: string;
@@ -33,7 +33,7 @@ describePg("server memory API", () => {
   });
 
   it("listMemoryFiles returns objects with name and content", () => {
-    const { files } = new AnimaService().listMemoryFiles();
+    const { files } = getServiceContext().service.listMemoryFiles();
     expect(files.length).toBeGreaterThan(0);
     const soul = files.find((f) => f.name === "SOUL.md");
     expect(soul).toBeDefined();
@@ -66,7 +66,7 @@ describePg("server memory API", () => {
     writeFileSync(join(processedDir, `${sid}.jsonl`), `${l2Lines.join("\n")}\n`, "utf-8");
     indexL2Session(sid);
 
-    const out = new AnimaService().memorySearch({ query: "compression" });
+    const out = getServiceContext().service.memorySearch({ query: "compression" });
     expect(out.l3.length).toBeGreaterThan(0);
     expect(out.l2.length).toBeGreaterThan(0);
     expect(out.l3[0]!.score).toBeGreaterThan(0);
@@ -76,6 +76,7 @@ describePg("server memory API", () => {
   it.skipIf(typeof Bun !== "undefined")("rebuildL2All distills L1 and reindexes FTS", async () => {
     const sid = "20260526_130000_efgh";
     await seedSession(
+      getTestEngine(),
       sid,
       {
         role: "session_meta",
@@ -102,17 +103,18 @@ describePg("server memory API", () => {
       ],
     );
 
-    const out = await new AnimaService().rebuildL2All();
+    const out = await getServiceContext().service.rebuildL2All();
     expect(out.sessions).toBeGreaterThan(0);
     expect(out.index_rows).toBeGreaterThan(0);
 
-    const hits = new AnimaService().memorySearch({ query: "alpha" });
+    const hits = getServiceContext().service.memorySearch({ query: "alpha" });
     expect(hits.l2.some((h) => h.session_id === sid)).toBe(true);
   });
 
   it.skipIf(typeof Bun !== "undefined")("distillL2All and reindexL2All are separate", async () => {
     const sid = "20260526_140000_split";
     await seedSession(
+      getTestEngine(),
       sid,
       {
         role: "session_meta",
@@ -133,7 +135,7 @@ describePg("server memory API", () => {
       ],
     );
 
-    const svc = new AnimaService();
+    const svc = getServiceContext().service;
     const { sessions } = await svc.distillL2All();
     expect(sessions).toBeGreaterThan(0);
 
@@ -155,9 +157,9 @@ describePg("server memory API", () => {
       recall: 0.5,
     });
 
-    const { index_rows } = new AnimaService().reindexL3All();
+    const { index_rows } = getServiceContext().service.reindexL3All();
     expect(index_rows).toBeGreaterThan(0);
-    const hits = new AnimaService().memorySearch({ query: "gamma" });
+    const hits = getServiceContext().service.memorySearch({ query: "gamma" });
     expect(hits.l3.length).toBeGreaterThan(0);
   });
 

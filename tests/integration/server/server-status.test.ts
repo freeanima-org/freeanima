@@ -6,7 +6,7 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { AnimaService, readRootVersion } from "@freeanima/service";
+import { getServiceContext, readRootVersion } from "@freeanima/service";
 
 const ROOT_VERSION = readRootVersion();
 
@@ -22,7 +22,7 @@ describePg("server status API", () => {
   });
 
   it("buildStatus matches WebUI / 卧室 contract", async () => {
-    const svc = new AnimaService();
+    const svc = getServiceContext().service;
     svc.markStarted();
     const body = await svc.buildStatus("127.0.0.1", 8080);
 
@@ -49,7 +49,7 @@ describePg("server status API", () => {
   });
 
   it("health returns status ok", () => {
-    expect(new AnimaService().health()).toEqual({
+    expect(getServiceContext().service.health()).toEqual({
       status: "ok",
       version: ROOT_VERSION,
     });

@@ -1,15 +1,18 @@
 {
-  "name": "@freeanima/kernel-db",
+  "name": "@freeanima/engine-db",
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./schema": "./src/schema/index.ts"
+    "./schema": "./src/schema/index.ts",
+    "./domain": "./src/domain/index.ts",
+    "./domain/*": "./src/domain/*.ts"
   },
   "scripts": {
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
+    "@freeanima/kernel-util": "workspace:*",
     "drizzle-orm": "catalog:",
     "zod": "catalog:"
   },

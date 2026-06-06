@@ -1,12 +1,12 @@
 import { existsSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
-import { listSessions } from "@freeanima/engine-conversation";
+import { getServiceContext } from "@freeanima/service";
+import * as conv from "@freeanima/engine-conversation";
 import { distillFromPg, l2SessionPath } from "@freeanima/life-memory/clean";
 import { indexL2Session } from "@freeanima/life-memory/l2-indexer";
 import { getProfileHopModel, loadConfig } from "@freeanima/service-config";
 import { logComponent } from "@freeanima/service-logging";
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
-import * as conv from "@freeanima/engine-conversation";
 import { loadSkill } from "@freeanima/life-memory";
 import { runSimpleTurn } from "@freeanima/service-api/turn-lifecycle";
 import type { CronJob } from "./models.ts";
@@ -17,11 +17,16 @@ import { deliverCronResult } from "./deliver.ts";
 /** 任务失败后最短重试间隔（秒），避免调度器每 10s 重复执行同一失败任务 */
 const FAILURE_RETRY_DELAY_SEC = 300;
 
+function conversation() {
+  return getServiceContext().conversation;
+}
+
 export async function runL2GapFill(): Promise<string> {
   let count = 0;
-  for (const sid of await listSessions()) {
+  const sessionStore = conversation().repos.session;
+  for (const sid of await conversation().listSessions()) {
     if (existsSync(l2SessionPath(sid))) continue;
-    const result = await distillFromPg(sid);
+    const result = await distillFromPg(sessionStore, sid);
     if (result) {
       count += 1;
       indexL2Session(sid);
@@ -56,7 +61,7 @@ async function runEngine(job: CronJob, prompt: string): Promise<string> {
   const cfg = loadConfig();
   const model = job.model_name ?? getProfileHopModel(cfg, PROFILE_CHAT);
   const sid = conv.generateSessionId();
-  await conv.initSession(sid, model, { platform: "cron" });
+  await conversation().initSession(sid, model, { platform: "cron" });
 
   for (const skillName of job.skills) {
     loadSkill(skillName);

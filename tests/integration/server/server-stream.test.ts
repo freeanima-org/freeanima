@@ -6,8 +6,8 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { AnimaService } from "@freeanima/service";
-import { seedSession } from "../../helpers/pg-test.ts";
+import { getServiceContext } from "@freeanima/service";
+import { getTestEngine, seedSession } from "../../helpers/pg-test.ts";
 
 describePg("sendMessageStream", () => {
   const prev = process.env.FREEANIMA_HOME;
@@ -22,7 +22,7 @@ describePg("sendMessageStream", () => {
 
   it("unknown slash command yields token and done without LLM", async () => {
     const sid = "20260526_150000_test";
-    await seedSession(sid, {
+    await seedSession(getTestEngine(), sid, {
       role: "session_meta",
       model: "test-model",
       tools: [],
@@ -31,7 +31,7 @@ describePg("sendMessageStream", () => {
       platform: "parlor",
     });
 
-    const svc = new AnimaService();
+    const svc = getServiceContext().service;
     const events: { event: string; data: Record<string, unknown> }[] = [];
     for await (const ev of svc.sendMessageStream(sid, "/unknown-cmd", "parlor")) {
       events.push(ev);

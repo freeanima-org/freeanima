@@ -8,9 +8,9 @@
   "dependencies": {
     "@freeanima/connectors-sqlite": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",
-    "@freeanima/kernel": "workspace:*",
+    "@freeanima/engine-repos": "workspace:*",
     "@freeanima/kernel-eventbus": "workspace:*",
-    "@freeanima/kernel-schemas": "workspace:*",
+    "@freeanima/kernel-util": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "@freeanima/service-logging": "workspace:*",
     "yaml": "^2.9.0",

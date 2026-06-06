@@ -7,9 +7,9 @@
   "dependencies": {
     "@freeanima/engine-conversation": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",
+    "@freeanima/kernel-util": "workspace:*",
     "@freeanima/kernel": "workspace:*",
     "@freeanima/kernel-hooks": "workspace:*",
-    "@freeanima/kernel-schemas": "workspace:*",
     "@freeanima/service-config": "workspace:*"
   },
   "devDependencies": {

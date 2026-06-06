@@ -4,7 +4,7 @@ import type {
   SessionMessage,
   SessionMetaMessage,
   SessionTodoStore,
-} from "@freeanima/kernel-schemas";
+} from "@freeanima/engine-db/domain";
 
 export type SessionSummaryRow = {
   id: string;

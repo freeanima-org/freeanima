@@ -9,7 +9,7 @@ import {
   sessionMessagesToInvokeInput,
 } from "../../src/index.ts";
 import { messagesForApi } from "@freeanima/capabilities-provider-openai-compatible/messages";
-import type { SessionMessage } from "@freeanima/kernel-schemas";
+import type { SessionMessage } from "@freeanima/engine-db/domain";
 import { beginLogIsolation, endLogIsolation } from "../../../../tests/helpers/log-isolation.ts";
 
 const prevHome = process.env.FREEANIMA_HOME;

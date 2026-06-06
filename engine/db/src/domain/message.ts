@@ -11,16 +11,16 @@ import {
   userPayloadSchema,
   systemPayloadSchema,
   type MessagePayload,
-} from "@freeanima/kernel-db/schema";
+} from "../schema/index.ts";
 import {
   awaitingClarifySchema,
   compressionStateSchema,
   sessionTodoStoreSchema,
 } from "./session-meta.ts";
-import { parseJsonLine } from "./util.ts";
+import { parseJsonLine } from "@freeanima/kernel-util";
 
 export { openAiToolSchema, toolCallSchema, messagePayloadSchema, type MessagePayload };
-export type { LlmTurnMessage, OpenAiToolSchema, ToolCall } from "@freeanima/kernel-db/schema";
+export type { LlmTurnMessage, OpenAiToolSchema, ToolCall } from "../schema/index.ts";
 
 /** 兼容旧 JSONL / payload 中的 id 字段 → pos */
 export function normalizeLegacyMessagePos(raw: unknown): unknown {

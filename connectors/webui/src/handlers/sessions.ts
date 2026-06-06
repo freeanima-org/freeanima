@@ -1,5 +1,5 @@
-import { loadSessionMeta } from "@freeanima/engine-conversation";
-import { isSessionMeta } from "@freeanima/kernel-schemas";
+import { getServiceContext } from "@freeanima/service";
+import { isSessionMeta } from "@freeanima/engine-conversation";
 import { PARLOR_PLATFORM } from "../api/constants.ts";
 import {
   createSessionBodySchema,
@@ -7,11 +7,10 @@ import {
   type CreateSessionBody,
   type PatchTitleBody,
 } from "@freeanima/connectors-webui/api";
-import { getServiceContext } from "@freeanima/service";
 import { ApiHandlerError } from "./errors.ts";
 
 export async function resolveSessionPlatform(sessionId: string): Promise<string> {
-  const meta = await loadSessionMeta(sessionId);
+  const meta = await getServiceContext().conversation.loadSessionMeta(sessionId);
   const p = isSessionMeta(meta) ? meta.platform : undefined;
   return typeof p === "string" && p ? p : PARLOR_PLATFORM;
 }

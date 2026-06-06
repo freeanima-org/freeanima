@@ -13,7 +13,7 @@ import {
   l2SessionPath,
   processedDir,
 } from "@freeanima/life-memory";
-import { seedSession } from "../../helpers/pg-test.ts";
+import { getTestEngine, seedSession, testConv } from "../../helpers/pg-test.ts";
 
 describePg("memory distill", () => {
   const prev = process.env.FREEANIMA_HOME;
@@ -30,6 +30,7 @@ describePg("memory distill", () => {
   it("distills L1 to L2 format", async () => {
     const sid = "20260526_120000_abcd";
     await seedSession(
+      getTestEngine(),
       sid,
       {
         role: "session_meta",
@@ -56,7 +57,8 @@ describePg("memory distill", () => {
       ],
     );
 
-    const out = await distillFromPg(sid, { overwrite: true });
+    const store = testConv().repos.session;
+    const out = await distillFromPg(store, sid, { overwrite: true });
     expect(out).not.toBeNull();
     const l2Path = l2SessionPath(sid);
     expect(existsSync(l2Path)).toBe(true);
@@ -74,6 +76,7 @@ describePg("memory distill", () => {
     const sid = "20260526_130000_ef01";
     mkdirSync(processedDir(), { recursive: true });
     await seedSession(
+      getTestEngine(),
       sid,
       {
         role: "session_meta",
@@ -94,7 +97,7 @@ describePg("memory distill", () => {
     const now = Date.now() / 1000;
     utimesSync(l2, now + 60, now + 60);
 
-    const result = await distillFromPg(sid, { ifNewer: true });
+    const result = await distillFromPg(testConv().repos.session, sid, { ifNewer: true });
     expect(result).toBeNull();
   });
 

@@ -1,19 +1,15 @@
-import {
-  buildRuntimeMessages,
-  loadSessionMeta,
-  loadSessionTools,
-  loadSoul,
-} from "@freeanima/engine-conversation";
 import { SUMMARY_USER_PREFIX } from "@freeanima/engine-compress";
 import { getActiveSkillsContent } from "@freeanima/life-memory";
-import { isSessionMeta } from "@freeanima/kernel-schemas";
+import { isSessionMeta } from "@freeanima/engine-conversation";
 import { decomposeSystemPromptParts } from "@freeanima/life-memory/system-prompt";
-import type { SessionMessage } from "@freeanima/kernel-schemas";
+import type { SessionMessage } from "@freeanima/engine-conversation";
 import {
   estimateMessagesTokens,
   estimateTokens,
   estimateToolsTokens,
 } from "@freeanima/engine-compress";
+import { loadSoul } from "@freeanima/engine-conversation";
+import { getServiceContext } from "../context.ts";
 
 export type RuntimeContextBreakdown = {
   /** 发给 LLM 的视图（压缩后 + 摘要注入），非 JSONL 全量 */
@@ -27,13 +23,17 @@ export type RuntimeContextBreakdown = {
   total: number;
 };
 
+function conv() {
+  return getServiceContext().conversation;
+}
+
 /** 从运行时 message list 分项估算 token（与 compress 决策口径一致） */
 export async function computeRuntimeContextBreakdown(
   session: string,
 ): Promise<RuntimeContextBreakdown> {
-  const meta = await loadSessionMeta(session);
-  const [runtimeMsgs] = await buildRuntimeMessages(session);
-  const tools = isSessionMeta(meta) ? await loadSessionTools(session, meta) : [];
+  const meta = await conv().loadSessionMeta(session);
+  const [runtimeMsgs] = await conv().buildRuntimeMessages(session);
+  const tools = isSessionMeta(meta) ? await conv().loadSessionTools(session, meta) : [];
 
   const soul = loadSoul();
   const cwd = isSessionMeta(meta) ? meta.cwd : undefined;

@@ -1,11 +1,6 @@
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
-import {
-  factDataSchema,
-  safeParseOrNull,
-  type FactData,
-  type FactSource,
-  type FactType,
-} from "@freeanima/kernel-schemas";
+import { safeParseOrNull } from "@freeanima/kernel-util";
+import { factDataSchema, type FactData, type FactSource, type FactType } from "./schemas/fact.ts";
 
 export const FRONTMATTER_DELIM = "---";
 

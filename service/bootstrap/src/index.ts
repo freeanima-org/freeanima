@@ -1,1 +1,1 @@
-export { kernel } from "./kernel.ts";
+export { createServiceKernel } from "./kernel.ts";

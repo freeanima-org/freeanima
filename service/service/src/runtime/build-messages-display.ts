@@ -1,5 +1,5 @@
-import type { SessionMessage } from "@freeanima/kernel-schemas";
-import type { DisplayItem, DisplayToolBlockItem } from "@freeanima/kernel-schemas";
+import type { SessionMessage } from "@freeanima/engine-conversation";
+import type { DisplayItem, DisplayToolBlockItem } from "@freeanima/service/schemas/display";
 
 function parseArgs(raw: string): Record<string, unknown> {
   try {

@@ -10,8 +10,8 @@
     "@freeanima/engine-llm": "workspace:*",
     "@freeanima/engine-provider-llm": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",
+    "@freeanima/engine-repos": "workspace:*",
     "@freeanima/kernel-hooks": "workspace:*",
-    "@freeanima/kernel-schemas": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "@freeanima/service-logging": "workspace:*"
   },

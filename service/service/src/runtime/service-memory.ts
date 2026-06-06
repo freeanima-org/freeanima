@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { PATHS } from "@freeanima/service-config";
+import { getServiceContext } from "../context.ts";
 import { distillAll } from "@freeanima/life-memory/clean";
 import { reindexL2All as reindexL2FtsAll } from "@freeanima/life-memory/l2-indexer";
 import { indexL3All as reindexL3FtsAll } from "@freeanima/life-memory/l3-indexer";
@@ -46,7 +47,8 @@ export function memorySearch(args: {
 }
 
 export async function distillL2All(): Promise<{ sessions: number }> {
-  return { sessions: await distillAll({ overwrite: true }) };
+  const store = getServiceContext().conversation.repos.session;
+  return { sessions: await distillAll(store, { overwrite: true }) };
 }
 
 export function reindexL2All(): { index_rows: number } {
@@ -58,7 +60,8 @@ export function reindexL3All(): { index_rows: number } {
 }
 
 export async function rebuildL2All(): Promise<{ sessions: number; index_rows: number }> {
-  const sessions = await distillAll({ overwrite: true });
+  const store = getServiceContext().conversation.repos.session;
+  const sessions = await distillAll(store, { overwrite: true });
   const index_rows = reindexL2FtsAll({ dropFirst: true });
   return { sessions, index_rows };
 }

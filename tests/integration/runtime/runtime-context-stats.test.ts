@@ -6,7 +6,7 @@ import {
   endIntegrationCase,
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
-import { newSession, appendMessage, updateSessionMetaField } from "@freeanima/engine";
+import { testConv } from "../../helpers/pg-test.ts";
 
 describePg("runtime context stats", () => {
   const prev = process.env.FREEANIMA_HOME;
@@ -28,6 +28,7 @@ compression:
   });
 
   it("breakdown includes tools and system parts from runtime view", async () => {
+    const c = testConv();
     const bigTool = {
       type: "function" as const,
       function: {
@@ -36,14 +37,14 @@ compression:
         parameters: { type: "object", properties: {} },
       },
     };
-    const sid = await newSession("parlor");
-    await updateSessionMetaField(sid, {
+    const sid = await c.newSession("parlor");
+    await c.updateSessionMetaField(sid, {
       model: "m",
       system_prompt: "SOUL block here\n\n## 常驻记忆\n- fact",
       tools: [bigTool],
     });
-    await appendMessage({ role: "user", content: "hi", pos: 1 }, sid);
-    await appendMessage({ role: "assistant", content: "ok", pos: 2 }, sid);
+    await c.appendMessage({ role: "user", content: "hi", pos: 1 }, sid);
+    await c.appendMessage({ role: "assistant", content: "ok", pos: 2 }, sid);
 
     const stats = await computeStats(sid);
     expect(stats.context_breakdown.tools).toBeGreaterThan(stats.context_breakdown.messages);

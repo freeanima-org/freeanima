@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@freeanima/engine-loop": "workspace:*",
-    "@freeanima/kernel-schemas": "workspace:*",
     "@freeanima/service-config": "workspace:*"
   },
   "devDependencies": {

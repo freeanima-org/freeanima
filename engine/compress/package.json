@@ -5,11 +5,12 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "@freeanima/engine-db": "workspace:*",
     "@freeanima/engine-llm": "workspace:*",
-    "@freeanima/kernel-schemas": "workspace:*",
     "@freeanima/service-config": "workspace:*"
   },
   "devDependencies": {
+    "@freeanima/engine-conversation": "workspace:*",
     "@types/bun": "catalog:"
   }
 }

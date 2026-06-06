@@ -5,7 +5,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@freeanima/kernel-schemas": "workspace:*"
+    "@freeanima/engine-db": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "catalog:"

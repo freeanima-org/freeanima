@@ -1,62 +1,43 @@
-import type { PgRepositories } from "./ports/index.ts";
-import { nullPgRepositories } from "./adapters/null.ts";
-import type { HookRegistry } from "@freeanima/kernel-hooks";
-import type { EventBus } from "@freeanima/kernel-eventbus";
+import { HookRegistry } from "@freeanima/kernel-hooks";
+import { EventBus } from "@freeanima/kernel-eventbus";
+import { MemoryEventQueue } from "@freeanima/kernel-eventbus/memory";
+import { createLogger } from "@freeanima/kernel-logging";
+import { createConsoleSink } from "@freeanima/kernel-logging/console";
+import type { HookRegistry as HookRegistryType } from "@freeanima/kernel-hooks";
+import type { EventBus as EventBusType } from "@freeanima/kernel-eventbus";
 import type { Logger } from "@freeanima/kernel-logging";
 
-let boundKernel: Kernel | null = null;
+export type KernelDeps = {
+  hookRegistry?: HookRegistryType;
+  logger?: Logger;
+  eventBus?: EventBusType;
+};
 
-/** 由 service/bootstrap 在启动时绑定全局 Kernel 实例 */
-export function bindKernel(kernel: Kernel): void {
-  boundKernel = kernel;
+function defaultLogger(): Logger {
+  return createLogger({ sinks: [createConsoleSink()] });
 }
 
-/** 获取已绑定的 Kernel（engine / life 经此访问 repos） */
-export function getKernel(): Kernel {
-  if (!boundKernel) {
-    throw new Error("Kernel 未绑定：请先由 service/bootstrap 调用 bindKernel()");
-  }
-  return boundKernel;
+/** 构造 Kernel；未传入的依赖使用安全默认（console logger、内存 EventBus） */
+export function createKernel(deps: KernelDeps = {}): Kernel {
+  const logger = deps.logger ?? defaultLogger();
+  const hookRegistry = deps.hookRegistry ?? new HookRegistry(logger);
+  const eventBus = deps.eventBus ?? new EventBus(logger, new MemoryEventQueue());
+  return new Kernel(hookRegistry, logger, eventBus);
 }
 
-/** 测试 / 集成测注入 Kernel */
-export function bindKernelForTest(kernel: Kernel): void {
-  boundKernel = kernel;
-}
-
-export function resetKernelBinding(): void {
-  boundKernel = null;
-}
-
-/** 内核组合视图 */
+/** 内核组合视图（hooks / logger / eventBus） */
 export class Kernel {
-  private _eventBus: EventBus;
-  private _repos: PgRepositories = nullPgRepositories;
-
   constructor(
-    readonly hookRegistry: HookRegistry,
+    readonly hookRegistry: HookRegistryType,
     readonly logger: Logger,
-    eventBus: EventBus,
-  ) {
-    this._eventBus = eventBus;
-  }
+    private _eventBus: EventBusType,
+  ) {}
 
-  get eventBus(): EventBus {
+  get eventBus(): EventBusType {
     return this._eventBus;
   }
 
-  setEventBus(bus: EventBus): void {
+  setEventBus(bus: EventBusType): void {
     this._eventBus = bus;
   }
-
-  get repos(): PgRepositories {
-    return this._repos;
-  }
-
-  setRepositories(repos: PgRepositories): void {
-    this._repos = repos;
-  }
 }
-
-export type { PgRepositories, SessionStorePort, SessionSummaryRow } from "./ports/index.ts";
-export { nullPgRepositories } from "./adapters/null.ts";

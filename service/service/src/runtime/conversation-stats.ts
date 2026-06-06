@@ -1,6 +1,6 @@
-import { listSessions, load, loadSessionMeta, sessionExists } from "@freeanima/engine-conversation";
-import { isSessionMeta } from "@freeanima/kernel-schemas";
-import type { SessionMessage } from "@freeanima/kernel-schemas";
+import { getServiceContext } from "../context.ts";
+import { isSessionMeta } from "@freeanima/engine-conversation";
+import type { SessionMessage } from "@freeanima/engine-conversation";
 import {
   analyzeCompression,
   getCompressionConfig,
@@ -119,8 +119,8 @@ async function readCompressionAndContextFields(
   >
 > {
   const cfg = getCompressionConfig();
-  const allMsgs = await load(session);
-  const meta = await loadSessionMeta(session);
+  const allMsgs = await getServiceContext().conversation.load(session);
+  const meta = await getServiceContext().conversation.loadSessionMeta(session);
   const state = parseCompressionState(isSessionMeta(meta) ? meta.compression : undefined);
   const l2 = state?.l2 ?? null;
   const l3 = isCompressed(state) ? (state?.l3 ?? null) : null;
@@ -183,7 +183,7 @@ function estimateUsageFromMessages(assistantMsgs: Record<string, unknown>[]): {
 }
 
 export async function computeStats(session: string): Promise<SessionStats> {
-  const records = await load(session);
+  const records = await getServiceContext().conversation.load(session);
   const messages = records.filter((r) => r.role !== "session_meta");
 
   const message_count = messages.length;
@@ -571,7 +571,7 @@ export async function statsReport(
   opts?: { allSessions?: boolean },
 ): Promise<string> {
   if (opts?.allSessions) {
-    const sessions = await listSessions();
+    const sessions = await getServiceContext().conversation.listSessions();
     if (!sessions.length) return "（无 session）";
     const parts: string[] = [];
     const perSession: SessionStats[] = [];
@@ -586,6 +586,7 @@ export async function statsReport(
 
   const name = session;
   if (!name) return statsReport(null, { allSessions: true });
-  if (!(await sessionExists(name))) return `Session: ${name}\n（空）`;
+  if (!(await getServiceContext().conversation.sessionExists(name)))
+    return `Session: ${name}\n（空）`;
   return formatStats(await computeStats(name));
 }

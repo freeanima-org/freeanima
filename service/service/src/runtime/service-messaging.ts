@@ -4,10 +4,11 @@ import {
   isRetryResult,
 } from "@freeanima/connectors-commands";
 import type { CommandDef } from "@freeanima/connectors-commands";
-import * as conv from "@freeanima/engine-conversation";
-import { collectStreamReply } from "@freeanima/engine-loop";
-import type { StreamEvent } from "@freeanima/engine-loop";
-import { kernel } from "@freeanima/service-bootstrap";
+import { getServiceContext } from "../context.ts";
+
+function conv() {
+  return getServiceContext().conversation;
+}
 import { headOkStepData, messageIncoming, turnAfterComplete } from "@freeanima/kernel-hooks";
 import type { MessageIncomingEffect, TurnAfterCompleteEffect } from "@freeanima/kernel-hooks";
 import type { Message } from "@freeanima/engine-conversation";
@@ -18,6 +19,7 @@ import type { EngineRunControl } from "./engine-run-control.ts";
 import type { SessionManager } from "./session-manager.ts";
 import { runExclusiveStreamTurn, streamErrorEvent, type StreamTurnHost } from "./turn-lifecycle.ts";
 import { applyCommandSessionEffects, checkPlatform } from "./service-sessions.ts";
+import { collectStreamReply, type StreamEvent } from "@freeanima/engine-loop";
 
 export type MessagingDeps = {
   runControl: EngineRunControl;
@@ -32,7 +34,7 @@ export async function runIncomingMessageHooks(
   message: string,
   platform: string,
 ): Promise<{ ok: true; message: string; expiredHint?: string } | { ok: false; reason: string }> {
-  const run = await kernel.hookRegistry.run(messageIncoming, {
+  const run = await getServiceContext().kernel.hookRegistry.run(messageIncoming, {
     sessionId,
     message,
     platform,
@@ -53,7 +55,7 @@ export async function runTurnAfterCompleteHooks(
   messages: Message[],
   defaultContent: string,
 ): Promise<string> {
-  const run = await kernel.hookRegistry.run(turnAfterComplete, {
+  const run = await getServiceContext().kernel.hookRegistry.run(turnAfterComplete, {
     sessionId,
     messages: messages as Record<string, unknown>[],
   });
@@ -127,7 +129,7 @@ export async function* sendMessageStream(
     yield streamErrorEvent(sessionId, "Server is shutting down");
     return;
   }
-  if (!(await conv.sessionExists(sessionId))) {
+  if (!(await conv().sessionExists(sessionId))) {
     yield streamErrorEvent(sessionId, `Session not found: ${sessionId}`);
     return;
   }
@@ -207,7 +209,7 @@ function runRetryStream(deps: MessagingDeps, sessionId: string): AsyncGenerator<
   deps.runControl.preemptSessionEngine(sessionId);
   return runExclusiveStreamTurn(
     sessionId,
-    async () => conv.retryTurn(sessionId),
+    async () => conv().retryTurn(sessionId),
     deps.streamHost,
     deps.sessionManager,
   );
@@ -221,7 +223,7 @@ function runTurnStream(
   deps.runControl.preemptSessionEngine(sessionId);
   return runExclusiveStreamTurn(
     sessionId,
-    async () => conv.beginTurn(sessionId, message),
+    async () => conv().beginTurn(sessionId, message),
     deps.streamHost,
     deps.sessionManager,
   );

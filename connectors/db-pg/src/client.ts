@@ -1,4 +1,4 @@
-import { relations, type DbRelations } from "@freeanima/kernel-db/schema";
+import { relations, type DbRelations } from "@freeanima/engine-db/schema";
 import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 

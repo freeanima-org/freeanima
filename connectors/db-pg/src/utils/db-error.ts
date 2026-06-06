@@ -1,5 +1,5 @@
 /** 展开 Drizzle / postgres 错误，便于 CLI 日志 */
-import { formatZodError } from "@freeanima/kernel-schemas";
+import { formatZodError } from "@freeanima/kernel-util";
 import { ZodError } from "zod";
 
 export function formatDbError(e: unknown): string {

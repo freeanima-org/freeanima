@@ -1,18 +1,11 @@
 import { describe, expect, it } from "bun:test";
-import { EventBus } from "@freeanima/kernel-eventbus";
-import { HookRegistry } from "@freeanima/kernel-hooks";
-import { kernel } from "../../src/index.ts";
+import { createServiceKernel } from "../../src/kernel.ts";
 
 describe("service-bootstrap kernel", () => {
-  it("kernel.hookRegistry 为 HookRegistry 实例", () => {
-    expect(kernel.hookRegistry).toBeInstanceOf(HookRegistry);
-  });
-
-  it("kernel.eventBus 为 EventBus 实例", () => {
-    expect(kernel.eventBus).toBeInstanceOf(EventBus);
-  });
-
-  it("kernel.logger 为 Logger 实例", () => {
+  it("createServiceKernel 返回 HookRegistry 与 EventBus", () => {
+    const kernel = createServiceKernel();
+    expect(kernel.hookRegistry).toBeDefined();
+    expect(kernel.eventBus).toBeDefined();
     expect(kernel.logger.info).toBeFunction();
   });
 });

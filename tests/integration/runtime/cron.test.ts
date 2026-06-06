@@ -29,7 +29,7 @@ import {
   cronStore,
 } from "@freeanima/service";
 import { patchConfigSection } from "@freeanima/service-config";
-import { seedSession } from "../../helpers/pg-test.ts";
+import { getTestEngine, seedSession } from "../../helpers/pg-test.ts";
 
 describePg("cron", () => {
   let home: string;
@@ -69,6 +69,7 @@ describePg("cron", () => {
 
   it.skipIf(typeof Bun !== "undefined")("runL2GapFill distills PG session without L2", async () => {
     await seedSession(
+      getTestEngine(),
       "20260531_gapfill_a",
       {
         role: "session_meta",

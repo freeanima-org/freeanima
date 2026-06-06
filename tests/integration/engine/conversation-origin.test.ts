@@ -6,8 +6,8 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { isSessionMeta } from "@freeanima/kernel-schemas";
-import * as conv from "@freeanima/engine-conversation";
+import { isSessionMeta } from "@freeanima/engine-conversation";
+import { testConv } from "../../helpers/pg-test.ts";
 
 describePg("conversation origin", () => {
   const prev = process.env.FREEANIMA_HOME;
@@ -21,22 +21,23 @@ describePg("conversation origin", () => {
   });
 
   it("findSessionByOrigin matches platform_extra keys", async () => {
-    const sid = await conv.newSession("discord", undefined, {
+    const c = testConv();
+    const sid = await c.newSession("discord", undefined, {
       guild_id: "g1",
       channel_id: "c1",
       thread_id: "t1",
     });
-    const found = await conv.findSessionByOrigin("discord", {
+    const found = await c.findSessionByOrigin("discord", {
       guild_id: "g1",
       channel_id: "c1",
       thread_id: "t1",
     });
     expect(found).toBe(sid);
 
-    const miss = await conv.findSessionByOrigin("discord", { thread_id: "other" });
+    const miss = await c.findSessionByOrigin("discord", { thread_id: "other" });
     expect(miss).toBeNull();
 
-    const meta = await conv.loadSessionMeta(sid);
+    const meta = await c.loadSessionMeta(sid);
     expect(isSessionMeta(meta) && meta.platform_extra?.thread_id).toBe("t1");
   });
 

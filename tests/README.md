@@ -28,4 +28,4 @@ bun test
 
 勿对集成测试使用生产 `DATABASE_URL`。
 
-PG harness 实现仍在 `@freeanima/kernel-db/test-helpers`；本目录 helpers 负责用例编排与 `describePg` / `describeSqlite` 门控。
+PG harness 实现仍在 `@freeanima/engine-db/test-helpers`；本目录 helpers 负责用例编排与 `describePg` / `describeSqlite` 门控。

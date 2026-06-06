@@ -79,7 +79,7 @@ packages:
 | 0    | legacy rename            | 全 repo import 切 legacy；后已删 legacy 壳          |
 | 1    | `kernel/`                | hooks / eventbus / schemas / db                     |
 | 2    | `capabilities/provider/` | LLM Provider 实现                                   |
-| 3    | `engine/`                | 主循环+工具循环；engine 直调 `@freeanima/kernel-db` |
+| 3    | `engine/`                | 主循环+工具循环；engine 直调 `@freeanima/engine-db` |
 | 4    | `life/memory/`           | 记忆管道、skills、检索                              |
 | 5    | `life/self/`             | 空壳（`@freeanima/life-self`）                      |
 | 6    | `life/estate/`           | 空壳（`@freeanima/life-estate`）                    |
@@ -95,7 +95,7 @@ packages:
 
 | 模块                          | 过渡期                                               | 最终归属                            |
 | ----------------------------- | ---------------------------------------------------- | ----------------------------------- |
-| `@freeanima/kernel-db`        | **已迁入** `kernel/db`；life/memory 与 service 共用  | 长期持久化层；类型在 kernel-schemas |
+| `@freeanima/engine-db`        | **已迁入** `kernel/db`；life/memory 与 service 共用  | 长期持久化层；类型在 kernel-schemas |
 | EventBus/registry/config 实现 | 新 kernel 只留接口                                   | service                             |
 | Turbo/CI                      | 已合并入主 CI（typecheck / lint / dep-check / test） |
 
@@ -111,7 +111,7 @@ packages:
 ### 新栈必做改进
 
 1. **TurnLifecycle 统一** — ✅ `turn-lifecycle.ts`（非流式 + 流式）
-2. **engine 直调 db** — ✅ `engine-conversation` → `@freeanima/kernel-db`（不做 SessionStore 注入）
+2. **engine 直调 db** — ✅ `engine-conversation` → `@freeanima/engine-db`（不做 SessionStore 注入）
 3. **AnimaService 拆分** — ✅ `anima-service` + status/sessions/memory/messaging 模块
 
 ### 层边界 dep-check
@@ -151,7 +151,7 @@ packages:
 | `@freeanima/engine`       | ~~`@freeanima/legacy-engine`~~（已删，拆至 engine-\* / life-memory）     |
 | `@freeanima/runtime`      | `@freeanima/legacy-runtime`                                              |
 | `@freeanima/memory`       | ~~`@freeanima/legacy-memory`~~ → `@freeanima/life-memory`                |
-| `@freeanima/db`           | ~~`@freeanima/legacy-db`~~ → `@freeanima/kernel-db`（`kernel/db`）       |
+| `@freeanima/db`           | ~~`@freeanima/legacy-db`~~ → `@freeanima/engine-db`（`kernel/db`）       |
 | `@freeanima/server`       | `@freeanima/legacy-server`                                               |
 | `@freeanima/gateway`      | ~~`@freeanima/legacy-gateway`~~ → `@freeanima/connectors-gateway`        |
 | `@freeanima/tools`        | `@freeanima/legacy-tools`（core 已拆至 `@freeanima/capabilities-tools`） |

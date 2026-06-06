@@ -7,7 +7,7 @@ import {
 } from "../../helpers/integration-case.ts";
 
 import { registerAllTools } from "@freeanima/service";
-import { initSession } from "@freeanima/engine";
+import { testConv } from "../../helpers/pg-test.ts";
 import {
   setAwaitingClarify,
   readAwaitingClarify,
@@ -31,66 +31,71 @@ describePg("clarify session", () => {
   });
 
   async function createSession(id: string): Promise<void> {
-    await initSession(id, "test-model", { platform: "parlor" });
+    await testConv().initSession(id, "test-model", { platform: "parlor" });
   }
 
   it("session A/B awaiting_clarify isolated", async () => {
+    const c = testConv();
     await createSession("session_a");
     await createSession("session_b");
 
-    await setAwaitingClarify("session_a", {
+    await setAwaitingClarify(c, "session_a", {
       items: [{ question: "A?" }],
       timeout_sec: 1800,
     });
 
-    expect((await readAwaitingClarify("session_a"))?.items[0]?.question).toBe("A?");
-    expect(await readAwaitingClarify("session_b")).toBeNull();
+    expect((await readAwaitingClarify(c, "session_a"))?.items[0]?.question).toBe("A?");
+    expect(await readAwaitingClarify(c, "session_b")).toBeNull();
 
-    await clearAwaitingClarify("session_a");
-    expect(await readAwaitingClarify("session_a")).toBeNull();
+    await clearAwaitingClarify(c, "session_a");
+    expect(await readAwaitingClarify(c, "session_a")).toBeNull();
   });
 
   it("resolveUserContent merges batch questions", async () => {
+    const c = testConv();
     await createSession("s1");
 
-    await setAwaitingClarify("s1", {
+    await setAwaitingClarify(c, "s1", {
       items: [{ question: "Q1?" }, { question: "Q2?" }],
       timeout_sec: 1800,
     });
 
-    const merged = await resolveUserContent("s1", "我的回答");
+    const merged = await resolveUserContent(c, "s1", "我的回答");
     expect(merged).toContain("Q1?");
     expect(merged).toContain("Q2?");
     expect(merged).toContain("我的回答");
-    expect(await readAwaitingClarify("s1")).toBeNull();
+    expect(await readAwaitingClarify(c, "s1")).toBeNull();
   });
 
   it("guard blocks slash commands while awaiting", async () => {
+    const c = testConv();
     await createSession("s1");
 
-    await setAwaitingClarify("s1", {
+    await setAwaitingClarify(c, "s1", {
       items: [{ question: "Q?" }],
       timeout_sec: 1800,
     });
 
-    expect((await guardAwaitingClarify("s1", "/help")).ok).toBe(false);
-    expect((await guardAwaitingClarify("s1", "/cancel")).ok).toBe(true);
-    expect((await guardAwaitingClarify("s1", "我的回答")).ok).toBe(true);
+    expect((await guardAwaitingClarify(c, "s1", "/help")).ok).toBe(false);
+    expect((await guardAwaitingClarify(c, "s1", "/cancel")).ok).toBe(true);
+    expect((await guardAwaitingClarify(c, "s1", "我的回答")).ok).toBe(true);
   });
 
   it("expire clears pending and resolve prepends hint", async () => {
+    const c = testConv();
     await createSession("s1");
 
     await setAwaitingClarify(
+      c,
       "s1",
       { items: [{ question: "Q?" }], timeout_sec: 60 },
       { asked_at: new Date(Date.now() - 120_000).toISOString().replace("Z", "+08:00") },
     );
 
-    const merged = await resolveUserContent("s1", "新消息");
+    const merged = await resolveUserContent(c, "s1", "新消息");
     expect(merged).toContain("超时作废");
     expect(merged).toContain("新消息");
-    expect(await readAwaitingClarify("s1")).toBeNull();
+    expect(await readAwaitingClarify(c, "s1")).toBeNull();
   });
 
   it("findAwaitingClarifyInMessages reads last clarify tool", () => {
@@ -110,8 +115,9 @@ describePg("clarify session", () => {
   });
 
   it("/cancel command clears awaiting", async () => {
+    const c = testConv();
     await createSession("s1");
-    await setAwaitingClarify("s1", {
+    await setAwaitingClarify(c, "s1", {
       items: [{ question: "Q?" }],
       timeout_sec: 1800,
     });
@@ -124,7 +130,7 @@ describePg("clarify session", () => {
       raw: "/cancel",
     });
     expect(result.text).toContain("已取消");
-    expect(await readAwaitingClarify("s1")).toBeNull();
+    expect(await readAwaitingClarify(c, "s1")).toBeNull();
   });
 
   afterAll(async () => {

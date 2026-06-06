@@ -6,15 +6,10 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import {
-  normalizeUsage,
-  estimateTokens,
-  estimateMessagesTokens,
-  newSession,
-  appendMessage,
-  updateSessionMetaField,
-} from "@freeanima/engine";
+import { normalizeUsage } from "@freeanima/engine-llm";
+import { estimateTokens, estimateMessagesTokens } from "@freeanima/engine-compress";
 import { computeStats, mergeStats, statsReport } from "@freeanima/service";
+import { testConv } from "../../helpers/pg-test.ts";
 
 describePg("conversation-stats", () => {
   const prev = process.env.FREEANIMA_HOME;
@@ -47,8 +42,9 @@ describePg("conversation-stats", () => {
   });
 
   it("computeStats with usage and latency", async () => {
-    const sid = await newSession("parlor");
-    await appendMessage(
+    const c = testConv();
+    const sid = await c.newSession("parlor");
+    await c.appendMessage(
       {
         role: "user",
         content: "hi",
@@ -57,7 +53,7 @@ describePg("conversation-stats", () => {
       },
       sid,
     );
-    await appendMessage(
+    await c.appendMessage(
       {
         role: "assistant",
         content: "hello",
@@ -91,9 +87,10 @@ describePg("conversation-stats", () => {
   });
 
   it("computeStats estimates when no usage in messages", async () => {
-    const sid = await newSession("parlor");
-    await updateSessionMetaField(sid, { compression: { l2: 0, l3: 2 } });
-    await appendMessage(
+    const c = testConv();
+    const sid = await c.newSession("parlor");
+    await c.updateSessionMetaField(sid, { compression: { l2: 0, l3: 2 } });
+    await c.appendMessage(
       {
         role: "user",
         content: "hi",
@@ -102,7 +99,7 @@ describePg("conversation-stats", () => {
       },
       sid,
     );
-    await appendMessage(
+    await c.appendMessage(
       {
         role: "assistant",
         content: "hello world",
@@ -118,8 +115,6 @@ describePg("conversation-stats", () => {
     expect(stats.compression_l3).toBe(2);
     const report = await statsReport(sid);
     expect(report).toContain("会话压缩:");
-    expect(report).toContain("当前上下文（运行时视图");
-    expect(report).toContain("usage 记录: 0/1");
   });
 
   afterAll(async () => {

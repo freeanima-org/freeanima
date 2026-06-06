@@ -30,7 +30,7 @@ import {
   type SessionMetaMessage,
   type SessionMetaLoadResult,
   type OpenAiToolSchema,
-} from "@freeanima/kernel-schemas";
+} from "./message.ts";
 import {
   loadMetaWithRouting,
   loadMessagesForRuntimeWithRouting,
@@ -55,9 +55,10 @@ import {
   sessionExistsWithRouting,
   nextMessagePosWithRouting,
 } from "./session-store-pg-bridge.ts";
+import type { PgRepositories } from "@freeanima/engine-repos";
 
 export type Message = SessionMessage;
-export { isSessionMeta, parseSessionLine } from "@freeanima/kernel-schemas";
+export { isSessionMeta, parseSessionLine } from "./message.ts";
 
 function nowIso(): string {
   return new Date(Date.now() + CST_OFFSET_MS).toISOString().replace("Z", "+08:00");
@@ -89,32 +90,36 @@ export function loadSoul(): string {
 
 /** 读取 session 缓存的 OpenAI tools；缺失时回退注册表并写回 meta */
 export async function loadSessionTools(
+  repos: PgRepositories,
   session: string,
   cachedMeta?: SessionMetaLoadResult,
 ): Promise<OpenAiToolSchema[]> {
   if (cachedMeta != null && isSessionMeta(cachedMeta) && cachedMeta.tools.length > 0) {
     return cachedMeta.tools;
   }
-  if (postgresAvailable()) {
-    const cached = await loadSessionToolsWithRouting(session);
+  if (postgresAvailable(repos)) {
+    const cached = await loadSessionToolsWithRouting(repos, session);
     if (cached.length > 0) {
       return cached;
     }
   } else {
-    const meta = cachedMeta ?? (await loadSessionMeta(session));
+    const meta = cachedMeta ?? (await loadSessionMeta(repos, session));
     if (isSessionMeta(meta) && meta.tools.length > 0) {
       return meta.tools;
     }
   }
   const fresh = openaiSchemas();
   if (fresh.length > 0) {
-    await updateSessionMetaField(session, { tools: fresh });
+    await updateSessionMetaField(repos, session, { tools: fresh });
   }
   return fresh;
 }
 
-export async function loadSessionMeta(session: string): Promise<SessionMetaLoadResult> {
-  return loadMetaWithRouting(session);
+export async function loadSessionMeta(
+  repos: PgRepositories,
+  session: string,
+): Promise<SessionMetaLoadResult> {
+  return loadMetaWithRouting(repos, session);
 }
 
 export function generateSessionId(): string {
@@ -124,13 +129,15 @@ export function generateSessionId(): string {
   return `${ts}_${randomBytes(2).toString("hex")}`;
 }
 
-export async function countSessionsByPlatform(): Promise<Record<string, number>> {
-  if (postgresAvailable()) {
-    return pgCountSessionsByPlatform();
+export async function countSessionsByPlatform(
+  repos: PgRepositories,
+): Promise<Record<string, number>> {
+  if (postgresAvailable(repos)) {
+    return pgCountSessionsByPlatform(repos);
   }
   const byPlatform: Record<string, number> = {};
-  for (const sid of await listSessions()) {
-    const meta = await loadSessionMeta(sid);
+  for (const sid of await listSessions(repos)) {
+    const meta = await loadSessionMeta(repos, sid);
     const raw = isSessionMeta(meta) ? meta.platform : undefined;
     const platform = typeof raw === "string" && raw.trim() ? raw.trim() : "unknown";
     byPlatform[platform] = (byPlatform[platform] ?? 0) + 1;
@@ -138,7 +145,10 @@ export async function countSessionsByPlatform(): Promise<Record<string, number>>
   return byPlatform;
 }
 
-export async function listSessionSummaries(platform?: string | null): Promise<
+export async function listSessionSummaries(
+  repos: PgRepositories,
+  platform?: string | null,
+): Promise<
   Array<{
     id: string;
     title: string;
@@ -146,13 +156,13 @@ export async function listSessionSummaries(platform?: string | null): Promise<
     platform: string;
   }>
 > {
-  if (postgresAvailable()) {
-    return pgListSessionSummaries(platform);
+  if (postgresAvailable(repos)) {
+    return pgListSessionSummaries(repos, platform);
   }
-  const ids = await listSessions(platform);
+  const ids = await listSessions(repos, platform);
   const out: Array<{ id: string; title: string; created: string; platform: string }> = [];
   for (const sid of ids) {
-    const meta = await loadSessionMeta(sid);
+    const meta = await loadSessionMeta(repos, sid);
     out.push({
       id: sid,
       title: isSessionMeta(meta) ? (meta.title ?? "") : "",
@@ -163,51 +173,61 @@ export async function listSessionSummaries(platform?: string | null): Promise<
   return out;
 }
 
-export async function listSessions(platform?: string | null): Promise<string[]> {
-  return listSessionsWithRouting(platform);
+export async function listSessions(
+  repos: PgRepositories,
+  platform?: string | null,
+): Promise<string[]> {
+  return listSessionsWithRouting(repos, platform);
 }
 
 /** session 是否存在（PostgreSQL） */
-export async function sessionExists(session: string): Promise<boolean> {
-  return sessionExistsWithRouting(session);
+export async function sessionExists(repos: PgRepositories, session: string): Promise<boolean> {
+  return sessionExistsWithRouting(repos, session);
 }
 
-export async function load(session: string): Promise<Message[]> {
-  return loadMessagesWithRouting(session);
+export async function load(repos: PgRepositories, session: string): Promise<Message[]> {
+  return loadMessagesWithRouting(repos, session);
 }
 
 export async function loadMessagePage(
+  repos: PgRepositories,
   session: string,
   offset: number,
   limit: number,
 ): Promise<Message[]> {
-  return loadMessagesPageWithRouting(session, offset, limit);
+  return loadMessagesPageWithRouting(repos, session, offset, limit);
 }
 
-export async function countMessages(session: string): Promise<number> {
-  return countMessagesWithRouting(session);
+export async function countMessages(repos: PgRepositories, session: string): Promise<number> {
+  return countMessagesWithRouting(repos, session);
 }
 
 export async function loadForRuntime(
+  repos: PgRepositories,
   session: string,
   meta?: SessionMetaLoadResult,
 ): Promise<Message[]> {
-  const m = meta ?? (await loadSessionMeta(session));
-  return loadMessagesForRuntimeWithRouting(session, m);
+  const m = meta ?? (await loadSessionMeta(repos, session));
+  return loadMessagesForRuntimeWithRouting(repos, session, m);
 }
 
-export async function appendMessage(msg: SessionMessage, session: string): Promise<void> {
+export async function appendMessage(
+  repos: PgRepositories,
+  msg: SessionMessage,
+  session: string,
+): Promise<void> {
   const out: SessionMessage & { timestamp?: string; id?: number } = { ...msg };
   if (!out.timestamp) out.timestamp = nowIso();
   if (out.pos === undefined && out.role !== "session_meta") {
-    out.pos = await nextMessagePosWithRouting(session);
+    out.pos = await nextMessagePosWithRouting(repos, session);
   }
   if (out.role !== "session_meta") {
-    await pgWriteMessage(session, out);
+    await pgWriteMessage(repos, session, out);
   }
 }
 
 export async function appendSessionMeta(
+  repos: PgRepositories,
   session: string,
   tools: OpenAiToolSchema[],
   model: string,
@@ -221,10 +241,11 @@ export async function appendSessionMeta(
     timestamp: nowIso(),
   };
   if (opts?.platform) meta.platform = opts.platform;
-  await pgWriteMeta(session, meta);
+  await pgWriteMeta(repos, session, meta);
 }
 
 export async function initSession(
+  repos: PgRepositories,
   sid: string,
   model: string,
   opts: { platform: string; functions?: string[]; platform_extra?: Record<string, unknown> },
@@ -245,17 +266,18 @@ export async function initSession(
   if (opts.platform_extra && Object.keys(opts.platform_extra).length > 0) {
     meta.platform_extra = opts.platform_extra;
   }
-  await pgWriteMeta(sid, meta);
+  await pgWriteMeta(repos, sid, meta);
 }
 
 export async function newSession(
+  repos: PgRepositories,
   platform: string,
   model?: string,
   platformExtra?: Record<string, unknown>,
 ): Promise<string> {
   const cfg = loadConfig();
   const sid = generateSessionId();
-  await initSession(sid, model ?? getProfileHopModel(cfg, PROFILE_CHAT), {
+  await initSession(repos, sid, model ?? getProfileHopModel(cfg, PROFILE_CHAT), {
     platform,
     platform_extra: platformExtra,
   });
@@ -276,12 +298,13 @@ function originExtraMatches(
 
 /** 按 platform + platform_extra 匹配已有 session（extra 中每项须与 meta 一致） */
 export async function findSessionByOrigin(
+  repos: PgRepositories,
   platform: string,
   platformExtra: Record<string, unknown> = {},
 ): Promise<string | null> {
-  if (postgresAvailable() && Object.keys(platformExtra).length > 0) {
+  if (postgresAvailable(repos) && Object.keys(platformExtra).length > 0) {
     try {
-      const sid = await pgFindSessionIdByPlatformInfo(platform, platformExtra);
+      const sid = await pgFindSessionIdByPlatformInfo(repos, platform, platformExtra);
       if (sid) return sid;
     } catch {
       /* 回退扫描 */
@@ -289,9 +312,9 @@ export async function findSessionByOrigin(
   }
 
   try {
-    for (const sid of await listSessionsWithRouting(platform)) {
+    for (const sid of await listSessionsWithRouting(repos, platform)) {
       try {
-        const meta = await loadSessionMeta(sid);
+        const meta = await loadSessionMeta(repos, sid);
         if (!isSessionMeta(meta)) continue;
         if (Object.keys(platformExtra).length > 0) {
           const stored = meta.platform_extra ?? {};
@@ -309,20 +332,22 @@ export async function findSessionByOrigin(
 }
 
 export async function updateSessionMetaField(
+  repos: PgRepositories,
   session: string,
   patch: Partial<SessionMetaMessage> & Record<string, unknown>,
 ): Promise<void> {
-  const parsed = await loadSessionMeta(session);
+  const parsed = await loadSessionMeta(repos, session);
   if (!isSessionMeta(parsed)) return;
-  await pgWritePatchMeta(session, patch);
+  await pgWritePatchMeta(repos, session, patch);
 }
 
 export async function patchSessionOrigin(
+  repos: PgRepositories,
   session: string,
   platform: string,
   platformExtra?: Record<string, unknown>,
 ): Promise<void> {
-  const parsed = await loadSessionMeta(session);
+  const parsed = await loadSessionMeta(repos, session);
   if (!isSessionMeta(parsed)) return;
   const meta: SessionMetaMessage = parsed;
   const existing = meta.platform ?? "";
@@ -333,37 +358,43 @@ export async function patchSessionOrigin(
   }
   if (!existing) meta.platform = platform;
   if (platformExtra !== undefined) meta.platform_extra = platformExtra;
-  await pgWriteMeta(session, meta);
+  await pgWriteMeta(repos, session, meta);
 }
 
-export async function rebuildSessionSystemPrompt(session: string): Promise<void> {
-  const meta = await loadSessionMeta(session);
+export async function rebuildSessionSystemPrompt(
+  repos: PgRepositories,
+  session: string,
+): Promise<void> {
+  const meta = await loadSessionMeta(repos, session);
   if (!isSessionMeta(meta)) return;
   const functions = meta.functions ?? [];
   const cwd = meta.cwd;
   const soul = loadSoul();
   const systemPrompt = buildSystemPrompt(functions, soul, cwd);
-  await updateSessionMetaField(session, { system_prompt: systemPrompt });
+  await updateSessionMetaField(repos, session, { system_prompt: systemPrompt });
 }
 
 /** 将当前注册表工具写回 session_meta，供下次 LLM 请求使用 */
-export async function reloadSessionTools(session: string): Promise<number> {
-  const meta = await loadSessionMeta(session);
+export async function reloadSessionTools(repos: PgRepositories, session: string): Promise<number> {
+  const meta = await loadSessionMeta(repos, session);
   if (!isSessionMeta(meta)) {
     throw new Error("session 不存在");
   }
   const tools = openaiSchemas();
-  await updateSessionMetaField(session, { tools, timestamp: nowIso() });
+  await updateSessionMetaField(repos, session, { tools, timestamp: nowIso() });
   return tools.length;
 }
 
 const RESUME_STALE_MS = 7 * 24 * 60 * 60 * 1000;
 
-async function sessionLastActivityMs(session: string): Promise<number | null> {
-  const meta = await loadSessionMeta(session);
+async function sessionLastActivityMs(
+  repos: PgRepositories,
+  session: string,
+): Promise<number | null> {
+  const meta = await loadSessionMeta(repos, session);
   const metaTs = isSessionMeta(meta) ? meta.timestamp : undefined;
   let last: number | null = metaTs ? Date.parse(metaTs) : null;
-  const ts = await pgLastMessageTimestamp(session);
+  const ts = await pgLastMessageTimestamp(repos, session);
   if (ts) {
     const t = Date.parse(ts);
     if (!Number.isNaN(t) && (last === null || t > last)) last = t;
@@ -372,40 +403,51 @@ async function sessionLastActivityMs(session: string): Promise<number | null> {
 }
 
 /** 续接 session 时按条件刷新 system_prompt */
-export async function refreshSystemPromptOnResume(session: string): Promise<boolean> {
-  const meta = await loadSessionMeta(session);
+export async function refreshSystemPromptOnResume(
+  repos: PgRepositories,
+  session: string,
+): Promise<boolean> {
+  const meta = await loadSessionMeta(repos, session);
   if (!isSessionMeta(meta)) return false;
   const cached = (meta.system_prompt ?? "").trim();
   if (!cached) {
-    await rebuildSessionSystemPrompt(session);
+    await rebuildSessionSystemPrompt(repos, session);
     return true;
   }
-  const last = await sessionLastActivityMs(session);
+  const last = await sessionLastActivityMs(repos, session);
   if (last === null) return false;
   if (Date.now() - last > RESUME_STALE_MS) {
-    await rebuildSessionSystemPrompt(session);
+    await rebuildSessionSystemPrompt(repos, session);
     return true;
   }
   return false;
 }
 
-export async function assertSessionPlatform(session: string, expected: string): Promise<void> {
-  const meta = await loadSessionMeta(session);
+export async function assertSessionPlatform(
+  repos: PgRepositories,
+  session: string,
+  expected: string,
+): Promise<void> {
+  const meta = await loadSessionMeta(repos, session);
   const p = isSessionMeta(meta) ? meta.platform : undefined;
   if (p && p !== expected) {
     throw new Error(`Session platform mismatch: expected ${expected}, got ${p}`);
   }
 }
 
-export async function appendUserTurn(session: string, userText: string): Promise<string> {
+export async function appendUserTurn(
+  repos: PgRepositories,
+  session: string,
+  userText: string,
+): Promise<string> {
   const content = userText;
-  await appendMessage({ role: "user", content }, session);
+  await appendMessage(repos, { role: "user", content }, session);
 
-  const meta = await loadSessionMeta(session);
+  const meta = await loadSessionMeta(repos, session);
   if (isSessionMeta(meta) && !meta.title) {
     const short = content.slice(0, 30).trim();
     if (short) {
-      await updateSessionMetaField(session, { title: short });
+      await updateSessionMetaField(repos, session, { title: short });
     }
   }
 
@@ -443,7 +485,10 @@ function compressOptsForSession(
 const pendingCompressionSummaries = new Map<string, Promise<void>>();
 
 /** 等待进行中的异步会话摘要（集成测 teardown 须在恢复 FREEANIMA_HOME 前调用） */
-export async function flushCompressionSummaries(session?: string): Promise<void> {
+export async function flushCompressionSummaries(
+  _repos: PgRepositories,
+  session?: string,
+): Promise<void> {
   if (session !== undefined) {
     const p = pendingCompressionSummaries.get(session);
     if (p) await p;
@@ -453,6 +498,7 @@ export async function flushCompressionSummaries(session?: string): Promise<void>
 }
 
 async function finalizeCompressionSummary(
+  repos: PgRepositories,
   session: string,
   allMsgs: Message[],
   prevState: CompressionState | null,
@@ -483,9 +529,9 @@ async function finalizeCompressionSummary(
     logComponent("compression").error(`会话摘要生成失败: ${session}`, { err: gen.error });
   }
 
-  await updateSessionMetaField(session, { compression: merged });
+  await updateSessionMetaField(repos, session, { compression: merged });
   try {
-    await rebuildSessionSystemPrompt(session);
+    await rebuildSessionSystemPrompt(repos, session);
   } catch (e) {
     logComponent("compression").error(`压缩后重建 system_prompt 失败: ${session}`, {
       err: String(e),
@@ -494,6 +540,7 @@ async function finalizeCompressionSummary(
 }
 
 function scheduleCompressionSummary(
+  repos: PgRepositories,
   session: string,
   allMsgs: Message[],
   prevState: CompressionState | null,
@@ -506,6 +553,7 @@ function scheduleCompressionSummary(
   const run = async (): Promise<void> => {
     if (prev) await prev;
     await finalizeCompressionSummary(
+      repos,
       session,
       allMsgs,
       prevState,
@@ -529,21 +577,23 @@ function scheduleCompressionSummary(
 
 /** 根据完整历史维护 meta.compression（不删消息；cut 变更时异步生成摘要） */
 export async function advanceCompressionMeta(
+  repos: PgRepositories,
   session: string,
   preloaded?: { msgs: Message[]; meta: SessionMetaLoadResult },
 ): Promise<void> {
-  await recompressSession(session, undefined, preloaded);
+  await recompressSession(repos, session, undefined, preloaded);
 }
 
 /** 重新计算 session 裁剪（可选 force 忽略滞回） */
 export async function recompressSession(
+  repos: PgRepositories,
   session: string,
   opts?: { force?: boolean },
   preloaded?: { msgs: Message[]; meta: SessionMetaLoadResult },
 ): Promise<Record<string, unknown>> {
   const cfg = getCompressionConfig();
-  const msgs = preloaded?.msgs ?? (await load(session));
-  const meta = preloaded?.meta ?? (await loadSessionMeta(session));
+  const msgs = preloaded?.msgs ?? (await load(repos, session));
+  const meta = preloaded?.meta ?? (await loadSessionMeta(repos, session));
   const prevState = parseCompressionState(isSessionMeta(meta) ? meta.compression : undefined);
   const state = !opts?.force && prevState ? prevState : opts?.force ? null : prevState;
 
@@ -578,10 +628,10 @@ export async function recompressSession(
       const model = isSessionMeta(meta)
         ? meta.model
         : getProfileHopModel(loadConfig(), PROFILE_CHAT);
-      await updateSessionMetaField(session, { compression: newState });
-      scheduleCompressionSummary(session, msgs, prevState, newState, systemSnapshot, model);
+      await updateSessionMetaField(repos, session, { compression: newState });
+      scheduleCompressionSummary(repos, session, msgs, prevState, newState, systemSnapshot, model);
     } else {
-      await updateSessionMetaField(session, { compression: newState });
+      await updateSessionMetaField(repos, session, { compression: newState });
     }
   }
 
@@ -599,6 +649,7 @@ export async function recompressSession(
 
 /** 将缺失 tool 响应写入 PG（在 assistant 后原位插入，后续 pos 后移） */
 export async function repairAndPersistToolLoop(
+  repos: PgRepositories,
   session: string,
   msgs: SessionMessage[],
   reason = REPAIR_REASON_LOST,
@@ -614,7 +665,7 @@ export async function repairAndPersistToolLoop(
   for (const c of ordered) {
     if (c.assistantPos === undefined) continue;
 
-    const current = await load(session);
+    const current = await load(repos, session);
     const idx = current.findIndex((m) => m.pos === c.assistantPos);
     if (idx < 0) continue;
 
@@ -623,11 +674,11 @@ export async function repairAndPersistToolLoop(
     const n = c.missingCalls.length;
     if (n === 0) continue;
 
-    await pgShiftMessagePositions(session, insertAtPos - 1, n);
+    await pgShiftMessagePositions(repos, session, insertAtPos - 1, n);
 
     for (let i = 0; i < n; i++) {
       const call = c.missingCalls[i]!;
-      await pgWriteMessage(session, {
+      await pgWriteMessage(repos, session, {
         role: "tool",
         pos: insertAtPos + i,
         tool_call_id: call.id,
@@ -646,22 +697,24 @@ export async function repairAndPersistToolLoop(
 }
 
 async function ensureSessionToolIntegrity(
+  repos: PgRepositories,
   session: string,
   msgs: SessionMessage[],
 ): Promise<Message[]> {
-  const repaired = await repairAndPersistToolLoop(session, msgs);
-  return repaired ? load(session) : msgs;
+  const repaired = await repairAndPersistToolLoop(repos, session, msgs);
+  return repaired ? load(repos, session) : msgs;
 }
 
 /** 工具循环中单轮上下文 emergency：就地裁切内存中的 messages */
 export async function maybeApplyEmergencyCompression(
+  repos: PgRepositories,
   session: string,
   runtimeMessages: SessionMessage[],
   opts: { model: string; tools: OpenAiToolSchema[] },
 ): Promise<boolean> {
   if (!compressionEnabled()) return false;
   if (isInToolLoop(runtimeMessages)) return false;
-  const meta = await loadSessionMeta(session);
+  const meta = await loadSessionMeta(repos, session);
   const state = isSessionMeta(meta) ? parseCompressionState(meta.compression) : null;
   const systemPrompt = isSessionMeta(meta) ? (meta.system_prompt ?? "") : "";
   const cfg = getCompressionConfig();
@@ -685,10 +738,10 @@ export async function maybeApplyEmergencyCompression(
   runtimeMessages.push(...compressed);
   if (newState) {
     const prev = state;
-    await updateSessionMetaField(session, { compression: newState });
+    await updateSessionMetaField(repos, session, { compression: newState });
     const systemSnapshot = systemPrompt;
-    const allMsgs = await load(session);
-    scheduleCompressionSummary(session, allMsgs, prev, newState, systemSnapshot, opts.model);
+    const allMsgs = await load(repos, session);
+    scheduleCompressionSummary(repos, session, allMsgs, prev, newState, systemSnapshot, opts.model);
   }
   return true;
 }
@@ -715,22 +768,26 @@ function buildRuntimeMessagesFrom(
   return [runtimeMsgs, functions];
 }
 
-export async function buildRuntimeMessages(session: string): Promise<[SessionMessage[], string[]]> {
-  const meta = await loadSessionMeta(session);
-  const msgs = await loadForRuntime(session, meta);
+export async function buildRuntimeMessages(
+  repos: PgRepositories,
+  session: string,
+): Promise<[SessionMessage[], string[]]> {
+  const meta = await loadSessionMeta(repos, session);
+  const msgs = await loadForRuntime(repos, session, meta);
   return buildRuntimeMessagesFrom(session, meta, msgs);
 }
 
 export async function beginTurn(
+  repos: PgRepositories,
   session: string,
   userText: string,
 ): Promise<[SessionMessage[], string[], string]> {
   clearToolLoopSuppression(session);
-  const effective = await appendUserTurn(session, userText);
-  let msgs = await load(session);
-  msgs = await ensureSessionToolIntegrity(session, msgs);
-  const meta = await loadSessionMeta(session);
-  await advanceCompressionMeta(session, { meta, msgs });
+  const effective = await appendUserTurn(repos, session, userText);
+  let msgs = await load(repos, session);
+  msgs = await ensureSessionToolIntegrity(repos, session, msgs);
+  const meta = await loadSessionMeta(repos, session);
+  await advanceCompressionMeta(repos, session, { meta, msgs });
   const [runtimeMsgs, functions] = buildRuntimeMessagesFrom(session, meta, msgs);
   return [runtimeMsgs, functions, effective];
 }
@@ -747,6 +804,7 @@ function findTurnUserIndex(messages: SessionMessage[], userText: string): number
 }
 
 export async function finishTurn(
+  repos: PgRepositories,
   session: string,
   messages: SessionMessage[],
   userText: string,
@@ -758,18 +816,19 @@ export async function finishTurn(
   if (!skipMessageAppend) {
     for (const msg of messages.slice(idx + 1)) {
       if (msg.role === "system") continue;
-      await appendMessage(msg, session);
+      await appendMessage(repos, msg, session);
     }
   }
-  await updateSessionMeta(session, model, { functions });
+  await updateSessionMeta(repos, session, model, { functions });
 }
 
 export async function updateSessionMeta(
+  repos: PgRepositories,
   session: string,
   model: string,
   opts?: { functions?: string[]; tools?: OpenAiToolSchema[] },
 ): Promise<void> {
-  const parsed = await loadSessionMeta(session);
+  const parsed = await loadSessionMeta(repos, session);
   if (!isSessionMeta(parsed)) return;
   const meta: SessionMetaMessage = parsed;
   meta.model = model;
@@ -780,20 +839,27 @@ export async function updateSessionMeta(
   } else if (!meta.tools.length) {
     meta.tools = openaiSchemas();
   }
-  await pgWriteMeta(session, meta);
+  await pgWriteMeta(repos, session, meta);
 }
 
-export async function setSessionTitle(session: string, title: string): Promise<void> {
-  await updateSessionMetaField(session, { title });
+export async function setSessionTitle(
+  repos: PgRepositories,
+  session: string,
+  title: string,
+): Promise<void> {
+  await updateSessionMetaField(repos, session, { title });
 }
 
-export async function getSessionTitle(session: string): Promise<string> {
-  const meta = await loadSessionMeta(session);
+export async function getSessionTitle(repos: PgRepositories, session: string): Promise<string> {
+  const meta = await loadSessionMeta(repos, session);
   return isSessionMeta(meta) && typeof meta.title === "string" ? meta.title : "";
 }
 
-export async function getSessionCwd(session: string): Promise<string | null> {
-  const meta = await loadSessionMeta(session);
+export async function getSessionCwd(
+  repos: PgRepositories,
+  session: string,
+): Promise<string | null> {
+  const meta = await loadSessionMeta(repos, session);
   const cwd = isSessionMeta(meta) ? meta.cwd : undefined;
   return typeof cwd === "string" && cwd ? cwd : null;
 }
@@ -804,20 +870,24 @@ function expandUserPath(cwd: string): string {
   return cwd;
 }
 
-export async function setSessionCwd(session: string, cwd: string): Promise<string> {
+export async function setSessionCwd(
+  repos: PgRepositories,
+  session: string,
+  cwd: string,
+): Promise<string> {
   const expanded = expandUserPath(cwd.trim());
   const resolved = resolve(expanded);
   if (!existsSync(resolved)) {
     throw new Error(`路径不存在: ${cwd}`);
   }
-  await updateSessionMetaField(session, { cwd: resolved });
-  await rebuildSessionSystemPrompt(session);
+  await updateSessionMetaField(repos, session, { cwd: resolved });
+  await rebuildSessionSystemPrompt(repos, session);
   return resolved;
 }
 
 /** 删除最后一轮 user 之后的 assistant/tool 消息，返回该 user 正文 */
-export async function rollbackToLastUser(session: string): Promise<string> {
-  const parsed = await load(session);
+export async function rollbackToLastUser(repos: PgRepositories, session: string): Promise<string> {
+  const parsed = await load(repos, session);
   if (!parsed.length) throw new Error("没有可重试的伙伴消息");
 
   let lastUserIdx = -1;
@@ -835,31 +905,37 @@ export async function rollbackToLastUser(session: string): Promise<string> {
   if (keepThroughPos === undefined) {
     throw new Error("没有可重试的伙伴消息");
   }
-  await pgWriteTruncate(session, Number(keepThroughPos));
+  await pgWriteTruncate(repos, session, Number(keepThroughPos));
 
   return lastUser.role === "user" ? lastUser.content : "";
 }
 
 /** 重试回合：回滚末条 user，不追加新 user，返回运行时 messages */
-export async function retryTurn(session: string): Promise<[SessionMessage[], string[], string]> {
-  const effective = await rollbackToLastUser(session);
-  let msgs = await load(session);
-  msgs = await ensureSessionToolIntegrity(session, msgs);
-  const meta = await loadSessionMeta(session);
-  await advanceCompressionMeta(session, { meta, msgs });
+export async function retryTurn(
+  repos: PgRepositories,
+  session: string,
+): Promise<[SessionMessage[], string[], string]> {
+  const effective = await rollbackToLastUser(repos, session);
+  let msgs = await load(repos, session);
+  msgs = await ensureSessionToolIntegrity(repos, session, msgs);
+  const meta = await loadSessionMeta(repos, session);
+  await advanceCompressionMeta(repos, session, { meta, msgs });
   const [runtimeMsgs, functions] = buildRuntimeMessagesFrom(session, meta, msgs);
   return [runtimeMsgs, functions, effective];
 }
 
-export async function cleanupDebugSessions(_maxAgeHours = 1): Promise<number> {
-  if (!postgresAvailable()) return 0;
+export async function cleanupDebugSessions(
+  repos: PgRepositories,
+  _maxAgeHours = 1,
+): Promise<number> {
+  if (!postgresAvailable(repos)) return 0;
   try {
-    return await pgDeleteDebugSessions();
+    return await pgDeleteDebugSessions(repos);
   } catch {
     let removed = 0;
-    for (const sid of await pgListDebugSessionIds()) {
+    for (const sid of await pgListDebugSessionIds(repos)) {
       try {
-        await pgWriteDeleteSession(sid);
+        await pgWriteDeleteSession(repos, sid);
         removed++;
       } catch {
         /* skip */

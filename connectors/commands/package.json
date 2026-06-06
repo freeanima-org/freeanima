@@ -8,7 +8,6 @@
     "@freeanima/capabilities-clarify": "workspace:*",
     "@freeanima/engine-conversation": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",
-    "@freeanima/kernel-schemas": "workspace:*",
     "@freeanima/life-memory": "workspace:*",
     "@freeanima/service-api": "workspace:*"
   },

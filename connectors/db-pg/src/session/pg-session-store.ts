@@ -1,4 +1,4 @@
-import type { SessionStorePort } from "@freeanima/kernel";
+import type { SessionStorePort } from "@freeanima/engine-repos";
 import { pgProfileWrap } from "../pg-profile.ts";
 import * as messageRepo from "./repos/message-repo.ts";
 import * as sessionRepo from "./repos/session-repo.ts";

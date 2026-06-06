@@ -1,9 +1,15 @@
 import type { AnimaService } from "./runtime/anima-service.ts";
 import type { AcpManager } from "@freeanima/capabilities-acp";
 import type { MCPManager } from "@freeanima/capabilities-mcp";
+import type { Kernel } from "@freeanima/kernel";
+import type { Engine } from "@freeanima/engine";
+import type { ConversationService } from "@freeanima/engine-conversation";
 
 export type ServiceContext = {
   service: AnimaService;
+  kernel: Kernel;
+  engine: Engine;
+  conversation: ConversationService;
   mcp: MCPManager | null;
   acp: AcpManager;
   host: string;

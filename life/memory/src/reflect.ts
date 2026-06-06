@@ -10,8 +10,8 @@ import {
   l2LineSchema,
   reflectStateSchema,
   type L2Line,
-} from "@freeanima/kernel-schemas";
-import { parseJsonLine, safeParseOrNull } from "@freeanima/kernel-schemas";
+} from "./schemas/l2.ts";
+import { parseJsonLine, safeParseOrNull } from "@freeanima/kernel-util";
 
 const EXTRACT_SYSTEM_PROMPT = `你是一位专业的记忆提取助手。你的任务是从一段对话中提取重要信息，存入长期记忆系统。
 
