@@ -19,8 +19,8 @@ import {
   executeCommand,
   isRetryResult,
   resolveCommand,
-  getServiceContext,
-} from "@freeanima/service";
+} from "@freeanima/connectors-commands";
+import { getServiceContext } from "@freeanima/service";
 import { registerTool } from "@freeanima/engine-tool";
 
 async function patchMetaForTest(sessionId: string, patch: Record<string, unknown>): Promise<void> {

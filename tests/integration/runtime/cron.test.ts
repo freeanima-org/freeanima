@@ -27,7 +27,7 @@ import {
   enqueueRunJob,
   Scheduler,
   cronStore,
-} from "@freeanima/service";
+} from "@freeanima/connectors-cron";
 import { patchConfigSection } from "@freeanima/service-config";
 import { getTestEngine, seedSession } from "../../helpers/pg-test.ts";
 

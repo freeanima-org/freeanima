@@ -35,6 +35,7 @@
     "@freeanima/kernel-eventbus": "workspace:*",
     "@freeanima/kernel-hooks": "workspace:*",
     "@freeanima/life-memory": "workspace:*",
+    "@freeanima/life-self": "workspace:*",
     "@freeanima/service-api": "workspace:*",
     "@freeanima/service-bootstrap": "workspace:*",
     "@freeanima/service-config": "workspace:*",

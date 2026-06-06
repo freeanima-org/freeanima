@@ -1,5 +1,2 @@
-/** 会客厅 Web 通道 session 标识 */
-export const PARLOR_PLATFORM = "parlor";
-
-/** 创作室结对编程 session 标识 */
-export const STUDIO_PAIR_PLATFORM = "studio-pair-programming";
+export { PARLOR_PLATFORM, WEBUI_BASE_PATH } from "@freeanima/service-api/constants";
+export { STUDIO_PAIR_PLATFORM } from "./platforms-local.ts";

@@ -418,6 +418,9 @@
     },
     "life/self": {
       "name": "@freeanima/life-self",
+      "dependencies": {
+        "@freeanima/service-config": "workspace:*",
+      },
       "devDependencies": {
         "@types/bun": "catalog:",
       },
@@ -494,6 +497,7 @@
         "@freeanima/kernel-eventbus": "workspace:*",
         "@freeanima/kernel-hooks": "workspace:*",
         "@freeanima/life-memory": "workspace:*",
+        "@freeanima/life-self": "workspace:*",
         "@freeanima/service-api": "workspace:*",
         "@freeanima/service-bootstrap": "workspace:*",
         "@freeanima/service-config": "workspace:*",
@@ -510,6 +514,7 @@
         "@freeanima/capabilities-acp": "workspace:*",
         "@freeanima/capabilities-clarify": "workspace:*",
         "@freeanima/capabilities-provider-openai-compatible": "workspace:*",
+        "@freeanima/connectors-commands": "workspace:*",
         "@freeanima/connectors-cron": "workspace:*",
         "@freeanima/connectors-db-pg": "workspace:*",
         "@freeanima/connectors-eventbus-sqlite": "workspace:*",
@@ -527,6 +532,7 @@
         "@freeanima/kernel-logging": "workspace:*",
         "@freeanima/life-memory": "workspace:*",
         "@freeanima/service": "workspace:*",
+        "@freeanima/service-api": "workspace:*",
         "@freeanima/service-bootstrap": "workspace:*",
         "@freeanima/service-config": "workspace:*",
         "@freeanima/service-logging": "workspace:*",

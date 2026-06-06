@@ -4,6 +4,7 @@ export {
   registerServiceMemoryBus,
   registerServiceTools,
 } from "./register.ts";
+import "./wire-api.ts";
 export {
   initServiceContext,
   getServiceContext,
