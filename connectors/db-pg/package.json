@@ -5,9 +5,10 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@freeanima/kernel": "workspace:*",
-    "@freeanima/kernel-db": "workspace:*",
-    "@freeanima/kernel-schemas": "workspace:*",
+    "@freeanima/engine-conversation": "workspace:*",
+    "@freeanima/engine-repos": "workspace:*",
+    "@freeanima/engine-db": "workspace:*",
+    "@freeanima/kernel-util": "workspace:*",
     "drizzle-orm": "catalog:",
     "postgres": "^3.4.9",
     "zod": "catalog:"

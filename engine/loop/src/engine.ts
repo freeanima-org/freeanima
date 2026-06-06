@@ -19,11 +19,11 @@ import {
 import * as llm from "@freeanima/engine-llm";
 import { cleanToolCallsForApi } from "@freeanima/engine-llm";
 import { markToolLoopActivity } from "@freeanima/engine-compress";
-import { getToolSessionId } from "./tool-context.ts";
+import { getToolSessionId, getToolRepos } from "./tool-context.ts";
 import { maybeApplyEmergencyCompression } from "@freeanima/engine-conversation";
 import { REPAIR_REASON_INTERRUPT } from "@freeanima/engine-llm";
-import type { AssistantMessage, SessionMessage, ToolMessage } from "@freeanima/kernel-schemas";
-import type { OpenAiToolSchema } from "@freeanima/kernel-schemas";
+import type { AssistantMessage, SessionMessage, ToolMessage } from "@freeanima/engine-conversation";
+import type { OpenAiToolSchema } from "@freeanima/engine-conversation";
 
 export class MaxTurnsExceeded extends Error {
   override name = "MaxTurnsExceeded";
@@ -151,7 +151,10 @@ async function afterRuntimeMessage(
   const model = opts?.model;
   const tools = opts?.tools;
   if (model && tools) {
-    await maybeApplyEmergencyCompression(sessionId, messages, { model, tools });
+    const repos = getToolRepos();
+    if (repos) {
+      await maybeApplyEmergencyCompression(repos, sessionId, messages, { model, tools });
+    }
   }
 }
 
@@ -168,7 +171,10 @@ async function afterToolRoundBatch(
   const model = opts?.model;
   const tools = opts?.tools;
   if (model && tools) {
-    await maybeApplyEmergencyCompression(sessionId, messages, { model, tools });
+    const repos = getToolRepos();
+    if (repos) {
+      await maybeApplyEmergencyCompression(repos, sessionId, messages, { model, tools });
+    }
   }
 }
 

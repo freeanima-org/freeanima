@@ -9,7 +9,9 @@
     "./runtime/system-prompt-wire": "./src/runtime/system-prompt-wire.ts",
     "./runtime/home-channel": "./src/runtime/home-channel.ts",
     "./runtime/conversation-stats": "./src/runtime/conversation-stats.ts",
-    "./runtime/turn-lifecycle": "./src/runtime/turn-lifecycle.ts"
+    "./runtime/turn-lifecycle": "./src/runtime/turn-lifecycle.ts",
+    "./schemas/display": "./src/schemas/display.ts",
+    "./schemas/snapshot": "./src/schemas/snapshot.ts"
   },
   "dependencies": {
     "@freeanima/capabilities-acp": "workspace:*",
@@ -26,12 +28,10 @@
     "@freeanima/engine-loop": "workspace:*",
     "@freeanima/engine-prompt": "workspace:*",
     "@freeanima/engine-provider-llm": "workspace:*",
-    "@freeanima/engine-tool": "workspace:*",
-    "@freeanima/kernel": "workspace:*",
+    "@freeanima/engine-repos": "workspace:*",
     "@freeanima/connectors-db-pg": "workspace:*",
     "@freeanima/kernel-eventbus": "workspace:*",
     "@freeanima/kernel-hooks": "workspace:*",
-    "@freeanima/kernel-schemas": "workspace:*",
     "@freeanima/life-memory": "workspace:*",
     "@freeanima/service-api": "workspace:*",
     "@freeanima/service-bootstrap": "workspace:*",

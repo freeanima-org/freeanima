@@ -7,7 +7,7 @@ import {
   type CompressionState,
   type SessionMetaMessage,
   type SessionTodoStore,
-} from "@freeanima/kernel-schemas";
+} from "@freeanima/engine-conversation";
 import { z } from "zod";
 
 import {
@@ -16,7 +16,7 @@ import {
   sessionSelectSchema,
   splitPlatformInfo,
   type SessionInsert,
-} from "@freeanima/kernel-db/schema";
+} from "@freeanima/engine-db/schema";
 
 import { normalizePgTimestamp, pgJsonbOrNull, pgTextOrNull } from "../../utils/timestamp.ts";
 

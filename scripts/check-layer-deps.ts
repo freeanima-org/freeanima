@@ -36,7 +36,7 @@ function layerOf(relPath: string): string | null {
   return null;
 }
 
-function isAllowed(layer: string, pkg: string): boolean {
+function isAllowed(layer: string, pkg: string, _relPath: string): boolean {
   switch (layer) {
     case "kernel":
       return pkg.startsWith("kernel-") || pkg === "kernel";
@@ -51,6 +51,7 @@ function isAllowed(layer: string, pkg: string): boolean {
       if (pkg.startsWith("kernel-") || pkg === "kernel") return true;
       if (pkg.startsWith("life-") || pkg === "life") return true;
       if (pkg.startsWith("engine-tool")) return true;
+      if (pkg === "engine-repos") return true;
       if (pkg === "connectors-sqlite") return true;
       if (pkg === "connectors-db-pg") return false;
       if (pkg === "service-config" || pkg === "service-logging") return true;
@@ -114,7 +115,7 @@ function scan(): Violation[] {
       let m: RegExpExecArray | null;
       while ((m = IMPORT_RE.exec(line)) !== null) {
         const pkg = m[1] ?? "";
-        if (!isAllowed(layer, pkg)) {
+        if (!isAllowed(layer, pkg, rel)) {
           violations.push({
             file: rel,
             line: i + 1,

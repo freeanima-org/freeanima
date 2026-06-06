@@ -5,8 +5,8 @@ import { openSqlite, type SqliteDatabase } from "@freeanima/connectors-sqlite";
 import { buildFtsQuery } from "./fts-query.ts";
 import { getStore } from "./store.ts";
 import type { FactData } from "./fact.ts";
-import { l3DomainsSchema, l3EntitiesSchema, l3SourcesSchema } from "@freeanima/kernel-schemas";
-import { safeParseOrNull } from "@freeanima/kernel-schemas";
+import { l3DomainsSchema, l3EntitiesSchema, l3SourcesSchema } from "./schemas/l2.ts";
+import { safeParseOrNull } from "@freeanima/kernel-util";
 
 const SCHEMA = `
 CREATE VIRTUAL TABLE IF NOT EXISTS l3_facts_fts USING fts5(

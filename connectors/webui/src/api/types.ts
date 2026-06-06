@@ -1,20 +1,23 @@
-/** WebUI wire 响应类型：与 kernel-schemas 内部快照对齐 */
+/** WebUI wire 响应类型：与 service 内部快照 / 展示视图对齐 */
 
 export type {
   DisplayItem,
   DisplayMessageItem,
   DisplayToolBlockItem,
   DisplayToolCall,
-  HealthSnapshot as HealthResponse,
   MessagesDisplay as MessagesResponse,
+} from "@freeanima/service/schemas/display";
+
+export type {
+  HealthSnapshot as HealthResponse,
   PlatformStatusSnapshot as PlatformStatus,
   SafeConfigSnapshot as SafeConfigResponse,
   ServiceSnapshot as ServiceStatus,
   SessionSummary as SessionListItem,
-} from "@freeanima/kernel-schemas";
+} from "@freeanima/service/schemas/snapshot";
 
-export type { CronJobData as CronJobApi } from "@freeanima/kernel-schemas";
+export type { CronJobData as CronJobApi } from "@freeanima/connectors-cron";
 
 export type CronJobsResponse = {
-  jobs: import("@freeanima/kernel-schemas").CronJobData[];
+  jobs: import("@freeanima/connectors-cron").CronJobData[];
 };

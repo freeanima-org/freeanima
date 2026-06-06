@@ -1,4 +1,4 @@
-import type { PgRepositories } from "@freeanima/kernel";
+import type { PgRepositories } from "@freeanima/engine-repos";
 import type { Db } from "./client.ts";
 import { PgSessionStore } from "./session/pg-session-store.ts";
 

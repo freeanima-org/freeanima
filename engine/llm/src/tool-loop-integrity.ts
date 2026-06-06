@@ -1,5 +1,5 @@
 import { toolResult } from "@freeanima/engine-tool";
-import type { SessionMessage, ToolMessage } from "@freeanima/kernel-schemas";
+import type { SessionMessage, ToolMessage } from "@freeanima/engine-db/domain";
 import { cleanToolCallsForApi } from "@freeanima/capabilities-provider-openai-compatible/stream-tools";
 import type { ToolCall } from "@freeanima/engine-provider-llm";
 

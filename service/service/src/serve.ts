@@ -1,8 +1,14 @@
 import "./wire-api.ts";
 import "@freeanima/service/runtime/system-prompt-wire";
-import { chat, cleanupDebugSessions, initLlmRuntime, PROFILE_REFLECT } from "@freeanima/engine";
-import { kernel } from "@freeanima/service-bootstrap";
-import { nullPgRepositories } from "@freeanima/kernel";
+import { chat, getLlmRuntime, initLlmRuntime, PROFILE_REFLECT } from "@freeanima/engine";
+import { createEngine, type Engine } from "@freeanima/engine";
+import { createServiceKernel } from "@freeanima/service-bootstrap";
+import { nullPgRepositories } from "@freeanima/engine-repos";
+import {
+  createConversationService,
+  type ConversationService,
+} from "@freeanima/engine-conversation";
+import type { Kernel } from "@freeanima/kernel";
 import {
   closeDb,
   createPgRepositories,
@@ -49,23 +55,25 @@ import { DEFAULT_BIND_HOST, parseBindHosts } from "./bind-hosts.ts";
 import { initServiceContext } from "./context.ts";
 
 let service: AnimaService | null = null;
+let kernel: Kernel | null = null;
+let engine: Engine | null = null;
+let conversation: ConversationService | null = null;
 let mcp: MCPManager | null = null;
 const acp = getAcpManager();
 let cronScheduler: Scheduler | null = null;
 
 export function getService(): AnimaService {
   if (!service) {
-    service = new AnimaService();
-    service.markStarted();
+    throw new Error("AnimaService 未初始化；请先调用 serve()");
   }
   return service;
 }
 
-function scheduleDebugSessionCleanup(): void {
+function scheduleDebugSessionCleanup(conv: ConversationService): void {
   void Promise.resolve()
     .then(async () => {
       startupLog("后台清理 debug 会话…");
-      const cleaned = await cleanupDebugSessions(12);
+      const cleaned = await conv.cleanupDebugSessions(12);
       if (cleaned > 0) {
         logComponent("startup").debug(`Cleaned ${cleaned} debug session(s)`, { count: cleaned });
       }
@@ -168,7 +176,7 @@ export async function serve(
   try {
     startupLog("注册工具…");
     registerServiceTools();
-    registerServiceIntegrations(kernel);
+    kernel = createServiceKernel();
 
     mkdirSync(dirname(PATHS.pidFile), { recursive: true });
     writeFileSync(PATHS.pidFile, String(process.pid));
@@ -176,19 +184,22 @@ export async function serve(
     initDatabase({ getDatabaseUrl: getConfiguredDatabaseUrl });
     initPgProfile({ sink: logComponent("db") });
 
-    if (isPostgresPrimary()) {
-      startupLog("初始化 PostgreSQL 连接池…");
-      getDb();
-      kernel.setRepositories(createPgRepositories({ getDb }));
-    } else {
-      kernel.setRepositories(nullPgRepositories);
-    }
+    const cfg = loadConfig();
+    const repos = isPostgresPrimary()
+      ? (() => {
+          startupLog("初始化 PostgreSQL 连接池…");
+          getDb();
+          return createPgRepositories({ getDb });
+        })()
+      : nullPgRepositories;
+    initLlmRuntime(cfg);
+    engine = createEngine({ repos, llm: getLlmRuntime() });
+    conversation = createConversationService(engine.repos);
 
-    startupLog("初始化 LLM runtime…");
-    initLlmRuntime(loadConfig());
+    registerServiceIntegrations({ kernel, conversation });
 
     startupLog("初始化 AnimaService / EventBus…");
-    service = new AnimaService();
+    service = new AnimaService({ kernel, conversation });
     service.markStarted();
     const nest = service;
 
@@ -196,7 +207,11 @@ export async function serve(
       const resp = await chat(messages, { profileId: PROFILE_REFLECT });
       return { content: resp.content ?? null };
     };
-    registerServiceMemoryBus({ kernel, reflectChat });
+    registerServiceMemoryBus({
+      kernel,
+      sessionStore: engine.repos.session,
+      reflectChat,
+    });
     service.setEventBus(kernel.eventBus);
 
     ensureBuiltinCronJobs();
@@ -208,7 +223,16 @@ export async function serve(
 
     mcp = new MCPManager();
 
-    initServiceContext({ service: nest, mcp, acp, host: statusHost, port });
+    initServiceContext({
+      service: nest,
+      kernel,
+      engine,
+      conversation,
+      mcp,
+      acp,
+      host: statusHost,
+      port,
+    });
 
     const webuiDev = useWebuiDevMode(Boolean(opts.foreground));
     if (opts.webui) {
@@ -227,7 +251,7 @@ export async function serve(
     }
     startupLog("HTTP 监听就绪");
     markStartupPhase(false);
-    scheduleDebugSessionCleanup();
+    scheduleDebugSessionCleanup(conversation);
   } catch (err) {
     markStartupPhase(false);
     throw err;
@@ -283,7 +307,7 @@ export async function serve(
 
     {
       const s = Date.now();
-      kernel.eventBus.stop();
+      kernel!.eventBus.stop();
       step("EventBus 已停止", Date.now() - s);
     }
 

@@ -110,8 +110,8 @@ export function ensureBuiltinCronJobs(): void {
   store.saveAll(jobs);
 }
 
+export { cronJobDataSchema, cronJobsFileSchema, type CronJobData } from "./schema.ts";
 export { CronJob } from "./models.ts";
-export type { CronJobData } from "./models.ts";
 export { Scheduler, POLL_INTERVAL_MS } from "./scheduler.ts";
 export { enqueueRunJob, runJob, runL2GapFill } from "./runner.ts";
 export { computeNextRun, parseSchedule, ScheduleType } from "./schedule.ts";

@@ -1,5 +1,5 @@
-import { cronJobDataSchema, type CronJobData } from "@freeanima/kernel-schemas";
-import { safeParseOrNull } from "@freeanima/kernel-schemas";
+import { safeParseOrNull } from "@freeanima/kernel-util";
+import { cronJobDataSchema, type CronJobData } from "./schema.ts";
 
 export type { CronJobData };
 

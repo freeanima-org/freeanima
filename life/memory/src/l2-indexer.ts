@@ -4,8 +4,8 @@ import { PATHS } from "@freeanima/service-config";
 import { openSqlite, type SqliteDatabase } from "@freeanima/connectors-sqlite";
 import { buildFtsQuery } from "./fts-query.ts";
 import { l2SessionPath } from "./clean.ts";
-import { l2LineSchema } from "@freeanima/kernel-schemas";
-import { parseJsonLine } from "@freeanima/kernel-schemas";
+import { l2LineSchema } from "./schemas/l2.ts";
+import { parseJsonLine } from "@freeanima/kernel-util";
 
 const SCHEMA = `
 CREATE VIRTUAL TABLE IF NOT EXISTS l2_messages_fts USING fts5(

@@ -1,11 +1,21 @@
 import { describe, it, expect } from "bun:test";
-import { cronJobDataSchema } from "../../src/cron.ts";
-import { eventPayloadSchemas, sessionUpdatedPayloadSchema } from "../../src/events.ts";
-import { l2LineSchema, factExtractionSchema } from "../../src/l2.ts";
+import { cronJobDataSchema } from "@freeanima/connectors-cron";
+import {
+  eventPayloadSchemas,
+  sessionUpdatedPayloadSchema,
+} from "@freeanima/life-memory/schemas/event-payloads";
+import { l2LineSchema, factExtractionSchema } from "@freeanima/life-memory/schemas/l2";
 import { toolArgsSchema, toolErrorSchema } from "@freeanima/engine-tool";
-import { parseCompressionState, clarifyToolAwaitingResultSchema } from "../../src/session-meta.ts";
+import {
+  parseCompressionState,
+  clarifyToolAwaitingResultSchema,
+  parseSessionLine,
+} from "@freeanima/engine-conversation";
 import { jsonRpcMessageSchema } from "@freeanima/capabilities-acp/schemas/acp-jsonrpc";
-import { weixinContextTokensSchema, weixinSyncSchema } from "../../src/weixin.ts";
+import {
+  weixinContextTokensSchema,
+  weixinSyncSchema,
+} from "@freeanima/connectors-gateway/schemas/weixin";
 
 describe("schemas/cron", () => {
   it("parses minimal cron job", () => {
@@ -87,8 +97,7 @@ describe("schemas/clarify tool result", () => {
 });
 
 describe("schemas/message", () => {
-  it("parseSessionLine 接受 pos", async () => {
-    const { parseSessionLine } = await import("../../src/message.ts");
+  it("parseSessionLine 接受 pos", () => {
     const parsed = parseSessionLine(
       JSON.stringify({ role: "user", content: "hi", pos: 3, timestamp: "t" }),
     );
@@ -97,8 +106,7 @@ describe("schemas/message", () => {
     expect(parsed.pos).toBe(3);
   });
 
-  it("parseSessionLine 将 legacy id 映射为 pos", async () => {
-    const { parseSessionLine } = await import("../../src/message.ts");
+  it("parseSessionLine 将 legacy id 映射为 pos", () => {
     const parsed = parseSessionLine(
       JSON.stringify({ role: "user", content: "hi", id: 5, timestamp: "t" }),
     );

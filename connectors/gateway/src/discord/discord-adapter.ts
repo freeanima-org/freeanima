@@ -13,7 +13,7 @@ import {
   isTransientNetworkError,
   networkErrorUserHint,
 } from "@freeanima/engine-loop";
-import { loadSessionMeta } from "@freeanima/engine-conversation";
+import { getServiceContext } from "@freeanima/service";
 import { RateLimitedLogger } from "@freeanima/kernel-retry";
 import { logComponent } from "@freeanima/service-logging";
 import type { AnimaService } from "@freeanima/service-api";
@@ -541,7 +541,7 @@ export class DiscordAdapter implements PlatformAdapter {
       // 流式回复完成：用 auto-title 重命名子线程
       if (channel.isThread()) {
         try {
-          const meta = await loadSessionMeta(sid);
+          const meta = await getServiceContext().conversation.loadSessionMeta(sid);
           const title = (meta.title as string)?.trim();
           if (title) {
             await channel.setName(title.slice(0, 100));

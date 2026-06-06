@@ -15,11 +15,11 @@ import { waitFor } from "../../helpers/wait.ts";
 import { SqliteEventQueue } from "@freeanima/connectors-eventbus-sqlite";
 import {
   resetStoreForTests,
-  registerMemoryHandlers,
+  registerMemoryPipeline,
   l2SessionPath,
   sessionUpdated,
 } from "@freeanima/life-memory";
-import { seedSession } from "../../helpers/pg-test.ts";
+import { getTestEngine, seedSession, testConv } from "../../helpers/pg-test.ts";
 
 describePgSqlite("memory handlers", () => {
   let home: string;
@@ -41,6 +41,7 @@ describePgSqlite("memory handlers", () => {
   it("session:updated creates processed file when reflect disabled", async () => {
     const sid = "20260526_140000_aaaa";
     await seedSession(
+      getTestEngine(),
       sid,
       {
         role: "session_meta",
@@ -60,7 +61,7 @@ describePgSqlite("memory handlers", () => {
       createLogger({ sinks: [createNullSink()] }),
       new SqliteEventQueue(join(home, "runtime", "events.db"), { pollMs: 20 }),
     );
-    registerMemoryHandlers(bus);
+    registerMemoryPipeline({ bus, sessionStore: testConv().repos.session });
     bus.start();
     bus.emit(sessionUpdated, { session_id: sid });
 

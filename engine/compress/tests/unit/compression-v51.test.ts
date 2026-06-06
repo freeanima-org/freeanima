@@ -8,7 +8,7 @@ import {
   SUMMARY_SYNTHETIC_POS,
   buildRuntimeFromLPoints,
 } from "@freeanima/engine-compress";
-import { isAssistantMessage, parseCompressionState } from "@freeanima/kernel-schemas";
+import { isAssistantMessage, parseCompressionState } from "@freeanima/engine-db/domain";
 import { afterEach, beforeEach, describe, it, expect } from "bun:test";
 import { aa, assistantToolCall, buildHistory, toolMsg, ua } from "../helpers/session-fixtures.ts";
 import {

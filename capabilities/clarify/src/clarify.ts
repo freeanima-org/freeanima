@@ -4,14 +4,14 @@ import {
   clarifyToolResolvedResultSchema,
   isSessionMeta,
   parseAwaitingClarify,
-  safeParseOrNull,
   type AwaitingClarify,
   type ClarifyItem,
   type ClarifyToolAwaitingResult,
   type ClarifyToolResolvedResult,
-} from "@freeanima/kernel-schemas";
+} from "@freeanima/engine-conversation";
+import { safeParseOrNull } from "@freeanima/kernel-util";
 import { toolErrorSchema } from "@freeanima/engine-tool";
-import { loadSessionMeta, updateSessionMetaField } from "@freeanima/engine-conversation";
+import type { ConversationService } from "@freeanima/engine-conversation";
 
 export type { ClarifyItem, AwaitingClarify };
 export type ClarifyAwaitingResult = ClarifyToolAwaitingResult;
@@ -48,13 +48,17 @@ export function getClarifyConfig(): { timeout_sec: number; max_items: number } {
   };
 }
 
-export async function readAwaitingClarify(session: string): Promise<AwaitingClarify | null> {
-  const meta = await loadSessionMeta(session);
+export async function readAwaitingClarify(
+  conversation: ConversationService,
+  session: string,
+): Promise<AwaitingClarify | null> {
+  const meta = await conversation.loadSessionMeta(session);
   if (!isSessionMeta(meta)) return null;
   return parseAwaiting(meta.awaiting_clarify);
 }
 
 export async function setAwaitingClarify(
+  conversation: ConversationService,
   session: string,
   payload: { items: ClarifyItem[]; timeout_sec: number },
   opts?: { asked_at?: string },
@@ -65,11 +69,14 @@ export async function setAwaitingClarify(
     asked_at: opts?.asked_at ?? nowIso(),
     timeout_sec: payload.timeout_sec,
   };
-  await updateSessionMetaField(session, { awaiting_clarify: awaiting });
+  await conversation.updateSessionMetaField(session, { awaiting_clarify: awaiting });
 }
 
-export async function clearAwaitingClarify(session: string): Promise<void> {
-  await updateSessionMetaField(session, { awaiting_clarify: undefined });
+export async function clearAwaitingClarify(
+  conversation: ConversationService,
+  session: string,
+): Promise<void> {
+  await conversation.updateSessionMetaField(session, { awaiting_clarify: undefined });
 }
 
 export function isAwaitingClarifyExpired(awaiting: AwaitingClarify): boolean {
@@ -79,12 +86,13 @@ export function isAwaitingClarifyExpired(awaiting: AwaitingClarify): boolean {
 }
 
 export async function expireIfNeeded(
+  conversation: ConversationService,
   session: string,
 ): Promise<{ expired: boolean; hint?: string }> {
-  const awaiting = await readAwaitingClarify(session);
+  const awaiting = await readAwaitingClarify(conversation, session);
   if (!awaiting) return { expired: false };
   if (!isAwaitingClarifyExpired(awaiting)) return { expired: false };
-  await clearAwaitingClarify(session);
+  await clearAwaitingClarify(conversation, session);
   return { expired: true, hint: "之前的问题已超时作废。" };
 }
 
@@ -112,15 +120,16 @@ export function formatClarifyText(items: ClarifyItem[]): string {
 }
 
 export async function guardAwaitingClarify(
+  conversation: ConversationService,
   session: string,
   message: string,
 ): Promise<GuardAwaitingResult> {
-  const expiry = await expireIfNeeded(session);
+  const expiry = await expireIfNeeded(conversation, session);
   if (expiry.expired) {
     return { ok: true, expired: true, hint: expiry.hint ?? "之前的问题已超时作废。" };
   }
 
-  const awaiting = await readAwaitingClarify(session);
+  const awaiting = await readAwaitingClarify(conversation, session);
   if (!awaiting) return { ok: true };
 
   const trimmed = message.trim();
@@ -195,15 +204,19 @@ export function findAwaitingClarifyInMessages(
   return null;
 }
 
-export async function resolveUserContent(session: string, userText: string): Promise<string> {
-  const expiry = await expireIfNeeded(session);
+export async function resolveUserContent(
+  conversation: ConversationService,
+  session: string,
+  userText: string,
+): Promise<string> {
+  const expiry = await expireIfNeeded(conversation, session);
   if (expiry.expired) {
     return `${expiry.hint ?? "之前的问题已超时作废。"}\n\n${userText}`;
   }
 
-  const awaiting = await readAwaitingClarify(session);
+  const awaiting = await readAwaitingClarify(conversation, session);
   if (awaiting) {
-    await clearAwaitingClarify(session);
+    await clearAwaitingClarify(conversation, session);
     return mergeClarifyResponse(awaiting.items, userText);
   }
   return userText;

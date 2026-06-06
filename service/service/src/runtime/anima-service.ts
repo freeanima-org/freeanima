@@ -5,13 +5,11 @@ import type {
   SafeConfigSnapshot,
   ServiceSnapshot,
   SessionSummary,
-} from "@freeanima/kernel-schemas";
+} from "@freeanima/service/schemas/snapshot";
 import type { StreamEvent } from "@freeanima/engine-loop";
-import type { Message } from "@freeanima/engine-conversation";
+import type { Message, ConversationService } from "@freeanima/engine-conversation";
 import type { CronJobData } from "@freeanima/connectors-cron";
-import { kernel } from "@freeanima/service-bootstrap";
-import { repairAndPersistToolLoop } from "@freeanima/engine-conversation";
-import * as conv from "@freeanima/engine-conversation";
+import type { Kernel } from "@freeanima/kernel";
 import { collectStreamReply } from "@freeanima/engine-loop";
 import { createTurnMessageCallbacks, type StreamTurnHost } from "./turn-lifecycle.ts";
 import { EngineRunControl } from "./engine-run-control.ts";
@@ -33,6 +31,13 @@ export class AnimaService implements StreamTurnHost {
   private readonly sessionManager = new SessionManager();
   private bus: EventBus | null = null;
   private onSessionUpdated: ((sid: string) => void) | null = null;
+
+  constructor(
+    private readonly deps: {
+      kernel: Kernel;
+      conversation: ConversationService;
+    },
+  ) {}
 
   private messagingDeps(): messaging.MessagingDeps {
     return {
@@ -66,15 +71,16 @@ export class AnimaService implements StreamTurnHost {
 
   engineStreamOpts(sessionId: string, signal: AbortSignal) {
     return {
-      hookRegistry: kernel.hookRegistry,
+      hookRegistry: this.deps.kernel.hookRegistry,
       ...createTurnMessageCallbacks(sessionId),
       signal,
     };
   }
 
   async reloadRuntimeAfterRepair(sessionId: string): Promise<[Message[], string[]]> {
-    await repairAndPersistToolLoop(sessionId, await conv.load(sessionId));
-    return conv.buildRuntimeMessages(sessionId);
+    const { conversation } = this.deps;
+    await conversation.repairAndPersistToolLoop(sessionId, await conversation.load(sessionId));
+    return conversation.buildRuntimeMessages(sessionId);
   }
 
   async onTurnAfterComplete(sessionId: string, msgs: Message[], reply: string): Promise<string> {

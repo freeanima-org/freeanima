@@ -7,7 +7,7 @@ import {
 } from "../../helpers/integration-case.ts";
 
 import { clearConfigCache } from "@freeanima/service-config";
-import { initSession } from "@freeanima/engine";
+import { testConv } from "../../helpers/pg-test.ts";
 import {
   bindAcpSession,
   getBoundAcpSession,
@@ -23,7 +23,7 @@ describePg("acp nest-binding", () => {
     clearConfigCache();
     await beginIntegrationCase("freeanima-acp-bind-");
     nestSid = "20260527_test_bind";
-    await initSession(nestSid, "test-model", { platform: "parlor" });
+    await testConv().initSession(nestSid, "test-model", { platform: "parlor" });
   });
 
   afterEach(async () => {
@@ -31,12 +31,13 @@ describePg("acp nest-binding", () => {
   });
 
   it("bind / read / unbind acp_sessions on session_meta", async () => {
-    expect(await readAcpSessions(nestSid)).toEqual({});
-    await bindAcpSession(nestSid, "cursor", "acp-uuid-1");
-    expect(await getBoundAcpSession(nestSid, "cursor")).toBe("acp-uuid-1");
-    expect(await readAcpSessions(nestSid)).toEqual({ cursor: "acp-uuid-1" });
-    await unbindAcpSession(nestSid, "cursor");
-    expect(await getBoundAcpSession(nestSid, "cursor")).toBeUndefined();
+    const c = testConv();
+    expect(await readAcpSessions(c, nestSid)).toEqual({});
+    await bindAcpSession(c, nestSid, "cursor", "acp-uuid-1");
+    expect(await getBoundAcpSession(c, nestSid, "cursor")).toBe("acp-uuid-1");
+    expect(await readAcpSessions(c, nestSid)).toEqual({ cursor: "acp-uuid-1" });
+    await unbindAcpSession(c, nestSid, "cursor");
+    expect(await getBoundAcpSession(c, nestSid, "cursor")).toBeUndefined();
   });
 
   afterAll(async () => {

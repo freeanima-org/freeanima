@@ -4,4 +4,4 @@ export type {
   MessagePayload,
   OpenAiToolSchema,
   ToolCall,
-} from "@freeanima/kernel-schemas";
+} from "@freeanima/engine-db/domain";

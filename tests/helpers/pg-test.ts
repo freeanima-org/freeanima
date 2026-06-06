@@ -9,29 +9,46 @@ import {
   setDbForTest,
   type Db,
 } from "@freeanima/connectors-db-pg";
-import { nullPgRepositories } from "@freeanima/kernel";
-import { kernel } from "@freeanima/service-bootstrap";
-import { clearConfigCache } from "@freeanima/service-config";
-import type { SessionMessage, SessionMetaMessage } from "@freeanima/kernel-schemas";
-import { relations } from "@freeanima/kernel-db/schema";
+import { createEngine } from "@freeanima/engine";
+import { createLlmRuntime, resetLlmRuntimeForTests } from "@freeanima/engine-llm";
+import {
+  createConversationService,
+  type ConversationService,
+} from "@freeanima/engine-conversation";
+import type { PgRepositories } from "@freeanima/engine-repos";
+import { clearConfigCache, loadConfig } from "@freeanima/service-config";
+import type { SessionMessage, SessionMetaMessage } from "@freeanima/engine-conversation";
+import { relations } from "@freeanima/engine-db/schema";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
+import type { Engine } from "@freeanima/engine";
 
 export type PgTestContext = {
   sql: postgres.Sql;
   db: Db;
+  engine: Engine;
   teardown: () => Promise<void>;
 };
 
 let activeCtx: PgTestContext | null = null;
+
+export function getActivePgTestContext(): PgTestContext | null {
+  return activeCtx;
+}
 
 async function clearPgTables(sql: postgres.Sql): Promise<void> {
   await sql`DELETE FROM messages`;
   await sql`DELETE FROM sessions`;
 }
 
-function wireRepositories(): void {
-  kernel.setRepositories(createPgRepositories({ getDb }));
+function createTestEngine(repos: PgRepositories): Engine {
+  return createEngine({ repos, llm: createLlmRuntime(loadConfig()) });
+}
+
+function wireEngine(): Engine {
+  const engine = createTestEngine(createPgRepositories({ getDb }));
+  if (activeCtx) activeCtx.engine = engine;
+  return engine;
 }
 
 /** Vitest 等根目录测试：注入 PG 连接并清表 */
@@ -41,16 +58,18 @@ export async function setupPgTestDb(url: string): Promise<PgTestContext> {
   await clearPgTables(sql);
   const db = drizzle({ client: sql, relations });
   setDbForTest(db, sql);
+  const engine = createTestEngine(createPgRepositories({ getDb }));
   activeCtx = {
     sql,
     db,
+    engine,
     async teardown() {
       await sql.end();
       await closeDb();
-      kernel.setRepositories(nullPgRepositories);
+      resetLlmRuntimeForTests();
+      activeCtx = null;
     },
   };
-  wireRepositories();
   return activeCtx;
 }
 
@@ -95,7 +114,7 @@ export async function setupIntegrationHome(opts: {
   clearConfigCache();
   if (activeCtx) {
     await clearPgTables(activeCtx.sql);
-    wireRepositories();
+    wireEngine();
     return activeCtx;
   }
   return setupPgTestDb(opts.url);
@@ -105,7 +124,6 @@ export async function setupIntegrationHome(opts: {
 export async function teardownIntegrationHome(): Promise<void> {
   if (activeCtx) {
     await activeCtx.teardown();
-    activeCtx = null;
   }
 }
 
@@ -119,13 +137,25 @@ export function appendIntegrationConfig(home: string, yaml: string): void {
 
 /** 通过 Session 端口写入 session（替代 sessions/*.jsonl fixture） */
 export async function seedSession(
+  engine: Engine,
   sessionId: string,
   meta: SessionMetaMessage,
   messages: SessionMessage[] = [],
 ): Promise<void> {
-  const session = kernel.repos.session;
+  const session = engine.repos.session;
   await session.upsertSessionMeta(sessionId, meta);
   for (const msg of messages) {
     await session.appendMessage(sessionId, msg);
   }
+}
+
+export function getTestEngine(): Engine {
+  if (!activeCtx) {
+    throw new Error("集成测试 PG harness 未初始化；请先 beginIntegrationCase");
+  }
+  return activeCtx.engine;
+}
+
+export function testConv(): ConversationService {
+  return createConversationService(getTestEngine().repos);
 }

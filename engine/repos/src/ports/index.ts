@@ -5,7 +5,7 @@ export type { MemoryStorePort } from "./memory.ts";
 export type { CronJobStorePort } from "./cron.ts";
 export type { TaskStorePort } from "./task.ts";
 
-/** Kernel 挂载的 PG 仓储聚合 */
+/** Engine 挂载的 PG 仓储聚合 */
 export interface PgRepositories {
   readonly pgAvailable: boolean;
   session: SessionStorePort;

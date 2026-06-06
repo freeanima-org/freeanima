@@ -5,24 +5,18 @@ import {
   registerCommand,
 } from "./registry.ts";
 import { clearAwaitingClarify, readAwaitingClarify } from "@freeanima/capabilities-clarify";
-import {
-  rebuildSessionSystemPrompt,
-  loadSessionMeta,
-  reloadSessionTools,
-  getSessionCwd,
-  setSessionCwd,
-  getSessionTitle,
-  setSessionTitle,
-  newSession,
-  recompressSession,
-} from "@freeanima/engine-conversation";
 import { statsReport } from "@freeanima/service-api/conversation-stats";
 import { listTools } from "@freeanima/engine-tool";
-import { isSessionMeta } from "@freeanima/kernel-schemas";
+import { isSessionMeta } from "@freeanima/engine-conversation";
 import { distillFromPg } from "@freeanima/life-memory/clean";
 import { isReflectEnabled } from "@freeanima/life-memory";
 import { reflectSession } from "@freeanima/life-memory/reflect";
 import { setHomeChannel } from "@freeanima/service-api/home-channel";
+import { getServiceContext } from "@freeanima/service";
+
+function conv() {
+  return getServiceContext().conversation;
+}
 
 function cmdHelp(ctx: CommandContext): string {
   const available = listCommandDefsForPlatform(ctx.platform);
@@ -48,14 +42,14 @@ function cmdHelp(ctx: CommandContext): string {
 async function cmdNew(ctx: CommandContext): Promise<CommandResult> {
   try {
     const oldSession = ctx.sessionId;
-    const l2Path = await distillFromPg(oldSession);
+    const l2Path = await distillFromPg(conv().repos.session, oldSession);
     if (l2Path && isReflectEnabled()) {
       await reflectSession(oldSession);
     }
   } catch {
     // 不阻塞 /new
   }
-  const sid = await newSession(ctx.platform);
+  const sid = await conv().newSession(ctx.platform);
   return {
     text: `🆕 新 session 已创建（${sid.slice(0, 8)}...）`,
     data: { new_session_id: sid },
@@ -67,20 +61,20 @@ function cmdRetry(_ctx: CommandContext): CommandResult {
 }
 
 async function cmdCancel(ctx: CommandContext): Promise<string> {
-  const pending = await readAwaitingClarify(ctx.sessionId);
+  const pending = await readAwaitingClarify(conv(), ctx.sessionId);
   if (!pending) return "当前没有待回答的提问。";
-  await clearAwaitingClarify(ctx.sessionId);
+  await clearAwaitingClarify(conv(), ctx.sessionId);
   return "已取消提问，可以继续对话。";
 }
 
 async function cmdReloadTools(ctx: CommandContext): Promise<string> {
-  const meta = await loadSessionMeta(ctx.sessionId);
+  const meta = await conv().loadSessionMeta(ctx.sessionId);
   if (!isSessionMeta(meta)) {
     return "⚠️ 当前 session 不存在，无法更新工具列表。";
   }
   const before = meta.tools.length;
   try {
-    const count = await reloadSessionTools(ctx.sessionId);
+    const count = await conv().reloadSessionTools(ctx.sessionId);
     const names = listTools().map((t) => t.name);
     const preview = names.length <= 8 ? names.join(", ") : `${names.slice(0, 8).join(", ")}…`;
     return `✅ 已更新 session 工具列表：${count} 个（此前 ${before} 个）。下次对话将携带最新工具。\n${preview}`;
@@ -90,12 +84,12 @@ async function cmdReloadTools(ctx: CommandContext): Promise<string> {
 }
 
 async function cmdReloadSystemPrompt(ctx: CommandContext): Promise<string> {
-  const meta = await loadSessionMeta(ctx.sessionId);
+  const meta = await conv().loadSessionMeta(ctx.sessionId);
   if (!isSessionMeta(meta)) {
     return "⚠️ 当前 session 不存在，无法重建 system prompt。";
   }
-  await rebuildSessionSystemPrompt(ctx.sessionId);
-  const after = await loadSessionMeta(ctx.sessionId);
+  await conv().rebuildSessionSystemPrompt(ctx.sessionId);
+  const after = await conv().loadSessionMeta(ctx.sessionId);
   const sp = isSessionMeta(after) ? (after.system_prompt ?? "") : "";
   return `✅ 已重建 system prompt（${sp.length} 字符），仅更新 session_meta.system_prompt`;
 }
@@ -109,12 +103,12 @@ async function cmdStats(ctx: CommandContext): Promise<string> {
 
 async function cmdCwd(ctx: CommandContext): Promise<string> {
   if (!ctx.args.length) {
-    const cwd = await getSessionCwd(ctx.sessionId);
+    const cwd = await conv().getSessionCwd(ctx.sessionId);
     return `📁 当前工作目录: ${cwd ?? "（未设置）"}`;
   }
   const newCwd = ctx.args.join(" ");
   try {
-    const resolved = await setSessionCwd(ctx.sessionId, newCwd);
+    const resolved = await conv().setSessionCwd(ctx.sessionId, newCwd);
     return `✅ 工作目录已切换至: ${resolved}\n（如有 AGENTS.md，内容已注入 system prompt）`;
   } catch (e) {
     return `❌ ${e instanceof Error ? e.message : String(e)}`;
@@ -123,11 +117,11 @@ async function cmdCwd(ctx: CommandContext): Promise<string> {
 
 async function cmdTitle(ctx: CommandContext): Promise<string> {
   if (!ctx.args.length) {
-    const title = await getSessionTitle(ctx.sessionId);
+    const title = await conv().getSessionTitle(ctx.sessionId);
     return `📝 当前标题: ${title || "（空）"}`;
   }
   const newTitle = ctx.args.join(" ").slice(0, 50);
-  await setSessionTitle(ctx.sessionId, newTitle);
+  await conv().setSessionTitle(ctx.sessionId, newTitle);
   return `✅ 标题已更新: ${newTitle}`;
 }
 
@@ -162,7 +156,7 @@ function cmdSethome(ctx: CommandContext): string {
 
 async function cmdCompress(ctx: CommandContext): Promise<string> {
   const force = ctx.args.includes("--force") || ctx.args.includes("-f");
-  const r = await recompressSession(ctx.sessionId, { force });
+  const r = await conv().recompressSession(ctx.sessionId, { force });
   if (!r.enabled) {
     return "会话压缩未启用（config.yaml → compression.enabled）";
   }

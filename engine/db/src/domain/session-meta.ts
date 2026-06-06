@@ -7,8 +7,8 @@ import {
   todoItemSchema,
   todoStatusSchema,
   clarifyItemSchema,
-} from "@freeanima/kernel-db/schema";
-import { safeParseOrNull } from "./util.ts";
+} from "../schema/index.ts";
+import { safeParseOrNull } from "@freeanima/kernel-util";
 
 export {
   awaitingClarifySchema,

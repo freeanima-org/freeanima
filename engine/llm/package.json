@@ -6,9 +6,9 @@
   },
   "dependencies": {
     "@freeanima/capabilities-provider-openai-compatible": "workspace:*",
+    "@freeanima/engine-db": "workspace:*",
     "@freeanima/engine-provider-llm": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",
-    "@freeanima/kernel-schemas": "workspace:*",
     "@freeanima/service-config": "workspace:*"
   },
   "devDependencies": {

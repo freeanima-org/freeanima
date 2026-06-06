@@ -8,29 +8,23 @@ import {
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { kernel } from "@freeanima/service-bootstrap";
-import { seedSession, appendIntegrationConfig } from "../../helpers/pg-test.ts";
+import {
+  getTestEngine,
+  seedSession,
+  appendIntegrationConfig,
+  testConv,
+} from "../../helpers/pg-test.ts";
 import {
   findCommand,
   executeCommand,
   isRetryResult,
   resolveCommand,
-  AnimaService,
+  getServiceContext,
 } from "@freeanima/service";
-import {
-  load,
-  newSession,
-  sessionExists,
-  loadSessionMeta,
-  loadSessionTools,
-  rollbackToLastUser,
-  getSessionTitle,
-  getSessionCwd,
-} from "@freeanima/engine";
 import { registerTool } from "@freeanima/engine-tool";
 
 async function patchMetaForTest(sessionId: string, patch: Record<string, unknown>): Promise<void> {
-  await kernel.repos.session.patchSessionMeta(sessionId, patch as never);
+  await getTestEngine().repos.session.patchSessionMeta(sessionId, patch as never);
 }
 
 describePg("slash commands", () => {
@@ -78,6 +72,7 @@ describePg("slash commands", () => {
   it("rollbackToLastUser removes trailing assistant", async () => {
     const sid = "20260526_160000_retry";
     await seedSession(
+      getTestEngine(),
       sid,
       {
         role: "session_meta",
@@ -93,25 +88,22 @@ describePg("slash commands", () => {
       ],
     );
 
-    const content = await rollbackToLastUser(sid);
+    const content = await testConv().rollbackToLastUser(sid);
     expect(content).toBe("你好");
-    const msgs = await load(sid);
+    const msgs = await testConv().load(sid);
     expect(msgs.filter((m) => m.role === "assistant")).toHaveLength(0);
     expect(msgs.filter((m) => m.role === "user")).toHaveLength(1);
   });
 
   it("listCommands includes help and retry", async () => {
-    const parlor = new AnimaService()
-      .listCommands({ platform: "parlor" })
-      .commands.map((c) => c.name);
+    const svc = getServiceContext().service;
+    const parlor = svc.listCommands({ platform: "parlor" }).commands.map((c) => c.name);
     expect(parlor).toContain("help");
     expect(parlor).toContain("retry");
     expect(parlor).toContain("reload_tools");
     expect(parlor).not.toContain("new");
 
-    const discord = new AnimaService()
-      .listCommands({ platform: "discord" })
-      .commands.map((c) => c.name);
+    const discord = svc.listCommands({ platform: "discord" }).commands.map((c) => c.name);
     expect(discord).toContain("new");
     expect(discord).toContain("sethome");
   });
@@ -123,7 +115,7 @@ describePg("slash commands", () => {
   });
 
   it("/new creates session and returns new_session_id", async () => {
-    const sid = await newSession("discord");
+    const sid = await testConv().newSession("discord");
     const [cmd] = findCommand("/new");
     const result = await executeCommand(cmd!, {
       sessionId: sid,
@@ -134,11 +126,11 @@ describePg("slash commands", () => {
     expect(result.text).toContain("新 session");
     expect(result.data?.new_session_id).toBeTruthy();
     expect(String(result.data?.new_session_id)).not.toBe(sid);
-    expect(await sessionExists(String(result.data?.new_session_id))).toBe(true);
+    expect(await testConv().sessionExists(String(result.data?.new_session_id))).toBe(true);
   });
 
   it("reload_tools updates session_meta tools", async () => {
-    const sid = await newSession("parlor");
+    const sid = await testConv().newSession("parlor");
     await patchMetaForTest(sid, {
       tools: [
         { type: "function", function: { name: "stale_tool", parameters: { type: "object" } } },
@@ -161,8 +153,8 @@ describePg("slash commands", () => {
     });
     expect(result.text).toContain("已更新 session 工具列表");
 
-    const metaTools = await loadSessionMeta(sid);
-    const tools = await loadSessionTools(sid, metaTools);
+    const metaTools = await testConv().loadSessionMeta(sid);
+    const tools = await testConv().loadSessionTools(sid, metaTools);
     const names = tools.map((t) => t.function?.name).filter(Boolean);
     expect(names).toContain("reload_tools_test_only");
     expect(names).not.toContain("stale_tool");
@@ -181,7 +173,7 @@ describePg("slash commands", () => {
 
   it("reload_system_prompt rebuilds session meta", async () => {
     writeFileSync(join(home, "SOUL.md"), "你是测试 Agent。\n", "utf-8");
-    const sid = await newSession("parlor");
+    const sid = await testConv().newSession("parlor");
     await patchMetaForTest(sid, { system_prompt: "旧 prompt" });
 
     const [cmd] = findCommand("/reload_system_prompt");
@@ -192,7 +184,7 @@ describePg("slash commands", () => {
       raw: "/reload_system_prompt",
     });
     expect(result.text).toContain("system prompt");
-    const spMeta = await loadSessionMeta(sid);
+    const spMeta = await testConv().loadSessionMeta(sid);
     const sp = String(spMeta.role === "session_meta" ? (spMeta.system_prompt ?? "") : "");
     expect(sp).toContain("你是测试 Agent");
     expect(sp).not.toBe("旧 prompt");
@@ -200,8 +192,8 @@ describePg("slash commands", () => {
 
   it("reload_system_prompt only updates system_prompt", async () => {
     writeFileSync(join(home, "SOUL.md"), "你是测试 Agent。\n", "utf-8");
-    const sid = await newSession("parlor");
-    const metaBefore = await loadSessionMeta(sid);
+    const sid = await testConv().newSession("parlor");
+    const metaBefore = await testConv().loadSessionMeta(sid);
     const preservedCwd = "/tmp/freeanima-preserved-cwd";
     const preservedTools = [{ type: "function" as const, function: { name: "keep_tool" } }];
     await patchMetaForTest(sid, {
@@ -219,16 +211,16 @@ describePg("slash commands", () => {
       raw: "/reload_system_prompt",
     });
 
-    const metaAfter = await loadSessionMeta(sid);
+    const metaAfter = await testConv().loadSessionMeta(sid);
     expect(metaAfter.cwd).toBe(preservedCwd);
-    expect(await loadSessionTools(sid, metaAfter)).toEqual(preservedTools);
+    expect(await testConv().loadSessionTools(sid, metaAfter)).toEqual(preservedTools);
     expect(metaAfter.title).toBe("保留标题");
     expect(metaAfter.model).toBe(metaBefore.model);
     expect(String(metaAfter.system_prompt ?? "")).not.toBe("旧 prompt");
   });
 
   it("stats command reports session", async () => {
-    const sid = await newSession("parlor");
+    const sid = await testConv().newSession("parlor");
     const [cmd] = findCommand("/stats");
     expect(cmd?.name).toBe("stats");
     const result = await executeCommand(cmd!, {
@@ -241,7 +233,7 @@ describePg("slash commands", () => {
   });
 
   it("title command get and set", async () => {
-    const sid = await newSession("parlor");
+    const sid = await testConv().newSession("parlor");
     const [setCmd] = findCommand("/title");
     await executeCommand(setCmd!, {
       sessionId: sid,
@@ -249,7 +241,7 @@ describePg("slash commands", () => {
       args: ["我的标题"],
       raw: "/title 我的标题",
     });
-    expect(await getSessionTitle(sid)).toBe("我的标题");
+    expect(await testConv().getSessionTitle(sid)).toBe("我的标题");
     const [getCmd] = findCommand("/title");
     const result = await executeCommand(getCmd!, {
       sessionId: sid,
@@ -261,7 +253,7 @@ describePg("slash commands", () => {
   });
 
   it("compress command reports compression state", async () => {
-    const sid = await newSession("parlor");
+    const sid = await testConv().newSession("parlor");
     const [cmd] = findCommand("/compress");
     expect(cmd?.name).toBe("compress");
     const result = await executeCommand(cmd!, {
@@ -275,7 +267,7 @@ describePg("slash commands", () => {
   });
 
   it("cwd command uses existing directory", async () => {
-    const sid = await newSession("parlor");
+    const sid = await testConv().newSession("parlor");
     const [cmd] = findCommand("/cwd");
     const result = await executeCommand(cmd!, {
       sessionId: sid,
@@ -284,7 +276,7 @@ describePg("slash commands", () => {
       raw: `/cwd ${home}`,
     });
     expect(result.text).toContain("工作目录已切换");
-    expect(await getSessionCwd(sid)).toBe(home);
+    expect(await testConv().getSessionCwd(sid)).toBe(home);
   });
 
   it("/sethome writes discord home_channel to config", async () => {

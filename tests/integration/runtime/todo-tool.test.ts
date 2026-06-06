@@ -6,11 +6,12 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { initSession, loadSessionMeta, runWithToolContext } from "@freeanima/engine";
+import { runWithToolContext } from "@freeanima/engine-loop";
 import { getTool } from "@freeanima/engine-tool";
 import { getProfileHopModel, loadConfig } from "@freeanima/service-config";
-import { addTodo, listTodos } from "@freeanima/service";
+import { addTodo, listTodos } from "@freeanima/engine-conversation/session-todos";
 import { registerAllTools } from "@freeanima/service";
+import { testConv } from "../../helpers/pg-test.ts";
 
 describePg("session todo", () => {
   const prev = process.env.FREEANIMA_HOME;
@@ -30,22 +31,31 @@ describePg("session todo", () => {
   it("two sessions isolated in session_meta.todos", async () => {
     const cfg = loadConfig();
     const model = getProfileHopModel(cfg);
+    const repos = testConv().repos;
 
-    await initSession("sess-a", model, { platform: "test" });
-    await initSession("sess-b", model, { platform: "test" });
+    await testConv().initSession("sess-a", model, { platform: "test" });
+    await testConv().initSession("sess-b", model, { platform: "test" });
 
-    await runWithToolContext("sess-a", async () => {
-      await addTodo("sess-a", "任务 A");
-    });
-    await runWithToolContext("sess-b", async () => {
-      await addTodo("sess-b", "任务 B");
-    });
+    await runWithToolContext(
+      "sess-a",
+      async () => {
+        await addTodo(repos, "sess-a", "任务 A");
+      },
+      { repos },
+    );
+    await runWithToolContext(
+      "sess-b",
+      async () => {
+        await addTodo(repos, "sess-b", "任务 B");
+      },
+      { repos },
+    );
 
-    expect(await listTodos("sess-a")).toContain("任务 A");
-    expect(await listTodos("sess-a")).not.toContain("任务 B");
-    expect(await listTodos("sess-b")).toContain("任务 B");
+    expect(await listTodos(repos, "sess-a")).toContain("任务 A");
+    expect(await listTodos(repos, "sess-a")).not.toContain("任务 B");
+    expect(await listTodos(repos, "sess-b")).toContain("任务 B");
 
-    const metaA = await loadSessionMeta("sess-a");
+    const metaA = await testConv().loadSessionMeta("sess-a");
     expect(metaA.role).toBe("session_meta");
     if (metaA.role !== "session_meta") return;
     const todos = metaA.todos as { items?: { content?: string }[] } | undefined;
@@ -57,7 +67,8 @@ describePg("session todo", () => {
 
     const cfg = loadConfig();
     const sid = "sess-todo-stream";
-    await initSession(sid, getProfileHopModel(cfg), { platform: "parlor" });
+    const repos = testConv().repos;
+    await testConv().initSession(sid, getProfileHopModel(cfg), { platform: "parlor" });
 
     async function* fakeStream() {
       const tool = getTool("todo")!;
@@ -66,7 +77,7 @@ describePg("session todo", () => {
     }
 
     let output = "";
-    for await (const chunk of runWithToolContext(sid, () => fakeStream())) {
+    for await (const chunk of runWithToolContext(sid, () => fakeStream(), { repos })) {
       output = String(chunk);
     }
 

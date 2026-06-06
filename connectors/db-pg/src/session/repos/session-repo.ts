@@ -6,17 +6,17 @@ import {
   type CompressionState,
   type SessionMetaMessage,
   type SessionTodoStore,
-} from "@freeanima/kernel-schemas";
+} from "@freeanima/engine-conversation";
 import { z } from "zod";
 
-import type { SessionSummaryRow } from "@freeanima/kernel";
+import type { SessionSummaryRow } from "@freeanima/engine-repos";
 import {
   acpSessionsSchema,
   awaitingClarifySchema,
   buildPlatformInfo,
   sessionInsertSchema,
   sessions,
-} from "@freeanima/kernel-db/schema";
+} from "@freeanima/engine-db/schema";
 
 import { getDb } from "../../client.ts";
 import {

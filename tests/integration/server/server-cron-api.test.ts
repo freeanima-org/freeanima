@@ -8,8 +8,7 @@ import {
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { createJob, AnimaService } from "@freeanima/service";
-import { getAcpManager } from "@freeanima/capabilities-acp";
+import { createJob, getServiceContext } from "@freeanima/service";
 import {
   listCronJobs,
   pauseCronJob,
@@ -17,7 +16,6 @@ import {
   runCronJobNow,
   ApiHandlerError,
 } from "@freeanima/connectors-webui/handlers";
-import { initServiceContext } from "@freeanima/service";
 
 describePg("server cron API", () => {
   let home: string;
@@ -44,7 +42,7 @@ describePg("server cron API", () => {
   });
 
   it("AnimaService pause and resume cron job", () => {
-    const svc = new AnimaService();
+    const svc = getServiceContext().service;
 
     const paused = svc.pauseCronJob(jobId);
     expect(paused).not.toBeNull();
@@ -58,7 +56,7 @@ describePg("server cron API", () => {
   });
 
   it("AnimaService runCronJobNow returns message for existing job", () => {
-    const svc = new AnimaService();
+    const svc = getServiceContext().service;
     const result = svc.runCronJobNow(jobId);
     expect(result).not.toBeNull();
     expect(result!.message).toContain("api-test");
@@ -66,22 +64,13 @@ describePg("server cron API", () => {
   });
 
   it("AnimaService returns null for unknown job id", () => {
-    const svc = new AnimaService();
+    const svc = getServiceContext().service;
     expect(svc.pauseCronJob("missing-id")).toBeNull();
     expect(svc.resumeCronJob("missing-id")).toBeNull();
     expect(svc.runCronJobNow("missing-id")).toBeNull();
   });
 
   it("handler pause/resume/run and 404", () => {
-    const svc = new AnimaService();
-    initServiceContext({
-      service: svc,
-      mcp: null,
-      acp: getAcpManager(),
-      host: "127.0.0.1",
-      port: 2658,
-    });
-
     const pauseBody = pauseCronJob(jobId);
     expect(pauseBody.ok).toBe(true);
     expect(pauseBody.job.paused).toBe(true);
@@ -97,15 +86,6 @@ describePg("server cron API", () => {
   });
 
   it("listCronJobs lists jobs", () => {
-    const svc = new AnimaService();
-    initServiceContext({
-      service: svc,
-      mcp: null,
-      acp: getAcpManager(),
-      host: "127.0.0.1",
-      port: 2658,
-    });
-
     const body = listCronJobs();
     expect(body.jobs.some((j: { id: string }) => j.id === jobId)).toBe(true);
   });

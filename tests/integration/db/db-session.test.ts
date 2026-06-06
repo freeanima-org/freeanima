@@ -1,6 +1,6 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
-import type { ConversationMessage } from "@freeanima/kernel-schemas";
-import { kernel } from "@freeanima/service-bootstrap";
+import type { ConversationMessage } from "@freeanima/engine-conversation";
+import { getTestEngine } from "../../helpers/pg-test.ts";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
   beginIntegrationCase,
@@ -24,7 +24,7 @@ describePg("db session (PostgreSQL)", () => {
   });
 
   it("append/read session meta and messages", async () => {
-    const session = kernel.repos.session;
+    const session = getTestEngine().repos.session;
     const sessionId = "20260530_test_db";
     await session.upsertSessionMeta(sessionId, {
       role: "session_meta",
@@ -66,7 +66,7 @@ describePg("db session (PostgreSQL)", () => {
   });
 
   it("shiftMessagePositions 为中间插入腾出 pos", async () => {
-    const session = kernel.repos.session;
+    const session = getTestEngine().repos.session;
     const sessionId = "20260531_shift_test";
     await session.upsertSessionMeta(sessionId, {
       role: "session_meta",

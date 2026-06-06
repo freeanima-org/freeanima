@@ -2,11 +2,35 @@ import { describe, it, expect, spyOn, afterEach, beforeEach } from "bun:test";
 import * as conv from "@freeanima/engine-conversation";
 import * as engine from "@freeanima/engine-loop";
 import type { StreamEvent } from "@freeanima/engine-loop";
+import { createConversationService } from "@freeanima/engine-conversation";
+import { nullPgRepositories } from "@freeanima/engine-repos";
+import type { Engine } from "@freeanima/engine";
+import { createServiceKernel } from "@freeanima/service-bootstrap";
+import { getAcpManager } from "@freeanima/capabilities-acp";
 import { AnimaService } from "../../../src/runtime/anima-service.ts";
+import { initServiceContext } from "../../../src/context.ts";
 import {
   beginMinimalConfigHome,
   endMinimalConfigHome,
 } from "../../../../../tests/helpers/minimal-config-home.ts";
+
+function wireTestService(): AnimaService {
+  const kernel = createServiceKernel();
+  const conversation = createConversationService(nullPgRepositories);
+  const service = new AnimaService({ kernel, conversation });
+  getAcpManager().wireConversation(conversation);
+  initServiceContext({
+    service,
+    kernel,
+    engine: { repos: nullPgRepositories } as Engine,
+    conversation,
+    mcp: null,
+    acp: getAcpManager(),
+    host: "127.0.0.1",
+    port: 2658,
+  });
+  return service;
+}
 
 describe("sendMessageStream done 顺序", () => {
   const restores: Array<{ mockRestore: () => void }> = [];
@@ -53,7 +77,7 @@ describe("sendMessageStream done 顺序", () => {
       ),
     );
 
-    const svc = new AnimaService();
+    const svc = wireTestService();
     for await (const ev of svc.sendMessageStream("test-sid", "hello", "parlor")) {
       if (ev.event === "done") {
         doneSeenBeforeFinishTurn = !finishTurnStarted;

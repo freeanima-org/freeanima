@@ -1,6 +1,10 @@
-import * as conv from "@freeanima/engine-conversation";
+import { getServiceContext } from "../context.ts";
+
+function conv() {
+  return getServiceContext().conversation;
+}
 import type { Message } from "@freeanima/engine-conversation";
-import type { SessionMessage } from "@freeanima/kernel-schemas";
+import type { SessionMessage } from "@freeanima/engine-conversation";
 import * as engine from "@freeanima/engine-loop";
 import { runWithToolContext } from "@freeanima/engine-loop";
 import type { StreamEvent } from "@freeanima/engine-loop";
@@ -64,11 +68,11 @@ export function createTurnMessageCallbacks(sessionId: string): {
 } {
   return {
     onMessageAppended: async (msg) => {
-      await conv.appendMessage(msg, sessionId);
+      await conv().appendMessage(msg, sessionId);
     },
     onToolRoundComplete: async (batch) => {
       for (const msg of batch) {
-        await conv.appendMessage(msg, sessionId);
+        await conv().appendMessage(msg, sessionId);
       }
     },
   };
@@ -82,14 +86,14 @@ export async function finalizeTurn(
   model: string,
   functions?: string[],
 ): Promise<void> {
-  await conv.finishTurn(sessionId, msgs, effectiveUserText, model, functions, true);
+  await conv().finishTurn(sessionId, msgs, effectiveUserText, model, functions, true);
 }
 
 export type RunSimpleTurnOpts = {
   sessionId: string;
   prompt: string;
   model: string;
-  /** 默认 conv.beginTurn；retry 等场景可传入 conv.retryTurn */
+  /** 默认 conv().beginTurn；retry 等场景可传入 conv().retryTurn */
   prepare?: (sessionId: string, prompt: string) => Promise<TurnPrepareResult>;
 };
 
@@ -98,14 +102,17 @@ export type RunSimpleTurnOpts = {
  * cron / 脚本等无 SSE 场景使用。
  */
 export async function runSimpleTurn(opts: RunSimpleTurnOpts): Promise<string> {
-  const { sessionId, prompt, model, prepare = conv.beginTurn } = opts;
+  const { sessionId, prompt, model, prepare = conv().beginTurn } = opts;
   const [msgs, functions, effective] = await prepare(sessionId, prompt);
   try {
-    return await runWithToolContext(sessionId, () =>
-      engine.run(msgs, {
-        model,
-        ...createTurnMessageCallbacks(sessionId),
-      }),
+    return await runWithToolContext(
+      sessionId,
+      () =>
+        engine.run(msgs, {
+          model,
+          ...createTurnMessageCallbacks(sessionId),
+        }),
+      { repos: conv().repos },
     );
   } catch (e) {
     if (e instanceof engine.MaxTurnsExceeded) {
@@ -124,19 +131,22 @@ export async function* yieldEngineStream(
   model: string,
   signal: AbortSignal,
 ): AsyncGenerator<StreamEvent> {
-  const tools = await conv.loadSessionTools(sessionId);
+  const tools = await conv().loadSessionTools(sessionId);
   host.acquireInFlight();
   try {
     try {
-      for await (const ev of runWithToolContext(sessionId, () =>
-        engine.runStream(msgs, {
-          model,
-          tools,
-          ...host.engineStreamOpts(sessionId, signal),
-        }),
+      for await (const ev of runWithToolContext(
+        sessionId,
+        () =>
+          engine.runStream(msgs, {
+            model,
+            tools,
+            ...host.engineStreamOpts(sessionId, signal),
+          }),
+        { repos: conv().repos },
       )) {
         if (ev.event === "awaiting_clarify") {
-          await applyClarifyStreamAwaiting(sessionId, ev.data.items, ev.data.timeout_sec);
+          await applyClarifyStreamAwaiting(conv(), sessionId, ev.data.items, ev.data.timeout_sec);
         }
         yield ev;
       }

@@ -1,9 +1,10 @@
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { getHomeDir } from "@freeanima/service-config";
-import { isSessionMeta, l2LineSchema, type SessionMessage } from "@freeanima/kernel-schemas";
-import { parseJsonLine } from "@freeanima/kernel-schemas";
-import { getKernel } from "@freeanima/kernel";
+import { isSessionMeta, type SessionMessage } from "@freeanima/engine-repos";
+import { l2LineSchema } from "./schemas/l2.ts";
+import { parseJsonLine } from "@freeanima/kernel-util";
+import type { SessionStorePort } from "@freeanima/engine-repos";
 
 export function processedDir(): string {
   return join(getHomeDir(), "processed");
@@ -30,13 +31,15 @@ function loadJsonl(path: string): Record<string, unknown>[] {
   return records;
 }
 
-async function readSessionMetaForDistill(sessionId: string): Promise<{
+async function readSessionMetaForDistill(
+  sessionStore: SessionStorePort,
+  sessionId: string,
+): Promise<{
   platform?: string;
   platform_extra?: Record<string, unknown>;
   title?: string;
 }> {
-  if (!getKernel().repos.pgAvailable) return {};
-  const meta = await getKernel().repos.session.getSessionMeta(sessionId);
+  const meta = await sessionStore.getSessionMeta(sessionId);
   if (!meta || !isSessionMeta(meta)) return {};
   return {
     platform: meta.platform != null ? String(meta.platform) : undefined,
@@ -70,6 +73,7 @@ function l1ActivityMtimeMs(records: Record<string, unknown>[]): number | null {
 }
 
 async function extractMeta(
+  sessionStore: SessionStorePort,
   records: Record<string, unknown>[],
   sessionId: string,
 ): Promise<Record<string, unknown>> {
@@ -83,7 +87,7 @@ async function extractMeta(
     platform_extra: {},
   };
 
-  const sm = await readSessionMetaForDistill(sessionId);
+  const sm = await readSessionMetaForDistill(sessionStore, sessionId);
   if (sm.platform) meta.platform = sm.platform;
   if (sm.platform_extra) meta.platform_extra = sm.platform_extra;
   if (sm.title) meta.title = sm.title;
@@ -147,6 +151,7 @@ function extractMessages(records: Record<string, unknown>[]): Record<string, unk
 }
 
 async function writeL2FromRecords(
+  sessionStore: SessionStorePort,
   sessionId: string,
   records: Record<string, unknown>[],
   opts?: { overwrite?: boolean; ifNewer?: boolean },
@@ -169,7 +174,7 @@ async function writeL2FromRecords(
 
   if (!records.length) return null;
 
-  const metaRecord = await extractMeta(records, sessionId);
+  const metaRecord = await extractMeta(sessionStore, records, sessionId);
   const messages = extractMessages(records);
   if (!messages.length) return null;
 
@@ -180,36 +185,39 @@ async function writeL2FromRecords(
 
 /** 从 PostgreSQL L1 蒸馏为 L2 JSONL */
 export async function distillFromPg(
+  sessionStore: SessionStorePort,
   sessionId: string,
   opts?: { overwrite?: boolean; ifNewer?: boolean },
 ): Promise<string | null> {
-  if (!getKernel().repos.pgAvailable) return null;
-  const msgs = await getKernel().repos.session.listMessages(sessionId);
+  const msgs = await sessionStore.listMessages(sessionId);
   if (!msgs.length) return null;
   const records = messagesToRecords(msgs);
-  return writeL2FromRecords(sessionId, records, opts);
+  return writeL2FromRecords(sessionStore, sessionId, records, opts);
 }
 
 /**
  * @deprecated 离线脚本；运行时请用 distillFromPg
  */
 export async function distill(
+  sessionStore: SessionStorePort,
   sessionId: string,
   l1Path: string,
   opts?: { overwrite?: boolean; ifNewer?: boolean },
 ): Promise<string | null> {
   if (!existsSync(l1Path)) return null;
   const records = loadJsonl(l1Path);
-  return writeL2FromRecords(sessionId, records, opts);
+  return writeL2FromRecords(sessionStore, sessionId, records, opts);
 }
 
 /** 扫描 PG 中全部 session，批量蒸馏为 L2 */
-export async function distillAll(opts?: { overwrite?: boolean }): Promise<number> {
+export async function distillAll(
+  sessionStore: SessionStorePort,
+  opts?: { overwrite?: boolean },
+): Promise<number> {
   const overwrite = opts?.overwrite ?? false;
   let count = 0;
-  if (!getKernel().repos.pgAvailable) return 0;
-  for (const sid of await getKernel().repos.session.listSessionIds(null)) {
-    if ((await distillFromPg(sid, { overwrite })) !== null) count++;
+  for (const sid of await sessionStore.listSessionIds(null)) {
+    if ((await distillFromPg(sessionStore, sid, { overwrite })) !== null) count++;
   }
   return count;
 }

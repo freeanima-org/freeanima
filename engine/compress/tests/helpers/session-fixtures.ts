@@ -3,7 +3,7 @@ import type {
   SessionMessage,
   ToolMessage,
   UserMessage,
-} from "@freeanima/kernel-schemas";
+} from "@freeanima/engine-db/domain";
 
 export function ua(pos: number, text = "u"): UserMessage {
   return { role: "user", content: text, pos };

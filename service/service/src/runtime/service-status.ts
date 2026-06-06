@@ -20,13 +20,17 @@ import {
 } from "@freeanima/connectors-cron";
 import type { CronJobData } from "@freeanima/connectors-cron";
 import { listCommandDefs, listCommandDefsForPlatform } from "@freeanima/connectors-commands";
-import * as conv from "@freeanima/engine-conversation";
+import { getServiceContext } from "../context.ts";
+
+function conv() {
+  return getServiceContext().conversation;
+}
 import type {
   HealthSnapshot,
   PlatformStatusSnapshot,
   SafeConfigSnapshot,
   ServiceSnapshot,
-} from "@freeanima/kernel-schemas";
+} from "@freeanima/service/schemas/snapshot";
 import { countL2FtsRows } from "@freeanima/life-memory/l2-indexer";
 import { getStore } from "@freeanima/life-memory/store";
 import { PARLOR_PLATFORM } from "./platforms.ts";
@@ -73,7 +77,7 @@ export function buildMemoryFileStats(): { files_count: number; files_bytes: numb
 
 export async function buildSessionsByPlatform(): Promise<Record<string, number>> {
   try {
-    return await conv.countSessionsByPlatform();
+    return await conv().countSessionsByPlatform();
   } catch {
     return {};
   }

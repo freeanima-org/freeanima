@@ -1,7 +1,7 @@
 import { sql as drizzleSql } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 
-import type { DbRelations } from "@freeanima/kernel-db/schema";
+import type { DbRelations } from "@freeanima/engine-db/schema";
 
 /** 确认 messages：PK=id(TEXT)、pos 列、payload JSONB、(session_id, pos) 唯一 */
 export async function assertMessagesSchema(db: PostgresJsDatabase<DbRelations>): Promise<void> {
@@ -16,7 +16,7 @@ export async function assertMessagesSchema(db: PostgresJsDatabase<DbRelations>):
   if (pkCols.length !== 1 || pkCols[0] !== "id") {
     throw new Error(
       `messages 表主键应为 (id)，当前为 (${pkCols.join(", ") || "未知"})。` +
-        "请先执行: bun run --filter @freeanima/kernel-db db:migrate",
+        "请先执行: bun run --filter @freeanima/engine-db db:migrate",
     );
   }
 
@@ -28,7 +28,7 @@ export async function assertMessagesSchema(db: PostgresJsDatabase<DbRelations>):
   `);
   if (!posCol[0]?.exists) {
     throw new Error(
-      "messages 表缺少 pos 列（会话内序号）。请先执行: bun run --filter @freeanima/kernel-db db:migrate",
+      "messages 表缺少 pos 列（会话内序号）。请先执行: bun run --filter @freeanima/engine-db db:migrate",
     );
   }
 
@@ -40,7 +40,7 @@ export async function assertMessagesSchema(db: PostgresJsDatabase<DbRelations>):
   `);
   if (!payloadCol[0]?.exists) {
     throw new Error(
-      "messages 表缺少 payload 列。请先执行: bun run --filter @freeanima/kernel-db db:migrate",
+      "messages 表缺少 payload 列。请先执行: bun run --filter @freeanima/engine-db db:migrate",
     );
   }
 
@@ -55,7 +55,7 @@ export async function assertMessagesSchema(db: PostgresJsDatabase<DbRelations>):
   `);
   if (Number(uqRows[0]?.cnt ?? 0) < 1) {
     throw new Error(
-      "messages 表缺少 (session_id, pos) 唯一索引。请先执行: bun run --filter @freeanima/kernel-db db:migrate",
+      "messages 表缺少 (session_id, pos) 唯一索引。请先执行: bun run --filter @freeanima/engine-db db:migrate",
     );
   }
 }

@@ -1,4 +1,4 @@
-import { safeParseOrNull } from "@freeanima/kernel-schemas";
+import { safeParseOrNull } from "@freeanima/kernel-util";
 /** 腾讯 iLink Bot API（参考 @tencent-weixin/openclaw-weixin src/api/api.ts） */
 
 import { randomBytes } from "node:crypto";

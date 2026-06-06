@@ -1,5 +1,5 @@
-import type { LlmTurnMessage } from "@freeanima/kernel-schemas";
-import type { SessionMessage } from "@freeanima/kernel-schemas";
+import type { LlmTurnMessage } from "@freeanima/engine-provider-llm";
+import type { SessionMessage } from "@freeanima/engine-db/domain";
 import { repairToolLoopMessages } from "./tool-loop-integrity.ts";
 
 export type InvokeMessageInput = {

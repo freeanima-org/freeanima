@@ -4,6 +4,8 @@ import { registerClarifyTool } from "@freeanima/capabilities-clarify";
 import { registerCoreTools, registerSupplementalTools } from "@freeanima/capabilities-tools";
 import { registerCronjobTool } from "@freeanima/connectors-cron/cronjob-tool";
 import type { Kernel } from "@freeanima/kernel";
+import type { ConversationService } from "@freeanima/engine-conversation";
+import type { SessionStorePort } from "@freeanima/engine-repos";
 import {
   registerMemoryPipeline,
   registerMemoryTools,
@@ -29,18 +31,23 @@ export function registerAllTools(): void {
   registerServiceTools();
 }
 
-/** 注册 clarify hook 与 ACP 工具（需 kernel） */
-export function registerServiceIntegrations(kernel: Kernel): void {
-  registerClarifyHooks(kernel);
+/** 注册 clarify hook 与 ACP 工具（需 kernel + conversation） */
+export function registerServiceIntegrations(opts: {
+  kernel: Kernel;
+  conversation: ConversationService;
+}): void {
+  registerClarifyHooks({ kernel: opts.kernel, conversation: opts.conversation });
+  getAcpManager().wireConversation(opts.conversation);
   getAcpManager().registerTools();
 }
 
 /** 注册记忆管道 reflect LLM 与 EventBus 订阅，并启动 EventBus */
 export function registerServiceMemoryBus(opts: {
   kernel: Kernel;
+  sessionStore: SessionStorePort;
   reflectChat: ReflectChatFn;
 }): void {
   registerReflectChat(opts.reflectChat);
-  registerMemoryPipeline(opts.kernel.eventBus);
+  registerMemoryPipeline({ bus: opts.kernel.eventBus, sessionStore: opts.sessionStore });
   opts.kernel.eventBus.start();
 }

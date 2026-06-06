@@ -6,7 +6,6 @@
   },
   "dependencies": {
     "@freeanima/kernel-eventbus": "workspace:*",
-    "@freeanima/kernel-schemas": "workspace:*",
     "@freeanima/kernel-hooks": "workspace:*",
     "@freeanima/kernel-logging": "workspace:*"
   },

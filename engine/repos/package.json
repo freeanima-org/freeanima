@@ -1,0 +1,14 @@
+{
+  "name": "@freeanima/engine-repos",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./null": "./src/adapters/null.ts"
+  },
+  "dependencies": {
+    "@freeanima/engine-db": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:"
+  }
+}

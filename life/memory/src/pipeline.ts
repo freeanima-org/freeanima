@@ -1,5 +1,6 @@
 import { logComponent } from "@freeanima/service-logging";
 import type { EventBus } from "@freeanima/kernel-eventbus";
+import type { SessionStorePort } from "@freeanima/engine-repos";
 import { isDebugSession } from "@freeanima/service-config";
 import { loadConfig } from "@freeanima/service-config";
 import { distillFromPg } from "./clean.ts";
@@ -16,7 +17,12 @@ export function isReflectEnabled(): boolean {
   return cfg.memory?.reflect?.enabled === true;
 }
 
-export function registerMemoryPipeline(bus: EventBus): void {
+export function registerMemoryPipeline(opts: {
+  bus: EventBus;
+  sessionStore: SessionStorePort;
+}): void {
+  const { bus, sessionStore } = opts;
+
   bus.on(sessionUpdated, async (payload) => {
     const sessionId = payload.session_id;
     if (!sessionId || isDebugSession(sessionId)) return;
@@ -29,7 +35,7 @@ export function registerMemoryPipeline(bus: EventBus): void {
         distillTimers.delete(sessionId);
         void (async () => {
           try {
-            const result = await distillFromPg(sessionId, { ifNewer: true });
+            const result = await distillFromPg(sessionStore, sessionId, { ifNewer: true });
             if (result !== null) {
               bus.emit(l2Updated, { session_id: sessionId });
             }
@@ -82,11 +88,15 @@ export function registerMemoryPipeline(bus: EventBus): void {
 }
 
 /** @deprecated 使用 registerMemoryPipeline */
-export function registerMemoryHandlers(bus: EventBus): void {
-  registerMemoryPipeline(bus);
+export function registerMemoryHandlers(_bus: EventBus): void {
+  throw new Error(
+    "registerMemoryHandlers 已废弃：请使用 registerMemoryPipeline({ bus, sessionStore })",
+  );
 }
 
 /** @deprecated 使用 registerMemoryPipeline */
-export function registerEventHandlers(bus: EventBus): void {
-  registerMemoryPipeline(bus);
+export function registerEventHandlers(_bus: EventBus): void {
+  throw new Error(
+    "registerEventHandlers 已废弃：请使用 registerMemoryPipeline({ bus, sessionStore })",
+  );
 }
