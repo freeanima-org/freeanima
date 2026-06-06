@@ -45,7 +45,11 @@ describe("db mappers", () => {
     );
     expect(userInsert.payload).toMatchObject({ role: "user", content: "hi" });
     expect(userInsert.payload).not.toHaveProperty("pos");
-    const user = rowToMessage(userInsert);
+    const user = rowToMessage({
+      ...userInsert,
+      contentFts: "hi",
+      createdAt: "2026-01-01T00:00:00.000Z",
+    });
     expect(user.pos).toBe(1);
 
     const toolInsert = messageToInsert("sess", {
@@ -57,7 +61,11 @@ describe("db mappers", () => {
     });
     expect(toolInsert.pos).toBe(2);
     expect(toolInsert.payload.role).toBe("tool");
-    const tool = rowToMessage(toolInsert);
+    const tool = rowToMessage({
+      ...toolInsert,
+      contentFts: null,
+      createdAt: "2026-01-01T00:00:01.000Z",
+    });
     expect(tool.pos).toBe(2);
   });
 });

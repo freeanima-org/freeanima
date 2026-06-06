@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, mkdtempSync } from "node:fs";
 import { tmpdir, homedir } from "node:os";
 import { join, resolve } from "node:path";
 import { randomBytes } from "node:crypto";
-import { openaiSchemas } from "@freeanima/engine-tool";
+import { openaiSchemasFromNames, toolNames } from "@freeanima/engine-tool";
 import { getProfileHopModel, loadConfig } from "@freeanima/service-config";
 import { CST_OFFSET_MS, formatCstIso } from "@freeanima/kernel-util";
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
@@ -83,31 +83,31 @@ export function allocateSessionCwd(sid: string): string {
 
 export { loadSoul } from "./soul-port.ts";
 
-/** 读取 session 缓存的 OpenAI tools；缺失时回退注册表并写回 meta */
+/** 读取 session 缓存的工具名并解析为 OpenAI schema；缺失时回退注册表并写回 meta */
 export async function loadSessionTools(
   repos: PgRepositories,
   session: string,
   cachedMeta?: SessionMetaLoadResult,
 ): Promise<OpenAiToolSchema[]> {
+  let names: string[] = [];
   if (cachedMeta != null && isSessionMeta(cachedMeta) && cachedMeta.tools.length > 0) {
-    return cachedMeta.tools;
-  }
-  if (postgresAvailable(repos)) {
-    const cached = await loadSessionToolsWithRouting(repos, session);
-    if (cached.length > 0) {
-      return cached;
-    }
+    names = cachedMeta.tools;
+  } else if (postgresAvailable(repos)) {
+    names = await loadSessionToolsWithRouting(repos, session);
   } else {
     const meta = cachedMeta ?? (await loadSessionMeta(repos, session));
     if (isSessionMeta(meta) && meta.tools.length > 0) {
-      return meta.tools;
+      names = meta.tools;
     }
   }
-  const fresh = openaiSchemas();
+  if (names.length > 0) {
+    return openaiSchemasFromNames(names);
+  }
+  const fresh = toolNames();
   if (fresh.length > 0) {
     await updateSessionMetaField(repos, session, { tools: fresh });
   }
-  return fresh;
+  return openaiSchemasFromNames(fresh);
 }
 
 export async function loadSessionMeta(
@@ -224,7 +224,7 @@ export async function appendMessage(
 export async function appendSessionMeta(
   repos: PgRepositories,
   session: string,
-  tools: OpenAiToolSchema[],
+  tools: string[],
   model: string,
   opts?: { platform?: string; functions?: string[] },
 ): Promise<void> {
@@ -251,7 +251,7 @@ export async function initSession(
   const meta: SessionMetaMessage = {
     role: "session_meta",
     model,
-    tools: openaiSchemas(),
+    tools: toolNames(),
     functions: opts.functions ?? [],
     timestamp: formatCstIso(),
     platform: opts.platform,
@@ -375,9 +375,9 @@ export async function reloadSessionTools(repos: PgRepositories, session: string)
   if (!isSessionMeta(meta)) {
     throw new Error("session 不存在");
   }
-  const tools = openaiSchemas();
-  await updateSessionMetaField(repos, session, { tools, timestamp: formatCstIso() });
-  return tools.length;
+  const names = toolNames();
+  await updateSessionMetaField(repos, session, { tools: names, timestamp: formatCstIso() });
+  return names.length;
 }
 
 const RESUME_STALE_MS = 7 * 24 * 60 * 60 * 1000;
@@ -582,9 +582,11 @@ export async function recompressSession(
     };
   }
 
+  const tools = await loadSessionTools(repos, session, meta);
   const compressOpts = buildCompressOptions(meta, state, defaultChatModel(), {
     force: opts?.force,
     forceEmergency: opts?.force,
+    tools,
   });
   const [, newState] = compress(msgs, compressOpts);
 
@@ -725,6 +727,7 @@ function buildRuntimeMessagesFrom(
   _session: string,
   meta: SessionMetaLoadResult,
   msgs: Message[],
+  tools: OpenAiToolSchema[],
 ): [SessionMessage[], string[]] {
   const functions = isSessionMeta(meta) ? meta.functions : [];
   let runtimeMsgs = msgs;
@@ -734,7 +737,7 @@ function buildRuntimeMessagesFrom(
     const state = isSessionMeta(meta) ? parseCompressionState(meta.compression) : null;
     const [compressed] = compress(
       runtimeMsgs,
-      buildCompressOptions(meta, state, defaultChatModel()),
+      buildCompressOptions(meta, state, defaultChatModel(), { tools }),
     );
     runtimeMsgs = compressed;
   }
@@ -752,13 +755,15 @@ export async function buildRuntimeMessages(
 ): Promise<[SessionMessage[], string[]]> {
   const meta = await loadSessionMeta(repos, session);
   const msgs = await loadForRuntime(repos, session, meta);
-  return buildRuntimeMessagesFrom(session, meta, msgs);
+  const tools = await loadSessionTools(repos, session, meta);
+  return buildRuntimeMessagesFrom(session, meta, msgs, tools);
 }
 
 async function loadMessagesForTurn(
   repos: PgRepositories,
   session: string,
   meta: SessionMetaLoadResult,
+  tools: OpenAiToolSchema[],
 ): Promise<Message[]> {
   if (!compressionEnabled()) {
     return load(repos, session);
@@ -768,7 +773,7 @@ async function loadMessagesForTurn(
     return load(repos, session);
   }
   const windowed = await loadForRuntime(repos, session, meta);
-  const compressOpts = buildCompressOptions(meta, state, defaultChatModel());
+  const compressOpts = buildCompressOptions(meta, state, defaultChatModel(), { tools });
   if (willAdvanceCompression(windowed, compressOpts)) {
     return load(repos, session);
   }
@@ -779,19 +784,20 @@ async function prepareTurnMessages(
   repos: PgRepositories,
   session: string,
   meta: SessionMetaLoadResult,
-): Promise<Message[]> {
-  let msgs = await loadMessagesForTurn(repos, session, meta);
+): Promise<{ msgs: Message[]; tools: OpenAiToolSchema[] }> {
+  const tools = await loadSessionTools(repos, session, meta);
+  let msgs = await loadMessagesForTurn(repos, session, meta, tools);
   msgs = await ensureSessionToolIntegrity(repos, session, msgs);
   const total = await countMessages(repos, session);
   if (msgs.length < total) {
     const state = isSessionMeta(meta) ? parseCompressionState(meta.compression) : null;
-    const compressOpts = buildCompressOptions(meta, state, defaultChatModel());
+    const compressOpts = buildCompressOptions(meta, state, defaultChatModel(), { tools });
     if (willAdvanceCompression(msgs, compressOpts)) {
       msgs = await load(repos, session);
       msgs = await ensureSessionToolIntegrity(repos, session, msgs);
     }
   }
-  return msgs;
+  return { msgs, tools };
 }
 
 export async function beginTurn(
@@ -802,9 +808,9 @@ export async function beginTurn(
   clearToolLoopSuppression(session);
   const effective = await appendUserTurn(repos, session, userText);
   const meta = await loadSessionMeta(repos, session);
-  const msgs = await prepareTurnMessages(repos, session, meta);
+  const { msgs, tools } = await prepareTurnMessages(repos, session, meta);
   await advanceCompressionMeta(repos, session, { meta, msgs });
-  const [runtimeMsgs, functions] = buildRuntimeMessagesFrom(session, meta, msgs);
+  const [runtimeMsgs, functions] = buildRuntimeMessagesFrom(session, meta, msgs, tools);
   return [runtimeMsgs, functions, effective];
 }
 
@@ -842,7 +848,7 @@ export async function updateSessionMeta(
   repos: PgRepositories,
   session: string,
   model: string,
-  opts?: { functions?: string[]; tools?: OpenAiToolSchema[] },
+  opts?: { functions?: string[]; tools?: string[] },
 ): Promise<void> {
   const parsed = await loadSessionMeta(repos, session);
   if (!isSessionMeta(parsed)) return;
@@ -853,7 +859,7 @@ export async function updateSessionMeta(
   if (opts?.tools !== undefined) {
     meta.tools = opts.tools;
   } else if (!meta.tools.length) {
-    meta.tools = openaiSchemas();
+    meta.tools = toolNames();
   }
   await pgWriteMeta(repos, session, meta);
 }
@@ -933,9 +939,9 @@ export async function retryTurn(
 ): Promise<[SessionMessage[], string[], string]> {
   const effective = await rollbackToLastUser(repos, session);
   const meta = await loadSessionMeta(repos, session);
-  const msgs = await prepareTurnMessages(repos, session, meta);
+  const { msgs, tools } = await prepareTurnMessages(repos, session, meta);
   await advanceCompressionMeta(repos, session, { meta, msgs });
-  const [runtimeMsgs, functions] = buildRuntimeMessagesFrom(session, meta, msgs);
+  const [runtimeMsgs, functions] = buildRuntimeMessagesFrom(session, meta, msgs, tools);
   return [runtimeMsgs, functions, effective];
 }
 

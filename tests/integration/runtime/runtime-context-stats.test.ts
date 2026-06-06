@@ -1,3 +1,4 @@
+import { registerTool } from "@freeanima/engine-tool";
 import { computeStats, statsReport } from "@freeanima/service";
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import { describePg } from "../../helpers/pg-test-gate.ts";
@@ -28,20 +29,18 @@ compression:
   });
 
   it("breakdown includes tools and system parts from runtime view", async () => {
+    registerTool({
+      name: "ctx_stats_big_tool",
+      description: "y".repeat(5000),
+      parameters: { type: "object", properties: {} },
+      handler: async () => JSON.stringify({ ok: true }),
+    });
     const c = testConv();
-    const bigTool = {
-      type: "function" as const,
-      function: {
-        name: "x",
-        description: "y".repeat(5000),
-        parameters: { type: "object", properties: {} },
-      },
-    };
     const sid = await c.newSession("parlor");
     await c.updateSessionMetaField(sid, {
       model: "m",
       system_prompt: "SOUL block here\n\n## 常驻记忆\n- fact",
-      tools: [bigTool],
+      tools: ["ctx_stats_big_tool"],
     });
     await c.appendMessage({ role: "user", content: "hi", pos: 1 }, sid);
     await c.appendMessage({ role: "assistant", content: "ok", pos: 2 }, sid);

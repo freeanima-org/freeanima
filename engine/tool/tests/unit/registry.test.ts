@@ -4,8 +4,10 @@ import {
   getTool,
   listTools,
   openaiSchemas,
+  openaiSchemasFromNames,
   registerTool,
   resolveToolArgs,
+  toolNames,
   unregisterToolsByToolset,
 } from "../../src/index.ts";
 
@@ -86,6 +88,14 @@ describe("defaultToolRegistry 模块级函数", () => {
   it("openaiSchemas 委托默认实例", () => {
     registerTool({ ...sampleTool, name: "schema_tool" });
     expect(openaiSchemas().some((s) => s.function.name === "schema_tool")).toBe(true);
+  });
+
+  it("openaiSchemasFromNames 按名解析 schema", () => {
+    registerTool({ ...sampleTool, name: "named_tool" });
+    expect(toolNames()).toContain("named_tool");
+    const schemas = openaiSchemasFromNames(["named_tool", "missing_tool"]);
+    expect(schemas).toHaveLength(1);
+    expect(schemas[0]?.function.name).toBe("named_tool");
   });
 
   it("resolveToolArgs 委托默认实例", () => {

@@ -22,14 +22,14 @@ describePg("schemas/message", () => {
     const line = JSON.stringify({
       role: "session_meta",
       model: "m",
-      tools: [{ type: "function", function: { name: "keep_tool" } }],
+      tools: ["keep_tool"],
       functions: [],
       timestamp: "t",
     });
     const parsed = parseSessionLine(line);
     expect(parsed?.role).toBe("session_meta");
     if (parsed?.role !== "session_meta") return;
-    expect(parsed.tools).toEqual([{ type: "function", function: { name: "keep_tool" } }]);
+    expect(parsed.tools).toEqual(["keep_tool"]);
   });
 
   it("parseSessionLine roundtrips user and assistant messages", () => {

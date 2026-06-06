@@ -7,6 +7,8 @@ export {
   listTools,
   openaiFunctionSchema,
   openaiSchemas,
+  openaiSchemasFromNames,
+  toolNames,
   checkEnvRequirements,
   resolveToolArgs,
 } from "./registry.ts";

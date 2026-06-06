@@ -1,7 +1,6 @@
 import { desc, eq, sql } from "drizzle-orm";
 import {
   compressionStateSchema,
-  openAiToolSchema,
   sessionTodoStoreSchema,
   type CompressionState,
   type SessionMetaMessage,
@@ -72,7 +71,7 @@ export async function getSessionTools(sessionId: string): Promise<SessionMetaMes
     .where(eq(sessions.id, sessionId))
     .limit(1);
   if (!rows.length) return [];
-  return z.array(openAiToolSchema).parse(rows[0]!.tools ?? []);
+  return z.array(z.string()).parse(rows[0]!.tools ?? []);
 }
 
 export async function upsertSessionMeta(
@@ -147,7 +146,7 @@ export async function patchSessionMeta(
     hasColumnPatch = true;
   }
   if (patch.tools !== undefined) {
-    set.tools = z.array(openAiToolSchema).parse(patch.tools);
+    set.tools = z.array(z.string()).parse(patch.tools);
     hasColumnPatch = true;
   }
   if (patch.functions !== undefined) {

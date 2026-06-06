@@ -195,7 +195,7 @@ describePg("slash commands", () => {
     const sid = await testConv().newSession("parlor");
     const metaBefore = await testConv().loadSessionMeta(sid);
     const preservedCwd = "/tmp/freeanima-preserved-cwd";
-    const preservedTools = [{ type: "function" as const, function: { name: "keep_tool" } }];
+    const preservedTools = ["keep_tool"];
     await patchMetaForTest(sid, {
       cwd: preservedCwd,
       tools: preservedTools,
@@ -213,7 +213,11 @@ describePg("slash commands", () => {
 
     const metaAfter = await testConv().loadSessionMeta(sid);
     expect(metaAfter.cwd).toBe(preservedCwd);
-    expect(await testConv().loadSessionTools(sid, metaAfter)).toEqual(preservedTools);
+    expect(
+      await testConv()
+        .loadSessionTools(sid, metaAfter)
+        .then((t) => t.map((x) => x.function.name)),
+    ).toEqual(preservedTools);
     expect(metaAfter.title).toBe("保留标题");
     expect(metaAfter.model).toBe(metaBefore.model);
     expect(String(metaAfter.system_prompt ?? "")).not.toBe("旧 prompt");
