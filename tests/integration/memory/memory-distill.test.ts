@@ -13,7 +13,7 @@ import {
   l2SessionPath,
   processedDir,
 } from "@freeanima/life-memory";
-import { seedSession } from "@freeanima/kernel-db/test-helpers";
+import { seedSession } from "../../helpers/pg-test.ts";
 
 describePg("memory distill", () => {
   const prev = process.env.FREEANIMA_HOME;

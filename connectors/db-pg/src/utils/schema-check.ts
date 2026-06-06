@@ -1,7 +1,7 @@
 import { sql as drizzleSql } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 
-import type { DbRelations } from "../schema/index.ts";
+import type { DbRelations } from "@freeanima/kernel-db/schema";
 
 /** 确认 messages：PK=id(TEXT)、pos 列、payload JSONB、(session_id, pos) 唯一 */
 export async function assertMessagesSchema(db: PostgresJsDatabase<DbRelations>): Promise<void> {

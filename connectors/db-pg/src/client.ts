@@ -1,7 +1,6 @@
+import { relations, type DbRelations } from "@freeanima/kernel-db/schema";
 import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-
-import { relations, type DbRelations } from "./schema/index.ts";
 
 export interface DatabaseConfig {
   url: string;

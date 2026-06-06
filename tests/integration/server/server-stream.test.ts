@@ -7,7 +7,7 @@ import {
 } from "../../helpers/integration-case.ts";
 
 import { AnimaService } from "@freeanima/service";
-import { seedSession } from "@freeanima/kernel-db/test-helpers";
+import { seedSession } from "../../helpers/pg-test.ts";
 
 describePg("sendMessageStream", () => {
   const prev = process.env.FREEANIMA_HOME;

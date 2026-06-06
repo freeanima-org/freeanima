@@ -8,8 +8,8 @@ import {
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { patchSessionMeta } from "@freeanima/kernel-db";
-import { seedSession, appendIntegrationConfig } from "@freeanima/kernel-db/test-helpers";
+import { kernel } from "@freeanima/service-bootstrap";
+import { seedSession, appendIntegrationConfig } from "../../helpers/pg-test.ts";
 import {
   findCommand,
   executeCommand,
@@ -30,7 +30,7 @@ import {
 import { registerTool } from "@freeanima/engine-tool";
 
 async function patchMetaForTest(sessionId: string, patch: Record<string, unknown>): Promise<void> {
-  await patchSessionMeta(sessionId, patch as never);
+  await kernel.repos.session.patchSessionMeta(sessionId, patch as never);
 }
 
 describePg("slash commands", () => {

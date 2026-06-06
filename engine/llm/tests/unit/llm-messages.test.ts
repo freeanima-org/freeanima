@@ -8,7 +8,7 @@ import type { LlmTurnMessage } from "@freeanima/kernel-schemas";
 
 describe("mergeStreamingToolCalls", () => {
   it("merges deltas by index into one tool call with name", () => {
-    let acc: Record<number, import("@freeanima/kernel-db").ToolCall> = {};
+    let acc: Record<number, import("@freeanima/kernel-schemas").ToolCall> = {};
     acc = mergeStreamingToolCalls(acc, [
       {
         index: 0,

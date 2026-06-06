@@ -1,15 +1,21 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
+import {
+  createPgRepositories,
+  closeDb,
+  getDb,
+  initDatabase,
+  setDbForTest,
+  type Db,
+} from "@freeanima/connectors-db-pg";
+import { nullPgRepositories } from "@freeanima/kernel";
+import { kernel } from "@freeanima/service-bootstrap";
 import { clearConfigCache } from "@freeanima/service-config";
 import type { SessionMessage, SessionMetaMessage } from "@freeanima/kernel-schemas";
+import { relations } from "@freeanima/kernel-db/schema";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-
-import { closeDb, initDatabase, type Db, setDbForTest } from "../client.ts";
-import { appendMessage } from "../repos/message-repo.ts";
-import { upsertSessionMeta } from "../repos/session-repo.ts";
-import { relations } from "../schema/index.ts";
 
 export type PgTestContext = {
   sql: postgres.Sql;
@@ -24,6 +30,10 @@ async function clearPgTables(sql: postgres.Sql): Promise<void> {
   await sql`DELETE FROM sessions`;
 }
 
+function wireRepositories(): void {
+  kernel.setRepositories(createPgRepositories({ getDb }));
+}
+
 /** Vitest 等根目录测试：注入 PG 连接并清表 */
 export async function setupPgTestDb(url: string): Promise<PgTestContext> {
   initDatabase({ getDatabaseUrl: () => url });
@@ -31,14 +41,17 @@ export async function setupPgTestDb(url: string): Promise<PgTestContext> {
   await clearPgTables(sql);
   const db = drizzle({ client: sql, relations });
   setDbForTest(db, sql);
-  return {
+  activeCtx = {
     sql,
     db,
     async teardown() {
       await sql.end();
       await closeDb();
+      kernel.setRepositories(nullPgRepositories);
     },
   };
+  wireRepositories();
+  return activeCtx;
 }
 
 const INTEGRATION_LLM_YAML = `
@@ -82,10 +95,10 @@ export async function setupIntegrationHome(opts: {
   clearConfigCache();
   if (activeCtx) {
     await clearPgTables(activeCtx.sql);
+    wireRepositories();
     return activeCtx;
   }
-  activeCtx = await setupPgTestDb(opts.url);
-  return activeCtx;
+  return setupPgTestDb(opts.url);
 }
 
 /** 集成测试套件结束时关闭 PG 连接 */
@@ -104,14 +117,15 @@ export function appendIntegrationConfig(home: string, yaml: string): void {
   clearConfigCache();
 }
 
-/** 通过 PG repo 写入 session（替代 sessions/*.jsonl fixture） */
+/** 通过 Session 端口写入 session（替代 sessions/*.jsonl fixture） */
 export async function seedSession(
   sessionId: string,
   meta: SessionMetaMessage,
   messages: SessionMessage[] = [],
 ): Promise<void> {
-  await upsertSessionMeta(sessionId, meta);
+  const session = kernel.repos.session;
+  await session.upsertSessionMeta(sessionId, meta);
   for (const msg of messages) {
-    await appendMessage(sessionId, msg);
+    await session.appendMessage(sessionId, msg);
   }
 }

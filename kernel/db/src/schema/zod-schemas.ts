@@ -4,7 +4,7 @@ import { z } from "zod";
 import {
   acpSessionsSchema,
   awaitingClarifySchema,
-  compressionStateSchema,
+  compressionJsonSchema,
   messagePayloadSchema,
   platformInfoSchema,
   sessionFunctionsSchema,
@@ -16,7 +16,7 @@ import { sessions } from "./sessions.ts";
 
 const sessionJsonbRefine = {
   platformInfo: platformInfoSchema.nullable(),
-  compression: compressionStateSchema.nullable(),
+  compression: compressionJsonSchema.nullable(),
   todos: sessionTodoStoreSchema,
   awaitingClarify: awaitingClarifySchema.nullable(),
   acpSessions: acpSessionsSchema.nullable(),

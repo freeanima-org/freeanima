@@ -12,6 +12,19 @@
 
 代码真相源：[`kernel/db/src/schema/`](../kernel/db/src/schema/)。
 
+## PG 多域架构（路径 C）
+
+| 包                            | 职责                                                             |
+| ----------------------------- | ---------------------------------------------------------------- |
+| `@freeanima/kernel-db`        | PG 表 DDL、migration、JSONB 存储 Zod（**L1 类型真源**）          |
+| `@freeanima/kernel`           | `SessionStorePort`、`PgRepositories` 端口；`Kernel.repos` 挂载点 |
+| `@freeanima/connectors-db-pg` | `PgSessionStore` 实现、连接池、mapper、repo                      |
+| `@freeanima/kernel-schemas`   | 领域便利类型；L1 重叠部分从 `kernel-db` **派生**                 |
+
+装配：`service/serve.ts` 调用 `createPgRepositories` → `kernel.setRepositories`。engine / life 经 `getKernel().repos.session` 读写，不直接依赖 connector。
+
+新增 PG 域（memory / cron / task）：`kernel-db/schema/{domain}` → `kernel/ports` → `connectors-db-pg` 实现 → `PgRepositories` 扩展字段。
+
 ---
 
 ## Slice A：L1 Session（2 表）
@@ -19,10 +32,10 @@
 ### 设计原则
 
 - `sessions` **一行 = `session_meta`**（含 compression、todos、clarify、tools 等）
-- `messages` **只追加**；`payload` JSONB 存 `ConversationPayload`（无 `pos`）；`pos` 列是会话内序号真相源
-- 领域类型复用 kernel Zod；Drizzle 管 DDL + migration
-- `sessions` 仍列化常用 meta 字段
-- 读写：`messageToInsert` / `rowToMessage`（`pos` 列 + payload 合并为 `ConversationMessage`）
+- `messages` **只追加**；`payload` JSONB 存 `MessagePayload`（无 `pos`）；`pos` 列是会话内序号真相源
+- **存储 Zod 以 `kernel-db` 为准**；`kernel-schemas` 派生 `ConversationMessage` 等领域视图
+- Drizzle 管 DDL + migration；`sessions` 仍列化常用 meta 字段
+- 读写：`connectors-db-pg` mapper（`pos` 列 + payload 合并为 `ConversationMessage`）
 
 ### 表结构
 

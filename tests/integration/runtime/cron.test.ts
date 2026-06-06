@@ -29,7 +29,7 @@ import {
   cronStore,
 } from "@freeanima/service";
 import { patchConfigSection } from "@freeanima/service-config";
-import { seedSession } from "@freeanima/kernel-db/test-helpers";
+import { seedSession } from "../../helpers/pg-test.ts";
 
 describePg("cron", () => {
   let home: string;

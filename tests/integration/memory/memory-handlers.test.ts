@@ -19,7 +19,7 @@ import {
   l2SessionPath,
   sessionUpdated,
 } from "@freeanima/life-memory";
-import { seedSession } from "@freeanima/kernel-db/test-helpers";
+import { seedSession } from "../../helpers/pg-test.ts";
 
 describePgSqlite("memory handlers", () => {
   let home: string;

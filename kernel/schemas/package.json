@@ -15,6 +15,7 @@
     "./weixin": "./src/weixin.ts"
   },
   "dependencies": {
+    "@freeanima/kernel-db": "workspace:*",
     "zod": "catalog:"
   },
   "devDependencies": {

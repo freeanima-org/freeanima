@@ -1,0 +1,81 @@
+import type { SessionStorePort } from "../ports/session.ts";
+
+const unavailable = (): never => {
+  throw new Error("database.url 未配置");
+};
+
+/** PG 不可用时的 Session 端口空实现 */
+export const nullSessionStore: SessionStorePort = {
+  async getSessionMeta() {
+    return null;
+  },
+  async getSessionMetaLite() {
+    return null;
+  },
+  async getSessionTools() {
+    return [];
+  },
+  async upsertSessionMeta() {
+    return;
+  },
+  async patchSessionMeta() {
+    return;
+  },
+  async updateCompression() {
+    return;
+  },
+  async updateTodos() {
+    return;
+  },
+  async appendMessage(..._args: Parameters<SessionStorePort["appendMessage"]>) {
+    return unavailable();
+  },
+  async nextMessagePos(..._args: Parameters<SessionStorePort["nextMessagePos"]>) {
+    return unavailable();
+  },
+  async listMessages() {
+    return [];
+  },
+  async listMessagesByPosRange() {
+    return [];
+  },
+  async listMessagesPage() {
+    return [];
+  },
+  async countMessages() {
+    return 0;
+  },
+  async lastMessageTimestamp() {
+    return null;
+  },
+  async truncateMessagesAfter() {
+    return;
+  },
+  async shiftMessagePositions() {
+    return;
+  },
+  async sessionExists() {
+    return false;
+  },
+  async deleteSession() {
+    return;
+  },
+  async listSessionIds() {
+    return [];
+  },
+  async listDebugSessionIds() {
+    return [];
+  },
+  async listSessionSummaries() {
+    return [];
+  },
+  async countSessionsByPlatform() {
+    return {};
+  },
+  async deleteDebugSessions() {
+    return 0;
+  },
+  async findSessionIdByPlatformInfo() {
+    return null;
+  },
+};

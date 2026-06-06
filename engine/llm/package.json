@@ -12,7 +12,6 @@
     "@freeanima/service-config": "workspace:*"
   },
   "devDependencies": {
-    "@freeanima/kernel-db": "workspace:*",
     "@types/bun": "catalog:"
   }
 }

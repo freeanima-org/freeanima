@@ -11,8 +11,8 @@
     "@freeanima/engine-prompt": "workspace:*",
     "@freeanima/engine-provider-llm": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",
+    "@freeanima/kernel": "workspace:*",
     "@freeanima/kernel-schemas": "workspace:*",
-    "@freeanima/kernel-db": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "@freeanima/service-logging": "workspace:*"
   },
