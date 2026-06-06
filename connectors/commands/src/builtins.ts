@@ -6,11 +6,9 @@ import {
 } from "./registry.ts";
 import { clearAwaitingClarify, readAwaitingClarify } from "@freeanima/capabilities-clarify";
 import { statsReport } from "@freeanima/service-api/conversation-stats";
+import { onSessionCloseBeforeNew } from "@freeanima/service-api/session-close";
 import { listTools } from "@freeanima/engine-tool";
 import { isSessionMeta } from "@freeanima/engine-conversation";
-import { distillFromPg } from "@freeanima/life-memory/clean";
-import { isReflectEnabled } from "@freeanima/life-memory";
-import { reflectSession } from "@freeanima/life-memory/reflect";
 import { setHomeChannel } from "@freeanima/service-api/home-channel";
 import { getServiceContext } from "@freeanima/service-api";
 
@@ -40,15 +38,7 @@ function cmdHelp(ctx: CommandContext): string {
 }
 
 async function cmdNew(ctx: CommandContext): Promise<CommandResult> {
-  try {
-    const oldSession = ctx.sessionId;
-    const l2Path = await distillFromPg(conv().repos.session, oldSession);
-    if (l2Path && isReflectEnabled()) {
-      await reflectSession(oldSession);
-    }
-  } catch {
-    // 不阻塞 /new
-  }
+  await onSessionCloseBeforeNew(ctx.sessionId);
   const sid = await conv().newSession(ctx.platform);
   return {
     text: `🆕 新 session 已创建（${sid.slice(0, 8)}...）`,

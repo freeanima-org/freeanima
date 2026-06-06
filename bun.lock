@@ -112,7 +112,6 @@
         "@freeanima/capabilities-clarify": "workspace:*",
         "@freeanima/engine-conversation": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
-        "@freeanima/life-memory": "workspace:*",
         "@freeanima/service-api": "workspace:*",
       },
       "devDependencies": {
@@ -122,11 +121,6 @@
     "connectors/cron": {
       "name": "@freeanima/connectors-cron",
       "dependencies": {
-        "@freeanima/engine-conversation": "workspace:*",
-        "@freeanima/engine-provider-llm": "workspace:*",
-        "@freeanima/engine-tool": "workspace:*",
-        "@freeanima/kernel-util": "workspace:*",
-        "@freeanima/life-memory": "workspace:*",
         "@freeanima/service-api": "workspace:*",
         "@freeanima/service-config": "workspace:*",
         "@freeanima/service-logging": "workspace:*",

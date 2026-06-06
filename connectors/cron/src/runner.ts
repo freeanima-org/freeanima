@@ -1,14 +1,7 @@
 import { existsSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
-import { getServiceContext } from "@freeanima/service-api";
-import * as conv from "@freeanima/engine-conversation";
-import { distillFromPg, l2SessionPath } from "@freeanima/life-memory/clean";
-import { indexL2Session } from "@freeanima/life-memory/l2-indexer";
-import { getProfileHopModel, loadConfig } from "@freeanima/service-config";
+import { runCronEngineTurn, runCronL2GapFill } from "@freeanima/service-api/cron-use-cases";
 import { logComponent } from "@freeanima/service-logging";
-import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
-import { loadSkill } from "@freeanima/life-memory";
-import { runSimpleTurn } from "@freeanima/service-api/turn-lifecycle";
 import type { CronJob } from "./models.ts";
 import * as store from "./store.ts";
 import { computeNextRun } from "./schedule.ts";
@@ -17,23 +10,7 @@ import { deliverCronResult } from "./deliver.ts";
 /** 任务失败后最短重试间隔（秒），避免调度器每 10s 重复执行同一失败任务 */
 const FAILURE_RETRY_DELAY_SEC = 300;
 
-function conversation() {
-  return getServiceContext().conversation;
-}
-
-export async function runL2GapFill(): Promise<string> {
-  let count = 0;
-  const sessionStore = conversation().repos.session;
-  for (const sid of await conversation().listSessions()) {
-    if (existsSync(l2SessionPath(sid))) continue;
-    const result = await distillFromPg(sessionStore, sid);
-    if (result) {
-      count += 1;
-      indexL2Session(sid);
-    }
-  }
-  return count ? `L2 gap-fill: ${count} session(s) distilled and indexed` : "";
-}
+export { runCronL2GapFill as runL2GapFill };
 
 function runScript(scriptPath: string, timeoutSec: number): string {
   const path = store.resolveScriptPath(scriptPath);
@@ -55,19 +32,6 @@ function runScript(scriptPath: string, timeoutSec: number): string {
     throw new Error(`Script exited with code ${cmd.status}${detail ? `: ${detail}` : ""}`);
   }
   return (cmd.stdout ?? "").trim();
-}
-
-async function runEngine(job: CronJob, prompt: string): Promise<string> {
-  const cfg = loadConfig();
-  const model = job.model_name ?? getProfileHopModel(cfg, PROFILE_CHAT);
-  const sid = conv.generateSessionId();
-  await conversation().initSession(sid, model, { platform: "cron" });
-
-  for (const skillName of job.skills) {
-    loadSkill(skillName);
-  }
-
-  return runSimpleTurn({ sessionId: sid, prompt, model });
 }
 
 function saveOutput(job: CronJob, content: string): void {
@@ -146,7 +110,7 @@ async function runJobInternal(job: CronJob): Promise<void> {
       throw new Error("no_agent=True requires a script");
     }
     const output =
-      job.id === "l2-gap-fill" ? await runL2GapFill() : runScript(job.script!, job.timeout_sec);
+      job.id === "l2-gap-fill" ? await runCronL2GapFill() : runScript(job.script!, job.timeout_sec);
     job.last_output = output;
     saveOutput(job, output);
     await notifyDeliver(job, true, output);
@@ -168,7 +132,7 @@ async function runJobInternal(job: CronJob): Promise<void> {
     const combined = [...chain, context].filter(Boolean).join("\n\n");
     if (combined) fullPrompt = `${combined}\n\n---\n\n${job.prompt}`;
 
-    const output = await runEngine(job, fullPrompt);
+    const output = await runCronEngineTurn(job, fullPrompt);
     job.last_output = output.slice(0, 10_000);
     saveOutput(job, output);
     await notifyDeliver(job, true, job.last_output);

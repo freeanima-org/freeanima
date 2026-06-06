@@ -29,6 +29,21 @@ export {
   type ServiceContext,
 } from "./service-context.ts";
 export {
+  onSessionCloseBeforeNew,
+  registerOnSessionCloseBeforeNew,
+  unregisterOnSessionCloseBeforeNew,
+  type OnSessionCloseBeforeNewFn,
+} from "./session-close.ts";
+export {
+  runCronL2GapFill,
+  runCronEngineTurn,
+  registerCronUseCases,
+  unregisterCronUseCases,
+  type CronEngineJobInput,
+  type RunCronL2GapFillFn,
+  type RunCronEngineTurnFn,
+} from "./cron-use-cases.ts";
+export {
   getStudioConfig,
   patchStudioConfig,
   buildFileTree,
