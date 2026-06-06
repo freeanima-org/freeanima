@@ -1,5 +1,6 @@
 ## 迁移方案补充（2026-06-02）
 
+> **归档 / 历史记录** — RFC #1 迁移已于 2026-06-05 完成；下文步骤 0–11 供查阅，非当前操作指南。
 > 回应 Issue 待讨论 #4（迁移策略），并补充现状评估结论。
 
 ### 策略选型：并行新包 + 自底向上逐包迁移（Strangler Fig）
@@ -93,10 +94,10 @@ packages:
 
 ### 横切模块
 
-| 模块                          | 过渡期                                               | 最终归属                            |
-| ----------------------------- | ---------------------------------------------------- | ----------------------------------- |
-| `@freeanima/engine-db`        | **已迁入** `kernel/db`；life/memory 与 service 共用  | 长期持久化层；类型在 kernel-schemas |
-| EventBus/registry/config 实现 | 新 kernel 只留接口                                   | service                             |
+| 模块                          | 过渡期                                               | 最终归属                       |
+| ----------------------------- | ---------------------------------------------------- | ------------------------------ |
+| `@freeanima/engine-db`        | **已迁入** `engine/db`；life/memory 与 service 共用  | 长期持久化层；类型在 engine-db |
+| EventBus/registry/config 实现 | 新 kernel 只留接口                                   | service                        |
 | Turbo/CI                      | 已合并入主 CI（typecheck / lint / dep-check / test） |
 
 ### 关键设计决策（回应待讨论项）
@@ -151,7 +152,7 @@ packages:
 | `@freeanima/engine`       | ~~`@freeanima/legacy-engine`~~（已删，拆至 engine-\* / life-memory）     |
 | `@freeanima/runtime`      | `@freeanima/legacy-runtime`                                              |
 | `@freeanima/memory`       | ~~`@freeanima/legacy-memory`~~ → `@freeanima/life-memory`                |
-| `@freeanima/db`           | ~~`@freeanima/legacy-db`~~ → `@freeanima/engine-db`（`kernel/db`）       |
+| `@freeanima/db`           | ~~`@freeanima/legacy-db`~~ → `@freeanima/engine-db`（`engine/db`）       |
 | `@freeanima/server`       | `@freeanima/legacy-server`                                               |
 | `@freeanima/gateway`      | ~~`@freeanima/legacy-gateway`~~ → `@freeanima/connectors-gateway`        |
 | `@freeanima/tools`        | `@freeanima/legacy-tools`（core 已拆至 `@freeanima/capabilities-tools`） |
@@ -163,11 +164,11 @@ packages:
 
 **已删除 legacy 包（2026-06-05）：** `@freeanima/legacy-kernel`、`@freeanima/legacy-engine`、`@freeanima/legacy-db`、`@freeanima/legacy-memory`、`@freeanima/legacy-integrations`。`packages/*` 与 `apps/*` legacy 壳已清空（2026-06-05 L2）；`@freeanima/runtime/server/tools/api/cli` 等职责分别迁入 `service/`、`kernel/api`、`cli/` 等新栈包。
 
-**步骤 0 不做：** 不建 `kernel/` 等新目录；不改 `pnpm-workspace.yaml` 新层 glob；不改运行时行为。
+**步骤 0 不做（历史）：** 不建 `kernel/` 等新目录；不改根 `package.json` workspaces；不改运行时行为。
 
 ### 步骤 1（独立 PR）：新建 `kernel/`
 
-1. 扩展 `pnpm-workspace.yaml`（加入 `kernel` 等新层 glob 可在此步或逐步加）
+1. 扩展根 `package.json` workspaces（`kernel` 等新层 glob 可在此步或逐步加）
 2. 创建 `kernel/package.json`（`@freeanima/kernel`），纯接口骨架 + schemas
 3. 新 kernel 单测；legacy 栈 CI 仍绿
 

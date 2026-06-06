@@ -1,42 +1,50 @@
 # Recall 统一检索与加载流程
 
-> `recall` 从"记忆检索"演进为 **统一发现入口**——跨记忆层与资源层，搜索属于"我"的一切。
-> 配合下游加载工具，形成"发现 → 按需加载"的完整链路。
+> **v1 ✅ 已实现**：`recall(query)` 搜索 PG `semantic_memory` + `messages` 全文，返回 content 片段（[`life/memory/src/register-tools.ts`](../../life/memory/src/register-tools.ts)）。
+> **v2 🚧 规划中**：统一发现入口——跨记忆层与资源层，精简索引 + 下游加载链。
 
-## 核心原则
+## v1 已实现
+
+| 能力            | 说明                                                        |
+| --------------- | ----------------------------------------------------------- |
+| `recall(query)` | PG FTS 双源：semantic_memory（默认 5）+ messages（默认 10） |
+| `remember`      | semantic_memory CRUD                                        |
+| 常驻记忆        | system prompt 注入（非 recall）                             |
+
+## v2 核心原则（🚧 规划中）
 
 - **`recall` 只做检索，不做加载。** 返回精简的索引（标题+描述+类型+标识），不返回完整内容。
 - **检索范围：记忆层 + 资源层。** 自我层始终注入系统提示词，不在 recall 范围内。
 - **加载由下游工具负责。** recall 告诉 LLM"有什么"，LLM 决定"要什么"，然后调对应的加载工具。
 
-## 检索范围
+## 检索范围（v2 🚧）
 
 ```
 recall 统一检索
 ├── 记忆层（Memory Layer）
-│   ├── L1 事实记忆（Semantic）—— 世界事实、个人偏好、自我经历
-│   ├── L2 情景记忆（Episodic）—— 对话记录、情感锚点
-│   ├── L3 程序记忆（Procedural）—— 技能、流程、know-how
-│   └── 感性记忆（Limbic）—— 情感印记、情绪 snapshot
+│   ├── 语义记忆 — semantic_memory（world/experience/opinion/…）
+│   ├── 情景记忆 — messages（对话 FTS）；limbic 🟡 未实现
+│   ├── 程序记忆 — skills / procedural facts
+│   └── 感性记忆 — imprint 类型；limbic 表 🟡 未实现
 │
-└── 资源层（Estate Layer）
-    ├── 工具（Tools）—— 已注册的工具名 + 一句话描述
-    ├── 技能（Skills）—— 可加载的技能定义
+└── 资源层（Estate Layer）🚧
+    ├── 工具（Tools）
+    ├── 技能（Skills）
     ├── 内部资产（笔记、项目、代码、文档）
     └── 实体关系（Entity Graph）
 ```
 
 ### 不在检索范围内的
 
-| 内容            | 理由           | 获取方式                            |
-| --------------- | -------------- | ----------------------------------- |
-| 自我层 L1~L4    | 量小，始终需要 | 始终注入 system prompt              |
-| 完整工具 Schema | 只在调用前需要 | `load_tools` 加载                   |
-| 完整记忆详情    | 只在需要时读取 | `read_memory`/`scroll_session` 加载 |
-| 文件完整内容    | 只在需要时读取 | `read_file` 读取                    |
-| 实体关系网络    | 只在需要时遍历 | `graph_query` 检索                  |
+| 内容            | 理由           | 获取方式                                  |
+| --------------- | -------------- | ----------------------------------------- |
+| 自我层 L1~L4    | 量小，始终需要 | 始终注入 system prompt                    |
+| 完整工具 Schema | 只在调用前需要 | `load_tools` 🚧 / 现有 `reload_tools`     |
+| 完整记忆详情    | 只在需要时读取 | `read_memory` 🚧 / 现有 `remember` 读单条 |
+| 文件完整内容    | 只在需要时读取 | `read_file` ✅                            |
+| 实体关系网络    | 只在需要时遍历 | `graph_query` 🚧                          |
 
-## 预设（Preset）
+## 预设（Preset）（🚧 规划中）
 
 `recall` 通过 `preset` 参数控制不同搜索方向。预设本质上是**对不同记忆/资源类型的结果加权模板**。
 
@@ -74,7 +82,7 @@ recall("上次我们聊的那个数据库问题", preset="回忆")
 → 工具     --（几乎不需要）
 ```
 
-## 完整流程
+## 完整流程（v2 🚧 规划中）
 
 ```
 伙伴提问 / LLM 需要信息
@@ -143,8 +151,8 @@ recall("上次我们聊的那个数据库问题", preset="回忆")
 ## 设计演进
 
 ```
-v1（初始）: recall 只搜记忆（语义+情景）
-v2（扩展）: recall 统一搜索记忆层 + 资源层
+v1（✅ 当前）: recall 搜 semantic_memory + messages FTS，返回完整片段
+v2（🚧 规划）: recall 统一搜索记忆层 + 资源层
             └── 引入 preset 预设
             └── 引入下游加载链（load_tools / read_memory 等）
 v3（未来）: 待定

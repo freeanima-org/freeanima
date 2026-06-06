@@ -1,6 +1,7 @@
 # 结对编程 v1 — 工作台设计
 
-> 在 Studio 里与 Agent 同屏读代码、搜索项目、聊方案。第一版不做编辑器编辑功能。
+> **Phase 1 ✅ 已实现**（2026-05-29）：三列 UI、highlight.js 查看、studio tree/file/search、xterm 终端、`studio-pair-programming` platform。
+> API 形态为 **tRPC**（`connectors/webui/src/trpc/routers/studio.ts`），非下文 REST 示例。
 
 ## 设计原则
 
@@ -316,4 +317,4 @@ StudioLayout 侧边栏保持现有风格，结对编程作为第一个入口。
 ---
 
 > 设计文档 · 2026-05-28  
-> 状态：Phase 1 已实现（2026-05-29）
+> 状态：**Phase 1 ✅ 已实现**（2026-05-29）；**Phase 2 🚧 规划中**
