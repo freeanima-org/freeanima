@@ -207,6 +207,28 @@ describe("streamReplyToChannel", () => {
     expect(lastEdit).toBe("final answer");
   });
 
+  it("多 tool 合并消息超过 Discord 上限时拆条发送", async () => {
+    const { channel, sends } = fakeChannel();
+    async function* gen(): AsyncGenerator<StreamEvent> {
+      for (let i = 0; i < 30; i++) {
+        yield { event: "tool_begin", data: { name: `tool_${i}`, args: { n: i } } };
+        yield {
+          event: "tool_result",
+          data: { name: `tool_${i}`, content: "x".repeat(180) },
+        };
+      }
+      yield { event: "token", data: { content: "done" } };
+      yield { event: "done", data: {} };
+    }
+    await streamReplyToChannel(channel, gen());
+
+    const toolSends = sends.filter((s) => s.includes("🔧"));
+    expect(toolSends.length).toBeGreaterThan(1);
+    for (const text of toolSends) {
+      expect(text.length).toBeLessThanOrEqual(2000);
+    }
+  });
+
   it("done 后 generator 仍挂起时不阻塞 finalize", async () => {
     const { channel, edits } = fakeChannel();
     let hangResolve: () => void = () => {};

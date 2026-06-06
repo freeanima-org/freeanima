@@ -146,13 +146,19 @@ export async function streamReplyToChannel(
     answerBuffer = "";
   };
 
+  const sendChunked = async (text: string): Promise<void> => {
+    for (const chunk of splitDiscordMessage(text)) {
+      await withDiscordRetry(async (): Promise<void> => {
+        await channelSend(chunk);
+      });
+    }
+  };
+
   const flushToolRound = async (): Promise<void> => {
     const text = toolRound.take();
     if (!text) return;
     await commitAnswerSegment();
-    await withDiscordRetry(async (): Promise<void> => {
-      await channelSend(text);
-    });
+    await sendChunked(text);
   };
 
   const ensureAnswerMsg = async (): Promise<Message> => {
@@ -245,9 +251,7 @@ export async function streamReplyToChannel(
         await flushToolRound();
         const payload = parseClarifyStreamEvent(event.data);
         if (payload) {
-          await withDiscordRetry(async (): Promise<void> => {
-            await channelSend(formatClarifyForPlatform("discord", payload));
-          });
+          await sendChunked(formatClarifyForPlatform("discord", payload));
         }
         break;
       }
