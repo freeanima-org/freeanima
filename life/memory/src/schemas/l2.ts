@@ -1,16 +1,5 @@
 import { z } from "zod";
 
-export const l2LineSchema = z
-  .object({
-    type: z.string().optional(),
-    t: z.string().optional(),
-    role: z.string().optional(),
-    content: z.string().optional(),
-  })
-  .passthrough();
-
-export type L2Line = z.infer<typeof l2LineSchema>;
-
 export const l3DomainsSchema = z.array(z.string());
 export const l3EntitiesSchema = z.array(z.string());
 export const l3SourcesSchema = z.array(z.record(z.string(), z.unknown()));

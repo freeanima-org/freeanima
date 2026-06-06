@@ -10,7 +10,7 @@ import { loadSoul } from "@freeanima/life-self";
 import { runSimpleTurn } from "./runtime/turn-lifecycle.ts";
 import { statsReport } from "./runtime/conversation-stats.ts";
 import { onSessionCloseBeforeNew } from "./runtime/use-cases/on-session-close.ts";
-import { runCronEngineTurn, runCronL2GapFill } from "./runtime/use-cases/cron-runner.ts";
+import { runCronEngineTurn } from "./runtime/use-cases/cron-runner.ts";
 import {
   buildFileTree,
   getStudioConfig,
@@ -23,7 +23,7 @@ import {
 registerLlmStackConfigurator(wireOpenAiCompatibleLlm);
 registerLoadSoul(loadSoul);
 registerOnSessionCloseBeforeNew(onSessionCloseBeforeNew);
-registerCronUseCases({ runCronL2GapFill, runCronEngineTurn });
+registerCronUseCases({ runCronEngineTurn });
 registerRunSimpleTurn(runSimpleTurn);
 registerStatsReport(statsReport);
 registerStudioPort({

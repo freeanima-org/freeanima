@@ -81,7 +81,7 @@ LLM 进行单次 Token 推理时的内部激活状态。随推理结束瞬间消
 
 - 最原始的、高保真的客观运行轨迹
 - role 区分消息类型（user/assistant/tool_call/tool_result）
-- 蒸馏 = `WHERE role IN ('user', 'assistant')`，无需独立 L2 副本
+- 召回过滤 = `role IN ('user','assistant')` 且 content 非空；由 PG `content_fts` 生成列维护，无需 `processed/` 中间文件
 
 **情感锚点** — limbic
 
@@ -176,10 +176,9 @@ LLM 进行单次 Token 推理时的内部激活状态。随推理结束瞬间消
 
 | 存储                                     | 对应记忆         | 实现                                                |
 | ---------------------------------------- | ---------------- | --------------------------------------------------- |
-| PostgreSQL L1（`sessions` + `messages`） | 对话记录（情景） | 主存；蒸馏读 PG                                     |
+| PostgreSQL L1（`sessions` + `messages`） | 对话记录（情景） | 主存；`messages.content_fts` GIN 全文索引（simple） |
 | L3 Markdown 文件                         | 语义事实         | `~/.anima/memory/f-*.md`（YAML frontmatter + body） |
 | `~/.anima/index/l3.db`                   | L3 FTS 索引      | SQLite FTS5                                         |
-| `~/.anima/index/l2.db`                   | L2 对话索引      | SQLite FTS5                                         |
 
 L3 事实的 YAML frontmatter 结构当前包含：
 
@@ -327,9 +326,9 @@ procedural（技能/工具定义） → 按需搜索
 ```
 v1（Hermes 时代，文件系统）    v2（逸灵风初期，文件系统）         v3（规划中）
 L1 JSONL                    messages 表                    ← 保持
-L2 JSONL（蒸馏后副本）        蒸馏 = WHERE 条件              ← 保持
+L2 JSONL（蒸馏后副本）        PG content_fts（已替代）       ← 已迁移
 L3 Markdown（YAML frontmatter） L3 Markdown（结构化 type）    type 细化 + 实体关系 + 时序
-L4 SQLite FTS                SQLite FTS5 + 实体图索引        多策略召回（图+时序+语义）
+L4 SQLite FTS（L3）          L3 SQLite FTS5 + 实体图索引     多策略召回（图+时序+语义）
 无情感层                      limbic 表                     ← 保持 + imprint 事实
 技能为文件                    procedural 三阶段               ← 保持
 反思用通用 prompt             所有处理带数字生命身份上下文             ← 保持

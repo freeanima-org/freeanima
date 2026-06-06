@@ -1,9 +1,10 @@
 import { join } from "node:path";
 import { PATHS } from "@freeanima/service-config";
+import type { MessageFtsHit } from "@freeanima/engine-repos";
 import { getStore } from "./store.ts";
 import { factScore } from "./fact.ts";
-import { searchL2 } from "./l2-indexer.ts";
 import { searchL3Fts } from "./l3-indexer.ts";
+import { getMemorySessionStore } from "./session-port.ts";
 
 export type SearchResult = {
   content: string;
@@ -15,9 +16,15 @@ export type SearchResult = {
 
 const DEFAULT_LIMIT = 10;
 
-function ftsRankToScore(rank: number): number {
+/** SQLite FTS5 rank（负值，越小越相关） */
+function sqliteRankToScore(rank: number): number {
   const raw = -rank;
   return Math.min(1.0, Math.max(0.1, raw / 5.0));
+}
+
+/** PG ts_rank（正值，越大越相关） */
+function pgRankToScore(rank: number): number {
+  return Math.min(1.0, Math.max(0.1, rank * 5.0));
 }
 
 function searchL3Internal(query: string): SearchResult[] {
@@ -28,7 +35,7 @@ function searchL3Internal(query: string): SearchResult[] {
         content: r.content,
         source: "l3" as const,
         path: join(PATHS.memory, `${r.fact_id}.md`),
-        score: ftsRankToScore(r.rank),
+        score: sqliteRankToScore(r.rank),
         metadata: {
           id: r.fact_id,
           type: r.type,
@@ -62,14 +69,14 @@ function searchL3Internal(query: string): SearchResult[] {
   }));
 }
 
-function searchL2Internal(query: string): SearchResult[] {
+async function searchL2Internal(query: string, limit = DEFAULT_LIMIT): Promise<SearchResult[]> {
   try {
-    const rows = searchL2(query, { limit: DEFAULT_LIMIT });
+    const rows = await searchL2(query, { limit });
     return rows.map((row) => ({
       content: row.content,
       source: "l2" as const,
-      path: join(PATHS.processed, `${row.session_id}.jsonl`),
-      score: ftsRankToScore(row.rank),
+      path: `pg:messages:${row.session_id}`,
+      score: pgRankToScore(row.rank),
       metadata: {
         role: row.role,
         session_id: row.session_id,
@@ -81,7 +88,7 @@ function searchL2Internal(query: string): SearchResult[] {
   }
 }
 
-export function search(query: string, limit = DEFAULT_LIMIT): SearchResult[] {
+export async function search(query: string, limit = DEFAULT_LIMIT): Promise<SearchResult[]> {
   const results: SearchResult[] = [];
   try {
     results.push(...searchL3Internal(query));
@@ -89,7 +96,7 @@ export function search(query: string, limit = DEFAULT_LIMIT): SearchResult[] {
     /* ignore */
   }
   try {
-    results.push(...searchL2Internal(query));
+    results.push(...(await searchL2Internal(query, limit)));
   } catch {
     /* ignore */
   }
@@ -103,8 +110,19 @@ export function searchL3(query: string, limit = DEFAULT_LIMIT): SearchResult[] {
   return results.slice(0, limit);
 }
 
-export function searchL2Only(query: string, limit = DEFAULT_LIMIT): SearchResult[] {
-  const results = searchL2Internal(query);
+export async function searchL2(
+  query: string,
+  opts?: { sessionId?: string; limit?: number },
+): Promise<MessageFtsHit[]> {
+  const store = getMemorySessionStore();
+  return store.searchMessagesFts(query, {
+    sessionId: opts?.sessionId,
+    limit: opts?.limit,
+  });
+}
+
+export async function searchL2Only(query: string, limit = DEFAULT_LIMIT): Promise<SearchResult[]> {
+  const results = await searchL2Internal(query, limit);
   results.sort((a, b) => b.score - a.score);
   return results.slice(0, limit);
 }
@@ -138,16 +156,16 @@ export type MemorySearchResult = {
   l2: MemorySearchL2Hit[];
 };
 
-export function memorySearchDetailed(
+export async function memorySearchDetailed(
   query: string,
   opts?: { l3Limit?: number; l2Limit?: number; sessionId?: string },
-): MemorySearchResult {
+): Promise<MemorySearchResult> {
   const q = query.trim();
   const l3Limit = Math.max(1, Math.min(50, opts?.l3Limit ?? 5));
   const l2Limit = Math.max(1, Math.min(50, opts?.l2Limit ?? 10));
 
   const l3Rows = searchL3Fts(q, l3Limit);
-  const l2Rows = searchL2(q, { limit: l2Limit, sessionId: opts?.sessionId });
+  const l2Rows = await searchL2(q, { limit: l2Limit, sessionId: opts?.sessionId });
 
   return {
     query: q,
@@ -162,7 +180,7 @@ export function memorySearchDetailed(
       entities: r.entities,
       sources: r.sources,
       rank: r.rank,
-      score: ftsRankToScore(r.rank),
+      score: sqliteRankToScore(r.rank),
     })),
     l2: l2Rows.map((r) => ({
       content: r.content,
@@ -170,7 +188,7 @@ export function memorySearchDetailed(
       session_id: r.session_id,
       timestamp: r.timestamp,
       rank: r.rank,
-      score: ftsRankToScore(r.rank),
+      score: pgRankToScore(r.rank),
     })),
   };
 }

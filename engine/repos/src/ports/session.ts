@@ -13,6 +13,15 @@ export type SessionSummaryRow = {
   platform: string;
 };
 
+/** PG messages FTS 命中行（recall / memorySearch L2 段） */
+export type MessageFtsHit = {
+  content: string;
+  role: string;
+  session_id: string;
+  timestamp: string;
+  rank: number;
+};
+
 /** L1 Session + Message 持久化端口（Slice A） */
 export interface SessionStorePort {
   getSessionMeta(sessionId: string): Promise<SessionMetaMessage | null>;
@@ -53,4 +62,11 @@ export interface SessionStorePort {
     platform: string,
     platformExtra?: Record<string, unknown>,
   ): Promise<string | null>;
+  /** PG messages.content_fts 全文检索（仅 user/assistant 可读 content） */
+  searchMessagesFts(
+    query: string,
+    opts?: { sessionId?: string; limit?: number },
+  ): Promise<MessageFtsHit[]>;
+  /** 可被 FTS 索引的消息行数（content_fts IS NOT NULL） */
+  countSearchableMessages(): Promise<number>;
 }

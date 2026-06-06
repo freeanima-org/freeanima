@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach } from "bun:test";
-import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import type { SessionStorePort } from "@freeanima/engine-repos";
 import {
   resetStoreForTests,
   registerMemoryTools,
@@ -10,10 +11,81 @@ import {
   searchL3,
   searchL3Fts,
   indexL3Facts,
-  indexL2Session,
+  registerMemorySessionStore,
+  resetMemorySessionStoreForTests,
 } from "@freeanima/life-memory";
 import { getTool } from "@freeanima/engine-tool";
 import { runWithToolContext } from "@freeanima/engine-loop";
+
+function mockSessionStore(overrides: Partial<SessionStorePort>): SessionStorePort {
+  const base: SessionStorePort = {
+    async getSessionMeta() {
+      return null;
+    },
+    async getSessionMetaLite() {
+      return null;
+    },
+    async getSessionTools() {
+      return [];
+    },
+    async upsertSessionMeta() {},
+    async patchSessionMeta() {},
+    async updateCompression() {},
+    async updateTodos() {},
+    async appendMessage() {
+      throw new Error("not implemented");
+    },
+    async nextMessagePos() {
+      return 1;
+    },
+    async listMessages() {
+      return [];
+    },
+    async listMessagesByPosRange() {
+      return [];
+    },
+    async listMessagesPage() {
+      return [];
+    },
+    async countMessages() {
+      return 0;
+    },
+    async lastMessageTimestamp() {
+      return null;
+    },
+    async truncateMessagesAfter() {},
+    async shiftMessagePositions() {},
+    async sessionExists() {
+      return false;
+    },
+    async deleteSession() {},
+    async listSessionIds() {
+      return [];
+    },
+    async listDebugSessionIds() {
+      return [];
+    },
+    async listSessionSummaries() {
+      return [];
+    },
+    async countSessionsByPlatform() {
+      return {};
+    },
+    async deleteDebugSessions() {
+      return 0;
+    },
+    async findSessionIdByPlatformInfo() {
+      return null;
+    },
+    async searchMessagesFts() {
+      return [];
+    },
+    async countSearchableMessages() {
+      return 0;
+    },
+  };
+  return { ...base, ...overrides };
+}
 
 describe("memory search", () => {
   let home: string;
@@ -23,10 +95,12 @@ describe("memory search", () => {
     home = mkdtempSync(join(tmpdir(), "freeanima-search-"));
     process.env.FREEANIMA_HOME = home;
     resetStoreForTests();
+    resetMemorySessionStoreForTests();
     registerMemoryTools();
   });
 
   afterEach(() => {
+    resetMemorySessionStoreForTests();
     if (prev === undefined) delete process.env.FREEANIMA_HOME;
     else process.env.FREEANIMA_HOME = prev;
   });
@@ -82,7 +156,7 @@ describe("memory search", () => {
     expect(searchL3Fts("gamma", 5).length).toBe(1);
   });
 
-  it("recall returns L3 facts and L2 dialogue", async () => {
+  it("recall returns L3 facts and PG dialogue hits", async () => {
     const store = new MemoryStore(join(home, "memory"));
     const id = store.create({
       content: "逸灵风记忆管道使用 compression 压缩",
@@ -93,18 +167,21 @@ describe("memory search", () => {
     indexL3Fact(store.get(id)!);
 
     const sid = "20260526_120000_abcd";
-    const processedDir = join(home, "processed");
-    mkdirSync(processedDir, { recursive: true });
-    const l2Lines = [
-      JSON.stringify({ type: "meta", session_id: sid, title: "t" }),
-      JSON.stringify({
-        t: "2026-05-26T12:00:00+08:00",
-        role: "user",
-        content: "讨论 compression 算法",
+    registerMemorySessionStore(
+      mockSessionStore({
+        async searchMessagesFts() {
+          return [
+            {
+              content: "讨论 compression 算法",
+              role: "user",
+              session_id: sid,
+              timestamp: "2026-05-26T12:00:00+08:00",
+              rank: 0.1,
+            },
+          ];
+        },
       }),
-    ];
-    writeFileSync(join(processedDir, `${sid}.jsonl`), `${l2Lines.join("\n")}\n`, "utf-8");
-    expect(indexL2Session(sid)).toBeGreaterThan(0);
+    );
 
     const out = await getTool("recall")!.handler({ query: "compression" });
     expect(out).toContain("## L3 事实");

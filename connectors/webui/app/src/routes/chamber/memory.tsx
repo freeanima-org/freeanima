@@ -38,7 +38,7 @@ function formatToolOutput(data: MemoryResult) {
     sections.push(`## 历史对话\n${lines.join("\n")}`);
   }
   if (!sections.length) {
-    return `未找到与「${data.query}」匹配的事实或历史对话（L2 仅含已蒸馏并索引的 session）。`;
+    return `未找到与「${data.query}」匹配的事实或历史对话。`;
   }
   return sections.join("\n\n");
 }
@@ -109,44 +109,11 @@ function MemoryPage() {
         <div>
           <h2 className="text-lg font-bold">🧠 记忆台</h2>
           <p className="text-sm text-base-content/60 mt-1">
-            调试 <code className="text-xs">recall</code> 召回效果：L3 事实 FTS + L2 历史对话 FTS。
+            调试 <code className="text-xs">recall</code> 召回效果：L3 事实 FTS + PG
+            历史对话全文索引。
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            className="btn btn-sm btn-outline btn-warning"
-            disabled={busy}
-            onClick={() =>
-              void postMemoryAction(
-                () => trpc.memory.l2Distill.mutate(),
-                "l2-distill",
-                "从全部 L1 session 重新生成 processed/（L2），不更新 FTS 索引。数据量大时可能耗时较久，确定继续？",
-              )
-            }
-          >
-            {busyAction === "l2-distill" ? (
-              <span className="loading loading-spinner loading-xs" />
-            ) : null}
-            L2 蒸馏
-          </button>
-          <button
-            type="button"
-            className="btn btn-sm btn-outline"
-            disabled={busy}
-            onClick={() =>
-              void postMemoryAction(
-                () => trpc.memory.l2Reindex.mutate(),
-                "l2-reindex",
-                "清空并重建 L2 FTS 索引（index/l2.db），不重新蒸馏。确定继续？",
-              )
-            }
-          >
-            {busyAction === "l2-reindex" ? (
-              <span className="loading loading-spinner loading-xs" />
-            ) : null}
-            重建 L2 索引
-          </button>
           <button
             type="button"
             className="btn btn-sm btn-outline"
@@ -208,7 +175,7 @@ function MemoryPage() {
             </div>
             <div className="form-control">
               <label className="label py-0">
-                <span className="label-text text-xs">L2 条数</span>
+                <span className="label-text text-xs">对话条数</span>
               </label>
               <input
                 value={sessionLimit}
@@ -221,7 +188,7 @@ function MemoryPage() {
             </div>
             <div className="form-control">
               <label className="label py-0">
-                <span className="label-text text-xs">L2 session 过滤（可选）</span>
+                <span className="label-text text-xs">session 过滤（可选）</span>
               </label>
               <input
                 value={sessionFilter}
@@ -243,7 +210,7 @@ function MemoryPage() {
             </button>
             {searched && !searching ? (
               <span className="text-xs text-base-content/50">
-                「{lastQuery}」— L3 {result.l3.length} 条，L2 {result.l2.length} 条
+                「{lastQuery}」— L3 {result.l3.length} 条，对话 {result.l2.length} 条
               </span>
             ) : null}
           </div>
@@ -254,7 +221,7 @@ function MemoryPage() {
 
       {searched && !searching && isEmpty ? (
         <div className="alert alert-info text-sm">
-          未找到与「{lastQuery}」匹配的事实或历史对话（L2 仅含已蒸馏并索引的 session）。
+          未找到与「{lastQuery}」匹配的事实或历史对话。
         </div>
       ) : null}
 
@@ -293,7 +260,7 @@ function MemoryPage() {
           {result.l2.length > 0 ? (
             <section>
               <h3 className="text-sm font-bold mb-2">
-                L2 历史对话
+                历史对话
                 <span className="badge badge-ghost badge-sm ml-1">{result.l2.length}</span>
               </h3>
               <div className="space-y-2">

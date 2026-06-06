@@ -31,7 +31,6 @@ import type {
   SafeConfigSnapshot,
   ServiceSnapshot,
 } from "@freeanima/service/schemas/snapshot";
-import { countL2FtsRows } from "@freeanima/life-memory/l2-indexer";
 import { getStore } from "@freeanima/life-memory/store";
 import { PARLOR_PLATFORM } from "./platforms.ts";
 import { ANIMA_VERSION } from "./version.ts";
@@ -129,7 +128,7 @@ export async function buildStatus(
     factsCount = 0;
   }
   try {
-    l2IndexRows = countL2FtsRows();
+    l2IndexRows = await conv().repos.session.countSearchableMessages();
   } catch {
     l2IndexRows = 0;
   }

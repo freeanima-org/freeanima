@@ -11,14 +11,11 @@ export {
   type FactData,
 } from "./fact.ts";
 export { MemoryStore, generateId, getStore, resetStoreForTests } from "./store.ts";
-export { processedDir, l2SessionPath, distillFromPg, distill, distillAll } from "./clean.ts";
 export {
   sessionUpdated,
-  l2Updated,
   l3Updated,
   testPing,
   type SessionUpdatedPayload,
-  type L2UpdatedPayload,
   type L3UpdatedPayload,
   type TestPingPayload,
 } from "./events.ts";
@@ -36,12 +33,11 @@ export {
 } from "./reflect-llm.ts";
 export { reflectSession, type ReflectSessionResult } from "./reflect.ts";
 export {
-  indexL2Session,
-  searchL2,
-  countL2FtsRows,
-  reindexL2All,
-  type L2SearchRow,
-} from "./l2-indexer.ts";
+  registerMemorySessionStore,
+  getMemorySessionStore,
+  resetMemorySessionStoreForTests,
+} from "./session-port.ts";
+export { filterRecallableMessages, type RecallableMessage } from "./message-filter.ts";
 export {
   indexL3Fact,
   indexL3Facts,
@@ -54,6 +50,7 @@ export { buildFtsQuery } from "./fts-query.ts";
 export {
   search,
   searchL3,
+  searchL2,
   searchL2Only,
   memorySearchDetailed,
   type SearchResult,

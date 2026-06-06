@@ -82,34 +82,13 @@ export function resumeJob(jobId: string): boolean {
 }
 
 export function ensureBuiltinCronJobs(): void {
-  const jobs = store.loadAll();
-  if (jobs.some((j) => j.id === "l2-gap-fill")) return;
-
-  const now = formatCstIso();
-  const next = computeNextRun("0 2 * * *") ?? 0;
-  const job = new CronJob({
-    id: "l2-gap-fill",
-    name: "L2 gap-fill",
-    schedule: "0 2 * * *",
-    prompt: "",
-    script: null,
-    no_agent: true,
-    deliver: "local",
-    timeout_sec: 300,
-    builtin: true,
-    repeat: null,
-    created_at: now,
-    updated_at: now,
-    next_run_at: next,
-  });
-  jobs.push(job);
-  store.saveAll(jobs);
+  // 内置任务由 connectors/cron 按需注册；L2 gap-fill 已移除（PG FTS 自动维护）
 }
 
 export { cronJobDataSchema, cronJobsFileSchema, type CronJobData } from "./schema.ts";
 export { CronJob } from "./models.ts";
 export { Scheduler, POLL_INTERVAL_MS } from "./scheduler.ts";
-export { enqueueRunJob, runJob, runL2GapFill } from "./runner.ts";
+export { enqueueRunJob, runJob } from "./runner.ts";
 export { computeNextRun, parseSchedule, ScheduleType } from "./schedule.ts";
 export {
   deliverCronResult,

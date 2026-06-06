@@ -35,12 +35,10 @@ export {
   type OnSessionCloseBeforeNewFn,
 } from "./session-close.ts";
 export {
-  runCronL2GapFill,
   runCronEngineTurn,
   registerCronUseCases,
   unregisterCronUseCases,
   type CronEngineJobInput,
-  type RunCronL2GapFillFn,
   type RunCronEngineTurnFn,
 } from "./cron-use-cases.ts";
 export {

@@ -1,6 +1,6 @@
 import { registerTool } from "@freeanima/engine-tool";
-import type { L2SearchRow } from "./l2-indexer.ts";
-import { searchL2 } from "./l2-indexer.ts";
+import type { MessageFtsHit } from "@freeanima/engine-repos";
+import { searchL2 } from "./search.ts";
 import { indexL3Fact, removeL3Fact } from "./l3-indexer.ts";
 import type { SearchResult } from "./search.ts";
 import { searchL3 } from "./search.ts";
@@ -40,7 +40,7 @@ function formatL3Section(results: SearchResult[]): string | null {
   return lines.join("\n");
 }
 
-function formatL2Section(rows: L2SearchRow[]): string | null {
+function formatL2Section(rows: MessageFtsHit[]): string | null {
   if (!rows.length) return null;
   const lines = [`找到 ${rows.length} 条匹配对话：`];
   for (let idx = 0; idx < rows.length; idx++) {
@@ -161,14 +161,14 @@ export function registerMemoryTools(): void {
   registerTool({
     name: "recall",
     description:
-      '搜索记忆：L3 持久化事实（FTS）+ L2 索引中的历史对话（已蒸馏 session，非原始 JSONL）。一次调用返回两处结果。\n\nFTS5 查询语法：\n- **空格**分隔的词默认 **OR**（任一匹配即可，宁可多不可漏）\n- **AND** 显式指定与：`Free AND Anima`\n- **OR** 显式指定或：`Free OR Anima`（空格已经是 OR，一般不需要显式写）\n- **NOT** 排除：`Free NOT Anima`\n- **NEAR** 邻近：`Free NEAR Anima`\n- **双引号** 短语精确匹配：`"逸灵风"`\n- **星号** 前缀匹配：`逸*`\n- 可用括号分组：`(Free OR Anima) AND 逸灵风`\n\n示例：`Free Anima 重命名`（任一出现即可）',
+      '搜索记忆：L3 持久化事实（SQLite FTS）+ 历史对话（PostgreSQL 全文索引，user/assistant 消息）。一次调用返回两处结果。\n\nPG 对话检索语法（to_tsquery simple）：\n- **空格**分隔的词默认 **OR**（任一匹配即可）\n- **AND** 显式指定与：`Free AND Anima`（转为 &）\n- **OR** 显式指定或：`Free OR Anima`（转为 |）\n- **NOT** 排除：`Free NOT Anima`（转为 !）\n- **双引号** 短语：`"逸灵风"`（CJK 按字 OR 匹配）\n\n示例：`Free Anima 重命名`（任一出现即可）',
     parameters: {
       type: "object",
       properties: {
         query: {
           type: "string",
           description:
-            "搜索关键词。FTS5 语法：空格=OR（默认宽召回）；显式 AND/OR/NOT/NEAR；双引号短语；星号前缀；括号分组。示例：'Free Anima'（任一匹配）、'Free AND Anima'（同时匹配）、'\"逸灵风\"'（精确短语）",
+            "搜索关键词。PG simple 配置：空格=OR；显式 AND/OR/NOT；双引号短语。示例：'Free Anima'（任一匹配）、'Free AND Anima'（同时匹配）、'\"逸灵风\"'（短语）",
         },
         limit: { type: "number", description: "L3 事实最多返回条数，默认 5" },
         session_limit: { type: "number", description: "L2 历史对话最多返回条数，默认 10" },
@@ -188,7 +188,7 @@ export function registerMemoryTools(): void {
       const sessionId = String(args.session ?? "").trim() || undefined;
 
       const l3Results = searchL3(query, l3Limit);
-      const l2Rows = searchL2(query, { limit: l2Limit, sessionId });
+      const l2Rows = await searchL2(query, { limit: l2Limit, sessionId });
 
       const sections: string[] = [];
       const l3Text = formatL3Section(l3Results);
@@ -197,7 +197,7 @@ export function registerMemoryTools(): void {
       if (l2Text) sections.push(`## 历史对话\n${l2Text}`);
 
       if (!sections.length) {
-        return `未找到与「${query}」匹配的事实或历史对话（L2 仅含已蒸馏并索引的 session）。`;
+        return `未找到与「${query}」匹配的事实或历史对话。`;
       }
       return sections.join("\n\n");
     },

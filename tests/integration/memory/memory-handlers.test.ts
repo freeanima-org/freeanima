@@ -11,14 +11,9 @@ import { join } from "node:path";
 import { createLogger } from "@freeanima/kernel-logging";
 import { createNullSink } from "@freeanima/kernel-logging/null";
 import { EventBus } from "@freeanima/kernel-eventbus";
-import { waitFor } from "../../helpers/wait.ts";
 import { SqliteEventQueue } from "@freeanima/connectors-eventbus-sqlite";
-import {
-  resetStoreForTests,
-  registerMemoryPipeline,
-  l2SessionPath,
-  sessionUpdated,
-} from "@freeanima/life-memory";
+import { resetStoreForTests, registerMemoryPipeline, sessionUpdated } from "@freeanima/life-memory";
+import { PATHS } from "@freeanima/service-config";
 import { getTestEngine, seedSession, testConv } from "../../helpers/pg-test.ts";
 
 describePgSqlite("memory handlers", () => {
@@ -38,7 +33,7 @@ describePgSqlite("memory handlers", () => {
     await restoreIntegrationHome(prev);
   });
 
-  it("session:updated creates processed file when reflect disabled", async () => {
+  it("session:updated does not create processed L2 file", async () => {
     const sid = "20260526_140000_aaaa";
     await seedSession(
       getTestEngine(),
@@ -65,9 +60,9 @@ describePgSqlite("memory handlers", () => {
     bus.start();
     bus.emit(sessionUpdated, { session_id: sid });
 
-    await waitFor(() => existsSync(l2SessionPath(sid)), { timeoutMs: 3000 });
+    await new Promise((r) => setTimeout(r, 500));
 
-    expect(existsSync(l2SessionPath(sid))).toBe(true);
+    expect(existsSync(join(PATHS.processed, `${sid}.jsonl`))).toBe(false);
     bus.stop();
   });
 
