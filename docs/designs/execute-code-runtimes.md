@@ -60,12 +60,12 @@ interface CodeRuntime {
 ### 阶段计划
 
 | 阶段           | 内容                                          |
-| -------------- | --------------------------------------------- |
+| -------------- | --------------------------------------------- | --------- |
 | **P0**（当前） | 扁平 schema + `runtime` 参数 + 仅 nodejs 启用 |
-| **P1**         | 实现 python runtime                           |
-| **P2**         | `config.yaml` 运行时开关                      |
-| **P3**         | deno + 权限策略                               |
-| **P4**         | 跨 runtime 的 `credential()` 注入             |
+| **P1**         | 实现 python runtime                           | 🚧 规划中 |
+| **P2**         | `config.yaml` 运行时开关                      | 🚧 规划中 |
+| **P3**         | deno + 权限策略                               | 🚧 规划中 |
+| **P4**         | 跨 runtime 的 `credential()` 注入             | 🚧 规划中 |
 
 ## 配置（P2 预留）
 
@@ -117,9 +117,9 @@ LLM 调用 execute_code(code, runtime?)
 - Deno 启用前必须定义 `--allow-*` 白名单策略
 - **不**根据代码内容自动猜测 runtime（避免误判）
 
-## credential 注入（P4）
+## credential 注入（P4 🚧 规划中）
 
-ARCHITECTURE 约定 `credential(path)` 在 `execute_code` 执行环境中可用，当前未实现。
+ARCHITECTURE 约定 `credential(path)` 在 `execute_code` 执行环境中可用，**当前未实现**。
 
 多 runtime 统一方案建议：
 

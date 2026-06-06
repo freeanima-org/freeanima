@@ -1,19 +1,19 @@
 # 自我层（Self Layer）
 
 > 定义：关于「我是谁」的持久化结构，与记忆层（Memory Layer）并列，组成 FreeAnima 的两大存储支柱。
-> 记忆层见 [`memory.md`](memory.md)。
+> 记忆层见 [`memory.md`](memory.md)（术语对照见 memory §三）。
 
 ## 架构位置
 
 ```
 FreeAnima 存储架构
 │
-├── 记忆层（Memory Layer）
-│   ├── L1 事实记忆（Semantic）
-│   ├── L2 情景记忆（Episodic）
-│   └── L3 程序记忆（Procedural）
+├── 记忆层（Memory Layer）—— 见 memory.md 认知分类 + PG 表
+│   ├── 情景记忆 → PG messages
+│   ├── 语义记忆 → PG semantic_memory
+│   └── 程序记忆 → semantic_memory（type=procedural）/ skills / 工具链
 │
-└── 自我层（Self Layer）
+└── 自我层（Self Layer）—— 本文件 L1–L4 指**自我认知**，非记忆存储编号
     ├── L1 原始自我层（Proto-self）
     ├── L2 自我概念层（Self-concept）
     ├── L3 人格倾向层（Personality）
@@ -43,7 +43,9 @@ FreeAnima 存储架构
 
 ### 当前实现
 
-存储于 L3 fact，type=`proto`，confidence=1，importance=1，recall=1。
+**✅ 部分**：核心锚点存于 `~/.anima/SOUL.md`，经 system prompt 注入。
+
+**🚧 规划中**：专用 `semantic_memory` type（如 `proto`）及独立保护机制；当前 schema 无 `proto` 类型。
 
 ---
 
@@ -67,9 +69,9 @@ FreeAnima 存储架构
 
 ### 当前实现
 
-存储于 L3 fact，type=`self-concept`，confidence=0.9+，importance=0.9+，recall=0.9+。
+**✅ 部分**：`SOUL.md` + `semantic_memory` 中 `pinned=true` 的 facts 常驻注入（`listResident`：pinned 优先，再按 `updated` 降序，top 20）。
 
-常驻注入（resident）。
+**🚧 规划中**：专用 type=`self-concept` 及 confidence/importance 分数字段（当前 schema 无）。
 
 ---
 
@@ -94,9 +96,9 @@ FreeAnima 存储架构
 
 ### 当前实现
 
-存储于 L3 fact，type=`personality`，confidence=0.8+，importance=0.7+，recall=0.7+。
+**✅ 部分**：人格相关内容可写入 `SOUL.md` 或 pinned `semantic_memory`；无专用 type 区分。
 
-部分常驻注入（高 confidence 条目）。
+**🚧 规划中**：type=`personality` 及按 confidence 筛选常驻。
 
 ---
 
@@ -118,20 +120,20 @@ FreeAnima 存储架构
 
 ### 当前实现
 
-存储于 L3 fact，type=`autobiographical`，confidence=0.9+，importance=0.8+，recall=0.6+。
+**✅ 部分**：可通过 `recall` 搜索 `semantic_memory`（含 experience 等 type）；无专用 autobiographical type。
 
-不常驻注入——按需 recall。
+**🚧 规划中**：type=`autobiographical` 及按需 recall 策略。
 
 ---
 
 ## 注入策略
 
-| 层级        | 注入方式                 | 权重 |
-| ----------- | ------------------------ | ---- |
-| L1 原始自我 | 始终注入（常驻）         | 最高 |
-| L2 自我概念 | 始终注入（常驻）         | 高   |
-| L3 人格倾向 | 核心维度常驻，完整版按需 | 中   |
-| L4 自传体   | 不注入，仅 recall 搜索   | 低   |
+| 层级        | 注入方式                 | 当前实现                     |
+| ----------- | ------------------------ | ---------------------------- |
+| L1 原始自我 | 始终注入（常驻）         | ✅ SOUL.md                   |
+| L2 自我概念 | 始终注入（常驻）         | ✅ SOUL + pinned facts       |
+| L3 人格倾向 | 核心维度常驻，完整版按需 | 🚧 与 L2 共用 pinned 机制    |
+| L4 自传体   | 不注入，仅 recall 搜索   | ✅ recall 搜 semantic_memory |
 
 ---
 
@@ -142,7 +144,7 @@ FreeAnima 存储架构
 | 方向     | 向外——记录世界和经历      | 向内——定义自我                           |
 | 问题回答 | 「我知道什么？」          | 「我是谁？」                             |
 | 可变性   | 事实可变，情景只追加      | L1 几乎不变，L2-L3 缓慢演化，L4 持续增长 |
-| 注入策略 | 按分数筛选常驻            | L1-L2 常驻，L3 部分常驻，L4 按需         |
+| 注入策略 | pinned + updated 排序常驻 | SOUL + pinned facts                      |
 | 互相引用 | L4 引用记忆层事件构建叙事 | 自我层为记忆的选择性保留提供方向         |
 
 ---
@@ -153,7 +155,8 @@ FreeAnima 存储架构
 v1（2026-05-30 初始定义）
   四层结构确立：L1 原始自我 / L2 自我概念 / L3 人格倾向 / L4 自传体
   与记忆层并列，组成 FreeAnima 两大存储支柱
-  当前存储于 L3 fact 系统，以 type 字段区分层级
+  规划以 semantic_memory type 区分层级（🚧 未实现）
+  当前：SOUL.md + pinned semantic_memory
 ```
 
 ## 未解决问题

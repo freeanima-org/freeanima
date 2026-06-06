@@ -1,14 +1,14 @@
 # 数据库设计
 
-> PostgreSQL 存储层。当前实施 **Slice A**（L1 Session）；L3 及 memory v2 见 **Slice B**（规划中）。
+> PostgreSQL 存储层。**Slice A**（对话存档）与 **Slice B**（`semantic_memory` 已落地；limbic / procedural 🚧 待建）。
 > 关联：[`compression.md`](compression.md)、[`memory.md`](memory.md)、[`sleep.md`](sleep.md)。
 
 ## 状态
 
-| 阶段        | 范围                                                    | 状态                          |
-| ----------- | ------------------------------------------------------- | ----------------------------- |
-| **Slice A** | `sessions` + `messages`（L1 主存 PG）                   | **已完成**                    |
-| **Slice B** | `semantic_memory`（语义记忆）；limbic / procedural 待建 | **进行中**（semantic 已落地） |
+| 阶段        | 范围                                                    | 状态                            |
+| ----------- | ------------------------------------------------------- | ------------------------------- |
+| **Slice A** | `sessions` + `messages`（对话主存 PG）                  | **✅ 已完成**                   |
+| **Slice B** | `semantic_memory`（语义记忆）；limbic / procedural 待建 | **semantic ✅；余下 🚧 规划中** |
 
 代码真相源：[`engine/db/src/schema/`](../engine/db/src/schema/)。
 
@@ -27,7 +27,7 @@
 
 ---
 
-## Slice A：L1 Session（2 表）
+## Slice A：Session（2 表）
 
 ### 设计原则
 
@@ -41,23 +41,23 @@
 
 #### `sessions`
 
-| 列                 | 类型          | 说明                                                                                         |
-| ------------------ | ------------- | -------------------------------------------------------------------------------------------- |
-| `id`               | TEXT PK       | 会话名                                                                                       |
-| `model`            | TEXT NOT NULL |                                                                                              |
-| `title`            | TEXT          |                                                                                              |
-| `cwd`              | TEXT          |                                                                                              |
-| `system_prompt`    | TEXT          |                                                                                              |
-| `platform_info`    | JSONB         | `discriminatedUnion("platform")`：parlor / discord / weixin / studio-pair-programming / cron |
-| `compression`      | JSONB         | `{ l2, l3, summary?, summary_at? }`                                                          |
-| `todos`            | JSONB         | `{ items, next_id }`                                                                         |
-| `awaiting_clarify` | JSONB         | clarify 暂停状态                                                                             |
-| `acp_sessions`     | JSONB         | ACP session uuid 映射                                                                        |
-| `tools`            | JSONB         | OpenAI tools 快照                                                                            |
-| `functions`        | JSONB         | string[]                                                                                     |
-| `debug`            | BOOLEAN       |                                                                                              |
-| `created_at`       | TIMESTAMPTZ   |                                                                                              |
-| `updated_at`       | TIMESTAMPTZ   |                                                                                              |
+| 列                 | 类型          | 说明                                                                                                        |
+| ------------------ | ------------- | ----------------------------------------------------------------------------------------------------------- |
+| `id`               | TEXT PK       | 会话名                                                                                                      |
+| `model`            | TEXT NOT NULL |                                                                                                             |
+| `title`            | TEXT          |                                                                                                             |
+| `cwd`              | TEXT          |                                                                                                             |
+| `system_prompt`    | TEXT          |                                                                                                             |
+| `platform_info`    | JSONB         | `discriminatedUnion("platform")`：parlor / discord / weixin / studio-pair-programming / cron                |
+| `compression`      | JSONB         | `{ l2, l3, summary?, summary_at? }` — **压缩边界**，非记忆层 L2/L3（见 [`compression.md`](compression.md)） |
+| `todos`            | JSONB         | `{ items, next_id }`                                                                                        |
+| `awaiting_clarify` | JSONB         | clarify 暂停状态                                                                                            |
+| `acp_sessions`     | JSONB         | ACP session uuid 映射                                                                                       |
+| `tools`            | JSONB         | OpenAI tools 快照                                                                                           |
+| `functions`        | JSONB         | string[]                                                                                                    |
+| `debug`            | BOOLEAN       |                                                                                                             |
+| `created_at`       | TIMESTAMPTZ   |                                                                                                             |
+| `updated_at`       | TIMESTAMPTZ   |                                                                                                             |
 
 #### `messages`
 
@@ -85,7 +85,8 @@ database:
 
 ### 迁移
 
-`bun run --filter @freeanima/engine-db db:migrate` — 应用 Drizzle migration（含列化 → payload JSONB 的数据回填）。
+- **✅ 生产**：`anima service` 启动且 PG 为主存时，[`serve.ts`](../service/service/src/serve.ts) 自动调用 `runMigrations()`。
+- **手动**：`bun run --filter @freeanima/engine-db db:migrate` — 应用 Drizzle migration（含列化 → payload JSONB 的数据回填）。
 
 ### 运维
 
@@ -148,8 +149,8 @@ DATABASE_URL="$(anima credential get services/postgres/anima url)" \
   bun run scripts/migrate-semantic-memory.ts [--dry-run] [--home ~/.anima]
 ```
 
-旧 `~/.anima/memory/f-*.md` 与 `~/.anima/index/l3.db` 迁移验证后可手动归档。
+旧 `~/.anima/memory/f-*.md` 与 `~/.anima/index/l3.db` 为**遗留路径**（非运行时）；迁移验证后可手动归档。
 
 ### 待建（Slice B 余下）
 
-limbic / procedural 等待 memory v2 定稿后继续落 PG。详见 [`memory.md`](memory.md) §三。
+limbic / procedural 🚧 规划中，待 memory v2 定稿后继续落 PG。详见 [`memory.md`](memory.md) §三。

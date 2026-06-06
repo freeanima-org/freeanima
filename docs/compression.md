@@ -1,18 +1,19 @@
 # 压缩优化方案（l 点 v5.1）
 
-> 运行时上下文压缩：L1 JSONL **全量存档**，仅裁切发给 LLM 的**四段视图**。
+> 运行时上下文压缩：PG `messages` **全量只追加**，仅裁切发给 LLM 的**四段视图**。
+> **l0–l4 为压缩边界**，与记忆层旧 L1–L4 编号无关（术语见 [`memory.md`](memory.md) §三）。
 > 关联：睡眠见 [`sleep.md`](sleep.md)，记忆体系见 [`memory.md`](memory.md)。
 
 ---
 
 ## 设计原则
 
-| 原则       | 说明                                                                                         |
-| ---------- | -------------------------------------------------------------------------------------------- |
-| JSONL 不删 | L1 永远保留完整对话；压缩只改**运行时视图**与 `session_meta.compression`                     |
-| l4 实时    | `l4 = max(id)`，随 append 增长，**不写入 meta**                                              |
-| 边界单调   | 压缩成功时 `新 l2 > 旧 l2`、`新 l3 ≥ 旧 l3`；否则放弃本次压缩                                |
-| 职责分离   | **定界**（`deriveBoundariesFromL4`）与 **触发**（`shouldAdvance`）解耦；仅触发区分 tool loop |
+| 原则     | 说明                                                                                         |
+| -------- | -------------------------------------------------------------------------------------------- |
+| PG 不删  | `messages` 永远保留完整对话；压缩只改**运行时视图**与 `session_meta.compression`             |
+| l4 实时  | `l4 = max(pos)`，随 append 增长，**不写入 meta**                                             |
+| 边界单调 | 压缩成功时 `新 l2 > 旧 l2`、`新 l3 ≥ 旧 l3`；否则放弃本次压缩                                |
+| 职责分离 | **定界**（`deriveBoundariesFromL4`）与 **触发**（`shouldAdvance`）解耦；仅触发区分 tool loop |
 
 ---
 
@@ -20,16 +21,16 @@
 
 ```mermaid
 flowchart LR
-  subgraph L1["L1 JSONL（全量，永不删）"]
-    m1["id=1 user"]
-    m2["id=2 assistant"]
+  subgraph L1["PG messages（全量，永不删）"]
+    m1["pos=1 user"]
+    m2["pos=2 assistant"]
     dots1["…"]
-    mN["id=N …"]
+    mN["pos=N …"]
   end
 
   subgraph RT["运行时发给 LLM"]
     l0["system l0"]
-    l1["摘要 user id=1"]
+    l1["摘要 user pos=1"]
     slim["精简 (l2,l3]"]
     raw["原始 (l3,l4]"]
     l0 --> l1 --> slim --> raw
@@ -45,30 +46,30 @@ flowchart LR
 
 ## 边界点 l0–l4
 
-| 点     | 含义                                                | 何时变          | 持久化 |
-| ------ | --------------------------------------------------- | --------------- | ------ |
-| **l0** | 系统提示词锚点，恒 **0**                            | 不变            | 否     |
-| **l1** | 运行时合成摘要 user 的 **id**，恒 **1**（**≠ l4**） | 不变            | 否     |
-| **l2** | 摘要段右界（`id ≤ l2` 已进入摘要）                  | **仅压缩成功**  | 是     |
-| **l3** | 精简段右界                                          | **仅压缩成功**  | 是     |
-| **l4** | 消息列表最右 id，`max(id)`                          | **实时** append | 否     |
+| 点     | 含义                                                 | 何时变          | 持久化 |
+| ------ | ---------------------------------------------------- | --------------- | ------ |
+| **l0** | 系统提示词锚点，恒 **0**                             | 不变            | 否     |
+| **l1** | 运行时合成摘要 user 的 **pos**，恒 **1**（**≠ l4**） | 不变            | 否     |
+| **l2** | 摘要段右界（`pos ≤ l2` 已进入摘要）                  | **仅压缩成功**  | 是     |
+| **l3** | 精简段右界                                           | **仅压缩成功**  | 是     |
+| **l4** | 消息列表最右 pos，`max(pos)`                         | **实时** append | 否     |
 
 ### 硬性约定
 
-1. **`l1 ≠ l4`**：`l1` 是合成行固定 id，与 JSONL 最大 id 无关。
+1. **`l1 ≠ l4`**：`l1` 是合成行固定 pos，与 `max(pos)` 无关。
 2. **`l4` 无策略**，不写入 meta。
 3. **非压缩路径只读 meta**；仅压缩成功时更新 `l2`、`l3`、`summary`。
-4. **无 `l2l`**：摘要语义 = **`id ≤ l2`**（不是「最后 user 之前」的旧 cut 语义）。
+4. **无 `l2l`**：摘要语义 = **`pos ≤ l2`**（不是「最后 user 之前」的旧 cut 语义）。
 
-未压缩：`l2 = l3 = 0`，无 `summary`，不注入 `id=1`。
+未压缩：`l2 = l3 = 0`，无 `summary`，不注入 `pos=1`。
 
-### JSONL 上的分段示意
+### messages 上的分段示意
 
-以 `l2=80, l3=145, l4=200` 为例（id 轴，非条数轴）：
+以 `l2=80, l3=145, l4=200` 为例（**pos 轴**，非条数轴）：
 
 ```mermaid
 flowchart LR
-  subgraph archived["已摘要 id ≤ l2"]
+  subgraph archived["已摘要 pos ≤ l2"]
     A["1 … 80"]
   end
   subgraph slimZone["精简 (l2, l3]"]
@@ -80,11 +81,11 @@ flowchart LR
   archived --> slimZone --> rawZone
 ```
 
-| JSONL 区间 | 运行时去向                                             |
-| ---------- | ------------------------------------------------------ |
-| `id ≤ l2`  | 不进消息列表 → 合成 `id=1` 摘要 user（`meta.summary`） |
-| `(l2, l3]` | 精简段（`slimMessage` 后 UA）                          |
-| `(l3, l4]` | 原始段（全量，含 tool）                                |
+| pos 区间   | 运行时去向                                              |
+| ---------- | ------------------------------------------------------- |
+| `pos ≤ l2` | 不进消息列表 → 合成 `pos=1` 摘要 user（`meta.summary`） |
+| `(l2, l3]` | 精简段（`slimMessage` 后 UA）                           |
+| `(l3, l4]` | 原始段（全量，含 tool）                                 |
 
 两次压缩之间：**l2 / l3 / summary 冻结**，仅 **`(l3, l4]`** 随 append 变长。
 
@@ -95,18 +96,18 @@ flowchart LR
 ```mermaid
 flowchart TB
   sys["① system<br/>l0 · meta.system_prompt"]
-  sum["② 摘要 user<br/>l1 · id=1 · [会话摘要]"]
+  sum["② 摘要 user<br/>l1 · pos=1 · [会话摘要]"]
   slim["③ 精简段<br/>(l2, l3] · slimMessage"]
   raw["④ 原始段<br/>(l3, l4] · 全量"]
   sys --> sum --> slim --> raw
 ```
 
-| 段     | 原始 id    | 说明                                              |
-| ------ | ---------- | ------------------------------------------------- |
-| system | l0         | `session_meta.system_prompt`，不在 JSONL 对话行里 |
-| 摘要   | `≤ l2`     | 合成 `id=1` + `summary` 文本；**不写 JSONL**      |
-| 精简   | `(l2, l3]` | slim 后 user/assistant（tool 丢弃）               |
-| 原始   | `(l3, l4]` | 全量消息，**不 slim**                             |
+| 段     | pos 范围   | 说明                                                 |
+| ------ | ---------- | ---------------------------------------------------- |
+| system | l0         | `session_meta.system_prompt`，不在 messages 对话行里 |
+| 摘要   | `≤ l2`     | 合成 `pos=1` + `summary` 文本；**不写 messages**     |
+| 精简   | `(l2, l3]` | slim 后 user/assistant（tool 丢弃）                  |
+| 原始   | `(l3, l4]` | 全量消息，**不 slim**                                |
 
 实现：`buildRuntimeFromLPoints` → `buildRuntimeMessages` 前置 `system`。
 
@@ -180,7 +181,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  start["l4 = max(id)"]
+  start["l4 = max(pos)"]
   start --> s1["Step 1：取最大 l3<br/>使 (l3,l4] 满足 raw 约束"]
   s1 -->|无合法 l3| abort["放弃压缩"]
   s1 --> s2["Step 2：取最大 l2<br/>使 (l2,l3] slim 后 ≥ slim_min"]
@@ -193,11 +194,11 @@ flowchart TD
 
 取**最大的** `l3`（右推，原始段尽量窄、靠右），使 **`(l3, l4]`** 满足：
 
-| 约束     | 说明                                                       |
-| -------- | ---------------------------------------------------------- |
-| 条数     | ≥ `raw_min_messages`（默认 5）                             |
-| 含 user  | 至少 1 条 `role=user`                                      |
-| 热尾起点 | **`min{ id \| id > l3 }`** 必须是 `user`（兼容 id 不连续） |
+| 约束     | 说明                                                          |
+| -------- | ------------------------------------------------------------- |
+| 条数     | ≥ `raw_min_messages`（默认 5）                                |
+| 含 user  | 至少 1 条 `role=user`                                         |
+| 热尾起点 | **`min{ pos \| pos > l3 }`** 必须是 `user`（兼容 pos 不连续） |
 
 > **注意**：L3 保证 raw 热尾以 `user` **起笔**，不保证热尾以完整 tool loop **收笔**；尾部 dangling `tool_calls` 由 engine `tool-loop-integrity` 在出站/落盘前 repair。
 
@@ -215,8 +216,8 @@ flowchart TD
 
 ### Step 3：摘要
 
-- 增量 JSONL 区间：**`(旧 l2, 新 l2]`**（首压 **`(0, 新 l2]`**）
-- LLM 合并进 `meta.summary`；运行时注入 **`id=1`** 摘要 user
+- 增量 messages 区间：**`(旧 l2, 新 l2]`**（首压 **`(0, 新 l2]`**）
+- LLM 合并进 `meta.summary`；运行时注入 **`pos=1`** 摘要 user
 
 定 l3 时已保证原始段以 user 开头，**无需**定界后再因 tool loop 左移 l3/l2。
 
@@ -250,7 +251,7 @@ flowchart TD
 | **工具循环内**      | 仅 `usage ≥ trigger_high`（0.80）或 `≥ emergency_ratio`（0.92） |
 | **工具循环内** 其余 | 不压                                                            |
 
-占用率按当前 **l4** 下四段 runtime 视图（system + 摘要 + 精简 + 原始 + tools）估算，**不用 JSONL 全量**。
+占用率按当前 **l4** 下四段 runtime 视图（system + 摘要 + 精简 + 原始 + tools）估算，**不用 messages 全量**。
 
 > v5.1 已移除 `tool_loop_suppress_sec` 时间抑制；`markToolLoopActivity` / `clearToolLoopSuppression` 仍由 engine / `beginTurn` 调用，但**不再**参与压缩门控。
 
@@ -294,7 +295,7 @@ sequenceDiagram
   participant SP as rebuildSessionSystemPrompt
 
   BT->>RC: advanceCompressionMeta
-  RC->>CP: 全量 JSONL + meta
+  RC->>CP: 全量 messages + meta
   CP->>CP: shouldAdvance?
   CP->>DB: 是 → 新 l2,l3
   DB-->>CP: l2,l3
@@ -335,7 +336,7 @@ flowchart LR
   e1 --> e2 --> e3 --> e4 --> e5
 ```
 
-1. `l4` = 当前内存消息 `max(id)`
+1. `l4` = 当前内存消息 `max(pos)`
 2. 阈值走**工具循环内**规则（`trigger_high` / `emergency_ratio`）
 3. 边界推导与常规定界相同，**无额外 shift**
 4. 写 meta 后异步摘要；内存视图立即变为四段
@@ -378,17 +379,17 @@ stateDiagram-v2
 
 ---
 
-## 与 L2 / 睡眠
+## 与记忆管道
+
+压缩**不**触发记忆反思；与 [`memory.md`](memory.md) 中的 `session:updated` → `reflectSession` 管道独立。
 
 ```mermaid
 flowchart TB
-  L1["L1 JSONL 全量"]
+  PG["PG messages 全量"]
   RT["运行时四段 + 摘要"]
-  L2p["L2 processed/"]
-  L3["L3 facts"]
-  L1 --> RT
-  L1 -->|"distill（与 l 点无关）"| L2p
-  L2p -->|"睡眠 / reflect"| L3
+  Reflect["reflectSession → semantic_memory"]
+  PG --> RT
+  PG -->|"session:updated（与 l 点无关）"| Reflect
 ```
 
-压缩**不**触发 distill；cron `ifNewer` 即可。L1 JSONL **永不删**。
+PG `messages` **永不删**（只追加）。

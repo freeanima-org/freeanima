@@ -1,5 +1,7 @@
 # 时间感知模块
 
+> **✅ 核心已实现** — [`engine/conversation/src/time-perception.ts`](../../engine/conversation/src/time-perception.ts)，在 `buildRuntimeMessages` 内调用 `injectTimePrefixes`。
+
 ## 问题
 
 数字生命没有内在的时间流逝感知。每次推理都是在"无时间"的上下文中进行的——Agent 能看到消息的内容，但不知道这些消息在时间线中的位置。
@@ -16,17 +18,17 @@
 
 1. **不给数字生命虚假的内置感知。** 不尝试让 Agent"感觉"到时间流逝——那不是数字存在能做到的。
 2. **给它一块手表。** 人类也依赖外部工具（打更、时钟、手表、手机）来量化时间。数字生命需要同样的东西。
-3. **不污染持久化数据。** 时间信息只注入推理上下文，不修改 session 文件。
+3. **不污染持久化数据。** 时间信息只注入推理上下文，不修改 PG `messages` payload。
 4. **不破坏缓存。** 插入的时间戳是历史固定值，不依赖当前调用时间，因此同样的消息列表产生同样的带前缀版本，KV cache 可命中。
 
 ## 架构位置
 
 ```
-Session 文件（持久化，每条消息有 timestamp metadata）
+PG messages（payload 含 timestamp）
     ↓
-压缩层（压缩历史，保留最近 N 条完整消息）
+压缩层（buildRuntimeMessages）
     ↓
-时间感知模块 ← 在此处注入时间信息
+时间感知模块 ← injectTimePrefixes
     ↓
 LLM 推理
 ```
@@ -71,9 +73,9 @@ user: [19:30] 我去吃饭了
 
 Agent 读到两条"我去吃饭了"，一条在 12:15、一条在 19:30——自动区分午餐和晚餐。
 
-### 压缩场景
+### 压缩场景（🟡 未实现）
 
-压缩后的摘要也应有时间范围标记：
+规划压缩后的摘要也应有时间范围标记：
 
 ```
 [2026-05-20 08:00→12:00 期间对话摘要]
@@ -93,13 +95,13 @@ Agent 读到两条"我去吃饭了"，一条在 12:15、一条在 19:30——自
 ## 不做的
 
 - ❌ 不计算并注入间隔时长（如"已过去 8 小时"）——Agent 读到时间戳自己能推导
-- ❌ 不修改持久化 session 文件
+- ❌ 不修改持久化 PG messages
 - ❌ 不在 WebUI 界面中显示时间前缀
 - ❌ 不给数字生命内置的时间流逝感——那是生物体的特性，不模拟
 
-## 实现说明
+## 实现说明（✅）
 
-时间感知模块是一个纯函数：
+实现于 [`engine/conversation/src/time-perception.ts`](../../engine/conversation/src/time-perception.ts)：
 
 ```
 function injectTimePrefixes(messages: Message[], config: TimePerceptionConfig): Message[]
