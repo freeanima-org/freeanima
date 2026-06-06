@@ -5,7 +5,7 @@ import type { CommandResult } from "@freeanima/connectors-commands";
 import type { MessagesDisplay } from "@freeanima/service/schemas/display";
 import type { SessionSummary } from "@freeanima/service/schemas/snapshot";
 import { getServiceContext } from "../context.ts";
-import { buildMessagesDisplay, paginateMessagesDisplay } from "./build-messages-display.ts";
+import { buildMessagesDisplay } from "./build-messages-display.ts";
 import { statsReport } from "./conversation-stats.ts";
 import { PARLOR_PLATFORM } from "./platforms.ts";
 
@@ -84,24 +84,20 @@ export async function getMessages(
     throw new Error(`Session not found: ${sessionId}`);
   }
   await checkPlatform({ platform }, sessionId);
-  if (opts?.limit != null) {
-    const offset = Math.max(0, opts.offset ?? 0);
-    const limit = Math.max(1, opts.limit);
-    const [total, page] = await Promise.all([
-      conv().countMessages(sessionId),
-      conv().loadMessagePage(sessionId, offset, limit),
-    ]);
-    const full = buildMessagesDisplay(page);
-    return {
-      session_id: sessionId,
-      display: full,
-      total,
-      offset,
-      limit,
-    };
-  }
-  const all = await conv().load(sessionId);
-  return paginateMessagesDisplay(sessionId, all, opts);
+  const offset = Math.max(0, opts?.offset ?? 0);
+  const limit = Math.max(1, opts?.limit ?? 500);
+  const [total, page] = await Promise.all([
+    conv().countMessages(sessionId),
+    conv().loadMessagePage(sessionId, offset, limit),
+  ]);
+  const full = buildMessagesDisplay(page);
+  return {
+    session_id: sessionId,
+    display: full,
+    total,
+    offset,
+    limit,
+  };
 }
 
 export async function setSessionTitle(

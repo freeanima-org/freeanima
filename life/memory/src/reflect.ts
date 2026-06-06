@@ -211,12 +211,27 @@ async function dedupBeforeWrite(content: string): Promise<string | null> {
 
 export type ReflectSessionResult = { written: number; fact_ids: string[] };
 
+const REFLECT_MESSAGE_WINDOW = 300;
+
+async function loadMessagesForReflect(
+  store: SessionStorePort,
+  sessionId: string,
+): Promise<RecallableMessage[]> {
+  const total = await store.countMessages(sessionId);
+  if (total <= REFLECT_MESSAGE_WINDOW) {
+    return filterRecallableMessages(await store.listMessages(sessionId));
+  }
+  const offset = total - REFLECT_MESSAGE_WINDOW;
+  const page = await store.listMessagesPage(sessionId, offset, REFLECT_MESSAGE_WINDOW);
+  return filterRecallableMessages(page);
+}
+
 export async function reflectSession(
   sessionId: string,
   sessionStore?: SessionStorePort,
 ): Promise<ReflectSessionResult> {
   const store = sessionStore ?? getMemorySessionStore();
-  const messages = filterRecallableMessages(await store.listMessages(sessionId));
+  const messages = await loadMessagesForReflect(store, sessionId);
   if (!messages.length) return { written: 0, fact_ids: [] };
 
   const incrementalInput = buildIncrementalInput(sessionId, messages);

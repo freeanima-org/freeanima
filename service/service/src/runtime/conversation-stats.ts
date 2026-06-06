@@ -93,6 +93,7 @@ function emptyBreakdown(): RuntimeContextBreakdown {
 
 async function readCompressionAndContextFields(
   session: string,
+  preloaded?: SessionMessage[],
 ): Promise<
   Pick<
     SessionStats,
@@ -119,14 +120,17 @@ async function readCompressionAndContextFields(
   >
 > {
   const cfg = getCompressionConfig();
-  const allMsgs = await getServiceContext().conversation.load(session);
-  const meta = await getServiceContext().conversation.loadSessionMeta(session);
+  const conv = getServiceContext().conversation;
+  const meta = await conv.loadSessionMeta(session);
+  const allMsgs = preloaded ?? (await conv.loadForRuntime(session));
   const state = parseCompressionState(isSessionMeta(meta) ? meta.compression : undefined);
   const l2 = state?.l2 ?? null;
   const l3 = isCompressed(state) ? (state?.l3 ?? null) : null;
   const fallbackModel = getProfileHopModel(loadConfig(), PROFILE_CHAT);
-  const compressOpts = buildCompressOptions(meta, state, fallbackModel);
+  const tools = isSessionMeta(meta) ? await conv.loadSessionTools(session, meta) : [];
+  const compressOpts = buildCompressOptions(meta, state, fallbackModel, { tools });
   const analysis = analyzeCompression(allMsgs, compressOpts);
+  const jsonlTotal = await conv.countMessages(session);
 
   let breakdown = emptyBreakdown();
   if (allMsgs.length > 0) {
@@ -142,9 +146,9 @@ async function readCompressionAndContextFields(
     compression_mode: analysis.mode,
     compression_l2: l2,
     compression_l3: l3,
-    compression_total_messages: analysis.jsonl_total,
+    compression_total_messages: jsonlTotal,
     compression_visible_messages: analysis.runtime_message_count,
-    compression_hidden: analysis.hidden_by_compression,
+    compression_hidden: Math.max(0, jsonlTotal - analysis.runtime_message_count),
     compression_has_summary: analysis.has_summary,
     compression_context_window: compressOpts.model ? getContextWindow(compressOpts.model) : null,
     compression_effective_budget: analysis.effective_budget,
@@ -176,10 +180,10 @@ function estimateUsageFromMessages(assistantMsgs: Record<string, unknown>[]): {
 }
 
 export async function computeStats(session: string): Promise<SessionStats> {
-  const records = await getServiceContext().conversation.load(session);
+  const conv = getServiceContext().conversation;
+  const message_count = await conv.countMessages(session);
+  const records = message_count > 0 ? await conv.load(session) : [];
   const messages = records.filter((r) => r.role !== "session_meta");
-
-  const message_count = messages.length;
   const assistant_msgs = messages.filter((m) => m.role === "assistant");
   const assistant_turns = assistant_msgs.length;
 
@@ -271,7 +275,7 @@ export async function computeStats(session: string): Promise<SessionStats> {
     partial_usage,
     partial_cached,
     estimated_usage,
-    ...(await readCompressionAndContextFields(session)),
+    ...(await readCompressionAndContextFields(session, records)),
   };
 }
 
