@@ -1,6 +1,5 @@
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { PATHS } from "@freeanima/service-config";
+import { join } from "node:path";
+import { registerSkillsFromDirectory } from "@freeanima/engine-skill";
 import { getToolSessionId } from "@freeanima/engine-loop";
 import { listTools, registerTool, toolError } from "@freeanima/engine-tool";
 import { loadConfig } from "@freeanima/service-config";
@@ -26,7 +25,7 @@ import {
 } from "./status.ts";
 
 const DEFAULT_HEALTH_CHECK_MS = 60_000;
-const BUILTIN_SKILL_NAME = "acp-cursor";
+const ACP_SKILLS_SOURCE = "acp";
 
 type AcpPromptOptions = {
   nestSessionId?: string;
@@ -124,17 +123,14 @@ function defaultCursorDescription(agentName: string): string {
   return `ACP agent: ${agentName}（默认绑定当前逸灵风对话；continue_session 自动续用）`;
 }
 
-function seedBuiltinSkill(): void {
-  const skillPath = join(PATHS.home, "skills", `${BUILTIN_SKILL_NAME}.md`);
-  if (existsSync(skillPath)) return;
-  const bundled = join(import.meta.dir, "..", "skills", `${BUILTIN_SKILL_NAME}.md`);
-  if (!existsSync(bundled)) return;
-  try {
-    mkdirSync(dirname(skillPath), { recursive: true });
-    writeFileSync(skillPath, readFileSync(bundled, "utf-8"), "utf-8");
-    logComponent("acp").info(`已安装内置 Skill: ${BUILTIN_SKILL_NAME}`);
-  } catch (e) {
-    logComponent("acp").warn("安装内置 Skill 失败", { err: e });
+function registerAcpBuiltinSkills(): void {
+  const dir = join(import.meta.dir, "..", "skills");
+  const count = registerSkillsFromDirectory(dir, { source: ACP_SKILLS_SOURCE });
+  if (count > 0) {
+    logComponent("acp").info(`已注册 ${count} 个 ACP 内置 Skill`, {
+      count,
+      source: ACP_SKILLS_SOURCE,
+    });
   }
 }
 
@@ -176,7 +172,7 @@ export class AcpManager {
     const agents = agentsCfg ?? cfg.acp_agents ?? {};
     if (!Object.keys(agents).length) return 0;
 
-    seedBuiltinSkill();
+    registerAcpBuiltinSkills();
 
     let count = 0;
     for (const [agentName, agentCfg] of Object.entries(agents)) {

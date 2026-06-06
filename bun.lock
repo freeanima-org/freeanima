@@ -30,6 +30,7 @@
         "@freeanima/engine-conversation": "workspace:*",
         "@freeanima/engine-db": "workspace:*",
         "@freeanima/engine-loop": "workspace:*",
+        "@freeanima/engine-skill": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
         "@freeanima/kernel-util": "workspace:*",
         "@freeanima/service-config": "workspace:*",
@@ -87,8 +88,8 @@
       "dependencies": {
         "@freeanima/engine-conversation": "workspace:*",
         "@freeanima/engine-loop": "workspace:*",
+        "@freeanima/engine-skill": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
-        "@freeanima/life-memory": "workspace:*",
         "@freeanima/service-config": "workspace:*",
       },
       "devDependencies": {
@@ -339,6 +340,16 @@
         "@types/bun": "catalog:",
       },
     },
+    "engine/skill": {
+      "name": "@freeanima/engine-skill",
+      "dependencies": {
+        "@freeanima/engine-tool": "workspace:*",
+        "@freeanima/service-config": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
     "engine/tool": {
       "name": "@freeanima/engine-tool",
       "dependencies": {
@@ -500,6 +511,7 @@
         "@freeanima/engine-prompt": "workspace:*",
         "@freeanima/engine-provider-llm": "workspace:*",
         "@freeanima/engine-repos": "workspace:*",
+        "@freeanima/engine-skill": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
         "@freeanima/kernel": "workspace:*",
         "@freeanima/kernel-eventbus": "workspace:*",
@@ -723,6 +735,8 @@
     "@freeanima/engine-provider-llm": ["@freeanima/engine-provider-llm@workspace:engine/provider-llm"],
 
     "@freeanima/engine-repos": ["@freeanima/engine-repos@workspace:engine/repos"],
+
+    "@freeanima/engine-skill": ["@freeanima/engine-skill@workspace:engine/skill"],
 
     "@freeanima/engine-tool": ["@freeanima/engine-tool@workspace:engine/tool"],
 

@@ -1,5 +1,4 @@
 import { SUMMARY_USER_PREFIX } from "@freeanima/engine-compress";
-import { getActiveSkillsContent } from "@freeanima/life-memory";
 import { isSessionMeta } from "@freeanima/engine-db/domain";
 import { decomposeSystemPromptParts } from "@freeanima/life-memory/system-prompt";
 import type { SessionMessage } from "@freeanima/engine-db/domain";
@@ -16,7 +15,6 @@ export type RuntimeContextBreakdown = {
   system_soul: number;
   system_agents: number;
   system_resident: number;
-  system_skills: number;
   summary: number;
   messages: number;
   tools: number;
@@ -37,7 +35,7 @@ export async function computeRuntimeContextBreakdown(
 
   const soul = loadSoul();
   const cwd = isSessionMeta(meta) ? meta.cwd : undefined;
-  const parts = decomposeSystemPromptParts(soul, cwd, getActiveSkillsContent(5));
+  const parts = decomposeSystemPromptParts(soul, cwd);
 
   let summary = 0;
   const messageRows: SessionMessage[] = [];
@@ -56,24 +54,15 @@ export async function computeRuntimeContextBreakdown(
   const system_soul = estimateTokens(parts.soul);
   const system_agents = estimateTokens(parts.agents);
   const system_resident = estimateTokens(parts.resident);
-  const system_skills = estimateTokens(parts.skills);
   const messages = estimateMessagesTokens(messageRows);
   const toolsTokens = estimateToolsTokens(tools);
 
-  const total =
-    system_soul +
-    system_agents +
-    system_resident +
-    system_skills +
-    summary +
-    messages +
-    toolsTokens;
+  const total = system_soul + system_agents + system_resident + summary + messages + toolsTokens;
 
   return {
     system_soul,
     system_agents,
     system_resident,
-    system_skills,
     summary,
     messages,
     tools: toolsTokens,

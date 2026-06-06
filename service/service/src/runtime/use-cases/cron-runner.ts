@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 import * as conv from "@freeanima/engine-conversation";
 import { distillFromPg, l2SessionPath } from "@freeanima/life-memory/clean";
 import { indexL2Session } from "@freeanima/life-memory/l2-indexer";
-import { loadSkill } from "@freeanima/life-memory";
+import { prependSkillsToPrompt } from "@freeanima/engine-skill";
 import { getProfileHopModel, loadConfig } from "@freeanima/service-config";
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
 import { runSimpleTurn } from "@freeanima/service-api/turn-lifecycle";
@@ -36,9 +36,7 @@ export async function runCronEngineTurn(job: CronEngineJobInput, prompt: string)
   const sid = conv.generateSessionId();
   await conversation.initSession(sid, model, { platform: "cron" });
 
-  for (const skillName of job.skills) {
-    loadSkill(skillName);
-  }
+  const fullPrompt = prependSkillsToPrompt(prompt, job.skills);
 
-  return runSimpleTurn({ sessionId: sid, prompt, model });
+  return runSimpleTurn({ sessionId: sid, prompt: fullPrompt, model });
 }

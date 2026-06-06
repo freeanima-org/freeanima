@@ -1,13 +1,4 @@
 export {
-  createSkill,
-  loadSkill,
-  unloadSkill,
-  listSkills,
-  viewSkill,
-  deleteSkill,
-  getActiveSkillsContent,
-} from "./skills.ts";
-export {
   FRONTMATTER_DELIM,
   nowIso,
   factScore,
