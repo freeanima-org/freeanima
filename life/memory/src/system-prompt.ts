@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { getStore } from "./store.ts";
+import { getSemanticMemoryStore } from "./semantic-port.ts";
 
 const MAX_AGENTS_CHARS = 8000;
 
@@ -22,10 +22,10 @@ function readAgents(cwd: string | null | undefined): string {
   }
 }
 
-function renderResidentMemory(): string {
-  const facts = getStore().resident(20);
+async function renderResidentMemory(): Promise<string> {
+  const facts = await getSemanticMemoryStore().listResident(20);
   if (!facts.length) return "";
-  const lines = facts.map((f) => `- ${f.content}`);
+  const lines = facts.map((f) => (f.pinned ? `- 📌 ${f.content}` : `- ${f.content}`));
   return `## 常驻记忆\n${lines.join("\n")}`;
 }
 
@@ -36,14 +36,14 @@ export type SystemPromptParts = {
 };
 
 /** soul / agents / resident；技能通过 load_skill 工具消息注入，不写入 system prompt */
-export function decomposeSystemPromptParts(
+export async function decomposeSystemPromptParts(
   soulContent: string,
   cwd?: string | null,
-): SystemPromptParts {
+): Promise<SystemPromptParts> {
   return {
     soul: soulContent.trim(),
     agents: readAgents(cwd),
-    resident: renderResidentMemory(),
+    resident: await renderResidentMemory(),
   };
 }
 

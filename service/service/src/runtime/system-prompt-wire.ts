@@ -4,7 +4,7 @@ import {
   decomposeSystemPromptParts as decomposeBase,
 } from "@freeanima/life-memory/system-prompt";
 
-registerSystemPromptBuilder((_functionNames, soulContent, cwd) => {
-  const parts = decomposeBase(soulContent, cwd);
+registerSystemPromptBuilder(async (_functionNames, soulContent, cwd) => {
+  const parts = await decomposeBase(soulContent, cwd);
   return composeSystemPrompt(parts);
 });

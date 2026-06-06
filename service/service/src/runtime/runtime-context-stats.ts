@@ -35,7 +35,7 @@ export async function computeRuntimeContextBreakdown(
 
   const soul = loadSoul();
   const cwd = isSessionMeta(meta) ? meta.cwd : undefined;
-  const parts = decomposeSystemPromptParts(soul, cwd);
+  const parts = await decomposeSystemPromptParts(soul, cwd);
 
   let summary = 0;
   const messageRows: SessionMessage[] = [];

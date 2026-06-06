@@ -3,7 +3,9 @@ export type {
   SessionStorePort,
   SessionSummaryRow,
   MessageFtsHit,
-  MemoryStorePort,
+  SemanticMemoryRow,
+  SemanticFtsHit,
+  SemanticMemoryStorePort,
   CronJobStorePort,
   TaskStorePort,
 } from "./ports/index.ts";

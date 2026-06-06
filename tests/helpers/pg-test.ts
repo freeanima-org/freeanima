@@ -44,6 +44,7 @@ export function getActivePgTestContext(): PgTestContext | null {
 async function clearPgTables(sql: postgres.Sql): Promise<void> {
   await sql`DELETE FROM messages`;
   await sql`DELETE FROM sessions`;
+  await sql`DELETE FROM semantic_memory`;
 }
 
 function createTestEngine(repos: PgRepositories): Engine {

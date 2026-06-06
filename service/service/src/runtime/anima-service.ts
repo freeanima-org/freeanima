@@ -224,11 +224,11 @@ export class AnimaService implements StreamTurnHost {
     return memory.memorySearch(args);
   }
 
-  reindexL3All(): { index_rows: number } {
+  reindexL3All(): Promise<{ index_rows: number }> {
     return memory.reindexL3All();
   }
 
-  listMemoryFiles(): { files: memory.MemoryFileEntry[] } {
+  listMemoryFiles(): Promise<{ files: memory.MemoryFileEntry[] }> {
     return memory.listMemoryFiles();
   }
 

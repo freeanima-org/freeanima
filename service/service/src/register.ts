@@ -5,7 +5,7 @@ import { registerCoreTools, registerSupplementalTools } from "@freeanima/capabil
 import { registerCronjobTool } from "@freeanima/connectors-cron/cronjob-tool";
 import type { Kernel } from "@freeanima/kernel";
 import type { ConversationService } from "@freeanima/engine-conversation";
-import type { SessionStorePort } from "@freeanima/engine-repos";
+import type { SemanticMemoryStorePort, SessionStorePort } from "@freeanima/engine-repos";
 import {
   registerMemoryPipeline,
   registerMemoryTools,
@@ -45,9 +45,14 @@ export function registerServiceIntegrations(opts: {
 export function registerServiceMemoryBus(opts: {
   kernel: Kernel;
   sessionStore: SessionStorePort;
+  semanticStore: SemanticMemoryStorePort;
   reflectChat: ReflectChatFn;
 }): void {
   registerReflectChat(opts.reflectChat);
-  registerMemoryPipeline({ bus: opts.kernel.eventBus, sessionStore: opts.sessionStore });
+  registerMemoryPipeline({
+    bus: opts.kernel.eventBus,
+    sessionStore: opts.sessionStore,
+    semanticStore: opts.semanticStore,
+  });
   opts.kernel.eventBus.start();
 }

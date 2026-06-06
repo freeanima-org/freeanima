@@ -8,23 +8,16 @@ export const Route = createFileRoute("/chamber/memory")({
 
 type MemoryResult = { query: string; l3: Record<string, unknown>[]; l2: Record<string, unknown>[] };
 
-function pct(n: unknown) {
-  return `${Math.round(Number(n ?? 0) * 100)}%`;
-}
-
 function formatToolOutput(data: MemoryResult) {
   const sections: string[] = [];
   if (data.l3?.length) {
-    const lines = [`找到 ${data.l3.length} 条匹配事实：`];
+    const lines = [`找到 ${data.l3.length} 条匹配记忆：`];
     for (const r of data.l3) {
-      lines.push(
-        `  [${r.fact_id}] (${pct(r.confidence)}/ ${pct(r.importance)}/ ${pct(r.recall)}) ${r.content}`,
-      );
-      if (Array.isArray(r.domains) && r.domains.length) {
-        lines.push(`       领域: ${(r.domains as string[]).join(", ")}`);
-      }
+      const type = String(r.type ?? "world");
+      const pin = r.pinned ? " 📌" : "";
+      lines.push(`  [${r.fact_id}] (${type})${pin} ${r.content}`);
     }
-    sections.push(`## L3 事实\n${lines.join("\n")}`);
+    sections.push(`## 语义记忆\n${lines.join("\n")}`);
   }
   if (data.l2?.length) {
     const lines = [`找到 ${data.l2.length} 条匹配对话：`];
@@ -38,7 +31,7 @@ function formatToolOutput(data: MemoryResult) {
     sections.push(`## 历史对话\n${lines.join("\n")}`);
   }
   if (!sections.length) {
-    return `未找到与「${data.query}」匹配的事实或历史对话。`;
+    return `未找到与「${data.query}」匹配的记忆或历史对话。`;
   }
   return sections.join("\n\n");
 }
@@ -109,7 +102,7 @@ function MemoryPage() {
         <div>
           <h2 className="text-lg font-bold">🧠 记忆台</h2>
           <p className="text-sm text-base-content/60 mt-1">
-            调试 <code className="text-xs">recall</code> 召回效果：L3 事实 FTS + PG
+            调试 <code className="text-xs">recall</code> 召回效果：语义记忆 PG FTS +
             历史对话全文索引。
           </p>
         </div>
@@ -122,14 +115,14 @@ function MemoryPage() {
               void postMemoryAction(
                 () => trpc.memory.l3Reindex.mutate(),
                 "l3-reindex",
-                "清空并重建 L3 FTS 索引（index/l3.db），不修改 memory/*.md 事实文件。确定继续？",
+                "统计 PG semantic_memory 条数（content_fts 自动维护，无需重建）。确定继续？",
               )
             }
           >
             {busyAction === "l3-reindex" ? (
               <span className="loading loading-spinner loading-xs" />
             ) : null}
-            重建 L3 索引
+            统计语义记忆
           </button>
         </div>
       </div>

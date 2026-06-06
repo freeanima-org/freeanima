@@ -1,7 +1,7 @@
 import { memorySearchBodySchema, type MemorySearchBody } from "@freeanima/connectors-webui/api";
 import { getServiceContext } from "@freeanima/service-api";
 
-export function listMemoryFiles() {
+export async function listMemoryFiles() {
   const { service } = getServiceContext();
   return service.listMemoryFiles();
 }
@@ -17,12 +17,12 @@ export async function memorySearch(body: MemorySearchBody) {
   });
 }
 
-export function memoryL3Reindex() {
+export async function memoryL3Reindex() {
   const { service } = getServiceContext();
-  const { index_rows } = service.reindexL3All();
+  const { index_rows } = await service.reindexL3All();
   return {
     ok: true as const,
     index_rows,
-    message: `L3 索引重建完成：${index_rows} 条事实已索引`,
+    message: `语义记忆共 ${index_rows} 条（PG content_fts 自动维护，无需重建索引）`,
   };
 }

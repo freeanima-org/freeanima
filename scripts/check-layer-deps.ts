@@ -52,7 +52,6 @@ function isAllowed(layer: string, pkg: string, _relPath: string): boolean {
       if (pkg.startsWith("life-") || pkg === "life") return true;
       if (pkg.startsWith("engine-tool")) return true;
       if (pkg === "engine-repos") return true;
-      if (pkg === "connectors-sqlite") return true;
       if (pkg === "connectors-db-pg") return false;
       if (pkg === "service-config" || pkg === "service-logging") return true;
       return false;

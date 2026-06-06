@@ -3,42 +3,37 @@ import { join } from "node:path";
 import { PATHS } from "@freeanima/service-config";
 import type { SessionStorePort } from "@freeanima/engine-repos";
 import { callReflectChat } from "./reflect-llm.ts";
-import { createFact, type FactData } from "./fact.ts";
-import { getStore } from "./store.ts";
+import { createSemanticMemory } from "./fact.ts";
 import { factExtractionSchema, reflectStateSchema } from "./schemas/l2.ts";
 import { filterRecallableMessages, type RecallableMessage } from "./message-filter.ts";
 import { getMemorySessionStore } from "./session-port.ts";
+import { getSemanticMemoryStore } from "./semantic-port.ts";
 import { safeParseOrNull } from "@freeanima/kernel-util";
 
-const EXTRACT_SYSTEM_PROMPT = `你是一位专业的记忆提取助手。你的任务是从一段对话中提取重要信息，存入长期记忆系统。
+const EXTRACT_SYSTEM_PROMPT = `你是一位专业的记忆提取助手。你的任务是从一段对话中提取重要信息，存入长期语义记忆。
 
-你可以提取以下类型的信息：
-- fact: 事实性陈述（"张三偏好精炼直接的沟通"）
-- entity: 实体定义（"逸灵风是数字生命的容器"）
-- relation: 实体间关系（"张三是逸灵风的伙伴"）
-- reflection: 反思/模式归纳（"对话模式：张三倾向于先讨论概念再讨论实现"）
+可提取的记忆类型：
+- world: 客观事实与知识（"逸灵风是数字生命的容器"）
+- experience: Agent 自身的第一人称行为记录
+- opinion: 主观判断
+- observation: 对人物/事物的综合观察
+- preference: 偏好与习惯（"张三偏好精炼直接的沟通"）
+- procedural: 如何做某事的知识
+- imprint: 值得保留的情感印记（只追加）
 
 提取规则：
 1. 只提取**有长期价值**的信息。琐碎的问候、确认、过程性对话不要提取。
-2. 一条事实应该是一句精炼的陈述，可以被直接放入上下文中理解。
-3. 伙伴说出的偏好/习惯/修正 → 高重要度（0.7+）。
-4. 数字生命学到的新知识/教训 → 中等重要度（0.5+）。
-5. 反复出现的主题/模式 → 类型为 reflection。
-6. 置信度：说了就是 0.6，反复确认 0.8，铁律级 1.0。
-7. 召回率：只有对大多数对话都相关的才设为高值（0.8+）。
-8. 识别对话中出现的实体（人物、项目、工具、概念），每条事实可关联多个实体。
+2. 一条记忆应该是一句精炼的陈述，可以被直接放入上下文中理解。
+3. 伙伴说出的偏好/习惯/修正 → type=preference，可考虑 pinned 语义（由你判断是否在 content 中体现重要性）。
+4. 数字生命学到的新知识/教训 → type=world 或 experience。
+5. 反复出现的主题/模式 → type=observation。
 
 输出格式为 JSON：
 {
   "facts": [
     {
-      "content": "事实内容（一句话精炼）",
-      "type": "fact",
-      "domains": ["relationship"],
-      "entities": ["张三"],
-      "confidence": 0.8,
-      "importance": 0.7,
-      "recall": 0.6
+      "content": "记忆内容（一句话精炼）",
+      "type": "preference"
     }
   ],
   "summary": "这段对话的核心主题一句话。"
@@ -52,7 +47,7 @@ const EXTRACT_INCREMENTAL_PROMPT = `你是一位专业的记忆提取助手。�
 **重要规则**：
 1. 只从「新增对话」部分提取记忆，不要重复提取已经提取过的内容。
 2. 前面的「上下文」仅供参考，帮助你理解新增部分的背景。
-3. 提取标准同上（只提取有长期价值的信息，一条事实一句精炼陈述）。
+3. 提取标准同上（只提取有长期价值的信息，一条记忆一句精炼陈述）。
 4. 如果新增部分没有值得提取的信息，返回 {"facts": [], "summary": ""}。
 
 输出格式与之前相同（JSON）。只返回 JSON，不要其他文字。`;
@@ -131,32 +126,22 @@ function updateReflectState(sessionId: string, messages: RecallableMessage[]): v
   writeReflectState(state);
 }
 
-function asStrList(value: unknown): string[] {
-  if (!Array.isArray(value)) return [];
-  return value.map(String).filter((v) => v.trim());
-}
-
-function normalizeFactItem(item: unknown): Record<string, unknown> | null {
+function normalizeFactItem(item: unknown): { content: string; type?: string } | null {
   if (typeof item === "string") {
     const content = item.trim();
-    return content ? { type: "fact", content } : null;
+    return content ? { content, type: "world" } : null;
   }
   if (!item || typeof item !== "object" || Array.isArray(item)) return null;
   const d = item as Record<string, unknown>;
   const content = String(d.content ?? "").trim();
   if (!content) return null;
   return {
-    type: String(d.type ?? "fact").trim() || "fact",
     content,
-    domains: asStrList(d.domains),
-    entities: asStrList(d.entities),
-    confidence: d.confidence ?? 0.6,
-    importance: d.importance ?? 0.5,
-    recall: d.recall ?? 0.3,
+    type: String(d.type ?? "world").trim() || "world",
   };
 }
 
-function parseExtraction(raw: string): Record<string, unknown>[] {
+function parseExtraction(raw: string): Array<{ content: string; type?: string }> {
   let text = raw;
   const jsonMatch = /```(?:json)?\s*\n?([\s\S]*?)\n?```/.exec(raw);
   if (jsonMatch) text = jsonMatch[1]!;
@@ -182,7 +167,7 @@ function parseExtraction(raw: string): Record<string, unknown>[] {
   const facts = extraction.facts;
   if (!Array.isArray(facts)) return [];
 
-  const normalized: Record<string, unknown>[] = [];
+  const normalized: Array<{ content: string; type?: string }> = [];
   for (const item of facts) {
     const f = normalizeFactItem(item);
     if (f) normalized.push(f);
@@ -193,7 +178,7 @@ function parseExtraction(raw: string): Record<string, unknown>[] {
 async function extractWithLlm(
   input: string,
   incremental: boolean,
-): Promise<Record<string, unknown>[]> {
+): Promise<Array<{ content: string; type?: string }>> {
   const maxChars = 8000;
   let text = input;
   if (text.length > maxChars) text = `${text.slice(0, maxChars)}\n\n[... 截断]`;
@@ -216,55 +201,11 @@ async function extractWithLlm(
   }
 }
 
-function clamp01(n: number): number {
-  return Math.min(1, Math.max(0, n));
-}
-
-function contentEqual(a: string, b: string): boolean {
-  return a.trim() === b.trim();
-}
-
-function normalizeContent(text: string): string {
-  return text
-    .trim()
-    .toLowerCase()
-    .replace(/[^\w\s]/g, "")
-    .replace(/\s+/g, "");
-}
-
-/** 若合并到已有事实则返回其 id，否则 null */
-function dedupBeforeWrite(store: ReturnType<typeof getStore>, newFact: FactData): string | null {
-  const existing = store.search(newFact.content);
-  for (const ef of existing) {
-    if (contentEqual(ef.content, newFact.content)) {
-      ef.confidence = Math.max(ef.confidence, newFact.confidence);
-      ef.importance = Math.max(ef.importance, newFact.importance);
-      for (const s of newFact.sources) {
-        if (!ef.sources.some((x) => JSON.stringify(x) === JSON.stringify(s))) {
-          ef.sources.push(s);
-        }
-      }
-      store.update(ef);
-      return ef.id;
-    }
-  }
-
-  const normNew = normalizeContent(newFact.content);
-  if (normNew) {
-    for (const ef of store.filter()) {
-      if (normalizeContent(ef.content) === normNew) {
-        ef.confidence = Math.max(ef.confidence, newFact.confidence);
-        ef.importance = Math.max(ef.importance, newFact.importance);
-        for (const s of newFact.sources) {
-          if (!ef.sources.some((x) => JSON.stringify(x) === JSON.stringify(s))) {
-            ef.sources.push(s);
-          }
-        }
-        store.update(ef);
-        return ef.id;
-      }
-    }
-  }
+/** 若合并到已有记忆则返回其 id，否则 null */
+async function dedupBeforeWrite(content: string): Promise<string | null> {
+  const store = getSemanticMemoryStore();
+  const exact = await store.findByContent(content);
+  if (exact) return exact.id;
   return null;
 }
 
@@ -282,37 +223,30 @@ export async function reflectSession(
   if (!incrementalInput) return { written: 0, fact_ids: [] };
 
   const factsData = await extractWithLlm(incrementalInput, true);
-  const summarySnippet = messages
-    .map((m) => m.content)
-    .join(" ")
-    .slice(0, 100);
-
   if (!factsData.length) {
     updateReflectState(sessionId, messages);
     return { written: 0, fact_ids: [] };
   }
 
-  const factStore = getStore();
+  const memoryStore = getSemanticMemoryStore();
   let written = 0;
   const factIds: string[] = [];
   for (const item of factsData) {
-    const fact = createFact({
-      type: String(item.type ?? "fact"),
-      content: String(item.content ?? ""),
-      domains: asStrList(item.domains),
-      entities: asStrList(item.entities),
-      confidence: clamp01(Number(item.confidence ?? 0.6)),
-      importance: clamp01(Number(item.importance ?? 0.5)),
-      recall: clamp01(Number(item.recall ?? 0.3)),
-      sources: [{ session: sessionId, summary: summarySnippet }],
+    const draft = createSemanticMemory({
+      type: item.type,
+      content: item.content,
     });
-    if (!fact.content) continue;
-    const mergedId = dedupBeforeWrite(factStore, fact);
+    if (!draft.content) continue;
+    const mergedId = await dedupBeforeWrite(draft.content);
     if (mergedId) {
       factIds.push(mergedId);
       continue;
     }
-    const id = factStore.create(fact);
+    const id = await memoryStore.create({
+      content: draft.content,
+      type: draft.type,
+      pinned: draft.pinned,
+    });
     factIds.push(id);
     written++;
   }

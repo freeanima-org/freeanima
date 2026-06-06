@@ -1,17 +1,8 @@
 import { z } from "zod";
 
-export const l3DomainsSchema = z.array(z.string());
-export const l3EntitiesSchema = z.array(z.string());
-export const l3SourcesSchema = z.array(z.record(z.string(), z.unknown()));
-
 export const factExtractionItemSchema = z.object({
   content: z.string(),
   type: z.string().optional(),
-  domains: z.array(z.string()).optional(),
-  entities: z.array(z.string()).optional(),
-  confidence: z.number().optional(),
-  importance: z.number().optional(),
-  recall: z.number().optional(),
 });
 
 export const factExtractionSchema = z.object({

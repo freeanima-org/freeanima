@@ -244,7 +244,7 @@ export async function initSession(
 ): Promise<void> {
   const soul = loadSoul();
   const cwd = allocateSessionCwd(sid);
-  const systemPrompt = buildSystemPrompt(opts.functions ?? [], soul, cwd);
+  const systemPrompt = await buildSystemPrompt(opts.functions ?? [], soul, cwd);
   const meta: SessionMetaMessage = {
     role: "session_meta",
     model,
@@ -362,7 +362,7 @@ export async function rebuildSessionSystemPrompt(
   const functions = meta.functions ?? [];
   const cwd = meta.cwd;
   const soul = loadSoul();
-  const systemPrompt = buildSystemPrompt(functions, soul, cwd);
+  const systemPrompt = await buildSystemPrompt(functions, soul, cwd);
   await updateSessionMetaField(repos, session, { system_prompt: systemPrompt });
 }
 

@@ -3,13 +3,15 @@ import { defineRelations } from "drizzle-orm";
 export * from "./jsonb/index.ts";
 export * from "./sessions.ts";
 export * from "./messages.ts";
+export * from "./semantic-memory.ts";
 export * from "./zod-schemas.ts";
 
 import { messages } from "./messages.ts";
+import { semanticMemory } from "./semantic-memory.ts";
 import { sessions } from "./sessions.ts";
 
 /** Drizzle 1.0：relations 为 drizzle() 必需配置 */
-export const relations = defineRelations({ sessions, messages }, (r) => ({
+export const relations = defineRelations({ sessions, messages, semanticMemory }, (r) => ({
   sessions: {
     messages: r.many.messages({
       from: r.sessions.id,

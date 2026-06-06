@@ -215,6 +215,7 @@ export async function serve(
     registerServiceMemoryBus({
       kernel,
       sessionStore: engine.repos.session,
+      semanticStore: engine.repos.semanticMemory,
       reflectChat,
     });
     service.setEventBus(kernel.eventBus);

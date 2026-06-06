@@ -1,27 +1,34 @@
 import { z } from "zod";
 
-export const factSourceSchema = z
-  .object({
-    session_id: z.string().optional(),
-    message_id: z.number().optional(),
-  })
-  .passthrough();
+export const semanticMemoryTypeSchema = z.enum([
+  "world",
+  "experience",
+  "opinion",
+  "observation",
+  "preference",
+  "procedural",
+  "imprint",
+]);
 
-export const factDataSchema = z.object({
+export type SemanticMemoryType = z.infer<typeof semanticMemoryTypeSchema>;
+
+/** 旧 fact 类型及 reflect 产出映射为 world */
+export function normalizeSemanticMemoryType(raw: string | undefined | null): SemanticMemoryType {
+  const t = String(raw ?? "world")
+    .trim()
+    .toLowerCase();
+  if (t === "fact") return "world";
+  const parsed = semanticMemoryTypeSchema.safeParse(t);
+  return parsed.success ? parsed.data : "world";
+}
+
+export const semanticMemorySchema = z.object({
   id: z.string(),
-  type: z.string(),
-  confidence: z.number(),
-  importance: z.number(),
-  recall: z.number(),
-  domains: z.array(z.string()).default([]),
-  threads: z.array(z.string()).default([]),
-  entities: z.array(z.string()).default([]),
-  sources: z.array(factSourceSchema).default([]),
+  type: semanticMemoryTypeSchema,
+  pinned: z.boolean(),
+  content: z.string(),
   created: z.string(),
   updated: z.string(),
-  content: z.string(),
 });
 
-export type FactSource = z.infer<typeof factSourceSchema>;
-export type FactData = z.infer<typeof factDataSchema>;
-export type FactType = FactData["type"];
+export type SemanticMemory = z.infer<typeof semanticMemorySchema>;
