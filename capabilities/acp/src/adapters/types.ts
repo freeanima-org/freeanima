@@ -1,4 +1,10 @@
+import type { PromptCapture } from "../cursor-decision.ts";
 import type { ACPClient } from "../client.ts";
+
+export type AcpServerRequestContext = {
+  client: ACPClient;
+  capture: PromptCapture;
+};
 
 /** ACP Agent 方言适配：解析通知、应答服务端 RPC */
 export interface AcpAgentAdapter {
@@ -14,5 +20,6 @@ export interface AcpAgentAdapter {
   handleServerRequest(
     method: string,
     params: Record<string, unknown>,
+    ctx?: AcpServerRequestContext,
   ): Record<string, unknown> | null;
 }

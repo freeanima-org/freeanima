@@ -1,3 +1,6 @@
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { PATHS } from "@freeanima/service-config";
 import { getToolSessionId } from "@freeanima/engine-loop";
 import { listTools, registerTool, toolError } from "@freeanima/engine-tool";
 import { loadConfig } from "@freeanima/service-config";
@@ -5,10 +8,13 @@ import { logComponent } from "@freeanima/service-logging";
 
 import type { ConversationService } from "@freeanima/engine-conversation";
 import { AcpAgentQueue } from "./agent-queue.ts";
-import { resolveAcpAdapter } from "./adapters/registry.ts";
 import { ACPClient } from "./client.ts";
 import { bindAcpSession, getBoundAcpSession, unbindAcpSession } from "./nest-binding.ts";
-import { formatAcpPromptResult, type AcpPromptResult } from "./prompt-result.ts";
+import {
+  formatAcpPromptResult,
+  type AcpCursorMode,
+  type AcpPromptResult,
+} from "./prompt-result.ts";
 import {
   sanitizeAcpConfig,
   shortSessionId,
@@ -19,17 +25,32 @@ import {
   type AcpStatusResponse,
 } from "./status.ts";
 
+const DEFAULT_HEALTH_CHECK_MS = 60_000;
+const BUILTIN_SKILL_NAME = "acp-cursor";
+
 type AcpPromptOptions = {
   nestSessionId?: string;
   acpSessionId?: string;
   newSession?: boolean;
+  continueSession?: boolean;
+  mode?: AcpCursorMode;
+};
+
+type SessionMeta = {
+  agent: string;
+  lastUsed: number;
 };
 
 class ACPSessionStore {
-  private sessions = new Map<string, { agent: string }>();
+  private sessions = new Map<string, SessionMeta>();
 
   add(sessionId: string, agentName: string): void {
-    this.sessions.set(sessionId, { agent: agentName });
+    this.sessions.set(sessionId, { agent: agentName, lastUsed: Date.now() });
+  }
+
+  touch(sessionId: string): void {
+    const row = this.sessions.get(sessionId);
+    if (row) row.lastUsed = Date.now();
   }
 
   getAgent(sessionId: string): string | undefined {
@@ -61,6 +82,19 @@ class ACPSessionStore {
   has(sessionId: string, agentName: string): boolean {
     return this.sessions.get(sessionId)?.agent === agentName;
   }
+
+  pruneExpired(ttlMs: number): string[] {
+    if (ttlMs <= 0) return [];
+    const now = Date.now();
+    const removed: string[] = [];
+    for (const [sid, meta] of this.sessions) {
+      if (now - meta.lastUsed > ttlMs) {
+        this.sessions.delete(sid);
+        removed.push(sid);
+      }
+    }
+    return removed;
+  }
 }
 
 let defaultManager: AcpManager | null = null;
@@ -70,12 +104,47 @@ export function getAcpManager(): AcpManager {
   return defaultManager;
 }
 
+function parseMode(raw: unknown): AcpCursorMode | undefined {
+  const s = String(raw ?? "")
+    .trim()
+    .toLowerCase();
+  if (s === "agent" || s === "plan" || s === "ask") return s;
+  return undefined;
+}
+
+function defaultCursorDescription(agentName: string): string {
+  if (agentName === "cursor") {
+    return (
+      "Cursor 编码代理，支持 Agent（直接修改代码）、Plan（先规划后执行）、Ask（只读分析）三种模式。" +
+      "可搜索代码库、分析代码、运行测试、应用修改。同对话自动续用 session。" +
+      "遇到 Cursor 提问或方案审批时，结果会含 pending 字段；可自主决策或 clarify 询问天空，" +
+      "再通过 continue_session=true 继续同一 session。"
+    );
+  }
+  return `ACP agent: ${agentName}（默认绑定当前逸灵风对话；continue_session 自动续用）`;
+}
+
+function seedBuiltinSkill(): void {
+  const skillPath = join(PATHS.home, "skills", `${BUILTIN_SKILL_NAME}.md`);
+  if (existsSync(skillPath)) return;
+  const bundled = join(import.meta.dir, "..", "skills", `${BUILTIN_SKILL_NAME}.md`);
+  if (!existsSync(bundled)) return;
+  try {
+    mkdirSync(dirname(skillPath), { recursive: true });
+    writeFileSync(skillPath, readFileSync(bundled, "utf-8"), "utf-8");
+    logComponent("acp").info(`已安装内置 Skill: ${BUILTIN_SKILL_NAME}`);
+  } catch (e) {
+    logComponent("acp").warn("安装内置 Skill 失败", { err: e });
+  }
+}
+
 export class AcpManager {
   private readonly clients = new Map<string, ACPClient>();
   private readonly sessionStore = new ACPSessionStore();
   private readonly agentQueues = new Map<string, AcpAgentQueue>();
   private readonly agentErrors = new Map<string, string>();
   private readonly starting = new Set<string>();
+  private readonly healthTimers = new Map<string, ReturnType<typeof setInterval>>();
   private toolsRegistered = false;
   private closed = false;
   private startTask: Promise<void> | null = null;
@@ -107,12 +176,12 @@ export class AcpManager {
     const agents = agentsCfg ?? cfg.acp_agents ?? {};
     if (!Object.keys(agents).length) return 0;
 
+    seedBuiltinSkill();
+
     let count = 0;
     for (const [agentName, agentCfg] of Object.entries(agents)) {
       const toolName = `acp_${agentName}`;
-      const description =
-        agentCfg.description ??
-        `ACP agent: ${agentName}（默认绑定当前逸灵风对话；new_session 强制新开）`;
+      const description = agentCfg.description ?? defaultCursorDescription(agentName);
 
       registerTool({
         name: toolName,
@@ -121,19 +190,37 @@ export class AcpManager {
         parameters: {
           type: "object",
           properties: {
+            prompt: {
+              type: "string",
+              description:
+                "发送给 Cursor 的指令或回复。多轮交互中可为任务描述、问题回答或继续对话。",
+            },
             goal: {
               type: "string",
-              description: "任务目标描述。清晰说明要做什么。",
+              description: "（已废弃，请用 prompt）任务目标描述。",
             },
             context: {
               type: "string",
-              description: "任务上下文/背景信息。项目路径、相关文件、约束条件等。",
+              description: "任务上下文：项目路径、相关文件、约束条件、模式说明等。",
               default: "",
+            },
+            mode: {
+              type: "string",
+              enum: ["agent", "plan", "ask"],
+              description:
+                "Cursor 模式：agent=直接修改执行，plan=先出方案，ask=只读分析。默认 agent。",
+              default: "agent",
+            },
+            continue_session: {
+              type: "boolean",
+              description:
+                "为 true 时自动续用当前逸灵风对话最近一次 acp session，无需手动传 session_id。",
+              default: false,
             },
             session_id: {
               type: "string",
               description:
-                "显式 ACP session ID（优先于逸灵风绑定）。一般无需填写，同对话会自动续用。",
+                "显式 ACP session ID（优先于逸灵风绑定）。一般无需填写，continue_session 或同对话自动续用。",
               default: "",
             },
             new_session: {
@@ -143,19 +230,25 @@ export class AcpManager {
               default: false,
             },
           },
-          required: ["goal"],
+          required: [],
         },
         handler: (args) => {
-          const goal = String(args.goal ?? "");
+          const prompt = String(args.prompt ?? args.goal ?? "").trim();
+          if (!prompt) return toolError("prompt（或 goal）不能为空");
           const context = String(args.context ?? "");
           const explicitSid = String(args.session_id ?? "").trim() || undefined;
           const newSession = args.new_session === true || args.new_session === "true";
+          const continueSession =
+            args.continue_session === true || args.continue_session === "true";
+          const mode = parseMode(args.mode) ?? "agent";
           const nestSid = getToolSessionId();
           return this.queueFor(agentName).run(() =>
-            this.handleAcpPrompt(agentName, goal, context, {
+            this.handleAcpPrompt(agentName, prompt, context, {
               nestSessionId: nestSid,
               acpSessionId: explicitSid,
               newSession,
+              continueSession,
+              mode,
             }),
           );
         },
@@ -176,7 +269,7 @@ export class AcpManager {
       let status: AcpAgentStatusView["status"] = "not_started";
       if (!isAcpAgentEnabled(agentCfg)) status = "disabled";
       else if (this.starting.has(name)) status = "starting";
-      else if (client?.isConnected) status = "connected";
+      else if (client?.isConnected && client.isProcessAlive()) status = "connected";
       else if (this.agentErrors.has(name)) status = "error";
 
       const registered = listTools().find((t) => t.name === `acp_${name}`);
@@ -219,7 +312,7 @@ export class AcpManager {
     if (!isAcpAgentEnabled(agentCfg)) {
       return { ok: false, error: `ACP agent '${name}' is disabled`, agent: name, action: "start" };
     }
-    if (this.clients.get(name)?.isConnected) {
+    if (this.clients.get(name)?.isConnected && this.clients.get(name)?.isProcessAlive()) {
       return { ok: true, agent: name, action: "start" };
     }
     if (this.starting.has(name)) {
@@ -250,6 +343,7 @@ export class AcpManager {
       };
     }
 
+    this.stopHealthCheck(name);
     const client = this.clients.get(name);
     if (client) {
       client.stop();
@@ -341,9 +435,72 @@ export class AcpManager {
     return agents?.[name];
   }
 
+  private stopHealthCheck(name: string): void {
+    const timer = this.healthTimers.get(name);
+    if (timer) {
+      clearInterval(timer);
+      this.healthTimers.delete(name);
+    }
+  }
+
+  private startHealthCheck(name: string, agentCfg: AcpAgentConfig): void {
+    this.stopHealthCheck(name);
+    const interval = agentCfg.health_check_interval_ms ?? DEFAULT_HEALTH_CHECK_MS;
+    if (interval <= 0) return;
+
+    const timer = setInterval(() => {
+      void this.runHealthCheck(name, agentCfg);
+    }, interval);
+    this.healthTimers.set(name, timer);
+  }
+
+  private async runHealthCheck(name: string, agentCfg: AcpAgentConfig): Promise<void> {
+    const client = this.clients.get(name);
+    if (!client) return;
+
+    const ttl = agentCfg.session_ttl_ms ?? 0;
+    if (ttl > 0) {
+      const expired = this.sessionStore.pruneExpired(ttl);
+      for (const sid of expired) {
+        try {
+          await client.closeSession(sid);
+        } catch {
+          /* ignore */
+        }
+      }
+    }
+
+    if (client.isConnected && client.isProcessAlive()) return;
+
+    logComponent("acp").warn(`ACP agent '${name}' 进程异常，尝试重启`, { agent: name });
+    this.clients.delete(name);
+    if (agentCfg.auto_restart === false) {
+      this.agentErrors.set(name, "process died");
+      return;
+    }
+
+    try {
+      await this.getOrStartClient(name, agentCfg);
+      const sessions = this.sessionStore.listForAgent(name);
+      if (sessions.length) {
+        logComponent("acp").info(`ACP '${name}' 已重启，${sessions.length} 个 session 待续用验证`, {
+          agent: name,
+          sessions: sessions.length,
+        });
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      this.agentErrors.set(name, msg);
+    }
+  }
+
   private async getOrStartClient(name: string, agentCfg: AcpAgentConfig): Promise<ACPClient> {
     const existing = this.clients.get(name);
-    if (existing?.isConnected) return existing;
+    if (existing?.isConnected && existing.isProcessAlive()) return existing;
+    if (existing) {
+      existing.stop();
+      this.clients.delete(name);
+    }
 
     const command = agentCfg.command ?? "";
     if (!command) throw new Error(`ACP agent '${name}' missing command`);
@@ -352,6 +509,7 @@ export class AcpManager {
     await client.start();
     this.clients.set(name, client);
     this.agentErrors.delete(name);
+    this.startHealthCheck(name, agentCfg);
     return client;
   }
 
@@ -365,6 +523,8 @@ export class AcpManager {
       const id = opts.acpSessionId;
       if (!this.sessionStore.has(id, agentName)) {
         this.sessionStore.add(id, agentName);
+      } else {
+        this.sessionStore.touch(id);
       }
       return { id, newSession: false, reusedBinding: false, explicit: true };
     }
@@ -374,10 +534,11 @@ export class AcpManager {
       return { id, newSession: true, reusedBinding: false, explicit: false };
     }
 
-    if (opts.nestSessionId) {
+    if (opts.continueSession && opts.nestSessionId) {
       const bound = await getBoundAcpSession(this.conv(), opts.nestSessionId, agentName);
       if (bound) {
         if (this.sessionStore.has(bound, agentName)) {
+          this.sessionStore.touch(bound);
           return { id: bound, newSession: false, reusedBinding: true, explicit: false };
         }
         const retried = await this.tryContinueOrRecreate(
@@ -386,6 +547,26 @@ export class AcpManager {
           agentCfg,
           opts.nestSessionId,
           bound,
+          opts.mode ?? "agent",
+        );
+        return { ...retried, reusedBinding: !retried.newSession, explicit: false };
+      }
+    }
+
+    if (opts.nestSessionId) {
+      const bound = await getBoundAcpSession(this.conv(), opts.nestSessionId, agentName);
+      if (bound) {
+        if (this.sessionStore.has(bound, agentName)) {
+          this.sessionStore.touch(bound);
+          return { id: bound, newSession: false, reusedBinding: true, explicit: false };
+        }
+        const retried = await this.tryContinueOrRecreate(
+          client,
+          agentName,
+          agentCfg,
+          opts.nestSessionId,
+          bound,
+          opts.mode ?? "agent",
         );
         return { ...retried, reusedBinding: !retried.newSession, explicit: false };
       }
@@ -402,9 +583,10 @@ export class AcpManager {
     agentCfg: AcpAgentConfig,
     nestSessionId: string,
     boundId: string,
+    mode: AcpCursorMode,
   ): Promise<{ id: string; newSession: boolean }> {
     try {
-      await client.setMode(boundId, agentCfg.agent_mode ?? "agent");
+      await client.setMode(boundId, mode);
       this.sessionStore.add(boundId, agentName);
       return { id: boundId, newSession: false };
     } catch {
@@ -435,7 +617,7 @@ export class AcpManager {
 
   private async handleAcpPrompt(
     agentName: string,
-    goal: string,
+    prompt: string,
     context: string,
     opts: AcpPromptOptions,
   ): Promise<string> {
@@ -444,11 +626,10 @@ export class AcpManager {
       return toolError(`ACP agent '${agentName}' not configured`);
     }
 
+    const mode = opts.mode ?? "agent";
+
     try {
       const client = await this.getOrStartClient(agentName, agentCfg);
-      const adapter = resolveAcpAdapter(agentCfg);
-      const defaultAgentMode = adapter.id === "cursor" ? "agent" : "code";
-      const defaultPlanMode = adapter.id === "cursor" ? false : "architect";
 
       const previousBound =
         opts.newSession && opts.nestSessionId
@@ -457,6 +638,7 @@ export class AcpManager {
 
       const resolved = await this.resolveAcpSession(client, agentName, agentCfg, opts);
       const sid = resolved.id;
+      this.sessionStore.touch(sid);
 
       if (previousBound && previousBound !== sid) {
         try {
@@ -467,26 +649,21 @@ export class AcpManager {
         this.sessionStore.remove(previousBound);
       }
 
-      const isFirstTurnInSession = resolved.newSession;
+      await client.setMode(sid, mode);
 
-      let output: string;
-      if (isFirstTurnInSession) {
-        output = await this.runInitialPrompt(
-          client,
-          sid,
-          goal,
-          context,
-          agentCfg,
-          defaultPlanMode,
-          defaultAgentMode,
-        );
-      } else {
-        const agentMode = agentCfg.agent_mode ?? defaultAgentMode;
-        await client.setMode(sid, agentMode);
-        let promptText = goal;
-        if (context) promptText += `\n\nContext: ${context}`;
-        output = await client.sendPrompt(sid, promptText);
+      let promptText = prompt;
+      if (context) promptText += `\n\nContext: ${context}`;
+
+      if (resolved.newSession && mode === "plan") {
+        promptText =
+          `## Goal\n${promptText}\n\n## Instructions\n` +
+          "First, analyze and create a detailed plan. " +
+          "After creating the plan, stop and wait for approval. " +
+          "Do NOT execute the plan yet.";
       }
+
+      const output = await client.sendPrompt(sid, promptText);
+      const capture = client.takeLastPromptCapture();
 
       const result: AcpPromptResult = {
         session_id: sid,
@@ -494,59 +671,20 @@ export class AcpManager {
         new_session: resolved.newSession,
         reused_binding: resolved.reusedBinding,
         explicit_session: resolved.explicit,
+        mode,
       };
+      if (capture?.pending.length) {
+        result.pending = capture.pending;
+      }
       return formatAcpPromptResult(result);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       this.agentErrors.set(agentName, msg);
-      if (opts.nestSessionId && !opts.acpSessionId) {
+      if (opts.nestSessionId && !opts.acpSessionId && !opts.continueSession) {
         await unbindAcpSession(this.conv(), opts.nestSessionId, agentName);
       }
       return toolError(msg);
     }
-  }
-
-  private async runInitialPrompt(
-    client: ACPClient,
-    sid: string,
-    goal: string,
-    context: string,
-    agentCfg: AcpAgentConfig,
-    defaultPlanMode: string | false,
-    defaultAgentMode: string,
-  ): Promise<string> {
-    let planMode: string | null = null;
-    if (agentCfg.plan_mode !== false) {
-      const raw = agentCfg.plan_mode ?? defaultPlanMode;
-      if (raw) planMode = String(raw);
-    }
-    if (planMode) {
-      await client.setMode(sid, planMode);
-    }
-
-    let promptText = `${goal}\n\nContext: ${context}`;
-    if (planMode) {
-      promptText =
-        `## Goal\n${promptText}\n\n## Instructions\n` +
-        "First, analyze and create a detailed plan. " +
-        "After creating the plan, stop and wait for approval. " +
-        "Do NOT execute the plan yet.";
-    }
-
-    let output = await client.sendPrompt(sid, promptText);
-    if (!output.trim() && planMode) {
-      try {
-        const agentMode = agentCfg.agent_mode ?? defaultAgentMode;
-        await client.setMode(sid, agentMode);
-        output = await client.sendPrompt(
-          sid,
-          `Execute the plan for:\n${goal}\n\nContext: ${context}`,
-        );
-      } catch {
-        /* ignore */
-      }
-    }
-    return output;
   }
 }
 

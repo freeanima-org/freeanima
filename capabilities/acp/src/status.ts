@@ -15,6 +15,10 @@ export type AcpAgentConfigView = {
   enabled?: boolean;
   connect_timeout_ms?: number;
   prompt_timeout_ms?: number;
+  health_check_interval_ms?: number;
+  session_ttl_ms?: number;
+  prompt_retry_once?: boolean;
+  auto_restart?: boolean;
 };
 
 export type AcpSessionView = {
@@ -70,6 +74,12 @@ export function sanitizeAcpConfig(cfg: AcpAgentConfig): AcpAgentConfigView {
   if (cfg.agent_mode) view.agent_mode = cfg.agent_mode;
   if (cfg.connect_timeout_ms) view.connect_timeout_ms = cfg.connect_timeout_ms;
   if (cfg.prompt_timeout_ms) view.prompt_timeout_ms = cfg.prompt_timeout_ms;
+  if (cfg.health_check_interval_ms != null) {
+    view.health_check_interval_ms = cfg.health_check_interval_ms;
+  }
+  if (cfg.session_ttl_ms != null) view.session_ttl_ms = cfg.session_ttl_ms;
+  if (cfg.prompt_retry_once != null) view.prompt_retry_once = cfg.prompt_retry_once;
+  if (cfg.auto_restart != null) view.auto_restart = cfg.auto_restart;
   return view;
 }
 

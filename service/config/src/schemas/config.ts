@@ -33,6 +33,14 @@ export const acpAgentSchema = z
     prompt_timeout_ms: z.number().int().positive().optional(),
     /** 是否在逸灵风启动时自动连接，默认 true */
     enabled: z.boolean().optional(),
+    /** 健康检查间隔（毫秒），默认 60000；0 禁用 */
+    health_check_interval_ms: z.number().int().nonnegative().optional(),
+    /** Session TTL（毫秒），默认 0 不过期 */
+    session_ttl_ms: z.number().int().nonnegative().optional(),
+    /** prompt 超时后是否重试一次，默认 true */
+    prompt_retry_once: z.boolean().optional(),
+    /** 子进程崩溃后是否自动重启，默认 true */
+    auto_restart: z.boolean().optional(),
   })
   .passthrough();
 
