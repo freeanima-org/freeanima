@@ -1,16 +1,13 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
-import { CST_OFFSET_MS, PATHS } from "@freeanima/service-config";
+import { PATHS } from "@freeanima/service-config";
+import { formatCstIso } from "@freeanima/kernel-util";
 import { CronJob } from "./models.ts";
 import { cronJobsFileSchema } from "./schema.ts";
 
 export const JOBS_FILE = () => join(PATHS.cronDir, "jobs.json");
 export const SCRIPTS_DIR = () => join(PATHS.cronDir, "scripts");
 export const OUTPUT_DIR = () => join(PATHS.cronDir, "output");
-
-function nowIso(): string {
-  return new Date(Date.now() + CST_OFFSET_MS).toISOString().replace("Z", "+08:00");
-}
 
 export function ensureDirs(): void {
   mkdirSync(PATHS.cronDir, { recursive: true });
@@ -69,7 +66,7 @@ export function update(job: CronJob): boolean {
   const jobs = loadAll();
   const idx = jobs.findIndex((j) => j.id === job.id);
   if (idx < 0) return false;
-  job.updated_at = nowIso();
+  job.updated_at = formatCstIso();
   jobs[idx] = job;
   saveAll(jobs);
   return true;

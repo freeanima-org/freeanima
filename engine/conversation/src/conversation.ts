@@ -3,7 +3,8 @@ import { tmpdir, homedir } from "node:os";
 import { join, resolve } from "node:path";
 import { randomBytes } from "node:crypto";
 import { openaiSchemas } from "@freeanima/engine-tool";
-import { PATHS, CST_OFFSET_MS, getProfileHopModel, loadConfig } from "@freeanima/service-config";
+import { PATHS, getProfileHopModel, loadConfig } from "@freeanima/service-config";
+import { CST_OFFSET_MS, formatCstIso } from "@freeanima/kernel-util";
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
 import { buildSystemPrompt } from "@freeanima/engine-prompt";
 import {
@@ -59,10 +60,6 @@ import type { PgRepositories } from "@freeanima/engine-repos";
 
 export type Message = SessionMessage;
 export { isSessionMeta, parseSessionLine } from "./message.ts";
-
-function nowIso(): string {
-  return new Date(Date.now() + CST_OFFSET_MS).toISOString().replace("Z", "+08:00");
-}
 
 /** 新 session 默认工作目录（与 Python `init_session` 一致，隔离于 service 启动目录） */
 export function allocateSessionCwd(sid: string): string {
@@ -217,7 +214,7 @@ export async function appendMessage(
   session: string,
 ): Promise<void> {
   const out: SessionMessage & { timestamp?: string; id?: number } = { ...msg };
-  if (!out.timestamp) out.timestamp = nowIso();
+  if (!out.timestamp) out.timestamp = formatCstIso();
   if (out.pos === undefined && out.role !== "session_meta") {
     out.pos = await nextMessagePosWithRouting(repos, session);
   }
@@ -238,7 +235,7 @@ export async function appendSessionMeta(
     model,
     tools,
     functions: opts?.functions ?? [],
-    timestamp: nowIso(),
+    timestamp: formatCstIso(),
   };
   if (opts?.platform) meta.platform = opts.platform;
   await pgWriteMeta(repos, session, meta);
@@ -258,7 +255,7 @@ export async function initSession(
     model,
     tools: openaiSchemas(),
     functions: opts.functions ?? [],
-    timestamp: nowIso(),
+    timestamp: formatCstIso(),
     platform: opts.platform,
     system_prompt: systemPrompt,
     cwd,
@@ -381,7 +378,7 @@ export async function reloadSessionTools(repos: PgRepositories, session: string)
     throw new Error("session 不存在");
   }
   const tools = openaiSchemas();
-  await updateSessionMetaField(repos, session, { tools, timestamp: nowIso() });
+  await updateSessionMetaField(repos, session, { tools, timestamp: formatCstIso() });
   return tools.length;
 }
 
@@ -521,7 +518,7 @@ async function finalizeCompressionSummary(
 
   const merged: CompressionState = {
     ...cutState,
-    summary_at: new Date(Date.now() + CST_OFFSET_MS).toISOString().replace("Z", "+08:00"),
+    summary_at: formatCstIso(),
   };
   if (gen.ok) {
     merged.summary = gen.summary;
@@ -684,7 +681,7 @@ export async function repairAndPersistToolLoop(
         tool_call_id: call.id,
         name: call.name,
         content: syntheticToolContent(reason),
-        timestamp: nowIso(),
+        timestamp: formatCstIso(),
       });
       inserted++;
     }
@@ -832,7 +829,7 @@ export async function updateSessionMeta(
   if (!isSessionMeta(parsed)) return;
   const meta: SessionMetaMessage = parsed;
   meta.model = model;
-  meta.timestamp = nowIso();
+  meta.timestamp = formatCstIso();
   if (opts?.functions) meta.functions = opts.functions;
   if (opts?.tools !== undefined) {
     meta.tools = opts.tools;

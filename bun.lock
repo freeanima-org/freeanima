@@ -449,6 +449,7 @@
     "service/config": {
       "name": "@freeanima/service-config",
       "dependencies": {
+        "@freeanima/kernel-util": "workspace:*",
         "yaml": "^2.9.0",
         "zod": "catalog:",
       },

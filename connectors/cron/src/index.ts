@@ -1,12 +1,8 @@
 import { randomBytes } from "node:crypto";
-import { CST_OFFSET_MS } from "@freeanima/service-config";
+import { formatCstIso } from "@freeanima/kernel-util";
 import { CronJob } from "./models.ts";
 import * as store from "./store.ts";
 import { computeNextRun } from "./schedule.ts";
-
-function nowIso(): string {
-  return new Date(Date.now() + CST_OFFSET_MS).toISOString().replace("Z", "+08:00");
-}
 
 export function createJob(opts: {
   name: string;
@@ -24,7 +20,7 @@ export function createJob(opts: {
   timeout_sec?: number;
   repeat?: number | null;
 }): CronJob {
-  const now = nowIso();
+  const now = formatCstIso();
   const id = randomBytes(8).toString("hex").slice(0, 16);
   const job = new CronJob({
     id,
@@ -89,7 +85,7 @@ export function ensureBuiltinCronJobs(): void {
   const jobs = store.loadAll();
   if (jobs.some((j) => j.id === "l2-gap-fill")) return;
 
-  const now = nowIso();
+  const now = formatCstIso();
   const next = computeNextRun("0 2 * * *") ?? 0;
   const job = new CronJob({
     id: "l2-gap-fill",

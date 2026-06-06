@@ -1,4 +1,5 @@
-import { CST_OFFSET_MS, loadConfig } from "@freeanima/service-config";
+import { loadConfig } from "@freeanima/service-config";
+import { formatCstIso } from "@freeanima/kernel-util";
 import {
   clarifyToolAwaitingResultSchema,
   clarifyToolResolvedResultSchema,
@@ -10,7 +11,7 @@ import {
   type ClarifyToolResolvedResult,
 } from "@freeanima/engine-conversation";
 import { safeParseOrNull } from "@freeanima/kernel-util";
-import { toolErrorSchema } from "@freeanima/engine-tool";
+import { parseToolResult } from "@freeanima/engine-tool";
 import type { ConversationService } from "@freeanima/engine-conversation";
 
 export type { ClarifyItem, AwaitingClarify };
@@ -24,10 +25,6 @@ export type GuardAwaitingResult =
 
 const DEFAULT_TIMEOUT_SEC = 1800;
 const DEFAULT_MAX_ITEMS = 5;
-
-function nowIso(): string {
-  return new Date(Date.now() + CST_OFFSET_MS).toISOString().replace("Z", "+08:00");
-}
 
 function parseAwaiting(raw: unknown): AwaitingClarify | null {
   return parseAwaitingClarify(raw);
@@ -66,7 +63,7 @@ export async function setAwaitingClarify(
   const awaiting: AwaitingClarify = {
     items: payload.items,
     required: true,
-    asked_at: opts?.asked_at ?? nowIso(),
+    asked_at: opts?.asked_at ?? formatCstIso(),
     timeout_sec: payload.timeout_sec,
   };
   await conversation.updateSessionMetaField(session, { awaiting_clarify: awaiting });
@@ -148,45 +145,44 @@ export async function guardAwaitingClarify(
 export function parseClarifyToolResult(
   content: string,
 ): ClarifyAwaitingResult | ClarifyResolvedResult | { error: string } | null {
-  try {
-    const data: unknown = JSON.parse(content);
-    const err = safeParseOrNull(toolErrorSchema, data);
-    if (err) return { error: err.error };
+  const parsed = parseToolResult<unknown>(content);
+  if (!parsed.ok) {
+    if (parsed.error === "invalid JSON") return null;
+    return { error: parsed.error };
+  }
+  const data = parsed.data;
 
-    const awaiting = safeParseOrNull(clarifyToolAwaitingResultSchema, data);
-    if (awaiting) return awaiting;
+  const awaiting = safeParseOrNull(clarifyToolAwaitingResultSchema, data);
+  if (awaiting) return awaiting;
 
-    const resolved = safeParseOrNull(clarifyToolResolvedResultSchema, data);
-    if (resolved) return resolved;
+  const resolved = safeParseOrNull(clarifyToolResolvedResultSchema, data);
+  if (resolved) return resolved;
 
-    if (
-      data &&
-      typeof data === "object" &&
-      !Array.isArray(data) &&
-      (data as { status?: string }).status === "awaiting" &&
-      Array.isArray((data as { items?: unknown }).items)
-    ) {
-      const timeout =
-        typeof (data as { timeout_sec?: unknown }).timeout_sec === "number" &&
-        (data as { timeout_sec: number }).timeout_sec >= 60
-          ? (data as { timeout_sec: number }).timeout_sec
-          : getClarifyConfig().timeout_sec;
-      const items: ClarifyItem[] = [];
-      for (const item of (data as { items: unknown[] }).items) {
-        if (!item || typeof item !== "object") continue;
-        const q = item as Record<string, unknown>;
-        if (typeof q.question !== "string" || !q.question.trim()) continue;
-        const out: ClarifyItem = { question: q.question.trim() };
-        if (Array.isArray(q.choices)) {
-          out.choices = q.choices.filter((c): c is string => typeof c === "string").slice(0, 4);
-        }
-        if (typeof q.default === "string") out.default = q.default;
-        items.push(out);
+  if (
+    data &&
+    typeof data === "object" &&
+    !Array.isArray(data) &&
+    (data as { status?: string }).status === "awaiting" &&
+    Array.isArray((data as { items?: unknown }).items)
+  ) {
+    const timeout =
+      typeof (data as { timeout_sec?: unknown }).timeout_sec === "number" &&
+      (data as { timeout_sec: number }).timeout_sec >= 60
+        ? (data as { timeout_sec: number }).timeout_sec
+        : getClarifyConfig().timeout_sec;
+    const items: ClarifyItem[] = [];
+    for (const item of (data as { items: unknown[] }).items) {
+      if (!item || typeof item !== "object") continue;
+      const q = item as Record<string, unknown>;
+      if (typeof q.question !== "string" || !q.question.trim()) continue;
+      const out: ClarifyItem = { question: q.question.trim() };
+      if (Array.isArray(q.choices)) {
+        out.choices = q.choices.filter((c): c is string => typeof c === "string").slice(0, 4);
       }
-      if (items.length) return { status: "awaiting", items, timeout_sec: timeout };
+      if (typeof q.default === "string") out.default = q.default;
+      items.push(out);
     }
-  } catch {
-    /* ignore */
+    if (items.length) return { status: "awaiting", items, timeout_sec: timeout };
   }
   return null;
 }

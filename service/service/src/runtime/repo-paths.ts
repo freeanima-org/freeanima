@@ -1,4 +1,4 @@
-import { getRepoRoot } from "./root-version.ts";
+import { getRepoRoot } from "@freeanima/service-config";
 
 /** monorepo 根目录 */
 export const REPO_ROOT = getRepoRoot();

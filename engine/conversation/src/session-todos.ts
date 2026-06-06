@@ -1,3 +1,4 @@
+import { formatCstIso } from "@freeanima/kernel-util";
 import { loadSessionMeta, updateSessionMetaField } from "./conversation.ts";
 import type { PgRepositories } from "@freeanima/engine-repos";
 import { isSessionMeta } from "./message.ts";
@@ -12,10 +13,6 @@ import {
 export type { TodoStatus, TodoItem, SessionTodoStore };
 
 const VALID_STATUSES = new Set<TodoStatus>(todoStatusSchema.options);
-
-function nowIso(): string {
-  return new Date().toISOString().replace(/\.\d{3}Z$/, "+08:00");
-}
 
 export async function loadSessionTodos(
   repos: PgRepositories,
@@ -61,7 +58,7 @@ export async function addTodo(
     id: data.next_id,
     content: content.trim(),
     status: "pending",
-    created_at: nowIso(),
+    created_at: formatCstIso(),
   };
   data.items.push(item);
   data.next_id += 1;
@@ -82,7 +79,7 @@ export async function updateTodo(
   for (const item of data.items) {
     if (item.id === id) {
       item.status = status;
-      item.updated_at = nowIso();
+      item.updated_at = formatCstIso();
       await saveSessionTodos(repos, sessionId, data);
       return `✓ [#${id}] → ${status}`;
     }

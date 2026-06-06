@@ -1,6 +1,14 @@
 import { readFileSync } from "node:fs";
 import type { z } from "zod";
 
+/** 东八区相对 UTC 的毫秒偏移 */
+export const CST_OFFSET_MS = 8 * 60 * 60 * 1000;
+
+/** 当前时刻的 CST ISO 8601 字符串（+08:00） */
+export function formatCstIso(date: Date = new Date()): string {
+  return new Date(date.getTime() + CST_OFFSET_MS).toISOString().replace("Z", "+08:00");
+}
+
 /** JSONL 单行 safeParse；无效行返回 null */
 export function parseJsonLine<T extends z.ZodType>(line: string, schema: T): z.infer<T> | null {
   const trimmed = line.trim();
