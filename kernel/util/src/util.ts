@@ -9,6 +9,11 @@ export function formatCstIso(date: Date = new Date()): string {
   return new Date(date.getTime() + CST_OFFSET_MS).toISOString().replace("Z", "+08:00");
 }
 
+/** 配置项 `enabled` 缺省或为 true 时视为启用 */
+export function isEnabledByDefault(cfg: { enabled?: boolean } | undefined): boolean {
+  return cfg?.enabled !== false;
+}
+
 /** JSONL 单行 safeParse；无效行返回 null */
 export function parseJsonLine<T extends z.ZodType>(line: string, schema: T): z.infer<T> | null {
   const trimmed = line.trim();

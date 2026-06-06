@@ -38,6 +38,7 @@ import {
   syncDiscordSlashCommands,
 } from "./discord-slash.ts";
 
+import { chunkText } from "../chunk-text.ts";
 import {
   deliverDiscordFinalContent,
   tryDiscordInterimEdit,
@@ -56,20 +57,7 @@ export const DISCORD_LOGIN_RETRY_MS = 5 * 60 * 1000;
 const DISCORD_STREAM_PLACEHOLDER = "⏳ 思考中…";
 
 function splitDiscordMessage(text: string, limit = DISCORD_MAX_LEN): string[] {
-  if (text.length <= limit) return [text];
-  const chunks: string[] = [];
-  let rest = text;
-  while (rest.length > limit) {
-    let cut = rest.lastIndexOf("\n\n", limit);
-    if (cut < limit / 2) cut = rest.lastIndexOf("\n", limit);
-    if (cut < limit / 2) cut = rest.lastIndexOf(" ", limit);
-    if (cut < limit / 2) cut = limit;
-    cut = Math.min(cut, DISCORD_MAX_LEN);
-    chunks.push(rest.slice(0, cut).trimEnd());
-    rest = rest.slice(cut).trimStart();
-  }
-  if (rest) chunks.push(rest);
-  return chunks.filter((c) => c.length > 0);
+  return chunkText(text, limit, { maxChunkLength: DISCORD_MAX_LEN });
 }
 
 function messageContext(message: Message, botUserId: string | undefined): DiscordMessageContext {

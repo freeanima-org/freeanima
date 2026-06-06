@@ -3,6 +3,7 @@ import { isSessionMeta } from "@freeanima/engine-db/domain";
 import type { SessionMessage } from "@freeanima/engine-db/domain";
 import {
   analyzeCompression,
+  buildCompressOptions,
   getCompressionConfig,
   getContextWindow,
   isCompressed,
@@ -124,16 +125,9 @@ async function readCompressionAndContextFields(
   const state = parseCompressionState(isSessionMeta(meta) ? meta.compression : undefined);
   const l2 = state?.l2 ?? null;
   const l3 = isCompressed(state) ? (state?.l3 ?? null) : null;
-  const systemPrompt = isSessionMeta(meta) ? (meta.system_prompt ?? "") : "";
-  const tools = isSessionMeta(meta) ? meta.tools : [];
-  const model = isSessionMeta(meta) ? meta.model : getProfileHopModel(loadConfig(), PROFILE_CHAT);
-  const analysis = analyzeCompression(allMsgs, {
-    maxRounds: cfg.maxRounds,
-    state,
-    systemPrompt,
-    tools,
-    model,
-  });
+  const fallbackModel = getProfileHopModel(loadConfig(), PROFILE_CHAT);
+  const compressOpts = buildCompressOptions(meta, state, fallbackModel);
+  const analysis = analyzeCompression(allMsgs, compressOpts);
 
   let breakdown = emptyBreakdown();
   if (allMsgs.length > 0) {
@@ -153,7 +147,7 @@ async function readCompressionAndContextFields(
     compression_visible_messages: analysis.runtime_message_count,
     compression_hidden: analysis.hidden_by_compression,
     compression_has_summary: analysis.has_summary,
-    compression_context_window: model ? getContextWindow(model) : null,
+    compression_context_window: compressOpts.model ? getContextWindow(compressOpts.model) : null,
     compression_effective_budget: analysis.effective_budget,
     compression_usage_ratio: analysis.usage_ratio,
     compression_trigger_high: cfg.triggerHigh,

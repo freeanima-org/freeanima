@@ -1,13 +1,13 @@
-import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { getHomeDir } from "@freeanima/service-config";
+import { PATHS } from "@freeanima/service-config";
 import { isSessionMeta, type SessionMessage } from "@freeanima/engine-repos";
 import { l2LineSchema } from "./schemas/l2.ts";
-import { parseJsonLine } from "@freeanima/kernel-util";
+import { readJsonlFile } from "./jsonl.ts";
 import type { SessionStorePort } from "@freeanima/engine-repos";
 
 export function processedDir(): string {
-  return join(getHomeDir(), "processed");
+  return PATHS.processed;
 }
 
 export function l2SessionPath(sessionId: string): string {
@@ -19,16 +19,7 @@ function ensureDir(): void {
 }
 
 function loadJsonl(path: string): Record<string, unknown>[] {
-  const records: Record<string, unknown>[] = [];
-  try {
-    for (const line of readFileSync(path, "utf-8").split("\n")) {
-      const parsed = parseJsonLine(line, l2LineSchema);
-      if (parsed) records.push(parsed);
-    }
-  } catch {
-    /* empty */
-  }
-  return records;
+  return readJsonlFile(path, l2LineSchema) as Record<string, unknown>[];
 }
 
 async function readSessionMetaForDistill(

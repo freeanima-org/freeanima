@@ -1,3 +1,4 @@
+import { isEnabledByDefault } from "@freeanima/kernel-util";
 import type { McpServerConfig } from "./client.ts";
 
 export type McpServerConfigView = {
@@ -65,7 +66,7 @@ export type McpControlResult = {
 
 /** enabled 缺省或为 true 时视为启用 */
 export function isMcpServerEnabled(cfg: McpServerConfig): boolean {
-  return cfg.enabled !== false;
+  return isEnabledByDefault(cfg);
 }
 
 /** 脱敏 MCP 配置供工作间 / API 展示 */

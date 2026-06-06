@@ -1,11 +1,12 @@
-import { existsSync, mkdirSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { PATHS } from "@freeanima/service-config";
-import { openSqlite, type SqliteDatabase } from "@freeanima/connectors-sqlite";
+import type { SqliteDatabase } from "@freeanima/connectors-sqlite";
 import { buildFtsQuery } from "./fts-query.ts";
 import { l2SessionPath } from "./clean.ts";
 import { l2LineSchema } from "./schemas/l2.ts";
-import { parseJsonLine } from "@freeanima/kernel-util";
+import { readJsonlFile } from "./jsonl.ts";
+import { openIndexDb } from "./index-db.ts";
 
 const SCHEMA = `
 CREATE VIRTUAL TABLE IF NOT EXISTS l2_messages_fts USING fts5(
@@ -28,11 +29,7 @@ function dbPath(): string {
 }
 
 function getConn(): SqliteDatabase {
-  mkdirSync(PATHS.index, { recursive: true });
-  const conn = openSqlite(dbPath());
-  conn.pragma("journal_mode = WAL");
-  conn.exec(SCHEMA);
-  return conn;
+  return openIndexDb("l2.db", SCHEMA);
 }
 
 export function indexL2Session(sessionId: string): number {
@@ -50,10 +47,7 @@ export function indexL2Session(sessionId: string): number {
     conn.prepare("DELETE FROM l2_messages_fts WHERE session_id = ?").run(sessionId);
 
     const rows: [string, string, string, string][] = [];
-    const text = readFileSync(l2Path, "utf-8");
-    for (const line of text.split("\n")) {
-      const record = parseJsonLine(line, l2LineSchema);
-      if (!record) continue;
+    for (const record of readJsonlFile(l2Path, l2LineSchema)) {
       if (record.type === "meta") continue;
       const content = String(record.content ?? "").trim();
       const role = String(record.role ?? "");

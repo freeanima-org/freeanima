@@ -11,7 +11,8 @@ import {
   reflectStateSchema,
   type L2Line,
 } from "./schemas/l2.ts";
-import { parseJsonLine, safeParseOrNull } from "@freeanima/kernel-util";
+import { readJsonlText } from "./jsonl.ts";
+import { safeParseOrNull } from "@freeanima/kernel-util";
 
 const EXTRACT_SYSTEM_PROMPT = `你是一位专业的记忆提取助手。你的任务是从一段对话中提取重要信息，存入长期记忆系统。
 
@@ -81,14 +82,7 @@ function writeReflectState(state: Record<string, { last_reflected_t?: string }>)
 }
 
 function parseL2Messages(l2Text: string): L2Line[] {
-  const messages: L2Line[] = [];
-  for (const line of l2Text.split("\n")) {
-    const record = parseJsonLine(line, l2LineSchema);
-    if (!record) continue;
-    if (record.type === "meta") continue;
-    messages.push(record);
-  }
-  return messages;
+  return readJsonlText(l2Text, l2LineSchema).filter((record) => record.type !== "meta");
 }
 
 function formatFullInput(messages: L2Line[]): string {
@@ -137,9 +131,7 @@ function buildIncrementalInput(sessionId: string, l2Text: string): string | null
 
 function updateReflectState(sessionId: string, l2Text: string): void {
   let lastT = "";
-  for (const line of l2Text.split("\n")) {
-    const record = parseJsonLine(line, l2LineSchema);
-    if (!record) continue;
+  for (const record of readJsonlText(l2Text, l2LineSchema)) {
     if (record.type === "meta") continue;
     const ts = record.t ?? "";
     if (ts) lastT = ts;

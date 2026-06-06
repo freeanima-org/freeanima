@@ -31,6 +31,7 @@
         "@freeanima/engine-db": "workspace:*",
         "@freeanima/engine-loop": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
+        "@freeanima/kernel-util": "workspace:*",
         "@freeanima/service-config": "workspace:*",
         "@freeanima/service-logging": "workspace:*",
         "zod": "catalog:",
@@ -58,6 +59,7 @@
       "name": "@freeanima/capabilities-mcp",
       "dependencies": {
         "@freeanima/engine-tool": "workspace:*",
+        "@freeanima/kernel-util": "workspace:*",
         "@freeanima/service-config": "workspace:*",
         "@freeanima/service-logging": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.29.0",
