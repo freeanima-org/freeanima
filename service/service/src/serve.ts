@@ -43,6 +43,7 @@ import { chdir } from "node:process";
 
 import {
   registerServiceIntegrations,
+  startAcpProgressTicker,
   registerServiceMemoryBus,
   registerServiceTools,
 } from "./register.ts";
@@ -345,6 +346,7 @@ export async function serve(
 
   mcp.startAllAsync();
   acp.startAllAsync();
+  startAcpProgressTicker();
   void discoverPlatforms(nest)
     .then(async (adapters) => {
       platforms = adapters;

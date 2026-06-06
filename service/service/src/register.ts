@@ -1,4 +1,5 @@
 import { getAcpManager } from "@freeanima/capabilities-acp";
+import { createAcpProgressDelivery } from "./acp-progress-delivery.ts";
 import { registerClarifyHooks } from "@freeanima/capabilities-clarify";
 import { registerClarifyTool } from "@freeanima/capabilities-clarify";
 import { registerCoreTools, registerSupplementalTools } from "@freeanima/capabilities-tools";
@@ -35,10 +36,24 @@ export function registerAllTools(): void {
 export function registerServiceIntegrations(opts: {
   kernel: Kernel;
   conversation: ConversationService;
+  onSessionUpdated?: ((sid: string) => void) | null;
 }): void {
   registerClarifyHooks({ kernel: opts.kernel, conversation: opts.conversation });
-  getAcpManager().wireConversation(opts.conversation);
-  getAcpManager().registerTools();
+  const acp = getAcpManager();
+  acp.wireConversation(opts.conversation);
+  acp.wireProgressDelivery(
+    createAcpProgressDelivery({
+      conversation: opts.conversation,
+      bus: opts.kernel.eventBus,
+      onSessionUpdated: opts.onSessionUpdated ?? null,
+    }),
+  );
+  acp.registerTools();
+}
+
+/** 服务启动后启动 ACP 进度轮询 */
+export function startAcpProgressTicker(): void {
+  getAcpManager().startProgressTicker();
 }
 
 /** 注册记忆管道 reflect LLM 与 EventBus 订阅，并启动 EventBus */
