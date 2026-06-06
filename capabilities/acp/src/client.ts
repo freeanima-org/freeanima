@@ -35,6 +35,12 @@ type PendingRequest = {
   timeoutId: ReturnType<typeof setTimeout>;
 };
 
+export type RunPromptOptions = {
+  promptTimeoutMs?: number;
+  onNotification?: (note: JsonRpcMessage, parsed: string | null) => void;
+  abortSignal?: AbortSignal;
+};
+
 export function resolveAcpRequestTimeoutMs(
   method: string,
   cfg?: Pick<AcpAgentConfig, "connect_timeout_ms" | "prompt_timeout_ms">,
@@ -58,6 +64,7 @@ export class ACPClient {
   private readonly sessionCwds = new Map<string, string>();
   private activePromptSessionId: string | null = null;
   private activeCapture: PromptCapture | null = null;
+  private activeNotificationHandler: RunPromptOptions["onNotification"] | null = null;
   private lastStderrDiagnosis: ReturnType<typeof diagnoseStderr> = null;
 
   constructor(
@@ -202,6 +209,14 @@ export class ACPClient {
     return this.request(method, params);
   }
 
+  callWithTimeout(
+    method: string,
+    params: Record<string, unknown> | undefined,
+    timeoutMs: number,
+  ): Promise<Record<string, unknown>> {
+    return this.request(method, params, timeoutMs);
+  }
+
   async createSession(cwd?: string): Promise<string> {
     const sessionCwd = cwd ?? this.defaultCwd ?? ".";
     const result = await this.call("session/new", {
@@ -237,15 +252,55 @@ export class ACPClient {
     }
   }
 
-  private async runPrompt(sessionId: string, text: string): Promise<string> {
+  async sendPromptWithOptions(
+    sessionId: string,
+    text: string,
+    opts?: RunPromptOptions,
+  ): Promise<string> {
+    if (opts?.abortSignal?.aborted) {
+      throw new ACPError(-1, "prompt aborted");
+    }
+    const onAbort = () => {
+      this.abortActivePrompt();
+    };
+    opts?.abortSignal?.addEventListener("abort", onAbort, { once: true });
+    try {
+      return await this.runPrompt(sessionId, text, opts);
+    } finally {
+      opts?.abortSignal?.removeEventListener("abort", onAbort);
+    }
+  }
+
+  abortActivePrompt(): void {
+    for (const [id, waiter] of this.pending) {
+      if (waiter.method !== "session/prompt") continue;
+      clearTimeout(waiter.timeoutId);
+      waiter.reject(new ACPError(-1, "prompt aborted"));
+      this.pending.delete(id);
+    }
+    this.activePromptSessionId = null;
+    this.activeCapture = null;
+    this.activeNotificationHandler = null;
+  }
+
+  private async runPrompt(
+    sessionId: string,
+    text: string,
+    opts?: RunPromptOptions,
+  ): Promise<string> {
     this.notificationQueue = [];
     this.activePromptSessionId = sessionId;
     this.activeCapture = createPromptCapture();
+    this.activeNotificationHandler = opts?.onNotification ?? null;
 
-    const result = await this.call("session/prompt", {
-      sessionId,
-      prompt: [{ type: "text", text }],
-    });
+    const result = await this.request(
+      "session/prompt",
+      {
+        sessionId,
+        prompt: [{ type: "text", text }],
+      },
+      opts?.promptTimeoutMs,
+    );
 
     const parts: string[] = [];
     for (const note of this.notificationQueue) {
@@ -261,6 +316,7 @@ export class ACPClient {
     }
 
     this.activePromptSessionId = null;
+    this.activeNotificationHandler = null;
     return parts.join("");
   }
 
@@ -337,6 +393,8 @@ export class ACPClient {
         method.startsWith("cursor/")
       ) {
         this.notificationQueue.push(msg);
+        const parsed = this.parseNotification(msg);
+        this.activeNotificationHandler?.(msg, parsed);
       }
       return;
     }
@@ -376,8 +434,9 @@ export class ACPClient {
   private request(
     method: string,
     params?: Record<string, unknown>,
+    timeoutOverrideMs?: number,
   ): Promise<Record<string, unknown>> {
-    const timeoutMs = resolveAcpRequestTimeoutMs(method, this.agentCfg);
+    const timeoutMs = timeoutOverrideMs ?? resolveAcpRequestTimeoutMs(method, this.agentCfg);
     return new Promise((resolve, reject) => {
       if (!this.proc?.stdin) {
         reject(new Error("ACP client not started"));

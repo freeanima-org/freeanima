@@ -1,12 +1,21 @@
 import { join } from "node:path";
 import { registerSkillsFromDirectory } from "@freeanima/engine-skill";
 import { getToolSessionId } from "@freeanima/engine-loop";
-import { listTools, registerTool, toolError } from "@freeanima/engine-tool";
+import { listTools, registerTool, toolError, toolResult } from "@freeanima/engine-tool";
 import { loadConfig } from "@freeanima/service-config";
 import { logComponent } from "@freeanima/service-logging";
 
 import type { ConversationService } from "@freeanima/engine-conversation";
+import {
+  AcpAsyncTaskStore,
+  appendProgressNote,
+  createTaskId,
+  formatProgressBody,
+  toTaskSnapshot,
+  type AcpAsyncTask,
+} from "./async-task.ts";
 import { AcpAgentQueue } from "./agent-queue.ts";
+import type { AcpProgressDeliveryPort } from "./ports/progress-delivery.ts";
 import { ACPClient } from "./client.ts";
 import { bindAcpSession, getBoundAcpSession, unbindAcpSession } from "./nest-binding.ts";
 import {
@@ -25,6 +34,8 @@ import {
 } from "./status.ts";
 
 const DEFAULT_HEALTH_CHECK_MS = 60_000;
+const DEFAULT_ASYNC_TIMEOUT_MINUTES = 30;
+const DEFAULT_PROGRESS_INTERVAL_MS = 30_000;
 const ACP_SKILLS_SOURCE = "acp";
 
 type AcpPromptOptions = {
@@ -116,11 +127,36 @@ function defaultCursorDescription(agentName: string): string {
     return (
       "Cursor 编码代理，支持 Agent（直接修改代码）、Plan（先规划后执行）、Ask（只读分析）三种模式。" +
       "可搜索代码库、分析代码、运行测试、应用修改。同对话自动续用 session。" +
+      "async=true 时后台执行并定时推送进度到消息通道。" +
       "遇到 Cursor 提问或方案审批时，结果会含 pending 字段；可自主决策或 clarify 询问天空，" +
       "再通过 continue_session=true 继续同一 session。"
     );
   }
   return `ACP agent: ${agentName}（默认绑定当前逸灵风对话；continue_session 自动续用）`;
+}
+
+function parseTimeoutMinutes(raw: unknown): number {
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n <= 0) return DEFAULT_ASYNC_TIMEOUT_MINUTES;
+  return Math.min(Math.floor(n), 24 * 60);
+}
+
+function buildPromptText(
+  prompt: string,
+  context: string,
+  resolved: { newSession: boolean },
+  mode: AcpCursorMode,
+): string {
+  let promptText = prompt;
+  if (context) promptText += `\n\nContext: ${context}`;
+  if (resolved.newSession && mode === "plan") {
+    promptText =
+      `## Goal\n${promptText}\n\n## Instructions\n` +
+      "First, analyze and create a detailed plan. " +
+      "After creating the plan, stop and wait for approval. " +
+      "Do NOT execute the plan yet.";
+  }
+  return promptText;
 }
 
 function registerAcpBuiltinSkills(): void {
@@ -145,9 +181,32 @@ export class AcpManager {
   private closed = false;
   private startTask: Promise<void> | null = null;
   private conversation: ConversationService | null = null;
+  private progressDelivery: AcpProgressDeliveryPort | null = null;
+  private readonly taskStore = new AcpAsyncTaskStore();
+  private readonly taskAbortControllers = new Map<string, AbortController>();
+  /** agentName → taskId 或 "sync" */
+  private readonly activePromptByAgent = new Map<string, string>();
+  private progressTicker: ReturnType<typeof setInterval> | null = null;
 
   wireConversation(conversation: ConversationService): void {
     this.conversation = conversation;
+  }
+
+  wireProgressDelivery(port: AcpProgressDeliveryPort): void {
+    this.progressDelivery = port;
+  }
+
+  startProgressTicker(intervalMs = DEFAULT_PROGRESS_INTERVAL_MS): void {
+    if (this.progressTicker) return;
+    this.progressTicker = setInterval(() => {
+      void this.pollProgress();
+    }, intervalMs);
+  }
+
+  stopProgressTicker(): void {
+    if (!this.progressTicker) return;
+    clearInterval(this.progressTicker);
+    this.progressTicker = null;
   }
 
   private conv(): ConversationService {
@@ -225,10 +284,29 @@ export class AcpManager {
                 "为 true 时强制新建 ACP session，并更新当前逸灵风 session 对该 agent 的绑定。",
               default: false,
             },
+            async: {
+              type: "boolean",
+              description:
+                "异步执行：立即返回 task_id，后台运行 Cursor 任务，进度通过消息通道定时推送。",
+              default: false,
+            },
+            timeout_minutes: {
+              type: "integer",
+              description: "异步模式最大运行时间（分钟），默认 30。",
+              default: DEFAULT_ASYNC_TIMEOUT_MINUTES,
+            },
+            cancel: {
+              type: "string",
+              description: "取消指定 task_id 的异步任务。",
+              default: "",
+            },
           },
           required: [],
         },
         handler: (args) => {
+          const cancelId = String(args.cancel ?? "").trim();
+          if (cancelId) return this.cancelAsyncTask(cancelId);
+
           const prompt = String(args.prompt ?? args.goal ?? "").trim();
           if (!prompt) return toolError("prompt（或 goal）不能为空");
           const context = String(args.context ?? "");
@@ -237,7 +315,28 @@ export class AcpManager {
           const continueSession =
             args.continue_session === true || args.continue_session === "true";
           const mode = parseMode(args.mode) ?? "agent";
+          const isAsync = args.async === true || args.async === "true";
+          const timeoutMinutes = parseTimeoutMinutes(args.timeout_minutes);
           const nestSid = getToolSessionId();
+
+          if (isAsync) {
+            return this.queueFor(agentName).run(() =>
+              this.launchAsync(
+                agentName,
+                prompt,
+                context,
+                {
+                  nestSessionId: nestSid,
+                  acpSessionId: explicitSid,
+                  newSession,
+                  continueSession,
+                  mode,
+                },
+                timeoutMinutes,
+              ),
+            );
+          }
+
           return this.queueFor(agentName).run(() =>
             this.handleAcpPrompt(agentName, prompt, context, {
               nestSessionId: nestSid,
@@ -410,6 +509,10 @@ export class AcpManager {
 
   async stopAll(): Promise<AcpControlResult> {
     this.closed = true;
+    this.stopProgressTicker();
+    for (const task of this.taskStore.listRunning()) {
+      this.cancelAsyncTaskInternal(task.taskId, "service shutdown");
+    }
     const names = [...this.clients.keys()];
     if (names.length) {
       logComponent("shutdown").debug(`ACP 停止 ${names.length} 个 agent: ${names.join(", ")}…`, {
@@ -611,6 +714,247 @@ export class AcpManager {
     return sid;
   }
 
+  private agentBusyError(agentName: string): string {
+    const active = this.activePromptByAgent.get(agentName);
+    return toolResult({
+      error: `ACP agent '${agentName}' 忙碌中`,
+      active_task_id: active,
+    });
+  }
+
+  private async preparePromptSession(
+    agentName: string,
+    agentCfg: AcpAgentConfig,
+    opts: AcpPromptOptions,
+  ): Promise<{
+    client: ACPClient;
+    sid: string;
+    resolved: { id: string; newSession: boolean; reusedBinding: boolean; explicit: boolean };
+    mode: AcpCursorMode;
+  }> {
+    const client = await this.getOrStartClient(agentName, agentCfg);
+    const mode = opts.mode ?? "agent";
+
+    const previousBound =
+      opts.newSession && opts.nestSessionId
+        ? await getBoundAcpSession(this.conv(), opts.nestSessionId, agentName)
+        : undefined;
+
+    const resolved = await this.resolveAcpSession(client, agentName, agentCfg, opts);
+    const sid = resolved.id;
+    this.sessionStore.touch(sid);
+
+    if (previousBound && previousBound !== sid) {
+      try {
+        await client.closeSession(previousBound);
+      } catch {
+        /* ignore */
+      }
+      this.sessionStore.remove(previousBound);
+    }
+
+    await client.setMode(sid, mode);
+    return { client, sid, resolved, mode };
+  }
+
+  private async launchAsync(
+    agentName: string,
+    prompt: string,
+    context: string,
+    opts: AcpPromptOptions,
+    timeoutMinutes: number,
+  ): Promise<string> {
+    const agentCfg = this.getAgentConfig(agentName);
+    if (!agentCfg) {
+      return toolError(`ACP agent '${agentName}' not configured`);
+    }
+    if (!opts.nestSessionId) {
+      return toolError("异步模式需要有效的逸灵风 session");
+    }
+
+    const activeTask = this.taskStore.findActive(agentName);
+    if (activeTask) {
+      return toolResult({
+        error: `ACP agent '${agentName}' 已有运行中的异步任务`,
+        active_task_id: activeTask.taskId,
+      });
+    }
+    if (this.activePromptByAgent.has(agentName)) {
+      return this.agentBusyError(agentName);
+    }
+
+    try {
+      const { client, sid, resolved, mode } = await this.preparePromptSession(
+        agentName,
+        agentCfg,
+        opts,
+      );
+      const promptText = buildPromptText(prompt, context, resolved, mode);
+      const now = Date.now();
+      const taskId = createTaskId();
+      const task: AcpAsyncTask = {
+        taskId,
+        agentName,
+        acpSessionId: sid,
+        nestSessionId: opts.nestSessionId,
+        mode,
+        status: "running",
+        startedAt: now,
+        lastProgressAt: now,
+        progressNotes: [],
+        lastDeliveredAt: 0,
+        timeoutAt: now + timeoutMinutes * 60_000,
+      };
+      this.taskStore.set(task);
+      this.activePromptByAgent.set(agentName, taskId);
+      const ac = new AbortController();
+      this.taskAbortControllers.set(taskId, ac);
+
+      void this.runAsyncPrompt(task, client, promptText, resolved, mode).catch((err) => {
+        logComponent("acp").error("异步 ACP 任务异常", { taskId, err });
+      });
+
+      return toolResult({
+        task_id: taskId,
+        status: "started",
+        session_id: sid,
+        hint: "进度将通过消息通道推送；完成后推送最终结果",
+      });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      this.agentErrors.set(agentName, msg);
+      return toolError(msg);
+    }
+  }
+
+  private async runAsyncPrompt(
+    task: AcpAsyncTask,
+    client: ACPClient,
+    promptText: string,
+    resolved: { newSession: boolean; reusedBinding: boolean; explicit: boolean },
+    mode: AcpCursorMode,
+  ): Promise<void> {
+    const { taskId, agentName, acpSessionId } = task;
+    const abort = this.taskAbortControllers.get(taskId);
+    const remainingMs = Math.max(task.timeoutAt - Date.now(), 1_000);
+
+    try {
+      const output = await client.sendPromptWithOptions(acpSessionId, promptText, {
+        promptTimeoutMs: remainingMs,
+        abortSignal: abort?.signal,
+        onNotification: (_note, parsed) => {
+          if (parsed) appendProgressNote(task, parsed);
+        },
+      });
+      const capture = client.takeLastPromptCapture();
+      const result: AcpPromptResult = {
+        session_id: acpSessionId,
+        output: output.trim() || "[empty response]",
+        new_session: resolved.newSession,
+        reused_binding: resolved.reusedBinding,
+        explicit_session: resolved.explicit,
+        mode,
+      };
+      if (capture?.pending.length) {
+        result.pending = capture.pending;
+      }
+      task.result = result;
+      task.status = "completed";
+      task.lastProgressAt = Date.now();
+      await this.deliverTaskResult(task, result);
+    } catch (e) {
+      if (task.status === "cancelled") return;
+      const msg = e instanceof Error ? e.message : String(e);
+      if (abort?.signal.aborted || msg.includes("aborted")) {
+        task.status = "cancelled";
+        task.error = "任务已取消";
+        await this.deliverTaskError(task, task.error);
+      } else if (msg.includes("timed out")) {
+        task.status = "timed_out";
+        task.error = msg;
+        try {
+          await client.closeSession(acpSessionId);
+        } catch {
+          /* ignore */
+        }
+        await this.deliverTaskError(task, `任务超时: ${msg}`);
+      } else {
+        task.status = "error";
+        task.error = msg;
+        this.agentErrors.set(agentName, msg);
+        await this.deliverTaskError(task, msg);
+      }
+    } finally {
+      this.releaseAsyncTask(taskId, agentName);
+    }
+  }
+
+  private releaseAsyncTask(taskId: string, agentName: string): void {
+    this.taskAbortControllers.delete(taskId);
+    if (this.activePromptByAgent.get(agentName) === taskId) {
+      this.activePromptByAgent.delete(agentName);
+    }
+  }
+
+  private cancelAsyncTask(taskId: string): string {
+    const task = this.taskStore.get(taskId);
+    if (!task) return toolError(`未找到任务: ${taskId}`);
+    if (task.status !== "running") {
+      return toolResult({ task_id: taskId, status: task.status });
+    }
+    this.cancelAsyncTaskInternal(taskId, "user cancelled");
+    return toolResult({ task_id: taskId, status: "cancelled" });
+  }
+
+  private cancelAsyncTaskInternal(taskId: string, reason: string): void {
+    const task = this.taskStore.get(taskId);
+    if (!task || task.status !== "running") return;
+    task.status = "cancelled";
+    task.error = reason;
+    const ac = this.taskAbortControllers.get(taskId);
+    ac?.abort();
+    const client = this.clients.get(task.agentName);
+    client?.abortActivePrompt();
+    void this.deliverTaskError(task, reason);
+  }
+
+  async pollProgress(): Promise<void> {
+    const port = this.progressDelivery;
+    if (!port) return;
+
+    for (const task of this.taskStore.listRunning()) {
+      if (task.lastProgressAt <= task.lastDeliveredAt && task.lastDeliveredAt > 0) continue;
+      const body = formatProgressBody(task);
+      try {
+        const res = await port.deliverProgress(toTaskSnapshot(task), body);
+        if (res?.progressMessageId) task.progressMessageId = res.progressMessageId;
+        task.lastDeliveredAt = Date.now();
+      } catch (e) {
+        logComponent("acp").warn("ACP 进度推送失败", { taskId: task.taskId, err: e });
+      }
+    }
+  }
+
+  private async deliverTaskResult(task: AcpAsyncTask, result: AcpPromptResult): Promise<void> {
+    const port = this.progressDelivery;
+    if (!port) return;
+    try {
+      await port.deliverResult(toTaskSnapshot(task), result);
+    } catch (e) {
+      logComponent("acp").warn("ACP 结果推送失败", { taskId: task.taskId, err: e });
+    }
+  }
+
+  private async deliverTaskError(task: AcpAsyncTask, message: string): Promise<void> {
+    const port = this.progressDelivery;
+    if (!port) return;
+    try {
+      await port.deliverError(toTaskSnapshot(task), message);
+    } catch (e) {
+      logComponent("acp").warn("ACP 错误推送失败", { taskId: task.taskId, err: e });
+    }
+  }
+
   private async handleAcpPrompt(
     agentName: string,
     prompt: string,
@@ -622,42 +966,16 @@ export class AcpManager {
       return toolError(`ACP agent '${agentName}' not configured`);
     }
 
+    if (this.activePromptByAgent.has(agentName)) {
+      return this.agentBusyError(agentName);
+    }
+    this.activePromptByAgent.set(agentName, "sync");
+
     const mode = opts.mode ?? "agent";
 
     try {
-      const client = await this.getOrStartClient(agentName, agentCfg);
-
-      const previousBound =
-        opts.newSession && opts.nestSessionId
-          ? await getBoundAcpSession(this.conv(), opts.nestSessionId, agentName)
-          : undefined;
-
-      const resolved = await this.resolveAcpSession(client, agentName, agentCfg, opts);
-      const sid = resolved.id;
-      this.sessionStore.touch(sid);
-
-      if (previousBound && previousBound !== sid) {
-        try {
-          await client.closeSession(previousBound);
-        } catch {
-          /* ignore */
-        }
-        this.sessionStore.remove(previousBound);
-      }
-
-      await client.setMode(sid, mode);
-
-      let promptText = prompt;
-      if (context) promptText += `\n\nContext: ${context}`;
-
-      if (resolved.newSession && mode === "plan") {
-        promptText =
-          `## Goal\n${promptText}\n\n## Instructions\n` +
-          "First, analyze and create a detailed plan. " +
-          "After creating the plan, stop and wait for approval. " +
-          "Do NOT execute the plan yet.";
-      }
-
+      const { client, sid, resolved } = await this.preparePromptSession(agentName, agentCfg, opts);
+      const promptText = buildPromptText(prompt, context, resolved, mode);
       const output = await client.sendPrompt(sid, promptText);
       const capture = client.takeLastPromptCapture();
 
@@ -680,6 +998,10 @@ export class AcpManager {
         await unbindAcpSession(this.conv(), opts.nestSessionId, agentName);
       }
       return toolError(msg);
+    } finally {
+      if (this.activePromptByAgent.get(agentName) === "sync") {
+        this.activePromptByAgent.delete(agentName);
+      }
     }
   }
 }

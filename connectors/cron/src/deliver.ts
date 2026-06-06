@@ -66,23 +66,30 @@ function formatDeliverText(job: CronJob, payload: CronDeliverPayload): string {
   return `⚠️ Cron job '${job.name}' failed:\n${err}`;
 }
 
-export async function deliverCronResult(job: CronJob, payload: CronDeliverPayload): Promise<void> {
-  const targets = resolveDeliverTargets(job.deliver);
-  if (!targets.length) return;
-
-  const text = formatDeliverText(job, payload);
+export async function deliverToTargets(targets: CronDeliverTarget[], text: string): Promise<void> {
+  if (!targets.length || !text.trim()) return;
   for (const target of targets) {
     const fn = deliverers.get(target.platform);
     if (!fn) {
-      const msg = `Cron deliver: no handler for platform '${target.platform}' (job ${job.id})`;
-      logComponent("cron-deliver").warn(msg);
+      logComponent("cron-deliver").warn(
+        `deliver: no handler for platform '${target.platform}' (${target.chat_id})`,
+      );
       continue;
     }
     try {
       await fn(target, text);
     } catch (e) {
-      const msg = `Cron deliver failed (${target.platform}:${target.chat_id}): ${e}`;
-      logComponent("cron-deliver").error(msg, { err: e });
+      logComponent("cron-deliver").error(`deliver failed (${target.platform}:${target.chat_id})`, {
+        err: e,
+      });
     }
   }
+}
+
+export async function deliverCronResult(job: CronJob, payload: CronDeliverPayload): Promise<void> {
+  const targets = resolveDeliverTargets(job.deliver);
+  if (!targets.length) return;
+
+  const text = formatDeliverText(job, payload);
+  await deliverToTargets(targets, text);
 }

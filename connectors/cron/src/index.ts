@@ -92,6 +92,7 @@ export { enqueueRunJob, runJob } from "./runner.ts";
 export { computeNextRun, parseSchedule, ScheduleType } from "./schedule.ts";
 export {
   deliverCronResult,
+  deliverToTargets,
   registerCronDeliverer,
   unregisterCronDeliverer,
   resolveDeliverTargets,
