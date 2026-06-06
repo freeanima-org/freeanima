@@ -58,10 +58,17 @@ export function slimMessage(msg: SessionMessage): SessionMessage | null {
     const hasCalls = Array.isArray(calls) && calls.length > 0;
     const content = String(msg.content ?? "").trim();
     const reasoning = String(msg.reasoning ?? "").trim();
-    const text = content || (hasCalls ? reasoning : content || reasoning);
+    let text = content || reasoning;
+    if (!text && hasCalls) {
+      const names = calls
+        .map((c) => c.function?.name?.trim())
+        .filter((n): n is string => Boolean(n));
+      text = names.length ? `[已执行工具: ${names.join(", ")}]` : "[已执行工具调用]";
+    }
+    if (!text) return null;
     const out: Extract<SessionMessage, { role: "assistant" }> = {
       role: "assistant",
-      content: text || null,
+      content: text,
     };
     if (msg.pos !== undefined) out.pos = msg.pos;
     if (msg.name !== undefined) out.name = msg.name;

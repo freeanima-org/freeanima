@@ -1,6 +1,24 @@
 import type { LlmTurnMessage } from "@freeanima/engine-provider-llm";
-import type { SessionMessage } from "@freeanima/engine-db/domain";
+import type { AssistantMessage, SessionMessage } from "@freeanima/engine-db/domain";
+import { cleanToolCallsForApi } from "@freeanima/engine-provider-llm/stream-tools";
 import { repairToolLoopMessages } from "./tool-loop-integrity.ts";
+
+/** 确保 assistant 在发往 provider 前必有 content 或有效 tool_calls */
+export function normalizeAssistantTurn(msg: AssistantMessage): LlmTurnMessage | null {
+  const cleaned = msg.tool_calls?.length ? cleanToolCallsForApi(msg.tool_calls) : [];
+  if (cleaned.length) {
+    return {
+      ...msg,
+      content: msg.content ?? null,
+      tool_calls: cleaned,
+    };
+  }
+  const text =
+    String(msg.content ?? "").trim() || String(msg.reasoning ?? msg.reasoning_content ?? "").trim();
+  if (!text) return null;
+  const { tool_calls: _removed, ...rest } = msg;
+  return { ...rest, role: "assistant", content: text };
+}
 
 export type InvokeMessageInput = {
   turns: LlmTurnMessage[];
@@ -22,6 +40,11 @@ export function sessionMessagesToInvokeInput(messages: SessionMessage[]): Invoke
     }
     pastLeadingSystem = true;
     if (msg.role === "system") continue;
+    if (msg.role === "assistant") {
+      const normalized = normalizeAssistantTurn(msg);
+      if (normalized) turns.push(normalized);
+      continue;
+    }
     turns.push(msg as LlmTurnMessage);
   }
 

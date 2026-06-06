@@ -7,6 +7,7 @@ import {
   REPAIR_REASON_LOST,
   syntheticToolContent,
   sessionMessagesToInvokeInput,
+  normalizeAssistantTurn,
 } from "../../src/index.ts";
 import { messagesForApi } from "@freeanima/capabilities-provider-openai-compatible/messages";
 import type { SessionMessage } from "@freeanima/engine-db/domain";
@@ -84,6 +85,34 @@ describe("tool-loop-integrity", () => {
     expect(plans).toHaveLength(1);
     expect(plans[0]?.insertAtPos).toBe(491);
     expect(plans[0]?.missingCalls[0]?.id).toBe("call_1");
+  });
+
+  it("normalizeAssistantTurn 丢弃无正文且无 tool_calls 的 assistant", () => {
+    expect(normalizeAssistantTurn({ role: "assistant", content: null })).toBeNull();
+    const api = messagesForApi(
+      sessionMessagesToInvokeInput([
+        { role: "user", content: "hi", pos: 1 },
+        { role: "assistant", content: null, pos: 2 },
+        { role: "user", content: "again", pos: 3 },
+      ]).turns,
+    );
+    expect(api.map((m) => m.role)).toEqual(["user", "user"]);
+  });
+
+  it("repairToolLoopMessages 剔除无效 tool_calls 时跳过 orphan tool", () => {
+    const msgs: SessionMessage[] = [
+      { role: "user", content: "hi", pos: 1 },
+      {
+        role: "assistant",
+        content: null,
+        pos: 2,
+        tool_calls: [{ id: "", type: "function", function: { name: "bad", arguments: "{}" } }],
+      },
+      { role: "tool", tool_call_id: "orphan", name: "bad", content: "x", pos: 3 },
+      { role: "user", content: "next", pos: 4 },
+    ];
+    const repaired = repairToolLoopMessages(msgs);
+    expect(repaired.map((m) => m.role)).toEqual(["user", "user"]);
   });
 
   it("isInsufficientToolMessagesError 识别 provider 400 文案", () => {
