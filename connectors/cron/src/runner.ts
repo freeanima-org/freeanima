@@ -1,6 +1,6 @@
 import { existsSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
-import { getServiceContext } from "@freeanima/service";
+import { getServiceContext } from "@freeanima/service-api";
 import * as conv from "@freeanima/engine-conversation";
 import { distillFromPg, l2SessionPath } from "@freeanima/life-memory/clean";
 import { indexL2Session } from "@freeanima/life-memory/l2-indexer";

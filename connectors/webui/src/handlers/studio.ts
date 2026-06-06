@@ -4,7 +4,7 @@ import {
   patchStudioConfig,
   readStudioFile,
   searchStudio,
-} from "@freeanima/service";
+} from "@freeanima/service-api";
 import { studioConfigPatchSchema, studioSearchBodySchema } from "@freeanima/connectors-webui/api";
 import { ApiHandlerError } from "./errors.ts";
 

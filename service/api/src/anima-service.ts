@@ -30,4 +30,6 @@ export type AnimaService = {
   listCommands(opts?: { platform?: string; all?: boolean }): {
     commands: ServiceCommandInfo[];
   };
+  waitForDrain(): Promise<void>;
+  getInFlightCount(): number;
 };

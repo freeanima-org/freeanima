@@ -1,23 +1,17 @@
 import type { AnimaService } from "./runtime/anima-service.ts";
-import type { AcpManager } from "@freeanima/capabilities-acp";
-import type { MCPManager } from "@freeanima/capabilities-mcp";
 import type { Kernel } from "@freeanima/kernel";
 import type { Engine } from "@freeanima/engine";
-import type { ConversationService } from "@freeanima/engine-conversation";
+import {
+  registerServiceContext,
+  type ServiceContext as ServiceContextPort,
+} from "@freeanima/service-api/service-context";
 
-export type ServiceContext = {
-  service: AnimaService;
+export type ServiceContext = ServiceContextPort & {
   kernel: Kernel;
   engine: Engine;
-  conversation: ConversationService;
-  mcp: MCPManager | null;
-  acp: AcpManager;
-  host: string;
-  port: number;
 };
 
-/** WebUI SSR bundle 会复制一份模块；用 globalThis 与 anima service 主进程共享 */
-const GLOBAL_CTX_KEY = Symbol.for("freeanima.serviceContext");
+const GLOBAL_CTX_KEY = Symbol.for("freeanima.serviceContextFull");
 
 let ctx: ServiceContext | null = null;
 
@@ -28,6 +22,8 @@ function readGlobalContext(): ServiceContext | null {
 export function initServiceContext(next: ServiceContext): void {
   ctx = next;
   (globalThis as Record<symbol, ServiceContext>)[GLOBAL_CTX_KEY] = next;
+  const { service, conversation, mcp, acp, host, port } = next;
+  registerServiceContext({ service, conversation, mcp, acp, host, port });
 }
 
 export function getServiceContext(): ServiceContext {
@@ -43,9 +39,6 @@ export function isServiceContextReady(): boolean {
   return readGlobalContext() !== null || ctx !== null;
 }
 
-export function assertNotShuttingDown(): void {
-  const { service } = getServiceContext();
-  if (service.isShuttingDown()) {
-    throw new Error("Server is shutting down");
-  }
-}
+export { assertNotShuttingDown } from "@freeanima/service-api/service-context";
+
+export type { AnimaService };

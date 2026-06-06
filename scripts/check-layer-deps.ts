@@ -64,6 +64,7 @@ function isAllowed(layer: string, pkg: string, _relPath: string): boolean {
       if (pkg === "service-config" || pkg === "service-logging") return true;
       return false;
     case "connectors":
+      if (pkg === "service") return false;
       return true;
     case "service":
       return true;

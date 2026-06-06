@@ -6,9 +6,15 @@
     "./anima-service": "./src/anima-service.ts",
     "./home-channel": "./src/home-channel.ts",
     "./turn-lifecycle": "./src/turn-lifecycle.ts",
-    "./conversation-stats": "./src/conversation-stats.ts"
+    "./conversation-stats": "./src/conversation-stats.ts",
+    "./service-context": "./src/service-context.ts",
+    "./studio-port": "./src/studio-port.ts",
+    "./runtime-service": "./src/runtime-service.ts"
   },
   "dependencies": {
+    "@freeanima/capabilities-acp": "workspace:*",
+    "@freeanima/capabilities-mcp": "workspace:*",
+    "@freeanima/engine-conversation": "workspace:*",
     "@freeanima/engine-loop": "workspace:*",
     "@freeanima/service-config": "workspace:*"
   },

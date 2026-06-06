@@ -35,11 +35,11 @@ describePg("server memory API", () => {
   it("listMemoryFiles returns objects with name and content", () => {
     const { files } = getServiceContext().service.listMemoryFiles();
     expect(files.length).toBeGreaterThan(0);
-    const soul = files.find((f) => f.name === "SOUL.md");
+    const soul = files.find((f: { name: string }) => f.name === "SOUL.md");
     expect(soul).toBeDefined();
     expect(soul!.content).toContain("Agent");
     expect(typeof soul!.size).toBe("number");
-    expect(files.some((f) => f.name.startsWith("f-"))).toBe(true);
+    expect(files.some((f: { name: string }) => f.name.startsWith("f-"))).toBe(true);
   });
 
   it.skipIf(typeof Bun !== "undefined")("memorySearch returns structured L3 and L2 hits", () => {
@@ -108,7 +108,7 @@ describePg("server memory API", () => {
     expect(out.index_rows).toBeGreaterThan(0);
 
     const hits = getServiceContext().service.memorySearch({ query: "alpha" });
-    expect(hits.l2.some((h) => h.session_id === sid)).toBe(true);
+    expect(hits.l2.some((h: { session_id: string }) => h.session_id === sid)).toBe(true);
   });
 
   it.skipIf(typeof Bun !== "undefined")("distillL2All and reindexL2All are separate", async () => {
@@ -145,7 +145,7 @@ describePg("server memory API", () => {
     const { index_rows } = svc.reindexL2All();
     expect(index_rows).toBeGreaterThan(0);
     const after = svc.memorySearch({ query: "split distill" });
-    expect(after.l2.some((h) => h.session_id === sid)).toBe(true);
+    expect(after.l2.some((h: { session_id: string }) => h.session_id === sid)).toBe(true);
   });
 
   it.skipIf(typeof Bun !== "undefined")("reindexL3All rebuilds FTS from memory files", () => {

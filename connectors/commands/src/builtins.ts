@@ -12,7 +12,7 @@ import { distillFromPg } from "@freeanima/life-memory/clean";
 import { isReflectEnabled } from "@freeanima/life-memory";
 import { reflectSession } from "@freeanima/life-memory/reflect";
 import { setHomeChannel } from "@freeanima/service-api/home-channel";
-import { getServiceContext } from "@freeanima/service";
+import { getServiceContext } from "@freeanima/service-api";
 
 function conv() {
   return getServiceContext().conversation;

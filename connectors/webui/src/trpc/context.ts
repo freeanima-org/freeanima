@@ -1,6 +1,6 @@
 import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
 import type { CreateWSSContextFnOptions } from "@trpc/server/adapters/ws";
-import { assertNotShuttingDown } from "@freeanima/service";
+import { assertNotShuttingDown } from "@freeanima/service-api";
 
 export type TrpcContext = {
   terminalSessionId: string | null;

@@ -192,7 +192,7 @@
         "@freeanima/connectors-cron": "workspace:*",
         "@freeanima/engine-conversation": "workspace:*",
         "@freeanima/engine-loop": "workspace:*",
-        "@freeanima/service": "workspace:*",
+        "@freeanima/service-api": "workspace:*",
         "@freeanima/service-logging": "workspace:*",
         "@tanstack/react-router": "^1.170.11",
         "@trpc/client": "^11",
@@ -425,6 +425,9 @@
     "service/api": {
       "name": "@freeanima/service-api",
       "dependencies": {
+        "@freeanima/capabilities-acp": "workspace:*",
+        "@freeanima/capabilities-mcp": "workspace:*",
+        "@freeanima/engine-conversation": "workspace:*",
         "@freeanima/engine-loop": "workspace:*",
         "@freeanima/service-config": "workspace:*",
       },
