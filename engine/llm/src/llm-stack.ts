@@ -1,11 +1,6 @@
 import type { NestConfig } from "@freeanima/service-config";
 import { getLlmConfig } from "@freeanima/service-config";
 import {
-  OpenAiCompatibleBackend,
-  OPENAI_COMPATIBLE_BACKEND_ID,
-  parseOpenAiCompatibleProviderSpec,
-} from "@freeanima/capabilities-provider-openai-compatible";
-import {
   assertProfilesValid,
   BackendRegistry,
   type LlmCallParams,
@@ -13,6 +8,8 @@ import {
   ProfileRegistry,
   ProviderRegistry,
 } from "@freeanima/engine-provider-llm";
+
+import { applyLlmStackConfigurator } from "./llm-stack-configurator.ts";
 
 export type LlmRuntime = {
   backends: BackendRegistry;
@@ -37,20 +34,10 @@ function profileDefsFromConfig(cfg: NestConfig): LlmProfileDef[] {
 
 export function createLlmRuntime(cfg: NestConfig): LlmRuntime {
   const backends = new BackendRegistry();
-  backends.register(new OpenAiCompatibleBackend(OPENAI_COMPATIBLE_BACKEND_ID));
-
   const providers = new ProviderRegistry(backends);
+  applyLlmStackConfigurator(cfg, backends, providers);
+
   const llm = getLlmConfig(cfg);
-
-  for (const [id, raw] of Object.entries(llm.providers)) {
-    const record = raw as Record<string, unknown>;
-    if (record.backend === OPENAI_COMPATIBLE_BACKEND_ID) {
-      providers.registerSpec(parseOpenAiCompatibleProviderSpec(id, record));
-    } else {
-      throw new Error(`不支持的 llm.providers.${id}.backend: ${String(record.backend)}`);
-    }
-  }
-
   const defs = profileDefsFromConfig(cfg);
   const profileRegistry = new ProfileRegistry(defs, llm.default_profile, providers);
   assertProfilesValid(defs, providers);

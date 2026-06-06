@@ -1,6 +1,6 @@
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 import type { LlmTurnMessage } from "@freeanima/engine-provider-llm";
-import { cleanToolCallsForApi } from "./stream-tools.ts";
+import { cleanToolCallsForApi } from "@freeanima/engine-provider-llm/stream-tools";
 
 function resolveToolName(
   messages: LlmTurnMessage[],

@@ -1,5 +1,7 @@
-import { describe, it, expect } from "bun:test";
+import { describe, it, expect, beforeAll } from "bun:test";
+import { wireOpenAiCompatibleLlm } from "@freeanima/capabilities-provider-openai-compatible";
 import { createLlmRuntime } from "../../src/llm-stack.ts";
+import { registerLlmStackConfigurator } from "../../src/llm-stack-configurator.ts";
 import type { NestConfig } from "@freeanima/service-config";
 
 const testCfg = {
@@ -19,6 +21,10 @@ const testCfg = {
     },
   },
 } as NestConfig;
+
+beforeAll(() => {
+  registerLlmStackConfigurator(wireOpenAiCompatibleLlm);
+});
 
 describe("createLlmRuntime", () => {
   it("assembles backend, providers, and profiles", () => {

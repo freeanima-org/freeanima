@@ -5,13 +5,13 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@freeanima/capabilities-provider-openai-compatible": "workspace:*",
     "@freeanima/engine-db": "workspace:*",
     "@freeanima/engine-provider-llm": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",
     "@freeanima/service-config": "workspace:*"
   },
   "devDependencies": {
+    "@freeanima/capabilities-provider-openai-compatible": "workspace:*",
     "@types/bun": "catalog:"
   }
 }

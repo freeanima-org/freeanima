@@ -10,7 +10,12 @@ import {
   type Db,
 } from "@freeanima/connectors-db-pg";
 import { createEngine } from "@freeanima/engine";
-import { createLlmRuntime, resetLlmRuntimeForTests } from "@freeanima/engine-llm";
+import {
+  createLlmRuntime,
+  registerLlmStackConfigurator,
+  resetLlmRuntimeForTests,
+} from "@freeanima/engine-llm";
+import { wireOpenAiCompatibleLlm } from "@freeanima/capabilities-provider-openai-compatible";
 import {
   createConversationService,
   type ConversationService,
@@ -42,6 +47,7 @@ async function clearPgTables(sql: postgres.Sql): Promise<void> {
 }
 
 function createTestEngine(repos: PgRepositories): Engine {
+  registerLlmStackConfigurator(wireOpenAiCompatibleLlm);
   return createEngine({ repos, llm: createLlmRuntime(loadConfig()) });
 }
 

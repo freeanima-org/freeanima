@@ -8,3 +8,8 @@ export {
   resetLlmRuntimeForTests,
   type LlmRuntime,
 } from "./llm-stack.ts";
+export {
+  registerLlmStackConfigurator,
+  unregisterLlmStackConfigurator,
+  type LlmStackConfigurator,
+} from "./llm-stack-configurator.ts";

@@ -2,7 +2,7 @@ import { describe, it, expect } from "bun:test";
 import {
   finalizeStreamingToolCalls,
   mergeStreamingToolCalls,
-} from "@freeanima/capabilities-provider-openai-compatible/stream-tools";
+} from "@freeanima/engine-provider-llm/stream-tools";
 import { messagesForApi } from "@freeanima/capabilities-provider-openai-compatible/messages";
 import type { LlmTurnMessage } from "@freeanima/engine-provider-llm";
 

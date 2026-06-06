@@ -7,7 +7,7 @@ import {
   cleanToolCallsForApi,
   finalizeStreamingToolCalls,
   mergeStreamingToolCalls,
-} from "@freeanima/capabilities-provider-openai-compatible/stream-tools";
+} from "@freeanima/engine-provider-llm/stream-tools";
 import { getLlmRuntime } from "./llm-stack.ts";
 import {
   sessionMessagesToInvokeInput,
@@ -86,4 +86,4 @@ function isSimpleChatOnly(messages: SessionMessage[] | SimpleChatMessage[]): boo
 }
 
 export { PROFILE_REFLECT, PROFILE_SUMMARY };
-export { normalizeUsage } from "@freeanima/capabilities-provider-openai-compatible/usage";
+export { normalizeUsage } from "@freeanima/engine-provider-llm/usage";
