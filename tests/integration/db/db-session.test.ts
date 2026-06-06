@@ -1,5 +1,5 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
-import type { ConversationMessage } from "@freeanima/engine-conversation";
+import type { ConversationMessage } from "@freeanima/engine-db/domain";
 import { getTestEngine } from "../../helpers/pg-test.ts";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {

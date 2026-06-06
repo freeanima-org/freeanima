@@ -10,7 +10,7 @@ import {
   parseCompressionState,
   clarifyToolAwaitingResultSchema,
   parseSessionLine,
-} from "@freeanima/engine-conversation";
+} from "@freeanima/engine-db/domain";
 import { jsonRpcMessageSchema } from "@freeanima/capabilities-acp/schemas/acp-jsonrpc";
 import {
   weixinContextTokensSchema,

@@ -3,8 +3,8 @@ import { getServiceContext } from "../context.ts";
 function conv() {
   return getServiceContext().conversation;
 }
-import type { Message } from "@freeanima/engine-conversation";
-import type { SessionMessage } from "@freeanima/engine-conversation";
+import type { SessionMessage as Message } from "@freeanima/engine-db/domain";
+import type { SessionMessage } from "@freeanima/engine-db/domain";
 import * as engine from "@freeanima/engine-loop";
 import { runWithToolContext } from "@freeanima/engine-loop";
 import type { StreamEvent } from "@freeanima/engine-loop";

@@ -11,7 +11,7 @@ function conv() {
 }
 import { headOkStepData, messageIncoming, turnAfterComplete } from "@freeanima/kernel-hooks";
 import type { MessageIncomingEffect, TurnAfterCompleteEffect } from "@freeanima/kernel-hooks";
-import type { Message } from "@freeanima/engine-conversation";
+import type { SessionMessage as Message } from "@freeanima/engine-db/domain";
 import type { EventBus } from "@freeanima/kernel-eventbus";
 import { sessionUpdated } from "@freeanima/life-memory";
 import { PARLOR_PLATFORM } from "./platforms.ts";

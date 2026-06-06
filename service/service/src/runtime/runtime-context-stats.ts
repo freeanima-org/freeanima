@@ -1,8 +1,8 @@
 import { SUMMARY_USER_PREFIX } from "@freeanima/engine-compress";
 import { getActiveSkillsContent } from "@freeanima/life-memory";
-import { isSessionMeta } from "@freeanima/engine-conversation";
+import { isSessionMeta } from "@freeanima/engine-db/domain";
 import { decomposeSystemPromptParts } from "@freeanima/life-memory/system-prompt";
-import type { SessionMessage } from "@freeanima/engine-conversation";
+import type { SessionMessage } from "@freeanima/engine-db/domain";
 import {
   estimateMessagesTokens,
   estimateTokens,

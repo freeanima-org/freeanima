@@ -8,7 +8,7 @@ import {
 } from "../../helpers/integration-case.ts";
 
 import { openaiSchemas } from "@freeanima/engine-tool";
-import { isSessionMeta } from "@freeanima/engine-conversation";
+import { isSessionMeta } from "@freeanima/engine-db/domain";
 import { registerAllTools } from "@freeanima/service";
 import { testConv } from "../../helpers/pg-test.ts";
 

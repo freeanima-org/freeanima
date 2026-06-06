@@ -11,11 +11,7 @@
  * - 不破坏缓存（时间戳是历史固定值）
  */
 
-import {
-  isUserMessage,
-  type SessionMessage,
-  type UserMessage,
-} from "@freeanima/engine-conversation";
+import { isUserMessage, type SessionMessage, type UserMessage } from "./message.ts";
 
 const CHINESE_WEEKDAYS = ["日", "一", "二", "三", "四", "五", "六"];
 

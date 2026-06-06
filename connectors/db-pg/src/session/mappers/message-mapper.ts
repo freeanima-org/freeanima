@@ -8,7 +8,7 @@ import {
   isUserMessage,
   type ConversationMessage,
   type SessionMessage,
-} from "@freeanima/engine-conversation";
+} from "@freeanima/engine-db/domain";
 
 import { type MessageInsert, messageSelectSchema } from "@freeanima/engine-db/schema";
 

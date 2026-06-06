@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@freeanima/engine-conversation": "workspace:*",
+    "@freeanima/engine-db": "workspace:*",
     "@freeanima/engine-loop": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",
     "@freeanima/service-config": "workspace:*",

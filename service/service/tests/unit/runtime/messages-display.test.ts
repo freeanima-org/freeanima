@@ -4,7 +4,7 @@ import {
 } from "../../../src/runtime/build-messages-display.ts";
 import { describe, expect, it } from "bun:test";
 
-import type { SessionMessage } from "@freeanima/engine-conversation";
+import type { SessionMessage } from "@freeanima/engine-db/domain";
 
 describe("buildMessagesDisplay", () => {
   it("聚合 assistant tool_calls 与 tool 结果为 tool_block", () => {

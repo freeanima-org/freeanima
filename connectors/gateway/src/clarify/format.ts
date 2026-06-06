@@ -1,4 +1,4 @@
-import type { ClarifyItem } from "@freeanima/engine-conversation";
+import type { ClarifyItem } from "@freeanima/engine-db/domain";
 
 import type { ClarifyPayload } from "./types.ts";
 

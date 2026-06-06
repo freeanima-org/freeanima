@@ -1,5 +1,5 @@
 import type { ConversationService } from "@freeanima/engine-conversation";
-import { isSessionMeta } from "@freeanima/engine-conversation";
+import { isSessionMeta } from "@freeanima/engine-db/domain";
 
 export type AcpSessionsMeta = Record<string, string>;
 

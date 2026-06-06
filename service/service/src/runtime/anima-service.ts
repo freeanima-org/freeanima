@@ -7,7 +7,8 @@ import type {
   SessionSummary,
 } from "@freeanima/service/schemas/snapshot";
 import type { StreamEvent } from "@freeanima/engine-loop";
-import type { Message, ConversationService } from "@freeanima/engine-conversation";
+import type { SessionMessage as Message } from "@freeanima/engine-db/domain";
+import type { ConversationService } from "@freeanima/engine-conversation";
 import type { CronJobData } from "@freeanima/connectors-cron";
 import type { Kernel } from "@freeanima/kernel";
 import { collectStreamReply } from "@freeanima/engine-loop";

@@ -7,6 +7,7 @@
   "dependencies": {
     "@freeanima/capabilities-clarify": "workspace:*",
     "@freeanima/engine-conversation": "workspace:*",
+    "@freeanima/engine-db": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",
     "@freeanima/service-api": "workspace:*"
   },

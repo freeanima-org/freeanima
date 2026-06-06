@@ -1,6 +1,6 @@
 import type { PgRepositories, SessionStorePort } from "@freeanima/engine-repos";
 import { parseCompressionState, isCompressed } from "@freeanima/engine-compress";
-import type { SessionMessage, SessionMetaMessage } from "@freeanima/engine-conversation";
+import type { SessionMessage, SessionMetaMessage } from "./message.ts";
 
 function store(repos: PgRepositories): SessionStorePort {
   return repos.session;
