@@ -17,6 +17,7 @@ import {
   initPgProfile,
   isPostgresPrimary,
 } from "@freeanima/connectors-db-pg";
+import { runMigrations } from "@freeanima/engine-db";
 import { getConfiguredDatabaseUrl, PATHS, loadConfig } from "@freeanima/service-config";
 import {
   installErrorLogHandlers,
@@ -188,13 +189,14 @@ export async function serve(
     initPgProfile({ sink: logComponent("db") });
 
     const cfg = loadConfig();
-    const repos = isPostgresPrimary()
-      ? (() => {
-          startupLog("初始化 PostgreSQL 连接池…");
-          getDb();
-          return createPgRepositories({ getDb });
-        })()
-      : nullPgRepositories;
+    let repos = nullPgRepositories;
+    if (isPostgresPrimary()) {
+      startupLog("初始化 PostgreSQL 连接池…");
+      const db = getDb();
+      await runMigrations(db);
+      startupLog("数据库迁移已完成");
+      repos = createPgRepositories({ getDb });
+    }
     initLlmRuntime(cfg);
     engine = createEngine({ repos, llm: getLlmRuntime() });
     conversation = createConversationService(engine.repos);
