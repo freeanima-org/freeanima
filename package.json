@@ -42,6 +42,7 @@
     "release:dry-run": "semantic-release --dry-run",
     "test": "bun scripts/run-tests.ts",
     "test:changed": "bun scripts/run-tests.ts --changed",
+    "memory:sample": "bun scripts/memory-sample.ts",
     "test:coverage": "bun test --coverage --pass-with-no-tests",
     "service": "bun cli/src/cli.ts service",
     "anima": "bun cli/src/cli.ts",

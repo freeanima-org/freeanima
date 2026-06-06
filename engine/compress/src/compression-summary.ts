@@ -39,9 +39,10 @@ export async function generateSessionSummary(
   newState: CompressionState,
   systemPromptSnapshot: string,
   model: string,
+  opts?: { preSliced?: boolean },
 ): Promise<GenerateSummaryResult> {
   const prevL2 = prevState?.l2 ?? null;
-  const slice = sliceForSummary(messages, prevL2, newState.l2);
+  const slice = opts?.preSliced ? messages : sliceForSummary(messages, prevL2, newState.l2);
   if (!slice.length && !prevState?.summary) {
     return { ok: false, error: "无待摘要内容" };
   }
