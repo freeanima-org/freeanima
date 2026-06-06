@@ -13,7 +13,7 @@ import {
   isTransientNetworkError,
   networkErrorUserHint,
 } from "@freeanima/engine-loop";
-import { getServiceContext } from "@freeanima/service";
+import { getServiceContext } from "@freeanima/service-api";
 import { RateLimitedLogger } from "@freeanima/kernel-retry";
 import { logComponent } from "@freeanima/service-logging";
 import type { AnimaService } from "@freeanima/service-api";

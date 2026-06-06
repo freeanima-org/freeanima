@@ -1,4 +1,4 @@
-import { getServiceContext } from "@freeanima/service";
+import { getServiceContext } from "@freeanima/service-api";
 import { ApiHandlerError } from "./errors.ts";
 
 export function getAcpStatus() {

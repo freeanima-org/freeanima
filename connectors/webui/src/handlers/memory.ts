@@ -1,5 +1,5 @@
 import { memorySearchBodySchema, type MemorySearchBody } from "@freeanima/connectors-webui/api";
-import { getServiceContext } from "@freeanima/service";
+import { getServiceContext } from "@freeanima/service-api";
 
 export function listMemoryFiles() {
   const { service } = getServiceContext();

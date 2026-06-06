@@ -1,4 +1,4 @@
-import { getServiceContext } from "@freeanima/service";
+import { getServiceContext } from "@freeanima/service-api";
 import { isSessionMeta } from "@freeanima/engine-conversation";
 import { PARLOR_PLATFORM } from "../api/constants.ts";
 import {
