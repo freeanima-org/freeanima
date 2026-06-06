@@ -1,8 +1,8 @@
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { PATHS } from "@freeanima/service-config";
-import { indexL3All as reindexL3FtsAll } from "@freeanima/life-memory/l3-indexer";
 import { memorySearchDetailed, type MemorySearchResult } from "@freeanima/life-memory/search";
+import { getServiceContext } from "../context.ts";
 
 export type MemoryFileEntry = {
   name: string;
@@ -28,6 +28,10 @@ function readMemoryEntry(path: string, displayName: string): MemoryFileEntry | n
   }
 }
 
+function semanticRepos() {
+  return getServiceContext().engine.repos.semanticMemory;
+}
+
 export async function memorySearch(args: {
   query: string;
   limit?: number;
@@ -43,11 +47,13 @@ export async function memorySearch(args: {
   });
 }
 
-export function reindexL3All(): { index_rows: number } {
-  return { index_rows: reindexL3FtsAll({ dropFirst: true }) };
+/** @deprecated PG STORED content_fts 自动维护，保留 API 兼容 */
+export async function reindexL3All(): Promise<{ index_rows: number }> {
+  const count = await semanticRepos().count();
+  return { index_rows: count };
 }
 
-export function listMemoryFiles(): { files: MemoryFileEntry[] } {
+export async function listMemoryFiles(): Promise<{ files: MemoryFileEntry[] }> {
   const files: MemoryFileEntry[] = [];
   const home = PATHS.home;
 
@@ -58,16 +64,20 @@ export function listMemoryFiles(): { files: MemoryFileEntry[] } {
   }
 
   try {
-    if (existsSync(PATHS.memory)) {
-      for (const name of readdirSync(PATHS.memory).toSorted()) {
-        if (!name.startsWith("f-") || !name.endsWith(".md")) continue;
-        const path = join(PATHS.memory, name);
-        const entry = readMemoryEntry(path, name);
-        if (entry) files.push(entry);
-      }
+    const rows = await semanticRepos().listAll();
+    for (const row of rows) {
+      const name = `${row.id}.md`;
+      const content = `---\nid: ${row.id}\ntype: ${row.type}\npinned: ${row.pinned}\ncreated: ${row.created}\nupdated: ${row.updated}\n---\n${row.content}`;
+      files.push({
+        name,
+        path: `pg:semantic_memory:${row.id}`,
+        size: Buffer.byteLength(content, "utf-8"),
+        mtime: Date.parse(row.updated) / 1000 || 0,
+        content,
+      });
     }
   } catch {
-    /* empty */
+    /* PG 不可用时仅返回 Markdown 身份文件 */
   }
 
   return { files };

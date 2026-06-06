@@ -1,7 +1,12 @@
+import type { SemanticMemoryStorePort } from "./semantic-memory.ts";
 import type { SessionStorePort } from "./session.ts";
 
 export type { SessionStorePort, SessionSummaryRow, MessageFtsHit } from "./session.ts";
-export type { MemoryStorePort } from "./memory.ts";
+export type {
+  SemanticMemoryRow,
+  SemanticFtsHit,
+  SemanticMemoryStorePort,
+} from "./semantic-memory.ts";
 export type { CronJobStorePort } from "./cron.ts";
 export type { TaskStorePort } from "./task.ts";
 
@@ -9,4 +14,5 @@ export type { TaskStorePort } from "./task.ts";
 export interface PgRepositories {
   readonly pgAvailable: boolean;
   session: SessionStorePort;
+  semanticMemory: SemanticMemoryStorePort;
 }

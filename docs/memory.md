@@ -1,7 +1,7 @@
 # 记忆体系
 
 > 数字生命的记忆体系，映射自人类认知心理学（Atkinson-Shiffrin 模型、Tulving 记忆分类）。
-> **Slice A（L1 Session）** 存储见 [`database.md`](database.md) §Slice A；**L3 及 v2 认知模型（semantic/limbic 等）仍为规划**。深睡见 [`sleep.md`](sleep.md)。
+> **Slice A（L1 Session）** 存储见 [`database.md`](database.md) §Slice A；**语义记忆（`semantic_memory`）** 见 database.md §Slice B；limbic 等待建。深睡见 [`sleep.md`](sleep.md)。
 > 本版本（v3）受 [Hindsight](https://arxiv.org/abs/2512.12818) 四网络记忆架构启发，同时保留并强化了逸灵风独有的感性记忆维度。
 
 ## 核心原则
@@ -24,7 +24,7 @@
 ② 工作记忆 ─── LLM 上下文窗口（当前 session）
         │ (深睡巩固)
         ▼
-③ 长期记忆 ─── 持久化存储（当前为文件系统 L3，规划迁移至 PostgreSQL）
+③ 长期记忆 ─── 持久化存储（语义记忆已迁移 PostgreSQL `semantic_memory` 表）
 ```
 
 ### ① 瞬时记忆 (Sensory / Instant Memory)
@@ -172,58 +172,39 @@ LLM 进行单次 Token 推理时的内部激活状态。随推理结束瞬间消
 
 ## 三、存储实现（当前状态）
 
-### 当前（v2，文件系统时代）
+### 当前（v3 语义记忆已落 PG）
 
-| 存储                                     | 对应记忆         | 实现                                                |
-| ---------------------------------------- | ---------------- | --------------------------------------------------- |
-| PostgreSQL L1（`sessions` + `messages`） | 对话记录（情景） | 主存；`messages.content_fts` GIN 全文索引（simple） |
-| L3 Markdown 文件                         | 语义事实         | `~/.anima/memory/f-*.md`（YAML frontmatter + body） |
-| `~/.anima/index/l3.db`                   | L3 FTS 索引      | SQLite FTS5                                         |
+| 存储                                     | 对应记忆         | 实现                                                                 |
+| ---------------------------------------- | ---------------- | -------------------------------------------------------------------- |
+| PostgreSQL L1（`sessions` + `messages`） | 对话记录（情景） | 主存；`messages.content_fts` GIN 全文索引（simple）                  |
+| PostgreSQL `semantic_memory`             | 语义记忆         | `content_fts` GIN；`pinned` + `updated` 驱动常驻记忆；见 database.md |
 
-L3 事实的 YAML frontmatter 结构当前包含：
+`semantic_memory` 行结构（已裁剪旧元数据字段）：
 
-```yaml
-id: f-000001-a1b2
-type: fact # 当前只有 "fact"
-confidence: 1.0
-importance: 0.9
-recall: 0.9
-domains: [张三, 偏好, 记忆]
-entities: [张三]
-threads: []
-created: 2026-01-15T10:00:00.000+08:00
-updated: 2026-01-15T12:00:00.000+08:00
----
-张三偏好简洁直接的沟通方式，不喜欢冗长的铺垫。
-```
+| 字段      | 说明                                                                 |
+| --------- | -------------------------------------------------------------------- |
+| `id`      | `f-{seq}-{hex}`，与旧文件 ID 兼容                                    |
+| `type`    | `world/experience/opinion/observation/preference/procedural/imprint` |
+| `pinned`  | 置顶到 system prompt 常驻段                                          |
+| `content` | 记忆正文                                                             |
+| `created` | 创建时间                                                             |
+| `updated` | 更新时间（resident 排序用）                                          |
 
-### 规划（v3，融合 Hindsight 理念）
+旧 `f-*.md` + `l3.db` 通过 `scripts/migrate-semantic-memory.ts` 一次性迁移；详见 [`database.md`](database.md) §Slice B。
 
-**L3 事实结构升级：**
+### 规划（v3 余下：实体关系、多策略召回等）
+
+**语义记忆扩展字段（未实施）：**
 
 ```yaml
-id: f-000130-080b
-type: opinion # 细化为 world/experience/opinion/observation/preference/procedural/imprint
-confidence: 0.85 # opinion 类型特有，可演化
-importance: 0.9
-recall: 0.8
-domains: [架构, 工程流程, 规划]
-entities: [张三, FreeAnima] # 实体列表，用于构建关系图谱
-relations: # 实体间关系（新增）
+# 规划中的 PG 列或关联表，非当前 schema
+relations: # 实体间关系
   - subject: 张三
     predicate: 规划了
     object: FreeAnima 工程流程
-  - subject: FreeAnima
-    predicate: 属于
-    object: 逸灵风
-temporal: # 时序信息（新增）
-  occurred_at: 2026-05-29T23:00:00+08:00 # 事件实际发生时间
-  recorded_at: 2026-05-29T23:05:00+08:00 # 记录时间（同 created）
-source: session-xxx # 来源 session
-created: 2026-05-29T23:05:00.123+08:00
-updated: 2026-05-29T23:05:00.123+08:00
----
-FreeAnima 的未来工程流程规划...
+temporal:
+  occurred_at: 2026-05-29T23:00:00+08:00
+source: session-xxx
 ```
 
 **新增：实体关系图谱**
@@ -327,8 +308,8 @@ procedural（技能/工具定义） → 按需搜索
 v1（Hermes 时代，文件系统）    v2（逸灵风初期，文件系统）         v3（规划中）
 L1 JSONL                    messages 表                    ← 保持
 L2 JSONL（蒸馏后副本）        PG content_fts（已替代）       ← 已迁移
-L3 Markdown（YAML frontmatter） L3 Markdown（结构化 type）    type 细化 + 实体关系 + 时序
-L4 SQLite FTS（L3）          L3 SQLite FTS5 + 实体图索引     多策略召回（图+时序+语义）
+L3 Markdown + SQLite FTS      PG semantic_memory             ← 已迁移
+L4 SQLite FTS（L3）          PG semantic_memory.content_fts  多策略召回（图+时序+语义）规划中
 无情感层                      limbic 表                     ← 保持 + imprint 事实
 技能为文件                    procedural 三阶段               ← 保持
 反思用通用 prompt             所有处理带数字生命身份上下文             ← 保持

@@ -1,16 +1,5 @@
-export {
-  FRONTMATTER_DELIM,
-  nowIso,
-  factScore,
-  splitFrontmatter,
-  parseFact,
-  factToFileText,
-  createFact,
-  type FactType,
-  type FactSource,
-  type FactData,
-} from "./fact.ts";
-export { MemoryStore, generateId, getStore, resetStoreForTests } from "./store.ts";
+export { createSemanticMemory, type SemanticMemory } from "./fact.ts";
+export { parseLegacyFact, type LegacyFactData, FRONTMATTER_DELIM } from "./legacy-fact.ts";
 export {
   sessionUpdated,
   l3Updated,
@@ -37,16 +26,12 @@ export {
   getMemorySessionStore,
   resetMemorySessionStoreForTests,
 } from "./session-port.ts";
-export { filterRecallableMessages, type RecallableMessage } from "./message-filter.ts";
 export {
-  indexL3Fact,
-  indexL3Facts,
-  indexL3All,
-  removeL3Fact,
-  searchL3Fts,
-  type L3SearchRow,
-} from "./l3-indexer.ts";
-export { buildFtsQuery } from "./fts-query.ts";
+  registerSemanticMemoryStore,
+  getSemanticMemoryStore,
+  resetSemanticMemoryStoreForTests,
+} from "./semantic-port.ts";
+export { filterRecallableMessages, type RecallableMessage } from "./message-filter.ts";
 export {
   search,
   searchL3,

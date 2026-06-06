@@ -12,7 +12,7 @@ import { createLogger } from "@freeanima/kernel-logging";
 import { createNullSink } from "@freeanima/kernel-logging/null";
 import { EventBus } from "@freeanima/kernel-eventbus";
 import { SqliteEventQueue } from "@freeanima/connectors-eventbus-sqlite";
-import { resetStoreForTests, registerMemoryPipeline, sessionUpdated } from "@freeanima/life-memory";
+import { registerMemoryPipeline, sessionUpdated } from "@freeanima/life-memory";
 import { PATHS } from "@freeanima/service-config";
 import { getTestEngine, seedSession, testConv } from "../../helpers/pg-test.ts";
 
@@ -26,7 +26,6 @@ describePgSqlite("memory handlers", () => {
       "memory:\n  reflect:\n    enabled: false\n",
     );
     home = ctx.home;
-    resetStoreForTests();
   });
 
   afterEach(async () => {
@@ -56,7 +55,11 @@ describePgSqlite("memory handlers", () => {
       createLogger({ sinks: [createNullSink()] }),
       new SqliteEventQueue(join(home, "runtime", "events.db"), { pollMs: 20 }),
     );
-    registerMemoryPipeline({ bus, sessionStore: testConv().repos.session });
+    registerMemoryPipeline({
+      bus,
+      sessionStore: testConv().repos.session,
+      semanticStore: getTestEngine().repos.semanticMemory,
+    });
     bus.start();
     bus.emit(sessionUpdated, { session_id: sid });
 

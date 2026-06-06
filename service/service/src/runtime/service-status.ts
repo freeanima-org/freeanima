@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import {
   getDefaultProviderBaseUrl,
@@ -31,7 +31,6 @@ import type {
   SafeConfigSnapshot,
   ServiceSnapshot,
 } from "@freeanima/service/schemas/snapshot";
-import { getStore } from "@freeanima/life-memory/store";
 import { PARLOR_PLATFORM } from "./platforms.ts";
 import { ANIMA_VERSION } from "./version.ts";
 
@@ -59,17 +58,6 @@ export function buildMemoryFileStats(): { files_count: number; files_bytes: numb
   add(PATHS.soul);
   add(join(PATHS.home, "MEMORY.md"));
   add(join(PATHS.home, "USER.md"));
-
-  try {
-    if (existsSync(PATHS.memory)) {
-      for (const name of readdirSync(PATHS.memory)) {
-        if (!name.startsWith("f-") || !name.endsWith(".md")) continue;
-        add(join(PATHS.memory, name));
-      }
-    }
-  } catch {
-    /* empty */
-  }
 
   return { files_count, files_bytes };
 }
@@ -123,7 +111,7 @@ export async function buildStatus(
   let factsCount = 0;
   let l2IndexRows = 0;
   try {
-    factsCount = getStore().count();
+    factsCount = await getServiceContext().engine.repos.semanticMemory.count();
   } catch {
     factsCount = 0;
   }

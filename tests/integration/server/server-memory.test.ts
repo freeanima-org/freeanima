@@ -6,9 +6,8 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { mkdirSync, writeFileSync } from "node:fs";
+import { writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { MemoryStore, indexL3Fact } from "@freeanima/life-memory";
 import { getServiceContext } from "@freeanima/service";
 import { getTestEngine, seedSession } from "../../helpers/pg-test.ts";
 
@@ -20,20 +19,18 @@ describePg("server memory API", () => {
     const ctx = await beginIntegrationCase("freeanima-memapi-");
     home = ctx.home;
     writeFileSync(join(home, "SOUL.md"), "# Agent\n", "utf-8");
-    mkdirSync(join(home, "memory"), { recursive: true });
-    writeFileSync(
-      join(home, "memory", "f-000001-abcd.md"),
-      "---\nid: f-000001-abcd\n---\nbody\n",
-      "utf-8",
-    );
   });
 
   afterEach(async () => {
     await restoreIntegrationHome(prev);
   });
 
-  it("listMemoryFiles returns objects with name and content", () => {
-    const { files } = getServiceContext().service.listMemoryFiles();
+  it("listMemoryFiles returns objects with name and content", async () => {
+    await getTestEngine().repos.semanticMemory.create({
+      id: "f-000001-abcd",
+      content: "测试语义记忆",
+    });
+    const { files } = await getServiceContext().service.listMemoryFiles();
     expect(files.length).toBeGreaterThan(0);
     const soul = files.find((f: { name: string }) => f.name === "SOUL.md");
     expect(soul).toBeDefined();
@@ -42,15 +39,11 @@ describePg("server memory API", () => {
     expect(files.some((f: { name: string }) => f.name.startsWith("f-"))).toBe(true);
   });
 
-  it("memorySearch returns structured L3 and PG dialogue hits", async () => {
-    const store = new MemoryStore(join(home, "memory"));
-    const id = store.create({
+  it("memorySearch returns structured semantic memory and PG dialogue hits", async () => {
+    await getTestEngine().repos.semanticMemory.create({
       content: "逸灵风记忆管道使用 compression 压缩",
-      confidence: 0.9,
-      importance: 0.9,
-      recall: 0.5,
+      type: "world",
     });
-    indexL3Fact(store.get(id)!);
 
     const sid = "20260526_120000_abcd";
     await seedSession(
@@ -82,16 +75,13 @@ describePg("server memory API", () => {
     expect(out.l2[0]!.session_id).toBe(sid);
   });
 
-  it("reindexL3All rebuilds FTS from memory files", async () => {
-    const store = new MemoryStore(join(home, "memory"));
-    store.create({
-      content: "L3 全量重建探针 gamma",
-      confidence: 0.9,
-      importance: 0.9,
-      recall: 0.5,
+  it("reindexL3All returns semantic memory count", async () => {
+    await getTestEngine().repos.semanticMemory.create({
+      content: "语义记忆计数探针 gamma",
+      type: "world",
     });
 
-    const { index_rows } = getServiceContext().service.reindexL3All();
+    const { index_rows } = await getServiceContext().service.reindexL3All();
     expect(index_rows).toBeGreaterThan(0);
     const hits = await getServiceContext().service.memorySearch({ query: "gamma" });
     expect(hits.l3.length).toBeGreaterThan(0);

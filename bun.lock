@@ -418,7 +418,6 @@
     "life/memory": {
       "name": "@freeanima/life-memory",
       "dependencies": {
-        "@freeanima/connectors-sqlite": "workspace:*",
         "@freeanima/engine-repos": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
         "@freeanima/kernel-eventbus": "workspace:*",

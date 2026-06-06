@@ -6,7 +6,6 @@
     "./*": "./src/*.ts"
   },
   "dependencies": {
-    "@freeanima/connectors-sqlite": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",
     "@freeanima/engine-repos": "workspace:*",
     "@freeanima/kernel-eventbus": "workspace:*",

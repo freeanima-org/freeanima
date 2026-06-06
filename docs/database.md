@@ -5,10 +5,10 @@
 
 ## 状态
 
-| 阶段        | 范围                                        | 状态       |
-| ----------- | ------------------------------------------- | ---------- |
-| **Slice A** | `sessions` + `messages`（L1 主存 PG）       | **已完成** |
-| **Slice B** | semantic / limbic / procedural（memory v2） | 规划中     |
+| 阶段        | 范围                                                    | 状态                          |
+| ----------- | ------------------------------------------------------- | ----------------------------- |
+| **Slice A** | `sessions` + `messages`（L1 主存 PG）                   | **已完成**                    |
+| **Slice B** | `semantic_memory`（语义记忆）；limbic / procedural 待建 | **进行中**（semantic 已落地） |
 
 代码真相源：[`engine/db/src/schema/`](../engine/db/src/schema/)。
 
@@ -121,6 +121,35 @@ bun test
 
 单元测试（mapper，不连 PG）：`bun test connectors/db-pg`
 
-## Slice B（规划中）
+## Slice B：semantic_memory（已落地）
 
-memory.md v2 定稿后：semantic / limbic / procedural 等表**直接落 PG**，跳过 facts 临时表。详见 [`memory.md`](memory.md) §三。
+### 表结构
+
+| 列            | 类型               | 说明                                                                 |
+| ------------- | ------------------ | -------------------------------------------------------------------- |
+| `id`          | TEXT PK            | 保留 `f-{seq}-{hex}` 格式                                            |
+| `type`        | TEXT               | `world/experience/opinion/observation/preference/procedural/imprint` |
+| `pinned`      | BOOLEAN            | 常驻记忆优先注入                                                     |
+| `content`     | TEXT               | 记忆正文                                                             |
+| `content_fts` | TSVECTOR（生成列） | `to_tsvector('simple', message_fts_input(content))` STORED           |
+| `created`     | TIMESTAMPTZ        |                                                                      |
+| `updated`     | TIMESTAMPTZ        |                                                                      |
+
+索引：`idx_semantic_memory_fts`（GIN）、`idx_semantic_memory_type`、`idx_semantic_memory_pinned`。
+
+端口：`SemanticMemoryStorePort`（`engine-repos`）→ `PgSemanticMemoryStore`（`connectors-db-pg`）→ `registerSemanticMemoryStore`（`life-memory`）。
+
+### 从文件系统迁移
+
+一次性脚本（读取旧 `f-*.md`，幂等 INSERT）：
+
+```bash
+DATABASE_URL="$(anima credential get services/postgres/anima url)" \
+  bun run scripts/migrate-semantic-memory.ts [--dry-run] [--home ~/.anima]
+```
+
+旧 `~/.anima/memory/f-*.md` 与 `~/.anima/index/l3.db` 迁移验证后可手动归档。
+
+### 待建（Slice B 余下）
+
+limbic / procedural 等待 memory v2 定稿后继续落 PG。详见 [`memory.md`](memory.md) §三。

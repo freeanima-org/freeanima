@@ -1,9 +1,5 @@
-import { join } from "node:path";
-import { PATHS } from "@freeanima/service-config";
 import type { MessageFtsHit } from "@freeanima/engine-repos";
-import { getStore } from "./store.ts";
-import { factScore } from "./fact.ts";
-import { searchL3Fts } from "./l3-indexer.ts";
+import { getSemanticMemoryStore } from "./semantic-port.ts";
 import { getMemorySessionStore } from "./session-port.ts";
 
 export type SearchResult = {
@@ -16,55 +12,23 @@ export type SearchResult = {
 
 const DEFAULT_LIMIT = 10;
 
-/** SQLite FTS5 rank（负值，越小越相关） */
-function sqliteRankToScore(rank: number): number {
-  const raw = -rank;
-  return Math.min(1.0, Math.max(0.1, raw / 5.0));
-}
-
 /** PG ts_rank（正值，越大越相关） */
 function pgRankToScore(rank: number): number {
   return Math.min(1.0, Math.max(0.1, rank * 5.0));
 }
 
-function searchL3Internal(query: string): SearchResult[] {
-  try {
-    const rows = searchL3Fts(query, DEFAULT_LIMIT);
-    if (rows.length) {
-      return rows.map((r) => ({
-        content: r.content,
-        source: "l3" as const,
-        path: join(PATHS.memory, `${r.fact_id}.md`),
-        score: sqliteRankToScore(r.rank),
-        metadata: {
-          id: r.fact_id,
-          type: r.type,
-          confidence: r.confidence,
-          importance: r.importance,
-          recall: r.recall,
-          domains: r.domains,
-          entities: r.entities,
-          sources: r.sources,
-        },
-      }));
-    }
-  } catch {
-    /* fallback */
-  }
-
-  const store = getStore();
-  return store.search(query).map((f) => ({
-    content: f.content,
+async function searchL3Internal(query: string, limit = DEFAULT_LIMIT): Promise<SearchResult[]> {
+  const store = getSemanticMemoryStore();
+  const rows = await store.searchFts(query, { limit });
+  return rows.map((r) => ({
+    content: r.content,
     source: "l3" as const,
-    path: join(PATHS.memory, `${f.id}.md`),
-    score: factScore(f),
+    path: `pg:semantic_memory:${r.id}`,
+    score: pgRankToScore(r.rank),
     metadata: {
-      id: f.id,
-      confidence: f.confidence,
-      importance: f.importance,
-      recall: f.recall,
-      domains: f.domains,
-      entities: f.entities,
+      id: r.id,
+      type: r.type,
+      pinned: r.pinned,
     },
   }));
 }
@@ -91,7 +55,7 @@ async function searchL2Internal(query: string, limit = DEFAULT_LIMIT): Promise<S
 export async function search(query: string, limit = DEFAULT_LIMIT): Promise<SearchResult[]> {
   const results: SearchResult[] = [];
   try {
-    results.push(...searchL3Internal(query));
+    results.push(...(await searchL3Internal(query, limit)));
   } catch {
     /* ignore */
   }
@@ -104,8 +68,8 @@ export async function search(query: string, limit = DEFAULT_LIMIT): Promise<Sear
   return results.slice(0, limit);
 }
 
-export function searchL3(query: string, limit = DEFAULT_LIMIT): SearchResult[] {
-  const results = searchL3Internal(query);
+export async function searchL3(query: string, limit = DEFAULT_LIMIT): Promise<SearchResult[]> {
+  const results = await searchL3Internal(query, limit);
   results.sort((a, b) => b.score - a.score);
   return results.slice(0, limit);
 }
@@ -131,12 +95,7 @@ export type MemorySearchL3Hit = {
   fact_id: string;
   content: string;
   type: string;
-  confidence: number;
-  importance: number;
-  recall: number;
-  domains: string[];
-  entities: string[];
-  sources: Record<string, unknown>[];
+  pinned: boolean;
   rank: number;
   score: number;
 };
@@ -164,23 +123,19 @@ export async function memorySearchDetailed(
   const l3Limit = Math.max(1, Math.min(50, opts?.l3Limit ?? 5));
   const l2Limit = Math.max(1, Math.min(50, opts?.l2Limit ?? 10));
 
-  const l3Rows = searchL3Fts(q, l3Limit);
+  const store = getSemanticMemoryStore();
+  const l3Rows = await store.searchFts(q, { limit: l3Limit });
   const l2Rows = await searchL2(q, { limit: l2Limit, sessionId: opts?.sessionId });
 
   return {
     query: q,
     l3: l3Rows.map((r) => ({
-      fact_id: r.fact_id,
+      fact_id: r.id,
       content: r.content,
       type: r.type,
-      confidence: r.confidence,
-      importance: r.importance,
-      recall: r.recall,
-      domains: r.domains,
-      entities: r.entities,
-      sources: r.sources,
+      pinned: r.pinned,
       rank: r.rank,
-      score: sqliteRankToScore(r.rank),
+      score: pgRankToScore(r.rank),
     })),
     l2: l2Rows.map((r) => ({
       content: r.content,
