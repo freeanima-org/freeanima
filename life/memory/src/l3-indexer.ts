@@ -1,12 +1,13 @@
-import { existsSync, mkdirSync, statSync } from "node:fs";
+import { existsSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { PATHS } from "@freeanima/service-config";
-import { openSqlite, type SqliteDatabase } from "@freeanima/connectors-sqlite";
+import type { SqliteDatabase } from "@freeanima/connectors-sqlite";
 import { buildFtsQuery } from "./fts-query.ts";
 import { getStore } from "./store.ts";
 import type { FactData } from "./fact.ts";
 import { l3DomainsSchema, l3EntitiesSchema, l3SourcesSchema } from "./schemas/l2.ts";
 import { safeParseOrNull } from "@freeanima/kernel-util";
+import { openIndexDb } from "./index-db.ts";
 
 const SCHEMA = `
 CREATE VIRTUAL TABLE IF NOT EXISTS l3_facts_fts USING fts5(
@@ -39,11 +40,7 @@ function dbPath(): string {
 }
 
 function getConn(): SqliteDatabase {
-  mkdirSync(PATHS.index, { recursive: true });
-  const conn = openSqlite(dbPath());
-  conn.pragma("journal_mode = WAL");
-  conn.exec(SCHEMA);
-  return conn;
+  return openIndexDb("l3.db", SCHEMA);
 }
 
 function indexOne(conn: SqliteDatabase, fact: FactData): void {

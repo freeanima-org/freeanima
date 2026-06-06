@@ -1,4 +1,5 @@
 import { safeParseOrNull } from "@freeanima/kernel-util";
+import { chunkText } from "../chunk-text.ts";
 /** 腾讯 iLink Bot API（参考 @tencent-weixin/openclaw-weixin src/api/api.ts） */
 
 import { randomBytes } from "node:crypto";
@@ -97,22 +98,7 @@ export function isWeixinSessionPaused(accountId: string): boolean {
 
 /** 将长文本切为 ≤limit 字符的多段（优先段落/换行边界） */
 export function chunkWeixinText(text: string, limit = WEIXIN_TEXT_CHUNK_LIMIT): string[] {
-  const trimmed = text.trim();
-  if (!trimmed) return [];
-  if (trimmed.length <= limit) return [trimmed];
-
-  const chunks: string[] = [];
-  let rest = trimmed;
-  while (rest.length > limit) {
-    let cut = rest.lastIndexOf("\n\n", limit);
-    if (cut < limit / 2) cut = rest.lastIndexOf("\n", limit);
-    if (cut < limit / 2) cut = rest.lastIndexOf(" ", limit);
-    if (cut < limit / 2) cut = limit;
-    chunks.push(rest.slice(0, cut).trimEnd());
-    rest = rest.slice(cut).trimStart();
-  }
-  if (rest) chunks.push(rest);
-  return chunks.filter((c) => c.length > 0);
+  return chunkText(text, limit, { trimInput: true });
 }
 
 export async function apiPost(

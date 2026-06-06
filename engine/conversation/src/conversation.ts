@@ -15,6 +15,7 @@ import {
   analyzeCompression,
   compress,
   parseCompressionState,
+  buildCompressOptions,
   type CompressionState,
 } from "@freeanima/engine-compress";
 import { injectTimePrefixes } from "./time-perception.ts";
@@ -449,28 +450,8 @@ function compressionEnabled(): boolean {
   return getCompressionConfig().enabled;
 }
 
-function compressOptsForSession(
-  _session: string,
-  meta: SessionMetaLoadResult,
-  state: CompressionState | null,
-  overrides?: {
-    forceEmergency?: boolean;
-    force?: boolean;
-  },
-): Parameters<typeof compress>[1] {
-  const cfg = getCompressionConfig();
-  const model = isSessionMeta(meta) ? meta.model : getProfileHopModel(loadConfig(), PROFILE_CHAT);
-  const systemPrompt = isSessionMeta(meta) ? (meta.system_prompt ?? "") : "";
-  const tools = isSessionMeta(meta) ? meta.tools : [];
-  return {
-    maxRounds: cfg.maxRounds,
-    model,
-    systemPrompt,
-    tools,
-    state,
-    forceEmergency: overrides?.forceEmergency,
-    force: overrides?.force,
-  };
+function defaultChatModel(): string {
+  return getProfileHopModel(loadConfig(), PROFILE_CHAT);
 }
 
 const pendingCompressionSummaries = new Map<string, Promise<void>>();
@@ -597,7 +578,7 @@ export async function recompressSession(
     };
   }
 
-  const compressOpts = compressOptsForSession(session, meta, state, {
+  const compressOpts = buildCompressOptions(meta, state, defaultChatModel(), {
     force: opts?.force,
     forceEmergency: opts?.force,
   });
@@ -738,7 +719,7 @@ export async function maybeApplyEmergencyCompression(
 }
 
 function buildRuntimeMessagesFrom(
-  session: string,
+  _session: string,
   meta: SessionMetaLoadResult,
   msgs: Message[],
 ): [SessionMessage[], string[]] {
@@ -748,7 +729,10 @@ function buildRuntimeMessagesFrom(
 
   if (compressionEnabled()) {
     const state = isSessionMeta(meta) ? parseCompressionState(meta.compression) : null;
-    const [compressed] = compress(runtimeMsgs, compressOptsForSession(session, meta, state));
+    const [compressed] = compress(
+      runtimeMsgs,
+      buildCompressOptions(meta, state, defaultChatModel()),
+    );
     runtimeMsgs = compressed;
   }
 

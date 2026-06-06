@@ -1,3 +1,4 @@
+import { isEnabledByDefault } from "@freeanima/kernel-util";
 import { acpAgentSchema } from "@freeanima/service-config";
 import type { z } from "zod";
 
@@ -53,7 +54,7 @@ export type AcpControlResult = {
 
 /** enabled 缺省或为 true 时视为启用 */
 export function isAcpAgentEnabled(cfg: AcpAgentConfig): boolean {
-  return cfg.enabled !== false;
+  return isEnabledByDefault(cfg);
 }
 
 export function sanitizeAcpConfig(cfg: AcpAgentConfig): AcpAgentConfigView {
