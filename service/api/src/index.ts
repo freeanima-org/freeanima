@@ -55,3 +55,4 @@ export {
   type StudioConfig,
   type StudioSearchHit,
 } from "./studio-port.ts";
+export { PARLOR_PLATFORM, WEBUI_BASE_PATH } from "./constants.ts";

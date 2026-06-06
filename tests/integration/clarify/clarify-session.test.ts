@@ -16,7 +16,7 @@ import {
   guardAwaitingClarify,
   findAwaitingClarifyInMessages,
 } from "@freeanima/capabilities-clarify";
-import { executeCommand, getCommand } from "@freeanima/service";
+import { executeCommand, getCommand } from "@freeanima/connectors-commands";
 
 describePg("clarify session", () => {
   const prevHome = process.env.FREEANIMA_HOME;

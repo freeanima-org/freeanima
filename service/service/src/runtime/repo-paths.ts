@@ -1,7 +1,7 @@
 import { getRepoRoot } from "@freeanima/service-config";
+import { WEBUI_BASE_PATH } from "@freeanima/service-api/constants";
 
 /** monorepo 根目录 */
 export const REPO_ROOT = getRepoRoot();
 
-/** 静态路由与 redirect 须一致 */
-export const WEBUI_BASE_PATH = "/webui";
+export { WEBUI_BASE_PATH };

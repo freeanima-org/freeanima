@@ -8,7 +8,7 @@ import {
   estimateTokens,
   estimateToolsTokens,
 } from "@freeanima/engine-compress";
-import { loadSoul } from "@freeanima/engine-conversation";
+import { loadSoul } from "@freeanima/life-self";
 import { getServiceContext } from "../context.ts";
 
 export type RuntimeContextBreakdown = {

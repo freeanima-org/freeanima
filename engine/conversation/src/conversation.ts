@@ -1,9 +1,9 @@
-import { existsSync, mkdirSync, mkdtempSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync } from "node:fs";
 import { tmpdir, homedir } from "node:os";
 import { join, resolve } from "node:path";
 import { randomBytes } from "node:crypto";
 import { openaiSchemas } from "@freeanima/engine-tool";
-import { PATHS, getProfileHopModel, loadConfig } from "@freeanima/service-config";
+import { getProfileHopModel, loadConfig } from "@freeanima/service-config";
 import { CST_OFFSET_MS, formatCstIso } from "@freeanima/kernel-util";
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
 import { buildSystemPrompt } from "@freeanima/engine-prompt";
@@ -57,6 +57,7 @@ import {
   nextMessagePosWithRouting,
 } from "./session-store-pg-bridge.ts";
 import type { PgRepositories } from "@freeanima/engine-repos";
+import { loadSoul } from "./soul-port.ts";
 
 export type Message = SessionMessage;
 export { isSessionMeta, parseSessionLine } from "./message.ts";
@@ -76,14 +77,7 @@ export function allocateSessionCwd(sid: string): string {
   return mkdtempSync(join(tmpdir(), "anima-cwd-"));
 }
 
-export function loadSoul(): string {
-  try {
-    if (!existsSync(PATHS.soul)) return "";
-    return readFileSync(PATHS.soul, "utf-8").trim();
-  } catch {
-    return "";
-  }
-}
+export { loadSoul } from "./soul-port.ts";
 
 /** 读取 session 缓存的 OpenAI tools；缺失时回退注册表并写回 meta */
 export async function loadSessionTools(

@@ -10,19 +10,3 @@ export * from "./conversation-stats.ts";
 export * from "./runtime-context-stats.ts";
 export { ANIMA_VERSION } from "./version.ts";
 export { getRepoRoot, readRootVersion, writeRootVersion } from "./root-version.ts";
-
-export {
-  createSkill,
-  loadSkill,
-  unloadSkill,
-  listSkills,
-  viewSkill,
-  deleteSkill,
-  getActiveSkillsContent,
-} from "@freeanima/life-memory";
-export * from "@freeanima/engine-conversation/session-todos";
-export * from "@freeanima/connectors-commands";
-export * from "@freeanima/connectors-cron";
-export * from "@freeanima/capabilities-clarify";
-export { injectTimePrefixes, type TimePerceptionConfig } from "@freeanima/engine-conversation";
-export type { CronJobData } from "@freeanima/connectors-cron";

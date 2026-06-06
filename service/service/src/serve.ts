@@ -26,13 +26,16 @@ import {
 } from "@freeanima/service-logging";
 import {
   AnimaService,
-  Scheduler,
-  enqueueRunJob,
-  ensureBuiltinCronJobs,
   ANIMA_VERSION,
   seedHomeChannelsFromHermes,
   REPO_ROOT,
 } from "./runtime/index.ts";
+import {
+  Scheduler,
+  enqueueRunJob,
+  ensureBuiltinCronJobs,
+  type CronJob,
+} from "@freeanima/connectors-cron";
 import { writeFileSync, unlinkSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import { chdir } from "node:process";
@@ -217,7 +220,7 @@ export async function serve(
     ensureBuiltinCronJobs();
     seedHomeChannelsFromHermes();
     cronScheduler = new Scheduler();
-    cronScheduler.start((job) => enqueueRunJob(job));
+    cronScheduler.start((job: CronJob) => enqueueRunJob(job));
     cronScheduler.rescheduleAll();
     startupLog("Cron 调度器已启动");
 
