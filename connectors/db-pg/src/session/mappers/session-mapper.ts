@@ -20,9 +20,7 @@ import {
 
 import { normalizePgTimestamp, pgJsonbOrNull, pgTextOrNull } from "../../utils/timestamp.ts";
 
-function nowIso(): string {
-  return normalizePgTimestamp(new Date());
-}
+const pgNowIso = (): string => normalizePgTimestamp(new Date());
 
 const META_KNOWN_KEYS = new Set([
   "role",
@@ -84,7 +82,7 @@ export function sessionMetaToInsert(sessionId: string, meta: SessionMetaMessage)
     functions,
     debug: meta.debug === true,
     createdAt: normalizePgTimestamp(meta.timestamp),
-    updatedAt: nowIso(),
+    updatedAt: pgNowIso(),
   };
 }
 
@@ -115,13 +113,13 @@ export function rowToSessionMeta(row: unknown): SessionMetaMessage {
 export function patchCompression(compression: CompressionState): Partial<SessionInsert> {
   return {
     compression,
-    updatedAt: nowIso(),
+    updatedAt: pgNowIso(),
   };
 }
 
 export function patchTodos(todos: SessionTodoStore): Partial<SessionInsert> {
   return {
     todos: sessionTodoStoreSchema.parse(todos),
-    updatedAt: nowIso(),
+    updatedAt: pgNowIso(),
   };
 }

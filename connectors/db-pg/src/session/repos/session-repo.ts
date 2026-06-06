@@ -28,9 +28,7 @@ import {
 import { formatDbError } from "../../utils/db-error.ts";
 import { normalizePgTimestamp, pgJsonbOrNull, pgTextOrNull } from "../../utils/timestamp.ts";
 
-function nowIso(): string {
-  return normalizePgTimestamp(new Date());
-}
+const pgNowIso = (): string => normalizePgTimestamp(new Date());
 
 export async function getSessionMeta(sessionId: string): Promise<SessionMetaMessage | null> {
   const db = getDb();
@@ -121,7 +119,7 @@ export async function patchSessionMeta(
   patch: Partial<SessionMetaMessage> & Record<string, unknown>,
 ): Promise<void> {
   const db = getDb();
-  const set: Record<string, unknown> = { updatedAt: nowIso() };
+  const set: Record<string, unknown> = { updatedAt: pgNowIso() };
   let hasColumnPatch = false;
 
   if (patch.title !== undefined) {

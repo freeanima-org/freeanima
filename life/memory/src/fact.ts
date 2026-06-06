@@ -1,14 +1,13 @@
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
-import { safeParseOrNull } from "@freeanima/kernel-util";
+import { formatCstIso, safeParseOrNull } from "@freeanima/kernel-util";
 import { factDataSchema, type FactData, type FactSource, type FactType } from "./schemas/fact.ts";
 
 export const FRONTMATTER_DELIM = "---";
 
 export type { FactType, FactSource, FactData };
 
-export function nowIso(): string {
-  return new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().replace("Z", "+08:00");
-}
+/** @deprecated 使用 formatCstIso */
+export const nowIso = formatCstIso;
 
 export function factScore(f: FactData): number {
   return f.confidence * f.importance * f.recall;

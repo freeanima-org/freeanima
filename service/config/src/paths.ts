@@ -1,3 +1,4 @@
+import { CST_OFFSET_MS as KERNEL_CST_OFFSET_MS } from "@freeanima/kernel-util";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
@@ -6,7 +7,8 @@ export function getHomeDir(): string {
   return process.env.FREEANIMA_HOME ?? join(homedir(), ".anima");
 }
 
-export const CST_OFFSET_MS = 8 * 60 * 60 * 1000;
+/** @deprecated 优先使用 `@freeanima/kernel-util` 的 `formatCstIso` */
+export const CST_OFFSET_MS = KERNEL_CST_OFFSET_MS;
 
 export function homePath(...segments: string[]): string {
   return join(getHomeDir(), ...segments);
