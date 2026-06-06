@@ -39,6 +39,18 @@ describe("messagesForApi", () => {
     expect(out[1]).toMatchObject({ role: "user", content: "hi" });
   });
 
+  it("assistant 无正文且 tool_calls 清洗后为空时使用空串 content", () => {
+    const out = messagesForApi([
+      {
+        role: "assistant",
+        content: null,
+        tool_calls: [{ id: "", function: { name: "bad", arguments: "{}" } }],
+      },
+    ]);
+    expect(out[0]).toMatchObject({ role: "assistant", content: "" });
+    expect("tool_calls" in out[0]! && out[0]!.tool_calls).toBeFalsy();
+  });
+
   it("resolves tool name from prior assistant tool_calls", () => {
     const msgs: LlmTurnMessage[] = [
       {

@@ -37,14 +37,15 @@ function sanitizeTurnForApi(
       return out;
     }
     case "assistant": {
+      const cleanedCalls = msg.tool_calls?.length ? cleanToolCallsForApi(msg.tool_calls) : [];
       const out: ChatCompletionMessageParam & { reasoning_content?: string } = {
         role: "assistant",
-        content: msg.content ?? null,
+        content: msg.content ?? (cleanedCalls.length ? null : ""),
       };
       const reasoningText = msg.reasoning_content || msg.reasoning || "";
       if (reasoningText) out.reasoning_content = reasoningText;
-      if (msg.tool_calls?.length) {
-        out.tool_calls = cleanToolCallsForApi(msg.tool_calls).map((tc) => ({
+      if (cleanedCalls.length) {
+        out.tool_calls = cleanedCalls.map((tc) => ({
           id: tc.id,
           type: "function" as const,
           function: tc.function,

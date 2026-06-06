@@ -54,6 +54,23 @@ describe("compression v5.1", () => {
     }
   });
 
+  it("slimMessage 为仅 tool_calls 的 assistant 生成占位正文", () => {
+    const slim = slimMessage({
+      role: "assistant",
+      content: null,
+      tool_calls: [
+        { id: "1", type: "function", function: { name: "read_file", arguments: "{}" } },
+        { id: "2", type: "function", function: { name: "grep", arguments: "{}" } },
+      ],
+      pos: 2,
+    });
+    expect(slim?.content).toBe("[已执行工具: read_file, grep]");
+  });
+
+  it("slimMessage 丢弃完全空白的 assistant", () => {
+    expect(slimMessage({ role: "assistant", content: null, pos: 2 })).toBeNull();
+  });
+
   it("deriveBoundariesFromL4 rejects l3 when raw segment does not start with user", () => {
     const msgs = [
       ...buildHistory(20),

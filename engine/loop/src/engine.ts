@@ -325,6 +325,29 @@ export async function* runStream(
     }
 
     const cleanedCalls = cleanToolCalls(toolCalls);
+    if (!cleanedCalls.length) {
+      const text = buffer.join("");
+      const pushed = withStreamMeta(
+        withReasoning(
+          {
+            role: "assistant",
+            content: text,
+            model,
+            finish_reason: turnFinishReason,
+          },
+          turnReasoning,
+        ),
+        streamMeta,
+      );
+      messages.push(pushed);
+      await afterRuntimeMessage(messages, pushed, {
+        ...opts,
+        model,
+        tools: toolSchemas,
+      });
+      yield { event: "done", data: {} };
+      return;
+    }
     const withTools = withStreamMeta(
       withReasoning(
         {

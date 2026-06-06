@@ -123,9 +123,16 @@ export function repairToolLoopMessages(
 
     const cleaned = cleanToolCallsForApi(msg.tool_calls as ToolCall[]);
     if (!cleaned.length) {
-      const { tool_calls: _removed, ...rest } = msg;
-      out.push(rest as SessionMessage);
-      i++;
+      const text =
+        String(msg.content ?? "").trim() ||
+        String(msg.reasoning ?? msg.reasoning_content ?? "").trim();
+      if (text) {
+        const { tool_calls: _removed, ...rest } = msg;
+        out.push({ ...rest, role: "assistant", content: text } as SessionMessage);
+      }
+      let j = i + 1;
+      while (j < messages.length && messages[j]?.role === "tool") j++;
+      i = j;
       continue;
     }
 
