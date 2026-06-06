@@ -1,4 +1,4 @@
-import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
+import { it, expect, beforeEach, afterEach, afterAll, spyOn } from "bun:test";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
   beginIntegrationCase,
@@ -98,5 +98,36 @@ describePg("conversation compression", () => {
     await c.finishTurn(sid, msgs, effective, "m", functions);
 
     expect((await c.load(sid)).length).toBe(countBefore + 2);
+  });
+
+  it("beginTurn on compressed session uses pos-range load instead of full listMessages", async () => {
+    const c = testConv();
+    const sid = await c.newSession("test");
+    for (let i = 0; i < 55; i++) {
+      await c.appendMessage({ role: "user", content: `u${i}`, pos: i * 2 + 1 }, sid);
+      await c.appendMessage({ role: "assistant", content: `a${i}`, pos: i * 2 + 2 }, sid);
+    }
+    await c.beginTurn(sid, "触发压缩");
+
+    const session = c.repos.session;
+    let fullListCalls = 0;
+    let rangeListCalls = 0;
+    const origList = session.listMessages.bind(session);
+    const origRange = session.listMessagesByPosRange.bind(session);
+    spyOn(session, "listMessages").mockImplementation(async (sessionId) => {
+      fullListCalls++;
+      return origList(sessionId);
+    });
+    spyOn(session, "listMessagesByPosRange").mockImplementation(
+      async (sessionId, fromPos, toPos) => {
+        rangeListCalls++;
+        return origRange(sessionId, fromPos, toPos);
+      },
+    );
+
+    await c.beginTurn(sid, "窗口加载探针");
+
+    expect(rangeListCalls).toBeGreaterThan(0);
+    expect(fullListCalls).toBe(0);
   });
 });

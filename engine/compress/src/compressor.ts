@@ -344,13 +344,11 @@ export function analyzeCompression(
   };
 }
 
-/**
- * 有状态压缩：JSONL 不修改；运行时四段视图 + meta l2/l3。
- */
-export function compress(
+/** 判断本轮是否会推进压缩边界（不执行 deriveBoundariesFromL4） */
+export function willAdvanceCompression(
   messages: SessionMessage[],
   opts?: CompressOptions,
-): [SessionMessage[], CompressionState | null] {
+): boolean {
   const cfg = getCompressionConfig();
   const maxRounds = opts?.maxRounds ?? cfg.maxRounds;
   const state = opts?.state ?? null;
@@ -359,7 +357,6 @@ export function compress(
   const budget = opts?.effectiveBudgetOverride ?? (model ? getEffectiveTokenBudget(model) : null);
   const tokenMode = budget != null;
 
-  const system = messages.filter((m) => m.role === "system");
   const rest = restMessages(messages);
   const l4 = getL4(messages);
   const systemPrompt = opts?.systemPrompt ?? "";
@@ -378,7 +375,7 @@ export function compress(
     else if (compressed && rawLen > recompressAt) messageAdvance = true;
   }
 
-  const { advance } = shouldAdvance({
+  return shouldAdvance({
     usageRatio,
     inToolLoop: opts?.force ? false : inToolLoop,
     hasCompressed: compressed,
@@ -388,13 +385,28 @@ export function compress(
     forceEmergency: opts?.forceEmergency,
     force: opts?.force,
     messageAdvance: opts?.force ? true : messageAdvance,
-  });
+  }).advance;
+}
 
-  if (!advance) {
+/**
+ * 有状态压缩：JSONL 不修改；运行时四段视图 + meta l2/l3。
+ */
+export function compress(
+  messages: SessionMessage[],
+  opts?: CompressOptions,
+): [SessionMessage[], CompressionState | null] {
+  const cfg = getCompressionConfig();
+  const state = opts?.state ?? null;
+
+  const system = messages.filter((m) => m.role === "system");
+  const compressed = isCompressed(state);
+
+  if (!willAdvanceCompression(messages, opts)) {
     const view = buildRuntimeFromLPoints(messages, state);
     return [[...system, ...view], compressed ? state : null];
   }
 
+  const l4 = getL4(messages);
   const deriveCfg = {
     rawMinMessages: opts?.boundaryOverrides?.rawMinMessages ?? cfg.rawMinMessages,
     slimMinMessages: opts?.boundaryOverrides?.slimMinMessages ?? cfg.slimMinMessages,

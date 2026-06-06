@@ -14,8 +14,10 @@ import {
   isInToolLoop,
   analyzeCompression,
   compress,
+  isCompressed,
   parseCompressionState,
   buildCompressOptions,
+  willAdvanceCompression,
   type CompressionState,
 } from "@freeanima/engine-compress";
 import { injectTimePrefixes } from "./time-perception.ts";
@@ -36,6 +38,7 @@ import {
 import {
   loadMetaWithRouting,
   loadMessagesForRuntimeWithRouting,
+  loadMessagesByPosRangeWithRouting,
   loadMessagesPageWithRouting,
   loadMessagesWithRouting,
   loadSessionToolsWithRouting,
@@ -472,7 +475,6 @@ export async function flushCompressionSummaries(
 async function finalizeCompressionSummary(
   repos: PgRepositories,
   session: string,
-  allMsgs: Message[],
   prevState: CompressionState | null,
   cutState: CompressionState,
   systemPromptSnapshot: string,
@@ -483,12 +485,16 @@ async function finalizeCompressionSummary(
     logComponent("compression").warn(`跳过会话摘要（FREEANIMA_HOME 已切换）: ${session}`);
     return;
   }
+  const prevL2 = prevState?.l2 ?? null;
+  const fromPos = (prevL2 ?? 0) + 1;
+  const slice = await loadMessagesByPosRangeWithRouting(repos, session, fromPos, cutState.l2);
   const gen = await generateSessionSummary(
-    allMsgs,
+    slice,
     prevState,
     cutState,
     systemPromptSnapshot,
     model,
+    { preSliced: true },
   );
 
   const merged: CompressionState = {
@@ -514,7 +520,6 @@ async function finalizeCompressionSummary(
 function scheduleCompressionSummary(
   repos: PgRepositories,
   session: string,
-  allMsgs: Message[],
   prevState: CompressionState | null,
   cutState: CompressionState,
   systemPromptSnapshot: string,
@@ -527,7 +532,6 @@ function scheduleCompressionSummary(
     await finalizeCompressionSummary(
       repos,
       session,
-      allMsgs,
       prevState,
       cutState,
       systemPromptSnapshot,
@@ -601,7 +605,7 @@ export async function recompressSession(
         ? meta.model
         : getProfileHopModel(loadConfig(), PROFILE_CHAT);
       await updateSessionMetaField(repos, session, { compression: newState });
-      scheduleCompressionSummary(repos, session, msgs, prevState, newState, systemSnapshot, model);
+      scheduleCompressionSummary(repos, session, prevState, newState, systemSnapshot, model);
     } else {
       await updateSessionMetaField(repos, session, { compression: newState });
     }
@@ -712,8 +716,7 @@ export async function maybeApplyEmergencyCompression(
     const prev = state;
     await updateSessionMetaField(repos, session, { compression: newState });
     const systemSnapshot = systemPrompt;
-    const allMsgs = await load(repos, session);
-    scheduleCompressionSummary(repos, session, allMsgs, prev, newState, systemSnapshot, opts.model);
+    scheduleCompressionSummary(repos, session, prev, newState, systemSnapshot, opts.model);
   }
   return true;
 }
@@ -752,6 +755,45 @@ export async function buildRuntimeMessages(
   return buildRuntimeMessagesFrom(session, meta, msgs);
 }
 
+async function loadMessagesForTurn(
+  repos: PgRepositories,
+  session: string,
+  meta: SessionMetaLoadResult,
+): Promise<Message[]> {
+  if (!compressionEnabled()) {
+    return load(repos, session);
+  }
+  const state = isSessionMeta(meta) ? parseCompressionState(meta.compression) : null;
+  if (!isCompressed(state)) {
+    return load(repos, session);
+  }
+  const windowed = await loadForRuntime(repos, session, meta);
+  const compressOpts = buildCompressOptions(meta, state, defaultChatModel());
+  if (willAdvanceCompression(windowed, compressOpts)) {
+    return load(repos, session);
+  }
+  return windowed;
+}
+
+async function prepareTurnMessages(
+  repos: PgRepositories,
+  session: string,
+  meta: SessionMetaLoadResult,
+): Promise<Message[]> {
+  let msgs = await loadMessagesForTurn(repos, session, meta);
+  msgs = await ensureSessionToolIntegrity(repos, session, msgs);
+  const total = await countMessages(repos, session);
+  if (msgs.length < total) {
+    const state = isSessionMeta(meta) ? parseCompressionState(meta.compression) : null;
+    const compressOpts = buildCompressOptions(meta, state, defaultChatModel());
+    if (willAdvanceCompression(msgs, compressOpts)) {
+      msgs = await load(repos, session);
+      msgs = await ensureSessionToolIntegrity(repos, session, msgs);
+    }
+  }
+  return msgs;
+}
+
 export async function beginTurn(
   repos: PgRepositories,
   session: string,
@@ -759,9 +801,8 @@ export async function beginTurn(
 ): Promise<[SessionMessage[], string[], string]> {
   clearToolLoopSuppression(session);
   const effective = await appendUserTurn(repos, session, userText);
-  let msgs = await load(repos, session);
-  msgs = await ensureSessionToolIntegrity(repos, session, msgs);
   const meta = await loadSessionMeta(repos, session);
+  const msgs = await prepareTurnMessages(repos, session, meta);
   await advanceCompressionMeta(repos, session, { meta, msgs });
   const [runtimeMsgs, functions] = buildRuntimeMessagesFrom(session, meta, msgs);
   return [runtimeMsgs, functions, effective];
@@ -891,9 +932,8 @@ export async function retryTurn(
   session: string,
 ): Promise<[SessionMessage[], string[], string]> {
   const effective = await rollbackToLastUser(repos, session);
-  let msgs = await load(repos, session);
-  msgs = await ensureSessionToolIntegrity(repos, session, msgs);
   const meta = await loadSessionMeta(repos, session);
+  const msgs = await prepareTurnMessages(repos, session, meta);
   await advanceCompressionMeta(repos, session, { meta, msgs });
   const [runtimeMsgs, functions] = buildRuntimeMessagesFrom(session, meta, msgs);
   return [runtimeMsgs, functions, effective];

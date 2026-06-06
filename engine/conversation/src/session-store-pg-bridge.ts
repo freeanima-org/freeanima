@@ -112,6 +112,18 @@ export async function loadMessagesForRuntimeWithRouting(
   return loadMessagesWithRouting(repos, sessionId);
 }
 
+export async function loadMessagesByPosRangeWithRouting(
+  repos: PgRepositories,
+  sessionId: string,
+  fromPos: number,
+  toPos?: number,
+): Promise<SessionMessage[]> {
+  if (!postgresAvailable(repos)) {
+    return [];
+  }
+  return store(repos).listMessagesByPosRange(sessionId, fromPos, toPos);
+}
+
 export async function loadMessagesPageWithRouting(
   repos: PgRepositories,
   sessionId: string,
