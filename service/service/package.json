@@ -32,6 +32,8 @@
     "@freeanima/engine-provider-llm": "workspace:*",
     "@freeanima/engine-repos": "workspace:*",
     "@freeanima/connectors-db-pg": "workspace:*",
+    "@freeanima/engine-tool": "workspace:*",
+    "@freeanima/kernel": "workspace:*",
     "@freeanima/kernel-eventbus": "workspace:*",
     "@freeanima/kernel-hooks": "workspace:*",
     "@freeanima/life-memory": "workspace:*",

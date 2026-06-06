@@ -9,6 +9,7 @@
     "@freeanima/engine-compress": "workspace:*",
     "@freeanima/engine-conversation": "workspace:*",
     "@freeanima/engine-llm": "workspace:*",
+    "@freeanima/engine-loop": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",
     "@freeanima/kernel-eventbus": "workspace:*",
     "@freeanima/kernel-logging": "workspace:*",
