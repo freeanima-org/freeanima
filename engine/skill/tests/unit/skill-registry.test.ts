@@ -68,7 +68,12 @@ describe("user skills", () => {
   });
 
   it("create / list / load / delete", () => {
-    expect(createUserSkill("demo", "测试技能", "做某事")).toContain("已创建");
+    const created = JSON.parse(createUserSkill("demo", "测试技能", "做某事")) as {
+      ok: boolean;
+      name: string;
+    };
+    expect(created.ok).toBe(true);
+    expect(created.name).toBe("demo");
     registerUserSkillsFromHome();
     expect(listSkills().some((s) => s.name === "demo" && s.source === USER_SKILLS_SOURCE)).toBe(
       true,
@@ -84,7 +89,9 @@ describe("user skills", () => {
     expect(loaded.content).toContain("做某事");
     expect(loaded.skill).toBe("demo");
 
-    expect(deleteUserSkill("demo")).toContain("已删除");
+    const deleted = JSON.parse(deleteUserSkill("demo")) as { ok: boolean; name: string };
+    expect(deleted.ok).toBe(true);
+    expect(deleted.name).toBe("demo");
     expect(listSkills().some((s) => s.name === "demo")).toBe(false);
   });
 
@@ -95,7 +102,8 @@ describe("user skills", () => {
       directory: "/pkg/skills",
       source: "acp",
     });
-    expect(deleteUserSkill("builtin-x")).toContain("内置技能");
+    const out = JSON.parse(deleteUserSkill("builtin-x")) as { error: string };
+    expect(out.error).toContain("内置技能");
     unregisterSkill("builtin-x");
   });
 });

@@ -1,17 +1,9 @@
-import { registerTool } from "@freeanima/engine-tool";
+import { registerTool, toolError, toolResult } from "@freeanima/engine-tool";
 import type { LimbicKind, LimbicMemoryCreateInput } from "@freeanima/engine-repos";
 
 import { getLimbicMemoryStore } from "./limbic-port.ts";
 
 const LIMBIC_KINDS = ["session_mood", "turning_point", "spike"] as const;
-
-function jsonResult(data: Record<string, unknown>): string {
-  return JSON.stringify(data);
-}
-
-function jsonError(message: string): string {
-  return JSON.stringify({ error: message });
-}
 
 function parseStringArray(value: unknown): string[] | undefined {
   if (value === undefined) return undefined;
@@ -62,18 +54,18 @@ export function registerLimbicMemoryTools(): void {
       const content = String(args.content ?? "").trim();
       const kindRaw = String(args.kind ?? "").trim();
 
-      if (!sessionId) return jsonError("session_id is required");
-      if (!content) return jsonError("content is required");
+      if (!sessionId) return toolError("session_id is required");
+      if (!content) return toolError("content is required");
       if (!LIMBIC_KINDS.includes(kindRaw as (typeof LIMBIC_KINDS)[number])) {
-        return jsonError(`kind must be one of: ${LIMBIC_KINDS.join(", ")}`);
+        return toolError(`kind must be one of: ${LIMBIC_KINDS.join(", ")}`);
       }
 
       const intensity = args.intensity !== undefined ? Number(args.intensity) : 0.5;
       if (Number.isNaN(intensity) || intensity < 0 || intensity > 1) {
-        return jsonError("intensity must be between 0 and 1");
+        return toolError("intensity must be between 0 and 1");
       }
       if (intensity < 0.3) {
-        return jsonError("intensity < 0.3：轻微情绪波动不应写入 limbic_memory");
+        return toolError("intensity < 0.3：轻微情绪波动不应写入 limbic_memory");
       }
 
       const row: LimbicMemoryCreateInput = {
@@ -89,9 +81,9 @@ export function registerLimbicMemoryTools(): void {
 
       try {
         const id = await getLimbicMemoryStore().create(row);
-        return jsonResult({ ok: true, id, kind: kindRaw, intensity });
+        return toolResult({ ok: true, id, kind: kindRaw, intensity });
       } catch (err) {
-        return jsonError(err instanceof Error ? err.message : String(err));
+        return toolError(err instanceof Error ? err.message : String(err));
       }
     },
   });

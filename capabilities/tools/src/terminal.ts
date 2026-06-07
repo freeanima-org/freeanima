@@ -1,4 +1,4 @@
-import { registerTool } from "@freeanima/engine-tool";
+import { registerTool, toolError } from "@freeanima/engine-tool";
 import { spawn, spawnSync, type ChildProcess } from "node:child_process";
 
 const MAX_OUTPUT = 50 * 1024;
@@ -36,9 +36,9 @@ function runForeground(command: string, timeout: number, workdir?: string | null
     return output;
   } catch (e) {
     const err = e as NodeJS.ErrnoException & { killed?: boolean };
-    if (err.killed) return `[timeout after ${safeTimeout}s]`;
-    if (err.code === "ENOENT") return "[error: shell not found]";
-    return `[error: ${err.message}]`;
+    if (err.killed) return toolError(`timeout after ${safeTimeout}s`);
+    if (err.code === "ENOENT") return toolError("shell not found");
+    return toolError(err.message);
   }
 }
 
@@ -61,8 +61,8 @@ function runBackground(command: string, workdir?: string | null): string {
     );
   } catch (e) {
     const err = e as NodeJS.ErrnoException;
-    if (err.code === "ENOENT") return "[error: shell not found]";
-    return `[error: ${err.message}]`;
+    if (err.code === "ENOENT") return toolError("shell not found");
+    return toolError(err.message);
   }
 }
 
@@ -86,9 +86,9 @@ async function handleProcess(
     return lines.join("\n");
   }
 
-  if (!sessionId) return "[error: session_id required]";
+  if (!sessionId) return toolError("session_id required");
   const proc = backgroundProcs.get(sessionId);
-  if (!proc) return `[error: process ${sessionId} not found]`;
+  if (!proc) return toolError(`process ${sessionId} not found`);
 
   const output = getBgOutput(sessionId);
 
@@ -112,7 +112,7 @@ async function handleProcess(
       });
     });
     const out = getBgOutput(sessionId);
-    if (code === null) return `[timeout after ${timeout}s, process still running]`;
+    if (code === null) return toolError(`timeout after ${timeout}s, process still running`);
     return out ? `exited (${code})\n${out}` : `exited (${code})`;
   }
 
@@ -126,7 +126,7 @@ async function handleProcess(
     return `killed (${sessionId})`;
   }
 
-  return `[error: unsupported action '${action}']`;
+  return toolError(`unsupported action '${action}'`);
 }
 
 export function registerTerminalTools(): void {
@@ -183,7 +183,7 @@ function handleTerminal(
   workdir?: string | null,
   background = false,
 ): string {
-  if (!command?.trim()) return "[error: command is empty]";
+  if (!command?.trim()) return toolError("command is empty");
   if (background) return runBackground(command, workdir);
   return runForeground(command, timeout, workdir);
 }

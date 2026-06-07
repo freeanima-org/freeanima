@@ -1,4 +1,4 @@
-import { registerTool } from "@freeanima/engine-tool";
+import { registerTool, toolError, toolResult } from "@freeanima/engine-tool";
 import type { MessageFtsHit } from "@freeanima/engine-repos";
 import { searchL2 } from "./search.ts";
 import type { SearchResult } from "./search.ts";
@@ -13,31 +13,25 @@ function asFloat(value: unknown, defaultVal: number): number {
   return Number.isNaN(n) ? defaultVal : n;
 }
 
-function formatL3Section(results: SearchResult[]): string | null {
-  if (!results.length) return null;
-  const lines = [`找到 ${results.length} 条匹配记忆：`];
-  for (const r of results) {
-    const meta = r.metadata;
-    const id = meta.id ?? "?";
-    const type = String(meta.type ?? "world");
-    const pinned = meta.pinned ? "📌" : "";
-    lines.push(`  [${id}] (${type})${pinned} ${r.content}`);
-  }
-  return lines.join("\n");
+function mapL3Hit(r: SearchResult) {
+  const meta = r.metadata;
+  return {
+    semantic_memory_id: String(meta.id ?? ""),
+    type: String(meta.type ?? "world"),
+    pinned: Boolean(meta.pinned),
+    content: r.content,
+    score: r.score,
+  };
 }
 
-function formatL2Section(rows: MessageFtsHit[]): string | null {
-  if (!rows.length) return null;
-  const lines = [`找到 ${rows.length} 条匹配对话：`];
-  for (let idx = 0; idx < rows.length; idx++) {
-    const r = rows[idx]!;
-    const sid = r.session_id.slice(0, 16);
-    const ts = r.timestamp.slice(0, 19) || "?";
-    const content = r.content.slice(0, 400);
-    lines.push(`\n--- ${idx + 1}. [${sid}] ${r.role} (${ts}) ---`);
-    lines.push(`  → ${content.slice(0, 200)}${content.length > 200 ? "…" : ""}`);
-  }
-  return lines.join("\n");
+function mapL2Hit(r: MessageFtsHit) {
+  return {
+    session_id: r.session_id,
+    role: r.role,
+    timestamp: r.timestamp,
+    content: r.content,
+    rank: r.rank,
+  };
 }
 
 export function registerMemoryTools(): void {
@@ -108,7 +102,7 @@ export function registerMemoryTools(): void {
     },
     handler: async (args) => {
       const query = String(args.query ?? "").trim();
-      if (!query) return JSON.stringify({ error: "query is required" });
+      if (!query) return toolError("query is required");
 
       const l3Limit = Math.max(1, Math.min(50, asFloat(args.limit, 5)));
       const l2Limit = Math.max(1, Math.min(50, asFloat(args.session_limit, 10)));
@@ -117,16 +111,15 @@ export function registerMemoryTools(): void {
       const l3Results = await searchL3(query, l3Limit);
       const l2Rows = await searchL2(query, { limit: l2Limit, sessionId });
 
-      const sections: string[] = [];
-      const l3Text = formatL3Section(l3Results);
-      if (l3Text) sections.push(`## 语义记忆\n${l3Text}`);
-      const l2Text = formatL2Section(l2Rows);
-      if (l2Text) sections.push(`## 历史对话\n${l2Text}`);
-
-      if (!sections.length) {
-        return `未找到与「${query}」匹配的记忆或历史对话。`;
-      }
-      return sections.join("\n\n");
+      return toolResult({
+        query,
+        semantic_memory: l3Results.map(mapL3Hit),
+        dialogue: l2Rows.map(mapL2Hit),
+        summary:
+          l3Results.length || l2Rows.length
+            ? `找到 ${l3Results.length} 条语义记忆、${l2Rows.length} 条历史对话`
+            : `未找到与「${query}」匹配的记忆或历史对话`,
+      });
     },
   });
 }

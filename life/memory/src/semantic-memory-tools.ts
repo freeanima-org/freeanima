@@ -1,4 +1,4 @@
-import { registerTool } from "@freeanima/engine-tool";
+import { registerTool, toolError, toolResult } from "@freeanima/engine-tool";
 import { formatCstIso } from "@freeanima/kernel-util";
 import type { SemanticMemoryCreateInput, SemanticMemoryUpdateInput } from "@freeanima/engine-repos";
 
@@ -21,17 +21,9 @@ function parseStringArray(value: unknown): string[] | undefined {
   return value.map((v) => String(v).trim()).filter(Boolean);
 }
 
-function jsonResult(data: Record<string, unknown>): string {
-  return JSON.stringify(data);
-}
-
-function jsonError(message: string): string {
-  return JSON.stringify({ error: message });
-}
-
 async function handleCreateSemanticMemory(args: Record<string, unknown>): Promise<string> {
   const content = String(args.content ?? "").trim();
-  if (!content) return jsonError("content is required");
+  if (!content) return toolError("content is required");
 
   const row: SemanticMemoryCreateInput = {
     content,
@@ -50,7 +42,7 @@ async function handleCreateSemanticMemory(args: Record<string, unknown>): Promis
   };
 
   const id = await getSemanticMemoryStore().create(row);
-  return jsonResult({ ok: true, id, semantic_memory_id: id, action: "create" });
+  return toolResult({ ok: true, id, semantic_memory_id: id, action: "create" });
 }
 
 function resolveSemanticMemoryId(args: Record<string, unknown>): string {
@@ -62,7 +54,7 @@ function rememberResult(
   semanticMemoryId: string,
   extra?: Record<string, unknown>,
 ): string {
-  return jsonResult({
+  return toolResult({
     ok: true,
     action,
     semantic_memory_id: semanticMemoryId,
@@ -73,15 +65,15 @@ function rememberResult(
 
 async function handleUpdateSemanticMemory(args: Record<string, unknown>): Promise<string> {
   const semanticMemoryId = resolveSemanticMemoryId(args);
-  if (!semanticMemoryId) return jsonError("semantic_memory_id is required");
+  if (!semanticMemoryId) return toolError("semantic_memory_id is required");
 
   const existing = await getSemanticMemoryStore().get(semanticMemoryId);
-  if (!existing) return jsonError(`Memory not found: ${semanticMemoryId}`);
+  if (!existing) return toolError(`Memory not found: ${semanticMemoryId}`);
 
   const patch: SemanticMemoryUpdateInput = { id: semanticMemoryId };
   if (args.content !== undefined) {
     const content = String(args.content).trim();
-    if (!content) return jsonError("content cannot be empty");
+    if (!content) return toolError("content cannot be empty");
     patch.content = content;
   }
   if (args.type !== undefined) patch.type = String(args.type);
@@ -97,7 +89,7 @@ async function handleUpdateSemanticMemory(args: Record<string, unknown>): Promis
   if (args.status !== undefined) patch.status = String(args.status);
 
   await getSemanticMemoryStore().update(patch);
-  return jsonResult({
+  return toolResult({
     ok: true,
     id: semanticMemoryId,
     semantic_memory_id: semanticMemoryId,
@@ -107,10 +99,10 @@ async function handleUpdateSemanticMemory(args: Record<string, unknown>): Promis
 
 async function handleDeprecateSemanticMemory(args: Record<string, unknown>): Promise<string> {
   const semanticMemoryId = resolveSemanticMemoryId(args);
-  if (!semanticMemoryId) return jsonError("semantic_memory_id is required");
+  if (!semanticMemoryId) return toolError("semantic_memory_id is required");
   const ok = await getSemanticMemoryStore().deprecate(semanticMemoryId);
-  if (!ok) return jsonError(`Memory not found: ${semanticMemoryId}`);
-  return jsonResult({
+  if (!ok) return toolError(`Memory not found: ${semanticMemoryId}`);
+  return toolResult({
     ok: true,
     id: semanticMemoryId,
     semantic_memory_id: semanticMemoryId,
@@ -137,33 +129,35 @@ async function handleSearchSemanticMemory(args: Record<string, unknown>): Promis
     source_sessions: sourceSessions,
   });
 
-  if (!rows.length) {
-    return query ? `未找到与「${query}」匹配的语义记忆。` : "未找到匹配的语义记忆。";
-  }
-
-  const lines = [`找到 ${rows.length} 条语义记忆：`];
-  for (const row of rows) {
-    const pinned = row.pinned ? "📌" : "";
-    const sources =
-      row.source_sessions.length > 0 ? ` sources=[${row.source_sessions.join(", ")}]` : "";
-    lines.push(`  [${row.id}] (${row.type})${pinned}${sources} ${row.content}`);
-  }
-  return lines.join("\n");
+  return toolResult({
+    query: query || null,
+    count: rows.length,
+    results: rows.map((row) => ({
+      id: row.id,
+      type: row.type,
+      content: row.content,
+      pinned: row.pinned,
+      source_sessions: row.source_sessions,
+      observed_at: row.observed_at,
+      occurred_at: row.occurred_at,
+      status: row.status,
+    })),
+  });
 }
 
 async function handleMergeSemanticMemories(args: Record<string, unknown>): Promise<string> {
   const sourceIds = parseStringArray(args.source_ids);
   if (!sourceIds || sourceIds.length === 0) {
-    return jsonError("source_ids is required (non-empty array)");
+    return toolError("source_ids is required (non-empty array)");
   }
   if (sourceIds.length === 1) {
-    return jsonError(
+    return toolError(
       "merge requires 2+ source_ids; use update_semantic_memory for single-memory edits",
     );
   }
 
   const targetContent = String(args.target_content ?? "").trim();
-  if (!targetContent) return jsonError("target_content is required");
+  if (!targetContent) return toolError("target_content is required");
 
   const store = getSemanticMemoryStore();
 
@@ -179,9 +173,9 @@ async function handleMergeSemanticMemories(args: Record<string, unknown>): Promi
     });
   }
 
-  if (sources.length === 0) return jsonError("None of the source_ids found");
+  if (sources.length === 0) return toolError("None of the source_ids found");
   if (sources.length === 1) {
-    return jsonError(
+    return toolError(
       `Only 1 of ${sourceIds.length} source_ids found; use update_semantic_memory instead`,
     );
   }
@@ -219,7 +213,7 @@ async function handleMergeSemanticMemories(args: Record<string, unknown>): Promi
     if (ok) deprecatedIds.push(s.id);
   }
 
-  return jsonResult({
+  return toolResult({
     ok: true,
     id: newId,
     action: "merge",
@@ -376,14 +370,14 @@ export async function rememberFromArgs(args: Record<string, unknown>): Promise<s
 
   if (action === "delete") {
     const semanticMemoryId = resolveSemanticMemoryId(args);
-    if (!semanticMemoryId) return jsonError("semantic_memory_id is required for delete");
+    if (!semanticMemoryId) return toolError("semantic_memory_id is required for delete");
     const deleted = await store.delete(semanticMemoryId);
     return rememberResult("delete", semanticMemoryId, { ok: deleted });
   }
 
   if (action === "update") {
     const semanticMemoryId = resolveSemanticMemoryId(args);
-    if (!semanticMemoryId) return jsonError("semantic_memory_id is required for update");
+    if (!semanticMemoryId) return toolError("semantic_memory_id is required for update");
     return handleUpdateSemanticMemory({ ...args, id: semanticMemoryId });
   }
 

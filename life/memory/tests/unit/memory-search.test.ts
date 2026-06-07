@@ -277,7 +277,13 @@ describe("memory search", () => {
     );
 
     const out = await getTool("recall")!.handler({ query: "compression" });
-    expect(out).toContain("## 语义记忆");
-    expect(out).toContain("## 历史对话");
+    const parsed = JSON.parse(out) as {
+      semantic_memory: { content: string }[];
+      dialogue: { content: string }[];
+    };
+    expect(parsed.semantic_memory.length).toBeGreaterThan(0);
+    expect(parsed.dialogue.length).toBeGreaterThan(0);
+    expect(parsed.semantic_memory.some((r) => r.content.includes("compression"))).toBe(true);
+    expect(parsed.dialogue.some((r) => r.content.includes("compression"))).toBe(true);
   });
 });
