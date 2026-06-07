@@ -16,7 +16,6 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@freeanima/engine-loop": "workspace:*",
     "@types/bun": "catalog:"
   }
 }

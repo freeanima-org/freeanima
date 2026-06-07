@@ -50,13 +50,7 @@ const fallbackProviderSchema = z.object({
   base_url: z.string().optional(),
 });
 
-const memoryReflectSchema = z.object({
-  enabled: z.boolean().optional(),
-});
-
-const memorySchema = z.object({
-  reflect: memoryReflectSchema.optional(),
-});
+const memorySchema = z.object({}).passthrough();
 
 const firecrawlSchema = z.object({
   api_url: z.string().optional(),

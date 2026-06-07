@@ -21,10 +21,7 @@ describePgSqlite("memory handlers", () => {
   const prev = process.env.FREEANIMA_HOME;
 
   beforeEach(async () => {
-    const ctx = await beginIntegrationCaseWithConfig(
-      "freeanima-handlers-",
-      "memory:\n  reflect:\n    enabled: false\n",
-    );
+    const ctx = await beginIntegrationCaseWithConfig("freeanima-handlers-", "");
     home = ctx.home;
   });
 

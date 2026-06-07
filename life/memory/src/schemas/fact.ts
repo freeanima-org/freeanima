@@ -12,7 +12,11 @@ export const semanticMemoryTypeSchema = z.enum([
 
 export type SemanticMemoryType = z.infer<typeof semanticMemoryTypeSchema>;
 
-/** 旧 fact 类型及 reflect 产出映射为 world */
+export const semanticMemoryStatusSchema = z.enum(["active", "deprecated"]);
+
+export type SemanticMemoryStatus = z.infer<typeof semanticMemoryStatusSchema>;
+
+/** 旧 fact 类型映射为 world */
 export function normalizeSemanticMemoryType(raw: string | undefined | null): SemanticMemoryType {
   const t = String(raw ?? "world")
     .trim()
@@ -27,6 +31,10 @@ export const semanticMemorySchema = z.object({
   type: semanticMemoryTypeSchema,
   pinned: z.boolean(),
   content: z.string(),
+  source_sessions: z.array(z.string()).default([]),
+  observed_at: z.string().nullable().default(null),
+  occurred_at: z.string().nullable().default(null),
+  status: semanticMemoryStatusSchema.default("active"),
   created: z.string(),
   updated: z.string(),
 });

@@ -20,6 +20,10 @@ export const semanticMemoryTypeSchema = z.enum([
 
 export type SemanticMemoryType = z.infer<typeof semanticMemoryTypeSchema>;
 
+export const semanticMemoryStatusSchema = z.enum(["active", "deprecated"]);
+
+export type SemanticMemoryStatus = z.infer<typeof semanticMemoryStatusSchema>;
+
 /** 旧 fact 类型及 reflect 产出映射为 world */
 export function normalizeSemanticMemoryType(raw: string | undefined | null): SemanticMemoryType {
   const t = String(raw ?? "world")
@@ -40,6 +44,10 @@ export const semanticMemory = pgTable(
     contentFts: tsvector("content_fts").generatedAlwaysAs(
       (): SQL => sql`to_tsvector('simple', message_fts_input(${semanticMemory.content}))`,
     ),
+    sourceSessions: text("source_sessions").array().notNull().default([]),
+    observedAt: timestamp("observed_at", { withTimezone: true }),
+    occurredAt: text("occurred_at"),
+    status: text("status").notNull().default("active"),
     created: timestamp("created", { withTimezone: true }).notNull().defaultNow(),
     updated: timestamp("updated", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -47,5 +55,7 @@ export const semanticMemory = pgTable(
     index("idx_semantic_memory_fts").using("gin", t.contentFts),
     index("idx_semantic_memory_type").on(t.type),
     index("idx_semantic_memory_pinned").on(t.pinned),
+    index("idx_semantic_memory_source_sessions").using("gin", t.sourceSessions),
+    index("idx_semantic_memory_status").on(t.status),
   ],
 );

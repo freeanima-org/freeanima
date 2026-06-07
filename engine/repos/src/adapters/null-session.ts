@@ -84,4 +84,7 @@ export const nullSessionStore: SessionStorePort = {
   async countSearchableMessages() {
     return 0;
   },
+  async listSessionIdsUpdatedBetween() {
+    return [];
+  },
 };

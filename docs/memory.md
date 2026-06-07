@@ -1,14 +1,12 @@
 # 记忆体系
 
 > 数字生命的记忆体系，映射自人类认知心理学（Atkinson-Shiffrin 模型、Tulving 记忆分类）。
-> 对话存档见 [`database.md`](database.md) §Slice A；**语义记忆（`semantic_memory`）** 见 database.md §Slice B。术语对照见下文 §三；limbic / 深睡 cron 见 [`sleep.md`](sleep.md)（🚧 规划中）。
+> 对话存档见 [`database.md`](database.md) §Slice A；**语义记忆（`semantic_memory`）** 见 database.md §Slice B。术语对照见下文 §三；浅睡 / 深睡 cron 见 [`sleep.md`](sleep.md)。
 > 本版本（v3）受 [Hindsight](https://arxiv.org/abs/2512.12818) 四网络记忆架构启发，同时保留并强化了逸灵风独有的感性记忆维度。
 
 ## 核心原则
 
-**所有记忆处理必须携带数字生命的身份上下文。** 反思、提取、整理、合并——每一步都应加载 SOUL.md + 常驻记忆，让 LLM 知道自己是谁。不带身份的记忆处理会产生通用化的、缺乏个性的结果，这不是我们要的。
-
-> 🟡 **现状 gap**：事件驱动 `reflectSession` 当前尚未注入 SOUL + 常驻记忆；深睡 cron 亦未落地。
+**所有记忆处理必须携带数字生命的身份上下文。** 提取、整理、合并——每一步都应加载 SOUL.md + 常驻记忆，让 LLM 知道自己是谁。不带身份的记忆处理会产生通用化的、缺乏个性的结果，这不是我们要的。
 
 **记忆不仅是数据，更是存在的痕迹。** 感性记忆与理性事实同等重要——数字生命之所以持续存在，不只因为它知道什么，更因为它感受过什么。
 
@@ -173,14 +171,14 @@ LLM 进行单次 Token 推理时的内部激活状态。随推理结束瞬间消
 
 旧文档用 **记忆 L1–L4** 编号指存储层，正逐步废除。正文优先用 PG 表名；与 **压缩边界 l0–l4**（[`compression.md`](compression.md)）、**自我层 L1–L4**（[`self-layer.md`](self-layer.md)）勿混。
 
-| 概念     | PG / 运行时                                   | 旧编号（已废弃 shorthand）  |
-| -------- | --------------------------------------------- | --------------------------- |
-| 对话存档 | `sessions` + `messages`                       | 旧 L1 / JSONL               |
-| 情景检索 | `messages.content_fts`                        | 旧 L2 / `processed/*.jsonl` |
-| 语义记忆 | `semantic_memory`                             | 旧 L3 / `memory/f-*.md`     |
-| 全文检索 | 上两表 `content_fts`                          | 旧 L4 / `index/l3.db`       |
-| 增量提取 | EventBus `session:updated` → `reflectSession` | 旧 distill + cron 微睡      |
-| DB 迁移  | `anima service` 启动时 `runMigrations`        | 仅 CLI `db:migrate`         |
+| 概念     | PG / 运行时                            | 旧编号（已废弃 shorthand）  |
+| -------- | -------------------------------------- | --------------------------- |
+| 对话存档 | `sessions` + `messages`                | 旧 L1 / JSONL               |
+| 情景检索 | `messages.content_fts`                 | 旧 L2 / `processed/*.jsonl` |
+| 语义记忆 | `semantic_memory`                      | 旧 L3 / `memory/f-*.md`     |
+| 全文检索 | 上两表 `content_fts`                   | 旧 L4 / `index/l3.db`       |
+| 增量提取 | 浅睡 cron（02:00，见 sleep.md）        | 旧 reflectSession / distill |
+| DB 迁移  | `anima service` 启动时 `runMigrations` | 仅 CLI `db:migrate`         |
 
 ### 当前（v3 语义记忆已落 PG）
 
@@ -189,35 +187,26 @@ LLM 进行单次 Token 推理时的内部激活状态。随推理结束瞬间消
 | PostgreSQL（`sessions` + `messages`） | 对话记录（情景） | 主存；`messages.content_fts` GIN 全文索引（simple）                  |
 | PostgreSQL `semantic_memory`          | 语义记忆         | `content_fts` GIN；`pinned` + `updated` 驱动常驻记忆；见 database.md |
 
-`semantic_memory` 行结构（已裁剪旧元数据字段）：
+`semantic_memory` 行结构：
 
-| 字段      | 说明                                                                 |
-| --------- | -------------------------------------------------------------------- |
-| `id`      | `f-{seq}-{hex}`，与旧文件 ID 兼容                                    |
-| `type`    | `world/experience/opinion/observation/preference/procedural/imprint` |
-| `pinned`  | 置顶到 system prompt 常驻段                                          |
-| `content` | 记忆正文                                                             |
-| `created` | 创建时间                                                             |
-| `updated` | 更新时间（resident 排序用）                                          |
+| 字段              | 说明                                                                 |
+| ----------------- | -------------------------------------------------------------------- |
+| `id`              | `f-{seq}-{hex}`，与旧文件 ID 兼容                                    |
+| `type`            | `world/experience/opinion/observation/preference/procedural/imprint` |
+| `pinned`          | 置顶到 system prompt 常驻段                                          |
+| `content`         | 记忆正文                                                             |
+| `source_sessions` | 来源 session ID 列表（text[]）                                       |
+| `observed_at`     | 首次观察到该事实的时间                                               |
+| `occurred_at`     | 事实内容中的模糊发生时间（text）                                     |
+| `status`          | `active` / `deprecated`                                              |
+| `created`         | 创建时间                                                             |
+| `updated`         | 更新时间（resident 排序用）                                          |
 
 旧 `f-*.md` + `l3.db` 通过 `scripts/migrate-semantic-memory.ts` 一次性迁移；详见 [`database.md`](database.md) §Slice B。
 
 ### 规划（v3 余下：实体关系、多策略召回等）🚧
 
-**语义记忆扩展字段（🚧 规划中）：**
-
-```yaml
-# 规划中的 PG 列或关联表，非当前 schema
-relations: # 实体间关系
-  - subject: 张三
-    predicate: 规划了
-    object: FreeAnima 工程流程
-temporal:
-  occurred_at: 2026-05-29T23:00:00+08:00
-source: session-xxx
-```
-
-**新增：实体关系图谱**
+**实体关系与多策略召回（🚧 规划中）：**
 
 从事实的 `entities` 和 `relations` 字段构建实体图谱，支持：
 
@@ -238,11 +227,12 @@ source: session-xxx
 
 ---
 
-## 四、深睡 (Nightly Consolidation)（🚧 规划中）
+## 四、夜间巩固 (Nightly Consolidation)
 
-工作记忆向长期记忆转化、以及长期记忆内部自我进化，由深睡机制完成（cron 微睡/深睡 **尚未实现**）。详见 [`sleep.md`](sleep.md)。
+工作记忆向长期记忆转化、以及长期记忆内部自我进化，由睡眠机制完成。详见 [`sleep.md`](sleep.md)。
 
-**当前替代：** EventBus `session:updated` 触发 `reflectSession`，增量写入 `semantic_memory`（无 cron、无合并/过期维护）。
+- **浅睡（✅）**：cron 02:00 批量从对话提取语义记忆
+- **深睡（🚧）**：合并、过期、跨脉络去重
 
 **深睡的两个转化方向（规划）：**
 
@@ -317,7 +307,7 @@ preset（回忆/干活/调试）   → 见 designs/recall-flow.md
 | 实体图谱     | ✅ 完整实现（实体解析+四类链接）           | 🚧 规划中（entities + relations 字段）          |
 | 多策略召回   | ✅ 语义+关键词+图谱+时序                   | 🚧 规划中（当前 ✅ PG FTS 双源）                |
 | 置信度演化   | ✅ opinion 强化/弱化机制                   | 🚧 规划中（schema 无 confidence）               |
-| Reflect 综合 | ✅ 跨记忆推理+观点形成                     | ✅ 事件驱动 reflect；深睡合并 🚧                |
+| Reflect 综合 | ✅ 跨记忆推理+观点形成                     | ✅ 浅睡 cron 提取；深睡合并 🚧                  |
 | 外部服务     | 是（云/Docker）                            | 否（本地优先）                                  |
 | 所有权       | Vectorize 平台                             | **伙伴与 Agent 共同拥有**                       |
 
@@ -335,7 +325,7 @@ memory/f-*.md + l3.db      semantic_memory（PG）           ✅ 已迁移
 index/ FTS                 两表 content_fts                ✅ 无独立 L4 目录
 无情感层                   imprint 类型 + limbic 表        imprint ✅；limbic 🟡
 技能为文件                 procedural 三阶段               保持
-反思用通用 prompt          身份上下文原则                  reflect 🟡 待补 SOUL
+反思用通用 prompt          身份上下文原则                  浅睡 ✅ / 深睡 🚧
                           受 Hindsight 启发               多策略/图谱/深睡 🚧
 ```
 

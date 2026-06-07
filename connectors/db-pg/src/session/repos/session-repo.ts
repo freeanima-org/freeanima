@@ -316,3 +316,21 @@ export async function findSessionIdByPlatformInfo(
     .limit(1);
   return rows[0]?.id ?? null;
 }
+
+/** sessions.updated_at 落在 [fromIso, toIso) 内、非 debug 的 session id */
+export async function listSessionIdsUpdatedBetween(
+  fromIso: string,
+  toIso: string,
+): Promise<string[]> {
+  const db = getDb();
+  const rows = await db
+    .select({ id: sessions.id })
+    .from(sessions)
+    .where(
+      sql`${sessions.updatedAt} >= ${fromIso}::timestamptz
+        AND ${sessions.updatedAt} < ${toIso}::timestamptz
+        AND ${sessions.debug} = false`,
+    )
+    .orderBy(desc(sessions.updatedAt));
+  return rows.map((r) => r.id);
+}

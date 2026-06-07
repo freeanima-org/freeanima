@@ -27,12 +27,17 @@ export async function searchSemanticMemoryFts(
       sm.type,
       sm.pinned,
       sm.content,
+      sm.source_sessions,
+      sm.observed_at,
+      sm.occurred_at,
+      sm.status,
       sm.created,
       sm.updated,
       ts_rank(sm.content_fts, q) AS rank
     FROM semantic_memory sm,
          to_tsquery('simple', ${tsquery}) q
     WHERE sm.content_fts @@ q
+      AND sm.status = 'active'
     ${typeFilter}
     ORDER BY rank DESC
     LIMIT ${limit}

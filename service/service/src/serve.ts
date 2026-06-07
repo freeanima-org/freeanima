@@ -1,6 +1,6 @@
 import "./wire-api.ts";
 import "@freeanima/service/runtime/system-prompt-wire";
-import { chat, getLlmRuntime, initLlmRuntime, PROFILE_REFLECT } from "@freeanima/engine";
+import { getLlmRuntime, initLlmRuntime } from "@freeanima/engine";
 import { createEngine, type Engine } from "@freeanima/engine";
 import { createServiceKernel } from "@freeanima/service-bootstrap";
 import { nullPgRepositories } from "@freeanima/engine-repos";
@@ -35,6 +35,7 @@ import {
   Scheduler,
   enqueueRunJob,
   ensureBuiltinCronJobs,
+  registerCronBuiltinHandler,
   type CronJob,
 } from "@freeanima/connectors-cron";
 import { writeFileSync, unlinkSync, mkdirSync } from "node:fs";
@@ -47,7 +48,9 @@ import {
   registerServiceMemoryBus,
   registerServiceTools,
 } from "./register.ts";
-import type { ReflectChatFn } from "@freeanima/life-memory";
+import { registerLightSleepWire } from "./runtime/light-sleep-wire.ts";
+import { runLightSleep } from "@freeanima/life-memory/light-sleep/run";
+import { loadSoul } from "@freeanima/life-self";
 import {
   discoverPlatforms,
   startPlatforms,
@@ -209,18 +212,14 @@ export async function serve(
     service.markStarted();
     const nest = service;
 
-    const reflectChat: ReflectChatFn = async (messages) => {
-      const resp = await chat(messages, { profileId: PROFILE_REFLECT });
-      return { content: resp.content ?? null };
-    };
     registerServiceMemoryBus({
       kernel,
       sessionStore: engine.repos.session,
       semanticStore: engine.repos.semanticMemory,
-      reflectChat,
     });
     service.setEventBus(kernel.eventBus);
 
+    registerLightSleepWire();
     ensureBuiltinCronJobs();
     seedHomeChannelsFromHermes();
     cronScheduler = new Scheduler();
@@ -239,6 +238,14 @@ export async function serve(
       acp,
       host: statusHost,
       port,
+    });
+
+    registerCronBuiltinHandler("builtin-light-sleep", async () => {
+      const result = await runLightSleep({
+        sessionStore: engine!.repos.session,
+        soulContent: loadSoul(),
+      });
+      return JSON.stringify(result);
     });
 
     const webuiDev = useWebuiDevMode(Boolean(opts.foreground));

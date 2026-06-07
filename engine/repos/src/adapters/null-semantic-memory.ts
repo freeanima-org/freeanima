@@ -15,6 +15,9 @@ export const nullSemanticMemoryStore: SemanticMemoryStorePort = {
   async update() {
     return unavailable();
   },
+  async deprecate() {
+    return unavailable();
+  },
   async delete() {
     return false;
   },
@@ -27,7 +30,13 @@ export const nullSemanticMemoryStore: SemanticMemoryStorePort = {
   async listAll() {
     return [];
   },
+  async listBySourceSessions() {
+    return [];
+  },
   async searchFts() {
+    return [];
+  },
+  async search() {
     return [];
   },
   async findByContent() {

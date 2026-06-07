@@ -9,18 +9,10 @@ export {
   type TestPingPayload,
 } from "./events.ts";
 export {
-  isReflectEnabled,
   registerMemoryPipeline,
   registerMemoryHandlers,
   registerEventHandlers,
 } from "./pipeline.ts";
-export {
-  registerReflectChat,
-  callReflectChat,
-  type ReflectChatFn,
-  type ReflectChatMessage,
-} from "./reflect-llm.ts";
-export { reflectSession, type ReflectSessionResult } from "./reflect.ts";
 export {
   registerMemorySessionStore,
   getMemorySessionStore,
@@ -45,7 +37,32 @@ export {
 } from "./search.ts";
 export { registerMemoryTools } from "./register-tools.ts";
 export {
+  registerSemanticMemoryTools,
+  rememberFromArgs,
+  createSemanticMemoryFromArgs,
+} from "./semantic-memory-tools.ts";
+export {
   decomposeSystemPromptParts,
   composeSystemPrompt,
   type SystemPromptParts,
 } from "./system-prompt.ts";
+export {
+  registerLightSleepEngine,
+  resetLightSleepEngineForTests,
+  runLightSleepEngine,
+  type LightSleepEngineFn,
+  type LightSleepEngineInput,
+  type LightSleepEngineResult,
+} from "./light-sleep-port.ts";
+export { runLightSleep, type LightSleepResult, type RunLightSleepOpts } from "./light-sleep/run.ts";
+export {
+  cstDayRange,
+  buildLightSleepUserMessages,
+  LIGHT_SLEEP_INSTRUCTION_MESSAGE,
+  type LightSleepDayRange,
+} from "./light-sleep/build-messages.ts";
+export {
+  readLightSleepState,
+  writeLightSleepState,
+  recordLightSleepRun,
+} from "./light-sleep/state.ts";
