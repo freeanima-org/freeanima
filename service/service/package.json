@@ -16,6 +16,7 @@
   "dependencies": {
     "@freeanima/capabilities-acp": "workspace:*",
     "@freeanima/capabilities-clarify": "workspace:*",
+    "@freeanima/capabilities-fridge-magnet": "workspace:*",
     "@freeanima/capabilities-mask": "workspace:*",
     "@freeanima/capabilities-mcp": "workspace:*",
     "@freeanima/capabilities-provider-openai-compatible": "workspace:*",

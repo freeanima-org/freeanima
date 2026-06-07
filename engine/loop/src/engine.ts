@@ -13,6 +13,8 @@ import type { HookClarifyItem, HookStreamEvent, TurnControl } from "@freeanima/k
 import {
   headOkStepData,
   toolAfterCall,
+  beforeLlmCall,
+  type BeforeLlmCallContext,
   type HookRegistry,
   type ToolAfterCallEffect,
 } from "@freeanima/kernel-hooks";
@@ -269,6 +271,13 @@ export async function* runStream(
 
   for (let turn = 0; turn < maxTurns; turn++) {
     checkAborted(opts?.signal);
+    // 运行 beforeLlmCall hook，允许模块（如冰箱贴）在 LLM 推理前修改消息
+    if (opts?.hookRegistry) {
+      await opts.hookRegistry.run(beforeLlmCall, {
+        sessionId: getToolSessionId() ?? "",
+        messages: messages as BeforeLlmCallContext["messages"],
+      });
+    }
     const buffer: string[] = [];
     let toolCalls: llm.LlmResponse["tool_calls"] | undefined;
     let turnReasoning: string | null = null;
