@@ -157,32 +157,37 @@ export function listToolsApi(): { tools: { name: string; description: string }[]
   return { tools: listTools().map((t) => ({ name: t.name, description: t.description })) };
 }
 
-export function listCronJobs(): { jobs: CronJobData[] } {
-  return { jobs: listJobs().map((j) => j.toJSON()) };
+export async function listCronJobs(): Promise<{ jobs: CronJobData[] }> {
+  const jobs = await listJobs();
+  return { jobs: jobs.map((j) => j.toJSON()) };
 }
 
-export function pauseCronJob(jobId: string): CronJobData | null {
-  if (!pauseJob(jobId)) return null;
-  return getJob(jobId)?.toJSON() ?? null;
+export async function pauseCronJob(jobId: string): Promise<CronJobData | null> {
+  if (!(await pauseJob(jobId))) return null;
+  const job = await getJob(jobId);
+  return job?.toJSON() ?? null;
 }
 
-export function resumeCronJob(jobId: string): CronJobData | null {
-  if (!resumeJob(jobId)) return null;
-  return getJob(jobId)?.toJSON() ?? null;
+export async function resumeCronJob(jobId: string): Promise<CronJobData | null> {
+  if (!(await resumeJob(jobId))) return null;
+  const job = await getJob(jobId);
+  return job?.toJSON() ?? null;
 }
 
-export function runCronJobNow(jobId: string): { job: CronJobData; message: string } | null {
-  const job = getJob(jobId);
+export async function runCronJobNow(
+  jobId: string,
+): Promise<{ job: CronJobData; message: string } | null> {
+  const job = await getJob(jobId);
   if (!job) return null;
-  enqueueRunJob(job);
+  void enqueueRunJob(job);
   return {
     job: job.toJSON(),
     message: `已触发立即运行: ${job.name}`,
   };
 }
 
-export function ensureBuiltinCronJobsRegistered(): void {
-  ensureBuiltinCronJobs();
+export async function ensureBuiltinCronJobsRegistered(): Promise<void> {
+  await ensureBuiltinCronJobs();
 }
 
 export function listCommands(opts?: { platform?: string; all?: boolean }): {

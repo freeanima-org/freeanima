@@ -148,10 +148,11 @@ export class AnimaService implements StreamTurnHost {
   }
 
   async buildStatus(host: string, port: number): Promise<ServiceSnapshot> {
+    const cronJobs = await status.listCronJobs();
     return status.buildStatus(
       this.startTime,
       this.platformStatus,
-      status.listCronJobs().jobs.length,
+      cronJobs.jobs.length,
       host,
       port,
     );
@@ -240,24 +241,24 @@ export class AnimaService implements StreamTurnHost {
     return status.listToolsApi();
   }
 
-  listCronJobs(): { jobs: CronJobData[] } {
+  listCronJobs(): Promise<{ jobs: CronJobData[] }> {
     return status.listCronJobs();
   }
 
-  pauseCronJob(jobId: string): CronJobData | null {
+  pauseCronJob(jobId: string): Promise<CronJobData | null> {
     return status.pauseCronJob(jobId);
   }
 
-  resumeCronJob(jobId: string): CronJobData | null {
+  resumeCronJob(jobId: string): Promise<CronJobData | null> {
     return status.resumeCronJob(jobId);
   }
 
-  runCronJobNow(jobId: string): { job: CronJobData; message: string } | null {
+  runCronJobNow(jobId: string): Promise<{ job: CronJobData; message: string } | null> {
     return status.runCronJobNow(jobId);
   }
 
-  ensureBuiltinCronJobs(): void {
-    status.ensureBuiltinCronJobsRegistered();
+  ensureBuiltinCronJobs(): Promise<void> {
+    return status.ensureBuiltinCronJobsRegistered();
   }
 
   listCommands(opts?: { platform?: string; all?: boolean }) {

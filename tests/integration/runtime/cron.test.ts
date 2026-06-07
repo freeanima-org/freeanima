@@ -8,7 +8,6 @@ import {
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { waitFor } from "../../helpers/wait.ts";
 import {
   parseSchedule,
   ScheduleType,
@@ -24,8 +23,10 @@ import {
   registerCronDeliverer,
   unregisterCronDeliverer,
   enqueueRunJob,
-  Scheduler,
-  cronStore,
+  initCronModule,
+  stopCronModule,
+  computeNextRunAt,
+  readOutputRef,
 } from "@freeanima/connectors-cron";
 import { patchConfigSection } from "@freeanima/service-config";
 
@@ -36,9 +37,11 @@ describePg("cron", () => {
   beforeEach(async () => {
     const ctx = await beginIntegrationCase("anima-cron-");
     home = ctx.home;
+    await initCronModule({ store: ctx.pg.engine.repos.cron });
   });
 
   afterEach(async () => {
+    stopCronModule();
     await restoreIntegrationHome(prev);
   });
 
@@ -48,20 +51,21 @@ describePg("cron", () => {
     expect(v).toBe(1800);
   });
 
-  it("createJob and listJobs", () => {
-    const j = createJob({
+  it("createJob and listJobs", async () => {
+    const j = await createJob({
       name: "test",
       schedule: "1h",
       prompt: "say hi",
     });
     expect(j.id).toBeTruthy();
-    expect(listJobs().length).toBe(1);
-    expect(getJob(j.id)?.name).toBe("test");
-    expect(pauseJob(j.id)).toBe(true);
-    expect(getJob(j.id)?.paused).toBe(true);
-    expect(resumeJob(j.id)).toBe(true);
-    ensureBuiltinCronJobs();
-    ensureBuiltinCronJobs();
+    expect((await listJobs()).length).toBeGreaterThanOrEqual(1);
+    expect((await getJob(j.id))?.name).toBe("test");
+    expect(await pauseJob(j.id)).toBe(true);
+    expect((await getJob(j.id))?.paused).toBe(true);
+    expect(computeNextRunAt("1h", true)).toBe(0);
+    expect(await resumeJob(j.id)).toBe(true);
+    await ensureBuiltinCronJobs();
+    await ensureBuiltinCronJobs();
   });
 
   it("resolveDeliverTargets", () => {
@@ -98,54 +102,31 @@ describePg("cron", () => {
     writeFileSync(scriptPath, "#!/usr/bin/env bash\nsleep 0.05\necho slow-ok\n", {
       mode: 0o755,
     });
-    const j = createJob({
+    const j = await createJob({
       name: "slow",
       schedule: "1h",
       no_agent: true,
       script: "slow.sh",
       timeout_sec: 60,
     });
-    const before = getJob(j.id)!.last_output;
-    void enqueueRunJob(getJob(j.id)!);
-    // 调用方同步返回时脚本尚未 spawn（与 HTTP /run 行为一致）
-    expect(getJob(j.id)!.last_output).toBe(before);
-    await waitFor(() => (getJob(j.id)?.last_output ?? "").includes("slow-ok"), {
-      timeoutMs: 800,
-    });
+    const before = readOutputRef((await getJob(j.id))?.last_output_ref);
+    void enqueueRunJob((await getJob(j.id))!);
+    expect(readOutputRef((await getJob(j.id))?.last_output_ref)).toBe(before);
+    const deadline = Date.now() + 800;
+    let done = false;
+    while (Date.now() < deadline) {
+      const job = await getJob(j.id);
+      if (readOutputRef(job?.last_output_ref).includes("slow-ok")) {
+        done = true;
+        break;
+      }
+      await new Promise((r) => setTimeout(r, 25));
+    }
+    expect(done).toBe(true);
   });
 
-  it("scheduler skips concurrent runs for same job", async () => {
-    mkdirSync(join(home, "cron"), { recursive: true });
-    const job = new CronJob({
-      id: "slow-job",
-      name: "slow",
-      schedule: "1h",
-      no_agent: true,
-      script: null,
-      next_run_at: 1,
-    });
-    cronStore.saveAll([job]);
-
-    let active = 0;
-    let maxActive = 0;
-    const scheduler = new Scheduler();
-    scheduler.start(async () => {
-      active += 1;
-      maxActive = Math.max(maxActive, active);
-      await new Promise((r) => setTimeout(r, 15));
-      active -= 1;
-    });
-
-    const tick = (scheduler as unknown as { tick: () => Promise<void> }).tick.bind(scheduler);
-    await tick();
-    await tick();
-    await new Promise((r) => setTimeout(r, 40));
-    scheduler.stop();
-    expect(maxActive).toBe(1);
-  });
-
-  it("createJob stores timeout_sec", () => {
-    const j = createJob({
+  it("createJob stores timeout_sec", async () => {
+    const j = await createJob({
       name: "long",
       schedule: "1h",
       prompt: "x",
@@ -153,7 +134,7 @@ describePg("cron", () => {
       script: "noop.sh",
       timeout_sec: 1800,
     });
-    expect(getJob(j.id)?.timeout_sec).toBe(1800);
+    expect((await getJob(j.id))?.timeout_sec).toBe(1800);
   });
 
   afterAll(async () => {

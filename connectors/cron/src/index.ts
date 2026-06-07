@@ -1,10 +1,19 @@
 import { randomBytes } from "node:crypto";
 import { formatCstIso } from "@freeanima/kernel-util";
 import { CronJob } from "./models.ts";
-import * as store from "./store.ts";
-import { computeNextRun } from "./schedule.ts";
+import {
+  ensureBuiltinCronJobs,
+  getCronHandleManager,
+  getCronStore,
+  getJob,
+  initCronModule,
+  isCronModuleInitialized,
+  loadAllJobs,
+  stopCronModule,
+} from "./module.ts";
+import { parseSchedule } from "./schedule.ts";
 
-export function createJob(opts: {
+export async function createJob(opts: {
   name: string;
   schedule: string;
   prompt?: string;
@@ -19,10 +28,11 @@ export function createJob(opts: {
   deliver?: string;
   timeout_sec?: number;
   repeat?: number | null;
-}): CronJob {
+}): Promise<CronJob> {
+  parseSchedule(opts.schedule);
   const now = formatCstIso();
   const id = randomBytes(8).toString("hex").slice(0, 16);
-  const job = new CronJob({
+  await getCronStore().create({
     id,
     name: opts.name,
     schedule: opts.schedule,
@@ -41,98 +51,53 @@ export function createJob(opts: {
     created_at: now,
     updated_at: now,
   });
-  const next = computeNextRun(opts.schedule, Date.now() / 1000);
-  if (next != null) job.next_run_at = next;
-  store.add(job);
+  const job = (await getJob(id))!;
+  getCronHandleManager().register(job);
   return job;
 }
 
-export function listJobs(): CronJob[] {
-  return store.loadAll();
+export async function listJobs(): Promise<CronJob[]> {
+  return loadAllJobs();
 }
 
-export function getJob(jobId: string): CronJob | null {
-  return store.find(jobId);
-}
+export { getJob };
 
-export function removeJob(jobId: string): boolean {
-  const job = store.find(jobId);
+export async function removeJob(jobId: string): Promise<boolean> {
+  const job = await getJob(jobId);
   if (!job) return false;
   if (job.builtin) {
     throw new Error(`'${jobId}' is a built-in task and cannot be removed`);
   }
-  return store.remove(jobId);
+  getCronHandleManager().unregister(jobId);
+  return getCronStore().delete(jobId);
 }
 
-export function pauseJob(jobId: string): boolean {
-  const job = store.find(jobId);
+export async function pauseJob(jobId: string): Promise<boolean> {
+  const job = await getJob(jobId);
   if (!job) return false;
   job.paused = true;
-  job.next_run_at = 0;
-  return store.update(job);
+  const ok = await getCronStore().update({ id: jobId, paused: true });
+  if (ok) getCronHandleManager().pause(jobId);
+  return ok;
 }
 
-export function resumeJob(jobId: string): boolean {
-  const job = store.find(jobId);
+export async function resumeJob(jobId: string): Promise<boolean> {
+  const job = await getJob(jobId);
   if (!job) return false;
   job.paused = false;
-  const next = computeNextRun(job.schedule);
-  job.next_run_at = next ?? 0;
-  return store.update(job);
+  const ok = await getCronStore().update({ id: jobId, paused: false });
+  if (ok) getCronHandleManager().resume(job);
+  return ok;
 }
 
-export function ensureBuiltinCronJobs(): void {
-  _ensureBuiltinLightSleepCronJob();
-  _ensureBuiltinDeepSleepCronJob();
-}
-
-function _ensureBuiltinLightSleepCronJob(): void {
-  const id = "builtin-light-sleep";
-  if (store.find(id)) return;
-  const now = formatCstIso();
-  const job = new CronJob({
-    id,
-    name: "light-sleep",
-    schedule: "0 2 * * *",
-    prompt: "",
-    no_agent: true,
-    builtin: true,
-    deliver: "local",
-    timeout_sec: 1800,
-    created_at: now,
-    updated_at: now,
-  });
-  const next = computeNextRun(job.schedule, Date.now() / 1000);
-  if (next != null) job.next_run_at = next;
-  store.add(job);
-}
-
-function _ensureBuiltinDeepSleepCronJob(): void {
-  const id = "builtin-deep-sleep";
-  if (store.find(id)) return;
-  const now = formatCstIso();
-  const job = new CronJob({
-    id,
-    name: "deep-sleep",
-    schedule: "0 3 * * *",
-    prompt: "",
-    no_agent: true,
-    builtin: true,
-    deliver: "local",
-    timeout_sec: 3600,
-    created_at: now,
-    updated_at: now,
-  });
-  const next = computeNextRun(job.schedule, Date.now() / 1000);
-  if (next != null) job.next_run_at = next;
-  store.add(job);
-}
+export { ensureBuiltinCronJobs, initCronModule, stopCronModule, isCronModuleInitialized };
 
 export { cronJobDataSchema, cronJobsFileSchema, type CronJobData } from "./schema.ts";
 export { CronJob } from "./models.ts";
-export { Scheduler, POLL_INTERVAL_MS } from "./scheduler.ts";
-export { enqueueRunJob, runJob } from "./runner.ts";
-export { computeNextRun, parseSchedule, ScheduleType } from "./schedule.ts";
+export { enqueueRunJob, runJob, runJobById } from "./runner.ts";
+export { parseSchedule, ScheduleType } from "./schedule.ts";
+export { computeNextRunAt, resolveBunSchedule } from "./bun-schedule.ts";
+export { cstCronToUtc } from "./timezone.ts";
 export {
   deliverCronResult,
   deliverToTargets,
@@ -149,4 +114,11 @@ export {
   resetCronBuiltinHandlersForTests,
   runCronBuiltinHandler,
 } from "./builtin-handlers.ts";
-export * as cronStore from "./store.ts";
+export {
+  ensureDirs,
+  outputPath,
+  resolveScriptPath,
+  toOutputRef,
+  fromOutputRef,
+  readOutputRef,
+} from "./paths.ts";

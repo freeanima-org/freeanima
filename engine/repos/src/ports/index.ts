@@ -10,12 +10,21 @@ export type {
   SemanticMemorySearchOpts,
   SemanticMemoryStorePort,
 } from "./semantic-memory.ts";
-export type { CronJobStorePort } from "./cron.ts";
+export type {
+  CronJobRow,
+  CronJobCreateInput,
+  CronJobBuiltinUpsertInput,
+  CronJobUpdateInput,
+  CronJobStorePort,
+} from "./cron.ts";
 export type { TaskStorePort } from "./task.ts";
+
+import type { CronJobStorePort } from "./cron.ts";
 
 /** Engine 挂载的 PG 仓储聚合 */
 export interface PgRepositories {
   readonly pgAvailable: boolean;
   session: SessionStorePort;
   semanticMemory: SemanticMemoryStorePort;
+  cron: CronJobStorePort;
 }

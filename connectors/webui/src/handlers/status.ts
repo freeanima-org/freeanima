@@ -22,28 +22,28 @@ export function listTools() {
   return service.listToolsApi();
 }
 
-export function listCronJobs() {
+export async function listCronJobs() {
   const { service } = getServiceContext();
-  return { jobs: service.listCronJobs().jobs };
+  return { jobs: (await service.listCronJobs()).jobs };
 }
 
-export function pauseCronJob(id: string) {
+export async function pauseCronJob(id: string) {
   const { service } = getServiceContext();
-  const job = service.pauseCronJob(id);
+  const job = await service.pauseCronJob(id);
   if (!job) throw new ApiHandlerError(404, `未找到任务: ${id}`, { job_id: id });
   return { ok: true as const, job };
 }
 
-export function resumeCronJob(id: string) {
+export async function resumeCronJob(id: string) {
   const { service } = getServiceContext();
-  const job = service.resumeCronJob(id);
+  const job = await service.resumeCronJob(id);
   if (!job) throw new ApiHandlerError(404, `未找到任务: ${id}`, { job_id: id });
   return { ok: true as const, job };
 }
 
-export function runCronJobNow(id: string) {
+export async function runCronJobNow(id: string) {
   const { service } = getServiceContext();
-  const result = service.runCronJobNow(id);
+  const result = await service.runCronJobNow(id);
   if (!result) throw new ApiHandlerError(404, `未找到任务: ${id}`, { job_id: id });
   return { ok: true as const, message: result.message, job: result.job };
 }

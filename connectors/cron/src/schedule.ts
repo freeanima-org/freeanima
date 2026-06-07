@@ -39,32 +39,11 @@ export function parseSchedule(expr: string): [ScheduleType, number | string] {
       throw new Error(`One-shot time is in the past: ${trimmed}`);
     }
     return [ScheduleType.ONESHOT, ts];
-  } catch {
+  } catch (e) {
+    if (e instanceof Error && e.message.startsWith("One-shot")) throw e;
     throw new Error(
       `Unrecognised schedule expression: '${trimmed}'. Try '30m', 'every 2h', '0 9 * * *', or an ISO timestamp.`,
+      { cause: e },
     );
   }
-}
-
-export function computeNextRun(expr: string, after?: number): number | null {
-  const base = after ?? Date.now() / 1000;
-  const [schedType, value] = parseSchedule(expr);
-
-  if (schedType === ScheduleType.INTERVAL) {
-    return base + (value as number);
-  }
-
-  if (schedType === ScheduleType.CRON) {
-    const interval = CronExpressionParser.parse(value as string, {
-      currentDate: new Date(base * 1000),
-    });
-    return interval.next().getTime() / 1000;
-  }
-
-  if (schedType === ScheduleType.ONESHOT) {
-    const ts = value as number;
-    return ts > base ? ts : null;
-  }
-
-  return null;
 }
