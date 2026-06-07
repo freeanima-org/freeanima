@@ -4,6 +4,7 @@ import { registerClarifyHooks } from "@freeanima/capabilities-clarify";
 import { registerClarifyTool } from "@freeanima/capabilities-clarify";
 import { registerCoreTools, registerSupplementalTools } from "@freeanima/capabilities-tools";
 import { registerCronjobTool } from "@freeanima/connectors-cron/cronjob-tool";
+import { registerSelfTools } from "@freeanima/life-self";
 import type { Kernel } from "@freeanima/kernel";
 import type { ConversationService } from "@freeanima/engine-conversation";
 import type { SemanticMemoryStorePort, SessionStorePort } from "@freeanima/engine-repos";
@@ -17,6 +18,7 @@ export function registerServiceTools(): void {
   registerCoreTools();
   registerSupplementalTools();
   registerMemoryTools();
+  registerSelfTools();
   registerClarifyTool();
   registerCronjobTool();
   toolsRegistered = true;

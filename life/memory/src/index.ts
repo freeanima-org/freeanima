@@ -23,6 +23,11 @@ export {
   getSemanticMemoryStore,
   resetSemanticMemoryStoreForTests,
 } from "./semantic-port.ts";
+export {
+  registerAutobiographicalMemoryStore,
+  getAutobiographicalMemoryStore,
+  resetAutobiographicalMemoryStoreForTests,
+} from "./autobiographical-port.ts";
 export { filterRecallableMessages, type RecallableMessage } from "./message-filter.ts";
 export {
   search,
@@ -64,6 +69,22 @@ export {
 } from "./deep-sleep-port.ts";
 export { runLightSleep, type LightSleepResult, type RunLightSleepOpts } from "./light-sleep/run.ts";
 export { runDeepSleep, type DeepSleepResult, type RunDeepSleepOpts } from "./deep-sleep/run.ts";
+export {
+  registerAutobiographyEngine,
+  resetAutobiographyEngineForTests,
+  runAutobiographyEngine,
+  type AutobiographyEngineFn,
+  type AutobiographyEngineInput,
+  type AutobiographyEngineResult,
+} from "./autobiography-port.ts";
+export {
+  runSelfAutobiography,
+  runSelfAutobiographyWithLog,
+  buildAutobiographySummary,
+  refreshAutobiographySummaryBlock,
+  type RunSelfAutobiographyOpts,
+  type SelfAutobiographyResult,
+} from "./autobiography/run.ts";
 export {
   cstDayRange,
   buildLightSleepUserMessages,

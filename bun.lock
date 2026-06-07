@@ -436,6 +436,8 @@
     "life/self": {
       "name": "@freeanima/life-self",
       "dependencies": {
+        "@freeanima/engine-repos": "workspace:*",
+        "@freeanima/engine-tool": "workspace:*",
         "@freeanima/service-config": "workspace:*",
       },
       "devDependencies": {
@@ -552,6 +554,7 @@
         "@freeanima/kernel-eventbus": "workspace:*",
         "@freeanima/kernel-logging": "workspace:*",
         "@freeanima/life-memory": "workspace:*",
+        "@freeanima/life-self": "workspace:*",
         "@freeanima/service": "workspace:*",
         "@freeanima/service-api": "workspace:*",
         "@freeanima/service-bootstrap": "workspace:*",

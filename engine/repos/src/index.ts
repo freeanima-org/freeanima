@@ -9,6 +9,17 @@ export type {
   SemanticMemoryUpdateInput,
   SemanticMemorySearchOpts,
   SemanticMemoryStorePort,
+  SelfBlockKey,
+  SelfBlockRow,
+  SelfBlockUpsertInput,
+  SelfBlockUpdateInput,
+  SelfLayerStorePort,
+  AutobiographicalSignificance,
+  AutobiographicalStatus,
+  AutobiographicalMemoryRow,
+  AutobiographicalMemoryCreateInput,
+  AutobiographicalListOrder,
+  AutobiographicalMemoryStorePort,
   CronJobRow,
   CronJobCreateInput,
   CronJobBuiltinUpsertInput,
@@ -16,6 +27,7 @@ export type {
   CronJobStorePort,
   TaskStorePort,
 } from "./ports/index.ts";
+export { SELF_BLOCK_KEYS } from "./ports/index.ts";
 export type {
   CompressionState,
   ConversationMessage,

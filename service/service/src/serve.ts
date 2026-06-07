@@ -48,9 +48,17 @@ import {
 } from "./register.ts";
 import { registerLightSleepWire } from "./runtime/light-sleep-wire.ts";
 import { registerDeepSleepWire } from "./runtime/deep-sleep-wire.ts";
+import { registerAutobiographyWire } from "./runtime/autobiography-wire.ts";
 import { runLightSleep } from "@freeanima/life-memory/light-sleep/run";
 import { runDeepSleep } from "@freeanima/life-memory/deep-sleep/run";
-import { loadSoul } from "@freeanima/life-self";
+import { runSelfAutobiographyWithLog } from "@freeanima/life-memory/autobiography/run";
+import {
+  ensureSelfLayerSeeded,
+  invalidateSelfLayerPromptCache,
+  loadSelfLayerPrompt,
+  registerSelfLayerStore,
+} from "@freeanima/life-self";
+import { registerAutobiographicalMemoryStore } from "@freeanima/life-memory";
 import {
   discoverPlatforms,
   startPlatforms,
@@ -217,24 +225,49 @@ export async function serve(
       sessionStore: engine.repos.session,
       semanticStore: engine.repos.semanticMemory,
     });
+    registerSelfLayerStore(repos.selfLayer);
+    registerAutobiographicalMemoryStore(repos.autobiographicalMemory);
+    if (repos.pgAvailable) {
+      const resident = await repos.semanticMemory.listResident(100);
+      await ensureSelfLayerSeeded({
+        store: repos.selfLayer,
+        pinnedFacts: resident.map((row) => ({ content: row.content, type: row.type })),
+      });
+      invalidateSelfLayerPromptCache();
+      await loadSelfLayerPrompt();
+    }
     service.setEventBus(kernel.eventBus);
 
     registerLightSleepWire();
     registerDeepSleepWire();
+    registerAutobiographyWire();
 
     if (repos.pgAvailable) {
       registerCronBuiltinHandler("builtin-light-sleep", async () => {
+        const selfContent = await loadSelfLayerPrompt();
         const result = await runLightSleep({
           sessionStore: engine!.repos.session,
-          soulContent: loadSoul(),
+          selfContent,
         });
         return JSON.stringify(result);
       });
 
       registerCronBuiltinHandler("builtin-deep-sleep", async () => {
-        const result = await runDeepSleep({
-          soulContent: loadSoul(),
+        const selfContent = await loadSelfLayerPrompt();
+        const result = await runDeepSleep({ selfContent });
+        return JSON.stringify(result);
+      });
+
+      registerCronBuiltinHandler("builtin-self-autobiography", async () => {
+        const selfContent = await loadSelfLayerPrompt();
+        const result = await runSelfAutobiographyWithLog({
+          semanticStore: engine!.repos.semanticMemory,
+          autoStore: engine!.repos.autobiographicalMemory,
+          selfStore: engine!.repos.selfLayer,
+          selfContent,
         });
+        invalidateSelfLayerPromptCache();
+        await loadSelfLayerPrompt();
         return JSON.stringify(result);
       });
 
