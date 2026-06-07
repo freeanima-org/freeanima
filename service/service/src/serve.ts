@@ -49,6 +49,7 @@ import {
 import { registerLightSleepWire } from "./runtime/light-sleep-wire.ts";
 import { registerDeepSleepWire } from "./runtime/deep-sleep-wire.ts";
 import { registerAutobiographyWire } from "./runtime/autobiography-wire.ts";
+import { initMaskSystem } from "./runtime/mask-wire.ts";
 import { runLightSleep } from "@freeanima/life-memory/light-sleep/run";
 import { runDeepSleep } from "@freeanima/life-memory/deep-sleep/run";
 import { runSelfAutobiographyWithLog } from "@freeanima/life-memory/autobiography/run";
@@ -242,6 +243,7 @@ export async function serve(
     }
     service.setEventBus(kernel.eventBus);
 
+    initMaskSystem();
     registerLightSleepWire();
     registerDeepSleepWire();
     registerAutobiographyWire();

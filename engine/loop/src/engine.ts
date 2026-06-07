@@ -41,11 +41,15 @@ type EngineOpts = {
   max_turns?: number;
   model?: string;
   tools?: OpenAiToolSchema[];
+  /** 能力面罩允许的工具名（来自 ResolvedMask.allowed_tools）；未设置时不做兜底拦截 */
+  toolMask?: { allowedTools: readonly string[] };
   hookRegistry?: HookRegistry;
   onMessageAppended?: (msg: SessionMessage) => void | Promise<void>;
   onToolRoundComplete?: (msgs: SessionMessage[]) => void | Promise<void>;
   signal?: AbortSignal;
 };
+
+export type RuntimeToolMask = NonNullable<EngineOpts["toolMask"]>;
 
 function withReasoning(
   msg: AssistantMessage,
@@ -375,7 +379,9 @@ export async function* runStream(
         yield { event: "tool_begin", data: { name: fnName, args: fnArgs } };
         const tool = getTool(fnName);
         let result: string;
-        if (!tool) {
+        if (opts?.toolMask && !opts.toolMask.allowedTools.includes(fnName)) {
+          result = toolError("工具被能力面罩限制");
+        } else if (!tool) {
           result = toolResult({ error: `Unknown tool: ${fnName}` });
         } else if (!argsResult.ok) {
           result = toolError(argsResult.error);

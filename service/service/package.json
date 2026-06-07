@@ -16,6 +16,7 @@
   "dependencies": {
     "@freeanima/capabilities-acp": "workspace:*",
     "@freeanima/capabilities-clarify": "workspace:*",
+    "@freeanima/capabilities-mask": "workspace:*",
     "@freeanima/capabilities-mcp": "workspace:*",
     "@freeanima/capabilities-provider-openai-compatible": "workspace:*",
     "@freeanima/capabilities-tools": "workspace:*",
@@ -43,6 +44,7 @@
     "@freeanima/service-bootstrap": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "@freeanima/service-logging": "workspace:*",
+    "yaml": "^2.9.0",
     "zod": "catalog:"
   },
   "devDependencies": {

@@ -11,6 +11,11 @@ import {
 } from "@freeanima/life-memory/deep-sleep-port";
 
 import { getServiceContext } from "../context.ts";
+import {
+  filterToolNamesByMask,
+  resolveSleepMask,
+  runtimeToolMaskFromResolved,
+} from "./mask-wire.ts";
 
 function buildMessages(input: DeepSleepEngineInput): SessionMessage[] {
   const now = new Date().toISOString();
@@ -25,7 +30,10 @@ async function runDeepSleepTurn(input: DeepSleepEngineInput): Promise<DeepSleepE
   const { conversation } = getServiceContext();
   const cfg = loadConfig();
   const model = getProfileHopModel(cfg, PROFILE_REFLECT);
-  const tools = openaiSchemasFromNames(input.toolNames);
+  const sleepMask = resolveSleepMask();
+  const toolNames = filterToolNamesByMask(input.toolNames, sleepMask);
+  const tools = openaiSchemasFromNames(toolNames);
+  const toolMask = runtimeToolMaskFromResolved(sleepMask);
   const messages = buildMessages(input);
 
   let toolCalls = 0;
@@ -34,7 +42,12 @@ async function runDeepSleepTurn(input: DeepSleepEngineInput): Promise<DeepSleepE
   await runWithToolContext(
     "deep-sleep",
     async () => {
-      for await (const ev of engine.runStream(messages, { model, tools, max_turns: 50 })) {
+      for await (const ev of engine.runStream(messages, {
+        model,
+        tools,
+        toolMask,
+        max_turns: 50,
+      })) {
         switch (ev.event) {
           case "token":
             parts.push(ev.data.content);

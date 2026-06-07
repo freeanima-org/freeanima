@@ -1,4 +1,5 @@
 import { getServiceContext } from "../context.ts";
+import { resolveSessionMaskFromMeta, runtimeToolMaskFromResolved } from "./mask-wire.ts";
 
 function conv() {
   return getServiceContext().conversation;
@@ -104,12 +105,17 @@ export type RunSimpleTurnOpts = {
 export async function runSimpleTurn(opts: RunSimpleTurnOpts): Promise<string> {
   const { sessionId, prompt, model, prepare = conv().beginTurn } = opts;
   const [msgs, functions, effective] = await prepare(sessionId, prompt);
+  const tools = await conv().loadSessionTools(sessionId);
+  const meta = await conv().loadSessionMeta(sessionId);
+  const toolMask = runtimeToolMaskFromResolved(resolveSessionMaskFromMeta(meta));
   try {
     return await runWithToolContext(
       sessionId,
       () =>
         engine.run(msgs, {
           model,
+          tools,
+          toolMask,
           ...createTurnMessageCallbacks(sessionId),
         }),
       { repos: conv().repos },
@@ -132,6 +138,8 @@ export async function* yieldEngineStream(
   signal: AbortSignal,
 ): AsyncGenerator<StreamEvent> {
   const tools = await conv().loadSessionTools(sessionId);
+  const meta = await conv().loadSessionMeta(sessionId);
+  const toolMask = runtimeToolMaskFromResolved(resolveSessionMaskFromMeta(meta));
   host.acquireInFlight();
   try {
     try {
@@ -141,6 +149,7 @@ export async function* yieldEngineStream(
           engine.runStream(msgs, {
             model,
             tools,
+            toolMask,
             ...host.engineStreamOpts(sessionId, signal),
           }),
         { repos: conv().repos },

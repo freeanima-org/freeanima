@@ -11,6 +11,11 @@ import {
 } from "@freeanima/life-memory/light-sleep-port";
 
 import { getServiceContext } from "../context.ts";
+import {
+  filterToolNamesByMask,
+  resolveSleepMask,
+  runtimeToolMaskFromResolved,
+} from "./mask-wire.ts";
 
 const SEMANTIC_MEMORY_WRITE_TOOLS = new Set([
   "create_semantic_memory",
@@ -43,7 +48,10 @@ async function runLightSleepTurn(input: LightSleepEngineInput): Promise<LightSle
   const { conversation } = getServiceContext();
   const cfg = loadConfig();
   const model = getProfileHopModel(cfg, PROFILE_REFLECT);
-  const tools = openaiSchemasFromNames(input.toolNames);
+  const sleepMask = resolveSleepMask();
+  const toolNames = filterToolNamesByMask(input.toolNames, sleepMask);
+  const tools = openaiSchemasFromNames(toolNames);
+  const toolMask = runtimeToolMaskFromResolved(sleepMask);
   const messages = buildMessages(input);
 
   let toolCalls = 0;
@@ -53,7 +61,12 @@ async function runLightSleepTurn(input: LightSleepEngineInput): Promise<LightSle
   await runWithToolContext(
     "light-sleep",
     async () => {
-      for await (const ev of engine.runStream(messages, { model, tools, max_turns: 50 })) {
+      for await (const ev of engine.runStream(messages, {
+        model,
+        tools,
+        toolMask,
+        max_turns: 50,
+      })) {
         switch (ev.event) {
           case "token":
             parts.push(ev.data.content);

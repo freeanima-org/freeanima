@@ -21,6 +21,7 @@ import {
   type CompressionState,
 } from "@freeanima/engine-compress";
 import { injectTimePrefixes } from "./time-perception.ts";
+import { applySessionToolMaskFilter } from "./mask-port.ts";
 import { logComponent } from "@freeanima/service-logging";
 import {
   detectToolLoopCorruption,
@@ -100,13 +101,28 @@ export async function loadSessionTools(
     }
   }
   if (names.length > 0) {
+    const metaForMask =
+      cachedMeta != null && isSessionMeta(cachedMeta)
+        ? cachedMeta
+        : await loadSessionMeta(repos, session);
+    if (isSessionMeta(metaForMask)) {
+      names = applySessionToolMaskFilter(names, metaForMask);
+    }
     return openaiSchemasFromNames(names);
   }
   const fresh = toolNames();
   if (fresh.length > 0) {
     await updateSessionMetaField(repos, session, { tools: fresh });
   }
-  return openaiSchemasFromNames(fresh);
+  let effective = fresh;
+  const metaForMask =
+    cachedMeta != null && isSessionMeta(cachedMeta)
+      ? cachedMeta
+      : await loadSessionMeta(repos, session);
+  if (isSessionMeta(metaForMask)) {
+    effective = applySessionToolMaskFilter(effective, metaForMask);
+  }
+  return openaiSchemasFromNames(effective);
 }
 
 export async function loadSessionMeta(
