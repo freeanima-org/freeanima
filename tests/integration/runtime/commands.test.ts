@@ -4,7 +4,10 @@ import {
   beginIntegrationCase,
   endIntegrationCase,
   restoreIntegrationHome,
+  syncIntegrationSelfLayer,
 } from "../../helpers/integration-case.ts";
+import type { PgTestContext } from "../../helpers/pg-test.ts";
+import { SELF_BLOCK_HEADINGS } from "@freeanima/life-self";
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -29,11 +32,13 @@ async function patchMetaForTest(sessionId: string, patch: Record<string, unknown
 
 describePg("slash commands", () => {
   let home: string;
+  let pg: PgTestContext;
   const prev = process.env.FREEANIMA_HOME;
 
   beforeEach(async () => {
     const ctx = await beginIntegrationCase("freeanima-cmd-");
     home = ctx.home;
+    pg = ctx.pg;
   });
 
   afterEach(async () => {
@@ -170,7 +175,10 @@ describePg("slash commands", () => {
   });
 
   it("reload_system_prompt rebuilds session meta", async () => {
-    writeFileSync(join(home, "SOUL.md"), "你是测试 Agent。\n", "utf-8");
+    const soulText = "你是测试 Agent。";
+    writeFileSync(join(home, "SOUL.md"), `${soulText}\n`, "utf-8");
+    await syncIntegrationSelfLayer(pg, soulText);
+
     const sid = await testConv().newSession("parlor");
     await patchMetaForTest(sid, { system_prompt: "旧 prompt" });
 
@@ -184,12 +192,17 @@ describePg("slash commands", () => {
     expect(result.text).toContain("system prompt");
     const spMeta = await testConv().loadSessionMeta(sid);
     const sp = String(spMeta.role === "session_meta" ? (spMeta.system_prompt ?? "") : "");
-    expect(sp).toContain("你是测试 Agent");
+    for (const heading of Object.values(SELF_BLOCK_HEADINGS)) {
+      expect(sp).toContain(`## ${heading}`);
+    }
+    expect(sp).toContain(soulText);
     expect(sp).not.toBe("旧 prompt");
   });
 
   it("reload_system_prompt only updates system_prompt", async () => {
-    writeFileSync(join(home, "SOUL.md"), "你是测试 Agent。\n", "utf-8");
+    const soulText = "你是测试 Agent。";
+    writeFileSync(join(home, "SOUL.md"), `${soulText}\n`, "utf-8");
+    await syncIntegrationSelfLayer(pg, soulText);
     const sid = await testConv().newSession("parlor");
     const metaBefore = await testConv().loadSessionMeta(sid);
     const preservedCwd = "/tmp/freeanima-preserved-cwd";

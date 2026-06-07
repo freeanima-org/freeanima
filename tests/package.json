@@ -27,6 +27,7 @@
     "@freeanima/connectors-gateway": "workspace:*",
     "@freeanima/capabilities-acp": "workspace:*",
     "@freeanima/life-memory": "workspace:*",
+    "@freeanima/life-self": "workspace:*",
     "@freeanima/service": "workspace:*",
     "@freeanima/service-api": "workspace:*",
     "@freeanima/service-config": "workspace:*",

@@ -61,7 +61,6 @@ import {
   nextMessagePosWithRouting,
 } from "./session-store-pg-bridge.ts";
 import type { PgRepositories } from "@freeanima/engine-repos";
-import { loadSoul } from "./soul-port.ts";
 
 export type Message = SessionMessage;
 export { isSessionMeta, parseSessionLine } from "./message.ts";
@@ -245,9 +244,8 @@ export async function initSession(
   model: string,
   opts: { platform: string; functions?: string[]; platform_extra?: Record<string, unknown> },
 ): Promise<void> {
-  const soul = loadSoul();
   const cwd = allocateSessionCwd(sid);
-  const systemPrompt = await buildSystemPrompt(opts.functions ?? [], soul, cwd);
+  const systemPrompt = await buildSystemPrompt(opts.functions ?? [], "", cwd);
   const meta: SessionMetaMessage = {
     role: "session_meta",
     model,
@@ -364,8 +362,7 @@ export async function rebuildSessionSystemPrompt(
   if (!isSessionMeta(meta)) return;
   const functions = meta.functions ?? [];
   const cwd = meta.cwd;
-  const soul = loadSoul();
-  const systemPrompt = await buildSystemPrompt(functions, soul, cwd);
+  const systemPrompt = await buildSystemPrompt(functions, "", cwd);
   await updateSessionMetaField(repos, session, { system_prompt: systemPrompt });
 }
 

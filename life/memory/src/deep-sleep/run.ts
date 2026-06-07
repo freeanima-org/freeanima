@@ -16,7 +16,7 @@ import { recordDeepSleepRun } from "./state.ts";
 import { writeDeepSleepRoundLog, makeRoundLog } from "./log.ts";
 
 export type RunDeepSleepOpts = {
-  soulContent: string;
+  selfContent: string;
   day?: string;
 };
 
@@ -69,7 +69,7 @@ export async function runDeepSleep(opts: RunDeepSleepOpts): Promise<DeepSleepRes
     logComponent("memory").warn("深睡全量 JSON 较大", { day, bytes });
   }
 
-  const parts = await decomposeSystemPromptParts(opts.soulContent, null);
+  const parts = await decomposeSystemPromptParts(opts.selfContent, null);
   const systemPrompt = composeSystemPrompt(parts);
   const changeLog = createEmptyChangeLog();
 

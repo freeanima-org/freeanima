@@ -4,6 +4,7 @@ import { searchL2 } from "./search.ts";
 import type { SearchResult } from "./search.ts";
 import { searchL3 } from "./search.ts";
 import { registerSemanticMemoryTools, rememberFromArgs } from "./semantic-memory-tools.ts";
+import { registerAutobiographicalMemoryTools } from "./autobiographical-tools.ts";
 
 function asFloat(value: unknown, defaultVal: number): number {
   if (value === null || value === undefined) return defaultVal;
@@ -40,6 +41,7 @@ function formatL2Section(rows: MessageFtsHit[]): string | null {
 
 export function registerMemoryTools(): void {
   registerSemanticMemoryTools();
+  registerAutobiographicalMemoryTools();
 
   registerTool({
     name: "remember",

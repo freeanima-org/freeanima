@@ -7,9 +7,18 @@ import { getAcpManager } from "@freeanima/capabilities-acp";
 import {
   registerMemorySessionStore,
   registerSemanticMemoryStore,
+  registerAutobiographicalMemoryStore,
   resetSemanticMemoryStoreForTests,
   resetMemorySessionStoreForTests,
+  resetAutobiographicalMemoryStoreForTests,
 } from "@freeanima/life-memory";
+import {
+  registerSelfLayerStore,
+  resetSelfLayerStoreForTests,
+  invalidateSelfLayerPromptCache,
+  ensureSelfLayerSeeded,
+  seedSelfLayerFromLegacy,
+} from "@freeanima/life-self";
 
 import { beginLogIsolation, resetServiceLogger } from "./log-isolation.ts";
 import { clearConfigCache } from "@freeanima/service-config";
@@ -41,8 +50,35 @@ export function wireIntegrationServiceContext(pg: PgTestContext): void {
   });
   resetSemanticMemoryStoreForTests();
   resetMemorySessionStoreForTests();
+  resetAutobiographicalMemoryStoreForTests();
+  resetSelfLayerStoreForTests();
   registerMemorySessionStore(pg.engine.repos.session);
   registerSemanticMemoryStore(pg.engine.repos.semanticMemory);
+  registerAutobiographicalMemoryStore(pg.engine.repos.autobiographicalMemory);
+  registerSelfLayerStore(pg.engine.repos.selfLayer);
+  invalidateSelfLayerPromptCache();
+}
+
+/** 集成测：从 SOUL / pinned 写入 self_blocks 并刷新 prompt 缓存 */
+export async function syncIntegrationSelfLayer(
+  pg: PgTestContext,
+  soulText?: string,
+): Promise<void> {
+  const resident = await pg.engine.repos.semanticMemory.listResident(100);
+  const pinnedFacts = resident.map((row) => ({ content: row.content, type: row.type }));
+  if (soulText !== undefined) {
+    await seedSelfLayerFromLegacy({
+      store: pg.engine.repos.selfLayer,
+      soulText,
+      pinnedFacts,
+    });
+  } else {
+    await ensureSelfLayerSeeded({
+      store: pg.engine.repos.selfLayer,
+      pinnedFacts,
+    });
+  }
+  invalidateSelfLayerPromptCache();
 }
 
 /** 集成测 afterEach：先等待异步压缩摘要，再恢复 FREEANIMA_HOME */
@@ -66,6 +102,7 @@ export async function beginIntegrationCase(prefix: string): Promise<{
   const { setupIntegrationHome } = await import("./pg-test.ts");
   const pg = await setupIntegrationHome({ url: pgTestUrl, home });
   wireIntegrationServiceContext(pg);
+  await syncIntegrationSelfLayer(pg);
   return { home, pg };
 }
 
@@ -80,6 +117,7 @@ export async function beginIntegrationCaseWithConfig(
   const { setupIntegrationHome } = await import("./pg-test.ts");
   const pg = await setupIntegrationHome({ url: pgTestUrl, home, configYaml });
   wireIntegrationServiceContext(pg);
+  await syncIntegrationSelfLayer(pg);
   return { home, pg };
 }
 

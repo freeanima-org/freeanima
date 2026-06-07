@@ -1,14 +1,15 @@
 # 数据库设计
 
-> PostgreSQL 存储层。**Slice A**（对话存档）与 **Slice B**（`semantic_memory` 已落地；limbic / procedural 🚧 待建）。
+> PostgreSQL 存储层。**Slice A**（对话存档）、**Slice B**（`semantic_memory`）、**Slice C**（自我层 + 自传体）已落地；limbic / procedural 🚧 待建。
 > 关联：[`compression.md`](compression.md)、[`memory.md`](memory.md)、[`sleep.md`](sleep.md)。
 
 ## 状态
 
-| 阶段        | 范围                                                    | 状态                            |
-| ----------- | ------------------------------------------------------- | ------------------------------- |
-| **Slice A** | `sessions` + `messages`（对话主存 PG）                  | **✅ 已完成**                   |
-| **Slice B** | `semantic_memory`（语义记忆）；limbic / procedural 待建 | **semantic ✅；余下 🚧 规划中** |
+| 阶段        | 范围                                                           | 状态                            |
+| ----------- | -------------------------------------------------------------- | ------------------------------- |
+| **Slice A** | `sessions` + `messages`（对话主存 PG）                         | **✅ 已完成**                   |
+| **Slice B** | `semantic_memory`（语义记忆）；limbic / procedural 待建        | **semantic ✅；余下 🚧 规划中** |
+| **Slice C** | `self_blocks` + `autobiographical_memory`（自我层 + 自传叙事） | **✅ 已完成**                   |
 
 代码真相源：[`engine/db/src/schema/`](../engine/db/src/schema/)。
 
@@ -160,6 +161,52 @@ DATABASE_URL="$(anima credential get services/postgres/anima url)" \
 ### 待建（Slice B 余下）
 
 limbic / procedural 🚧 规划中，待 memory v2 定稿后继续落 PG。详见 [`memory.md`](memory.md) §三。
+
+## Slice C：自我层与自传体（已落地）
+
+### `self_blocks`（自我层六块）
+
+| 列           | 类型        | 说明                                                                                                                 |
+| ------------ | ----------- | -------------------------------------------------------------------------------------------------------------------- |
+| `block_key`  | TEXT PK     | `existence_anchor` / `self_model` / `personality_baseline` / `direction` / `metacognition` / `autobiography_summary` |
+| `content`    | TEXT        | Markdown 正文                                                                                                        |
+| `locked`     | BOOLEAN     | `existence_anchor` 默认 true；update 需 `force`                                                                      |
+| `version`    | INTEGER     | 变更计数                                                                                                             |
+| `updated_by` | TEXT        | `seed` / `manual` / `tool` / `autobiography_cron` 等                                                                 |
+| `created_at` | TIMESTAMPTZ |                                                                                                                      |
+| `updated_at` | TIMESTAMPTZ |                                                                                                                      |
+
+端口：`SelfLayerStorePort`（`engine-repos`）→ `PgSelfLayerStore`（`connectors-db-pg`）→ `registerSelfLayerStore`（`life-self`）。
+
+方法：`getBlock` / `listBlocks` / `upsertBlock` / `updateBlock`（`locked` 块需 `force`）/ `isInitialized`。
+
+启动 seed：`serve.ts` 调用 `ensureSelfLayerSeeded`（一次性从 `SOUL.md` + pinned 启发式写入；`SOUL.md` 不再参与运行时 prompt）。
+
+### `autobiographical_memory`（自传体叙事，记忆层）
+
+| 列                | 类型        | 说明                                     |
+| ----------------- | ----------- | ---------------------------------------- |
+| `id`              | TEXT PK     | UUID                                     |
+| `title`           | TEXT        | 叙事标题                                 |
+| `content`         | TEXT        | 叙事正文（只追加，无 update）            |
+| `significance`    | TEXT        | `normal` / `milestone` / `turning_point` |
+| `period_start`    | TEXT        | 模糊时间起点                             |
+| `period_end`      | TEXT        | 模糊时间终点                             |
+| `source_facts`    | TEXT[]      | 关联 `semantic_memory.id`                |
+| `source_sessions` | TEXT[]      | 关联 session id                          |
+| `status`          | TEXT        | `active` / `deprecated`                  |
+| `created_at`      | TIMESTAMPTZ |                                          |
+| `updated_at`      | TIMESTAMPTZ | deprecate 时更新                         |
+
+索引：`status`、`significance`、`updated_at`、`source_facts`（GIN）、`source_sessions`（GIN）。
+
+端口：`AutobiographicalMemoryStorePort` → `PgAutobiographicalMemoryStore` → `registerAutobiographicalMemoryStore`（`life-memory`）。
+
+方法：`create` / `get` / `deprecate` / `count` / `listActive` / `listCreatedSince` / `listBySourceFacts` / `listBySourceSessions`（**无** content `update`）。
+
+维护：`builtin-self-autobiography` cron（04:00 CST）从 `experience`/`imprint` 语义记忆叙事加工；`autobiography_summary` 块由同一任务从本表压缩刷新。
+
+Migration：[`engine/db/migrations/20260607150000_self_and_autobiographical/migration.sql`](../engine/db/migrations/20260607150000_self_and_autobiographical/migration.sql)。
 
 ## cron_jobs（已落地）
 

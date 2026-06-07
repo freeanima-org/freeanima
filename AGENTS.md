@@ -128,6 +128,12 @@ Agent 新增或移动类型 / Zod / 端口时，按下列顺序决策：
 | `cron_jobs` PG schema（DDL）                                  | `engine-db/migrations`       | SQL migration                                   |
 | Cron job API 校验 schema                                      | `connectors-cron`            | `schema.ts`                                     |
 | `CronJobStorePort`                                            | `engine-repos`               | `ports/cron.ts`                                 |
+| `self_blocks` DDL + `selfBlockKeySchema`                      | `engine-db/schema`           | `self-layer.ts`                                 |
+| `SelfLayerStorePort` / `SelfBlockRow`                         | `engine-repos`               | `ports/self-layer.ts`                           |
+| 六块 prompt 视图（`SELF_BLOCK_HEADINGS` 等）                  | `life-self`                  | `blocks.ts`、`compose.ts`                       |
+| `autobiographical_memory` DDL + significance/status Zod       | `engine-db/schema`           | `autobiographical-memory.ts`                    |
+| `AutobiographicalMemoryStorePort`                             | `engine-repos`               | `ports/autobiographical-memory.ts`              |
+| 自传 cron 编排 / 工具                                         | `life-memory`                | `autobiography/`、`autobiographical-tools.ts`   |
 | WebUI 展示视图（`MessagesDisplay`）                           | `service/schemas`            | `display.ts`                                    |
 | AnimaService 内部快照（`ServiceSnapshot` 等）                 | `service/schemas`            | `snapshot.ts`                                   |
 | 微信网关持久化 schema                                         | `connectors-gateway/schemas` | `weixin.ts`                                     |

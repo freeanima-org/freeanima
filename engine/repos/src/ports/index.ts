@@ -18,13 +18,33 @@ export type {
   CronJobStorePort,
 } from "./cron.ts";
 export type { TaskStorePort } from "./task.ts";
+export type {
+  SelfBlockKey,
+  SelfBlockRow,
+  SelfBlockUpsertInput,
+  SelfBlockUpdateInput,
+  SelfLayerStorePort,
+} from "./self-layer.ts";
+export { SELF_BLOCK_KEYS } from "./self-layer.ts";
+export type {
+  AutobiographicalSignificance,
+  AutobiographicalStatus,
+  AutobiographicalMemoryRow,
+  AutobiographicalMemoryCreateInput,
+  AutobiographicalListOrder,
+  AutobiographicalMemoryStorePort,
+} from "./autobiographical-memory.ts";
 
+import type { AutobiographicalMemoryStorePort } from "./autobiographical-memory.ts";
 import type { CronJobStorePort } from "./cron.ts";
+import type { SelfLayerStorePort } from "./self-layer.ts";
 
 /** Engine 挂载的 PG 仓储聚合 */
 export interface PgRepositories {
   readonly pgAvailable: boolean;
   session: SessionStorePort;
   semanticMemory: SemanticMemoryStorePort;
+  selfLayer: SelfLayerStorePort;
+  autobiographicalMemory: AutobiographicalMemoryStorePort;
   cron: CronJobStorePort;
 }

@@ -73,6 +73,7 @@ export function rowToPatch(job: CronJob): CronJobUpdateInput {
 export async function ensureBuiltinCronJobs(): Promise<void> {
   await _ensureBuiltinLightSleepCronJob();
   await _ensureBuiltinDeepSleepCronJob();
+  await _ensureBuiltinSelfAutobiographyCronJob();
 }
 
 async function _ensureBuiltinLightSleepCronJob(): Promise<void> {
@@ -101,6 +102,22 @@ async function _ensureBuiltinDeepSleepCronJob(): Promise<void> {
     no_agent: true,
     deliver: "local",
     timeout_sec: 3600,
+  });
+  const job = await getJob(id);
+  if (!job || !handles) return;
+  if (scheduleChanged) handles.reregister(job);
+}
+
+async function _ensureBuiltinSelfAutobiographyCronJob(): Promise<void> {
+  const id = "builtin-self-autobiography";
+  const scheduleChanged = await getCronStore().upsertBuiltin({
+    id,
+    name: "self-autobiography",
+    schedule: "0 4 * * *",
+    prompt: "",
+    no_agent: true,
+    deliver: "local",
+    timeout_sec: 1800,
   });
   const job = await getJob(id);
   if (!job || !handles) return;

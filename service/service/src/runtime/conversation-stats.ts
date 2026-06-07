@@ -81,7 +81,7 @@ export {
 
 function emptyBreakdown(): RuntimeContextBreakdown {
   return {
-    system_soul: 0,
+    system_self: 0,
     system_agents: 0,
     system_resident: 0,
     summary: 0,
@@ -359,7 +359,7 @@ export function mergeStats(items: SessionStats[], label = "汇总"): SessionStat
 
   const bd = emptyBreakdown();
   for (const s of items) {
-    bd.system_soul += s.context_breakdown.system_soul;
+    bd.system_self += s.context_breakdown.system_self;
     bd.system_agents += s.context_breakdown.system_agents;
     bd.system_resident += s.context_breakdown.system_resident;
     bd.summary += s.context_breakdown.summary;
@@ -507,12 +507,12 @@ function formatCompression(stats: SessionStats): string {
 
 function formatContextBreakdown(stats: SessionStats): string[] {
   const b = stats.context_breakdown;
-  const systemTotal = b.system_soul + b.system_agents + b.system_resident;
+  const systemTotal = b.system_self + b.system_agents + b.system_resident;
   const lines = [
     `当前上下文（运行时视图，压缩后）: ~${formatTokenK(stats.context_tokens_est)} tokens`,
     `  系统提示词合计: ~${formatTokenK(systemTotal)}`,
   ];
-  if (b.system_soul > 0) lines.push(`    SOUL: ~${formatTokenK(b.system_soul)}`);
+  if (b.system_self > 0) lines.push(`    自我层: ~${formatTokenK(b.system_self)}`);
   if (b.system_agents > 0) lines.push(`    AGENTS.md: ~${formatTokenK(b.system_agents)}`);
   if (b.system_resident > 0) lines.push(`    常驻记忆: ~${formatTokenK(b.system_resident)}`);
   if (b.summary > 0) lines.push(`  会话摘要: ~${formatTokenK(b.summary)}`);

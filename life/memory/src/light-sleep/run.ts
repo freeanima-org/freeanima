@@ -24,7 +24,7 @@ export type LightSleepResult = {
 
 export type RunLightSleepOpts = {
   sessionStore?: SessionStorePort;
-  soulContent: string;
+  selfContent: string;
   day?: string;
 };
 
@@ -61,7 +61,7 @@ export async function runLightSleep(opts: RunLightSleepOpts): Promise<LightSleep
   const blocks = await collectSessionBlocks(sessionStore, sessionIds);
   const dialogue = formatDialogueMessage(blocks);
   const userMessages = await buildLightSleepUserMessages(sessionStore, sessionIds);
-  const parts = await decomposeSystemPromptParts(opts.soulContent, null);
+  const parts = await decomposeSystemPromptParts(opts.selfContent, null);
   const systemPrompt = composeSystemPrompt(parts);
 
   logComponent("memory").info("浅睡开始", {

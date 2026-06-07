@@ -30,18 +30,18 @@ async function renderResidentMemory(): Promise<string> {
 }
 
 export type SystemPromptParts = {
-  soul: string;
+  self: string;
   agents: string;
   resident: string;
 };
 
-/** soul / agents / resident；技能通过 load_skill 工具消息注入，不写入 system prompt */
+/** self / agents / resident；技能通过 load_skill 工具消息注入，不写入 system prompt */
 export async function decomposeSystemPromptParts(
-  soulContent: string,
+  selfContent: string,
   cwd?: string | null,
 ): Promise<SystemPromptParts> {
   return {
-    soul: soulContent.trim(),
+    self: selfContent.trim(),
     agents: readAgents(cwd),
     resident: await renderResidentMemory(),
   };
@@ -49,7 +49,7 @@ export async function decomposeSystemPromptParts(
 
 export function composeSystemPrompt(parts: SystemPromptParts): string {
   const chunks: string[] = [];
-  if (parts.soul) chunks.push(parts.soul);
+  if (parts.self) chunks.push(parts.self);
   if (parts.agents) chunks.push(parts.agents);
   if (parts.resident) chunks.push(parts.resident);
   return chunks.join("\n\n");

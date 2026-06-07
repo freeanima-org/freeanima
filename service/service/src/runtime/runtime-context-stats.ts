@@ -7,12 +7,12 @@ import {
   estimateTokens,
   estimateToolsTokens,
 } from "@freeanima/engine-compress";
-import { loadSoul } from "@freeanima/life-self";
+import { loadSelfLayerPrompt } from "@freeanima/life-self";
 import { getServiceContext } from "../context.ts";
 
 export type RuntimeContextBreakdown = {
   /** 发给 LLM 的视图（压缩后 + 摘要注入），非 JSONL 全量 */
-  system_soul: number;
+  system_self: number;
   system_agents: number;
   system_resident: number;
   summary: number;
@@ -33,9 +33,9 @@ export async function computeRuntimeContextBreakdown(
   const [runtimeMsgs] = await conv().buildRuntimeMessages(session);
   const tools = isSessionMeta(meta) ? await conv().loadSessionTools(session, meta) : [];
 
-  const soul = loadSoul();
+  const selfContent = await loadSelfLayerPrompt();
   const cwd = isSessionMeta(meta) ? meta.cwd : undefined;
-  const parts = await decomposeSystemPromptParts(soul, cwd);
+  const parts = await decomposeSystemPromptParts(selfContent, cwd);
 
   let summary = 0;
   const messageRows: SessionMessage[] = [];
@@ -51,16 +51,16 @@ export async function computeRuntimeContextBreakdown(
     messageRows.push(m);
   }
 
-  const system_soul = estimateTokens(parts.soul);
+  const system_self = estimateTokens(parts.self);
   const system_agents = estimateTokens(parts.agents);
   const system_resident = estimateTokens(parts.resident);
   const messages = estimateMessagesTokens(messageRows);
   const toolsTokens = estimateToolsTokens(tools);
 
-  const total = system_soul + system_agents + system_resident + summary + messages + toolsTokens;
+  const total = system_self + system_agents + system_resident + summary + messages + toolsTokens;
 
   return {
-    system_soul,
+    system_self,
     system_agents,
     system_resident,
     summary,
