@@ -3,16 +3,20 @@ import { spawnSync } from "node:child_process";
 import { runCronEngineTurn } from "@freeanima/service-api/cron-use-cases";
 import { logComponent } from "@freeanima/service-logging";
 import type { CronJob } from "./models.ts";
-import * as store from "./store.ts";
-import { computeNextRun } from "./schedule.ts";
+import { CronJob as CronJobClass } from "./models.ts";
+import {
+  fromOutputRef,
+  outputPath,
+  readOutputRef,
+  resolveScriptPath,
+  toOutputRef,
+} from "./paths.ts";
 import { deliverCronResult } from "./deliver.ts";
 import { runCronBuiltinHandler } from "./builtin-handlers.ts";
-
-/** 任务失败后最短重试间隔（秒），避免调度器每 10s 重复执行同一失败任务 */
-const FAILURE_RETRY_DELAY_SEC = 300;
+import { getCronHandleManager, getCronStore, isCronModuleInitialized } from "./module.ts";
 
 function runScript(scriptPath: string, timeoutSec: number): string {
-  const path = store.resolveScriptPath(scriptPath);
+  const path = resolveScriptPath(scriptPath);
   if (!existsSync(path)) {
     throw new Error(`Script not found: ${path}`);
   }
@@ -33,31 +37,46 @@ function runScript(scriptPath: string, timeoutSec: number): string {
   return (cmd.stdout ?? "").trim();
 }
 
-function saveOutput(job: CronJob, content: string): void {
-  const outPath = store.outputPath(job.id, job.run_count);
+function saveOutput(job: CronJob, content: string): string {
+  const outPath = outputPath(job.id, job.run_count);
   try {
     writeFileSync(outPath, content, "utf-8");
   } catch {
     /* ignore */
   }
+  return toOutputRef(outPath);
 }
 
-function finalizeJob(job: CronJob, success: boolean): void {
-  if (job.repeat != null && job.run_count >= job.repeat) {
-    job.paused = true;
-    job.next_run_at = 0;
-  } else if (!success) {
-    job.next_run_at = Date.now() / 1000 + FAILURE_RETRY_DELAY_SEC;
-  } else {
-    try {
-      const next = computeNextRun(job.schedule, Date.now() / 1000);
-      job.next_run_at = next ?? 0;
-    } catch {
+async function persistJob(job: CronJob): Promise<void> {
+  await getCronStore().update({
+    id: job.id,
+    run_count: job.run_count,
+    paused: job.paused,
+    last_run_at: job.last_run_at > 0 ? new Date(job.last_run_at * 1000).toISOString() : null,
+    last_output_ref: job.last_output_ref,
+  });
+}
+
+async function finalizeJob(job: CronJob, success: boolean): Promise<void> {
+  if (isCronModuleInitialized()) {
+    const handles = getCronHandleManager();
+
+    if (job.repeat != null && job.run_count >= job.repeat) {
       job.paused = true;
-      job.next_run_at = 0;
+      handles.pause(job.id);
+    } else if (!success) {
+      handles.scheduleRetry(job.id);
+    } else if (!job.paused) {
+      handles.register(job);
     }
   }
-  store.update(job);
+
+  await persistJob(job);
+}
+
+async function getJobSync(id: string): Promise<CronJob | null> {
+  const row = await getCronStore().get(id);
+  return row ? CronJobClass.fromRow(row) : null;
 }
 
 async function notifyDeliver(
@@ -85,36 +104,40 @@ export function enqueueRunJob(job: CronJob): Promise<void> {
   });
 }
 
+export async function runJobById(jobId: string): Promise<void> {
+  const row = await getCronStore().get(jobId);
+  if (!row) return;
+  const job = CronJobClass.fromRow(row);
+  if (job.paused) return;
+  if (job.repeat != null && job.run_count >= job.repeat) return;
+  await runJob(job);
+}
+
 export async function runJob(job: CronJob): Promise<void> {
   try {
     await runJobInternal(job);
   } catch (e) {
     const errText = String(e);
-    job.last_output = `ERROR: ${errText}`;
-    saveOutput(job, job.last_output);
-    await notifyDeliver(job, false, job.last_output, errText);
-    finalizeJob(job, false);
+    const output = `ERROR: ${errText}`;
+    job.last_output_ref = saveOutput(job, output);
+    await notifyDeliver(job, false, output, errText);
+    await finalizeJob(job, false);
   }
 }
 
 async function runJobInternal(job: CronJob): Promise<void> {
   job.run_count += 1;
   job.last_run_at = Date.now() / 1000;
-  // 长任务执行期间禁止调度器重入（spawnSync 阻塞时 runningIds 可能来不及生效）
-  job.next_run_at = Date.now() / 1000 + (job.timeout_sec ?? 300);
-  store.update(job);
+  await persistJob(job);
+
+  let outputText = "";
 
   if (job.no_agent) {
     const builtinOutput = job.builtin ? await runCronBuiltinHandler(job.id) : null;
     if (builtinOutput != null) {
-      job.last_output = builtinOutput.slice(0, 10_000);
-      saveOutput(job, job.last_output);
-      await notifyDeliver(job, true, job.last_output);
+      outputText = builtinOutput.slice(0, 10_000);
     } else if (job.script) {
-      const output = runScript(job.script, job.timeout_sec);
-      job.last_output = output;
-      saveOutput(job, output);
-      await notifyDeliver(job, true, output);
+      outputText = runScript(job.script, job.timeout_sec);
     } else {
       throw new Error("no_agent=True requires a script or registered builtin handler");
     }
@@ -124,11 +147,12 @@ async function runJobInternal(job: CronJob): Promise<void> {
 
     const chain: string[] = [];
     for (const upstreamId of job.context_from) {
-      const upstream = store.find(upstreamId);
-      if (upstream?.last_output) {
-        chain.push(
-          `--- Output from job ${upstream.name || upstreamId} ---\n${upstream.last_output}`,
-        );
+      const upstream = await getJobSync(upstreamId);
+      if (upstream?.last_output_ref) {
+        const upstreamOutput = readOutputRef(upstream.last_output_ref);
+        if (upstreamOutput) {
+          chain.push(`--- Output from job ${upstream.name || upstreamId} ---\n${upstreamOutput}`);
+        }
       }
     }
 
@@ -136,11 +160,15 @@ async function runJobInternal(job: CronJob): Promise<void> {
     const combined = [...chain, context].filter(Boolean).join("\n\n");
     if (combined) fullPrompt = `${combined}\n\n---\n\n${job.prompt}`;
 
-    const output = await runCronEngineTurn(job, fullPrompt);
-    job.last_output = output.slice(0, 10_000);
-    saveOutput(job, output);
-    await notifyDeliver(job, true, job.last_output);
+    outputText = (await runCronEngineTurn(job, fullPrompt)).slice(0, 10_000);
   }
 
-  finalizeJob(job, true);
+  job.last_output_ref = saveOutput(job, outputText);
+  await notifyDeliver(job, true, outputText);
+  await finalizeJob(job, true);
+}
+
+/** 读取 output ref 绝对路径（deliver 等用） */
+export function resolveJobOutputPath(job: CronJob): string {
+  return job.last_output_ref ? fromOutputRef(job.last_output_ref) : "";
 }

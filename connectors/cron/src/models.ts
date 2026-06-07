@@ -1,4 +1,7 @@
+import type { CronJobRow } from "@freeanima/engine-repos";
 import { safeParseOrNull } from "@freeanima/kernel-util";
+import { computeNextRunAt } from "./bun-schedule.ts";
+import { readOutputRef } from "./paths.ts";
 import { cronJobDataSchema, type CronJobData } from "./schema.ts";
 
 export type { CronJobData };
@@ -24,9 +27,8 @@ export class CronJob {
   paused: boolean;
   created_at: string;
   updated_at: string;
-  next_run_at: number;
   last_run_at: number;
-  last_output: string;
+  last_output_ref: string | null;
 
   constructor(init: Partial<CronJobData> & Pick<CronJobData, "id" | "name" | "schedule">) {
     this.id = init.id;
@@ -49,12 +51,41 @@ export class CronJob {
     this.paused = init.paused ?? false;
     this.created_at = init.created_at ?? "";
     this.updated_at = init.updated_at ?? "";
-    this.next_run_at = init.next_run_at ?? 0;
     this.last_run_at = init.last_run_at ?? 0;
-    this.last_output = init.last_output ?? "";
+    this.last_output_ref = init.last_output_ref ?? null;
   }
 
-  toJSON(): CronJobData {
+  static fromRow(row: CronJobRow): CronJob {
+    return new CronJob({
+      id: row.id,
+      name: row.name,
+      schedule: row.schedule,
+      prompt: row.prompt,
+      skills: row.skills,
+      script: row.script,
+      no_agent: row.no_agent,
+      enabled_toolsets: row.enabled_toolsets,
+      model_provider: row.model_provider,
+      model_name: row.model_name,
+      workdir: row.workdir,
+      context_from: row.context_from,
+      deliver: row.deliver,
+      timeout_sec: row.timeout_sec,
+      builtin: row.builtin,
+      repeat: row.repeat,
+      run_count: row.run_count,
+      paused: row.paused,
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+      last_run_at: row.last_run_at ? Math.floor(new Date(row.last_run_at).getTime() / 1000) : 0,
+      last_output_ref: row.last_output_ref,
+    });
+  }
+
+  toJSON(opts?: { includeOutput?: boolean }): CronJobData {
+    const next = computeNextRunAt(this.schedule, this.paused) ?? 0;
+    const lastOutput =
+      opts?.includeOutput && this.last_output_ref ? readOutputRef(this.last_output_ref) : "";
     return {
       id: this.id,
       name: this.name,
@@ -76,9 +107,10 @@ export class CronJob {
       paused: this.paused,
       created_at: this.created_at,
       updated_at: this.updated_at,
-      next_run_at: this.next_run_at,
       last_run_at: this.last_run_at,
-      last_output: this.last_output,
+      last_output_ref: this.last_output_ref,
+      next_run_at: next,
+      last_output: lastOutput.slice(0, 10_000),
     };
   }
 

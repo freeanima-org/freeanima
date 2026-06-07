@@ -32,11 +32,9 @@ import {
   REPO_ROOT,
 } from "./runtime/index.ts";
 import {
-  Scheduler,
-  enqueueRunJob,
-  ensureBuiltinCronJobs,
+  initCronModule,
+  stopCronModule,
   registerCronBuiltinHandler,
-  type CronJob,
 } from "@freeanima/connectors-cron";
 import { writeFileSync, unlinkSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
@@ -70,7 +68,7 @@ let engine: Engine | null = null;
 let conversation: ConversationService | null = null;
 let mcp: MCPManager | null = null;
 const acp = getAcpManager();
-let cronScheduler: Scheduler | null = null;
+let cronInitialized = false;
 
 export function getService(): AnimaService {
   if (!service) {
@@ -223,12 +221,31 @@ export async function serve(
 
     registerLightSleepWire();
     registerDeepSleepWire();
-    ensureBuiltinCronJobs();
+
+    if (repos.pgAvailable) {
+      registerCronBuiltinHandler("builtin-light-sleep", async () => {
+        const result = await runLightSleep({
+          sessionStore: engine!.repos.session,
+          soulContent: loadSoul(),
+        });
+        return JSON.stringify(result);
+      });
+
+      registerCronBuiltinHandler("builtin-deep-sleep", async () => {
+        const result = await runDeepSleep({
+          soulContent: loadSoul(),
+        });
+        return JSON.stringify(result);
+      });
+
+      await initCronModule({ store: repos.cron });
+      cronInitialized = true;
+      startupLog("Cron 调度器已启动 (Bun.cron)");
+    } else {
+      startupLog("PostgreSQL 不可用，跳过 Cron 模块");
+    }
+
     seedHomeChannelsFromHermes();
-    cronScheduler = new Scheduler();
-    cronScheduler.start((job: CronJob) => enqueueRunJob(job));
-    cronScheduler.rescheduleAll();
-    startupLog("Cron 调度器已启动");
 
     mcp = new MCPManager();
 
@@ -241,21 +258,6 @@ export async function serve(
       acp,
       host: statusHost,
       port,
-    });
-
-    registerCronBuiltinHandler("builtin-light-sleep", async () => {
-      const result = await runLightSleep({
-        sessionStore: engine!.repos.session,
-        soulContent: loadSoul(),
-      });
-      return JSON.stringify(result);
-    });
-
-    registerCronBuiltinHandler("builtin-deep-sleep", async () => {
-      const result = await runDeepSleep({
-        soulContent: loadSoul(),
-      });
-      return JSON.stringify(result);
     });
 
     const webuiDev = useWebuiDevMode(Boolean(opts.foreground));
@@ -312,7 +314,7 @@ export async function serve(
 
     {
       const s = Date.now();
-      cronScheduler?.stop();
+      if (cronInitialized) stopCronModule();
       step("Cron 调度器已停止", Date.now() - s);
     }
 

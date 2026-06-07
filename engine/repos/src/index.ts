@@ -9,6 +9,10 @@ export type {
   SemanticMemoryUpdateInput,
   SemanticMemorySearchOpts,
   SemanticMemoryStorePort,
+  CronJobRow,
+  CronJobCreateInput,
+  CronJobBuiltinUpsertInput,
+  CronJobUpdateInput,
   CronJobStorePort,
   TaskStorePort,
 } from "./ports/index.ts";

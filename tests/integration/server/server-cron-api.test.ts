@@ -8,7 +8,7 @@ import {
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { createJob } from "@freeanima/connectors-cron";
+import { createJob, initCronModule, stopCronModule } from "@freeanima/connectors-cron";
 import { getServiceContext } from "@freeanima/service";
 import {
   listCronJobs,
@@ -26,9 +26,10 @@ describePg("server cron API", () => {
   beforeEach(async () => {
     const ctx = await beginIntegrationCase("anima-cron-api-");
     home = ctx.home;
+    await initCronModule({ store: ctx.pg.engine.repos.cron });
     mkdirSync(join(home, "cron", "scripts"), { recursive: true });
     writeFileSync(join(home, "cron", "scripts", "noop.js"), "console.log('ok');\n", "utf-8");
-    const j = createJob({
+    const j = await createJob({
       name: "api-test",
       schedule: "1h",
       prompt: "",
@@ -39,55 +40,57 @@ describePg("server cron API", () => {
   });
 
   afterEach(async () => {
+    stopCronModule();
     await restoreIntegrationHome(prev);
   });
 
-  it("AnimaService pause and resume cron job", () => {
+  it("AnimaService pause and resume cron job", async () => {
     const svc = getServiceContext().service;
 
-    const paused = svc.pauseCronJob(jobId);
+    const paused = await svc.pauseCronJob(jobId);
     expect(paused).not.toBeNull();
     expect(paused!.paused).toBe(true);
     expect(paused!.next_run_at).toBe(0);
 
-    const resumed = svc.resumeCronJob(jobId);
+    const resumed = await svc.resumeCronJob(jobId);
     expect(resumed).not.toBeNull();
     expect(resumed!.paused).toBe(false);
     expect(resumed!.next_run_at).toBeGreaterThan(0);
   });
 
-  it("AnimaService runCronJobNow returns message for existing job", () => {
+  it("AnimaService runCronJobNow returns message for existing job", async () => {
     const svc = getServiceContext().service;
-    const result = svc.runCronJobNow(jobId);
+    const result = await svc.runCronJobNow(jobId);
     expect(result).not.toBeNull();
     expect(result!.message).toContain("api-test");
     expect(result!.job.id).toBe(jobId);
+    await new Promise((r) => setTimeout(r, 150));
   });
 
-  it("AnimaService returns null for unknown job id", () => {
+  it("AnimaService returns null for unknown job id", async () => {
     const svc = getServiceContext().service;
-    expect(svc.pauseCronJob("missing-id")).toBeNull();
-    expect(svc.resumeCronJob("missing-id")).toBeNull();
-    expect(svc.runCronJobNow("missing-id")).toBeNull();
+    expect(await svc.pauseCronJob("missing-id")).toBeNull();
+    expect(await svc.resumeCronJob("missing-id")).toBeNull();
+    expect(await svc.runCronJobNow("missing-id")).toBeNull();
   });
 
-  it("handler pause/resume/run and 404", () => {
-    const pauseBody = pauseCronJob(jobId);
+  it("handler pause/resume/run and 404", async () => {
+    const pauseBody = await pauseCronJob(jobId);
     expect(pauseBody.ok).toBe(true);
     expect(pauseBody.job.paused).toBe(true);
 
-    const resumeBody = resumeCronJob(jobId);
+    const resumeBody = await resumeCronJob(jobId);
     expect(resumeBody.job.paused).toBe(false);
 
-    const runBody = runCronJobNow(jobId);
+    const runBody = await runCronJobNow(jobId);
     expect(runBody.ok).toBe(true);
     expect(runBody.message).toContain("api-test");
 
-    expect(() => pauseCronJob("no-such-job")).toThrow(ApiHandlerError);
+    await expect(pauseCronJob("no-such-job")).rejects.toThrow(ApiHandlerError);
   });
 
-  it("listCronJobs lists jobs", () => {
-    const body = listCronJobs();
+  it("listCronJobs lists jobs", async () => {
+    const body = await listCronJobs();
     expect(body.jobs.some((j: { id: string }) => j.id === jobId)).toBe(true);
   });
 

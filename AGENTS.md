@@ -125,7 +125,9 @@ Agent 新增或移动类型 / Zod / 端口时，按下列顺序决策：
 | `SessionStorePort` / `PgRepositories`                         | `engine-repos`               | 仓储端口                                        |
 | L2 行 / fact 提取 schema                                      | `life-memory/schemas`        | `l2.ts`、`fact.ts`                              |
 | EventBus payload Zod（`session:updated` 等）                  | `life-memory/schemas`        | `event-payloads.ts`；topic token 见 `events.ts` |
-| Cron job 持久化 schema                                        | `connectors-cron`            | `schema.ts`                                     |
+| `cron_jobs` PG schema（DDL）                                  | `engine-db/migrations`       | SQL migration                                   |
+| Cron job API 校验 schema                                      | `connectors-cron`            | `schema.ts`                                     |
+| `CronJobStorePort`                                            | `engine-repos`               | `ports/cron.ts`                                 |
 | WebUI 展示视图（`MessagesDisplay`）                           | `service/schemas`            | `display.ts`                                    |
 | AnimaService 内部快照（`ServiceSnapshot` 等）                 | `service/schemas`            | `snapshot.ts`                                   |
 | 微信网关持久化 schema                                         | `connectors-gateway/schemas` | `weixin.ts`                                     |
