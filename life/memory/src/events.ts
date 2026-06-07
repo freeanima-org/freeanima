@@ -5,7 +5,7 @@ export type SessionUpdatedPayload = {
 };
 
 export type L3UpdatedPayload = {
-  fact_ids?: string[];
+  semantic_memory_ids?: string[];
 };
 
 export type TestPingPayload = Record<string, unknown>;

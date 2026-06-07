@@ -184,29 +184,52 @@ limbic / procedural 🚧 规划中，待 memory v2 定稿后继续落 PG。详�
 
 ### `autobiographical_memory`（自传体叙事，记忆层）
 
-| 列                | 类型        | 说明                                     |
-| ----------------- | ----------- | ---------------------------------------- |
-| `id`              | TEXT PK     | UUID                                     |
-| `title`           | TEXT        | 叙事标题                                 |
-| `content`         | TEXT        | 叙事正文（只追加，无 update）            |
-| `significance`    | TEXT        | `normal` / `milestone` / `turning_point` |
-| `period_start`    | TEXT        | 模糊时间起点                             |
-| `period_end`      | TEXT        | 模糊时间终点                             |
-| `source_facts`    | TEXT[]      | 关联 `semantic_memory.id`                |
-| `source_sessions` | TEXT[]      | 关联 session id                          |
-| `status`          | TEXT        | `active` / `deprecated`                  |
-| `created_at`      | TIMESTAMPTZ |                                          |
-| `updated_at`      | TIMESTAMPTZ | deprecate 时更新                         |
+| 列                | 类型        | 说明                                                                  |
+| ----------------- | ----------- | --------------------------------------------------------------------- |
+| `id`              | TEXT PK     | UUID                                                                  |
+| `title`           | TEXT        | 叙事标题                                                              |
+| `content`         | TEXT        | 叙事正文（只追加，无 update）                                         |
+| `significance`    | TEXT        | `normal` / `milestone` / `turning_point`                              |
+| `period_start`    | TEXT        | 模糊时间起点                                                          |
+| `period_end`      | TEXT        | 模糊时间终点                                                          |
+| `source_facts`    | TEXT[]      | 关联 `semantic_memory.id`（PG 列名；领域层 `source_semantic_memory`） |
+| `source_sessions` | TEXT[]      | 关联 session id                                                       |
+| `status`          | TEXT        | `active` / `deprecated`                                               |
+| `created_at`      | TIMESTAMPTZ |                                                                       |
+| `updated_at`      | TIMESTAMPTZ | deprecate 时更新                                                      |
 
 索引：`status`、`significance`、`updated_at`、`source_facts`（GIN）、`source_sessions`（GIN）。
 
 端口：`AutobiographicalMemoryStorePort` → `PgAutobiographicalMemoryStore` → `registerAutobiographicalMemoryStore`（`life-memory`）。
 
-方法：`create` / `get` / `deprecate` / `count` / `listActive` / `listCreatedSince` / `listBySourceFacts` / `listBySourceSessions`（**无** content `update`）。
+方法：`create` / `get` / `deprecate` / `count` / `listActive` / `listCreatedSince` / `listBySourceSemanticMemory` / `listBySourceSessions`（**无** content `update`）。
 
 维护：`builtin-self-autobiography` cron（04:00 CST）从 `experience`/`imprint` 语义记忆叙事加工；`autobiography_summary` 块由同一任务从本表压缩刷新。
 
 Migration：[`engine/db/migrations/20260607150000_self_and_autobiographical/migration.sql`](../engine/db/migrations/20260607150000_self_and_autobiographical/migration.sql)。
+
+### `limbic_memory`（边缘系统情感记忆）
+
+| 列                    | 类型        | 说明                                       |
+| --------------------- | ----------- | ------------------------------------------ |
+| `id`                  | UUID PK     |                                            |
+| `session_id`          | TEXT        | 关联 session                               |
+| `kind`                | TEXT        | `session_mood` / `turning_point` / `spike` |
+| `valence`             | REAL        | 效价 -1.0 到 1.0                           |
+| `arousal`             | REAL        | 唤醒度 0.0 到 1.0                          |
+| `content`             | TEXT        | 第一人称情感描述                           |
+| `intensity`           | REAL        | 强度 0.0 到 1.0，默认 0.5                  |
+| `source_segment`      | TEXT        | early / mid / late 或具体位置              |
+| `semantic_memory_ids` | TEXT[]      | 关联 `semantic_memory.id`                  |
+| `created_at`          | TIMESTAMPTZ |                                            |
+
+索引：`semantic_memory_ids`（GIN）、`session_id`、`created_at`、`kind`、`intensity`、`valence`、`arousal`。
+
+端口：`LimbicMemoryStorePort` → `PgLimbicMemoryStore` → `registerLimbicMemoryStore`（`life-memory`）。
+
+方法：`create` / `get` / `listBySession`。**不注入** system prompt；浅睡 Phase 2 经 `create_limbic_memory` 写入。
+
+Migration：[`engine/db/migrations/20260607160000_limbic_memory/migration.sql`](../engine/db/migrations/20260607160000_limbic_memory/migration.sql)。
 
 ## cron_jobs（已落地）
 

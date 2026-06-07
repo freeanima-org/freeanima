@@ -134,6 +134,9 @@ Agent 新增或移动类型 / Zod / 端口时，按下列顺序决策：
 | `autobiographical_memory` DDL + significance/status Zod       | `engine-db/schema`           | `autobiographical-memory.ts`                    |
 | `AutobiographicalMemoryStorePort`                             | `engine-repos`               | `ports/autobiographical-memory.ts`              |
 | 自传 cron 编排 / 工具                                         | `life-memory`                | `autobiography/`、`autobiographical-tools.ts`   |
+| `limbic_memory` DDL + `limbicKindSchema`                      | `engine-db/schema`           | `limbic-memory.ts`                              |
+| `LimbicMemoryStorePort`                                       | `engine-repos`               | `ports/limbic-memory.ts`                        |
+| 浅睡 Phase 2 / `create_limbic_memory`                         | `life-memory`                | `limbic-tools.ts`、`light-sleep/run.ts`         |
 | WebUI 展示视图（`MessagesDisplay`）                           | `service/schemas`            | `display.ts`                                    |
 | AnimaService 内部快照（`ServiceSnapshot` 等）                 | `service/schemas`            | `snapshot.ts`                                   |
 | 微信网关持久化 schema                                         | `connectors-gateway/schemas` | `weixin.ts`                                     |

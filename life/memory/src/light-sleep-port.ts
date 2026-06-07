@@ -1,12 +1,13 @@
 export type LightSleepEngineInput = {
   systemPrompt: string;
-  userMessages: [string, string, string];
+  userMessages: string[];
   toolNames: string[];
 };
 
 export type LightSleepEngineResult = {
   summary: string;
   tool_calls: number;
+  semantic_memory_ids: string[];
 };
 
 export type LightSleepEngineFn = (input: LightSleepEngineInput) => Promise<LightSleepEngineResult>;

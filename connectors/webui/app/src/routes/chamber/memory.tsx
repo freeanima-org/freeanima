@@ -15,7 +15,7 @@ function formatToolOutput(data: MemoryResult) {
     for (const r of data.l3) {
       const type = String(r.type ?? "world");
       const pin = r.pinned ? " 📌" : "";
-      lines.push(`  [${r.fact_id}] (${type})${pin} ${r.content}`);
+      lines.push(`  [${r.semantic_memory_id}] (${type})${pin} ${r.content}`);
     }
     sections.push(`## 语义记忆\n${lines.join("\n")}`);
   }
@@ -228,11 +228,11 @@ function MemoryPage() {
               </h3>
               <div className="space-y-2">
                 {result.l3.map((hit, idx) => (
-                  <div key={String(hit.fact_id)} className="card bg-base-200">
+                  <div key={String(hit.semantic_memory_id)} className="card bg-base-200">
                     <div className="card-body py-3 px-4 gap-2">
                       <div className="flex flex-wrap items-center gap-2 text-xs">
                         <span className="font-mono font-bold">
-                          {idx + 1}. {String(hit.fact_id)}
+                          {idx + 1}. {String(hit.semantic_memory_id)}
                         </span>
                         <span className="badge badge-ghost badge-xs">
                           rank {Number(hit.rank).toFixed(4)}

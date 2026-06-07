@@ -12,14 +12,31 @@ import {
 
 import { getServiceContext } from "../context.ts";
 
+const SEMANTIC_MEMORY_WRITE_TOOLS = new Set([
+  "create_semantic_memory",
+  "update_semantic_memory",
+  "remember",
+]);
+
 function buildMessages(input: LightSleepEngineInput): SessionMessage[] {
   const now = new Date().toISOString();
-  return [
-    { role: "system", content: input.systemPrompt },
-    { role: "user", content: input.userMessages[0], timestamp: now },
-    { role: "user", content: input.userMessages[1], timestamp: now },
-    { role: "user", content: input.userMessages[2], timestamp: now },
-  ];
+  const messages: SessionMessage[] = [{ role: "system", content: input.systemPrompt }];
+  for (const content of input.userMessages) {
+    messages.push({ role: "user", content, timestamp: now });
+  }
+  return messages;
+}
+
+function extractSemanticMemoryId(toolName: string, content: string): string | null {
+  if (!SEMANTIC_MEMORY_WRITE_TOOLS.has(toolName)) return null;
+  try {
+    const parsed = JSON.parse(content) as Record<string, unknown>;
+    if (parsed.error) return null;
+    const id = String(parsed.semantic_memory_id ?? parsed.id ?? parsed.fact_id ?? "").trim();
+    return id || null;
+  } catch {
+    return null;
+  }
 }
 
 async function runLightSleepTurn(input: LightSleepEngineInput): Promise<LightSleepEngineResult> {
@@ -31,6 +48,7 @@ async function runLightSleepTurn(input: LightSleepEngineInput): Promise<LightSle
 
   let toolCalls = 0;
   const parts: string[] = [];
+  const semanticMemoryIds: string[] = [];
 
   await runWithToolContext(
     "light-sleep",
@@ -47,6 +65,11 @@ async function runLightSleepTurn(input: LightSleepEngineInput): Promise<LightSle
           case "tool_begin":
             toolCalls += 1;
             break;
+          case "tool_result": {
+            const id = extractSemanticMemoryId(ev.data.name, ev.data.content);
+            if (id && !semanticMemoryIds.includes(id)) semanticMemoryIds.push(id);
+            break;
+          }
           case "error":
             throw new Error(ev.data.error);
           default:
@@ -58,7 +81,11 @@ async function runLightSleepTurn(input: LightSleepEngineInput): Promise<LightSle
   );
 
   const summary = parts.join("").trim() || `完成 ${toolCalls} 次工具调用`;
-  return { summary: summary.slice(0, 2000), tool_calls: toolCalls };
+  return {
+    summary: summary.slice(0, 2000),
+    tool_calls: toolCalls,
+    semantic_memory_ids: semanticMemoryIds,
+  };
 }
 
 /** 注册浅睡 LLM 引擎（engine.run + 工具白名单） */

@@ -44,12 +44,12 @@ export class PgAutobiographicalMemoryStore implements AutobiographicalMemoryStor
     );
   }
 
-  async listBySourceFacts(
-    factIds: string[],
-    opts?: Parameters<AutobiographicalMemoryStorePort["listBySourceFacts"]>[1],
+  async listBySourceSemanticMemory(
+    semanticMemoryIds: string[],
+    opts?: Parameters<AutobiographicalMemoryStorePort["listBySourceSemanticMemory"]>[1],
   ) {
-    return pgProfileWrap("autobiographicalMemory.listBySourceFacts", () =>
-      crudRepo.listAutobiographicalMemoryBySourceFacts(factIds, opts),
+    return pgProfileWrap("autobiographicalMemory.listBySourceSemanticMemory", () =>
+      crudRepo.listAutobiographicalMemoryBySourceSemanticMemory(semanticMemoryIds, opts),
     );
   }
 

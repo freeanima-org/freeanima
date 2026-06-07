@@ -159,14 +159,49 @@ export const LIGHT_SLEEP_INSTRUCTION_MESSAGE = `# 提取指令
 
 请直接调用工具完成写入；无需输出 JSON 摘要。`;
 
+export const LIMBIC_PHASE_INSTRUCTION = `# 情感提取（Phase 2）
+
+基于上方 Phase 1 语义记忆产出与本日 session，判断是否有值得记录的情感体验。
+
+## 克制原则
+- 轻微情绪波动、intensity < 0.3 → **不要调用** create_limbic_memory
+- 无明确情感信号 → 直接回复「本轮跳过：无值得记录的情感」
+- 不重复记录同一 session 的相似情绪
+
+## 工具：create_limbic_memory
+- kind：session_mood（整体情绪）| turning_point（情感转折）| spike（强烈瞬间）
+- content：第一人称「我感到…」
+- valence：-1.0（负）到 1.0（正）；arousal：0.0 到 1.0
+- intensity：0.3 以上才写入；关联 semantic_memory_ids 与 session_id
+
+请直接调用工具；无需输出 JSON 摘要。`;
+
 export async function buildLightSleepUserMessages(
   sessionStore: SessionStorePort,
   sessionIds: string[],
-): Promise<[string, string, string]> {
+): Promise<string[]> {
   const blocks = await collectSessionBlocks(sessionStore, sessionIds);
   const dialogue = formatDialogueMessage(blocks);
   const related = await getSemanticMemoryStore().listBySourceSessions(sessionIds, {
     status: "active",
   });
   return [dialogue.text, formatExistingMemoriesMessage(related), LIGHT_SLEEP_INSTRUCTION_MESSAGE];
+}
+
+export function buildLimbicPhaseUserMessages(
+  sessionIds: string[],
+  semanticMemoryIds: string[],
+): string[] {
+  const contextLines = [
+    "# 本日 session",
+    ...sessionIds.map((id) => `- ${id}`),
+    "",
+    "# Phase 1 语义记忆产出（新建/更新）",
+  ];
+  if (semanticMemoryIds.length) {
+    contextLines.push(...semanticMemoryIds.map((id) => `- ${id}`));
+  } else {
+    contextLines.push("（本轮仅有废弃或无 id 返回；若无情感信号可跳过）");
+  }
+  return [contextLines.join("\n"), LIMBIC_PHASE_INSTRUCTION];
 }

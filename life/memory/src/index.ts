@@ -28,6 +28,11 @@ export {
   getAutobiographicalMemoryStore,
   resetAutobiographicalMemoryStoreForTests,
 } from "./autobiographical-port.ts";
+export {
+  registerLimbicMemoryStore,
+  getLimbicMemoryStore,
+  resetLimbicMemoryStoreForTests,
+} from "./limbic-port.ts";
 export { filterRecallableMessages, type RecallableMessage } from "./message-filter.ts";
 export {
   search,

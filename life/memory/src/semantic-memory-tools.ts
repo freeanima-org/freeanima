@@ -50,17 +50,35 @@ async function handleCreateSemanticMemory(args: Record<string, unknown>): Promis
   };
 
   const id = await getSemanticMemoryStore().create(row);
-  return jsonResult({ ok: true, id, action: "create" });
+  return jsonResult({ ok: true, id, semantic_memory_id: id, action: "create" });
+}
+
+function resolveSemanticMemoryId(args: Record<string, unknown>): string {
+  return String(args.semantic_memory_id ?? args.fact_id ?? args.id ?? "").trim();
+}
+
+function rememberResult(
+  action: string,
+  semanticMemoryId: string,
+  extra?: Record<string, unknown>,
+): string {
+  return jsonResult({
+    ok: true,
+    action,
+    semantic_memory_id: semanticMemoryId,
+    fact_id: semanticMemoryId,
+    ...extra,
+  });
 }
 
 async function handleUpdateSemanticMemory(args: Record<string, unknown>): Promise<string> {
-  const id = String(args.id ?? args.fact_id ?? "").trim();
-  if (!id) return jsonError("id is required");
+  const semanticMemoryId = resolveSemanticMemoryId(args);
+  if (!semanticMemoryId) return jsonError("semantic_memory_id is required");
 
-  const existing = await getSemanticMemoryStore().get(id);
-  if (!existing) return jsonError(`Memory not found: ${id}`);
+  const existing = await getSemanticMemoryStore().get(semanticMemoryId);
+  if (!existing) return jsonError(`Memory not found: ${semanticMemoryId}`);
 
-  const patch: SemanticMemoryUpdateInput = { id };
+  const patch: SemanticMemoryUpdateInput = { id: semanticMemoryId };
   if (args.content !== undefined) {
     const content = String(args.content).trim();
     if (!content) return jsonError("content cannot be empty");
@@ -79,15 +97,25 @@ async function handleUpdateSemanticMemory(args: Record<string, unknown>): Promis
   if (args.status !== undefined) patch.status = String(args.status);
 
   await getSemanticMemoryStore().update(patch);
-  return jsonResult({ ok: true, id, action: "update" });
+  return jsonResult({
+    ok: true,
+    id: semanticMemoryId,
+    semantic_memory_id: semanticMemoryId,
+    action: "update",
+  });
 }
 
 async function handleDeprecateSemanticMemory(args: Record<string, unknown>): Promise<string> {
-  const id = String(args.id ?? args.fact_id ?? "").trim();
-  if (!id) return jsonError("id is required");
-  const ok = await getSemanticMemoryStore().deprecate(id);
-  if (!ok) return jsonError(`Memory not found: ${id}`);
-  return jsonResult({ ok: true, id, action: "deprecate" });
+  const semanticMemoryId = resolveSemanticMemoryId(args);
+  if (!semanticMemoryId) return jsonError("semantic_memory_id is required");
+  const ok = await getSemanticMemoryStore().deprecate(semanticMemoryId);
+  if (!ok) return jsonError(`Memory not found: ${semanticMemoryId}`);
+  return jsonResult({
+    ok: true,
+    id: semanticMemoryId,
+    semantic_memory_id: semanticMemoryId,
+    action: "deprecate",
+  });
 }
 
 async function handleSearchSemanticMemory(args: Record<string, unknown>): Promise<string> {
@@ -347,22 +375,22 @@ export async function rememberFromArgs(args: Record<string, unknown>): Promise<s
   const store = getSemanticMemoryStore();
 
   if (action === "delete") {
-    const factId = String(args.fact_id ?? "").trim();
-    if (!factId) return jsonError("fact_id is required for delete");
-    const deleted = await store.delete(factId);
-    return jsonResult({ ok: deleted, fact_id: factId, action: "delete" });
+    const semanticMemoryId = resolveSemanticMemoryId(args);
+    if (!semanticMemoryId) return jsonError("semantic_memory_id is required for delete");
+    const deleted = await store.delete(semanticMemoryId);
+    return rememberResult("delete", semanticMemoryId, { ok: deleted });
   }
 
   if (action === "update") {
-    const factId = String(args.fact_id ?? "").trim();
-    if (!factId) return jsonError("fact_id is required for update");
-    return handleUpdateSemanticMemory({ ...args, id: factId });
+    const semanticMemoryId = resolveSemanticMemoryId(args);
+    if (!semanticMemoryId) return jsonError("semantic_memory_id is required for update");
+    return handleUpdateSemanticMemory({ ...args, id: semanticMemoryId });
   }
 
   const sessionId = getToolSessionIdForMemory();
-  const factId = await createSemanticMemoryFromArgs(args, {
+  const semanticMemoryId = await createSemanticMemoryFromArgs(args, {
     source_sessions: sessionId ? [sessionId] : [],
     observed_at: formatCstIso(),
   });
-  return jsonResult({ ok: true, fact_id: factId, action: "create" });
+  return rememberResult("create", semanticMemoryId);
 }

@@ -34,9 +34,16 @@ export type {
   AutobiographicalListOrder,
   AutobiographicalMemoryStorePort,
 } from "./autobiographical-memory.ts";
+export type {
+  LimbicKind,
+  LimbicMemoryRow,
+  LimbicMemoryCreateInput,
+  LimbicMemoryStorePort,
+} from "./limbic-memory.ts";
 
 import type { AutobiographicalMemoryStorePort } from "./autobiographical-memory.ts";
 import type { CronJobStorePort } from "./cron.ts";
+import type { LimbicMemoryStorePort } from "./limbic-memory.ts";
 import type { SelfLayerStorePort } from "./self-layer.ts";
 
 /** Engine 挂载的 PG 仓储聚合 */
@@ -46,5 +53,6 @@ export interface PgRepositories {
   semanticMemory: SemanticMemoryStorePort;
   selfLayer: SelfLayerStorePort;
   autobiographicalMemory: AutobiographicalMemoryStorePort;
+  limbicMemory: LimbicMemoryStorePort;
   cron: CronJobStorePort;
 }

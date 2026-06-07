@@ -101,7 +101,7 @@ recall("上次我们聊的那个数据库问题", preset="回忆")
    ├──────────────┼──────────────────────────┤
    │ 工具         │ load_tools(["name"])     │ → 完整 Schema
    │ 技能         │ load_skill("name")       │ → 可注入的技能
-   │ 语义/感性记忆 │ read_memory("fact_id")   │ → 完整事实内容
+   │ 语义/感性记忆 │ read_memory("semantic_memory_id")   │ → 完整事实内容
    │ 情景记忆片段  │ scroll_session("id")     │ → 最近的对话上下文
    │ 文件/文档    │ read_file("path")        │ → 文件内容
    │ 实体关系     │ graph_query("entity")    │ → 关联网络

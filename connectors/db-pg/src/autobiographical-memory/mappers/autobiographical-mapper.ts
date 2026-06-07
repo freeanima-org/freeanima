@@ -49,7 +49,7 @@ export function mapAutobiographicalMemoryRow(
     significance: normalizeSignificance(row.significance),
     period_start: row.period_start ?? row.periodStart ?? null,
     period_end: row.period_end ?? row.periodEnd ?? null,
-    source_facts: row.source_facts ?? row.sourceFacts ?? [],
+    source_semantic_memory: row.source_facts ?? row.sourceFacts ?? [],
     source_sessions: row.source_sessions ?? row.sourceSessions ?? [],
     status: normalizeStatus(row.status),
     created: created != null ? normalizePgTimestamp(created) : "",

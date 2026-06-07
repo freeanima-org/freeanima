@@ -46,7 +46,7 @@ export async function createAutobiographicalMemory(
     significance: normalizeSignificance(row.significance),
     periodStart: row.period_start ?? null,
     periodEnd: row.period_end ?? null,
-    sourceFacts: normalizeStringArray(row.source_facts),
+    sourceFacts: normalizeStringArray(row.source_semantic_memory),
     sourceSessions: normalizeStringArray(row.source_sessions),
     status: "active",
     createdAt: new Date(now),
@@ -172,11 +172,11 @@ export async function listAutobiographicalMemoryCreatedSince(
   return rows.map(mapAutobiographicalMemoryRow);
 }
 
-export async function listAutobiographicalMemoryBySourceFacts(
-  factIds: string[],
+export async function listAutobiographicalMemoryBySourceSemanticMemory(
+  semanticMemoryIds: string[],
   opts?: { status?: AutobiographicalStatus },
 ): Promise<AutobiographicalMemoryRow[]> {
-  const ids = factIds.map((s) => s.trim()).filter(Boolean);
+  const ids = semanticMemoryIds.map((s) => s.trim()).filter(Boolean);
   if (!ids.length) return [];
 
   const status = opts?.status ?? "active";
