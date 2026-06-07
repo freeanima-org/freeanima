@@ -74,6 +74,7 @@ firecrawl:
 #     description: "委托 Cursor Agent 执行编码任务"
 #     plan_mode: false
 #     agent_mode: agent
+#     model: auto  # Cursor ACP 模型；auto=Auto，也可写 composer-2.5[fast=true] 等 modelId
 #     enabled: true
 #     connect_timeout_ms: 15000
 #     prompt_timeout_ms: 120000

@@ -24,6 +24,8 @@ export const acpAgentSchema = z
     adapter: z.string().optional(),
     plan_mode: z.union([z.string(), z.boolean()]).optional(),
     agent_mode: z.string().optional(),
+    /** Cursor ACP 模型；`auto` 表示 Auto（default[]），缺省 cursor 适配器亦为 auto */
+    model: z.string().optional(),
     url: z.string().optional(),
     transport: z.enum(["stdio", "sse"]).optional(),
     name: z.string().optional(),
