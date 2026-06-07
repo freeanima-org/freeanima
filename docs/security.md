@@ -1,7 +1,7 @@
 # 逸灵风安全
 
 > 已采纳原则见 [ARCHITECTURE.md](../ARCHITECTURE.md)。
-> 当前任务中的安全评审见 [TODOS.md](../TODOS.md)。
+> 安全评审与落地项见 [GitHub Issue #33](https://github.com/freeanima-org/freeanima/issues/33)、[#46](https://github.com/freeanima-org/freeanima/issues/46)。
 
 ## 信任模型（开源部署必读）
 

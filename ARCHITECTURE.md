@@ -419,18 +419,11 @@ conversation.py  emit("session:updated")
 
 ## 方向
 
-阶段性能力规划，**不是执行清单**。具体任务见 `TODOS.md`。
-
-- 技能 / 插件系统
-- 笔记资产纳入 L4 检索（范围待讨论）
-- 安全 P0 项落地（read deny、shell 策略）— 见 [`docs/security.md`](docs/security.md)
-- docgen：从 registry 自动生成工具表（低优）
-- WebUI 多行粘贴优化（长文本 → 临时文件链接）
-- 扩展更多 Hook 点（见上文「Hooks」）
+阶段性能力愿景与讨论项见 [GitHub Issues](https://github.com/freeanima-org/freeanima/issues)（标签 `enhancement` / `discussion` / `security`）。本文件不写执行清单。
 
 ## 约束
 
 - 原则与结构写在本文件；不写具体待办
 - 会周变的实现细节以代码为准；长期专题进 `docs/*.md`（见 `AGENTS.md` 文档地图）
-- 当前要做的事只进 `TODOS.md`；**完成后从 TODOS 删除**，不保留已完成项
+- 可执行任务与讨论项开 GitHub Issue；完成后 close Issue
 - 用户可见的发布级变更进 `CHANGELOG.md`（发版时）

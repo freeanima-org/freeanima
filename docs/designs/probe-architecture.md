@@ -1,6 +1,6 @@
 # Probe 探针架构设计
 
-> 🚧 **规划中（草案）** — 代码库尚无 Probe 实现。
+> **草案** — 代码库尚无 Probe 实现。跟踪 [Issue #43](https://github.com/freeanima-org/freeanima/issues/43)。
 
 > 把数字生命的手伸向你授权的地方——不搬家，不挪窝，只是多了一双手。
 

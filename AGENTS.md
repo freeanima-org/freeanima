@@ -21,7 +21,7 @@
 
 ## 启动顺序
 
-1. [`TODOS.md`](TODOS.md) — 当前任务，最高优先级
+1. [GitHub Issues](https://github.com/freeanima-org/freeanima/issues) — 可执行任务与讨论项
 2. [`ARCHITECTURE.md`](ARCHITECTURE.md) — 改架构 / 记忆 / 凭证前必读
 3. 按任务展开 `docs/` 专题（见下方文档地图）
 
@@ -169,16 +169,16 @@ anima credential list              # 凭证路径；值在 pass
 
 ## 文档地图
 
-| 文件                                   | 职责                       |
-| -------------------------------------- | -------------------------- |
-| [`AGENTS.md`](AGENTS.md)               | 本文件：启动协议与硬性约束 |
-| [`TODOS.md`](TODOS.md)                 | 当前可执行任务             |
-| [`ARCHITECTURE.md`](ARCHITECTURE.md)   | 架构原则与方向             |
-| [`docs/memory.md`](docs/memory.md)     | 记忆管道                   |
-| [`docs/database.md`](docs/database.md) | PostgreSQL schema          |
-| [`docs/security.md`](docs/security.md) | 安全与凭证                 |
-| [`docs/identity.md`](docs/identity.md) | 数字生命 / SOUL            |
-| [`docs/designs/`](docs/designs/)       | 专题设计（含 RFC 迁移）    |
+| 文件                                                               | 职责                       |
+| ------------------------------------------------------------------ | -------------------------- |
+| [`AGENTS.md`](AGENTS.md)                                           | 本文件：启动协议与硬性约束 |
+| [GitHub Issues](https://github.com/freeanima-org/freeanima/issues) | 可执行任务与讨论项         |
+| [`ARCHITECTURE.md`](ARCHITECTURE.md)                               | 架构原则与方向             |
+| [`docs/memory.md`](docs/memory.md)                                 | 记忆管道                   |
+| [`docs/database.md`](docs/database.md)                             | PostgreSQL schema          |
+| [`docs/security.md`](docs/security.md)                             | 安全与凭证                 |
+| [`docs/identity.md`](docs/identity.md)                             | 数字生命 / SOUL            |
+| [`docs/designs/`](docs/designs/)                                   | 专题设计（含 RFC 迁移）    |
 
 ---
 
@@ -186,7 +186,7 @@ anima credential list              # 凭证路径；值在 pass
 
 1. **代码实现** > 一切文档
 2. **ARCHITECTURE.md** > 专题 `docs/*.md`
-3. **TODOS.md** > ARCHITECTURE 方向规划
+3. **GitHub Issues** > ARCHITECTURE 方向规划
 
 ## 改代码须同步的文档
 
@@ -199,15 +199,15 @@ anima credential list              # 凭证路径；值在 pass
 | 架构原则                   | ARCHITECTURE.md                                                                      |
 | 新建 RFC 包 / rename       | 本文件命名表 + [`issue-1-migration-plan.md`](docs/designs/issue-1-migration-plan.md) |
 | 发版                       | [`docs/versioning.md`](docs/versioning.md)                                           |
-| 任务完成                   | 从 TODOS 删除；用户可见变更用 Conventional Commits                                   |
+| 任务完成                   | close 对应 GitHub Issue；用户可见变更用 Conventional Commits                         |
 
 工具表、模块树、API 列表**不维护在文档中**——以注册代码与服务 router 为准。
 
 ## 维护规约
 
 - 原则变更先 ARCHITECTURE，再决定是否写专题 doc
-- 新专题 >50 行且长期有效才进 `docs/`，否则进 TODOS
-- 任务完成从 TODOS 删除，不保留已完成项
+- 新专题 >50 行且长期有效才进 `docs/`；可执行任务与讨论项开 GitHub Issue
+- 任务完成 close 对应 Issue，不保留已完成项在文档中
 
 ## 各文件禁止写什么
 
@@ -215,4 +215,3 @@ anima credential list              # 凭证路径；值在 pass
 | ------------------- | ------------------------------------------------------------------------------- |
 | AGENTS.md（本文件） | 完整工具表、目录树、API 对照、SemVer 细则（**须**维护代码层与依赖、类型归属表） |
 | ARCHITECTURE.md     | 具体待办、会周变工具清单                                                        |
-| TODOS.md            | 已完成项、架构长篇                                                              |

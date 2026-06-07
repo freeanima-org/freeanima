@@ -317,4 +317,4 @@ StudioLayout 侧边栏保持现有风格，结对编程作为第一个入口。
 ---
 
 > 设计文档 · 2026-05-28  
-> 状态：**Phase 1 ✅ 已实现**（2026-05-29）；**Phase 2 🚧 规划中**
+> 状态：**Phase 1 ✅ 已实现**（2026-05-29）；Phase 2 见 [Issue #37](https://github.com/freeanima-org/freeanima/issues/37)

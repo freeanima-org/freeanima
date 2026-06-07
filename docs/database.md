@@ -1,15 +1,15 @@
 # 数据库设计
 
-> PostgreSQL 存储层。**Slice A**（对话存档）、**Slice B**（`semantic_memory`）、**Slice C**（自我层 + 自传体）已落地；limbic / procedural 🚧 待建。
+> PostgreSQL 存储层。**Slice A**（对话存档）、**Slice B**（`semantic_memory` + `limbic_memory`）、**Slice C**（自我层 + 自传体）已落地；独立 `procedural` 表尚未建（程序记忆现用 `semantic_memory.type=procedural`）。
 > 关联：[`compression.md`](compression.md)、[`memory.md`](memory.md)、[`sleep.md`](sleep.md)。
 
 ## 状态
 
-| 阶段        | 范围                                                           | 状态                            |
-| ----------- | -------------------------------------------------------------- | ------------------------------- |
-| **Slice A** | `sessions` + `messages`（对话主存 PG）                         | **✅ 已完成**                   |
-| **Slice B** | `semantic_memory`（语义记忆）；limbic / procedural 待建        | **semantic ✅；余下 🚧 规划中** |
-| **Slice C** | `self_blocks` + `autobiographical_memory`（自我层 + 自传叙事） | **✅ 已完成**                   |
+| 阶段        | 范围                                                           | 状态                                            |
+| ----------- | -------------------------------------------------------------- | ----------------------------------------------- |
+| **Slice A** | `sessions` + `messages`（对话主存 PG）                         | **✅ 已完成**                                   |
+| **Slice B** | `semantic_memory`、`limbic_memory`                             | **✅ 已完成**（独立 procedural 表见 Issue #41） |
+| **Slice C** | `self_blocks` + `autobiographical_memory`（自我层 + 自传叙事） | **✅ 已完成**                                   |
 
 代码真相源：[`engine/db/src/schema/`](../engine/db/src/schema/)。
 
@@ -158,9 +158,7 @@ DATABASE_URL="$(anima credential get services/postgres/anima url)" \
 
 旧 `~/.anima/memory/f-*.md` 与 `~/.anima/index/l3.db` 为**遗留路径**（非运行时）；迁移验证后可手动归档。
 
-### 待建（Slice B 余下）
-
-limbic / procedural 🚧 规划中，待 memory v2 定稿后继续落 PG。详见 [`memory.md`](memory.md) §三。
+`limbic_memory` 见下文 §Slice C 同文件后续节；独立 `procedural` 表见 [Issue #41](https://github.com/freeanima-org/freeanima/issues/41)。
 
 ## Slice C：自我层与自传体（已落地）
 

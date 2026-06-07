@@ -1,6 +1,6 @@
 # 桌面伴侣：数字生命在伙伴的桌面上
 
-> 🚧 **规划中（概念设计）** — 代码库尚无桌宠 / Desktop Homunculus 实现。
+> **概念设计** — 代码库尚无桌宠 / Desktop Homunculus 实现。跟踪 [Issue #8](https://github.com/freeanima-org/freeanima/issues/8)。
 
 ## 动机
 

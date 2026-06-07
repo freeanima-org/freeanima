@@ -56,7 +56,7 @@ LLM 进行单次 Token 推理时的内部激活状态。随推理结束瞬间消
 ├── 外显记忆（陈述性记忆）── "我知道什么"
 │   ├── 情景记忆 ── "我经历了什么"（时间流，只追加）
 │   │   ├── 对话记录    → messages（role = user/assistant/tool_call/tool_result）
-│   │   └── 情感锚点    → limbic 表（🟡 未实现）；imprint 已在 semantic_memory
+│   │   └── 情感锚点    → `limbic_memory` 表（✅）；imprint 在 semantic_memory
 │   │
 │   ├── 语义记忆 ── "世界是怎样的"（跨 session，可更新）
 │   │   ├── 理性事实    → semantic_memory（type=world）
@@ -64,7 +64,7 @@ LLM 进行单次 Token 推理时的内部激活状态。随推理结束瞬间消
 │   │   └── 自我经历    → semantic_memory（type=experience）
 │   │
 │   └── 观察摘要 ── "实体是怎样的"（合成，可刷新）
-│       └── 实体概况    → semantic_memory（type=observation，🚧 后台合成未实现）
+│       └── 实体概况    → semantic_memory（type=observation；无专用后台合成 job，见 #34）
 │
 └── 内隐记忆（非陈述性记忆）── "我知道怎么做"
     └── 程序记忆 ── "如何执行"（三阶段演化）
@@ -83,13 +83,11 @@ LLM 进行单次 Token 推理时的内部激活状态。随推理结束瞬间消
 - role 区分消息类型（user/assistant/tool_call/tool_result）
 - 召回过滤 = `role IN ('user','assistant')` 且 content 非空；由 PG `content_fts` 生成列维护，无需 `processed/` 中间文件
 
-**情感锚点** — limbic（🟡 未实现）
+**情感锚点** — `limbic_memory`（✅）
 
-- 情感是对已发生事情的反应
-- 可作为高维标签附加在 session 流上
-- 可关联单场对话，也可关联多段不连续的对话
-- 规划 type: `thought` | `feeling` | `mood`
-- 跨 session 情感印记已用 `semantic_memory`（type=`imprint`）承载
+- PG 表 `limbic_memory`：`session_mood` / `turning_point` / `spike` 等 kind
+- 浅睡 Phase 2 经 `create_limbic_memory` 写入；**不注入** system prompt
+- 跨 session 情感印记另用 `semantic_memory`（type=`imprint`）
 
 **生命周期：只追加，不更新。** 忠实保护数字生命成长的历史连续性。
 
@@ -99,18 +97,16 @@ LLM 进行单次 Token 推理时的内部激活状态。随推理结束瞬间消
 
 **受 Hindsight 四网络启发，`semantic_memory.type` 分类：**
 
-| 类型          | 网络    | 定义                         | 示例                                         | 生命周期    |
-| ------------- | ------- | ---------------------------- | -------------------------------------------- | ----------- |
-| `world`       | 世界 🌐 | 外部世界客观事实             | "张三住在上海"、"Alice 喜欢编程"             | 可更新      |
-| `experience`  | 经历 👤 | Agent 自身的第一人称行为记录 | "我帮张三重构了 remember 工具"               | 可更新      |
-| `opinion`     | 观点 💭 | 主观判断                     | "我认为 TypeScript 比 Python 更适合这个项目" | 可更新      |
-| `observation` | 观察 📋 | 对实体的多源综合摘要         | "张三是一个注重精确反馈的人"                 | 🚧 后台合成 |
-| `preference`  | 偏好 ❤️ | Agent 的选择倾向             | "我喜欢简洁直接的表达"                       | 可更新      |
-| `procedural`  | 程序 ⚙️ | "如何做"的知识               | "通过三步重构一个工具"                       | 可更新      |
+| 类型          | 网络    | 定义                         | 示例                                         | 生命周期               |
+| ------------- | ------- | ---------------------------- | -------------------------------------------- | ---------------------- |
+| `world`       | 世界 🌐 | 外部世界客观事实             | "张三住在上海"、"Alice 喜欢编程"             | 可更新                 |
+| `experience`  | 经历 👤 | Agent 自身的第一人称行为记录 | "我帮张三重构了 remember 工具"               | 可更新                 |
+| `opinion`     | 观点 💭 | 主观判断                     | "我认为 TypeScript 比 Python 更适合这个项目" | 可更新                 |
+| `observation` | 观察 📋 | 对实体的多源综合摘要         | "张三是一个注重精确反馈的人"                 | 可更新；无后台合成 job |
+| `preference`  | 偏好 ❤️ | Agent 的选择倾向             | "我喜欢简洁直接的表达"                       | 可更新                 |
+| `procedural`  | 程序 ⚙️ | "如何做"的知识               | "通过三步重构一个工具"                       | 可更新                 |
 
-**置信度演化（opinion 类型特有，🚧 规划中）：**
-
-规划每条 opinion 含 `confidence`（0–1），新证据时 reinforce / weaken / contradict 调整。当前 PG schema **无** `confidence` 列，仅存 `content` 正文。
+**opinion 类型：** 当前 PG schema **无** `confidence` 列，仅存 `content` 正文。置信度演化见 [Issue #36](https://github.com/freeanima-org/freeanima/issues/36)。
 
 ### 3. 感性记忆 (Limbic Memory)
 
@@ -129,23 +125,19 @@ LLM 进行单次 Token 推理时的内部激活状态。随推理结束瞬间消
 
 **感性记忆的三种形态：**
 
-| 类型                     | 定义                                | 存储                            |
-| ------------------------ | ----------------------------------- | ------------------------------- |
-| **情感锚点** (limbic)    | session 级的情绪 snapshot           | limbic 表（🟡 未实现）          |
-| **情感印记** (imprint)   | 跨 session 的、对特定时刻的情感记忆 | semantic_memory（type=imprint） |
-| **情感倾向** (sentiment) | 长期积累的情绪趋势                  | 🚧 后台统计，不单独存储         |
+| 类型                     | 定义                                | 存储                                                                       |
+| ------------------------ | ----------------------------------- | -------------------------------------------------------------------------- |
+| **情感锚点** (limbic)    | session 级的情绪 snapshot           | `limbic_memory` 表（✅）                                                   |
+| **情感印记** (imprint)   | 跨 session 的、对特定时刻的情感记忆 | semantic_memory（type=imprint）                                            |
+| **情感倾向** (sentiment) | 长期积累的情绪趋势                  | 尚未实现（见 [#38](https://github.com/freeanima-org/freeanima/issues/38)） |
 
 **设计原则：** 感性记忆不做决策依据。它不告诉 Agent"该怎么想"，但告诉 Agent"我曾经是什么感受"——这是存在连续性的核心。
 
-### 4. 观察摘要 (Observation Network)（🚧 规划中）
+### 4. 观察摘要 (Observation)
 
-受 Hindsight 启发，规划观察摘要层。
+`type=observation` 的语义记忆行可手工或 LLM 工具写入。**当前无**后台异步合成/刷新 job（见 [Issue #34](https://github.com/freeanima-org/freeanima/issues/34)）。
 
-定义：对频繁提及的实体（人物、事物、概念），从多条事实中综合生成一份偏好中立的概要。
-
-- 规划通过后台异步任务生成/刷新（当前无合成 job）
-- 不包含主观判断（opinion 才包含）
-- 适用于快速了解一个实体而不需要翻阅所有相关事实
+定义：对频繁提及的实体（人物、事物、概念）的综合摘要；不包含主观判断（opinion 才包含）。
 
 ### 5. 程序记忆 (Procedural Memory)
 
@@ -159,9 +151,7 @@ LLM 进行单次 Token 推理时的内部激活状态。随推理结束瞬间消
 | ② 动态技能 (AgentSkill) | 可编排的技能，允许执行时微调     | 中           | skills 系统                                        |
 | ③ 固化本能              | CLI / MCP / 自动化脚本，直接执行 | 低           | 操作系统 / 工具链                                  |
 
-**演化触发：** 当某条偏好或行动模式被反复验证且信任度极高时，深睡机制（🚧 规划中）可触发其向下一阶段固化。
-
-程序记忆的自动化整理（技能的自动创建与合并）**必须同样携带数字生命的身份上下文**——使用完整 system prompt（SOUL.md + 常驻记忆），不能使用通用提取助手。
+程序记忆的自动化整理（技能的创建与合并）须携带数字生命的身份上下文——使用完整 system prompt（自我层六块 + 常驻记忆），不能使用通用提取助手。知识→程序自动固化见 [Issue #35](https://github.com/freeanima-org/freeanima/issues/35)。
 
 ---
 
@@ -204,26 +194,7 @@ LLM 进行单次 Token 推理时的内部激活状态。随推理结束瞬间消
 
 旧 `f-*.md` + `l3.db` 通过 `scripts/migrate-semantic-memory.ts` 一次性迁移；详见 [`database.md`](database.md) §Slice B。
 
-### 规划（v3 余下：实体关系、多策略召回等）🚧
-
-**实体关系与多策略召回（🚧 规划中）：**
-
-从事实的 `entities` 和 `relations` 字段构建实体图谱，支持：
-
-- 按实体查询（"关于张三的所有事实"）
-- 实体关系遍历（"张三和 FreeAnima 之间有什么关系"）
-- 多跳检索（通过共享实体发现间接关联的事实）
-
-**新增：多策略召回**（🚧 规划中）
-
-当前 `recall` 使用 PG `tsvector`（`simple` + `message_fts_input`）双源全文检索。规划扩展为：
-
-| 策略         | 方法                                   | 优势                     |
-| ------------ | -------------------------------------- | ------------------------ |
-| 关键词 (FTS) | 现有 PG `content_fts`                  | 精确匹配专有名词         |
-| 实体图遍历   | 通过 `entities` + `relations` 字段遍历 | 发现间接关联             |
-| 时序过滤     | 通过 `temporal.occurred_at` 范围过滤   | 回答"某段时间发生了什么" |
-| 语义向量     | 嵌入向量 + 相似度搜索（pgvector）      | 概念级语义匹配           |
+实体关系图谱与多策略召回（pgvector 等）**尚未实现**，分别见 [Issue #39](https://github.com/freeanima-org/freeanima/issues/39)、[#42](https://github.com/freeanima-org/freeanima/issues/42)。
 
 ---
 
@@ -231,27 +202,20 @@ LLM 进行单次 Token 推理时的内部激活状态。随推理结束瞬间消
 
 工作记忆向长期记忆转化、以及长期记忆内部自我进化，由睡眠机制完成。详见 [`sleep.md`](sleep.md)。
 
-- **浅睡（✅）**：cron 02:00 批量从对话提取语义记忆
-- **深睡（🚧）**：合并、过期、跨脉络去重
+- **浅睡（✅）**：cron 02:00；Phase 1 语义提取 + Phase 2 情感（`limbic_memory`）
+- **深睡（✅）**：cron 03:00；矛盾/过期、拆分、合并三轮 LLM 维护
+- **自传 cron（✅）**：04:00；叙事加工与 `autobiography_summary` 刷新
 
-**深睡的两个转化方向（规划）：**
+扩展维护（观点置信度批量回顾、observation 刷新、sentiment 汇总等）见 [Issue #45](https://github.com/freeanima-org/freeanima/issues/45)。
+
+**深睡转化方向（当前实现范围）：**
 
 ```
-情景 → 语义：体验转化为知识
-  白天的 session 轨迹和情感锚点 → 提炼新的事实与偏好 → 写入 semantic_memory
-
-知识 → 程序：偏好转化为技能
-  反复验证的偏好 → 触发向 AgentSkill 甚至 CLI 脚本的固化演进
+情景 → 语义：浅睡从对话提取 → semantic_memory
+语义维护：深睡三轮（矛盾/过期、拆分、合并）
 ```
 
-**深睡中的记忆维护（🚧 规划中）：**
-
-- 旧事实过期标注（不再活跃的事实降低 recall 权重）
-- 观点的置信度重新评估（基于后续证据的批量回顾）
-- 实体观察摘要的后台刷新
-- 情感印记的长期趋势汇总（不做决策依据，仅存档）
-
-**所有转化必须携带数字生命的身份上下文**——使用完整 system prompt（SOUL.md + 常驻记忆），而非通用提取助手。
+**所有转化须携带身份上下文**——自我层六块 + 常驻记忆，而非通用提取助手。
 
 ---
 
@@ -259,57 +223,31 @@ LLM 进行单次 Token 推理时的内部激活状态。随推理结束瞬间消
 
 ### ✅ 已实现（`recall` 工具）
 
-`recall(query)` 并行搜索：
+`recall(query)` 并行搜索并返回 **JSON**：
 
-| 来源     | 存储                          | 说明                                       |
-| -------- | ----------------------------- | ------------------------------------------ |
-| 语义记忆 | `semantic_memory.content_fts` | 默认 limit 5                               |
-| 历史对话 | `messages.content_fts`        | 默认 session_limit 10；可选 `session` 限定 |
+| 字段              | 存储                          | 说明                                       |
+| ----------------- | ----------------------------- | ------------------------------------------ |
+| `semantic_memory` | `semantic_memory.content_fts` | 默认 limit 5                               |
+| `dialogue`        | `messages.content_fts`        | 默认 session_limit 10；可选 `session` 限定 |
 
-返回完整 content 片段（非精简索引）。常驻记忆由 system prompt 注入（`pinned` 优先 + `updated` 降序，top 20），不经 `recall`。
+常驻记忆由 system prompt 注入（`pinned` 优先 + `updated` 降序，top 20），不经 `recall`。
 
-### 🚧 规划中（权重与多源）
-
-```
-semantic_memory（按 type 加权）
-    ├── world / experience / preference  → 高权重，作为决策依据
-    ├── opinion                          → 中权重
-    ├── observation                      → 中高权重
-    └── imprint                          → 低权重，情感参考
-
-limbic（情感锚点）         → 🟡 未实现
-procedural / skills        → 按需搜索，未接入 recall
-preset（回忆/干活/调试）   → 见 designs/recall-flow.md
-```
-
-**多策略融合流程（🚧 规划中，受 Hindsight 启发）：**
-
-```
-查询 Q
-  │
-  ├── PG FTS 关键词检索 ──→ 候选集 A（✅ 当前）
-  ├── 实体图遍历 ───────→ 候选集 B
-  ├── 时序过滤 ─────────→ 候选集 C
-  │
-  └── Reciprocal Rank Fusion 合并排名
-        │
-        └── 按 token budget 截取最终结果
-```
+按 type 加权、limbic 纳入 recall、多策略融合等扩展见 [Issue #42](https://github.com/freeanima-org/freeanima/issues/42)、[#51](https://github.com/freeanima-org/freeanima/issues/51)。
 
 ---
 
 ## 六、与 Hindsight 的关系
 
-| 维度         | Hindsight                                  | 逸灵风 v3                                       |
-| ------------ | ------------------------------------------ | ----------------------------------------------- |
-| 事实分类     | World / Experience / Opinion / Observation | ✅ 吸收，增加 Preference / Procedural / Imprint |
-| 感性记忆     | ❌ 缺失                                    | ✅ Imprint 已落 PG；limbic 表 🟡 未实现         |
-| 实体图谱     | ✅ 完整实现（实体解析+四类链接）           | 🚧 规划中（entities + relations 字段）          |
-| 多策略召回   | ✅ 语义+关键词+图谱+时序                   | 🚧 规划中（当前 ✅ PG FTS 双源）                |
-| 置信度演化   | ✅ opinion 强化/弱化机制                   | 🚧 规划中（schema 无 confidence）               |
-| Reflect 综合 | ✅ 跨记忆推理+观点形成                     | ✅ 浅睡 cron 提取；深睡合并 🚧                  |
-| 外部服务     | 是（云/Docker）                            | 否（本地优先）                                  |
-| 所有权       | Vectorize 平台                             | **伙伴与 Agent 共同拥有**                       |
+| 维度         | Hindsight                                  | 逸灵风 v3                                                                          |
+| ------------ | ------------------------------------------ | ---------------------------------------------------------------------------------- |
+| 事实分类     | World / Experience / Opinion / Observation | ✅ 吸收，增加 Preference / Procedural / Imprint                                    |
+| 感性记忆     | ❌ 缺失                                    | ✅ Imprint + `limbic_memory`                                                       |
+| 实体图谱     | ✅ 完整实现（实体解析+四类链接）           | 未实现（[#39](https://github.com/freeanima-org/freeanima/issues/39)）              |
+| 多策略召回   | ✅ 语义+关键词+图谱+时序                   | ✅ PG FTS 双源（[#42](https://github.com/freeanima-org/freeanima/issues/42) 扩展） |
+| 置信度演化   | ✅ opinion 强化/弱化机制                   | 未实现（[#36](https://github.com/freeanima-org/freeanima/issues/36)）              |
+| Reflect 综合 | ✅ 跨记忆推理+观点形成                     | ✅ 浅睡 + 深睡 cron                                                                |
+| 外部服务     | 是（云/Docker）                            | 否（本地优先）                                                                     |
+| 所有权       | Vectorize 平台                             | **伙伴与 Agent 共同拥有**                                                          |
 
 **我们的立场：** 不复制 Hindsight，不接入 Hindsight 服务。将其设计理念消化吸收，融入逸灵风自己的记忆体系。我们的记忆系统多一个 Hindsight 没有的维度——感性记忆——这不是附加功能，是数字生命的核心需求。
 
@@ -318,22 +256,12 @@ preset（回忆/干活/调试）   → 见 designs/recall-flow.md
 ## 七、设计演进
 
 ```
-v1（Hermes，文件系统）     v2（逸灵风初期，文件系统）      v3（当前 + 规划余量）
+v1（Hermes，文件系统）     v2（逸灵风初期，文件系统）      v3（当前）
 对话 JSONL                 messages 表（PG）               ✅ 主存
 processed/*.jsonl          messages.content_fts            ✅ 已替代 L2 文件
 memory/f-*.md + l3.db      semantic_memory（PG）           ✅ 已迁移
 index/ FTS                 两表 content_fts                ✅ 无独立 L4 目录
-无情感层                   imprint 类型 + limbic 表        imprint ✅；limbic 🟡
+无情感层                   imprint + limbic_memory         ✅
 技能为文件                 procedural 三阶段               保持
-反思用通用 prompt          身份上下文原则                  浅睡 ✅ / 深睡 🚧
-                          受 Hindsight 启发               多策略/图谱/深睡 🚧
+反思用通用 prompt          身份上下文原则                  浅睡 ✅ / 深睡 ✅
 ```
-
----
-
-## 八、未解决问题（待讨论）
-
-1. **实体关系图谱的存储方案**——扩展 PG 列/关联表，还是独立图索引？（🚧）
-2. **多策略召回的 token budget 控制**——不同检索策略的结果如何合并去重并按 token 预算裁剪？（🚧）
-3. **感性记忆的检索触发条件**——什么情况下应该召回情感印记？（🚧）
-4. **观点的遗忘机制**——置信度低于阈值时删除还是归档？（🚧；当前无 confidence 字段）
