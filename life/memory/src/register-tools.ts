@@ -5,6 +5,7 @@ import type { SearchResult } from "./search.ts";
 import { searchL3 } from "./search.ts";
 import { registerSemanticMemoryTools, rememberFromArgs } from "./semantic-memory-tools.ts";
 import { registerAutobiographicalMemoryTools } from "./autobiographical-tools.ts";
+import { registerLimbicMemoryTools } from "./limbic-tools.ts";
 
 function asFloat(value: unknown, defaultVal: number): number {
   if (value === null || value === undefined) return defaultVal;
@@ -42,14 +43,15 @@ function formatL2Section(rows: MessageFtsHit[]): string | null {
 export function registerMemoryTools(): void {
   registerSemanticMemoryTools();
   registerAutobiographicalMemoryTools();
+  registerLimbicMemoryTools();
 
   registerTool({
     name: "remember",
     description:
       "管理持久化语义记忆：创建、更新或删除。\n" +
       "- 默认 action=create：新增一条记忆（自动推断 source_sessions / observed_at）\n" +
-      "- action=update：根据 fact_id 更新已有记忆\n" +
-      "- action=delete：根据 fact_id 物理删除\n" +
+      "- action=update：根据 semantic_memory_id 更新已有记忆\n" +
+      "- action=delete：根据 semantic_memory_id 物理删除\n" +
       "pinned=true 的记忆会优先出现在常驻上下文中。",
     parameters: {
       type: "object",
@@ -63,7 +65,14 @@ export function registerMemoryTools(): void {
           type: "string",
           description: "记忆内容（一句话精炼描述），create 和 update 时必需",
         },
-        fact_id: { type: "string", description: "记忆 ID，update 或 delete 时必需" },
+        semantic_memory_id: {
+          type: "string",
+          description: "语义记忆 ID，update 或 delete 时必需",
+        },
+        fact_id: {
+          type: "string",
+          description: "semantic_memory_id 的兼容别名，update 或 delete 时可用",
+        },
         type: {
           type: "string",
           description:

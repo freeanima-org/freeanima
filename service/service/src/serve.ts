@@ -58,7 +58,10 @@ import {
   loadSelfLayerPrompt,
   registerSelfLayerStore,
 } from "@freeanima/life-self";
-import { registerAutobiographicalMemoryStore } from "@freeanima/life-memory";
+import {
+  registerAutobiographicalMemoryStore,
+  registerLimbicMemoryStore,
+} from "@freeanima/life-memory";
 import {
   discoverPlatforms,
   startPlatforms,
@@ -227,6 +230,7 @@ export async function serve(
     });
     registerSelfLayerStore(repos.selfLayer);
     registerAutobiographicalMemoryStore(repos.autobiographicalMemory);
+    registerLimbicMemoryStore(repos.limbicMemory);
     if (repos.pgAvailable) {
       const resident = await repos.semanticMemory.listResident(100);
       await ensureSelfLayerSeeded({

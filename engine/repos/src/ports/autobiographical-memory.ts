@@ -13,7 +13,7 @@ export type AutobiographicalMemoryRow = {
   significance: AutobiographicalSignificance;
   period_start: string | null;
   period_end: string | null;
-  source_facts: string[];
+  source_semantic_memory: string[];
   source_sessions: string[];
   status: AutobiographicalStatus;
   created: string;
@@ -26,7 +26,7 @@ export type AutobiographicalMemoryCreateInput = {
   significance?: AutobiographicalSignificance;
   period_start?: string | null;
   period_end?: string | null;
-  source_facts?: string[];
+  source_semantic_memory?: string[];
   source_sessions?: string[];
   id?: string;
 };
@@ -45,8 +45,8 @@ export interface AutobiographicalMemoryStorePort {
     order?: AutobiographicalListOrder;
   }): Promise<AutobiographicalMemoryRow[]>;
   listCreatedSince(iso: string, opts?: { limit?: number }): Promise<AutobiographicalMemoryRow[]>;
-  listBySourceFacts(
-    factIds: string[],
+  listBySourceSemanticMemory(
+    semanticMemoryIds: string[],
     opts?: { status?: AutobiographicalStatus },
   ): Promise<AutobiographicalMemoryRow[]>;
   listBySourceSessions(

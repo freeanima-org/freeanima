@@ -16,6 +16,7 @@ import {
   autobiographicalSignificanceSchema,
   autobiographicalStatusSchema,
 } from "./autobiographical-memory.ts";
+import { limbicKindSchema, limbicMemory } from "./limbic-memory.ts";
 import { messages } from "./messages.ts";
 import { semanticMemory, semanticMemoryTypeSchema } from "./semantic-memory.ts";
 import { selfBlockKeySchema, selfBlocks } from "./self-layer.ts";
@@ -82,3 +83,13 @@ export const autobiographicalMemoryInsertSchema = createInsertSchema(
 
 export type AutobiographicalMemorySelect = z.infer<typeof autobiographicalMemorySelectSchema>;
 export type AutobiographicalMemoryInsert = z.infer<typeof autobiographicalMemoryInsertSchema>;
+
+const limbicMemoryRefine = {
+  kind: limbicKindSchema,
+};
+
+export const limbicMemorySelectSchema = createSelectSchema(limbicMemory, limbicMemoryRefine);
+export const limbicMemoryInsertSchema = createInsertSchema(limbicMemory, limbicMemoryRefine);
+
+export type LimbicMemorySelect = z.infer<typeof limbicMemorySelectSchema>;
+export type LimbicMemoryInsert = z.infer<typeof limbicMemoryInsertSchema>;

@@ -231,7 +231,7 @@ describe("memory search", () => {
         content: "增量索引探针 beta",
         type: "world",
       });
-      expect(out).toContain("fact_id");
+      expect(out).toContain("semantic_memory_id");
     });
     const results = await searchL3("beta", 5);
     expect(results.length).toBe(1);

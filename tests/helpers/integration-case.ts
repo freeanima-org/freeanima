@@ -8,9 +8,11 @@ import {
   registerMemorySessionStore,
   registerSemanticMemoryStore,
   registerAutobiographicalMemoryStore,
+  registerLimbicMemoryStore,
   resetSemanticMemoryStoreForTests,
   resetMemorySessionStoreForTests,
   resetAutobiographicalMemoryStoreForTests,
+  resetLimbicMemoryStoreForTests,
 } from "@freeanima/life-memory";
 import {
   registerSelfLayerStore,
@@ -51,10 +53,12 @@ export function wireIntegrationServiceContext(pg: PgTestContext): void {
   resetSemanticMemoryStoreForTests();
   resetMemorySessionStoreForTests();
   resetAutobiographicalMemoryStoreForTests();
+  resetLimbicMemoryStoreForTests();
   resetSelfLayerStoreForTests();
   registerMemorySessionStore(pg.engine.repos.session);
   registerSemanticMemoryStore(pg.engine.repos.semanticMemory);
   registerAutobiographicalMemoryStore(pg.engine.repos.autobiographicalMemory);
+  registerLimbicMemoryStore(pg.engine.repos.limbicMemory);
   registerSelfLayerStore(pg.engine.repos.selfLayer);
   invalidateSelfLayerPromptCache();
 }

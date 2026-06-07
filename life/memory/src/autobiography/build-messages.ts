@@ -35,7 +35,7 @@ export function formatExistingAutobiographical(rows: AutobiographicalMemoryRow[]
         significance: row.significance,
         period_start: row.period_start,
         period_end: row.period_end,
-        source_facts: row.source_facts,
+        source_semantic_memory: row.source_semantic_memory,
         content_preview: row.content.slice(0, 200),
       }),
     );
@@ -56,7 +56,7 @@ export const AUTOBIOGRAPHY_INSTRUCTION = `# 自传体叙事提取
 - deprecate_autobiographical_memory：仅当发现重复/明显过时时软废弃
 
 ## 要求
-- 每条叙事需关联 source_facts（semantic_memory id）
+- 每条叙事需关联 source_semantic_memory（semantic_memory id）
 - significance：turning_point（自我转折）> milestone（里程碑）> normal
 - period_start/period_end 可填模糊时间（如「2026-05」）`;
 

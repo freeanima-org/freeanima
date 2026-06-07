@@ -92,7 +92,7 @@ export async function searchL2Only(query: string, limit = DEFAULT_LIMIT): Promis
 }
 
 export type MemorySearchL3Hit = {
-  fact_id: string;
+  semantic_memory_id: string;
   content: string;
   type: string;
   pinned: boolean;
@@ -130,7 +130,7 @@ export async function memorySearchDetailed(
   return {
     query: q,
     l3: l3Rows.map((r) => ({
-      fact_id: r.id,
+      semantic_memory_id: r.id,
       content: r.content,
       type: r.type,
       pinned: r.pinned,

@@ -22,11 +22,16 @@ function parseStringArray(value: unknown): string[] | undefined {
   return value.map((v) => String(v).trim()).filter(Boolean);
 }
 
+function parseSourceSemanticMemory(args: Record<string, unknown>): string[] | undefined {
+  const raw = args.source_semantic_memory ?? args.source_facts;
+  return parseStringArray(raw);
+}
+
 export function registerAutobiographicalMemoryTools(): void {
   registerTool({
     name: "create_autobiographical_memory",
     description:
-      "创建一条自传体叙事（只追加，正文写入后不可修改）。需提供 title 与 content；可选 significance/period/source_facts/source_sessions。",
+      "创建一条自传体叙事（只追加，正文写入后不可修改）。需提供 title 与 content；可选 significance/period/source_semantic_memory/source_sessions。",
     parameters: {
       type: "object",
       properties: {
@@ -39,10 +44,15 @@ export function registerAutobiographicalMemoryTools(): void {
         },
         period_start: { type: "string", description: "模糊时间起点" },
         period_end: { type: "string", description: "模糊时间终点" },
-        source_facts: {
+        source_semantic_memory: {
           type: "array",
           items: { type: "string" },
           description: "关联 semantic_memory id",
+        },
+        source_facts: {
+          type: "array",
+          items: { type: "string" },
+          description: "source_semantic_memory 的兼容别名",
         },
         source_sessions: {
           type: "array",
@@ -70,7 +80,7 @@ export function registerAutobiographicalMemoryTools(): void {
         significance,
         period_start: args.period_start !== undefined ? String(args.period_start) : undefined,
         period_end: args.period_end !== undefined ? String(args.period_end) : undefined,
-        source_facts: parseStringArray(args.source_facts),
+        source_semantic_memory: parseSourceSemanticMemory(args),
         source_sessions: parseStringArray(args.source_sessions),
       };
 

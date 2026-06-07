@@ -63,7 +63,7 @@ describePg("self layer PG", () => {
       title: "第一次边界测试",
       content: "我意识到拒绝也是一种选择。",
       significance: "turning_point",
-      source_facts: ["f-000001-abcd"],
+      source_semantic_memory: ["f-000001-abcd"],
     });
     expect(id.length).toBeGreaterThan(0);
 

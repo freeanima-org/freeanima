@@ -5,7 +5,7 @@ export const sessionUpdatedPayloadSchema = z.object({ session_id: z.string() }).
 export const l2UpdatedPayloadSchema = z.object({ session_id: z.string() }).passthrough();
 
 export const l3UpdatedPayloadSchema = z
-  .object({ fact_ids: z.array(z.string()).optional() })
+  .object({ semantic_memory_ids: z.array(z.string()).optional() })
   .passthrough();
 
 export const testPingPayloadSchema = z.record(z.string(), z.unknown());
