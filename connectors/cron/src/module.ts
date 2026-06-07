@@ -35,12 +35,14 @@ export function stopCronModule(): void {
 }
 
 export async function loadAllJobs(): Promise<CronJob[]> {
-  const rows = await getCronStore().listAll();
+  if (!store) return [];
+  const rows = await store.listAll();
   return rows.map((row) => CronJob.fromRow(row));
 }
 
 export async function getJob(jobId: string): Promise<CronJob | null> {
-  const row = await getCronStore().get(jobId);
+  if (!store) return null;
+  const row = await store.get(jobId);
   return row ? CronJob.fromRow(row) : null;
 }
 
