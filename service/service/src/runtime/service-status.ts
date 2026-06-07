@@ -8,7 +8,7 @@ import {
   CST_OFFSET_MS,
   PATHS,
 } from "@freeanima/service-config";
-import { listTools } from "@freeanima/engine-tool";
+import { listTools, listToolSets } from "@freeanima/engine-tool";
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
 import {
   ensureBuiltinCronJobs,
@@ -153,8 +153,22 @@ export function getConfig(): SafeConfigSnapshot {
   return { config: sanitizeConfigForApi(cfg) as SafeConfigSnapshot["config"] };
 }
 
-export function listToolsApi(): { tools: { name: string; description: string }[] } {
-  return { tools: listTools().map((t) => ({ name: t.name, description: t.description })) };
+export function listToolsApi(): {
+  tools: { name: string; description: string; toolset?: string }[];
+  tool_sets: { name: string; description: string; tools: string[] }[];
+} {
+  return {
+    tools: listTools().map((t) => ({
+      name: t.name,
+      description: t.description,
+      toolset: t.toolset,
+    })),
+    tool_sets: listToolSets().map((ts) => ({
+      name: ts.name,
+      description: ts.description,
+      tools: [...ts.tools],
+    })),
+  };
 }
 
 export async function listCronJobs(): Promise<{ jobs: CronJobData[] }> {

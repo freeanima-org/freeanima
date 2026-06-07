@@ -30,3 +30,11 @@ export {
 } from "./json-util.ts";
 export type { ParsedToolResult, ToolErrorResult } from "./json-util.ts";
 export type { ToolArgsRecord } from "./tool-json.ts";
+export {
+  ToolSetRegistry,
+  defaultToolSetRegistry,
+  registerToolSet,
+  getToolSet,
+  listToolSets,
+} from "./toolset.ts";
+export type { ToolSet } from "./toolset.ts";

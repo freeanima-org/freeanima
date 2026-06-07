@@ -237,7 +237,10 @@ export class AnimaService implements StreamTurnHost {
     return status.getConfig();
   }
 
-  listToolsApi(): { tools: { name: string; description: string }[] } {
+  listToolsApi(): {
+    tools: { name: string; description: string; toolset?: string }[];
+    tool_sets: { name: string; description: string; tools: string[] }[];
+  } {
     return status.listToolsApi();
   }
 
