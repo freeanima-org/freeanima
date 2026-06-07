@@ -6,16 +6,29 @@ export type SemanticMemoryDbRow = {
   type: string;
   pinned: boolean;
   content: string;
+  source_sessions?: string[] | null;
+  sourceSessions?: string[] | null;
+  observed_at?: Date | string | null;
+  observedAt?: Date | string | null;
+  occurred_at?: string | null;
+  occurredAt?: string | null;
+  status?: string | null;
   created: Date | string;
   updated: Date | string;
 };
 
 export function mapSemanticMemoryRow(row: SemanticMemoryDbRow): SemanticMemoryRow {
+  const sourceSessions = row.source_sessions ?? row.sourceSessions ?? [];
+  const observedRaw = row.observed_at ?? row.observedAt;
   return {
     id: row.id,
     type: row.type,
     pinned: row.pinned,
     content: row.content,
+    source_sessions: sourceSessions,
+    observed_at: observedRaw != null ? normalizePgTimestamp(observedRaw) : null,
+    occurred_at: row.occurred_at ?? row.occurredAt ?? null,
+    status: row.status ?? "active",
     created: normalizePgTimestamp(row.created),
     updated: normalizePgTimestamp(row.updated),
   };

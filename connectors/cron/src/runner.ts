@@ -6,6 +6,7 @@ import type { CronJob } from "./models.ts";
 import * as store from "./store.ts";
 import { computeNextRun } from "./schedule.ts";
 import { deliverCronResult } from "./deliver.ts";
+import { runCronBuiltinHandler } from "./builtin-handlers.ts";
 
 /** 任务失败后最短重试间隔（秒），避免调度器每 10s 重复执行同一失败任务 */
 const FAILURE_RETRY_DELAY_SEC = 300;
@@ -104,13 +105,19 @@ async function runJobInternal(job: CronJob): Promise<void> {
   store.update(job);
 
   if (job.no_agent) {
-    if (!job.script) {
-      throw new Error("no_agent=True requires a script");
+    const builtinOutput = job.builtin ? await runCronBuiltinHandler(job.id) : null;
+    if (builtinOutput != null) {
+      job.last_output = builtinOutput.slice(0, 10_000);
+      saveOutput(job, job.last_output);
+      await notifyDeliver(job, true, job.last_output);
+    } else if (job.script) {
+      const output = runScript(job.script, job.timeout_sec);
+      job.last_output = output;
+      saveOutput(job, output);
+      await notifyDeliver(job, true, output);
+    } else {
+      throw new Error("no_agent=True requires a script or registered builtin handler");
     }
-    const output = runScript(job.script, job.timeout_sec);
-    job.last_output = output;
-    saveOutput(job, output);
-    await notifyDeliver(job, true, output);
   } else {
     let context = "";
     if (job.script) context = runScript(job.script, job.timeout_sec);

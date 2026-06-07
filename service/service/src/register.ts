@@ -7,12 +7,7 @@ import { registerCronjobTool } from "@freeanima/connectors-cron/cronjob-tool";
 import type { Kernel } from "@freeanima/kernel";
 import type { ConversationService } from "@freeanima/engine-conversation";
 import type { SemanticMemoryStorePort, SessionStorePort } from "@freeanima/engine-repos";
-import {
-  registerMemoryPipeline,
-  registerMemoryTools,
-  registerReflectChat,
-  type ReflectChatFn,
-} from "@freeanima/life-memory";
+import { registerMemoryPipeline, registerMemoryTools } from "@freeanima/life-memory";
 
 let toolsRegistered = false;
 
@@ -56,14 +51,12 @@ export function startAcpProgressTicker(): void {
   getAcpManager().startProgressTicker();
 }
 
-/** 注册记忆管道 reflect LLM 与 EventBus 订阅，并启动 EventBus */
+/** 注册记忆 store 并启动 EventBus（session:updated 事件保留，无 reflect 订阅） */
 export function registerServiceMemoryBus(opts: {
   kernel: Kernel;
   sessionStore: SessionStorePort;
   semanticStore: SemanticMemoryStorePort;
-  reflectChat: ReflectChatFn;
 }): void {
-  registerReflectChat(opts.reflectChat);
   registerMemoryPipeline({
     bus: opts.kernel.eventBus,
     sessionStore: opts.sessionStore,

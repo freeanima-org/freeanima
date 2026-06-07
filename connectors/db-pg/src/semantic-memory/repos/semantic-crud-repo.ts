@@ -1,20 +1,31 @@
 import { desc, eq, sql as drizzleSql } from "drizzle-orm";
-import { normalizeSemanticMemoryType, semanticMemory } from "@freeanima/engine-db/schema";
-import type { SemanticMemoryRow } from "@freeanima/engine-repos";
+import {
+  normalizeSemanticMemoryType,
+  semanticMemory,
+  semanticMemoryStatusSchema,
+} from "@freeanima/engine-db/schema";
+import type {
+  SemanticMemoryCreateInput,
+  SemanticMemoryRow,
+  SemanticMemoryUpdateInput,
+} from "@freeanima/engine-repos";
 import { formatCstIso } from "@freeanima/kernel-util";
 
 import { getDb } from "../../client.ts";
 import { mapSemanticMemoryRow } from "../mappers/semantic-mapper.ts";
 import { nextSemanticMemoryId } from "./id-gen.ts";
 
-export async function createSemanticMemory(row: {
-  content: string;
-  type?: string;
-  pinned?: boolean;
-  id?: string;
-  created?: string;
-  updated?: string;
-}): Promise<string> {
+function normalizeStatus(raw: string | undefined | null): string {
+  const parsed = semanticMemoryStatusSchema.safeParse(String(raw ?? "active").trim());
+  return parsed.success ? parsed.data : "active";
+}
+
+function normalizeSourceSessions(raw: string[] | undefined): string[] {
+  if (!raw) return [];
+  return raw.map((s) => s.trim()).filter(Boolean);
+}
+
+export async function createSemanticMemory(row: SemanticMemoryCreateInput): Promise<string> {
   const content = row.content.trim();
   if (!content) throw new Error("content is required");
 
@@ -24,6 +35,10 @@ export async function createSemanticMemory(row: {
   const now = formatCstIso();
   const created = row.created ?? now;
   const updated = row.updated ?? created;
+  const sourceSessions = normalizeSourceSessions(row.source_sessions);
+  const observedAt = row.observed_at ?? created;
+  const occurredAt = row.occurred_at ?? null;
+  const status = normalizeStatus(row.status);
 
   const db = getDb();
   await db
@@ -33,6 +48,10 @@ export async function createSemanticMemory(row: {
       type,
       pinned,
       content,
+      sourceSessions,
+      observedAt: observedAt ? new Date(observedAt) : null,
+      occurredAt,
+      status,
       created: new Date(created),
       updated: new Date(updated),
     })
@@ -42,6 +61,10 @@ export async function createSemanticMemory(row: {
         type,
         pinned,
         content,
+        sourceSessions,
+        observedAt: observedAt ? new Date(observedAt) : null,
+        occurredAt,
+        status,
         updated: new Date(updated),
       },
     });
@@ -56,21 +79,34 @@ export async function getSemanticMemory(id: string): Promise<SemanticMemoryRow |
   return row ? mapSemanticMemoryRow(row) : null;
 }
 
-export async function updateSemanticMemory(row: {
-  id: string;
-  content?: string;
-  type?: string;
-  pinned?: boolean;
-}): Promise<void> {
+export async function updateSemanticMemory(row: SemanticMemoryUpdateInput): Promise<void> {
   const patch: Partial<typeof semanticMemory.$inferInsert> = {
     updated: new Date(formatCstIso()),
   };
   if (row.content !== undefined) patch.content = row.content.trim();
   if (row.type !== undefined) patch.type = normalizeSemanticMemoryType(row.type);
   if (row.pinned !== undefined) patch.pinned = row.pinned;
+  if (row.source_sessions !== undefined) {
+    patch.sourceSessions = normalizeSourceSessions(row.source_sessions);
+  }
+  if (row.observed_at !== undefined) {
+    patch.observedAt = row.observed_at ? new Date(row.observed_at) : null;
+  }
+  if (row.occurred_at !== undefined) patch.occurredAt = row.occurred_at;
+  if (row.status !== undefined) patch.status = normalizeStatus(row.status);
 
   const db = getDb();
   await db.update(semanticMemory).set(patch).where(eq(semanticMemory.id, row.id));
+}
+
+export async function deprecateSemanticMemory(id: string): Promise<boolean> {
+  const db = getDb();
+  const updated = await db
+    .update(semanticMemory)
+    .set({ status: "deprecated", updated: new Date(formatCstIso()) })
+    .where(eq(semanticMemory.id, id))
+    .returning({ id: semanticMemory.id });
+  return updated.length > 0;
 }
 
 export async function deleteSemanticMemory(id: string): Promise<boolean> {
@@ -95,6 +131,7 @@ export async function listResidentSemanticMemory(topN = 20): Promise<SemanticMem
   const rows = await db
     .select()
     .from(semanticMemory)
+    .where(eq(semanticMemory.status, "active"))
     .orderBy(desc(semanticMemory.pinned), desc(semanticMemory.updated))
     .limit(limit);
   return rows.map(mapSemanticMemoryRow);
@@ -103,6 +140,48 @@ export async function listResidentSemanticMemory(topN = 20): Promise<SemanticMem
 export async function listAllSemanticMemory(): Promise<SemanticMemoryRow[]> {
   const db = getDb();
   const rows = await db.select().from(semanticMemory).orderBy(desc(semanticMemory.updated));
+  return rows.map(mapSemanticMemoryRow);
+}
+
+export async function listSemanticMemoryBySourceSessions(
+  sessionIds: string[],
+  opts?: { status?: "active" | "deprecated" | "all" },
+): Promise<SemanticMemoryRow[]> {
+  const ids = sessionIds.map((s) => s.trim()).filter(Boolean);
+  if (!ids.length) return [];
+
+  const status = opts?.status ?? "active";
+  const statusFilter = status === "all" ? drizzleSql`` : drizzleSql`AND sm.status = ${status}`;
+
+  const db = getDb();
+  const rows = await db.execute<{
+    id: string;
+    type: string;
+    pinned: boolean;
+    content: string;
+    source_sessions: string[];
+    observed_at: Date | null;
+    occurred_at: string | null;
+    status: string;
+    created: Date;
+    updated: Date;
+  }>(drizzleSql`
+    SELECT
+      sm.id,
+      sm.type,
+      sm.pinned,
+      sm.content,
+      sm.source_sessions,
+      sm.observed_at,
+      sm.occurred_at,
+      sm.status,
+      sm.created,
+      sm.updated
+    FROM semantic_memory sm
+    WHERE sm.source_sessions && ${ids}::text[]
+    ${statusFilter}
+    ORDER BY sm.updated DESC
+  `);
   return rows.map(mapSemanticMemoryRow);
 }
 
@@ -118,12 +197,18 @@ export async function findSemanticMemoryByContent(
     type: string;
     pinned: boolean;
     content: string;
+    source_sessions: string[];
+    observed_at: Date | null;
+    occurred_at: string | null;
+    status: string;
     created: Date;
     updated: Date;
   }>(drizzleSql`
-    SELECT id, type, pinned, content, created, updated
+    SELECT
+      id, type, pinned, content, source_sessions, observed_at, occurred_at, status, created, updated
     FROM semantic_memory
     WHERE btrim(content) = btrim(${trimmed})
+      AND status = 'active'
     LIMIT 1
   `);
   const row = rows[0];

@@ -69,4 +69,6 @@ export interface SessionStorePort {
   ): Promise<MessageFtsHit[]>;
   /** 可被 FTS 索引的消息行数（content_fts IS NOT NULL） */
   countSearchableMessages(): Promise<number>;
+  /** sessions.updated_at 落在 [fromIso, toIso) 内的 session id（不含 debug） */
+  listSessionIdsUpdatedBetween(fromIso: string, toIso: string): Promise<string[]>;
 }

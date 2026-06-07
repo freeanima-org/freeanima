@@ -82,7 +82,24 @@ export function resumeJob(jobId: string): boolean {
 }
 
 export function ensureBuiltinCronJobs(): void {
-  // 内置任务由 connectors/cron 按需注册；L2 gap-fill 已移除（PG FTS 自动维护）
+  const id = "builtin-light-sleep";
+  if (store.find(id)) return;
+  const now = formatCstIso();
+  const job = new CronJob({
+    id,
+    name: "light-sleep",
+    schedule: "0 2 * * *",
+    prompt: "",
+    no_agent: true,
+    builtin: true,
+    deliver: "local",
+    timeout_sec: 1800,
+    created_at: now,
+    updated_at: now,
+  });
+  const next = computeNextRun(job.schedule, Date.now() / 1000);
+  if (next != null) job.next_run_at = next;
+  store.add(job);
 }
 
 export { cronJobDataSchema, cronJobsFileSchema, type CronJobData } from "./schema.ts";
@@ -100,4 +117,10 @@ export {
   type CronDeliverPayload,
   type CronDeliverTarget,
 } from "./deliver.ts";
+export {
+  registerCronBuiltinHandler,
+  unregisterCronBuiltinHandler,
+  resetCronBuiltinHandlersForTests,
+  runCronBuiltinHandler,
+} from "./builtin-handlers.ts";
 export * as cronStore from "./store.ts";

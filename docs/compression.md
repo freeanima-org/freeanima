@@ -381,15 +381,15 @@ stateDiagram-v2
 
 ## 与记忆管道
 
-压缩**不**触发记忆反思；与 [`memory.md`](memory.md) 中的 `session:updated` → `reflectSession` 管道独立。
+压缩**不**触发语义记忆提取；浅睡 cron 独立运行（见 [`sleep.md`](sleep.md)）。
 
 ```mermaid
 flowchart TB
   PG["PG messages 全量"]
   RT["运行时四段 + 摘要"]
-  Reflect["reflectSession → semantic_memory"]
+  Sleep["浅睡 cron → semantic_memory"]
   PG --> RT
-  PG -->|"session:updated（与 l 点无关）"| Reflect
+  PG -->|"独立 cron 02:00"| Sleep
 ```
 
 PG `messages` **永不删**（只追加）。

@@ -3,7 +3,7 @@ import type { MessageFtsHit } from "@freeanima/engine-repos";
 import { searchL2 } from "./search.ts";
 import type { SearchResult } from "./search.ts";
 import { searchL3 } from "./search.ts";
-import { getSemanticMemoryStore } from "./semantic-port.ts";
+import { registerSemanticMemoryTools, rememberFromArgs } from "./semantic-memory-tools.ts";
 
 function asFloat(value: unknown, defaultVal: number): number {
   if (value === null || value === undefined) return defaultVal;
@@ -39,13 +39,15 @@ function formatL2Section(rows: MessageFtsHit[]): string | null {
 }
 
 export function registerMemoryTools(): void {
+  registerSemanticMemoryTools();
+
   registerTool({
     name: "remember",
     description:
       "管理持久化语义记忆：创建、更新或删除。\n" +
-      "- 默认 action=create：新增一条记忆\n" +
-      "- action=update：根据 fact_id 更新已有记忆的内容、类型或 pinned\n" +
-      "- action=delete：根据 fact_id 删除指定记忆\n" +
+      "- 默认 action=create：新增一条记忆（自动推断 source_sessions / observed_at）\n" +
+      "- action=update：根据 fact_id 更新已有记忆\n" +
+      "- action=delete：根据 fact_id 物理删除\n" +
       "pinned=true 的记忆会优先出现在常驻上下文中。",
     parameters: {
       type: "object",
@@ -69,42 +71,7 @@ export function registerMemoryTools(): void {
       },
       required: [],
     },
-    handler: async (args) => {
-      const action = String(args.action ?? "create").trim() || "create";
-      const store = getSemanticMemoryStore();
-
-      if (action === "delete") {
-        const factId = String(args.fact_id ?? "").trim();
-        if (!factId) return JSON.stringify({ error: "fact_id is required for delete" });
-        const deleted = await store.delete(factId);
-        return JSON.stringify({ ok: deleted, fact_id: factId, action: "delete" });
-      }
-
-      if (action === "update") {
-        const factId = String(args.fact_id ?? "").trim();
-        if (!factId) return JSON.stringify({ error: "fact_id is required for update" });
-        const existing = await store.get(factId);
-        if (!existing) return JSON.stringify({ error: `Memory not found: ${factId}` });
-        const content = String(args.content ?? existing.content).trim();
-        if (!content) return JSON.stringify({ error: "content is required for update" });
-        await store.update({
-          id: factId,
-          content,
-          type: args.type !== undefined ? String(args.type) : undefined,
-          pinned: args.pinned !== undefined ? Boolean(args.pinned) : undefined,
-        });
-        return JSON.stringify({ ok: true, fact_id: factId, action: "update" });
-      }
-
-      const content = String(args.content ?? "").trim();
-      if (!content) return JSON.stringify({ error: "content is required" });
-      const factId = await store.create({
-        content,
-        type: args.type !== undefined ? String(args.type) : undefined,
-        pinned: args.pinned !== undefined ? Boolean(args.pinned) : undefined,
-      });
-      return JSON.stringify({ ok: true, fact_id: factId, action: "create" });
-    },
+    handler: rememberFromArgs,
   });
 
   registerTool({

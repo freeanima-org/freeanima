@@ -5,6 +5,9 @@ export type { SessionStorePort, SessionSummaryRow, MessageFtsHit } from "./sessi
 export type {
   SemanticMemoryRow,
   SemanticFtsHit,
+  SemanticMemoryCreateInput,
+  SemanticMemoryUpdateInput,
+  SemanticMemorySearchOpts,
   SemanticMemoryStorePort,
 } from "./semantic-memory.ts";
 export type { CronJobStorePort } from "./cron.ts";

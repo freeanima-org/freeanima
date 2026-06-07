@@ -72,4 +72,10 @@ export class PgSessionStore implements SessionStorePort {
       { sessionId },
     );
   }
+
+  async listSessionIdsUpdatedBetween(fromIso: string, toIso: string) {
+    return pgProfileWrap("listSessionIdsUpdatedBetween", () =>
+      sessionRepo.listSessionIdsUpdatedBetween(fromIso, toIso),
+    );
+  }
 }

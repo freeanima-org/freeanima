@@ -126,17 +126,23 @@ bun test
 
 ### 表结构
 
-| 列            | 类型               | 说明                                                                 |
-| ------------- | ------------------ | -------------------------------------------------------------------- |
-| `id`          | TEXT PK            | 保留 `f-{seq}-{hex}` 格式                                            |
-| `type`        | TEXT               | `world/experience/opinion/observation/preference/procedural/imprint` |
-| `pinned`      | BOOLEAN            | 常驻记忆优先注入                                                     |
-| `content`     | TEXT               | 记忆正文                                                             |
-| `content_fts` | TSVECTOR（生成列） | `to_tsvector('simple', message_fts_input(content))` STORED           |
-| `created`     | TIMESTAMPTZ        |                                                                      |
-| `updated`     | TIMESTAMPTZ        |                                                                      |
+| 列                | 类型               | 说明                                                                 |
+| ----------------- | ------------------ | -------------------------------------------------------------------- |
+| `id`              | TEXT PK            | 保留 `f-{seq}-{hex}` 格式                                            |
+| `type`            | TEXT               | `world/experience/opinion/observation/preference/procedural/imprint` |
+| `pinned`          | BOOLEAN            | 常驻记忆优先注入                                                     |
+| `content`         | TEXT               | 记忆正文                                                             |
+| `content_fts`     | TSVECTOR（生成列） | `to_tsvector('simple', message_fts_input(content))` STORED           |
+| `source_sessions` | TEXT[]             | 来源 session ID 列表，默认 `'{}'`                                    |
+| `observed_at`     | TIMESTAMPTZ        | 首次观察到该事实的时间；旧行回填 `created`                           |
+| `occurred_at`     | TEXT               | 事实内容中的模糊发生时间                                             |
+| `status`          | TEXT               | `active` / `deprecated`，默认 `active`                               |
+| `created`         | TIMESTAMPTZ        |                                                                      |
+| `updated`         | TIMESTAMPTZ        |                                                                      |
 
-索引：`idx_semantic_memory_fts`（GIN）、`idx_semantic_memory_type`、`idx_semantic_memory_pinned`。
+索引：`idx_semantic_memory_fts`（GIN）、`idx_semantic_memory_type`、`idx_semantic_memory_pinned`、`idx_semantic_memory_source_sessions`（GIN）、`idx_semantic_memory_status`。
+
+端口方法：`create` / `update`（覆盖式，未传不变；`source_sessions: []` 可清空）/ `deprecate` / `listBySourceSessions` / `search` / `searchFts`；`listResident` 与 recall 默认 `status=active`。
 
 端口：`SemanticMemoryStorePort`（`engine-repos`）→ `PgSemanticMemoryStore`（`connectors-db-pg`）→ `registerSemanticMemoryStore`（`life-memory`）。
 
