@@ -12,6 +12,7 @@ export type AcpAgentConfigView = {
   adapter?: string;
   plan_mode?: string | false;
   agent_mode?: string;
+  model?: string;
   enabled?: boolean;
   connect_timeout_ms?: number;
   prompt_timeout_ms?: number;
@@ -72,6 +73,7 @@ export function sanitizeAcpConfig(cfg: AcpAgentConfig): AcpAgentConfigView {
   if (cfg.adapter) view.adapter = cfg.adapter;
   if (cfg.plan_mode !== undefined) view.plan_mode = cfg.plan_mode as string | false;
   if (cfg.agent_mode) view.agent_mode = cfg.agent_mode;
+  if (cfg.model) view.model = cfg.model;
   if (cfg.connect_timeout_ms) view.connect_timeout_ms = cfg.connect_timeout_ms;
   if (cfg.prompt_timeout_ms) view.prompt_timeout_ms = cfg.prompt_timeout_ms;
   if (cfg.health_check_interval_ms != null) {

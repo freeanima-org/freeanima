@@ -11,6 +11,7 @@ import { handleClientMethod } from "./client-methods.ts";
 import { createPromptCapture, type PromptCapture } from "./cursor-decision.ts";
 import type { AcpAgentConfig } from "./status.ts";
 import { jsonRpcMessageSchema, type JsonRpcMessage } from "./schemas/acp-jsonrpc.ts";
+import { resolveAcpModelId } from "./model.ts";
 import { diagnoseStderr } from "./stderr-patterns.ts";
 
 export const DEFAULT_CONNECT_TIMEOUT_MS = 15_000;
@@ -228,7 +229,31 @@ export class ACPClient {
       throw new ACPError(-1, "session/new did not return sessionId");
     }
     this.sessionCwds.set(sessionId, sessionCwd);
+
+    const modelId = resolveAcpModelId(this.agentCfg?.model, this.adapterId);
+    if (modelId) {
+      await this.setModel(sessionId, modelId);
+    }
+
     return sessionId;
+  }
+
+  async setModel(sessionId: string, modelId: string): Promise<void> {
+    try {
+      await this.call("session/set_model", { sessionId, modelId });
+      return;
+    } catch {
+      /* 部分 agent 仅支持 set_config_option */
+    }
+    try {
+      await this.call("session/set_config_option", {
+        sessionId,
+        configId: "model",
+        value: modelId,
+      });
+    } catch {
+      /* 部分 agent 不支持 model 切换 */
+    }
   }
 
   async setMode(sessionId: string, modeId: string): Promise<void> {
