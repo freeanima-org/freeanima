@@ -1,3 +1,4 @@
+import { toolError } from "@freeanima/engine-tool";
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, writeFileSync, unlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -29,14 +30,17 @@ export function listEnabledRuntimes(): RuntimeId[] {
 }
 
 function formatSpawnResult(result: ReturnType<typeof spawnSync>): string {
-  const parts = [result.stdout, result.stderr].filter(Boolean).join("\n");
-  if (result.status !== 0) {
-    return JSON.stringify({
-      output: parts,
-      exit_code: result.status ?? 1,
-    });
+  const parts: string[] = [];
+  if (result.stdout) parts.push(String(result.stdout));
+  if (result.stderr) parts.push(`--- stderr ---\n${result.stderr}`);
+  if (result.status !== 0 && result.status !== null) {
+    parts.push(`--- exit code: ${result.status} ---`);
   }
-  return parts || "(no output)";
+  let output = parts.join("");
+  if (output.length > MAX_OUTPUT) {
+    output = `${output.slice(0, MAX_OUTPUT)}\n... (truncated at ${MAX_OUTPUT} chars)`;
+  }
+  return output || "(no output)";
 }
 
 function runNodejs(code: string, timeoutSec: number): string {
@@ -51,7 +55,7 @@ function runNodejs(code: string, timeoutSec: number): string {
     });
     return formatSpawnResult(result);
   } catch (e) {
-    return JSON.stringify({ error: String(e) });
+    return toolError(String(e));
   } finally {
     try {
       unlinkSync(file);
@@ -63,16 +67,16 @@ function runNodejs(code: string, timeoutSec: number): string {
 
 export function runExecuteCode(code: string, runtime: RuntimeId, timeoutSec: number): string {
   if (!ENABLED_RUNTIMES.has(runtime)) {
-    return JSON.stringify({
-      error: `runtime '${runtime}' 尚未启用；当前可用: ${listEnabledRuntimes().join(", ")}`,
-    });
+    return toolError(
+      `runtime '${runtime}' 尚未启用；当前可用: ${listEnabledRuntimes().join(", ")}`,
+    );
   }
 
   switch (runtime) {
     case "nodejs":
       return runNodejs(code, timeoutSec);
     default:
-      return JSON.stringify({ error: `runtime '${runtime}' 未实现` });
+      return toolError(`runtime '${runtime}' 未实现`);
   }
 }
 

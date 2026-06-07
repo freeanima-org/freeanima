@@ -1,3 +1,4 @@
+import { toolError, toolResult } from "@freeanima/engine-tool";
 import { formatCstIso } from "@freeanima/kernel-util";
 import { loadSessionMeta, updateSessionMetaField } from "./conversation.ts";
 import type { PgRepositories } from "@freeanima/engine-repos";
@@ -32,19 +33,11 @@ export async function saveSessionTodos(
 
 export async function listTodos(repos: PgRepositories, sessionId: string): Promise<string> {
   const data = await loadSessionTodos(repos, sessionId);
-  if (!data.items.length) return "📋 暂无待办。";
-  const lines = ["📋 待办清单："];
-  const icons: Record<TodoStatus, string> = {
-    pending: "○",
-    in_progress: "◐",
-    completed: "✓",
-    cancelled: "✗",
-  };
-  for (const item of data.items) {
-    const icon = icons[item.status] ?? "○";
-    lines.push(`  [${String(item.id).padStart(3)}] ${icon} ${item.content}`);
-  }
-  return lines.join("\n");
+  return toolResult({
+    ok: true,
+    todos: data.items,
+    message: data.items.length ? `共 ${data.items.length} 条待办` : "暂无待办",
+  });
 }
 
 export async function addTodo(
@@ -52,7 +45,7 @@ export async function addTodo(
   sessionId: string,
   content: string,
 ): Promise<string> {
-  if (!content.trim()) return JSON.stringify({ error: "content is required" });
+  if (!content.trim()) return toolError("content is required");
   const data = await loadSessionTodos(repos, sessionId);
   const item: TodoItem = {
     id: data.next_id,
@@ -63,7 +56,12 @@ export async function addTodo(
   data.items.push(item);
   data.next_id += 1;
   await saveSessionTodos(repos, sessionId, data);
-  return `✓ 已添加 [#${item.id}] ${item.content}`;
+  return toolResult({
+    ok: true,
+    action: "add",
+    todo: item,
+    message: `已添加 [#${item.id}] ${item.content}`,
+  });
 }
 
 export async function updateTodo(
@@ -73,7 +71,7 @@ export async function updateTodo(
   status: TodoStatus,
 ): Promise<string> {
   if (!VALID_STATUSES.has(status)) {
-    return JSON.stringify({ error: `invalid status ${status}` });
+    return toolError(`invalid status ${status}`);
   }
   const data = await loadSessionTodos(repos, sessionId);
   for (const item of data.items) {
@@ -81,10 +79,16 @@ export async function updateTodo(
       item.status = status;
       item.updated_at = formatCstIso();
       await saveSessionTodos(repos, sessionId, data);
-      return `✓ [#${id}] → ${status}`;
+      return toolResult({
+        ok: true,
+        action: "update",
+        id,
+        status,
+        message: `[#${id}] → ${status}`,
+      });
     }
   }
-  return JSON.stringify({ error: `todo #${id} not found` });
+  return toolError(`todo #${id} not found`);
 }
 
 export async function deleteTodo(
@@ -97,9 +101,9 @@ export async function deleteTodo(
   data.items = data.items.filter((item) => item.id !== id);
   if (data.items.length < before) {
     await saveSessionTodos(repos, sessionId, data);
-    return `✓ 已删除 [#${id}]`;
+    return toolResult({ ok: true, action: "delete", id, message: `已删除 [#${id}]` });
   }
-  return JSON.stringify({ error: `todo #${id} not found` });
+  return toolError(`todo #${id} not found`);
 }
 
 export async function handleSessionTodo(
@@ -114,15 +118,15 @@ export async function handleSessionTodo(
     case "add":
       return addTodo(repos, sessionId, opts?.content ?? "");
     case "update":
-      if (opts?.id == null) return JSON.stringify({ error: "id is required" });
+      if (opts?.id == null) return toolError("id is required");
       if (!opts.status || !VALID_STATUSES.has(opts.status as TodoStatus)) {
-        return JSON.stringify({ error: "valid status is required" });
+        return toolError("valid status is required");
       }
       return updateTodo(repos, sessionId, opts.id, opts.status as TodoStatus);
     case "delete":
-      if (opts?.id == null) return JSON.stringify({ error: "id is required" });
+      if (opts?.id == null) return toolError("id is required");
       return deleteTodo(repos, sessionId, opts.id);
     default:
-      return JSON.stringify({ error: `unknown action ${action}` });
+      return toolError(`unknown action ${action}`);
   }
 }

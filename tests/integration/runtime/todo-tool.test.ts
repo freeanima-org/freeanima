@@ -51,9 +51,13 @@ describePg("session todo", () => {
       { repos },
     );
 
-    expect(await listTodos(repos, "sess-a")).toContain("任务 A");
-    expect(await listTodos(repos, "sess-a")).not.toContain("任务 B");
-    expect(await listTodos(repos, "sess-b")).toContain("任务 B");
+    expect(JSON.parse(await listTodos(repos, "sess-a")).todos[0]?.content).toBe("任务 A");
+    expect(
+      JSON.parse(await listTodos(repos, "sess-a")).todos.some(
+        (t: { content: string }) => t.content === "任务 B",
+      ),
+    ).toBe(false);
+    expect(JSON.parse(await listTodos(repos, "sess-b")).todos[0]?.content).toBe("任务 B");
 
     const metaA = await testConv().loadSessionMeta("sess-a");
     expect(metaA.role).toBe("session_meta");
@@ -81,7 +85,7 @@ describePg("session todo", () => {
       output = String(chunk);
     }
 
-    expect(output).toContain("已添加");
+    expect(JSON.parse(output).message).toContain("已添加");
     expect(output).not.toContain("无 session 上下文");
   });
 });

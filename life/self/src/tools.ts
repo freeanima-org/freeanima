@@ -1,18 +1,10 @@
-import { registerTool } from "@freeanima/engine-tool";
+import { registerTool, toolError, toolResult } from "@freeanima/engine-tool";
 import type { SelfBlockKey } from "@freeanima/engine-repos";
 import { SELF_BLOCK_KEYS } from "@freeanima/engine-repos";
 
 import { invalidateSelfLayerPromptCache } from "./cache.ts";
 import { loadSelfBlocks, loadSelfLayerPrompt } from "./load.ts";
 import { getSelfLayerStore } from "./port.ts";
-
-function jsonResult(data: Record<string, unknown>): string {
-  return JSON.stringify(data);
-}
-
-function jsonError(message: string): string {
-  return JSON.stringify({ error: message });
-}
 
 function parseBlockKey(raw: unknown): SelfBlockKey | null {
   const key = String(raw ?? "").trim() as SelfBlockKey;
@@ -30,9 +22,9 @@ export function registerSelfTools(): void {
     handler: async () => {
       try {
         const blocks = await loadSelfBlocks();
-        return jsonResult({ blocks });
+        return toolResult({ blocks });
       } catch (err) {
-        return jsonError(err instanceof Error ? err.message : String(err));
+        return toolError(err instanceof Error ? err.message : String(err));
       }
     },
   });
@@ -58,10 +50,10 @@ export function registerSelfTools(): void {
     },
     handler: async (args) => {
       const blockKey = parseBlockKey(args.block_key);
-      if (!blockKey) return jsonError("invalid block_key");
+      if (!blockKey) return toolError("invalid block_key");
 
       const content = String(args.content ?? "").trim();
-      if (!content) return jsonError("content is required");
+      if (!content) return toolError("content is required");
 
       const force = args.force !== undefined ? Boolean(args.force) : false;
 
@@ -80,9 +72,9 @@ export function registerSelfTools(): void {
         }
         invalidateSelfLayerPromptCache();
         await loadSelfLayerPrompt();
-        return jsonResult({ ok: true, block_key: blockKey });
+        return toolResult({ ok: true, block_key: blockKey });
       } catch (err) {
-        return jsonError(err instanceof Error ? err.message : String(err));
+        return toolError(err instanceof Error ? err.message : String(err));
       }
     },
   });

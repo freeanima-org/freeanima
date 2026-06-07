@@ -1,4 +1,4 @@
-import { registerTool } from "@freeanima/engine-tool";
+import { registerTool, toolError, toolResult } from "@freeanima/engine-tool";
 import type {
   AutobiographicalSignificance,
   AutobiographicalMemoryCreateInput,
@@ -7,14 +7,6 @@ import type {
 import { getAutobiographicalMemoryStore } from "./autobiographical-port.ts";
 
 const SIGNIFICANCE_VALUES = ["normal", "milestone", "turning_point"] as const;
-
-function jsonResult(data: Record<string, unknown>): string {
-  return JSON.stringify(data);
-}
-
-function jsonError(message: string): string {
-  return JSON.stringify({ error: message });
-}
 
 function parseStringArray(value: unknown): string[] | undefined {
   if (value === undefined) return undefined;
@@ -65,8 +57,8 @@ export function registerAutobiographicalMemoryTools(): void {
     handler: async (args: Record<string, unknown>) => {
       const title = String(args.title ?? "").trim();
       const content = String(args.content ?? "").trim();
-      if (!title) return jsonError("title is required");
-      if (!content) return jsonError("content is required");
+      if (!title) return toolError("title is required");
+      if (!content) return toolError("content is required");
 
       const sigRaw = args.significance !== undefined ? String(args.significance).trim() : undefined;
       const significance =
@@ -86,9 +78,9 @@ export function registerAutobiographicalMemoryTools(): void {
 
       try {
         const id = await getAutobiographicalMemoryStore().create(row);
-        return jsonResult({ id, title });
+        return toolResult({ ok: true, id, title });
       } catch (err) {
-        return jsonError(err instanceof Error ? err.message : String(err));
+        return toolError(err instanceof Error ? err.message : String(err));
       }
     },
   });
@@ -105,12 +97,12 @@ export function registerAutobiographicalMemoryTools(): void {
     },
     handler: async (args: Record<string, unknown>) => {
       const id = String(args.id ?? "").trim();
-      if (!id) return jsonError("id is required");
+      if (!id) return toolError("id is required");
       try {
         const ok = await getAutobiographicalMemoryStore().deprecate(id);
-        return jsonResult({ ok, id });
+        return toolResult({ ok, id });
       } catch (err) {
-        return jsonError(err instanceof Error ? err.message : String(err));
+        return toolError(err instanceof Error ? err.message : String(err));
       }
     },
   });
