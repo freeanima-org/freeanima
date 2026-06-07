@@ -82,6 +82,11 @@ export function resumeJob(jobId: string): boolean {
 }
 
 export function ensureBuiltinCronJobs(): void {
+  _ensureBuiltinLightSleepCronJob();
+  _ensureBuiltinDeepSleepCronJob();
+}
+
+function _ensureBuiltinLightSleepCronJob(): void {
   const id = "builtin-light-sleep";
   if (store.find(id)) return;
   const now = formatCstIso();
@@ -94,6 +99,27 @@ export function ensureBuiltinCronJobs(): void {
     builtin: true,
     deliver: "local",
     timeout_sec: 1800,
+    created_at: now,
+    updated_at: now,
+  });
+  const next = computeNextRun(job.schedule, Date.now() / 1000);
+  if (next != null) job.next_run_at = next;
+  store.add(job);
+}
+
+function _ensureBuiltinDeepSleepCronJob(): void {
+  const id = "builtin-deep-sleep";
+  if (store.find(id)) return;
+  const now = formatCstIso();
+  const job = new CronJob({
+    id,
+    name: "deep-sleep",
+    schedule: "0 3 * * *",
+    prompt: "",
+    no_agent: true,
+    builtin: true,
+    deliver: "local",
+    timeout_sec: 3600,
     created_at: now,
     updated_at: now,
   });

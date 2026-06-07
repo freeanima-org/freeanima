@@ -123,6 +123,84 @@ async function handleSearchSemanticMemory(args: Record<string, unknown>): Promis
   return lines.join("\n");
 }
 
+async function handleMergeSemanticMemories(args: Record<string, unknown>): Promise<string> {
+  const sourceIds = parseStringArray(args.source_ids);
+  if (!sourceIds || sourceIds.length === 0) {
+    return jsonError("source_ids is required (non-empty array)");
+  }
+  if (sourceIds.length === 1) {
+    return jsonError(
+      "merge requires 2+ source_ids; use update_semantic_memory for single-memory edits",
+    );
+  }
+
+  const targetContent = String(args.target_content ?? "").trim();
+  if (!targetContent) return jsonError("target_content is required");
+
+  const store = getSemanticMemoryStore();
+
+  // 查找所有源记忆
+  const sources: { id: string; source_sessions: string[]; observed_at: string | null }[] = [];
+  for (const id of sourceIds) {
+    const row = await store.get(id);
+    if (!row) continue;
+    sources.push({
+      id: row.id,
+      source_sessions: row.source_sessions,
+      observed_at: row.observed_at,
+    });
+  }
+
+  if (sources.length === 0) return jsonError("None of the source_ids found");
+  if (sources.length === 1) {
+    return jsonError(
+      `Only 1 of ${sourceIds.length} source_ids found; use update_semantic_memory instead`,
+    );
+  }
+
+  // 合并 source_sessions（并集去重）
+  const mergedSessions = [...new Set(sources.flatMap((s) => s.source_sessions))];
+
+  // 合并 observed_at（取最早非空）
+  let earliestObserved: string | null = null;
+  for (const s of sources) {
+    if (!s.observed_at) continue;
+    if (!earliestObserved || s.observed_at < earliestObserved) {
+      earliestObserved = s.observed_at;
+    }
+  }
+
+  // 创建新记忆
+  const newId = await store.create({
+    content: targetContent,
+    type: args.target_type !== undefined ? String(args.target_type) : undefined,
+    pinned: args.target_pinned !== undefined ? Boolean(args.target_pinned) : undefined,
+    source_sessions: mergedSessions,
+    observed_at: earliestObserved,
+    occurred_at:
+      args.target_occurred_at !== undefined && args.target_occurred_at !== null
+        ? String(args.target_occurred_at)
+        : undefined,
+    status: "active",
+  });
+
+  // 废弃所有源记忆
+  const deprecatedIds: string[] = [];
+  for (const s of sources) {
+    const ok = await store.deprecate(s.id);
+    if (ok) deprecatedIds.push(s.id);
+  }
+
+  return jsonResult({
+    ok: true,
+    id: newId,
+    action: "merge",
+    deprecated_ids: deprecatedIds,
+    merged_source_sessions: mergedSessions,
+    merged_observed_at: earliestObserved,
+  });
+}
+
 /** 供 remember 与浅睡共用的创建逻辑 */
 export async function createSemanticMemoryFromArgs(
   args: Record<string, unknown>,
@@ -239,6 +317,28 @@ export function registerSemanticMemoryTools(): void {
       required: [],
     },
     handler: handleSearchSemanticMemory,
+  });
+
+  registerTool({
+    name: "merge_semantic_memories",
+    description:
+      "合并多条语义记忆为一条。程序自动处理 source_sessions 并集和 observed_at 取最早。需 2+ 条 source_ids 和 target_content。合并后自动废弃源记忆。",
+    parameters: {
+      type: "object",
+      properties: {
+        source_ids: {
+          type: "array",
+          items: { type: "string" },
+          description: "待合并的源记忆 ID（至少 2 条）",
+        },
+        target_content: { type: "string", description: "合并后的新记忆正文" },
+        target_type: { type: "string", enum: [...MEMORY_TYPES], description: "合并后的记忆类型" },
+        target_pinned: { type: "boolean", description: "是否置顶" },
+        target_occurred_at: { type: "string", description: "事实发生的模糊时间" },
+      },
+      required: ["source_ids", "target_content"],
+    },
+    handler: handleMergeSemanticMemories,
   });
 }
 

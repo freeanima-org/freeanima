@@ -54,7 +54,16 @@ export {
   type LightSleepEngineInput,
   type LightSleepEngineResult,
 } from "./light-sleep-port.ts";
+export {
+  registerDeepSleepEngine,
+  resetDeepSleepEngineForTests,
+  runDeepSleepEngine,
+  type DeepSleepEngineFn,
+  type DeepSleepEngineInput,
+  type DeepSleepEngineResult,
+} from "./deep-sleep-port.ts";
 export { runLightSleep, type LightSleepResult, type RunLightSleepOpts } from "./light-sleep/run.ts";
+export { runDeepSleep, type DeepSleepResult, type RunDeepSleepOpts } from "./deep-sleep/run.ts";
 export {
   cstDayRange,
   buildLightSleepUserMessages,
