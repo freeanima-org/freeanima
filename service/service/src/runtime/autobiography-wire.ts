@@ -11,6 +11,11 @@ import {
 } from "@freeanima/life-memory/autobiography-port";
 
 import { getServiceContext } from "../context.ts";
+import {
+  filterToolNamesByMask,
+  resolveSleepMask,
+  runtimeToolMaskFromResolved,
+} from "./mask-wire.ts";
 
 function buildMessages(input: AutobiographyEngineInput): SessionMessage[] {
   const now = new Date().toISOString();
@@ -27,7 +32,10 @@ async function runAutobiographyTurn(
   const { conversation } = getServiceContext();
   const cfg = loadConfig();
   const model = getProfileHopModel(cfg, PROFILE_REFLECT);
-  const tools = openaiSchemasFromNames(input.toolNames);
+  const sleepMask = resolveSleepMask();
+  const toolNames = filterToolNamesByMask(input.toolNames, sleepMask);
+  const tools = openaiSchemasFromNames(toolNames);
+  const toolMask = runtimeToolMaskFromResolved(sleepMask);
   const messages = buildMessages(input);
 
   let toolCalls = 0;
@@ -36,7 +44,12 @@ async function runAutobiographyTurn(
   await runWithToolContext(
     "self-autobiography",
     async () => {
-      for await (const ev of engine.runStream(messages, { model, tools, max_turns: 20 })) {
+      for await (const ev of engine.runStream(messages, {
+        model,
+        tools,
+        toolMask,
+        max_turns: 20,
+      })) {
         switch (ev.event) {
           case "token":
             parts.push(ev.data.content);

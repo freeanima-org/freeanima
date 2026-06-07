@@ -7,6 +7,7 @@ import {
   type SessionMetaMessage,
   type SessionTodoStore,
 } from "@freeanima/engine-db/domain";
+import { capabilityMaskSchema } from "@freeanima/engine-db/schema";
 import { z } from "zod";
 
 import {
@@ -37,6 +38,7 @@ const META_KNOWN_KEYS = new Set([
   "platform_extra",
   "debug",
   "timestamp",
+  "capability_mask",
 ]);
 
 /** session_meta → PG insert 行 */
@@ -52,6 +54,11 @@ export function sessionMetaToInsert(sessionId: string, meta: SessionMetaMessage)
     ...(meta.platform_extra && typeof meta.platform_extra === "object" ? meta.platform_extra : {}),
     ...passthrough,
   };
+  if (meta.capability_mask !== undefined) {
+    extra.capability_mask = capabilityMaskSchema.parse(meta.capability_mask);
+  } else {
+    delete extra.capability_mask;
+  }
 
   const tools = z.array(z.string()).parse(meta.tools ?? []);
   const todos = sessionTodoStoreSchema.parse(meta.todos ?? { items: [], next_id: 1 });
@@ -89,6 +96,11 @@ export function sessionMetaToInsert(sessionId: string, meta: SessionMetaMessage)
 export function rowToSessionMeta(row: unknown): SessionMetaMessage {
   const parsed = sessionSelectSchema.parse(row);
   const { platform, platform_extra } = splitPlatformInfo(parsed.platformInfo);
+  const capabilityMaskRaw = platform_extra?.capability_mask;
+  const capability_mask =
+    capabilityMaskRaw !== undefined ? capabilityMaskSchema.parse(capabilityMaskRaw) : undefined;
+  const restExtra = platform_extra ? { ...platform_extra } : undefined;
+  if (restExtra) delete restExtra.capability_mask;
   const base = {
     role: "session_meta" as const,
     timestamp: parsed.createdAt,
@@ -103,7 +115,8 @@ export function rowToSessionMeta(row: unknown): SessionMetaMessage {
     acp_sessions: parsed.acpSessions ?? undefined,
     tools: parsed.tools,
     functions: parsed.functions,
-    platform_extra,
+    platform_extra: restExtra && Object.keys(restExtra).length > 0 ? restExtra : undefined,
+    capability_mask,
     debug: parsed.debug,
   };
   return sessionMetaSchema.parse(base);

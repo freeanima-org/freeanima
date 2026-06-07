@@ -36,14 +36,15 @@
 
 ## LLM 工具风险
 
-| 能力               | 风险                                                                    |
-| ------------------ | ----------------------------------------------------------------------- |
-| `terminal`         | 默认 `shell: true`，可执行任意 shell 命令                               |
-| `read_file`        | 部分路径 deny（`.ssh` 私钥、`/etc/passwd` 等）；**未**全面 deny `/etc/` |
-| `write_file`       | deny list + 写保护路径                                                  |
-| MCP 工具           | 能力完全由外部 Server 决定；stdio 默认，SSE 认证方案未完整定义          |
-| ACP（Cursor）      | 默认 **自动批准** 所有 `session/request_permission`（`allow-once`）     |
-| `list_credentials` | 仅返回 pass 路径元数据，不含值                                          |
+| 能力               | 风险                                                                                  |
+| ------------------ | ------------------------------------------------------------------------------------- |
+| `terminal`         | 默认 `shell: true`，可执行任意 shell 命令                                             |
+| `read_file`        | 部分路径 deny（`.ssh` 私钥、`/etc/passwd` 等）；**未**全面 deny `/etc/`               |
+| `write_file`       | deny list + 写保护路径                                                                |
+| MCP 工具           | 能力完全由外部 Server 决定；stdio 默认，SSE 认证方案未完整定义                        |
+| 能力面罩（Mask）   | Session 级工具白名单；`deny` 覆盖 `allow`；LLM 不可见策略细节；见 `capabilities/mask` |
+| ACP（Cursor）      | 默认 **自动批准** 所有 `session/request_permission`（`allow-once`）                   |
+| `list_credentials` | 仅返回 pass 路径元数据，不含值                                                        |
 
 ## 已覆盖措施
 

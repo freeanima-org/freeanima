@@ -137,6 +137,8 @@ Agent 新增或移动类型 / Zod / 端口时，按下列顺序决策：
 | `limbic_memory` DDL + `limbicKindSchema`                      | `engine-db/schema`           | `limbic-memory.ts`                              |
 | `LimbicMemoryStorePort`                                       | `engine-repos`               | `ports/limbic-memory.ts`                        |
 | 浅睡 Phase 2 / `create_limbic_memory`                         | `life-memory`                | `limbic-tools.ts`、`light-sleep/run.ts`         |
+| 能力面罩（`Mask` / `ResolvedMask` / 注册表）                  | `capabilities-mask`          | `types.ts`、`registry.ts`、`resolve.ts`         |
+| Session `capability_mask` 存储形状                            | `engine-db/schema`           | `jsonb/capability-mask.ts`                      |
 | WebUI 展示视图（`MessagesDisplay`）                           | `service/schemas`            | `display.ts`                                    |
 | AnimaService 内部快照（`ServiceSnapshot` 等）                 | `service/schemas`            | `snapshot.ts`                                   |
 | 微信网关持久化 schema                                         | `connectors-gateway/schemas` | `weixin.ts`                                     |

@@ -56,6 +56,16 @@
         "@types/bun": "catalog:",
       },
     },
+    "capabilities/mask": {
+      "name": "@freeanima/capabilities-mask",
+      "dependencies": {
+        "@freeanima/engine-tool": "workspace:*",
+        "@freeanima/service-logging": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
     "capabilities/mcp": {
       "name": "@freeanima/capabilities-mcp",
       "dependencies": {
@@ -116,6 +126,7 @@
       "name": "@freeanima/connectors-commands",
       "dependencies": {
         "@freeanima/capabilities-clarify": "workspace:*",
+        "@freeanima/capabilities-mask": "workspace:*",
         "@freeanima/engine-conversation": "workspace:*",
         "@freeanima/engine-db": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
@@ -497,6 +508,7 @@
       "dependencies": {
         "@freeanima/capabilities-acp": "workspace:*",
         "@freeanima/capabilities-clarify": "workspace:*",
+        "@freeanima/capabilities-mask": "workspace:*",
         "@freeanima/capabilities-mcp": "workspace:*",
         "@freeanima/capabilities-provider-openai-compatible": "workspace:*",
         "@freeanima/capabilities-tools": "workspace:*",
@@ -524,6 +536,7 @@
         "@freeanima/service-bootstrap": "workspace:*",
         "@freeanima/service-config": "workspace:*",
         "@freeanima/service-logging": "workspace:*",
+        "yaml": "^2.9.0",
         "zod": "catalog:",
       },
       "devDependencies": {
@@ -698,6 +711,8 @@
     "@freeanima/capabilities-acp": ["@freeanima/capabilities-acp@workspace:capabilities/acp"],
 
     "@freeanima/capabilities-clarify": ["@freeanima/capabilities-clarify@workspace:capabilities/clarify"],
+
+    "@freeanima/capabilities-mask": ["@freeanima/capabilities-mask@workspace:capabilities/mask"],
 
     "@freeanima/capabilities-mcp": ["@freeanima/capabilities-mcp@workspace:capabilities/mcp"],
 

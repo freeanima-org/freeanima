@@ -5,7 +5,15 @@ import {
   registerCommand,
 } from "./registry.ts";
 import { clearAwaitingClarify, readAwaitingClarify } from "@freeanima/capabilities-clarify";
+import {
+  defaultMaskRegistry,
+  getMask,
+  listMasks,
+  resolveMaskPresets,
+} from "@freeanima/capabilities-mask";
+import { defaultToolSetRegistry } from "@freeanima/engine-tool";
 import { statsReport } from "@freeanima/service-api/conversation-stats";
+import { PARLOR_PLATFORM } from "@freeanima/service-api/constants";
 import { onSessionCloseBeforeNew } from "@freeanima/service-api/session-close";
 import { listTools } from "@freeanima/engine-tool";
 import { isSessionMeta } from "@freeanima/engine-db/domain";
@@ -164,6 +172,60 @@ async function cmdCompress(ctx: CommandContext): Promise<string> {
   return lines.join("\n");
 }
 
+async function reloadMaskSideEffects(sessionId: string): Promise<void> {
+  await conv().recompressSession(sessionId, { force: true });
+  await conv().reloadSessionTools(sessionId);
+  await conv().rebuildSessionSystemPrompt(sessionId);
+}
+
+async function cmdMask(ctx: CommandContext): Promise<string> {
+  const sub = ctx.args[0]?.toLowerCase();
+  const meta = await conv().loadSessionMeta(ctx.sessionId);
+  if (!isSessionMeta(meta)) {
+    return "⚠️ 当前 session 不存在，无法设置能力面罩。";
+  }
+
+  if (sub === "set") {
+    const preset = ctx.args[1]?.trim();
+    if (!preset) {
+      return "用法：`/mask set <preset-name>`";
+    }
+    if (!getMask(preset)) {
+      const known = listMasks()
+        .map((m) => m.name)
+        .join(", ");
+      return `⚠️ 未知面具 '${preset}'。可用：${known || "（无）"}`;
+    }
+    await conv().updateSessionMetaField(ctx.sessionId, {
+      capability_mask: { presets: [preset] },
+    });
+    await reloadMaskSideEffects(ctx.sessionId);
+    const resolved = resolveMaskPresets([preset], defaultMaskRegistry, defaultToolSetRegistry);
+    return `✅ 已设置能力面罩 '${preset}'（${resolved.allowed_tools.length} 个工具）。已压缩并重载工具与 system prompt。`;
+  }
+
+  if (sub === "clear") {
+    await conv().updateSessionMetaField(ctx.sessionId, { capability_mask: undefined });
+    await reloadMaskSideEffects(ctx.sessionId);
+    return "✅ 已移除能力面罩，恢复全能力。已压缩并重载工具与 system prompt。";
+  }
+
+  if (sub === "show") {
+    const presets = meta.capability_mask?.presets ?? [];
+    if (!presets.length) {
+      return "ℹ️ 当前 session 未设置能力面罩（全能力）。";
+    }
+    const resolved = resolveMaskPresets(presets, defaultMaskRegistry, defaultToolSetRegistry);
+    const preview =
+      resolved.allowed_tools.length <= 12
+        ? resolved.allowed_tools.join(", ")
+        : `${resolved.allowed_tools.slice(0, 12).join(", ")}…（共 ${resolved.allowed_tools.length} 个）`;
+    return [`🎭 能力面罩：${presets.join(", ")}`, `允许工具：${preview || "（无）"}`].join("\n");
+  }
+
+  return "用法：`/mask set <preset>` | `/mask clear` | `/mask show`";
+}
+
 export function registerBuiltins(): void {
   registerCommand({
     name: "help",
@@ -238,5 +300,12 @@ export function registerBuiltins(): void {
     description: "重新计算当前 session 运行时压缩（--force 忽略滞回）",
     handler: cmdCompress,
     scope: "session",
+  });
+  registerCommand({
+    name: "mask",
+    description: "设置 / 查看 / 清除当前 session 能力面罩（仅会客厅）",
+    handler: cmdMask,
+    scope: "session",
+    platforms: [PARLOR_PLATFORM],
   });
 }

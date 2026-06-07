@@ -12,6 +12,7 @@ import {
   systemPayloadSchema,
   type MessagePayload,
 } from "../schema/index.ts";
+import { capabilityMaskSchema } from "../schema/jsonb/capability-mask.ts";
 import {
   awaitingClarifySchema,
   compressionStateSchema,
@@ -70,6 +71,7 @@ export const sessionMetaSchema = z
     todos: z.unknown().optional(),
     awaiting_clarify: z.unknown().optional(),
     acp_sessions: z.record(z.string(), z.string()).optional(),
+    capability_mask: capabilityMaskSchema.optional(),
   })
   .passthrough();
 
