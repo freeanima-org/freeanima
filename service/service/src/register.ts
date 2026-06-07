@@ -2,13 +2,20 @@ import { getAcpManager } from "@freeanima/capabilities-acp";
 import { createAcpProgressDelivery } from "./acp-progress-delivery.ts";
 import { registerClarifyHooks } from "@freeanima/capabilities-clarify";
 import { registerClarifyTool } from "@freeanima/capabilities-clarify";
+import {
+  createFridgeMagnetHandler,
+  initRedis,
+  registerWriteFridgeMagnetTool,
+} from "@freeanima/capabilities-fridge-magnet";
 import { registerCoreTools, registerSupplementalTools } from "@freeanima/capabilities-tools";
 import { registerCronjobTool } from "@freeanima/connectors-cron/cronjob-tool";
 import { registerSelfTools } from "@freeanima/life-self";
 import type { Kernel } from "@freeanima/kernel";
+import { beforeLlmCall } from "@freeanima/kernel-hooks";
 import type { ConversationService } from "@freeanima/engine-conversation";
 import type { SemanticMemoryStorePort, SessionStorePort } from "@freeanima/engine-repos";
 import { registerMemoryPipeline, registerMemoryTools } from "@freeanima/life-memory";
+import type { NestConfig } from "@freeanima/service-config";
 
 let toolsRegistered = false;
 
@@ -21,6 +28,7 @@ export function registerServiceTools(): void {
   registerSelfTools();
   registerClarifyTool();
   registerCronjobTool();
+  registerWriteFridgeMagnetTool();
   toolsRegistered = true;
 }
 
@@ -46,6 +54,18 @@ export function registerServiceIntegrations(opts: {
     }),
   );
   acp.registerTools();
+}
+
+/** 初始化 Redis 并注册冰箱贴 beforeLlmCall hook（需 kernel + 配置） */
+export function registerFridgeMagnet(opts: { kernel: Kernel; redis?: NestConfig["redis"] }): void {
+  const redisCfg = opts.redis ?? {};
+  initRedis({
+    host: redisCfg.host ?? undefined,
+    port: redisCfg.port ?? undefined,
+    password: redisCfg.password ?? undefined,
+    db: redisCfg.db ?? undefined,
+  });
+  opts.kernel.hookRegistry.on(beforeLlmCall, createFridgeMagnetHandler());
 }
 
 /** 服务启动后启动 ACP 进度轮询 */

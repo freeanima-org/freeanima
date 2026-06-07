@@ -88,6 +88,15 @@ export const databaseConfigSchema = z.object({
 
 export type DatabaseConfigInput = z.infer<typeof databaseConfigSchema>;
 
+const redisConfigSchema = z
+  .object({
+    host: z.string().optional(),
+    port: z.number().int().positive().optional(),
+    password: z.string().optional(),
+    db: z.number().int().nonnegative().optional(),
+  })
+  .optional();
+
 const modelEntrySchema = z.object({
   context_window: z.number().int().positive().optional(),
 });
@@ -121,6 +130,7 @@ export const nestConfigSchema = z
     platforms: z.record(z.string(), z.unknown()).optional(),
     memory: memorySchema.optional(),
     database: databaseConfigSchema.optional(),
+    redis: redisConfigSchema,
   })
   .passthrough();
 

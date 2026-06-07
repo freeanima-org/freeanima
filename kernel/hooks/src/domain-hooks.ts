@@ -32,6 +32,11 @@ export type TurnAfterCompleteEffect = {
   displayContent?: string;
 };
 
+export type BeforeLlmCallContext = {
+  sessionId: string;
+  messages: { role: string; content: string | null }[];
+};
+
 /** @deprecated 使用 MessageIncomingContext */
 export type MessageIncomingPayload = MessageIncomingContext;
 
@@ -54,4 +59,9 @@ export const toolAfterCall = createHook<ToolAfterCallContext>(
 export const turnAfterComplete = createHook<TurnAfterCompleteContext>(
   "@freeanima/kernel-hooks/hooks/turn-after-complete",
   "单轮对话结束后",
+);
+
+export const beforeLlmCall = createHook<BeforeLlmCallContext>(
+  "@freeanima/kernel-hooks/hooks/before-llm-call",
+  "每轮 LLM 调用前触发（首轮及工具循环每轮均触发）",
 );

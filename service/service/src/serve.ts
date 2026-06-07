@@ -41,6 +41,7 @@ import { dirname } from "node:path";
 import { chdir } from "node:process";
 
 import {
+  registerFridgeMagnet,
   registerServiceIntegrations,
   startAcpProgressTicker,
   registerServiceMemoryBus,
@@ -218,6 +219,7 @@ export async function serve(
     conversation = createConversationService(engine.repos);
 
     registerServiceIntegrations({ kernel, conversation });
+    registerFridgeMagnet({ kernel, redis: cfg.redis });
 
     startupLog("初始化 AnimaService / EventBus…");
     service = new AnimaService({ kernel, conversation });

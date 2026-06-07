@@ -1,0 +1,19 @@
+{
+  "name": "@freeanima/capabilities-fridge-magnet",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@freeanima/engine-loop": "workspace:*",
+    "@freeanima/engine-tool": "workspace:*",
+    "@freeanima/kernel-hooks": "workspace:*",
+    "@freeanima/service-config": "workspace:*",
+    "@freeanima/service-logging": "workspace:*",
+    "ioredis": "^5.6.1"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:"
+  }
+}
