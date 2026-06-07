@@ -48,6 +48,7 @@ function saveOutput(job: CronJob, content: string): string {
 }
 
 async function persistJob(job: CronJob): Promise<void> {
+  if (!isCronModuleInitialized()) return;
   await getCronStore().update({
     id: job.id,
     run_count: job.run_count,
@@ -75,6 +76,7 @@ async function finalizeJob(job: CronJob, success: boolean): Promise<void> {
 }
 
 async function getJobSync(id: string): Promise<CronJob | null> {
+  if (!isCronModuleInitialized()) return null;
   const row = await getCronStore().get(id);
   return row ? CronJobClass.fromRow(row) : null;
 }
@@ -105,6 +107,7 @@ export function enqueueRunJob(job: CronJob): Promise<void> {
 }
 
 export async function runJobById(jobId: string): Promise<void> {
+  if (!isCronModuleInitialized()) return;
   const row = await getCronStore().get(jobId);
   if (!row) return;
   const job = CronJobClass.fromRow(row);
