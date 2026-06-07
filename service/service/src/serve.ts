@@ -49,7 +49,9 @@ import {
   registerServiceTools,
 } from "./register.ts";
 import { registerLightSleepWire } from "./runtime/light-sleep-wire.ts";
+import { registerDeepSleepWire } from "./runtime/deep-sleep-wire.ts";
 import { runLightSleep } from "@freeanima/life-memory/light-sleep/run";
+import { runDeepSleep } from "@freeanima/life-memory/deep-sleep/run";
 import { loadSoul } from "@freeanima/life-self";
 import {
   discoverPlatforms,
@@ -220,6 +222,7 @@ export async function serve(
     service.setEventBus(kernel.eventBus);
 
     registerLightSleepWire();
+    registerDeepSleepWire();
     ensureBuiltinCronJobs();
     seedHomeChannelsFromHermes();
     cronScheduler = new Scheduler();
@@ -243,6 +246,13 @@ export async function serve(
     registerCronBuiltinHandler("builtin-light-sleep", async () => {
       const result = await runLightSleep({
         sessionStore: engine!.repos.session,
+        soulContent: loadSoul(),
+      });
+      return JSON.stringify(result);
+    });
+
+    registerCronBuiltinHandler("builtin-deep-sleep", async () => {
+      const result = await runDeepSleep({
         soulContent: loadSoul(),
       });
       return JSON.stringify(result);
