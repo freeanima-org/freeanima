@@ -51,13 +51,15 @@ describePg("conversation", () => {
     const meta = await c.loadSessionMeta(sid);
     expect(isSessionMeta(meta)).toBe(true);
     if (!isSessionMeta(meta)) return;
-    expect(meta.tools.length).toBeGreaterThan(0);
-    expect(typeof meta.tools[0]).toBe("string");
+
+    const storedToolNames = await c.repos.session.getSessionTools(sid);
+    expect(storedToolNames.length).toBeGreaterThan(0);
+    expect(typeof storedToolNames[0]).toBe("string");
 
     const tools = await c.loadSessionTools(sid);
-    expect(tools.length).toBe(meta.tools.length);
+    expect(tools.length).toBe(storedToolNames.length);
     expect(tools[0]).toHaveProperty("type", "function");
-    expect(tools.every((t) => meta.tools.includes(t.function.name))).toBe(true);
+    expect(tools.every((t) => storedToolNames.includes(t.function.name))).toBe(true);
   });
 });
 

@@ -132,9 +132,7 @@ describePg("slash commands", () => {
   it("reload_tools updates session_meta tools", async () => {
     const sid = await testConv().newSession("parlor");
     await patchMetaForTest(sid, {
-      tools: [
-        { type: "function", function: { name: "stale_tool", parameters: { type: "object" } } },
-      ],
+      tools: ["stale_tool"],
     });
 
     registerTool({
@@ -213,11 +211,7 @@ describePg("slash commands", () => {
 
     const metaAfter = await testConv().loadSessionMeta(sid);
     expect(metaAfter.cwd).toBe(preservedCwd);
-    expect(
-      await testConv()
-        .loadSessionTools(sid, metaAfter)
-        .then((t) => t.map((x) => x.function.name)),
-    ).toEqual(preservedTools);
+    expect(await getTestEngine().repos.session.getSessionTools(sid)).toEqual(preservedTools);
     expect(metaAfter.title).toBe("保留标题");
     expect(metaAfter.model).toBe(metaBefore.model);
     expect(String(metaAfter.system_prompt ?? "")).not.toBe("旧 prompt");
