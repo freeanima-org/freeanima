@@ -14,8 +14,12 @@ export {
   nestConfigSchema,
   acpAgentSchema,
   mcpServerSchema,
+  emailAccountSchema,
+  emailConfigSchema,
   type NestConfig,
   type LlmConfig,
+  type EmailAccountConfig,
+  type EmailConfig,
 } from "./schemas/config.ts";
 export {
   OPENAI_COMPATIBLE_BACKEND_ID,

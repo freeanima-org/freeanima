@@ -4,7 +4,15 @@
   "exports": {
     ".": "./src/index.ts"
   },
+  "dependencies": {
+    "@freeanima/engine-tool": "workspace:*",
+    "@freeanima/service-config": "workspace:*",
+    "imapflow": "^1.0.186",
+    "nodemailer": "^6.9.16",
+    "zod": "catalog:"
+  },
   "devDependencies": {
-    "@types/bun": "catalog:"
+    "@types/bun": "catalog:",
+    "@types/nodemailer": "^6.4.17"
   }
 }

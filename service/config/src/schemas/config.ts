@@ -117,6 +117,29 @@ const compressionSchema = z.object({
 
 export const modelsConfigSchema = z.record(z.string(), modelEntrySchema);
 
+export const emailAccountSchema = z.object({
+  id: z.string(),
+  credential_path: z.string(),
+  address: z.string().email(),
+  display_name: z.string().optional(),
+  smtp_host: z.string(),
+  smtp_port: z.number().int().positive(),
+  imap_host: z.string(),
+  imap_port: z.number().int().positive(),
+  default_sender: z.boolean().default(false),
+  enabled: z.boolean().default(true),
+  desc: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+  credential_field: z.string().default("password"),
+});
+
+export const emailConfigSchema = z.object({
+  accounts: z.array(emailAccountSchema).optional(),
+});
+
+export type EmailAccountConfig = z.infer<typeof emailAccountSchema>;
+export type EmailConfig = z.infer<typeof emailConfigSchema>;
+
 export const nestConfigSchema = z
   .object({
     llm: llmConfigSchema,
@@ -132,6 +155,7 @@ export const nestConfigSchema = z
     memory: memorySchema.optional(),
     database: databaseConfigSchema.optional(),
     redis: redisConfigSchema,
+    email: emailConfigSchema.optional(),
   })
   .passthrough();
 

@@ -3,6 +3,7 @@ import { WEBUI_BASE_PATH } from "../api/constants.ts";
 import { ApiHandlerError } from "../handlers/errors.ts";
 import { assertNotShuttingDown } from "./context.ts";
 import { acpRoutes } from "./routes/acp.ts";
+import { emailRoutes } from "./routes/email.ts";
 import { healthRoutes } from "./routes/health.ts";
 import { mcpRoutes } from "./routes/mcp.ts";
 import { memoryRoutes } from "./routes/memory.ts";
@@ -21,6 +22,7 @@ export const apiApp = new Elysia({ prefix: "/api" })
   .use(memoryRoutes)
   .use(mcpRoutes)
   .use(acpRoutes)
+  .use(emailRoutes)
   .use(studioRoutes)
   .use(terminalWsRoutes);
 

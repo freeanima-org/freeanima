@@ -16,6 +16,8 @@ describe("registerServiceTools", () => {
     expect(names.has("cronjob")).toBe(true);
     expect(names.has("create_task")).toBe(true);
     expect(names.has("clarify")).toBe(true);
+    expect(names.has("list_email_accounts")).toBe(true);
+    expect(names.has("send_email")).toBe(true);
   });
 
   it("is idempotent", () => {

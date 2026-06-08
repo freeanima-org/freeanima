@@ -88,6 +88,21 @@ models:
   deepseek-v4-flash:
     context_window: 1000000
 
+# 邮箱（通信资产 —— 一等公民，非通知渠道）
+# 密码走 pass：credential add email/{name} password=xxx
+# credential_path 指向 pass 路径；credential_field 默认 password，可按需覆盖
+email:
+  accounts:
+    - id: main-inbox
+      address: you@example.com
+      credential_path: email/example
+      # credential_field: password
+      smtp_host: smtp.example.com
+      smtp_port: 465
+      imap_host: imap.example.com
+      imap_port: 993
+      default_sender: true
+
 # 运行时压缩（PG messages 不删，仅裁切发给 LLM 的视图）
 compression:
   enabled: true

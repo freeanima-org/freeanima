@@ -11,6 +11,7 @@ const navItems = [
   { to: "/chamber/mcp", label: "🔌 MCP" },
   { to: "/chamber/acp", label: "🤝 ACP" },
   { to: "/chamber/cron", label: "⏰ 定时任务" },
+  { to: "/chamber/email", label: "📧 邮件" },
 ] as const;
 
 export const Route = createFileRoute("/chamber")({
