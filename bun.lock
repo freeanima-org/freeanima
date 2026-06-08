@@ -107,6 +107,19 @@
         "@types/bun": "catalog:",
       },
     },
+    "capabilities/tasks": {
+      "name": "@freeanima/capabilities-tasks",
+      "dependencies": {
+        "@freeanima/capabilities-fridge-magnet": "workspace:*",
+        "@freeanima/engine-loop": "workspace:*",
+        "@freeanima/engine-repos": "workspace:*",
+        "@freeanima/engine-tool": "workspace:*",
+        "@freeanima/kernel-util": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
     "capabilities/tools": {
       "name": "@freeanima/capabilities-tools",
       "dependencies": {
@@ -526,6 +539,7 @@
         "@freeanima/capabilities-mask": "workspace:*",
         "@freeanima/capabilities-mcp": "workspace:*",
         "@freeanima/capabilities-provider-openai-compatible": "workspace:*",
+        "@freeanima/capabilities-tasks": "workspace:*",
         "@freeanima/capabilities-tools": "workspace:*",
         "@freeanima/connectors-commands": "workspace:*",
         "@freeanima/connectors-cron": "workspace:*",
@@ -564,6 +578,7 @@
         "@freeanima/capabilities-acp": "workspace:*",
         "@freeanima/capabilities-clarify": "workspace:*",
         "@freeanima/capabilities-provider-openai-compatible": "workspace:*",
+        "@freeanima/capabilities-tasks": "workspace:*",
         "@freeanima/connectors-commands": "workspace:*",
         "@freeanima/connectors-cron": "workspace:*",
         "@freeanima/connectors-db-pg": "workspace:*",
@@ -734,6 +749,8 @@
     "@freeanima/capabilities-mcp": ["@freeanima/capabilities-mcp@workspace:capabilities/mcp"],
 
     "@freeanima/capabilities-provider-openai-compatible": ["@freeanima/capabilities-provider-openai-compatible@workspace:capabilities/provider-openai-compatible"],
+
+    "@freeanima/capabilities-tasks": ["@freeanima/capabilities-tasks@workspace:capabilities/tasks"],
 
     "@freeanima/capabilities-tools": ["@freeanima/capabilities-tools@workspace:capabilities/tools"],
 

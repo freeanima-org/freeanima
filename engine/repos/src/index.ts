@@ -30,8 +30,14 @@ export type {
   CronJobUpdateInput,
   CronJobStorePort,
   TaskStorePort,
+  TaskRow,
+  TaskCreateInput,
+  TaskUpdateInput,
+  TaskListOpts,
+  TaskStatus,
+  TaskPriority,
 } from "./ports/index.ts";
-export { SELF_BLOCK_KEYS } from "./ports/index.ts";
+export { SELF_BLOCK_KEYS, TASK_STATUSES, TASK_PRIORITIES } from "./ports/index.ts";
 export type {
   CompressionState,
   ConversationMessage,

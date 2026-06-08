@@ -1,8 +1,14 @@
 export {
   initRedis,
   getRedis,
-  scanSessionMagnets,
-  writeFridgeMagnet,
+  resetRedisForTests,
+  magnetRedisKey,
+  randomBase62,
+  clampTtl,
+  setMagnet,
+  getMagnet,
+  deleteMagnet,
+  scanMagnets,
 } from "./store.ts";
 export {
   formatFridgeMagnets,
@@ -13,4 +19,4 @@ export {
 } from "./inject.ts";
 export { registerWriteFridgeMagnetTool } from "./tool.ts";
 export { createFridgeMagnetHandler } from "./handler.ts";
-export type { FridgeMagnet, FridgeMagnetRedisConfig } from "./types.ts";
+export type { FridgeMagnet, FridgeMagnetScanHit, FridgeMagnetRedisConfig } from "./types.ts";

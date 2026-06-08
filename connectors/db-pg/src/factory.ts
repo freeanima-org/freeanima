@@ -6,6 +6,7 @@ import { PgLimbicMemoryStore } from "./limbic-memory/pg-limbic-memory-store.ts";
 import { PgSelfLayerStore } from "./self-layer/pg-self-layer-store.ts";
 import { PgSemanticMemoryStore } from "./semantic-memory/pg-semantic-memory-store.ts";
 import { PgSessionStore } from "./session/pg-session-store.ts";
+import { PgTaskStore } from "./tasks/pg-task-store.ts";
 
 export function createPgRepositories(_opts: { getDb: () => Db }): PgRepositories {
   return {
@@ -16,5 +17,6 @@ export function createPgRepositories(_opts: { getDb: () => Db }): PgRepositories
     autobiographicalMemory: new PgAutobiographicalMemoryStore(),
     limbicMemory: new PgLimbicMemoryStore(),
     cron: new PgCronJobStore(),
+    tasks: new PgTaskStore(),
   };
 }

@@ -33,9 +33,7 @@ export function injectIntoMessages(
 }
 
 /** 剪除所有 user 消息中的冰箱贴块 */
-export function stripAllFromMessages(
-  messages: { role: string; content: string | null }[],
-): void {
+export function stripAllFromMessages(messages: { role: string; content: string | null }[]): void {
   for (const msg of messages) {
     if (msg.role === "user" && msg.content !== null) {
       msg.content = stripFridgeMagnets(msg.content);

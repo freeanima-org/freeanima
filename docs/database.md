@@ -278,3 +278,26 @@ DATABASE_URL="$(anima credential get services/postgres/anima url)" \
 ```
 
 旧 `~/.anima/cron/jobs.json` 为遗留路径；迁移验证后可手动归档。
+
+## tasks（已落地）
+
+跨 session 持久待办；`status` / `priority` 为 TEXT + Zod enum（`engine-db/schema/tasks.ts`）。
+
+| 列                  | 类型        | 说明                                                  |
+| ------------------- | ----------- | ----------------------------------------------------- |
+| `id`                | TEXT PK     | UUID                                                  |
+| `title`             | TEXT        | 标题                                                  |
+| `description`       | TEXT        | 详情（可选）                                          |
+| `status`            | TEXT        | pending / in_progress / completed / cancelled         |
+| `priority`          | TEXT        | high / medium / low / none                            |
+| `due_at`            | TIMESTAMPTZ | 截止时间（可选）                                      |
+| `created_at`        | TIMESTAMPTZ |                                                       |
+| `updated_at`        | TIMESTAMPTZ |                                                       |
+| `completed_at`      | TIMESTAMPTZ | 完成/取消时间（可选）                                 |
+| `source_session_id` | TEXT FK     | 创建来源 session（`sessions.id`，ON DELETE SET NULL） |
+
+索引：`idx_tasks_status`、`idx_tasks_list`（status, priority, created_at）。
+
+端口：`TaskStorePort`（`engine-repos`）→ `PgTaskStore`（`connectors-db-pg`）→ `capabilities/tasks` 工具。
+
+Migration：[`engine/db/migrations/20260608120000_tasks/migration.sql`](../engine/db/migrations/20260608120000_tasks/migration.sql)。

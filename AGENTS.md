@@ -128,6 +128,9 @@ Agent 新增或移动类型 / Zod / 端口时，按下列顺序决策：
 | `cron_jobs` PG schema（DDL）                                  | `engine-db/migrations`       | SQL migration                                   |
 | Cron job API 校验 schema                                      | `connectors-cron`            | `schema.ts`                                     |
 | `CronJobStorePort`                                            | `engine-repos`               | `ports/cron.ts`                                 |
+| `tasks` DDL + status/priority Zod                             | `engine-db/schema`           | `tasks.ts`                                      |
+| `TaskStorePort` / `TaskRow`                                   | `engine-repos`               | `ports/task.ts`                                 |
+| 待办工具 + 冰箱贴摘要桥接                                     | `capabilities-tasks`         | `tool.ts`、`fridge-bridge.ts`                   |
 | `self_blocks` DDL + `selfBlockKeySchema`                      | `engine-db/schema`           | `self-layer.ts`                                 |
 | `SelfLayerStorePort` / `SelfBlockRow`                         | `engine-repos`               | `ports/self-layer.ts`                           |
 | 六块 prompt 视图（`SELF_BLOCK_HEADINGS` 等）                  | `life-self`                  | `blocks.ts`、`compose.ts`                       |
