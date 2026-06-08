@@ -1,4 +1,4 @@
-name: Docker Release
+name: Release Docker
 
 on:
   push:
@@ -11,6 +11,7 @@ permissions:
 
 jobs:
   docker:
+    name: Build & push
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

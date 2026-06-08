@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-bun
+      - uses: ./.github/actions/setup-anima-home
+      - run: bun run typecheck
+      - run: bun run lint
+      - run: bun run dep-check
+      - run: bun run test
+
+  e2e:
+    name: E2E
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-bun
+      - uses: ./.github/actions/setup-anima-home
+      - uses: ./.github/actions/setup-chromium
+      - run: bun run test:e2e
