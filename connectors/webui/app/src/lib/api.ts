@@ -233,6 +233,9 @@ export const api = {
     startAll: { mutate: () => unwrap(client.api.acp["start-all"].post()) },
     stopAll: { mutate: () => unwrap(client.api.acp["stop-all"].post()) },
   },
+  credentials: {
+    list: { query: () => unwrap(client.api.credentials.get()) },
+  },
   studio: {
     config: {
       get: { query: () => unwrap(client.api.studio.config.get()) },
