@@ -5,11 +5,7 @@ import { loadConfig } from "./config.ts";
 export function resolveDatabaseUrl(raw: string): string {
   if (raw.startsWith("pass:")) {
     const passPath = raw.slice("pass:".length);
-    try {
-      return credential(passPath, "url");
-    } catch {
-      return credential(passPath);
-    }
+    return credential(passPath, "url");
   }
   return raw;
 }

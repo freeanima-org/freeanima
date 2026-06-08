@@ -14,7 +14,7 @@ function getFirecrawlConfig(): FirecrawlConfig {
   const apiUrl = (fc.api_url as string) || "https://api.firecrawl.dev";
   let apiKey = "";
   try {
-    apiKey = credential("services/firecrawl");
+    apiKey = credential("services/firecrawl", "token");
   } catch {
     /* optional */
   }

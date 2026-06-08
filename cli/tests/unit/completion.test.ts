@@ -43,7 +43,7 @@ describe("shell completion", () => {
 
   it("includes credential subcommands", () => {
     const bash = generateCompletion("bash", buildProgram());
-    for (const token of ["list", "get", "add"]) {
+    for (const token of ["list", "get", "add", "set"]) {
       expect(bash).toContain(token);
     }
   });
