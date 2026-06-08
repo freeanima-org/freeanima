@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+import { randomInt } from "node:crypto";
 import { redisDel, redisGet, redisScanEntries, redisSet } from "@freeanima/connectors-redis";
 import type { FridgeMagnetScanHit } from "./types.ts";
 
@@ -10,10 +10,9 @@ export function magnetRedisKey(module: string, id: string): string {
 }
 
 export function randomBase62(length: number): string {
-  const bytes = randomBytes(length);
   let out = "";
   for (let i = 0; i < length; i++) {
-    out += BASE62[bytes[i]! % BASE62.length];
+    out += BASE62[randomInt(BASE62.length)];
   }
   return out;
 }

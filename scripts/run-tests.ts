@@ -1,4 +1,4 @@
-import { execSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -13,19 +13,23 @@ const coverageDir = join(repoRoot, "coverage");
 const shardDir = join(repoRoot, ".coverage-shards");
 
 function runBunTest(extraArgs: string[]): void {
-  execSync(["bun", "test", ...extraArgs].join(" "), {
+  const result = spawnSync("bun", ["test", ...extraArgs], {
     cwd: repoRoot,
     stdio: "inherit",
     env: process.env,
   });
+  if (result.status !== 0) {
+    throw new Error(`bun test exited with code ${result.status ?? "unknown"}`);
+  }
 }
 
 function integrationTestsInChangedRun(): boolean {
   try {
-    const out = execSync("bun test --changed --dry-run 2>&1", {
+    const result = spawnSync("bun", ["test", "--changed", "--dry-run"], {
       cwd: repoRoot,
       encoding: "utf-8",
     });
+    const out = `${result.stdout ?? ""}${result.stderr ?? ""}`;
     return /tests\/integration\//.test(out);
   } catch {
     return false;
@@ -74,17 +78,24 @@ function mergeLcovFiles(files: string[]): string {
 
 function listTestFiles(root: string): string[] {
   const absRoot = join(repoRoot, root);
-  const out = execSync(
-    `find ${JSON.stringify(absRoot)} -type f \\( -name '*.test.ts' -o -name '*.spec.ts' \\)`,
-    {
-      encoding: "utf-8",
-    },
-  );
-  return out
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((abs) => relative(repoRoot, abs));
+  const files: string[] = [];
+
+  function walk(dir: string): void {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(full);
+      } else if (
+        entry.isFile() &&
+        (entry.name.endsWith(".test.ts") || entry.name.endsWith(".spec.ts"))
+      ) {
+        files.push(relative(repoRoot, full));
+      }
+    }
+  }
+
+  walk(absRoot);
+  return files;
 }
 
 function runCoverageTarget(target: string): boolean {
@@ -164,11 +175,14 @@ try {
   if (coverage) {
     collectCoverageShards();
   } else {
-    execSync(["bun", ...bunArgs].join(" "), {
+    const result = spawnSync("bun", bunArgs, {
       cwd: repoRoot,
       stdio: "inherit",
       env: process.env,
     });
+    if (result.status !== 0) {
+      exitCode = 1;
+    }
   }
 } catch {
   exitCode = 1;
