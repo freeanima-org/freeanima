@@ -1,5 +1,4 @@
 import type { SessionStorePort } from "@freeanima/engine-repos";
-import { pgProfileWrap } from "../pg-profile.ts";
 import * as messageFtsRepo from "./repos/message-fts-repo.ts";
 import * as messageRepo from "./repos/message-repo.ts";
 import * as sessionRepo from "./repos/session-repo.ts";
@@ -25,57 +24,12 @@ export class PgSessionStore implements SessionStorePort {
   findSessionIdByPlatformInfo = sessionRepo.findSessionIdByPlatformInfo;
   countMessages = messageRepo.countMessages;
   lastMessageTimestamp = messageRepo.lastMessageTimestamp;
-  async searchMessagesFts(query: string, opts?: { sessionId?: string; limit?: number }) {
-    return pgProfileWrap("searchMessagesFts", () => messageFtsRepo.searchMessagesFts(query, opts), {
-      resultBytes: (rows) => JSON.stringify(rows).length,
-    });
-  }
-
-  async countSearchableMessages() {
-    return pgProfileWrap("countSearchableMessages", () => messageFtsRepo.countSearchableMessages());
-  }
-
-  async getSessionMetaLite(sessionId: string) {
-    return pgProfileWrap("getSessionMetaLite", () => sessionRepo.getSessionMetaLite(sessionId), {
-      sessionId,
-    });
-  }
-
-  async getSessionTools(sessionId: string) {
-    return pgProfileWrap("getSessionTools", () => sessionRepo.getSessionTools(sessionId), {
-      sessionId,
-    });
-  }
-
-  async listMessages(sessionId: string) {
-    return pgProfileWrap("listMessages", () => messageRepo.listMessages(sessionId), {
-      sessionId,
-      resultBytes: (rows) => JSON.stringify(rows).length,
-    });
-  }
-
-  async listMessagesByPosRange(sessionId: string, fromPos: number, toPos?: number) {
-    return pgProfileWrap(
-      "listMessagesByPosRange",
-      () => messageRepo.listMessagesByPosRange(sessionId, fromPos, toPos),
-      {
-        sessionId,
-        resultBytes: (rows) => JSON.stringify(rows).length,
-      },
-    );
-  }
-
-  async listMessagesPage(sessionId: string, offset: number, limit: number) {
-    return pgProfileWrap(
-      "listMessagesPage",
-      () => messageRepo.listMessagesPage(sessionId, offset, limit),
-      { sessionId },
-    );
-  }
-
-  async listSessionIdsUpdatedBetween(fromIso: string, toIso: string) {
-    return pgProfileWrap("listSessionIdsUpdatedBetween", () =>
-      sessionRepo.listSessionIdsUpdatedBetween(fromIso, toIso),
-    );
-  }
+  searchMessagesFts = messageFtsRepo.searchMessagesFts;
+  countSearchableMessages = messageFtsRepo.countSearchableMessages;
+  getSessionMetaLite = sessionRepo.getSessionMetaLite;
+  getSessionTools = sessionRepo.getSessionTools;
+  listMessages = messageRepo.listMessages;
+  listMessagesByPosRange = messageRepo.listMessagesByPosRange;
+  listMessagesPage = messageRepo.listMessagesPage;
+  listSessionIdsUpdatedBetween = sessionRepo.listSessionIdsUpdatedBetween;
 }

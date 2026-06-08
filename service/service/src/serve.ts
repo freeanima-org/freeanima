@@ -14,7 +14,6 @@ import {
   createPgRepositories,
   getDb,
   initDatabase,
-  initPgProfile,
   isPostgresPrimary,
 } from "@freeanima/connectors-db-pg";
 import { runMigrations } from "@freeanima/engine-db";
@@ -204,7 +203,6 @@ export async function serve(
     writeFileSync(PATHS.pidFile, String(process.pid));
 
     initDatabase({ getDatabaseUrl: getConfiguredDatabaseUrl });
-    initPgProfile({ sink: logComponent("db") });
 
     const cfg = loadConfig();
     let repos = nullPgRepositories;
