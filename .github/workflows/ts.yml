@@ -14,32 +14,7 @@ jobs:
         with:
           bun-version: "1.3.14"
       - run: bun install --frozen-lockfile
-      - name: Seed CI Anima home
-        run: |
-          mkdir -p "${{ runner.temp }}/anima-home"
-          cat > "${{ runner.temp }}/anima-home/config.yaml" <<'EOF'
-          llm:
-            default_profile: chat
-            providers:
-              main:
-                backend: openai_compatible
-                base_url: https://api.openai.com/v1
-                api_key: ci-test-key
-            profiles:
-              chat:
-                chain:
-                  - provider: main
-                    model: test-model
-              reflect:
-                chain:
-                  - provider: main
-                    model: test-model
-              summary:
-                chain:
-                  - provider: main
-                    model: test-model
-          EOF
-          echo "FREEANIMA_HOME=${{ runner.temp }}/anima-home" >> "$GITHUB_ENV"
+      - uses: ./.github/actions/setup-anima-home
       - run: bun run typecheck
       - run: bun run lint
       - run: bun run dep-check
@@ -53,39 +28,8 @@ jobs:
         with:
           bun-version: "1.3.14"
       - run: bun install --frozen-lockfile
-      - name: Seed CI Anima home
-        run: |
-          mkdir -p "${{ runner.temp }}/anima-home"
-          cat > "${{ runner.temp }}/anima-home/config.yaml" <<'EOF'
-          llm:
-            default_profile: chat
-            providers:
-              main:
-                backend: openai_compatible
-                base_url: https://api.openai.com/v1
-                api_key: ci-test-key
-            profiles:
-              chat:
-                chain:
-                  - provider: main
-                    model: test-model
-              reflect:
-                chain:
-                  - provider: main
-                    model: test-model
-              summary:
-                chain:
-                  - provider: main
-                    model: test-model
-          EOF
-          echo "FREEANIMA_HOME=${{ runner.temp }}/anima-home" >> "$GITHUB_ENV"
-      - name: Install Chromium for WebView E2E
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y chromium
-          CHROME="$(command -v chromium || command -v chromium-browser || true)"
-          echo "BUN_CHROME_PATH=${CHROME}" >> "$GITHUB_ENV"
-          chromium --version || true
+      - uses: ./.github/actions/setup-anima-home
+      - uses: ./.github/actions/setup-chromium
       - name: Run E2E (WebView)
         run: bun run test:e2e
 

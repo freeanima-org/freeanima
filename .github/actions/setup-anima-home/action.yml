@@ -1,0 +1,32 @@
+name: Seed CI Anima home
+description: 写入最小 config.yaml 并设置 FREEANIMA_HOME
+runs:
+  using: composite
+  steps:
+    - name: Seed config
+      shell: bash
+      run: |
+        mkdir -p "${{ runner.temp }}/anima-home"
+        cat > "${{ runner.temp }}/anima-home/config.yaml" <<'EOF'
+        llm:
+          default_profile: chat
+          providers:
+            main:
+              backend: openai_compatible
+              base_url: https://api.openai.com/v1
+              api_key: ci-test-key
+          profiles:
+            chat:
+              chain:
+                - provider: main
+                  model: test-model
+            reflect:
+              chain:
+                - provider: main
+                  model: test-model
+            summary:
+              chain:
+                - provider: main
+                  model: test-model
+        EOF
+        echo "FREEANIMA_HOME=${{ runner.temp }}/anima-home" >> "$GITHUB_ENV"
