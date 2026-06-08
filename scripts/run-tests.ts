@@ -39,7 +39,7 @@ const bunArgs = [
   "--pass-with-no-tests",
   ...(changed ? ["--changed"] : []),
   "--exclude",
-  "tests/e2e/**",
+  "**/tests/e2e/**",
 ];
 
 try {
