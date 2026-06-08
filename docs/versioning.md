@@ -89,8 +89,22 @@ git push origin v0.1.0
 Release workflow 在 semantic-release 成功后还会：
 
 1. **`bun run build:cli`** — 产出 `cli/publish/`（`@freeanima/cli` tarball 内容）
-2. **`scripts/publish-cli.sh`** — 在 `cli/publish/` 执行 `bun publish`；需 secret **`NPM_TOKEN`**（未配置时 **跳过 npm 发布**，不阻断 GitHub Release）
-3. **Docker 镜像** — push `v*` tag 时由 [`.github/workflows/docker-release.yml`](../.github/workflows/docker-release.yml) 构建并推送到 `ghcr.io/freeanima-org/freeanima:latest` 与 `:vX.Y.Z`
+2. **`scripts/publish-cli.sh`** — CI 内 **`npm publish` + OIDC**（推荐，见下）；本地可 `NPM_TOKEN` + `bun publish`；均未配置时跳过 npm 发布
+
+### npm Trusted Publishing（推荐）
+
+在 [npm Trusted Publishers](https://docs.npmjs.com/trusted-publishers#for-github-actions) 为 `@freeanima/cli` 配置 GitHub Actions 后，**无需 `NPM_TOKEN` secret**：
+
+| 字段                 | 值              |
+| -------------------- | --------------- |
+| Organization or user | `freeanima-org` |
+| Repository           | `freeanima`     |
+| Workflow filename    | `release.yml`   |
+| Allowed actions      | `npm publish`   |
+
+Release workflow 已设 `id-token: write` 与 `actions/setup-node`（`registry-url`）。首次发包若包尚不存在，需先用 token 手动发一版或在 npm 创建包后再绑 Trusted Publisher。
+
+验证通过后，可在包 Settings → Publishing access 选 **disallow tokens**，仅保留 OIDC 发布。3. **Docker 镜像** — push `v*` tag 时由 [`.github/workflows/docker-release.yml`](../.github/workflows/docker-release.yml) 构建并推送到 `ghcr.io/freeanima-org/freeanima:latest` 与 `:vX.Y.Z`
 
 本地安装发布包（开发调试）：
 
