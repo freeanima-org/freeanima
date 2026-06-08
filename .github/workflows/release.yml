@@ -27,12 +27,8 @@ jobs:
       # cli/publish 为构建产物（gitignore），semantic-release prepare 也会再 build 一次
       - run: bun run build:cli
 
-      # 质量门禁由 .github/workflows/ci.yml 负责（同 push 已跑 typecheck/lint/dep-check/test）
-      # npm 发布走 scripts/publish-cli.sh 原生 OIDC；勿设 registry-url（会阻断 Trusted Publishing）
+      # npm 发布走 scripts/publish-cli.sh（bunx npm@11 + OIDC）；勿用 setup-node registry-url
       # 见 https://docs.npmjs.com/trusted-publishers#for-github-actions
-      - uses: actions/setup-node@v6
-        with:
-          node-version: "22"
 
       - name: semantic-release
         env:
