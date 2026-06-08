@@ -13,8 +13,6 @@ afterEach(() => {
 
 function mockHandle(): WebuiServerHandle {
   return {
-    server: {} as WebuiServerHandle["server"],
-    bunDev: null,
     close: vi.fn(),
   };
 }

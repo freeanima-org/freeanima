@@ -320,12 +320,12 @@ WebUI 是 React 19 CSR 应用（`connectors/webui/`），由 `anima service` 在
 ### 服务拓扑
 
 ```
-浏览器 ──HTTP/SSE/WS──→ node:http（2658，API + WS 升级）
+浏览器 ──HTTP/SSE/WS──→ Bun.serve（2658）
                               │
                               ├─ /api/trpc/*（HTTP batch + SSE subscription）
-                              ├─ /api/trpc/ws（终端 WebSocket）
+                              ├─ /api/trpc/ws（终端 WebSocket，Bun 原生 upgrade）
                               ├─ /api/health
-                              ├─ /webui/*、/_bun/* → 内嵌 Bun fullstack dev（HTML/TSX/CSS HMR）
+                              ├─ /webui/*、/_bun/*（Bun fullstack dev：HTML/TSX/CSS HMR）
                               └─ tRPC router → AnimaService（进程内）
                          AnimaService / EventBus / Gateway（同进程）
 ```
@@ -357,7 +357,7 @@ anima service status
 # 浏览器访问 http://127.0.0.1:2658/webui/parlor/chat
 ```
 
-WebUI 由 [`connectors/webui/src/webui-server.ts`](connectors/webui/src/webui-server.ts) 在 `serve()` 内启动：对外 `node:http`，内嵌 Bun fullstack 编译 `connectors/webui/app/index.html`（Tailwind 依赖根 `bunfig.toml` 的 `bun-plugin-tailwind`）。
+WebUI 由 [`connectors/webui/src/webui-server.ts`](connectors/webui/src/webui-server.ts) 在 `serve()` 内启动：单 `Bun.serve` 提供 API 与 fullstack 编译 `connectors/webui/app/index.html`（Tailwind 依赖根 `bunfig.toml` 的 `bun-plugin-tailwind`）。
 
 ## 事件系统
 
