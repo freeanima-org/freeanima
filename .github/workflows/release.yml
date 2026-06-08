@@ -27,36 +27,11 @@ jobs:
           bun-version: "1.3.14"
 
       - run: bun install --frozen-lockfile
-      - name: Seed CI Anima home
-        run: |
-          mkdir -p "${{ runner.temp }}/anima-home"
-          cat > "${{ runner.temp }}/anima-home/config.yaml" <<'EOF'
-          llm:
-            default_profile: chat
-            providers:
-              main:
-                backend: openai_compatible
-                base_url: https://api.openai.com/v1
-                api_key: ci-test-key
-            profiles:
-              chat:
-                chain:
-                  - provider: main
-                    model: test-model
-              reflect:
-                chain:
-                  - provider: main
-                    model: test-model
-              summary:
-                chain:
-                  - provider: main
-                    model: test-model
-          EOF
-          echo "FREEANIMA_HOME=${{ runner.temp }}/anima-home" >> "$GITHUB_ENV"
-      - run: bun run typecheck
-      - run: bun run dep-check
-      - run: bun run test
 
+      # cli/publish 为构建产物（gitignore），先 build 以满足 @semantic-release/npm pkgRoot 校验
+      - run: bun run build:cli
+
+      # 质量门禁由 .github/workflows/ts.yml 负责（同 push 已跑 typecheck/lint/dep-check/test）
       # npm Trusted Publishing：setup-node 在 GITHUB_ACTIONS 下用 OIDC 换短期 token
       # 见 https://docs.npmjs.com/trusted-publishers#for-github-actions
       - uses: actions/setup-node@v4
@@ -67,6 +42,5 @@ jobs:
       - name: semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           HUSKY: "0"
         run: bunx semantic-release
