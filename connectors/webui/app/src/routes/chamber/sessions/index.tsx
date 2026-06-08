@@ -1,9 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { SessionMessagePanel } from "@/components/chamber/SessionMessagePanel.tsx";
 import { useChamberSessionsStore } from "@/stores/chamber-sessions.ts";
 
-export const Route = createFileRoute("/chamber/sessions")({
+export const Route = createFileRoute("/chamber/sessions/")({
   component: ChamberSessionsPage,
 });
 
@@ -20,6 +19,10 @@ function formatCreated(iso: string) {
 
 function ChamberSessionsPage() {
   const store = useChamberSessionsStore();
+  const sessions = store.paginatedSessions();
+  const pageCount = store.sessionsPageCount();
+  const currentPage = store.currentSessionsPage();
+  const totalSessions = store.sortedSessions().length;
 
   useEffect(() => {
     void useChamberSessionsStore.getState().fetchSessions();
@@ -46,27 +49,18 @@ function ChamberSessionsPage() {
       ) : (
         <div className="card bg-base-200">
           <div className="card-body p-0">
-            {store.sortedSessions().length === 0 ? (
+            {totalSessions === 0 ? (
               <div className="text-sm text-base-content/50 p-4">无会话</div>
             ) : (
-              <div className="divide-y divide-base-300/50">
-                {store.sortedSessions().map((s) => (
-                  <div
-                    key={s.id}
-                    className={
-                      store.selectedId === s.id
-                        ? "bg-base-300/30 transition-colors"
-                        : "transition-colors"
-                    }
-                  >
-                    <button
-                      type="button"
-                      className="w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-base-300/20 transition-colors"
-                      onClick={() => store.toggleSession(s.id)}
+              <>
+                <div className="divide-y divide-base-300/50">
+                  {sessions.map((s) => (
+                    <Link
+                      key={s.id}
+                      to="/chamber/sessions/$sessionId"
+                      params={{ sessionId: s.id }}
+                      className="block w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-base-300/20 transition-colors"
                     >
-                      <span className="shrink-0 text-base-content/50 w-4">
-                        {store.selectedId === s.id ? "▼" : "▶"}
-                      </span>
                       <span className="badge badge-ghost badge-xs shrink-0">
                         {s.platform || "legacy"}
                       </span>
@@ -79,28 +73,36 @@ function ChamberSessionsPage() {
                           {formatCreated(s.created)}
                         </span>
                       ) : null}
-                    </button>
+                    </Link>
+                  ))}
+                </div>
 
-                    {store.selectedId === s.id ? (
-                      <div className="px-4 pb-4 border-t border-base-300/30 bg-base-100/40">
-                        <div className="font-mono text-[10px] text-base-content/40 py-2 break-all sm:hidden">
-                          {s.id}
-                        </div>
-                        <SessionMessagePanel
-                          items={store.display}
-                          total={store.total}
-                          currentPage={store.currentPage()}
-                          pageCount={store.pageCount()}
-                          pageSize={store.limit}
-                          pageOffset={store.offset}
-                          loading={store.loadingMessages}
-                          onPageChange={(p) => void store.goToPage(p)}
-                        />
-                      </div>
-                    ) : null}
+                {pageCount > 1 ? (
+                  <div className="flex items-center justify-between gap-2 px-4 py-3 border-t border-base-300/50 text-xs">
+                    <span className="text-base-content/60">
+                      共 {totalSessions} 条 · 第 {currentPage} / {pageCount} 页
+                    </span>
+                    <div className="join">
+                      <button
+                        type="button"
+                        className="btn btn-xs join-item"
+                        disabled={currentPage <= 1}
+                        onClick={() => store.goToSessionsPage(currentPage - 1)}
+                      >
+                        上一页
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-xs join-item"
+                        disabled={currentPage >= pageCount}
+                        onClick={() => store.goToSessionsPage(currentPage + 1)}
+                      >
+                        下一页
+                      </button>
+                    </div>
                   </div>
-                ))}
-              </div>
+                ) : null}
+              </>
             )}
           </div>
         </div>
