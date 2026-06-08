@@ -22,7 +22,6 @@ import { Route as ParlorSessionsRouteImport } from './routes/parlor/sessions'
 import { Route as ParlorChatRouteImport } from './routes/parlor/chat'
 import { Route as ChamberToolsRouteImport } from './routes/chamber/tools'
 import { Route as ChamberSessionsRouteImport } from './routes/chamber/sessions'
-import { Route as ChamberMemoryFilesRouteImport } from './routes/chamber/memory-files'
 import { Route as ChamberMemoryRouteImport } from './routes/chamber/memory'
 import { Route as ChamberMcpRouteImport } from './routes/chamber/mcp'
 import { Route as ChamberDashboardRouteImport } from './routes/chamber/dashboard'
@@ -96,11 +95,6 @@ const ChamberSessionsRoute = ChamberSessionsRouteImport.update({
   path: '/sessions',
   getParentRoute: () => ChamberRouteRoute,
 } as any)
-const ChamberMemoryFilesRoute = ChamberMemoryFilesRouteImport.update({
-  id: '/memory-files',
-  path: '/memory-files',
-  getParentRoute: () => ChamberRouteRoute,
-} as any)
 const ChamberMemoryRoute = ChamberMemoryRouteImport.update({
   id: '/memory',
   path: '/memory',
@@ -150,7 +144,6 @@ export interface FileRoutesByFullPath {
   '/chamber/dashboard': typeof ChamberDashboardRoute
   '/chamber/mcp': typeof ChamberMcpRoute
   '/chamber/memory': typeof ChamberMemoryRoute
-  '/chamber/memory-files': typeof ChamberMemoryFilesRoute
   '/chamber/sessions': typeof ChamberSessionsRoute
   '/chamber/tools': typeof ChamberToolsRoute
   '/parlor/chat': typeof ParlorChatRoute
@@ -173,7 +166,6 @@ export interface FileRoutesByTo {
   '/chamber/dashboard': typeof ChamberDashboardRoute
   '/chamber/mcp': typeof ChamberMcpRoute
   '/chamber/memory': typeof ChamberMemoryRoute
-  '/chamber/memory-files': typeof ChamberMemoryFilesRoute
   '/chamber/sessions': typeof ChamberSessionsRoute
   '/chamber/tools': typeof ChamberToolsRoute
   '/parlor/chat': typeof ParlorChatRoute
@@ -197,7 +189,6 @@ export interface FileRoutesById {
   '/chamber/dashboard': typeof ChamberDashboardRoute
   '/chamber/mcp': typeof ChamberMcpRoute
   '/chamber/memory': typeof ChamberMemoryRoute
-  '/chamber/memory-files': typeof ChamberMemoryFilesRoute
   '/chamber/sessions': typeof ChamberSessionsRoute
   '/chamber/tools': typeof ChamberToolsRoute
   '/parlor/chat': typeof ParlorChatRoute
@@ -222,7 +213,6 @@ export interface FileRouteTypes {
     | '/chamber/dashboard'
     | '/chamber/mcp'
     | '/chamber/memory'
-    | '/chamber/memory-files'
     | '/chamber/sessions'
     | '/chamber/tools'
     | '/parlor/chat'
@@ -245,7 +235,6 @@ export interface FileRouteTypes {
     | '/chamber/dashboard'
     | '/chamber/mcp'
     | '/chamber/memory'
-    | '/chamber/memory-files'
     | '/chamber/sessions'
     | '/chamber/tools'
     | '/parlor/chat'
@@ -268,7 +257,6 @@ export interface FileRouteTypes {
     | '/chamber/dashboard'
     | '/chamber/mcp'
     | '/chamber/memory'
-    | '/chamber/memory-files'
     | '/chamber/sessions'
     | '/chamber/tools'
     | '/parlor/chat'
@@ -380,13 +368,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChamberSessionsRouteImport
       parentRoute: typeof ChamberRouteRoute
     }
-    '/chamber/memory-files': {
-      id: '/chamber/memory-files'
-      path: '/memory-files'
-      fullPath: '/chamber/memory-files'
-      preLoaderRoute: typeof ChamberMemoryFilesRouteImport
-      parentRoute: typeof ChamberRouteRoute
-    }
     '/chamber/memory': {
       id: '/chamber/memory'
       path: '/memory'
@@ -447,7 +428,6 @@ interface ChamberRouteRouteChildren {
   ChamberDashboardRoute: typeof ChamberDashboardRoute
   ChamberMcpRoute: typeof ChamberMcpRoute
   ChamberMemoryRoute: typeof ChamberMemoryRoute
-  ChamberMemoryFilesRoute: typeof ChamberMemoryFilesRoute
   ChamberSessionsRoute: typeof ChamberSessionsRoute
   ChamberToolsRoute: typeof ChamberToolsRoute
 }
@@ -460,7 +440,6 @@ const ChamberRouteRouteChildren: ChamberRouteRouteChildren = {
   ChamberDashboardRoute: ChamberDashboardRoute,
   ChamberMcpRoute: ChamberMcpRoute,
   ChamberMemoryRoute: ChamberMemoryRoute,
-  ChamberMemoryFilesRoute: ChamberMemoryFilesRoute,
   ChamberSessionsRoute: ChamberSessionsRoute,
   ChamberToolsRoute: ChamberToolsRoute,
 }
