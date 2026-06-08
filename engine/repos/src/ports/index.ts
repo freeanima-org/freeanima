@@ -17,7 +17,16 @@ export type {
   CronJobUpdateInput,
   CronJobStorePort,
 } from "./cron.ts";
-export type { TaskStorePort } from "./task.ts";
+export type {
+  TaskStorePort,
+  TaskRow,
+  TaskCreateInput,
+  TaskUpdateInput,
+  TaskListOpts,
+  TaskStatus,
+  TaskPriority,
+} from "./task.ts";
+export { TASK_STATUSES, TASK_PRIORITIES } from "./task.ts";
 export type {
   SelfBlockKey,
   SelfBlockRow,
@@ -45,6 +54,7 @@ import type { AutobiographicalMemoryStorePort } from "./autobiographical-memory.
 import type { CronJobStorePort } from "./cron.ts";
 import type { LimbicMemoryStorePort } from "./limbic-memory.ts";
 import type { SelfLayerStorePort } from "./self-layer.ts";
+import type { TaskStorePort } from "./task.ts";
 
 /** Engine 挂载的 PG 仓储聚合 */
 export interface PgRepositories {
@@ -55,4 +65,5 @@ export interface PgRepositories {
   autobiographicalMemory: AutobiographicalMemoryStorePort;
   limbicMemory: LimbicMemoryStorePort;
   cron: CronJobStorePort;
+  tasks: TaskStorePort;
 }

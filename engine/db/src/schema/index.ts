@@ -7,6 +7,7 @@ export * from "./semantic-memory.ts";
 export * from "./self-layer.ts";
 export * from "./autobiographical-memory.ts";
 export * from "./limbic-memory.ts";
+export * from "./tasks.ts";
 export * from "./zod-schemas.ts";
 
 import { messages } from "./messages.ts";

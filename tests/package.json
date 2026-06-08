@@ -14,6 +14,7 @@
     "@freeanima/kernel-eventbus": "workspace:*",
     "@freeanima/kernel-logging": "workspace:*",
     "@freeanima/capabilities-clarify": "workspace:*",
+    "@freeanima/capabilities-tasks": "workspace:*",
     "@freeanima/capabilities-provider-openai-compatible": "workspace:*",
     "@freeanima/connectors-db-pg": "workspace:*",
     "@freeanima/kernel": "workspace:*",

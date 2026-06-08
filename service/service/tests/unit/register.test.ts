@@ -14,6 +14,7 @@ describe("registerServiceTools", () => {
     expect(names.has("read_file")).toBe(true);
     expect(names.has("todo")).toBe(true);
     expect(names.has("cronjob")).toBe(true);
+    expect(names.has("create_task")).toBe(true);
     expect(names.has("clarify")).toBe(true);
   });
 

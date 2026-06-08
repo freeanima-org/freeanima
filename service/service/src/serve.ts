@@ -72,6 +72,7 @@ import {
 } from "@freeanima/connectors-gateway";
 import { MCPManager } from "@freeanima/capabilities-mcp";
 import { getAcpManager } from "@freeanima/capabilities-acp";
+import { registerTaskStore } from "@freeanima/capabilities-tasks/task-port";
 import { DEFAULT_BIND_HOST, parseBindHosts } from "./bind-hosts.ts";
 import { initServiceContext } from "./context.ts";
 
@@ -234,6 +235,7 @@ export async function serve(
     registerSelfLayerStore(repos.selfLayer);
     registerAutobiographicalMemoryStore(repos.autobiographicalMemory);
     registerLimbicMemoryStore(repos.limbicMemory);
+    registerTaskStore(repos.tasks);
     if (repos.pgAvailable) {
       const resident = await repos.semanticMemory.listResident(100);
       await ensureSelfLayerSeeded({

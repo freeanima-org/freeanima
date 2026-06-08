@@ -2,6 +2,7 @@ import { describe, expect, it } from "bun:test";
 import { messageToInsert, rowToMessage } from "../../src/session/mappers/message-mapper.ts";
 import { sessionMetaToInsert } from "../../src/session/mappers/session-mapper.ts";
 import { mapCronJobRow, type CronJobDbRow } from "../../src/cron/mappers/cron-mapper.ts";
+import { mapTaskRow } from "../../src/tasks/mappers/task-mapper.ts";
 describe("db mappers", () => {
   it("sessionMetaToInsert 规范化 timestamp", () => {
     const row = sessionMetaToInsert("cron_test", {
@@ -143,5 +144,27 @@ describe("db mappers", () => {
     expect(result.model_provider).toBe("openai");
     expect(result.model_name).toBe("gpt-4o");
     expect(result.workdir).toBe("/tmp");
+  });
+
+  it("mapTaskRow 完整映射", () => {
+    const result = mapTaskRow({
+      id: "550e8400-e29b-41d4-a716-446655440000",
+      title: "写周记",
+      description: "本周总结",
+      status: "pending",
+      priority: "high",
+      dueAt: "2026-06-10T12:00:00.000Z",
+      createdAt: "2026-06-08T10:00:00.000Z",
+      updatedAt: "2026-06-08T10:00:00.000Z",
+      completedAt: null,
+      sourceSessionId: "20260608_100000_ab12",
+    });
+    expect(result.id).toBe("550e8400-e29b-41d4-a716-446655440000");
+    expect(result.title).toBe("写周记");
+    expect(result.status).toBe("pending");
+    expect(result.priority).toBe("high");
+    expect(result.due_at).toBe("2026-06-10T12:00:00.000Z");
+    expect(result.source_session_id).toBe("20260608_100000_ab12");
+    expect(result.completed_at).toBeNull();
   });
 });

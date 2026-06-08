@@ -16,7 +16,12 @@ export type {
   HookRunMeta,
 } from "./hook.ts";
 export type { HookClarifyItem, HookStreamEvent, TurnControl } from "./hook-stream.ts";
-export { messageIncoming, toolAfterCall, turnAfterComplete, beforeLlmCall } from "./domain-hooks.ts";
+export {
+  messageIncoming,
+  toolAfterCall,
+  turnAfterComplete,
+  beforeLlmCall,
+} from "./domain-hooks.ts";
 export type {
   MessageIncomingContext,
   MessageIncomingEffect,

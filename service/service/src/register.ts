@@ -7,6 +7,11 @@ import {
   initRedis,
   registerWriteFridgeMagnetTool,
 } from "@freeanima/capabilities-fridge-magnet";
+import {
+  createFridgeBridge,
+  registerTaskTools,
+  registerTasksModule,
+} from "@freeanima/capabilities-tasks";
 import { registerCoreTools, registerSupplementalTools } from "@freeanima/capabilities-tools";
 import { registerCronjobTool } from "@freeanima/connectors-cron/cronjob-tool";
 import { registerSelfTools } from "@freeanima/life-self";
@@ -29,6 +34,7 @@ export function registerServiceTools(): void {
   registerClarifyTool();
   registerCronjobTool();
   registerWriteFridgeMagnetTool();
+  registerTaskTools();
   toolsRegistered = true;
 }
 
@@ -66,6 +72,7 @@ export function registerFridgeMagnet(opts: { kernel: Kernel; redis?: NestConfig[
     db: redisCfg.db ?? undefined,
   });
   opts.kernel.hookRegistry.on(beforeLlmCall, createFridgeMagnetHandler());
+  registerTasksModule({ fridgeBridge: createFridgeBridge() });
 }
 
 /** 服务启动后启动 ACP 进度轮询 */

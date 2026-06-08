@@ -48,6 +48,8 @@ async function clearPgTables(sql: postgres.Sql): Promise<void> {
   await sql`DELETE FROM self_blocks`;
   await sql`DELETE FROM autobiographical_memory`;
   await sql`DELETE FROM limbic_memory`;
+  await sql`DELETE FROM tasks`;
+  await sql`DELETE FROM cron_jobs`;
 }
 
 function createTestEngine(repos: PgRepositories): Engine {
