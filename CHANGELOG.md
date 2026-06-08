@@ -3,16 +3,15 @@
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 新版本节由 [semantic-release](https://semantic-release.gitbook.io/) 根据 Conventional Commits 自动写入顶部。
 
-
 ## [0.3.2](https://github.com/freeanima-org/freeanima/compare/v0.3.1...v0.3.2) (2026-06-08)
 
 ### Bug Fixes
 
-* **release:** 用 bunx npm@11 发布并移除 setup-node ([#70](https://github.com/freeanima-org/freeanima/issues/70)) ([41f76ad](https://github.com/freeanima-org/freeanima/commit/41f76ad21299f417bf090a9e46b8f14a8c276dd9))
+- **release:** 用 bunx npm@11 发布并移除 setup-node ([#70](https://github.com/freeanima-org/freeanima/issues/70)) ([41f76ad](https://github.com/freeanima-org/freeanima/commit/41f76ad21299f417bf090a9e46b8f14a8c276dd9))
 
 ### Miscellaneous
 
-* **deps:** bump docker/login-action from 3 to 4 ([#68](https://github.com/freeanima-org/freeanima/issues/68)) ([dcfdd39](https://github.com/freeanima-org/freeanima/commit/dcfdd39fcaa4cb2180f13857f25f00ed8e2b28ef))
+- **deps:** bump docker/login-action from 3 to 4 ([#68](https://github.com/freeanima-org/freeanima/issues/68)) ([dcfdd39](https://github.com/freeanima-org/freeanima/commit/dcfdd39fcaa4cb2180f13857f25f00ed8e2b28ef))
 
 ## [0.3.1](https://github.com/freeanima-org/freeanima/compare/v0.3.0...v0.3.1) (2026-06-08)
 
@@ -107,13 +106,6 @@ Co-authored-by: Cursor <cursoragent@cursor.com>
 ### Tests
 
 - **e2e:** WebView 卧室 dashboard smoke ([e17b82f](https://github.com/freeanima-org/freeanima/commit/e17b82fd8b05777cc5f9b6fdec886b06ec330d8c)), closes [#9](https://github.com/freeanima-org/freeanima/issues/9)
-
-## [Unreleased]
-
-### BREAKING CHANGES
-
-- **webui:** API 从 tRPC 迁移至 Elysia REST + Eden Treaty；HTTP 路径为 `/api/*`，终端 WebSocket 为 `/api/studio/terminal/ws`，聊天流式为 `POST /api/messages/stream`（SSE）
-- **memory:** 废除记忆层 L1–L4 / L1–L3 编号；`memorySearch` 返回 `{ semantic_memory, dialogue }`；状态快照字段 `semantic_memory_count` / `dialogue_message_count`；`POST /api/memory/semantic-memory/count` 替代 `/l3-reindex`；EventBus topic `semantic_memory:updated` 替代 `l3:updated`
 
 ## [0.1.6](https://github.com/freeanima-org/freeanima/compare/v0.1.5...v0.1.6) (2026-06-07)
 
