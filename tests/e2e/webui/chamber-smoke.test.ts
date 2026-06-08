@@ -1,5 +1,5 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
-import { describeE2e } from "../../helpers/webview-gate.ts";
+import { describeE2e, createE2eWebView } from "../../helpers/webview-gate.ts";
 import { startE2eWebuiServer, type E2eWebuiServer } from "../../helpers/e2e-webui-server.ts";
 import { endIntegrationCase } from "../../helpers/integration-case.ts";
 
@@ -37,7 +37,7 @@ describeE2e("webui e2e", () => {
     "能打开卧室 dashboard",
     async () => {
       if (!server) throw new Error("E2E server not started");
-      await using view = new Bun.WebView({ width: 1280, height: 720 });
+      await using view = createE2eWebView({ width: 1280, height: 720 });
       await view.navigate(`http://127.0.0.1:${server.port}/webui/chamber/dashboard`);
       const found = await waitForTestId(view, "chamber-layout", 60_000);
       expect(found).toBe(true);
