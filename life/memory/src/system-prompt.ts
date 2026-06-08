@@ -3,6 +3,17 @@ import { join } from "node:path";
 import { getSemanticMemoryStore } from "./semantic-port.ts";
 
 const MAX_AGENTS_CHARS = 8000;
+const PROMPT_CODE_FENCE_LANG = "md";
+
+/** system prompt 常驻记忆段外层第二人称骨架 */
+export const RESIDENT_MEMORY_SYSTEM_FRAME = `以下是你的常驻记忆。这些事实与约定需要你始终携带，你必须遵守并在对话中自觉运用。`;
+
+function wrapPromptSection(heading: string, inner: string, frame?: string): string {
+  const body = inner.trim();
+  if (!body) return "";
+  const header = frame ? `${frame.trim()}\n\n## ${heading}` : `## ${heading}`;
+  return `${header}\n\`\`\`${PROMPT_CODE_FENCE_LANG}\n${body}\n\`\`\``;
+}
 
 function readAgents(cwd: string | null | undefined): string {
   if (!cwd) return "";
@@ -16,7 +27,7 @@ function readAgents(cwd: string | null | undefined): string {
       const tail = content.slice(-Math.floor(MAX_AGENTS_CHARS * 0.2));
       content = `${head}\n\n[... 已截断 ...]\n\n${tail}`;
     }
-    return `## 项目上下文\n${content}`;
+    return wrapPromptSection("项目上下文", content);
   } catch {
     return "";
   }
@@ -26,7 +37,7 @@ async function renderResidentMemory(): Promise<string> {
   const facts = await getSemanticMemoryStore().listResident(20);
   if (!facts.length) return "";
   const lines = facts.map((f) => (f.pinned ? `- 📌 ${f.content}` : `- ${f.content}`));
-  return `## 常驻记忆\n${lines.join("\n")}`;
+  return wrapPromptSection("常驻记忆", lines.join("\n"), RESIDENT_MEMORY_SYSTEM_FRAME);
 }
 
 export type SystemPromptParts = {
@@ -50,7 +61,7 @@ export async function decomposeSystemPromptParts(
 export function composeSystemPrompt(parts: SystemPromptParts): string {
   const chunks: string[] = [];
   if (parts.self) chunks.push(parts.self);
-  if (parts.agents) chunks.push(parts.agents);
   if (parts.resident) chunks.push(parts.resident);
+  if (parts.agents) chunks.push(parts.agents);
   return chunks.join("\n\n");
 }

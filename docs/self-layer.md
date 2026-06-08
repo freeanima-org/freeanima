@@ -77,11 +77,13 @@ FreeAnima 存储架构
 
 组装顺序（[`life-memory/system-prompt`](../life/memory/src/system-prompt.ts) + [`system-prompt-wire`](../service/service/src/runtime/system-prompt-wire.ts)）：
 
-```
-1. 自我层六块（## 存在锚点 … ## 自传概括）  ← loadSelfLayerPrompt() / self_blocks
-2. ## 项目上下文（session cwd 下 AGENTS.md）
-3. ## 常驻记忆（semantic_memory pinned，非自我事实）
-```
+````
+1. 灵魂文件（第二人称骨架 + ```md 内嵌六块）  ← loadSelfLayerPrompt() / self_blocks
+2. 常驻记忆（第二人称骨架 + ```md 内嵌 pinned 事实）  ← semantic_memory
+3. 项目上下文（```md 内嵌 session cwd 下 AGENTS.md）
+````
+
+各段标题（`## 灵魂文件` / `## 常驻记忆` / `## 项目上下文`）在代码块外；正文在 `md` 围栏内。灵魂文件与常驻记忆段外层使用第二人称指令骨架，内层保留第一人称自我陈述质地。
 
 运行时 **不再** 直接注入 `SOUL.md` 全文；`SOUL.md` 仅作 seed 源与人工编辑备份。PG 不可用时的 fallback 仍将 SOUL 映射到 `self_model` 块。
 

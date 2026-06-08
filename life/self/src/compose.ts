@@ -1,6 +1,12 @@
 import type { SelfBlockKey, SelfBlockRow } from "@freeanima/engine-repos";
 
-import { SELF_BLOCK_EMPTY_PLACEHOLDER, SELF_BLOCK_HEADINGS } from "./blocks.ts";
+import {
+  SELF_BLOCK_EMPTY_PLACEHOLDER,
+  SELF_BLOCK_HEADINGS,
+  SELF_LAYER_CODE_FENCE_LANG,
+  SELF_LAYER_PROMPT_HEADING,
+  SELF_LAYER_SYSTEM_FRAME,
+} from "./blocks.ts";
 
 export type SelfBlockView = {
   block_key: SelfBlockKey;
@@ -29,6 +35,14 @@ export function renderSelfLayerPrompt(blocks: SelfBlockRow[]): string {
     lines.push(`## ${heading}`, body);
   }
   return lines.join("\n\n");
+}
+
+/** 将六块 Markdown 包裹为 system prompt 自我层段（第二人称骨架 + 代码块） */
+export function wrapSelfLayerForSystemPrompt(innerMarkdown: string): string {
+  const body = innerMarkdown.trim();
+  if (!body) return "";
+  const header = `${SELF_LAYER_SYSTEM_FRAME}\n\n## ${SELF_LAYER_PROMPT_HEADING}`;
+  return `${header}\n\`\`\`${SELF_LAYER_CODE_FENCE_LANG}\n${body}\n\`\`\``;
 }
 
 export function composeSelfLayerPromptFromViews(views: SelfBlockView[]): string {

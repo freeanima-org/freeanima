@@ -7,10 +7,13 @@ export {
   SELF_BLOCK_EMPTY_PLACEHOLDER,
   DEFAULT_EXISTENCE_ANCHOR,
   DEFAULT_METACOGNITION,
+  SELF_LAYER_SYSTEM_FRAME,
+  SELF_LAYER_PROMPT_HEADING,
 } from "./blocks.ts";
 export { registerSelfLayerStore, getSelfLayerStore, resetSelfLayerStoreForTests } from "./port.ts";
 export {
   renderSelfLayerPrompt,
+  wrapSelfLayerForSystemPrompt,
   composeSelfLayerPromptFromViews,
   toSelfBlockView,
   type SelfBlockView,

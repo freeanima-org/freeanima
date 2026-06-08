@@ -6,7 +6,12 @@ import {
   invalidateSelfLayerPromptCache,
   setSelfLayerPromptCache,
 } from "./cache.ts";
-import { renderSelfLayerPrompt, toSelfBlockView, type SelfBlockView } from "./compose.ts";
+import {
+  renderSelfLayerPrompt,
+  toSelfBlockView,
+  wrapSelfLayerForSystemPrompt,
+  type SelfBlockView,
+} from "./compose.ts";
 import { getSelfLayerStore } from "./port.ts";
 import { loadSoul } from "./soul.ts";
 
@@ -42,13 +47,14 @@ export async function loadSelfLayerPrompt(): Promise<string> {
   try {
     const rows = await getSelfLayerStore().listBlocks();
     const hasContent = rows.some((row) => row.content.trim().length > 0);
-    const prompt = hasContent
+    const inner = hasContent
       ? renderSelfLayerPrompt(rows)
       : renderSelfLayerPrompt(fallbackBlocksFromSoul());
+    const prompt = wrapSelfLayerForSystemPrompt(inner);
     setSelfLayerPromptCache(prompt);
     return prompt;
   } catch {
-    const prompt = renderSelfLayerPrompt(fallbackBlocksFromSoul());
+    const prompt = wrapSelfLayerForSystemPrompt(renderSelfLayerPrompt(fallbackBlocksFromSoul()));
     setSelfLayerPromptCache(prompt);
     return prompt;
   }

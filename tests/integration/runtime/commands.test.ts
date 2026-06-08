@@ -7,7 +7,11 @@ import {
   syncIntegrationSelfLayer,
 } from "../../helpers/integration-case.ts";
 import type { PgTestContext } from "../../helpers/pg-test.ts";
-import { SELF_BLOCK_HEADINGS } from "@freeanima/life-self";
+import {
+  SELF_BLOCK_HEADINGS,
+  SELF_LAYER_PROMPT_HEADING,
+  SELF_LAYER_SYSTEM_FRAME,
+} from "@freeanima/life-self";
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -192,6 +196,9 @@ describePg("slash commands", () => {
     expect(result.text).toContain("system prompt");
     const spMeta = await testConv().loadSessionMeta(sid);
     const sp = String(spMeta.role === "session_meta" ? (spMeta.system_prompt ?? "") : "");
+    expect(sp).toContain(SELF_LAYER_SYSTEM_FRAME);
+    expect(sp).toContain(`## ${SELF_LAYER_PROMPT_HEADING}`);
+    expect(sp).toContain("```md");
     for (const heading of Object.values(SELF_BLOCK_HEADINGS)) {
       expect(sp).toContain(`## ${heading}`);
     }
