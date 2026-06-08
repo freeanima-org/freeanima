@@ -33,11 +33,15 @@ describeE2e("webui e2e", () => {
     await endIntegrationCase();
   });
 
-  it("能打开卧室 dashboard", async () => {
-    if (!server) throw new Error("E2E server not started");
-    await using view = new Bun.WebView({ width: 1280, height: 720 });
-    await view.navigate(`http://127.0.0.1:${server.port}/webui/chamber/dashboard`);
-    const found = await waitForTestId(view, "chamber-layout", 60_000);
-    expect(found).toBe(true);
-  });
+  it(
+    "能打开卧室 dashboard",
+    async () => {
+      if (!server) throw new Error("E2E server not started");
+      await using view = new Bun.WebView({ width: 1280, height: 720 });
+      await view.navigate(`http://127.0.0.1:${server.port}/webui/chamber/dashboard`);
+      const found = await waitForTestId(view, "chamber-layout", 60_000);
+      expect(found).toBe(true);
+    },
+    { timeout: 90_000 },
+  );
 });
