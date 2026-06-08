@@ -1,0 +1,70 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { SessionMessagePanel } from "@/components/chamber/SessionMessagePanel.tsx";
+import { useChamberSessionsStore } from "@/stores/chamber-sessions.ts";
+
+export const Route = createFileRoute("/chamber/sessions/$sessionId")({
+  component: SessionDetailPage,
+});
+
+function formatCreated(iso: string) {
+  if (!iso) return "";
+  try {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return iso.slice(0, 16);
+    return d.toLocaleString("zh-CN", { hour12: false });
+  } catch {
+    return iso.slice(0, 16);
+  }
+}
+
+function SessionDetailPage() {
+  const { sessionId } = Route.useParams();
+  const store = useChamberSessionsStore();
+  const session = store.findSession(sessionId);
+
+  useEffect(() => {
+    const state = useChamberSessionsStore.getState();
+    if (!state.sessions.length && !state.loadingSessions) {
+      void state.fetchSessions();
+    }
+  }, []);
+
+  useEffect(() => {
+    void useChamberSessionsStore.getState().selectSession(sessionId, 1);
+  }, [sessionId]);
+
+  return (
+    <div>
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        <Link to="/chamber/sessions" className="btn btn-ghost btn-xs">
+          ← 返回列表
+        </Link>
+        <h2 className="text-lg font-bold flex-1 truncate">{session?.title || "（无标题）"}</h2>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2 mb-4 text-xs text-base-content/60">
+        <span className="badge badge-ghost badge-xs">{session?.platform || "legacy"}</span>
+        {session?.created ? <span>{formatCreated(session.created)}</span> : null}
+        <span className="font-mono break-all">{sessionId}</span>
+      </div>
+
+      <div className="card bg-base-200">
+        <div className="card-body">
+          <SessionMessagePanel
+            items={store.display}
+            total={store.total}
+            currentPage={store.currentPage()}
+            pageCount={store.pageCount()}
+            pageSize={store.limit}
+            pageOffset={store.offset}
+            loading={store.loadingMessages}
+            onPageChange={(p) => void store.goToPage(p)}
+          />
+        </div>
+      </div>
+
+      {store.error ? <div className="alert alert-error text-sm mt-4">{store.error}</div> : null}
+    </div>
+  );
+}

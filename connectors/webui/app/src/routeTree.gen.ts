@@ -21,7 +21,6 @@ import { Route as StudioNovelRouteImport } from './routes/studio/novel'
 import { Route as ParlorSessionsRouteImport } from './routes/parlor/sessions'
 import { Route as ParlorChatRouteImport } from './routes/parlor/chat'
 import { Route as ChamberToolsRouteImport } from './routes/chamber/tools'
-import { Route as ChamberSessionsRouteImport } from './routes/chamber/sessions'
 import { Route as ChamberMemoryRouteImport } from './routes/chamber/memory'
 import { Route as ChamberMcpRouteImport } from './routes/chamber/mcp'
 import { Route as ChamberDashboardRouteImport } from './routes/chamber/dashboard'
@@ -29,6 +28,9 @@ import { Route as ChamberCronRouteImport } from './routes/chamber/cron'
 import { Route as ChamberConfigRouteImport } from './routes/chamber/config'
 import { Route as ChamberCommandsRouteImport } from './routes/chamber/commands'
 import { Route as ChamberAcpRouteImport } from './routes/chamber/acp'
+import { Route as ChamberSessionsRouteRouteImport } from './routes/chamber/sessions/route'
+import { Route as ChamberSessionsIndexRouteImport } from './routes/chamber/sessions/index'
+import { Route as ChamberSessionsSessionIdRouteImport } from './routes/chamber/sessions/$sessionId'
 
 const WorkshopRoute = WorkshopRouteImport.update({
   id: '/workshop',
@@ -90,11 +92,6 @@ const ChamberToolsRoute = ChamberToolsRouteImport.update({
   path: '/tools',
   getParentRoute: () => ChamberRouteRoute,
 } as any)
-const ChamberSessionsRoute = ChamberSessionsRouteImport.update({
-  id: '/sessions',
-  path: '/sessions',
-  getParentRoute: () => ChamberRouteRoute,
-} as any)
 const ChamberMemoryRoute = ChamberMemoryRouteImport.update({
   id: '/memory',
   path: '/memory',
@@ -130,6 +127,22 @@ const ChamberAcpRoute = ChamberAcpRouteImport.update({
   path: '/acp',
   getParentRoute: () => ChamberRouteRoute,
 } as any)
+const ChamberSessionsRouteRoute = ChamberSessionsRouteRouteImport.update({
+  id: '/sessions',
+  path: '/sessions',
+  getParentRoute: () => ChamberRouteRoute,
+} as any)
+const ChamberSessionsIndexRoute = ChamberSessionsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ChamberSessionsRouteRoute,
+} as any)
+const ChamberSessionsSessionIdRoute =
+  ChamberSessionsSessionIdRouteImport.update({
+    id: '/$sessionId',
+    path: '/$sessionId',
+    getParentRoute: () => ChamberSessionsRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -137,6 +150,7 @@ export interface FileRoutesByFullPath {
   '/parlor': typeof ParlorRouteRouteWithChildren
   '/studio': typeof StudioRouteRouteWithChildren
   '/workshop': typeof WorkshopRouteWithChildren
+  '/chamber/sessions': typeof ChamberSessionsRouteRouteWithChildren
   '/chamber/acp': typeof ChamberAcpRoute
   '/chamber/commands': typeof ChamberCommandsRoute
   '/chamber/config': typeof ChamberConfigRoute
@@ -144,7 +158,6 @@ export interface FileRoutesByFullPath {
   '/chamber/dashboard': typeof ChamberDashboardRoute
   '/chamber/mcp': typeof ChamberMcpRoute
   '/chamber/memory': typeof ChamberMemoryRoute
-  '/chamber/sessions': typeof ChamberSessionsRoute
   '/chamber/tools': typeof ChamberToolsRoute
   '/parlor/chat': typeof ParlorChatRoute
   '/parlor/sessions': typeof ParlorSessionsRoute
@@ -152,6 +165,8 @@ export interface FileRoutesByFullPath {
   '/studio/pair-programming': typeof StudioPairProgrammingRoute
   '/studio/short-video': typeof StudioShortVideoRoute
   '/workshop/$path': typeof WorkshopPathRoute
+  '/chamber/sessions/$sessionId': typeof ChamberSessionsSessionIdRoute
+  '/chamber/sessions/': typeof ChamberSessionsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -166,7 +181,6 @@ export interface FileRoutesByTo {
   '/chamber/dashboard': typeof ChamberDashboardRoute
   '/chamber/mcp': typeof ChamberMcpRoute
   '/chamber/memory': typeof ChamberMemoryRoute
-  '/chamber/sessions': typeof ChamberSessionsRoute
   '/chamber/tools': typeof ChamberToolsRoute
   '/parlor/chat': typeof ParlorChatRoute
   '/parlor/sessions': typeof ParlorSessionsRoute
@@ -174,6 +188,8 @@ export interface FileRoutesByTo {
   '/studio/pair-programming': typeof StudioPairProgrammingRoute
   '/studio/short-video': typeof StudioShortVideoRoute
   '/workshop/$path': typeof WorkshopPathRoute
+  '/chamber/sessions/$sessionId': typeof ChamberSessionsSessionIdRoute
+  '/chamber/sessions': typeof ChamberSessionsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -182,6 +198,7 @@ export interface FileRoutesById {
   '/parlor': typeof ParlorRouteRouteWithChildren
   '/studio': typeof StudioRouteRouteWithChildren
   '/workshop': typeof WorkshopRouteWithChildren
+  '/chamber/sessions': typeof ChamberSessionsRouteRouteWithChildren
   '/chamber/acp': typeof ChamberAcpRoute
   '/chamber/commands': typeof ChamberCommandsRoute
   '/chamber/config': typeof ChamberConfigRoute
@@ -189,7 +206,6 @@ export interface FileRoutesById {
   '/chamber/dashboard': typeof ChamberDashboardRoute
   '/chamber/mcp': typeof ChamberMcpRoute
   '/chamber/memory': typeof ChamberMemoryRoute
-  '/chamber/sessions': typeof ChamberSessionsRoute
   '/chamber/tools': typeof ChamberToolsRoute
   '/parlor/chat': typeof ParlorChatRoute
   '/parlor/sessions': typeof ParlorSessionsRoute
@@ -197,6 +213,8 @@ export interface FileRoutesById {
   '/studio/pair-programming': typeof StudioPairProgrammingRoute
   '/studio/short-video': typeof StudioShortVideoRoute
   '/workshop/$path': typeof WorkshopPathRoute
+  '/chamber/sessions/$sessionId': typeof ChamberSessionsSessionIdRoute
+  '/chamber/sessions/': typeof ChamberSessionsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -206,6 +224,7 @@ export interface FileRouteTypes {
     | '/parlor'
     | '/studio'
     | '/workshop'
+    | '/chamber/sessions'
     | '/chamber/acp'
     | '/chamber/commands'
     | '/chamber/config'
@@ -213,7 +232,6 @@ export interface FileRouteTypes {
     | '/chamber/dashboard'
     | '/chamber/mcp'
     | '/chamber/memory'
-    | '/chamber/sessions'
     | '/chamber/tools'
     | '/parlor/chat'
     | '/parlor/sessions'
@@ -221,6 +239,8 @@ export interface FileRouteTypes {
     | '/studio/pair-programming'
     | '/studio/short-video'
     | '/workshop/$path'
+    | '/chamber/sessions/$sessionId'
+    | '/chamber/sessions/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -235,7 +255,6 @@ export interface FileRouteTypes {
     | '/chamber/dashboard'
     | '/chamber/mcp'
     | '/chamber/memory'
-    | '/chamber/sessions'
     | '/chamber/tools'
     | '/parlor/chat'
     | '/parlor/sessions'
@@ -243,6 +262,8 @@ export interface FileRouteTypes {
     | '/studio/pair-programming'
     | '/studio/short-video'
     | '/workshop/$path'
+    | '/chamber/sessions/$sessionId'
+    | '/chamber/sessions'
   id:
     | '__root__'
     | '/'
@@ -250,6 +271,7 @@ export interface FileRouteTypes {
     | '/parlor'
     | '/studio'
     | '/workshop'
+    | '/chamber/sessions'
     | '/chamber/acp'
     | '/chamber/commands'
     | '/chamber/config'
@@ -257,7 +279,6 @@ export interface FileRouteTypes {
     | '/chamber/dashboard'
     | '/chamber/mcp'
     | '/chamber/memory'
-    | '/chamber/sessions'
     | '/chamber/tools'
     | '/parlor/chat'
     | '/parlor/sessions'
@@ -265,6 +286,8 @@ export interface FileRouteTypes {
     | '/studio/pair-programming'
     | '/studio/short-video'
     | '/workshop/$path'
+    | '/chamber/sessions/$sessionId'
+    | '/chamber/sessions/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -361,13 +384,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChamberToolsRouteImport
       parentRoute: typeof ChamberRouteRoute
     }
-    '/chamber/sessions': {
-      id: '/chamber/sessions'
-      path: '/sessions'
-      fullPath: '/chamber/sessions'
-      preLoaderRoute: typeof ChamberSessionsRouteImport
-      parentRoute: typeof ChamberRouteRoute
-    }
     '/chamber/memory': {
       id: '/chamber/memory'
       path: '/memory'
@@ -417,10 +433,45 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChamberAcpRouteImport
       parentRoute: typeof ChamberRouteRoute
     }
+    '/chamber/sessions': {
+      id: '/chamber/sessions'
+      path: '/sessions'
+      fullPath: '/chamber/sessions'
+      preLoaderRoute: typeof ChamberSessionsRouteRouteImport
+      parentRoute: typeof ChamberRouteRoute
+    }
+    '/chamber/sessions/': {
+      id: '/chamber/sessions/'
+      path: '/'
+      fullPath: '/chamber/sessions/'
+      preLoaderRoute: typeof ChamberSessionsIndexRouteImport
+      parentRoute: typeof ChamberSessionsRouteRoute
+    }
+    '/chamber/sessions/$sessionId': {
+      id: '/chamber/sessions/$sessionId'
+      path: '/$sessionId'
+      fullPath: '/chamber/sessions/$sessionId'
+      preLoaderRoute: typeof ChamberSessionsSessionIdRouteImport
+      parentRoute: typeof ChamberSessionsRouteRoute
+    }
   }
 }
 
+interface ChamberSessionsRouteRouteChildren {
+  ChamberSessionsSessionIdRoute: typeof ChamberSessionsSessionIdRoute
+  ChamberSessionsIndexRoute: typeof ChamberSessionsIndexRoute
+}
+
+const ChamberSessionsRouteRouteChildren: ChamberSessionsRouteRouteChildren = {
+  ChamberSessionsSessionIdRoute: ChamberSessionsSessionIdRoute,
+  ChamberSessionsIndexRoute: ChamberSessionsIndexRoute,
+}
+
+const ChamberSessionsRouteRouteWithChildren =
+  ChamberSessionsRouteRoute._addFileChildren(ChamberSessionsRouteRouteChildren)
+
 interface ChamberRouteRouteChildren {
+  ChamberSessionsRouteRoute: typeof ChamberSessionsRouteRouteWithChildren
   ChamberAcpRoute: typeof ChamberAcpRoute
   ChamberCommandsRoute: typeof ChamberCommandsRoute
   ChamberConfigRoute: typeof ChamberConfigRoute
@@ -428,11 +479,11 @@ interface ChamberRouteRouteChildren {
   ChamberDashboardRoute: typeof ChamberDashboardRoute
   ChamberMcpRoute: typeof ChamberMcpRoute
   ChamberMemoryRoute: typeof ChamberMemoryRoute
-  ChamberSessionsRoute: typeof ChamberSessionsRoute
   ChamberToolsRoute: typeof ChamberToolsRoute
 }
 
 const ChamberRouteRouteChildren: ChamberRouteRouteChildren = {
+  ChamberSessionsRouteRoute: ChamberSessionsRouteRouteWithChildren,
   ChamberAcpRoute: ChamberAcpRoute,
   ChamberCommandsRoute: ChamberCommandsRoute,
   ChamberConfigRoute: ChamberConfigRoute,
@@ -440,7 +491,6 @@ const ChamberRouteRouteChildren: ChamberRouteRouteChildren = {
   ChamberDashboardRoute: ChamberDashboardRoute,
   ChamberMcpRoute: ChamberMcpRoute,
   ChamberMemoryRoute: ChamberMemoryRoute,
-  ChamberSessionsRoute: ChamberSessionsRoute,
   ChamberToolsRoute: ChamberToolsRoute,
 }
 
