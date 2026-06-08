@@ -2,7 +2,6 @@ import { registerTool, toolError, toolResult } from "@freeanima/engine-tool";
 import {
   existsSync,
   mkdirSync,
-  readdirSync,
   readFileSync,
   realpathSync,
   statSync,
@@ -109,7 +108,7 @@ function isDeniedWrite(path: string): string | null {
   return null;
 }
 
-function handleReadFile(path: string, offset = 1, limit = 500): string {
+async function handleReadFile(path: string, offset = 1, limit = 500): Promise<string> {
   const resolved = resolveFilePath(path);
   const deny = isDeniedRead(resolved);
   if (deny) return toolError(deny);
@@ -117,7 +116,7 @@ function handleReadFile(path: string, offset = 1, limit = 500): string {
   if (BINARY_EXT.has(ext)) return toolError("binary file type blocked");
   let content: string;
   try {
-    content = readFileSync(resolved, "utf-8");
+    content = await Bun.file(resolved).text();
   } catch (e) {
     return toolError(`read failed: ${e}`);
   }
@@ -163,34 +162,18 @@ function shouldSearchByFilename(pattern: string, target: string, outputMode: str
   return target === "content" && outputMode === "files_only" && looksLikeGlobPattern(pattern);
 }
 
-function globNameMatch(name: string, pattern: string): boolean {
-  const escaped = pattern
-    .replace(/[.+^${}()|[\]\\]/g, "\\$&")
-    .replace(/\*/g, ".*")
-    .replace(/\?/g, ".");
-  return new RegExp(`^${escaped}$`).test(name);
+function shouldSkipGlobPath(relPath: string): boolean {
+  const parts = relPath.split(/[/\\]/);
+  return parts.some((p) => p === "node_modules" || p === ".git");
 }
 
-function findFilesByGlob(root: string, pattern: string): string[] {
+async function findFilesByGlob(root: string, pattern: string): Promise<string[]> {
+  const glob = new Bun.Glob(pattern);
   const out: string[] = [];
-  const walk = (dir: string): void => {
-    let entries;
-    try {
-      entries = readdirSync(dir, { withFileTypes: true });
-    } catch {
-      return;
-    }
-    for (const ent of entries) {
-      const full = join(dir, ent.name);
-      if (ent.isDirectory()) {
-        if (ent.name === "node_modules" || ent.name === ".git") continue;
-        walk(full);
-      } else if (ent.isFile() && globNameMatch(ent.name, pattern)) {
-        out.push(full);
-      }
-    }
-  };
-  walk(root);
+  for await (const rel of glob.scan({ cwd: root, onlyFiles: true })) {
+    if (shouldSkipGlobPath(rel)) continue;
+    out.push(join(root, rel));
+  }
   return out;
 }
 
@@ -204,7 +187,12 @@ function globPatternsFrom(pattern: string): string[] {
   return [pattern];
 }
 
-function searchFilesByGlob(pattern: string, path: string, limit: number, offset: number): string {
+async function searchFilesByGlob(
+  pattern: string,
+  path: string,
+  limit: number,
+  offset: number,
+): Promise<string> {
   const base = resolveSearchPath(path);
   if (!existsSync(base)) return toolError(`路径不存在: ${path}`);
   const cap = Math.max(1, Math.min(limit, 5000));
@@ -217,7 +205,7 @@ function searchFilesByGlob(pattern: string, path: string, limit: number, offset:
   for (const root of roots) {
     for (const globPat of globs) {
       try {
-        matches.push(...findFilesByGlob(root, globPat));
+        matches.push(...(await findFilesByGlob(root, globPat)));
       } catch (e) {
         return toolError(String(e));
       }
@@ -243,7 +231,7 @@ function appendRgPattern(cmd: string[], pattern: string, regex: boolean): void {
   }
 }
 
-function handleSearchFiles(
+async function handleSearchFiles(
   pattern: string,
   target = "content",
   path = ".",
@@ -253,7 +241,7 @@ function handleSearchFiles(
   outputMode = "content",
   context = 0,
   regex = false,
-): string {
+): Promise<string> {
   const base = resolveSearchPath(path);
   if (!existsSync(base)) return toolError(`路径不存在: ${path}`);
   const cap = Math.max(1, Math.min(limit, 5000));
