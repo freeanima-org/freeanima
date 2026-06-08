@@ -2,10 +2,10 @@ export { createSemanticMemory, type SemanticMemory } from "./fact.ts";
 export { parseLegacyFact, type LegacyFactData, FRONTMATTER_DELIM } from "./legacy-fact.ts";
 export {
   sessionUpdated,
-  l3Updated,
+  semanticMemoryUpdated,
   testPing,
   type SessionUpdatedPayload,
-  type L3UpdatedPayload,
+  type SemanticMemoryUpdatedPayload,
   type TestPingPayload,
 } from "./events.ts";
 export {
@@ -36,13 +36,13 @@ export {
 export { filterRecallableMessages, type RecallableMessage } from "./message-filter.ts";
 export {
   search,
-  searchL3,
-  searchL2,
-  searchL2Only,
+  searchSemanticMemory,
+  searchDialogue,
+  searchDialogueOnly,
   memorySearchDetailed,
   type SearchResult,
-  type MemorySearchL3Hit,
-  type MemorySearchL2Hit,
+  type SemanticMemorySearchHit,
+  type DialogueSearchHit,
   type MemorySearchResult,
 } from "./search.ts";
 export { registerMemoryTools } from "./register-tools.ts";

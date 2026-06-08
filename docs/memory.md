@@ -157,25 +157,15 @@ LLM 进行单次 Token 推理时的内部激活状态。随推理结束瞬间消
 
 ## 三、存储实现（当前状态）
 
-### 术语与现状（2026-06）
-
-旧文档用 **记忆 L1–L4** 编号指存储层，正逐步废除。正文优先用 PG 表名；与 **压缩边界 l0–l4**（[`compression.md`](compression.md)）、**自我层 L1–L4**（[`self-layer.md`](self-layer.md)）勿混。
-
-| 概念     | PG / 运行时                            | 旧编号（已废弃 shorthand）  |
-| -------- | -------------------------------------- | --------------------------- |
-| 对话存档 | `sessions` + `messages`                | 旧 L1 / JSONL               |
-| 情景检索 | `messages.content_fts`                 | 旧 L2 / `processed/*.jsonl` |
-| 语义记忆 | `semantic_memory`                      | 旧 L3 / `memory/f-*.md`     |
-| 全文检索 | 上两表 `content_fts`                   | 旧 L4 / `index/l3.db`       |
-| 增量提取 | 浅睡 cron（02:00，见 sleep.md）        | 旧 reflectSession / distill |
-| DB 迁移  | `anima service` 启动时 `runMigrations` | 仅 CLI `db:migrate`         |
-
-### 当前（v3 语义记忆已落 PG）
-
 | 存储                                  | 对应记忆         | 实现                                                                 |
 | ------------------------------------- | ---------------- | -------------------------------------------------------------------- |
 | PostgreSQL（`sessions` + `messages`） | 对话记录（情景） | 主存；`messages.content_fts` GIN 全文索引（simple）                  |
 | PostgreSQL `semantic_memory`          | 语义记忆         | `content_fts` GIN；`pinned` + `updated` 驱动常驻记忆；见 database.md |
+| PostgreSQL `limbic_memory`            | 感性记忆         | 浅睡 Phase 2 写入；不经 `recall`                                     |
+
+增量提取：浅睡 cron（02:00，见 [`sleep.md`](sleep.md)）。DB 迁移：`anima service` 启动时 `runMigrations`。
+
+**术语说明：** 压缩边界 **l0–l4** 见 [`compression.md`](compression.md)，与记忆层存储无关。
 
 `semantic_memory` 行结构：
 
@@ -258,9 +248,9 @@ LLM 进行单次 Token 推理时的内部激活状态。随推理结束瞬间消
 ```
 v1（Hermes，文件系统）     v2（逸灵风初期，文件系统）      v3（当前）
 对话 JSONL                 messages 表（PG）               ✅ 主存
-processed/*.jsonl          messages.content_fts            ✅ 已替代 L2 文件
+processed/*.jsonl          messages.content_fts            ✅ 已替代中间文件
 memory/f-*.md + l3.db      semantic_memory（PG）           ✅ 已迁移
-index/ FTS                 两表 content_fts                ✅ 无独立 L4 目录
+index/ FTS                 两表 content_fts                ✅ 无独立索引目录
 无情感层                   imprint + limbic_memory         ✅
 技能为文件                 procedural 三阶段               保持
 反思用通用 prompt          身份上下文原则                  浅睡 ✅ / 深睡 ✅

@@ -88,7 +88,7 @@ models:
   deepseek-v4-flash:
     context_window: 1000000
 
-# 运行时压缩（L1 JSONL 不删，仅裁切发给 LLM 的视图）
+# 运行时压缩（PG messages 不删，仅裁切发给 LLM 的视图）
 compression:
   enabled: true
   max_rounds: 50
@@ -100,7 +100,7 @@ compression:
   slim_min_messages: 50
   summary_max_tokens: 4000
 
-# L1 Session PostgreSQL（Slice A，生产必填）
+# Slice A 对话 Session PostgreSQL（生产必填）
 # database:
 #   url: pass:services/postgres/anima
 #   # Docker: postgresql://freeanima:${PG_PASSWORD}@postgres:5432/freeanima

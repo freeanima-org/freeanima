@@ -17,9 +17,9 @@ export async function memorySearch(body: MemorySearchBody) {
   });
 }
 
-export async function memoryL3Reindex() {
+export async function countSemanticMemory() {
   const { service } = getServiceContext();
-  const { index_rows } = await service.reindexL3All();
+  const { index_rows } = await service.countSemanticMemory();
   return {
     ok: true as const,
     index_rows,

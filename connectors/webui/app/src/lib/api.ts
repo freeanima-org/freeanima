@@ -199,7 +199,9 @@ export const api = {
         session?: string;
       }) => unwrap(client.api.memory.search.post(input)),
     },
-    l3Reindex: { mutate: () => unwrap(client.api.memory["l3-reindex"].post()) },
+    semanticMemoryCount: {
+      mutate: () => unwrap(client.api.memory["semantic-memory"].count.post()),
+    },
   },
   mcp: {
     status: { query: () => unwrap(client.api.mcp.status.get()) },

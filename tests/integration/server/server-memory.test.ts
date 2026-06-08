@@ -69,22 +69,22 @@ describePg("server memory API", () => {
     );
 
     const out = await getServiceContext().service.memorySearch({ query: "compression" });
-    expect(out.l3.length).toBeGreaterThan(0);
-    expect(out.l2.length).toBeGreaterThan(0);
-    expect(out.l3[0]!.score).toBeGreaterThan(0);
-    expect(out.l2[0]!.session_id).toBe(sid);
+    expect(out.semantic_memory.length).toBeGreaterThan(0);
+    expect(out.dialogue.length).toBeGreaterThan(0);
+    expect(out.semantic_memory[0]!.score).toBeGreaterThan(0);
+    expect(out.dialogue[0]!.session_id).toBe(sid);
   });
 
-  it("reindexL3All returns semantic memory count", async () => {
+  it("countSemanticMemory returns semantic memory count", async () => {
     await getTestEngine().repos.semanticMemory.create({
       content: "语义记忆计数探针 gamma",
       type: "world",
     });
 
-    const { index_rows } = await getServiceContext().service.reindexL3All();
+    const { index_rows } = await getServiceContext().service.countSemanticMemory();
     expect(index_rows).toBeGreaterThan(0);
     const hits = await getServiceContext().service.memorySearch({ query: "gamma" });
-    expect(hits.l3.length).toBeGreaterThan(0);
+    expect(hits.semantic_memory.length).toBeGreaterThan(0);
   });
 
   afterAll(async () => {

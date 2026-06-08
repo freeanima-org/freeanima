@@ -41,14 +41,14 @@ export async function memorySearch(args: {
   const query = args.query.trim();
   if (!query) throw new Error("query is required");
   return memorySearchDetailed(query, {
-    l3Limit: args.limit,
-    l2Limit: args.session_limit,
+    semanticLimit: args.limit,
+    dialogueLimit: args.session_limit,
     sessionId: args.session?.trim() || undefined,
   });
 }
 
-/** @deprecated PG STORED content_fts 自动维护，保留 API 兼容 */
-export async function reindexL3All(): Promise<{ index_rows: number }> {
+/** PG STORED content_fts 自动维护；返回 semantic_memory 行数 */
+export async function countSemanticMemory(): Promise<{ index_rows: number }> {
   const count = await semanticRepos().count();
   return { index_rows: count };
 }

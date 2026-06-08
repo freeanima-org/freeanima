@@ -64,8 +64,8 @@ function DashboardPage() {
   const memoryStats = {
     files_count: svc?.memory?.files_count ?? 0,
     files_bytes: svc?.memory?.files_bytes ?? 0,
-    facts_count: svc?.memory?.facts_count ?? 0,
-    l2_index_rows: svc?.memory?.l2_index_rows ?? 0,
+    semantic_memory_count: svc?.memory?.semantic_memory_count ?? 0,
+    dialogue_message_count: svc?.memory?.dialogue_message_count ?? 0,
   };
 
   const sessionByPlatform = svc?.sessions?.by_platform ?? {};
@@ -176,11 +176,11 @@ function DashboardPage() {
             <StatCard title="记忆文件体积">
               <p className="text-2xl font-mono mt-1">{formatBytes(memoryStats.files_bytes)}</p>
             </StatCard>
-            <StatCard title="L3 事实">
-              <p className="text-2xl font-mono mt-1">{memoryStats.facts_count}</p>
+            <StatCard title="语义记忆">
+              <p className="text-2xl font-mono mt-1">{memoryStats.semantic_memory_count}</p>
             </StatCard>
-            <StatCard title="L2 索引">
-              <p className="text-2xl font-mono mt-1">{memoryStats.l2_index_rows}</p>
+            <StatCard title="对话消息">
+              <p className="text-2xl font-mono mt-1">{memoryStats.dialogue_message_count}</p>
               <p className="text-xs text-base-content/50">条消息</p>
             </StatCard>
           </div>

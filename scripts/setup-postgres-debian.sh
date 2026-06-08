@@ -99,7 +99,7 @@ port=${DB_PORT}
 user=${DB_USER}
 password=${ANIMA_PG_PASSWORD}
 database=${DB_NAME}
-desc=逸灵风 L1 PostgreSQL 本机
+desc=逸灵风 Slice A PostgreSQL 本机
 EOF
 
 echo ""
@@ -113,7 +113,7 @@ echo "以 ${TARGET_USER} 用户导入 pass 后删除该文件："
 echo "  anima credential add ${PASS_PATH} url=\$(grep '^url=' ${CRED_FILE} | cut -d= -f2-) \\"
 echo "    host=127.0.0.1 port=${DB_PORT} user=${DB_USER} \\"
 echo "    password=\$(grep '^password=' ${CRED_FILE} | cut -d= -f2-) database=${DB_NAME} \\"
-echo "    desc='逸灵风 L1 PostgreSQL 本机'"
+echo "    desc='逸灵风 Slice A PostgreSQL 本机'"
 echo "  rm -f ${CRED_FILE}"
 echo ""
 echo "Drizzle migrate（需先从 pass 读取 URL）："

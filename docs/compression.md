@@ -1,7 +1,7 @@
 # 压缩优化方案（l 点 v5.1）
 
 > 运行时上下文压缩：PG `messages` **全量只追加**，仅裁切发给 LLM 的**四段视图**。
-> **l0–l4 为压缩边界**，与记忆层旧 L1–L4 编号无关（术语见 [`memory.md`](memory.md) §三）。
+> **l0–l4 为压缩边界**（术语见 [`compression.md`](compression.md)）；与记忆层 PG 存储无关。
 > 关联：睡眠见 [`sleep.md`](sleep.md)，记忆体系见 [`memory.md`](memory.md)。
 
 ---
@@ -21,7 +21,7 @@
 
 ```mermaid
 flowchart LR
-  subgraph L1["PG messages（全量，永不删）"]
+  subgraph pgMessages["PG messages（全量，永不删）"]
     m1["pos=1 user"]
     m2["pos=2 assistant"]
     dots1["…"]
@@ -36,7 +36,7 @@ flowchart LR
     l0 --> l1 --> slim --> raw
   end
 
-  L1 -->|"compress + buildRuntime"| RT
+  pgMessages -->|"compress + buildRuntime"| RT
 ```
 
 - **非压缩路径**：只读 meta，`l2/l3/summary` 不变；`(l3, l4]` 随新消息变长。
@@ -200,7 +200,7 @@ flowchart TD
 | 含 user  | 至少 1 条 `role=user`                                         |
 | 热尾起点 | **`min{ pos \| pos > l3 }`** 必须是 `user`（兼容 pos 不连续） |
 
-> **注意**：L3 保证 raw 热尾以 `user` **起笔**，不保证热尾以完整 tool loop **收笔**；尾部 dangling `tool_calls` 由 engine `tool-loop-integrity` 在出站/落盘前 repair。
+> **注意**：`l3` 保证 raw 热尾以 `user` **起笔**，不保证热尾以完整 tool loop **收笔**；尾部 dangling `tool_calls` 由 engine `tool-loop-integrity` 在出站/落盘前 repair。
 
 无合法 `l3` → 放弃压缩。
 

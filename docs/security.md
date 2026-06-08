@@ -27,7 +27,7 @@
 
 | 路径                               | 内容                                    | 加密                 |
 | ---------------------------------- | --------------------------------------- | -------------------- |
-| PostgreSQL L1                      | sessions / messages                     | 无应用层加密         |
+| PostgreSQL 对话存档                | sessions / messages                     | 无应用层加密         |
 | `~/.anima/memory/`                 | 遗留语义记忆目录（已迁 PG；迁移脚本用） | 无                   |
 | `~/.anima/weixin/`                 | 微信同步状态                            | 无                   |
 | `~/.hermes/weixin/accounts/*.json` | Hermes 遗留明文回退                     | 无（代码仍支持读取） |

@@ -4,7 +4,7 @@ import { getMemorySessionStore } from "./session-port.ts";
 
 export type SearchResult = {
   content: string;
-  source: "l3" | "l2";
+  source: "semantic_memory" | "dialogue";
   path: string;
   score: number;
   metadata: Record<string, unknown>;
@@ -17,12 +17,15 @@ function pgRankToScore(rank: number): number {
   return Math.min(1.0, Math.max(0.1, rank * 5.0));
 }
 
-async function searchL3Internal(query: string, limit = DEFAULT_LIMIT): Promise<SearchResult[]> {
+async function searchSemanticMemoryInternal(
+  query: string,
+  limit = DEFAULT_LIMIT,
+): Promise<SearchResult[]> {
   const store = getSemanticMemoryStore();
   const rows = await store.searchFts(query, { limit });
   return rows.map((r) => ({
     content: r.content,
-    source: "l3" as const,
+    source: "semantic_memory" as const,
     path: `pg:semantic_memory:${r.id}`,
     score: pgRankToScore(r.rank),
     metadata: {
@@ -33,12 +36,15 @@ async function searchL3Internal(query: string, limit = DEFAULT_LIMIT): Promise<S
   }));
 }
 
-async function searchL2Internal(query: string, limit = DEFAULT_LIMIT): Promise<SearchResult[]> {
+async function searchDialogueInternal(
+  query: string,
+  limit = DEFAULT_LIMIT,
+): Promise<SearchResult[]> {
   try {
-    const rows = await searchL2(query, { limit });
+    const rows = await searchDialogue(query, { limit });
     return rows.map((row) => ({
       content: row.content,
-      source: "l2" as const,
+      source: "dialogue" as const,
       path: `pg:messages:${row.session_id}`,
       score: pgRankToScore(row.rank),
       metadata: {
@@ -55,12 +61,12 @@ async function searchL2Internal(query: string, limit = DEFAULT_LIMIT): Promise<S
 export async function search(query: string, limit = DEFAULT_LIMIT): Promise<SearchResult[]> {
   const results: SearchResult[] = [];
   try {
-    results.push(...(await searchL3Internal(query, limit)));
+    results.push(...(await searchSemanticMemoryInternal(query, limit)));
   } catch {
     /* ignore */
   }
   try {
-    results.push(...(await searchL2Internal(query, limit)));
+    results.push(...(await searchDialogueInternal(query, limit)));
   } catch {
     /* ignore */
   }
@@ -68,13 +74,16 @@ export async function search(query: string, limit = DEFAULT_LIMIT): Promise<Sear
   return results.slice(0, limit);
 }
 
-export async function searchL3(query: string, limit = DEFAULT_LIMIT): Promise<SearchResult[]> {
-  const results = await searchL3Internal(query, limit);
+export async function searchSemanticMemory(
+  query: string,
+  limit = DEFAULT_LIMIT,
+): Promise<SearchResult[]> {
+  const results = await searchSemanticMemoryInternal(query, limit);
   results.sort((a, b) => b.score - a.score);
   return results.slice(0, limit);
 }
 
-export async function searchL2(
+export async function searchDialogue(
   query: string,
   opts?: { sessionId?: string; limit?: number },
 ): Promise<MessageFtsHit[]> {
@@ -85,13 +94,16 @@ export async function searchL2(
   });
 }
 
-export async function searchL2Only(query: string, limit = DEFAULT_LIMIT): Promise<SearchResult[]> {
-  const results = await searchL2Internal(query, limit);
+export async function searchDialogueOnly(
+  query: string,
+  limit = DEFAULT_LIMIT,
+): Promise<SearchResult[]> {
+  const results = await searchDialogueInternal(query, limit);
   results.sort((a, b) => b.score - a.score);
   return results.slice(0, limit);
 }
 
-export type MemorySearchL3Hit = {
+export type SemanticMemorySearchHit = {
   semantic_memory_id: string;
   content: string;
   type: string;
@@ -100,7 +112,7 @@ export type MemorySearchL3Hit = {
   score: number;
 };
 
-export type MemorySearchL2Hit = {
+export type DialogueSearchHit = {
   content: string;
   role: string;
   session_id: string;
@@ -111,25 +123,28 @@ export type MemorySearchL2Hit = {
 
 export type MemorySearchResult = {
   query: string;
-  l3: MemorySearchL3Hit[];
-  l2: MemorySearchL2Hit[];
+  semantic_memory: SemanticMemorySearchHit[];
+  dialogue: DialogueSearchHit[];
 };
 
 export async function memorySearchDetailed(
   query: string,
-  opts?: { l3Limit?: number; l2Limit?: number; sessionId?: string },
+  opts?: { semanticLimit?: number; dialogueLimit?: number; sessionId?: string },
 ): Promise<MemorySearchResult> {
   const q = query.trim();
-  const l3Limit = Math.max(1, Math.min(50, opts?.l3Limit ?? 5));
-  const l2Limit = Math.max(1, Math.min(50, opts?.l2Limit ?? 10));
+  const semanticLimit = Math.max(1, Math.min(50, opts?.semanticLimit ?? 5));
+  const dialogueLimit = Math.max(1, Math.min(50, opts?.dialogueLimit ?? 10));
 
   const store = getSemanticMemoryStore();
-  const l3Rows = await store.searchFts(q, { limit: l3Limit });
-  const l2Rows = await searchL2(q, { limit: l2Limit, sessionId: opts?.sessionId });
+  const semanticRows = await store.searchFts(q, { limit: semanticLimit });
+  const dialogueRows = await searchDialogue(q, {
+    limit: dialogueLimit,
+    sessionId: opts?.sessionId,
+  });
 
   return {
     query: q,
-    l3: l3Rows.map((r) => ({
+    semantic_memory: semanticRows.map((r) => ({
       semantic_memory_id: r.id,
       content: r.content,
       type: r.type,
@@ -137,7 +152,7 @@ export async function memorySearchDetailed(
       rank: r.rank,
       score: pgRankToScore(r.rank),
     })),
-    l2: l2Rows.map((r) => ({
+    dialogue: dialogueRows.map((r) => ({
       content: r.content,
       role: r.role,
       session_id: r.session_id,

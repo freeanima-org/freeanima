@@ -24,7 +24,7 @@ tests/
 bun test
 ```
 
-依赖 **SQLite**（EventBus、L2/L3 FTS）：仅 **bun:sqlite**（运行时要求 Bun）。
+依赖 **SQLite**（EventBus、语义/情景记忆 FTS）：仅 **bun:sqlite**（运行时要求 Bun）。
 
 勿对集成测试使用生产 `DATABASE_URL`。
 

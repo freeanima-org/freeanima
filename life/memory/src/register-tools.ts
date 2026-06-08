@@ -1,8 +1,7 @@
 import { registerTool, toolError, toolResult } from "@freeanima/engine-tool";
 import type { MessageFtsHit } from "@freeanima/engine-repos";
-import { searchL2 } from "./search.ts";
+import { searchDialogue, searchSemanticMemory } from "./search.ts";
 import type { SearchResult } from "./search.ts";
-import { searchL3 } from "./search.ts";
 import { registerSemanticMemoryTools, rememberFromArgs } from "./semantic-memory-tools.ts";
 import { registerAutobiographicalMemoryTools } from "./autobiographical-tools.ts";
 import { registerLimbicMemoryTools } from "./limbic-tools.ts";
@@ -13,7 +12,7 @@ function asFloat(value: unknown, defaultVal: number): number {
   return Number.isNaN(n) ? defaultVal : n;
 }
 
-function mapL3Hit(r: SearchResult) {
+function mapSemanticMemoryHit(r: SearchResult) {
   const meta = r.metadata;
   return {
     semantic_memory_id: String(meta.id ?? ""),
@@ -24,7 +23,7 @@ function mapL3Hit(r: SearchResult) {
   };
 }
 
-function mapL2Hit(r: MessageFtsHit) {
+function mapDialogueHit(r: MessageFtsHit) {
   return {
     session_id: r.session_id,
     role: r.role,
@@ -104,20 +103,20 @@ export function registerMemoryTools(): void {
       const query = String(args.query ?? "").trim();
       if (!query) return toolError("query is required");
 
-      const l3Limit = Math.max(1, Math.min(50, asFloat(args.limit, 5)));
-      const l2Limit = Math.max(1, Math.min(50, asFloat(args.session_limit, 10)));
+      const semanticLimit = Math.max(1, Math.min(50, asFloat(args.limit, 5)));
+      const dialogueLimit = Math.max(1, Math.min(50, asFloat(args.session_limit, 10)));
       const sessionId = String(args.session ?? "").trim() || undefined;
 
-      const l3Results = await searchL3(query, l3Limit);
-      const l2Rows = await searchL2(query, { limit: l2Limit, sessionId });
+      const semanticResults = await searchSemanticMemory(query, semanticLimit);
+      const dialogueRows = await searchDialogue(query, { limit: dialogueLimit, sessionId });
 
       return toolResult({
         query,
-        semantic_memory: l3Results.map(mapL3Hit),
-        dialogue: l2Rows.map(mapL2Hit),
+        semantic_memory: semanticResults.map(mapSemanticMemoryHit),
+        dialogue: dialogueRows.map(mapDialogueHit),
         summary:
-          l3Results.length || l2Rows.length
-            ? `找到 ${l3Results.length} 条语义记忆、${l2Rows.length} 条历史对话`
+          semanticResults.length || dialogueRows.length
+            ? `找到 ${semanticResults.length} 条语义记忆、${dialogueRows.length} 条历史对话`
             : `未找到与「${query}」匹配的记忆或历史对话`,
       });
     },

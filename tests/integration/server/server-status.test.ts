@@ -41,8 +41,8 @@ describePg("server status API", () => {
       expect.objectContaining({
         files_count: expect.any(Number),
         files_bytes: expect.any(Number),
-        facts_count: expect.any(Number),
-        l2_index_rows: expect.any(Number),
+        semantic_memory_count: expect.any(Number),
+        dialogue_message_count: expect.any(Number),
       }),
     );
     expect(body.platforms).toBeTypeOf("object");

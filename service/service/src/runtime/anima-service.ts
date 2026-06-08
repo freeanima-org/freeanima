@@ -225,8 +225,8 @@ export class AnimaService implements StreamTurnHost {
     return memory.memorySearch(args);
   }
 
-  reindexL3All(): Promise<{ index_rows: number }> {
-    return memory.reindexL3All();
+  countSemanticMemory(): Promise<{ index_rows: number }> {
+    return memory.countSemanticMemory();
   }
 
   listMemoryFiles(): Promise<{ files: memory.MemoryFileEntry[] }> {

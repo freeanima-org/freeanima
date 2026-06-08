@@ -6,7 +6,7 @@ export type RecallableMessage = {
   content: string;
 };
 
-/** 从 L1 消息中筛出可召回/可 reflect 的 user/assistant 文本（对齐原 L2 蒸馏规则） */
+/** 从对话 messages 中筛出可召回/可 reflect 的 user/assistant 文本（排除 tool 与空 content） */
 export function filterRecallableMessages(msgs: ConversationMessage[]): RecallableMessage[] {
   const out: RecallableMessage[] = [];
   for (const rec of msgs) {

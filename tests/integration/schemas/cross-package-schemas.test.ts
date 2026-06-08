@@ -4,7 +4,7 @@ import {
   eventPayloadSchemas,
   sessionUpdatedPayloadSchema,
 } from "@freeanima/life-memory/schemas/event-payloads";
-import { factExtractionSchema } from "@freeanima/life-memory/schemas/l2";
+import { factExtractionSchema } from "@freeanima/life-memory/schemas/fact-extraction";
 import { filterRecallableMessages } from "@freeanima/life-memory";
 import { toolArgsSchema, toolErrorSchema } from "@freeanima/engine-tool";
 import {
@@ -44,7 +44,7 @@ describe("schemas/events", () => {
   });
 });
 
-describe("schemas/l2", () => {
+describe("schemas/fact-extraction", () => {
   it("filterRecallableMessages keeps user messages", () => {
     const filtered = filterRecallableMessages([
       { role: "user", content: "hi", pos: 1, timestamp: "t" },
