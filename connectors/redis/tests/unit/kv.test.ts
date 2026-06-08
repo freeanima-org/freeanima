@@ -29,11 +29,14 @@ describe("redis KV", () => {
         store.delete(key);
         return 1;
       },
-      scan: async (cursor: string | number, ...args: (string | number)[]) => {
-        const pattern = String(args[1] ?? "*").replace("*", ".*");
-        const re = new RegExp(`^${pattern}$`);
-        const keys = [...store.keys()].filter((k) => re.test(k));
-        return [cursor === "0" || cursor === 0 ? "0" : "0", keys] as [string, string[]];
+      scan: async (_cursor: string | number, ...args: (string | number)[]) => {
+        const glob = String(args[1] ?? "*");
+        const keys = [...store.keys()].filter((k) => {
+          if (glob === "*") return true;
+          if (glob.endsWith("*")) return k.startsWith(glob.slice(0, -1));
+          return k === glob;
+        });
+        return ["0", keys] as [string, string[]];
       },
     } as unknown as RedisClient);
 
