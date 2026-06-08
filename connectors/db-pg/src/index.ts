@@ -11,14 +11,4 @@ export {
   type Db,
 } from "./client.ts";
 export { createPgRepositories } from "./factory.ts";
-export {
-  initPgProfile,
-  pgProfileEnabled,
-  pgProfileLogSummary,
-  pgProfileRecord,
-  pgProfileReset,
-  pgProfileSummary,
-  pgProfileWrap,
-  type PgProfileSink,
-} from "./pg-profile.ts";
 export { messagesForCompress } from "./queries/messages-for-compress.ts";
