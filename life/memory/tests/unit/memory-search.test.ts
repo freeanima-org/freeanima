@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 import type { SemanticMemoryStorePort, SessionStorePort } from "@freeanima/engine-repos";
 import {
   registerMemoryTools,
-  searchL3,
+  searchSemanticMemory,
   registerMemorySessionStore,
   registerSemanticMemoryStore,
   resetMemorySessionStoreForTests,
@@ -213,15 +213,15 @@ describe("memory search", () => {
     resetSemanticMemoryStoreForTests();
   });
 
-  it("searchL3 finds semantic memory via port", async () => {
+  it("searchSemanticMemory finds semantic memory via port", async () => {
     const store = createMockSemanticStore();
     registerSemanticMemoryStore(store);
     await store.create({ content: "逸灵风使用 TypeScript 实现记忆管道" });
 
-    const results = await searchL3("TypeScript", 5);
+    const results = await searchSemanticMemory("TypeScript", 5);
     expect(results.length).toBeGreaterThan(0);
     expect(results.some((r) => r.content.includes("TypeScript"))).toBe(true);
-    expect(results[0]!.source).toBe("l3");
+    expect(results[0]!.source).toBe("semantic_memory");
   });
 
   it("remember creates semantic memory with source_sessions", async () => {
@@ -233,7 +233,7 @@ describe("memory search", () => {
       });
       expect(out).toContain("semantic_memory_id");
     });
-    const results = await searchL3("beta", 5);
+    const results = await searchSemanticMemory("beta", 5);
     expect(results.length).toBe(1);
   });
 

@@ -15,14 +15,14 @@
 
 ## PG 多域架构（路径 C）
 
-| 包                               | 职责                                                                             |
-| -------------------------------- | -------------------------------------------------------------------------------- |
-| `@freeanima/engine-db`           | PG 表 DDL、migration、JSONB 存储 Zod 与 L1 **领域类型**（`schema/` + `domain/`） |
-| `@freeanima/engine-repos`        | `SessionStorePort`、`PgRepositories` 等仓储**端口**；`null*` 适配器              |
-| `@freeanima/engine-conversation` | 会话运行时；re-export `engine-db/domain` 便利类型                                |
-| `@freeanima/connectors-db-pg`    | `PgSessionStore` 实现、连接池、mapper、repo                                      |
+| 包                               | 职责                                                                                  |
+| -------------------------------- | ------------------------------------------------------------------------------------- |
+| `@freeanima/engine-db`           | PG 表 DDL、migration、JSONB 存储 Zod 与 Slice A **领域类型**（`schema/` + `domain/`） |
+| `@freeanima/engine-repos`        | `SessionStorePort`、`PgRepositories` 等仓储**端口**；`null*` 适配器                   |
+| `@freeanima/engine-conversation` | 会话运行时；re-export `engine-db/domain` 便利类型                                     |
+| `@freeanima/connectors-db-pg`    | `PgSessionStore` 实现、连接池、mapper、repo                                           |
 
-装配：[`service/service/src/serve.ts`](../service/service/src/serve.ts) 调用 `createPgRepositories` → `createEngine({ repos })` → `createConversationService(engine.repos)` → `initServiceContext`。运行时 L1 读写经 `getServiceContext().conversation` 或显式 `ConversationService` / `SessionStorePort`，不直接依赖 connector。
+装配：[`service/service/src/serve.ts`](../service/service/src/serve.ts) 调用 `createPgRepositories` → `createEngine({ repos })` → `createConversationService(engine.repos)` → `initServiceContext`。运行时对话存档读写经 `getServiceContext().conversation` 或显式 `ConversationService` / `SessionStorePort`，不直接依赖 connector。
 
 新增 PG 域（memory / cron / task）：`engine-db/schema/{domain}` → `engine-repos` 增端口 → `connectors-db-pg` 实现 → `PgRepositories` 扩展字段 → `serve.ts` 装配。
 
@@ -42,23 +42,23 @@
 
 #### `sessions`
 
-| 列                 | 类型          | 说明                                                                                                        |
-| ------------------ | ------------- | ----------------------------------------------------------------------------------------------------------- |
-| `id`               | TEXT PK       | 会话名                                                                                                      |
-| `model`            | TEXT NOT NULL |                                                                                                             |
-| `title`            | TEXT          |                                                                                                             |
-| `cwd`              | TEXT          |                                                                                                             |
-| `system_prompt`    | TEXT          |                                                                                                             |
-| `platform_info`    | JSONB         | `discriminatedUnion("platform")`：parlor / discord / weixin / studio-pair-programming / cron                |
-| `compression`      | JSONB         | `{ l2, l3, summary?, summary_at? }` — **压缩边界**，非记忆层 L2/L3（见 [`compression.md`](compression.md)） |
-| `todos`            | JSONB         | `{ items, next_id }`                                                                                        |
-| `awaiting_clarify` | JSONB         | clarify 暂停状态                                                                                            |
-| `acp_sessions`     | JSONB         | ACP session uuid 映射                                                                                       |
-| `tools`            | JSONB         | OpenAI tools 快照                                                                                           |
-| `functions`        | JSONB         | string[]                                                                                                    |
-| `debug`            | BOOLEAN       |                                                                                                             |
-| `created_at`       | TIMESTAMPTZ   |                                                                                                             |
-| `updated_at`       | TIMESTAMPTZ   |                                                                                                             |
+| 列                 | 类型          | 说明                                                                                         |
+| ------------------ | ------------- | -------------------------------------------------------------------------------------------- |
+| `id`               | TEXT PK       | 会话名                                                                                       |
+| `model`            | TEXT NOT NULL |                                                                                              |
+| `title`            | TEXT          |                                                                                              |
+| `cwd`              | TEXT          |                                                                                              |
+| `system_prompt`    | TEXT          |                                                                                              |
+| `platform_info`    | JSONB         | `discriminatedUnion("platform")`：parlor / discord / weixin / studio-pair-programming / cron |
+| `compression`      | JSONB         | `{ l2, l3, summary?, summary_at? }` — **压缩边界**（见 [`compression.md`](compression.md)）  |
+| `todos`            | JSONB         | `{ items, next_id }`                                                                         |
+| `awaiting_clarify` | JSONB         | clarify 暂停状态                                                                             |
+| `acp_sessions`     | JSONB         | ACP session uuid 映射                                                                        |
+| `tools`            | JSONB         | OpenAI tools 快照                                                                            |
+| `functions`        | JSONB         | string[]                                                                                     |
+| `debug`            | BOOLEAN       |                                                                                              |
+| `created_at`       | TIMESTAMPTZ   |                                                                                              |
+| `updated_at`       | TIMESTAMPTZ   |                                                                                              |
 
 #### `messages`
 
@@ -72,7 +72,7 @@
 
 唯一索引：`(session_id, pos)`。
 
-全文索引：`messages_content_fts_gin`（GIN on `content_fts`）。供 `recall` 历史对话检索；过滤规则与旧 L2 蒸馏一致（排除 tool 消息与空 content）。
+全文索引：`messages_content_fts_gin`（GIN on `content_fts`）。供 `recall` 历史对话检索；过滤规则：排除 tool 消息与空 content。
 
 ### 配置
 

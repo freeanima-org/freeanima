@@ -32,8 +32,8 @@ export type ServiceSnapshot = {
   memory: {
     files_count: number;
     files_bytes: number;
-    facts_count: number;
-    l2_index_rows: number;
+    semantic_memory_count: number;
+    dialogue_message_count: number;
   };
   host?: string;
   port?: number;

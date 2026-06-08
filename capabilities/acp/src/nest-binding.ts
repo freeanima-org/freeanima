@@ -3,7 +3,7 @@ import { isSessionMeta } from "@freeanima/engine-db/domain";
 
 export type AcpSessionsMeta = Record<string, string>;
 
-/** 从逸灵风 L1 session_meta 读取 acp_sessions */
+/** 从逸灵风 session_meta 读取 acp_sessions */
 export async function readAcpSessions(
   conversation: ConversationService,
   nestSessionId: string,

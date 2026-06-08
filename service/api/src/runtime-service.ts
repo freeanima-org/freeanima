@@ -20,7 +20,7 @@ export type RuntimeService = AnimaService & {
   getStatus(): Record<string, unknown>;
   listMemoryFiles(): any;
   memorySearch(opts: any): Promise<any>;
-  reindexL3All(): any;
+  countSemanticMemory(): any;
 };
 
 export type { AnimaService, ServiceCommandInfo } from "./anima-service.ts";

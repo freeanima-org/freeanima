@@ -1,6 +1,6 @@
 # 逸灵风（FreeAnima）
 
-Agent 运行时基础设施：记忆分层（L1–L4）、工具注册（本地 / MCP / ACP）、Gateway（Discord / 微信 / WebUI）、pass 凭证隔离。
+Agent 运行时基础设施：语义/情景/程序记忆（PG FTS）、工具注册（本地 / MCP / ACP）、Gateway（Discord / 微信 / WebUI）、pass 凭证隔离。
 
 **能力概览：** 记忆管道 · 工具扁平注册 · MCP/ACP · EventBus 异步索引 · WebUI 卧室
 

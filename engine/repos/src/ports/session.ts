@@ -13,7 +13,7 @@ export type SessionSummaryRow = {
   platform: string;
 };
 
-/** PG messages FTS 命中行（recall / memorySearch L2 段） */
+/** PG messages FTS 命中行（recall / memorySearch dialogue 段） */
 export type MessageFtsHit = {
   content: string;
   role: string;
@@ -22,7 +22,7 @@ export type MessageFtsHit = {
   rank: number;
 };
 
-/** L1 Session + Message 持久化端口（Slice A） */
+/** 对话 Session + Message 持久化端口（Slice A） */
 export interface SessionStorePort {
   getSessionMeta(sessionId: string): Promise<SessionMetaMessage | null>;
   getSessionMetaLite(sessionId: string): Promise<SessionMetaMessage | null>;

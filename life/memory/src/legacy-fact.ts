@@ -1,5 +1,5 @@
 /**
- * 旧 L3 Markdown 事实解析（仅迁移脚本与一次性回填使用）。
+ * 旧 Markdown 语义记忆文件解析（仅迁移脚本与一次性回填使用）。
  * 运行时代码勿依赖此模块。
  */
 import { parseYaml } from "@freeanima/service-config";

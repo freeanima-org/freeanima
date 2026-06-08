@@ -8,6 +8,7 @@
 ### BREAKING CHANGES
 
 - **webui:** API 从 tRPC 迁移至 Elysia REST + Eden Treaty；HTTP 路径为 `/api/*`，终端 WebSocket 为 `/api/studio/terminal/ws`，聊天流式为 `POST /api/messages/stream`（SSE）
+- **memory:** 废除记忆层 L1–L4 / L1–L3 编号；`memorySearch` 返回 `{ semantic_memory, dialogue }`；状态快照字段 `semantic_memory_count` / `dialogue_message_count`；`POST /api/memory/semantic-memory/count` 替代 `/l3-reindex`；EventBus topic `semantic_memory:updated` 替代 `l3:updated`
 
 ## [0.1.6](https://github.com/freeanima-org/freeanima/compare/v0.1.5...v0.1.6) (2026-06-07)
 

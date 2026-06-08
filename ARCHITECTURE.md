@@ -23,17 +23,20 @@
 ├───────────────────────────────────────────────┤
 │ ② 自我层（Self）                                │
 │    回答："我是谁"                                │
-│    └── L1 原始自我（存在锚点，几乎不可变）        │
-│    └── L2 自我概念（身份/能力/底线认知，可更新）   │
-│    └── L3 人格倾向（跨会话稳定的反应倾向，半稳定）  │
-│    └── L4 自传体（经历的叙事组织，只追加）          │
+│    └── 存在锚点（existence_anchor，几乎不可变）   │
+│    └── 自我模型（self_model，可更新）             │
+│    └── 人格基线（personality_baseline，半稳定）   │
+│    └── 方向意图（direction）                      │
+│    └── 元认知（metacognition）                    │
+│    └── 自传概括（autobiography_summary，只追加）  │
 │    详见 [`docs/self-layer.md`](docs/self-layer.md) │
 ├───────────────────────────────────────────────┤
 │ ③ 记忆层（Memory）                               │
 │    回答："我知道/记得什么"                        │
-│    └── L1 事实记忆（Semantic）                   │
-│    └── L2 情景记忆（Episodic）                   │
-│    └── L3 程序记忆（Procedural）                 │
+│    └── 语义记忆（Semantic）                      │
+│    └── 情景记忆（Episodic）                      │
+│    └── 程序记忆（Procedural）                    │
+│    └── 感性记忆（Limbic / Imprint）              │
 │    详见 [`docs/memory.md`](docs/memory.md)       │
 ├───────────────────────────────────────────────┤
 │ ④ 资源层（Estate）                               │
@@ -111,16 +114,16 @@ Agent 的行为输出
 
 需要细化设计方案时，拆为 `docs/designs/scene-awareness.md` 和 `docs/designs/capability-masks.md`。
 
-## 记忆分层（摘要）
+## 记忆存储（摘要）
 
-| 层  | 位置                               | 职责                                           |
-| --- | ---------------------------------- | ---------------------------------------------- |
-| L1  | PostgreSQL `sessions` + `messages` | 原始对话存档（`sessions/*.jsonl` 仅迁移/归档） |
-| L2  | `processed/*.jsonl`                | L1 蒸馏精简                                    |
-| L3  | `memory/*.md`                      | 原子事实                                       |
-| L4  | `index/`                           | FTS 检索（L3 优先，L2 兜底）                   |
+| 存储     | PG 表 / 机制            | 认知分类                                              |
+| -------- | ----------------------- | ----------------------------------------------------- |
+| 对话存档 | `sessions` + `messages` | 情景记忆（Episodic）                                  |
+| 语义记忆 | `semantic_memory`       | 语义记忆（Semantic）；含 procedural / imprint 等 type |
+| 情景检索 | `messages.content_fts`  | 历史对话全文索引                                      |
+| 感性记忆 | `limbic_memory`         | 情感锚点（浅睡 Phase 2 写入）                         |
 
-管道：`distill → reflect → index`，由 EventBus 异步驱动。细节见 [`docs/memory.md`](docs/memory.md)。
+管道：浅睡 / 深睡 cron + `recall` PG FTS 双源检索。细节见 [`docs/memory.md`](docs/memory.md)。
 
 ## 凭证系统（摘要）
 
@@ -366,11 +369,9 @@ WebUI 由 [`connectors/webui/src/webui-server.ts`](connectors/webui/src/webui-se
 **异步 after-the-fact 通知模式。** 组件不直接调用对方，而是发射事件，由注册的处理器链处理。
 
 ```
-conversation.py  emit("session:updated")
-  └─ handlers: distill → reflect（按注册顺序执行）
-               每个 handler 处理完后可发射下游事件
-               distill 成功 → emit("l2:updated") → index_l2_fts
-               reflect 写事实 → emit("l3:updated") → index_l3_fts
+conversation 落盘 → emit("session:updated")
+  └─ registerMemoryPipeline 注册浅睡 / 深睡等处理器
+  └─ 语义记忆写入 → emit("semantic_memory:updated")
 ```
 
 特征：
@@ -378,7 +379,7 @@ conversation.py  emit("session:updated")
 - 同步写入 SQLite 表（微秒级），后台线程轮询执行
 - 处理器链在同一次轮询中顺序执行，前一个失败则中断链
 - 失败重试（最多 3 次），不会丢失事件
-- 用于**发生后该做什么**的场景：蒸馏、反射、索引
+- 用于**发生后该做什么**的场景：浅睡提取、深睡维护、索引通知
 
 ### Hooks（`@freeanima/kernel-hooks`）
 

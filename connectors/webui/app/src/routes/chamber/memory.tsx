@@ -6,22 +6,26 @@ export const Route = createFileRoute("/chamber/memory")({
   component: MemoryPage,
 });
 
-type MemoryResult = { query: string; l3: Record<string, unknown>[]; l2: Record<string, unknown>[] };
+type MemoryResult = {
+  query: string;
+  semantic_memory: Record<string, unknown>[];
+  dialogue: Record<string, unknown>[];
+};
 
 function formatToolOutput(data: MemoryResult) {
   const sections: string[] = [];
-  if (data.l3?.length) {
-    const lines = [`找到 ${data.l3.length} 条匹配记忆：`];
-    for (const r of data.l3) {
+  if (data.semantic_memory?.length) {
+    const lines = [`找到 ${data.semantic_memory.length} 条匹配记忆：`];
+    for (const r of data.semantic_memory) {
       const type = String(r.type ?? "world");
       const pin = r.pinned ? " 📌" : "";
       lines.push(`  [${r.semantic_memory_id}] (${type})${pin} ${r.content}`);
     }
     sections.push(`## 语义记忆\n${lines.join("\n")}`);
   }
-  if (data.l2?.length) {
-    const lines = [`找到 ${data.l2.length} 条匹配对话：`];
-    data.l2.forEach((r, idx) => {
+  if (data.dialogue?.length) {
+    const lines = [`找到 ${data.dialogue.length} 条匹配对话：`];
+    data.dialogue.forEach((r, idx) => {
       const sid = String(r.session_id).slice(0, 16);
       const ts = String(r.timestamp).slice(0, 19) || "?";
       const content = String(r.content).slice(0, 400);
@@ -48,9 +52,13 @@ function MemoryPage() {
   const [searched, setSearched] = useState(false);
   const [error, setError] = useState("");
   const [lastQuery, setLastQuery] = useState("");
-  const [result, setResult] = useState<MemoryResult>({ query: "", l3: [], l2: [] });
+  const [result, setResult] = useState<MemoryResult>({
+    query: "",
+    semantic_memory: [],
+    dialogue: [],
+  });
 
-  const isEmpty = !result.l3.length && !result.l2.length;
+  const isEmpty = !result.semantic_memory.length && !result.dialogue.length;
   const toolPreview = useMemo(() => formatToolOutput(result), [result]);
 
   const postMemoryAction = async (
@@ -113,13 +121,13 @@ function MemoryPage() {
             disabled={busy}
             onClick={() =>
               void postMemoryAction(
-                () => api.memory.l3Reindex.mutate(),
-                "l3-reindex",
+                () => api.memory.semanticMemoryCount.mutate(),
+                "semantic-memory-count",
                 "统计 PG semantic_memory 条数（content_fts 自动维护，无需重建）。确定继续？",
               )
             }
           >
-            {busyAction === "l3-reindex" ? (
+            {busyAction === "semantic-memory-count" ? (
               <span className="loading loading-spinner loading-xs" />
             ) : null}
             统计语义记忆
@@ -155,7 +163,7 @@ function MemoryPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div className="form-control">
               <label className="label py-0">
-                <span className="label-text text-xs">L3 条数</span>
+                <span className="label-text text-xs">语义记忆条数</span>
               </label>
               <input
                 value={limit}
@@ -203,7 +211,8 @@ function MemoryPage() {
             </button>
             {searched && !searching ? (
               <span className="text-xs text-base-content/50">
-                「{lastQuery}」— L3 {result.l3.length} 条，对话 {result.l2.length} 条
+                「{lastQuery}」— 语义记忆 {result.semantic_memory.length} 条，对话{" "}
+                {result.dialogue.length} 条
               </span>
             ) : null}
           </div>
@@ -214,20 +223,22 @@ function MemoryPage() {
 
       {searched && !searching && isEmpty ? (
         <div className="alert alert-info text-sm">
-          未找到与「{lastQuery}」匹配的事实或历史对话。
+          未找到与「{lastQuery}」匹配的记忆或历史对话。
         </div>
       ) : null}
 
       {searched && !isEmpty ? (
         <div className="space-y-4">
-          {result.l3.length > 0 ? (
+          {result.semantic_memory.length > 0 ? (
             <section>
               <h3 className="text-sm font-bold mb-2">
-                L3 事实
-                <span className="badge badge-ghost badge-sm ml-1">{result.l3.length}</span>
+                语义记忆
+                <span className="badge badge-ghost badge-sm ml-1">
+                  {result.semantic_memory.length}
+                </span>
               </h3>
               <div className="space-y-2">
-                {result.l3.map((hit, idx) => (
+                {result.semantic_memory.map((hit, idx) => (
                   <div key={String(hit.semantic_memory_id)} className="card bg-base-200">
                     <div className="card-body py-3 px-4 gap-2">
                       <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -250,14 +261,14 @@ function MemoryPage() {
             </section>
           ) : null}
 
-          {result.l2.length > 0 ? (
+          {result.dialogue.length > 0 ? (
             <section>
               <h3 className="text-sm font-bold mb-2">
                 历史对话
-                <span className="badge badge-ghost badge-sm ml-1">{result.l2.length}</span>
+                <span className="badge badge-ghost badge-sm ml-1">{result.dialogue.length}</span>
               </h3>
               <div className="space-y-2">
-                {result.l2.map((hit, idx) => (
+                {result.dialogue.map((hit, idx) => (
                   <div
                     key={`${hit.session_id}-${hit.timestamp}-${idx}`}
                     className="card bg-base-200"

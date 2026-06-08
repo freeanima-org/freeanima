@@ -1,4 +1,4 @@
-/** WebUI 消息展示视图（由 L1 SessionMessage 投影，非 HTTP 契约） */
+/** WebUI 消息展示视图（由 Slice A SessionMessage 投影，非 HTTP 契约） */
 
 export type DisplayToolCall = {
   name: string;

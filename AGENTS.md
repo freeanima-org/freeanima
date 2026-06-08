@@ -9,7 +9,7 @@
 
 | 能力     | 要点                                                                                                                                                                         |
 | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 记忆     | L1 对话（PG）→ L2 蒸馏 → L3 事实 → L4 检索；见 [`docs/memory.md`](docs/memory.md)                                                                                            |
+| 记忆     | 对话存档（PG）→ 浅睡提取 → `semantic_memory` → PG FTS 检索；见 [`docs/memory.md`](docs/memory.md)                                                                            |
 | 工具     | 本地 / MCP / ACP 扁平注册；实现于 `capabilities/tools/`、`capabilities/mcp/`、`capabilities/acp/`                                                                            |
 | 凭证     | pass GPG；运行时注入；LLM **只见路径不见值**                                                                                                                                 |
 | 数据目录 | `~/.anima/`（`FREEANIMA_HOME` 可覆盖）；备份打包此目录即可                                                                                                                   |
@@ -61,7 +61,7 @@
 | ---------------- | ---------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
 | **kernel**       | 与业务无关的运行时基建：Hook、EventBus、日志、跨层共用纯类型/工具                  | `kernel-hooks`、`kernel-eventbus`、`kernel-logging`               |
 | **engine**       | Agent **机制**：对话、LLM 循环、工具注册、压缩、仓储端口、PG schema 真源           | `engine-conversation`、`engine-loop`、`engine-repos`、`engine-db` |
-| **life**         | 数字生命的**持续性与记忆管道**（L2/L3/reflect/index），只通过端口读 L1             | `life-memory`、`life-self`                                        |
+| **life**         | 数字生命的**持续性与记忆管道**（语义/情景记忆、浅睡/深睡），只通过端口读对话存档   | `life-memory`、`life-self`                                        |
 | **capabilities** | 可插拔**能力包**（本地工具、MCP/ACP、clarify、LLM provider），不含组合与 I/O 装配  | `capabilities-tools`、`capabilities-mcp`                          |
 | **connectors**   | **外部世界适配**：Gateway、WebUI、Cron、PG 实现、命令注册                          | `connectors-db-pg`、`connectors-gateway`                          |
 | **service**      | **组合根**：创建 Kernel/Engine/Conversation/AnimaService，注入上下文，对外进程入口 | `service`、`service-bootstrap`                                    |
@@ -118,34 +118,34 @@ Agent 新增或移动类型 / Zod / 端口时，按下列顺序决策：
 
 #### 类型归属表
 
-| 内容                                                          | 包                           | 路径 / 说明                                     |
-| ------------------------------------------------------------- | ---------------------------- | ----------------------------------------------- |
-| L1 message / session_meta 存储 Zod                            | `engine-db/schema`           | JSONB 与 payload 真源                           |
-| L1 领域便利类型（`SessionMessage`、`ConversationMessage` 等） | `engine-db/domain`           | 自 schema 派生；`engine-conversation` re-export |
-| `SessionStorePort` / `PgRepositories`                         | `engine-repos`               | 仓储端口                                        |
-| L2 行 / fact 提取 schema                                      | `life-memory/schemas`        | `l2.ts`、`fact.ts`                              |
-| EventBus payload Zod（`session:updated` 等）                  | `life-memory/schemas`        | `event-payloads.ts`；topic token 见 `events.ts` |
-| `cron_jobs` PG schema（DDL）                                  | `engine-db/migrations`       | SQL migration                                   |
-| Cron job API 校验 schema                                      | `connectors-cron`            | `schema.ts`                                     |
-| `CronJobStorePort`                                            | `engine-repos`               | `ports/cron.ts`                                 |
-| `tasks` DDL + status/priority Zod                             | `engine-db/schema`           | `tasks.ts`                                      |
-| `TaskStorePort` / `TaskRow`                                   | `engine-repos`               | `ports/task.ts`                                 |
-| 待办工具 + 冰箱贴摘要桥接                                     | `capabilities-tasks`         | `tool.ts`、`fridge-bridge.ts`                   |
-| `self_blocks` DDL + `selfBlockKeySchema`                      | `engine-db/schema`           | `self-layer.ts`                                 |
-| `SelfLayerStorePort` / `SelfBlockRow`                         | `engine-repos`               | `ports/self-layer.ts`                           |
-| 六块 prompt 视图（`SELF_BLOCK_HEADINGS` 等）                  | `life-self`                  | `blocks.ts`、`compose.ts`                       |
-| `autobiographical_memory` DDL + significance/status Zod       | `engine-db/schema`           | `autobiographical-memory.ts`                    |
-| `AutobiographicalMemoryStorePort`                             | `engine-repos`               | `ports/autobiographical-memory.ts`              |
-| 自传 cron 编排 / 工具                                         | `life-memory`                | `autobiography/`、`autobiographical-tools.ts`   |
-| `limbic_memory` DDL + `limbicKindSchema`                      | `engine-db/schema`           | `limbic-memory.ts`                              |
-| `LimbicMemoryStorePort`                                       | `engine-repos`               | `ports/limbic-memory.ts`                        |
-| 浅睡 Phase 2 / `create_limbic_memory`                         | `life-memory`                | `limbic-tools.ts`、`light-sleep/run.ts`         |
-| 能力面罩（`Mask` / `ResolvedMask` / 注册表）                  | `capabilities-mask`          | `types.ts`、`registry.ts`、`resolve.ts`         |
-| Session `capability_mask` 存储形状                            | `engine-db/schema`           | `jsonb/capability-mask.ts`                      |
-| WebUI 展示视图（`MessagesDisplay`）                           | `service/schemas`            | `display.ts`                                    |
-| AnimaService 内部快照（`ServiceSnapshot` 等）                 | `service/schemas`            | `snapshot.ts`                                   |
-| 微信网关持久化 schema                                         | `connectors-gateway/schemas` | `weixin.ts`                                     |
-| JSON safeParse 工具                                           | `kernel-util`                | `parseJsonLine`、`safeParseOrNull` 等           |
+| 内容                                                               | 包                           | 路径 / 说明                                     |
+| ------------------------------------------------------------------ | ---------------------------- | ----------------------------------------------- |
+| Slice A message / session_meta 存储 Zod                            | `engine-db/schema`           | JSONB 与 payload 真源                           |
+| Slice A 领域便利类型（`SessionMessage`、`ConversationMessage` 等） | `engine-db/domain`           | 自 schema 派生；`engine-conversation` re-export |
+| `SessionStorePort` / `PgRepositories`                              | `engine-repos`               | 仓储端口                                        |
+| 浅睡 fact 提取 schema                                              | `life-memory/schemas`        | `fact-extraction.ts`、`fact.ts`                 |
+| EventBus payload Zod（`session:updated` 等）                       | `life-memory/schemas`        | `event-payloads.ts`；topic token 见 `events.ts` |
+| `cron_jobs` PG schema（DDL）                                       | `engine-db/migrations`       | SQL migration                                   |
+| Cron job API 校验 schema                                           | `connectors-cron`            | `schema.ts`                                     |
+| `CronJobStorePort`                                                 | `engine-repos`               | `ports/cron.ts`                                 |
+| `tasks` DDL + status/priority Zod                                  | `engine-db/schema`           | `tasks.ts`                                      |
+| `TaskStorePort` / `TaskRow`                                        | `engine-repos`               | `ports/task.ts`                                 |
+| 待办工具 + 冰箱贴摘要桥接                                          | `capabilities-tasks`         | `tool.ts`、`fridge-bridge.ts`                   |
+| `self_blocks` DDL + `selfBlockKeySchema`                           | `engine-db/schema`           | `self-layer.ts`                                 |
+| `SelfLayerStorePort` / `SelfBlockRow`                              | `engine-repos`               | `ports/self-layer.ts`                           |
+| 六块 prompt 视图（`SELF_BLOCK_HEADINGS` 等）                       | `life-self`                  | `blocks.ts`、`compose.ts`                       |
+| `autobiographical_memory` DDL + significance/status Zod            | `engine-db/schema`           | `autobiographical-memory.ts`                    |
+| `AutobiographicalMemoryStorePort`                                  | `engine-repos`               | `ports/autobiographical-memory.ts`              |
+| 自传 cron 编排 / 工具                                              | `life-memory`                | `autobiography/`、`autobiographical-tools.ts`   |
+| `limbic_memory` DDL + `limbicKindSchema`                           | `engine-db/schema`           | `limbic-memory.ts`                              |
+| `LimbicMemoryStorePort`                                            | `engine-repos`               | `ports/limbic-memory.ts`                        |
+| 浅睡 Phase 2 / `create_limbic_memory`                              | `life-memory`                | `limbic-tools.ts`、`light-sleep/run.ts`         |
+| 能力面罩（`Mask` / `ResolvedMask` / 注册表）                       | `capabilities-mask`          | `types.ts`、`registry.ts`、`resolve.ts`         |
+| Session `capability_mask` 存储形状                                 | `engine-db/schema`           | `jsonb/capability-mask.ts`                      |
+| WebUI 展示视图（`MessagesDisplay`）                                | `service/schemas`            | `display.ts`                                    |
+| AnimaService 内部快照（`ServiceSnapshot` 等）                      | `service/schemas`            | `snapshot.ts`                                   |
+| 微信网关持久化 schema                                              | `connectors-gateway/schemas` | `weixin.ts`                                     |
+| JSON safeParse 工具                                                | `kernel-util`                | `parseJsonLine`、`safeParseOrNull` 等           |
 
 新增 PG 域：`engine-db/schema/{domain}` → `engine-repos` 增端口 → `connectors-db-pg` 实现 → `PgRepositories` 扩展 → `serve.ts` 装配。详见 [`docs/database.md`](docs/database.md)。
 
@@ -197,7 +197,7 @@ anima credential list              # 凭证路径；值在 pass
 
 | 变更类型                   | 更新                                                                                 |
 | -------------------------- | ------------------------------------------------------------------------------------ |
-| L1 / PG schema             | [`docs/database.md`](docs/database.md)                                               |
+| Slice A / PG schema        | [`docs/database.md`](docs/database.md)                                               |
 | 层依赖 / 组合根 / 类型归属 | 本文件（代码层与依赖、类型归属）+ [`docs/database.md`](docs/database.md) PG 包表     |
 | 记忆管道 / 检索            | [`docs/memory.md`](docs/memory.md) + ARCHITECTURE                                    |
 | 安全 / 威胁面              | [`docs/security.md`](docs/security.md) + ARCHITECTURE                                |

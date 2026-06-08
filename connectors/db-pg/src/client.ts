@@ -31,7 +31,7 @@ export function getDatabaseConfig(): DatabaseConfig | null {
   return { url };
 }
 
-/** 已配置 database.url（L1 Session 使用 PostgreSQL） */
+/** 已配置 database.url（Slice A 对话 Session 使用 PostgreSQL） */
 export function isPostgresPrimary(): boolean {
   return getDatabaseConfig() != null;
 }

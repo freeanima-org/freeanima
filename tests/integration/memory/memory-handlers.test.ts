@@ -29,7 +29,7 @@ describePgSqlite("memory handlers", () => {
     await restoreIntegrationHome(prev);
   });
 
-  it("session:updated does not create processed L2 file", async () => {
+  it("session:updated does not create processed dialogue distill file", async () => {
     const sid = "20260526_140000_aaaa";
     await seedSession(
       getTestEngine(),

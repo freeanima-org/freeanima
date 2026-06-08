@@ -138,8 +138,8 @@ export async function buildStatus(
     memory: {
       files_count: fileStats.files_count,
       files_bytes: fileStats.files_bytes,
-      facts_count: factsCount,
-      l2_index_rows: l2IndexRows,
+      semantic_memory_count: factsCount,
+      dialogue_message_count: l2IndexRows,
     },
   };
   if (host) status.host = host;

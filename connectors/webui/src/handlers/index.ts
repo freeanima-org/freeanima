@@ -19,7 +19,7 @@ export {
   runCronJobNow,
   restartService,
 } from "./status.ts";
-export { listMemoryFiles, memorySearch, memoryL3Reindex } from "./memory.ts";
+export { listMemoryFiles, memorySearch, countSemanticMemory } from "./memory.ts";
 export { getMcpStatus, mcpStartAll, mcpStopAll, mcpStartServer, mcpStopServer } from "./mcp.ts";
 export { getAcpStatus, acpStartAll, acpStopAll, acpStartAgent, acpStopAgent } from "./acp.ts";
 export {
