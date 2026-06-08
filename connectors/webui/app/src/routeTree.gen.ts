@@ -29,6 +29,7 @@ import { Route as ChamberEmailRouteImport } from './routes/chamber/email'
 import { Route as ChamberConfigRouteImport } from './routes/chamber/config'
 import { Route as ChamberCommandsRouteImport } from './routes/chamber/commands'
 import { Route as ChamberAcpRouteImport } from './routes/chamber/acp'
+import { Route as ChamberCredentialsRouteImport } from './routes/chamber/credentials'
 import { Route as ChamberSessionsRouteRouteImport } from './routes/chamber/sessions/route'
 import { Route as ChamberSessionsIndexRouteImport } from './routes/chamber/sessions/index'
 import { Route as ChamberSessionsSessionIdRouteImport } from './routes/chamber/sessions/$sessionId'
@@ -133,6 +134,11 @@ const ChamberAcpRoute = ChamberAcpRouteImport.update({
   path: '/acp',
   getParentRoute: () => ChamberRouteRoute,
 } as any)
+const ChamberCredentialsRoute = ChamberCredentialsRouteImport.update({
+  id: '/credentials',
+  path: '/credentials',
+  getParentRoute: () => ChamberRouteRoute,
+} as any)
 const ChamberSessionsRouteRoute = ChamberSessionsRouteRouteImport.update({
   id: '/sessions',
   path: '/sessions',
@@ -160,6 +166,7 @@ export interface FileRoutesByFullPath {
   '/chamber/acp': typeof ChamberAcpRoute
   '/chamber/commands': typeof ChamberCommandsRoute
   '/chamber/config': typeof ChamberConfigRoute
+  '/chamber/credentials': typeof ChamberCredentialsRoute
   '/chamber/cron': typeof ChamberCronRoute
   '/chamber/email': typeof ChamberEmailRoute
   '/chamber/dashboard': typeof ChamberDashboardRoute
@@ -184,6 +191,7 @@ export interface FileRoutesByTo {
   '/chamber/acp': typeof ChamberAcpRoute
   '/chamber/commands': typeof ChamberCommandsRoute
   '/chamber/config': typeof ChamberConfigRoute
+  '/chamber/credentials': typeof ChamberCredentialsRoute
   '/chamber/cron': typeof ChamberCronRoute
   '/chamber/email': typeof ChamberEmailRoute
   '/chamber/dashboard': typeof ChamberDashboardRoute
@@ -210,6 +218,7 @@ export interface FileRoutesById {
   '/chamber/acp': typeof ChamberAcpRoute
   '/chamber/commands': typeof ChamberCommandsRoute
   '/chamber/config': typeof ChamberConfigRoute
+  '/chamber/credentials': typeof ChamberCredentialsRoute
   '/chamber/cron': typeof ChamberCronRoute
   '/chamber/email': typeof ChamberEmailRoute
   '/chamber/dashboard': typeof ChamberDashboardRoute
@@ -237,6 +246,7 @@ export interface FileRouteTypes {
     | '/chamber/acp'
     | '/chamber/commands'
     | '/chamber/config'
+    | '/chamber/credentials'
     | '/chamber/cron'
     | '/chamber/email'
     | '/chamber/dashboard'
@@ -261,6 +271,7 @@ export interface FileRouteTypes {
     | '/chamber/acp'
     | '/chamber/commands'
     | '/chamber/config'
+    | '/chamber/credentials'
     | '/chamber/cron'
     | '/chamber/email'
     | '/chamber/dashboard'
@@ -286,6 +297,7 @@ export interface FileRouteTypes {
     | '/chamber/acp'
     | '/chamber/commands'
     | '/chamber/config'
+    | '/chamber/credentials'
     | '/chamber/cron'
     | '/chamber/email'
     | '/chamber/dashboard'
@@ -452,6 +464,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChamberAcpRouteImport
       parentRoute: typeof ChamberRouteRoute
     }
+    '/chamber/credentials': {
+      id: '/chamber/credentials'
+      path: '/credentials'
+      fullPath: '/chamber/credentials'
+      preLoaderRoute: typeof ChamberCredentialsRouteImport
+      parentRoute: typeof ChamberRouteRoute
+    }
     '/chamber/sessions': {
       id: '/chamber/sessions'
       path: '/sessions'
@@ -494,6 +513,7 @@ interface ChamberRouteRouteChildren {
   ChamberAcpRoute: typeof ChamberAcpRoute
   ChamberCommandsRoute: typeof ChamberCommandsRoute
   ChamberConfigRoute: typeof ChamberConfigRoute
+  ChamberCredentialsRoute: typeof ChamberCredentialsRoute
   ChamberCronRoute: typeof ChamberCronRoute
   ChamberEmailRoute: typeof ChamberEmailRoute
   ChamberDashboardRoute: typeof ChamberDashboardRoute
@@ -507,6 +527,7 @@ const ChamberRouteRouteChildren: ChamberRouteRouteChildren = {
   ChamberAcpRoute: ChamberAcpRoute,
   ChamberCommandsRoute: ChamberCommandsRoute,
   ChamberConfigRoute: ChamberConfigRoute,
+  ChamberCredentialsRoute: ChamberCredentialsRoute,
   ChamberCronRoute: ChamberCronRoute,
   ChamberEmailRoute: ChamberEmailRoute,
   ChamberDashboardRoute: ChamberDashboardRoute,
