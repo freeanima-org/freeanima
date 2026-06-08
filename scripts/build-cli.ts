@@ -53,6 +53,14 @@ await import(join(root, "dist/cli.js"));
     engines: { bun: ">=1.3.14" },
     bin: { anima: "./dist/anima" },
     files: ["dist", "migrations", "connectors"],
+    repository: {
+      type: "git",
+      url: "git+https://github.com/freeanima-org/freeanima.git",
+    },
+    publishConfig: {
+      access: "public",
+      registry: "https://registry.npmjs.org",
+    },
   };
 
   writeFileSync(join(PUBLISH_DIR, "package.json"), `${JSON.stringify(publishPkg, null, 2)}\n`);
