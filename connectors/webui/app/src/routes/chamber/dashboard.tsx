@@ -165,15 +165,9 @@ function DashboardPage() {
         <section>
           <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
             <h3 className="text-sm font-semibold text-base-content/60">记忆</h3>
-            <div className="flex gap-2 text-xs">
-              <Link to="/chamber/memory-files" className="link link-hover">
-                记忆文件
-              </Link>
-              <span className="text-base-content/30">·</span>
-              <Link to="/chamber/memory" className="link link-hover">
-                记忆台
-              </Link>
-            </div>
+            <Link to="/chamber/memory" className="link link-hover text-xs">
+              记忆台
+            </Link>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard title="记忆文件">

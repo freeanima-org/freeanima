@@ -3,7 +3,6 @@ import { ResponsiveSidebarLayout } from "@/components/ResponsiveSidebarLayout.ts
 
 const navItems = [
   { to: "/chamber/dashboard", label: "📊 仪表盘" },
-  { to: "/chamber/memory-files", label: "📁 记忆文件" },
   { to: "/chamber/sessions", label: "💬 会话列表" },
   { to: "/chamber/memory", label: "🧠 记忆台" },
   { to: "/chamber/config", label: "⚙️ 配置" },
