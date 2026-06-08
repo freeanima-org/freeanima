@@ -1,6 +1,6 @@
 import { ImapFlow } from "imapflow";
 
-import { readAccountPassword, resolveAccount } from "./accounts.ts";
+import { resolveAccount, resolveAccountPassword } from "./accounts.ts";
 
 function imapSecure(port: number): boolean {
   return port >= 993;
@@ -11,13 +11,14 @@ async function withImapAccount<T>(
   fn: (client: ImapFlow) => Promise<T>,
 ): Promise<T> {
   const account = resolveAccount(accountId);
+  const pass = await resolveAccountPassword(account);
   const client = new ImapFlow({
     host: account.imap_host,
     port: account.imap_port,
     secure: imapSecure(account.imap_port),
     auth: {
       user: account.address,
-      pass: readAccountPassword(account),
+      pass,
     },
     logger: false,
   });

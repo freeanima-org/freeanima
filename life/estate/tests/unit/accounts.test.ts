@@ -16,7 +16,7 @@ import {
 
 const sampleAccount = {
   id: "feng-fengtrace",
-  credential_path: "email/feng-fengtrace",
+  password: 'credential("email/feng-fengtrace", "password")',
   address: "feng@fengtrace.com",
   display_name: "Feng",
   smtp_host: "smtp.example.com",
@@ -38,11 +38,11 @@ describe("email accounts", () => {
     endMinimalConfigHome(prevHome);
   });
 
-  it("listEmailAccounts 返回 credential_path", () => {
+  it("listEmailAccounts 返回 password 引用", () => {
     patchConfigSection("email", { accounts: [sampleAccount] });
     const accounts = listEmailAccounts();
     expect(accounts).toHaveLength(1);
-    expect(accounts[0]?.credential_path).toBe("email/feng-fengtrace");
+    expect(accounts[0]?.password).toBe('credential("email/feng-fengtrace", "password")');
   });
 
   it("editEmailAccount 更新字段并处理 default_sender 互斥", () => {
@@ -52,7 +52,7 @@ describe("email accounts", () => {
         {
           ...sampleAccount,
           id: "feng.grass.show",
-          credential_path: "email/feng.grass.show",
+          password: 'credential("email/feng.grass.show", "token")',
           address: "feng@grass.show",
           default_sender: false,
         },
@@ -80,13 +80,13 @@ describe("email accounts", () => {
     expect(resolveAccount("feng-fengtrace").address).toBe("feng@fengtrace.com");
   });
 
-  it("registerEmailAccount 在 pass 缺失时报错", () => {
-    expect(() =>
+  it("registerEmailAccount 在 pass 缺失时报错", async () => {
+    await expect(
       registerEmailAccount({
         ...sampleAccount,
         id: "test-nonexistent-account-xyz",
-        credential_path: "email/test-nonexistent-account-xyz",
+        password: 'credential("email/test-nonexistent-account-xyz", "password")',
       }),
-    ).toThrow(/pass 凭证 email\/test-nonexistent-account-xyz/);
+    ).rejects.toThrow(/邮件密码无法解析/);
   });
 });

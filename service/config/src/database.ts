@@ -1,17 +1,13 @@
-import { credential } from "./credential.ts";
 import { loadConfig } from "./config.ts";
+import { resolveValue } from "./resolve.ts";
 
-/** 解析 pass: 前缀或直连 URL */
-export function resolveDatabaseUrl(raw: string): string {
-  if (raw.startsWith("pass:")) {
-    const passPath = raw.slice("pass:".length);
-    return credential(passPath, "url");
-  }
-  return raw;
+/** 展开 database.url 中的 env/credential 引用 */
+export async function resolveDatabaseUrl(raw: string): Promise<string> {
+  return resolveValue(raw);
 }
 
 /** 从 config.yaml 读取 database.url；未配置时返回 null */
-export function getConfiguredDatabaseUrl(): string | null {
+export async function getConfiguredDatabaseUrl(): Promise<string | null> {
   const cfg = loadConfig();
   const db = cfg.database;
   if (!db?.url) return null;

@@ -21,8 +21,10 @@ import { runMigrations } from "@freeanima/engine-db";
 import {
   getConfiguredDatabaseUrl,
   getConfiguredRedisUrl,
-  PATHS,
   loadConfig,
+  PATHS,
+  resolveLlmProviderApiKeys,
+  validateConfigOnStartup,
 } from "@freeanima/service-config";
 import {
   installErrorLogHandlers,
@@ -200,6 +202,9 @@ export async function serve(
   writeStatusFile(statusHost, port, "starting");
   let servers: WebuiServerHandle[] = [];
   try {
+    startupLog("校验 config.yaml…");
+    await validateConfigOnStartup();
+
     startupLog("注册工具…");
     registerServiceTools();
     kernel = createServiceKernel();
@@ -207,10 +212,11 @@ export async function serve(
     mkdirSync(dirname(PATHS.pidFile), { recursive: true });
     writeFileSync(PATHS.pidFile, String(process.pid));
 
-    initDatabase({ getDatabaseUrl: getConfiguredDatabaseUrl });
+    const dbUrl = await getConfiguredDatabaseUrl();
+    initDatabase({ getDatabaseUrl: () => dbUrl });
     initRedis({ getRedisUrl: getConfiguredRedisUrl });
 
-    const cfg = loadConfig();
+    const cfg = await resolveLlmProviderApiKeys(loadConfig());
     let repos = nullPgRepositories;
     if (isPostgresPrimary()) {
       startupLog("初始化 PostgreSQL 连接池…");

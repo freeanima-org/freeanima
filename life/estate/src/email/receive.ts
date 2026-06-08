@@ -1,6 +1,6 @@
 import { ImapFlow } from "imapflow";
 
-import { readAccountPassword, resolveEnabledAccounts } from "./accounts.ts";
+import { resolveAccountPassword, resolveEnabledAccounts } from "./accounts.ts";
 import type { EmailAccount } from "./types.ts";
 import type { EmailFilter, EmailMessage } from "./types.ts";
 import { emailFilterSchema } from "./types.ts";
@@ -34,13 +34,14 @@ async function withImapClient<T>(
   account: EmailAccount,
   fn: (client: ImapFlow) => Promise<T>,
 ): Promise<T> {
+  const pass = await resolveAccountPassword(account);
   const client = new ImapFlow({
     host: account.imap_host,
     port: account.imap_port,
     secure: imapSecure(account.imap_port),
     auth: {
       user: account.address,
-      pass: readAccountPassword(account),
+      pass,
     },
     logger: false,
   });

@@ -19,7 +19,7 @@ type EmailAccount = {
   default_sender?: boolean;
   enabled?: boolean;
   desc?: string;
-  credential_path: string;
+  password: string;
 };
 
 type EmailMessage = {
@@ -188,8 +188,8 @@ function EmailPage() {
                         <td className="font-mono text-xs">{account.address}</td>
                       </tr>
                       <tr>
-                        <td className="text-base-content/50">凭证</td>
-                        <td className="font-mono text-xs">{account.credential_path}</td>
+                        <td className="text-base-content/50">密码</td>
+                        <td className="font-mono text-xs break-all">{account.password}</td>
                       </tr>
                       <tr>
                         <td className="text-base-content/50">SMTP</td>
