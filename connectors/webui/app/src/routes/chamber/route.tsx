@@ -20,25 +20,27 @@ export const Route = createFileRoute("/chamber")({
 
 function ChamberLayout() {
   return (
-    <ResponsiveSidebarLayout
-      title="卧室"
-      subtitle="Chamber"
-      sidebar={() => (
-        <nav className="flex-1 px-2 pb-3 space-y-1 overflow-y-auto">
-          {navItems.map((item) => (
-            <Link
-              key={item.to}
-              to={item.to}
-              className="nav-link"
-              activeProps={{ className: "nav-link sidebar-nav-active" }}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-      )}
-    >
-      <Outlet />
-    </ResponsiveSidebarLayout>
+    <div data-testid="chamber-layout">
+      <ResponsiveSidebarLayout
+        title="卧室"
+        subtitle="Chamber"
+        sidebar={() => (
+          <nav className="flex-1 px-2 pb-3 space-y-1 overflow-y-auto">
+            {navItems.map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                className="nav-link"
+                activeProps={{ className: "nav-link sidebar-nav-active" }}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+        )}
+      >
+        <Outlet />
+      </ResponsiveSidebarLayout>
+    </div>
   );
 }

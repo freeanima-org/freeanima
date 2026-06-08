@@ -8,6 +8,7 @@ export type WebuiServerOptions = {
 };
 
 export type WebuiServerHandle = {
+  port: number;
   close: () => void | Promise<void>;
 };
 
@@ -63,6 +64,7 @@ export async function startWebuiHttpServer(
   }
 
   return {
+    port: server.port,
     close: () => {
       routes.broadcastReconnectNotification();
       routes.shutdown();

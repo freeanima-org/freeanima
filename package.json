@@ -44,6 +44,7 @@
     "test:changed": "bun scripts/run-tests.ts --changed",
     "memory:sample": "bun scripts/memory-sample.ts",
     "test:coverage": "bun test --coverage --pass-with-no-tests",
+    "test:e2e": "bun scripts/run-e2e-tests.ts",
     "service": "bun cli/src/cli.ts service",
     "anima": "bun cli/src/cli.ts",
     "link:global": "mkdir -p \"${BUN_INSTALL:-$HOME/.bun}/bin\" && ln -sf \"$PWD/cli/src/cli.ts\" \"${BUN_INSTALL:-$HOME/.bun}/bin/anima\" && chmod +x cli/src/cli.ts",

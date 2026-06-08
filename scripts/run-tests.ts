@@ -34,7 +34,13 @@ if (needsPg) {
   }
 }
 
-const bunArgs = ["test", "--pass-with-no-tests", ...(changed ? ["--changed"] : [])];
+const bunArgs = [
+  "test",
+  "--pass-with-no-tests",
+  ...(changed ? ["--changed"] : []),
+  "--exclude",
+  "tests/e2e/**",
+];
 
 try {
   execSync(["bun", ...bunArgs].join(" "), {
