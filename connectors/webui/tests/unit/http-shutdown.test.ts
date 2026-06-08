@@ -13,6 +13,7 @@ afterEach(() => {
 
 function mockHandle(): WebuiServerHandle {
   return {
+    port: 2658,
     close: vi.fn(),
   };
 }

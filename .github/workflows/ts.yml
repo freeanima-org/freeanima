@@ -44,6 +44,9 @@ jobs:
       - run: bun run lint
       - run: bun run dep-check
       - run: bun run test
+      - name: Install Chromium for WebView E2E
+        run: sudo apt-get update && sudo apt-get install -y chromium
+      - run: bun run test:e2e
       - name: Install gitleaks
         run: |
           curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz" | tar -xz
