@@ -21,7 +21,7 @@ FreeAnima 存储架构
 **设计原则：**
 
 - 自我层与记忆层**性质不同**：记忆层「向外记录世界与经历」，自我层「向内定义自我」
-- 自我层**不**再依赖 `semantic_memory.pinned` 或 SOUL.md 运行时注入；PG `self_blocks` 为真相源
+- 自我层**不**再依赖 `semantic_memory.pinned` 文件注入；PG `self_blocks` 为唯一真相源
 - **六块全部常驻** system prompt（与 AGENTS.md、非自我 pinned 常驻记忆并列）
 
 ---
@@ -52,8 +52,8 @@ FreeAnima 存储架构
 
 - **表：** `self_blocks`（[`engine/db/src/schema/self-layer.ts`](../engine/db/src/schema/self-layer.ts)）
 - **端口：** `SelfLayerStorePort`（`engine-repos`）→ `PgSelfLayerStore`（`connectors-db-pg`）
-- **消费：** `@freeanima/life-self`（组装 prompt、seed、工具 `get_self_blocks` / `update_self_block`）
-- **装配：** `serve.ts` 调用 `registerSelfLayerStore`；启动时 `ensureSelfLayerSeeded`（一次性从 `SOUL.md` + pinned 启发式导入）
+- **消费：** `@freeanima/life-self`（组装 prompt、工具 `get_self_blocks` / `update_self_block`）
+- **装配：** `serve.ts` 调用 `registerSelfLayerStore` 并预热 `loadSelfLayerPrompt()` 缓存
 
 `existence_anchor` 默认 `locked=true`；更新需工具参数 `force=true` 或 CLI 显式操作。
 
@@ -78,14 +78,14 @@ FreeAnima 存储架构
 组装顺序（[`life-memory/system-prompt`](../life/memory/src/system-prompt.ts) + [`system-prompt-wire`](../service/service/src/runtime/system-prompt-wire.ts)）：
 
 ````
-1. 灵魂文件（第二人称骨架 + ```md 内嵌六块）  ← loadSelfLayerPrompt() / self_blocks
+1. 自我层（第二人称骨架 + ```md 内嵌六块）  ← loadSelfLayerPrompt() / self_blocks
 2. 常驻记忆（第二人称骨架 + ```md 内嵌 pinned 事实）  ← semantic_memory
 3. 项目上下文（```md 内嵌 session cwd 下 AGENTS.md）
 ````
 
-各段标题（`## 灵魂文件` / `## 常驻记忆` / `## 项目上下文`）在代码块外；正文在 `md` 围栏内。灵魂文件与常驻记忆段外层使用第二人称指令骨架，内层保留第一人称自我陈述质地。
+各段标题（`## 自我层` / `## 常驻记忆` / `## 项目上下文`）在代码块外；正文在 `md` 围栏内。自我层与常驻记忆段外层使用第二人称指令骨架，内层保留第一人称自我陈述质地。
 
-运行时 **不再** 直接注入 `SOUL.md` 全文；`SOUL.md` 仅作 seed 源与人工编辑备份。PG 不可用时的 fallback 仍将 SOUL 映射到 `self_model` 块。
+维护方式：`get_self_blocks` / `update_self_block` 工具，或直接写 PG `self_blocks`。
 
 ---
 
@@ -103,7 +103,7 @@ FreeAnima 存储架构
 ## 设计演进
 
 ```
-v1（2026-05-30）  L1–L4 概念模型 + SOUL.md / pinned facts（已废弃运行时路径）
+v1（2026-05-30）  L1–L4 概念模型 + 叙事文件运行时注入（已废弃）
 v2（2026-06-07）  PG self_blocks 六块 + autobiographical_memory 独立表 + 04:00 自传 cron
 ```
 

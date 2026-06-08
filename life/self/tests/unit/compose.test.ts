@@ -8,7 +8,7 @@ import {
 import { renderSelfLayerPrompt, wrapSelfLayerForSystemPrompt } from "../../src/compose.ts";
 
 describe("wrapSelfLayerForSystemPrompt", () => {
-  it("含第二人称骨架、灵魂文件标题与 md 围栏", () => {
+  it("含第二人称骨架、自我层标题与 md 围栏", () => {
     const inner = renderSelfLayerPrompt([
       {
         block_key: "self_model",

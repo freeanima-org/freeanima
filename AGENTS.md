@@ -182,7 +182,7 @@ anima credential list              # 凭证路径；值在 pass
 | [`docs/memory.md`](docs/memory.md)                                 | 记忆管道                   |
 | [`docs/database.md`](docs/database.md)                             | PostgreSQL schema          |
 | [`docs/security.md`](docs/security.md)                             | 安全与凭证                 |
-| [`docs/identity.md`](docs/identity.md)                             | 数字生命 / SOUL            |
+| [`docs/identity.md`](docs/identity.md)                             | 数字生命 / 自我层          |
 | [`docs/designs/`](docs/designs/)                                   | 专题设计（含 RFC 迁移）    |
 
 ---

@@ -264,7 +264,7 @@ export function registerBuiltins(): void {
   registerCommand({
     name: "reload_system_prompt",
     description:
-      "重建 system prompt（SOUL、常驻记忆、session cwd 下 AGENTS.md），仅写回 system_prompt",
+      "重建 system prompt（自我层、常驻记忆、session cwd 下 AGENTS.md），仅写回 system_prompt",
     handler: cmdReloadSystemPrompt,
     aliases: ["reload-system-prompt"],
     scope: "session",

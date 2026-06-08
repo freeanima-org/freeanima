@@ -54,7 +54,6 @@ import { runLightSleep } from "@freeanima/life-memory/light-sleep/run";
 import { runDeepSleep } from "@freeanima/life-memory/deep-sleep/run";
 import { runSelfAutobiographyWithLog } from "@freeanima/life-memory/autobiography/run";
 import {
-  ensureSelfLayerSeeded,
   invalidateSelfLayerPromptCache,
   loadSelfLayerPrompt,
   registerSelfLayerStore,
@@ -235,11 +234,6 @@ export async function serve(
     registerLimbicMemoryStore(repos.limbicMemory);
     registerTaskStore(repos.tasks);
     if (repos.pgAvailable) {
-      const resident = await repos.semanticMemory.listResident(100);
-      await ensureSelfLayerSeeded({
-        store: repos.selfLayer,
-        pinnedFacts: resident.map((row) => ({ content: row.content, type: row.type })),
-      });
       invalidateSelfLayerPromptCache();
       await loadSelfLayerPrompt();
     }

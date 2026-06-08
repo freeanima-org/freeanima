@@ -81,8 +81,6 @@ export function allocateSessionCwd(sid: string): string {
   return mkdtempSync(join(tmpdir(), "anima-cwd-"));
 }
 
-export { loadSoul } from "./soul-port.ts";
-
 /** 读取 session 缓存的工具名并解析为 OpenAI schema；缺失时回退注册表并写回 meta */
 export async function loadSessionTools(
   repos: PgRepositories,
@@ -261,7 +259,7 @@ export async function initSession(
   opts: { platform: string; functions?: string[]; platform_extra?: Record<string, unknown> },
 ): Promise<void> {
   const cwd = allocateSessionCwd(sid);
-  const systemPrompt = await buildSystemPrompt(opts.functions ?? [], "", cwd);
+  const systemPrompt = await buildSystemPrompt(opts.functions ?? [], cwd);
   const meta: SessionMetaMessage = {
     role: "session_meta",
     model,
@@ -378,7 +376,7 @@ export async function rebuildSessionSystemPrompt(
   if (!isSessionMeta(meta)) return;
   const functions = meta.functions ?? [];
   const cwd = meta.cwd;
-  const systemPrompt = await buildSystemPrompt(functions, "", cwd);
+  const systemPrompt = await buildSystemPrompt(functions, cwd);
   await updateSessionMetaField(repos, session, { system_prompt: systemPrompt });
 }
 

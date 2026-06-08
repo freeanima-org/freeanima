@@ -13,14 +13,12 @@ import {
   type SelfBlockView,
 } from "./compose.ts";
 import { getSelfLayerStore } from "./port.ts";
-import { loadSoul } from "./soul.ts";
 
-function fallbackBlocksFromSoul(): SelfBlockRow[] {
-  const soul = loadSoul();
+function emptyPlaceholderBlocks(): SelfBlockRow[] {
   const now = "";
   return SELF_BLOCK_KEYS.map((key) => ({
     block_key: key,
-    content: key === "self_model" ? soul : "",
+    content: "",
     locked: key === "existence_anchor",
     version: 0,
     updated_by: null,
@@ -35,26 +33,22 @@ export async function loadSelfBlocks(): Promise<SelfBlockView[]> {
     const rows = await getSelfLayerStore().listBlocks();
     return rows.map(toSelfBlockView);
   } catch {
-    return fallbackBlocksFromSoul().map(toSelfBlockView);
+    return emptyPlaceholderBlocks().map(toSelfBlockView);
   }
 }
 
-/** 从 store 组装六块常驻 Markdown；PG 无内容时 fallback SOUL.md */
+/** 从 PG self_blocks 组装自我层 system prompt 段 */
 export async function loadSelfLayerPrompt(): Promise<string> {
   const cached = getSelfLayerPromptCache();
   if (cached) return cached;
 
   try {
     const rows = await getSelfLayerStore().listBlocks();
-    const hasContent = rows.some((row) => row.content.trim().length > 0);
-    const inner = hasContent
-      ? renderSelfLayerPrompt(rows)
-      : renderSelfLayerPrompt(fallbackBlocksFromSoul());
-    const prompt = wrapSelfLayerForSystemPrompt(inner);
+    const prompt = wrapSelfLayerForSystemPrompt(renderSelfLayerPrompt(rows));
     setSelfLayerPromptCache(prompt);
     return prompt;
   } catch {
-    const prompt = wrapSelfLayerForSystemPrompt(renderSelfLayerPrompt(fallbackBlocksFromSoul()));
+    const prompt = wrapSelfLayerForSystemPrompt(renderSelfLayerPrompt(emptyPlaceholderBlocks()));
     setSelfLayerPromptCache(prompt);
     return prompt;
   }

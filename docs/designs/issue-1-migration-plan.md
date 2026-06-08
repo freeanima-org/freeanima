@@ -177,4 +177,4 @@ packages:
 - RFC 迁移步骤 0–11 **已完成**
 - 运行时入口：`AnimaService`（[`service/service/src/runtime/`](../../service/service/src/runtime/) 模块化拆分）
 - 层边界：`bun run dep-check`（[`scripts/check-layer-deps.ts`](../../scripts/check-layer-deps.ts)）
-- 待迁入：`life-self`（SOUL / 自我层）、`life-estate`（资源层）由空壳包承接
+- 待迁入：`life-estate`（资源层）由空壳包承接；`life-self`（自我层）已落地

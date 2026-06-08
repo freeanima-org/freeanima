@@ -22,8 +22,4 @@ export class PgSelfLayerStore implements SelfLayerStorePort {
   ) {
     return crudRepo.updateSelfBlock(input, opts);
   }
-
-  async isInitialized() {
-    return crudRepo.isSelfLayerInitialized();
-  }
 }

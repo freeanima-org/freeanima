@@ -45,5 +45,4 @@ export interface SelfLayerStorePort {
   upsertBlock(input: SelfBlockUpsertInput): Promise<void>;
   /** locked 块默认拒绝更新；force=true 时允许 */
   updateBlock(input: SelfBlockUpdateInput, opts?: { force?: boolean }): Promise<void>;
-  isInitialized(): Promise<boolean>;
 }

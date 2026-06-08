@@ -178,9 +178,9 @@ DATABASE_URL="$(anima credential get services/postgres/anima url)" \
 
 端口：`SelfLayerStorePort`（`engine-repos`）→ `PgSelfLayerStore`（`connectors-db-pg`）→ `registerSelfLayerStore`（`life-self`）。
 
-方法：`getBlock` / `listBlocks` / `upsertBlock` / `updateBlock`（`locked` 块需 `force`）/ `isInitialized`。
+方法：`getBlock` / `listBlocks` / `upsertBlock` / `updateBlock`（`locked` 块需 `force`）。
 
-启动 seed：`serve.ts` 调用 `ensureSelfLayerSeeded`（一次性从 `SOUL.md` + pinned 启发式写入；`SOUL.md` 不再参与运行时 prompt）。
+运行时由 `loadSelfLayerPrompt()` 读取；维护通过 `get_self_blocks` / `update_self_block` 或直接写表。
 
 ### `autobiographical_memory`（自传体叙事，记忆层）
 

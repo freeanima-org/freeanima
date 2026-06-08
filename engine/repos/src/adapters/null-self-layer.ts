@@ -33,7 +33,4 @@ export const nullSelfLayerStore: SelfLayerStorePort = {
   async updateBlock() {
     return unavailable();
   },
-  async isInitialized() {
-    return false;
-  },
 };

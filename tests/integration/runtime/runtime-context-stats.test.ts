@@ -39,7 +39,7 @@ compression:
     const sid = await c.newSession("parlor");
     await c.updateSessionMetaField(sid, {
       model: "m",
-      system_prompt: "SOUL block here\n\n## 常驻记忆\n- fact",
+      system_prompt: "自我层 block here\n\n## 常驻记忆\n- fact",
       tools: ["ctx_stats_big_tool"],
     });
     await c.appendMessage({ role: "user", content: "hi", pos: 1 }, sid);

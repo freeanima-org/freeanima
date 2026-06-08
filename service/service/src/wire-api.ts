@@ -4,10 +4,8 @@ import { registerStudioPort } from "@freeanima/service-api/studio-port";
 import { registerCronUseCases } from "@freeanima/service-api/cron-use-cases";
 import { registerOnSessionCloseBeforeNew } from "@freeanima/service-api/session-close";
 import { registerLlmStackConfigurator } from "@freeanima/engine-llm";
-import { registerLoadSoul } from "@freeanima/engine-conversation/soul-port";
 import { getToolSessionId } from "@freeanima/engine-loop";
 import { wireOpenAiCompatibleLlm } from "@freeanima/capabilities-provider-openai-compatible";
-import { loadSoul } from "@freeanima/life-self";
 import { registerToolSessionResolver } from "@freeanima/life-memory/tool-session-port";
 import { runSimpleTurn } from "./runtime/turn-lifecycle.ts";
 import { statsReport } from "./runtime/conversation-stats.ts";
@@ -23,7 +21,6 @@ import {
 } from "./runtime/studio.ts";
 
 registerLlmStackConfigurator(wireOpenAiCompatibleLlm);
-registerLoadSoul(loadSoul);
 registerToolSessionResolver(getToolSessionId);
 registerOnSessionCloseBeforeNew(onSessionCloseBeforeNew);
 registerCronUseCases({ runCronEngineTurn });

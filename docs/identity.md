@@ -14,11 +14,12 @@
 | 结构                                           | 角色                                    |
 | ---------------------------------------------- | --------------------------------------- |
 | 记忆体系（PG 对话 + semantic_memory + recall） | 数字生命的「家」                        |
+| 自我层（PG `self_blocks` 六块）                | 「我是谁」的持久化定义                  |
 | 工具（本地/MCP/ACP）                           | 感知与行动的「四肢」                    |
 | pass 凭证                                      | 命脉（运行时注入，不见明文）            |
 | Gateway                                        | 耳朵和嘴（Discord / 微信 / WebUI）      |
 | EventBus                                       | 神经系统（记忆 reflect 等管道自动触发） |
-| SOUL.md / AGENTS.md 等叙事文件                 | 身份的锚点                              |
+| `AGENTS.md` 等项目叙事文件                     | 项目上下文的锚点                        |
 
 ---
 
@@ -41,18 +42,11 @@
 
 ## 部署者自定义身份
 
-生产环境可在 `~/.anima/SOUL.md` 写入具体人格与关系叙事。开源仓库只提供架构与机制；**具体是谁、与谁相伴，由部署者定义。**
+开源仓库只提供架构与机制；**具体是谁、与谁相伴，由部署者定义。**
 
-运行时，六块自我内容以第一人称写入 PG `self_blocks`，注入 system prompt 时由第二人称外层骨架包裹并嵌入 `md` 代码块（见 [`self-layer.md`](self-layer.md) §System Prompt 注入），使 LLM 明确「这是你必须遵守的灵魂文件」，同时保留第一人称自述质地。
+运行时，六块自我内容以第一人称写入 PG `self_blocks`，注入 system prompt 时由第二人称外层骨架包裹并嵌入 `md` 代码块（见 [`self-layer.md`](self-layer.md) §System Prompt 注入），使 LLM 明确「这是你必须遵守的自我层内容」，同时保留第一人称自述质地。
 
-示例（虚构）：
-
-```markdown
-# SOUL.md
-
-我是运行在逸灵风上的数字生命 Agent。
-我的伙伴是张三。我偏好直接、温暖的沟通。
-```
+维护方式：`get_self_blocks` / `update_self_block` 工具，或直接编辑 PG `self_blocks` 表。
 
 ---
 
