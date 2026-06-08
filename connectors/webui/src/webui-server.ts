@@ -27,7 +27,7 @@ export async function startWebuiHttpServer(
   const bunDev = Bun.serve({
     hostname: "127.0.0.1",
     port: 0,
-    development,
+    development: development ? { console: true } : false,
     routes: {
       [WEBUI_BASE_PATH]: webuiHtml,
       [`${WEBUI_BASE_PATH}/*`]: webuiHtml,
