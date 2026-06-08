@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { trpc } from "@/lib/trpc.ts";
+import { api } from "@/lib/api.ts";
 
 export const Route = createFileRoute("/chamber/memory")({
   component: MemoryPage,
@@ -80,7 +80,7 @@ function MemoryPage() {
     setSearching(true);
     setError("");
     try {
-      const d = (await trpc.memory.search.mutate({
+      const d = (await api.memory.search.mutate({
         query: q,
         limit,
         session_limit: sessionLimit,
@@ -113,7 +113,7 @@ function MemoryPage() {
             disabled={busy}
             onClick={() =>
               void postMemoryAction(
-                () => trpc.memory.l3Reindex.mutate(),
+                () => api.memory.l3Reindex.mutate(),
                 "l3-reindex",
                 "统计 PG semantic_memory 条数（content_fts 自动维护，无需重建）。确定继续？",
               )

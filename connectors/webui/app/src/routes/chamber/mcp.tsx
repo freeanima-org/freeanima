@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { trpc } from "@/lib/trpc.ts";
+import { api } from "@/lib/api.ts";
 
 export const Route = createFileRoute("/chamber/mcp")({
-  loader: () => trpc.mcp.status.query().catch(() => null),
+  loader: () => api.mcp.status.query().catch(() => null),
   component: McpPage,
 });
 
@@ -59,7 +59,7 @@ function McpPage() {
     setError("");
     setActing((a) => ({ ...a, [name]: action }));
     try {
-      const fn = action === "start" ? trpc.mcp.start : trpc.mcp.stop;
+      const fn = action === "start" ? api.mcp.start : api.mcp.stop;
       setStatus((await fn.mutate({ name })) as McpStatus);
     } catch (e) {
       setError(
@@ -78,7 +78,7 @@ function McpPage() {
     setError("");
     setBulkActing(true);
     try {
-      const fn = action === "start-all" ? trpc.mcp.startAll : trpc.mcp.stopAll;
+      const fn = action === "start-all" ? api.mcp.startAll : api.mcp.stopAll;
       setStatus((await fn.mutate()) as McpStatus);
     } catch (e) {
       setError(

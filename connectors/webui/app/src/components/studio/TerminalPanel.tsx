@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Terminal } from "xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import "xterm/css/xterm.css";
-import { trpc } from "@/lib/trpc.ts";
+import { api } from "@/lib/api.ts";
 
 export function TerminalPanel() {
   const termElRef = useRef<HTMLDivElement>(null);
@@ -36,7 +36,7 @@ export function TerminalPanel() {
         fitAddon.fit();
         const sid = sessionIdRef.current;
         if (sid) {
-          void trpc.studio.terminal.resize.mutate({
+          void api.studio.terminal.resize.mutate({
             sessionId: sid,
             cols: term.cols,
             rows: term.rows,
@@ -50,7 +50,7 @@ export function TerminalPanel() {
     const sendInput = (data: string) => {
       const sid = sessionIdRef.current;
       if (sid) {
-        void trpc.studio.terminal.write.mutate({ sessionId: sid, data });
+        void api.studio.terminal.write.mutate({ sessionId: sid, data });
       }
     };
 
@@ -60,16 +60,16 @@ export function TerminalPanel() {
       sessionIdRef.current = null;
       setStatusMsg("");
 
-      const sub = trpc.studio.terminal.stream.subscribe(undefined, {
+      const sub = api.studio.terminal.stream.subscribe(undefined, {
         onData: (msg) => {
-          if (msg.type === "ready") {
+          if (msg.type === "ready" && msg.sessionId) {
             sessionIdRef.current = msg.sessionId;
             requestAnimationFrame(fitTerminal);
-          } else if (msg.type === "output") {
+          } else if (msg.type === "output" && msg.data !== undefined) {
             term.write(msg.data);
-          } else if (msg.type === "error") {
+          } else if (msg.type === "error" && msg.message) {
             setStatusMsg(msg.message);
-          } else if (msg.type === "exit") {
+          } else if (msg.type === "exit" && msg.code !== undefined) {
             setStatusMsg(`进程退出 (${msg.code})`);
           }
         },
@@ -103,7 +103,7 @@ export function TerminalPanel() {
       unsubRef.current?.();
       const sid = sessionIdRef.current;
       if (sid) {
-        void trpc.studio.terminal.close.mutate({ sessionId: sid });
+        void api.studio.terminal.close.mutate({ sessionId: sid });
       }
       term.dispose();
     };
