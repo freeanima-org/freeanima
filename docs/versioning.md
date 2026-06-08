@@ -102,7 +102,7 @@ Release workflow 在 semantic-release 成功后还会：
 | Workflow filename    | `release.yml`   |
 | Allowed actions      | `npm publish`   |
 
-Release workflow 已设 `id-token: write` 与 `actions/setup-node`（`registry-url`）。首次发包若包尚不存在，需先用 token 手动发一版或在 npm 创建包后再绑 Trusted Publisher。
+Release workflow 已设 `id-token: write`；`actions/setup-node` **勿**设 `registry-url`（会与 `@semantic-release/npm` OIDC 冲突导致 `EINVALIDNPMTOKEN`）。首次发包若包尚不存在，需先用 token 手动发一版或在 npm 创建包后再绑 Trusted Publisher。
 
 验证通过后，可在包 Settings → Publishing access 选 **disallow tokens**，仅保留 OIDC 发布。3. **Docker 镜像** — push `v*` tag 时由 [`.github/workflows/release-docker.yml`](../.github/workflows/release-docker.yml) 构建并推送到 `ghcr.io/freeanima-org/freeanima:latest` 与 `:vX.Y.Z`
 

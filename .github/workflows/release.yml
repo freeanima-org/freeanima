@@ -28,12 +28,11 @@ jobs:
       - run: bun run build:cli
 
       # 质量门禁由 .github/workflows/ci.yml 负责（同 push 已跑 typecheck/lint/dep-check/test）
-      # npm Trusted Publishing：setup-node 在 GITHUB_ACTIONS 下用 OIDC 换短期 token
-      # 见 https://docs.npmjs.com/trusted-publishers#for-github-actions
+      # 仅安装 npm CLI；勿设 registry-url——会与 @semantic-release/npm OIDC 冲突（EINVALIDNPMTOKEN）
+      # 见 https://semantic-release.gitbook.io/semantic-release/recipes/ci-configurations/github-actions
       - uses: actions/setup-node@v6
         with:
           node-version: "22"
-          registry-url: "https://registry.npmjs.org"
 
       - name: semantic-release
         env:
