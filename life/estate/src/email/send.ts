@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 
-import { readAccountPassword, resolveAccount } from "./accounts.ts";
+import { resolveAccount, resolveAccountPassword } from "./accounts.ts";
 
 export type SendEmailInput = {
   account_id?: string;
@@ -23,7 +23,7 @@ export async function sendEmail(input: SendEmailInput): Promise<{
   account_id: string;
 }> {
   const account = resolveAccount(input.account_id);
-  const pass = readAccountPassword(account);
+  const pass = await resolveAccountPassword(account);
 
   const transport = nodemailer.createTransport({
     host: account.smtp_host,

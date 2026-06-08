@@ -1,14 +1,14 @@
 # 逸灵风 config.yaml 示例
 # 复制到 ~/.anima/config.yaml 并根据需要修改
 
-# LLM（provider + profile）；API Key 可省略，由 pass api/opencode-go 注入
+# LLM（provider + profile）；API Key 使用 credential() 或 env() 引用
 llm:
   default_profile: chat
   providers:
     main:
       backend: openai_compatible
       base_url: https://api.openai.com/v1
-      # api_key:  # pass: anima credential add api/opencode-go token=xxx
+      # api_key: credential("api/opencode-go", "token")
   profiles:
     chat:
       chain:
@@ -89,14 +89,12 @@ models:
     context_window: 1000000
 
 # 邮箱（通信资产 —— 一等公民，非通知渠道）
-# 密码走 pass：credential add email/{name} password=xxx
-# credential_path 指向 pass 路径；credential_field 默认 password，可按需覆盖
+# password 支持明文、env("KEY") 或 credential("path", "field")
 email:
   accounts:
     - id: main-inbox
       address: you@example.com
-      credential_path: email/example
-      # credential_field: password
+      password: credential("email/example", "password")
       smtp_host: smtp.example.com
       smtp_port: 465
       imap_host: imap.example.com
@@ -117,7 +115,7 @@ compression:
 
 # Slice A 对话 Session PostgreSQL（生产必填）
 # database:
-#   url: pass:services/postgres/anima
+#   url: credential("services/postgres/anima", "url")
 #   # Docker: postgresql://freeanima:${PG_PASSWORD}@postgres:5432/freeanima
 
 # Redis（冰箱贴 / 待办跨 session 上下文；不可用时静默降级）

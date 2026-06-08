@@ -19,14 +19,14 @@ export function registerEmailTools(): void {
   registerTool({
     name: "register_email_account",
     description:
-      "注册邮件账户到 config.yaml。密码须预先写入 pass；credential_path 指定 pass 路径（如 email/feng-fengtrace），credential_field 指定字段名（默认 password）。",
+      '注册邮件账户到 config.yaml。password 支持明文、env("KEY") 或 credential("path", "field")。',
     parameters: {
       type: "object",
       properties: {
-        id: { type: "string", description: "账户 ID（config 内唯一标识，与 pass 路径无关）" },
-        credential_path: {
+        id: { type: "string", description: "账户 ID（config 内唯一标识）" },
+        password: {
           type: "string",
-          description: "pass 凭证路径，如 email/feng-fengtrace",
+          description: '密码引用，如 credential("email/feng-fengtrace", "password")',
         },
         address: { type: "string", description: "邮箱地址" },
         display_name: { type: "string", description: "发件显示名" },
@@ -38,25 +38,13 @@ export function registerEmailTools(): void {
         enabled: { type: "boolean" },
         desc: { type: "string" },
         tags: { type: "array", items: { type: "string" } },
-        credential_field: {
-          type: "string",
-          description: "pass 凭证字段名，默认 password",
-        },
       },
-      required: [
-        "id",
-        "credential_path",
-        "address",
-        "smtp_host",
-        "smtp_port",
-        "imap_host",
-        "imap_port",
-      ],
+      required: ["id", "password", "address", "smtp_host", "smtp_port", "imap_host", "imap_port"],
     },
     handler: async (args) => {
       try {
         const input = emailAccountInputSchema.parse(args);
-        const account = registerEmailAccount(input);
+        const account = await registerEmailAccount(input);
         return toolResult({ ok: true, account });
       } catch (err) {
         return toolError(errMsg(err));
@@ -66,12 +54,12 @@ export function registerEmailTools(): void {
 
   registerTool({
     name: "edit_email_account",
-    description: "编辑已注册邮件账户（不含密码）。",
+    description: "编辑已注册邮件账户（password 可改为新的 env/credential 引用）。",
     parameters: {
       type: "object",
       properties: {
         id: { type: "string" },
-        credential_path: { type: "string", description: "pass 凭证路径" },
+        password: { type: "string", description: "明文 / env() / credential() 引用" },
         address: { type: "string" },
         display_name: { type: "string" },
         smtp_host: { type: "string" },
@@ -82,10 +70,6 @@ export function registerEmailTools(): void {
         enabled: { type: "boolean" },
         desc: { type: "string" },
         tags: { type: "array", items: { type: "string" } },
-        credential_field: {
-          type: "string",
-          description: "pass 凭证字段名，默认 password",
-        },
       },
       required: ["id"],
     },

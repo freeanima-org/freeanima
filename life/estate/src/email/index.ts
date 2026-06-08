@@ -4,7 +4,7 @@ export {
   getDefaultSender,
   getEmailAccounts,
   listEmailAccounts,
-  readAccountPassword,
+  resolveAccountPassword,
   registerEmailAccount,
   resolveAccount,
   resolveEnabledAccounts,

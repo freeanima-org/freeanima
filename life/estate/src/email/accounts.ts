@@ -1,8 +1,8 @@
 import {
-  credential,
   emailAccountSchema,
   loadConfig,
   patchConfigSection,
+  resolveValue,
 } from "@freeanima/service-config";
 
 import type { EmailAccount, EmailAccountInput, EmailAccountPatch } from "./types.ts";
@@ -44,30 +44,27 @@ function normalizeDefaultSender(accounts: EmailAccount[]): EmailAccount[] {
   });
 }
 
-function credentialField(account: Pick<EmailAccount, "credential_field">): string {
-  return account.credential_field ?? "password";
-}
-
-function assertCredentialExists(
-  account: Pick<EmailAccount, "credential_path" | "credential_field">,
-): void {
-  const path = account.credential_path;
-  const field = credentialField(account);
+async function assertPasswordResolvable(account: Pick<EmailAccount, "password">): Promise<void> {
   try {
-    credential(path, field);
-  } catch {
-    throw new Error(`pass 凭证 ${path} 不存在或缺少 ${field} 字段`);
+    await resolveValue(account.password);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    throw new Error(`邮件密码无法解析: ${msg}`, { cause: err });
   }
 }
 
-export function registerEmailAccount(input: EmailAccountInput): EmailAccount {
+export async function resolveAccountPassword(account: EmailAccount): Promise<string> {
+  return resolveValue(account.password);
+}
+
+export async function registerEmailAccount(input: EmailAccountInput): Promise<EmailAccount> {
   const parsed = emailAccountInputSchema.parse(input);
   const accounts = getEmailAccounts();
   if (accounts.some((a) => a.id === parsed.id)) {
     throw new Error(`邮件账户已存在: ${parsed.id}`);
   }
 
-  assertCredentialExists(parsed);
+  await assertPasswordResolvable(parsed);
 
   let next = [...accounts, parsed];
   if (parsed.default_sender) {
@@ -137,8 +134,4 @@ export function resolveEnabledAccounts(accountId?: string): EmailAccount[] {
   const accounts = getEmailAccounts().filter((a) => a.enabled !== false);
   if (accounts.length === 0) throw new Error("未配置可用的邮件账户");
   return accounts;
-}
-
-export function readAccountPassword(account: EmailAccount): string {
-  return credential(account.credential_path, credentialField(account));
 }
