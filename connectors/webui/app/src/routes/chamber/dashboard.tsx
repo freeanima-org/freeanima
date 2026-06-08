@@ -1,17 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import type { ServiceStatus } from "@freeanima/connectors-webui/api";
 import { useState } from "react";
-import { trpc } from "@/lib/trpc.ts";
+import { api } from "@/lib/api.ts";
 
 export const Route = createFileRoute("/chamber/dashboard")({
   loader: async () => {
     const [status, mcpData, acpData, cmdData, tools, cronJobs] = await Promise.all([
-      trpc.status.get.query().catch(() => null),
-      trpc.mcp.status.query().catch(() => null),
-      trpc.acp.status.query().catch(() => null),
-      trpc.sessions.commands.query({ all: true }).catch(() => null),
-      trpc.status.tools.query().catch(() => null),
-      trpc.status.cronJobs.query().catch(() => null),
+      api.status.get.query().catch(() => null),
+      api.mcp.status.query().catch(() => null),
+      api.acp.status.query().catch(() => null),
+      api.sessions.commands.query({ all: true }).catch(() => null),
+      api.status.tools.query().catch(() => null),
+      api.status.cronJobs.query().catch(() => null),
     ]);
     return { status, mcpData, acpData, cmdData, tools, cronJobs };
   },
@@ -86,7 +86,7 @@ function DashboardPage() {
     if (!confirm("确定要重启服务吗？正在进行的对话将被中断。")) return;
     setRestarting(true);
     try {
-      const res = await trpc.status.restart.mutate();
+      const res = await api.status.restart.mutate();
       alert((res as { message?: string }).message || "服务正在重启...");
     } catch (err) {
       alert(`重启失败: ${err instanceof Error ? err.message : String(err)}`);

@@ -1,7 +1,5 @@
-import { WEBUI_BASE_PATH } from "./api/constants.ts";
-import webuiHtml from "../app/index.html";
-import { createHttpRoutes, TRPC_WS_PATH } from "./http-routes.ts";
-import type { TrpcWsSocketData } from "./trpc-bun-ws.ts";
+import { createApiApp, WEBUI_BASE_PATH } from "./elysia/app.ts";
+import { broadcastWsReconnect, shutdownWebui } from "./elysia/shutdown.ts";
 
 export type WebuiServerOptions = {
   development?: boolean;
@@ -11,6 +9,29 @@ export type WebuiServerHandle = {
   port: number;
   close: () => void | Promise<void>;
 };
+
+type WebuiRouteValue = Bun.HTMLBundle;
+
+/** 仅在 WebUI 监听启动时加载；close 后释放引用以便 GC */
+let cachedHtmlBundle: WebuiRouteValue | null = null;
+
+async function loadWebuiHtmlBundle(): Promise<WebuiRouteValue> {
+  if (!cachedHtmlBundle) {
+    cachedHtmlBundle = (await import("../app/index.html")).default;
+  }
+  return cachedHtmlBundle;
+}
+
+function releaseWebuiHtmlBundle(): void {
+  cachedHtmlBundle = null;
+}
+
+function webuiRoutes(handler: WebuiRouteValue): Record<string, WebuiRouteValue> {
+  return {
+    [WEBUI_BASE_PATH]: handler,
+    [`${WEBUI_BASE_PATH}/*`]: handler,
+  };
+}
 
 export async function startWebuiHttpServer(
   host: string,
@@ -22,53 +43,38 @@ export async function startWebuiHttpServer(
     process.env.NODE_ENV = "development";
   }
 
-  const routes = createHttpRoutes();
+  const webuiHtml = await loadWebuiHtmlBundle();
+  const apiApp = createApiApp().compile();
 
-  const server = Bun.serve<TrpcWsSocketData>({
+  const server = Bun.serve({
     hostname: host,
     port,
     development: development ? { console: true } : false,
-    routes: {
-      [WEBUI_BASE_PATH]: webuiHtml,
-      [`${WEBUI_BASE_PATH}/*`]: webuiHtml,
-    },
-    async fetch(req, bunServer) {
+    routes: webuiRoutes(webuiHtml),
+    fetch(req) {
       const url = new URL(req.url);
-      if (
-        url.pathname === TRPC_WS_PATH &&
-        req.headers.get("upgrade")?.toLowerCase() === "websocket"
-      ) {
-        if (bunServer.upgrade(req, { data: { req } })) {
-          return undefined as unknown as Response;
-        }
-        return new Response("WebSocket upgrade failed", { status: 500 });
+      if (url.pathname === "/" || url.pathname === "") {
+        return apiApp.fetch(req);
       }
-
-      return routes.fetch(req);
-    },
-    websocket: {
-      open(ws) {
-        routes.websocket.open(ws);
-      },
-      message(ws, message) {
-        routes.websocket.message(ws, message);
-      },
-      close(ws) {
-        routes.websocket.close(ws);
-      },
+      if (url.pathname.startsWith("/api")) {
+        return apiApp.fetch(req);
+      }
+      return undefined as unknown as Response;
     },
   });
 
   if (!server.port) {
+    releaseWebuiHtmlBundle();
     throw new Error(`WebUI server failed to bind ${host}:${port}`);
   }
 
   return {
     port: server.port,
     close: () => {
-      routes.broadcastReconnectNotification();
-      routes.shutdown();
+      broadcastWsReconnect();
+      shutdownWebui();
       server.stop(true);
+      releaseWebuiHtmlBundle();
     },
   };
 }
@@ -84,4 +90,5 @@ export async function startWebuiHttpServers(
   return Promise.all(hosts.map((host) => startWebuiHttpServer(host, port, options)));
 }
 
-export { WEBUI_BASE_PATH } from "./api/constants.ts";
+export { WEBUI_BASE_PATH };
+export type { App } from "./elysia/app.ts";

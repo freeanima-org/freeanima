@@ -3,6 +3,12 @@
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 新版本节由 [semantic-release](https://semantic-release.gitbook.io/) 根据 Conventional Commits 自动写入顶部。
 
+## [Unreleased]
+
+### BREAKING CHANGES
+
+- **webui:** API 从 tRPC 迁移至 Elysia REST + Eden Treaty；HTTP 路径为 `/api/*`，终端 WebSocket 为 `/api/studio/terminal/ws`，聊天流式为 `POST /api/messages/stream`（SSE）
+
 ## [0.1.6](https://github.com/freeanima-org/freeanima/compare/v0.1.5...v0.1.6) (2026-06-07)
 
 ### Features

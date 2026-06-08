@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { trpc } from "@/lib/trpc.ts";
+import { api } from "@/lib/api.ts";
 
 export const Route = createFileRoute("/chamber/commands")({
-  loader: () => trpc.sessions.commands.query({ all: true }).catch(() => ({ commands: [] })),
+  loader: () => api.sessions.commands.query({ all: true }).catch(() => ({ commands: [] })),
   component: CommandsPage,
 });
 

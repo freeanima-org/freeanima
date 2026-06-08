@@ -1,7 +1,7 @@
 import type { StreamApiEvent } from "@freeanima/connectors-webui/api";
 import { marked } from "marked";
 import { create } from "zustand";
-import { trpc } from "@/lib/trpc.ts";
+import { api } from "@/lib/api.ts";
 
 type SendCallbacks = {
   onToken?: (text: string) => void;
@@ -120,7 +120,7 @@ export const useChatStore = create<ChatState>(() => ({
 
     try {
       await new Promise<void>((resolve, reject) => {
-        const sub = trpc.messages.sendStream.subscribe(
+        const sub = api.messages.sendStream.subscribe(
           { sessionId, message: text },
           {
             onData: (ev) => {

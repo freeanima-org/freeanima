@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { trpc } from "@/lib/trpc.ts";
+import { api } from "@/lib/api.ts";
 
 export const Route = createFileRoute("/chamber/config")({
-  loader: () => trpc.status.config.query().catch(() => null),
+  loader: () => api.status.config.query().catch(() => null),
   component: ConfigPage,
 });
 

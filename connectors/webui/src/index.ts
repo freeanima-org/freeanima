@@ -7,4 +7,4 @@ export {
 } from "./webui-server.ts";
 export { closeHttpServers, waitForDrainWithTimeout } from "./http-shutdown.ts";
 export * from "./handlers/index.ts";
-export { appRouter, type AppRouter } from "./trpc/router.ts";
+export { apiApp, createApiApp, type App } from "./elysia/app.ts";

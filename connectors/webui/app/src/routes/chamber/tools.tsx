@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { trpc } from "@/lib/trpc.ts";
+import { api } from "@/lib/api.ts";
 
 type ToolRow = {
   name: string;
@@ -23,8 +23,7 @@ type ToolsLoaderData = {
 const EMPTY_LOADER_DATA: ToolsLoaderData = { tools: [], tool_sets: [] };
 
 export const Route = createFileRoute("/chamber/tools")({
-  loader: () =>
-    trpc.status.tools.query().catch(() => EMPTY_LOADER_DATA) as Promise<ToolsLoaderData>,
+  loader: () => api.status.tools.query().catch(() => EMPTY_LOADER_DATA) as Promise<ToolsLoaderData>,
   component: ToolsPage,
 });
 

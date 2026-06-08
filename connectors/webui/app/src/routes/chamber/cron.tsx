@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { trpc } from "@/lib/trpc.ts";
+import { api } from "@/lib/api.ts";
 
 export const Route = createFileRoute("/chamber/cron")({
-  loader: () => trpc.status.cronJobs.query().catch(() => ({ jobs: [] })),
+  loader: () => api.status.cronJobs.query().catch(() => ({ jobs: [] })),
   component: CronPage,
 });
 
@@ -37,7 +37,7 @@ function CronPage() {
     setLoading(true);
     setError("");
     try {
-      const data = await trpc.status.cronJobs.query();
+      const data = await api.status.cronJobs.query();
       setJobs(((data as { jobs?: CronJob[] }).jobs ?? []) as CronJob[]);
     } catch (e) {
       setError(`加载失败: ${e instanceof Error ? e.message : String(e)}`);
@@ -52,8 +52,8 @@ function CronPage() {
     setToggling((t) => ({ ...t, [job.id]: action }));
     try {
       const data = enable
-        ? await trpc.status.resumeCron.mutate({ id: job.id })
-        : await trpc.status.pauseCron.mutate({ id: job.id });
+        ? await api.status.resumeCron.mutate({ id: job.id })
+        : await api.status.pauseCron.mutate({ id: job.id });
       if ((data as { job?: CronJob }).job) updateJob((data as { job: CronJob }).job);
     } catch (e) {
       setError(
@@ -72,7 +72,7 @@ function CronPage() {
     setError("");
     setRunning((r) => ({ ...r, [job.id]: true }));
     try {
-      const data = await trpc.status.runCron.mutate({ id: job.id });
+      const data = await api.status.runCron.mutate({ id: job.id });
       if ((data as { job?: CronJob }).job) updateJob((data as { job: CronJob }).job);
       setToast((t) => ({
         ...t,

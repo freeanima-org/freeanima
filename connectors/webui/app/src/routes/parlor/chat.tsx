@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { trpc } from "@/lib/trpc.ts";
+import { api } from "@/lib/api.ts";
 import { useChatStore } from "@/stores/chat.ts";
 import { useSessionsStore } from "@/stores/sessions.ts";
 
@@ -72,7 +72,7 @@ function ChatPage() {
   const showCmdMenu = filteredCommands.length > 0;
 
   useEffect(() => {
-    void trpc.sessions.commands
+    void api.sessions.commands
       .query({})
       .then((raw) => setCommandList((raw as { commands?: CommandItem[] }).commands ?? []))
       .catch((e) => console.error("Failed to fetch commands:", e));

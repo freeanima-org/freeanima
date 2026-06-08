@@ -1,6 +1,6 @@
 import type { DisplayItem, SessionListItem } from "@freeanima/connectors-webui/api";
 import { create } from "zustand";
-import { trpc } from "@/lib/trpc.ts";
+import { api } from "@/lib/api.ts";
 
 export const STUDIO_PAIR_PLATFORM = "studio-pair-programming";
 
@@ -59,7 +59,7 @@ export const usePairProgrammingStore = create<PairProgrammingState>((set, get) =
 
   async fetchConfig() {
     try {
-      const c = await trpc.studio.config.get.query();
+      const c = await api.studio.config.get.query();
       const cfg = c as StudioConfig;
       set({ config: cfg, workspace: cfg.workspace || "" });
     } catch (e) {
@@ -69,7 +69,7 @@ export const usePairProgrammingStore = create<PairProgrammingState>((set, get) =
 
   async fetchSessions() {
     try {
-      const resp = await trpc.sessions.list.query({ platform: STUDIO_PAIR_PLATFORM });
+      const resp = await api.sessions.list.query({ platform: STUDIO_PAIR_PLATFORM });
       const sessions = (resp as { sessions?: SessionListItem[] }).sessions ?? [];
       set({ sessions });
       return sessions;
@@ -82,7 +82,7 @@ export const usePairProgrammingStore = create<PairProgrammingState>((set, get) =
   async selectSession(id) {
     set({ currentSessionId: id, display: [] });
     try {
-      const resp = await trpc.sessions.messages.query({ sessionId: id });
+      const resp = await api.sessions.messages.query({ sessionId: id });
       set({ display: (resp as { display?: DisplayItem[] }).display ?? [] });
     } catch (e) {
       console.error("selectSession:", e);
@@ -91,7 +91,7 @@ export const usePairProgrammingStore = create<PairProgrammingState>((set, get) =
 
   async createNewSession() {
     try {
-      const d = await trpc.sessions.create.mutate({ platform: STUDIO_PAIR_PLATFORM });
+      const d = await api.sessions.create.mutate({ platform: STUDIO_PAIR_PLATFORM });
       await get().fetchSessions();
       const sessionId = (d as { session_id: string }).session_id;
       await get().selectSession(sessionId);
@@ -104,7 +104,7 @@ export const usePairProgrammingStore = create<PairProgrammingState>((set, get) =
 
   async renameSession(sessionId, newTitle) {
     try {
-      await trpc.sessions.setTitle.mutate({ sessionId, title: newTitle });
+      await api.sessions.setTitle.mutate({ sessionId, title: newTitle });
       set({
         sessions: get().sessions.map((s) => (s.id === sessionId ? { ...s, title: newTitle } : s)),
       });
@@ -120,7 +120,7 @@ export const usePairProgrammingStore = create<PairProgrammingState>((set, get) =
   async fetchTree() {
     set({ loading: true, error: "" });
     try {
-      const d = await trpc.studio.tree.query();
+      const d = await api.studio.tree.query();
       const data = d as { tree?: FileTreeNode[]; workspace?: string };
       set({
         fileTree: data.tree || [],
@@ -138,7 +138,7 @@ export const usePairProgrammingStore = create<PairProgrammingState>((set, get) =
 
   async openFile(path, highlightLine) {
     try {
-      const file = await trpc.studio.file.query({ path });
+      const file = await api.studio.file.query({ path });
       set({
         currentFile: {
           ...(file as Record<string, unknown>),
@@ -156,7 +156,7 @@ export const usePairProgrammingStore = create<PairProgrammingState>((set, get) =
       return;
     }
     try {
-      const d = await trpc.studio.search.mutate({ query });
+      const d = await api.studio.search.mutate({ query });
       set({ searchResults: ((d as { results?: SearchHit[] }).results || []) as SearchHit[] });
     } catch (e) {
       set({
