@@ -90,6 +90,7 @@ export type DatabaseConfigInput = z.infer<typeof databaseConfigSchema>;
 
 const redisConfigSchema = z
   .object({
+    url: z.string().optional(),
     host: z.string().optional(),
     port: z.number().int().positive().optional(),
     password: z.string().optional(),

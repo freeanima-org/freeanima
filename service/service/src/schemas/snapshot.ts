@@ -11,6 +11,11 @@ export type PlatformStatusSnapshot = {
   [key: string]: unknown;
 };
 
+export type DependencyStatus =
+  | { status: "connected"; latency_ms?: number }
+  | { status: "error"; error?: string }
+  | { status: "not_configured" };
+
 export type ServiceSnapshot = {
   status: "running";
   pid: number;
@@ -37,6 +42,10 @@ export type ServiceSnapshot = {
   };
   host?: string;
   port?: number;
+  dependencies: {
+    postgres: DependencyStatus;
+    redis: DependencyStatus;
+  };
 };
 
 export type SessionSummary = {

@@ -9,6 +9,7 @@ export type {
 } from "@freeanima/service/schemas/display";
 
 export type {
+  DependencyStatus,
   HealthSnapshot as HealthResponse,
   PlatformStatusSnapshot as PlatformStatus,
   SafeConfigSnapshot as SafeConfigResponse,

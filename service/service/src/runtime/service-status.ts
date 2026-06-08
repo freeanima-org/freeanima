@@ -20,12 +20,15 @@ import {
 } from "@freeanima/connectors-cron";
 import type { CronJobData } from "@freeanima/connectors-cron";
 import { listCommandDefs, listCommandDefsForPlatform } from "@freeanima/connectors-commands";
+import { pingDatabase } from "@freeanima/connectors-db-pg";
+import { pingRedis } from "@freeanima/connectors-redis";
 import { getServiceContext } from "../context.ts";
 
 function conv() {
   return getServiceContext().conversation;
 }
 import type {
+  DependencyStatus,
   HealthSnapshot,
   PlatformStatusSnapshot,
   SafeConfigSnapshot,
@@ -73,6 +76,14 @@ export function health(): HealthSnapshot {
   return { status: "ok", version: ANIMA_VERSION };
 }
 
+export async function buildDependenciesStatus(): Promise<{
+  postgres: DependencyStatus;
+  redis: DependencyStatus;
+}> {
+  const [postgres, redis] = await Promise.all([pingDatabase(), pingRedis()]);
+  return { postgres, redis };
+}
+
 export async function buildStatus(
   startTime: number,
   platformStatus: Record<string, PlatformStatusSnapshot>,
@@ -107,6 +118,7 @@ export async function buildStatus(
   }
 
   const fileStats = buildMemoryFileStats();
+  const dependencies = await buildDependenciesStatus();
   let factsCount = 0;
   let l2IndexRows = 0;
   try {
@@ -141,6 +153,7 @@ export async function buildStatus(
       semantic_memory_count: factsCount,
       dialogue_message_count: l2IndexRows,
     },
+    dependencies,
   };
   if (host) status.host = host;
   if (port) status.port = port;

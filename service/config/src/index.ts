@@ -4,6 +4,7 @@ export { parseYaml, stringifyYaml } from "./yaml.ts";
 export * from "./credential.ts";
 export * from "./config.ts";
 export * from "./database.ts";
+export * from "./redis.ts";
 export * from "./repo-root.ts";
 export * from "./version.ts";
 export * from "./config-sanitize.ts";

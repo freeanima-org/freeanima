@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import type { ServiceStatus } from "@freeanima/connectors-webui/api";
+import type { DependencyStatus, ServiceStatus } from "@freeanima/connectors-webui/api";
 import { useState } from "react";
 import { api } from "@/lib/api.ts";
 
@@ -33,6 +33,18 @@ function formatBytes(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
+function dependencyBadgeClass(status: DependencyStatus["status"]) {
+  if (status === "connected") return "badge-success";
+  if (status === "error") return "badge-error";
+  return "badge-ghost";
+}
+
+function dependencyLabel(dep: DependencyStatus) {
+  if (dep.status === "connected") return "已连接";
+  if (dep.status === "error") return "异常";
+  return "未配置";
 }
 
 function DashboardPage() {
@@ -70,6 +82,8 @@ function DashboardPage() {
 
   const sessionByPlatform = svc?.sessions?.by_platform ?? {};
   const platforms = svc?.platforms ?? {};
+  const postgres = svc?.dependencies?.postgres;
+  const redis = svc?.dependencies?.redis;
 
   const sessionPlatformRows = Object.entries(sessionByPlatform)
     .map(([platform, count]) => ({ platform, count: count as number }))
@@ -130,6 +144,50 @@ function DashboardPage() {
               <p className="text-lg font-mono mt-1 truncate" title={svc.config?.model}>
                 {svc.config?.model || "—"}
               </p>
+            </StatCard>
+          </div>
+        </section>
+
+        <section>
+          <h3 className="text-sm font-semibold text-base-content/60 mb-2">基础设施</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard title="PostgreSQL">
+              {postgres ? (
+                <div className="mt-1 space-y-1">
+                  <span className={`badge ${dependencyBadgeClass(postgres.status)}`}>
+                    {dependencyLabel(postgres)}
+                  </span>
+                  {postgres.status === "connected" && postgres.latency_ms != null ? (
+                    <p className="text-xs text-base-content/50">{postgres.latency_ms} ms</p>
+                  ) : null}
+                  {postgres.status === "error" && postgres.error ? (
+                    <p className="text-xs text-error truncate" title={postgres.error}>
+                      {postgres.error}
+                    </p>
+                  ) : null}
+                </div>
+              ) : (
+                <p className="text-2xl font-mono mt-1">—</p>
+              )}
+            </StatCard>
+            <StatCard title="Redis">
+              {redis ? (
+                <div className="mt-1 space-y-1">
+                  <span className={`badge ${dependencyBadgeClass(redis.status)}`}>
+                    {dependencyLabel(redis)}
+                  </span>
+                  {redis.status === "connected" && redis.latency_ms != null ? (
+                    <p className="text-xs text-base-content/50">{redis.latency_ms} ms</p>
+                  ) : null}
+                  {redis.status === "error" && redis.error ? (
+                    <p className="text-xs text-error truncate" title={redis.error}>
+                      {redis.error}
+                    </p>
+                  ) : null}
+                </div>
+              ) : (
+                <p className="text-2xl font-mono mt-1">—</p>
+              )}
             </StatCard>
           </div>
         </section>
