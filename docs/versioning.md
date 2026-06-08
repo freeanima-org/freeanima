@@ -89,11 +89,13 @@ git push origin v0.1.0
 Release workflow 在 semantic-release 成功后还会：
 
 1. **`bun run build:cli`** — 产出 `cli/publish/`（`@freeanima/cli` tarball 内容）
-2. **`@semantic-release/npm`** — 根 `package.json` 写版本（不发布）；`pkgRoot: cli/publish` 阶段 `npm publish` + OIDC；本地手动发包用 `bun run publish:cli`
+2. **`@semantic-release/npm`**（`npmPublish: false`）— 仅 bump 根 `package.json` 版本
+3. **`scripts/publish-cli.sh`** — `npm publish` + GitHub Actions OIDC（npm CLI ≥ 11.5.1）；本地手动发包用 `bun run publish:cli`（需 `npm login`）
+4. **Docker 镜像** — push `v*` tag 时由 [`.github/workflows/release-docker.yml`](../.github/workflows/release-docker.yml) 构建并推送到 `ghcr.io/freeanima-org/freeanima:latest` 与 `:vX.Y.Z`
 
-### npm Trusted Publishing（推荐）
+### npm Trusted Publishing（唯一 CI 发布路径）
 
-在 [npm Trusted Publishers](https://docs.npmjs.com/trusted-publishers#for-github-actions) 为 `@freeanima/cli` 配置 GitHub Actions 后，**无需 `NPM_TOKEN` secret**：
+在 [npm Trusted Publishers](https://docs.npmjs.com/trusted-publishers#for-github-actions) 为 `@freeanima/cli` 配置 GitHub Actions：
 
 | 字段                 | 值              |
 | -------------------- | --------------- |
@@ -102,9 +104,9 @@ Release workflow 在 semantic-release 成功后还会：
 | Workflow filename    | `release.yml`   |
 | Allowed actions      | `npm publish`   |
 
-Release workflow 已设 `id-token: write`；`actions/setup-node` **勿**设 `registry-url`（会与 `@semantic-release/npm` OIDC 冲突导致 `EINVALIDNPMTOKEN`）。`cli/publish/package.json` 的 `publishConfig.registry` 须为 `https://registry.npmjs.org/`（含尾斜杠），否则插件不尝试 OIDC 而要求 `NPM_TOKEN`。首次发包若包尚不存在，需先在 npm 创建包并绑 Trusted Publisher。
+Release workflow 已设 `id-token: write`；`actions/setup-node` **勿**设 `registry-url`（会阻断 npm CLI OIDC）。`cli/publish/package.json` 的 `publishConfig.registry` 须为 `https://registry.npmjs.org/`（含尾斜杠）。首次发包若包尚不存在，需先在 npm 创建包并绑 Trusted Publisher。
 
-验证通过后，可在包 Settings → Publishing access 选 **disallow tokens**，仅保留 OIDC 发布。3. **Docker 镜像** — push `v*` tag 时由 [`.github/workflows/release-docker.yml`](../.github/workflows/release-docker.yml) 构建并推送到 `ghcr.io/freeanima-org/freeanima:latest` 与 `:vX.Y.Z`
+验证通过后，可在包 Settings → Publishing access 选 **disallow tokens**，仅保留 OIDC 发布。
 
 本地安装发布包（开发调试）：
 

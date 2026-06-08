@@ -24,12 +24,12 @@ jobs:
 
       - uses: ./.github/actions/setup-bun
 
-      # cli/publish 为构建产物（gitignore），先 build 以满足 @semantic-release/npm pkgRoot 校验
+      # cli/publish 为构建产物（gitignore），semantic-release prepare 也会再 build 一次
       - run: bun run build:cli
 
       # 质量门禁由 .github/workflows/ci.yml 负责（同 push 已跑 typecheck/lint/dep-check/test）
-      # 仅安装 npm CLI；勿设 registry-url——会与 @semantic-release/npm OIDC 冲突（EINVALIDNPMTOKEN）
-      # 见 https://semantic-release.gitbook.io/semantic-release/recipes/ci-configurations/github-actions
+      # npm 发布走 scripts/publish-cli.sh 原生 OIDC；勿设 registry-url（会阻断 Trusted Publishing）
+      # 见 https://docs.npmjs.com/trusted-publishers#for-github-actions
       - uses: actions/setup-node@v6
         with:
           node-version: "22"
