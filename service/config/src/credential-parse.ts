@@ -9,7 +9,7 @@ export function parseCredentialDict(text: string, path: string): Record<string, 
     const msg = err instanceof Error ? err.message : String(err);
     throw new Error(
       `Credential '${path}' is not valid YAML. Rewrite with 'anima credential add': ${msg}`,
-      { cause: err instanceof Error ? err : undefined },
+      { cause: err },
     );
   }
   if (typeof data !== "object" || data === null || Array.isArray(data)) {
