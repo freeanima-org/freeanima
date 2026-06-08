@@ -5,6 +5,7 @@ import type {
   ChatStreamEvent,
   ToolCall,
 } from "@freeanima/engine-provider-llm";
+import type { ChatCompletionMessageFunctionToolCall } from "openai/resources/chat/completions";
 import { createOpenAiClient } from "./client.ts";
 import { buildChatCompletionParams, buildStreamingChatCompletionParams } from "./request-params.ts";
 import { finalizeStreamingToolCalls, mergeStreamingToolCalls } from "./stream-tools.ts";
@@ -38,9 +39,12 @@ export async function runOpenAiChat(
   };
 
   if (msg.tool_calls?.length) {
+    const functionCalls = msg.tool_calls.filter(
+      (tc): tc is ChatCompletionMessageFunctionToolCall => tc.type === "function",
+    );
     return {
       ...base,
-      tool_calls: msg.tool_calls.map((tc) => ({
+      tool_calls: functionCalls.map((tc) => ({
         id: tc.id,
         type: tc.type,
         function: {

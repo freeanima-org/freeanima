@@ -10,7 +10,7 @@ describe("mapOpenAiCompatibleError", () => {
   });
 
   it("将 APIError 映射为 ProviderError", () => {
-    const err = mapOpenAiCompatibleError(new APIError(429, {}, "rate", {}), {
+    const err = mapOpenAiCompatibleError(new APIError(429, {}, "rate", new Headers()), {
       providerId: "main",
     });
     expect(err.code).toBe("rate_limited");
