@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
-import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
+import { parseYaml, stringifyYaml } from "./yaml.ts";
 import { CREDENTIAL_MAP, PATHS } from "./paths.ts";
 import { nestConfigSchema, type NestConfig } from "./schemas/config.ts";
 import { OPENAI_COMPATIBLE_BACKEND_ID } from "./schemas/llm-config.ts";

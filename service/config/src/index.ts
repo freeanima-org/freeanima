@@ -1,4 +1,5 @@
 export * from "./paths.ts";
+export { parseYaml, stringifyYaml } from "./yaml.ts";
 export * from "./credential.ts";
 export * from "./config.ts";
 export * from "./database.ts";

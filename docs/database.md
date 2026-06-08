@@ -262,7 +262,7 @@ Migration：[`engine/db/migrations/20260607160000_limbic_memory/migration.sql`](
 
 索引：`idx_cron_jobs_paused`。
 
-调度：`Bun.cron` 进程内调度（`schedule` 注册时 CST→UTC 转换）；`next_run_at` 不入库，API 层用 `Bun.cron.parse` 计算。
+调度：`Bun.cron` 进程内调度；5 段 cron 校验与 `next_run_at` 均经 `Bun.cron.parse`（注册前 CST→UTC 转换）。`next_run_at` 不入库，API 层实时计算。
 
 端口：`CronJobStorePort`（`engine-repos`）→ `PgCronJobStore`（`connectors-db-pg`）→ `initCronModule`（`connectors-cron` / `serve.ts`）。
 

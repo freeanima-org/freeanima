@@ -9,7 +9,7 @@
 改造目标：
 
 1. **语义清晰** — LLM 明确知道该写什么语言、该选哪个 runtime
-2. **默认 Node.js** — 与逸灵风同栈，TS/JS 片段首选
+2. **默认 Bun** — 与逸灵风同栈，TS/JS 片段首选
 3. **可扩展** — 预留 Python、Deno，按配置逐步启用
 4. **与 terminal 分工** — 结构化子进程 vs shell
 
@@ -29,7 +29,7 @@ Python 批处理应走 `execute_code(runtime="python")`，而非 `python3 -c "..
 ```typescript
 execute_code({
   code: string,           // 源码
-  runtime?: "nodejs" | "python" | "deno",  // 默认 nodejs
+  runtime?: "bun" | "nodejs" | "python" | "deno",  // 默认 bun
   timeout?: number,       // 秒，默认 300，上限 600
 })
 ```
@@ -53,22 +53,23 @@ interface CodeRuntime {
 
 | runtime    | 命令                              | 文件   | preamble                | 状态      |
 | ---------- | --------------------------------- | ------ | ----------------------- | --------- |
+| **bun**    | `bun`（`Bun.spawn`）              | `.ts`  | `node:fs` 等常用 import | ✅ 已实现 |
 | **nodejs** | `node --experimental-strip-types` | `.mts` | `node:fs` 等常用 import | ✅ 已实现 |
 | **python** | `python3`                         | `.py`  | 可选 `os`/`pathlib`     | 🔲 预留   |
 | **deno**   | `deno run --allow-read=...`       | `.ts`  | Deno 标准库             | 🔲 预留   |
 
 ### 阶段计划
 
-| 阶段           | 内容                                          | 状态                                                           |
-| -------------- | --------------------------------------------- | -------------------------------------------------------------- |
-| **P0**（当前） | 扁平 schema + `runtime` 参数 + 仅 nodejs 启用 | ✅ 已实现                                                      |
-| **P1–P4**      | python / 配置开关 / deno / credential 注入    | 见 [#40](https://github.com/freeanima-org/freeanima/issues/40) |
+| 阶段           | 内容                                           | 状态                                                           |
+| -------------- | ---------------------------------------------- | -------------------------------------------------------------- |
+| **P0**（当前） | 扁平 schema + `runtime` 参数 + bun/nodejs 启用 | ✅ 已实现                                                      |
+| **P1–P4**      | python / 配置开关 / deno / credential 注入     | 见 [#40](https://github.com/freeanima-org/freeanima/issues/40) |
 
 ## 配置（P2 预留）
 
 ```yaml
 execute_code:
-  default_runtime: nodejs
+  default_runtime: bun
   runtimes:
     nodejs:
       enabled: true

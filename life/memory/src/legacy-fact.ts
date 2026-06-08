@@ -2,7 +2,7 @@
  * 旧 L3 Markdown 事实解析（仅迁移脚本与一次性回填使用）。
  * 运行时代码勿依赖此模块。
  */
-import { parse as parseYaml } from "yaml";
+import { parseYaml } from "@freeanima/service-config";
 import { formatCstIso, safeParseOrNull } from "@freeanima/kernel-util";
 import { z } from "zod";
 

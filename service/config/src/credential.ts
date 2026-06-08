@@ -1,7 +1,7 @@
 import { execFileSync, spawnSync } from "node:child_process";
 import { readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { parse as parseYaml, stringify as yamlStringify } from "yaml";
+import { parseYaml, stringifyYaml } from "./yaml.ts";
 import { PATHS } from "./paths.ts";
 
 export interface CredentialMeta {
@@ -166,7 +166,7 @@ function clearCredentialCacheForPath(path: string): void {
 
 /** 写入或覆盖 pass 凭证（YAML 字典） */
 export function insertCredential(path: string, data: Record<string, string>): string {
-  const content = yamlStringify(data);
+  const content = stringifyYaml(data);
   let result: ReturnType<typeof spawnSync>;
   try {
     result = spawnSync("pass", ["insert", "--multiline", "--force", path], {

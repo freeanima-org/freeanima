@@ -13,7 +13,6 @@
   },
   "dependencies": {
     "@freeanima/kernel-util": "workspace:*",
-    "yaml": "^2.9.0",
     "zod": "catalog:"
   },
   "devDependencies": {

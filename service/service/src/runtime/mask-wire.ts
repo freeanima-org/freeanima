@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from "node:fs";
-import { parse as parseYaml } from "yaml";
+import { parseYaml } from "@freeanima/service-config";
 import { z } from "zod";
 import {
   defaultMaskRegistry,

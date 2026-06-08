@@ -1,4 +1,4 @@
-import { CronExpressionParser } from "cron-parser";
+import { cstCronToUtc } from "./timezone.ts";
 
 export enum ScheduleType {
   INTERVAL = "interval",
@@ -24,12 +24,11 @@ export function parseSchedule(expr: string): [ScheduleType, number | string] {
 
   const parts = trimmed.split(/\s+/);
   if (parts.length === 5) {
-    try {
-      CronExpressionParser.parse(trimmed);
-      return [ScheduleType.CRON, trimmed];
-    } catch (e) {
-      throw new Error(`Invalid cron expression '${trimmed}': ${e}`, { cause: e });
+    const utc = cstCronToUtc(trimmed);
+    if (!Bun.cron.parse(utc)) {
+      throw new Error(`Invalid cron expression '${trimmed}'`);
     }
+    return [ScheduleType.CRON, trimmed];
   }
 
   try {

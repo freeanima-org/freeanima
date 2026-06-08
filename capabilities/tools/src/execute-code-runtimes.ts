@@ -7,26 +7,47 @@ import { join } from "node:path";
 const MAX_OUTPUT = 50 * 1024;
 const MAX_TIMEOUT = 600;
 
+const BUN_PREAMBLE = `
+import { readFileSync, writeFileSync } from "node:fs";
+// anima-tools minimal preamble for execute_code
+`;
+
 const NODEJS_PREAMBLE = `
 import { readFileSync, writeFileSync } from "node:fs";
 // anima-tools minimal preamble for execute_code
 `;
 
-export type RuntimeId = "nodejs" | "python" | "deno";
+export type RuntimeId = "bun" | "nodejs" | "python" | "deno";
 
-const ALL_RUNTIMES: RuntimeId[] = ["nodejs", "python", "deno"];
+const ALL_RUNTIMES: RuntimeId[] = ["bun", "nodejs", "python", "deno"];
 
 /** 当前已启用的运行时；P1 起扩展 python，P3 起 deno */
-const ENABLED_RUNTIMES = new Set<RuntimeId>(["nodejs"]);
+const ENABLED_RUNTIMES = new Set<RuntimeId>(["bun", "nodejs"]);
 
 export function parseRuntime(raw: unknown): RuntimeId {
-  const value = String(raw ?? "nodejs").toLowerCase();
+  const value = String(raw ?? "bun").toLowerCase();
   if (ALL_RUNTIMES.includes(value as RuntimeId)) return value as RuntimeId;
-  return "nodejs";
+  return "bun";
 }
 
 export function listEnabledRuntimes(): RuntimeId[] {
   return ALL_RUNTIMES.filter((id) => ENABLED_RUNTIMES.has(id));
+}
+
+function truncateOutput(output: string): string {
+  if (output.length <= MAX_OUTPUT) return output;
+  return `${output.slice(0, MAX_OUTPUT)}\n... (truncated at ${MAX_OUTPUT} chars)`;
+}
+
+function formatProcessOutput(stdout: string, stderr: string, exitCode: number | null): string {
+  const parts: string[] = [];
+  if (stdout) parts.push(stdout);
+  if (stderr) parts.push(`--- stderr ---\n${stderr}`);
+  if (exitCode !== 0 && exitCode !== null) {
+    parts.push(`--- exit code: ${exitCode} ---`);
+  }
+  const output = parts.join("");
+  return truncateOutput(output) || "(no output)";
 }
 
 function formatSpawnResult(result: ReturnType<typeof spawnSync>): string {
@@ -43,12 +64,43 @@ function formatSpawnResult(result: ReturnType<typeof spawnSync>): string {
   return output || "(no output)";
 }
 
+async function runBun(code: string, timeoutSec: number): Promise<string> {
+  const dir = mkdtempSync(join(tmpdir(), "anima-exec-"));
+  const file = join(dir, "snippet.ts");
+  writeFileSync(file, `${BUN_PREAMBLE}\n${code}`, "utf-8");
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutSec * 1000);
+  try {
+    const proc = Bun.spawn(["bun", file], {
+      cwd: dir,
+      stdout: "pipe",
+      stderr: "pipe",
+      signal: controller.signal,
+    });
+    const [stdout, stderr, exitCode] = await Promise.all([
+      new Response(proc.stdout).text(),
+      new Response(proc.stderr).text(),
+      proc.exited,
+    ]);
+    return formatProcessOutput(stdout, stderr, exitCode);
+  } catch (e) {
+    return toolError(String(e));
+  } finally {
+    clearTimeout(timer);
+    try {
+      unlinkSync(file);
+    } catch {
+      /* ignore */
+    }
+  }
+}
+
 function runNodejs(code: string, timeoutSec: number): string {
   const dir = mkdtempSync(join(tmpdir(), "anima-exec-"));
   const file = join(dir, "snippet.mts");
   writeFileSync(file, `${NODEJS_PREAMBLE}\n${code}`, "utf-8");
   try {
-    const result = spawnSync(process.execPath, ["--experimental-strip-types", file], {
+    const result = spawnSync("node", ["--experimental-strip-types", file], {
       encoding: "utf-8",
       timeout: timeoutSec * 1000,
       maxBuffer: MAX_OUTPUT,
@@ -65,7 +117,11 @@ function runNodejs(code: string, timeoutSec: number): string {
   }
 }
 
-export function runExecuteCode(code: string, runtime: RuntimeId, timeoutSec: number): string {
+export async function runExecuteCode(
+  code: string,
+  runtime: RuntimeId,
+  timeoutSec: number,
+): Promise<string> {
   if (!ENABLED_RUNTIMES.has(runtime)) {
     return toolError(
       `runtime '${runtime}' 尚未启用；当前可用: ${listEnabledRuntimes().join(", ")}`,
@@ -73,6 +129,8 @@ export function runExecuteCode(code: string, runtime: RuntimeId, timeoutSec: num
   }
 
   switch (runtime) {
+    case "bun":
+      return runBun(code, timeoutSec);
     case "nodejs":
       return runNodejs(code, timeoutSec);
     default:
