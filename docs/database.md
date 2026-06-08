@@ -84,6 +84,8 @@ database:
 
 生产环境必须配置 `database.url`。
 
+**驱动（PoC）**：`DATABASE_DRIVER=bun` 启用 `Bun.sql` + `drizzle-orm/bun-sql/postgres`；默认 `postgres`（postgres.js）。Bun 驱动下 Drizzle 1.0.0-rc.3 的 RQB 查询仍有兼容问题，完整切换前需上游修复或升级；见 `tests/integration/db/bun-sql-driver.test.ts`。
+
 ### 迁移
 
 - **✅ 生产**：`anima service` 启动且 PG 为主存时，[`serve.ts`](../service/service/src/serve.ts) 自动调用 `runMigrations()`。

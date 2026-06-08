@@ -4,10 +4,12 @@ import { join } from "node:path";
 import {
   createPgRepositories,
   closeDb,
+  getDatabaseDriver,
   getDb,
   initDatabase,
   setDbForTest,
   type Db,
+  type SqlClient,
 } from "@freeanima/connectors-db-pg";
 import { createEngine } from "@freeanima/engine";
 import {
@@ -24,32 +26,48 @@ import type { PgRepositories } from "@freeanima/engine-repos";
 import { clearConfigCache, loadConfig } from "@freeanima/service-config";
 import type { SessionMessage, SessionMetaMessage } from "@freeanima/engine-db/domain";
 import { relations } from "@freeanima/engine-db/schema";
-import { drizzle } from "drizzle-orm/postgres-js";
+import { drizzle as drizzleBun } from "drizzle-orm/bun-sql/postgres";
+import { drizzle as drizzlePostgres } from "drizzle-orm/postgres-js";
+import { SQL } from "bun";
 import postgres from "postgres";
 import type { Engine } from "@freeanima/engine";
 
 export type PgTestContext = {
-  sql: postgres.Sql;
+  sql: SqlClient;
   db: Db;
   engine: Engine;
   teardown: () => Promise<void>;
 };
 
 let activeCtx: PgTestContext | null = null;
+let activeDriver: ReturnType<typeof getDatabaseDriver> | null = null;
 
 export function getActivePgTestContext(): PgTestContext | null {
   return activeCtx;
 }
 
-async function clearPgTables(sql: postgres.Sql): Promise<void> {
-  await sql`DELETE FROM messages`;
-  await sql`DELETE FROM sessions`;
-  await sql`DELETE FROM semantic_memory`;
-  await sql`DELETE FROM self_blocks`;
-  await sql`DELETE FROM autobiographical_memory`;
-  await sql`DELETE FROM limbic_memory`;
-  await sql`DELETE FROM tasks`;
-  await sql`DELETE FROM cron_jobs`;
+async function clearPgTables(sql: SqlClient): Promise<void> {
+  if (getDatabaseDriver() === "bun") {
+    const bunSql = sql as SQL;
+    await bunSql`DELETE FROM messages`;
+    await bunSql`DELETE FROM sessions`;
+    await bunSql`DELETE FROM semantic_memory`;
+    await bunSql`DELETE FROM self_blocks`;
+    await bunSql`DELETE FROM autobiographical_memory`;
+    await bunSql`DELETE FROM limbic_memory`;
+    await bunSql`DELETE FROM tasks`;
+    await bunSql`DELETE FROM cron_jobs`;
+    return;
+  }
+  const pgSql = sql as postgres.Sql;
+  await pgSql`DELETE FROM messages`;
+  await pgSql`DELETE FROM sessions`;
+  await pgSql`DELETE FROM semantic_memory`;
+  await pgSql`DELETE FROM self_blocks`;
+  await pgSql`DELETE FROM autobiographical_memory`;
+  await pgSql`DELETE FROM limbic_memory`;
+  await pgSql`DELETE FROM tasks`;
+  await pgSql`DELETE FROM cron_jobs`;
 }
 
 function createTestEngine(repos: PgRepositories): Engine {
@@ -64,22 +82,34 @@ function wireEngine(): Engine {
 }
 
 /** Vitest 等根目录测试：注入 PG 连接并清表 */
+function createTestSql(url: string): { sql: SqlClient; db: Db } {
+  if (getDatabaseDriver() === "bun") {
+    const sql = new SQL(url);
+    const db = drizzleBun({ client: sql, relations });
+    return { sql, db };
+  }
+  const sql = postgres(url, { max: 5 });
+  const db = drizzlePostgres({ client: sql, relations });
+  return { sql, db };
+}
+
 export async function setupPgTestDb(url: string): Promise<PgTestContext> {
   initDatabase({ getDatabaseUrl: () => url });
-  const sql = postgres(url, { max: 5 });
+  const { sql, db } = createTestSql(url);
   await clearPgTables(sql);
-  const db = drizzle({ client: sql, relations });
-  setDbForTest(db, sql);
+  setDbForTest(db, sql, getDatabaseDriver());
   const engine = createTestEngine(createPgRepositories({ getDb }));
   activeCtx = {
     sql,
     db,
     engine,
     async teardown() {
-      await sql.end();
+      if (getDatabaseDriver() === "bun") (sql as SQL).close();
+      else await (sql as postgres.Sql).end();
       await closeDb();
       resetLlmRuntimeForTests();
       activeCtx = null;
+      activeDriver = null;
     },
   };
   return activeCtx;
@@ -124,12 +154,20 @@ export async function setupIntegrationHome(opts: {
 }): Promise<PgTestContext> {
   writeDatabaseConfig(opts.home, opts.url, opts.configYaml);
   clearConfigCache();
+  const driver = getDatabaseDriver();
+  if (activeCtx && activeDriver !== driver) {
+    await activeCtx.teardown();
+    activeCtx = null;
+    activeDriver = null;
+  }
   if (activeCtx) {
     await clearPgTables(activeCtx.sql);
     wireEngine();
     return activeCtx;
   }
-  return setupPgTestDb(opts.url);
+  const ctx = await setupPgTestDb(opts.url);
+  activeDriver = driver;
+  return ctx;
 }
 
 /** 集成测试套件结束时关闭 PG 连接 */
