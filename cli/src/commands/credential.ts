@@ -1,4 +1,9 @@
-import { credential, insertCredential, listCredentials } from "@freeanima/service-config";
+import {
+  credential,
+  insertCredential,
+  listCredentials,
+  updateCredential,
+} from "@freeanima/service-config";
 import type { Command } from "commander";
 
 import { printCliError } from "../output/errors.ts";
@@ -42,8 +47,8 @@ export function registerCredentialCommand(program: Command): void {
     .command("get")
     .description("读取凭证值（输出到 stdout，供脚本使用）")
     .argument("<path>", "凭证路径，如 services/discord")
-    .argument("[field]", "YAML 字段名（多字段凭证必填）")
-    .action((path: string, field?: string) => {
+    .argument("<field>", "YAML 字段名，如 token、url")
+    .action((path: string, field: string) => {
       try {
         console.log(credential(path, field));
       } catch (e) {
@@ -54,7 +59,7 @@ export function registerCredentialCommand(program: Command): void {
 
   credentialCmd
     .command("add")
-    .description("写入凭证（YAML），参数格式 key=value")
+    .description("新建或整份覆盖凭证（YAML），参数格式 key=value")
     .argument("<path>", "凭证路径")
     .argument("<kv...>", "字段，如 token=xxx desc=Discord bot")
     .action((path: string, kv: string[]) => {
@@ -62,6 +67,22 @@ export function registerCredentialCommand(program: Command): void {
         const data = parseKeyValues(kv);
         insertCredential(path, data);
         writeStatusLine("ok", `已写入 ${path}`);
+      } catch (e) {
+        printCliError(e);
+        process.exit(1);
+      }
+    });
+
+  credentialCmd
+    .command("set")
+    .description("更新凭证字段（合并已有 YAML，不覆盖未提及字段）")
+    .argument("<path>", "凭证路径")
+    .argument("<kv...>", "字段，如 npmtoken=xxx desc=updated")
+    .action((path: string, kv: string[]) => {
+      try {
+        const data = parseKeyValues(kv);
+        updateCredential(path, data);
+        writeStatusLine("ok", `已更新 ${path}`);
       } catch (e) {
         printCliError(e);
         process.exit(1);

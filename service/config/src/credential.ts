@@ -1,7 +1,8 @@
 import { execFileSync, spawnSync } from "node:child_process";
 import { readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { parseYaml, stringifyYaml } from "./yaml.ts";
+import { assertYamlDictRoundtrip, parseCredentialDict } from "./credential-parse.ts";
+import { stringifyYaml } from "./yaml.ts";
 import { PATHS } from "./paths.ts";
 
 export interface CredentialMeta {
@@ -43,51 +44,41 @@ class RuntimeError extends Error {
   override name = "RuntimeError";
 }
 
-function tryYaml(text: string): { data: unknown; isYaml: boolean } {
-  try {
-    const data = parseYaml(text);
-    if (typeof data === "object" && data !== null && !Array.isArray(data)) {
-      return { data, isYaml: true };
-    }
-    return { data: text, isYaml: false };
-  } catch {
-    return { data: text, isYaml: false };
-  }
+function toRuntimeError(err: unknown): RuntimeError {
+  const msg = err instanceof Error ? err.message : String(err);
+  return new RuntimeError(msg);
 }
 
-function resolveCredential(path: string, field?: string): string {
+function resolveCredential(path: string, field: string): string {
   const raw = passShow(path);
-  const { data, isYaml } = tryYaml(raw);
-  if (!isYaml) return String(data);
-  const dict = data as Record<string, unknown>;
-  if (field) {
-    const val = dict[field];
-    if (val === undefined) {
-      throw new RuntimeError(
-        `Credential '${path}' has no field '${field}'. Available: ${Object.keys(dict).join(", ")}`,
-      );
-    }
-    return String(val);
+  let dict: Record<string, unknown>;
+  try {
+    dict = parseCredentialDict(raw, path);
+  } catch (err: unknown) {
+    throw toRuntimeError(err);
   }
-  throw new RuntimeError(
-    `Credential '${path}' is a YAML dict with fields: ${Object.keys(dict).join(", ")}. Specify field=`,
-  );
+
+  const val = dict[field];
+  if (val === undefined) {
+    throw new RuntimeError(
+      `Credential '${path}' has no field '${field}'. Available: ${Object.keys(dict).join(", ")}`,
+    );
+  }
+  return String(val);
 }
 
 /** 读取 YAML 凭证全文（用于 weixin-ilink 等多字段配置） */
 export function credentialRaw(path: string): Record<string, unknown> {
   const raw = passShow(path);
-  const { data, isYaml } = tryYaml(raw);
-  if (!isYaml || typeof data !== "object" || data === null || Array.isArray(data)) {
-    throw new RuntimeError(
-      `Credential '${path}' is plaintext, not YAML. Use 'anima credential add' to rewrite as YAML.`,
-    );
+  try {
+    return parseCredentialDict(raw, path);
+  } catch (err: unknown) {
+    throw toRuntimeError(err);
   }
-  return data as Record<string, unknown>;
 }
 
-export function credential(path: string, field?: string): string {
-  const cacheKey = field ? `${path}:${field}` : path;
+export function credential(path: string, field: string): string {
+  const cacheKey = `${path}:${field}`;
   const hit = cache.get(cacheKey);
   if (hit !== undefined) {
     if (hit instanceof Error) throw hit;
@@ -125,20 +116,17 @@ function readCredentialMeta(gpgPath: string): CredentialMeta {
   let isYaml = false;
   try {
     const raw = passShow(rel);
-    const { data, isYaml: y } = tryYaml(raw);
-    isYaml = y;
-    if (y && typeof data === "object" && data !== null) {
-      const dict = data as Record<string, unknown>;
-      fields = Object.keys(dict);
-      const tagsRaw = dict.tags;
-      if (Array.isArray(tagsRaw)) tags = tagsRaw.map(String);
-      else if (typeof tagsRaw === "string")
-        tags = tagsRaw
-          .split(",")
-          .map((t) => t.trim())
-          .filter(Boolean);
-      desc = String(dict.desc ?? dict.description ?? "");
-    }
+    const dict = parseCredentialDict(raw, rel);
+    isYaml = true;
+    fields = Object.keys(dict);
+    const tagsRaw = dict.tags;
+    if (Array.isArray(tagsRaw)) tags = tagsRaw.map(String);
+    else if (typeof tagsRaw === "string")
+      tags = tagsRaw
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean);
+    desc = String(dict.desc ?? dict.description ?? "");
   } catch {
     // metadata only
   }
@@ -164,9 +152,31 @@ function clearCredentialCacheForPath(path: string): void {
   }
 }
 
-/** 写入或覆盖 pass 凭证（YAML 字典） */
-export function insertCredential(path: string, data: Record<string, string>): string {
-  const content = stringifyYaml(data);
+function credentialNotFound(err: unknown): boolean {
+  return err instanceof RuntimeError && err.message.startsWith("Failed to read credential");
+}
+
+/** 将 YAML 字典转为 string 记录（供 merge / 写回 pass） */
+export function credentialDictToRecord(dict: Record<string, unknown>): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [key, val] of Object.entries(dict)) {
+    if (val === null || val === undefined) continue;
+    if (typeof val === "string") out[key] = val;
+    else if (typeof val === "number" || typeof val === "boolean") out[key] = String(val);
+    else out[key] = JSON.stringify(val);
+  }
+  return out;
+}
+
+/** 合并已有字段与 patch（patch 同名键覆盖） */
+export function mergeCredentialData(
+  existing: Record<string, unknown>,
+  patch: Record<string, string>,
+): Record<string, string> {
+  return { ...credentialDictToRecord(existing), ...patch };
+}
+
+function writeCredential(path: string, content: string): string {
   let result: ReturnType<typeof spawnSync>;
   try {
     result = spawnSync("pass", ["insert", "--multiline", "--force", path], {
@@ -190,4 +200,32 @@ export function insertCredential(path: string, data: Record<string, string>): st
   }
   clearCredentialCacheForPath(path);
   return path;
+}
+
+/** 写入或覆盖 pass 凭证（YAML 字典） */
+export function insertCredential(path: string, data: Record<string, string>): string {
+  const content = stringifyYaml(data);
+  try {
+    assertYamlDictRoundtrip(content, path);
+  } catch (err: unknown) {
+    throw toRuntimeError(err);
+  }
+  return writeCredential(path, content);
+}
+
+/** 合并更新 pass 凭证字段；路径不存在时等同 insertCredential */
+export function updateCredential(path: string, patch: Record<string, string>): string {
+  let merged: Record<string, string>;
+  try {
+    const raw = passShow(path);
+    const dict = parseCredentialDict(raw, path);
+    merged = mergeCredentialData(dict, patch);
+  } catch (err: unknown) {
+    if (credentialNotFound(err)) {
+      merged = patch;
+    } else {
+      throw toRuntimeError(err);
+    }
+  }
+  return insertCredential(path, merged);
 }
