@@ -1,0 +1,20 @@
+---
+import Pagination from "virtual:starlight/components/Pagination";
+import SiteFooter from "./SiteFooter.astro";
+---
+
+<div class="starlight-footer">
+  <Pagination />
+  <SiteFooter />
+</div>
+
+<style>
+  .starlight-footer :global(.site-footer) {
+    border-top: none;
+    margin-top: 0;
+  }
+
+  .starlight-footer :global(.pagination-links) {
+    margin-top: 3rem;
+  }
+</style>

@@ -1,1 +1,31 @@
-/* P1 再补充设计 token */
+/* Starlight 主题变量 → 与 global.css 设计 token 对齐 */
+:root {
+  --sl-color-black: var(--color-bg);
+  --sl-color-gray-1: var(--color-text);
+  --sl-color-gray-2: var(--color-text-secondary);
+  --sl-color-gray-3: var(--color-text-muted);
+  --sl-color-gray-4: var(--color-text-faint);
+  --sl-color-gray-5: var(--color-border);
+  --sl-color-gray-6: #141416;
+  --sl-color-gray-7: var(--color-bg);
+
+  --sl-color-text: var(--color-text-secondary);
+  --sl-color-text-accent: var(--color-text);
+  --sl-color-bg: var(--color-bg);
+  --sl-color-bg-nav: var(--color-bg);
+  --sl-color-bg-sidebar: #141416;
+  --sl-color-bg-inline-code: #141416;
+  --sl-color-hairline-light: var(--color-border);
+  --sl-color-hairline: var(--color-border);
+  --sl-color-hairline-shade: var(--color-border);
+
+  --sl-color-accent: var(--color-text);
+  --sl-color-accent-high: var(--color-text);
+  --sl-color-accent-low: #141416;
+}
+
+/* 文档页顶栏内嵌 SiteHeader 时去掉重复边框 */
+.site-header--embedded {
+  border-bottom: none;
+  padding-inline: 0;
+}
