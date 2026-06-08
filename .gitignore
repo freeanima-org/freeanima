@@ -42,5 +42,6 @@ cli/publish/
 
 # Coverage
 coverage/
+.coverage-shards/
 
 .tanstack/

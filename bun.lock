@@ -14,6 +14,7 @@
         "@semantic-release/github": "^12.0.8",
         "@semantic-release/npm": "^13.1.5",
         "@semantic-release/release-notes-generator": "^14.1.1",
+        "@splicemood/lcov-to-cobertura": "^0.1.1",
         "@types/bun": "catalog:",
         "@types/node": "catalog:",
         "@typescript/native-preview": "^7.0.0-dev.20260602.1",
@@ -1008,6 +1009,8 @@
     "@sindresorhus/is": ["@sindresorhus/is@4.6.0", "", {}, "sha512-t09vSN3MdfsyCHoFcTRCH/iUtG7OJ0CsjzB8cjAmKc/va/kIgeDI/TxsigdncE/4be734m0cvIYwNaV4i2XqAw=="],
 
     "@sindresorhus/merge-streams": ["@sindresorhus/merge-streams@4.0.0", "", {}, "sha512-tlqY9xq5ukxTUZBmoOp+m61cqwQD5pHJtFY3Mn8CA8ps6yghLH/Hw8UPdqg4OLmFW3IFlcXnQNmo/dh8HzXYIQ=="],
+
+    "@splicemood/lcov-to-cobertura": ["@splicemood/lcov-to-cobertura@0.1.1", "", { "bin": { "lcov-to-cobertura": "dist/src/cli.js", "lcov_cobertura": "dist/src/cli.js" } }, "sha512-qT3ebtNYMgzdkb1OUxFRJ30Y1e/Lj5m976Oc5x//LDplJCH6Lzex6GJojfdvLhSVb76/MEoDg+eyUrwfxmvRFQ=="],
 
     "@tanstack/history": ["@tanstack/history@1.162.0", "", {}, "sha512-79pf/RkhteYZTRgcR4F9kbk84P2N8rugQJswxfIqovlbRiT3yI7eBE+5QorIrZaOKktsgzRlXh1l/du/xpl4iA=="],
 

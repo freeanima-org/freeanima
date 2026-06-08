@@ -13,14 +13,28 @@ jobs:
   quality:
     name: Quality
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      code-quality: write
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: ./.github/actions/setup-bun
       - uses: ./.github/actions/setup-anima-home
       - run: bun run typecheck
       - run: bun run lint
       - run: bun run dep-check
       - run: bun run test
+      - run: bun run coverage:cobertura
+      - name: Upload coverage report
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        uses: actions/upload-code-coverage@v1
+        with:
+          file: coverage/cobertura.xml
+          language: JavaScript
+          label: code-coverage/bun
+      - run: bun run coverage:check-threshold
 
   e2e:
     name: E2E
