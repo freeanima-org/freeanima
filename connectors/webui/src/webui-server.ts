@@ -1,16 +1,13 @@
-import type { Server as HttpServer } from "node:http";
-import { createServer } from "node:http";
 import { WEBUI_BASE_PATH } from "./api/constants.ts";
 import webuiHtml from "../app/index.html";
-import { createHttpRoutes, handleNodeHttpRequest } from "./http-routes.ts";
+import { createHttpRoutes, TRPC_WS_PATH } from "./http-routes.ts";
+import type { TrpcWsSocketData } from "./trpc-bun-ws.ts";
 
 export type WebuiServerOptions = {
   development?: boolean;
 };
 
 export type WebuiServerHandle = {
-  server: HttpServer;
-  bunDev: ReturnType<typeof Bun.serve> | null;
   close: () => void | Promise<void>;
 };
 
@@ -24,51 +21,52 @@ export async function startWebuiHttpServer(
     process.env.NODE_ENV = "development";
   }
 
-  const bunDev = Bun.serve({
-    hostname: "127.0.0.1",
-    port: 0,
+  const routes = createHttpRoutes();
+
+  const server = Bun.serve<TrpcWsSocketData>({
+    hostname: host,
+    port,
     development: development ? { console: true } : false,
     routes: {
       [WEBUI_BASE_PATH]: webuiHtml,
       [`${WEBUI_BASE_PATH}/*`]: webuiHtml,
     },
-    fetch(_req) {
-      return new Response("Not Found", { status: 404 });
+    async fetch(req, bunServer) {
+      const url = new URL(req.url);
+      if (
+        url.pathname === TRPC_WS_PATH &&
+        req.headers.get("upgrade")?.toLowerCase() === "websocket"
+      ) {
+        if (bunServer.upgrade(req, { data: { req } })) {
+          return undefined as unknown as Response;
+        }
+        return new Response("WebSocket upgrade failed", { status: 500 });
+      }
+
+      return routes.fetch(req);
+    },
+    websocket: {
+      open(ws) {
+        routes.websocket.open(ws);
+      },
+      message(ws, message) {
+        routes.websocket.message(ws, message);
+      },
+      close(ws) {
+        routes.websocket.close(ws);
+      },
     },
   });
 
-  const proxyWebui = async (req: Request): Promise<Response> => {
-    const url = new URL(req.url);
-    const upstream = `http://127.0.0.1:${bunDev.port}${url.pathname}${url.search}`;
-    return fetch(upstream, {
-      method: req.method,
-      headers: req.headers,
-      body: req.method === "GET" || req.method === "HEAD" ? undefined : req.body,
-    });
-  };
-
-  const routes = createHttpRoutes(proxyWebui);
-  let closeWs: (() => void) | null = null;
-
-  const server = createServer((req, res) => {
-    void handleNodeHttpRequest(routes, req, res);
-  });
-
-  closeWs = routes.attachTrpcWs(server, bunDev.port);
-
-  await new Promise<void>((resolve, reject) => {
-    server.once("error", reject);
-    server.listen(port, host, () => resolve());
-  });
+  if (!server.port) {
+    throw new Error(`WebUI server failed to bind ${host}:${port}`);
+  }
 
   return {
-    server,
-    bunDev,
     close: () => {
-      closeWs?.();
+      routes.broadcastReconnectNotification();
       routes.shutdown();
-      server.close();
-      bunDev.stop(true);
+      server.stop(true);
     },
   };
 }
