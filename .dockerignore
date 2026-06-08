@@ -1,0 +1,12 @@
+.git
+.cursor
+node_modules
+**/.git
+**/node_modules
+cli/publish
+*.log
+.env
+config.yaml
+.anima
+coverage
+.husky/_

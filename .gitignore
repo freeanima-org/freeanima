@@ -1,6 +1,7 @@
 # Environment
 .env
 .env.*
+!.env.example
 
 # Local runtime config (never commit)
 config.yaml
@@ -35,6 +36,9 @@ bun-debug.log*
 # WebUI Vue projects
 connectors/webui/app/*/node_modules/
 connectors/webui/app/dist/
+
+# CLI publish 产物
+cli/publish/
 
 # Coverage
 coverage/

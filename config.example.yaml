@@ -103,3 +103,12 @@ compression:
 # L1 Session PostgreSQL（Slice A，生产必填）
 # database:
 #   url: pass:services/postgres/anima
+#   # Docker: postgresql://freeanima:${PG_PASSWORD}@postgres:5432/freeanima
+
+# Redis（冰箱贴 / 待办跨 session 上下文；不可用时静默降级）
+# 本地默认 127.0.0.1:6379；Docker Compose 内写 redis
+# redis:
+#   host: 127.0.0.1
+#   port: 6379
+#   # password:
+#   # db: 0

@@ -1,3 +1,5 @@
+import { join } from "node:path";
+import { getRepoRoot } from "@freeanima/service-config";
 import { createApiApp, WEBUI_BASE_PATH } from "./elysia/app.ts";
 import { broadcastWsReconnect, shutdownWebui } from "./elysia/shutdown.ts";
 
@@ -17,9 +19,10 @@ let cachedHtmlBundle: WebuiRouteValue | null = null;
 
 async function loadWebuiHtmlBundle(): Promise<WebuiRouteValue> {
   if (!cachedHtmlBundle) {
-    cachedHtmlBundle = (await import("../app/index.html")).default;
+    const htmlPath = join(getRepoRoot(), "connectors/webui/app/index.html");
+    cachedHtmlBundle = (await import(/* @vite-ignore */ htmlPath)).default;
   }
-  return cachedHtmlBundle;
+  return cachedHtmlBundle!;
 }
 
 function releaseWebuiHtmlBundle(): void {

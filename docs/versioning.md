@@ -84,6 +84,29 @@ git push origin v0.1.0
 
 之后仅 **tag 之后** 的可发版 commit 会触发新版本。
 
+## Bun 全局包与 Docker 镜像
+
+Release workflow 在 semantic-release 成功后还会：
+
+1. **`bun run build:cli`** — 产出 `cli/publish/`（`@freeanima/cli` tarball 内容）
+2. **`bun publish --access public`**（在 `cli/publish/`，需 GitHub Actions secret **`NPM_TOKEN`**）
+3. **Docker 镜像** — push `v*` tag 时由 [`.github/workflows/docker-release.yml`](../.github/workflows/docker-release.yml) 构建并推送到 `ghcr.io/freeanima-org/freeanima:latest` 与 `:vX.Y.Z`
+
+本地安装发布包（开发调试）：
+
+```bash
+bun run build:cli
+bun install -g ./cli/publish
+anima service start --foreground
+```
+
+Docker Compose 快速体验：
+
+```bash
+cp .env.example .env   # 填写 PG_PASSWORD、OPENAI_API_KEY
+docker compose up --build
+```
+
 ## 禁止事项
 
 - 不要在业务代码中硬编码 `X.Y.Z`；统一 `import { ANIMA_VERSION } from "@freeanima/service"`（或经 health/status 暴露）。
@@ -96,6 +119,7 @@ git push origin v0.1.0
 | ---------------------------------------- | --------------------------- |
 | `package.json`                           | 版本唯一写入源（CI 更新）   |
 | `.releaserc.json`                        | semantic-release 插件配置   |
-| `.github/workflows/release.yml`          | 发版 CI                     |
+| `.github/workflows/release.yml`          | 发版 CI + npm publish       |
+| `.github/workflows/docker-release.yml`   | Docker 镜像推 GHCR          |
 | `service/service/src/runtime/version.ts` | 运行时读取根版本            |
 | `CHANGELOG.md`                           | 自动追加新版本节 + 历史条目 |
