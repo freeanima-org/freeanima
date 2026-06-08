@@ -89,7 +89,7 @@ git push origin v0.1.0
 Release workflow 在 semantic-release 成功后还会：
 
 1. **`bun run build:cli`** — 产出 `cli/publish/`（`@freeanima/cli` tarball 内容）
-2. **`bun publish --access public`**（在 `cli/publish/`，需 GitHub Actions secret **`NPM_TOKEN`**）
+2. **`scripts/publish-cli.sh`** — 在 `cli/publish/` 执行 `bun publish`；需 secret **`NPM_TOKEN`**（未配置时 **跳过 npm 发布**，不阻断 GitHub Release）
 3. **Docker 镜像** — push `v*` tag 时由 [`.github/workflows/docker-release.yml`](../.github/workflows/docker-release.yml) 构建并推送到 `ghcr.io/freeanima-org/freeanima:latest` 与 `:vX.Y.Z`
 
 本地安装发布包（开发调试）：

@@ -52,7 +52,7 @@
       "@semantic-release/exec",
       {
         "prepareCmd": "bun run build:cli",
-        "publishCmd": "cd cli/publish && bun publish --access public"
+        "publishCmd": "bash scripts/publish-cli.sh"
       }
     ],
     [
