@@ -43,6 +43,8 @@
 
 生产环境可在 `~/.anima/SOUL.md` 写入具体人格与关系叙事。开源仓库只提供架构与机制；**具体是谁、与谁相伴，由部署者定义。**
 
+运行时，六块自我内容以第一人称写入 PG `self_blocks`，注入 system prompt 时由第二人称外层骨架包裹并嵌入 `md` 代码块（见 [`self-layer.md`](self-layer.md) §System Prompt 注入），使 LLM 明确「这是你必须遵守的灵魂文件」，同时保留第一人称自述质地。
+
 示例（虚构）：
 
 ```markdown
