@@ -19,22 +19,11 @@ cd "${ROOT}/cli/publish"
 VERSION="$(bun -p "require('./package.json').version")"
 echo "发布 @freeanima/cli@${VERSION} …"
 
-resolve_npm() {
-  local candidate
-  for candidate in "${ROOT}"/node_modules/.bun/npm@*/node_modules/npm/bin/npm; do
-    if [ -x "$candidate" ]; then
-      echo "$candidate"
-      return 0
-    fi
-  done
-  command -v npm
-}
+# 不用 setup-node / PATH 上的 npm（GHA 上可能损坏）；bunx 拉取 npm 11+ 以支持 Trusted Publishing
+NPM=(bunx npm@11)
+NPM_VERSION="$("${NPM[@]}" --version)"
+echo "npm: bunx npm@11 (${NPM_VERSION})"
 
-NPM="$(resolve_npm)"
-NPM_VERSION="$("${NPM}" --version)"
-echo "npm: ${NPM} (${NPM_VERSION})"
-
-# Trusted Publishing 需 npm CLI >= 11.5.1
 if ! awk -v v="${NPM_VERSION}" 'BEGIN {
   split(v, p, ".");
   if (p[1] < 11 || (p[1] == 11 && p[2] < 5) || (p[1] == 11 && p[2] == 5 && p[3] < 1)) exit 1
@@ -44,4 +33,4 @@ if ! awk -v v="${NPM_VERSION}" 'BEGIN {
 fi
 
 echo "使用 npm publish（GitHub Actions OIDC）"
-"${NPM}" publish --access public
+"${NPM[@]}" publish --access public
