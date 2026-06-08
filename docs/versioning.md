@@ -104,7 +104,7 @@ Release workflow 在 semantic-release 成功后还会：
 
 Release workflow 已设 `id-token: write` 与 `actions/setup-node`（`registry-url`）。首次发包若包尚不存在，需先用 token 手动发一版或在 npm 创建包后再绑 Trusted Publisher。
 
-验证通过后，可在包 Settings → Publishing access 选 **disallow tokens**，仅保留 OIDC 发布。3. **Docker 镜像** — push `v*` tag 时由 [`.github/workflows/docker-release.yml`](../.github/workflows/docker-release.yml) 构建并推送到 `ghcr.io/freeanima-org/freeanima:latest` 与 `:vX.Y.Z`
+验证通过后，可在包 Settings → Publishing access 选 **disallow tokens**，仅保留 OIDC 发布。3. **Docker 镜像** — push `v*` tag 时由 [`.github/workflows/release-docker.yml`](../.github/workflows/release-docker.yml) 构建并推送到 `ghcr.io/freeanima-org/freeanima:latest` 与 `:vX.Y.Z`
 
 本地安装发布包（开发调试）：
 
@@ -134,6 +134,6 @@ docker compose up --build
 | `package.json`                           | 版本唯一写入源（CI 更新）   |
 | `.releaserc.json`                        | semantic-release 插件配置   |
 | `.github/workflows/release.yml`          | 发版 CI + npm publish       |
-| `.github/workflows/docker-release.yml`   | Docker 镜像推 GHCR          |
+| `.github/workflows/release-docker.yml`   | Docker 镜像推 GHCR          |
 | `service/service/src/runtime/version.ts` | 运行时读取根版本            |
 | `CHANGELOG.md`                           | 自动追加新版本节 + 历史条目 |

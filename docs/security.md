@@ -57,7 +57,7 @@
 | Slash 命令     | 白名单路由                                                                                                       |
 | MCP 默认 stdio | 减少端口暴露                                                                                                     |
 | 凭证隔离       | LLM 只见 pass 路径，不见值                                                                                       |
-| CI 密钥扫描    | `.github/workflows/ts.yml` 含 gitleaks                                                                           |
+| CI 密钥扫描    | `.github/workflows/security.yml`（Gitleaks）；GitHub Secret scanning + Push protection（公开仓库免费）           |
 | `.gitignore`   | `.env.*`、`config.yaml`、私钥后缀                                                                                |
 
 ## 已知缺口（文档 ≠ 已全部落地）
