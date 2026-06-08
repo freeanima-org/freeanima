@@ -9,10 +9,16 @@ const repoRoot = join(fileURLToPath(new URL(".", import.meta.url)), "..");
 const changed = process.argv.includes("--changed");
 const coverage = process.argv.includes("--coverage");
 const label = coverage ? "coverage:cobertura" : changed ? "test:changed" : "test";
-
-const coverageConfig = join(repoRoot, "bunfig.coverage.toml");
 const coverageDir = join(repoRoot, "coverage");
 const shardDir = join(repoRoot, ".coverage-shards");
+
+function runBunTest(extraArgs: string[]): void {
+  execSync(["bun", "test", ...extraArgs].join(" "), {
+    cwd: repoRoot,
+    stdio: "inherit",
+    env: process.env,
+  });
+}
 
 function integrationTestsInChangedRun(): boolean {
   try {
@@ -64,14 +70,6 @@ function mergeLcovFiles(files: string[]): string {
   }
 
   return [...records.values()].join("");
-}
-
-function runBunTest(extraArgs: string[]): void {
-  execSync([`bun --config=${coverageConfig}`, "test", ...extraArgs].join(" "), {
-    cwd: repoRoot,
-    stdio: "inherit",
-    env: process.env,
-  });
 }
 
 function listTestFiles(root: string): string[] {

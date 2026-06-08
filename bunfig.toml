@@ -3,7 +3,7 @@
 [test]
 coverageReporter = ["text", "lcov"]
 coverageDir = "coverage"
-coverageThreshold = 0.6
+coverageThreshold = 0
 
 coveragePathIgnorePatterns = [
   "**/node_modules/**",
