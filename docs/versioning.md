@@ -1,3 +1,7 @@
+---
+title: Versioning
+---
+
 # 版本与发版
 
 逸灵风采用 [语义化版本 2.0.0](https://semver.org/lang/zh-CN/)（`MAJOR.MINOR.PATCH`）。

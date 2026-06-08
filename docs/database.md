@@ -1,3 +1,7 @@
+---
+title: Database
+---
+
 # 数据库设计
 
 > PostgreSQL 存储层。**Slice A**（对话存档）、**Slice B**（`semantic_memory` + `limbic_memory`）、**Slice C**（自我层 + 自传体）已落地；独立 `procedural` 表尚未建（程序记忆现用 `semantic_memory.type=procedural`）。

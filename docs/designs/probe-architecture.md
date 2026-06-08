@@ -1,3 +1,7 @@
+---
+title: Probe Architecture
+---
+
 # Probe 探针架构设计
 
 > **草案** — 代码库尚无 Probe 实现。跟踪 [Issue #43](https://github.com/freeanima-org/freeanima/issues/43)。

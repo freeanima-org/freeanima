@@ -1,3 +1,7 @@
+---
+title: Pair Programming V1
+---
+
 # 结对编程 v1 — 工作台设计
 
 > **Phase 1 ✅ 已实现**（2026-05-29）：三列 UI、highlight.js 查看、studio tree/file/search、xterm 终端、`studio-pair-programming` platform。

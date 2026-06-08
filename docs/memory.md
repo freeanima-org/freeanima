@@ -1,3 +1,7 @@
+---
+title: Memory
+---
+
 # 记忆体系
 
 > 数字生命的记忆体系，映射自人类认知心理学（Atkinson-Shiffrin 模型、Tulving 记忆分类）。
