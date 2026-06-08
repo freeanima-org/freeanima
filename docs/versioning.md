@@ -89,7 +89,7 @@ git push origin v0.1.0
 Release workflow 在 semantic-release 成功后还会：
 
 1. **`bun run build:cli`** — 产出 `cli/publish/`（`@freeanima/cli` tarball 内容）
-2. **`scripts/publish-cli.sh`** — CI 内 **`npm publish` + OIDC**（推荐，见下）；本地可 `NPM_TOKEN` + `bun publish`；均未配置时跳过 npm 发布
+2. **`@semantic-release/npm`** — 根 `package.json` 写版本（不发布）；`pkgRoot: cli/publish` 阶段 `npm publish` + OIDC；本地手动发包用 `bun run publish:cli`
 
 ### npm Trusted Publishing（推荐）
 
