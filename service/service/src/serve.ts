@@ -16,8 +16,14 @@ import {
   initDatabase,
   isPostgresPrimary,
 } from "@freeanima/connectors-db-pg";
+import { closeRedis, initRedis, isRedisConfigured } from "@freeanima/connectors-redis";
 import { runMigrations } from "@freeanima/engine-db";
-import { getConfiguredDatabaseUrl, PATHS, loadConfig } from "@freeanima/service-config";
+import {
+  getConfiguredDatabaseUrl,
+  getConfiguredRedisUrl,
+  PATHS,
+  loadConfig,
+} from "@freeanima/service-config";
 import {
   installErrorLogHandlers,
   logComponent,
@@ -202,6 +208,7 @@ export async function serve(
     writeFileSync(PATHS.pidFile, String(process.pid));
 
     initDatabase({ getDatabaseUrl: getConfiguredDatabaseUrl });
+    initRedis({ getRedisUrl: getConfiguredRedisUrl });
 
     const cfg = loadConfig();
     let repos = nullPgRepositories;
@@ -217,7 +224,7 @@ export async function serve(
     conversation = createConversationService(engine.repos);
 
     registerServiceIntegrations({ kernel, conversation });
-    registerFridgeMagnet({ kernel, redis: cfg.redis });
+    registerFridgeMagnet({ kernel });
 
     startupLog("初始化 AnimaService / EventBus…");
     service = new AnimaService({ kernel, conversation });
@@ -388,6 +395,12 @@ export async function serve(
       const s = Date.now();
       await closeDb();
       step("PostgreSQL 连接池已关闭", Date.now() - s);
+    }
+
+    if (isRedisConfigured()) {
+      const s = Date.now();
+      await closeRedis();
+      step("Redis 连接已关闭", Date.now() - s);
     }
 
     cleanStatusFile();

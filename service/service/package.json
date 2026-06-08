@@ -36,6 +36,7 @@
     "@freeanima/engine-repos": "workspace:*",
     "@freeanima/engine-skill": "workspace:*",
     "@freeanima/connectors-db-pg": "workspace:*",
+    "@freeanima/connectors-redis": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",
     "@freeanima/kernel": "workspace:*",
     "@freeanima/kernel-eventbus": "workspace:*",

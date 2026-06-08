@@ -46,6 +46,17 @@ describePg("server status API", () => {
       }),
     );
     expect(body.platforms).toBeTypeOf("object");
+    expect(body.dependencies).toEqual(
+      expect.objectContaining({
+        postgres: expect.objectContaining({
+          status: expect.stringMatching(/^(connected|error|not_configured)$/),
+        }),
+        redis: expect.objectContaining({
+          status: expect.stringMatching(/^(connected|error|not_configured)$/),
+        }),
+      }),
+    );
+    expect(body.dependencies.postgres.status).toBe("connected");
   });
 
   it("health returns status ok", () => {

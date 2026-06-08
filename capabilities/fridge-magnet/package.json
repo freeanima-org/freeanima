@@ -6,12 +6,12 @@
     "./*": "./src/*.ts"
   },
   "dependencies": {
+    "@freeanima/connectors-redis": "workspace:*",
     "@freeanima/engine-loop": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",
     "@freeanima/kernel-hooks": "workspace:*",
     "@freeanima/service-config": "workspace:*",
-    "@freeanima/service-logging": "workspace:*",
-    "ioredis": "^5.6.1"
+    "@freeanima/service-logging": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "catalog:"

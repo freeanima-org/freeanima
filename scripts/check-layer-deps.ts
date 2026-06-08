@@ -60,6 +60,7 @@ function isAllowed(layer: string, pkg: string, _relPath: string): boolean {
       if (pkg.startsWith("engine-") || pkg === "engine") return true;
       if (pkg.startsWith("capabilities-") || pkg === "capabilities") return true;
       if (pkg.startsWith("life-memory")) return true;
+      if (pkg === "connectors-redis") return true;
       if (pkg === "service-config" || pkg === "service-logging") return true;
       return false;
     case "connectors":

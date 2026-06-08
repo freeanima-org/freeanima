@@ -4,7 +4,6 @@ import { registerClarifyHooks } from "@freeanima/capabilities-clarify";
 import { registerClarifyTool } from "@freeanima/capabilities-clarify";
 import {
   createFridgeMagnetHandler,
-  initRedis,
   registerWriteFridgeMagnetTool,
 } from "@freeanima/capabilities-fridge-magnet";
 import {
@@ -20,8 +19,6 @@ import { beforeLlmCall } from "@freeanima/kernel-hooks";
 import type { ConversationService } from "@freeanima/engine-conversation";
 import type { SemanticMemoryStorePort, SessionStorePort } from "@freeanima/engine-repos";
 import { registerMemoryPipeline, registerMemoryTools } from "@freeanima/life-memory";
-import type { NestConfig } from "@freeanima/service-config";
-
 let toolsRegistered = false;
 
 /** 注册全部本地/MCP 无关工具（幂等） */
@@ -62,15 +59,8 @@ export function registerServiceIntegrations(opts: {
   acp.registerTools();
 }
 
-/** 初始化 Redis 并注册冰箱贴 beforeLlmCall hook（需 kernel + 配置） */
-export function registerFridgeMagnet(opts: { kernel: Kernel; redis?: NestConfig["redis"] }): void {
-  const redisCfg = opts.redis ?? {};
-  initRedis({
-    host: redisCfg.host ?? undefined,
-    port: redisCfg.port ?? undefined,
-    password: redisCfg.password ?? undefined,
-    db: redisCfg.db ?? undefined,
-  });
+/** 注册冰箱贴 beforeLlmCall hook（Redis 须在组合根 initRedis 后可用） */
+export function registerFridgeMagnet(opts: { kernel: Kernel }): void {
   opts.kernel.hookRegistry.on(beforeLlmCall, createFridgeMagnetHandler());
   registerTasksModule({ fridgeBridge: createFridgeBridge() });
 }

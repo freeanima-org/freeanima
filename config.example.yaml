@@ -108,7 +108,8 @@ compression:
 # Redis（冰箱贴 / 待办跨 session 上下文；不可用时静默降级）
 # 本地默认 127.0.0.1:6379；Docker Compose 内写 redis
 # redis:
-#   host: 127.0.0.1
-#   port: 6379
+#   url: redis://127.0.0.1:6379/0
+#   # host: 127.0.0.1
+#   # port: 6379
 #   # password:
 #   # db: 0

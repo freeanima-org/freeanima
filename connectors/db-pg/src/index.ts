@@ -12,5 +12,6 @@ export {
   type SqlClient,
   getDatabaseDriver,
 } from "./client.ts";
+export { pingDatabase, type DatabasePingStatus } from "./health.ts";
 export { createPgRepositories } from "./factory.ts";
 export { messagesForCompress } from "./queries/messages-for-compress.ts";
