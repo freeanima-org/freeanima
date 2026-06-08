@@ -49,6 +49,13 @@
       }
     ],
     [
+      "@semantic-release/exec",
+      {
+        "prepareCmd": "bun run build:cli",
+        "publishCmd": "cd cli/publish && bun publish --access public"
+      }
+    ],
+    [
       "@semantic-release/github",
       {
         "successComment": false,

@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { parseYaml, stringifyYaml } from "./yaml.ts";
 import { CREDENTIAL_MAP, PATHS } from "./paths.ts";
+import { expandConfigEnv } from "./env-expand.ts";
 import { nestConfigSchema, type NestConfig } from "./schemas/config.ts";
 import { OPENAI_COMPATIBLE_BACKEND_ID } from "./schemas/llm-config.ts";
 import { credential } from "./credential.ts";
@@ -10,7 +11,7 @@ let cache: NestConfig | null = null;
 function loadYamlFile(path: string): Record<string, unknown> {
   if (!existsSync(path)) return {};
   try {
-    const raw = readFileSync(path, "utf-8");
+    const raw = expandConfigEnv(readFileSync(path, "utf-8"));
     const data = parseYaml(raw);
     return typeof data === "object" && data !== null && !Array.isArray(data)
       ? (data as Record<string, unknown>)

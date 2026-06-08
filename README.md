@@ -30,6 +30,8 @@ anima service start
 
 凭证路径约定见 [`docs/security.md`](docs/security.md#凭证责任)。数据库迁移见 [`docs/database.md`](docs/database.md)。
 
+**Docker Compose**（外部快速体验）：`cp .env.example .env` 后 `docker compose up --build`，见 [Issue #3](https://github.com/freeanima-org/freeanima/issues/3)。
+
 ## 首次部署安全清单
 
 1. 密钥只进 **pass**（GPG），勿写入 `config.yaml` 并提交 git

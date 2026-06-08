@@ -1,4 +1,5 @@
 export * from "./paths.ts";
+export { expandConfigEnv } from "./env-expand.ts";
 export { parseYaml, stringifyYaml } from "./yaml.ts";
 export * from "./credential.ts";
 export * from "./config.ts";

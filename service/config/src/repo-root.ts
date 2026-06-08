@@ -4,6 +4,9 @@ import { fileURLToPath } from "node:url";
 
 let cachedRepoRoot: string | null = null;
 
+const CLI_PACKAGE_NAME = "@freeanima/cli";
+const ROOT_PACKAGE_NAME = "freeanima";
+
 function packageNameAt(dir: string): string | null {
   const path = join(dir, "package.json");
   if (!existsSync(path)) return null;
@@ -15,19 +18,24 @@ function packageNameAt(dir: string): string | null {
   }
 }
 
-/** monorepo 根目录 */
+function isRepoRoot(dir: string): boolean {
+  const name = packageNameAt(dir);
+  return name === ROOT_PACKAGE_NAME || name === CLI_PACKAGE_NAME;
+}
+
+/** monorepo 或 @freeanima/cli 发布包根目录 */
 export function getRepoRoot(): string {
   if (cachedRepoRoot) return cachedRepoRoot;
 
   const fromEnv = process.env.FREEANIMA_REPO_ROOT?.trim();
-  if (fromEnv && packageNameAt(fromEnv) === "freeanima") {
+  if (fromEnv && isRepoRoot(fromEnv)) {
     cachedRepoRoot = fromEnv;
     return cachedRepoRoot;
   }
 
   let dir = dirname(fileURLToPath(import.meta.url));
   for (let i = 0; i < 16; i++) {
-    if (packageNameAt(dir) === "freeanima") {
+    if (isRepoRoot(dir)) {
       cachedRepoRoot = dir;
       return cachedRepoRoot;
     }

@@ -38,4 +38,17 @@ describe("service-config", () => {
     const cfg = loadConfig();
     expect(cfg.firecrawl?.api_url).toBe("http://127.0.0.1:3002");
   });
+
+  it("expands ${VAR} in config.yaml", () => {
+    process.env.TEST_LLM_MODEL = "env-model";
+    writeFileSync(
+      join(home, "config.yaml"),
+      `${MINIMAL_LLM_YAML.replace("test-model", "${TEST_LLM_MODEL}")}`,
+      "utf-8",
+    );
+    clearConfigCache();
+    const cfg = loadConfig();
+    expect(getProfileHopModel(cfg, "chat")).toBe("env-model");
+    delete process.env.TEST_LLM_MODEL;
+  });
 });
