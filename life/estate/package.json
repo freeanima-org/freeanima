@@ -8,7 +8,7 @@
     "@freeanima/engine-tool": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "imapflow": "^1.0.186",
-    "nodemailer": "^6.9.16",
+    "nodemailer": "^8.0.10",
     "zod": "catalog:"
   },
   "devDependencies": {
