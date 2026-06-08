@@ -25,6 +25,7 @@ import { Route as ChamberMemoryRouteImport } from './routes/chamber/memory'
 import { Route as ChamberMcpRouteImport } from './routes/chamber/mcp'
 import { Route as ChamberDashboardRouteImport } from './routes/chamber/dashboard'
 import { Route as ChamberCronRouteImport } from './routes/chamber/cron'
+import { Route as ChamberEmailRouteImport } from './routes/chamber/email'
 import { Route as ChamberConfigRouteImport } from './routes/chamber/config'
 import { Route as ChamberCommandsRouteImport } from './routes/chamber/commands'
 import { Route as ChamberAcpRouteImport } from './routes/chamber/acp'
@@ -112,6 +113,11 @@ const ChamberCronRoute = ChamberCronRouteImport.update({
   path: '/cron',
   getParentRoute: () => ChamberRouteRoute,
 } as any)
+const ChamberEmailRoute = ChamberEmailRouteImport.update({
+  id: '/email',
+  path: '/email',
+  getParentRoute: () => ChamberRouteRoute,
+} as any)
 const ChamberConfigRoute = ChamberConfigRouteImport.update({
   id: '/config',
   path: '/config',
@@ -155,6 +161,7 @@ export interface FileRoutesByFullPath {
   '/chamber/commands': typeof ChamberCommandsRoute
   '/chamber/config': typeof ChamberConfigRoute
   '/chamber/cron': typeof ChamberCronRoute
+  '/chamber/email': typeof ChamberEmailRoute
   '/chamber/dashboard': typeof ChamberDashboardRoute
   '/chamber/mcp': typeof ChamberMcpRoute
   '/chamber/memory': typeof ChamberMemoryRoute
@@ -178,6 +185,7 @@ export interface FileRoutesByTo {
   '/chamber/commands': typeof ChamberCommandsRoute
   '/chamber/config': typeof ChamberConfigRoute
   '/chamber/cron': typeof ChamberCronRoute
+  '/chamber/email': typeof ChamberEmailRoute
   '/chamber/dashboard': typeof ChamberDashboardRoute
   '/chamber/mcp': typeof ChamberMcpRoute
   '/chamber/memory': typeof ChamberMemoryRoute
@@ -203,6 +211,7 @@ export interface FileRoutesById {
   '/chamber/commands': typeof ChamberCommandsRoute
   '/chamber/config': typeof ChamberConfigRoute
   '/chamber/cron': typeof ChamberCronRoute
+  '/chamber/email': typeof ChamberEmailRoute
   '/chamber/dashboard': typeof ChamberDashboardRoute
   '/chamber/mcp': typeof ChamberMcpRoute
   '/chamber/memory': typeof ChamberMemoryRoute
@@ -229,6 +238,7 @@ export interface FileRouteTypes {
     | '/chamber/commands'
     | '/chamber/config'
     | '/chamber/cron'
+    | '/chamber/email'
     | '/chamber/dashboard'
     | '/chamber/mcp'
     | '/chamber/memory'
@@ -252,6 +262,7 @@ export interface FileRouteTypes {
     | '/chamber/commands'
     | '/chamber/config'
     | '/chamber/cron'
+    | '/chamber/email'
     | '/chamber/dashboard'
     | '/chamber/mcp'
     | '/chamber/memory'
@@ -276,6 +287,7 @@ export interface FileRouteTypes {
     | '/chamber/commands'
     | '/chamber/config'
     | '/chamber/cron'
+    | '/chamber/email'
     | '/chamber/dashboard'
     | '/chamber/mcp'
     | '/chamber/memory'
@@ -412,6 +424,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChamberCronRouteImport
       parentRoute: typeof ChamberRouteRoute
     }
+    '/chamber/email': {
+      id: '/chamber/email'
+      path: '/email'
+      fullPath: '/chamber/email'
+      preLoaderRoute: typeof ChamberEmailRouteImport
+      parentRoute: typeof ChamberRouteRoute
+    }
     '/chamber/config': {
       id: '/chamber/config'
       path: '/config'
@@ -476,6 +495,7 @@ interface ChamberRouteRouteChildren {
   ChamberCommandsRoute: typeof ChamberCommandsRoute
   ChamberConfigRoute: typeof ChamberConfigRoute
   ChamberCronRoute: typeof ChamberCronRoute
+  ChamberEmailRoute: typeof ChamberEmailRoute
   ChamberDashboardRoute: typeof ChamberDashboardRoute
   ChamberMcpRoute: typeof ChamberMcpRoute
   ChamberMemoryRoute: typeof ChamberMemoryRoute
@@ -488,6 +508,7 @@ const ChamberRouteRouteChildren: ChamberRouteRouteChildren = {
   ChamberCommandsRoute: ChamberCommandsRoute,
   ChamberConfigRoute: ChamberConfigRoute,
   ChamberCronRoute: ChamberCronRoute,
+  ChamberEmailRoute: ChamberEmailRoute,
   ChamberDashboardRoute: ChamberDashboardRoute,
   ChamberMcpRoute: ChamberMcpRoute,
   ChamberMemoryRoute: ChamberMemoryRoute,

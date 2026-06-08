@@ -190,6 +190,12 @@ export const api = {
     },
     restart: { mutate: () => unwrap(client.api.status.restart.post()) },
   },
+  email: {
+    overview: { query: () => unwrap(client.api.email.get()) },
+    fetch: {
+      mutate: (input: { id: string }) => unwrap(client.api.email({ id: input.id }).fetch.post()),
+    },
+  },
   memory: {
     search: {
       mutate: (input: {

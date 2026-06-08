@@ -14,6 +14,7 @@ import {
 import { registerCoreTools, registerSupplementalTools } from "@freeanima/capabilities-tools";
 import { registerCronjobTool } from "@freeanima/connectors-cron/cronjob-tool";
 import { registerSelfTools } from "@freeanima/life-self";
+import { registerEstateTools } from "@freeanima/life-estate";
 import type { Kernel } from "@freeanima/kernel";
 import { beforeLlmCall } from "@freeanima/kernel-hooks";
 import type { ConversationService } from "@freeanima/engine-conversation";
@@ -28,6 +29,7 @@ export function registerServiceTools(): void {
   registerSupplementalTools();
   registerMemoryTools();
   registerSelfTools();
+  registerEstateTools();
   registerClarifyTool();
   registerCronjobTool();
   registerWriteFridgeMagnetTool();
