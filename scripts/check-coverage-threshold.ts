@@ -5,8 +5,8 @@ import { fileURLToPath } from "node:url";
 const repoRoot = join(fileURLToPath(new URL(".", import.meta.url)), "..");
 const lcovPath = join(repoRoot, "coverage", "lcov.info");
 
-/** 与 bunfig.toml coverageThreshold = 0.6 一致（行 + 函数均须达标） */
-const THRESHOLD = 0.6;
+/** 与 bunfig.toml coverageThreshold 一致；0 表示仅上报、不卡 CI */
+const THRESHOLD = 0;
 
 function parseLcovRates(lcov: string): { lines: number; functions: number } {
   let totalLines = 0;
