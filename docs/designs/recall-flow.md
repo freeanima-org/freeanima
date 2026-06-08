@@ -1,3 +1,7 @@
+---
+title: Recall Flow
+---
+
 # Recall 统一检索与加载流程
 
 > **v1 ✅ 已实现**：`recall(query)` 返回 JSON（`semantic_memory` + `dialogue` 结构化结果），底层 PG FTS 双源（[`life/memory/src/register-tools.ts`](../../life/memory/src/register-tools.ts)）。

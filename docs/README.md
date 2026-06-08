@@ -1,3 +1,7 @@
+---
+title: 文档索引
+---
+
 # docs/
 
 文档索引与维护规约见 [AGENTS.md](../AGENTS.md#文档地图)。可执行任务与讨论项见 [GitHub Issues](https://github.com/freeanima-org/freeanima/issues)。

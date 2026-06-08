@@ -1,3 +1,7 @@
+---
+title: Sleep
+---
+
 # 睡眠机制 (Sleep)
 
 > 浅睡（Light Sleep）为语义记忆**唯一**增量提取通道；深睡（Deep Sleep）为记忆库存量优化；自传 cron 为叙事加工与自我层概括刷新。

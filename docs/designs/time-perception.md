@@ -1,3 +1,7 @@
+---
+title: Time Perception
+---
+
 # 时间感知模块
 
 > **✅ 核心已实现** — [`engine/conversation/src/time-perception.ts`](../../engine/conversation/src/time-perception.ts)，在 `buildRuntimeMessages` 内调用 `injectTimePrefixes`。

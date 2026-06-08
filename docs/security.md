@@ -1,3 +1,7 @@
+---
+title: Security
+---
+
 # 逸灵风安全
 
 > 已采纳原则见 [ARCHITECTURE.md](../ARCHITECTURE.md)。

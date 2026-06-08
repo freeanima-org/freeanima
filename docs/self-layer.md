@@ -1,3 +1,7 @@
+---
+title: Self Layer
+---
+
 # 自我层（Self Layer）
 
 > 定义：关于「我是谁」的持久化结构，与记忆层（Memory Layer）并列，组成 FreeAnima 的两大存储支柱。
