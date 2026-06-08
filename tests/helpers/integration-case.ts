@@ -18,8 +18,6 @@ import {
   registerSelfLayerStore,
   resetSelfLayerStoreForTests,
   invalidateSelfLayerPromptCache,
-  ensureSelfLayerSeeded,
-  seedSelfLayerFromLegacy,
 } from "@freeanima/life-self";
 
 import { beginLogIsolation, resetServiceLogger } from "./log-isolation.ts";
@@ -63,23 +61,16 @@ export function wireIntegrationServiceContext(pg: PgTestContext): void {
   invalidateSelfLayerPromptCache();
 }
 
-/** 集成测：从 SOUL / pinned 写入 self_blocks 并刷新 prompt 缓存 */
+/** 集成测：可选写入 self_model 并刷新 prompt 缓存 */
 export async function syncIntegrationSelfLayer(
   pg: PgTestContext,
-  soulText?: string,
+  selfModel?: string,
 ): Promise<void> {
-  const resident = await pg.engine.repos.semanticMemory.listResident(100);
-  const pinnedFacts = resident.map((row) => ({ content: row.content, type: row.type }));
-  if (soulText !== undefined) {
-    await seedSelfLayerFromLegacy({
-      store: pg.engine.repos.selfLayer,
-      soulText,
-      pinnedFacts,
-    });
-  } else {
-    await ensureSelfLayerSeeded({
-      store: pg.engine.repos.selfLayer,
-      pinnedFacts,
+  if (selfModel !== undefined) {
+    await pg.engine.repos.selfLayer.upsertBlock({
+      block_key: "self_model",
+      content: selfModel,
+      updated_by: "test",
     });
   }
   invalidateSelfLayerPromptCache();

@@ -104,10 +104,3 @@ export async function updateSelfBlock(
   const db = getDb();
   await db.update(selfBlocks).set(patch).where(eq(selfBlocks.blockKey, blockKey));
 }
-
-export async function isSelfLayerInitialized(): Promise<boolean> {
-  const db = getDb();
-  const rows = await db.select({ blockKey: selfBlocks.blockKey }).from(selfBlocks);
-  const keys = new Set(rows.map((row) => normalizeBlockKey(row.blockKey)));
-  return SELF_BLOCK_KEYS.every((key) => keys.has(key));
-}

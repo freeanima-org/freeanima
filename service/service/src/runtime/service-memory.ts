@@ -57,8 +57,8 @@ export async function listMemoryFiles(): Promise<{ files: MemoryFileEntry[] }> {
   const files: MemoryFileEntry[] = [];
   const home = PATHS.home;
 
-  for (const name of ["SOUL.md", "MEMORY.md", "USER.md"]) {
-    const path = name === "SOUL.md" ? PATHS.soul : join(home, name);
+  for (const name of ["MEMORY.md", "USER.md"]) {
+    const path = join(home, name);
     const entry = readMemoryEntry(path, name);
     if (entry) files.push(entry);
   }

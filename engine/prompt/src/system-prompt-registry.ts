@@ -1,6 +1,5 @@
 export type SystemPromptBuilder = (
   functionNames: string[],
-  soulContent: string,
   cwd?: string | null,
 ) => string | Promise<string>;
 
@@ -13,7 +12,6 @@ export function registerSystemPromptBuilder(fn: SystemPromptBuilder): void {
 
 export async function buildSystemPrompt(
   functionNames: string[],
-  soulContent: string,
   cwd?: string | null,
 ): Promise<string> {
   if (!builder) {
@@ -21,5 +19,5 @@ export async function buildSystemPrompt(
       "SystemPromptBuilder 未注册：请 import @freeanima/service/runtime/system-prompt-wire，或调用 registerSystemPromptBuilder",
     );
   }
-  return builder(functionNames, soulContent, cwd);
+  return builder(functionNames, cwd);
 }

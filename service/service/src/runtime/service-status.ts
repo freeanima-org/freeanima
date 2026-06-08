@@ -55,7 +55,6 @@ export function buildMemoryFileStats(): { files_count: number; files_bytes: numb
     }
   };
 
-  add(PATHS.soul);
   add(join(PATHS.home, "MEMORY.md"));
   add(join(PATHS.home, "USER.md"));
 

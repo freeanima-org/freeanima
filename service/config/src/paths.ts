@@ -21,9 +21,6 @@ export const PATHS = {
   get configYaml() {
     return homePath("config.yaml");
   },
-  get soul() {
-    return process.env.SOUL_PATH ?? homePath("SOUL.md");
-  },
   get sessions() {
     return homePath("sessions");
   },

@@ -18,7 +18,7 @@ describePg("server memory API", () => {
   beforeEach(async () => {
     const ctx = await beginIntegrationCase("freeanima-memapi-");
     home = ctx.home;
-    writeFileSync(join(home, "SOUL.md"), "# Agent\n", "utf-8");
+    writeFileSync(join(home, "MEMORY.md"), "# 记忆笔记\n", "utf-8");
   });
 
   afterEach(async () => {
@@ -32,10 +32,10 @@ describePg("server memory API", () => {
     });
     const { files } = await getServiceContext().service.listMemoryFiles();
     expect(files.length).toBeGreaterThan(0);
-    const soul = files.find((f: { name: string }) => f.name === "SOUL.md");
-    expect(soul).toBeDefined();
-    expect(soul!.content).toContain("Agent");
-    expect(typeof soul!.size).toBe("number");
+    const memory = files.find((f: { name: string }) => f.name === "MEMORY.md");
+    expect(memory).toBeDefined();
+    expect(memory!.content).toContain("记忆笔记");
+    expect(typeof memory!.size).toBe("number");
     expect(files.some((f: { name: string }) => f.name.startsWith("f-"))).toBe(true);
   });
 

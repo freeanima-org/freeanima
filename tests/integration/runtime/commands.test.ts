@@ -13,7 +13,7 @@ import {
   SELF_LAYER_SYSTEM_FRAME,
 } from "@freeanima/life-self";
 
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   getTestEngine,
@@ -179,9 +179,8 @@ describePg("slash commands", () => {
   });
 
   it("reload_system_prompt rebuilds session meta", async () => {
-    const soulText = "你是测试 Agent。";
-    writeFileSync(join(home, "SOUL.md"), `${soulText}\n`, "utf-8");
-    await syncIntegrationSelfLayer(pg, soulText);
+    const selfModel = "你是测试 Agent。";
+    await syncIntegrationSelfLayer(pg, selfModel);
 
     const sid = await testConv().newSession("parlor");
     await patchMetaForTest(sid, { system_prompt: "旧 prompt" });
@@ -202,14 +201,13 @@ describePg("slash commands", () => {
     for (const heading of Object.values(SELF_BLOCK_HEADINGS)) {
       expect(sp).toContain(`## ${heading}`);
     }
-    expect(sp).toContain(soulText);
+    expect(sp).toContain(selfModel);
     expect(sp).not.toBe("旧 prompt");
   });
 
   it("reload_system_prompt only updates system_prompt", async () => {
-    const soulText = "你是测试 Agent。";
-    writeFileSync(join(home, "SOUL.md"), `${soulText}\n`, "utf-8");
-    await syncIntegrationSelfLayer(pg, soulText);
+    const selfModel = "你是测试 Agent。";
+    await syncIntegrationSelfLayer(pg, selfModel);
     const sid = await testConv().newSession("parlor");
     const metaBefore = await testConv().loadSessionMeta(sid);
     const preservedCwd = "/tmp/freeanima-preserved-cwd";
