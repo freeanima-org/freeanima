@@ -1,4 +1,4 @@
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { selfBlockKeySchema, selfBlocks } from "@freeanima/engine-db/schema";
 import type {
   SelfBlockKey,
@@ -10,7 +10,7 @@ import { SELF_BLOCK_KEYS } from "@freeanima/engine-repos";
 import { formatCstIso } from "@freeanima/kernel-util";
 
 import { getDb } from "../../client.ts";
-import { mapSelfBlockRow, type SelfBlockDbRow } from "../mappers/self-mapper.ts";
+import { mapSelfBlockRow } from "../mappers/self-mapper.ts";
 
 function normalizeBlockKey(raw: string): SelfBlockKey {
   const parsed = selfBlockKeySchema.safeParse(raw.trim());
@@ -22,28 +22,15 @@ function normalizeBlockKey(raw: string): SelfBlockKey {
 
 export async function getSelfBlock(key: SelfBlockKey): Promise<SelfBlockRow | null> {
   const db = getDb();
-  const rows = await db.execute<SelfBlockDbRow>(sql`
-    SELECT block_key, content, locked, version, updated_by, created_at, updated_at
-    FROM self_blocks
-    WHERE block_key = ${key}
-    LIMIT 1
-  `);
+  const rows = await db.select().from(selfBlocks).where(eq(selfBlocks.blockKey, key)).limit(1);
   const row = rows[0];
   return row ? mapSelfBlockRow(row) : null;
 }
 
 export async function listSelfBlocks(): Promise<SelfBlockRow[]> {
   const db = getDb();
-  const rows = await db.execute<SelfBlockDbRow>(sql`
-    SELECT block_key, content, locked, version, updated_by, created_at, updated_at
-    FROM self_blocks
-  `);
-  const byKey = new Map(
-    rows.map((row) => {
-      const mapped = mapSelfBlockRow(row);
-      return [mapped.block_key, mapped] as const;
-    }),
-  );
+  const rows = await db.select().from(selfBlocks);
+  const byKey = new Map(rows.map((row) => [normalizeBlockKey(row.blockKey), mapSelfBlockRow(row)]));
   const now = formatCstIso();
   return SELF_BLOCK_KEYS.map((key) => {
     const existing = byKey.get(key);

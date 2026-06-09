@@ -90,9 +90,7 @@ database:
 
 **驱动**：`Bun.sql` + `drizzle-orm/bun-sql/postgres`（`connectors/db-pg`）。
 
-**上游补丁**：rc.3 的 bun-sql 驱动默认 `tagged=true` 会导致 RQB `.select()` 生成残缺 SQL（[drizzle#5802](https://github.com/drizzle-team/drizzle-orm/issues/5802)）；仓库用 Bun `patchedDependencies` 打 [`patches/drizzle-orm@1.0.0-rc.3.patch`](../patches/drizzle-orm@1.0.0-rc.3.patch)（等同 [PR#5824](https://github.com/drizzle-team/drizzle-orm/pull/5824)：`tagged=false`）。上游合并发版后可删补丁。
-
-读路径仍经 `connectors/db-pg/src/utils/sql-read.ts`（`execute`）；上游稳定后可逐步收回 RQB。回归见 `tests/integration/db/db-session.test.ts`。
+**上游补丁**：rc.3 的 bun-sql 驱动默认 `tagged=true` 会导致 RQB `.select()` 生成残缺 SQL（[drizzle#5802](https://github.com/drizzle-team/drizzle-orm/issues/5802)）；仓库用 Bun `patchedDependencies` 打 [`patches/drizzle-orm@1.0.0-rc.3.patch`](../patches/drizzle-orm@1.0.0-rc.3.patch)（等同 [PR#5824](https://github.com/drizzle-team/drizzle-orm/pull/5824)：`tagged=false`）。补丁生效后 CRUD 读路径用 Drizzle RQB；FTS / 复杂检索仍用 `execute`。上游合并发版后可删补丁。回归见 `tests/integration/db/db-session.test.ts`。
 
 ### 迁移
 
