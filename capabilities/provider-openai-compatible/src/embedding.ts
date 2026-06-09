@@ -3,6 +3,13 @@ import type { ResolvedEmbeddingConfig } from "@freeanima/service-config";
 import { createOpenAiClientFromParsed } from "./client.ts";
 
 export type EmbedTextFn = (text: string) => Promise<number[] | null>;
+export type EmbedTextsFn = (texts: string[]) => Promise<(number[] | null)[]>;
+
+function assertEmbeddingDimensions(vec: number[], expected: number): void {
+  if (vec.length !== expected) {
+    throw new Error(`embedding 维度 ${vec.length} 与配置 ${expected} 不一致`);
+  }
+}
 
 /** OpenAI 兼容 /v1/embeddings 客户端（Ollama bge-m3 等） */
 export function createOpenAiEmbeddingClient(cfg: ResolvedEmbeddingConfig): EmbedTextFn {
@@ -22,9 +29,48 @@ export function createOpenAiEmbeddingClient(cfg: ResolvedEmbeddingConfig): Embed
     });
     const vec = res.data[0]?.embedding;
     if (!vec?.length) return null;
-    if (vec.length !== cfg.dimensions) {
-      throw new Error(`embedding 维度 ${vec.length} 与配置 ${cfg.dimensions} 不一致`);
-    }
+    assertEmbeddingDimensions(vec, cfg.dimensions);
     return vec;
+  };
+}
+
+/** OpenAI 兼容 batch /v1/embeddings（input: string[]） */
+export function createOpenAiEmbeddingBatchClient(cfg: ResolvedEmbeddingConfig): EmbedTextsFn {
+  const client = createOpenAiClientFromParsed({
+    apiKey: cfg.apiKey,
+    baseUrl: cfg.baseUrl,
+    timeoutMs: cfg.timeoutMs,
+  });
+
+  return async (texts: string[]): Promise<(number[] | null)[]> => {
+    if (!texts.length) return [];
+
+    const inputs: string[] = [];
+    const sourceIndices: number[] = [];
+    const result: (number[] | null)[] = texts.map(() => null);
+
+    for (let i = 0; i < texts.length; i++) {
+      const trimmed = texts[i]!.trim();
+      if (!trimmed) continue;
+      inputs.push(trimmed);
+      sourceIndices.push(i);
+    }
+    if (!inputs.length) return result;
+
+    const res = await client.embeddings.create({
+      model: cfg.model,
+      input: inputs,
+    });
+
+    for (const item of res.data) {
+      const inputIdx = item.index;
+      if (inputIdx == null || inputIdx < 0 || inputIdx >= sourceIndices.length) continue;
+      const vec = item.embedding;
+      if (!vec?.length) continue;
+      assertEmbeddingDimensions(vec, cfg.dimensions);
+      result[sourceIndices[inputIdx]!] = vec;
+    }
+
+    return result;
   };
 }

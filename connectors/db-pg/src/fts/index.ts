@@ -22,4 +22,13 @@ export {
 } from "./coverage.ts";
 export { rrfMerge, semanticMemoryDocKey, messageDocKey } from "./rrf.ts";
 export { hybridSearchSemanticMemory, hybridSearchMessages } from "./hybrid-search.ts";
-export { registerEmbedTextFn, resetEmbedTextFnForTest } from "../embedding/runtime.ts";
+export {
+  registerEmbedTextFn,
+  registerEmbedTextsFn,
+  resetEmbedTextFnForTest,
+  resetEmbedTextsFnForTest,
+} from "../embedding/runtime.ts";
+export {
+  flushEmbeddingQueueForTest,
+  resetEmbeddingQueueForTest,
+} from "../embedding/batch-queue.ts";
