@@ -1,0 +1,47 @@
+import { describe, expect, it, mock } from "bun:test";
+
+const embeddingsCreate = mock(async ({ input }: { input: string | string[] }) => {
+  const inputs = Array.isArray(input) ? input : [input];
+  return {
+    data: inputs.map((_, index) => ({
+      index,
+      embedding: [0.1, 0.2, 0.3, 0.4],
+    })),
+  };
+});
+
+mock.module("./client.ts", () => ({
+  createOpenAiClientFromParsed: () => ({
+    embeddings: { create: embeddingsCreate },
+  }),
+}));
+
+import { createOpenAiEmbeddingBatchClient } from "./embedding.ts";
+
+const cfg = {
+  apiKey: "test",
+  baseUrl: "http://127.0.0.1:11434/v1",
+  model: "bge-m3",
+  dimensions: 4,
+  timeoutMs: 5000,
+};
+
+describe("createOpenAiEmbeddingBatchClient", () => {
+  it("空数组直接返回空", async () => {
+    const embed = createOpenAiEmbeddingBatchClient(cfg);
+    expect(await embed([])).toEqual([]);
+    expect(embeddingsCreate).not.toHaveBeenCalled();
+  });
+
+  it("batch input 按 index 对齐，空白项为 null", async () => {
+    embeddingsCreate.mockClear();
+    const embed = createOpenAiEmbeddingBatchClient(cfg);
+    const out = await embed(["hello", "  ", "world"]);
+
+    expect(embeddingsCreate).toHaveBeenCalledTimes(1);
+    expect(out).toHaveLength(3);
+    expect(out[0]).toEqual([0.1, 0.2, 0.3, 0.4]);
+    expect(out[1]).toBeNull();
+    expect(out[2]).toEqual([0.1, 0.2, 0.3, 0.4]);
+  });
+});

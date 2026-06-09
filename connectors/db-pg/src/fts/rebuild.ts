@@ -2,8 +2,9 @@ import { sql as drizzleSql } from "drizzle-orm";
 
 import { isCjkJiebaEnabled, isEmbeddingEnabled } from "@freeanima/service-config";
 
-import { getEmbedTextFn } from "../embedding/runtime.ts";
-import { setMessageEmbedding, setSemanticMemoryEmbedding } from "../embedding/store.ts";
+import { embedAndStoreJobs } from "../embedding/embed-jobs.ts";
+import { getEmbedTextFn, getEmbedTextsFn } from "../embedding/runtime.ts";
+import type { EmbeddingPendingJob } from "../embedding/types.ts";
 import { getDb } from "../client.ts";
 import { segmentForFts } from "./segment.ts";
 import type { FtsRebuildOptions, FtsRebuildPhase } from "./rebuild-types.ts";
@@ -157,8 +158,7 @@ async function rebuildMessagesFtsSegmented(
 }
 
 async function rebuildSemanticMemoryEmbeddings(opts: FtsRebuildOptions): Promise<number> {
-  const embed = getEmbedTextFn();
-  if (!embed) return 0;
+  if (!getEmbedTextFn() && !getEmbedTextsFn()) return 0;
 
   const onlyMissing = opts.onlyMissing ?? false;
   const total = await countSemanticMemoryEmbeddingTargets(onlyMissing);
@@ -180,15 +180,19 @@ async function rebuildSemanticMemoryEmbeddings(opts: FtsRebuildOptions): Promise
     `);
     if (!rows.length) break;
 
-    for (const row of rows) {
-      const trimmed = row.content.trim();
-      if (!trimmed) continue;
-      const vec = await embed(trimmed);
-      if (!vec) continue;
-      const ok = await setSemanticMemoryEmbedding(row.id, trimmed, vec);
-      if (ok) updated += 1;
-      report(opts.onProgress, "semantic_memory_embedding", "semantic_memory", updated, total);
-    }
+    const jobs: EmbeddingPendingJob[] = rows.map((row) => ({
+      kind: "semantic_memory",
+      id: row.id,
+      content: row.content,
+    }));
+
+    await embedAndStoreJobs(jobs, {
+      onStored: (count) => {
+        updated += count;
+        report(opts.onProgress, "semantic_memory_embedding", "semantic_memory", updated, total);
+      },
+    });
+
     offset += rows.length;
     if (rows.length < BATCH_SIZE) break;
   }
@@ -197,8 +201,7 @@ async function rebuildSemanticMemoryEmbeddings(opts: FtsRebuildOptions): Promise
 }
 
 async function rebuildMessagesEmbeddings(opts: FtsRebuildOptions): Promise<number> {
-  const embed = getEmbedTextFn();
-  if (!embed) return 0;
+  if (!getEmbedTextFn() && !getEmbedTextsFn()) return 0;
 
   const onlyMissing = opts.onlyMissing ?? false;
   const total = await countMessagesEmbeddingTargets(onlyMissing);
@@ -218,15 +221,19 @@ async function rebuildMessagesEmbeddings(opts: FtsRebuildOptions): Promise<numbe
     `);
     if (!rows.length) break;
 
-    for (const row of rows) {
-      const trimmed = (row.content ?? "").trim();
-      if (!trimmed) continue;
-      const vec = await embed(trimmed);
-      if (!vec) continue;
-      const ok = await setMessageEmbedding(row.id, trimmed, vec);
-      if (ok) updated += 1;
-      report(opts.onProgress, "messages_embedding", "messages", updated, total);
-    }
+    const jobs: EmbeddingPendingJob[] = rows.map((row) => ({
+      kind: "message",
+      id: row.id,
+      content: row.content ?? "",
+    }));
+
+    await embedAndStoreJobs(jobs, {
+      onStored: (count) => {
+        updated += count;
+        report(opts.onProgress, "messages_embedding", "messages", updated, total);
+      },
+    });
+
     offset += rows.length;
     if (rows.length < BATCH_SIZE) break;
   }
@@ -242,7 +249,8 @@ export async function rebuildAllFtsSegments(
   const semantic_memory = await rebuildSemanticMemoryFtsSegmented(useJieba, opts);
   const messages = await rebuildMessagesFtsSegmented(useJieba, opts);
 
-  const embedding_enabled = isEmbeddingEnabled() && getEmbedTextFn() != null;
+  const embedding_enabled =
+    isEmbeddingEnabled() && (getEmbedTextFn() != null || getEmbedTextsFn() != null);
   let embeddings: Record<string, number> | undefined;
   if (embedding_enabled) {
     const smEmb = await rebuildSemanticMemoryEmbeddings(opts);
