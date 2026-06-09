@@ -36,13 +36,6 @@ function formatUptime(seconds: number | null | undefined) {
   return `${s}s`;
 }
 
-function formatBytes(bytes: number) {
-  if (!bytes) return "0 B";
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-}
-
 function dependencyBadgeClass(status: DependencyStatus["status"]) {
   if (status === "connected") return "badge-success";
   if (status === "error") return "badge-error";
@@ -53,6 +46,21 @@ function dependencyLabel(dep: DependencyStatus) {
   if (dep.status === "connected") return "已连接";
   if (dep.status === "error") return "异常";
   return "未配置";
+}
+
+function dependencyBadge(dep: DependencyStatus | undefined, name: string) {
+  if (!dep) {
+    return <span className="badge badge-ghost badge-sm">{name} —</span>;
+  }
+  const latency =
+    dep.status === "connected" && dep.latency_ms != null ? ` ${dep.latency_ms}ms` : "";
+  const title = dep.status === "error" && dep.error ? dep.error : undefined;
+  return (
+    <span className={`badge badge-sm ${dependencyBadgeClass(dep.status)}`} title={title}>
+      {name} {dependencyLabel(dep)}
+      {latency}
+    </span>
+  );
 }
 
 function DashboardPage() {
@@ -81,12 +89,8 @@ function DashboardPage() {
   const cronCount = svc?.cron_jobs ?? (cronJobs as { jobs?: unknown[] } | null)?.jobs?.length ?? 0;
   const commandCount = (cmdData as { commands?: unknown[] } | null)?.commands?.length ?? null;
 
-  const memoryStats = {
-    files_count: svc?.memory?.files_count ?? 0,
-    files_bytes: svc?.memory?.files_bytes ?? 0,
-    semantic_memory_count: svc?.memory?.semantic_memory_count ?? 0,
-    dialogue_message_count: svc?.memory?.dialogue_message_count ?? 0,
-  };
+  const semanticMemoryCount = svc?.memory?.semantic_memory_count ?? 0;
+  const dialogueMessageCount = svc?.memory?.dialogue_message_count ?? 0;
 
   const sessionByPlatform = svc?.sessions?.by_platform ?? {};
   const platforms = svc?.platforms ?? {};
@@ -104,6 +108,20 @@ function DashboardPage() {
       ? `${(processMemoryKb / 1024).toFixed(1)} MB`
       : `${processMemoryKb} KB`;
 
+  const mcpSummary = [
+    `${mcp.server_count} 服务器`,
+    `${mcp.connected_count} 已连接`,
+    ...(mcp.connecting_count > 0 ? [`${mcp.connecting_count} 连接中`] : []),
+    `${mcp.tool_count} 工具`,
+  ].join(" · ");
+
+  const acpSummary = [
+    `${acp.agent_count} 代理`,
+    `${acp.connected_count} 已连接`,
+    `${acp.session_count} 会话`,
+    `${acp.tool_count} 工具`,
+  ].join(" · ");
+
   const confirmRestart = async () => {
     if (!confirm("确定要重启服务吗？正在进行的对话将被中断。")) return;
     setRestarting(true);
@@ -119,7 +137,7 @@ function DashboardPage() {
   if (!svc) {
     return (
       <div>
-        <h2 className="text-lg font-bold mb-4">📊 仪表盘</h2>
+        <h2 className="text-lg font-bold mb-2">📊 仪表盘</h2>
         <div className="alert alert-error text-sm">加载服务状态失败</div>
       </div>
     );
@@ -127,245 +145,142 @@ function DashboardPage() {
 
   return (
     <div>
-      <h2 className="text-lg font-bold mb-4">📊 仪表盘</h2>
-      <div className="space-y-6">
+      <h2 className="text-lg font-bold mb-2">📊 仪表盘</h2>
+      <div className="space-y-4">
         <section>
-          <h3 className="text-sm font-semibold text-base-content/60 mb-2">运行态</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard title="服务状态">
-              <div className="flex items-center gap-2 mt-1">
-                <span
-                  className={`badge ${svc.status === "running" ? "badge-success" : "badge-error"}`}
-                >
-                  {svc.status}
-                </span>
-                <span className="text-xs text-base-content/50">v{svc.version || "?"}</span>
-              </div>
-            </StatCard>
-            <StatCard title="运行时长">
-              <p className="text-2xl font-mono mt-1">{formatUptime(svc.uptime_seconds) || "—"}</p>
-            </StatCard>
-            <StatCard title="进程内存">
-              <p className="text-2xl font-mono mt-1">{processMemoryLabel}</p>
-            </StatCard>
-            <StatCard title="当前模型">
-              <p className="text-lg font-mono mt-1 truncate" title={svc.config?.model}>
-                {svc.config?.model || "—"}
-              </p>
-            </StatCard>
+          <h3 className="text-sm font-semibold text-base-content/60 mb-1.5">运行态</h3>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+            <RuntimeCard
+              svc={svc}
+              processMemoryLabel={processMemoryLabel}
+              postgres={postgres}
+              redis={redis}
+              restarting={restarting}
+              onRestart={() => void confirmRestart()}
+            />
+            <PlatformConnectionsCard platforms={platforms} />
           </div>
         </section>
 
         <section>
-          <h3 className="text-sm font-semibold text-base-content/60 mb-2">基础设施</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard title="PostgreSQL">
-              {postgres ? (
-                <div className="mt-1 space-y-1">
-                  <span className={`badge ${dependencyBadgeClass(postgres.status)}`}>
-                    {dependencyLabel(postgres)}
-                  </span>
-                  {postgres.status === "connected" && postgres.latency_ms != null ? (
-                    <p className="text-xs text-base-content/50">{postgres.latency_ms} ms</p>
-                  ) : null}
-                  {postgres.status === "error" && postgres.error ? (
-                    <p className="text-xs text-error truncate" title={postgres.error}>
-                      {postgres.error}
-                    </p>
-                  ) : null}
-                </div>
-              ) : (
-                <p className="text-2xl font-mono mt-1">—</p>
-              )}
-            </StatCard>
-            <StatCard title="Redis">
-              {redis ? (
-                <div className="mt-1 space-y-1">
-                  <span className={`badge ${dependencyBadgeClass(redis.status)}`}>
-                    {dependencyLabel(redis)}
-                  </span>
-                  {redis.status === "connected" && redis.latency_ms != null ? (
-                    <p className="text-xs text-base-content/50">{redis.latency_ms} ms</p>
-                  ) : null}
-                  {redis.status === "error" && redis.error ? (
-                    <p className="text-xs text-error truncate" title={redis.error}>
-                      {redis.error}
-                    </p>
-                  ) : null}
-                </div>
-              ) : (
-                <p className="text-2xl font-mono mt-1">—</p>
-              )}
-            </StatCard>
-          </div>
-        </section>
-
-        <section>
-          <h3 className="text-sm font-semibold text-base-content/60 mb-2">会话与工具</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard title="会话">
-              <p className="text-2xl font-mono mt-1">{svc.sessions?.total ?? 0}</p>
-              <p className="text-xs text-base-content/50">全平台总计</p>
-            </StatCard>
+          <h3 className="text-sm font-semibold text-base-content/60 mb-1.5">会话与工具</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 items-stretch">
+            <SessionStatCard total={svc.sessions?.total ?? 0} platformRows={sessionPlatformRows} />
+            <CompactExtensionCard
+              title="ACP"
+              href="/chamber/acp"
+              summary={acpSummary}
+              error={acpError}
+            />
             <StatCard title="工具">
-              <p className="text-2xl font-mono mt-1">{toolCount}</p>
+              <p className="text-xl font-mono mt-1">{toolCount}</p>
               <p className="text-xs text-base-content/50">已注册</p>
             </StatCard>
-            <StatCard title="定时任务">
-              <div className="flex items-center justify-between gap-2">
-                <h4 className="text-sm text-base-content/60">定时任务</h4>
+            <CompactExtensionCard
+              title="MCP"
+              href="/chamber/mcp"
+              summary={mcpSummary}
+              error={mcpError}
+            />
+            <StatCard
+              title="定时任务"
+              action={
                 <Link to="/chamber/cron" className="text-xs link link-hover">
                   管理
                 </Link>
-              </div>
-              <p className="text-2xl font-mono mt-1">{cronCount}</p>
+              }
+            >
+              <p className="text-xl font-mono mt-1">{cronCount}</p>
               <p className="text-xs text-base-content/50">{cronCount > 0 ? "已配置" : "无"}</p>
             </StatCard>
             <StatCard title="Slash 命令">
-              <p className="text-2xl font-mono mt-1">{commandCount ?? "—"}</p>
+              <p className="text-xl font-mono mt-1">{commandCount ?? "—"}</p>
               <p className="text-xs text-base-content/50">全平台</p>
             </StatCard>
           </div>
         </section>
 
         <section>
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
             <h3 className="text-sm font-semibold text-base-content/60">记忆</h3>
             <Link to="/chamber/memory" className="link link-hover text-xs">
               记忆台
             </Link>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard title="记忆文件">
-              <p className="text-2xl font-mono mt-1">{memoryStats.files_count}</p>
-            </StatCard>
-            <StatCard title="记忆文件体积">
-              <p className="text-2xl font-mono mt-1">{formatBytes(memoryStats.files_bytes)}</p>
-            </StatCard>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <StatCard title="语义记忆">
-              <p className="text-2xl font-mono mt-1">{memoryStats.semantic_memory_count}</p>
+              <p className="text-xl font-mono mt-1">{semanticMemoryCount}</p>
             </StatCard>
             <StatCard title="对话消息">
-              <p className="text-2xl font-mono mt-1">{memoryStats.dialogue_message_count}</p>
+              <p className="text-xl font-mono mt-1">{dialogueMessageCount}</p>
               <p className="text-xs text-base-content/50">条消息</p>
             </StatCard>
           </div>
         </section>
+      </div>
+    </div>
+  );
+}
 
-        <section>
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-            <h3 className="text-sm font-semibold text-base-content/60">MCP</h3>
-            <Link to="/chamber/mcp" className="text-xs link link-hover">
-              管理
-            </Link>
-          </div>
-          {mcpError ? (
-            <div className="alert alert-warning text-sm mb-2 py-2">{mcpError}</div>
-          ) : null}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard title="已配置">
-              <p className="text-2xl font-mono mt-1">{mcp.server_count}</p>
-            </StatCard>
-            <StatCard title="已连接">
-              <p className="text-2xl font-mono mt-1">{mcp.connected_count}</p>
-            </StatCard>
-            <StatCard title="连接中">
-              <p className="text-2xl font-mono mt-1">{mcp.connecting_count}</p>
-            </StatCard>
-            <StatCard title="注册工具">
-              <p className="text-2xl font-mono mt-1">{mcp.tool_count}</p>
-            </StatCard>
-          </div>
-        </section>
-
-        <section>
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-            <h3 className="text-sm font-semibold text-base-content/60">ACP</h3>
-            <Link to="/chamber/acp" className="text-xs link link-hover">
-              管理
-            </Link>
-          </div>
-          {acpError ? (
-            <div className="alert alert-warning text-sm mb-2 py-2">{acpError}</div>
-          ) : null}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard title="已配置">
-              <p className="text-2xl font-mono mt-1">{acp.agent_count}</p>
-            </StatCard>
-            <StatCard title="已连接">
-              <p className="text-2xl font-mono mt-1">{acp.connected_count}</p>
-            </StatCard>
-            <StatCard title="活跃 Session">
-              <p className="text-2xl font-mono mt-1">{acp.session_count}</p>
-            </StatCard>
-            <StatCard title="注册工具">
-              <p className="text-2xl font-mono mt-1">{acp.tool_count}</p>
-            </StatCard>
-          </div>
-        </section>
-
-        <div className="card bg-base-200">
-          <div className="card-body">
-            <h3 className="card-title text-sm">会话按平台</h3>
-            {sessionPlatformRows.length === 0 ? (
-              <div className="text-sm text-base-content/50 mt-1">无会话</div>
-            ) : (
-              <div className="flex flex-wrap gap-2 mt-2">
-                {sessionPlatformRows.map((row) => (
-                  <span key={row.platform} className="badge badge-ghost badge-lg font-mono">
-                    {row.platform}: {row.count}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="card bg-base-200">
-          <div className="card-body">
-            <h3 className="card-title text-sm">平台连接</h3>
-            {Object.keys(platforms).length === 0 ? (
-              <div className="text-sm text-base-content/50 mt-1">无平台接入</div>
-            ) : (
-              <div className="mt-2 space-y-1">
-                {Object.entries(platforms).map(([name, ps]) => (
-                  <div key={name} className="flex items-center gap-2 text-sm">
-                    <span
-                      className={`badge badge-xs ${(ps as { status?: string }).status === "connected" ? "badge-success" : "badge-ghost"}`}
-                    />
-                    <span>{name}</span>
-                    {(ps as { bot_name?: string }).bot_name ? (
-                      <span className="text-xs text-base-content/50">
-                        ({(ps as { bot_name?: string }).bot_name})
-                      </span>
-                    ) : null}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="card bg-base-200">
-          <div className="card-body">
-            <h3 className="card-title text-sm">系统</h3>
-            <div className="text-sm space-y-1 mt-1">
-              <p>逸灵风 v{svc.version || "?"}</p>
-              {svc.start_time_iso ? (
-                <p className="text-xs text-base-content/50">启动于 {svc.start_time_iso}</p>
-              ) : null}
-              {svc.pid ? <p className="text-xs text-base-content/50">PID {svc.pid}</p> : null}
-              <div className="mt-3 pt-3 border-t border-base-300">
-                <button
-                  type="button"
-                  className="btn btn-outline btn-warning btn-sm"
-                  disabled={restarting}
-                  onClick={() => void confirmRestart()}
-                >
-                  {restarting ? "重启中…" : "重启服务"}
-                </button>
-              </div>
+function RuntimeCard({
+  svc,
+  processMemoryLabel,
+  postgres,
+  redis,
+  restarting,
+  onRestart,
+}: {
+  svc: ServiceStatus;
+  processMemoryLabel: string;
+  postgres: DependencyStatus | undefined;
+  redis: DependencyStatus | undefined;
+  restarting: boolean;
+  onRestart: () => void;
+}) {
+  return (
+    <div className="card bg-base-200 lg:col-span-2">
+      <div className="card-body py-3 px-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-2">
+          <div>
+            <h4 className="text-sm text-base-content/60">服务状态</h4>
+            <div className="flex items-center gap-2 mt-1">
+              <span
+                className={`badge ${svc.status === "running" ? "badge-success" : "badge-error"}`}
+              >
+                {svc.status}
+              </span>
+              <span className="text-xs text-base-content/50">v{svc.version || "?"}</span>
             </div>
+          </div>
+          <div>
+            <h4 className="text-sm text-base-content/60">运行时长</h4>
+            <p className="text-xl font-mono mt-1">{formatUptime(svc.uptime_seconds) || "—"}</p>
+          </div>
+          <div>
+            <h4 className="text-sm text-base-content/60">进程内存</h4>
+            <p className="text-xl font-mono mt-1">{processMemoryLabel}</p>
+          </div>
+          <div>
+            <h4 className="text-sm text-base-content/60">当前模型</h4>
+            <p className="text-base font-mono mt-1 truncate" title={svc.config?.model}>
+              {svc.config?.model || "—"}
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-base-content/50 border-t border-base-300 pt-2 mt-2">
+          {svc.start_time_iso ? <span>启动于 {svc.start_time_iso}</span> : null}
+          {svc.pid ? <span>PID {svc.pid}</span> : null}
+          {dependencyBadge(postgres, "PG")}
+          {dependencyBadge(redis, "Redis")}
+          <div className="ml-auto">
+            <button
+              type="button"
+              className="btn btn-outline btn-warning btn-xs"
+              disabled={restarting}
+              onClick={onRestart}
+            >
+              {restarting ? "重启中…" : "重启服务"}
+            </button>
           </div>
         </div>
       </div>
@@ -373,11 +288,116 @@ function DashboardPage() {
   );
 }
 
-function StatCard({ title, children }: { title: string; children: React.ReactNode }) {
+function PlatformConnectionsCard({ platforms }: { platforms: Record<string, unknown> }) {
+  const entries = Object.entries(platforms);
+
   return (
     <div className="card bg-base-200">
-      <div className="card-body py-4">
-        <h4 className="text-sm text-base-content/60">{title}</h4>
+      <div className="card-body py-3 px-4">
+        <h3 className="text-sm text-base-content/60">平台连接</h3>
+        {entries.length === 0 ? (
+          <div className="text-xs text-base-content/50 mt-1">无平台接入</div>
+        ) : (
+          <div className="mt-1 space-y-1 max-h-24 overflow-y-auto">
+            {entries.map(([name, ps]) => (
+              <div key={name} className="flex items-center gap-2 text-sm">
+                <span
+                  className={`badge badge-xs ${(ps as { status?: string }).status === "connected" ? "badge-success" : "badge-ghost"}`}
+                />
+                <span className="truncate">{name}</span>
+                {(ps as { bot_name?: string }).bot_name ? (
+                  <span className="text-xs text-base-content/50 truncate">
+                    ({(ps as { bot_name?: string }).bot_name})
+                  </span>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SessionStatCard({
+  total,
+  platformRows,
+}: {
+  total: number;
+  platformRows: { platform: string; count: number }[];
+}) {
+  return (
+    <div className="group/session relative h-full">
+      <StatCard title="会话">
+        <p className="text-xl font-mono mt-1">{total}</p>
+        <p className="text-xs text-base-content/50">悬停查看分平台</p>
+      </StatCard>
+      <div
+        role="tooltip"
+        className="pointer-events-none absolute left-0 top-full z-50 mt-1 hidden min-w-[10rem] rounded-lg bg-neutral px-3 py-2 text-xs text-neutral-content shadow-lg group-hover/session:block"
+      >
+        {platformRows.length === 0 ? (
+          <p className="text-left">暂无分平台数据</p>
+        ) : (
+          <ul className="list-none space-y-0.5 text-left">
+            {platformRows.map((row) => (
+              <li key={row.platform} className="font-mono whitespace-nowrap">
+                {row.platform}: {row.count}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function CompactExtensionCard({
+  title,
+  href,
+  summary,
+  error,
+}: {
+  title: string;
+  href: string;
+  summary: string;
+  error?: string;
+}) {
+  return (
+    <div className="card bg-base-200 h-full">
+      <div className="card-body flex h-full flex-col py-3 px-4">
+        <div className="flex items-center justify-between gap-2">
+          <h4 className="text-sm text-base-content/60">{title}</h4>
+          <Link to={href} className="text-xs link link-hover">
+            管理
+          </Link>
+        </div>
+        {error ? (
+          <p className="mt-1 text-xs text-warning">{error}</p>
+        ) : (
+          <p className="mt-1 flex-1 text-xs leading-snug text-base-content/70">{summary}</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function StatCard({
+  title,
+  children,
+  action,
+}: {
+  title: string;
+  children: React.ReactNode;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div className="card bg-base-200 h-full">
+      <div className="card-body flex h-full flex-col py-3 px-4">
+        <div className="flex items-center justify-between gap-2">
+          <h4 className="text-sm text-base-content/60">{title}</h4>
+          {action}
+        </div>
         {children}
       </div>
     </div>
