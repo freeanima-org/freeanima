@@ -305,7 +305,7 @@ export async function serve(
         return JSON.stringify(result);
       });
 
-      await initCronModule({ store: repos.cron });
+      await initCronModule({ store: repos.cron, logStore: repos.cronLog });
       cronInitialized = true;
       startupLog("Cron 调度器已启动 (Bun.cron)");
     } else {

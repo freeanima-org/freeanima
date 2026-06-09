@@ -104,3 +104,11 @@ export {
   writeLightSleepState,
   recordLightSleepRun,
 } from "./light-sleep/state.ts";
+export { readDeepSleepState, writeDeepSleepState, recordDeepSleepRun } from "./deep-sleep/state.ts";
+export { applyDeepSleepToolResult } from "./deep-sleep/apply-tool-result.ts";
+export {
+  buildSleepSummary,
+  listDeepSleepRoundLogs,
+  SLEEP_JOB_IDS,
+  type SleepSummary,
+} from "./sleep-records.ts";

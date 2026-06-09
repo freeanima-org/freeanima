@@ -1,4 +1,10 @@
-import type { CronJobRow, CronJobStorePort, CronJobUpdateInput } from "@freeanima/engine-repos";
+import type {
+  CronJobRow,
+  CronJobStorePort,
+  CronJobUpdateInput,
+  CronLogStorePort,
+} from "@freeanima/engine-repos";
+import { setCronLogStore } from "./cron-log.ts";
 import { CronHandleManager } from "./handle-manager.ts";
 import { CronJob } from "./models.ts";
 import { runJobById } from "./runner.ts";
@@ -20,8 +26,12 @@ export function isCronModuleInitialized(): boolean {
   return store != null && handles != null;
 }
 
-export async function initCronModule(opts: { store: CronJobStorePort }): Promise<void> {
+export async function initCronModule(opts: {
+  store: CronJobStorePort;
+  logStore?: CronLogStorePort;
+}): Promise<void> {
   store = opts.store;
+  setCronLogStore(opts.logStore ?? null);
   handles = new CronHandleManager((jobId) => runJobById(jobId));
   await ensureBuiltinCronJobs();
   const jobs = await loadAllJobs();
@@ -32,6 +42,7 @@ export function stopCronModule(): void {
   handles?.stopAll();
   handles = null;
   store = null;
+  setCronLogStore(null);
 }
 
 export async function loadAllJobs(): Promise<CronJob[]> {

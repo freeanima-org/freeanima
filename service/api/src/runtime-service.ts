@@ -30,6 +30,15 @@ export type RuntimeService = AnimaService & {
   getRebuildFtsJobStatus(): any;
   listSelfBlocks(): Promise<any>;
   getPromptDebug(sessionId?: string | null): Promise<any>;
+  getSleepSummary(): Promise<any>;
+  listSleepRuns(opts?: { limit?: number; offset?: number; ok?: boolean }): Promise<any>;
+  listCronLogs(opts?: {
+    job_id?: string;
+    limit?: number;
+    offset?: number;
+    ok?: boolean;
+  }): Promise<any>;
+  getDeepSleepRounds(day: string): { day: string; rounds: unknown[] };
 };
 
 export type { AnimaService, ServiceCommandInfo } from "./anima-service.ts";

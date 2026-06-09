@@ -19,6 +19,12 @@ export type {
   CronJobStorePort,
 } from "./cron.ts";
 export type {
+  CronLogRow,
+  CronLogAppendInput,
+  CronLogListOpts,
+  CronLogStorePort,
+} from "./cron-log.ts";
+export type {
   TaskStorePort,
   TaskRow,
   TaskCreateInput,
@@ -60,6 +66,7 @@ export type {
 
 import type { AutobiographicalMemoryStorePort } from "./autobiographical-memory.ts";
 import type { CronJobStorePort } from "./cron.ts";
+import type { CronLogStorePort } from "./cron-log.ts";
 import type { LimbicMemoryStorePort } from "./limbic-memory.ts";
 import type { SelfLayerStorePort } from "./self-layer.ts";
 import type { TaskStorePort } from "./task.ts";
@@ -74,5 +81,6 @@ export interface PgRepositories {
   autobiographicalMemory: AutobiographicalMemoryStorePort;
   limbicMemory: LimbicMemoryStorePort;
   cron: CronJobStorePort;
+  cronLog: CronLogStorePort;
   tasks: TaskStorePort;
 }

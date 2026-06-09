@@ -15,6 +15,7 @@ import { resolveFtsSegmentedForWrite } from "../../fts/write.ts";
 import { scheduleSemanticMemoryEmbedding } from "../../embedding/schedule.ts";
 import { clearSemanticMemoryEmbedding } from "../../embedding/store.ts";
 import { getDb } from "../../client.ts";
+import { pgTextArrayOverlap } from "../../utils/pg-sql.ts";
 import { mapSemanticMemoryRow } from "../mappers/semantic-mapper.ts";
 import { nextSemanticMemoryId } from "./id-gen.ts";
 
@@ -214,7 +215,7 @@ export async function listSemanticMemoryBySourceSessions(
       sm.created,
       sm.updated
     FROM semantic_memory sm
-    WHERE sm.source_sessions && ${ids}::text[]
+    WHERE ${pgTextArrayOverlap("sm.source_sessions", ids)}
     ${statusFilter}
     ORDER BY sm.updated DESC
   `);

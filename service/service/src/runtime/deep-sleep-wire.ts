@@ -3,6 +3,7 @@ import { runWithToolContext } from "@freeanima/engine-loop";
 import type { SessionMessage } from "@freeanima/engine-db/domain";
 import { PROFILE_REFLECT } from "@freeanima/engine-provider-llm";
 import { getProfileHopModel, loadConfig } from "@freeanima/service-config";
+import { applyDeepSleepToolResult } from "@freeanima/life-memory";
 import {
   registerDeepSleepEngine,
   type DeepSleepEngineInput,
@@ -58,6 +59,12 @@ async function runDeepSleepTurn(input: DeepSleepEngineInput): Promise<DeepSleepE
           case "tool_begin":
             toolCalls += 1;
             break;
+          case "tool_result": {
+            if (input.changeLog) {
+              applyDeepSleepToolResult(input.changeLog, ev.data.name, ev.data.content);
+            }
+            break;
+          }
           case "error":
             throw new Error(ev.data.error);
           default:

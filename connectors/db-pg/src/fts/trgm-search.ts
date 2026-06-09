@@ -4,14 +4,9 @@ import { getFtsTrgmMinSimilarity } from "@freeanima/service-config";
 import { getDb } from "../client.ts";
 import type { SemanticMemoryDbRow } from "../semantic-memory/mappers/semantic-mapper.ts";
 import { messageDocKey, semanticMemoryDocKey } from "./rrf.ts";
+import { pgSemanticSourceSessionsFilter, pgSemanticTypeFilter } from "../utils/pg-sql.ts";
 
 export type TrgmSemanticHit = SemanticMemoryDbRow & { docKey: string; rank: number };
-
-function buildTypeFilter(types: string[]) {
-  if (types.length === 0) return drizzleSql``;
-  if (types.length === 1) return drizzleSql`AND sm.type = ${types[0]}`;
-  return drizzleSql`AND sm.type = ANY(${types}::text[])`;
-}
 
 export async function searchSemanticMemoryTrgm(
   query: string,
@@ -32,12 +27,9 @@ export async function searchSemanticMemoryTrgm(
   const sourceSessions = opts?.sourceSessions?.map((s) => s.trim()).filter(Boolean) ?? [];
 
   const db = getDb();
-  const typeFilter = buildTypeFilter(types);
+  const typeFilter = pgSemanticTypeFilter(types);
   const statusFilter = status === "all" ? drizzleSql`` : drizzleSql`AND sm.status = ${status}`;
-  const sourceFilter =
-    sourceSessions.length > 0
-      ? drizzleSql`AND sm.source_sessions && ${sourceSessions}::text[]`
-      : drizzleSql``;
+  const sourceFilter = pgSemanticSourceSessionsFilter(sourceSessions);
 
   const rows = await db.execute<SemanticMemoryDbRow & { rank: number }>(drizzleSql`
     SELECT

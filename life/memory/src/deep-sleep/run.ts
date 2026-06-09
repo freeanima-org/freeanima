@@ -100,6 +100,7 @@ export async function runDeepSleep(opts: RunDeepSleepOpts): Promise<DeepSleepRes
         messages.instructionText,
       ],
       toolNames: [...DEEP_SLEEP_TOOL_NAMES],
+      changeLog,
     });
 
     const finishedAt = formatCstIso();

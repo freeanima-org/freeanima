@@ -35,6 +35,7 @@ const SLEEP_MASK = {
     "create_semantic_memory",
     "update_semantic_memory",
     "deprecate_semantic_memory",
+    "merge_semantic_memories",
     "create_limbic_memory",
     "create_autobiographical_memory",
     "deprecate_autobiographical_memory",

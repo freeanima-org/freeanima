@@ -294,6 +294,27 @@ Migration：[`engine/db/migrations/20260607160000_limbic_memory/migration.sql`](
 
 Migration：[`engine/db/migrations/20260607140000_cron_jobs/migration.sql`](../engine/db/migrations/20260607140000_cron_jobs/migration.sql)（手写 SQL，无 Drizzle schema 文件）。
 
+## cron_log（已落地）
+
+Cron 每次运行结束追加一行（成功与失败均记录）；WebUI `/chamber/sleep` 与 `GET /api/cron-logs` 查询此表。`cron/output/*.txt` 仍保留作调试副本。
+
+| 列            | 类型        | 说明                                          |
+| ------------- | ----------- | --------------------------------------------- |
+| `id`          | BIGINT PK   | 自增                                          |
+| `job_id`      | TEXT FK     | → `cron_jobs.id` ON DELETE CASCADE            |
+| `run_count`   | INTEGER     | 与当次 `cron_jobs.run_count` 一致             |
+| `ok`          | BOOLEAN     | 是否成功                                      |
+| `finished_at` | TIMESTAMPTZ | 结束时间                                      |
+| `output`      | JSONB       | 成功且可解析为 JSON 时写入（如浅睡/深睡结果） |
+| `output_text` | TEXT        | 非 JSON 成功输出截断原文                      |
+| `error`       | TEXT        | 失败错误摘要（截断 ~2KB）                     |
+
+唯一约束：`(job_id, run_count)`。索引：`idx_cron_log_job_finished (job_id, finished_at DESC)`。
+
+端口：`CronLogStorePort`（`engine-repos`）→ `PgCronLogStore`（`connectors-db-pg`）；写入点 `connectors/cron/src/runner.ts`（`appendCronRunLog`）。
+
+Schema：`engine/db/src/schema/cron-log.ts`。Migration：[`engine/db/migrations/20260612120000_cron_log/migration.sql`](../engine/db/migrations/20260612120000_cron_log/migration.sql)。
+
 ## tasks（已落地）
 
 跨 session 持久待办；`status` / `priority` 为 TEXT + Zod enum（`engine-db/schema/tasks.ts`）。
