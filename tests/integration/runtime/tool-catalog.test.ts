@@ -43,6 +43,7 @@ describePg("tool catalog lazy load", () => {
     for (const expected of DEFAULT_SESSION_TOOL_NAMES) {
       if (getTestEngine().toolSets.getTool(expected)) {
         expect(names).toContain(expected);
+        expect(meta.tools).toContain(expected);
       }
     }
     expect(names).not.toContain("read_file");
