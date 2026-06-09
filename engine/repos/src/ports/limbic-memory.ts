@@ -28,9 +28,19 @@ export type LimbicMemoryCreateInput = {
   id?: string;
 };
 
+export type LimbicListOpts = {
+  query?: string;
+  offset?: number;
+  limit?: number;
+  session_id?: string;
+  kind?: LimbicKind;
+};
+
 /** 边缘系统记忆持久化端口 */
 export interface LimbicMemoryStorePort {
   create(row: LimbicMemoryCreateInput): Promise<string>;
   get(id: string): Promise<LimbicMemoryRow | null>;
   listBySession(sessionId: string, opts?: { limit?: number }): Promise<LimbicMemoryRow[]>;
+  list(opts?: LimbicListOpts): Promise<LimbicMemoryRow[]>;
+  count(opts?: Omit<LimbicListOpts, "offset" | "limit">): Promise<number>;
 }

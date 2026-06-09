@@ -1,8 +1,27 @@
 import { Elysia } from "elysia";
-import { memorySearchBodySchema } from "../../api/schemas.ts";
-import { countSemanticMemory, listMemoryFiles, memorySearch } from "../../handlers/index.ts";
+import {
+  autobiographicalMemoryListBodySchema,
+  limbicMemoryListBodySchema,
+  memorySearchBodySchema,
+  semanticMemoryListBodySchema,
+} from "../../api/schemas.ts";
+import {
+  countSemanticMemory,
+  listAutobiographicalMemories,
+  listLimbicMemories,
+  listMemoryFiles,
+  listSemanticMemories,
+  memorySearch,
+} from "../../handlers/index.ts";
 
 export const memoryRoutes = new Elysia({ prefix: "/memory" })
   .get("/files", () => listMemoryFiles())
   .post("/search", ({ body }) => memorySearch(memorySearchBodySchema.parse(body)))
-  .post("/semantic-memory/count", () => countSemanticMemory());
+  .post("/semantic-memory/count", () => countSemanticMemory())
+  .post("/semantic/list", ({ body }) =>
+    listSemanticMemories(semanticMemoryListBodySchema.parse(body)),
+  )
+  .post("/limbic/list", ({ body }) => listLimbicMemories(limbicMemoryListBodySchema.parse(body)))
+  .post("/autobiographical/list", ({ body }) =>
+    listAutobiographicalMemories(autobiographicalMemoryListBodySchema.parse(body)),
+  );

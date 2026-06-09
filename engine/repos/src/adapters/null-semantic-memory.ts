@@ -39,6 +39,9 @@ export const nullSemanticMemoryStore: SemanticMemoryStorePort = {
   async search() {
     return [];
   },
+  async countSearch() {
+    return 0;
+  },
   async findByContent() {
     return null;
   },

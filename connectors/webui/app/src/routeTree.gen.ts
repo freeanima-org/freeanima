@@ -21,15 +21,19 @@ import { Route as StudioNovelRouteImport } from './routes/studio/novel'
 import { Route as ParlorSessionsRouteImport } from './routes/parlor/sessions'
 import { Route as ParlorChatRouteImport } from './routes/parlor/chat'
 import { Route as ChamberToolsRouteImport } from './routes/chamber/tools'
+import { Route as ChamberSemanticMemoryRouteImport } from './routes/chamber/semantic-memory'
+import { Route as ChamberSelfLayerRouteImport } from './routes/chamber/self-layer'
 import { Route as ChamberMemoryRouteImport } from './routes/chamber/memory'
 import { Route as ChamberMcpRouteImport } from './routes/chamber/mcp'
+import { Route as ChamberLimbicMemoryRouteImport } from './routes/chamber/limbic-memory'
+import { Route as ChamberEmailRouteImport } from './routes/chamber/email'
 import { Route as ChamberDashboardRouteImport } from './routes/chamber/dashboard'
 import { Route as ChamberCronRouteImport } from './routes/chamber/cron'
-import { Route as ChamberEmailRouteImport } from './routes/chamber/email'
+import { Route as ChamberCredentialsRouteImport } from './routes/chamber/credentials'
 import { Route as ChamberConfigRouteImport } from './routes/chamber/config'
 import { Route as ChamberCommandsRouteImport } from './routes/chamber/commands'
+import { Route as ChamberAutobiographicalMemoryRouteImport } from './routes/chamber/autobiographical-memory'
 import { Route as ChamberAcpRouteImport } from './routes/chamber/acp'
-import { Route as ChamberCredentialsRouteImport } from './routes/chamber/credentials'
 import { Route as ChamberSessionsRouteRouteImport } from './routes/chamber/sessions/route'
 import { Route as ChamberSessionsIndexRouteImport } from './routes/chamber/sessions/index'
 import { Route as ChamberSessionsSessionIdRouteImport } from './routes/chamber/sessions/$sessionId'
@@ -94,6 +98,16 @@ const ChamberToolsRoute = ChamberToolsRouteImport.update({
   path: '/tools',
   getParentRoute: () => ChamberRouteRoute,
 } as any)
+const ChamberSemanticMemoryRoute = ChamberSemanticMemoryRouteImport.update({
+  id: '/semantic-memory',
+  path: '/semantic-memory',
+  getParentRoute: () => ChamberRouteRoute,
+} as any)
+const ChamberSelfLayerRoute = ChamberSelfLayerRouteImport.update({
+  id: '/self-layer',
+  path: '/self-layer',
+  getParentRoute: () => ChamberRouteRoute,
+} as any)
 const ChamberMemoryRoute = ChamberMemoryRouteImport.update({
   id: '/memory',
   path: '/memory',
@@ -102,6 +116,16 @@ const ChamberMemoryRoute = ChamberMemoryRouteImport.update({
 const ChamberMcpRoute = ChamberMcpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
+  getParentRoute: () => ChamberRouteRoute,
+} as any)
+const ChamberLimbicMemoryRoute = ChamberLimbicMemoryRouteImport.update({
+  id: '/limbic-memory',
+  path: '/limbic-memory',
+  getParentRoute: () => ChamberRouteRoute,
+} as any)
+const ChamberEmailRoute = ChamberEmailRouteImport.update({
+  id: '/email',
+  path: '/email',
   getParentRoute: () => ChamberRouteRoute,
 } as any)
 const ChamberDashboardRoute = ChamberDashboardRouteImport.update({
@@ -114,9 +138,9 @@ const ChamberCronRoute = ChamberCronRouteImport.update({
   path: '/cron',
   getParentRoute: () => ChamberRouteRoute,
 } as any)
-const ChamberEmailRoute = ChamberEmailRouteImport.update({
-  id: '/email',
-  path: '/email',
+const ChamberCredentialsRoute = ChamberCredentialsRouteImport.update({
+  id: '/credentials',
+  path: '/credentials',
   getParentRoute: () => ChamberRouteRoute,
 } as any)
 const ChamberConfigRoute = ChamberConfigRouteImport.update({
@@ -129,14 +153,15 @@ const ChamberCommandsRoute = ChamberCommandsRouteImport.update({
   path: '/commands',
   getParentRoute: () => ChamberRouteRoute,
 } as any)
+const ChamberAutobiographicalMemoryRoute =
+  ChamberAutobiographicalMemoryRouteImport.update({
+    id: '/autobiographical-memory',
+    path: '/autobiographical-memory',
+    getParentRoute: () => ChamberRouteRoute,
+  } as any)
 const ChamberAcpRoute = ChamberAcpRouteImport.update({
   id: '/acp',
   path: '/acp',
-  getParentRoute: () => ChamberRouteRoute,
-} as any)
-const ChamberCredentialsRoute = ChamberCredentialsRouteImport.update({
-  id: '/credentials',
-  path: '/credentials',
   getParentRoute: () => ChamberRouteRoute,
 } as any)
 const ChamberSessionsRouteRoute = ChamberSessionsRouteRouteImport.update({
@@ -164,14 +189,18 @@ export interface FileRoutesByFullPath {
   '/workshop': typeof WorkshopRouteWithChildren
   '/chamber/sessions': typeof ChamberSessionsRouteRouteWithChildren
   '/chamber/acp': typeof ChamberAcpRoute
+  '/chamber/autobiographical-memory': typeof ChamberAutobiographicalMemoryRoute
   '/chamber/commands': typeof ChamberCommandsRoute
   '/chamber/config': typeof ChamberConfigRoute
   '/chamber/credentials': typeof ChamberCredentialsRoute
   '/chamber/cron': typeof ChamberCronRoute
-  '/chamber/email': typeof ChamberEmailRoute
   '/chamber/dashboard': typeof ChamberDashboardRoute
+  '/chamber/email': typeof ChamberEmailRoute
+  '/chamber/limbic-memory': typeof ChamberLimbicMemoryRoute
   '/chamber/mcp': typeof ChamberMcpRoute
   '/chamber/memory': typeof ChamberMemoryRoute
+  '/chamber/self-layer': typeof ChamberSelfLayerRoute
+  '/chamber/semantic-memory': typeof ChamberSemanticMemoryRoute
   '/chamber/tools': typeof ChamberToolsRoute
   '/parlor/chat': typeof ParlorChatRoute
   '/parlor/sessions': typeof ParlorSessionsRoute
@@ -189,14 +218,18 @@ export interface FileRoutesByTo {
   '/studio': typeof StudioRouteRouteWithChildren
   '/workshop': typeof WorkshopRouteWithChildren
   '/chamber/acp': typeof ChamberAcpRoute
+  '/chamber/autobiographical-memory': typeof ChamberAutobiographicalMemoryRoute
   '/chamber/commands': typeof ChamberCommandsRoute
   '/chamber/config': typeof ChamberConfigRoute
   '/chamber/credentials': typeof ChamberCredentialsRoute
   '/chamber/cron': typeof ChamberCronRoute
-  '/chamber/email': typeof ChamberEmailRoute
   '/chamber/dashboard': typeof ChamberDashboardRoute
+  '/chamber/email': typeof ChamberEmailRoute
+  '/chamber/limbic-memory': typeof ChamberLimbicMemoryRoute
   '/chamber/mcp': typeof ChamberMcpRoute
   '/chamber/memory': typeof ChamberMemoryRoute
+  '/chamber/self-layer': typeof ChamberSelfLayerRoute
+  '/chamber/semantic-memory': typeof ChamberSemanticMemoryRoute
   '/chamber/tools': typeof ChamberToolsRoute
   '/parlor/chat': typeof ParlorChatRoute
   '/parlor/sessions': typeof ParlorSessionsRoute
@@ -216,14 +249,18 @@ export interface FileRoutesById {
   '/workshop': typeof WorkshopRouteWithChildren
   '/chamber/sessions': typeof ChamberSessionsRouteRouteWithChildren
   '/chamber/acp': typeof ChamberAcpRoute
+  '/chamber/autobiographical-memory': typeof ChamberAutobiographicalMemoryRoute
   '/chamber/commands': typeof ChamberCommandsRoute
   '/chamber/config': typeof ChamberConfigRoute
   '/chamber/credentials': typeof ChamberCredentialsRoute
   '/chamber/cron': typeof ChamberCronRoute
-  '/chamber/email': typeof ChamberEmailRoute
   '/chamber/dashboard': typeof ChamberDashboardRoute
+  '/chamber/email': typeof ChamberEmailRoute
+  '/chamber/limbic-memory': typeof ChamberLimbicMemoryRoute
   '/chamber/mcp': typeof ChamberMcpRoute
   '/chamber/memory': typeof ChamberMemoryRoute
+  '/chamber/self-layer': typeof ChamberSelfLayerRoute
+  '/chamber/semantic-memory': typeof ChamberSemanticMemoryRoute
   '/chamber/tools': typeof ChamberToolsRoute
   '/parlor/chat': typeof ParlorChatRoute
   '/parlor/sessions': typeof ParlorSessionsRoute
@@ -244,14 +281,18 @@ export interface FileRouteTypes {
     | '/workshop'
     | '/chamber/sessions'
     | '/chamber/acp'
+    | '/chamber/autobiographical-memory'
     | '/chamber/commands'
     | '/chamber/config'
     | '/chamber/credentials'
     | '/chamber/cron'
-    | '/chamber/email'
     | '/chamber/dashboard'
+    | '/chamber/email'
+    | '/chamber/limbic-memory'
     | '/chamber/mcp'
     | '/chamber/memory'
+    | '/chamber/self-layer'
+    | '/chamber/semantic-memory'
     | '/chamber/tools'
     | '/parlor/chat'
     | '/parlor/sessions'
@@ -269,14 +310,18 @@ export interface FileRouteTypes {
     | '/studio'
     | '/workshop'
     | '/chamber/acp'
+    | '/chamber/autobiographical-memory'
     | '/chamber/commands'
     | '/chamber/config'
     | '/chamber/credentials'
     | '/chamber/cron'
-    | '/chamber/email'
     | '/chamber/dashboard'
+    | '/chamber/email'
+    | '/chamber/limbic-memory'
     | '/chamber/mcp'
     | '/chamber/memory'
+    | '/chamber/self-layer'
+    | '/chamber/semantic-memory'
     | '/chamber/tools'
     | '/parlor/chat'
     | '/parlor/sessions'
@@ -295,14 +340,18 @@ export interface FileRouteTypes {
     | '/workshop'
     | '/chamber/sessions'
     | '/chamber/acp'
+    | '/chamber/autobiographical-memory'
     | '/chamber/commands'
     | '/chamber/config'
     | '/chamber/credentials'
     | '/chamber/cron'
-    | '/chamber/email'
     | '/chamber/dashboard'
+    | '/chamber/email'
+    | '/chamber/limbic-memory'
     | '/chamber/mcp'
     | '/chamber/memory'
+    | '/chamber/self-layer'
+    | '/chamber/semantic-memory'
     | '/chamber/tools'
     | '/parlor/chat'
     | '/parlor/sessions'
@@ -408,6 +457,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChamberToolsRouteImport
       parentRoute: typeof ChamberRouteRoute
     }
+    '/chamber/semantic-memory': {
+      id: '/chamber/semantic-memory'
+      path: '/semantic-memory'
+      fullPath: '/chamber/semantic-memory'
+      preLoaderRoute: typeof ChamberSemanticMemoryRouteImport
+      parentRoute: typeof ChamberRouteRoute
+    }
+    '/chamber/self-layer': {
+      id: '/chamber/self-layer'
+      path: '/self-layer'
+      fullPath: '/chamber/self-layer'
+      preLoaderRoute: typeof ChamberSelfLayerRouteImport
+      parentRoute: typeof ChamberRouteRoute
+    }
     '/chamber/memory': {
       id: '/chamber/memory'
       path: '/memory'
@@ -420,6 +483,20 @@ declare module '@tanstack/react-router' {
       path: '/mcp'
       fullPath: '/chamber/mcp'
       preLoaderRoute: typeof ChamberMcpRouteImport
+      parentRoute: typeof ChamberRouteRoute
+    }
+    '/chamber/limbic-memory': {
+      id: '/chamber/limbic-memory'
+      path: '/limbic-memory'
+      fullPath: '/chamber/limbic-memory'
+      preLoaderRoute: typeof ChamberLimbicMemoryRouteImport
+      parentRoute: typeof ChamberRouteRoute
+    }
+    '/chamber/email': {
+      id: '/chamber/email'
+      path: '/email'
+      fullPath: '/chamber/email'
+      preLoaderRoute: typeof ChamberEmailRouteImport
       parentRoute: typeof ChamberRouteRoute
     }
     '/chamber/dashboard': {
@@ -436,11 +513,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChamberCronRouteImport
       parentRoute: typeof ChamberRouteRoute
     }
-    '/chamber/email': {
-      id: '/chamber/email'
-      path: '/email'
-      fullPath: '/chamber/email'
-      preLoaderRoute: typeof ChamberEmailRouteImport
+    '/chamber/credentials': {
+      id: '/chamber/credentials'
+      path: '/credentials'
+      fullPath: '/chamber/credentials'
+      preLoaderRoute: typeof ChamberCredentialsRouteImport
       parentRoute: typeof ChamberRouteRoute
     }
     '/chamber/config': {
@@ -457,18 +534,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChamberCommandsRouteImport
       parentRoute: typeof ChamberRouteRoute
     }
+    '/chamber/autobiographical-memory': {
+      id: '/chamber/autobiographical-memory'
+      path: '/autobiographical-memory'
+      fullPath: '/chamber/autobiographical-memory'
+      preLoaderRoute: typeof ChamberAutobiographicalMemoryRouteImport
+      parentRoute: typeof ChamberRouteRoute
+    }
     '/chamber/acp': {
       id: '/chamber/acp'
       path: '/acp'
       fullPath: '/chamber/acp'
       preLoaderRoute: typeof ChamberAcpRouteImport
-      parentRoute: typeof ChamberRouteRoute
-    }
-    '/chamber/credentials': {
-      id: '/chamber/credentials'
-      path: '/credentials'
-      fullPath: '/chamber/credentials'
-      preLoaderRoute: typeof ChamberCredentialsRouteImport
       parentRoute: typeof ChamberRouteRoute
     }
     '/chamber/sessions': {
@@ -511,28 +588,36 @@ const ChamberSessionsRouteRouteWithChildren =
 interface ChamberRouteRouteChildren {
   ChamberSessionsRouteRoute: typeof ChamberSessionsRouteRouteWithChildren
   ChamberAcpRoute: typeof ChamberAcpRoute
+  ChamberAutobiographicalMemoryRoute: typeof ChamberAutobiographicalMemoryRoute
   ChamberCommandsRoute: typeof ChamberCommandsRoute
   ChamberConfigRoute: typeof ChamberConfigRoute
   ChamberCredentialsRoute: typeof ChamberCredentialsRoute
   ChamberCronRoute: typeof ChamberCronRoute
-  ChamberEmailRoute: typeof ChamberEmailRoute
   ChamberDashboardRoute: typeof ChamberDashboardRoute
+  ChamberEmailRoute: typeof ChamberEmailRoute
+  ChamberLimbicMemoryRoute: typeof ChamberLimbicMemoryRoute
   ChamberMcpRoute: typeof ChamberMcpRoute
   ChamberMemoryRoute: typeof ChamberMemoryRoute
+  ChamberSelfLayerRoute: typeof ChamberSelfLayerRoute
+  ChamberSemanticMemoryRoute: typeof ChamberSemanticMemoryRoute
   ChamberToolsRoute: typeof ChamberToolsRoute
 }
 
 const ChamberRouteRouteChildren: ChamberRouteRouteChildren = {
   ChamberSessionsRouteRoute: ChamberSessionsRouteRouteWithChildren,
   ChamberAcpRoute: ChamberAcpRoute,
+  ChamberAutobiographicalMemoryRoute: ChamberAutobiographicalMemoryRoute,
   ChamberCommandsRoute: ChamberCommandsRoute,
   ChamberConfigRoute: ChamberConfigRoute,
   ChamberCredentialsRoute: ChamberCredentialsRoute,
   ChamberCronRoute: ChamberCronRoute,
-  ChamberEmailRoute: ChamberEmailRoute,
   ChamberDashboardRoute: ChamberDashboardRoute,
+  ChamberEmailRoute: ChamberEmailRoute,
+  ChamberLimbicMemoryRoute: ChamberLimbicMemoryRoute,
   ChamberMcpRoute: ChamberMcpRoute,
   ChamberMemoryRoute: ChamberMemoryRoute,
+  ChamberSelfLayerRoute: ChamberSelfLayerRoute,
+  ChamberSemanticMemoryRoute: ChamberSemanticMemoryRoute,
   ChamberToolsRoute: ChamberToolsRoute,
 }
 

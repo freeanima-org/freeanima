@@ -33,13 +33,22 @@ export type AutobiographicalMemoryCreateInput = {
 
 export type AutobiographicalListOrder = "updated_desc" | "significance_desc";
 
+export type AutobiographicalListOpts = {
+  query?: string;
+  offset?: number;
+  limit?: number;
+  status?: AutobiographicalStatus;
+  significance?: AutobiographicalSignificance;
+  source_session?: string;
+};
+
 /** 自传体记忆持久化端口（只追加；无 content update） */
 export interface AutobiographicalMemoryStorePort {
   create(row: AutobiographicalMemoryCreateInput): Promise<string>;
   get(id: string): Promise<AutobiographicalMemoryRow | null>;
   /** 软废弃；正文不变 */
   deprecate(id: string): Promise<boolean>;
-  count(opts?: { status?: AutobiographicalStatus }): Promise<number>;
+  count(opts?: Omit<AutobiographicalListOpts, "offset" | "limit">): Promise<number>;
   listActive(opts?: {
     limit?: number;
     order?: AutobiographicalListOrder;
@@ -53,4 +62,5 @@ export interface AutobiographicalMemoryStorePort {
     sessionIds: string[],
     opts?: { status?: AutobiographicalStatus },
   ): Promise<AutobiographicalMemoryRow[]>;
+  list(opts?: AutobiographicalListOpts): Promise<AutobiographicalMemoryRow[]>;
 }

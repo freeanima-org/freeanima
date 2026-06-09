@@ -1,6 +1,7 @@
 import type { LimbicMemoryStorePort } from "@freeanima/engine-repos";
 
 import * as crudRepo from "./repos/limbic-crud-repo.ts";
+import * as listRepo from "./repos/limbic-list-repo.ts";
 
 /** PostgreSQL LimbicMemoryStorePort 实现 */
 export class PgLimbicMemoryStore implements LimbicMemoryStorePort {
@@ -17,5 +18,13 @@ export class PgLimbicMemoryStore implements LimbicMemoryStorePort {
     opts?: Parameters<LimbicMemoryStorePort["listBySession"]>[1],
   ) {
     return crudRepo.listLimbicMemoryBySession(sessionId, opts);
+  }
+
+  async list(opts?: Parameters<LimbicMemoryStorePort["list"]>[0]) {
+    return listRepo.listLimbicMemory(opts);
+  }
+
+  async count(opts?: Parameters<LimbicMemoryStorePort["count"]>[0]) {
+    return listRepo.countLimbicMemory(opts);
   }
 }

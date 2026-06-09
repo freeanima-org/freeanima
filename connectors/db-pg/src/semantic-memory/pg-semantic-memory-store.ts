@@ -53,6 +53,10 @@ export class PgSemanticMemoryStore implements SemanticMemoryStorePort {
     return searchRepo.searchSemanticMemory(opts);
   }
 
+  async countSearch(opts: Parameters<SemanticMemoryStorePort["countSearch"]>[0]) {
+    return searchRepo.countSemanticMemorySearch(opts);
+  }
+
   async findByContent(content: string) {
     return crudRepo.findSemanticMemoryByContent(content);
   }

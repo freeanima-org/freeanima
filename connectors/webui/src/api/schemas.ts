@@ -1,4 +1,36 @@
+import {
+  autobiographicalSignificanceSchema,
+  autobiographicalStatusSchema,
+  limbicKindSchema,
+  semanticMemoryStatusSchema,
+  semanticMemoryTypeSchema,
+} from "@freeanima/engine-db/schema";
 import { z } from "zod";
+
+const memoryListPaginationSchema = z.object({
+  offset: z.number().int().min(0).optional(),
+  limit: z.number().int().min(1).max(100).optional(),
+});
+
+export const semanticMemoryListBodySchema = memoryListPaginationSchema.extend({
+  query: z.string().optional(),
+  types: z.array(semanticMemoryTypeSchema).optional(),
+  status: semanticMemoryStatusSchema.or(z.literal("all")).optional(),
+  source_session: z.string().optional(),
+});
+
+export const limbicMemoryListBodySchema = memoryListPaginationSchema.extend({
+  query: z.string().optional(),
+  session_id: z.string().optional(),
+  kind: limbicKindSchema.optional(),
+});
+
+export const autobiographicalMemoryListBodySchema = memoryListPaginationSchema.extend({
+  query: z.string().optional(),
+  status: autobiographicalStatusSchema.optional(),
+  significance: autobiographicalSignificanceSchema.optional(),
+  source_session: z.string().optional(),
+});
 
 const clarifyItemSchema = z.object({
   question: z.string().min(1),
@@ -47,6 +79,9 @@ export type CreateSessionBody = z.infer<typeof createSessionBodySchema>;
 export type PatchTitleBody = z.infer<typeof patchTitleBodySchema>;
 export type SendMessageBody = z.infer<typeof sendMessageBodySchema>;
 export type MemorySearchBody = z.infer<typeof memorySearchBodySchema>;
+export type SemanticMemoryListBody = z.infer<typeof semanticMemoryListBodySchema>;
+export type LimbicMemoryListBody = z.infer<typeof limbicMemoryListBodySchema>;
+export type AutobiographicalMemoryListBody = z.infer<typeof autobiographicalMemoryListBodySchema>;
 export type StudioConfigPatch = z.infer<typeof studioConfigPatchSchema>;
 export type StudioSearchBody = z.infer<typeof studioSearchBodySchema>;
 

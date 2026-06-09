@@ -41,12 +41,14 @@ export type {
   AutobiographicalMemoryRow,
   AutobiographicalMemoryCreateInput,
   AutobiographicalListOrder,
+  AutobiographicalListOpts,
   AutobiographicalMemoryStorePort,
 } from "./autobiographical-memory.ts";
 export type {
   LimbicKind,
   LimbicMemoryRow,
   LimbicMemoryCreateInput,
+  LimbicListOpts,
   LimbicMemoryStorePort,
 } from "./limbic-memory.ts";
 

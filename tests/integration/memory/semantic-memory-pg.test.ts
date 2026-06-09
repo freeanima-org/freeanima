@@ -59,6 +59,22 @@ describePg("semantic_memory PG", () => {
     expect(await store.get(pinnedId)).toBeNull();
   });
 
+  it("search offset and countSearch align", async () => {
+    const store = getTestEngine().repos.semanticMemory;
+    await store.create({ content: "offset 探针 one", type: "world" });
+    await store.create({ content: "offset 探针 two", type: "world" });
+
+    const total = await store.countSearch({ query: "offset 探针" });
+    expect(total).toBeGreaterThanOrEqual(2);
+
+    const page = await store.search({ query: "offset 探针", limit: 1, offset: 0 });
+    expect(page.length).toBe(1);
+
+    const page2 = await store.search({ query: "offset 探针", limit: 1, offset: 1 });
+    expect(page2.length).toBe(1);
+    expect(page2[0]?.id).not.toBe(page[0]?.id);
+  });
+
   afterAll(async () => {
     await endIntegrationCase();
   });

@@ -227,6 +227,42 @@ export async function countSemanticMemory() {
   return unwrap(apiClient.api.memory["semantic-memory"].count.post());
 }
 
+export async function listSemanticMemories(input: {
+  query?: string;
+  offset?: number;
+  limit?: number;
+  types?: string[];
+  status?: string;
+  source_session?: string;
+}) {
+  return unwrap(apiClient.api.memory.semantic.list.post(input));
+}
+
+export async function listLimbicMemories(input: {
+  query?: string;
+  offset?: number;
+  limit?: number;
+  session_id?: string;
+  kind?: string;
+}) {
+  return unwrap(apiClient.api.memory.limbic.list.post(input));
+}
+
+export async function listAutobiographicalMemories(input: {
+  query?: string;
+  offset?: number;
+  limit?: number;
+  status?: string;
+  significance?: string;
+  source_session?: string;
+}) {
+  return unwrap(apiClient.api.memory.autobiographical.list.post(input));
+}
+
+export async function getSelfBlocks() {
+  return unwrap(apiClient.api.self.blocks.get());
+}
+
 export async function getMcpStatus() {
   return unwrap(apiClient.api.mcp.status.get());
 }

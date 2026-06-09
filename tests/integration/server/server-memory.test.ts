@@ -9,6 +9,7 @@ import {
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { getServiceContext } from "@freeanima/service";
+import { SELF_BLOCK_KEYS } from "@freeanima/engine-repos";
 import { getTestEngine, seedSession } from "../../helpers/pg-test.ts";
 
 describePg("server memory API", () => {
@@ -85,6 +86,105 @@ describePg("server memory API", () => {
     expect(index_rows).toBeGreaterThan(0);
     const hits = await getServiceContext().service.memorySearch({ query: "gamma" });
     expect(hits.semantic_memory.length).toBeGreaterThan(0);
+  });
+
+  it("listSemanticMemories supports filter offset and total", async () => {
+    await getTestEngine().repos.semanticMemory.create({
+      content: "列表探针 alpha unique-token",
+      type: "preference",
+    });
+    await getTestEngine().repos.semanticMemory.create({
+      content: "列表探针 beta unique-token",
+      type: "world",
+    });
+
+    const filtered = await getServiceContext().service.listSemanticMemories({
+      query: "unique-token",
+      types: ["preference"],
+      limit: 10,
+    });
+    expect(filtered.total).toBe(1);
+    expect(filtered.items.length).toBe(1);
+    expect(filtered.items[0]?.type).toBe("preference");
+
+    const page = await getServiceContext().service.listSemanticMemories({
+      limit: 1,
+      offset: 0,
+    });
+    expect(page.total).toBeGreaterThanOrEqual(2);
+    expect(page.items.length).toBe(1);
+    expect(page.offset).toBe(0);
+    expect(page.limit).toBe(1);
+  });
+
+  it("listLimbicMemories supports session and kind filter", async () => {
+    const sid = "20260526_130000_limbic";
+    await getTestEngine().repos.limbicMemory.create({
+      session_id: sid,
+      kind: "spike",
+      content: "情感探针 spike 内容",
+    });
+    await getTestEngine().repos.limbicMemory.create({
+      session_id: sid,
+      kind: "session_mood",
+      content: "情感探针 mood 内容",
+    });
+
+    const spikes = await getServiceContext().service.listLimbicMemories({
+      session_id: sid,
+      kind: "spike",
+    });
+    expect(spikes.total).toBe(1);
+    expect(spikes.items[0]?.kind).toBe("spike");
+
+    const searched = await getServiceContext().service.listLimbicMemories({
+      query: "spike",
+      session_id: sid,
+    });
+    expect(searched.total).toBe(1);
+    expect(searched.items[0]?.content).toContain("spike");
+  });
+
+  it("listAutobiographicalMemories supports significance filter", async () => {
+    await getTestEngine().repos.autobiographicalMemory.create({
+      title: "里程碑事件",
+      content: "自传列表探针 milestone",
+      significance: "milestone",
+    });
+    await getTestEngine().repos.autobiographicalMemory.create({
+      title: "日常记录",
+      content: "自传列表探针 normal",
+      significance: "normal",
+    });
+
+    const milestones = await getServiceContext().service.listAutobiographicalMemories({
+      significance: "milestone",
+    });
+    expect(milestones.total).toBeGreaterThanOrEqual(1);
+    expect(
+      milestones.items.every((r: { significance: string }) => r.significance === "milestone"),
+    ).toBe(true);
+
+    const searched = await getServiceContext().service.listAutobiographicalMemories({
+      query: "milestone",
+    });
+    expect(searched.total).toBeGreaterThanOrEqual(1);
+    expect(searched.items.some((r: { title: string }) => r.title.includes("里程碑"))).toBe(true);
+  });
+
+  it("listSelfBlocks returns six blocks in order", async () => {
+    await getTestEngine().repos.selfLayer.upsertBlock({
+      block_key: "direction",
+      content: "自我层列表探针",
+      updated_by: "test",
+    });
+
+    const { blocks } = await getServiceContext().service.listSelfBlocks();
+    expect(blocks.length).toBe(SELF_BLOCK_KEYS.length);
+    expect(blocks.map((b: { block_key: string }) => b.block_key)).toEqual([...SELF_BLOCK_KEYS]);
+    const direction = blocks.find((b: { block_key: string }) => b.block_key === "direction");
+    expect(direction?.content).toBe("自我层列表探针");
+    expect(direction?.heading).toBe("方向意图");
   });
 
   afterAll(async () => {

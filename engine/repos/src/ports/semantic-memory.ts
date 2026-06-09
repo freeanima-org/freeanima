@@ -44,6 +44,7 @@ export type SemanticMemoryUpdateInput = {
 
 export type SemanticMemorySearchOpts = {
   query?: string;
+  offset?: number;
   limit?: number;
   types?: string[];
   status?: "active" | "deprecated" | "all";
@@ -66,5 +67,7 @@ export interface SemanticMemoryStorePort {
   ): Promise<SemanticMemoryRow[]>;
   searchFts(query: string, opts?: { limit?: number; types?: string[] }): Promise<SemanticFtsHit[]>;
   search(opts: SemanticMemorySearchOpts): Promise<SemanticFtsHit[]>;
+  /** 与 search 相同过滤（不含 limit/offset） */
+  countSearch(opts: Omit<SemanticMemorySearchOpts, "limit" | "offset">): Promise<number>;
   findByContent(content: string): Promise<SemanticMemoryRow | null>;
 }

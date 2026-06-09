@@ -21,6 +21,10 @@ export type RuntimeService = AnimaService & {
   listMemoryFiles(): any;
   memorySearch(opts: any): Promise<any>;
   countSemanticMemory(): any;
+  listSemanticMemories(opts?: any): Promise<any>;
+  listLimbicMemories(opts?: any): Promise<any>;
+  listAutobiographicalMemories(opts?: any): Promise<any>;
+  listSelfBlocks(): Promise<any>;
 };
 
 export type { AnimaService, ServiceCommandInfo } from "./anima-service.ts";

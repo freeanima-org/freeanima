@@ -18,6 +18,7 @@ import { SessionManager } from "./session-manager.ts";
 import * as status from "./service-status.ts";
 import * as sessions from "./service-sessions.ts";
 import * as memory from "./service-memory.ts";
+import * as selfLayer from "./service-self.ts";
 import * as messaging from "./service-messaging.ts";
 import { PARLOR_PLATFORM } from "./platforms.ts";
 
@@ -231,6 +232,22 @@ export class AnimaService implements StreamTurnHost {
 
   listMemoryFiles(): Promise<{ files: memory.MemoryFileEntry[] }> {
     return memory.listMemoryFiles();
+  }
+
+  listSemanticMemories(args?: Parameters<typeof memory.listSemanticMemories>[0]) {
+    return memory.listSemanticMemories(args);
+  }
+
+  listLimbicMemories(args?: Parameters<typeof memory.listLimbicMemories>[0]) {
+    return memory.listLimbicMemories(args);
+  }
+
+  listAutobiographicalMemories(args?: Parameters<typeof memory.listAutobiographicalMemories>[0]) {
+    return memory.listAutobiographicalMemories(args);
+  }
+
+  listSelfBlocks(): Promise<{ blocks: selfLayer.SelfBlockDisplay[] }> {
+    return selfLayer.listSelfBlocks();
   }
 
   getConfig(): SafeConfigSnapshot {
