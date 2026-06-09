@@ -10,6 +10,7 @@
     "./runtime/home-channel": "./src/runtime/home-channel.ts",
     "./runtime/conversation-stats": "./src/runtime/conversation-stats.ts",
     "./runtime/turn-lifecycle": "./src/runtime/turn-lifecycle.ts",
+    "./runtime/process-restart": "./src/runtime/process-restart.ts",
     "./schemas/display": "./src/schemas/display.ts",
     "./schemas/snapshot": "./src/schemas/snapshot.ts"
   },

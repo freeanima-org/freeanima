@@ -26,6 +26,7 @@ import {
   findCommand,
   executeCommand,
   isRetryResult,
+  isRestartResult,
   resolveCommand,
 } from "@freeanima/connectors-commands";
 import { getServiceContext } from "@freeanima/service";
@@ -133,9 +134,10 @@ describePg("slash commands", () => {
       raw: "/new",
     });
     expect(result.text).toContain("新 session");
-    expect(result.data?.new_session_id).toBeTruthy();
-    expect(String(result.data?.new_session_id)).not.toBe(sid);
-    expect(await testConv().sessionExists(String(result.data?.new_session_id))).toBe(true);
+    const data = result.data as { new_session_id?: string } | undefined;
+    expect(data?.new_session_id).toBeTruthy();
+    expect(String(data?.new_session_id)).not.toBe(sid);
+    expect(await testConv().sessionExists(String(data?.new_session_id))).toBe(true);
   });
 
   it("reload_tools resets session to default tools", async () => {
@@ -323,6 +325,47 @@ describePg("slash commands", () => {
     expect(result.text).toContain("微信 home channel");
     const cfg = readFileSync(join(home, "config.yaml"), "utf-8");
     expect(cfg).toContain("home_channel: peer@im.wechat");
+  });
+
+  it("/restart 在 parlor、discord、weixin 可解析", () => {
+    for (const platform of ["parlor", "discord", "weixin"] as const) {
+      const [cmd] = resolveCommand("/restart", platform);
+      expect(cmd?.name).toBe("restart");
+    }
+  });
+
+  it("/restart 返回 restart action 与提示文本", async () => {
+    const [cmd] = findCommand("/restart");
+    expect(cmd?.name).toBe("restart");
+    const result = await executeCommand(cmd!, {
+      sessionId: "x",
+      platform: "parlor",
+      args: [],
+      raw: "/restart",
+    });
+    expect(isRestartResult(result)).toBe(true);
+    expect(result.text).toContain("正在重启");
+  });
+
+  it("listCommands 含 restart（parlor / discord / weixin）", () => {
+    const svc = getServiceContext().service;
+    for (const platform of ["parlor", "discord", "weixin"] as const) {
+      const names = svc.listCommands({ platform }).commands.map((c) => c.name);
+      expect(names).toContain("restart");
+    }
+  });
+
+  it("/restart 在 shuttingDown 时返回已在重启提示", async () => {
+    getServiceContext().service.startShutdown();
+    const [cmd] = findCommand("/restart");
+    const result = await executeCommand(cmd!, {
+      sessionId: "x",
+      platform: "parlor",
+      args: [],
+      raw: "/restart",
+    });
+    expect(result.text).toContain("已在重启");
+    expect(isRestartResult(result)).toBe(false);
   });
 
   afterAll(async () => {

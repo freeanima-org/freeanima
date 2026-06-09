@@ -1,3 +1,4 @@
+import type { CommandRestartData } from "./restart-data.ts";
 import type { CommandRetryData } from "./retry-data.ts";
 
 export type CommandContext = {
@@ -10,7 +11,7 @@ export type CommandContext = {
 
 export type CommandResult = {
   text: string;
-  data?: CommandRetryData | Record<string, unknown> | null;
+  data?: CommandRetryData | CommandRestartData | Record<string, unknown> | null;
 };
 
 export type CommandHandler = (
@@ -93,4 +94,10 @@ export function isRetryResult(result: CommandResult): result is CommandResult & 
   data: CommandRetryData;
 } {
   return result.data?.action === "retry";
+}
+
+export function isRestartResult(result: CommandResult): result is CommandResult & {
+  data: CommandRestartData;
+} {
+  return result.data?.action === "restart";
 }

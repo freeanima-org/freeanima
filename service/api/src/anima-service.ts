@@ -32,4 +32,5 @@ export type AnimaService = {
   };
   waitForDrain(): Promise<void>;
   getInFlightCount(): number;
+  abortAll(): void;
 };

@@ -2,6 +2,7 @@ import {
   executeCommand as runSlashCommand,
   resolveCommand,
   isRetryResult,
+  isRestartResult,
 } from "@freeanima/connectors-commands";
 import type { CommandDef } from "@freeanima/connectors-commands";
 import { getServiceContext } from "../context.ts";
@@ -20,6 +21,7 @@ import type { SessionManager } from "./session-manager.ts";
 import { runExclusiveStreamTurn, streamErrorEvent, type StreamTurnHost } from "./turn-lifecycle.ts";
 import { applyCommandSessionEffects, checkPlatform } from "./service-sessions.ts";
 import { collectStreamReply, type StreamEvent } from "@freeanima/engine-loop";
+import { scheduleGracefulRestart } from "./process-restart.ts";
 
 export type MessagingDeps = {
   runControl: EngineRunControl;
@@ -115,6 +117,11 @@ export async function executeCommand(
     }
   }
 
+  if (isRestartResult(result)) {
+    scheduleGracefulRestart(deps.runControl);
+    return { text: result.text, data: result.data, found: true };
+  }
+
   return { text: result.text, data: result.data ?? null, found: true };
 }
 
@@ -197,6 +204,14 @@ async function* dispatchCommandStream(
       yield { event: "token", data: { content: `⚠️ ${e}` } };
       yield { event: "done", data: {} };
     }
+    return;
+  }
+  if (isRestartResult(result)) {
+    if (result.text) {
+      yield { event: "token", data: { content: result.text } };
+    }
+    yield { event: "done", data: {} };
+    scheduleGracefulRestart(deps.runControl);
     return;
   }
   if (result.text) {

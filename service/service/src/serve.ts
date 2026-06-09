@@ -183,6 +183,10 @@ async function defaultWaitForDrain(anima: AnimaService, maxMs: number): Promise<
       }, maxMs);
     }),
   ]);
+  if (anima.getInFlightCount() > 0) {
+    anima.abortAll();
+    await anima.waitForDrain();
+  }
 }
 
 export async function serve(

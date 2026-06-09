@@ -227,6 +227,16 @@ async function cmdMask(ctx: CommandContext): Promise<string> {
   return "用法：`/mask set <preset>` | `/mask clear` | `/mask show`";
 }
 
+function cmdRestart(_ctx: CommandContext): CommandResult | string {
+  if (getServiceContext().service.isShuttingDown()) {
+    return "服务已在重启中…";
+  }
+  return {
+    text: "🔄 正在重启服务（等待进行中对话落盘后执行）…",
+    data: { action: "restart" },
+  };
+}
+
 export function registerBuiltins(): void {
   registerCommand({
     name: "help",
@@ -308,5 +318,12 @@ export function registerBuiltins(): void {
     handler: cmdMask,
     scope: "session",
     platforms: [PARLOR_PLATFORM],
+  });
+  registerCommand({
+    name: "restart",
+    description: "重启逸灵风服务（等待进行中对话落盘后执行）",
+    handler: cmdRestart,
+    scope: "global",
+    platforms: ["parlor", "discord", "weixin"],
   });
 }

@@ -49,6 +49,8 @@ type EngineOpts = {
   onMessageAppended?: (msg: SessionMessage) => void | Promise<void>;
   onToolRoundComplete?: (msgs: SessionMessage[]) => void | Promise<void>;
   signal?: AbortSignal;
+  /** 进程关停时返回 true，engine 在下一轮 LLM / 工具前中断 */
+  shouldStop?: () => boolean;
 };
 
 export type RuntimeToolMask = NonNullable<EngineOpts["toolMask"]>;
@@ -81,6 +83,13 @@ function cleanToolCalls(
 function checkAborted(signal?: AbortSignal): void {
   if (signal?.aborted) {
     throw new EngineTurnInterrupted(REPAIR_REASON_INTERRUPT);
+  }
+}
+
+function checkShouldStop(opts?: Pick<EngineOpts, "signal" | "shouldStop">): void {
+  checkAborted(opts?.signal);
+  if (opts?.shouldStop?.()) {
+    throw new EngineTurnInterrupted("服务正在关停");
   }
 }
 
@@ -270,7 +279,7 @@ export async function* runStream(
   const HARD = 8;
 
   for (let turn = 0; turn < maxTurns; turn++) {
-    checkAborted(opts?.signal);
+    checkShouldStop(opts);
     // 运行 beforeLlmCall hook，允许模块（如冰箱贴）在 LLM 推理前修改消息
     if (opts?.hookRegistry) {
       await opts.hookRegistry.run(beforeLlmCall, {
@@ -381,7 +390,7 @@ export async function* runStream(
 
     try {
       for (const tc of cleanedCalls) {
-        checkAborted(opts?.signal);
+        checkShouldStop(opts);
         const fnName = (tc.function?.name ?? "").trim() || "unknown";
         const argsResult = parseToolArgs(tc.function.arguments);
         const fnArgs = argsResult.ok ? argsResult.data : {};
