@@ -19,12 +19,11 @@ title: Sleep
 
 ## 当前状态
 
-| 机制           | 状态      | 说明                                     |
-| -------------- | --------- | ---------------------------------------- |
-| 浅睡 cron      | ✅ 已实现 | 每天 02:00，`builtin-light-sleep`        |
-| 深睡 cron      | ✅ 已实现 | 每天 03:00，`builtin-deep-sleep`         |
-| 自传 cron      | ✅ 已实现 | 每天 04:00，`builtin-self-autobiography` |
-| reflectSession | ❌ 已废弃 | 原 EventBus 增量提取已移除               |
+| 机制      | 状态      | 说明                                     |
+| --------- | --------- | ---------------------------------------- |
+| 浅睡 cron | ✅ 已实现 | 每天 02:00，`builtin-light-sleep`        |
+| 深睡 cron | ✅ 已实现 | 每天 03:00，`builtin-deep-sleep`         |
+| 自传 cron | ✅ 已实现 | 每天 04:00，`builtin-self-autobiography` |
 
 ## 浅睡 (Light Sleep)
 

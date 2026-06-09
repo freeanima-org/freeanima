@@ -2,7 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import { Terminal } from "xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import "xterm/css/xterm.css";
-import { api } from "@/lib/api.ts";
+import {
+  subscribeTerminalStream,
+  terminalClose,
+  terminalResize,
+  terminalWrite,
+} from "@/lib/api.ts";
 
 export function TerminalPanel() {
   const termElRef = useRef<HTMLDivElement>(null);
@@ -36,11 +41,7 @@ export function TerminalPanel() {
         fitAddon.fit();
         const sid = sessionIdRef.current;
         if (sid) {
-          void api.studio.terminal.resize.mutate({
-            sessionId: sid,
-            cols: term.cols,
-            rows: term.rows,
-          });
+          void terminalResize(sid, term.cols, term.rows);
         }
       } catch {
         /* 容器尺寸为 0 时忽略 */
@@ -50,7 +51,7 @@ export function TerminalPanel() {
     const sendInput = (data: string) => {
       const sid = sessionIdRef.current;
       if (sid) {
-        void api.studio.terminal.write.mutate({ sessionId: sid, data });
+        void terminalWrite(sid, data);
       }
     };
 
@@ -60,7 +61,7 @@ export function TerminalPanel() {
       sessionIdRef.current = null;
       setStatusMsg("");
 
-      const sub = api.studio.terminal.stream.subscribe(undefined, {
+      const sub = subscribeTerminalStream({
         onData: (msg) => {
           if (msg.type === "ready" && msg.sessionId) {
             sessionIdRef.current = msg.sessionId;
@@ -103,7 +104,7 @@ export function TerminalPanel() {
       unsubRef.current?.();
       const sid = sessionIdRef.current;
       if (sid) {
-        void api.studio.terminal.close.mutate({ sessionId: sid });
+        void terminalClose(sid);
       }
       term.dispose();
     };

@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { api } from "@/lib/api.ts";
+import { listSessionCommands } from "@/lib/api.ts";
 
 export const Route = createFileRoute("/chamber/commands")({
-  loader: () => api.sessions.commands.query({ all: true }).catch(() => ({ commands: [] })),
+  loader: () => listSessionCommands({ all: true }).catch(() => ({ commands: [] })),
   component: CommandsPage,
 });
 

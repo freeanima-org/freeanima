@@ -71,7 +71,7 @@ describe("weixin-message", () => {
     expect(parsed!.peerId).toBe("room-9");
   });
 
-  it("parses message without message_type (Hermes/iLink 常见)", () => {
+  it("parses message without message_type (iLink 常见)", () => {
     const parsed = parseUserTextMessage(
       {
         from_user_id: "wxid_user1",

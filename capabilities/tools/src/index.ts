@@ -17,7 +17,7 @@ import { registerTodoTool } from "./todo-tool.ts";
 import { registerTerminalTools } from "./terminal.ts";
 import { registerWebTools } from "./web.ts";
 
-/** 无 legacy-runtime 依赖的基础工具集 */
+/** 基础工具集 */
 export function registerCoreTools(): void {
   registerFileTools();
   registerCredentialTools();
@@ -26,7 +26,7 @@ export function registerCoreTools(): void {
   registerWebTools();
 }
 
-/** skills + browser + todo（无 legacy-runtime） */
+/** skills + browser + todo */
 export function registerSupplementalTools(): void {
   registerSkillsTools();
   registerBrowserTools();

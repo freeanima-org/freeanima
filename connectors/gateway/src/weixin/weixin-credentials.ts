@@ -1,8 +1,5 @@
 import { credentialRaw } from "@freeanima/service-config";
 import { logComponent } from "@freeanima/service-logging";
-import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { homedir } from "node:os";
-import { join } from "node:path";
 
 import { ILINK_BASE_URL } from "./ilink-api.ts";
 
@@ -15,7 +12,7 @@ export type WeixinCredentials = {
   account_id: string;
 };
 
-/** 从 iLink token 解析机器人 account_id（Hermes 的 WEIXIN_ACCOUNT_ID） */
+/** 从 iLink token 解析机器人 account_id（token 冒号前段） */
 export function botAccountIdFromToken(token: string): string {
   const trimmed = token.trim();
   const colon = trimmed.indexOf(":");
@@ -34,40 +31,14 @@ function buildCredentials(data: Record<string, unknown>, source: string): Weixin
   };
 }
 
-function loadFromHermesFallback(): WeixinCredentials | null {
-  const hermesDir = join(homedir(), ".hermes", "weixin", "accounts");
-  if (!existsSync(hermesDir)) return null;
-
-  const files = readdirSync(hermesDir)
-    .filter((n) => n.endsWith(".json"))
-    .filter((n) => !n.endsWith("context-tokens.json"))
-    .filter((n) => !n.startsWith("."))
-    .toSorted();
-
-  for (const name of files) {
-    try {
-      const data = JSON.parse(readFileSync(join(hermesDir, name), "utf-8")) as Record<
-        string,
-        unknown
-      >;
-      const token = String(data.token ?? "");
-      if (!token) continue;
-      return buildCredentials(data, `Hermes config (${name})`);
-    } catch {
-      continue;
-    }
-  }
-  return null;
-}
-
-/** pass `services/weixin-ilink` 优先，其次 Hermes 账户 JSON */
+/** pass `services/weixin-ilink` */
 export function loadWeixinCredentials(): WeixinCredentials | null {
   try {
     const data = credentialRaw("services/weixin-ilink");
     const token = String(data.token ?? "");
-    if (!token) return loadFromHermesFallback();
+    if (!token) return null;
     return buildCredentials(data, "pass");
   } catch {
-    return loadFromHermesFallback();
+    return null;
   }
 }

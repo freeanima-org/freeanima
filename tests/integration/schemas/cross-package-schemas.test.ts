@@ -76,8 +76,8 @@ describe("schemas/tool-json", () => {
 });
 
 describe("schemas/session-meta compression", () => {
-  it("migrates legacy cut_id fields", () => {
-    const s = parseCompressionState({ cut_id: 5, last_summarized_cut_id: 3 });
+  it("parses l2/l3 compression state", () => {
+    const s = parseCompressionState({ l2: 3, l3: 5 });
     expect(s).toEqual({ l2: 3, l3: 5 });
   });
 });
@@ -105,13 +105,13 @@ describe("schemas/message", () => {
     expect(parsed.pos).toBe(3);
   });
 
-  it("parseSessionLine 将 legacy id 映射为 pos", () => {
+  it("parseSessionLine 忽略未知 id 字段", () => {
     const parsed = parseSessionLine(
       JSON.stringify({ role: "user", content: "hi", id: 5, timestamp: "t" }),
     );
     expect(parsed?.role).toBe("user");
     if (parsed?.role !== "user") return;
-    expect(parsed.pos).toBe(5);
+    expect(parsed.pos).toBeUndefined();
     expect("id" in parsed).toBe(false);
   });
 });

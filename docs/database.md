@@ -153,17 +153,6 @@ bun test
 
 端口：`SemanticMemoryStorePort`（`engine-repos`）→ `PgSemanticMemoryStore`（`connectors-db-pg`）→ `registerSemanticMemoryStore`（`life-memory`）。
 
-### 从文件系统迁移
-
-一次性脚本（读取旧 `f-*.md`，幂等 INSERT）：
-
-```bash
-DATABASE_URL="$(anima credential get services/postgres/anima url)" \
-  bun run scripts/migrate-semantic-memory.ts [--dry-run] [--home ~/.anima]
-```
-
-旧 `~/.anima/memory/f-*.md` 与 `~/.anima/index/l3.db` 为**遗留路径**（非运行时）；迁移验证后可手动归档。
-
 `limbic_memory` 见下文 §Slice C 同文件后续节；独立 `procedural` 表见 [Issue #41](https://github.com/freeanima-org/freeanima/issues/41)。
 
 ## Slice C：自我层与自传体（已落地）
@@ -273,17 +262,6 @@ Migration：[`engine/db/migrations/20260607160000_limbic_memory/migration.sql`](
 端口：`CronJobStorePort`（`engine-repos`）→ `PgCronJobStore`（`connectors-db-pg`）→ `initCronModule`（`connectors-cron` / `serve.ts`）。
 
 Migration：[`engine/db/migrations/20260607140000_cron_jobs/migration.sql`](../engine/db/migrations/20260607140000_cron_jobs/migration.sql)（手写 SQL，无 Drizzle schema 文件）。
-
-### 从 jobs.json 迁移
-
-一次性脚本（幂等 `ON CONFLICT DO NOTHING`）：
-
-```bash
-DATABASE_URL="$(anima credential get services/postgres/anima url)" \
-  bun run scripts/migrate-cron-to-pg.ts [--dry-run] [--home ~/.anima]
-```
-
-旧 `~/.anima/cron/jobs.json` 为遗留路径；迁移验证后可手动归档。
 
 ## tasks（已落地）
 

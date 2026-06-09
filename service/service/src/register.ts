@@ -72,14 +72,13 @@ export function startAcpProgressTicker(): void {
   getAcpManager().startProgressTicker();
 }
 
-/** 注册记忆 store 并启动 EventBus（session:updated 事件保留，无 reflect 订阅） */
+/** 注册记忆 store 并启动 EventBus */
 export function registerServiceMemoryBus(opts: {
   kernel: Kernel;
   sessionStore: SessionStorePort;
   semanticStore: SemanticMemoryStorePort;
 }): void {
   registerMemoryPipeline({
-    bus: opts.kernel.eventBus,
     sessionStore: opts.sessionStore,
     semanticStore: opts.semanticStore,
   });

@@ -17,21 +17,15 @@ import { readFileSync, writeFileSync } from "node:fs";
 // anima-tools minimal preamble for execute_code
 `;
 
-export type RuntimeId = "bun" | "nodejs" | "python" | "deno";
-
-const ALL_RUNTIMES: RuntimeId[] = ["bun", "nodejs", "python", "deno"];
-
-/** 当前已启用的运行时；P1 起扩展 python，P3 起 deno */
-const ENABLED_RUNTIMES = new Set<RuntimeId>(["bun", "nodejs"]);
+export type RuntimeId = "bun" | "nodejs";
 
 export function parseRuntime(raw: unknown): RuntimeId {
   const value = String(raw ?? "bun").toLowerCase();
-  if (ALL_RUNTIMES.includes(value as RuntimeId)) return value as RuntimeId;
-  return "bun";
+  return value === "nodejs" ? "nodejs" : "bun";
 }
 
 export function listEnabledRuntimes(): RuntimeId[] {
-  return ALL_RUNTIMES.filter((id) => ENABLED_RUNTIMES.has(id));
+  return ["bun", "nodejs"];
 }
 
 function truncateOutput(output: string): string {
@@ -122,19 +116,13 @@ export async function runExecuteCode(
   runtime: RuntimeId,
   timeoutSec: number,
 ): Promise<string> {
-  if (!ENABLED_RUNTIMES.has(runtime)) {
-    return toolError(
-      `runtime '${runtime}' 尚未启用；当前可用: ${listEnabledRuntimes().join(", ")}`,
-    );
-  }
-
   switch (runtime) {
     case "bun":
       return runBun(code, timeoutSec);
     case "nodejs":
       return runNodejs(code, timeoutSec);
     default:
-      return toolError(`runtime '${runtime}' 未实现`);
+      return toolError(`runtime '${runtime}' 不支持`);
   }
 }
 

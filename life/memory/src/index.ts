@@ -1,5 +1,4 @@
 export { createSemanticMemory, type SemanticMemory } from "./fact.ts";
-export { parseLegacyFact, type LegacyFactData, FRONTMATTER_DELIM } from "./legacy-fact.ts";
 export {
   sessionUpdated,
   semanticMemoryUpdated,
@@ -8,11 +7,7 @@ export {
   type SemanticMemoryUpdatedPayload,
   type TestPingPayload,
 } from "./events.ts";
-export {
-  registerMemoryPipeline,
-  registerMemoryHandlers,
-  registerEventHandlers,
-} from "./pipeline.ts";
+export { registerMemoryPipeline } from "./pipeline.ts";
 export {
   registerMemorySessionStore,
   getMemorySessionStore,

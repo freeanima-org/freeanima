@@ -24,13 +24,9 @@ export const semanticMemoryStatusSchema = z.enum(["active", "deprecated"]);
 
 export type SemanticMemoryStatus = z.infer<typeof semanticMemoryStatusSchema>;
 
-/** 旧 fact 类型及 reflect 产出映射为 world */
 export function normalizeSemanticMemoryType(raw: string | undefined | null): SemanticMemoryType {
-  const t = String(raw ?? "world")
-    .trim()
-    .toLowerCase();
-  if (t === "fact") return "world";
-  const parsed = semanticMemoryTypeSchema.safeParse(t);
+  if (!raw?.trim()) return "world";
+  const parsed = semanticMemoryTypeSchema.safeParse(raw.trim().toLowerCase());
   return parsed.success ? parsed.data : "world";
 }
 

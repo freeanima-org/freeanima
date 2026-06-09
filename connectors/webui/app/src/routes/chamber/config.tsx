@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { api } from "@/lib/api.ts";
+import { getStatusConfig } from "@/lib/api.ts";
 
 export const Route = createFileRoute("/chamber/config")({
-  loader: () => api.status.config.query().catch(() => null),
+  loader: () => getStatusConfig().catch(() => null),
   component: ConfigPage,
 });
 

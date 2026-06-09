@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { api } from "@/lib/api.ts";
+import { getAcpStatus, startAllAcp, startAcp, stopAllAcp, stopAcp } from "@/lib/api.ts";
 
 const ACP_START_TIMEOUT_MS = 30_000;
 
@@ -14,7 +14,7 @@ function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promi
 }
 
 export const Route = createFileRoute("/chamber/acp")({
-  loader: () => api.acp.status.query().catch(() => null),
+  loader: () => getAcpStatus().catch(() => null),
   component: AcpPage,
 });
 
@@ -68,8 +68,7 @@ function AcpPage() {
     setError("");
     setActing((a) => ({ ...a, [name]: action }));
     try {
-      const req =
-        action === "start" ? api.acp.start.mutate({ name }) : api.acp.stop.mutate({ name });
+      const req = action === "start" ? startAcp(name) : stopAcp(name);
       const result =
         action === "start"
           ? await withTimeout(
@@ -96,7 +95,7 @@ function AcpPage() {
     setError("");
     setBulkActing(true);
     try {
-      const req = action === "start-all" ? api.acp.startAll.mutate() : api.acp.stopAll.mutate();
+      const req = action === "start-all" ? startAllAcp() : stopAllAcp();
       const result =
         action === "start-all"
           ? await withTimeout(

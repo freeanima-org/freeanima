@@ -29,11 +29,11 @@ afterEach(() => {
 });
 
 describe("compression v5.1", () => {
-  it("parseCompressionState migrates cut_id / last_summarized_cut_id", () => {
+  it("parseCompressionState 解析 l2/l3", () => {
     const s = parseCompressionState({
-      cut_id: 10,
+      l2: 8,
+      l3: 10,
       summary: "x",
-      last_summarized_cut_id: 8,
     });
     expect(s).toEqual({ l2: 8, l3: 10, summary: "x" });
   });

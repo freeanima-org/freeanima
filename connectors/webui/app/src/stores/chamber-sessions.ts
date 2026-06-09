@@ -1,6 +1,6 @@
 import type { DisplayItem, SessionListItem } from "@freeanima/connectors-webui/api";
 import { create } from "zustand";
-import { api } from "@/lib/api.ts";
+import { getSessionMessages, listAllSessions } from "@/lib/api.ts";
 
 const SESSIONS_PAGE_SIZE = 10;
 const MESSAGES_PAGE_SIZE = 100;
@@ -83,7 +83,7 @@ export const useChamberSessionsStore = create<ChamberSessionsState>((set, get) =
   async fetchSessions() {
     set({ loadingSessions: true, error: "" });
     try {
-      const resp = await api.sessions.listAll.query();
+      const resp = await listAllSessions();
       const sessions = (resp as { sessions?: SessionListItem[] }).sessions ?? [];
       set({ sessions, sessionsPage: 1 });
     } catch (e) {
@@ -112,11 +112,7 @@ export const useChamberSessionsStore = create<ChamberSessionsState>((set, get) =
     const safe = Math.min(Math.max(1, page), get().pageCount());
     const pageOffset = Math.max(0, (safe - 1) * limit);
     try {
-      const data = await api.sessions.messages.query({
-        sessionId,
-        offset: pageOffset,
-        limit,
-      });
+      const data = await getSessionMessages(sessionId, pageOffset, limit);
       const resp = data as {
         display?: DisplayItem[];
         total?: number;

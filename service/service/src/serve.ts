@@ -32,12 +32,7 @@ import {
   logStartupError,
   markStartupPhase,
 } from "@freeanima/service-logging";
-import {
-  AnimaService,
-  ANIMA_VERSION,
-  seedHomeChannelsFromHermes,
-  REPO_ROOT,
-} from "./runtime/index.ts";
+import { AnimaService, ANIMA_VERSION, REPO_ROOT } from "./runtime/index.ts";
 import {
   initCronModule,
   stopCronModule,
@@ -292,8 +287,6 @@ export async function serve(
     } else {
       startupLog("PostgreSQL 不可用，跳过 Cron 模块");
     }
-
-    seedHomeChannelsFromHermes();
 
     mcp = new MCPManager();
 

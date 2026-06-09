@@ -23,17 +23,6 @@ import { parseJsonLine } from "@freeanima/kernel-util";
 export { openAiToolSchema, toolCallSchema, messagePayloadSchema, type MessagePayload };
 export type { LlmTurnMessage, OpenAiToolSchema, ToolCall } from "../schema/index.ts";
 
-/** 兼容旧 JSONL / payload 中的 id 字段 → pos */
-export function normalizeLegacyMessagePos(raw: unknown): unknown {
-  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
-  const o = { ...(raw as Record<string, unknown>) };
-  if (o.pos === undefined && typeof o.id === "number") {
-    o.pos = o.id;
-  }
-  delete o.id;
-  return o;
-}
-
 const posField = { pos: z.number().optional() };
 
 export const userMessageSchema = userPayloadSchema.extend(posField);
@@ -51,7 +40,7 @@ const conversationRoles = z.discriminatedUnion("role", [
 /** 对话消息（不含 session_meta），供 compressor / LLM 使用 */
 export const conversationMessageSchema = conversationRoles;
 
-/** PG messages.payload — 与 kernel-db 存储 schema 一致 */
+/** PG messages.payload */
 export const conversationPayloadSchema = messagePayloadSchema;
 
 export const sessionMetaSchema = z
@@ -75,16 +64,13 @@ export const sessionMetaSchema = z
   })
   .passthrough();
 
-export const sessionMessageSchema = z.preprocess(
-  normalizeLegacyMessagePos,
-  z.discriminatedUnion("role", [
-    sessionMetaSchema,
-    userMessageSchema,
-    systemMessageSchema,
-    assistantMessageSchema,
-    toolMessageSchema,
-  ]),
-);
+export const sessionMessageSchema = z.discriminatedUnion("role", [
+  sessionMetaSchema,
+  userMessageSchema,
+  systemMessageSchema,
+  assistantMessageSchema,
+  toolMessageSchema,
+]);
 
 export type ConversationMessage = z.infer<typeof conversationMessageSchema>;
 export type ConversationPayload = MessagePayload;

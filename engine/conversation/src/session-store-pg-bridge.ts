@@ -232,14 +232,3 @@ export async function pgListMessages(
 ): Promise<SessionMessage[]> {
   return store(repos).listMessages(sessionId);
 }
-
-/** @deprecated 使用 pgWriteMeta */
-export const maybeDualWriteMeta = pgWriteMeta;
-/** @deprecated 使用 pgWritePatchMeta */
-export const maybeDualWritePatchMeta = pgWritePatchMeta;
-/** @deprecated 使用 pgWriteMessage */
-export const maybeDualWriteMessage = pgWriteMessage;
-/** @deprecated 使用 pgWriteTruncate */
-export const maybeDualWriteTruncate = pgWriteTruncate;
-/** @deprecated 使用 pgWriteDeleteSession */
-export const maybeDualWriteDeleteSession = pgWriteDeleteSession;

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { api } from "@/lib/api.ts";
+import { getToolsStatus } from "@/lib/api.ts";
 
 type ToolRow = {
   name: string;
@@ -23,7 +23,7 @@ type ToolsLoaderData = {
 const EMPTY_LOADER_DATA: ToolsLoaderData = { tools: [], tool_sets: [] };
 
 export const Route = createFileRoute("/chamber/tools")({
-  loader: () => api.status.tools.query().catch(() => EMPTY_LOADER_DATA) as Promise<ToolsLoaderData>,
+  loader: () => getToolsStatus().catch(() => EMPTY_LOADER_DATA) as Promise<ToolsLoaderData>,
   component: ToolsPage,
 });
 

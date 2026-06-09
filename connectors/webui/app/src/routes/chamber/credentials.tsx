@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { api } from "@/lib/api.ts";
+import { listCredentials } from "@/lib/api.ts";
 
 type CredentialMeta = {
   path: string;
@@ -19,8 +19,7 @@ type CredentialsLoaderData = {
 const EMPTY_LOADER_DATA: CredentialsLoaderData = { credentials: [] };
 
 export const Route = createFileRoute("/chamber/credentials")({
-  loader: () =>
-    api.credentials.list.query().catch(() => EMPTY_LOADER_DATA) as Promise<CredentialsLoaderData>,
+  loader: () => listCredentials().catch(() => EMPTY_LOADER_DATA) as Promise<CredentialsLoaderData>,
   component: CredentialsPage,
 });
 

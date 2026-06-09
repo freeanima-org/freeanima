@@ -31,18 +31,6 @@ describe("execute_code runtimes", () => {
     const out = await runExecuteCode('console.log("anima-node-ok");', "nodejs", 30);
     expect(out.trim()).toBe("anima-node-ok");
   });
-
-  it("returns error JSON for disabled python runtime", async () => {
-    const out = await runExecuteCode('print("hi")', "python", 30);
-    const parsed = JSON.parse(out) as { error: string };
-    expect(parsed.error).toContain("python");
-    expect(parsed.error).toContain("bun");
-  });
-
-  it("returns error JSON for disabled deno runtime", async () => {
-    const out = await runExecuteCode('console.log("hi")', "deno", 30);
-    expect(JSON.parse(out)).toMatchObject({ error: expect.stringContaining("deno") });
-  });
 });
 
 describe("openaiSchemas", () => {

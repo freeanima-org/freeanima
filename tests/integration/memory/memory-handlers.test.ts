@@ -53,7 +53,6 @@ describePgSqlite("memory handlers", () => {
       new SqliteEventQueue(join(home, "runtime", "events.db"), { pollMs: 20 }),
     );
     registerMemoryPipeline({
-      bus,
       sessionStore: testConv().repos.session,
       semanticStore: getTestEngine().repos.semanticMemory,
     });
