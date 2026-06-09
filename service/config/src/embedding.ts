@@ -19,11 +19,17 @@ export type EmbeddingConfigSnapshot = {
   dimensions: number;
 };
 
+function stripTrailingSlashes(url: string): string {
+  let end = url.length;
+  while (end > 0 && url.charCodeAt(end - 1) === 47) end--;
+  return end === url.length ? url : url.slice(0, end);
+}
+
 function resolveEmbeddingBaseUrl(raw: string | undefined): string {
   const trimmed = raw?.trim();
-  if (trimmed) return trimmed.replace(/\/+$/, "");
+  if (trimmed) return stripTrailingSlashes(trimmed);
   const env = process.env.OLLAMA_BASE_URL?.trim();
-  if (env) return env.replace(/\/+$/, "");
+  if (env) return stripTrailingSlashes(env);
   return DEFAULT_OLLAMA_BASE_URL;
 }
 
