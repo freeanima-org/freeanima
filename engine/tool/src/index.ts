@@ -4,6 +4,7 @@ export type {
   ToolArgs,
   ToolHandler,
   ToolDef,
+  ToolReturnKind,
   OpenAiToolEntry,
 } from "./registry.ts";
 /** @deprecated 使用 ToolSetRegistry */
@@ -36,3 +37,5 @@ export type {
   ListToolsCatalogOptions,
   SearchToolsCatalogOptions,
 } from "./catalog.ts";
+export { buildToolsStatus, resolveReturnKind, TEXT_RETURN_TOOL_NAMES } from "./tools-status.ts";
+export type { ToolsStatusResponse, ToolsStatusToolItem } from "./tools-status.ts";

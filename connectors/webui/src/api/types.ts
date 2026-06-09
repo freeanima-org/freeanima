@@ -8,7 +8,7 @@ export type {
   MessagesDisplay as MessagesResponse,
 } from "@freeanima/service/schemas/display";
 
-export type { PromptDebugResponse } from "./schemas.ts";
+export type { PromptDebugResponse, ToolsStatusResponse, ToolsStatusToolItem } from "./schemas.ts";
 
 export type {
   DependencyStatus,
