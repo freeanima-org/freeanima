@@ -130,7 +130,7 @@ describePg("tasks tool", () => {
     expect(parsed.tasks[0]?.title).toBe("待办任务");
   });
 
-  it("complete_task 更新状态", async () => {
+  it("tasks_complete 更新状态", async () => {
     const cfg = loadConfig();
     const sid = "sess-task-complete";
     const repos = testConv().repos;
@@ -145,7 +145,7 @@ describePg("tasks tool", () => {
     await runWithToolContext(
       sid,
       async () => {
-        const tool = toolSets.getTool("complete_task")!;
+        const tool = toolSets.getTool("tasks_complete")!;
         output = await Promise.resolve(tool.handler({ id: created.id }));
       },
       { repos, tools: toolSets },
