@@ -173,6 +173,33 @@ f-030 — 已修改：content 更新为 "..."
 
 宕机后下次对应时刻补跑即可；非实时系统。
 
+## 历史补跑（一次性 CLI）
+
+对上线前或迁移后的历史对话，可按 **CST 自然日**逐日补跑浅睡，与 nightly cron 逻辑一致，但由人工触发、独立进度文件。
+
+```bash
+anima memory sleep backfill [--from YYYY-MM-DD] [--to YYYY-MM-DD] [--resume]
+```
+
+| 选项       | 说明                                                          |
+| ---------- | ------------------------------------------------------------- |
+| `--from`   | 起始日；省略时取 `sessions` 中最早非 debug 会话的 CST 日      |
+| `--to`     | 截止日；省略时为 **昨日 CST**（与 02:00 cron 默认处理日一致） |
+| `--resume` | 从进度文件续跑，跳过已完成日                                  |
+
+**进度文件**：`~/.anima/runtime/light_sleep_backfill_state.json`（与 `light_sleep_state.json` 独立）。
+
+**行为要点**：
+
+- 每日独立调用 `runLightSleep({ day })`；单日失败记录后继续下一天
+- Stage 3b（自传概括刷新）默认仅在 **最后一天** 执行，中间日跳过以节省 token
+- 补跑前请确保 LLM 能正确填写 `observed_at` / `occurred_at`（见 [`memory.md`](memory.md)）；否则记忆时间会落成补跑时刻
+- 补跑只写入 semantic / limbic / autobiographical；**跨 session 语义合并仍靠深睡**——补跑结束后建议手动等一次 03:00 深睡或自行触发
+- 与 02:00 cron 无冲突，但建议补跑时暂停服务或错开凌晨窗口
+- 单次对话输入仍受约 **120k 字符**限制（见上文「上下文过大」）
+
+实现：[`life/memory/src/light-sleep/backfill.ts`](../life/memory/src/light-sleep/backfill.ts)；CLI bootstrap：[`bootstrap-memory-jobs.ts`](../service/service/src/bootstrap-memory-jobs.ts)。
+
 ## 与现有架构的关系
 
 ```

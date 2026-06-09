@@ -15,6 +15,7 @@ type MemoryRecallHit = {
   content?: string;
   source_sessions?: string[];
   observed_at?: string | null;
+  occurred_at?: string | null;
   status?: string;
   session_id?: string;
   message_id?: string;
@@ -55,6 +56,12 @@ function formatToolOutput(data: MemoryResult) {
     lines.push(`${idx + 1}. [${label}] score ${hit.score.toFixed(4)}`);
     if (hit.memory_type === "semantic") {
       lines.push(`  ${hit.semantic_memory_id} (${hit.type}) ${hit.content}`);
+      if (hit.observed_at || hit.occurred_at) {
+        const parts: string[] = [];
+        if (hit.observed_at) parts.push(`observed=${hit.observed_at.slice(0, 19)}`);
+        if (hit.occurred_at) parts.push(`occurred=${hit.occurred_at}`);
+        lines.push(`  ${parts.join(" ")}`);
+      }
     } else if (hit.memory_type === "session") {
       lines.push(`  ${hit.session_id} / ${hit.message_id} ${hit.role}: ${hit.snippet}`);
     } else if (hit.memory_type === "limbic") {
@@ -96,7 +103,16 @@ function RecallHitCard({ hit, index }: { hit: MemoryRecallHit; index: number }) 
           ) : null}
         </div>
         {hit.memory_type === "semantic" ? (
-          <p className="text-sm whitespace-pre-wrap">{hit.content}</p>
+          <>
+            <p className="text-sm whitespace-pre-wrap">{hit.content}</p>
+            {hit.observed_at || hit.occurred_at ? (
+              <p className="text-xs text-base-content/60 font-mono">
+                {hit.observed_at ? `observed ${hit.observed_at.slice(0, 19)}` : null}
+                {hit.observed_at && hit.occurred_at ? " · " : null}
+                {hit.occurred_at ? `occurred ${hit.occurred_at}` : null}
+              </p>
+            ) : null}
+          </>
         ) : null}
         {hit.memory_type === "session" ? (
           <p className="text-sm whitespace-pre-wrap">{hit.snippet}</p>

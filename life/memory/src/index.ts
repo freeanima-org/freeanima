@@ -80,6 +80,21 @@ export {
   type DeepSleepEngineResult,
 } from "./deep-sleep-port.ts";
 export { runLightSleep, type LightSleepResult, type RunLightSleepOpts } from "./light-sleep/run.ts";
+export {
+  runLightSleepBackfill,
+  enumerateCstDays,
+  addCstDay,
+  defaultBackfillToDay,
+  resolveBackfillDayRange,
+  type RunLightSleepBackfillOpts,
+  type LightSleepBackfillResult,
+} from "./light-sleep/backfill.ts";
+export {
+  readLightSleepBackfillState,
+  writeLightSleepBackfillState,
+  recordLightSleepBackfillProgress,
+  type LightSleepBackfillState,
+} from "./light-sleep/backfill-state.ts";
 export { runDeepSleep, type DeepSleepResult, type RunDeepSleepOpts } from "./deep-sleep/run.ts";
 export {
   registerAutobiographyEngine,

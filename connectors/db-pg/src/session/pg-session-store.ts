@@ -35,4 +35,5 @@ export class PgSessionStore implements SessionStorePort {
   listMessagesByPosRange = messageRepo.listMessagesByPosRange;
   listMessagesPage = messageRepo.listMessagesPage;
   listSessionIdsUpdatedBetween = sessionRepo.listSessionIdsUpdatedBetween;
+  getEarliestSessionDay = sessionRepo.getEarliestSessionDay;
 }

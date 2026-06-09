@@ -91,4 +91,6 @@ export interface SessionStorePort {
   countSearchableMessages(): Promise<number>;
   /** sessions.updated_at 落在 [fromIso, toIso) 内的 session id（不含 debug） */
   listSessionIdsUpdatedBetween(fromIso: string, toIso: string): Promise<string[]>;
+  /** 最早非 debug session 的 CST 自然日 YYYY-MM-DD；无 session 时 null */
+  getEarliestSessionDay(): Promise<string | null>;
 }

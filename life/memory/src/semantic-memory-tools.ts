@@ -164,7 +164,12 @@ async function handleMergeSemanticMemories(args: Record<string, unknown>): Promi
   const store = getSemanticMemoryStore();
 
   // 查找所有源记忆
-  const sources: { id: string; source_sessions: string[]; observed_at: string | null }[] = [];
+  const sources: {
+    id: string;
+    source_sessions: string[];
+    observed_at: string | null;
+    occurred_at: string | null;
+  }[] = [];
   for (const id of sourceIds) {
     const row = await store.get(id);
     if (!row) continue;
@@ -172,6 +177,7 @@ async function handleMergeSemanticMemories(args: Record<string, unknown>): Promi
       id: row.id,
       source_sessions: row.source_sessions,
       observed_at: row.observed_at,
+      occurred_at: row.occurred_at,
     });
   }
 
@@ -194,6 +200,21 @@ async function handleMergeSemanticMemories(args: Record<string, unknown>): Promi
     }
   }
 
+  // 合并 occurred_at（取最早非空字符串；模糊时间按字典序近似）
+  let earliestOccurred: string | null = null;
+  for (const s of sources) {
+    const raw = s.occurred_at?.trim();
+    if (!raw) continue;
+    if (!earliestOccurred || raw < earliestOccurred) {
+      earliestOccurred = raw;
+    }
+  }
+
+  const mergedOccurred =
+    args.target_occurred_at !== undefined && args.target_occurred_at !== null
+      ? String(args.target_occurred_at)
+      : (earliestOccurred ?? undefined);
+
   // 创建新记忆
   const newId = await store.create({
     content: targetContent,
@@ -201,10 +222,7 @@ async function handleMergeSemanticMemories(args: Record<string, unknown>): Promi
     pinned: args.target_pinned !== undefined ? Boolean(args.target_pinned) : undefined,
     source_sessions: mergedSessions,
     observed_at: earliestObserved,
-    occurred_at:
-      args.target_occurred_at !== undefined && args.target_occurred_at !== null
-        ? String(args.target_occurred_at)
-        : undefined,
+    occurred_at: mergedOccurred,
     status: "active",
   });
 
@@ -222,7 +240,18 @@ async function handleMergeSemanticMemories(args: Record<string, unknown>): Promi
     deprecated_ids: deprecatedIds,
     merged_source_sessions: mergedSessions,
     merged_observed_at: earliestObserved,
+    merged_occurred_at: mergedOccurred ?? null,
   });
+}
+
+function resolveObservedAt(
+  args: Record<string, unknown>,
+  defaults?: { observed_at?: string },
+): string {
+  if (args.observed_at !== undefined && args.observed_at !== null) {
+    return String(args.observed_at);
+  }
+  return defaults?.observed_at ?? formatCstIso();
 }
 
 /** 供 remember 与浅睡共用的创建逻辑 */
@@ -243,7 +272,7 @@ export async function createSemanticMemoryFromArgs(
     type: args.type !== undefined ? String(args.type) : undefined,
     pinned: args.pinned !== undefined ? Boolean(args.pinned) : undefined,
     source_sessions: sourceSessions,
-    observed_at: defaults?.observed_at ?? formatCstIso(),
+    observed_at: resolveObservedAt(args, defaults),
     occurred_at:
       args.occurred_at !== undefined && args.occurred_at !== null
         ? String(args.occurred_at)
@@ -342,7 +371,7 @@ export const semanticMemoryToolDefs: ToolDef[] = [
   {
     name: "memory_semantic_merge",
     description:
-      "合并多条语义记忆为一条。程序自动处理 source_sessions 并集和 observed_at 取最早。需 2+ 条 source_ids 和 target_content。合并后自动废弃源记忆。",
+      "合并多条语义记忆为一条。程序自动处理 source_sessions 并集、observed_at 与 occurred_at 取最早。需 2+ 条 source_ids 和 target_content。合并后自动废弃源记忆。",
     parameters: {
       type: "object",
       properties: {
@@ -382,7 +411,6 @@ export async function rememberFromArgs(args: Record<string, unknown>): Promise<s
   const sessionId = getToolSessionIdForMemory();
   const semanticMemoryId = await createSemanticMemoryFromArgs(args, {
     source_sessions: sessionId ? [sessionId] : [],
-    observed_at: formatCstIso(),
   });
   return rememberResult("create", semanticMemoryId);
 }

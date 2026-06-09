@@ -121,8 +121,9 @@ export function formatExistingMemoriesMessage(rows: SemanticMemoryRow[]): string
   for (const row of rows) {
     const sources = row.source_sessions.length > 0 ? `[${row.source_sessions.join(", ")}]` : "[]";
     const observed = row.observed_at?.slice(0, 19) ?? "?";
+    const occurred = row.occurred_at?.trim() ? ` occurred=${row.occurred_at}` : "";
     lines.push(
-      `[${row.id}] (${row.type}) sources=${sources} observed=${observed}${row.pinned ? " 📌" : ""}`,
+      `[${row.id}] (${row.type}) sources=${sources} observed=${observed}${occurred}${row.pinned ? " 📌" : ""}`,
     );
     lines.push(row.content);
     lines.push("");
@@ -147,7 +148,9 @@ export const LIGHT_SLEEP_INSTRUCTION_MESSAGE = `# 提取指令
 ## 工具说明
 
 ### memory_semantic_create
-显式创建。必填 content；建议填写 type、source_sessions（来自对话 session）、observed_at。
+显式创建。必填 content；建议填写 type、source_sessions（来自对话 session）。
+- **observed_at**：对话中**首次提及**该事实的消息时间（ISO8601，取自上方对话行首时间戳）
+- **occurred_at**：事实**内容中描述**的发生时间（可模糊，如「2025 春」「上周」）；与 observed_at 不同
 
 ### memory_semantic_update（覆盖式）
 **仅修改传入的字段，未传字段保持不变。**

@@ -96,4 +96,7 @@ export const nullSessionStore: SessionStorePort = {
   async listSessionIdsUpdatedBetween() {
     return [];
   },
+  async getEarliestSessionDay() {
+    return null;
+  },
 };

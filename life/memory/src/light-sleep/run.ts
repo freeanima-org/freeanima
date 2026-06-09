@@ -43,6 +43,7 @@ export type RunLightSleepOpts = {
   selfStore?: SelfLayerStorePort;
   selfContent: string;
   day?: string;
+  skipSummaryRefresh?: boolean;
 };
 
 const LIGHT_SLEEP_TOOL_NAMES = [
@@ -153,11 +154,16 @@ export async function runLightSleep(opts: RunLightSleepOpts): Promise<LightSleep
   const narrativesCreated = Math.max(0, afterAuto.length - existingAuto.length);
 
   let summaryRefreshed = false;
-  if (opts.selfStore) {
+  if (opts.selfStore && !opts.skipSummaryRefresh) {
     summaryRefreshed = await refreshAutobiographySummaryBlock(autoStore, opts.selfStore);
     logComponent("memory").info("浅睡 Stage 3b（自传概括）完成", {
       day: range.day,
       summary_refreshed: summaryRefreshed,
+    });
+  } else if (opts.skipSummaryRefresh) {
+    logComponent("memory").info("浅睡 Stage 3b 跳过", {
+      day: range.day,
+      reason: "skip_summary_refresh",
     });
   } else {
     logComponent("memory").warn("浅睡 Stage 3b 跳过：未注入 selfStore", { day: range.day });

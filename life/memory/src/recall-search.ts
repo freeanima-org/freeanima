@@ -28,6 +28,7 @@ export type SemanticRecallHit = {
   content: string;
   source_sessions: string[];
   observed_at: string | null;
+  occurred_at: string | null;
   status: string;
 };
 
@@ -133,6 +134,7 @@ function mapCandidateToHit(
         content: row.content,
         source_sessions: row.source_sessions,
         observed_at: row.observed_at,
+        occurred_at: row.occurred_at,
         status: row.status,
       };
     }

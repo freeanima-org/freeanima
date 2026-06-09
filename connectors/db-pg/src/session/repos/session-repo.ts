@@ -341,3 +341,18 @@ export async function listSessionIdsUpdatedBetween(
     .orderBy(desc(sessions.updatedAt));
   return rows.map((r) => r.id);
 }
+
+/** 最早非 debug session 的 CST 自然日 YYYY-MM-DD */
+export async function getEarliestSessionDay(): Promise<string | null> {
+  const db = getDb();
+  const rows = await db.execute<{ day: string | null }>(sql`
+    SELECT to_char(
+      (MIN(${sessions.createdAt}) AT TIME ZONE 'Asia/Shanghai')::date,
+      'YYYY-MM-DD'
+    ) AS day
+    FROM ${sessions}
+    WHERE ${sessions.debug} = false
+  `);
+  const day = rows[0]?.day?.trim();
+  return day || null;
+}

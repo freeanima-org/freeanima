@@ -83,6 +83,9 @@ function createMockSessionStore(overrides: Partial<SessionStorePort> = {}): Sess
     async listSessionIdsUpdatedBetween() {
       return [];
     },
+    async getEarliestSessionDay() {
+      return null;
+    },
   };
   return { ...base, ...overrides };
 }
