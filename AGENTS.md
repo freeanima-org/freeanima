@@ -46,7 +46,7 @@
 | **跨包集成** | `tests/integration/`                             | PG、Redis、临时目录、`beginIntegrationCase`   | —                                                                               |
 | **E2E**      | `tests/e2e/`                                     | WebView + Chromium + PG + HTTP                | —                                                                               |
 
-- pre-commit：`bun run test:changed`；推 PR 前须 `bun run test` 全量（`--changed` 不保证跨包关联）。
+- pre-commit：`bun run test:changed`（**仅单元** changed）；推 PR 前须 `bun run test` 全量（单元 + 集成 + E2E 并行，`--changed` 不保证跨包关联）。
 - 单包逻辑 → 旁置单元测；多包协作或真实持久化 → `tests/integration/`。
 
 #### 原包 Mock 导出（单元测优先使用）
@@ -210,7 +210,10 @@ Agent 新增或移动类型 / Zod / 端口时，按下列顺序决策：
 
 ```bash
 bun install && bun run check       # 推 PR 前：typecheck + lint + format + 测试
-bun run test:changed               # 本地 / pre-commit
+bun run test:changed               # 本地 / pre-commit（仅单元 changed）
+bun run test:unit                  # 单元全量
+bun run test:integration           # 集成（tests/integration/）
+bun run test                       # 单元 + 集成 + E2E 并行
 bun run service start --foreground # 前台 dev（WebUI HMR）
 anima credential list              # 凭证路径；值在 pass
 ```

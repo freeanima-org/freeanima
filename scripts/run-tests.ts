@@ -1,14 +1,12 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
-import { fileURLToPath } from "node:url";
 
 import { setupIntegrationPg } from "./integration-pg-setup.ts";
+import { discoverTestRoots, getRepoRoot } from "./test-roots.ts";
 
-const repoRoot = join(fileURLToPath(new URL(".", import.meta.url)), "..");
-const changed = process.argv.includes("--changed");
-const coverage = process.argv.includes("--coverage");
-const label = coverage ? "coverage:cobertura" : changed ? "test:changed" : "test";
+const repoRoot = getRepoRoot();
+const label = "coverage:cobertura";
 const coverageDir = join(repoRoot, "coverage");
 const shardDir = join(repoRoot, ".coverage-shards");
 
@@ -21,63 +19,6 @@ function runBunTest(extraArgs: string[]): void {
   if (result.status !== 0) {
     throw new Error(`bun test exited with code ${result.status ?? "unknown"}`);
   }
-}
-
-function integrationTestsInChangedRun(): boolean {
-  try {
-    const result = spawnSync("bun", ["test", "--changed", "--dry-run"], {
-      cwd: repoRoot,
-      encoding: "utf-8",
-    });
-    const out = `${result.stdout ?? ""}${result.stderr ?? ""}`;
-    return /tests\/integration\//.test(out);
-  } catch {
-    return false;
-  }
-}
-
-function pkgSrcHasTests(srcPath: string): boolean {
-  if (!existsSync(srcPath)) return false;
-  function walk(dir: string): boolean {
-    for (const entry of readdirSync(dir, { withFileTypes: true })) {
-      const full = join(dir, entry.name);
-      if (entry.isDirectory()) {
-        if (walk(full)) return true;
-      } else if (
-        entry.isFile() &&
-        (entry.name.endsWith(".test.ts") || entry.name.endsWith(".spec.ts"))
-      ) {
-        return true;
-      }
-    }
-    return false;
-  }
-  return walk(srcPath);
-}
-
-function discoverTestRoots(): string[] {
-  const roots: string[] = [];
-  const layerNames = ["kernel", "engine", "life", "service", "capabilities", "connectors"] as const;
-
-  for (const layer of layerNames) {
-    const layerPath = join(repoRoot, layer);
-    if (!existsSync(layerPath)) continue;
-    for (const entry of readdirSync(layerPath, { withFileTypes: true })) {
-      if (!entry.isDirectory()) continue;
-      const srcPath = join(layerPath, entry.name, "src");
-      if (pkgSrcHasTests(srcPath)) {
-        roots.push(relative(repoRoot, srcPath));
-      }
-    }
-  }
-
-  for (const extra of ["cli/src", "tests/integration"]) {
-    if (existsSync(join(repoRoot, extra)) && pkgSrcHasTests(join(repoRoot, extra))) {
-      roots.push(extra);
-    }
-  }
-
-  return roots.toSorted();
 }
 
 function mergeLcovFiles(files: string[]): string {
@@ -169,42 +110,23 @@ function collectCoverageShards(): void {
   console.log(`[${label}] 已合并 ${shardFiles.length} 个 lcov 分片 → coverage/lcov.info`);
 }
 
-const needsPg = !changed || integrationTestsInChangedRun();
+if (!process.argv.includes("--coverage")) {
+  console.error("[run-tests] 仅支持 --coverage（由 coverage:cobertura 调用）");
+  process.exit(1);
+}
 
 let exitCode = 0;
 let teardown: () => Promise<void> = async () => {};
 
-if (needsPg) {
-  try {
-    teardown = await setupIntegrationPg();
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.warn(`[${label}] ${msg}\n[${label}] 继续运行测试（PG 集成用例将 skip）`);
-  }
+try {
+  teardown = await setupIntegrationPg();
+} catch (err) {
+  const msg = err instanceof Error ? err.message : String(err);
+  console.warn(`[${label}] ${msg}\n[${label}] 继续运行（PG 集成用例将 skip）`);
 }
 
-const bunArgs = [
-  "test",
-  "--pass-with-no-tests",
-  ...(changed ? ["--changed"] : []),
-  ...(coverage ? ["--coverage", "--coverage-reporter=lcov"] : []),
-  "--path-ignore-patterns",
-  "**/tests/e2e/**",
-];
-
 try {
-  if (coverage) {
-    collectCoverageShards();
-  } else {
-    const result = spawnSync("bun", bunArgs, {
-      cwd: repoRoot,
-      stdio: "inherit",
-      env: process.env,
-    });
-    if (result.status !== 0) {
-      exitCode = 1;
-    }
-  }
+  collectCoverageShards();
 } catch {
   exitCode = 1;
 } finally {

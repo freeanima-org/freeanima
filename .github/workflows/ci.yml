@@ -25,7 +25,7 @@ jobs:
       - run: bun run typecheck
       - run: bun run lint
       - run: bun run dep-check
-      - run: bun run test
+      - run: bun scripts/run-all-tests.ts --suites unit,integration
       - run: bun run coverage:cobertura
       - name: Upload coverage report
         if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository

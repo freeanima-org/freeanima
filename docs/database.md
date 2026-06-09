@@ -123,13 +123,14 @@ DATABASE_URL="$(anima credential get services/postgres/anima url)" \
 
 #### 集成测试（本机，非 pre-commit）
 
-需 **Docker** 运行中。`bun test` 会通过 Docker CLI 起临时 PostgreSQL 17、跑 migration，并执行根目录 `tests/integration/`（与单元测试一并运行）。
+需 **Docker** 运行中。`bun run test:integration` 或 `bun run test`（并行全量）会通过 Docker CLI 起临时 PostgreSQL 17、跑 migration，并执行 `tests/integration/`。pre-commit 的 `test:changed` **不**跑集成测。
 
 ```bash
-bun test
+bun run test:integration
+bun run test              # 单元 + 集成 + E2E 并行
 ```
 
-单元测试（mapper，不连 PG）：`bun test connectors/db-pg`
+单元测试（mapper，不连 PG）：`bun run test:unit` 或 `bun test connectors/db-pg/src`
 
 ## Slice B：semantic_memory（已落地）
 
