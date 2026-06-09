@@ -33,9 +33,6 @@ export const PATHS = {
   get index() {
     return homePath("index");
   },
-  get todos() {
-    return homePath("todos.json");
-  },
   get eventsDb() {
     return homePath("runtime", "events.db");
   },

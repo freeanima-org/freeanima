@@ -7,7 +7,7 @@ export function registerExecuteCodeTool(): void {
     name: "execute_code",
     description:
       "在子进程中执行代码片段（无 shell）。runtime 默认 bun：TypeScript/JavaScript，可用 node:fs 等内置模块。" +
-      "可选 runtime=nodejs；python/deno 已预留但未启用。Python 脚本请暂用 terminal。复杂 shell 操作用 terminal。",
+      "可选 runtime=nodejs。Python 脚本请用 terminal。复杂 shell 操作用 terminal。",
     parameters: {
       type: "object",
       properties: {
@@ -17,7 +17,7 @@ export function registerExecuteCodeTool(): void {
         },
         runtime: {
           type: "string",
-          enum: ["bun", "nodejs", "python", "deno"],
+          enum: ["bun", "nodejs"],
           default: "bun",
           description: "执行运行时，默认 bun",
         },

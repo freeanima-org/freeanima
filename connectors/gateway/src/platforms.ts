@@ -31,9 +31,7 @@ export async function discoverPlatforms(service: AnimaService): Promise<Platform
     adapters.push(createWeixinAdapter(service, weixinCreds));
     logComponent("gateway").info("Discovered platform: weixin");
   } else {
-    logComponent("gateway").info(
-      "WeChat not configured (pass services/weixin-ilink or ~/.hermes/weixin/accounts/)",
-    );
+    logComponent("gateway").info("WeChat not configured (pass services/weixin-ilink)");
   }
 
   return adapters;

@@ -9,7 +9,6 @@ export * from "./repo-root.ts";
 export * from "./version.ts";
 export * from "./config-sanitize.ts";
 export * from "./llm-config.ts";
-export * from "./session-path.ts";
 export { resolveValue } from "./resolve.ts";
 export { validateConfigOnStartup } from "./validate.ts";
 export { resolveLlmProviderApiKeys } from "./llm-resolve.ts";

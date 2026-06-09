@@ -1,17 +1,25 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import type { DependencyStatus, ServiceStatus } from "@freeanima/connectors-webui/api";
 import { useState } from "react";
-import { api } from "@/lib/api.ts";
+import {
+  getAcpStatus,
+  getCronJobs,
+  getMcpStatus,
+  getStatus,
+  getToolsStatus,
+  listSessionCommands,
+  restartService,
+} from "@/lib/api.ts";
 
 export const Route = createFileRoute("/chamber/dashboard")({
   loader: async () => {
     const [status, mcpData, acpData, cmdData, tools, cronJobs] = await Promise.all([
-      api.status.get.query().catch(() => null),
-      api.mcp.status.query().catch(() => null),
-      api.acp.status.query().catch(() => null),
-      api.sessions.commands.query({ all: true }).catch(() => null),
-      api.status.tools.query().catch(() => null),
-      api.status.cronJobs.query().catch(() => null),
+      getStatus().catch(() => null),
+      getMcpStatus().catch(() => null),
+      getAcpStatus().catch(() => null),
+      listSessionCommands({ all: true }).catch(() => null),
+      getToolsStatus().catch(() => null),
+      getCronJobs().catch(() => null),
     ]);
     return { status, mcpData, acpData, cmdData, tools, cronJobs };
   },
@@ -100,7 +108,7 @@ function DashboardPage() {
     if (!confirm("确定要重启服务吗？正在进行的对话将被中断。")) return;
     setRestarting(true);
     try {
-      const res = await api.status.restart.mutate();
+      const res = await restartService();
       alert((res as { message?: string }).message || "服务正在重启...");
     } catch (err) {
       alert(`重启失败: ${err instanceof Error ? err.message : String(err)}`);

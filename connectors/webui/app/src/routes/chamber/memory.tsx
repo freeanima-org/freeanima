@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { api } from "@/lib/api.ts";
+import { countSemanticMemory, searchMemory } from "@/lib/api.ts";
 
 export const Route = createFileRoute("/chamber/memory")({
   component: MemoryPage,
@@ -88,7 +88,7 @@ function MemoryPage() {
     setSearching(true);
     setError("");
     try {
-      const d = (await api.memory.search.mutate({
+      const d = (await searchMemory({
         query: q,
         limit,
         session_limit: sessionLimit,
@@ -121,7 +121,7 @@ function MemoryPage() {
             disabled={busy}
             onClick={() =>
               void postMemoryAction(
-                () => api.memory.semanticMemoryCount.mutate(),
+                () => countSemanticMemory(),
                 "semantic-memory-count",
                 "统计 PG semantic_memory 条数（content_fts 自动维护，无需重建）。确定继续？",
               )

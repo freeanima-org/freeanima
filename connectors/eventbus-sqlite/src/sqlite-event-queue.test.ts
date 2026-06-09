@@ -6,7 +6,7 @@ import { createLogger } from "@freeanima/kernel-logging";
 import { createNullSink } from "@freeanima/kernel-logging/null";
 import { EventBus, createEventTopic } from "@freeanima/kernel-eventbus";
 import { SqliteEventQueue } from "./sqlite-event-queue.ts";
-import { seedLegacyPythonStyleEvent } from "./test-helpers.ts";
+import { seedPendingEvent } from "./test-helpers.ts";
 
 const testPing = createEventTopic<{ n: number }>("test:ping");
 
@@ -34,11 +34,11 @@ describe("SqliteEventQueue", () => {
     else process.env.FREEANIMA_HOME = prev;
   });
 
-  it("reads Python-style events table (data column)", async () => {
+  it("reads pending events from events.db", async () => {
     mkdirSync(join(home, "runtime"), { recursive: true });
     const dbPath = join(home, "runtime", "events.db");
 
-    seedLegacyPythonStyleEvent(dbPath, testPing.qualifiedId, { n: 1 });
+    seedPendingEvent(dbPath, testPing.qualifiedId, { n: 1 });
 
     const bus = new EventBus(
       createLogger({ sinks: [createNullSink()] }),

@@ -1,7 +1,7 @@
 import type { DisplayItem, SessionListItem } from "@freeanima/connectors-webui/api";
 import { PARLOR_PLATFORM } from "@freeanima/connectors-webui/api";
 import { create } from "zustand";
-import { api } from "@/lib/api.ts";
+import { createSession, getSessionMessages, listSessions, setSessionTitle } from "@/lib/api.ts";
 
 export { PARLOR_PLATFORM };
 
@@ -25,7 +25,7 @@ export const useSessionsStore = create<SessionsState>((set, get) => ({
 
   async fetchSessions() {
     try {
-      const resp = await api.sessions.list.query({ platform: PARLOR_PLATFORM });
+      const resp = await listSessions(PARLOR_PLATFORM);
       const sessions = (resp as { sessions?: SessionListItem[] }).sessions ?? [];
       set({ sessions });
       return sessions;
@@ -38,7 +38,7 @@ export const useSessionsStore = create<SessionsState>((set, get) => ({
   async selectSession(id) {
     set({ currentId: id, display: [] });
     try {
-      const resp = await api.sessions.messages.query({ sessionId: id });
+      const resp = await getSessionMessages(id);
       set({ display: (resp as { display?: DisplayItem[] }).display ?? [] });
     } catch (e) {
       console.error("selectSession messages:", e);
@@ -47,7 +47,7 @@ export const useSessionsStore = create<SessionsState>((set, get) => ({
 
   async newSession() {
     try {
-      const d = await api.sessions.create.mutate({ platform: PARLOR_PLATFORM });
+      const d = await createSession(PARLOR_PLATFORM);
       await get().fetchSessions();
       const sessionId = (d as { session_id: string }).session_id;
       await get().selectSession(sessionId);
@@ -60,7 +60,7 @@ export const useSessionsStore = create<SessionsState>((set, get) => ({
 
   async renameSession(sessionId, newTitle) {
     try {
-      await api.sessions.setTitle.mutate({ sessionId, title: newTitle });
+      await setSessionTitle(sessionId, newTitle);
       set({
         sessions: get().sessions.map((s) => (s.id === sessionId ? { ...s, title: newTitle } : s)),
       });

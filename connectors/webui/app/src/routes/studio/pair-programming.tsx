@@ -6,7 +6,7 @@ import { TerminalPanel } from "@/components/studio/TerminalPanel.tsx";
 import { SessionPanel } from "@/components/studio/SessionPanel.tsx";
 import { useMediaQuery } from "@/hooks/useMediaQuery.ts";
 import { usePairProgrammingStore } from "@/stores/pair-programming.ts";
-import { api } from "@/lib/api.ts";
+import { patchStudioConfig } from "@/lib/api.ts";
 
 export const Route = createFileRoute("/studio/pair-programming")({
   component: PairProgrammingPage,
@@ -55,7 +55,7 @@ function PairProgrammingPage() {
   const saveWorkspace = async () => {
     const ws = workspaceInput.trim();
     if (!ws) return;
-    await api.studio.config.patch.mutate({ workspace: ws });
+    await patchStudioConfig({ workspace: ws });
     await store.fetchConfig();
     await store.fetchTree();
   };

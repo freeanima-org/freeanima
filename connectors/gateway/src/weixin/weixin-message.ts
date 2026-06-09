@@ -97,7 +97,7 @@ export function extractTextFromMessage(msg: IlinkMessage): string {
 }
 
 /**
- * 解析伙伴文本消息（对齐 Hermes：不强制 message_type，仅排除 BOT 与自身发送者）
+ * 解析伙伴文本消息（不强制 message_type，仅排除 BOT 与自身发送者）
  */
 export function parseUserTextMessage(
   msg: IlinkMessage,

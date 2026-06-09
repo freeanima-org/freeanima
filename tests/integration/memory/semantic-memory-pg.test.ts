@@ -59,13 +59,6 @@ describePg("semantic_memory PG", () => {
     expect(await store.get(pinnedId)).toBeNull();
   });
 
-  it("maps legacy fact type to world", async () => {
-    const store = getTestEngine().repos.semanticMemory;
-    const id = await store.create({ content: "客观事实探针", type: "fact" });
-    const row = await store.get(id);
-    expect(row?.type).toBe("world");
-  });
-
   afterAll(async () => {
     await endIntegrationCase();
   });

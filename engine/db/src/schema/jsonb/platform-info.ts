@@ -65,14 +65,14 @@ export type DiscordPlatformInfo = z.infer<typeof discordPlatformInfoSchema>;
 export type WeixinPlatformInfo = z.infer<typeof weixinPlatformInfoSchema>;
 export type StudioPairPlatformInfo = z.infer<typeof studioPairPlatformInfoSchema>;
 
-/** 历史 JSONL 缺字段时的占位（迁移 / 双写容忍） */
-export const LEGACY_PLATFORM_STRING_DEFAULT = "nothing";
+/** platform_extra 缺必填字段时的占位 */
+export const PLATFORM_STRING_PLACEHOLDER = "nothing";
 
-const PLATFORM_LEGACY_DEFAULTS: Partial<Record<Platform, Record<string, unknown>>> = {
-  discord: { channel_id: LEGACY_PLATFORM_STRING_DEFAULT },
+const PLATFORM_EXTRA_DEFAULTS: Partial<Record<Platform, Record<string, unknown>>> = {
+  discord: { channel_id: PLATFORM_STRING_PLACEHOLDER },
   weixin: {
-    weixin_user_id: LEGACY_PLATFORM_STRING_DEFAULT,
-    weixin_peer_id: LEGACY_PLATFORM_STRING_DEFAULT,
+    weixin_user_id: PLATFORM_STRING_PLACEHOLDER,
+    weixin_peer_id: PLATFORM_STRING_PLACEHOLDER,
     is_group: false,
   },
 };
@@ -97,12 +97,12 @@ function normalizePlatformExtra(
   return out;
 }
 
-/** 补齐各 platform 必填 extra，避免旧 JSONL 迁移时 Zod 失败 */
-export function applyLegacyPlatformDefaults(
+/** 补齐各 platform 必填 extra 字段 */
+export function applyPlatformExtraDefaults(
   platform: Platform,
   extra: Record<string, unknown>,
 ): Record<string, unknown> {
-  const defaults = PLATFORM_LEGACY_DEFAULTS[platform];
+  const defaults = PLATFORM_EXTRA_DEFAULTS[platform];
   if (!defaults) return extra;
   const out = { ...extra };
   for (const [key, val] of Object.entries(defaults)) {
@@ -121,7 +121,7 @@ export function buildPlatformInfo(
     return null;
   }
   const extra = normalizePlatformExtra(platformExtra);
-  const withDefaults = applyLegacyPlatformDefaults(platform, { ...extra });
+  const withDefaults = applyPlatformExtraDefaults(platform, { ...extra });
   const merged: Record<string, unknown> = {
     platform,
     ...withDefaults,

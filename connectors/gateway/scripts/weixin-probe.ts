@@ -13,7 +13,7 @@ import {
 
 const creds = loadWeixinCredentials();
 if (!creds) {
-  console.error("未找到微信凭证（pass services/weixin-ilink 或 ~/.hermes/weixin/accounts）");
+  console.error("未找到微信凭证（pass services/weixin-ilink）");
   process.exit(1);
 }
 

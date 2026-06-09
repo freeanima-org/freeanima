@@ -22,26 +22,8 @@ export type SqliteEventQueueOptions = {
   pollMs?: number;
 };
 
-function tableColumns(db: Database): Set<string> {
-  const rows = db.prepare("PRAGMA table_info(events)").all() as { name: string }[];
-  return new Set(rows.map((r) => r.name));
-}
-
-/** 与 Python EventBus 共用 events.db schema */
-function migrateEventsSchema(db: Database): void {
+function initEventsSchema(db: Database): void {
   db.exec(SCHEMA);
-  const cols = tableColumns(db);
-  if (!cols.size) return;
-
-  if (cols.has("payload") && !cols.has("data")) {
-    db.exec("ALTER TABLE events RENAME COLUMN payload TO data");
-  }
-  if (!cols.has("retries")) {
-    db.exec("ALTER TABLE events ADD COLUMN retries INTEGER NOT NULL DEFAULT 0");
-  }
-  if (!cols.has("last_error")) {
-    db.exec("ALTER TABLE events ADD COLUMN last_error TEXT");
-  }
 }
 
 function parsePayload(raw: string): unknown | null {
@@ -64,7 +46,7 @@ export class SqliteEventQueue implements EventQueueAdapter {
     mkdirSync(dirname(dbPath), { recursive: true });
     this.db = new Database(dbPath, { create: true });
     this.db.exec("PRAGMA journal_mode = WAL");
-    migrateEventsSchema(this.db);
+    initEventsSchema(this.db);
     this.pollMs = opts?.pollMs ?? 500;
   }
 

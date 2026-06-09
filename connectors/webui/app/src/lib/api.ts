@@ -3,13 +3,13 @@ import type { StreamApiEvent } from "@freeanima/connectors-webui/api";
 import type { App } from "@freeanima/connectors-webui/elysia";
 import { apiPath } from "./api-path.ts";
 
-const client = treaty<App>(
+export const apiClient = treaty<App>(
   typeof window !== "undefined" ? window.location.origin : "http://127.0.0.1:2658",
 );
 
 type TreatyResult<T> = { data: T | null; error: unknown };
 
-async function unwrap<T>(promise: Promise<TreatyResult<T>>): Promise<T> {
+export async function unwrap<T>(promise: Promise<TreatyResult<T>>): Promise<T> {
   const result = await promise;
   if (result.error) {
     const err = result.error as { value?: unknown; message?: string };
@@ -27,7 +27,7 @@ type SubscribeCallbacks<T> = {
   onComplete?: () => void;
 };
 
-function subscribeMessageStream(
+export function subscribeMessageStream(
   input: { sessionId: string; message: string },
   callbacks: SubscribeCallbacks<StreamApiEvent>,
 ): { unsubscribe: () => void } {
@@ -77,29 +77,23 @@ function subscribeMessageStream(
   return { unsubscribe: () => controller.abort() };
 }
 
-function subscribeTerminalStream(
-  callbacks: SubscribeCallbacks<{
-    type: string;
-    sessionId?: string;
-    data?: string;
-    code?: number;
-    message?: string;
-  }>,
-): { unsubscribe: () => void } {
-  const ws = client.api.studio.terminal.ws.subscribe();
+type TerminalStreamEvent = {
+  type: string;
+  sessionId?: string;
+  data?: string;
+  code?: number;
+  message?: string;
+};
+
+export function subscribeTerminalStream(callbacks: SubscribeCallbacks<TerminalStreamEvent>): {
+  unsubscribe: () => void;
+} {
+  const ws = apiClient.api.studio.terminal.ws.subscribe();
   let closed = false;
 
   ws.subscribe((message) => {
     if (closed) return;
-    callbacks.onData?.(
-      message as {
-        type: string;
-        sessionId?: string;
-        data?: string;
-        code?: number;
-        message?: string;
-      },
-    );
+    callbacks.onData?.(message as TerminalStreamEvent);
   });
 
   ws.on("error", () => {
@@ -120,174 +114,173 @@ function subscribeTerminalStream(
   };
 }
 
-/** 与旧 tRPC 客户端形状兼容的 API  facade */
-export const api = {
-  sessions: {
-    list: {
-      query: (input?: { platform?: string }) => unwrap(client.api.sessions.get({ query: input })),
-    },
-    listAll: {
-      query: () => unwrap(client.api.sessions.all.get()),
-    },
-    create: {
-      mutate: (input?: { platform?: string }) => unwrap(client.api.sessions.post(input ?? {})),
-    },
-    messages: {
-      query: (input: { sessionId: string; offset?: number; limit?: number }) =>
-        unwrap(
-          client.api.sessions({ sessionId: input.sessionId }).messages.get({
-            query: {
-              offset: input.offset?.toString(),
-              limit: input.limit?.toString(),
-            },
-          }),
-        ),
-    },
-    setTitle: {
-      mutate: (input: { sessionId: string; title: string }) =>
-        unwrap(
-          client.api.sessions({ sessionId: input.sessionId }).title.patch({
-            title: input.title,
-          }),
-        ),
-    },
-    commands: {
-      query: (input?: { all?: boolean; platform?: string }) =>
-        unwrap(
-          client.api.sessions.commands.get({
-            query: {
-              all: input?.all ? "true" : undefined,
-              platform: input?.platform,
-            },
-          }),
-        ),
-    },
-  },
-  messages: {
-    sendStream: {
-      subscribe: (
-        input: { sessionId: string; message: string },
-        callbacks: SubscribeCallbacks<StreamApiEvent>,
-      ) => subscribeMessageStream(input, callbacks),
-    },
-  },
-  status: {
-    get: { query: () => unwrap(client.api.status.get()) },
-    config: { query: () => unwrap(client.api.status.config.get()) },
-    tools: { query: () => unwrap(client.api.status.tools.get()) },
-    cronJobs: { query: () => unwrap(client.api.status["cron-jobs"].get()) },
-    pauseCron: {
-      mutate: (input: { id: string }) =>
-        unwrap(client.api.status["cron-jobs"]({ id: input.id }).pause.post()),
-    },
-    resumeCron: {
-      mutate: (input: { id: string }) =>
-        unwrap(client.api.status["cron-jobs"]({ id: input.id }).resume.post()),
-    },
-    runCron: {
-      mutate: (input: { id: string }) =>
-        unwrap(client.api.status["cron-jobs"]({ id: input.id }).run.post()),
-    },
-    restart: { mutate: () => unwrap(client.api.status.restart.post()) },
-  },
-  email: {
-    overview: { query: () => unwrap(client.api.email.get()) },
-    fetch: {
-      mutate: (input: { id: string }) => unwrap(client.api.email({ id: input.id }).fetch.post()),
-    },
-  },
-  memory: {
-    search: {
-      mutate: (input: {
-        query: string;
-        limit?: number;
-        session_limit?: number;
-        session?: string;
-      }) => unwrap(client.api.memory.search.post(input)),
-    },
-    semanticMemoryCount: {
-      mutate: () => unwrap(client.api.memory["semantic-memory"].count.post()),
-    },
-  },
-  mcp: {
-    status: { query: () => unwrap(client.api.mcp.status.get()) },
-    start: {
-      mutate: (input: { name: string }) =>
-        unwrap(client.api.mcp({ name: input.name }).start.post()),
-    },
-    stop: {
-      mutate: (input: { name: string }) => unwrap(client.api.mcp({ name: input.name }).stop.post()),
-    },
-    startAll: { mutate: () => unwrap(client.api.mcp["start-all"].post()) },
-    stopAll: { mutate: () => unwrap(client.api.mcp["stop-all"].post()) },
-  },
-  acp: {
-    status: { query: () => unwrap(client.api.acp.status.get()) },
-    start: {
-      mutate: (input: { name: string }) =>
-        unwrap(client.api.acp({ name: input.name }).start.post()),
-    },
-    stop: {
-      mutate: (input: { name: string }) => unwrap(client.api.acp({ name: input.name }).stop.post()),
-    },
-    startAll: { mutate: () => unwrap(client.api.acp["start-all"].post()) },
-    stopAll: { mutate: () => unwrap(client.api.acp["stop-all"].post()) },
-  },
-  credentials: {
-    list: { query: () => unwrap(client.api.credentials.get()) },
-  },
-  studio: {
-    config: {
-      get: { query: () => unwrap(client.api.studio.config.get()) },
-      patch: {
-        mutate: (input: { workspace?: string; gitignore?: boolean; showHidden?: boolean }) =>
-          unwrap(client.api.studio.config.patch(input)),
-      },
-    },
-    tree: { query: () => unwrap(client.api.studio.tree.get()) },
-    file: {
-      query: (input: { path: string }) =>
-        unwrap(client.api.studio.file.get({ query: { path: input.path } })),
-    },
-    search: {
-      mutate: (input: { query: string }) => unwrap(client.api.studio.search.post(input)),
-    },
-    terminal: {
-      stream: {
-        subscribe: (
-          _input: undefined,
-          callbacks: SubscribeCallbacks<{
-            type: string;
-            sessionId?: string;
-            data?: string;
-            code?: number;
-            message?: string;
-          }>,
-        ) => subscribeTerminalStream(callbacks),
-      },
-      write: {
-        mutate: (input: { sessionId: string; data: string }) =>
-          unwrap(
-            client.api.studio.terminal({ sessionId: input.sessionId }).write.post({
-              data: input.data,
-            }),
-          ),
-      },
-      resize: {
-        mutate: (input: { sessionId: string; cols: number; rows: number }) =>
-          unwrap(
-            client.api.studio.terminal({ sessionId: input.sessionId }).resize.post({
-              cols: input.cols,
-              rows: input.rows,
-            }),
-          ),
-      },
-      close: {
-        mutate: (input: { sessionId: string }) =>
-          unwrap(client.api.studio.terminal({ sessionId: input.sessionId }).close.post()),
-      },
-    },
-  },
-};
+export async function listSessions(platform?: string) {
+  return unwrap(apiClient.api.sessions.get({ query: { platform } }));
+}
 
-export { client as treatyClient };
+export async function listAllSessions() {
+  return unwrap(apiClient.api.sessions.all.get());
+}
+
+export async function createSession(platform?: string) {
+  return unwrap(apiClient.api.sessions.post(platform ? { platform } : {}));
+}
+
+export async function getSessionMessages(sessionId: string, offset?: number, limit?: number) {
+  return unwrap(
+    apiClient.api.sessions({ sessionId }).messages.get({
+      query: {
+        offset: offset?.toString(),
+        limit: limit?.toString(),
+      },
+    }),
+  );
+}
+
+export async function setSessionTitle(sessionId: string, title: string) {
+  return unwrap(apiClient.api.sessions({ sessionId }).title.patch({ title }));
+}
+
+export async function listSessionCommands(opts?: { all?: boolean; platform?: string }) {
+  return unwrap(
+    apiClient.api.sessions.commands.get({
+      query: {
+        all: opts?.all ? "true" : undefined,
+        platform: opts?.platform,
+      },
+    }),
+  );
+}
+
+export async function getStatus() {
+  return unwrap(apiClient.api.status.get());
+}
+
+export async function getStatusConfig() {
+  return unwrap(apiClient.api.status.config.get());
+}
+
+export async function getToolsStatus() {
+  return unwrap(apiClient.api.status.tools.get());
+}
+
+export async function getCronJobs() {
+  return unwrap(apiClient.api.status["cron-jobs"].get());
+}
+
+export async function pauseCronJob(id: string) {
+  return unwrap(apiClient.api.status["cron-jobs"]({ id }).pause.post());
+}
+
+export async function resumeCronJob(id: string) {
+  return unwrap(apiClient.api.status["cron-jobs"]({ id }).resume.post());
+}
+
+export async function runCronJob(id: string) {
+  return unwrap(apiClient.api.status["cron-jobs"]({ id }).run.post());
+}
+
+export async function restartService() {
+  return unwrap(apiClient.api.status.restart.post());
+}
+
+export async function getEmailOverview() {
+  return unwrap(apiClient.api.email.get());
+}
+
+export async function fetchEmailAccount(id: string) {
+  return unwrap(apiClient.api.email({ id }).fetch.post());
+}
+
+export async function searchMemory(input: {
+  query: string;
+  limit?: number;
+  session_limit?: number;
+  session?: string;
+}) {
+  return unwrap(apiClient.api.memory.search.post(input));
+}
+
+export async function countSemanticMemory() {
+  return unwrap(apiClient.api.memory["semantic-memory"].count.post());
+}
+
+export async function getMcpStatus() {
+  return unwrap(apiClient.api.mcp.status.get());
+}
+
+export async function startMcp(name: string) {
+  return unwrap(apiClient.api.mcp({ name }).start.post());
+}
+
+export async function stopMcp(name: string) {
+  return unwrap(apiClient.api.mcp({ name }).stop.post());
+}
+
+export async function startAllMcp() {
+  return unwrap(apiClient.api.mcp["start-all"].post());
+}
+
+export async function stopAllMcp() {
+  return unwrap(apiClient.api.mcp["stop-all"].post());
+}
+
+export async function getAcpStatus() {
+  return unwrap(apiClient.api.acp.status.get());
+}
+
+export async function startAcp(name: string) {
+  return unwrap(apiClient.api.acp({ name }).start.post());
+}
+
+export async function stopAcp(name: string) {
+  return unwrap(apiClient.api.acp({ name }).stop.post());
+}
+
+export async function startAllAcp() {
+  return unwrap(apiClient.api.acp["start-all"].post());
+}
+
+export async function stopAllAcp() {
+  return unwrap(apiClient.api.acp["stop-all"].post());
+}
+
+export async function listCredentials() {
+  return unwrap(apiClient.api.credentials.get());
+}
+
+export async function getStudioConfig() {
+  return unwrap(apiClient.api.studio.config.get());
+}
+
+export async function patchStudioConfig(input: {
+  workspace?: string;
+  gitignore?: boolean;
+  showHidden?: boolean;
+}) {
+  return unwrap(apiClient.api.studio.config.patch(input));
+}
+
+export async function getStudioTree() {
+  return unwrap(apiClient.api.studio.tree.get());
+}
+
+export async function getStudioFile(path: string) {
+  return unwrap(apiClient.api.studio.file.get({ query: { path } }));
+}
+
+export async function searchStudio(query: string) {
+  return unwrap(apiClient.api.studio.search.post({ query }));
+}
+
+export async function terminalWrite(sessionId: string, data: string) {
+  return unwrap(apiClient.api.studio.terminal({ sessionId }).write.post({ data }));
+}
+
+export async function terminalResize(sessionId: string, cols: number, rows: number) {
+  return unwrap(apiClient.api.studio.terminal({ sessionId }).resize.post({ cols, rows }));
+}
+
+export async function terminalClose(sessionId: string) {
+  return unwrap(apiClient.api.studio.terminal({ sessionId }).close.post());
+}

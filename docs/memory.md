@@ -186,8 +186,6 @@ LLM 进行单次 Token 推理时的内部激活状态。随推理结束瞬间消
 | `created`         | 创建时间                                                             |
 | `updated`         | 更新时间（resident 排序用）                                          |
 
-旧 `f-*.md` + `l3.db` 通过 `scripts/migrate-semantic-memory.ts` 一次性迁移；详见 [`database.md`](database.md) §Slice B。
-
 实体关系图谱与多策略召回（pgvector 等）**尚未实现**，分别见 [Issue #39](https://github.com/freeanima-org/freeanima/issues/39)、[#42](https://github.com/freeanima-org/freeanima/issues/42)。
 
 ---

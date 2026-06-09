@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { api } from "@/lib/api.ts";
+import { getMcpStatus, startAllMcp, startMcp, stopAllMcp, stopMcp } from "@/lib/api.ts";
 
 export const Route = createFileRoute("/chamber/mcp")({
-  loader: () => api.mcp.status.query().catch(() => null),
+  loader: () => getMcpStatus().catch(() => null),
   component: McpPage,
 });
 
@@ -59,8 +59,8 @@ function McpPage() {
     setError("");
     setActing((a) => ({ ...a, [name]: action }));
     try {
-      const fn = action === "start" ? api.mcp.start : api.mcp.stop;
-      setStatus((await fn.mutate({ name })) as McpStatus);
+      const result = action === "start" ? await startMcp(name) : await stopMcp(name);
+      setStatus(result as McpStatus);
     } catch (e) {
       setError(
         `${name} ${action === "start" ? "启动" : "停止"}失败: ${e instanceof Error ? e.message : String(e)}`,
@@ -78,8 +78,8 @@ function McpPage() {
     setError("");
     setBulkActing(true);
     try {
-      const fn = action === "start-all" ? api.mcp.startAll : api.mcp.stopAll;
-      setStatus((await fn.mutate()) as McpStatus);
+      const result = action === "start-all" ? await startAllMcp() : await stopAllMcp();
+      setStatus(result as McpStatus);
     } catch (e) {
       setError(
         action === "start-all"

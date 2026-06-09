@@ -6,7 +6,7 @@ export type RecallableMessage = {
   content: string;
 };
 
-/** 从对话 messages 中筛出可召回/可 reflect 的 user/assistant 文本（排除 tool 与空 content） */
+/** 从对话 messages 中筛出可召回的 user/assistant 文本（排除 tool 与空 content） */
 export function filterRecallableMessages(msgs: ConversationMessage[]): RecallableMessage[] {
   const out: RecallableMessage[] = [];
   for (const rec of msgs) {

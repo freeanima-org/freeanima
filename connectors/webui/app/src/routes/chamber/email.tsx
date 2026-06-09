@@ -1,10 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { api } from "@/lib/api.ts";
+import { fetchEmailAccount, getEmailOverview } from "@/lib/api.ts";
 
 export const Route = createFileRoute("/chamber/email")({
-  loader: () =>
-    api.email.overview.query().catch(() => ({ accounts: [], messages: [], errors: {} })),
+  loader: () => getEmailOverview().catch(() => ({ accounts: [], messages: [], errors: {} })),
   component: EmailPage,
 });
 
@@ -71,7 +70,7 @@ function EmailPage() {
     setLoading(true);
     setError("");
     try {
-      const data = (await api.email.overview.query()) as Overview;
+      const data = (await getEmailOverview()) as Overview;
       setAccounts(data.accounts ?? []);
       setMessages(data.messages ?? []);
       setErrors(data.errors ?? {});
@@ -86,7 +85,7 @@ function EmailPage() {
     setError("");
     setFetching((f) => ({ ...f, [account.id]: true }));
     try {
-      const data = (await api.email.fetch.mutate({ id: account.id })) as {
+      const data = (await fetchEmailAccount(account.id)) as {
         ok?: boolean;
         error?: string;
         messages?: EmailMessage[];
