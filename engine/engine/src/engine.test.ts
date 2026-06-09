@@ -10,7 +10,7 @@ import {
 } from "@freeanima/engine-provider-llm";
 import { ToolRegistry } from "@freeanima/engine-tool";
 import { nullPgRepositories } from "@freeanima/engine-repos";
-import { MockBackend } from "../../provider-llm/tests/helpers/mock-backend.ts";
+import { MockBackend } from "@freeanima/engine-provider-llm/test-helpers/mock-backend";
 import { Engine } from "./engine.ts";
 
 describe("Engine", () => {

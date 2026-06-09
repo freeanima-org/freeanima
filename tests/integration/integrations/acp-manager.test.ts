@@ -1,28 +1,30 @@
-import { it, expect, beforeEach, afterEach } from "bun:test";
-import { describePg } from "../../helpers/pg-test-gate.ts";
-
+import { describe, it, expect, afterEach } from "bun:test";
+import { parseYaml } from "@freeanima/service-config";
+import { animaConfigSchema } from "@freeanima/service-config/schemas/config";
+import { resetConfigForTest, setConfigForTest } from "@freeanima/service-config";
+import { MINIMAL_LLM_YAML } from "@freeanima/service-config/test-helpers/minimal-llm-config";
 import { registerTool, listTools } from "@freeanima/engine-tool";
 import { registerAcpTools } from "@freeanima/capabilities-acp";
-import { beginMinimalConfigHome, endMinimalConfigHome } from "../../helpers/minimal-config-home.ts";
 
-let prevHome: string | undefined;
+function emptyConfig() {
+  const parsed = animaConfigSchema.safeParse(parseYaml(MINIMAL_LLM_YAML));
+  if (!parsed.success) throw new Error(parsed.error.message);
+  return parsed.data;
+}
 
-beforeEach(() => {
-  ({ prevHome } = beginMinimalConfigHome("anima-acp-mgr-"));
-});
+describe("acp manager", () => {
+  afterEach(() => {
+    resetConfigForTest();
+  });
 
-afterEach(() => {
-  endMinimalConfigHome(prevHome);
-});
-
-describePg("acp manager", () => {
   it("registerAcpTools returns 0 when no agents configured", () => {
+    setConfigForTest(emptyConfig());
     const count = registerAcpTools({});
     expect(count).toBe(0);
   });
 
   it("registerAcpTools registers tools from config", () => {
-    // 清理可能已有的 acp 工具计数基线
+    setConfigForTest(emptyConfig());
     const before = listTools().filter((t) => t.name.startsWith("acp_")).length;
     const count = registerAcpTools({
       test_agent: {

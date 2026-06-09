@@ -88,7 +88,7 @@ database:
 
 生产环境必须配置 `database.url`。
 
-**驱动（PoC）**：`DATABASE_DRIVER=bun` 启用 `Bun.sql` + `drizzle-orm/bun-sql/postgres`；默认 `postgres`（postgres.js）。Bun 驱动下 Drizzle 1.0.0-rc.3 的 RQB 查询仍有兼容问题，完整切换前需上游修复或升级；见 `tests/integration/db/bun-sql-driver.test.ts`。
+**驱动**：`Bun.sql` + `drizzle-orm/bun-sql/postgres`（`connectors/db-pg`）。Drizzle 1.0.0-rc.3 的 RQB `.select()` 不生成列清单；session/message 热路径读操作统一走 `execute`（`connectors/db-pg/src/utils/sql-read.ts`）。回归见 `tests/integration/db/db-session.test.ts`。
 
 ### 迁移
 

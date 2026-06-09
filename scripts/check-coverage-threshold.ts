@@ -4,9 +4,21 @@ import { fileURLToPath } from "node:url";
 
 const repoRoot = join(fileURLToPath(new URL(".", import.meta.url)), "..");
 const lcovPath = join(repoRoot, "coverage", "lcov.info");
+const baselinePath = join(repoRoot, "scripts", "coverage-baseline.json");
 
-/** 与 bunfig.toml coverageThreshold 一致；0 表示仅上报、不卡 CI */
-const THRESHOLD = 0;
+type Baseline = {
+  lines: number;
+  functions: number;
+  slack: number;
+};
+
+function loadBaseline(): Baseline {
+  if (!existsSync(baselinePath)) {
+    return { lines: 0, functions: 0, slack: 0 };
+  }
+  const raw = JSON.parse(readFileSync(baselinePath, "utf-8")) as Baseline;
+  return raw;
+}
 
 function parseLcovRates(lcov: string): { lines: number; functions: number } {
   let totalLines = 0;
@@ -32,14 +44,20 @@ if (!existsSync(lcovPath)) {
   process.exit(1);
 }
 
+const baseline = loadBaseline();
+const minLines = Math.max(0, baseline.lines - baseline.slack);
+const minFunctions = Math.max(0, baseline.functions - baseline.slack);
+
 const rates = parseLcovRates(readFileSync(lcovPath, "utf-8"));
 const linesPct = (rates.lines * 100).toFixed(2);
 const funcsPct = (rates.functions * 100).toFixed(2);
+const minLinesPct = (minLines * 100).toFixed(2);
+const minFuncsPct = (minFunctions * 100).toFixed(2);
 
 console.log(
-  `[coverage:check-threshold] lines=${linesPct}% functions=${funcsPct}% (要求 ≥ ${THRESHOLD * 100}%)`,
+  `[coverage:check-threshold] lines=${linesPct}% functions=${funcsPct}% (要求 ≥ ${minLinesPct}% / ${minFuncsPct}%)`,
 );
 
-if (rates.lines < THRESHOLD || rates.functions < THRESHOLD) {
+if (rates.lines < minLines || rates.functions < minFunctions) {
   process.exit(1);
 }

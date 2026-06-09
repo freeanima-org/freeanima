@@ -6,7 +6,8 @@
     "./console": "./src/sinks/console.ts",
     "./file": "./src/sinks/file.ts",
     "./memory": "./src/sinks/memory.ts",
-    "./null": "./src/sinks/null.ts"
+    "./null": "./src/sinks/null.ts",
+    "./testing": "./src/testing.ts"
   },
   "devDependencies": {
     "@types/bun": "catalog:"

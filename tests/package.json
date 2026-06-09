@@ -22,7 +22,6 @@
     "@freeanima/engine-repos": "workspace:*",
     "@freeanima/service-bootstrap": "workspace:*",
     "drizzle-orm": "catalog:",
-    "postgres": "^3.4.9",
     "@freeanima/connectors-cron": "workspace:*",
     "@freeanima/connectors-commands": "workspace:*",
     "@freeanima/connectors-gateway": "workspace:*",

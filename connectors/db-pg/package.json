@@ -10,7 +10,6 @@
     "@freeanima/engine-db": "workspace:*",
     "@freeanima/kernel-util": "workspace:*",
     "drizzle-orm": "catalog:",
-    "postgres": "^3.4.9",
     "zod": "catalog:"
   },
   "devDependencies": {

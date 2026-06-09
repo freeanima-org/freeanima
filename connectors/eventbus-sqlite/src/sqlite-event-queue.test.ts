@@ -1,49 +1,18 @@
-import { describe, it, expect, beforeEach, afterEach } from "bun:test";
-import { mkdtempSync, mkdirSync } from "node:fs";
-import { join } from "node:path";
-import { tmpdir } from "node:os";
+import { describe, it, expect } from "bun:test";
 import { createLogger } from "@freeanima/kernel-logging";
 import { createNullSink } from "@freeanima/kernel-logging/null";
 import { EventBus, createEventTopic } from "@freeanima/kernel-eventbus";
 import { SqliteEventQueue } from "./sqlite-event-queue.ts";
-import { seedPendingEvent } from "./test-helpers.ts";
+import { waitFor } from "./test-helpers.ts";
 
 const testPing = createEventTopic<{ n: number }>("test:ping");
 
-async function waitFor(predicate: () => boolean, timeoutMs = 400): Promise<void> {
-  const deadline = Date.now() + timeoutMs;
-  while (!predicate()) {
-    if (Date.now() >= deadline) {
-      throw new Error(`waitFor timed out after ${timeoutMs}ms`);
-    }
-    await new Promise((r) => setTimeout(r, 10));
-  }
-}
-
 describe("SqliteEventQueue", () => {
-  let home: string;
-  const prev = process.env.FREEANIMA_HOME;
+  it("reads pending events from memory db", async () => {
+    const queue = new SqliteEventQueue(":memory:", { pollMs: 10 });
+    queue.enqueue(testPing.qualifiedId, { n: 1 });
 
-  beforeEach(() => {
-    home = mkdtempSync(join(tmpdir(), "freeanima-bus-"));
-    process.env.FREEANIMA_HOME = home;
-  });
-
-  afterEach(() => {
-    if (prev === undefined) delete process.env.FREEANIMA_HOME;
-    else process.env.FREEANIMA_HOME = prev;
-  });
-
-  it("reads pending events from events.db", async () => {
-    mkdirSync(join(home, "runtime"), { recursive: true });
-    const dbPath = join(home, "runtime", "events.db");
-
-    seedPendingEvent(dbPath, testPing.qualifiedId, { n: 1 });
-
-    const bus = new EventBus(
-      createLogger({ sinks: [createNullSink()] }),
-      new SqliteEventQueue(dbPath, { pollMs: 10 }),
-    );
+    const bus = new EventBus(createLogger({ sinks: [createNullSink()] }), queue);
     const seen: number[] = [];
     bus.on(testPing, (p) => {
       seen.push(p.n);

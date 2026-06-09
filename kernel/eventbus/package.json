@@ -4,7 +4,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./memory": "./src/adapters/memory.ts",
-    "./null": "./src/adapters/null.ts"
+    "./null": "./src/adapters/null.ts",
+    "./testing": "./src/testing.ts"
   },
   "dependencies": {
     "@freeanima/kernel-logging": "workspace:*"

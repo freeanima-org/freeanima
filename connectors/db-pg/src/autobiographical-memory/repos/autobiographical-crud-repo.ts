@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { desc, eq, sql as drizzleSql } from "drizzle-orm";
+import { eq, sql as drizzleSql } from "drizzle-orm";
 import {
   autobiographicalMemory,
   autobiographicalSignificanceSchema,
@@ -78,11 +78,14 @@ export async function getAutobiographicalMemory(
   id: string,
 ): Promise<AutobiographicalMemoryRow | null> {
   const db = getDb();
-  const rows = await db
-    .select()
-    .from(autobiographicalMemory)
-    .where(eq(autobiographicalMemory.id, id))
-    .limit(1);
+  const rows = await db.execute<AutobiographicalMemoryDbRow>(drizzleSql`
+    SELECT
+      id, title, content, significance, period_start, period_end,
+      source_facts, source_sessions, status, created_at, updated_at
+    FROM autobiographical_memory
+    WHERE id = ${id}
+    LIMIT 1
+  `);
   const row = rows[0];
   return row ? mapAutobiographicalMemoryRow(row) : null;
 }
@@ -139,12 +142,15 @@ export async function listActiveAutobiographicalMemory(opts?: {
   const db = getDb();
 
   if (order === "updated_desc") {
-    const rows = await db
-      .select()
-      .from(autobiographicalMemory)
-      .where(eq(autobiographicalMemory.status, "active"))
-      .orderBy(desc(autobiographicalMemory.updatedAt))
-      .limit(limit);
+    const rows = await db.execute<AutobiographicalMemoryDbRow>(drizzleSql`
+      SELECT
+        id, title, content, significance, period_start, period_end,
+        source_facts, source_sessions, status, created_at, updated_at
+      FROM autobiographical_memory
+      WHERE status = 'active'
+      ORDER BY updated_at DESC
+      LIMIT ${limit}
+    `);
     return rows.map(mapAutobiographicalMemoryRow);
   }
 

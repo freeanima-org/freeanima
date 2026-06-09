@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { and, asc, eq, inArray, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { tasks, taskPrioritySchema, taskStatusSchema } from "@freeanima/engine-db/schema";
 import type {
   TaskCreateInput,
@@ -12,17 +12,10 @@ import type {
 import { formatCstIso } from "@freeanima/kernel-util";
 
 import { getDb } from "../../client.ts";
-import { mapTaskRow } from "../mappers/task-mapper.ts";
+import { mapTaskRow, type TaskDbRow } from "../mappers/task-mapper.ts";
 
 const DEFAULT_LIST_STATUSES: TaskStatus[] = ["pending", "in_progress"];
 const DEFAULT_LIST_LIMIT = 50;
-
-const priorityOrderSql = sql`CASE ${tasks.priority}
-  WHEN 'high' THEN 0
-  WHEN 'medium' THEN 1
-  WHEN 'low' THEN 2
-  ELSE 3
-END`;
 
 function normalizeStatus(raw: string | undefined, fallback: TaskStatus): TaskStatus {
   if (raw == null) return fallback;
@@ -64,11 +57,26 @@ export async function createTask(input: TaskCreateInput): Promise<TaskRow> {
   return mapTaskRow(row);
 }
 
+const TASK_COLUMNS = sql`
+  id,
+  title,
+  description,
+  status,
+  priority,
+  due_at AS "dueAt",
+  created_at AS "createdAt",
+  updated_at AS "updatedAt",
+  completed_at AS "completedAt",
+  source_session_id AS "sourceSessionId"
+`;
+
 export async function getTask(id: string): Promise<TaskRow | null> {
   const trimmed = id.trim();
   if (!trimmed) return null;
   const db = getDb();
-  const rows = await db.select().from(tasks).where(eq(tasks.id, trimmed)).limit(1);
+  const rows = await db.execute<TaskDbRow>(sql`
+    SELECT ${TASK_COLUMNS} FROM tasks WHERE id = ${trimmed} LIMIT 1
+  `);
   const row = rows[0];
   return row ? mapTaskRow(row) : null;
 }
@@ -113,18 +121,32 @@ export async function updateTask(input: TaskUpdateInput): Promise<TaskRow | null
 export async function listTasks(opts?: TaskListOpts): Promise<TaskRow[]> {
   const statuses = opts?.status?.length ? opts.status : DEFAULT_LIST_STATUSES;
   const limit = Math.max(1, Math.min(500, opts?.limit ?? DEFAULT_LIST_LIMIT));
-
-  const conditions = [inArray(tasks.status, statuses)];
-  if (opts?.priority) {
-    conditions.push(eq(tasks.priority, normalizePriority(opts.priority, "none")));
-  }
+  const priority = opts?.priority ? normalizePriority(opts.priority, "none") : null;
 
   const db = getDb();
-  const rows = await db
-    .select()
-    .from(tasks)
-    .where(and(...conditions))
-    .orderBy(asc(priorityOrderSql), asc(tasks.createdAt))
-    .limit(limit);
+  const statusIn = sql.join(
+    statuses.map((s) => sql`${s}`),
+    sql`, `,
+  );
+  const rows = priority
+    ? await db.execute<TaskDbRow>(sql`
+        SELECT ${TASK_COLUMNS}
+        FROM tasks
+        WHERE status IN (${statusIn})
+          AND priority = ${priority}
+        ORDER BY
+          CASE priority WHEN 'high' THEN 0 WHEN 'medium' THEN 1 WHEN 'low' THEN 2 ELSE 3 END,
+          created_at ASC
+        LIMIT ${limit}
+      `)
+    : await db.execute<TaskDbRow>(sql`
+        SELECT ${TASK_COLUMNS}
+        FROM tasks
+        WHERE status IN (${statusIn})
+        ORDER BY
+          CASE priority WHEN 'high' THEN 0 WHEN 'medium' THEN 1 WHEN 'low' THEN 2 ELSE 3 END,
+          created_at ASC
+        LIMIT ${limit}
+      `);
   return rows.map(mapTaskRow);
 }

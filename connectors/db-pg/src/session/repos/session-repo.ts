@@ -1,4 +1,4 @@
-import { desc, eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import {
   compressionStateSchema,
   sessionTodoStoreSchema,
@@ -24,54 +24,39 @@ import {
   rowToSessionMeta,
   sessionMetaToInsert,
 } from "../mappers/session-mapper.ts";
+import {
+  findSessionIdByPlatformProbe,
+  selectDebugSessionIds,
+  selectSessionById,
+  selectSessionIdsUpdatedBetween,
+  selectSessionsForList,
+  selectSessionsPlatformInfo,
+  selectSessionSummaries,
+  selectSessionTools,
+  sessionExists as readSessionExists,
+} from "../../utils/sql-read.ts";
 import { formatDbError } from "../../utils/db-error.ts";
 import { normalizePgTimestamp, pgJsonbOrNull, pgTextOrNull } from "../../utils/timestamp.ts";
 
 const pgNowIso = (): string => normalizePgTimestamp(new Date());
 
 export async function getSessionMeta(sessionId: string): Promise<SessionMetaMessage | null> {
-  const db = getDb();
-  const rows = await db.select().from(sessions).where(eq(sessions.id, sessionId)).limit(1);
+  const rows = await selectSessionById(sessionId);
   if (!rows.length) return null;
   return rowToSessionMeta(rows[0]!);
 }
 
 /** 热路径 meta：不加载 tools JSONB（tools 用 getSessionTools 按需读） */
 export async function getSessionMetaLite(sessionId: string): Promise<SessionMetaMessage | null> {
-  const db = getDb();
-  const rows = await db
-    .select({
-      id: sessions.id,
-      model: sessions.model,
-      title: sessions.title,
-      cwd: sessions.cwd,
-      systemPrompt: sessions.systemPrompt,
-      platformInfo: sessions.platformInfo,
-      compression: sessions.compression,
-      todos: sessions.todos,
-      awaitingClarify: sessions.awaitingClarify,
-      acpSessions: sessions.acpSessions,
-      functions: sessions.functions,
-      debug: sessions.debug,
-      createdAt: sessions.createdAt,
-      updatedAt: sessions.updatedAt,
-    })
-    .from(sessions)
-    .where(eq(sessions.id, sessionId))
-    .limit(1);
+  const rows = await selectSessionById(sessionId);
   if (!rows.length) return null;
   return rowToSessionMeta({ ...rows[0]!, tools: [] });
 }
 
 export async function getSessionTools(sessionId: string): Promise<SessionMetaMessage["tools"]> {
-  const db = getDb();
-  const rows = await db
-    .select({ tools: sessions.tools })
-    .from(sessions)
-    .where(eq(sessions.id, sessionId))
-    .limit(1);
-  if (!rows.length) return [];
-  return z.array(z.string()).parse(rows[0]!.tools ?? []);
+  const tools = await selectSessionTools(sessionId);
+  if (tools == null) return [];
+  return z.array(z.string()).parse(tools);
 }
 
 export async function upsertSessionMeta(
@@ -81,12 +66,7 @@ export async function upsertSessionMeta(
   const db = getDb();
   const row = sessionInsertSchema.parse(sessionMetaToInsert(sessionId, meta));
   try {
-    const existing = await db
-      .select({ id: sessions.id })
-      .from(sessions)
-      .where(eq(sessions.id, sessionId))
-      .limit(1);
-    if (existing.length) {
+    if (await readSessionExists(sessionId)) {
       await db
         .update(sessions)
         .set({
@@ -208,15 +188,7 @@ export async function updateTodos(sessionId: string, todos: SessionTodoStore): P
 }
 
 export async function listSessionIds(platform?: string | null): Promise<string[]> {
-  const db = getDb();
-  const rows = await db
-    .select({
-      id: sessions.id,
-      platformInfo: sessions.platformInfo,
-      updatedAt: sessions.updatedAt,
-    })
-    .from(sessions)
-    .orderBy(desc(sessions.updatedAt));
+  const rows = await selectSessionsForList();
   return rows
     .filter((r) => {
       if (!platform) return true;
@@ -228,14 +200,11 @@ export async function listSessionIds(platform?: string | null): Promise<string[]
 }
 
 export async function listDebugSessionIds(): Promise<string[]> {
-  const db = getDb();
-  const rows = await db.select({ id: sessions.id }).from(sessions).where(eq(sessions.debug, true));
-  return rows.map((r) => r.id);
+  return selectDebugSessionIds();
 }
 
 export async function countSessionsByPlatform(): Promise<Record<string, number>> {
-  const db = getDb();
-  const rows = await db.select({ platformInfo: sessions.platformInfo }).from(sessions);
+  const rows = await selectSessionsPlatformInfo();
   const byPlatform: Record<string, number> = {};
   for (const row of rows) {
     const raw = row.platformInfo?.platform;
@@ -246,16 +215,7 @@ export async function countSessionsByPlatform(): Promise<Record<string, number>>
 }
 
 export async function listSessionSummaries(platform?: string | null): Promise<SessionSummaryRow[]> {
-  const db = getDb();
-  const rows = await db
-    .select({
-      id: sessions.id,
-      title: sessions.title,
-      platformInfo: sessions.platformInfo,
-      createdAt: sessions.createdAt,
-    })
-    .from(sessions)
-    .orderBy(desc(sessions.updatedAt));
+  const rows = await selectSessionSummaries();
   return rows
     .filter((row) => {
       if (!platform) return true;
@@ -288,13 +248,7 @@ export async function deleteSession(sessionId: string): Promise<void> {
 }
 
 export async function sessionExists(sessionId: string): Promise<boolean> {
-  const db = getDb();
-  const rows = await db
-    .select({ id: sessions.id })
-    .from(sessions)
-    .where(eq(sessions.id, sessionId))
-    .limit(1);
-  return rows.length > 0;
+  return readSessionExists(sessionId);
 }
 
 /**
@@ -307,14 +261,7 @@ export async function findSessionIdByPlatformInfo(
 ): Promise<string | null> {
   const probe = buildPlatformInfo(platform, platformExtra);
   if (!probe) return null;
-  const db = getDb();
-  const rows = await db
-    .select({ id: sessions.id })
-    .from(sessions)
-    .where(sql`${sessions.platformInfo} @> ${JSON.stringify(probe)}::jsonb`)
-    .orderBy(desc(sessions.updatedAt))
-    .limit(1);
-  return rows[0]?.id ?? null;
+  return findSessionIdByPlatformProbe(JSON.stringify(probe));
 }
 
 /** sessions.updated_at 落在 [fromIso, toIso) 内、非 debug 的 session id */
@@ -322,15 +269,5 @@ export async function listSessionIdsUpdatedBetween(
   fromIso: string,
   toIso: string,
 ): Promise<string[]> {
-  const db = getDb();
-  const rows = await db
-    .select({ id: sessions.id })
-    .from(sessions)
-    .where(
-      sql`${sessions.updatedAt} >= ${fromIso}::timestamptz
-        AND ${sessions.updatedAt} < ${toIso}::timestamptz
-        AND ${sessions.debug} = false`,
-    )
-    .orderBy(desc(sessions.updatedAt));
-  return rows.map((r) => r.id);
+  return selectSessionIdsUpdatedBetween(fromIso, toIso);
 }
