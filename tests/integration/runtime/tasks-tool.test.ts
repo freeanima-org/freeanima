@@ -7,7 +7,7 @@ import {
 } from "../../helpers/integration-case.ts";
 
 import { runWithToolContext } from "@freeanima/engine-loop";
-import { getTool } from "@freeanima/engine-tool";
+import { ToolRegistry } from "@freeanima/engine-tool";
 import { getProfileHopModel, loadConfig } from "@freeanima/service-config";
 import {
   registerTaskTools,
@@ -16,6 +16,8 @@ import {
 } from "@freeanima/capabilities-tasks";
 import { registerTaskStore, resetTaskStoreForTests } from "@freeanima/capabilities-tasks/task-port";
 import { testConv } from "../../helpers/pg-test.ts";
+
+const tools = new ToolRegistry();
 
 describePg("tasks tool", () => {
   const prev = process.env.FREEANIMA_HOME;
@@ -34,7 +36,7 @@ describePg("tasks tool", () => {
         },
       },
     });
-    registerTaskTools();
+    registerTaskTools(tools);
   });
 
   afterEach(async () => {
@@ -57,7 +59,7 @@ describePg("tasks tool", () => {
     await runWithToolContext(
       sid,
       async () => {
-        const tool = getTool("create_task")!;
+        const tool = tools.get("create_task")!;
         output = await Promise.resolve(
           tool.handler({
             title: "找天空聊UI",
@@ -65,7 +67,7 @@ describePg("tasks tool", () => {
           }),
         );
       },
-      { repos },
+      { repos, tools },
     );
 
     const parsed = JSON.parse(output) as {
@@ -113,10 +115,10 @@ describePg("tasks tool", () => {
     await runWithToolContext(
       sid,
       async () => {
-        const tool = getTool("list_tasks")!;
+        const tool = tools.get("list_tasks")!;
         output = await Promise.resolve(tool.handler({}));
       },
-      { repos },
+      { repos, tools },
     );
 
     const parsed = JSON.parse(output) as {
@@ -143,10 +145,10 @@ describePg("tasks tool", () => {
     await runWithToolContext(
       sid,
       async () => {
-        const tool = getTool("complete_task")!;
+        const tool = tools.get("complete_task")!;
         output = await Promise.resolve(tool.handler({ id: created.id }));
       },
-      { repos },
+      { repos, tools },
     );
 
     const parsed = JSON.parse(output) as {

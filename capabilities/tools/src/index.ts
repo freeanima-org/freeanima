@@ -8,6 +8,8 @@ export { registerCredentialTools } from "./credential-tool.ts";
 export { registerExecuteCodeTool } from "./execute-code.ts";
 export { clampTimeout, parseRuntime, runExecuteCode } from "./execute-code-runtimes.ts";
 
+import type { ToolRegistry } from "@freeanima/engine-tool";
+import type { SkillRegistry } from "@freeanima/engine-skill";
 import { registerBrowserTools } from "./browser.ts";
 import { registerCredentialTools } from "./credential-tool.ts";
 import { registerExecuteCodeTool } from "./execute-code.ts";
@@ -18,17 +20,17 @@ import { registerTerminalTools } from "./terminal.ts";
 import { registerWebTools } from "./web.ts";
 
 /** 基础工具集 */
-export function registerCoreTools(): void {
-  registerFileTools();
-  registerCredentialTools();
-  registerExecuteCodeTool();
-  registerTerminalTools();
-  registerWebTools();
+export function registerCoreTools(tools: ToolRegistry): void {
+  registerFileTools(tools);
+  registerCredentialTools(tools);
+  registerExecuteCodeTool(tools);
+  registerTerminalTools(tools);
+  registerWebTools(tools);
 }
 
 /** skills + browser + todo */
-export function registerSupplementalTools(): void {
-  registerSkillsTools();
-  registerBrowserTools();
-  registerTodoTool();
+export function registerSupplementalTools(tools: ToolRegistry, skills: SkillRegistry): void {
+  registerSkillsTools(tools, skills);
+  registerBrowserTools(tools);
+  registerTodoTool(tools);
 }

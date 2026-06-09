@@ -1,4 +1,5 @@
-import { registerTool, toolError, toolResult } from "@freeanima/engine-tool";
+import type { ToolRegistry } from "@freeanima/engine-tool";
+import { toolError, toolResult } from "@freeanima/engine-tool";
 import type { MessageFtsHit } from "@freeanima/engine-repos";
 import { searchDialogue, searchSemanticMemory } from "./search.ts";
 import type { SearchResult } from "./search.ts";
@@ -33,12 +34,12 @@ function mapDialogueHit(r: MessageFtsHit) {
   };
 }
 
-export function registerMemoryTools(): void {
-  registerSemanticMemoryTools();
-  registerAutobiographicalMemoryTools();
-  registerLimbicMemoryTools();
+export function registerMemoryTools(tools: ToolRegistry): void {
+  registerSemanticMemoryTools(tools);
+  registerAutobiographicalMemoryTools(tools);
+  registerLimbicMemoryTools(tools);
 
-  registerTool({
+  tools.register({
     name: "remember",
     description:
       "管理持久化语义记忆：创建、更新或删除。\n" +
@@ -78,7 +79,7 @@ export function registerMemoryTools(): void {
     handler: rememberFromArgs,
   });
 
-  registerTool({
+  tools.register({
     name: "recall",
     description:
       '搜索记忆：语义记忆（PostgreSQL 全文索引）+ 历史对话（PostgreSQL messages 全文索引）。一次调用返回两处结果。\n\nPG 对话检索语法（to_tsquery simple）：\n- **空格**分隔的词默认 **OR**（任一匹配即可）\n- **AND** 显式指定与：`Free AND Anima`（转为 &）\n- **OR** 显式指定或：`Free OR Anima`（转为 |）\n- **NOT** 排除：`Free NOT Anima`（转为 !）\n- **双引号** 短语：`"逸灵风"`（CJK 按字 OR 匹配）\n\n示例：`Free Anima 重命名`（任一出现即可）',

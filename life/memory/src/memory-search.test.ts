@@ -9,8 +9,10 @@ import {
   resetSemanticMemoryStoreForTests,
 } from "@freeanima/life-memory";
 import { registerToolSessionResolver } from "@freeanima/life-memory/tool-session-port";
-import { getTool } from "@freeanima/engine-tool";
+import { ToolRegistry } from "@freeanima/engine-tool";
 import { runWithToolContext } from "@freeanima/engine-loop";
+
+const tools = new ToolRegistry();
 
 function mockSessionStore(overrides: Partial<SessionStorePort>): SessionStorePort {
   const base: SessionStorePort = {
@@ -218,7 +220,7 @@ describe("memory search", () => {
     resetSemanticMemoryStoreForTests();
     registerSemanticMemoryStore(createMockSemanticStore());
     registerToolSessionResolver(() => "20260527_160000_test");
-    registerMemoryTools();
+    registerMemoryTools(tools);
   });
 
   afterEach(() => {
@@ -239,13 +241,17 @@ describe("memory search", () => {
 
   it("remember creates semantic memory with source_sessions", async () => {
     const sid = "20260527_160000_test";
-    await runWithToolContext(sid, async () => {
-      const out = await getTool("remember")!.handler({
-        content: "增量索引探针 beta",
-        type: "world",
-      });
-      expect(out).toContain("semantic_memory_id");
-    });
+    await runWithToolContext(
+      sid,
+      async () => {
+        const out = await tools.get("remember")!.handler({
+          content: "增量索引探针 beta",
+          type: "world",
+        });
+        expect(out).toContain("semantic_memory_id");
+      },
+      { tools },
+    );
     const results = await searchSemanticMemory("beta", 5);
     expect(results.length).toBe(1);
   });
@@ -257,7 +263,7 @@ describe("memory search", () => {
       content: "带来源的 memory",
       source_sessions: ["s1", "s2"],
     });
-    const out = await getTool("update_semantic_memory")!.handler({
+    const out = await tools.get("update_semantic_memory")!.handler({
       id,
       source_sessions: [],
     });
@@ -289,7 +295,7 @@ describe("memory search", () => {
       }),
     );
 
-    const out = await getTool("recall")!.handler({ query: "compression" });
+    const out = await tools.get("recall")!.handler({ query: "compression" });
     const parsed = JSON.parse(out) as {
       semantic_memory: { content: string }[];
       dialogue: { content: string }[];

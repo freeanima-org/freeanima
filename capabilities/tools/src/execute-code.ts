@@ -1,9 +1,9 @@
-import { registerTool } from "@freeanima/engine-tool";
+import type { ToolRegistry } from "@freeanima/engine-tool";
 
 import { clampTimeout, parseRuntime, runExecuteCode } from "./execute-code-runtimes.ts";
 
-export function registerExecuteCodeTool(): void {
-  registerTool({
+export function registerExecuteCodeTool(tools: ToolRegistry): void {
+  tools.register({
     name: "execute_code",
     description:
       "在子进程中执行代码片段（无 shell）。runtime 默认 bun：TypeScript/JavaScript，可用 node:fs 等内置模块。" +

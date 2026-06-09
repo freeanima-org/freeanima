@@ -1,4 +1,5 @@
-import { registerTool, toolError, toolResult } from "@freeanima/engine-tool";
+import type { ToolRegistry } from "@freeanima/engine-tool";
+import { toolError, toolResult } from "@freeanima/engine-tool";
 import type { SelfBlockKey } from "@freeanima/engine-repos";
 import { SELF_BLOCK_KEYS } from "@freeanima/engine-repos";
 
@@ -11,8 +12,8 @@ function parseBlockKey(raw: unknown): SelfBlockKey | null {
   return SELF_BLOCK_KEYS.includes(key) ? key : null;
 }
 
-export function registerSelfTools(): void {
-  registerTool({
+export function registerSelfTools(tools: ToolRegistry): void {
+  tools.register({
     name: "get_self_blocks",
     description: "读取自我层六块（存在锚点、自我模型、人格基线、方向意图、元认知、自传概括）。",
     parameters: {
@@ -29,7 +30,7 @@ export function registerSelfTools(): void {
     },
   });
 
-  registerTool({
+  tools.register({
     name: "update_self_block",
     description: "更新自我层指定块的内容。existence_anchor 默认 locked，需 force=true 才能修改。",
     parameters: {

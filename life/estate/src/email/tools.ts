@@ -1,4 +1,5 @@
-import { registerTool, toolError, toolResult } from "@freeanima/engine-tool";
+import type { ToolRegistry } from "@freeanima/engine-tool";
+import { toolError, toolResult } from "@freeanima/engine-tool";
 
 import {
   deleteEmailAccount,
@@ -15,8 +16,8 @@ function errMsg(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
 }
 
-export function registerEmailTools(): void {
-  registerTool({
+export function registerEmailTools(tools: ToolRegistry): void {
+  tools.register({
     name: "register_email_account",
     description:
       '注册邮件账户到 config.yaml。password 支持明文、env("KEY") 或 credential("path", "field")。',
@@ -52,7 +53,7 @@ export function registerEmailTools(): void {
     },
   });
 
-  registerTool({
+  tools.register({
     name: "edit_email_account",
     description: "编辑已注册邮件账户（password 可改为新的 env/credential 引用）。",
     parameters: {
@@ -86,7 +87,7 @@ export function registerEmailTools(): void {
     },
   });
 
-  registerTool({
+  tools.register({
     name: "list_email_accounts",
     description: "列出 config.yaml 中的邮件账户（含 pass 路径，不含密码）。",
     parameters: { type: "object", properties: {} },
@@ -99,7 +100,7 @@ export function registerEmailTools(): void {
     },
   });
 
-  registerTool({
+  tools.register({
     name: "delete_email_account",
     description: "从 config.yaml 删除邮件账户（不删除 pass 凭证）。",
     parameters: {
@@ -119,7 +120,7 @@ export function registerEmailTools(): void {
     },
   });
 
-  registerTool({
+  tools.register({
     name: "send_email",
     description: "通过已配置账户发送邮件。",
     parameters: {
@@ -151,7 +152,7 @@ export function registerEmailTools(): void {
     },
   });
 
-  registerTool({
+  tools.register({
     name: "fetch_emails",
     description: "从 IMAP 拉取最近邮件摘要。",
     parameters: {
@@ -174,7 +175,7 @@ export function registerEmailTools(): void {
     },
   });
 
-  registerTool({
+  tools.register({
     name: "list_emails",
     description: "按条件列出 IMAP 邮件摘要。",
     parameters: {
@@ -203,7 +204,7 @@ export function registerEmailTools(): void {
     },
   });
 
-  registerTool({
+  tools.register({
     name: "read_email",
     description: "读取单封邮件全文。",
     parameters: {
@@ -228,7 +229,7 @@ export function registerEmailTools(): void {
     },
   });
 
-  registerTool({
+  tools.register({
     name: "mark_email_read",
     description: "将邮件标记为已读。",
     parameters: {
@@ -253,7 +254,7 @@ export function registerEmailTools(): void {
     },
   });
 
-  registerTool({
+  tools.register({
     name: "delete_email",
     description: "从 IMAP 邮箱删除邮件。",
     parameters: {

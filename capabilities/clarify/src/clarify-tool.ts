@@ -1,4 +1,5 @@
-import { registerTool, toolError, toolResult } from "@freeanima/engine-tool";
+import type { ToolRegistry } from "@freeanima/engine-tool";
+import { toolError, toolResult } from "@freeanima/engine-tool";
 import { getClarifyConfig } from "./clarify.ts";
 import type { ClarifyItem as ClarifyItemType } from "./clarify.ts";
 
@@ -86,8 +87,8 @@ function handleClarify(args: ClarifyArgs): string {
   });
 }
 
-export function registerClarifyTool(): void {
-  registerTool({
+export function registerClarifyTool(tools: ToolRegistry): void {
+  tools.register({
     name: "clarify",
     description:
       "向伙伴提问以获取继续所需的信息。支持批量提问（items）与可选自动推荐（required=false + default）。",

@@ -30,18 +30,3 @@ export class ToolSetRegistry {
     return [...this.registry.values()];
   }
 }
-
-/** 全局默认 ToolSet 注册表 */
-export const defaultToolSetRegistry = new ToolSetRegistry();
-
-export function registerToolSet(name: string, description: string, tools: string[]): void {
-  defaultToolSetRegistry.register(name, description, tools);
-}
-
-export function getToolSet(name: string): ToolSet | undefined {
-  return defaultToolSetRegistry.get(name);
-}
-
-export function listToolSets(): ToolSet[] {
-  return defaultToolSetRegistry.list();
-}

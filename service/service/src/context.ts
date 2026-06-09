@@ -1,6 +1,7 @@
 import type { AnimaService } from "./runtime/anima-service.ts";
 import type { Kernel } from "@freeanima/kernel";
 import type { Engine } from "@freeanima/engine";
+import type { MaskRegistry } from "@freeanima/capabilities-mask";
 import {
   registerServiceContext,
   type ServiceContext as ServiceContextPort,
@@ -8,7 +9,6 @@ import {
 
 export type ServiceContext = ServiceContextPort & {
   kernel: Kernel;
-  engine: Engine;
 };
 
 const GLOBAL_CTX_KEY = Symbol.for("freeanima.serviceContextFull");
@@ -22,8 +22,8 @@ function readGlobalContext(): ServiceContext | null {
 export function initServiceContext(next: ServiceContext): void {
   ctx = next;
   (globalThis as Record<symbol, ServiceContext>)[GLOBAL_CTX_KEY] = next;
-  const { service, conversation, mcp, acp, host, port } = next;
-  registerServiceContext({ service, conversation, mcp, acp, host, port });
+  const { service, conversation, engine, masks, mcp, acp, host, port } = next;
+  registerServiceContext({ service, conversation, engine, masks, mcp, acp, host, port });
 }
 
 export function getServiceContext(): ServiceContext {
@@ -41,4 +41,4 @@ export function isServiceContextReady(): boolean {
 
 export { assertNotShuttingDown } from "@freeanima/service-api/service-context";
 
-export type { AnimaService };
+export type { AnimaService, Engine, MaskRegistry };

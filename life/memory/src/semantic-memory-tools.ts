@@ -1,4 +1,5 @@
-import { registerTool, toolError, toolResult } from "@freeanima/engine-tool";
+import type { ToolRegistry } from "@freeanima/engine-tool";
+import { toolError, toolResult } from "@freeanima/engine-tool";
 import { formatCstIso } from "@freeanima/kernel-util";
 import type { SemanticMemoryCreateInput, SemanticMemoryUpdateInput } from "@freeanima/engine-repos";
 
@@ -249,8 +250,8 @@ export async function createSemanticMemoryFromArgs(
   });
 }
 
-export function registerSemanticMemoryTools(): void {
-  registerTool({
+export function registerSemanticMemoryTools(tools: ToolRegistry): void {
+  tools.register({
     name: "create_semantic_memory",
     description:
       "显式创建一条语义记忆。需提供 content；可选 type/pinned/source_sessions/observed_at/occurred_at。",
@@ -273,7 +274,7 @@ export function registerSemanticMemoryTools(): void {
     handler: handleCreateSemanticMemory,
   });
 
-  registerTool({
+  tools.register({
     name: "update_semantic_memory",
     description:
       "覆盖式更新语义记忆：仅修改传入的字段，未传字段保持不变。传 source_sessions=[] 可清空来源列表。",
@@ -298,7 +299,7 @@ export function registerSemanticMemoryTools(): void {
     handler: handleUpdateSemanticMemory,
   });
 
-  registerTool({
+  tools.register({
     name: "deprecate_semantic_memory",
     description: "软废弃一条语义记忆（status=deprecated，保留历史）。",
     parameters: {
@@ -311,7 +312,7 @@ export function registerSemanticMemoryTools(): void {
     handler: handleDeprecateSemanticMemory,
   });
 
-  registerTool({
+  tools.register({
     name: "search_semantic_memory",
     description:
       "结构化搜索语义记忆：支持 FTS query、type/status/source_sessions 过滤。默认仅返回 active。",
@@ -341,7 +342,7 @@ export function registerSemanticMemoryTools(): void {
     handler: handleSearchSemanticMemory,
   });
 
-  registerTool({
+  tools.register({
     name: "merge_semantic_memories",
     description:
       "合并多条语义记忆为一条。程序自动处理 source_sessions 并集和 observed_at 取最早。需 2+ 条 source_ids 和 target_content。合并后自动废弃源记忆。",

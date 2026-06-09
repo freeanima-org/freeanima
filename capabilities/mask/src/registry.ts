@@ -39,17 +39,3 @@ export class MaskRegistry {
     return [...this.masks.entries()].map(([name, mask]) => ({ name, mask }));
   }
 }
-
-export const defaultMaskRegistry = new MaskRegistry();
-
-export function registerMask(name: string, mask: Mask): void {
-  defaultMaskRegistry.register(name, mask);
-}
-
-export function getMask(name: string): Mask | undefined {
-  return defaultMaskRegistry.get(name);
-}
-
-export function listMasks(): { name: string; mask: Mask }[] {
-  return defaultMaskRegistry.list();
-}

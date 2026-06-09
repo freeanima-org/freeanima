@@ -7,11 +7,10 @@ import {
 } from "../../helpers/integration-case.ts";
 
 import { runWithToolContext } from "@freeanima/engine-loop";
-import { getTool } from "@freeanima/engine-tool";
 import { getProfileHopModel, loadConfig } from "@freeanima/service-config";
 import { addTodo, listTodos } from "@freeanima/engine-conversation/session-todos";
 import { registerAllTools } from "@freeanima/service";
-import { testConv } from "../../helpers/pg-test.ts";
+import { getTestEngine, testConv } from "../../helpers/pg-test.ts";
 
 describePg("session todo", () => {
   const prev = process.env.FREEANIMA_HOME;
@@ -36,19 +35,20 @@ describePg("session todo", () => {
     await testConv().initSession("sess-a", model, { platform: "test" });
     await testConv().initSession("sess-b", model, { platform: "test" });
 
+    const tools = getTestEngine().tools;
     await runWithToolContext(
       "sess-a",
       async () => {
         await addTodo(repos, "sess-a", "任务 A");
       },
-      { repos },
+      { repos, tools },
     );
     await runWithToolContext(
       "sess-b",
       async () => {
         await addTodo(repos, "sess-b", "任务 B");
       },
-      { repos },
+      { repos, tools },
     );
 
     expect(JSON.parse(await listTodos(repos, "sess-a")).todos[0]?.content).toBe("任务 A");
@@ -67,23 +67,24 @@ describePg("session todo", () => {
   });
 
   it("todo handler sees session when invoked inside bound runStream iteration", async () => {
-    registerAllTools();
+    const engine = getTestEngine();
+    registerAllTools({ tools: engine.tools, skills: engine.skills });
 
     const cfg = loadConfig();
     const sid = "sess-todo-stream";
     const repos = testConv().repos;
+    const tools = engine.tools;
     await testConv().initSession(sid, getProfileHopModel(cfg), { platform: "parlor" });
 
-    async function* fakeStream() {
-      const tool = getTool("todo")!;
-      const result = await Promise.resolve(tool.handler({ action: "add", content: "stream 测试" }));
-      yield result;
-    }
-
     let output = "";
-    for await (const chunk of runWithToolContext(sid, () => fakeStream(), { repos })) {
-      output = String(chunk);
-    }
+    await runWithToolContext(
+      sid,
+      async () => {
+        const tool = tools.get("todo")!;
+        output = await Promise.resolve(tool.handler({ action: "add", content: "stream 测试" }));
+      },
+      { repos, tools },
+    );
 
     expect(JSON.parse(output).message).toContain("已添加");
     expect(output).not.toContain("无 session 上下文");

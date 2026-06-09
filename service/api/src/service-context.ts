@@ -1,12 +1,16 @@
 import type { AcpManager } from "@freeanima/capabilities-acp";
+import type { MaskRegistry } from "@freeanima/capabilities-mask";
 import type { MCPManager } from "@freeanima/capabilities-mcp";
 import type { ConversationService } from "@freeanima/engine-conversation";
+import type { Engine } from "@freeanima/engine";
 
 import type { RuntimeService } from "./runtime-service.ts";
 
 export type ServiceContext = {
   service: RuntimeService;
   conversation: ConversationService;
+  engine: Engine;
+  masks: MaskRegistry;
   mcp: MCPManager | null;
   acp: AcpManager;
   host: string;

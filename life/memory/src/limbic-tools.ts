@@ -1,4 +1,5 @@
-import { registerTool, toolError, toolResult } from "@freeanima/engine-tool";
+import type { ToolRegistry } from "@freeanima/engine-tool";
+import { toolError, toolResult } from "@freeanima/engine-tool";
 import type { LimbicKind, LimbicMemoryCreateInput } from "@freeanima/engine-repos";
 
 import { getLimbicMemoryStore } from "./limbic-port.ts";
@@ -18,8 +19,8 @@ function parseOptionalFloat(value: unknown): number | null | undefined {
   return Number.isNaN(n) ? null : n;
 }
 
-export function registerLimbicMemoryTools(): void {
-  registerTool({
+export function registerLimbicMemoryTools(tools: ToolRegistry): void {
+  tools.register({
     name: "create_limbic_memory",
     description:
       "记录边缘系统情感记忆（第一人称「我感到…」）。kind：session_mood（会话整体情绪）| turning_point（情感转折）| spike（强烈瞬间）。" +

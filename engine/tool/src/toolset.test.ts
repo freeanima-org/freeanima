@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { ToolSetRegistry, getToolSet, listToolSets, registerToolSet } from "./index.ts";
+import { ToolSetRegistry } from "./index.ts";
 
 describe("ToolSetRegistry", () => {
   it("register 后 get / list 返回冻结的 ToolSet", () => {
@@ -28,15 +28,5 @@ describe("ToolSetRegistry", () => {
     registry.register("snap", "快照", names);
     names.push("c");
     expect(registry.get("snap")?.tools).toEqual(["a", "b"]);
-  });
-});
-
-describe("defaultToolSetRegistry 模块级函数", () => {
-  it("registerToolSet / getToolSet / listToolSets 委托默认实例", () => {
-    const before = listToolSets().length;
-    const unique = `__toolset_test_${Date.now()}`;
-    registerToolSet(unique, "测试集", ["test_tool_a"]);
-    expect(getToolSet(unique)?.tools).toEqual(["test_tool_a"]);
-    expect(listToolSets().length).toBe(before + 1);
   });
 });

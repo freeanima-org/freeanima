@@ -1,9 +1,10 @@
 import { getToolSessionId } from "@freeanima/engine-loop";
-import { registerTool, toolResult, toolError, type ToolArgs } from "@freeanima/engine-tool";
+import type { ToolRegistry } from "@freeanima/engine-tool";
+import { toolResult, toolError, type ToolArgs } from "@freeanima/engine-tool";
 import { clampTtl, magnetRedisKey, randomBase62, setMagnet } from "./store.ts";
 
-export function registerWriteFridgeMagnetTool(): void {
-  registerTool({
+export function registerWriteFridgeMagnetTool(tools: ToolRegistry): void {
+  tools.register({
     name: "write_fridge_magnet",
     description:
       "在冰箱贴上写一张便签。冰箱贴是跨轮对话的临时状态共享黑板，贴在当前 session 中，有过期时间。key 可选；不传则自动生成 4 位随机 ID。",

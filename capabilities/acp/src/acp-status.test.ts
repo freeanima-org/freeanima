@@ -4,7 +4,7 @@ import { animaConfigSchema } from "@freeanima/service-config/schemas/config";
 import { resetConfigForTest, setConfigForTest } from "@freeanima/service-config";
 import { MINIMAL_LLM_YAML } from "@freeanima/service-config/test-helpers/minimal-llm-config";
 import { sanitizeAcpConfig, shortSessionId, isAcpAgentEnabled } from "./status.ts";
-import { AcpManager } from "./manager.ts";
+import { createTestAcpManager } from "./test-helpers/manager.ts";
 
 function acpConfigYaml(extra: string): ReturnType<typeof parseMinimal> {
   return parseMinimal([MINIMAL_LLM_YAML.trim(), extra].join("\n"));
@@ -72,7 +72,7 @@ describe("AcpManager.getStatus", () => {
         ].join("\n"),
       ),
     );
-    const mgr = new AcpManager();
+    const { mgr } = createTestAcpManager();
     mgr.registerTools();
     const status = mgr.getStatus();
 
@@ -91,7 +91,7 @@ describe("AcpManager.getStatus", () => {
         ["acp_agents:", "  cursor:", "    command: echo", "    args: [noop]"].join("\n"),
       ),
     );
-    const mgr = new AcpManager();
+    const { mgr } = createTestAcpManager();
     const result = await mgr.startAll();
     expect(result.ok).toBe(false);
     expect(result.error).toMatch(/cursor:/);
@@ -103,7 +103,8 @@ describe("AcpManager.getStatus", () => {
         ["acp_agents:", "  cursor:", "    command: echo", "    enabled: false"].join("\n"),
       ),
     );
-    const mgr = new AcpManager();
+    const { mgr } = createTestAcpManager();
+    mgr.registerTools();
     const status = mgr.getStatus();
     expect(status.agents[0]?.status).toBe("disabled");
   });

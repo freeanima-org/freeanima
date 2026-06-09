@@ -4,6 +4,8 @@ import { createConversationService } from "@freeanima/engine-conversation";
 import { createServiceKernel } from "@freeanima/service-bootstrap";
 import { AnimaService, initServiceContext } from "@freeanima/service";
 import { getAcpManager } from "@freeanima/capabilities-acp";
+import { MaskRegistry } from "../../capabilities/mask/src/registry.ts";
+import { registerAllTools, resetRegisterServiceToolsForTest } from "@freeanima/service";
 import {
   registerMemorySessionStore,
   registerSemanticMemoryStore,
@@ -35,8 +37,14 @@ async function flushActiveCompressionSummaries(): Promise<void> {
 /** 集成测标准 ServiceContext（builtins / AnimaService / WebUI handler） */
 export function wireIntegrationServiceContext(pg: PgTestContext): void {
   const kernel = createServiceKernel();
-  const conversation = createConversationService(pg.engine.repos);
+  const conversation = createConversationService(pg.engine.repos, pg.engine.tools);
   const service = new AnimaService({ kernel, conversation });
+  resetRegisterServiceToolsForTest();
+  registerAllTools({ tools: pg.engine.catalog.tools, skills: pg.engine.catalog.skills });
+  getAcpManager().wireRegistries({
+    tools: pg.engine.catalog.tools,
+    skills: pg.engine.catalog.skills,
+  });
   getAcpManager().wireConversation(conversation);
   initServiceContext({
     service,
@@ -45,6 +53,7 @@ export function wireIntegrationServiceContext(pg: PgTestContext): void {
     conversation,
     mcp: null,
     acp: getAcpManager(),
+    masks: new MaskRegistry(),
     host: "127.0.0.1",
     port: 2658,
   });

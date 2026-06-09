@@ -1,4 +1,5 @@
-import { registerTool, toolError, toolResult } from "@freeanima/engine-tool";
+import type { ToolRegistry } from "@freeanima/engine-tool";
+import { toolError, toolResult } from "@freeanima/engine-tool";
 import {
   existsSync,
   mkdirSync,
@@ -334,8 +335,8 @@ function handlePatch(
   }
 }
 
-export function registerFileTools(): void {
-  registerTool({
+export function registerFileTools(tools: ToolRegistry): void {
+  tools.register({
     name: "read_file",
     description: "Read a text file with line numbers",
     parameters: {
@@ -350,7 +351,7 @@ export function registerFileTools(): void {
     handler: (a) => handleReadFile(String(a.path), Number(a.offset ?? 1), Number(a.limit ?? 500)),
   });
 
-  registerTool({
+  tools.register({
     name: "write_file",
     description: "Write file content",
     parameters: {
@@ -364,7 +365,7 @@ export function registerFileTools(): void {
     handler: (a) => handleWriteFile(String(a.path), String(a.content ?? "")),
   });
 
-  registerTool({
+  tools.register({
     name: "search_files",
     description:
       "搜索文件。target=files：pattern 为 glob（支持 a|b 多段）。target=content：pattern 为搜索文字（默认字面量，regex=true 为正则）。" +
@@ -415,7 +416,7 @@ export function registerFileTools(): void {
       ),
   });
 
-  registerTool({
+  tools.register({
     name: "patch",
     description: "Replace string in file",
     parameters: {

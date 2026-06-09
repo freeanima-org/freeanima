@@ -1,7 +1,9 @@
 import { join } from "node:path";
+import type { SkillRegistry } from "@freeanima/engine-skill";
 import { registerSkillsFromDirectory } from "@freeanima/engine-skill";
 import { getToolSessionId } from "@freeanima/engine-loop";
-import { listTools, registerTool, toolError, toolResult } from "@freeanima/engine-tool";
+import type { ToolRegistry } from "@freeanima/engine-tool";
+import { toolError, toolResult } from "@freeanima/engine-tool";
 import { loadConfig } from "@freeanima/service-config";
 import { logComponent } from "@freeanima/service-logging";
 
@@ -159,9 +161,9 @@ function buildPromptText(
   return promptText;
 }
 
-function registerAcpBuiltinSkills(): void {
+function registerAcpBuiltinSkills(skills: SkillRegistry): void {
   const dir = join(import.meta.dir, "..", "skills");
-  const count = registerSkillsFromDirectory(dir, { source: ACP_SKILLS_SOURCE });
+  const count = registerSkillsFromDirectory(skills, dir, { source: ACP_SKILLS_SOURCE });
   if (count > 0) {
     logComponent("acp").info(`已注册 ${count} 个 ACP 内置 Skill`, {
       count,
@@ -187,6 +189,13 @@ export class AcpManager {
   /** agentName → taskId 或 "sync" */
   private readonly activePromptByAgent = new Map<string, string>();
   private progressTicker: ReturnType<typeof setInterval> | null = null;
+  private tools: ToolRegistry | null = null;
+  private skills: SkillRegistry | null = null;
+
+  wireRegistries(opts: { tools: ToolRegistry; skills: SkillRegistry }): void {
+    this.tools = opts.tools;
+    this.skills = opts.skills;
+  }
 
   wireConversation(conversation: ConversationService): void {
     this.conversation = conversation;
@@ -227,18 +236,21 @@ export class AcpManager {
 
   registerTools(agentsCfg?: Record<string, AcpAgentConfig>): number {
     if (this.toolsRegistered && !agentsCfg) return 0;
+    if (!this.tools || !this.skills) {
+      throw new Error("AcpManager: tools/skills 未绑定，请先 wireRegistries");
+    }
     const cfg = loadConfig();
     const agents = agentsCfg ?? cfg.acp_agents ?? {};
     if (!Object.keys(agents).length) return 0;
 
-    registerAcpBuiltinSkills();
+    registerAcpBuiltinSkills(this.skills);
 
     let count = 0;
     for (const [agentName, agentCfg] of Object.entries(agents)) {
       const toolName = `acp_${agentName}`;
       const description = agentCfg.description ?? defaultCursorDescription(agentName);
 
-      registerTool({
+      this.tools.register({
         name: toolName,
         description,
         toolset: `acp:${agentName}`,
@@ -367,7 +379,7 @@ export class AcpManager {
       else if (client?.isConnected && client.isProcessAlive()) status = "connected";
       else if (this.agentErrors.has(name)) status = "error";
 
-      const registered = listTools().find((t) => t.name === `acp_${name}`);
+      const registered = this.tools!.list().find((t) => t.name === `acp_${name}`);
       const sessionIds = this.sessionStore.listForAgent(name);
 
       views.push({
@@ -389,7 +401,7 @@ export class AcpManager {
       agent_count: views.length,
       connected_count,
       session_count: this.sessionStore.count(),
-      tool_count: listTools().filter((t) => t.toolset?.startsWith("acp:")).length,
+      tool_count: this.tools!.list().filter((t) => t.toolset?.startsWith("acp:")).length,
       agents: views,
     };
   }

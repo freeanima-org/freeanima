@@ -4,9 +4,15 @@ import {
   registerSemanticMemoryStore,
   resetSemanticMemoryStoreForTests,
 } from "@freeanima/life-memory";
-import { registerServiceTools } from "./register.ts";
+import { MaskRegistry } from "@freeanima/capabilities-mask";
+import { createEngineCatalog } from "@freeanima/engine";
+import type { Engine } from "@freeanima/engine";
+import { nullPgRepositories } from "@freeanima/engine-repos";
+import { registerServiceTools, resetRegisterServiceToolsForTest } from "./register.ts";
 import { initServiceContext } from "./context.ts";
 import { computeGlobalBreakdown, getPromptDebug } from "./runtime/service-prompt-debug.ts";
+
+const catalog = createEngineCatalog();
 
 const emptySemanticStore = {
   async listResident() {
@@ -53,9 +59,10 @@ function seedContext() {
     conversation: mockConv as never,
     service: {} as never,
     kernel: {} as never,
-    engine: {} as never,
+    engine: { catalog, repos: nullPgRepositories } as Engine,
     mcp: {} as never,
     acp: {} as never,
+    masks: new MaskRegistry(),
     host: "127.0.0.1",
     port: 2658,
   });
@@ -65,7 +72,8 @@ type PromptDebugToolItem = Awaited<ReturnType<typeof getPromptDebug>>["tools"]["
 
 describe("service-prompt-debug", () => {
   beforeEach(() => {
-    registerServiceTools();
+    resetRegisterServiceToolsForTest();
+    registerServiceTools({ tools: catalog.tools, skills: catalog.skills });
     registerSemanticMemoryStore(emptySemanticStore);
     seedContext();
     mockConv.sessionExists.mockClear();

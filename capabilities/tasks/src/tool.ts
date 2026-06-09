@@ -1,5 +1,6 @@
 import { getToolSessionId } from "@freeanima/engine-loop";
-import { registerTool, toolError, toolResult } from "@freeanima/engine-tool";
+import type { ToolRegistry } from "@freeanima/engine-tool";
+import { toolError, toolResult } from "@freeanima/engine-tool";
 import { formatCstIso } from "@freeanima/kernel-util";
 import type {
   TaskListOpts,
@@ -212,8 +213,8 @@ async function handleListTasks(args: Record<string, unknown>): Promise<string> {
   });
 }
 
-export function registerTaskTools(): void {
-  registerTool({
+export function registerTaskTools(tools: ToolRegistry): void {
+  tools.register({
     name: "create_task",
     description: "创建跨 session 持久待办任务",
     parameters: {
@@ -233,7 +234,7 @@ export function registerTaskTools(): void {
     handler: handleCreateTask,
   });
 
-  registerTool({
+  tools.register({
     name: "update_task",
     description: "更新待办任务字段",
     parameters: {
@@ -251,7 +252,7 @@ export function registerTaskTools(): void {
     handler: handleUpdateTask,
   });
 
-  registerTool({
+  tools.register({
     name: "complete_task",
     description: "将任务标记为 completed",
     parameters: {
@@ -262,7 +263,7 @@ export function registerTaskTools(): void {
     handler: (args) => handleStatusChange(args, "completed", "complete"),
   });
 
-  registerTool({
+  tools.register({
     name: "cancel_task",
     description: "将任务标记为 cancelled",
     parameters: {
@@ -273,7 +274,7 @@ export function registerTaskTools(): void {
     handler: (args) => handleStatusChange(args, "cancelled", "cancel"),
   });
 
-  registerTool({
+  tools.register({
     name: "reopen_task",
     description: "将任务重新打开为 pending",
     parameters: {
@@ -284,7 +285,7 @@ export function registerTaskTools(): void {
     handler: (args) => handleStatusChange(args, "pending", "reopen"),
   });
 
-  registerTool({
+  tools.register({
     name: "list_tasks",
     description: "列出待办；默认 pending + in_progress，按 priority 降序、created_at 升序",
     parameters: {
@@ -302,7 +303,7 @@ export function registerTaskTools(): void {
     handler: handleListTasks,
   });
 
-  registerTool({
+  tools.register({
     name: "get_task",
     description: "按 ID 获取单条任务",
     parameters: {

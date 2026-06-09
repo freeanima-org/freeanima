@@ -1,4 +1,5 @@
-import { registerTool, toolError, toolResult } from "@freeanima/engine-tool";
+import type { ToolRegistry } from "@freeanima/engine-tool";
+import { toolError, toolResult } from "@freeanima/engine-tool";
 import { credential, loadConfig, readAppVersion } from "@freeanima/service-config";
 
 const USER_AGENT = `anima/${readAppVersion()}`;
@@ -156,8 +157,8 @@ async function handleWebExtract(urls: string[]): Promise<string> {
   return toolResult({ results });
 }
 
-export function registerWebTools(): void {
-  registerTool({
+export function registerWebTools(tools: ToolRegistry): void {
+  tools.register({
     name: "web_search",
     description: "Search the web via Firecrawl",
     parameters: {
@@ -171,7 +172,7 @@ export function registerWebTools(): void {
     handler: (a) => handleWebSearch(String(a.query), Number(a.limit ?? 5)),
   });
 
-  registerTool({
+  tools.register({
     name: "web_extract",
     description: "Fetch URLs and extract content via Firecrawl",
     parameters: {

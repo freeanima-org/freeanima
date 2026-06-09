@@ -4,6 +4,10 @@ import { resolveSessionMaskFromMeta, runtimeToolMaskFromResolved } from "./mask-
 function conv() {
   return getServiceContext().conversation;
 }
+
+function toolRegistry() {
+  return getServiceContext().engine.catalog.tools;
+}
 import type { SessionMessage as Message } from "@freeanima/engine-db/domain";
 import type { SessionMessage } from "@freeanima/engine-db/domain";
 import * as engine from "@freeanima/engine-loop";
@@ -118,7 +122,7 @@ export async function runSimpleTurn(opts: RunSimpleTurnOpts): Promise<string> {
           toolMask,
           ...createTurnMessageCallbacks(sessionId),
         }),
-      { repos: conv().repos },
+      { repos: conv().repos, tools: toolRegistry() },
     );
   } catch (e) {
     if (e instanceof engine.MaxTurnsExceeded) {
@@ -152,7 +156,7 @@ export async function* yieldEngineStream(
             toolMask,
             ...host.engineStreamOpts(sessionId, signal),
           }),
-        { repos: conv().repos },
+        { repos: conv().repos, tools: toolRegistry() },
       )) {
         if (ev.event === "awaiting_clarify") {
           await applyClarifyStreamAwaiting(conv(), sessionId, ev.data.items, ev.data.timeout_sec);

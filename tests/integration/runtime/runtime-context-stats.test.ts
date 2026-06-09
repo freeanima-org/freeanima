@@ -1,4 +1,3 @@
-import { registerTool } from "@freeanima/engine-tool";
 import { computeStats, statsReport } from "@freeanima/service";
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import { describePg } from "../../helpers/pg-test-gate.ts";
@@ -7,7 +6,7 @@ import {
   endIntegrationCase,
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
-import { testConv } from "../../helpers/pg-test.ts";
+import { getTestEngine, testConv } from "../../helpers/pg-test.ts";
 
 describePg("runtime context stats", () => {
   const prev = process.env.FREEANIMA_HOME;
@@ -29,7 +28,7 @@ compression:
   });
 
   it("breakdown includes tools and system parts from runtime view", async () => {
-    registerTool({
+    getTestEngine().tools.register({
       name: "ctx_stats_big_tool",
       description: "y".repeat(5000),
       parameters: { type: "object", properties: {} },

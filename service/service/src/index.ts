@@ -3,6 +3,7 @@ export {
   registerServiceIntegrations,
   registerServiceMemoryBus,
   registerServiceTools,
+  resetRegisterServiceToolsForTest,
 } from "./register.ts";
 import "./wire-api.ts";
 export {

@@ -1,7 +1,12 @@
 import "./wire-api.ts";
 import "@freeanima/service/runtime/system-prompt-wire";
-import { getLlmRuntime, initLlmRuntime } from "@freeanima/engine";
-import { createEngine, type Engine } from "@freeanima/engine";
+import {
+  createEngine,
+  createEngineCatalog,
+  getLlmRuntime,
+  initLlmRuntime,
+  type Engine,
+} from "@freeanima/engine";
 import { createServiceKernel } from "@freeanima/service-bootstrap";
 import { nullPgRepositories } from "@freeanima/engine-repos";
 import {
@@ -53,6 +58,7 @@ import { registerLightSleepWire } from "./runtime/light-sleep-wire.ts";
 import { registerDeepSleepWire } from "./runtime/deep-sleep-wire.ts";
 import { registerAutobiographyWire } from "./runtime/autobiography-wire.ts";
 import { initMaskSystem } from "./runtime/mask-wire.ts";
+import { MaskRegistry } from "@freeanima/capabilities-mask";
 import { runLightSleep } from "@freeanima/life-memory/light-sleep/run";
 import { runDeepSleep } from "@freeanima/life-memory/deep-sleep/run";
 import { runSelfAutobiographyWithLog } from "@freeanima/life-memory/autobiography/run";
@@ -201,7 +207,9 @@ export async function serve(
     await validateConfigOnStartup();
 
     startupLog("注册工具…");
-    registerServiceTools();
+    const catalog = createEngineCatalog();
+    const masks = new MaskRegistry();
+    registerServiceTools({ tools: catalog.tools, skills: catalog.skills });
     kernel = createServiceKernel();
 
     mkdirSync(dirname(PATHS.pidFile), { recursive: true });
@@ -221,10 +229,15 @@ export async function serve(
       repos = createPgRepositories({ getDb });
     }
     initLlmRuntime(cfg);
-    engine = createEngine({ repos, llm: getLlmRuntime() });
-    conversation = createConversationService(engine.repos);
+    engine = createEngine({ repos, llm: getLlmRuntime(), catalog });
+    conversation = createConversationService(engine.repos, catalog.tools);
 
-    registerServiceIntegrations({ kernel, conversation });
+    registerServiceIntegrations({
+      kernel,
+      conversation,
+      tools: catalog.tools,
+      skills: catalog.skills,
+    });
     registerFridgeMagnet({ kernel });
 
     startupLog("初始化 AnimaService / EventBus…");
@@ -246,7 +259,7 @@ export async function serve(
     }
     service.setEventBus(kernel.eventBus);
 
-    initMaskSystem();
+    initMaskSystem(masks);
     registerLightSleepWire();
     registerDeepSleepWire();
     registerAutobiographyWire();
@@ -287,12 +300,13 @@ export async function serve(
       startupLog("PostgreSQL 不可用，跳过 Cron 模块");
     }
 
-    mcp = new MCPManager();
+    mcp = new MCPManager(catalog.tools);
 
     initServiceContext({
       service,
       kernel,
       engine,
+      masks,
       conversation,
       mcp,
       acp,

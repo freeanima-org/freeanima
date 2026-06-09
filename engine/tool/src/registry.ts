@@ -40,7 +40,7 @@ export function openaiFunctionSchema(t: ToolDef): {
 
 export type OpenAiToolEntry = ReturnType<typeof openaiFunctionSchema>;
 
-/** Tool 注册表；由 Engine / service 实例化，模块级函数委托 defaultToolRegistry */
+/** Tool 注册表；由组合根创建并注入 Engine.catalog */
 export class ToolRegistry {
   private readonly registry = new Map<string, ToolDef>();
   private readonly order: string[] = [];
@@ -73,8 +73,21 @@ export class ToolRegistry {
     return this.order.map((n) => this.registry.get(n)!).filter(Boolean);
   }
 
+  toolNames(): string[] {
+    return this.list().map((t) => t.name);
+  }
+
   openaiSchemas(): OpenAiToolEntry[] {
     return this.list().map((t) => openaiFunctionSchema(t));
+  }
+
+  openaiSchemasFromNames(names: string[]): OpenAiToolEntry[] {
+    const out: OpenAiToolEntry[] = [];
+    for (const name of names) {
+      const def = this.get(name);
+      if (def) out.push(openaiFunctionSchema(def));
+    }
+    return out;
   }
 
   checkEnvRequirements(): string[] {
@@ -91,48 +104,4 @@ export class ToolRegistry {
   resolveToolArgs(raw: string | undefined | null): ParsedToolResult<ToolArgs> {
     return parseToolArgs(raw);
   }
-}
-
-/** 全局默认注册表（与 legacy registerTool 行为一致） */
-export const defaultToolRegistry = new ToolRegistry();
-
-export function registerTool(def: ToolDef): void {
-  defaultToolRegistry.register(def);
-}
-
-export function unregisterToolsByToolset(toolset: string): string[] {
-  return defaultToolRegistry.unregisterToolsByToolset(toolset);
-}
-
-export function getTool(name: string): ToolDef | undefined {
-  return defaultToolRegistry.get(name);
-}
-
-export function listTools(): ToolDef[] {
-  return defaultToolRegistry.list();
-}
-
-export function openaiSchemas(): OpenAiToolEntry[] {
-  return defaultToolRegistry.openaiSchemas();
-}
-
-export function toolNames(): string[] {
-  return defaultToolRegistry.list().map((t) => t.name);
-}
-
-export function openaiSchemasFromNames(names: string[]): OpenAiToolEntry[] {
-  const out: OpenAiToolEntry[] = [];
-  for (const name of names) {
-    const def = defaultToolRegistry.get(name);
-    if (def) out.push(openaiFunctionSchema(def));
-  }
-  return out;
-}
-
-export function checkEnvRequirements(): string[] {
-  return defaultToolRegistry.checkEnvRequirements();
-}
-
-export function resolveToolArgs(raw: string | undefined | null): ParsedToolResult<ToolArgs> {
-  return defaultToolRegistry.resolveToolArgs(raw);
 }

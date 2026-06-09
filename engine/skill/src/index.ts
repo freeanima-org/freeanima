@@ -1,15 +1,4 @@
-export {
-  SkillRegistry,
-  defaultSkillRegistry,
-  registerSkill,
-  unregisterSkill,
-  unregisterSkillsBySource,
-  getSkill,
-  listSkills,
-  searchSkills,
-  registerSkillsFromDirectory,
-  type SkillDef,
-} from "./registry.ts";
+export { SkillRegistry, registerSkillsFromDirectory, type SkillDef } from "./registry.ts";
 export {
   parseFrontmatter,
   stripFrontmatter,

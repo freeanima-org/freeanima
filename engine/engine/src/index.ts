@@ -1,4 +1,11 @@
-export { Engine, createEngine, type EngineDeps, type EngineLlm } from "./engine.ts";
+export {
+  Engine,
+  createEngine,
+  createEngineCatalog,
+  type EngineCatalog,
+  type EngineDeps,
+  type EngineLlm,
+} from "./engine.ts";
 export * from "@freeanima/engine-tool";
 export * from "@freeanima/engine-provider-llm";
 export * from "@freeanima/engine-prompt";

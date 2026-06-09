@@ -28,7 +28,6 @@ import {
   resolveCommand,
 } from "@freeanima/connectors-commands";
 import { getServiceContext } from "@freeanima/service";
-import { registerTool } from "@freeanima/engine-tool";
 
 async function patchMetaForTest(sessionId: string, patch: Record<string, unknown>): Promise<void> {
   await getTestEngine().repos.session.patchSessionMeta(sessionId, patch as never);
@@ -144,7 +143,7 @@ describePg("slash commands", () => {
       tools: ["stale_tool"],
     });
 
-    registerTool({
+    getTestEngine().tools.register({
       name: "reload_tools_test_only",
       description: "test",
       parameters: { type: "object", properties: {} },

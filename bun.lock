@@ -334,6 +334,7 @@
         "@freeanima/engine-prompt": "workspace:*",
         "@freeanima/engine-provider-llm": "workspace:*",
         "@freeanima/engine-repos": "workspace:*",
+        "@freeanima/engine-skill": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
       },
       "devDependencies": {
@@ -509,7 +510,9 @@
       "name": "@freeanima/service-api",
       "dependencies": {
         "@freeanima/capabilities-acp": "workspace:*",
+        "@freeanima/capabilities-mask": "workspace:*",
         "@freeanima/capabilities-mcp": "workspace:*",
+        "@freeanima/engine": "workspace:*",
         "@freeanima/engine-conversation": "workspace:*",
         "@freeanima/engine-loop": "workspace:*",
         "@freeanima/service-config": "workspace:*",

@@ -3,41 +3,40 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import {
+  SkillRegistry,
   createUserSkill,
   deleteUserSkill,
   loadSkillIntoContext,
-  listSkills,
   listSkillsForTool,
-  registerSkill,
   registerSkillsFromDirectory,
-  searchSkills,
   searchSkillsForTool,
-  unregisterSkill,
   USER_SKILLS_SOURCE,
   registerUserSkillsFromHome,
 } from "./index.ts";
 
 describe("SkillRegistry", () => {
+  const skills = new SkillRegistry();
+
   it("register / list / search", () => {
-    registerSkill({
+    skills.register({
       name: "demo-a",
       description: "Alpha skill",
       directory: "/tmp/skills-a",
       source: "test",
     });
-    registerSkill({
+    skills.register({
       name: "demo-b",
       description: "Beta helper",
       directory: "/tmp/skills-b",
       source: "test",
     });
 
-    expect(listSkills().map((s) => s.name)).toContain("demo-a");
-    expect(searchSkills("beta").map((s) => s.name)).toContain("demo-b");
-    expect(searchSkills("missing")).toHaveLength(0);
+    expect(skills.list().map((s) => s.name)).toContain("demo-a");
+    expect(skills.search("beta").map((s) => s.name)).toContain("demo-b");
+    expect(skills.search("missing")).toHaveLength(0);
 
-    unregisterSkill("demo-a");
-    unregisterSkill("demo-b");
+    skills.unregister("demo-a");
+    skills.unregister("demo-b");
   });
 
   it("registerSkillsFromDirectory 扫描 md 文件", () => {
@@ -46,14 +45,15 @@ describe("SkillRegistry", () => {
       join(dir, "scan-me.md"),
       "---\nname: scan-me\ndescription: From dir\n---\n\n# Body\n",
     );
-    const count = registerSkillsFromDirectory(dir, { source: "pkg:test" });
+    const count = registerSkillsFromDirectory(skills, dir, { source: "pkg:test" });
     expect(count).toBe(1);
-    expect(searchSkills("scan-me")[0]?.description).toBe("From dir");
-    unregisterSkill("scan-me");
+    expect(skills.search("scan-me")[0]?.description).toBe("From dir");
+    skills.unregister("scan-me");
   });
 });
 
 describe("user skills", () => {
+  const skills = new SkillRegistry();
   let home: string;
   const prev = process.env.FREEANIMA_HOME;
 
@@ -68,42 +68,42 @@ describe("user skills", () => {
   });
 
   it("create / list / load / delete", () => {
-    const created = JSON.parse(createUserSkill("demo", "测试技能", "做某事")) as {
+    const created = JSON.parse(createUserSkill(skills, "demo", "测试技能", "做某事")) as {
       ok: boolean;
       name: string;
     };
     expect(created.ok).toBe(true);
     expect(created.name).toBe("demo");
-    registerUserSkillsFromHome();
-    expect(listSkills().some((s) => s.name === "demo" && s.source === USER_SKILLS_SOURCE)).toBe(
+    registerUserSkillsFromHome(skills);
+    expect(skills.list().some((s) => s.name === "demo" && s.source === USER_SKILLS_SOURCE)).toBe(
       true,
     );
 
-    const listed = JSON.parse(listSkillsForTool());
+    const listed = JSON.parse(listSkillsForTool(skills));
     expect(listed.skills.some((s: { name: string }) => s.name === "demo")).toBe(true);
 
-    const searched = JSON.parse(searchSkillsForTool("测试"));
+    const searched = JSON.parse(searchSkillsForTool(skills, "测试"));
     expect(searched.total).toBeGreaterThan(0);
 
-    const loaded = JSON.parse(loadSkillIntoContext("demo"));
+    const loaded = JSON.parse(loadSkillIntoContext(skills, "demo"));
     expect(loaded.content).toContain("做某事");
     expect(loaded.skill).toBe("demo");
 
-    const deleted = JSON.parse(deleteUserSkill("demo")) as { ok: boolean; name: string };
+    const deleted = JSON.parse(deleteUserSkill(skills, "demo")) as { ok: boolean; name: string };
     expect(deleted.ok).toBe(true);
     expect(deleted.name).toBe("demo");
-    expect(listSkills().some((s) => s.name === "demo")).toBe(false);
+    expect(skills.list().some((s) => s.name === "demo")).toBe(false);
   });
 
   it("不可删除内置技能", () => {
-    registerSkill({
+    skills.register({
       name: "builtin-x",
       description: "built-in",
       directory: "/pkg/skills",
       source: "acp",
     });
-    const out = JSON.parse(deleteUserSkill("builtin-x")) as { error: string };
+    const out = JSON.parse(deleteUserSkill(skills, "builtin-x")) as { error: string };
     expect(out.error).toContain("内置技能");
-    unregisterSkill("builtin-x");
+    skills.unregister("builtin-x");
   });
 });
