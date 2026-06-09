@@ -17,6 +17,22 @@ describe("elysia apiApp", () => {
     expect(res.status).not.toBe(404);
   });
 
+  it("GET /api/email/:accountId/messages 路由已注册", async () => {
+    const res = await apiApp.handle(
+      new Request("http://127.0.0.1/api/email/test-account/messages"),
+    );
+    expect(res.status).not.toBe(404);
+  });
+
+  it("GET /api/credentials/detail 路由已注册", async () => {
+    const res = await apiApp.handle(
+      new Request("http://127.0.0.1/api/credentials/detail?path=test/path"),
+    );
+    expect(res.status).toBe(404);
+    const text = await res.text();
+    expect(text.toLowerCase()).toContain("not found");
+  });
+
   it("根路径 / 不在 apiApp 内", async () => {
     const res = await apiApp.handle(new Request("http://127.0.0.1/"));
     expect(res.status).toBe(404);
