@@ -5,6 +5,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "@freeanima/connectors-eventbus-redis": "workspace:*",
     "@freeanima/connectors-eventbus-sqlite": "workspace:*",
     "@freeanima/kernel": "workspace:*",
     "@freeanima/kernel-eventbus": "workspace:*",
