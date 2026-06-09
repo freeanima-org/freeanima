@@ -33,13 +33,16 @@ tests/
 ## 运行
 
 ```bash
-bun run test              # 单元 + 集成（有 Docker 时自动起临时 PG 17 + migrate；无 Docker 时 PG 用例 skip）
-bun run test:changed      # pre-commit：仅变更相关测试
-bun run test:e2e          # E2E（需 Chromium + PG）
-bun run check             # typecheck + lint + format + test:changed
+bun run test:unit          # 单元全量（各包 src + cli/src，无 PG）
+bun run test:integration   # 集成（tests/integration/，需 Docker 或 PG 用例 skip）
+bun run test:e2e           # E2E（需 Chromium + PG）
+bun run test               # 上述三者并行（编排层共享一次 PG）
+bun run test:changed       # pre-commit：仅单元 changed（无 PG、无集成）
+bun run check              # typecheck + lint + format + test:changed
 ```
 
-- 集成测有 Docker 时由 [`scripts/integration-pg-setup.ts`](../scripts/integration-pg-setup.ts) 注入 `ANIMA_TEST_PG_URL`；PG harness 在 [`tests/helpers/pg-test.ts`](helpers/pg-test.ts)。
+- `test` / `test:integration` / `test:e2e` 有 Docker 时由 [`scripts/integration-pg-setup.ts`](../scripts/integration-pg-setup.ts) 注入 `ANIMA_TEST_PG_URL`；并行跑时由 [`scripts/run-all-tests.ts`](../scripts/run-all-tests.ts) 统一起 PG，子进程继承环境。
+- PG harness 在 [`tests/helpers/pg-test.ts`](helpers/pg-test.ts)。
 - EventBus / 记忆 FTS 依赖 **bun:sqlite**（Bun 运行时）。
 - 勿对集成测试使用生产 `DATABASE_URL`。
 - 推 PR 前除 `test:changed` 外应偶尔跑全量 `bun run test`。

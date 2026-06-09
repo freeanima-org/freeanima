@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { setupIntegrationPg } from "./integration-pg-setup.ts";
 
 const repoRoot = join(fileURLToPath(new URL(".", import.meta.url)), "..");
-const label = "test:e2e";
+const label = "test:integration";
 
 let exitCode = 0;
 let teardown: () => Promise<void> = async () => {};
@@ -16,12 +16,12 @@ if (!pgPreset) {
     teardown = await setupIntegrationPg();
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    console.warn(`[${label}] ${msg}\n[${label}] 继续运行（PG 相关用例可能 skip）`);
+    console.warn(`[${label}] ${msg}\n[${label}] 继续运行（PG 集成用例将 skip）`);
   }
 }
 
 try {
-  execSync("bun test tests/e2e --pass-with-no-tests", {
+  execSync("bun test tests/integration --pass-with-no-tests", {
     cwd: repoRoot,
     stdio: "inherit",
     env: process.env,
