@@ -20,6 +20,12 @@ if ! command -v psql >/dev/null 2>&1; then
 fi
 
 PG_VERSION="$(psql --version | awk '{print $3}' | cut -d. -f1)"
+PGVECTOR_PKG="postgresql-${PG_VERSION}-pgvector"
+if apt-cache show "${PGVECTOR_PKG}" >/dev/null 2>&1; then
+  DEBIAN_FRONTEND=noninteractive apt-get install -y "${PGVECTOR_PKG}"
+else
+  echo "警告: 未找到 ${PGVECTOR_PKG}，请手动安装 pgvector 后再执行 ensure-pg-extensions.sql" >&2
+fi
 PG_CONF="/etc/postgresql/${PG_VERSION}/main/postgresql.conf"
 PG_HBA="/etc/postgresql/${PG_VERSION}/main/pg_hba.conf"
 PG_SNIPPET="/etc/postgresql/${PG_VERSION}/main/conf.d/99-anima-production.conf"
@@ -49,6 +55,10 @@ fi
 
 sudo -u postgres psql -d "${DB_NAME}" -v ON_ERROR_STOP=1 -c \
   "GRANT ALL ON SCHEMA public TO ${DB_USER}; ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO ${DB_USER};"
+
+# pg_trgm / vector 须 superuser 安装（应用 migrate 用户无权限）
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+sudo -u postgres psql -d "${DB_NAME}" -v ON_ERROR_STOP=1 -f "${REPO_ROOT}/engine/db/scripts/ensure-pg-extensions.sql"
 
 # 生产向参数（4C / 8G 本机参考值；可按机器调整）
 mkdir -p "$(dirname "${PG_SNIPPET}")"

@@ -1,7 +1,17 @@
 import { sql, type SQL } from "drizzle-orm";
-import { bigint, customType, index, jsonb, pgTable, text, uniqueIndex } from "drizzle-orm/pg-core";
+import {
+  bigint,
+  customType,
+  index,
+  jsonb,
+  pgTable,
+  text,
+  uniqueIndex,
+  vector,
+} from "drizzle-orm/pg-core";
 
 import type { MessagePayload } from "./jsonb/message-payload.ts";
+import { SEMANTIC_EMBEDDING_DIMENSIONS } from "./embedding.ts";
 import { sessions } from "./sessions.ts";
 
 const tsvector = customType<{ data: string }>({
@@ -22,6 +32,7 @@ export const messages = pgTable(
     pos: bigint("pos", { mode: "number" }).notNull(),
     payload: jsonb("payload").$type<MessagePayload>().notNull(),
     ftsSegmented: text("fts_segmented"),
+    contentEmbedding: vector("content_embedding", { dimensions: SEMANTIC_EMBEDDING_DIMENSIONS }),
     /** STORED 生成列；全文检索输入（message_fts_input + simple 配置） */
     contentFts: tsvector("content_fts").generatedAlwaysAs(
       (): SQL => sql`CASE

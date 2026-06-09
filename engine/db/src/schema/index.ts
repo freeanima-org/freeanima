@@ -1,5 +1,6 @@
 import { defineRelations } from "drizzle-orm";
 
+export * from "./embedding.ts";
 export * from "./jsonb/index.ts";
 export * from "./sessions.ts";
 export * from "./messages.ts";

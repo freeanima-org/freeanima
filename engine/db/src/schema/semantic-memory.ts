@@ -1,6 +1,8 @@
 import { sql, type SQL } from "drizzle-orm";
-import { boolean, customType, index, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, customType, index, pgTable, text, timestamp, vector } from "drizzle-orm/pg-core";
 import { z } from "zod";
+
+import { SEMANTIC_EMBEDDING_DIMENSIONS } from "./embedding.ts";
 
 const tsvector = customType<{ data: string }>({
   dataType() {
@@ -38,6 +40,7 @@ export const semanticMemory = pgTable(
     pinned: boolean("pinned").notNull().default(false),
     content: text("content").notNull(),
     ftsSegmented: text("fts_segmented"),
+    contentEmbedding: vector("content_embedding", { dimensions: SEMANTIC_EMBEDDING_DIMENSIONS }),
     contentFts: tsvector("content_fts").generatedAlwaysAs(
       (): SQL =>
         sql`to_tsvector('simple', CASE

@@ -138,3 +138,11 @@ compression:
 #   trgm:
 #     min_similarity: 0.35
 #     fallback_when_hits_lt: 3
+
+# 向量检索（OpenAI 兼容 /v1/embeddings；配置 model 后常开，与 FTS/trgm 三路 RRF）
+# embedding:
+#   enabled: true
+#   base_url: http://127.0.0.1:11434/v1
+#   api_key: ollama
+#   model: bge-m3
+#   dimensions: 1024

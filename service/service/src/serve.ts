@@ -82,6 +82,7 @@ import { getAcpManager } from "@freeanima/capabilities-acp";
 import { registerTaskStore } from "@freeanima/capabilities-tasks/task-port";
 import { DEFAULT_BIND_HOST, parseBindHosts } from "./bind-hosts.ts";
 import { initServiceContext } from "./context.ts";
+import { wireEmbeddingRuntime } from "./runtime/embedding-wire.ts";
 
 let service: AnimaService | null = null;
 let kernel: Kernel | null = null;
@@ -205,6 +206,7 @@ export async function serve(
   try {
     startupLog("校验 config.yaml…");
     await validateConfigOnStartup();
+    wireEmbeddingRuntime();
 
     startupLog("注册工具…");
     const catalog = createEngineCatalog();

@@ -186,7 +186,7 @@ LLM 进行单次 Token 推理时的内部激活状态。随推理结束瞬间消
 | `created`         | 创建时间                                                             |
 | `updated`         | 更新时间（resident 排序用）                                          |
 
-实体关系图谱与多策略召回（pgvector 等）**尚未实现**，分别见 [Issue #39](https://github.com/freeanima-org/freeanima/issues/39)、[#42](https://github.com/freeanima-org/freeanima/issues/42)。
+实体关系图谱**尚未实现**（[Issue #39](https://github.com/freeanima-org/freeanima/issues/39)）。多策略召回已实现 **FTS + pg_trgm + pgvector RRF**（`config.embedding` + Ollama bge-m3 等）；见 [`database.md`](database.md) §Slice B。
 
 ---
 

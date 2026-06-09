@@ -66,18 +66,19 @@ title: Database
 
 #### `messages`
 
-| 列              | 类型                  | 说明                                                                           |
-| --------------- | --------------------- | ------------------------------------------------------------------------------ |
-| `id`            | TEXT PK               | 全局唯一行 id（UUID）                                                          |
-| `session_id`    | TEXT FK → sessions.id |                                                                                |
-| `pos`           | BIGINT                | 会话内单调序号（compression l2/l3 指向此值；领域层 `Message.pos`）             |
-| `payload`       | JSONB                 | `ConversationPayload`（role/content/tool_calls 等，**不含 pos**）              |
-| `fts_segmented` | TEXT（可空）          | jieba 分词串；`cjk.enabled` 时写入；`content_fts` 优先使用非空值               |
-| `content_fts`   | TSVECTOR（生成列）    | STORED；有 `fts_segmented` 时直接索引分词串，否则 `message_fts_input(content)` |
+| 列                  | 类型                  | 说明                                                                           |
+| ------------------- | --------------------- | ------------------------------------------------------------------------------ |
+| `id`                | TEXT PK               | 全局唯一行 id（UUID）                                                          |
+| `session_id`        | TEXT FK → sessions.id |                                                                                |
+| `pos`               | BIGINT                | 会话内单调序号（compression l2/l3 指向此值；领域层 `Message.pos`）             |
+| `payload`           | JSONB                 | `ConversationPayload`（role/content/tool_calls 等，**不含 pos**）              |
+| `fts_segmented`     | TEXT（可空）          | jieba 分词串；`cjk.enabled` 时写入；`content_fts` 优先使用非空值               |
+| `content_fts`       | TSVECTOR（生成列）    | STORED；有 `fts_segmented` 时直接索引分词串，否则 `message_fts_input(content)` |
+| `content_embedding` | VECTOR(1024)          | 对话 content embedding；配置 `embedding` 后异步写入                            |
 
 唯一索引：`(session_id, pos)`。
 
-全文索引：`messages_content_fts_gin`（GIN on `content_fts`）、`idx_messages_content_trgm`（GIN trgm on `payload->>'content'`）。供 `recall` 历史对话检索；过滤规则：排除 tool 消息与空 content。检索为 **FTS + pg_trgm RRF 合并**（常开）。
+全文索引：`messages_content_fts_gin`（GIN on `content_fts`）、`idx_messages_content_trgm`（GIN trgm on `payload->>'content'`）、`idx_messages_embedding_hnsw`（HNSW cosine）。供 `recall` 历史对话检索；过滤规则：排除 tool 消息与空 content。检索为 **FTS + pg_trgm + pgvector 三路 RRF**（常开；向量路需 `embedding` 配置且列非空）。
 
 ### 配置
 
@@ -97,6 +98,14 @@ database:
 
 - **✅ 生产**：`anima service` 启动且 PG 为主存时，[`serve.ts`](../service/service/src/serve.ts) 自动调用 `runMigrations()`。
 - **手动**：`bun run --filter @freeanima/engine-db db:migrate` — 应用 Drizzle migration（含列化 → payload JSONB 的数据回填）。
+- **扩展（一次性，须 superuser）**：`pg_trgm` / `vector` 不能由应用用户 `CREATE EXTENSION`。本机 Debian 用 [`setup-postgres-debian.sh`](../scripts/setup-postgres-debian.sh) 会自动安装；已有库请执行：
+
+```bash
+sudo apt install postgresql-17-pgvector   # 版本号与 psql --version 一致
+sudo -u postgres psql -d anima -f engine/db/scripts/ensure-pg-extensions.sql
+```
+
+然后再 `db:migrate` 或重启 `anima service`。
 
 ### 运维
 
@@ -137,22 +146,23 @@ bun run test              # 单元 + 集成 + E2E 并行
 
 ### 表结构
 
-| 列                | 类型               | 说明                                                                          |
-| ----------------- | ------------------ | ----------------------------------------------------------------------------- |
-| `id`              | TEXT PK            | 保留 `f-{seq}-{hex}` 格式                                                     |
-| `type`            | TEXT               | `world/experience/opinion/observation/preference/procedural/imprint`          |
-| `pinned`          | BOOLEAN            | 常驻记忆优先注入                                                              |
-| `content`         | TEXT               | 记忆正文                                                                      |
-| `fts_segmented`   | TEXT（可空）       | jieba 分词串；`cjk.enabled` 时写入                                            |
-| `content_fts`     | TSVECTOR（生成列） | 有 `fts_segmented` 时直接索引分词串，否则 `message_fts_input(content)` STORED |
-| `source_sessions` | TEXT[]             | 来源 session ID 列表，默认 `'{}'`                                             |
-| `observed_at`     | TIMESTAMPTZ        | 首次观察到该事实的时间；旧行回填 `created`                                    |
-| `occurred_at`     | TEXT               | 事实内容中的模糊发生时间                                                      |
-| `status`          | TEXT               | `active` / `deprecated`，默认 `active`                                        |
-| `created`         | TIMESTAMPTZ        |                                                                               |
-| `updated`         | TIMESTAMPTZ        |                                                                               |
+| 列                  | 类型               | 说明                                                                          |
+| ------------------- | ------------------ | ----------------------------------------------------------------------------- |
+| `id`                | TEXT PK            | 保留 `f-{seq}-{hex}` 格式                                                     |
+| `type`              | TEXT               | `world/experience/opinion/observation/preference/procedural/imprint`          |
+| `pinned`            | BOOLEAN            | 常驻记忆优先注入                                                              |
+| `content`           | TEXT               | 记忆正文                                                                      |
+| `fts_segmented`     | TEXT（可空）       | jieba 分词串；`cjk.enabled` 时写入                                            |
+| `content_fts`       | TSVECTOR（生成列） | 有 `fts_segmented` 时直接索引分词串，否则 `message_fts_input(content)` STORED |
+| `content_embedding` | VECTOR(1024)       | bge-m3 等 embedding；`config.embedding` 配置后异步写入；WebUI 重建可 backfill |
+| `source_sessions`   | TEXT[]             | 来源 session ID 列表，默认 `'{}'`                                             |
+| `observed_at`       | TIMESTAMPTZ        | 首次观察到该事实的时间；旧行回填 `created`                                    |
+| `occurred_at`       | TEXT               | 事实内容中的模糊发生时间                                                      |
+| `status`            | TEXT               | `active` / `deprecated`，默认 `active`                                        |
+| `created`           | TIMESTAMPTZ        |                                                                               |
+| `updated`           | TIMESTAMPTZ        |                                                                               |
 
-索引：`idx_semantic_memory_fts`（GIN）、`idx_semantic_memory_content_trgm`（GIN trgm）、`idx_semantic_memory_type`、`idx_semantic_memory_pinned`、`idx_semantic_memory_source_sessions`（GIN）、`idx_semantic_memory_status`。检索为 **FTS + pg_trgm RRF 合并**（常开）。
+索引：`idx_semantic_memory_fts`（GIN）、`idx_semantic_memory_content_trgm`（GIN trgm）、`idx_semantic_memory_embedding_hnsw`（HNSW cosine）、`idx_semantic_memory_type`、`idx_semantic_memory_pinned`、`idx_semantic_memory_source_sessions`（GIN）、`idx_semantic_memory_status`。检索为 **FTS + pg_trgm + pgvector 三路 RRF**（常开；向量路需 `embedding` 配置且列非空）。
 
 端口方法：`create` / `update`（覆盖式，未传不变；`source_sessions: []` 可清空）/ `deprecate` / `listBySourceSessions` / `search` / `searchFts`；`listResident` 与 recall 默认 `status=active`。
 
