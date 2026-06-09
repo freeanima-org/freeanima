@@ -22,7 +22,7 @@ async function main(): Promise<void> {
   mkdirSync(join(PUBLISH_DIR, "connectors/webui"), { recursive: true });
 
   console.log("bundling cli…");
-  await $`bun build ${join(CLI_DIR, "src/cli.ts")} --outfile ${join(PUBLISH_DIR, "dist/cli.js")} --target bun --minify`;
+  await $`bun build ${join(CLI_DIR, "src/cli.ts")} --outdir ${join(PUBLISH_DIR, "dist")} --target bun --minify`;
 
   console.log("copying migrations…");
   cpSync(join(ROOT, "engine/db/migrations"), join(PUBLISH_DIR, "migrations"), {
