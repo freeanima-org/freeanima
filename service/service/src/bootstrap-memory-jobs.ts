@@ -37,15 +37,12 @@ import {
 import {
   registerAutobiographicalMemoryStore,
   registerLimbicMemoryStore,
+  registerMemoryPipeline,
 } from "@freeanima/life-memory";
 import { registerTaskStore } from "@freeanima/capabilities-tasks/task-port";
 
 import { AnimaService, REPO_ROOT } from "./runtime/index.ts";
-import {
-  registerServiceIntegrations,
-  registerServiceMemoryBus,
-  registerServiceTools,
-} from "./register.ts";
+import { registerServiceIntegrations, registerServiceTools } from "./register.ts";
 import { registerLightSleepWire } from "./runtime/light-sleep-wire.ts";
 import { registerAutobiographyWire } from "./runtime/autobiography-wire.ts";
 import { initMaskSystem } from "./runtime/mask-wire.ts";
@@ -109,8 +106,7 @@ export async function bootstrapMemoryJobs(): Promise<MemoryJobsContext> {
     const service = new AnimaService({ kernel, conversation });
     service.markStarted();
 
-    registerServiceMemoryBus({
-      kernel,
+    registerMemoryPipeline({
       sessionStore: repos.session,
       semanticStore: repos.semanticMemory,
     });

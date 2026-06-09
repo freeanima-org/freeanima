@@ -3,7 +3,7 @@ import type { RedisClient } from "bun";
 import { createLogger } from "@freeanima/kernel-logging";
 import { createNullSink } from "@freeanima/kernel-logging/null";
 import { EventBus, createEventTopic } from "@freeanima/kernel-eventbus";
-import { RedisEventQueue } from "./redis-event-queue.ts";
+import { RedisEventQueue, safeCloseOwnedRedisClient } from "./redis-event-queue.ts";
 import {
   createMockRedisLists,
   seedPendingEvent,
@@ -122,5 +122,16 @@ describe("RedisEventQueue", () => {
     queue.stop();
     expect(process).not.toHaveBeenCalled();
     expect(lists.processing).toHaveLength(0);
+  });
+
+  it("safeCloseOwnedRedisClient 吞掉 Connection closed", () => {
+    const client = {
+      close: () => {
+        throw Object.assign(new Error("Connection closed"), {
+          code: "ERR_REDIS_CONNECTION_CLOSED",
+        });
+      },
+    } as unknown as RedisClient;
+    expect(() => safeCloseOwnedRedisClient(client)).not.toThrow();
   });
 });

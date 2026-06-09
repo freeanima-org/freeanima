@@ -38,9 +38,21 @@ export function getRedis(): RedisClient {
   return client;
 }
 
+function isRedisConnectionClosedError(err: unknown): boolean {
+  return (
+    err instanceof Error &&
+    "code" in err &&
+    (err as { code: unknown }).code === "ERR_REDIS_CONNECTION_CLOSED"
+  );
+}
+
 export async function closeRedis(): Promise<void> {
   if (!client) return;
-  client.close();
+  try {
+    client.close();
+  } catch (err) {
+    if (!isRedisConnectionClosedError(err)) throw err;
+  }
   client = null;
 }
 

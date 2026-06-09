@@ -22,6 +22,24 @@ type EventEnvelope = {
   createdAt: string;
 };
 
+function isRedisConnectionClosedError(err: unknown): boolean {
+  return (
+    err instanceof Error &&
+    "code" in err &&
+    (err as { code: unknown }).code === "ERR_REDIS_CONNECTION_CLOSED"
+  );
+}
+
+/** 关闭自管 Redis 连接；BRPOPLPUSH 阻塞中被 close 打断时 Bun 可能已关闭连接 */
+export function safeCloseOwnedRedisClient(client: RedisClient): void {
+  try {
+    client.close();
+  } catch (err) {
+    if (isRedisConnectionClosedError(err)) return;
+    throw err;
+  }
+}
+
 function parseEnvelope(raw: string): EventEnvelope | null {
   try {
     const data = JSON.parse(raw) as EventEnvelope;
@@ -82,7 +100,7 @@ export class RedisEventQueue implements EventQueueAdapter {
   stop(): void {
     this.running = false;
     if (this.ownsClient) {
-      this.redis.close();
+      safeCloseOwnedRedisClient(this.redis);
     }
   }
 
