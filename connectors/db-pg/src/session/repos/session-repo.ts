@@ -61,7 +61,7 @@ export async function getSessionMetaLite(sessionId: string): Promise<SessionMeta
     .where(eq(sessions.id, sessionId))
     .limit(1);
   if (!rows.length) return null;
-  return rowToSessionMeta({ ...rows[0]!, tools: [] });
+  return rowToSessionMeta(rows[0]!);
 }
 
 export async function getSessionTools(sessionId: string): Promise<SessionMetaMessage["tools"]> {
