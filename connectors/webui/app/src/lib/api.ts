@@ -164,6 +164,14 @@ export async function getToolsStatus() {
   return unwrap(apiClient.api.status.tools.get());
 }
 
+export async function getPromptDebug(sessionId?: string) {
+  return unwrap(
+    apiClient.api.prompt.debug.get({
+      query: sessionId ? { session_id: sessionId } : {},
+    }),
+  );
+}
+
 export async function getCronJobs() {
   return unwrap(apiClient.api.status["cron-jobs"].get());
 }

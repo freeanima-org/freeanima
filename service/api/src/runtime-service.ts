@@ -25,6 +25,7 @@ export type RuntimeService = AnimaService & {
   listLimbicMemories(opts?: any): Promise<any>;
   listAutobiographicalMemories(opts?: any): Promise<any>;
   listSelfBlocks(): Promise<any>;
+  getPromptDebug(sessionId?: string | null): Promise<any>;
 };
 
 export type { AnimaService, ServiceCommandInfo } from "./anima-service.ts";

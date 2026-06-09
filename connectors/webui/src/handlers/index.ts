@@ -27,6 +27,7 @@ export {
   listLimbicMemories,
   listAutobiographicalMemories,
 } from "./memory.ts";
+export { getPromptDebug } from "./prompt.ts";
 export { listSelfBlocks } from "./self.ts";
 export { getMcpStatus, mcpStartAll, mcpStopAll, mcpStartServer, mcpStopServer } from "./mcp.ts";
 export { getAcpStatus, acpStartAll, acpStopAll, acpStartAgent, acpStopAgent } from "./acp.ts";

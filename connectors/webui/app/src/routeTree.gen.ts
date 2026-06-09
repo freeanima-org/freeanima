@@ -23,6 +23,7 @@ import { Route as ParlorChatRouteImport } from './routes/parlor/chat'
 import { Route as ChamberToolsRouteImport } from './routes/chamber/tools'
 import { Route as ChamberSemanticMemoryRouteImport } from './routes/chamber/semantic-memory'
 import { Route as ChamberSelfLayerRouteImport } from './routes/chamber/self-layer'
+import { Route as ChamberSystemPromptRouteImport } from './routes/chamber/system-prompt'
 import { Route as ChamberMemoryRouteImport } from './routes/chamber/memory'
 import { Route as ChamberMcpRouteImport } from './routes/chamber/mcp'
 import { Route as ChamberLimbicMemoryRouteImport } from './routes/chamber/limbic-memory'
@@ -106,6 +107,11 @@ const ChamberSemanticMemoryRoute = ChamberSemanticMemoryRouteImport.update({
 const ChamberSelfLayerRoute = ChamberSelfLayerRouteImport.update({
   id: '/self-layer',
   path: '/self-layer',
+  getParentRoute: () => ChamberRouteRoute,
+} as any)
+const ChamberSystemPromptRoute = ChamberSystemPromptRouteImport.update({
+  id: '/system-prompt',
+  path: '/system-prompt',
   getParentRoute: () => ChamberRouteRoute,
 } as any)
 const ChamberMemoryRoute = ChamberMemoryRouteImport.update({
@@ -200,6 +206,7 @@ export interface FileRoutesByFullPath {
   '/chamber/mcp': typeof ChamberMcpRoute
   '/chamber/memory': typeof ChamberMemoryRoute
   '/chamber/self-layer': typeof ChamberSelfLayerRoute
+  '/chamber/system-prompt': typeof ChamberSystemPromptRoute
   '/chamber/semantic-memory': typeof ChamberSemanticMemoryRoute
   '/chamber/tools': typeof ChamberToolsRoute
   '/parlor/chat': typeof ParlorChatRoute
@@ -229,6 +236,7 @@ export interface FileRoutesByTo {
   '/chamber/mcp': typeof ChamberMcpRoute
   '/chamber/memory': typeof ChamberMemoryRoute
   '/chamber/self-layer': typeof ChamberSelfLayerRoute
+  '/chamber/system-prompt': typeof ChamberSystemPromptRoute
   '/chamber/semantic-memory': typeof ChamberSemanticMemoryRoute
   '/chamber/tools': typeof ChamberToolsRoute
   '/parlor/chat': typeof ParlorChatRoute
@@ -260,6 +268,7 @@ export interface FileRoutesById {
   '/chamber/mcp': typeof ChamberMcpRoute
   '/chamber/memory': typeof ChamberMemoryRoute
   '/chamber/self-layer': typeof ChamberSelfLayerRoute
+  '/chamber/system-prompt': typeof ChamberSystemPromptRoute
   '/chamber/semantic-memory': typeof ChamberSemanticMemoryRoute
   '/chamber/tools': typeof ChamberToolsRoute
   '/parlor/chat': typeof ParlorChatRoute
@@ -292,6 +301,7 @@ export interface FileRouteTypes {
     | '/chamber/mcp'
     | '/chamber/memory'
     | '/chamber/self-layer'
+    | '/chamber/system-prompt'
     | '/chamber/semantic-memory'
     | '/chamber/tools'
     | '/parlor/chat'
@@ -321,6 +331,7 @@ export interface FileRouteTypes {
     | '/chamber/mcp'
     | '/chamber/memory'
     | '/chamber/self-layer'
+    | '/chamber/system-prompt'
     | '/chamber/semantic-memory'
     | '/chamber/tools'
     | '/parlor/chat'
@@ -351,6 +362,7 @@ export interface FileRouteTypes {
     | '/chamber/mcp'
     | '/chamber/memory'
     | '/chamber/self-layer'
+    | '/chamber/system-prompt'
     | '/chamber/semantic-memory'
     | '/chamber/tools'
     | '/parlor/chat'
@@ -469,6 +481,13 @@ declare module '@tanstack/react-router' {
       path: '/self-layer'
       fullPath: '/chamber/self-layer'
       preLoaderRoute: typeof ChamberSelfLayerRouteImport
+      parentRoute: typeof ChamberRouteRoute
+    }
+    '/chamber/system-prompt': {
+      id: '/chamber/system-prompt'
+      path: '/system-prompt'
+      fullPath: '/chamber/system-prompt'
+      preLoaderRoute: typeof ChamberSystemPromptRouteImport
       parentRoute: typeof ChamberRouteRoute
     }
     '/chamber/memory': {
@@ -599,6 +618,7 @@ interface ChamberRouteRouteChildren {
   ChamberMcpRoute: typeof ChamberMcpRoute
   ChamberMemoryRoute: typeof ChamberMemoryRoute
   ChamberSelfLayerRoute: typeof ChamberSelfLayerRoute
+  ChamberSystemPromptRoute: typeof ChamberSystemPromptRoute
   ChamberSemanticMemoryRoute: typeof ChamberSemanticMemoryRoute
   ChamberToolsRoute: typeof ChamberToolsRoute
 }
@@ -617,6 +637,7 @@ const ChamberRouteRouteChildren: ChamberRouteRouteChildren = {
   ChamberMcpRoute: ChamberMcpRoute,
   ChamberMemoryRoute: ChamberMemoryRoute,
   ChamberSelfLayerRoute: ChamberSelfLayerRoute,
+  ChamberSystemPromptRoute: ChamberSystemPromptRoute,
   ChamberSemanticMemoryRoute: ChamberSemanticMemoryRoute,
   ChamberToolsRoute: ChamberToolsRoute,
 }
