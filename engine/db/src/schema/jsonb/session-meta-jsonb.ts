@@ -38,14 +38,37 @@ export type AwaitingClarifyJson = z.infer<typeof awaitingClarifySchema>;
 export const acpSessionsSchema = z.record(z.string(), z.string());
 export type AcpSessionsJson = z.infer<typeof acpSessionsSchema>;
 
+/** 旧版 sessions.tools 曾存 OpenAI tool schema；读取时归一化为工具名 */
+export function normalizeSessionToolNames(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  const names: string[] = [];
+  for (const entry of raw) {
+    if (typeof entry === "string" && entry.length > 0) {
+      names.push(entry);
+      continue;
+    }
+    if (entry && typeof entry === "object") {
+      const fn = (entry as { function?: { name?: unknown } }).function;
+      const name = fn && typeof fn === "object" ? fn.name : undefined;
+      if (typeof name === "string" && name.length > 0) {
+        names.push(name);
+      }
+    }
+  }
+  return names;
+}
+
 /** sessions.tools */
-export const sessionToolsSchema = z.array(z.string());
+export const sessionToolsSchema = z.preprocess(normalizeSessionToolNames, z.array(z.string()));
 export type SessionToolsJson = z.infer<typeof sessionToolsSchema>;
 
 /** sessions.loaded_tools — tools_load 累积的执行白名单 */
-export const sessionLoadedToolsSchema = z.array(z.string());
+export const sessionLoadedToolsSchema = z.preprocess(
+  normalizeSessionToolNames,
+  z.array(z.string()),
+);
 export type SessionLoadedToolsJson = z.infer<typeof sessionLoadedToolsSchema>;
 
 /** sessions.functions */
-export const sessionFunctionsSchema = z.array(z.string());
+export const sessionFunctionsSchema = z.preprocess(normalizeSessionToolNames, z.array(z.string()));
 export type SessionFunctionsJson = z.infer<typeof sessionFunctionsSchema>;

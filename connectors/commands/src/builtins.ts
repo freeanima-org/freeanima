@@ -39,8 +39,11 @@ function cmdHelp(ctx: CommandContext): string {
 }
 
 async function cmdNew(ctx: CommandContext): Promise<CommandResult> {
-  await onSessionCloseBeforeNew(ctx.sessionId);
+  const summary = await onSessionCloseBeforeNew(ctx.sessionId);
   const sid = await conv().newSession(ctx.platform);
+  if (summary) {
+    await conv().appendMessage({ role: "assistant", content: summary }, sid);
+  }
   return {
     text: `🆕 新 session 已创建（${sid.slice(0, 8)}...）`,
     data: { new_session_id: sid },
@@ -247,7 +250,7 @@ export function registerBuiltins(): void {
   });
   registerCommand({
     name: "new",
-    description: "创建新 session（旧 session 蒸馏并复盘）",
+    description: "创建新 session（承接上一 session 摘要）",
     handler: cmdNew,
     scope: "global",
     platforms: ["discord", "weixin"],

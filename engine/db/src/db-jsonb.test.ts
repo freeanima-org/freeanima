@@ -1,5 +1,9 @@
 import { describe, expect, it } from "bun:test";
 import { buildPlatformInfo, splitPlatformInfo } from "./schema/jsonb/platform-info.ts";
+import {
+  normalizeSessionToolNames,
+  sessionToolsSchema,
+} from "./schema/jsonb/session-meta-jsonb.ts";
 
 describe("platform_info schema", () => {
   it("platformInfo 合并 platform 与 platform_extra", () => {
@@ -44,5 +48,27 @@ describe("platform_info schema", () => {
       weixin_peer_id: "nothing",
       is_group: false,
     });
+  });
+});
+
+describe("session tools jsonb", () => {
+  it("normalizeSessionToolNames 保留工具名字符串", () => {
+    expect(normalizeSessionToolNames(["file_read_file", "grep"])).toEqual([
+      "file_read_file",
+      "grep",
+    ]);
+  });
+
+  it("normalizeSessionToolNames 从旧版 OpenAI schema 提取 function.name", () => {
+    const legacy = [
+      { type: "function", function: { name: "file_read_file", description: "read" } },
+      { type: "function", function: { name: "grep" } },
+    ];
+    expect(normalizeSessionToolNames(legacy)).toEqual(["file_read_file", "grep"]);
+    expect(sessionToolsSchema.parse(legacy)).toEqual(["file_read_file", "grep"]);
+  });
+
+  it("normalizeSessionToolNames 忽略无效项", () => {
+    expect(normalizeSessionToolNames([null, "", {}, { function: {} }])).toEqual([]);
   });
 });

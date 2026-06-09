@@ -6,14 +6,16 @@ import {
   type SessionMetaMessage,
   type SessionTodoStore,
 } from "@freeanima/engine-db/domain";
-import { z } from "zod";
 
 import type { SessionSummaryRow } from "@freeanima/engine-repos";
 import {
   acpSessionsSchema,
   awaitingClarifySchema,
   buildPlatformInfo,
+  sessionFunctionsSchema,
   sessionInsertSchema,
+  sessionLoadedToolsSchema,
+  sessionToolsSchema,
   sessions,
 } from "@freeanima/engine-db/schema";
 
@@ -73,7 +75,7 @@ export async function getSessionTools(sessionId: string): Promise<SessionMetaMes
     .where(eq(sessions.id, sessionId))
     .limit(1);
   if (!rows.length) return [];
-  return z.array(z.string()).parse(rows[0]!.tools ?? []);
+  return sessionToolsSchema.parse(rows[0]!.tools ?? []);
 }
 
 export async function upsertSessionMeta(
@@ -149,15 +151,15 @@ export async function patchSessionMeta(
     hasColumnPatch = true;
   }
   if (patch.tools !== undefined) {
-    set.tools = z.array(z.string()).parse(patch.tools);
+    set.tools = sessionToolsSchema.parse(patch.tools);
     hasColumnPatch = true;
   }
   if (patch.loaded_tools !== undefined) {
-    set.loadedTools = z.array(z.string()).parse(patch.loaded_tools);
+    set.loadedTools = sessionLoadedToolsSchema.parse(patch.loaded_tools);
     hasColumnPatch = true;
   }
   if (patch.functions !== undefined) {
-    set.functions = z.array(z.string()).parse(patch.functions);
+    set.functions = sessionFunctionsSchema.parse(patch.functions);
     hasColumnPatch = true;
   }
   if (patch.todos !== undefined) {
