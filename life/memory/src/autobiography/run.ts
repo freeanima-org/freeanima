@@ -13,7 +13,7 @@ import { buildAutobiographyUserMessages } from "./build-messages.ts";
 
 const AUTOBIOGRAPHY_TOOL_NAMES = [
   "memory_autobiographical_create",
-  "deprecate_autobiographical_memory",
+  "memory_autobiographical_deprecate",
 ] as const;
 
 const LOOKBACK_DAYS = 7;

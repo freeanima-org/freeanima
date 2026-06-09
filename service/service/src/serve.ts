@@ -61,7 +61,6 @@ import { initMaskSystem } from "./runtime/mask-wire.ts";
 import { MaskRegistry } from "@freeanima/capabilities-mask";
 import { runLightSleep } from "@freeanima/life-memory/light-sleep/run";
 import { runDeepSleep } from "@freeanima/life-memory/deep-sleep/run";
-import { runSelfAutobiographyWithLog } from "@freeanima/life-memory/autobiography/run";
 import {
   invalidateSelfLayerPromptCache,
   loadSelfLayerPrompt,
@@ -276,20 +275,6 @@ export async function serve(
         const selfContent = await loadSelfLayerPrompt();
         const result = await runLightSleep({
           sessionStore: engine!.repos.session,
-          selfContent,
-        });
-        return JSON.stringify(result);
-      });
-
-      registerCronBuiltinHandler("builtin-deep-sleep", async () => {
-        const selfContent = await loadSelfLayerPrompt();
-        const result = await runDeepSleep({ selfContent });
-        return JSON.stringify(result);
-      });
-
-      registerCronBuiltinHandler("builtin-self-autobiography", async () => {
-        const selfContent = await loadSelfLayerPrompt();
-        const result = await runSelfAutobiographyWithLog({
           semanticStore: engine!.repos.semanticMemory,
           autoStore: engine!.repos.autobiographicalMemory,
           selfStore: engine!.repos.selfLayer,
@@ -297,6 +282,12 @@ export async function serve(
         });
         invalidateSelfLayerPromptCache();
         await loadSelfLayerPrompt();
+        return JSON.stringify(result);
+      });
+
+      registerCronBuiltinHandler("builtin-deep-sleep", async () => {
+        const selfContent = await loadSelfLayerPrompt();
+        const result = await runDeepSleep({ selfContent });
         return JSON.stringify(result);
       });
 

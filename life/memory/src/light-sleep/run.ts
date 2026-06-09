@@ -1,11 +1,20 @@
 import { logComponent } from "@freeanima/service-logging";
-import type { SessionStorePort } from "@freeanima/engine-repos";
+import type {
+  AutobiographicalMemoryStorePort,
+  SelfLayerStorePort,
+  SemanticMemoryStorePort,
+  SessionStorePort,
+} from "@freeanima/engine-repos";
 
+import { buildLightSleepAutobiographyUserMessages } from "../autobiography/build-messages.ts";
+import { runAutobiographyEngine } from "../autobiography-port.ts";
+import { refreshAutobiographySummaryBlock } from "../autobiography/run.ts";
+import { getAutobiographicalMemoryStore } from "../autobiographical-port.ts";
 import { composeSystemPrompt, decomposeSystemPromptParts } from "../system-prompt.ts";
 import { getMemorySessionStore } from "../session-port.ts";
 import {
   buildLightSleepUserMessages,
-  buildLimbicPhaseUserMessages,
+  buildLimbicUserMessages,
   collectSessionBlocks,
   cstDayRange,
   formatDialogueMessage,
@@ -19,13 +28,19 @@ export type LightSleepResult = {
   sessions: number;
   truncated_sessions: number;
   tool_calls: number;
-  limbic_tool_calls?: number;
+  limbic_tool_calls: number;
+  autobiography_tool_calls: number;
+  narratives_created: number;
+  summary_refreshed: boolean;
   summary: string;
   skipped?: string;
 };
 
 export type RunLightSleepOpts = {
   sessionStore?: SessionStorePort;
+  semanticStore?: SemanticMemoryStorePort;
+  autoStore?: AutobiographicalMemoryStorePort;
+  selfStore?: SelfLayerStorePort;
   selfContent: string;
   day?: string;
 };
@@ -38,8 +53,20 @@ const LIGHT_SLEEP_TOOL_NAMES = [
 
 const LIMBIC_TOOL_NAMES = ["memory_limbic_create"] as const;
 
+const AUTOBIOGRAPHY_TOOL_NAMES = [
+  "memory_autobiographical_create",
+  "memory_autobiographical_deprecate",
+] as const;
+
+function appendSummaryPart(base: string, label: string, part: string): string {
+  const trimmed = part.trim();
+  if (!trimmed) return base;
+  return `${base} | ${label}：${trimmed}`.slice(0, 2000);
+}
+
 export async function runLightSleep(opts: RunLightSleepOpts): Promise<LightSleepResult> {
   const sessionStore = opts.sessionStore ?? getMemorySessionStore();
+  const autoStore = opts.autoStore ?? getAutobiographicalMemoryStore();
   const range = cstDayRange(opts.day);
   const sessionIds = await sessionStore.listSessionIdsUpdatedBetween(range.fromIso, range.toIso);
 
@@ -50,6 +77,10 @@ export async function runLightSleep(opts: RunLightSleepOpts): Promise<LightSleep
       sessions: 0,
       truncated_sessions: 0,
       tool_calls: 0,
+      limbic_tool_calls: 0,
+      autobiography_tool_calls: 0,
+      narratives_created: 0,
+      summary_refreshed: false,
       summary: "本日无 session 活动，跳过浅睡",
       skipped: "no_sessions",
     };
@@ -58,59 +89,92 @@ export async function runLightSleep(opts: RunLightSleepOpts): Promise<LightSleep
       sessionIds: [],
       truncatedSessions: 0,
       toolCalls: 0,
+      limbicToolCalls: 0,
+      autobiographyToolCalls: 0,
+      narrativesCreated: 0,
+      summaryRefreshed: false,
     });
     return result;
   }
 
   const blocks = await collectSessionBlocks(sessionStore, sessionIds);
   const dialogue = formatDialogueMessage(blocks);
-  const userMessages = await buildLightSleepUserMessages(sessionStore, sessionIds);
   const parts = await decomposeSystemPromptParts(opts.selfContent, null);
   const systemPrompt = composeSystemPrompt(parts);
 
-  logComponent("memory").info("浅睡 Phase 1 开始", {
+  logComponent("memory").info("浅睡 Stage 1（语义）开始", {
     day: range.day,
     sessions: sessionIds.length,
     truncated_sessions: dialogue.truncatedSessions,
   });
 
-  const phase1 = await runLightSleepEngine({
+  const semanticMessages = await buildLightSleepUserMessages(sessionStore, sessionIds);
+  const stageSemantic = await runLightSleepEngine({
     systemPrompt,
-    userMessages,
+    userMessages: semanticMessages,
     toolNames: [...LIGHT_SLEEP_TOOL_NAMES],
   });
 
-  let limbicToolCalls = 0;
-  let summary = phase1.summary;
+  let summary = stageSemantic.summary;
 
-  if (phase1.tool_calls > 0) {
-    logComponent("memory").info("浅睡 Phase 2 开始", {
+  logComponent("memory").info("浅睡 Stage 2（感性）开始", {
+    day: range.day,
+    semantic_memory_ids: stageSemantic.semantic_memory_ids,
+  });
+
+  const limbicMessages = await buildLimbicUserMessages(sessionStore, sessionIds);
+  const stageLimbic = await runLightSleepEngine({
+    systemPrompt,
+    userMessages: limbicMessages,
+    toolNames: [...LIMBIC_TOOL_NAMES],
+  });
+  summary = appendSummaryPart(summary, "情感", stageLimbic.summary);
+
+  logComponent("memory").info("浅睡 Stage 3（自传体）开始", {
+    day: range.day,
+    limbic_memory_ids: stageLimbic.limbic_memory_ids,
+  });
+
+  const existingAuto = await autoStore.listActive({ limit: 200 });
+  const autobiographyMessages = await buildLightSleepAutobiographyUserMessages(
+    sessionStore,
+    sessionIds,
+    stageSemantic.semantic_memory_ids,
+    stageLimbic.limbic_memory_ids,
+  );
+  const stageAutobiography = await runAutobiographyEngine({
+    systemPrompt,
+    userMessages: autobiographyMessages,
+    toolNames: [...AUTOBIOGRAPHY_TOOL_NAMES],
+  });
+  summary = appendSummaryPart(summary, "自传", stageAutobiography.summary);
+
+  const afterAuto = await autoStore.listActive({ limit: 200 });
+  const narrativesCreated = Math.max(0, afterAuto.length - existingAuto.length);
+
+  let summaryRefreshed = false;
+  if (opts.selfStore) {
+    summaryRefreshed = await refreshAutobiographySummaryBlock(autoStore, opts.selfStore);
+    logComponent("memory").info("浅睡 Stage 3b（自传概括）完成", {
       day: range.day,
-      semantic_memory_ids: phase1.semantic_memory_ids,
+      summary_refreshed: summaryRefreshed,
     });
-
-    const limbicMessages = buildLimbicPhaseUserMessages(sessionIds, phase1.semantic_memory_ids);
-    const phase2 = await runLightSleepEngine({
-      systemPrompt,
-      userMessages: limbicMessages,
-      toolNames: [...LIMBIC_TOOL_NAMES],
-    });
-    limbicToolCalls = phase2.tool_calls;
-    if (phase2.summary.trim()) {
-      summary = `${summary} | 情感：${phase2.summary}`.slice(0, 2000);
-    }
   } else {
-    logComponent("memory").info("浅睡 Phase 2 跳过", {
-      day: range.day,
-      reason: "phase1_no_tool_calls",
-    });
+    logComponent("memory").warn("浅睡 Stage 3b 跳过：未注入 selfStore", { day: range.day });
   }
+
+  const totalToolCalls =
+    stageSemantic.tool_calls + stageLimbic.tool_calls + stageAutobiography.tool_calls;
 
   recordLightSleepRun({
     day: range.day,
     sessionIds,
     truncatedSessions: dialogue.truncatedSessions,
-    toolCalls: phase1.tool_calls + limbicToolCalls,
+    toolCalls: stageSemantic.tool_calls,
+    limbicToolCalls: stageLimbic.tool_calls,
+    autobiographyToolCalls: stageAutobiography.tool_calls,
+    narrativesCreated,
+    summaryRefreshed,
   });
 
   const result: LightSleepResult = {
@@ -118,11 +182,14 @@ export async function runLightSleep(opts: RunLightSleepOpts): Promise<LightSleep
     day: range.day,
     sessions: sessionIds.length,
     truncated_sessions: dialogue.truncatedSessions,
-    tool_calls: phase1.tool_calls,
-    limbic_tool_calls: limbicToolCalls,
+    tool_calls: stageSemantic.tool_calls,
+    limbic_tool_calls: stageLimbic.tool_calls,
+    autobiography_tool_calls: stageAutobiography.tool_calls,
+    narratives_created: narrativesCreated,
+    summary_refreshed: summaryRefreshed,
     summary,
   };
 
-  logComponent("memory").info("浅睡完成", result);
+  logComponent("memory").info("浅睡完成", { ...result, total_tool_calls: totalToolCalls });
   return result;
 }

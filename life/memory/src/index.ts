@@ -96,7 +96,9 @@ export {
 export {
   cstDayRange,
   buildLightSleepUserMessages,
+  buildLimbicUserMessages,
   LIGHT_SLEEP_INSTRUCTION_MESSAGE,
+  LIMBIC_INSTRUCTION,
   type LightSleepDayRange,
 } from "./light-sleep/build-messages.ts";
 export {

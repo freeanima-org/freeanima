@@ -121,7 +121,7 @@ Agent 的行为输出
 | 对话存档 | `sessions` + `messages` | 情景记忆（Episodic）                                  |
 | 语义记忆 | `semantic_memory`       | 语义记忆（Semantic）；含 procedural / imprint 等 type |
 | 情景检索 | `messages.content_fts`  | 历史对话全文索引                                      |
-| 感性记忆 | `limbic_memory`         | 情感锚点（浅睡 Phase 2 写入）                         |
+| 感性记忆 | `limbic_memory`         | 情感锚点（浅睡 Stage 2 写入）                         |
 
 管道：浅睡 / 深睡 cron + `memory_recall` PG FTS 双源检索。细节见 [`docs/memory.md`](docs/memory.md)。
 

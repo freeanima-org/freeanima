@@ -4,7 +4,7 @@ title: Sleep
 
 # 睡眠机制 (Sleep)
 
-> 浅睡（Light Sleep）为语义记忆**唯一**增量提取通道；深睡（Deep Sleep）为记忆库存量优化；自传 cron 为叙事加工与自我层概括刷新。
+> 浅睡（Light Sleep）为增量提取通道（语义 + 感性 + 自传体）；深睡（Deep Sleep）为记忆库存量优化。
 
 ## 概述
 
@@ -14,42 +14,53 @@ title: Sleep
 
 1. **内部机制，不留痕迹** — 睡眠在后台运行，不写入 session，不影响对话流
 2. **不照搬人类的节奏** — 触发基于系统需求（cron），非实时
-3. **三级分层** — 浅睡（增量写入）、深睡（存量优化）、自传 cron（叙事 + 自我概括）各司其职
+3. **两级分层** — 浅睡（增量写入：语义 / 感性 / 自传体）、深睡（语义存量优化）各司其职
 4. **身份上下文** — 所有记忆处理必须携带**自我层六块** + 常驻记忆（见 [`self-layer.md`](self-layer.md)）
 
 ## 当前状态
 
-| 机制      | 状态      | 说明                                     |
-| --------- | --------- | ---------------------------------------- |
-| 浅睡 cron | ✅ 已实现 | 每天 02:00，`builtin-light-sleep`        |
-| 深睡 cron | ✅ 已实现 | 每天 03:00，`builtin-deep-sleep`         |
-| 自传 cron | ✅ 已实现 | 每天 04:00，`builtin-self-autobiography` |
+| 机制      | 状态      | 说明                              |
+| --------- | --------- | --------------------------------- |
+| 浅睡 cron | ✅ 已实现 | 每天 02:00，`builtin-light-sleep` |
+| 深睡 cron | ✅ 已实现 | 每天 03:00，`builtin-deep-sleep`  |
 
 ## 浅睡 (Light Sleep)
 
-| 属性     | 值                                                                                   |
-| -------- | ------------------------------------------------------------------------------------ |
-| 触发     | 仅 cron，每天 02:00（`0 2 * * *`），不支持手动触发                                   |
-| 处理范围 | CST 前一个自然日内有活动的 session（`sessions.updated_at`）                          |
-| 输入     | 当日全部对话（user+assistant，去 tool），按 session 分段                             |
-| 工具     | 仅 `memory_semantic_create` / `memory_semantic_update` / `memory_semantic_deprecate` |
-| 去重     | **局部**：仅与同 `source_sessions` 的已有记忆比较；跨脉络留给深睡                    |
+| 属性     | 值                                                                          |
+| -------- | --------------------------------------------------------------------------- |
+| 触发     | 仅 cron，每天 02:00（`0 2 * * *`），不支持手动触发                          |
+| 处理范围 | CST 前一个自然日内有活动的 session（`sessions.updated_at`）                 |
+| 输入     | 当日全部对话（user+assistant，去 tool），按 session 分段                    |
+| 编排     | 三阶段顺序执行（同级、各自独立 LLM 调用；前一阶段零工具调用不跳过后续阶段） |
 
-### 消息结构
+### 三阶段
+
+| 阶段   | 目标存储                            | 工具白名单                                        | 输入要点                                                   |
+| ------ | ----------------------------------- | ------------------------------------------------- | ---------------------------------------------------------- |
+| 1 语义 | `semantic_memory`                   | `memory_semantic_create` / `update` / `deprecate` | 对话 + 已有 semantic（`listBySourceSessions`）             |
+| 2 感性 | `limbic_memory`                     | `memory_limbic_create`                            | 对话 + 已有 limbic（`listBySession`）                      |
+| 3 自传 | `autobiographical_memory`           | `memory_autobiographical_create` / `deprecate`    | 对话 + 当日 semantic + 当日 limbic + 已有 autobiographical |
+| 3b     | `self_blocks.autobiography_summary` | （程序压缩，无 LLM）                              | active 自传叙事 → 概括块刷新                               |
+
+**克制原则**：各阶段 LLM 判断「无值得记录」→ 不调用工具、直接回复跳过；程序不因前一阶段零工具调用而跳过后续阶段。
+
+**去重（语义）**：**局部**——仅与同 `source_sessions` 的已有记忆比较；跨脉络留给深睡。
+
+实现：[`life/memory/src/light-sleep/run.ts`](../life/memory/src/light-sleep/run.ts)；装配：[`serve.ts`](../service/service/src/serve.ts)。
+
+### Stage 1 消息结构
 
 System prompt：自我层六块 + 常驻记忆（pinned facts，top 20）。
-
-三条 user 消息，由程序构建：
 
 | #   | 内容                                                                         |
 | --- | ---------------------------------------------------------------------------- |
 | 1   | 当日全部对话：user+assistant，按 session ID 分段，带时间戳与上下文标注       |
 | 2   | 已有记忆：`listBySourceSessions` 预筛（与当日 session 有交集的 active 记忆） |
-| 3   | 提取指令 + 三工具用法说明（精简 skill）                                      |
+| 3   | 语义提取指令 + 三工具用法说明                                                |
 
-LLM **不**携带 `search_semantic_memory`（消息 2 已由程序提供）。
+LLM **不**携带 `memory_semantic_search`（消息 2 已由程序提供）。
 
-### update_semantic_memory 语义（覆盖式）
+### memory_semantic_update 语义（覆盖式）
 
 - **仅修改传入的字段**，未传字段保持不变
 - 要清空 `source_sessions` → 显式传 `source_sessions: []`
@@ -60,16 +71,16 @@ LLM **不**携带 `search_semantic_memory`（消息 2 已由程序提供）。
 ```
 1. 计算 CST 前一日时间窗
 2. listSessionIdsUpdatedBetween → 涉及 session 列表
-3. 加载各 session 可召回消息 → 构建 user 消息 1
-4. listBySourceSessions(sessionIds) → 构建 user 消息 2
-5. 注入提取指令 → user 消息 3
-6. engine.run（PROFILE_REFLECT，三工具白名单）
+3. Stage 1：语义提取 → semantic_memory
+4. Stage 2：感性提取 → limbic_memory
+5. Stage 3：自传叙事提取 → autobiographical_memory
+6. Stage 3b：压缩刷新 → self_blocks.autobiography_summary
 7. 写入 light_sleep_state.json
 ```
 
 ### 上下文过大
 
-单次输入超过约 120k 字符时，按 session 更新时间倒序截断，并在消息 1 末尾标注 `[已截断 N 个 session]`。
+单次输入超过约 120k 字符时，按 session 更新时间倒序截断，并在对话段末尾标注 `[已截断 N 个 session]`（各阶段复用同一截断逻辑）。
 
 ## 深睡 (Deep Sleep)
 
@@ -152,52 +163,12 @@ f-030 — 已修改：content 更新为 "..."
 
 记录内容：当日日期、轮次、active 记忆数、前序变更数、tool_calls 数、summary、变更日志快照。
 
-## 自传 cron (Self Autobiography)
-
-| 属性     | 值                                                                                         |
-| -------- | ------------------------------------------------------------------------------------------ |
-| 触发     | 仅 cron，每天 04:00（`0 4 * * *`），在深睡之后                                             |
-| 内置 ID  | `builtin-self-autobiography`                                                               |
-| 输入     | 近 7 日 `semantic_memory`（`type=experience` / `imprint`）+ 已有 `autobiographical_memory` |
-| **不**从 | 原始对话（那是浅睡职责）                                                                   |
-
-### 克制原则
-
-- LLM 判断「无值得记录的叙事」→ **不调用工具**，直接回复跳过
-- 不强行产出空条目；`narratives_created=0` 为正常成功
-
-### 两阶段
-
-**阶段 A — 叙事提取（conditional create）**
-
-- 工具：`create_autobiographical_memory`、`deprecate_autobiographical_memory`（**无** content update）
-- 输出：0~N 条新叙事写入 `autobiographical_memory`（只追加）
-
-**阶段 B — 概括刷新（always）**
-
-- 读取 active `autobiographical_memory`，按 `significance` + 时间压缩
-- 粒度随距离递减：近期较细，远期仅 milestone / turning_point
-- 写入 `self_blocks.autobiography_summary`（`updated_by=autobiography_cron`）
-
-### 数据流
-
-```
-semantic_memory (experience/imprint)
-  │ 浅睡已写入；深睡 03:00 已整理
-  ▼
-builtin-self-autobiography（04:00）
-  ├─ 阶段 A → autobiographical_memory（详细叙事，记忆层）
-  └─ 阶段 B → self_blocks.autobiography_summary（自我层概括，常驻 prompt）
-```
-
-实现：[`life/memory/src/autobiography/run.ts`](../life/memory/src/autobiography/run.ts)；装配：[`serve.ts`](../service/service/src/serve.ts)。
-
 ## 触发机制
 
 ```cron
-0 2 * * *  light-sleep           # builtin-light-sleep
+0 2 * * *  light-sleep           # builtin-light-sleep（语义 + 感性 + 自传体）
 0 3 * * *  deep-sleep            # builtin-deep-sleep
-0 4 * * *  self-autobiography   # builtin-self-autobiography
+30 5 * * *  memory-reference-sync  # builtin-memory-reference-sync
 ```
 
 宕机后下次对应时刻补跑即可；非实时系统。
@@ -206,15 +177,14 @@ builtin-self-autobiography（04:00）
 
 ```
 PG messages（对话存档）
-  │ 浅睡 cron（02:00，批量）
-  ▼
-semantic_memory
-  │ 深睡 cron（03:00，合并/过期/拆分）
+  │ 浅睡 cron（02:00，三阶段）
+  ├─► semantic_memory
+  ├─► limbic_memory
+  └─► autobiographical_memory ──压缩──► self_blocks.autobiography_summary
+  │
+  │ 深睡 cron（03:00，语义维护）
   ▼
 semantic_memory（整理后）
-  │ 自传 cron（04:00，experience/imprint → 叙事）
-  ▼
-autobiographical_memory ──压缩──► self_blocks.autobiography_summary
   │ memory_recall（对话中实时检索）
   ▼
 当前上下文中的 Agent 身份与召回片段

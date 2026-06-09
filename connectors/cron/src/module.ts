@@ -81,10 +81,20 @@ export function rowToPatch(job: CronJob): CronJobUpdateInput {
 }
 
 export async function ensureBuiltinCronJobs(): Promise<void> {
+  await _removeDeprecatedBuiltinSelfAutobiographyCronJob();
   await _ensureBuiltinLightSleepCronJob();
   await _ensureBuiltinDeepSleepCronJob();
-  await _ensureBuiltinSelfAutobiographyCronJob();
   await _ensureBuiltinMemoryReferenceSyncCronJob();
+}
+
+const DEPRECATED_SELF_AUTOBIOGRAPHY_ID = "builtin-self-autobiography";
+
+async function _removeDeprecatedBuiltinSelfAutobiographyCronJob(): Promise<void> {
+  const cronStore = getCronStore();
+  const existing = await cronStore.get(DEPRECATED_SELF_AUTOBIOGRAPHY_ID);
+  if (!existing) return;
+  handles?.unregister(DEPRECATED_SELF_AUTOBIOGRAPHY_ID);
+  await cronStore.delete(DEPRECATED_SELF_AUTOBIOGRAPHY_ID);
 }
 
 async function _ensureBuiltinLightSleepCronJob(): Promise<void> {
@@ -96,7 +106,7 @@ async function _ensureBuiltinLightSleepCronJob(): Promise<void> {
     prompt: "",
     no_agent: true,
     deliver: "local",
-    timeout_sec: 1800,
+    timeout_sec: 3600,
   });
   const job = await getJob(id);
   if (!job || !handles) return;
@@ -113,22 +123,6 @@ async function _ensureBuiltinDeepSleepCronJob(): Promise<void> {
     no_agent: true,
     deliver: "local",
     timeout_sec: 3600,
-  });
-  const job = await getJob(id);
-  if (!job || !handles) return;
-  if (scheduleChanged) handles.reregister(job);
-}
-
-async function _ensureBuiltinSelfAutobiographyCronJob(): Promise<void> {
-  const id = "builtin-self-autobiography";
-  const scheduleChanged = await getCronStore().upsertBuiltin({
-    id,
-    name: "self-autobiography",
-    schedule: "0 4 * * *",
-    prompt: "",
-    no_agent: true,
-    deliver: "local",
-    timeout_sec: 1800,
   });
   const job = await getJob(id);
   if (!job || !handles) return;

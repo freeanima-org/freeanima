@@ -43,6 +43,18 @@ function extractSemanticMemoryId(toolName: string, content: string): string | nu
   }
 }
 
+function extractLimbicMemoryId(toolName: string, content: string): string | null {
+  if (toolName !== "memory_limbic_create") return null;
+  try {
+    const parsed = JSON.parse(content) as Record<string, unknown>;
+    if (parsed.error) return null;
+    const id = String(parsed.id ?? "").trim();
+    return id || null;
+  } catch {
+    return null;
+  }
+}
+
 async function runLightSleepTurn(input: LightSleepEngineInput): Promise<LightSleepEngineResult> {
   const { conversation, engine: eng } = getServiceContext();
   const cfg = loadConfig();
@@ -56,6 +68,7 @@ async function runLightSleepTurn(input: LightSleepEngineInput): Promise<LightSle
   let toolCalls = 0;
   const parts: string[] = [];
   const semanticMemoryIds: string[] = [];
+  const limbicMemoryIds: string[] = [];
 
   await runWithToolContext(
     "light-sleep",
@@ -78,8 +91,14 @@ async function runLightSleepTurn(input: LightSleepEngineInput): Promise<LightSle
             toolCalls += 1;
             break;
           case "tool_result": {
-            const id = extractSemanticMemoryId(ev.data.name, ev.data.content);
-            if (id && !semanticMemoryIds.includes(id)) semanticMemoryIds.push(id);
+            const semanticId = extractSemanticMemoryId(ev.data.name, ev.data.content);
+            if (semanticId && !semanticMemoryIds.includes(semanticId)) {
+              semanticMemoryIds.push(semanticId);
+            }
+            const limbicId = extractLimbicMemoryId(ev.data.name, ev.data.content);
+            if (limbicId && !limbicMemoryIds.includes(limbicId)) {
+              limbicMemoryIds.push(limbicId);
+            }
             break;
           }
           case "error":
@@ -97,6 +116,7 @@ async function runLightSleepTurn(input: LightSleepEngineInput): Promise<LightSle
     summary: summary.slice(0, 2000),
     tool_calls: toolCalls,
     semantic_memory_ids: semanticMemoryIds,
+    limbic_memory_ids: limbicMemoryIds,
   };
 }
 
