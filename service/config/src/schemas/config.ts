@@ -86,6 +86,15 @@ export const databaseConfigSchema = z.object({
   url: z.string().min(1),
 });
 
+export const cjkConfigSchema = z
+  .object({
+    enabled: z.boolean().optional(),
+    dict_path: z.string().optional(),
+  })
+  .optional();
+
+export type CjkConfigInput = z.infer<typeof cjkConfigSchema>;
+
 export type DatabaseConfigInput = z.infer<typeof databaseConfigSchema>;
 
 const redisConfigSchema = z
@@ -163,6 +172,7 @@ export const animaConfigSchema = z
     fallback_providers: z.array(fallbackProviderSchema).optional(),
     platforms: z.record(z.string(), z.unknown()).optional(),
     memory: memorySchema.optional(),
+    cjk: cjkConfigSchema,
     database: databaseConfigSchema.optional(),
     eventbus: eventbusConfigSchema,
     redis: redisConfigSchema,

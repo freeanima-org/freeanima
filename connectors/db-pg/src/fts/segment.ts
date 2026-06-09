@@ -1,0 +1,62 @@
+import { readFileSync } from "node:fs";
+
+import { isCjkJiebaEnabled, cjkJiebaDictPath } from "@freeanima/service-config";
+import type { Jieba } from "@node-rs/jieba";
+
+const CJK_RUN_RE = /[\u4e00-\u9fff\u3400-\u4dbf]+/g;
+
+let jiebaInstance: Jieba | null = null;
+let jiebaLoadFailed = false;
+
+async function getJieba(): Promise<Jieba | null> {
+  if (!isCjkJiebaEnabled()) return null;
+  if (jiebaLoadFailed) return null;
+  if (jiebaInstance) return jiebaInstance;
+  try {
+    const { Jieba } = await import("@node-rs/jieba");
+    const { dict } = await import("@node-rs/jieba/dict");
+    const jieba = Jieba.withDict(dict);
+    const dictPath = cjkJiebaDictPath();
+    try {
+      jieba.loadDict(readFileSync(dictPath));
+    } catch {
+      /* 用户词典可选 */
+    }
+    jiebaInstance = jieba;
+    return jieba;
+  } catch {
+    jiebaLoadFailed = true;
+    return null;
+  }
+}
+
+/** 重置 jieba 单例（测试 teardown） */
+export function resetJiebaForTest(): void {
+  jiebaInstance = null;
+  jiebaLoadFailed = false;
+}
+
+/** CJK 段 jieba 分词 + 非 CJK 原样，输出 FTS 输入串 */
+export async function segmentForFts(text: string): Promise<string> {
+  const trimmed = text.trim();
+  if (!trimmed) return "";
+
+  const jieba = await getJieba();
+  if (!jieba) return trimmed;
+
+  const parts: string[] = [];
+  let last = 0;
+  for (const match of trimmed.matchAll(CJK_RUN_RE)) {
+    const index = match.index ?? 0;
+    if (index > last) {
+      parts.push(trimmed.slice(last, index));
+    }
+    parts.push(jieba.cut(match[0], false).join(" "));
+    last = index + match[0].length;
+  }
+  if (last < trimmed.length) {
+    parts.push(trimmed.slice(last));
+  }
+
+  return parts.join(" ").replace(/\s+/g, " ").trim();
+}

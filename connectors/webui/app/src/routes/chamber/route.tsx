@@ -6,6 +6,7 @@ const navItems = [
   { to: "/chamber/sessions", label: "💬 会话列表" },
   { to: "/chamber/memory", label: "🧠 记忆台" },
   { to: "/chamber/semantic-memory", label: "📝 语义记忆" },
+  { to: "/chamber/fts", label: "🔍 全文检索" },
   { to: "/chamber/limbic-memory", label: "💗 情感记忆" },
   { to: "/chamber/autobiographical-memory", label: "📖 自传记忆" },
   { to: "/chamber/self-layer", label: "🪞 自我层" },

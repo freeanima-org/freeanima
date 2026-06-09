@@ -126,3 +126,9 @@ compression:
 #   # port: 6379
 #   # password:
 #   # db: 0
+
+# CJK 全文检索（jieba 分词；默认关闭）
+# 开启后写入与重建会使用 jieba；切换配置后请在 WebUI「全文检索」页重建索引
+# cjk:
+#   enabled: false
+#   # dict_path: ~/.anima/cjk/user.dict

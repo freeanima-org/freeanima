@@ -24,6 +24,8 @@ export type RuntimeService = AnimaService & {
   listSemanticMemories(opts?: any): Promise<any>;
   listLimbicMemories(opts?: any): Promise<any>;
   listAutobiographicalMemories(opts?: any): Promise<any>;
+  getFtsStatus(): any;
+  rebuildFtsIndex(): Promise<any>;
   listSelfBlocks(): Promise<any>;
   getPromptDebug(sessionId?: string | null): Promise<any>;
 };

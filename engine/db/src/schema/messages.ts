@@ -21,12 +21,17 @@ export const messages = pgTable(
     /** 会话内单调序号（compression l2/l3 指向此值；领域层 Message.pos） */
     pos: bigint("pos", { mode: "number" }).notNull(),
     payload: jsonb("payload").$type<MessagePayload>().notNull(),
+    ftsSegmented: text("fts_segmented"),
     /** STORED 生成列；全文检索输入（message_fts_input + simple 配置） */
     contentFts: tsvector("content_fts").generatedAlwaysAs(
       (): SQL => sql`CASE
         WHEN (${messages.payload})->>'role' IN ('user', 'assistant')
           AND length(btrim((${messages.payload})->>'content')) > 0
-        THEN to_tsvector('simple', message_fts_input((${messages.payload})->>'content'))
+        THEN to_tsvector('simple', CASE
+          WHEN nullif(btrim(${messages.ftsSegmented}), '') IS NOT NULL
+          THEN regexp_replace(btrim(${messages.ftsSegmented}), '\\s+', ' ', 'g')
+          ELSE message_fts_input((${messages.payload})->>'content')
+        END)
         ELSE NULL
       END`,
     ),

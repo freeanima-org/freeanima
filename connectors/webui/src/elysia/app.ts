@@ -5,6 +5,7 @@ import { assertNotShuttingDown } from "./context.ts";
 import { acpRoutes } from "./routes/acp.ts";
 import { credentialsRoutes } from "./routes/credentials.ts";
 import { emailRoutes } from "./routes/email.ts";
+import { ftsRoutes } from "./routes/fts.ts";
 import { healthRoutes } from "./routes/health.ts";
 import { mcpRoutes } from "./routes/mcp.ts";
 import { memoryRoutes } from "./routes/memory.ts";
@@ -23,6 +24,7 @@ export const apiApp = new Elysia({ prefix: "/api" })
   .use(messagesRoutes)
   .use(statusRoutes)
   .use(memoryRoutes)
+  .use(ftsRoutes)
   .use(promptRoutes)
   .use(selfRoutes)
   .use(mcpRoutes)

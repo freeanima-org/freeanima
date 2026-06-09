@@ -47,4 +47,5 @@ export {
   markEmailRead,
 } from "./email.ts";
 export { listCredentialMetas, getCredentialDetailHandler } from "./credentials.ts";
+export { getFtsStatus, rebuildFtsIndex } from "./fts.ts";
 export { ApiHandlerError } from "./errors.ts";

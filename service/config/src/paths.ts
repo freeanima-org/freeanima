@@ -48,6 +48,9 @@ export const PATHS = {
   get weixinContextTokensFile() {
     return homePath("weixin", "context-tokens.json");
   },
+  get cjkUserDict() {
+    return homePath("cjk", "user.dict");
+  },
   get passStore() {
     return join(homedir(), ".password-store");
   },

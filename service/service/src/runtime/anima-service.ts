@@ -19,6 +19,7 @@ import * as status from "./service-status.ts";
 import * as sessions from "./service-sessions.ts";
 import * as memory from "./service-memory.ts";
 import * as selfLayer from "./service-self.ts";
+import * as fts from "./service-fts.ts";
 import * as promptDebug from "./service-prompt-debug.ts";
 import * as messaging from "./service-messaging.ts";
 import { PARLOR_PLATFORM } from "./platforms.ts";
@@ -245,6 +246,14 @@ export class AnimaService implements StreamTurnHost {
 
   listAutobiographicalMemories(args?: Parameters<typeof memory.listAutobiographicalMemories>[0]) {
     return memory.listAutobiographicalMemories(args);
+  }
+
+  getFtsStatus(): fts.CjkConfigSnapshot {
+    return fts.getFtsStatus();
+  }
+
+  rebuildFtsIndex(): Promise<fts.FtsRebuildResult> {
+    return fts.rebuildFtsIndex();
   }
 
   listSelfBlocks(): Promise<{ blocks: selfLayer.SelfBlockDisplay[] }> {
