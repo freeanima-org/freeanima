@@ -31,6 +31,12 @@ export class EngineRunControl {
     return this.inFlightCount;
   }
 
+  abortAll(): void {
+    for (const controller of this.sessionAbortControllers.values()) {
+      controller.abort();
+    }
+  }
+
   async waitForDrain(): Promise<void> {
     if (this.inFlightCount <= 0) {
       logComponent("shutdown").debug("无进行中请求，跳过 drain");

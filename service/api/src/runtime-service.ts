@@ -3,6 +3,7 @@ import type { AnimaService } from "./anima-service.ts";
 /** WebUI / 状态 API 所需的运行时服务窄接口（Gateway 接口的超集） */
 export type RuntimeService = AnimaService & {
   isShuttingDown(): boolean;
+  startShutdown(): void;
   markStarted(): void;
   health(): any;
   buildStatus(host: string, port: number): Promise<any>;

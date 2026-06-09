@@ -78,6 +78,7 @@ export class AnimaService implements StreamTurnHost {
       hookRegistry: this.deps.kernel.hookRegistry,
       ...createTurnMessageCallbacks(sessionId),
       signal,
+      shouldStop: () => this.runControl.isShuttingDown(),
     };
   }
 
@@ -112,6 +113,10 @@ export class AnimaService implements StreamTurnHost {
 
   getInFlightCount(): number {
     return this.runControl.getInFlightCount();
+  }
+
+  abortAll(): void {
+    this.runControl.abortAll();
   }
 
   setEventBus(bus: EventBus): void {

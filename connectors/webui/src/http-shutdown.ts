@@ -22,6 +22,10 @@ export async function waitForDrainWithTimeout(anima: AnimaService, maxMs: number
       }, maxMs);
     }),
   ]);
+  if (anima.getInFlightCount() > 0) {
+    anima.abortAll();
+    await anima.waitForDrain();
+  }
 }
 
 export async function closeHttpServers(

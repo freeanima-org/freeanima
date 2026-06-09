@@ -32,6 +32,7 @@ export type StreamTurnHost = {
   endEngineRun(sessionId: string, controller: AbortController): void;
   acquireInFlight(): void;
   releaseInFlight(): void;
+  isShuttingDown?(): boolean;
   engineStreamOpts(
     sessionId: string,
     signal: AbortSignal,
@@ -217,6 +218,7 @@ export async function* runExclusiveStreamTurn(
     let retried = false;
 
     while (true) {
+      if (host.isShuttingDown?.()) break;
       hadError = false;
       sawDone = false;
       let pendingDone: StreamEvent | null = null;
@@ -244,6 +246,7 @@ export async function* runExclusiveStreamTurn(
           }
         }
         if (retried && !sawDone && !hadError) {
+          if (host.isShuttingDown?.()) break;
           continue;
         }
         if (!hadError) {
