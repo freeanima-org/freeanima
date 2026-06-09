@@ -59,6 +59,22 @@ describePg("semantic_memory PG", () => {
     expect(await store.get(pinnedId)).toBeNull();
   });
 
+  it("FTS CJK 邻近匹配：偏好不误命中很好/偏离", async () => {
+    const store = getTestEngine().repos.semanticMemory;
+
+    const targetId = await store.create({
+      content: "逸灵风偏好简洁直接的沟通方式",
+      type: "preference",
+    });
+    await store.create({ content: "今天天气很好，心情不错", type: "world" });
+    await store.create({ content: "讨论偏离了原定主题", type: "world" });
+
+    const hits = await store.searchFts("偏好", { limit: 10 });
+    const hitIds = hits.map((h) => h.id);
+    expect(hitIds).toContain(targetId);
+    expect(hits.every((h) => h.content.includes("偏好"))).toBe(true);
+  });
+
   it("search offset and countSearch align", async () => {
     const store = getTestEngine().repos.semanticMemory;
     await store.create({ content: "offset 探针 one", type: "world" });

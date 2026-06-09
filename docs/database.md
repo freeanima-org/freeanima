@@ -66,13 +66,13 @@ title: Database
 
 #### `messages`
 
-| 列            | 类型                  | 说明                                                                      |
-| ------------- | --------------------- | ------------------------------------------------------------------------- |
-| `id`          | TEXT PK               | 全局唯一行 id（UUID）                                                     |
-| `session_id`  | TEXT FK → sessions.id |                                                                           |
-| `pos`         | BIGINT                | 会话内单调序号（compression l2/l3 指向此值；领域层 `Message.pos`）        |
-| `payload`     | JSONB                 | `ConversationPayload`（role/content/tool_calls 等，**不含 pos**）         |
-| `content_fts` | TSVECTOR（生成列）    | STORED；`to_tsvector('simple', message_fts_input(content))`；CJK 按字切分 |
+| 列            | 类型                  | 说明                                                                                                        |
+| ------------- | --------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `id`          | TEXT PK               | 全局唯一行 id（UUID）                                                                                       |
+| `session_id`  | TEXT FK → sessions.id |                                                                                                             |
+| `pos`         | BIGINT                | 会话内单调序号（compression l2/l3 指向此值；领域层 `Message.pos`）                                          |
+| `payload`     | JSONB                 | `ConversationPayload`（role/content/tool_calls 等，**不含 pos**）                                           |
+| `content_fts` | TSVECTOR（生成列）    | STORED；`to_tsvector('simple', message_fts_input(content))`；CJK 索引按字切分；查询默认多词 AND、CJK 邻近链 |
 
 唯一索引：`(session_id, pos)`。
 
@@ -136,19 +136,19 @@ bun run test              # 单元 + 集成 + E2E 并行
 
 ### 表结构
 
-| 列                | 类型               | 说明                                                                 |
-| ----------------- | ------------------ | -------------------------------------------------------------------- |
-| `id`              | TEXT PK            | 保留 `f-{seq}-{hex}` 格式                                            |
-| `type`            | TEXT               | `world/experience/opinion/observation/preference/procedural/imprint` |
-| `pinned`          | BOOLEAN            | 常驻记忆优先注入                                                     |
-| `content`         | TEXT               | 记忆正文                                                             |
-| `content_fts`     | TSVECTOR（生成列） | `to_tsvector('simple', message_fts_input(content))` STORED           |
-| `source_sessions` | TEXT[]             | 来源 session ID 列表，默认 `'{}'`                                    |
-| `observed_at`     | TIMESTAMPTZ        | 首次观察到该事实的时间；旧行回填 `created`                           |
-| `occurred_at`     | TEXT               | 事实内容中的模糊发生时间                                             |
-| `status`          | TEXT               | `active` / `deprecated`，默认 `active`                               |
-| `created`         | TIMESTAMPTZ        |                                                                      |
-| `updated`         | TIMESTAMPTZ        |                                                                      |
+| 列                | 类型               | 说明                                                                             |
+| ----------------- | ------------------ | -------------------------------------------------------------------------------- |
+| `id`              | TEXT PK            | 保留 `f-{seq}-{hex}` 格式                                                        |
+| `type`            | TEXT               | `world/experience/opinion/observation/preference/procedural/imprint`             |
+| `pinned`          | BOOLEAN            | 常驻记忆优先注入                                                                 |
+| `content`         | TEXT               | 记忆正文                                                                         |
+| `content_fts`     | TSVECTOR（生成列） | `to_tsvector('simple', message_fts_input(content))` STORED；检索见 messages 同上 |
+| `source_sessions` | TEXT[]             | 来源 session ID 列表，默认 `'{}'`                                                |
+| `observed_at`     | TIMESTAMPTZ        | 首次观察到该事实的时间；旧行回填 `created`                                       |
+| `occurred_at`     | TEXT               | 事实内容中的模糊发生时间                                                         |
+| `status`          | TEXT               | `active` / `deprecated`，默认 `active`                                           |
+| `created`         | TIMESTAMPTZ        |                                                                                  |
+| `updated`         | TIMESTAMPTZ        |                                                                                  |
 
 索引：`idx_semantic_memory_fts`（GIN）、`idx_semantic_memory_type`、`idx_semantic_memory_pinned`、`idx_semantic_memory_source_sessions`（GIN）、`idx_semantic_memory_status`。
 
