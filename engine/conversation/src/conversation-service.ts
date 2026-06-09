@@ -1,4 +1,5 @@
 import type { PgRepositories } from "@freeanima/engine-repos";
+import type { ToolRegistry } from "@freeanima/engine-tool";
 import type { SessionMessage } from "./message.ts";
 import {
   advanceCompressionMeta,
@@ -47,9 +48,18 @@ function bindRepos<A extends unknown[], T>(
   return (...args: A) => fn(repos, ...args);
 }
 
-/** 绑定 PgRepositories 的对话 API；由 service 组合根实例化 */
+function bindReposAndTools<A extends unknown[], T>(
+  repos: PgRepositories,
+  tools: ToolRegistry,
+  fn: (repos: PgRepositories, tools: ToolRegistry, ...args: A) => T,
+): (...args: A) => T {
+  return (...args: A) => fn(repos, tools, ...args);
+}
+
+/** 绑定 PgRepositories 与 ToolRegistry；由 service 组合根实例化 */
 export class ConversationService {
   readonly repos: PgRepositories;
+  readonly tools: ToolRegistry;
 
   readonly loadSessionTools;
   readonly loadSessionMeta;
@@ -89,9 +99,10 @@ export class ConversationService {
   readonly retryTurn;
   readonly cleanupDebugSessions;
 
-  constructor(repos: PgRepositories) {
+  constructor(repos: PgRepositories, tools: ToolRegistry) {
     this.repos = repos;
-    this.loadSessionTools = bindRepos(repos, loadSessionTools);
+    this.tools = tools;
+    this.loadSessionTools = bindReposAndTools(repos, tools, loadSessionTools);
     this.loadSessionMeta = bindRepos(repos, loadSessionMeta);
     this.countSessionsByPlatform = bindRepos(repos, countSessionsByPlatform);
     this.listSessionSummaries = bindRepos(repos, listSessionSummaries);
@@ -104,8 +115,8 @@ export class ConversationService {
     this.appendMessage = (msg: SessionMessage, session: string) =>
       appendMessage(repos, msg, session);
     this.appendSessionMeta = bindRepos(repos, appendSessionMeta);
-    this.initSession = bindRepos(repos, initSession);
-    this.newSession = bindRepos(repos, newSession);
+    this.initSession = bindReposAndTools(repos, tools, initSession);
+    this.newSession = bindReposAndTools(repos, tools, newSession);
     this.findSessionByOrigin = bindRepos(repos, findSessionByOrigin);
     this.updateSessionMetaField = (
       session: string,
@@ -113,28 +124,31 @@ export class ConversationService {
     ) => updateSessionMetaField(repos, session, patch);
     this.patchSessionOrigin = bindRepos(repos, patchSessionOrigin);
     this.rebuildSessionSystemPrompt = bindRepos(repos, rebuildSessionSystemPrompt);
-    this.reloadSessionTools = bindRepos(repos, reloadSessionTools);
+    this.reloadSessionTools = bindReposAndTools(repos, tools, reloadSessionTools);
     this.refreshSystemPromptOnResume = bindRepos(repos, refreshSystemPromptOnResume);
     this.assertSessionPlatform = bindRepos(repos, assertSessionPlatform);
     this.appendUserTurn = bindRepos(repos, appendUserTurn);
-    this.advanceCompressionMeta = bindRepos(repos, advanceCompressionMeta);
-    this.recompressSession = bindRepos(repos, recompressSession);
+    this.advanceCompressionMeta = bindReposAndTools(repos, tools, advanceCompressionMeta);
+    this.recompressSession = bindReposAndTools(repos, tools, recompressSession);
     this.repairAndPersistToolLoop = bindRepos(repos, repairAndPersistToolLoop);
     this.maybeApplyEmergencyCompression = bindRepos(repos, maybeApplyEmergencyCompression);
-    this.buildRuntimeMessages = bindRepos(repos, buildRuntimeMessages);
-    this.beginTurn = bindRepos(repos, beginTurn);
-    this.finishTurn = bindRepos(repos, finishTurn);
-    this.updateSessionMeta = bindRepos(repos, updateSessionMeta);
+    this.buildRuntimeMessages = bindReposAndTools(repos, tools, buildRuntimeMessages);
+    this.beginTurn = bindReposAndTools(repos, tools, beginTurn);
+    this.finishTurn = bindReposAndTools(repos, tools, finishTurn);
+    this.updateSessionMeta = bindReposAndTools(repos, tools, updateSessionMeta);
     this.setSessionTitle = bindRepos(repos, setSessionTitle);
     this.getSessionTitle = bindRepos(repos, getSessionTitle);
     this.getSessionCwd = bindRepos(repos, getSessionCwd);
     this.setSessionCwd = bindRepos(repos, setSessionCwd);
     this.rollbackToLastUser = bindRepos(repos, rollbackToLastUser);
-    this.retryTurn = bindRepos(repos, retryTurn);
+    this.retryTurn = bindReposAndTools(repos, tools, retryTurn);
     this.cleanupDebugSessions = bindRepos(repos, cleanupDebugSessions);
   }
 }
 
-export function createConversationService(repos: PgRepositories): ConversationService {
-  return new ConversationService(repos);
+export function createConversationService(
+  repos: PgRepositories,
+  tools: ToolRegistry,
+): ConversationService {
+  return new ConversationService(repos, tools);
 }

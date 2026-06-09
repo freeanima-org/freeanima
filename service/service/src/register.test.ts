@@ -1,16 +1,20 @@
-import { listTools } from "@freeanima/engine-tool";
-import { describe, it, expect, beforeEach } from "bun:test";
+import { SkillRegistry } from "@freeanima/engine-skill";
+import { ToolRegistry } from "@freeanima/engine-tool";
+import { describe, it, expect, afterEach } from "bun:test";
 
-import { registerServiceTools } from "./register.ts";
+import { registerServiceTools, resetRegisterServiceToolsForTest } from "./register.ts";
+
+const tools = new ToolRegistry();
+const skills = new SkillRegistry();
 
 describe("registerServiceTools", () => {
-  beforeEach(() => {
-    // 模块级幂等标志无法在单测间重置；仅验证重复调用不抛错
+  afterEach(() => {
+    resetRegisterServiceToolsForTest();
   });
 
   it("registers core tool names", () => {
-    registerServiceTools();
-    const names = new Set(listTools().map((t) => t.name));
+    registerServiceTools({ tools, skills });
+    const names = new Set(tools.list().map((t) => t.name));
     expect(names.has("read_file")).toBe(true);
     expect(names.has("todo")).toBe(true);
     expect(names.has("cronjob")).toBe(true);
@@ -21,9 +25,9 @@ describe("registerServiceTools", () => {
   });
 
   it("is idempotent", () => {
-    const before = listTools().length;
-    registerServiceTools();
-    registerServiceTools();
-    expect(listTools().length).toBe(before);
+    const before = tools.list().length;
+    registerServiceTools({ tools, skills });
+    registerServiceTools({ tools, skills });
+    expect(tools.list().length).toBe(before);
   });
 });

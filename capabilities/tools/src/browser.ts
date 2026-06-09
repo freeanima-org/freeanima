@@ -1,5 +1,6 @@
 import { getToolSessionId } from "@freeanima/engine-loop";
-import { registerTool, toolError } from "@freeanima/engine-tool";
+import type { ToolRegistry } from "@freeanima/engine-tool";
+import { toolError } from "@freeanima/engine-tool";
 
 import {
   camofoxBack,
@@ -19,8 +20,8 @@ function sessionKey(): string {
   return getToolSessionId() ?? "default";
 }
 
-export function registerBrowserTools(): void {
-  registerTool({
+export function registerBrowserTools(tools: ToolRegistry): void {
+  tools.register({
     name: "browser_navigate",
     description:
       "在浏览器中打开 URL。需先调用本工具再使用其他 browser_* 工具。纯文本/API 页面优先 web_extract 或 terminal curl；需要交互（点击、填表、动态内容）时用浏览器。返回紧凑 snapshot 与元素 ref，通常无需再单独 browser_snapshot。",
@@ -44,7 +45,7 @@ export function registerBrowserTools(): void {
     },
   });
 
-  registerTool({
+  tools.register({
     name: "browser_snapshot",
     description:
       "获取当前页面的 accessibility tree 文本快照，含可交互元素 ref（如 @e1）。full=false 为紧凑视图；full=true 为完整内容。超过约 8000 字符会截断。browser_navigate 已含紧凑 snapshot，交互导致页面变化后可调用本工具刷新。",
@@ -63,7 +64,7 @@ export function registerBrowserTools(): void {
     handler: (args) => camofoxSnapshot(sessionKey(), Boolean(args.full)),
   });
 
-  registerTool({
+  tools.register({
     name: "browser_click",
     description: "点击 snapshot 中 ref 标识的元素（如 @e5）。需先 browser_navigate。",
     parameters: {
@@ -81,7 +82,7 @@ export function registerBrowserTools(): void {
     },
   });
 
-  registerTool({
+  tools.register({
     name: "browser_type",
     description: "向 ref 对应输入框输入文本（先清空再输入）。需先 browser_navigate。",
     parameters: {
@@ -100,7 +101,7 @@ export function registerBrowserTools(): void {
     },
   });
 
-  registerTool({
+  tools.register({
     name: "browser_scroll",
     description: "滚动页面（up/down）。需先 browser_navigate。",
     parameters: {
@@ -114,7 +115,7 @@ export function registerBrowserTools(): void {
     handler: (args) => camofoxScroll(sessionKey(), String(args.direction ?? "")),
   });
 
-  registerTool({
+  tools.register({
     name: "browser_back",
     description: "浏览器后退。需先 browser_navigate。",
     parameters: { type: "object", properties: {}, required: [] },
@@ -122,7 +123,7 @@ export function registerBrowserTools(): void {
     handler: () => camofoxBack(sessionKey()),
   });
 
-  registerTool({
+  tools.register({
     name: "browser_press",
     description: "按下键盘键（Enter、Tab、Escape 等）。需先 browser_navigate。",
     parameters: {
@@ -140,7 +141,7 @@ export function registerBrowserTools(): void {
     },
   });
 
-  registerTool({
+  tools.register({
     name: "browser_console",
     description:
       "读取浏览器 console 与 JS 错误。Camofox 后端仅返回空结果与说明；可用 browser_snapshot 检查页面。",
@@ -155,7 +156,7 @@ export function registerBrowserTools(): void {
     handler: (args) => camofoxConsole(sessionKey(), Boolean(args.clear)),
   });
 
-  registerTool({
+  tools.register({
     name: "browser_get_images",
     description: "列出当前页面图片 URL 与 alt 文本。需先 browser_navigate。",
     parameters: { type: "object", properties: {}, required: [] },
@@ -163,7 +164,7 @@ export function registerBrowserTools(): void {
     handler: () => camofoxGetImages(sessionKey()),
   });
 
-  registerTool({
+  tools.register({
     name: "browser_vision",
     description:
       "截取当前页面 PNG 并保存到 ~/.anima/browser_screenshots/。annotate=true 时附加 accessibility tree 摘要。视觉 LLM 分析暂未接入，返回 screenshot_path。",

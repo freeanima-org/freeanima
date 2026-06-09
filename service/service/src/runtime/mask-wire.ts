@@ -1,20 +1,13 @@
 import { existsSync, readFileSync } from "node:fs";
-import { parseYaml } from "@freeanima/service-config";
-import { z } from "zod";
-import {
-  defaultMaskRegistry,
-  getMask,
-  registerMask,
-  resolveMaskByName,
-  resolveMaskPresets,
-  type ResolvedMask,
-  type SessionCapabilityMask,
-} from "@freeanima/capabilities-mask";
-import { defaultToolSetRegistry } from "@freeanima/engine-tool";
+import { MaskRegistry, resolveMaskByName, resolveMaskPresets } from "@freeanima/capabilities-mask";
+import type { ResolvedMask, SessionCapabilityMask } from "@freeanima/capabilities-mask";
+import type { ToolSetRegistry } from "@freeanima/engine-tool";
 import { isSessionMeta, type SessionMetaMessage } from "@freeanima/engine-db/domain";
 import { registerSessionToolMaskFilter } from "@freeanima/engine-conversation";
-import { PATHS } from "@freeanima/service-config";
+import { parseYaml, PATHS } from "@freeanima/service-config";
 import { logComponent } from "@freeanima/service-logging";
+import { z } from "zod";
+import { getServiceContext } from "../context.ts";
 
 const credentialPermissionSchema = z.object({
   name: z.string(),
@@ -51,11 +44,11 @@ const SLEEP_MASK = {
   credentials: [] as [],
 };
 
-function registerBuiltinMasks(): void {
-  registerMask("sleep", SLEEP_MASK);
+function registerBuiltinMasks(masks: MaskRegistry): void {
+  masks.register("sleep", SLEEP_MASK);
 }
 
-function loadMasksFromYaml(): void {
+function loadMasksFromYaml(masks: MaskRegistry): void {
   const path = PATHS.masksYaml;
   if (!existsSync(path)) return;
   let raw: unknown;
@@ -71,16 +64,21 @@ function loadMasksFromYaml(): void {
     return;
   }
   for (const [name, mask] of Object.entries(parsed.data.masks)) {
-    if (getMask(name)) {
+    if (masks.get(name)) {
       logComponent("mask").warn(`跳过 masks.yaml 中的 '${name}'：内置面具已存在`);
       continue;
     }
     try {
-      registerMask(name, mask);
+      masks.register(name, mask);
     } catch (e) {
       logComponent("mask").warn(`注册面具 '${name}' 失败: ${String(e)}`);
     }
   }
+}
+
+function catalogFromContext(): { masks: MaskRegistry; toolSets: ToolSetRegistry } {
+  const { masks, engine } = getServiceContext();
+  return { masks, toolSets: engine.catalog.toolSets };
 }
 
 export function resolveSessionCapabilityMask(
@@ -88,7 +86,8 @@ export function resolveSessionCapabilityMask(
 ): ResolvedMask | null {
   const presets = capabilityMask?.presets ?? [];
   if (!presets.length) return null;
-  return resolveMaskPresets(presets, defaultMaskRegistry, defaultToolSetRegistry);
+  const { masks, toolSets } = catalogFromContext();
+  return resolveMaskPresets(presets, masks, toolSets);
 }
 
 export function resolveSessionMaskFromMeta(
@@ -99,7 +98,8 @@ export function resolveSessionMaskFromMeta(
 }
 
 export function resolveSleepMask(): ResolvedMask {
-  return resolveMaskByName("sleep", defaultMaskRegistry, defaultToolSetRegistry);
+  const { masks, toolSets } = catalogFromContext();
+  return resolveMaskByName("sleep", masks, toolSets);
 }
 
 export function filterToolNamesByMask(
@@ -118,9 +118,9 @@ export function runtimeToolMaskFromResolved(
 }
 
 /** 启动时注册内置 / YAML 面具，并注入 session 工具过滤 */
-export function initMaskSystem(): void {
-  registerBuiltinMasks();
-  loadMasksFromYaml();
+export function initMaskSystem(masks: MaskRegistry): void {
+  registerBuiltinMasks(masks);
+  loadMasksFromYaml(masks);
 
   registerSessionToolMaskFilter((toolNames, meta) => {
     const resolved = resolveSessionMaskFromMeta(meta);
@@ -129,4 +129,4 @@ export function initMaskSystem(): void {
   });
 }
 
-export { checkTool, getMask, listMasks, defaultMaskRegistry } from "@freeanima/capabilities-mask";
+export { checkTool, checkCredential } from "@freeanima/capabilities-mask";

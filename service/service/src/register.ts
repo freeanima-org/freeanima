@@ -19,37 +19,49 @@ import type { Kernel } from "@freeanima/kernel";
 import { beforeLlmCall } from "@freeanima/kernel-hooks";
 import type { ConversationService } from "@freeanima/engine-conversation";
 import type { SemanticMemoryStorePort, SessionStorePort } from "@freeanima/engine-repos";
+import type { SkillRegistry } from "@freeanima/engine-skill";
+import type { ToolRegistry } from "@freeanima/engine-tool";
 import { registerMemoryPipeline, registerMemoryTools } from "@freeanima/life-memory";
-let toolsRegistered = false;
+let registeredCatalog: { tools: ToolRegistry; skills: SkillRegistry } | null = null;
 
-/** 注册全部本地/MCP 无关工具（幂等） */
-export function registerServiceTools(): void {
-  if (toolsRegistered) return;
-  registerCoreTools();
-  registerSupplementalTools();
-  registerMemoryTools();
-  registerSelfTools();
-  registerEstateTools();
-  registerClarifyTool();
-  registerCronjobTool();
-  registerWriteFridgeMagnetTool();
-  registerTaskTools();
-  toolsRegistered = true;
+/** 注册全部本地/MCP 无关工具（幂等：同一 catalog 实例只注册一次） */
+export function registerServiceTools(opts: { tools: ToolRegistry; skills: SkillRegistry }): void {
+  if (registeredCatalog?.tools === opts.tools && registeredCatalog?.skills === opts.skills) {
+    return;
+  }
+  registerCoreTools(opts.tools);
+  registerSupplementalTools(opts.tools, opts.skills);
+  registerMemoryTools(opts.tools);
+  registerSelfTools(opts.tools);
+  registerEstateTools(opts.tools);
+  registerClarifyTool(opts.tools);
+  registerCronjobTool(opts.tools);
+  registerWriteFridgeMagnetTool(opts.tools);
+  registerTaskTools(opts.tools);
+  registeredCatalog = opts;
+}
+
+/** 单测 reset */
+export function resetRegisterServiceToolsForTest(): void {
+  registeredCatalog = null;
 }
 
 /** @deprecated 使用 registerServiceTools */
-export function registerAllTools(): void {
-  registerServiceTools();
+export function registerAllTools(opts: { tools: ToolRegistry; skills: SkillRegistry }): void {
+  registerServiceTools(opts);
 }
 
 /** 注册 clarify hook 与 ACP 工具（需 kernel + conversation） */
 export function registerServiceIntegrations(opts: {
   kernel: Kernel;
   conversation: ConversationService;
+  tools: ToolRegistry;
+  skills: SkillRegistry;
   onSessionUpdated?: ((sid: string) => void) | null;
 }): void {
   registerClarifyHooks({ kernel: opts.kernel, conversation: opts.conversation });
   const acp = getAcpManager();
+  acp.wireRegistries({ tools: opts.tools, skills: opts.skills });
   acp.wireConversation(opts.conversation);
   acp.wireProgressDelivery(
     createAcpProgressDelivery({

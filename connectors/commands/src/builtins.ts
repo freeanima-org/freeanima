@@ -5,17 +5,10 @@ import {
   registerCommand,
 } from "./registry.ts";
 import { clearAwaitingClarify, readAwaitingClarify } from "@freeanima/capabilities-clarify";
-import {
-  defaultMaskRegistry,
-  getMask,
-  listMasks,
-  resolveMaskPresets,
-} from "@freeanima/capabilities-mask";
-import { defaultToolSetRegistry } from "@freeanima/engine-tool";
+import { resolveMaskPresets } from "@freeanima/capabilities-mask";
 import { statsReport } from "@freeanima/service-api/conversation-stats";
 import { PARLOR_PLATFORM } from "@freeanima/service-api/constants";
 import { onSessionCloseBeforeNew } from "@freeanima/service-api/session-close";
-import { listTools } from "@freeanima/engine-tool";
 import { isSessionMeta } from "@freeanima/engine-db/domain";
 import { setHomeChannel } from "@freeanima/service-api/home-channel";
 import { getServiceContext } from "@freeanima/service-api";
@@ -73,7 +66,9 @@ async function cmdReloadTools(ctx: CommandContext): Promise<string> {
   const before = meta.tools.length;
   try {
     const count = await conv().reloadSessionTools(ctx.sessionId);
-    const names = listTools().map((t) => t.name);
+    const names = getServiceContext()
+      .engine.catalog.tools.list()
+      .map((t) => t.name);
     const preview = names.length <= 8 ? names.join(", ") : `${names.slice(0, 8).join(", ")}…`;
     return `✅ 已更新 session 工具列表：${count} 个（此前 ${before} 个）。下次对话将携带最新工具。\n${preview}`;
   } catch (e) {
@@ -190,8 +185,10 @@ async function cmdMask(ctx: CommandContext): Promise<string> {
     if (!preset) {
       return "用法：`/mask set <preset-name>`";
     }
-    if (!getMask(preset)) {
-      const known = listMasks()
+    const { masks, engine } = getServiceContext();
+    if (!masks.get(preset)) {
+      const known = masks
+        .list()
         .map((m) => m.name)
         .join(", ");
       return `⚠️ 未知面具 '${preset}'。可用：${known || "（无）"}`;
@@ -200,7 +197,7 @@ async function cmdMask(ctx: CommandContext): Promise<string> {
       capability_mask: { presets: [preset] },
     });
     await reloadMaskSideEffects(ctx.sessionId);
-    const resolved = resolveMaskPresets([preset], defaultMaskRegistry, defaultToolSetRegistry);
+    const resolved = resolveMaskPresets([preset], masks, engine.catalog.toolSets);
     return `✅ 已设置能力面罩 '${preset}'（${resolved.allowed_tools.length} 个工具）。已压缩并重载工具与 system prompt。`;
   }
 
@@ -215,7 +212,8 @@ async function cmdMask(ctx: CommandContext): Promise<string> {
     if (!presets.length) {
       return "ℹ️ 当前 session 未设置能力面罩（全能力）。";
     }
-    const resolved = resolveMaskPresets(presets, defaultMaskRegistry, defaultToolSetRegistry);
+    const { masks, engine } = getServiceContext();
+    const resolved = resolveMaskPresets(presets, masks, engine.catalog.toolSets);
     const preview =
       resolved.allowed_tools.length <= 12
         ? resolved.allowed_tools.join(", ")

@@ -1,15 +1,5 @@
-import { afterEach, describe, expect, it } from "bun:test";
-import {
-  ToolRegistry,
-  getTool,
-  listTools,
-  openaiSchemas,
-  openaiSchemasFromNames,
-  registerTool,
-  resolveToolArgs,
-  toolNames,
-  unregisterToolsByToolset,
-} from "./index.ts";
+import { describe, expect, it } from "bun:test";
+import { ToolRegistry } from "./index.ts";
 
 const TEST_TOOLSET = "__engine_tool_test__";
 
@@ -20,10 +10,6 @@ const sampleTool = {
   handler: () => '{"ok":true}',
   toolset: TEST_TOOLSET,
 };
-
-afterEach(() => {
-  unregisterToolsByToolset(TEST_TOOLSET);
-});
 
 describe("ToolRegistry", () => {
   it("register 与 list 保持注册顺序", () => {
@@ -66,6 +52,22 @@ describe("ToolRegistry", () => {
     ]);
   });
 
+  it("openaiSchemasFromNames 按名解析 schema", () => {
+    const registry = new ToolRegistry();
+    registry.register({ ...sampleTool, name: "named_tool" });
+    expect(registry.toolNames()).toContain("named_tool");
+    const schemas = registry.openaiSchemasFromNames(["named_tool", "missing_tool"]);
+    expect(schemas).toHaveLength(1);
+    expect(schemas[0]?.function.name).toBe("named_tool");
+  });
+
+  it("toolNames 返回已注册工具名列表", () => {
+    const registry = new ToolRegistry();
+    registry.register({ ...sampleTool, name: "x" });
+    registry.register({ ...sampleTool, name: "y" });
+    expect(registry.toolNames()).toEqual(["x", "y"]);
+  });
+
   it("resolveToolArgs 解析 JSON 对象", () => {
     const registry = new ToolRegistry();
     const result = registry.resolveToolArgs('{"x":1}');
@@ -75,30 +77,5 @@ describe("ToolRegistry", () => {
   it("resolveToolArgs 空参数默认为 {}", () => {
     const registry = new ToolRegistry();
     expect(registry.resolveToolArgs(null)).toEqual({ ok: true, data: {} });
-  });
-});
-
-describe("defaultToolRegistry 模块级函数", () => {
-  it("registerTool / getTool / listTools 委托默认实例", () => {
-    registerTool({ ...sampleTool, name: "mod_tool" });
-    expect(getTool("mod_tool")).toBeDefined();
-    expect(listTools().some((t) => t.name === "mod_tool")).toBe(true);
-  });
-
-  it("openaiSchemas 委托默认实例", () => {
-    registerTool({ ...sampleTool, name: "schema_tool" });
-    expect(openaiSchemas().some((s) => s.function.name === "schema_tool")).toBe(true);
-  });
-
-  it("openaiSchemasFromNames 按名解析 schema", () => {
-    registerTool({ ...sampleTool, name: "named_tool" });
-    expect(toolNames()).toContain("named_tool");
-    const schemas = openaiSchemasFromNames(["named_tool", "missing_tool"]);
-    expect(schemas).toHaveLength(1);
-    expect(schemas[0]?.function.name).toBe("named_tool");
-  });
-
-  it("resolveToolArgs 委托默认实例", () => {
-    expect(resolveToolArgs("{}")).toEqual({ ok: true, data: {} });
   });
 });

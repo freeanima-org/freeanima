@@ -1,5 +1,8 @@
 import { runWithToolContext, getToolSessionId } from "@freeanima/engine-loop";
+import { ToolRegistry } from "@freeanima/engine-tool";
 import { describe, it, expect } from "bun:test";
+
+const tools = new ToolRegistry();
 
 describe("runWithToolContext", () => {
   it("propagates session through async generator iteration", async () => {
@@ -11,7 +14,7 @@ describe("runWithToolContext", () => {
     }
 
     const seen: (string | undefined)[] = [];
-    for await (const sid of runWithToolContext("sess-stream", () => inner())) {
+    for await (const sid of runWithToolContext("sess-stream", () => inner(), { tools })) {
       seen.push(sid);
     }
 
@@ -19,10 +22,14 @@ describe("runWithToolContext", () => {
   });
 
   it("propagates session through promise chain", async () => {
-    const sid = await runWithToolContext("sess-promise", async () => {
-      await Promise.resolve();
-      return getToolSessionId();
-    });
+    const sid = await runWithToolContext(
+      "sess-promise",
+      async () => {
+        await Promise.resolve();
+        return getToolSessionId();
+      },
+      { tools },
+    );
     expect(sid).toBe("sess-promise");
   });
 });

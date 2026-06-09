@@ -12,6 +12,7 @@
     "@freeanima/engine-prompt": "workspace:*",
     "@freeanima/engine-provider-llm": "workspace:*",
     "@freeanima/engine-repos": "workspace:*",
+    "@freeanima/engine-skill": "workspace:*",
     "@freeanima/engine-tool": "workspace:*"
   },
   "devDependencies": {

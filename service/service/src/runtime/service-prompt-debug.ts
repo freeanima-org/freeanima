@@ -1,6 +1,6 @@
 import { estimateTokens, estimateToolsTokens } from "@freeanima/engine-compress";
 import { isSessionMeta } from "@freeanima/engine-db/domain";
-import { listTools, type JsonSchemaObject } from "@freeanima/engine-tool";
+import type { JsonSchemaObject } from "@freeanima/engine-tool";
 import { loadSelfLayerPrompt } from "@freeanima/life-self";
 import {
   composeSystemPrompt,
@@ -72,13 +72,19 @@ export function computeGlobalBreakdown(
   };
 }
 
+function catalogTools() {
+  return getServiceContext().engine.catalog.tools;
+}
+
 function registryToolItems(): PromptDebugToolItem[] {
-  return listTools().map((t) => ({
-    name: t.name,
-    description: t.description,
-    toolset: t.toolset,
-    parameters: t.parameters,
-  }));
+  return catalogTools()
+    .list()
+    .map((t) => ({
+      name: t.name,
+      description: t.description,
+      toolset: t.toolset,
+      parameters: t.parameters,
+    }));
 }
 
 function sessionToolItems(
@@ -91,7 +97,11 @@ function sessionToolItems(
     };
   }>,
 ): PromptDebugToolItem[] {
-  const registry = new Map(listTools().map((t) => [t.name, t]));
+  const registry = new Map(
+    catalogTools()
+      .list()
+      .map((t) => [t.name, t]),
+  );
   return schemas.map((s) => {
     const def = registry.get(s.function.name);
     return {

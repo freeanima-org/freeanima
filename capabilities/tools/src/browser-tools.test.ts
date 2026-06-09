@@ -1,5 +1,6 @@
 import { runWithToolContext } from "@freeanima/engine-loop";
-import { getTool, listTools } from "@freeanima/engine-tool";
+import { SkillRegistry } from "@freeanima/engine-skill";
+import { ToolRegistry } from "@freeanima/engine-tool";
 import { parseYaml } from "@freeanima/service-config";
 import { animaConfigSchema } from "@freeanima/service-config/schemas/config";
 import { resetConfigForTest, setConfigForTest } from "@freeanima/service-config";
@@ -29,6 +30,9 @@ const BROWSER_TOOLS = [
   "browser_vision",
 ];
 
+const tools = new ToolRegistry();
+const skills = new SkillRegistry();
+
 let savedFetch: typeof fetch | undefined;
 
 function stubFetch(impl: typeof fetch): void {
@@ -56,7 +60,7 @@ function browserConfig(baseUrl?: string) {
 
 describe("browser tools", () => {
   beforeAll(() => {
-    registerSupplementalTools();
+    registerSupplementalTools(tools, skills);
   });
 
   beforeEach(() => {
@@ -72,7 +76,7 @@ describe("browser tools", () => {
   });
 
   it("registers browser_* tools", () => {
-    const names = new Set(listTools().map((t) => t.name));
+    const names = new Set(tools.list().map((t) => t.name));
     for (const name of BROWSER_TOOLS) {
       expect(names.has(name), name).toBe(true);
     }
@@ -80,7 +84,7 @@ describe("browser tools", () => {
 
   it("browser tools use toolset browser", () => {
     for (const name of BROWSER_TOOLS) {
-      expect(getTool(name)?.toolset).toBe("browser");
+      expect(tools.get(name)?.toolset).toBe("browser");
     }
   });
 
@@ -91,32 +95,32 @@ describe("browser tools", () => {
   });
 
   it("browser_navigate requires url", async () => {
-    const out = await getTool("browser_navigate")!.handler({ url: "  " });
+    const out = await tools.get("browser_navigate")!.handler({ url: "  " });
     const data = JSON.parse(out);
     expect(data.error).toContain("url");
   });
 
   it("browser_navigate errors when camofox not configured", async () => {
     setConfigForTest(browserConfig());
-    const out = await getTool("browser_navigate")!.handler({ url: "https://example.com" });
+    const out = await tools.get("browser_navigate")!.handler({ url: "https://example.com" });
     const data = JSON.parse(out);
     expect(data.error).toContain("config.yaml");
   });
 
   it("browser_click requires ref", async () => {
-    const out = await getTool("browser_click")!.handler({});
+    const out = await tools.get("browser_click")!.handler({});
     const data = JSON.parse(out);
     expect(data.error).toContain("ref");
   });
 
   it("browser_scroll rejects invalid direction", async () => {
-    const out = await getTool("browser_scroll")!.handler({ direction: "left" });
+    const out = await tools.get("browser_scroll")!.handler({ direction: "left" });
     const data = JSON.parse(out);
     expect(data.error).toContain("direction");
   });
 
   it("browser_console returns limited support note", async () => {
-    const out = await getTool("browser_console")!.handler({});
+    const out = await tools.get("browser_console")!.handler({});
     const data = JSON.parse(out);
     expect(data.success).toBe(true);
     expect(data.total_messages).toBe(0);
@@ -197,12 +201,16 @@ describe("browser tools", () => {
     });
     stubFetch(fetchMock as unknown as typeof fetch);
 
-    await runWithToolContext("ctx-session-123", async () => {
-      const out = JSON.parse(
-        await getTool("browser_navigate")!.handler({ url: "https://ctx.test" }),
-      );
-      expect(out.success).toBe(true);
-    });
+    await runWithToolContext(
+      "ctx-session-123",
+      async () => {
+        const out = JSON.parse(
+          await tools.get("browser_navigate")!.handler({ url: "https://ctx.test" }),
+        );
+        expect(out.success).toBe(true);
+      },
+      { tools },
+    );
 
     resetCamofoxSessionsForTests();
     const out = JSON.parse(await camofoxSnapshot("ctx-session-123"));

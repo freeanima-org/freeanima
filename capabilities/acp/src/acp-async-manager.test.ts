@@ -3,7 +3,7 @@ import { parseYaml } from "@freeanima/service-config";
 import { animaConfigSchema } from "@freeanima/service-config/schemas/config";
 import { resetConfigForTest, setConfigForTest } from "@freeanima/service-config";
 import { MINIMAL_LLM_YAML } from "@freeanima/service-config/test-helpers/minimal-llm-config";
-import { AcpManager } from "./manager.ts";
+import { createTestAcpManager } from "./test-helpers/manager.ts";
 import type { AcpProgressDeliveryPort } from "./ports/progress-delivery.ts";
 
 function acpMinimalConfig() {
@@ -31,7 +31,7 @@ describe("AcpManager 异步进度轮询", () => {
       deliverError: async () => {},
     };
 
-    const mgr = new AcpManager();
+    const { mgr } = createTestAcpManager();
     mgr.wireProgressDelivery(port);
     mgr.registerTools();
 
@@ -61,7 +61,7 @@ describe("AcpManager 异步进度轮询", () => {
 
   it("cancelAsyncTask 对未知任务返回错误", () => {
     setConfigForTest(acpMinimalConfig());
-    const mgr = new AcpManager();
+    const { mgr } = createTestAcpManager();
     mgr.registerTools();
     const out = (mgr as unknown as { cancelAsyncTask: (id: string) => string }).cancelAsyncTask(
       "missing",

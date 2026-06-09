@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { getSkill } from "./registry.ts";
+import type { SkillRegistry } from "./registry.ts";
 
 export type SkillFrontmatter = {
   name?: string;
@@ -44,8 +44,8 @@ export function stripFrontmatter(text: string): string {
   return text.trim();
 }
 
-export function readSkillFile(name: string): string | null {
-  const def = getSkill(name);
+export function readSkillFile(skills: SkillRegistry, name: string): string | null {
+  const def = skills.get(name);
   if (!def) return null;
   const path = skillFilePath(def.directory, name);
   if (!existsSync(path)) return null;
@@ -57,8 +57,8 @@ export function readSkillFile(name: string): string | null {
 }
 
 /** 读取技能正文（去掉 frontmatter） */
-export function readSkillBody(name: string): string | null {
-  const raw = readSkillFile(name);
+export function readSkillBody(skills: SkillRegistry, name: string): string | null {
+  const raw = readSkillFile(skills, name);
   if (raw == null) return null;
   const body = stripFrontmatter(raw);
   return body.trim() ? body : null;

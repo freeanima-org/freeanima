@@ -1,8 +1,9 @@
-import { registerTool, toolResult } from "@freeanima/engine-tool";
+import type { ToolRegistry } from "@freeanima/engine-tool";
+import { toolResult } from "@freeanima/engine-tool";
 import { listCredentials } from "@freeanima/service-config";
 
-export function registerCredentialTools(): void {
-  registerTool({
+export function registerCredentialTools(tools: ToolRegistry): void {
+  tools.register({
     name: "list_credentials",
     description: "List pass credential paths (no values)",
     parameters: { type: "object", properties: {} },

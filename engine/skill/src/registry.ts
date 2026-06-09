@@ -56,34 +56,9 @@ export class SkillRegistry {
   }
 }
 
-export const defaultSkillRegistry = new SkillRegistry();
-
-export function registerSkill(def: SkillDef): void {
-  defaultSkillRegistry.register(def);
-}
-
-export function unregisterSkill(name: string): boolean {
-  return defaultSkillRegistry.unregister(name);
-}
-
-export function unregisterSkillsBySource(source: string): string[] {
-  return defaultSkillRegistry.unregisterBySource(source);
-}
-
-export function getSkill(name: string): SkillDef | undefined {
-  return defaultSkillRegistry.get(name);
-}
-
-export function listSkills(): SkillDef[] {
-  return defaultSkillRegistry.list();
-}
-
-export function searchSkills(query: string): SkillDef[] {
-  return defaultSkillRegistry.search(query);
-}
-
 /** 扫描目录下 `*.md` 并注册（description 优先 frontmatter，否则用注册时传入的默认值） */
 export function registerSkillsFromDirectory(
+  skills: SkillRegistry,
   directory: string,
   opts?: { source?: string; description?: string },
 ): number {
@@ -98,7 +73,7 @@ export function registerSkillsFromDirectory(
     const name = file.replace(/\.md$/, "");
     if (!name) continue;
     const description = readSkillDescriptionFromFile(directory, name) || opts?.description || "";
-    registerSkill({
+    skills.register({
       name,
       description,
       directory,

@@ -4,6 +4,7 @@ import { animaConfigSchema } from "@freeanima/service-config/schemas/config";
 import { resetConfigForTest, setConfigForTest } from "@freeanima/service-config";
 import { MINIMAL_LLM_YAML } from "@freeanima/service-config/test-helpers/minimal-llm-config";
 import { sanitizeMcpConfig, isMcpServerEnabled } from "./status.ts";
+import { ToolRegistry } from "@freeanima/engine-tool";
 import { MCPManager } from "./manager.ts";
 
 function mcpTestConfig() {
@@ -57,7 +58,7 @@ describe("MCPManager.getStatus", () => {
 
   it("未启动时返回配置与 not_started 状态", async () => {
     setConfigForTest(mcpTestConfig());
-    const mgr = new MCPManager();
+    const mgr = new MCPManager(new ToolRegistry());
     const status = await mgr.getStatus();
 
     expect(status.server_count).toBe(2);
@@ -79,7 +80,7 @@ describe("MCPManager.getStatus", () => {
 
   it("startAllAsync 立即返回且不阻塞 getStatus", async () => {
     setConfigForTest(mcpTestConfig());
-    const mgr = new MCPManager();
+    const mgr = new MCPManager(new ToolRegistry());
     mgr.startAllAsync();
     const status = await mgr.getStatus();
     expect(status.server_count).toBe(2);

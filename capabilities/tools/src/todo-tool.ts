@@ -1,5 +1,6 @@
 import { getToolSessionId, getToolRepos } from "@freeanima/engine-loop";
-import { registerTool, toolError } from "@freeanima/engine-tool";
+import type { ToolRegistry } from "@freeanima/engine-tool";
+import { toolError } from "@freeanima/engine-tool";
 import { handleSessionTodo } from "@freeanima/engine-conversation/session-todos";
 
 async function handleTodo(args: Record<string, unknown>): Promise<string> {
@@ -16,8 +17,8 @@ async function handleTodo(args: Record<string, unknown>): Promise<string> {
   return handleSessionTodo(repos, sessionId, action, { content, id, status });
 }
 
-export function registerTodoTool(): void {
-  registerTool({
+export function registerTodoTool(tools: ToolRegistry): void {
+  tools.register({
     name: "todo",
     description:
       "管理当前对话 session 的待办清单（与其他 session 隔离）。支持 list/add/update/delete",

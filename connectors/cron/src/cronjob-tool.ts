@@ -1,4 +1,5 @@
-import { registerTool, toolError, toolResult } from "@freeanima/engine-tool";
+import type { ToolRegistry } from "@freeanima/engine-tool";
+import { toolError, toolResult } from "@freeanima/engine-tool";
 import { computeNextRunAt } from "./bun-schedule.ts";
 import {
   createJob,
@@ -141,8 +142,8 @@ async function handleCronjob(args: Record<string, unknown>): Promise<string> {
   return toolError(`未知 action: ${action}`);
 }
 
-export function registerCronjobTool(): void {
-  registerTool({
+export function registerCronjobTool(tools: ToolRegistry): void {
+  tools.register({
     name: "cronjob",
     description: "管理定时任务：创建、列表、查看、暂停、恢复、删除、立即运行",
     parameters: {

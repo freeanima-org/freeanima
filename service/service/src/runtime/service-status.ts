@@ -8,7 +8,7 @@ import {
   CST_OFFSET_MS,
   PATHS,
 } from "@freeanima/service-config";
-import { listTools, listToolSets } from "@freeanima/engine-tool";
+import { getServiceContext } from "../context.ts";
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
 import {
   ensureBuiltinCronJobs,
@@ -22,7 +22,6 @@ import type { CronJobData } from "@freeanima/connectors-cron";
 import { listCommandDefs, listCommandDefsForPlatform } from "@freeanima/connectors-commands";
 import { pingDatabase } from "@freeanima/connectors-db-pg";
 import { pingRedis } from "@freeanima/connectors-redis";
-import { getServiceContext } from "../context.ts";
 
 function conv() {
   return getServiceContext().conversation;
@@ -99,7 +98,7 @@ export async function buildStatus(
 
   let toolCount = 0;
   try {
-    toolCount = listTools().length;
+    toolCount = getServiceContext().engine.catalog.tools.list().length;
   } catch {
     toolCount = 0;
   }
@@ -169,13 +168,14 @@ export function listToolsApi(): {
   tools: { name: string; description: string; toolset?: string }[];
   tool_sets: { name: string; description: string; tools: string[] }[];
 } {
+  const { engine } = getServiceContext();
   return {
-    tools: listTools().map((t) => ({
+    tools: engine.catalog.tools.list().map((t) => ({
       name: t.name,
       description: t.description,
       toolset: t.toolset,
     })),
-    tool_sets: listToolSets().map((ts) => ({
+    tool_sets: engine.catalog.toolSets.list().map((ts) => ({
       name: ts.name,
       description: ts.description,
       tools: [...ts.tools],

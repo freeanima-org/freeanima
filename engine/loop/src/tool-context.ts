@@ -1,7 +1,8 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import type { PgRepositories } from "@freeanima/engine-repos";
+import type { ToolRegistry } from "@freeanima/engine-tool";
 
-type ToolContextStore = { sessionId: string; repos?: PgRepositories };
+type ToolContextStore = { sessionId: string; repos?: PgRepositories; tools: ToolRegistry };
 
 const storage = new AsyncLocalStorage<ToolContextStore>();
 
@@ -30,9 +31,9 @@ async function* bindToolContext<T>(
 export function runWithToolContext<T>(
   sessionId: string,
   fn: () => T,
-  opts?: { repos?: PgRepositories },
+  opts: { tools: ToolRegistry; repos?: PgRepositories },
 ): T {
-  const store: ToolContextStore = { sessionId, repos: opts?.repos };
+  const store: ToolContextStore = { sessionId, repos: opts.repos, tools: opts.tools };
   const result = storage.run(store, fn);
   if (isAsyncIterable(result)) {
     return bindToolContext(store, result) as T;
@@ -46,4 +47,12 @@ export function getToolSessionId(): string | undefined {
 
 export function getToolRepos(): PgRepositories | undefined {
   return storage.getStore()?.repos;
+}
+
+export function getToolRegistry(): ToolRegistry {
+  const tools = storage.getStore()?.tools;
+  if (!tools) {
+    throw new Error("ToolRegistry 未在 tool context 中设置；请通过 runWithToolContext 传入 tools");
+  }
+  return tools;
 }

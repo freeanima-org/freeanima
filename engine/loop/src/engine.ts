@@ -1,11 +1,4 @@
-import {
-  parseToolArgs,
-  toolError,
-  toolResult,
-  checkEnvRequirements,
-  getTool,
-  openaiSchemas,
-} from "@freeanima/engine-tool";
+import { parseToolArgs, toolError, toolResult } from "@freeanima/engine-tool";
 import { getProfileHopModel, loadConfig } from "@freeanima/service-config";
 import { logComponent } from "@freeanima/service-logging";
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
@@ -21,7 +14,7 @@ import {
 import * as llm from "@freeanima/engine-llm";
 import { cleanToolCallsForApi } from "@freeanima/engine-llm";
 import { markToolLoopActivity } from "@freeanima/engine-compress";
-import { getToolSessionId, getToolRepos } from "./tool-context.ts";
+import { getToolRegistry, getToolSessionId, getToolRepos } from "./tool-context.ts";
 import { maybeApplyEmergencyCompression } from "@freeanima/engine-conversation";
 import { REPAIR_REASON_INTERRUPT } from "@freeanima/engine-llm";
 import type {
@@ -88,12 +81,12 @@ function prepareEngine(opts?: {
   model?: string;
   tools?: OpenAiToolSchema[];
 }): [OpenAiToolSchema[], string] {
-  const missing = checkEnvRequirements();
+  const missing = getToolRegistry().checkEnvRequirements();
   if (missing.length) {
     throw new Error(`Missing required environment variables: ${missing.join(", ")}`);
   }
   const schemas: OpenAiToolSchema[] =
-    opts?.tools && opts.tools.length > 0 ? opts.tools : openaiSchemas();
+    opts?.tools && opts.tools.length > 0 ? opts.tools : getToolRegistry().openaiSchemas();
   const cfg = loadConfig();
   const resolved = opts?.model ?? getProfileHopModel(cfg, PROFILE_CHAT);
   return [schemas, resolved];
@@ -386,7 +379,7 @@ export async function* runStream(
         const argsResult = parseToolArgs(tc.function.arguments);
         const fnArgs = argsResult.ok ? argsResult.data : {};
         yield { event: "tool_begin", data: { name: fnName, args: fnArgs } };
-        const tool = getTool(fnName);
+        const tool = getToolRegistry().get(fnName);
         let result: string;
         if (opts?.toolMask && !opts.toolMask.allowedTools.includes(fnName)) {
           result = toolError("工具被能力面罩限制");

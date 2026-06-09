@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { listTools } from "@freeanima/engine-tool";
+import { ToolRegistry } from "@freeanima/engine-tool";
 
 import { registerEmailTools } from "./email/tools.ts";
 
@@ -18,8 +18,9 @@ const EMAIL_TOOL_NAMES = [
 
 describe("registerEmailTools", () => {
   it("注册 10 个邮件工具", () => {
-    registerEmailTools();
-    const names = new Set(listTools().map((t) => t.name));
+    const tools = new ToolRegistry();
+    registerEmailTools(tools);
+    const names = new Set(tools.list().map((t) => t.name));
     for (const name of EMAIL_TOOL_NAMES) {
       expect(names.has(name)).toBe(true);
     }

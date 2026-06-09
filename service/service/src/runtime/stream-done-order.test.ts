@@ -4,23 +4,29 @@ import * as engine from "@freeanima/engine-loop";
 import type { StreamEvent } from "@freeanima/engine-loop";
 import { createConversationService } from "@freeanima/engine-conversation";
 import { nullPgRepositories } from "@freeanima/engine-repos";
-import type { Engine } from "@freeanima/engine";
+import { MaskRegistry } from "@freeanima/capabilities-mask";
+import { createEngineCatalog, type Engine } from "@freeanima/engine";
 import { createServiceKernel } from "@freeanima/service-bootstrap";
 import { getAcpManager } from "@freeanima/capabilities-acp";
 import { AnimaService } from "./anima-service.ts";
 import { initServiceContext } from "../context.ts";
+
+const catalog = createEngineCatalog();
+const testEngine = { catalog, repos: nullPgRepositories } as Engine;
+
 function wireTestService(): AnimaService {
   const kernel = createServiceKernel();
-  const conversation = createConversationService(nullPgRepositories);
+  const conversation = createConversationService(nullPgRepositories, catalog.tools);
   const service = new AnimaService({ kernel, conversation });
   getAcpManager().wireConversation(conversation);
   initServiceContext({
     service,
     kernel,
-    engine: { repos: nullPgRepositories } as Engine,
+    engine: testEngine,
     conversation,
     mcp: null,
     acp: getAcpManager(),
+    masks: new MaskRegistry(),
     host: "127.0.0.1",
     port: 2658,
   });

@@ -1,4 +1,5 @@
-import { registerTool, toolError } from "@freeanima/engine-tool";
+import type { ToolRegistry } from "@freeanima/engine-tool";
+import { toolError } from "@freeanima/engine-tool";
 import { spawn, spawnSync, type ChildProcess } from "node:child_process";
 
 const MAX_OUTPUT = 50 * 1024;
@@ -129,8 +130,8 @@ async function handleProcess(
   return toolError(`unsupported action '${action}'`);
 }
 
-export function registerTerminalTools(): void {
-  registerTool({
+export function registerTerminalTools(tools: ToolRegistry): void {
+  tools.register({
     name: "terminal",
     description: "Run a shell command in a subprocess and return output",
     parameters: {
@@ -153,7 +154,7 @@ export function registerTerminalTools(): void {
       ),
   });
 
-  registerTool({
+  tools.register({
     name: "process",
     description: "Manage background processes started with terminal(background=true)",
     parameters: {

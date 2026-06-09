@@ -12,13 +12,13 @@ export type CronEngineJobInput = {
 };
 
 export async function runCronEngineTurn(job: CronEngineJobInput, prompt: string): Promise<string> {
-  const { conversation } = getServiceContext();
+  const { conversation, engine } = getServiceContext();
   const cfg = loadConfig();
   const model = job.model_name ?? getProfileHopModel(cfg, PROFILE_CHAT);
   const sid = conv.generateSessionId();
   await conversation.initSession(sid, model, { platform: "cron" });
 
-  const fullPrompt = prependSkillsToPrompt(prompt, job.skills);
+  const fullPrompt = prependSkillsToPrompt(engine.skills, prompt, job.skills);
 
   return runSimpleTurn({ sessionId: sid, prompt: fullPrompt, model });
 }
