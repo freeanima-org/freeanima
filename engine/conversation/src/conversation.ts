@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, mkdtempSync } from "node:fs";
 import { tmpdir, homedir } from "node:os";
 import { join, resolve } from "node:path";
 import { randomBytes } from "node:crypto";
-import type { ToolRegistry } from "@freeanima/engine-tool";
+import type { ToolSetRegistry } from "@freeanima/engine-tool";
 import { getProfileHopModel, loadConfig } from "@freeanima/service-config";
 import { CST_OFFSET_MS, formatCstIso } from "@freeanima/kernel-util";
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
@@ -84,7 +84,7 @@ export function allocateSessionCwd(sid: string): string {
 /** 读取 session 缓存的工具名并解析为 OpenAI schema；缺失时回退注册表并写回 meta */
 export async function loadSessionTools(
   repos: PgRepositories,
-  tools: ToolRegistry,
+  tools: ToolSetRegistry,
   session: string,
   cachedMeta?: SessionMetaLoadResult,
 ): Promise<OpenAiToolSchema[]> {
@@ -255,7 +255,7 @@ export async function appendSessionMeta(
 
 export async function initSession(
   repos: PgRepositories,
-  tools: ToolRegistry,
+  tools: ToolSetRegistry,
   sid: string,
   model: string,
   opts: { platform: string; functions?: string[]; platform_extra?: Record<string, unknown> },
@@ -280,7 +280,7 @@ export async function initSession(
 
 export async function newSession(
   repos: PgRepositories,
-  tools: ToolRegistry,
+  tools: ToolSetRegistry,
   platform: string,
   model?: string,
   platformExtra?: Record<string, unknown>,
@@ -386,7 +386,7 @@ export async function rebuildSessionSystemPrompt(
 /** 将当前注册表工具写回 session_meta，供下次 LLM 请求使用 */
 export async function reloadSessionTools(
   repos: PgRepositories,
-  tools: ToolRegistry,
+  tools: ToolSetRegistry,
   session: string,
 ): Promise<number> {
   const meta = await loadSessionMeta(repos, session);
@@ -572,7 +572,7 @@ function scheduleCompressionSummary(
 /** 根据完整历史维护 meta.compression（不删消息；cut 变更时异步生成摘要） */
 export async function advanceCompressionMeta(
   repos: PgRepositories,
-  tools: ToolRegistry,
+  tools: ToolSetRegistry,
   session: string,
   preloaded?: { msgs: Message[]; meta: SessionMetaLoadResult },
 ): Promise<void> {
@@ -582,7 +582,7 @@ export async function advanceCompressionMeta(
 /** 重新计算 session 裁剪（可选 force 忽略滞回） */
 export async function recompressSession(
   repos: PgRepositories,
-  registry: ToolRegistry,
+  registry: ToolSetRegistry,
   session: string,
   opts?: { force?: boolean },
   preloaded?: { msgs: Message[]; meta: SessionMetaLoadResult },
@@ -771,7 +771,7 @@ function buildRuntimeMessagesFrom(
 
 export async function buildRuntimeMessages(
   repos: PgRepositories,
-  registry: ToolRegistry,
+  registry: ToolSetRegistry,
   session: string,
 ): Promise<[SessionMessage[], string[]]> {
   const meta = await loadSessionMeta(repos, session);
@@ -803,7 +803,7 @@ async function loadMessagesForTurn(
 
 async function prepareTurnMessages(
   repos: PgRepositories,
-  registry: ToolRegistry,
+  registry: ToolSetRegistry,
   session: string,
   meta: SessionMetaLoadResult,
 ): Promise<{ msgs: Message[]; tools: OpenAiToolSchema[] }> {
@@ -824,7 +824,7 @@ async function prepareTurnMessages(
 
 export async function beginTurn(
   repos: PgRepositories,
-  registry: ToolRegistry,
+  registry: ToolSetRegistry,
   session: string,
   userText: string,
 ): Promise<[SessionMessage[], string[], string]> {
@@ -850,7 +850,7 @@ function findTurnUserIndex(messages: SessionMessage[], userText: string): number
 
 export async function finishTurn(
   repos: PgRepositories,
-  registry: ToolRegistry,
+  registry: ToolSetRegistry,
   session: string,
   messages: SessionMessage[],
   userText: string,
@@ -870,7 +870,7 @@ export async function finishTurn(
 
 export async function updateSessionMeta(
   repos: PgRepositories,
-  registry: ToolRegistry,
+  registry: ToolSetRegistry,
   session: string,
   model: string,
   opts?: { functions?: string[]; tools?: string[] },
@@ -960,7 +960,7 @@ export async function rollbackToLastUser(repos: PgRepositories, session: string)
 /** 重试回合：回滚末条 user，不追加新 user，返回运行时 messages */
 export async function retryTurn(
   repos: PgRepositories,
-  registry: ToolRegistry,
+  registry: ToolSetRegistry,
   session: string,
 ): Promise<[SessionMessage[], string[], string]> {
   const effective = await rollbackToLastUser(repos, session);

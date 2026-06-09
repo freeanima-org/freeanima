@@ -16,7 +16,7 @@ const testEngine = { catalog, repos: nullPgRepositories } as Engine;
 
 function wireTestService(): AnimaService {
   const kernel = createServiceKernel();
-  const conversation = createConversationService(nullPgRepositories, catalog.tools);
+  const conversation = createConversationService(nullPgRepositories, catalog.toolSets);
   const service = new AnimaService({ kernel, conversation });
   getAcpManager().wireConversation(conversation);
   initServiceContext({

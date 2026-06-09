@@ -9,7 +9,6 @@ export type CronJobDbRow = {
   skills: string[];
   script: string | null;
   no_agent: boolean;
-  enabled_toolsets: string[] | null;
   model_provider: string | null;
   model_name: string | null;
   workdir: string | null;
@@ -35,7 +34,6 @@ export function mapCronJobRow(row: CronJobDbRow): CronJobRow {
     skills: row.skills ?? [],
     script: row.script,
     no_agent: row.no_agent,
-    enabled_toolsets: row.enabled_toolsets,
     model_provider: row.model_provider,
     model_name: row.model_name,
     workdir: row.workdir,

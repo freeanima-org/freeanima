@@ -1,20 +1,26 @@
 import { SkillRegistry } from "@freeanima/engine-skill";
-import { ToolRegistry } from "@freeanima/engine-tool";
-import { describe, it, expect, afterEach } from "bun:test";
+import { ToolSetRegistry } from "@freeanima/engine-tool";
+import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 
 import { registerServiceTools, resetRegisterServiceToolsForTest } from "./register.ts";
 
-const tools = new ToolRegistry();
-const skills = new SkillRegistry();
-
 describe("registerServiceTools", () => {
+  let toolSets: ToolSetRegistry;
+  let skills: SkillRegistry;
+
+  beforeEach(() => {
+    resetRegisterServiceToolsForTest();
+    toolSets = new ToolSetRegistry();
+    skills = new SkillRegistry();
+  });
+
   afterEach(() => {
     resetRegisterServiceToolsForTest();
   });
 
   it("registers core tool names", () => {
-    registerServiceTools({ tools, skills });
-    const names = new Set(tools.list().map((t) => t.name));
+    registerServiceTools({ toolSets, skills });
+    const names = new Set(toolSets.listTools().map((t) => t.name));
     expect(names.has("read_file")).toBe(true);
     expect(names.has("todo")).toBe(true);
     expect(names.has("cronjob")).toBe(true);
@@ -25,9 +31,9 @@ describe("registerServiceTools", () => {
   });
 
   it("is idempotent", () => {
-    const before = tools.list().length;
-    registerServiceTools({ tools, skills });
-    registerServiceTools({ tools, skills });
-    expect(tools.list().length).toBe(before);
+    registerServiceTools({ toolSets, skills });
+    const before = toolSets.listTools().length;
+    registerServiceTools({ toolSets, skills });
+    expect(toolSets.listTools().length).toBe(before);
   });
 });

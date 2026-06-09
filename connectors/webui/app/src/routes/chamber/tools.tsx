@@ -4,7 +4,6 @@ import { getToolsStatus } from "@/lib/api.ts";
 type ToolRow = {
   name: string;
   description?: string;
-  toolset?: string;
   requires_env?: unknown;
   parameters?: unknown;
 };
@@ -21,6 +20,43 @@ type ToolsLoaderData = {
 };
 
 const EMPTY_LOADER_DATA: ToolsLoaderData = { tools: [], tool_sets: [] };
+
+/** 静态 ToolSet 展示顺序；未列出的静态集按名称排序，动态集 mcp_* → acp_* */
+const STATIC_TOOLSET_ORDER = [
+  "fs",
+  "terminal",
+  "browser",
+  "web",
+  "code",
+  "skills",
+  "credentials",
+  "todo",
+  "tasks",
+  "cron",
+  "clarify",
+  "fridge",
+  "memory",
+  "self",
+  "email",
+] as const;
+
+function toolSetSortKey(name: string): [number, number, string] {
+  if (name.startsWith("mcp_")) return [2, 0, name];
+  if (name.startsWith("acp_")) return [3, 0, name];
+  const idx = STATIC_TOOLSET_ORDER.indexOf(name as (typeof STATIC_TOOLSET_ORDER)[number]);
+  if (idx >= 0) return [0, idx, name];
+  return [1, 0, name];
+}
+
+function sortToolSets(toolSets: ToolSetRow[]): ToolSetRow[] {
+  return toolSets.toSorted((a, b) => {
+    const ka = toolSetSortKey(a.name);
+    const kb = toolSetSortKey(b.name);
+    if (ka[0] !== kb[0]) return ka[0] - kb[0];
+    if (ka[1] !== kb[1]) return ka[1] - kb[1];
+    return ka[2].localeCompare(kb[2]);
+  });
+}
 
 export const Route = createFileRoute("/chamber/tools")({
   loader: () => getToolsStatus().catch(() => EMPTY_LOADER_DATA) as Promise<ToolsLoaderData>,
@@ -54,7 +90,7 @@ function ToolCard({ tool }: { tool: ToolRow }) {
 function ToolsPage() {
   const data = Route.useLoaderData();
   const tools = data.tools ?? [];
-  const toolSets = data.tool_sets ?? [];
+  const toolSets = sortToolSets(data.tool_sets ?? []);
   const toolByName = new Map(tools.map((t) => [t.name, t]));
 
   if (!toolSets.length) {
@@ -76,12 +112,7 @@ function ToolsPage() {
     for (const name of ts.tools) groupedNames.add(name);
   }
 
-  const registeredToolSetNames = new Set(toolSets.map((ts) => ts.name));
-  const ungroupedTools = tools.filter(
-    (t) =>
-      !groupedNames.has(t.name) &&
-      (t.toolset === undefined || !registeredToolSetNames.has(t.toolset)),
-  );
+  const ungroupedTools = tools.filter((t) => !groupedNames.has(t.name));
 
   return (
     <div>
@@ -98,6 +129,7 @@ function ToolsPage() {
             <details key={ts.name} className="group">
               <summary className="cursor-pointer font-bold list-none flex items-baseline gap-2">
                 <span className="select-none">📦 {ts.name}</span>
+                <span className="badge badge-neutral badge-xs">{groupedTools.length}</span>
                 {ts.description ? (
                   <span className="text-xs font-normal text-base-content/50">{ts.description}</span>
                 ) : null}

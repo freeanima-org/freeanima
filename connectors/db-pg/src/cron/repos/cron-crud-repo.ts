@@ -24,11 +24,6 @@ function textArrayLiteral(values: string[]): string {
   return `ARRAY[${values.map((v) => sqlLiteral(v)).join(", ")}]::text[]`;
 }
 
-function nullableTextArrayLiteral(values: string[] | null | undefined): string {
-  if (values == null) return "NULL";
-  return textArrayLiteral(normalizeStringArray(values));
-}
-
 export async function createCronJob(row: CronJobCreateInput): Promise<void> {
   const now = formatCstIso();
   const created = row.created_at ?? now;
@@ -40,7 +35,7 @@ export async function createCronJob(row: CronJobCreateInput): Promise<void> {
   await db.execute(
     drizzleSql.raw(`
     INSERT INTO cron_jobs (
-      id, name, schedule, prompt, skills, script, no_agent, enabled_toolsets,
+      id, name, schedule, prompt, skills, script, no_agent,
       model_provider, model_name, workdir, context_from, deliver, timeout_sec,
       builtin, repeat, run_count, paused, created_at, updated_at, last_run_at, last_output_ref
     ) VALUES (
@@ -51,7 +46,6 @@ export async function createCronJob(row: CronJobCreateInput): Promise<void> {
       ${textArrayLiteral(skills)},
       ${row.script != null ? sqlLiteral(row.script) : "NULL"},
       ${row.no_agent ?? false},
-      ${nullableTextArrayLiteral(row.enabled_toolsets)},
       ${row.model_provider != null ? sqlLiteral(row.model_provider) : "NULL"},
       ${row.model_name != null ? sqlLiteral(row.model_name) : "NULL"},
       ${row.workdir != null ? sqlLiteral(row.workdir) : "NULL"},
@@ -108,7 +102,7 @@ export async function getCronJob(id: string): Promise<CronJobRow | null> {
   const db = getDb();
   const rows = await db.execute<CronJobDbRow>(drizzleSql`
     SELECT
-      id, name, schedule, prompt, skills, script, no_agent, enabled_toolsets,
+      id, name, schedule, prompt, skills, script, no_agent,
       model_provider, model_name, workdir, context_from, deliver, timeout_sec,
       builtin, repeat, run_count, paused, created_at, updated_at, last_run_at, last_output_ref
     FROM cron_jobs
@@ -132,9 +126,6 @@ export async function updateCronJob(patch: CronJobUpdateInput): Promise<boolean>
     sets.push(patch.script == null ? "script = NULL" : `script = ${sqlLiteral(patch.script)}`);
   }
   if (patch.no_agent !== undefined) sets.push(`no_agent = ${patch.no_agent}`);
-  if (patch.enabled_toolsets !== undefined) {
-    sets.push(`enabled_toolsets = ${nullableTextArrayLiteral(patch.enabled_toolsets)}`);
-  }
   if (patch.model_provider !== undefined) {
     sets.push(
       patch.model_provider == null
@@ -202,7 +193,7 @@ export async function listAllCronJobs(): Promise<CronJobRow[]> {
   const db = getDb();
   const rows = await db.execute<CronJobDbRow>(drizzleSql`
     SELECT
-      id, name, schedule, prompt, skills, script, no_agent, enabled_toolsets,
+      id, name, schedule, prompt, skills, script, no_agent,
       model_provider, model_name, workdir, context_from, deliver, timeout_sec,
       builtin, repeat, run_count, paused, created_at, updated_at, last_run_at, last_output_ref
     FROM cron_jobs

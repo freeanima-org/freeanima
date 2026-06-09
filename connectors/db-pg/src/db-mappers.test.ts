@@ -80,7 +80,6 @@ describe("db mappers", () => {
     skills: [],
     script: null,
     no_agent: false,
-    enabled_toolsets: null,
     model_provider: null,
     model_name: null,
     workdir: null,
@@ -132,7 +131,6 @@ describe("db mappers", () => {
       name: "每日备份",
       builtin: false,
       repeat: 100,
-      enabled_toolsets: ["fs"],
       model_provider: "openai",
       model_name: "gpt-4o",
       workdir: "/tmp",
@@ -140,7 +138,6 @@ describe("db mappers", () => {
     const result = mapCronJobRow(row);
     expect(result.builtin).toBe(false);
     expect(result.repeat).toBe(100);
-    expect(result.enabled_toolsets).toEqual(["fs"]);
     expect(result.model_provider).toBe("openai");
     expect(result.model_name).toBe("gpt-4o");
     expect(result.workdir).toBe("/tmp");

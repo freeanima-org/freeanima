@@ -5,7 +5,20 @@ import { resolveMask, resolveMaskByName } from "./resolve.ts";
 
 function toolSetRegistry(): ToolSetRegistry {
   const reg = new ToolSetRegistry();
-  reg.register("browser", "浏览器", ["browser_navigate", "browser_click"]);
+  reg.registerToolSet("browser", "浏览器", [
+    {
+      name: "browser_navigate",
+      description: "nav",
+      parameters: { type: "object", properties: {} },
+      handler: () => "{}",
+    },
+    {
+      name: "browser_click",
+      description: "click",
+      parameters: { type: "object", properties: {} },
+      handler: () => "{}",
+    },
+  ]);
   return reg;
 }
 

@@ -42,7 +42,7 @@ export {
 } from "./search.ts";
 export { registerMemoryTools } from "./register-tools.ts";
 export {
-  registerSemanticMemoryTools,
+  semanticMemoryToolDefs,
   rememberFromArgs,
   createSemanticMemoryFromArgs,
 } from "./semantic-memory-tools.ts";

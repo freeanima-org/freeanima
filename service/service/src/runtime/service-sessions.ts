@@ -111,6 +111,6 @@ export async function setSessionTitle(
 
 export async function appendSessionMetaForEngine(session: string): Promise<void> {
   const cfg = loadConfig();
-  const names = getServiceContext().engine.catalog.tools.toolNames();
+  const names = getServiceContext().engine.catalog.toolSets.toolNames();
   await conv().appendSessionMeta(session, names, getProfileHopModel(cfg, PROFILE_CHAT), {});
 }

@@ -110,31 +110,33 @@ createServiceKernel()
 → catalog = createEngineCatalog(); masks = new MaskRegistry()
 → registerServiceTools(catalog); initMaskSystem(masks)
 → createEngine({ catalog, repos, llm })
-→ createConversationService(engine.repos, catalog.tools)
+→ createConversationService(engine.repos, catalog.toolSets)
 → new AnimaService({ kernel, conversation })
 → initServiceContext({ engine, masks, service, conversation, ... })
 ```
 
 #### Runtime Catalog（Registry 实例）
 
-**实例获取原则**：要拿到 `ToolRegistry` / `ToolSetRegistry` / `SkillRegistry` / `MaskRegistry` 等 catalog 实例，**要么 `new` 一个，要么从上下文（或自上下文派生的显式参数）获取**。
+**实例获取原则**：要拿到 `ToolSetRegistry` / `SkillRegistry` / `MaskRegistry` 等 catalog 实例，**要么 `new` 一个，要么从上下文（或自上下文派生的显式参数）获取**。
 
 | 场景                                              | 做法                                                                                                                                      |
 | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | 组合根 [`serve.ts`](service/service/src/serve.ts) | `new` 各 Registry，装入 `Engine.catalog` 与 `ServiceContext.masks`                                                                        |
 | 运行时读写                                        | `getServiceContext().engine.catalog.*`、`getServiceContext().masks`；turn 内经 `runWithToolContext(..., { tools })` / `getToolRegistry()` |
-| 向下传递                                          | 显式参数（如 `registerCoreTools(tools)`）合法，**参数须来自组合根 `new` 或 context**，不得读模块 default                                  |
-| 单元测                                            | `new ToolRegistry()` 等隔离实例；禁止污染进程级 catalog                                                                                   |
+| 向下传递                                          | 显式参数（如 `registerCoreTools(toolSets)`）合法，**参数须来自组合根 `new` 或 context**，不得读模块 default                               |
+| 单元测                                            | `new ToolSetRegistry()` 等隔离实例；禁止污染进程级 catalog                                                                                |
 
 **归属**（层边界）：
 
-- `Engine.catalog`：`tools`、`toolSets`、`skills`（engine 层）
+- `Engine.catalog`：`toolSets`、`skills`（engine 层）；`ToolSetRegistry` 内嵌 `ToolDef[]`，flat API（`getTool` / `listTools` / `openaiSchemas`）在 `toolSets` 实例上
+- `Engine.tools`：只读 getter，指向 `catalog.toolSets`（兼容旧调用方）
 - `ServiceContext.masks`：`MaskRegistry`（capabilities 层；engine 不可 import `capabilities-mask`）
 
 **禁止**：
 
 - `export const default*Registry` 及依赖它的模块级 `registerTool()` / `listTools()` / `registerMask()` 等（import 时隐式绑定，不可注入）
 - capabilities / life / engine 内 `import { defaultToolRegistry }` 等直接读 default
+- `ToolDef.toolset` 字段；工具归属由所在 ToolSet 决定；MCP/ACP 动态集用 `registerToolSet` / `unregisterToolSet` 配对（不用 upsert）
 
 **允许**：与 `ConversationService`、`SessionStorePort` 相同——组合根实例化，运行时经 `getServiceContext()` 或显式参数传递。
 

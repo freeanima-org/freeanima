@@ -55,7 +55,6 @@ export function rowToPatch(job: CronJob): CronJobUpdateInput {
     skills: job.skills,
     script: job.script,
     no_agent: job.no_agent,
-    enabled_toolsets: job.enabled_toolsets,
     model_provider: job.model_provider,
     model_name: job.model_name,
     workdir: job.workdir,

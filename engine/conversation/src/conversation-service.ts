@@ -1,5 +1,5 @@
 import type { PgRepositories } from "@freeanima/engine-repos";
-import type { ToolRegistry } from "@freeanima/engine-tool";
+import type { ToolSetRegistry } from "@freeanima/engine-tool";
 import type { SessionMessage } from "./message.ts";
 import {
   advanceCompressionMeta,
@@ -50,16 +50,16 @@ function bindRepos<A extends unknown[], T>(
 
 function bindReposAndTools<A extends unknown[], T>(
   repos: PgRepositories,
-  tools: ToolRegistry,
-  fn: (repos: PgRepositories, tools: ToolRegistry, ...args: A) => T,
+  tools: ToolSetRegistry,
+  fn: (repos: PgRepositories, tools: ToolSetRegistry, ...args: A) => T,
 ): (...args: A) => T {
   return (...args: A) => fn(repos, tools, ...args);
 }
 
-/** 绑定 PgRepositories 与 ToolRegistry；由 service 组合根实例化 */
+/** 绑定 PgRepositories 与 ToolSetRegistry；由 service 组合根实例化 */
 export class ConversationService {
   readonly repos: PgRepositories;
-  readonly tools: ToolRegistry;
+  readonly tools: ToolSetRegistry;
 
   readonly loadSessionTools;
   readonly loadSessionMeta;
@@ -99,7 +99,7 @@ export class ConversationService {
   readonly retryTurn;
   readonly cleanupDebugSessions;
 
-  constructor(repos: PgRepositories, tools: ToolRegistry) {
+  constructor(repos: PgRepositories, tools: ToolSetRegistry) {
     this.repos = repos;
     this.tools = tools;
     this.loadSessionTools = bindReposAndTools(repos, tools, loadSessionTools);
@@ -148,7 +148,7 @@ export class ConversationService {
 
 export function createConversationService(
   repos: PgRepositories,
-  tools: ToolRegistry,
+  tools: ToolSetRegistry,
 ): ConversationService {
   return new ConversationService(repos, tools);
 }

@@ -2,8 +2,8 @@ import { join } from "node:path";
 import type { SkillRegistry } from "@freeanima/engine-skill";
 import { registerSkillsFromDirectory } from "@freeanima/engine-skill";
 import { getToolSessionId } from "@freeanima/engine-loop";
-import type { ToolRegistry } from "@freeanima/engine-tool";
-import { toolError, toolResult } from "@freeanima/engine-tool";
+import type { ToolDef, ToolSetRegistry } from "@freeanima/engine-tool";
+import { acpToolsetId, toolError, toolResult } from "@freeanima/engine-tool";
 import { loadConfig } from "@freeanima/service-config";
 import { logComponent } from "@freeanima/service-logging";
 
@@ -189,11 +189,11 @@ export class AcpManager {
   /** agentName → taskId 或 "sync" */
   private readonly activePromptByAgent = new Map<string, string>();
   private progressTicker: ReturnType<typeof setInterval> | null = null;
-  private tools: ToolRegistry | null = null;
+  private toolSets: ToolSetRegistry | null = null;
   private skills: SkillRegistry | null = null;
 
-  wireRegistries(opts: { tools: ToolRegistry; skills: SkillRegistry }): void {
-    this.tools = opts.tools;
+  wireRegistries(opts: { toolSets: ToolSetRegistry; skills: SkillRegistry }): void {
+    this.toolSets = opts.toolSets;
     this.skills = opts.skills;
   }
 
@@ -236,8 +236,8 @@ export class AcpManager {
 
   registerTools(agentsCfg?: Record<string, AcpAgentConfig>): number {
     if (this.toolsRegistered && !agentsCfg) return 0;
-    if (!this.tools || !this.skills) {
-      throw new Error("AcpManager: tools/skills 未绑定，请先 wireRegistries");
+    if (!this.toolSets || !this.skills) {
+      throw new Error("AcpManager: toolSets/skills 未绑定，请先 wireRegistries");
     }
     const cfg = loadConfig();
     const agents = agentsCfg ?? cfg.acp_agents ?? {};
@@ -250,10 +250,9 @@ export class AcpManager {
       const toolName = `acp_${agentName}`;
       const description = agentCfg.description ?? defaultCursorDescription(agentName);
 
-      this.tools.register({
+      const def: ToolDef = {
         name: toolName,
         description,
-        toolset: `acp:${agentName}`,
         parameters: {
           type: "object",
           properties: {
@@ -359,7 +358,10 @@ export class AcpManager {
             }),
           );
         },
-      });
+      };
+      const setId = acpToolsetId(agentName);
+      this.toolSets.unregisterToolSet(setId);
+      this.toolSets.registerToolSet(setId, description, [def]);
       count += 1;
     }
     this.toolsRegistered = true;
@@ -379,7 +381,7 @@ export class AcpManager {
       else if (client?.isConnected && client.isProcessAlive()) status = "connected";
       else if (this.agentErrors.has(name)) status = "error";
 
-      const registered = this.tools!.list().find((t) => t.name === `acp_${name}`);
+      const registered = this.toolSets!.getTool(`acp_${name}`);
       const sessionIds = this.sessionStore.listForAgent(name);
 
       views.push({
@@ -401,7 +403,7 @@ export class AcpManager {
       agent_count: views.length,
       connected_count,
       session_count: this.sessionStore.count(),
-      tool_count: this.tools!.list().filter((t) => t.toolset?.startsWith("acp:")).length,
+      tool_count: this.toolSets!.listToolSets().filter((ts) => ts.name.startsWith("acp_")).length,
       agents: views,
     };
   }

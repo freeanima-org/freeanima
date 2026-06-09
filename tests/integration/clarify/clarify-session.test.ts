@@ -24,7 +24,7 @@ describePg("clarify session", () => {
   beforeEach(async () => {
     await beginIntegrationCase("anima-clarify-");
     const engine = getTestEngine();
-    registerAllTools({ tools: engine.tools, skills: engine.skills });
+    registerAllTools({ toolSets: engine.toolSets, skills: engine.skills });
   });
 
   afterEach(async () => {

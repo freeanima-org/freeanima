@@ -9,7 +9,7 @@ import {
   ProviderRegistry,
 } from "@freeanima/engine-provider-llm";
 import { SkillRegistry } from "@freeanima/engine-skill";
-import { ToolRegistry, ToolSetRegistry } from "@freeanima/engine-tool";
+import { ToolSetRegistry } from "@freeanima/engine-tool";
 import { nullPgRepositories } from "@freeanima/engine-repos";
 import { MockBackend } from "@freeanima/engine-provider-llm/test-helpers/mock-backend";
 import { Engine } from "./engine.ts";
@@ -17,7 +17,6 @@ import { Engine } from "./engine.ts";
 describe("Engine", () => {
   it("组合 catalog 与 llm 组件群", () => {
     const catalog = {
-      tools: new ToolRegistry(),
       toolSets: new ToolSetRegistry(),
       skills: new SkillRegistry(),
     };
@@ -33,7 +32,8 @@ describe("Engine", () => {
     );
     const llm = { backends, providers, profiles };
     const engine = new Engine(catalog, llm, nullPgRepositories);
-    expect(engine.tools).toBe(catalog.tools);
+    expect(engine.tools).toBe(catalog.toolSets);
+    expect(engine.toolSets).toBe(catalog.toolSets);
     expect(engine.catalog.skills).toBe(catalog.skills);
     expect(engine.llm.backends).toBe(backends);
     expect(engine.llm.providers).toBe(providers);

@@ -176,5 +176,5 @@ export function getTestEngine(): Engine {
 
 export function testConv(): ConversationService {
   const engine = getTestEngine();
-  return createConversationService(engine.repos, engine.tools);
+  return createConversationService(engine.repos, engine.catalog.toolSets);
 }

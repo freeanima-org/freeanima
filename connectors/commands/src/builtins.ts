@@ -67,7 +67,7 @@ async function cmdReloadTools(ctx: CommandContext): Promise<string> {
   try {
     const count = await conv().reloadSessionTools(ctx.sessionId);
     const names = getServiceContext()
-      .engine.catalog.tools.list()
+      .engine.catalog.toolSets.listTools()
       .map((t) => t.name);
     const preview = names.length <= 8 ? names.join(", ") : `${names.slice(0, 8).join(", ")}…`;
     return `✅ 已更新 session 工具列表：${count} 个（此前 ${before} 个）。下次对话将携带最新工具。\n${preview}`;

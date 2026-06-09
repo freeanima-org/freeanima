@@ -9,7 +9,6 @@ export const cronJobDataSchema = z.object({
   skills: z.array(z.string()).default([]),
   script: z.string().nullable().default(null),
   no_agent: z.boolean().default(false),
-  enabled_toolsets: z.array(z.string()).nullable().default(null),
   model_provider: z.string().nullable().default(null),
   model_name: z.string().nullable().default(null),
   workdir: z.string().nullable().default(null),
