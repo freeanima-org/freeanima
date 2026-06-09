@@ -15,8 +15,17 @@ function assertDockerAvailable(): void {
   }
 }
 
+/** 测试库 superuser 预装扩展（vector 不在 migration 内，见 ensure-pg-extensions.sql） */
+function ensurePgExtensions(url: string): void {
+  const extensionsPath = join(dbRoot, "scripts/ensure-pg-extensions.sql");
+  execSync(`psql "${url}" -v ON_ERROR_STOP=1 -f "${extensionsPath}"`, {
+    stdio: "inherit",
+  });
+}
+
 /** 用 psql 执行 migration SQL（避免 setup 依赖 workspace 包解析） */
 function runMigrations(url: string): void {
+  ensurePgExtensions(url);
   const migrationsDir = join(dbRoot, "migrations");
   const dirs = readdirSync(migrationsDir, { withFileTypes: true })
     .filter((d) => d.isDirectory())
