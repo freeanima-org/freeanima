@@ -22,6 +22,8 @@ describe("registerServiceTools", () => {
     registerServiceTools({ toolSets, skills });
     const names = new Set(toolSets.listTools().map((t) => t.name));
     expect(names.has("read_file")).toBe(true);
+    expect(names.has("tool_search")).toBe(true);
+    expect(names.has("tool_load")).toBe(true);
     expect(names.has("todo")).toBe(true);
     expect(names.has("cronjob")).toBe(true);
     expect(names.has("create_task")).toBe(true);

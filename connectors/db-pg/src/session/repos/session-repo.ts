@@ -100,6 +100,7 @@ export async function upsertSessionMeta(
           awaitingClarify: row.awaitingClarify,
           acpSessions: row.acpSessions,
           tools: row.tools,
+          loadedTools: row.loadedTools,
           functions: row.functions,
           debug: row.debug,
           updatedAt: row.updatedAt,
@@ -147,6 +148,10 @@ export async function patchSessionMeta(
   }
   if (patch.tools !== undefined) {
     set.tools = z.array(z.string()).parse(patch.tools);
+    hasColumnPatch = true;
+  }
+  if (patch.loaded_tools !== undefined) {
+    set.loadedTools = z.array(z.string()).parse(patch.loaded_tools);
     hasColumnPatch = true;
   }
   if (patch.functions !== undefined) {

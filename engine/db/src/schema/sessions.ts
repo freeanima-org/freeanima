@@ -6,6 +6,7 @@ import type {
   AwaitingClarifyJson,
   CompressionJson,
   SessionFunctionsJson,
+  SessionLoadedToolsJson,
   SessionTodosJson,
   SessionToolsJson,
 } from "./jsonb/session-jsonb.ts";
@@ -22,6 +23,7 @@ export const sessions = pgTable("sessions", {
   awaitingClarify: jsonb("awaiting_clarify").$type<AwaitingClarifyJson | null>(),
   acpSessions: jsonb("acp_sessions").$type<AcpSessionsJson | null>(),
   tools: jsonb("tools").$type<SessionToolsJson>().notNull().default([]),
+  loadedTools: jsonb("loaded_tools").$type<SessionLoadedToolsJson>().notNull().default([]),
   functions: jsonb("functions").$type<SessionFunctionsJson>().notNull().default([]),
   debug: boolean("debug").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true, mode: "string" }).notNull(),

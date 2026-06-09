@@ -13,6 +13,7 @@ import {
   SELF_LAYER_SYSTEM_FRAME,
 } from "@freeanima/life-self";
 
+import { isSessionMeta } from "@freeanima/engine-db/domain";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
@@ -137,20 +138,12 @@ describePg("slash commands", () => {
     expect(await testConv().sessionExists(String(result.data?.new_session_id))).toBe(true);
   });
 
-  it("reload_tools updates session_meta tools", async () => {
+  it("reload_tools resets session to default tools", async () => {
     const sid = await testConv().newSession("parlor");
     await patchMetaForTest(sid, {
       tools: ["stale_tool"],
+      loaded_tools: ["read_file"],
     });
-
-    getTestEngine().toolSets.registerToolSet("__test_reload__", "测试", [
-      {
-        name: "reload_tools_test_only",
-        description: "test",
-        parameters: { type: "object", properties: {} },
-        handler: async () => JSON.stringify({ ok: true }),
-      },
-    ]);
 
     const [cmd] = findCommand("/reload_tools");
     const result = await executeCommand(cmd!, {
@@ -159,13 +152,17 @@ describePg("slash commands", () => {
       args: [],
       raw: "/reload_tools",
     });
-    expect(result.text).toContain("已更新 session 工具列表");
+    expect(result.text).toContain("已重置 session 工具");
 
-    const metaTools = await testConv().loadSessionMeta(sid);
-    const tools = await testConv().loadSessionTools(sid, metaTools);
-    const names = tools.map((t) => t.function?.name).filter(Boolean);
-    expect(names).toContain("reload_tools_test_only");
-    expect(names).not.toContain("stale_tool");
+    const meta = await testConv().loadSessionMeta(sid);
+    expect(isSessionMeta(meta)).toBe(true);
+    if (!isSessionMeta(meta)) return;
+    expect(meta.tools).not.toContain("stale_tool");
+    expect(meta.loaded_tools ?? []).toEqual([]);
+    const schemas = await testConv().loadSessionTools(sid, meta);
+    const names = schemas.map((t) => t.function?.name).filter(Boolean);
+    expect(names).toContain("tool_search");
+    expect(names).toContain("tool_load");
   });
 
   it("reload_tools on missing session returns warning", async () => {

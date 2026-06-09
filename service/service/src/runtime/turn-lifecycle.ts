@@ -1,3 +1,4 @@
+import { isSessionMeta, resolveExecutableToolNames } from "@freeanima/engine-conversation";
 import { getServiceContext } from "../context.ts";
 import { resolveSessionMaskFromMeta, runtimeToolMaskFromResolved } from "./mask-wire.ts";
 
@@ -112,6 +113,7 @@ export async function runSimpleTurn(opts: RunSimpleTurnOpts): Promise<string> {
   const tools = await conv().loadSessionTools(sessionId);
   const meta = await conv().loadSessionMeta(sessionId);
   const toolMask = runtimeToolMaskFromResolved(resolveSessionMaskFromMeta(meta));
+  const executableTools = isSessionMeta(meta) ? resolveExecutableToolNames(meta) : undefined;
   try {
     return await runWithToolContext(
       sessionId,
@@ -120,9 +122,10 @@ export async function runSimpleTurn(opts: RunSimpleTurnOpts): Promise<string> {
           model,
           tools,
           toolMask,
+          executableTools,
           ...createTurnMessageCallbacks(sessionId),
         }),
-      { repos: conv().repos, tools: toolRegistry() },
+      { repos: conv().repos, tools: toolRegistry(), executableTools },
     );
   } catch (e) {
     if (e instanceof engine.MaxTurnsExceeded) {
@@ -144,6 +147,7 @@ export async function* yieldEngineStream(
   const tools = await conv().loadSessionTools(sessionId);
   const meta = await conv().loadSessionMeta(sessionId);
   const toolMask = runtimeToolMaskFromResolved(resolveSessionMaskFromMeta(meta));
+  const executableTools = isSessionMeta(meta) ? resolveExecutableToolNames(meta) : undefined;
   host.acquireInFlight();
   try {
     try {
@@ -154,9 +158,10 @@ export async function* yieldEngineStream(
             model,
             tools,
             toolMask,
+            executableTools,
             ...host.engineStreamOpts(sessionId, signal),
           }),
-        { repos: conv().repos, tools: toolRegistry() },
+        { repos: conv().repos, tools: toolRegistry(), executableTools },
       )) {
         if (ev.event === "awaiting_clarify") {
           await applyClarifyStreamAwaiting(conv(), sessionId, ev.data.items, ev.data.timeout_sec);

@@ -8,6 +8,7 @@ import {
 } from "../../helpers/integration-case.ts";
 
 import { isSessionMeta } from "@freeanima/engine-db/domain";
+import { DEFAULT_SESSION_TOOL_NAMES } from "@freeanima/engine-tool";
 import { registerAllTools } from "@freeanima/service";
 import { getTestEngine, testConv } from "../../helpers/pg-test.ts";
 
@@ -44,7 +45,7 @@ describePg("conversation", () => {
     expect(cwd).toContain(sid.slice(0, 8));
   });
 
-  it("new session writes tool names and loadSessionTools resolves schemas", async () => {
+  it("new session writes default tool names and loadSessionTools resolves schemas", async () => {
     const engine = getTestEngine();
     registerAllTools({ toolSets: engine.toolSets, skills: engine.skills });
     const c = testConv();
@@ -55,7 +56,11 @@ describePg("conversation", () => {
 
     const storedToolNames = await c.repos.session.getSessionTools(sid);
     expect(storedToolNames.length).toBeGreaterThan(0);
-    expect(typeof storedToolNames[0]).toBe("string");
+    expect(storedToolNames.length).toBeLessThan(engine.toolSets.toolNames().length);
+    for (const name of storedToolNames) {
+      expect(DEFAULT_SESSION_TOOL_NAMES.includes(name as never)).toBe(true);
+    }
+    expect(meta.loaded_tools ?? []).toEqual([]);
 
     const tools = await c.loadSessionTools(sid);
     expect(tools.length).toBe(storedToolNames.length);
