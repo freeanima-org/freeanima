@@ -150,7 +150,7 @@ export const emailConfigSchema = z.object({
 export type EmailAccountConfig = z.infer<typeof emailAccountSchema>;
 export type EmailConfig = z.infer<typeof emailConfigSchema>;
 
-export const nestConfigSchema = z
+export const animaConfigSchema = z
   .object({
     llm: llmConfigSchema,
     firecrawl: firecrawlSchema.optional(),
@@ -174,7 +174,7 @@ export const nestConfigSchema = z
   })
   .passthrough();
 
-export type NestConfig = z.infer<typeof nestConfigSchema>;
+export type AnimaConfig = z.infer<typeof animaConfigSchema>;
 export type { LlmConfig } from "./llm-config.ts";
 export {
   llmConfigSchema,

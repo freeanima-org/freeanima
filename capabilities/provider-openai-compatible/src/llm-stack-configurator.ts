@@ -1,4 +1,4 @@
-import type { NestConfig } from "@freeanima/service-config";
+import type { AnimaConfig } from "@freeanima/service-config";
 import { getLlmConfig } from "@freeanima/service-config";
 import type { BackendRegistry, ProviderRegistry } from "@freeanima/engine-provider-llm";
 import {
@@ -9,7 +9,7 @@ import {
 
 /** 向 engine-llm 注册 OpenAI 兼容 provider/backend */
 export function wireOpenAiCompatibleLlm(
-  cfg: NestConfig,
+  cfg: AnimaConfig,
   backends: BackendRegistry,
   providers: ProviderRegistry,
 ): void {

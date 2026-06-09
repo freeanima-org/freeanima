@@ -69,42 +69,42 @@ export function createAcpProgressDelivery(opts: {
     opts.onSessionUpdated?.(sessionId);
   };
 
-  const loadTargets = async (nestSessionId: string): Promise<CronDeliverTarget[]> => {
-    const meta = await opts.conversation.loadSessionMeta(nestSessionId);
+  const loadTargets = async (animaSessionId: string): Promise<CronDeliverTarget[]> => {
+    const meta = await opts.conversation.loadSessionMeta(animaSessionId);
     return resolveSessionDeliverTargets(meta);
   };
 
   return {
     async deliverProgress(task, body) {
-      const targets = await loadTargets(task.nestSessionId);
+      const targets = await loadTargets(task.animaSessionId);
       if (targets.length) {
         await deliverToTargets(targets, body);
-      } else if (task.nestSessionId) {
-        notifySession(task.nestSessionId);
+      } else if (task.animaSessionId) {
+        notifySession(task.animaSessionId);
       }
     },
 
     async deliverResult(task, result) {
       const body = formatResultBody(task, result);
-      const targets = await loadTargets(task.nestSessionId);
+      const targets = await loadTargets(task.animaSessionId);
       if (targets.length) {
         await deliverToTargets(targets, body);
       } else {
         logComponent("acp-deliver").debug("无外部投递目标，仅通知 session 更新", {
-          sessionId: task.nestSessionId,
+          sessionId: task.animaSessionId,
           taskId: task.taskId,
         });
       }
-      notifySession(task.nestSessionId);
+      notifySession(task.animaSessionId);
     },
 
     async deliverError(task, message) {
       const body = formatErrorBody(task, message);
-      const targets = await loadTargets(task.nestSessionId);
+      const targets = await loadTargets(task.animaSessionId);
       if (targets.length) {
         await deliverToTargets(targets, body);
       }
-      notifySession(task.nestSessionId);
+      notifySession(task.animaSessionId);
     },
   };
 }

@@ -33,11 +33,11 @@ describe("http-shutdown", () => {
 
   it("waitForDrainWithTimeout 超时后继续", async () => {
     vi.useFakeTimers();
-    const nest = {
+    const anima = {
       getInFlightCount: () => 2,
       waitForDrain: () => new Promise<void>(() => {}),
     };
-    const p = waitForDrainWithTimeout(nest as never, 1000);
+    const p = waitForDrainWithTimeout(anima as never, 1000);
     vi.advanceTimersByTime(1000);
     await p;
     vi.useRealTimers();

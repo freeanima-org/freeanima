@@ -47,7 +47,7 @@ describe("AcpManager 异步进度轮询", () => {
       taskId: "t1",
       agentName: "cursor",
       acpSessionId: "s1",
-      nestSessionId: "n1",
+      animaSessionId: "n1",
       mode: "agent",
       status: "running",
       startedAt: now,

@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll } from "bun:test";
 import { wireOpenAiCompatibleLlm } from "@freeanima/capabilities-provider-openai-compatible";
 import { createLlmRuntime } from "../../src/llm-stack.ts";
 import { registerLlmStackConfigurator } from "../../src/llm-stack-configurator.ts";
-import type { NestConfig } from "@freeanima/service-config";
+import type { AnimaConfig } from "@freeanima/service-config";
 
 const testCfg = {
   llm: {
@@ -20,7 +20,7 @@ const testCfg = {
       },
     },
   },
-} as NestConfig;
+} as AnimaConfig;
 
 beforeAll(() => {
   registerLlmStackConfigurator(wireOpenAiCompatibleLlm);

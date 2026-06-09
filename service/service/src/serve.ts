@@ -230,7 +230,6 @@ export async function serve(
     startupLog("初始化 AnimaService / EventBus…");
     service = new AnimaService({ kernel, conversation });
     service.markStarted();
-    const nest = service;
 
     registerServiceMemoryBus({
       kernel,
@@ -291,7 +290,7 @@ export async function serve(
     mcp = new MCPManager();
 
     initServiceContext({
-      service: nest,
+      service,
       kernel,
       engine,
       conversation,
@@ -325,7 +324,6 @@ export async function serve(
   }
 
   let platforms: PlatformAdapter[] = [];
-  const nest = service!;
 
   const shutdown = async (signal: string) => {
     const t0 = Date.now();
@@ -337,12 +335,12 @@ export async function serve(
       signal,
     });
 
-    nest.startShutdown();
+    service!.startShutdown();
     step("已拒绝新请求", Date.now() - t0);
 
     {
       const s = Date.now();
-      await (opts.webui?.waitForDrain ?? defaultWaitForDrain)(nest, 90_000);
+      await (opts.webui?.waitForDrain ?? defaultWaitForDrain)(service!, 90_000);
       step("请求排空完成", Date.now() - s);
     }
 
@@ -413,7 +411,7 @@ export async function serve(
   mcp.startAllAsync();
   acp.startAllAsync();
   startAcpProgressTicker();
-  void discoverPlatforms(nest)
+  void discoverPlatforms(service!)
     .then(async (adapters) => {
       platforms = adapters;
       await startPlatforms(adapters);

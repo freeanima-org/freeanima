@@ -17,7 +17,7 @@ import {
 import { AcpAgentQueue } from "./agent-queue.ts";
 import type { AcpProgressDeliveryPort } from "./ports/progress-delivery.ts";
 import { ACPClient } from "./client.ts";
-import { bindAcpSession, getBoundAcpSession, unbindAcpSession } from "./nest-binding.ts";
+import { bindAcpSession, getBoundAcpSession, unbindAcpSession } from "./anima-binding.ts";
 import {
   formatAcpPromptResult,
   type AcpCursorMode,
@@ -39,7 +39,7 @@ const DEFAULT_PROGRESS_INTERVAL_MS = 30_000;
 const ACP_SKILLS_SOURCE = "acp";
 
 type AcpPromptOptions = {
-  nestSessionId?: string;
+  animaSessionId?: string;
   acpSessionId?: string;
   newSession?: boolean;
   continueSession?: boolean;
@@ -317,7 +317,7 @@ export class AcpManager {
           const mode = parseMode(args.mode) ?? "agent";
           const isAsync = args.async === true || args.async === "true";
           const timeoutMinutes = parseTimeoutMinutes(args.timeout_minutes);
-          const nestSid = getToolSessionId();
+          const animaSid = getToolSessionId();
 
           if (isAsync) {
             return this.queueFor(agentName).run(() =>
@@ -326,7 +326,7 @@ export class AcpManager {
                 prompt,
                 context,
                 {
-                  nestSessionId: nestSid,
+                  animaSessionId: animaSid,
                   acpSessionId: explicitSid,
                   newSession,
                   continueSession,
@@ -339,7 +339,7 @@ export class AcpManager {
 
           return this.queueFor(agentName).run(() =>
             this.handleAcpPrompt(agentName, prompt, context, {
-              nestSessionId: nestSid,
+              animaSessionId: animaSid,
               acpSessionId: explicitSid,
               newSession,
               continueSession,
@@ -629,12 +629,12 @@ export class AcpManager {
     }
 
     if (opts.newSession) {
-      const id = await this.createAcpSession(client, agentName, agentCfg, opts.nestSessionId);
+      const id = await this.createAcpSession(client, agentName, agentCfg, opts.animaSessionId);
       return { id, newSession: true, reusedBinding: false, explicit: false };
     }
 
-    if (opts.continueSession && opts.nestSessionId) {
-      const bound = await getBoundAcpSession(this.conv(), opts.nestSessionId, agentName);
+    if (opts.continueSession && opts.animaSessionId) {
+      const bound = await getBoundAcpSession(this.conv(), opts.animaSessionId, agentName);
       if (bound) {
         if (this.sessionStore.has(bound, agentName)) {
           this.sessionStore.touch(bound);
@@ -644,7 +644,7 @@ export class AcpManager {
           client,
           agentName,
           agentCfg,
-          opts.nestSessionId,
+          opts.animaSessionId,
           bound,
           opts.mode ?? "agent",
         );
@@ -652,8 +652,8 @@ export class AcpManager {
       }
     }
 
-    if (opts.nestSessionId) {
-      const bound = await getBoundAcpSession(this.conv(), opts.nestSessionId, agentName);
+    if (opts.animaSessionId) {
+      const bound = await getBoundAcpSession(this.conv(), opts.animaSessionId, agentName);
       if (bound) {
         if (this.sessionStore.has(bound, agentName)) {
           this.sessionStore.touch(bound);
@@ -663,7 +663,7 @@ export class AcpManager {
           client,
           agentName,
           agentCfg,
-          opts.nestSessionId,
+          opts.animaSessionId,
           bound,
           opts.mode ?? "agent",
         );
@@ -671,7 +671,7 @@ export class AcpManager {
       }
     }
 
-    const id = await this.createAcpSession(client, agentName, agentCfg, opts.nestSessionId);
+    const id = await this.createAcpSession(client, agentName, agentCfg, opts.animaSessionId);
     return { id, newSession: true, reusedBinding: false, explicit: false };
   }
 
@@ -680,7 +680,7 @@ export class AcpManager {
     client: ACPClient,
     agentName: string,
     agentCfg: AcpAgentConfig,
-    nestSessionId: string,
+    animaSessionId: string,
     boundId: string,
     mode: AcpCursorMode,
   ): Promise<{ id: string; newSession: boolean }> {
@@ -696,7 +696,7 @@ export class AcpManager {
     } catch {
       /* ignore */
     }
-    const id = await this.createAcpSession(client, agentName, agentCfg, nestSessionId);
+    const id = await this.createAcpSession(client, agentName, agentCfg, animaSessionId);
     return { id, newSession: true };
   }
 
@@ -704,12 +704,12 @@ export class AcpManager {
     client: ACPClient,
     agentName: string,
     agentCfg: AcpAgentConfig,
-    nestSessionId?: string,
+    animaSessionId?: string,
   ): Promise<string> {
     const sid = await client.createSession(agentCfg.cwd);
     this.sessionStore.add(sid, agentName);
-    if (nestSessionId) {
-      await bindAcpSession(this.conv(), nestSessionId, agentName, sid);
+    if (animaSessionId) {
+      await bindAcpSession(this.conv(), animaSessionId, agentName, sid);
     }
     return sid;
   }
@@ -736,8 +736,8 @@ export class AcpManager {
     const mode = opts.mode ?? "agent";
 
     const previousBound =
-      opts.newSession && opts.nestSessionId
-        ? await getBoundAcpSession(this.conv(), opts.nestSessionId, agentName)
+      opts.newSession && opts.animaSessionId
+        ? await getBoundAcpSession(this.conv(), opts.animaSessionId, agentName)
         : undefined;
 
     const resolved = await this.resolveAcpSession(client, agentName, agentCfg, opts);
@@ -768,7 +768,7 @@ export class AcpManager {
     if (!agentCfg) {
       return toolError(`ACP agent '${agentName}' not configured`);
     }
-    if (!opts.nestSessionId) {
+    if (!opts.animaSessionId) {
       return toolError("异步模式需要有效的逸灵风 session");
     }
 
@@ -796,7 +796,7 @@ export class AcpManager {
         taskId,
         agentName,
         acpSessionId: sid,
-        nestSessionId: opts.nestSessionId,
+        animaSessionId: opts.animaSessionId,
         mode,
         status: "running",
         startedAt: now,
@@ -994,8 +994,8 @@ export class AcpManager {
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       this.agentErrors.set(agentName, msg);
-      if (opts.nestSessionId && !opts.acpSessionId && !opts.continueSession) {
-        await unbindAcpSession(this.conv(), opts.nestSessionId, agentName);
+      if (opts.animaSessionId && !opts.acpSessionId && !opts.continueSession) {
+        await unbindAcpSession(this.conv(), opts.animaSessionId, agentName);
       }
       return toolError(msg);
     } finally {

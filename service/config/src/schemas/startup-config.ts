@@ -1,1 +1,1 @@
-export { nestConfigSchema as startupConfigSchema } from "./config.ts";
+export { animaConfigSchema as startupConfigSchema } from "./config.ts";

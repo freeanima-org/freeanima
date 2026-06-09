@@ -1,9 +1,9 @@
-import type { NestConfig } from "./schemas/config.ts";
+import type { AnimaConfig } from "./schemas/config.ts";
 import { resolveValue } from "./resolve.ts";
 
 /** 展开 llm.providers.*.api_key 中的 env/credential 引用 */
-export async function resolveLlmProviderApiKeys(cfg: NestConfig): Promise<NestConfig> {
-  const providers: NestConfig["llm"]["providers"] = {};
+export async function resolveLlmProviderApiKeys(cfg: AnimaConfig): Promise<AnimaConfig> {
+  const providers: AnimaConfig["llm"]["providers"] = {};
   for (const [id, provider] of Object.entries(cfg.llm.providers)) {
     providers[id] = {
       ...provider,
