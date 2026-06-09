@@ -46,7 +46,7 @@ describePg("conversation", () => {
 
   it("new session writes tool names and loadSessionTools resolves schemas", async () => {
     const engine = getTestEngine();
-    registerAllTools({ tools: engine.tools, skills: engine.skills });
+    registerAllTools({ toolSets: engine.toolSets, skills: engine.skills });
     const c = testConv();
     const sid = await c.newSession("parlor");
     const meta = await c.loadSessionMeta(sid);

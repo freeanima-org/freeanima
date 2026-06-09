@@ -37,12 +37,12 @@ async function flushActiveCompressionSummaries(): Promise<void> {
 /** 集成测标准 ServiceContext（builtins / AnimaService / WebUI handler） */
 export function wireIntegrationServiceContext(pg: PgTestContext): void {
   const kernel = createServiceKernel();
-  const conversation = createConversationService(pg.engine.repos, pg.engine.tools);
+  const conversation = createConversationService(pg.engine.repos, pg.engine.catalog.toolSets);
   const service = new AnimaService({ kernel, conversation });
   resetRegisterServiceToolsForTest();
-  registerAllTools({ tools: pg.engine.catalog.tools, skills: pg.engine.catalog.skills });
+  registerAllTools({ toolSets: pg.engine.catalog.toolSets, skills: pg.engine.catalog.skills });
   getAcpManager().wireRegistries({
-    tools: pg.engine.catalog.tools,
+    toolSets: pg.engine.catalog.toolSets,
     skills: pg.engine.catalog.skills,
   });
   getAcpManager().wireConversation(conversation);

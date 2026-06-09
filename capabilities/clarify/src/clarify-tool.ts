@@ -1,4 +1,4 @@
-import type { ToolRegistry } from "@freeanima/engine-tool";
+import type { ToolSetRegistry } from "@freeanima/engine-tool";
 import { toolError, toolResult } from "@freeanima/engine-tool";
 import { getClarifyConfig } from "./clarify.ts";
 import type { ClarifyItem as ClarifyItemType } from "./clarify.ts";
@@ -87,59 +87,61 @@ function handleClarify(args: ClarifyArgs): string {
   });
 }
 
-export function registerClarifyTool(tools: ToolRegistry): void {
-  tools.register({
-    name: "clarify",
-    description:
-      "向伙伴提问以获取继续所需的信息。支持批量提问（items）与可选自动推荐（required=false + default）。",
-    parameters: {
-      type: "object",
-      properties: {
-        items: {
-          type: "array",
-          description: "批量问题列表",
-          minItems: 1,
-          maxItems: 5,
+export function registerClarifyTool(toolSets: ToolSetRegistry): void {
+  toolSets.registerToolSet("clarify", "向伙伴提问澄清", [
+    {
+      name: "clarify",
+      description:
+        "向伙伴提问以获取继续所需的信息。支持批量提问（items）与可选自动推荐（required=false + default）。",
+      parameters: {
+        type: "object",
+        properties: {
           items: {
-            type: "object",
-            properties: {
-              question: { type: "string", description: "问题正文" },
-              choices: {
-                type: "array",
-                items: { type: "string" },
-                maxItems: 4,
-                description: "可选选项",
+            type: "array",
+            description: "批量问题列表",
+            minItems: 1,
+            maxItems: 5,
+            items: {
+              type: "object",
+              properties: {
+                question: { type: "string", description: "问题正文" },
+                choices: {
+                  type: "array",
+                  items: { type: "string" },
+                  maxItems: 4,
+                  description: "可选选项",
+                },
+                default: {
+                  type: "string",
+                  description: "required=false 时的 LLM 推荐答案",
+                },
               },
-              default: {
-                type: "string",
-                description: "required=false 时的 LLM 推荐答案",
-              },
+              required: ["question"],
             },
-            required: ["question"],
+          },
+          question: {
+            type: "string",
+            description: "单个问题（与 items 二选一，向后兼容）",
+          },
+          choices: {
+            type: "array",
+            items: { type: "string" },
+            maxItems: 4,
+            description: "单问题模式下的选项",
+          },
+          required: {
+            type: "boolean",
+            description: "是否必须等待伙伴确认；false 时需提供 default 并自动续跑",
+            default: true,
+          },
+          timeout_sec: {
+            type: "integer",
+            minimum: 60,
+            description: "required=true 时等待超时秒数",
           },
         },
-        question: {
-          type: "string",
-          description: "单个问题（与 items 二选一，向后兼容）",
-        },
-        choices: {
-          type: "array",
-          items: { type: "string" },
-          maxItems: 4,
-          description: "单问题模式下的选项",
-        },
-        required: {
-          type: "boolean",
-          description: "是否必须等待伙伴确认；false 时需提供 default 并自动续跑",
-          default: true,
-        },
-        timeout_sec: {
-          type: "integer",
-          minimum: 60,
-          description: "required=true 时等待超时秒数",
-        },
       },
+      handler: (a) => handleClarify(a as ClarifyArgs),
     },
-    handler: (a) => handleClarify(a as ClarifyArgs),
-  });
+  ]);
 }

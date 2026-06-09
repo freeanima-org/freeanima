@@ -68,7 +68,7 @@ describePg("session todo", () => {
 
   it("todo handler sees session when invoked inside bound runStream iteration", async () => {
     const engine = getTestEngine();
-    registerAllTools({ tools: engine.tools, skills: engine.skills });
+    registerAllTools({ toolSets: engine.toolSets, skills: engine.skills });
 
     const cfg = loadConfig();
     const sid = "sess-todo-stream";
@@ -80,7 +80,7 @@ describePg("session todo", () => {
     await runWithToolContext(
       sid,
       async () => {
-        const tool = tools.get("todo")!;
+        const tool = tools.getTool("todo")!;
         output = await Promise.resolve(tool.handler({ action: "add", content: "stream 测试" }));
       },
       { repos, tools },

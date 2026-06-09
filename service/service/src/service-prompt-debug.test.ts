@@ -12,8 +12,6 @@ import { registerServiceTools, resetRegisterServiceToolsForTest } from "./regist
 import { initServiceContext } from "./context.ts";
 import { computeGlobalBreakdown, getPromptDebug } from "./runtime/service-prompt-debug.ts";
 
-const catalog = createEngineCatalog();
-
 const emptySemanticStore = {
   async listResident() {
     return [];
@@ -54,7 +52,7 @@ const mockConv = {
   buildRuntimeMessages: mock(async () => [[], null] as const),
 };
 
-function seedContext() {
+function seedContext(catalog: ReturnType<typeof createEngineCatalog>) {
   initServiceContext({
     conversation: mockConv as never,
     service: {} as never,
@@ -71,11 +69,14 @@ function seedContext() {
 type PromptDebugToolItem = Awaited<ReturnType<typeof getPromptDebug>>["tools"]["items"][number];
 
 describe("service-prompt-debug", () => {
+  let catalog: ReturnType<typeof createEngineCatalog>;
+
   beforeEach(() => {
     resetRegisterServiceToolsForTest();
-    registerServiceTools({ tools: catalog.tools, skills: catalog.skills });
+    catalog = createEngineCatalog();
+    registerServiceTools({ toolSets: catalog.toolSets, skills: catalog.skills });
     registerSemanticMemoryStore(emptySemanticStore);
-    seedContext();
+    seedContext(catalog);
     mockConv.sessionExists.mockClear();
     mockConv.loadSessionMeta.mockClear();
     mockConv.loadSessionTools.mockClear();

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { ToolRegistry } from "@freeanima/engine-tool";
+import { ToolSetRegistry } from "@freeanima/engine-tool";
 import { LIFE_ESTATE_PACKAGE, registerEstateTools } from "./index.ts";
 
 describe("@freeanima/life-estate", () => {
@@ -8,6 +8,6 @@ describe("@freeanima/life-estate", () => {
   });
 
   it("registerEstateTools 可调用", () => {
-    expect(() => registerEstateTools(new ToolRegistry())).not.toThrow();
+    expect(() => registerEstateTools(new ToolSetRegistry())).not.toThrow();
   });
 });

@@ -16,7 +16,7 @@ const testEngine = { catalog, repos: nullPgRepositories } as Engine;
 
 function wireTestService(): AnimaService {
   const kernel = createServiceKernel();
-  const conversation = createConversationService(nullPgRepositories, catalog.tools);
+  const conversation = createConversationService(nullPgRepositories, catalog.toolSets);
   const service = new AnimaService({ kernel, conversation });
   getAcpManager().wireConversation(conversation);
   initServiceContext({
@@ -69,7 +69,7 @@ describe("turn-lifecycle", () => {
 
     expect(finish).toHaveBeenCalledWith(
       nullPgRepositories,
-      catalog.tools,
+      catalog.toolSets,
       "sid-2",
       msgs,
       "q",
@@ -98,14 +98,14 @@ describe("turn-lifecycle", () => {
     expect(out).toBe("done reply");
     expect(conv.beginTurn).toHaveBeenCalledWith(
       nullPgRepositories,
-      catalog.tools,
+      catalog.toolSets,
       "cron-sid",
       "cron prompt",
     );
     expect(engine.run).toHaveBeenCalled();
     expect(conv.finishTurn).toHaveBeenCalledWith(
       nullPgRepositories,
-      catalog.tools,
+      catalog.toolSets,
       "cron-sid",
       msgs,
       "cron prompt",

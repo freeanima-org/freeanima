@@ -20,7 +20,7 @@ describe("acp manager", () => {
   it("registerAcpTools returns 0 when no agents configured", () => {
     setConfigForTest(emptyConfig());
     const catalog = createEngineCatalog();
-    getAcpManager().wireRegistries({ tools: catalog.tools, skills: catalog.skills });
+    getAcpManager().wireRegistries({ toolSets: catalog.toolSets, skills: catalog.skills });
     const count = registerAcpTools({});
     expect(count).toBe(0);
   });
@@ -28,8 +28,8 @@ describe("acp manager", () => {
   it("registerAcpTools registers tools from config", () => {
     setConfigForTest(emptyConfig());
     const catalog = createEngineCatalog();
-    getAcpManager().wireRegistries({ tools: catalog.tools, skills: catalog.skills });
-    const before = catalog.tools.list().filter((t) => t.name.startsWith("acp_")).length;
+    getAcpManager().wireRegistries({ toolSets: catalog.toolSets, skills: catalog.skills });
+    const before = catalog.toolSets.listTools().filter((t) => t.name.startsWith("acp_")).length;
     const count = registerAcpTools({
       test_agent: {
         command: "echo",
@@ -38,7 +38,7 @@ describe("acp manager", () => {
       },
     });
     expect(count).toBe(1);
-    const names = catalog.tools.list().map((t) => t.name);
+    const names = catalog.toolSets.listTools().map((t) => t.name);
     expect(names).toContain("acp_test_agent");
     expect(names.length).toBeGreaterThanOrEqual(before + 1);
   });

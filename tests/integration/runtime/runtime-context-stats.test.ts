@@ -28,12 +28,14 @@ compression:
   });
 
   it("breakdown includes tools and system parts from runtime view", async () => {
-    getTestEngine().tools.register({
-      name: "ctx_stats_big_tool",
-      description: "y".repeat(5000),
-      parameters: { type: "object", properties: {} },
-      handler: async () => JSON.stringify({ ok: true }),
-    });
+    getTestEngine().toolSets.registerToolSet("__ctx_stats__", "测试", [
+      {
+        name: "ctx_stats_big_tool",
+        description: "y".repeat(5000),
+        parameters: { type: "object", properties: {} },
+        handler: async () => JSON.stringify({ ok: true }),
+      },
+    ]);
     const c = testConv();
     const sid = await c.newSession("parlor");
     await c.updateSessionMetaField(sid, {

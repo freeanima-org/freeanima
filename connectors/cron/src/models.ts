@@ -14,7 +14,6 @@ export class CronJob {
   skills: string[];
   script: string | null;
   no_agent: boolean;
-  enabled_toolsets: string[] | null;
   model_provider: string | null;
   model_name: string | null;
   workdir: string | null;
@@ -38,7 +37,6 @@ export class CronJob {
     this.skills = init.skills ?? [];
     this.script = init.script ?? null;
     this.no_agent = init.no_agent ?? false;
-    this.enabled_toolsets = init.enabled_toolsets ?? null;
     this.model_provider = init.model_provider ?? null;
     this.model_name = init.model_name ?? null;
     this.workdir = init.workdir ?? null;
@@ -64,7 +62,6 @@ export class CronJob {
       skills: row.skills,
       script: row.script,
       no_agent: row.no_agent,
-      enabled_toolsets: row.enabled_toolsets,
       model_provider: row.model_provider,
       model_name: row.model_name,
       workdir: row.workdir,
@@ -94,7 +91,6 @@ export class CronJob {
       skills: [...this.skills],
       script: this.script,
       no_agent: this.no_agent,
-      enabled_toolsets: this.enabled_toolsets ? [...this.enabled_toolsets] : null,
       model_provider: this.model_provider,
       model_name: this.model_name,
       workdir: this.workdir,

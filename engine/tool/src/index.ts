@@ -1,4 +1,4 @@
-export { ToolRegistry, openaiFunctionSchema } from "./registry.ts";
+export { openaiFunctionSchema } from "./registry.ts";
 export type {
   JsonSchemaObject,
   ToolArgs,
@@ -6,6 +6,8 @@ export type {
   ToolDef,
   OpenAiToolEntry,
 } from "./registry.ts";
+/** @deprecated 使用 ToolSetRegistry */
+export type { ToolSetRegistry as ToolRegistry } from "./toolset.ts";
 export {
   isToolError,
   parseToolArgs,
@@ -17,5 +19,5 @@ export {
 } from "./json-util.ts";
 export type { ParsedToolResult, ToolErrorResult } from "./json-util.ts";
 export type { ToolArgsRecord } from "./tool-json.ts";
-export { ToolSetRegistry } from "./toolset.ts";
-export type { ToolSet } from "./toolset.ts";
+export { ToolSetRegistry, mcpToolsetId, acpToolsetId } from "./toolset.ts";
+export type { ToolSet, ToolSetView } from "./toolset.ts";

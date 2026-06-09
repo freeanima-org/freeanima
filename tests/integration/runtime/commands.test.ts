@@ -143,12 +143,14 @@ describePg("slash commands", () => {
       tools: ["stale_tool"],
     });
 
-    getTestEngine().tools.register({
-      name: "reload_tools_test_only",
-      description: "test",
-      parameters: { type: "object", properties: {} },
-      handler: async () => JSON.stringify({ ok: true }),
-    });
+    getTestEngine().toolSets.registerToolSet("__test_reload__", "测试", [
+      {
+        name: "reload_tools_test_only",
+        description: "test",
+        parameters: { type: "object", properties: {} },
+        handler: async () => JSON.stringify({ ok: true }),
+      },
+    ]);
 
     const [cmd] = findCommand("/reload_tools");
     const result = await executeCommand(cmd!, {

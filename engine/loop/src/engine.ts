@@ -379,7 +379,7 @@ export async function* runStream(
         const argsResult = parseToolArgs(tc.function.arguments);
         const fnArgs = argsResult.ok ? argsResult.data : {};
         yield { event: "tool_begin", data: { name: fnName, args: fnArgs } };
-        const tool = getToolRegistry().get(fnName);
+        const tool = getToolRegistry().getTool(fnName);
         let result: string;
         if (opts?.toolMask && !opts.toolMask.allowedTools.includes(fnName)) {
           result = toolError("工具被能力面罩限制");

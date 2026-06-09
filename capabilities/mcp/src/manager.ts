@@ -1,5 +1,5 @@
-import type { ToolRegistry } from "@freeanima/engine-tool";
-import { toolError } from "@freeanima/engine-tool";
+import type { ToolDef, ToolSetRegistry } from "@freeanima/engine-tool";
+import { mcpToolsetId, toolError } from "@freeanima/engine-tool";
 import { loadConfig } from "@freeanima/service-config";
 import { logComponent } from "@freeanima/service-logging";
 
@@ -25,7 +25,7 @@ export class MCPManager {
   private closed = false;
   private startTask: Promise<number> | null = null;
 
-  constructor(private readonly toolRegistry: ToolRegistry) {}
+  constructor(private readonly toolSets: ToolSetRegistry) {}
 
   /** 后台并行连接已启用的 MCP Server，不阻塞 HTTP 启动 */
   startAllAsync(serversCfg?: McpServersConfig): void {
@@ -95,7 +95,7 @@ export class MCPManager {
       this.clients.delete(name);
     }
 
-    this.toolRegistry.unregisterToolsByToolset(`mcp:${name}`);
+    this.toolSets.unregisterToolSet(mcpToolsetId(name));
     this.serverErrors.delete(name);
     this.recountTools();
     return { ok: true, server: name, action: "stop" };
@@ -206,21 +206,20 @@ export class MCPManager {
 
     this.clients.set(name, session);
 
-    const tools = await session.listTools();
-    let registered = 0;
+    const mcpTools = await session.listTools();
+    const defs: ToolDef[] = [];
 
-    for (const toolDef of tools) {
+    for (const toolDef of mcpTools) {
       const originalName = toolDef.name;
       if (!originalName) continue;
 
       const prefixedName = `mcp_${name}_${originalName}`;
       const params = mcpToolParameters({ inputSchema: toolDef.inputSchema });
 
-      this.toolRegistry.register({
+      defs.push({
         name: prefixedName,
         description: toolDef.description ?? `MCP tool ${originalName} (${name})`,
         parameters: params,
-        toolset: `mcp:${name}`,
         handler: async (args) => {
           try {
             const result = await session.callTool(originalName, args);
@@ -230,20 +229,25 @@ export class MCPManager {
           }
         },
       });
-      registered++;
     }
 
-    if (registered > 0) {
-      logComponent("mcp").info(`MCP '${name}': ${registered} tool(s) registered`, {
+    const setId = mcpToolsetId(name);
+    this.toolSets.unregisterToolSet(setId);
+    if (defs.length > 0) {
+      this.toolSets.registerToolSet(setId, `MCP ${name}`, defs);
+      logComponent("mcp").info(`MCP '${name}': ${defs.length} tool(s) registered`, {
         server: name,
-        tool_count: registered,
+        tool_count: defs.length,
       });
     }
-    return registered;
+    return defs.length;
   }
 
   private recountTools(): void {
-    this.toolCount = this.toolRegistry.list().filter((t) => t.toolset?.startsWith("mcp:")).length;
+    this.toolCount = this.toolSets
+      .listToolSets()
+      .filter((ts) => ts.name.startsWith("mcp_"))
+      .reduce((n, ts) => n + ts.tools.length, 0);
   }
 
   async getStatus(): Promise<McpStatusResponse> {
@@ -258,7 +262,8 @@ export class MCPManager {
       const enabled = isMcpServerEnabled(rawCfg);
       const session = this.clients.get(name);
       const error = this.serverErrors.get(name);
-      const registeredTools = this.toolRegistry.list().filter((t) => t.toolset === `mcp:${name}`);
+      const setId = mcpToolsetId(name);
+      const registeredTools = this.toolSets.getToolSet(setId)?.tools ?? [];
 
       let tools: McpServerStatusView["tools"] = [];
       let resources: McpServerStatusView["resources"] = [];
@@ -360,7 +365,7 @@ export class MCPManager {
       }
     }
     for (const name of [...this.clients.keys()]) {
-      this.toolRegistry.unregisterToolsByToolset(`mcp:${name}`);
+      this.toolSets.unregisterToolSet(mcpToolsetId(name));
     }
     this.clients.clear();
     this.serverConfigs.clear();

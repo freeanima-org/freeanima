@@ -1,4 +1,4 @@
-import type { ToolRegistry } from "@freeanima/engine-tool";
+import type { ToolDef } from "@freeanima/engine-tool";
 import { toolError, toolResult } from "@freeanima/engine-tool";
 import type {
   AutobiographicalSignificance,
@@ -20,8 +20,8 @@ function parseSourceSemanticMemory(args: Record<string, unknown>): string[] | un
   return parseStringArray(raw);
 }
 
-export function registerAutobiographicalMemoryTools(tools: ToolRegistry): void {
-  tools.register({
+export const autobiographicalMemoryToolDefs: ToolDef[] = [
+  {
     name: "create_autobiographical_memory",
     description:
       "创建一条自传体叙事（只追加，正文写入后不可修改）。需提供 title 与 content；可选 significance/period/source_semantic_memory/source_sessions。",
@@ -84,9 +84,8 @@ export function registerAutobiographicalMemoryTools(tools: ToolRegistry): void {
         return toolError(err instanceof Error ? err.message : String(err));
       }
     },
-  });
-
-  tools.register({
+  },
+  {
     name: "deprecate_autobiographical_memory",
     description: "软废弃一条自传体叙事（正文不变，status=deprecated）。",
     parameters: {
@@ -106,5 +105,5 @@ export function registerAutobiographicalMemoryTools(tools: ToolRegistry): void {
         return toolError(err instanceof Error ? err.message : String(err));
       }
     },
-  });
-}
+  },
+];

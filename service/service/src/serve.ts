@@ -209,7 +209,7 @@ export async function serve(
     startupLog("注册工具…");
     const catalog = createEngineCatalog();
     const masks = new MaskRegistry();
-    registerServiceTools({ tools: catalog.tools, skills: catalog.skills });
+    registerServiceTools({ toolSets: catalog.toolSets, skills: catalog.skills });
     kernel = createServiceKernel();
 
     mkdirSync(dirname(PATHS.pidFile), { recursive: true });
@@ -230,12 +230,12 @@ export async function serve(
     }
     initLlmRuntime(cfg);
     engine = createEngine({ repos, llm: getLlmRuntime(), catalog });
-    conversation = createConversationService(engine.repos, catalog.tools);
+    conversation = createConversationService(engine.repos, catalog.toolSets);
 
     registerServiceIntegrations({
       kernel,
       conversation,
-      tools: catalog.tools,
+      toolSets: catalog.toolSets,
       skills: catalog.skills,
     });
     registerFridgeMagnet({ kernel });
@@ -300,7 +300,7 @@ export async function serve(
       startupLog("PostgreSQL 不可用，跳过 Cron 模块");
     }
 
-    mcp = new MCPManager(catalog.tools);
+    mcp = new MCPManager(catalog.toolSets);
 
     initServiceContext({
       service,

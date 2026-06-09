@@ -1,4 +1,4 @@
-import type { ToolRegistry } from "@freeanima/engine-tool";
+import type { ToolSetRegistry } from "@freeanima/engine-tool";
 import { toolError } from "@freeanima/engine-tool";
 import { spawn, spawnSync, type ChildProcess } from "node:child_process";
 
@@ -130,52 +130,53 @@ async function handleProcess(
   return toolError(`unsupported action '${action}'`);
 }
 
-export function registerTerminalTools(tools: ToolRegistry): void {
-  tools.register({
-    name: "terminal",
-    description: "Run a shell command in a subprocess and return output",
-    parameters: {
-      type: "object",
-      properties: {
-        command: { type: "string" },
-        timeout: { type: "integer", default: 180, minimum: 1, maximum: MAX_FOREGROUND_TIMEOUT },
-        workdir: { type: "string" },
-        background: { type: "boolean", default: false },
-        pty: { type: "boolean", default: false },
-      },
-      required: ["command"],
-    },
-    handler: (a) =>
-      handleTerminal(
-        String(a.command),
-        Number(a.timeout ?? 180),
-        a.workdir != null ? String(a.workdir) : null,
-        Boolean(a.background),
-      ),
-  });
-
-  tools.register({
-    name: "process",
-    description: "Manage background processes started with terminal(background=true)",
-    parameters: {
-      type: "object",
-      properties: {
-        action: {
-          type: "string",
-          enum: ["list", "poll", "log", "wait", "kill"],
+export function registerTerminalTools(toolSets: ToolSetRegistry): void {
+  toolSets.registerToolSet("terminal", "终端命令与后台进程", [
+    {
+      name: "terminal",
+      description: "Run a shell command in a subprocess and return output",
+      parameters: {
+        type: "object",
+        properties: {
+          command: { type: "string" },
+          timeout: { type: "integer", default: 180, minimum: 1, maximum: MAX_FOREGROUND_TIMEOUT },
+          workdir: { type: "string" },
+          background: { type: "boolean", default: false },
+          pty: { type: "boolean", default: false },
         },
-        session_id: { type: "string" },
-        timeout: { type: "integer", default: 30 },
+        required: ["command"],
       },
-      required: ["action"],
+      handler: (a) =>
+        handleTerminal(
+          String(a.command),
+          Number(a.timeout ?? 180),
+          a.workdir != null ? String(a.workdir) : null,
+          Boolean(a.background),
+        ),
     },
-    handler: (a) =>
-      handleProcess(
-        String(a.action),
-        a.session_id != null ? String(a.session_id) : null,
-        Number(a.timeout ?? 30),
-      ),
-  });
+    {
+      name: "process",
+      description: "Manage background processes started with terminal(background=true)",
+      parameters: {
+        type: "object",
+        properties: {
+          action: {
+            type: "string",
+            enum: ["list", "poll", "log", "wait", "kill"],
+          },
+          session_id: { type: "string" },
+          timeout: { type: "integer", default: 30 },
+        },
+        required: ["action"],
+      },
+      handler: (a) =>
+        handleProcess(
+          String(a.action),
+          a.session_id != null ? String(a.session_id) : null,
+          Number(a.timeout ?? 30),
+        ),
+    },
+  ]);
 }
 
 function handleTerminal(

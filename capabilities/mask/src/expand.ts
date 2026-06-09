@@ -23,7 +23,7 @@ export function expandToolSets(items: string[], toolSetRegistry: ToolSetRegistry
       out.push(item);
       continue;
     }
-    out.push(...toolSet.tools);
+    out.push(...toolSet.tools.map((t) => t.name));
   }
   return out;
 }

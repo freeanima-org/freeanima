@@ -1,8 +1,8 @@
 import { runWithToolContext, getToolSessionId } from "@freeanima/engine-loop";
-import { ToolRegistry } from "@freeanima/engine-tool";
+import { ToolSetRegistry } from "@freeanima/engine-tool";
 import { describe, it, expect } from "bun:test";
 
-const tools = new ToolRegistry();
+const tools = new ToolSetRegistry();
 
 describe("runWithToolContext", () => {
   it("propagates session through async generator iteration", async () => {

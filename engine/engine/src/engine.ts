@@ -54,7 +54,7 @@ export class Engine {
   ) {}
 
   get tools() {
-    return this.catalog.tools;
+    return this.catalog.toolSets;
   }
 
   get toolSets() {

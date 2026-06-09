@@ -232,30 +232,29 @@ Migration：[`engine/db/migrations/20260607160000_limbic_memory/migration.sql`](
 
 ### 表结构
 
-| 列                 | 类型        | 说明                                            |
-| ------------------ | ----------- | ----------------------------------------------- |
-| `id`               | TEXT PK     | 16 hex 或 `builtin-*`                           |
-| `name`             | TEXT        | 任务名称                                        |
-| `schedule`         | TEXT        | CST 语义调度表达式（cron / interval / oneshot） |
-| `prompt`           | TEXT        | LLM 提示词                                      |
-| `skills`           | TEXT[]      | 技能列表                                        |
-| `script`           | TEXT        | 脚本路径（相对 `cron/scripts`）                 |
-| `no_agent`         | BOOLEAN     | 仅脚本/builtin，不调用 LLM                      |
-| `enabled_toolsets` | TEXT[]      | 启用工具集                                      |
-| `model_provider`   | TEXT        | 模型 provider                                   |
-| `model_name`       | TEXT        | 模型名                                          |
-| `workdir`          | TEXT        | 工作目录                                        |
-| `context_from`     | TEXT[]      | 上游任务 ID                                     |
-| `deliver`          | TEXT        | 投递目标                                        |
-| `timeout_sec`      | INTEGER     | 超时秒数                                        |
-| `builtin`          | BOOLEAN     | 内置任务                                        |
-| `repeat`           | INTEGER     | 最大运行次数                                    |
-| `run_count`        | INTEGER     | 已运行次数                                      |
-| `paused`           | BOOLEAN     | 暂停状态                                        |
-| `created_at`       | TIMESTAMPTZ |                                                 |
-| `updated_at`       | TIMESTAMPTZ |                                                 |
-| `last_run_at`      | TIMESTAMPTZ | 上次运行时间                                    |
-| `last_output_ref`  | TEXT        | output 文件相对 `FREEANIMA_HOME` 路径           |
+| 列                | 类型        | 说明                                            |
+| ----------------- | ----------- | ----------------------------------------------- |
+| `id`              | TEXT PK     | 16 hex 或 `builtin-*`                           |
+| `name`            | TEXT        | 任务名称                                        |
+| `schedule`        | TEXT        | CST 语义调度表达式（cron / interval / oneshot） |
+| `prompt`          | TEXT        | LLM 提示词                                      |
+| `skills`          | TEXT[]      | 技能列表                                        |
+| `script`          | TEXT        | 脚本路径（相对 `cron/scripts`）                 |
+| `no_agent`        | BOOLEAN     | 仅脚本/builtin，不调用 LLM                      |
+| `model_provider`  | TEXT        | 模型 provider                                   |
+| `model_name`      | TEXT        | 模型名                                          |
+| `workdir`         | TEXT        | 工作目录                                        |
+| `context_from`    | TEXT[]      | 上游任务 ID                                     |
+| `deliver`         | TEXT        | 投递目标                                        |
+| `timeout_sec`     | INTEGER     | 超时秒数                                        |
+| `builtin`         | BOOLEAN     | 内置任务                                        |
+| `repeat`          | INTEGER     | 最大运行次数                                    |
+| `run_count`       | INTEGER     | 已运行次数                                      |
+| `paused`          | BOOLEAN     | 暂停状态                                        |
+| `created_at`      | TIMESTAMPTZ |                                                 |
+| `updated_at`      | TIMESTAMPTZ |                                                 |
+| `last_run_at`     | TIMESTAMPTZ | 上次运行时间                                    |
+| `last_output_ref` | TEXT        | output 文件相对 `FREEANIMA_HOME` 路径           |
 
 索引：`idx_cron_jobs_paused`。
 

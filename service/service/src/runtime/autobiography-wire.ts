@@ -33,7 +33,7 @@ async function runAutobiographyTurn(
   const model = getProfileHopModel(cfg, PROFILE_REFLECT);
   const sleepMask = resolveSleepMask();
   const toolNames = filterToolNamesByMask(input.toolNames, sleepMask);
-  const tools = eng.catalog.tools.openaiSchemasFromNames(toolNames);
+  const tools = eng.catalog.toolSets.openaiSchemasFromNames(toolNames);
   const toolMask = runtimeToolMaskFromResolved(sleepMask);
   const messages = buildMessages(input);
 
@@ -67,7 +67,7 @@ async function runAutobiographyTurn(
         }
       }
     },
-    { repos: conversation.repos, tools: eng.catalog.tools },
+    { repos: conversation.repos, tools: eng.catalog.toolSets },
   );
 
   const summary = parts.join("").trim() || `完成 ${toolCalls} 次工具调用`;

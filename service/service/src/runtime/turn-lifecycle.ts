@@ -6,7 +6,7 @@ function conv() {
 }
 
 function toolRegistry() {
-  return getServiceContext().engine.catalog.tools;
+  return getServiceContext().engine.catalog.toolSets;
 }
 import type { SessionMessage as Message } from "@freeanima/engine-db/domain";
 import type { SessionMessage } from "@freeanima/engine-db/domain";

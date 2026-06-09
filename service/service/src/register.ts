@@ -20,24 +20,27 @@ import { beforeLlmCall } from "@freeanima/kernel-hooks";
 import type { ConversationService } from "@freeanima/engine-conversation";
 import type { SemanticMemoryStorePort, SessionStorePort } from "@freeanima/engine-repos";
 import type { SkillRegistry } from "@freeanima/engine-skill";
-import type { ToolRegistry } from "@freeanima/engine-tool";
+import type { ToolSetRegistry } from "@freeanima/engine-tool";
 import { registerMemoryPipeline, registerMemoryTools } from "@freeanima/life-memory";
-let registeredCatalog: { tools: ToolRegistry; skills: SkillRegistry } | null = null;
+let registeredCatalog: { toolSets: ToolSetRegistry; skills: SkillRegistry } | null = null;
 
 /** 注册全部本地/MCP 无关工具（幂等：同一 catalog 实例只注册一次） */
-export function registerServiceTools(opts: { tools: ToolRegistry; skills: SkillRegistry }): void {
-  if (registeredCatalog?.tools === opts.tools && registeredCatalog?.skills === opts.skills) {
+export function registerServiceTools(opts: {
+  toolSets: ToolSetRegistry;
+  skills: SkillRegistry;
+}): void {
+  if (registeredCatalog?.toolSets === opts.toolSets && registeredCatalog?.skills === opts.skills) {
     return;
   }
-  registerCoreTools(opts.tools);
-  registerSupplementalTools(opts.tools, opts.skills);
-  registerMemoryTools(opts.tools);
-  registerSelfTools(opts.tools);
-  registerEstateTools(opts.tools);
-  registerClarifyTool(opts.tools);
-  registerCronjobTool(opts.tools);
-  registerWriteFridgeMagnetTool(opts.tools);
-  registerTaskTools(opts.tools);
+  registerCoreTools(opts.toolSets);
+  registerSupplementalTools(opts.toolSets, opts.skills);
+  registerMemoryTools(opts.toolSets);
+  registerSelfTools(opts.toolSets);
+  registerEstateTools(opts.toolSets);
+  registerClarifyTool(opts.toolSets);
+  registerCronjobTool(opts.toolSets);
+  registerWriteFridgeMagnetTool(opts.toolSets);
+  registerTaskTools(opts.toolSets);
   registeredCatalog = opts;
 }
 
@@ -47,7 +50,7 @@ export function resetRegisterServiceToolsForTest(): void {
 }
 
 /** @deprecated 使用 registerServiceTools */
-export function registerAllTools(opts: { tools: ToolRegistry; skills: SkillRegistry }): void {
+export function registerAllTools(opts: { toolSets: ToolSetRegistry; skills: SkillRegistry }): void {
   registerServiceTools(opts);
 }
 
@@ -55,13 +58,13 @@ export function registerAllTools(opts: { tools: ToolRegistry; skills: SkillRegis
 export function registerServiceIntegrations(opts: {
   kernel: Kernel;
   conversation: ConversationService;
-  tools: ToolRegistry;
+  toolSets: ToolSetRegistry;
   skills: SkillRegistry;
   onSessionUpdated?: ((sid: string) => void) | null;
 }): void {
   registerClarifyHooks({ kernel: opts.kernel, conversation: opts.conversation });
   const acp = getAcpManager();
-  acp.wireRegistries({ tools: opts.tools, skills: opts.skills });
+  acp.wireRegistries({ toolSets: opts.toolSets, skills: opts.skills });
   acp.wireConversation(opts.conversation);
   acp.wireProgressDelivery(
     createAcpProgressDelivery({

@@ -73,18 +73,21 @@ export function computeGlobalBreakdown(
 }
 
 function catalogTools() {
-  return getServiceContext().engine.catalog.tools;
+  return getServiceContext().engine.catalog.toolSets;
 }
 
 function registryToolItems(): PromptDebugToolItem[] {
-  return catalogTools()
-    .list()
-    .map((t) => ({
-      name: t.name,
-      description: t.description,
-      toolset: t.toolset,
-      parameters: t.parameters,
-    }));
+  const toolSets = catalogTools();
+  const toolSetByName = new Map<string, string>();
+  for (const ts of toolSets.listToolSets()) {
+    for (const n of ts.tools) toolSetByName.set(n, ts.name);
+  }
+  return toolSets.listTools().map((t) => ({
+    name: t.name,
+    description: t.description,
+    toolset: toolSetByName.get(t.name),
+    parameters: t.parameters,
+  }));
 }
 
 function sessionToolItems(
@@ -97,17 +100,18 @@ function sessionToolItems(
     };
   }>,
 ): PromptDebugToolItem[] {
-  const registry = new Map(
-    catalogTools()
-      .list()
-      .map((t) => [t.name, t]),
-  );
+  const toolSets = catalogTools();
+  const registry = new Map(toolSets.listTools().map((t) => [t.name, t]));
+  const toolSetByName = new Map<string, string>();
+  for (const ts of toolSets.listToolSets()) {
+    for (const n of ts.tools) toolSetByName.set(n, ts.name);
+  }
   return schemas.map((s) => {
     const def = registry.get(s.function.name);
     return {
       name: s.function.name,
       description: s.function.description ?? def?.description ?? "",
-      toolset: def?.toolset,
+      toolset: toolSetByName.get(s.function.name),
       parameters: (s.function.parameters ??
         def?.parameters ?? { type: "object" }) as JsonSchemaObject,
     };

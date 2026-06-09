@@ -7,7 +7,6 @@ export type CronJobRow = {
   skills: string[];
   script: string | null;
   no_agent: boolean;
-  enabled_toolsets: string[] | null;
   model_provider: string | null;
   model_name: string | null;
   workdir: string | null;
@@ -32,7 +31,6 @@ export type CronJobCreateInput = {
   skills?: string[];
   script?: string | null;
   no_agent?: boolean;
-  enabled_toolsets?: string[] | null;
   model_provider?: string | null;
   model_name?: string | null;
   workdir?: string | null;
@@ -69,7 +67,6 @@ export type CronJobUpdateInput = {
   skills?: string[];
   script?: string | null;
   no_agent?: boolean;
-  enabled_toolsets?: string[] | null;
   model_provider?: string | null;
   model_name?: string | null;
   workdir?: string | null;

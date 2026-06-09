@@ -1,4 +1,4 @@
-import type { ToolRegistry } from "@freeanima/engine-tool";
+import type { ToolSetRegistry } from "@freeanima/engine-tool";
 import { toolError, toolResult } from "@freeanima/engine-tool";
 import {
   existsSync,
@@ -335,106 +335,105 @@ function handlePatch(
   }
 }
 
-export function registerFileTools(tools: ToolRegistry): void {
-  tools.register({
-    name: "read_file",
-    description: "Read a text file with line numbers",
-    parameters: {
-      type: "object",
-      properties: {
-        path: { type: "string" },
-        offset: { type: "integer", default: 1 },
-        limit: { type: "integer", default: 500 },
-      },
-      required: ["path"],
-    },
-    handler: (a) => handleReadFile(String(a.path), Number(a.offset ?? 1), Number(a.limit ?? 500)),
-  });
-
-  tools.register({
-    name: "write_file",
-    description: "Write file content",
-    parameters: {
-      type: "object",
-      properties: {
-        path: { type: "string" },
-        content: { type: "string" },
-      },
-      required: ["path", "content"],
-    },
-    handler: (a) => handleWriteFile(String(a.path), String(a.content ?? "")),
-  });
-
-  tools.register({
-    name: "search_files",
-    description:
-      "搜索文件。target=files：pattern 为 glob（支持 a|b 多段）。target=content：pattern 为搜索文字（默认字面量，regex=true 为正则）。" +
-      "output_mode=files_only 且 pattern 含 * ? 时自动按文件名匹配。",
-    parameters: {
-      type: "object",
-      properties: {
-        pattern: {
-          type: "string",
-          description: "glob（target=files）或搜索文字/正则（target=content）",
+export function registerFileTools(toolSets: ToolSetRegistry): void {
+  toolSets.registerToolSet("fs", "文件读写与搜索", [
+    {
+      name: "read_file",
+      description: "Read a text file with line numbers",
+      parameters: {
+        type: "object",
+        properties: {
+          path: { type: "string" },
+          offset: { type: "integer", default: 1 },
+          limit: { type: "integer", default: 500 },
         },
-        target: {
-          type: "string",
-          enum: ["content", "files"],
-          default: "content",
-          description: "files=按文件名 glob；content=按文件内容搜索",
-        },
-        path: { type: "string", default: "." },
-        file_glob: { type: "string", description: "content 模式下限制搜索的文件 glob" },
-        regex: {
-          type: "boolean",
-          default: false,
-          description: "content 模式：true 时 pattern 为正则；默认 false 为字面量",
-        },
-        limit: { type: "integer", default: 50 },
-        offset: { type: "integer", default: 0 },
-        output_mode: {
-          type: "string",
-          enum: ["content", "files_only", "count"],
-          default: "content",
-          description: "content=带行内容；files_only=仅路径；count=计数",
-        },
-        context: { type: "integer", default: 0 },
+        required: ["path"],
       },
-      required: ["pattern"],
+      handler: (a) => handleReadFile(String(a.path), Number(a.offset ?? 1), Number(a.limit ?? 500)),
     },
-    handler: (a) =>
-      handleSearchFiles(
-        String(a.pattern),
-        String(a.target ?? "content"),
-        String(a.path ?? "."),
-        a.file_glob != null ? String(a.file_glob) : null,
-        Number(a.limit ?? 50),
-        Number(a.offset ?? 0),
-        String(a.output_mode ?? "content"),
-        Number(a.context ?? 0),
-        Boolean(a.regex),
-      ),
-  });
-
-  tools.register({
-    name: "patch",
-    description: "Replace string in file",
-    parameters: {
-      type: "object",
-      properties: {
-        path: { type: "string" },
-        old_string: { type: "string" },
-        new_string: { type: "string" },
-        replace_all: { type: "boolean", default: false },
+    {
+      name: "write_file",
+      description: "Write file content",
+      parameters: {
+        type: "object",
+        properties: {
+          path: { type: "string" },
+          content: { type: "string" },
+        },
+        required: ["path", "content"],
       },
-      required: ["path", "old_string", "new_string"],
+      handler: (a) => handleWriteFile(String(a.path), String(a.content ?? "")),
     },
-    handler: (a) =>
-      handlePatch(
-        String(a.path),
-        String(a.old_string),
-        String(a.new_string),
-        Boolean(a.replace_all),
-      ),
-  });
+    {
+      name: "search_files",
+      description:
+        "搜索文件。target=files：pattern 为 glob（支持 a|b 多段）。target=content：pattern 为搜索文字（默认字面量，regex=true 为正则）。" +
+        "output_mode=files_only 且 pattern 含 * ? 时自动按文件名匹配。",
+      parameters: {
+        type: "object",
+        properties: {
+          pattern: {
+            type: "string",
+            description: "glob（target=files）或搜索文字/正则（target=content）",
+          },
+          target: {
+            type: "string",
+            enum: ["content", "files"],
+            default: "content",
+            description: "files=按文件名 glob；content=按文件内容搜索",
+          },
+          path: { type: "string", default: "." },
+          file_glob: { type: "string", description: "content 模式下限制搜索的文件 glob" },
+          regex: {
+            type: "boolean",
+            default: false,
+            description: "content 模式：true 时 pattern 为正则；默认 false 为字面量",
+          },
+          limit: { type: "integer", default: 50 },
+          offset: { type: "integer", default: 0 },
+          output_mode: {
+            type: "string",
+            enum: ["content", "files_only", "count"],
+            default: "content",
+            description: "content=带行内容；files_only=仅路径；count=计数",
+          },
+          context: { type: "integer", default: 0 },
+        },
+        required: ["pattern"],
+      },
+      handler: (a) =>
+        handleSearchFiles(
+          String(a.pattern),
+          String(a.target ?? "content"),
+          String(a.path ?? "."),
+          a.file_glob != null ? String(a.file_glob) : null,
+          Number(a.limit ?? 50),
+          Number(a.offset ?? 0),
+          String(a.output_mode ?? "content"),
+          Number(a.context ?? 0),
+          Boolean(a.regex),
+        ),
+    },
+    {
+      name: "patch",
+      description: "Replace string in file",
+      parameters: {
+        type: "object",
+        properties: {
+          path: { type: "string" },
+          old_string: { type: "string" },
+          new_string: { type: "string" },
+          replace_all: { type: "boolean", default: false },
+        },
+        required: ["path", "old_string", "new_string"],
+      },
+      handler: (a) =>
+        handlePatch(
+          String(a.path),
+          String(a.old_string),
+          String(a.new_string),
+          Boolean(a.replace_all),
+        ),
+    },
+  ]);
 }

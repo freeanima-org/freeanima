@@ -20,7 +20,6 @@ export async function createJob(opts: {
   skills?: string[];
   script?: string | null;
   no_agent?: boolean;
-  enabled_toolsets?: string[] | null;
   model_provider?: string | null;
   model_name?: string | null;
   workdir?: string | null;
@@ -40,7 +39,6 @@ export async function createJob(opts: {
     skills: opts.skills ?? [],
     script: opts.script ?? null,
     no_agent: opts.no_agent ?? false,
-    enabled_toolsets: opts.enabled_toolsets ?? null,
     model_provider: opts.model_provider ?? null,
     model_name: opts.model_name ?? null,
     workdir: opts.workdir ?? null,

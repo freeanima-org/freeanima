@@ -98,7 +98,7 @@ export async function buildStatus(
 
   let toolCount = 0;
   try {
-    toolCount = getServiceContext().engine.catalog.tools.list().length;
+    toolCount = getServiceContext().engine.catalog.toolSets.listTools().length;
   } catch {
     toolCount = 0;
   }
@@ -169,13 +169,17 @@ export function listToolsApi(): {
   tool_sets: { name: string; description: string; tools: string[] }[];
 } {
   const { engine } = getServiceContext();
+  const toolSetByName = new Map<string, string>();
+  for (const ts of engine.catalog.toolSets.listToolSets()) {
+    for (const n of ts.tools) toolSetByName.set(n, ts.name);
+  }
   return {
-    tools: engine.catalog.tools.list().map((t) => ({
+    tools: engine.catalog.toolSets.listTools().map((t) => ({
       name: t.name,
       description: t.description,
-      toolset: t.toolset,
+      toolset: toolSetByName.get(t.name),
     })),
-    tool_sets: engine.catalog.toolSets.list().map((ts) => ({
+    tool_sets: engine.catalog.toolSets.listToolSets().map((ts) => ({
       name: ts.name,
       description: ts.description,
       tools: [...ts.tools],
