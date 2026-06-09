@@ -55,7 +55,7 @@ export async function setupIntegrationPg(): Promise<() => Promise<void>> {
   assertDockerAvailable();
   // 不用 Testcontainers：其 dockerode → ssh2 NAPI 在 Bun / Node 退出时会触发 uv_version_string 崩溃
   const containerId = execSync(
-    "docker run -d -p 0:5432 -e POSTGRES_PASSWORD=test -e POSTGRES_USER=test -e POSTGRES_DB=test postgres:17-alpine",
+    "docker run -d -p 0:5432 -e POSTGRES_PASSWORD=test -e POSTGRES_USER=test -e POSTGRES_DB=test pgvector/pgvector:pg17",
     { encoding: "utf-8" },
   ).trim();
   try {

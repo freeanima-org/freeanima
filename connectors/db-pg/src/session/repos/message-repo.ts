@@ -4,6 +4,7 @@ import type { ConversationMessage, SessionMessage } from "@freeanima/engine-db/d
 import { messages } from "@freeanima/engine-db/schema";
 
 import { resolveFtsSegmentedForWrite } from "../../fts/write.ts";
+import { scheduleMessageEmbedding } from "../../embedding/schedule.ts";
 import { getDb } from "../../client.ts";
 import { messageToInsert, rowToMessage } from "../mappers/message-mapper.ts";
 
@@ -25,7 +26,10 @@ export async function appendMessage(
     .onConflictDoNothing({ target: [messages.sessionId, messages.pos] })
     .returning();
   if (inserted.length) {
-    return rowToMessage(inserted[0]!);
+    const row = inserted[0]!;
+    const content = extractIndexableContent(row.payload);
+    if (content) scheduleMessageEmbedding(row.id, content);
+    return rowToMessage(row);
   }
 
   const rows = await db

@@ -271,8 +271,16 @@ export async function getFtsStatus() {
   return unwrap(apiClient.api.fts.status.get());
 }
 
-export async function rebuildFtsIndex() {
-  return unwrap(apiClient.api.fts.rebuild.post());
+export async function startRebuildFtsIndex(opts?: { only_missing?: boolean }) {
+  return unwrap(
+    apiClient.api.fts.rebuild.post({
+      only_missing: opts?.only_missing ?? true,
+    }),
+  );
+}
+
+export async function getRebuildFtsJobStatus() {
+  return unwrap(apiClient.api.fts.rebuild.status.get());
 }
 
 export async function getSelfBlocks() {

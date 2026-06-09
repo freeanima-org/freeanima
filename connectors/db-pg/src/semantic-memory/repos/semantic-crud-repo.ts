@@ -12,6 +12,8 @@ import type {
 import { formatCstIso } from "@freeanima/kernel-util";
 
 import { resolveFtsSegmentedForWrite } from "../../fts/write.ts";
+import { scheduleSemanticMemoryEmbedding } from "../../embedding/schedule.ts";
+import { clearSemanticMemoryEmbedding } from "../../embedding/store.ts";
 import { getDb } from "../../client.ts";
 import { mapSemanticMemoryRow } from "../mappers/semantic-mapper.ts";
 import { nextSemanticMemoryId } from "./id-gen.ts";
@@ -73,6 +75,7 @@ export async function createSemanticMemory(row: SemanticMemoryCreateInput): Prom
       },
     });
 
+  scheduleSemanticMemoryEmbedding(id, content);
   return id;
 }
 
@@ -90,6 +93,7 @@ export async function updateSemanticMemory(row: SemanticMemoryUpdateInput): Prom
   if (row.content !== undefined) {
     patch.content = row.content.trim();
     patch.ftsSegmented = await resolveFtsSegmentedForWrite(patch.content);
+    await clearSemanticMemoryEmbedding(row.id);
   }
   if (row.type !== undefined) patch.type = normalizeSemanticMemoryType(row.type);
   if (row.pinned !== undefined) patch.pinned = row.pinned;
@@ -104,6 +108,9 @@ export async function updateSemanticMemory(row: SemanticMemoryUpdateInput): Prom
 
   const db = getDb();
   await db.update(semanticMemory).set(patch).where(eq(semanticMemory.id, row.id));
+  if (patch.content) {
+    scheduleSemanticMemoryEmbedding(row.id, patch.content);
+  }
 }
 
 export async function deprecateSemanticMemory(id: string): Promise<boolean> {

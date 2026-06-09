@@ -5,7 +5,12 @@ export function getFtsStatus() {
   return service.getFtsStatus();
 }
 
-export async function rebuildFtsIndex() {
+export function startRebuildFtsIndex(opts?: { onlyMissing?: boolean }) {
   const { service } = getServiceContext();
-  return service.rebuildFtsIndex();
+  return service.startRebuildFtsIndex(opts);
+}
+
+export function getRebuildFtsJobStatus() {
+  const { service } = getServiceContext();
+  return service.getRebuildFtsJobStatus();
 }

@@ -11,6 +11,7 @@ export * from "./version.ts";
 export * from "./config-sanitize.ts";
 export * from "./cjk.ts";
 export * from "./fts.ts";
+export * from "./embedding.ts";
 export * from "./llm-config.ts";
 export { resolveValue } from "./resolve.ts";
 export { validateConfigOnStartup } from "./validate.ts";

@@ -1,12 +1,45 @@
-import { rebuildAllFtsSegments, type FtsRebuildResult } from "@freeanima/connectors-db-pg";
-import { getCjkConfigSnapshot, type CjkConfigSnapshot } from "@freeanima/service-config";
+import {
+  getFtsCoverageStats,
+  getFtsRebuildJobStatus as readFtsRebuildJobStatus,
+  startFtsRebuildJob,
+  type FtsCoverageStats,
+  type FtsRebuildJobStatus,
+} from "@freeanima/connectors-db-pg";
+import {
+  getCjkConfigSnapshot,
+  getEmbeddingConfigSnapshot,
+  type CjkConfigSnapshot,
+  type EmbeddingConfigSnapshot,
+} from "@freeanima/service-config";
 
-export type { FtsRebuildResult, CjkConfigSnapshot };
+export type { CjkConfigSnapshot, EmbeddingConfigSnapshot, FtsCoverageStats, FtsRebuildJobStatus };
 
-export function getFtsStatus(): CjkConfigSnapshot {
-  return getCjkConfigSnapshot();
+export type FtsStatusSnapshot = CjkConfigSnapshot & {
+  embedding: EmbeddingConfigSnapshot;
+  coverage: FtsCoverageStats | null;
+  rebuild: FtsRebuildJobStatus;
+};
+
+export async function getFtsStatus(): Promise<FtsStatusSnapshot> {
+  let coverage: FtsCoverageStats | null = null;
+  try {
+    coverage = await getFtsCoverageStats();
+  } catch {
+    coverage = null;
+  }
+  return {
+    ...getCjkConfigSnapshot(),
+    embedding: getEmbeddingConfigSnapshot(),
+    coverage,
+    rebuild: readFtsRebuildJobStatus(),
+  };
 }
 
-export async function rebuildFtsIndex(): Promise<FtsRebuildResult> {
-  return rebuildAllFtsSegments();
+/** 后台启动重建（默认仅补缺失行，可断点续跑） */
+export function startRebuildFtsIndex(opts?: { onlyMissing?: boolean }): FtsRebuildJobStatus {
+  return startFtsRebuildJob(opts);
+}
+
+export function getRebuildFtsJobStatus(): FtsRebuildJobStatus {
+  return readFtsRebuildJobStatus();
 }

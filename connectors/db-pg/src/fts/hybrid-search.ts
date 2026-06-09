@@ -2,11 +2,13 @@ import type { MessageFtsHit, SemanticFtsHit } from "@freeanima/engine-repos";
 import { getFtsTrgmFallbackWhenHitsLt, getFtsTrgmMinSimilarity } from "@freeanima/service-config";
 import { sql as drizzleSql } from "drizzle-orm";
 
+import { embedQueryText } from "../embedding/query.ts";
 import { getDb } from "../client.ts";
 import { buildFtsTsQuery } from "./query.ts";
 import { rrfMerge, messageDocKey, semanticMemoryDocKey } from "./rrf.ts";
 import { searchMessagesTrgm, searchSemanticMemoryTrgm } from "./trgm-search.ts";
 import { searchSemanticMemoryFtsRaw, searchMessagesFtsRaw } from "./hybrid-raw.ts";
+import { searchMessagesVector, searchSemanticMemoryVector } from "./vector-search.ts";
 import { mapSemanticMemoryRow } from "../semantic-memory/mappers/semantic-mapper.ts";
 
 function buildTypeFilter(types: string[]) {
@@ -41,6 +43,8 @@ export async function hybridSearchSemanticMemory(
   const offset = Math.max(0, opts?.offset ?? 0);
   const fetchLimit = limit + offset;
 
+  const queryEmbedding = await embedQueryText(q);
+
   const ftsHits = await searchSemanticMemoryFtsRaw(q, {
     limit: candidateLimit(fetchLimit, 0),
     types: opts?.types,
@@ -48,17 +52,28 @@ export async function hybridSearchSemanticMemory(
     sourceSessions: opts?.sourceSessions,
   });
   const pool = candidateLimit(fetchLimit, ftsHits.length);
-  const trgmHits = await searchSemanticMemoryTrgm(q, {
-    limit: pool,
-    types: opts?.types,
-    status: opts?.status,
-    sourceSessions: opts?.sourceSessions,
-  });
+  const [trgmHits, vectorHits] = await Promise.all([
+    searchSemanticMemoryTrgm(q, {
+      limit: pool,
+      types: opts?.types,
+      status: opts?.status,
+      sourceSessions: opts?.sourceSessions,
+    }),
+    queryEmbedding
+      ? searchSemanticMemoryVector(queryEmbedding, {
+          limit: pool,
+          types: opts?.types,
+          status: opts?.status,
+          sourceSessions: opts?.sourceSessions,
+        })
+      : Promise.resolve([]),
+  ]);
 
   const ftsRanked = ftsHits.map((h) => ({ ...h, docKey: semanticMemoryDocKey(h.id) }));
   const trgmRanked = trgmHits.map((h) => ({ ...h, docKey: h.docKey }));
+  const vectorRanked = vectorHits.map((h) => ({ ...h, docKey: h.docKey }));
 
-  const merged = rrfMerge([ftsRanked, trgmRanked], { limit: pool });
+  const merged = rrfMerge([ftsRanked, trgmRanked, vectorRanked], { limit: pool });
   return merged.slice(offset, offset + limit).map((row) => ({
     ...mapSemanticMemoryRow(row),
     rank: row.rank,
@@ -73,13 +88,19 @@ export async function hybridSearchMessages(
   if (!q) return [];
 
   const limit = Math.max(1, Math.min(50, opts?.limit ?? 10));
+  const queryEmbedding = await embedQueryText(q);
 
   const ftsHits = await searchMessagesFtsRaw(q, { ...opts, limit: candidateLimit(limit, 0) });
   const pool = candidateLimit(limit, ftsHits.length);
-  const trgmHits = await searchMessagesTrgm(q, { ...opts, limit: pool });
+  const [trgmHits, vectorHits] = await Promise.all([
+    searchMessagesTrgm(q, { ...opts, limit: pool }),
+    queryEmbedding
+      ? searchMessagesVector(queryEmbedding, { ...opts, limit: pool })
+      : Promise.resolve([]),
+  ]);
 
   const ftsRanked = ftsHits.map((h) => ({ ...h, docKey: messageDocKey(h.id) }));
-  const merged = rrfMerge([ftsRanked, trgmHits], { limit: pool });
+  const merged = rrfMerge([ftsRanked, trgmHits, vectorHits], { limit: pool });
 
   return merged.slice(0, limit).map((row) => ({
     content: row.content,
@@ -108,6 +129,7 @@ export async function hybridCountSemanticMemory(
   const status = opts?.status ?? "active";
   const sourceSessions = opts?.sourceSessions?.map((s) => s.trim()).filter(Boolean) ?? [];
   const minSim = getFtsTrgmMinSimilarity();
+  const queryEmbedding = await embedQueryText(q);
 
   const db = getDb();
   const typeFilter = buildTypeFilter(types);
@@ -115,6 +137,19 @@ export async function hybridCountSemanticMemory(
   const sourceFilter =
     sourceSessions.length > 0
       ? drizzleSql`AND sm.source_sessions && ${sourceSessions}::text[]`
+      : drizzleSql``;
+
+  const vectorUnion =
+    queryEmbedding && queryEmbedding.length > 0
+      ? drizzleSql`
+      UNION
+      SELECT sm.id
+      FROM semantic_memory sm
+      WHERE sm.content_embedding IS NOT NULL
+      ${statusFilter}
+      ${typeFilter}
+      ${sourceFilter}
+    `
       : drizzleSql``;
 
   const rows = await db.execute<{ n: number }>(drizzleSql`
@@ -132,6 +167,7 @@ export async function hybridCountSemanticMemory(
       ${statusFilter}
       ${typeFilter}
       ${sourceFilter}
+      ${vectorUnion}
     ) merged
   `);
   return Number(rows[0]?.n ?? 0);

@@ -1,6 +1,11 @@
-import { Elysia } from "elysia";
-import { getFtsStatus, rebuildFtsIndex } from "../../handlers/fts.ts";
+import { Elysia, t } from "elysia";
+import { getFtsStatus, getRebuildFtsJobStatus, startRebuildFtsIndex } from "../../handlers/fts.ts";
 
 export const ftsRoutes = new Elysia({ prefix: "/fts" })
   .get("/status", () => getFtsStatus())
-  .post("/rebuild", () => rebuildFtsIndex());
+  .get("/rebuild/status", () => getRebuildFtsJobStatus())
+  .post("/rebuild", ({ body }) => startRebuildFtsIndex({ onlyMissing: body.only_missing }), {
+    body: t.Object({
+      only_missing: t.Optional(t.Boolean()),
+    }),
+  });

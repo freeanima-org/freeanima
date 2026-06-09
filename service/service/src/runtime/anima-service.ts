@@ -248,12 +248,16 @@ export class AnimaService implements StreamTurnHost {
     return memory.listAutobiographicalMemories(args);
   }
 
-  getFtsStatus(): fts.CjkConfigSnapshot {
+  getFtsStatus(): Promise<fts.FtsStatusSnapshot> {
     return fts.getFtsStatus();
   }
 
-  rebuildFtsIndex(): Promise<fts.FtsRebuildResult> {
-    return fts.rebuildFtsIndex();
+  startRebuildFtsIndex(opts?: { onlyMissing?: boolean }): fts.FtsRebuildJobStatus {
+    return fts.startRebuildFtsIndex(opts);
+  }
+
+  getRebuildFtsJobStatus(): fts.FtsRebuildJobStatus {
+    return fts.getRebuildFtsJobStatus();
   }
 
   listSelfBlocks(): Promise<{ blocks: selfLayer.SelfBlockDisplay[] }> {

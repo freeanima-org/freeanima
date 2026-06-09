@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { llmConfigSchema } from "./llm-config.ts";
+import { embeddingConfigSchema } from "./embedding.ts";
 
 export const mcpServerSchema = z
   .object({
@@ -189,6 +190,7 @@ export const animaConfigSchema = z
     memory: memorySchema.optional(),
     cjk: cjkConfigSchema,
     fts: ftsConfigSchema,
+    embedding: embeddingConfigSchema,
     database: databaseConfigSchema.optional(),
     eventbus: eventbusConfigSchema,
     redis: redisConfigSchema,

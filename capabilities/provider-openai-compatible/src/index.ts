@@ -6,3 +6,4 @@ export {
 export type { OpenAiCompatibleProviderConfig } from "./config.ts";
 export { OpenAiCompatibleBackend } from "./backend.ts";
 export { wireOpenAiCompatibleLlm } from "./llm-stack-configurator.ts";
+export { createOpenAiEmbeddingClient, type EmbedTextFn } from "./embedding.ts";
