@@ -20,7 +20,13 @@ export {
   type FtsTableCoverageRow,
   type FtsTableCapabilities,
 } from "./coverage.ts";
-export { rrfMerge, semanticMemoryDocKey, messageDocKey } from "./rrf.ts";
+export {
+  rrfMerge,
+  semanticMemoryDocKey,
+  messageDocKey,
+  limbicDocKey,
+  autobiographicalDocKey,
+} from "./rrf.ts";
 export { hybridSearchSemanticMemory, hybridSearchMessages } from "./hybrid-search.ts";
 export {
   registerEmbedTextFn,

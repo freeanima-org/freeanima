@@ -103,54 +103,13 @@ export async function searchDialogueOnly(
   return results.slice(0, limit);
 }
 
-export type SemanticMemorySearchHit = {
-  semantic_memory_id: string;
-  content: string;
-  type: string;
-  pinned: boolean;
-  rank: number;
-  score: number;
-};
-
-export type DialogueSearchHit = {
-  session_id: string;
-  message_id: string;
-};
-
-export type MemorySearchResult = {
-  query: string;
-  semantic_memory: SemanticMemorySearchHit[];
-  dialogue: DialogueSearchHit[];
-};
-
-export async function memorySearchDetailed(
-  query: string,
-  opts?: { semanticLimit?: number; dialogueLimit?: number; sessionId?: string },
-): Promise<MemorySearchResult> {
-  const q = query.trim();
-  const semanticLimit = Math.max(1, Math.min(50, opts?.semanticLimit ?? 5));
-  const dialogueLimit = Math.max(1, Math.min(50, opts?.dialogueLimit ?? 10));
-
-  const store = getSemanticMemoryStore();
-  const semanticRows = await store.searchFts(q, { limit: semanticLimit });
-  const dialogueRows = await searchDialogue(q, {
-    limit: dialogueLimit,
-    sessionId: opts?.sessionId,
-  });
-
-  return {
-    query: q,
-    semantic_memory: semanticRows.map((r) => ({
-      semantic_memory_id: r.id,
-      content: r.content,
-      type: r.type,
-      pinned: r.pinned,
-      rank: r.rank,
-      score: pgRankToScore(r.rank),
-    })),
-    dialogue: dialogueRows.map((r) => ({
-      session_id: r.session_id,
-      message_id: r.message_id,
-    })),
-  };
-}
+export {
+  memoryRecallSearch,
+  type MemoryRecallHit,
+  type MemoryRecallHitType,
+  type MemoryRecallResult,
+  type SemanticRecallHit,
+  type SessionRecallHit,
+  type LimbicRecallHit,
+  type AutobiographicalRecallHit,
+} from "./recall-search.ts";

@@ -118,11 +118,12 @@ describe("registerSessionTools", () => {
       async () => {
         const raw = await def!.handler({ query: "hello" });
         const parsed = JSON.parse(raw) as {
-          hits: { message_id: string; content: string }[];
+          hits: { message_id: string; snippet: string; content?: string }[];
         };
         expect(parsed.hits).toHaveLength(1);
         expect(parsed.hits[0]!.message_id).toBe("m1");
-        expect(parsed.hits[0]!.content).toBe("hello world");
+        expect(parsed.hits[0]!.snippet).toContain("hello");
+        expect(parsed.hits[0]!.content).toBeUndefined();
       },
       { tools: toolSets, repos: reposWithSession(session) },
     );

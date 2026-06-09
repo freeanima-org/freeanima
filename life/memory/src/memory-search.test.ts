@@ -3,8 +3,12 @@ import type { SemanticMemoryStorePort, SessionStorePort } from "@freeanima/engin
 import {
   registerMemoryTools,
   searchSemanticMemory,
+  registerAutobiographicalMemoryStore,
+  registerLimbicMemoryStore,
   registerMemorySessionStore,
   registerSemanticMemoryStore,
+  resetAutobiographicalMemoryStoreForTests,
+  resetLimbicMemoryStoreForTests,
   resetMemorySessionStoreForTests,
   resetSemanticMemoryStoreForTests,
 } from "@freeanima/life-memory";
@@ -230,7 +234,55 @@ describe("memory search", () => {
     toolSets = new ToolSetRegistry();
     resetMemorySessionStoreForTests();
     resetSemanticMemoryStoreForTests();
+    resetLimbicMemoryStoreForTests();
+    resetAutobiographicalMemoryStoreForTests();
     registerSemanticMemoryStore(createMockSemanticStore());
+    registerLimbicMemoryStore({
+      async create() {
+        return "lm-1";
+      },
+      async get() {
+        return null;
+      },
+      async listBySession() {
+        return [];
+      },
+      async list() {
+        return [];
+      },
+      async count() {
+        return 0;
+      },
+    });
+    registerAutobiographicalMemoryStore({
+      async create() {
+        return "ab-1";
+      },
+      async get() {
+        return null;
+      },
+      async deprecate() {
+        return false;
+      },
+      async count() {
+        return 0;
+      },
+      async listActive() {
+        return [];
+      },
+      async listCreatedSince() {
+        return [];
+      },
+      async listBySourceSemanticMemory() {
+        return [];
+      },
+      async listBySourceSessions() {
+        return [];
+      },
+      async list() {
+        return [];
+      },
+    });
     registerToolSessionResolver(() => "20260527_160000_test");
     registerMemoryTools(toolSets);
   });
@@ -238,6 +290,8 @@ describe("memory search", () => {
   afterEach(() => {
     resetMemorySessionStoreForTests();
     resetSemanticMemoryStoreForTests();
+    resetLimbicMemoryStoreForTests();
+    resetAutobiographicalMemoryStoreForTests();
   });
 
   it("searchSemanticMemory finds semantic memory via port", async () => {
@@ -285,7 +339,7 @@ describe("memory search", () => {
     expect(row?.source_sessions).toEqual([]);
   });
 
-  it("recall returns semantic memory and dialogue hits", async () => {
+  it("memory_recall returns unified results with memory_type", async () => {
     const store = createMockSemanticStore();
     registerSemanticMemoryStore(store);
     await store.create({ content: "逸灵风记忆管道使用 compression 压缩" });
@@ -310,14 +364,13 @@ describe("memory search", () => {
 
     const out = await toolSets.getTool("memory_recall")!.handler({ query: "compression" });
     const parsed = JSON.parse(out) as {
-      semantic_memory: { content: string }[];
-      dialogue: { session_id: string; message_id: string; content?: string }[];
+      results: Array<{ memory_type: string; snippet?: string; content?: string }>;
     };
-    expect(parsed.semantic_memory.length).toBeGreaterThan(0);
-    expect(parsed.dialogue.length).toBeGreaterThan(0);
-    expect(parsed.semantic_memory.some((r) => r.content.includes("compression"))).toBe(true);
-    expect(parsed.dialogue[0]!.session_id).toBe(sid);
-    expect(parsed.dialogue[0]!.message_id).toBe("msg-001");
-    expect(parsed.dialogue[0]!.content).toBeUndefined();
+    expect(parsed.results.length).toBeGreaterThan(0);
+    const semantic = parsed.results.find((r) => r.memory_type === "semantic");
+    const session = parsed.results.find((r) => r.memory_type === "session");
+    expect(semantic?.content?.includes("compression")).toBe(true);
+    expect(session?.snippet?.includes("compression")).toBe(true);
+    expect(session && "content" in session).toBe(false);
   });
 });

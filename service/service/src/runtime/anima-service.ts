@@ -230,7 +230,7 @@ export class AnimaService implements StreamTurnHost {
     return messaging.sendMessageStream(this.messagingDeps(), sessionId, message, platform);
   }
 
-  memorySearch(args: { query: string; limit?: number; session_limit?: number; session?: string }) {
+  memorySearch(args: { query: string; limit?: number; session?: string }) {
     return memory.memorySearch(args);
   }
 

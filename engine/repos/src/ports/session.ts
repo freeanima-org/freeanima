@@ -13,7 +13,7 @@ export type SessionSummaryRow = {
   platform: string;
 };
 
-/** PG messages FTS 命中行（recall / memorySearch dialogue 段） */
+/** PG messages FTS 命中行（memory_recall / sessions_search；对外映射 snippet） */
 export type MessageFtsHit = {
   message_id: string;
   content: string;

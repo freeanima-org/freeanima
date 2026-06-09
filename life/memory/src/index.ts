@@ -42,11 +42,15 @@ export {
   searchSemanticMemory,
   searchDialogue,
   searchDialogueOnly,
-  memorySearchDetailed,
+  memoryRecallSearch,
   type SearchResult,
-  type SemanticMemorySearchHit,
-  type DialogueSearchHit,
-  type MemorySearchResult,
+  type MemoryRecallHit,
+  type MemoryRecallHitType,
+  type MemoryRecallResult,
+  type SemanticRecallHit,
+  type SessionRecallHit,
+  type LimbicRecallHit,
+  type AutobiographicalRecallHit,
 } from "./search.ts";
 export { registerMemoryTools } from "./register-tools.ts";
 export {

@@ -21,7 +21,6 @@ export async function memorySearch(body: MemorySearchBody) {
   return service.memorySearch({
     query: parsed.query,
     limit: parsed.limit,
-    session_limit: parsed.session_limit,
     session: parsed.session,
   });
 }

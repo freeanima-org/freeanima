@@ -1,5 +1,6 @@
 import { getToolRepos } from "@freeanima/engine-loop";
 import { toolError, toolResult, type ToolSetRegistry } from "@freeanima/engine-tool";
+import { formatSessionMessageSearchHit } from "@freeanima/kernel-util";
 
 const FTS_SYNTAX =
   "PG 检索语法（to_tsquery simple）：\n" +
@@ -29,8 +30,8 @@ export function registerSessionTools(toolSets: ToolSetRegistry): void {
       name: "sessions_search",
       description:
         "搜索历史对话（PostgreSQL messages 全文索引）。\n" +
-        "返回完整命中内容；可用 session 限定范围。\n" +
-        "加载上下文请用 sessions_scroll。\n\n" +
+        "返回匹配关键词 snippet，不含整条消息正文；可用 session 限定范围。\n" +
+        "加载全文上下文请用 sessions_scroll。\n\n" +
         FTS_SYNTAX,
       parameters: {
         type: "object",
@@ -54,14 +55,7 @@ export function registerSessionTools(toolSets: ToolSetRegistry): void {
         const limit = asInt(args.limit, 10, 1, 50);
         const sessionId = String(args.session ?? "").trim() || undefined;
         const rows = await ctx.store.searchMessagesFts(query, { sessionId, limit });
-        const hits = rows.map((r) => ({
-          session_id: r.session_id,
-          message_id: r.message_id,
-          role: r.role,
-          timestamp: r.timestamp,
-          content: r.content,
-          rank: r.rank,
-        }));
+        const hits = rows.map((r) => formatSessionMessageSearchHit(query, r));
 
         return toolResult({
           query,

@@ -9,7 +9,7 @@ import type {
   SemanticMemorySearchOpts,
 } from "@freeanima/engine-repos";
 import { PATHS } from "@freeanima/service-config";
-import { memorySearchDetailed, type MemorySearchResult } from "@freeanima/life-memory/search";
+import { memoryRecallSearch, type MemoryRecallResult } from "@freeanima/life-memory/search";
 import { getServiceContext } from "../context.ts";
 
 export type MemoryListResult<T> = {
@@ -60,14 +60,12 @@ function semanticRepos() {
 export async function memorySearch(args: {
   query: string;
   limit?: number;
-  session_limit?: number;
   session?: string;
-}): Promise<MemorySearchResult> {
+}): Promise<MemoryRecallResult> {
   const query = args.query.trim();
   if (!query) throw new Error("query is required");
-  return memorySearchDetailed(query, {
-    semanticLimit: args.limit,
-    dialogueLimit: args.session_limit,
+  return memoryRecallSearch(query, {
+    limit: args.limit,
     sessionId: args.session?.trim() || undefined,
   });
 }

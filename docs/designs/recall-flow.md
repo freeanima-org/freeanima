@@ -4,16 +4,17 @@ title: Recall Flow
 
 # Recall 统一检索与加载流程
 
-> **v1 ✅ 已实现**：`recall(query)` 返回 JSON（`semantic_memory` + `dialogue` 结构化结果），底层 PG FTS 双源（[`life/memory/src/register-tools.ts`](../../life/memory/src/register-tools.ts)）。
-> **v2 目标设计**（未实现）：统一发现入口与下游加载链，见 [Issue #47](https://github.com/freeanima-org/freeanima/issues/47)。
+> **v1 ✅ 已实现**：`memory_recall(query)` 四源统一召回 + RRF 重排，返回 `results[]`（`memory_type` 区分）；会话命中为 snippet（[`life/memory/src/recall-search.ts`](../../life/memory/src/recall-search.ts)）。
+> **v2 目标设计**（未实现）：资源层 + preset + 瘦索引加载链，见 [Issue #47](https://github.com/freeanima-org/freeanima/issues/47)。
 
 ## v1 已实现
 
-| 能力            | 说明                                                          |
-| --------------- | ------------------------------------------------------------- |
-| `recall(query)` | PG FTS 双源：semantic_memory + messages；返回 JSON 结构化结果 |
-| `remember`      | semantic_memory CRUD                                          |
-| 常驻记忆        | system prompt 注入（非 recall）                               |
+| 能力              | 说明                                                                           |
+| ----------------- | ------------------------------------------------------------------------------ |
+| `memory_recall`   | semantic / session / limbic / autobiographical 四源；Top N；session 为 snippet |
+| `sessions_search` | 会话消息 FTS；返回 snippet（非整条 content）                                   |
+| `memory_remember` | semantic_memory CRUD                                                           |
+| 常驻记忆          | system prompt 注入（非 recall）                                                |
 
 ## v2 目标设计（Issue #47）
 

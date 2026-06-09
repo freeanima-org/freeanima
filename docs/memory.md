@@ -165,7 +165,7 @@ LLM 进行单次 Token 推理时的内部激活状态。随推理结束瞬间消
 | ------------------------------------- | ---------------- | ---------------------------------------------------------------------------- |
 | PostgreSQL（`sessions` + `messages`） | 对话记录（情景） | 主存；`messages.content_fts` GIN 全文索引（simple）                          |
 | PostgreSQL `semantic_memory`          | 语义记忆         | `content_fts` GIN；`pinned` + `reference_count` 驱动常驻记忆；见 database.md |
-| PostgreSQL `limbic_memory`            | 感性记忆         | 浅睡 Stage 2 写入；不经 `memory_recall`                                      |
+| PostgreSQL `limbic_memory`            | 感性记忆         | 浅睡 Stage 2 写入；经 `memory_recall`（`memory_type=limbic`）检索            |
 
 增量提取：浅睡 cron（02:00，见 [`sleep.md`](sleep.md)）。DB 迁移：`anima service` 启动时 `runMigrations`。
 
@@ -214,12 +214,16 @@ LLM 进行单次 Token 推理时的内部激活状态。随推理结束瞬间消
 
 ### ✅ 已实现（`memory_recall` 工具）
 
-`memory_recall(query)` 并行搜索并返回 **JSON**：
+`memory_recall(query)` 四源并行召回（语义 / 会话消息 / 感性 / 自传体），**RRF 跨类型重排**后返回统一 `results[]`（默认 Top 10），以 `memory_type` 区分：
 
-| 字段              | 存储                          | 说明                                       |
-| ----------------- | ----------------------------- | ------------------------------------------ |
-| `semantic_memory` | `semantic_memory.content_fts` | 默认 limit 5                               |
-| `dialogue`        | `messages.content_fts`        | 默认 session_limit 10；可选 `session` 限定 |
+| `memory_type`      | 存储                          | 说明                                                |
+| ------------------ | ----------------------------- | --------------------------------------------------- |
+| `semantic`         | `semantic_memory` hybrid 检索 | 返回完整 `content`                                  |
+| `session`          | `messages` hybrid 检索        | 返回匹配 `snippet`；可选 `session` 限定会话消息范围 |
+| `limbic`           | `limbic_memory` ILIKE         | 感性记忆正文                                        |
+| `autobiographical` | `autobiographical_memory`     | `title` + `content` snippet                         |
+
+`sessions_search` 会话命中同样返回 **snippet**（非整条消息）；全文上下文用 `sessions_scroll`。
 
 常驻记忆由 system prompt 注入：**pinned 全量** + **reference_count top N**（默认 N=20）；每条以 `[记忆 #f-000001-abcd] 内容` 格式携带 ID，LLM 引用时在回复末尾标注相同标记。引用计数由消息正文解析写入 `memory_references`，cron `builtin-memory-reference-sync` 从 messages 全量校准。
 

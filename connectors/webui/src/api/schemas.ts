@@ -58,7 +58,6 @@ export const memorySearchBodySchema = z
   .object({
     query: z.string(),
     limit: z.number().int().positive().optional(),
-    session_limit: z.number().int().positive().optional(),
     session: z.string().optional(),
   })
   .transform((b) => ({ ...b, query: b.query.trim() }))
