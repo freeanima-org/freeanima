@@ -1,4 +1,4 @@
-import { eq, sql as drizzleSql } from "drizzle-orm";
+import { desc, eq, sql as drizzleSql } from "drizzle-orm";
 import {
   normalizeSemanticMemoryType,
   semanticMemory,
@@ -12,7 +12,7 @@ import type {
 import { formatCstIso } from "@freeanima/kernel-util";
 
 import { getDb } from "../../client.ts";
-import { mapSemanticMemoryRow, type SemanticMemoryDbRow } from "../mappers/semantic-mapper.ts";
+import { mapSemanticMemoryRow } from "../mappers/semantic-mapper.ts";
 import { nextSemanticMemoryId } from "./id-gen.ts";
 
 function normalizeStatus(raw: string | undefined | null): string {
@@ -74,12 +74,7 @@ export async function createSemanticMemory(row: SemanticMemoryCreateInput): Prom
 
 export async function getSemanticMemory(id: string): Promise<SemanticMemoryRow | null> {
   const db = getDb();
-  const rows = await db.execute<SemanticMemoryDbRow>(drizzleSql`
-    SELECT id, type, pinned, content, source_sessions, observed_at, occurred_at, status, created, updated
-    FROM semantic_memory
-    WHERE id = ${id}
-    LIMIT 1
-  `);
+  const rows = await db.select().from(semanticMemory).where(eq(semanticMemory.id, id)).limit(1);
   const row = rows[0];
   return row ? mapSemanticMemoryRow(row) : null;
 }
@@ -133,23 +128,18 @@ export async function countSemanticMemory(): Promise<number> {
 export async function listResidentSemanticMemory(topN = 20): Promise<SemanticMemoryRow[]> {
   const limit = Math.max(1, Math.min(100, topN));
   const db = getDb();
-  const rows = await db.execute<SemanticMemoryDbRow>(drizzleSql`
-    SELECT id, type, pinned, content, source_sessions, observed_at, occurred_at, status, created, updated
-    FROM semantic_memory
-    WHERE status = 'active'
-    ORDER BY pinned DESC, updated DESC
-    LIMIT ${limit}
-  `);
+  const rows = await db
+    .select()
+    .from(semanticMemory)
+    .where(eq(semanticMemory.status, "active"))
+    .orderBy(desc(semanticMemory.pinned), desc(semanticMemory.updated))
+    .limit(limit);
   return rows.map(mapSemanticMemoryRow);
 }
 
 export async function listAllSemanticMemory(): Promise<SemanticMemoryRow[]> {
   const db = getDb();
-  const rows = await db.execute<SemanticMemoryDbRow>(drizzleSql`
-    SELECT id, type, pinned, content, source_sessions, observed_at, occurred_at, status, created, updated
-    FROM semantic_memory
-    ORDER BY updated DESC
-  `);
+  const rows = await db.select().from(semanticMemory).orderBy(desc(semanticMemory.updated));
   return rows.map(mapSemanticMemoryRow);
 }
 
