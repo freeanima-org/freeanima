@@ -2,7 +2,7 @@ import { sql as drizzleSql } from "drizzle-orm";
 import type { SemanticFtsHit, SemanticMemorySearchOpts } from "@freeanima/engine-repos";
 
 import { getDb } from "../../client.ts";
-import { buildFtsTsQuery } from "../../fts/query.ts";
+import { hybridCountSemanticMemory, hybridSearchSemanticMemory } from "../../fts/hybrid-search.ts";
 import { mapSemanticMemoryRow, type SemanticMemoryDbRow } from "../mappers/semantic-mapper.ts";
 
 type SemanticSearchFilterOpts = Omit<SemanticMemorySearchOpts, "limit" | "offset">;
@@ -48,35 +48,13 @@ export async function searchSemanticMemory(
 
   const db = getDb();
   if (q) {
-    const tsquery = await buildFtsTsQuery(q);
-    if (!tsquery) return [];
-    const rows = await db.execute<SemanticMemoryDbRow & { rank: number }>(drizzleSql`
-      SELECT
-        sm.id,
-        sm.type,
-        sm.pinned,
-        sm.content,
-        sm.source_sessions,
-        sm.observed_at,
-        sm.occurred_at,
-        sm.status,
-        sm.created,
-        sm.updated,
-        ts_rank_cd(sm.content_fts, q, 32) AS rank
-      FROM semantic_memory sm,
-           to_tsquery('simple', ${tsquery}) q
-      WHERE sm.content_fts @@ q
-      ${typeFilter}
-      ${statusFilter}
-      ${sourceFilter}
-      ORDER BY rank DESC
-      OFFSET ${offset}
-      LIMIT ${limit}
-    `);
-    return rows.map((r) => ({
-      ...mapSemanticMemoryRow(r),
-      rank: Number(r.rank),
-    }));
+    return hybridSearchSemanticMemory(q, {
+      limit,
+      offset,
+      types,
+      status,
+      sourceSessions,
+    });
   }
 
   const rows = await db.execute<SemanticMemoryDbRow & { rank: number }>(drizzleSql`
@@ -117,18 +95,7 @@ export async function countSemanticMemorySearch(opts: SemanticSearchFilterOpts):
 
   const db = getDb();
   if (q) {
-    const tsquery = await buildFtsTsQuery(q);
-    if (!tsquery) return 0;
-    const rows = await db.execute<{ n: number }>(drizzleSql`
-      SELECT count(*)::int AS n
-      FROM semantic_memory sm,
-           to_tsquery('simple', ${tsquery}) q
-      WHERE sm.content_fts @@ q
-      ${typeFilter}
-      ${statusFilter}
-      ${sourceFilter}
-    `);
-    return Number(rows[0]?.n ?? 0);
+    return hybridCountSemanticMemory(q, { types, status, sourceSessions });
   }
 
   const rows = await db.execute<{ n: number }>(drizzleSql`

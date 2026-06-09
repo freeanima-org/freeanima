@@ -77,7 +77,7 @@ title: Database
 
 唯一索引：`(session_id, pos)`。
 
-全文索引：`messages_content_fts_gin`（GIN on `content_fts`）。供 `recall` 历史对话检索；过滤规则：排除 tool 消息与空 content。
+全文索引：`messages_content_fts_gin`（GIN on `content_fts`）、`idx_messages_content_trgm`（GIN trgm on `payload->>'content'`）。供 `recall` 历史对话检索；过滤规则：排除 tool 消息与空 content。检索为 **FTS + pg_trgm RRF 合并**（常开）。
 
 ### 配置
 
@@ -152,7 +152,7 @@ bun run test              # 单元 + 集成 + E2E 并行
 | `created`         | TIMESTAMPTZ        |                                                                               |
 | `updated`         | TIMESTAMPTZ        |                                                                               |
 
-索引：`idx_semantic_memory_fts`（GIN）、`idx_semantic_memory_type`、`idx_semantic_memory_pinned`、`idx_semantic_memory_source_sessions`（GIN）、`idx_semantic_memory_status`。
+索引：`idx_semantic_memory_fts`（GIN）、`idx_semantic_memory_content_trgm`（GIN trgm）、`idx_semantic_memory_type`、`idx_semantic_memory_pinned`、`idx_semantic_memory_source_sessions`（GIN）、`idx_semantic_memory_status`。检索为 **FTS + pg_trgm RRF 合并**（常开）。
 
 端口方法：`create` / `update`（覆盖式，未传不变；`source_sessions: []` 可清空）/ `deprecate` / `listBySourceSessions` / `search` / `searchFts`；`listResident` 与 recall 默认 `status=active`。
 
