@@ -10,7 +10,6 @@ import { toolArgsSchema, toolErrorSchema } from "@freeanima/engine-tool";
 import {
   parseCompressionState,
   clarifyToolAwaitingResultSchema,
-  parseSessionLine,
 } from "@freeanima/engine-db/domain";
 import { jsonRpcMessageSchema } from "@freeanima/capabilities-acp/schemas/acp-jsonrpc";
 import {
@@ -92,27 +91,6 @@ describe("schemas/clarify tool result", () => {
     expect(result.success).toBe(true);
     if (!result.success) return;
     expect(result.data).toMatchObject({ status: "awaiting", timeout_sec: 120 });
-  });
-});
-
-describe("schemas/message", () => {
-  it("parseSessionLine 接受 pos", () => {
-    const parsed = parseSessionLine(
-      JSON.stringify({ role: "user", content: "hi", pos: 3, timestamp: "t" }),
-    );
-    expect(parsed?.role).toBe("user");
-    if (parsed?.role !== "user") return;
-    expect(parsed.pos).toBe(3);
-  });
-
-  it("parseSessionLine 忽略未知 id 字段", () => {
-    const parsed = parseSessionLine(
-      JSON.stringify({ role: "user", content: "hi", id: 5, timestamp: "t" }),
-    );
-    expect(parsed?.role).toBe("user");
-    if (parsed?.role !== "user") return;
-    expect(parsed.pos).toBeUndefined();
-    expect("id" in parsed).toBe(false);
   });
 });
 

@@ -130,7 +130,7 @@ async function readCompressionAndContextFields(
   const tools = isSessionMeta(meta) ? await conv.loadSessionTools(session, meta) : [];
   const compressOpts = buildCompressOptions(meta, state, fallbackModel, { tools });
   const analysis = analyzeCompression(allMsgs, compressOpts);
-  const jsonlTotal = await conv.countMessages(session);
+  const storedTotal = await conv.countMessages(session);
 
   let breakdown = emptyBreakdown();
   if (allMsgs.length > 0) {
@@ -146,9 +146,9 @@ async function readCompressionAndContextFields(
     compression_mode: analysis.mode,
     compression_l2: l2,
     compression_l3: l3,
-    compression_total_messages: jsonlTotal,
+    compression_total_messages: storedTotal,
     compression_visible_messages: analysis.runtime_message_count,
-    compression_hidden: Math.max(0, jsonlTotal - analysis.runtime_message_count),
+    compression_hidden: Math.max(0, storedTotal - analysis.runtime_message_count),
     compression_has_summary: analysis.has_summary,
     compression_context_window: compressOpts.model ? getContextWindow(compressOpts.model) : null,
     compression_effective_budget: analysis.effective_budget,
@@ -463,13 +463,13 @@ function formatCompression(stats: SessionStats): string {
 
   if (stats.compression_l3 == null) {
     lines.push(
-      `尚未压缩（JSONL ${stats.compression_total_messages} 条；运行时约 ${formatTokenK(stats.context_tokens_est)} tokens）`,
+      `尚未压缩（存档 ${stats.compression_total_messages} 条；运行时约 ${formatTokenK(stats.context_tokens_est)} tokens）`,
     );
     return lines.join("\n");
   }
 
   lines.push(
-    `l2=${stats.compression_l2 ?? 0} l3=${stats.compression_l3}；JSONL 存档 ${stats.compression_total_messages} 条`,
+    `l2=${stats.compression_l2 ?? 0} l3=${stats.compression_l3}；存档 ${stats.compression_total_messages} 条`,
   );
   lines.push(
     `运行时可见 ${stats.compression_visible_messages} 条消息（相对全量隐藏 ${stats.compression_hidden} 条）`,
@@ -530,7 +530,7 @@ function formatUsageNote(stats: SessionStats): string | null {
     return null;
   }
   if (stats.estimated_usage) {
-    return `usage 记录: 0/${stats.assistant_turns} 轮（JSONL 无 API usage，以下为内容粗估）`;
+    return `usage 记录: 0/${stats.assistant_turns} 轮（存档无 API usage，以下为内容粗估）`;
   }
   return `usage 记录: 0/${stats.assistant_turns} 轮`;
 }
@@ -542,7 +542,7 @@ export function formatStats(stats: SessionStats): string {
   };
   const lines = [
     `Session: ${stats.session}`,
-    `消息数: ${stats.message_count}（JSONL 全量，含已裁隐藏）`,
+    `消息数: ${stats.message_count}（全量，含已裁隐藏）`,
     `assistant 轮次: ${stats.assistant_turns}`,
     formatCompression(stats),
     ...formatContextBreakdown(stats),

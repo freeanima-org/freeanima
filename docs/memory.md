@@ -249,8 +249,8 @@ LLM 进行单次 Token 推理时的内部激活状态。随推理结束瞬间消
 
 ```
 v1（Hermes，文件系统）     v2（逸灵风初期，文件系统）      v3（当前）
-对话 JSONL                 messages 表（PG）               ✅ 主存
-processed/*.jsonl          messages.content_fts            ✅ 已替代中间文件
+sessions 文件存档          messages 表（PG）               ✅ 主存
+processed 中间文件         messages.content_fts            ✅ 已替代
 memory/f-*.md + l3.db      semantic_memory（PG）           ✅ 已迁移
 index/ FTS                 两表 content_fts                ✅ 无独立索引目录
 无情感层                   imprint + limbic_memory         ✅

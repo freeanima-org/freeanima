@@ -27,7 +27,7 @@ describe("createFileSink", () => {
     timestamp: Date.parse("2026-06-03T00:00:00.000Z"),
   };
 
-  it("默认 json 格式追加 JSONL 行", () => {
+  it("默认 json 格式每行追加一条 JSON", () => {
     const lines: Array<{ path: string; line: string }> = [];
     const sink = createFileSink({
       path: "/tmp/unused.log",

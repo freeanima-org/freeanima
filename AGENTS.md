@@ -145,7 +145,7 @@ Agent 新增或移动类型 / Zod / 端口时，按下列顺序决策：
 | WebUI 展示视图（`MessagesDisplay`）                                | `service/schemas`            | `display.ts`                                    |
 | AnimaService 内部快照（`ServiceSnapshot` 等）                      | `service/schemas`            | `snapshot.ts`                                   |
 | 微信网关持久化 schema                                              | `connectors-gateway/schemas` | `weixin.ts`                                     |
-| JSON safeParse 工具                                                | `kernel-util`                | `parseJsonLine`、`safeParseOrNull` 等           |
+| JSON safeParse 工具                                                | `kernel-util`                | `parseJsonFile`、`safeParseOrNull` 等           |
 
 新增 PG 域：`engine-db/schema/{domain}` → `engine-repos` 增端口 → `connectors-db-pg` 实现 → `PgRepositories` 扩展 → `serve.ts` 装配。详见 [`docs/database.md`](docs/database.md)。
 

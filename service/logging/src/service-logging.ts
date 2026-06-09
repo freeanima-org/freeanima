@@ -20,7 +20,7 @@ function resolveLogLevel(): LogLevel {
   return "info";
 }
 
-/** 创建服务默认 Logger：stderr pretty + ~/.anima/error.log JSONL */
+/** 创建服务默认 Logger：stderr pretty + ~/.anima/error.log（每行一条 JSON） */
 export function createServiceLogger(options?: { level?: LogLevel }): Logger {
   return createLogger({
     level: options?.level ?? resolveLogLevel(),

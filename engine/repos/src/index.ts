@@ -51,7 +51,6 @@ export {
   isSystemMessage,
   isToolMessage,
   isUserMessage,
-  parseSessionLine,
 } from "@freeanima/engine-db/domain";
 export { nullPgRepositories } from "./adapters/null.ts";
 export { nullSessionStore } from "./adapters/null-session.ts";

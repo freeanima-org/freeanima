@@ -11,7 +11,7 @@ import { loadSelfLayerPrompt } from "@freeanima/life-self";
 import { getServiceContext } from "../context.ts";
 
 export type RuntimeContextBreakdown = {
-  /** 发给 LLM 的视图（压缩后 + 摘要注入），非 JSONL 全量 */
+  /** 发给 LLM 的视图（压缩后 + 摘要注入），非存档全量 */
   system_self: number;
   system_agents: number;
   system_resident: number;

@@ -64,7 +64,7 @@ import {
 import type { PgRepositories } from "@freeanima/engine-repos";
 
 export type Message = SessionMessage;
-export { isSessionMeta, parseSessionLine } from "./message.ts";
+export { isSessionMeta } from "./message.ts";
 
 /** 新 session 默认工作目录（与 Python `init_session` 一致，隔离于 service 启动目录） */
 export function allocateSessionCwd(sid: string): string {

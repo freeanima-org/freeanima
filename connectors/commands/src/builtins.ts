@@ -161,7 +161,7 @@ async function cmdCompress(ctx: CommandContext): Promise<string> {
   const lines = [
     r.updated ? "✅ 已更新 compression l2/l3" : "ℹ️ l2/l3 未变化",
     `l2: ${r.l2 ?? "—"}  l3: ${r.l3 ?? "（无，未达压缩阈）"}`,
-    `JSONL ${r.jsonl_total} 条 → 运行时 ${r.runtime_message_count} 条（隐藏 ${r.hidden_by_compression} 条）`,
+    `存档 ${r.stored_total} 条 → 运行时 ${r.runtime_message_count} 条（隐藏 ${r.hidden_by_compression} 条）`,
     `原始段 ${r.window_raw}/${r.recompress_at} 条（首次阈 ${r.threshold}）`,
   ];
   if (r.messages_until_recompress != null) {

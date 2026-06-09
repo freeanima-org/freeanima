@@ -18,8 +18,6 @@ import {
   compressionStateSchema,
   sessionTodoStoreSchema,
 } from "./session-meta.ts";
-import { parseJsonLine } from "@freeanima/kernel-util";
-
 export { openAiToolSchema, toolCallSchema, messagePayloadSchema, type MessagePayload };
 export type { LlmTurnMessage, OpenAiToolSchema, ToolCall } from "../schema/index.ts";
 
@@ -85,11 +83,6 @@ export type ToolMessage = z.infer<typeof toolMessageSchema>;
 export type SessionMessage = z.infer<typeof sessionMessageSchema>;
 
 export type SessionMetaLoadResult = SessionMetaMessage | Record<string, never>;
-
-/** 解析 JSONL 单行；无效行返回 null */
-export function parseSessionLine(line: string): SessionMessage | null {
-  return parseJsonLine(line, sessionMessageSchema);
-}
 
 export function isSessionMeta(meta: SessionMetaLoadResult): meta is SessionMetaMessage {
   return meta.role === "session_meta";
