@@ -1,4 +1,4 @@
-import { expect, it, beforeEach, afterEach, afterAll } from "bun:test";
+import { expect, it, beforeEach, afterEach, afterAll, spyOn } from "bun:test";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import type { SessionMessage } from "@freeanima/engine-db/domain";
 import {
@@ -12,6 +12,7 @@ import { isSessionMeta } from "@freeanima/engine-db/domain";
 import { DEFAULT_SESSION_TOOL_NAMES } from "@freeanima/engine-tool";
 import { runWithToolContext } from "@freeanima/engine-loop";
 import * as engine from "@freeanima/engine-loop";
+import * as llm from "@freeanima/engine-llm";
 
 describePg("tool catalog lazy load", () => {
   const prev = process.env.FREEANIMA_HOME;
@@ -93,31 +94,43 @@ describePg("tool catalog lazy load", () => {
       },
     ]);
 
+    let llmTurn = 0;
+    const chatStreamSpy = spyOn(llm, "chatStream").mockImplementation(async function* () {
+      if (llmTurn++ === 0) {
+        yield {
+          type: "tool_calls",
+          tool_calls: [
+            {
+              id: "call_1",
+              type: "function",
+              function: { name: "gate_test_tool", arguments: "{}" },
+            },
+          ],
+        };
+        yield { type: "done", finish_reason: "tool_calls", usage: null, reasoning: null };
+        return;
+      }
+      yield { type: "done", finish_reason: "stop", usage: null, reasoning: null };
+    });
+
     const msgs: SessionMessage[] = [
       {
         role: "user",
         content: "test",
       },
-      {
-        role: "assistant",
-        content: null,
-        tool_calls: [
-          {
-            id: "call_1",
-            type: "function",
-            function: { name: "gate_test_tool", arguments: "{}" },
-          },
-        ],
-      },
     ];
 
-    await runWithToolContext(
-      sid,
-      async () => {
-        await engine.run(msgs, { tools, executableTools });
-      },
-      { repos: c.repos, tools: getTestEngine().toolSets, executableTools },
-    );
+    try {
+      await runWithToolContext(
+        sid,
+        async () => {
+          await engine.run(msgs, { tools, executableTools });
+        },
+        { repos: c.repos, tools: getTestEngine().toolSets, executableTools },
+      );
+    } finally {
+      chatStreamSpy.mockRestore();
+    }
 
     const toolMsg = msgs.find((m) => m.role === "tool");
     expect(toolMsg?.content).toContain("tool_load");

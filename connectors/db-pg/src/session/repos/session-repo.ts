@@ -51,6 +51,7 @@ export async function getSessionMetaLite(sessionId: string): Promise<SessionMeta
       todos: sessions.todos,
       awaitingClarify: sessions.awaitingClarify,
       acpSessions: sessions.acpSessions,
+      loadedTools: sessions.loadedTools,
       functions: sessions.functions,
       debug: sessions.debug,
       createdAt: sessions.createdAt,
