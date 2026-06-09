@@ -279,7 +279,7 @@ describePg("slash commands", () => {
       raw: "/compress",
     });
     expect(result.text).toContain("l3");
-    expect(result.text).toContain("JSONL");
+    expect(result.text).toContain("存档");
   });
 
   it("cwd command uses existing directory", async () => {

@@ -130,7 +130,7 @@ Agent 的行为输出
 - pass（GPG）是凭证的唯一存储；部署环境上的 pass 仓库是运行时的一等公民资产
 - LLM **永不接触凭证值**：只见 `list_credentials()` 返回的路径与元数据
 - 运行时注入：`credential(path)` 仅在 `execute_code` / `terminal` 执行环境中可用
-- 凭证值不写入 session JSONL、不写入日志
+- 凭证值不写入 session 存档、不写入日志
 - 平台适配器（Discord 等）启动时从 pass 读取 token
 - CLI：`anima credential {list,get,add}`
 

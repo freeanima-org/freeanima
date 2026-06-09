@@ -18,7 +18,7 @@ const CST_DATETIME_MINUTE_RE = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})/;
 
 /**
  * 从 user 消息中提取 timestamp。
- * JSONL 中的 timestamp 格式为 ISO 8601 +08:00，如 "2026-05-20T08:02:00.000+08:00"。
+ * 消息中的 timestamp 格式为 ISO 8601 +08:00，如 "2026-05-20T08:02:00.000+08:00"。
  * 无有效 timestamp 返回 null。
  */
 function getMessageTimestamp(msg: UserMessage): Date | null {

@@ -21,18 +21,6 @@ export const PATHS = {
   get configYaml() {
     return homePath("config.yaml");
   },
-  get sessions() {
-    return homePath("sessions");
-  },
-  get processed() {
-    return homePath("processed");
-  },
-  get memory() {
-    return homePath("memory");
-  },
-  get index() {
-    return homePath("index");
-  },
   get eventsDb() {
     return homePath("runtime", "events.db");
   },

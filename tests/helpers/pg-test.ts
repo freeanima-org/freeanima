@@ -185,7 +185,7 @@ export function appendIntegrationConfig(home: string, yaml: string): void {
   clearConfigCache();
 }
 
-/** 通过 Session 端口写入 session（替代 sessions/*.jsonl fixture） */
+/** 通过 Session 端口写入 session fixture */
 export async function seedSession(
   engine: Engine,
   sessionId: string,

@@ -204,7 +204,7 @@ export function shouldAdvance(opts: {
   return { advance: false, emergency: false };
 }
 
-/** 四段运行时视图（不含 JSONL 内 system；摘要为合成 pos=1） */
+/** 四段运行时视图（不含持久化 system；摘要为合成 pos=1） */
 export function buildRuntimeFromLPoints(
   messages: SessionMessage[],
   state: CompressionState | null,
@@ -251,7 +251,7 @@ export type CompressionAnalysis = {
   l2: number | null;
   l3: number | null;
   l4: number;
-  jsonl_total: number;
+  stored_total: number;
   window_raw: number;
   window_slim: number;
   hidden_by_compression: number;
@@ -294,7 +294,7 @@ export function analyzeCompression(
   const tokenMode = budget != null;
   const state = opts?.state ?? null;
   const rest = restMessages(messages);
-  const jsonlTotal = rest.length;
+  const storedTotal = rest.length;
   const l4 = getL4(messages);
   const l2 = state?.l2 ?? null;
   const l3 = state?.l3 ?? null;
@@ -305,7 +305,7 @@ export function analyzeCompression(
   const systemPrompt = opts?.systemPrompt ?? "";
   const tokensEst = buildRuntimeEstimate(runtimeBody, systemPrompt, opts?.tools);
 
-  let windowRaw = jsonlTotal;
+  let windowRaw = storedTotal;
   let windowSlim = 0;
   if (isCompressed(state) && l3 != null) {
     windowRaw = rawSegment(rest, l3, l4).length;
@@ -314,7 +314,7 @@ export function analyzeCompression(
 
   let messagesUntil: number | null = null;
   let roundsUntil: number | null = null;
-  if (!tokenMode && jsonlTotal > threshold && isCompressed(state) && windowRaw <= recompressAt) {
+  if (!tokenMode && storedTotal > threshold && isCompressed(state) && windowRaw <= recompressAt) {
     messagesUntil = recompressAt - windowRaw + 1;
     roundsUntil = Math.max(1, Math.ceil(messagesUntil / 2));
   }
@@ -330,10 +330,10 @@ export function analyzeCompression(
     l2,
     l3,
     l4,
-    jsonl_total: jsonlTotal,
+    stored_total: storedTotal,
     window_raw: windowRaw,
     window_slim: windowSlim,
-    hidden_by_compression: Math.max(0, jsonlTotal - runtimeMessageCount),
+    hidden_by_compression: Math.max(0, storedTotal - runtimeMessageCount),
     runtime_message_count: runtimeMessageCount,
     messages_until_recompress: messagesUntil,
     rounds_until_recompress: roundsUntil,
@@ -389,7 +389,7 @@ export function willAdvanceCompression(
 }
 
 /**
- * 有状态压缩：JSONL 不修改；运行时四段视图 + meta l2/l3。
+ * 有状态压缩：存档不修改；运行时四段视图 + meta l2/l3。
  */
 export function compress(
   messages: SessionMessage[],

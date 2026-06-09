@@ -14,19 +14,6 @@ export function isEnabledByDefault(cfg: { enabled?: boolean } | undefined): bool
   return cfg?.enabled !== false;
 }
 
-/** JSONL 单行 safeParse；无效行返回 null */
-export function parseJsonLine<T extends z.ZodType>(line: string, schema: T): z.infer<T> | null {
-  const trimmed = line.trim();
-  if (!trimmed) return null;
-  try {
-    const raw: unknown = JSON.parse(trimmed);
-    const result = schema.safeParse(raw);
-    return result.success ? result.data : null;
-  } catch {
-    return null;
-  }
-}
-
 /** 读取 JSON 文件并 safeParse；失败返回 null */
 export function parseJsonFile<T extends z.ZodType>(path: string, schema: T): z.infer<T> | null {
   try {
