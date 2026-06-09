@@ -12,7 +12,7 @@ import {
 } from "@freeanima/connectors-db-pg";
 import { createEngine } from "@freeanima/engine";
 import {
-  createLlmRuntime,
+  initLlmRuntime,
   registerLlmStackConfigurator,
   resetLlmRuntimeForTests,
 } from "@freeanima/engine-llm";
@@ -55,7 +55,9 @@ async function clearPgTables(sql: SqlClient): Promise<void> {
 
 function createTestEngine(repos: PgRepositories): Engine {
   registerLlmStackConfigurator(wireOpenAiCompatibleLlm);
-  return createEngine({ repos, llm: createLlmRuntime(loadConfig()) });
+  const cfg = loadConfig();
+  const llm = initLlmRuntime(cfg);
+  return createEngine({ repos, llm });
 }
 
 function wireEngine(): Engine {
