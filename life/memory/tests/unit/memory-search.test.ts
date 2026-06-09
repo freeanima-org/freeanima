@@ -186,8 +186,21 @@ function createMockSemanticStore(): SemanticMemoryStorePort {
         const q = opts.query.toLowerCase();
         list = list.filter((r) => r.content.toLowerCase().includes(q));
       }
+      const offset = opts.offset ?? 0;
       const limit = opts.limit ?? 10;
-      return list.slice(0, limit).map((r, i) => ({ ...r, rank: 1 / (i + 1) }));
+      return list.slice(offset, offset + limit).map((r, i) => ({ ...r, rank: 1 / (i + 1) }));
+    },
+    async countSearch(opts) {
+      const status = opts.status ?? "active";
+      let list = [...rows.values()].filter((r) => status === "all" || r.status === status);
+      if (opts.source_sessions?.length) {
+        list = list.filter((r) => r.source_sessions.some((s) => opts.source_sessions!.includes(s)));
+      }
+      if (opts.query) {
+        const q = opts.query.toLowerCase();
+        list = list.filter((r) => r.content.toLowerCase().includes(q));
+      }
+      return list.length;
     },
     async findByContent(content) {
       const trimmed = content.trim();

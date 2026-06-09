@@ -5,24 +5,48 @@ import { getDb } from "../../client.ts";
 import { buildPgTsQuery } from "../../session/fts-query.ts";
 import { mapSemanticMemoryRow, type SemanticMemoryDbRow } from "../mappers/semantic-mapper.ts";
 
-export async function searchSemanticMemory(
-  opts: SemanticMemorySearchOpts,
-): Promise<SemanticFtsHit[]> {
-  const limit = Math.max(1, Math.min(50, opts.limit ?? 10));
+type SemanticSearchFilterOpts = Omit<SemanticMemorySearchOpts, "limit" | "offset">;
+
+function normalizeSearchOpts(opts: SemanticSearchFilterOpts) {
   const types = opts.types?.filter(Boolean) ?? [];
   const status = opts.status ?? "active";
   const sourceSessions = opts.source_sessions?.map((s: string) => s.trim()).filter(Boolean) ?? [];
+  const q = opts.query?.trim() ?? "";
+  return { types, status, sourceSessions, q };
+}
 
-  const db = getDb();
+function buildSemanticFilters(
+  types: string[],
+  status: "active" | "deprecated" | "all",
+  sourceSessions: string[],
+) {
   const typeFilter =
-    types.length > 0 ? drizzleSql`AND sm.type = ANY(${types}::text[])` : drizzleSql``;
+    types.length === 0
+      ? drizzleSql``
+      : types.length === 1
+        ? drizzleSql`AND sm.type = ${types[0]}`
+        : drizzleSql`AND sm.type = ANY(${types}::text[])`;
   const statusFilter = status === "all" ? drizzleSql`` : drizzleSql`AND sm.status = ${status}`;
   const sourceFilter =
     sourceSessions.length > 0
       ? drizzleSql`AND sm.source_sessions && ${sourceSessions}::text[]`
       : drizzleSql``;
+  return { typeFilter, statusFilter, sourceFilter };
+}
 
-  const q = opts.query?.trim() ?? "";
+export async function searchSemanticMemory(
+  opts: SemanticMemorySearchOpts,
+): Promise<SemanticFtsHit[]> {
+  const limit = Math.max(1, Math.min(100, opts.limit ?? 10));
+  const offset = Math.max(0, opts.offset ?? 0);
+  const { types, status, sourceSessions, q } = normalizeSearchOpts(opts);
+  const { typeFilter, statusFilter, sourceFilter } = buildSemanticFilters(
+    types,
+    status,
+    sourceSessions,
+  );
+
+  const db = getDb();
   if (q) {
     const tsquery = buildPgTsQuery(q);
     if (!tsquery) return [];
@@ -46,6 +70,7 @@ export async function searchSemanticMemory(
       ${statusFilter}
       ${sourceFilter}
       ORDER BY rank DESC
+      OFFSET ${offset}
       LIMIT ${limit}
     `);
     return rows.map((r) => ({
@@ -73,10 +98,46 @@ export async function searchSemanticMemory(
     ${statusFilter}
     ${sourceFilter}
     ORDER BY sm.updated DESC
+    OFFSET ${offset}
     LIMIT ${limit}
   `);
   return rows.map((r) => ({
     ...mapSemanticMemoryRow(r),
     rank: Number(r.rank),
   }));
+}
+
+export async function countSemanticMemorySearch(opts: SemanticSearchFilterOpts): Promise<number> {
+  const { types, status, sourceSessions, q } = normalizeSearchOpts(opts);
+  const { typeFilter, statusFilter, sourceFilter } = buildSemanticFilters(
+    types,
+    status,
+    sourceSessions,
+  );
+
+  const db = getDb();
+  if (q) {
+    const tsquery = buildPgTsQuery(q);
+    if (!tsquery) return 0;
+    const rows = await db.execute<{ n: number }>(drizzleSql`
+      SELECT count(*)::int AS n
+      FROM semantic_memory sm,
+           to_tsquery('simple', ${tsquery}) q
+      WHERE sm.content_fts @@ q
+      ${typeFilter}
+      ${statusFilter}
+      ${sourceFilter}
+    `);
+    return Number(rows[0]?.n ?? 0);
+  }
+
+  const rows = await db.execute<{ n: number }>(drizzleSql`
+    SELECT count(*)::int AS n
+    FROM semantic_memory sm
+    WHERE true
+    ${typeFilter}
+    ${statusFilter}
+    ${sourceFilter}
+  `);
+  return Number(rows[0]?.n ?? 0);
 }

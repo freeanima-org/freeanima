@@ -44,4 +44,8 @@ export class PgAutobiographicalMemoryStore implements AutobiographicalMemoryStor
   ) {
     return crudRepo.listAutobiographicalMemoryBySourceSessions(sessionIds, opts);
   }
+
+  async list(opts?: Parameters<AutobiographicalMemoryStorePort["list"]>[0]) {
+    return crudRepo.listAutobiographicalMemory(opts);
+  }
 }

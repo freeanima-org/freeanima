@@ -30,4 +30,7 @@ export const nullAutobiographicalMemoryStore: AutobiographicalMemoryStorePort = 
   async listBySourceSessions() {
     return [];
   },
+  async list() {
+    return [];
+  },
 };
