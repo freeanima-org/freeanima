@@ -3,7 +3,7 @@ export {
   getBoundAcpSession,
   readAcpSessions,
   unbindAcpSession,
-} from "./nest-binding.ts";
+} from "./anima-binding.ts";
 export {
   AcpAsyncTaskStore,
   createTaskId,

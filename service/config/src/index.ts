@@ -14,12 +14,12 @@ export { resolveValue } from "./resolve.ts";
 export { validateConfigOnStartup } from "./validate.ts";
 export { resolveLlmProviderApiKeys } from "./llm-resolve.ts";
 export {
-  nestConfigSchema,
+  animaConfigSchema,
   acpAgentSchema,
   mcpServerSchema,
   emailAccountSchema,
   emailConfigSchema,
-  type NestConfig,
+  type AnimaConfig,
   type LlmConfig,
   type EmailAccountConfig,
   type EmailConfig,

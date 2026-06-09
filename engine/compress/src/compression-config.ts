@@ -1,5 +1,5 @@
 import { loadConfig } from "@freeanima/service-config";
-import type { NestConfig } from "@freeanima/service-config";
+import type { AnimaConfig } from "@freeanima/service-config";
 
 export type ModelConfig = {
   context_window?: number;
@@ -35,7 +35,7 @@ export function getCompressionConfig(): ResolvedCompressionConfig {
 }
 
 export function getModelsConfig(): Record<string, ModelConfig> {
-  const cfg = loadConfig() as NestConfig & { models?: Record<string, ModelConfig> };
+  const cfg = loadConfig() as AnimaConfig & { models?: Record<string, ModelConfig> };
   const models = cfg.models;
   if (!models || typeof models !== "object") return {};
   return models;

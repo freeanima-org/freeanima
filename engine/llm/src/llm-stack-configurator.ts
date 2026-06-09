@@ -1,8 +1,8 @@
-import type { NestConfig } from "@freeanima/service-config";
+import type { AnimaConfig } from "@freeanima/service-config";
 import type { BackendRegistry, ProviderRegistry } from "@freeanima/engine-provider-llm";
 
 export type LlmStackConfigurator = (
-  cfg: NestConfig,
+  cfg: AnimaConfig,
   backends: BackendRegistry,
   providers: ProviderRegistry,
 ) => void;
@@ -18,7 +18,7 @@ export function unregisterLlmStackConfigurator(): void {
 }
 
 export function applyLlmStackConfigurator(
-  cfg: NestConfig,
+  cfg: AnimaConfig,
   backends: BackendRegistry,
   providers: ProviderRegistry,
 ): void {

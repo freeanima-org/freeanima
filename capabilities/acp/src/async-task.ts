@@ -8,7 +8,7 @@ export type AcpAsyncTask = {
   taskId: string;
   agentName: string;
   acpSessionId: string;
-  nestSessionId: string;
+  animaSessionId: string;
   mode: AcpCursorMode;
   status: AcpAsyncTaskStatus;
   startedAt: number;
@@ -25,7 +25,7 @@ export type AcpAsyncTaskSnapshot = {
   taskId: string;
   agentName: string;
   acpSessionId: string;
-  nestSessionId: string;
+  animaSessionId: string;
   mode: AcpCursorMode;
   status: AcpAsyncTaskStatus;
   startedAt: number;
@@ -41,7 +41,7 @@ export function toTaskSnapshot(task: AcpAsyncTask): AcpAsyncTaskSnapshot {
     taskId: task.taskId,
     agentName: task.agentName,
     acpSessionId: task.acpSessionId,
-    nestSessionId: task.nestSessionId,
+    animaSessionId: task.animaSessionId,
     mode: task.mode,
     status: task.status,
     startedAt: task.startedAt,

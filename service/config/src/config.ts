@@ -2,9 +2,9 @@ import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { parseYaml, stringifyYaml } from "./yaml.ts";
 import { PATHS } from "./paths.ts";
 import { expandConfigEnv } from "./env-expand.ts";
-import { nestConfigSchema, type NestConfig } from "./schemas/config.ts";
+import { animaConfigSchema, type AnimaConfig } from "./schemas/config.ts";
 
-let cache: NestConfig | null = null;
+let cache: AnimaConfig | null = null;
 
 function loadYamlFile(path: string): Record<string, unknown> {
   if (!existsSync(path)) return {};
@@ -19,12 +19,12 @@ function loadYamlFile(path: string): Record<string, unknown> {
   }
 }
 
-export function loadConfig(): NestConfig {
+export function loadConfig(): AnimaConfig {
   if (cache) return cache;
 
   const merged: Record<string, unknown> = { ...loadYamlFile(PATHS.configYaml) };
 
-  const parsed = nestConfigSchema.safeParse(merged);
+  const parsed = animaConfigSchema.safeParse(merged);
   if (!parsed.success) {
     throw new Error(`Invalid config.yaml: ${parsed.error.message}`);
   }
@@ -32,7 +32,7 @@ export function loadConfig(): NestConfig {
   return cache;
 }
 
-export function reloadConfig(): NestConfig {
+export function reloadConfig(): AnimaConfig {
   cache = null;
   return loadConfig();
 }
@@ -45,7 +45,7 @@ export { sanitizeConfigForApi } from "./config-sanitize.ts";
 
 /** 合并写入 config.yaml 某一段（如 discord / weixin） */
 export function patchConfigSection(
-  section: keyof NestConfig | string,
+  section: keyof AnimaConfig | string,
   patch: Record<string, unknown>,
 ): void {
   const raw = loadYamlFile(PATHS.configYaml);
@@ -57,7 +57,7 @@ export function patchConfigSection(
   raw[section] = merged;
   writeFileSync(PATHS.configYaml, stringifyYaml(raw), "utf-8");
   clearConfigCache();
-  const validated = nestConfigSchema.safeParse(loadYamlFile(PATHS.configYaml));
+  const validated = animaConfigSchema.safeParse(loadYamlFile(PATHS.configYaml));
   if (!validated.success) {
     throw new Error(`config patch produced invalid config: ${validated.error.message}`);
   }

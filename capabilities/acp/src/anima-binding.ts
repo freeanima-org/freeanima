@@ -6,9 +6,9 @@ export type AcpSessionsMeta = Record<string, string>;
 /** 从逸灵风 session_meta 读取 acp_sessions */
 export async function readAcpSessions(
   conversation: ConversationService,
-  nestSessionId: string,
+  animaSessionId: string,
 ): Promise<AcpSessionsMeta> {
-  const meta = await conversation.loadSessionMeta(nestSessionId);
+  const meta = await conversation.loadSessionMeta(animaSessionId);
   if (!isSessionMeta(meta)) return {};
   const raw = meta.acp_sessions;
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
@@ -17,33 +17,33 @@ export async function readAcpSessions(
 
 export async function getBoundAcpSession(
   conversation: ConversationService,
-  nestSessionId: string,
+  animaSessionId: string,
   agentName: string,
 ): Promise<string | undefined> {
-  const sessions = await readAcpSessions(conversation, nestSessionId);
+  const sessions = await readAcpSessions(conversation, animaSessionId);
   return sessions[agentName];
 }
 
 export async function bindAcpSession(
   conversation: ConversationService,
-  nestSessionId: string,
+  animaSessionId: string,
   agentName: string,
   acpSessionId: string,
 ): Promise<void> {
-  const prev = await readAcpSessions(conversation, nestSessionId);
-  await conversation.updateSessionMetaField(nestSessionId, {
+  const prev = await readAcpSessions(conversation, animaSessionId);
+  await conversation.updateSessionMetaField(animaSessionId, {
     acp_sessions: { ...prev, [agentName]: acpSessionId },
   });
 }
 
 export async function unbindAcpSession(
   conversation: ConversationService,
-  nestSessionId: string,
+  animaSessionId: string,
   agentName: string,
 ): Promise<void> {
-  const prev = await readAcpSessions(conversation, nestSessionId);
+  const prev = await readAcpSessions(conversation, animaSessionId);
   if (!(agentName in prev)) return;
   const next = { ...prev };
   delete next[agentName];
-  await conversation.updateSessionMetaField(nestSessionId, { acp_sessions: next });
+  await conversation.updateSessionMetaField(animaSessionId, { acp_sessions: next });
 }

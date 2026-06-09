@@ -1,4 +1,4 @@
-import type { NestConfig } from "@freeanima/service-config";
+import type { AnimaConfig } from "@freeanima/service-config";
 import { getLlmConfig } from "@freeanima/service-config";
 import {
   assertProfilesValid,
@@ -19,7 +19,7 @@ export type LlmRuntime = {
 
 let runtime: LlmRuntime | null = null;
 
-function profileDefsFromConfig(cfg: NestConfig): LlmProfileDef[] {
+function profileDefsFromConfig(cfg: AnimaConfig): LlmProfileDef[] {
   const llm = getLlmConfig(cfg);
   return Object.entries(llm.profiles).map(([id, profile]) => ({
     id,
@@ -32,7 +32,7 @@ function profileDefsFromConfig(cfg: NestConfig): LlmProfileDef[] {
   }));
 }
 
-export function createLlmRuntime(cfg: NestConfig): LlmRuntime {
+export function createLlmRuntime(cfg: AnimaConfig): LlmRuntime {
   const backends = new BackendRegistry();
   const providers = new ProviderRegistry(backends);
   applyLlmStackConfigurator(cfg, backends, providers);
@@ -45,7 +45,7 @@ export function createLlmRuntime(cfg: NestConfig): LlmRuntime {
   return { backends, providers, profiles: profileRegistry };
 }
 
-export function initLlmRuntime(cfg: NestConfig): LlmRuntime {
+export function initLlmRuntime(cfg: AnimaConfig): LlmRuntime {
   runtime = createLlmRuntime(cfg);
   return runtime;
 }
