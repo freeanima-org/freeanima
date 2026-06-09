@@ -198,6 +198,23 @@ Agent 新增或移动类型 / Zod / 端口时，按下列顺序决策：
 
 新增 PG 域：`engine-db/schema/{domain}` → `engine-repos` 增端口 → `connectors-db-pg` 实现 → `PgRepositories` 扩展 → `serve.ts` 装配。详见 [`docs/database.md`](docs/database.md)。
 
+#### PG Schema 迁移（硬性）
+
+**流程**：改 `engine/db/src/schema/` → **`drizzle-kit generate`** → **`migrate`**。
+
+| 步骤 | 命令 / 动作                                                        | 产出                                                         |
+| ---- | ------------------------------------------------------------------ | ------------------------------------------------------------ |
+| 1    | 改 Drizzle schema（`engine/db/src/schema/`）                       | TypeScript 真源                                              |
+| 2    | `DATABASE_URL=… bun run --filter @freeanima/engine-db db:generate` | `migrations/{ts}_{name}/migration.sql` + **`snapshot.json`** |
+| 3    | `DATABASE_URL=… bun run --filter @freeanima/engine-db db:migrate`  | PG 应用 DDL；生产亦可在 `anima service` 启动时自动 migrate   |
+
+**禁止**：
+
+- **跳过 `generate`、仅手写 `migration.sql`**（缺 `snapshot.json` 会断 Drizzle snapshot 链，下次 `generate` 可能重复建表）
+- **已应用的 migration 目录内改 SQL / 删 snapshot**（须新 migration 修正）
+
+**允许**：`generate` 之后，在当次 `migration.sql` 中**追加** Drizzle 表达不了的 SQL（如 `CREATE EXTENSION`、`message_fts_input()`、部分 GIN 表达式索引）；**勿**以此替代整个 generate 步骤。
+
 ### 安全与连续性
 
 - 凭证、密钥不写入 git / 日志 / 工具返回值
@@ -216,6 +233,10 @@ bun run test:integration           # 集成（tests/integration/）
 bun run test                       # 单元 + 集成 + E2E 并行
 bun run service start --foreground # 前台 dev（WebUI HMR）
 anima credential list              # 凭证路径；值在 pass
+
+# PG schema 变更（须 generate 产出 snapshot.json，见上文「PG Schema 迁移」）
+DATABASE_URL="…" bun run --filter @freeanima/engine-db db:generate
+DATABASE_URL="…" bun run --filter @freeanima/engine-db db:migrate
 ```
 
 - WebUI 会客厅：`http://127.0.0.1:2658/webui/parlor/chat`
