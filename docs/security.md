@@ -17,13 +17,14 @@ title: Security
 
 ## 凭证责任
 
-| 规则          | 说明                                                                                                                                 |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| 唯一权威存储  | [pass](https://www.passwordstore.org/)（GPG，`~/.password-store`）                                                                   |
-| 禁止入库      | 勿将 API Key、Token、DB 密码写入 `config.yaml` 并提交 git                                                                            |
-| 运行时目录    | `~/.anima/`（`FREEANIMA_HOME` 可改）含 config、会话、记忆——建议 `chmod 700`                                                          |
-| CLI 明文输出  | `anima credential get` 向 stdout 打印明文；勿重定向到共享日志                                                                        |
-| pass 路径约定 | `api/opencode-go`、`services/discord`、`services/firecrawl`、`services/postgres/anima`、`services/pushdeer`、`services/weixin-ilink` |
+| 规则           | 说明                                                                                                                                 |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| 唯一权威存储   | [pass](https://www.passwordstore.org/)（GPG，`~/.password-store`）                                                                   |
+| 禁止入库       | 勿将 API Key、Token、DB 密码写入 `config.yaml` 并提交 git                                                                            |
+| 运行时目录     | `~/.anima/`（`FREEANIMA_HOME` 可改）含 config、会话、记忆——建议 `chmod 700`                                                          |
+| CLI 明文输出   | `anima credential get` 向 stdout 打印明文；勿重定向到共享日志                                                                        |
+| WebUI 凭证详情 | `GET /api/credentials/detail?path=` 向本机 WebUI 返回 pass 明文；与 CLI 同等敏感，依赖 bind 地址与进程隔离                           |
+| pass 路径约定  | `api/opencode-go`、`services/discord`、`services/firecrawl`、`services/postgres/anima`、`services/pushdeer`、`services/weixin-ilink` |
 
 `config.yaml` 支持 `database.url: pass:services/postgres/anima` 等形式；密钥由运行时从 pass 注入。
 

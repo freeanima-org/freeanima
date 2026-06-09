@@ -30,6 +30,12 @@ export {
   studioSearch,
 } from "./studio.ts";
 export { iterateMessageStream } from "./message-stream.ts";
-export { getEmailOverview, fetchAccountEmails } from "./email.ts";
-export { listCredentialMetas } from "./credentials.ts";
+export {
+  getEmailOverview,
+  fetchAccountEmails,
+  listAccountMessages,
+  getEmailMessage,
+  markEmailRead,
+} from "./email.ts";
+export { listCredentialMetas, getCredentialDetailHandler } from "./credentials.ts";
 export { ApiHandlerError } from "./errors.ts";

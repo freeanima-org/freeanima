@@ -142,6 +142,22 @@ export function listCredentials(): CredentialMeta[] {
   return walkGpg(PATHS.passStore).toSorted().map(readCredentialMeta);
 }
 
+export type CredentialDetail =
+  | { yaml: true; fields: Record<string, unknown> }
+  | { yaml: false; value: string };
+
+/** 读取凭证明文（仅限 listCredentials 已列出的路径） */
+export function getCredentialDetail(path: string): CredentialDetail {
+  const meta = listCredentials().find((c) => c.path === path);
+  if (!meta) {
+    throw new RuntimeError(`Credential not found: ${path}`);
+  }
+  if (meta.yaml) {
+    return { yaml: true, fields: credentialRaw(path) };
+  }
+  return { yaml: false, value: passShow(path) };
+}
+
 export function clearCredentialCache(): void {
   cache.clear();
 }

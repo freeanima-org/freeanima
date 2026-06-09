@@ -21,7 +21,7 @@ export const Route = createFileRoute("/chamber")({
 
 function ChamberLayout() {
   return (
-    <div data-testid="chamber-layout">
+    <div data-testid="chamber-layout" className="h-full min-h-0">
       <ResponsiveSidebarLayout
         title="卧室"
         subtitle="Chamber"

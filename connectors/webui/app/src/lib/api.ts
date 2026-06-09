@@ -188,8 +188,30 @@ export async function getEmailOverview() {
   return unwrap(apiClient.api.email.get());
 }
 
-export async function fetchEmailAccount(id: string) {
-  return unwrap(apiClient.api.email({ id }).fetch.post());
+export async function fetchEmailAccount(accountId: string) {
+  return unwrap(apiClient.api.email({ accountId }).fetch.post());
+}
+
+export async function listAccountMessages(accountId: string, limit = 50) {
+  return unwrap(apiClient.api.email({ accountId }).messages.get({ query: { limit } }));
+}
+
+export async function getEmailMessage(accountId: string, uid: number) {
+  return unwrap(
+    apiClient.api
+      .email({ accountId })
+      .messages({ uid: String(uid) })
+      .get(),
+  );
+}
+
+export async function markEmailRead(accountId: string, uid: number) {
+  return unwrap(
+    apiClient.api
+      .email({ accountId })
+      .messages({ uid: String(uid) })
+      .read.post(),
+  );
 }
 
 export async function searchMemory(input: {
@@ -247,6 +269,10 @@ export async function stopAllAcp() {
 
 export async function listCredentials() {
   return unwrap(apiClient.api.credentials.get());
+}
+
+export async function getCredentialDetail(path: string) {
+  return unwrap(apiClient.api.credentials.detail.get({ query: { path } }));
 }
 
 export async function getStudioConfig() {
