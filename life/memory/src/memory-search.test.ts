@@ -96,6 +96,7 @@ type MockRow = {
   observed_at: string | null;
   occurred_at: string | null;
   status: string;
+  reference_count: number;
   created: string;
   updated: string;
 };
@@ -118,6 +119,7 @@ function createMockSemanticStore(): SemanticMemoryStorePort {
         observed_at: row.observed_at ?? now,
         occurred_at: row.occurred_at ?? null,
         status: row.status ?? "active",
+        reference_count: 0,
         created: row.created ?? now,
         updated: row.updated ?? now,
       });

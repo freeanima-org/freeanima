@@ -73,6 +73,7 @@ export async function ensureBuiltinCronJobs(): Promise<void> {
   await _ensureBuiltinLightSleepCronJob();
   await _ensureBuiltinDeepSleepCronJob();
   await _ensureBuiltinSelfAutobiographyCronJob();
+  await _ensureBuiltinMemoryReferenceSyncCronJob();
 }
 
 async function _ensureBuiltinLightSleepCronJob(): Promise<void> {
@@ -117,6 +118,22 @@ async function _ensureBuiltinSelfAutobiographyCronJob(): Promise<void> {
     no_agent: true,
     deliver: "local",
     timeout_sec: 1800,
+  });
+  const job = await getJob(id);
+  if (!job || !handles) return;
+  if (scheduleChanged) handles.reregister(job);
+}
+
+async function _ensureBuiltinMemoryReferenceSyncCronJob(): Promise<void> {
+  const id = "builtin-memory-reference-sync";
+  const scheduleChanged = await getCronStore().upsertBuiltin({
+    id,
+    name: "memory-reference-sync",
+    schedule: "30 5 * * *",
+    prompt: "",
+    no_agent: true,
+    deliver: "local",
+    timeout_sec: 600,
   });
   const job = await getJob(id);
   if (!job || !handles) return;

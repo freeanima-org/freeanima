@@ -9,22 +9,26 @@ import {
   RESIDENT_MEMORY_SYSTEM_FRAME,
 } from "./system-prompt.ts";
 import { registerSemanticMemoryStore, resetSemanticMemoryStoreForTests } from "./semantic-port.ts";
+import { MEMORY_REFERENCE_CITATION_RULE } from "./memory-reference.ts";
 
-function createMockSemanticStore(
-  resident: Array<{ content: string; pinned?: boolean }> = [],
-): SemanticMemoryStorePort {
+function createMockSemanticStore(resident: Array<{ content: string; pinned?: boolean }> = []) {
   return {
     async listResident() {
       return resident.map((row, i) => ({
-        id: `fact-${i}`,
+        id: `f-00000${i}-abcd`,
         content: row.content,
         type: "fact",
         pinned: row.pinned ?? false,
+        reference_count: 0,
+        source_sessions: [],
+        observed_at: null,
+        occurred_at: null,
+        status: "active",
         created: "",
         updated: "",
       }));
     },
-  } as SemanticMemoryStorePort;
+  } as unknown as SemanticMemoryStorePort;
 }
 
 describe("system-prompt", () => {
@@ -55,7 +59,8 @@ describe("system-prompt", () => {
     expect(parts.resident).toContain(RESIDENT_MEMORY_SYSTEM_FRAME);
     expect(parts.resident).toContain("## 常驻记忆");
     expect(parts.resident).toContain("```md");
-    expect(parts.resident).toContain("- 📌 我喜欢测试");
+    expect(parts.resident).toContain("- 📌 [记忆 #f-000000-abcd] 我喜欢测试");
+    expect(parts.resident).toContain(MEMORY_REFERENCE_CITATION_RULE);
   });
 
   it("项目上下文段含代码块且无第二人称骨架", async () => {

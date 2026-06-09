@@ -5,6 +5,7 @@ export * from "./jsonb/index.ts";
 export * from "./sessions.ts";
 export * from "./messages.ts";
 export * from "./semantic-memory.ts";
+export * from "./memory-reference.ts";
 export * from "./self-layer.ts";
 export * from "./autobiographical-memory.ts";
 export * from "./limbic-memory.ts";

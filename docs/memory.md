@@ -161,11 +161,11 @@ LLM 进行单次 Token 推理时的内部激活状态。随推理结束瞬间消
 
 ## 三、存储实现（当前状态）
 
-| 存储                                  | 对应记忆         | 实现                                                                 |
-| ------------------------------------- | ---------------- | -------------------------------------------------------------------- |
-| PostgreSQL（`sessions` + `messages`） | 对话记录（情景） | 主存；`messages.content_fts` GIN 全文索引（simple）                  |
-| PostgreSQL `semantic_memory`          | 语义记忆         | `content_fts` GIN；`pinned` + `updated` 驱动常驻记忆；见 database.md |
-| PostgreSQL `limbic_memory`            | 感性记忆         | 浅睡 Phase 2 写入；不经 `recall`                                     |
+| 存储                                  | 对应记忆         | 实现                                                                         |
+| ------------------------------------- | ---------------- | ---------------------------------------------------------------------------- |
+| PostgreSQL（`sessions` + `messages`） | 对话记录（情景） | 主存；`messages.content_fts` GIN 全文索引（simple）                          |
+| PostgreSQL `semantic_memory`          | 语义记忆         | `content_fts` GIN；`pinned` + `reference_count` 驱动常驻记忆；见 database.md |
+| PostgreSQL `limbic_memory`            | 感性记忆         | 浅睡 Phase 2 写入；不经 `recall`                                             |
 
 增量提取：浅睡 cron（02:00，见 [`sleep.md`](sleep.md)）。DB 迁移：`anima service` 启动时 `runMigrations`。
 
@@ -222,7 +222,7 @@ LLM 进行单次 Token 推理时的内部激活状态。随推理结束瞬间消
 | `semantic_memory` | `semantic_memory.content_fts` | 默认 limit 5                               |
 | `dialogue`        | `messages.content_fts`        | 默认 session_limit 10；可选 `session` 限定 |
 
-常驻记忆由 system prompt 注入（`pinned` 优先 + `updated` 降序，top 20），不经 `recall`。
+常驻记忆由 system prompt 注入：**pinned 全量** + **reference_count top N**（默认 N=20）；每条以 `[记忆 #f-000001-abcd] 内容` 格式携带 ID，LLM 引用时在回复末尾标注相同标记。引用计数由消息正文解析写入 `memory_references`，cron `builtin-memory-reference-sync` 从 messages 全量校准。
 
 按 type 加权、limbic 纳入 recall、多策略融合等扩展见 [Issue #42](https://github.com/freeanima-org/freeanima/issues/42)、[#51](https://github.com/freeanima-org/freeanima/issues/51)。
 

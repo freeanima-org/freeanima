@@ -70,6 +70,7 @@ import {
 import {
   registerAutobiographicalMemoryStore,
   registerLimbicMemoryStore,
+  syncSemanticMemoryReferenceCounts,
 } from "@freeanima/life-memory";
 import {
   discoverPlatforms,
@@ -296,6 +297,11 @@ export async function serve(
         });
         invalidateSelfLayerPromptCache();
         await loadSelfLayerPrompt();
+        return JSON.stringify(result);
+      });
+
+      registerCronBuiltinHandler("builtin-memory-reference-sync", async () => {
+        const result = await syncSemanticMemoryReferenceCounts(engine!.repos.memoryReference);
         return JSON.stringify(result);
       });
 

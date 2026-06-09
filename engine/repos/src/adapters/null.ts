@@ -3,6 +3,7 @@ import { nullAutobiographicalMemoryStore } from "./null-autobiographical-memory.
 import { nullCronJobStore } from "./null-cron.ts";
 import { nullLimbicMemoryStore } from "./null-limbic-memory.ts";
 import { nullSelfLayerStore } from "./null-self-layer.ts";
+import { nullMemoryReferenceStore } from "./null-memory-reference.ts";
 import { nullSemanticMemoryStore } from "./null-semantic-memory.ts";
 import { nullSessionStore } from "./null-session.ts";
 import { nullTaskStore } from "./null-task.ts";
@@ -11,6 +12,7 @@ export const nullPgRepositories: PgRepositories = {
   pgAvailable: false,
   session: nullSessionStore,
   semanticMemory: nullSemanticMemoryStore,
+  memoryReference: nullMemoryReferenceStore,
   selfLayer: nullSelfLayerStore,
   autobiographicalMemory: nullAutobiographicalMemoryStore,
   limbicMemory: nullLimbicMemoryStore,

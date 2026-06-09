@@ -187,6 +187,7 @@
         "@freeanima/engine-db": "workspace:*",
         "@freeanima/engine-repos": "workspace:*",
         "@freeanima/kernel-util": "workspace:*",
+        "@freeanima/life-memory": "workspace:*",
         "@freeanima/service-config": "workspace:*",
         "@freeanima/service-logging": "workspace:*",
         "@node-rs/jieba": "^2.0.1",

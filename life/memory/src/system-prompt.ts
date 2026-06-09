@@ -1,12 +1,13 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { getSemanticMemoryStore } from "./semantic-port.ts";
+import { formatResidentMemoryLine, MEMORY_REFERENCE_CITATION_RULE } from "./memory-reference.ts";
 
 const MAX_AGENTS_CHARS = 8000;
 const PROMPT_CODE_FENCE_LANG = "md";
 
 /** system prompt 常驻记忆段外层第二人称骨架 */
-export const RESIDENT_MEMORY_SYSTEM_FRAME = `以下是你的常驻记忆。这些事实与约定需要你始终携带，你必须遵守并在对话中自觉运用。`;
+export const RESIDENT_MEMORY_SYSTEM_FRAME = `以下是你的常驻记忆。这些事实与约定需要你始终携带，你必须遵守并在对话中自觉运用。\n${MEMORY_REFERENCE_CITATION_RULE}`;
 
 function wrapPromptSection(heading: string, inner: string, frame?: string): string {
   const body = inner.trim();
@@ -36,7 +37,7 @@ function readAgents(cwd: string | null | undefined): string {
 async function renderResidentMemory(): Promise<string> {
   const facts = await getSemanticMemoryStore().listResident(20);
   if (!facts.length) return "";
-  const lines = facts.map((f) => (f.pinned ? `- 📌 ${f.content}` : `- ${f.content}`));
+  const lines = facts.map((f) => formatResidentMemoryLine(f.content, f.id, f.pinned));
   return wrapPromptSection("常驻记忆", lines.join("\n"), RESIDENT_MEMORY_SYSTEM_FRAME);
 }
 

@@ -135,6 +135,7 @@ async function handleSearchSemanticMemory(args: Record<string, unknown>): Promis
     count: rows.length,
     results: rows.map((row) => ({
       id: row.id,
+      semantic_memory_id: row.id,
       type: row.type,
       content: row.content,
       pinned: row.pinned,

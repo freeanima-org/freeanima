@@ -1,5 +1,14 @@
 import { sql, type SQL } from "drizzle-orm";
-import { boolean, customType, index, pgTable, text, timestamp, vector } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  customType,
+  index,
+  pgTable,
+  real,
+  text,
+  timestamp,
+  vector,
+} from "drizzle-orm/pg-core";
 import { z } from "zod";
 
 import { SEMANTIC_EMBEDDING_DIMENSIONS } from "./embedding.ts";
@@ -53,6 +62,8 @@ export const semanticMemory = pgTable(
     observedAt: timestamp("observed_at", { withTimezone: true }),
     occurredAt: text("occurred_at"),
     status: text("status").notNull().default("active"),
+    /** 按 session 去重 + 30 天时间衰减后的引用权重合计（定期全量同步校准） */
+    referenceCount: real("reference_count").notNull().default(0),
     created: timestamp("created", { withTimezone: true }).notNull().defaultNow(),
     updated: timestamp("updated", { withTimezone: true }).notNull().defaultNow(),
   },

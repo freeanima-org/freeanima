@@ -38,6 +38,9 @@ export type {
   TaskListOpts,
   TaskStatus,
   TaskPriority,
+  MemoryReferenceRow,
+  MemoryReferenceStorePort,
+  RecordMessageReferencesInput,
 } from "./ports/index.ts";
 export { SELF_BLOCK_KEYS, TASK_STATUSES, TASK_PRIORITIES } from "./ports/index.ts";
 export type {

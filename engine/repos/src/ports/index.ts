@@ -1,3 +1,4 @@
+import type { MemoryReferenceStorePort } from "./memory-reference.ts";
 import type { SemanticMemoryStorePort } from "./semantic-memory.ts";
 import type { SessionStorePort } from "./session.ts";
 
@@ -45,6 +46,11 @@ export type {
   AutobiographicalMemoryStorePort,
 } from "./autobiographical-memory.ts";
 export type {
+  MemoryReferenceRow,
+  MemoryReferenceStorePort,
+  RecordMessageReferencesInput,
+} from "./memory-reference.ts";
+export type {
   LimbicKind,
   LimbicMemoryRow,
   LimbicMemoryCreateInput,
@@ -63,6 +69,7 @@ export interface PgRepositories {
   readonly pgAvailable: boolean;
   session: SessionStorePort;
   semanticMemory: SemanticMemoryStorePort;
+  memoryReference: MemoryReferenceStorePort;
   selfLayer: SelfLayerStorePort;
   autobiographicalMemory: AutobiographicalMemoryStorePort;
   limbicMemory: LimbicMemoryStorePort;

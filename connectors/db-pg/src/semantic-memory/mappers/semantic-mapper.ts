@@ -13,6 +13,8 @@ export type SemanticMemoryDbRow = {
   occurred_at?: string | null;
   occurredAt?: string | null;
   status?: string | null;
+  reference_count?: number | null;
+  referenceCount?: number | null;
   created: Date | string;
   updated: Date | string;
 };
@@ -29,6 +31,7 @@ export function mapSemanticMemoryRow(row: SemanticMemoryDbRow): SemanticMemoryRo
     observed_at: observedRaw != null ? normalizePgTimestamp(observedRaw) : null,
     occurred_at: row.occurred_at ?? row.occurredAt ?? null,
     status: row.status ?? "active",
+    reference_count: Number(row.reference_count ?? row.referenceCount ?? 0),
     created: normalizePgTimestamp(row.created),
     updated: normalizePgTimestamp(row.updated),
   };

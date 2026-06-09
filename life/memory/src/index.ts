@@ -9,6 +9,14 @@ export {
 } from "./events.ts";
 export { registerMemoryPipeline } from "./pipeline.ts";
 export {
+  formatMemoryReferenceMarker,
+  formatResidentMemoryLine,
+  parseMemoryReferenceMarkers,
+  MEMORY_REFERENCE_CITATION_RULE,
+  memoryReferenceWeight,
+} from "./memory-reference.ts";
+export { syncSemanticMemoryReferenceCounts } from "./reference-sync.ts";
+export {
   registerMemorySessionStore,
   getMemorySessionStore,
   resetMemorySessionStoreForTests,
