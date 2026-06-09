@@ -98,6 +98,15 @@ const redisConfigSchema = z
   })
   .optional();
 
+export const eventbusConfigSchema = z
+  .object({
+    backend: z.enum(["sqlite", "redis"]).optional(),
+    key_prefix: z.string().min(1).optional(),
+  })
+  .optional();
+
+export type EventbusConfigInput = z.infer<typeof eventbusConfigSchema>;
+
 const modelEntrySchema = z.object({
   context_window: z.number().int().positive().optional(),
 });
@@ -155,6 +164,7 @@ export const nestConfigSchema = z
     platforms: z.record(z.string(), z.unknown()).optional(),
     memory: memorySchema.optional(),
     database: databaseConfigSchema.optional(),
+    eventbus: eventbusConfigSchema,
     redis: redisConfigSchema,
     email: emailConfigSchema.optional(),
     discord: sectionSchema.optional(),

@@ -1,0 +1,14 @@
+{
+  "name": "@freeanima/connectors-eventbus-redis",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@freeanima/kernel-eventbus": "workspace:*"
+  },
+  "devDependencies": {
+    "@freeanima/kernel-logging": "workspace:*",
+    "@types/bun": "catalog:"
+  }
+}
