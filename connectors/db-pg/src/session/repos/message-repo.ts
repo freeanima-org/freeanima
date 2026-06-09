@@ -3,8 +3,14 @@ import type { ConversationMessage, SessionMessage } from "@freeanima/engine-db/d
 
 import { messages } from "@freeanima/engine-db/schema";
 
+import { resolveFtsSegmentedForWrite } from "../../fts/write.ts";
 import { getDb } from "../../client.ts";
 import { messageToInsert, rowToMessage } from "../mappers/message-mapper.ts";
+
+function extractIndexableContent(payload: { role: string; content?: string | null }): string {
+  if (payload.role !== "user" && payload.role !== "assistant") return "";
+  return typeof payload.content === "string" ? payload.content.trim() : "";
+}
 
 export async function appendMessage(
   sessionId: string,
@@ -12,9 +18,10 @@ export async function appendMessage(
 ): Promise<ConversationMessage> {
   const db = getDb();
   const insert = messageToInsert(sessionId, msg);
+  const ftsSegmented = await resolveFtsSegmentedForWrite(extractIndexableContent(insert.payload));
   const inserted = await db
     .insert(messages)
-    .values(insert)
+    .values({ ...insert, ftsSegmented })
     .onConflictDoNothing({ target: [messages.sessionId, messages.pos] })
     .returning();
   if (inserted.length) {

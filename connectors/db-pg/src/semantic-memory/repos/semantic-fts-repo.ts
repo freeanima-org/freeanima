@@ -2,7 +2,7 @@ import { sql as drizzleSql } from "drizzle-orm";
 import type { SemanticFtsHit } from "@freeanima/engine-repos";
 
 import { getDb } from "../../client.ts";
-import { buildPgTsQuery } from "../../session/fts-query.ts";
+import { buildFtsTsQuery } from "../../fts/query.ts";
 import { mapSemanticMemoryRow, type SemanticMemoryDbRow } from "../mappers/semantic-mapper.ts";
 
 export async function searchSemanticMemoryFts(
@@ -12,7 +12,7 @@ export async function searchSemanticMemoryFts(
   const q = query.trim();
   if (!q) return [];
 
-  const tsquery = buildPgTsQuery(q);
+  const tsquery = await buildFtsTsQuery(q);
   if (!tsquery) return [];
 
   const limit = Math.max(1, Math.min(50, opts?.limit ?? 10));

@@ -2,7 +2,7 @@ import { sql as drizzleSql } from "drizzle-orm";
 import type { MessageFtsHit } from "@freeanima/engine-repos";
 
 import { getDb } from "../../client.ts";
-import { buildPgTsQuery } from "../fts-query.ts";
+import { buildFtsTsQuery } from "../../fts/query.ts";
 
 export async function searchMessagesFts(
   query: string,
@@ -11,7 +11,7 @@ export async function searchMessagesFts(
   const q = query.trim();
   if (!q) return [];
 
-  const tsquery = buildPgTsQuery(q);
+  const tsquery = await buildFtsTsQuery(q);
   if (!tsquery) return [];
 
   const limit = Math.max(1, Math.min(50, opts?.limit ?? 10));

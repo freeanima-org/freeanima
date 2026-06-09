@@ -267,6 +267,14 @@ export async function listAutobiographicalMemories(input: {
   return unwrap(apiClient.api.memory.autobiographical.list.post(input));
 }
 
+export async function getFtsStatus() {
+  return unwrap(apiClient.api.fts.status.get());
+}
+
+export async function rebuildFtsIndex() {
+  return unwrap(apiClient.api.fts.rebuild.post());
+}
+
 export async function getSelfBlocks() {
   return unwrap(apiClient.api.self.blocks.get());
 }

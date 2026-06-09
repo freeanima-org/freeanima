@@ -37,8 +37,14 @@ export const semanticMemory = pgTable(
     type: text("type").notNull().default("world"),
     pinned: boolean("pinned").notNull().default(false),
     content: text("content").notNull(),
+    ftsSegmented: text("fts_segmented"),
     contentFts: tsvector("content_fts").generatedAlwaysAs(
-      (): SQL => sql`to_tsvector('simple', message_fts_input(${semanticMemory.content}))`,
+      (): SQL =>
+        sql`to_tsvector('simple', CASE
+          WHEN nullif(btrim(${semanticMemory.ftsSegmented}), '') IS NOT NULL
+          THEN regexp_replace(btrim(${semanticMemory.ftsSegmented}), '\\s+', ' ', 'g')
+          ELSE message_fts_input(${semanticMemory.content})
+        END)`,
     ),
     sourceSessions: text("source_sessions").array().notNull().default([]),
     observedAt: timestamp("observed_at", { withTimezone: true }),

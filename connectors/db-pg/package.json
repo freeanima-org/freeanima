@@ -2,13 +2,16 @@
   "name": "@freeanima/connectors-db-pg",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./fts": "./src/fts/index.ts"
   },
   "dependencies": {
     "@freeanima/engine-conversation": "workspace:*",
     "@freeanima/engine-repos": "workspace:*",
     "@freeanima/engine-db": "workspace:*",
     "@freeanima/kernel-util": "workspace:*",
+    "@freeanima/service-config": "workspace:*",
+    "@node-rs/jieba": "^2.0.1",
     "drizzle-orm": "catalog:",
     "zod": "catalog:"
   },

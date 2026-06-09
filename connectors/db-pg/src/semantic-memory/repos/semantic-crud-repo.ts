@@ -11,6 +11,7 @@ import type {
 } from "@freeanima/engine-repos";
 import { formatCstIso } from "@freeanima/kernel-util";
 
+import { resolveFtsSegmentedForWrite } from "../../fts/write.ts";
 import { getDb } from "../../client.ts";
 import { mapSemanticMemoryRow } from "../mappers/semantic-mapper.ts";
 import { nextSemanticMemoryId } from "./id-gen.ts";
@@ -39,6 +40,7 @@ export async function createSemanticMemory(row: SemanticMemoryCreateInput): Prom
   const observedAt = row.observed_at ?? created;
   const occurredAt = row.occurred_at ?? null;
   const status = normalizeStatus(row.status);
+  const ftsSegmented = await resolveFtsSegmentedForWrite(content);
 
   const db = getDb();
   await db
@@ -48,6 +50,7 @@ export async function createSemanticMemory(row: SemanticMemoryCreateInput): Prom
       type,
       pinned,
       content,
+      ftsSegmented,
       sourceSessions,
       observedAt: observedAt ? new Date(observedAt) : null,
       occurredAt,
@@ -61,6 +64,7 @@ export async function createSemanticMemory(row: SemanticMemoryCreateInput): Prom
         type,
         pinned,
         content,
+        ftsSegmented,
         sourceSessions,
         observedAt: observedAt ? new Date(observedAt) : null,
         occurredAt,
@@ -83,7 +87,10 @@ export async function updateSemanticMemory(row: SemanticMemoryUpdateInput): Prom
   const patch: Partial<typeof semanticMemory.$inferInsert> = {
     updated: new Date(formatCstIso()),
   };
-  if (row.content !== undefined) patch.content = row.content.trim();
+  if (row.content !== undefined) {
+    patch.content = row.content.trim();
+    patch.ftsSegmented = await resolveFtsSegmentedForWrite(patch.content);
+  }
   if (row.type !== undefined) patch.type = normalizeSemanticMemoryType(row.type);
   if (row.pinned !== undefined) patch.pinned = row.pinned;
   if (row.source_sessions !== undefined) {

@@ -9,6 +9,7 @@ export * from "./eventbus.ts";
 export * from "./repo-root.ts";
 export * from "./version.ts";
 export * from "./config-sanitize.ts";
+export * from "./cjk.ts";
 export * from "./llm-config.ts";
 export { resolveValue } from "./resolve.ts";
 export { validateConfigOnStartup } from "./validate.ts";

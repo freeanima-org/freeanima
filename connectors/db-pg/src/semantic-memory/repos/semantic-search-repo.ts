@@ -2,7 +2,7 @@ import { sql as drizzleSql } from "drizzle-orm";
 import type { SemanticFtsHit, SemanticMemorySearchOpts } from "@freeanima/engine-repos";
 
 import { getDb } from "../../client.ts";
-import { buildPgTsQuery } from "../../session/fts-query.ts";
+import { buildFtsTsQuery } from "../../fts/query.ts";
 import { mapSemanticMemoryRow, type SemanticMemoryDbRow } from "../mappers/semantic-mapper.ts";
 
 type SemanticSearchFilterOpts = Omit<SemanticMemorySearchOpts, "limit" | "offset">;
@@ -48,7 +48,7 @@ export async function searchSemanticMemory(
 
   const db = getDb();
   if (q) {
-    const tsquery = buildPgTsQuery(q);
+    const tsquery = await buildFtsTsQuery(q);
     if (!tsquery) return [];
     const rows = await db.execute<SemanticMemoryDbRow & { rank: number }>(drizzleSql`
       SELECT
@@ -117,7 +117,7 @@ export async function countSemanticMemorySearch(opts: SemanticSearchFilterOpts):
 
   const db = getDb();
   if (q) {
-    const tsquery = buildPgTsQuery(q);
+    const tsquery = await buildFtsTsQuery(q);
     if (!tsquery) return 0;
     const rows = await db.execute<{ n: number }>(drizzleSql`
       SELECT count(*)::int AS n

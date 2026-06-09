@@ -21,12 +21,13 @@ import { Route as StudioNovelRouteImport } from './routes/studio/novel'
 import { Route as ParlorSessionsRouteImport } from './routes/parlor/sessions'
 import { Route as ParlorChatRouteImport } from './routes/parlor/chat'
 import { Route as ChamberToolsRouteImport } from './routes/chamber/tools'
+import { Route as ChamberSystemPromptRouteImport } from './routes/chamber/system-prompt'
 import { Route as ChamberSemanticMemoryRouteImport } from './routes/chamber/semantic-memory'
 import { Route as ChamberSelfLayerRouteImport } from './routes/chamber/self-layer'
-import { Route as ChamberSystemPromptRouteImport } from './routes/chamber/system-prompt'
 import { Route as ChamberMemoryRouteImport } from './routes/chamber/memory'
 import { Route as ChamberMcpRouteImport } from './routes/chamber/mcp'
 import { Route as ChamberLimbicMemoryRouteImport } from './routes/chamber/limbic-memory'
+import { Route as ChamberFtsRouteImport } from './routes/chamber/fts'
 import { Route as ChamberEmailRouteImport } from './routes/chamber/email'
 import { Route as ChamberDashboardRouteImport } from './routes/chamber/dashboard'
 import { Route as ChamberCronRouteImport } from './routes/chamber/cron'
@@ -99,6 +100,11 @@ const ChamberToolsRoute = ChamberToolsRouteImport.update({
   path: '/tools',
   getParentRoute: () => ChamberRouteRoute,
 } as any)
+const ChamberSystemPromptRoute = ChamberSystemPromptRouteImport.update({
+  id: '/system-prompt',
+  path: '/system-prompt',
+  getParentRoute: () => ChamberRouteRoute,
+} as any)
 const ChamberSemanticMemoryRoute = ChamberSemanticMemoryRouteImport.update({
   id: '/semantic-memory',
   path: '/semantic-memory',
@@ -107,11 +113,6 @@ const ChamberSemanticMemoryRoute = ChamberSemanticMemoryRouteImport.update({
 const ChamberSelfLayerRoute = ChamberSelfLayerRouteImport.update({
   id: '/self-layer',
   path: '/self-layer',
-  getParentRoute: () => ChamberRouteRoute,
-} as any)
-const ChamberSystemPromptRoute = ChamberSystemPromptRouteImport.update({
-  id: '/system-prompt',
-  path: '/system-prompt',
   getParentRoute: () => ChamberRouteRoute,
 } as any)
 const ChamberMemoryRoute = ChamberMemoryRouteImport.update({
@@ -127,6 +128,11 @@ const ChamberMcpRoute = ChamberMcpRouteImport.update({
 const ChamberLimbicMemoryRoute = ChamberLimbicMemoryRouteImport.update({
   id: '/limbic-memory',
   path: '/limbic-memory',
+  getParentRoute: () => ChamberRouteRoute,
+} as any)
+const ChamberFtsRoute = ChamberFtsRouteImport.update({
+  id: '/fts',
+  path: '/fts',
   getParentRoute: () => ChamberRouteRoute,
 } as any)
 const ChamberEmailRoute = ChamberEmailRouteImport.update({
@@ -202,12 +208,13 @@ export interface FileRoutesByFullPath {
   '/chamber/cron': typeof ChamberCronRoute
   '/chamber/dashboard': typeof ChamberDashboardRoute
   '/chamber/email': typeof ChamberEmailRoute
+  '/chamber/fts': typeof ChamberFtsRoute
   '/chamber/limbic-memory': typeof ChamberLimbicMemoryRoute
   '/chamber/mcp': typeof ChamberMcpRoute
   '/chamber/memory': typeof ChamberMemoryRoute
   '/chamber/self-layer': typeof ChamberSelfLayerRoute
-  '/chamber/system-prompt': typeof ChamberSystemPromptRoute
   '/chamber/semantic-memory': typeof ChamberSemanticMemoryRoute
+  '/chamber/system-prompt': typeof ChamberSystemPromptRoute
   '/chamber/tools': typeof ChamberToolsRoute
   '/parlor/chat': typeof ParlorChatRoute
   '/parlor/sessions': typeof ParlorSessionsRoute
@@ -232,12 +239,13 @@ export interface FileRoutesByTo {
   '/chamber/cron': typeof ChamberCronRoute
   '/chamber/dashboard': typeof ChamberDashboardRoute
   '/chamber/email': typeof ChamberEmailRoute
+  '/chamber/fts': typeof ChamberFtsRoute
   '/chamber/limbic-memory': typeof ChamberLimbicMemoryRoute
   '/chamber/mcp': typeof ChamberMcpRoute
   '/chamber/memory': typeof ChamberMemoryRoute
   '/chamber/self-layer': typeof ChamberSelfLayerRoute
-  '/chamber/system-prompt': typeof ChamberSystemPromptRoute
   '/chamber/semantic-memory': typeof ChamberSemanticMemoryRoute
+  '/chamber/system-prompt': typeof ChamberSystemPromptRoute
   '/chamber/tools': typeof ChamberToolsRoute
   '/parlor/chat': typeof ParlorChatRoute
   '/parlor/sessions': typeof ParlorSessionsRoute
@@ -264,12 +272,13 @@ export interface FileRoutesById {
   '/chamber/cron': typeof ChamberCronRoute
   '/chamber/dashboard': typeof ChamberDashboardRoute
   '/chamber/email': typeof ChamberEmailRoute
+  '/chamber/fts': typeof ChamberFtsRoute
   '/chamber/limbic-memory': typeof ChamberLimbicMemoryRoute
   '/chamber/mcp': typeof ChamberMcpRoute
   '/chamber/memory': typeof ChamberMemoryRoute
   '/chamber/self-layer': typeof ChamberSelfLayerRoute
-  '/chamber/system-prompt': typeof ChamberSystemPromptRoute
   '/chamber/semantic-memory': typeof ChamberSemanticMemoryRoute
+  '/chamber/system-prompt': typeof ChamberSystemPromptRoute
   '/chamber/tools': typeof ChamberToolsRoute
   '/parlor/chat': typeof ParlorChatRoute
   '/parlor/sessions': typeof ParlorSessionsRoute
@@ -297,12 +306,13 @@ export interface FileRouteTypes {
     | '/chamber/cron'
     | '/chamber/dashboard'
     | '/chamber/email'
+    | '/chamber/fts'
     | '/chamber/limbic-memory'
     | '/chamber/mcp'
     | '/chamber/memory'
     | '/chamber/self-layer'
-    | '/chamber/system-prompt'
     | '/chamber/semantic-memory'
+    | '/chamber/system-prompt'
     | '/chamber/tools'
     | '/parlor/chat'
     | '/parlor/sessions'
@@ -327,12 +337,13 @@ export interface FileRouteTypes {
     | '/chamber/cron'
     | '/chamber/dashboard'
     | '/chamber/email'
+    | '/chamber/fts'
     | '/chamber/limbic-memory'
     | '/chamber/mcp'
     | '/chamber/memory'
     | '/chamber/self-layer'
-    | '/chamber/system-prompt'
     | '/chamber/semantic-memory'
+    | '/chamber/system-prompt'
     | '/chamber/tools'
     | '/parlor/chat'
     | '/parlor/sessions'
@@ -358,12 +369,13 @@ export interface FileRouteTypes {
     | '/chamber/cron'
     | '/chamber/dashboard'
     | '/chamber/email'
+    | '/chamber/fts'
     | '/chamber/limbic-memory'
     | '/chamber/mcp'
     | '/chamber/memory'
     | '/chamber/self-layer'
-    | '/chamber/system-prompt'
     | '/chamber/semantic-memory'
+    | '/chamber/system-prompt'
     | '/chamber/tools'
     | '/parlor/chat'
     | '/parlor/sessions'
@@ -469,6 +481,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChamberToolsRouteImport
       parentRoute: typeof ChamberRouteRoute
     }
+    '/chamber/system-prompt': {
+      id: '/chamber/system-prompt'
+      path: '/system-prompt'
+      fullPath: '/chamber/system-prompt'
+      preLoaderRoute: typeof ChamberSystemPromptRouteImport
+      parentRoute: typeof ChamberRouteRoute
+    }
     '/chamber/semantic-memory': {
       id: '/chamber/semantic-memory'
       path: '/semantic-memory'
@@ -481,13 +500,6 @@ declare module '@tanstack/react-router' {
       path: '/self-layer'
       fullPath: '/chamber/self-layer'
       preLoaderRoute: typeof ChamberSelfLayerRouteImport
-      parentRoute: typeof ChamberRouteRoute
-    }
-    '/chamber/system-prompt': {
-      id: '/chamber/system-prompt'
-      path: '/system-prompt'
-      fullPath: '/chamber/system-prompt'
-      preLoaderRoute: typeof ChamberSystemPromptRouteImport
       parentRoute: typeof ChamberRouteRoute
     }
     '/chamber/memory': {
@@ -509,6 +521,13 @@ declare module '@tanstack/react-router' {
       path: '/limbic-memory'
       fullPath: '/chamber/limbic-memory'
       preLoaderRoute: typeof ChamberLimbicMemoryRouteImport
+      parentRoute: typeof ChamberRouteRoute
+    }
+    '/chamber/fts': {
+      id: '/chamber/fts'
+      path: '/fts'
+      fullPath: '/chamber/fts'
+      preLoaderRoute: typeof ChamberFtsRouteImport
       parentRoute: typeof ChamberRouteRoute
     }
     '/chamber/email': {
@@ -614,12 +633,13 @@ interface ChamberRouteRouteChildren {
   ChamberCronRoute: typeof ChamberCronRoute
   ChamberDashboardRoute: typeof ChamberDashboardRoute
   ChamberEmailRoute: typeof ChamberEmailRoute
+  ChamberFtsRoute: typeof ChamberFtsRoute
   ChamberLimbicMemoryRoute: typeof ChamberLimbicMemoryRoute
   ChamberMcpRoute: typeof ChamberMcpRoute
   ChamberMemoryRoute: typeof ChamberMemoryRoute
   ChamberSelfLayerRoute: typeof ChamberSelfLayerRoute
-  ChamberSystemPromptRoute: typeof ChamberSystemPromptRoute
   ChamberSemanticMemoryRoute: typeof ChamberSemanticMemoryRoute
+  ChamberSystemPromptRoute: typeof ChamberSystemPromptRoute
   ChamberToolsRoute: typeof ChamberToolsRoute
 }
 
@@ -633,12 +653,13 @@ const ChamberRouteRouteChildren: ChamberRouteRouteChildren = {
   ChamberCronRoute: ChamberCronRoute,
   ChamberDashboardRoute: ChamberDashboardRoute,
   ChamberEmailRoute: ChamberEmailRoute,
+  ChamberFtsRoute: ChamberFtsRoute,
   ChamberLimbicMemoryRoute: ChamberLimbicMemoryRoute,
   ChamberMcpRoute: ChamberMcpRoute,
   ChamberMemoryRoute: ChamberMemoryRoute,
   ChamberSelfLayerRoute: ChamberSelfLayerRoute,
-  ChamberSystemPromptRoute: ChamberSystemPromptRoute,
   ChamberSemanticMemoryRoute: ChamberSemanticMemoryRoute,
+  ChamberSystemPromptRoute: ChamberSystemPromptRoute,
   ChamberToolsRoute: ChamberToolsRoute,
 }
 
