@@ -132,3 +132,9 @@ compression:
 # cjk:
 #   enabled: false
 #   # dict_path: ~/.anima/cjk/user.dict
+
+# FTS 调参（trgm / vector 无 enabled 开关，迁移后常开）
+# fts:
+#   trgm:
+#     min_similarity: 0.35
+#     fallback_when_hits_lt: 3

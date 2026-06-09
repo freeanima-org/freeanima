@@ -95,6 +95,21 @@ export const cjkConfigSchema = z
 
 export type CjkConfigInput = z.infer<typeof cjkConfigSchema>;
 
+export const ftsTrgmConfigSchema = z
+  .object({
+    min_similarity: z.number().min(0).max(1).optional(),
+    fallback_when_hits_lt: z.number().int().nonnegative().optional(),
+  })
+  .optional();
+
+export const ftsConfigSchema = z
+  .object({
+    trgm: ftsTrgmConfigSchema,
+  })
+  .optional();
+
+export type FtsConfigInput = z.infer<typeof ftsConfigSchema>;
+
 export type DatabaseConfigInput = z.infer<typeof databaseConfigSchema>;
 
 const redisConfigSchema = z
@@ -173,6 +188,7 @@ export const animaConfigSchema = z
     platforms: z.record(z.string(), z.unknown()).optional(),
     memory: memorySchema.optional(),
     cjk: cjkConfigSchema,
+    fts: ftsConfigSchema,
     database: databaseConfigSchema.optional(),
     eventbus: eventbusConfigSchema,
     redis: redisConfigSchema,
