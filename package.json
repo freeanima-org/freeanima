@@ -56,6 +56,9 @@
     "link:global": "mkdir -p \"${BUN_INSTALL:-$HOME/.bun}/bin\" && ln -sf \"$PWD/cli/src/cli.ts\" \"${BUN_INSTALL:-$HOME/.bun}/bin/anima\" && chmod +x cli/src/cli.ts",
     "prepare": "husky"
   },
+  "patchedDependencies": {
+    "drizzle-orm@1.0.0-rc.3": "patches/drizzle-orm@1.0.0-rc.3.patch"
+  },
   "trustedDependencies": [
     "cpu-features",
     "esbuild",

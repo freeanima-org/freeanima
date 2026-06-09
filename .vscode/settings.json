@@ -1,0 +1,4 @@
+{
+  "githubPullRequests.postDone": "checkoutDefaultBranchAndPull",
+  "githubPullRequests.createDefaultBaseBranch": "repositoryDefault"
+}

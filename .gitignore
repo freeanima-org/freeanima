@@ -18,7 +18,7 @@ id_ed25519
 Thumbs.db
 
 # IDE
-.vscode/
+# .vscode/
 .idea/
 
 # Cursor worktrees (created by cursor_agent tool)
