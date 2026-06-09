@@ -81,14 +81,14 @@ export function registerMemoryTools(toolSets: ToolSetRegistry): void {
     {
       name: "recall",
       description:
-        '搜索记忆：语义记忆（PostgreSQL 全文索引）+ 历史对话（PostgreSQL messages 全文索引）。一次调用返回两处结果。\n\nPG 对话检索语法（to_tsquery simple）：\n- **空格**分隔的词默认 **OR**（任一匹配即可）\n- **AND** 显式指定与：`Free AND Anima`（转为 &）\n- **OR** 显式指定或：`Free OR Anima`（转为 |）\n- **NOT** 排除：`Free NOT Anima`（转为 !）\n- **双引号** 短语：`"逸灵风"`（CJK 按字 OR 匹配）\n\n示例：`Free Anima 重命名`（任一出现即可）',
+        '搜索记忆：语义记忆（PostgreSQL 全文索引）+ 历史对话（PostgreSQL messages 全文索引）。一次调用返回两处结果。\n\nPG 检索语法（to_tsquery simple）：\n- **空格**分隔的词默认 **AND**（均需匹配）\n- **OR** 显式宽召回：`偏好 OR 简洁`（转为 |）\n- **AND** / **NOT**：`Free AND Anima`、`Free NOT Anima`\n- **双引号** 短语 / CJK 词：`"逸灵风"`、`偏好`（CJK 按字 **邻近** 连续匹配）\n\n示例：`偏好 简洁`（须同时出现）；宽搜用 `偏好 OR 简洁`',
       parameters: {
         type: "object",
         properties: {
           query: {
             type: "string",
             description:
-              "搜索关键词。PG simple 配置：空格=OR；显式 AND/OR/NOT；双引号短语。示例：'Free Anima'（任一匹配）、'Free AND Anima'（同时匹配）、'\"逸灵风\"'（短语）",
+              '搜索关键词。默认空格=AND；宽召回用 OR；CJK 短语邻近匹配。示例："偏好 简洁"（同时匹配）、"偏好 OR 简洁"（任一）、"逸灵风"',
           },
           limit: { type: "number", description: "语义记忆最多返回条数，默认 5" },
           session_limit: { type: "number", description: "历史对话最多返回条数，默认 10" },

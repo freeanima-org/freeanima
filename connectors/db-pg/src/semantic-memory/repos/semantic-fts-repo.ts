@@ -33,7 +33,7 @@ export async function searchSemanticMemoryFts(
       sm.status,
       sm.created,
       sm.updated,
-      ts_rank(sm.content_fts, q) AS rank
+      ts_rank_cd(sm.content_fts, q, 32) AS rank
     FROM semantic_memory sm,
          to_tsquery('simple', ${tsquery}) q
     WHERE sm.content_fts @@ q

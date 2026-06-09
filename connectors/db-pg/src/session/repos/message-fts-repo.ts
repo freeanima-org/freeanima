@@ -30,7 +30,7 @@ export async function searchMessagesFts(
       m.payload->>'role' AS role,
       m.session_id,
       m.payload->>'timestamp' AS timestamp,
-      ts_rank(m.content_fts, q) AS rank
+      ts_rank_cd(m.content_fts, q, 32) AS rank
     FROM messages m,
          to_tsquery('simple', ${tsquery}) q
     WHERE m.content_fts @@ q
