@@ -159,3 +159,51 @@ export const messagesQuerySchema = z.object({
 });
 
 export type MessagesQuery = z.infer<typeof messagesQuerySchema>;
+
+const runtimeContextBreakdownSchema = z.object({
+  system_self: z.number(),
+  system_agents: z.number(),
+  system_resident: z.number(),
+  summary: z.number(),
+  messages: z.number(),
+  tools: z.number(),
+  total: z.number(),
+});
+
+const promptDebugToolItemSchema = z.object({
+  name: z.string(),
+  description: z.string(),
+  toolset: z.string().optional(),
+  parameters: z.record(z.string(), z.unknown()),
+});
+
+export const promptDebugResponseSchema = z.object({
+  mode: z.enum(["global", "session"]),
+  session_id: z.string().optional(),
+  system: z.object({
+    parts: z.object({
+      self: z.string(),
+      agents: z.string(),
+      resident: z.string(),
+    }),
+    composed: z.string(),
+    stored: z.string().nullable().optional(),
+    in_sync: z.boolean().optional(),
+    breakdown: runtimeContextBreakdownSchema,
+  }),
+  tools: z.object({
+    mode: z.enum(["registry", "session"]),
+    count: z.number(),
+    tokens_est: z.number(),
+    items: z.array(promptDebugToolItemSchema),
+  }),
+  meta: z
+    .object({
+      cwd: z.string().nullable().optional(),
+      capability_mask: z.object({ presets: z.array(z.string()) }).optional(),
+      tool_names: z.array(z.string()).optional(),
+    })
+    .optional(),
+});
+
+export type PromptDebugResponse = z.infer<typeof promptDebugResponseSchema>;

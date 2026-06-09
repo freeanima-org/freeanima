@@ -8,6 +8,7 @@ import { emailRoutes } from "./routes/email.ts";
 import { healthRoutes } from "./routes/health.ts";
 import { mcpRoutes } from "./routes/mcp.ts";
 import { memoryRoutes } from "./routes/memory.ts";
+import { promptRoutes } from "./routes/prompt.ts";
 import { selfRoutes } from "./routes/self.ts";
 import { messagesRoutes } from "./routes/messages.ts";
 import { sessionsRoutes } from "./routes/sessions.ts";
@@ -22,6 +23,7 @@ export const apiApp = new Elysia({ prefix: "/api" })
   .use(messagesRoutes)
   .use(statusRoutes)
   .use(memoryRoutes)
+  .use(promptRoutes)
   .use(selfRoutes)
   .use(mcpRoutes)
   .use(acpRoutes)

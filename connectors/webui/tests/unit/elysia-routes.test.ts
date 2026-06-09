@@ -33,6 +33,11 @@ describe("elysia apiApp", () => {
     expect(text.toLowerCase()).toContain("not found");
   });
 
+  it("GET /api/prompt/debug 路由已注册", async () => {
+    const res = await apiApp.handle(new Request("http://127.0.0.1/api/prompt/debug"));
+    expect(res.status).not.toBe(404);
+  });
+
   it("根路径 / 不在 apiApp 内", async () => {
     const res = await apiApp.handle(new Request("http://127.0.0.1/"));
     expect(res.status).toBe(404);

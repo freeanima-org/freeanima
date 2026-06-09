@@ -8,5 +8,6 @@ export * from "./studio-gitignore.ts";
 export { REPO_ROOT, WEBUI_BASE_PATH } from "./repo-paths.ts";
 export * from "./conversation-stats.ts";
 export * from "./runtime-context-stats.ts";
+export * from "./service-prompt-debug.ts";
 export { ANIMA_VERSION } from "./version.ts";
 export { getRepoRoot, readRootVersion, writeRootVersion } from "./root-version.ts";

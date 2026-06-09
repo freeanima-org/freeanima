@@ -9,6 +9,7 @@ const navItems = [
   { to: "/chamber/limbic-memory", label: "💗 情感记忆" },
   { to: "/chamber/autobiographical-memory", label: "📖 自传记忆" },
   { to: "/chamber/self-layer", label: "🪞 自我层" },
+  { to: "/chamber/system-prompt", label: "📋 系统提示词" },
   { to: "/chamber/config", label: "⚙️ 配置" },
   { to: "/chamber/tools", label: "🔧 工具" },
   { to: "/chamber/commands", label: "⌨️ 命令" },
