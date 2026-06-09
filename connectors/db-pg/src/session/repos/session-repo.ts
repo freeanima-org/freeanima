@@ -36,7 +36,7 @@ export async function getSessionMeta(sessionId: string): Promise<SessionMetaMess
   return rowToSessionMeta(rows[0]!);
 }
 
-/** 热路径 meta：不加载 tools JSONB（tools 用 getSessionTools 按需读） */
+/** 热路径 meta：保留 tools/loaded_tools，供运行时工具白名单与默认工具集判断 */
 export async function getSessionMetaLite(sessionId: string): Promise<SessionMetaMessage | null> {
   const db = getDb();
   const rows = await db
@@ -51,6 +51,7 @@ export async function getSessionMetaLite(sessionId: string): Promise<SessionMeta
       todos: sessions.todos,
       awaitingClarify: sessions.awaitingClarify,
       acpSessions: sessions.acpSessions,
+      tools: sessions.tools,
       loadedTools: sessions.loadedTools,
       functions: sessions.functions,
       debug: sessions.debug,
