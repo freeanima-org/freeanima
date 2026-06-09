@@ -3,6 +3,7 @@ import {
   insertCredential,
   listCredentials,
   updateCredential,
+  type CredentialMeta,
 } from "@freeanima/service-config";
 import type { Command } from "commander";
 
@@ -10,7 +11,21 @@ import { printCliError } from "../output/errors.ts";
 import { renderTable } from "../output/table.ts";
 import { writeStatusLine } from "../output/status.ts";
 
-function parseKeyValues(pairs: string[]): Record<string, string> {
+export type CredentialCommandDeps = {
+  listCredentials: () => CredentialMeta[];
+  credential: (path: string, field: string) => string;
+  insertCredential: (path: string, data: Record<string, string>) => string;
+  updateCredential: (path: string, data: Record<string, string>) => string;
+};
+
+const defaultCredentialDeps: CredentialCommandDeps = {
+  listCredentials,
+  credential,
+  insertCredential,
+  updateCredential,
+};
+
+export function parseKeyValues(pairs: string[]): Record<string, string> {
   const data: Record<string, string> = {};
   for (const pair of pairs) {
     const eq = pair.indexOf("=");
@@ -25,7 +40,10 @@ function parseKeyValues(pairs: string[]): Record<string, string> {
   return data;
 }
 
-export function registerCredentialCommand(program: Command): void {
+export function registerCredentialCommand(
+  program: Command,
+  deps: CredentialCommandDeps = defaultCredentialDeps,
+): void {
   const credentialCmd = program
     .command("credential")
     .description("管理 pass 凭证（不含密钥明文回显到日志）");
@@ -34,7 +52,7 @@ export function registerCredentialCommand(program: Command): void {
     .command("list")
     .description("列出凭证路径与字段元数据")
     .action(() => {
-      const creds = listCredentials();
+      const creds = deps.listCredentials();
       if (!creds.length) {
         console.log("(无凭证)");
         return;
@@ -50,7 +68,7 @@ export function registerCredentialCommand(program: Command): void {
     .argument("<field>", "YAML 字段名，如 token、url")
     .action((path: string, field: string) => {
       try {
-        console.log(credential(path, field));
+        console.log(deps.credential(path, field));
       } catch (e) {
         printCliError(e);
         process.exit(1);
@@ -65,7 +83,7 @@ export function registerCredentialCommand(program: Command): void {
     .action((path: string, kv: string[]) => {
       try {
         const data = parseKeyValues(kv);
-        insertCredential(path, data);
+        deps.insertCredential(path, data);
         writeStatusLine("ok", `已写入 ${path}`);
       } catch (e) {
         printCliError(e);
@@ -81,7 +99,7 @@ export function registerCredentialCommand(program: Command): void {
     .action((path: string, kv: string[]) => {
       try {
         const data = parseKeyValues(kv);
-        updateCredential(path, data);
+        deps.updateCredential(path, data);
         writeStatusLine("ok", `已更新 ${path}`);
       } catch (e) {
         printCliError(e);

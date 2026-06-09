@@ -38,6 +38,28 @@
 - **import 相对路径须带 `.ts` / `.tsx` 后缀**（oxlint `import/extensions`）
 - 集成测须隔离日志：`tests/helpers/integration-case.ts`（`restoreIntegrationHome` + `flushCompressionSummaries`），勿污染 `~/.anima/error.log`
 
+#### 测试分层（硬性）
+
+| 层级         | 位置                                             | 允许                                          | 禁止                                                                            |
+| ------------ | ------------------------------------------------ | --------------------------------------------- | ------------------------------------------------------------------------------- |
+| **单元测试** | `{layer}/{pkg}/src/**/*.test.ts`（**一律旁置**） | `mock` / `spyOn` / 原包 Tier 1–2 导出（见下） | PG、真实 Redis、文件读写、`FREEANIMA_HOME` 隔离、`tests/helpers/`、Docker、外网 |
+| **跨包集成** | `tests/integration/`                             | PG、Redis、临时目录、`beginIntegrationCase`   | —                                                                               |
+| **E2E**      | `tests/e2e/`                                     | WebView + Chromium + PG + HTTP                | —                                                                               |
+
+- pre-commit：`bun run test:changed`；推 PR 前须 `bun run test` 全量（`--changed` 不保证跨包关联）。
+- 单包逻辑 → 旁置单元测；多包协作或真实持久化 → `tests/integration/`。
+
+#### 原包 Mock 导出（单元测优先使用）
+
+| 层级              | 包                                                                                       | 用法                                                       |
+| ----------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| Tier 1 内存适配器 | `kernel-logging/null`、`/memory`；`kernel-eventbus/memory`、`/null`；`engine-repos/null` | `createNullSink`、`MemoryEventQueue`、`nullPgRepositories` |
+| Tier 2 单例注入   | `connectors-redis`、`connectors-db-pg`、`service-config` 等                              | `setXForTest` / `resetXForTest`；`afterEach` 必须 reset    |
+| Tier 3 组合工厂   | 可选 `@freeanima/{pkg}/testing`                                                          | 仅组合 Tier 1，如 `createTestLogger`                       |
+| 领域 mock         | `{pkg}/src/test-helpers/`                                                                | 原包无 port 时（如 `MockBackend`）                         |
+
+单元测**禁止** `import` `tests/helpers/log-isolation.ts` 或写 `config.yaml`；配置用 `setConfigForTest`，日志用 `createNullSink` / `createMemorySink`。
+
 ### 包命名（RFC #1）
 
 新栈 workspace 包名 **以层名为首段前缀**：

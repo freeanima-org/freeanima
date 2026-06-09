@@ -1,5 +1,7 @@
+import { sql as drizzleSql } from "drizzle-orm";
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import type { ConversationMessage } from "@freeanima/engine-db/domain";
+import { getDb } from "@freeanima/connectors-db-pg";
 import { getTestEngine } from "../../helpers/pg-test.ts";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
@@ -21,6 +23,12 @@ describePg("db session (PostgreSQL)", () => {
 
   afterAll(async () => {
     await endIntegrationCase();
+  });
+
+  it("Bun.sql 原生连接可用", async () => {
+    const db = getDb();
+    const rows = await db.execute<{ n: number }>(drizzleSql`SELECT 1 AS n`);
+    expect(Number(rows[0]?.n)).toBe(1);
   });
 
   it("append/read session meta and messages", async () => {
@@ -63,6 +71,67 @@ describePg("db session (PostgreSQL)", () => {
     await session.updateCompression(sessionId, { l2: 1, l3: 2 });
     const meta2 = await session.getSessionMeta(sessionId);
     expect(meta2?.compression).toEqual({ l2: 1, l3: 2 });
+  });
+
+  it("JSONB assistant tool_calls round-trip", async () => {
+    const session = getTestEngine().repos.session;
+    const sessionId = "db_jsonb_tool_calls";
+    await session.upsertSessionMeta(sessionId, {
+      role: "session_meta",
+      model: "test-model",
+      tools: [],
+      functions: [],
+      timestamp: new Date().toISOString(),
+      platform: "parlor",
+    });
+
+    await session.appendMessage(sessionId, {
+      role: "assistant",
+      content: "",
+      pos: 1,
+      timestamp: new Date().toISOString(),
+      tool_calls: [
+        {
+          id: "call_1",
+          type: "function",
+          function: { name: "read_file", arguments: '{"path":"."}' },
+        },
+      ],
+    });
+
+    const msgs = await session.listMessages(sessionId);
+    expect(msgs).toHaveLength(1);
+    expect(msgs[0]?.role).toBe("assistant");
+    if (msgs[0]?.role === "assistant") {
+      expect(msgs[0].tool_calls?.[0]?.function.name).toBe("read_file");
+    }
+  });
+
+  it("并发 appendMessage", async () => {
+    const session = getTestEngine().repos.session;
+    const sessionId = "db_concurrent_append";
+    await session.upsertSessionMeta(sessionId, {
+      role: "session_meta",
+      model: "test-model",
+      tools: [],
+      functions: [],
+      timestamp: new Date().toISOString(),
+      platform: "parlor",
+    });
+
+    await Promise.all(
+      Array.from({ length: 8 }, (_, i) =>
+        session.appendMessage(sessionId, {
+          role: "user",
+          content: `msg-${i}`,
+          pos: i + 1,
+          timestamp: new Date().toISOString(),
+        }),
+      ),
+    );
+
+    const messages = await session.listMessages(sessionId);
+    expect(messages).toHaveLength(8);
   });
 
   it("shiftMessagePositions 为中间插入腾出 pos", async () => {

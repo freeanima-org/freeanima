@@ -1,8 +1,7 @@
-import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
+import { it, expect, beforeEach, afterEach } from "bun:test";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
   beginIntegrationCaseWithConfig,
-  endIntegrationCase,
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
@@ -16,8 +15,6 @@ import {
   resolveStudioPath,
   patchStudioConfig,
   getStudioConfig,
-  parseGitignore,
-  isIgnored,
 } from "@freeanima/service";
 import { clearConfigCache } from "@freeanima/service-config";
 
@@ -79,27 +76,5 @@ describePg("studio", () => {
     patchStudioConfig({ workspace: other });
     clearConfigCache();
     expect(getStudioConfig().workspace).toBe(other);
-  });
-});
-
-describePg("studio-gitignore", () => {
-  it("parseGitignore handles negation and dir-only", () => {
-    const rules = parseGitignore("*.log\n!important.log\nbuild/\n");
-    expect(rules).toHaveLength(3);
-    expect(isIgnored("debug.log", false, [rules])).toBe(true);
-    expect(isIgnored("important.log", false, [rules])).toBe(false);
-    expect(isIgnored("build", true, [rules])).toBe(true);
-    expect(isIgnored("build/app.js", false, [rules])).toBe(false);
-  });
-
-  it("root-anchored /tmp/cursor-* does not ignore apps", () => {
-    const rules = parseGitignore("/tmp/cursor-*/\n");
-    expect(isIgnored("apps", true, [rules])).toBe(false);
-    expect(isIgnored("packages", true, [rules])).toBe(false);
-    expect(isIgnored("tmp/cursor-foo", true, [rules])).toBe(true);
-  });
-
-  afterAll(async () => {
-    await endIntegrationCase();
   });
 });

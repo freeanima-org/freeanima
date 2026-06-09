@@ -2,6 +2,17 @@ import { Database } from "bun:sqlite";
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 
+/** 单元测轮询断言 */
+export async function waitFor(predicate: () => boolean, timeoutMs = 400): Promise<void> {
+  const deadline = Date.now() + timeoutMs;
+  while (!predicate()) {
+    if (Date.now() >= deadline) {
+      throw new Error(`waitFor timed out after ${timeoutMs}ms`);
+    }
+    await new Promise((r) => setTimeout(r, 10));
+  }
+}
+
 /** 测试用：写入一条 pending 事件 */
 export function seedPendingEvent(
   dbPath: string,

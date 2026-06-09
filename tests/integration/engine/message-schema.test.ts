@@ -1,20 +1,26 @@
-import { it, expect, beforeAll, afterAll } from "bun:test";
+import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import { describePg } from "../../helpers/pg-test-gate.ts";
-import { beginIntegrationCase, endIntegrationCase } from "../../helpers/integration-case.ts";
+import {
+  beginIntegrationCase,
+  endIntegrationCase,
+  restoreIntegrationHome,
+} from "../../helpers/integration-case.ts";
 
 import { testConv } from "../../helpers/pg-test.ts";
 
 describePg("schemas/message", () => {
   const prev = process.env.FREEANIMA_HOME;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     await beginIntegrationCase("msg-schema-");
+  });
+
+  afterEach(async () => {
+    await restoreIntegrationHome(prev);
   });
 
   afterAll(async () => {
     await endIntegrationCase();
-    if (prev === undefined) delete process.env.FREEANIMA_HOME;
-    else process.env.FREEANIMA_HOME = prev;
   });
 
   it("updateSessionMetaField preserves acp_sessions", async () => {

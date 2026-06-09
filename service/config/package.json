@@ -9,7 +9,8 @@
     "./config-sanitize": "./src/config-sanitize.ts",
     "./llm-config": "./src/llm-config.ts",
     "./schemas/config": "./src/schemas/config.ts",
-    "./schemas/llm-config": "./src/schemas/llm-config.ts"
+    "./schemas/llm-config": "./src/schemas/llm-config.ts",
+    "./test-helpers/minimal-llm-config": "./src/test-helpers/minimal-llm-config.ts"
   },
   "dependencies": {
     "@freeanima/kernel-util": "workspace:*",

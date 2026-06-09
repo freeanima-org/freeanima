@@ -4,7 +4,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./stream-tools": "./src/stream-tools.ts",
-    "./usage": "./src/usage.ts"
+    "./usage": "./src/usage.ts",
+    "./test-helpers/mock-backend": "./src/test-helpers/mock-backend.ts"
   },
   "dependencies": {
     "@freeanima/engine-db": "workspace:*"

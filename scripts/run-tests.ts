@@ -36,6 +36,25 @@ function integrationTestsInChangedRun(): boolean {
   }
 }
 
+function pkgSrcHasTests(srcPath: string): boolean {
+  if (!existsSync(srcPath)) return false;
+  function walk(dir: string): boolean {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, entry.name);
+      if (entry.isDirectory()) {
+        if (walk(full)) return true;
+      } else if (
+        entry.isFile() &&
+        (entry.name.endsWith(".test.ts") || entry.name.endsWith(".spec.ts"))
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
+  return walk(srcPath);
+}
+
 function discoverTestRoots(): string[] {
   const roots: string[] = [];
   const layerNames = ["kernel", "engine", "life", "service", "capabilities", "connectors"] as const;
@@ -45,15 +64,17 @@ function discoverTestRoots(): string[] {
     if (!existsSync(layerPath)) continue;
     for (const entry of readdirSync(layerPath, { withFileTypes: true })) {
       if (!entry.isDirectory()) continue;
-      const testsPath = join(layerPath, entry.name, "tests");
-      if (existsSync(testsPath)) {
-        roots.push(relative(repoRoot, testsPath));
+      const srcPath = join(layerPath, entry.name, "src");
+      if (pkgSrcHasTests(srcPath)) {
+        roots.push(relative(repoRoot, srcPath));
       }
     }
   }
 
-  for (const extra of ["cli/tests", "tests/integration"]) {
-    if (existsSync(join(repoRoot, extra))) roots.push(extra);
+  for (const extra of ["cli/src", "tests/integration"]) {
+    if (existsSync(join(repoRoot, extra)) && pkgSrcHasTests(join(repoRoot, extra))) {
+      roots.push(extra);
+    }
   }
 
   return roots.toSorted();

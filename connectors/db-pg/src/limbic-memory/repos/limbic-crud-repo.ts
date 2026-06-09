@@ -1,9 +1,9 @@
-import { desc, eq } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { limbicKindSchema, limbicMemory } from "@freeanima/engine-db/schema";
 import type { LimbicMemoryCreateInput, LimbicMemoryRow } from "@freeanima/engine-repos";
 
 import { getDb } from "../../client.ts";
-import { mapLimbicMemoryRow } from "../mappers/limbic-mapper.ts";
+import { mapLimbicMemoryRow, type LimbicMemoryDbRow } from "../mappers/limbic-mapper.ts";
 
 function normalizeKind(raw: string) {
   const parsed = limbicKindSchema.safeParse(String(raw).trim());
@@ -60,7 +60,12 @@ export async function getLimbicMemory(id: string): Promise<LimbicMemoryRow | nul
   const trimmed = id.trim();
   if (!trimmed) return null;
   const db = getDb();
-  const rows = await db.select().from(limbicMemory).where(eq(limbicMemory.id, trimmed)).limit(1);
+  const rows = await db.execute<LimbicMemoryDbRow>(sql`
+    SELECT id, session_id, kind, valence, arousal, content, intensity, source_segment, semantic_memory_ids, created_at
+    FROM limbic_memory
+    WHERE id = ${trimmed}::uuid
+    LIMIT 1
+  `);
   const row = rows[0];
   return row ? mapLimbicMemoryRow(row) : null;
 }
@@ -73,11 +78,12 @@ export async function listLimbicMemoryBySession(
   if (!sid) return [];
   const limit = Math.max(1, Math.min(500, opts?.limit ?? 100));
   const db = getDb();
-  const rows = await db
-    .select()
-    .from(limbicMemory)
-    .where(eq(limbicMemory.sessionId, sid))
-    .orderBy(desc(limbicMemory.createdAt))
-    .limit(limit);
+  const rows = await db.execute<LimbicMemoryDbRow>(sql`
+    SELECT id, session_id, kind, valence, arousal, content, intensity, source_segment, semantic_memory_ids, created_at
+    FROM limbic_memory
+    WHERE session_id = ${sid}
+    ORDER BY created_at DESC
+    LIMIT ${limit}
+  `);
   return rows.map(mapLimbicMemoryRow);
 }

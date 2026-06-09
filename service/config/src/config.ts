@@ -41,6 +41,16 @@ export function clearConfigCache(): void {
   cache = null;
 }
 
+/** 单元测注入内存配置（跳过读盘）；与 clearConfigCache 等价于 reset */
+export function setConfigForTest(cfg: AnimaConfig): void {
+  cache = cfg;
+}
+
+/** 单元测 teardown：清空配置缓存 */
+export function resetConfigForTest(): void {
+  cache = null;
+}
+
 export { sanitizeConfigForApi } from "./config-sanitize.ts";
 
 /** 合并写入 config.yaml 某一段（如 discord / weixin） */

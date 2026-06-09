@@ -1,5 +1,16 @@
 const DEFAULT_PREFIX = "anima:events";
 
+/** 单元测轮询断言 */
+export async function waitFor(predicate: () => boolean, timeoutMs = 400): Promise<void> {
+  const deadline = Date.now() + timeoutMs;
+  while (!predicate()) {
+    if (Date.now() >= deadline) {
+      throw new Error(`waitFor timed out after ${timeoutMs}ms`);
+    }
+    await new Promise((r) => setTimeout(r, 10));
+  }
+}
+
 type MockLists = {
   pending: string[];
   processing: string[];

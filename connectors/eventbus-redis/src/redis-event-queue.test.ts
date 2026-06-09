@@ -4,19 +4,14 @@ import { createLogger } from "@freeanima/kernel-logging";
 import { createNullSink } from "@freeanima/kernel-logging/null";
 import { EventBus, createEventTopic } from "@freeanima/kernel-eventbus";
 import { RedisEventQueue } from "./redis-event-queue.ts";
-import { createMockRedisLists, seedPendingEvent, seedProcessingEvent } from "./test-helpers.ts";
+import {
+  createMockRedisLists,
+  seedPendingEvent,
+  seedProcessingEvent,
+  waitFor,
+} from "./test-helpers.ts";
 
 const testPing = createEventTopic<{ n: number }>("test:ping");
-
-async function waitFor(predicate: () => boolean, timeoutMs = 400): Promise<void> {
-  const deadline = Date.now() + timeoutMs;
-  while (!predicate()) {
-    if (Date.now() >= deadline) {
-      throw new Error(`waitFor timed out after ${timeoutMs}ms`);
-    }
-    await new Promise((r) => setTimeout(r, 10));
-  }
-}
 
 function createQueue(): {
   queue: RedisEventQueue;
