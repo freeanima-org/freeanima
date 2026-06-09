@@ -23,14 +23,14 @@ const EMPTY_LOADER_DATA: ToolsLoaderData = { tools: [], tool_sets: [] };
 
 /** 静态 ToolSet 展示顺序；未列出的静态集按名称排序，动态集 mcp_* → acp_* */
 const STATIC_TOOLSET_ORDER = [
-  "fs",
+  "tools",
+  "file",
   "terminal",
   "browser",
   "web",
   "code",
   "skills",
   "credentials",
-  "todo",
   "tasks",
   "cron",
   "clarify",

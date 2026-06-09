@@ -31,12 +31,12 @@ export type RunLightSleepOpts = {
 };
 
 const LIGHT_SLEEP_TOOL_NAMES = [
-  "create_semantic_memory",
-  "update_semantic_memory",
-  "deprecate_semantic_memory",
+  "memory_semantic_create",
+  "memory_semantic_update",
+  "memory_semantic_deprecate",
 ] as const;
 
-const LIMBIC_TOOL_NAMES = ["create_limbic_memory"] as const;
+const LIMBIC_TOOL_NAMES = ["memory_limbic_create"] as const;
 
 export async function runLightSleep(opts: RunLightSleepOpts): Promise<LightSleepResult> {
   const sessionStore = opts.sessionStore ?? getMemorySessionStore();

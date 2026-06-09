@@ -144,7 +144,7 @@ describePg("slash commands", () => {
     const sid = await testConv().newSession("parlor");
     await patchMetaForTest(sid, {
       tools: ["stale_tool"],
-      loaded_tools: ["read_file"],
+      loaded_tools: ["file_read_file"],
     });
 
     const [cmd] = findCommand("/reload_tools");
@@ -163,8 +163,8 @@ describePg("slash commands", () => {
     expect(meta.loaded_tools ?? []).toEqual([]);
     const schemas = await testConv().loadSessionTools(sid, meta);
     const names = schemas.map((t) => t.function?.name).filter(Boolean);
-    expect(names).toContain("tool_search");
-    expect(names).toContain("tool_load");
+    expect(names).toContain("tools_list");
+    expect(names).toContain("tools_load");
   });
 
   it("reload_tools on missing session returns warning", async () => {

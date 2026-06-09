@@ -13,13 +13,13 @@ describe("resolveExecutableToolNames", () => {
     const meta = {
       role: "session_meta",
       model: "m",
-      tools: ["tool_search", "recall"],
-      loaded_tools: ["read_file"],
+      tools: ["tools_list", "memory_recall"],
+      loaded_tools: ["file_read_file"],
       functions: [],
       timestamp: "",
     } satisfies SessionMetaMessage;
     expect(resolveExecutableToolNames(meta).toSorted()).toEqual(
-      ["read_file", "recall", "tool_search"].toSorted(),
+      ["file_read_file", "memory_recall", "tools_list"].toSorted(),
     );
   });
 });

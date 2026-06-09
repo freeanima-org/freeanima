@@ -52,7 +52,7 @@ export const AUTOBIOGRAPHY_INSTRUCTION = `# 自传体叙事提取
 - 不强行产出空条目、不重复已有叙事
 
 ## 工具
-- create_autobiographical_memory：创建新叙事（只追加）
+- memory_autobiographical_create：创建新叙事（只追加）
 - deprecate_autobiographical_memory：仅当发现重复/明显过时时软废弃
 
 ## 要求

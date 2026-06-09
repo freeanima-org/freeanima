@@ -6,7 +6,7 @@ import { clampTtl, magnetRedisKey, randomBase62, setMagnet } from "./store.ts";
 export function registerWriteFridgeMagnetTool(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet("fridge", "跨轮冰箱贴便签", [
     {
-      name: "write_fridge_magnet",
+      name: "fridge_write",
       description:
         "在冰箱贴上写一张便签。冰箱贴是跨轮对话的临时状态共享黑板，贴在当前 session 中，有过期时间。key 可选；不传则自动生成 4 位随机 ID。",
       parameters: {

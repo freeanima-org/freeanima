@@ -22,7 +22,7 @@ export type { ToolArgsRecord } from "./tool-json.ts";
 export { ToolSetRegistry, mcpToolsetId, acpToolsetId } from "./toolset.ts";
 export type { ToolSet, ToolSetView } from "./toolset.ts";
 export {
-  CATALOG_TOOL_NAMES,
+  TOOLS_DISCOVERY_NAMES,
   DEFAULT_SESSION_TOOL_NAMES,
   resolveDefaultSessionTools,
 } from "./default-session-tools.ts";

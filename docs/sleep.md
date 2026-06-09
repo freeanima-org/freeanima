@@ -32,7 +32,7 @@ title: Sleep
 | 触发     | 仅 cron，每天 02:00（`0 2 * * *`），不支持手动触发                                   |
 | 处理范围 | CST 前一个自然日内有活动的 session（`sessions.updated_at`）                          |
 | 输入     | 当日全部对话（user+assistant，去 tool），按 session 分段                             |
-| 工具     | 仅 `create_semantic_memory` / `update_semantic_memory` / `deprecate_semantic_memory` |
+| 工具     | 仅 `memory_semantic_create` / `memory_semantic_update` / `memory_semantic_deprecate` |
 | 去重     | **局部**：仅与同 `source_sessions` 的已有记忆比较；跨脉络留给深睡                    |
 
 ### 消息结构
@@ -73,12 +73,12 @@ LLM **不**携带 `search_semantic_memory`（消息 2 已由程序提供）。
 
 ## 深睡 (Deep Sleep)
 
-| 属性     | 值                                                                                                            |
-| -------- | ------------------------------------------------------------------------------------------------------------- |
-| 触发     | 仅 cron，每天 03:00（`0 3 * * *`），不支持手动触发                                                            |
-| 处理对象 | `semantic_memory` 全量 active 记忆                                                                            |
-| 操作     | 矛盾检测 + 过期标记、拆分、去重合并，三轮顺序执行                                                             |
-| 工具     | `create_semantic_memory` / `update_semantic_memory` / `deprecate_semantic_memory` / `merge_semantic_memories` |
+| 属性     | 值                                                                                                          |
+| -------- | ----------------------------------------------------------------------------------------------------------- |
+| 触发     | 仅 cron，每天 03:00（`0 3 * * *`），不支持手动触发                                                          |
+| 处理对象 | `semantic_memory` 全量 active 记忆                                                                          |
+| 操作     | 矛盾检测 + 过期标记、拆分、去重合并，三轮顺序执行                                                           |
+| 工具     | `memory_semantic_create` / `memory_semantic_update` / `memory_semantic_deprecate` / `memory_semantic_merge` |
 
 ### 三轮处理
 
@@ -215,13 +215,13 @@ semantic_memory（整理后）
   │ 自传 cron（04:00，experience/imprint → 叙事）
   ▼
 autobiographical_memory ──压缩──► self_blocks.autobiography_summary
-  │ recall（对话中实时检索）
+  │ memory_recall（对话中实时检索）
   ▼
 当前上下文中的 Agent 身份与召回片段
 ```
 
 `session:updated` EventBus 事件仍保留（WebUI 刷新等），**不再**触发 reflect。
 
-## remember 工具
+## memory_remember 工具
 
-对话中的 `remember` 为便捷封装：自动推断 `source_sessions`（当前 session）与 `observed_at`，底层调用 `create_semantic_memory` 逻辑。物理删除仍走 `action=delete`；软废弃用 `deprecate_semantic_memory`。
+对话中的 `memory_remember` 为便捷封装：自动推断 `source_sessions`（当前 session）与 `observed_at`，底层调用 `memory_semantic_create` 逻辑。物理删除仍走 `action=delete`；软废弃用 `memory_semantic_deprecate`。

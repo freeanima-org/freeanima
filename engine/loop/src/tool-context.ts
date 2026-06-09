@@ -74,7 +74,7 @@ export function getToolRegistry(): ToolSetRegistry {
   return tools;
 }
 
-/** tool_load 等同轮追加可执行工具名 */
+/** tools_load 等同轮追加可执行工具名 */
 export function grantExecutableTools(names: readonly string[]): void {
   const store = storage.getStore();
   if (!store?.executableTools) return;

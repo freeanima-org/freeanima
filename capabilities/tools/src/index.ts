@@ -17,7 +17,6 @@ import { registerCredentialTools } from "./credential-tool.ts";
 import { registerExecuteCodeTool } from "./execute-code.ts";
 import { registerFileTools } from "./file.ts";
 import { registerSkillsTools } from "./skills-tools.ts";
-import { registerTodoTool } from "./todo-tool.ts";
 import { registerTerminalTools } from "./terminal.ts";
 import { registerWebTools } from "./web.ts";
 
@@ -31,9 +30,8 @@ export function registerCoreTools(toolSets: ToolSetRegistry): void {
   registerWebTools(toolSets);
 }
 
-/** skills + browser + todo */
+/** skills + browser */
 export function registerSupplementalTools(toolSets: ToolSetRegistry, skills: SkillRegistry): void {
   registerSkillsTools(toolSets, skills);
   registerBrowserTools(toolSets);
-  registerTodoTool(toolSets);
 }

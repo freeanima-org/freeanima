@@ -140,21 +140,21 @@ export const LIGHT_SLEEP_INSTRUCTION_MESSAGE = `# 提取指令
 - **仅**与已有记忆中 source_sessions 有交集的条目比较
 - 已有更准确 → 跳过或 update
 - 新事实补充已有 → update
-- 已有不再适用 → deprecate_semantic_memory
-- 全新 → create_semantic_memory
+- 已有不再适用 → memory_semantic_deprecate
+- 全新 → memory_semantic_create
 
 ## 工具说明
 
-### create_semantic_memory
+### memory_semantic_create
 显式创建。必填 content；建议填写 type、source_sessions（来自对话 session）、observed_at。
 
-### update_semantic_memory（覆盖式）
+### memory_semantic_update（覆盖式）
 **仅修改传入的字段，未传字段保持不变。**
 - 要改 content/type/pinned/observed_at/occurred_at/status → 传入对应字段
 - 要**清空** source_sessions → 显式传 \`source_sessions: []\`
 - 未传 source_sessions → 保持原值不变
 
-### deprecate_semantic_memory
+### memory_semantic_deprecate
 软废弃（status=deprecated），保留历史。
 
 请直接调用工具完成写入；无需输出 JSON 摘要。`;
@@ -164,11 +164,11 @@ export const LIMBIC_PHASE_INSTRUCTION = `# 情感提取（Phase 2）
 基于上方 Phase 1 语义记忆产出与本日 session，判断是否有值得记录的情感体验。
 
 ## 克制原则
-- 轻微情绪波动、intensity < 0.3 → **不要调用** create_limbic_memory
+- 轻微情绪波动、intensity < 0.3 → **不要调用** memory_limbic_create
 - 无明确情感信号 → 直接回复「本轮跳过：无值得记录的情感」
 - 不重复记录同一 session 的相似情绪
 
-## 工具：create_limbic_memory
+## 工具：memory_limbic_create
 - kind：session_mood（整体情绪）| turning_point（情感转折）| spike（强烈瞬间）
 - content：第一人称「我感到…」
 - valence：-1.0（负）到 1.0（正）；arousal：0.0 到 1.0

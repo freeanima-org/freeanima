@@ -247,7 +247,7 @@ describe("memory search", () => {
     await runWithToolContext(
       sid,
       async () => {
-        const out = await toolSets.getTool("remember")!.handler({
+        const out = await toolSets.getTool("memory_remember")!.handler({
           content: "增量索引探针 beta",
           type: "world",
         });
@@ -259,14 +259,14 @@ describe("memory search", () => {
     expect(results.length).toBe(1);
   });
 
-  it("update_semantic_memory clears source_sessions with empty array", async () => {
+  it("memory_semantic_update clears source_sessions with empty array", async () => {
     const store = createMockSemanticStore();
     registerSemanticMemoryStore(store);
     const id = await store.create({
       content: "带来源的 memory",
       source_sessions: ["s1", "s2"],
     });
-    const out = await toolSets.getTool("update_semantic_memory")!.handler({
+    const out = await toolSets.getTool("memory_semantic_update")!.handler({
       id,
       source_sessions: [],
     });
@@ -298,7 +298,7 @@ describe("memory search", () => {
       }),
     );
 
-    const out = await toolSets.getTool("recall")!.handler({ query: "compression" });
+    const out = await toolSets.getTool("memory_recall")!.handler({ query: "compression" });
     const parsed = JSON.parse(out) as {
       semantic_memory: { content: string }[];
       dialogue: { content: string }[];

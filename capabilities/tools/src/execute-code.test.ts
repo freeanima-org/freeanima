@@ -53,7 +53,7 @@ describe("openaiSchemas", () => {
       expect(params).not.toHaveProperty("parameters");
     }
 
-    const exec = schemas.find((s) => (s.function as { name: string }).name === "execute_code");
+    const exec = schemas.find((s) => (s.function as { name: string }).name === "code_execute");
     expect(exec).toBeDefined();
     const desc = (exec!.function as { description: string }).description;
     expect(desc).toContain("bun");

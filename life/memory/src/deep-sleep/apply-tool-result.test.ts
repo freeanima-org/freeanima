@@ -9,14 +9,14 @@ describe("applyDeepSleepToolResult", () => {
 
     applyDeepSleepToolResult(
       log,
-      "deprecate_semantic_memory",
+      "memory_semantic_deprecate",
       JSON.stringify({ ok: true, semantic_memory_id: "f-000001" }),
     );
     expect(log.deprecatedIds).toEqual(["f-000001"]);
 
     applyDeepSleepToolResult(
       log,
-      "merge_semantic_memories",
+      "memory_semantic_merge",
       JSON.stringify({
         ok: true,
         id: "f-000099",
@@ -30,7 +30,7 @@ describe("applyDeepSleepToolResult", () => {
 
   test("ignores tool errors", () => {
     const log = createEmptyChangeLog();
-    applyDeepSleepToolResult(log, "create_semantic_memory", JSON.stringify({ error: "fail" }));
+    applyDeepSleepToolResult(log, "memory_semantic_create", JSON.stringify({ error: "fail" }));
     expect(log.addedIds).toHaveLength(0);
   });
 });

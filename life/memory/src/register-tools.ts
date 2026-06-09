@@ -40,7 +40,7 @@ export function registerMemoryTools(toolSets: ToolSetRegistry): void {
     ...autobiographicalMemoryToolDefs,
     ...limbicMemoryToolDefs,
     {
-      name: "remember",
+      name: "memory_remember",
       description:
         "管理持久化语义记忆：创建、更新或删除。\n" +
         "- 默认 action=create：新增一条记忆（自动推断 source_sessions / observed_at）\n" +
@@ -79,7 +79,7 @@ export function registerMemoryTools(toolSets: ToolSetRegistry): void {
       handler: rememberFromArgs,
     },
     {
-      name: "recall",
+      name: "memory_recall",
       description:
         '搜索记忆：语义记忆（PostgreSQL 全文索引）+ 历史对话（PostgreSQL messages 全文索引）。一次调用返回两处结果。\n\nPG 检索语法（to_tsquery simple）：\n- **空格**分隔的词默认 **AND**（均需匹配）\n- **OR** 显式宽召回：`偏好 OR 简洁`（转为 |）\n- **AND** / **NOT**：`Free AND Anima`、`Free NOT Anima`\n- **双引号** 短语 / CJK 词：`"逸灵风"`、`偏好`（CJK 按字 **邻近** 连续匹配）\n\n示例：`偏好 简洁`（须同时出现）；宽搜用 `偏好 OR 简洁`',
       parameters: {

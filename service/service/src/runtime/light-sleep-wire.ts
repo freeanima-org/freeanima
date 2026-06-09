@@ -17,9 +17,9 @@ import {
 } from "./mask-wire.ts";
 
 const SEMANTIC_MEMORY_WRITE_TOOLS = new Set([
-  "create_semantic_memory",
-  "update_semantic_memory",
-  "remember",
+  "memory_semantic_create",
+  "memory_semantic_update",
+  "memory_remember",
 ]);
 
 function buildMessages(input: LightSleepEngineInput): SessionMessage[] {

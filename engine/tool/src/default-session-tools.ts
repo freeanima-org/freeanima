@@ -1,13 +1,13 @@
 import type { ToolSetRegistry } from "./toolset.ts";
 
-export const CATALOG_TOOL_NAMES = ["tool_search", "tool_load"] as const;
+export const TOOLS_DISCOVERY_NAMES = ["tools_list", "tools_load"] as const;
 
 export const DEFAULT_SESSION_TOOL_NAMES = [
-  ...CATALOG_TOOL_NAMES,
-  "recall",
-  "remember",
-  "search_skills",
-  "load_skill",
+  ...TOOLS_DISCOVERY_NAMES,
+  "memory_recall",
+  "memory_remember",
+  "skills_search",
+  "skills_load",
 ] as const;
 
 export type DefaultSessionToolName = (typeof DEFAULT_SESSION_TOOL_NAMES)[number];

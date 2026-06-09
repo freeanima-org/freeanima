@@ -27,22 +27,22 @@ describe("resolveMask", () => {
     const masks = new MaskRegistry();
     masks.register("base", {
       inherits: [],
-      allowed_tools: ["recall", "read_file"],
+      allowed_tools: ["memory_recall", "file_read_file"],
       denied_tools: [],
       auto_skills: ["skill_a"],
       credentials: [],
     });
     masks.register("child", {
       inherits: ["base"],
-      allowed_tools: ["write_file"],
-      denied_tools: ["read_file"],
+      allowed_tools: ["file_write_file"],
+      denied_tools: ["file_read_file"],
       auto_skills: ["skill_b"],
       credentials: [],
     });
     const ts = toolSetRegistry();
     const resolved = resolveMaskByName("child", masks, ts);
-    expect(resolved.allowed_tools).toEqual(["recall", "write_file"]);
-    expect(resolved.denied_tools).toEqual(["read_file"]);
+    expect(resolved.allowed_tools.toSorted()).toEqual(["file_write_file", "memory_recall"]);
+    expect(resolved.denied_tools).toEqual(["file_read_file"]);
     expect(resolved.auto_skills).toEqual(["skill_a", "skill_b"]);
   });
 
@@ -71,13 +71,13 @@ describe("resolveMask", () => {
     const masks = new MaskRegistry();
     const mask = {
       inherits: [] as string[],
-      allowed_tools: ["recall", "grep"],
+      allowed_tools: ["memory_recall", "grep"],
       denied_tools: ["grep"],
       auto_skills: [] as string[],
       credentials: [] as [],
     };
     const resolved = resolveMask(mask, masks, toolSetRegistry());
-    expect(resolved.allowed_tools).toEqual(["recall"]);
+    expect(resolved.allowed_tools).toEqual(["memory_recall"]);
     expect(resolved.denied_tools).toEqual(["grep"]);
   });
 
@@ -105,12 +105,12 @@ describe("resolveMask", () => {
     const masks = new MaskRegistry();
     const mask = {
       inherits: [] as string[],
-      allowed_tools: ["@browser", "recall"],
+      allowed_tools: ["@browser", "memory_recall"],
       denied_tools: [],
       auto_skills: [] as string[],
       credentials: [] as [],
     };
     const resolved = resolveMask(mask, masks, toolSetRegistry());
-    expect(resolved.allowed_tools).toEqual(["browser_click", "browser_navigate", "recall"]);
+    expect(resolved.allowed_tools).toEqual(["browser_click", "browser_navigate", "memory_recall"]);
   });
 });

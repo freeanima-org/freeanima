@@ -59,7 +59,7 @@ describePg("tasks tool", () => {
     await runWithToolContext(
       sid,
       async () => {
-        const tool = toolSets.getTool("create_task")!;
+        const tool = toolSets.getTool("tasks_create")!;
         output = await Promise.resolve(
           tool.handler({
             title: "找天空聊UI",
@@ -115,7 +115,7 @@ describePg("tasks tool", () => {
     await runWithToolContext(
       sid,
       async () => {
-        const tool = toolSets.getTool("list_tasks")!;
+        const tool = toolSets.getTool("tasks_list")!;
         output = await Promise.resolve(tool.handler({}));
       },
       { repos, tools: toolSets },

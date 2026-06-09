@@ -154,7 +154,7 @@ async function handleMergeSemanticMemories(args: Record<string, unknown>): Promi
   }
   if (sourceIds.length === 1) {
     return toolError(
-      "merge requires 2+ source_ids; use update_semantic_memory for single-memory edits",
+      "merge requires 2+ source_ids; use memory_semantic_update for single-memory edits",
     );
   }
 
@@ -178,7 +178,7 @@ async function handleMergeSemanticMemories(args: Record<string, unknown>): Promi
   if (sources.length === 0) return toolError("None of the source_ids found");
   if (sources.length === 1) {
     return toolError(
-      `Only 1 of ${sourceIds.length} source_ids found; use update_semantic_memory instead`,
+      `Only 1 of ${sourceIds.length} source_ids found; use memory_semantic_update instead`,
     );
   }
 
@@ -253,7 +253,7 @@ export async function createSemanticMemoryFromArgs(
 
 export const semanticMemoryToolDefs: ToolDef[] = [
   {
-    name: "create_semantic_memory",
+    name: "memory_semantic_create",
     description:
       "显式创建一条语义记忆。需提供 content；可选 type/pinned/source_sessions/observed_at/occurred_at。",
     parameters: {
@@ -275,7 +275,7 @@ export const semanticMemoryToolDefs: ToolDef[] = [
     handler: handleCreateSemanticMemory,
   },
   {
-    name: "update_semantic_memory",
+    name: "memory_semantic_update",
     description:
       "覆盖式更新语义记忆：仅修改传入的字段，未传字段保持不变。传 source_sessions=[] 可清空来源列表。",
     parameters: {
@@ -299,7 +299,7 @@ export const semanticMemoryToolDefs: ToolDef[] = [
     handler: handleUpdateSemanticMemory,
   },
   {
-    name: "deprecate_semantic_memory",
+    name: "memory_semantic_deprecate",
     description: "软废弃一条语义记忆（status=deprecated，保留历史）。",
     parameters: {
       type: "object",
@@ -311,7 +311,7 @@ export const semanticMemoryToolDefs: ToolDef[] = [
     handler: handleDeprecateSemanticMemory,
   },
   {
-    name: "search_semantic_memory",
+    name: "memory_semantic_search",
     description:
       "结构化搜索语义记忆：支持 FTS query、type/status/source_sessions 过滤。默认仅返回 active。",
     parameters: {
@@ -340,7 +340,7 @@ export const semanticMemoryToolDefs: ToolDef[] = [
     handler: handleSearchSemanticMemory,
   },
   {
-    name: "merge_semantic_memories",
+    name: "memory_semantic_merge",
     description:
       "合并多条语义记忆为一条。程序自动处理 source_sessions 并集和 observed_at 取最早。需 2+ 条 source_ids 和 target_content。合并后自动废弃源记忆。",
     parameters: {

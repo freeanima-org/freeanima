@@ -42,7 +42,7 @@ export type AcpSessionsJson = z.infer<typeof acpSessionsSchema>;
 export const sessionToolsSchema = z.array(z.string());
 export type SessionToolsJson = z.infer<typeof sessionToolsSchema>;
 
-/** sessions.loaded_tools — tool_load 累积的执行白名单 */
+/** sessions.loaded_tools — tools_load 累积的执行白名单 */
 export const sessionLoadedToolsSchema = z.array(z.string());
 export type SessionLoadedToolsJson = z.infer<typeof sessionLoadedToolsSchema>;
 

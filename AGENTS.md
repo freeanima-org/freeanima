@@ -32,7 +32,7 @@
 ### 代码与测试
 
 - 类型注解全覆盖
-- 工具返回：**失败一律 `toolError(msg)`（JSON `{"error":"..."}`）**；成功分两类——结构化工具用 `toolResult(obj)`，LLM 可读工具（如 `read_file` / `terminal` / `execute_code`）允许纯文本 stdout。
+- 工具返回：**失败一律 `toolError(msg)`（JSON `{"error":"..."}`）**；成功分两类——结构化工具用 `toolResult(obj)`，LLM 可读工具（如 `file_read_file` / `terminal_run` / `code_execute`）允许纯文本 stdout。
 - 安全路径以代码为准（写保护、设备阻塞、二进制过滤）
 - 新功能须补测试（最小可用）；mock 外部依赖；真实 LLM / 外网用例默认不进 CI
 - **import 相对路径须带 `.ts` / `.tsx` 后缀**（oxlint `import/extensions`）

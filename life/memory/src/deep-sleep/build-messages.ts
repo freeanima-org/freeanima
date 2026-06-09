@@ -54,18 +54,18 @@ const TOOL_INSTRUCTION_COMMON = `## 工具说明
 
 所有工具覆盖式工作，仅修改传入字段。
 
-### update_semantic_memory
+### memory_semantic_update
 - 修改已有记忆。未传字段保持不变。
 - 传 source_sessions: [] 可清空来源。
-- 传 status: "deprecated" 可废弃记忆（等价于 deprecate_semantic_memory）。
+- 传 status: "deprecated" 可废弃记忆（等价于 memory_semantic_deprecate）。
 
-### deprecate_semantic_memory
+### memory_semantic_deprecate
 - 软废弃一条记忆（status=deprecated），保留历史。
 
-### create_semantic_memory
+### memory_semantic_create
 - 创建新记忆。必填 content；建议填写 type、source_sessions、observed_at。
 
-### merge_semantic_memories
+### memory_semantic_merge
 - 合并多条记忆为一条。程序自动处理 source_sessions 并集和 observed_at 取最早。
 - 参数：source_ids（2+条）、target_content（合并后正文）。
 - 可选 target_type / target_pinned / target_occurred_at。
@@ -107,8 +107,8 @@ ${TOOL_INSTRUCTION_COMMON}
 - 不拆："Free Anima 是一个数字人类框架，由天空开发" → 关联紧密的一体信息
 
 ## 处理方式
-- 拆分时：create_semantic_memory 创建各条新记忆 → deprecate 原始记忆
-- 如果原记忆过长但无法拆分 → 可用 update_semantic_memory 精简 content
+- 拆分时：memory_semantic_create 创建各条新记忆 → deprecate 原始记忆
+- 如果原记忆过长但无法拆分 → 可用 memory_semantic_update 精简 content
 - 不确定时跳过
 
 ## 注意
@@ -130,8 +130,8 @@ ${TOOL_INSTRUCTION_COMMON}
 - 不合并："张三在腾讯工作" + "张三负责微信支付" → 有关联但不同事实（后续由实体系统关联）
 
 ## 处理方式
-- 使用 merge_semantic_memories 合并 2+ 条为 1 条。
-- 如果只有 1 条需要修改 → 用 update_semantic_memory。
+- 使用 memory_semantic_merge 合并 2+ 条为 1 条。
+- 如果只有 1 条需要修改 → 用 memory_semantic_update。
 - 优先保留更准确、更完整的那条的表述。
 
 ## 注意
@@ -181,8 +181,8 @@ export async function fetchAllActiveMemories(): Promise<SemanticMemoryRow[]> {
 
 /** 深睡 LLM 调用工具白名单 */
 export const DEEP_SLEEP_TOOL_NAMES = [
-  "update_semantic_memory",
-  "deprecate_semantic_memory",
-  "create_semantic_memory",
-  "merge_semantic_memories",
+  "memory_semantic_update",
+  "memory_semantic_deprecate",
+  "memory_semantic_create",
+  "memory_semantic_merge",
 ] as const;

@@ -216,7 +216,7 @@ async function handleListTasks(args: Record<string, unknown>): Promise<string> {
 export function registerTaskTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet("tasks", "跨 session 持久待办", [
     {
-      name: "create_task",
+      name: "tasks_create",
       description: "创建跨 session 持久待办任务",
       parameters: {
         type: "object",
@@ -235,7 +235,7 @@ export function registerTaskTools(toolSets: ToolSetRegistry): void {
       handler: handleCreateTask,
     },
     {
-      name: "update_task",
+      name: "tasks_update",
       description: "更新待办任务字段",
       parameters: {
         type: "object",
@@ -252,7 +252,7 @@ export function registerTaskTools(toolSets: ToolSetRegistry): void {
       handler: handleUpdateTask,
     },
     {
-      name: "complete_task",
+      name: "tasks_complete",
       description: "将任务标记为 completed",
       parameters: {
         type: "object",
@@ -262,7 +262,7 @@ export function registerTaskTools(toolSets: ToolSetRegistry): void {
       handler: (args) => handleStatusChange(args, "completed", "complete"),
     },
     {
-      name: "cancel_task",
+      name: "tasks_cancel",
       description: "将任务标记为 cancelled",
       parameters: {
         type: "object",
@@ -272,7 +272,7 @@ export function registerTaskTools(toolSets: ToolSetRegistry): void {
       handler: (args) => handleStatusChange(args, "cancelled", "cancel"),
     },
     {
-      name: "reopen_task",
+      name: "tasks_reopen",
       description: "将任务重新打开为 pending",
       parameters: {
         type: "object",
@@ -282,7 +282,7 @@ export function registerTaskTools(toolSets: ToolSetRegistry): void {
       handler: (args) => handleStatusChange(args, "pending", "reopen"),
     },
     {
-      name: "list_tasks",
+      name: "tasks_list",
       description: "列出待办；默认 pending + in_progress，按 priority 降序、created_at 升序",
       parameters: {
         type: "object",
@@ -299,7 +299,7 @@ export function registerTaskTools(toolSets: ToolSetRegistry): void {
       handler: handleListTasks,
     },
     {
-      name: "get_task",
+      name: "tasks_get",
       description: "按 ID 获取单条任务",
       parameters: {
         type: "object",

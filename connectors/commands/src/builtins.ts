@@ -267,7 +267,7 @@ export function registerBuiltins(): void {
   });
   registerCommand({
     name: "reload_tools",
-    description: "重置 session 工具 schema 为默认集，并清空 tool_load 累积的 loaded_tools",
+    description: "重置 session 工具 schema 为默认集，并清空 tools_load 累积的 loaded_tools",
     handler: cmdReloadTools,
     aliases: ["reload-tools"],
     scope: "session",

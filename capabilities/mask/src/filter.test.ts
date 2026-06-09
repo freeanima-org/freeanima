@@ -3,21 +3,21 @@ import { checkCredential, checkTool } from "./filter.ts";
 import type { ResolvedMask } from "./types.ts";
 
 const resolved: ResolvedMask = {
-  allowed_tools: ["recall", "read_file"],
-  denied_tools: ["write_file"],
+  allowed_tools: ["memory_recall", "file_read_file"],
+  denied_tools: ["file_write_file"],
   auto_skills: [],
   credentials: [{ name: "api_key", read: "deny", write: "allow" }],
 };
 
 describe("checkTool", () => {
   it("allowed 工具通过", () => {
-    expect(checkTool("recall", resolved)).toEqual({ ok: true });
+    expect(checkTool("memory_recall", resolved)).toEqual({ ok: true });
   });
 
   it("未允许工具拒绝", () => {
-    const r = checkTool("execute_code", resolved);
+    const r = checkTool("code_execute", resolved);
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.reason).toContain("execute_code");
+    if (!r.ok) expect(r.reason).toContain("code_execute");
   });
 });
 

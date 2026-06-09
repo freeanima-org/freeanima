@@ -25,25 +25,25 @@ export function applyDeepSleepToolResult(
   if (!parsed) return;
 
   switch (toolName) {
-    case "create_semantic_memory": {
+    case "memory_semantic_create": {
       const id = asId(parsed.semantic_memory_id ?? parsed.id);
       if (!id) return;
       applyChangeLog(log, "added", id, "新建语义记忆");
       break;
     }
-    case "update_semantic_memory": {
+    case "memory_semantic_update": {
       const id = asId(parsed.semantic_memory_id ?? parsed.id);
       if (!id) return;
       applyChangeLog(log, "modified", id, "更新语义记忆");
       break;
     }
-    case "deprecate_semantic_memory": {
+    case "memory_semantic_deprecate": {
       const id = asId(parsed.semantic_memory_id ?? parsed.id);
       if (!id) return;
       applyChangeLog(log, "deprecated", id, "废弃语义记忆");
       break;
     }
-    case "merge_semantic_memories": {
+    case "memory_semantic_merge": {
       const newId = asId(parsed.id);
       if (newId) applyChangeLog(log, "added", newId, "合并后新记忆");
       const deprecated = parsed.deprecated_ids;
