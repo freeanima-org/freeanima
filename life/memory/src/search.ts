@@ -113,12 +113,8 @@ export type SemanticMemorySearchHit = {
 };
 
 export type DialogueSearchHit = {
-  content: string;
-  role: string;
   session_id: string;
-  timestamp: string;
-  rank: number;
-  score: number;
+  message_id: string;
 };
 
 export type MemorySearchResult = {
@@ -153,12 +149,8 @@ export async function memorySearchDetailed(
       score: pgRankToScore(r.rank),
     })),
     dialogue: dialogueRows.map((r) => ({
-      content: r.content,
-      role: r.role,
       session_id: r.session_id,
-      timestamp: r.timestamp,
-      rank: r.rank,
-      score: pgRankToScore(r.rank),
+      message_id: r.message_id,
     })),
   };
 }

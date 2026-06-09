@@ -6,6 +6,8 @@ export const DEFAULT_SESSION_TOOL_NAMES = [
   ...TOOLS_DISCOVERY_NAMES,
   "memory_recall",
   "memory_remember",
+  "sessions_search",
+  "sessions_scroll",
   "skills_search",
   "skills_load",
 ] as const;

@@ -3,6 +3,7 @@ export type {
   SessionStorePort,
   SessionSummaryRow,
   MessageFtsHit,
+  MessageRowView,
   SemanticMemoryRow,
   SemanticFtsHit,
   SemanticMemoryCreateInput,

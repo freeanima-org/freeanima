@@ -98,6 +98,7 @@ export async function hybridSearchMessages(
   const merged = rrfMerge([ftsRanked, trgmHits, vectorHits], { limit: pool });
 
   return merged.slice(0, limit).map((row) => ({
+    message_id: row.id,
     content: row.content,
     role: row.role,
     session_id: row.session_id,

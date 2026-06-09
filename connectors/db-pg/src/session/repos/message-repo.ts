@@ -1,5 +1,6 @@
 import { and, asc, desc, eq, gte, lte, sql } from "drizzle-orm";
 import type { ConversationMessage, SessionMessage } from "@freeanima/engine-db/domain";
+import type { MessageRowView } from "@freeanima/engine-repos";
 
 import { messages } from "@freeanima/engine-db/schema";
 
@@ -12,6 +13,28 @@ import { messageToInsert, rowToMessage } from "../mappers/message-mapper.ts";
 function extractIndexableContent(payload: { role: string; content?: string | null }): string {
   if (payload.role !== "user" && payload.role !== "assistant") return "";
   return typeof payload.content === "string" ? payload.content.trim() : "";
+}
+
+function rowToMessageRowView(row: {
+  id: string;
+  pos: number;
+  payload: { role: string; content?: string | null; timestamp?: string | null };
+}): MessageRowView {
+  const role = row.payload.role ?? "";
+  const raw = typeof row.payload.content === "string" ? row.payload.content : "";
+  let content = "";
+  if (role === "user" || role === "assistant") {
+    content = raw;
+  } else if (role === "tool") {
+    content = raw.length > 200 ? `${raw.slice(0, 200)}…` : raw;
+  }
+  return {
+    message_id: row.id,
+    pos: Number(row.pos),
+    role,
+    content,
+    timestamp: typeof row.payload.timestamp === "string" ? row.payload.timestamp : "",
+  };
 }
 
 export async function appendMessage(
@@ -117,6 +140,59 @@ export async function listMessagesPage(
     .offset(safeOffset)
     .limit(safeLimit);
   return rows.map((r) => rowToMessage(r));
+}
+
+export async function findMessagePos(sessionId: string, messageId: string): Promise<number | null> {
+  const db = getDb();
+  const rows = await db
+    .select({ pos: messages.pos })
+    .from(messages)
+    .where(and(eq(messages.sessionId, sessionId), eq(messages.id, messageId)))
+    .limit(1);
+  if (!rows.length) return null;
+  return Number(rows[0]!.pos);
+}
+
+export async function listMessageRowsPage(
+  sessionId: string,
+  offset: number,
+  limit: number,
+): Promise<MessageRowView[]> {
+  const db = getDb();
+  const safeOffset = Math.max(0, offset);
+  const safeLimit = Math.max(1, limit);
+  const rows = await db
+    .select({
+      id: messages.id,
+      pos: messages.pos,
+      payload: messages.payload,
+    })
+    .from(messages)
+    .where(eq(messages.sessionId, sessionId))
+    .orderBy(asc(messages.pos))
+    .offset(safeOffset)
+    .limit(safeLimit);
+  return rows.map((r) => rowToMessageRowView(r));
+}
+
+export async function listMessageRowsFromPos(
+  sessionId: string,
+  fromPos: number,
+  limit: number,
+): Promise<MessageRowView[]> {
+  const db = getDb();
+  const safeLimit = Math.max(1, limit);
+  const rows = await db
+    .select({
+      id: messages.id,
+      pos: messages.pos,
+      payload: messages.payload,
+    })
+    .from(messages)
+    .where(and(eq(messages.sessionId, sessionId), gte(messages.pos, fromPos)))
+    .orderBy(asc(messages.pos))
+    .limit(safeLimit);
+  return rows.map((r) => rowToMessageRowView(r));
 }
 
 /** 最近一条消息时间戳（避免 listMessages 全量加载） */

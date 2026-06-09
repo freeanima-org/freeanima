@@ -27,10 +27,7 @@ function mapSemanticMemoryHit(r: SearchResult) {
 function mapDialogueHit(r: MessageFtsHit) {
   return {
     session_id: r.session_id,
-    role: r.role,
-    timestamp: r.timestamp,
-    content: r.content,
-    rank: r.rank,
+    message_id: r.message_id,
   };
 }
 
@@ -81,7 +78,14 @@ export function registerMemoryTools(toolSets: ToolSetRegistry): void {
     {
       name: "memory_recall",
       description:
-        '搜索记忆：语义记忆（PostgreSQL 全文索引）+ 历史对话（PostgreSQL messages 全文索引）。一次调用返回两处结果。\n\nPG 检索语法（to_tsquery simple）：\n- **空格**分隔的词默认 **AND**（均需匹配）\n- **OR** 显式宽召回：`偏好 OR 简洁`（转为 |）\n- **AND** / **NOT**：`Free AND Anima`、`Free NOT Anima`\n- **双引号** 短语 / CJK 词：`"逸灵风"`、`偏好`（CJK 按字 **邻近** 连续匹配）\n\n示例：`偏好 简洁`（须同时出现）；宽搜用 `偏好 OR 简洁`',
+        "搜索记忆：语义记忆（PostgreSQL 全文索引）+ 历史对话索引（session_id + message_id，不含正文）。\n" +
+        "对话正文请用 sessions_scroll；按 session 范围搜对话请用 sessions_search。\n\n" +
+        "PG 检索语法（to_tsquery simple）：\n" +
+        "- **空格**分隔的词默认 **AND**（均需匹配）\n" +
+        "- **OR** 显式宽召回：`偏好 OR 简洁`（转为 |）\n" +
+        "- **AND** / **NOT**：`Free AND Anima`、`Free NOT Anima`\n" +
+        '- **双引号** 短语 / CJK 词：`"逸灵风"`、`偏好`（CJK 按字 **邻近** 连续匹配）\n\n' +
+        "示例：`偏好 简洁`（须同时出现）；宽搜用 `偏好 OR 简洁`",
       parameters: {
         type: "object",
         properties: {
@@ -91,11 +95,7 @@ export function registerMemoryTools(toolSets: ToolSetRegistry): void {
               '搜索关键词。默认空格=AND；宽召回用 OR；CJK 短语邻近匹配。示例："偏好 简洁"（同时匹配）、"偏好 OR 简洁"（任一）、"逸灵风"',
           },
           limit: { type: "number", description: "语义记忆最多返回条数，默认 5" },
-          session_limit: { type: "number", description: "历史对话最多返回条数，默认 10" },
-          session: {
-            type: "string",
-            description: "可选：仅在指定 session id 内搜索历史对话",
-          },
+          session_limit: { type: "number", description: "历史对话索引最多返回条数，默认 10" },
         },
         required: ["query"],
       },
@@ -105,10 +105,9 @@ export function registerMemoryTools(toolSets: ToolSetRegistry): void {
 
         const semanticLimit = Math.max(1, Math.min(50, asFloat(args.limit, 5)));
         const dialogueLimit = Math.max(1, Math.min(50, asFloat(args.session_limit, 10)));
-        const sessionId = String(args.session ?? "").trim() || undefined;
 
         const semanticResults = await searchSemanticMemory(query, semanticLimit);
-        const dialogueRows = await searchDialogue(query, { limit: dialogueLimit, sessionId });
+        const dialogueRows = await searchDialogue(query, { limit: dialogueLimit });
 
         return toolResult({
           query,

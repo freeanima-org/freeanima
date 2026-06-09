@@ -23,6 +23,9 @@ export class PgSessionStore implements SessionStorePort {
   deleteDebugSessions = sessionRepo.deleteDebugSessions;
   findSessionIdByPlatformInfo = sessionRepo.findSessionIdByPlatformInfo;
   countMessages = messageRepo.countMessages;
+  findMessagePos = messageRepo.findMessagePos;
+  listMessageRowsPage = messageRepo.listMessageRowsPage;
+  listMessageRowsFromPos = messageRepo.listMessageRowsFromPos;
   lastMessageTimestamp = messageRepo.lastMessageTimestamp;
   searchMessagesFts = messageFtsRepo.searchMessagesFts;
   countSearchableMessages = messageFtsRepo.countSearchableMessages;

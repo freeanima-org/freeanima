@@ -2,7 +2,12 @@ import type { MemoryReferenceStorePort } from "./memory-reference.ts";
 import type { SemanticMemoryStorePort } from "./semantic-memory.ts";
 import type { SessionStorePort } from "./session.ts";
 
-export type { SessionStorePort, SessionSummaryRow, MessageFtsHit } from "./session.ts";
+export type {
+  SessionStorePort,
+  SessionSummaryRow,
+  MessageFtsHit,
+  MessageRowView,
+} from "./session.ts";
 export type {
   SemanticMemoryRow,
   SemanticFtsHit,

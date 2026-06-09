@@ -47,6 +47,15 @@ function mockSessionStore(overrides: Partial<SessionStorePort>): SessionStorePor
     async countMessages() {
       return 0;
     },
+    async findMessagePos() {
+      return null;
+    },
+    async listMessageRowsPage() {
+      return [];
+    },
+    async listMessageRowsFromPos() {
+      return [];
+    },
     async lastMessageTimestamp() {
       return null;
     },
@@ -287,6 +296,7 @@ describe("memory search", () => {
         async searchMessagesFts() {
           return [
             {
+              message_id: "msg-001",
               content: "讨论 compression 算法",
               role: "user",
               session_id: sid,
@@ -301,11 +311,13 @@ describe("memory search", () => {
     const out = await toolSets.getTool("memory_recall")!.handler({ query: "compression" });
     const parsed = JSON.parse(out) as {
       semantic_memory: { content: string }[];
-      dialogue: { content: string }[];
+      dialogue: { session_id: string; message_id: string; content?: string }[];
     };
     expect(parsed.semantic_memory.length).toBeGreaterThan(0);
     expect(parsed.dialogue.length).toBeGreaterThan(0);
     expect(parsed.semantic_memory.some((r) => r.content.includes("compression"))).toBe(true);
-    expect(parsed.dialogue.some((r) => r.content.includes("compression"))).toBe(true);
+    expect(parsed.dialogue[0]!.session_id).toBe(sid);
+    expect(parsed.dialogue[0]!.message_id).toBe("msg-001");
+    expect(parsed.dialogue[0]!.content).toBeUndefined();
   });
 });
