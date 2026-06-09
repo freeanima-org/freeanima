@@ -14,7 +14,12 @@ import {
 import * as llm from "@freeanima/engine-llm";
 import { cleanToolCallsForApi } from "@freeanima/engine-llm";
 import { markToolLoopActivity } from "@freeanima/engine-compress";
-import { getToolRegistry, getToolSessionId, getToolRepos } from "./tool-context.ts";
+import {
+  getToolRegistry,
+  getToolSessionId,
+  getToolRepos,
+  isExecutableTool,
+} from "./tool-context.ts";
 import { maybeApplyEmergencyCompression } from "@freeanima/engine-conversation";
 import { REPAIR_REASON_INTERRUPT } from "@freeanima/engine-llm";
 import type {
@@ -38,6 +43,8 @@ type EngineOpts = {
   tools?: OpenAiToolSchema[];
   /** 能力面罩允许的工具名（来自 ResolvedMask.allowed_tools）；未设置时不做兜底拦截 */
   toolMask?: { allowedTools: readonly string[] };
+  /** 允许执行的工具名（default + loaded_tools）；未设置时不做 loaded 门禁 */
+  executableTools?: readonly string[];
   hookRegistry?: HookRegistry;
   onMessageAppended?: (msg: SessionMessage) => void | Promise<void>;
   onToolRoundComplete?: (msgs: SessionMessage[]) => void | Promise<void>;
@@ -383,24 +390,34 @@ export async function* runStream(
         let result: string;
         if (opts?.toolMask && !opts.toolMask.allowedTools.includes(fnName)) {
           result = toolError("工具被能力面罩限制");
-        } else if (!tool) {
-          result = toolResult({ error: `Unknown tool: ${fnName}` });
-        } else if (!argsResult.ok) {
-          result = toolError(argsResult.error);
         } else {
-          try {
-            result = await Promise.resolve(tool.handler(fnArgs));
-            if (typeof result !== "string") result = toolResult(result);
-            failureCounts.delete(fnName);
-          } catch (exc) {
-            result = toolResult({ error: `${fnName} failed: ${exc}` });
-            const count = (failureCounts.get(fnName) ?? 0) + 1;
-            failureCounts.set(fnName, count);
-            if (count >= HARD) {
-              throw new Error(
-                `Tool '${fnName}' failed ${count} times consecutively. Last: ${exc}`,
-                { cause: exc },
-              );
+          const ctxExec = isExecutableTool(fnName);
+          const blockedByLoaded =
+            ctxExec === false ||
+            (ctxExec === undefined &&
+              opts?.executableTools != null &&
+              !opts.executableTools.includes(fnName));
+          if (blockedByLoaded) {
+            result = toolError("工具未加载，请先 tool_load");
+          } else if (!tool) {
+            result = toolResult({ error: `Unknown tool: ${fnName}` });
+          } else if (!argsResult.ok) {
+            result = toolError(argsResult.error);
+          } else {
+            try {
+              result = await Promise.resolve(tool.handler(fnArgs));
+              if (typeof result !== "string") result = toolResult(result);
+              failureCounts.delete(fnName);
+            } catch (exc) {
+              result = toolResult({ error: `${fnName} failed: ${exc}` });
+              const count = (failureCounts.get(fnName) ?? 0) + 1;
+              failureCounts.set(fnName, count);
+              if (count >= HARD) {
+                throw new Error(
+                  `Tool '${fnName}' failed ${count} times consecutively. Last: ${exc}`,
+                  { cause: exc },
+                );
+              }
             }
           }
         }

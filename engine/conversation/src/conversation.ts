@@ -3,6 +3,7 @@ import { tmpdir, homedir } from "node:os";
 import { join, resolve } from "node:path";
 import { randomBytes } from "node:crypto";
 import type { ToolSetRegistry } from "@freeanima/engine-tool";
+import { resolveDefaultSessionTools } from "@freeanima/engine-tool";
 import { getProfileHopModel, loadConfig } from "@freeanima/service-config";
 import { CST_OFFSET_MS, formatCstIso } from "@freeanima/kernel-util";
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
@@ -109,9 +110,9 @@ export async function loadSessionTools(
     }
     return tools.openaiSchemasFromNames(names);
   }
-  const fresh = tools.toolNames();
+  const fresh = resolveDefaultSessionTools(tools);
   if (fresh.length > 0) {
-    await updateSessionMetaField(repos, session, { tools: fresh });
+    await updateSessionMetaField(repos, session, { tools: fresh, loaded_tools: [] });
   }
   let effective = fresh;
   const metaForMask =
@@ -246,6 +247,7 @@ export async function appendSessionMeta(
     role: "session_meta",
     model,
     tools,
+    loaded_tools: [],
     functions: opts?.functions ?? [],
     timestamp: formatCstIso(),
   };
@@ -265,7 +267,8 @@ export async function initSession(
   const meta: SessionMetaMessage = {
     role: "session_meta",
     model,
-    tools: tools.toolNames(),
+    tools: resolveDefaultSessionTools(tools),
+    loaded_tools: [],
     functions: opts.functions ?? [],
     timestamp: formatCstIso(),
     platform: opts.platform,
@@ -383,7 +386,7 @@ export async function rebuildSessionSystemPrompt(
   await updateSessionMetaField(repos, session, { system_prompt: systemPrompt });
 }
 
-/** 将当前注册表工具写回 session_meta，供下次 LLM 请求使用 */
+/** 重置 session 工具 schema 为默认集并清空 loaded_tools */
 export async function reloadSessionTools(
   repos: PgRepositories,
   tools: ToolSetRegistry,
@@ -393,8 +396,12 @@ export async function reloadSessionTools(
   if (!isSessionMeta(meta)) {
     throw new Error("session 不存在");
   }
-  const names = tools.toolNames();
-  await updateSessionMetaField(repos, session, { tools: names, timestamp: formatCstIso() });
+  const names = resolveDefaultSessionTools(tools);
+  await updateSessionMetaField(repos, session, {
+    tools: names,
+    loaded_tools: [],
+    timestamp: formatCstIso(),
+  });
   return names.length;
 }
 
@@ -884,7 +891,8 @@ export async function updateSessionMeta(
   if (opts?.tools !== undefined) {
     meta.tools = opts.tools;
   } else if (!meta.tools.length) {
-    meta.tools = registry.toolNames();
+    meta.tools = resolveDefaultSessionTools(registry);
+    meta.loaded_tools = meta.loaded_tools ?? [];
   }
   await pgWriteMeta(repos, session, meta);
 }

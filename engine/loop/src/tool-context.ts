@@ -2,7 +2,13 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import type { PgRepositories } from "@freeanima/engine-repos";
 import type { ToolSetRegistry } from "@freeanima/engine-tool";
 
-type ToolContextStore = { sessionId: string; repos?: PgRepositories; tools: ToolSetRegistry };
+type ToolContextStore = {
+  sessionId: string;
+  repos?: PgRepositories;
+  tools: ToolSetRegistry;
+  /** 可变执行白名单；未设置时不做 loaded 门禁 */
+  executableTools?: Set<string>;
+};
 
 const storage = new AsyncLocalStorage<ToolContextStore>();
 
@@ -31,9 +37,18 @@ async function* bindToolContext<T>(
 export function runWithToolContext<T>(
   sessionId: string,
   fn: () => T,
-  opts: { tools: ToolSetRegistry; repos?: PgRepositories },
+  opts: {
+    tools: ToolSetRegistry;
+    repos?: PgRepositories;
+    executableTools?: readonly string[];
+  },
 ): T {
-  const store: ToolContextStore = { sessionId, repos: opts.repos, tools: opts.tools };
+  const store: ToolContextStore = {
+    sessionId,
+    repos: opts.repos,
+    tools: opts.tools,
+    executableTools: opts.executableTools ? new Set(opts.executableTools) : undefined,
+  };
   const result = storage.run(store, fn);
   if (isAsyncIterable(result)) {
     return bindToolContext(store, result) as T;
@@ -57,4 +72,20 @@ export function getToolRegistry(): ToolSetRegistry {
     );
   }
   return tools;
+}
+
+/** tool_load 等同轮追加可执行工具名 */
+export function grantExecutableTools(names: readonly string[]): void {
+  const store = storage.getStore();
+  if (!store?.executableTools) return;
+  for (const name of names) {
+    if (name.trim()) store.executableTools.add(name.trim());
+  }
+}
+
+/** 返回是否在执行白名单内；无白名单时 undefined（不门禁） */
+export function isExecutableTool(name: string): boolean | undefined {
+  const set = storage.getStore()?.executableTools;
+  if (!set) return undefined;
+  return set.has(name);
 }

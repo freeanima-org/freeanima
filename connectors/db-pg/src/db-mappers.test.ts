@@ -9,12 +9,14 @@ describe("db mappers", () => {
       role: "session_meta",
       model: "m",
       tools: [],
+      loaded_tools: [],
       functions: [],
       timestamp: "2026-05-17T07:15:24.873+00:00",
       platform: "cron",
     });
     expect(row.createdAt).toBe("2026-05-17T07:15:24.873Z");
     expect(row.platformInfo).toEqual({ platform: "cron" });
+    expect(row.loadedTools).toEqual([]);
   });
 
   it("cron ended_at 规范化进 platform_info", () => {
@@ -22,6 +24,7 @@ describe("db mappers", () => {
       role: "session_meta",
       model: "m",
       tools: [],
+      loaded_tools: [],
       functions: [],
       timestamp: "2026-05-11T04:00:11.050Z",
       platform: "cron",
@@ -49,6 +52,8 @@ describe("db mappers", () => {
     const user = rowToMessage({
       ...userInsert,
       contentFts: "hi",
+      ftsSegmented: null,
+      contentEmbedding: null,
       createdAt: "2026-01-01T00:00:00.000Z",
     });
     expect(user.pos).toBe(1);
@@ -65,6 +70,8 @@ describe("db mappers", () => {
     const tool = rowToMessage({
       ...toolInsert,
       contentFts: null,
+      ftsSegmented: null,
+      contentEmbedding: null,
       createdAt: "2026-01-01T00:00:01.000Z",
     });
     expect(tool.pos).toBe(2);

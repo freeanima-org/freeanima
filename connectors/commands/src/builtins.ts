@@ -63,14 +63,17 @@ async function cmdReloadTools(ctx: CommandContext): Promise<string> {
   if (!isSessionMeta(meta)) {
     return "⚠️ 当前 session 不存在，无法更新工具列表。";
   }
-  const before = meta.tools.length;
+  const beforeSchema = meta.tools.length;
+  const beforeLoaded = meta.loaded_tools?.length ?? 0;
   try {
     const count = await conv().reloadSessionTools(ctx.sessionId);
-    const names = getServiceContext()
-      .engine.catalog.toolSets.listTools()
-      .map((t) => t.name);
+    const after = await conv().loadSessionMeta(ctx.sessionId);
+    const names = isSessionMeta(after) ? after.tools : [];
     const preview = names.length <= 8 ? names.join(", ") : `${names.slice(0, 8).join(", ")}…`;
-    return `✅ 已更新 session 工具列表：${count} 个（此前 ${before} 个）。下次对话将携带最新工具。\n${preview}`;
+    return (
+      `✅ 已重置 session 工具：schema ${count} 个（此前 ${beforeSchema} 个），` +
+      `已清空 loaded_tools（此前 ${beforeLoaded} 个）。\n默认工具：${preview}`
+    );
   } catch (e) {
     return `⚠️ 更新工具列表失败：${String(e)}`;
   }
@@ -254,7 +257,7 @@ export function registerBuiltins(): void {
   });
   registerCommand({
     name: "reload_tools",
-    description: "将当前已注册工具写回 session_meta，下次对话请求时带给 LLM",
+    description: "重置 session 工具 schema 为默认集，并清空 tool_load 累积的 loaded_tools",
     handler: cmdReloadTools,
     aliases: ["reload-tools"],
     scope: "session",

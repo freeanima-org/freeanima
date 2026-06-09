@@ -34,6 +34,7 @@ const META_KNOWN_KEYS = new Set([
   "awaiting_clarify",
   "acp_sessions",
   "tools",
+  "loaded_tools",
   "functions",
   "platform_extra",
   "debug",
@@ -61,6 +62,7 @@ export function sessionMetaToInsert(sessionId: string, meta: SessionMetaMessage)
   }
 
   const tools = z.array(z.string()).parse(meta.tools ?? []);
+  const loadedTools = z.array(z.string()).parse(meta.loaded_tools ?? []);
   const todos = sessionTodoStoreSchema.parse(meta.todos ?? { items: [], next_id: 1 });
   const functions = z.array(z.string()).parse(meta.functions ?? []);
   const compressionRaw = pgJsonbOrNull(meta.compression);
@@ -85,6 +87,7 @@ export function sessionMetaToInsert(sessionId: string, meta: SessionMetaMessage)
     awaitingClarify: awaitingParsed,
     acpSessions: acpParsed,
     tools,
+    loadedTools,
     functions,
     debug: meta.debug === true,
     createdAt: normalizePgTimestamp(meta.timestamp),
@@ -114,6 +117,7 @@ export function rowToSessionMeta(row: unknown): SessionMetaMessage {
     awaiting_clarify: parsed.awaitingClarify ?? undefined,
     acp_sessions: parsed.acpSessions ?? undefined,
     tools: parsed.tools,
+    loaded_tools: parsed.loadedTools,
     functions: parsed.functions,
     platform_extra: restExtra && Object.keys(restExtra).length > 0 ? restExtra : undefined,
     capability_mask,
