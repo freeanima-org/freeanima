@@ -36,12 +36,22 @@ jobs:
           label: code-coverage/bun
       - run: bun run coverage:check-threshold
 
-  e2e:
-    name: E2E
+  blackbox-dispatch:
+    name: Blackbox dispatch
+    needs: [quality]
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: ./.github/actions/setup-bun
-      - uses: ./.github/actions/setup-anima-home
-      - uses: ./.github/actions/setup-chromium
-      - run: bun run test:e2e
+      - name: Dispatch pr-verify to freeanima-testing
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.TESTING_REPO_DISPATCH_PAT }}
+          repository: freeanima-org/freeanima-testing
+          event-type: pr-verify
+          client-payload: |-
+            {
+              "sha": "${{ github.event.pull_request.head.sha }}",
+              "ref": "${{ github.event.pull_request.head.ref }}",
+              "pr_number": ${{ github.event.pull_request.number }},
+              "repo_full_name": "${{ github.repository }}"
+            }
