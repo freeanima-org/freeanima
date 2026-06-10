@@ -1,8 +1,6 @@
 import { randomInt } from "node:crypto";
-import { redisDel, redisGet, redisScanEntries, redisSet } from "@freeanima/connectors-redis";
-import type { FridgeMagnetScanHit } from "./types.ts";
+import { getFridgeStore } from "./fridge-store-port.ts";
 
-const MAX_TTL = 86400;
 const BASE62 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
 export function magnetRedisKey(module: string, id: string): string {
@@ -18,6 +16,7 @@ export function randomBase62(length: number): string {
 }
 
 export function clampTtl(ttl?: number): number {
+  const MAX_TTL = 86400;
   const n = ttl ?? MAX_TTL;
   return Math.max(1, Math.min(n, MAX_TTL));
 }
@@ -28,17 +27,17 @@ export async function setMagnet(
   value: string,
   ttl?: number,
 ): Promise<void> {
-  await redisSet(magnetRedisKey(module, id), value, clampTtl(ttl));
+  await getFridgeStore().set(magnetRedisKey(module, id), value, clampTtl(ttl));
 }
 
 export async function getMagnet(module: string, id: string): Promise<string | null> {
-  return redisGet(magnetRedisKey(module, id));
+  return getFridgeStore().get(magnetRedisKey(module, id));
 }
 
 export async function deleteMagnet(module: string, id: string): Promise<void> {
-  await redisDel(magnetRedisKey(module, id));
+  await getFridgeStore().delete(magnetRedisKey(module, id));
 }
 
-export async function scanMagnets(pattern: string): Promise<FridgeMagnetScanHit[]> {
-  return redisScanEntries(pattern);
+export async function scanMagnets(pattern: string) {
+  return getFridgeStore().scan(pattern);
 }

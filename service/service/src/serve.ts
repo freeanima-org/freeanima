@@ -52,8 +52,11 @@ import {
   registerServiceIntegrations,
   startAcpProgressTicker,
   registerServiceMemoryBus,
+  registerServiceStores,
   registerServiceTools,
 } from "./register.ts";
+import { registerFridgeStore } from "@freeanima/capabilities-fridge-magnet";
+import { createRedisFridgeStore } from "@freeanima/connectors-redis";
 import { registerLightSleepWire } from "./runtime/light-sleep-wire.ts";
 import { registerDeepSleepWire } from "./runtime/deep-sleep-wire.ts";
 import { registerAutobiographyWire } from "./runtime/autobiography-wire.ts";
@@ -61,16 +64,8 @@ import { initMaskSystem } from "./runtime/mask-wire.ts";
 import { MaskRegistry } from "@freeanima/capabilities-mask";
 import { runLightSleep } from "@freeanima/life-memory/light-sleep/run";
 import { runDeepSleep } from "@freeanima/life-memory/deep-sleep/run";
-import {
-  invalidateSelfLayerPromptCache,
-  loadSelfLayerPrompt,
-  registerSelfLayerStore,
-} from "@freeanima/life-self";
-import {
-  registerAutobiographicalMemoryStore,
-  registerLimbicMemoryStore,
-  syncSemanticMemoryReferenceCounts,
-} from "@freeanima/life-memory";
+import { invalidateSelfLayerPromptCache, loadSelfLayerPrompt } from "@freeanima/life-self";
+import { syncSemanticMemoryReferenceCounts } from "@freeanima/life-memory";
 import {
   discoverPlatforms,
   startPlatforms,
@@ -79,7 +74,7 @@ import {
 } from "@freeanima/connectors-gateway";
 import { MCPManager } from "@freeanima/capabilities-mcp";
 import { getAcpManager } from "@freeanima/capabilities-acp";
-import { registerTaskStore } from "@freeanima/capabilities-tasks/task-port";
+import { createFridgeBridge } from "@freeanima/capabilities-tasks";
 import { DEFAULT_BIND_HOST, parseBindHosts } from "./bind-hosts.ts";
 import { initServiceContext } from "./context.ts";
 import { wireEmbeddingRuntime } from "./runtime/embedding-wire.ts";
@@ -244,21 +239,16 @@ export async function serve(
       toolSets: catalog.toolSets,
       skills: catalog.skills,
     });
-    registerFridgeMagnet({ kernel });
+
+    registerFridgeStore(createRedisFridgeStore());
 
     startupLog("初始化 AnimaService / EventBus…");
     service = new AnimaService({ kernel, conversation });
     service.markStarted();
 
-    registerServiceMemoryBus({
-      kernel,
-      sessionStore: engine.repos.session,
-      semanticStore: engine.repos.semanticMemory,
-    });
-    registerSelfLayerStore(repos.selfLayer);
-    registerAutobiographicalMemoryStore(repos.autobiographicalMemory);
-    registerLimbicMemoryStore(repos.limbicMemory);
-    registerTaskStore(repos.tasks);
+    registerServiceStores(repos, { fridgeBridge: createFridgeBridge() });
+    registerFridgeMagnet({ kernel });
+    registerServiceMemoryBus({ kernel });
     if (repos.pgAvailable) {
       invalidateSelfLayerPromptCache();
       await loadSelfLayerPrompt();

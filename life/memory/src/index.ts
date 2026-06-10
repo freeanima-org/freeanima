@@ -7,7 +7,7 @@ export {
   type SemanticMemoryUpdatedPayload,
   type TestPingPayload,
 } from "./events.ts";
-export { registerMemoryPipeline } from "./pipeline.ts";
+export { registerMemoryPipeline, type MemoryPipelineStores } from "./pipeline.ts";
 export {
   formatMemoryReferenceMarker,
   formatResidentMemoryLine,

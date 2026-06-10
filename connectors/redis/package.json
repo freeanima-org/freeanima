@@ -4,6 +4,9 @@
   "exports": {
     ".": "./src/index.ts"
   },
+  "dependencies": {
+    "@freeanima/capabilities-fridge-magnet": "workspace:*"
+  },
   "devDependencies": {
     "@types/bun": "catalog:"
   }

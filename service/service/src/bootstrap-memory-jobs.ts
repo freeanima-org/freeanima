@@ -29,20 +29,10 @@ import { logStartupError, markStartupPhase } from "@freeanima/service-logging";
 import { MCPManager } from "@freeanima/capabilities-mcp";
 import { getAcpManager } from "@freeanima/capabilities-acp";
 import { MaskRegistry } from "@freeanima/capabilities-mask";
-import {
-  invalidateSelfLayerPromptCache,
-  loadSelfLayerPrompt,
-  registerSelfLayerStore,
-} from "@freeanima/life-self";
-import {
-  registerAutobiographicalMemoryStore,
-  registerLimbicMemoryStore,
-  registerMemoryPipeline,
-} from "@freeanima/life-memory";
-import { registerTaskStore } from "@freeanima/capabilities-tasks/task-port";
-
-import { AnimaService, REPO_ROOT } from "./runtime/index.ts";
+import { invalidateSelfLayerPromptCache, loadSelfLayerPrompt } from "@freeanima/life-self";
 import { registerServiceIntegrations, registerServiceTools } from "./register.ts";
+import { registerServiceStores } from "./register-stores.ts";
+import { AnimaService, REPO_ROOT } from "./runtime/index.ts";
 import { registerLightSleepWire } from "./runtime/light-sleep-wire.ts";
 import { registerAutobiographyWire } from "./runtime/autobiography-wire.ts";
 import { initMaskSystem } from "./runtime/mask-wire.ts";
@@ -106,14 +96,7 @@ export async function bootstrapMemoryJobs(): Promise<MemoryJobsContext> {
     const service = new AnimaService({ kernel, conversation });
     service.markStarted();
 
-    registerMemoryPipeline({
-      sessionStore: repos.session,
-      semanticStore: repos.semanticMemory,
-    });
-    registerSelfLayerStore(repos.selfLayer);
-    registerAutobiographicalMemoryStore(repos.autobiographicalMemory);
-    registerLimbicMemoryStore(repos.limbicMemory);
-    registerTaskStore(repos.tasks);
+    registerServiceStores(repos);
 
     invalidateSelfLayerPromptCache();
     const selfContent = await loadSelfLayerPrompt();

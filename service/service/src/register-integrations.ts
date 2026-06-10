@@ -1,8 +1,7 @@
-import { getAcpManager } from "@freeanima/capabilities-acp";
-import { createAcpProgressDelivery } from "./acp-progress-delivery.ts";
-import { registerClarifyHooks } from "@freeanima/capabilities-clarify";
 import { createFridgeMagnetHandler } from "@freeanima/capabilities-fridge-magnet";
-import { createFridgeBridge, registerTasksModule } from "@freeanima/capabilities-tasks";
+import { getAcpManager } from "@freeanima/capabilities-acp";
+import { registerClarifyHooks } from "@freeanima/capabilities-clarify";
+import { createAcpProgressDelivery } from "./acp-progress-delivery.ts";
 import type { Kernel } from "@freeanima/kernel";
 import { beforeLlmCall } from "@freeanima/kernel-hooks";
 import type { ConversationService } from "@freeanima/engine-conversation";
@@ -31,10 +30,9 @@ export function registerServiceIntegrations(opts: {
   acp.registerTools();
 }
 
-/** 注册冰箱贴 beforeLlmCall hook（Redis 须在组合根 initRedis 后可用） */
+/** 注册冰箱贴 beforeLlmCall hook（FridgeStore 须在组合根 registerFridgeStore 后可用） */
 export function registerFridgeMagnet(opts: { kernel: Kernel }): void {
   opts.kernel.hookRegistry.on(beforeLlmCall, createFridgeMagnetHandler());
-  registerTasksModule({ fridgeBridge: createFridgeBridge() });
 }
 
 /** 服务启动后启动 ACP 进度轮询 */
