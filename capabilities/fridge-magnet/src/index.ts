@@ -1,4 +1,10 @@
 export {
+  registerFridgeStore,
+  getFridgeStore,
+  resetFridgeStoreForTests,
+  type FridgeStorePort,
+} from "./fridge-store-port.ts";
+export {
   magnetRedisKey,
   randomBase62,
   clampTtl,

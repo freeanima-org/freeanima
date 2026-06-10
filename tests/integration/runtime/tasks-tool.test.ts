@@ -14,7 +14,7 @@ import {
   registerTasksModule,
   resetTasksModuleForTests,
 } from "@freeanima/capabilities-tasks";
-import { registerTaskStore, resetTaskStoreForTests } from "@freeanima/capabilities-tasks/task-port";
+import { resetTaskStoreForTests } from "@freeanima/capabilities-tasks/task-port";
 import { testConv } from "../../helpers/pg-test.ts";
 
 describePg("tasks tool", () => {
@@ -28,8 +28,8 @@ describePg("tasks tool", () => {
     summaryWrites.length = 0;
     resetTaskStoreForTests();
     resetTasksModuleForTests();
-    registerTaskStore(testConv().repos.tasks);
     registerTasksModule({
+      taskStore: testConv().repos.tasks,
       fridgeBridge: {
         setMagnet: async (module: string, id: string, value: string) => {
           summaryWrites.push({ module, id, value });

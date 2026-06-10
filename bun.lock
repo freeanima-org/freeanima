@@ -61,7 +61,6 @@
     "capabilities/fridge-magnet": {
       "name": "@freeanima/capabilities-fridge-magnet",
       "dependencies": {
-        "@freeanima/connectors-redis": "workspace:*",
         "@freeanima/engine-loop": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
         "@freeanima/kernel-hooks": "workspace:*",
@@ -240,6 +239,9 @@
     },
     "connectors/redis": {
       "name": "@freeanima/connectors-redis",
+      "dependencies": {
+        "@freeanima/capabilities-fridge-magnet": "workspace:*",
+      },
       "devDependencies": {
         "@types/bun": "catalog:",
       },

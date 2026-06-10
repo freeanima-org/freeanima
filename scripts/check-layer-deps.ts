@@ -66,7 +66,6 @@ function isAllowed(layer: string, pkg: string, _relPath: string): boolean {
       if (root.startsWith("engine-") || root === "engine") return true;
       if (root.startsWith("capabilities-") || root === "capabilities") return true;
       if (root.startsWith("life-memory")) return true;
-      if (root === "connectors-redis") return true;
       if (root === "service-config" || root === "service-logging") return true;
       return false;
     case "connectors":

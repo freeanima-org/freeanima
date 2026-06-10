@@ -13,12 +13,16 @@ import { TASK_PRIORITIES, TASK_STATUSES } from "@freeanima/engine-repos";
 
 import type { FridgeBridge } from "./types.ts";
 import { syncTasksSummary } from "./fridge-bridge.ts";
-import { getTaskStore } from "./task-port.ts";
+import { getTaskStore, registerTaskStore } from "./task-port.ts";
 
 let fridgeBridge: FridgeBridge | undefined;
 
-export function registerTasksModule(opts?: { fridgeBridge?: FridgeBridge }): void {
-  fridgeBridge = opts?.fridgeBridge;
+export function registerTasksModule(opts: {
+  taskStore: TaskStorePort;
+  fridgeBridge?: FridgeBridge;
+}): void {
+  registerTaskStore(opts.taskStore);
+  fridgeBridge = opts.fridgeBridge;
 }
 
 export function resetTasksModuleForTests(): void {
