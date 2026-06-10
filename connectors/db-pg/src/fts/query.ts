@@ -24,9 +24,4 @@ export async function buildFtsTsQuery(raw: string): Promise<string> {
   return buildCharModeTsQuery(trimmed);
 }
 
-/** @deprecated 使用 buildFtsTsQuery */
-export async function buildPgTsQuery(raw: string): Promise<string> {
-  return buildFtsTsQuery(raw);
-}
-
 export { buildCharModeTsQuery, buildJiebaModeTsQuery } from "./query-char.ts";

@@ -1,5 +1,4 @@
 export {
-  registerAllTools,
   registerServiceIntegrations,
   registerServiceMemoryBus,
   registerServiceTools,

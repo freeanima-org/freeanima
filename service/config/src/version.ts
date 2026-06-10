@@ -14,9 +14,6 @@ export function readAppVersion(repoRoot?: string): string {
   return pkg.version;
 }
 
-/** @deprecated 使用 readAppVersion */
-export const readRootVersion = readAppVersion;
-
 /** 写入 monorepo 根 package.json 的 version */
 export function writeRootVersion(version: string, repoRoot?: string): void {
   const root = repoRoot ?? getRepoRoot();

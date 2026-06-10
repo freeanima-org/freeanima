@@ -7,8 +7,6 @@ export type {
   ToolReturnKind,
   OpenAiToolEntry,
 } from "./registry.ts";
-/** @deprecated 使用 ToolSetRegistry */
-export type { ToolSetRegistry as ToolRegistry } from "./toolset.ts";
 export {
   isToolError,
   parseToolArgs,
@@ -28,7 +26,7 @@ export {
   resolveDefaultSessionTools,
 } from "./default-session-tools.ts";
 export type { DefaultSessionToolName } from "./default-session-tools.ts";
-export { expandToolNames, expandToolSets } from "./expand.ts";
+export { expandToolNames } from "./expand.ts";
 export type { ExpandToolNamesOptions } from "./expand.ts";
 export { formatToolsForToolMessage, listToolsCatalog, searchToolsCatalog } from "./catalog.ts";
 export type {

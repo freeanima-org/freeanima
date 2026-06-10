@@ -1,6 +1,1 @@
-export {
-  getRepoRoot,
-  readAppVersion,
-  readRootVersion,
-  writeRootVersion,
-} from "@freeanima/service-config";
+export { getRepoRoot, readAppVersion, writeRootVersion } from "@freeanima/service-config";

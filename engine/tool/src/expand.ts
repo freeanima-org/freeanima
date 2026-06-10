@@ -35,8 +35,3 @@ export function expandToolNames(
   }
   return out;
 }
-
-/** @deprecated 使用 expandToolNames */
-export function expandToolSets(items: string[], toolSetRegistry: ToolSetRegistry): string[] {
-  return expandToolNames(toolSetRegistry, items);
-}

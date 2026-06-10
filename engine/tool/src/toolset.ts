@@ -77,22 +77,12 @@ export class ToolSetRegistry {
     return this.sets.get(name.trim());
   }
 
-  /** @deprecated 使用 getToolSet */
-  get(name: string): ToolSet | undefined {
-    return this.getToolSet(name);
-  }
-
   listToolSets(): ToolSetView[] {
     return [...this.sets.values()].map((ts) => ({
       name: ts.name,
       description: ts.description,
       tools: ts.tools.map((t) => t.name),
     }));
-  }
-
-  /** @deprecated 使用 listToolSets */
-  list(): ToolSetView[] {
-    return this.listToolSets();
   }
 
   getTool(name: string): ToolDef | undefined {

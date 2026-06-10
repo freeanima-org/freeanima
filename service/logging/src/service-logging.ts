@@ -63,26 +63,6 @@ export function formatError(err: unknown): string {
   }
 }
 
-export type ErrorLogDetail = {
-  error?: unknown;
-  source?: string;
-  context?: Record<string, unknown>;
-};
-
-function detailToAttributes(detail?: ErrorLogDetail): LogAttributes {
-  const attributes: LogAttributes = { ...detail?.context };
-  if (detail?.error !== undefined) {
-    attributes.err = detail.error;
-  }
-  return attributes;
-}
-
-/** @deprecated 使用 logComponent(component).error() */
-export function logError(message: string, detail?: ErrorLogDetail): void {
-  const component = detail?.source ?? "app";
-  logComponent(component).error(message, detailToAttributes(detail));
-}
-
 /** 启动阶段标记：未捕获错误记录后退出进程（供 systemd 感知失败） */
 export function markStartupPhase(active: boolean): void {
   inStartupPhase = active;

@@ -4,7 +4,7 @@ import { createMemorySink } from "@freeanima/kernel-logging/memory";
 import type { MemorySink } from "@freeanima/kernel-logging/memory";
 import {
   logApiError,
-  logError,
+  logComponent,
   logStartupError,
   resetServiceLogger,
   setServiceLogger,
@@ -23,7 +23,7 @@ describe("error-log", () => {
   });
 
   it("writes errors to memory sink", () => {
-    logError("test message", { source: "test" });
+    logComponent("test").error("test message", { source: "test" });
     logApiError("POST", "/api/sessions/x/messages/stream", 503, "LLM failed", {
       session_id: "x",
     });

@@ -16,7 +16,6 @@ export { createPgRepositories } from "./factory.ts";
 export { messagesForCompress } from "./queries/messages-for-compress.ts";
 export {
   buildFtsTsQuery,
-  buildPgTsQuery,
   rebuildAllFtsSegments,
   resetJiebaForTest,
   registerEmbedTextFn,

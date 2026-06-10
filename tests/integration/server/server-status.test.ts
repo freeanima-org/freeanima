@@ -6,9 +6,9 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { getServiceContext, readRootVersion } from "@freeanima/service";
+import { getServiceContext, readAppVersion } from "@freeanima/service";
 
-const ROOT_VERSION = readRootVersion();
+const ROOT_VERSION = readAppVersion();
 
 describePg("server status API", () => {
   const prev = process.env.FREEANIMA_HOME;

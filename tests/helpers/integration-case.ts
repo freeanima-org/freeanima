@@ -5,7 +5,7 @@ import { createServiceKernel } from "@freeanima/service-bootstrap";
 import { AnimaService, initServiceContext } from "@freeanima/service";
 import { getAcpManager } from "@freeanima/capabilities-acp";
 import { MaskRegistry } from "../../capabilities/mask/src/registry.ts";
-import { registerAllTools, resetRegisterServiceToolsForTest } from "@freeanima/service";
+import { registerServiceTools, resetRegisterServiceToolsForTest } from "@freeanima/service";
 import {
   registerMemorySessionStore,
   registerSemanticMemoryStore,
@@ -40,7 +40,7 @@ export function wireIntegrationServiceContext(pg: PgTestContext): void {
   const conversation = createConversationService(pg.engine.repos, pg.engine.catalog.toolSets);
   const service = new AnimaService({ kernel, conversation });
   resetRegisterServiceToolsForTest();
-  registerAllTools({ toolSets: pg.engine.catalog.toolSets, skills: pg.engine.catalog.skills });
+  registerServiceTools({ toolSets: pg.engine.catalog.toolSets, skills: pg.engine.catalog.skills });
   getAcpManager().wireRegistries({
     toolSets: pg.engine.catalog.toolSets,
     skills: pg.engine.catalog.skills,
