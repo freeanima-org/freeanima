@@ -1,0 +1,107 @@
+export function stripHeadlineTags(text: string): string {
+  return text.replace(/<b>/gi, "").replace(/<\/b>/gi, "");
+}
+
+export type TextSearchSnippetOpts = {
+  maxLen?: number;
+  contextChars?: number;
+};
+
+/** 从 query 提取可用于匹配的词条（剥离 AND/OR/NOT 与引号短语） */
+export function extractSearchTerms(query: string): string[] {
+  const q = query.trim();
+  if (!q) return [];
+
+  const terms: string[] = [];
+  const quoted = [...q.matchAll(/"([^"]+)"/g)];
+  for (const m of quoted) {
+    const t = m[1]?.trim();
+    if (t) terms.push(t);
+  }
+
+  const withoutQuotes = q.replace(/"[^"]*"/g, " ");
+  const withoutOps = withoutQuotes.replace(/\b(AND|OR|NOT)\b/gi, " ");
+  for (const part of withoutOps.split(/\s+/)) {
+    const t = part.trim();
+    if (t) terms.push(t);
+  }
+
+  return terms;
+}
+
+/** 围绕 query 关键词在 content 中提取短片段（trgm/vector 等非 headline 命中兜底） */
+export function buildTextSearchSnippet(
+  query: string,
+  content: string,
+  opts?: TextSearchSnippetOpts,
+): string {
+  const maxLen = opts?.maxLen ?? 200;
+  const contextChars = opts?.contextChars ?? 60;
+  const trimmed = content.trim();
+  if (!trimmed) return "";
+
+  const terms = extractSearchTerms(query);
+  if (terms.length === 0) {
+    return trimmed.length <= maxLen ? trimmed : `${trimmed.slice(0, maxLen)}…`;
+  }
+
+  const lowerContent = trimmed.toLowerCase();
+  let matchIndex = -1;
+  let matchedTerm = "";
+  for (const term of terms) {
+    const idx = lowerContent.indexOf(term.toLowerCase());
+    if (idx !== -1) {
+      matchIndex = idx;
+      matchedTerm = term;
+      break;
+    }
+  }
+
+  if (matchIndex === -1) {
+    return trimmed.length <= maxLen ? trimmed : `${trimmed.slice(0, maxLen)}…`;
+  }
+
+  const start = Math.max(0, matchIndex - contextChars);
+  const end = Math.min(trimmed.length, matchIndex + matchedTerm.length + contextChars);
+  let snippet = trimmed.slice(start, end);
+  if (start > 0) snippet = `…${snippet}`;
+  if (end < trimmed.length) snippet = `${snippet}…`;
+
+  if (snippet.length > maxLen) {
+    return `${snippet.slice(0, maxLen)}…`;
+  }
+  return snippet;
+}
+
+export type SessionMessageSearchFields = {
+  session_id: string;
+  message_id: string;
+  role: string;
+  timestamp: string;
+  content: string;
+  rank: number;
+};
+
+export type SessionMessageSearchHit = {
+  session_id: string;
+  message_id: string;
+  role: string;
+  timestamp: string;
+  snippet: string;
+  rank: number;
+};
+
+/** 会话消息 FTS 命中 → 对外搜索 hit（snippet，不含全文 content） */
+export function formatSessionMessageSearchHit(
+  query: string,
+  row: SessionMessageSearchFields,
+): SessionMessageSearchHit {
+  return {
+    session_id: row.session_id,
+    message_id: row.message_id,
+    role: row.role,
+    timestamp: row.timestamp,
+    rank: row.rank,
+    snippet: buildTextSearchSnippet(query, row.content),
+  };
+}

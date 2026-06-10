@@ -3,8 +3,12 @@ import type { SemanticMemoryStorePort, SessionStorePort } from "@freeanima/engin
 import {
   registerMemoryTools,
   searchSemanticMemory,
+  registerAutobiographicalMemoryStore,
+  registerLimbicMemoryStore,
   registerMemorySessionStore,
   registerSemanticMemoryStore,
+  resetAutobiographicalMemoryStoreForTests,
+  resetLimbicMemoryStoreForTests,
   resetMemorySessionStoreForTests,
   resetSemanticMemoryStoreForTests,
 } from "@freeanima/life-memory";
@@ -47,6 +51,15 @@ function mockSessionStore(overrides: Partial<SessionStorePort>): SessionStorePor
     async countMessages() {
       return 0;
     },
+    async findMessagePos() {
+      return null;
+    },
+    async listMessageRowsPage() {
+      return [];
+    },
+    async listMessageRowsFromPos() {
+      return [];
+    },
     async lastMessageTimestamp() {
       return null;
     },
@@ -83,6 +96,9 @@ function mockSessionStore(overrides: Partial<SessionStorePort>): SessionStorePor
     async listSessionIdsUpdatedBetween() {
       return [];
     },
+    async getEarliestSessionDay() {
+      return null;
+    },
   };
   return { ...base, ...overrides };
 }
@@ -96,6 +112,7 @@ type MockRow = {
   observed_at: string | null;
   occurred_at: string | null;
   status: string;
+  reference_count: number;
   created: string;
   updated: string;
 };
@@ -118,6 +135,7 @@ function createMockSemanticStore(): SemanticMemoryStorePort {
         observed_at: row.observed_at ?? now,
         occurred_at: row.occurred_at ?? null,
         status: row.status ?? "active",
+        reference_count: 0,
         created: row.created ?? now,
         updated: row.updated ?? now,
       });
@@ -219,7 +237,55 @@ describe("memory search", () => {
     toolSets = new ToolSetRegistry();
     resetMemorySessionStoreForTests();
     resetSemanticMemoryStoreForTests();
+    resetLimbicMemoryStoreForTests();
+    resetAutobiographicalMemoryStoreForTests();
     registerSemanticMemoryStore(createMockSemanticStore());
+    registerLimbicMemoryStore({
+      async create() {
+        return "lm-1";
+      },
+      async get() {
+        return null;
+      },
+      async listBySession() {
+        return [];
+      },
+      async list() {
+        return [];
+      },
+      async count() {
+        return 0;
+      },
+    });
+    registerAutobiographicalMemoryStore({
+      async create() {
+        return "ab-1";
+      },
+      async get() {
+        return null;
+      },
+      async deprecate() {
+        return false;
+      },
+      async count() {
+        return 0;
+      },
+      async listActive() {
+        return [];
+      },
+      async listCreatedSince() {
+        return [];
+      },
+      async listBySourceSemanticMemory() {
+        return [];
+      },
+      async listBySourceSessions() {
+        return [];
+      },
+      async list() {
+        return [];
+      },
+    });
     registerToolSessionResolver(() => "20260527_160000_test");
     registerMemoryTools(toolSets);
   });
@@ -227,6 +293,8 @@ describe("memory search", () => {
   afterEach(() => {
     resetMemorySessionStoreForTests();
     resetSemanticMemoryStoreForTests();
+    resetLimbicMemoryStoreForTests();
+    resetAutobiographicalMemoryStoreForTests();
   });
 
   it("searchSemanticMemory finds semantic memory via port", async () => {
@@ -245,7 +313,7 @@ describe("memory search", () => {
     await runWithToolContext(
       sid,
       async () => {
-        const out = await toolSets.getTool("remember")!.handler({
+        const out = await toolSets.getTool("memory_remember")!.handler({
           content: "增量索引探针 beta",
           type: "world",
         });
@@ -257,14 +325,14 @@ describe("memory search", () => {
     expect(results.length).toBe(1);
   });
 
-  it("update_semantic_memory clears source_sessions with empty array", async () => {
+  it("memory_semantic_update clears source_sessions with empty array", async () => {
     const store = createMockSemanticStore();
     registerSemanticMemoryStore(store);
     const id = await store.create({
       content: "带来源的 memory",
       source_sessions: ["s1", "s2"],
     });
-    const out = await toolSets.getTool("update_semantic_memory")!.handler({
+    const out = await toolSets.getTool("memory_semantic_update")!.handler({
       id,
       source_sessions: [],
     });
@@ -274,7 +342,7 @@ describe("memory search", () => {
     expect(row?.source_sessions).toEqual([]);
   });
 
-  it("recall returns semantic memory and dialogue hits", async () => {
+  it("memory_recall returns unified results with memory_type", async () => {
     const store = createMockSemanticStore();
     registerSemanticMemoryStore(store);
     await store.create({ content: "逸灵风记忆管道使用 compression 压缩" });
@@ -285,6 +353,7 @@ describe("memory search", () => {
         async searchMessagesFts() {
           return [
             {
+              message_id: "msg-001",
               content: "讨论 compression 算法",
               role: "user",
               session_id: sid,
@@ -296,14 +365,15 @@ describe("memory search", () => {
       }),
     );
 
-    const out = await toolSets.getTool("recall")!.handler({ query: "compression" });
+    const out = await toolSets.getTool("memory_recall")!.handler({ query: "compression" });
     const parsed = JSON.parse(out) as {
-      semantic_memory: { content: string }[];
-      dialogue: { content: string }[];
+      results: Array<{ memory_type: string; snippet?: string; content?: string }>;
     };
-    expect(parsed.semantic_memory.length).toBeGreaterThan(0);
-    expect(parsed.dialogue.length).toBeGreaterThan(0);
-    expect(parsed.semantic_memory.some((r) => r.content.includes("compression"))).toBe(true);
-    expect(parsed.dialogue.some((r) => r.content.includes("compression"))).toBe(true);
+    expect(parsed.results.length).toBeGreaterThan(0);
+    const semantic = parsed.results.find((r) => r.memory_type === "semantic");
+    const session = parsed.results.find((r) => r.memory_type === "session");
+    expect(semantic?.content?.includes("compression")).toBe(true);
+    expect(session?.snippet?.includes("compression")).toBe(true);
+    expect(session && "content" in session).toBe(false);
   });
 });

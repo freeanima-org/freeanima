@@ -59,7 +59,7 @@ describePg("tasks tool", () => {
     await runWithToolContext(
       sid,
       async () => {
-        const tool = toolSets.getTool("create_task")!;
+        const tool = toolSets.getTool("tasks_create")!;
         output = await Promise.resolve(
           tool.handler({
             title: "找天空聊UI",
@@ -115,7 +115,7 @@ describePg("tasks tool", () => {
     await runWithToolContext(
       sid,
       async () => {
-        const tool = toolSets.getTool("list_tasks")!;
+        const tool = toolSets.getTool("tasks_list")!;
         output = await Promise.resolve(tool.handler({}));
       },
       { repos, tools: toolSets },
@@ -130,7 +130,7 @@ describePg("tasks tool", () => {
     expect(parsed.tasks[0]?.title).toBe("待办任务");
   });
 
-  it("complete_task 更新状态", async () => {
+  it("tasks_complete 更新状态", async () => {
     const cfg = loadConfig();
     const sid = "sess-task-complete";
     const repos = testConv().repos;
@@ -145,7 +145,7 @@ describePg("tasks tool", () => {
     await runWithToolContext(
       sid,
       async () => {
-        const tool = toolSets.getTool("complete_task")!;
+        const tool = toolSets.getTool("tasks_complete")!;
         output = await Promise.resolve(tool.handler({ id: created.id }));
       },
       { repos, tools: toolSets },

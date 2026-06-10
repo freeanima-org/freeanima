@@ -58,7 +58,6 @@ export const memorySearchBodySchema = z
   .object({
     query: z.string(),
     limit: z.number().int().positive().optional(),
-    session_limit: z.number().int().positive().optional(),
     session: z.string().optional(),
   })
   .transform((b) => ({ ...b, query: b.query.trim() }))
@@ -207,3 +206,40 @@ export const promptDebugResponseSchema = z.object({
 });
 
 export type PromptDebugResponse = z.infer<typeof promptDebugResponseSchema>;
+
+const jsonSchemaObjectSchema = z.record(z.string(), z.unknown());
+
+const openAiToolEntrySchema = z.object({
+  type: z.literal("function"),
+  function: z.object({
+    name: z.string(),
+    description: z.string(),
+    parameters: jsonSchemaObjectSchema,
+  }),
+});
+
+const toolsStatusToolItemSchema = z.object({
+  name: z.string(),
+  description: z.string(),
+  toolset: z.string().optional(),
+  parameters: jsonSchemaObjectSchema,
+  requires_env: z.array(z.string()).optional(),
+  definition: openAiToolEntrySchema,
+  return_kind: z.enum(["json", "text"]),
+  return_schema: jsonSchemaObjectSchema.optional(),
+});
+
+export const toolsStatusResponseSchema = z.object({
+  default_tools: z.array(z.string()),
+  tools: z.array(toolsStatusToolItemSchema),
+  tool_sets: z.array(
+    z.object({
+      name: z.string(),
+      description: z.string(),
+      tools: z.array(z.string()),
+    }),
+  ),
+});
+
+export type ToolsStatusResponse = z.infer<typeof toolsStatusResponseSchema>;
+export type ToolsStatusToolItem = z.infer<typeof toolsStatusToolItemSchema>;

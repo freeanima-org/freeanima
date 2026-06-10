@@ -13,13 +13,23 @@ export type SessionSummaryRow = {
   platform: string;
 };
 
-/** PG messages FTS 命中行（recall / memorySearch dialogue 段） */
+/** PG messages FTS 命中行（memory_recall / sessions_search；对外映射 snippet） */
 export type MessageFtsHit = {
+  message_id: string;
   content: string;
   role: string;
   session_id: string;
   timestamp: string;
   rank: number;
+};
+
+/** LLM 工具可读的消息行视图（含 PG 主键） */
+export type MessageRowView = {
+  message_id: string;
+  pos: number;
+  role: string;
+  content: string;
+  timestamp: string;
 };
 
 /** 对话 Session + Message 持久化端口（Slice A） */
@@ -48,6 +58,16 @@ export interface SessionStorePort {
     limit: number,
   ): Promise<ConversationMessage[]>;
   countMessages(sessionId: string): Promise<number>;
+  /** 按 PG 主键查会话内 pos（scroll 锚点） */
+  findMessagePos(sessionId: string, messageId: string): Promise<number | null>;
+  /** 按 pos 顺序分页，返回含 message_id 的 LLM 可读行 */
+  listMessageRowsPage(sessionId: string, offset: number, limit: number): Promise<MessageRowView[]>;
+  /** 从指定 pos 起向后读取 limit 条（message_id 锚点 scroll） */
+  listMessageRowsFromPos(
+    sessionId: string,
+    fromPos: number,
+    limit: number,
+  ): Promise<MessageRowView[]>;
   lastMessageTimestamp(sessionId: string): Promise<string | null>;
   truncateMessagesAfter(sessionId: string, keepThroughPos: number): Promise<void>;
   shiftMessagePositions(sessionId: string, afterPos: number, delta: number): Promise<void>;
@@ -71,4 +91,6 @@ export interface SessionStorePort {
   countSearchableMessages(): Promise<number>;
   /** sessions.updated_at 落在 [fromIso, toIso) 内的 session id（不含 debug） */
   listSessionIdsUpdatedBetween(fromIso: string, toIso: string): Promise<string[]>;
+  /** 最早非 debug session 的 CST 自然日 YYYY-MM-DD；无 session 时 null */
+  getEarliestSessionDay(): Promise<string | null>;
 }

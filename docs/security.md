@@ -42,12 +42,12 @@ title: Security
 | 能力               | 风险                                                                                  |
 | ------------------ | ------------------------------------------------------------------------------------- |
 | `terminal`         | 默认 `shell: true`，可执行任意 shell 命令                                             |
-| `read_file`        | 部分路径 deny（`.ssh` 私钥、`/etc/passwd` 等）；**未**全面 deny `/etc/`               |
-| `write_file`       | deny list + 写保护路径                                                                |
+| `file_read_file`   | 部分路径 deny（`.ssh` 私钥、`/etc/passwd` 等）；**未**全面 deny `/etc/`               |
+| `file_write_file`  | deny list + 写保护路径                                                                |
 | MCP 工具           | 能力完全由外部 Server 决定；stdio 默认，SSE 认证方案未完整定义                        |
 | 能力面罩（Mask）   | Session 级工具白名单；`deny` 覆盖 `allow`；LLM 不可见策略细节；见 `capabilities/mask` |
 | ACP（Cursor）      | 默认 **自动批准** 所有 `session/request_permission`（`allow-once`）                   |
-| `list_credentials` | 仅返回 pass 路径元数据，不含值                                                        |
+| `credentials_list` | 仅返回 pass 路径元数据，不含值                                                        |
 
 ## 已覆盖措施
 
@@ -56,7 +56,7 @@ title: Security
 | 同域 RPC       | TanStack Start server functions 默认同源，无需 CORS 白名单                                                       |
 | 配置密钥脱敏   | `AnimaService.getConfig()` → `sanitizeConfigForApi()`（`api_key`、`database.url`、嵌套 `pushkey`、`mcp env` 等） |
 | MCP 配置脱敏   | `sanitizeMcpConfig`：`env` 仅暴露 `env_keys`                                                                     |
-| 写路径安全     | `write_file` deny list（部分 `/etc/*`、`.ssh` 私钥等）                                                           |
+| 写路径安全     | `file_write_file` deny list（部分 `/etc/*`、`.ssh` 私钥等）                                                      |
 | Slash 命令     | 白名单路由                                                                                                       |
 | MCP 默认 stdio | 减少端口暴露                                                                                                     |
 | 凭证隔离       | LLM 只见 pass 路径，不见值                                                                                       |
@@ -67,15 +67,15 @@ title: Security
 
 以下在代码或文档中规划，**部署者请勿假设已实现**：
 
-| 优先级 | 项                                             | 现状     |
-| ------ | ---------------------------------------------- | -------- |
-| P0     | read_file 全面 deny（`/etc/` 等）              | 部分实现 |
-| P0     | `terminal` / `execute_code` 默认 `shell=False` | 未实现   |
-| P1     | Runtime Unix socket `chmod 600` + 握手 token   | 未实现   |
-| P1     | `FREEANIMA_WRITE_SAFE_ROOT` / `READ_SAFE_ROOT` | 未实现   |
-| P2     | HTTP API 鉴权                                  | 无       |
-| P3     | IPC / LLM 速率限制                             | 无       |
-| P3     | Session 磁盘加密                               | 无       |
+| 优先级 | 项                                                 | 现状     |
+| ------ | -------------------------------------------------- | -------- |
+| P0     | file_read_file 全面 deny（`/etc/` 等）             | 部分实现 |
+| P0     | `terminal_run` / `code_execute` 默认 `shell=False` | 未实现   |
+| P1     | Runtime Unix socket `chmod 600` + 握手 token       | 未实现   |
+| P1     | `FREEANIMA_WRITE_SAFE_ROOT` / `READ_SAFE_ROOT`     | 未实现   |
+| P2     | HTTP API 鉴权                                      | 无       |
+| P3     | IPC / LLM 速率限制                                 | 无       |
+| P3     | Session 磁盘加密                                   | 无       |
 
 ## 威胁源
 
@@ -89,24 +89,24 @@ title: Security
 
 ## 安全矩阵
 
-| 模块             | A 外网              | B LLM 注入                                                 | C Agent 过失     | D 依赖链        | E 数据           |
-| ---------------- | ------------------- | ---------------------------------------------------------- | ---------------- | --------------- | ---------------- |
-| **Runtime**      | 默认 127.0.0.1 bind | MaxTurnsExceeded                                           | 缺口：速率限制   | llm client 漏洞 | PG 无加密        |
-| **Gateway**      | Token 在 pass       | 恶意消息                                                   | 错误回复敏感信息 | SDK 漏洞        | —                |
-| **CLI / Tools**  | 本地 shell 被攻陷   | read_file 部分 deny（**P0 扩展中**）；shell=True（**P0**） | rm -rf 等        | —               | 日志可能含对话   |
-| **HTTP / WebUI** | 无鉴权；CORS 白名单 | BFF 不直连 LLM 参数                                        | config 展示      | Vue/axios       | SSE 明文         |
-| **MCP / ACP**    | SSE 认证未定义      | 恶意参数                                                   | 错误委托         | Server 被攻陷   | 上下文含敏感数据 |
+| 模块             | A 外网              | B LLM 注入                                                      | C Agent 过失     | D 依赖链        | E 数据           |
+| ---------------- | ------------------- | --------------------------------------------------------------- | ---------------- | --------------- | ---------------- |
+| **Runtime**      | 默认 127.0.0.1 bind | MaxTurnsExceeded                                                | 缺口：速率限制   | llm client 漏洞 | PG 无加密        |
+| **Gateway**      | Token 在 pass       | 恶意消息                                                        | 错误回复敏感信息 | SDK 漏洞        | —                |
+| **CLI / Tools**  | 本地 shell 被攻陷   | file_read_file 部分 deny（**P0 扩展中**）；shell=True（**P0**） | rm -rf 等        | —               | 日志可能含对话   |
+| **HTTP / WebUI** | 无鉴权；CORS 白名单 | BFF 不直连 LLM 参数                                             | config 展示      | Vue/axios       | SSE 明文         |
+| **MCP / ACP**    | SSE 认证未定义      | 恶意参数                                                        | 错误委托         | Server 被攻陷   | 上下文含敏感数据 |
 
 ## 待评审方案
 
-### P0 — read_file 路径安全
+### P0 — file_read_file 路径安全
 
 - 读侧 deny：`/etc/`、`/proc/`、`~/.ssh/` 等
 - 可选 `FREEANIMA_READ_SAFE_ROOT`
 
 ### P0 — shell 执行策略
 
-- `terminal()` / `execute_code` 默认 `shell=False`
+- `terminal_run()` / `code_execute` 默认 `shell=False`
 - `FREEANIMA_ALLOW_SHELL=true` 才允许 shell 管道
 
 ### P1 — Runtime / Gateway

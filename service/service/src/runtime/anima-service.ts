@@ -21,6 +21,7 @@ import * as memory from "./service-memory.ts";
 import * as selfLayer from "./service-self.ts";
 import * as fts from "./service-fts.ts";
 import * as promptDebug from "./service-prompt-debug.ts";
+import * as sleep from "./service-sleep.ts";
 import * as messaging from "./service-messaging.ts";
 import { PARLOR_PLATFORM } from "./platforms.ts";
 
@@ -229,7 +230,7 @@ export class AnimaService implements StreamTurnHost {
     return messaging.sendMessageStream(this.messagingDeps(), sessionId, message, platform);
   }
 
-  memorySearch(args: { query: string; limit?: number; session_limit?: number; session?: string }) {
+  memorySearch(args: { query: string; limit?: number; session?: string }) {
     return memory.memorySearch(args);
   }
 
@@ -277,10 +278,7 @@ export class AnimaService implements StreamTurnHost {
     return status.getConfig();
   }
 
-  listToolsApi(): {
-    tools: { name: string; description: string; toolset?: string }[];
-    tool_sets: { name: string; description: string; tools: string[] }[];
-  } {
+  listToolsApi() {
     return status.listToolsApi();
   }
 
@@ -298,6 +296,22 @@ export class AnimaService implements StreamTurnHost {
 
   runCronJobNow(jobId: string): Promise<{ job: CronJobData; message: string } | null> {
     return status.runCronJobNow(jobId);
+  }
+
+  getSleepSummary() {
+    return sleep.getSleepSummary();
+  }
+
+  listSleepRuns(opts?: Parameters<typeof sleep.listSleepRuns>[0]) {
+    return sleep.listSleepRuns(opts);
+  }
+
+  listCronLogs(opts?: Parameters<typeof sleep.listCronLogs>[0]) {
+    return sleep.listCronLogs(opts);
+  }
+
+  getDeepSleepRounds(day: string) {
+    return sleep.getDeepSleepRounds(day);
   }
 
   ensureBuiltinCronJobs(): Promise<void> {

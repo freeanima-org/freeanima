@@ -24,7 +24,7 @@ export function registerSkillsTools(toolSets: ToolSetRegistry, skills: SkillRegi
 
   toolSets.registerToolSet("skills", "技能注册与管理", [
     {
-      name: "create_skill",
+      name: "skills_create",
       description: "创建新技能（Markdown 文件，含 YAML frontmatter），写入 ~/.anima/skills 并注册",
       parameters: {
         type: "object",
@@ -44,9 +44,9 @@ export function registerSkillsTools(toolSets: ToolSetRegistry, skills: SkillRegi
         ),
     },
     {
-      name: "load_skill",
+      name: "skills_load",
       description:
-        "加载技能正文到当前对话上下文（通过 tool 消息返回，不写入 system prompt）。使用前可用 list_skills / search_skills 发现技能。",
+        "加载技能正文到当前对话上下文（通过 tool 消息返回，不写入 system prompt）。使用前可用 skills_list / skills_search 发现技能。",
       parameters: {
         type: "object",
         properties: { name: { type: "string", description: "已注册的技能名称" } },
@@ -55,13 +55,13 @@ export function registerSkillsTools(toolSets: ToolSetRegistry, skills: SkillRegi
       handler: (args) => loadSkillIntoContext(skills, String(args.name ?? "")),
     },
     {
-      name: "list_skills",
+      name: "skills_list",
       description: "列出技能注册中心中所有已注册技能（名称、描述、来源、目录）",
       parameters: { type: "object", properties: {} },
       handler: () => listSkillsForTool(skills),
     },
     {
-      name: "search_skills",
+      name: "skills_search",
       description: "在技能注册中心按名称、描述或来源搜索技能",
       parameters: {
         type: "object",
@@ -73,7 +73,7 @@ export function registerSkillsTools(toolSets: ToolSetRegistry, skills: SkillRegi
       handler: (args) => searchSkillsForTool(skills, String(args.query ?? "")),
     },
     {
-      name: "view_skill",
+      name: "skills_view",
       description: "查看技能完整 Markdown 文件（含 frontmatter）",
       parameters: {
         type: "object",
@@ -83,7 +83,7 @@ export function registerSkillsTools(toolSets: ToolSetRegistry, skills: SkillRegi
       handler: (args) => viewUserSkill(skills, String(args.name ?? "")),
     },
     {
-      name: "delete_skill",
+      name: "skills_delete",
       description: "删除用户自建技能（~/.anima/skills）；内置技能不可删",
       parameters: {
         type: "object",

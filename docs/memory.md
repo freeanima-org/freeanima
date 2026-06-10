@@ -90,7 +90,7 @@ LLM 进行单次 Token 推理时的内部激活状态。随推理结束瞬间消
 **情感锚点** — `limbic_memory`（✅）
 
 - PG 表 `limbic_memory`：`session_mood` / `turning_point` / `spike` 等 kind
-- 浅睡 Phase 2 经 `create_limbic_memory` 写入；**不注入** system prompt
+- 浅睡 Stage 2 经 `memory_limbic_create` 写入；**不注入** system prompt
 - 跨 session 情感印记另用 `semantic_memory`（type=`imprint`）
 
 **生命周期：只追加，不更新。** 忠实保护数字生命成长的历史连续性。
@@ -161,11 +161,11 @@ LLM 进行单次 Token 推理时的内部激活状态。随推理结束瞬间消
 
 ## 三、存储实现（当前状态）
 
-| 存储                                  | 对应记忆         | 实现                                                                 |
-| ------------------------------------- | ---------------- | -------------------------------------------------------------------- |
-| PostgreSQL（`sessions` + `messages`） | 对话记录（情景） | 主存；`messages.content_fts` GIN 全文索引（simple）                  |
-| PostgreSQL `semantic_memory`          | 语义记忆         | `content_fts` GIN；`pinned` + `updated` 驱动常驻记忆；见 database.md |
-| PostgreSQL `limbic_memory`            | 感性记忆         | 浅睡 Phase 2 写入；不经 `recall`                                     |
+| 存储                                  | 对应记忆         | 实现                                                                         |
+| ------------------------------------- | ---------------- | ---------------------------------------------------------------------------- |
+| PostgreSQL（`sessions` + `messages`） | 对话记录（情景） | 主存；`messages.content_fts` GIN 全文索引（simple）                          |
+| PostgreSQL `semantic_memory`          | 语义记忆         | `content_fts` GIN；`pinned` + `reference_count` 驱动常驻记忆；见 database.md |
+| PostgreSQL `limbic_memory`            | 感性记忆         | 浅睡 Stage 2 写入；经 `memory_recall`（`memory_type=limbic`）检索            |
 
 增量提取：浅睡 cron（02:00，见 [`sleep.md`](sleep.md)）。DB 迁移：`anima service` 启动时 `runMigrations`。
 
@@ -194,16 +194,15 @@ LLM 进行单次 Token 推理时的内部激活状态。随推理结束瞬间消
 
 工作记忆向长期记忆转化、以及长期记忆内部自我进化，由睡眠机制完成。详见 [`sleep.md`](sleep.md)。
 
-- **浅睡（✅）**：cron 02:00；Phase 1 语义提取 + Phase 2 情感（`limbic_memory`）
+- **浅睡（✅）**：cron 02:00；Stage 1 语义 + Stage 2 感性（`limbic_memory`）+ Stage 3 自传叙事与 `autobiography_summary` 刷新
 - **深睡（✅）**：cron 03:00；矛盾/过期、拆分、合并三轮 LLM 维护
-- **自传 cron（✅）**：04:00；叙事加工与 `autobiography_summary` 刷新
 
 扩展维护（观点置信度批量回顾、observation 刷新、sentiment 汇总等）见 [Issue #45](https://github.com/freeanima-org/freeanima/issues/45)。
 
 **深睡转化方向（当前实现范围）：**
 
 ```
-情景 → 语义：浅睡从对话提取 → semantic_memory
+情景 → 语义 / 感性 / 自传：浅睡三阶段从对话提取
 语义维护：深睡三轮（矛盾/过期、拆分、合并）
 ```
 
@@ -213,18 +212,22 @@ LLM 进行单次 Token 推理时的内部激活状态。随推理结束瞬间消
 
 ## 五、检索策略
 
-### ✅ 已实现（`recall` 工具）
+### ✅ 已实现（`memory_recall` 工具）
 
-`recall(query)` 并行搜索并返回 **JSON**：
+`memory_recall(query)` 四源并行召回（语义 / 会话消息 / 感性 / 自传体），**RRF 跨类型重排**后返回统一 `results[]`（默认 Top 10），以 `memory_type` 区分：
 
-| 字段              | 存储                          | 说明                                       |
-| ----------------- | ----------------------------- | ------------------------------------------ |
-| `semantic_memory` | `semantic_memory.content_fts` | 默认 limit 5                               |
-| `dialogue`        | `messages.content_fts`        | 默认 session_limit 10；可选 `session` 限定 |
+| `memory_type`      | 存储                          | 说明                                                |
+| ------------------ | ----------------------------- | --------------------------------------------------- |
+| `semantic`         | `semantic_memory` hybrid 检索 | 返回完整 `content`                                  |
+| `session`          | `messages` hybrid 检索        | 返回匹配 `snippet`；可选 `session` 限定会话消息范围 |
+| `limbic`           | `limbic_memory` ILIKE         | 感性记忆正文                                        |
+| `autobiographical` | `autobiographical_memory`     | `title` + `content` snippet                         |
 
-常驻记忆由 system prompt 注入（`pinned` 优先 + `updated` 降序，top 20），不经 `recall`。
+`sessions_search` 会话命中同样返回 **snippet**（非整条消息）；全文上下文用 `sessions_scroll`。
 
-按 type 加权、limbic 纳入 recall、多策略融合等扩展见 [Issue #42](https://github.com/freeanima-org/freeanima/issues/42)、[#51](https://github.com/freeanima-org/freeanima/issues/51)。
+常驻记忆由 system prompt 注入：**pinned 全量** + **reference_count top N**（默认 N=20）；每条以 `[记忆 #f-000001-abcd] 内容` 格式携带 ID，LLM 引用时在回复末尾标注相同标记。引用计数由消息正文解析写入 `memory_references`，cron `builtin-memory-reference-sync` 从 messages 全量校准。
+
+按 type 加权、limbic 纳入 memory_recall、多策略融合等扩展见 [Issue #42](https://github.com/freeanima-org/freeanima/issues/42)、[#51](https://github.com/freeanima-org/freeanima/issues/51)。
 
 ---
 

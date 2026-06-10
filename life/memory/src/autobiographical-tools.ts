@@ -22,7 +22,7 @@ function parseSourceSemanticMemory(args: Record<string, unknown>): string[] | un
 
 export const autobiographicalMemoryToolDefs: ToolDef[] = [
   {
-    name: "create_autobiographical_memory",
+    name: "memory_autobiographical_create",
     description:
       "创建一条自传体叙事（只追加，正文写入后不可修改）。需提供 title 与 content；可选 significance/period/source_semantic_memory/source_sessions。",
     parameters: {
@@ -86,7 +86,7 @@ export const autobiographicalMemoryToolDefs: ToolDef[] = [
     },
   },
   {
-    name: "deprecate_autobiographical_memory",
+    name: "memory_autobiographical_deprecate",
     description: "软废弃一条自传体叙事（正文不变，status=deprecated）。",
     parameters: {
       type: "object",

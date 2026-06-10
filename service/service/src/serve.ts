@@ -61,7 +61,6 @@ import { initMaskSystem } from "./runtime/mask-wire.ts";
 import { MaskRegistry } from "@freeanima/capabilities-mask";
 import { runLightSleep } from "@freeanima/life-memory/light-sleep/run";
 import { runDeepSleep } from "@freeanima/life-memory/deep-sleep/run";
-import { runSelfAutobiographyWithLog } from "@freeanima/life-memory/autobiography/run";
 import {
   invalidateSelfLayerPromptCache,
   loadSelfLayerPrompt,
@@ -70,6 +69,7 @@ import {
 import {
   registerAutobiographicalMemoryStore,
   registerLimbicMemoryStore,
+  syncSemanticMemoryReferenceCounts,
 } from "@freeanima/life-memory";
 import {
   discoverPlatforms,
@@ -275,20 +275,6 @@ export async function serve(
         const selfContent = await loadSelfLayerPrompt();
         const result = await runLightSleep({
           sessionStore: engine!.repos.session,
-          selfContent,
-        });
-        return JSON.stringify(result);
-      });
-
-      registerCronBuiltinHandler("builtin-deep-sleep", async () => {
-        const selfContent = await loadSelfLayerPrompt();
-        const result = await runDeepSleep({ selfContent });
-        return JSON.stringify(result);
-      });
-
-      registerCronBuiltinHandler("builtin-self-autobiography", async () => {
-        const selfContent = await loadSelfLayerPrompt();
-        const result = await runSelfAutobiographyWithLog({
           semanticStore: engine!.repos.semanticMemory,
           autoStore: engine!.repos.autobiographicalMemory,
           selfStore: engine!.repos.selfLayer,
@@ -299,7 +285,18 @@ export async function serve(
         return JSON.stringify(result);
       });
 
-      await initCronModule({ store: repos.cron });
+      registerCronBuiltinHandler("builtin-deep-sleep", async () => {
+        const selfContent = await loadSelfLayerPrompt();
+        const result = await runDeepSleep({ selfContent });
+        return JSON.stringify(result);
+      });
+
+      registerCronBuiltinHandler("builtin-memory-reference-sync", async () => {
+        const result = await syncSemanticMemoryReferenceCounts(engine!.repos.memoryReference);
+        return JSON.stringify(result);
+      });
+
+      await initCronModule({ store: repos.cron, logStore: repos.cronLog });
       cronInitialized = true;
       startupLog("Cron 调度器已启动 (Bun.cron)");
     } else {

@@ -188,6 +188,44 @@ export async function runCronJob(id: string) {
   return unwrap(apiClient.api.status["cron-jobs"]({ id }).run.post());
 }
 
+export async function getSleepSummary() {
+  return unwrap(apiClient.api.sleep.summary.get());
+}
+
+export async function listSleepRuns(opts?: { limit?: number; offset?: number; ok?: boolean }) {
+  return unwrap(
+    apiClient.api.sleep.runs.get({
+      query: {
+        limit: opts?.limit,
+        offset: opts?.offset,
+        ok: opts?.ok,
+      },
+    }),
+  );
+}
+
+export async function getDeepSleepRounds(day: string) {
+  return unwrap(apiClient.api.sleep["deep-sleep"]({ day }).rounds.get());
+}
+
+export async function listCronLogs(opts?: {
+  job_id?: string;
+  limit?: number;
+  offset?: number;
+  ok?: boolean;
+}) {
+  return unwrap(
+    apiClient.api["cron-logs"].get({
+      query: {
+        job_id: opts?.job_id,
+        limit: opts?.limit,
+        offset: opts?.offset,
+        ok: opts?.ok,
+      },
+    }),
+  );
+}
+
 export async function restartService() {
   return unwrap(apiClient.api.status.restart.post());
 }
@@ -222,12 +260,7 @@ export async function markEmailRead(accountId: string, uid: number) {
   );
 }
 
-export async function searchMemory(input: {
-  query: string;
-  limit?: number;
-  session_limit?: number;
-  session?: string;
-}) {
+export async function searchMemory(input: { query: string; limit?: number; session?: string }) {
   return unwrap(apiClient.api.memory.search.post(input));
 }
 

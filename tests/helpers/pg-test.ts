@@ -43,6 +43,7 @@ export function getActivePgTestContext(): PgTestContext | null {
 }
 
 async function clearPgTables(sql: SqlClient): Promise<void> {
+  await sql`DELETE FROM memory_references`;
   await sql`DELETE FROM messages`;
   await sql`DELETE FROM sessions`;
   await sql`DELETE FROM semantic_memory`;

@@ -13,6 +13,7 @@ import { promptRoutes } from "./routes/prompt.ts";
 import { selfRoutes } from "./routes/self.ts";
 import { messagesRoutes } from "./routes/messages.ts";
 import { sessionsRoutes } from "./routes/sessions.ts";
+import { cronLogRoutes, sleepRoutes } from "./routes/sleep.ts";
 import { statusRoutes } from "./routes/status.ts";
 import { studioRoutes } from "./routes/studio.ts";
 import { terminalWsRoutes } from "./routes/terminal-ws.ts";
@@ -23,6 +24,8 @@ export const apiApp = new Elysia({ prefix: "/api" })
   .use(sessionsRoutes)
   .use(messagesRoutes)
   .use(statusRoutes)
+  .use(sleepRoutes)
+  .use(cronLogRoutes)
   .use(memoryRoutes)
   .use(ftsRoutes)
   .use(promptRoutes)

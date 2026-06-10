@@ -62,6 +62,7 @@ describePg("memory PG FTS", () => {
     expect(hits.length).toBeGreaterThan(0);
     expect(hits.every((h) => h.role === "user" || h.role === "assistant")).toBe(true);
     expect(hits.some((h) => h.content.includes("你好"))).toBe(true);
+    expect(hits.every((h) => h.message_id.length > 0)).toBe(true);
   });
 
   it("filterRecallableMessages excludes tool messages", async () => {

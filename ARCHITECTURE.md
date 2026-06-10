@@ -121,15 +121,15 @@ Agent 的行为输出
 | 对话存档 | `sessions` + `messages` | 情景记忆（Episodic）                                  |
 | 语义记忆 | `semantic_memory`       | 语义记忆（Semantic）；含 procedural / imprint 等 type |
 | 情景检索 | `messages.content_fts`  | 历史对话全文索引                                      |
-| 感性记忆 | `limbic_memory`         | 情感锚点（浅睡 Phase 2 写入）                         |
+| 感性记忆 | `limbic_memory`         | 情感锚点（浅睡 Stage 2 写入）                         |
 
-管道：浅睡 / 深睡 cron + `recall` PG FTS 双源检索。细节见 [`docs/memory.md`](docs/memory.md)。
+管道：浅睡 / 深睡 cron + `memory_recall` PG FTS 双源检索。细节见 [`docs/memory.md`](docs/memory.md)。
 
 ## 凭证系统（摘要）
 
 - pass（GPG）是凭证的唯一存储；部署环境上的 pass 仓库是运行时的一等公民资产
-- LLM **永不接触凭证值**：只见 `list_credentials()` 返回的路径与元数据
-- 运行时注入：`credential(path)` 仅在 `execute_code` / `terminal` 执行环境中可用
+- LLM **永不接触凭证值**：只见 `credentials_list()` 返回的路径与元数据
+- 运行时注入：`credential(path)` 仅在 `code_execute` / `terminal_run` 执行环境中可用
 - 凭证值不写入 session 存档、不写入日志
 - 平台适配器（Discord 等）启动时从 pass 读取 token
 - CLI：`anima credential {list,get,add}`
@@ -151,9 +151,9 @@ LLM 不关心一个工具来自哪一层，只关心它叫什么名字、接受�
 
 ```
 LLM 视角 — flat tool list:
-  read_file(path)                ← 本地
-  write_file(path, content)      ← 本地
-  execute_code(code)             ← 本地
+  file_read_file(path)           ← 本地
+  file_write_file(path, content) ← 本地
+  code_execute(code)             ← 本地
   query_database(sql)            ← MCP Server A
   send_email(to, subject)        ← MCP Server B
   acp_cursor(goal, context)      ← ACP 实例
@@ -180,9 +180,9 @@ LLM 视角 — flat tool list:
 
 ```typescript
 registerTool({
-  name: "read_file",
+  name: "file_read_file",
   description: "Read a text file",
-  parameters: { name: "read_file", description: "...", parameters: { type: "object", ... } },
+  parameters: { name: "file_read_file", description: "...", parameters: { type: "object", ... } },
   handler: (args) => toolResult({ ok: true }),
 });
 ```
@@ -311,7 +311,7 @@ LLM 调 acp_cursor(goal="重构 auth 模块", context="...")
 LLM 分析数据库异常:
   1. acp_cursor("检查 users 表的相关代码")     ← ACP：让 Cursor 分析代码
   2. query_database("SELECT * FROM users ...") ← MCP：查数据库
-  3. write_file("analysis.md", content)        ← 本地：写结果到文件
+  3. file_write_file("analysis.md", content)   ← 本地：写结果到文件
 ```
 
 LLM 自己决定用什么工具、什么顺序。逸灵风只负责注册和路由。

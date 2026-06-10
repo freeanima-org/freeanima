@@ -407,7 +407,7 @@ export async function* runStream(
               opts?.executableTools != null &&
               !opts.executableTools.includes(fnName));
           if (blockedByLoaded) {
-            result = toolError("工具未加载，请先 tool_load");
+            result = toolError("工具未加载，请先 tools_load");
           } else if (!tool) {
             result = toolResult({ error: `Unknown tool: ${fnName}` });
           } else if (!argsResult.ok) {

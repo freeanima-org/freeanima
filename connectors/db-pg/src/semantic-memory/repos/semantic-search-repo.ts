@@ -2,6 +2,7 @@ import { sql as drizzleSql } from "drizzle-orm";
 import type { SemanticFtsHit, SemanticMemorySearchOpts } from "@freeanima/engine-repos";
 
 import { getDb } from "../../client.ts";
+import { pgSemanticSourceSessionsFilter, pgSemanticTypeFilter } from "../../utils/pg-sql.ts";
 import { hybridCountSemanticMemory, hybridSearchSemanticMemory } from "../../fts/hybrid-search.ts";
 import { mapSemanticMemoryRow, type SemanticMemoryDbRow } from "../mappers/semantic-mapper.ts";
 
@@ -20,17 +21,9 @@ function buildSemanticFilters(
   status: "active" | "deprecated" | "all",
   sourceSessions: string[],
 ) {
-  const typeFilter =
-    types.length === 0
-      ? drizzleSql``
-      : types.length === 1
-        ? drizzleSql`AND sm.type = ${types[0]}`
-        : drizzleSql`AND sm.type = ANY(${types}::text[])`;
+  const typeFilter = pgSemanticTypeFilter(types);
   const statusFilter = status === "all" ? drizzleSql`` : drizzleSql`AND sm.status = ${status}`;
-  const sourceFilter =
-    sourceSessions.length > 0
-      ? drizzleSql`AND sm.source_sessions && ${sourceSessions}::text[]`
-      : drizzleSql``;
+  const sourceFilter = pgSemanticSourceSessionsFilter(sourceSessions);
   return { typeFilter, statusFilter, sourceFilter };
 }
 

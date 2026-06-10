@@ -1,8 +1,11 @@
+import type { DeepSleepChangeLog } from "./deep-sleep/types.ts";
+
 /** 深睡单轮 LLM 调用输入（与浅睡类似，但 userMessages 为 4 条） */
 export type DeepSleepEngineInput = {
   systemPrompt: string;
   userMessages: [string, string, string, string];
   toolNames: string[];
+  changeLog?: DeepSleepChangeLog;
 };
 
 export type DeepSleepEngineResult = {

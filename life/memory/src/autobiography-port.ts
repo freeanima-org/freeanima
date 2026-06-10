@@ -1,6 +1,6 @@
 export type AutobiographyEngineInput = {
   systemPrompt: string;
-  userMessages: [string, string];
+  userMessages: string[];
   toolNames: string[];
 };
 

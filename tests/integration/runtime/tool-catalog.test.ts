@@ -46,22 +46,22 @@ describePg("tool catalog lazy load", () => {
         expect(meta.tools).toContain(expected);
       }
     }
-    expect(names).not.toContain("read_file");
+    expect(names).not.toContain("file_read_file");
     expect(meta.loaded_tools ?? []).toEqual([]);
   });
 
-  it("tool_load 写入 loaded_tools 但不扩展 schema", async () => {
+  it("tools_load 写入 loaded_tools 但不扩展 schema", async () => {
     const c = testConv();
     const sid = await c.newSession("parlor");
-    const toolLoad = getTestEngine().toolSets.getTool("tool_load");
+    const toolLoad = getTestEngine().toolSets.getTool("tools_load");
     expect(toolLoad).toBeDefined();
 
     await runWithToolContext(
       sid,
       async () => {
-        const raw = await toolLoad!.handler({ names: ["read_file"] });
+        const raw = await toolLoad!.handler({ names: ["file_read_file"] });
         const parsed = JSON.parse(raw);
-        expect(parsed.tools?.[0]?.name).toBe("read_file");
+        expect(parsed.tools?.[0]?.name).toBe("file_read_file");
         expect(parsed.tools?.[0]?.parameters).toBeDefined();
       },
       { repos: c.repos, tools: getTestEngine().toolSets },
@@ -70,10 +70,10 @@ describePg("tool catalog lazy load", () => {
     const meta = await c.loadSessionMeta(sid);
     expect(isSessionMeta(meta)).toBe(true);
     if (!isSessionMeta(meta)) return;
-    expect(meta.loaded_tools).toContain("read_file");
+    expect(meta.loaded_tools).toContain("file_read_file");
 
     const schemas = await c.loadSessionTools(sid, meta);
-    expect(schemas.map((t) => t.function.name)).not.toContain("read_file");
+    expect(schemas.map((t) => t.function.name)).not.toContain("file_read_file");
   });
 
   it("未 load 的工具被 executableTools 门禁拦截", async () => {
@@ -134,6 +134,6 @@ describePg("tool catalog lazy load", () => {
     }
 
     const toolMsg = msgs.find((m) => m.role === "tool");
-    expect(toolMsg?.content).toContain("tool_load");
+    expect(toolMsg?.content).toContain("tools_load");
   });
 });

@@ -18,6 +18,7 @@ const navItems = [
   { to: "/chamber/acp", label: "🤝 ACP" },
   { to: "/chamber/credentials", label: "🔐 凭证" },
   { to: "/chamber/cron", label: "⏰ 定时任务" },
+  { to: "/chamber/sleep", label: "😴 睡眠记录" },
   { to: "/chamber/email", label: "📧 邮件" },
 ] as const;
 

@@ -9,24 +9,24 @@ import { ToolSetRegistry } from "./toolset.ts";
 
 function testRegistry(): ToolSetRegistry {
   const registry = new ToolSetRegistry();
-  registry.registerToolSet("fs", "文件", [
+  registry.registerToolSet("file", "文件", [
     {
-      name: "read_file",
+      name: "file_read_file",
       description: "读取文件",
       parameters: { type: "object", properties: { path: { type: "string" } } },
       handler: () => "ok",
     },
     {
-      name: "write_file",
+      name: "file_write_file",
       description: "写入文件",
       parameters: { type: "object", properties: {} },
       handler: () => "ok",
     },
   ]);
-  registry.registerToolSet("catalog", "目录", [
+  registry.registerToolSet("tools", "目录", [
     {
-      name: "tool_search",
-      description: "搜索工具",
+      name: "tools_list",
+      description: "列出工具",
       parameters: { type: "object", properties: {} },
       handler: () => "ok",
     },
@@ -37,7 +37,7 @@ function testRegistry(): ToolSetRegistry {
 describe("expandToolNames", () => {
   it("展开 @toolset", () => {
     const registry = testRegistry();
-    expect(expandToolNames(registry, ["@fs"])).toEqual(["read_file", "write_file"]);
+    expect(expandToolNames(registry, ["@file"])).toEqual(["file_read_file", "file_write_file"]);
   });
 });
 
@@ -46,9 +46,9 @@ describe("listToolsCatalog", () => {
     const registry = testRegistry();
     const all = listToolsCatalog(registry);
     expect(all.total).toBe(3);
-    const fsOnly = listToolsCatalog(registry, { toolset: "fs" });
-    expect(fsOnly.total).toBe(2);
-    expect(fsOnly.tools.map((t) => t.name)).toEqual(["read_file", "write_file"]);
+    const fileOnly = listToolsCatalog(registry, { toolset: "file" });
+    expect(fileOnly.total).toBe(2);
+    expect(fileOnly.tools.map((t) => t.name)).toEqual(["file_read_file", "file_write_file"]);
   });
 });
 
@@ -56,14 +56,14 @@ describe("searchToolsCatalog", () => {
   it("按名称或描述匹配", () => {
     const registry = testRegistry();
     const hit = searchToolsCatalog(registry, "读取");
-    expect(hit.tools.some((t) => t.name === "read_file")).toBe(true);
+    expect(hit.tools.some((t) => t.name === "file_read_file")).toBe(true);
   });
 });
 
 describe("formatToolsForToolMessage", () => {
   it("返回完整 parameters", () => {
     const registry = testRegistry();
-    const formatted = formatToolsForToolMessage(registry, ["read_file"]);
+    const formatted = formatToolsForToolMessage(registry, ["file_read_file"]);
     expect(formatted).toHaveLength(1);
     expect(formatted[0]?.parameters).toEqual({
       type: "object",

@@ -4,6 +4,7 @@ export type {
   ToolArgs,
   ToolHandler,
   ToolDef,
+  ToolReturnKind,
   OpenAiToolEntry,
 } from "./registry.ts";
 /** @deprecated 使用 ToolSetRegistry */
@@ -22,7 +23,7 @@ export type { ToolArgsRecord } from "./tool-json.ts";
 export { ToolSetRegistry, mcpToolsetId, acpToolsetId } from "./toolset.ts";
 export type { ToolSet, ToolSetView } from "./toolset.ts";
 export {
-  CATALOG_TOOL_NAMES,
+  TOOLS_DISCOVERY_NAMES,
   DEFAULT_SESSION_TOOL_NAMES,
   resolveDefaultSessionTools,
 } from "./default-session-tools.ts";
@@ -36,3 +37,5 @@ export type {
   ListToolsCatalogOptions,
   SearchToolsCatalogOptions,
 } from "./catalog.ts";
+export { buildToolsStatus, resolveReturnKind, TEXT_RETURN_TOOL_NAMES } from "./tools-status.ts";
+export type { ToolsStatusResponse, ToolsStatusToolItem } from "./tools-status.ts";

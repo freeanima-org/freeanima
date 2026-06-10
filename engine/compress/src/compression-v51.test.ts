@@ -51,12 +51,12 @@ describe("compression v5.1", () => {
       role: "assistant",
       content: null,
       tool_calls: [
-        { id: "1", type: "function", function: { name: "read_file", arguments: "{}" } },
+        { id: "1", type: "function", function: { name: "file_read_file", arguments: "{}" } },
         { id: "2", type: "function", function: { name: "grep", arguments: "{}" } },
       ],
       pos: 2,
     });
-    expect(slim?.content).toBe("[已执行工具: read_file, grep]");
+    expect(slim?.content).toBe("[已执行工具: file_read_file, grep]");
   });
 
   it("slimMessage 丢弃完全空白的 assistant", () => {

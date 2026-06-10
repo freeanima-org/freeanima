@@ -1,4 +1,4 @@
-import { desc, eq, sql as drizzleSql } from "drizzle-orm";
+import { desc, eq, sql as drizzleSql, and } from "drizzle-orm";
 import {
   normalizeSemanticMemoryType,
   semanticMemory,
@@ -15,6 +15,7 @@ import { resolveFtsSegmentedForWrite } from "../../fts/write.ts";
 import { scheduleSemanticMemoryEmbedding } from "../../embedding/schedule.ts";
 import { clearSemanticMemoryEmbedding } from "../../embedding/store.ts";
 import { getDb } from "../../client.ts";
+import { pgTextArrayOverlap } from "../../utils/pg-sql.ts";
 import { mapSemanticMemoryRow } from "../mappers/semantic-mapper.ts";
 import { nextSemanticMemoryId } from "./id-gen.ts";
 
@@ -142,13 +143,35 @@ export async function countSemanticMemory(): Promise<number> {
 export async function listResidentSemanticMemory(topN = 20): Promise<SemanticMemoryRow[]> {
   const limit = Math.max(1, Math.min(100, topN));
   const db = getDb();
-  const rows = await db
+
+  const pinnedRows = await db
     .select()
     .from(semanticMemory)
-    .where(eq(semanticMemory.status, "active"))
-    .orderBy(desc(semanticMemory.pinned), desc(semanticMemory.updated))
-    .limit(limit);
-  return rows.map(mapSemanticMemoryRow);
+    .where(and(eq(semanticMemory.status, "active"), eq(semanticMemory.pinned, true)))
+    .orderBy(desc(semanticMemory.updated));
+
+  const pinnedIds = new Set(pinnedRows.map((r) => r.id));
+  const remaining = Math.max(0, limit - pinnedRows.length);
+
+  let topReferenced = pinnedRows;
+  if (remaining > 0) {
+    const candidates = await db
+      .select()
+      .from(semanticMemory)
+      .where(
+        and(
+          eq(semanticMemory.status, "active"),
+          eq(semanticMemory.pinned, false),
+          drizzleSql`${semanticMemory.referenceCount} > 0`,
+        ),
+      )
+      .orderBy(desc(semanticMemory.referenceCount), desc(semanticMemory.updated))
+      .limit(remaining + pinnedIds.size);
+    const filtered = candidates.filter((r) => !pinnedIds.has(r.id)).slice(0, remaining);
+    topReferenced = [...pinnedRows, ...filtered];
+  }
+
+  return topReferenced.map(mapSemanticMemoryRow);
 }
 
 export async function listAllSemanticMemory(): Promise<SemanticMemoryRow[]> {
@@ -192,7 +215,7 @@ export async function listSemanticMemoryBySourceSessions(
       sm.created,
       sm.updated
     FROM semantic_memory sm
-    WHERE sm.source_sessions && ${ids}::text[]
+    WHERE ${pgTextArrayOverlap("sm.source_sessions", ids)}
     ${statusFilter}
     ORDER BY sm.updated DESC
   `);

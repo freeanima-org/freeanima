@@ -48,4 +48,5 @@ export {
 } from "./email.ts";
 export { listCredentialMetas, getCredentialDetailHandler } from "./credentials.ts";
 export { getFtsStatus, startRebuildFtsIndex, getRebuildFtsJobStatus } from "./fts.ts";
+export { getSleepSummary, listSleepRuns, listCronLogs, getDeepSleepRounds } from "./sleep.ts";
 export { ApiHandlerError } from "./errors.ts";

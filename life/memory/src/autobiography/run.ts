@@ -12,8 +12,8 @@ import { runAutobiographyEngine } from "../autobiography-port.ts";
 import { buildAutobiographyUserMessages } from "./build-messages.ts";
 
 const AUTOBIOGRAPHY_TOOL_NAMES = [
-  "create_autobiographical_memory",
-  "deprecate_autobiographical_memory",
+  "memory_autobiographical_create",
+  "memory_autobiographical_deprecate",
 ] as const;
 
 const LOOKBACK_DAYS = 7;

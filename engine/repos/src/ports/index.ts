@@ -1,7 +1,13 @@
+import type { MemoryReferenceStorePort } from "./memory-reference.ts";
 import type { SemanticMemoryStorePort } from "./semantic-memory.ts";
 import type { SessionStorePort } from "./session.ts";
 
-export type { SessionStorePort, SessionSummaryRow, MessageFtsHit } from "./session.ts";
+export type {
+  SessionStorePort,
+  SessionSummaryRow,
+  MessageFtsHit,
+  MessageRowView,
+} from "./session.ts";
 export type {
   SemanticMemoryRow,
   SemanticFtsHit,
@@ -17,6 +23,12 @@ export type {
   CronJobUpdateInput,
   CronJobStorePort,
 } from "./cron.ts";
+export type {
+  CronLogRow,
+  CronLogAppendInput,
+  CronLogListOpts,
+  CronLogStorePort,
+} from "./cron-log.ts";
 export type {
   TaskStorePort,
   TaskRow,
@@ -45,6 +57,11 @@ export type {
   AutobiographicalMemoryStorePort,
 } from "./autobiographical-memory.ts";
 export type {
+  MemoryReferenceRow,
+  MemoryReferenceStorePort,
+  RecordMessageReferencesInput,
+} from "./memory-reference.ts";
+export type {
   LimbicKind,
   LimbicMemoryRow,
   LimbicMemoryCreateInput,
@@ -54,6 +71,7 @@ export type {
 
 import type { AutobiographicalMemoryStorePort } from "./autobiographical-memory.ts";
 import type { CronJobStorePort } from "./cron.ts";
+import type { CronLogStorePort } from "./cron-log.ts";
 import type { LimbicMemoryStorePort } from "./limbic-memory.ts";
 import type { SelfLayerStorePort } from "./self-layer.ts";
 import type { TaskStorePort } from "./task.ts";
@@ -63,9 +81,11 @@ export interface PgRepositories {
   readonly pgAvailable: boolean;
   session: SessionStorePort;
   semanticMemory: SemanticMemoryStorePort;
+  memoryReference: MemoryReferenceStorePort;
   selfLayer: SelfLayerStorePort;
   autobiographicalMemory: AutobiographicalMemoryStorePort;
   limbicMemory: LimbicMemoryStorePort;
   cron: CronJobStorePort;
+  cronLog: CronLogStorePort;
   tasks: TaskStorePort;
 }

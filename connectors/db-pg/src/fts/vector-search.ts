@@ -5,12 +5,7 @@ import { formatPgVector } from "../embedding/format.ts";
 import type { SemanticMemoryDbRow } from "../semantic-memory/mappers/semantic-mapper.ts";
 import { mapSemanticMemoryRow } from "../semantic-memory/mappers/semantic-mapper.ts";
 import { messageDocKey, semanticMemoryDocKey } from "./rrf.ts";
-
-function buildTypeFilter(types: string[]) {
-  if (types.length === 0) return drizzleSql``;
-  if (types.length === 1) return drizzleSql`AND sm.type = ${types[0]}`;
-  return drizzleSql`AND sm.type = ANY(${types}::text[])`;
-}
+import { pgSemanticSourceSessionsFilter, pgSemanticTypeFilter } from "../utils/pg-sql.ts";
 
 export type VectorSemanticHit = SemanticMemoryDbRow & { docKey: string; rank: number };
 
@@ -32,12 +27,9 @@ export async function searchSemanticMemoryVector(
   const queryVec = formatPgVector(queryEmbedding);
 
   const db = getDb();
-  const typeFilter = buildTypeFilter(types);
+  const typeFilter = pgSemanticTypeFilter(types);
   const statusFilter = status === "all" ? drizzleSql`` : drizzleSql`AND sm.status = ${status}`;
-  const sourceFilter =
-    sourceSessions.length > 0
-      ? drizzleSql`AND sm.source_sessions && ${sourceSessions}::text[]`
-      : drizzleSql``;
+  const sourceFilter = pgSemanticSourceSessionsFilter(sourceSessions);
 
   const rows = await db.execute<SemanticMemoryDbRow & { rank: number }>(drizzleSql`
     SELECT

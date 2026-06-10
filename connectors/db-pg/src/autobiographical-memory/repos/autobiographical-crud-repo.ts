@@ -14,6 +14,7 @@ import type {
 import { formatCstIso } from "@freeanima/kernel-util";
 
 import { getDb } from "../../client.ts";
+import { pgTextArrayOverlap } from "../../utils/pg-sql.ts";
 import {
   mapAutobiographicalMemoryRow,
   type AutobiographicalMemoryDbRow,
@@ -113,7 +114,7 @@ export async function countAutobiographicalMemory(
     ? drizzleSql`AND significance = ${significance}`
     : drizzleSql``;
   const sourceFilter = sourceSession
-    ? drizzleSql`AND source_sessions && ${[sourceSession]}::text[]`
+    ? drizzleSql`AND ${pgTextArrayOverlap("source_sessions", [sourceSession])}`
     : drizzleSql``;
   const queryFilter = query
     ? drizzleSql`AND (title ILIKE ${"%" + escapeIlikePattern(query) + "%"} ESCAPE '\\' OR content ILIKE ${"%" + escapeIlikePattern(query) + "%"} ESCAPE '\\')`
@@ -229,7 +230,7 @@ export async function listAutobiographicalMemoryBySourceSemanticMemory(
       created_at,
       updated_at
     FROM autobiographical_memory
-    WHERE source_facts && ${ids}::text[]
+    WHERE ${pgTextArrayOverlap("source_facts", ids)}
       AND status = ${status}
     ORDER BY updated_at DESC
   `);
@@ -260,7 +261,7 @@ export async function listAutobiographicalMemoryBySourceSessions(
       created_at,
       updated_at
     FROM autobiographical_memory
-    WHERE source_sessions && ${ids}::text[]
+    WHERE ${pgTextArrayOverlap("source_sessions", ids)}
       AND status = ${status}
     ORDER BY updated_at DESC
   `);
@@ -279,7 +280,7 @@ export async function listAutobiographicalMemory(
     ? drizzleSql`AND significance = ${significance}`
     : drizzleSql``;
   const sourceFilter = sourceSession
-    ? drizzleSql`AND source_sessions && ${[sourceSession]}::text[]`
+    ? drizzleSql`AND ${pgTextArrayOverlap("source_sessions", [sourceSession])}`
     : drizzleSql``;
   const queryFilter = query
     ? drizzleSql`AND (title ILIKE ${"%" + escapeIlikePattern(query) + "%"} ESCAPE '\\' OR content ILIKE ${"%" + escapeIlikePattern(query) + "%"} ESCAPE '\\')`

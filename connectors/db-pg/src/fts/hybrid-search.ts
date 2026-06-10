@@ -10,12 +10,7 @@ import { searchMessagesTrgm, searchSemanticMemoryTrgm } from "./trgm-search.ts";
 import { searchSemanticMemoryFtsRaw, searchMessagesFtsRaw } from "./hybrid-raw.ts";
 import { searchMessagesVector, searchSemanticMemoryVector } from "./vector-search.ts";
 import { mapSemanticMemoryRow } from "../semantic-memory/mappers/semantic-mapper.ts";
-
-function buildTypeFilter(types: string[]) {
-  if (types.length === 0) return drizzleSql``;
-  if (types.length === 1) return drizzleSql`AND sm.type = ${types[0]}`;
-  return drizzleSql`AND sm.type = ANY(${types}::text[])`;
-}
+import { pgSemanticSourceSessionsFilter, pgSemanticTypeFilter } from "../utils/pg-sql.ts";
 
 function candidateLimit(requested: number, ftsCount: number): number {
   const fallback = getFtsTrgmFallbackWhenHitsLt();
@@ -103,6 +98,7 @@ export async function hybridSearchMessages(
   const merged = rrfMerge([ftsRanked, trgmHits, vectorHits], { limit: pool });
 
   return merged.slice(0, limit).map((row) => ({
+    message_id: row.id,
     content: row.content,
     role: row.role,
     session_id: row.session_id,
@@ -132,12 +128,9 @@ export async function hybridCountSemanticMemory(
   const queryEmbedding = await embedQueryText(q);
 
   const db = getDb();
-  const typeFilter = buildTypeFilter(types);
+  const typeFilter = pgSemanticTypeFilter(types);
   const statusFilter = status === "all" ? drizzleSql`` : drizzleSql`AND sm.status = ${status}`;
-  const sourceFilter =
-    sourceSessions.length > 0
-      ? drizzleSql`AND sm.source_sessions && ${sourceSessions}::text[]`
-      : drizzleSql``;
+  const sourceFilter = pgSemanticSourceSessionsFilter(sourceSessions);
 
   const vectorUnion =
     queryEmbedding && queryEmbedding.length > 0

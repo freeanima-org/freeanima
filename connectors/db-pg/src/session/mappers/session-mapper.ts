@@ -8,7 +8,11 @@ import {
   type SessionTodoStore,
 } from "@freeanima/engine-db/domain";
 import { capabilityMaskSchema } from "@freeanima/engine-db/schema";
-import { z } from "zod";
+import {
+  sessionFunctionsSchema,
+  sessionLoadedToolsSchema,
+  sessionToolsSchema,
+} from "@freeanima/engine-db/schema";
 
 import {
   acpSessionsSchema,
@@ -61,10 +65,10 @@ export function sessionMetaToInsert(sessionId: string, meta: SessionMetaMessage)
     delete extra.capability_mask;
   }
 
-  const tools = z.array(z.string()).parse(meta.tools ?? []);
-  const loadedTools = z.array(z.string()).parse(meta.loaded_tools ?? []);
+  const tools = sessionToolsSchema.parse(meta.tools ?? []);
+  const loadedTools = sessionLoadedToolsSchema.parse(meta.loaded_tools ?? []);
   const todos = sessionTodoStoreSchema.parse(meta.todos ?? { items: [], next_id: 1 });
-  const functions = z.array(z.string()).parse(meta.functions ?? []);
+  const functions = sessionFunctionsSchema.parse(meta.functions ?? []);
   const compressionRaw = pgJsonbOrNull(meta.compression);
   const compressionParsed = compressionRaw ? compressionStateSchema.parse(compressionRaw) : null;
   const awaitingRaw = pgJsonbOrNull(meta.awaiting_clarify);

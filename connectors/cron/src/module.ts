@@ -1,4 +1,10 @@
-import type { CronJobRow, CronJobStorePort, CronJobUpdateInput } from "@freeanima/engine-repos";
+import type {
+  CronJobRow,
+  CronJobStorePort,
+  CronJobUpdateInput,
+  CronLogStorePort,
+} from "@freeanima/engine-repos";
+import { setCronLogStore } from "./cron-log.ts";
 import { CronHandleManager } from "./handle-manager.ts";
 import { CronJob } from "./models.ts";
 import { runJobById } from "./runner.ts";
@@ -20,8 +26,12 @@ export function isCronModuleInitialized(): boolean {
   return store != null && handles != null;
 }
 
-export async function initCronModule(opts: { store: CronJobStorePort }): Promise<void> {
+export async function initCronModule(opts: {
+  store: CronJobStorePort;
+  logStore?: CronLogStorePort;
+}): Promise<void> {
   store = opts.store;
+  setCronLogStore(opts.logStore ?? null);
   handles = new CronHandleManager((jobId) => runJobById(jobId));
   await ensureBuiltinCronJobs();
   const jobs = await loadAllJobs();
@@ -32,6 +42,7 @@ export function stopCronModule(): void {
   handles?.stopAll();
   handles = null;
   store = null;
+  setCronLogStore(null);
 }
 
 export async function loadAllJobs(): Promise<CronJob[]> {
@@ -70,9 +81,20 @@ export function rowToPatch(job: CronJob): CronJobUpdateInput {
 }
 
 export async function ensureBuiltinCronJobs(): Promise<void> {
+  await _removeDeprecatedBuiltinSelfAutobiographyCronJob();
   await _ensureBuiltinLightSleepCronJob();
   await _ensureBuiltinDeepSleepCronJob();
-  await _ensureBuiltinSelfAutobiographyCronJob();
+  await _ensureBuiltinMemoryReferenceSyncCronJob();
+}
+
+const DEPRECATED_SELF_AUTOBIOGRAPHY_ID = "builtin-self-autobiography";
+
+async function _removeDeprecatedBuiltinSelfAutobiographyCronJob(): Promise<void> {
+  const cronStore = getCronStore();
+  const existing = await cronStore.get(DEPRECATED_SELF_AUTOBIOGRAPHY_ID);
+  if (!existing) return;
+  handles?.unregister(DEPRECATED_SELF_AUTOBIOGRAPHY_ID);
+  await cronStore.delete(DEPRECATED_SELF_AUTOBIOGRAPHY_ID);
 }
 
 async function _ensureBuiltinLightSleepCronJob(): Promise<void> {
@@ -84,7 +106,7 @@ async function _ensureBuiltinLightSleepCronJob(): Promise<void> {
     prompt: "",
     no_agent: true,
     deliver: "local",
-    timeout_sec: 1800,
+    timeout_sec: 3600,
   });
   const job = await getJob(id);
   if (!job || !handles) return;
@@ -107,16 +129,16 @@ async function _ensureBuiltinDeepSleepCronJob(): Promise<void> {
   if (scheduleChanged) handles.reregister(job);
 }
 
-async function _ensureBuiltinSelfAutobiographyCronJob(): Promise<void> {
-  const id = "builtin-self-autobiography";
+async function _ensureBuiltinMemoryReferenceSyncCronJob(): Promise<void> {
+  const id = "builtin-memory-reference-sync";
   const scheduleChanged = await getCronStore().upsertBuiltin({
     id,
-    name: "self-autobiography",
-    schedule: "0 4 * * *",
+    name: "memory-reference-sync",
+    schedule: "30 5 * * *",
     prompt: "",
     no_agent: true,
     deliver: "local",
-    timeout_sec: 1800,
+    timeout_sec: 600,
   });
   const job = await getJob(id);
   if (!job || !handles) return;

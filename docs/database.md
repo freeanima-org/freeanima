@@ -146,25 +146,42 @@ bun run test              # 单元 + 集成 + E2E 并行
 
 ### 表结构
 
-| 列                  | 类型               | 说明                                                                          |
-| ------------------- | ------------------ | ----------------------------------------------------------------------------- |
-| `id`                | TEXT PK            | 保留 `f-{seq}-{hex}` 格式                                                     |
-| `type`              | TEXT               | `world/experience/opinion/observation/preference/procedural/imprint`          |
-| `pinned`            | BOOLEAN            | 常驻记忆优先注入                                                              |
-| `content`           | TEXT               | 记忆正文                                                                      |
-| `fts_segmented`     | TEXT（可空）       | jieba 分词串；`cjk.enabled` 时写入                                            |
-| `content_fts`       | TSVECTOR（生成列） | 有 `fts_segmented` 时直接索引分词串，否则 `message_fts_input(content)` STORED |
-| `content_embedding` | VECTOR(1024)       | bge-m3 等 embedding；`config.embedding` 配置后异步写入；WebUI 重建可 backfill |
-| `source_sessions`   | TEXT[]             | 来源 session ID 列表，默认 `'{}'`                                             |
-| `observed_at`       | TIMESTAMPTZ        | 首次观察到该事实的时间；旧行回填 `created`                                    |
-| `occurred_at`       | TEXT               | 事实内容中的模糊发生时间                                                      |
-| `status`            | TEXT               | `active` / `deprecated`，默认 `active`                                        |
-| `created`           | TIMESTAMPTZ        |                                                                               |
-| `updated`           | TIMESTAMPTZ        |                                                                               |
+| 列                  | 类型               | 说明                                                                                              |
+| ------------------- | ------------------ | ------------------------------------------------------------------------------------------------- |
+| `id`                | TEXT PK            | 保留 `f-{seq}-{hex}` 格式                                                                         |
+| `type`              | TEXT               | `world/experience/opinion/observation/preference/procedural/imprint`                              |
+| `pinned`            | BOOLEAN            | 常驻记忆优先注入                                                                                  |
+| `content`           | TEXT               | 记忆正文                                                                                          |
+| `fts_segmented`     | TEXT（可空）       | jieba 分词串；`cjk.enabled` 时写入                                                                |
+| `content_fts`       | TSVECTOR（生成列） | 有 `fts_segmented` 时直接索引分词串，否则 `message_fts_input(content)` STORED                     |
+| `content_embedding` | VECTOR(1024)       | bge-m3 等 embedding；`config.embedding` 配置后异步写入；WebUI 重建可 backfill                     |
+| `source_sessions`   | TEXT[]             | 来源 session ID 列表，默认 `'{}'`                                                                 |
+| `observed_at`       | TIMESTAMPTZ        | 首次观察到该事实的时间；旧行回填 `created`                                                        |
+| `occurred_at`       | TEXT               | 事实内容中的模糊发生时间                                                                          |
+| `status`            | TEXT               | `active` / `deprecated`，默认 `active`                                                            |
+| `reference_count`   | REAL               | 按 session 去重 + 30 天时间衰减后的引用权重合计；`builtin-memory-reference-sync` 从 messages 重算 |
+| `created`           | TIMESTAMPTZ        |                                                                                                   |
+| `updated`           | TIMESTAMPTZ        |                                                                                                   |
+
+### `memory_references`（语义记忆引用）
+
+消息正文中的 `[记忆 #f-000001-abcd]` 标记持久化；session / message 删除时级联作废。
+
+| 列                   | 类型        | 说明                                     |
+| -------------------- | ----------- | ---------------------------------------- |
+| `id`                 | UUID PK     |                                          |
+| `message_id`         | TEXT FK     | → `messages.id` ON DELETE CASCADE        |
+| `semantic_memory_id` | TEXT FK     | → `semantic_memory.id` ON DELETE CASCADE |
+| `session_id`         | TEXT FK     | → `sessions.id` ON DELETE CASCADE        |
+| `created_at`         | TIMESTAMPTZ | 引用时间（通常取 message timestamp）     |
+
+唯一索引：`(message_id, semantic_memory_id)`。同一 session 内同记忆多次引用仅计一次权重；30 天内引用权重 ×2。
+
+端口：`MemoryReferenceStorePort`（`engine-repos`）→ `PgMemoryReferenceStore`（`connectors-db-pg`）；`appendMessage` 增量写入；cron `builtin-memory-reference-sync` 从 messages 全量重建并校准 `reference_count`。
 
 索引：`idx_semantic_memory_fts`（GIN）、`idx_semantic_memory_content_trgm`（GIN trgm）、`idx_semantic_memory_embedding_hnsw`（HNSW cosine）、`idx_semantic_memory_type`、`idx_semantic_memory_pinned`、`idx_semantic_memory_source_sessions`（GIN）、`idx_semantic_memory_status`。检索为 **FTS + pg_trgm + pgvector 三路 RRF**（常开；向量路需 `embedding` 配置且列非空）。
 
-端口方法：`create` / `update`（覆盖式，未传不变；`source_sessions: []` 可清空）/ `deprecate` / `listBySourceSessions` / `search` / `searchFts`；`listResident` 与 recall 默认 `status=active`。
+端口方法：`create` / `update`（覆盖式，未传不变；`source_sessions: []` 可清空）/ `deprecate` / `listBySourceSessions` / `search` / `searchFts`；`listResident` = **pinned 全量** + **reference_count top N**（默认 N=20，仅 `status=active`）。
 
 端口：`SemanticMemoryStorePort`（`engine-repos`）→ `PgSemanticMemoryStore`（`connectors-db-pg`）→ `registerSemanticMemoryStore`（`life-memory`）。
 
@@ -276,6 +293,27 @@ Migration：[`engine/db/migrations/20260607160000_limbic_memory/migration.sql`](
 端口：`CronJobStorePort`（`engine-repos`）→ `PgCronJobStore`（`connectors-db-pg`）→ `initCronModule`（`connectors-cron` / `serve.ts`）。
 
 Migration：[`engine/db/migrations/20260607140000_cron_jobs/migration.sql`](../engine/db/migrations/20260607140000_cron_jobs/migration.sql)（手写 SQL，无 Drizzle schema 文件）。
+
+## cron_log（已落地）
+
+Cron 每次运行结束追加一行（成功与失败均记录）；WebUI `/chamber/sleep` 与 `GET /api/cron-logs` 查询此表。`cron/output/*.txt` 仍保留作调试副本。
+
+| 列            | 类型        | 说明                                          |
+| ------------- | ----------- | --------------------------------------------- |
+| `id`          | BIGINT PK   | 自增                                          |
+| `job_id`      | TEXT FK     | → `cron_jobs.id` ON DELETE CASCADE            |
+| `run_count`   | INTEGER     | 与当次 `cron_jobs.run_count` 一致             |
+| `ok`          | BOOLEAN     | 是否成功                                      |
+| `finished_at` | TIMESTAMPTZ | 结束时间                                      |
+| `output`      | JSONB       | 成功且可解析为 JSON 时写入（如浅睡/深睡结果） |
+| `output_text` | TEXT        | 非 JSON 成功输出截断原文                      |
+| `error`       | TEXT        | 失败错误摘要（截断 ~2KB）                     |
+
+唯一约束：`(job_id, run_count)`。索引：`idx_cron_log_job_finished (job_id, finished_at DESC)`。
+
+端口：`CronLogStorePort`（`engine-repos`）→ `PgCronLogStore`（`connectors-db-pg`）；写入点 `connectors/cron/src/runner.ts`（`appendCronRunLog`）。
+
+Schema：`engine/db/src/schema/cron-log.ts`。Migration：[`engine/db/migrations/20260612120000_cron_log/migration.sql`](../engine/db/migrations/20260612120000_cron_log/migration.sql)。
 
 ## tasks（已落地）
 

@@ -9,6 +9,14 @@ export {
 } from "./events.ts";
 export { registerMemoryPipeline } from "./pipeline.ts";
 export {
+  formatMemoryReferenceMarker,
+  formatResidentMemoryLine,
+  parseMemoryReferenceMarkers,
+  MEMORY_REFERENCE_CITATION_RULE,
+  memoryReferenceWeight,
+} from "./memory-reference.ts";
+export { syncSemanticMemoryReferenceCounts } from "./reference-sync.ts";
+export {
   registerMemorySessionStore,
   getMemorySessionStore,
   resetMemorySessionStoreForTests,
@@ -34,11 +42,15 @@ export {
   searchSemanticMemory,
   searchDialogue,
   searchDialogueOnly,
-  memorySearchDetailed,
+  memoryRecallSearch,
   type SearchResult,
-  type SemanticMemorySearchHit,
-  type DialogueSearchHit,
-  type MemorySearchResult,
+  type MemoryRecallHit,
+  type MemoryRecallHitType,
+  type MemoryRecallResult,
+  type SemanticRecallHit,
+  type SessionRecallHit,
+  type LimbicRecallHit,
+  type AutobiographicalRecallHit,
 } from "./search.ts";
 export { registerMemoryTools } from "./register-tools.ts";
 export {
@@ -68,6 +80,21 @@ export {
   type DeepSleepEngineResult,
 } from "./deep-sleep-port.ts";
 export { runLightSleep, type LightSleepResult, type RunLightSleepOpts } from "./light-sleep/run.ts";
+export {
+  runLightSleepBackfill,
+  enumerateCstDays,
+  addCstDay,
+  defaultBackfillToDay,
+  resolveBackfillDayRange,
+  type RunLightSleepBackfillOpts,
+  type LightSleepBackfillResult,
+} from "./light-sleep/backfill.ts";
+export {
+  readLightSleepBackfillState,
+  writeLightSleepBackfillState,
+  recordLightSleepBackfillProgress,
+  type LightSleepBackfillState,
+} from "./light-sleep/backfill-state.ts";
 export { runDeepSleep, type DeepSleepResult, type RunDeepSleepOpts } from "./deep-sleep/run.ts";
 export {
   registerAutobiographyEngine,
@@ -88,7 +115,9 @@ export {
 export {
   cstDayRange,
   buildLightSleepUserMessages,
+  buildLimbicUserMessages,
   LIGHT_SLEEP_INSTRUCTION_MESSAGE,
+  LIMBIC_INSTRUCTION,
   type LightSleepDayRange,
 } from "./light-sleep/build-messages.ts";
 export {
@@ -96,3 +125,11 @@ export {
   writeLightSleepState,
   recordLightSleepRun,
 } from "./light-sleep/state.ts";
+export { readDeepSleepState, writeDeepSleepState, recordDeepSleepRun } from "./deep-sleep/state.ts";
+export { applyDeepSleepToolResult } from "./deep-sleep/apply-tool-result.ts";
+export {
+  buildSleepSummary,
+  listDeepSleepRoundLogs,
+  SLEEP_JOB_IDS,
+  type SleepSummary,
+} from "./sleep-records.ts";

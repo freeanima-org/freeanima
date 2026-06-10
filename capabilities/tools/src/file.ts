@@ -336,9 +336,9 @@ function handlePatch(
 }
 
 export function registerFileTools(toolSets: ToolSetRegistry): void {
-  toolSets.registerToolSet("fs", "文件读写与搜索", [
+  toolSets.registerToolSet("file", "文件读写与搜索", [
     {
-      name: "read_file",
+      name: "file_read_file",
       description: "Read a text file with line numbers",
       parameters: {
         type: "object",
@@ -352,7 +352,7 @@ export function registerFileTools(toolSets: ToolSetRegistry): void {
       handler: (a) => handleReadFile(String(a.path), Number(a.offset ?? 1), Number(a.limit ?? 500)),
     },
     {
-      name: "write_file",
+      name: "file_write_file",
       description: "Write file content",
       parameters: {
         type: "object",
@@ -365,7 +365,7 @@ export function registerFileTools(toolSets: ToolSetRegistry): void {
       handler: (a) => handleWriteFile(String(a.path), String(a.content ?? "")),
     },
     {
-      name: "search_files",
+      name: "file_search_files",
       description:
         "搜索文件。target=files：pattern 为 glob（支持 a|b 多段）。target=content：pattern 为搜索文字（默认字面量，regex=true 为正则）。" +
         "output_mode=files_only 且 pattern 含 * ? 时自动按文件名匹配。",
@@ -415,7 +415,7 @@ export function registerFileTools(toolSets: ToolSetRegistry): void {
         ),
     },
     {
-      name: "patch",
+      name: "file_patch",
       description: "Replace string in file",
       parameters: {
         type: "object",

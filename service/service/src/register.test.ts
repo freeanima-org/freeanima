@@ -21,15 +21,15 @@ describe("registerServiceTools", () => {
   it("registers core tool names", () => {
     registerServiceTools({ toolSets, skills });
     const names = new Set(toolSets.listTools().map((t) => t.name));
-    expect(names.has("read_file")).toBe(true);
-    expect(names.has("tool_search")).toBe(true);
-    expect(names.has("tool_load")).toBe(true);
-    expect(names.has("todo")).toBe(true);
-    expect(names.has("cronjob")).toBe(true);
-    expect(names.has("create_task")).toBe(true);
+    expect(names.has("file_read_file")).toBe(true);
+    expect(names.has("tools_list")).toBe(true);
+    expect(names.has("tools_load")).toBe(true);
+    expect(names.has("todo")).toBe(false);
+    expect(names.has("cron_job")).toBe(true);
+    expect(names.has("tasks_create")).toBe(true);
     expect(names.has("clarify")).toBe(true);
-    expect(names.has("list_email_accounts")).toBe(true);
-    expect(names.has("send_email")).toBe(true);
+    expect(names.has("email_list_accounts")).toBe(true);
+    expect(names.has("email_send")).toBe(true);
   });
 
   it("is idempotent", () => {

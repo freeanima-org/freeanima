@@ -4,16 +4,16 @@ import { ToolSetRegistry } from "@freeanima/engine-tool";
 import { registerEmailTools } from "./email/tools.ts";
 
 const EMAIL_TOOL_NAMES = [
-  "register_email_account",
-  "edit_email_account",
-  "list_email_accounts",
-  "delete_email_account",
-  "send_email",
-  "fetch_emails",
-  "list_emails",
-  "read_email",
-  "mark_email_read",
-  "delete_email",
+  "email_register_account",
+  "email_edit_account",
+  "email_list_accounts",
+  "email_delete_account",
+  "email_send",
+  "email_fetch",
+  "email_list",
+  "email_read",
+  "email_mark_read",
+  "email_delete",
 ] as const;
 
 describe("registerEmailTools", () => {

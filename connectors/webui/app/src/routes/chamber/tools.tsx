@@ -1,36 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
+import type { ToolsStatusResponse, ToolsStatusToolItem } from "@freeanima/connectors-webui/api";
 import { getToolsStatus } from "@/lib/api.ts";
 
-type ToolRow = {
-  name: string;
-  description?: string;
-  requires_env?: unknown;
-  parameters?: unknown;
-};
+type ToolsLoaderData = ToolsStatusResponse;
 
-type ToolSetRow = {
-  name: string;
-  description: string;
-  tools: string[];
-};
-
-type ToolsLoaderData = {
-  tools: ToolRow[];
-  tool_sets: ToolSetRow[];
-};
-
-const EMPTY_LOADER_DATA: ToolsLoaderData = { tools: [], tool_sets: [] };
+const EMPTY_LOADER_DATA: ToolsLoaderData = { default_tools: [], tools: [], tool_sets: [] };
 
 /** 静态 ToolSet 展示顺序；未列出的静态集按名称排序，动态集 mcp_* → acp_* */
 const STATIC_TOOLSET_ORDER = [
-  "fs",
+  "tools",
+  "file",
   "terminal",
   "browser",
   "web",
   "code",
   "skills",
   "credentials",
-  "todo",
   "tasks",
   "cron",
   "clarify",
@@ -48,7 +33,7 @@ function toolSetSortKey(name: string): [number, number, string] {
   return [1, 0, name];
 }
 
-function sortToolSets(toolSets: ToolSetRow[]): ToolSetRow[] {
+function sortToolSets(toolSets: ToolsLoaderData["tool_sets"]): ToolsLoaderData["tool_sets"] {
   return toolSets.toSorted((a, b) => {
     const ka = toolSetSortKey(a.name);
     const kb = toolSetSortKey(b.name);
@@ -58,27 +43,75 @@ function sortToolSets(toolSets: ToolSetRow[]): ToolSetRow[] {
   });
 }
 
+function returnKindLabel(kind: ToolsStatusToolItem["return_kind"]): string {
+  return kind === "text" ? "纯文本" : "结构化 JSON";
+}
+
+function returnKindHint(kind: ToolsStatusToolItem["return_kind"]): string {
+  if (kind === "text") {
+    return '成功时返回纯文本；失败时返回 {"error":"..."}';
+  }
+  return '成功时返回 toolResult JSON 对象；失败时返回 {"error":"..."}';
+}
+
 export const Route = createFileRoute("/chamber/tools")({
   loader: () => getToolsStatus().catch(() => EMPTY_LOADER_DATA) as Promise<ToolsLoaderData>,
   component: ToolsPage,
 });
 
-function ToolCard({ tool }: { tool: ToolRow }) {
+function DefaultToolsSection({ names }: { names: string[] }) {
+  if (!names.length) return null;
+  return (
+    <div className="card bg-base-200 mb-4">
+      <div className="card-body py-3 px-4 gap-2">
+        <h3 className="text-sm font-semibold">默认加载工具</h3>
+        <p className="text-xs text-base-content/60">
+          新会话自动注入 LLM tools 参数的默认集（tools_load 按需加载的工具不在此列）。
+        </p>
+        <div className="flex flex-wrap gap-1">
+          {names.map((name) => (
+            <span key={name} className="badge badge-primary badge-sm font-mono">
+              {name}
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ToolCard({ tool }: { tool: ToolsStatusToolItem }) {
   return (
     <div className="card bg-base-200">
       <div className="card-body py-3 px-4">
-        <div className="flex items-center justify-between">
-          <h3 className="font-mono text-sm font-bold">{tool.name}</h3>
-          {tool.requires_env ? <span className="badge badge-warning badge-xs">需密钥</span> : null}
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="font-mono text-sm font-bold break-all">{tool.name}</h3>
+          <div className="flex items-center gap-1 shrink-0">
+            <span
+              className={`badge badge-xs ${tool.return_kind === "text" ? "badge-info" : "badge-neutral"}`}
+            >
+              {returnKindLabel(tool.return_kind)}
+            </span>
+            {tool.requires_env?.length ? (
+              <span className="badge badge-warning badge-xs">需密钥</span>
+            ) : null}
+          </div>
         </div>
         {tool.description ? (
           <p className="text-xs text-base-content/60">{tool.description}</p>
         ) : null}
-        {tool.parameters ? (
+        <p className="text-xs text-base-content/50 mt-1">{returnKindHint(tool.return_kind)}</p>
+        <details className="mt-1">
+          <summary className="text-xs cursor-pointer text-base-content/50">工具定义</summary>
+          <pre className="text-xs mt-1 bg-base-300 p-2 rounded overflow-x-auto">
+            {JSON.stringify(tool.definition, null, 2)}
+          </pre>
+        </details>
+        {tool.return_schema ? (
           <details className="mt-1">
-            <summary className="text-xs cursor-pointer text-base-content/50">参数</summary>
+            <summary className="text-xs cursor-pointer text-base-content/50">返回 schema</summary>
             <pre className="text-xs mt-1 bg-base-300 p-2 rounded overflow-x-auto">
-              {JSON.stringify(tool.parameters, null, 2)}
+              {JSON.stringify(tool.return_schema, null, 2)}
             </pre>
           </details>
         ) : null}
@@ -90,6 +123,7 @@ function ToolCard({ tool }: { tool: ToolRow }) {
 function ToolsPage() {
   const data = Route.useLoaderData();
   const tools = data.tools ?? [];
+  const defaultTools = data.default_tools ?? [];
   const toolSets = sortToolSets(data.tool_sets ?? []);
   const toolByName = new Map(tools.map((t) => [t.name, t]));
 
@@ -98,6 +132,7 @@ function ToolsPage() {
       <div>
         <h2 className="text-lg font-bold mb-4">🔧 工具</h2>
         <p className="text-sm text-base-content/60 mb-4">已注册的工具列表。</p>
+        <DefaultToolsSection names={defaultTools} />
         <div className="space-y-3">
           {tools.map((tool) => (
             <ToolCard key={tool.name} tool={tool} />
@@ -118,12 +153,13 @@ function ToolsPage() {
     <div>
       <h2 className="text-lg font-bold mb-4">🔧 工具</h2>
       <p className="text-sm text-base-content/60 mb-4">已注册的工具列表（按 ToolSet 分组）。</p>
+      <DefaultToolsSection names={defaultTools} />
 
       <div className="space-y-4">
         {toolSets.map((ts) => {
           const groupedTools = ts.tools
             .map((name) => toolByName.get(name))
-            .filter((t): t is ToolRow => t !== undefined);
+            .filter((t): t is ToolsStatusToolItem => t !== undefined);
           if (!groupedTools.length) return null;
           return (
             <details key={ts.name} className="group">

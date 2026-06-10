@@ -6,12 +6,12 @@ describe("MaskRegistry", () => {
     const reg = new MaskRegistry();
     reg.register("sleep", {
       inherits: [],
-      allowed_tools: ["recall"],
+      allowed_tools: ["memory_recall"],
       denied_tools: [],
       auto_skills: [],
       credentials: [],
     });
-    expect(reg.get("sleep")?.allowed_tools).toEqual(["recall"]);
+    expect(reg.get("sleep")?.allowed_tools).toEqual(["memory_recall"]);
     expect(reg.list()).toHaveLength(1);
     expect(Object.isFrozen(reg.get("sleep"))).toBe(true);
   });

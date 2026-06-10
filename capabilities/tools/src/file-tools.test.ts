@@ -30,7 +30,7 @@ describe("file tools", () => {
   it("read_file returns line numbers", async () => {
     const p = join(cwd, "a.txt");
     writeFileSync(p, "a\nb\nc\n", "utf-8");
-    const tool = toolSets.getTool("read_file")!;
+    const tool = toolSets.getTool("file_read_file")!;
     const out = await tool.handler({ path: p, offset: 1, limit: 2 });
     expect(out).toContain("1|a");
     expect(out).toContain("2|b");
@@ -38,7 +38,7 @@ describe("file tools", () => {
 
   it("write_file creates file", async () => {
     const target = join(cwd, "sub", "f.txt");
-    const tool = toolSets.getTool("write_file")!;
+    const tool = toolSets.getTool("file_write_file")!;
     const out = await tool.handler({ path: target, content: "hello" });
     expect(out).toContain('"ok":true');
     expect(readFileSync(target, "utf-8")).toBe("hello");
@@ -47,7 +47,7 @@ describe("file tools", () => {
   it("patch replaces content on existing file", async () => {
     const p = join(cwd, "patch-me.txt");
     writeFileSync(p, "hello world\n", "utf-8");
-    const tool = toolSets.getTool("patch")!;
+    const tool = toolSets.getTool("file_patch")!;
     const out = await tool.handler({
       path: p,
       old_string: "world",
@@ -62,7 +62,7 @@ describe("file tools", () => {
     const abs = join(cwd, rel);
     mkdirSync(dirname(abs), { recursive: true });
     writeFileSync(abs, "alpha\n", "utf-8");
-    const out = await toolSets.getTool("patch")!.handler({
+    const out = await toolSets.getTool("file_patch")!.handler({
       path: rel,
       old_string: "alpha",
       new_string: "beta",
@@ -73,7 +73,7 @@ describe("file tools", () => {
 
   it("tools are registered", () => {
     const names = new Set(toolSets.listTools().map((t) => t.name));
-    expect(names.has("read_file")).toBe(true);
-    expect(names.has("list_credentials")).toBe(true);
+    expect(names.has("file_read_file")).toBe(true);
+    expect(names.has("credentials_list")).toBe(true);
   });
 });

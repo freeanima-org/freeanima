@@ -1,4 +1,4 @@
-import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
+import { it, expect, beforeEach, afterEach, afterAll, spyOn } from "bun:test";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
   beginIntegrationCase,
@@ -30,6 +30,7 @@ import {
   resolveCommand,
 } from "@freeanima/connectors-commands";
 import { getServiceContext } from "@freeanima/service";
+import * as engineConversation from "@freeanima/engine-conversation";
 
 async function patchMetaForTest(sessionId: string, patch: Record<string, unknown>): Promise<void> {
   await getTestEngine().repos.session.patchSessionMeta(sessionId, patch as never);
@@ -140,11 +141,60 @@ describePg("slash commands", () => {
     expect(await testConv().sessionExists(String(data?.new_session_id))).toBe(true);
   });
 
+  it("/new writes handoff summary as first assistant message without mutating old session", async () => {
+    const handoffSpy = spyOn(engineConversation, "generateSessionHandoffSummary").mockResolvedValue(
+      {
+        ok: true,
+        summary: "上一段对话摘要",
+      },
+    );
+
+    try {
+      const sid = "20260609_120000_handoff";
+      await seedSession(
+        getTestEngine(),
+        sid,
+        {
+          role: "session_meta",
+          model: "test-model",
+          tools: [],
+          functions: [],
+          timestamp: new Date().toISOString(),
+          platform: "discord",
+        },
+        [
+          { role: "user", content: "你好", pos: 1, timestamp: "t1" },
+          { role: "assistant", content: "哈喽", pos: 2, timestamp: "t2" },
+        ],
+      );
+
+      const oldCount = await testConv().countMessages(sid);
+      const [cmd] = findCommand("/new");
+      const result = await executeCommand(cmd!, {
+        sessionId: sid,
+        platform: "discord",
+        args: [],
+        raw: "/new",
+      });
+
+      expect(handoffSpy).toHaveBeenCalled();
+      expect(await testConv().countMessages(sid)).toBe(oldCount);
+
+      const newSid = String((result.data as { new_session_id?: string })?.new_session_id);
+      const msgs = await testConv().load(newSid);
+      expect(msgs).toHaveLength(1);
+      expect(msgs[0]?.role).toBe("assistant");
+      expect(msgs[0]?.content).toBe("上一段对话摘要");
+    } finally {
+      handoffSpy.mockRestore();
+    }
+  });
+
   it("reload_tools resets session to default tools", async () => {
     const sid = await testConv().newSession("parlor");
     await patchMetaForTest(sid, {
       tools: ["stale_tool"],
-      loaded_tools: ["read_file"],
+      loaded_tools: ["file_read_file"],
     });
 
     const [cmd] = findCommand("/reload_tools");
@@ -163,8 +213,8 @@ describePg("slash commands", () => {
     expect(meta.loaded_tools ?? []).toEqual([]);
     const schemas = await testConv().loadSessionTools(sid, meta);
     const names = schemas.map((t) => t.function?.name).filter(Boolean);
-    expect(names).toContain("tool_search");
-    expect(names).toContain("tool_load");
+    expect(names).toContain("tools_list");
+    expect(names).toContain("tools_load");
   });
 
   it("reload_tools on missing session returns warning", async () => {

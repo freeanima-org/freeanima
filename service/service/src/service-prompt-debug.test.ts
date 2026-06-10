@@ -29,7 +29,7 @@ const mockConv = {
   loadSessionMeta: mock(async () => ({
     role: "session_meta" as const,
     model: "gpt-4",
-    tools: ["read_file"],
+    tools: ["file_read_file"],
     functions: [],
     timestamp: "2026-01-01T00:00:00+08:00",
     system_prompt: "",
@@ -39,7 +39,7 @@ const mockConv = {
     {
       type: "function" as const,
       function: {
-        name: "read_file",
+        name: "file_read_file",
         description: "Read a text file",
         parameters: {
           type: "object",
@@ -90,7 +90,7 @@ describe("service-prompt-debug", () => {
   it("computeGlobalBreakdown 只统计 system 与 tools 分项", () => {
     const items: PromptDebugToolItem[] = [
       {
-        name: "read_file",
+        name: "file_read_file",
         description: "Read file",
         parameters: { type: "object" },
       },
@@ -126,7 +126,7 @@ describe("service-prompt-debug", () => {
     mockConv.loadSessionMeta.mockImplementation(async () => ({
       role: "session_meta" as const,
       model: "gpt-4",
-      tools: ["read_file"],
+      tools: ["file_read_file"],
       functions: [],
       timestamp: "2026-01-01T00:00:00+08:00",
       system_prompt: preview.system.composed,
@@ -140,8 +140,8 @@ describe("service-prompt-debug", () => {
     expect(out.system.stored).toBe(preview.system.composed);
     expect(out.system.composed).toBe(preview.system.composed);
     expect(out.tools.mode).toBe("session");
-    expect(out.tools.items.some((t) => t.name === "read_file")).toBe(true);
+    expect(out.tools.items.some((t) => t.name === "file_read_file")).toBe(true);
     expect(out.meta?.cwd).toBe("/tmp/project");
-    expect(out.meta?.tool_names).toEqual(["read_file"]);
+    expect(out.meta?.tool_names).toEqual(["file_read_file"]);
   });
 });

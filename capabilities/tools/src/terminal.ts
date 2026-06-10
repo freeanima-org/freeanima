@@ -133,7 +133,7 @@ async function handleProcess(
 export function registerTerminalTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet("terminal", "终端命令与后台进程", [
     {
-      name: "terminal",
+      name: "terminal_run",
       description: "Run a shell command in a subprocess and return output",
       parameters: {
         type: "object",
@@ -155,8 +155,8 @@ export function registerTerminalTools(toolSets: ToolSetRegistry): void {
         ),
     },
     {
-      name: "process",
-      description: "Manage background processes started with terminal(background=true)",
+      name: "terminal_process",
+      description: "Manage background processes started with terminal_run(background=true)",
       parameters: {
         type: "object",
         properties: {

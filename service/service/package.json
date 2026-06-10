@@ -12,7 +12,8 @@
     "./runtime/turn-lifecycle": "./src/runtime/turn-lifecycle.ts",
     "./runtime/process-restart": "./src/runtime/process-restart.ts",
     "./schemas/display": "./src/schemas/display.ts",
-    "./schemas/snapshot": "./src/schemas/snapshot.ts"
+    "./schemas/snapshot": "./src/schemas/snapshot.ts",
+    "./bootstrap-memory-jobs": "./src/bootstrap-memory-jobs.ts"
   },
   "dependencies": {
     "@freeanima/capabilities-acp": "workspace:*",

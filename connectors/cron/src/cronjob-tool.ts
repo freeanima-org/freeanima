@@ -145,7 +145,7 @@ async function handleCronjob(args: Record<string, unknown>): Promise<string> {
 export function registerCronjobTool(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet("cron", "定时任务管理", [
     {
-      name: "cronjob",
+      name: "cron_job",
       description: "管理定时任务：创建、列表、查看、暂停、恢复、删除、立即运行",
       parameters: {
         type: "object",

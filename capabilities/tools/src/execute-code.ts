@@ -5,7 +5,7 @@ import { clampTimeout, parseRuntime, runExecuteCode } from "./execute-code-runti
 export function registerExecuteCodeTool(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet("code", "子进程代码执行", [
     {
-      name: "execute_code",
+      name: "code_execute",
       description:
         "在子进程中执行代码片段（无 shell）。runtime 默认 bun：TypeScript/JavaScript，可用 node:fs 等内置模块。" +
         "可选 runtime=nodejs。Python 脚本请用 terminal。复杂 shell 操作用 terminal。",

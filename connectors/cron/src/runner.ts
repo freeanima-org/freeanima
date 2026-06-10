@@ -12,6 +12,7 @@ import {
   toOutputRef,
 } from "./paths.ts";
 import { deliverCronResult } from "./deliver.ts";
+import { appendCronRunLog } from "./cron-log.ts";
 import { runCronBuiltinHandler } from "./builtin-handlers.ts";
 import { getCronHandleManager, getCronStore, isCronModuleInitialized } from "./module.ts";
 
@@ -108,7 +109,13 @@ export function enqueueRunJob(job: CronJob): Promise<void> {
 
 export async function runJobById(jobId: string): Promise<void> {
   if (!isCronModuleInitialized()) return;
-  const row = await getCronStore().get(jobId);
+  let row;
+  try {
+    row = await getCronStore().get(jobId);
+  } catch (e) {
+    getCronHandleManager().scheduleRetry(jobId);
+    throw e;
+  }
   if (!row) return;
   const job = CronJobClass.fromRow(row);
   if (job.paused) return;
@@ -123,6 +130,13 @@ export async function runJob(job: CronJob): Promise<void> {
     const errText = String(e);
     const output = `ERROR: ${errText}`;
     job.last_output_ref = saveOutput(job, output);
+    await appendCronRunLog({
+      job_id: job.id,
+      run_count: job.run_count,
+      ok: false,
+      outputText: output,
+      error: errText,
+    });
     await notifyDeliver(job, false, output, errText);
     await finalizeJob(job, false);
   }
@@ -167,6 +181,12 @@ async function runJobInternal(job: CronJob): Promise<void> {
   }
 
   job.last_output_ref = saveOutput(job, outputText);
+  await appendCronRunLog({
+    job_id: job.id,
+    run_count: job.run_count,
+    ok: true,
+    outputText,
+  });
   await notifyDeliver(job, true, outputText);
   await finalizeJob(job, true);
 }

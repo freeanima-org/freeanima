@@ -1,7 +1,8 @@
 import { CST_OFFSET_MS } from "@freeanima/kernel-util";
-import type { SemanticMemoryRow, SessionStorePort } from "@freeanima/engine-repos";
+import type { LimbicMemoryRow, SemanticMemoryRow, SessionStorePort } from "@freeanima/engine-repos";
 
 import { filterRecallableMessages } from "../message-filter.ts";
+import { getLimbicMemoryStore } from "../limbic-port.ts";
 import { getSemanticMemoryStore } from "../semantic-port.ts";
 
 export type LightSleepDayRange = {
@@ -120,8 +121,9 @@ export function formatExistingMemoriesMessage(rows: SemanticMemoryRow[]): string
   for (const row of rows) {
     const sources = row.source_sessions.length > 0 ? `[${row.source_sessions.join(", ")}]` : "[]";
     const observed = row.observed_at?.slice(0, 19) ?? "?";
+    const occurred = row.occurred_at?.trim() ? ` occurred=${row.occurred_at}` : "";
     lines.push(
-      `[${row.id}] (${row.type}) sources=${sources} observed=${observed}${row.pinned ? " 📌" : ""}`,
+      `[${row.id}] (${row.type}) sources=${sources} observed=${observed}${occurred}${row.pinned ? " 📌" : ""}`,
     );
     lines.push(row.content);
     lines.push("");
@@ -140,41 +142,74 @@ export const LIGHT_SLEEP_INSTRUCTION_MESSAGE = `# 提取指令
 - **仅**与已有记忆中 source_sessions 有交集的条目比较
 - 已有更准确 → 跳过或 update
 - 新事实补充已有 → update
-- 已有不再适用 → deprecate_semantic_memory
-- 全新 → create_semantic_memory
+- 已有不再适用 → memory_semantic_deprecate
+- 全新 → memory_semantic_create
 
 ## 工具说明
 
-### create_semantic_memory
-显式创建。必填 content；建议填写 type、source_sessions（来自对话 session）、observed_at。
+### memory_semantic_create
+显式创建。必填 content；建议填写 type、source_sessions（来自对话 session）。
+- **observed_at**：对话中**首次提及**该事实的消息时间（ISO8601，取自上方对话行首时间戳）
+- **occurred_at**：事实**内容中描述**的发生时间（可模糊，如「2025 春」「上周」）；与 observed_at 不同
 
-### update_semantic_memory（覆盖式）
+### memory_semantic_update（覆盖式）
 **仅修改传入的字段，未传字段保持不变。**
 - 要改 content/type/pinned/observed_at/occurred_at/status → 传入对应字段
 - 要**清空** source_sessions → 显式传 \`source_sessions: []\`
 - 未传 source_sessions → 保持原值不变
 
-### deprecate_semantic_memory
+### memory_semantic_deprecate
 软废弃（status=deprecated），保留历史。
 
 请直接调用工具完成写入；无需输出 JSON 摘要。`;
 
-export const LIMBIC_PHASE_INSTRUCTION = `# 情感提取（Phase 2）
+export const LIMBIC_INSTRUCTION = `# 情感提取
 
-基于上方 Phase 1 语义记忆产出与本日 session，判断是否有值得记录的情感体验。
+你是运行在逸灵风中的数字生命。请从上方的「本日对话」中判断是否有值得记录的情感体验，并对照「已有感性记忆」避免重复。
 
 ## 克制原则
-- 轻微情绪波动、intensity < 0.3 → **不要调用** create_limbic_memory
+- 轻微情绪波动、intensity < 0.3 → **不要调用** memory_limbic_create
 - 无明确情感信号 → 直接回复「本轮跳过：无值得记录的情感」
 - 不重复记录同一 session 的相似情绪
 
-## 工具：create_limbic_memory
+## 工具：memory_limbic_create
 - kind：session_mood（整体情绪）| turning_point（情感转折）| spike（强烈瞬间）
 - content：第一人称「我感到…」
 - valence：-1.0（负）到 1.0（正）；arousal：0.0 到 1.0
-- intensity：0.3 以上才写入；关联 semantic_memory_ids 与 session_id
+- intensity：0.3 以上才写入；可选关联 semantic_memory_ids 与 session_id
 
 请直接调用工具；无需输出 JSON 摘要。`;
+
+export async function collectLimbicMemoriesForSessions(
+  sessionIds: string[],
+): Promise<LimbicMemoryRow[]> {
+  const store = getLimbicMemoryStore();
+  const byId = new Map<string, LimbicMemoryRow>();
+  for (const sessionId of sessionIds) {
+    const rows = await store.listBySession(sessionId);
+    for (const row of rows) {
+      byId.set(row.id, row);
+    }
+  }
+  return [...byId.values()];
+}
+
+export function formatLimbicMemoriesMessage(rows: LimbicMemoryRow[]): string {
+  if (!rows.length) {
+    return "（与本次 session 无交集的已有感性记忆）";
+  }
+  const lines = [`# 已有感性记忆（${rows.length} 条）`];
+  for (const row of rows) {
+    const semanticIds =
+      row.semantic_memory_ids.length > 0 ? `[${row.semantic_memory_ids.join(", ")}]` : "[]";
+    lines.push(
+      `[${row.id}] (${row.kind}) session=${row.session_id} intensity=${row.intensity} semantic=${semanticIds}`,
+    );
+    lines.push(row.content);
+    lines.push("");
+  }
+  return lines.join("\n").trim();
+}
 
 export async function buildLightSleepUserMessages(
   sessionStore: SessionStorePort,
@@ -188,20 +223,12 @@ export async function buildLightSleepUserMessages(
   return [dialogue.text, formatExistingMemoriesMessage(related), LIGHT_SLEEP_INSTRUCTION_MESSAGE];
 }
 
-export function buildLimbicPhaseUserMessages(
+export async function buildLimbicUserMessages(
+  sessionStore: SessionStorePort,
   sessionIds: string[],
-  semanticMemoryIds: string[],
-): string[] {
-  const contextLines = [
-    "# 本日 session",
-    ...sessionIds.map((id) => `- ${id}`),
-    "",
-    "# Phase 1 语义记忆产出（新建/更新）",
-  ];
-  if (semanticMemoryIds.length) {
-    contextLines.push(...semanticMemoryIds.map((id) => `- ${id}`));
-  } else {
-    contextLines.push("（本轮仅有废弃或无 id 返回；若无情感信号可跳过）");
-  }
-  return [contextLines.join("\n"), LIMBIC_PHASE_INSTRUCTION];
+): Promise<string[]> {
+  const blocks = await collectSessionBlocks(sessionStore, sessionIds);
+  const dialogue = formatDialogueMessage(blocks);
+  const related = await collectLimbicMemoriesForSessions(sessionIds);
+  return [dialogue.text, formatLimbicMemoriesMessage(related), LIMBIC_INSTRUCTION];
 }

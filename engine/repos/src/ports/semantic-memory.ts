@@ -8,6 +8,7 @@ export type SemanticMemoryRow = {
   observed_at: string | null;
   occurred_at: string | null;
   status: string;
+  reference_count: number;
   created: string;
   updated: string;
 };

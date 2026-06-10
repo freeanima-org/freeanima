@@ -127,8 +127,10 @@
       "dependencies": {
         "@freeanima/engine-conversation": "workspace:*",
         "@freeanima/engine-loop": "workspace:*",
+        "@freeanima/engine-repos": "workspace:*",
         "@freeanima/engine-skill": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
+        "@freeanima/kernel-util": "workspace:*",
         "@freeanima/service-config": "workspace:*",
       },
       "devDependencies": {
@@ -142,6 +144,7 @@
       },
       "dependencies": {
         "@freeanima/connectors-webui": "workspace:*",
+        "@freeanima/life-memory": "workspace:*",
         "@freeanima/service": "workspace:*",
         "@freeanima/service-config": "workspace:*",
         "@freeanima/service-logging": "workspace:*",
@@ -187,6 +190,7 @@
         "@freeanima/engine-db": "workspace:*",
         "@freeanima/engine-repos": "workspace:*",
         "@freeanima/kernel-util": "workspace:*",
+        "@freeanima/life-memory": "workspace:*",
         "@freeanima/service-config": "workspace:*",
         "@freeanima/service-logging": "workspace:*",
         "@node-rs/jieba": "^2.0.1",

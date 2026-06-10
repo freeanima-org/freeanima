@@ -19,6 +19,7 @@ import {
   enqueueRunJob,
 } from "@freeanima/connectors-cron";
 import type { CronJobData } from "@freeanima/connectors-cron";
+import { buildToolsStatus } from "@freeanima/engine-tool";
 import { listCommandDefs, listCommandDefsForPlatform } from "@freeanima/connectors-commands";
 import { pingDatabase } from "@freeanima/connectors-db-pg";
 import { pingRedis } from "@freeanima/connectors-redis";
@@ -164,27 +165,9 @@ export function getConfig(): SafeConfigSnapshot {
   return { config: sanitizeConfigForApi(cfg) as SafeConfigSnapshot["config"] };
 }
 
-export function listToolsApi(): {
-  tools: { name: string; description: string; toolset?: string }[];
-  tool_sets: { name: string; description: string; tools: string[] }[];
-} {
+export function listToolsApi() {
   const { engine } = getServiceContext();
-  const toolSetByName = new Map<string, string>();
-  for (const ts of engine.catalog.toolSets.listToolSets()) {
-    for (const n of ts.tools) toolSetByName.set(n, ts.name);
-  }
-  return {
-    tools: engine.catalog.toolSets.listTools().map((t) => ({
-      name: t.name,
-      description: t.description,
-      toolset: toolSetByName.get(t.name),
-    })),
-    tool_sets: engine.catalog.toolSets.listToolSets().map((ts) => ({
-      name: ts.name,
-      description: ts.description,
-      tools: [...ts.tools],
-    })),
-  };
+  return buildToolsStatus(engine.catalog.toolSets);
 }
 
 export async function listCronJobs(): Promise<{ jobs: CronJobData[] }> {

@@ -22,6 +22,7 @@ import { Route as ParlorSessionsRouteImport } from './routes/parlor/sessions'
 import { Route as ParlorChatRouteImport } from './routes/parlor/chat'
 import { Route as ChamberToolsRouteImport } from './routes/chamber/tools'
 import { Route as ChamberSystemPromptRouteImport } from './routes/chamber/system-prompt'
+import { Route as ChamberSleepRouteImport } from './routes/chamber/sleep'
 import { Route as ChamberSemanticMemoryRouteImport } from './routes/chamber/semantic-memory'
 import { Route as ChamberSelfLayerRouteImport } from './routes/chamber/self-layer'
 import { Route as ChamberMemoryRouteImport } from './routes/chamber/memory'
@@ -103,6 +104,11 @@ const ChamberToolsRoute = ChamberToolsRouteImport.update({
 const ChamberSystemPromptRoute = ChamberSystemPromptRouteImport.update({
   id: '/system-prompt',
   path: '/system-prompt',
+  getParentRoute: () => ChamberRouteRoute,
+} as any)
+const ChamberSleepRoute = ChamberSleepRouteImport.update({
+  id: '/sleep',
+  path: '/sleep',
   getParentRoute: () => ChamberRouteRoute,
 } as any)
 const ChamberSemanticMemoryRoute = ChamberSemanticMemoryRouteImport.update({
@@ -214,6 +220,7 @@ export interface FileRoutesByFullPath {
   '/chamber/memory': typeof ChamberMemoryRoute
   '/chamber/self-layer': typeof ChamberSelfLayerRoute
   '/chamber/semantic-memory': typeof ChamberSemanticMemoryRoute
+  '/chamber/sleep': typeof ChamberSleepRoute
   '/chamber/system-prompt': typeof ChamberSystemPromptRoute
   '/chamber/tools': typeof ChamberToolsRoute
   '/parlor/chat': typeof ParlorChatRoute
@@ -245,6 +252,7 @@ export interface FileRoutesByTo {
   '/chamber/memory': typeof ChamberMemoryRoute
   '/chamber/self-layer': typeof ChamberSelfLayerRoute
   '/chamber/semantic-memory': typeof ChamberSemanticMemoryRoute
+  '/chamber/sleep': typeof ChamberSleepRoute
   '/chamber/system-prompt': typeof ChamberSystemPromptRoute
   '/chamber/tools': typeof ChamberToolsRoute
   '/parlor/chat': typeof ParlorChatRoute
@@ -278,6 +286,7 @@ export interface FileRoutesById {
   '/chamber/memory': typeof ChamberMemoryRoute
   '/chamber/self-layer': typeof ChamberSelfLayerRoute
   '/chamber/semantic-memory': typeof ChamberSemanticMemoryRoute
+  '/chamber/sleep': typeof ChamberSleepRoute
   '/chamber/system-prompt': typeof ChamberSystemPromptRoute
   '/chamber/tools': typeof ChamberToolsRoute
   '/parlor/chat': typeof ParlorChatRoute
@@ -312,6 +321,7 @@ export interface FileRouteTypes {
     | '/chamber/memory'
     | '/chamber/self-layer'
     | '/chamber/semantic-memory'
+    | '/chamber/sleep'
     | '/chamber/system-prompt'
     | '/chamber/tools'
     | '/parlor/chat'
@@ -343,6 +353,7 @@ export interface FileRouteTypes {
     | '/chamber/memory'
     | '/chamber/self-layer'
     | '/chamber/semantic-memory'
+    | '/chamber/sleep'
     | '/chamber/system-prompt'
     | '/chamber/tools'
     | '/parlor/chat'
@@ -375,6 +386,7 @@ export interface FileRouteTypes {
     | '/chamber/memory'
     | '/chamber/self-layer'
     | '/chamber/semantic-memory'
+    | '/chamber/sleep'
     | '/chamber/system-prompt'
     | '/chamber/tools'
     | '/parlor/chat'
@@ -486,6 +498,13 @@ declare module '@tanstack/react-router' {
       path: '/system-prompt'
       fullPath: '/chamber/system-prompt'
       preLoaderRoute: typeof ChamberSystemPromptRouteImport
+      parentRoute: typeof ChamberRouteRoute
+    }
+    '/chamber/sleep': {
+      id: '/chamber/sleep'
+      path: '/sleep'
+      fullPath: '/chamber/sleep'
+      preLoaderRoute: typeof ChamberSleepRouteImport
       parentRoute: typeof ChamberRouteRoute
     }
     '/chamber/semantic-memory': {
@@ -639,6 +658,7 @@ interface ChamberRouteRouteChildren {
   ChamberMemoryRoute: typeof ChamberMemoryRoute
   ChamberSelfLayerRoute: typeof ChamberSelfLayerRoute
   ChamberSemanticMemoryRoute: typeof ChamberSemanticMemoryRoute
+  ChamberSleepRoute: typeof ChamberSleepRoute
   ChamberSystemPromptRoute: typeof ChamberSystemPromptRoute
   ChamberToolsRoute: typeof ChamberToolsRoute
 }
@@ -659,6 +679,7 @@ const ChamberRouteRouteChildren: ChamberRouteRouteChildren = {
   ChamberMemoryRoute: ChamberMemoryRoute,
   ChamberSelfLayerRoute: ChamberSelfLayerRoute,
   ChamberSemanticMemoryRoute: ChamberSemanticMemoryRoute,
+  ChamberSleepRoute: ChamberSleepRoute,
   ChamberSystemPromptRoute: ChamberSystemPromptRoute,
   ChamberToolsRoute: ChamberToolsRoute,
 }

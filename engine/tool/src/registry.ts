@@ -12,12 +12,17 @@ export type ToolArgs = Record<string, unknown>;
 
 export type ToolHandler = (args: ToolArgs) => string | Promise<string>;
 
+/** 工具成功返回的约定形态：结构化 JSON（toolResult）或 LLM 可读纯文本 */
+export type ToolReturnKind = "json" | "text";
+
 export type ToolDef = {
   name: string;
   description: string;
   parameters: JsonSchemaObject;
   handler: ToolHandler;
   requiresEnv?: string[];
+  returnKind?: ToolReturnKind;
+  returnSchema?: JsonSchemaObject;
 };
 
 /** 将 ToolDef 转为 OpenAI Chat Completions `tools[]` 项 */

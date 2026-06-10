@@ -70,10 +70,16 @@ describePg("server memory API", () => {
     );
 
     const out = await getServiceContext().service.memorySearch({ query: "compression" });
-    expect(out.semantic_memory.length).toBeGreaterThan(0);
-    expect(out.dialogue.length).toBeGreaterThan(0);
-    expect(out.semantic_memory[0]!.score).toBeGreaterThan(0);
-    expect(out.dialogue[0]!.session_id).toBe(sid);
+    expect(out.results.length).toBeGreaterThan(0);
+    const semantic = out.results.find((r: { memory_type: string }) => r.memory_type === "semantic");
+    const session = out.results.find((r: { memory_type: string }) => r.memory_type === "session");
+    expect(semantic).toBeDefined();
+    expect(session).toBeDefined();
+    expect(semantic!.score).toBeGreaterThan(0);
+    if (session?.memory_type === "session") {
+      expect(session.session_id).toBe(sid);
+      expect(session.snippet.length).toBeGreaterThan(0);
+    }
   });
 
   it("countSemanticMemory returns semantic memory count", async () => {
@@ -85,7 +91,9 @@ describePg("server memory API", () => {
     const { index_rows } = await getServiceContext().service.countSemanticMemory();
     expect(index_rows).toBeGreaterThan(0);
     const hits = await getServiceContext().service.memorySearch({ query: "gamma" });
-    expect(hits.semantic_memory.length).toBeGreaterThan(0);
+    expect(hits.results.some((r: { memory_type: string }) => r.memory_type === "semantic")).toBe(
+      true,
+    );
   });
 
   it("listSemanticMemories supports filter offset and total", async () => {
