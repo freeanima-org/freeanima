@@ -12,6 +12,11 @@ type Violation = { file: string; line: number; pkg: string; reason: string };
 
 const IMPORT_RE = /from\s+["']@freeanima\/([^"']+)["']/g;
 
+/** import 路径首段即 workspace 包名（如 service/schemas/display → service） */
+function workspacePkgName(importPath: string): string {
+  return importPath.split("/")[0] ?? importPath;
+}
+
 function isExempt(relPath: string): boolean {
   if (relPath.includes("/tests/")) return true;
   if (relPath.includes("/test-helpers/")) return true;
@@ -37,34 +42,35 @@ function layerOf(relPath: string): string | null {
 }
 
 function isAllowed(layer: string, pkg: string, _relPath: string): boolean {
+  const root = workspacePkgName(pkg);
   switch (layer) {
     case "kernel":
-      return pkg.startsWith("kernel-") || pkg === "kernel";
+      return root.startsWith("kernel-") || root === "kernel";
     case "engine":
-      if (pkg.startsWith("kernel-") || pkg === "kernel") return true;
-      if (pkg.startsWith("engine-") || pkg === "engine") return true;
-      if (pkg === "service-config" || pkg === "service-logging") return true;
-      if (pkg.startsWith("capabilities-provider")) return true;
-      if (pkg === "connectors-db-pg") return false;
+      if (root.startsWith("kernel-") || root === "kernel") return true;
+      if (root.startsWith("engine-") || root === "engine") return true;
+      if (root === "service-config" || root === "service-logging") return true;
+      if (root.startsWith("capabilities-provider")) return true;
+      if (root === "connectors-db-pg") return false;
       return false;
     case "life":
-      if (pkg.startsWith("kernel-") || pkg === "kernel") return true;
-      if (pkg.startsWith("life-") || pkg === "life") return true;
-      if (pkg.startsWith("engine-tool")) return true;
-      if (pkg === "engine-repos") return true;
-      if (pkg === "connectors-db-pg") return false;
-      if (pkg === "service-config" || pkg === "service-logging") return true;
+      if (root.startsWith("kernel-") || root === "kernel") return true;
+      if (root.startsWith("life-") || root === "life") return true;
+      if (root.startsWith("engine-tool")) return true;
+      if (root === "engine-repos") return true;
+      if (root === "connectors-db-pg") return false;
+      if (root === "service-config" || root === "service-logging") return true;
       return false;
     case "capabilities":
-      if (pkg.startsWith("kernel-") || pkg === "kernel") return true;
-      if (pkg.startsWith("engine-") || pkg === "engine") return true;
-      if (pkg.startsWith("capabilities-") || pkg === "capabilities") return true;
-      if (pkg.startsWith("life-memory")) return true;
-      if (pkg === "connectors-redis") return true;
-      if (pkg === "service-config" || pkg === "service-logging") return true;
+      if (root.startsWith("kernel-") || root === "kernel") return true;
+      if (root.startsWith("engine-") || root === "engine") return true;
+      if (root.startsWith("capabilities-") || root === "capabilities") return true;
+      if (root.startsWith("life-memory")) return true;
+      if (root === "connectors-redis") return true;
+      if (root === "service-config" || root === "service-logging") return true;
       return false;
     case "connectors":
-      if (pkg === "service") return false;
+      if (root === "service") return false;
       return true;
     case "service":
       return true;
@@ -74,7 +80,8 @@ function isAllowed(layer: string, pkg: string, _relPath: string): boolean {
 }
 
 function reasonFor(layer: string, pkg: string): string {
-  return `层 ${layer} 不允许依赖 @freeanima/${pkg}`;
+  const root = workspacePkgName(pkg);
+  return `层 ${layer} 不允许依赖 @freeanima/${root}`;
 }
 
 function walk(dir: string, out: string[]): void {

@@ -92,14 +92,14 @@
 
 #### 允许依赖（与 dep-check 一致）
 
-| 层               | 允许 `@freeanima/*`                                                                                           | 禁止（要点）                                |
-| ---------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
-| **kernel**       | `kernel-*`、`kernel`                                                                                          | `engine-*`、`service`                       |
-| **engine**       | `kernel-*`、`engine-*`、`service-config`、`service-logging`、`capabilities-provider-*`                        | `connectors-db-pg`（PG 实现不得渗入机制层） |
-| **life**         | `kernel-*`、`life-*`、`engine-tool`、`engine-repos`、`connectors-sqlite`、`service-config`、`service-logging` | `engine-db`、`connectors-db-pg`             |
-| **capabilities** | `kernel-*`、`engine-*`、`capabilities-*`、`life-memory`（按需）、`service-config`、`service-logging`          | `service`                                   |
-| **connectors**   | 各层（实现层，可调用 service 上下文）                                                                         | —                                           |
-| **service**      | 各层（组合根）                                                                                                | —                                           |
+| 层               | 允许 `@freeanima/*`                                                                                                      | 禁止（要点）                                |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------- |
+| **kernel**       | `kernel-*`、`kernel`                                                                                                     | `engine-*`、`service`                       |
+| **engine**       | `kernel-*`、`engine-*`、`service-config`、`service-logging`、`capabilities-provider-*`                                   | `connectors-db-pg`（PG 实现不得渗入机制层） |
+| **life**         | `kernel-*`、`life-*`、`engine-tool`、`engine-repos`、`service-config`、`service-logging`                                 | `engine-db`、`connectors-db-pg`             |
+| **capabilities** | `kernel-*`、`engine-*`、`capabilities-*`、`life-memory`（按需）、`connectors-redis`、`service-config`、`service-logging` | `service`、`connectors-*`（redis 除外）     |
+| **connectors**   | 各下层 + `service-api` / `service-config` / `service-logging` 等                                                         | `@freeanima/service`（组合根主包）          |
+| **service**      | 各层（组合根）                                                                                                           | —                                           |
 
 #### 组合根与全局单例
 
