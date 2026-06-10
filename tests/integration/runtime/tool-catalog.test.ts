@@ -7,7 +7,7 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 import { getTestEngine, testConv } from "../../helpers/pg-test.ts";
-import { registerAllTools } from "@freeanima/service";
+import { registerServiceTools } from "@freeanima/service";
 import { isSessionMeta } from "@freeanima/engine-db/domain";
 import { DEFAULT_SESSION_TOOL_NAMES } from "@freeanima/engine-tool";
 import { runWithToolContext } from "@freeanima/engine-loop";
@@ -20,7 +20,7 @@ describePg("tool catalog lazy load", () => {
   beforeEach(async () => {
     await beginIntegrationCase("anima-tool-catalog-");
     const eng = getTestEngine();
-    registerAllTools({ toolSets: eng.toolSets, skills: eng.skills });
+    registerServiceTools({ toolSets: eng.toolSets, skills: eng.skills });
   });
 
   afterEach(async () => {

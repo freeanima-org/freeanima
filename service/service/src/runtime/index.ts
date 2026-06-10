@@ -10,4 +10,4 @@ export * from "./conversation-stats.ts";
 export * from "./runtime-context-stats.ts";
 export * from "./service-prompt-debug.ts";
 export { ANIMA_VERSION } from "./version.ts";
-export { getRepoRoot, readRootVersion, writeRootVersion } from "./root-version.ts";
+export { getRepoRoot, readAppVersion, writeRootVersion } from "./root-version.ts";

@@ -5,9 +5,9 @@ import {
   getProfileHopModel,
   loadConfig,
   sanitizeConfigForApi,
-  CST_OFFSET_MS,
   PATHS,
 } from "@freeanima/service-config";
+import { CST_OFFSET_MS } from "@freeanima/kernel-util";
 import { getServiceContext } from "../context.ts";
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
 import {

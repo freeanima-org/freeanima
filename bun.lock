@@ -400,6 +400,7 @@
       "name": "@freeanima/engine-skill",
       "dependencies": {
         "@freeanima/engine-tool": "workspace:*",
+        "@freeanima/kernel-util": "workspace:*",
         "@freeanima/service-config": "workspace:*",
       },
       "devDependencies": {
@@ -586,6 +587,7 @@
         "@freeanima/kernel": "workspace:*",
         "@freeanima/kernel-eventbus": "workspace:*",
         "@freeanima/kernel-hooks": "workspace:*",
+        "@freeanima/kernel-util": "workspace:*",
         "@freeanima/life-estate": "workspace:*",
         "@freeanima/life-memory": "workspace:*",
         "@freeanima/life-self": "workspace:*",

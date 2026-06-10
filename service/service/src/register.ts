@@ -49,11 +49,6 @@ export function resetRegisterServiceToolsForTest(): void {
   registeredCatalog = null;
 }
 
-/** @deprecated 使用 registerServiceTools */
-export function registerAllTools(opts: { toolSets: ToolSetRegistry; skills: SkillRegistry }): void {
-  registerServiceTools(opts);
-}
-
 /** 注册 clarify hook 与 ACP 工具（需 kernel + conversation） */
 export function registerServiceIntegrations(opts: {
   kernel: Kernel;
