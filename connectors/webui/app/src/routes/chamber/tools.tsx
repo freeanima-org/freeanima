@@ -49,9 +49,31 @@ function returnKindLabel(kind: ToolsStatusToolItem["return_kind"]): string {
 
 function returnKindHint(kind: ToolsStatusToolItem["return_kind"]): string {
   if (kind === "text") {
-    return '成功时返回纯文本；失败时返回 {"error":"..."}';
+    return "成功时返回纯文本；失败时返回 JSON error";
   }
-  return '成功时返回 toolResult JSON 对象；失败时返回 {"error":"..."}';
+  return "成功时返回 toolResult JSON 对象；失败时返回 JSON error";
+}
+
+function isDynamicRemoteTool(tool: ToolsStatusToolItem): boolean {
+  const ts = tool.toolset ?? "";
+  return ts.startsWith("mcp_") || ts.startsWith("acp_");
+}
+
+function formatReturnExample(tool: ToolsStatusToolItem): string {
+  if (tool.return_example === undefined) return "";
+  if (tool.return_kind === "text" && typeof tool.return_example === "string") {
+    return tool.return_example;
+  }
+  return JSON.stringify(tool.return_example, null, 2);
+}
+
+async function copyText(text: string, label: string): Promise<void> {
+  try {
+    await navigator.clipboard.writeText(text);
+    console.info(`已复制${label}`);
+  } catch {
+    console.warn(`复制${label}失败`);
+  }
 }
 
 export const Route = createFileRoute("/chamber/tools")({
@@ -81,12 +103,15 @@ function DefaultToolsSection({ names }: { names: string[] }) {
 }
 
 function ToolCard({ tool }: { tool: ToolsStatusToolItem }) {
+  const exampleText = formatReturnExample(tool);
+  const missingContract = !tool.return_schema && !isDynamicRemoteTool(tool);
+
   return (
     <div className="card bg-base-200">
       <div className="card-body py-3 px-4">
         <div className="flex items-center justify-between gap-2">
           <h3 className="font-mono text-sm font-bold break-all">{tool.name}</h3>
-          <div className="flex items-center gap-1 shrink-0">
+          <div className="flex items-center gap-1 shrink-0 flex-wrap justify-end">
             <span
               className={`badge badge-xs ${tool.return_kind === "text" ? "badge-info" : "badge-neutral"}`}
             >
@@ -95,26 +120,78 @@ function ToolCard({ tool }: { tool: ToolsStatusToolItem }) {
             {tool.requires_env?.length ? (
               <span className="badge badge-warning badge-xs">需密钥</span>
             ) : null}
+            {missingContract ? (
+              <span className="badge badge-error badge-xs">未记录返回契约</span>
+            ) : null}
           </div>
         </div>
         {tool.description ? (
           <p className="text-xs text-base-content/60">{tool.description}</p>
         ) : null}
         <p className="text-xs text-base-content/50 mt-1">{returnKindHint(tool.return_kind)}</p>
+        {tool.return_text_hint ? (
+          <p className="text-xs text-base-content/50 mt-1">{tool.return_text_hint}</p>
+        ) : null}
+
         <details className="mt-1">
-          <summary className="text-xs cursor-pointer text-base-content/50">工具定义</summary>
+          <summary className="text-xs cursor-pointer text-base-content/50">参数 schema</summary>
           <pre className="text-xs mt-1 bg-base-300 p-2 rounded overflow-x-auto">
-            {JSON.stringify(tool.definition, null, 2)}
+            {JSON.stringify(tool.parameters, null, 2)}
           </pre>
         </details>
+
         {tool.return_schema ? (
           <details className="mt-1">
-            <summary className="text-xs cursor-pointer text-base-content/50">返回 schema</summary>
+            <summary className="text-xs cursor-pointer text-base-content/50">
+              成功返回 schema
+            </summary>
             <pre className="text-xs mt-1 bg-base-300 p-2 rounded overflow-x-auto">
               {JSON.stringify(tool.return_schema, null, 2)}
             </pre>
           </details>
         ) : null}
+
+        {exampleText ? (
+          <details className="mt-1">
+            <summary className="text-xs cursor-pointer text-base-content/50 flex items-center gap-2">
+              <span>保真示例（成功）</span>
+              <button
+                type="button"
+                className="btn btn-ghost btn-xs"
+                onClick={(e) => {
+                  e.preventDefault();
+                  void copyText(exampleText, "成功返回示例");
+                }}
+              >
+                复制
+              </button>
+            </summary>
+            <pre className="text-xs mt-1 bg-base-300 p-2 rounded overflow-x-auto whitespace-pre-wrap">
+              {exampleText}
+            </pre>
+          </details>
+        ) : null}
+
+        <details className="mt-1">
+          <summary className="text-xs cursor-pointer text-base-content/50">错误返回</summary>
+          <p className="text-xs text-base-content/50 mt-1">所有工具失败时统一返回 JSON：</p>
+          <pre className="text-xs mt-1 bg-base-300 p-2 rounded overflow-x-auto">
+            {JSON.stringify(tool.error_schema, null, 2)}
+          </pre>
+          <p className="text-xs text-base-content/50 mt-2">示例：</p>
+          <pre className="text-xs mt-1 bg-base-300 p-2 rounded overflow-x-auto">
+            {JSON.stringify(tool.error_example, null, 2)}
+          </pre>
+        </details>
+
+        <details className="mt-1">
+          <summary className="text-xs cursor-pointer text-base-content/50">
+            完整 OpenAI 定义
+          </summary>
+          <pre className="text-xs mt-1 bg-base-300 p-2 rounded overflow-x-auto">
+            {JSON.stringify(tool.definition, null, 2)}
+          </pre>
+        </details>
       </div>
     </div>
   );

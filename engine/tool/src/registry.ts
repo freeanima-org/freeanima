@@ -1,3 +1,5 @@
+import type { z } from "zod";
+
 /** JSON Schema object 子集（OpenAI function parameters） */
 export type JsonSchemaObject = {
   type?: string;
@@ -22,7 +24,14 @@ export type ToolDef = {
   handler: ToolHandler;
   requiresEnv?: string[];
   returnKind?: ToolReturnKind;
+  /** 由 returnZod 推导；text 工具也可手写 */
   returnSchema?: JsonSchemaObject;
+  /** 成功返回 Zod SSOT */
+  returnZod?: z.ZodType;
+  /** 经 schema 校验的保真示例 */
+  returnExample?: unknown;
+  /** text 工具的可读格式说明 */
+  returnTextHint?: string;
 };
 
 /** 将 ToolDef 转为 OpenAI Chat Completions `tools[]` 项 */

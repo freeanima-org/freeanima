@@ -37,3 +37,19 @@ export type {
 } from "./catalog.ts";
 export { buildToolsStatus, resolveReturnKind, TEXT_RETURN_TOOL_NAMES } from "./tools-status.ts";
 export type { ToolsStatusResponse, ToolsStatusToolItem } from "./tools-status.ts";
+export {
+  attachToolReturns,
+  defineToolReturn,
+  defineTextToolReturn,
+  globalToolErrorContract,
+} from "./return-contract.ts";
+export { z } from "zod";
+export type { ToolReturnContractFields } from "./return-contract.ts";
+export {
+  okObjectSchema,
+  paginatedListSchema,
+  textLineNumberExample,
+  textReturnJsonSchema,
+  toolErrorReturnExample,
+  toolErrorReturnSchema,
+} from "./return-schemas/common.ts";

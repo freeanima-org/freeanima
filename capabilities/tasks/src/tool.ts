@@ -1,6 +1,7 @@
 import { getToolSessionId } from "@freeanima/engine-loop";
 import type { ToolSetRegistry } from "@freeanima/engine-tool";
-import { toolError, toolResult } from "@freeanima/engine-tool";
+import { attachToolReturns, toolError, toolResult } from "@freeanima/engine-tool";
+import { TASKS_TOOL_RETURNS } from "./return-schemas.ts";
 import { formatCstIso } from "@freeanima/kernel-util";
 import type {
   TaskListOpts,
@@ -218,99 +219,106 @@ async function handleListTasks(args: Record<string, unknown>): Promise<string> {
 }
 
 export function registerTaskTools(toolSets: ToolSetRegistry): void {
-  toolSets.registerToolSet("tasks", "跨 session 持久待办", [
-    {
-      name: "tasks_create",
-      description: "创建跨 session 持久待办任务",
-      parameters: {
-        type: "object",
-        properties: {
-          title: { type: "string", description: "任务标题" },
-          description: { type: "string", description: "任务详情（可选）" },
-          priority: {
-            type: "string",
-            enum: [...TASK_PRIORITIES],
-            description: "优先级，默认 none",
+  toolSets.registerToolSet(
+    "tasks",
+    "跨 session 持久待办",
+    attachToolReturns(
+      [
+        {
+          name: "tasks_create",
+          description: "创建跨 session 持久待办任务",
+          parameters: {
+            type: "object",
+            properties: {
+              title: { type: "string", description: "任务标题" },
+              description: { type: "string", description: "任务详情（可选）" },
+              priority: {
+                type: "string",
+                enum: [...TASK_PRIORITIES],
+                description: "优先级，默认 none",
+              },
+              due_at: { type: "string", description: "截止时间 ISO8601（可选）" },
+            },
+            required: ["title"],
           },
-          due_at: { type: "string", description: "截止时间 ISO8601（可选）" },
+          handler: handleCreateTask,
         },
-        required: ["title"],
-      },
-      handler: handleCreateTask,
-    },
-    {
-      name: "tasks_update",
-      description: "更新待办任务字段",
-      parameters: {
-        type: "object",
-        properties: {
-          id: { type: "string", description: "任务 ID" },
-          title: { type: "string" },
-          description: { type: "string" },
-          status: { type: "string", enum: [...TASK_STATUSES] },
-          priority: { type: "string", enum: [...TASK_PRIORITIES] },
-          due_at: { type: "string" },
-        },
-        required: ["id"],
-      },
-      handler: handleUpdateTask,
-    },
-    {
-      name: "tasks_complete",
-      description: "将任务标记为 completed",
-      parameters: {
-        type: "object",
-        properties: { id: { type: "string", description: "任务 ID" } },
-        required: ["id"],
-      },
-      handler: (args) => handleStatusChange(args, "completed", "complete"),
-    },
-    {
-      name: "tasks_cancel",
-      description: "将任务标记为 cancelled",
-      parameters: {
-        type: "object",
-        properties: { id: { type: "string", description: "任务 ID" } },
-        required: ["id"],
-      },
-      handler: (args) => handleStatusChange(args, "cancelled", "cancel"),
-    },
-    {
-      name: "tasks_reopen",
-      description: "将任务重新打开为 pending",
-      parameters: {
-        type: "object",
-        properties: { id: { type: "string", description: "任务 ID" } },
-        required: ["id"],
-      },
-      handler: (args) => handleStatusChange(args, "pending", "reopen"),
-    },
-    {
-      name: "tasks_list",
-      description: "列出待办；默认 pending + in_progress，按 priority 降序、created_at 升序",
-      parameters: {
-        type: "object",
-        properties: {
-          status: {
-            type: "array",
-            items: { type: "string", enum: [...TASK_STATUSES] },
-            description: "状态过滤；默认 pending + in_progress",
+        {
+          name: "tasks_update",
+          description: "更新待办任务字段",
+          parameters: {
+            type: "object",
+            properties: {
+              id: { type: "string", description: "任务 ID" },
+              title: { type: "string" },
+              description: { type: "string" },
+              status: { type: "string", enum: [...TASK_STATUSES] },
+              priority: { type: "string", enum: [...TASK_PRIORITIES] },
+              due_at: { type: "string" },
+            },
+            required: ["id"],
           },
-          priority: { type: "string", enum: [...TASK_PRIORITIES] },
-          limit: { type: "integer", description: "最大条数，默认 50" },
+          handler: handleUpdateTask,
         },
-      },
-      handler: handleListTasks,
-    },
-    {
-      name: "tasks_get",
-      description: "按 ID 获取单条任务",
-      parameters: {
-        type: "object",
-        properties: { id: { type: "string", description: "任务 ID" } },
-        required: ["id"],
-      },
-      handler: handleGetTask,
-    },
-  ]);
+        {
+          name: "tasks_complete",
+          description: "将任务标记为 completed",
+          parameters: {
+            type: "object",
+            properties: { id: { type: "string", description: "任务 ID" } },
+            required: ["id"],
+          },
+          handler: (args) => handleStatusChange(args, "completed", "complete"),
+        },
+        {
+          name: "tasks_cancel",
+          description: "将任务标记为 cancelled",
+          parameters: {
+            type: "object",
+            properties: { id: { type: "string", description: "任务 ID" } },
+            required: ["id"],
+          },
+          handler: (args) => handleStatusChange(args, "cancelled", "cancel"),
+        },
+        {
+          name: "tasks_reopen",
+          description: "将任务重新打开为 pending",
+          parameters: {
+            type: "object",
+            properties: { id: { type: "string", description: "任务 ID" } },
+            required: ["id"],
+          },
+          handler: (args) => handleStatusChange(args, "pending", "reopen"),
+        },
+        {
+          name: "tasks_list",
+          description: "列出待办；默认 pending + in_progress，按 priority 降序、created_at 升序",
+          parameters: {
+            type: "object",
+            properties: {
+              status: {
+                type: "array",
+                items: { type: "string", enum: [...TASK_STATUSES] },
+                description: "状态过滤；默认 pending + in_progress",
+              },
+              priority: { type: "string", enum: [...TASK_PRIORITIES] },
+              limit: { type: "integer", description: "最大条数，默认 50" },
+            },
+          },
+          handler: handleListTasks,
+        },
+        {
+          name: "tasks_get",
+          description: "按 ID 获取单条任务",
+          parameters: {
+            type: "object",
+            properties: { id: { type: "string", description: "任务 ID" } },
+            required: ["id"],
+          },
+          handler: handleGetTask,
+        },
+      ],
+      TASKS_TOOL_RETURNS,
+    ),
+  );
 }

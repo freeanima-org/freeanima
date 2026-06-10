@@ -1,5 +1,6 @@
 import type { ToolSetRegistry } from "@freeanima/engine-tool";
-import { toolError, toolResult } from "@freeanima/engine-tool";
+import { attachToolReturns, toolError, toolResult } from "@freeanima/engine-tool";
+import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
 import { credential, loadConfig, readAppVersion } from "@freeanima/service-config";
 
 const USER_AGENT = `anima/${readAppVersion()}`;
@@ -158,34 +159,41 @@ async function handleWebExtract(urls: string[]): Promise<string> {
 }
 
 export function registerWebTools(toolSets: ToolSetRegistry): void {
-  toolSets.registerToolSet("web", "网页搜索与内容提取", [
-    {
-      name: "web_search",
-      description: "Search the web via Firecrawl",
-      parameters: {
-        type: "object",
-        properties: {
-          query: { type: "string" },
-          limit: { type: "integer", default: 5, minimum: 1, maximum: MAX_SEARCH_LIMIT },
+  toolSets.registerToolSet(
+    "web",
+    "网页搜索与内容提取",
+    attachToolReturns(
+      [
+        {
+          name: "web_search",
+          description: "Search the web via Firecrawl",
+          parameters: {
+            type: "object",
+            properties: {
+              query: { type: "string" },
+              limit: { type: "integer", default: 5, minimum: 1, maximum: MAX_SEARCH_LIMIT },
+            },
+            required: ["query"],
+          },
+          handler: (a) => handleWebSearch(String(a.query), Number(a.limit ?? 5)),
         },
-        required: ["query"],
-      },
-      handler: (a) => handleWebSearch(String(a.query), Number(a.limit ?? 5)),
-    },
-    {
-      name: "web_extract",
-      description: "Fetch URLs and extract content via Firecrawl",
-      parameters: {
-        type: "object",
-        properties: {
-          urls: { type: "array", items: { type: "string" }, maxItems: MAX_EXTRACT_URLS },
+        {
+          name: "web_extract",
+          description: "Fetch URLs and extract content via Firecrawl",
+          parameters: {
+            type: "object",
+            properties: {
+              urls: { type: "array", items: { type: "string" }, maxItems: MAX_EXTRACT_URLS },
+            },
+            required: ["urls"],
+          },
+          handler: (a) => {
+            const urls = Array.isArray(a.urls) ? a.urls.map(String) : [];
+            return handleWebExtract(urls);
+          },
         },
-        required: ["urls"],
-      },
-      handler: (a) => {
-        const urls = Array.isArray(a.urls) ? a.urls.map(String) : [];
-        return handleWebExtract(urls);
-      },
-    },
-  ]);
+      ],
+      CAPABILITIES_TOOLS_RETURNS,
+    ),
+  );
 }

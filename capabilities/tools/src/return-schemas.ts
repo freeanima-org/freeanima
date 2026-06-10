@@ -1,0 +1,488 @@
+import {
+  defineTextToolReturn,
+  defineToolReturn,
+  textLineNumberExample,
+  type ToolReturnContractFields,
+  z,
+} from "@freeanima/engine-tool";
+
+const catalogEntrySchema = z.object({
+  name: z.string(),
+  description: z.string(),
+  toolset: z.string(),
+  allowed: z.boolean(),
+});
+
+const toolCatalogMessageEntrySchema = z.object({
+  name: z.string(),
+  description: z.string(),
+  toolset: z.string(),
+  parameters: z.record(z.string(), z.unknown()),
+});
+
+const okPathSchema = z.object({ ok: z.literal(true), path: z.string() });
+
+const fileSearchFilesUnionSchema = z.union([
+  z.object({ files: z.array(z.string()), total: z.number() }),
+  z.object({ matches: z.array(z.string()), total_lines: z.number(), truncated: z.boolean() }),
+  z.object({ counts: z.array(z.string()), raw: z.string() }),
+]);
+
+const browserSuccessSchema = z.object({ success: z.literal(true) });
+
+const browserNavigateSchema = browserSuccessSchema.extend({
+  url: z.string(),
+  title: z.string(),
+  snapshot: z.string().optional(),
+  element_count: z.number().optional(),
+  vnc_url: z.string().optional(),
+  vnc_hint: z.string().optional(),
+});
+
+const browserSnapshotSchema = browserSuccessSchema.extend({
+  snapshot: z.string(),
+  element_count: z.number(),
+});
+
+const browserClickSchema = browserSuccessSchema.extend({
+  clicked: z.string(),
+  url: z.string(),
+});
+
+const browserTypeSchema = browserSuccessSchema.extend({
+  typed: z.string(),
+  element: z.string(),
+});
+
+const browserScrollSchema = browserSuccessSchema.extend({
+  scrolled: z.string(),
+});
+
+const browserUrlSchema = browserSuccessSchema.extend({
+  url: z.string(),
+});
+
+const browserPressSchema = browserSuccessSchema.extend({
+  pressed: z.string(),
+});
+
+const browserConsoleSchema = browserSuccessSchema.extend({
+  console_messages: z.array(z.unknown()),
+  js_errors: z.array(z.unknown()),
+  note: z.string().optional(),
+});
+
+const browserImagesSchema = browserSuccessSchema.extend({
+  images: z.array(z.object({ url: z.string(), alt: z.string() })),
+  count: z.number(),
+});
+
+const browserVisionSchema = browserSuccessSchema.extend({
+  screenshot_path: z.string(),
+  question: z.string(),
+  analysis: z.null(),
+  note: z.string(),
+  snapshot_excerpt: z.string().optional(),
+});
+
+const webSearchResultSchema = z.object({
+  results: z.array(z.object({ title: z.string(), url: z.string(), description: z.string() })),
+  total: z.number(),
+});
+
+const webExtractResultSchema = z.object({
+  results: z.array(
+    z.object({
+      url: z.string(),
+      title: z.string(),
+      content: z.string(),
+      error: z.string().nullable(),
+    }),
+  ),
+});
+
+const skillListEntrySchema = z.object({
+  name: z.string(),
+  description: z.string(),
+  source: z.string().optional(),
+  directory: z.string(),
+});
+
+const credentialEntrySchema = z.object({
+  path: z.string(),
+  category: z.string(),
+  fields: z.array(z.string()),
+  tags: z.array(z.string()),
+  desc: z.string().optional(),
+});
+
+const sessionSearchHitSchema = z.object({
+  session_id: z.string(),
+  message_id: z.string(),
+  role: z.string(),
+  timestamp: z.string(),
+  snippet: z.string(),
+});
+
+const sessionMessageRowSchema = z.object({
+  id: z.string(),
+  role: z.string(),
+  content: z.string(),
+  pos: z.number(),
+  timestamp: z.string().optional(),
+});
+
+const todoItemSchema = z.object({
+  id: z.number(),
+  content: z.string(),
+  status: z.enum(["pending", "in_progress", "completed", "cancelled"]),
+  created_at: z.string(),
+  updated_at: z.string().optional(),
+});
+
+const todoReturnSchema = z.union([
+  z.object({
+    ok: z.literal(true),
+    todos: z.array(todoItemSchema),
+    message: z.string(),
+  }),
+  z.object({
+    ok: z.literal(true),
+    action: z.literal("add"),
+    todo: todoItemSchema,
+    message: z.string(),
+  }),
+  z.object({
+    ok: z.literal(true),
+    action: z.literal("update"),
+    id: z.number(),
+    status: z.enum(["pending", "in_progress", "completed", "cancelled"]),
+    message: z.string(),
+  }),
+  z.object({
+    ok: z.literal(true),
+    action: z.literal("delete"),
+    id: z.number(),
+    message: z.string(),
+  }),
+]);
+
+export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields> = {
+  tools_list: defineToolReturn({
+    schema: z.object({
+      tools: z.array(catalogEntrySchema),
+      total: z.number(),
+      query: z.string().optional(),
+    }),
+    example: {
+      tools: [
+        {
+          name: "file_read_file",
+          description: "Read a text file",
+          toolset: "file",
+          allowed: true,
+        },
+      ],
+      total: 1,
+    },
+  }),
+  tools_load: defineToolReturn({
+    schema: z.object({
+      loaded: z.array(z.string()),
+      denied: z.array(z.string()),
+      already_loaded: z.array(z.string()),
+      unknown: z.array(z.string()),
+      tools: z.array(toolCatalogMessageEntrySchema),
+    }),
+    example: {
+      loaded: ["file_read_file"],
+      denied: [],
+      already_loaded: [],
+      unknown: [],
+      tools: [
+        {
+          name: "file_read_file",
+          description: "Read a text file",
+          toolset: "file",
+          parameters: { type: "object", properties: { path: { type: "string" } } },
+        },
+      ],
+    },
+  }),
+  file_read_file: defineTextToolReturn({
+    hint: "带行号的纯文本，每行格式为 offset|line_content",
+    example: textLineNumberExample,
+  }),
+  file_write_file: defineToolReturn({
+    schema: okPathSchema,
+    example: { ok: true, path: "/home/user/project/README.md" },
+  }),
+  file_search_files: defineToolReturn({
+    schema: fileSearchFilesUnionSchema,
+    example: {
+      matches: ["./src/index.ts:10:export function main()"],
+      total_lines: 1,
+      truncated: false,
+    },
+  }),
+  file_patch: defineToolReturn({
+    schema: okPathSchema,
+    example: { ok: true, path: "/home/user/project/src/app.ts" },
+  }),
+  terminal_run: defineTextToolReturn({
+    hint: "命令 stdout/stderr 纯文本；非零退出码附加 --- exit code: N ---；后台模式返回 session_id 提示",
+    example: "hello world\n--- exit code: 0 ---",
+  }),
+  terminal_process: defineTextToolReturn({
+    hint: "纯文本：list/poll/log/wait/kill 的状态与输出",
+    example: "running\nprocess output line",
+  }),
+  code_execute: defineTextToolReturn({
+    hint: "子进程 stdout/stderr 纯文本；非零退出码附加 --- exit code: N ---",
+    example: "42\n--- exit code: 0 ---",
+  }),
+  browser_navigate: defineToolReturn({
+    schema: browserNavigateSchema,
+    example: {
+      success: true,
+      url: "https://example.com",
+      title: "Example Domain",
+      snapshot: '[@e1] link "More information..."',
+      element_count: 1,
+    },
+  }),
+  browser_snapshot: defineToolReturn({
+    schema: browserSnapshotSchema,
+    example: {
+      success: true,
+      snapshot: '[@e1] button "Submit"',
+      element_count: 1,
+    },
+  }),
+  browser_click: defineToolReturn({
+    schema: browserClickSchema,
+    example: { success: true, clicked: "e1", url: "https://example.com/clicked" },
+  }),
+  browser_type: defineToolReturn({
+    schema: browserTypeSchema,
+    example: { success: true, typed: "hello", element: "e2" },
+  }),
+  browser_scroll: defineToolReturn({
+    schema: browserScrollSchema,
+    example: { success: true, scrolled: "down" },
+  }),
+  browser_back: defineToolReturn({
+    schema: browserUrlSchema,
+    example: { success: true, url: "https://example.com/" },
+  }),
+  browser_press: defineToolReturn({
+    schema: browserPressSchema,
+    example: { success: true, pressed: "Enter" },
+  }),
+  browser_console: defineToolReturn({
+    schema: browserConsoleSchema,
+    example: {
+      success: true,
+      console_messages: [],
+      js_errors: [],
+      note: "Camofox 后端暂不支持 console 抓取",
+    },
+  }),
+  browser_get_images: defineToolReturn({
+    schema: browserImagesSchema,
+    example: {
+      success: true,
+      images: [{ url: "https://example.com/logo.png", alt: "Logo" }],
+      count: 1,
+    },
+  }),
+  browser_vision: defineToolReturn({
+    schema: browserVisionSchema,
+    example: {
+      success: true,
+      screenshot_path: "/home/user/.anima/browser_screenshots/browser_screenshot_a1b2c3d4.png",
+      question: "页面上有什么按钮？",
+      analysis: null,
+      note: "逸灵风暂未接入 auxiliary vision LLM；已保存截图到 screenshot_path。",
+    },
+  }),
+  web_search: defineToolReturn({
+    schema: webSearchResultSchema,
+    example: {
+      results: [
+        {
+          title: "Example",
+          url: "https://example.com",
+          description: "An example search result",
+        },
+      ],
+      total: 1,
+    },
+  }),
+  web_extract: defineToolReturn({
+    schema: webExtractResultSchema,
+    example: {
+      results: [
+        {
+          url: "https://example.com",
+          title: "Example Domain",
+          content: "# Example Domain\n\nThis domain is for use in documentation.",
+          error: null,
+        },
+      ],
+    },
+  }),
+  skills_create: defineToolReturn({
+    schema: z.object({
+      ok: z.literal(true),
+      name: z.string(),
+      description: z.string(),
+      message: z.string(),
+    }),
+    example: {
+      ok: true,
+      name: "my-skill",
+      description: "示例技能",
+      message: "技能 'my-skill' 已创建并注册",
+    },
+  }),
+  skills_load: defineToolReturn({
+    schema: z.object({
+      skill: z.string(),
+      description: z.string(),
+      source: z.string().optional(),
+      content: z.string(),
+    }),
+    example: {
+      skill: "my-skill",
+      description: "示例技能",
+      source: "user",
+      content: "# My Skill\n\n技能正文",
+    },
+  }),
+  skills_list: defineToolReturn({
+    schema: z.object({
+      skills: z.array(skillListEntrySchema),
+      total: z.number(),
+      message: z.string().optional(),
+    }),
+    example: {
+      skills: [
+        {
+          name: "my-skill",
+          description: "示例技能",
+          source: "user",
+          directory: "/home/user/.anima/skills",
+        },
+      ],
+      total: 1,
+    },
+  }),
+  skills_search: defineToolReturn({
+    schema: z.object({
+      query: z.string(),
+      skills: z.array(skillListEntrySchema),
+      total: z.number(),
+    }),
+    example: {
+      query: "demo",
+      skills: [
+        {
+          name: "my-skill",
+          description: "示例技能",
+          source: "user",
+          directory: "/home/user/.anima/skills",
+        },
+      ],
+      total: 1,
+    },
+  }),
+  skills_view: defineToolReturn({
+    schema: z.object({ name: z.string(), content: z.string() }),
+    example: {
+      name: "my-skill",
+      content: "---\ndescription: 示例\n---\n\n# My Skill",
+    },
+  }),
+  skills_delete: defineToolReturn({
+    schema: z.object({
+      ok: z.literal(true),
+      name: z.string(),
+      message: z.string(),
+    }),
+    example: { ok: true, name: "my-skill", message: "技能 'my-skill' 已删除" },
+  }),
+  credentials_list: defineToolReturn({
+    schema: z.object({ credentials: z.array(credentialEntrySchema) }),
+    example: {
+      credentials: [
+        {
+          path: "services/firecrawl",
+          category: "services",
+          fields: ["token"],
+          tags: [],
+          desc: "Firecrawl API token",
+        },
+      ],
+    },
+  }),
+  sessions_search: defineToolReturn({
+    schema: z.object({
+      query: z.string(),
+      hits: z.array(sessionSearchHitSchema),
+      summary: z.string(),
+    }),
+    example: {
+      query: "压缩",
+      hits: [
+        {
+          session_id: "sess-001",
+          message_id: "msg-001",
+          role: "user",
+          timestamp: "2026-06-10T10:00:00+08:00",
+          snippet: "…对话压缩…",
+        },
+      ],
+      summary: "找到 1 条历史对话",
+    },
+  }),
+  sessions_scroll: defineToolReturn({
+    schema: z.object({
+      session_id: z.string(),
+      messages: z.array(sessionMessageRowSchema),
+      total: z.number(),
+      offset: z.number(),
+      limit: z.number(),
+    }),
+    example: {
+      session_id: "sess-001",
+      messages: [
+        {
+          id: "msg-001",
+          role: "user",
+          content: "你好",
+          pos: 1,
+          timestamp: "2026-06-10T10:00:00+08:00",
+        },
+      ],
+      total: 1,
+      offset: 0,
+      limit: 20,
+    },
+  }),
+  todo: defineToolReturn({
+    schema: todoReturnSchema,
+    example: {
+      ok: true,
+      todos: [
+        {
+          id: 1,
+          content: "完成工具返回 schema",
+          status: "pending",
+          created_at: "2026-06-10T10:00:00+08:00",
+        },
+      ],
+      message: "共 1 条待办",
+    },
+  }),
+};

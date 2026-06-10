@@ -238,6 +238,10 @@ const toolsStatusToolItemSchema = z.object({
   definition: openAiToolEntrySchema,
   return_kind: z.enum(["json", "text"]),
   return_schema: jsonSchemaObjectSchema.optional(),
+  return_example: z.unknown().optional(),
+  return_text_hint: z.string().optional(),
+  error_schema: jsonSchemaObjectSchema,
+  error_example: z.object({ error: z.string() }),
 });
 
 export const toolsStatusResponseSchema = z.object({
