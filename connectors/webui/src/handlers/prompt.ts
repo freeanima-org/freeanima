@@ -1,8 +1,8 @@
-import { getServiceContext } from "@freeanima/service-api";
+import { webuiCtx } from "./runtime.ts";
 import { ApiHandlerError } from "./errors.ts";
 
 export async function getPromptDebug(sessionId?: string | null) {
-  const { service } = getServiceContext();
+  const { service } = webuiCtx();
   try {
     return await service.getPromptDebug(sessionId);
   } catch (e) {

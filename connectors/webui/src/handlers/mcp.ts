@@ -1,8 +1,8 @@
-import { getServiceContext } from "@freeanima/service-api";
+import { webuiCtx } from "./runtime.ts";
 import { ApiHandlerError } from "./errors.ts";
 
 export async function getMcpStatus() {
-  const { mcp } = getServiceContext();
+  const { mcp } = webuiCtx();
   if (!mcp) {
     return {
       server_count: 0,
@@ -16,7 +16,7 @@ export async function getMcpStatus() {
 }
 
 export async function mcpStartAll() {
-  const { mcp } = getServiceContext();
+  const { mcp } = webuiCtx();
   if (!mcp) throw new ApiHandlerError(503, "MCP manager not available");
   const result = await mcp.startAllEnabled();
   if (!result.ok) throw new ApiHandlerError(400, result.error ?? "start failed");
@@ -24,7 +24,7 @@ export async function mcpStartAll() {
 }
 
 export async function mcpStopAll() {
-  const { mcp } = getServiceContext();
+  const { mcp } = webuiCtx();
   if (!mcp) throw new ApiHandlerError(503, "MCP manager not available");
   const result = await mcp.stopAll();
   if (!result.ok) throw new ApiHandlerError(400, result.error ?? "stop failed");
@@ -32,7 +32,7 @@ export async function mcpStopAll() {
 }
 
 export async function mcpStartServer(name: string) {
-  const { mcp } = getServiceContext();
+  const { mcp } = webuiCtx();
   if (!mcp) throw new ApiHandlerError(503, "MCP manager not available");
   const result = await mcp.startServer(name);
   if (!result.ok) {
@@ -42,7 +42,7 @@ export async function mcpStartServer(name: string) {
 }
 
 export async function mcpStopServer(name: string) {
-  const { mcp } = getServiceContext();
+  const { mcp } = webuiCtx();
   if (!mcp) throw new ApiHandlerError(503, "MCP manager not available");
   const result = await mcp.stopServer(name);
   if (!result.ok) {

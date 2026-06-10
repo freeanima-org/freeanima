@@ -1,4 +1,4 @@
-import { getServiceContext } from "@freeanima/service-api";
+import { webuiCtx } from "./runtime.ts";
 import { isSessionMeta } from "@freeanima/engine-db/domain";
 import { PARLOR_PLATFORM } from "../api/constants.ts";
 import {
@@ -10,26 +10,26 @@ import {
 import { ApiHandlerError } from "./errors.ts";
 
 export async function resolveSessionPlatform(sessionId: string): Promise<string> {
-  const meta = await getServiceContext().conversation.loadSessionMeta(sessionId);
+  const meta = await webuiCtx().conversation.loadSessionMeta(sessionId);
   const p = isSessionMeta(meta) ? meta.platform : undefined;
   return typeof p === "string" && p ? p : PARLOR_PLATFORM;
 }
 
 export async function listSessions(platform?: string) {
-  const { service } = getServiceContext();
+  const { service } = webuiCtx();
   const { sessions } = await service.listSessions(platform);
   return { sessions };
 }
 
 export async function createSession(body: CreateSessionBody) {
   const parsed = createSessionBodySchema.parse(body);
-  const { service } = getServiceContext();
+  const { service } = webuiCtx();
   const platform = parsed.platform ?? PARLOR_PLATFORM;
   return service.createSession(platform);
 }
 
 export async function getSessionInfo(sessionId: string) {
-  const { service } = getServiceContext();
+  const { service } = webuiCtx();
   try {
     return await service.getSessionInfo(sessionId, await resolveSessionPlatform(sessionId));
   } catch (e) {
@@ -41,7 +41,7 @@ export async function getSessionMessages(
   sessionId: string,
   opts?: { offset?: number; limit?: number },
 ) {
-  const { service } = getServiceContext();
+  const { service } = webuiCtx();
   try {
     return service.getMessages(sessionId, await resolveSessionPlatform(sessionId), opts);
   } catch (e) {
@@ -51,7 +51,7 @@ export async function getSessionMessages(
 
 export async function setSessionTitle(sessionId: string, body: PatchTitleBody) {
   const { title } = patchTitleBodySchema.parse(body);
-  const { service } = getServiceContext();
+  const { service } = webuiCtx();
   try {
     return await service.setSessionTitle(sessionId, title, await resolveSessionPlatform(sessionId));
   } catch (e) {
@@ -60,13 +60,13 @@ export async function setSessionTitle(sessionId: string, body: PatchTitleBody) {
 }
 
 export function listCommands(opts: { platform?: string; all?: boolean }) {
-  const { service } = getServiceContext();
+  const { service } = webuiCtx();
   const all = opts.all === true;
   const platform = opts.platform ?? PARLOR_PLATFORM;
   return service.listCommands({ platform, all });
 }
 
 export function getPlatforms() {
-  const { service } = getServiceContext();
+  const { service } = webuiCtx();
   return { ok: true as const, data: service.getStatus().platforms };
 }

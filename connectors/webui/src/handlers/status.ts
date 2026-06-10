@@ -1,48 +1,48 @@
-import { getServiceContext } from "@freeanima/service-api";
+import { webuiCtx } from "./runtime.ts";
 import { scheduleServiceRestart } from "../service-restart.ts";
 import { ApiHandlerError } from "./errors.ts";
 
 export function getHealth() {
-  const { service } = getServiceContext();
+  const { service } = webuiCtx();
   return service.health();
 }
 
 export async function getStatus() {
-  const { service, host, port } = getServiceContext();
+  const { service, host, port } = webuiCtx();
   return service.buildStatus(host, port);
 }
 
 export function getConfig() {
-  const { service } = getServiceContext();
+  const { service } = webuiCtx();
   return service.getConfig().config;
 }
 
 export function listTools() {
-  const { service } = getServiceContext();
+  const { service } = webuiCtx();
   return service.listToolsApi();
 }
 
 export async function listCronJobs() {
-  const { service } = getServiceContext();
+  const { service } = webuiCtx();
   return { jobs: (await service.listCronJobs()).jobs };
 }
 
 export async function pauseCronJob(id: string) {
-  const { service } = getServiceContext();
+  const { service } = webuiCtx();
   const job = await service.pauseCronJob(id);
   if (!job) throw new ApiHandlerError(404, `未找到任务: ${id}`, { job_id: id });
   return { ok: true as const, job };
 }
 
 export async function resumeCronJob(id: string) {
-  const { service } = getServiceContext();
+  const { service } = webuiCtx();
   const job = await service.resumeCronJob(id);
   if (!job) throw new ApiHandlerError(404, `未找到任务: ${id}`, { job_id: id });
   return { ok: true as const, job };
 }
 
 export async function runCronJobNow(id: string) {
-  const { service } = getServiceContext();
+  const { service } = webuiCtx();
   const result = await service.runCronJobNow(id);
   if (!result) throw new ApiHandlerError(404, `未找到任务: ${id}`, { job_id: id });
   return { ok: true as const, message: result.message, job: result.job };
