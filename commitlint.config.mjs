@@ -3,7 +3,7 @@ export default {
   extends: ["@commitlint/config-conventional"],
   ignores: [(message) => message.startsWith("Merge ")],
   rules: {
-    // 与 docs/versioning.md、.releaserc.json 对齐
+    // 与 docs/versioning.md、.releaserc.cjs 对齐
     "type-enum": [
       2,
       "always",

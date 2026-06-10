@@ -38,6 +38,11 @@
 - **import 相对路径须带 `.ts` / `.tsx` 后缀**（oxlint `import/extensions`）
 - 集成测须隔离日志：`tests/helpers/integration-case.ts`（`restoreIntegrationHome` + `flushCompressionSummaries`），勿污染 `~/.anima/error.log`
 
+### 发版与 CHANGELOG
+
+- **禁止手动编辑 [`CHANGELOG.md`](CHANGELOG.md)**：新版本节由 merge `main` 后 [semantic-release](https://semantic-release.gitbook.io/) 根据 Conventional Commits 自动写入顶部；Agent 不得在 PR / 任务中改动该文件（含补写条目、`[Unreleased]`、列表符或格式化）。
+- 发版流程与 commit 规范见 [`docs/versioning.md`](docs/versioning.md)；配置见 [`.releaserc.cjs`](.releaserc.cjs)。
+
 #### 测试分层（硬性）
 
 | 层级         | 位置                                             | 允许                                          | 禁止                                                                            |
@@ -293,3 +298,4 @@ DATABASE_URL="…" bun run --filter @freeanima/engine-db db:migrate
 | ------------------- | ------------------------------------------------------------------------------- |
 | AGENTS.md（本文件） | 完整工具表、目录树、API 对照、SemVer 细则（**须**维护代码层与依赖、类型归属表） |
 | ARCHITECTURE.md     | 具体待办、会周变工具清单                                                        |
+| CHANGELOG.md        | 手动增删版本节或条目（semantic-release 自动维护，见上文「发版与 CHANGELOG」）   |
