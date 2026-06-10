@@ -30,6 +30,7 @@ export type RuntimeService = AnimaService & {
   startRebuildFtsIndex(opts?: { onlyMissing?: boolean }): any;
   getRebuildFtsJobStatus(): any;
   listSelfBlocks(): Promise<any>;
+  listFridgeMagnets(): Promise<any>;
   getPromptDebug(sessionId?: string | null): Promise<any>;
   getSleepSummary(): Promise<any>;
   listSleepRuns(opts?: { limit?: number; offset?: number; ok?: boolean }): Promise<any>;

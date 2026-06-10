@@ -38,6 +38,11 @@ describe("elysia apiApp", () => {
     expect(res.status).not.toBe(404);
   });
 
+  it("GET /api/fridge/magnets 路由已注册", async () => {
+    const res = await apiApp.handle(new Request("http://127.0.0.1/api/fridge/magnets"));
+    expect(res.status).not.toBe(404);
+  });
+
   it("POST /api/tasks/list 路由已注册", async () => {
     const res = await apiApp.handle(
       new Request("http://127.0.0.1/api/tasks/list", {

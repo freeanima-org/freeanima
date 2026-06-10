@@ -1,5 +1,5 @@
 import { treaty } from "@elysiajs/eden";
-import type { StreamApiEvent } from "@freeanima/connectors-webui/api";
+import type { FridgeMagnetsResponse, StreamApiEvent } from "@freeanima/connectors-webui/api";
 import type { App } from "@freeanima/connectors-webui/elysia";
 import { apiPath } from "./api-path.ts";
 
@@ -328,6 +328,10 @@ export async function getRebuildFtsJobStatus() {
 
 export async function getSelfBlocks() {
   return unwrap(apiClient.api.self.blocks.get());
+}
+
+export async function getFridgeMagnets(): Promise<FridgeMagnetsResponse> {
+  return unwrap<FridgeMagnetsResponse>(apiClient.api.fridge.magnets.get());
 }
 
 export async function getMcpStatus() {

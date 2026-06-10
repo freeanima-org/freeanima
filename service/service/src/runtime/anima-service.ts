@@ -23,6 +23,7 @@ import * as fts from "./service-fts.ts";
 import * as promptDebug from "./service-prompt-debug.ts";
 import * as sleep from "./service-sleep.ts";
 import * as tasks from "./service-tasks.ts";
+import * as fridge from "./service-fridge.ts";
 import * as messaging from "./service-messaging.ts";
 import { PARLOR_PLATFORM } from "./platforms.ts";
 
@@ -273,6 +274,10 @@ export class AnimaService implements StreamTurnHost {
 
   listSelfBlocks(): Promise<{ blocks: selfLayer.SelfBlockDisplay[] }> {
     return selfLayer.listSelfBlocks();
+  }
+
+  listFridgeMagnets(): Promise<fridge.ListFridgeMagnetsResult> {
+    return fridge.listFridgeMagnets();
   }
 
   getPromptDebug(sessionId?: string | null): Promise<promptDebug.PromptDebugResponse> {

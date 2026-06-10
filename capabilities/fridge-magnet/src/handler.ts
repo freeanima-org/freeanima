@@ -17,13 +17,8 @@ export function createFridgeMagnetHandler() {
     const lastMsg = ctx.messages[ctx.messages.length - 1];
     if (!lastMsg || lastMsg.role !== "user") return;
 
-    const sessionPattern = `fridge:session:${ctx.sessionId}:*`;
-    const tasksPattern = "fridge:tasks:*";
-    const [sessionHits, taskHits] = await Promise.all([
-      scanMagnets(sessionPattern),
-      scanMagnets(tasksPattern),
-    ]);
-    const magnets = toDisplayMagnets([...sessionHits, ...taskHits]);
+    const hits = await scanMagnets("fridge:*");
+    const magnets = toDisplayMagnets(hits);
     if (magnets.length === 0) return;
 
     injectIntoMessages(ctx.messages, magnets);

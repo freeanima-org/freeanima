@@ -30,6 +30,7 @@ import { Route as ChamberMemoryRouteImport } from './routes/chamber/memory'
 import { Route as ChamberMcpRouteImport } from './routes/chamber/mcp'
 import { Route as ChamberLimbicMemoryRouteImport } from './routes/chamber/limbic-memory'
 import { Route as ChamberFtsRouteImport } from './routes/chamber/fts'
+import { Route as ChamberFridgeRouteImport } from './routes/chamber/fridge'
 import { Route as ChamberEmailRouteImport } from './routes/chamber/email'
 import { Route as ChamberDashboardRouteImport } from './routes/chamber/dashboard'
 import { Route as ChamberCronRouteImport } from './routes/chamber/cron'
@@ -147,6 +148,11 @@ const ChamberFtsRoute = ChamberFtsRouteImport.update({
   path: '/fts',
   getParentRoute: () => ChamberRouteRoute,
 } as any)
+const ChamberFridgeRoute = ChamberFridgeRouteImport.update({
+  id: '/fridge',
+  path: '/fridge',
+  getParentRoute: () => ChamberRouteRoute,
+} as any)
 const ChamberEmailRoute = ChamberEmailRouteImport.update({
   id: '/email',
   path: '/email',
@@ -220,6 +226,7 @@ export interface FileRoutesByFullPath {
   '/chamber/cron': typeof ChamberCronRoute
   '/chamber/dashboard': typeof ChamberDashboardRoute
   '/chamber/email': typeof ChamberEmailRoute
+  '/chamber/fridge': typeof ChamberFridgeRoute
   '/chamber/fts': typeof ChamberFtsRoute
   '/chamber/limbic-memory': typeof ChamberLimbicMemoryRoute
   '/chamber/mcp': typeof ChamberMcpRoute
@@ -253,6 +260,7 @@ export interface FileRoutesByTo {
   '/chamber/cron': typeof ChamberCronRoute
   '/chamber/dashboard': typeof ChamberDashboardRoute
   '/chamber/email': typeof ChamberEmailRoute
+  '/chamber/fridge': typeof ChamberFridgeRoute
   '/chamber/fts': typeof ChamberFtsRoute
   '/chamber/limbic-memory': typeof ChamberLimbicMemoryRoute
   '/chamber/mcp': typeof ChamberMcpRoute
@@ -288,6 +296,7 @@ export interface FileRoutesById {
   '/chamber/cron': typeof ChamberCronRoute
   '/chamber/dashboard': typeof ChamberDashboardRoute
   '/chamber/email': typeof ChamberEmailRoute
+  '/chamber/fridge': typeof ChamberFridgeRoute
   '/chamber/fts': typeof ChamberFtsRoute
   '/chamber/limbic-memory': typeof ChamberLimbicMemoryRoute
   '/chamber/mcp': typeof ChamberMcpRoute
@@ -324,6 +333,7 @@ export interface FileRouteTypes {
     | '/chamber/cron'
     | '/chamber/dashboard'
     | '/chamber/email'
+    | '/chamber/fridge'
     | '/chamber/fts'
     | '/chamber/limbic-memory'
     | '/chamber/mcp'
@@ -357,6 +367,7 @@ export interface FileRouteTypes {
     | '/chamber/cron'
     | '/chamber/dashboard'
     | '/chamber/email'
+    | '/chamber/fridge'
     | '/chamber/fts'
     | '/chamber/limbic-memory'
     | '/chamber/mcp'
@@ -391,6 +402,7 @@ export interface FileRouteTypes {
     | '/chamber/cron'
     | '/chamber/dashboard'
     | '/chamber/email'
+    | '/chamber/fridge'
     | '/chamber/fts'
     | '/chamber/limbic-memory'
     | '/chamber/mcp'
@@ -568,6 +580,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChamberFtsRouteImport
       parentRoute: typeof ChamberRouteRoute
     }
+    '/chamber/fridge': {
+      id: '/chamber/fridge'
+      path: '/fridge'
+      fullPath: '/chamber/fridge'
+      preLoaderRoute: typeof ChamberFridgeRouteImport
+      parentRoute: typeof ChamberRouteRoute
+    }
     '/chamber/email': {
       id: '/chamber/email'
       path: '/email'
@@ -671,6 +690,7 @@ interface ChamberRouteRouteChildren {
   ChamberCronRoute: typeof ChamberCronRoute
   ChamberDashboardRoute: typeof ChamberDashboardRoute
   ChamberEmailRoute: typeof ChamberEmailRoute
+  ChamberFridgeRoute: typeof ChamberFridgeRoute
   ChamberFtsRoute: typeof ChamberFtsRoute
   ChamberLimbicMemoryRoute: typeof ChamberLimbicMemoryRoute
   ChamberMcpRoute: typeof ChamberMcpRoute
@@ -693,6 +713,7 @@ const ChamberRouteRouteChildren: ChamberRouteRouteChildren = {
   ChamberCronRoute: ChamberCronRoute,
   ChamberDashboardRoute: ChamberDashboardRoute,
   ChamberEmailRoute: ChamberEmailRoute,
+  ChamberFridgeRoute: ChamberFridgeRoute,
   ChamberFtsRoute: ChamberFtsRoute,
   ChamberLimbicMemoryRoute: ChamberLimbicMemoryRoute,
   ChamberMcpRoute: ChamberMcpRoute,

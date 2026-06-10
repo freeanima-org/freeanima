@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { listSessionCommands } from "@/lib/api.ts";
+import { FridgeMagnetInjectPreview } from "@/components/FridgeMagnetInjectPreview.tsx";
+import { getFridgeMagnets, listSessionCommands } from "@/lib/api.ts";
 import { useChatStore } from "@/stores/chat.ts";
 import { useSessionsStore } from "@/stores/sessions.ts";
 
@@ -55,8 +56,26 @@ function ChatPage() {
   const [commandList, setCommandList] = useState<CommandItem[]>([]);
   const [selectedCmdIdx, setSelectedCmdIdx] = useState(0);
   const [clarifyPending, setClarifyPending] = useState<ClarifyPending | null>(null);
+  const [fridgeData, setFridgeData] = useState({
+    redis_configured: true,
+    magnets: [] as Array<{ key: string; value: string }>,
+    inject_text: "",
+  });
+  const [fridgeLoading, setFridgeLoading] = useState(false);
 
   const INPUT_MAX_HEIGHT_PX = 192;
+
+  const refreshFridgeMagnets = async () => {
+    setFridgeLoading(true);
+    try {
+      const data = await getFridgeMagnets();
+      setFridgeData(data);
+    } catch {
+      setFridgeData({ redis_configured: false, magnets: [], inject_text: "" });
+    } finally {
+      setFridgeLoading(false);
+    }
+  };
 
   const slashPrefix = useMemo(() => {
     if (!inputText.startsWith("/")) return null;
@@ -76,6 +95,7 @@ function ChatPage() {
     void listSessionCommands()
       .then((raw) => setCommandList((raw as { commands?: CommandItem[] }).commands ?? []))
       .catch((e) => console.error("Failed to fetch commands:", e));
+    void refreshFridgeMagnets();
   }, []);
 
   const scrollDown = () => {
@@ -210,6 +230,7 @@ function ChatPage() {
         if (content) appendItem({ type: "message", role: "assistant", content });
         setStreamAccumulated("");
         scrollDown();
+        void refreshFridgeMagnets();
       },
     });
   };
@@ -353,6 +374,14 @@ function ChatPage() {
           </div>
         ) : null}
       </div>
+
+      <FridgeMagnetInjectPreview
+        injectText={fridgeData.inject_text}
+        magnetCount={fridgeData.magnets.length}
+        redisConfigured={fridgeData.redis_configured}
+        loading={fridgeLoading}
+        onRefresh={() => void refreshFridgeMagnets()}
+      />
 
       <div className="border-t border-base-300 p-4 bg-base-100 relative">
         <form

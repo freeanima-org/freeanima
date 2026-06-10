@@ -254,3 +254,18 @@ export const toolsStatusResponseSchema = z.object({
 
 export type ToolsStatusResponse = z.infer<typeof toolsStatusResponseSchema>;
 export type ToolsStatusToolItem = z.infer<typeof toolsStatusToolItemSchema>;
+
+export type FridgeMagnetItem = {
+  key: string;
+  value: string;
+  module: "session" | "tasks" | "other";
+  session_id?: string;
+  label?: string;
+  ttl_seconds: number | null;
+};
+
+export type FridgeMagnetsResponse = {
+  redis_configured: boolean;
+  magnets: FridgeMagnetItem[];
+  inject_text: string;
+};
