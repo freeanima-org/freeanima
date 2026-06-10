@@ -140,4 +140,4 @@ docker compose up --build
 ## Repository Settings (Maintainers)
 
 - Actions → General → **Allow GitHub Actions to create and approve pull requests**
-- `RELEASE_PAT` must be able to open PRs and trigger CI on Release PR (cannot substitute default `GITHUB_TOKEN`)
+- `FREEANIMA_CI` must be able to open PRs and trigger CI on Release PR (cannot substitute default `GITHUB_TOKEN`); same org secret is used for blackbox `repository_dispatch` (see [`.github/SECRETS.md`](../../.github/SECRETS.md))

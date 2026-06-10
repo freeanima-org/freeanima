@@ -40,10 +40,10 @@ bun run check              # typecheck + lint + format + test:changed
 
 ## Main repo ↔ testing-repo wiring
 
-| Repo                  | Secret                            | Purpose                                          |
-| --------------------- | --------------------------------- | ------------------------------------------------ |
-| **freeanima**         | `TESTING_REPO_DISPATCH_PAT`       | dispatch `pr-verify` after PR passes             |
-| **freeanima-testing** | `MAIN_REPO_STATUS_PAT` (optional) | write back PR commit status `freeanima/blackbox` |
+| Repo                  | Secret                          | Purpose                                               |
+| --------------------- | ------------------------------- | ----------------------------------------------------- |
+| **freeanima**         | `FREEANIMA_CI`                  | Release Please + dispatch `pr-verify` after PR passes |
+| **freeanima-testing** | `FREEANIMA_CI` or dedicated PAT | write back PR commit status `freeanima/blackbox`      |
 
 Fine-grained PAT: **freeanima** side needs **Actions: Read and write** on `freeanima-testing`; testing side needs **Commit statuses: Read and write** on `freeanima`.
 
