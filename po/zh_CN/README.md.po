@@ -6,11 +6,11 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-10 17:00+0800\n"
+"POT-Creation-Date: 2026-06-10 17:52+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: zh_CN\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -48,62 +48,86 @@ msgstr ""
 
 #. type: Plain text
 #: docs/README.md:10
-msgid "## Topic Index"
-msgstr "## 专题索引"
+msgid "## Guide — 使用与维护"
+msgstr "## 使用指南"
 
 #. type: Plain text
-#: docs/README.md:22
+#: docs/README.md:16
 #, no-wrap
 msgid ""
-"| Topic | File |\n"
-"| ----- | ---- |\n"
-"| Digital life positioning | [identity.md](identity.md) |\n"
-"| Self layer | [self-layer.md](self-layer.md) |\n"
-"| Memory system | [memory.md](memory.md) |\n"
-"| Compression | [compression.md](compression.md) |\n"
-"| Sleep mechanism | [sleep.md](sleep.md) |\n"
-"| Security | [security.md](security.md) |\n"
-"| Database | [database.md](database.md) |\n"
-"| Release | [versioning.md](versioning.md) |\n"
-"| Design drafts | [designs/](designs/) |\n"
+"| Topic    | File                                       |\n"
+"| -------- | ------------------------------------------ |\n"
+"| Security | [guide/security.md](guide/security.md)     |\n"
+"| Database | [guide/database.md](guide/database.md)     |\n"
+"| Release  | [guide/versioning.md](guide/versioning.md) |\n"
 msgstr ""
-"| 主题         | 文件                             |\n"
-"| ------------ | -------------------------------- |\n"
-"| 数字生命定位 | [identity.md](identity.md)       |\n"
-"| 自我层       | [self-layer.md](self-layer.md)   |\n"
-"| 记忆体系     | [memory.md](memory.md)           |\n"
-"| 压缩         | [compression.md](compression.md) |\n"
-"| 睡眠机制     | [sleep.md](sleep.md)             |\n"
-"| 安全         | [security.md](security.md)       |\n"
-"| 数据库       | [database.md](database.md)       |\n"
-"| 发版         | [versioning.md](versioning.md)   |\n"
-"| 设计稿       | [designs/](designs/)             |\n"
+"| 主题   | 文件                                           |\n"
+"| ------ | ---------------------------------------------- |\n"
+"| 安全   | [guide/security.md](guide/security.md)         |\n"
+"| 数据库 | [guide/database.md](guide/database.md)         |\n"
+"| 发版   | [guide/versioning.md](guide/versioning.md)     |\n"
 
 #. type: Plain text
-#: docs/README.md:24
-msgid "## Design Draft Status (Summary)"
-msgstr "## 设计稿状态（摘要）"
+#: docs/README.md:18
+msgid "## Concepts — 核心概念"
+msgstr "## 核心概念"
 
 #. type: Plain text
-#: docs/README.md:33
+#: docs/README.md:29
 #, no-wrap
 msgid ""
-"| File | Status |\n"
-"| ---- | ------ |\n"
-"| [recall-flow.md](designs/recall-flow.md) | v1 ✅ implemented; v2 target design in [#47](https://github.com/freeanima-org/freeanima/issues/47) |\n"
-"| [time-perception.md](designs/time-perception.md) | Core ✅; compression summary timestamps in [#5](https://github.com/freeanima-org/freeanima/issues/5) |\n"
-"| [pair-programming-v1.md](designs/pair-programming-v1.md) | Phase 1 ✅; Phase 2 in [#37](https://github.com/freeanima-org/freeanima/issues/37) |\n"
-"| [execute-code-runtimes.md](designs/execute-code-runtimes.md) | P0 ✅ (nodejs); P1–P4 in [#40](https://github.com/freeanima-org/freeanima/issues/40) |\n"
-"| [probe-architecture.md](designs/probe-architecture.md) | Draft; see [#43](https://github.com/freeanima-org/freeanima/issues/43) |\n"
-"| [desktop-companion.md](designs/desktop-companion.md) | Concept; see [#8](https://github.com/freeanima-org/freeanima/issues/8) |\n"
-"| [issue-1-migration-plan.md](designs/issue-1-migration-plan.md) | Archived (migration complete) |\n"
+"| Topic           | File                                                       |\n"
+"| --------------- | ---------------------------------------------------------- |\n"
+"| Architecture    | [concepts/architecture.md](concepts/architecture.md)       |\n"
+"| Identity        | [concepts/identity.md](concepts/identity.md)               |\n"
+"| Self layer      | [concepts/self-layer.md](concepts/self-layer.md)           |\n"
+"| Memory          | [concepts/memory.md](concepts/memory.md)                   |\n"
+"| Compression     | [concepts/compression.md](concepts/compression.md)         |\n"
+"| Sleep           | [concepts/sleep.md](concepts/sleep.md)                     |\n"
+"| Time perception | [concepts/time-perception.md](concepts/time-perception.md) |\n"
+"| Recall flow     | [concepts/recall-flow.md](concepts/recall-flow.md)         |\n"
 msgstr ""
-"| 文件                                                           | 状态                                                                                    |\n"
-"| -------------------------------------------------------------- | --------------------------------------------------------------------------------------- |\n"
-"| [recall-flow.md](designs/recall-flow.md)                       | v1 ✅ 已实现；v2 目标设计见 [#47](https://github.com/freeanima-org/freeanima/issues/47) |\n"
-"| [time-perception.md](designs/time-perception.md)               | 核心 ✅；压缩摘要时间见 [#5](https://github.com/freeanima-org/freeanima/issues/5)       |\n"
-"| [pair-programming-v1.md](designs/pair-programming-v1.md)       | Phase 1 ✅；Phase 2 见 [#37](https://github.com/freeanima-org/freeanima/issues/37)      |\n"
-"| [execute-code-runtimes.md](designs/execute-code-runtimes.md)   | P0 ✅（nodejs）；P1–P4 见 [#40](https://github.com/freeanima-org/freeanima/issues/40)   |\n"
-"| [probe-architecture.md](designs/probe-architecture.md)         | 草案；见 [#43](https://github.com/freeanima-org/freeanima/issues/43)                    |\n"
-"| [desktop-companion.md](designs/desktop-companion.md)           | 概念；见 [#8](https://github.com/freeanima-org/freeanima/issues/8)                      |\n"
-"| [issue-1-migration-plan.md](designs/issue-1-migration-plan.md) | 归档（迁移已完成）                                                                      |\n"
+"| 主题     | 文件                                                       |\n"
+"| -------- | ---------------------------------------------------------- |\n"
+"| 架构     | [concepts/architecture.md](concepts/architecture.md)       |\n"
+"| 身份定位 | [concepts/identity.md](concepts/identity.md)               |\n"
+"| 自我层   | [concepts/self-layer.md](concepts/self-layer.md)           |\n"
+"| 记忆     | [concepts/memory.md](concepts/memory.md)                   |\n"
+"| 压缩     | [concepts/compression.md](concepts/compression.md)         |\n"
+"| 睡眠     | [concepts/sleep.md](concepts/sleep.md)                     |\n"
+"| 时间感知 | [concepts/time-perception.md](concepts/time-perception.md) |\n"
+"| 回忆检索 | [concepts/recall-flow.md](concepts/recall-flow.md)         |\n"
+
+#. type: Plain text
+#: docs/README.md:31
+msgid "## Features — 重要产品能力"
+msgstr "## 功能"
+
+#. type: Plain text
+#: docs/README.md:35
+#, no-wrap
+msgid ""
+"| Topic            | File                                                               |\n"
+"| ---------------- | ------------------------------------------------------------------ |\n"
+"| Pair programming | [features/pair-programming-v1.md](features/pair-programming-v1.md) |\n"
+msgstr ""
+"| 主题     | 文件                                                               |\n"
+"| -------- | ------------------------------------------------------------------ |\n"
+"| 结对编程 | [features/pair-programming-v1.md](features/pair-programming-v1.md) |\n"
+
+#. type: Plain text
+#: docs/README.md:37
+msgid "## Tools — 通用内置工具"
+msgstr "## 工具"
+
+#. type: Plain text
+#: docs/README.md:40
+#, no-wrap
+msgid ""
+"| Topic         | File                                                             |\n"
+"| ------------- | ---------------------------------------------------------------- |\n"
+"| Code runtimes | [tools/execute-code-runtimes.md](tools/execute-code-runtimes.md) |\n"
+msgstr ""
+"| 主题         | 文件                                                               |\n"
+"| ------------ | ------------------------------------------------------------------ |\n"
+"| 代码执行运行时 | [tools/execute-code-runtimes.md](tools/execute-code-runtimes.md) |\n"

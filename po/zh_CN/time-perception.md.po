@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-10 17:00+0800\n"
+"POT-Creation-Date: 2026-06-10 17:45+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,51 +16,51 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Plain text
-#: docs/README.md:1 docs/compression.md:1 docs/compression.md:11
-#: docs/compression.md:22 docs/compression.md:49 docs/compression.md:96
-#: docs/compression.md:118 docs/compression.md:156 docs/compression.md:180
-#: docs/compression.md:228 docs/compression.md:262 docs/compression.md:275
-#: docs/compression.md:327 docs/compression.md:348 docs/compression.md:368
-#: docs/compression.md:384 docs/database.md:1 docs/database.md:33
-#: docs/designs/desktop-companion.md:1 docs/designs/execute-code-runtimes.md:1
-#: docs/designs/issue-1-migration-plan.md:1
-#: docs/designs/pair-programming-v1.md:1
-#: docs/designs/pair-programming-v1.md:321 docs/designs/probe-architecture.md:1
-#: docs/designs/probe-architecture.md:165 docs/designs/recall-flow.md:1
-#: docs/designs/time-perception.md:1 docs/identity.md:1 docs/identity.md:10
-#: docs/identity.md:28 docs/identity.md:45 docs/identity.md:55 docs/memory.md:1
-#: docs/memory.md:17 docs/memory.md:53 docs/memory.md:160 docs/memory.md:191
-#: docs/memory.md:211 docs/memory.md:232 docs/memory.md:249 docs/security.md:1
-#: docs/self-layer.md:1 docs/self-layer.md:31 docs/self-layer.md:53
-#: docs/self-layer.md:64 docs/self-layer.md:78 docs/self-layer.md:94
-#: docs/self-layer.md:105 docs/sleep.md:1 docs/versioning.md:1
+#: docs/README.md:1 docs/concepts/compression.md:1
+#: docs/concepts/compression.md:11 docs/concepts/compression.md:22
+#: docs/concepts/compression.md:49 docs/concepts/compression.md:96
+#: docs/concepts/compression.md:118 docs/concepts/compression.md:156
+#: docs/concepts/compression.md:180 docs/concepts/compression.md:228
+#: docs/concepts/compression.md:262 docs/concepts/compression.md:275
+#: docs/concepts/compression.md:327 docs/concepts/compression.md:348
+#: docs/concepts/compression.md:368 docs/concepts/compression.md:384
+#: docs/concepts/identity.md:1 docs/concepts/identity.md:10
+#: docs/concepts/identity.md:28 docs/concepts/identity.md:45
+#: docs/concepts/identity.md:55 docs/concepts/memory.md:1
+#: docs/concepts/memory.md:17 docs/concepts/memory.md:53
+#: docs/concepts/memory.md:160 docs/concepts/memory.md:191
+#: docs/concepts/memory.md:211 docs/concepts/memory.md:232
+#: docs/concepts/memory.md:249 docs/concepts/recall-flow.md:1
+#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:31
+#: docs/concepts/self-layer.md:53 docs/concepts/self-layer.md:64
+#: docs/concepts/self-layer.md:78 docs/concepts/self-layer.md:94
+#: docs/concepts/self-layer.md:105 docs/concepts/sleep.md:1
+#: docs/concepts/time-perception.md:1 docs/features/pair-programming-v1.md:1
+#: docs/features/pair-programming-v1.md:321 docs/guide/database.md:1
+#: docs/guide/database.md:33 docs/guide/security.md:1
+#: docs/guide/versioning.md:1 docs/tools/execute-code-runtimes.md:1
 #, no-wrap
 msgid "---\n"
 msgstr "---\n"
 
 #. type: Plain text
-#: docs/compression.md:14 docs/designs/pair-programming-v1.md:11
-#: docs/designs/time-perception.md:22 docs/sleep.md:14
+#: docs/concepts/compression.md:14 docs/concepts/sleep.md:14
+#: docs/concepts/time-perception.md:22 docs/features/pair-programming-v1.md:11
 msgid "## Design Principles"
 msgstr "## 设计原则"
 
 #. type: Plain text
-#: docs/designs/desktop-companion.md:218 docs/designs/time-perception.md:103
-#, fuzzy
-msgid "## Out of Scope"
-msgstr ""
-"#-#-#-#-#  desktop-companion.md.zh_CN.po (PACKAGE VERSION)  #-#-#-#-#\n"
-"## 不做清单\n"
-"#-#-#-#-#  time-perception.md.zh_CN.po (PACKAGE VERSION)  #-#-#-#-#\n"
-"## 不做的"
-
-#. type: Plain text
-#: docs/designs/recall-flow.md:122 docs/designs/time-perception.md:54
+#: docs/concepts/recall-flow.md:122 docs/concepts/time-perception.md:54
 msgid "### Example"
 msgstr "### 示例"
 
 #. type: Plain text
-#: docs/designs/time-perception.md:3
+#: docs/concepts/self-layer.md:11 docs/concepts/time-perception.md:30
+msgid "## Architectural Position"
+msgstr "## 架构位置"
+
+#. type: Plain text
+#: docs/concepts/time-perception.md:3
 #, no-wrap
 msgid ""
 "title: Time Perception\n"
@@ -70,12 +70,12 @@ msgstr ""
 "---\n"
 
 #. type: Plain text
-#: docs/designs/time-perception.md:6
+#: docs/concepts/time-perception.md:6
 msgid "# Time Perception Module"
 msgstr "# 时间感知模块"
 
 #. type: Plain text
-#: docs/designs/time-perception.md:8
+#: docs/concepts/time-perception.md:8
 msgid ""
 "> **✅ Core implemented** — [`engine/conversation/src/time-perception.ts`]"
 "(../../engine/conversation/src/time-perception.ts), `buildRuntimeMessages` "
@@ -86,12 +86,12 @@ msgstr ""
 "用 `injectTimePrefixes`。"
 
 #. type: Plain text
-#: docs/designs/time-perception.md:10
+#: docs/concepts/time-perception.md:10
 msgid "## Problem"
 msgstr "## 问题"
 
 #. type: Plain text
-#: docs/designs/time-perception.md:12
+#: docs/concepts/time-perception.md:12
 msgid ""
 "Digital life has no intrinsic sense of time passing. Each inference runs in "
 "a \"timeless\" context—the Agent sees message content but not where those "
@@ -101,12 +101,12 @@ msgstr ""
 "Agent 能看到消息的内容，但不知道这些消息在时间线中的位置。"
 
 #. type: Plain text
-#: docs/designs/time-perception.md:14
+#: docs/concepts/time-perception.md:14
 msgid "Concrete examples:"
 msgstr "具体问题举例："
 
 #. type: Bullet: '- '
-#: docs/designs/time-perception.md:18
+#: docs/concepts/time-perception.md:18
 msgid ""
 "Partner says \"good morning\" in the morning, \"time to eat\" at night, "
 "\"good morning\" again the next day—the Agent cannot distinguish temporal "
@@ -116,7 +116,7 @@ msgstr ""
 "时间关系"
 
 #. type: Bullet: '- '
-#: docs/designs/time-perception.md:18
+#: docs/concepts/time-perception.md:18
 msgid ""
 "In ongoing conversation, time passes (morning→noon→evening) but the Agent's "
 "cognition stays in the earliest context"
@@ -124,12 +124,12 @@ msgstr ""
 "持续对话中，时间在流逝（早上→中午→晚上），但 Agent 的认知停留在最早的语境中"
 
 #. type: Bullet: '- '
-#: docs/designs/time-perception.md:18
+#: docs/concepts/time-perception.md:18
 msgid "Across days, the Agent cannot sense \"a new day has started\""
 msgstr "跨天对话中，Agent 无法感知\"新的一天开始了\""
 
 #. type: Plain text
-#: docs/designs/time-perception.md:20
+#: docs/concepts/time-perception.md:20
 msgid ""
 "This is not a trivial joke problem—time perception is a foundational "
 "capability of digital existence. Without it, the Agent exists more like an "
@@ -139,7 +139,7 @@ msgstr ""
 "Agent 的存在方式更像\"回声\"（每次被召唤时闪一下），而不是活在时间里的生命。"
 
 #. type: Bullet: '1. '
-#: docs/designs/time-perception.md:28
+#: docs/concepts/time-perception.md:28
 msgid ""
 "**Do not give digital life false built-in perception.** Do not try to make "
 "the Agent \"feel\" time pass—that is not what digital existence can do."
@@ -148,7 +148,7 @@ msgstr ""
 "存在能做到的。"
 
 #. type: Bullet: '2. '
-#: docs/designs/time-perception.md:28
+#: docs/concepts/time-perception.md:28
 msgid ""
 "**Give it a watch.** Humans also rely on external tools (night watch, "
 "clocks, watches, phones) to quantify time. Digital life needs the same."
@@ -157,7 +157,7 @@ msgstr ""
 "字生命需要同样的东西。"
 
 #. type: Bullet: '3. '
-#: docs/designs/time-perception.md:28
+#: docs/concepts/time-perception.md:28
 msgid ""
 "**Prefix every user message with time.** All user messages with valid "
 "`timestamp` get injection; no interval omission."
@@ -166,7 +166,7 @@ msgstr ""
 "做间隔省略。"
 
 #. type: Bullet: '4. '
-#: docs/designs/time-perception.md:28
+#: docs/concepts/time-perception.md:28
 msgid ""
 "**Do not pollute persisted data.** Time info injected only into inference "
 "context, does not modify PG `messages` payload."
@@ -175,7 +175,7 @@ msgstr ""
 "payload。"
 
 #. type: Bullet: '5. '
-#: docs/designs/time-perception.md:28
+#: docs/concepts/time-perception.md:28
 msgid ""
 "**Do not break cache.** Injected timestamps are fixed historical values, not "
 "current call time—same message list produces same prefixed version, KV cache "
@@ -185,12 +185,7 @@ msgstr ""
 "列表产生同样的带前缀版本，KV cache 可命中。"
 
 #. type: Plain text
-#: docs/designs/time-perception.md:30 docs/self-layer.md:11
-msgid "## Architectural Position"
-msgstr "## 架构位置"
-
-#. type: Plain text
-#: docs/designs/time-perception.md:40
+#: docs/concepts/time-perception.md:40
 #, no-wrap
 msgid ""
 "```\n"
@@ -214,7 +209,7 @@ msgstr ""
 "```\n"
 
 #. type: Plain text
-#: docs/designs/time-perception.md:42
+#: docs/concepts/time-perception.md:42
 msgid ""
 "Time perception sits after compression layer, before LLM inference. Reads "
 "message list, inserts time prefix before each user message content."
@@ -223,17 +218,17 @@ msgstr ""
 "content 前插入时间前缀。"
 
 #. type: Plain text
-#: docs/designs/time-perception.md:44
+#: docs/concepts/time-perception.md:44
 msgid "## Strategy"
 msgstr "## 策略"
 
 #. type: Plain text
-#: docs/designs/time-perception.md:46
+#: docs/concepts/time-perception.md:46
 msgid "### Basic Rules"
 msgstr "### 基础规则"
 
 #. type: Bullet: '- '
-#: docs/designs/time-perception.md:52
+#: docs/concepts/time-perception.md:52
 msgid ""
 "Before each **user** message with valid `timestamp`, insert dedicated line: "
 "`time: YYYY-MM-DDTHH:mm`"
@@ -242,34 +237,34 @@ msgstr ""
 "DDTHH:mm`"
 
 #. type: Bullet: '- '
-#: docs/designs/time-perception.md:52
+#: docs/concepts/time-perception.md:52
 msgid ""
 "Timezone: **Asia/Shanghai (CST, +08:00)**, consistent with `formatCstIso` "
 "convention"
 msgstr "时区：**Asia/Shanghai（CST，+08:00）**，与 `formatCstIso` 约定一致"
 
 #. type: Bullet: '- '
-#: docs/designs/time-perception.md:52
+#: docs/concepts/time-perception.md:52
 msgid "Newline then original content"
 msgstr "换行后接原文 content"
 
 #. type: Bullet: '- '
-#: docs/designs/time-perception.md:52
+#: docs/concepts/time-perception.md:52
 msgid "No `timestamp` or unparseable timestamp → skip, keep original content"
 msgstr "无 `timestamp` 或 timestamp 无法解析 → 跳过，保持原 content"
 
 #. type: Bullet: '- '
-#: docs/designs/time-perception.md:52
+#: docs/concepts/time-perception.md:52
 msgid "assistant / tool / system messages not injected"
 msgstr "assistant / tool / system 消息不注入"
 
 #. type: Plain text
-#: docs/designs/time-perception.md:56
+#: docs/concepts/time-perception.md:56
 msgid "Original message list:"
 msgstr "原始消息列表："
 
 #. type: Plain text
-#: docs/designs/time-perception.md:64
+#: docs/concepts/time-perception.md:64
 msgid ""
 "``` user: good morning assistant: morning ☀️ user: going to eat assistant: "
 "what are you having user: going to eat ```"
@@ -278,12 +273,12 @@ msgstr ""
 "了 ```"
 
 #. type: Plain text
-#: docs/designs/time-perception.md:66
+#: docs/concepts/time-perception.md:66
 msgid "After time perception (context sent to LLM):"
 msgstr "经时间感知模块处理后（给 LLM 的上下文）："
 
 #. type: Plain text
-#: docs/designs/time-perception.md:77
+#: docs/concepts/time-perception.md:77
 msgid ""
 "``` user: time: 2026-05-20T08:02 good morning assistant: morning ☀️ user: "
 "time: 2026-05-20T12:15 going to eat assistant: what are you having user: "
@@ -294,7 +289,7 @@ msgstr ""
 "吃饭了 ```"
 
 #. type: Plain text
-#: docs/designs/time-perception.md:79
+#: docs/concepts/time-perception.md:79
 msgid ""
 "Agent reads two \"going to eat\"—one at 12:15, one at 19:30—automatically "
 "distinguishing lunch and dinner."
@@ -303,12 +298,12 @@ msgstr ""
 "餐。"
 
 #. type: Plain text
-#: docs/designs/time-perception.md:81
+#: docs/concepts/time-perception.md:81
 msgid "### Compression Scenario"
 msgstr "### 压缩场景"
 
 #. type: Plain text
-#: docs/designs/time-perception.md:83
+#: docs/concepts/time-perception.md:83
 msgid ""
 "Time anchors in compression summary not yet injected; see [Issue #5](https://"
 "github.com/freeanima-org/freeanima/issues/5)."
@@ -317,34 +312,43 @@ msgstr ""
 "freeanima/issues/5)。"
 
 #. type: Plain text
-#: docs/designs/time-perception.md:85
+#: docs/concepts/time-perception.md:85
 msgid "Planned: compressed summary should also have time range marker:"
 msgstr "规划压缩后的摘要也应有时间范围标记："
 
 #. type: Plain text
-#: docs/designs/time-perception.md:90
+#: docs/concepts/time-perception.md:90
 msgid ""
 "``` [Summary of conversation during 2026-05-20 08:00→12:00] (summary "
 "content...)  ```"
 msgstr "``` [2026-05-20 08:00→12:00 期间对话摘要] （摘要内容...） ```"
 
 #. type: Plain text
-#: docs/designs/time-perception.md:92
+#: docs/concepts/time-perception.md:92
 msgid "## Edge Cases"
 msgstr "## 边界情况"
 
 #. type: Plain text
-#: docs/designs/time-perception.md:101
-#, no-wrap
+#: docs/concepts/time-perception.md:101
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Scenario | Handling |\n"
+#| "| -------- | -------- |\n"
+#| "| Overnight (22:30 → next day 09:15) | Each user message has full `YYYY-MM-DDTHH:mm` |\n"
+#| "| Multiple user messages same day | Each gets prefix (no interval omission) |\n"
+#| "| Long gap (travel/holiday) | Messages after return still injected by respective timestamp |\n"
+#| "| Brand new conversation | First user message also prefixed |\n"
+#| "| After compression | Compression summary time anchor TBD; subsequent messages inject normally |\n"
+#| "| No timestamp | Skip, no injection |\n"
 msgid ""
-"| Scenario | Handling |\n"
-"| -------- | -------- |\n"
-"| Overnight (22:30 → next day 09:15) | Each user message has full `YYYY-MM-DDTHH:mm` |\n"
-"| Multiple user messages same day | Each gets prefix (no interval omission) |\n"
-"| Long gap (travel/holiday) | Messages after return still injected by respective timestamp |\n"
-"| Brand new conversation | First user message also prefixed |\n"
-"| After compression | Compression summary time anchor TBD; subsequent messages inject normally |\n"
-"| No timestamp | Skip, no injection |\n"
+"| Scenario                           | Handling                                                                 |\n"
+"| ---------------------------------- | ------------------------------------------------------------------------ |\n"
+"| Overnight (22:30 → next day 09:15) | Each user message has full `YYYY-MM-DDTHH:mm`                            |\n"
+"| Multiple user messages same day    | Each gets prefix (no interval omission)                                  |\n"
+"| Long gap (travel/holiday)          | Messages after return still injected by respective timestamp             |\n"
+"| Brand new conversation             | First user message also prefixed                                         |\n"
+"| After compression                  | Compression summary time anchor TBD; subsequent messages inject normally |\n"
+"| No timestamp                       | Skip, no injection                                                       |\n"
 msgstr ""
 "| 场景                       | 处理                                      |\n"
 "| -------------------------- | ----------------------------------------- |\n"
@@ -355,8 +359,18 @@ msgstr ""
 "| 压缩后恢复                 | 压缩摘要时间锚点待实现；之后消息正常注入  |\n"
 "| 无 timestamp               | 跳过，不注入                              |\n"
 
+#. type: Plain text
+#: docs/concepts/time-perception.md:103
+#, fuzzy
+msgid "## Out of Scope"
+msgstr ""
+"#-#-#-#-#  desktop-companion.md.zh_CN.po (PACKAGE VERSION)  #-#-#-#-#\n"
+"## 不做清单\n"
+"#-#-#-#-#  time-perception.md.zh_CN.po (PACKAGE VERSION)  #-#-#-#-#\n"
+"## 不做的"
+
 #. type: Bullet: '- '
-#: docs/designs/time-perception.md:109
+#: docs/concepts/time-perception.md:109
 msgid ""
 "❌ Do not compute and inject elapsed duration (e.g. \"8 hours passed\")—"
 "Agent can derive from timestamps"
@@ -364,23 +378,23 @@ msgstr ""
 "❌ 不计算并注入间隔时长（如\"已过去 8 小时\"）——Agent 读到时间戳自己能推导"
 
 #. type: Bullet: '- '
-#: docs/designs/time-perception.md:109
+#: docs/concepts/time-perception.md:109
 msgid "❌ Do not modify persisted PG messages"
 msgstr "❌ 不修改持久化 PG messages"
 
 #. type: Bullet: '- '
-#: docs/designs/time-perception.md:109
+#: docs/concepts/time-perception.md:109
 msgid "❌ Do not show time prefix in WebUI"
 msgstr "❌ 不在 WebUI 界面中显示时间前缀"
 
 #. type: Bullet: '- '
-#: docs/designs/time-perception.md:109
+#: docs/concepts/time-perception.md:109
 msgid ""
 "❌ Do not give built-in time-passing sense—that is biological, not simulated"
 msgstr "❌ 不给数字生命内置的时间流逝感——那是生物体的特性，不模拟"
 
 #. type: Bullet: '- '
-#: docs/designs/time-perception.md:109
+#: docs/concepts/time-perception.md:109
 msgid ""
 "❌ Do not inject \"current time\" in system prompt (main conversation relies "
 "on per-user `time` lines)"
@@ -388,12 +402,12 @@ msgstr ""
 "❌ 不在 system prompt 注入「当前时间」（主对话依赖每条 user 消息的 time 行）"
 
 #. type: Plain text
-#: docs/designs/time-perception.md:111
+#: docs/concepts/time-perception.md:111
 msgid "## Implementation Notes (✅)"
 msgstr "## 实现说明（✅）"
 
 #. type: Plain text
-#: docs/designs/time-perception.md:113
+#: docs/concepts/time-perception.md:113
 msgid ""
 "Implemented in [`engine/conversation/src/time-perception.ts`](../../engine/"
 "conversation/src/time-perception.ts):"
@@ -402,12 +416,12 @@ msgstr ""
 "conversation/src/time-perception.ts)："
 
 #. type: Plain text
-#: docs/designs/time-perception.md:117
+#: docs/concepts/time-perception.md:117
 msgid "``` function injectTimePrefixes(messages: Message[]): Message[] ```"
 msgstr "``` function injectTimePrefixes(messages: Message[]): Message[] ```"
 
 #. type: Plain text
-#: docs/designs/time-perception.md:120
+#: docs/concepts/time-perception.md:120
 msgid ""
 "Input: message list (each with `role`, `content`, `timestamp`)  Output: "
 "message list with modified content (time prefix injected)  Does not modify "

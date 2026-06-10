@@ -6,12 +6,12 @@ Agent 运行时基础设施：语义/情景/程序记忆（PG FTS）、工具注
 
 ## 文档导航
 
-| 读者          | 入口                                                  |
-| ------------- | ----------------------------------------------------- |
-| 部署者 / 访客 | 本页快速开始 + [`docs/security.md`](docs/security.md) |
-| AI Agent      | [`AGENTS.md`](AGENTS.md)                              |
-| 架构          | [`ARCHITECTURE.md`](ARCHITECTURE.md)                  |
-| 数字生命定位  | [`docs/identity.md`](docs/identity.md)                |
+| 读者          | 入口                                                              |
+| ------------- | ----------------------------------------------------------------- |
+| 部署者 / 访客 | 本页快速开始 + [`docs/guide/security.md`](docs/guide/security.md) |
+| AI Agent      | [`AGENTS.md`](AGENTS.md)                                          |
+| 架构          | [`docs/concepts/architecture.md`](docs/concepts/architecture.md)  |
+| 数字生命定位  | [`docs/concepts/identity.md`](docs/concepts/identity.md)          |
 
 ## 快速开始
 
@@ -28,7 +28,7 @@ cp config.example.yaml ~/.anima/config.yaml
 anima service start
 ```
 
-凭证路径约定见 [`docs/security.md`](docs/security.md#凭证责任)。数据库迁移见 [`docs/database.md`](docs/database.md)。
+凭证路径约定见 [`docs/guide/security.md`](docs/guide/security.md#凭证责任)。数据库迁移见 [`docs/guide/database.md`](docs/guide/database.md)。
 
 **Docker Compose**（外部快速体验）：`cp .env.example .env` 后 `docker compose up --build`，见 [Issue #3](https://github.com/freeanima-org/freeanima/issues/3)。
 
@@ -38,7 +38,7 @@ anima service start
 2. `chmod 700 ~/.anima`
 3. 默认仅 bind `127.0.0.1`；公网暴露需自行加鉴权
 4. 审查 MCP/ACP 配置；不信任的外部 Server 设 `enabled: false`
-5. HTTP / WebUI **无内置鉴权**——详见 [`docs/security.md`](docs/security.md)
+5. HTTP / WebUI **无内置鉴权**——详见 [`docs/guide/security.md`](docs/guide/security.md)
 
 ## 开源宣言
 

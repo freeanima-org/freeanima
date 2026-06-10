@@ -119,7 +119,7 @@ Implementation: `buildRuntimeFromLPoints` → `buildRuntimeMessages` prepends `s
 
 ## Configuration
 
-`config.yaml` example (full file: [`config.example.yaml`](../config.example.yaml)):
+`config.yaml` example (full file: [`config.example.yaml`](../../config.example.yaml)):
 
 ```yaml
 models:

@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-10 17:00+0800\n"
+"POT-Creation-Date: 2026-06-10 17:45+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,36 +16,41 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Plain text
-#: docs/README.md:1 docs/compression.md:1 docs/compression.md:11
-#: docs/compression.md:22 docs/compression.md:49 docs/compression.md:96
-#: docs/compression.md:118 docs/compression.md:156 docs/compression.md:180
-#: docs/compression.md:228 docs/compression.md:262 docs/compression.md:275
-#: docs/compression.md:327 docs/compression.md:348 docs/compression.md:368
-#: docs/compression.md:384 docs/database.md:1 docs/database.md:33
-#: docs/designs/desktop-companion.md:1 docs/designs/execute-code-runtimes.md:1
-#: docs/designs/issue-1-migration-plan.md:1
-#: docs/designs/pair-programming-v1.md:1
-#: docs/designs/pair-programming-v1.md:321 docs/designs/probe-architecture.md:1
-#: docs/designs/probe-architecture.md:165 docs/designs/recall-flow.md:1
-#: docs/designs/time-perception.md:1 docs/identity.md:1 docs/identity.md:10
-#: docs/identity.md:28 docs/identity.md:45 docs/identity.md:55 docs/memory.md:1
-#: docs/memory.md:17 docs/memory.md:53 docs/memory.md:160 docs/memory.md:191
-#: docs/memory.md:211 docs/memory.md:232 docs/memory.md:249 docs/security.md:1
-#: docs/self-layer.md:1 docs/self-layer.md:31 docs/self-layer.md:53
-#: docs/self-layer.md:64 docs/self-layer.md:78 docs/self-layer.md:94
-#: docs/self-layer.md:105 docs/sleep.md:1 docs/versioning.md:1
+#: docs/README.md:1 docs/concepts/compression.md:1
+#: docs/concepts/compression.md:11 docs/concepts/compression.md:22
+#: docs/concepts/compression.md:49 docs/concepts/compression.md:96
+#: docs/concepts/compression.md:118 docs/concepts/compression.md:156
+#: docs/concepts/compression.md:180 docs/concepts/compression.md:228
+#: docs/concepts/compression.md:262 docs/concepts/compression.md:275
+#: docs/concepts/compression.md:327 docs/concepts/compression.md:348
+#: docs/concepts/compression.md:368 docs/concepts/compression.md:384
+#: docs/concepts/identity.md:1 docs/concepts/identity.md:10
+#: docs/concepts/identity.md:28 docs/concepts/identity.md:45
+#: docs/concepts/identity.md:55 docs/concepts/memory.md:1
+#: docs/concepts/memory.md:17 docs/concepts/memory.md:53
+#: docs/concepts/memory.md:160 docs/concepts/memory.md:191
+#: docs/concepts/memory.md:211 docs/concepts/memory.md:232
+#: docs/concepts/memory.md:249 docs/concepts/recall-flow.md:1
+#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:31
+#: docs/concepts/self-layer.md:53 docs/concepts/self-layer.md:64
+#: docs/concepts/self-layer.md:78 docs/concepts/self-layer.md:94
+#: docs/concepts/self-layer.md:105 docs/concepts/sleep.md:1
+#: docs/concepts/time-perception.md:1 docs/features/pair-programming-v1.md:1
+#: docs/features/pair-programming-v1.md:321 docs/guide/database.md:1
+#: docs/guide/database.md:33 docs/guide/security.md:1
+#: docs/guide/versioning.md:1 docs/tools/execute-code-runtimes.md:1
 #, no-wrap
 msgid "---\n"
 msgstr "---\n"
 
 #. type: Plain text
-#: docs/compression.md:14 docs/designs/pair-programming-v1.md:11
-#: docs/designs/time-perception.md:22 docs/sleep.md:14
+#: docs/concepts/compression.md:14 docs/concepts/sleep.md:14
+#: docs/concepts/time-perception.md:22 docs/features/pair-programming-v1.md:11
 msgid "## Design Principles"
 msgstr "## 设计原则"
 
 #. type: Plain text
-#: docs/sleep.md:3
+#: docs/concepts/sleep.md:3
 #, no-wrap
 msgid ""
 "title: Sleep\n"
@@ -55,12 +60,12 @@ msgstr ""
 "---\n"
 
 #. type: Plain text
-#: docs/sleep.md:6
+#: docs/concepts/sleep.md:6
 msgid "# Sleep Mechanism"
 msgstr "# 睡眠机制 (Sleep)"
 
 #. type: Plain text
-#: docs/sleep.md:8
+#: docs/concepts/sleep.md:8
 msgid ""
 "> Light Sleep is the incremental extraction channel (semantic + limbic + "
 "autobiographical); Deep Sleep optimizes semantic memory inventory."
@@ -69,12 +74,12 @@ msgstr ""
 "Sleep）为记忆库存量优化。"
 
 #. type: Plain text
-#: docs/sleep.md:10
+#: docs/concepts/sleep.md:10
 msgid "## Overview"
 msgstr "## 概述"
 
 #. type: Plain text
-#: docs/sleep.md:12
+#: docs/concepts/sleep.md:12
 msgid ""
 "Sleep is the digital life's memory consolidation mechanism—analogous to "
 "human sleep where the brain replays daytime experiences, converts short-term "
@@ -85,21 +90,21 @@ msgstr ""
 "时记忆转化为长期存储，整理过程本身消散，不留痕迹。"
 
 #. type: Bullet: '1. '
-#: docs/sleep.md:19
+#: docs/concepts/sleep.md:19
 msgid ""
 "**Internal mechanism, no trace** — Sleep runs in background, does not write "
 "to sessions, does not affect conversation flow"
 msgstr "**内部机制，不留痕迹** — 睡眠在后台运行，不写入 session，不影响对话流"
 
 #. type: Bullet: '2. '
-#: docs/sleep.md:19
+#: docs/concepts/sleep.md:19
 msgid ""
 "**Do not copy human rhythm literally** — Triggered by system need (cron), "
 "not real-time"
 msgstr "**不照搬人类的节奏** — 触发基于系统需求（cron），非实时"
 
 #. type: Bullet: '3. '
-#: docs/sleep.md:19
+#: docs/concepts/sleep.md:19
 msgid ""
 "**Two-tier layering** — Light sleep (incremental writes: semantic / limbic / "
 "autobiographical), deep sleep (semantic inventory optimization) each with "
@@ -109,7 +114,7 @@ msgstr ""
 "司其职"
 
 #. type: Bullet: '4. '
-#: docs/sleep.md:19
+#: docs/concepts/sleep.md:19
 msgid ""
 "**Identity context** — All memory processing must carry **self layer six "
 "blocks** + resident memory (see [`self-layer.md`](self-layer.md))"
@@ -118,18 +123,23 @@ msgstr ""
 "layer.md`](self-layer.md)）"
 
 #. type: Plain text
-#: docs/sleep.md:21
+#: docs/concepts/sleep.md:21
 msgid "## Current State"
 msgstr "## 当前状态"
 
 #. type: Plain text
-#: docs/sleep.md:26
-#, no-wrap
+#: docs/concepts/sleep.md:26
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Mechanism | Status | Notes |\n"
+#| "| --------- | ------ | ----- |\n"
+#| "| Light sleep cron | ✅ Implemented | Daily 02:00, `builtin-light-sleep` |\n"
+#| "| Deep sleep cron | ✅ Implemented | Daily 03:00, `builtin-deep-sleep` |\n"
 msgid ""
-"| Mechanism | Status | Notes |\n"
-"| --------- | ------ | ----- |\n"
+"| Mechanism        | Status         | Notes                              |\n"
+"| ---------------- | -------------- | ---------------------------------- |\n"
 "| Light sleep cron | ✅ Implemented | Daily 02:00, `builtin-light-sleep` |\n"
-"| Deep sleep cron | ✅ Implemented | Daily 03:00, `builtin-deep-sleep` |\n"
+"| Deep sleep cron  | ✅ Implemented | Daily 03:00, `builtin-deep-sleep`  |\n"
 msgstr ""
 "| 机制      | 状态      | 说明                              |\n"
 "| --------- | --------- | --------------------------------- |\n"
@@ -137,19 +147,26 @@ msgstr ""
 "| 深睡 cron | ✅ 已实现 | 每天 03:00，`builtin-deep-sleep`  |\n"
 
 #. type: Plain text
-#: docs/sleep.md:28
+#: docs/concepts/sleep.md:28
 msgid "## Light Sleep"
 msgstr "## 浅睡 (Light Sleep)"
 
 #. type: Plain text
-#: docs/sleep.md:35
-#, no-wrap
+#: docs/concepts/sleep.md:35
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Attribute | Value |\n"
+#| "| --------- | ----- |\n"
+#| "| Trigger | Cron only, daily 02:00 (`0 2 * * *`), no manual trigger |\n"
+#| "| Scope | Sessions with activity in previous CST calendar day (`sessions.updated_at`) |\n"
+#| "| Input | Full day's conversations (user+assistant, tools stripped), segmented by session |\n"
+#| "| Orchestration | Three stages sequential (peer stages, separate LLM calls each; zero tool calls in prior stage does not skip subsequent stages) |\n"
 msgid ""
-"| Attribute | Value |\n"
-"| --------- | ----- |\n"
-"| Trigger | Cron only, daily 02:00 (`0 2 * * *`), no manual trigger |\n"
-"| Scope | Sessions with activity in previous CST calendar day (`sessions.updated_at`) |\n"
-"| Input | Full day's conversations (user+assistant, tools stripped), segmented by session |\n"
+"| Attribute     | Value                                                                                                                          |\n"
+"| ------------- | ------------------------------------------------------------------------------------------------------------------------------ |\n"
+"| Trigger       | Cron only, daily 02:00 (`0 2 * * *`), no manual trigger                                                                        |\n"
+"| Scope         | Sessions with activity in previous CST calendar day (`sessions.updated_at`)                                                    |\n"
+"| Input         | Full day's conversations (user+assistant, tools stripped), segmented by session                                                |\n"
 "| Orchestration | Three stages sequential (peer stages, separate LLM calls each; zero tool calls in prior stage does not skip subsequent stages) |\n"
 msgstr ""
 "| 属性     | 值                                                                          |\n"
@@ -160,20 +177,27 @@ msgstr ""
 "| 编排     | 三阶段顺序执行（同级、各自独立 LLM 调用；前一阶段零工具调用不跳过后续阶段） |\n"
 
 #. type: Plain text
-#: docs/sleep.md:37
+#: docs/concepts/sleep.md:37
 msgid "### Three Stages"
 msgstr "### 三阶段"
 
 #. type: Plain text
-#: docs/sleep.md:44
-#, no-wrap
+#: docs/concepts/sleep.md:44
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Stage | Target storage | Tool allowlist | Input highlights |\n"
+#| "| ----- | -------------- | -------------- | ---------------- |\n"
+#| "| 1 Semantic | `semantic_memory` | `memory_semantic_create` / `update` / `deprecate` | Conversation + existing semantic (`listBySourceSessions`) |\n"
+#| "| 2 Limbic | `limbic_memory` | `memory_limbic_create` | Conversation + existing limbic (`listBySession`) |\n"
+#| "| 3 Autobiographical | `autobiographical_memory` | `memory_autobiographical_create` / `deprecate` | Conversation + day's semantic + day's limbic + existing autobiographical |\n"
+#| "| 3b | `self_blocks.autobiography_summary` | (programmatic compression, no LLM) | Active autobiographical narratives → summary block refresh |\n"
 msgid ""
-"| Stage | Target storage | Tool allowlist | Input highlights |\n"
-"| ----- | -------------- | -------------- | ---------------- |\n"
-"| 1 Semantic | `semantic_memory` | `memory_semantic_create` / `update` / `deprecate` | Conversation + existing semantic (`listBySourceSessions`) |\n"
-"| 2 Limbic | `limbic_memory` | `memory_limbic_create` | Conversation + existing limbic (`listBySession`) |\n"
-"| 3 Autobiographical | `autobiographical_memory` | `memory_autobiographical_create` / `deprecate` | Conversation + day's semantic + day's limbic + existing autobiographical |\n"
-"| 3b | `self_blocks.autobiography_summary` | (programmatic compression, no LLM) | Active autobiographical narratives → summary block refresh |\n"
+"| Stage              | Target storage                      | Tool allowlist                                    | Input highlights                                                         |\n"
+"| ------------------ | ----------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------ |\n"
+"| 1 Semantic         | `semantic_memory`                   | `memory_semantic_create` / `update` / `deprecate` | Conversation + existing semantic (`listBySourceSessions`)                |\n"
+"| 2 Limbic           | `limbic_memory`                     | `memory_limbic_create`                            | Conversation + existing limbic (`listBySession`)                         |\n"
+"| 3 Autobiographical | `autobiographical_memory`           | `memory_autobiographical_create` / `deprecate`    | Conversation + day's semantic + day's limbic + existing autobiographical |\n"
+"| 3b                 | `self_blocks.autobiography_summary` | (programmatic compression, no LLM)                | Active autobiographical narratives → summary block refresh               |\n"
 msgstr ""
 "| 阶段   | 目标存储                            | 工具白名单                                        | 输入要点                                                   |\n"
 "| ------ | ----------------------------------- | ------------------------------------------------- | ---------------------------------------------------------- |\n"
@@ -183,47 +207,59 @@ msgstr ""
 "| 3b     | `self_blocks.autobiography_summary` | （程序压缩，无 LLM）                              | active 自传叙事 → 概括块刷新                               |\n"
 
 #. type: Plain text
-#: docs/sleep.md:46
+#: docs/concepts/sleep.md:46
 #, no-wrap
 msgid "**Restraint principle:** Each stage LLM judges \"nothing worth recording\" → no tool calls, reply skip; program does not skip subsequent stages because prior stage had zero tool calls.\n"
 msgstr "**克制原则**：各阶段 LLM 判断「无值得记录」→ 不调用工具、直接回复跳过；程序不因前一阶段零工具调用而跳过后续阶段。\n"
 
 #. type: Plain text
-#: docs/sleep.md:48
+#: docs/concepts/sleep.md:48
 #, no-wrap
 msgid "**Dedup (semantic):** **Local only**—compare only against existing memories with same `source_sessions`; cross-thread merging left to deep sleep.\n"
 msgstr "**去重（语义）**：**局部**——仅与同 `source_sessions` 的已有记忆比较；跨脉络留给深睡。\n"
 
 #. type: Plain text
-#: docs/sleep.md:50
+#: docs/concepts/sleep.md:50
+#, fuzzy
+#| msgid ""
+#| "Implementation: [`life/memory/src/light-sleep/run.ts`](../life/memory/src/"
+#| "light-sleep/run.ts); wiring: [`serve.ts`](../service/service/src/"
+#| "serve.ts)."
 msgid ""
-"Implementation: [`life/memory/src/light-sleep/run.ts`](../life/memory/src/"
-"light-sleep/run.ts); wiring: [`serve.ts`](../service/service/src/serve.ts)."
+"Implementation: [`life/memory/src/light-sleep/run.ts`](../../life/memory/src/"
+"light-sleep/run.ts); wiring: [`serve.ts`](../../service/service/src/"
+"serve.ts)."
 msgstr ""
 "实现：[`life/memory/src/light-sleep/run.ts`](../life/memory/src/light-sleep/"
 "run.ts)；装配：[`serve.ts`](../service/service/src/serve.ts)。"
 
 #. type: Plain text
-#: docs/sleep.md:52
+#: docs/concepts/sleep.md:52
 msgid "### Stage 1 Message Structure"
 msgstr "### Stage 1 消息结构"
 
 #. type: Plain text
-#: docs/sleep.md:54
+#: docs/concepts/sleep.md:54
 msgid ""
 "System prompt: self layer six blocks + resident memory (pinned facts, top "
 "20)."
 msgstr "System prompt：自我层六块 + 常驻记忆（pinned facts，top 20）。"
 
 #. type: Plain text
-#: docs/sleep.md:60
-#, no-wrap
+#: docs/concepts/sleep.md:60
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| # | Content |\n"
+#| "| - | ------- |\n"
+#| "| 1 | Full day's conversation: user+assistant, segmented by session ID, with timestamps and context labels |\n"
+#| "| 2 | Existing memories: `listBySourceSessions` pre-filter (active memories intersecting day's sessions) |\n"
+#| "| 3 | Semantic extraction instructions + three-tool usage |\n"
 msgid ""
-"| # | Content |\n"
-"| - | ------- |\n"
-"| 1 | Full day's conversation: user+assistant, segmented by session ID, with timestamps and context labels |\n"
-"| 2 | Existing memories: `listBySourceSessions` pre-filter (active memories intersecting day's sessions) |\n"
-"| 3 | Semantic extraction instructions + three-tool usage |\n"
+"| #   | Content                                                                                              |\n"
+"| --- | ---------------------------------------------------------------------------------------------------- |\n"
+"| 1   | Full day's conversation: user+assistant, segmented by session ID, with timestamps and context labels |\n"
+"| 2   | Existing memories: `listBySourceSessions` pre-filter (active memories intersecting day's sessions)   |\n"
+"| 3   | Semantic extraction instructions + three-tool usage                                                  |\n"
 msgstr ""
 "| #   | 内容                                                                         |\n"
 "| --- | ---------------------------------------------------------------------------- |\n"
@@ -232,39 +268,39 @@ msgstr ""
 "| 3   | 语义提取指令 + 三工具用法说明                                                |\n"
 
 #. type: Plain text
-#: docs/sleep.md:62
+#: docs/concepts/sleep.md:62
 msgid ""
 "LLM **does not** carry `memory_semantic_search` (message 2 already provided "
 "by program)."
 msgstr "LLM **不**携带 `memory_semantic_search`（消息 2 已由程序提供）。"
 
 #. type: Plain text
-#: docs/sleep.md:64
+#: docs/concepts/sleep.md:64
 msgid "### `memory_semantic_update` Semantics (Overwrite)"
 msgstr "### memory_semantic_update 语义（覆盖式）"
 
 #. type: Bullet: '- '
-#: docs/sleep.md:68
+#: docs/concepts/sleep.md:68
 msgid "**Only modifies passed fields**; omitted fields unchanged"
 msgstr "**仅修改传入的字段**，未传字段保持不变"
 
 #. type: Bullet: '- '
-#: docs/sleep.md:68
+#: docs/concepts/sleep.md:68
 msgid "To clear `source_sessions` → explicitly pass `source_sessions: []`"
 msgstr "要清空 `source_sessions` → 显式传 `source_sessions: []`"
 
 #. type: Bullet: '- '
-#: docs/sleep.md:68
+#: docs/concepts/sleep.md:68
 msgid "Omit `source_sessions` → keep original value"
 msgstr "未传 `source_sessions` → 保持原值"
 
 #. type: Plain text
-#: docs/sleep.md:70
+#: docs/concepts/sleep.md:70
 msgid "### Flow"
 msgstr "### 流程"
 
 #. type: Plain text
-#: docs/sleep.md:80
+#: docs/concepts/sleep.md:80
 msgid ""
 "``` 1. Compute CST previous-day time window 2. listSessionIdsUpdatedBetween "
 "→ involved session list 3. Stage 1: semantic extraction → semantic_memory 4. "
@@ -280,12 +316,12 @@ msgstr ""
 "light_sleep_state.json ```"
 
 #. type: Plain text
-#: docs/sleep.md:82
+#: docs/concepts/sleep.md:82
 msgid "### Context Too Large"
 msgstr "### 上下文过大"
 
 #. type: Plain text
-#: docs/sleep.md:84
+#: docs/concepts/sleep.md:84
 msgid ""
 "When single input exceeds ~120k characters, truncate by session `updated_at` "
 "descending, append `[Truncated N sessions]` at conversation segment end "
@@ -295,20 +331,27 @@ msgstr ""
 "`[已截断 N 个 session]`（各阶段复用同一截断逻辑）。"
 
 #. type: Plain text
-#: docs/sleep.md:86
+#: docs/concepts/sleep.md:86
 msgid "## Deep Sleep"
 msgstr "## 深睡 (Deep Sleep)"
 
 #. type: Plain text
-#: docs/sleep.md:93
-#, no-wrap
+#: docs/concepts/sleep.md:93
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Attribute | Value |\n"
+#| "| --------- | ----- |\n"
+#| "| Trigger | Cron only, daily 03:00 (`0 3 * * *`), no manual trigger |\n"
+#| "| Target | All active `semantic_memory` |\n"
+#| "| Operations | Contradiction detection + expiry marking, split, dedup merge—three sequential rounds |\n"
+#| "| Tools | `memory_semantic_create` / `memory_semantic_update` / `memory_semantic_deprecate` / `memory_semantic_merge` |\n"
 msgid ""
-"| Attribute | Value |\n"
-"| --------- | ----- |\n"
-"| Trigger | Cron only, daily 03:00 (`0 3 * * *`), no manual trigger |\n"
-"| Target | All active `semantic_memory` |\n"
-"| Operations | Contradiction detection + expiry marking, split, dedup merge—three sequential rounds |\n"
-"| Tools | `memory_semantic_create` / `memory_semantic_update` / `memory_semantic_deprecate` / `memory_semantic_merge` |\n"
+"| Attribute  | Value                                                                                                       |\n"
+"| ---------- | ----------------------------------------------------------------------------------------------------------- |\n"
+"| Trigger    | Cron only, daily 03:00 (`0 3 * * *`), no manual trigger                                                     |\n"
+"| Target     | All active `semantic_memory`                                                                                |\n"
+"| Operations | Contradiction detection + expiry marking, split, dedup merge—three sequential rounds                        |\n"
+"| Tools      | `memory_semantic_create` / `memory_semantic_update` / `memory_semantic_deprecate` / `memory_semantic_merge` |\n"
 msgstr ""
 "| 属性     | 值                                                                                                          |\n"
 "| -------- | ----------------------------------------------------------------------------------------------------------- |\n"
@@ -318,19 +361,25 @@ msgstr ""
 "| 工具     | `memory_semantic_create` / `memory_semantic_update` / `memory_semantic_deprecate` / `memory_semantic_merge` |\n"
 
 #. type: Plain text
-#: docs/sleep.md:95
+#: docs/concepts/sleep.md:95
 msgid "### Three Rounds"
 msgstr "### 三轮处理"
 
 #. type: Plain text
-#: docs/sleep.md:101
-#, no-wrap
+#: docs/concepts/sleep.md:101
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Round | Intent | Focus |\n"
+#| "| ----- | ------ | ----- |\n"
+#| "| 1 | Contradiction detection + expiry marking | Exclusive contradictions → deprecate; superseded facts → deprecate |\n"
+#| "| 2 | Split | One content with multiple independent facts → split into multiple rows |\n"
+#| "| 3 | Dedup merge | Duplicate/highly similar → merge into one |\n"
 msgid ""
-"| Round | Intent | Focus |\n"
-"| ----- | ------ | ----- |\n"
-"| 1 | Contradiction detection + expiry marking | Exclusive contradictions → deprecate; superseded facts → deprecate |\n"
-"| 2 | Split | One content with multiple independent facts → split into multiple rows |\n"
-"| 3 | Dedup merge | Duplicate/highly similar → merge into one |\n"
+"| Round | Intent                                   | Focus                                                                  |\n"
+"| ----- | ---------------------------------------- | ---------------------------------------------------------------------- |\n"
+"| 1     | Contradiction detection + expiry marking | Exclusive contradictions → deprecate; superseded facts → deprecate     |\n"
+"| 2     | Split                                    | One content with multiple independent facts → split into multiple rows |\n"
+"| 3     | Dedup merge                              | Duplicate/highly similar → merge into one                              |\n"
 msgstr ""
 "| 轮次 | 意图                | 关注点                                           |\n"
 "| ---- | ------------------- | ------------------------------------------------ |\n"
@@ -339,45 +388,45 @@ msgstr ""
 "| 3    | 去重合并            | 重复/高度相似 → 合并为一条                       |\n"
 
 #. type: Plain text
-#: docs/sleep.md:103
+#: docs/concepts/sleep.md:103
 #, no-wrap
 msgid "**Ordering rationale:** Clean problems first (contradiction+expiry), then refine (split), then merge. Each round sees clean data after prior rounds.\n"
 msgstr "**顺序理由**：先清理问题（矛盾+过期），再细化（拆分），最后合并。每轮看到的是前序轮处理后的干净数据。\n"
 
 #. type: Plain text
-#: docs/sleep.md:105
+#: docs/concepts/sleep.md:105
 msgid "### Contradiction Definition (Exclusive)"
 msgstr "### 矛盾定义（排他性）"
 
 #. type: Plain text
-#: docs/sleep.md:107
+#: docs/concepts/sleep.md:107
 msgid ""
 "Two memories semantically negate each other and cannot be explained by "
 "temporal change → contradiction."
 msgstr "两条记忆在语义上互相否定，且无法用时间变化解释 → 矛盾。"
 
 #. type: Bullet: '- '
-#: docs/sleep.md:112
+#: docs/concepts/sleep.md:112
 msgid ""
 "✓ Contradiction: \"daughter born Year of Tiger\" vs \"daughter born Year of "
 "Goat\" (zodiac unique)"
 msgstr "✓ 矛盾：「女儿属虎」vs「女儿属羊」（生肖唯一）"
 
 #. type: Bullet: '- '
-#: docs/sleep.md:112
+#: docs/concepts/sleep.md:112
 msgid ""
 "✓ Contradiction: \"dislikes spicy food\" vs \"likes spicy food\" (direct "
 "negation)"
 msgstr "✓ 矛盾：「不喜欢吃辣」vs「喜欢吃辣」（直接否定）"
 
 #. type: Bullet: '- '
-#: docs/sleep.md:112
+#: docs/concepts/sleep.md:112
 msgid ""
 "✗ Not contradiction: \"likes apples\" vs \"likes cherries\" (can coexist)"
 msgstr "✗ 不矛盾：「喜欢苹果」vs「喜欢樱桃」（可共存）"
 
 #. type: Bullet: '- '
-#: docs/sleep.md:112
+#: docs/concepts/sleep.md:112
 msgid ""
 "✗ Not contradiction (change): \"likes Python\" vs \"now prefers TypeScript\" "
 "(both can be valid)"
@@ -385,52 +434,46 @@ msgstr ""
 "✗ 不矛盾（变化）：「喜欢 Python」vs「现在更喜欢 TypeScript」（新旧都可对）"
 
 #. type: Plain text
-#: docs/sleep.md:114
+#: docs/concepts/sleep.md:114
 msgid "### Message Structure"
 msgstr "### 消息结构"
 
 #. type: Plain text
-#: docs/sleep.md:116
+#: docs/concepts/sleep.md:116
 msgid "System prompt: self layer six blocks + resident memory."
 msgstr "System prompt：自我层六块 + 常驻记忆。"
 
 #. type: Plain text
-#: docs/sleep.md:123
+#: docs/concepts/sleep.md:123
 #, no-wrap
 msgid ""
-"| # | Content | Notes |\n"
-"| - | ------- | ----- |\n"
-"| 1 | Full active semantic memory JSON | **Identical every round → provider cache** |\n"
-"| 1.5 | Incremental change summary | Empty first round; subsequent rounds append prior operations (merged/deprecated/added/modified) |\n"
-"| 2 | Program pre-filter | Empty in v1 |\n"
-"| 3 | Instructions | Round intent + tool usage |\n"
+"| #   | Content                          | Notes                                                                                           |\n"
+"| --- | -------------------------------- | ----------------------------------------------------------------------------------------------- |\n"
+"| 1   | Full active semantic memory JSON | **Identical every round → provider cache**                                                      |\n"
+"| 1.5 | Incremental change summary       | Empty first round; subsequent rounds append prior operations (merged/deprecated/added/modified) |\n"
+"| 2   | Program pre-filter               | Empty in v1                                                                                     |\n"
+"| 3   | Instructions                     | Round intent + tool usage                                                                       |\n"
 msgstr ""
-"| #   | 内容                      | 说明                                                      |\n"
-"| --- | ------------------------- | --------------------------------------------------------- |\n"
-"| 1   | 全量 active 语义记忆 JSON | **每轮完全相同 → provider 缓存**                          |\n"
-"| 1.5 | 增量变更摘要              | 首轮为空；后续每轮追加前序操作（已合并/已废弃/新增/修改） |\n"
-"| 2   | 程序预筛                  | 首版为空                                                  |\n"
-"| 3   | 指令                      | 本轮意图 + 工具用法说明                                   |\n"
 
 #. type: Plain text
-#: docs/sleep.md:125
+#: docs/concepts/sleep.md:125
 msgid ""
 "Message 1 is the token hog and grows linearly; kept unchanged to maximize "
 "provider cache."
 msgstr "消息1 是 token 消耗大头且线性增长，保持不变以最大化 provider 缓存。"
 
 #. type: Plain text
-#: docs/sleep.md:127
+#: docs/concepts/sleep.md:127
 msgid "### Message 1.5 Format"
 msgstr "### 消息1.5 格式"
 
 #. type: Plain text
-#: docs/sleep.md:130
+#: docs/concepts/sleep.md:130
 msgid "``` # Incremental changes (this content is authoritative)"
 msgstr "``` # 增量变更（以本内容为准）"
 
 #. type: Plain text
-#: docs/sleep.md:134
+#: docs/concepts/sleep.md:134
 msgid ""
 "## Processed (ignore these original entries in message 1)  f-001 — merged "
 "into f-003 f-010 — expired/deprecated (superseded by new fact)"
@@ -439,7 +482,7 @@ msgstr ""
 "过期/废弃（新事实取代）"
 
 #. type: Plain text
-#: docs/sleep.md:137
+#: docs/concepts/sleep.md:137
 msgid ""
 "## New entries (not in message 1)  f-003 (world) \"Bob works in Pudong, "
 "Shanghai\" sources=[s-abc,s-def] observed=2026-05-01T..."
@@ -448,7 +491,7 @@ msgstr ""
 "sources=[s-abc,s-def] observed=2026-05-01T..."
 
 #. type: Plain text
-#: docs/sleep.md:141
+#: docs/concepts/sleep.md:141
 msgid ""
 "## Modified entries (authoritative here, overrides message 1)  f-030 — "
 "modified: content updated to \"...\" ```"
@@ -457,20 +500,27 @@ msgstr ""
 "更新为 \"...\" ```"
 
 #. type: Plain text
-#: docs/sleep.md:143
+#: docs/concepts/sleep.md:143
 msgid "### Threshold Strategy"
 msgstr "### 阈值策略"
 
 #. type: Plain text
-#: docs/sleep.md:150
-#, no-wrap
+#: docs/concepts/sleep.md:150
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Full JSON size | Behavior |\n"
+#| "| -------------- | -------- |\n"
+#| "| < 10k | Normal |\n"
+#| "| 10k ~ 100k | ⚠️ warn log, normal processing |\n"
+#| "| 100k ~ 300k | Batch by type |\n"
+#| "| > 300k | ❌ error, refuse |\n"
 msgid ""
-"| Full JSON size | Behavior |\n"
-"| -------------- | -------- |\n"
-"| < 10k | Normal |\n"
-"| 10k ~ 100k | ⚠️ warn log, normal processing |\n"
-"| 100k ~ 300k | Batch by type |\n"
-"| > 300k | ❌ error, refuse |\n"
+"| Full JSON size | Behavior                       |\n"
+"| -------------- | ------------------------------ |\n"
+"| < 10k          | Normal                         |\n"
+"| 10k ~ 100k     | ⚠️ warn log, normal processing |\n"
+"| 100k ~ 300k    | Batch by type                  |\n"
+"| > 300k         | ❌ error, refuse               |\n"
 msgstr ""
 "| 全量 JSON 大小 | 行为                  |\n"
 "| -------------- | --------------------- |\n"
@@ -480,42 +530,42 @@ msgstr ""
 "| > 300k         | ❌ 报错拒绝           |\n"
 
 #. type: Plain text
-#: docs/sleep.md:152
+#: docs/concepts/sleep.md:152
 msgid "### `merge_semantic_memories` Tool"
 msgstr "### merge_semantic_memories 工具"
 
 #. type: Plain text
-#: docs/sleep.md:154
+#: docs/concepts/sleep.md:154
 msgid "Program auto-stitches fields; LLM only cares about merged new content:"
 msgstr "程序自动处理字段缝合，LLM 只需关心合并后的新 content："
 
 #. type: Bullet: '- '
-#: docs/sleep.md:159
+#: docs/concepts/sleep.md:159
 msgid "`source_sessions` → union deduped across source memories"
 msgstr "`source_sessions` → 所有源记忆的并集去重"
 
 #. type: Bullet: '- '
-#: docs/sleep.md:159
+#: docs/concepts/sleep.md:159
 msgid "`observed_at` → earliest value"
 msgstr "`observed_at` → 取最早值"
 
 #. type: Bullet: '- '
-#: docs/sleep.md:159
+#: docs/concepts/sleep.md:159
 msgid "Create new memory → deprecate all source_ids"
 msgstr "创建新记忆 → 废弃所有 source_ids"
 
 #. type: Bullet: '- '
-#: docs/sleep.md:159
+#: docs/concepts/sleep.md:159
 msgid "Only 1 source_id → prompt to use update_semantic_memory"
 msgstr "仅 1 个 source_id → 提示使用 update_semantic_memory"
 
 #. type: Plain text
-#: docs/sleep.md:161
+#: docs/concepts/sleep.md:161
 msgid "### Operation Log"
 msgstr "### 操作日志"
 
 #. type: Plain text
-#: docs/sleep.md:163
+#: docs/concepts/sleep.md:163
 msgid ""
 "Each round written to `~/.anima/logs/deep_sleep_{day}_{round_index}"
 "_{round}.json`, not in database, for troubleshooting only."
@@ -524,7 +574,7 @@ msgstr ""
 "_{round}.json`，不进数据库，仅用于排查。"
 
 #. type: Plain text
-#: docs/sleep.md:165
+#: docs/concepts/sleep.md:165
 msgid ""
 "Records: date, round, active memory count, prior change count, tool_calls "
 "count, summary, change log snapshot."
@@ -533,12 +583,12 @@ msgstr ""
 "变更日志快照。"
 
 #. type: Plain text
-#: docs/sleep.md:167
+#: docs/concepts/sleep.md:167
 msgid "## Trigger Mechanism"
 msgstr "## 触发机制"
 
 #. type: Plain text
-#: docs/sleep.md:173
+#: docs/concepts/sleep.md:173
 #, no-wrap
 msgid ""
 "```cron\n"
@@ -554,17 +604,17 @@ msgstr ""
 "```\n"
 
 #. type: Plain text
-#: docs/sleep.md:175
+#: docs/concepts/sleep.md:175
 msgid "After downtime, next scheduled run catches up; not a real-time system."
 msgstr "宕机后下次对应时刻补跑即可；非实时系统。"
 
 #. type: Plain text
-#: docs/sleep.md:177
+#: docs/concepts/sleep.md:177
 msgid "## Historical Backfill (One-Time CLI)"
 msgstr "## 历史补跑（一次性 CLI）"
 
 #. type: Plain text
-#: docs/sleep.md:179
+#: docs/concepts/sleep.md:179
 msgid ""
 "For historical conversations before go-live or after migration, run light "
 "sleep **per CST calendar day**, same logic as nightly cron but manually "
@@ -574,7 +624,7 @@ msgstr ""
 "逻辑一致，但由人工触发、独立进度文件。"
 
 #. type: Plain text
-#: docs/sleep.md:183
+#: docs/concepts/sleep.md:183
 msgid ""
 "```bash anima memory sleep backfill [--from YYYY-MM-DD] [--to YYYY-MM-DD] [--"
 "resume] ```"
@@ -583,14 +633,20 @@ msgstr ""
 "resume] ```"
 
 #. type: Plain text
-#: docs/sleep.md:189
-#, no-wrap
+#: docs/concepts/sleep.md:189
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Option | Description |\n"
+#| "| ------ | ----------- |\n"
+#| "| `--from` | Start date; if omitted, earliest non-debug session CST day in `sessions` |\n"
+#| "| `--to` | End date; if omitted, **yesterday CST** (same as 02:00 cron default day) |\n"
+#| "| `--resume` | Continue from progress file, skip completed days |\n"
 msgid ""
-"| Option | Description |\n"
-"| ------ | ----------- |\n"
-"| `--from` | Start date; if omitted, earliest non-debug session CST day in `sessions` |\n"
-"| `--to` | End date; if omitted, **yesterday CST** (same as 02:00 cron default day) |\n"
-"| `--resume` | Continue from progress file, skip completed days |\n"
+"| Option     | Description                                                              |\n"
+"| ---------- | ------------------------------------------------------------------------ |\n"
+"| `--from`   | Start date; if omitted, earliest non-debug session CST day in `sessions` |\n"
+"| `--to`     | End date; if omitted, **yesterday CST** (same as 02:00 cron default day) |\n"
+"| `--resume` | Continue from progress file, skip completed days                         |\n"
 msgstr ""
 "| 选项       | 说明                                                          |\n"
 "| ---------- | ------------------------------------------------------------- |\n"
@@ -599,26 +655,26 @@ msgstr ""
 "| `--resume` | 从进度文件续跑，跳过已完成日                                  |\n"
 
 #. type: Plain text
-#: docs/sleep.md:191
+#: docs/concepts/sleep.md:191
 #, no-wrap
 msgid "**Progress file:** `~/.anima/runtime/light_sleep_backfill_state.json` (separate from `light_sleep_state.json`).\n"
 msgstr "**进度文件**：`~/.anima/runtime/light_sleep_backfill_state.json`（与 `light_sleep_state.json` 独立）。\n"
 
 #. type: Plain text
-#: docs/sleep.md:193
+#: docs/concepts/sleep.md:193
 #, no-wrap
 msgid "**Behavior notes:**\n"
 msgstr "**行为要点**：\n"
 
 #. type: Bullet: '- '
-#: docs/sleep.md:200
+#: docs/concepts/sleep.md:200
 msgid ""
 "Each day independently calls `runLightSleep({ day })`; single-day failure "
 "recorded then continue next day"
 msgstr "每日独立调用 `runLightSleep({ day })`；单日失败记录后继续下一天"
 
 #. type: Bullet: '- '
-#: docs/sleep.md:200
+#: docs/concepts/sleep.md:200
 msgid ""
 "Stage 3b (autobiography summary refresh) runs only on **last day** by "
 "default; skipped on intermediate days to save tokens"
@@ -626,7 +682,7 @@ msgstr ""
 "Stage 3b（自传概括刷新）默认仅在 **最后一天** 执行，中间日跳过以节省 token"
 
 #. type: Bullet: '- '
-#: docs/sleep.md:200
+#: docs/concepts/sleep.md:200
 msgid ""
 "Before backfill, ensure LLM correctly fills `observed_at` / `occurred_at` "
 "(see [`memory.md`](memory.md)); otherwise memory times become backfill moment"
@@ -635,7 +691,7 @@ msgstr ""
 "(memory.md)）；否则记忆时间会落成补跑时刻"
 
 #. type: Bullet: '- '
-#: docs/sleep.md:200
+#: docs/concepts/sleep.md:200
 msgid ""
 "Backfill only writes semantic / limbic / autobiographical; **cross-session "
 "semantic merge still relies on deep sleep**—after backfill, wait for 03:00 "
@@ -645,37 +701,42 @@ msgstr ""
 "睡**——补跑结束后建议手动等一次 03:00 深睡或自行触发"
 
 #. type: Bullet: '- '
-#: docs/sleep.md:200
+#: docs/concepts/sleep.md:200
 msgid ""
 "No conflict with 02:00 cron, but pause service or avoid early-morning window "
 "during backfill"
 msgstr "与 02:00 cron 无冲突，但建议补跑时暂停服务或错开凌晨窗口"
 
 #. type: Bullet: '- '
-#: docs/sleep.md:200
+#: docs/concepts/sleep.md:200
 msgid ""
 "Single conversation input still capped at ~**120k characters** (see "
 "\"Context Too Large\" above)"
 msgstr "单次对话输入仍受约 **120k 字符**限制（见上文「上下文过大」）"
 
 #. type: Plain text
-#: docs/sleep.md:202
+#: docs/concepts/sleep.md:202
+#, fuzzy
+#| msgid ""
+#| "Implementation: [`life/memory/src/light-sleep/backfill.ts`](../life/"
+#| "memory/src/light-sleep/backfill.ts); CLI bootstrap: [`bootstrap-memory-"
+#| "jobs.ts`](../service/service/src/bootstrap-memory-jobs.ts)."
 msgid ""
-"Implementation: [`life/memory/src/light-sleep/backfill.ts`](../life/memory/"
-"src/light-sleep/backfill.ts); CLI bootstrap: [`bootstrap-memory-jobs.ts`](../"
-"service/service/src/bootstrap-memory-jobs.ts)."
+"Implementation: [`life/memory/src/light-sleep/backfill.ts`](../../life/"
+"memory/src/light-sleep/backfill.ts); CLI bootstrap: [`bootstrap-memory-"
+"jobs.ts`](../../service/service/src/bootstrap-memory-jobs.ts)."
 msgstr ""
 "实现：[`life/memory/src/light-sleep/backfill.ts`](../life/memory/src/light-"
 "sleep/backfill.ts)；CLI bootstrap：[`bootstrap-memory-jobs.ts`](../service/"
 "service/src/bootstrap-memory-jobs.ts)。"
 
 #. type: Plain text
-#: docs/sleep.md:204
+#: docs/concepts/sleep.md:204
 msgid "## Relationship to Existing Architecture"
 msgstr "## 与现有架构的关系"
 
 #. type: Plain text
-#: docs/sleep.md:219
+#: docs/concepts/sleep.md:219
 #, no-wrap
 msgid ""
 "```\n"
@@ -709,7 +770,7 @@ msgstr ""
 "```\n"
 
 #. type: Plain text
-#: docs/sleep.md:221
+#: docs/concepts/sleep.md:221
 msgid ""
 "`session:updated` EventBus event retained (WebUI refresh, etc.), **no "
 "longer** triggers reflect."
@@ -717,12 +778,12 @@ msgstr ""
 "`session:updated` EventBus 事件仍保留（WebUI 刷新等），**不再**触发 reflect。"
 
 #. type: Plain text
-#: docs/sleep.md:223
+#: docs/concepts/sleep.md:223
 msgid "## `memory_remember` Tool"
 msgstr "## memory_remember 工具"
 
 #. type: Plain text
-#: docs/sleep.md:224
+#: docs/concepts/sleep.md:224
 msgid ""
 "In-conversation `memory_remember` is a convenience wrapper: auto-infers "
 "`source_sessions` (current session) and `observed_at`, underlying "

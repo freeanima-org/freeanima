@@ -4,7 +4,7 @@ title: Security
 
 # FreeAnima Security
 
-> Adopted principles: [ARCHITECTURE.md](../ARCHITECTURE.md).
+> Adopted principles: [architecture.md](../concepts/architecture.md).
 > Security review and implementation items: [GitHub Issue #33](https://github.com/freeanima-org/freeanima/issues/33), [#46](https://github.com/freeanima-org/freeanima/issues/46).
 
 ## Trust Model (Required Reading for Open-Source Deployment)
@@ -116,12 +116,12 @@ The following are planned in code or docs—**deployers must not assume implemen
 
 ### P2 — Config Redaction Maintenance
 
-- When adding secret fields, sync [`service/config/src/config-sanitize.ts`](../service/config/src/config-sanitize.ts)
+- When adding secret fields, sync [`service/config/src/config-sanitize.ts`](../../service/config/src/config-sanitize.ts)
 
 ## First-Deployment Security Checklist
 
 1. Install and initialize pass + GPG; all secrets into pass only
-2. Copy [`config.example.yaml`](../config.example.yaml) → `~/.anima/config.yaml`; **do not** write plaintext secrets in config
+2. Copy [`config.example.yaml`](../../config.example.yaml) → `~/.anima/config.yaml`; **do not** write plaintext secrets in config
 3. `chmod 700 ~/.anima`
 4. Bind `127.0.0.1` only, or ensure intranet isolation
 5. Review `mcp_servers` / `acp_agents` config; set `enabled: false` for untrusted external Servers

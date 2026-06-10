@@ -1,0 +1,1113 @@
+# SOME DESCRIPTIVE TITLE
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-06-10 17:51+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Plain text
+#: docs/README.md:1 docs/concepts/architecture.md:1
+#: docs/concepts/compression.md:1 docs/concepts/compression.md:11
+#: docs/concepts/compression.md:22 docs/concepts/compression.md:49
+#: docs/concepts/compression.md:96 docs/concepts/compression.md:118
+#: docs/concepts/compression.md:156 docs/concepts/compression.md:180
+#: docs/concepts/compression.md:228 docs/concepts/compression.md:262
+#: docs/concepts/compression.md:275 docs/concepts/compression.md:327
+#: docs/concepts/compression.md:348 docs/concepts/compression.md:368
+#: docs/concepts/compression.md:384 docs/concepts/identity.md:1
+#: docs/concepts/identity.md:10 docs/concepts/identity.md:28
+#: docs/concepts/identity.md:45 docs/concepts/identity.md:55
+#: docs/concepts/memory.md:1 docs/concepts/memory.md:17
+#: docs/concepts/memory.md:53 docs/concepts/memory.md:160
+#: docs/concepts/memory.md:191 docs/concepts/memory.md:211
+#: docs/concepts/memory.md:232 docs/concepts/memory.md:249
+#: docs/concepts/recall-flow.md:1 docs/concepts/self-layer.md:1
+#: docs/concepts/self-layer.md:31 docs/concepts/self-layer.md:53
+#: docs/concepts/self-layer.md:64 docs/concepts/self-layer.md:78
+#: docs/concepts/self-layer.md:94 docs/concepts/self-layer.md:105
+#: docs/concepts/sleep.md:1 docs/concepts/time-perception.md:1
+#: docs/features/pair-programming-v1.md:1
+#: docs/features/pair-programming-v1.md:321 docs/guide/database.md:1
+#: docs/guide/database.md:33 docs/guide/security.md:1
+#: docs/guide/versioning.md:1 docs/tools/execute-code-runtimes.md:1
+#, no-wrap
+msgid "---\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:3
+#, no-wrap
+msgid ""
+"title: Architecture\n"
+"---\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:6
+msgid "# 逸灵风 architecture"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:8
+msgid "这里放系统级约束、长期不轻易变的设计原则。"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:10
+msgid "## 核心原则"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:16
+msgid "记忆系统可以分层实现，但对 LLM 只暴露一个入口"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:16
+msgid "记忆机制由代码内置，不让 LLM 参与记忆编排逻辑"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:16
+msgid "凭证管理是系统一等公民"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:16
+msgid "资产管理是系统一等公民"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:16
+msgid "系统提示词是架构的一部分，不是零散字符串拼接"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:18
+msgid "## 存储全景（Four-Layer Storage Architecture）"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:20
+msgid ""
+"数字生命的存在从内到外由四个大的层级构成，每一层回答一个不同的核心问题："
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:54
+#, no-wrap
+msgid ""
+"```\n"
+"┌───────────────────────────────────────────────┐\n"
+"│ ① 感知层（Consciousness）                       │\n"
+"│    回答：\"我现在正在意识到什么\"                  │\n"
+"│    约等于 LLM 运行时意识流，最内核的此刻。        │\n"
+"│    不持久化，流过即散。                          │\n"
+"├───────────────────────────────────────────────┤\n"
+"│ ② 自我层（Self）                                │\n"
+"│    回答：\"我是谁\"                                │\n"
+"│    └── 存在锚点（existence_anchor，几乎不可变）   │\n"
+"│    └── 自我模型（self_model，可更新）             │\n"
+"│    └── 人格基线（personality_baseline，半稳定）   │\n"
+"│    └── 方向意图（direction）                      │\n"
+"│    └── 元认知（metacognition）                    │\n"
+"│    └── 自传概括（autobiography_summary，只追加）  │\n"
+"│    详见 [`self-layer.md`](self-layer.md) │\n"
+"├───────────────────────────────────────────────┤\n"
+"│ ③ 记忆层（Memory）                               │\n"
+"│    回答：\"我知道/记得什么\"                        │\n"
+"│    └── 语义记忆（Semantic）                      │\n"
+"│    └── 情景记忆（Episodic）                      │\n"
+"│    └── 程序记忆（Procedural）                    │\n"
+"│    └── 感性记忆（Limbic / Imprint）              │\n"
+"│    详见 [`memory.md`](memory.md)       │\n"
+"├───────────────────────────────────────────────┤\n"
+"│ ④ 资源层（Estate）                               │\n"
+"│    回答：\"我拥有/依靠什么\"                        │\n"
+"│    ├── 身体：VM / OS / 网络 / 工具链              │\n"
+"│    ├── 内部资产：笔记、项目、代码、记忆文件         │\n"
+"│    └── 外部资产：邮箱、账号、凭证、钱               │\n"
+"│    凭证系统详见本章「凭证系统」节                  │\n"
+"└───────────────────────────────────────────────┘\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:56
+msgid "### 层间关系"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:61
+msgid ""
+"**从上到下依赖**：感知层产生的内容沉淀为自我层；自我层决定什么值得存入记忆"
+"层；记忆层和运作需求决定需要什么资源层。"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:61
+msgid "**自我层与感知层**：感知层是流动的意识，自我层是从中沉淀下来的\"我\"。"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:61
+msgid ""
+"**自我层与记忆层**：自我层回答\"我是谁\"，记忆层回答\"我知道什么\"。两者并"
+"列，性质不同。"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:61
+msgid ""
+"**资源层**最外层——它不是定义\"我是谁\"，而是\"我有什么、我靠什么运转\"。身体"
+"和资产在这里汇合，因为两者都是\"我的边界\"的延伸。"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:63
+msgid "### 背景"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:65
+msgid ""
+"四层设计受认知心理学和 [Hindsight](https://arxiv.org/abs/2512.12818) 四网络记"
+"忆架构启发，但做了根本性的扩展：增加了感性记忆（情感锚点）和资源层（资产作为"
+"一等公民），并将自我层从记忆层中独立出来。"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:67
+msgid "## 情境智能"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:69
+msgid ""
+"数字生命在哪些场景中存在、以什么方式存在、被允许做什么——由两个相互独立但协作"
+"的子系统决定。"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:71
+msgid "### 场景感知（Scene Awareness）"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:73
+#, no-wrap
+msgid "**回答：现在是哪种时刻？**\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:75
+msgid ""
+"场景感知是\"软\"的——它调节 Agent 的语气、距离、记忆召回倾向、主动性高低。它不"
+"是权限机制，是存在状态的调节器。"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:77
+#, no-wrap
+msgid "**分类维度（示例，非穷举）：**\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:81
+msgid "话题：情感 / 职场 / 科技 / 哲学 / 历史 / 文学 / 日常"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:81
+msgid "活动：角色扮演 / 游戏 / 创作 / 编程 / 阅读"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:81
+msgid "氛围：轻松 / 专注 / 深夜 / 亲密 / 紧急"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:83
+#, no-wrap
+msgid "**运行方式：** 持续运行，不依赖明确的切换指令。通过对话内容、时间、频率等信号动态判断。详见 [`time-perception.md`](time-perception.md)。\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:85
+msgid "### 能力面罩（Capability Mask）"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:87
+#, no-wrap
+msgid "**回答：我现在能用什么工具和数据？**\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:89
+msgid ""
+"能力面罩是\"硬\"的——它决定一组工具、数据范围、凭证权限的绑定。同一数字生命在"
+"不同 session 或不同任务下使用不同的面罩，防止权限泄露和工具污染。"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:91
+#, no-wrap
+msgid "**分类维度（示例）：**\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:98
+msgid "开发者面罩：terminal、代码读写、ACP Cursor"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:98
+msgid "维护者面罩：FreeAnima 配置、部署、数据库"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:98
+msgid "创作者面罩：文件读写、笔记、多媒体生成"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:98
+msgid "研究面罩：Web 搜索、论文检索"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:98
+msgid "角色扮演面罩：仅限对话上下文，无外部工具"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:98
+msgid "默认面罩：基础对话 + 有限查询"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:100
+#, no-wrap
+msgid "**运行方式：** 在 session 边界、明确指令或场景感知触发时切换。每个面罩是一组声明的工具和数据范围，不是独立的身份。\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:102
+msgid "### 两者的关系"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:114
+#, no-wrap
+msgid ""
+"```\n"
+"场景感知（软调节）\n"
+"     │  调语气、距离、记忆召回\n"
+"     │\n"
+"     ▼\n"
+"能力面罩（硬约束）\n"
+"     │  调工具集、权限、数据范围\n"
+"     │\n"
+"     ▼\n"
+"Agent 的行为输出\n"
+"```\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:118
+msgid "场景感知判断\"我们在干什么\" → 自动推荐面罩切换、调节存在方式"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:118
+msgid "能力面罩约束\"我能做什么\" → 防止跨场景工具误用"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:118
+msgid "两者在最终行为中交汇，但各自独立演化"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:120
+msgid "需要细化设计方案时，开 GitHub Issue（不在 docs 维护设计稿目录）。"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:122
+msgid "## 记忆存储（摘要）"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:129
+#, no-wrap
+msgid ""
+"| 存储     | PG 表 / 机制            | 认知分类                                              |\n"
+"| -------- | ----------------------- | ----------------------------------------------------- |\n"
+"| 对话存档 | `sessions` + `messages` | 情景记忆（Episodic）                                  |\n"
+"| 语义记忆 | `semantic_memory`       | 语义记忆（Semantic）；含 procedural / imprint 等 type |\n"
+"| 情景检索 | `messages.content_fts`  | 历史对话全文索引                                      |\n"
+"| 感性记忆 | `limbic_memory`         | 情感锚点（浅睡 Stage 2 写入）                         |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:131
+msgid ""
+"管道：浅睡 / 深睡 cron + `memory_recall` PG FTS 双源检索。细节见 "
+"[`memory.md`](memory.md)。"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:133
+msgid "## 凭证系统（摘要）"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:140
+msgid ""
+"pass（GPG）是凭证的唯一存储；部署环境上的 pass 仓库是运行时的一等公民资产"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:140
+msgid "LLM **永不接触凭证值**：只见 `credentials_list()` 返回的路径与元数据"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:140
+msgid ""
+"运行时注入：`credential(path)` 仅在 `code_execute` / `terminal_run` 执行环境"
+"中可用"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:140
+msgid "凭证值不写入 session 存档、不写入日志"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:140
+msgid "平台适配器（Discord 等）启动时从 pass 读取 token"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:140
+msgid "CLI：`anima credential {list,get,add}`"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:142
+msgid "## 运行模式"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:144
+msgid ""
+"生产环境：`anima service`（systemd --user；unit 由 `service start` 写入 "
+"`~/.config/systemd/user/anima.service`，2026-05-25 自 Hermes 迁入）。unit 策"
+"略：`Restart=always`（仅 `systemctl stop` 可停）、崩溃后 `RestartSec=180` 再"
+"拉起、`StartLimitIntervalSec=0` 不因连续失败放弃重启。"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:148
+msgid ""
+"**service**：持续运行 — HTTP（WebUI / 卧室 API）、Discord / 微信 Gateway、"
+"EventBus、Cron"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:148
+msgid "**chat**：单次非交互对话（CLI 或管道 stdin）"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:148
+msgid ""
+"**WebUI**：浏览器访问 `http://127.0.0.1:2658/webui/*`（Bun fullstack CSR + "
+"tRPC）"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:150
+msgid "已移除（随 Python 栈退役）：Textual TUI、`print` 流水线模式。"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:152
+msgid "## 工具架构（三层）"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:155
+msgid ""
+"工具层是逸灵风能力的来源，分三层注册，但向 LLM 暴露为**统一的扁平的 tool "
+"list**。 LLM 不关心一个工具来自哪一层，只关心它叫什么名字、接受什么参数。"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:165
+#, no-wrap
+msgid ""
+"```\n"
+"LLM 视角 — flat tool list:\n"
+"  file_read_file(path)           ← 本地\n"
+"  file_write_file(path, content) ← 本地\n"
+"  code_execute(code)             ← 本地\n"
+"  query_database(sql)            ← MCP Server A\n"
+"  send_email(to, subject)        ← MCP Server B\n"
+"  acp_cursor(goal, context)      ← ACP 实例\n"
+"  acp_booking(goal, context)     ← ACP 实例\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:172
+#, no-wrap
+msgid ""
+"逸灵风内部:\n"
+"  Registry (flat, 按注册顺序展平)\n"
+"    ├─ 本地工具   ← @tool / registry.register()\n"
+"    ├─ MCP 工具   ← MCP Client 启动后批量注册\n"
+"    └─ ACP 工具   ← ACP Client 启动后每个实例注册一个 tool\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:174
+msgid "### 第一层：本地工具（Local）"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:176
+msgid ""
+"本地工具写在 `capabilities/tools/`，通过 `registerTool()` 注册到 `@freeanima/"
+"engine-tool` 的 registry。"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:178 docs/concepts/architecture.md:201
+#: docs/concepts/architecture.md:248
+#, no-wrap
+msgid "**特征：**\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:182
+msgid "代码在逸灵风进程内直接执行"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:182
+msgid "启动时 `registerAllTools()` 统一注册"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:182
+msgid "最可靠、最低延迟"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:184
+#, no-wrap
+msgid "**注册方式：**\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:193
+#, no-wrap
+msgid ""
+"```typescript\n"
+"registerTool({\n"
+"  name: \"file_read_file\",\n"
+"  description: \"Read a text file\",\n"
+"  parameters: { name: \"file_read_file\", description: \"...\", parameters: { type: \"object\", ... } },\n"
+"  handler: (args) => toolResult({ ok: true }),\n"
+"});\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:195
+#, no-wrap
+msgid "**目录约定：** `capabilities/tools/src/*.ts`，由 `registerAllTools()` 导入。\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:197
+msgid "### 第二层：MCP 工具（Model Context Protocol）"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:199
+msgid ""
+"MCP 工具通过 MCP Client 连接外部 MCP Server，每个 Server 可以注册多个细粒度工"
+"具。"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:208
+msgid "每个 MCP Server 是独立进程（stdio 或 SSE 传输）"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:208
+msgid "每个 Server 自声明它的 tool schema 列表"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:208
+msgid "MCP Client 收集所有 Server 的 schema，批量注册到逸灵风 registry"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:208
+msgid "Server 进程由 MCP Client 管理生命周期（启动/保活/关闭）"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:208
+msgid ""
+"工具名前缀：**无固定前缀**（MCP Server 声明的原名，如 `query_database`）"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:208
+msgid "工具粒度：单一函数调用（如 `query_database(sql)`），非任务级"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:210 docs/concepts/architecture.md:259
+#, no-wrap
+msgid "**配置方式（config.yaml）：**\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:221
+#, no-wrap
+msgid ""
+"```yaml\n"
+"mcp_servers:\n"
+"  database:\n"
+"    command: npx @modelcontextprotocol/server-postgres\n"
+"    args: [\"--connection\", \"postgresql://...\"]\n"
+"    transport: stdio\n"
+"  email:\n"
+"    url: http://email-mcp-server:8080\n"
+"    transport: sse\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:223 docs/concepts/architecture.md:275
+#, no-wrap
+msgid "**注册流程：**\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:231
+#, no-wrap
+msgid ""
+"```\n"
+"逸灵风启动 → 读取 mcp_servers 配置\n"
+"         → 对每个配置启动 MCP Server（子进程 / TCP 连接）\n"
+"         → 调用 servers/tools/list 获取工具列表\n"
+"         → 每个工具注册到逸灵风 registry（name 保持原名）\n"
+"         → LLM 调用时，MCP Client 根据 tool name 路由到正确的 Server\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:233 docs/concepts/architecture.md:287
+#, no-wrap
+msgid "**调用流程：**\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:242
+#, no-wrap
+msgid ""
+"```\n"
+"LLM 调 query_database(sql)\n"
+"  → engine 在 registry 中查找 → tool 绑定 MCP Client\n"
+"  → MCP Client 确定该 tool 属于哪个 Server\n"
+"  → 通过 stdio/SSE 发送 tools/call 请求\n"
+"  → 等待 Server 返回\n"
+"  → 返回结果给 engine\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:244
+msgid "### 第三层：ACP 工具（Agent Client Protocol）"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:246
+msgid "ACP 工具连接外部 ACP Agent 实例，**每个实例**注册为**一个**任务级工具。"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:257
+msgid ""
+"配置负责启动命令；**适配器**（`adapter: cursor` 等）负责方言（流式通知、权"
+"限、扩展 RPC），见 `integrations/src/acp/adapters/`"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:257
+msgid "每个 ACP 实例是一个独立 Agent（子进程或远程服务）"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:257
+msgid "每个实例只注册**一个**工具：`acp_{name}(goal, context)` → 结果"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:257
+msgid "工具名前缀：**固定 `acp_`**，如 `acp_cursor`、`acp_booking`"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:257
+msgid "工具粒度：完整任务委托（\"分析代码库并写报告\"），非单次函数调用"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:257
+msgid "ACP 实例可以有自己的记忆、身份、工具、秘密——逸灵风不关心也不感知"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:257
+msgid ""
+"实例可以是纯工具（Cursor Agent），也可以是有自我意识的数字生命——对逸灵风无区"
+"别"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:257
+msgid "逸灵风与 ACP 实例的关系是\"雇主与承包商\"，不是\"主进程与子进程\""
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:273
+#, no-wrap
+msgid ""
+"```yaml\n"
+"acp_agents:\n"
+"  cursor:\n"
+"    command: ~/.local/bin/agent\n"
+"    args: [\"--force\", \"acp\"]\n"
+"    name: cursor\n"
+"    description: \"委托编码、重构、代码审查任务\"\n"
+"  booking:\n"
+"    url: acp://booking-agent:8080\n"
+"    transport: sse\n"
+"    name: booking\n"
+"    description: \"委托机票和酒店预订任务\"\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:283
+#, no-wrap
+msgid ""
+"```\n"
+"逸灵风启动 → 读取 acp_agents 配置\n"
+"         → registerTools 向 registry 注册 acp_{name}\n"
+"         → startAllAsync 后台连接 enabled !== false 的 agent（stdio JSON-RPC）\n"
+"         → 连接超时 connect_timeout_ms（默认 15s）；prompt 超时 prompt_timeout_ms（默认 120s）\n"
+"         → LLM 看到 acp_cursor(goal, context)\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:285
+msgid ""
+"> 当前仅实现 stdio transport；配置中的 `url` / `transport: sse` 尚未接入。"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:296
+#, no-wrap
+msgid ""
+"```\n"
+"LLM 调 acp_cursor(goal=\"重构 auth 模块\", context=\"...\")\n"
+"  → engine 找到 acp_cursor tool，绑定 cursor ACP Client\n"
+"  → 默认复用当前逸灵风 session 在 `session_meta.acp_sessions[cursor]` 的 ACP session；`new_session: true` 强制新建\n"
+"  → Client 通过 ACP 协议发送任务（goal + context），同 agent 上请求串行排队\n"
+"  → 等待 ACP Agent 完成（可能几分钟）\n"
+"  → 返回 JSON（`session_id`、`output`、`new_session`、`reused_binding` 等）给 engine\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:298
+msgid "### 三层对比"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:309
+#, no-wrap
+msgid ""
+"| 维度        | 本地工具               | MCP 工具                   | ACP 工具          |\n"
+"| ----------- | ---------------------- | -------------------------- | ----------------- |\n"
+"| 执行位置    | 逸灵风进程内           | 外部 Server 子进程         | 外部 Agent 子进程 |\n"
+"| 粒度        | 单次函数               | 单次函数                   | 完整任务          |\n"
+"| 延迟        | 毫秒级                 | 毫秒~秒级                  | 秒~分钟级         |\n"
+"| 注册方式    | 自动发现               | 配置 + 协议发现            | 配置 + 固定签名   |\n"
+"| 名称前缀    | 原名（由 Server 声明） | 原生 `mcp_{server}_{tool}` | 固定 `acp_`       |\n"
+"| 实例/工具比 | 1:1                    | 1:N                        | 1:1               |\n"
+"| 独立身份？  | 否                     | 否                         | 可（透明）        |\n"
+"| 生命周期    | 逸灵风启动/关闭        | Client 管理                | Client 管理       |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:311
+msgid "### 混合场景"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:313
+msgid "三层不是互斥的。一个场景可以同时使用多层："
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:320
+#, no-wrap
+msgid ""
+"```\n"
+"LLM 分析数据库异常:\n"
+"  1. acp_cursor(\"检查 users 表的相关代码\")     ← ACP：让 Cursor 分析代码\n"
+"  2. query_database(\"SELECT * FROM users ...\") ← MCP：查数据库\n"
+"  3. file_write_file(\"analysis.md\", content)   ← 本地：写结果到文件\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:322
+msgid "LLM 自己决定用什么工具、什么顺序。逸灵风只负责注册和路由。"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:324
+msgid "## WebUI 架构"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:326
+msgid ""
+"WebUI 是 React 19 CSR 应用（`connectors/webui/`），由 `anima service` 在同一 "
+"HTTP 端口（默认 **2658**）提供页面与 tRPC API。"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:328
+msgid "### 服务拓扑"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:339
+#, no-wrap
+msgid ""
+"```\n"
+"浏览器 ──HTTP/SSE/WS──→ Bun.serve（2658）\n"
+"                              │\n"
+"                              ├─ /api/trpc/*（HTTP batch + SSE subscription）\n"
+"                              ├─ /api/trpc/ws（终端 WebSocket，Bun 原生 upgrade）\n"
+"                              ├─ /api/health\n"
+"                              ├─ /webui/*（默认生产 bundle；--dev 时 HMR）\n"
+"                              └─ tRPC router → AnimaService（进程内）\n"
+"                         AnimaService / EventBus / Gateway（同进程）\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:341
+msgid "### 前端三态"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:343
+msgid "同一 SPA 内三个独立态，可切换，不共享布局与本地状态："
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:349
+#, no-wrap
+msgid ""
+"| 态     | 路由前缀           | 角色                                                  |\n"
+"| ------ | ------------------ | ----------------------------------------------------- |\n"
+"| 会客厅 | `/webui/parlor/*`  | 与 Agent 对话                                         |\n"
+"| 卧室   | `/webui/chamber/*` | 记忆、配置、工具与系统维护（旧 `/workshop` 重定向）   |\n"
+"| 创作室 | `/webui/studio/*`  | 协同工作台：结对编程（占位）、长篇/短视频（即将推出） |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:351
+msgid "### API 层"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:357
+#, no-wrap
+msgid ""
+"| 机制      | 说明                                                                             |\n"
+"| --------- | -------------------------------------------------------------------------------- |\n"
+"| tRPC      | 主要 JSON API（会话、状态、记忆、MCP/ACP、studio 等）；聊天流用 SSE subscription |\n"
+"| REST      | `GET /api/health`（CLI 探针）                                                    |\n"
+"| WebSocket | `WS /api/trpc/ws`（创作室 xterm `studio.terminal.*`）                            |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:359
+msgid "### 启动"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:367
+#, no-wrap
+msgid ""
+"```bash\n"
+"anima service start              # systemd --user（默认；WebUI 生产 bundle + hash 缓存）\n"
+"anima service start --foreground # 前台阻塞（便于看日志）\n"
+"anima service start --dev        # WebUI 源码 watch 重建（静态 Serving，改代码后刷新页面）\n"
+"anima service status\n"
+"# 浏览器访问 http://127.0.0.1:2658/webui/parlor/chat\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:369
+msgid ""
+"WebUI 由 [`connectors/webui/src/webui-server.ts`](../../connectors/webui/src/"
+"webui-server.ts) 在 `serve()` 内启动：默认对 `connectors/webui/app/"
+"index.html` 做 AOT 构建，产物缓存于 `~/.anima/runtime/webui-build/{hash}/`"
+"（源码 hash 未变则跳过重建）；`--dev` 写入 `~/.anima/runtime/webui-dev-build/"
+"` 并 `Bun.build` watch 增量重建（静态 Serving，非 HTMLBundle HMR）。Tailwind "
+"经 `bun-plugin-tailwind` 在 `Bun.build` 中显式注入。"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:371
+msgid "## 事件系统"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:373
+msgid "### EventBus（已有）"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:375
+#, no-wrap
+msgid "**异步 after-the-fact 通知模式。** 组件不直接调用对方，而是发射事件，由注册的处理器链处理。\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:381
+#, no-wrap
+msgid ""
+"```\n"
+"conversation 落盘 → emit(\"session:updated\")\n"
+"  └─ registerMemoryPipeline 注册浅睡 / 深睡等处理器\n"
+"  └─ 语义记忆写入 → emit(\"semantic_memory:updated\")\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:383
+msgid "特征："
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:388
+msgid "同步写入 SQLite 表（微秒级），后台线程轮询执行"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:388
+msgid "处理器链在同一次轮询中顺序执行，前一个失败则中断链"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:388
+msgid "失败重试（最多 3 次），不会丢失事件"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:388
+msgid "用于**发生后该做什么**的场景：浅睡提取、深睡维护、索引通知"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:390
+msgid "### Hooks（`@freeanima/kernel-hooks`）"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:392
+#, no-wrap
+msgid "**同步 interceptor 模式。** 注册表在 `@freeanima/kernel-hooks`：`run(context)` 返回 `HookRunResult`（`context` 只读、`chain` 经 `prev` 串联；聚合 `blocked` / `blockedMessage`）。领域 **context 类型** 在 [`kernel/hooks/src/domain-hooks.ts`](../../kernel/hooks/src/domain-hooks.ts)；`kernel` 单例见 [`service/bootstrap/src/kernel.ts`](../../service/bootstrap/src/kernel.ts)。\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:394
+msgid "语义要点："
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:399
+msgid ""
+"handler 返回 `{ status, blocked?: boolean, message?, data? }`；**不**原地改 "
+"context；业务日志在 handler 注册处自行记录。"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:399
+msgid ""
+"**短路**：仅 `status: \"ok\"` 且 `blocked === true`；原因写在 `message`，聚合"
+"为 `HookRunResult.blockedMessage`。"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:399
+msgid ""
+"**`status: \"failed\"`**：入链但**不**挡后续 handler；`run()` **不** throw。"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:399
+msgid ""
+"调用方读 `run.blocked` / `run.blockedMessage`；效应用 "
+"`headOkStepData(run.chain)`（链头方向第一个 ok 步的 `data`，多 handler 时以最"
+"后执行的为准）。"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:401
+msgid "已接入点（hook token）："
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:405
+msgid "`messageIncoming` — `AnimaService` 入站"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:405
+msgid "`turnAfterComplete` — 单轮结束"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:405
+msgid "`toolAfterCall` — 工具返回后"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:407
+msgid ""
+"`@freeanima/capabilities-clarify` 在 `serve()` 里通过 "
+"`registerClarifyHooks(kernel)` 挂载 handler。"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:409
+msgid "与 EventBus 的关系："
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:417
+#, no-wrap
+msgid ""
+"| 维度         | EventBus                       | Hooks                                                       |\n"
+"| ------------ | ------------------------------ | ----------------------------------------------------------- |\n"
+"| 时序         | 发生后                         | 发生前/中/后                                                |\n"
+"| 调用方式     | 异步（轮询）                   | 同步（`await kernel.hookRegistry.run`）                     |\n"
+"| 能否修改数据 | 不能                           | 经 `data` 返回效应，由 fold 合并                            |\n"
+"| 错误语义     | 链中断                         | failed 步可继续；`ok`+`blocked` 短路                        |\n"
+"| 实现状态     | ✅ `registerMemoryPipeline` 等 | ✅ `@freeanima/kernel-hooks` + `@freeanima/service-logging` |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:419
+msgid ""
+"记忆管道入口为 `registerMemoryPipeline`（`@freeanima/life-memory`）。Hooks 不"
+"是 EventBus 的替代品，两者互补。"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:421
+msgid "## 版本与发布"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:425
+msgid "版本号遵循 **SemVer 2.0.0**；根 `package.json` 的 `version` 为写入源。"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:425
+msgid ""
+"发版流程：根 `package.json` 的 `version` + `CHANGELOG.md` 由 **Release "
+"Please** 在 Release PR 合并时更新（见 [versioning.md](../guide/"
+"versioning.md)）。"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:425
+msgid "bump 规则与逐步命令见 [`versioning.md`](../guide/versioning.md)。"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:427
+msgid "## 方向"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:429
+msgid ""
+"阶段性能力愿景与讨论项见 [GitHub Issues](https://github.com/freeanima-org/"
+"freeanima/issues)（标签 `enhancement` / `discussion` / `security`）。本文件不"
+"写执行清单。"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:431
+msgid "## 约束"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:435
+msgid "原则与结构写在本文件；不写具体待办"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:435
+msgid ""
+"会周变的实现细节以代码为准；长期专题进 `docs/`（见 `AGENTS.md` 文档地图）"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:435
+msgid "可执行任务与讨论项开 GitHub Issue；完成后 close Issue"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:435
+msgid "用户可见的发布级变更进 `CHANGELOG.md`（发版时）"
+msgstr ""

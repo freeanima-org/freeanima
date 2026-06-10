@@ -5,7 +5,7 @@ title: Database
 # Database Design
 
 > PostgreSQL storage layer. **Slice A** (conversation archive), **Slice B** (`semantic_memory` + `limbic_memory`), **Slice C** (self layer + autobiographical) are live; standalone `procedural` table not yet created (procedural memory currently uses `semantic_memory.type=procedural`).
-> Related: [`compression.md`](compression.md), [`memory.md`](memory.md), [`sleep.md`](sleep.md).
+> Related: [`compression.md`](../concepts/compression.md), [`memory.md`](../concepts/memory.md), [`sleep.md`](../concepts/sleep.md).
 
 ## Status
 
@@ -15,7 +15,7 @@ title: Database
 | **Slice B** | `semantic_memory`, `limbic_memory`                                                  | **✅ Complete** (standalone procedural table: Issue #41) |
 | **Slice C** | `self_blocks` + `autobiographical_memory` (self layer + autobiographical narrative) | **✅ Complete**                                          |
 
-Code source of truth: [`engine/db/src/schema/`](../engine/db/src/schema/).
+Code source of truth: [`engine/db/src/schema/`](../../engine/db/src/schema/).
 
 ## PG Multi-Domain Architecture (Path C)
 
@@ -26,7 +26,7 @@ Code source of truth: [`engine/db/src/schema/`](../engine/db/src/schema/).
 | `@freeanima/engine-conversation` | Session runtime; re-exports `engine-db/domain` convenience types                                 |
 | `@freeanima/connectors-db-pg`    | `PgSessionStore` implementation, connection pool, mapper, repos                                  |
 
-Wiring: [`service/service/src/serve.ts`](../service/service/src/serve.ts) calls `createPgRepositories` → `createEngine({ repos })` → `createConversationService(engine.repos)` → `initServiceContext`. Runtime conversation archive reads/writes via `getServiceContext().conversation` or explicit `ConversationService` / `SessionStorePort`, not direct connector dependency.
+Wiring: [`service/service/src/serve.ts`](../../service/service/src/serve.ts) calls `createPgRepositories` → `createEngine({ repos })` → `createConversationService(engine.repos)` → `initServiceContext`. Runtime conversation archive reads/writes via `getServiceContext().conversation` or explicit `ConversationService` / `SessionStorePort`, not direct connector dependency.
 
 New PG domain (memory / cron / task): `engine-db/schema/{domain}` → add port in `engine-repos` → implement in `connectors-db-pg` → extend `PgRepositories` fields → wire in `serve.ts`.
 
@@ -92,13 +92,13 @@ Production must configure `database.url`.
 
 **Driver:** `Bun.sql` + `drizzle-orm/bun-sql/postgres` (`connectors/db-pg`).
 
-**Upstream patch:** rc.3 bun-sql driver default `tagged=true` causes incomplete SQL from RQB `.select()` ([drizzle#5802](https://github.com/drizzle-team/drizzle-orm/issues/5802)); repo uses Bun `patchedDependencies` with [`patches/drizzle-orm@1.0.0-rc.3.patch`](../patches/drizzle-orm@1.0.0-rc.3.patch) (equivalent to [PR#5824](https://github.com/drizzle-team/drizzle-orm/pull/5824): `tagged=false`). After patch, CRUD read path uses Drizzle RQB; FTS / complex retrieval still uses `execute`. Patch removable when upstream merges and releases. Regression: `tests/integration/db/db-session.test.ts`.
+**Upstream patch:** rc.3 bun-sql driver default `tagged=true` causes incomplete SQL from RQB `.select()` ([drizzle#5802](https://github.com/drizzle-team/drizzle-orm/issues/5802)); repo uses Bun `patchedDependencies` with [`patches/drizzle-orm@1.0.0-rc.3.patch`](../../patches/drizzle-orm@1.0.0-rc.3.patch) (equivalent to [PR#5824](https://github.com/drizzle-team/drizzle-orm/pull/5824): `tagged=false`). After patch, CRUD read path uses Drizzle RQB; FTS / complex retrieval still uses `execute`. Patch removable when upstream merges and releases. Regression: `tests/integration/db/db-session.test.ts`.
 
 ### Migrations
 
-- **✅ Production:** On `anima service` startup with PG as primary store, [`serve.ts`](../service/service/src/serve.ts) auto-calls `runMigrations()`.
+- **✅ Production:** On `anima service` startup with PG as primary store, [`serve.ts`](../../service/service/src/serve.ts) auto-calls `runMigrations()`.
 - **Manual:** `bun run --filter @freeanima/engine-db db:migrate` — applies Drizzle migrations (including columnized → payload JSONB backfill).
-- **Extensions (one-time, requires superuser):** `pg_trgm` / `vector` cannot be `CREATE EXTENSION` by app user. On local Debian, [`setup-postgres-debian.sh`](../scripts/setup-postgres-debian.sh) installs automatically; for existing DB:
+- **Extensions (one-time, requires superuser):** `pg_trgm` / `vector` cannot be `CREATE EXTENSION` by app user. On local Debian, [`setup-postgres-debian.sh`](../../scripts/setup-postgres-debian.sh) installs automatically; for existing DB:
 
 ```bash
 sudo apt install postgresql-17-pgvector   # version matches psql --version
@@ -231,7 +231,7 @@ Methods: `create` / `get` / `deprecate` / `count` / `listActive` / `listCreatedS
 
 Maintenance: `builtin-self-autobiography` cron (04:00 CST) processes narrative from `experience`/`imprint` semantic memories; `autobiography_summary` block compressed/refreshed from this table in same job.
 
-Migration: [`engine/db/migrations/20260607150000_self_and_autobiographical/migration.sql`](../engine/db/migrations/20260607150000_self_and_autobiographical/migration.sql).
+Migration: [`engine/db/migrations/20260607150000_self_and_autobiographical/migration.sql`](../../engine/db/migrations/20260607150000_self_and_autobiographical/migration.sql).
 
 ### `limbic_memory` (Limbic Emotional Memory)
 
@@ -254,7 +254,7 @@ Port: `LimbicMemoryStorePort` → `PgLimbicMemoryStore` → `registerLimbicMemor
 
 Methods: `create` / `get` / `listBySession`. **Not injected** into system prompt; light sleep Phase 2 writes via `create_limbic_memory`.
 
-Migration: [`engine/db/migrations/20260607160000_limbic_memory/migration.sql`](../engine/db/migrations/20260607160000_limbic_memory/migration.sql).
+Migration: [`engine/db/migrations/20260607160000_limbic_memory/migration.sql`](../../engine/db/migrations/20260607160000_limbic_memory/migration.sql).
 
 ## cron_jobs (Live)
 
@@ -292,7 +292,7 @@ Scheduling: `Bun.cron` in-process; 5-field cron validation and `next_run_at` via
 
 Port: `CronJobStorePort` (`engine-repos`) → `PgCronJobStore` (`connectors-db-pg`) → `initCronModule` (`connectors-cron` / `serve.ts`).
 
-Migration: [`engine/db/migrations/20260607140000_cron_jobs/migration.sql`](../engine/db/migrations/20260607140000_cron_jobs/migration.sql) (hand-written SQL, no Drizzle schema file).
+Migration: [`engine/db/migrations/20260607140000_cron_jobs/migration.sql`](../../engine/db/migrations/20260607140000_cron_jobs/migration.sql) (hand-written SQL, no Drizzle schema file).
 
 ## cron_log (Live)
 
@@ -313,7 +313,7 @@ Unique constraint: `(job_id, run_count)`. Index: `idx_cron_log_job_finished (job
 
 Port: `CronLogStorePort` (`engine-repos`) → `PgCronLogStore` (`connectors-db-pg`); write site `connectors/cron/src/runner.ts` (`appendCronRunLog`).
 
-Schema: `engine/db/src/schema/cron-log.ts`. Migration: [`engine/db/migrations/20260612120000_cron_log/migration.sql`](../engine/db/migrations/20260612120000_cron_log/migration.sql).
+Schema: `engine/db/src/schema/cron-log.ts`. Migration: [`engine/db/migrations/20260612120000_cron_log/migration.sql`](../../engine/db/migrations/20260612120000_cron_log/migration.sql).
 
 ## tasks (Live)
 
@@ -336,4 +336,4 @@ Indexes: `idx_tasks_status`, `idx_tasks_list` (status, priority, created_at).
 
 Port: `TaskStorePort` (`engine-repos`) → `PgTaskStore` (`connectors-db-pg`) → `capabilities/tasks` tools.
 
-Migration: [`engine/db/migrations/20260608120000_tasks/migration.sql`](../engine/db/migrations/20260608120000_tasks/migration.sql).
+Migration: [`engine/db/migrations/20260608120000_tasks/migration.sql`](../../engine/db/migrations/20260608120000_tasks/migration.sql).

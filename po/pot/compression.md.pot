@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-10 17:00+0800\n"
+"POT-Creation-Date: 2026-06-10 17:45+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,30 +17,35 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Plain text
-#: docs/README.md:1 docs/compression.md:1 docs/compression.md:11
-#: docs/compression.md:22 docs/compression.md:49 docs/compression.md:96
-#: docs/compression.md:118 docs/compression.md:156 docs/compression.md:180
-#: docs/compression.md:228 docs/compression.md:262 docs/compression.md:275
-#: docs/compression.md:327 docs/compression.md:348 docs/compression.md:368
-#: docs/compression.md:384 docs/database.md:1 docs/database.md:33
-#: docs/designs/desktop-companion.md:1 docs/designs/execute-code-runtimes.md:1
-#: docs/designs/issue-1-migration-plan.md:1
-#: docs/designs/pair-programming-v1.md:1
-#: docs/designs/pair-programming-v1.md:321 docs/designs/probe-architecture.md:1
-#: docs/designs/probe-architecture.md:165 docs/designs/recall-flow.md:1
-#: docs/designs/time-perception.md:1 docs/identity.md:1 docs/identity.md:10
-#: docs/identity.md:28 docs/identity.md:45 docs/identity.md:55 docs/memory.md:1
-#: docs/memory.md:17 docs/memory.md:53 docs/memory.md:160 docs/memory.md:191
-#: docs/memory.md:211 docs/memory.md:232 docs/memory.md:249 docs/security.md:1
-#: docs/self-layer.md:1 docs/self-layer.md:31 docs/self-layer.md:53
-#: docs/self-layer.md:64 docs/self-layer.md:78 docs/self-layer.md:94
-#: docs/self-layer.md:105 docs/sleep.md:1 docs/versioning.md:1
+#: docs/README.md:1 docs/concepts/compression.md:1
+#: docs/concepts/compression.md:11 docs/concepts/compression.md:22
+#: docs/concepts/compression.md:49 docs/concepts/compression.md:96
+#: docs/concepts/compression.md:118 docs/concepts/compression.md:156
+#: docs/concepts/compression.md:180 docs/concepts/compression.md:228
+#: docs/concepts/compression.md:262 docs/concepts/compression.md:275
+#: docs/concepts/compression.md:327 docs/concepts/compression.md:348
+#: docs/concepts/compression.md:368 docs/concepts/compression.md:384
+#: docs/concepts/identity.md:1 docs/concepts/identity.md:10
+#: docs/concepts/identity.md:28 docs/concepts/identity.md:45
+#: docs/concepts/identity.md:55 docs/concepts/memory.md:1
+#: docs/concepts/memory.md:17 docs/concepts/memory.md:53
+#: docs/concepts/memory.md:160 docs/concepts/memory.md:191
+#: docs/concepts/memory.md:211 docs/concepts/memory.md:232
+#: docs/concepts/memory.md:249 docs/concepts/recall-flow.md:1
+#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:31
+#: docs/concepts/self-layer.md:53 docs/concepts/self-layer.md:64
+#: docs/concepts/self-layer.md:78 docs/concepts/self-layer.md:94
+#: docs/concepts/self-layer.md:105 docs/concepts/sleep.md:1
+#: docs/concepts/time-perception.md:1 docs/features/pair-programming-v1.md:1
+#: docs/features/pair-programming-v1.md:321 docs/guide/database.md:1
+#: docs/guide/database.md:33 docs/guide/security.md:1
+#: docs/guide/versioning.md:1 docs/tools/execute-code-runtimes.md:1
 #, no-wrap
 msgid "---\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:3
+#: docs/concepts/compression.md:3
 #, no-wrap
 msgid ""
 "title: Compression\n"
@@ -48,12 +53,12 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:6
+#: docs/concepts/compression.md:6
 msgid "# Compression Design (l-point v5.1)"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:10
+#: docs/concepts/compression.md:10
 msgid ""
 "> Runtime context compression: PG `messages` **fully append-only**; only the "
 "**four-segment view** sent to the LLM is trimmed.  > **l0–l4 are compression "
@@ -63,30 +68,30 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:14 docs/designs/pair-programming-v1.md:11
-#: docs/designs/time-perception.md:22 docs/sleep.md:14
+#: docs/concepts/compression.md:14 docs/concepts/sleep.md:14
+#: docs/concepts/time-perception.md:22 docs/features/pair-programming-v1.md:11
 msgid "## Design Principles"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:21
+#: docs/concepts/compression.md:21
 #, no-wrap
 msgid ""
-"| Principle | Description |\n"
-"| --------- | ----------- |\n"
-"| PG never deletes | `messages` always retains full conversation; compression only changes **runtime view** and `session_meta.compression` |\n"
-"| l4 real-time | `l4 = max(pos)`, grows with append, **not written to meta** |\n"
-"| Monotonic boundaries | On successful compression: `new l2 > old l2`, `new l3 ≥ old l3`; otherwise abort |\n"
+"| Principle              | Description                                                                                                                        |\n"
+"| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |\n"
+"| PG never deletes       | `messages` always retains full conversation; compression only changes **runtime view** and `session_meta.compression`              |\n"
+"| l4 real-time           | `l4 = max(pos)`, grows with append, **not written to meta**                                                                        |\n"
+"| Monotonic boundaries   | On successful compression: `new l2 > old l2`, `new l3 ≥ old l3`; otherwise abort                                                   |\n"
 "| Separation of concerns | **Boundary setting** (`deriveBoundariesFromL4`) decoupled from **trigger** (`shouldAdvance`); only trigger distinguishes tool loop |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:25
+#: docs/concepts/compression.md:25
 msgid "## Two-Layer Storage"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:34
+#: docs/concepts/compression.md:34
 #, no-wrap
 msgid ""
 "```mermaid\n"
@@ -100,7 +105,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:42
+#: docs/concepts/compression.md:42
 #, no-wrap
 msgid ""
 "  subgraph RT[\"Runtime sent to LLM\"]\n"
@@ -113,7 +118,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:45
+#: docs/concepts/compression.md:45
 #, no-wrap
 msgid ""
 "  pgMessages -->|\"compress + buildRuntime\"| RT\n"
@@ -121,84 +126,84 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/compression.md:48
+#: docs/concepts/compression.md:48
 msgid ""
 "**Non-compression path:** read meta only; `l2/l3/summary` unchanged; `(l3, "
 "l4]` grows with new messages."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/compression.md:48
+#: docs/concepts/compression.md:48
 msgid ""
 "**Compression path:** after `shouldAdvance` passes → "
 "`deriveBoundariesFromL4` → write `l2/l3` → async summary LLM."
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:52
+#: docs/concepts/compression.md:52
 msgid "## Boundary Points l0–l4"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:60
+#: docs/concepts/compression.md:60
 #, no-wrap
 msgid ""
-"| Point | Meaning | When it changes | Persisted |\n"
-"| ----- | ------- | --------------- | --------- |\n"
-"| **l0** | System prompt anchor, always **0** | Never | No |\n"
-"| **l1** | Runtime synthetic summary user **pos**, always **1** (**≠ l4**) | Never | No |\n"
-"| **l2** | Summary segment right boundary (`pos ≤ l2` already summarized) | **Only on successful compression** | Yes |\n"
-"| **l3** | Slim segment right boundary | **Only on successful compression** | Yes |\n"
-"| **l4** | Rightmost message pos, `max(pos)` | **Real-time** append | No |\n"
+"| Point  | Meaning                                                         | When it changes                    | Persisted |\n"
+"| ------ | --------------------------------------------------------------- | ---------------------------------- | --------- |\n"
+"| **l0** | System prompt anchor, always **0**                              | Never                              | No        |\n"
+"| **l1** | Runtime synthetic summary user **pos**, always **1** (**≠ l4**) | Never                              | No        |\n"
+"| **l2** | Summary segment right boundary (`pos ≤ l2` already summarized)  | **Only on successful compression** | Yes       |\n"
+"| **l3** | Slim segment right boundary                                     | **Only on successful compression** | Yes       |\n"
+"| **l4** | Rightmost message pos, `max(pos)`                               | **Real-time** append               | No        |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:62
+#: docs/concepts/compression.md:62
 msgid "### Hard Conventions"
 msgstr ""
 
 #. type: Bullet: '1. '
-#: docs/compression.md:67
+#: docs/concepts/compression.md:67
 msgid ""
 "**`l1 ≠ l4`:** `l1` is fixed synthetic row pos, unrelated to `max(pos)`."
 msgstr ""
 
 #. type: Bullet: '2. '
-#: docs/compression.md:67
+#: docs/concepts/compression.md:67
 msgid "**`l4` has no policy**, not written to meta."
 msgstr ""
 
 #. type: Bullet: '3. '
-#: docs/compression.md:67
+#: docs/concepts/compression.md:67
 msgid ""
 "**Non-compression path reads meta only**; only successful compression "
 "updates `l2`, `l3`, `summary`."
 msgstr ""
 
 #. type: Bullet: '4. '
-#: docs/compression.md:67
+#: docs/concepts/compression.md:67
 msgid ""
 "**No `l2l`:** summary semantics = **`pos ≤ l2`** (not legacy \"before last "
 "user\" cut semantics)."
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:69
+#: docs/concepts/compression.md:69
 msgid "Uncompressed: `l2 = l3 = 0`, no `summary`, no `pos=1` injection."
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:71
+#: docs/concepts/compression.md:71
 msgid "### Segment Sketch on messages"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:73
+#: docs/concepts/compression.md:73
 msgid "Example `l2=80, l3=145, l4=200` (**pos axis**, not message count):"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:87
+#: docs/concepts/compression.md:87
 #, no-wrap
 msgid ""
 "```mermaid\n"
@@ -217,30 +222,30 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:93
+#: docs/concepts/compression.md:93
 #, no-wrap
 msgid ""
-"| pos range | Runtime destination |\n"
-"| --------- | ------------------- |\n"
+"| pos range  | Runtime destination                                                     |\n"
+"| ---------- | ----------------------------------------------------------------------- |\n"
 "| `pos ≤ l2` | Not in message list → synthesized `pos=1` summary user (`meta.summary`) |\n"
-"| `(l2, l3]` | Slim segment (UA after `slimMessage`) |\n"
-"| `(l3, l4]` | Raw segment (full, including tools) |\n"
+"| `(l2, l3]` | Slim segment (UA after `slimMessage`)                                   |\n"
+"| `(l3, l4]` | Raw segment (full, including tools)                                     |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:95
+#: docs/concepts/compression.md:95
 msgid ""
 "Between two compressions: **l2 / l3 / summary frozen**; only **`(l3, l4]`** "
 "grows with append."
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:99
+#: docs/concepts/compression.md:99
 msgid "## Runtime Four Segments (Sent to LLM)"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:108
+#: docs/concepts/compression.md:108
 #, no-wrap
 msgid ""
 "```mermaid\n"
@@ -254,38 +259,38 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:115
+#: docs/concepts/compression.md:115
 #, no-wrap
 msgid ""
-"| Segment | pos range | Description |\n"
-"| ------- | --------- | ----------- |\n"
-"| system | l0 | `session_meta.system_prompt`, not in messages conversation rows |\n"
-"| summary | `≤ l2` | Synthetic `pos=1` + `summary` text; **not written to messages** |\n"
-"| slim | `(l2, l3]` | Slimmed user/assistant (tools dropped) |\n"
-"| raw | `(l3, l4]` | Full messages, **not slimmed** |\n"
+"| Segment | pos range  | Description                                                     |\n"
+"| ------- | ---------- | --------------------------------------------------------------- |\n"
+"| system  | l0         | `session_meta.system_prompt`, not in messages conversation rows |\n"
+"| summary | `≤ l2`     | Synthetic `pos=1` + `summary` text; **not written to messages** |\n"
+"| slim    | `(l2, l3]` | Slimmed user/assistant (tools dropped)                          |\n"
+"| raw     | `(l3, l4]` | Full messages, **not slimmed**                                  |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:117
+#: docs/concepts/compression.md:117
 msgid ""
 "Implementation: `buildRuntimeFromLPoints` → `buildRuntimeMessages` prepends "
 "`system`."
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:121
+#: docs/concepts/compression.md:121
 msgid "## Configuration"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:123
+#: docs/concepts/compression.md:123
 msgid ""
-"`config.yaml` example (full file: [`config.example.yaml`](../"
+"`config.yaml` example (full file: [`config.example.yaml`](../../"
 "config.example.yaml)):"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:128
+#: docs/concepts/compression.md:128
 #, no-wrap
 msgid ""
 "```yaml\n"
@@ -295,7 +300,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:140
+#: docs/concepts/compression.md:140
 #, no-wrap
 msgid ""
 "compression:\n"
@@ -312,27 +317,27 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:149
+#: docs/concepts/compression.md:149
 #, no-wrap
 msgid ""
-"| Item | Default | Description |\n"
-"| ---- | ------- | ----------- |\n"
-"| Effective budget | `context_window - reserved_tokens` (floor 4096) | Token mode occupancy denominator |\n"
-"| `trigger_low` | 0.60 | **Outside** loop first/re-compress threshold |\n"
-"| `trigger_high` | 0.80 | **Inside** loop compress threshold |\n"
-"| `emergency_ratio` | 0.92 | Inside loop hard cap + emergency path |\n"
-"| `raw_min_messages` | 5 | Raw segment floor when setting l3 |\n"
-"| `slim_min_messages` | 50 | Slim segment floor after slim when setting l2 |\n"
+"| Item                | Default                                         | Description                                   |\n"
+"| ------------------- | ----------------------------------------------- | --------------------------------------------- |\n"
+"| Effective budget    | `context_window - reserved_tokens` (floor 4096) | Token mode occupancy denominator              |\n"
+"| `trigger_low`       | 0.60                                            | **Outside** loop first/re-compress threshold  |\n"
+"| `trigger_high`      | 0.80                                            | **Inside** loop compress threshold            |\n"
+"| `emergency_ratio`   | 0.92                                            | Inside loop hard cap + emergency path         |\n"
+"| `raw_min_messages`  | 5                                               | Raw segment floor when setting l3             |\n"
+"| `slim_min_messages` | 50                                              | Slim segment floor after slim when setting l2 |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:151
+#: docs/concepts/compression.md:151
 #, no-wrap
 msgid "**Removed** (v5.1 no longer reads): `tool_loop_suppress_sec`, `slim_user_shift`, `tool_loop_user_shift`, `l2l`.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:153
+#: docs/concepts/compression.md:153
 msgid ""
 "When `models.*.context_window` and `default_context_window` are both unset, "
 "falls back to **message count** mode: first trigger `> max_rounds×2` "
@@ -340,19 +345,19 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:155
+#: docs/concepts/compression.md:155
 msgid ""
 "Token estimate: `engine/compress/src/token-estimate.ts` (shared with "
 "`conversation-stats`)."
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:159
+#: docs/concepts/compression.md:159
 msgid "## Compression Decision Pipeline"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:171
+#: docs/concepts/compression.md:171
 #, no-wrap
 msgid ""
 "```mermaid\n"
@@ -369,33 +374,33 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:173
+#: docs/concepts/compression.md:173
 msgid "### Separation of Concerns"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:179
+#: docs/concepts/compression.md:179
 #, no-wrap
 msgid ""
-"| Module | Cares about tool loop? |\n"
-"| ------ | ---------------------- |\n"
-"| `deriveBoundariesFromL4` | **No** — same right-to-left algorithm |\n"
-"| `shouldAdvance` | **Yes** — different thresholds inside/outside |\n"
-"| `buildRuntimeFromLPoints` | **No** |\n"
+"| Module                    | Cares about tool loop?                        |\n"
+"| ------------------------- | --------------------------------------------- |\n"
+"| `deriveBoundariesFromL4`  | **No** — same right-to-left algorithm         |\n"
+"| `shouldAdvance`           | **Yes** — different thresholds inside/outside |\n"
+"| `buildRuntimeFromLPoints` | **No**                                        |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:183
+#: docs/concepts/compression.md:183
 msgid "## Boundary Derivation: `deriveBoundariesFromL4`"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:185
+#: docs/concepts/compression.md:185
 msgid "Input: full message list, current **`l4`**, old `l2/l3`."
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:196
+#: docs/concepts/compression.md:196
 #, no-wrap
 msgid ""
 "```mermaid\n"
@@ -411,30 +416,30 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:198
+#: docs/concepts/compression.md:198
 msgid "### Step 1: Set `l3`"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:200
+#: docs/concepts/compression.md:200
 msgid ""
 "Take the **largest** `l3` (push right, raw segment as narrow as possible) so "
 "**`(l3, l4]`** satisfies:"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:206
+#: docs/concepts/compression.md:206
 #, no-wrap
 msgid ""
-"| Constraint | Description |\n"
-"| ---------- | ----------- |\n"
-"| Count | ≥ `raw_min_messages` (default 5) |\n"
-"| Has user | At least 1 `role=user` |\n"
-"| Hot-tail start | **`min{ pos | pos > l3 }`** must be `user` (handles non-contiguous pos) |\n"
+"| Constraint     | Description                      |\n"
+"| -------------- | -------------------------------- | --------------------------------------------------------- |\n"
+"| Count          | ≥ `raw_min_messages` (default 5) |\n"
+"| Has user       | At least 1 `role=user`           |\n"
+"| Hot-tail start | \\*\\*`min{ pos                    | pos > l3 }`** must be `user` (handles non-contiguous pos) |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:208
+#: docs/concepts/compression.md:208
 msgid ""
 "> **Note:** `l3` ensures raw hot-tail **starts** with `user`, not that hot-"
 "tail **ends** with a complete tool loop; trailing dangling `tool_calls` "
@@ -442,78 +447,78 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:210
+#: docs/concepts/compression.md:210
 msgid "No valid `l3` → abort compression."
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:212
+#: docs/concepts/compression.md:212
 msgid "### Step 2: Set `l2`"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:214
+#: docs/concepts/compression.md:214
 msgid ""
 "Take the **largest** `l2` so **`(l2, l3]`** after `slimMessage` has count ≥ "
 "`slim_min_messages` (default 50)."
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:220
+#: docs/concepts/compression.md:220
 #, no-wrap
 msgid ""
-"| Check | Description |\n"
-"| ----- | ----------- |\n"
-"| `l2 < l3` | Otherwise invalid |\n"
-"| `new l3 ≥ old l3` | Monotonic |\n"
+"| Check             | Description                    |\n"
+"| ----------------- | ------------------------------ |\n"
+"| `l2 < l3`         | Otherwise invalid              |\n"
+"| `new l3 ≥ old l3` | Monotonic                      |\n"
 "| `new l2 > old l2` | Strict right shift, else abort |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:222
+#: docs/concepts/compression.md:222
 msgid "### Step 3: Summary"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/compression.md:225
+#: docs/concepts/compression.md:225
 msgid ""
 "Increment message range: **`(old l2, new l2]`** (first compression **`(0, "
 "new l2]`**)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/compression.md:225
+#: docs/concepts/compression.md:225
 msgid ""
 "LLM merges into `meta.summary`; runtime injects **`pos=1`** summary user"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:227
+#: docs/concepts/compression.md:227
 msgid ""
 "Step 1 already ensures raw segment starts with user—**no** post-boundary l3/"
 "l2 shift for tool loop."
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:231
+#: docs/concepts/compression.md:231
 msgid "## Trigger: `shouldAdvance`"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:233
+#: docs/concepts/compression.md:233
 msgid ""
 "`isInToolLoop(messages)` **only used here**, **not** in "
 "`deriveBoundariesFromL4`."
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:235
+#: docs/concepts/compression.md:235
 #, no-wrap
 msgid "**Tool loop detection** (`compression-tool-loop.ts`): after last `user`, if tail ends with `tool` or `assistant` with `tool_calls`, inside loop.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:251
+#: docs/concepts/compression.md:251
 #, no-wrap
 msgid ""
 "```mermaid\n"
@@ -534,25 +539,25 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:257
+#: docs/concepts/compression.md:257
 #, no-wrap
 msgid ""
-"| Scenario | Advance compression? |\n"
-"| -------- | -------------------- |\n"
-"| **Outside tool loop** | `usage ≥ trigger_low` (0.60); `< trigger_low` do not compress |\n"
-"| **Inside tool loop** | Only `usage ≥ trigger_high` (0.80) or `≥ emergency_ratio` (0.92) |\n"
-"| **Inside tool loop** otherwise | Do not compress |\n"
+"| Scenario                       | Advance compression?                                             |\n"
+"| ------------------------------ | ---------------------------------------------------------------- |\n"
+"| **Outside tool loop**          | `usage ≥ trigger_low` (0.60); `< trigger_low` do not compress    |\n"
+"| **Inside tool loop**           | Only `usage ≥ trigger_high` (0.80) or `≥ emergency_ratio` (0.92) |\n"
+"| **Inside tool loop** otherwise | Do not compress                                                  |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:259
+#: docs/concepts/compression.md:259
 msgid ""
 "Occupancy estimated from four-segment runtime view at current **l4** (system "
 "+ summary + slim + raw + tools), **not** full messages."
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:261
+#: docs/concepts/compression.md:261
 msgid ""
 "> v5.1 removed `tool_loop_suppress_sec` time suppression; "
 "`markToolLoopActivity` / `clearToolLoopSuppression` still called by engine / "
@@ -560,39 +565,39 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:265
+#: docs/concepts/compression.md:265
 msgid "## Slim Segment: `slimMessage`"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:267
+#: docs/concepts/compression.md:267
 msgid "Raw segment **not** slimmed."
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:274
+#: docs/concepts/compression.md:274
 #, no-wrap
 msgid ""
-"| role | Behavior |\n"
-"| ---- | -------- |\n"
-"| `tool` | **Dropped** |\n"
-"| `user` | Kept (strip `reasoning` / `tool_calls` fields) |\n"
-"| `assistant` + `tool_calls` | Non-empty `content` uses content, **else `reasoning`**; strip `tool_calls` / `reasoning` |\n"
-"| `assistant` without tool_calls | Keep `content`, strip `reasoning` |\n"
+"| role                           | Behavior                                                                                 |\n"
+"| ------------------------------ | ---------------------------------------------------------------------------------------- |\n"
+"| `tool`                         | **Dropped**                                                                              |\n"
+"| `user`                         | Kept (strip `reasoning` / `tool_calls` fields)                                           |\n"
+"| `assistant` + `tool_calls`     | Non-empty `content` uses content, **else `reasoning`**; strip `tool_calls` / `reasoning` |\n"
+"| `assistant` without tool_calls | Keep `content`, strip `reasoning`                                                        |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:278
+#: docs/concepts/compression.md:278
 msgid "## Session Summary"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:280
+#: docs/concepts/compression.md:280
 msgid "### meta Structure"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:289
+#: docs/concepts/compression.md:289
 #, no-wrap
 msgid ""
 "```json\n"
@@ -606,12 +611,12 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:291
+#: docs/concepts/compression.md:291
 msgid "### Summary Pipeline"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:300
+#: docs/concepts/compression.md:300
 #, no-wrap
 msgid ""
 "```mermaid\n"
@@ -625,7 +630,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:311
+#: docs/concepts/compression.md:311
 #, no-wrap
 msgid ""
 "  BT->>RC: advanceCompressionMeta\n"
@@ -641,45 +646,45 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:318
+#: docs/concepts/compression.md:318
 #, no-wrap
 msgid ""
-"| Step | Description |\n"
-"| ---- | ----------- |\n"
-"| Trigger | `beginTurn` → `advanceCompressionMeta`; or `/compress`; or emergency |\n"
-"| Slice | `sliceForSummary(messages, prevL2, newL2)` |\n"
-"| LLM | `system` = pre-compression `system_prompt` **snapshot**; no tools |\n"
-"| Write-back | Overwrite `summary` + `summary_at`; `rebuildSessionSystemPrompt()` |\n"
+"| Step       | Description                                                          |\n"
+"| ---------- | -------------------------------------------------------------------- |\n"
+"| Trigger    | `beginTurn` → `advanceCompressionMeta`; or `/compress`; or emergency |\n"
+"| Slice      | `sliceForSummary(messages, prevL2, newL2)`                           |\n"
+"| LLM        | `system` = pre-compression `system_prompt` **snapshot**; no tools    |\n"
+"| Write-back | Overwrite `summary` + `summary_at`; `rebuildSessionSystemPrompt()`   |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:320
+#: docs/concepts/compression.md:320
 msgid "Legacy meta **read-time migration** (`parseCompressionState`):"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:326
+#: docs/concepts/compression.md:326
 #, no-wrap
 msgid ""
-"| Old field | → New field |\n"
-"| --------- | ----------- |\n"
-"| `anchor_id` | `l3` |\n"
-"| `cut_id` (no anchor) | `l3` |\n"
-"| `last_summarized_cut_id` | `l2` |\n"
+"| Old field                | → New field |\n"
+"| ------------------------ | ----------- |\n"
+"| `anchor_id`              | `l3`        |\n"
+"| `cut_id` (no anchor)     | `l3`        |\n"
+"| `last_summarized_cut_id` | `l2`        |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:330
+#: docs/concepts/compression.md:330
 msgid "## Emergency (Single-Turn Hard Cap)"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:332
+#: docs/concepts/compression.md:332
 msgid "`maybeApplyEmergencyCompression` (called from engine tool loop):"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:342
+#: docs/concepts/compression.md:342
 #, no-wrap
 msgid ""
 "```mermaid\n"
@@ -694,36 +699,36 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '1. '
-#: docs/compression.md:347
+#: docs/concepts/compression.md:347
 msgid "`l4` = current in-memory message `max(pos)`"
 msgstr ""
 
 #. type: Bullet: '2. '
-#: docs/compression.md:347
+#: docs/concepts/compression.md:347
 msgid ""
 "Thresholds follow **inside tool loop** rules (`trigger_high` / "
 "`emergency_ratio`)"
 msgstr ""
 
 #. type: Bullet: '3. '
-#: docs/compression.md:347
+#: docs/concepts/compression.md:347
 msgid "Boundary derivation same as normal; **no extra shift**"
 msgstr ""
 
 #. type: Bullet: '4. '
-#: docs/compression.md:347
+#: docs/concepts/compression.md:347
 msgid ""
 "After meta write, async summary; in-memory view immediately becomes four "
 "segments"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:351
+#: docs/concepts/compression.md:351
 msgid "## Message Lifecycle"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:360
+#: docs/concepts/compression.md:360
 #, no-wrap
 msgid ""
 "```mermaid\n"
@@ -737,56 +742,56 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:367
+#: docs/concepts/compression.md:367
 #, no-wrap
 msgid ""
-"| Timing | Behavior |\n"
-"| ------ | -------- |\n"
-"| `beginTurn` | `clearToolLoopSuppression` → append user → `advanceCompressionMeta` → `buildRuntimeMessages` |\n"
-"| Each tool/assistant turn | engine `markToolLoopActivity` (does not affect v5.1 compression threshold) |\n"
-"| `buildRuntimeMessages` | `compress` reads meta only unless `shouldAdvance` true |\n"
-"| `/compress --force` | Ignore hysteresis, recompute boundaries from `l2=l3=0` |\n"
+"| Timing                   | Behavior                                                                                     |\n"
+"| ------------------------ | -------------------------------------------------------------------------------------------- |\n"
+"| `beginTurn`              | `clearToolLoopSuppression` → append user → `advanceCompressionMeta` → `buildRuntimeMessages` |\n"
+"| Each tool/assistant turn | engine `markToolLoopActivity` (does not affect v5.1 compression threshold)                   |\n"
+"| `buildRuntimeMessages`   | `compress` reads meta only unless `shouldAdvance` true                                       |\n"
+"| `/compress --force`      | Ignore hysteresis, recompute boundaries from `l2=l3=0`                                       |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:371
+#: docs/concepts/compression.md:371
 msgid "## Implementation Entry Points"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:381
+#: docs/concepts/compression.md:381
 #, no-wrap
 msgid ""
-"| Module | Responsibility |\n"
-"| ------ | -------------- |\n"
-"| `engine/compress/src/compressor.ts` | l-points, `deriveBoundariesFromL4`, `shouldAdvance`, `buildRuntimeFromLPoints`, `slimMessage` |\n"
-"| `engine/compress/src/compression-config.ts` | Config and `context_window` / effective budget |\n"
-"| `engine/compress/src/compression-summary.ts` | Summary LLM |\n"
-"| `engine/compress/src/compression-tool-loop.ts` | `isInToolLoop` |\n"
-"| `engine/conversation/src/conversation.ts` | `recompressSession`, `buildRuntimeMessages`, `maybeApplyEmergencyCompression` |\n"
-"| `engine/loop/src/engine.ts` | Emergency call site |\n"
-"| `service/service/src/runtime/conversation-stats.ts` | `/stats` shows `l2`/`l3`/occupancy |\n"
+"| Module                                              | Responsibility                                                                                |\n"
+"| --------------------------------------------------- | --------------------------------------------------------------------------------------------- |\n"
+"| `engine/compress/src/compressor.ts`                 | l-points, `deriveBoundariesFromL4`, `shouldAdvance`, `buildRuntimeFromLPoints`, `slimMessage` |\n"
+"| `engine/compress/src/compression-config.ts`         | Config and `context_window` / effective budget                                                |\n"
+"| `engine/compress/src/compression-summary.ts`        | Summary LLM                                                                                   |\n"
+"| `engine/compress/src/compression-tool-loop.ts`      | `isInToolLoop`                                                                                |\n"
+"| `engine/conversation/src/conversation.ts`           | `recompressSession`, `buildRuntimeMessages`, `maybeApplyEmergencyCompression`                 |\n"
+"| `engine/loop/src/engine.ts`                         | Emergency call site                                                                           |\n"
+"| `service/service/src/runtime/conversation-stats.ts` | `/stats` shows `l2`/`l3`/occupancy                                                            |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:383
+#: docs/concepts/compression.md:383
 msgid "Manual: `/compress` (`--force` ignores hysteresis)."
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:387
+#: docs/concepts/compression.md:387
 msgid "## Relationship to Memory Pipeline"
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:389
+#: docs/concepts/compression.md:389
 msgid ""
 "Compression **does not** trigger semantic memory extraction; light sleep "
 "cron runs independently (see [`sleep.md`](sleep.md))."
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:398
+#: docs/concepts/compression.md:398
 #, no-wrap
 msgid ""
 "```mermaid\n"
@@ -800,6 +805,6 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/compression.md:399
+#: docs/concepts/compression.md:399
 msgid "PG `messages` **never deleted** (append-only)."
 msgstr ""
