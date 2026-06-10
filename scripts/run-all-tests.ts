@@ -10,13 +10,12 @@ const label = "test";
 const SUITE_SCRIPTS: Record<string, string> = {
   unit: "scripts/run-unit-tests.ts",
   integration: "scripts/run-integration-tests.ts",
-  e2e: "scripts/run-e2e-tests.ts",
 };
 
 function parseSuites(): string[] {
   const idx = process.argv.indexOf("--suites");
   if (idx === -1) {
-    return ["unit", "integration", "e2e"];
+    return ["unit", "integration"];
   }
   const raw = process.argv[idx + 1];
   if (!raw?.trim()) {
@@ -28,7 +27,7 @@ function parseSuites(): string[] {
     .filter(Boolean);
   for (const suite of suites) {
     if (!SUITE_SCRIPTS[suite]) {
-      throw new Error(`[test] 未知 suite: ${suite}（可选: unit, integration, e2e）`);
+      throw new Error(`[test] 未知 suite: ${suite}（可选: unit, integration）`);
     }
   }
   return suites;
@@ -47,7 +46,7 @@ function runScript(scriptPath: string): Promise<number> {
 }
 
 const suites = parseSuites();
-const needsPg = suites.includes("integration") || suites.includes("e2e");
+const needsPg = suites.includes("integration");
 
 let exitCode = 0;
 let teardown: () => Promise<void> = async () => {};

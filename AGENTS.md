@@ -45,13 +45,13 @@
 
 #### 测试分层（硬性）
 
-| 层级         | 位置                                             | 允许                                          | 禁止                                                                            |
-| ------------ | ------------------------------------------------ | --------------------------------------------- | ------------------------------------------------------------------------------- |
-| **单元测试** | `{layer}/{pkg}/src/**/*.test.ts`（**一律旁置**） | `mock` / `spyOn` / 原包 Tier 1–2 导出（见下） | PG、真实 Redis、文件读写、`FREEANIMA_HOME` 隔离、`tests/helpers/`、Docker、外网 |
-| **跨包集成** | `tests/integration/`                             | PG、Redis、临时目录、`beginIntegrationCase`   | —                                                                               |
-| **E2E**      | `tests/e2e/`                                     | WebView + Chromium + PG + HTTP                | —                                                                               |
+| 层级         | 位置                                                                    | 允许                                          | 禁止                                                                            |
+| ------------ | ----------------------------------------------------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------- |
+| **单元测试** | `{layer}/{pkg}/src/**/*.test.ts`（**一律旁置**）                        | `mock` / `spyOn` / 原包 Tier 1–2 导出（见下） | PG、真实 Redis、文件读写、`FREEANIMA_HOME` 隔离、`tests/helpers/`、Docker、外网 |
+| **跨包集成** | `tests/integration/`                                                    | PG、Redis、临时目录、`beginIntegrationCase`   | —                                                                               |
+| **黑盒 E2E** | [freeanima-testing](https://github.com/freeanima-org/freeanima-testing) | Compose + Playwright；PR dispatch 异步跑      | —                                                                               |
 
-- pre-commit：`bun run test:changed`（**仅单元** changed）；推 PR 前须 `bun run test` 全量（单元 + 集成 + E2E 并行，`--changed` 不保证跨包关联）。
+- pre-commit：`bun run test:changed`（**仅单元** changed）；推 PR 前须 `bun run test` 全量（单元 + 集成；黑盒见 freeanima-testing）。
 - 单包逻辑 → 旁置单元测；多包协作或真实持久化 → `tests/integration/`。
 
 #### 原包 Mock 导出（单元测优先使用）
@@ -235,7 +235,7 @@ bun install && bun run check       # 推 PR 前：typecheck + lint + format + �
 bun run test:changed               # 本地 / pre-commit（仅单元 changed）
 bun run test:unit                  # 单元全量
 bun run test:integration           # 集成（tests/integration/）
-bun run test                       # 单元 + 集成 + E2E 并行
+bun run test                       # 单元 + 集成 并行
 bun run service start --foreground # 前台阻塞（日志直出）
 bun run service start --dev        # WebUI 源码 watch 重建（非 HMR；改 frontend 后刷新页面）
 anima credential list              # 凭证路径；值在 pass
