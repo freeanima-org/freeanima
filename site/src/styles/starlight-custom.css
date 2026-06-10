@@ -305,3 +305,15 @@ site-search dialog {
   border: 1px solid var(--fa-border) !important;
   border-radius: 0 !important;
 }
+
+/* ---------- Mermaid diagrams (astro-mermaid) ---------- */
+.mermaid,
+.mermaid-container {
+  margin: 1.25rem 0;
+  overflow-x: auto;
+}
+
+.mermaid svg {
+  max-width: 100%;
+  height: auto;
+}
