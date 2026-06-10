@@ -416,7 +416,7 @@ conversation 落盘 → emit("session:updated")
 ## 版本与发布
 
 - 版本号遵循 **SemVer 2.0.0**；根 `package.json` 的 `version` 为写入源。
-- 发版流程：根 `package.json` 的 `version` + `CHANGELOG.md` 由 **semantic-release** 在 merge `main` 后自动更新（见 [docs/versioning.md](docs/versioning.md)）。
+- 发版流程：根 `package.json` 的 `version` + `CHANGELOG.md` 由 **Release Please** 在 Release PR 合并时更新（见 [docs/versioning.md](docs/versioning.md)）。
 - bump 规则与逐步命令见 [`docs/versioning.md`](docs/versioning.md)。
 
 ## 方向

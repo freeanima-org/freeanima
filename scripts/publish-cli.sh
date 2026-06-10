@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# semantic-release publish 阶段：经 GitHub Actions OIDC 发布 @freeanima/cli
+# Release workflow publish job：：经 GitHub Actions OIDC 发布 @freeanima/cli
 # 须 npmjs Trusted Publisher（release.yml + @freeanima/cli）；本地发包用 bun run publish:cli + npm login
 set -euo pipefail
 
