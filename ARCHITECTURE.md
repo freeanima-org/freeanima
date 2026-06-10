@@ -328,7 +328,7 @@ WebUI 是 React 19 CSR 应用（`connectors/webui/`），由 `anima service` 在
                               ├─ /api/trpc/*（HTTP batch + SSE subscription）
                               ├─ /api/trpc/ws（终端 WebSocket，Bun 原生 upgrade）
                               ├─ /api/health
-                              ├─ /webui/*、/_bun/*（Bun fullstack dev：HTML/TSX/CSS HMR）
+                              ├─ /webui/*（默认生产 bundle；--dev 时 HMR）
                               └─ tRPC router → AnimaService（进程内）
                          AnimaService / EventBus / Gateway（同进程）
 ```
@@ -354,13 +354,14 @@ WebUI 是 React 19 CSR 应用（`connectors/webui/`），由 `anima service` 在
 ### 启动
 
 ```bash
-anima service start              # systemd --user（默认）
-anima service start --foreground # 本地调试（Bun fullstack HMR）
+anima service start              # systemd --user（默认；WebUI 生产 bundle + hash 缓存）
+anima service start --foreground # 前台阻塞（便于看日志）
+anima service start --dev        # WebUI 源码 watch 重建（静态 Serving，改代码后刷新页面）
 anima service status
 # 浏览器访问 http://127.0.0.1:2658/webui/parlor/chat
 ```
 
-WebUI 由 [`connectors/webui/src/webui-server.ts`](connectors/webui/src/webui-server.ts) 在 `serve()` 内启动：单 `Bun.serve` 提供 API 与 fullstack 编译 `connectors/webui/app/index.html`（Tailwind 依赖根 `bunfig.toml` 的 `bun-plugin-tailwind`）。
+WebUI 由 [`connectors/webui/src/webui-server.ts`](connectors/webui/src/webui-server.ts) 在 `serve()` 内启动：默认对 `connectors/webui/app/index.html` 做 AOT 构建，产物缓存于 `~/.anima/runtime/webui-build/{hash}/`（源码 hash 未变则跳过重建）；`--dev` 写入 `~/.anima/runtime/webui-dev-build/` 并 `Bun.build` watch 增量重建（静态 Serving，非 HTMLBundle HMR）。Tailwind 经 `bun-plugin-tailwind` 在 `Bun.build` 中显式注入。
 
 ## 事件系统
 

@@ -1,8 +1,12 @@
 import { join } from "node:path";
-import { getRepoRoot } from "@freeanima/service-config";
 import { createApiApp, WEBUI_BASE_PATH } from "./elysia/app.ts";
 import { bindWebuiServiceContext } from "./handlers/runtime.ts";
 import { broadcastWsReconnect, shutdownWebui } from "./elysia/shutdown.ts";
+import {
+  ensureWebuiDevCacheDir,
+  ensureWebuiProductionCacheDir,
+  releaseWebuiHtmlBundle,
+} from "./webui-bundle.ts";
 
 export type WebuiServerOptions = {
   development?: boolean;
@@ -13,27 +17,59 @@ export type WebuiServerHandle = {
   close: () => void | Promise<void>;
 };
 
-type WebuiRouteValue = Bun.HTMLBundle;
+type RouteHandler = (req: Request) => Response | Promise<Response>;
 
-/** 仅在 WebUI 监听启动时加载；close 后释放引用以便 GC */
-let cachedHtmlBundle: WebuiRouteValue | null = null;
+const WEBUI_HTML_NAME = "index.html";
 
-async function loadWebuiHtmlBundle(): Promise<WebuiRouteValue> {
-  if (!cachedHtmlBundle) {
-    const htmlPath = join(getRepoRoot(), "connectors/webui/app/index.html");
-    cachedHtmlBundle = (await import(/* @vite-ignore */ htmlPath)).default;
+function apiRouteHandler(apiApp: {
+  fetch: (req: Request) => Response | Promise<Response>;
+}): RouteHandler {
+  return (req) => apiApp.fetch(req);
+}
+
+/** 将 /webui/... 映射为缓存目录内相对路径（SPA 路由回退 index.html） */
+export function resolveProductionWebuiAssetPath(pathname: string): string {
+  let rel = pathname.slice(WEBUI_BASE_PATH.length);
+  if (rel.startsWith("/")) rel = rel.slice(1);
+  if (rel === "" || !rel.includes(".")) {
+    return WEBUI_HTML_NAME;
   }
-  return cachedHtmlBundle!;
+  return rel;
 }
 
-function releaseWebuiHtmlBundle(): void {
-  cachedHtmlBundle = null;
+function serveProductionWebui(pathname: string, cacheDir: string): Response | null {
+  if (pathname !== WEBUI_BASE_PATH && !pathname.startsWith(`${WEBUI_BASE_PATH}/`)) {
+    return null;
+  }
+  const rel = resolveProductionWebuiAssetPath(pathname);
+  const asset = Bun.file(join(cacheDir, rel));
+  if (asset.size > 0) {
+    return new Response(asset);
+  }
+  const index = Bun.file(join(cacheDir, WEBUI_HTML_NAME));
+  if (index.size > 0) {
+    return new Response(index);
+  }
+  return null;
 }
 
-function webuiRoutes(handler: WebuiRouteValue): Record<string, WebuiRouteValue> {
+function staticWebuiRouteHandler(cacheDir: string): RouteHandler {
+  return (req) => {
+    const pathname = new URL(req.url).pathname;
+    return serveProductionWebui(pathname, cacheDir) ?? new Response("Not Found", { status: 404 });
+  };
+}
+
+function buildRoutes(
+  apiApp: { fetch: (req: Request) => Response | Promise<Response> },
+  cacheDir: string,
+): Record<string, RouteHandler> {
+  const webuiHandler = staticWebuiRouteHandler(cacheDir);
   return {
-    [WEBUI_BASE_PATH]: handler,
-    [`${WEBUI_BASE_PATH}/*`]: handler,
+    "/": apiRouteHandler(apiApp),
+    "/api/*": apiRouteHandler(apiApp),
+    [WEBUI_BASE_PATH]: webuiHandler,
+    [`${WEBUI_BASE_PATH}/*`]: webuiHandler,
   };
 }
 
@@ -43,29 +79,18 @@ export async function startWebuiHttpServer(
   options: WebuiServerOptions = {},
 ): Promise<WebuiServerHandle> {
   bindWebuiServiceContext();
-  const development = options.development ?? process.env.NODE_ENV !== "production";
-  if (development) {
-    process.env.NODE_ENV = "development";
-  }
+  const development = options.development ?? false;
 
-  const webuiHtml = await loadWebuiHtmlBundle();
+  const cacheDir = development
+    ? await ensureWebuiDevCacheDir()
+    : await ensureWebuiProductionCacheDir();
   const apiApp = createApiApp().compile();
 
   const server = Bun.serve({
     hostname: host,
     port,
-    development: development ? { console: true } : false,
-    routes: webuiRoutes(webuiHtml),
-    fetch(req) {
-      const url = new URL(req.url);
-      if (url.pathname === "/" || url.pathname === "") {
-        return apiApp.fetch(req);
-      }
-      if (url.pathname.startsWith("/api")) {
-        return apiApp.fetch(req);
-      }
-      return undefined as unknown as Response;
-    },
+    development: false,
+    routes: buildRoutes(apiApp, cacheDir),
   });
 
   if (!server.port) {

@@ -23,6 +23,7 @@ import { renderSystemdUnit, systemdUserAvailable, SYSTEMD_UNIT } from "./systemd
 export type ServiceArgs = {
   action: string;
   foreground: boolean;
+  dev: boolean;
   host: string;
   port: number;
 };
@@ -279,6 +280,7 @@ async function cmdServiceStatus(args: ServiceArgs): Promise<void> {
   printStartupErrorHints();
   console.log("  启动: anima service start");
   console.log("  调试: anima service start --foreground");
+  console.log("  WebUI 开发: anima service start --dev");
 }
 
 export async function runServiceCommand(args: ServiceArgs): Promise<void> {
@@ -290,7 +292,7 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
         console.log(`逸灵风已在运行 (PID ${isServerAlive()})`);
         process.exit(1);
       }
-      console.log("逸灵风 · 前台启动（WebUI dev 模式）…");
+      console.log("逸灵风 · 前台启动…");
       installErrorLogHandlers();
       try {
         const { serve } = await import("@freeanima/service");
@@ -298,6 +300,7 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
           await import("@freeanima/connectors-webui");
         await serve(args.host, args.port, {
           foreground: true,
+          webuiDev: args.dev,
           webui: {
             start: startWebuiHttpServers,
             close: closeHttpServers,

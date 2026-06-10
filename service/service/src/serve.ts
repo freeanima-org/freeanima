@@ -78,6 +78,7 @@ import { createFridgeBridge } from "@freeanima/capabilities-tasks";
 import { DEFAULT_BIND_HOST, parseBindHosts } from "./bind-hosts.ts";
 import { initServiceContext } from "./context.ts";
 import { wireEmbeddingRuntime } from "./runtime/embedding-wire.ts";
+import { resolveWebuiDevMode } from "./webui-dev-mode.ts";
 
 let service: AnimaService | null = null;
 let kernel: Kernel | null = null;
@@ -153,14 +154,12 @@ export type WebuiHooks = {
 export type ServeOptions = {
   /** CLI 前台阻塞运行（systemd/detached 子进程亦会传 true，不等于 WebUI dev） */
   foreground?: boolean;
+  /** CLI --dev：WebUI Bun fullstack HMR */
+  webuiDev?: boolean;
   webui?: WebuiHooks;
 };
 
-function useWebuiDevMode(foreground: boolean): boolean {
-  if (process.env.ANIMA_WEBUI_DEV === "1") return true;
-  if (process.env.ANIMA_WEBUI_DEV === "0") return false;
-  return foreground;
-}
+export { resolveWebuiDevMode } from "./webui-dev-mode.ts";
 
 async function defaultWaitForDrain(anima: AnimaService, maxMs: number): Promise<void> {
   await Promise.race([
@@ -307,9 +306,13 @@ export async function serve(
       port,
     });
 
-    const webuiDev = useWebuiDevMode(Boolean(opts.foreground));
+    const webuiDev = resolveWebuiDevMode(opts.webuiDev);
     if (opts.webui) {
-      startupLog(webuiDev ? "启动 WebUI HTTP（Bun fullstack dev）…" : "启动 WebUI HTTP…");
+      startupLog(
+        webuiDev
+          ? "启动 WebUI HTTP（dev 构建 + watch，静态 Serving）…"
+          : "启动 WebUI HTTP（生产 bundle，hash 缓存）…",
+      );
       servers = await opts.webui.start(bindHosts, port, { development: webuiDev });
     } else {
       startupLog("未注入 WebUI hooks，跳过 HTTP 监听");

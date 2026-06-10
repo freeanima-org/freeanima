@@ -34,7 +34,7 @@ describe("shell completion", () => {
 
   it("includes service actions and flags", () => {
     const bash = generateCompletion("bash", buildProgram());
-    for (const token of ["start", "stop", "restart", "status", "--foreground"]) {
+    for (const token of ["start", "stop", "restart", "status", "--foreground", "--dev"]) {
       expect(bash).toContain(token);
     }
     // action 在 COMP_CWORD==2（anima service <TAB>）
