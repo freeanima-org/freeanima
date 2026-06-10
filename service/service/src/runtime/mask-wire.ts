@@ -1,6 +1,10 @@
 import { existsSync, readFileSync } from "node:fs";
 import { MaskRegistry, resolveMaskByName, resolveMaskPresets } from "@freeanima/capabilities-mask";
-import type { ResolvedMask, SessionCapabilityMask } from "@freeanima/capabilities-mask";
+import type {
+  MaskRegistryLookup,
+  ResolvedMask,
+  SessionCapabilityMask,
+} from "@freeanima/capabilities-mask";
 import type { ToolSetRegistry } from "@freeanima/engine-tool";
 import { isSessionMeta, type SessionMetaMessage } from "@freeanima/engine-db/domain";
 import { registerSessionToolMaskFilter } from "@freeanima/engine-conversation";
@@ -77,7 +81,7 @@ function loadMasksFromYaml(masks: MaskRegistry): void {
   }
 }
 
-function catalogFromContext(): { masks: MaskRegistry; toolSets: ToolSetRegistry } {
+function catalogFromContext(): { masks: MaskRegistryLookup; toolSets: ToolSetRegistry } {
   const { masks, engine } = getServiceContext();
   return { masks, toolSets: engine.catalog.toolSets };
 }

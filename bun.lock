@@ -313,7 +313,6 @@
       "name": "@freeanima/engine-db",
       "dependencies": {
         "@freeanima/kernel-util": "workspace:*",
-        "@freeanima/service-config": "workspace:*",
         "drizzle-orm": "catalog:",
         "zod": "catalog:",
       },
@@ -508,12 +507,11 @@
     "service/api": {
       "name": "@freeanima/service-api",
       "dependencies": {
-        "@freeanima/capabilities-acp": "workspace:*",
-        "@freeanima/capabilities-mask": "workspace:*",
-        "@freeanima/capabilities-mcp": "workspace:*",
-        "@freeanima/engine": "workspace:*",
         "@freeanima/engine-conversation": "workspace:*",
         "@freeanima/engine-loop": "workspace:*",
+        "@freeanima/engine-repos": "workspace:*",
+        "@freeanima/engine-skill": "workspace:*",
+        "@freeanima/engine-tool": "workspace:*",
         "@freeanima/service-config": "workspace:*",
         "@freeanima/service-logging": "workspace:*",
       },

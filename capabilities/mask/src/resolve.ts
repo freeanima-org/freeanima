@@ -1,9 +1,18 @@
-import type { MaskRegistry } from "./registry.ts";
 import type { Mask, ResolvedMask } from "./types.ts";
 import { mergeMaskChain } from "./merge.ts";
 import type { ToolSetRegistry } from "@freeanima/engine-tool";
 
-function collectInheritanceChain(name: string, registry: MaskRegistry, visiting: string[]): Mask[] {
+/** 面具解析所需的 registry 窄接口（MaskRegistry 与 ServiceContext 端口均满足） */
+export type MaskRegistryLookup = {
+  get(name: string): Mask | undefined;
+  list(): { name: string; mask: Mask }[];
+};
+
+function collectInheritanceChain(
+  name: string,
+  registry: MaskRegistryLookup,
+  visiting: string[],
+): Mask[] {
   if (visiting.includes(name)) {
     throw new Error(`Circular inheritance: ${[...visiting, name].join("→")}`);
   }
@@ -19,7 +28,11 @@ function collectInheritanceChain(name: string, registry: MaskRegistry, visiting:
   return chain;
 }
 
-function collectMaskAncestors(mask: Mask, registry: MaskRegistry, visiting: string[]): Mask[] {
+function collectMaskAncestors(
+  mask: Mask,
+  registry: MaskRegistryLookup,
+  visiting: string[],
+): Mask[] {
   const chain: Mask[] = [];
   for (const parentName of mask.inherits) {
     if (visiting.includes(parentName)) {
@@ -38,7 +51,7 @@ function collectMaskAncestors(mask: Mask, registry: MaskRegistry, visiting: stri
 /** 展开 inherits 链并合并为最终面具 */
 export function resolveMask(
   mask: Mask,
-  registry: MaskRegistry,
+  registry: MaskRegistryLookup,
   toolSetRegistry: ToolSetRegistry,
 ): ResolvedMask {
   const chain = [...collectMaskAncestors(mask, registry, []), mask];
@@ -48,7 +61,7 @@ export function resolveMask(
 /** 按注册名解析命名面具（含 inherits） */
 export function resolveMaskByName(
   name: string,
-  registry: MaskRegistry,
+  registry: MaskRegistryLookup,
   toolSetRegistry: ToolSetRegistry,
 ): ResolvedMask {
   const chain = collectInheritanceChain(name.trim(), registry, []);
@@ -58,7 +71,7 @@ export function resolveMaskByName(
 /** 合并多个 preset 解析结果 */
 export function resolveMaskPresets(
   presetNames: readonly string[],
-  registry: MaskRegistry,
+  registry: MaskRegistryLookup,
   toolSetRegistry: ToolSetRegistry,
 ): ResolvedMask {
   const resolved = presetNames.map((preset) => {
