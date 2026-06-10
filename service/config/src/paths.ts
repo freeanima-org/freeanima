@@ -50,4 +50,10 @@ export const PATHS = {
   get passStore() {
     return join(homedir(), ".password-store");
   },
+  get webuiBuildDir() {
+    return homePath("runtime", "webui-build");
+  },
+  get webuiDevBuildDir() {
+    return homePath("runtime", "webui-dev-build");
+  },
 } as const;

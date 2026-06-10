@@ -236,7 +236,8 @@ bun run test:changed               # 本地 / pre-commit（仅单元 changed）
 bun run test:unit                  # 单元全量
 bun run test:integration           # 集成（tests/integration/）
 bun run test                       # 单元 + 集成 + E2E 并行
-bun run service start --foreground # 前台 dev（WebUI HMR）
+bun run service start --foreground # 前台阻塞（日志直出）
+bun run service start --dev        # WebUI 源码 watch 重建（非 HMR；改 frontend 后刷新页面）
 anima credential list              # 凭证路径；值在 pass
 
 # PG schema 变更（须 generate 产出 snapshot.json，见上文「PG Schema 迁移」）
