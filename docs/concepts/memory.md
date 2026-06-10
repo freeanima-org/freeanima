@@ -5,7 +5,7 @@ title: Memory
 # Memory System
 
 > The digital life's memory system, mapped from human cognitive psychology (Atkinson-Shiffrin model, Tulving memory taxonomy).
-> Conversation archive: [`database.md`](database.md) §Slice A; **semantic memory (`semantic_memory`)**: database.md §Slice B. Terminology cross-reference in §III below; light/deep sleep crons: [`sleep.md`](sleep.md).
+> Conversation archive: [`database.md`](../guide/database.md) §Slice A; **semantic memory (`semantic_memory`)**: database.md §Slice B. Terminology cross-reference in §III below; light/deep sleep crons: [`sleep.md`](sleep.md).
 > This version (v3) is inspired by the [Hindsight](https://arxiv.org/abs/2512.12818) four-network memory architecture, while preserving and strengthening FreeAnima's unique limbic memory dimension.
 
 ## Core Principles
@@ -186,7 +186,7 @@ Incremental extraction: light sleep cron (02:00, see [`sleep.md`](sleep.md)). DB
 | `created`         | Creation time                                                        |
 | `updated`         | Update time (used for resident sorting)                              |
 
-Entity relationship graph **not yet implemented** ([Issue #39](https://github.com/freeanima-org/freeanima/issues/39)). Multi-strategy recall implements **FTS + pg_trgm + pgvector RRF** (`config.embedding` + Ollama bge-m3, etc.); see [`database.md`](database.md) §Slice B.
+Entity relationship graph **not yet implemented** ([Issue #39](https://github.com/freeanima-org/freeanima/issues/39)). Multi-strategy recall implements **FTS + pg_trgm + pgvector RRF** (`config.embedding` + Ollama bge-m3, etc.); see [`database.md`](../guide/database.md) §Slice B.
 
 ---
 

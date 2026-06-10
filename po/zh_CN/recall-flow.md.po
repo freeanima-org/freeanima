@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-10 17:00+0800\n"
+"POT-Creation-Date: 2026-06-10 17:45+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,43 +16,35 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Plain text
-#: docs/README.md:1 docs/compression.md:1 docs/compression.md:11
-#: docs/compression.md:22 docs/compression.md:49 docs/compression.md:96
-#: docs/compression.md:118 docs/compression.md:156 docs/compression.md:180
-#: docs/compression.md:228 docs/compression.md:262 docs/compression.md:275
-#: docs/compression.md:327 docs/compression.md:348 docs/compression.md:368
-#: docs/compression.md:384 docs/database.md:1 docs/database.md:33
-#: docs/designs/desktop-companion.md:1 docs/designs/execute-code-runtimes.md:1
-#: docs/designs/issue-1-migration-plan.md:1
-#: docs/designs/pair-programming-v1.md:1
-#: docs/designs/pair-programming-v1.md:321 docs/designs/probe-architecture.md:1
-#: docs/designs/probe-architecture.md:165 docs/designs/recall-flow.md:1
-#: docs/designs/time-perception.md:1 docs/identity.md:1 docs/identity.md:10
-#: docs/identity.md:28 docs/identity.md:45 docs/identity.md:55 docs/memory.md:1
-#: docs/memory.md:17 docs/memory.md:53 docs/memory.md:160 docs/memory.md:191
-#: docs/memory.md:211 docs/memory.md:232 docs/memory.md:249 docs/security.md:1
-#: docs/self-layer.md:1 docs/self-layer.md:31 docs/self-layer.md:53
-#: docs/self-layer.md:64 docs/self-layer.md:78 docs/self-layer.md:94
-#: docs/self-layer.md:105 docs/sleep.md:1 docs/versioning.md:1
+#: docs/README.md:1 docs/concepts/compression.md:1
+#: docs/concepts/compression.md:11 docs/concepts/compression.md:22
+#: docs/concepts/compression.md:49 docs/concepts/compression.md:96
+#: docs/concepts/compression.md:118 docs/concepts/compression.md:156
+#: docs/concepts/compression.md:180 docs/concepts/compression.md:228
+#: docs/concepts/compression.md:262 docs/concepts/compression.md:275
+#: docs/concepts/compression.md:327 docs/concepts/compression.md:348
+#: docs/concepts/compression.md:368 docs/concepts/compression.md:384
+#: docs/concepts/identity.md:1 docs/concepts/identity.md:10
+#: docs/concepts/identity.md:28 docs/concepts/identity.md:45
+#: docs/concepts/identity.md:55 docs/concepts/memory.md:1
+#: docs/concepts/memory.md:17 docs/concepts/memory.md:53
+#: docs/concepts/memory.md:160 docs/concepts/memory.md:191
+#: docs/concepts/memory.md:211 docs/concepts/memory.md:232
+#: docs/concepts/memory.md:249 docs/concepts/recall-flow.md:1
+#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:31
+#: docs/concepts/self-layer.md:53 docs/concepts/self-layer.md:64
+#: docs/concepts/self-layer.md:78 docs/concepts/self-layer.md:94
+#: docs/concepts/self-layer.md:105 docs/concepts/sleep.md:1
+#: docs/concepts/time-perception.md:1 docs/features/pair-programming-v1.md:1
+#: docs/features/pair-programming-v1.md:321 docs/guide/database.md:1
+#: docs/guide/database.md:33 docs/guide/security.md:1
+#: docs/guide/versioning.md:1 docs/tools/execute-code-runtimes.md:1
 #, no-wrap
 msgid "---\n"
 msgstr "---\n"
 
 #. type: Plain text
-#: docs/designs/probe-architecture.md:159 docs/designs/recall-flow.md:169
-#: docs/self-layer.md:115
-#, fuzzy
-msgid "## Open Questions"
-msgstr ""
-"#-#-#-#-#  probe-architecture.md.zh_CN.po (PACKAGE VERSION)  #-#-#-#-#\n"
-"## 开放问题\n"
-"#-#-#-#-#  recall-flow.md.zh_CN.po (PACKAGE VERSION)  #-#-#-#-#\n"
-"## 未解决问题\n"
-"#-#-#-#-#  self-layer.md.zh_CN.po (PACKAGE VERSION)  #-#-#-#-#\n"
-"## 未解决问题"
-
-#. type: Plain text
-#: docs/designs/recall-flow.md:3
+#: docs/concepts/recall-flow.md:3
 #, no-wrap
 msgid ""
 "title: Recall Flow\n"
@@ -62,12 +54,12 @@ msgstr ""
 "---\n"
 
 #. type: Plain text
-#: docs/designs/recall-flow.md:6
+#: docs/concepts/recall-flow.md:6
 msgid "# Unified Recall Retrieval and Loading Flow"
 msgstr "# Recall 统一检索与加载流程"
 
 #. type: Plain text
-#: docs/designs/recall-flow.md:9
+#: docs/concepts/recall-flow.md:9
 msgid ""
 "> **v1 ✅ Implemented:** `memory_recall(query)` four-source unified recall + "
 "RRF reranking, returns `results[]` (distinguished by `memory_type`); session "
@@ -83,20 +75,27 @@ msgstr ""
 "github.com/freeanima-org/freeanima/issues/47)。"
 
 #. type: Plain text
-#: docs/designs/recall-flow.md:11
+#: docs/concepts/recall-flow.md:11
 msgid "## v1 Implemented"
 msgstr "## v1 已实现"
 
 #. type: Plain text
-#: docs/designs/recall-flow.md:18
-#, no-wrap
+#: docs/concepts/recall-flow.md:18
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Capability | Description |\n"
+#| "| ---------- | ----------- |\n"
+#| "| `memory_recall` | Four sources: semantic / session / limbic / autobiographical; Top N; session returns snippet |\n"
+#| "| `sessions_search` | Session message FTS; returns snippet (not full content) |\n"
+#| "| `memory_remember` | semantic_memory CRUD |\n"
+#| "| Resident memory | system prompt injection (not recall) |\n"
 msgid ""
-"| Capability | Description |\n"
-"| ---------- | ----------- |\n"
-"| `memory_recall` | Four sources: semantic / session / limbic / autobiographical; Top N; session returns snippet |\n"
-"| `sessions_search` | Session message FTS; returns snippet (not full content) |\n"
-"| `memory_remember` | semantic_memory CRUD |\n"
-"| Resident memory | system prompt injection (not recall) |\n"
+"| Capability        | Description                                                                                  |\n"
+"| ----------------- | -------------------------------------------------------------------------------------------- |\n"
+"| `memory_recall`   | Four sources: semantic / session / limbic / autobiographical; Top N; session returns snippet |\n"
+"| `sessions_search` | Session message FTS; returns snippet (not full content)                                      |\n"
+"| `memory_remember` | semantic_memory CRUD                                                                         |\n"
+"| Resident memory   | system prompt injection (not recall)                                                         |\n"
 msgstr ""
 "| 能力              | 说明                                                                           |\n"
 "| ----------------- | ------------------------------------------------------------------------------ |\n"
@@ -106,17 +105,17 @@ msgstr ""
 "| 常驻记忆          | system prompt 注入（非 recall）                                                |\n"
 
 #. type: Plain text
-#: docs/designs/recall-flow.md:20
+#: docs/concepts/recall-flow.md:20
 msgid "## v2 Target Design (Issue #47)"
 msgstr "## v2 目标设计（Issue #47）"
 
 #. type: Plain text
-#: docs/designs/recall-flow.md:22
+#: docs/concepts/recall-flow.md:22
 msgid "> The following is v2 design draft, **not current runtime behavior**."
 msgstr "> 以下为 v2 设计稿，**非当前运行时行为**。"
 
 #. type: Bullet: '- '
-#: docs/designs/recall-flow.md:26
+#: docs/concepts/recall-flow.md:26
 msgid ""
 "**`recall` retrieves only, does not load.** Returns lean index (title + "
 "description + type + id), not full content."
@@ -125,7 +124,7 @@ msgstr ""
 "回完整内容。"
 
 #. type: Bullet: '- '
-#: docs/designs/recall-flow.md:26
+#: docs/concepts/recall-flow.md:26
 msgid ""
 "**Scope: memory layer + resource layer.** Self layer always injected in "
 "system prompt, outside recall scope."
@@ -134,7 +133,7 @@ msgstr ""
 "内。"
 
 #. type: Bullet: '- '
-#: docs/designs/recall-flow.md:26
+#: docs/concepts/recall-flow.md:26
 msgid ""
 "**Loading handled by downstream tools.** recall tells the LLM \"what "
 "exists\"; LLM decides \"what to fetch\", then calls corresponding load tools."
@@ -143,12 +142,12 @@ msgstr ""
 "调对应的加载工具。"
 
 #. type: Plain text
-#: docs/designs/recall-flow.md:28
+#: docs/concepts/recall-flow.md:28
 msgid "## Retrieval Scope (v2 Design)"
 msgstr "## 检索范围（v2 设计）"
 
 #. type: Plain text
-#: docs/designs/recall-flow.md:43
+#: docs/concepts/recall-flow.md:43
 #, no-wrap
 msgid ""
 "```\n"
@@ -182,21 +181,29 @@ msgstr ""
 "```\n"
 
 #. type: Plain text
-#: docs/designs/recall-flow.md:45
+#: docs/concepts/recall-flow.md:45
 msgid "### Out of Retrieval Scope"
 msgstr "### 不在检索范围内的"
 
 #. type: Plain text
-#: docs/designs/recall-flow.md:53
-#, no-wrap
+#: docs/concepts/recall-flow.md:53
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Content | Reason | Access |\n"
+#| "| ------- | ------ | ------ |\n"
+#| "| Self layer six blocks | Small, always needed | Always injected in system prompt |\n"
+#| "| Full tool schemas | Needed only before call | `load_tools` (v2) / existing `reload_tools` |\n"
+#| "| Full memory detail | Needed on demand | `read_memory` (v2) / existing `remember` single-row read |\n"
+#| "| Full file content | Needed on demand | `read_file` ✅ |\n"
+#| "| Entity relationship network | Traverse on demand | `graph_query` (v2) |\n"
 msgid ""
-"| Content | Reason | Access |\n"
-"| ------- | ------ | ------ |\n"
-"| Self layer six blocks | Small, always needed | Always injected in system prompt |\n"
-"| Full tool schemas | Needed only before call | `load_tools` (v2) / existing `reload_tools` |\n"
-"| Full memory detail | Needed on demand | `read_memory` (v2) / existing `remember` single-row read |\n"
-"| Full file content | Needed on demand | `read_file` ✅ |\n"
-"| Entity relationship network | Traverse on demand | `graph_query` (v2) |\n"
+"| Content                     | Reason                  | Access                                                   |\n"
+"| --------------------------- | ----------------------- | -------------------------------------------------------- |\n"
+"| Self layer six blocks       | Small, always needed    | Always injected in system prompt                         |\n"
+"| Full tool schemas           | Needed only before call | `load_tools` (v2) / existing `reload_tools`              |\n"
+"| Full memory detail          | Needed on demand        | `read_memory` (v2) / existing `remember` single-row read |\n"
+"| Full file content           | Needed on demand        | `read_file` ✅                                           |\n"
+"| Entity relationship network | Traverse on demand      | `graph_query` (v2)                                       |\n"
 msgstr ""
 "| 内容            | 理由           | 获取方式                                    |\n"
 "| --------------- | -------------- | ------------------------------------------- |\n"
@@ -207,12 +214,12 @@ msgstr ""
 "| 实体关系网络    | 只在需要时遍历 | `graph_query`（v2）                         |\n"
 
 #. type: Plain text
-#: docs/designs/recall-flow.md:55
+#: docs/concepts/recall-flow.md:55
 msgid "## Presets (v2 Design)"
 msgstr "## 预设（Preset）（v2 设计）"
 
 #. type: Plain text
-#: docs/designs/recall-flow.md:57
+#: docs/concepts/recall-flow.md:57
 msgid ""
 "`recall` uses `preset` parameter to steer search direction. Presets are "
 "**weighting templates** over memory/resource types."
@@ -221,21 +228,29 @@ msgstr ""
 "型的结果加权模板**。"
 
 #. type: Plain text
-#: docs/designs/recall-flow.md:59
+#: docs/concepts/recall-flow.md:59
 msgid "### Preset Definitions"
 msgstr "### 预设定义"
 
 #. type: Plain text
-#: docs/designs/recall-flow.md:67
-#, no-wrap
+#: docs/concepts/recall-flow.md:67
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Preset | Semantic | Episodic | Limbic | Procedural | Skills | Tools | Notes |\n"
+#| "| ------ | -------- | -------- | ------ | ---------- | ------ | ----- | ----- |\n"
+#| "| `balanced` (default) | Med | Med | Low | Med | Med | Low | General, no bias |\n"
+#| "| `recall` | High | High | High | Low | Low | — | Remember past, recover emotion |\n"
+#| "| `work` | Low | — | — | High | High | High | Complete tasks, solve problems |\n"
+#| "| `debug` | Med | Med | — | High | High | High | Troubleshoot, needs tech + context |\n"
+#| "| `learn` | High | Low | — | High | Med | Low | Understand a concept or domain |\n"
 msgid ""
-"| Preset | Semantic | Episodic | Limbic | Procedural | Skills | Tools | Notes |\n"
-"| ------ | -------- | -------- | ------ | ---------- | ------ | ----- | ----- |\n"
-"| `balanced` (default) | Med | Med | Low | Med | Med | Low | General, no bias |\n"
-"| `recall` | High | High | High | Low | Low | — | Remember past, recover emotion |\n"
-"| `work` | Low | — | — | High | High | High | Complete tasks, solve problems |\n"
-"| `debug` | Med | Med | — | High | High | High | Troubleshoot, needs tech + context |\n"
-"| `learn` | High | Low | — | High | Med | Low | Understand a concept or domain |\n"
+"| Preset               | Semantic | Episodic | Limbic | Procedural | Skills | Tools | Notes                              |\n"
+"| -------------------- | -------- | -------- | ------ | ---------- | ------ | ----- | ---------------------------------- |\n"
+"| `balanced` (default) | Med      | Med      | Low    | Med        | Med    | Low   | General, no bias                   |\n"
+"| `recall`             | High     | High     | High   | Low        | Low    | —     | Remember past, recover emotion     |\n"
+"| `work`               | Low      | —        | —      | High       | High   | High  | Complete tasks, solve problems     |\n"
+"| `debug`              | Med      | Med      | —      | High       | High   | High  | Troubleshoot, needs tech + context |\n"
+"| `learn`              | High     | Low      | —      | High       | Med    | Low   | Understand a concept or domain     |\n"
 msgstr ""
 "| 预设               | 语义 | 情景 | 感性 | 程序 | 技能 | 工具 | 说明                       |\n"
 "| ------------------ | ---- | ---- | ---- | ---- | ---- | ---- | -------------------------- |\n"
@@ -246,12 +261,12 @@ msgstr ""
 "| `学习`（learn）    | 高   | 低   | -    | 高   | 中   | 低   | 理解一个概念或领域         |\n"
 
 #. type: Plain text
-#: docs/designs/recall-flow.md:69
+#: docs/concepts/recall-flow.md:69
 msgid "### Extensibility"
 msgstr "### 扩展性"
 
 #. type: Plain text
-#: docs/designs/recall-flow.md:71
+#: docs/concepts/recall-flow.md:71
 msgid ""
 "Presets are templates, not fixed taxonomy. New presets later (e.g. `social`, "
 "`create`). Default `balanced` when preset omitted."
@@ -260,12 +275,12 @@ msgstr ""
 "preset 时默认 `balanced`。"
 
 #. type: Plain text
-#: docs/designs/recall-flow.md:73
+#: docs/concepts/recall-flow.md:73
 msgid "### Usage Examples"
 msgstr "### 用法示例"
 
 #. type: Plain text
-#: docs/designs/recall-flow.md:82
+#: docs/concepts/recall-flow.md:82
 #, no-wrap
 msgid ""
 "```\n"
@@ -287,7 +302,7 @@ msgstr ""
 "→ 感性记忆  --（几乎不需要）\n"
 
 #. type: Plain text
-#: docs/designs/recall-flow.md:91
+#: docs/concepts/recall-flow.md:91
 #, no-wrap
 msgid ""
 "recall(\"that database issue we discussed last time\", preset=\"recall\")\n"
@@ -309,12 +324,12 @@ msgstr ""
 "```\n"
 
 #. type: Plain text
-#: docs/designs/recall-flow.md:93
+#: docs/concepts/recall-flow.md:93
 msgid "## Full Flow (v2 Design)"
 msgstr "## 完整流程（v2 设计）"
 
 #. type: Plain text
-#: docs/designs/recall-flow.md:105
+#: docs/concepts/recall-flow.md:105
 #, no-wrap
 msgid ""
 "```\n"
@@ -342,7 +357,7 @@ msgstr ""
 "② 根据结果类型选择下游加载工具:\n"
 
 #. type: Plain text
-#: docs/designs/recall-flow.md:120
+#: docs/concepts/recall-flow.md:120
 #, no-wrap
 msgid ""
 "   ┌──────────────┬──────────────────────────┐\n"
@@ -376,17 +391,17 @@ msgstr ""
 "```\n"
 
 #. type: Plain text
-#: docs/designs/recall-flow.md:122 docs/designs/time-perception.md:54
+#: docs/concepts/recall-flow.md:122 docs/concepts/time-perception.md:54
 msgid "### Example"
 msgstr "### 示例"
 
 #. type: Plain text
-#: docs/designs/recall-flow.md:125
+#: docs/concepts/recall-flow.md:125
 msgid "``` You: Check on the server whether Nginx logs have recent errors"
 msgstr "``` 你：帮我在服务器上查一下 Nginx 日志最近有没有报错"
 
 #. type: Plain text
-#: docs/designs/recall-flow.md:132
+#: docs/concepts/recall-flow.md:132
 #, no-wrap
 msgid ""
 "① I → recall(\"nginx logs server errors\", preset=\"work\")\n"
@@ -404,7 +419,7 @@ msgstr ""
 "    - 技能: 排查 Nginx 错误的标准化流程\n"
 
 #. type: Plain text
-#: docs/designs/recall-flow.md:137
+#: docs/concepts/recall-flow.md:137
 #, no-wrap
 msgid ""
 "② I need tools → load_tools([\"tail_logs\", \"grep_logs\"])\n"
@@ -418,7 +433,7 @@ msgstr ""
 "    grep_logs(path, pattern)\n"
 
 #. type: Plain text
-#: docs/designs/recall-flow.md:141
+#: docs/concepts/recall-flow.md:141
 #, no-wrap
 msgid ""
 "③ I call tail_logs(path=\"/var/log/nginx/access.log\", lines=50)\n"
@@ -430,23 +445,29 @@ msgstr ""
 "```\n"
 
 #. type: Plain text
-#: docs/designs/recall-flow.md:143
+#: docs/concepts/recall-flow.md:143
 msgid "## Relationship to Self Layer"
 msgstr "## 与自我层的关系"
 
 #. type: Plain text
-#: docs/designs/recall-flow.md:145
+#: docs/concepts/recall-flow.md:145
 msgid "Self layer (six blocks) is not retrieved via `recall`."
 msgstr "自我层（六块）不通过 `recall` 检索。"
 
 #. type: Plain text
-#: docs/designs/recall-flow.md:151
-#, no-wrap
+#: docs/concepts/recall-flow.md:151
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Layer | Injection | Reason |\n"
+#| "| ----- | --------- | ------ |\n"
+#| "| Self layer | Always in system prompt | Small, fixed, every conversation needs \"who I am\" |\n"
+#| "| Memory layer | `recall` + downstream load | Large, dynamic, search on demand |\n"
+#| "| Resource layer | `recall` + downstream load | Tool definitions needed temporarily, load before call |\n"
 msgid ""
-"| Layer | Injection | Reason |\n"
-"| ----- | --------- | ------ |\n"
-"| Self layer | Always in system prompt | Small, fixed, every conversation needs \"who I am\" |\n"
-"| Memory layer | `recall` + downstream load | Large, dynamic, search on demand |\n"
+"| Layer          | Injection                  | Reason                                                |\n"
+"| -------------- | -------------------------- | ----------------------------------------------------- |\n"
+"| Self layer     | Always in system prompt    | Small, fixed, every conversation needs \"who I am\"     |\n"
+"| Memory layer   | `recall` + downstream load | Large, dynamic, search on demand                      |\n"
 "| Resource layer | `recall` + downstream load | Tool definitions needed temporarily, load before call |\n"
 msgstr ""
 "| 层     | 注入方式               | 理由                                   |\n"
@@ -456,17 +477,17 @@ msgstr ""
 "| 资源层 | `recall` + 下游加载    | 工具定义是临时需要的，调之前才加载     |\n"
 
 #. type: Plain text
-#: docs/designs/recall-flow.md:153
+#: docs/concepts/recall-flow.md:153
 msgid "## Naming Rationale"
 msgstr "## 命名说明"
 
 #. type: Plain text
-#: docs/designs/recall-flow.md:155
+#: docs/concepts/recall-flow.md:155
 msgid "The name `recall` stays unchanged."
 msgstr "`recall` 的命名保持不改变。"
 
 #. type: Plain text
-#: docs/designs/recall-flow.md:157
+#: docs/concepts/recall-flow.md:157
 msgid ""
 "In cognitive psychology, Recall is the standard term for actively pulling "
 "stored information from memory—no external cue, no prompt, you \"remember\" "
@@ -479,12 +500,12 @@ msgstr ""
 "已经存储的东西。即使检索范围从记忆层扩展到资源层，动作的本质没变。"
 
 #. type: Plain text
-#: docs/designs/recall-flow.md:159 docs/self-layer.md:108
+#: docs/concepts/recall-flow.md:159 docs/concepts/self-layer.md:108
 msgid "## Design Evolution"
 msgstr "## 设计演进"
 
 #. type: Plain text
-#: docs/designs/recall-flow.md:167
+#: docs/concepts/recall-flow.md:167
 #, no-wrap
 msgid ""
 "```\n"
@@ -503,13 +524,25 @@ msgstr ""
 "v3（未来）: 待定\n"
 "```\n"
 
+#. type: Plain text
+#: docs/concepts/recall-flow.md:169 docs/concepts/self-layer.md:115
+#, fuzzy
+msgid "## Open Questions"
+msgstr ""
+"#-#-#-#-#  probe-architecture.md.zh_CN.po (PACKAGE VERSION)  #-#-#-#-#\n"
+"## 开放问题\n"
+"#-#-#-#-#  recall-flow.md.zh_CN.po (PACKAGE VERSION)  #-#-#-#-#\n"
+"## 未解决问题\n"
+"#-#-#-#-#  self-layer.md.zh_CN.po (PACKAGE VERSION)  #-#-#-#-#\n"
+"## 未解决问题"
+
 #. type: Bullet: '1. '
-#: docs/designs/recall-flow.md:172
+#: docs/concepts/recall-flow.md:172
 msgid "How many presets are enough? Do 3–5 cover most scenarios, or need more?"
 msgstr "preset 的数量多少合适？3~5 个预设是否覆盖大部分场景，还是需要更多？"
 
 #. type: Bullet: '2. '
-#: docs/designs/recall-flow.md:172
+#: docs/concepts/recall-flow.md:172
 msgid ""
 "Format of recall \"lean results\"—structured JSON (LLM programmatic) or "
 "natural language (LLM direct understanding)?"
@@ -518,7 +551,7 @@ msgstr ""
 "是自然语言描述（方便 LLM 直接理解）？"
 
 #. type: Bullet: '3. '
-#: docs/designs/recall-flow.md:172
+#: docs/concepts/recall-flow.md:172
 msgid ""
 "Downstream load tool permission control—should `load_tools` be constrained "
 "by scene awareness / capability mask?"

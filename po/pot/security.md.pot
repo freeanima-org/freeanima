@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-10 17:00+0800\n"
+"POT-Creation-Date: 2026-06-10 17:45+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,30 +17,35 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Plain text
-#: docs/README.md:1 docs/compression.md:1 docs/compression.md:11
-#: docs/compression.md:22 docs/compression.md:49 docs/compression.md:96
-#: docs/compression.md:118 docs/compression.md:156 docs/compression.md:180
-#: docs/compression.md:228 docs/compression.md:262 docs/compression.md:275
-#: docs/compression.md:327 docs/compression.md:348 docs/compression.md:368
-#: docs/compression.md:384 docs/database.md:1 docs/database.md:33
-#: docs/designs/desktop-companion.md:1 docs/designs/execute-code-runtimes.md:1
-#: docs/designs/issue-1-migration-plan.md:1
-#: docs/designs/pair-programming-v1.md:1
-#: docs/designs/pair-programming-v1.md:321 docs/designs/probe-architecture.md:1
-#: docs/designs/probe-architecture.md:165 docs/designs/recall-flow.md:1
-#: docs/designs/time-perception.md:1 docs/identity.md:1 docs/identity.md:10
-#: docs/identity.md:28 docs/identity.md:45 docs/identity.md:55 docs/memory.md:1
-#: docs/memory.md:17 docs/memory.md:53 docs/memory.md:160 docs/memory.md:191
-#: docs/memory.md:211 docs/memory.md:232 docs/memory.md:249 docs/security.md:1
-#: docs/self-layer.md:1 docs/self-layer.md:31 docs/self-layer.md:53
-#: docs/self-layer.md:64 docs/self-layer.md:78 docs/self-layer.md:94
-#: docs/self-layer.md:105 docs/sleep.md:1 docs/versioning.md:1
+#: docs/README.md:1 docs/concepts/compression.md:1
+#: docs/concepts/compression.md:11 docs/concepts/compression.md:22
+#: docs/concepts/compression.md:49 docs/concepts/compression.md:96
+#: docs/concepts/compression.md:118 docs/concepts/compression.md:156
+#: docs/concepts/compression.md:180 docs/concepts/compression.md:228
+#: docs/concepts/compression.md:262 docs/concepts/compression.md:275
+#: docs/concepts/compression.md:327 docs/concepts/compression.md:348
+#: docs/concepts/compression.md:368 docs/concepts/compression.md:384
+#: docs/concepts/identity.md:1 docs/concepts/identity.md:10
+#: docs/concepts/identity.md:28 docs/concepts/identity.md:45
+#: docs/concepts/identity.md:55 docs/concepts/memory.md:1
+#: docs/concepts/memory.md:17 docs/concepts/memory.md:53
+#: docs/concepts/memory.md:160 docs/concepts/memory.md:191
+#: docs/concepts/memory.md:211 docs/concepts/memory.md:232
+#: docs/concepts/memory.md:249 docs/concepts/recall-flow.md:1
+#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:31
+#: docs/concepts/self-layer.md:53 docs/concepts/self-layer.md:64
+#: docs/concepts/self-layer.md:78 docs/concepts/self-layer.md:94
+#: docs/concepts/self-layer.md:105 docs/concepts/sleep.md:1
+#: docs/concepts/time-perception.md:1 docs/features/pair-programming-v1.md:1
+#: docs/features/pair-programming-v1.md:321 docs/guide/database.md:1
+#: docs/guide/database.md:33 docs/guide/security.md:1
+#: docs/guide/versioning.md:1 docs/tools/execute-code-runtimes.md:1
 #, no-wrap
 msgid "---\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/security.md:3
+#: docs/guide/security.md:3
 #, no-wrap
 msgid ""
 "title: Security\n"
@@ -48,31 +53,31 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/security.md:6
+#: docs/guide/security.md:6
 msgid "# FreeAnima Security"
 msgstr ""
 
 #. type: Plain text
-#: docs/security.md:9
+#: docs/guide/security.md:9
 msgid ""
-"> Adopted principles: [ARCHITECTURE.md](../ARCHITECTURE.md).  > Security "
-"review and implementation items: [GitHub Issue #33](https://github.com/"
-"freeanima-org/freeanima/issues/33), [#46](https://github.com/freeanima-org/"
-"freeanima/issues/46)."
+"> Adopted principles: [architecture.md](../concepts/architecture.md).  > "
+"Security review and implementation items: [GitHub Issue #33](https://"
+"github.com/freeanima-org/freeanima/issues/33), [#46](https://github.com/"
+"freeanima-org/freeanima/issues/46)."
 msgstr ""
 
 #. type: Plain text
-#: docs/security.md:11
+#: docs/guide/security.md:11
 msgid "## Trust Model (Required Reading for Open-Source Deployment)"
 msgstr ""
 
 #. type: Plain text
-#: docs/security.md:13
+#: docs/guide/security.md:13
 msgid "FreeAnima is designed for **single-user local / intranet** deployment:"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/security.md:17
+#: docs/guide/security.md:17
 msgid ""
 "HTTP / WebUI **has no auth by default**; binding `127.0.0.1` is not security—"
 "any process or user that can reach the port can read sessions, send "
@@ -80,272 +85,272 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/security.md:17
+#: docs/guide/security.md:17
 msgid ""
 "Default bind is `127.0.0.1`; for LAN access, assess CORS and network "
 "isolation yourself."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/security.md:17
+#: docs/guide/security.md:17
 msgid ""
 "**Do not** expose the service to the public internet without reverse-proxy "
 "authentication."
 msgstr ""
 
 #. type: Plain text
-#: docs/security.md:19
+#: docs/guide/security.md:19
 msgid "## Credential Responsibilities"
 msgstr ""
 
 #. type: Plain text
-#: docs/security.md:28
+#: docs/guide/security.md:28
 #, no-wrap
 msgid ""
-"| Rule | Description |\n"
-"| ---- | ----------- |\n"
-"| Sole authoritative store | [pass](https://www.passwordstore.org/) (GPG, `~/.password-store`) |\n"
-"| Never commit secrets | Do not write API keys, tokens, DB passwords into `config.yaml` and commit to git |\n"
-"| Runtime directory | `~/.anima/` (`FREEANIMA_HOME` overridable) holds config, sessions, memory—recommend `chmod 700` |\n"
-"| CLI plaintext output | `anima credential get` prints plaintext to stdout; do not redirect to shared logs |\n"
-"| WebUI credential detail | `GET /api/credentials/detail?path=` returns pass plaintext to local WebUI; same sensitivity as CLI; relies on bind address and process isolation |\n"
-"| pass path conventions | `api/opencode-go`, `services/discord`, `services/firecrawl`, `services/postgres/anima`, `services/pushdeer`, `services/weixin-ilink` |\n"
+"| Rule                     | Description                                                                                                                                      |\n"
+"| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |\n"
+"| Sole authoritative store | [pass](https://www.passwordstore.org/) (GPG, `~/.password-store`)                                                                                |\n"
+"| Never commit secrets     | Do not write API keys, tokens, DB passwords into `config.yaml` and commit to git                                                                 |\n"
+"| Runtime directory        | `~/.anima/` (`FREEANIMA_HOME` overridable) holds config, sessions, memory—recommend `chmod 700`                                                  |\n"
+"| CLI plaintext output     | `anima credential get` prints plaintext to stdout; do not redirect to shared logs                                                                |\n"
+"| WebUI credential detail  | `GET /api/credentials/detail?path=` returns pass plaintext to local WebUI; same sensitivity as CLI; relies on bind address and process isolation |\n"
+"| pass path conventions    | `api/opencode-go`, `services/discord`, `services/firecrawl`, `services/postgres/anima`, `services/pushdeer`, `services/weixin-ilink`             |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/security.md:30
+#: docs/guide/security.md:30
 msgid ""
 "`config.yaml` supports `database.url: pass:services/postgres/anima` etc.; "
 "secrets injected at runtime from pass."
 msgstr ""
 
 #. type: Plain text
-#: docs/security.md:32
+#: docs/guide/security.md:32
 msgid "## Data Persistence"
 msgstr ""
 
 #. type: Plain text
-#: docs/security.md:37
+#: docs/guide/security.md:37
 #, no-wrap
 msgid ""
-"| Path | Content | Encryption |\n"
-"| ---- | ------- | ---------- |\n"
+"| Path                            | Content             | Encryption                      |\n"
+"| ------------------------------- | ------------------- | ------------------------------- |\n"
 "| PostgreSQL conversation archive | sessions / messages | No application-layer encryption |\n"
-"| `~/.anima/weixin/` | WeChat sync state | None |\n"
+"| `~/.anima/weixin/`              | WeChat sync state   | None                            |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/security.md:39
+#: docs/guide/security.md:39
 msgid "Disk backup = data access. Protect backup media accordingly."
 msgstr ""
 
 #. type: Plain text
-#: docs/security.md:41
+#: docs/guide/security.md:41
 msgid "## LLM Tool Risks"
 msgstr ""
 
 #. type: Plain text
-#: docs/security.md:51
+#: docs/guide/security.md:51
 #, no-wrap
 msgid ""
-"| Capability | Risk |\n"
-"| ---------- | ---- |\n"
-"| `terminal` | Default `shell: true`, can run arbitrary shell commands |\n"
-"| `file_read_file` | Partial path deny (`.ssh` private keys, `/etc/passwd`, etc.); **not** full `/etc/` deny |\n"
-"| `file_write_file` | deny list + write-protected paths |\n"
-"| MCP tools | Capabilities entirely determined by external Server; stdio default, SSE auth scheme not fully defined |\n"
+"| Capability             | Risk                                                                                                           |\n"
+"| ---------------------- | -------------------------------------------------------------------------------------------------------------- |\n"
+"| `terminal`             | Default `shell: true`, can run arbitrary shell commands                                                        |\n"
+"| `file_read_file`       | Partial path deny (`.ssh` private keys, `/etc/passwd`, etc.); **not** full `/etc/` deny                        |\n"
+"| `file_write_file`      | deny list + write-protected paths                                                                              |\n"
+"| MCP tools              | Capabilities entirely determined by external Server; stdio default, SSE auth scheme not fully defined          |\n"
 "| Capability mask (Mask) | Session-level tool whitelist; `deny` overrides `allow`; LLM cannot see policy details; see `capabilities/mask` |\n"
-"| ACP (Cursor) | Default **auto-approve** all `session/request_permission` (`allow-once`) |\n"
-"| `credentials_list` | Returns pass path metadata only, no values |\n"
+"| ACP (Cursor)           | Default **auto-approve** all `session/request_permission` (`allow-once`)                                       |\n"
+"| `credentials_list`     | Returns pass path metadata only, no values                                                                     |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/security.md:53
+#: docs/guide/security.md:53
 msgid "## Measures in Place"
 msgstr ""
 
 #. type: Plain text
-#: docs/security.md:65
+#: docs/guide/security.md:65
 #, no-wrap
 msgid ""
-"| Measure | Description |\n"
-"| ------- | ----------- |\n"
-"| Same-origin RPC | TanStack Start server functions same-origin by default, no CORS whitelist needed |\n"
+"| Measure                 | Description                                                                                                          |\n"
+"| ----------------------- | -------------------------------------------------------------------------------------------------------------------- |\n"
+"| Same-origin RPC         | TanStack Start server functions same-origin by default, no CORS whitelist needed                                     |\n"
 "| Config secret redaction | `AnimaService.getConfig()` → `sanitizeConfigForApi()` (`api_key`, `database.url`, nested `pushkey`, `mcp env`, etc.) |\n"
-"| MCP config redaction | `sanitizeMcpConfig`: `env` exposes only `env_keys` |\n"
-"| Write path safety | `file_write_file` deny list (partial `/etc/*`, `.ssh` private keys, etc.) |\n"
-"| Slash commands | Whitelist routing |\n"
-"| MCP default stdio | Reduces port exposure |\n"
-"| Credential isolation | LLM sees pass paths only, not values |\n"
-"| CI secret scanning | `.github/workflows/security.yml` (Gitleaks); GitHub Secret scanning + Push protection (free for public repos) |\n"
-"| `.gitignore` | `.env.*`, `config.yaml`, private key suffixes |\n"
+"| MCP config redaction    | `sanitizeMcpConfig`: `env` exposes only `env_keys`                                                                   |\n"
+"| Write path safety       | `file_write_file` deny list (partial `/etc/*`, `.ssh` private keys, etc.)                                            |\n"
+"| Slash commands          | Whitelist routing                                                                                                    |\n"
+"| MCP default stdio       | Reduces port exposure                                                                                                |\n"
+"| Credential isolation    | LLM sees pass paths only, not values                                                                                 |\n"
+"| CI secret scanning      | `.github/workflows/security.yml` (Gitleaks); GitHub Secret scanning + Push protection (free for public repos)        |\n"
+"| `.gitignore`            | `.env.*`, `config.yaml`, private key suffixes                                                                        |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/security.md:67
+#: docs/guide/security.md:67
 msgid "## Known Gaps (Documentation ≠ Fully Implemented)"
 msgstr ""
 
 #. type: Plain text
-#: docs/security.md:69
+#: docs/guide/security.md:69
 msgid ""
 "The following are planned in code or docs—**deployers must not assume "
 "implemented**:"
 msgstr ""
 
 #. type: Plain text
-#: docs/security.md:79
+#: docs/guide/security.md:79
 #, no-wrap
 msgid ""
-"| Priority | Item | Status |\n"
-"| -------- | ---- | ------ |\n"
-"| P0 | file_read_file full deny (`/etc/` etc.) | Partial |\n"
-"| P0 | `terminal_run` / `code_execute` default `shell=False` | Not implemented |\n"
-"| P1 | Runtime Unix socket `chmod 600` + handshake token | Not implemented |\n"
-"| P1 | `FREEANIMA_WRITE_SAFE_ROOT` / `READ_SAFE_ROOT` | Not implemented |\n"
-"| P2 | HTTP API auth | None |\n"
-"| P3 | IPC / LLM rate limiting | None |\n"
-"| P3 | Session disk encryption | None |\n"
+"| Priority | Item                                                  | Status          |\n"
+"| -------- | ----------------------------------------------------- | --------------- |\n"
+"| P0       | file_read_file full deny (`/etc/` etc.)               | Partial         |\n"
+"| P0       | `terminal_run` / `code_execute` default `shell=False` | Not implemented |\n"
+"| P1       | Runtime Unix socket `chmod 600` + handshake token     | Not implemented |\n"
+"| P1       | `FREEANIMA_WRITE_SAFE_ROOT` / `READ_SAFE_ROOT`        | Not implemented |\n"
+"| P2       | HTTP API auth                                         | None            |\n"
+"| P3       | IPC / LLM rate limiting                               | None            |\n"
+"| P3       | Session disk encryption                               | None            |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/security.md:81
+#: docs/guide/security.md:81
 msgid "## Threat Sources"
 msgstr ""
 
 #. type: Plain text
-#: docs/security.md:89
+#: docs/guide/security.md:89
 #, no-wrap
 msgid ""
-"| Code | Name | Description |\n"
-"| ---- | ---- | ----------- |\n"
-"| **A** | External attack | Unauthorized access, port exposure |\n"
+"| Code  | Name                | Description                                                      |\n"
+"| ----- | ------------------- | ---------------------------------------------------------------- |\n"
+"| **A** | External attack     | Unauthorized access, port exposure                               |\n"
 "| **B** | LLM-layer injection | Prompt injection, tool parameter manipulation, command injection |\n"
-"| **C** | Agent error | Mistaken dangerous operations |\n"
-"| **D** | Dependency chain | Third-party lib / MCP / ACP compromise |\n"
-"| **E** | Data security | Conversation leak, key leak, memory tampering |\n"
+"| **C** | Agent error         | Mistaken dangerous operations                                    |\n"
+"| **D** | Dependency chain    | Third-party lib / MCP / ACP compromise                           |\n"
+"| **E** | Data security       | Conversation leak, key leak, memory tampering                    |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/security.md:91
+#: docs/guide/security.md:91
 msgid "## Security Matrix"
 msgstr ""
 
 #. type: Plain text
-#: docs/security.md:99
+#: docs/guide/security.md:99
 #, no-wrap
 msgid ""
-"| Module | A External | B LLM injection | C Agent error | D Dependencies | E Data |\n"
-"| ------ | ---------- | --------------- | ------------- | -------------- | ------ |\n"
-"| **Runtime** | Default 127.0.0.1 bind | MaxTurnsExceeded | Gap: rate limiting | llm client vulns | PG unencrypted |\n"
-"| **Gateway** | Token in pass | Malicious messages | Reply with sensitive info | SDK vulns | — |\n"
-"| **CLI / Tools** | Local shell compromised | file_read_file partial deny (**P0 extending**); shell=True (**P0**) | rm -rf etc. | — | Logs may contain conversations |\n"
-"| **HTTP / WebUI** | No auth; CORS whitelist | BFF does not touch LLM params directly | config display | Vue/axios | SSE plaintext |\n"
-"| **MCP / ACP** | SSE auth undefined | Malicious params | Wrong delegation | Server compromised | Context may contain sensitive data |\n"
+"| Module           | A External              | B LLM injection                                                     | C Agent error             | D Dependencies     | E Data                             |\n"
+"| ---------------- | ----------------------- | ------------------------------------------------------------------- | ------------------------- | ------------------ | ---------------------------------- |\n"
+"| **Runtime**      | Default 127.0.0.1 bind  | MaxTurnsExceeded                                                    | Gap: rate limiting        | llm client vulns   | PG unencrypted                     |\n"
+"| **Gateway**      | Token in pass           | Malicious messages                                                  | Reply with sensitive info | SDK vulns          | —                                  |\n"
+"| **CLI / Tools**  | Local shell compromised | file_read_file partial deny (**P0 extending**); shell=True (**P0**) | rm -rf etc.               | —                  | Logs may contain conversations     |\n"
+"| **HTTP / WebUI** | No auth; CORS whitelist | BFF does not touch LLM params directly                              | config display            | Vue/axios          | SSE plaintext                      |\n"
+"| **MCP / ACP**    | SSE auth undefined      | Malicious params                                                    | Wrong delegation          | Server compromised | Context may contain sensitive data |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/security.md:101
+#: docs/guide/security.md:101
 msgid "## Proposals Pending Review"
 msgstr ""
 
 #. type: Plain text
-#: docs/security.md:103
+#: docs/guide/security.md:103
 msgid "### P0 — file_read_file Path Safety"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/security.md:106
+#: docs/guide/security.md:106
 msgid "Read-side deny: `/etc/`, `/proc/`, `~/.ssh/`, etc."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/security.md:106
+#: docs/guide/security.md:106
 msgid "Optional `FREEANIMA_READ_SAFE_ROOT`"
 msgstr ""
 
 #. type: Plain text
-#: docs/security.md:108
+#: docs/guide/security.md:108
 msgid "### P0 — Shell Execution Policy"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/security.md:111
+#: docs/guide/security.md:111
 msgid "`terminal_run()` / `code_execute` default `shell=False`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/security.md:111
+#: docs/guide/security.md:111
 msgid "`FREEANIMA_ALLOW_SHELL=true` required for shell pipes"
 msgstr ""
 
 #. type: Plain text
-#: docs/security.md:113
+#: docs/guide/security.md:113
 msgid "### P1 — Runtime / Gateway"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/security.md:116
+#: docs/guide/security.md:116
 msgid "Unix socket `chmod 600` + optional handshake token"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/security.md:116
+#: docs/guide/security.md:116
 msgid "Write safe root default cwd (`FREEANIMA_WRITE_SAFE_ROOT`)"
 msgstr ""
 
 #. type: Plain text
-#: docs/security.md:118
+#: docs/guide/security.md:118
 msgid "### P2 — Config Redaction Maintenance"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/security.md:120
+#: docs/guide/security.md:120
 msgid ""
-"When adding secret fields, sync [`service/config/src/config-sanitize.ts`](../"
-"service/config/src/config-sanitize.ts)"
+"When adding secret fields, sync [`service/config/src/config-sanitize.ts`]"
+"(../../service/config/src/config-sanitize.ts)"
 msgstr ""
 
 #. type: Plain text
-#: docs/security.md:122
+#: docs/guide/security.md:122
 msgid "## First-Deployment Security Checklist"
 msgstr ""
 
 #. type: Bullet: '1. '
-#: docs/security.md:129
+#: docs/guide/security.md:129
 msgid "Install and initialize pass + GPG; all secrets into pass only"
 msgstr ""
 
 #. type: Bullet: '2. '
-#: docs/security.md:129
+#: docs/guide/security.md:129
 msgid ""
-"Copy [`config.example.yaml`](../config.example.yaml) → `~/.anima/"
+"Copy [`config.example.yaml`](../../config.example.yaml) → `~/.anima/"
 "config.yaml`; **do not** write plaintext secrets in config"
 msgstr ""
 
 #. type: Bullet: '3. '
-#: docs/security.md:129
+#: docs/guide/security.md:129
 msgid "`chmod 700 ~/.anima`"
 msgstr ""
 
 #. type: Bullet: '4. '
-#: docs/security.md:129
+#: docs/guide/security.md:129
 msgid "Bind `127.0.0.1` only, or ensure intranet isolation"
 msgstr ""
 
 #. type: Bullet: '5. '
-#: docs/security.md:129
+#: docs/guide/security.md:129
 msgid ""
 "Review `mcp_servers` / `acp_agents` config; set `enabled: false` for "
 "untrusted external Servers"
 msgstr ""
 
 #. type: Bullet: '6. '
-#: docs/security.md:129
+#: docs/guide/security.md:129
 msgid "Regularly backup pass and `~/.anima/`; encrypt backup media"
 msgstr ""
 
 #. type: Bullet: '7. '
-#: docs/security.md:129
+#: docs/guide/security.md:129
 msgid "Do not commit `.env`, `config.yaml` to git"
 msgstr ""

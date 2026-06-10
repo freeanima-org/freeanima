@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readdirSync, statSync } from "node:fs";
 import { basename, join, relative } from "node:path";
 
 export type DocMaster = {
-  /** Relative to repo root, e.g. docs/identity.md */
+  /** Relative to repo root, e.g. docs/concepts/identity.md */
   rel: string;
   /** Absolute path */
   abs: string;
@@ -30,10 +30,7 @@ export function listDocMasters(dir: string = docsRoot): DocMaster[] {
   const out: DocMaster[] = [];
   if (!existsSync(dir)) return out;
   for (const name of readdirSync(dir).toSorted()) {
-    if (
-      dir === docsRoot &&
-      (name === ".zh-cn-ref" || name === ".generated" || name === "glossary.md")
-    ) {
+    if (dir === docsRoot && (name === ".zh-cn-ref" || name === ".generated")) {
       continue;
     }
     const path = join(dir, name);

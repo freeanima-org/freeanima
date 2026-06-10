@@ -1,19 +1,19 @@
 # 逸灵风 — Agent 启动协议
 
 > 面向在本仓库工作的 AI Agent（Cursor、Copilot 等）。
-> 数字生命定位见 [`docs/identity.md`](docs/identity.md)；自我层见 [`docs/self-layer.md`](docs/self-layer.md)。
+> 数字生命定位见 [`docs/concepts/identity.md`](docs/concepts/identity.md)；自我层见 [`docs/concepts/self-layer.md`](docs/concepts/self-layer.md)。
 
 ## 全局视角
 
 `freeanima`（逸灵风）是 **TypeScript 单栈** Agent 运行时：`anima service` 启动 Bun 服务（WebUI + tRPC + Gateway + 引擎）。
 
-| 能力     | 要点                                                                                                                                                                         |
-| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 记忆     | 对话存档（PG）→ 浅睡提取 → `semantic_memory` → PG FTS 检索；见 [`docs/memory.md`](docs/memory.md)                                                                            |
-| 工具     | 本地 / MCP / ACP 扁平注册；实现于 `capabilities/tools/`、`capabilities/mcp/`、`capabilities/acp/`                                                                            |
-| 凭证     | pass GPG；运行时注入；LLM **只见路径不见值**                                                                                                                                 |
-| 数据目录 | `~/.anima/`（`FREEANIMA_HOME` 可覆盖）；备份打包此目录即可                                                                                                                   |
-| 代码布局 | `kernel/`、`engine/`、`life/`、`capabilities/`、`connectors/`、`service/`、`cli/`；详图见 [`docs/designs/issue-1-migration-plan.md`](docs/designs/issue-1-migration-plan.md) |
+| 能力     | 要点                                                                                                                                                       |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 记忆     | 对话存档（PG）→ 浅睡提取 → `semantic_memory` → PG FTS 检索；见 [`docs/concepts/memory.md`](docs/concepts/memory.md)                                        |
+| 工具     | 本地 / MCP / ACP 扁平注册；实现于 `capabilities/tools/`、`capabilities/mcp/`、`capabilities/acp/`                                                          |
+| 凭证     | pass GPG；运行时注入；LLM **只见路径不见值**                                                                                                               |
+| 数据目录 | `~/.anima/`（`FREEANIMA_HOME` 可覆盖）；备份打包此目录即可                                                                                                 |
+| 代码布局 | `kernel/`、`engine/`、`life/`、`capabilities/`、`connectors/`、`service/`、`cli/`；详图见 [`docs/concepts/architecture.md`](docs/concepts/architecture.md) |
 
 **细节以代码为准**；勿凭文档臆造工具名、端点或目录。需要时直接读源码或 `grep`。
 
@@ -22,7 +22,7 @@
 ## 启动顺序
 
 1. [GitHub Issues](https://github.com/freeanima-org/freeanima/issues) — 可执行任务与讨论项
-2. [`ARCHITECTURE.md`](ARCHITECTURE.md) — 改架构 / 记忆 / 凭证前必读
+2. [`docs/concepts/architecture.md`](docs/concepts/architecture.md) — 改架构 / 记忆 / 凭证前必读
 3. 按任务展开 `docs/` 专题（见下方文档地图）
 
 ---
@@ -41,7 +41,7 @@
 ### 发版与 CHANGELOG
 
 - **禁止手动编辑 [`CHANGELOG.md`](CHANGELOG.md)**：新版本节由 Release PR 合并时 [Release Please](https://github.com/googleapis/release-please) 写入顶部；Agent 不得在 PR / 任务中改动该文件（含补写条目、`[Unreleased]`、列表符或格式化）。
-- 发版流程与 commit 规范见 [`docs/versioning.md`](docs/versioning.md)；
+- 发版流程与 commit 规范见 [`docs/guide/versioning.md`](docs/guide/versioning.md)；
 
 #### 测试分层（硬性）
 
@@ -80,7 +80,7 @@
 
 ### 代码层与依赖
 
-> 此处是**代码仓库**分层（与 [`ARCHITECTURE.md`](ARCHITECTURE.md) 中的认知四层 Consciousness/Self/Memory/Estate 不同）。依赖边界由 [`scripts/check-layer-deps.ts`](scripts/check-layer-deps.ts) 强制检查。
+> 此处是**代码仓库**分层（与 [`docs/concepts/architecture.md`](docs/concepts/architecture.md) 中的认知四层 Consciousness/Self/Memory/Estate 不同）。依赖边界由 [`scripts/check-layer-deps.ts`](scripts/check-layer-deps.ts) 强制检查。
 
 #### 分层依据
 
@@ -201,7 +201,7 @@ Agent 新增或移动类型 / Zod / 端口时，按下列顺序决策：
 | 微信网关持久化 schema                                              | `connectors-gateway/schemas` | `weixin.ts`                                               |
 | JSON safeParse 工具                                                | `kernel-util`                | `parseJsonFile`、`safeParseOrNull` 等                     |
 
-新增 PG 域：`engine-db/schema/{domain}` → `engine-repos` 增端口 → `connectors-db-pg` 实现 → `PgRepositories` 扩展 → `serve.ts` 装配。详见 [`docs/database.md`](docs/database.md)。
+新增 PG 域：`engine-db/schema/{domain}` → `engine-repos` 增端口 → `connectors-db-pg` 实现 → `PgRepositories` 扩展 → `serve.ts` 装配。详见 [`docs/guide/database.md`](docs/guide/database.md)。
 
 #### PG Schema 迁移（硬性）
 
@@ -223,7 +223,7 @@ Agent 新增或移动类型 / Zod / 端口时，按下列顺序决策：
 ### 安全与连续性
 
 - 凭证、密钥不写入 git / 日志 / 工具返回值
-- 记忆与自我层改动需格外谨慎（见 [`docs/identity.md`](docs/identity.md)）
+- 记忆与自我层改动需格外谨慎（见 [`docs/concepts/identity.md`](docs/concepts/identity.md)）
 - 连续性高于功能堆砌；简单基建自写，复杂逻辑用成熟三方库
 
 ---
@@ -246,57 +246,57 @@ DATABASE_URL="…" bun run --filter @freeanima/engine-db db:migrate
 ```
 
 - WebUI 会客厅：`http://127.0.0.1:2658/webui/parlor/chat`
-- 发版与 commit 规范：[`docs/versioning.md`](docs/versioning.md)
-- PG 迁移：[`docs/database.md`](docs/database.md)
+- 发版与 commit 规范：[`docs/guide/versioning.md`](docs/guide/versioning.md)
+- PG 迁移：[`docs/guide/database.md`](docs/guide/database.md)
 
 ---
 
 ## 文档地图
 
-| 文件                                                               | 职责                       |
-| ------------------------------------------------------------------ | -------------------------- |
-| [`AGENTS.md`](AGENTS.md)                                           | 本文件：启动协议与硬性约束 |
-| [GitHub Issues](https://github.com/freeanima-org/freeanima/issues) | 可执行任务与讨论项         |
-| [`ARCHITECTURE.md`](ARCHITECTURE.md)                               | 架构原则与方向             |
-| [`docs/memory.md`](docs/memory.md)                                 | 记忆管道                   |
-| [`docs/database.md`](docs/database.md)                             | PostgreSQL schema          |
-| [`docs/security.md`](docs/security.md)                             | 安全与凭证                 |
-| [`docs/identity.md`](docs/identity.md)                             | 数字生命 / 自我层          |
-| [`docs/designs/`](docs/designs/)                                   | 专题设计（含 RFC 迁移）    |
+| 文件                                                               | 职责                             |
+| ------------------------------------------------------------------ | -------------------------------- |
+| [`AGENTS.md`](AGENTS.md)                                           | 本文件：启动协议与硬性约束       |
+| [GitHub Issues](https://github.com/freeanima-org/freeanima/issues) | 可执行任务与讨论项               |
+| [`docs/concepts/architecture.md`](docs/concepts/architecture.md)   | 架构原则与方向                   |
+| [`docs/concepts/`](docs/concepts/)                                 | 核心概念（记忆、自我层等）       |
+| [`docs/guide/`](docs/guide/)                                       | 使用与维护（安全、数据库、发版） |
+| [`docs/features/`](docs/features/)                                 | 重要产品能力                     |
+| [`docs/tools/`](docs/tools/)                                       | 通用/次要内置工具                |
 
 ---
 
 ## 冲突优先级
 
 1. **代码实现** > 一切文档
-2. **ARCHITECTURE.md** > 专题 `docs/*.md`
-3. **GitHub Issues** > ARCHITECTURE 方向规划
+2. **`docs/concepts/architecture.md`** > 其他 `docs/**/*.md`
+3. **GitHub Issues** > architecture 方向规划
 
 ## 改代码须同步的文档
 
-| 变更类型                   | 更新                                                                                 |
-| -------------------------- | ------------------------------------------------------------------------------------ |
-| Slice A / PG schema        | [`docs/database.md`](docs/database.md)                                               |
-| 层依赖 / 组合根 / 类型归属 | 本文件（代码层与依赖、类型归属）+ [`docs/database.md`](docs/database.md) PG 包表     |
-| 记忆管道 / 检索            | [`docs/memory.md`](docs/memory.md) + ARCHITECTURE                                    |
-| 安全 / 威胁面              | [`docs/security.md`](docs/security.md) + ARCHITECTURE                                |
-| 架构原则                   | ARCHITECTURE.md                                                                      |
-| 新建 RFC 包 / rename       | 本文件命名表 + [`issue-1-migration-plan.md`](docs/designs/issue-1-migration-plan.md) |
-| 发版                       | [`docs/versioning.md`](docs/versioning.md)                                           |
-| 任务完成                   | close 对应 GitHub Issue；用户可见变更用 Conventional Commits                         |
+| 变更类型                   | 更新                                                                                         |
+| -------------------------- | -------------------------------------------------------------------------------------------- |
+| Slice A / PG schema        | [`docs/guide/database.md`](docs/guide/database.md)                                           |
+| 层依赖 / 组合根 / 类型归属 | 本文件（代码层与依赖、类型归属）+ [`docs/guide/database.md`](docs/guide/database.md) PG 包表 |
+| 记忆管道 / 检索            | [`docs/concepts/memory.md`](docs/concepts/memory.md) + architecture                          |
+| 安全 / 威胁面              | [`docs/guide/security.md`](docs/guide/security.md) + architecture                            |
+| 架构原则                   | [`docs/concepts/architecture.md`](docs/concepts/architecture.md)                             |
+| 新建 RFC 包 / rename       | 本文件命名表 + architecture 代码层章节                                                       |
+| 发版                       | [`docs/guide/versioning.md`](docs/guide/versioning.md)                                       |
+| 任务完成                   | close 对应 GitHub Issue；用户可见变更用 Conventional Commits                                 |
 
 工具表、模块树、API 列表**不维护在文档中**——以注册代码与服务 router 为准。
 
 ## 维护规约
 
-- 原则变更先 ARCHITECTURE，再决定是否写专题 doc
+- 原则变更先 [`docs/concepts/architecture.md`](docs/concepts/architecture.md)，再决定是否写专题 doc
 - 新专题 >50 行且长期有效才进 `docs/`；可执行任务与讨论项开 GitHub Issue
 - 任务完成 close 对应 Issue，不保留已完成项在文档中
+- **docs 目录约定**：部署/凭证/发版 → `docs/guide/`；机制原理 → `docs/concepts/`；重要产品能力 → `docs/features/`；通用工具 → `docs/tools/`；未实现想法 → Issue，不开 doc
 
 ## 各文件禁止写什么
 
-| 文件                | 禁止                                                                            |
-| ------------------- | ------------------------------------------------------------------------------- |
-| AGENTS.md（本文件） | 完整工具表、目录树、API 对照、SemVer 细则（**须**维护代码层与依赖、类型归属表） |
-| ARCHITECTURE.md     | 具体待办、会周变工具清单                                                        |
-| CHANGELOG.md        | 手动增删版本节或条目（Release Please 自动维护，见上文「发版与 CHANGELOG」）     |
+| 文件                          | 禁止                                                                            |
+| ----------------------------- | ------------------------------------------------------------------------------- |
+| AGENTS.md（本文件）           | 完整工具表、目录树、API 对照、SemVer 细则（**须**维护代码层与依赖、类型归属表） |
+| docs/concepts/architecture.md | 具体待办、会周变工具清单                                                        |
+| CHANGELOG.md                  | 手动增删版本节或条目（Release Please 自动维护，见上文「发版与 CHANGELOG」）     |

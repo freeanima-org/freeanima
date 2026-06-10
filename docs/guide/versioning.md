@@ -5,11 +5,11 @@ title: Versioning
 # Versioning and Release
 
 FreeAnima follows [Semantic Versioning 2.0.0](https://semver.org/) (`MAJOR.MINOR.PATCH`).
-The **sole write source** is `"version"` in the root [`package.json`](../package.json);
+The **sole write source** is `"version"` in the root [`package.json`](../../package.json);
 other workspace sub-package `package.json` files **do not** include a `version` field.
 Runtime reads the root version via `ANIMA_VERSION` from `@freeanima/service`.
 
-Release is handled by **[Release Please](https://github.com/googleapis/release-please)** in GitHub Actions (see [`.github/workflows/release.yml`](../.github/workflows/release.yml)).
+Release is handled by **[Release Please](https://github.com/googleapis/release-please)** in GitHub Actions (see [`.github/workflows/release.yml`](../../.github/workflows/release.yml)).
 
 ## When to Bump Which Digit
 
@@ -43,7 +43,7 @@ bun run anima -- service status   # reads version from status file / health API
 3. `Release` workflow runs **release-please**: opens or updates a **Release PR** (label `autorelease: pending`), accumulating changelog and version bump since last tag
 4. Release PR runs full CI; **maintainers decide when to release**, merge Release PR
 5. After merge, same workflow: `release_created` → tag `vX.Y.Z`, create GitHub Release → `build:cli` + `publish-cli.sh` (npm OIDC)
-6. Push `v*` tag triggers [`.github/workflows/release-docker.yml`](../.github/workflows/release-docker.yml)
+6. Push `v*` tag triggers [`.github/workflows/release-docker.yml`](../../.github/workflows/release-docker.yml)
 
 **Not** one release per `feat`; **one release when Release PR merges** (accumulating multiple commits).
 
@@ -79,7 +79,7 @@ Specify version in commit body with `Release-As: x.y.z` (see [Release Please doc
 
 ### Version Manifest
 
-[`.release-please-manifest.json`](../.release-please-manifest.json) records current published version; must match latest `v*` tag and root `package.json`; auto-updated by Release Please after release.
+[`.release-please-manifest.json`](../../.release-please-manifest.json) records current published version; must match latest `v*` tag and root `package.json`; auto-updated by Release Please after release.
 
 ## Bun Global Package and Docker Image
 
@@ -87,7 +87,7 @@ After Release PR merge and `release_created`:
 
 1. **`bun run build:cli`** — produces `cli/publish/` (`@freeanima/cli` tarball contents)
 2. **`scripts/publish-cli.sh`** — `npm publish` + GitHub Actions OIDC (npm CLI ≥ 11.5.1); local manual publish: `bun run publish:cli` (requires `npm login`)
-3. **Docker image** — on `v*` tag push, [`.github/workflows/release-docker.yml`](../.github/workflows/release-docker.yml) builds and pushes to `ghcr.io/freeanima-org/freeanima:latest` and `:vX.Y.Z`
+3. **Docker image** — on `v*` tag push, [`.github/workflows/release-docker.yml`](../../.github/workflows/release-docker.yml) builds and pushes to `ghcr.io/freeanima-org/freeanima:latest` and `:vX.Y.Z`
 
 ### npm Trusted Publishing (Sole CI Publish Path)
 

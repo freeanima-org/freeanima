@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-10 17:00+0800\n"
+"POT-Creation-Date: 2026-06-10 17:52+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,24 +17,30 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Plain text
-#: docs/README.md:1 docs/compression.md:1 docs/compression.md:11
-#: docs/compression.md:22 docs/compression.md:49 docs/compression.md:96
-#: docs/compression.md:118 docs/compression.md:156 docs/compression.md:180
-#: docs/compression.md:228 docs/compression.md:262 docs/compression.md:275
-#: docs/compression.md:327 docs/compression.md:348 docs/compression.md:368
-#: docs/compression.md:384 docs/database.md:1 docs/database.md:33
-#: docs/designs/desktop-companion.md:1 docs/designs/execute-code-runtimes.md:1
-#: docs/designs/issue-1-migration-plan.md:1
-#: docs/designs/pair-programming-v1.md:1
-#: docs/designs/pair-programming-v1.md:321 docs/designs/probe-architecture.md:1
-#: docs/designs/probe-architecture.md:165 docs/designs/recall-flow.md:1
-#: docs/designs/time-perception.md:1 docs/identity.md:1 docs/identity.md:10
-#: docs/identity.md:28 docs/identity.md:45 docs/identity.md:55 docs/memory.md:1
-#: docs/memory.md:17 docs/memory.md:53 docs/memory.md:160 docs/memory.md:191
-#: docs/memory.md:211 docs/memory.md:232 docs/memory.md:249 docs/security.md:1
-#: docs/self-layer.md:1 docs/self-layer.md:31 docs/self-layer.md:53
-#: docs/self-layer.md:64 docs/self-layer.md:78 docs/self-layer.md:94
-#: docs/self-layer.md:105 docs/sleep.md:1 docs/versioning.md:1
+#: docs/README.md:1 docs/concepts/architecture.md:1
+#: docs/concepts/compression.md:1 docs/concepts/compression.md:11
+#: docs/concepts/compression.md:22 docs/concepts/compression.md:49
+#: docs/concepts/compression.md:96 docs/concepts/compression.md:118
+#: docs/concepts/compression.md:156 docs/concepts/compression.md:180
+#: docs/concepts/compression.md:228 docs/concepts/compression.md:262
+#: docs/concepts/compression.md:275 docs/concepts/compression.md:327
+#: docs/concepts/compression.md:348 docs/concepts/compression.md:368
+#: docs/concepts/compression.md:384 docs/concepts/identity.md:1
+#: docs/concepts/identity.md:10 docs/concepts/identity.md:28
+#: docs/concepts/identity.md:45 docs/concepts/identity.md:55
+#: docs/concepts/memory.md:1 docs/concepts/memory.md:17
+#: docs/concepts/memory.md:53 docs/concepts/memory.md:160
+#: docs/concepts/memory.md:191 docs/concepts/memory.md:211
+#: docs/concepts/memory.md:232 docs/concepts/memory.md:249
+#: docs/concepts/recall-flow.md:1 docs/concepts/self-layer.md:1
+#: docs/concepts/self-layer.md:31 docs/concepts/self-layer.md:53
+#: docs/concepts/self-layer.md:64 docs/concepts/self-layer.md:78
+#: docs/concepts/self-layer.md:94 docs/concepts/self-layer.md:105
+#: docs/concepts/sleep.md:1 docs/concepts/time-perception.md:1
+#: docs/features/pair-programming-v1.md:1
+#: docs/features/pair-programming-v1.md:321 docs/guide/database.md:1
+#: docs/guide/database.md:33 docs/guide/security.md:1
+#: docs/guide/versioning.md:1 docs/tools/execute-code-runtimes.md:1
 #, no-wrap
 msgid "---\n"
 msgstr ""
@@ -62,42 +68,65 @@ msgstr ""
 
 #. type: Plain text
 #: docs/README.md:10
-msgid "## Topic Index"
+msgid "## Guide — 使用与维护"
 msgstr ""
 
 #. type: Plain text
-#: docs/README.md:22
+#: docs/README.md:16
 #, no-wrap
 msgid ""
-"| Topic | File |\n"
-"| ----- | ---- |\n"
-"| Digital life positioning | [identity.md](identity.md) |\n"
-"| Self layer | [self-layer.md](self-layer.md) |\n"
-"| Memory system | [memory.md](memory.md) |\n"
-"| Compression | [compression.md](compression.md) |\n"
-"| Sleep mechanism | [sleep.md](sleep.md) |\n"
-"| Security | [security.md](security.md) |\n"
-"| Database | [database.md](database.md) |\n"
-"| Release | [versioning.md](versioning.md) |\n"
-"| Design drafts | [designs/](designs/) |\n"
+"| Topic    | File                                       |\n"
+"| -------- | ------------------------------------------ |\n"
+"| Security | [guide/security.md](guide/security.md)     |\n"
+"| Database | [guide/database.md](guide/database.md)     |\n"
+"| Release  | [guide/versioning.md](guide/versioning.md) |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/README.md:24
-msgid "## Design Draft Status (Summary)"
+#: docs/README.md:18
+msgid "## Concepts — 核心概念"
 msgstr ""
 
 #. type: Plain text
-#: docs/README.md:33
+#: docs/README.md:29
 #, no-wrap
 msgid ""
-"| File | Status |\n"
-"| ---- | ------ |\n"
-"| [recall-flow.md](designs/recall-flow.md) | v1 ✅ implemented; v2 target design in [#47](https://github.com/freeanima-org/freeanima/issues/47) |\n"
-"| [time-perception.md](designs/time-perception.md) | Core ✅; compression summary timestamps in [#5](https://github.com/freeanima-org/freeanima/issues/5) |\n"
-"| [pair-programming-v1.md](designs/pair-programming-v1.md) | Phase 1 ✅; Phase 2 in [#37](https://github.com/freeanima-org/freeanima/issues/37) |\n"
-"| [execute-code-runtimes.md](designs/execute-code-runtimes.md) | P0 ✅ (nodejs); P1–P4 in [#40](https://github.com/freeanima-org/freeanima/issues/40) |\n"
-"| [probe-architecture.md](designs/probe-architecture.md) | Draft; see [#43](https://github.com/freeanima-org/freeanima/issues/43) |\n"
-"| [desktop-companion.md](designs/desktop-companion.md) | Concept; see [#8](https://github.com/freeanima-org/freeanima/issues/8) |\n"
-"| [issue-1-migration-plan.md](designs/issue-1-migration-plan.md) | Archived (migration complete) |\n"
+"| Topic           | File                                                       |\n"
+"| --------------- | ---------------------------------------------------------- |\n"
+"| Architecture    | [concepts/architecture.md](concepts/architecture.md)       |\n"
+"| Identity        | [concepts/identity.md](concepts/identity.md)               |\n"
+"| Self layer      | [concepts/self-layer.md](concepts/self-layer.md)           |\n"
+"| Memory          | [concepts/memory.md](concepts/memory.md)                   |\n"
+"| Compression     | [concepts/compression.md](concepts/compression.md)         |\n"
+"| Sleep           | [concepts/sleep.md](concepts/sleep.md)                     |\n"
+"| Time perception | [concepts/time-perception.md](concepts/time-perception.md) |\n"
+"| Recall flow     | [concepts/recall-flow.md](concepts/recall-flow.md)         |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/README.md:31
+msgid "## Features — 重要产品能力"
+msgstr ""
+
+#. type: Plain text
+#: docs/README.md:35
+#, no-wrap
+msgid ""
+"| Topic            | File                                                               |\n"
+"| ---------------- | ------------------------------------------------------------------ |\n"
+"| Pair programming | [features/pair-programming-v1.md](features/pair-programming-v1.md) |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/README.md:37
+msgid "## Tools — 通用内置工具"
+msgstr ""
+
+#. type: Plain text
+#: docs/README.md:40
+#, no-wrap
+msgid ""
+"| Topic         | File                                                             |\n"
+"| ------------- | ---------------------------------------------------------------- |\n"
+"| Code runtimes | [tools/execute-code-runtimes.md](tools/execute-code-runtimes.md) |\n"
 msgstr ""

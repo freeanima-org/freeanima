@@ -1,4 +1,4 @@
-/** 自我层六块；详见 docs/self-layer.md */
+/** 自我层六块；详见 docs/concepts/self-layer.md */
 export const LIFE_SELF_PACKAGE = "@freeanima/life-self" as const;
 
 export {

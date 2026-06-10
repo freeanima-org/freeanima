@@ -5,10 +5,12 @@ import tailwindcss from "@tailwindcss/vite";
 import { paraglideVitePlugin } from "@inlang/paraglide-js";
 
 import { starlightSidebar } from "./src/lib/sidebar.ts";
+import { docRedirects } from "./src/lib/doc-redirects.ts";
 
 export default defineConfig({
   base: "/",
   site: "https://freeanima.com",
+  redirects: docRedirects,
   vite: {
     plugins: [
       tailwindcss(),
@@ -40,6 +42,11 @@ export default defineConfig({
       },
       sidebar: starlightSidebar,
       customCss: ["./src/styles/global.css", "./src/styles/starlight-custom.css"],
+      expressiveCode: {
+        themes: ["starlight-dark", "starlight-light"],
+        useStarlightDarkModeSwitch: true,
+        styleOverrides: { borderRadius: "0px" },
+      },
     }),
     react(),
   ],

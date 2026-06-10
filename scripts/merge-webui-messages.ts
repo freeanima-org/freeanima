@@ -2,6 +2,7 @@
 /**
  * Merge WebUI Paraglide message keys into messages/en.json（及初始 zh-cn.json 种子）。
  * 日常中文译文请改 po/zh_CN/en.xml.po，再 bun run i18n:po4a 编译 zh-cn.json。
+ * 术语见 i18n/glossary.md。
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";

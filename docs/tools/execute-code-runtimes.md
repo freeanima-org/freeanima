@@ -114,7 +114,7 @@ LLM calls execute_code(code, runtime?)
 
 ## Security
 
-- Always `shell: false` (consistent with `docs/security.md`)
+- Always `shell: false` (consistent with [`guide/security.md`](../guide/security.md))
 - Timeout and `maxBuffer` same as current implementation
 - Before enabling Deno, define `--allow-*` whitelist policy
 - **Do not** auto-guess runtime from code content (avoid misjudgment)

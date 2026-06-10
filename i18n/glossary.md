@@ -1,11 +1,6 @@
----
-title: Glossary
-description: Canonical English terms and Simplified Chinese translations for UI and documentation.
----
-
 # Glossary
 
-Use these terms consistently in Paraglide messages (`messages/en.json`, compiled `messages/zh-cn.json`) and gettext PO (`po/zh_CN/*.po`, including `en.xml.po` for UI strings).
+译者维护 Paraglide（`messages/en.json`、编译产物 `messages/zh-cn.json`）与 gettext PO（`po/zh_CN/*.po`，含 UI 的 `en.xml.po`）时，请统一使用下列术语。
 
 | English (canonical) | 中文      | Notes                                  |
 | ------------------- | --------- | -------------------------------------- |

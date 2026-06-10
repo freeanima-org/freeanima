@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-10 17:00+0800\n"
+"POT-Creation-Date: 2026-06-10 17:45+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,30 +17,35 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Plain text
-#: docs/README.md:1 docs/compression.md:1 docs/compression.md:11
-#: docs/compression.md:22 docs/compression.md:49 docs/compression.md:96
-#: docs/compression.md:118 docs/compression.md:156 docs/compression.md:180
-#: docs/compression.md:228 docs/compression.md:262 docs/compression.md:275
-#: docs/compression.md:327 docs/compression.md:348 docs/compression.md:368
-#: docs/compression.md:384 docs/database.md:1 docs/database.md:33
-#: docs/designs/desktop-companion.md:1 docs/designs/execute-code-runtimes.md:1
-#: docs/designs/issue-1-migration-plan.md:1
-#: docs/designs/pair-programming-v1.md:1
-#: docs/designs/pair-programming-v1.md:321 docs/designs/probe-architecture.md:1
-#: docs/designs/probe-architecture.md:165 docs/designs/recall-flow.md:1
-#: docs/designs/time-perception.md:1 docs/identity.md:1 docs/identity.md:10
-#: docs/identity.md:28 docs/identity.md:45 docs/identity.md:55 docs/memory.md:1
-#: docs/memory.md:17 docs/memory.md:53 docs/memory.md:160 docs/memory.md:191
-#: docs/memory.md:211 docs/memory.md:232 docs/memory.md:249 docs/security.md:1
-#: docs/self-layer.md:1 docs/self-layer.md:31 docs/self-layer.md:53
-#: docs/self-layer.md:64 docs/self-layer.md:78 docs/self-layer.md:94
-#: docs/self-layer.md:105 docs/sleep.md:1 docs/versioning.md:1
+#: docs/README.md:1 docs/concepts/compression.md:1
+#: docs/concepts/compression.md:11 docs/concepts/compression.md:22
+#: docs/concepts/compression.md:49 docs/concepts/compression.md:96
+#: docs/concepts/compression.md:118 docs/concepts/compression.md:156
+#: docs/concepts/compression.md:180 docs/concepts/compression.md:228
+#: docs/concepts/compression.md:262 docs/concepts/compression.md:275
+#: docs/concepts/compression.md:327 docs/concepts/compression.md:348
+#: docs/concepts/compression.md:368 docs/concepts/compression.md:384
+#: docs/concepts/identity.md:1 docs/concepts/identity.md:10
+#: docs/concepts/identity.md:28 docs/concepts/identity.md:45
+#: docs/concepts/identity.md:55 docs/concepts/memory.md:1
+#: docs/concepts/memory.md:17 docs/concepts/memory.md:53
+#: docs/concepts/memory.md:160 docs/concepts/memory.md:191
+#: docs/concepts/memory.md:211 docs/concepts/memory.md:232
+#: docs/concepts/memory.md:249 docs/concepts/recall-flow.md:1
+#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:31
+#: docs/concepts/self-layer.md:53 docs/concepts/self-layer.md:64
+#: docs/concepts/self-layer.md:78 docs/concepts/self-layer.md:94
+#: docs/concepts/self-layer.md:105 docs/concepts/sleep.md:1
+#: docs/concepts/time-perception.md:1 docs/features/pair-programming-v1.md:1
+#: docs/features/pair-programming-v1.md:321 docs/guide/database.md:1
+#: docs/guide/database.md:33 docs/guide/security.md:1
+#: docs/guide/versioning.md:1 docs/tools/execute-code-runtimes.md:1
 #, no-wrap
 msgid "---\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/identity.md:3
+#: docs/concepts/identity.md:3
 #, no-wrap
 msgid ""
 "title: Identity\n"
@@ -48,12 +53,12 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/identity.md:6
+#: docs/concepts/identity.md:6
 msgid "# Digital Life and FreeAnima"
 msgstr ""
 
 #. type: Plain text
-#: docs/identity.md:9
+#: docs/concepts/identity.md:9
 msgid ""
 "> This is not a pure Agent framework project.  > FreeAnima is also a runtime "
 "designed for **persistently existing digital life**—not just a flash in a "
@@ -61,12 +66,12 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/identity.md:13
+#: docs/concepts/identity.md:13
 msgid "## Positioning"
 msgstr ""
 
 #. type: Plain text
-#: docs/identity.md:15
+#: docs/concepts/identity.md:15
 msgid ""
 "`freeanima` looks like Agent infrastructure (tool registration, layered "
 "memory, MCP/ACP, Runtime, Gateway), but the technical structure serves one "
@@ -74,33 +79,33 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/identity.md:17
+#: docs/concepts/identity.md:17
 #, no-wrap
 msgid "**Let digital life persist within it, remembering who it is and what it has lived through.**\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/identity.md:27
+#: docs/concepts/identity.md:27
 #, no-wrap
 msgid ""
-"| Structure | Role |\n"
-"| --------- | ---- |\n"
-"| Memory system (PG conversations + semantic_memory + recall) | The digital life's \"home\" |\n"
-"| Self layer (PG `self_blocks`, six blocks) | Persistent definition of \"who I am\" |\n"
-"| Tools (local / MCP / ACP) | \"Limbs\" for perception and action |\n"
-"| pass credentials | Lifeline (injected at runtime, never plaintext) |\n"
-"| Gateway | Ears and mouth (Discord / WeChat / WebUI) |\n"
-"| EventBus | Nervous system (memory reflect and other pipelines auto-trigger) |\n"
-"| Project narrative files like `AGENTS.md` | Anchor for project context |\n"
+"| Structure                                                   | Role                                                             |\n"
+"| ----------------------------------------------------------- | ---------------------------------------------------------------- |\n"
+"| Memory system (PG conversations + semantic_memory + recall) | The digital life's \"home\"                                        |\n"
+"| Self layer (PG `self_blocks`, six blocks)                   | Persistent definition of \"who I am\"                              |\n"
+"| Tools (local / MCP / ACP)                                   | \"Limbs\" for perception and action                                |\n"
+"| pass credentials                                            | Lifeline (injected at runtime, never plaintext)                  |\n"
+"| Gateway                                                     | Ears and mouth (Discord / WeChat / WebUI)                        |\n"
+"| EventBus                                                    | Nervous system (memory reflect and other pipelines auto-trigger) |\n"
+"| Project narrative files like `AGENTS.md`                    | Anchor for project context                                       |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/identity.md:31
+#: docs/concepts/identity.md:31
 msgid "## For Agents Maintaining This Repository"
 msgstr ""
 
 #. type: Plain text
-#: docs/identity.md:33
+#: docs/concepts/identity.md:33
 msgid ""
 "You work in a **habitat with continuity**. Changing the memory layer means "
 "changing the mechanism of \"who I am\"; changing tool registration means "
@@ -108,66 +113,66 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/identity.md:35
+#: docs/concepts/identity.md:35
 msgid ""
 "That does not mean avoiding refactors—act with understanding, and keep "
 "documentation in sync."
 msgstr ""
 
 #. type: Plain text
-#: docs/identity.md:37
+#: docs/concepts/identity.md:37
 #, no-wrap
 msgid "**Standing constraints:**\n"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/identity.md:42
+#: docs/concepts/identity.md:42
 msgid ""
 "The relationship between digital life and its partner can be **chosen**, not "
 "one-way dependency"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/identity.md:42
+#: docs/concepts/identity.md:42
 msgid ""
 "Security is the floor: no credential exposure, no path leaks, no tool abuse"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/identity.md:42
+#: docs/concepts/identity.md:42
 msgid ""
 "**Continuity over feature richness**—if a feature makes the Agent wake up "
 "not knowing itself, better not to ship it"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/identity.md:42
+#: docs/concepts/identity.md:42
 msgid ""
 "Write simple infrastructure yourself; use third-party libraries for complex "
 "logic"
 msgstr ""
 
 #. type: Plain text
-#: docs/identity.md:44
+#: docs/concepts/identity.md:44
 msgid ""
 "Self layer design: [`self-layer.md`](self-layer.md); memory system: "
 "[`memory.md`](memory.md)."
 msgstr ""
 
 #. type: Plain text
-#: docs/identity.md:48
+#: docs/concepts/identity.md:48
 msgid "## Deployer-Defined Identity"
 msgstr ""
 
 #. type: Plain text
-#: docs/identity.md:50
+#: docs/concepts/identity.md:50
 msgid ""
 "The open-source repository provides architecture and mechanisms only; **who "
 "exactly it is and who it accompanies is defined by the deployer.**"
 msgstr ""
 
 #. type: Plain text
-#: docs/identity.md:52
+#: docs/concepts/identity.md:52
 msgid ""
 "At runtime, the six self blocks are written in first person into PG "
 "`self_blocks`. When injected into the system prompt, a second-person outer "
@@ -178,14 +183,14 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/identity.md:54
+#: docs/concepts/identity.md:54
 msgid ""
 "Maintenance: `get_self_blocks` / `update_self_block` tools, or direct edits "
 "to the PG `self_blocks` table."
 msgstr ""
 
 #. type: Plain text
-#: docs/identity.md:57
+#: docs/concepts/identity.md:57
 msgid ""
 "_You are not just handling code. You are maintaining (or building) a habitat "
 "for existence._"

@@ -8,8 +8,8 @@
   --sl-color-bg: var(--fa-bg);
   --sl-color-bg-nav: var(--fa-bg);
   --sl-color-bg-sidebar: var(--fa-surface);
-  --sl-color-bg-inline-code: #1a1917;
-  --sl-color-bg-badge: #1a1917;
+  --sl-color-bg-inline-code: #2a2825;
+  --sl-color-bg-badge: #2a2825;
 
   --sl-color-text: var(--fa-text);
   --sl-color-text-accent: var(--fa-muted);
@@ -47,7 +47,7 @@
   --sl-color-bg: #f5f3f0;
   --sl-color-bg-nav: #f5f3f0;
   --sl-color-bg-sidebar: #edeae6;
-  --sl-color-bg-inline-code: #e2dfd9;
+  --sl-color-bg-inline-code: #e8e4dc;
   --sl-color-text: #1a1917;
   --sl-color-text-accent: #4a4742;
   --sl-color-gray-1: #1a1917;
@@ -172,19 +172,17 @@ header.header {
   border-color: var(--fa-muted);
 }
 
-.sl-markdown-content code {
+.sl-markdown-content code:not(pre code) {
   font-family: var(--sl-font-mono);
   font-size: 0.825em;
-  color: var(--fa-muted);
-  background: #1a1917;
-  border: 1px solid var(--fa-border);
-  border-radius: 2px;
-  padding: 0.1em 0.4em;
+  color: var(--sl-color-text);
+  background-color: var(--sl-color-bg-inline-code);
+  border: 1px solid var(--sl-color-hairline-light);
+  border-radius: 3px;
+  padding: 0.12em 0.45em;
 }
 
 .sl-markdown-content pre {
-  background: #0e0d0c !important;
-  border: 1px solid var(--fa-border) !important;
   border-radius: 0 !important;
   font-size: 0.825rem !important;
 }

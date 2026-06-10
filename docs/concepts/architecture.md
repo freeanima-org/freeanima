@@ -1,3 +1,7 @@
+---
+title: Architecture
+---
+
 # 逸灵风 architecture
 
 这里放系统级约束、长期不轻易变的设计原则。
@@ -29,7 +33,7 @@
 │    └── 方向意图（direction）                      │
 │    └── 元认知（metacognition）                    │
 │    └── 自传概括（autobiography_summary，只追加）  │
-│    详见 [`docs/self-layer.md`](docs/self-layer.md) │
+│    详见 [`self-layer.md`](self-layer.md) │
 ├───────────────────────────────────────────────┤
 │ ③ 记忆层（Memory）                               │
 │    回答："我知道/记得什么"                        │
@@ -37,7 +41,7 @@
 │    └── 情景记忆（Episodic）                      │
 │    └── 程序记忆（Procedural）                    │
 │    └── 感性记忆（Limbic / Imprint）              │
-│    详见 [`docs/memory.md`](docs/memory.md)       │
+│    详见 [`memory.md`](memory.md)       │
 ├───────────────────────────────────────────────┤
 │ ④ 资源层（Estate）                               │
 │    回答："我拥有/依靠什么"                        │
@@ -75,7 +79,7 @@
 - 活动：角色扮演 / 游戏 / 创作 / 编程 / 阅读
 - 氛围：轻松 / 专注 / 深夜 / 亲密 / 紧急
 
-**运行方式：** 持续运行，不依赖明确的切换指令。通过对话内容、时间、频率等信号动态判断。详见 [`docs/designs/time-perception.md`](docs/designs/time-perception.md)。
+**运行方式：** 持续运行，不依赖明确的切换指令。通过对话内容、时间、频率等信号动态判断。详见 [`time-perception.md`](time-perception.md)。
 
 ### 能力面罩（Capability Mask）
 
@@ -112,7 +116,7 @@ Agent 的行为输出
 - 能力面罩约束"我能做什么" → 防止跨场景工具误用
 - 两者在最终行为中交汇，但各自独立演化
 
-需要细化设计方案时，拆为 `docs/designs/scene-awareness.md` 和 `docs/designs/capability-masks.md`。
+需要细化设计方案时，开 GitHub Issue（不在 docs 维护设计稿目录）。
 
 ## 记忆存储（摘要）
 
@@ -123,7 +127,7 @@ Agent 的行为输出
 | 情景检索 | `messages.content_fts`  | 历史对话全文索引                                      |
 | 感性记忆 | `limbic_memory`         | 情感锚点（浅睡 Stage 2 写入）                         |
 
-管道：浅睡 / 深睡 cron + `memory_recall` PG FTS 双源检索。细节见 [`docs/memory.md`](docs/memory.md)。
+管道：浅睡 / 深睡 cron + `memory_recall` PG FTS 双源检索。细节见 [`memory.md`](memory.md)。
 
 ## 凭证系统（摘要）
 
@@ -361,7 +365,7 @@ anima service status
 # 浏览器访问 http://127.0.0.1:2658/webui/parlor/chat
 ```
 
-WebUI 由 [`connectors/webui/src/webui-server.ts`](connectors/webui/src/webui-server.ts) 在 `serve()` 内启动：默认对 `connectors/webui/app/index.html` 做 AOT 构建，产物缓存于 `~/.anima/runtime/webui-build/{hash}/`（源码 hash 未变则跳过重建）；`--dev` 写入 `~/.anima/runtime/webui-dev-build/` 并 `Bun.build` watch 增量重建（静态 Serving，非 HTMLBundle HMR）。Tailwind 经 `bun-plugin-tailwind` 在 `Bun.build` 中显式注入。
+WebUI 由 [`connectors/webui/src/webui-server.ts`](../../connectors/webui/src/webui-server.ts) 在 `serve()` 内启动：默认对 `connectors/webui/app/index.html` 做 AOT 构建，产物缓存于 `~/.anima/runtime/webui-build/{hash}/`（源码 hash 未变则跳过重建）；`--dev` 写入 `~/.anima/runtime/webui-dev-build/` 并 `Bun.build` watch 增量重建（静态 Serving，非 HTMLBundle HMR）。Tailwind 经 `bun-plugin-tailwind` 在 `Bun.build` 中显式注入。
 
 ## 事件系统
 
@@ -384,7 +388,7 @@ conversation 落盘 → emit("session:updated")
 
 ### Hooks（`@freeanima/kernel-hooks`）
 
-**同步 interceptor 模式。** 注册表在 `@freeanima/kernel-hooks`：`run(context)` 返回 `HookRunResult`（`context` 只读、`chain` 经 `prev` 串联；聚合 `blocked` / `blockedMessage`）。领域 **context 类型** 在 [`kernel/hooks/src/domain-hooks.ts`](kernel/hooks/src/domain-hooks.ts)；`kernel` 单例见 [`service/bootstrap/src/kernel.ts`](service/bootstrap/src/kernel.ts)。
+**同步 interceptor 模式。** 注册表在 `@freeanima/kernel-hooks`：`run(context)` 返回 `HookRunResult`（`context` 只读、`chain` 经 `prev` 串联；聚合 `blocked` / `blockedMessage`）。领域 **context 类型** 在 [`kernel/hooks/src/domain-hooks.ts`](../../kernel/hooks/src/domain-hooks.ts)；`kernel` 单例见 [`service/bootstrap/src/kernel.ts`](../../service/bootstrap/src/kernel.ts)。
 
 语义要点：
 
@@ -416,8 +420,8 @@ conversation 落盘 → emit("session:updated")
 ## 版本与发布
 
 - 版本号遵循 **SemVer 2.0.0**；根 `package.json` 的 `version` 为写入源。
-- 发版流程：根 `package.json` 的 `version` + `CHANGELOG.md` 由 **Release Please** 在 Release PR 合并时更新（见 [docs/versioning.md](docs/versioning.md)）。
-- bump 规则与逐步命令见 [`docs/versioning.md`](docs/versioning.md)。
+- 发版流程：根 `package.json` 的 `version` + `CHANGELOG.md` 由 **Release Please** 在 Release PR 合并时更新（见 [versioning.md](../guide/versioning.md)）。
+- bump 规则与逐步命令见 [`versioning.md`](../guide/versioning.md)。
 
 ## 方向
 
@@ -426,6 +430,6 @@ conversation 落盘 → emit("session:updated")
 ## 约束
 
 - 原则与结构写在本文件；不写具体待办
-- 会周变的实现细节以代码为准；长期专题进 `docs/*.md`（见 `AGENTS.md` 文档地图）
+- 会周变的实现细节以代码为准；长期专题进 `docs/`（见 `AGENTS.md` 文档地图）
 - 可执行任务与讨论项开 GitHub Issue；完成后 close Issue
 - 用户可见的发布级变更进 `CHANGELOG.md`（发版时）

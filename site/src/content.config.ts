@@ -23,7 +23,13 @@ export const collections = {
     loader: glob(
       {
         base: docsRoot,
-        pattern: ["*.{md,mdx}", "designs/**/*.{md,mdx}"],
+        pattern: [
+          "README.md",
+          "guide/**/*.{md,mdx}",
+          "concepts/**/*.{md,mdx}",
+          "features/**/*.{md,mdx}",
+          "tools/**/*.{md,mdx}",
+        ],
         generateId: ({ entry }) => docsEntryId(entry),
       },
       {

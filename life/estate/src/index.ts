@@ -1,4 +1,4 @@
-/** 资源层（笔记/凭证/资产）；详见 ARCHITECTURE.md 与 docs/security.md */
+/** 资源层（笔记/凭证/资产）；详见 docs/concepts/architecture.md 与 docs/guide/security.md */
 import type { ToolSetRegistry } from "@freeanima/engine-tool";
 import { registerEmailTools } from "./email/tools.ts";
 

@@ -5,7 +5,7 @@ title: Self Layer
 # Self Layer
 
 > Definition: A persistent structure about "who I am", parallel to the Memory Layer, forming FreeAnima's two storage pillars.
-> Memory layer: [`memory.md`](memory.md); detailed autobiographical narrative: [`database.md`](database.md) §Slice C `autobiographical_memory`.
+> Memory layer: [`memory.md`](memory.md); detailed autobiographical narrative: [`database.md`](../guide/database.md) §Slice C `autobiographical_memory`.
 
 ## Architectural Position
 
@@ -54,7 +54,7 @@ FreeAnima Storage Architecture
 
 ## Storage and Ports
 
-- **Table:** `self_blocks` ([`engine/db/src/schema/self-layer.ts`](../engine/db/src/schema/self-layer.ts))
+- **Table:** `self_blocks` ([`engine/db/src/schema/self-layer.ts`](../../engine/db/src/schema/self-layer.ts))
 - **Port:** `SelfLayerStorePort` (`engine-repos`) → `PgSelfLayerStore` (`connectors-db-pg`)
 - **Consumer:** `@freeanima/life-self` (prompt assembly, tools `get_self_blocks` / `update_self_block`)
 - **Wiring:** `serve.ts` calls `registerSelfLayerStore` and warms `loadSelfLayerPrompt()` cache
@@ -79,7 +79,7 @@ See [`sleep.md`](sleep.md) §Autobiography cron.
 
 ## System Prompt Injection
 
-Assembly order ([`life-memory/system-prompt`](../life/memory/src/system-prompt.ts) + [`system-prompt-wire`](../service/service/src/runtime/system-prompt-wire.ts)):
+Assembly order ([`life-memory/system-prompt`](../../life/memory/src/system-prompt.ts) + [`system-prompt-wire`](../../service/service/src/runtime/system-prompt-wire.ts)):
 
 ````
 1. Self layer (second-person skeleton + six blocks embedded in ```md)  ← loadSelfLayerPrompt() / self_blocks
