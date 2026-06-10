@@ -1,0 +1,187 @@
+---
+const LAYERS = [
+  { id: "self", zh: "自我层", label: "「我是谁」", en: "IDENTITY" },
+  { id: "memory", zh: "记忆层", label: "「我经历过什么」", en: "MEMORY" },
+  { id: "perception", zh: "感知层", label: "「我如何行动」", en: "PERCEPTION" },
+  { id: "resource", zh: "资源层", label: "「我的身体与资产」", en: "RESOURCE" },
+];
+
+const LAYER_H = 72;
+const SVG_W = 640;
+const LEFT_PAD = 100;
+const RIGHT_PAD = 100;
+const BLOCK_W = SVG_W - LEFT_PAD - RIGHT_PAD;
+const TOTAL_H = LAYERS.length * LAYER_H;
+const SVG_H = TOTAL_H + 40;
+const YEAR = String(new Date().getFullYear());
+---
+
+<div class="blueprint-diagram">
+  <svg viewBox={`0 0 ${SVG_W} ${SVG_H}`} aria-label="Free Anima 四层架构示意图">
+    {
+      LAYERS.map((layer, i) => {
+        const y = i * LAYER_H;
+        const isTop = i === 0;
+        const isBottom = i === LAYERS.length - 1;
+        const idx = String(i + 1).padStart(2, "0");
+        const midY = y + LAYER_H / 2;
+
+        return (
+          <g>
+            <rect
+              x={LEFT_PAD}
+              y={y}
+              width={BLOCK_W}
+              height={LAYER_H}
+              fill="none"
+              stroke="var(--fa-border)"
+              stroke-width="1"
+            />
+
+            {isTop && (
+              <g>
+                <line x1={LEFT_PAD} y1={y} x2={LEFT_PAD - 8} y2={y} stroke="var(--fa-dim)" stroke-width="1" />
+                <line x1={LEFT_PAD} y1={y} x2={LEFT_PAD} y2={y + 8} stroke="var(--fa-dim)" stroke-width="1" />
+                <line
+                  x1={LEFT_PAD + BLOCK_W}
+                  y1={y}
+                  x2={LEFT_PAD + BLOCK_W + 8}
+                  y2={y}
+                  stroke="var(--fa-dim)"
+                  stroke-width="1"
+                />
+                <line
+                  x1={LEFT_PAD + BLOCK_W}
+                  y1={y}
+                  x2={LEFT_PAD + BLOCK_W}
+                  y2={y + 8}
+                  stroke="var(--fa-dim)"
+                  stroke-width="1"
+                />
+              </g>
+            )}
+
+            {isBottom && (
+              <g>
+                <line
+                  x1={LEFT_PAD}
+                  y1={y + LAYER_H}
+                  x2={LEFT_PAD - 8}
+                  y2={y + LAYER_H}
+                  stroke="var(--fa-dim)"
+                  stroke-width="1"
+                />
+                <line
+                  x1={LEFT_PAD}
+                  y1={y + LAYER_H}
+                  x2={LEFT_PAD}
+                  y2={y + LAYER_H - 8}
+                  stroke="var(--fa-dim)"
+                  stroke-width="1"
+                />
+                <line
+                  x1={LEFT_PAD + BLOCK_W}
+                  y1={y + LAYER_H}
+                  x2={LEFT_PAD + BLOCK_W + 8}
+                  y2={y + LAYER_H}
+                  stroke="var(--fa-dim)"
+                  stroke-width="1"
+                />
+                <line
+                  x1={LEFT_PAD + BLOCK_W}
+                  y1={y + LAYER_H}
+                  x2={LEFT_PAD + BLOCK_W}
+                  y2={y + LAYER_H - 8}
+                  stroke="var(--fa-dim)"
+                  stroke-width="1"
+                />
+              </g>
+            )}
+
+            <text
+              x={LEFT_PAD + 16}
+              y={midY + 4}
+              fill="var(--fa-dim)"
+              font-size="9"
+              font-family="var(--font-mono)"
+              letter-spacing="0.12em"
+            >
+              {idx}
+            </text>
+
+            <text
+              x={LEFT_PAD + 48}
+              y={midY - 8}
+              fill="var(--fa-muted)"
+              font-size="13"
+              font-family="var(--font-sans)"
+              font-weight="300"
+              letter-spacing="0.04em"
+            >
+              {layer.zh}
+            </text>
+
+            <text
+              x={LEFT_PAD + 48}
+              y={midY + 10}
+              fill="var(--fa-dim)"
+              font-size="10"
+              font-family="var(--font-sans)"
+              font-weight="300"
+              letter-spacing="0.02em"
+            >
+              {layer.label}
+            </text>
+
+            <text
+              x={LEFT_PAD + BLOCK_W - 16}
+              y={midY + 4}
+              fill="var(--fa-dim)"
+              font-size="9"
+              font-family="var(--font-mono)"
+              letter-spacing="0.18em"
+              text-anchor="end"
+            >
+              {layer.en}
+            </text>
+          </g>
+        );
+      })
+    }
+
+    <text
+      x={LEFT_PAD}
+      y={TOTAL_H + 28}
+      fill="var(--fa-dim)"
+      font-size="9"
+      font-family="var(--font-mono)"
+      letter-spacing="0.12em"
+    >
+      FREE ANIMA · ARCHITECTURE v0.1 · MIT LICENSE
+    </text>
+
+    <text
+      x={LEFT_PAD + BLOCK_W}
+      y={TOTAL_H + 28}
+      fill="var(--fa-dim)"
+      font-size="9"
+      font-family="var(--font-mono)"
+      letter-spacing="0.08em"
+      text-anchor="end"
+    >
+      {YEAR}
+    </text>
+  </svg>
+</div>
+
+<style>
+  .blueprint-diagram {
+    overflow-x: auto;
+  }
+
+  .blueprint-diagram svg {
+    width: 100%;
+    max-width: 640px;
+    display: block;
+  }
+</style>

@@ -64,7 +64,7 @@ function handleAskQuestion(
     const pending: CursorPendingQuestions = { kind: "questions", questions };
     ctx.capture.pending.push(pending);
     ctx.capture.notes.push(
-      `Cursor 提出问题（${questions.length} 个），已暂停等待决策。请自主回答或调用 clarify 询问天空，然后通过 acp_cursor（continue_session=true）继续。`,
+      `Cursor 提出问题（${questions.length} 个），已暂停等待决策。请自主回答或调用 clarify 询问伙伴，然后通过 acp_cursor（continue_session=true）继续。`,
     );
   }
 

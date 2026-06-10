@@ -62,7 +62,7 @@ describePg("tasks tool", () => {
         const tool = toolSets.getTool("tasks_create")!;
         output = await Promise.resolve(
           tool.handler({
-            title: "找天空聊UI",
+            title: "讨论 UI 方案",
             priority: "high",
           }),
         );
@@ -81,17 +81,17 @@ describePg("tasks tool", () => {
       };
     };
     expect(parsed.ok).toBe(true);
-    expect(parsed.task.title).toBe("找天空聊UI");
+    expect(parsed.task.title).toBe("讨论 UI 方案");
     expect(parsed.task.status).toBe("pending");
     expect(parsed.task.priority).toBe("high");
     expect(parsed.task.source_session_id).toBe(sid);
 
     const row = await repos.tasks.get(parsed.task.id);
-    expect(row?.title).toBe("找天空聊UI");
+    expect(row?.title).toBe("讨论 UI 方案");
 
     expect(summaryWrites.some((w) => w.module === "tasks" && w.id === "summary")).toBe(true);
     expect(summaryWrites.at(-1)?.value).toContain("待办 (1)");
-    expect(summaryWrites.at(-1)?.value).toContain("找天空聊UI");
+    expect(summaryWrites.at(-1)?.value).toContain("讨论 UI 方案");
   });
 
   it("list_tasks 默认仅 pending + in_progress", async () => {

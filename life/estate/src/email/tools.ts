@@ -28,7 +28,7 @@ export function registerEmailTools(toolSets: ToolSetRegistry): void {
           id: { type: "string", description: "账户 ID（config 内唯一标识）" },
           password: {
             type: "string",
-            description: '密码引用，如 credential("email/feng-fengtrace", "password")',
+            description: '密码引用，如 credential("email/example", "password")',
           },
           address: { type: "string", description: "邮箱地址" },
           display_name: { type: "string", description: "发件显示名" },

@@ -14,10 +14,10 @@ import {
 import type { EmailAccount } from "./email/types.ts";
 
 const sampleAccount: EmailAccount = {
-  id: "feng-fengtrace",
-  password: 'credential("email/feng-fengtrace", "password")',
-  address: "feng@fengtrace.com",
-  display_name: "Feng",
+  id: "main-inbox",
+  password: 'credential("email/example", "password")',
+  address: "you@example.com",
+  display_name: "Example User",
   smtp_host: "smtp.example.com",
   smtp_port: 465,
   imap_host: "imap.example.com",
@@ -62,7 +62,7 @@ describe("email accounts", () => {
     serviceConfig.patchConfigSection("email", { accounts: [sampleAccount] });
     const accounts = listEmailAccounts();
     expect(accounts).toHaveLength(1);
-    expect(accounts[0]?.password).toBe('credential("email/feng-fengtrace", "password")');
+    expect(accounts[0]?.password).toBe('credential("email/example", "password")');
   });
 
   it("editEmailAccount 更新字段并处理 default_sender 互斥", () => {
@@ -71,33 +71,33 @@ describe("email accounts", () => {
         sampleAccount,
         {
           ...sampleAccount,
-          id: "feng.grass.show",
-          password: 'credential("email/feng.grass.show", "token")',
-          address: "feng@grass.show",
+          id: "backup-inbox",
+          password: 'credential("email/backup", "token")',
+          address: "backup@example.com",
           default_sender: false,
         },
       ],
     });
 
-    editEmailAccount("feng.grass.show", { default_sender: true });
+    editEmailAccount("backup-inbox", { default_sender: true });
     const accounts = listEmailAccounts();
-    const primary = accounts.find((a) => a.id === "feng-fengtrace");
-    const secondary = accounts.find((a) => a.id === "feng.grass.show");
+    const primary = accounts.find((a) => a.id === "main-inbox");
+    const secondary = accounts.find((a) => a.id === "backup-inbox");
     expect(primary?.default_sender).toBe(false);
     expect(secondary?.default_sender).toBe(true);
   });
 
   it("deleteEmailAccount 删除账户", () => {
     serviceConfig.patchConfigSection("email", { accounts: [sampleAccount] });
-    deleteEmailAccount("feng-fengtrace");
+    deleteEmailAccount("main-inbox");
     expect(listEmailAccounts()).toHaveLength(0);
   });
 
   it("getDefaultSender 与 resolveAccount", () => {
     serviceConfig.patchConfigSection("email", { accounts: [sampleAccount] });
-    expect(getDefaultSender()?.id).toBe("feng-fengtrace");
-    expect(resolveAccount().id).toBe("feng-fengtrace");
-    expect(resolveAccount("feng-fengtrace").address).toBe("feng@fengtrace.com");
+    expect(getDefaultSender()?.id).toBe("main-inbox");
+    expect(resolveAccount().id).toBe("main-inbox");
+    expect(resolveAccount("main-inbox").address).toBe("you@example.com");
   });
 
   it("registerEmailAccount 在 pass 缺失时报错", async () => {

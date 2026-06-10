@@ -1,14 +1,24 @@
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500&family=IBM+Plex+Mono:wght@400&family=Noto+Sans+SC:wght@300;400;500&display=swap");
 @import "tailwindcss";
 
 :root {
-  --color-bg: #0a0a0b;
-  --color-text: #e8e6e3;
-  --color-text-secondary: #b8b4ad;
-  --color-text-muted: #9c9890;
-  --color-text-faint: #8a8782;
-  --color-text-dim: #5c5954;
-  --color-border: #3a3834;
+  --fa-bg: #0a0a0b;
+  --fa-text: #e8e6e3;
+  --fa-muted: #b8b4ad;
+  --fa-dim: #9c9890;
+  --fa-faint: #5a5650;
+  --fa-border: #3a3834;
+  --fa-surface: #111110;
+
+  --color-bg: var(--fa-bg);
+  --color-text: var(--fa-text);
+  --color-text-secondary: var(--fa-muted);
+  --color-text-muted: var(--fa-dim);
+  --color-text-faint: var(--fa-faint);
+  --color-text-dim: var(--fa-faint);
+  --color-border: var(--fa-border);
   --font-sans: "IBM Plex Sans", "Noto Sans SC", system-ui, -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", "Fira Code", monospace;
 }
 
 @theme {
@@ -29,6 +39,8 @@ body {
   background: var(--color-bg);
   color: var(--color-text);
   font-family: var(--font-sans);
+  font-weight: 300;
+  letter-spacing: 0.01em;
   -webkit-font-smoothing: antialiased;
 }
 

@@ -1,0 +1,309 @@
+/* ============================================================
+   Free Anima — Starlight Custom Theme
+   ============================================================ */
+
+/* ---------- Color tokens (dark mode — Starlight defaults to dark) ---------- */
+:root[data-theme="dark"],
+:root {
+  --sl-color-bg: var(--fa-bg);
+  --sl-color-bg-nav: var(--fa-bg);
+  --sl-color-bg-sidebar: var(--fa-surface);
+  --sl-color-bg-inline-code: #1a1917;
+  --sl-color-bg-badge: #1a1917;
+
+  --sl-color-text: var(--fa-text);
+  --sl-color-text-accent: var(--fa-muted);
+  --sl-color-gray-1: var(--fa-text);
+  --sl-color-gray-2: var(--fa-muted);
+  --sl-color-gray-3: var(--fa-dim);
+  --sl-color-gray-4: var(--fa-faint);
+  --sl-color-gray-5: #3a3834;
+  --sl-color-gray-6: #1e1c1a;
+  --sl-color-black: var(--fa-bg);
+  --sl-color-white: var(--fa-text);
+
+  --sl-color-accent-low: #2a2825;
+  --sl-color-accent: #9c9890;
+  --sl-color-accent-high: var(--fa-text);
+
+  --sl-color-hairline-light: var(--fa-border);
+  --sl-color-hairline-shade: var(--fa-border);
+
+  --sl-font: var(--font-sans);
+  --sl-font-mono: var(--font-mono);
+  --sl-text-xs: 0.7rem;
+  --sl-text-sm: 0.8rem;
+  --sl-text-base: 0.9375rem;
+  --sl-text-lg: 1.125rem;
+  --sl-text-xl: 1.375rem;
+  --sl-text-2xl: 1.75rem;
+  --sl-text-3xl: 2.25rem;
+  --sl-text-4xl: 3rem;
+  --sl-text-5xl: 3.75rem;
+}
+
+/* Light mode — muted inversion, keeps warm feel */
+:root[data-theme="light"] {
+  --sl-color-bg: #f5f3f0;
+  --sl-color-bg-nav: #f5f3f0;
+  --sl-color-bg-sidebar: #edeae6;
+  --sl-color-bg-inline-code: #e2dfd9;
+  --sl-color-text: #1a1917;
+  --sl-color-text-accent: #4a4742;
+  --sl-color-gray-1: #1a1917;
+  --sl-color-gray-2: #3a3834;
+  --sl-color-gray-3: #5a5650;
+  --sl-color-gray-4: #9c9890;
+  --sl-color-gray-5: #c8c4bd;
+  --sl-color-gray-6: #e2dfd9;
+  --sl-color-accent-low: #dedad4;
+  --sl-color-accent: #5a5650;
+  --sl-color-accent-high: #1a1917;
+  --sl-color-hairline-light: #d0cdc7;
+  --sl-color-hairline-shade: #b8b4ad;
+}
+
+/* ---------- Starlight header integration ---------- */
+.header {
+  padding: 0;
+}
+
+.site-header--embedded {
+  border-bottom: none;
+  padding-inline: 0;
+}
+
+header.header {
+  border-bottom: 1px solid var(--fa-border) !important;
+  background: var(--fa-bg) !important;
+  backdrop-filter: none;
+}
+
+.site-title {
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  font-size: 0.875rem;
+  color: var(--fa-text) !important;
+}
+
+/* ---------- Sidebar ---------- */
+.sidebar-pane {
+  border-right: 1px solid var(--fa-border) !important;
+  background: var(--fa-surface) !important;
+}
+
+.sidebar nav > ul > li > details > summary,
+.sidebar-section-label,
+[class*="sectionLabel"] {
+  font-size: 0.7rem !important;
+  letter-spacing: 0.16em !important;
+  text-transform: uppercase !important;
+  color: var(--fa-faint) !important;
+  font-weight: 400 !important;
+}
+
+.sidebar a {
+  color: var(--fa-dim) !important;
+  font-size: 0.875rem !important;
+  font-weight: 300 !important;
+  transition: color 0.15s;
+}
+
+.sidebar a:hover {
+  color: var(--fa-text) !important;
+}
+
+.sidebar a[aria-current="page"] {
+  color: var(--fa-text) !important;
+  font-weight: 400 !important;
+  border-left: 1px solid var(--fa-muted);
+  padding-left: calc(var(--sl-sidebar-item-padding-inline) - 1px);
+}
+
+/* ---------- Main content ---------- */
+.content-panel {
+  border-left: none !important;
+}
+
+.sl-markdown-content {
+  line-height: 1.75;
+}
+
+.sl-markdown-content h1,
+.sl-markdown-content h2,
+.sl-markdown-content h3,
+.sl-markdown-content h4 {
+  font-weight: 300;
+  letter-spacing: -0.015em;
+  color: var(--fa-text);
+}
+
+.sl-markdown-content h1 {
+  font-size: 2rem;
+}
+
+.sl-markdown-content h2 {
+  font-size: 1.25rem;
+  border-bottom: 1px solid var(--fa-border);
+  padding-bottom: 0.5rem;
+  margin-top: 3rem;
+}
+
+.sl-markdown-content h3 {
+  font-size: 1rem;
+  color: var(--fa-muted);
+}
+
+.sl-markdown-content p,
+.sl-markdown-content li {
+  color: var(--fa-muted);
+  font-size: 0.9375rem;
+}
+
+.sl-markdown-content a {
+  color: var(--fa-text);
+  text-decoration: none;
+  border-bottom: 1px solid var(--fa-border);
+  padding-bottom: 1px;
+  transition: border-color 0.15s;
+}
+
+.sl-markdown-content a:hover {
+  border-color: var(--fa-muted);
+}
+
+.sl-markdown-content code {
+  font-family: var(--sl-font-mono);
+  font-size: 0.825em;
+  color: var(--fa-muted);
+  background: #1a1917;
+  border: 1px solid var(--fa-border);
+  border-radius: 2px;
+  padding: 0.1em 0.4em;
+}
+
+.sl-markdown-content pre {
+  background: #0e0d0c !important;
+  border: 1px solid var(--fa-border) !important;
+  border-radius: 0 !important;
+  font-size: 0.825rem !important;
+}
+
+/* ---------- Hero (splash pages) ---------- */
+.hero {
+  padding-block: clamp(4rem, 12vh, 8rem) !important;
+}
+
+.hero h1 {
+  font-size: clamp(2rem, 5vw, 4rem) !important;
+  font-weight: 300 !important;
+  letter-spacing: -0.02em !important;
+  line-height: 1.1 !important;
+}
+
+.hero .tagline {
+  color: var(--fa-muted) !important;
+  font-weight: 300 !important;
+  font-size: 1.05rem !important;
+  line-height: 1.75 !important;
+}
+
+.sl-link-button {
+  border-radius: 0 !important;
+}
+
+.hero .sl-link-button.primary {
+  background: var(--fa-text) !important;
+  color: var(--fa-bg) !important;
+  border: none !important;
+  border-radius: 0 !important;
+  font-size: 0.875rem !important;
+  letter-spacing: 0.06em !important;
+  font-weight: 400 !important;
+  padding: 0.7rem 1.5rem !important;
+  transition: background 0.2s !important;
+}
+
+.hero .sl-link-button.primary:hover {
+  background: var(--fa-muted) !important;
+}
+
+.hero .sl-link-button.secondary {
+  background: transparent !important;
+  color: var(--fa-dim) !important;
+  border: 1px solid var(--fa-border) !important;
+  border-radius: 0 !important;
+  font-size: 0.875rem !important;
+  letter-spacing: 0.06em !important;
+  font-weight: 300 !important;
+  padding: 0.7rem 1.5rem !important;
+  transition:
+    border-color 0.2s,
+    color 0.2s !important;
+}
+
+.hero .sl-link-button.secondary:hover {
+  border-color: var(--fa-muted) !important;
+  color: var(--fa-text) !important;
+}
+
+/* ---------- Right sidebar (TOC) ---------- */
+starlight-toc nav {
+  border-left: 1px solid var(--fa-border) !important;
+}
+
+.right-sidebar-panel a {
+  color: var(--fa-faint) !important;
+  font-size: 0.8rem !important;
+  transition: color 0.15s;
+}
+
+.right-sidebar-panel a:hover,
+.right-sidebar-panel a[aria-current="true"] {
+  color: var(--fa-text) !important;
+}
+
+/* ---------- Pagination ---------- */
+.pagination-links a {
+  border: 1px solid var(--fa-border) !important;
+  border-radius: 0 !important;
+  color: var(--fa-muted) !important;
+  transition:
+    border-color 0.2s,
+    color 0.2s !important;
+}
+
+.pagination-links a:hover {
+  border-color: var(--fa-muted) !important;
+  color: var(--fa-text) !important;
+}
+
+/* ---------- Aside / callout blocks ---------- */
+.starlight-aside {
+  border-radius: 0 !important;
+  border-left-width: 1px !important;
+  background: #111110 !important;
+}
+
+.starlight-aside--note {
+  border-left-color: var(--fa-border) !important;
+}
+
+.starlight-aside--tip {
+  border-left-color: #4a7a5a !important;
+}
+
+.starlight-aside--caution {
+  border-left-color: #7a5a2a !important;
+}
+
+.starlight-aside--danger {
+  border-left-color: #7a2a2a !important;
+}
+
+/* ---------- Search ---------- */
+site-search dialog {
+  background: var(--fa-surface) !important;
+  border: 1px solid var(--fa-border) !important;
+  border-radius: 0 !important;
+}
