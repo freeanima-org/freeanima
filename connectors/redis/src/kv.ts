@@ -40,6 +40,16 @@ export async function redisDel(key: string): Promise<void> {
   }
 }
 
+/** 读取键剩余 TTL（秒）；不可用时返回 null。语义对齐 Redis TTL 命令。 */
+export async function redisTtl(key: string): Promise<number | null> {
+  if (!isRedisConfigured()) return null;
+  try {
+    return await getRedis().ttl(key);
+  } catch {
+    return null;
+  }
+}
+
 /** SCAN 匹配键并批量取值；不可用时返回空数组。 */
 export async function redisScanEntries(pattern: string, count = 100): Promise<RedisScanEntry[]> {
   if (!isRedisConfigured()) return [];
