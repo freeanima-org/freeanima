@@ -135,11 +135,11 @@ docker compose up --build
 
 ## 相关文件
 
-| 文件                                     | 作用                        |
-| ---------------------------------------- | --------------------------- |
-| `package.json`                           | 版本唯一写入源（CI 更新）   |
-| `.releaserc.json`                        | semantic-release 插件配置   |
-| `.github/workflows/release.yml`          | 发版 CI + npm publish       |
-| `.github/workflows/release-docker.yml`   | Docker 镜像推 GHCR          |
-| `service/service/src/runtime/version.ts` | 运行时读取根版本            |
-| `CHANGELOG.md`                           | 自动追加新版本节 + 历史条目 |
+| 文件                                     | 作用                                                            |
+| ---------------------------------------- | --------------------------------------------------------------- |
+| `package.json`                           | 版本唯一写入源（CI 更新）                                       |
+| `.releaserc.cjs`                         | semantic-release 插件配置（含 changelog 列表符 `-` 对齐 oxfmt） |
+| `.github/workflows/release.yml`          | 发版 CI + npm publish                                           |
+| `.github/workflows/release-docker.yml`   | Docker 镜像推 GHCR                                              |
+| `service/service/src/runtime/version.ts` | 运行时读取根版本                                                |
+| `CHANGELOG.md`                           | 自动追加新版本节 + 历史条目                                     |
