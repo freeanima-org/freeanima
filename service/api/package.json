@@ -15,15 +15,18 @@
     "./constants": "./src/constants.ts",
     "./schemas/display": "./src/schemas/display.ts",
     "./schemas/snapshot": "./src/schemas/snapshot.ts",
-    "./process-restart": "./src/process-restart.ts"
+    "./process-restart": "./src/process-restart.ts",
+    "./ports/mcp-manager": "./src/ports/mcp-manager.ts",
+    "./ports/acp-manager": "./src/ports/acp-manager.ts",
+    "./ports/mask-registry": "./src/ports/mask-registry.ts",
+    "./ports/service-engine": "./src/ports/service-engine.ts"
   },
   "dependencies": {
-    "@freeanima/capabilities-acp": "workspace:*",
-    "@freeanima/capabilities-mask": "workspace:*",
-    "@freeanima/capabilities-mcp": "workspace:*",
-    "@freeanima/engine": "workspace:*",
     "@freeanima/engine-conversation": "workspace:*",
     "@freeanima/engine-loop": "workspace:*",
+    "@freeanima/engine-repos": "workspace:*",
+    "@freeanima/engine-skill": "workspace:*",
+    "@freeanima/engine-tool": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "@freeanima/service-logging": "workspace:*"
   },
