@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { m } from "@/lib/i18n.ts";
 import { countSemanticMemory, searchMemory } from "@/lib/api.ts";
+import { memoryTypeLabel } from "@/lib/webui-status.ts";
 
 export const Route = createFileRoute("/chamber/memory")({
   component: MemoryPage,
@@ -39,20 +41,13 @@ type MemoryResult = {
   summary: string;
 };
 
-const MEMORY_TYPE_LABEL: Record<string, string> = {
-  semantic: "语义记忆",
-  session: "会话消息",
-  limbic: "感性记忆",
-  autobiographical: "自传体",
-};
-
 function formatToolOutput(data: MemoryResult) {
   if (!data.results?.length) {
-    return `未找到与「${data.query}」匹配的记忆。`;
+    return m.webui_chamber_memory_not_found({ query: data.query });
   }
   const lines = [data.summary, ""];
   for (const [idx, hit] of data.results.entries()) {
-    const label = MEMORY_TYPE_LABEL[hit.memory_type] ?? hit.memory_type;
+    const label = memoryTypeLabel(hit.memory_type);
     lines.push(`${idx + 1}. [${label}] score ${hit.score.toFixed(4)}`);
     if (hit.memory_type === "semantic") {
       lines.push(`  ${hit.semantic_memory_id} (${hit.type}) ${hit.content}`);
@@ -74,7 +69,7 @@ function formatToolOutput(data: MemoryResult) {
 }
 
 function RecallHitCard({ hit, index }: { hit: MemoryRecallHit; index: number }) {
-  const label = MEMORY_TYPE_LABEL[hit.memory_type] ?? hit.memory_type;
+  const label = memoryTypeLabel(hit.memory_type);
   return (
     <div className="card bg-base-200">
       <div className="card-body py-3 px-4 gap-2">
@@ -164,9 +159,13 @@ function MemoryPage() {
     setError("");
     try {
       const d = (await fn()) as { message?: string };
-      setStatusMessage(d.message || "完成");
+      setStatusMessage(d.message || m.webui_common_done());
     } catch (e) {
-      setError(`操作失败: ${e instanceof Error ? e.message : String(e)}`);
+      setError(
+        m.webui_common_operation_failed({
+          detail: e instanceof Error ? e.message : String(e),
+        }),
+      );
     } finally {
       setBusy(false);
       setBusyAction("");
@@ -188,7 +187,11 @@ function MemoryPage() {
       setLastQuery(q);
       setSearched(true);
     } catch (e) {
-      setError(`检索失败: ${e instanceof Error ? e.message : String(e)}`);
+      setError(
+        m.webui_common_search_failed({
+          detail: e instanceof Error ? e.message : String(e),
+        }),
+      );
     } finally {
       setSearching(false);
     }
@@ -198,10 +201,8 @@ function MemoryPage() {
     <div>
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="text-lg font-bold">🧠 记忆台</h2>
-          <p className="text-sm text-base-content/60 mt-1">
-            调试 <code className="text-xs">memory_recall</code>：四源统一召回 + 跨类型重排。
-          </p>
+          <h2 className="text-lg font-bold">{m.webui_chamber_nav_memory()}</h2>
+          <p className="text-sm text-base-content/60 mt-1">{m.webui_chamber_memory_desc()}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <button
@@ -212,14 +213,14 @@ function MemoryPage() {
               void postMemoryAction(
                 () => countSemanticMemory(),
                 "semantic-memory-count",
-                "统计 PG semantic_memory 条数（content_fts 自动维护，无需重建）。确定继续？",
+                m.webui_chamber_memory_count_confirm(),
               )
             }
           >
             {busyAction === "semantic-memory-count" ? (
               <span className="loading loading-spinner loading-xs" />
             ) : null}
-            统计语义记忆
+            {m.webui_chamber_memory_count_btn()}
           </button>
         </div>
       </div>
@@ -238,21 +239,21 @@ function MemoryPage() {
         <div className="card-body gap-4">
           <div className="form-control">
             <label className="label py-0">
-              <span className="label-text text-xs">搜索词</span>
+              <span className="label-text text-xs">{m.webui_common_search_optional()}</span>
             </label>
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               type="text"
               className="input input-bordered input-sm font-mono"
-              placeholder="输入关键词…"
+              placeholder={m.webui_common_keyword_placeholder()}
               autoFocus
             />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="form-control">
               <label className="label py-0">
-                <span className="label-text text-xs">返回条数（Top N）</span>
+                <span className="label-text text-xs">{m.webui_chamber_memory_top_n()}</span>
               </label>
               <input
                 value={limit}
@@ -265,7 +266,9 @@ function MemoryPage() {
             </div>
             <div className="form-control">
               <label className="label py-0">
-                <span className="label-text text-xs">session 过滤（仅会话消息）</span>
+                <span className="label-text text-xs">
+                  {m.webui_chamber_memory_session_filter()}
+                </span>
               </label>
               <input
                 value={sessionFilter}
@@ -283,7 +286,7 @@ function MemoryPage() {
               disabled={searching || !query.trim()}
             >
               {searching ? <span className="loading loading-spinner loading-xs" /> : null}
-              检索
+              {m.webui_common_search()}
             </button>
             {searched && !searching ? (
               <span className="text-xs text-base-content/50">
@@ -297,14 +300,16 @@ function MemoryPage() {
       {error ? <div className="alert alert-error text-sm mb-4">{error}</div> : null}
 
       {searched && !searching && isEmpty ? (
-        <div className="alert alert-info text-sm">未找到与「{lastQuery}」匹配的记忆。</div>
+        <div className="alert alert-info text-sm">
+          {m.webui_chamber_memory_not_found({ query: lastQuery })}
+        </div>
       ) : null}
 
       {searched && !isEmpty ? (
         <div className="space-y-4">
           <section>
             <h3 className="text-sm font-bold mb-2">
-              召回结果
+              {m.webui_chamber_memory_recall_results()}
               <span className="badge badge-ghost badge-sm ml-1">{result.results.length}</span>
             </h3>
             <div className="space-y-2">
@@ -316,7 +321,7 @@ function MemoryPage() {
 
           <details className="collapse collapse-arrow bg-base-200">
             <summary className="collapse-title text-xs font-mono text-base-content/60 min-h-0 py-3">
-              memory_recall 原始输出预览
+              {m.webui_chamber_memory_raw_preview()}
             </summary>
             <div className="collapse-content">
               <pre className="text-xs bg-base-300 p-3 rounded-lg whitespace-pre-wrap overflow-x-auto">

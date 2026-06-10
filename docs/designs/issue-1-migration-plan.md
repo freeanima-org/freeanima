@@ -2,33 +2,33 @@
 title: Issue 1 Migration Plan
 ---
 
-## 迁移方案补充（2026-06-02）
+## Migration Plan Supplement (2026-06-02)
 
-> **归档 / 历史记录** — RFC #1 迁移已于 2026-06-05 完成；下文步骤 0–11 供查阅，非当前操作指南。
-> 回应 Issue 待讨论 #4（迁移策略），并补充现状评估结论。
+> **Archived / historical record** — RFC #1 migration completed 2026-06-05; steps 0–11 below for reference, not current operational guide.
+> Responds to Issue discussion #4 (migration strategy), with current-state assessment conclusions.
 
-### 策略选型：并行新包 + 自底向上逐包迁移（Strangler Fig）
+### Strategy: Parallel New Packages + Bottom-Up Per-Package Migration (Strangler Fig)
 
-不在旧目录内渐进重构，而是在仓库根目录**按 RFC 层级平铺目录**，从 **kernel 起逐包向上迁移**。**迁移已于 2026-06-05 完成**（`packages/`、`apps/` 已删除）。
+No incremental refactor inside old directories; **flatten directories by RFC layer at repo root**, migrate **package by package starting from kernel**. **Migration completed 2026-06-05** (`packages/`, `apps/` removed).
 
-**已确认决策：**
+**Confirmed decisions:**
 
-- **目录布局**：根目录平铺 — `kernel/`、`engine/`、`life/`、`capabilities/`、`connectors/`、`service/`、`cli/`
-- **包命名**：`@freeanima/{layer}-{slug}`（见 [`AGENTS.md`](../../AGENTS.md)）
+- **Directory layout:** Flat at root — `kernel/`, `engine/`, `life/`, `capabilities/`, `connectors/`, `service/`, `cli/`
+- **Package naming:** `@freeanima/{layer}-{slug}` (see [`AGENTS.md`](../../AGENTS.md))
 
-### 新栈包命名（2026-06-04）
+### New Stack Package Naming (2026-06-04)
 
-命名单一真相源：[`AGENTS.md`](../../AGENTS.md#新栈包命名rfc-1)。
+Single source of truth for naming: [`AGENTS.md`](../../AGENTS.md#新栈包命名rfc-1).
 
-| 形态     | 模式                               | 示例                                                         |
-| -------- | ---------------------------------- | ------------------------------------------------------------ |
-| 层聚合   | `@freeanima/{layer}`               | `kernel`、`engine`、`service`                                |
-| 层内组件 | `@freeanima/{layer}-{slug}`        | `kernel-eventbus`、`engine-tool`、`life-memory`              |
-| 层内实现 | `@freeanima/{layer}-{slug}-{impl}` | `connectors-eventbus-sqlite`、`capabilities-provider-openai` |
+| Form                    | Pattern                            | Examples                                                     |
+| ----------------------- | ---------------------------------- | ------------------------------------------------------------ |
+| Layer aggregate         | `@freeanima/{layer}`               | `kernel`, `engine`, `service`                                |
+| In-layer component      | `@freeanima/{layer}-{slug}`        | `kernel-eventbus`, `engine-tool`, `life-memory`              |
+| In-layer implementation | `@freeanima/{layer}-{slug}-{impl}` | `connectors-eventbus-sqlite`, `capabilities-provider-openai` |
 
-slug 合成词不加内连字符（`eventbus` 非 `event-bus`）。
+Slug compound words without internal hyphen (`eventbus` not `event-bus`).
 
-### 目标目录结构
+### Target Directory Structure
 
 ```
 freeanima/
@@ -36,30 +36,30 @@ freeanima/
 │   ├── eventbus/              # @freeanima/kernel-eventbus
 │   ├── hooks/                 # @freeanima/kernel-hooks
 │   ├── logging/               # @freeanima/kernel-logging
-│   └── kernel/                # @freeanima/kernel（聚合）
-├── engine/                    # @freeanima/engine（聚合）；子包 engine-tool、engine-provider 等
+│   └── kernel/                # @freeanima/kernel (aggregate)
+├── engine/                    # @freeanima/engine (aggregate); subpackages engine-tool, engine-provider, etc.
 ├── life/
 │   ├── memory/                # @freeanima/life-memory
 │   ├── self/                  # @freeanima/life-self
 │   └── estate/                # @freeanima/life-estate
 ├── capabilities/
 │   ├── tools/                 # @freeanima/capabilities-tools
-│   ├── provider/              # @freeanima/capabilities-provider（或 capabilities-provider-openai）
+│   ├── provider/              # @freeanima/capabilities-provider (or capabilities-provider-openai)
 │   ├── mcp/                   # @freeanima/capabilities-mcp
 │   ├── acp/                   # @freeanima/capabilities-acp
 │   └── clarify/               # @freeanima/capabilities-clarify
 ├── connectors/
 │   ├── eventbus-sqlite/       # @freeanima/connectors-eventbus-sqlite
 │   ├── gateway/               # @freeanima/connectors-gateway
-│   ├── webui/                 # @freeanima/connectors-webui（HTTP server + Vue SPA）
+│   ├── webui/                 # @freeanima/connectors-webui (HTTP server + Vue SPA)
 │   ├── cron/                  # @freeanima/connectors-cron
 │   └── commands/              # @freeanima/connectors-commands
-├── service/                   # @freeanima/service（AnimaService + serve）
+├── service/                   # @freeanima/service (AnimaService + serve)
 ├── cli/                       # @freeanima/cli
 └── tests/                     # @freeanima/integration-tests
 ```
 
-### workspace（bun）
+### workspace (bun)
 
 ```yaml
 packages:
@@ -73,112 +73,112 @@ packages:
   - "tests"
 ```
 
-### 迁移步骤
+### Migration Steps
 
-| 步骤 | 包     | 状态                    |
-| ---- | ------ | ----------------------- |
-| 0–11 | 见下表 | ✅ 已完成（2026-06-05） |
+| Step | Package         | Status                   |
+| ---- | --------------- | ------------------------ |
+| 0–11 | See table below | ✅ Complete (2026-06-05) |
 
-| 步骤 | 包                       | 完成标准                                            |
-| ---- | ------------------------ | --------------------------------------------------- |
-| 0    | legacy rename            | 全 repo import 切 legacy；后已删 legacy 壳          |
-| 1    | `kernel/`                | hooks / eventbus / schemas / db                     |
-| 2    | `capabilities/provider/` | LLM Provider 实现                                   |
-| 3    | `engine/`                | 主循环+工具循环；engine 直调 `@freeanima/engine-db` |
-| 4    | `life/memory/`           | 记忆管道、skills、检索                              |
-| 5    | `life/self/`             | 空壳（`@freeanima/life-self`）                      |
-| 6    | `life/estate/`           | 空壳（`@freeanima/life-estate`）                    |
-| 7    | `capabilities/*`         | tools / mcp / acp / clarify                         |
-| 8    | `connectors/*`           | gateway / cron / commands / webui                   |
-| 9    | `service/`               | `serve` + `AnimaService` 组装全栈                   |
-| 10   | `cli/`                   | `anima` bin → `@freeanima/service`                  |
-| 11   | 删 legacy                | 移除 `packages/`、`apps/`                           |
+| Step | Package                  | Completion criteria                                                 |
+| ---- | ------------------------ | ------------------------------------------------------------------- |
+| 0    | legacy rename            | Full repo imports to legacy; legacy shells later removed            |
+| 1    | `kernel/`                | hooks / eventbus / schemas / db                                     |
+| 2    | `capabilities/provider/` | LLM Provider implementations                                        |
+| 3    | `engine/`                | Main loop + tool loop; engine calls `@freeanima/engine-db` directly |
+| 4    | `life/memory/`           | Memory pipeline, skills, retrieval                                  |
+| 5    | `life/self/`             | Shell (`@freeanima/life-self`)                                      |
+| 6    | `life/estate/`           | Shell (`@freeanima/life-estate`)                                    |
+| 7    | `capabilities/*`         | tools / mcp / acp / clarify                                         |
+| 8    | `connectors/*`           | gateway / cron / commands / webui                                   |
+| 9    | `service/`               | `serve` + `AnimaService` assembles full stack                       |
+| 10   | `cli/`                   | `anima` bin → `@freeanima/service`                                  |
+| 11   | Remove legacy            | Remove `packages/`, `apps/`                                         |
 
-生产入口：`anima service` → [`service/service/src/serve.ts`](../../service/service/src/serve.ts)。
+Production entry: `anima service` → [`service/service/src/serve.ts`](../../service/service/src/serve.ts).
 
-### 横切模块
+### Cross-Cutting Modules
 
-| 模块                          | 过渡期                                               | 最终归属                       |
-| ----------------------------- | ---------------------------------------------------- | ------------------------------ |
-| `@freeanima/engine-db`        | **已迁入** `engine/db`；life/memory 与 service 共用  | 长期持久化层；类型在 engine-db |
-| EventBus/registry/config 实现 | 新 kernel 只留接口                                   | service                        |
-| Turbo/CI                      | 已合并入主 CI（typecheck / lint / dep-check / test） |
+| Module                                   | Transition                                                     | Final home                                |
+| ---------------------------------------- | -------------------------------------------------------------- | ----------------------------------------- |
+| `@freeanima/engine-db`                   | **Migrated** to `engine/db`; shared by life/memory and service | Long-term persistence; types in engine-db |
+| EventBus/registry/config implementations | New kernel keeps interfaces only                               | service                                   |
+| Turbo/CI                                 | Merged into main CI (typecheck / lint / dep-check / test)      |                                           |
 
-### 关键设计决策（回应待讨论项）
+### Key Design Decisions (Responding to Open Items)
 
-| #   | 问题               | 决策                                              |
-| --- | ------------------ | ------------------------------------------------- |
-| 1   | 零工具启动时主循环 | 已满足，空 tool list 即可纯对话，无需特殊处理     |
-| 2   | Skills 归属        | **memory**（程序性记忆）；self 负责 HOOK 注入     |
-| 3   | 能力层注册方式     | 各包独立 export，**service 层统一 register 入口** |
-| 4   | 迁移策略           | **并行新包 + legacy rename**（本文方案）          |
+| #   | Question                             | Decision                                                                     |
+| --- | ------------------------------------ | ---------------------------------------------------------------------------- |
+| 1   | Main loop with zero tools at startup | Already satisfied; empty tool list enables pure chat, no special handling    |
+| 2   | Skills ownership                     | **memory** (procedural memory); self handles HOOK injection                  |
+| 3   | Capability layer registration        | Each package exports independently; **service layer unified register entry** |
+| 4   | Migration strategy                   | **Parallel new packages + legacy rename** (this plan)                        |
 
-### 新栈必做改进
+### Required New-Stack Improvements
 
-1. **TurnLifecycle 统一** — ✅ `turn-lifecycle.ts`（非流式 + 流式）
-2. **engine 直调 db** — ✅ `engine-conversation` → `@freeanima/engine-db`（不做 SessionStore 注入）
-3. **AnimaService 拆分** — ✅ `anima-service` + status/sessions/memory/messaging 模块
+1. **TurnLifecycle unified** — ✅ `turn-lifecycle.ts` (non-streaming + streaming)
+2. **engine calls db directly** — ✅ `engine-conversation` → `@freeanima/engine-db` (no SessionStore injection)
+3. **AnimaService split** — ✅ `anima-service` + status/sessions/memory/messaging modules
 
-### 层边界 dep-check
+### Layer Boundary dep-check
 
-脚本：[`scripts/check-layer-deps.ts`](../../scripts/check-layer-deps.ts)，`bun run dep-check`（已挂入 `bun run check`）。
+Script: [`scripts/check-layer-deps.ts`](../../scripts/check-layer-deps.ts), `bun run dep-check` (in `bun run check`).
 
-| 层                | 允许 `@freeanima/*`                                                                           | 禁止                                 |
-| ----------------- | --------------------------------------------------------------------------------------------- | ------------------------------------ |
-| `kernel/**`       | `kernel-*`                                                                                    | 其他 workspace 包                    |
-| `engine/**`       | `kernel-*`、`engine-*`、`service-config`、`service-logging`、`capabilities-provider-*`        | `connectors-*`、`service`（runtime） |
-| `life/**`         | `kernel-*`、`life-*`、`engine-tool`、`connectors-sqlite`、`service-config`、`service-logging` | 其他 `connectors-*`、`service`       |
-| `capabilities/**` | `kernel-*`、`engine-*`、`capabilities-*`、`life-memory`、`service-config`、`service-logging`  | `connectors-*`、`service`            |
-| `connectors/**`   | 各下层 + `service`                                                                            | —                                    |
-| `service/**`      | 全部                                                                                          | —                                    |
+| Layer             | Allowed `@freeanima/*`                                                                        | Forbidden                           |
+| ----------------- | --------------------------------------------------------------------------------------------- | ----------------------------------- |
+| `kernel/**`       | `kernel-*`                                                                                    | Other workspace packages            |
+| `engine/**`       | `kernel-*`, `engine-*`, `service-config`, `service-logging`, `capabilities-provider-*`        | `connectors-*`, `service` (runtime) |
+| `life/**`         | `kernel-*`, `life-*`, `engine-tool`, `connectors-sqlite`, `service-config`, `service-logging` | Other `connectors-*`, `service`     |
+| `capabilities/**` | `kernel-*`, `engine-*`, `capabilities-*`, `life-memory`, `service-config`, `service-logging`  | `connectors-*`, `service`           |
+| `connectors/**`   | Lower layers + `service`                                                                      | —                                   |
+| `service/**`      | All                                                                                           | —                                   |
 
-测试文件（`**/*.{test,spec}.ts`、`**/tests/**`）与 `cli/**` 豁免。
+Test files (`**/*.{test,spec}.ts`, `**/tests/**`) and `cli/**` exempt.
 
-### PR 拆分原则
+### PR Split Principles
 
-**一步一 PR**；步骤 0 单独做，不与步骤 1 合并。
+**One step per PR**; step 0 alone, not merged with step 1.
 
-### 步骤 0（独立 PR）：legacy rename
+### Step 0 (Standalone PR): legacy rename
 
-**范围：仅机械改名，零逻辑变更，不创建新层目录。**
+**Scope: mechanical rename only, zero logic change, no new layer directories.**
 
-1. 现有 `packages/*`、`apps/*` 的 `package.json` → `name` 改为 `@freeanima/legacy-*`
-2. 全 repo 所有 import / workspace 依赖 / turbo 配置同步更新
-3. 根 `package.json` devDependencies、bin 路径等指向 legacy 包名
-4. 跑全量 CI（typecheck + test），必须全绿
-5. 必要时更新 `AGENTS.md` / 本文件标注 legacy 包名映射（不维护独立模块树文档）
+1. Existing `packages/*`, `apps/*` `package.json` → `name` to `@freeanima/legacy-*`
+2. Full repo imports / workspace deps / turbo config sync update
+3. Root `package.json` devDependencies, bin paths point to legacy package names
+4. Run full CI (typecheck + test), must be green
+5. Update `AGENTS.md` / this file with legacy package name mapping if needed (no standalone module tree doc)
 
-**legacy 包名映射（示例）：**
+**Legacy package name mapping (example):**
 
-| 现名（步骤 0 前）         | legacy 名（步骤 0 后）                                                   |
-| ------------------------- | ------------------------------------------------------------------------ |
-| `@freeanima/kernel`       | ~~`@freeanima/legacy-kernel`~~（已删，拆至 kernel-_ / service-_）        |
-| `@freeanima/engine`       | ~~`@freeanima/legacy-engine`~~（已删，拆至 engine-\* / life-memory）     |
-| `@freeanima/runtime`      | `@freeanima/legacy-runtime`                                              |
-| `@freeanima/memory`       | ~~`@freeanima/legacy-memory`~~ → `@freeanima/life-memory`                |
-| `@freeanima/db`           | ~~`@freeanima/legacy-db`~~ → `@freeanima/engine-db`（`engine/db`）       |
-| `@freeanima/server`       | `@freeanima/legacy-server`                                               |
-| `@freeanima/gateway`      | ~~`@freeanima/legacy-gateway`~~ → `@freeanima/connectors-gateway`        |
-| `@freeanima/tools`        | `@freeanima/legacy-tools`（core 已拆至 `@freeanima/capabilities-tools`） |
-| `@freeanima/integrations` | `@freeanima/legacy-integrations`                                         |
-| `@freeanima/clarify`      | ~~`@freeanima/legacy-clarify`~~ → `@freeanima/capabilities-clarify`      |
-| `@freeanima/api`          | `@freeanima/legacy-api`                                                  |
-| `@freeanima/cli`          | `@freeanima/legacy-cli`                                                  |
-| `@freeanima/webui`        | `@freeanima/legacy-webui`                                                |
+| Name (before step 0)      | Legacy name (after step 0)                                                 |
+| ------------------------- | -------------------------------------------------------------------------- |
+| `@freeanima/kernel`       | ~~`@freeanima/legacy-kernel`~~ (removed, split to kernel-_ / service-_)    |
+| `@freeanima/engine`       | ~~`@freeanima/legacy-engine`~~ (removed, split to engine-\* / life-memory) |
+| `@freeanima/runtime`      | `@freeanima/legacy-runtime`                                                |
+| `@freeanima/memory`       | ~~`@freeanima/legacy-memory`~~ → `@freeanima/life-memory`                  |
+| `@freeanima/db`           | ~~`@freeanima/legacy-db`~~ → `@freeanima/engine-db` (`engine/db`)          |
+| `@freeanima/server`       | `@freeanima/legacy-server`                                                 |
+| `@freeanima/gateway`      | ~~`@freeanima/legacy-gateway`~~ → `@freeanima/connectors-gateway`          |
+| `@freeanima/tools`        | `@freeanima/legacy-tools` (core split to `@freeanima/capabilities-tools`)  |
+| `@freeanima/integrations` | `@freeanima/legacy-integrations`                                           |
+| `@freeanima/clarify`      | ~~`@freeanima/legacy-clarify`~~ → `@freeanima/capabilities-clarify`        |
+| `@freeanima/api`          | `@freeanima/legacy-api`                                                    |
+| `@freeanima/cli`          | `@freeanima/legacy-cli`                                                    |
+| `@freeanima/webui`        | `@freeanima/legacy-webui`                                                  |
 
-**已删除 legacy 包（2026-06-05）：** `@freeanima/legacy-kernel`、`@freeanima/legacy-engine`、`@freeanima/legacy-db`、`@freeanima/legacy-memory`、`@freeanima/legacy-integrations`。`packages/*` 与 `apps/*` legacy 壳已清空（2026-06-05 L2）；`@freeanima/runtime/server/tools/api/cli` 等职责分别迁入 `service/`、`kernel/api`、`cli/` 等新栈包。
+**Removed legacy packages (2026-06-05):** `@freeanima/legacy-kernel`, `@freeanima/legacy-engine`, `@freeanima/legacy-db`, `@freeanima/legacy-memory`, `@freeanima/legacy-integrations`. `packages/*` and `apps/*` legacy shells cleared (2026-06-05 L2); `@freeanima/runtime/server/tools/api/cli` etc. migrated to `service/`, `kernel/api`, `cli/` new-stack packages.
 
-**步骤 0 不做（历史）：** 不建 `kernel/` 等新目录；不改根 `package.json` workspaces；不改运行时行为。
+**Step 0 did not (historical):** Create `kernel/` etc.; change root `package.json` workspaces; change runtime behavior.
 
-### 步骤 1（独立 PR）：新建 `kernel/`
+### Step 1 (Standalone PR): Create `kernel/`
 
-1. 扩展根 `package.json` workspaces（`kernel` 等新层 glob 可在此步或逐步加）
-2. 创建 `kernel/package.json`（`@freeanima/kernel`），纯接口骨架 + schemas
-3. 新 kernel 单测；legacy 栈 CI 仍绿
+1. Extend root `package.json` workspaces (new layer globs can be added this step or gradually)
+2. Create `kernel/package.json` (`@freeanima/kernel`), pure interface skeleton + schemas
+3. New kernel unit tests; legacy stack CI still green
 
-### 现状评估摘要（2026-06-05）
+### Current-State Assessment Summary (2026-06-05)
 
-- RFC 迁移步骤 0–11 **已完成**
-- 运行时入口：`AnimaService`（[`service/service/src/runtime/`](../../service/service/src/runtime/) 模块化拆分）
-- 层边界：`bun run dep-check`（[`scripts/check-layer-deps.ts`](../../scripts/check-layer-deps.ts)）
-- 待迁入：`life-estate`（资源层）由空壳包承接；`life-self`（自我层）已落地
+- RFC migration steps 0–11 **complete**
+- Runtime entry: `AnimaService` (modular split in [`service/service/src/runtime/`](../../service/service/src/runtime/))
+- Layer boundaries: `bun run dep-check` ([`scripts/check-layer-deps.ts`](../../scripts/check-layer-deps.ts))
+- Pending migration: `life-estate` (resource layer) via shell package; `life-self` (self layer) live

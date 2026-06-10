@@ -1,0 +1,428 @@
+# SOME DESCRIPTIVE TITLE
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-06-10 17:00+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Plain text
+#: docs/README.md:1 docs/compression.md:1 docs/compression.md:11
+#: docs/compression.md:22 docs/compression.md:49 docs/compression.md:96
+#: docs/compression.md:118 docs/compression.md:156 docs/compression.md:180
+#: docs/compression.md:228 docs/compression.md:262 docs/compression.md:275
+#: docs/compression.md:327 docs/compression.md:348 docs/compression.md:368
+#: docs/compression.md:384 docs/database.md:1 docs/database.md:33
+#: docs/designs/desktop-companion.md:1 docs/designs/execute-code-runtimes.md:1
+#: docs/designs/issue-1-migration-plan.md:1
+#: docs/designs/pair-programming-v1.md:1
+#: docs/designs/pair-programming-v1.md:321 docs/designs/probe-architecture.md:1
+#: docs/designs/probe-architecture.md:165 docs/designs/recall-flow.md:1
+#: docs/designs/time-perception.md:1 docs/identity.md:1 docs/identity.md:10
+#: docs/identity.md:28 docs/identity.md:45 docs/identity.md:55 docs/memory.md:1
+#: docs/memory.md:17 docs/memory.md:53 docs/memory.md:160 docs/memory.md:191
+#: docs/memory.md:211 docs/memory.md:232 docs/memory.md:249 docs/security.md:1
+#: docs/self-layer.md:1 docs/self-layer.md:31 docs/self-layer.md:53
+#: docs/self-layer.md:64 docs/self-layer.md:78 docs/self-layer.md:94
+#: docs/self-layer.md:105 docs/sleep.md:1 docs/versioning.md:1
+#, no-wrap
+msgid "---\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:3
+#, no-wrap
+msgid ""
+"title: Versioning\n"
+"---\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:6
+msgid "# Versioning and Release"
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:11
+msgid ""
+"FreeAnima follows [Semantic Versioning 2.0.0](https://semver.org/) "
+"(`MAJOR.MINOR.PATCH`).  The **sole write source** is `\"version\"` in the "
+"root [`package.json`](../package.json); other workspace sub-package "
+"`package.json` files **do not** include a `version` field.  Runtime reads "
+"the root version via `ANIMA_VERSION` from `@freeanima/service`."
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:13
+msgid ""
+"Release is handled by **[Release Please](https://github.com/googleapis/"
+"release-please)** in GitHub Actions (see [`.github/workflows/release.yml`]"
+"(../.github/workflows/release.yml))."
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:15
+msgid "## When to Bump Which Digit"
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:17
+msgid ""
+"Determined by **Conventional Commits**. Currently in **0.x.y initial "
+"development**, using 0.x convention: **x = breaking change, y = compatible "
+"feature/fix** (differs from post-1.0.0 MAJOR/MINOR/PATCH semantics)."
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:24
+#, no-wrap
+msgid ""
+"| Commit | Version digit | Example |\n"
+"| ------ | ------------- | ------- |\n"
+"| `feat:` | **PATCH (y)** | `0.1.0` → `0.1.1` |\n"
+"| `fix:` / `perf:` / `revert:` | **PATCH (y)** | `0.1.1` → `0.1.2` |\n"
+"| `BREAKING CHANGE:` or `feat!:` | **MINOR (x)** | `0.1.2` → `0.2.0` |\n"
+"| `chore:` / `docs:` / `refactor:` / `test:` / `ci:` | **No release** | — |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:26
+#, no-wrap
+msgid "**1.0.0** is not auto-published on breaking commits; maintainers decide explicitly when API is stable (commit footer `Release-As: 1.0.0` or dedicated release).\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:28
+msgid ""
+"Multiple commits in one Release PR merge into **one release**, taking "
+"highest bump (e.g. `fix` + `feat` → patch; `feat` + breaking → minor)."
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:30
+msgid ""
+"Release Please defaults to `feat` / `fix` / `deps` as releasable commit "
+"triggers for Release PR updates; `perf` / `revert` appear in changelog but "
+"alone may not open a Release PR (use `fix:` prefix or `Release-As` footer)."
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:32
+msgid "## Checking Version Day-to-Day"
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:38
+#, no-wrap
+msgid ""
+"```bash\n"
+"bun -p \"require('./package.json').version\"\n"
+"# Or after build:\n"
+"bun run anima -- service status   # reads version from status file / health API\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:40
+msgid "## Release Flow (Release PR)"
+msgstr ""
+
+#. type: Bullet: '1. '
+#: docs/versioning.md:47
+msgid "Write **Conventional Commits** on feature branches (see below)"
+msgstr ""
+
+#. type: Bullet: '2. '
+#: docs/versioning.md:47
+msgid "Merge PR to `main` (must pass `Quality` + `freeanima/blackbox`)"
+msgstr ""
+
+#. type: Bullet: '3. '
+#: docs/versioning.md:47
+msgid ""
+"`Release` workflow runs **release-please**: opens or updates a **Release "
+"PR** (label `autorelease: pending`), accumulating changelog and version bump "
+"since last tag"
+msgstr ""
+
+#. type: Bullet: '4. '
+#: docs/versioning.md:47
+msgid ""
+"Release PR runs full CI; **maintainers decide when to release**, merge "
+"Release PR"
+msgstr ""
+
+#. type: Bullet: '5. '
+#: docs/versioning.md:47
+msgid ""
+"After merge, same workflow: `release_created` → tag `vX.Y.Z`, create GitHub "
+"Release → `build:cli` + `publish-cli.sh` (npm OIDC)"
+msgstr ""
+
+#. type: Bullet: '6. '
+#: docs/versioning.md:47
+msgid ""
+"Push `v*` tag triggers [`.github/workflows/release-docker.yml`](../.github/"
+"workflows/release-docker.yml)"
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:49
+#, no-wrap
+msgid "**Not** one release per `feat`; **one release when Release PR merges** (accumulating multiple commits).\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:51
+msgid "### Commit Message Format"
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:54
+msgid "``` <type>(<scope>): <subject>"
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:56
+msgid "[optional body]"
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:59
+msgid "[optional footer: BREAKING CHANGE: ...] ```"
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:61
+msgid ""
+"Common types: `feat`, `fix`, `perf`, `docs`, `chore`, `refactor`, `test`, "
+"`ci`, `build`, `revert`."
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:63
+msgid ""
+"Local **`git commit` is enforced** (Husky `commit-msg` + [commitlint]"
+"(https://commitlint.js.org/), config at root `commitlint.config.mjs`)."
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:65
+msgid "Examples:"
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:70
+msgid ""
+"``` feat(gateway): Discord thread continuation reuses session fix(cron): run "
+"endpoint changed to async enqueue feat(api)!: remove non-SSE message endpoint"
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:73
+msgid "BREAKING CHANGE: POST /api/sessions/:id/messages removed ```"
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:75
+msgid "### Preview Next Version"
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:77
+msgid ""
+"On GitHub, inspect **Release PR** diff (`package.json` + `CHANGELOG.md`) for "
+"next version content and number."
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:79
+msgid ""
+"Specify version in commit body with `Release-As: x.y.z` (see [Release Please "
+"docs](https://github.com/googleapis/release-please))."
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:81
+msgid "### Version Manifest"
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:83
+msgid ""
+"[`.release-please-manifest.json`](../.release-please-manifest.json) records "
+"current published version; must match latest `v*` tag and root "
+"`package.json`; auto-updated by Release Please after release."
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:85
+msgid "## Bun Global Package and Docker Image"
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:87
+msgid "After Release PR merge and `release_created`:"
+msgstr ""
+
+#. type: Bullet: '1. '
+#: docs/versioning.md:91
+msgid ""
+"**`bun run build:cli`** — produces `cli/publish/` (`@freeanima/cli` tarball "
+"contents)"
+msgstr ""
+
+#. type: Bullet: '2. '
+#: docs/versioning.md:91
+msgid ""
+"**`scripts/publish-cli.sh`** — `npm publish` + GitHub Actions OIDC (npm CLI "
+"≥ 11.5.1); local manual publish: `bun run publish:cli` (requires `npm login`)"
+msgstr ""
+
+#. type: Bullet: '3. '
+#: docs/versioning.md:91
+msgid ""
+"**Docker image** — on `v*` tag push, [`.github/workflows/release-docker.yml`]"
+"(../.github/workflows/release-docker.yml) builds and pushes to `ghcr.io/"
+"freeanima-org/freeanima:latest` and `:vX.Y.Z`"
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:93
+msgid "### npm Trusted Publishing (Sole CI Publish Path)"
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:95
+msgid ""
+"Configure GitHub Actions in [npm Trusted Publishers](https://docs.npmjs.com/"
+"trusted-publishers#for-github-actions) for `@freeanima/cli`:"
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:102
+#, no-wrap
+msgid ""
+"| Field | Value |\n"
+"| ----- | ----- |\n"
+"| Organization or user | `freeanima-org` |\n"
+"| Repository | `freeanima` |\n"
+"| Workflow filename | `release.yml` |\n"
+"| Allowed actions | `npm publish` |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:104
+msgid ""
+"Release workflow `publish` job has `id-token: write`; publish with `bunx "
+"npm@11 publish` (do not use `setup-node` `registry-url`, blocks OIDC). `cli/"
+"publish/package.json` `publishConfig.registry` must be `https://"
+"registry.npmjs.org/` (trailing slash)."
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:106
+msgid ""
+"After verification, package Settings → Publishing access can **disallow "
+"tokens**, OIDC-only publish."
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:108
+msgid "Local install of published package (dev debugging):"
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:114
+msgid ""
+"```bash bun run build:cli bun install -g ./cli/publish anima service start --"
+"foreground ```"
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:116
+msgid "Docker Compose quick start:"
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:121
+#, no-wrap
+msgid ""
+"```bash\n"
+"cp .env.example .env   # fill PG_PASSWORD, OPENAI_API_KEY\n"
+"docker compose up --build\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:123
+msgid "## Prohibited"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/versioning.md:127
+msgid ""
+"Do not hardcode `X.Y.Z` in business code; use `import { ANIMA_VERSION } from "
+"\"@freeanima/service\"` (or expose via health/status)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/versioning.md:127
+msgid "Do not maintain `version` in workspace sub-package `package.json`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/versioning.md:127
+msgid ""
+"Do not manually edit `CHANGELOG.md` or `[Unreleased]`; release notes come "
+"from commits and Release Please."
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:129
+msgid "## Related Files"
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:139
+#, no-wrap
+msgid ""
+"| File | Role |\n"
+"| ---- | ---- |\n"
+"| `package.json` | Sole version write source (updated by Release PR) |\n"
+"| `release-please-config.json` | Release Please strategy and changelog sections |\n"
+"| `.release-please-manifest.json` | Published version manifest |\n"
+"| `.github/workflows/release.yml` | release-please + npm publish |\n"
+"| `.github/workflows/release-docker.yml` | Docker image push to GHCR |\n"
+"| `service/service/src/runtime/version.ts` | Runtime root version read |\n"
+"| `CHANGELOG.md` | New version section appended on Release PR merge |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/versioning.md:141
+msgid "## Repository Settings (Maintainers)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/versioning.md:143
+msgid ""
+"Actions → General → **Allow GitHub Actions to create and approve pull "
+"requests**"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/versioning.md:143
+msgid ""
+"`RELEASE_PAT` must be able to open PRs and trigger CI on Release PR (cannot "
+"substitute default `GITHUB_TOKEN`)"
+msgstr ""

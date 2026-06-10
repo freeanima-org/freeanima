@@ -1,4 +1,6 @@
-import { Outlet, createRootRoute, useRouterState, useNavigate } from "@tanstack/react-router";
+import { Outlet, createRootRoute, useNavigate, useRouterState } from "@tanstack/react-router";
+import { useState } from "react";
+import { getWebUiLocale, m, toggleWebUiLocale } from "@/lib/i18n.ts";
 
 export const Route = createRootRoute({
   component: RootComponent,
@@ -20,6 +22,7 @@ function AppShell() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const mode = resolveMode(pathname);
+  const [, setLocaleTick] = useState(0);
 
   const switchMode = (target: AppMode) => {
     if (target === "parlor") {
@@ -34,34 +37,44 @@ function AppShell() {
     }
   };
 
+  const toggleLocale = () => {
+    toggleWebUiLocale();
+    setLocaleTick((n) => n + 1);
+  };
+
+  const locale = getWebUiLocale();
+
   return (
     <div className="h-screen flex flex-col">
       <header className="app-header shrink-0 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-3 py-2 sm:px-4 sm:py-0 sm:h-10 sm:flex-nowrap border-b border-base-300 bg-base-200">
-        <span className="text-sm font-medium text-base-content/70 shrink-0">逸灵风</span>
-        <div className="flex gap-1 sm:gap-2 w-full sm:w-auto">
+        <span className="text-sm font-medium text-base-content/70 shrink-0">{m.webui_brand()}</span>
+        <div className="flex gap-1 sm:gap-2 w-full sm:w-auto items-center">
           <button
             type="button"
             className={`btn btn-xs flex-1 sm:flex-none min-w-0 ${mode === "parlor" ? "btn-primary" : "btn-ghost"}`}
-            title="Parlor"
+            title={m.webui_mode_parlor()}
             onClick={() => switchMode("parlor")}
           >
-            会客厅
+            {m.webui_mode_parlor()}
           </button>
           <button
             type="button"
             className={`btn btn-xs flex-1 sm:flex-none min-w-0 ${mode === "chamber" ? "btn-primary" : "btn-ghost"}`}
-            title="Chamber"
+            title={m.webui_mode_chamber()}
             onClick={() => switchMode("chamber")}
           >
-            卧室
+            {m.webui_mode_chamber()}
           </button>
           <button
             type="button"
             className={`btn btn-xs flex-1 sm:flex-none min-w-0 ${mode === "studio" ? "btn-primary" : "btn-ghost"}`}
-            title="Studio"
+            title={m.webui_mode_studio()}
             onClick={() => switchMode("studio")}
           >
-            创作室
+            {m.webui_mode_studio()}
+          </button>
+          <button type="button" className="btn btn-xs btn-ghost" onClick={toggleLocale}>
+            {locale === "zh-cn" ? m.webui_nav_language_en() : m.webui_nav_language_zh()}
           </button>
         </div>
       </header>

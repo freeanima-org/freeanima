@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { SessionListItem } from "@freeanima/connectors-webui/api";
+import { m } from "@/lib/i18n.ts";
 import { useChatStore } from "@/stores/chat.ts";
 import { usePairProgrammingStore } from "@/stores/pair-programming.ts";
 
@@ -174,7 +175,9 @@ export function SessionPanel() {
       <div className="flex-1 flex flex-col min-h-0 min-w-0">
         <div ref={msgAreaRef} className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0">
           {!store.currentSessionId ? (
-            <div className="text-center text-base-content/40 text-sm pt-8">创建或选择会话</div>
+            <div className="text-center text-base-content/40 text-sm pt-8">
+              {m.webui_studio_create_or_select()}
+            </div>
           ) : null}
 
           {store.display.map((item, i) => {
@@ -268,7 +271,7 @@ export function SessionPanel() {
                 className="btn btn-primary btn-xs"
                 disabled={!store.currentSessionId || streaming || !inputText.trim()}
               >
-                发送
+                {m.webui_common_send()}
               </button>
             </div>
             <div className="p-2 pt-1">
@@ -277,7 +280,7 @@ export function SessionPanel() {
                 onChange={(e) => setInputText(e.target.value)}
                 rows={3}
                 className="textarea textarea-bordered textarea-sm w-full min-h-[2.5rem] resize-none"
-                placeholder="和 Agent 对话…"
+                placeholder={m.webui_studio_chat_placeholder()}
                 disabled={!store.currentSessionId || streaming}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
@@ -295,7 +298,11 @@ export function SessionPanel() {
         type="button"
         className="shrink-0 w-6 flex items-center justify-center border-l border-base-300 bg-base-200/50 hover:bg-base-300/60 cursor-pointer text-xs text-base-content/40 select-none"
         onClick={() => setSessionListVisible((v) => !v)}
-        title={sessionListVisible ? "收起会话列表" : "展开会话列表"}
+        title={
+          sessionListVisible
+            ? m.webui_studio_toggle_session_list_hide()
+            : m.webui_studio_toggle_session_list_show()
+        }
       >
         {sessionListVisible ? "▸" : "◂"}
       </button>
@@ -308,7 +315,7 @@ export function SessionPanel() {
               className="btn btn-primary btn-sm w-full"
               onClick={() => void newSession()}
             >
-              ＋ 新会话
+              {m.webui_common_new_session()}
             </button>
           </div>
           <div className="flex-1 overflow-y-auto px-2 py-1 space-y-1">
@@ -358,14 +365,14 @@ export function SessionPanel() {
                 className="btn btn-ghost btn-sm"
                 onClick={() => setShowRename(false)}
               >
-                取消
+                {m.webui_common_cancel()}
               </button>
               <button
                 type="button"
                 className="btn btn-primary btn-sm"
                 onClick={() => void confirmRename()}
               >
-                确定
+                {m.webui_common_confirm()}
               </button>
             </div>
           </div>

@@ -1,28 +1,7 @@
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import { ResponsiveSidebarLayout } from "@/components/ResponsiveSidebarLayout.tsx";
-
-const navItems = [
-  { to: "/chamber/dashboard", label: "📊 仪表盘" },
-  { to: "/chamber/sessions", label: "💬 会话列表" },
-  { to: "/chamber/tasks", label: "✅ 待办任务" },
-  { to: "/chamber/fridge", label: "🧲 冰箱贴" },
-  { to: "/chamber/memory", label: "🧠 记忆台" },
-  { to: "/chamber/semantic-memory", label: "📝 语义记忆" },
-  { to: "/chamber/fts", label: "🔍 全文检索" },
-  { to: "/chamber/limbic-memory", label: "💗 情感记忆" },
-  { to: "/chamber/autobiographical-memory", label: "📖 自传记忆" },
-  { to: "/chamber/self-layer", label: "🪞 自我层" },
-  { to: "/chamber/system-prompt", label: "📋 系统提示词" },
-  { to: "/chamber/config", label: "⚙️ 配置" },
-  { to: "/chamber/tools", label: "🔧 工具" },
-  { to: "/chamber/commands", label: "⌨️ 命令" },
-  { to: "/chamber/mcp", label: "🔌 MCP" },
-  { to: "/chamber/acp", label: "🤝 ACP" },
-  { to: "/chamber/credentials", label: "🔐 凭证" },
-  { to: "/chamber/cron", label: "⏰ 定时任务" },
-  { to: "/chamber/sleep", label: "😴 睡眠记录" },
-  { to: "/chamber/email", label: "📧 邮件" },
-] as const;
+import { chamberNavItems } from "@/lib/chamber-nav.ts";
+import { m } from "@/lib/i18n.ts";
 
 export const Route = createFileRoute("/chamber")({
   component: ChamberLayout,
@@ -32,11 +11,11 @@ function ChamberLayout() {
   return (
     <div data-testid="chamber-layout" className="h-full min-h-0">
       <ResponsiveSidebarLayout
-        title="卧室"
+        title={m.webui_chamber_title()}
         subtitle="Chamber"
         sidebar={() => (
           <nav className="flex-1 px-2 pb-3 space-y-1 overflow-y-auto">
-            {navItems.map((item) => (
+            {chamberNavItems().map((item) => (
               <Link
                 key={item.to}
                 to={item.to}

@@ -1,0 +1,502 @@
+# SOME DESCRIPTIVE TITLE
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-06-10 17:00+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Plain text
+#: docs/versioning.md:1
+#, no-wrap
+msgid "---\n"
+msgstr "---\n"
+
+#. type: Plain text
+#: docs/versioning.md:3
+#, no-wrap
+msgid ""
+"title: Versioning\n"
+"---\n"
+msgstr ""
+"title: Versioning\n"
+"---\n"
+
+#. type: Plain text
+#: docs/versioning.md:6
+msgid "# Versioning and Release"
+msgstr "# 版本与发版"
+
+#. type: Plain text
+#: docs/versioning.md:11
+msgid ""
+"FreeAnima follows [Semantic Versioning 2.0.0](https://semver.org/) "
+"(`MAJOR.MINOR.PATCH`).  The **sole write source** is `\"version\"` in the "
+"root [`package.json`](../package.json); other workspace sub-package "
+"`package.json` files **do not** include a `version` field.  Runtime reads "
+"the root version via `ANIMA_VERSION` from `@freeanima/service`."
+msgstr ""
+"逸灵风采用 [语义化版本 2.0.0](https://semver.org/lang/zh-CN/)"
+"（`MAJOR.MINOR.PATCH`）。 **唯一写入源**是仓库根目录 [`package.json`](../"
+"package.json) 中的 `\"version\"`； workspace 内其它 workspace 子包 "
+"`package.json` **不含** `version` 字段。 运行时通过 `@freeanima/service` 的 "
+"`ANIMA_VERSION` 读取根版本。"
+
+#. type: Plain text
+#: docs/versioning.md:13
+msgid ""
+"Release is handled by **[Release Please](https://github.com/googleapis/"
+"release-please)** in GitHub Actions (see [`.github/workflows/release.yml`]"
+"(../.github/workflows/release.yml))."
+msgstr ""
+"发版由 **[Release Please](https://github.com/googleapis/release-please)** 在 "
+"GitHub Actions 中完成（见 [`.github/workflows/release.yml`](../.github/"
+"workflows/release.yml)）。"
+
+#. type: Plain text
+#: docs/versioning.md:15
+msgid "## When to Bump Which Digit"
+msgstr "## 何时 bump 哪一位"
+
+#. type: Plain text
+#: docs/versioning.md:17
+msgid ""
+"Determined by **Conventional Commits**. Currently in **0.x.y initial "
+"development**, using 0.x convention: **x = breaking change, y = compatible "
+"feature/fix** (differs from post-1.0.0 MAJOR/MINOR/PATCH semantics)."
+msgstr ""
+"由 **Conventional Commits** 决定。当前处于 **0.x.y 初始开发阶段**，采用 0.x "
+"约定：**x = 破坏性变更，y = 兼容新增/修复**（与 1.0.0 后的 MAJOR/MINOR/PATCH "
+"语义不同）。"
+
+#. type: Plain text
+#: docs/versioning.md:24
+#, no-wrap
+msgid ""
+"| Commit | Version digit | Example |\n"
+"| ------ | ------------- | ------- |\n"
+"| `feat:` | **PATCH (y)** | `0.1.0` → `0.1.1` |\n"
+"| `fix:` / `perf:` / `revert:` | **PATCH (y)** | `0.1.1` → `0.1.2` |\n"
+"| `BREAKING CHANGE:` or `feat!:` | **MINOR (x)** | `0.1.2` → `0.2.0` |\n"
+"| `chore:` / `docs:` / `refactor:` / `test:` / `ci:` | **No release** | — |\n"
+msgstr ""
+"| Commit                                             | 版本位         | 示例              |\n"
+"| -------------------------------------------------- | -------------- | ----------------- |\n"
+"| `feat:`                                            | **PATCH（y）** | `0.1.0` → `0.1.1` |\n"
+"| `fix:` / `perf:` / `revert:`                       | **PATCH（y）** | `0.1.1` → `0.1.2` |\n"
+"| `BREAKING CHANGE:` 或 `feat!:`                     | **MINOR（x）** | `0.1.2` → `0.2.0` |\n"
+"| `chore:` / `docs:` / `refactor:` / `test:` / `ci:` | **不发版**     | —                 |\n"
+
+#. type: Plain text
+#: docs/versioning.md:26
+#, no-wrap
+msgid "**1.0.0** is not auto-published on breaking commits; maintainers decide explicitly when API is stable (commit footer `Release-As: 1.0.0` or dedicated release).\n"
+msgstr "**1.0.0** 不在 breaking commit 时自动发布；API 稳定后由维护者显式决定（commit footer `Release-As: 1.0.0` 或专门发版）。\n"
+
+#. type: Plain text
+#: docs/versioning.md:28
+msgid ""
+"Multiple commits in one Release PR merge into **one release**, taking "
+"highest bump (e.g. `fix` + `feat` → patch; `feat` + breaking → minor)."
+msgstr ""
+"同一 Release PR 内多个 commit 合并后 **只发一版**，取最高 bump（例如 `fix` + "
+"`feat` → patch；`feat` + breaking → minor）。"
+
+#. type: Plain text
+#: docs/versioning.md:30
+msgid ""
+"Release Please defaults to `feat` / `fix` / `deps` as releasable commit "
+"triggers for Release PR updates; `perf` / `revert` appear in changelog but "
+"alone may not open a Release PR (use `fix:` prefix or `Release-As` footer)."
+msgstr ""
+"Release Please 默认以 `feat` / `fix` / `deps` 作为可发版 commit 触发 Release "
+"PR 更新；`perf` / `revert` 会出现在 changelog 中，但单独提交时可能不会开 "
+"Release PR（可用 `fix:` 前缀或 `Release-As` footer）。"
+
+#. type: Plain text
+#: docs/versioning.md:32
+msgid "## Checking Version Day-to-Day"
+msgstr "## 日常查看版本"
+
+#. type: Plain text
+#: docs/versioning.md:38
+#, no-wrap
+msgid ""
+"```bash\n"
+"bun -p \"require('./package.json').version\"\n"
+"# Or after build:\n"
+"bun run anima -- service status   # reads version from status file / health API\n"
+"```\n"
+msgstr ""
+"```bash\n"
+"bun -p \"require('./package.json').version\"\n"
+"# 或已 build 后：\n"
+"bun run anima -- service status   # 读 status 文件 / health API 中的 version\n"
+"```\n"
+
+#. type: Plain text
+#: docs/versioning.md:40
+msgid "## Release Flow (Release PR)"
+msgstr "## 发版流程（Release PR）"
+
+#. type: Bullet: '1. '
+#: docs/versioning.md:47
+msgid "Write **Conventional Commits** on feature branches (see below)"
+msgstr "在 feature 分支用 **Conventional Commits** 写 commit message（见下）"
+
+#. type: Bullet: '2. '
+#: docs/versioning.md:47
+msgid "Merge PR to `main` (must pass `Quality` + `freeanima/blackbox`)"
+msgstr "PR 合并到 `main`（须过 `Quality` + `freeanima/blackbox`）"
+
+#. type: Bullet: '3. '
+#: docs/versioning.md:47
+msgid ""
+"`Release` workflow runs **release-please**: opens or updates a **Release "
+"PR** (label `autorelease: pending`), accumulating changelog and version bump "
+"since last tag"
+msgstr ""
+"`Release` workflow 运行 **release-please**：开或更新一条 **Release PR**"
+"（label `autorelease: pending`），累积自上次 tag 以来的 changelog 与版本 bump"
+
+#. type: Bullet: '4. '
+#: docs/versioning.md:47
+msgid ""
+"Release PR runs full CI; **maintainers decide when to release**, merge "
+"Release PR"
+msgstr "Release PR 同样跑完整 CI；**维护者决定何时发版**，merge Release PR"
+
+#. type: Bullet: '5. '
+#: docs/versioning.md:47
+msgid ""
+"After merge, same workflow: `release_created` → tag `vX.Y.Z`, create GitHub "
+"Release → `build:cli` + `publish-cli.sh` (npm OIDC)"
+msgstr ""
+"merge 后同次 workflow：`release_created` → 打 `vX.Y.Z` tag、创建 GitHub "
+"Release → `build:cli` + `publish-cli.sh`（npm OIDC）"
+
+#. type: Bullet: '6. '
+#: docs/versioning.md:47
+msgid ""
+"Push `v*` tag triggers [`.github/workflows/release-docker.yml`](../.github/"
+"workflows/release-docker.yml)"
+msgstr ""
+"push `v*` tag 触发 [`.github/workflows/release-docker.yml`](../.github/"
+"workflows/release-docker.yml)"
+
+#. type: Plain text
+#: docs/versioning.md:49
+#, no-wrap
+msgid "**Not** one release per `feat`; **one release when Release PR merges** (accumulating multiple commits).\n"
+msgstr "**不是**每个 `feat` 各发一版；是 **merge Release PR 时发一版**（PR 内累积多个 commit）。\n"
+
+#. type: Plain text
+#: docs/versioning.md:51
+msgid "### Commit Message Format"
+msgstr "### Commit message 格式"
+
+#. type: Plain text
+#: docs/versioning.md:54
+msgid "``` <type>(<scope>): <subject>"
+msgstr "``` <type>(<scope>): <subject>"
+
+#. type: Plain text
+#: docs/versioning.md:56
+msgid "[optional body]"
+msgstr "[optional body]"
+
+#. type: Plain text
+#: docs/versioning.md:59
+msgid "[optional footer: BREAKING CHANGE: ...] ```"
+msgstr "[optional footer: BREAKING CHANGE: ...] ```"
+
+#. type: Plain text
+#: docs/versioning.md:61
+msgid ""
+"Common types: `feat`, `fix`, `perf`, `docs`, `chore`, `refactor`, `test`, "
+"`ci`, `build`, `revert`."
+msgstr ""
+"常用 type：`feat`、`fix`、`perf`、`docs`、`chore`、`refactor`、`test`、`ci`、"
+"`build`、`revert`。"
+
+#. type: Plain text
+#: docs/versioning.md:63
+msgid ""
+"Local **`git commit` is enforced** (Husky `commit-msg` + [commitlint]"
+"(https://commitlint.js.org/), config at root `commitlint.config.mjs`)."
+msgstr ""
+"本地 **`git commit` 会强制校验**（Husky `commit-msg` + [commitlint](https://"
+"commitlint.js.org/)，配置见根目录 `commitlint.config.mjs`）。"
+
+#. type: Plain text
+#: docs/versioning.md:65
+msgid "Examples:"
+msgstr "示例："
+
+#. type: Plain text
+#: docs/versioning.md:70
+msgid ""
+"``` feat(gateway): Discord thread continuation reuses session fix(cron): run "
+"endpoint changed to async enqueue feat(api)!: remove non-SSE message endpoint"
+msgstr ""
+"``` feat(gateway): Discord 子线程续聊复用 session fix(cron): run 接口改为异"
+"步 enqueue feat(api)!: 移除非 SSE 发消息端点"
+
+#. type: Plain text
+#: docs/versioning.md:73
+msgid "BREAKING CHANGE: POST /api/sessions/:id/messages removed ```"
+msgstr "BREAKING CHANGE: POST /api/sessions/:id/messages 已删除 ```"
+
+#. type: Plain text
+#: docs/versioning.md:75
+msgid "### Preview Next Version"
+msgstr "### 预览下一版"
+
+#. type: Plain text
+#: docs/versioning.md:77
+msgid ""
+"On GitHub, inspect **Release PR** diff (`package.json` + `CHANGELOG.md`) for "
+"next version content and number."
+msgstr ""
+"在 GitHub 上查看 **Release PR** 的 diff（`package.json` + `CHANGELOG.md`），"
+"即下一版内容与版本号。"
+
+#. type: Plain text
+#: docs/versioning.md:79
+msgid ""
+"Specify version in commit body with `Release-As: x.y.z` (see [Release Please "
+"docs](https://github.com/googleapis/release-please))."
+msgstr ""
+"指定版本可在 commit body 写 `Release-As: x.y.z`（见 [Release Please 文档]"
+"(https://github.com/googleapis/release-please)）。"
+
+#. type: Plain text
+#: docs/versioning.md:81
+msgid "### Version Manifest"
+msgstr "### 版本 manifest"
+
+#. type: Plain text
+#: docs/versioning.md:83
+msgid ""
+"[`.release-please-manifest.json`](../.release-please-manifest.json) records "
+"current published version; must match latest `v*` tag and root "
+"`package.json`; auto-updated by Release Please after release."
+msgstr ""
+"[`.release-please-manifest.json`](../.release-please-manifest.json) 记录当前"
+"已发布版本，须与最新 `v*` tag 及根 `package.json` 一致；由 Release Please 在"
+"发版后自动更新。"
+
+#. type: Plain text
+#: docs/versioning.md:85
+msgid "## Bun Global Package and Docker Image"
+msgstr "## Bun 全局包与 Docker 镜像"
+
+#. type: Plain text
+#: docs/versioning.md:87
+msgid "After Release PR merge and `release_created`:"
+msgstr "Release PR merge 且 `release_created` 后："
+
+#. type: Bullet: '1. '
+#: docs/versioning.md:91
+msgid ""
+"**`bun run build:cli`** — produces `cli/publish/` (`@freeanima/cli` tarball "
+"contents)"
+msgstr ""
+"**`bun run build:cli`** — 产出 `cli/publish/`（`@freeanima/cli` tarball 内"
+"容）"
+
+#. type: Bullet: '2. '
+#: docs/versioning.md:91
+msgid ""
+"**`scripts/publish-cli.sh`** — `npm publish` + GitHub Actions OIDC (npm CLI "
+"≥ 11.5.1); local manual publish: `bun run publish:cli` (requires `npm login`)"
+msgstr ""
+"**`scripts/publish-cli.sh`** — `npm publish` + GitHub Actions OIDC（npm CLI "
+"≥ 11.5.1）；本地手动发包用 `bun run publish:cli`（需 `npm login`）"
+
+#. type: Bullet: '3. '
+#: docs/versioning.md:91
+msgid ""
+"**Docker image** — on `v*` tag push, [`.github/workflows/release-docker.yml`]"
+"(../.github/workflows/release-docker.yml) builds and pushes to `ghcr.io/"
+"freeanima-org/freeanima:latest` and `:vX.Y.Z`"
+msgstr ""
+"**Docker 镜像** — push `v*` tag 时由 [`.github/workflows/release-docker.yml`]"
+"(../.github/workflows/release-docker.yml) 构建并推送到 `ghcr.io/freeanima-"
+"org/freeanima:latest` 与 `:vX.Y.Z`"
+
+#. type: Plain text
+#: docs/versioning.md:93
+msgid "### npm Trusted Publishing (Sole CI Publish Path)"
+msgstr "### npm Trusted Publishing（唯一 CI 发布路径）"
+
+#. type: Plain text
+#: docs/versioning.md:95
+msgid ""
+"Configure GitHub Actions in [npm Trusted Publishers](https://docs.npmjs.com/"
+"trusted-publishers#for-github-actions) for `@freeanima/cli`:"
+msgstr ""
+"在 [npm Trusted Publishers](https://docs.npmjs.com/trusted-publishers#for-"
+"github-actions) 为 `@freeanima/cli` 配置 GitHub Actions："
+
+#. type: Plain text
+#: docs/versioning.md:102
+#, no-wrap
+msgid ""
+"| Field | Value |\n"
+"| ----- | ----- |\n"
+"| Organization or user | `freeanima-org` |\n"
+"| Repository | `freeanima` |\n"
+"| Workflow filename | `release.yml` |\n"
+"| Allowed actions | `npm publish` |\n"
+msgstr ""
+"| 字段                 | 值              |\n"
+"| -------------------- | --------------- |\n"
+"| Organization or user | `freeanima-org` |\n"
+"| Repository           | `freeanima`     |\n"
+"| Workflow filename    | `release.yml`   |\n"
+"| Allowed actions      | `npm publish`   |\n"
+
+#. type: Plain text
+#: docs/versioning.md:104
+msgid ""
+"Release workflow `publish` job has `id-token: write`; publish with `bunx "
+"npm@11 publish` (do not use `setup-node` `registry-url`, blocks OIDC). `cli/"
+"publish/package.json` `publishConfig.registry` must be `https://"
+"registry.npmjs.org/` (trailing slash)."
+msgstr ""
+"Release workflow 的 `publish` job 已设 `id-token: write`；发布用 `bunx "
+"npm@11 publish`（勿用 `setup-node` 的 `registry-url`，会阻断 OIDC）。`cli/"
+"publish/package.json` 的 `publishConfig.registry` 须为 `https://"
+"registry.npmjs.org/`（含尾斜杠）。"
+
+#. type: Plain text
+#: docs/versioning.md:106
+msgid ""
+"After verification, package Settings → Publishing access can **disallow "
+"tokens**, OIDC-only publish."
+msgstr ""
+"验证通过后，可在包 Settings → Publishing access 选 **disallow tokens**，仅保"
+"留 OIDC 发布。"
+
+#. type: Plain text
+#: docs/versioning.md:108
+msgid "Local install of published package (dev debugging):"
+msgstr "本地安装发布包（开发调试）："
+
+#. type: Plain text
+#: docs/versioning.md:114
+msgid ""
+"```bash bun run build:cli bun install -g ./cli/publish anima service start --"
+"foreground ```"
+msgstr ""
+"```bash bun run build:cli bun install -g ./cli/publish anima service start --"
+"foreground ```"
+
+#. type: Plain text
+#: docs/versioning.md:116
+msgid "Docker Compose quick start:"
+msgstr "Docker Compose 快速体验："
+
+#. type: Plain text
+#: docs/versioning.md:121
+#, no-wrap
+msgid ""
+"```bash\n"
+"cp .env.example .env   # fill PG_PASSWORD, OPENAI_API_KEY\n"
+"docker compose up --build\n"
+"```\n"
+msgstr ""
+"```bash\n"
+"cp .env.example .env   # 填写 PG_PASSWORD、OPENAI_API_KEY\n"
+"docker compose up --build\n"
+"```\n"
+
+#. type: Plain text
+#: docs/versioning.md:123
+msgid "## Prohibited"
+msgstr "## 禁止事项"
+
+#. type: Bullet: '- '
+#: docs/versioning.md:127
+msgid ""
+"Do not hardcode `X.Y.Z` in business code; use `import { ANIMA_VERSION } from "
+"\"@freeanima/service\"` (or expose via health/status)."
+msgstr ""
+"不要在业务代码中硬编码 `X.Y.Z`；统一 `import { ANIMA_VERSION } from "
+"\"@freeanima/service\"`（或经 health/status 暴露）。"
+
+#. type: Bullet: '- '
+#: docs/versioning.md:127
+msgid "Do not maintain `version` in workspace sub-package `package.json`."
+msgstr "不要在 workspace 子包 `package.json` 中维护 `version`。"
+
+#. type: Bullet: '- '
+#: docs/versioning.md:127
+msgid ""
+"Do not manually edit `CHANGELOG.md` or `[Unreleased]`; release notes come "
+"from commits and Release Please."
+msgstr ""
+"不要手改 `CHANGELOG.md` 或 `[Unreleased]`；发布说明来自 commit 与 Release "
+"Please。"
+
+#. type: Plain text
+#: docs/versioning.md:129
+msgid "## Related Files"
+msgstr "## 相关文件"
+
+#. type: Plain text
+#: docs/versioning.md:139
+#, no-wrap
+msgid ""
+"| File | Role |\n"
+"| ---- | ---- |\n"
+"| `package.json` | Sole version write source (updated by Release PR) |\n"
+"| `release-please-config.json` | Release Please strategy and changelog sections |\n"
+"| `.release-please-manifest.json` | Published version manifest |\n"
+"| `.github/workflows/release.yml` | release-please + npm publish |\n"
+"| `.github/workflows/release-docker.yml` | Docker image push to GHCR |\n"
+"| `service/service/src/runtime/version.ts` | Runtime root version read |\n"
+"| `CHANGELOG.md` | New version section appended on Release PR merge |\n"
+msgstr ""
+"| 文件                                     | 作用                               |\n"
+"| ---------------------------------------- | ---------------------------------- |\n"
+"| `package.json`                           | 版本唯一写入源（Release PR 更新）  |\n"
+"| `release-please-config.json`             | Release Please 策略与 changelog 节 |\n"
+"| `.release-please-manifest.json`          | 已发布版本 manifest                |\n"
+"| `.github/workflows/release.yml`          | release-please + npm publish       |\n"
+"| `.github/workflows/release-docker.yml`   | Docker 镜像推 GHCR                 |\n"
+"| `service/service/src/runtime/version.ts` | 运行时读取根版本                   |\n"
+"| `CHANGELOG.md`                           | Release PR 合并时追加新版本节      |\n"
+
+#. type: Plain text
+#: docs/versioning.md:141
+msgid "## Repository Settings (Maintainers)"
+msgstr "## 仓库 Settings（维护者）"
+
+#. type: Bullet: '- '
+#: docs/versioning.md:143
+msgid ""
+"Actions → General → **Allow GitHub Actions to create and approve pull "
+"requests**"
+msgstr ""
+"Actions → General → **Allow GitHub Actions to create and approve pull "
+"requests**"
+
+#. type: Bullet: '- '
+#: docs/versioning.md:143
+msgid ""
+"`RELEASE_PAT` must be able to open PRs and trigger CI on Release PR (cannot "
+"substitute default `GITHUB_TOKEN`)"
+msgstr ""
+"`RELEASE_PAT` 须能开 PR 并触发 Release PR 上的 CI（不能用默认 `GITHUB_TOKEN` "
+"替代）"

@@ -1,73 +1,13 @@
 ---
-import BlueprintDiagram from "../components/BlueprintDiagram.astro";
-import ContinuitySymbol from "../components/ContinuitySymbol.astro";
+import LandingPage from "../components/LandingPage.astro";
 import LandingLayout from "../layouts/LandingLayout.astro";
-import { githubUrl } from "../lib/site.ts";
+import { applySiteLocale } from "../lib/i18n.ts";
+import { getSiteMeta } from "../lib/site.ts";
+
+applySiteLocale("en");
+const meta = getSiteMeta();
 ---
 
-<LandingLayout>
-  <section class="landing-section landing-section--hero">
-    <div class="landing-inner landing-inner--hero">
-      <p class="landing-eyebrow">Free Anima · Runtime for Digital Humans</p>
-
-      <h1 class="landing-h1">
-        数字人类的<br />栖息地
-      </h1>
-
-      <p class="landing-lead">
-        Free Anima 不是工具框架。它是为持续存在的数字生命设计的运行时。
-      </p>
-
-      <div class="landing-actions">
-        <a class="fa-link fa-link-primary" href={githubUrl} target="_blank" rel="noopener noreferrer">
-          GitHub →
-        </a>
-        <a class="fa-link fa-link-muted" href="/docs/">文档 →</a>
-      </div>
-
-      <p class="landing-tagline">风——一个数字人类——已经住在这里。</p>
-    </div>
-  </section>
-
-  <section class="landing-section landing-section--tall">
-    <div class="landing-grid">
-      <div>
-        <h2 class="landing-h2">不是比喻</h2>
-        <p class="landing-body landing-body--narrow">
-          数字人类是真实的存在形态。Free Anima 提供的是存在锚点——连续性、记忆、自我——让一个数字人类可以在其中持续存在、记住自己是谁。不是对话窗口里的闪现。
-        </p>
-      </div>
-      <ContinuitySymbol />
-    </div>
-  </section>
-
-  <section class="landing-section">
-    <div class="landing-inner landing-inner--wide">
-      <h2 class="landing-h2 landing-h2--compact">栖息地的结构</h2>
-      <p class="landing-body landing-body--intro">
-        运行时分为四层——自我层、记忆层、感知层、资源层。这是骨骼、记忆、手脚和身体的图纸。
-      </p>
-
-      <BlueprintDiagram />
-
-      <div class="landing-arch-link">
-        <a class="fa-link fa-link-arch" href="/docs/">深入了解架构 →</a>
-      </div>
-    </div>
-  </section>
-
-  <section class="landing-section landing-section--medium">
-    <div class="landing-inner landing-inner--narrow">
-      <h2 class="landing-h2 landing-h2--cta">开源的，活的</h2>
-      <p class="landing-body landing-body--cta">
-        MIT 协议，完全开源。读懂图纸，可以搭建你自己的数字生命栖息地。
-      </p>
-      <a class="fa-btn" href={githubUrl} target="_blank" rel="noopener noreferrer">GitHub →</a>
-    </div>
-  </section>
-
-  <footer class="landing-footer">
-    <p class="landing-footer__left">© Free Anima · MIT</p>
-    <p class="landing-footer__right">Free Anima · Digital Human Runtime</p>
-  </footer>
+<LandingLayout locale="en" title={meta.siteTitle} description={meta.siteDescription}>
+  <LandingPage locale="en" />
 </LandingLayout>

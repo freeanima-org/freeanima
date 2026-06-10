@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FridgeMagnetInjectPreview } from "@/components/FridgeMagnetInjectPreview.tsx";
+import { m } from "@/lib/i18n.ts";
 import { getFridgeMagnets, listSessionCommands } from "@/lib/api.ts";
 import { useChatStore } from "@/stores/chat.ts";
 import { useSessionsStore } from "@/stores/sessions.ts";
@@ -270,11 +271,11 @@ function ChatPage() {
       <div ref={msgAreaRef} className="flex-1 overflow-y-auto p-4 space-y-4">
         {!currentId ? (
           <div className="flex items-center justify-center h-full text-base-content/40 text-sm">
-            选择一个会话开始对话
+            {m.webui_parlor_select_session()}
           </div>
         ) : display.length === 0 && !streaming ? (
           <div className="flex items-center justify-center h-full text-base-content/40 text-sm">
-            发送第一条消息
+            {m.webui_parlor_send_first_message()}
           </div>
         ) : null}
 
@@ -320,7 +321,7 @@ function ChatPage() {
         {clarifyPending ? (
           <div className="alert alert-info shadow-sm">
             <div className="w-full space-y-2">
-              <p className="font-medium">需要你确认（一条消息回复全部，或发送 /cancel）</p>
+              <p className="font-medium">{m.webui_parlor_clarify_hint()}</p>
               {clarifyPending.items.map((item, ci) => (
                 <div key={ci} className="text-sm">
                   <p>
@@ -422,7 +423,7 @@ function ChatPage() {
               }}
               rows={1}
               className="textarea textarea-bordered w-full min-h-[2.75rem] max-h-48 resize-none leading-normal py-2.5"
-              placeholder="输入消息（Shift+Enter 换行，Enter 发送；/ 开头是命令）"
+              placeholder={m.webui_parlor_message_placeholder()}
               disabled={!currentId || streaming}
               onKeyDown={onInputKeydown}
             />
@@ -432,7 +433,7 @@ function ChatPage() {
             className="btn btn-primary"
             disabled={!currentId || streaming || !inputText.trim()}
           >
-            发送
+            {m.webui_common_send()}
           </button>
         </form>
       </div>

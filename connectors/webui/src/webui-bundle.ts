@@ -1,3 +1,4 @@
+import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
   existsSync,
@@ -156,7 +157,21 @@ type BuildWebuiOptions = {
   sourcemap?: boolean;
 };
 
+function compileParaglideMessages(repoRoot: string): void {
+  const result = spawnSync("bun", ["run", "paraglide"], {
+    cwd: join(repoRoot, "site"),
+    encoding: "utf8",
+  });
+  if (result.status !== 0) {
+    throw new Error(
+      `paraglide compile failed: ${result.stderr || result.stdout || "unknown error"}`,
+    );
+  }
+}
+
 async function buildWebuiToDir(appDir: string, opts: BuildWebuiOptions): Promise<void> {
+  const repoRoot = getRepoRoot();
+  compileParaglideMessages(repoRoot);
   const htmlPath = join(appDir, WEBUI_HTML_NAME);
   mkdirSync(opts.outdir, { recursive: true });
   const tailwind = await loadTailwindPlugin();

@@ -1,3 +1,5 @@
+import { m } from "@/lib/i18n.ts";
+
 type MemoryListPaginationProps = {
   total: number;
   pageSize: number;
@@ -19,7 +21,11 @@ export function MemoryListPagination({
   return (
     <div className="flex items-center justify-between gap-2 pt-2 border-t border-base-300/50 text-xs">
       <span className="text-base-content/60">
-        共 {total} 条 · 第 {currentPage} / {pageCount} 页
+        {m.webui_common_pagination({
+          total: String(total),
+          current: String(currentPage),
+          pages: String(pageCount),
+        })}
       </span>
       <div className="join">
         <button
@@ -28,7 +34,7 @@ export function MemoryListPagination({
           disabled={currentPage <= 1 || loading}
           onClick={() => onPageChange(currentPage - 1)}
         >
-          上一页
+          {m.webui_common_previous_page()}
         </button>
         <button
           type="button"
@@ -36,7 +42,7 @@ export function MemoryListPagination({
           disabled={currentPage >= pageCount || loading}
           onClick={() => onPageChange(currentPage + 1)}
         >
-          下一页
+          {m.webui_common_next_page()}
         </button>
       </div>
     </div>

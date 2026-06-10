@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useRouterState } from "@tanstack/react-router";
+import { m } from "@/lib/i18n.ts";
 
 type ResponsiveSidebarLayoutProps = {
   title: string;
@@ -34,7 +35,7 @@ export function ResponsiveSidebarLayout({
           type="button"
           className="btn btn-ghost btn-sm btn-square"
           aria-expanded={sidebarOpen}
-          aria-label="切换导航"
+          aria-label={m.webui_common_toggle_nav()}
           onClick={() => setSidebarOpen((v) => !v)}
         >
           ☰

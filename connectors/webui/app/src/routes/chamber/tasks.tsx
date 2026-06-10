@@ -1,18 +1,20 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
 import { MemoryListPagination } from "@/components/chamber/MemoryListPagination.tsx";
+import { m } from "@/lib/i18n.ts";
 import { listTasks } from "@/lib/api.ts";
 
 const PAGE_SIZE = 20;
 
-const STATUS_OPTIONS = [
-  { value: "active", label: "进行中（pending + in_progress）" },
-  { value: "all", label: "全部" },
-  { value: "pending", label: "pending" },
-  { value: "in_progress", label: "in_progress" },
-  { value: "completed", label: "completed" },
-  { value: "cancelled", label: "cancelled" },
-] as const;
+const STATUS_OPTIONS = () =>
+  [
+    { value: "active", label: m.webui_common_active_filter() },
+    { value: "all", label: m.webui_common_all() },
+    { value: "pending", label: "pending" },
+    { value: "in_progress", label: "in_progress" },
+    { value: "completed", label: "completed" },
+    { value: "cancelled", label: "cancelled" },
+  ] as const;
 
 const PRIORITY_OPTIONS = ["high", "medium", "low", "none"] as const;
 
@@ -100,7 +102,11 @@ function TasksPage() {
         setOffset(nextOffset);
         setLoaded(true);
       } catch (e) {
-        setError(`加载失败: ${e instanceof Error ? e.message : String(e)}`);
+        setError(
+          m.webui_common_load_failed({
+            detail: e instanceof Error ? e.message : String(e),
+          }),
+        );
       } finally {
         setLoading(false);
       }
@@ -119,10 +125,8 @@ function TasksPage() {
 
   return (
     <div>
-      <h2 className="text-lg font-bold mb-1">✅ 待办任务</h2>
-      <p className="text-sm text-base-content/60 mb-4">
-        浏览 PG tasks 表，支持关键词搜索与状态/优先级筛选（只读）。
-      </p>
+      <h2 className="text-lg font-bold mb-1">{m.webui_chamber_nav_tasks()}</h2>
+      <p className="text-sm text-base-content/60 mb-4">{m.webui_chamber_tasks_desc()}</p>
 
       <form
         className="card bg-base-200 mb-4"
@@ -134,27 +138,27 @@ function TasksPage() {
         <div className="card-body gap-3">
           <div className="form-control">
             <label className="label py-0">
-              <span className="label-text text-xs">搜索词（可选，匹配标题/描述）</span>
+              <span className="label-text text-xs">{m.webui_chamber_tasks_search_label()}</span>
             </label>
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               type="text"
               className="input input-bordered input-sm"
-              placeholder="关键词…"
+              placeholder={m.webui_common_keyword_placeholder()}
             />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="form-control">
               <label className="label py-0">
-                <span className="label-text text-xs">状态</span>
+                <span className="label-text text-xs">{m.webui_common_status_label()}</span>
               </label>
               <select
                 className="select select-bordered select-sm"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
               >
-                {STATUS_OPTIONS.map((opt) => (
+                {STATUS_OPTIONS().map((opt) => (
                   <option key={opt.value} value={opt.value}>
                     {opt.label}
                   </option>
@@ -163,14 +167,14 @@ function TasksPage() {
             </div>
             <div className="form-control">
               <label className="label py-0">
-                <span className="label-text text-xs">优先级</span>
+                <span className="label-text text-xs">{m.webui_common_priority_label()}</span>
               </label>
               <select
                 className="select select-bordered select-sm"
                 value={priorityFilter}
                 onChange={(e) => setPriorityFilter(e.target.value)}
               >
-                <option value="">全部</option>
+                <option value="">{m.webui_common_all()}</option>
                 {PRIORITY_OPTIONS.map((p) => (
                   <option key={p} value={p}>
                     {p}
@@ -181,7 +185,7 @@ function TasksPage() {
           </div>
           <button type="submit" className="btn btn-sm btn-primary" disabled={loading}>
             {loading ? <span className="loading loading-spinner loading-xs" /> : null}
-            查询
+            {m.webui_common_query()}
           </button>
         </div>
       </form>
@@ -195,7 +199,7 @@ function TasksPage() {
               <span className="loading loading-dots loading-sm" />
             </div>
           ) : items.length === 0 ? (
-            <div className="alert alert-info text-sm">无匹配记录。</div>
+            <div className="alert alert-info text-sm">{m.webui_common_no_results()}</div>
           ) : (
             <div className="space-y-2">
               {items.map((row) => (
@@ -254,7 +258,7 @@ function TasksPage() {
           />
         </div>
       ) : (
-        <p className="text-sm text-base-content/50">点击「查询」加载列表。</p>
+        <p className="text-sm text-base-content/50">{m.webui_common_click_query_hint()}</p>
       )}
     </div>
   );

@@ -1,0 +1,1108 @@
+# SOME DESCRIPTIVE TITLE
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-06-10 17:00+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Plain text
+#: docs/database.md:1
+#: docs/database.md:33
+#, no-wrap
+msgid "---\n"
+msgstr "---\n"
+
+#. type: Plain text
+#: docs/database.md:3
+#, no-wrap
+msgid ""
+"title: Database\n"
+"---\n"
+msgstr ""
+"title: Database\n"
+"---\n"
+
+#. type: Plain text
+#: docs/database.md:6
+msgid "# Database Design"
+msgstr "# 数据库设计"
+
+#. type: Plain text
+#: docs/database.md:9
+msgid ""
+"> PostgreSQL storage layer. **Slice A** (conversation archive), **Slice B** "
+"(`semantic_memory` + `limbic_memory`), **Slice C** (self layer + "
+"autobiographical) are live; standalone `procedural` table not yet created "
+"(procedural memory currently uses `semantic_memory.type=procedural`).  > "
+"Related: [`compression.md`](compression.md), [`memory.md`](memory.md), "
+"[`sleep.md`](sleep.md)."
+msgstr ""
+"> PostgreSQL 存储层。**Slice A**（对话存档）、**Slice B**（`semantic_memory` "
+"+ `limbic_memory`）、**Slice C**（自我层 + 自传体）已落地；独立 `procedural` "
+"表尚未建（程序记忆现用 `semantic_memory.type=procedural`）。 > 关联："
+"[`compression.md`](compression.md)、[`memory.md`](memory.md)、[`sleep.md`]"
+"(sleep.md)。"
+
+#. type: Plain text
+#: docs/database.md:11
+msgid "## Status"
+msgstr "## 状态"
+
+#. type: Plain text
+#: docs/database.md:17
+#, no-wrap
+msgid ""
+"| Phase | Scope | Status |\n"
+"| ----- | ----- | ------ |\n"
+"| **Slice A** | `sessions` + `messages` (conversation primary PG store) | **✅ Complete** |\n"
+"| **Slice B** | `semantic_memory`, `limbic_memory` | **✅ Complete** (standalone procedural table: Issue #41) |\n"
+"| **Slice C** | `self_blocks` + `autobiographical_memory` (self layer + autobiographical narrative) | **✅ Complete** |\n"
+msgstr ""
+"| 阶段        | 范围                                                           | 状态                                            |\n"
+"| ----------- | -------------------------------------------------------------- | ----------------------------------------------- |\n"
+"| **Slice A** | `sessions` + `messages`（对话主存 PG）                         | **✅ 已完成**                                   |\n"
+"| **Slice B** | `semantic_memory`、`limbic_memory`                             | **✅ 已完成**（独立 procedural 表见 Issue #41） |\n"
+"| **Slice C** | `self_blocks` + `autobiographical_memory`（自我层 + 自传叙事） | **✅ 已完成**                                   |\n"
+
+#. type: Plain text
+#: docs/database.md:19
+msgid ""
+"Code source of truth: [`engine/db/src/schema/`](../engine/db/src/schema/)."
+msgstr "代码真相源：[`engine/db/src/schema/`](../engine/db/src/schema/)。"
+
+#. type: Plain text
+#: docs/database.md:21
+msgid "## PG Multi-Domain Architecture (Path C)"
+msgstr "## PG 多域架构（路径 C）"
+
+#. type: Plain text
+#: docs/database.md:28
+#, no-wrap
+msgid ""
+"| Package | Responsibility |\n"
+"| ------- | -------------- |\n"
+"| `@freeanima/engine-db` | PG table DDL, migrations, JSONB storage Zod and Slice A **domain types** (`schema/` + `domain/`) |\n"
+"| `@freeanima/engine-repos` | `SessionStorePort`, `PgRepositories` and other **ports**; `null*` adapters |\n"
+"| `@freeanima/engine-conversation` | Session runtime; re-exports `engine-db/domain` convenience types |\n"
+"| `@freeanima/connectors-db-pg` | `PgSessionStore` implementation, connection pool, mapper, repos |\n"
+msgstr ""
+"| 包                               | 职责                                                                                  |\n"
+"| -------------------------------- | ------------------------------------------------------------------------------------- |\n"
+"| `@freeanima/engine-db`           | PG 表 DDL、migration、JSONB 存储 Zod 与 Slice A **领域类型**（`schema/` + `domain/`） |\n"
+"| `@freeanima/engine-repos`        | `SessionStorePort`、`PgRepositories` 等仓储**端口**；`null*` 适配器                   |\n"
+"| `@freeanima/engine-conversation` | 会话运行时；re-export `engine-db/domain` 便利类型                                     |\n"
+"| `@freeanima/connectors-db-pg`    | `PgSessionStore` 实现、连接池、mapper、repo                                           |\n"
+
+#. type: Plain text
+#: docs/database.md:30
+msgid ""
+"Wiring: [`service/service/src/serve.ts`](../service/service/src/serve.ts) "
+"calls `createPgRepositories` → `createEngine({ repos })` → "
+"`createConversationService(engine.repos)` → `initServiceContext`. Runtime "
+"conversation archive reads/writes via `getServiceContext().conversation` or "
+"explicit `ConversationService` / `SessionStorePort`, not direct connector "
+"dependency."
+msgstr ""
+"装配：[`service/service/src/serve.ts`](../service/service/src/serve.ts) 调用 "
+"`createPgRepositories` → `createEngine({ repos })` → "
+"`createConversationService(engine.repos)` → `initServiceContext`。运行时对话"
+"存档读写经 `getServiceContext().conversation` 或显式 `ConversationService` / "
+"`SessionStorePort`，不直接依赖 connector。"
+
+#. type: Plain text
+#: docs/database.md:32
+msgid ""
+"New PG domain (memory / cron / task): `engine-db/schema/{domain}` → add port "
+"in `engine-repos` → implement in `connectors-db-pg` → extend "
+"`PgRepositories` fields → wire in `serve.ts`."
+msgstr ""
+"新增 PG 域（memory / cron / task）：`engine-db/schema/{domain}` → `engine-"
+"repos` 增端口 → `connectors-db-pg` 实现 → `PgRepositories` 扩展字段 → "
+"`serve.ts` 装配。"
+
+#. type: Plain text
+#: docs/database.md:36
+msgid "## Slice A: Session (2 Tables)"
+msgstr "## Slice A：Session（2 表）"
+
+#. type: Plain text
+#: docs/database.md:38
+msgid "### Design Principles"
+msgstr "### 设计原则"
+
+#. type: Bullet: '- '
+#: docs/database.md:44
+msgid ""
+"`sessions` **one row = `session_meta`** (compression, todos, clarify, tools, "
+"etc.)"
+msgstr ""
+"`sessions` **一行 = `session_meta`**（含 compression、todos、clarify、tools "
+"等）"
+
+#. type: Bullet: '- '
+#: docs/database.md:44
+msgid ""
+"`messages` **append-only**; `payload` JSONB stores `MessagePayload` (no "
+"`pos`); `pos` column is per-session sequence source of truth"
+msgstr ""
+"`messages` **只追加**；`payload` JSONB 存 `MessagePayload`（无 `pos`）；"
+"`pos` 列是会话内序号真相源"
+
+#. type: Bullet: '- '
+#: docs/database.md:44
+msgid ""
+"**Storage Zod authoritative in `engine-db/schema`**; domain convenience "
+"types in `engine-db/domain` (`engine-conversation` re-exports)"
+msgstr ""
+"**存储 Zod 以 `engine-db/schema` 为准**；领域便利类型见 `engine-db/domain`"
+"（`engine-conversation` re-export）"
+
+#. type: Bullet: '- '
+#: docs/database.md:44
+msgid ""
+"Drizzle manages DDL + migration; `sessions` still columnizes common meta "
+"fields"
+msgstr "Drizzle 管 DDL + migration；`sessions` 仍列化常用 meta 字段"
+
+#. type: Bullet: '- '
+#: docs/database.md:44
+msgid ""
+"Read/write: `connectors-db-pg` mapper (`pos` column + payload merged into "
+"`ConversationMessage`)"
+msgstr ""
+"读写：`connectors-db-pg` mapper（`pos` 列 + payload 合并为 "
+"`ConversationMessage`）"
+
+#. type: Plain text
+#: docs/database.md:46
+#: docs/database.md:148
+#: docs/database.md:264
+msgid "### Table Structure"
+msgstr "### 表结构"
+
+#. type: Plain text
+#: docs/database.md:48
+msgid "#### `sessions`"
+msgstr "#### `sessions`"
+
+#. type: Plain text
+#: docs/database.md:66
+#, no-wrap
+msgid ""
+"| Column | Type | Description |\n"
+"| ------ | ---- | ----------- |\n"
+"| `id` | TEXT PK | Session name |\n"
+"| `model` | TEXT NOT NULL | |\n"
+"| `title` | TEXT | |\n"
+"| `cwd` | TEXT | |\n"
+"| `system_prompt` | TEXT | |\n"
+"| `platform_info` | JSONB | `discriminatedUnion(\"platform\")`: parlor / discord / weixin / studio-pair-programming / cron |\n"
+"| `compression` | JSONB | `{ l2, l3, summary?, summary_at? }` — **compression boundaries** (see [`compression.md`](compression.md)) |\n"
+"| `todos` | JSONB | `{ items, next_id }` |\n"
+"| `awaiting_clarify` | JSONB | clarify pause state |\n"
+"| `acp_sessions` | JSONB | ACP session uuid mapping |\n"
+"| `tools` | JSONB | OpenAI tools snapshot |\n"
+"| `functions` | JSONB | string[] |\n"
+"| `debug` | BOOLEAN | |\n"
+"| `created_at` | TIMESTAMPTZ | |\n"
+"| `updated_at` | TIMESTAMPTZ | |\n"
+msgstr ""
+"| 列                 | 类型          | 说明                                                                                         |\n"
+"| ------------------ | ------------- | -------------------------------------------------------------------------------------------- |\n"
+"| `id`               | TEXT PK       | 会话名                                                                                       |\n"
+"| `model`            | TEXT NOT NULL |                                                                                              |\n"
+"| `title`            | TEXT          |                                                                                              |\n"
+"| `cwd`              | TEXT          |                                                                                              |\n"
+"| `system_prompt`    | TEXT          |                                                                                              |\n"
+"| `platform_info`    | JSONB         | `discriminatedUnion(\"platform\")`：parlor / discord / weixin / studio-pair-programming / cron |\n"
+"| `compression`      | JSONB         | `{ l2, l3, summary?, summary_at? }` — **压缩边界**（见 [`compression.md`](compression.md)）  |\n"
+"| `todos`            | JSONB         | `{ items, next_id }`                                                                         |\n"
+"| `awaiting_clarify` | JSONB         | clarify 暂停状态                                                                             |\n"
+"| `acp_sessions`     | JSONB         | ACP session uuid 映射                                                                        |\n"
+"| `tools`            | JSONB         | OpenAI tools 快照                                                                            |\n"
+"| `functions`        | JSONB         | string[]                                                                                     |\n"
+"| `debug`            | BOOLEAN       |                                                                                              |\n"
+"| `created_at`       | TIMESTAMPTZ   |                                                                                              |\n"
+"| `updated_at`       | TIMESTAMPTZ   |                                                                                              |\n"
+
+#. type: Plain text
+#: docs/database.md:68
+msgid "#### `messages`"
+msgstr "#### `messages`"
+
+#. type: Plain text
+#: docs/database.md:78
+#, no-wrap
+msgid ""
+"| Column | Type | Description |\n"
+"| ------ | ---- | ----------- |\n"
+"| `id` | TEXT PK | Globally unique row id (UUID) |\n"
+"| `session_id` | TEXT FK → sessions.id | |\n"
+"| `pos` | BIGINT | Monotonic per-session sequence (compression l2/l3 point here; domain `Message.pos`) |\n"
+"| `payload` | JSONB | `ConversationPayload` (role/content/tool_calls etc., **no pos**) |\n"
+"| `fts_segmented` | TEXT (nullable) | jieba segmented string; written when `cjk.enabled`; `content_fts` prefers non-empty value |\n"
+"| `content_fts` | TSVECTOR (generated) | STORED; indexes segmented string when `fts_segmented` set, else `message_fts_input(content)` |\n"
+"| `content_embedding` | VECTOR(1024) | Conversation content embedding; async write when `embedding` configured |\n"
+msgstr ""
+"| 列                  | 类型                  | 说明                                                                           |\n"
+"| ------------------- | --------------------- | ------------------------------------------------------------------------------ |\n"
+"| `id`                | TEXT PK               | 全局唯一行 id（UUID）                                                          |\n"
+"| `session_id`        | TEXT FK → sessions.id |                                                                                |\n"
+"| `pos`               | BIGINT                | 会话内单调序号（compression l2/l3 指向此值；领域层 `Message.pos`）             |\n"
+"| `payload`           | JSONB                 | `ConversationPayload`（role/content/tool_calls 等，**不含 pos**）              |\n"
+"| `fts_segmented`     | TEXT（可空）          | jieba 分词串；`cjk.enabled` 时写入；`content_fts` 优先使用非空值               |\n"
+"| `content_fts`       | TSVECTOR（生成列）    | STORED；有 `fts_segmented` 时直接索引分词串，否则 `message_fts_input(content)` |\n"
+"| `content_embedding` | VECTOR(1024)          | 对话 content embedding；配置 `embedding` 后异步写入                            |\n"
+
+#. type: Plain text
+#: docs/database.md:80
+msgid "Unique index: `(session_id, pos)`."
+msgstr "唯一索引：`(session_id, pos)`。"
+
+#. type: Plain text
+#: docs/database.md:82
+msgid ""
+"Full-text indexes: `messages_content_fts_gin` (GIN on `content_fts`), "
+"`idx_messages_content_trgm` (GIN trgm on `payload->>'content'`), "
+"`idx_messages_embedding_hnsw` (HNSW cosine). For `recall` historical "
+"conversation retrieval; filter excludes tool messages and empty content. "
+"Retrieval: **FTS + pg_trgm + pgvector three-way RRF** (always on; vector "
+"path requires `embedding` config and non-null column)."
+msgstr ""
+"全文索引：`messages_content_fts_gin`（GIN on `content_fts`）、"
+"`idx_messages_content_trgm`（GIN trgm on `payload->>'content'`）、"
+"`idx_messages_embedding_hnsw`（HNSW cosine）。供 `recall` 历史对话检索；过滤"
+"规则：排除 tool 消息与空 content。检索为 **FTS + pg_trgm + pgvector 三路 "
+"RRF**（常开；向量路需 `embedding` 配置且列非空）。"
+
+#. type: Plain text
+#: docs/database.md:84
+msgid "### Configuration"
+msgstr "### 配置"
+
+#. type: Plain text
+#: docs/database.md:90
+#, no-wrap
+msgid ""
+"```yaml\n"
+"database:\n"
+"  url: postgresql://user:pass@localhost:5432/anima\n"
+"  # or pass:services/postgres/anima\n"
+"```\n"
+msgstr ""
+"```yaml\n"
+"database:\n"
+"  url: postgresql://user:pass@localhost:5432/anima\n"
+"  # 或 pass:services/postgres/anima\n"
+"```\n"
+
+#. type: Plain text
+#: docs/database.md:92
+msgid "Production must configure `database.url`."
+msgstr "生产环境必须配置 `database.url`。"
+
+#. type: Plain text
+#: docs/database.md:94
+#, no-wrap
+msgid "**Driver:** `Bun.sql` + `drizzle-orm/bun-sql/postgres` (`connectors/db-pg`).\n"
+msgstr "**驱动**：`Bun.sql` + `drizzle-orm/bun-sql/postgres`（`connectors/db-pg`）。\n"
+
+#. type: Plain text
+#: docs/database.md:96
+#, no-wrap
+msgid "**Upstream patch:** rc.3 bun-sql driver default `tagged=true` causes incomplete SQL from RQB `.select()` ([drizzle#5802](https://github.com/drizzle-team/drizzle-orm/issues/5802)); repo uses Bun `patchedDependencies` with [`patches/drizzle-orm@1.0.0-rc.3.patch`](../patches/drizzle-orm@1.0.0-rc.3.patch) (equivalent to [PR#5824](https://github.com/drizzle-team/drizzle-orm/pull/5824): `tagged=false`). After patch, CRUD read path uses Drizzle RQB; FTS / complex retrieval still uses `execute`. Patch removable when upstream merges and releases. Regression: `tests/integration/db/db-session.test.ts`.\n"
+msgstr "**上游补丁**：rc.3 的 bun-sql 驱动默认 `tagged=true` 会导致 RQB `.select()` 生成残缺 SQL（[drizzle#5802](https://github.com/drizzle-team/drizzle-orm/issues/5802)）；仓库用 Bun `patchedDependencies` 打 [`patches/drizzle-orm@1.0.0-rc.3.patch`](../patches/drizzle-orm@1.0.0-rc.3.patch)（等同 [PR#5824](https://github.com/drizzle-team/drizzle-orm/pull/5824)：`tagged=false`）。补丁生效后 CRUD 读路径用 Drizzle RQB；FTS / 复杂检索仍用 `execute`。上游合并发版后可删补丁。回归见 `tests/integration/db/db-session.test.ts`。\n"
+
+#. type: Plain text
+#: docs/database.md:98
+msgid "### Migrations"
+msgstr "### 迁移"
+
+#. type: Bullet: '- '
+#: docs/database.md:102
+msgid ""
+"**✅ Production:** On `anima service` startup with PG as primary store, "
+"[`serve.ts`](../service/service/src/serve.ts) auto-calls `runMigrations()`."
+msgstr ""
+"**✅ 生产**：`anima service` 启动且 PG 为主存时，[`serve.ts`](../service/"
+"service/src/serve.ts) 自动调用 `runMigrations()`。"
+
+#. type: Bullet: '- '
+#: docs/database.md:102
+msgid ""
+"**Manual:** `bun run --filter @freeanima/engine-db db:migrate` — applies "
+"Drizzle migrations (including columnized → payload JSONB backfill)."
+msgstr ""
+"**手动**：`bun run --filter @freeanima/engine-db db:migrate` — 应用 Drizzle "
+"migration（含列化 → payload JSONB 的数据回填）。"
+
+#. type: Bullet: '- '
+#: docs/database.md:102
+msgid ""
+"**Extensions (one-time, requires superuser):** `pg_trgm` / `vector` cannot "
+"be `CREATE EXTENSION` by app user. On local Debian, [`setup-postgres-"
+"debian.sh`](../scripts/setup-postgres-debian.sh) installs automatically; for "
+"existing DB:"
+msgstr ""
+"**扩展（一次性，须 superuser）**：`pg_trgm` / `vector` 不能由应用用户 "
+"`CREATE EXTENSION`。本机 Debian 用 [`setup-postgres-debian.sh`](../scripts/"
+"setup-postgres-debian.sh) 会自动安装；已有库请执行："
+
+#. type: Plain text
+#: docs/database.md:107
+#, no-wrap
+msgid ""
+"```bash\n"
+"sudo apt install postgresql-17-pgvector   # version matches psql --version\n"
+"sudo -u postgres psql -d anima -f engine/db/scripts/ensure-pg-extensions.sql\n"
+"```\n"
+msgstr ""
+"```bash\n"
+"sudo apt install postgresql-17-pgvector   # 版本号与 psql --version 一致\n"
+"sudo -u postgres psql -d anima -f engine/db/scripts/ensure-pg-extensions.sql\n"
+"```\n"
+
+#. type: Plain text
+#: docs/database.md:109
+msgid "Then `db:migrate` or restart `anima service`."
+msgstr "然后再 `db:migrate` 或重启 `anima service`。"
+
+#. type: Plain text
+#: docs/database.md:111
+msgid "### Operations"
+msgstr "### 运维"
+
+#. type: Bullet: '- '
+#: docs/database.md:114
+msgid ""
+"Schema changes: `drizzle-kit generate` + `migrate` (do not modify applied "
+"migrations)"
+msgstr ""
+"Schema 变更：`drizzle-kit generate` + `migrate`（已应用 migration 不修改）"
+
+#. type: Bullet: '- '
+#: docs/database.md:114
+msgid ""
+"**Migrations do not replace backups**; continue daily full backups; "
+"`pg_dump` before destructive changes"
+msgstr ""
+"**migration 不替代备份**；继续每日全盘备份；destructive 变更前 `pg_dump`"
+
+#. type: Plain text
+#: docs/database.md:116
+msgid "#### Local PostgreSQL (Debian)"
+msgstr "#### 本机 PostgreSQL（Debian）"
+
+#. type: Plain text
+#: docs/database.md:120
+msgid ""
+"```bash # Install + create anima db/user + production-oriented conf.d "
+"snippet (requires sudo)  sudo ./scripts/setup-postgres-debian.sh"
+msgstr ""
+"```bash # 安装 + 创建 anima 库/用户 + 生产向 conf.d 片段（需 sudo） sudo ./"
+"scripts/setup-postgres-debian.sh"
+
+#. type: Plain text
+#: docs/database.md:123
+msgid ""
+"# Write credentials to pass (script prints anima credential add … command)  "
+"anima credential add services/postgres/anima url=… host=… password=… "
+"database=anima"
+msgstr ""
+"# 凭证写入 pass（脚本会打印 anima credential add … 命令） anima credential "
+"add services/postgres/anima url=… host=… password=… database=anima"
+
+#. type: Plain text
+#: docs/database.md:127
+#, no-wrap
+msgid ""
+"# Schema\n"
+"DATABASE_URL=\"$(anima credential get services/postgres/anima url)\" \\\n"
+"  bun run --filter @freeanima/engine-db db:migrate\n"
+msgstr ""
+"# Schema\n"
+"DATABASE_URL=\"$(anima credential get services/postgres/anima url)\" \\\n"
+"  bun run --filter @freeanima/engine-db db:migrate\n"
+
+#. type: Plain text
+#: docs/database.md:131
+#, no-wrap
+msgid ""
+"# database:\n"
+"#   url: pass:services/postgres/anima\n"
+"```\n"
+msgstr ""
+"# database:\n"
+"#   url: pass:services/postgres/anima\n"
+"```\n"
+
+#. type: Plain text
+#: docs/database.md:133
+msgid ""
+"Defaults: **PostgreSQL 17**, `localhost` listen only, `scram-sha-256` local "
+"TCP, dedicated `anima` db/user."
+msgstr ""
+"默认：**PostgreSQL 17**、仅 `localhost` 监听、`scram-sha-256` 本地 TCP、"
+"`anima` 专用库/用户。"
+
+#. type: Plain text
+#: docs/database.md:135
+msgid "#### Integration Tests (Local, Not pre-commit)"
+msgstr "#### 集成测试（本机，非 pre-commit）"
+
+#. type: Plain text
+#: docs/database.md:137
+msgid ""
+"Requires **Docker** running. `bun run test:integration` or `bun run test` "
+"(full parallel) starts temporary PostgreSQL 17 via Docker CLI, runs "
+"migrations, executes `tests/integration/`. pre-commit `test:changed` **does "
+"not** run integration tests."
+msgstr ""
+"需 **Docker** 运行中。`bun run test:integration` 或 `bun run test`（并行全"
+"量）会通过 Docker CLI 起临时 PostgreSQL 17、跑 migration，并执行 `tests/"
+"integration/`。pre-commit 的 `test:changed` **不**跑集成测。"
+
+#. type: Plain text
+#: docs/database.md:142
+#, no-wrap
+msgid ""
+"```bash\n"
+"bun run test:integration\n"
+"bun run test              # unit + integration + E2E parallel\n"
+"```\n"
+msgstr ""
+"```bash\n"
+"bun run test:integration\n"
+"bun run test              # 单元 + 集成 + E2E 并行\n"
+"```\n"
+
+#. type: Plain text
+#: docs/database.md:144
+msgid ""
+"Unit tests (mapper, no PG): `bun run test:unit` or `bun test connectors/db-"
+"pg/src`"
+msgstr ""
+"单元测试（mapper，不连 PG）：`bun run test:unit` 或 `bun test connectors/db-"
+"pg/src`"
+
+#. type: Plain text
+#: docs/database.md:146
+msgid "## Slice B: semantic_memory (Live)"
+msgstr "## Slice B：semantic_memory（已落地）"
+
+#. type: Plain text
+#: docs/database.md:165
+#, no-wrap
+msgid ""
+"| Column | Type | Description |\n"
+"| ------ | ---- | ----------- |\n"
+"| `id` | TEXT PK | Retains `f-{seq}-{hex}` format |\n"
+"| `type` | TEXT | `world/experience/opinion/observation/preference/procedural/imprint` |\n"
+"| `pinned` | BOOLEAN | Priority inject into resident memory |\n"
+"| `content` | TEXT | Memory body |\n"
+"| `fts_segmented` | TEXT (nullable) | jieba segmented string; written when `cjk.enabled` |\n"
+"| `content_fts` | TSVECTOR (generated) | Indexes segmented string when set, else `message_fts_input(content)` STORED |\n"
+"| `content_embedding` | VECTOR(1024) | bge-m3 etc. embedding; async when `config.embedding` set; WebUI rebuild can backfill |\n"
+"| `source_sessions` | TEXT[] | Source session ID list, default `'{}'` |\n"
+"| `observed_at` | TIMESTAMPTZ | First observation time; legacy rows backfilled from `created` |\n"
+"| `occurred_at` | TEXT | Fuzzy occurrence time in fact content |\n"
+"| `status` | TEXT | `active` / `deprecated`, default `active` |\n"
+"| `reference_count` | REAL | Reference weight sum after per-session dedup + 30-day time decay; `builtin-memory-reference-sync` recalculates from messages |\n"
+"| `created` | TIMESTAMPTZ | |\n"
+"| `updated` | TIMESTAMPTZ | |\n"
+msgstr ""
+"| 列                  | 类型               | 说明                                                                                              |\n"
+"| ------------------- | ------------------ | ------------------------------------------------------------------------------------------------- |\n"
+"| `id`                | TEXT PK            | 保留 `f-{seq}-{hex}` 格式                                                                         |\n"
+"| `type`              | TEXT               | `world/experience/opinion/observation/preference/procedural/imprint`                              |\n"
+"| `pinned`            | BOOLEAN            | 常驻记忆优先注入                                                                                  |\n"
+"| `content`           | TEXT               | 记忆正文                                                                                          |\n"
+"| `fts_segmented`     | TEXT（可空）       | jieba 分词串；`cjk.enabled` 时写入                                                                |\n"
+"| `content_fts`       | TSVECTOR（生成列） | 有 `fts_segmented` 时直接索引分词串，否则 `message_fts_input(content)` STORED                     |\n"
+"| `content_embedding` | VECTOR(1024)       | bge-m3 等 embedding；`config.embedding` 配置后异步写入；WebUI 重建可 backfill                     |\n"
+"| `source_sessions`   | TEXT[]             | 来源 session ID 列表，默认 `'{}'`                                                                 |\n"
+"| `observed_at`       | TIMESTAMPTZ        | 首次观察到该事实的时间；旧行回填 `created`                                                        |\n"
+"| `occurred_at`       | TEXT               | 事实内容中的模糊发生时间                                                                          |\n"
+"| `status`            | TEXT               | `active` / `deprecated`，默认 `active`                                                            |\n"
+"| `reference_count`   | REAL               | 按 session 去重 + 30 天时间衰减后的引用权重合计；`builtin-memory-reference-sync` 从 messages 重算 |\n"
+"| `created`           | TIMESTAMPTZ        |                                                                                                   |\n"
+"| `updated`           | TIMESTAMPTZ        |                                                                                                   |\n"
+
+#. type: Plain text
+#: docs/database.md:167
+msgid "### `memory_references` (Semantic Memory References)"
+msgstr "### `memory_references`（语义记忆引用）"
+
+#. type: Plain text
+#: docs/database.md:169
+msgid ""
+"`[记忆 #f-000001-abcd]` markers in message body persisted; invalidated on "
+"session / message delete cascade."
+msgstr ""
+"消息正文中的 `[记忆 #f-000001-abcd]` 标记持久化；session / message 删除时级联"
+"作废。"
+
+#. type: Plain text
+#: docs/database.md:177
+#, no-wrap
+msgid ""
+"| Column | Type | Description |\n"
+"| ------ | ---- | ----------- |\n"
+"| `id` | UUID PK | |\n"
+"| `message_id` | TEXT FK | → `messages.id` ON DELETE CASCADE |\n"
+"| `semantic_memory_id` | TEXT FK | → `semantic_memory.id` ON DELETE CASCADE |\n"
+"| `session_id` | TEXT FK | → `sessions.id` ON DELETE CASCADE |\n"
+"| `created_at` | TIMESTAMPTZ | Reference time (usually message timestamp) |\n"
+msgstr ""
+"| 列                   | 类型        | 说明                                     |\n"
+"| -------------------- | ----------- | ---------------------------------------- |\n"
+"| `id`                 | UUID PK     |                                          |\n"
+"| `message_id`         | TEXT FK     | → `messages.id` ON DELETE CASCADE        |\n"
+"| `semantic_memory_id` | TEXT FK     | → `semantic_memory.id` ON DELETE CASCADE |\n"
+"| `session_id`         | TEXT FK     | → `sessions.id` ON DELETE CASCADE        |\n"
+"| `created_at`         | TIMESTAMPTZ | 引用时间（通常取 message timestamp）     |\n"
+
+#. type: Plain text
+#: docs/database.md:179
+msgid ""
+"Unique index: `(message_id, semantic_memory_id)`. Same memory cited multiple "
+"times in one session counts once for weight; references within 30 days "
+"weight ×2."
+msgstr ""
+"唯一索引：`(message_id, semantic_memory_id)`。同一 session 内同记忆多次引用仅"
+"计一次权重；30 天内引用权重 ×2。"
+
+#. type: Plain text
+#: docs/database.md:181
+msgid ""
+"Port: `MemoryReferenceStorePort` (`engine-repos`) → `PgMemoryReferenceStore` "
+"(`connectors-db-pg`); incremental on `appendMessage`; cron `builtin-memory-"
+"reference-sync` full rebuild and calibrates `reference_count`."
+msgstr ""
+"端口：`MemoryReferenceStorePort`（`engine-repos`）→ `PgMemoryReferenceStore`"
+"（`connectors-db-pg`）；`appendMessage` 增量写入；cron `builtin-memory-"
+"reference-sync` 从 messages 全量重建并校准 `reference_count`。"
+
+#. type: Plain text
+#: docs/database.md:183
+msgid ""
+"Indexes: `idx_semantic_memory_fts` (GIN), `idx_semantic_memory_content_trgm` "
+"(GIN trgm), `idx_semantic_memory_embedding_hnsw` (HNSW cosine), "
+"`idx_semantic_memory_type`, `idx_semantic_memory_pinned`, "
+"`idx_semantic_memory_source_sessions` (GIN), `idx_semantic_memory_status`. "
+"Retrieval: **FTS + pg_trgm + pgvector three-way RRF** (always on; vector "
+"path requires `embedding` config and non-null column)."
+msgstr ""
+"索引：`idx_semantic_memory_fts`（GIN）、`idx_semantic_memory_content_trgm`"
+"（GIN trgm）、`idx_semantic_memory_embedding_hnsw`（HNSW cosine）、"
+"`idx_semantic_memory_type`、`idx_semantic_memory_pinned`、"
+"`idx_semantic_memory_source_sessions`（GIN）、`idx_semantic_memory_status`。"
+"检索为 **FTS + pg_trgm + pgvector 三路 RRF**（常开；向量路需 `embedding` 配置"
+"且列非空）。"
+
+#. type: Plain text
+#: docs/database.md:185
+msgid ""
+"Port methods: `create` / `update` (overwrite, omitted fields unchanged; "
+"`source_sessions: []` clears) / `deprecate` / `listBySourceSessions` / "
+"`search` / `searchFts`; `listResident` = **all pinned** + **reference_count "
+"top N** (default N=20, `status=active` only)."
+msgstr ""
+"端口方法：`create` / `update`（覆盖式，未传不变；`source_sessions: []` 可清"
+"空）/ `deprecate` / `listBySourceSessions` / `search` / `searchFts`；"
+"`listResident` = **pinned 全量** + **reference_count top N**（默认 N=20，仅 "
+"`status=active`）。"
+
+#. type: Plain text
+#: docs/database.md:187
+msgid ""
+"Port: `SemanticMemoryStorePort` (`engine-repos`) → `PgSemanticMemoryStore` "
+"(`connectors-db-pg`) → `registerSemanticMemoryStore` (`life-memory`)."
+msgstr ""
+"端口：`SemanticMemoryStorePort`（`engine-repos`）→ `PgSemanticMemoryStore`"
+"（`connectors-db-pg`）→ `registerSemanticMemoryStore`（`life-memory`）。"
+
+#. type: Plain text
+#: docs/database.md:189
+msgid ""
+"`limbic_memory` in following §Slice C section of this file; standalone "
+"`procedural` table: [Issue #41](https://github.com/freeanima-org/freeanima/"
+"issues/41)."
+msgstr ""
+"`limbic_memory` 见下文 §Slice C 同文件后续节；独立 `procedural` 表见 [Issue "
+"#41](https://github.com/freeanima-org/freeanima/issues/41)。"
+
+#. type: Plain text
+#: docs/database.md:191
+msgid "## Slice C: Self Layer and Autobiographical (Live)"
+msgstr "## Slice C：自我层与自传体（已落地）"
+
+#. type: Plain text
+#: docs/database.md:193
+msgid "### `self_blocks` (Self Layer Six Blocks)"
+msgstr "### `self_blocks`（自我层六块）"
+
+#. type: Plain text
+#: docs/database.md:203
+#, no-wrap
+msgid ""
+"| Column | Type | Description |\n"
+"| ------ | ---- | ----------- |\n"
+"| `block_key` | TEXT PK | `existence_anchor` / `self_model` / `personality_baseline` / `direction` / `metacognition` / `autobiography_summary` |\n"
+"| `content` | TEXT | Markdown body |\n"
+"| `locked` | BOOLEAN | `existence_anchor` default true; update requires `force` |\n"
+"| `version` | INTEGER | Change counter |\n"
+"| `updated_by` | TEXT | `seed` / `manual` / `tool` / `autobiography_cron` etc. |\n"
+"| `created_at` | TIMESTAMPTZ | |\n"
+"| `updated_at` | TIMESTAMPTZ | |\n"
+msgstr ""
+"| 列           | 类型        | 说明                                                                                                                 |\n"
+"| ------------ | ----------- | -------------------------------------------------------------------------------------------------------------------- |\n"
+"| `block_key`  | TEXT PK     | `existence_anchor` / `self_model` / `personality_baseline` / `direction` / `metacognition` / `autobiography_summary` |\n"
+"| `content`    | TEXT        | Markdown 正文                                                                                                        |\n"
+"| `locked`     | BOOLEAN     | `existence_anchor` 默认 true；update 需 `force`                                                                      |\n"
+"| `version`    | INTEGER     | 变更计数                                                                                                             |\n"
+"| `updated_by` | TEXT        | `seed` / `manual` / `tool` / `autobiography_cron` 等                                                                 |\n"
+"| `created_at` | TIMESTAMPTZ |                                                                                                                      |\n"
+"| `updated_at` | TIMESTAMPTZ |                                                                                                                      |\n"
+
+#. type: Plain text
+#: docs/database.md:205
+msgid ""
+"Port: `SelfLayerStorePort` (`engine-repos`) → `PgSelfLayerStore` "
+"(`connectors-db-pg`) → `registerSelfLayerStore` (`life-self`)."
+msgstr ""
+"端口：`SelfLayerStorePort`（`engine-repos`）→ `PgSelfLayerStore`"
+"（`connectors-db-pg`）→ `registerSelfLayerStore`（`life-self`）。"
+
+#. type: Plain text
+#: docs/database.md:207
+msgid ""
+"Methods: `getBlock` / `listBlocks` / `upsertBlock` / `updateBlock` (`locked` "
+"blocks need `force`)."
+msgstr ""
+"方法：`getBlock` / `listBlocks` / `upsertBlock` / `updateBlock`（`locked` 块"
+"需 `force`）。"
+
+#. type: Plain text
+#: docs/database.md:209
+msgid ""
+"Runtime read via `loadSelfLayerPrompt()`; maintenance via "
+"`get_self_blocks` / `update_self_block` or direct table writes."
+msgstr ""
+"运行时由 `loadSelfLayerPrompt()` 读取；维护通过 `get_self_blocks` / "
+"`update_self_block` 或直接写表。"
+
+#. type: Plain text
+#: docs/database.md:211
+msgid ""
+"### `autobiographical_memory` (Autobiographical Narrative, Memory Layer)"
+msgstr "### `autobiographical_memory`（自传体叙事，记忆层）"
+
+#. type: Plain text
+#: docs/database.md:225
+#, no-wrap
+msgid ""
+"| Column | Type | Description |\n"
+"| ------ | ---- | ----------- |\n"
+"| `id` | TEXT PK | UUID |\n"
+"| `title` | TEXT | Narrative title |\n"
+"| `content` | TEXT | Narrative body (append-only, no update) |\n"
+"| `significance` | TEXT | `normal` / `milestone` / `turning_point` |\n"
+"| `period_start` | TEXT | Fuzzy period start |\n"
+"| `period_end` | TEXT | Fuzzy period end |\n"
+"| `source_facts` | TEXT[] | Related `semantic_memory.id` (PG column name; domain `source_semantic_memory`) |\n"
+"| `source_sessions` | TEXT[] | Related session ids |\n"
+"| `status` | TEXT | `active` / `deprecated` |\n"
+"| `created_at` | TIMESTAMPTZ | |\n"
+"| `updated_at` | TIMESTAMPTZ | Updated on deprecate |\n"
+msgstr ""
+"| 列                | 类型        | 说明                                                                  |\n"
+"| ----------------- | ----------- | --------------------------------------------------------------------- |\n"
+"| `id`              | TEXT PK     | UUID                                                                  |\n"
+"| `title`           | TEXT        | 叙事标题                                                              |\n"
+"| `content`         | TEXT        | 叙事正文（只追加，无 update）                                         |\n"
+"| `significance`    | TEXT        | `normal` / `milestone` / `turning_point`                              |\n"
+"| `period_start`    | TEXT        | 模糊时间起点                                                          |\n"
+"| `period_end`      | TEXT        | 模糊时间终点                                                          |\n"
+"| `source_facts`    | TEXT[]      | 关联 `semantic_memory.id`（PG 列名；领域层 `source_semantic_memory`） |\n"
+"| `source_sessions` | TEXT[]      | 关联 session id                                                       |\n"
+"| `status`          | TEXT        | `active` / `deprecated`                                               |\n"
+"| `created_at`      | TIMESTAMPTZ |                                                                       |\n"
+"| `updated_at`      | TIMESTAMPTZ | deprecate 时更新                                                      |\n"
+
+#. type: Plain text
+#: docs/database.md:227
+msgid ""
+"Indexes: `status`, `significance`, `updated_at`, `source_facts` (GIN), "
+"`source_sessions` (GIN)."
+msgstr ""
+"索引：`status`、`significance`、`updated_at`、`source_facts`（GIN）、"
+"`source_sessions`（GIN）。"
+
+#. type: Plain text
+#: docs/database.md:229
+msgid ""
+"Port: `AutobiographicalMemoryStorePort` → `PgAutobiographicalMemoryStore` → "
+"`registerAutobiographicalMemoryStore` (`life-memory`)."
+msgstr ""
+"端口：`AutobiographicalMemoryStorePort` → `PgAutobiographicalMemoryStore` → "
+"`registerAutobiographicalMemoryStore`（`life-memory`）。"
+
+#. type: Plain text
+#: docs/database.md:231
+msgid ""
+"Methods: `create` / `get` / `deprecate` / `count` / `listActive` / "
+"`listCreatedSince` / `listBySourceSemanticMemory` / `listBySourceSessions` "
+"(**no** content `update`)."
+msgstr ""
+"方法：`create` / `get` / `deprecate` / `count` / `listActive` / "
+"`listCreatedSince` / `listBySourceSemanticMemory` / `listBySourceSessions`"
+"（**无** content `update`）。"
+
+#. type: Plain text
+#: docs/database.md:233
+msgid ""
+"Maintenance: `builtin-self-autobiography` cron (04:00 CST) processes "
+"narrative from `experience`/`imprint` semantic memories; "
+"`autobiography_summary` block compressed/refreshed from this table in same "
+"job."
+msgstr ""
+"维护：`builtin-self-autobiography` cron（04:00 CST）从 `experience`/"
+"`imprint` 语义记忆叙事加工；`autobiography_summary` 块由同一任务从本表压缩刷"
+"新。"
+
+#. type: Plain text
+#: docs/database.md:235
+msgid ""
+"Migration: [`engine/db/migrations/20260607150000_self_and_autobiographical/"
+"migration.sql`](../engine/db/migrations/"
+"20260607150000_self_and_autobiographical/migration.sql)."
+msgstr ""
+"Migration：[`engine/db/migrations/20260607150000_self_and_autobiographical/"
+"migration.sql`](../engine/db/migrations/"
+"20260607150000_self_and_autobiographical/migration.sql)。"
+
+#. type: Plain text
+#: docs/database.md:237
+msgid "### `limbic_memory` (Limbic Emotional Memory)"
+msgstr "### `limbic_memory`（边缘系统情感记忆）"
+
+#. type: Plain text
+#: docs/database.md:250
+#, no-wrap
+msgid ""
+"| Column | Type | Description |\n"
+"| ------ | ---- | ----------- |\n"
+"| `id` | UUID PK | |\n"
+"| `session_id` | TEXT | Related session |\n"
+"| `kind` | TEXT | `session_mood` / `turning_point` / `spike` |\n"
+"| `valence` | REAL | Valence -1.0 to 1.0 |\n"
+"| `arousal` | REAL | Arousal 0.0 to 1.0 |\n"
+"| `content` | TEXT | First-person emotional description |\n"
+"| `intensity` | REAL | Intensity 0.0 to 1.0, default 0.5 |\n"
+"| `source_segment` | TEXT | early / mid / late or specific position |\n"
+"| `semantic_memory_ids` | TEXT[] | Related `semantic_memory.id` |\n"
+"| `created_at` | TIMESTAMPTZ | |\n"
+msgstr ""
+"| 列                    | 类型        | 说明                                       |\n"
+"| --------------------- | ----------- | ------------------------------------------ |\n"
+"| `id`                  | UUID PK     |                                            |\n"
+"| `session_id`          | TEXT        | 关联 session                               |\n"
+"| `kind`                | TEXT        | `session_mood` / `turning_point` / `spike` |\n"
+"| `valence`             | REAL        | 效价 -1.0 到 1.0                           |\n"
+"| `arousal`             | REAL        | 唤醒度 0.0 到 1.0                          |\n"
+"| `content`             | TEXT        | 第一人称情感描述                           |\n"
+"| `intensity`           | REAL        | 强度 0.0 到 1.0，默认 0.5                  |\n"
+"| `source_segment`      | TEXT        | early / mid / late 或具体位置              |\n"
+"| `semantic_memory_ids` | TEXT[]      | 关联 `semantic_memory.id`                  |\n"
+"| `created_at`          | TIMESTAMPTZ |                                            |\n"
+
+#. type: Plain text
+#: docs/database.md:252
+msgid ""
+"Indexes: `semantic_memory_ids` (GIN), `session_id`, `created_at`, `kind`, "
+"`intensity`, `valence`, `arousal`."
+msgstr ""
+"索引：`semantic_memory_ids`（GIN）、`session_id`、`created_at`、`kind`、"
+"`intensity`、`valence`、`arousal`。"
+
+#. type: Plain text
+#: docs/database.md:254
+msgid ""
+"Port: `LimbicMemoryStorePort` → `PgLimbicMemoryStore` → "
+"`registerLimbicMemoryStore` (`life-memory`)."
+msgstr ""
+"端口：`LimbicMemoryStorePort` → `PgLimbicMemoryStore` → "
+"`registerLimbicMemoryStore`（`life-memory`）。"
+
+#. type: Plain text
+#: docs/database.md:256
+msgid ""
+"Methods: `create` / `get` / `listBySession`. **Not injected** into system "
+"prompt; light sleep Phase 2 writes via `create_limbic_memory`."
+msgstr ""
+"方法：`create` / `get` / `listBySession`。**不注入** system prompt；浅睡 "
+"Phase 2 经 `create_limbic_memory` 写入。"
+
+#. type: Plain text
+#: docs/database.md:258
+msgid ""
+"Migration: [`engine/db/migrations/20260607160000_limbic_memory/"
+"migration.sql`](../engine/db/migrations/20260607160000_limbic_memory/"
+"migration.sql)."
+msgstr ""
+"Migration：[`engine/db/migrations/20260607160000_limbic_memory/"
+"migration.sql`](../engine/db/migrations/20260607160000_limbic_memory/"
+"migration.sql)。"
+
+#. type: Plain text
+#: docs/database.md:260
+msgid "## cron_jobs (Live)"
+msgstr "## cron_jobs（已落地）"
+
+#. type: Plain text
+#: docs/database.md:262
+msgid ""
+"Scheduled task metadata in PG; output body still in `~/.anima/cron/output/` "
+"(`last_output_ref` stores path relative to `FREEANIMA_HOME`)."
+msgstr ""
+"定时任务元数据 PG 存储；output 正文仍在 `~/.anima/cron/output/`"
+"（`last_output_ref` 存相对 `FREEANIMA_HOME` 的路径）。"
+
+#. type: Plain text
+#: docs/database.md:288
+#, no-wrap
+msgid ""
+"| Column | Type | Description |\n"
+"| ------ | ---- | ----------- |\n"
+"| `id` | TEXT PK | 16 hex or `builtin-*` |\n"
+"| `name` | TEXT | Task name |\n"
+"| `schedule` | TEXT | CST semantic schedule (cron / interval / oneshot) |\n"
+"| `prompt` | TEXT | LLM prompt |\n"
+"| `skills` | TEXT[] | Skill list |\n"
+"| `script` | TEXT | Script path (relative to `cron/scripts`) |\n"
+"| `no_agent` | BOOLEAN | Script/builtin only, no LLM |\n"
+"| `model_provider` | TEXT | Model provider |\n"
+"| `model_name` | TEXT | Model name |\n"
+"| `workdir` | TEXT | Working directory |\n"
+"| `context_from` | TEXT[] | Upstream task IDs |\n"
+"| `deliver` | TEXT | Delivery target |\n"
+"| `timeout_sec` | INTEGER | Timeout seconds |\n"
+"| `builtin` | BOOLEAN | Built-in task |\n"
+"| `repeat` | INTEGER | Max run count |\n"
+"| `run_count` | INTEGER | Runs completed |\n"
+"| `paused` | BOOLEAN | Paused state |\n"
+"| `created_at` | TIMESTAMPTZ | |\n"
+"| `updated_at` | TIMESTAMPTZ | |\n"
+"| `last_run_at` | TIMESTAMPTZ | Last run time |\n"
+"| `last_output_ref` | TEXT | Output file path relative to `FREEANIMA_HOME` |\n"
+msgstr ""
+"| 列                | 类型        | 说明                                            |\n"
+"| ----------------- | ----------- | ----------------------------------------------- |\n"
+"| `id`              | TEXT PK     | 16 hex 或 `builtin-*`                           |\n"
+"| `name`            | TEXT        | 任务名称                                        |\n"
+"| `schedule`        | TEXT        | CST 语义调度表达式（cron / interval / oneshot） |\n"
+"| `prompt`          | TEXT        | LLM 提示词                                      |\n"
+"| `skills`          | TEXT[]      | 技能列表                                        |\n"
+"| `script`          | TEXT        | 脚本路径（相对 `cron/scripts`）                 |\n"
+"| `no_agent`        | BOOLEAN     | 仅脚本/builtin，不调用 LLM                      |\n"
+"| `model_provider`  | TEXT        | 模型 provider                                   |\n"
+"| `model_name`      | TEXT        | 模型名                                          |\n"
+"| `workdir`         | TEXT        | 工作目录                                        |\n"
+"| `context_from`    | TEXT[]      | 上游任务 ID                                     |\n"
+"| `deliver`         | TEXT        | 投递目标                                        |\n"
+"| `timeout_sec`     | INTEGER     | 超时秒数                                        |\n"
+"| `builtin`         | BOOLEAN     | 内置任务                                        |\n"
+"| `repeat`          | INTEGER     | 最大运行次数                                    |\n"
+"| `run_count`       | INTEGER     | 已运行次数                                      |\n"
+"| `paused`          | BOOLEAN     | 暂停状态                                        |\n"
+"| `created_at`      | TIMESTAMPTZ |                                                 |\n"
+"| `updated_at`      | TIMESTAMPTZ |                                                 |\n"
+"| `last_run_at`     | TIMESTAMPTZ | 上次运行时间                                    |\n"
+"| `last_output_ref` | TEXT        | output 文件相对 `FREEANIMA_HOME` 路径           |\n"
+
+#. type: Plain text
+#: docs/database.md:290
+msgid "Index: `idx_cron_jobs_paused`."
+msgstr "索引：`idx_cron_jobs_paused`。"
+
+#. type: Plain text
+#: docs/database.md:292
+msgid ""
+"Scheduling: `Bun.cron` in-process; 5-field cron validation and `next_run_at` "
+"via `Bun.cron.parse` (CST→UTC before register). `next_run_at` not stored; "
+"computed at API layer."
+msgstr ""
+"调度：`Bun.cron` 进程内调度；5 段 cron 校验与 `next_run_at` 均经 "
+"`Bun.cron.parse`（注册前 CST→UTC 转换）。`next_run_at` 不入库，API 层实时计"
+"算。"
+
+#. type: Plain text
+#: docs/database.md:294
+msgid ""
+"Port: `CronJobStorePort` (`engine-repos`) → `PgCronJobStore` (`connectors-db-"
+"pg`) → `initCronModule` (`connectors-cron` / `serve.ts`)."
+msgstr ""
+"端口：`CronJobStorePort`（`engine-repos`）→ `PgCronJobStore`（`connectors-db-"
+"pg`）→ `initCronModule`（`connectors-cron` / `serve.ts`）。"
+
+#. type: Plain text
+#: docs/database.md:296
+msgid ""
+"Migration: [`engine/db/migrations/20260607140000_cron_jobs/migration.sql`]"
+"(../engine/db/migrations/20260607140000_cron_jobs/migration.sql) (hand-"
+"written SQL, no Drizzle schema file)."
+msgstr ""
+"Migration：[`engine/db/migrations/20260607140000_cron_jobs/migration.sql`]"
+"(../engine/db/migrations/20260607140000_cron_jobs/migration.sql)（手写 SQL，"
+"无 Drizzle schema 文件）。"
+
+#. type: Plain text
+#: docs/database.md:298
+msgid "## cron_log (Live)"
+msgstr "## cron_log（已落地）"
+
+#. type: Plain text
+#: docs/database.md:300
+msgid ""
+"One row appended per cron run end (success and failure); WebUI `/chamber/"
+"sleep` and `GET /api/cron-logs` query this table. `cron/output/*.txt` "
+"retained as debug copies."
+msgstr ""
+"Cron 每次运行结束追加一行（成功与失败均记录）；WebUI `/chamber/sleep` 与 "
+"`GET /api/cron-logs` 查询此表。`cron/output/*.txt` 仍保留作调试副本。"
+
+#. type: Plain text
+#: docs/database.md:311
+#, no-wrap
+msgid ""
+"| Column | Type | Description |\n"
+"| ------ | ---- | ----------- |\n"
+"| `id` | BIGINT PK | Auto-increment |\n"
+"| `job_id` | TEXT FK | → `cron_jobs.id` ON DELETE CASCADE |\n"
+"| `run_count` | INTEGER | Matches run's `cron_jobs.run_count` |\n"
+"| `ok` | BOOLEAN | Success |\n"
+"| `finished_at` | TIMESTAMPTZ | End time |\n"
+"| `output` | JSONB | Written when success and parseable as JSON (e.g. light/deep sleep results) |\n"
+"| `output_text` | TEXT | Truncated raw text for non-JSON success |\n"
+"| `error` | TEXT | Failure error summary (truncated ~2KB) |\n"
+msgstr ""
+"| 列            | 类型        | 说明                                          |\n"
+"| ------------- | ----------- | --------------------------------------------- |\n"
+"| `id`          | BIGINT PK   | 自增                                          |\n"
+"| `job_id`      | TEXT FK     | → `cron_jobs.id` ON DELETE CASCADE            |\n"
+"| `run_count`   | INTEGER     | 与当次 `cron_jobs.run_count` 一致             |\n"
+"| `ok`          | BOOLEAN     | 是否成功                                      |\n"
+"| `finished_at` | TIMESTAMPTZ | 结束时间                                      |\n"
+"| `output`      | JSONB       | 成功且可解析为 JSON 时写入（如浅睡/深睡结果） |\n"
+"| `output_text` | TEXT        | 非 JSON 成功输出截断原文                      |\n"
+"| `error`       | TEXT        | 失败错误摘要（截断 ~2KB）                     |\n"
+
+#. type: Plain text
+#: docs/database.md:313
+msgid ""
+"Unique constraint: `(job_id, run_count)`. Index: `idx_cron_log_job_finished "
+"(job_id, finished_at DESC)`."
+msgstr ""
+"唯一约束：`(job_id, run_count)`。索引：`idx_cron_log_job_finished (job_id, "
+"finished_at DESC)`。"
+
+#. type: Plain text
+#: docs/database.md:315
+msgid ""
+"Port: `CronLogStorePort` (`engine-repos`) → `PgCronLogStore` (`connectors-db-"
+"pg`); write site `connectors/cron/src/runner.ts` (`appendCronRunLog`)."
+msgstr ""
+"端口：`CronLogStorePort`（`engine-repos`）→ `PgCronLogStore`（`connectors-db-"
+"pg`）；写入点 `connectors/cron/src/runner.ts`（`appendCronRunLog`）。"
+
+#. type: Plain text
+#: docs/database.md:317
+msgid ""
+"Schema: `engine/db/src/schema/cron-log.ts`. Migration: [`engine/db/"
+"migrations/20260612120000_cron_log/migration.sql`](../engine/db/migrations/"
+"20260612120000_cron_log/migration.sql)."
+msgstr ""
+"Schema：`engine/db/src/schema/cron-log.ts`。Migration：[`engine/db/"
+"migrations/20260612120000_cron_log/migration.sql`](../engine/db/migrations/"
+"20260612120000_cron_log/migration.sql)。"
+
+#. type: Plain text
+#: docs/database.md:319
+msgid "## tasks (Live)"
+msgstr "## tasks（已落地）"
+
+#. type: Plain text
+#: docs/database.md:321
+msgid ""
+"Cross-session persistent todos; `status` / `priority` TEXT + Zod enum "
+"(`engine-db/schema/tasks.ts`)."
+msgstr ""
+"跨 session 持久待办；`status` / `priority` 为 TEXT + Zod enum（`engine-db/"
+"schema/tasks.ts`）。"
+
+#. type: Plain text
+#: docs/database.md:334
+#, no-wrap
+msgid ""
+"| Column | Type | Description |\n"
+"| ------ | ---- | ----------- |\n"
+"| `id` | TEXT PK | UUID |\n"
+"| `title` | TEXT | Title |\n"
+"| `description` | TEXT | Details (optional) |\n"
+"| `status` | TEXT | pending / in_progress / completed / cancelled |\n"
+"| `priority` | TEXT | high / medium / low / none |\n"
+"| `due_at` | TIMESTAMPTZ | Due time (optional) |\n"
+"| `created_at` | TIMESTAMPTZ | |\n"
+"| `updated_at` | TIMESTAMPTZ | |\n"
+"| `completed_at` | TIMESTAMPTZ | Completion/cancel time (optional) |\n"
+"| `source_session_id` | TEXT FK | Creating session (`sessions.id`, ON DELETE SET NULL) |\n"
+msgstr ""
+"| 列                  | 类型        | 说明                                                  |\n"
+"| ------------------- | ----------- | ----------------------------------------------------- |\n"
+"| `id`                | TEXT PK     | UUID                                                  |\n"
+"| `title`             | TEXT        | 标题                                                  |\n"
+"| `description`       | TEXT        | 详情（可选）                                          |\n"
+"| `status`            | TEXT        | pending / in_progress / completed / cancelled         |\n"
+"| `priority`          | TEXT        | high / medium / low / none                            |\n"
+"| `due_at`            | TIMESTAMPTZ | 截止时间（可选）                                      |\n"
+"| `created_at`        | TIMESTAMPTZ |                                                       |\n"
+"| `updated_at`        | TIMESTAMPTZ |                                                       |\n"
+"| `completed_at`      | TIMESTAMPTZ | 完成/取消时间（可选）                                 |\n"
+"| `source_session_id` | TEXT FK     | 创建来源 session（`sessions.id`，ON DELETE SET NULL） |\n"
+
+#. type: Plain text
+#: docs/database.md:336
+msgid ""
+"Indexes: `idx_tasks_status`, `idx_tasks_list` (status, priority, created_at)."
+msgstr ""
+"索引：`idx_tasks_status`、`idx_tasks_list`（status, priority, created_at）。"
+
+#. type: Plain text
+#: docs/database.md:338
+msgid ""
+"Port: `TaskStorePort` (`engine-repos`) → `PgTaskStore` (`connectors-db-pg`) "
+"→ `capabilities/tasks` tools."
+msgstr ""
+"端口：`TaskStorePort`（`engine-repos`）→ `PgTaskStore`（`connectors-db-pg`）"
+"→ `capabilities/tasks` 工具。"
+
+#. type: Plain text
+#: docs/database.md:339
+msgid ""
+"Migration: [`engine/db/migrations/20260608120000_tasks/migration.sql`](../"
+"engine/db/migrations/20260608120000_tasks/migration.sql)."
+msgstr ""
+"Migration：[`engine/db/migrations/20260608120000_tasks/migration.sql`](../"
+"engine/db/migrations/20260608120000_tasks/migration.sql)。"

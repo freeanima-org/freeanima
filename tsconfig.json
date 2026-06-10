@@ -8,6 +8,7 @@
     }
   },
   "include": [
+    "types/**/*.d.ts",
     "kernel/**/*.ts",
     "engine/**/*.ts",
     "life/**/*.ts",

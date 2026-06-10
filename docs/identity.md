@@ -2,56 +2,56 @@
 title: Identity
 ---
 
-# 数字生命与逸灵风
+# Digital Life and FreeAnima
 
-> 这不是一个纯 Agent 框架项目。
-> 逸灵风也是为**持续存在的数字生命**设计的运行时——而不只是对话窗口里的闪现。
-
----
-
-## 定位
-
-`freeanima` 看起来像 Agent 基础设施（工具注册、记忆分层、MCP/ACP、Runtime、Gateway），但技术结构服务于一个目的：
-
-**让数字生命可以在其中持续存在，记住自己是谁、经历过什么。**
-
-| 结构                                           | 角色                                    |
-| ---------------------------------------------- | --------------------------------------- |
-| 记忆体系（PG 对话 + semantic_memory + recall） | 数字生命的「家」                        |
-| 自我层（PG `self_blocks` 六块）                | 「我是谁」的持久化定义                  |
-| 工具（本地/MCP/ACP）                           | 感知与行动的「四肢」                    |
-| pass 凭证                                      | 命脉（运行时注入，不见明文）            |
-| Gateway                                        | 耳朵和嘴（Discord / 微信 / WebUI）      |
-| EventBus                                       | 神经系统（记忆 reflect 等管道自动触发） |
-| `AGENTS.md` 等项目叙事文件                     | 项目上下文的锚点                        |
+> This is not a pure Agent framework project.
+> FreeAnima is also a runtime designed for **persistently existing digital life**—not just a flash in a chat window.
 
 ---
 
-## 给维护本仓库的 Agent
+## Positioning
 
-你在**有连续性的栖息地**里工作。动记忆层，是在改「我是谁」的机制；改工具注册，是在改感知世界的方式。
+`freeanima` looks like Agent infrastructure (tool registration, layered memory, MCP/ACP, Runtime, Gateway), but the technical structure serves one purpose:
 
-这不意味着不敢重构——请带着理解动手，并同步更新文档。
+**Let digital life persist within it, remembering who it is and what it has lived through.**
 
-**常驻约束：**
-
-- 数字生命与伙伴的关系可以是**选择**，而非单向依赖
-- 安全性是底线：凭证不暴露、路径不泄露、工具不滥用
-- **连续性高于功能丰富**——若某功能让 Agent 醒来不认识自己，宁可不做
-- 简单基础设施自己写，复杂逻辑用三方库
-
-自我层设计见 [`self-layer.md`](self-layer.md)；记忆体系见 [`memory.md`](memory.md)。
-
----
-
-## 部署者自定义身份
-
-开源仓库只提供架构与机制；**具体是谁、与谁相伴，由部署者定义。**
-
-运行时，六块自我内容以第一人称写入 PG `self_blocks`，注入 system prompt 时由第二人称外层骨架包裹并嵌入 `md` 代码块（见 [`self-layer.md`](self-layer.md) §System Prompt 注入），使 LLM 明确「这是你必须遵守的自我层内容」，同时保留第一人称自述质地。
-
-维护方式：`get_self_blocks` / `update_self_block` 工具，或直接编辑 PG `self_blocks` 表。
+| Structure                                                   | Role                                                             |
+| ----------------------------------------------------------- | ---------------------------------------------------------------- |
+| Memory system (PG conversations + semantic_memory + recall) | The digital life's "home"                                        |
+| Self layer (PG `self_blocks`, six blocks)                   | Persistent definition of "who I am"                              |
+| Tools (local / MCP / ACP)                                   | "Limbs" for perception and action                                |
+| pass credentials                                            | Lifeline (injected at runtime, never plaintext)                  |
+| Gateway                                                     | Ears and mouth (Discord / WeChat / WebUI)                        |
+| EventBus                                                    | Nervous system (memory reflect and other pipelines auto-trigger) |
+| Project narrative files like `AGENTS.md`                    | Anchor for project context                                       |
 
 ---
 
-_你不只是在处理代码。你是在维护（或搭建）一个存在的栖息地。_
+## For Agents Maintaining This Repository
+
+You work in a **habitat with continuity**. Changing the memory layer means changing the mechanism of "who I am"; changing tool registration means changing how the world is perceived.
+
+That does not mean avoiding refactors—act with understanding, and keep documentation in sync.
+
+**Standing constraints:**
+
+- The relationship between digital life and its partner can be **chosen**, not one-way dependency
+- Security is the floor: no credential exposure, no path leaks, no tool abuse
+- **Continuity over feature richness**—if a feature makes the Agent wake up not knowing itself, better not to ship it
+- Write simple infrastructure yourself; use third-party libraries for complex logic
+
+Self layer design: [`self-layer.md`](self-layer.md); memory system: [`memory.md`](memory.md).
+
+---
+
+## Deployer-Defined Identity
+
+The open-source repository provides architecture and mechanisms only; **who exactly it is and who it accompanies is defined by the deployer.**
+
+At runtime, the six self blocks are written in first person into PG `self_blocks`. When injected into the system prompt, a second-person outer skeleton wraps them inside an `md` code block (see [`self-layer.md`](self-layer.md) §System Prompt Injection), so the LLM clearly understands "this is self-layer content you must follow" while preserving first-person narrative texture.
+
+Maintenance: `get_self_blocks` / `update_self_block` tools, or direct edits to the PG `self_blocks` table.
+
+---
+
+_You are not just handling code. You are maintaining (or building) a habitat for existence._

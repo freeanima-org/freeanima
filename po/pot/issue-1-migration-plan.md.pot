@@ -1,0 +1,464 @@
+# SOME DESCRIPTIVE TITLE
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-06-10 17:00+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Plain text
+#: docs/README.md:1 docs/compression.md:1 docs/compression.md:11
+#: docs/compression.md:22 docs/compression.md:49 docs/compression.md:96
+#: docs/compression.md:118 docs/compression.md:156 docs/compression.md:180
+#: docs/compression.md:228 docs/compression.md:262 docs/compression.md:275
+#: docs/compression.md:327 docs/compression.md:348 docs/compression.md:368
+#: docs/compression.md:384 docs/database.md:1 docs/database.md:33
+#: docs/designs/desktop-companion.md:1 docs/designs/execute-code-runtimes.md:1
+#: docs/designs/issue-1-migration-plan.md:1
+#: docs/designs/pair-programming-v1.md:1
+#: docs/designs/pair-programming-v1.md:321 docs/designs/probe-architecture.md:1
+#: docs/designs/probe-architecture.md:165 docs/designs/recall-flow.md:1
+#: docs/designs/time-perception.md:1 docs/identity.md:1 docs/identity.md:10
+#: docs/identity.md:28 docs/identity.md:45 docs/identity.md:55 docs/memory.md:1
+#: docs/memory.md:17 docs/memory.md:53 docs/memory.md:160 docs/memory.md:191
+#: docs/memory.md:211 docs/memory.md:232 docs/memory.md:249 docs/security.md:1
+#: docs/self-layer.md:1 docs/self-layer.md:31 docs/self-layer.md:53
+#: docs/self-layer.md:64 docs/self-layer.md:78 docs/self-layer.md:94
+#: docs/self-layer.md:105 docs/sleep.md:1 docs/versioning.md:1
+#, no-wrap
+msgid "---\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/issue-1-migration-plan.md:3
+#, no-wrap
+msgid ""
+"title: Issue 1 Migration Plan\n"
+"---\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/issue-1-migration-plan.md:6
+msgid "## Migration Plan Supplement (2026-06-02)"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/issue-1-migration-plan.md:9
+msgid ""
+"> **Archived / historical record** — RFC #1 migration completed 2026-06-05; "
+"steps 0–11 below for reference, not current operational guide.  > Responds "
+"to Issue discussion #4 (migration strategy), with current-state assessment "
+"conclusions."
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/issue-1-migration-plan.md:11
+msgid ""
+"### Strategy: Parallel New Packages + Bottom-Up Per-Package Migration "
+"(Strangler Fig)"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/issue-1-migration-plan.md:13
+msgid ""
+"No incremental refactor inside old directories; **flatten directories by RFC "
+"layer at repo root**, migrate **package by package starting from kernel**. "
+"**Migration completed 2026-06-05** (`packages/`, `apps/` removed)."
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/issue-1-migration-plan.md:15
+#, no-wrap
+msgid "**Confirmed decisions:**\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/issue-1-migration-plan.md:18
+msgid ""
+"**Directory layout:** Flat at root — `kernel/`, `engine/`, `life/`, "
+"`capabilities/`, `connectors/`, `service/`, `cli/`"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/issue-1-migration-plan.md:18
+msgid ""
+"**Package naming:** `@freeanima/{layer}-{slug}` (see [`AGENTS.md`](../../"
+"AGENTS.md))"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/issue-1-migration-plan.md:20
+msgid "### New Stack Package Naming (2026-06-04)"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/issue-1-migration-plan.md:22
+msgid ""
+"Single source of truth for naming: [`AGENTS.md`](../../AGENTS.md#新栈包命名"
+"rfc-1)."
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/issue-1-migration-plan.md:28
+#, no-wrap
+msgid ""
+"| Form | Pattern | Examples |\n"
+"| ---- | ------- | -------- |\n"
+"| Layer aggregate | `@freeanima/{layer}` | `kernel`, `engine`, `service` |\n"
+"| In-layer component | `@freeanima/{layer}-{slug}` | `kernel-eventbus`, `engine-tool`, `life-memory` |\n"
+"| In-layer implementation | `@freeanima/{layer}-{slug}-{impl}` | `connectors-eventbus-sqlite`, `capabilities-provider-openai` |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/issue-1-migration-plan.md:30
+msgid ""
+"Slug compound words without internal hyphen (`eventbus` not `event-bus`)."
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/issue-1-migration-plan.md:32
+msgid "### Target Directory Structure"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/issue-1-migration-plan.md:61
+#, no-wrap
+msgid ""
+"```\n"
+"freeanima/\n"
+"├── kernel/\n"
+"│   ├── eventbus/              # @freeanima/kernel-eventbus\n"
+"│   ├── hooks/                 # @freeanima/kernel-hooks\n"
+"│   ├── logging/               # @freeanima/kernel-logging\n"
+"│   └── kernel/                # @freeanima/kernel (aggregate)\n"
+"├── engine/                    # @freeanima/engine (aggregate); subpackages engine-tool, engine-provider, etc.\n"
+"├── life/\n"
+"│   ├── memory/                # @freeanima/life-memory\n"
+"│   ├── self/                  # @freeanima/life-self\n"
+"│   └── estate/                # @freeanima/life-estate\n"
+"├── capabilities/\n"
+"│   ├── tools/                 # @freeanima/capabilities-tools\n"
+"│   ├── provider/              # @freeanima/capabilities-provider (or capabilities-provider-openai)\n"
+"│   ├── mcp/                   # @freeanima/capabilities-mcp\n"
+"│   ├── acp/                   # @freeanima/capabilities-acp\n"
+"│   └── clarify/               # @freeanima/capabilities-clarify\n"
+"├── connectors/\n"
+"│   ├── eventbus-sqlite/       # @freeanima/connectors-eventbus-sqlite\n"
+"│   ├── gateway/               # @freeanima/connectors-gateway\n"
+"│   ├── webui/                 # @freeanima/connectors-webui (HTTP server + Vue SPA)\n"
+"│   ├── cron/                  # @freeanima/connectors-cron\n"
+"│   └── commands/              # @freeanima/connectors-commands\n"
+"├── service/                   # @freeanima/service (AnimaService + serve)\n"
+"├── cli/                       # @freeanima/cli\n"
+"└── tests/                     # @freeanima/integration-tests\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/issue-1-migration-plan.md:63
+msgid "### workspace (bun)"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/issue-1-migration-plan.md:75
+#, no-wrap
+msgid ""
+"```yaml\n"
+"packages:\n"
+"  - \"kernel/*\"\n"
+"  - \"engine/*\"\n"
+"  - \"life/*\"\n"
+"  - \"capabilities/*\"\n"
+"  - \"connectors/*\"\n"
+"  - \"service/*\"\n"
+"  - \"cli\"\n"
+"  - \"tests\"\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/issue-1-migration-plan.md:77
+msgid "### Migration Steps"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/issue-1-migration-plan.md:81
+#, no-wrap
+msgid ""
+"| Step | Package | Status |\n"
+"| ---- | ------- | ------ |\n"
+"| 0–11 | See table below | ✅ Complete (2026-06-05) |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/issue-1-migration-plan.md:96
+#, no-wrap
+msgid ""
+"| Step | Package | Completion criteria |\n"
+"| ---- | ------- | ------------------- |\n"
+"| 0 | legacy rename | Full repo imports to legacy; legacy shells later removed |\n"
+"| 1 | `kernel/` | hooks / eventbus / schemas / db |\n"
+"| 2 | `capabilities/provider/` | LLM Provider implementations |\n"
+"| 3 | `engine/` | Main loop + tool loop; engine calls `@freeanima/engine-db` directly |\n"
+"| 4 | `life/memory/` | Memory pipeline, skills, retrieval |\n"
+"| 5 | `life/self/` | Shell (`@freeanima/life-self`) |\n"
+"| 6 | `life/estate/` | Shell (`@freeanima/life-estate`) |\n"
+"| 7 | `capabilities/*` | tools / mcp / acp / clarify |\n"
+"| 8 | `connectors/*` | gateway / cron / commands / webui |\n"
+"| 9 | `service/` | `serve` + `AnimaService` assembles full stack |\n"
+"| 10 | `cli/` | `anima` bin → `@freeanima/service` |\n"
+"| 11 | Remove legacy | Remove `packages/`, `apps/` |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/issue-1-migration-plan.md:98
+msgid ""
+"Production entry: `anima service` → [`service/service/src/serve.ts`](../../"
+"service/service/src/serve.ts)."
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/issue-1-migration-plan.md:100
+msgid "### Cross-Cutting Modules"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/issue-1-migration-plan.md:106
+#, no-wrap
+msgid ""
+"| Module | Transition | Final home |\n"
+"| ------ | ---------- | ---------- |\n"
+"| `@freeanima/engine-db` | **Migrated** to `engine/db`; shared by life/memory and service | Long-term persistence; types in engine-db |\n"
+"| EventBus/registry/config implementations | New kernel keeps interfaces only | service |\n"
+"| Turbo/CI | Merged into main CI (typecheck / lint / dep-check / test) | |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/issue-1-migration-plan.md:108
+msgid "### Key Design Decisions (Responding to Open Items)"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/issue-1-migration-plan.md:115
+#, no-wrap
+msgid ""
+"| # | Question | Decision |\n"
+"| - | -------- | -------- |\n"
+"| 1 | Main loop with zero tools at startup | Already satisfied; empty tool list enables pure chat, no special handling |\n"
+"| 2 | Skills ownership | **memory** (procedural memory); self handles HOOK injection |\n"
+"| 3 | Capability layer registration | Each package exports independently; **service layer unified register entry** |\n"
+"| 4 | Migration strategy | **Parallel new packages + legacy rename** (this plan) |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/issue-1-migration-plan.md:117
+msgid "### Required New-Stack Improvements"
+msgstr ""
+
+#. type: Bullet: '1. '
+#: docs/designs/issue-1-migration-plan.md:121
+msgid ""
+"**TurnLifecycle unified** — ✅ `turn-lifecycle.ts` (non-streaming + "
+"streaming)"
+msgstr ""
+
+#. type: Bullet: '2. '
+#: docs/designs/issue-1-migration-plan.md:121
+msgid ""
+"**engine calls db directly** — ✅ `engine-conversation` → `@freeanima/engine-"
+"db` (no SessionStore injection)"
+msgstr ""
+
+#. type: Bullet: '3. '
+#: docs/designs/issue-1-migration-plan.md:121
+msgid ""
+"**AnimaService split** — ✅ `anima-service` + status/sessions/memory/"
+"messaging modules"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/issue-1-migration-plan.md:123
+msgid "### Layer Boundary dep-check"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/issue-1-migration-plan.md:125
+msgid ""
+"Script: [`scripts/check-layer-deps.ts`](../../scripts/check-layer-deps.ts), "
+"`bun run dep-check` (in `bun run check`)."
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/issue-1-migration-plan.md:134
+#, no-wrap
+msgid ""
+"| Layer | Allowed `@freeanima/*` | Forbidden |\n"
+"| ----- | ---------------------- | --------- |\n"
+"| `kernel/**` | `kernel-*` | Other workspace packages |\n"
+"| `engine/**` | `kernel-*`, `engine-*`, `service-config`, `service-logging`, `capabilities-provider-*` | `connectors-*`, `service` (runtime) |\n"
+"| `life/**` | `kernel-*`, `life-*`, `engine-tool`, `connectors-sqlite`, `service-config`, `service-logging` | Other `connectors-*`, `service` |\n"
+"| `capabilities/**` | `kernel-*`, `engine-*`, `capabilities-*`, `life-memory`, `service-config`, `service-logging` | `connectors-*`, `service` |\n"
+"| `connectors/**` | Lower layers + `service` | — |\n"
+"| `service/**` | All | — |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/issue-1-migration-plan.md:136
+msgid "Test files (`**/*.{test,spec}.ts`, `**/tests/**`) and `cli/**` exempt."
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/issue-1-migration-plan.md:138
+msgid "### PR Split Principles"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/issue-1-migration-plan.md:140
+#, no-wrap
+msgid "**One step per PR**; step 0 alone, not merged with step 1.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/issue-1-migration-plan.md:142
+msgid "### Step 0 (Standalone PR): legacy rename"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/issue-1-migration-plan.md:144
+#, no-wrap
+msgid "**Scope: mechanical rename only, zero logic change, no new layer directories.**\n"
+msgstr ""
+
+#. type: Bullet: '1. '
+#: docs/designs/issue-1-migration-plan.md:150
+msgid ""
+"Existing `packages/*`, `apps/*` `package.json` → `name` to `@freeanima/"
+"legacy-*`"
+msgstr ""
+
+#. type: Bullet: '2. '
+#: docs/designs/issue-1-migration-plan.md:150
+msgid "Full repo imports / workspace deps / turbo config sync update"
+msgstr ""
+
+#. type: Bullet: '3. '
+#: docs/designs/issue-1-migration-plan.md:150
+msgid ""
+"Root `package.json` devDependencies, bin paths point to legacy package names"
+msgstr ""
+
+#. type: Bullet: '4. '
+#: docs/designs/issue-1-migration-plan.md:150
+msgid "Run full CI (typecheck + test), must be green"
+msgstr ""
+
+#. type: Bullet: '5. '
+#: docs/designs/issue-1-migration-plan.md:150
+msgid ""
+"Update `AGENTS.md` / this file with legacy package name mapping if needed "
+"(no standalone module tree doc)"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/issue-1-migration-plan.md:152
+#, no-wrap
+msgid "**Legacy package name mapping (example):**\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/issue-1-migration-plan.md:168
+#, no-wrap
+msgid ""
+"| Name (before step 0) | Legacy name (after step 0) |\n"
+"| -------------------- | -------------------------- |\n"
+"| `@freeanima/kernel` | ~~`@freeanima/legacy-kernel`~~ (removed, split to kernel-_ / service-_) |\n"
+"| `@freeanima/engine` | ~~`@freeanima/legacy-engine`~~ (removed, split to engine-\\* / life-memory) |\n"
+"| `@freeanima/runtime` | `@freeanima/legacy-runtime` |\n"
+"| `@freeanima/memory` | ~~`@freeanima/legacy-memory`~~ → `@freeanima/life-memory` |\n"
+"| `@freeanima/db` | ~~`@freeanima/legacy-db`~~ → `@freeanima/engine-db` (`engine/db`) |\n"
+"| `@freeanima/server` | `@freeanima/legacy-server` |\n"
+"| `@freeanima/gateway` | ~~`@freeanima/legacy-gateway`~~ → `@freeanima/connectors-gateway` |\n"
+"| `@freeanima/tools` | `@freeanima/legacy-tools` (core split to `@freeanima/capabilities-tools`) |\n"
+"| `@freeanima/integrations` | `@freeanima/legacy-integrations` |\n"
+"| `@freeanima/clarify` | ~~`@freeanima/legacy-clarify`~~ → `@freeanima/capabilities-clarify` |\n"
+"| `@freeanima/api` | `@freeanima/legacy-api` |\n"
+"| `@freeanima/cli` | `@freeanima/legacy-cli` |\n"
+"| `@freeanima/webui` | `@freeanima/legacy-webui` |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/issue-1-migration-plan.md:170
+#, no-wrap
+msgid "**Removed legacy packages (2026-06-05):** `@freeanima/legacy-kernel`, `@freeanima/legacy-engine`, `@freeanima/legacy-db`, `@freeanima/legacy-memory`, `@freeanima/legacy-integrations`. `packages/*` and `apps/*` legacy shells cleared (2026-06-05 L2); `@freeanima/runtime/server/tools/api/cli` etc. migrated to `service/`, `kernel/api`, `cli/` new-stack packages.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/issue-1-migration-plan.md:172
+#, no-wrap
+msgid "**Step 0 did not (historical):** Create `kernel/` etc.; change root `package.json` workspaces; change runtime behavior.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/issue-1-migration-plan.md:174
+msgid "### Step 1 (Standalone PR): Create `kernel/`"
+msgstr ""
+
+#. type: Bullet: '1. '
+#: docs/designs/issue-1-migration-plan.md:178
+msgid ""
+"Extend root `package.json` workspaces (new layer globs can be added this "
+"step or gradually)"
+msgstr ""
+
+#. type: Bullet: '2. '
+#: docs/designs/issue-1-migration-plan.md:178
+msgid ""
+"Create `kernel/package.json` (`@freeanima/kernel`), pure interface skeleton "
+"+ schemas"
+msgstr ""
+
+#. type: Bullet: '3. '
+#: docs/designs/issue-1-migration-plan.md:178
+msgid "New kernel unit tests; legacy stack CI still green"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/issue-1-migration-plan.md:180
+msgid "### Current-State Assessment Summary (2026-06-05)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/issue-1-migration-plan.md:184
+msgid "RFC migration steps 0–11 **complete**"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/issue-1-migration-plan.md:184
+msgid ""
+"Runtime entry: `AnimaService` (modular split in [`service/service/src/"
+"runtime/`](../../service/service/src/runtime/))"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/issue-1-migration-plan.md:184
+msgid ""
+"Layer boundaries: `bun run dep-check` ([`scripts/check-layer-deps.ts`](../../"
+"scripts/check-layer-deps.ts))"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/issue-1-migration-plan.md:184
+msgid ""
+"Pending migration: `life-estate` (resource layer) via shell package; `life-"
+"self` (self layer) live"
+msgstr ""

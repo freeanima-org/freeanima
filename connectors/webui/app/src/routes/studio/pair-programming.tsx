@@ -6,6 +6,7 @@ import { TerminalPanel } from "@/components/studio/TerminalPanel.tsx";
 import { SessionPanel } from "@/components/studio/SessionPanel.tsx";
 import { useMediaQuery } from "@/hooks/useMediaQuery.ts";
 import { usePairProgrammingStore } from "@/stores/pair-programming.ts";
+import { m } from "@/lib/i18n.ts";
 import { patchStudioConfig } from "@/lib/api.ts";
 
 export const Route = createFileRoute("/studio/pair-programming")({
@@ -91,9 +92,9 @@ function PairProgrammingPage() {
     return (
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="max-w-md text-center space-y-4">
-          <h3 className="text-lg font-bold">配置工作目录</h3>
+          <h3 className="text-lg font-bold">{m.webui_studio_workdir_title()}</h3>
           <p className="text-sm text-base-content/60">
-            结对编程需要先设置{" "}
+            {m.webui_studio_workdir_lead()}{" "}
             <code className="text-xs bg-base-300 px-1 rounded">studio.workspace</code>。
           </p>
           <form
@@ -111,11 +112,11 @@ function PairProgrammingPage() {
               placeholder="/path/to/project"
             />
             <button type="submit" className="btn btn-primary" disabled={!workspaceInput.trim()}>
-              保存
+              {m.webui_common_save()}
             </button>
           </form>
           <Link to="/chamber/config" className="btn btn-ghost btn-sm">
-            前往卧室配置
+            {m.webui_studio_workdir_goto_chamber()}
           </Link>
         </div>
       </div>
@@ -129,7 +130,7 @@ function PairProgrammingPage() {
           type="button"
           className={`btn btn-ghost btn-xs gap-1 ${leftVisible ? "" : "opacity-40"}`}
           onClick={() => setLeftVisible((v) => !v)}
-          title="切换左侧面板"
+          title={m.webui_studio_toggle_left_panel()}
         >
           📁
         </button>
@@ -137,7 +138,7 @@ function PairProgrammingPage() {
           type="button"
           className={`btn btn-ghost btn-xs gap-1 ${terminalVisible ? "" : "opacity-40"}`}
           onClick={() => setTerminalVisible((v) => !v)}
-          title="切换终端面板"
+          title={m.webui_studio_toggle_terminal_panel()}
         >
           ⬇
         </button>
@@ -145,12 +146,12 @@ function PairProgrammingPage() {
           type="button"
           className={`btn btn-ghost btn-xs gap-1 ${rightVisible ? "" : "opacity-40"}`}
           onClick={() => setRightVisible((v) => !v)}
-          title="切换会话面板"
+          title={m.webui_studio_toggle_session_panel()}
         >
           💬
         </button>
         <span className="flex-1" />
-        <span className="text-base-content/30 text-xs select-none">面板</span>
+        <span className="text-base-content/30 text-xs select-none">{m.webui_studio_panels()}</span>
       </div>
 
       <div className="flex flex-1 min-h-0 overflow-hidden">
@@ -210,7 +211,7 @@ function PairProgrammingPage() {
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 alert alert-warning shadow-lg text-sm max-w-lg z-10">
           {store.error}
           <button type="button" className="btn btn-ghost btn-xs" onClick={() => store.clearError()}>
-            关闭
+            {m.webui_common_close()}
           </button>
         </div>
       ) : null}

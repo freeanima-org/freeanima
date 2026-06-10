@@ -1,0 +1,621 @@
+# SOME DESCRIPTIVE TITLE
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-06-10 17:00+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Plain text
+#: docs/README.md:1 docs/compression.md:1 docs/compression.md:11
+#: docs/compression.md:22 docs/compression.md:49 docs/compression.md:96
+#: docs/compression.md:118 docs/compression.md:156 docs/compression.md:180
+#: docs/compression.md:228 docs/compression.md:262 docs/compression.md:275
+#: docs/compression.md:327 docs/compression.md:348 docs/compression.md:368
+#: docs/compression.md:384 docs/database.md:1 docs/database.md:33
+#: docs/designs/desktop-companion.md:1 docs/designs/execute-code-runtimes.md:1
+#: docs/designs/issue-1-migration-plan.md:1
+#: docs/designs/pair-programming-v1.md:1
+#: docs/designs/pair-programming-v1.md:321 docs/designs/probe-architecture.md:1
+#: docs/designs/probe-architecture.md:165 docs/designs/recall-flow.md:1
+#: docs/designs/time-perception.md:1 docs/identity.md:1 docs/identity.md:10
+#: docs/identity.md:28 docs/identity.md:45 docs/identity.md:55 docs/memory.md:1
+#: docs/memory.md:17 docs/memory.md:53 docs/memory.md:160 docs/memory.md:191
+#: docs/memory.md:211 docs/memory.md:232 docs/memory.md:249 docs/security.md:1
+#: docs/self-layer.md:1 docs/self-layer.md:31 docs/self-layer.md:53
+#: docs/self-layer.md:64 docs/self-layer.md:78 docs/self-layer.md:94
+#: docs/self-layer.md:105 docs/sleep.md:1 docs/versioning.md:1
+#, no-wrap
+msgid "---\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:14 docs/designs/pair-programming-v1.md:11
+#: docs/designs/time-perception.md:22 docs/sleep.md:14
+msgid "## Design Principles"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:3
+#, no-wrap
+msgid ""
+"title: Sleep\n"
+"---\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:6
+msgid "# Sleep Mechanism"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:8
+msgid ""
+"> Light Sleep is the incremental extraction channel (semantic + limbic + "
+"autobiographical); Deep Sleep optimizes semantic memory inventory."
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:10
+msgid "## Overview"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:12
+msgid ""
+"Sleep is the digital life's memory consolidation mechanism—analogous to "
+"human sleep where the brain replays daytime experiences, converts short-term "
+"memory to long-term storage; the consolidation process itself dissipates, "
+"leaving no trace."
+msgstr ""
+
+#. type: Bullet: '1. '
+#: docs/sleep.md:19
+msgid ""
+"**Internal mechanism, no trace** — Sleep runs in background, does not write "
+"to sessions, does not affect conversation flow"
+msgstr ""
+
+#. type: Bullet: '2. '
+#: docs/sleep.md:19
+msgid ""
+"**Do not copy human rhythm literally** — Triggered by system need (cron), "
+"not real-time"
+msgstr ""
+
+#. type: Bullet: '3. '
+#: docs/sleep.md:19
+msgid ""
+"**Two-tier layering** — Light sleep (incremental writes: semantic / limbic / "
+"autobiographical), deep sleep (semantic inventory optimization) each with "
+"its role"
+msgstr ""
+
+#. type: Bullet: '4. '
+#: docs/sleep.md:19
+msgid ""
+"**Identity context** — All memory processing must carry **self layer six "
+"blocks** + resident memory (see [`self-layer.md`](self-layer.md))"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:21
+msgid "## Current State"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:26
+#, no-wrap
+msgid ""
+"| Mechanism | Status | Notes |\n"
+"| --------- | ------ | ----- |\n"
+"| Light sleep cron | ✅ Implemented | Daily 02:00, `builtin-light-sleep` |\n"
+"| Deep sleep cron | ✅ Implemented | Daily 03:00, `builtin-deep-sleep` |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:28
+msgid "## Light Sleep"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:35
+#, no-wrap
+msgid ""
+"| Attribute | Value |\n"
+"| --------- | ----- |\n"
+"| Trigger | Cron only, daily 02:00 (`0 2 * * *`), no manual trigger |\n"
+"| Scope | Sessions with activity in previous CST calendar day (`sessions.updated_at`) |\n"
+"| Input | Full day's conversations (user+assistant, tools stripped), segmented by session |\n"
+"| Orchestration | Three stages sequential (peer stages, separate LLM calls each; zero tool calls in prior stage does not skip subsequent stages) |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:37
+msgid "### Three Stages"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:44
+#, no-wrap
+msgid ""
+"| Stage | Target storage | Tool allowlist | Input highlights |\n"
+"| ----- | -------------- | -------------- | ---------------- |\n"
+"| 1 Semantic | `semantic_memory` | `memory_semantic_create` / `update` / `deprecate` | Conversation + existing semantic (`listBySourceSessions`) |\n"
+"| 2 Limbic | `limbic_memory` | `memory_limbic_create` | Conversation + existing limbic (`listBySession`) |\n"
+"| 3 Autobiographical | `autobiographical_memory` | `memory_autobiographical_create` / `deprecate` | Conversation + day's semantic + day's limbic + existing autobiographical |\n"
+"| 3b | `self_blocks.autobiography_summary` | (programmatic compression, no LLM) | Active autobiographical narratives → summary block refresh |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:46
+#, no-wrap
+msgid "**Restraint principle:** Each stage LLM judges \"nothing worth recording\" → no tool calls, reply skip; program does not skip subsequent stages because prior stage had zero tool calls.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:48
+#, no-wrap
+msgid "**Dedup (semantic):** **Local only**—compare only against existing memories with same `source_sessions`; cross-thread merging left to deep sleep.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:50
+msgid ""
+"Implementation: [`life/memory/src/light-sleep/run.ts`](../life/memory/src/"
+"light-sleep/run.ts); wiring: [`serve.ts`](../service/service/src/serve.ts)."
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:52
+msgid "### Stage 1 Message Structure"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:54
+msgid ""
+"System prompt: self layer six blocks + resident memory (pinned facts, top "
+"20)."
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:60
+#, no-wrap
+msgid ""
+"| # | Content |\n"
+"| - | ------- |\n"
+"| 1 | Full day's conversation: user+assistant, segmented by session ID, with timestamps and context labels |\n"
+"| 2 | Existing memories: `listBySourceSessions` pre-filter (active memories intersecting day's sessions) |\n"
+"| 3 | Semantic extraction instructions + three-tool usage |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:62
+msgid ""
+"LLM **does not** carry `memory_semantic_search` (message 2 already provided "
+"by program)."
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:64
+msgid "### `memory_semantic_update` Semantics (Overwrite)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sleep.md:68
+msgid "**Only modifies passed fields**; omitted fields unchanged"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sleep.md:68
+msgid "To clear `source_sessions` → explicitly pass `source_sessions: []`"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sleep.md:68
+msgid "Omit `source_sessions` → keep original value"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:70
+msgid "### Flow"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:80
+msgid ""
+"``` 1. Compute CST previous-day time window 2. listSessionIdsUpdatedBetween "
+"→ involved session list 3. Stage 1: semantic extraction → semantic_memory 4. "
+"Stage 2: limbic extraction → limbic_memory 5. Stage 3: autobiographical "
+"narrative extraction → autobiographical_memory 6. Stage 3b: compression "
+"refresh → self_blocks.autobiography_summary 7. Write light_sleep_state.json "
+"```"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:82
+msgid "### Context Too Large"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:84
+msgid ""
+"When single input exceeds ~120k characters, truncate by session `updated_at` "
+"descending, append `[Truncated N sessions]` at conversation segment end "
+"(same truncation logic reused across stages)."
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:86
+msgid "## Deep Sleep"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:93
+#, no-wrap
+msgid ""
+"| Attribute | Value |\n"
+"| --------- | ----- |\n"
+"| Trigger | Cron only, daily 03:00 (`0 3 * * *`), no manual trigger |\n"
+"| Target | All active `semantic_memory` |\n"
+"| Operations | Contradiction detection + expiry marking, split, dedup merge—three sequential rounds |\n"
+"| Tools | `memory_semantic_create` / `memory_semantic_update` / `memory_semantic_deprecate` / `memory_semantic_merge` |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:95
+msgid "### Three Rounds"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:101
+#, no-wrap
+msgid ""
+"| Round | Intent | Focus |\n"
+"| ----- | ------ | ----- |\n"
+"| 1 | Contradiction detection + expiry marking | Exclusive contradictions → deprecate; superseded facts → deprecate |\n"
+"| 2 | Split | One content with multiple independent facts → split into multiple rows |\n"
+"| 3 | Dedup merge | Duplicate/highly similar → merge into one |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:103
+#, no-wrap
+msgid "**Ordering rationale:** Clean problems first (contradiction+expiry), then refine (split), then merge. Each round sees clean data after prior rounds.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:105
+msgid "### Contradiction Definition (Exclusive)"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:107
+msgid ""
+"Two memories semantically negate each other and cannot be explained by "
+"temporal change → contradiction."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sleep.md:112
+msgid ""
+"✓ Contradiction: \"daughter born Year of Tiger\" vs \"daughter born Year of "
+"Goat\" (zodiac unique)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sleep.md:112
+msgid ""
+"✓ Contradiction: \"dislikes spicy food\" vs \"likes spicy food\" (direct "
+"negation)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sleep.md:112
+msgid ""
+"✗ Not contradiction: \"likes apples\" vs \"likes cherries\" (can coexist)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sleep.md:112
+msgid ""
+"✗ Not contradiction (change): \"likes Python\" vs \"now prefers TypeScript\" "
+"(both can be valid)"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:114
+msgid "### Message Structure"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:116
+msgid "System prompt: self layer six blocks + resident memory."
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:123
+#, no-wrap
+msgid ""
+"| # | Content | Notes |\n"
+"| - | ------- | ----- |\n"
+"| 1 | Full active semantic memory JSON | **Identical every round → provider cache** |\n"
+"| 1.5 | Incremental change summary | Empty first round; subsequent rounds append prior operations (merged/deprecated/added/modified) |\n"
+"| 2 | Program pre-filter | Empty in v1 |\n"
+"| 3 | Instructions | Round intent + tool usage |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:125
+msgid ""
+"Message 1 is the token hog and grows linearly; kept unchanged to maximize "
+"provider cache."
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:127
+msgid "### Message 1.5 Format"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:130
+msgid "``` # Incremental changes (this content is authoritative)"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:134
+msgid ""
+"## Processed (ignore these original entries in message 1)  f-001 — merged "
+"into f-003 f-010 — expired/deprecated (superseded by new fact)"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:137
+msgid ""
+"## New entries (not in message 1)  f-003 (world) \"Bob works in Pudong, "
+"Shanghai\" sources=[s-abc,s-def] observed=2026-05-01T..."
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:141
+msgid ""
+"## Modified entries (authoritative here, overrides message 1)  f-030 — "
+"modified: content updated to \"...\" ```"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:143
+msgid "### Threshold Strategy"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:150
+#, no-wrap
+msgid ""
+"| Full JSON size | Behavior |\n"
+"| -------------- | -------- |\n"
+"| < 10k | Normal |\n"
+"| 10k ~ 100k | ⚠️ warn log, normal processing |\n"
+"| 100k ~ 300k | Batch by type |\n"
+"| > 300k | ❌ error, refuse |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:152
+msgid "### `merge_semantic_memories` Tool"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:154
+msgid "Program auto-stitches fields; LLM only cares about merged new content:"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sleep.md:159
+msgid "`source_sessions` → union deduped across source memories"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sleep.md:159
+msgid "`observed_at` → earliest value"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sleep.md:159
+msgid "Create new memory → deprecate all source_ids"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sleep.md:159
+msgid "Only 1 source_id → prompt to use update_semantic_memory"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:161
+msgid "### Operation Log"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:163
+msgid ""
+"Each round written to `~/.anima/logs/deep_sleep_{day}_{round_index}"
+"_{round}.json`, not in database, for troubleshooting only."
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:165
+msgid ""
+"Records: date, round, active memory count, prior change count, tool_calls "
+"count, summary, change log snapshot."
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:167
+msgid "## Trigger Mechanism"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:173
+#, no-wrap
+msgid ""
+"```cron\n"
+"0 2 * * *  light-sleep           # builtin-light-sleep (semantic + limbic + autobiographical)\n"
+"0 3 * * *  deep-sleep            # builtin-deep-sleep\n"
+"30 5 * * *  memory-reference-sync  # builtin-memory-reference-sync\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:175
+msgid "After downtime, next scheduled run catches up; not a real-time system."
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:177
+msgid "## Historical Backfill (One-Time CLI)"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:179
+msgid ""
+"For historical conversations before go-live or after migration, run light "
+"sleep **per CST calendar day**, same logic as nightly cron but manually "
+"triggered with separate progress file."
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:183
+msgid ""
+"```bash anima memory sleep backfill [--from YYYY-MM-DD] [--to YYYY-MM-DD] [--"
+"resume] ```"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:189
+#, no-wrap
+msgid ""
+"| Option | Description |\n"
+"| ------ | ----------- |\n"
+"| `--from` | Start date; if omitted, earliest non-debug session CST day in `sessions` |\n"
+"| `--to` | End date; if omitted, **yesterday CST** (same as 02:00 cron default day) |\n"
+"| `--resume` | Continue from progress file, skip completed days |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:191
+#, no-wrap
+msgid "**Progress file:** `~/.anima/runtime/light_sleep_backfill_state.json` (separate from `light_sleep_state.json`).\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:193
+#, no-wrap
+msgid "**Behavior notes:**\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sleep.md:200
+msgid ""
+"Each day independently calls `runLightSleep({ day })`; single-day failure "
+"recorded then continue next day"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sleep.md:200
+msgid ""
+"Stage 3b (autobiography summary refresh) runs only on **last day** by "
+"default; skipped on intermediate days to save tokens"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sleep.md:200
+msgid ""
+"Before backfill, ensure LLM correctly fills `observed_at` / `occurred_at` "
+"(see [`memory.md`](memory.md)); otherwise memory times become backfill moment"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sleep.md:200
+msgid ""
+"Backfill only writes semantic / limbic / autobiographical; **cross-session "
+"semantic merge still relies on deep sleep**—after backfill, wait for 03:00 "
+"deep sleep or trigger manually"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sleep.md:200
+msgid ""
+"No conflict with 02:00 cron, but pause service or avoid early-morning window "
+"during backfill"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sleep.md:200
+msgid ""
+"Single conversation input still capped at ~**120k characters** (see "
+"\"Context Too Large\" above)"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:202
+msgid ""
+"Implementation: [`life/memory/src/light-sleep/backfill.ts`](../life/memory/"
+"src/light-sleep/backfill.ts); CLI bootstrap: [`bootstrap-memory-jobs.ts`](../"
+"service/service/src/bootstrap-memory-jobs.ts)."
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:204
+msgid "## Relationship to Existing Architecture"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:219
+#, no-wrap
+msgid ""
+"```\n"
+"PG messages (conversation archive)\n"
+"  │ light sleep cron (02:00, three stages)\n"
+"  ├─► semantic_memory\n"
+"  ├─► limbic_memory\n"
+"  └─► autobiographical_memory ──compress──► self_blocks.autobiography_summary\n"
+"  │\n"
+"  │ deep sleep cron (03:00, semantic maintenance)\n"
+"  ▼\n"
+"semantic_memory (consolidated)\n"
+"  │ memory_recall (real-time retrieval in conversation)\n"
+"  ▼\n"
+"Agent identity and recalled fragments in current context\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:221
+msgid ""
+"`session:updated` EventBus event retained (WebUI refresh, etc.), **no "
+"longer** triggers reflect."
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:223
+msgid "## `memory_remember` Tool"
+msgstr ""
+
+#. type: Plain text
+#: docs/sleep.md:224
+msgid ""
+"In-conversation `memory_remember` is a convenience wrapper: auto-infers "
+"`source_sessions` (current session) and `observed_at`, underlying "
+"`memory_semantic_create` logic. Physical delete via `action=delete`; soft "
+"deprecation via `memory_semantic_deprecate`."
+msgstr ""

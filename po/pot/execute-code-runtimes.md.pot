@@ -1,0 +1,413 @@
+# SOME DESCRIPTIVE TITLE
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-06-10 17:00+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Plain text
+#: docs/README.md:1 docs/compression.md:1 docs/compression.md:11
+#: docs/compression.md:22 docs/compression.md:49 docs/compression.md:96
+#: docs/compression.md:118 docs/compression.md:156 docs/compression.md:180
+#: docs/compression.md:228 docs/compression.md:262 docs/compression.md:275
+#: docs/compression.md:327 docs/compression.md:348 docs/compression.md:368
+#: docs/compression.md:384 docs/database.md:1 docs/database.md:33
+#: docs/designs/desktop-companion.md:1 docs/designs/execute-code-runtimes.md:1
+#: docs/designs/issue-1-migration-plan.md:1
+#: docs/designs/pair-programming-v1.md:1
+#: docs/designs/pair-programming-v1.md:321 docs/designs/probe-architecture.md:1
+#: docs/designs/probe-architecture.md:165 docs/designs/recall-flow.md:1
+#: docs/designs/time-perception.md:1 docs/identity.md:1 docs/identity.md:10
+#: docs/identity.md:28 docs/identity.md:45 docs/identity.md:55 docs/memory.md:1
+#: docs/memory.md:17 docs/memory.md:53 docs/memory.md:160 docs/memory.md:191
+#: docs/memory.md:211 docs/memory.md:232 docs/memory.md:249 docs/security.md:1
+#: docs/self-layer.md:1 docs/self-layer.md:31 docs/self-layer.md:53
+#: docs/self-layer.md:64 docs/self-layer.md:78 docs/self-layer.md:94
+#: docs/self-layer.md:105 docs/sleep.md:1 docs/versioning.md:1
+#, no-wrap
+msgid "---\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/execute-code-runtimes.md:3
+#, no-wrap
+msgid ""
+"title: Execute Code Runtimes\n"
+"---\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/execute-code-runtimes.md:6
+msgid "# execute_code Multi-Runtime Design"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/execute-code-runtimes.md:8
+msgid ""
+"> One tool, multiple runtimes; default Node.js, extend Python / Deno on "
+"demand."
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/execute-code-runtimes.md:10
+msgid "## Background"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/execute-code-runtimes.md:12
+msgid ""
+"`execute_code` was hardcoded to Node.js, but the tool schema exposed only "
+"`\"Run code\"` to the LLM, causing models to frequently write Python and "
+"fail execution."
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/execute-code-runtimes.md:14
+msgid "Goals:"
+msgstr ""
+
+#. type: Bullet: '1. '
+#: docs/designs/execute-code-runtimes.md:19
+msgid ""
+"**Clear semantics** — LLM knows which language to write and which runtime to "
+"pick"
+msgstr ""
+
+#. type: Bullet: '2. '
+#: docs/designs/execute-code-runtimes.md:19
+msgid "**Default Bun** — same stack as FreeAnima, preferred for TS/JS snippets"
+msgstr ""
+
+#. type: Bullet: '3. '
+#: docs/designs/execute-code-runtimes.md:19
+msgid "**Extensible** — reserve Python, Deno, enable progressively via config"
+msgstr ""
+
+#. type: Bullet: '4. '
+#: docs/designs/execute-code-runtimes.md:19
+msgid "**Division from terminal** — structured subprocess vs shell"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/execute-code-runtimes.md:21
+msgid "## Division from terminal"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/execute-code-runtimes.md:28
+#, no-wrap
+msgid ""
+"| | `execute_code` | `terminal` |\n"
+"| - | -------------- | ---------- |\n"
+"| Execution | No shell, fixed runtime | shell=true |\n"
+"| Best for | Short scripts, data processing, logic checks | System commands, pipes, git, long tasks |\n"
+"| Output | 50KB cap, controllable timeout | Same limits but more freedom |\n"
+"| Security | Smaller attack surface (no shell injection) | Larger attack surface |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/execute-code-runtimes.md:30
+msgid ""
+"Python batch jobs should use `execute_code(runtime=\"python\")`, not "
+"`python3 -c \"...\"` in terminal."
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/execute-code-runtimes.md:32
+msgid "## API"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/execute-code-runtimes.md:40
+#, no-wrap
+msgid ""
+"```typescript\n"
+"execute_code({\n"
+"  code: string,           // source\n"
+"  runtime?: \"bun\" | \"nodejs\" | \"python\" | \"deno\",  // default bun\n"
+"  timeout?: number,       // seconds, default 300, max 600\n"
+"})\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/execute-code-runtimes.md:42
+msgid "### LLM-Visible Description (Principles)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/execute-code-runtimes.md:45
+msgid ""
+"Top-level `description` is LLM's sole source of truth (flat JSON Schema, no "
+"nested wrapper)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/execute-code-runtimes.md:45
+msgid ""
+"State default runtime, each runtime's language, alternatives when runtime "
+"disabled"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/execute-code-runtimes.md:47
+msgid "## Runtime Registry"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/execute-code-runtimes.md:57
+#, no-wrap
+msgid ""
+"```typescript\n"
+"interface CodeRuntime {\n"
+"  id: \"nodejs\" | \"python\" | \"deno\";\n"
+"  enabled: boolean;\n"
+"  extension: string; // .mts / .py / .ts\n"
+"  preamble?: string; // bootstrap before writing file\n"
+"  command: string[]; // spawn command and args (last item is file path placeholder)\n"
+"}\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/execute-code-runtimes.md:64
+#, no-wrap
+msgid ""
+"| runtime | command | file | preamble | status |\n"
+"| ------- | ------- | ---- | -------- | ------ |\n"
+"| **bun** | `bun` (`Bun.spawn`) | `.ts` | common `node:fs` imports etc. | ✅ implemented |\n"
+"| **nodejs** | `node --experimental-strip-types` | `.mts` | common `node:fs` imports etc. | ✅ implemented |\n"
+"| **python** | `python3` | `.py` | optional `os`/`pathlib` | 🔲 reserved |\n"
+"| **deno** | `deno run --allow-read=...` | `.ts` | Deno stdlib | 🔲 reserved |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/execute-code-runtimes.md:66
+msgid "### Phase Plan"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/execute-code-runtimes.md:71
+#, no-wrap
+msgid ""
+"| Phase | Content | Status |\n"
+"| ----- | ------- | ------ |\n"
+"| **P0** (current) | Flat schema + `runtime` param + bun/nodejs enabled | ✅ implemented |\n"
+"| **P1–P4** | python / config toggles / deno / credential injection | see [#40](https://github.com/freeanima-org/freeanima/issues/40) |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/execute-code-runtimes.md:73
+msgid "## Configuration (P2 Reserved)"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/execute-code-runtimes.md:87
+#, no-wrap
+msgid ""
+"```yaml\n"
+"execute_code:\n"
+"  default_runtime: bun\n"
+"  runtimes:\n"
+"    nodejs:\n"
+"      enabled: true\n"
+"    python:\n"
+"      enabled: true\n"
+"      command: python3\n"
+"    deno:\n"
+"      enabled: false\n"
+"      command: deno\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/execute-code-runtimes.md:89
+msgid "Disabled runtime returns:"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/execute-code-runtimes.md:93
+msgid ""
+"```json { \"error\": \"runtime 'python' not enabled; available: nodejs\" } "
+"```"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/execute-code-runtimes.md:95
+msgid "## Execution Flow"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/execute-code-runtimes.md:114
+#, no-wrap
+msgid ""
+"```\n"
+"LLM calls execute_code(code, runtime?)\n"
+"        │\n"
+"        ▼\n"
+"  Resolve runtime (default nodejs)\n"
+"        │\n"
+"        ▼\n"
+"  Lookup registry → enabled?\n"
+"        │ no ──→ {\"error\": \"...\"}\n"
+"        ▼ yes\n"
+"  mkdtemp → write preamble + code → spawn\n"
+"        │\n"
+"        ▼\n"
+"  Merge stdout/stderr; non-zero exit → JSON { output, exit_code }\n"
+"        │\n"
+"        ▼\n"
+"  Clean temp files\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/execute-code-runtimes.md:116
+msgid "## Security"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/execute-code-runtimes.md:121
+msgid "Always `shell: false` (consistent with `docs/security.md`)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/execute-code-runtimes.md:121
+msgid "Timeout and `maxBuffer` same as current implementation"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/execute-code-runtimes.md:121
+msgid "Before enabling Deno, define `--allow-*` whitelist policy"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/execute-code-runtimes.md:121
+msgid "**Do not** auto-guess runtime from code content (avoid misjudgment)"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/execute-code-runtimes.md:123
+msgid "## Credential Injection (P4, Issue #40)"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/execute-code-runtimes.md:125
+msgid ""
+"ARCHITECTURE specifies `credential(path)` available in `execute_code` "
+"execution environment, **not yet implemented**."
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/execute-code-runtimes.md:127
+msgid "Suggested unified multi-runtime approach:"
+msgstr ""
+
+#. type: Bullet: '1. '
+#: docs/designs/execute-code-runtimes.md:131
+msgid ""
+"Parent process resolves `credential(\"...\")` calls in code before spawn (or "
+"explicit params)"
+msgstr ""
+
+#. type: Bullet: '2. '
+#: docs/designs/execute-code-runtimes.md:131
+msgid "Inject via environment: `ANIMA_CRED_<PATH>` (path escaped)"
+msgstr ""
+
+#. type: Bullet: '3. '
+#: docs/designs/execute-code-runtimes.md:131
+msgid "Each runtime preamble provides same-name helper reading env"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/execute-code-runtimes.md:133
+msgid "Do not call pass CLI inside each runtime."
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/execute-code-runtimes.md:135
+msgid "## Tool Schema Flattening"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/execute-code-runtimes.md:137
+msgid "FreeAnima local tools use standard OpenAI shape:"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/execute-code-runtimes.md:150
+#, no-wrap
+msgid ""
+"```typescript\n"
+"registerTool({\n"
+"  name: \"execute_code\",\n"
+"  description: \"……full description LLM sees……\",\n"
+"  parameters: {\n"
+"    type: \"object\",\n"
+"    properties: { … },\n"
+"    required: […],\n"
+"  },\n"
+"  handler: …,\n"
+"});\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/execute-code-runtimes.md:152
+msgid ""
+"Forbidden: nested `{ name, description, parameters: { … } }` wrapper; "
+"`openaiFunctionSchema` maps top-level fields directly."
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/execute-code-runtimes.md:154
+msgid "## File Layout"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/execute-code-runtimes.md:160
+#, no-wrap
+msgid ""
+"```\n"
+"capabilities/tools/src/\n"
+"  execute-code.ts          # tool registration + routing\n"
+"  execute-code-runtimes.ts # runtime registry and spawn logic (P1+ extension)\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/execute-code-runtimes.md:162
+msgid "## Tests"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/execute-code-runtimes.md:166
+msgid "Default `runtime` nodejs executes TS/JS"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/execute-code-runtimes.md:166
+msgid "Disabled runtime returns error JSON"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/execute-code-runtimes.md:166
+msgid "`openaiSchemas()` `execute_code.description` includes Node.js note"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/execute-code-runtimes.md:166
+msgid "Nested parameters format regression: should not reappear"
+msgstr ""

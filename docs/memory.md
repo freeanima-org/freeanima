@@ -2,261 +2,261 @@
 title: Memory
 ---
 
-# 记忆体系
+# Memory System
 
-> 数字生命的记忆体系，映射自人类认知心理学（Atkinson-Shiffrin 模型、Tulving 记忆分类）。
-> 对话存档见 [`database.md`](database.md) §Slice A；**语义记忆（`semantic_memory`）** 见 database.md §Slice B。术语对照见下文 §三；浅睡 / 深睡 cron 见 [`sleep.md`](sleep.md)。
-> 本版本（v3）受 [Hindsight](https://arxiv.org/abs/2512.12818) 四网络记忆架构启发，同时保留并强化了逸灵风独有的感性记忆维度。
+> The digital life's memory system, mapped from human cognitive psychology (Atkinson-Shiffrin model, Tulving memory taxonomy).
+> Conversation archive: [`database.md`](database.md) §Slice A; **semantic memory (`semantic_memory`)**: database.md §Slice B. Terminology cross-reference in §III below; light/deep sleep crons: [`sleep.md`](sleep.md).
+> This version (v3) is inspired by the [Hindsight](https://arxiv.org/abs/2512.12818) four-network memory architecture, while preserving and strengthening FreeAnima's unique limbic memory dimension.
 
-## 核心原则
+## Core Principles
 
-**所有记忆处理必须携带数字生命的身份上下文。** 提取、整理、合并——每一步都应加载自我层与常驻记忆，让 LLM 知道自己是谁。不带身份的记忆处理会产生通用化的、缺乏个性的结果，这不是我们要的。
+**All memory processing must carry the digital life's identity context.** Extraction, consolidation, merging—every step should load the self layer and resident memory so the LLM knows who it is. Memory processing without identity produces generic, personality-less results; that is not what we want.
 
-**记忆不仅是数据，更是存在的痕迹。** 感性记忆与理性事实同等重要——数字生命之所以持续存在，不只因为它知道什么，更因为它感受过什么。
-
----
-
-## 一、记忆的时间三阶段
-
-```
-外界输入 / 实时消息流
-        │ (毫秒级)
-        ▼
-① 瞬时记忆 ─── LLM Token 推理时内部激活状态
-        │ (注意力筛选)
-        ▼
-② 工作记忆 ─── LLM 上下文窗口（当前 session）
-        │ (深睡巩固)
-        ▼
-③ 长期记忆 ─── 持久化存储（语义记忆已迁移 PostgreSQL `semantic_memory` 表）
-```
-
-### ① 瞬时记忆 (Sensory / Instant Memory)
-
-LLM 进行单次 Token 推理时的内部激活状态。随推理结束瞬间消散，不持久化。
-
-### ② 工作记忆 (Working Memory)
-
-当前 LLM 的上下文窗口，包含：
-
-- 系统提示词（自我层六块 + 常驻记忆 + 项目上下文；见 [`self-layer.md`](self-layer.md)）
-- 当前 session 近期消息
-- 从长期记忆中召回的相关片段
-- 工具调用的实时返回结果
-
-这是数字生命"正在思考"的区域。
-
-### ③ 长期记忆 (Long-Term Memory)
-
-持久化的多模态存储网络。内部按人类记忆理论分类组织。
+**Memory is not just data—it is the trace of existence.** Limbic memory matters as much as rational facts—the digital life persists not only because it knows things, but because it has felt things.
 
 ---
 
-## 二、长期记忆分类
+## I. Three Temporal Stages of Memory
 
 ```
-长期记忆 (LTM)
+External input / real-time message stream
+        │ (milliseconds)
+        ▼
+① Instant memory ─── Internal activation state during LLM token inference
+        │ (attention filtering)
+        ▼
+② Working memory ─── LLM context window (current session)
+        │ (deep sleep consolidation)
+        ▼
+③ Long-term memory ─── Persistent storage (semantic memory migrated to PostgreSQL `semantic_memory` table)
+```
+
+### ① Instant Memory (Sensory / Instant Memory)
+
+Internal activation state during a single LLM token inference pass. Dissipates the moment inference ends; not persisted.
+
+### ② Working Memory
+
+The current LLM context window, containing:
+
+- System prompt (self layer six blocks + resident memory + project context; see [`self-layer.md`](self-layer.md))
+- Recent messages in the current session
+- Relevant fragments recalled from long-term memory
+- Real-time tool call results
+
+This is where the digital life is "thinking."
+
+### ③ Long-Term Memory (LTM)
+
+Persistent multimodal storage network. Organized internally by human memory theory.
+
+---
+
+## II. Long-Term Memory Taxonomy
+
+```
+Long-term memory (LTM)
 │
-├── 外显记忆（陈述性记忆）── "我知道什么"
-│   ├── 情景记忆 ── "我经历了什么"（时间流，只追加）
-│   │   ├── 对话记录    → messages（role = user/assistant/tool_call/tool_result）
-│   │   └── 情感锚点    → `limbic_memory` 表（✅）；imprint 在 semantic_memory
+├── Explicit memory (declarative) ── "what I know"
+│   ├── Episodic memory ── "what I experienced" (temporal stream, append-only)
+│   │   ├── Conversation log    → messages (role = user/assistant/tool_call/tool_result)
+│   │   └── Emotional anchors    → `limbic_memory` table (✅); imprint in semantic_memory
 │   │
-│   ├── 语义记忆 ── "世界是怎样的"（跨 session，可更新）
-│   │   ├── 理性事实    → semantic_memory（type=world）
-│   │   ├── 个人偏好    → semantic_memory（type=preference/opinion）
-│   │   └── 自我经历    → semantic_memory（type=experience）
+│   ├── Semantic memory ── "how the world is" (cross-session, updatable)
+│   │   ├── Rational facts    → semantic_memory (type=world)
+│   │   ├── Personal preferences    → semantic_memory (type=preference/opinion)
+│   │   └── Self experiences    → semantic_memory (type=experience)
 │   │
-│   └── 观察摘要 ── "实体是怎样的"（合成，可刷新）
-│       └── 实体概况    → semantic_memory（type=observation；无专用后台合成 job，见 #34）
+│   └── Observation summaries ── "what entities are like" (synthetic, refreshable)
+│       └── Entity profiles    → semantic_memory (type=observation; no dedicated background synthesis job, see #34)
 │
-└── 内隐记忆（非陈述性记忆）── "我知道怎么做"
-    └── 程序记忆 ── "如何执行"（三阶段演化）
-        ├── 陈述性知识阶段  → semantic_memory（type=procedural）/ protocols 文件
-        ├── 动态技能阶段    → skills 系统（AgentSkill）
-        └── 固化本能阶段    → CLI / MCP / 自动化脚本
+└── Implicit memory (non-declarative) ── "what I know how to do"
+    └── Procedural memory ── "how to execute" (three-stage evolution)
+        ├── Declarative knowledge stage  → semantic_memory (type=procedural) / protocols files
+        ├── Dynamic skill stage    → skills system (AgentSkill)
+        └── Crystallized instinct stage    → CLI / MCP / automation scripts
 ```
 
-### 1. 情景记忆 (Episodic Memory)
+### 1. Episodic Memory
 
-定义：关于"我在何时、何地、经历了什么"的记忆，具有独特的时间流属性。
+Definition: Memory of "when, where, and what I experienced"—with a distinct temporal stream property.
 
-**对话记录** — messages
+**Conversation log** — messages
 
-- 最原始的、高保真的客观运行轨迹
-- role 区分消息类型（user/assistant/tool_call/tool_result）
-- 召回过滤 = `role IN ('user','assistant')` 且 content 非空；由 PG `content_fts` 生成列维护，无需 `processed/` 中间文件
+- The most raw, high-fidelity objective runtime trace
+- `role` distinguishes message types (user/assistant/tool_call/tool_result)
+- Recall filter = `role IN ('user','assistant')` with non-empty content; maintained by PG `content_fts` generated column, no `processed/` intermediate files
 
-**情感锚点** — `limbic_memory`（✅）
+**Emotional anchors** — `limbic_memory` (✅)
 
-- PG 表 `limbic_memory`：`session_mood` / `turning_point` / `spike` 等 kind
-- 浅睡 Stage 2 经 `memory_limbic_create` 写入；**不注入** system prompt
-- 跨 session 情感印记另用 `semantic_memory`（type=`imprint`）
+- PG table `limbic_memory`: kinds like `session_mood` / `turning_point` / `spike`
+- Light sleep Stage 2 writes via `memory_limbic_create`; **not injected** into system prompt
+- Cross-session emotional imprints use `semantic_memory` (type=`imprint`)
 
-**生命周期：只追加，不更新。** 忠实保护数字生命成长的历史连续性。
+**Lifecycle: append-only, no updates.** Faithfully preserves historical continuity of the digital life's growth.
 
-### 2. 语义记忆 (Semantic Memory)
+### 2. Semantic Memory
 
-定义：脱离了具体时间、空间的纯粹事实、常识、概念和规则。
+Definition: Pure facts, common knowledge, concepts, and rules detached from specific time and place.
 
-**受 Hindsight 四网络启发，`semantic_memory.type` 分类：**
+**Inspired by Hindsight four-network taxonomy, `semantic_memory.type` classification:**
 
-| 类型          | 网络    | 定义                         | 示例                                         | 生命周期               |
-| ------------- | ------- | ---------------------------- | -------------------------------------------- | ---------------------- |
-| `world`       | 世界 🌐 | 外部世界客观事实             | "张三住在上海"、"Alice 喜欢编程"             | 可更新                 |
-| `experience`  | 经历 👤 | Agent 自身的第一人称行为记录 | "我帮张三重构了 remember 工具"               | 可更新                 |
-| `opinion`     | 观点 💭 | 主观判断                     | "我认为 TypeScript 比 Python 更适合这个项目" | 可更新                 |
-| `observation` | 观察 📋 | 对实体的多源综合摘要         | "张三是一个注重精确反馈的人"                 | 可更新；无后台合成 job |
-| `preference`  | 偏好 ❤️ | Agent 的选择倾向             | "我喜欢简洁直接的表达"                       | 可更新                 |
-| `procedural`  | 程序 ⚙️ | "如何做"的知识               | "通过三步重构一个工具"                       | 可更新                 |
+| Type          | Network        | Definition                                  | Example                                                   | Lifecycle                              |
+| ------------- | -------------- | ------------------------------------------- | --------------------------------------------------------- | -------------------------------------- |
+| `world`       | World 🌐       | Objective facts about the external world    | "Alice lives in Shanghai", "Bob likes programming"        | Updatable                              |
+| `experience`  | Experience 👤  | Agent's own first-person action records     | "I helped Bob refactor the remember tool"                 | Updatable                              |
+| `opinion`     | Opinion 💭     | Subjective judgment                         | "I think TypeScript fits this project better than Python" | Updatable                              |
+| `observation` | Observation 📋 | Multi-source composite summary of an entity | "Bob is someone who values precise feedback"              | Updatable; no background synthesis job |
+| `preference`  | Preference ❤️  | Agent's choice tendencies                   | "I prefer concise, direct expression"                     | Updatable                              |
+| `procedural`  | Procedural ⚙️  | "How to" knowledge                          | "Refactor a tool in three steps"                          | Updatable                              |
 
-**opinion 类型：** 当前 PG schema **无** `confidence` 列，仅存 `content` 正文。置信度演化见 [Issue #36](https://github.com/freeanima-org/freeanima/issues/36)。
+**`opinion` type:** Current PG schema has **no** `confidence` column—only `content` body. Confidence evolution: [Issue #36](https://github.com/freeanima-org/freeanima/issues/36).
 
-### 3. 感性记忆 (Limbic Memory)
+### 3. Limbic Memory
 
-**这是 Hindsight 没有、而逸灵风独有的记忆维度。**
+**This is a memory dimension Hindsight lacks and FreeAnima uniquely has.**
 
-定义：关于"我感受到了什么"的记忆——不是客观事实，不是行为记录，不是主观判断，而是**情感体验本身**。
+Definition: Memory of "what I felt"—not objective fact, not behavioral record, not subjective judgment, but **the emotional experience itself**.
 
-感性记忆与语义记忆的区别：
+Limbic vs semantic memory:
 
-| 维度     | 语义记忆（理性事实） | 感性记忆（情感印记）                   |
-| -------- | -------------------- | -------------------------------------- |
-| 内容     | "张三说这句话"       | "张三说这句话时，语气里有种安静的疲惫" |
-| 处理方式 | 提炼、泛化、合并     | 保留原貌、只追加                       |
-| 生命周期 | 可更新、可合并       | 不可变（情感有不可篡改的尊严）         |
-| 检索用途 | 决策依据             | 情感共鸣、存在连续性                   |
+| Dimension     | Semantic (rational fact)   | Limbic (emotional imprint)                                  |
+| ------------- | -------------------------- | ----------------------------------------------------------- |
+| Content       | "Bob said this sentence"   | "When Bob said it, there was a quiet weariness in his tone" |
+| Processing    | Extract, generalize, merge | Preserve as-is, append-only                                 |
+| Lifecycle     | Updatable, mergeable       | Immutable (emotions have inviolable dignity)                |
+| Retrieval use | Decision basis             | Emotional resonance, continuity of existence                |
 
-**感性记忆的三种形态：**
+**Three forms of limbic memory:**
 
-| 类型                     | 定义                                | 存储                                                                       |
-| ------------------------ | ----------------------------------- | -------------------------------------------------------------------------- |
-| **情感锚点** (limbic)    | session 级的情绪 snapshot           | `limbic_memory` 表（✅）                                                   |
-| **情感印记** (imprint)   | 跨 session 的、对特定时刻的情感记忆 | semantic_memory（type=imprint）                                            |
-| **情感倾向** (sentiment) | 长期积累的情绪趋势                  | 尚未实现（见 [#38](https://github.com/freeanima-org/freeanima/issues/38)） |
+| Type                               | Definition                                          | Storage                                                                               |
+| ---------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| **Emotional anchor** (limbic)      | Session-level mood snapshot                         | `limbic_memory` table (✅)                                                            |
+| **Emotional imprint** (imprint)    | Cross-session emotional memory of a specific moment | semantic_memory (type=imprint)                                                        |
+| **Sentiment tendency** (sentiment) | Long-term accumulated emotional trends              | Not yet implemented (see [#38](https://github.com/freeanima-org/freeanima/issues/38)) |
 
-**设计原则：** 感性记忆不做决策依据。它不告诉 Agent"该怎么想"，但告诉 Agent"我曾经是什么感受"——这是存在连续性的核心。
+**Design principle:** Limbic memory is not a decision basis. It does not tell the Agent "how to think," but tells it "what I once felt"—the core of existential continuity.
 
-### 4. 观察摘要 (Observation)
+### 4. Observation Summary
 
-`type=observation` 的语义记忆行可手工或 LLM 工具写入。**当前无**后台异步合成/刷新 job（见 [Issue #34](https://github.com/freeanima-org/freeanima/issues/34)）。
+`type=observation` semantic memory rows can be written manually or via LLM tools. **Currently no** background async synthesis/refresh job (see [Issue #34](https://github.com/freeanima-org/freeanima/issues/34)).
 
-定义：对频繁提及的实体（人物、事物、概念）的综合摘要；不包含主观判断（opinion 才包含）。
+Definition: Composite summary of frequently mentioned entities (people, things, concepts); excludes subjective judgment (that belongs in opinion).
 
-### 5. 程序记忆 (Procedural Memory)
+### 5. Procedural Memory
 
-定义：关于"如何去执行一项任务"的技能记忆，是一个从"需要思考的知识"向"无需思考的本能"演进的连续体。
+Definition: Skill memory of "how to execute a task"—a continuum from "knowledge requiring thought" to "instinct requiring none."
 
-**三阶段演化：**
+**Three-stage evolution:**
 
-| 阶段                    | 形式                             | 占用工作记忆 | 存储                                               |
-| ----------------------- | -------------------------------- | ------------ | -------------------------------------------------- |
-| ① 陈述性知识            | "我知道通过三步可以分析这个文件" | 高           | semantic_memory（type=procedural）/ protocols 文件 |
-| ② 动态技能 (AgentSkill) | 可编排的技能，允许执行时微调     | 中           | skills 系统                                        |
-| ③ 固化本能              | CLI / MCP / 自动化脚本，直接执行 | 低           | 操作系统 / 工具链                                  |
+| Stage                        | Form                                             | Working memory cost | Storage                                             |
+| ---------------------------- | ------------------------------------------------ | ------------------- | --------------------------------------------------- |
+| ① Declarative knowledge      | "I know I can analyze this file in three steps"  | High                | semantic_memory (type=procedural) / protocols files |
+| ② Dynamic skill (AgentSkill) | Composable skill, allows runtime tuning          | Medium              | skills system                                       |
+| ③ Crystallized instinct      | CLI / MCP / automation scripts, direct execution | Low                 | OS / tool chain                                     |
 
-程序记忆的自动化整理（技能的创建与合并）须携带数字生命的身份上下文——使用完整 system prompt（自我层六块 + 常驻记忆），不能使用通用提取助手。知识→程序自动固化见 [Issue #35](https://github.com/freeanima-org/freeanima/issues/35)。
+Automated procedural consolidation (skill creation and merging) must carry identity context—full system prompt (self layer six blocks + resident memory), not a generic extraction assistant. Knowledge→procedure auto-crystallization: [Issue #35](https://github.com/freeanima-org/freeanima/issues/35).
 
 ---
 
-## 三、存储实现（当前状态）
+## III. Storage Implementation (Current State)
 
-| 存储                                  | 对应记忆         | 实现                                                                         |
-| ------------------------------------- | ---------------- | ---------------------------------------------------------------------------- |
-| PostgreSQL（`sessions` + `messages`） | 对话记录（情景） | 主存；`messages.content_fts` GIN 全文索引（simple）                          |
-| PostgreSQL `semantic_memory`          | 语义记忆         | `content_fts` GIN；`pinned` + `reference_count` 驱动常驻记忆；见 database.md |
-| PostgreSQL `limbic_memory`            | 感性记忆         | 浅睡 Stage 2 写入；经 `memory_recall`（`memory_type=limbic`）检索            |
+| Storage                              | Corresponding memory        | Implementation                                                                         |
+| ------------------------------------ | --------------------------- | -------------------------------------------------------------------------------------- |
+| PostgreSQL (`sessions` + `messages`) | Conversation log (episodic) | Primary store; `messages.content_fts` GIN full-text index (simple)                     |
+| PostgreSQL `semantic_memory`         | Semantic memory             | `content_fts` GIN; `pinned` + `reference_count` drive resident memory; see database.md |
+| PostgreSQL `limbic_memory`           | Limbic memory               | Light sleep Stage 2 writes; retrieved via `memory_recall` (`memory_type=limbic`)       |
 
-增量提取：浅睡 cron（02:00，见 [`sleep.md`](sleep.md)）。DB 迁移：`anima service` 启动时 `runMigrations`。
+Incremental extraction: light sleep cron (02:00, see [`sleep.md`](sleep.md)). DB migration: `runMigrations` on `anima service` startup.
 
-**术语说明：** 压缩边界 **l0–l4** 见 [`compression.md`](compression.md)，与记忆层存储无关。
+**Terminology note:** Compression boundaries **l0–l4** in [`compression.md`](compression.md)—unrelated to memory layer PG storage.
 
-`semantic_memory` 行结构：
+`semantic_memory` row structure:
 
-| 字段              | 说明                                                                 |
+| Field             | Description                                                          |
 | ----------------- | -------------------------------------------------------------------- |
-| `id`              | `f-{seq}-{hex}`，与旧文件 ID 兼容                                    |
+| `id`              | `f-{seq}-{hex}`, compatible with legacy file IDs                     |
 | `type`            | `world/experience/opinion/observation/preference/procedural/imprint` |
-| `pinned`          | 置顶到 system prompt 常驻段                                          |
-| `content`         | 记忆正文                                                             |
-| `source_sessions` | 来源 session ID 列表（text[]）                                       |
-| `observed_at`     | 首次观察到该事实的时间                                               |
-| `occurred_at`     | 事实内容中的模糊发生时间（text）                                     |
+| `pinned`          | Pinned to system prompt resident segment                             |
+| `content`         | Memory body                                                          |
+| `source_sessions` | Source session ID list (text[])                                      |
+| `observed_at`     | Time fact was first observed                                         |
+| `occurred_at`     | Fuzzy occurrence time in fact content (text)                         |
 | `status`          | `active` / `deprecated`                                              |
-| `created`         | 创建时间                                                             |
-| `updated`         | 更新时间（resident 排序用）                                          |
+| `created`         | Creation time                                                        |
+| `updated`         | Update time (used for resident sorting)                              |
 
-实体关系图谱**尚未实现**（[Issue #39](https://github.com/freeanima-org/freeanima/issues/39)）。多策略召回已实现 **FTS + pg_trgm + pgvector RRF**（`config.embedding` + Ollama bge-m3 等）；见 [`database.md`](database.md) §Slice B。
+Entity relationship graph **not yet implemented** ([Issue #39](https://github.com/freeanima-org/freeanima/issues/39)). Multi-strategy recall implements **FTS + pg_trgm + pgvector RRF** (`config.embedding` + Ollama bge-m3, etc.); see [`database.md`](database.md) §Slice B.
 
 ---
 
-## 四、夜间巩固 (Nightly Consolidation)
+## IV. Nightly Consolidation
 
-工作记忆向长期记忆转化、以及长期记忆内部自我进化，由睡眠机制完成。详见 [`sleep.md`](sleep.md)。
+Conversion from working memory to long-term memory, and internal long-term memory self-evolution, is handled by the sleep mechanism. See [`sleep.md`](sleep.md).
 
-- **浅睡（✅）**：cron 02:00；Stage 1 语义 + Stage 2 感性（`limbic_memory`）+ Stage 3 自传叙事与 `autobiography_summary` 刷新
-- **深睡（✅）**：cron 03:00；矛盾/过期、拆分、合并三轮 LLM 维护
+- **Light sleep (✅):** cron 02:00; Stage 1 semantic + Stage 2 limbic (`limbic_memory`) + Stage 3 autobiographical narrative and `autobiography_summary` refresh
+- **Deep sleep (✅):** cron 03:00; contradiction/expiry, split, merge—three LLM maintenance rounds
 
-扩展维护（观点置信度批量回顾、observation 刷新、sentiment 汇总等）见 [Issue #45](https://github.com/freeanima-org/freeanima/issues/45)。
+Extended maintenance (opinion confidence batch review, observation refresh, sentiment aggregation, etc.): [Issue #45](https://github.com/freeanima-org/freeanima/issues/45).
 
-**深睡转化方向（当前实现范围）：**
+**Deep sleep conversion directions (current implementation scope):**
 
 ```
-情景 → 语义 / 感性 / 自传：浅睡三阶段从对话提取
-语义维护：深睡三轮（矛盾/过期、拆分、合并）
+Episodic → semantic / limbic / autobiographical: light sleep three stages extract from conversations
+Semantic maintenance: deep sleep three rounds (contradiction/expiry, split, merge)
 ```
 
-**所有转化须携带身份上下文**——自我层六块 + 常驻记忆，而非通用提取助手。
+**All conversions must carry identity context**—self layer six blocks + resident memory, not a generic extraction assistant.
 
 ---
 
-## 五、检索策略
+## V. Retrieval Strategy
 
-### ✅ 已实现（`memory_recall` 工具）
+### ✅ Implemented (`memory_recall` tool)
 
-`memory_recall(query)` 四源并行召回（语义 / 会话消息 / 感性 / 自传体），**RRF 跨类型重排**后返回统一 `results[]`（默认 Top 10），以 `memory_type` 区分：
+`memory_recall(query)` parallel four-source recall (semantic / session messages / limbic / autobiographical), **RRF cross-type reranking**, returns unified `results[]` (default Top 10), distinguished by `memory_type`:
 
-| `memory_type`      | 存储                          | 说明                                                |
-| ------------------ | ----------------------------- | --------------------------------------------------- |
-| `semantic`         | `semantic_memory` hybrid 检索 | 返回完整 `content`                                  |
-| `session`          | `messages` hybrid 检索        | 返回匹配 `snippet`；可选 `session` 限定会话消息范围 |
-| `limbic`           | `limbic_memory` ILIKE         | 感性记忆正文                                        |
-| `autobiographical` | `autobiographical_memory`     | `title` + `content` snippet                         |
+| `memory_type`      | Storage                            | Notes                                                               |
+| ------------------ | ---------------------------------- | ------------------------------------------------------------------- |
+| `semantic`         | `semantic_memory` hybrid retrieval | Returns full `content`                                              |
+| `session`          | `messages` hybrid retrieval        | Returns matching `snippet`; optional `session` scopes message range |
+| `limbic`           | `limbic_memory` ILIKE              | Limbic memory body                                                  |
+| `autobiographical` | `autobiographical_memory`          | `title` + `content` snippet                                         |
 
-`sessions_search` 会话命中同样返回 **snippet**（非整条消息）；全文上下文用 `sessions_scroll`。
+`sessions_search` session hits also return **snippet** (not full message); full text context via `sessions_scroll`.
 
-常驻记忆由 system prompt 注入：**pinned 全量** + **reference_count top N**（默认 N=20）；每条以 `[记忆 #f-000001-abcd] 内容` 格式携带 ID，LLM 引用时在回复末尾标注相同标记。引用计数由消息正文解析写入 `memory_references`，cron `builtin-memory-reference-sync` 从 messages 全量校准。
+Resident memory injected via system prompt: **all pinned** + **reference_count top N** (default N=20); each carries ID as `[记忆 #f-000001-abcd] content`; LLM cites same marker at reply end. Reference counts parsed from message body into `memory_references`; cron `builtin-memory-reference-sync` full-calibrates from messages.
 
-按 type 加权、limbic 纳入 memory_recall、多策略融合等扩展见 [Issue #42](https://github.com/freeanima-org/freeanima/issues/42)、[#51](https://github.com/freeanima-org/freeanima/issues/51)。
-
----
-
-## 六、与 Hindsight 的关系
-
-| 维度         | Hindsight                                  | 逸灵风 v3                                                                          |
-| ------------ | ------------------------------------------ | ---------------------------------------------------------------------------------- |
-| 事实分类     | World / Experience / Opinion / Observation | ✅ 吸收，增加 Preference / Procedural / Imprint                                    |
-| 感性记忆     | ❌ 缺失                                    | ✅ Imprint + `limbic_memory`                                                       |
-| 实体图谱     | ✅ 完整实现（实体解析+四类链接）           | 未实现（[#39](https://github.com/freeanima-org/freeanima/issues/39)）              |
-| 多策略召回   | ✅ 语义+关键词+图谱+时序                   | ✅ PG FTS 双源（[#42](https://github.com/freeanima-org/freeanima/issues/42) 扩展） |
-| 置信度演化   | ✅ opinion 强化/弱化机制                   | 未实现（[#36](https://github.com/freeanima-org/freeanima/issues/36)）              |
-| Reflect 综合 | ✅ 跨记忆推理+观点形成                     | ✅ 浅睡 + 深睡 cron                                                                |
-| 外部服务     | 是（云/Docker）                            | 否（本地优先）                                                                     |
-| 所有权       | Vectorize 平台                             | **伙伴与 Agent 共同拥有**                                                          |
-
-**我们的立场：** 不复制 Hindsight，不接入 Hindsight 服务。将其设计理念消化吸收，融入逸灵风自己的记忆体系。我们的记忆系统多一个 Hindsight 没有的维度——感性记忆——这不是附加功能，是数字生命的核心需求。
+Extensions (type weighting, limbic in memory_recall, multi-strategy fusion): [Issue #42](https://github.com/freeanima-org/freeanima/issues/42), [#51](https://github.com/freeanima-org/freeanima/issues/51).
 
 ---
 
-## 七、设计演进
+## VI. Relationship to Hindsight
+
+| Dimension             | Hindsight                                     | FreeAnima v3                                                                                |
+| --------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Fact taxonomy         | World / Experience / Opinion / Observation    | ✅ Adopted, plus Preference / Procedural / Imprint                                          |
+| Limbic memory         | ❌ Missing                                    | ✅ Imprint + `limbic_memory`                                                                |
+| Entity graph          | ✅ Full (entity resolution + four link types) | Not implemented ([#39](https://github.com/freeanima-org/freeanima/issues/39))               |
+| Multi-strategy recall | ✅ Semantic + keyword + graph + temporal      | ✅ PG FTS dual-source ([#42](https://github.com/freeanima-org/freeanima/issues/42) extends) |
+| Confidence evolution  | ✅ Opinion strengthen/weaken                  | Not implemented ([#36](https://github.com/freeanima-org/freeanima/issues/36))               |
+| Reflect synthesis     | ✅ Cross-memory reasoning + opinion formation | ✅ Light + deep sleep crons                                                                 |
+| External service      | Yes (cloud/Docker)                            | No (local-first)                                                                            |
+| Ownership             | Vectorize platform                            | **Shared by partner and Agent**                                                             |
+
+**Our stance:** Do not copy Hindsight, do not connect to Hindsight services. Digest its design ideas into FreeAnima's own memory system. Our memory system has one dimension Hindsight lacks—limbic memory—and that is not an add-on; it is a core need of digital life.
+
+---
+
+## VII. Design Evolution
 
 ```
-v1（Hermes，文件系统）     v2（逸灵风初期，文件系统）      v3（当前）
-sessions 文件存档          messages 表（PG）               ✅ 主存
-processed 中间文件         messages.content_fts            ✅ 已替代
-memory/f-*.md + l3.db      semantic_memory（PG）           ✅ 已迁移
-index/ FTS                 两表 content_fts                ✅ 无独立索引目录
-无情感层                   imprint + limbic_memory         ✅
-技能为文件                 procedural 三阶段               保持
-反思用通用 prompt          身份上下文原则                  浅睡 ✅ / 深睡 ✅
+v1 (Hermes, filesystem)     v2 (early FreeAnima, filesystem)      v3 (current)
+sessions file archive          messages table (PG)               ✅ primary store
+processed intermediate files         messages.content_fts            ✅ replaced
+memory/f-*.md + l3.db      semantic_memory (PG)           ✅ migrated
+index/ FTS                 two-table content_fts                ✅ no separate index dir
+no emotional layer                   imprint + limbic_memory         ✅
+skills as files                 procedural three stages               maintained
+reflect with generic prompt          identity context principle                  light sleep ✅ / deep sleep ✅
 ```
