@@ -3,6 +3,7 @@ import {
   createSessionBodySchema,
   sendMessageBodySchema,
   memorySearchBodySchema,
+  taskListBodySchema,
 } from "./api/schemas.ts";
 
 describe("api/schemas", () => {
@@ -24,5 +25,19 @@ describe("api/schemas", () => {
   it("accepts optional platform on create session", () => {
     expect(createSessionBodySchema.safeParse({}).success).toBe(true);
     expect(createSessionBodySchema.safeParse({ platform: "parlor" }).success).toBe(true);
+  });
+
+  it("validates task list body", () => {
+    const ok = taskListBodySchema.safeParse({
+      query: "test",
+      offset: 0,
+      limit: 20,
+      status: "all",
+      priority: "high",
+    });
+    expect(ok.success).toBe(true);
+
+    const singleStatus = taskListBodySchema.safeParse({ status: "pending" });
+    expect(singleStatus.success).toBe(true);
   });
 });

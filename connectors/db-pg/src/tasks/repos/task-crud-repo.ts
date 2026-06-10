@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { and, asc, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, or, sql } from "drizzle-orm";
 import { tasks, taskPrioritySchema, taskStatusSchema } from "@freeanima/engine-db/schema";
 import type {
   TaskCreateInput,
@@ -16,6 +16,29 @@ import { mapTaskRow } from "../mappers/task-mapper.ts";
 
 const DEFAULT_LIST_STATUSES: TaskStatus[] = ["pending", "in_progress"];
 const DEFAULT_LIST_LIMIT = 50;
+
+function escapeIlikePattern(raw: string): string {
+  return raw.replace(/\\/g, "\\\\").replace(/%/g, "\\%").replace(/_/g, "\\_");
+}
+
+function buildListConditions(opts?: Omit<TaskListOpts, "offset" | "limit">) {
+  const statuses = opts?.status?.length ? opts.status : DEFAULT_LIST_STATUSES;
+  const conditions = [inArray(tasks.status, statuses)];
+  if (opts?.priority) {
+    conditions.push(eq(tasks.priority, normalizePriority(opts.priority, "none")));
+  }
+  const query = opts?.query?.trim() ?? "";
+  if (query) {
+    const pattern = `%${escapeIlikePattern(query)}%`;
+    conditions.push(
+      or(
+        sql`${tasks.title} ILIKE ${pattern} ESCAPE '\\'`,
+        sql`${tasks.description} ILIKE ${pattern} ESCAPE '\\'`,
+      )!,
+    );
+  }
+  return conditions;
+}
 
 const priorityOrderSql = sql`CASE ${tasks.priority}
   WHEN 'high' THEN 0
@@ -111,13 +134,9 @@ export async function updateTask(input: TaskUpdateInput): Promise<TaskRow | null
 }
 
 export async function listTasks(opts?: TaskListOpts): Promise<TaskRow[]> {
-  const statuses = opts?.status?.length ? opts.status : DEFAULT_LIST_STATUSES;
   const limit = Math.max(1, Math.min(500, opts?.limit ?? DEFAULT_LIST_LIMIT));
-
-  const conditions = [inArray(tasks.status, statuses)];
-  if (opts?.priority) {
-    conditions.push(eq(tasks.priority, normalizePriority(opts.priority, "none")));
-  }
+  const offset = Math.max(0, opts?.offset ?? 0);
+  const conditions = buildListConditions(opts);
 
   const db = getDb();
   const rows = await db
@@ -125,6 +144,17 @@ export async function listTasks(opts?: TaskListOpts): Promise<TaskRow[]> {
     .from(tasks)
     .where(and(...conditions))
     .orderBy(asc(priorityOrderSql), asc(tasks.createdAt))
+    .offset(offset)
     .limit(limit);
   return rows.map(mapTaskRow);
+}
+
+export async function countTasks(opts?: Omit<TaskListOpts, "offset" | "limit">): Promise<number> {
+  const conditions = buildListConditions(opts);
+  const db = getDb();
+  const rows = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(tasks)
+    .where(and(...conditions));
+  return Number(rows[0]?.n ?? 0);
 }

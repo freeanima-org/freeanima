@@ -38,6 +38,17 @@ describe("elysia apiApp", () => {
     expect(res.status).not.toBe(404);
   });
 
+  it("POST /api/tasks/list 路由已注册", async () => {
+    const res = await apiApp.handle(
+      new Request("http://127.0.0.1/api/tasks/list", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      }),
+    );
+    expect(res.status).not.toBe(404);
+  });
+
   it("根路径 / 不在 apiApp 内", async () => {
     const res = await apiApp.handle(new Request("http://127.0.0.1/"));
     expect(res.status).toBe(404);

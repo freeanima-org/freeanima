@@ -21,6 +21,7 @@ import { Route as StudioNovelRouteImport } from './routes/studio/novel'
 import { Route as ParlorSessionsRouteImport } from './routes/parlor/sessions'
 import { Route as ParlorChatRouteImport } from './routes/parlor/chat'
 import { Route as ChamberToolsRouteImport } from './routes/chamber/tools'
+import { Route as ChamberTasksRouteImport } from './routes/chamber/tasks'
 import { Route as ChamberSystemPromptRouteImport } from './routes/chamber/system-prompt'
 import { Route as ChamberSleepRouteImport } from './routes/chamber/sleep'
 import { Route as ChamberSemanticMemoryRouteImport } from './routes/chamber/semantic-memory'
@@ -99,6 +100,11 @@ const ParlorChatRoute = ParlorChatRouteImport.update({
 const ChamberToolsRoute = ChamberToolsRouteImport.update({
   id: '/tools',
   path: '/tools',
+  getParentRoute: () => ChamberRouteRoute,
+} as any)
+const ChamberTasksRoute = ChamberTasksRouteImport.update({
+  id: '/tasks',
+  path: '/tasks',
   getParentRoute: () => ChamberRouteRoute,
 } as any)
 const ChamberSystemPromptRoute = ChamberSystemPromptRouteImport.update({
@@ -222,6 +228,7 @@ export interface FileRoutesByFullPath {
   '/chamber/semantic-memory': typeof ChamberSemanticMemoryRoute
   '/chamber/sleep': typeof ChamberSleepRoute
   '/chamber/system-prompt': typeof ChamberSystemPromptRoute
+  '/chamber/tasks': typeof ChamberTasksRoute
   '/chamber/tools': typeof ChamberToolsRoute
   '/parlor/chat': typeof ParlorChatRoute
   '/parlor/sessions': typeof ParlorSessionsRoute
@@ -254,6 +261,7 @@ export interface FileRoutesByTo {
   '/chamber/semantic-memory': typeof ChamberSemanticMemoryRoute
   '/chamber/sleep': typeof ChamberSleepRoute
   '/chamber/system-prompt': typeof ChamberSystemPromptRoute
+  '/chamber/tasks': typeof ChamberTasksRoute
   '/chamber/tools': typeof ChamberToolsRoute
   '/parlor/chat': typeof ParlorChatRoute
   '/parlor/sessions': typeof ParlorSessionsRoute
@@ -288,6 +296,7 @@ export interface FileRoutesById {
   '/chamber/semantic-memory': typeof ChamberSemanticMemoryRoute
   '/chamber/sleep': typeof ChamberSleepRoute
   '/chamber/system-prompt': typeof ChamberSystemPromptRoute
+  '/chamber/tasks': typeof ChamberTasksRoute
   '/chamber/tools': typeof ChamberToolsRoute
   '/parlor/chat': typeof ParlorChatRoute
   '/parlor/sessions': typeof ParlorSessionsRoute
@@ -323,6 +332,7 @@ export interface FileRouteTypes {
     | '/chamber/semantic-memory'
     | '/chamber/sleep'
     | '/chamber/system-prompt'
+    | '/chamber/tasks'
     | '/chamber/tools'
     | '/parlor/chat'
     | '/parlor/sessions'
@@ -355,6 +365,7 @@ export interface FileRouteTypes {
     | '/chamber/semantic-memory'
     | '/chamber/sleep'
     | '/chamber/system-prompt'
+    | '/chamber/tasks'
     | '/chamber/tools'
     | '/parlor/chat'
     | '/parlor/sessions'
@@ -388,6 +399,7 @@ export interface FileRouteTypes {
     | '/chamber/semantic-memory'
     | '/chamber/sleep'
     | '/chamber/system-prompt'
+    | '/chamber/tasks'
     | '/chamber/tools'
     | '/parlor/chat'
     | '/parlor/sessions'
@@ -491,6 +503,13 @@ declare module '@tanstack/react-router' {
       path: '/tools'
       fullPath: '/chamber/tools'
       preLoaderRoute: typeof ChamberToolsRouteImport
+      parentRoute: typeof ChamberRouteRoute
+    }
+    '/chamber/tasks': {
+      id: '/chamber/tasks'
+      path: '/tasks'
+      fullPath: '/chamber/tasks'
+      preLoaderRoute: typeof ChamberTasksRouteImport
       parentRoute: typeof ChamberRouteRoute
     }
     '/chamber/system-prompt': {
@@ -660,6 +679,7 @@ interface ChamberRouteRouteChildren {
   ChamberSemanticMemoryRoute: typeof ChamberSemanticMemoryRoute
   ChamberSleepRoute: typeof ChamberSleepRoute
   ChamberSystemPromptRoute: typeof ChamberSystemPromptRoute
+  ChamberTasksRoute: typeof ChamberTasksRoute
   ChamberToolsRoute: typeof ChamberToolsRoute
 }
 
@@ -681,6 +701,7 @@ const ChamberRouteRouteChildren: ChamberRouteRouteChildren = {
   ChamberSemanticMemoryRoute: ChamberSemanticMemoryRoute,
   ChamberSleepRoute: ChamberSleepRoute,
   ChamberSystemPromptRoute: ChamberSystemPromptRoute,
+  ChamberTasksRoute: ChamberTasksRoute,
   ChamberToolsRoute: ChamberToolsRoute,
 }
 

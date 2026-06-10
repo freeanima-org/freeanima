@@ -49,4 +49,5 @@ export {
 export { listCredentialMetas, getCredentialDetailHandler } from "./credentials.ts";
 export { getFtsStatus, startRebuildFtsIndex, getRebuildFtsJobStatus } from "./fts.ts";
 export { getSleepSummary, listSleepRuns, listCronLogs, getDeepSleepRounds } from "./sleep.ts";
+export { listTasks } from "./tasks.ts";
 export { ApiHandlerError } from "./errors.ts";
