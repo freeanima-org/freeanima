@@ -258,11 +258,9 @@ export async function* runExclusiveStreamTurn(
           const displayContent = await host.onTurnAfterComplete(sessionId, msgs, reply);
           if (displayContent !== reply) {
             buffer.push({ event: "content_replace", data: { content: displayContent } });
-            streamedText = true;
             signalReady();
           } else if (displayContent.trim() && !streamedText) {
             buffer.push({ event: "content_replace", data: { content: displayContent } });
-            streamedText = true;
             signalReady();
           }
           if (pendingDone) {
