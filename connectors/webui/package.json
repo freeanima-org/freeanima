@@ -18,7 +18,6 @@
     "@freeanima/engine-db": "workspace:*",
     "@freeanima/engine-loop": "workspace:*",
     "@freeanima/life-estate": "workspace:*",
-    "@freeanima/service": "workspace:*",
     "@freeanima/service-api": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "@freeanima/service-logging": "workspace:*",
