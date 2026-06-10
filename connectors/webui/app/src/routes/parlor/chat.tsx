@@ -39,6 +39,7 @@ function ChatPage() {
   const currentId = useSessionsStore((s) => s.currentId);
   const display = useSessionsStore((s) => s.display);
   const appendItem = useSessionsStore((s) => s.appendItem);
+  const refreshMessages = useSessionsStore((s) => s.refreshMessages);
 
   const renderMd = useChatStore((s) => s.renderMd);
   const streaming = useChatStore((s) => s.streaming);
@@ -117,6 +118,7 @@ function ChatPage() {
     requestAnimationFrame(resizeInput);
 
     appendItem({ type: "message", role: "user", content: text });
+    const displayBaseline = useSessionsStore.getState().display.length;
     if (clarifyPending) setClarifyPending(null);
     scrollDown();
 
@@ -129,6 +131,7 @@ function ChatPage() {
     let pendingTools: ToolCallState[] = [];
 
     await send(currentId, text, {
+      recoverDisplay: (id) => refreshMessages(id, displayBaseline),
       onToken: (fullText) => {
         accumulated = fullText;
         setStreamAccumulated(fullText);
@@ -182,8 +185,14 @@ function ChatPage() {
         setToolCalls([]);
         scrollDown();
       },
-      onDone: () => {
+      onDone: (opts) => {
         setStreamDone(true);
+        if (opts?.recovered) {
+          setStreamAccumulated("");
+          setToolCalls([]);
+          scrollDown();
+          return;
+        }
         if (pendingTools.length > 0) {
           appendItem({
             type: "tool_block",

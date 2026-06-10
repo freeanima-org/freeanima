@@ -85,6 +85,7 @@ export function SessionPanel() {
     if (!text || !store.currentSessionId || streaming) return;
     setInputText("");
     store.appendItem({ type: "message", role: "user", content: text });
+    const displayBaseline = store.display.length;
     scrollDown();
     setStreamAccumulated("");
     setStreamDone(false);
@@ -94,6 +95,7 @@ export function SessionPanel() {
     let pendingTools: ToolCallState[] = [];
 
     await chatStore.send(store.currentSessionId, text, {
+      recoverDisplay: (id) => store.refreshMessages(id, displayBaseline),
       onToken: (full) => {
         accumulated = full;
         setStreamAccumulated(full);
@@ -138,8 +140,14 @@ export function SessionPanel() {
         setToolCalls([]);
         scrollDown();
       },
-      onDone: () => {
+      onDone: (opts) => {
         setStreamDone(true);
+        if (opts?.recovered) {
+          setStreamAccumulated("");
+          setToolCalls([]);
+          scrollDown();
+          return;
+        }
         if (pendingTools.length > 0) {
           store.appendItem({
             type: "tool_block",

@@ -222,6 +222,7 @@ export async function* runExclusiveStreamTurn(
       hadError = false;
       sawDone = false;
       let pendingDone: StreamEvent | null = null;
+      let streamedText = false;
       const { signal, controller } = host.beginEngineRun(sessionId);
 
       try {
@@ -230,6 +231,9 @@ export async function* runExclusiveStreamTurn(
             pendingDone = ev;
             sawDone = true;
             continue;
+          }
+          if (ev.event === "token" || ev.event === "content_replace") {
+            streamedText = true;
           }
           buffer.push(ev);
           signalReady();
@@ -254,6 +258,11 @@ export async function* runExclusiveStreamTurn(
           const displayContent = await host.onTurnAfterComplete(sessionId, msgs, reply);
           if (displayContent !== reply) {
             buffer.push({ event: "content_replace", data: { content: displayContent } });
+            streamedText = true;
+            signalReady();
+          } else if (displayContent.trim() && !streamedText) {
+            buffer.push({ event: "content_replace", data: { content: displayContent } });
+            streamedText = true;
             signalReady();
           }
           if (pendingDone) {
@@ -287,6 +296,7 @@ export async function* runExclusiveStreamTurn(
   while (!closed || buffer.length > 0) {
     while (buffer.length > 0) {
       yield buffer.shift()!;
+      await new Promise<void>((resolve) => setImmediate(resolve));
     }
     if (closed) break;
     await new Promise<void>((resolve) => {

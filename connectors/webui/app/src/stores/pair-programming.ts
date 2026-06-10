@@ -13,6 +13,13 @@ import {
 
 export const STUDIO_PAIR_PLATFORM = "studio-pair-programming";
 
+function hasNewReply(display: DisplayItem[], baselineCount: number): boolean {
+  const newItems = display.slice(baselineCount);
+  return newItems.some(
+    (item) => (item.type === "message" && item.role === "assistant") || item.type === "tool_block",
+  );
+}
+
 export type StudioFileView = Record<string, unknown> & { highlightLine?: number | null };
 
 type StudioConfig = {
@@ -48,6 +55,7 @@ type PairProgrammingState = {
   createNewSession: () => Promise<string | null>;
   renameSession: (sessionId: string, newTitle: string) => Promise<void>;
   appendItem: (item: DisplayItem) => void;
+  refreshMessages: (sessionId: string, baselineCount: number) => Promise<boolean>;
   fetchTree: () => Promise<void>;
   openFile: (path: string, highlightLine?: number) => Promise<void>;
   globalSearch: (query: string) => Promise<void>;
@@ -123,6 +131,18 @@ export const usePairProgrammingStore = create<PairProgrammingState>((set, get) =
 
   appendItem(item) {
     set({ display: [...get().display, item] });
+  },
+
+  async refreshMessages(sessionId, baselineCount) {
+    try {
+      const resp = await getSessionMessages(sessionId);
+      const display = (resp as { display?: DisplayItem[] }).display ?? [];
+      set({ display });
+      return hasNewReply(display, baselineCount);
+    } catch (e) {
+      console.error("refreshMessages:", e);
+      return false;
+    }
   },
 
   async fetchTree() {
