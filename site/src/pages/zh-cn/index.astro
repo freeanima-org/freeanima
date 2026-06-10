@@ -1,0 +1,13 @@
+---
+import LandingPage from "../../components/LandingPage.astro";
+import LandingLayout from "../../layouts/LandingLayout.astro";
+import { applySiteLocale } from "../../lib/i18n.ts";
+import { getSiteMeta } from "../../lib/site.ts";
+
+applySiteLocale("zh-cn");
+const meta = getSiteMeta();
+---
+
+<LandingLayout locale="zh-cn" title={meta.siteTitle} description={meta.siteDescription}>
+  <LandingPage locale="zh-cn" />
+</LandingLayout>

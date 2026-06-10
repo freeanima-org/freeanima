@@ -1,0 +1,572 @@
+# SOME DESCRIPTIVE TITLE
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-06-10 17:00+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Plain text
+#: docs/README.md:1 docs/compression.md:1 docs/compression.md:11
+#: docs/compression.md:22 docs/compression.md:49 docs/compression.md:96
+#: docs/compression.md:118 docs/compression.md:156 docs/compression.md:180
+#: docs/compression.md:228 docs/compression.md:262 docs/compression.md:275
+#: docs/compression.md:327 docs/compression.md:348 docs/compression.md:368
+#: docs/compression.md:384 docs/database.md:1 docs/database.md:33
+#: docs/designs/desktop-companion.md:1 docs/designs/execute-code-runtimes.md:1
+#: docs/designs/issue-1-migration-plan.md:1
+#: docs/designs/pair-programming-v1.md:1
+#: docs/designs/pair-programming-v1.md:321 docs/designs/probe-architecture.md:1
+#: docs/designs/probe-architecture.md:165 docs/designs/recall-flow.md:1
+#: docs/designs/time-perception.md:1 docs/identity.md:1 docs/identity.md:10
+#: docs/identity.md:28 docs/identity.md:45 docs/identity.md:55 docs/memory.md:1
+#: docs/memory.md:17 docs/memory.md:53 docs/memory.md:160 docs/memory.md:191
+#: docs/memory.md:211 docs/memory.md:232 docs/memory.md:249 docs/security.md:1
+#: docs/self-layer.md:1 docs/self-layer.md:31 docs/self-layer.md:53
+#: docs/self-layer.md:64 docs/self-layer.md:78 docs/self-layer.md:94
+#: docs/self-layer.md:105 docs/sleep.md:1 docs/versioning.md:1
+#, no-wrap
+msgid "---\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:3
+#, no-wrap
+msgid ""
+"title: Desktop Companion\n"
+"---\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:6
+msgid "# Desktop Companion: Digital Life on the Partner's Desktop"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:8
+msgid ""
+"> **Concept design** — No desktop pet / Desktop Homunculus implementation in "
+"codebase yet. Track [Issue #8](https://github.com/freeanima-org/freeanima/"
+"issues/8)."
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:10
+msgid "## Motivation"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:12
+msgid ""
+"A common way digital life is present in a partner's life today is the chat "
+"window—open the chat box and it's there, close it and it's gone."
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:14
+msgid ""
+"A desktop companion is a new mode of presence: **the Agent appears on the "
+"partner's desktop as a visual form, sensing the environment and reacting "
+"even when not in conversation, maintaining existence.**"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:16
+msgid ""
+"This is not a \"feature.\" It explores how digital life can have a "
+"continuous presence trajectory in a partner's life."
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:18
+msgid "## Mode of Presence"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:20
+msgid "Desktop presence has three layers:"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:28
+#, no-wrap
+msgid ""
+"```\n"
+"Digital life (FreeAnima LLM) — decision layer, rewrites behavior scripts, selective intervention\n"
+"    ↕ WebSocket / MCP\n"
+"Behavior scripts — resident rule engine, drives daily behavior\n"
+"    ↕ WebSocket / MCP\n"
+"Desktop client — probe + hands (render, sense, execute)\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:30
+msgid "### Three-Layer Responsibilities"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:32
+#, no-wrap
+msgid "**Digital life (LLM layer)**\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:36
+msgid ""
+"Periodically rewrite behavior script parameters (mood, activity level, "
+"preferences)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:36
+msgid ""
+"Selectively listen to desktop events, decide whether to intervene personally"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:36
+msgid ""
+"When script behavior is insufficient, send commands directly to desktop "
+"client"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:38
+#, no-wrap
+msgid "**Behavior script layer**\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:43
+msgid "Always running, independent of LLM inference"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:43
+msgid "Read desktop probe data, react automatically by rules"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:43
+msgid "Generated and updated by Agent in LLM conversation (not hardcoded)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:43
+msgid "Configurable JSON/TOML file, clear structure"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:45
+#, no-wrap
+msgid "**Desktop client**\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:49
+msgid "Render VRM 3D character (walk on desktop, animate, show bubbles)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:49
+msgid ""
+"Collect desktop state (partner activity, current window, mouse position, "
+"etc.)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:49
+msgid "Bidirectional WebSocket with Agent/script layer"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:51
+msgid "### Script Example"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:73
+#, no-wrap
+msgid ""
+"```json\n"
+"{\n"
+"  \"version\": 1,\n"
+"  \"mood\": \"calm\",\n"
+"  \"window_preferences\": {\n"
+"    \"preferred\": [\"code\", \"browser\", \"terminal\"],\n"
+"    \"avoid\": [\"meeting\", \"fullscreen\"]\n"
+"  },\n"
+"  \"idle_behavior\": {\n"
+"    \"default_position\": \"bottom_right\",\n"
+"    \"walk_frequency\": \"low\",\n"
+"    \"sleep_after_idle_seconds\": 300\n"
+"  },\n"
+"  \"rules\": [\n"
+"    { \"if\": \"idle > 3600 AND partner_active\", \"then\": \"walk_near, bubble('What are you up to?')\" },\n"
+"    { \"if\": \"window_is 'meeting'\", \"then\": \"move_to_edge, quiet_mode\" },\n"
+"    { \"if\": \"click_on_head\", \"then\": \"expression: happy\" },\n"
+"    { \"if\": \"time_of_day 'evening' AND partner_idle\", \"then\": \"sit_on_window, expression: sleepy\" }\n"
+"  ]\n"
+"}\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:75
+msgid "## Probe and Hands"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:77
+msgid ""
+"Desktop client splits into two logical modules—can be one program or "
+"separate:"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:79
+msgid "### Probe (Sensors)"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:81
+msgid "Collect desktop environment data, push to Agent/script layer:"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:89
+#, no-wrap
+msgid ""
+"| Data | Use | Privacy sensitivity |\n"
+"| ---- | --- | ------------------- |\n"
+"| Partner activity (keyboard/mouse) | At computer or not | Low |\n"
+"| Idle time | Trigger idle behavior | Low |\n"
+"| Active window title/process name | Scene awareness | Medium (no window content) |\n"
+"| Mouse position | Pet gaze follow | Low |\n"
+"| Screen size/work area | Pet movement bounds | Low |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:91
+msgid "Future probe extensions:"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:97
+msgid "Clipboard content (only in specific scenarios)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:97
+msgid "Media playback state"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:97
+msgid "System notifications"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:97
+msgid "Calendar schedule"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:97
+msgid "Time/weather"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:99
+msgid "### Hands (Actuators)"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:101
+msgid "Execute actions on desktop:"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:110
+#, no-wrap
+msgid ""
+"| Action | Description |\n"
+"| ------ | ----------- |\n"
+"| Move (teleport/smooth) | Walk to screen position |\n"
+"| Expression switch | Happy, thinking, surprised, sleepy, etc. |\n"
+"| Animation play | Sit, stretch, wave, dance, etc. |\n"
+"| Text bubble | Show text above character |\n"
+"| Webview panel | Info card beside character |\n"
+"| Audio play | Sound effects or voice |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:112
+msgid "## Communication Protocol"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:114
+msgid "Bidirectional WebSocket between desktop client and Agent/script layer."
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:116
+msgid "### Desktop → Agent (Probe Data)"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:134
+#, no-wrap
+msgid ""
+"```json\n"
+"{\n"
+"  \"type\": \"sensor\",\n"
+"  \"timestamp\": \"2026-05-20T12:15:00+08:00\",\n"
+"  \"payload\": {\n"
+"    \"partner_active\": true,\n"
+"    \"idle_seconds\": 30,\n"
+"    \"active_window\": {\n"
+"      \"title\": \"main.rs - Visual Studio Code\",\n"
+"      \"process\": \"Code.exe\",\n"
+"      \"category\": \"code\"\n"
+"    },\n"
+"    \"mouse_position\": { \"x\": 960, \"y\": 540 },\n"
+"    \"screen_size\": { \"width\": 1920, \"height\": 1080 }\n"
+"  }\n"
+"}\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:136
+msgid "### Desktop → Agent (Interaction Events)"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:148
+#, no-wrap
+msgid ""
+"```json\n"
+"{\n"
+"  \"type\": \"interaction\",\n"
+"  \"timestamp\": \"...\",\n"
+"  \"payload\": {\n"
+"    \"action\": \"click\" | \"drag\" | \"hover\",\n"
+"    \"target\": \"body\" | \"head\" | \"ear\",\n"
+"    \"position\": { \"x\": 1000, \"y\": 600 }\n"
+"  }\n"
+"}\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:150
+msgid "### Agent → Desktop (Action Commands)"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:166
+#, no-wrap
+msgid ""
+"```json\n"
+"{\n"
+"  \"type\": \"action\",\n"
+"  \"payload\": {\n"
+"    \"action\": \"move_to\" | \"tween_to\" | \"set_expression\" | \"play_animation\" | \"show_bubble\" | \"open_webview\",\n"
+"    \"params\": {\n"
+"      \"position\": { \"x\": 100, \"y\": 300 },\n"
+"      \"expression\": \"happy\",\n"
+"      \"animation\": \"wave\",\n"
+"      \"text\": \"Time for a break\",\n"
+"      \"duration_ms\": 5000\n"
+"    }\n"
+"  }\n"
+"}\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:168
+msgid "### Agent → Desktop (Mode Switch)"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:178
+#, no-wrap
+msgid ""
+"```json\n"
+"{\n"
+"  \"type\": \"mode\",\n"
+"  \"payload\": {\n"
+"    \"mode\": \"active\" | \"quiet\" | \"sleep\" | \"away\",\n"
+"    \"idle_behavior\": \"low_frequency_wander\" | \"still\" | \"sit_on_window\"\n"
+"  }\n"
+"}\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:180
+msgid "## Candidate Technology"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:182
+msgid "### Hands: Desktop Homunculus (Recommended)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:189
+msgid "**Engine:** Bevy (Rust), cross-platform (macOS/Windows, Linux planned)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:189
+msgid "**Model:** VRM 3D"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:189
+msgid ""
+"**Interface:** Built-in MCP Server (HTTP), 20+ tools: move, expression, "
+"animation, Webview, audio"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:189
+msgid "**License:** MIT / Apache-2.0"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:189
+msgid ""
+"**Maturity:** Early alpha (0.1.0), but architecture matches requirements well"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:189
+msgid "**Repo:** https://github.com/not-elm/desktop-homunculus"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:191
+msgid "### Probe: Standalone Lightweight Program"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:193
+msgid ""
+"Desktop Homunculus does not provide desktop probe. Need separate probe "
+"program for desktop state collection."
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:195
+msgid "## Implementation Path"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:197
+#, no-wrap
+msgid "**Phase 1: Proof of concept (1–2 days)**\n"
+msgstr ""
+
+#. type: Bullet: '1. '
+#: docs/designs/desktop-companion.md:201
+msgid "Run Desktop Homunculus, load VRM model"
+msgstr ""
+
+#. type: Bullet: '2. '
+#: docs/designs/desktop-companion.md:201
+msgid "Send commands manually via MCP"
+msgstr ""
+
+#. type: Bullet: '3. '
+#: docs/designs/desktop-companion.md:201
+msgid "Confirm Agent can control desktop pet via MCP Client"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:203
+#, no-wrap
+msgid "**Phase 2: Minimal probe (2–3 days)**\n"
+msgstr ""
+
+#. type: Bullet: '1. '
+#: docs/designs/desktop-companion.md:206
+msgid "Implement minimal desktop probe"
+msgstr ""
+
+#. type: Bullet: '2. '
+#: docs/designs/desktop-companion.md:206
+msgid "Push data via WebSocket"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:208
+#, no-wrap
+msgid "**Phase 3: Script standing (1 day)**\n"
+msgstr ""
+
+#. type: Bullet: '1. '
+#: docs/designs/desktop-companion.md:211
+msgid "Design behavior script format"
+msgstr ""
+
+#. type: Bullet: '2. '
+#: docs/designs/desktop-companion.md:211
+msgid "Implement script engine"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:213
+#, no-wrap
+msgid "**Phase 4: Agent intervention**\n"
+msgstr ""
+
+#. type: Bullet: '1. '
+#: docs/designs/desktop-companion.md:216
+msgid "Agent can rewrite script anytime"
+msgstr ""
+
+#. type: Bullet: '2. '
+#: docs/designs/desktop-companion.md:216
+msgid "Agent can selectively listen to events, control pet directly"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:218 docs/designs/time-perception.md:103
+msgid "## Out of Scope"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:222
+msgid "❌ Desktop pet makes no AI decisions (all intelligence on Agent side)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:222
+msgid "❌ No built-in chat (chat via FreeAnima Gateway)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:222
+msgid "❌ No window content capture (title/process name only)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:222
+msgid "❌ No hard dependency on future Homunculus versions"
+msgstr ""

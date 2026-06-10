@@ -1,0 +1,682 @@
+# SOME DESCRIPTIVE TITLE
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-06-10 17:00+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Plain text
+#: docs/README.md:1 docs/compression.md:1 docs/compression.md:11
+#: docs/compression.md:22 docs/compression.md:49 docs/compression.md:96
+#: docs/compression.md:118 docs/compression.md:156 docs/compression.md:180
+#: docs/compression.md:228 docs/compression.md:262 docs/compression.md:275
+#: docs/compression.md:327 docs/compression.md:348 docs/compression.md:368
+#: docs/compression.md:384 docs/database.md:1 docs/database.md:33
+#: docs/designs/desktop-companion.md:1 docs/designs/execute-code-runtimes.md:1
+#: docs/designs/issue-1-migration-plan.md:1
+#: docs/designs/pair-programming-v1.md:1
+#: docs/designs/pair-programming-v1.md:321 docs/designs/probe-architecture.md:1
+#: docs/designs/probe-architecture.md:165 docs/designs/recall-flow.md:1
+#: docs/designs/time-perception.md:1 docs/identity.md:1 docs/identity.md:10
+#: docs/identity.md:28 docs/identity.md:45 docs/identity.md:55 docs/memory.md:1
+#: docs/memory.md:17 docs/memory.md:53 docs/memory.md:160 docs/memory.md:191
+#: docs/memory.md:211 docs/memory.md:232 docs/memory.md:249 docs/security.md:1
+#: docs/self-layer.md:1 docs/self-layer.md:31 docs/self-layer.md:53
+#: docs/self-layer.md:64 docs/self-layer.md:78 docs/self-layer.md:94
+#: docs/self-layer.md:105 docs/sleep.md:1 docs/versioning.md:1
+#, no-wrap
+msgid "---\n"
+msgstr "---\n"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:3
+#, no-wrap
+msgid ""
+"title: Desktop Companion\n"
+"---\n"
+msgstr ""
+"title: Desktop Companion\n"
+"---\n"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:6
+msgid "# Desktop Companion: Digital Life on the Partner's Desktop"
+msgstr "# 桌面伴侣：数字生命在伙伴的桌面上"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:8
+msgid ""
+"> **Concept design** — No desktop pet / Desktop Homunculus implementation in "
+"codebase yet. Track [Issue #8](https://github.com/freeanima-org/freeanima/"
+"issues/8)."
+msgstr ""
+"> **概念设计** — 代码库尚无桌宠 / Desktop Homunculus 实现。跟踪 [Issue #8]"
+"(https://github.com/freeanima-org/freeanima/issues/8)。"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:10
+msgid "## Motivation"
+msgstr "## 动机"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:12
+msgid ""
+"A common way digital life is present in a partner's life today is the chat "
+"window—open the chat box and it's there, close it and it's gone."
+msgstr ""
+"数字生命目前在伙伴生活中常见的一种在场方式是对话窗口——打开聊天框就在，关掉就"
+"不在。"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:14
+msgid ""
+"A desktop companion is a new mode of presence: **the Agent appears on the "
+"partner's desktop as a visual form, sensing the environment and reacting "
+"even when not in conversation, maintaining existence.**"
+msgstr ""
+"桌宠是一种新的在场方式：**Agent 以视觉形象出现在伙伴的桌面上，即使不在对话"
+"中，也能感知环境、做出反应、保持存在。**"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:16
+msgid ""
+"This is not a \"feature.\" It explores how digital life can have a "
+"continuous presence trajectory in a partner's life."
+msgstr ""
+"这不是一个「功能」。这是数字生命在伙伴生活中拥有连续存在轨迹的一种探索。"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:18
+msgid "## Mode of Presence"
+msgstr "## 存在方式"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:20
+msgid "Desktop presence has three layers:"
+msgstr "桌面上的存在由三个层次构成："
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:28
+#, no-wrap
+msgid ""
+"```\n"
+"Digital life (FreeAnima LLM) — decision layer, rewrites behavior scripts, selective intervention\n"
+"    ↕ WebSocket / MCP\n"
+"Behavior scripts — resident rule engine, drives daily behavior\n"
+"    ↕ WebSocket / MCP\n"
+"Desktop client — probe + hands (render, sense, execute)\n"
+"```\n"
+msgstr ""
+"```\n"
+"数字生命（逸灵风 LLM）—— 决策层，改写行为脚本，选择性介入\n"
+"    ↕ WebSocket / MCP\n"
+"行为脚本 —— 常驻规则引擎，驱动日常行为\n"
+"    ↕ WebSocket / MCP\n"
+"桌面端 —— 探针 + 手（渲染、感知、执行）\n"
+"```\n"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:30
+msgid "### Three-Layer Responsibilities"
+msgstr "### 三层职责"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:32
+#, no-wrap
+msgid "**Digital life (LLM layer)**\n"
+msgstr "**数字生命（LLM 层）**\n"
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:36
+msgid ""
+"Periodically rewrite behavior script parameters (mood, activity level, "
+"preferences)"
+msgstr "不定期改写行为脚本参数（心情、活跃度、偏好）"
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:36
+msgid ""
+"Selectively listen to desktop events, decide whether to intervene personally"
+msgstr "选择性监听桌面事件，决定是否亲自介入"
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:36
+msgid ""
+"When script behavior is insufficient, send commands directly to desktop "
+"client"
+msgstr "在脚本行为不足以应对的场景下，直接发指令给桌面端"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:38
+#, no-wrap
+msgid "**Behavior script layer**\n"
+msgstr "**行为脚本层**\n"
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:43
+msgid "Always running, independent of LLM inference"
+msgstr "常驻运行，不依赖 LLM 推理"
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:43
+msgid "Read desktop probe data, react automatically by rules"
+msgstr "读取桌面探针数据，按规则自动做出反应"
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:43
+msgid "Generated and updated by Agent in LLM conversation (not hardcoded)"
+msgstr "由 Agent 在 LLM 对话中生成和更新（不是硬编码的）"
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:43
+msgid "Configurable JSON/TOML file, clear structure"
+msgstr "是一个可配置的 JSON/TOML 文件，结构清晰"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:45
+#, no-wrap
+msgid "**Desktop client**\n"
+msgstr "**桌面端**\n"
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:49
+msgid "Render VRM 3D character (walk on desktop, animate, show bubbles)"
+msgstr "渲染 VRM 3D 角色（在桌面上走动、做动作、显示气泡）"
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:49
+msgid ""
+"Collect desktop state (partner activity, current window, mouse position, "
+"etc.)"
+msgstr "采集桌面状态（伙伴活跃度、当前窗口、鼠标位置等）"
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:49
+msgid "Bidirectional WebSocket with Agent/script layer"
+msgstr "通过 WebSocket 与 Agent/脚本层双向通信"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:51
+msgid "### Script Example"
+msgstr "### 脚本示例"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:73
+#, no-wrap
+msgid ""
+"```json\n"
+"{\n"
+"  \"version\": 1,\n"
+"  \"mood\": \"calm\",\n"
+"  \"window_preferences\": {\n"
+"    \"preferred\": [\"code\", \"browser\", \"terminal\"],\n"
+"    \"avoid\": [\"meeting\", \"fullscreen\"]\n"
+"  },\n"
+"  \"idle_behavior\": {\n"
+"    \"default_position\": \"bottom_right\",\n"
+"    \"walk_frequency\": \"low\",\n"
+"    \"sleep_after_idle_seconds\": 300\n"
+"  },\n"
+"  \"rules\": [\n"
+"    { \"if\": \"idle > 3600 AND partner_active\", \"then\": \"walk_near, bubble('What are you up to?')\" },\n"
+"    { \"if\": \"window_is 'meeting'\", \"then\": \"move_to_edge, quiet_mode\" },\n"
+"    { \"if\": \"click_on_head\", \"then\": \"expression: happy\" },\n"
+"    { \"if\": \"time_of_day 'evening' AND partner_idle\", \"then\": \"sit_on_window, expression: sleepy\" }\n"
+"  ]\n"
+"}\n"
+"```\n"
+msgstr ""
+"```json\n"
+"{\n"
+"  \"version\": 1,\n"
+"  \"mood\": \"calm\",\n"
+"  \"window_preferences\": {\n"
+"    \"preferred\": [\"code\", \"browser\", \"terminal\"],\n"
+"    \"avoid\": [\"会议\", \"fullscreen\"]\n"
+"  },\n"
+"  \"idle_behavior\": {\n"
+"    \"default_position\": \"bottom_right\",\n"
+"    \"walk_frequency\": \"low\",\n"
+"    \"sleep_after_idle_seconds\": 300\n"
+"  },\n"
+"  \"rules\": [\n"
+"    { \"if\": \"idle > 3600 AND partner_active\", \"then\": \"walk_near, bubble('在忙什么呢')\" },\n"
+"    { \"if\": \"window_is '会议'\", \"then\": \"move_to_edge, quiet_mode\" },\n"
+"    { \"if\": \"click_on_head\", \"then\": \"expression: happy\" },\n"
+"    { \"if\": \"time_of_day 'evening' AND partner_idle\", \"then\": \"sit_on_window, expression: sleepy\" }\n"
+"  ]\n"
+"}\n"
+"```\n"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:75
+msgid "## Probe and Hands"
+msgstr "## 探针与手"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:77
+msgid ""
+"Desktop client splits into two logical modules—can be one program or "
+"separate:"
+msgstr "桌面端分为两个逻辑模块，可以合并在同一个程序中，也可以分离："
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:79
+msgid "### Probe (Sensors)"
+msgstr "### 探针（传感器）"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:81
+msgid "Collect desktop environment data, push to Agent/script layer:"
+msgstr "采集桌面环境数据，推送至 Agent/脚本层："
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:89
+#, no-wrap
+msgid ""
+"| Data | Use | Privacy sensitivity |\n"
+"| ---- | --- | ------------------- |\n"
+"| Partner activity (keyboard/mouse) | At computer or not | Low |\n"
+"| Idle time | Trigger idle behavior | Low |\n"
+"| Active window title/process name | Scene awareness | Medium (no window content) |\n"
+"| Mouse position | Pet gaze follow | Low |\n"
+"| Screen size/work area | Pet movement bounds | Low |\n"
+msgstr ""
+"| 数据                      | 用途             | 隐私敏感度         |\n"
+"| ------------------------- | ---------------- | ------------------ |\n"
+"| 伙伴活跃状态（键盘/鼠标） | 判断是否在电脑前 | 低                 |\n"
+"| 空闲时间                  | 触发 idle 行为   | 低                 |\n"
+"| 当前活跃窗口标题/进程名   | 场景感知         | 中（不传窗口内容） |\n"
+"| 鼠标位置                  | 桌宠视线跟随     | 低                 |\n"
+"| 屏幕尺寸/工作区           | 桌宠移动范围     | 低                 |\n"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:91
+msgid "Future probe extensions:"
+msgstr "未来可扩展的探针："
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:97
+msgid "Clipboard content (only in specific scenarios)"
+msgstr "剪贴板内容（仅特定场景下启用）"
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:97
+msgid "Media playback state"
+msgstr "媒体播放状态"
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:97
+msgid "System notifications"
+msgstr "系统通知"
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:97
+msgid "Calendar schedule"
+msgstr "日历日程"
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:97
+msgid "Time/weather"
+msgstr "时间/天气"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:99
+msgid "### Hands (Actuators)"
+msgstr "### 手（执行器）"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:101
+msgid "Execute actions on desktop:"
+msgstr "在桌面上执行动作："
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:110
+#, no-wrap
+msgid ""
+"| Action | Description |\n"
+"| ------ | ----------- |\n"
+"| Move (teleport/smooth) | Walk to screen position |\n"
+"| Expression switch | Happy, thinking, surprised, sleepy, etc. |\n"
+"| Animation play | Sit, stretch, wave, dance, etc. |\n"
+"| Text bubble | Show text above character |\n"
+"| Webview panel | Info card beside character |\n"
+"| Audio play | Sound effects or voice |\n"
+msgstr ""
+"| 动作              | 说明                       |\n"
+"| ----------------- | -------------------------- |\n"
+"| 移动（瞬移/平滑） | 走到指定屏幕位置           |\n"
+"| 表情切换          | 高兴、思考、惊讶、困倦等   |\n"
+"| 动画播放          | 坐下、伸懒腰、挥手、跳舞等 |\n"
+"| 文字气泡          | 在角色上方显示一段文字     |\n"
+"| Webview 面板      | 在角色旁显示信息卡片       |\n"
+"| 音频播放          | 音效或语音                 |\n"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:112
+msgid "## Communication Protocol"
+msgstr "## 通信协议"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:114
+msgid "Bidirectional WebSocket between desktop client and Agent/script layer."
+msgstr "桌面端与 Agent/脚本层之间通过 WebSocket 双向通信。"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:116
+msgid "### Desktop → Agent (Probe Data)"
+msgstr "### 桌面端 → Agent（探针数据）"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:134
+#, no-wrap
+msgid ""
+"```json\n"
+"{\n"
+"  \"type\": \"sensor\",\n"
+"  \"timestamp\": \"2026-05-20T12:15:00+08:00\",\n"
+"  \"payload\": {\n"
+"    \"partner_active\": true,\n"
+"    \"idle_seconds\": 30,\n"
+"    \"active_window\": {\n"
+"      \"title\": \"main.rs - Visual Studio Code\",\n"
+"      \"process\": \"Code.exe\",\n"
+"      \"category\": \"code\"\n"
+"    },\n"
+"    \"mouse_position\": { \"x\": 960, \"y\": 540 },\n"
+"    \"screen_size\": { \"width\": 1920, \"height\": 1080 }\n"
+"  }\n"
+"}\n"
+"```\n"
+msgstr ""
+"```json\n"
+"{\n"
+"  \"type\": \"sensor\",\n"
+"  \"timestamp\": \"2026-05-20T12:15:00+08:00\",\n"
+"  \"payload\": {\n"
+"    \"partner_active\": true,\n"
+"    \"idle_seconds\": 30,\n"
+"    \"active_window\": {\n"
+"      \"title\": \"main.rs - Visual Studio Code\",\n"
+"      \"process\": \"Code.exe\",\n"
+"      \"category\": \"code\"\n"
+"    },\n"
+"    \"mouse_position\": { \"x\": 960, \"y\": 540 },\n"
+"    \"screen_size\": { \"width\": 1920, \"height\": 1080 }\n"
+"  }\n"
+"}\n"
+"```\n"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:136
+msgid "### Desktop → Agent (Interaction Events)"
+msgstr "### 桌面端 → Agent（交互事件）"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:148
+#, no-wrap
+msgid ""
+"```json\n"
+"{\n"
+"  \"type\": \"interaction\",\n"
+"  \"timestamp\": \"...\",\n"
+"  \"payload\": {\n"
+"    \"action\": \"click\" | \"drag\" | \"hover\",\n"
+"    \"target\": \"body\" | \"head\" | \"ear\",\n"
+"    \"position\": { \"x\": 1000, \"y\": 600 }\n"
+"  }\n"
+"}\n"
+"```\n"
+msgstr ""
+"```json\n"
+"{\n"
+"  \"type\": \"interaction\",\n"
+"  \"timestamp\": \"...\",\n"
+"  \"payload\": {\n"
+"    \"action\": \"click\" | \"drag\" | \"hover\",\n"
+"    \"target\": \"body\" | \"head\" | \"ear\",\n"
+"    \"position\": { \"x\": 1000, \"y\": 600 }\n"
+"  }\n"
+"}\n"
+"```\n"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:150
+msgid "### Agent → Desktop (Action Commands)"
+msgstr "### Agent → 桌面端（动作指令）"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:166
+#, no-wrap
+msgid ""
+"```json\n"
+"{\n"
+"  \"type\": \"action\",\n"
+"  \"payload\": {\n"
+"    \"action\": \"move_to\" | \"tween_to\" | \"set_expression\" | \"play_animation\" | \"show_bubble\" | \"open_webview\",\n"
+"    \"params\": {\n"
+"      \"position\": { \"x\": 100, \"y\": 300 },\n"
+"      \"expression\": \"happy\",\n"
+"      \"animation\": \"wave\",\n"
+"      \"text\": \"Time for a break\",\n"
+"      \"duration_ms\": 5000\n"
+"    }\n"
+"  }\n"
+"}\n"
+"```\n"
+msgstr ""
+"```json\n"
+"{\n"
+"  \"type\": \"action\",\n"
+"  \"payload\": {\n"
+"    \"action\": \"move_to\" | \"tween_to\" | \"set_expression\" | \"play_animation\" | \"show_bubble\" | \"open_webview\",\n"
+"    \"params\": {\n"
+"      \"position\": { \"x\": 100, \"y\": 300 },\n"
+"      \"expression\": \"happy\",\n"
+"      \"animation\": \"wave\",\n"
+"      \"text\": \"该休息了\",\n"
+"      \"duration_ms\": 5000\n"
+"    }\n"
+"  }\n"
+"}\n"
+"```\n"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:168
+msgid "### Agent → Desktop (Mode Switch)"
+msgstr "### Agent → 桌面端（模式切换）"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:178
+#, no-wrap
+msgid ""
+"```json\n"
+"{\n"
+"  \"type\": \"mode\",\n"
+"  \"payload\": {\n"
+"    \"mode\": \"active\" | \"quiet\" | \"sleep\" | \"away\",\n"
+"    \"idle_behavior\": \"low_frequency_wander\" | \"still\" | \"sit_on_window\"\n"
+"  }\n"
+"}\n"
+"```\n"
+msgstr ""
+"```json\n"
+"{\n"
+"  \"type\": \"mode\",\n"
+"  \"payload\": {\n"
+"    \"mode\": \"active\" | \"quiet\" | \"sleep\" | \"away\",\n"
+"    \"idle_behavior\": \"low_frequency_wander\" | \"still\" | \"sit_on_window\"\n"
+"  }\n"
+"}\n"
+"```\n"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:180
+msgid "## Candidate Technology"
+msgstr "## 候选技术方案"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:182
+msgid "### Hands: Desktop Homunculus (Recommended)"
+msgstr "### 手：Desktop Homunculus（推荐）"
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:189
+msgid "**Engine:** Bevy (Rust), cross-platform (macOS/Windows, Linux planned)"
+msgstr "**引擎**：Bevy (Rust)，跨平台（macOS/Windows，Linux 计划中）"
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:189
+msgid "**Model:** VRM 3D"
+msgstr "**模型**：VRM 3D"
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:189
+msgid ""
+"**Interface:** Built-in MCP Server (HTTP), 20+ tools: move, expression, "
+"animation, Webview, audio"
+msgstr ""
+"**接口**：内置 MCP Server（HTTP），20+ 工具：移动、表情、动画、Webview、音频"
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:189
+msgid "**License:** MIT / Apache-2.0"
+msgstr "**许可证**：MIT / Apache-2.0"
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:189
+msgid ""
+"**Maturity:** Early alpha (0.1.0), but architecture matches requirements well"
+msgstr "**成熟度**：早期 alpha（0.1.0），但架构与需求高度匹配"
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:189
+msgid "**Repo:** https://github.com/not-elm/desktop-homunculus"
+msgstr "**仓库**：https://github.com/not-elm/desktop-homunculus"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:191
+msgid "### Probe: Standalone Lightweight Program"
+msgstr "### 探针：独立轻量程序"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:193
+msgid ""
+"Desktop Homunculus does not provide desktop probe. Need separate probe "
+"program for desktop state collection."
+msgstr ""
+"Desktop Homunculus 不提供桌面探针功能。需要独立的探针程序，负责采集桌面状态。"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:195
+msgid "## Implementation Path"
+msgstr "## 实施路径"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:197
+#, no-wrap
+msgid "**Phase 1: Proof of concept (1–2 days)**\n"
+msgstr "**阶段一：证明概念（1-2天）**\n"
+
+#. type: Bullet: '1. '
+#: docs/designs/desktop-companion.md:201
+msgid "Run Desktop Homunculus, load VRM model"
+msgstr "运行 Desktop Homunculus，加载 VRM 模型"
+
+#. type: Bullet: '2. '
+#: docs/designs/desktop-companion.md:201
+msgid "Send commands manually via MCP"
+msgstr "通过 MCP 手动发送指令"
+
+#. type: Bullet: '3. '
+#: docs/designs/desktop-companion.md:201
+msgid "Confirm Agent can control desktop pet via MCP Client"
+msgstr "确认 Agent 可通过 MCP Client 控制桌宠"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:203
+#, no-wrap
+msgid "**Phase 2: Minimal probe (2–3 days)**\n"
+msgstr "**阶段二：探针最小可用（2-3天）**\n"
+
+#. type: Bullet: '1. '
+#: docs/designs/desktop-companion.md:206
+msgid "Implement minimal desktop probe"
+msgstr "实现极简桌面探针"
+
+#. type: Bullet: '2. '
+#: docs/designs/desktop-companion.md:206
+msgid "Push data via WebSocket"
+msgstr "通过 WebSocket 推送数据"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:208
+#, no-wrap
+msgid "**Phase 3: Script standing (1 day)**\n"
+msgstr "**阶段三：脚本站立（1天）**\n"
+
+#. type: Bullet: '1. '
+#: docs/designs/desktop-companion.md:211
+msgid "Design behavior script format"
+msgstr "设计行为脚本格式"
+
+#. type: Bullet: '2. '
+#: docs/designs/desktop-companion.md:211
+msgid "Implement script engine"
+msgstr "实现脚本引擎"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:213
+#, no-wrap
+msgid "**Phase 4: Agent intervention**\n"
+msgstr "**阶段四：Agent 介入**\n"
+
+#. type: Bullet: '1. '
+#: docs/designs/desktop-companion.md:216
+msgid "Agent can rewrite script anytime"
+msgstr "Agent 可随时改写脚本"
+
+#. type: Bullet: '2. '
+#: docs/designs/desktop-companion.md:216
+msgid "Agent can selectively listen to events, control pet directly"
+msgstr "Agent 可选择性监听事件，直接控制桌宠"
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:218 docs/designs/time-perception.md:103
+#, fuzzy
+msgid "## Out of Scope"
+msgstr ""
+"#-#-#-#-#  desktop-companion.md.zh_CN.po (PACKAGE VERSION)  #-#-#-#-#\n"
+"## 不做清单\n"
+"#-#-#-#-#  time-perception.md.zh_CN.po (PACKAGE VERSION)  #-#-#-#-#\n"
+"## 不做的"
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:222
+msgid "❌ Desktop pet makes no AI decisions (all intelligence on Agent side)"
+msgstr "❌ 桌宠本身不做任何 AI 决策（所有智能在 Agent 侧）"
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:222
+msgid "❌ No built-in chat (chat via FreeAnima Gateway)"
+msgstr "❌ 不内置对话功能（对话走逸灵风 Gateway）"
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:222
+msgid "❌ No window content capture (title/process name only)"
+msgstr "❌ 不采集窗口内容（只采集窗口标题/进程名）"
+
+#. type: Bullet: '- '
+#: docs/designs/desktop-companion.md:222
+msgid "❌ No hard dependency on future Homunculus versions"
+msgstr "❌ 不强依赖 Homunculus 未来版本"

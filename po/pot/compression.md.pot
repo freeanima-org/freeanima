@@ -1,0 +1,805 @@
+# SOME DESCRIPTIVE TITLE
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-06-10 17:00+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Plain text
+#: docs/README.md:1 docs/compression.md:1 docs/compression.md:11
+#: docs/compression.md:22 docs/compression.md:49 docs/compression.md:96
+#: docs/compression.md:118 docs/compression.md:156 docs/compression.md:180
+#: docs/compression.md:228 docs/compression.md:262 docs/compression.md:275
+#: docs/compression.md:327 docs/compression.md:348 docs/compression.md:368
+#: docs/compression.md:384 docs/database.md:1 docs/database.md:33
+#: docs/designs/desktop-companion.md:1 docs/designs/execute-code-runtimes.md:1
+#: docs/designs/issue-1-migration-plan.md:1
+#: docs/designs/pair-programming-v1.md:1
+#: docs/designs/pair-programming-v1.md:321 docs/designs/probe-architecture.md:1
+#: docs/designs/probe-architecture.md:165 docs/designs/recall-flow.md:1
+#: docs/designs/time-perception.md:1 docs/identity.md:1 docs/identity.md:10
+#: docs/identity.md:28 docs/identity.md:45 docs/identity.md:55 docs/memory.md:1
+#: docs/memory.md:17 docs/memory.md:53 docs/memory.md:160 docs/memory.md:191
+#: docs/memory.md:211 docs/memory.md:232 docs/memory.md:249 docs/security.md:1
+#: docs/self-layer.md:1 docs/self-layer.md:31 docs/self-layer.md:53
+#: docs/self-layer.md:64 docs/self-layer.md:78 docs/self-layer.md:94
+#: docs/self-layer.md:105 docs/sleep.md:1 docs/versioning.md:1
+#, no-wrap
+msgid "---\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:3
+#, no-wrap
+msgid ""
+"title: Compression\n"
+"---\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:6
+msgid "# Compression Design (l-point v5.1)"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:10
+msgid ""
+"> Runtime context compression: PG `messages` **fully append-only**; only the "
+"**four-segment view** sent to the LLM is trimmed.  > **l0–l4 are compression "
+"boundaries** (terminology in [`compression.md`](compression.md)); unrelated "
+"to memory layer PG storage.  > Related: sleep [`sleep.md`](sleep.md), memory "
+"system [`memory.md`](memory.md)."
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:14 docs/designs/pair-programming-v1.md:11
+#: docs/designs/time-perception.md:22 docs/sleep.md:14
+msgid "## Design Principles"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:21
+#, no-wrap
+msgid ""
+"| Principle | Description |\n"
+"| --------- | ----------- |\n"
+"| PG never deletes | `messages` always retains full conversation; compression only changes **runtime view** and `session_meta.compression` |\n"
+"| l4 real-time | `l4 = max(pos)`, grows with append, **not written to meta** |\n"
+"| Monotonic boundaries | On successful compression: `new l2 > old l2`, `new l3 ≥ old l3`; otherwise abort |\n"
+"| Separation of concerns | **Boundary setting** (`deriveBoundariesFromL4`) decoupled from **trigger** (`shouldAdvance`); only trigger distinguishes tool loop |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:25
+msgid "## Two-Layer Storage"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:34
+#, no-wrap
+msgid ""
+"```mermaid\n"
+"flowchart LR\n"
+"  subgraph pgMessages[\"PG messages (full, never deleted)\"]\n"
+"    m1[\"pos=1 user\"]\n"
+"    m2[\"pos=2 assistant\"]\n"
+"    dots1[\"…\"]\n"
+"    mN[\"pos=N …\"]\n"
+"  end\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:42
+#, no-wrap
+msgid ""
+"  subgraph RT[\"Runtime sent to LLM\"]\n"
+"    l0[\"system l0\"]\n"
+"    l1[\"summary user pos=1\"]\n"
+"    slim[\"slim (l2,l3]\"]\n"
+"    raw[\"raw (l3,l4]\"]\n"
+"    l0 --> l1 --> slim --> raw\n"
+"  end\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:45
+#, no-wrap
+msgid ""
+"  pgMessages -->|\"compress + buildRuntime\"| RT\n"
+"```\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/compression.md:48
+msgid ""
+"**Non-compression path:** read meta only; `l2/l3/summary` unchanged; `(l3, "
+"l4]` grows with new messages."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/compression.md:48
+msgid ""
+"**Compression path:** after `shouldAdvance` passes → "
+"`deriveBoundariesFromL4` → write `l2/l3` → async summary LLM."
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:52
+msgid "## Boundary Points l0–l4"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:60
+#, no-wrap
+msgid ""
+"| Point | Meaning | When it changes | Persisted |\n"
+"| ----- | ------- | --------------- | --------- |\n"
+"| **l0** | System prompt anchor, always **0** | Never | No |\n"
+"| **l1** | Runtime synthetic summary user **pos**, always **1** (**≠ l4**) | Never | No |\n"
+"| **l2** | Summary segment right boundary (`pos ≤ l2` already summarized) | **Only on successful compression** | Yes |\n"
+"| **l3** | Slim segment right boundary | **Only on successful compression** | Yes |\n"
+"| **l4** | Rightmost message pos, `max(pos)` | **Real-time** append | No |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:62
+msgid "### Hard Conventions"
+msgstr ""
+
+#. type: Bullet: '1. '
+#: docs/compression.md:67
+msgid ""
+"**`l1 ≠ l4`:** `l1` is fixed synthetic row pos, unrelated to `max(pos)`."
+msgstr ""
+
+#. type: Bullet: '2. '
+#: docs/compression.md:67
+msgid "**`l4` has no policy**, not written to meta."
+msgstr ""
+
+#. type: Bullet: '3. '
+#: docs/compression.md:67
+msgid ""
+"**Non-compression path reads meta only**; only successful compression "
+"updates `l2`, `l3`, `summary`."
+msgstr ""
+
+#. type: Bullet: '4. '
+#: docs/compression.md:67
+msgid ""
+"**No `l2l`:** summary semantics = **`pos ≤ l2`** (not legacy \"before last "
+"user\" cut semantics)."
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:69
+msgid "Uncompressed: `l2 = l3 = 0`, no `summary`, no `pos=1` injection."
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:71
+msgid "### Segment Sketch on messages"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:73
+msgid "Example `l2=80, l3=145, l4=200` (**pos axis**, not message count):"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:87
+#, no-wrap
+msgid ""
+"```mermaid\n"
+"flowchart LR\n"
+"  subgraph archived[\"Summarized pos ≤ l2\"]\n"
+"    A[\"1 … 80\"]\n"
+"  end\n"
+"  subgraph slimZone[\"Slim (l2, l3]\"]\n"
+"    B[\"81 … 145\"]\n"
+"  end\n"
+"  subgraph rawZone[\"Raw (l3, l4]\"]\n"
+"    C[\"146 … 200\"]\n"
+"  end\n"
+"  archived --> slimZone --> rawZone\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:93
+#, no-wrap
+msgid ""
+"| pos range | Runtime destination |\n"
+"| --------- | ------------------- |\n"
+"| `pos ≤ l2` | Not in message list → synthesized `pos=1` summary user (`meta.summary`) |\n"
+"| `(l2, l3]` | Slim segment (UA after `slimMessage`) |\n"
+"| `(l3, l4]` | Raw segment (full, including tools) |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:95
+msgid ""
+"Between two compressions: **l2 / l3 / summary frozen**; only **`(l3, l4]`** "
+"grows with append."
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:99
+msgid "## Runtime Four Segments (Sent to LLM)"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:108
+#, no-wrap
+msgid ""
+"```mermaid\n"
+"flowchart TB\n"
+"  sys[\"① system<br/>l0 · meta.system_prompt\"]\n"
+"  sum[\"② summary user<br/>l1 · pos=1 · [session summary]\"]\n"
+"  slim[\"③ slim segment<br/>(l2, l3] · slimMessage\"]\n"
+"  raw[\"④ raw segment<br/>(l3, l4] · full\"]\n"
+"  sys --> sum --> slim --> raw\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:115
+#, no-wrap
+msgid ""
+"| Segment | pos range | Description |\n"
+"| ------- | --------- | ----------- |\n"
+"| system | l0 | `session_meta.system_prompt`, not in messages conversation rows |\n"
+"| summary | `≤ l2` | Synthetic `pos=1` + `summary` text; **not written to messages** |\n"
+"| slim | `(l2, l3]` | Slimmed user/assistant (tools dropped) |\n"
+"| raw | `(l3, l4]` | Full messages, **not slimmed** |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:117
+msgid ""
+"Implementation: `buildRuntimeFromLPoints` → `buildRuntimeMessages` prepends "
+"`system`."
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:121
+msgid "## Configuration"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:123
+msgid ""
+"`config.yaml` example (full file: [`config.example.yaml`](../"
+"config.example.yaml)):"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:128
+#, no-wrap
+msgid ""
+"```yaml\n"
+"models:\n"
+"  deepseek-v4-flash:\n"
+"    context_window: 1000000\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:140
+#, no-wrap
+msgid ""
+"compression:\n"
+"  enabled: true\n"
+"  reserved_tokens: 8192\n"
+"  trigger_low: 0.60 # outside tool loop: eligible to compress\n"
+"  trigger_high: 0.80 # inside tool loop: eligible to compress\n"
+"  emergency_ratio: 0.92 # hard cap inside tool loop\n"
+"  raw_min_messages: 5 # raw segment (l3, l4] minimum count\n"
+"  slim_min_messages: 50 # slim segment (l2, l3] minimum after slim\n"
+"  summary_max_tokens: 4000\n"
+"  max_rounds: 50 # fallback message-count mode when context_window unset\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:149
+#, no-wrap
+msgid ""
+"| Item | Default | Description |\n"
+"| ---- | ------- | ----------- |\n"
+"| Effective budget | `context_window - reserved_tokens` (floor 4096) | Token mode occupancy denominator |\n"
+"| `trigger_low` | 0.60 | **Outside** loop first/re-compress threshold |\n"
+"| `trigger_high` | 0.80 | **Inside** loop compress threshold |\n"
+"| `emergency_ratio` | 0.92 | Inside loop hard cap + emergency path |\n"
+"| `raw_min_messages` | 5 | Raw segment floor when setting l3 |\n"
+"| `slim_min_messages` | 50 | Slim segment floor after slim when setting l2 |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:151
+#, no-wrap
+msgid "**Removed** (v5.1 no longer reads): `tool_loop_suppress_sec`, `slim_user_shift`, `tool_loop_user_shift`, `l2l`.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:153
+msgid ""
+"When `models.*.context_window` and `default_context_window` are both unset, "
+"falls back to **message count** mode: first trigger `> max_rounds×2` "
+"messages; after compression, raw segment `> max_rounds×4` triggers again."
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:155
+msgid ""
+"Token estimate: `engine/compress/src/token-estimate.ts` (shared with "
+"`conversation-stats`)."
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:159
+msgid "## Compression Decision Pipeline"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:171
+#, no-wrap
+msgid ""
+"```mermaid\n"
+"flowchart TD\n"
+"  in[\"Full messages + meta + l4\"]\n"
+"  in --> view[\"buildRuntimeFromLPoints<br/>estimate usage_ratio\"]\n"
+"  view --> adv{\"shouldAdvance<br/>(only tool loop branch)\"}\n"
+"  adv -->|no| frozen[\"Keep l2/l3<br/>only (l3,l4] grows\"]\n"
+"  adv -->|yes| derive[\"deriveBoundariesFromL4<br/>(tool loop agnostic)\"]\n"
+"  derive -->|no valid boundary| frozen\n"
+"  derive -->|l2,l3| meta[\"Write meta l2,l3\"]\n"
+"  meta --> sum[\"Async summary LLM<br/>(old l2, new l2]\"]\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:173
+msgid "### Separation of Concerns"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:179
+#, no-wrap
+msgid ""
+"| Module | Cares about tool loop? |\n"
+"| ------ | ---------------------- |\n"
+"| `deriveBoundariesFromL4` | **No** — same right-to-left algorithm |\n"
+"| `shouldAdvance` | **Yes** — different thresholds inside/outside |\n"
+"| `buildRuntimeFromLPoints` | **No** |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:183
+msgid "## Boundary Derivation: `deriveBoundariesFromL4`"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:185
+msgid "Input: full message list, current **`l4`**, old `l2/l3`."
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:196
+#, no-wrap
+msgid ""
+"```mermaid\n"
+"flowchart TD\n"
+"  start[\"l4 = max(pos)\"]\n"
+"  start --> s1[\"Step 1: max l3<br/>so (l3,l4] satisfies raw constraints\"]\n"
+"  s1 -->|no valid l3| abort[\"Abort compression\"]\n"
+"  s1 --> s2[\"Step 2: max l2<br/>so (l2,l3] after slim ≥ slim_min\"]\n"
+"  s2 -->|no valid l2 or monotonicity violation| abort\n"
+"  s2 --> s3[\"Step 3: summary increment (old l2, new l2]\"]\n"
+"  s3 --> write[\"Write l2, l3; async write summary\"]\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:198
+msgid "### Step 1: Set `l3`"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:200
+msgid ""
+"Take the **largest** `l3` (push right, raw segment as narrow as possible) so "
+"**`(l3, l4]`** satisfies:"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:206
+#, no-wrap
+msgid ""
+"| Constraint | Description |\n"
+"| ---------- | ----------- |\n"
+"| Count | ≥ `raw_min_messages` (default 5) |\n"
+"| Has user | At least 1 `role=user` |\n"
+"| Hot-tail start | **`min{ pos | pos > l3 }`** must be `user` (handles non-contiguous pos) |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:208
+msgid ""
+"> **Note:** `l3` ensures raw hot-tail **starts** with `user`, not that hot-"
+"tail **ends** with a complete tool loop; trailing dangling `tool_calls` "
+"repaired by engine `tool-loop-integrity` before outbound/persist."
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:210
+msgid "No valid `l3` → abort compression."
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:212
+msgid "### Step 2: Set `l2`"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:214
+msgid ""
+"Take the **largest** `l2` so **`(l2, l3]`** after `slimMessage` has count ≥ "
+"`slim_min_messages` (default 50)."
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:220
+#, no-wrap
+msgid ""
+"| Check | Description |\n"
+"| ----- | ----------- |\n"
+"| `l2 < l3` | Otherwise invalid |\n"
+"| `new l3 ≥ old l3` | Monotonic |\n"
+"| `new l2 > old l2` | Strict right shift, else abort |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:222
+msgid "### Step 3: Summary"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/compression.md:225
+msgid ""
+"Increment message range: **`(old l2, new l2]`** (first compression **`(0, "
+"new l2]`**)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/compression.md:225
+msgid ""
+"LLM merges into `meta.summary`; runtime injects **`pos=1`** summary user"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:227
+msgid ""
+"Step 1 already ensures raw segment starts with user—**no** post-boundary l3/"
+"l2 shift for tool loop."
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:231
+msgid "## Trigger: `shouldAdvance`"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:233
+msgid ""
+"`isInToolLoop(messages)` **only used here**, **not** in "
+"`deriveBoundariesFromL4`."
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:235
+#, no-wrap
+msgid "**Tool loop detection** (`compression-tool-loop.ts`): after last `user`, if tail ends with `tool` or `assistant` with `tool_calls`, inside loop.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:251
+#, no-wrap
+msgid ""
+"```mermaid\n"
+"flowchart TD\n"
+"  start[\"usage_ratio = tokens / budget\"]\n"
+"  start --> force{\"/compress --force<br/>or forceEmergency?\"}\n"
+"  force -->|yes| go[\"Advance compression\"]\n"
+"  force -->|no| loop{isInToolLoop?}\n"
+"  loop -->|no| out[\"usage ≥ trigger_low ?\"]\n"
+"  out -->|yes| go\n"
+"  out -->|no| hold[\"Keep boundaries\"]\n"
+"  loop -->|yes| emerg[\"usage ≥ emergency_ratio ?\"]\n"
+"  emerg -->|yes| go\n"
+"  emerg -->|no| high[\"usage ≥ trigger_high ?\"]\n"
+"  high -->|yes| go\n"
+"  high -->|no| hold\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:257
+#, no-wrap
+msgid ""
+"| Scenario | Advance compression? |\n"
+"| -------- | -------------------- |\n"
+"| **Outside tool loop** | `usage ≥ trigger_low` (0.60); `< trigger_low` do not compress |\n"
+"| **Inside tool loop** | Only `usage ≥ trigger_high` (0.80) or `≥ emergency_ratio` (0.92) |\n"
+"| **Inside tool loop** otherwise | Do not compress |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:259
+msgid ""
+"Occupancy estimated from four-segment runtime view at current **l4** (system "
+"+ summary + slim + raw + tools), **not** full messages."
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:261
+msgid ""
+"> v5.1 removed `tool_loop_suppress_sec` time suppression; "
+"`markToolLoopActivity` / `clearToolLoopSuppression` still called by engine / "
+"`beginTurn`, but **no longer** gate compression."
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:265
+msgid "## Slim Segment: `slimMessage`"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:267
+msgid "Raw segment **not** slimmed."
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:274
+#, no-wrap
+msgid ""
+"| role | Behavior |\n"
+"| ---- | -------- |\n"
+"| `tool` | **Dropped** |\n"
+"| `user` | Kept (strip `reasoning` / `tool_calls` fields) |\n"
+"| `assistant` + `tool_calls` | Non-empty `content` uses content, **else `reasoning`**; strip `tool_calls` / `reasoning` |\n"
+"| `assistant` without tool_calls | Keep `content`, strip `reasoning` |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:278
+msgid "## Session Summary"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:280
+msgid "### meta Structure"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:289
+#, no-wrap
+msgid ""
+"```json\n"
+"{\n"
+"  \"l2\": 80,\n"
+"  \"l3\": 145,\n"
+"  \"summary\": \"Merged single summary…\",\n"
+"  \"summary_at\": \"2026-05-28T02:00:00+08:00\"\n"
+"}\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:291
+msgid "### Summary Pipeline"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:300
+#, no-wrap
+msgid ""
+"```mermaid\n"
+"sequenceDiagram\n"
+"  participant BT as beginTurn / engine\n"
+"  participant RC as recompressSession\n"
+"  participant CP as compress\n"
+"  participant DB as deriveBoundariesFromL4\n"
+"  participant LLM as compression-summary\n"
+"  participant SP as rebuildSessionSystemPrompt\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:311
+#, no-wrap
+msgid ""
+"  BT->>RC: advanceCompressionMeta\n"
+"  RC->>CP: full messages + meta\n"
+"  CP->>CP: shouldAdvance?\n"
+"  CP->>DB: yes → new l2,l3\n"
+"  DB-->>CP: l2,l3\n"
+"  CP-->>RC: boundary change\n"
+"  RC->>LLM: slice (old l2, new l2] + old summary\n"
+"  LLM-->>RC: overwrite summary\n"
+"  RC->>SP: refresh system_prompt\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:318
+#, no-wrap
+msgid ""
+"| Step | Description |\n"
+"| ---- | ----------- |\n"
+"| Trigger | `beginTurn` → `advanceCompressionMeta`; or `/compress`; or emergency |\n"
+"| Slice | `sliceForSummary(messages, prevL2, newL2)` |\n"
+"| LLM | `system` = pre-compression `system_prompt` **snapshot**; no tools |\n"
+"| Write-back | Overwrite `summary` + `summary_at`; `rebuildSessionSystemPrompt()` |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:320
+msgid "Legacy meta **read-time migration** (`parseCompressionState`):"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:326
+#, no-wrap
+msgid ""
+"| Old field | → New field |\n"
+"| --------- | ----------- |\n"
+"| `anchor_id` | `l3` |\n"
+"| `cut_id` (no anchor) | `l3` |\n"
+"| `last_summarized_cut_id` | `l2` |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:330
+msgid "## Emergency (Single-Turn Hard Cap)"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:332
+msgid "`maybeApplyEmergencyCompression` (called from engine tool loop):"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:342
+#, no-wrap
+msgid ""
+"```mermaid\n"
+"flowchart LR\n"
+"  e1[\"In-memory runtime messages\"]\n"
+"  e2[\"usage ≥ emergency_ratio\"]\n"
+"  e3[\"forceEmergency + deriveBoundariesFromL4\"]\n"
+"  e4[\"Replace messages[] in place\"]\n"
+"  e5[\"Write meta + async summary\"]\n"
+"  e1 --> e2 --> e3 --> e4 --> e5\n"
+"```\n"
+msgstr ""
+
+#. type: Bullet: '1. '
+#: docs/compression.md:347
+msgid "`l4` = current in-memory message `max(pos)`"
+msgstr ""
+
+#. type: Bullet: '2. '
+#: docs/compression.md:347
+msgid ""
+"Thresholds follow **inside tool loop** rules (`trigger_high` / "
+"`emergency_ratio`)"
+msgstr ""
+
+#. type: Bullet: '3. '
+#: docs/compression.md:347
+msgid "Boundary derivation same as normal; **no extra shift**"
+msgstr ""
+
+#. type: Bullet: '4. '
+#: docs/compression.md:347
+msgid ""
+"After meta write, async summary; in-memory view immediately becomes four "
+"segments"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:351
+msgid "## Message Lifecycle"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:360
+#, no-wrap
+msgid ""
+"```mermaid\n"
+"stateDiagram-v2\n"
+"  [*] --> Uncompressed: new session\n"
+"  Uncompressed --> Compressed: usage ≥ trigger_low<br/>derive success\n"
+"  Compressed --> Compressed: append only lengthens (l3,l4]\n"
+"  Compressed --> Compressed: usage hits threshold again<br/>l2,l3 shift right\n"
+"  Compressed --> Compressed: emergency in-place trim\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:367
+#, no-wrap
+msgid ""
+"| Timing | Behavior |\n"
+"| ------ | -------- |\n"
+"| `beginTurn` | `clearToolLoopSuppression` → append user → `advanceCompressionMeta` → `buildRuntimeMessages` |\n"
+"| Each tool/assistant turn | engine `markToolLoopActivity` (does not affect v5.1 compression threshold) |\n"
+"| `buildRuntimeMessages` | `compress` reads meta only unless `shouldAdvance` true |\n"
+"| `/compress --force` | Ignore hysteresis, recompute boundaries from `l2=l3=0` |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:371
+msgid "## Implementation Entry Points"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:381
+#, no-wrap
+msgid ""
+"| Module | Responsibility |\n"
+"| ------ | -------------- |\n"
+"| `engine/compress/src/compressor.ts` | l-points, `deriveBoundariesFromL4`, `shouldAdvance`, `buildRuntimeFromLPoints`, `slimMessage` |\n"
+"| `engine/compress/src/compression-config.ts` | Config and `context_window` / effective budget |\n"
+"| `engine/compress/src/compression-summary.ts` | Summary LLM |\n"
+"| `engine/compress/src/compression-tool-loop.ts` | `isInToolLoop` |\n"
+"| `engine/conversation/src/conversation.ts` | `recompressSession`, `buildRuntimeMessages`, `maybeApplyEmergencyCompression` |\n"
+"| `engine/loop/src/engine.ts` | Emergency call site |\n"
+"| `service/service/src/runtime/conversation-stats.ts` | `/stats` shows `l2`/`l3`/occupancy |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:383
+msgid "Manual: `/compress` (`--force` ignores hysteresis)."
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:387
+msgid "## Relationship to Memory Pipeline"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:389
+msgid ""
+"Compression **does not** trigger semantic memory extraction; light sleep "
+"cron runs independently (see [`sleep.md`](sleep.md))."
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:398
+#, no-wrap
+msgid ""
+"```mermaid\n"
+"flowchart TB\n"
+"  PG[\"PG messages full\"]\n"
+"  RT[\"Runtime four segments + summary\"]\n"
+"  Sleep[\"Light sleep cron → semantic_memory\"]\n"
+"  PG --> RT\n"
+"  PG -->|\"Independent cron 02:00\"| Sleep\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:399
+msgid "PG `messages` **never deleted** (append-only)."
+msgstr ""

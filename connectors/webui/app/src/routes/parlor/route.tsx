@@ -2,6 +2,7 @@ import { createFileRoute, Outlet, useNavigate, useSearch } from "@tanstack/react
 import type { SessionListItem } from "@freeanima/connectors-webui/api";
 import { useEffect, useRef, useState } from "react";
 import { ResponsiveSidebarLayout } from "@/components/ResponsiveSidebarLayout.tsx";
+import { m } from "@/lib/i18n.ts";
 import { useSessionsStore } from "@/stores/sessions.ts";
 
 export const Route = createFileRoute("/parlor")({
@@ -103,7 +104,7 @@ function ParlorLayout() {
 
   return (
     <ResponsiveSidebarLayout
-      title="会客厅"
+      title={m.webui_parlor_title()}
       subtitle="Parlor"
       showSidebarHeader={false}
       mobileActions={
@@ -119,7 +120,7 @@ function ParlorLayout() {
               className="btn btn-primary btn-sm w-full"
               onClick={() => void newSession()}
             >
-              ＋ 新会话
+              {m.webui_common_new_session()}
             </button>
           </div>
           <div className="flex-1 overflow-y-auto px-2 py-1 space-y-1">
@@ -159,7 +160,7 @@ function ParlorLayout() {
             className="px-3 py-1.5 hover:bg-base-300 cursor-pointer text-sm"
             onClick={startRename}
           >
-            ✏️ 重命名
+            {m.webui_common_rename()}
           </div>
         </div>
       ) : null}
@@ -173,14 +174,14 @@ function ParlorLayout() {
             className="bg-base-100 rounded-xl p-5 shadow-2xl w-full max-w-sm"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-sm font-bold mb-3">修改标题</h3>
+            <h3 className="text-sm font-bold mb-3">{m.webui_common_edit_title()}</h3>
             <input
               ref={renameInputRef}
               value={renameText}
               onChange={(e) => setRenameText(e.target.value)}
               type="text"
               className="input input-bordered w-full text-sm"
-              placeholder="输入新标题"
+              placeholder={m.webui_common_title_placeholder()}
               onKeyDown={(e) => {
                 if (e.key === "Enter") void confirmRename();
                 if (e.key === "Escape") setShowRenameDialog(false);
@@ -192,14 +193,14 @@ function ParlorLayout() {
                 className="btn btn-ghost btn-sm"
                 onClick={() => setShowRenameDialog(false)}
               >
-                取消
+                {m.webui_common_cancel()}
               </button>
               <button
                 type="button"
                 className="btn btn-primary btn-sm"
                 onClick={() => void confirmRename()}
               >
-                确定
+                {m.webui_common_confirm()}
               </button>
             </div>
           </div>

@@ -1,14 +1,17 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ResponsiveSidebarLayout } from "@/components/ResponsiveSidebarLayout.tsx";
+import { m } from "@/lib/i18n.ts";
 
 const CHROMELESS_KEY = "studio-chromeless";
 
-const navItems = [
-  { to: "/studio/pair-programming", label: "🤝 结对编程" },
-  { to: "/studio/novel", label: "📖 长篇小说创作", comingSoon: true },
-  { to: "/studio/short-video", label: "🎬 短视频创作", comingSoon: true },
-] as const;
+function studioNavItems(): { to: string; label: string; comingSoon?: boolean }[] {
+  return [
+    { to: "/studio/pair-programming", label: m.webui_studio_nav_pair() },
+    { to: "/studio/novel", label: m.webui_studio_nav_novel(), comingSoon: true },
+    { to: "/studio/short-video", label: m.webui_studio_nav_short_video(), comingSoon: true },
+  ];
+}
 
 export const Route = createFileRoute("/studio")({
   component: StudioLayout,
@@ -49,19 +52,21 @@ function StudioLayout() {
         <header className="shrink-0 flex items-center gap-2 px-2 py-1 border-b border-base-300 bg-base-200/80 text-sm">
           <div className="dropdown">
             <button type="button" tabIndex={0} className="btn btn-ghost btn-xs gap-1">
-              🤝 结对编程
+              {m.webui_studio_nav_pair()}
               <span className="opacity-50">▾</span>
             </button>
             <ul
               tabIndex={0}
               className="dropdown-content menu z-50 mt-1 p-1 shadow-lg bg-base-200 rounded-lg w-48 border border-base-300"
             >
-              {navItems.map((item) => (
+              {studioNavItems().map((item) => (
                 <li key={item.to}>
                   <Link to={item.to} className="text-sm" activeProps={{ className: "active" }}>
                     {item.label}
                     {"comingSoon" in item && item.comingSoon ? (
-                      <span className="badge badge-xs badge-ghost ml-1">即将推出</span>
+                      <span className="badge badge-xs badge-ghost ml-1">
+                        {m.webui_common_coming_soon()}
+                      </span>
                     ) : null}
                   </Link>
                 </li>
@@ -72,7 +77,7 @@ function StudioLayout() {
           <button
             type="button"
             className="btn btn-ghost btn-xs"
-            title={chromeless ? "显示顶栏" : "专注模式"}
+            title={chromeless ? m.webui_studio_show_header() : m.webui_studio_focus_mode()}
             onClick={toggleChromeless}
           >
             {chromeless ? "⊞" : "⛶"}
@@ -88,11 +93,11 @@ function StudioLayout() {
   return (
     <div className="h-full flex flex-col min-h-0 overflow-hidden">
       <ResponsiveSidebarLayout
-        title="创作室"
+        title={m.webui_studio_title()}
         subtitle="Studio"
         sidebar={() => (
           <nav className="flex-1 px-2 pb-3 space-y-1 overflow-y-auto">
-            {navItems.map((item) => (
+            {studioNavItems().map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
@@ -101,7 +106,9 @@ function StudioLayout() {
               >
                 {item.label}
                 {"comingSoon" in item && item.comingSoon ? (
-                  <span className="ml-1 badge badge-xs badge-ghost">即将推出</span>
+                  <span className="ml-1 badge badge-xs badge-ghost">
+                    {m.webui_common_coming_soon()}
+                  </span>
                 ) : null}
               </Link>
             ))}

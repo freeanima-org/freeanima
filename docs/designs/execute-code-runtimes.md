@@ -2,74 +2,74 @@
 title: Execute Code Runtimes
 ---
 
-# execute_code 多运行时设计
+# execute_code Multi-Runtime Design
 
-> 一个工具、多种运行时；默认 Node.js，按需扩展 Python / Deno。
+> One tool, multiple runtimes; default Node.js, extend Python / Deno on demand.
 
-## 背景
+## Background
 
-`execute_code` 原先硬编码 Node.js，但 tool schema 对 LLM 只暴露 `"Run code"`，导致模型频繁写入 Python 而执行失败。
+`execute_code` was hardcoded to Node.js, but the tool schema exposed only `"Run code"` to the LLM, causing models to frequently write Python and fail execution.
 
-改造目标：
+Goals:
 
-1. **语义清晰** — LLM 明确知道该写什么语言、该选哪个 runtime
-2. **默认 Bun** — 与逸灵风同栈，TS/JS 片段首选
-3. **可扩展** — 预留 Python、Deno，按配置逐步启用
-4. **与 terminal 分工** — 结构化子进程 vs shell
+1. **Clear semantics** — LLM knows which language to write and which runtime to pick
+2. **Default Bun** — same stack as FreeAnima, preferred for TS/JS snippets
+3. **Extensible** — reserve Python, Deno, enable progressively via config
+4. **Division from terminal** — structured subprocess vs shell
 
-## 与 terminal 的分工
+## Division from terminal
 
-|          | `execute_code`             | `terminal`                    |
-| -------- | -------------------------- | ----------------------------- |
-| 执行方式 | 无 shell，固定运行时       | shell=true                    |
-| 适合     | 短脚本、数据处理、逻辑验证 | 系统命令、管道、git、长期任务 |
-| 输出     | 50KB 上限，超时可控        | 同样有限制但更自由            |
-| 安全     | 攻击面小（无 shell 注入）  | 攻击面较大                    |
+|           | `execute_code`                               | `terminal`                              |
+| --------- | -------------------------------------------- | --------------------------------------- |
+| Execution | No shell, fixed runtime                      | shell=true                              |
+| Best for  | Short scripts, data processing, logic checks | System commands, pipes, git, long tasks |
+| Output    | 50KB cap, controllable timeout               | Same limits but more freedom            |
+| Security  | Smaller attack surface (no shell injection)  | Larger attack surface                   |
 
-Python 批处理应走 `execute_code(runtime="python")`，而非 `python3 -c "..."` 塞进 terminal。
+Python batch jobs should use `execute_code(runtime="python")`, not `python3 -c "..."` in terminal.
 
 ## API
 
 ```typescript
 execute_code({
-  code: string,           // 源码
-  runtime?: "bun" | "nodejs" | "python" | "deno",  // 默认 bun
-  timeout?: number,       // 秒，默认 300，上限 600
+  code: string,           // source
+  runtime?: "bun" | "nodejs" | "python" | "deno",  // default bun
+  timeout?: number,       // seconds, default 300, max 600
 })
 ```
 
-### LLM 可见描述（原则）
+### LLM-Visible Description (Principles)
 
-- 顶层 `description` 即 LLM 唯一真相源（扁平 JSON Schema，无嵌套包装）
-- 明确默认 runtime、各 runtime 语言、未启用时的替代方案
+- Top-level `description` is LLM's sole source of truth (flat JSON Schema, no nested wrapper)
+- State default runtime, each runtime's language, alternatives when runtime disabled
 
-## 运行时注册表
+## Runtime Registry
 
 ```typescript
 interface CodeRuntime {
   id: "nodejs" | "python" | "deno";
   enabled: boolean;
   extension: string; // .mts / .py / .ts
-  preamble?: string; // 写入文件前的 bootstrap
-  command: string[]; // spawn 命令与参数（末项为文件路径占位）
+  preamble?: string; // bootstrap before writing file
+  command: string[]; // spawn command and args (last item is file path placeholder)
 }
 ```
 
-| runtime    | 命令                              | 文件   | preamble                | 状态      |
-| ---------- | --------------------------------- | ------ | ----------------------- | --------- |
-| **bun**    | `bun`（`Bun.spawn`）              | `.ts`  | `node:fs` 等常用 import | ✅ 已实现 |
-| **nodejs** | `node --experimental-strip-types` | `.mts` | `node:fs` 等常用 import | ✅ 已实现 |
-| **python** | `python3`                         | `.py`  | 可选 `os`/`pathlib`     | 🔲 预留   |
-| **deno**   | `deno run --allow-read=...`       | `.ts`  | Deno 标准库             | 🔲 预留   |
+| runtime    | command                           | file   | preamble                      | status         |
+| ---------- | --------------------------------- | ------ | ----------------------------- | -------------- |
+| **bun**    | `bun` (`Bun.spawn`)               | `.ts`  | common `node:fs` imports etc. | ✅ implemented |
+| **nodejs** | `node --experimental-strip-types` | `.mts` | common `node:fs` imports etc. | ✅ implemented |
+| **python** | `python3`                         | `.py`  | optional `os`/`pathlib`       | 🔲 reserved    |
+| **deno**   | `deno run --allow-read=...`       | `.ts`  | Deno stdlib                   | 🔲 reserved    |
 
-### 阶段计划
+### Phase Plan
 
-| 阶段           | 内容                                           | 状态                                                           |
-| -------------- | ---------------------------------------------- | -------------------------------------------------------------- |
-| **P0**（当前） | 扁平 schema + `runtime` 参数 + bun/nodejs 启用 | ✅ 已实现                                                      |
-| **P1–P4**      | python / 配置开关 / deno / credential 注入     | 见 [#40](https://github.com/freeanima-org/freeanima/issues/40) |
+| Phase            | Content                                               | Status                                                          |
+| ---------------- | ----------------------------------------------------- | --------------------------------------------------------------- |
+| **P0** (current) | Flat schema + `runtime` param + bun/nodejs enabled    | ✅ implemented                                                  |
+| **P1–P4**        | python / config toggles / deno / credential injection | see [#40](https://github.com/freeanima-org/freeanima/issues/40) |
 
-## 配置（P2 预留）
+## Configuration (P2 Reserved)
 
 ```yaml
 execute_code:
@@ -85,60 +85,60 @@ execute_code:
       command: deno
 ```
 
-未启用的 runtime 返回：
+Disabled runtime returns:
 
 ```json
-{ "error": "runtime 'python' 尚未启用；当前可用: nodejs" }
+{ "error": "runtime 'python' not enabled; available: nodejs" }
 ```
 
-## 执行流程
+## Execution Flow
 
 ```
-LLM 调用 execute_code(code, runtime?)
+LLM calls execute_code(code, runtime?)
         │
         ▼
-  解析 runtime（默认 nodejs）
+  Resolve runtime (default nodejs)
         │
         ▼
-  查注册表 → enabled?
+  Lookup registry → enabled?
         │ no ──→ {"error": "..."}
         ▼ yes
-  mkdtemp → 写 preamble + code → spawn
+  mkdtemp → write preamble + code → spawn
         │
         ▼
-  stdout/stderr 合并；非零 exit → JSON { output, exit_code }
+  Merge stdout/stderr; non-zero exit → JSON { output, exit_code }
         │
         ▼
-  清理临时文件
+  Clean temp files
 ```
 
-## 安全
+## Security
 
-- 始终 `shell: false`（与 `docs/security.md` 一致）
-- 超时与 `maxBuffer` 与现实现保持一致
-- Deno 启用前必须定义 `--allow-*` 白名单策略
-- **不**根据代码内容自动猜测 runtime（避免误判）
+- Always `shell: false` (consistent with `docs/security.md`)
+- Timeout and `maxBuffer` same as current implementation
+- Before enabling Deno, define `--allow-*` whitelist policy
+- **Do not** auto-guess runtime from code content (avoid misjudgment)
 
-## credential 注入（P4，Issue #40）
+## Credential Injection (P4, Issue #40)
 
-ARCHITECTURE 约定 `credential(path)` 在 `execute_code` 执行环境中可用，**当前未实现**。
+ARCHITECTURE specifies `credential(path)` available in `execute_code` execution environment, **not yet implemented**.
 
-多 runtime 统一方案建议：
+Suggested unified multi-runtime approach:
 
-1. 父进程在 spawn 前解析代码中的 `credential("...")` 调用（或显式参数）
-2. 通过环境变量注入：`ANIMA_CRED_<PATH>`（路径转义）
-3. 各 runtime preamble 提供同名 helper 读 env
+1. Parent process resolves `credential("...")` calls in code before spawn (or explicit params)
+2. Inject via environment: `ANIMA_CRED_<PATH>` (path escaped)
+3. Each runtime preamble provides same-name helper reading env
 
-不在各 runtime 内直接调 pass CLI。
+Do not call pass CLI inside each runtime.
 
-## Tool Schema 扁平化
+## Tool Schema Flattening
 
-逸灵风本地工具统一为 OpenAI 标准形态：
+FreeAnima local tools use standard OpenAI shape:
 
 ```typescript
 registerTool({
   name: "execute_code",
-  description: "……LLM 看到的完整说明……",
+  description: "……full description LLM sees……",
   parameters: {
     type: "object",
     properties: { … },
@@ -148,19 +148,19 @@ registerTool({
 });
 ```
 
-禁止 `{ name, description, parameters: { … } }` 嵌套包装；`openaiFunctionSchema` 直接映射顶层字段。
+Forbidden: nested `{ name, description, parameters: { … } }` wrapper; `openaiFunctionSchema` maps top-level fields directly.
 
-## 文件布局
+## File Layout
 
 ```
 capabilities/tools/src/
-  execute-code.ts          # 工具注册 + 路由
-  execute-code-runtimes.ts # 运行时注册表与 spawn 逻辑（P1 起扩展）
+  execute-code.ts          # tool registration + routing
+  execute-code-runtimes.ts # runtime registry and spawn logic (P1+ extension)
 ```
 
-## 测试
+## Tests
 
-- `runtime` 默认 nodejs 执行 TS/JS
-- 未启用 runtime 返回 error JSON
-- `openaiSchemas()` 中 `execute_code.description` 含 Node.js 说明
-- 嵌套 parameters 格式回归：不应再出现
+- Default `runtime` nodejs executes TS/JS
+- Disabled runtime returns error JSON
+- `openaiSchemas()` `execute_code.description` includes Node.js note
+- Nested parameters format regression: should not reappear

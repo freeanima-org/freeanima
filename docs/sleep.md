@@ -2,223 +2,223 @@
 title: Sleep
 ---
 
-# 睡眠机制 (Sleep)
+# Sleep Mechanism
 
-> 浅睡（Light Sleep）为增量提取通道（语义 + 感性 + 自传体）；深睡（Deep Sleep）为记忆库存量优化。
+> Light Sleep is the incremental extraction channel (semantic + limbic + autobiographical); Deep Sleep optimizes semantic memory inventory.
 
-## 概述
+## Overview
 
-睡眠是数字生命的记忆整理机制，类比人类的睡眠——大脑在夜间回放白天的经历，将临时记忆转化为长期存储，整理过程本身消散，不留痕迹。
+Sleep is the digital life's memory consolidation mechanism—analogous to human sleep where the brain replays daytime experiences, converts short-term memory to long-term storage; the consolidation process itself dissipates, leaving no trace.
 
-## 设计原则
+## Design Principles
 
-1. **内部机制，不留痕迹** — 睡眠在后台运行，不写入 session，不影响对话流
-2. **不照搬人类的节奏** — 触发基于系统需求（cron），非实时
-3. **两级分层** — 浅睡（增量写入：语义 / 感性 / 自传体）、深睡（语义存量优化）各司其职
-4. **身份上下文** — 所有记忆处理必须携带**自我层六块** + 常驻记忆（见 [`self-layer.md`](self-layer.md)）
+1. **Internal mechanism, no trace** — Sleep runs in background, does not write to sessions, does not affect conversation flow
+2. **Do not copy human rhythm literally** — Triggered by system need (cron), not real-time
+3. **Two-tier layering** — Light sleep (incremental writes: semantic / limbic / autobiographical), deep sleep (semantic inventory optimization) each with its role
+4. **Identity context** — All memory processing must carry **self layer six blocks** + resident memory (see [`self-layer.md`](self-layer.md))
 
-## 当前状态
+## Current State
 
-| 机制      | 状态      | 说明                              |
-| --------- | --------- | --------------------------------- |
-| 浅睡 cron | ✅ 已实现 | 每天 02:00，`builtin-light-sleep` |
-| 深睡 cron | ✅ 已实现 | 每天 03:00，`builtin-deep-sleep`  |
+| Mechanism        | Status         | Notes                              |
+| ---------------- | -------------- | ---------------------------------- |
+| Light sleep cron | ✅ Implemented | Daily 02:00, `builtin-light-sleep` |
+| Deep sleep cron  | ✅ Implemented | Daily 03:00, `builtin-deep-sleep`  |
 
-## 浅睡 (Light Sleep)
+## Light Sleep
 
-| 属性     | 值                                                                          |
-| -------- | --------------------------------------------------------------------------- |
-| 触发     | 仅 cron，每天 02:00（`0 2 * * *`），不支持手动触发                          |
-| 处理范围 | CST 前一个自然日内有活动的 session（`sessions.updated_at`）                 |
-| 输入     | 当日全部对话（user+assistant，去 tool），按 session 分段                    |
-| 编排     | 三阶段顺序执行（同级、各自独立 LLM 调用；前一阶段零工具调用不跳过后续阶段） |
+| Attribute     | Value                                                                                                                          |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Trigger       | Cron only, daily 02:00 (`0 2 * * *`), no manual trigger                                                                        |
+| Scope         | Sessions with activity in previous CST calendar day (`sessions.updated_at`)                                                    |
+| Input         | Full day's conversations (user+assistant, tools stripped), segmented by session                                                |
+| Orchestration | Three stages sequential (peer stages, separate LLM calls each; zero tool calls in prior stage does not skip subsequent stages) |
 
-### 三阶段
+### Three Stages
 
-| 阶段   | 目标存储                            | 工具白名单                                        | 输入要点                                                   |
-| ------ | ----------------------------------- | ------------------------------------------------- | ---------------------------------------------------------- |
-| 1 语义 | `semantic_memory`                   | `memory_semantic_create` / `update` / `deprecate` | 对话 + 已有 semantic（`listBySourceSessions`）             |
-| 2 感性 | `limbic_memory`                     | `memory_limbic_create`                            | 对话 + 已有 limbic（`listBySession`）                      |
-| 3 自传 | `autobiographical_memory`           | `memory_autobiographical_create` / `deprecate`    | 对话 + 当日 semantic + 当日 limbic + 已有 autobiographical |
-| 3b     | `self_blocks.autobiography_summary` | （程序压缩，无 LLM）                              | active 自传叙事 → 概括块刷新                               |
+| Stage              | Target storage                      | Tool allowlist                                    | Input highlights                                                         |
+| ------------------ | ----------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------ |
+| 1 Semantic         | `semantic_memory`                   | `memory_semantic_create` / `update` / `deprecate` | Conversation + existing semantic (`listBySourceSessions`)                |
+| 2 Limbic           | `limbic_memory`                     | `memory_limbic_create`                            | Conversation + existing limbic (`listBySession`)                         |
+| 3 Autobiographical | `autobiographical_memory`           | `memory_autobiographical_create` / `deprecate`    | Conversation + day's semantic + day's limbic + existing autobiographical |
+| 3b                 | `self_blocks.autobiography_summary` | (programmatic compression, no LLM)                | Active autobiographical narratives → summary block refresh               |
 
-**克制原则**：各阶段 LLM 判断「无值得记录」→ 不调用工具、直接回复跳过；程序不因前一阶段零工具调用而跳过后续阶段。
+**Restraint principle:** Each stage LLM judges "nothing worth recording" → no tool calls, reply skip; program does not skip subsequent stages because prior stage had zero tool calls.
 
-**去重（语义）**：**局部**——仅与同 `source_sessions` 的已有记忆比较；跨脉络留给深睡。
+**Dedup (semantic):** **Local only**—compare only against existing memories with same `source_sessions`; cross-thread merging left to deep sleep.
 
-实现：[`life/memory/src/light-sleep/run.ts`](../life/memory/src/light-sleep/run.ts)；装配：[`serve.ts`](../service/service/src/serve.ts)。
+Implementation: [`life/memory/src/light-sleep/run.ts`](../life/memory/src/light-sleep/run.ts); wiring: [`serve.ts`](../service/service/src/serve.ts).
 
-### Stage 1 消息结构
+### Stage 1 Message Structure
 
-System prompt：自我层六块 + 常驻记忆（pinned facts，top 20）。
+System prompt: self layer six blocks + resident memory (pinned facts, top 20).
 
-| #   | 内容                                                                         |
-| --- | ---------------------------------------------------------------------------- |
-| 1   | 当日全部对话：user+assistant，按 session ID 分段，带时间戳与上下文标注       |
-| 2   | 已有记忆：`listBySourceSessions` 预筛（与当日 session 有交集的 active 记忆） |
-| 3   | 语义提取指令 + 三工具用法说明                                                |
+| #   | Content                                                                                              |
+| --- | ---------------------------------------------------------------------------------------------------- |
+| 1   | Full day's conversation: user+assistant, segmented by session ID, with timestamps and context labels |
+| 2   | Existing memories: `listBySourceSessions` pre-filter (active memories intersecting day's sessions)   |
+| 3   | Semantic extraction instructions + three-tool usage                                                  |
 
-LLM **不**携带 `memory_semantic_search`（消息 2 已由程序提供）。
+LLM **does not** carry `memory_semantic_search` (message 2 already provided by program).
 
-### memory_semantic_update 语义（覆盖式）
+### `memory_semantic_update` Semantics (Overwrite)
 
-- **仅修改传入的字段**，未传字段保持不变
-- 要清空 `source_sessions` → 显式传 `source_sessions: []`
-- 未传 `source_sessions` → 保持原值
+- **Only modifies passed fields**; omitted fields unchanged
+- To clear `source_sessions` → explicitly pass `source_sessions: []`
+- Omit `source_sessions` → keep original value
 
-### 流程
-
-```
-1. 计算 CST 前一日时间窗
-2. listSessionIdsUpdatedBetween → 涉及 session 列表
-3. Stage 1：语义提取 → semantic_memory
-4. Stage 2：感性提取 → limbic_memory
-5. Stage 3：自传叙事提取 → autobiographical_memory
-6. Stage 3b：压缩刷新 → self_blocks.autobiography_summary
-7. 写入 light_sleep_state.json
-```
-
-### 上下文过大
-
-单次输入超过约 120k 字符时，按 session 更新时间倒序截断，并在对话段末尾标注 `[已截断 N 个 session]`（各阶段复用同一截断逻辑）。
-
-## 深睡 (Deep Sleep)
-
-| 属性     | 值                                                                                                          |
-| -------- | ----------------------------------------------------------------------------------------------------------- |
-| 触发     | 仅 cron，每天 03:00（`0 3 * * *`），不支持手动触发                                                          |
-| 处理对象 | `semantic_memory` 全量 active 记忆                                                                          |
-| 操作     | 矛盾检测 + 过期标记、拆分、去重合并，三轮顺序执行                                                           |
-| 工具     | `memory_semantic_create` / `memory_semantic_update` / `memory_semantic_deprecate` / `memory_semantic_merge` |
-
-### 三轮处理
-
-| 轮次 | 意图                | 关注点                                           |
-| ---- | ------------------- | ------------------------------------------------ |
-| 1    | 矛盾检测 + 过期标记 | 排他性矛盾 → deprecate；被新事实取代 → deprecate |
-| 2    | 拆分                | 一条 content 含多个独立事实 → 拆为多条           |
-| 3    | 去重合并            | 重复/高度相似 → 合并为一条                       |
-
-**顺序理由**：先清理问题（矛盾+过期），再细化（拆分），最后合并。每轮看到的是前序轮处理后的干净数据。
-
-### 矛盾定义（排他性）
-
-两条记忆在语义上互相否定，且无法用时间变化解释 → 矛盾。
-
-- ✓ 矛盾：「女儿属虎」vs「女儿属羊」（生肖唯一）
-- ✓ 矛盾：「不喜欢吃辣」vs「喜欢吃辣」（直接否定）
-- ✗ 不矛盾：「喜欢苹果」vs「喜欢樱桃」（可共存）
-- ✗ 不矛盾（变化）：「喜欢 Python」vs「现在更喜欢 TypeScript」（新旧都可对）
-
-### 消息结构
-
-System prompt：自我层六块 + 常驻记忆。
-
-| #   | 内容                      | 说明                                                      |
-| --- | ------------------------- | --------------------------------------------------------- |
-| 1   | 全量 active 语义记忆 JSON | **每轮完全相同 → provider 缓存**                          |
-| 1.5 | 增量变更摘要              | 首轮为空；后续每轮追加前序操作（已合并/已废弃/新增/修改） |
-| 2   | 程序预筛                  | 首版为空                                                  |
-| 3   | 指令                      | 本轮意图 + 工具用法说明                                   |
-
-消息1 是 token 消耗大头且线性增长，保持不变以最大化 provider 缓存。
-
-### 消息1.5 格式
+### Flow
 
 ```
-# 增量变更（以本内容为准）
-
-## 已处理（请忽略消息1中的以下原始条目）
-f-001 — 已被合并到 f-003
-f-010 — 已过期/废弃（新事实取代）
-
-## 新增条目（未在消息1中出现）
-f-003 (world) "张三在上海浦东工作" sources=[s-abc,s-def] observed=2026-05-01T...
-
-## 已修改条目（以本内容为准，覆盖消息1中的原始版本）
-f-030 — 已修改：content 更新为 "..."
+1. Compute CST previous-day time window
+2. listSessionIdsUpdatedBetween → involved session list
+3. Stage 1: semantic extraction → semantic_memory
+4. Stage 2: limbic extraction → limbic_memory
+5. Stage 3: autobiographical narrative extraction → autobiographical_memory
+6. Stage 3b: compression refresh → self_blocks.autobiography_summary
+7. Write light_sleep_state.json
 ```
 
-### 阈值策略
+### Context Too Large
 
-| 全量 JSON 大小 | 行为                  |
-| -------------- | --------------------- |
-| < 10k          | 正常                  |
-| 10k ~ 100k     | ⚠️ warn log，正常处理 |
-| 100k ~ 300k    | 按 type 分批处理      |
-| > 300k         | ❌ 报错拒绝           |
+When single input exceeds ~120k characters, truncate by session `updated_at` descending, append `[Truncated N sessions]` at conversation segment end (same truncation logic reused across stages).
 
-### merge_semantic_memories 工具
+## Deep Sleep
 
-程序自动处理字段缝合，LLM 只需关心合并后的新 content：
+| Attribute  | Value                                                                                                       |
+| ---------- | ----------------------------------------------------------------------------------------------------------- |
+| Trigger    | Cron only, daily 03:00 (`0 3 * * *`), no manual trigger                                                     |
+| Target     | All active `semantic_memory`                                                                                |
+| Operations | Contradiction detection + expiry marking, split, dedup merge—three sequential rounds                        |
+| Tools      | `memory_semantic_create` / `memory_semantic_update` / `memory_semantic_deprecate` / `memory_semantic_merge` |
 
-- `source_sessions` → 所有源记忆的并集去重
-- `observed_at` → 取最早值
-- 创建新记忆 → 废弃所有 source_ids
-- 仅 1 个 source_id → 提示使用 update_semantic_memory
+### Three Rounds
 
-### 操作日志
+| Round | Intent                                   | Focus                                                                  |
+| ----- | ---------------------------------------- | ---------------------------------------------------------------------- |
+| 1     | Contradiction detection + expiry marking | Exclusive contradictions → deprecate; superseded facts → deprecate     |
+| 2     | Split                                    | One content with multiple independent facts → split into multiple rows |
+| 3     | Dedup merge                              | Duplicate/highly similar → merge into one                              |
 
-每轮操作记录写入 `~/.anima/logs/deep_sleep_{day}_{round_index}_{round}.json`，不进数据库，仅用于排查。
+**Ordering rationale:** Clean problems first (contradiction+expiry), then refine (split), then merge. Each round sees clean data after prior rounds.
 
-记录内容：当日日期、轮次、active 记忆数、前序变更数、tool_calls 数、summary、变更日志快照。
+### Contradiction Definition (Exclusive)
 
-## 触发机制
+Two memories semantically negate each other and cannot be explained by temporal change → contradiction.
+
+- ✓ Contradiction: "daughter born Year of Tiger" vs "daughter born Year of Goat" (zodiac unique)
+- ✓ Contradiction: "dislikes spicy food" vs "likes spicy food" (direct negation)
+- ✗ Not contradiction: "likes apples" vs "likes cherries" (can coexist)
+- ✗ Not contradiction (change): "likes Python" vs "now prefers TypeScript" (both can be valid)
+
+### Message Structure
+
+System prompt: self layer six blocks + resident memory.
+
+| #   | Content                          | Notes                                                                                           |
+| --- | -------------------------------- | ----------------------------------------------------------------------------------------------- |
+| 1   | Full active semantic memory JSON | **Identical every round → provider cache**                                                      |
+| 1.5 | Incremental change summary       | Empty first round; subsequent rounds append prior operations (merged/deprecated/added/modified) |
+| 2   | Program pre-filter               | Empty in v1                                                                                     |
+| 3   | Instructions                     | Round intent + tool usage                                                                       |
+
+Message 1 is the token hog and grows linearly; kept unchanged to maximize provider cache.
+
+### Message 1.5 Format
+
+```
+# Incremental changes (this content is authoritative)
+
+## Processed (ignore these original entries in message 1)
+f-001 — merged into f-003
+f-010 — expired/deprecated (superseded by new fact)
+
+## New entries (not in message 1)
+f-003 (world) "Bob works in Pudong, Shanghai" sources=[s-abc,s-def] observed=2026-05-01T...
+
+## Modified entries (authoritative here, overrides message 1)
+f-030 — modified: content updated to "..."
+```
+
+### Threshold Strategy
+
+| Full JSON size | Behavior                       |
+| -------------- | ------------------------------ |
+| < 10k          | Normal                         |
+| 10k ~ 100k     | ⚠️ warn log, normal processing |
+| 100k ~ 300k    | Batch by type                  |
+| > 300k         | ❌ error, refuse               |
+
+### `merge_semantic_memories` Tool
+
+Program auto-stitches fields; LLM only cares about merged new content:
+
+- `source_sessions` → union deduped across source memories
+- `observed_at` → earliest value
+- Create new memory → deprecate all source_ids
+- Only 1 source_id → prompt to use update_semantic_memory
+
+### Operation Log
+
+Each round written to `~/.anima/logs/deep_sleep_{day}_{round_index}_{round}.json`, not in database, for troubleshooting only.
+
+Records: date, round, active memory count, prior change count, tool_calls count, summary, change log snapshot.
+
+## Trigger Mechanism
 
 ```cron
-0 2 * * *  light-sleep           # builtin-light-sleep（语义 + 感性 + 自传体）
+0 2 * * *  light-sleep           # builtin-light-sleep (semantic + limbic + autobiographical)
 0 3 * * *  deep-sleep            # builtin-deep-sleep
 30 5 * * *  memory-reference-sync  # builtin-memory-reference-sync
 ```
 
-宕机后下次对应时刻补跑即可；非实时系统。
+After downtime, next scheduled run catches up; not a real-time system.
 
-## 历史补跑（一次性 CLI）
+## Historical Backfill (One-Time CLI)
 
-对上线前或迁移后的历史对话，可按 **CST 自然日**逐日补跑浅睡，与 nightly cron 逻辑一致，但由人工触发、独立进度文件。
+For historical conversations before go-live or after migration, run light sleep **per CST calendar day**, same logic as nightly cron but manually triggered with separate progress file.
 
 ```bash
 anima memory sleep backfill [--from YYYY-MM-DD] [--to YYYY-MM-DD] [--resume]
 ```
 
-| 选项       | 说明                                                          |
-| ---------- | ------------------------------------------------------------- |
-| `--from`   | 起始日；省略时取 `sessions` 中最早非 debug 会话的 CST 日      |
-| `--to`     | 截止日；省略时为 **昨日 CST**（与 02:00 cron 默认处理日一致） |
-| `--resume` | 从进度文件续跑，跳过已完成日                                  |
+| Option     | Description                                                              |
+| ---------- | ------------------------------------------------------------------------ |
+| `--from`   | Start date; if omitted, earliest non-debug session CST day in `sessions` |
+| `--to`     | End date; if omitted, **yesterday CST** (same as 02:00 cron default day) |
+| `--resume` | Continue from progress file, skip completed days                         |
 
-**进度文件**：`~/.anima/runtime/light_sleep_backfill_state.json`（与 `light_sleep_state.json` 独立）。
+**Progress file:** `~/.anima/runtime/light_sleep_backfill_state.json` (separate from `light_sleep_state.json`).
 
-**行为要点**：
+**Behavior notes:**
 
-- 每日独立调用 `runLightSleep({ day })`；单日失败记录后继续下一天
-- Stage 3b（自传概括刷新）默认仅在 **最后一天** 执行，中间日跳过以节省 token
-- 补跑前请确保 LLM 能正确填写 `observed_at` / `occurred_at`（见 [`memory.md`](memory.md)）；否则记忆时间会落成补跑时刻
-- 补跑只写入 semantic / limbic / autobiographical；**跨 session 语义合并仍靠深睡**——补跑结束后建议手动等一次 03:00 深睡或自行触发
-- 与 02:00 cron 无冲突，但建议补跑时暂停服务或错开凌晨窗口
-- 单次对话输入仍受约 **120k 字符**限制（见上文「上下文过大」）
+- Each day independently calls `runLightSleep({ day })`; single-day failure recorded then continue next day
+- Stage 3b (autobiography summary refresh) runs only on **last day** by default; skipped on intermediate days to save tokens
+- Before backfill, ensure LLM correctly fills `observed_at` / `occurred_at` (see [`memory.md`](memory.md)); otherwise memory times become backfill moment
+- Backfill only writes semantic / limbic / autobiographical; **cross-session semantic merge still relies on deep sleep**—after backfill, wait for 03:00 deep sleep or trigger manually
+- No conflict with 02:00 cron, but pause service or avoid early-morning window during backfill
+- Single conversation input still capped at ~**120k characters** (see "Context Too Large" above)
 
-实现：[`life/memory/src/light-sleep/backfill.ts`](../life/memory/src/light-sleep/backfill.ts)；CLI bootstrap：[`bootstrap-memory-jobs.ts`](../service/service/src/bootstrap-memory-jobs.ts)。
+Implementation: [`life/memory/src/light-sleep/backfill.ts`](../life/memory/src/light-sleep/backfill.ts); CLI bootstrap: [`bootstrap-memory-jobs.ts`](../service/service/src/bootstrap-memory-jobs.ts).
 
-## 与现有架构的关系
+## Relationship to Existing Architecture
 
 ```
-PG messages（对话存档）
-  │ 浅睡 cron（02:00，三阶段）
+PG messages (conversation archive)
+  │ light sleep cron (02:00, three stages)
   ├─► semantic_memory
   ├─► limbic_memory
-  └─► autobiographical_memory ──压缩──► self_blocks.autobiography_summary
+  └─► autobiographical_memory ──compress──► self_blocks.autobiography_summary
   │
-  │ 深睡 cron（03:00，语义维护）
+  │ deep sleep cron (03:00, semantic maintenance)
   ▼
-semantic_memory（整理后）
-  │ memory_recall（对话中实时检索）
+semantic_memory (consolidated)
+  │ memory_recall (real-time retrieval in conversation)
   ▼
-当前上下文中的 Agent 身份与召回片段
+Agent identity and recalled fragments in current context
 ```
 
-`session:updated` EventBus 事件仍保留（WebUI 刷新等），**不再**触发 reflect。
+`session:updated` EventBus event retained (WebUI refresh, etc.), **no longer** triggers reflect.
 
-## memory_remember 工具
+## `memory_remember` Tool
 
-对话中的 `memory_remember` 为便捷封装：自动推断 `source_sessions`（当前 session）与 `observed_at`，底层调用 `memory_semantic_create` 逻辑。物理删除仍走 `action=delete`；软废弃用 `memory_semantic_deprecate`。
+In-conversation `memory_remember` is a convenience wrapper: auto-infers `source_sessions` (current session) and `observed_at`, underlying `memory_semantic_create` logic. Physical delete via `action=delete`; soft deprecation via `memory_semantic_deprecate`.

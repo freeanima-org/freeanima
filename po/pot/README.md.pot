@@ -1,0 +1,103 @@
+# SOME DESCRIPTIVE TITLE
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-06-10 17:00+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Plain text
+#: docs/README.md:1 docs/compression.md:1 docs/compression.md:11
+#: docs/compression.md:22 docs/compression.md:49 docs/compression.md:96
+#: docs/compression.md:118 docs/compression.md:156 docs/compression.md:180
+#: docs/compression.md:228 docs/compression.md:262 docs/compression.md:275
+#: docs/compression.md:327 docs/compression.md:348 docs/compression.md:368
+#: docs/compression.md:384 docs/database.md:1 docs/database.md:33
+#: docs/designs/desktop-companion.md:1 docs/designs/execute-code-runtimes.md:1
+#: docs/designs/issue-1-migration-plan.md:1
+#: docs/designs/pair-programming-v1.md:1
+#: docs/designs/pair-programming-v1.md:321 docs/designs/probe-architecture.md:1
+#: docs/designs/probe-architecture.md:165 docs/designs/recall-flow.md:1
+#: docs/designs/time-perception.md:1 docs/identity.md:1 docs/identity.md:10
+#: docs/identity.md:28 docs/identity.md:45 docs/identity.md:55 docs/memory.md:1
+#: docs/memory.md:17 docs/memory.md:53 docs/memory.md:160 docs/memory.md:191
+#: docs/memory.md:211 docs/memory.md:232 docs/memory.md:249 docs/security.md:1
+#: docs/self-layer.md:1 docs/self-layer.md:31 docs/self-layer.md:53
+#: docs/self-layer.md:64 docs/self-layer.md:78 docs/self-layer.md:94
+#: docs/self-layer.md:105 docs/sleep.md:1 docs/versioning.md:1
+#, no-wrap
+msgid "---\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/README.md:3
+#, no-wrap
+msgid ""
+"title: Documentation Index\n"
+"---\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/README.md:6
+msgid "# docs/"
+msgstr ""
+
+#. type: Plain text
+#: docs/README.md:8
+msgid ""
+"See [AGENTS.md](../AGENTS.md#documentation-map) for the documentation index "
+"and maintenance conventions. Actionable tasks and discussion items live in "
+"[GitHub Issues](https://github.com/freeanima-org/freeanima/issues)."
+msgstr ""
+
+#. type: Plain text
+#: docs/README.md:10
+msgid "## Topic Index"
+msgstr ""
+
+#. type: Plain text
+#: docs/README.md:22
+#, no-wrap
+msgid ""
+"| Topic | File |\n"
+"| ----- | ---- |\n"
+"| Digital life positioning | [identity.md](identity.md) |\n"
+"| Self layer | [self-layer.md](self-layer.md) |\n"
+"| Memory system | [memory.md](memory.md) |\n"
+"| Compression | [compression.md](compression.md) |\n"
+"| Sleep mechanism | [sleep.md](sleep.md) |\n"
+"| Security | [security.md](security.md) |\n"
+"| Database | [database.md](database.md) |\n"
+"| Release | [versioning.md](versioning.md) |\n"
+"| Design drafts | [designs/](designs/) |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/README.md:24
+msgid "## Design Draft Status (Summary)"
+msgstr ""
+
+#. type: Plain text
+#: docs/README.md:33
+#, no-wrap
+msgid ""
+"| File | Status |\n"
+"| ---- | ------ |\n"
+"| [recall-flow.md](designs/recall-flow.md) | v1 ✅ implemented; v2 target design in [#47](https://github.com/freeanima-org/freeanima/issues/47) |\n"
+"| [time-perception.md](designs/time-perception.md) | Core ✅; compression summary timestamps in [#5](https://github.com/freeanima-org/freeanima/issues/5) |\n"
+"| [pair-programming-v1.md](designs/pair-programming-v1.md) | Phase 1 ✅; Phase 2 in [#37](https://github.com/freeanima-org/freeanima/issues/37) |\n"
+"| [execute-code-runtimes.md](designs/execute-code-runtimes.md) | P0 ✅ (nodejs); P1–P4 in [#40](https://github.com/freeanima-org/freeanima/issues/40) |\n"
+"| [probe-architecture.md](designs/probe-architecture.md) | Draft; see [#43](https://github.com/freeanima-org/freeanima/issues/43) |\n"
+"| [desktop-companion.md](designs/desktop-companion.md) | Concept; see [#8](https://github.com/freeanima-org/freeanima/issues/8) |\n"
+"| [issue-1-migration-plan.md](designs/issue-1-migration-plan.md) | Archived (migration complete) |\n"
+msgstr ""

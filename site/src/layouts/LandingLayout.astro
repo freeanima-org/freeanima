@@ -1,18 +1,25 @@
 ---
-import { siteDescription, siteTitle } from "../lib/site.ts";
+import SiteHeader from "../components/SiteHeader.astro";
+import type { SiteLocale } from "../lib/site.ts";
+import { getSiteMeta } from "../lib/site.ts";
 import "../styles/global.css";
 import "../styles/landing.css";
 
 interface Props {
+  locale?: SiteLocale;
   title?: string;
   description?: string;
 }
 
-const { title = siteTitle, description = siteDescription } = Astro.props;
+const locale = Astro.props.locale ?? "en";
+const fallback = getSiteMeta();
+const title = Astro.props.title ?? fallback.siteTitle;
+const description = Astro.props.description ?? fallback.siteDescription;
+const htmlLang = locale === "zh-cn" ? "zh-CN" : "en";
 ---
 
 <!doctype html>
-<html lang="zh-CN">
+<html lang={htmlLang}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -21,6 +28,7 @@ const { title = siteTitle, description = siteDescription } = Astro.props;
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   </head>
   <body>
+    <SiteHeader locale={locale} />
     <main class="landing">
       <slot />
     </main>

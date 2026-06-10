@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
 import { MemoryListPagination } from "@/components/chamber/MemoryListPagination.tsx";
+import { m } from "@/lib/i18n.ts";
 import { listSemanticMemories } from "@/lib/api.ts";
 
 const PAGE_SIZE = 20;
@@ -62,7 +63,11 @@ function SemanticMemoryPage() {
         setOffset(nextOffset);
         setLoaded(true);
       } catch (e) {
-        setError(`加载失败: ${e instanceof Error ? e.message : String(e)}`);
+        setError(
+          m.webui_common_load_failed({
+            detail: e instanceof Error ? e.message : String(e),
+          }),
+        );
       } finally {
         setLoading(false);
       }
@@ -81,10 +86,8 @@ function SemanticMemoryPage() {
 
   return (
     <div>
-      <h2 className="text-lg font-bold mb-1">📝 语义记忆</h2>
-      <p className="text-sm text-base-content/60 mb-4">
-        浏览 PG semantic_memory 表，支持 FTS 搜索与过滤。
-      </p>
+      <h2 className="text-lg font-bold mb-1">{m.webui_chamber_nav_semantic()}</h2>
+      <p className="text-sm text-base-content/60 mb-4">{m.webui_chamber_semantic_desc()}</p>
 
       <form
         className="card bg-base-200 mb-4"
@@ -96,27 +99,27 @@ function SemanticMemoryPage() {
         <div className="card-body gap-3">
           <div className="form-control">
             <label className="label py-0">
-              <span className="label-text text-xs">搜索词（可选，FTS）</span>
+              <span className="label-text text-xs">{m.webui_chamber_semantic_search_fts()}</span>
             </label>
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               type="text"
               className="input input-bordered input-sm"
-              placeholder="关键词…"
+              placeholder={m.webui_common_keyword_placeholder()}
             />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div className="form-control">
               <label className="label py-0">
-                <span className="label-text text-xs">类型</span>
+                <span className="label-text text-xs">{m.webui_common_type_label()}</span>
               </label>
               <select
                 className="select select-bordered select-sm"
                 value={typeFilter}
                 onChange={(e) => setTypeFilter(e.target.value)}
               >
-                <option value="">全部</option>
+                <option value="">{m.webui_common_all()}</option>
                 {SEMANTIC_TYPES.map((t) => (
                   <option key={t} value={t}>
                     {t}
@@ -126,7 +129,7 @@ function SemanticMemoryPage() {
             </div>
             <div className="form-control">
               <label className="label py-0">
-                <span className="label-text text-xs">状态</span>
+                <span className="label-text text-xs">{m.webui_common_status_label()}</span>
               </label>
               <select
                 className="select select-bordered select-sm"
@@ -135,12 +138,14 @@ function SemanticMemoryPage() {
               >
                 <option value="active">active</option>
                 <option value="deprecated">deprecated</option>
-                <option value="all">全部</option>
+                <option value="all">{m.webui_common_all()}</option>
               </select>
             </div>
             <div className="form-control">
               <label className="label py-0">
-                <span className="label-text text-xs">来源 session（可选）</span>
+                <span className="label-text text-xs">
+                  {m.webui_chamber_semantic_source_session()}
+                </span>
               </label>
               <input
                 value={sourceSession}
@@ -153,7 +158,7 @@ function SemanticMemoryPage() {
           </div>
           <button type="submit" className="btn btn-sm btn-primary" disabled={loading}>
             {loading ? <span className="loading loading-spinner loading-xs" /> : null}
-            查询
+            {m.webui_common_query()}
           </button>
         </div>
       </form>
@@ -167,7 +172,7 @@ function SemanticMemoryPage() {
               <span className="loading loading-dots loading-sm" />
             </div>
           ) : items.length === 0 ? (
-            <div className="alert alert-info text-sm">无匹配记录。</div>
+            <div className="alert alert-info text-sm">{m.webui_common_no_results()}</div>
           ) : (
             <div className="space-y-2">
               {items.map((row) => (
@@ -209,7 +214,7 @@ function SemanticMemoryPage() {
           />
         </div>
       ) : (
-        <p className="text-sm text-base-content/50">点击「查询」加载列表。</p>
+        <p className="text-sm text-base-content/50">{m.webui_common_click_query_hint()}</p>
       )}
     </div>
   );

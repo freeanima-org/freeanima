@@ -6,6 +6,15 @@ on:
     paths:
       - "site/**"
       - "docs/**"
+      - "messages/**"
+      - "project.inlang/**"
+      - "po/**"
+      - "po4a.cfg"
+      - "scripts/check-paraglide-messages.ts"
+      - "scripts/check-po-health.ts"
+      - "scripts/gen-po4a-cfg.ts"
+      - "scripts/i18n-po4a.ts"
+      - "scripts/messages-i18n-lib.ts"
       - ".github/workflows/site.yml"
   workflow_dispatch:
 
@@ -24,7 +33,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
+      - run: sudo apt-get update && sudo apt-get install -y po4a gettext
       - run: bun install
+      - run: bun run i18n:po4a
+      - run: bun scripts/check-paraglide-messages.ts
+      - run: bun scripts/check-po-health.ts
+        # 默认 warn：允许 fuzzy，英文 docs 可先合并，中文翻译滞后追赶
       - run: cd site && bun run build
       - uses: actions/upload-pages-artifact@v3
         with:

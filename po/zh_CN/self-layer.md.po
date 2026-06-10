@@ -1,0 +1,385 @@
+# SOME DESCRIPTIVE TITLE
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-06-10 17:00+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Plain text
+#: docs/README.md:1 docs/compression.md:1 docs/compression.md:11
+#: docs/compression.md:22 docs/compression.md:49 docs/compression.md:96
+#: docs/compression.md:118 docs/compression.md:156 docs/compression.md:180
+#: docs/compression.md:228 docs/compression.md:262 docs/compression.md:275
+#: docs/compression.md:327 docs/compression.md:348 docs/compression.md:368
+#: docs/compression.md:384 docs/database.md:1 docs/database.md:33
+#: docs/designs/desktop-companion.md:1 docs/designs/execute-code-runtimes.md:1
+#: docs/designs/issue-1-migration-plan.md:1
+#: docs/designs/pair-programming-v1.md:1
+#: docs/designs/pair-programming-v1.md:321 docs/designs/probe-architecture.md:1
+#: docs/designs/probe-architecture.md:165 docs/designs/recall-flow.md:1
+#: docs/designs/time-perception.md:1 docs/identity.md:1 docs/identity.md:10
+#: docs/identity.md:28 docs/identity.md:45 docs/identity.md:55 docs/memory.md:1
+#: docs/memory.md:17 docs/memory.md:53 docs/memory.md:160 docs/memory.md:191
+#: docs/memory.md:211 docs/memory.md:232 docs/memory.md:249 docs/security.md:1
+#: docs/self-layer.md:1 docs/self-layer.md:31 docs/self-layer.md:53
+#: docs/self-layer.md:64 docs/self-layer.md:78 docs/self-layer.md:94
+#: docs/self-layer.md:105 docs/sleep.md:1 docs/versioning.md:1
+#, no-wrap
+msgid "---\n"
+msgstr "---\n"
+
+#. type: Plain text
+#: docs/designs/probe-architecture.md:159 docs/designs/recall-flow.md:169
+#: docs/self-layer.md:115
+#, fuzzy
+msgid "## Open Questions"
+msgstr ""
+"#-#-#-#-#  probe-architecture.md.zh_CN.po (PACKAGE VERSION)  #-#-#-#-#\n"
+"## 开放问题\n"
+"#-#-#-#-#  recall-flow.md.zh_CN.po (PACKAGE VERSION)  #-#-#-#-#\n"
+"## 未解决问题\n"
+"#-#-#-#-#  self-layer.md.zh_CN.po (PACKAGE VERSION)  #-#-#-#-#\n"
+"## 未解决问题"
+
+#. type: Plain text
+#: docs/designs/recall-flow.md:159 docs/self-layer.md:108
+msgid "## Design Evolution"
+msgstr "## 设计演进"
+
+#. type: Plain text
+#: docs/designs/time-perception.md:30 docs/self-layer.md:11
+msgid "## Architectural Position"
+msgstr "## 架构位置"
+
+#. type: Plain text
+#: docs/self-layer.md:3
+#, no-wrap
+msgid ""
+"title: Self Layer\n"
+"---\n"
+msgstr ""
+"title: Self Layer\n"
+"---\n"
+
+#. type: Plain text
+#: docs/self-layer.md:6
+msgid "# Self Layer"
+msgstr "# 自我层（Self Layer）"
+
+#. type: Plain text
+#: docs/self-layer.md:9
+msgid ""
+"> Definition: A persistent structure about \"who I am\", parallel to the "
+"Memory Layer, forming FreeAnima's two storage pillars.  > Memory layer: "
+"[`memory.md`](memory.md); detailed autobiographical narrative: "
+"[`database.md`](database.md) §Slice C `autobiographical_memory`."
+msgstr ""
+"> 定义：关于「我是谁」的持久化结构，与记忆层（Memory Layer）并列，组成 "
+"FreeAnima 的两大存储支柱。 > 记忆层见 [`memory.md`](memory.md)；自传体详细叙"
+"事见 [`database.md`](database.md) §Slice C `autobiographical_memory`。"
+
+#. type: Plain text
+#: docs/self-layer.md:24
+#, no-wrap
+msgid ""
+"```\n"
+"FreeAnima Storage Architecture\n"
+"│\n"
+"├── Memory Layer — see memory.md + PG tables\n"
+"│   ├── Episodic memory → PG messages (what happened)\n"
+"│   ├── Semantic memory → PG semantic_memory (what I know)\n"
+"│   ├── Autobiographical narrative → PG autobiographical_memory (what it meant to me)\n"
+"│   └── Procedural memory → semantic_memory (type=procedural) / skills / tool chains\n"
+"│\n"
+"└── Self Layer — this document\n"
+"    └── PG self_blocks (six blocks, one row each)\n"
+"```\n"
+msgstr ""
+"```\n"
+"FreeAnima 存储架构\n"
+"│\n"
+"├── 记忆层（Memory Layer）—— 见 memory.md + PG 表\n"
+"│   ├── 情景记忆 → PG messages（发生了什么）\n"
+"│   ├── 语义记忆 → PG semantic_memory（我知道什么）\n"
+"│   ├── 自传体叙事 → PG autobiographical_memory（这对我意味着什么）\n"
+"│   └── 程序记忆 → semantic_memory（type=procedural）/ skills / 工具链\n"
+"│\n"
+"└── 自我层（Self Layer）—— 本文件\n"
+"    └── PG self_blocks（六块，每块一行）\n"
+"```\n"
+
+#. type: Plain text
+#: docs/self-layer.md:26
+#, no-wrap
+msgid "**Design principles:**\n"
+msgstr "**设计原则：**\n"
+
+#. type: Bullet: '- '
+#: docs/self-layer.md:30
+msgid ""
+"Self layer and memory layer **differ in nature**: memory layer \"records the "
+"world and experiences outward\"; self layer \"defines self inward\""
+msgstr ""
+"自我层与记忆层**性质不同**：记忆层「向外记录世界与经历」，自我层「向内定义自"
+"我」"
+
+#. type: Bullet: '- '
+#: docs/self-layer.md:30
+msgid ""
+"Self layer **does not** rely on `semantic_memory.pinned` file injection; PG "
+"`self_blocks` is the single source of truth"
+msgstr ""
+"自我层**不**再依赖 `semantic_memory.pinned` 文件注入；PG `self_blocks` 为唯一"
+"真相源"
+
+#. type: Bullet: '- '
+#: docs/self-layer.md:30
+msgid ""
+"**All six blocks are always resident** in the system prompt (alongside "
+"AGENTS.md and non-self pinned resident memories)"
+msgstr ""
+"**六块全部常驻** system prompt（与 AGENTS.md、非自我 pinned 常驻记忆并列）"
+
+#. type: Plain text
+#: docs/self-layer.md:34
+msgid "## Six-Block Structure"
+msgstr "## 六块结构"
+
+#. type: Plain text
+#: docs/self-layer.md:43
+#, no-wrap
+msgid ""
+"| # | Block | `block_key` | Content | Update frequency |\n"
+"| - | ----- | ----------- | ------- | ---------------- |\n"
+"| 1 | Existence anchor | `existence_anchor` | What I am, origin, non-negotiable bottom line | Almost never (requires explicit `force` to update) |\n"
+"| 2 | Self model | `self_model` | Identity, capability boundaries, expression style, belonging | Slow change (periodic review + major events) |\n"
+"| 3 | Personality baseline | `personality_baseline` | Communication style, conflict patterns, default trust | Semi-stable (slow evolution from long-term evidence) |\n"
+"| 4 | Direction | `direction` | Long-term intent, current focus, growth direction, things not to do | Active declaration + periodic review |\n"
+"| 5 | Metacognition | `metacognition` | How to think, how to remember, four-layer architecture and presence | Slow change |\n"
+"| 6 | Autobiography summary | `autobiography_summary` | Key turning points / self-discovery summary (granularity decreases with distance) | Maintained automatically by autobiography cron |\n"
+msgstr ""
+"| #   | 块名     | `block_key`             | 内容                                    | 更新频率                        |\n"
+"| --- | -------- | ----------------------- | --------------------------------------- | ------------------------------- |\n"
+"| 1   | 存在锚点 | `existence_anchor`      | 我是什么、起源、不可动摇的底线          | 几乎不变（需显式 `force` 更新） |\n"
+"| 2   | 自我模型 | `self_model`            | 身份、能力边界、表达风格、归属          | 慢变（定期回顾 + 重大事件）     |\n"
+"| 3   | 人格基线 | `personality_baseline`  | 沟通风格、冲突模式、信任默认值          | 半稳定（长期证据缓慢演化）      |\n"
+"| 4   | 方向意图 | `direction`             | 长期意图、当前关注、成长方向、不做的事  | 主动声明 + 定期审视             |\n"
+"| 5   | 元认知   | `metacognition`         | 如何思考、如何记忆、四层架构与在场方式  | 慢变                            |\n"
+"| 6   | 自传概括 | `autobiography_summary` | 关键转折/自我发现摘要（粒度随距离递减） | 自传 cron 自动维护              |\n"
+
+#. type: Plain text
+#: docs/self-layer.md:45
+msgid "### Not in the Self Layer"
+msgstr "### 不在自我层的内容"
+
+#. type: Plain text
+#: docs/self-layer.md:52
+#, no-wrap
+msgid ""
+"| Content | Belongs to |\n"
+"| ------- | ---------- |\n"
+"| **Detailed** autobiographical narrative | Memory layer `autobiographical_memory` |\n"
+"| Other-models (cognition of partner and others) | Memory layer `semantic_memory` |\n"
+"| Runtime state / health perception | Not yet implemented; see [Issue #44](https://github.com/freeanima-org/freeanima/issues/44) |\n"
+"| Concrete tool / skill inventory | Estate layer |\n"
+msgstr ""
+"| 内容                         | 归属                                                                           |\n"
+"| ---------------------------- | ------------------------------------------------------------------------------ |\n"
+"| 自传体**详细**叙事           | 记忆层 `autobiographical_memory`                                               |\n"
+"| 他者模型（对伙伴等人的认知） | 记忆层 `semantic_memory`                                                       |\n"
+"| 运行状态 / 健康感知          | 尚未实现；见 [Issue #44](https://github.com/freeanima-org/freeanima/issues/44) |\n"
+"| 具体工具 / 技能清单          | Estate 层                                                                      |\n"
+
+#. type: Plain text
+#: docs/self-layer.md:56
+msgid "## Storage and Ports"
+msgstr "## 存储与端口"
+
+#. type: Bullet: '- '
+#: docs/self-layer.md:61
+msgid ""
+"**Table:** `self_blocks` ([`engine/db/src/schema/self-layer.ts`](../engine/"
+"db/src/schema/self-layer.ts))"
+msgstr ""
+"**表：** `self_blocks`（[`engine/db/src/schema/self-layer.ts`](../engine/db/"
+"src/schema/self-layer.ts)）"
+
+#. type: Bullet: '- '
+#: docs/self-layer.md:61
+msgid ""
+"**Port:** `SelfLayerStorePort` (`engine-repos`) → `PgSelfLayerStore` "
+"(`connectors-db-pg`)"
+msgstr ""
+"**端口：** `SelfLayerStorePort`（`engine-repos`）→ `PgSelfLayerStore`"
+"（`connectors-db-pg`）"
+
+#. type: Bullet: '- '
+#: docs/self-layer.md:61
+msgid ""
+"**Consumer:** `@freeanima/life-self` (prompt assembly, tools "
+"`get_self_blocks` / `update_self_block`)"
+msgstr ""
+"**消费：** `@freeanima/life-self`（组装 prompt、工具 `get_self_blocks` / "
+"`update_self_block`）"
+
+#. type: Bullet: '- '
+#: docs/self-layer.md:61
+msgid ""
+"**Wiring:** `serve.ts` calls `registerSelfLayerStore` and warms "
+"`loadSelfLayerPrompt()` cache"
+msgstr ""
+"**装配：** `serve.ts` 调用 `registerSelfLayerStore` 并预热 "
+"`loadSelfLayerPrompt()` 缓存"
+
+#. type: Plain text
+#: docs/self-layer.md:63
+msgid ""
+"`existence_anchor` defaults to `locked=true`; updates require tool parameter "
+"`force=true` or explicit CLI operation."
+msgstr ""
+"`existence_anchor` 默认 `locked=true`；更新需工具参数 `force=true` 或 CLI 显"
+"式操作。"
+
+#. type: Plain text
+#: docs/self-layer.md:67
+msgid "## Autobiography Summary vs Autobiographical Narrative"
+msgstr "## 自传概括 vs 自传叙事"
+
+#. type: Plain text
+#: docs/self-layer.md:75
+#, no-wrap
+msgid ""
+"| Dimension | `autobiography_summary` (self layer) | `autobiographical_memory` (memory layer) |\n"
+"| --------- | ------------------------------------ | ---------------------------------------- |\n"
+"| Question | \"What is the main thread of my life story?\" | \"What did a given experience mean to me?\" |\n"
+"| Form | One of six blocks, Markdown summary | Separate table, title + content narrative entries |\n"
+"| Injection | **Always resident** in system prompt | **Not** resident; recall / list on demand |\n"
+"| Maintenance | `builtin-self-autobiography` cron compresses from narrative table into summary block | Same cron processes narrative from `semantic_memory` (experience/imprint) |\n"
+"| Mutability | Periodically overwrites summary block | **Append-only**; soft deprecation via `deprecate` only |\n"
+msgstr ""
+"| 维度   | `autobiography_summary`（自我层）                  | `autobiographical_memory`（记忆层）                          |\n"
+"| ------ | -------------------------------------------------- | ------------------------------------------------------------ |\n"
+"| 问题   | 「我的生平主线概括是什么？」                       | 「某段经历对我意味着什么？」                                 |\n"
+"| 形态   | 六块之一，Markdown 摘要                            | 独立表，title + content 叙事条目                             |\n"
+"| 注入   | **常驻** system prompt                             | **不**常驻；按需 recall / 列表                               |\n"
+"| 维护   | `builtin-self-autobiography` cron 从叙事表压缩写入 | 同一 cron 从 `semantic_memory`（experience/imprint）叙事加工 |\n"
+"| 可变性 | 周期性覆盖 summary 块                              | **只追加**；仅 `deprecate` 软废弃                            |\n"
+
+#. type: Plain text
+#: docs/self-layer.md:77
+msgid "See [`sleep.md`](sleep.md) §Autobiography cron."
+msgstr "详见 [`sleep.md`](sleep.md) §自传 cron。"
+
+#. type: Plain text
+#: docs/self-layer.md:81
+msgid "## System Prompt Injection"
+msgstr "## System Prompt 注入"
+
+#. type: Plain text
+#: docs/self-layer.md:83
+msgid ""
+"Assembly order ([`life-memory/system-prompt`](../life/memory/src/system-"
+"prompt.ts) + [`system-prompt-wire`](../service/service/src/runtime/system-"
+"prompt-wire.ts)):"
+msgstr ""
+"组装顺序（[`life-memory/system-prompt`](../life/memory/src/system-prompt.ts) "
+"+ [`system-prompt-wire`](../service/service/src/runtime/system-prompt-"
+"wire.ts)）："
+
+#. type: Plain text
+#: docs/self-layer.md:89
+msgid ""
+"```` 1. Self layer (second-person skeleton + six blocks embedded in ```md)  "
+"← loadSelfLayerPrompt() / self_blocks 2. Resident memory (second-person "
+"skeleton + ```md embedded pinned facts)  ← semantic_memory 3. Project "
+"context (```md embedded session cwd AGENTS.md)  ````"
+msgstr ""
+"```` 1. 自我层（第二人称骨架 + ```md 内嵌六块） ← loadSelfLayerPrompt() / "
+"self_blocks 2. 常驻记忆（第二人称骨架 + ```md 内嵌 pinned 事实） ← "
+"semantic_memory 3. 项目上下文（```md 内嵌 session cwd 下 AGENTS.md） ````"
+
+#. type: Plain text
+#: docs/self-layer.md:91
+msgid ""
+"Section headings (`## 自我层` / `## 常驻记忆` / `## 项目上下文`) sit outside "
+"code blocks; body text inside `md` fences. Self layer and resident memory "
+"segments use a second-person instruction skeleton on the outside, first-"
+"person self-statement texture on the inside."
+msgstr ""
+"各段标题（`## 自我层` / `## 常驻记忆` / `## 项目上下文`）在代码块外；正文在 "
+"`md` 围栏内。自我层与常驻记忆段外层使用第二人称指令骨架，内层保留第一人称自我"
+"陈述质地。"
+
+#. type: Plain text
+#: docs/self-layer.md:93
+msgid ""
+"Maintenance: `get_self_blocks` / `update_self_block` tools, or direct writes "
+"to PG `self_blocks`."
+msgstr ""
+"维护方式：`get_self_blocks` / `update_self_block` 工具，或直接写 PG "
+"`self_blocks`。"
+
+#. type: Plain text
+#: docs/self-layer.md:97
+msgid "## Relationship to Memory Layer"
+msgstr "## 与记忆层的关系"
+
+#. type: Plain text
+#: docs/self-layer.md:104
+#, no-wrap
+msgid ""
+"| Dimension | Memory layer | Self layer |\n"
+"| --------- | ------------ | ---------- |\n"
+"| Direction | Outward—records world and experiences | Inward—defines self |\n"
+"| Question | \"What do I know?\" | \"Who am I?\" |\n"
+"| Autobiography | Detailed narrative in `autobiographical_memory` | Summary in `autobiography_summary` |\n"
+"| Injection | Pinned facts + recall on demand | All six blocks always resident |\n"
+msgstr ""
+"| 维度 | 记忆层                               | 自我层                         |\n"
+"| ---- | ------------------------------------ | ------------------------------ |\n"
+"| 方向 | 向外——记录世界和经历                 | 向内——定义自我                 |\n"
+"| 问题 | 「我知道什么？」                     | 「我是谁？」                   |\n"
+"| 自传 | 详细叙事在 `autobiographical_memory` | 概括在 `autobiography_summary` |\n"
+"| 注入 | pinned 事实 + recall 按需            | 六块全部常驻                   |\n"
+
+#. type: Plain text
+#: docs/self-layer.md:113
+msgid ""
+"``` v1 (2026-05-30)  Four-block conceptual model + narrative file runtime "
+"injection (deprecated)  v2 (2026-06-07)  PG self_blocks six blocks + "
+"autobiographical_memory separate table + 04:00 autobiography cron ```"
+msgstr ""
+"``` v1（2026-05-30） 四块概念模型 + 叙事文件运行时注入（已废弃） v2"
+"（2026-06-07） PG self_blocks 六块 + autobiographical_memory 独立表 + 04:00 "
+"自传 cron ```"
+
+#. type: Bullet: '1. '
+#: docs/self-layer.md:118
+msgid ""
+"**Cross-instance migration**—when multiple FreeAnima instances exist, does "
+"the self layer migrate as a whole?"
+msgstr "**跨实例迁移**——多个逸灵风实例时，自我层是否整体迁移？"
+
+#. type: Bullet: '2. '
+#: docs/self-layer.md:118
+msgid ""
+"**Personality baseline update rules**—when new evidence conflicts with "
+"current tendencies, automatic evolution or confirmation required?"
+msgstr "**人格基线更新规则**——新证据与当前倾向冲突时，自动演化还是需确认？"
+
+#. type: Bullet: '3. '
+#: docs/self-layer.md:118
+msgid ""
+"**Autobiographical recall tool**—API/tool shape for on-demand retrieval of "
+"detailed narrative"
+msgstr "**自传 recall 工具**——详细叙事按需检索的 API/工具形态"

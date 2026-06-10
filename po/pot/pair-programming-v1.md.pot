@@ -1,0 +1,746 @@
+# SOME DESCRIPTIVE TITLE
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-06-10 17:00+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Plain text
+#: docs/README.md:1 docs/compression.md:1 docs/compression.md:11
+#: docs/compression.md:22 docs/compression.md:49 docs/compression.md:96
+#: docs/compression.md:118 docs/compression.md:156 docs/compression.md:180
+#: docs/compression.md:228 docs/compression.md:262 docs/compression.md:275
+#: docs/compression.md:327 docs/compression.md:348 docs/compression.md:368
+#: docs/compression.md:384 docs/database.md:1 docs/database.md:33
+#: docs/designs/desktop-companion.md:1 docs/designs/execute-code-runtimes.md:1
+#: docs/designs/issue-1-migration-plan.md:1
+#: docs/designs/pair-programming-v1.md:1
+#: docs/designs/pair-programming-v1.md:321 docs/designs/probe-architecture.md:1
+#: docs/designs/probe-architecture.md:165 docs/designs/recall-flow.md:1
+#: docs/designs/time-perception.md:1 docs/identity.md:1 docs/identity.md:10
+#: docs/identity.md:28 docs/identity.md:45 docs/identity.md:55 docs/memory.md:1
+#: docs/memory.md:17 docs/memory.md:53 docs/memory.md:160 docs/memory.md:191
+#: docs/memory.md:211 docs/memory.md:232 docs/memory.md:249 docs/security.md:1
+#: docs/self-layer.md:1 docs/self-layer.md:31 docs/self-layer.md:53
+#: docs/self-layer.md:64 docs/self-layer.md:78 docs/self-layer.md:94
+#: docs/self-layer.md:105 docs/sleep.md:1 docs/versioning.md:1
+#, no-wrap
+msgid "---\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:14 docs/designs/pair-programming-v1.md:11
+#: docs/designs/time-perception.md:22 docs/sleep.md:14
+msgid "## Design Principles"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:3
+#, no-wrap
+msgid ""
+"title: Pair Programming V1\n"
+"---\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:6
+msgid "# Pair Programming v1 — Workbench Design"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:9
+msgid ""
+"> **Phase 1 ✅ Implemented** (2026-05-29): three-column UI, highlight.js "
+"viewer, studio tree/file/search, xterm terminal, `studio-pair-programming` "
+"platform.  > API shape is **tRPC** (`connectors/webui/src/trpc/routers/"
+"studio.ts`), not REST examples below."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/pair-programming-v1.md:19
+msgid ""
+"**Ship fast, not feature-complete:** Minimal viable scope to close the loop "
+"of \"review code with Agent in Studio\""
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/pair-programming-v1.md:19
+msgid ""
+"**Lightweight start:** File tree + file viewer + global search + chat + "
+"terminal; no Monaco Editor yet"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/pair-programming-v1.md:19
+msgid ""
+"**Syntax highlighting via highlight.js** (not Monaco Editor) to reduce first "
+"implementation cost"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/pair-programming-v1.md:19
+msgid ""
+"**Read-only first:** v1 focuses on reading code; Agent analyzes and "
+"suggests, no direct edit/save yet"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/pair-programming-v1.md:19
+msgid ""
+"**Platform identity separation:** Pair programming sessions use dedicated "
+"platform id, isolated from parlor chat sessions"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/pair-programming-v1.md:19
+msgid ""
+"**Local direct read:** Files read server-side (not Probe); workspace path "
+"configured in chamber settings"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/pair-programming-v1.md:19
+msgid ""
+"**Terminal in Phase 1** (promoted from original Phase 2)—important for "
+"debugging and ops"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:21
+msgid "## Overall Layout"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:43
+#, no-wrap
+msgid ""
+"```\n"
+"┌──────────────────────────────────────────────────────────┐\n"
+"│  Studio                     [Pair Programming] [Novel] … │  ← StudioLayout sidebar\n"
+"├──────────┬────────────────────────┬──────────────────────┤\n"
+"│ 🔍 Search│                       │  💬 Session list      │\n"
+"│ Files    │                       │  ┌──────────────────┐ │\n"
+"│ ─────── │     Code viewer        │  │ session-001      │ │\n"
+"│ src/     │    (highlight.js)      │  │ session-002      │ │\n"
+"│   main.ts│                       │  │ session-003      │ │\n"
+"│   utils/ │   Shows selected file  │  ├──────────────────┤ │\n"
+"│   ...    │   syntax highlight,    │  │                  │ │\n"
+"│          │   line numbers         │  │  Chat area        │ │\n"
+"│ index.html│                      │  │  Agent: this code │ │\n"
+"│ package.json│                    │  │  has a potential… │ │\n"
+"│          │                       │  │                  │ │\n"
+"│          │                       │  │  ┌──input──┐     │ │\n"
+"│          │                       │  │  │         │     │ │\n"
+"└──────────┴────────────────────────┴──────────────────────┘\n"
+"   Left              Center                   Right\n"
+"  file tree      highlight.js code viewer   session list + chat\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:45
+msgid "### Three-Column Widths"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:51
+#, no-wrap
+msgid ""
+"| Column | Default | Resizable |\n"
+"| ------ | ------- | --------- |\n"
+"| Left (file tree) | 260px | Drag 180–400px |\n"
+"| Center (editor) | 1fr | — |\n"
+"| Right (sessions) | 360px | Drag 280–500px |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:53
+msgid "## I. Platform-Aware Sessions"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:55
+msgid "### Change: Frontend API Client"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:61
+#, no-wrap
+msgid ""
+"```ts\n"
+"// api/client.ts\n"
+"export function createSession(platform = \"parlor\") {\n"
+"  return postJSON(\"/sessions\", { platform });\n"
+"}\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:67
+#, no-wrap
+msgid ""
+"export function listSessions(platform?: string) {\n"
+"  const q = platform ? `?platform=${encodeURIComponent(platform)}` : \"\";\n"
+"  return getJSON(`/sessions${q}`).then((d) => d.sessions || []);\n"
+"}\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:69
+msgid "### Change: Backend HTTP Layer"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:72
+msgid "```ts // http-app.ts"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:79
+#, no-wrap
+msgid ""
+"// Create session — read platform from body\n"
+"api.post(\"/sessions\", async (c) => {\n"
+"  const body = await c.req.json().catch(() => ({}));\n"
+"  const platform = body.platform ?? PARLOR_PLATFORM;\n"
+"  return c.json(service.createSession(platform));\n"
+"});\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:86
+#, no-wrap
+msgid ""
+"// List sessions — optional platform filter\n"
+"api.get(\"/sessions\", (c) => {\n"
+"  const platform = c.req.query(\"platform\") ?? undefined;\n"
+"  return c.json(service.listSessions(platform));\n"
+"});\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:88
+msgid ""
+"> Note: `conversation.ts` `newSession(platform)` and "
+"`listSessions(platform?)` already support platform; HTTP layer only needs "
+"passthrough."
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:90
+msgid "### Pair Programming Platform Value"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:94
+msgid "``` platform = \"studio-pair-programming\" ```"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/pair-programming-v1.md:98
+msgid ""
+"Sessions created in PairProgrammingView automatically carry this platform"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/pair-programming-v1.md:98
+msgid "Session list filtered accordingly—pair programming sessions only"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/pair-programming-v1.md:98
+msgid "Isolated from parlor (`parlor`) and other platform sessions"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:100
+msgid "## II. Code Viewer"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:102
+msgid ""
+"v1 does not embed Monaco Editor; **highlight.js** for syntax highlighting to "
+"reduce first implementation cost."
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:104
+msgid "### Dependencies"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:112
+#, no-wrap
+msgid ""
+"```json\n"
+"{\n"
+"  \"dependencies\": {\n"
+"    \"highlight.js\": \"^11.9.0\"\n"
+"  }\n"
+"}\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:114
+msgid "### Component Structure"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:123
+#, no-wrap
+msgid ""
+"```\n"
+"PairProgrammingView.vue\n"
+"├── FileTreePanel.vue          ← left column\n"
+"├── CodeViewerPanel.vue       ← center (highlight.js)\n"
+"├── SessionPanel.vue           ← right column\n"
+"│   ├── SessionList.vue        ← session list (platform filter)\n"
+"│   └── ChatPanel.vue          ← chat (shares SSE channel with parlor)\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:125
+msgid "### CodeViewerPanel Responsibilities"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/pair-programming-v1.md:131
+msgid "Accept `{ filePath, content, language }` props"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/pair-programming-v1.md:131
+msgid "Render syntax highlighting with highlight.js"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/pair-programming-v1.md:131
+msgid "Show line numbers"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/pair-programming-v1.md:131
+msgid "Optional basic code folding (v1 can skip)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/pair-programming-v1.md:131
+msgid ""
+"Click line number to select/copy (later for \"Agent, look at this line\")"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:133
+msgid "### Future Upgrade Path"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:135
+msgid ""
+"When editing is needed, upgrade to Monaco Editor (read-only→editable); file "
+"tree and chat unchanged."
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:137
+msgid "## III. File Tree"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:139
+msgid "### Data Source"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:143
+msgid "``` GET /api/studio/tree?path=<workspace> ```"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:145
+msgid "Return structure:"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:165
+#, no-wrap
+msgid ""
+"```json\n"
+"{\n"
+"  \"tree\": [\n"
+"    {\n"
+"      \"name\": \"src\",\n"
+"      \"type\": \"directory\",\n"
+"      \"children\": [\n"
+"        { \"name\": \"main.ts\", \"type\": \"file\", \"size\": 1234 },\n"
+"        { \"name\": \"utils\", \"type\": \"directory\", \"children\": [...] }\n"
+"      ]\n"
+"    },\n"
+"    {\n"
+"      \"name\": \"package.json\",\n"
+"      \"type\": \"file\",\n"
+"      \"size\": 567\n"
+"    }\n"
+"  ]\n"
+"}\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:167
+msgid "### File Tree Component"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/pair-programming-v1.md:171
+msgid "Recursive directory tree, expand/collapse"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/pair-programming-v1.md:171
+msgid "Click file → load content to viewer"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/pair-programming-v1.md:171
+msgid ""
+"Root from chamber config `workspace` (v1 can hardcode or read from config)"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:173
+msgid "### Filename Search"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:181
+msgid ""
+"``` Search box (top of left column)  ├── Keyword → real-time filter tree "
+"nodes ├── Matching files/dirs highlighted/kept ├── Fuzzy match (fuse.js or "
+"simple includes)  └── Select result → auto scroll and expand path ```"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:183
+msgid "### Workspace Configuration"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:185
+msgid "New chamber config keys:"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:190
+#, no-wrap
+msgid ""
+"| key | Type | Default | Description |\n"
+"| --- | ---- | ------- | ----------- |\n"
+"| `studio.workspace` | string | `\"\"` | Pair programming workspace path |\n"
+"| `studio.gitignore` | boolean | `true` | Filter file tree by .gitignore |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:192
+msgid ""
+"If workspace unset on first visit, show guide prompt linking to chamber "
+"config page."
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:194
+msgid "## IV. Global Search"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:196
+msgid "### API"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:212
+#, no-wrap
+msgid ""
+"```\n"
+"POST /api/studio/search\n"
+"Body: { query: string, path: string }\n"
+"Response: {\n"
+"  results: [\n"
+"    {\n"
+"      \"file\": \"src/main.ts\",\n"
+"      \"line\": 42,\n"
+"      \"column\": 8,\n"
+"      \"content\": \"  const x = foo()\",\n"
+"      \"match\": \"foo\"\n"
+"    }\n"
+"  ]\n"
+"}\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:214
+msgid "### Implementation"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/pair-programming-v1.md:220
+msgid "Backend recursively scans workspace directory"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/pair-programming-v1.md:220
+msgid "Read `.gitignore`, apply gitignore rules"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/pair-programming-v1.md:220
+msgid "Support nested `.gitignore` (subdirectory rules stack)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/pair-programming-v1.md:220
+msgid "Use ripgrep if available, else Node.js line-by-line search"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/pair-programming-v1.md:220
+msgid "Scope: all plain text files (configurable include extensions)"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:222
+msgid "### Frontend Interaction"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/pair-programming-v1.md:226
+msgid "Global search entry at bottom of left column or top of center column"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/pair-programming-v1.md:226
+msgid "Results: filename + line + matching line snippet"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/pair-programming-v1.md:226
+msgid "Click result → jump to file + line in viewer"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:228
+msgid "## V. New Backend APIs"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:236
+#, no-wrap
+msgid ""
+"| Method | Path | Description |\n"
+"| ------ | ---- | ----------- |\n"
+"| `GET` | `/api/studio/tree` | Workspace file tree |\n"
+"| `GET` | `/api/studio/file` | Read file content (query: `path`) |\n"
+"| `POST` | `/api/studio/search` | Global text search |\n"
+"| `GET` | `/api/studio/config` | Studio config (includes workspace) |\n"
+"| `PUT` | `/api/studio/config` | Update studio config |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:238
+msgid "### File Read"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:249
+#, no-wrap
+msgid ""
+"```\n"
+"GET /api/studio/file?path=src/main.ts\n"
+"Response:\n"
+"{\n"
+"  \"path\": \"src/main.ts\",\n"
+"  \"content\": \"import { ... }\",\n"
+"  \"language\": \"typescript\",\n"
+"  \"size\": 1234\n"
+"}\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:251
+msgid "Safety limits:"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/pair-programming-v1.md:255
+msgid "Path must be under workspace directory"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/pair-programming-v1.md:255
+msgid "Reject hidden files (leading `.`) unless `showHidden` config allows"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/pair-programming-v1.md:255
+msgid "File size cap: 1MB (over limit returns notice)"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:257
+msgid "## VI. Frontend Store and State"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:259
+msgid "### New Store"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:269
+#, no-wrap
+msgid ""
+"```ts\n"
+"// stores/studio/pair-programming.js\n"
+"export const usePairProgrammingStore = defineStore('pair-programming', () => {\n"
+"  const sessions = ref([])\n"
+"  const currentSessionId = ref(null)\n"
+"  const fileTree = ref([])\n"
+"  const currentFile = ref(null)      // { path, content, language }\n"
+"  const searchResults = ref([])\n"
+"  const workspace = ref('')\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:275
+#, no-wrap
+msgid ""
+"  async function fetchSessions() { /* filter by platform */ }\n"
+"  async function createSession() { /* platform = studio-pair-programming */ }\n"
+"  async function fetchTree() { /* GET /api/studio/tree */ }\n"
+"  async function openFile(path) { /* GET /api/studio/file */ }\n"
+"  async function globalSearch(query) { /* POST /api/studio/search */ }\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:279
+#, no-wrap
+msgid ""
+"  return { ... }\n"
+"})\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:281
+msgid "## VII. Routing and Navigation"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:285
+msgid "``` GET /studio/pair-programming → PairProgrammingView.vue ```"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:287
+msgid "Route in place:"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:295
+#, no-wrap
+msgid ""
+"```ts\n"
+"{\n"
+"  path: '/studio/pair-programming',\n"
+"  name: 'studio-pair-programming',\n"
+"  component: () => import('../views/studio/PairProgrammingView.vue'),\n"
+"}\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:297
+msgid ""
+"StudioLayout sidebar keeps existing style; pair programming as first entry."
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:299
+msgid "## VIII. Implementation Plan"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:301
+msgid "### Phase 1"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:312
+#, no-wrap
+msgid ""
+"| Step | Content | Estimate |\n"
+"| ---- | ------- | -------- |\n"
+"| 1.1 | API: POST/GET sessions support platform | 2h |\n"
+"| 1.2 | API: studio/tree, studio/file, studio/search endpoints | 4h |\n"
+"| 1.3 | Frontend: three-column layout + FileTreePanel | 3h |\n"
+"| 1.4 | Frontend: CodeViewerPanel (highlight.js) | 1.5h |\n"
+"| 1.5 | Frontend: SessionPanel (session list + chat) | 3h |\n"
+"| 1.6 | Frontend: filename search + navigation | 2h |\n"
+"| 1.7 | Frontend: global search UI + result navigation | 2h |\n"
+"| 1.8 | Terminal panel (xterm.js) | 2h |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:314
+msgid "### Phase 2 (Later)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/pair-programming-v1.md:320
+msgid "Upgrade highlight.js to Monaco Editor (editable)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/pair-programming-v1.md:320
+msgid "File edit + diff preview + apply/reject"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/pair-programming-v1.md:320
+msgid "Git panel (diff/stage/commit)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/pair-programming-v1.md:320
+msgid "Multi-workspace support"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/pair-programming-v1.md:320
+msgid "More collaboration features"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/pair-programming-v1.md:324
+msgid ""
+"> Design document · 2026-05-28 > Status: **Phase 1 ✅ Implemented** "
+"(2026-05-29); Phase 2 see [Issue #37](https://github.com/freeanima-org/"
+"freeanima/issues/37)"
+msgstr ""

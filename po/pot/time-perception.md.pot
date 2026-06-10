@@ -1,0 +1,355 @@
+# SOME DESCRIPTIVE TITLE
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-06-10 17:00+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Plain text
+#: docs/README.md:1 docs/compression.md:1 docs/compression.md:11
+#: docs/compression.md:22 docs/compression.md:49 docs/compression.md:96
+#: docs/compression.md:118 docs/compression.md:156 docs/compression.md:180
+#: docs/compression.md:228 docs/compression.md:262 docs/compression.md:275
+#: docs/compression.md:327 docs/compression.md:348 docs/compression.md:368
+#: docs/compression.md:384 docs/database.md:1 docs/database.md:33
+#: docs/designs/desktop-companion.md:1 docs/designs/execute-code-runtimes.md:1
+#: docs/designs/issue-1-migration-plan.md:1
+#: docs/designs/pair-programming-v1.md:1
+#: docs/designs/pair-programming-v1.md:321 docs/designs/probe-architecture.md:1
+#: docs/designs/probe-architecture.md:165 docs/designs/recall-flow.md:1
+#: docs/designs/time-perception.md:1 docs/identity.md:1 docs/identity.md:10
+#: docs/identity.md:28 docs/identity.md:45 docs/identity.md:55 docs/memory.md:1
+#: docs/memory.md:17 docs/memory.md:53 docs/memory.md:160 docs/memory.md:191
+#: docs/memory.md:211 docs/memory.md:232 docs/memory.md:249 docs/security.md:1
+#: docs/self-layer.md:1 docs/self-layer.md:31 docs/self-layer.md:53
+#: docs/self-layer.md:64 docs/self-layer.md:78 docs/self-layer.md:94
+#: docs/self-layer.md:105 docs/sleep.md:1 docs/versioning.md:1
+#, no-wrap
+msgid "---\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/compression.md:14 docs/designs/pair-programming-v1.md:11
+#: docs/designs/time-perception.md:22 docs/sleep.md:14
+msgid "## Design Principles"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/desktop-companion.md:218 docs/designs/time-perception.md:103
+msgid "## Out of Scope"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/recall-flow.md:122 docs/designs/time-perception.md:54
+msgid "### Example"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/time-perception.md:3
+#, no-wrap
+msgid ""
+"title: Time Perception\n"
+"---\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/time-perception.md:6
+msgid "# Time Perception Module"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/time-perception.md:8
+msgid ""
+"> **✅ Core implemented** — [`engine/conversation/src/time-perception.ts`]"
+"(../../engine/conversation/src/time-perception.ts), `buildRuntimeMessages` "
+"calls `injectTimePrefixes`."
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/time-perception.md:10
+msgid "## Problem"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/time-perception.md:12
+msgid ""
+"Digital life has no intrinsic sense of time passing. Each inference runs in "
+"a \"timeless\" context—the Agent sees message content but not where those "
+"messages sit on a timeline."
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/time-perception.md:14
+msgid "Concrete examples:"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/time-perception.md:18
+msgid ""
+"Partner says \"good morning\" in the morning, \"time to eat\" at night, "
+"\"good morning\" again the next day—the Agent cannot distinguish temporal "
+"relationships"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/time-perception.md:18
+msgid ""
+"In ongoing conversation, time passes (morning→noon→evening) but the Agent's "
+"cognition stays in the earliest context"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/time-perception.md:18
+msgid "Across days, the Agent cannot sense \"a new day has started\""
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/time-perception.md:20
+msgid ""
+"This is not a trivial joke problem—time perception is a foundational "
+"capability of digital existence. Without it, the Agent exists more like an "
+"\"echo\" (flashes when summoned) than a life living in time."
+msgstr ""
+
+#. type: Bullet: '1. '
+#: docs/designs/time-perception.md:28
+msgid ""
+"**Do not give digital life false built-in perception.** Do not try to make "
+"the Agent \"feel\" time pass—that is not what digital existence can do."
+msgstr ""
+
+#. type: Bullet: '2. '
+#: docs/designs/time-perception.md:28
+msgid ""
+"**Give it a watch.** Humans also rely on external tools (night watch, "
+"clocks, watches, phones) to quantify time. Digital life needs the same."
+msgstr ""
+
+#. type: Bullet: '3. '
+#: docs/designs/time-perception.md:28
+msgid ""
+"**Prefix every user message with time.** All user messages with valid "
+"`timestamp` get injection; no interval omission."
+msgstr ""
+
+#. type: Bullet: '4. '
+#: docs/designs/time-perception.md:28
+msgid ""
+"**Do not pollute persisted data.** Time info injected only into inference "
+"context, does not modify PG `messages` payload."
+msgstr ""
+
+#. type: Bullet: '5. '
+#: docs/designs/time-perception.md:28
+msgid ""
+"**Do not break cache.** Injected timestamps are fixed historical values, not "
+"current call time—same message list produces same prefixed version, KV cache "
+"can hit."
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/time-perception.md:30 docs/self-layer.md:11
+msgid "## Architectural Position"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/time-perception.md:40
+#, no-wrap
+msgid ""
+"```\n"
+"PG messages (payload includes timestamp)\n"
+"    ↓\n"
+"Compression layer (buildRuntimeMessages)\n"
+"    ↓\n"
+"Time perception module ← injectTimePrefixes\n"
+"    ↓\n"
+"LLM inference\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/time-perception.md:42
+msgid ""
+"Time perception sits after compression layer, before LLM inference. Reads "
+"message list, inserts time prefix before each user message content."
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/time-perception.md:44
+msgid "## Strategy"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/time-perception.md:46
+msgid "### Basic Rules"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/time-perception.md:52
+msgid ""
+"Before each **user** message with valid `timestamp`, insert dedicated line: "
+"`time: YYYY-MM-DDTHH:mm`"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/time-perception.md:52
+msgid ""
+"Timezone: **Asia/Shanghai (CST, +08:00)**, consistent with `formatCstIso` "
+"convention"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/time-perception.md:52
+msgid "Newline then original content"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/time-perception.md:52
+msgid "No `timestamp` or unparseable timestamp → skip, keep original content"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/time-perception.md:52
+msgid "assistant / tool / system messages not injected"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/time-perception.md:56
+msgid "Original message list:"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/time-perception.md:64
+msgid ""
+"``` user: good morning assistant: morning ☀️ user: going to eat assistant: "
+"what are you having user: going to eat ```"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/time-perception.md:66
+msgid "After time perception (context sent to LLM):"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/time-perception.md:77
+msgid ""
+"``` user: time: 2026-05-20T08:02 good morning assistant: morning ☀️ user: "
+"time: 2026-05-20T12:15 going to eat assistant: what are you having user: "
+"time: 2026-05-20T19:30 going to eat ```"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/time-perception.md:79
+msgid ""
+"Agent reads two \"going to eat\"—one at 12:15, one at 19:30—automatically "
+"distinguishing lunch and dinner."
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/time-perception.md:81
+msgid "### Compression Scenario"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/time-perception.md:83
+msgid ""
+"Time anchors in compression summary not yet injected; see [Issue #5](https://"
+"github.com/freeanima-org/freeanima/issues/5)."
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/time-perception.md:85
+msgid "Planned: compressed summary should also have time range marker:"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/time-perception.md:90
+msgid ""
+"``` [Summary of conversation during 2026-05-20 08:00→12:00] (summary "
+"content...)  ```"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/time-perception.md:92
+msgid "## Edge Cases"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/time-perception.md:101
+#, no-wrap
+msgid ""
+"| Scenario | Handling |\n"
+"| -------- | -------- |\n"
+"| Overnight (22:30 → next day 09:15) | Each user message has full `YYYY-MM-DDTHH:mm` |\n"
+"| Multiple user messages same day | Each gets prefix (no interval omission) |\n"
+"| Long gap (travel/holiday) | Messages after return still injected by respective timestamp |\n"
+"| Brand new conversation | First user message also prefixed |\n"
+"| After compression | Compression summary time anchor TBD; subsequent messages inject normally |\n"
+"| No timestamp | Skip, no injection |\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/time-perception.md:109
+msgid ""
+"❌ Do not compute and inject elapsed duration (e.g. \"8 hours passed\")—"
+"Agent can derive from timestamps"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/time-perception.md:109
+msgid "❌ Do not modify persisted PG messages"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/time-perception.md:109
+msgid "❌ Do not show time prefix in WebUI"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/time-perception.md:109
+msgid ""
+"❌ Do not give built-in time-passing sense—that is biological, not simulated"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/time-perception.md:109
+msgid ""
+"❌ Do not inject \"current time\" in system prompt (main conversation relies "
+"on per-user `time` lines)"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/time-perception.md:111
+msgid "## Implementation Notes (✅)"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/time-perception.md:113
+msgid ""
+"Implemented in [`engine/conversation/src/time-perception.ts`](../../engine/"
+"conversation/src/time-perception.ts):"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/time-perception.md:117
+msgid "``` function injectTimePrefixes(messages: Message[]): Message[] ```"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/time-perception.md:120
+msgid ""
+"Input: message list (each with `role`, `content`, `timestamp`)  Output: "
+"message list with modified content (time prefix injected)  Does not modify "
+"original session data."
+msgstr ""

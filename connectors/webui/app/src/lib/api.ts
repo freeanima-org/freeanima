@@ -1,6 +1,7 @@
 import { treaty } from "@elysiajs/eden";
 import type { FridgeMagnetsResponse, StreamApiEvent } from "@freeanima/connectors-webui/api";
 import type { App } from "@freeanima/connectors-webui/elysia";
+import { m } from "./i18n.ts";
 import { apiPath } from "./api-path.ts";
 
 export const apiClient = treaty<App>(
@@ -13,10 +14,10 @@ export async function unwrap<T>(promise: Promise<TreatyResult<T>>): Promise<T> {
   const result = await promise;
   if (result.error) {
     const err = result.error as { value?: unknown; message?: string };
-    throw new Error(String(err.value ?? err.message ?? "请求失败"));
+    throw new Error(String(err.value ?? err.message ?? m.webui_common_request_failed()));
   }
   if (result.data === null || result.data === undefined) {
-    throw new Error("空响应");
+    throw new Error(m.webui_common_empty_response());
   }
   return result.data;
 }
@@ -47,7 +48,7 @@ export function subscribeMessageStream(
       }
       const reader = res.body?.getReader();
       if (!reader) {
-        callbacks.onError?.(new Error("无响应流"));
+        callbacks.onError?.(new Error(m.webui_common_no_response_stream()));
         return;
       }
       const decoder = new TextDecoder();
@@ -98,7 +99,7 @@ export function subscribeTerminalStream(callbacks: SubscribeCallbacks<TerminalSt
 
   ws.on("error", () => {
     if (closed) return;
-    callbacks.onError?.(new Error("WebSocket 连接失败"));
+    callbacks.onError?.(new Error(m.webui_common_websocket_failed()));
   });
 
   ws.on("close", () => {

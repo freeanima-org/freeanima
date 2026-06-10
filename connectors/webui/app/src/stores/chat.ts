@@ -1,6 +1,7 @@
 import type { StreamApiEvent } from "@freeanima/connectors-webui/api";
 import { marked } from "marked";
 import { create } from "zustand";
+import { m } from "@/lib/i18n.ts";
 import { subscribeMessageStream } from "@/lib/api.ts";
 
 type SendDoneOptions = {
@@ -147,7 +148,7 @@ export const useChatStore = create<ChatState>(() => ({
       if (fallbackError) {
         callbacks.onError?.(fallbackError);
       } else if (!receivedDone && !streamText.trim()) {
-        callbacks.onError?.("无回复，请检查 API 密钥与服务端日志");
+        callbacks.onError?.(m.webui_common_no_reply());
       }
     };
 
@@ -162,14 +163,14 @@ export const useChatStore = create<ChatState>(() => ({
               if (result.receivedError) {
                 receivedError = true;
                 if (ev.event === "error") {
-                  serverErrorMsg = ev.data.error || "服务端错误";
+                  serverErrorMsg = ev.data.error || m.webui_common_server_error();
                 }
               }
               if (result.receivedDone) notifyDone();
             },
             onError: (err) => {
               receivedError = true;
-              transportErrorMsg = err.message || "服务端错误";
+              transportErrorMsg = err.message || m.webui_common_server_error();
               reject(err);
             },
             onComplete: () => {
@@ -195,7 +196,7 @@ export const useChatStore = create<ChatState>(() => ({
       if (recovered) {
         notifyDone({ recovered: true });
       } else if (!receivedError || transportErrorMsg) {
-        callbacks.onError?.(transportErrorMsg || "网络错误");
+        callbacks.onError?.(transportErrorMsg || m.webui_common_network_error());
       }
     } finally {
       useChatStore.setState({

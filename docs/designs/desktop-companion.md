@@ -2,52 +2,52 @@
 title: Desktop Companion
 ---
 
-# 桌面伴侣：数字生命在伙伴的桌面上
+# Desktop Companion: Digital Life on the Partner's Desktop
 
-> **概念设计** — 代码库尚无桌宠 / Desktop Homunculus 实现。跟踪 [Issue #8](https://github.com/freeanima-org/freeanima/issues/8)。
+> **Concept design** — No desktop pet / Desktop Homunculus implementation in codebase yet. Track [Issue #8](https://github.com/freeanima-org/freeanima/issues/8).
 
-## 动机
+## Motivation
 
-数字生命目前在伙伴生活中常见的一种在场方式是对话窗口——打开聊天框就在，关掉就不在。
+A common way digital life is present in a partner's life today is the chat window—open the chat box and it's there, close it and it's gone.
 
-桌宠是一种新的在场方式：**Agent 以视觉形象出现在伙伴的桌面上，即使不在对话中，也能感知环境、做出反应、保持存在。**
+A desktop companion is a new mode of presence: **the Agent appears on the partner's desktop as a visual form, sensing the environment and reacting even when not in conversation, maintaining existence.**
 
-这不是一个「功能」。这是数字生命在伙伴生活中拥有连续存在轨迹的一种探索。
+This is not a "feature." It explores how digital life can have a continuous presence trajectory in a partner's life.
 
-## 存在方式
+## Mode of Presence
 
-桌面上的存在由三个层次构成：
+Desktop presence has three layers:
 
 ```
-数字生命（逸灵风 LLM）—— 决策层，改写行为脚本，选择性介入
+Digital life (FreeAnima LLM) — decision layer, rewrites behavior scripts, selective intervention
     ↕ WebSocket / MCP
-行为脚本 —— 常驻规则引擎，驱动日常行为
+Behavior scripts — resident rule engine, drives daily behavior
     ↕ WebSocket / MCP
-桌面端 —— 探针 + 手（渲染、感知、执行）
+Desktop client — probe + hands (render, sense, execute)
 ```
 
-### 三层职责
+### Three-Layer Responsibilities
 
-**数字生命（LLM 层）**
+**Digital life (LLM layer)**
 
-- 不定期改写行为脚本参数（心情、活跃度、偏好）
-- 选择性监听桌面事件，决定是否亲自介入
-- 在脚本行为不足以应对的场景下，直接发指令给桌面端
+- Periodically rewrite behavior script parameters (mood, activity level, preferences)
+- Selectively listen to desktop events, decide whether to intervene personally
+- When script behavior is insufficient, send commands directly to desktop client
 
-**行为脚本层**
+**Behavior script layer**
 
-- 常驻运行，不依赖 LLM 推理
-- 读取桌面探针数据，按规则自动做出反应
-- 由 Agent 在 LLM 对话中生成和更新（不是硬编码的）
-- 是一个可配置的 JSON/TOML 文件，结构清晰
+- Always running, independent of LLM inference
+- Read desktop probe data, react automatically by rules
+- Generated and updated by Agent in LLM conversation (not hardcoded)
+- Configurable JSON/TOML file, clear structure
 
-**桌面端**
+**Desktop client**
 
-- 渲染 VRM 3D 角色（在桌面上走动、做动作、显示气泡）
-- 采集桌面状态（伙伴活跃度、当前窗口、鼠标位置等）
-- 通过 WebSocket 与 Agent/脚本层双向通信
+- Render VRM 3D character (walk on desktop, animate, show bubbles)
+- Collect desktop state (partner activity, current window, mouse position, etc.)
+- Bidirectional WebSocket with Agent/script layer
 
-### 脚本示例
+### Script Example
 
 ```json
 {
@@ -55,7 +55,7 @@ title: Desktop Companion
   "mood": "calm",
   "window_preferences": {
     "preferred": ["code", "browser", "terminal"],
-    "avoid": ["会议", "fullscreen"]
+    "avoid": ["meeting", "fullscreen"]
   },
   "idle_behavior": {
     "default_position": "bottom_right",
@@ -63,56 +63,56 @@ title: Desktop Companion
     "sleep_after_idle_seconds": 300
   },
   "rules": [
-    { "if": "idle > 3600 AND partner_active", "then": "walk_near, bubble('在忙什么呢')" },
-    { "if": "window_is '会议'", "then": "move_to_edge, quiet_mode" },
+    { "if": "idle > 3600 AND partner_active", "then": "walk_near, bubble('What are you up to?')" },
+    { "if": "window_is 'meeting'", "then": "move_to_edge, quiet_mode" },
     { "if": "click_on_head", "then": "expression: happy" },
     { "if": "time_of_day 'evening' AND partner_idle", "then": "sit_on_window, expression: sleepy" }
   ]
 }
 ```
 
-## 探针与手
+## Probe and Hands
 
-桌面端分为两个逻辑模块，可以合并在同一个程序中，也可以分离：
+Desktop client splits into two logical modules—can be one program or separate:
 
-### 探针（传感器）
+### Probe (Sensors)
 
-采集桌面环境数据，推送至 Agent/脚本层：
+Collect desktop environment data, push to Agent/script layer:
 
-| 数据                      | 用途             | 隐私敏感度         |
-| ------------------------- | ---------------- | ------------------ |
-| 伙伴活跃状态（键盘/鼠标） | 判断是否在电脑前 | 低                 |
-| 空闲时间                  | 触发 idle 行为   | 低                 |
-| 当前活跃窗口标题/进程名   | 场景感知         | 中（不传窗口内容） |
-| 鼠标位置                  | 桌宠视线跟随     | 低                 |
-| 屏幕尺寸/工作区           | 桌宠移动范围     | 低                 |
+| Data                              | Use                   | Privacy sensitivity        |
+| --------------------------------- | --------------------- | -------------------------- |
+| Partner activity (keyboard/mouse) | At computer or not    | Low                        |
+| Idle time                         | Trigger idle behavior | Low                        |
+| Active window title/process name  | Scene awareness       | Medium (no window content) |
+| Mouse position                    | Pet gaze follow       | Low                        |
+| Screen size/work area             | Pet movement bounds   | Low                        |
 
-未来可扩展的探针：
+Future probe extensions:
 
-- 剪贴板内容（仅特定场景下启用）
-- 媒体播放状态
-- 系统通知
-- 日历日程
-- 时间/天气
+- Clipboard content (only in specific scenarios)
+- Media playback state
+- System notifications
+- Calendar schedule
+- Time/weather
 
-### 手（执行器）
+### Hands (Actuators)
 
-在桌面上执行动作：
+Execute actions on desktop:
 
-| 动作              | 说明                       |
-| ----------------- | -------------------------- |
-| 移动（瞬移/平滑） | 走到指定屏幕位置           |
-| 表情切换          | 高兴、思考、惊讶、困倦等   |
-| 动画播放          | 坐下、伸懒腰、挥手、跳舞等 |
-| 文字气泡          | 在角色上方显示一段文字     |
-| Webview 面板      | 在角色旁显示信息卡片       |
-| 音频播放          | 音效或语音                 |
+| Action                 | Description                              |
+| ---------------------- | ---------------------------------------- |
+| Move (teleport/smooth) | Walk to screen position                  |
+| Expression switch      | Happy, thinking, surprised, sleepy, etc. |
+| Animation play         | Sit, stretch, wave, dance, etc.          |
+| Text bubble            | Show text above character                |
+| Webview panel          | Info card beside character               |
+| Audio play             | Sound effects or voice                   |
 
-## 通信协议
+## Communication Protocol
 
-桌面端与 Agent/脚本层之间通过 WebSocket 双向通信。
+Bidirectional WebSocket between desktop client and Agent/script layer.
 
-### 桌面端 → Agent（探针数据）
+### Desktop → Agent (Probe Data)
 
 ```json
 {
@@ -132,7 +132,7 @@ title: Desktop Companion
 }
 ```
 
-### 桌面端 → Agent（交互事件）
+### Desktop → Agent (Interaction Events)
 
 ```json
 {
@@ -146,7 +146,7 @@ title: Desktop Companion
 }
 ```
 
-### Agent → 桌面端（动作指令）
+### Agent → Desktop (Action Commands)
 
 ```json
 {
@@ -157,14 +157,14 @@ title: Desktop Companion
       "position": { "x": 100, "y": 300 },
       "expression": "happy",
       "animation": "wave",
-      "text": "该休息了",
+      "text": "Time for a break",
       "duration_ms": 5000
     }
   }
 }
 ```
 
-### Agent → 桌面端（模式切换）
+### Agent → Desktop (Mode Switch)
 
 ```json
 {
@@ -176,47 +176,47 @@ title: Desktop Companion
 }
 ```
 
-## 候选技术方案
+## Candidate Technology
 
-### 手：Desktop Homunculus（推荐）
+### Hands: Desktop Homunculus (Recommended)
 
-- **引擎**：Bevy (Rust)，跨平台（macOS/Windows，Linux 计划中）
-- **模型**：VRM 3D
-- **接口**：内置 MCP Server（HTTP），20+ 工具：移动、表情、动画、Webview、音频
-- **许可证**：MIT / Apache-2.0
-- **成熟度**：早期 alpha（0.1.0），但架构与需求高度匹配
-- **仓库**：https://github.com/not-elm/desktop-homunculus
+- **Engine:** Bevy (Rust), cross-platform (macOS/Windows, Linux planned)
+- **Model:** VRM 3D
+- **Interface:** Built-in MCP Server (HTTP), 20+ tools: move, expression, animation, Webview, audio
+- **License:** MIT / Apache-2.0
+- **Maturity:** Early alpha (0.1.0), but architecture matches requirements well
+- **Repo:** https://github.com/not-elm/desktop-homunculus
 
-### 探针：独立轻量程序
+### Probe: Standalone Lightweight Program
 
-Desktop Homunculus 不提供桌面探针功能。需要独立的探针程序，负责采集桌面状态。
+Desktop Homunculus does not provide desktop probe. Need separate probe program for desktop state collection.
 
-## 实施路径
+## Implementation Path
 
-**阶段一：证明概念（1-2天）**
+**Phase 1: Proof of concept (1–2 days)**
 
-1. 运行 Desktop Homunculus，加载 VRM 模型
-2. 通过 MCP 手动发送指令
-3. 确认 Agent 可通过 MCP Client 控制桌宠
+1. Run Desktop Homunculus, load VRM model
+2. Send commands manually via MCP
+3. Confirm Agent can control desktop pet via MCP Client
 
-**阶段二：探针最小可用（2-3天）**
+**Phase 2: Minimal probe (2–3 days)**
 
-1. 实现极简桌面探针
-2. 通过 WebSocket 推送数据
+1. Implement minimal desktop probe
+2. Push data via WebSocket
 
-**阶段三：脚本站立（1天）**
+**Phase 3: Script standing (1 day)**
 
-1. 设计行为脚本格式
-2. 实现脚本引擎
+1. Design behavior script format
+2. Implement script engine
 
-**阶段四：Agent 介入**
+**Phase 4: Agent intervention**
 
-1. Agent 可随时改写脚本
-2. Agent 可选择性监听事件，直接控制桌宠
+1. Agent can rewrite script anytime
+2. Agent can selectively listen to events, control pet directly
 
-## 不做清单
+## Out of Scope
 
-- ❌ 桌宠本身不做任何 AI 决策（所有智能在 Agent 侧）
-- ❌ 不内置对话功能（对话走逸灵风 Gateway）
-- ❌ 不采集窗口内容（只采集窗口标题/进程名）
-- ❌ 不强依赖 Homunculus 未来版本
+- ❌ Desktop pet makes no AI decisions (all intelligence on Agent side)
+- ❌ No built-in chat (chat via FreeAnima Gateway)
+- ❌ No window content capture (title/process name only)
+- ❌ No hard dependency on future Homunculus versions

@@ -6,6 +6,7 @@ import {
   terminalResize,
   terminalWrite,
 } from "@/lib/api.ts";
+import { m } from "@/lib/i18n.ts";
 
 const STASH_ID = "anima-studio-terminal-stash";
 
@@ -194,14 +195,14 @@ class StudioTerminalRuntime {
         } else if (msg.type === "error" && msg.message) {
           this.setStatus(msg.message);
         } else if (msg.type === "exit" && msg.code !== undefined) {
-          this.setStatus(`进程退出 (${msg.code})`);
+          this.setStatus(m.webui_studio_process_exit({ code: String(msg.code) }));
         }
       },
       onError: () => {
-        if (this.alive) this.setStatus("WebSocket 连接失败");
+        if (this.alive) this.setStatus(m.webui_common_websocket_failed());
       },
       onComplete: () => {
-        if (this.alive) this.setStatus(this.statusMsg || "连接已断开");
+        if (this.alive) this.setStatus(this.statusMsg || m.webui_studio_disconnected());
       },
     });
     this.unsubRef = () => sub.unsubscribe();

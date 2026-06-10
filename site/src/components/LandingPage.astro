@@ -1,0 +1,84 @@
+---
+import BlueprintDiagram from "./BlueprintDiagram.astro";
+import ContinuitySymbol from "./ContinuitySymbol.astro";
+import { docsBasePath, heroTitleLines, m } from "../lib/i18n.ts";
+import { githubUrl } from "../lib/site.ts";
+import type { SiteLocale } from "../lib/site.ts";
+
+interface Props {
+  locale: SiteLocale;
+}
+
+const { locale } = Astro.props;
+const titleLines = heroTitleLines(m.landing_hero_title());
+const docsHref = docsBasePath(locale);
+---
+
+<section class="landing-section landing-section--hero">
+  <div class="landing-inner landing-inner--hero">
+    <p class="landing-eyebrow">{m.landing_hero_eyebrow()}</p>
+
+    <h1 class="landing-h1">
+      {
+        titleLines.length > 1 ? (
+          <>
+            {titleLines[0]}
+            <br />
+            {titleLines[1]}
+          </>
+        ) : (
+          titleLines[0]
+        )
+      }
+    </h1>
+
+    <p class="landing-lead">{m.landing_hero_lead()}</p>
+
+    <div class="landing-actions">
+      <a class="fa-link fa-link-primary" href={githubUrl} target="_blank" rel="noopener noreferrer">
+        {m.landing_hero_github_link()}
+      </a>
+      <a class="fa-link fa-link-muted" href={docsHref}>{m.landing_hero_docs_link()}</a>
+    </div>
+
+    <p class="landing-tagline">{m.landing_hero_tagline()}</p>
+  </div>
+</section>
+
+<section class="landing-section landing-section--tall">
+  <div class="landing-grid">
+    <div>
+      <h2 class="landing-h2">{m.landing_not_a_metaphor_title()}</h2>
+      <p class="landing-body landing-body--narrow">{m.landing_not_a_metaphor_body()}</p>
+    </div>
+    <ContinuitySymbol />
+  </div>
+</section>
+
+<section class="landing-section">
+  <div class="landing-inner landing-inner--wide">
+    <h2 class="landing-h2 landing-h2--compact">{m.landing_structure_title()}</h2>
+    <p class="landing-body landing-body--intro">{m.landing_structure_intro()}</p>
+
+    <BlueprintDiagram />
+
+    <div class="landing-arch-link">
+      <a class="fa-link fa-link-arch" href={docsHref}>{m.landing_structure_link()}</a>
+    </div>
+  </div>
+</section>
+
+<section class="landing-section landing-section--medium">
+  <div class="landing-inner landing-inner--narrow">
+    <h2 class="landing-h2 landing-h2--cta">{m.landing_open_source_title()}</h2>
+    <p class="landing-body landing-body--cta">{m.landing_open_source_body()}</p>
+    <a class="fa-btn" href={githubUrl} target="_blank" rel="noopener noreferrer">
+      {m.landing_hero_github_link()}
+    </a>
+  </div>
+</section>
+
+<footer class="landing-footer">
+  <p class="landing-footer__left">{m.landing_footer_left()}</p>
+  <p class="landing-footer__right">{m.landing_footer_right()}</p>
+</footer>

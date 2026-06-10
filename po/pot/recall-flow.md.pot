@@ -1,0 +1,397 @@
+# SOME DESCRIPTIVE TITLE
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-06-10 17:00+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Plain text
+#: docs/README.md:1 docs/compression.md:1 docs/compression.md:11
+#: docs/compression.md:22 docs/compression.md:49 docs/compression.md:96
+#: docs/compression.md:118 docs/compression.md:156 docs/compression.md:180
+#: docs/compression.md:228 docs/compression.md:262 docs/compression.md:275
+#: docs/compression.md:327 docs/compression.md:348 docs/compression.md:368
+#: docs/compression.md:384 docs/database.md:1 docs/database.md:33
+#: docs/designs/desktop-companion.md:1 docs/designs/execute-code-runtimes.md:1
+#: docs/designs/issue-1-migration-plan.md:1
+#: docs/designs/pair-programming-v1.md:1
+#: docs/designs/pair-programming-v1.md:321 docs/designs/probe-architecture.md:1
+#: docs/designs/probe-architecture.md:165 docs/designs/recall-flow.md:1
+#: docs/designs/time-perception.md:1 docs/identity.md:1 docs/identity.md:10
+#: docs/identity.md:28 docs/identity.md:45 docs/identity.md:55 docs/memory.md:1
+#: docs/memory.md:17 docs/memory.md:53 docs/memory.md:160 docs/memory.md:191
+#: docs/memory.md:211 docs/memory.md:232 docs/memory.md:249 docs/security.md:1
+#: docs/self-layer.md:1 docs/self-layer.md:31 docs/self-layer.md:53
+#: docs/self-layer.md:64 docs/self-layer.md:78 docs/self-layer.md:94
+#: docs/self-layer.md:105 docs/sleep.md:1 docs/versioning.md:1
+#, no-wrap
+msgid "---\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/probe-architecture.md:159 docs/designs/recall-flow.md:169
+#: docs/self-layer.md:115
+msgid "## Open Questions"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/recall-flow.md:3
+#, no-wrap
+msgid ""
+"title: Recall Flow\n"
+"---\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/recall-flow.md:6
+msgid "# Unified Recall Retrieval and Loading Flow"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/recall-flow.md:9
+msgid ""
+"> **v1 ✅ Implemented:** `memory_recall(query)` four-source unified recall + "
+"RRF reranking, returns `results[]` (distinguished by `memory_type`); session "
+"hits are snippets ([`life/memory/src/recall-search.ts`](../../life/memory/"
+"src/recall-search.ts)).  > **v2 target design** (not implemented): resource "
+"layer + preset + lean index loading chain, see [Issue #47](https://"
+"github.com/freeanima-org/freeanima/issues/47)."
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/recall-flow.md:11
+msgid "## v1 Implemented"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/recall-flow.md:18
+#, no-wrap
+msgid ""
+"| Capability | Description |\n"
+"| ---------- | ----------- |\n"
+"| `memory_recall` | Four sources: semantic / session / limbic / autobiographical; Top N; session returns snippet |\n"
+"| `sessions_search` | Session message FTS; returns snippet (not full content) |\n"
+"| `memory_remember` | semantic_memory CRUD |\n"
+"| Resident memory | system prompt injection (not recall) |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/recall-flow.md:20
+msgid "## v2 Target Design (Issue #47)"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/recall-flow.md:22
+msgid "> The following is v2 design draft, **not current runtime behavior**."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/recall-flow.md:26
+msgid ""
+"**`recall` retrieves only, does not load.** Returns lean index (title + "
+"description + type + id), not full content."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/recall-flow.md:26
+msgid ""
+"**Scope: memory layer + resource layer.** Self layer always injected in "
+"system prompt, outside recall scope."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/designs/recall-flow.md:26
+msgid ""
+"**Loading handled by downstream tools.** recall tells the LLM \"what "
+"exists\"; LLM decides \"what to fetch\", then calls corresponding load tools."
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/recall-flow.md:28
+msgid "## Retrieval Scope (v2 Design)"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/recall-flow.md:43
+#, no-wrap
+msgid ""
+"```\n"
+"recall unified retrieval\n"
+"├── Memory Layer\n"
+"│   ├── Semantic memory — semantic_memory (world/experience/opinion/…)\n"
+"│   ├── Episodic memory — messages (conversation FTS)\n"
+"│   ├── Procedural memory — skills / procedural facts\n"
+"│   └── Limbic memory — imprint (semantic_memory); limbic table (✅ implemented, light sleep Phase 2 writes, not via recall)\n"
+"│\n"
+"└── Resource Layer (Estate Layer, v2 design)\n"
+"    ├── Tools\n"
+"    ├── Skills\n"
+"    ├── Internal assets (notes, projects, code, docs)\n"
+"    └── Entity graph\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/recall-flow.md:45
+msgid "### Out of Retrieval Scope"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/recall-flow.md:53
+#, no-wrap
+msgid ""
+"| Content | Reason | Access |\n"
+"| ------- | ------ | ------ |\n"
+"| Self layer six blocks | Small, always needed | Always injected in system prompt |\n"
+"| Full tool schemas | Needed only before call | `load_tools` (v2) / existing `reload_tools` |\n"
+"| Full memory detail | Needed on demand | `read_memory` (v2) / existing `remember` single-row read |\n"
+"| Full file content | Needed on demand | `read_file` ✅ |\n"
+"| Entity relationship network | Traverse on demand | `graph_query` (v2) |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/recall-flow.md:55
+msgid "## Presets (v2 Design)"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/recall-flow.md:57
+msgid ""
+"`recall` uses `preset` parameter to steer search direction. Presets are "
+"**weighting templates** over memory/resource types."
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/recall-flow.md:59
+msgid "### Preset Definitions"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/recall-flow.md:67
+#, no-wrap
+msgid ""
+"| Preset | Semantic | Episodic | Limbic | Procedural | Skills | Tools | Notes |\n"
+"| ------ | -------- | -------- | ------ | ---------- | ------ | ----- | ----- |\n"
+"| `balanced` (default) | Med | Med | Low | Med | Med | Low | General, no bias |\n"
+"| `recall` | High | High | High | Low | Low | — | Remember past, recover emotion |\n"
+"| `work` | Low | — | — | High | High | High | Complete tasks, solve problems |\n"
+"| `debug` | Med | Med | — | High | High | High | Troubleshoot, needs tech + context |\n"
+"| `learn` | High | Low | — | High | Med | Low | Understand a concept or domain |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/recall-flow.md:69
+msgid "### Extensibility"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/recall-flow.md:71
+msgid ""
+"Presets are templates, not fixed taxonomy. New presets later (e.g. `social`, "
+"`create`). Default `balanced` when preset omitted."
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/recall-flow.md:73
+msgid "### Usage Examples"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/recall-flow.md:82
+#, no-wrap
+msgid ""
+"```\n"
+"recall(\"how to query database\", preset=\"work\")\n"
+"→ procedural memory +++\n"
+"→ skills      +++\n"
+"→ tools       +++\n"
+"→ semantic    +\n"
+"→ episodic    - (almost none)\n"
+"→ limbic      -- (hardly needed)\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/recall-flow.md:91
+#, no-wrap
+msgid ""
+"recall(\"that database issue we discussed last time\", preset=\"recall\")\n"
+"→ episodic    +++\n"
+"→ limbic      +++\n"
+"→ semantic    ++\n"
+"→ procedural  +\n"
+"→ skills      -\n"
+"→ tools       -- (hardly needed)\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/recall-flow.md:93
+msgid "## Full Flow (v2 Design)"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/recall-flow.md:105
+#, no-wrap
+msgid ""
+"```\n"
+"Partner question / LLM needs information\n"
+"        │\n"
+"        ▼\n"
+"① recall(query, preset=\"...\")\n"
+"   └── Unified search memory layer + resource layer\n"
+"   └── Return lean result list (title + description + type + id)\n"
+"        │\n"
+"        ▼  LLM decides what is needed and how to use it\n"
+"        │\n"
+"② Choose downstream load tool by result type:\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/recall-flow.md:120
+#, no-wrap
+msgid ""
+"   ┌──────────────┬──────────────────────────┐\n"
+"   │ Result type  │ Downstream load tool     │\n"
+"   ├──────────────┼──────────────────────────┤\n"
+"   │ Tool         │ load_tools([\"name\"])     │ → full schema\n"
+"   │ Skill        │ load_skill(\"name\")       │ → injectable skill\n"
+"   │ Semantic/limbic memory │ read_memory(\"semantic_memory_id\") │ → full fact content\n"
+"   │ Episodic snippet │ scroll_session(\"id\") │ → recent conversation context\n"
+"   │ File/doc     │ read_file(\"path\")        │ → file content\n"
+"   │ Entity graph │ graph_query(\"entity\")    │ → related network\n"
+"   └──────────────┴──────────────────────────┘\n"
+"        │\n"
+"        ▼\n"
+"③ LLM responds or decides further based on loaded content\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/recall-flow.md:122 docs/designs/time-perception.md:54
+msgid "### Example"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/recall-flow.md:125
+msgid "``` You: Check on the server whether Nginx logs have recent errors"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/recall-flow.md:132
+#, no-wrap
+msgid ""
+"① I → recall(\"nginx logs server errors\", preset=\"work\")\n"
+"    Returns:\n"
+"    - Tool: tail_logs - view tail of file\n"
+"    - Tool: grep_logs - search logs for keyword\n"
+"    - Fact: Nginx logs at /var/log/nginx/access.log\n"
+"    - Skill: Standard Nginx error troubleshooting flow\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/recall-flow.md:137
+#, no-wrap
+msgid ""
+"② I need tools → load_tools([\"tail_logs\", \"grep_logs\"])\n"
+"    Returns full schema:\n"
+"    tail_logs(path, lines)\n"
+"    grep_logs(path, pattern)\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/recall-flow.md:141
+#, no-wrap
+msgid ""
+"③ I call tail_logs(path=\"/var/log/nginx/access.log\", lines=50)\n"
+"    grep_logs(path=\"/var/log/nginx/error.log\", pattern=\"5xx\")\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/recall-flow.md:143
+msgid "## Relationship to Self Layer"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/recall-flow.md:145
+msgid "Self layer (six blocks) is not retrieved via `recall`."
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/recall-flow.md:151
+#, no-wrap
+msgid ""
+"| Layer | Injection | Reason |\n"
+"| ----- | --------- | ------ |\n"
+"| Self layer | Always in system prompt | Small, fixed, every conversation needs \"who I am\" |\n"
+"| Memory layer | `recall` + downstream load | Large, dynamic, search on demand |\n"
+"| Resource layer | `recall` + downstream load | Tool definitions needed temporarily, load before call |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/recall-flow.md:153
+msgid "## Naming Rationale"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/recall-flow.md:155
+msgid "The name `recall` stays unchanged."
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/recall-flow.md:157
+msgid ""
+"In cognitive psychology, Recall is the standard term for actively pulling "
+"stored information from memory—no external cue, no prompt, you \"remember\" "
+"yourself. This is not exploring the unknown (discover/find), but retrieving "
+"what you already stored. Even when scope extends from memory layer to "
+"resource layer, the action's essence is unchanged."
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/recall-flow.md:159 docs/self-layer.md:108
+msgid "## Design Evolution"
+msgstr ""
+
+#. type: Plain text
+#: docs/designs/recall-flow.md:167
+#, no-wrap
+msgid ""
+"```\n"
+"v1 (✅ current): recall searches semantic_memory + messages FTS, returns JSON structured results\n"
+"v2 (design #47): recall unified search memory layer + resource layer\n"
+"            └── introduce preset\n"
+"            └── introduce downstream load chain (load_tools / read_memory etc.)\n"
+"v3 (future): TBD\n"
+"```\n"
+msgstr ""
+
+#. type: Bullet: '1. '
+#: docs/designs/recall-flow.md:172
+msgid "How many presets are enough? Do 3–5 cover most scenarios, or need more?"
+msgstr ""
+
+#. type: Bullet: '2. '
+#: docs/designs/recall-flow.md:172
+msgid ""
+"Format of recall \"lean results\"—structured JSON (LLM programmatic) or "
+"natural language (LLM direct understanding)?"
+msgstr ""
+
+#. type: Bullet: '3. '
+#: docs/designs/recall-flow.md:172
+msgid ""
+"Downstream load tool permission control—should `load_tools` be constrained "
+"by scene awareness / capability mask?"
+msgstr ""

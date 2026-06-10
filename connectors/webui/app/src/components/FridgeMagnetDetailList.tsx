@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { m } from "@/lib/i18n.ts";
 
 export type FridgeMagnetItem = {
   key: string;
@@ -11,12 +12,13 @@ export type FridgeMagnetItem = {
 
 export function formatFridgeTtl(seconds: number | null): string {
   if (seconds === null) return "—";
-  if (seconds < 0) return "无过期";
-  if (seconds < 60) return `剩余 ${seconds}s`;
+  if (seconds < 0) return m.webui_chamber_fridge_expiry_none();
+  if (seconds < 60) return m.webui_chamber_fridge_expiry_seconds({ seconds: String(seconds) });
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
-  if (hours > 0) return `剩余 ${hours}h ${minutes}m`;
-  return `剩余 ${minutes}m`;
+  if (hours > 0)
+    return m.webui_chamber_fridge_expiry_hours({ hours: String(hours), minutes: String(minutes) });
+  return m.webui_chamber_fridge_expiry_minutes({ minutes: String(minutes) });
 }
 
 type FridgeMagnetDetailListProps = {
@@ -26,15 +28,11 @@ type FridgeMagnetDetailListProps = {
 
 export function FridgeMagnetDetailList({ magnets, redisConfigured }: FridgeMagnetDetailListProps) {
   if (!redisConfigured) {
-    return (
-      <div className="alert alert-warning text-sm">
-        Redis 未配置或不可用，冰箱贴功能已静默降级。
-      </div>
-    );
+    return <div className="alert alert-warning text-sm">{m.webui_chamber_fridge_redis_down()}</div>;
   }
 
   if (magnets.length === 0) {
-    return <div className="alert alert-info text-sm">当前无冰箱贴便签。</div>;
+    return <div className="alert alert-info text-sm">{m.webui_chamber_fridge_empty()}</div>;
   }
 
   return (
@@ -45,9 +43,13 @@ export function FridgeMagnetDetailList({ magnets, redisConfigured }: FridgeMagne
             <div className="flex flex-wrap items-center gap-2">
               <span className="badge badge-ghost badge-sm font-mono">{magnet.key}</span>
               {magnet.module === "tasks" ? (
-                <span className="badge badge-info badge-sm">待办摘要</span>
+                <span className="badge badge-info badge-sm">
+                  {m.webui_chamber_fridge_badge_task()}
+                </span>
               ) : magnet.module === "session" ? (
-                <span className="badge badge-primary badge-sm">会话便签</span>
+                <span className="badge badge-primary badge-sm">
+                  {m.webui_chamber_fridge_badge_session()}
+                </span>
               ) : null}
               <span className="text-xs text-base-content/60">
                 {formatFridgeTtl(magnet.ttl_seconds)}
@@ -55,7 +57,7 @@ export function FridgeMagnetDetailList({ magnets, redisConfigured }: FridgeMagne
             </div>
             {magnet.session_id ? (
               <div className="text-xs">
-                会话{" "}
+                {m.webui_common_session_label()}{" "}
                 <Link
                   to="/chamber/sessions/$sessionId"
                   params={{ sessionId: magnet.session_id }}
