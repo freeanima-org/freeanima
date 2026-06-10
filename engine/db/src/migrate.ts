@@ -1,16 +1,18 @@
-import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { getRepoRoot } from "@freeanima/service-config";
 import type { BunSQLDatabase } from "drizzle-orm/bun-sql/postgres";
 
-function resolveMigrationsFolder(): string {
-  const fromRepo = join(getRepoRoot(), "migrations");
-  if (existsSync(fromRepo)) return fromRepo;
-  return join(import.meta.dir, "../migrations");
-}
+/** engine-db 包内 migrations 目录（相对本模块） */
+export const DEFAULT_MIGRATIONS_FOLDER = join(import.meta.dir, "../migrations");
 
-export async function runMigrations(db: BunSQLDatabase<any>): Promise<void> {
-  const migrationsFolder = resolveMigrationsFolder();
+export type RunMigrationsOptions = {
+  migrationsFolder?: string;
+};
+
+export async function runMigrations(
+  db: BunSQLDatabase<any>,
+  opts?: RunMigrationsOptions,
+): Promise<void> {
+  const migrationsFolder = opts?.migrationsFolder ?? DEFAULT_MIGRATIONS_FOLDER;
   const { migrate } = await import("drizzle-orm/bun-sql/postgres/migrator");
   await migrate(db, { migrationsFolder });
 }

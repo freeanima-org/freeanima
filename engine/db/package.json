@@ -13,7 +13,6 @@
   },
   "dependencies": {
     "@freeanima/kernel-util": "workspace:*",
-    "@freeanima/service-config": "workspace:*",
     "drizzle-orm": "catalog:",
     "zod": "catalog:"
   },
