@@ -20,28 +20,28 @@ function errMsg(err: unknown): string {
 export function registerEmailTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
     "email",
-    "邮件账户与收发",
+    "Email accounts and send/receive",
     attachToolReturns(
       [
         {
           name: "email_register_account",
           description:
-            '注册邮件账户到 config.yaml。password 支持明文、env("KEY") 或 credential("path", "field")。',
+            'Register an email account in config.yaml. password supports plaintext, env("KEY"), or credential("path", "field").',
           parameters: {
             type: "object",
             properties: {
-              id: { type: "string", description: "账户 ID（config 内唯一标识）" },
+              id: { type: "string", description: "Account ID (unique in config)" },
               password: {
                 type: "string",
-                description: '密码引用，如 credential("email/example", "password")',
+                description: 'Password reference, e.g. credential("email/example", "password")',
               },
-              address: { type: "string", description: "邮箱地址" },
-              display_name: { type: "string", description: "发件显示名" },
+              address: { type: "string", description: "Email address" },
+              display_name: { type: "string", description: "Sender display name" },
               smtp_host: { type: "string" },
               smtp_port: { type: "number" },
               imap_host: { type: "string" },
               imap_port: { type: "number" },
-              default_sender: { type: "boolean", description: "是否为默认发件账户" },
+              default_sender: { type: "boolean", description: "Default outbound account" },
               enabled: { type: "boolean" },
               desc: { type: "string" },
               tags: { type: "array", items: { type: "string" } },
@@ -68,12 +68,16 @@ export function registerEmailTools(toolSets: ToolSetRegistry): void {
         },
         {
           name: "email_edit_account",
-          description: "编辑已注册邮件账户（password 可改为新的 env/credential 引用）。",
+          description:
+            "Edit a registered email account (password may be updated to env/credential reference).",
           parameters: {
             type: "object",
             properties: {
               id: { type: "string" },
-              password: { type: "string", description: "明文 / env() / credential() 引用" },
+              password: {
+                type: "string",
+                description: "Plaintext / env() / credential() reference",
+              },
               address: { type: "string" },
               display_name: { type: "string" },
               smtp_host: { type: "string" },
@@ -101,7 +105,7 @@ export function registerEmailTools(toolSets: ToolSetRegistry): void {
         },
         {
           name: "email_list_accounts",
-          description: "列出 config.yaml 中的邮件账户（含 pass 路径，不含密码）。",
+          description: "List email accounts in config.yaml (includes pass paths, not passwords).",
           parameters: { type: "object", properties: {} },
           handler: async () => {
             try {
@@ -113,7 +117,7 @@ export function registerEmailTools(toolSets: ToolSetRegistry): void {
         },
         {
           name: "email_delete_account",
-          description: "从 config.yaml 删除邮件账户（不删除 pass 凭证）。",
+          description: "Remove email account from config.yaml (does not delete pass credentials).",
           parameters: {
             type: "object",
             properties: { id: { type: "string" } },
@@ -132,11 +136,14 @@ export function registerEmailTools(toolSets: ToolSetRegistry): void {
         },
         {
           name: "email_send",
-          description: "通过已配置账户发送邮件。",
+          description: "Send email via a configured account.",
           parameters: {
             type: "object",
             properties: {
-              account_id: { type: "string", description: "发件账户 ID，省略则用默认账户" },
+              account_id: {
+                type: "string",
+                description: "Sender account ID; default account if omitted",
+              },
               to: { type: "string" },
               subject: { type: "string" },
               body: { type: "string" },
@@ -163,12 +170,15 @@ export function registerEmailTools(toolSets: ToolSetRegistry): void {
         },
         {
           name: "email_fetch",
-          description: "从 IMAP 拉取最近邮件摘要。",
+          description: "Fetch recent email summaries from IMAP.",
           parameters: {
             type: "object",
             properties: {
-              account_id: { type: "string", description: "账户 ID，省略则查询全部启用账户" },
-              limit: { type: "number", description: "条数，默认 20" },
+              account_id: {
+                type: "string",
+                description: "Account ID; all enabled accounts if omitted",
+              },
+              limit: { type: "number", description: "Count, default 20" },
             },
           },
           handler: async (args) => {
@@ -185,15 +195,15 @@ export function registerEmailTools(toolSets: ToolSetRegistry): void {
         },
         {
           name: "email_list",
-          description: "按条件列出 IMAP 邮件摘要。",
+          description: "List IMAP email summaries with filters.",
           parameters: {
             type: "object",
             properties: {
               account_id: { type: "string" },
               unread: { type: "boolean" },
-              since: { type: "string", description: "ISO 日期或 YYYY-MM-DD" },
+              since: { type: "string", description: "ISO date or YYYY-MM-DD" },
               from: { type: "string" },
-              subject: { type: "string", description: "主题包含" },
+              subject: { type: "string", description: "Subject contains" },
               limit: { type: "number" },
             },
           },
@@ -213,7 +223,7 @@ export function registerEmailTools(toolSets: ToolSetRegistry): void {
         },
         {
           name: "email_read",
-          description: "读取单封邮件全文。",
+          description: "Read full body of a single email.",
           parameters: {
             type: "object",
             properties: {
@@ -237,7 +247,7 @@ export function registerEmailTools(toolSets: ToolSetRegistry): void {
         },
         {
           name: "email_mark_read",
-          description: "将邮件标记为已读。",
+          description: "Mark an email as read.",
           parameters: {
             type: "object",
             properties: {
@@ -261,7 +271,7 @@ export function registerEmailTools(toolSets: ToolSetRegistry): void {
         },
         {
           name: "email_delete",
-          description: "从 IMAP 邮箱删除邮件。",
+          description: "Delete an email from the IMAP mailbox.",
           parameters: {
             type: "object",
             properties: {

@@ -3,7 +3,7 @@ import type { LlmTurnMessage } from "@freeanima/engine-provider-llm";
 import { messagesForApi } from "./messages.ts";
 
 describe("messagesForApi", () => {
-  it("前置 system 并映射 user/assistant/tool", () => {
+  it("prepends system and maps user/assistant/tool", () => {
     const turn: LlmTurnMessage[] = [
       { role: "user", content: "hi" },
       {
@@ -28,7 +28,7 @@ describe("messagesForApi", () => {
     expect((api[3] as { name?: string }).name).toBe("grep");
   });
 
-  it("assistant 写入 reasoning_content", () => {
+  it("assistant writes reasoning_content", () => {
     const api = messagesForApi([{ role: "assistant", content: "ans", reasoning: "think" }]);
     expect(api[0]).toMatchObject({
       role: "assistant",

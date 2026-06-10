@@ -1,7 +1,7 @@
-/** Cursor ACP 中 Auto 模型对应的 modelId */
+/** modelId for Auto model in Cursor ACP */
 export const CURSOR_AUTO_MODEL_ID = "default[]";
 
-/** 将 config 中的 model 别名解析为 ACP modelId；cursor 适配器缺省为 Auto */
+/** Resolve model alias in config to ACP modelId; cursor adapter defaults to Auto */
 export function resolveAcpModelId(raw: string | undefined, adapterId: string): string | undefined {
   const trimmed = raw?.trim();
   if (trimmed) {

@@ -1,6 +1,6 @@
 import type { DeepSleepChangeLog } from "./deep-sleep/types.ts";
 
-/** 深睡单轮 LLM 调用输入（与浅睡类似，但 userMessages 为 4 条） */
+/** Deep sleep single-round LLM input (similar to light sleep, but userMessages has 4 entries) */
 export type DeepSleepEngineInput = {
   systemPrompt: string;
   userMessages: [string, string, string, string];
@@ -29,7 +29,9 @@ export async function runDeepSleepEngine(
   input: DeepSleepEngineInput,
 ): Promise<DeepSleepEngineResult> {
   if (!engineFn) {
-    throw new Error("深睡 LLM 未配置：请在服务启动时调用 registerDeepSleepEngine()");
+    throw new Error(
+      "Deep sleep LLM not configured: call registerDeepSleepEngine() at service startup",
+    );
   }
   return engineFn(input);
 }

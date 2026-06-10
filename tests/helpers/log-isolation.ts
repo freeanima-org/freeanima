@@ -7,7 +7,7 @@ import { resetServiceLogger } from "@freeanima/service-logging";
 
 export { resetServiceLogger };
 
-/** 测试隔离：临时 FREEANIMA_HOME + 重置 logger，避免污染 ~/.anima/error.log */
+/** Test isolation: temp FREEANIMA_HOME + reset logger to avoid polluting ~/.anima/error.log */
 export function beginLogIsolation(prefix: string): string {
   const home = mkdtempSync(join(tmpdir(), prefix));
   process.env.FREEANIMA_HOME = home;
@@ -16,7 +16,7 @@ export function beginLogIsolation(prefix: string): string {
   return home;
 }
 
-/** 恢复 FREEANIMA_HOME；logger 单测应在下次 beginLogIsolation 时重建 */
+/** Restore FREEANIMA_HOME; unit tests should rebuild logger on next beginLogIsolation */
 export function endLogIsolation(prevHome?: string): void {
   if (prevHome === undefined) delete process.env.FREEANIMA_HOME;
   else process.env.FREEANIMA_HOME = prevHome;

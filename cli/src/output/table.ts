@@ -1,7 +1,7 @@
 const COL_MAX = [45, 14, 48, 40] as const;
 const COL_MIN = 6;
 
-/** 简单文本表格（列宽截断） */
+/** Simple text table (column width truncation) */
 export function renderTable(rows: string[][], headers: string[]): string {
   const colCount = headers.length;
   const widths: number[] = Array.from({ length: colCount }, (_, i) =>

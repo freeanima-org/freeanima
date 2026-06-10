@@ -14,7 +14,7 @@ export const DEFAULT_SESSION_TOOL_NAMES = [
 
 export type DefaultSessionToolName = (typeof DEFAULT_SESSION_TOOL_NAMES)[number];
 
-/** 过滤掉 Registry 中尚不存在的名（MCP 未连、测试 partial registry） */
+/** Filter out names not yet in Registry (MCP disconnected, partial registry in tests) */
 export function resolveDefaultSessionTools(registry: ToolSetRegistry): string[] {
   return DEFAULT_SESSION_TOOL_NAMES.filter((name) => registry.getTool(name) != null);
 }

@@ -18,14 +18,14 @@ function toListEntry(def: SkillDef): SkillListEntry {
   };
 }
 
-/** load_skill 工具：将技能正文放入 tool 消息上下文 */
+/** load_skill tool: put skill body into tool message context */
 export function loadSkillIntoContext(skills: SkillRegistry, name: string): string {
   const trimmed = name.trim();
-  if (!trimmed) return toolError("技能名称不能为空");
+  if (!trimmed) return toolError("Skill name cannot be empty");
   const def = skills.get(trimmed);
-  if (!def) return toolError(`技能 '${trimmed}' 未注册`);
+  if (!def) return toolError(`Skill '${trimmed}' is not registered`);
   const content = readSkillBody(skills, trimmed);
-  if (!content) return toolError(`技能 '${trimmed}' 内容为空或文件不存在`);
+  if (!content) return toolError(`Skill '${trimmed}' content is empty or file missing`);
   return toolResult({
     skill: trimmed,
     description: def.description,
@@ -37,7 +37,7 @@ export function loadSkillIntoContext(skills: SkillRegistry, name: string): strin
 export function listSkillsForTool(skills: SkillRegistry): string {
   const list = skills.list();
   if (!list.length) {
-    return toolResult({ skills: [], total: 0, message: "暂无已注册技能。" });
+    return toolResult({ skills: [], total: 0, message: "No registered skills." });
   }
   return toolResult({
     skills: list.map(toListEntry),
@@ -54,7 +54,7 @@ export function searchSkillsForTool(skills: SkillRegistry, query: string): strin
   });
 }
 
-/** Cron 等无 tool 回合场景：将技能正文前缀到 prompt */
+/** Cron etc. no-tool turns: prefix skill body to prompt */
 export function formatSkillsPrefix(skills: SkillRegistry, names: string[]): string {
   const parts: string[] = [];
   for (const name of names) {

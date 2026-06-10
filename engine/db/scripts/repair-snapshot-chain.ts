@@ -1,6 +1,6 @@
 /**
- * 为缺 snapshot.json 的历史 migration 按顺序补链（不新增 migration 目录）。
- * 用法：bun engine/db/scripts/repair-snapshot-chain.ts
+ * Repair snapshot chain for historical migrations missing snapshot.json (no new migration dir).
+ * Usage: bun engine/db/scripts/repair-snapshot-chain.ts
  */
 import { randomUUID } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
@@ -206,7 +206,7 @@ function main(): void {
   snap.ddl.push(...buildSemanticMemoryProvenanceExtras(full));
   writeSnapshot("20260607120000_semantic_memory_provenance", snap);
 
-  // cron_jobs / pg_trgm：仅 migration.sql 生效，不在 Drizzle schema → snapshot ddl 不变，只推进链
+  // cron_jobs / pg_trgm: migration.sql only, not in Drizzle schema → snapshot ddl unchanged, advance chain only
   snap = nextSnap(snap);
   writeSnapshot("20260607140000_cron_jobs", snap);
 

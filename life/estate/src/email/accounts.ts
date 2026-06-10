@@ -49,7 +49,7 @@ async function assertPasswordResolvable(account: Pick<EmailAccount, "password">)
     await resolveValue(account.password);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    throw new Error(`邮件密码无法解析: ${msg}`, { cause: err });
+    throw new Error(`Email password could not be resolved: ${msg}`, { cause: err });
   }
 }
 
@@ -61,7 +61,7 @@ export async function registerEmailAccount(input: EmailAccountInput): Promise<Em
   const parsed = emailAccountInputSchema.parse(input);
   const accounts = getEmailAccounts();
   if (accounts.some((a) => a.id === parsed.id)) {
-    throw new Error(`邮件账户已存在: ${parsed.id}`);
+    throw new Error(`Email account already exists: ${parsed.id}`);
   }
 
   await assertPasswordResolvable(parsed);
@@ -79,7 +79,7 @@ export function editEmailAccount(id: string, patch: EmailAccountPatch): EmailAcc
   const parsed = emailAccountPatchSchema.parse(patch);
   const accounts = getEmailAccounts();
   const idx = accounts.findIndex((a) => a.id === id);
-  if (idx < 0) throw new Error(`邮件账户不存在: ${id}`);
+  if (idx < 0) throw new Error(`Email account not found: ${id}`);
 
   const merged = emailAccountSchema.parse({ ...accounts[idx], ...parsed, id });
   let next = accounts.map((a, i) => (i === idx ? merged : a));
@@ -98,7 +98,7 @@ export function listEmailAccounts(): EmailAccount[] {
 export function deleteEmailAccount(id: string): void {
   const accounts = getEmailAccounts();
   if (!accounts.some((a) => a.id === id)) {
-    throw new Error(`邮件账户不存在: ${id}`);
+    throw new Error(`Email account not found: ${id}`);
   }
   let next = accounts.filter((a) => a.id !== id);
   next = normalizeDefaultSender(next);
@@ -113,18 +113,18 @@ export function getDefaultSender(): EmailAccount | null {
 export function resolveAccount(accountId?: string): EmailAccount {
   const accounts = getEmailAccounts().filter((a) => a.enabled !== false);
   if (accounts.length === 0) {
-    throw new Error("未配置可用的邮件账户");
+    throw new Error("No enabled email accounts configured");
   }
 
   if (accountId) {
     const account = accounts.find((a) => a.id === accountId);
-    if (!account) throw new Error(`邮件账户不存在或未启用: ${accountId}`);
+    if (!account) throw new Error(`Email account not found or disabled: ${accountId}`);
     return account;
   }
 
   const fallback = getDefaultSender();
   if (!fallback || fallback.enabled === false) {
-    throw new Error("未找到默认发件账户");
+    throw new Error("No default sender account found");
   }
   return fallback;
 }
@@ -132,6 +132,6 @@ export function resolveAccount(accountId?: string): EmailAccount {
 export function resolveEnabledAccounts(accountId?: string): EmailAccount[] {
   if (accountId) return [resolveAccount(accountId)];
   const accounts = getEmailAccounts().filter((a) => a.enabled !== false);
-  if (accounts.length === 0) throw new Error("未配置可用的邮件账户");
+  if (accounts.length === 0) throw new Error("No enabled email accounts configured");
   return accounts;
 }

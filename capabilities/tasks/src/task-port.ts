@@ -2,19 +2,19 @@ import type { TaskStorePort } from "@freeanima/engine-repos";
 
 let taskStore: TaskStorePort | null = null;
 
-/** 由 service 启动时注入 TaskStorePort */
+/** Injected by service at startup */
 export function registerTaskStore(store: TaskStorePort): void {
   taskStore = store;
 }
 
 export function getTaskStore(): TaskStorePort {
   if (!taskStore) {
-    throw new Error("TaskStore 未配置：请在服务启动时调用 registerTaskStore()");
+    throw new Error("TaskStore not configured: call registerTaskStore() at service startup");
   }
   return taskStore;
 }
 
-/** 测试重置 */
+/** Test reset */
 export function resetTaskStoreForTests(): void {
   taskStore = null;
 }

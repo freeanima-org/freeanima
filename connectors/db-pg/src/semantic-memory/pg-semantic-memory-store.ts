@@ -4,7 +4,7 @@ import * as crudRepo from "./repos/semantic-crud-repo.ts";
 import * as ftsRepo from "./repos/semantic-fts-repo.ts";
 import * as searchRepo from "./repos/semantic-search-repo.ts";
 
-/** PostgreSQL SemanticMemoryStorePort 实现 */
+/** PostgreSQL SemanticMemoryStorePort implementation */
 export class PgSemanticMemoryStore implements SemanticMemoryStorePort {
   async create(row: Parameters<SemanticMemoryStorePort["create"]>[0]) {
     return crudRepo.createSemanticMemory(row);

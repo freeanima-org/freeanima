@@ -1,9 +1,9 @@
 #!/usr/bin/env bun
 /**
- * Docs PO / po4a 健康检查（po/pot/*.pot + po/<lang>/*.po）。
+ * Docs PO / po4a health check (po/pot/*.pot + po/<lang>/*.po).
  *
- * 默认 warn：允许 fuzzy（英文领先、中文追赶）。
- * --strict：存在 fuzzy 时失败。
+ * Default warn: allow fuzzy (English ahead, translations catching up).
+ * --strict: fail when fuzzy entries exist.
  */
 import { existsSync, readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
@@ -70,7 +70,7 @@ for (const lang of DOC_PO_LANGS) {
   }
 
   if (totalFuzzy > 0) {
-    const message = `${totalFuzzy} fuzzy entries in po/${lang}/（英文已更新，译文待审校）`;
+    const message = `${totalFuzzy} fuzzy entries in po/${lang}/ (English updated, translations pending review)`;
     if (strict) fail(message);
     warn(message);
   }

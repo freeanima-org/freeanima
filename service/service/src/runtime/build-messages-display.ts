@@ -19,7 +19,7 @@ function argsPreviewFromObject(argsObj: Record<string, unknown>): string {
     .join(", ");
 }
 
-/** 将对话 messages 序列投影为 WebUI display 列表（含 tool_block 聚合） */
+/** Project conversation message sequence to WebUI display list (with tool_block aggregation) */
 export function buildMessagesDisplay(all: SessionMessage[]): DisplayItem[] {
   const display: DisplayItem[] = [];
   let pendingBlock: DisplayToolBlockItem | null = null;

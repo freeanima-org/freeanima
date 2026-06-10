@@ -98,7 +98,7 @@ function candidateLimit(limit: number): number {
 
 function buildRecallSummary(query: string, results: MemoryRecallHit[]): string {
   if (results.length === 0) {
-    return `未找到与「${query}」匹配的记忆`;
+    return `No memories matched "${query}"`;
   }
   const counts: Record<MemoryRecallHitType, number> = {
     semantic: 0,
@@ -114,7 +114,7 @@ function buildRecallSummary(query: string, results: MemoryRecallHit[]): string {
   if (counts.session) parts.push(`session ${counts.session}`);
   if (counts.limbic) parts.push(`limbic ${counts.limbic}`);
   if (counts.autobiographical) parts.push(`autobiographical ${counts.autobiographical}`);
-  return `找到 ${results.length} 条相关记忆（${parts.join("、")}）`;
+  return `Found ${results.length} related memories (${parts.join(", ")})`;
 }
 
 function mapCandidateToHit(

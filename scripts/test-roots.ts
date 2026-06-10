@@ -43,7 +43,7 @@ function discoverLayerPkgSrcRoots(): string[] {
   return roots;
 }
 
-/** 单元测试根：各包 src + cli/src */
+/** Unit test roots: each package src + cli/src */
 export function discoverUnitTestRoots(): string[] {
   const roots = discoverLayerPkgSrcRoots();
   const cliSrc = join(repoRoot, "cli/src");
@@ -53,7 +53,7 @@ export function discoverUnitTestRoots(): string[] {
   return roots.toSorted();
 }
 
-/** coverage 分片：单元 + tests/integration */
+/** Coverage shards: unit + tests/integration */
 export function discoverTestRoots(): string[] {
   const roots = discoverUnitTestRoots();
   const integration = join(repoRoot, "tests/integration");

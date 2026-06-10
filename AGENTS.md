@@ -1,114 +1,114 @@
-# 逸灵风 — Agent 启动协议
+# FreeAnima — Agent Bootstrap Protocol
 
-> 面向在本仓库工作的 AI Agent（Cursor、Copilot 等）。
-> 数字生命定位见 [`docs/concepts/identity.md`](docs/concepts/identity.md)；自我层见 [`docs/concepts/self-layer.md`](docs/concepts/self-layer.md)。
+> For AI agents working in this repository (Cursor, Copilot, etc.).
+> Digital-life identity: [`docs/concepts/identity.md`](docs/concepts/identity.md); self layer: [`docs/concepts/self-layer.md`](docs/concepts/self-layer.md).
 
-## 全局视角
+## Global view
 
-`freeanima`（逸灵风）是 **TypeScript 单栈** Agent 运行时：`anima service` 启动 Bun 服务（WebUI + tRPC + Gateway + 引擎）。
+`freeanima` (FreeAnima) is a **TypeScript-only** agent runtime: `anima service` starts the Bun service (WebUI + tRPC + Gateway + engine).
 
-| 能力     | 要点                                                                                                                                                       |
-| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 记忆     | 对话存档（PG）→ 浅睡提取 → `semantic_memory` → PG FTS 检索；见 [`docs/concepts/memory.md`](docs/concepts/memory.md)                                        |
-| 工具     | 本地 / MCP / ACP 扁平注册；实现于 `capabilities/tools/`、`capabilities/mcp/`、`capabilities/acp/`                                                          |
-| 凭证     | pass GPG；运行时注入；LLM **只见路径不见值**                                                                                                               |
-| 数据目录 | `~/.anima/`（`FREEANIMA_HOME` 可覆盖）；备份打包此目录即可                                                                                                 |
-| 代码布局 | `kernel/`、`engine/`、`life/`、`capabilities/`、`connectors/`、`service/`、`cli/`；详图见 [`docs/concepts/architecture.md`](docs/concepts/architecture.md) |
+| Capability     | Highlights                                                                                                                                              |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Memory         | Conversation archive (PG) → light-sleep extraction → `semantic_memory` → PG FTS retrieval; see [`docs/concepts/memory.md`](docs/concepts/memory.md)     |
+| Tools          | Local / MCP / ACP flat registration; implemented in `capabilities/tools/`, `capabilities/mcp/`, `capabilities/acp/`                                     |
+| Credentials    | pass GPG; injected at runtime; LLM **sees paths, not values**                                                                                           |
+| Data directory | `~/.anima/` (override with `FREEANIMA_HOME`); back up this directory to preserve state                                                                  |
+| Code layout    | `kernel/`, `engine/`, `life/`, `capabilities/`, `connectors/`, `service/`, `cli/`; see [`docs/concepts/architecture.md`](docs/concepts/architecture.md) |
 
-**细节以代码为准**；勿凭文档臆造工具名、端点或目录。需要时直接读源码或 `grep`。
-
----
-
-## 启动顺序
-
-1. [GitHub Issues](https://github.com/freeanima-org/freeanima/issues) — 可执行任务与讨论项
-2. [`docs/concepts/architecture.md`](docs/concepts/architecture.md) — 改架构 / 记忆 / 凭证前必读
-3. 按任务展开 `docs/` 专题（见下方文档地图）
+**Code is the source of truth**; do not invent tool names, endpoints, or directories from docs alone. Read source or `grep` when needed.
 
 ---
 
-## 硬性约束
+## Startup order
 
-### 代码与测试
+1. [GitHub Issues](https://github.com/freeanima-org/freeanima/issues) — actionable tasks and discussions
+2. [`docs/concepts/architecture.md`](docs/concepts/architecture.md) — read before changing architecture / memory / credentials
+3. Expand `docs/` topics per task (see doc map below)
 
-- 类型注解全覆盖
-- 工具返回：**失败一律 `toolError(msg)`（JSON `{"error":"..."}`）**；成功分两类——结构化工具用 `toolResult(obj)`，LLM 可读工具（如 `file_read_file` / `terminal_run` / `code_execute`）允许纯文本 stdout。
-- 安全路径以代码为准（写保护、设备阻塞、二进制过滤）
-- 新功能须补测试（最小可用）；mock 外部依赖；真实 LLM / 外网用例默认不进 CI
-- **import 相对路径须带 `.ts` / `.tsx` 后缀**（oxlint `import/extensions`）
-- 集成测须隔离日志：`tests/helpers/integration-case.ts`（`restoreIntegrationHome` + `flushCompressionSummaries`），勿污染 `~/.anima/error.log`
+---
 
-### 发版与 CHANGELOG
+## Hard constraints
 
-- **禁止手动编辑 [`CHANGELOG.md`](CHANGELOG.md)**：新版本节由 Release PR 合并时 [Release Please](https://github.com/googleapis/release-please) 写入顶部；Agent 不得在 PR / 任务中改动该文件（含补写条目、`[Unreleased]`、列表符或格式化）。
-- 发版流程与 commit 规范见 [`docs/guide/versioning.md`](docs/guide/versioning.md)；
+### Code and tests
 
-#### 测试分层（硬性）
+- Full type annotations
+- Tool returns: **failures always use `toolError(msg)` (JSON `{"error":"..."}`)**; successes split into structured tools with `toolResult(obj)`, and LLM-readable tools (e.g. `file_read_file` / `terminal_run` / `code_execute`) may return plain-text stdout.
+- Safe paths per code (write protection, device blocking, binary filtering)
+- New features need tests (minimal viable); mock external deps; real LLM / network cases excluded from CI by default
+- **Relative imports must include `.ts` / `.tsx` suffix** (oxlint `import/extensions`)
+- Integration tests must isolate logs: `tests/helpers/integration-case.ts` (`restoreIntegrationHome` + `flushCompressionSummaries`); do not pollute `~/.anima/error.log`
 
-| 层级         | 位置                                                                    | 允许                                          | 禁止                                                                            |
-| ------------ | ----------------------------------------------------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------- |
-| **单元测试** | `{layer}/{pkg}/src/**/*.test.ts`（**一律旁置**）                        | `mock` / `spyOn` / 原包 Tier 1–2 导出（见下） | PG、真实 Redis、文件读写、`FREEANIMA_HOME` 隔离、`tests/helpers/`、Docker、外网 |
-| **跨包集成** | `tests/integration/`                                                    | PG、Redis、临时目录、`beginIntegrationCase`   | —                                                                               |
-| **黑盒 E2E** | [freeanima-testing](https://github.com/freeanima-org/freeanima-testing) | Compose + Playwright；PR dispatch 异步跑      | —                                                                               |
+### Release and CHANGELOG
 
-- pre-commit：`bun run test:changed`（**仅单元** changed）；推 PR 前须 `bun run test` 全量（单元 + 集成；黑盒见 freeanima-testing）。
-- 单包逻辑 → 旁置单元测；多包协作或真实持久化 → `tests/integration/`。
+- **Do not manually edit [`CHANGELOG.md`](CHANGELOG.md)**: Release Please writes the new version section at the top when a Release PR merges; agents must not change that file in PRs/tasks (including entries, `[Unreleased]`, bullets, or formatting).
+- Release flow and commit conventions: [`docs/guide/versioning.md`](docs/guide/versioning.md);
 
-#### 原包 Mock 导出（单元测优先使用）
+#### Test tiers (mandatory)
 
-| 层级              | 包                                                                                       | 用法                                                       |
-| ----------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| Tier 1 内存适配器 | `kernel-logging/null`、`/memory`；`kernel-eventbus/memory`、`/null`；`engine-repos/null` | `createNullSink`、`MemoryEventQueue`、`nullPgRepositories` |
-| Tier 2 单例注入   | `connectors-redis`、`connectors-db-pg`、`service-config` 等                              | `setXForTest` / `resetXForTest`；`afterEach` 必须 reset    |
-| Tier 3 组合工厂   | 可选 `@freeanima/{pkg}/testing`                                                          | 仅组合 Tier 1，如 `createTestLogger`                       |
-| 领域 mock         | `{pkg}/src/test-helpers/`                                                                | 原包无 port 时（如 `MockBackend`）                         |
+| Tier                          | Location                                                                | Allowed                                                  | Forbidden                                                                               |
+| ----------------------------- | ----------------------------------------------------------------------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| **Unit tests**                | `{layer}/{pkg}/src/**/*.test.ts` (**always colocated**)                 | `mock` / `spyOn` / same-package Tier 1–2 exports (below) | PG, real Redis, file I/O, `FREEANIMA_HOME` isolation, `tests/helpers/`, Docker, network |
+| **Cross-package integration** | `tests/integration/`                                                    | PG, Redis, temp dirs, `beginIntegrationCase`             | —                                                                                       |
+| **Black-box E2E**             | [freeanima-testing](https://github.com/freeanima-org/freeanima-testing) | Compose + Playwright; PR dispatch async                  | —                                                                                       |
 
-单元测**禁止** `import` `tests/helpers/log-isolation.ts` 或写 `config.yaml`；配置用 `setConfigForTest`，日志用 `createNullSink` / `createMemorySink`。
+- pre-commit: `bun run test:changed` (**unit only**, changed); before PR push run `bun run test` full (unit + integration; black-box in freeanima-testing).
+- Single-package logic → colocated unit tests; multi-package or real persistence → `tests/integration/`.
 
-### 包命名（RFC #1）
+#### Same-package mock exports (prefer in unit tests)
 
-新栈 workspace 包名 **以层名为首段前缀**：
+| Tier                       | Packages                                                                                 | Usage                                                      |
+| -------------------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| Tier 1 in-memory adapters  | `kernel-logging/null`, `/memory`; `kernel-eventbus/memory`, `/null`; `engine-repos/null` | `createNullSink`, `MemoryEventQueue`, `nullPgRepositories` |
+| Tier 2 singleton injection | `connectors-redis`, `connectors-db-pg`, `service-config`, etc.                           | `setXForTest` / `resetXForTest`; `afterEach` must reset    |
+| Tier 3 composite factories | optional `@freeanima/{pkg}/testing`                                                      | Tier 1 only, e.g. `createTestLogger`                       |
+| Domain mocks               | `{pkg}/src/test-helpers/`                                                                | when package has no port (e.g. `MockBackend`)              |
 
-| 形态     | 模式                               | 示例                                            |
-| -------- | ---------------------------------- | ----------------------------------------------- |
-| 层聚合   | `@freeanima/{layer}`               | `kernel`、`engine`                              |
-| 层内组件 | `@freeanima/{layer}-{slug}`        | `kernel-eventbus`、`engine-tool`、`service-api` |
-| 层内实现 | `@freeanima/{layer}-{slug}-{impl}` | `connectors-eventbus-sqlite`                    |
+Unit tests **must not** `import` `tests/helpers/log-isolation.ts` or write `config.yaml`; use `setConfigForTest` for config and `createNullSink` / `createMemorySink` for logging.
 
-- slug 合成词不加内连字符（`eventbus` 非 `event-bus`）
-- Hook / EventTopic 的 `qualifiedId` 与 npm 包名独立
+### Package naming (RFC #1)
 
-### 代码层与依赖
+New-stack workspace package names **prefix with layer name**:
 
-> 此处是**代码仓库**分层（与 [`docs/concepts/architecture.md`](docs/concepts/architecture.md) 中的认知四层 Consciousness/Self/Memory/Estate 不同）。依赖边界由 [`scripts/check-layer-deps.ts`](scripts/check-layer-deps.ts) 强制检查。
+| Shape                | Pattern                            | Example                                         |
+| -------------------- | ---------------------------------- | ----------------------------------------------- |
+| Layer aggregate      | `@freeanima/{layer}`               | `kernel`, `engine`                              |
+| Layer component      | `@freeanima/{layer}-{slug}`        | `kernel-eventbus`, `engine-tool`, `service-api` |
+| Layer implementation | `@freeanima/{layer}-{slug}-{impl}` | `connectors-eventbus-sqlite`                    |
 
-#### 分层依据
+- Compound slugs without inner hyphens (`eventbus`, not `event-bus`)
+- Hook / EventTopic `qualifiedId` is independent of npm package name
 
-| 层               | 职责（划分依据）                                                                   | 典型包                                                            |
-| ---------------- | ---------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| **kernel**       | 与业务无关的运行时基建：Hook、EventBus、日志、跨层共用纯类型/工具                  | `kernel-hooks`、`kernel-eventbus`、`kernel-logging`               |
-| **engine**       | Agent **机制**：对话、LLM 循环、工具注册、压缩、仓储端口、PG schema 真源           | `engine-conversation`、`engine-loop`、`engine-repos`、`engine-db` |
-| **life**         | 数字生命的**持续性与记忆管道**（语义/情景记忆、浅睡/深睡），只通过端口读对话存档   | `life-memory`、`life-self`                                        |
-| **capabilities** | 可插拔**能力包**（本地工具、MCP/ACP、clarify、LLM provider），不含组合与 I/O 装配  | `capabilities-tools`、`capabilities-mcp`                          |
-| **connectors**   | **外部世界适配**：Gateway、WebUI、Cron、PG 实现、命令注册                          | `connectors-db-pg`、`connectors-gateway`                          |
-| **service**      | **组合根**：创建 Kernel/Engine/Conversation/AnimaService，注入上下文，对外进程入口 | `service`、`service-bootstrap`                                    |
+### Code layers and dependencies
 
-依赖方向：`service` 装配各层 → `connectors` 实现端口 → `engine` / `life` / `capabilities` 消费端口与机制 → `kernel` 提供基建。
+> This is **repository** layering (distinct from the cognitive four layers Consciousness/Self/Memory/Estate in [`docs/concepts/architecture.md`](docs/concepts/architecture.md)). Dependency boundaries are enforced by [`scripts/check-layer-deps.ts`](scripts/check-layer-deps.ts).
 
-#### 允许依赖（与 dep-check 一致）
+#### Layer rationale
 
-| 层               | 允许 `@freeanima/*`                                                                                                      | 禁止（要点）                                |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------- |
-| **kernel**       | `kernel-*`、`kernel`                                                                                                     | `engine-*`、`service`                       |
-| **engine**       | `kernel-*`、`engine-*`、`service-config`、`service-logging`、`capabilities-provider-*`                                   | `connectors-db-pg`（PG 实现不得渗入机制层） |
-| **life**         | `kernel-*`、`life-*`、`engine-tool`、`engine-repos`、`service-config`、`service-logging`                                 | `engine-db`、`connectors-db-pg`             |
-| **capabilities** | `kernel-*`、`engine-*`、`capabilities-*`、`life-memory`（按需）、`connectors-redis`、`service-config`、`service-logging` | `service`、`connectors-*`（redis 除外）     |
-| **connectors**   | 各下层 + `service-api` / `service-config` / `service-logging` 等                                                         | `@freeanima/service`（组合根主包）          |
-| **service**      | 各层（组合根）                                                                                                           | —                                           |
+| Layer            | Responsibility (split criterion)                                                                                                        | Typical packages                                                  |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| **kernel**       | Business-agnostic runtime infra: Hook, EventBus, logging, cross-layer pure types/utils                                                  | `kernel-hooks`, `kernel-eventbus`, `kernel-logging`               |
+| **engine**       | Agent **mechanism**: conversation, LLM loop, tool registry, compression, repo ports, PG schema SSOT                                     | `engine-conversation`, `engine-loop`, `engine-repos`, `engine-db` |
+| **life**         | Digital-life **continuity and memory pipeline** (semantic/episodic memory, light/deep sleep); reads conversation archive via ports only | `life-memory`, `life-self`                                        |
+| **capabilities** | Pluggable **capability packs** (local tools, MCP/ACP, clarify, LLM provider); no composition or I/O wiring                              | `capabilities-tools`, `capabilities-mcp`                          |
+| **connectors**   | **External-world adapters**: Gateway, WebUI, Cron, PG impl, command registration                                                        | `connectors-db-pg`, `connectors-gateway`                          |
+| **service**      | **Composition root**: creates Kernel/Engine/Conversation/AnimaService, injects context, process entry                                   | `service`, `service-bootstrap`                                    |
 
-#### 组合根与全局单例
+Dependency direction: `service` wires layers → `connectors` implement ports → `engine` / `life` / `capabilities` consume ports and mechanisms → `kernel` provides infra.
 
-[`service/service/src/serve.ts`](service/service/src/serve.ts) 是唯一装配 PG 与运行时上下文的入口：
+#### Allowed dependencies (matches dep-check)
+
+| Layer            | Allowed `@freeanima/*`                                                                                                       | Forbidden (highlights)                                          |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| **kernel**       | `kernel-*`, `kernel`                                                                                                         | `engine-*`, `service`                                           |
+| **engine**       | `kernel-*`, `engine-*`, `service-config`, `service-logging`, `capabilities-provider-*`                                       | `connectors-db-pg` (PG impl must not leak into mechanism layer) |
+| **life**         | `kernel-*`, `life-*`, `engine-tool`, `engine-repos`, `service-config`, `service-logging`                                     | `engine-db`, `connectors-db-pg`                                 |
+| **capabilities** | `kernel-*`, `engine-*`, `capabilities-*`, `life-memory` (as needed), `connectors-redis`, `service-config`, `service-logging` | `service`, `connectors-*` (except redis)                        |
+| **connectors**   | lower layers + `service-api` / `service-config` / `service-logging`, etc.                                                    | `@freeanima/service` (main composition root package)            |
+| **service**      | all layers (composition root)                                                                                                | —                                                               |
+
+#### Composition root and global singletons
+
+[`service/service/src/serve.ts`](service/service/src/serve.ts) is the sole entry that wires PG and runtime context:
 
 ```
 createServiceKernel()
@@ -120,183 +120,183 @@ createServiceKernel()
 → initServiceContext({ engine, masks, service, conversation, ... })
 ```
 
-#### Runtime Catalog（Registry 实例）
+#### Runtime Catalog (Registry instances)
 
-**实例获取原则**：要拿到 `ToolSetRegistry` / `SkillRegistry` / `MaskRegistry` 等 catalog 实例，**要么 `new` 一个，要么从上下文（或自上下文派生的显式参数）获取**。
+**Instance acquisition**: to get `ToolSetRegistry` / `SkillRegistry` / `MaskRegistry` etc., **either `new` one or obtain from context (or explicit params derived from context)**.
 
-| 场景                                              | 做法                                                                                                                                      |
-| ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| 组合根 [`serve.ts`](service/service/src/serve.ts) | `new` 各 Registry，装入 `Engine.catalog` 与 `ServiceContext.masks`                                                                        |
-| 运行时读写                                        | `getServiceContext().engine.catalog.*`、`getServiceContext().masks`；turn 内经 `runWithToolContext(..., { tools })` / `getToolRegistry()` |
-| 向下传递                                          | 显式参数（如 `registerCoreTools(toolSets)`）合法，**参数须来自组合根 `new` 或 context**，不得读模块 default                               |
-| 单元测                                            | `new ToolSetRegistry()` 等隔离实例；禁止污染进程级 catalog                                                                                |
+| Scenario                                                    | Approach                                                                                                                                     |
+| ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Composition root [`serve.ts`](service/service/src/serve.ts) | `new` each Registry; put into `Engine.catalog` and `ServiceContext.masks`                                                                    |
+| Runtime read/write                                          | `getServiceContext().engine.catalog.*`, `getServiceContext().masks`; per turn via `runWithToolContext(..., { tools })` / `getToolRegistry()` |
+| Pass down                                                   | Explicit params (e.g. `registerCoreTools(toolSets)`) OK; **params must come from composition-root `new` or context**, not module defaults    |
+| Unit tests                                                  | `new ToolSetRegistry()` etc. isolated instances; no process-wide catalog pollution                                                           |
 
-**归属**（层边界）：
+**Ownership** (layer boundaries):
 
-- `Engine.catalog`：`toolSets`、`skills`（engine 层）；`ToolSetRegistry` 内嵌 `ToolDef[]`，flat API（`getTool` / `listTools` / `openaiSchemas`）在 `toolSets` 实例上
-- `Engine.tools`：只读 getter，指向 `catalog.toolSets`（兼容旧调用方）
-- `ServiceContext.masks`：`MaskRegistry`（capabilities 层；engine 不可 import `capabilities-mask`）
+- `Engine.catalog`: `toolSets`, `skills` (engine layer); `ToolSetRegistry` embeds `ToolDef[]`; flat API (`getTool` / `listTools` / `openaiSchemas`) on `toolSets` instance
+- `Engine.tools`: read-only getter pointing at `catalog.toolSets` (legacy callers)
+- `ServiceContext.masks`: `MaskRegistry` (capabilities layer; engine must not import `capabilities-mask`)
 
-**禁止**：
+**Forbidden**:
 
-- `export const default*Registry` 及依赖它的模块级 `registerTool()` / `listTools()` / `registerMask()` 等（import 时隐式绑定，不可注入）
-- capabilities / life / engine 内 `import { defaultToolRegistry }` 等直接读 default
-- `ToolDef.toolset` 字段；工具归属由所在 ToolSet 决定；MCP/ACP 动态集用 `registerToolSet` / `unregisterToolSet` 配对（不用 upsert）
+- `export const default*Registry` and module-level `registerTool()` / `listTools()` / `registerMask()` that depend on it (implicit bind on import, not injectable)
+- capabilities / life / engine importing `{ defaultToolRegistry }` etc.
+- `ToolDef.toolset` field; tool ownership is by ToolSet; MCP/ACP dynamic sets use `registerToolSet` / `unregisterToolSet` in pairs (not upsert)
 
-**允许**：与 `ConversationService`、`SessionStorePort` 相同——组合根实例化，运行时经 `getServiceContext()` 或显式参数传递。
+**Allowed**: same as `ConversationService`, `SessionStorePort` — instantiated at composition root; runtime via `getServiceContext()` or explicit params.
 
-**禁止：**
+**Forbidden:**
 
-- `bindKernel` / `getKernel` / `Kernel.repos` 等内层全局单例
-- 在 engine/life 内直接 `new` PG 连接或 import `connectors-db-pg`
+- `bindKernel` / `getKernel` / `Kernel.repos` etc. inner global singletons
+- Direct `new` PG connections or `import connectors-db-pg` inside engine/life
 
-**允许：**
+**Allowed:**
 
-- **`ConversationService`**：在 service 组合根实例化；运行时经 `getServiceContext().conversation`，或**显式参数**向下传递
-- **`SessionStorePort`**：life 记忆管道经 `registerMemoryPipeline({ sessionStore })` 注入
-- **工具上下文**：`runWithToolContext(sessionId, fn, { repos, tools })` + `getToolRepos()` / `getToolRegistry()`（见 `engine/loop/src/tool-context.ts`）
+- **`ConversationService`**: instantiated at service composition root; runtime via `getServiceContext().conversation` or **explicit params**
+- **`SessionStorePort`**: life memory pipeline via `registerMemoryPipeline({ sessionStore })`
+- **Tool context**: `runWithToolContext(sessionId, fn, { repos, tools })` + `getToolRepos()` / `getToolRegistry()` (see `engine/loop/src/tool-context.ts`)
 
-### 类型归属
+### Type ownership
 
-Agent 新增或移动类型 / Zod / 端口时，按下列顺序决策：
+When adding or moving types / Zod / ports, decide in this order:
 
-1. **PG 存储形状（DDL + JSONB Zod）** → `@freeanima/engine-db`（唯一真源 SSOT）
-2. **仓储端口与聚合** → `@freeanima/engine-repos`（`*StorePort`、`PgRepositories`；含 `null*` 适配器）
-3. **领域类型** → **谁消费谁拥有**（该层的 `{layer}-{slug}` 包内）；仅当多域共用时才上浮到 kernel 纯类型包
+1. **PG storage shape (DDL + JSONB Zod)** → `@freeanima/engine-db` (sole SSOT)
+2. **Repository ports and aggregates** → `@freeanima/engine-repos` (`*StorePort`, `PgRepositories`; includes `null*` adapters)
+3. **Domain types** → **owner consumes** (in that layer's `{layer}-{slug}` package); hoist to kernel pure-type packages only when shared across domains
 
-补充原则：
+Additional rules:
 
-- 领域视图可 `import type` / `z.infer` 自 `engine-db`，但**不得复制** storage Zod 定义
-- **HTTP/WebUI 契约**在 `connectors-webui/api` 或 `service-api`；**进程内快照/展示**归 service
-- **EventBus payload** 归事件**发布方所在域**（记忆事件 → life-memory）
+- Domain views may `import type` / `z.infer` from `engine-db`, but **must not duplicate** storage Zod definitions
+- **HTTP/WebUI contracts** in `connectors-webui/api` or `service-api`; **in-process snapshots/display** in service
+- **EventBus payloads** belong to the **publisher's domain** (memory events → life-memory)
 
-#### 类型归属表
+#### Type ownership table
 
-| 内容                                                               | 包                           | 路径 / 说明                                               |
-| ------------------------------------------------------------------ | ---------------------------- | --------------------------------------------------------- |
-| Slice A message / session_meta 存储 Zod                            | `engine-db/schema`           | JSONB 与 payload 真源                                     |
-| Slice A 领域便利类型（`SessionMessage`、`ConversationMessage` 等） | `engine-db/domain`           | 自 schema 派生；`engine-conversation` re-export           |
-| `SessionStorePort` / `PgRepositories`                              | `engine-repos`               | 仓储端口                                                  |
-| 浅睡 fact 提取 schema                                              | `life-memory/schemas`        | `fact-extraction.ts`、`fact.ts`                           |
-| EventBus payload Zod（`session:updated` 等）                       | `life-memory/schemas`        | `event-payloads.ts`；topic token 见 `events.ts`           |
-| `cron_jobs` PG schema（DDL）                                       | `engine-db/migrations`       | SQL migration                                             |
-| Cron job API 校验 schema                                           | `connectors-cron`            | `schema.ts`                                               |
-| `CronJobStorePort`                                                 | `engine-repos`               | `ports/cron.ts`                                           |
-| `tasks` DDL + status/priority Zod                                  | `engine-db/schema`           | `tasks.ts`                                                |
-| `TaskStorePort` / `TaskRow`                                        | `engine-repos`               | `ports/task.ts`                                           |
-| 待办工具 + 冰箱贴摘要桥接                                          | `capabilities-tasks`         | `tool.ts`、`fridge-bridge.ts`                             |
-| `self_blocks` DDL + `selfBlockKeySchema`                           | `engine-db/schema`           | `self-layer.ts`                                           |
-| `SelfLayerStorePort` / `SelfBlockRow`                              | `engine-repos`               | `ports/self-layer.ts`                                     |
-| 六块 prompt 视图（`SELF_BLOCK_HEADINGS` 等）                       | `life-self`                  | `blocks.ts`、`compose.ts`                                 |
-| `autobiographical_memory` DDL + significance/status Zod            | `engine-db/schema`           | `autobiographical-memory.ts`                              |
-| `AutobiographicalMemoryStorePort`                                  | `engine-repos`               | `ports/autobiographical-memory.ts`                        |
-| 自传 cron 编排 / 工具                                              | `life-memory`                | `autobiography/`、`autobiographical-tools.ts`             |
-| `limbic_memory` DDL + `limbicKindSchema`                           | `engine-db/schema`           | `limbic-memory.ts`                                        |
-| `LimbicMemoryStorePort`                                            | `engine-repos`               | `ports/limbic-memory.ts`                                  |
-| 浅睡 Stage 2 感性 / Stage 3 自传 / `memory_limbic_create`          | `life-memory`                | `limbic-tools.ts`、`light-sleep/run.ts`、`autobiography/` |
-| 能力面罩（`Mask` / `ResolvedMask` / 注册表）                       | `capabilities-mask`          | `types.ts`、`registry.ts`、`resolve.ts`                   |
-| Session `capability_mask` 存储形状                                 | `engine-db/schema`           | `jsonb/capability-mask.ts`                                |
-| WebUI 展示视图（`MessagesDisplay`）                                | `service/schemas`            | `display.ts`                                              |
-| AnimaService 内部快照（`ServiceSnapshot` 等）                      | `service/schemas`            | `snapshot.ts`                                             |
-| 微信网关持久化 schema                                              | `connectors-gateway/schemas` | `weixin.ts`                                               |
-| JSON safeParse 工具                                                | `kernel-util`                | `parseJsonFile`、`safeParseOrNull` 等                     |
+| Content                                                                          | Package                      | Path / notes                                              |
+| -------------------------------------------------------------------------------- | ---------------------------- | --------------------------------------------------------- |
+| Slice A message / session_meta storage Zod                                       | `engine-db/schema`           | JSONB and payload SSOT                                    |
+| Slice A domain convenience types (`SessionMessage`, `ConversationMessage`, etc.) | `engine-db/domain`           | Derived from schema; `engine-conversation` re-exports     |
+| `SessionStorePort` / `PgRepositories`                                            | `engine-repos`               | Repository ports                                          |
+| Light-sleep fact extraction schema                                               | `life-memory/schemas`        | `fact-extraction.ts`, `fact.ts`                           |
+| EventBus payload Zod (`session:updated`, etc.)                                   | `life-memory/schemas`        | `event-payloads.ts`; topic token in `events.ts`           |
+| `cron_jobs` PG schema (DDL)                                                      | `engine-db/migrations`       | SQL migration                                             |
+| Cron job API validation schema                                                   | `connectors-cron`            | `schema.ts`                                               |
+| `CronJobStorePort`                                                               | `engine-repos`               | `ports/cron.ts`                                           |
+| `tasks` DDL + status/priority Zod                                                | `engine-db/schema`           | `tasks.ts`                                                |
+| `TaskStorePort` / `TaskRow`                                                      | `engine-repos`               | `ports/task.ts`                                           |
+| Task tools + fridge summary bridge                                               | `capabilities-tasks`         | `tool.ts`, `fridge-bridge.ts`                             |
+| `self_blocks` DDL + `selfBlockKeySchema`                                         | `engine-db/schema`           | `self-layer.ts`                                           |
+| `SelfLayerStorePort` / `SelfBlockRow`                                            | `engine-repos`               | `ports/self-layer.ts`                                     |
+| Six-block prompt view (`SELF_BLOCK_HEADINGS`, etc.)                              | `life-self`                  | `blocks.ts`, `compose.ts`                                 |
+| `autobiographical_memory` DDL + significance/status Zod                          | `engine-db/schema`           | `autobiographical-memory.ts`                              |
+| `AutobiographicalMemoryStorePort`                                                | `engine-repos`               | `ports/autobiographical-memory.ts`                        |
+| Autobiography cron orchestration / tools                                         | `life-memory`                | `autobiography/`, `autobiographical-tools.ts`             |
+| `limbic_memory` DDL + `limbicKindSchema`                                         | `engine-db/schema`           | `limbic-memory.ts`                                        |
+| `LimbicMemoryStorePort`                                                          | `engine-repos`               | `ports/limbic-memory.ts`                                  |
+| Light-sleep Stage 2 limbic / Stage 3 autobiography / `memory_limbic_create`      | `life-memory`                | `limbic-tools.ts`, `light-sleep/run.ts`, `autobiography/` |
+| Capability masks (`Mask` / `ResolvedMask` / registry)                            | `capabilities-mask`          | `types.ts`, `registry.ts`, `resolve.ts`                   |
+| Session `capability_mask` storage shape                                          | `engine-db/schema`           | `jsonb/capability-mask.ts`                                |
+| WebUI display view (`MessagesDisplay`)                                           | `service/schemas`            | `display.ts`                                              |
+| AnimaService internal snapshot (`ServiceSnapshot`, etc.)                         | `service/schemas`            | `snapshot.ts`                                             |
+| WeChat gateway persistence schema                                                | `connectors-gateway/schemas` | `weixin.ts`                                               |
+| JSON safeParse utilities                                                         | `kernel-util`                | `parseJsonFile`, `safeParseOrNull`, etc.                  |
 
-新增 PG 域：`engine-db/schema/{domain}` → `engine-repos` 增端口 → `connectors-db-pg` 实现 → `PgRepositories` 扩展 → `serve.ts` 装配。详见 [`docs/guide/database.md`](docs/guide/database.md)。
+New PG domain: `engine-db/schema/{domain}` → add port in `engine-repos` → implement in `connectors-db-pg` → extend `PgRepositories` → wire in `serve.ts`. See [`docs/guide/database.md`](docs/guide/database.md).
 
-#### PG Schema 迁移（硬性）
+#### PG schema migrations (mandatory)
 
-**流程**：改 `engine/db/src/schema/` → **`drizzle-kit generate`** → **`migrate`**。
+**Flow**: change `engine/db/src/schema/` → **`drizzle-kit generate`** → **`migrate`**.
 
-| 步骤 | 命令 / 动作                                                        | 产出                                                         |
-| ---- | ------------------------------------------------------------------ | ------------------------------------------------------------ |
-| 1    | 改 Drizzle schema（`engine/db/src/schema/`）                       | TypeScript 真源                                              |
-| 2    | `DATABASE_URL=… bun run --filter @freeanima/engine-db db:generate` | `migrations/{ts}_{name}/migration.sql` + **`snapshot.json`** |
-| 3    | `DATABASE_URL=… bun run --filter @freeanima/engine-db db:migrate`  | PG 应用 DDL；生产亦可在 `anima service` 启动时自动 migrate   |
+| Step | Command / action                                                   | Output                                                               |
+| ---- | ------------------------------------------------------------------ | -------------------------------------------------------------------- |
+| 1    | Change Drizzle schema (`engine/db/src/schema/`)                    | TypeScript SSOT                                                      |
+| 2    | `DATABASE_URL=… bun run --filter @freeanima/engine-db db:generate` | `migrations/{ts}_{name}/migration.sql` + **`snapshot.json`**         |
+| 3    | `DATABASE_URL=… bun run --filter @freeanima/engine-db db:migrate`  | PG applies DDL; production may auto-migrate on `anima service` start |
 
-**禁止**：
+**Forbidden**:
 
-- **跳过 `generate`、仅手写 `migration.sql`**（缺 `snapshot.json` 会断 Drizzle snapshot 链，下次 `generate` 可能重复建表）
-- **已应用的 migration 目录内改 SQL / 删 snapshot**（须新 migration 修正）
+- **Skip `generate` and hand-write `migration.sql` only** (missing `snapshot.json` breaks Drizzle snapshot chain; next `generate` may recreate tables)
+- **Edit SQL / delete snapshot in already-applied migration dirs** (add a new migration to fix)
 
-**允许**：`generate` 之后，在当次 `migration.sql` 中**追加** Drizzle 表达不了的 SQL（如 `CREATE EXTENSION`、`message_fts_input()`、部分 GIN 表达式索引）；**勿**以此替代整个 generate 步骤。
+**Allowed**: after `generate`, **append** SQL Drizzle cannot express in that migration's `migration.sql` (e.g. `CREATE EXTENSION`, `message_fts_input()`, some GIN expression indexes); **do not** use this to replace the whole generate step.
 
-### 安全与连续性
+### Security and continuity
 
-- 凭证、密钥不写入 git / 日志 / 工具返回值
-- 记忆与自我层改动需格外谨慎（见 [`docs/concepts/identity.md`](docs/concepts/identity.md)）
-- 连续性高于功能堆砌；简单基建自写，复杂逻辑用成熟三方库
+- Credentials and secrets never in git / logs / tool return values
+- Memory and self-layer changes need extra care (see [`docs/concepts/identity.md`](docs/concepts/identity.md))
+- Continuity over feature pile-up; simple infra written in-house, complex logic via mature third-party libs
 
 ---
 
-## 常用命令
+## Common commands
 
 ```bash
-bun install && bun run check       # 推 PR 前：typecheck + lint + format + 测试
-bun run test:changed               # 本地 / pre-commit（仅单元 changed）
-bun run test:unit                  # 单元全量
-bun run test:integration           # 集成（tests/integration/）
-bun run test                       # 单元 + 集成 并行
-bun run service start --foreground # 前台阻塞（日志直出）
-bun run service start --dev        # WebUI 源码 watch 重建（非 HMR；改 frontend 后刷新页面）
-anima credential list              # 凭证路径；值在 pass
+bun install && bun run check # before PR: typecheck + lint + format + tests
+bun run test:changed # local / pre-commit (unit changed only)
+bun run test:unit # all unit tests
+bun run test:integration # integration (tests/integration/)
+bun run test # unit + integration in parallel
+bun run service start --foreground # foreground block (logs to stdout)
+bun run service start --dev # WebUI source watch rebuild (not HMR; refresh page after frontend edits)
+anima credential list # credential paths; values in pass
 
-# PG schema 变更（须 generate 产出 snapshot.json，见上文「PG Schema 迁移」）
+# PG schema changes (must generate snapshot.json; see "PG schema migrations" above)
 DATABASE_URL="…" bun run --filter @freeanima/engine-db db:generate
 DATABASE_URL="…" bun run --filter @freeanima/engine-db db:migrate
 ```
 
-- WebUI 会客厅：`http://127.0.0.1:2658/webui/parlor/chat`
-- 发版与 commit 规范：[`docs/guide/versioning.md`](docs/guide/versioning.md)
-- PG 迁移：[`docs/guide/database.md`](docs/guide/database.md)
+- WebUI parlor: `http://127.0.0.1:2658/webui/parlor/chat`
+- Release and commit conventions: [`docs/guide/versioning.md`](docs/guide/versioning.md)
+- PG migrations: [`docs/guide/database.md`](docs/guide/database.md)
 
 ---
 
-## 文档地图
+## Doc map
 
-| 文件                                                               | 职责                             |
-| ------------------------------------------------------------------ | -------------------------------- |
-| [`AGENTS.md`](AGENTS.md)                                           | 本文件：启动协议与硬性约束       |
-| [GitHub Issues](https://github.com/freeanima-org/freeanima/issues) | 可执行任务与讨论项               |
-| [`docs/concepts/architecture.md`](docs/concepts/architecture.md)   | 架构原则与方向                   |
-| [`docs/concepts/`](docs/concepts/)                                 | 核心概念（记忆、自我层等）       |
-| [`docs/guide/`](docs/guide/)                                       | 使用与维护（安全、数据库、发版） |
-| [`docs/features/`](docs/features/)                                 | 重要产品能力                     |
-| [`docs/tools/`](docs/tools/)                                       | 通用/次要内置工具                |
+| File                                                               | Role                                                |
+| ------------------------------------------------------------------ | --------------------------------------------------- |
+| [`AGENTS.md`](AGENTS.md)                                           | This file: bootstrap protocol and hard constraints  |
+| [GitHub Issues](https://github.com/freeanima-org/freeanima/issues) | Actionable tasks and discussions                    |
+| [`docs/concepts/architecture.md`](docs/concepts/architecture.md)   | Architecture principles and direction               |
+| [`docs/concepts/`](docs/concepts/)                                 | Core concepts (memory, self layer, etc.)            |
+| [`docs/guide/`](docs/guide/)                                       | Usage and maintenance (security, database, release) |
+| [`docs/features/`](docs/features/)                                 | Major product capabilities                          |
+| [`docs/tools/`](docs/tools/)                                       | General/minor built-in tools                        |
 
 ---
 
-## 冲突优先级
+## Conflict priority
 
-1. **代码实现** > 一切文档
-2. **`docs/concepts/architecture.md`** > 其他 `docs/**/*.md`
-3. **GitHub Issues** > architecture 方向规划
+1. **Code implementation** > all docs
+2. **`docs/concepts/architecture.md`** > other `docs/**/*.md`
+3. **GitHub Issues** > architecture direction planning
 
-## 改代码须同步的文档
+## Docs to update when code changes
 
-| 变更类型                   | 更新                                                                                         |
-| -------------------------- | -------------------------------------------------------------------------------------------- |
-| Slice A / PG schema        | [`docs/guide/database.md`](docs/guide/database.md)                                           |
-| 层依赖 / 组合根 / 类型归属 | 本文件（代码层与依赖、类型归属）+ [`docs/guide/database.md`](docs/guide/database.md) PG 包表 |
-| 记忆管道 / 检索            | [`docs/concepts/memory.md`](docs/concepts/memory.md) + architecture                          |
-| 安全 / 威胁面              | [`docs/guide/security.md`](docs/guide/security.md) + architecture                            |
-| 架构原则                   | [`docs/concepts/architecture.md`](docs/concepts/architecture.md)                             |
-| 新建 RFC 包 / rename       | 本文件命名表 + architecture 代码层章节                                                       |
-| 发版                       | [`docs/guide/versioning.md`](docs/guide/versioning.md)                                       |
-| 任务完成                   | close 对应 GitHub Issue；用户可见变更用 Conventional Commits                                 |
+| Change type                                    | Update                                                                                                               |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Slice A / PG schema                            | [`docs/guide/database.md`](docs/guide/database.md)                                                                   |
+| Layer deps / composition root / type ownership | This file (code layers & deps, type ownership) + [`docs/guide/database.md`](docs/guide/database.md) PG package table |
+| Memory pipeline / retrieval                    | [`docs/concepts/memory.md`](docs/concepts/memory.md) + architecture                                                  |
+| Security / threat surface                      | [`docs/guide/security.md`](docs/guide/security.md) + architecture                                                    |
+| Architecture principles                        | [`docs/concepts/architecture.md`](docs/concepts/architecture.md)                                                     |
+| New RFC package / rename                       | This file naming table + architecture code-layer section                                                             |
+| Release                                        | [`docs/guide/versioning.md`](docs/guide/versioning.md)                                                               |
+| Task done                                      | close corresponding GitHub Issue; user-visible changes use Conventional Commits                                      |
 
-工具表、模块树、API 列表**不维护在文档中**——以注册代码与服务 router 为准。
+Tool tables, module trees, API lists **are not maintained in docs** — use registration code and service router as source of truth.
 
-## 维护规约
+## Maintenance conventions
 
-- 原则变更先 [`docs/concepts/architecture.md`](docs/concepts/architecture.md)，再决定是否写专题 doc
-- 新专题 >50 行且长期有效才进 `docs/`；可执行任务与讨论项开 GitHub Issue
-- 任务完成 close 对应 Issue，不保留已完成项在文档中
-- **docs 目录约定**：部署/凭证/发版 → `docs/guide/`；机制原理 → `docs/concepts/`；重要产品能力 → `docs/features/`；通用工具 → `docs/tools/`；未实现想法 → Issue，不开 doc
+- Principle changes first in [`docs/concepts/architecture.md`](docs/concepts/architecture.md), then decide on a topic doc
+- New topic >50 lines and long-lived → `docs/`; actionable items → GitHub Issue
+- Close Issue when task done; do not keep completed items in docs
+- **docs layout**: deploy/credentials/release → `docs/guide/`; mechanisms → `docs/concepts/`; major product features → `docs/features/`; general tools → `docs/tools/`; unimplemented ideas → Issue, not doc
 
-## 各文件禁止写什么
+## What each file must not contain
 
-| 文件                          | 禁止                                                                            |
-| ----------------------------- | ------------------------------------------------------------------------------- |
-| AGENTS.md（本文件）           | 完整工具表、目录树、API 对照、SemVer 细则（**须**维护代码层与依赖、类型归属表） |
-| docs/concepts/architecture.md | 具体待办、会周变工具清单                                                        |
-| CHANGELOG.md                  | 手动增删版本节或条目（Release Please 自动维护，见上文「发版与 CHANGELOG」）     |
+| File                          | Forbidden                                                                                                                   |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| AGENTS.md (this file)         | Full tool table, directory tree, API cross-ref, SemVer details (**must** maintain code layers & deps, type ownership table) |
+| docs/concepts/architecture.md | Concrete todos, weekly-changing tool lists                                                                                  |
+| CHANGELOG.md                  | Manual add/remove of version sections or entries (Release Please maintains; see "Release and CHANGELOG" above)              |

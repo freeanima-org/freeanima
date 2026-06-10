@@ -2,7 +2,7 @@ import type { Mask, ResolvedMask } from "./types.ts";
 import { mergeMaskChain } from "./merge.ts";
 import type { ToolSetRegistry } from "@freeanima/engine-tool";
 
-/** 面具解析所需的 registry 窄接口（MaskRegistry 与 ServiceContext 端口均满足） */
+/** Narrow registry interface for mask resolution (satisfied by MaskRegistry and ServiceContext port) */
 export type MaskRegistryLookup = {
   get(name: string): Mask | undefined;
   list(): { name: string; mask: Mask }[];
@@ -48,7 +48,7 @@ function collectMaskAncestors(
   return chain;
 }
 
-/** 展开 inherits 链并合并为最终面具 */
+/** Expand inherits chain and merge into final mask */
 export function resolveMask(
   mask: Mask,
   registry: MaskRegistryLookup,
@@ -58,7 +58,7 @@ export function resolveMask(
   return mergeMaskChain(chain, toolSetRegistry);
 }
 
-/** 按注册名解析命名面具（含 inherits） */
+/** Resolve named mask by registry name (including inherits) */
 export function resolveMaskByName(
   name: string,
   registry: MaskRegistryLookup,
@@ -68,7 +68,7 @@ export function resolveMaskByName(
   return mergeMaskChain(chain, toolSetRegistry);
 }
 
-/** 合并多个 preset 解析结果 */
+/** Merge multiple preset resolution results */
 export function resolveMaskPresets(
   presetNames: readonly string[],
   registry: MaskRegistryLookup,

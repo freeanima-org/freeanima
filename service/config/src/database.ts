@@ -1,12 +1,12 @@
 import { loadConfig } from "./config.ts";
 import { resolveValue } from "./resolve.ts";
 
-/** 展开 database.url 中的 env/credential 引用 */
+/** Expand env/credential references in database.url */
 export async function resolveDatabaseUrl(raw: string): Promise<string> {
   return resolveValue(raw);
 }
 
-/** 从 config.yaml 读取 database.url；未配置时返回 null */
+/** Read database.url from config.yaml; null when not configured */
 export async function getConfiguredDatabaseUrl(): Promise<string | null> {
   const cfg = loadConfig();
   const db = cfg.database;

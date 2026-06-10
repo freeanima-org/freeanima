@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { SessionMessagePanel } from "@/components/chamber/SessionMessagePanel.tsx";
+import { m } from "@/lib/i18n.ts";
 import { useChamberSessionsStore } from "@/stores/chamber-sessions.ts";
 
 export const Route = createFileRoute("/chamber/sessions/$sessionId")({
@@ -38,9 +39,11 @@ function SessionDetailPage() {
     <div>
       <div className="flex flex-wrap items-center gap-2 mb-4">
         <Link to="/chamber/sessions" className="btn btn-ghost btn-xs">
-          ← 返回列表
+          {m.webui_chamber_sessions_back_list()}
         </Link>
-        <h2 className="text-lg font-bold flex-1 truncate">{session?.title || "（无标题）"}</h2>
+        <h2 className="text-lg font-bold flex-1 truncate">
+          {session?.title || m.webui_common_no_title()}
+        </h2>
       </div>
 
       <div className="flex flex-wrap items-center gap-2 mb-4 text-xs text-base-content/60">

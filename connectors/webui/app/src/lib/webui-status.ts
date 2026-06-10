@@ -13,7 +13,7 @@ export function acpStatusLabel(status: string): string {
   if (status === "starting") return m.webui_common_connecting();
   if (status === "error") return m.webui_common_error();
   if (status === "disabled") return m.webui_common_disabled();
-  return m.webui_common_not_configured();
+  return m.webui_common_not_connected();
 }
 
 export function dependencyStatusLabel(status: string): string {

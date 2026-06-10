@@ -10,12 +10,12 @@ const sampleRecord: LogRecord = {
 };
 
 describe("createNullSink", () => {
-  it("emit 不抛错、无副作用", () => {
+  it("emit does not throw and has no side effects", () => {
     const sink = createNullSink();
     expect(() => sink.emit(sampleRecord)).not.toThrow();
   });
 
-  it("多次 emit 仍安全", () => {
+  it("multiple emit calls remain safe", () => {
     const sink = createNullSink();
     sink.emit(sampleRecord);
     sink.emit({ ...sampleRecord, level: "error" });

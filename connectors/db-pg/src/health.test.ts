@@ -7,12 +7,12 @@ describe("pingDatabase", () => {
     resetDatabaseForTest();
   });
 
-  it("未配置 database.url 时返回 not_configured", async () => {
+  it("Returns not_configured when database.url not configured", async () => {
     resetDatabaseForTest();
     expect(await pingDatabase()).toEqual({ status: "not_configured" });
   });
 
-  it("SELECT 1 成功时返回 connected", async () => {
+  it("Returns connected on successful SELECT 1", async () => {
     initDatabase({ getDatabaseUrl: () => "postgresql://localhost/test" });
     setDbForTest({
       execute: async () => [{ "?column?": 1 }],
@@ -24,7 +24,7 @@ describe("pingDatabase", () => {
     }
   });
 
-  it("查询失败时返回 error", async () => {
+  it("Returns error on query failure", async () => {
     initDatabase({ getDatabaseUrl: () => "postgresql://localhost/test" });
     setDbForTest({
       execute: async () => {

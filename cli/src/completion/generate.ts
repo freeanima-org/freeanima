@@ -92,8 +92,8 @@ function generateBash(root: Command): string {
 
   const rootWords = [...tree.subcommands, ...tree.options].join(" ");
   const lines = [
-    "# anima bash completion — 自动生成，与 CLI 同步",
-    '# 安装: eval "$(anima completion bash)"',
+    "# anima bash completion — auto-generated, synced with CLI",
+    '# Install: eval "$(anima completion bash)"',
     "",
     "_anima() {",
     '    local first="${COMP_WORDS[1]}"',
@@ -126,7 +126,7 @@ function renderZshCase(node: CommandTree, depth: number): string[] {
     const all = [...node.subcommands, ...node.options].join(" ");
     lines.push(`${indent}if (( CURRENT == ${level} )); then`);
     if (all) {
-      lines.push(`${indent}    _values "命令" ${all}`);
+      lines.push(`${indent}    _values "command" ${all}`);
     } else {
       lines.push(`${indent}    return 0`);
     }
@@ -143,7 +143,7 @@ function renderZshCase(node: CommandTree, depth: number): string[] {
     if (childSubs) {
       lines.push(`${indent}    if (( CURRENT == ${childLevel} )); then`);
       const words = [childSubs, childOpts].filter(Boolean).join(" ");
-      lines.push(`${indent}        _values "操作" ${words}`);
+      lines.push(`${indent}        _values "action" ${words}`);
       lines.push(`${indent}        return 0`, `${indent}    fi`);
     }
     if (childOpts) {
@@ -162,8 +162,8 @@ function generateZsh(root: Command): string {
   const tree = commandTree(root);
   const lines = [
     "#compdef anima",
-    "# anima zsh completion — 自动生成，与 CLI 同步",
-    "# 安装: source <(anima completion zsh)",
+    "# anima zsh completion — auto-generated, synced with CLI",
+    "# Install: source <(anima completion zsh)",
     "",
     "_anima() {",
     ...renderZshCase(tree, 1),
@@ -178,5 +178,5 @@ function generateZsh(root: Command): string {
 export function generateCompletion(shell: string, program: Command): string {
   if (shell === "bash") return generateBash(program);
   if (shell === "zsh") return generateZsh(program);
-  throw new Error(`不支持的 shell: '${shell}'，可选: ${SUPPORTED_SHELLS.join(", ")}`);
+  throw new Error(`Unsupported shell: '${shell}', options: ${SUPPORTED_SHELLS.join(", ")}`);
 }

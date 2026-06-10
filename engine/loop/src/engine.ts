@@ -41,15 +41,15 @@ type EngineOpts = {
   max_turns?: number;
   model?: string;
   tools?: OpenAiToolSchema[];
-  /** 能力面罩允许的工具名（来自 ResolvedMask.allowed_tools）；未设置时不做兜底拦截 */
+  /** Tool names allowed by capability mask (ResolvedMask.allowed_tools); no fallback block when unset */
   toolMask?: { allowedTools: readonly string[] };
-  /** 允许执行的工具名（default + loaded_tools）；未设置时不做 loaded 门禁 */
+  /** Executable tool names (default + loaded_tools); no loaded gate when unset */
   executableTools?: readonly string[];
   hookRegistry?: HookRegistry;
   onMessageAppended?: (msg: SessionMessage) => void | Promise<void>;
   onToolRoundComplete?: (msgs: SessionMessage[]) => void | Promise<void>;
   signal?: AbortSignal;
-  /** 进程关停时返回 true，engine 在下一轮 LLM / 工具前中断 */
+  /** Returns true on process shutdown; engine interrupts before next LLM / tool round */
   shouldStop?: () => boolean;
 };
 
@@ -89,7 +89,7 @@ function checkAborted(signal?: AbortSignal): void {
 function checkShouldStop(opts?: Pick<EngineOpts, "signal" | "shouldStop">): void {
   checkAborted(opts?.signal);
   if (opts?.shouldStop?.()) {
-    throw new EngineTurnInterrupted("服务正在关停");
+    throw new EngineTurnInterrupted("Service is shutting down");
   }
 }
 
@@ -280,7 +280,7 @@ export async function* runStream(
 
   for (let turn = 0; turn < maxTurns; turn++) {
     checkShouldStop(opts);
-    // 运行 beforeLlmCall hook，允许模块（如冰箱贴）在 LLM 推理前修改消息
+    // Run beforeLlmCall hook; modules (e.g. fridge magnets) may modify messages before LLM inference
     if (opts?.hookRegistry) {
       await opts.hookRegistry.run(beforeLlmCall, {
         sessionId: getToolSessionId() ?? "",
@@ -313,7 +313,7 @@ export async function* runStream(
         yield { event: "done", data: { reason: "interrupted" } };
         return;
       }
-      const msg = `LLM 调用失败: ${e}`;
+      const msg = `LLM call failed: ${e}`;
       logComponent("engine").error(msg, { err: e });
       yield { event: "error", data: { error: msg } };
       return;
@@ -398,7 +398,7 @@ export async function* runStream(
         const tool = getToolRegistry().getTool(fnName);
         let result: string;
         if (opts?.toolMask && !opts.toolMask.allowedTools.includes(fnName)) {
-          result = toolError("工具被能力面罩限制");
+          result = toolError("Tool restricted by capability mask");
         } else {
           const ctxExec = isExecutableTool(fnName);
           const blockedByLoaded =
@@ -407,7 +407,7 @@ export async function* runStream(
               opts?.executableTools != null &&
               !opts.executableTools.includes(fnName));
           if (blockedByLoaded) {
-            result = toolError("工具未加载，请先 tools_load");
+            result = toolError("Tool not loaded; call tools_load first");
           } else if (!tool) {
             result = toolResult({ error: `Unknown tool: ${fnName}` });
           } else if (!argsResult.ok) {

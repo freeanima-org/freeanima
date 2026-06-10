@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { m } from "@/lib/i18n.ts";
 import { usePairProgrammingStore } from "@/stores/pair-programming.ts";
 import { TreeNode, type TreeNodeData } from "./TreeNode.tsx";
 
@@ -109,7 +110,7 @@ export function FileTreePanel() {
           ].join(" ")}
           onClick={() => setLeftTab("tree")}
         >
-          📁 目录树
+          {m.webui_studio_filetree_tab()}
         </button>
         <button
           type="button"
@@ -119,7 +120,7 @@ export function FileTreePanel() {
           ].join(" ")}
           onClick={() => setLeftTab("search")}
         >
-          🔍 搜索
+          {m.webui_studio_filetree_search_tab()}
         </button>
       </div>
 
@@ -131,7 +132,7 @@ export function FileTreePanel() {
               onChange={(e) => setFilterText(e.target.value)}
               type="search"
               className="input input-sm input-bordered w-full"
-              placeholder="过滤文件名…"
+              placeholder={m.webui_studio_filetree_filter_placeholder()}
               autoComplete="off"
             />
           </div>
@@ -154,7 +155,9 @@ export function FileTreePanel() {
               ))
             )}
             {!loading && filteredTree.length === 0 ? (
-              <div className="p-4 text-xs text-base-content/50">无匹配文件</div>
+              <div className="p-4 text-xs text-base-content/50">
+                {m.webui_studio_filetree_no_files()}
+              </div>
             ) : null}
           </div>
         </>
@@ -173,17 +176,17 @@ export function FileTreePanel() {
                 onChange={(e) => setGlobalQuery(e.target.value)}
                 type="search"
                 className="input input-sm input-bordered flex-1"
-                placeholder="搜索文件内容…"
+                placeholder={m.webui_studio_filetree_search_placeholder()}
               />
               <button type="submit" className="btn btn-sm btn-ghost" disabled={!globalQuery.trim()}>
-                搜
+                {m.webui_studio_filetree_search_btn()}
               </button>
             </form>
           </div>
           <div className="flex-1 overflow-y-auto min-h-0">
             {searchResults.length === 0 ? (
               <div className="p-4 text-xs text-base-content/50 text-center">
-                输入关键词搜索项目文件
+                {m.webui_studio_filetree_search_hint()}
               </div>
             ) : (
               searchResults.map((hit, i) => (

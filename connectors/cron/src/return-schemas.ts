@@ -64,15 +64,15 @@ export const CRON_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
       jobs: [
         {
           id: "job-001",
-          name: "每日摘要",
+          name: "Daily summary",
           schedule: "0 9 * * *",
           paused: false,
           run_count: 3,
           next_run: "06-11 09:00",
-          summary: "活跃 · 每日摘要 · 0 9 * * *",
+          summary: "active · Daily summary · 0 9 * * *",
         },
       ],
-      message: "共 1 个定时任务",
+      message: "1 scheduled job total",
     },
   }),
 };

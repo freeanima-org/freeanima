@@ -128,7 +128,7 @@ async function buildSystemView(cwd?: string | null): Promise<{
   return { parts, composed };
 }
 
-/** WebUI 系统提示词调试视图（只读） */
+/** WebUI system prompt debug view (read-only) */
 export async function getPromptDebug(sessionId?: string | null): Promise<PromptDebugResponse> {
   const id = sessionId?.trim() || null;
 

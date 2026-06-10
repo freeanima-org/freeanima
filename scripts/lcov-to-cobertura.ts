@@ -9,11 +9,11 @@ const lcovPath = join(repoRoot, "coverage", "lcov.info");
 const outPath = join(repoRoot, "coverage", "cobertura.xml");
 
 if (!existsSync(lcovPath)) {
-  console.error(`[coverage:cobertura] 缺少 ${lcovPath}，请先运行带 --coverage 的测试`);
+  console.error(`[coverage:cobertura] missing ${lcovPath}; run tests with --coverage first`);
   process.exit(1);
 }
 
 const lcov = readFileSync(lcovPath, "utf-8");
 const xml = new LcovCobertura(lcov).convert();
 writeFileSync(outPath, xml);
-console.log(`[coverage:cobertura] 已写入 ${outPath}`);
+console.log(`[coverage:cobertura] wrote ${outPath}`);

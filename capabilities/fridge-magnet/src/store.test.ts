@@ -10,14 +10,14 @@ import {
 } from "./store.ts";
 
 describe("magnetRedisKey", () => {
-  it("三段命名空间", () => {
+  it("three-part namespace", () => {
     expect(magnetRedisKey("session", "abc:r1a2")).toBe("fridge:session:abc:r1a2");
     expect(magnetRedisKey("tasks", "summary")).toBe("fridge:tasks:summary");
   });
 });
 
 describe("randomBase62", () => {
-  it("生成长度为 4 的 base62 字符串", () => {
+  it("generates 4-char base62 string", () => {
     const id = randomBase62(4);
     expect(id).toHaveLength(4);
     expect(id).toMatch(/^[0-9A-Za-z]{4}$/);
@@ -25,15 +25,15 @@ describe("randomBase62", () => {
 });
 
 describe("clampTtl", () => {
-  it("默认 86400，最小 1，最大 86400", () => {
+  it("default 86400, min 1, max 86400", () => {
     expect(clampTtl()).toBe(86400);
     expect(clampTtl(0)).toBe(1);
     expect(clampTtl(100_000)).toBe(86400);
   });
 });
 
-describe("Redis 未初始化时静默降级", () => {
-  it("setMagnet/getMagnet/deleteMagnet/scanMagnets 不抛错", async () => {
+describe("silent degradation when Redis is not initialized", () => {
+  it("setMagnet/getMagnet/deleteMagnet/scanMagnets do not throw", async () => {
     await expect(setMagnet("session", "x:y", "v")).resolves.toBeUndefined();
     await expect(getMagnet("session", "x:y")).resolves.toBeNull();
     await expect(deleteMagnet("session", "x:y")).resolves.toBeUndefined();

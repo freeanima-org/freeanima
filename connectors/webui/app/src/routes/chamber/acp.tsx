@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { getAcpStatus, startAllAcp, startAcp, stopAllAcp, stopAcp } from "@/lib/api.ts";
+import { m } from "@/lib/i18n.ts";
+import { acpStatusLabel } from "@/lib/webui-status.ts";
 
 const ACP_START_TIMEOUT_MS = 30_000;
 
@@ -35,14 +37,6 @@ type AcpStatus = {
   agents: AcpAgent[];
 };
 
-function statusLabel(s: string) {
-  if (s === "connected") return "已连接";
-  if (s === "starting") return "连接中";
-  if (s === "error") return "错误";
-  if (s === "disabled") return "已禁用";
-  return "未连接";
-}
-
 function statusBadgeClass(s: string) {
   if (s === "connected") return "badge-success";
   if (s === "starting") return "badge-warning";
@@ -57,7 +51,7 @@ function AcpPage() {
   const [status, setStatus] = useState<AcpStatus | null>(initial);
   const [bulkActing, setBulkActing] = useState(false);
   const [acting, setActing] = useState<Record<string, string>>({});
-  const [error, setError] = useState(initial ? "" : "加载失败");
+  const [error, setError] = useState(initial ? "" : m.webui_common_load_failed_short());
 
   const canStart = (agent: AcpAgent) =>
     agent.status !== "connected" && agent.status !== "starting" && agent.status !== "disabled";
@@ -71,16 +65,17 @@ function AcpPage() {
       const req = action === "start" ? startAcp(name) : stopAcp(name);
       const result =
         action === "start"
-          ? await withTimeout(
-              req,
-              ACP_START_TIMEOUT_MS,
-              "连接超时（30s），请检查 agent 是否已 login、command 路径是否正确",
-            )
+          ? await withTimeout(req, ACP_START_TIMEOUT_MS, m.webui_chamber_acp_start_timeout())
           : await req;
       setStatus(result as AcpStatus);
     } catch (e) {
       setError(
-        `${name} ${action === "start" ? "连接" : "断开"}失败: ${e instanceof Error ? e.message : String(e)}`,
+        m.webui_chamber_acp_action_failed({
+          name,
+          action:
+            action === "start" ? m.webui_chamber_acp_connect() : m.webui_chamber_acp_disconnect(),
+          detail: e instanceof Error ? e.message : String(e),
+        }),
       );
     } finally {
       setActing((a) => {
@@ -98,18 +93,18 @@ function AcpPage() {
       const req = action === "start-all" ? startAllAcp() : stopAllAcp();
       const result =
         action === "start-all"
-          ? await withTimeout(
-              req,
-              ACP_START_TIMEOUT_MS,
-              "全部连接超时（30s），请检查各 agent 配置与 login 状态",
-            )
+          ? await withTimeout(req, ACP_START_TIMEOUT_MS, m.webui_chamber_acp_start_all_timeout())
           : await req;
       setStatus(result as AcpStatus);
     } catch (e) {
       setError(
         action === "start-all"
-          ? `全部连接失败: ${e instanceof Error ? e.message : String(e)}`
-          : `全部断开失败: ${e instanceof Error ? e.message : String(e)}`,
+          ? m.webui_chamber_acp_start_all_failed({
+              detail: e instanceof Error ? e.message : String(e),
+            })
+          : m.webui_chamber_acp_stop_all_failed({
+              detail: e instanceof Error ? e.message : String(e),
+            }),
       );
     } finally {
       setBulkActing(false);
@@ -119,8 +114,10 @@ function AcpPage() {
   if (!status) {
     return (
       <div>
-        <h2 className="text-lg font-bold">🤝 ACP</h2>
-        <div className="alert alert-error text-sm mt-4">{error || "加载失败"}</div>
+        <h2 className="text-lg font-bold">{m.webui_chamber_nav_acp()}</h2>
+        <div className="alert alert-error text-sm mt-4">
+          {error || m.webui_common_load_failed_short()}
+        </div>
       </div>
     );
   }
@@ -129,10 +126,8 @@ function AcpPage() {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <div>
-          <h2 className="text-lg font-bold">🤝 ACP</h2>
-          <p className="text-sm text-base-content/60 mt-1">
-            Agent Client Protocol 代理：配置、连接状态与逸灵风侧活跃 session。
-          </p>
+          <h2 className="text-lg font-bold">{m.webui_chamber_nav_acp()}</h2>
+          <p className="text-sm text-base-content/60 mt-1">{m.webui_chamber_acp_desc()}</p>
         </div>
         {status.agents.length > 0 ? (
           <div className="flex gap-2">
@@ -142,7 +137,7 @@ function AcpPage() {
               disabled={bulkActing}
               onClick={() => void controlAll("start-all")}
             >
-              连接全部
+              {m.webui_chamber_acp_connect_all()}
             </button>
             <button
               type="button"
@@ -150,7 +145,7 @@ function AcpPage() {
               disabled={bulkActing}
               onClick={() => void controlAll("stop-all")}
             >
-              断开全部
+              {m.webui_chamber_acp_disconnect_all()}
             </button>
           </div>
         ) : null}
@@ -159,10 +154,10 @@ function AcpPage() {
       <div className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[
-            ["已配置", status.agent_count],
-            ["已连接", status.connected_count],
-            ["活跃 Session", status.session_count],
-            ["注册工具", status.tool_count],
+            [m.webui_chamber_acp_configured(), status.agent_count],
+            [m.webui_common_connected(), status.connected_count],
+            [m.webui_chamber_acp_active_sessions(), status.session_count],
+            [m.webui_chamber_acp_registered_tools(), status.tool_count],
           ].map(([label, value]) => (
             <div key={String(label)} className="card bg-base-200">
               <div className="card-body py-4">
@@ -180,7 +175,7 @@ function AcpPage() {
                 <div className="flex flex-wrap items-center gap-2">
                   <h3 className="font-mono font-bold">{agent.name}</h3>
                   <span className={`badge badge-sm ${statusBadgeClass(agent.status)}`}>
-                    {statusLabel(agent.status)}
+                    {acpStatusLabel(agent.status)}
                   </span>
                 </div>
                 <div className="flex gap-2">
@@ -191,7 +186,7 @@ function AcpPage() {
                       disabled={!!acting[agent.name] || bulkActing}
                       onClick={() => void controlAgent(agent.name, "start")}
                     >
-                      连接
+                      {m.webui_chamber_acp_connect()}
                     </button>
                   ) : null}
                   {canStop(agent) ? (
@@ -201,7 +196,7 @@ function AcpPage() {
                       disabled={!!acting[agent.name] || bulkActing}
                       onClick={() => void controlAgent(agent.name, "stop")}
                     >
-                      断开
+                      {m.webui_chamber_acp_disconnect()}
                     </button>
                   ) : null}
                 </div>
@@ -210,7 +205,9 @@ function AcpPage() {
                 <div className="alert alert-error text-xs py-2 mb-3">{agent.error}</div>
               ) : null}
               <details open>
-                <summary className="text-sm font-medium cursor-pointer mb-2">配置</summary>
+                <summary className="text-sm font-medium cursor-pointer mb-2">
+                  {m.webui_common_config()}
+                </summary>
                 <pre className="text-xs overflow-x-auto">
                   {JSON.stringify(agent.config, null, 2)}
                 </pre>
@@ -221,10 +218,10 @@ function AcpPage() {
       </div>
 
       <div className="alert alert-warning text-xs mt-6">
-        <p className="font-medium">说明</p>
+        <p className="font-medium">{m.webui_chamber_acp_notes_title()}</p>
         <ul className="list-disc list-inside mt-1 space-y-0.5 text-base-content/70">
-          <li>逸灵风启动时会自动连接 enabled !== false 的 agent（与 MCP 一致）。</li>
-          <li>「连接」仅完成 ACP initialize 握手，不创建 session。</li>
+          <li>{m.webui_chamber_acp_note_auto_connect()}</li>
+          <li>{m.webui_chamber_acp_note_handshake()}</li>
         </ul>
       </div>
 

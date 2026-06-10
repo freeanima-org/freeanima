@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { DisplayToolCall } from "@freeanima/connectors-webui/api";
+import { m } from "@/lib/i18n.ts";
 
 type ToolBlockBubbleProps = {
   calls: DisplayToolCall[];
@@ -28,7 +29,7 @@ function formatJson(obj: Record<string, unknown>) {
 
 function truncateResult(text: string, max = 8000) {
   if (text.length <= max) return text;
-  return `${text.slice(0, max)}\n…（已截断）`;
+  return `${text.slice(0, max)}\n${m.webui_chamber_message_truncated()}`;
 }
 
 export function ToolBlockBubble({ calls }: ToolBlockBubbleProps) {
@@ -43,7 +44,9 @@ export function ToolBlockBubble({ calls }: ToolBlockBubbleProps) {
       >
         <span className="shrink-0 mt-0.5 text-base-content/50">{expanded ? "▼" : "▶"}</span>
         <div className="flex-1 min-w-0 space-y-1">
-          <div className="font-medium text-base-content/70">工具调用 · {calls.length} 项</div>
+          <div className="font-medium text-base-content/70">
+            {m.webui_chamber_message_tool_calls({ count: String(calls.length) })}
+          </div>
           {calls.map((c, ci) => (
             <div
               key={c.tool_call_id || ci}
@@ -76,7 +79,9 @@ export function ToolBlockBubble({ calls }: ToolBlockBubbleProps) {
               </div>
               {c.args && Object.keys(c.args).length > 0 ? (
                 <div>
-                  <div className="text-base-content/50 mb-0.5">参数</div>
+                  <div className="text-base-content/50 mb-0.5">
+                    {m.webui_chamber_message_args()}
+                  </div>
                   <pre className="text-[11px] overflow-x-auto max-h-40 whitespace-pre-wrap break-all">
                     {formatJson(c.args)}
                   </pre>
@@ -84,13 +89,17 @@ export function ToolBlockBubble({ calls }: ToolBlockBubbleProps) {
               ) : null}
               {c.result ? (
                 <div>
-                  <div className="text-base-content/50 mb-0.5">结果</div>
+                  <div className="text-base-content/50 mb-0.5">
+                    {m.webui_chamber_message_result()}
+                  </div>
                   <pre className="text-[11px] overflow-x-auto max-h-60 whitespace-pre-wrap break-all">
                     {truncateResult(c.result)}
                   </pre>
                 </div>
               ) : c.status === "pending" ? (
-                <div className="text-base-content/40 italic">等待结果…</div>
+                <div className="text-base-content/40 italic">
+                  {m.webui_chamber_message_waiting_result()}
+                </div>
               ) : null}
             </div>
           ))}

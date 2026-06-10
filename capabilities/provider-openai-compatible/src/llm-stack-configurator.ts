@@ -7,7 +7,7 @@ import {
   parseOpenAiCompatibleProviderSpec,
 } from "./index.ts";
 
-/** 向 engine-llm 注册 OpenAI 兼容 provider/backend */
+/** Register OpenAI compatible provider/backend with engine-llm */
 export function wireOpenAiCompatibleLlm(
   cfg: AnimaConfig,
   backends: BackendRegistry,
@@ -21,7 +21,7 @@ export function wireOpenAiCompatibleLlm(
     if (record.backend === OPENAI_COMPATIBLE_BACKEND_ID) {
       providers.registerSpec(parseOpenAiCompatibleProviderSpec(id, record));
     } else {
-      throw new Error(`不支持的 llm.providers.${id}.backend: ${String(record.backend)}`);
+      throw new Error(`Unsupported llm.providers.${id}.backend: ${String(record.backend)}`);
     }
   }
 }

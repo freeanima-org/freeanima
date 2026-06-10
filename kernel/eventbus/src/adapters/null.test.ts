@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "bun:test";
 import { NullEventQueue } from "./null.ts";
 
 describe("NullEventQueue", () => {
-  it("enqueue / start / stop 均为 no-op", async () => {
+  it("enqueue / start / stop are no-op", async () => {
     const queue = new NullEventQueue();
     const process = vi.fn(async () => "ack" as const);
 
@@ -14,7 +14,7 @@ describe("NullEventQueue", () => {
     expect(process).not.toHaveBeenCalled();
   });
 
-  it("重复 start / stop 不抛错", () => {
+  it("repeated start / stop do not throw", () => {
     const queue = new NullEventQueue();
     queue.start(async () => "ack");
     queue.start(async () => "ack");

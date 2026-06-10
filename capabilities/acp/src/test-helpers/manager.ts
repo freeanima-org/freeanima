@@ -2,7 +2,7 @@ import { SkillRegistry } from "@freeanima/engine-skill";
 import { ToolSetRegistry } from "@freeanima/engine-tool";
 import { AcpManager } from "../manager.ts";
 
-/** 单测用：绑定独立 catalog 的 AcpManager */
+/** For unit tests: AcpManager with isolated catalog */
 export function createTestAcpManager(): {
   mgr: AcpManager;
   toolSets: ToolSetRegistry;

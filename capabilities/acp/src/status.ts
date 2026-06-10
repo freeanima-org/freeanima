@@ -57,7 +57,7 @@ export type AcpControlResult = {
   action?: "start" | "stop";
 };
 
-/** enabled 缺省或为 true 时视为启用 */
+/** treated as enabled when enabled is omitted or true */
 export function isAcpAgentEnabled(cfg: AcpAgentConfig): boolean {
   return isEnabledByDefault(cfg);
 }

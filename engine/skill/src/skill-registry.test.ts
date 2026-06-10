@@ -39,7 +39,7 @@ describe("SkillRegistry", () => {
     skills.unregister("demo-b");
   });
 
-  it("registerSkillsFromDirectory 扫描 md 文件", () => {
+  it("registerSkillsFromDirectory scans md files", () => {
     const dir = mkdtempSync(join(tmpdir(), "skill-dir-"));
     writeFileSync(
       join(dir, "scan-me.md"),
@@ -68,7 +68,7 @@ describe("user skills", () => {
   });
 
   it("create / list / load / delete", () => {
-    const created = JSON.parse(createUserSkill(skills, "demo", "测试技能", "做某事")) as {
+    const created = JSON.parse(createUserSkill(skills, "demo", "test skill", "do something")) as {
       ok: boolean;
       name: string;
     };
@@ -82,11 +82,11 @@ describe("user skills", () => {
     const listed = JSON.parse(listSkillsForTool(skills));
     expect(listed.skills.some((s: { name: string }) => s.name === "demo")).toBe(true);
 
-    const searched = JSON.parse(searchSkillsForTool(skills, "测试"));
+    const searched = JSON.parse(searchSkillsForTool(skills, "test"));
     expect(searched.total).toBeGreaterThan(0);
 
     const loaded = JSON.parse(loadSkillIntoContext(skills, "demo"));
-    expect(loaded.content).toContain("做某事");
+    expect(loaded.content).toContain("do something");
     expect(loaded.skill).toBe("demo");
 
     const deleted = JSON.parse(deleteUserSkill(skills, "demo")) as { ok: boolean; name: string };
@@ -95,7 +95,7 @@ describe("user skills", () => {
     expect(skills.list().some((s) => s.name === "demo")).toBe(false);
   });
 
-  it("不可删除内置技能", () => {
+  it("cannot delete built-in skill", () => {
     skills.register({
       name: "builtin-x",
       description: "built-in",
@@ -103,7 +103,7 @@ describe("user skills", () => {
       source: "acp",
     });
     const out = JSON.parse(deleteUserSkill(skills, "builtin-x")) as { error: string };
-    expect(out.error).toContain("内置技能");
+    expect(out.error).toContain("built-in skill");
     skills.unregister("builtin-x");
   });
 });

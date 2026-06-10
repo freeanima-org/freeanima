@@ -6,6 +6,15 @@ import {
   readEmail,
 } from "@freeanima/life-estate";
 
+function accountNotFound(id: string) {
+  return {
+    ok: false as const,
+    error: `Account not found: ${id}`,
+    code: "email_account_not_found" as const,
+    params: { account_id: id },
+  };
+}
+
 export async function getEmailOverview() {
   const accounts = listEmailAccounts();
   let messages: Awaited<ReturnType<typeof listEmails>> = [];
@@ -25,7 +34,7 @@ export async function getEmailOverview() {
 export async function fetchAccountEmails(id: string) {
   const account = listEmailAccounts().find((a: { id: string }) => a.id === id);
   if (!account) {
-    return { ok: false as const, error: `未找到账户: ${id}`, messages: [] };
+    return { ...accountNotFound(id), messages: [] };
   }
 
   try {
@@ -48,7 +57,7 @@ function findAccount(accountId: string) {
 export async function listAccountMessages(accountId: string, limit = 50) {
   const account = findAccount(accountId);
   if (!account) {
-    return { ok: false as const, error: `未找到账户: ${accountId}`, messages: [] };
+    return { ...accountNotFound(accountId), messages: [] };
   }
 
   try {
@@ -67,7 +76,7 @@ export async function listAccountMessages(accountId: string, limit = 50) {
 export async function getEmailMessage(accountId: string, uid: number) {
   const account = findAccount(accountId);
   if (!account) {
-    return { ok: false as const, error: `未找到账户: ${accountId}` };
+    return accountNotFound(accountId);
   }
 
   try {
@@ -84,7 +93,7 @@ export async function getEmailMessage(accountId: string, uid: number) {
 export async function markEmailRead(accountId: string, uid: number) {
   const account = findAccount(accountId);
   if (!account) {
-    return { ok: false as const, error: `未找到账户: ${accountId}` };
+    return accountNotFound(accountId);
   }
 
   try {

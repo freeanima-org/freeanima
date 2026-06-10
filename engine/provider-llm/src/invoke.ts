@@ -1,7 +1,7 @@
 import type { LlmTurnMessage, OpenAiToolSchema, ToolCall } from "./messages.ts";
 import type { LlmCallParams } from "./model.ts";
 
-/** Backend invoke 入参：model 由 Profile 绑定配置提供，不在此 DTO */
+/** Backend invoke input: model from Profile binding, not in this DTO */
 export type ChatRequest = {
   messages: LlmTurnMessage[];
   systemPrompt?: string;

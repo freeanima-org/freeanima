@@ -2,7 +2,7 @@ import type { LimbicKind } from "@freeanima/engine-db/schema";
 
 export type { LimbicKind };
 
-/** PG limbic_memory 行 */
+/** PG limbic_memory row */
 export type LimbicMemoryRow = {
   id: string;
   session_id: string;
@@ -36,7 +36,7 @@ export type LimbicListOpts = {
   kind?: LimbicKind;
 };
 
-/** 边缘系统记忆持久化端口 */
+/** Limbic memory persistence port */
 export interface LimbicMemoryStorePort {
   create(row: LimbicMemoryCreateInput): Promise<string>;
   get(id: string): Promise<LimbicMemoryRow | null>;

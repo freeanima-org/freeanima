@@ -7,6 +7,8 @@ import {
   listAccountMessages,
   markEmailRead,
 } from "@/lib/api.ts";
+import { m } from "@/lib/i18n.ts";
+import { translateApiPayload } from "@/lib/api-errors.ts";
 
 export const Route = createFileRoute("/chamber/email")({
   loader: () => getEmailOverview().catch(() => ({ accounts: [], messages: [], errors: {} })),
@@ -85,7 +87,11 @@ function EmailPage() {
       setAccounts(data.accounts ?? []);
       setErrors(data.errors ?? {});
     } catch (e) {
-      setError(`加载失败: ${e instanceof Error ? e.message : String(e)}`);
+      setError(
+        m.webui_common_load_failed({
+          detail: e instanceof Error ? e.message : String(e),
+        }),
+      );
     } finally {
       setLoading(false);
     }
@@ -101,7 +107,12 @@ function EmailPage() {
         messages?: EmailMessage[];
       };
       if (!data.ok) {
-        setErrors((prev) => ({ ...prev, [accountId]: data.error ?? "加载失败" }));
+        setErrors((prev) => ({
+          ...prev,
+          [accountId]: translateApiPayload(
+            data as { error?: string; code?: string; params?: Record<string, string> },
+          ),
+        }));
         setMessages([]);
         return;
       }
@@ -112,7 +123,11 @@ function EmailPage() {
       });
       setMessages(data.messages ?? []);
     } catch (e) {
-      setError(`邮件列表加载失败: ${e instanceof Error ? e.message : String(e)}`);
+      setError(
+        m.webui_chamber_email_list_load_failed({
+          detail: e instanceof Error ? e.message : String(e),
+        }),
+      );
       setMessages([]);
     } finally {
       setListLoading(false);
@@ -153,7 +168,12 @@ function EmailPage() {
         messages?: EmailMessage[];
       };
       if (!data.ok) {
-        setErrors((prev) => ({ ...prev, [activeAccountId]: data.error ?? "拉取失败" }));
+        setErrors((prev) => ({
+          ...prev,
+          [activeAccountId]: translateApiPayload(
+            data as { error?: string; code?: string; params?: Record<string, string> },
+          ),
+        }));
         return;
       }
       setErrors((prev) => {
@@ -162,12 +182,16 @@ function EmailPage() {
         return next;
       });
       setMessages(data.messages ?? []);
-      if (selectedUid !== null && !data.messages?.some((m) => m.uid === selectedUid)) {
+      if (selectedUid !== null && !data.messages?.some((msg) => msg.uid === selectedUid)) {
         setSelectedUid(null);
         setDetail(null);
       }
     } catch (e) {
-      setError(`拉取失败: ${e instanceof Error ? e.message : String(e)}`);
+      setError(
+        m.webui_chamber_email_fetch_failed({
+          detail: e instanceof Error ? e.message : String(e),
+        }),
+      );
     } finally {
       setFetching(false);
     }
@@ -185,7 +209,11 @@ function EmailPage() {
         message?: EmailMessage;
       };
       if (!data.ok || !data.message) {
-        setError(data.error ?? "读取邮件失败");
+        setError(
+          translateApiPayload(
+            data as { error?: string; code?: string; params?: Record<string, string> },
+          ),
+        );
         setDetail(null);
         return;
       }
@@ -193,11 +221,17 @@ function EmailPage() {
       if (msg.unread) {
         const readResult = (await markEmailRead(activeAccountId, msg.uid)) as { ok?: boolean };
         if (readResult.ok) {
-          setMessages((prev) => prev.map((m) => (m.uid === msg.uid ? { ...m, unread: false } : m)));
+          setMessages((prev) =>
+            prev.map((item) => (item.uid === msg.uid ? { ...item, unread: false } : item)),
+          );
         }
       }
     } catch (e) {
-      setError(`读取邮件失败: ${e instanceof Error ? e.message : String(e)}`);
+      setError(
+        m.webui_chamber_email_read_failed({
+          detail: e instanceof Error ? e.message : String(e),
+        }),
+      );
       setDetail(null);
     } finally {
       setDetailLoading(false);
@@ -210,17 +244,17 @@ function EmailPage() {
     <div className={isReader ? "h-full flex flex-col min-h-0 overflow-hidden" : undefined}>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4 shrink-0">
         <div>
-          <h2 className="text-lg font-bold">📧 邮件</h2>
+          <h2 className="text-lg font-bold">{m.webui_chamber_nav_email()}</h2>
           <p className="text-sm text-base-content/60 mt-1">
             {view === "picker"
-              ? "选择邮箱账户进入收件箱。账户管理、发信与删信请使用 Agent 工具。"
-              : "查看收件箱邮件。账户管理、发信与删信请使用 Agent 工具。"}
+              ? m.webui_chamber_email_desc_picker()
+              : m.webui_chamber_email_desc_reader()}
           </p>
         </div>
         <div className="flex gap-2">
           {view === "reader" ? (
             <button type="button" className="btn btn-sm btn-ghost" onClick={backToPicker}>
-              ← 返回账户
+              {m.webui_chamber_email_back_accounts()}
             </button>
           ) : null}
           <button
@@ -229,14 +263,14 @@ function EmailPage() {
             disabled={loading}
             onClick={() => void reload()}
           >
-            刷新
+            {m.webui_common_refresh()}
           </button>
         </div>
       </div>
 
       {errors._all ? (
         <div className="alert alert-warning text-sm mb-4 shrink-0">
-          邮件加载部分失败: {errors._all}
+          {m.webui_chamber_email_partial_load_failed({ detail: errors._all })}
         </div>
       ) : null}
 
@@ -245,9 +279,7 @@ function EmailPage() {
           <span className="loading loading-dots loading-md" />
         </div>
       ) : accounts.length === 0 ? (
-        <div className="alert alert-info text-sm">
-          暂无邮件账户。请用 register_email_account 工具注册。
-        </div>
+        <div className="alert alert-info text-sm">{m.webui_chamber_email_no_accounts()}</div>
       ) : view === "picker" ? (
         <div className="grid gap-4 sm:grid-cols-2">
           {accounts.map((account) => (
@@ -257,19 +289,25 @@ function EmailPage() {
                   <h3 className="font-bold">{accountLabel(account)}</h3>
                   <span className="badge badge-sm badge-ghost font-mono">{account.id}</span>
                   {account.default_sender ? (
-                    <span className="badge badge-sm badge-primary">默认发件</span>
+                    <span className="badge badge-sm badge-primary">
+                      {m.webui_chamber_email_default_sender()}
+                    </span>
                   ) : null}
                   {account.enabled === false ? (
-                    <span className="badge badge-sm badge-ghost">已禁用</span>
+                    <span className="badge badge-sm badge-ghost">{m.webui_common_disabled()}</span>
                   ) : (
-                    <span className="badge badge-sm badge-success">启用</span>
+                    <span className="badge badge-sm badge-success">
+                      {m.webui_chamber_email_enabled()}
+                    </span>
                   )}
                 </div>
 
                 <table className="table table-xs mb-3">
                   <tbody>
                     <tr>
-                      <td className="text-base-content/50 w-20">地址</td>
+                      <td className="text-base-content/50 w-20">
+                        {m.webui_chamber_email_address()}
+                      </td>
                       <td className="font-mono text-xs">{account.address}</td>
                     </tr>
                     <tr>
@@ -297,7 +335,7 @@ function EmailPage() {
                   disabled={account.enabled === false}
                   onClick={() => void enterReader(account)}
                 >
-                  进入邮箱
+                  {m.webui_chamber_email_enter_inbox()}
                 </button>
               </div>
             </div>
@@ -316,7 +354,7 @@ function EmailPage() {
                   onClick={() => void onFetch()}
                 >
                   {fetching ? <span className="loading loading-spinner loading-xs" /> : null}
-                  拉取
+                  {m.webui_chamber_email_fetch()}
                 </button>
               </div>
               {accounts.length > 1 ? (
@@ -344,7 +382,7 @@ function EmailPage() {
                 </div>
               ) : messages.length === 0 ? (
                 <p className="text-xs text-base-content/50 p-3">
-                  暂无邮件，点击「拉取」从服务器同步。
+                  {m.webui_chamber_email_no_messages()}
                 </p>
               ) : (
                 <div className="divide-y divide-base-300">
@@ -366,7 +404,9 @@ function EmailPage() {
                         )}
                         <div className="min-w-0 flex-1">
                           <div className="text-xs font-medium truncate">{msg.from}</div>
-                          <div className="text-sm truncate">{msg.subject || "(无主题)"}</div>
+                          <div className="text-sm truncate">
+                            {msg.subject || m.webui_chamber_email_no_subject()}
+                          </div>
                           <div className="text-xs text-base-content/50 mt-0.5">
                             {formatDate(msg.date)}
                           </div>
@@ -387,29 +427,31 @@ function EmailPage() {
             ) : detail ? (
               <>
                 <div className="shrink-0 p-4 border-b border-base-300">
-                  <h3 className="font-bold text-base">{detail.subject || "(无主题)"}</h3>
+                  <h3 className="font-bold text-base">
+                    {detail.subject || m.webui_chamber_email_no_subject()}
+                  </h3>
                   <div className="text-sm text-base-content/70 mt-2 space-y-1">
                     <div>
-                      <span className="text-base-content/50">发件人：</span>
+                      <span className="text-base-content/50">{m.webui_chamber_email_from()}</span>
                       {detail.from}
                     </div>
                     <div>
-                      <span className="text-base-content/50">收件人：</span>
+                      <span className="text-base-content/50">{m.webui_chamber_email_to()}</span>
                       {detail.to}
                     </div>
                     <div>
-                      <span className="text-base-content/50">时间：</span>
+                      <span className="text-base-content/50">{m.webui_chamber_email_date()}</span>
                       {formatDate(detail.date)}
                     </div>
                   </div>
                 </div>
                 <pre className="flex-1 min-h-0 overflow-y-auto p-4 text-sm whitespace-pre-wrap font-sans">
-                  {detail.body || detail.preview || "(无正文)"}
+                  {detail.body || detail.preview || m.webui_chamber_email_no_body()}
                 </pre>
               </>
             ) : (
               <div className="flex justify-center items-center flex-1 min-h-0 text-sm text-base-content/50">
-                选择左侧邮件查看正文
+                {m.webui_chamber_email_select_message()}
               </div>
             )}
           </div>

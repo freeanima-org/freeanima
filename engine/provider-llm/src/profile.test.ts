@@ -51,10 +51,10 @@ describe("profile helpers", () => {
     );
     expect(result.ok).toBe(false);
     expect(result.issues.map((i) => i.message)).toEqual([
-      "chain 不能为空",
-      "hop.provider 不能为空",
-      "hop.model 不能为空",
-      'provider "ghost" 未注册',
+      "chain cannot be empty",
+      "hop.provider cannot be empty",
+      "hop.model cannot be empty",
+      'provider "ghost" is not registered',
     ]);
   });
 
@@ -63,7 +63,7 @@ describe("profile helpers", () => {
     backends.register(new MockBackend());
     const providers = new ProviderRegistry(backends);
     expect(() => assertProfilesValid([{ id: "x", chain: [] }], providers)).toThrow(
-      "profile 配置无效: x[-1]: chain 不能为空",
+      "Invalid profile config: x[-1]: chain cannot be empty",
     );
   });
 });
@@ -88,16 +88,16 @@ describe("ProfileRegistry", () => {
           "chat",
           providers,
         ),
-    ).toThrow("重复的 profile id: chat");
+    ).toThrow("Duplicate profile id: chat");
 
     expect(
       () => new ProfileRegistry([profileDef("chat", [hop("main", "m")])], "missing", providers),
-    ).toThrow('default profile "missing" 未定义');
+    ).toThrow('default profile "missing" is not defined');
   });
 
   it("throws when resolving unknown profile", () => {
     const { profiles } = setupProfileStack();
-    expect(() => profiles.resolve("nope")).toThrow("未找到 profile: nope");
+    expect(() => profiles.resolve("nope")).toThrow("Profile not found: nope");
   });
 
   it("list returns all registered profiles", () => {
@@ -123,7 +123,7 @@ describe("LlmProfile", () => {
   it("provider getter throws before bind", () => {
     const { providers } = setupProfileStack();
     const unbound = new LlmProfile(profileDef("solo", [hop("main", "m")]), providers);
-    expect(() => unbound.provider).toThrow('profile "solo" 尚未 bind');
+    expect(() => unbound.provider).toThrow('profile "solo" is not bound yet');
   });
 
   it("chat delegates to backend and marks provider healthy", async () => {
@@ -186,6 +186,6 @@ describe("LlmProfile", () => {
     const providers = new ProviderRegistry(backends);
     providers.register(new LlmProvider("main", "mock", {}, backends.get("mock")));
     const profile = new LlmProfile({ id: "empty", chain: [] }, providers);
-    await expect(profile.bind()).rejects.toThrow('profile "empty" chain 不能为空');
+    await expect(profile.bind()).rejects.toThrow('profile "empty" chain cannot be empty');
   });
 });

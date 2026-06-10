@@ -56,7 +56,7 @@ export function readSkillFile(skills: SkillRegistry, name: string): string | nul
   }
 }
 
-/** 读取技能正文（去掉 frontmatter） */
+/** Read skill body (strip frontmatter) */
 export function readSkillBody(skills: SkillRegistry, name: string): string | null {
   const raw = readSkillFile(skills, name);
   if (raw == null) return null;

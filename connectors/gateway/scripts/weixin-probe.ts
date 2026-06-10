@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-/** 微信 iLink 探活：getupdates 一次，打印 ret / msgs 数量 / 首条摘要（需 pass services/weixin-ilink） */
+/** WeChat iLink probe: one getupdates, print ret / msg count / first summary (requires pass services/weixin-ilink) */
 import { existsSync, readFileSync } from "node:fs";
 
 import { PATHS } from "@freeanima/service-config";
@@ -13,7 +13,7 @@ import {
 
 const creds = loadWeixinCredentials();
 if (!creds) {
-  console.error("未找到微信凭证（pass services/weixin-ilink）");
+  console.error("WeChat credentials not found (pass services/weixin-ilink)");
   process.exit(1);
 }
 

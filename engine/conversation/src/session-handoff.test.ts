@@ -37,16 +37,16 @@ describe("generateSessionHandoffSummary", () => {
     generateSessionSummaryMock.mockResolvedValue({ ok: true, summary: "generated" });
   });
 
-  it("无对话内容时跳过", async () => {
+  it("skips when no conversation content", async () => {
     loadMock.mockResolvedValue([]);
     loadSessionMetaMock.mockResolvedValue(baseMeta);
 
     const result = await generateSessionHandoffSummary(nullPgRepositories, "sid");
-    expect(result).toEqual({ ok: false, error: "无对话内容" });
+    expect(result).toEqual({ ok: false, error: "No conversation content" });
     expect(generateSessionSummaryMock).not.toHaveBeenCalled();
   });
 
-  it("compression 摘要已覆盖全量历史时短路", async () => {
+  it("short-circuits when compression summary covers full history", async () => {
     loadMock.mockResolvedValue([
       { role: "user", content: "u", pos: 1 },
       { role: "assistant", content: "a", pos: 2 },
@@ -56,17 +56,17 @@ describe("generateSessionHandoffSummary", () => {
       compression: {
         l2: 2,
         l3: 2,
-        summary: "已有摘要",
+        summary: "Existing summary",
         summary_at: "2026-06-09T00:00:00+08:00",
       },
     });
 
     const result = await generateSessionHandoffSummary(nullPgRepositories, "sid");
-    expect(result).toEqual({ ok: true, summary: "已有摘要" });
+    expect(result).toEqual({ ok: true, summary: "Existing summary" });
     expect(generateSessionSummaryMock).not.toHaveBeenCalled();
   });
 
-  it("否则调用 generateSessionSummary 增量合并", async () => {
+  it("otherwise calls generateSessionSummary for incremental merge", async () => {
     loadMock.mockResolvedValue([
       { role: "user", content: "u1", pos: 1 },
       { role: "assistant", content: "a1", pos: 2 },
@@ -75,7 +75,12 @@ describe("generateSessionHandoffSummary", () => {
     ]);
     loadSessionMetaMock.mockResolvedValue({
       ...baseMeta,
-      compression: { l2: 2, l3: 2, summary: "部分摘要", summary_at: "2026-06-09T00:00:00+08:00" },
+      compression: {
+        l2: 2,
+        l3: 2,
+        summary: "Partial summary",
+        summary_at: "2026-06-09T00:00:00+08:00",
+      },
     });
 
     const result = await generateSessionHandoffSummary(nullPgRepositories, "sid");

@@ -1,4 +1,4 @@
 import { readAppVersion } from "./root-version.ts";
 
-/** 与根 package.json version 同步（发版时 bump 根目录即可） */
+/** Synced with root package.json version (bump root on release) */
 export const ANIMA_VERSION: string = readAppVersion();

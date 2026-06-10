@@ -3,7 +3,7 @@ import { createNullSink } from "@freeanima/kernel-logging/null";
 import { EventBus } from "./event-bus.ts";
 import { MemoryEventQueue } from "./adapters/memory.ts";
 
-/** 单元测默认 EventBus：NullSink + 内存队列 */
+/** Default unit-test EventBus: NullSink + memory queue */
 export function createTestEventBus(): EventBus {
   const logger = createLogger({ sinks: [createNullSink()] });
   return new EventBus(logger, new MemoryEventQueue());

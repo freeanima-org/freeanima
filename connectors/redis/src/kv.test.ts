@@ -8,7 +8,7 @@ describe("redis KV", () => {
     resetRedisForTest();
   });
 
-  it("未 initRedis 时静默降级", async () => {
+  it("Graceful degradation when initRedis not called", async () => {
     resetRedisForTest();
     await expect(redisSet("k", "v", 60)).resolves.toBeUndefined();
     await expect(redisGet("k")).resolves.toBeNull();
@@ -16,7 +16,7 @@ describe("redis KV", () => {
     await expect(redisScanEntries("fridge:*")).resolves.toEqual([]);
   });
 
-  it("setex/get/del/scan 走 Bun 客户端", async () => {
+  it("setex/get/del/scan via Bun client", async () => {
     const store = new Map<string, string>();
     initRedis({ getRedisUrl: () => "redis://127.0.0.1:6379" });
     setRedisForTest({

@@ -7,7 +7,7 @@ export function checkTool(
   if (resolved.allowed_tools.includes(toolName)) {
     return { ok: true };
   }
-  return { ok: false, reason: `工具 '${toolName}' 被能力面罩限制` };
+  return { ok: false, reason: `Tool '${toolName}' is restricted by capability mask` };
 }
 
 export function checkCredential(
@@ -18,7 +18,10 @@ export function checkCredential(
   const perm = resolved.credentials.find((c) => c.name === credName);
   if (!perm) return { ok: true };
   if (perm[mode] === "deny") {
-    return { ok: false, reason: `凭证 '${credName}' 的 ${mode} 被能力面罩限制` };
+    return {
+      ok: false,
+      reason: `Credential '${credName}' ${mode} is restricted by capability mask`,
+    };
   }
   return { ok: true };
 }

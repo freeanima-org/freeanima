@@ -52,7 +52,7 @@ export function initLlmRuntime(cfg: AnimaConfig): LlmRuntime {
 
 export function getLlmRuntime(): LlmRuntime {
   if (!runtime) {
-    throw new Error("LLM runtime 未初始化：请先调用 initLlmRuntime()");
+    throw new Error("LLM runtime not initialized: call initLlmRuntime() first");
   }
   return runtime;
 }

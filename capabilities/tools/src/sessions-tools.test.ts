@@ -95,7 +95,7 @@ function reposWithSession(session: SessionStorePort) {
 }
 
 describe("registerSessionTools", () => {
-  it("sessions_search 返回 FTS 命中", async () => {
+  it("sessions_search returns FTS hits", async () => {
     const toolSets = new ToolSetRegistry();
     registerSessionTools(toolSets);
     const def = toolSets.getTool("sessions_search");
@@ -132,7 +132,7 @@ describe("registerSessionTools", () => {
     );
   });
 
-  it("sessions_search 缺少 query 返回 error", async () => {
+  it("sessions_search returns error when query missing", async () => {
     const toolSets = new ToolSetRegistry();
     registerSessionTools(toolSets);
     const def = toolSets.getTool("sessions_search")!;
@@ -147,7 +147,7 @@ describe("registerSessionTools", () => {
     );
   });
 
-  it("sessions_scroll 按 offset 分页", async () => {
+  it("sessions_scroll paginates by offset", async () => {
     const toolSets = new ToolSetRegistry();
     registerSessionTools(toolSets);
     const def = toolSets.getTool("sessions_scroll")!;
@@ -191,7 +191,7 @@ describe("registerSessionTools", () => {
     );
   });
 
-  it("sessions_scroll 按 message_id 锚点", async () => {
+  it("sessions_scroll anchors by message_id", async () => {
     const toolSets = new ToolSetRegistry();
     registerSessionTools(toolSets);
     const def = toolSets.getTool("sessions_scroll")!;
@@ -234,7 +234,7 @@ describe("registerSessionTools", () => {
     );
   });
 
-  it("sessions_scroll session 不存在返回 error", async () => {
+  it("sessions_scroll returns error when session missing", async () => {
     const toolSets = new ToolSetRegistry();
     registerSessionTools(toolSets);
     const def = toolSets.getTool("sessions_scroll")!;

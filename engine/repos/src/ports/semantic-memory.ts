@@ -1,4 +1,4 @@
-/** PG semantic_memory 行（life-memory / recall / remember 消费） */
+/** PG semantic_memory row (consumed by life-memory / recall / remember) */
 export type SemanticMemoryRow = {
   id: string;
   type: string;
@@ -13,7 +13,7 @@ export type SemanticMemoryRow = {
   updated: string;
 };
 
-/** PG semantic_memory.content_fts 命中行 */
+/** PG semantic_memory.content_fts hit row */
 export type SemanticFtsHit = SemanticMemoryRow & {
   rank: number;
 };
@@ -31,7 +31,7 @@ export type SemanticMemoryCreateInput = {
   updated?: string;
 };
 
-/** 覆盖式更新：仅传入的字段会被修改；source_sessions 传 [] 可清空 */
+/** Overlay update: only passed fields change; source_sessions [] clears */
 export type SemanticMemoryUpdateInput = {
   id: string;
   content?: string;
@@ -52,7 +52,7 @@ export type SemanticMemorySearchOpts = {
   source_sessions?: string[];
 };
 
-/** 语义记忆持久化端口（Slice B — semantic_memory 表） */
+/** Semantic memory persistence port (Slice B — semantic_memory table) */
 export interface SemanticMemoryStorePort {
   create(row: SemanticMemoryCreateInput): Promise<string>;
   get(id: string): Promise<SemanticMemoryRow | null>;
@@ -68,7 +68,7 @@ export interface SemanticMemoryStorePort {
   ): Promise<SemanticMemoryRow[]>;
   searchFts(query: string, opts?: { limit?: number; types?: string[] }): Promise<SemanticFtsHit[]>;
   search(opts: SemanticMemorySearchOpts): Promise<SemanticFtsHit[]>;
-  /** 与 search 相同过滤（不含 limit/offset） */
+  /** Same filters as search (no limit/offset) */
   countSearch(opts: Omit<SemanticMemorySearchOpts, "limit" | "offset">): Promise<number>;
   findByContent(content: string): Promise<SemanticMemoryRow | null>;
 }

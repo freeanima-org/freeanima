@@ -12,7 +12,7 @@ export type SearchResult = {
 
 const DEFAULT_LIMIT = 10;
 
-/** PG ts_rank_cd（正值，越大越相关） */
+/** PG ts_rank_cd (positive; higher means more relevant) */
 function pgRankToScore(rank: number): number {
   return Math.min(1.0, Math.max(0.1, rank * 5.0));
 }

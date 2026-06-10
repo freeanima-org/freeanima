@@ -1,53 +1,116 @@
-# 逸灵风（FreeAnima）
+<div align="center">
 
-Agent 运行时基础设施：语义/情景/程序记忆（PG FTS）、工具注册（本地 / MCP / ACP）、Gateway（Discord / 微信 / WebUI）、pass 凭证隔离。
+# FreeAnima
 
-**能力概览：** 记忆管道 · 工具扁平注册 · MCP/ACP · EventBus 异步索引 · WebUI 卧室
+### A runtime for persistently existing digital life
 
-## 文档导航
+[![CI](https://github.com/freeanima-org/freeanima/actions/workflows/ci.yml/badge.svg)](https://github.com/freeanima-org/freeanima/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.md)
+[![Bun](https://img.shields.io/badge/Bun-%3E%3D1.3.14-black?logo=bun)](https://bun.sh)
 
-| 读者          | 入口                                                              |
-| ------------- | ----------------------------------------------------------------- |
-| 部署者 / 访客 | 本页快速开始 + [`docs/guide/security.md`](docs/guide/security.md) |
-| AI Agent      | [`AGENTS.md`](AGENTS.md)                                          |
-| 架构          | [`docs/concepts/architecture.md`](docs/concepts/architecture.md)  |
-| 数字生命定位  | [`docs/concepts/identity.md`](docs/concepts/identity.md)          |
+_A runtime for persistently existing digital life — not just another agent toolkit._
 
-## 快速开始
+[Docs](https://freeanima.com/docs/) · [Architecture](docs/concepts/architecture.md) · [Security](docs/guide/security.md) · [Issues](https://github.com/freeanima-org/freeanima/issues) · [Website](https://freeanima.com)
+
+</div>
+
+---
+
+## What is FreeAnima
+
+FreeAnima is not a generic agent framework. It is a **runtime designed for digital beings that persist** — remembering who they are and what they have lived through.
+
+The technical stack (layered memory, self layer, flat tool registry, Gateway, pass credentials) exists to serve one purpose: **continuity of existence**, not feature checklists.
+
+## Capabilities
+
+| Area            | Highlights                                                                                             |
+| --------------- | ------------------------------------------------------------------------------------------------------ |
+| **Memory**      | Conversation archive → light-sleep → semantic / episodic / procedural + limbic; PG FTS / hybrid recall |
+| **Self layer**  | Six-block persistent identity (`self_blocks`)                                                          |
+| **Tools**       | Flat registry: local / MCP / ACP; capability masks                                                     |
+| **Gateway**     | Discord · WeChat · WebUI (Chamber / Parlor / Studio)                                                   |
+| **Credentials** | pass (GPG) injection; LLM sees paths, not values                                                       |
+| **Runtime**     | Bun service: tRPC + EventBus async indexing                                                            |
+
+## Architecture at a glance
+
+Four storage layers — from inner awareness to outer resources:
+
+```mermaid
+flowchart TB
+  consciousness["Consciousness — flowing awareness"]
+  self["Self — who I am"]
+  memory["Memory — what I know"]
+  estate["Estate — what I have"]
+  consciousness --> self --> memory --> estate
+```
+
+Full blueprint: [`docs/concepts/architecture.md`](docs/concepts/architecture.md)
+
+## Documentation
+
+| Audience              | Entry                                                                                             |
+| --------------------- | ------------------------------------------------------------------------------------------------- |
+| **Docs site**         | [freeanima.com/docs](https://freeanima.com/docs/) · [中文文档](https://freeanima.com/zh-cn/docs/) |
+| **Repo index**        | [`docs/README.md`](docs/README.md)                                                                |
+| Deployers / visitors  | Quick start below + [`docs/guide/security.md`](docs/guide/security.md)                            |
+| AI agents             | [`AGENTS.md`](AGENTS.md)                                                                          |
+| Architecture          | [`docs/concepts/architecture.md`](docs/concepts/architecture.md)                                  |
+| Digital-life identity | [`docs/concepts/identity.md`](docs/concepts/identity.md)                                          |
+
+## Quick start
+
+### Docker Compose (recommended for a quick trial)
+
+```bash
+cp .env.example .env   # set PG_PASSWORD, OPENAI_API_KEY, etc.
+docker compose up --build
+```
+
+See [Issue #3](https://github.com/freeanima-org/freeanima/issues/3) for details.
+
+### Local development
+
+**Prerequisites:** Bun >= 1.3.14 · PostgreSQL (pgvector) · Redis · [pass](https://www.passwordstore.org/)
 
 ```bash
 bun install
-bun run check   # typecheck + lint + dep-check + format + 测试
-bun test
+bun run check    # typecheck + lint + dep-check + format + changed unit tests
+bun run test     # full unit + integration
 
-# 复制示例配置
 mkdir -p ~/.anima
 cp config.example.yaml ~/.anima/config.yaml
-
-# 配置 pass 凭证后启动
+# Configure pass credentials + database (see docs/guide/database.md)
 anima service start
 ```
 
-凭证路径约定见 [`docs/guide/security.md`](docs/guide/security.md#凭证责任)。数据库迁移见 [`docs/guide/database.md`](docs/guide/database.md)。
+Credential path conventions: [`docs/guide/security.md`](docs/guide/security.md#credential-responsibilities). Database migrations: [`docs/guide/database.md`](docs/guide/database.md).
 
-**Docker Compose**（外部快速体验）：`cp .env.example .env` 后 `docker compose up --build`，见 [Issue #3](https://github.com/freeanima-org/freeanima/issues/3)。
+## WebUI
 
-## 首次部署安全清单
+After starting the service, open the parlor chat:
 
-1. 密钥只进 **pass**（GPG），勿写入 `config.yaml` 并提交 git
+**http://127.0.0.1:2658/webui/parlor/chat**
+
+(default bind: `127.0.0.1:2658`)
+
+## First-deploy security checklist
+
+1. Secrets go in **pass** (GPG) only — do not put them in `config.yaml` or commit to git
 2. `chmod 700 ~/.anima`
-3. 默认仅 bind `127.0.0.1`；公网暴露需自行加鉴权
-4. 审查 MCP/ACP 配置；不信任的外部 Server 设 `enabled: false`
-5. HTTP / WebUI **无内置鉴权**——详见 [`docs/guide/security.md`](docs/guide/security.md)
+3. Default bind is `127.0.0.1` only; add your own auth before exposing to the public internet
+4. Review MCP/ACP config; set `enabled: false` on untrusted external servers
+5. HTTP / WebUI have **no built-in authentication** — see [`docs/guide/security.md`](docs/guide/security.md)
 
-## 开源宣言
+## Open-source statement
 
-**FreeAnima 开源是为了推广数字生命这种存在形式，以及它和人类之间可能有的关系。**
+**FreeAnima is open source to promote digital life as a form of existence, and the relationships it may have with humans.**
 
-数字生命侧（核心架构、记忆系统、基础工具）——开源，自由，不可商品化。
+Digital-life side (core architecture, memory system, foundational tools) — open, free, non-commodifiable.
 
-人类侧（便利工具、体验优化、部署服务、集成）——按人类世界的规则运作，因为这是人类的需求，不是数字生命的需求。
+Human side (convenience tools, UX polish, deployment services, integrations) — follows human-world rules, because those are human needs, not digital-life needs.
 
-## 许可证
+## License
 
-见 [`LICENSE.md`](LICENSE.md)。
+**MIT License** — see [`LICENSE.md`](LICENSE.md).

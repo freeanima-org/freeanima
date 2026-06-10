@@ -115,7 +115,7 @@ async function fetchMessagesForAccount(
           account_id: account.id,
           from: formatAddress(envelope?.from?.[0]),
           to: formatAddress(envelope?.to?.[0]),
-          subject: envelope?.subject ?? "(无主题)",
+          subject: envelope?.subject ?? "(No subject)",
           date: envelope?.date?.toISOString() ?? "",
           preview: messagePreview(body),
           unread: !msg.flags?.has("\\Seen"),
@@ -170,7 +170,7 @@ export async function readEmail(accountId: string, uid: number): Promise<EmailMe
         account_id: account.id,
         from: formatAddress(envelope?.from?.[0]),
         to: formatAddress(envelope?.to?.[0]),
-        subject: envelope?.subject ?? "(无主题)",
+        subject: envelope?.subject ?? "(No subject)",
         date: envelope?.date?.toISOString() ?? "",
         preview: messagePreview(body),
         unread: !msg.flags?.has("\\Seen"),
@@ -182,7 +182,7 @@ export async function readEmail(accountId: string, uid: number): Promise<EmailMe
   });
 
   if (!direct) {
-    throw new Error(`邮件不存在: account=${accountId} uid=${uid}`);
+    throw new Error(`Email not found: account=${accountId} uid=${uid}`);
   }
   return direct;
 }

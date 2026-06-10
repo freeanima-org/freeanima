@@ -6,9 +6,9 @@ import { handleSessionTodo } from "@freeanima/engine-conversation/session-todos"
 
 async function handleTodo(args: Record<string, unknown>): Promise<string> {
   const sessionId = getToolSessionId();
-  if (!sessionId) return toolError("无 session 上下文");
+  if (!sessionId) return toolError("No session context");
   const repos = getToolRepos();
-  if (!repos) return toolError("无 repos 上下文");
+  if (!repos) return toolError("No repos context");
 
   const action = String(args.action ?? "list");
   const content = args.content != null ? String(args.content) : undefined;
@@ -21,13 +21,13 @@ async function handleTodo(args: Record<string, unknown>): Promise<string> {
 export function registerTodoTool(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
     "todo",
-    "当前会话待办清单",
+    "Current session todo list",
     attachToolReturns(
       [
         {
           name: "todo",
           description:
-            "管理当前对话 session 的待办清单（与其他 session 隔离）。支持 list/add/update/delete",
+            "Manage the todo list for the current conversation session (isolated from other sessions). Supports list/add/update/delete",
           parameters: {
             type: "object",
             properties: {
@@ -35,14 +35,14 @@ export function registerTodoTool(toolSets: ToolSetRegistry): void {
                 type: "string",
                 enum: ["list", "add", "update", "delete"],
                 description:
-                  "list — 列出；add — 添加（需 content）；update — 更新状态（需 id+status）；delete — 删除（需 id）",
+                  "list — list; add — add (requires content); update — update status (requires id+status); delete — delete (requires id)",
               },
-              content: { type: "string", description: "待办内容（add 必需）" },
-              id: { type: "integer", description: "待办 ID（update/delete 必需）" },
+              content: { type: "string", description: "Todo content (required for add)" },
+              id: { type: "integer", description: "Todo ID (required for update/delete)" },
               status: {
                 type: "string",
                 enum: ["pending", "in_progress", "completed", "cancelled"],
-                description: "新状态（update 必需）",
+                description: "New status (required for update)",
               },
             },
             required: ["action"],

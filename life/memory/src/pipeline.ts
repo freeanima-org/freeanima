@@ -16,7 +16,7 @@ export type MemoryPipelineStores = {
   limbicStore: LimbicMemoryStorePort;
 };
 
-/** 注册记忆管道依赖（session / semantic / autobiographical / limbic store） */
+/** Register memory pipeline dependencies (session / semantic / autobiographical / limbic stores) */
 export function registerMemoryPipeline(stores: MemoryPipelineStores): void {
   registerMemorySessionStore(stores.sessionStore);
   registerSemanticMemoryStore(stores.semanticStore);

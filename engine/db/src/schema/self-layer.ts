@@ -12,7 +12,7 @@ export const selfBlockKeySchema = z.enum([
 
 export type SelfBlockKey = z.infer<typeof selfBlockKeySchema>;
 
-/** 自我层六块（每 block_key 一行） */
+/** Self-layer six blocks (one row per block_key) */
 export const selfBlocks = pgTable("self_blocks", {
   blockKey: text("block_key").primaryKey(),
   content: text("content").notNull().default(""),

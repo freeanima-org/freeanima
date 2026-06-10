@@ -3,7 +3,7 @@ import { collectStreamReply } from "./collect-stream-reply.ts";
 import type { StreamEvent } from "./engine.ts";
 
 describe("collectStreamReply", () => {
-  it("拼接 token 并在 content_replace 时替换全文", async () => {
+  it("concatenates tokens and replaces full text on content_replace", async () => {
     async function* gen(): AsyncGenerator<StreamEvent> {
       yield { event: "token", data: { content: "hello" } };
       yield { event: "content_replace", data: { content: "final" } };
@@ -12,7 +12,7 @@ describe("collectStreamReply", () => {
     await expect(collectStreamReply(gen())).resolves.toBe("final");
   });
 
-  it("error 事件抛出", async () => {
+  it("throws on error event", async () => {
     async function* gen(): AsyncGenerator<StreamEvent> {
       yield { event: "error", data: { error: "boom" } };
     }

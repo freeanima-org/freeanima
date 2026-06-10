@@ -24,17 +24,17 @@ function sessionKey(): string {
 export function registerBrowserTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
     "browser",
-    "浏览器自动化",
+    "Browser automation",
     attachToolReturns(
       [
         {
           name: "browser_navigate",
           description:
-            "在浏览器中打开 URL。需先调用本工具再使用其他 browser_* 工具。纯文本/API 页面优先 web_extract 或 terminal curl；需要交互（点击、填表、动态内容）时用浏览器。返回紧凑 snapshot 与元素 ref，通常无需再单独 browser_snapshot。",
+            "Open a URL in the browser. Call this tool first before using other browser_* tools. For plain text/API pages prefer web_extract or terminal curl; use the browser when interaction is needed (clicks, forms, dynamic content). Returns a compact snapshot with element refs; usually no separate browser_snapshot is needed.",
           parameters: {
             type: "object",
             properties: {
-              url: { type: "string", description: "目标 URL，如 https://example.com" },
+              url: { type: "string", description: "Target URL, e.g. https://example.com" },
             },
             required: ["url"],
           },
@@ -43,7 +43,7 @@ export function registerBrowserTools(toolSets: ToolSetRegistry): void {
             if (!url) return toolError("url is required");
             if (!isCamofoxConfigured()) {
               return toolError(
-                "未配置 Camofox。请在 ~/.anima/config.yaml 设置 browser.camofox.base_url。",
+                "Camofox not configured. Set browser.camofox.base_url in ~/.anima/config.yaml.",
               );
             }
             return camofoxNavigate(sessionKey(), url);
@@ -52,13 +52,13 @@ export function registerBrowserTools(toolSets: ToolSetRegistry): void {
         {
           name: "browser_snapshot",
           description:
-            "获取当前页面的 accessibility tree 文本快照，含可交互元素 ref（如 @e1）。full=false 为紧凑视图；full=true 为完整内容。超过约 8000 字符会截断。browser_navigate 已含紧凑 snapshot，交互导致页面变化后可调用本工具刷新。",
+            "Get an accessibility tree text snapshot of the current page with interactive element refs (e.g. @e1). full=false is compact view; full=true is full content. Truncated at ~8000 chars. browser_navigate already includes a compact snapshot; call this after interactions change the page.",
           parameters: {
             type: "object",
             properties: {
               full: {
                 type: "boolean",
-                description: "true=完整页面；false=紧凑可交互元素视图",
+                description: "true=full page; false=compact interactive elements view",
                 default: false,
               },
             },
@@ -68,11 +68,12 @@ export function registerBrowserTools(toolSets: ToolSetRegistry): void {
         },
         {
           name: "browser_click",
-          description: "点击 snapshot 中 ref 标识的元素（如 @e5）。需先 browser_navigate。",
+          description:
+            "Click the element identified by ref in the snapshot (e.g. @e5). Requires browser_navigate first.",
           parameters: {
             type: "object",
             properties: {
-              ref: { type: "string", description: "snapshot 中的元素 ref，如 @e5" },
+              ref: { type: "string", description: "Element ref from snapshot, e.g. @e5" },
             },
             required: ["ref"],
           },
@@ -84,12 +85,13 @@ export function registerBrowserTools(toolSets: ToolSetRegistry): void {
         },
         {
           name: "browser_type",
-          description: "向 ref 对应输入框输入文本（先清空再输入）。需先 browser_navigate。",
+          description:
+            "Type text into the input identified by ref (clears first). Requires browser_navigate first.",
           parameters: {
             type: "object",
             properties: {
-              ref: { type: "string", description: "输入框 ref，如 @e3" },
-              text: { type: "string", description: "要输入的文本" },
+              ref: { type: "string", description: "Input ref, e.g. @e3" },
+              text: { type: "string", description: "Text to type" },
             },
             required: ["ref", "text"],
           },
@@ -101,11 +103,11 @@ export function registerBrowserTools(toolSets: ToolSetRegistry): void {
         },
         {
           name: "browser_scroll",
-          description: "滚动页面（up/down）。需先 browser_navigate。",
+          description: "Scroll the page (up/down). Requires browser_navigate first.",
           parameters: {
             type: "object",
             properties: {
-              direction: { type: "string", enum: ["up", "down"], description: "滚动方向" },
+              direction: { type: "string", enum: ["up", "down"], description: "Scroll direction" },
             },
             required: ["direction"],
           },
@@ -113,17 +115,18 @@ export function registerBrowserTools(toolSets: ToolSetRegistry): void {
         },
         {
           name: "browser_back",
-          description: "浏览器后退。需先 browser_navigate。",
+          description: "Browser back navigation. Requires browser_navigate first.",
           parameters: { type: "object", properties: {}, required: [] },
           handler: () => camofoxBack(sessionKey()),
         },
         {
           name: "browser_press",
-          description: "按下键盘键（Enter、Tab、Escape 等）。需先 browser_navigate。",
+          description:
+            "Press a keyboard key (Enter, Tab, Escape, etc.). Requires browser_navigate first.",
           parameters: {
             type: "object",
             properties: {
-              key: { type: "string", description: "键名，如 Enter、Tab" },
+              key: { type: "string", description: "Key name, e.g. Enter, Tab" },
             },
             required: ["key"],
           },
@@ -136,11 +139,11 @@ export function registerBrowserTools(toolSets: ToolSetRegistry): void {
         {
           name: "browser_console",
           description:
-            "读取浏览器 console 与 JS 错误。Camofox 后端仅返回空结果与说明；可用 browser_snapshot 检查页面。",
+            "Read browser console and JS errors. Camofox backend returns empty results with a note; use browser_snapshot to inspect the page.",
           parameters: {
             type: "object",
             properties: {
-              clear: { type: "boolean", default: false, description: "读取后是否清空缓冲" },
+              clear: { type: "boolean", default: false, description: "Clear buffer after reading" },
             },
             required: [],
           },
@@ -148,25 +151,26 @@ export function registerBrowserTools(toolSets: ToolSetRegistry): void {
         },
         {
           name: "browser_get_images",
-          description: "列出当前页面图片 URL 与 alt 文本。需先 browser_navigate。",
+          description:
+            "List image URLs and alt text on the current page. Requires browser_navigate first.",
           parameters: { type: "object", properties: {}, required: [] },
           handler: () => camofoxGetImages(sessionKey()),
         },
         {
           name: "browser_vision",
           description:
-            "截取当前页面 PNG 并保存到 ~/.anima/browser_screenshots/。annotate=true 时附加 accessibility tree 摘要。视觉 LLM 分析暂未接入，返回 screenshot_path。",
+            "Capture current page as PNG and save to ~/.anima/browser_screenshots/. When annotate=true, attach accessibility tree summary. Vision LLM analysis not yet integrated; returns screenshot_path.",
           parameters: {
             type: "object",
             properties: {
               question: {
                 type: "string",
-                description: "希望从截图中了解的内容（供后续 vision 接入）",
+                description: "What to learn from the screenshot (for future vision integration)",
               },
               annotate: {
                 type: "boolean",
                 default: false,
-                description: "是否附加 snapshot 摘要作为标注上下文",
+                description: "Attach snapshot summary as annotation context",
               },
             },
             required: ["question"],

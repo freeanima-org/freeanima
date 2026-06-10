@@ -20,7 +20,7 @@ async function getJieba(): Promise<Jieba | null> {
     try {
       jieba.loadDict(readFileSync(dictPath));
     } catch {
-      /* 用户词典可选 */
+      /* user dictionary optional */
     }
     jiebaInstance = jieba;
     return jieba;
@@ -30,13 +30,13 @@ async function getJieba(): Promise<Jieba | null> {
   }
 }
 
-/** 重置 jieba 单例（测试 teardown） */
+/** Reset jieba singleton (test teardown) */
 export function resetJiebaForTest(): void {
   jiebaInstance = null;
   jiebaLoadFailed = false;
 }
 
-/** CJK 段 jieba 分词 + 非 CJK 原样，输出 FTS 输入串 */
+/** CJK segments via jieba + non-CJK as-is, output FTS input string */
 export async function segmentForFts(text: string): Promise<string> {
   const trimmed = text.trim();
   if (!trimmed) return "";

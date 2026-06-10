@@ -241,7 +241,7 @@ async function rebuildMessagesEmbeddings(opts: FtsRebuildOptions): Promise<numbe
   return updated;
 }
 
-/** 按当前 cjk.enabled 全量刷新 fts_segmented，并按 embedding 配置刷新向量 */
+/** Full refresh fts_segmented per cjk.enabled and vectors per embedding config */
 export async function rebuildAllFtsSegments(
   opts: FtsRebuildOptions = {},
 ): Promise<FtsRebuildResult> {

@@ -1,9 +1,9 @@
 #!/usr/bin/env bun
 /**
- * 统一 po4a 流程：docs + Paraglide UI messages。
- * 1. 生成 po4a.cfg / messages/po4a/en.xml
- * 2. po4a 更新 POT/PO 并写出译文
- * 3. 编译 messages/zh-cn.json（Paraglide 消费）
+ * Unified po4a pipeline: docs + Paraglide UI messages.
+ * 1. Generate po4a.cfg / messages/po4a/en.xml
+ * 2. Run po4a to update POT/PO and write translations
+ * 3. Compile messages/zh-cn.json (consumed by Paraglide)
  */
 import { spawnSync } from "node:child_process";
 import { join } from "node:path";

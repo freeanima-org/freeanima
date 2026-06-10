@@ -16,7 +16,7 @@ export const SELF_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
       blocks: [
         {
           block_key: "self_model",
-          content: "## 自我模型\n\n我是逸灵风。",
+          content: "## Self model\n\nI am FreeAnima.",
           locked: false,
           updated_at: "2026-06-10T10:00:00+08:00",
           updated_by: "tool",

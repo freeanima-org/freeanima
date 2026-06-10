@@ -2,7 +2,7 @@ import { sql as drizzleSql } from "drizzle-orm";
 
 import type { Db } from "../client.ts";
 
-/** 确认 messages：PK=id(TEXT)、pos 列、payload JSONB、(session_id, pos) 唯一 */
+/** Verify messages: PK=id(TEXT), pos column, payload JSONB, unique (session_id, pos) */
 export async function assertMessagesSchema(db: Db): Promise<void> {
   const pkRows = await db.execute<{ cols: string[] | null }>(drizzleSql`
     SELECT array_agg(a.attname ORDER BY k.ord) AS cols
@@ -14,8 +14,8 @@ export async function assertMessagesSchema(db: Db): Promise<void> {
   const pkCols = pkRows[0]?.cols ?? [];
   if (pkCols.length !== 1 || pkCols[0] !== "id") {
     throw new Error(
-      `messages 表主键应为 (id)，当前为 (${pkCols.join(", ") || "未知"})。` +
-        "请先执行: bun run --filter @freeanima/engine-db db:migrate",
+      `messages table PK should be (id), currently (${pkCols.join(", ") || "unknown"}).` +
+        "Run: bun run --filter @freeanima/engine-db db:migrate",
     );
   }
 
@@ -27,7 +27,7 @@ export async function assertMessagesSchema(db: Db): Promise<void> {
   `);
   if (!posCol[0]?.exists) {
     throw new Error(
-      "messages 表缺少 pos 列（会话内序号）。请先执行: bun run --filter @freeanima/engine-db db:migrate",
+      "messages table missing pos column (in-session sequence). Run: bun run --filter @freeanima/engine-db db:migrate",
     );
   }
 
@@ -39,7 +39,7 @@ export async function assertMessagesSchema(db: Db): Promise<void> {
   `);
   if (!payloadCol[0]?.exists) {
     throw new Error(
-      "messages 表缺少 payload 列。请先执行: bun run --filter @freeanima/engine-db db:migrate",
+      "messages table missing payload column. Run: bun run --filter @freeanima/engine-db db:migrate",
     );
   }
 
@@ -54,7 +54,7 @@ export async function assertMessagesSchema(db: Db): Promise<void> {
   `);
   if (Number(uqRows[0]?.cnt ?? 0) < 1) {
     throw new Error(
-      "messages 表缺少 (session_id, pos) 唯一索引。请先执行: bun run --filter @freeanima/engine-db db:migrate",
+      "messages table missing unique index on (session_id, pos). Run: bun run --filter @freeanima/engine-db db:migrate",
     );
   }
 }

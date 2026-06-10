@@ -1,6 +1,6 @@
 import { Elysia, NotFoundError } from "elysia";
 import { WEBUI_BASE_PATH } from "../api/constants.ts";
-import { ApiHandlerError } from "../handlers/errors.ts";
+import { ApiHandlerError, apiErrorBody } from "../handlers/errors.ts";
 import { assertNotShuttingDown } from "./context.ts";
 import { acpRoutes } from "./routes/acp.ts";
 import { credentialsRoutes } from "./routes/credentials.ts";
@@ -17,6 +17,7 @@ import { cronLogRoutes, sleepRoutes } from "./routes/sleep.ts";
 import { statusRoutes } from "./routes/status.ts";
 import { studioRoutes } from "./routes/studio.ts";
 import { terminalWsRoutes } from "./routes/terminal-ws.ts";
+import { TerminalSessionError } from "./terminal-session.ts";
 import { tasksRoutes } from "./routes/tasks.ts";
 import { fridgeRoutes } from "./routes/fridge.ts";
 
@@ -54,11 +55,11 @@ export function createApiApp() {
     .onError(({ error, set }) => {
       if (error instanceof ApiHandlerError) {
         set.status = error.status;
-        return { error: error.message };
+        return apiErrorBody(error);
       }
-      if (error instanceof Error && error.message.includes("终端会话")) {
+      if (error instanceof TerminalSessionError) {
         set.status = 404;
-        return { error: error.message };
+        return { error: error.message, code: error.code };
       }
       if (error instanceof NotFoundError) {
         set.status = 404;

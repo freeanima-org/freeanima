@@ -30,7 +30,7 @@ export function getServiceContext(): ServiceContext {
   const shared = readGlobalContext();
   if (shared) return shared;
   if (!ctx) {
-    throw new Error("ServiceContext 未初始化");
+    throw new Error("ServiceContext not initialized");
   }
   return ctx;
 }

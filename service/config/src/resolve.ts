@@ -7,7 +7,7 @@ const EMBEDDED_RE = /env\("([^"]*)"\)|credential\("([^"]*)",\s*"([^"]*)"\)/g;
 function resolveEnvKey(key: string): string {
   const value = process.env[key];
   if (value === undefined || value === "") {
-    throw new Error(`环境变量 ${key} 未设置`);
+    throw new Error(`Environment variable ${key} is not set`);
   }
   return value;
 }
@@ -16,7 +16,7 @@ function resolveCredential(path: string, field: string): string {
   return credential(path, field);
 }
 
-/** 延迟展开 config 中的 env("KEY") / credential("path", "field") 引用 */
+/** Lazily expand env("KEY") / credential("path", "field") references in config */
 export async function resolveValue(value: string): Promise<string> {
   const envFull = ENV_FULL_RE.exec(value);
   if (envFull) {

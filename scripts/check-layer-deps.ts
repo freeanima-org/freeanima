@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 /**
- * 层边界依赖检查：扫描 @freeanima/* import 是否符合架构规则。
- * 测试与 test-helpers 目录豁免。
+ * Layer boundary dependency check: scan @freeanima/* imports against architecture rules.
+ * Tests and test-helpers directories are exempt.
  */
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
@@ -12,7 +12,7 @@ type Violation = { file: string; line: number; pkg: string; reason: string };
 
 const IMPORT_RE = /from\s+["']@freeanima\/([^"']+)["']/g;
 
-/** import 路径首段即 workspace 包名（如 service/schemas/display → service） */
+/** First segment of import path is the workspace package name (e.g. service/schemas/display → service) */
 function workspacePkgName(importPath: string): string {
   return importPath.split("/")[0] ?? importPath;
 }
@@ -80,7 +80,7 @@ function isAllowed(layer: string, pkg: string, _relPath: string): boolean {
 
 function reasonFor(layer: string, pkg: string): string {
   const root = workspacePkgName(pkg);
-  return `层 ${layer} 不允许依赖 @freeanima/${root}`;
+  return `layer ${layer} must not depend on @freeanima/${root}`;
 }
 
 function walk(dir: string, out: string[]): void {

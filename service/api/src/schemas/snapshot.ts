@@ -1,4 +1,4 @@
-/** AnimaService 内部快照类型 */
+/** AnimaService internal snapshot types */
 
 export type HealthSnapshot = {
   status: "ok";

@@ -97,7 +97,9 @@ async function camofoxFetch(
 ): Promise<Response> {
   const cfg = resolveConfig();
   if (!cfg.baseUrl) {
-    throw new Error("未配置 Camofox。请在 ~/.anima/config.yaml 设置 browser.camofox.base_url。");
+    throw new Error(
+      "Camofox not configured. Set browser.camofox.base_url in ~/.anima/config.yaml.",
+    );
   }
   const timeoutMs = init.timeoutMs ?? cfg.timeoutMs;
   const { timeoutMs: _drop, ...rest } = init;
@@ -199,7 +201,9 @@ function truncateSnapshot(snapshotText: string, maxChars = SNAPSHOT_SUMMARIZE_TH
   }
   const remaining = lines.length - result.length;
   if (remaining > 0) {
-    result.push(`\n[... ${remaining} 行已截断，可用 browser_snapshot(full=true) 获取完整内容]`);
+    result.push(
+      `\n[... ${remaining} lines truncated; use browser_snapshot(full=true) for full content]`,
+    );
   }
   return result.join("\n");
 }
@@ -284,7 +288,7 @@ async function ensureTab(sessionId: string, url = "about:blank"): Promise<Camofo
   });
   const tabId = data.tabId;
   if (typeof tabId !== "string" || !tabId) {
-    throw new Error("Camofox 创建 tab 失败：响应缺少 tabId");
+    throw new Error("Camofox tab creation failed: response missing tabId");
   }
   session.tabId = tabId;
   sessions.set(sessionId, session);
@@ -294,7 +298,7 @@ async function ensureTab(sessionId: string, url = "about:blank"): Promise<Camofo
 function requireTab(sessionId: string): CamofoxSession {
   const session = sessions.get(sessionId);
   if (!session?.tabId) {
-    throw new Error("无浏览器会话。请先调用 browser_navigate。");
+    throw new Error("No browser session. Call browser_navigate first.");
   }
   return session;
 }
@@ -302,7 +306,7 @@ function requireTab(sessionId: string): CamofoxSession {
 function connectionErrorMessage(): string {
   const url = getCamofoxUrl() || "http://localhost:9377";
   return (
-    `无法连接 Camofox（${url}）。请确认 Docker 服务已启动，例如：` +
+    `Cannot connect to Camofox (${url}). Ensure Docker is running, e.g.:` +
     `docker run -p 9377:9377 -e CAMOFOX_PORT=9377 jo-inc/camofox-browser`
   );
 }
@@ -320,7 +324,7 @@ function wrapError(err: unknown): string {
   return toolError(msg);
 }
 
-/** 测试用：清空进程内会话缓存 */
+/** For tests: clear in-process session cache */
 export function resetCamofoxSessionsForTests(): void {
   sessions.clear();
   vncUrl = null;
@@ -329,7 +333,9 @@ export function resetCamofoxSessionsForTests(): void {
 
 export async function camofoxNavigate(sessionId: string, url: string): Promise<string> {
   if (!isCamofoxConfigured()) {
-    return toolError("未配置 Camofox。请在 ~/.anima/config.yaml 设置 browser.camofox.base_url。");
+    return toolError(
+      "Camofox not configured. Set browser.camofox.base_url in ~/.anima/config.yaml.",
+    );
   }
   try {
     let session = await ensureSession(sessionId);
@@ -353,7 +359,7 @@ export async function camofoxNavigate(sessionId: string, url: string): Promise<s
     const vnc = getVncUrl();
     if (vnc) {
       result.vnc_url = vnc;
-      result.vnc_hint = "浏览器可通过 VNC 观看，可将 vnc_url 分享给伙伴。";
+      result.vnc_hint = "Browser viewable via VNC; share vnc_url with your partner.";
     }
 
     try {
@@ -376,7 +382,9 @@ export async function camofoxNavigate(sessionId: string, url: string): Promise<s
 
 export async function camofoxSnapshot(sessionId: string, full = false): Promise<string> {
   if (!isCamofoxConfigured()) {
-    return toolError("未配置 Camofox。请在 ~/.anima/config.yaml 设置 browser.camofox.base_url。");
+    return toolError(
+      "Camofox not configured. Set browser.camofox.base_url in ~/.anima/config.yaml.",
+    );
   }
   try {
     const session = requireTab(sessionId);
@@ -395,7 +403,7 @@ export async function camofoxSnapshot(sessionId: string, full = false): Promise<
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    if (msg.includes("无浏览器会话")) return toolError(msg);
+    if (msg.includes("No browser session")) return toolError(msg);
     return wrapError(err);
   }
 }
@@ -415,7 +423,7 @@ export async function camofoxClick(sessionId: string, ref: string): Promise<stri
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    if (msg.includes("无浏览器会话")) return toolError(msg);
+    if (msg.includes("No browser session")) return toolError(msg);
     return wrapError(err);
   }
 }
@@ -436,14 +444,14 @@ export async function camofoxType(sessionId: string, ref: string, text: string):
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    if (msg.includes("无浏览器会话")) return toolError(msg);
+    if (msg.includes("No browser session")) return toolError(msg);
     return wrapError(err);
   }
 }
 
 export async function camofoxScroll(sessionId: string, direction: string): Promise<string> {
   if (direction !== "up" && direction !== "down") {
-    return toolError(`无效 direction '${direction}'，请使用 up 或 down。`);
+    return toolError(`Invalid direction '${direction}'; use up or down.`);
   }
   try {
     const session = requireTab(sessionId);
@@ -457,7 +465,7 @@ export async function camofoxScroll(sessionId: string, direction: string): Promi
     return toolResult({ success: true, scrolled: direction });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    if (msg.includes("无浏览器会话")) return toolError(msg);
+    if (msg.includes("No browser session")) return toolError(msg);
     return wrapError(err);
   }
 }
@@ -469,7 +477,7 @@ export async function camofoxBack(sessionId: string): Promise<string> {
     return toolResult({ success: true, url: data.url ?? "" });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    if (msg.includes("无浏览器会话")) return toolError(msg);
+    if (msg.includes("No browser session")) return toolError(msg);
     return wrapError(err);
   }
 }
@@ -481,7 +489,7 @@ export async function camofoxPress(sessionId: string, key: string): Promise<stri
     return toolResult({ success: true, pressed: key });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    if (msg.includes("无浏览器会话")) return toolError(msg);
+    if (msg.includes("No browser session")) return toolError(msg);
     return wrapError(err);
   }
 }
@@ -493,7 +501,7 @@ export async function camofoxConsole(_sessionId: string, _clear = false): Promis
     js_errors: [],
     total_messages: 0,
     total_errors: 0,
-    note: "Camofox 后端暂不支持浏览器 console 日志捕获。请使用 browser_snapshot 或 browser_vision 检查页面状态。",
+    note: "Camofox backend does not support browser console log capture yet. Use browser_snapshot or browser_vision to inspect the page.",
   });
 }
 
@@ -519,7 +527,7 @@ export async function camofoxGetImages(sessionId: string): Promise<string> {
     return toolResult({ success: true, images, count: images.length });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    if (msg.includes("无浏览器会话")) return toolError(msg);
+    if (msg.includes("No browser session")) return toolError(msg);
     return wrapError(err);
   }
 }
@@ -543,7 +551,7 @@ export async function camofoxVision(
       screenshot_path: screenshotPath,
       question,
       analysis: null,
-      note: "逸灵风暂未接入 auxiliary vision LLM；已保存截图到 screenshot_path。可将路径交给伙伴或在后续版本启用视觉分析。",
+      note: "Free Anima has no auxiliary vision LLM yet; screenshot saved to screenshot_path. Share the path with your partner or enable vision analysis in a future version.",
     };
 
     if (annotate) {
@@ -559,7 +567,7 @@ export async function camofoxVision(
     return toolResult(payload);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    if (msg.includes("无浏览器会话")) return toolError(msg);
+    if (msg.includes("No browser session")) return toolError(msg);
     return wrapError(err);
   }
 }

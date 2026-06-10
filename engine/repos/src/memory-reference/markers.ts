@@ -1,18 +1,18 @@
-/** 语义记忆 ID 格式：f-000001-abcd */
+/** Semantic memory ID format: f-000001-abcd */
 export const SEMANTIC_MEMORY_ID_PATTERN = "f-\\d{6}-[0-9a-f]{4}";
 
-/** 正文 / 回复中的引用标记：`[记忆 #f-000001-abcd]` */
+/** Citation marker in body / replies: `[memory #f-000001-abcd]` */
 export const MEMORY_REFERENCE_MARKER_RE = new RegExp(
-  `\\[记忆 #(${SEMANTIC_MEMORY_ID_PATTERN})\\]`,
+  `\\[memory #(${SEMANTIC_MEMORY_ID_PATTERN})\\]`,
   "gi",
 );
 
-/** 常驻记忆注入前缀 */
+/** Prefix injected for resident memory lines */
 export function formatMemoryReferenceMarker(semanticMemoryId: string): string {
-  return `[记忆 #${semanticMemoryId}]`;
+  return `[memory #${semanticMemoryId}]`;
 }
 
-/** 带 ID 的常驻记忆行 */
+/** Resident memory line with ID */
 export function formatResidentMemoryLine(
   content: string,
   semanticMemoryId: string,
@@ -22,7 +22,7 @@ export function formatResidentMemoryLine(
   return pinned ? `- 📌 ${marker} ${content}` : `- ${marker} ${content}`;
 }
 
-/** 从消息正文解析语义记忆引用 ID（去重、保序） */
+/** Parse semantic memory reference IDs from message body (dedupe, preserve order) */
 export function parseMemoryReferenceMarkers(content: string): string[] {
   if (!content.trim()) return [];
   const seen = new Set<string>();
@@ -36,15 +36,15 @@ export function parseMemoryReferenceMarkers(content: string): string[] {
   return ids;
 }
 
-/** system prompt 中要求 LLM 在回复末尾标注引用的记忆 */
+/** System prompt rule: LLM must cite referenced memories at the end of replies */
 export const MEMORY_REFERENCE_CITATION_RULE =
-  "如果回复中参考了某条携带 `[记忆 #xxx]` 标记的内容，请在回复末尾标注对应的 `[记忆 #xxx]`。";
+  "If your reply references content carrying a `[memory #xxx]` marker, append the corresponding `[memory #xxx]` at the end of your reply.";
 
-/** 30 天内引用权重倍数 */
+/** Weight multiplier for references within 30 days */
 export const MEMORY_REFERENCE_RECENT_WEIGHT = 2;
-/** 30 天外引用权重倍数 */
+/** Weight multiplier for references older than 30 days */
 export const MEMORY_REFERENCE_STALE_WEIGHT = 1;
-/** 时间衰减窗口（天） */
+/** Decay window in days */
 export const MEMORY_REFERENCE_DECAY_DAYS = 30;
 
 export function memoryReferenceWeight(createdAt: Date, now = new Date()): number {

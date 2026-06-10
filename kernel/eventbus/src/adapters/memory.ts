@@ -1,6 +1,6 @@
 import type { DispatchOutcome, EventQueueAdapter, StoredEvent } from "../queue.ts";
 
-/** 进程内内存队列；start 后 drain，无持久化与重试 */
+/** In-process memory queue; drain after start; no persistence or retry */
 export class MemoryEventQueue implements EventQueueAdapter {
   private queue: StoredEvent[] = [];
   private running = false;

@@ -9,7 +9,7 @@ import {
 } from "./return-contract.ts";
 
 describe("defineToolReturn", () => {
-  it("推导 returnSchema 并校验 example", () => {
+  it("derives returnSchema and validates example", () => {
     const contract = defineToolReturn({
       schema: z.object({ ok: z.literal(true), count: z.number() }),
       example: { ok: true, count: 3 },
@@ -19,7 +19,7 @@ describe("defineToolReturn", () => {
     expect(contract.returnExample).toEqual({ ok: true, count: 3 });
   });
 
-  it("example 不匹配 schema 时抛错", () => {
+  it("throws when example does not match schema", () => {
     expect(() =>
       defineToolReturn({
         schema: z.object({ count: z.number() }),
@@ -30,19 +30,19 @@ describe("defineToolReturn", () => {
 });
 
 describe("defineTextToolReturn", () => {
-  it("设置 text 契约", () => {
+  it("sets text contract", () => {
     const contract = defineTextToolReturn({
-      hint: "行号|内容",
+      hint: "line|content",
       example: "1|hello",
     });
     expect(contract.returnKind).toBe("text");
-    expect(contract.returnTextHint).toBe("行号|内容");
+    expect(contract.returnTextHint).toBe("line|content");
     expect(contract.returnExample).toBe("1|hello");
   });
 });
 
 describe("attachToolReturns", () => {
-  it("按名称合并契约", () => {
+  it("merges contracts by name", () => {
     const base = {
       name: "demo",
       description: "d",
@@ -60,9 +60,9 @@ describe("attachToolReturns", () => {
 });
 
 describe("globalToolErrorContract", () => {
-  it("返回统一错误 schema 与示例", () => {
+  it("returns unified error schema and example", () => {
     const err = globalToolErrorContract();
-    expect(err.error_example).toEqual({ error: "示例错误信息" });
+    expect(err.error_example).toEqual({ error: "Example error message" });
     expect(err.error_schema.type).toBe("object");
   });
 });

@@ -6,8 +6,8 @@ import { formatResidentMemoryLine, MEMORY_REFERENCE_CITATION_RULE } from "./memo
 const MAX_AGENTS_CHARS = 8000;
 const PROMPT_CODE_FENCE_LANG = "md";
 
-/** system prompt 常驻记忆段外层第二人称骨架 */
-export const RESIDENT_MEMORY_SYSTEM_FRAME = `以下是你的常驻记忆。这些事实与约定需要你始终携带，你必须遵守并在对话中自觉运用。\n${MEMORY_REFERENCE_CITATION_RULE}`;
+/** Outer second-person frame for the resident-memory system prompt segment */
+export const RESIDENT_MEMORY_SYSTEM_FRAME = `Below is your resident memory. These facts and conventions must always travel with you; follow and apply them consciously in conversation.\n${MEMORY_REFERENCE_CITATION_RULE}`;
 
 function wrapPromptSection(heading: string, inner: string, frame?: string): string {
   const body = inner.trim();
@@ -26,9 +26,9 @@ function readAgents(cwd: string | null | undefined): string {
     if (content.length > MAX_AGENTS_CHARS) {
       const head = content.slice(0, Math.floor(MAX_AGENTS_CHARS * 0.7));
       const tail = content.slice(-Math.floor(MAX_AGENTS_CHARS * 0.2));
-      content = `${head}\n\n[... 已截断 ...]\n\n${tail}`;
+      content = `${head}\n\n[... truncated ...]\n\n${tail}`;
     }
-    return wrapPromptSection("项目上下文", content);
+    return wrapPromptSection("Project context", content);
   } catch {
     return "";
   }
@@ -38,7 +38,7 @@ async function renderResidentMemory(): Promise<string> {
   const facts = await getSemanticMemoryStore().listResident(20);
   if (!facts.length) return "";
   const lines = facts.map((f) => formatResidentMemoryLine(f.content, f.id, f.pinned));
-  return wrapPromptSection("常驻记忆", lines.join("\n"), RESIDENT_MEMORY_SYSTEM_FRAME);
+  return wrapPromptSection("Resident memory", lines.join("\n"), RESIDENT_MEMORY_SYSTEM_FRAME);
 }
 
 export type SystemPromptParts = {
@@ -47,7 +47,7 @@ export type SystemPromptParts = {
   resident: string;
 };
 
-/** self / agents / resident；技能通过 load_skill 工具消息注入，不写入 system prompt */
+/** self / agents / resident; skills are injected via load_skill tool messages, not system prompt */
 export async function decomposeSystemPromptParts(
   selfContent: string,
   cwd?: string | null,

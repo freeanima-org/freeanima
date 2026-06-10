@@ -35,7 +35,7 @@ export async function getFtsStatus(): Promise<FtsStatusSnapshot> {
   };
 }
 
-/** 后台启动重建（默认仅补缺失行，可断点续跑） */
+/** Background rebuild on startup (default: fill missing rows only; resumable) */
 export function startRebuildFtsIndex(opts?: { onlyMissing?: boolean }): FtsRebuildJobStatus {
   return startFtsRebuildJob(opts);
 }

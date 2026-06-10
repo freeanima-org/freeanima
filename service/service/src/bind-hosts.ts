@@ -1,4 +1,4 @@
-/** 默认 HTTP 监听地址（逗号分隔可传 CLI --host） */
+/** Default HTTP bind address (comma-separated; pass via CLI --host) */
 export const DEFAULT_BIND_HOSTS = ["127.0.0.1"] as const;
 
 export const DEFAULT_BIND_HOST = DEFAULT_BIND_HOSTS.join(",");
@@ -12,7 +12,7 @@ export function parseBindHosts(host: string): string[] {
   return hosts;
 }
 
-/** status / health 探测用：优先 loopback */
+/** For status / health probes: prefer loopback */
 export function resolveProbeHost(host: string): string {
   const hosts = parseBindHosts(host);
   if (hosts.includes("127.0.0.1")) return "127.0.0.1";

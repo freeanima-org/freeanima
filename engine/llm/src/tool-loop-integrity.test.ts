@@ -12,7 +12,7 @@ import {
 import { messagesForApi } from "@freeanima/capabilities-provider-openai-compatible/messages";
 import type { SessionMessage } from "@freeanima/engine-db/domain";
 describe("tool-loop-integrity", () => {
-  it("detectToolLoopCorruption 发现 dangling assistant", () => {
+  it("detectToolLoopCorruption finds dangling assistant", () => {
     const msgs: SessionMessage[] = [
       { role: "user", content: "hi", pos: 1 },
       {
@@ -37,7 +37,7 @@ describe("tool-loop-integrity", () => {
     expect(issues[0]?.missingCalls).toEqual([{ id: "call_2", name: "grep" }]);
   });
 
-  it("repairToolLoopMessages 补 synthetic tool 并剔除 orphan", () => {
+  it("repairToolLoopMessages adds synthetic tool and drops orphan", () => {
     const msgs: SessionMessage[] = [
       { role: "user", content: "hi", pos: 1 },
       {
@@ -63,7 +63,7 @@ describe("tool-loop-integrity", () => {
     ).toBe(true);
   });
 
-  it("planToolLoopInserts 在中间 assistant 后插入而非末尾", () => {
+  it("planToolLoopInserts inserts after middle assistant not at end", () => {
     const msgs: SessionMessage[] = [
       { role: "user", content: "u1", pos: 489 },
       {
@@ -83,7 +83,7 @@ describe("tool-loop-integrity", () => {
     expect(plans[0]?.missingCalls[0]?.id).toBe("call_1");
   });
 
-  it("normalizeAssistantTurn 丢弃无正文且无 tool_calls 的 assistant", () => {
+  it("normalizeAssistantTurn drops assistant with no body and no tool_calls", () => {
     expect(normalizeAssistantTurn({ role: "assistant", content: null })).toBeNull();
     const api = messagesForApi(
       sessionMessagesToInvokeInput([
@@ -95,7 +95,7 @@ describe("tool-loop-integrity", () => {
     expect(api.map((m) => m.role)).toEqual(["user", "user"]);
   });
 
-  it("repairToolLoopMessages 剔除无效 tool_calls 时跳过 orphan tool", () => {
+  it("repairToolLoopMessages skips orphan tool when stripping invalid tool_calls", () => {
     const msgs: SessionMessage[] = [
       { role: "user", content: "hi", pos: 1 },
       {
@@ -111,7 +111,7 @@ describe("tool-loop-integrity", () => {
     expect(repaired.map((m) => m.role)).toEqual(["user", "user"]);
   });
 
-  it("isInsufficientToolMessagesError 识别 provider 400 文案", () => {
+  it("isInsufficientToolMessagesError recognizes provider 400 message", () => {
     expect(
       isInsufficientToolMessagesError(
         "400 Error from provider (DeepSeek): insufficient tool messages following tool_calls message",

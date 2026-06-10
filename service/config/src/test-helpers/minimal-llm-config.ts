@@ -1,4 +1,4 @@
-/** 单测用最小 llm 配置块（满足 animaConfigSchema.llm） */
+/** Minimal llm config block for unit tests (satisfies animaConfigSchema.llm) */
 export const MINIMAL_LLM_YAML = `
 llm:
   default_profile: chat

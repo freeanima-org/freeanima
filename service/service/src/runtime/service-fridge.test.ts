@@ -33,13 +33,13 @@ describe("listFridgeMagnets", () => {
     resetRedisForTest();
   });
 
-  it("返回全局便签、inject_text 与 TTL", async () => {
+  it("returns global notes, inject_text, and TTL", async () => {
     const keyA = magnetRedisKey("session", "sess-1:note");
     const keyTasks = magnetRedisKey("tasks", "summary");
     registerFridgeStore(
       createMemoryFridgeStore({
-        [keyA]: "便签内容",
-        [keyTasks]: "待办 (2)",
+        [keyA]: "note content",
+        [keyTasks]: "tasks (2)",
       }),
     );
 
@@ -57,7 +57,7 @@ describe("listFridgeMagnets", () => {
     expect(result.magnets).toHaveLength(2);
     expect(result.magnets[0]).toMatchObject({
       key: "session:sess-1:note",
-      value: "便签内容",
+      value: "note content",
       module: "session",
       session_id: "sess-1",
       label: "note",
@@ -69,11 +69,11 @@ describe("listFridgeMagnets", () => {
       ttl_seconds: -1,
     });
     expect(result.inject_text).toBe(
-      "```fridge\nsession:sess-1:note: 便签内容\ntasks:summary: 待办 (2)\n```\n",
+      "```fridge\nsession:sess-1:note: note content\ntasks:summary: tasks (2)\n```\n",
     );
   });
 
-  it("Redis 未配置时返回空列表", async () => {
+  it("returns empty list when Redis not configured", async () => {
     resetRedisForTest();
     const result = await listFridgeMagnets();
     expect(result.redis_configured).toBe(false);

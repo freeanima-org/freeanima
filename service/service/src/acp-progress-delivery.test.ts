@@ -16,7 +16,7 @@ function metaFixture(
 }
 
 describe("resolveSessionDeliverTargets", () => {
-  it("discord thread 映射 chat_id 与 thread_id", () => {
+  it("discord thread maps chat_id and thread_id", () => {
     const targets = resolveSessionDeliverTargets(
       metaFixture({
         platform: "discord",
@@ -30,7 +30,7 @@ describe("resolveSessionDeliverTargets", () => {
     expect(targets).toEqual([{ platform: "discord", chat_id: "parent-ch", thread_id: "thread-1" }]);
   });
 
-  it("weixin 使用 chat_id", () => {
+  it("weixin uses chat_id", () => {
     const targets = resolveSessionDeliverTargets(
       metaFixture({
         platform: "weixin",
@@ -40,7 +40,7 @@ describe("resolveSessionDeliverTargets", () => {
     expect(targets).toEqual([{ platform: "weixin", chat_id: "wx-user-1" }]);
   });
 
-  it("parlor 无外部投递目标", () => {
+  it("parlor has no external delivery target", () => {
     const targets = resolveSessionDeliverTargets(metaFixture({ platform: "parlor" }));
     expect(targets).toEqual([]);
   });

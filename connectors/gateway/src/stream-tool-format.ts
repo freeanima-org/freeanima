@@ -1,4 +1,4 @@
-/** 网关流式工具行格式化（Discord / 微信共用） */
+/** Gateway streaming tool line formatting (Discord / WeChat shared) */
 
 export const TOOL_LINE_MAX = 120;
 export const TOOL_RESULT_MAX = 200;
@@ -21,7 +21,7 @@ export function serializeToolArgs(args: Record<string, unknown>): string {
   }
 }
 
-/** 🔧 tool_name({"key":"val"}) — 整行截断 */
+/** 🔧 tool_name({"key":"val"}) — truncate whole line */
 export function formatToolBeginLine(
   name: string,
   args: Record<string, unknown>,
@@ -32,7 +32,7 @@ export function formatToolBeginLine(
   return truncateText(full, maxLen);
 }
 
-/** → 结果摘要（截断） */
+/** → result summary (truncated) */
 export function formatToolResultLine(
   _name: string,
   content: string,
@@ -55,7 +55,7 @@ export function formatToolRoundMessage(lines: string[]): string {
   return lines.filter((l) => l.trim().length > 0).join("\n");
 }
 
-/** 缓冲一轮 tool_begin / tool_result，轮次结束时 take() 合并为一条 */
+/** Buffer one round of tool_begin / tool_result, take() merges at round end */
 export class ToolRoundCollector {
   private lines: string[] = [];
 

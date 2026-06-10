@@ -11,11 +11,13 @@ function assertDockerAvailable(): void {
   try {
     execSync("docker info", { stdio: "ignore" });
   } catch {
-    throw new Error("集成测试需要 Docker 运行中。请启动 Docker 后重试：bun test");
+    throw new Error(
+      "Integration tests require Docker to be running. Start Docker and retry: bun test",
+    );
   }
 }
 
-/** 测试库 superuser 预装扩展（vector 不在 migration 内，见 ensure-pg-extensions.sql） */
+/** Pre-install extensions on test DB superuser (vector is not in migrations; see ensure-pg-extensions.sql) */
 function ensurePgExtensions(url: string): void {
   const extensionsPath = join(dbRoot, "scripts/ensure-pg-extensions.sql");
   execSync(`psql "${url}" -v ON_ERROR_STOP=1 -f "${extensionsPath}"`, {
@@ -23,7 +25,7 @@ function ensurePgExtensions(url: string): void {
   });
 }
 
-/** 用 psql 执行 migration SQL（避免 setup 依赖 workspace 包解析） */
+/** Run migration SQL via psql (avoids setup depending on workspace package resolution) */
 function runMigrations(url: string): void {
   ensurePgExtensions(url);
   const migrationsDir = join(dbRoot, "migrations");
@@ -49,10 +51,10 @@ async function waitForPostgres(port: string, maxAttempts = 60): Promise<void> {
       await sleep(500);
     }
   }
-  throw new Error("PostgreSQL 容器在超时内未就绪");
+  throw new Error("PostgreSQL container did not become ready within the timeout");
 }
 
-/** 启动 PG 并注入 `ANIMA_TEST_PG_URL`（须在 bun test 子进程启动前调用） */
+/** Start PG and set `ANIMA_TEST_PG_URL` (must be called before spawning bun test subprocesses) */
 export async function setupIntegrationPg(): Promise<() => Promise<void>> {
   const presetUrl = process.env.ANIMA_TEST_PG_URL?.trim();
   if (presetUrl) {
@@ -62,7 +64,7 @@ export async function setupIntegrationPg(): Promise<() => Promise<void>> {
   }
 
   assertDockerAvailable();
-  // 不用 Testcontainers：其 dockerode → ssh2 NAPI 在 Bun / Node 退出时会触发 uv_version_string 崩溃
+  // Skip Testcontainers: dockerode → ssh2 NAPI triggers uv_version_string crash on Bun / Node exit
   const containerId = execSync(
     "docker run -d -p 0:5432 -e POSTGRES_PASSWORD=test -e POSTGRES_USER=test -e POSTGRES_DB=test pgvector/pgvector:pg17",
     { encoding: "utf-8" },
@@ -73,7 +75,7 @@ export async function setupIntegrationPg(): Promise<() => Promise<void>> {
     }).trim();
     const port = portLine.split(":").at(-1);
     if (!port) {
-      throw new Error(`无法解析 PostgreSQL 映射端口: ${portLine}`);
+      throw new Error(`failed to parse PostgreSQL mapped port: ${portLine}`);
     }
     await waitForPostgres(port);
     const url = `postgres://test:test@127.0.0.1:${port}/test`;

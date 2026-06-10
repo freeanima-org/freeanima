@@ -23,20 +23,20 @@ export type RunDeepSleepOpts = {
 const DEEP_SLEEP_ROUNDS: DeepSleepRound[] = ["contradiction_expiry", "split", "merge"];
 
 /**
- * 深睡编排：三轮 LLM 调用处理语义记忆的维护操作。
+ * Deep sleep orchestration: three LLM rounds maintain semantic memories.
  *
- * 三轮顺序：
- * 1. 矛盾检测 + 过期标记
- * 2. 拆分
- * 3. 去重合并
+ * Round order:
+ * 1. Contradiction detection + expiry marking
+ * 2. Split
+ * 3. Deduplicate and merge
  *
- * 消息1 始终不变（全量 active 记忆 JSON），消息1.5 随轮追加变更日志。
+ * Message 1 stays fixed (full active memory JSON); message 1.5 appends change log each round.
  */
 export async function runDeepSleep(opts: RunDeepSleepOpts): Promise<DeepSleepResult> {
   const range = cstDayRange(opts.day);
   const day = range.day;
 
-  // 获取全量 active 记忆
+  // Fetch all active memories
   const allRows = await fetchAllActiveMemories();
   if (allRows.length === 0) {
     const result: DeepSleepResult = {
@@ -44,14 +44,14 @@ export async function runDeepSleep(opts: RunDeepSleepOpts): Promise<DeepSleepRes
       day,
       rounds: [],
       total_tool_calls: 0,
-      skipped: "语义记忆库为空，跳过深睡",
+      skipped: "Semantic memory store empty; skipping deep sleep",
     };
-    logComponent("memory").info("深睡跳过", { day, reason: "no_memories" });
+    logComponent("memory").info("deep sleep skipped", { day, reason: "no_memories" });
     recordDeepSleepRun({ day, roundsCompleted: 0, stats: { total_tool_calls: 0 } });
     return result;
   }
 
-  // 大小检查
+  // Size check
   const { bytes } = (await import("./build-messages.ts")).formatAllMemoriesMessage(allRows);
   const sizeStatus = checkJsonSize(bytes);
   if (sizeStatus === "error") {
@@ -60,20 +60,20 @@ export async function runDeepSleep(opts: RunDeepSleepOpts): Promise<DeepSleepRes
       day,
       rounds: [],
       total_tool_calls: 0,
-      skipped: `全量记忆 JSON 超过 300KB（${(bytes / 1024).toFixed(1)}KB），拒绝执行`,
+      skipped: `Full memory JSON exceeds 300KB (${(bytes / 1024).toFixed(1)}KB); refusing to run`,
     };
-    logComponent("memory").error("深睡拒绝", { day, reason: "json_too_large", bytes });
+    logComponent("memory").error("deep sleep refused", { day, reason: "json_too_large", bytes });
     return result;
   }
   if (sizeStatus === "warn") {
-    logComponent("memory").warn("深睡全量 JSON 较大", { day, bytes });
+    logComponent("memory").warn("deep sleep full JSON is large", { day, bytes });
   }
 
   const parts = await decomposeSystemPromptParts(opts.selfContent, null);
   const systemPrompt = composeSystemPrompt(parts);
   const changeLog = createEmptyChangeLog();
 
-  logComponent("memory").info("深睡开始", {
+  logComponent("memory").info("deep sleep started", {
     day,
     active_memories: allRows.length,
     json_bytes: bytes,
@@ -107,7 +107,7 @@ export async function runDeepSleep(opts: RunDeepSleepOpts): Promise<DeepSleepRes
     totalToolCalls += engineResult.tool_calls;
     roundStats[round] = engineResult.tool_calls;
 
-    // 写操作日志
+    // Write operation log
     const roundLog = makeRoundLog({
       day,
       round,
@@ -115,7 +115,7 @@ export async function runDeepSleep(opts: RunDeepSleepOpts): Promise<DeepSleepRes
       startedAt,
       finishedAt,
       activeMemoryCount: allRows.length,
-      changeLogBefore: changeLog, // 快照（引用）
+      changeLogBefore: changeLog, // snapshot (by reference)
       toolCalls: engineResult.tool_calls,
       summary: engineResult.summary,
       changeLogAfter: changeLog,
@@ -128,7 +128,7 @@ export async function runDeepSleep(opts: RunDeepSleepOpts): Promise<DeepSleepRes
       summary: engineResult.summary,
     });
 
-    logComponent("memory").info("深睡轮次完成", {
+    logComponent("memory").info("deep sleep round completed", {
       day,
       round,
       round_index: roundIndex,
@@ -154,6 +154,6 @@ export async function runDeepSleep(opts: RunDeepSleepOpts): Promise<DeepSleepRes
     total_tool_calls: totalToolCalls,
   };
 
-  logComponent("memory").info("深睡完成", result);
+  logComponent("memory").info("deep sleep completed", result);
   return result;
 }

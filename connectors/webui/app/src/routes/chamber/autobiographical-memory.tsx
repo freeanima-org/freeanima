@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
 import { MemoryListPagination } from "@/components/chamber/MemoryListPagination.tsx";
 import { listAutobiographicalMemories } from "@/lib/api.ts";
+import { m } from "@/lib/i18n.ts";
 
 const PAGE_SIZE = 20;
 
@@ -53,7 +54,11 @@ function AutobiographicalMemoryPage() {
         setOffset(nextOffset);
         setLoaded(true);
       } catch (e) {
-        setError(`加载失败: ${e instanceof Error ? e.message : String(e)}`);
+        setError(
+          m.webui_common_load_failed({
+            detail: e instanceof Error ? e.message : String(e),
+          }),
+        );
       } finally {
         setLoading(false);
       }
@@ -71,8 +76,8 @@ function AutobiographicalMemoryPage() {
 
   return (
     <div>
-      <h2 className="text-lg font-bold mb-1">📖 自传记忆</h2>
-      <p className="text-sm text-base-content/60 mb-4">浏览 autobiographical_memory 叙事条目。</p>
+      <h2 className="text-lg font-bold mb-1">{m.webui_chamber_nav_autobio()}</h2>
+      <p className="text-sm text-base-content/60 mb-4">{m.webui_chamber_autobio_desc()}</p>
 
       <form
         className="card bg-base-200 mb-4"
@@ -84,20 +89,20 @@ function AutobiographicalMemoryPage() {
         <div className="card-body gap-3">
           <div className="form-control">
             <label className="label py-0">
-              <span className="label-text text-xs">搜索词（可选，标题/内容 ILIKE）</span>
+              <span className="label-text text-xs">{m.webui_chamber_autobio_search()}</span>
             </label>
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               type="text"
               className="input input-bordered input-sm"
-              placeholder="关键词…"
+              placeholder={m.webui_common_keyword_placeholder()}
             />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div className="form-control">
               <label className="label py-0">
-                <span className="label-text text-xs">状态</span>
+                <span className="label-text text-xs">{m.webui_common_status_label()}</span>
               </label>
               <select
                 className="select select-bordered select-sm"
@@ -117,7 +122,7 @@ function AutobiographicalMemoryPage() {
                 value={significanceFilter}
                 onChange={(e) => setSignificanceFilter(e.target.value)}
               >
-                <option value="">全部</option>
+                <option value="">{m.webui_common_all()}</option>
                 {SIGNIFICANCE_OPTIONS.map((s) => (
                   <option key={s} value={s}>
                     {s}
@@ -127,7 +132,9 @@ function AutobiographicalMemoryPage() {
             </div>
             <div className="form-control">
               <label className="label py-0">
-                <span className="label-text text-xs">来源 session（可选）</span>
+                <span className="label-text text-xs">
+                  {m.webui_chamber_autobio_source_session()}
+                </span>
               </label>
               <input
                 value={sourceSession}
@@ -140,7 +147,7 @@ function AutobiographicalMemoryPage() {
           </div>
           <button type="submit" className="btn btn-sm btn-primary" disabled={loading}>
             {loading ? <span className="loading loading-spinner loading-xs" /> : null}
-            查询
+            {m.webui_common_query()}
           </button>
         </div>
       </form>
@@ -154,7 +161,7 @@ function AutobiographicalMemoryPage() {
               <span className="loading loading-dots loading-sm" />
             </div>
           ) : items.length === 0 ? (
-            <div className="alert alert-info text-sm">无匹配记录。</div>
+            <div className="alert alert-info text-sm">{m.webui_common_no_results()}</div>
           ) : (
             <div className="space-y-2">
               {items.map((row) => (
@@ -189,7 +196,7 @@ function AutobiographicalMemoryPage() {
           />
         </div>
       ) : (
-        <p className="text-sm text-base-content/50">点击「查询」加载列表。</p>
+        <p className="text-sm text-base-content/50">{m.webui_common_click_query_hint()}</p>
       )}
     </div>
   );

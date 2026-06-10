@@ -9,11 +9,11 @@ import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
 import { formatSessionMessageSearchHit } from "@freeanima/kernel-util";
 
 const FTS_SYNTAX =
-  "PG 检索语法（to_tsquery simple）：\n" +
-  "- **空格**分隔的词默认 **AND**（均需匹配）\n" +
-  "- **OR** 显式宽召回：`偏好 OR 简洁`（转为 |）\n" +
-  "- **AND** / **NOT**：`Free AND Anima`、`Free NOT Anima`\n" +
-  '- **双引号** 短语 / CJK 词：`"逸灵风"`、`偏好`（CJK 按字 **邻近** 连续匹配）';
+  "PG search syntax (to_tsquery simple):\n" +
+  "- **Space**-separated words default to **AND** (all must match)\n" +
+  "- **OR** for broad recall: `preference OR concise` (becomes |)\n" +
+  "- **AND** / **NOT**: `Free AND Anima`, `Free NOT Anima`\n" +
+  '- **Quotes** for phrases / CJK: `"Free Anima"`, `preference` (CJK matches by character **proximity**)';
 
 function asInt(value: unknown, defaultVal: number, min: number, max: number): number {
   if (value === null || value === undefined) return defaultVal;
@@ -26,32 +26,35 @@ function requireSessionStore():
   | { ok: true; store: NonNullable<ReturnType<typeof getToolRepos>>["session"] }
   | { ok: false; error: string } {
   const repos = getToolRepos();
-  if (!repos) return { ok: false, error: "无 repos 上下文" };
+  if (!repos) return { ok: false, error: "No repos context" };
   return { ok: true, store: repos.session };
 }
 
 export function registerSessionTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
     "sessions",
-    "历史对话检索与分页阅读",
+    "Historical conversation search and paginated reading",
     attachToolReturns(
       [
         {
           name: "sessions_search",
           description:
-            "搜索历史对话（PostgreSQL messages 全文索引）。\n" +
-            "返回匹配关键词 snippet，不含整条消息正文；可用 session 限定范围。\n" +
-            "加载全文上下文请用 sessions_scroll。\n\n" +
+            "Search historical conversations (PostgreSQL messages full-text index).\n" +
+            "Returns matching keyword snippets, not full message body; optional session scope.\n" +
+            "Use sessions_scroll to load full context.\n\n" +
             FTS_SYNTAX,
           parameters: {
             type: "object",
             properties: {
               query: {
                 type: "string",
-                description: "搜索关键词。默认空格=AND；宽召回用 OR",
+                description: "Search keywords. Default space=AND; use OR for broad recall",
               },
-              session: { type: "string", description: "可选：仅在指定 session id 内搜索" },
-              limit: { type: "number", description: "最多返回条数，默认 10" },
+              session: {
+                type: "string",
+                description: "Optional: search only within specified session id",
+              },
+              limit: { type: "number", description: "Max results, default 10" },
             },
             required: ["query"],
           },
@@ -71,26 +74,29 @@ export function registerSessionTools(toolSets: ToolSetRegistry): void {
               query,
               hits,
               summary: hits.length
-                ? `找到 ${hits.length} 条历史对话`
-                : `未找到与「${query}」匹配的历史对话`,
+                ? `Found ${hits.length} historical conversations`
+                : `No historical conversations matching '${query}'`,
             });
           },
         },
         {
           name: "sessions_scroll",
           description:
-            "分页阅读指定 session 的历史消息（user/assistant 完整 content；tool 消息截断）。\n" +
-            "可用 message_id（来自 memory_recall 或 sessions_search）作为锚点，从该消息起向后读取；否则用 offset 分页。",
+            "Paginated reading of historical messages in specified session (user/assistant full content; tool messages truncated).\n" +
+            "Use message_id (from memory_recall or sessions_search) as anchor to read forward; otherwise paginate with offset.",
           parameters: {
             type: "object",
             properties: {
               session_id: { type: "string", description: "session id" },
               message_id: {
                 type: "string",
-                description: "可选：锚点消息 id，优先于 offset",
+                description: "Optional: anchor message id, takes precedence over offset",
               },
-              offset: { type: "number", description: "分页偏移（按 pos 顺序），默认 0" },
-              limit: { type: "number", description: "每页条数，默认 20" },
+              offset: {
+                type: "number",
+                description: "Pagination offset (by pos order), default 0",
+              },
+              limit: { type: "number", description: "Items per page, default 20" },
             },
             required: ["session_id"],
           },

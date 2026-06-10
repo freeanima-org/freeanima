@@ -15,7 +15,7 @@ import {
 
 type McpServersConfig = NonNullable<ReturnType<typeof loadConfig>["mcp_servers"]>;
 
-/** MCP 管理器 — 启动 config 中的 MCP Server，发现并注册工具 */
+/** MCP manager — start MCP Servers from config, discover and register tools */
 export class MCPManager {
   private readonly clients = new Map<string, McpClientSession>();
   private readonly serverConfigs = new Map<string, McpServerConfig>();
@@ -27,7 +27,7 @@ export class MCPManager {
 
   constructor(private readonly toolSets: ToolSetRegistry) {}
 
-  /** 后台并行连接已启用的 MCP Server，不阻塞 HTTP 启动 */
+  /** Connect enabled MCP Servers in parallel in background without blocking HTTP startup */
   startAllAsync(serversCfg?: McpServersConfig): void {
     if (this.startTask || this.closed) return;
     this.startTask = this.runStartAll(serversCfg, { enabledOnly: true }).finally(() => {
@@ -38,7 +38,7 @@ export class MCPManager {
     });
   }
 
-  /** 同步等待全部已启用 MCP Server 连接完成（测试或需阻塞场景） */
+  /** Synchronously wait for all enabled MCP Server connections (tests or blocking scenarios) */
   async startAll(serversCfg?: McpServersConfig): Promise<number> {
     if (this.startTask) return this.startTask;
     if (this.closed) return this.toolCount;
@@ -50,7 +50,7 @@ export class MCPManager {
     }
   }
 
-  /** 启动单个 MCP Server（工作间手动控制） */
+  /** Start a single MCP Server (workshop manual control) */
   async startServer(name: string): Promise<McpControlResult> {
     const serverCfg = this.resolveServerConfig(name);
     if (!serverCfg) {
@@ -74,7 +74,7 @@ export class MCPManager {
     return { ok: true, server: name, action: "start" };
   }
 
-  /** 停止单个 MCP Server 并注销其工具 */
+  /** Stop a single MCP Server and unregister its tools */
   async stopServer(name: string): Promise<McpControlResult> {
     if (this.connecting.has(name)) {
       return {
@@ -101,7 +101,7 @@ export class MCPManager {
     return { ok: true, server: name, action: "stop" };
   }
 
-  /** 启动所有 enabled 且未连接的 server */
+  /** Start all enabled and disconnected servers */
   async startAllEnabled(): Promise<McpControlResult> {
     const cfg = loadConfig();
     const servers = cfg.mcp_servers ?? {};
@@ -120,7 +120,7 @@ export class MCPManager {
     return { ok: true, action: "start" };
   }
 
-  /** 停止所有已连接的 MCP Server */
+  /** Stop all connected MCP Servers */
   async stopAll(): Promise<McpControlResult> {
     for (const name of [...this.clients.keys()]) {
       await this.stopServer(name);
@@ -290,7 +290,7 @@ export class MCPManager {
             mime_type: r.mimeType,
           }));
         } catch {
-          /* 部分 Server 不支持 resources */
+          /* Some servers do not support resources */
         }
         try {
           const listed = await session.listPrompts();
@@ -300,7 +300,7 @@ export class MCPManager {
             arguments: p.arguments,
           }));
         } catch {
-          /* 部分 Server 不支持 prompts */
+          /* Some servers do not support prompts */
         }
       }
 
@@ -340,28 +340,28 @@ export class MCPManager {
     const clientCount = this.clients.size;
     const connectingCount = this.connecting.size;
     logComponent("shutdown").debug(
-      `MCP 关闭 ${clientCount} 个连接` +
-        (connectingCount ? `（另有 ${connectingCount} 个仍在连接中）` : "") +
+      `MCP closing ${clientCount} connection(s)` +
+        (connectingCount ? ` (plus ${connectingCount} still connecting)` : "") +
         "…",
       { client_count: clientCount, connecting_count: connectingCount },
     );
     this.closed = true;
     if (this.startTask) {
-      logComponent("shutdown").debug("MCP 等待后台 startAll 结束…");
+      logComponent("shutdown").debug("MCP waiting for background startAll to finish…");
       await this.startTask.catch(() => {});
-      logComponent("shutdown").debug("MCP 后台 startAll 已结束", { ms: Date.now() - t0 });
+      logComponent("shutdown").debug("MCP background startAll finished", { ms: Date.now() - t0 });
     }
 
     for (const [name, session] of this.clients) {
       const ts = Date.now();
       try {
         await session.close();
-        logComponent("shutdown").debug(`MCP '${name}' 已关闭`, {
+        logComponent("shutdown").debug(`MCP '${name}' closed`, {
           ms: Date.now() - ts,
           server: name,
         });
       } catch (err) {
-        logComponent("shutdown").warn(`MCP '${name}' 关闭失败`, { err, server: name });
+        logComponent("shutdown").warn(`MCP '${name}' close failed`, { err, server: name });
       }
     }
     for (const name of [...this.clients.keys()]) {
@@ -373,7 +373,7 @@ export class MCPManager {
     this.connecting.clear();
     this.toolCount = 0;
     this.closed = false;
-    logComponent("shutdown").debug("MCP 全部关闭完成", { ms: Date.now() - t0 });
+    logComponent("shutdown").debug("MCP shutdown complete", { ms: Date.now() - t0 });
   }
 
   serverCount(): number {

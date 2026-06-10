@@ -16,9 +16,9 @@ export type McpServerConfig = {
   api_key_env?: string;
   env?: Record<string, string>;
   cwd?: string;
-  /** 连接超时（毫秒），默认 15000 */
+  /** Connection timeout (ms), default 15000 */
   connect_timeout_ms?: number;
-  /** 是否在逸灵风启动时自动连接，默认 true */
+  /** Whether to auto-connect on Free Anima startup, default true */
   enabled?: boolean;
 };
 
@@ -84,7 +84,7 @@ function createTransport(serverName: string, cfg: McpServerConfig): Transport {
   });
 }
 
-/** 单个 MCP Server 会话（SDK Client + Transport） */
+/** Single MCP Server session (SDK Client + Transport) */
 export class McpClientSession {
   readonly name: string;
   private readonly client: Client;

@@ -24,33 +24,33 @@ export const autobiographicalMemoryToolDefs: ToolDef[] = [
   {
     name: "memory_autobiographical_create",
     description:
-      "创建一条自传体叙事（只追加，正文写入后不可修改）。需提供 title 与 content；可选 significance/period/source_semantic_memory/source_sessions。",
+      "Create an autobiographical narrative (append-only; body immutable after write). Requires title and content; optional significance/period/source_semantic_memory/source_sessions.",
     parameters: {
       type: "object",
       properties: {
-        title: { type: "string", description: "叙事标题" },
-        content: { type: "string", description: "叙事正文" },
+        title: { type: "string", description: "Narrative title" },
+        content: { type: "string", description: "Narrative body" },
         significance: {
           type: "string",
           enum: [...SIGNIFICANCE_VALUES],
           description: "normal | milestone | turning_point",
         },
-        period_start: { type: "string", description: "模糊时间起点" },
-        period_end: { type: "string", description: "模糊时间终点" },
+        period_start: { type: "string", description: "Fuzzy period start" },
+        period_end: { type: "string", description: "Fuzzy period end" },
         source_semantic_memory: {
           type: "array",
           items: { type: "string" },
-          description: "关联 semantic_memory id",
+          description: "Linked semantic_memory ids",
         },
         source_facts: {
           type: "array",
           items: { type: "string" },
-          description: "source_semantic_memory 的兼容别名",
+          description: "Alias for source_semantic_memory",
         },
         source_sessions: {
           type: "array",
           items: { type: "string" },
-          description: "关联 session id",
+          description: "Linked session ids",
         },
       },
       required: ["title", "content"],
@@ -87,7 +87,8 @@ export const autobiographicalMemoryToolDefs: ToolDef[] = [
   },
   {
     name: "memory_autobiographical_deprecate",
-    description: "软废弃一条自传体叙事（正文不变，status=deprecated）。",
+    description:
+      "Soft-deprecate an autobiographical narrative (body unchanged, status=deprecated).",
     parameters: {
       type: "object",
       properties: {

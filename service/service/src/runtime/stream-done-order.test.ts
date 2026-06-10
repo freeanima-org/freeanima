@@ -33,7 +33,7 @@ function wireTestService(): AnimaService {
   return service;
 }
 
-describe("sendMessageStream done 顺序", () => {
+describe("sendMessageStream done order", () => {
   const restores: Array<{ mockRestore: () => void }> = [];
 
   afterEach(() => {
@@ -41,7 +41,7 @@ describe("sendMessageStream done 顺序", () => {
     restores.length = 0;
   });
 
-  it("done 在 finishTurn 开始之前 yield 给消费者", async () => {
+  it("done yields to consumer before finishTurn starts", async () => {
     restores.push(
       spyOn(conv, "sessionExists").mockResolvedValue(true),
       spyOn(conv, "assertSessionPlatform").mockResolvedValue(undefined),

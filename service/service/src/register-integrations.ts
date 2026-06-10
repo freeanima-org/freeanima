@@ -8,7 +8,7 @@ import type { ConversationService } from "@freeanima/engine-conversation";
 import type { SkillRegistry } from "@freeanima/engine-skill";
 import type { ToolSetRegistry } from "@freeanima/engine-tool";
 
-/** 注册 clarify hook 与 ACP 工具（需 kernel + conversation） */
+/** Register clarify hook and ACP tools (requires kernel + conversation) */
 export function registerServiceIntegrations(opts: {
   kernel: Kernel;
   conversation: ConversationService;
@@ -30,12 +30,12 @@ export function registerServiceIntegrations(opts: {
   acp.registerTools();
 }
 
-/** 注册冰箱贴 beforeLlmCall hook（FridgeStore 须在组合根 registerFridgeStore 后可用） */
+/** Register fridge magnet beforeLlmCall hook (FridgeStore must be available after registerFridgeStore at composition root) */
 export function registerFridgeMagnet(opts: { kernel: Kernel }): void {
   opts.kernel.hookRegistry.on(beforeLlmCall, createFridgeMagnetHandler());
 }
 
-/** 服务启动后启动 ACP 进度轮询 */
+/** Start ACP progress polling after service startup */
 export function startAcpProgressTicker(): void {
   getAcpManager().startProgressTicker();
 }

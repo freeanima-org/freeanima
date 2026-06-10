@@ -18,7 +18,7 @@ describe("handleClientMethod", () => {
     );
   });
 
-  it("fs/read_text_file 读取文件", () => {
+  it("fs/read_text_file reads a file", () => {
     const r = handleClientMethod(
       "fs/read_text_file",
       { path: join(projectCwd, "src", "main.ts") },
@@ -27,13 +27,13 @@ describe("handleClientMethod", () => {
     expect(r?.content).toContain("hello");
   });
 
-  it("get_project_info 返回元数据", () => {
+  it("get_project_info returns metadata", () => {
     const r = handleClientMethod("get_project_info", {}, { projectCwd });
     expect(r?.name).toBe("test-proj");
     expect(r?.cwd).toBe(projectCwd);
   });
 
-  it("explain_code 返回代码内容", () => {
+  it("explain_code returns code content", () => {
     const r = handleClientMethod(
       "explain_code",
       { path: join(projectCwd, "src", "main.ts") },
@@ -42,18 +42,18 @@ describe("handleClientMethod", () => {
     expect(r?.content).toContain("hello");
   });
 
-  it("未知方法返回 null", () => {
+  it("unknown method returns null", () => {
     expect(handleClientMethod("unknown/method", {}, { projectCwd })).toBeNull();
   });
 });
 
 describe("diagnoseStderr", () => {
-  it("识别认证错误", () => {
+  it("recognizes authentication errors", () => {
     const d = diagnoseStderr(["Error: unauthorized access"]);
     expect(d?.pattern).toBe("authentication");
   });
 
-  it("无匹配时返回 null", () => {
+  it("returns null when no match", () => {
     expect(diagnoseStderr(["some random log"])).toBeNull();
   });
 });

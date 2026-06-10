@@ -33,7 +33,7 @@ describe("LlmProvider", () => {
   it("prepareParams throws when model cannot be resolved", async () => {
     const { provider } = setupProvider();
     await expect(provider.prepareParams("__missing__")).rejects.toThrow(
-      'provider "main" 无法解析 model "__missing__"',
+      'provider "main" cannot resolve model "__missing__"',
     );
   });
 
@@ -84,12 +84,12 @@ describe("ProviderRegistry", () => {
     const providers = new ProviderRegistry(backends);
     providers.registerSpec({ id: "x", backendId: backend.id, context: {} });
     expect(() => providers.register(new LlmProvider("x", backend.id, {}, backend))).toThrow(
-      'provider "x" 已有待实例化 spec，不能重复 register',
+      'provider "x" already has a pending spec; cannot register again',
     );
 
     providers.register(new LlmProvider("y", backend.id, {}, backend));
     expect(() => providers.registerSpec({ id: "y", backendId: backend.id, context: {} })).toThrow(
-      'provider "y" 已实例化，不能重复 registerSpec',
+      'provider "y" already instantiated; cannot registerSpec again',
     );
   });
 
@@ -97,6 +97,6 @@ describe("ProviderRegistry", () => {
     const backends = new BackendRegistry();
     backends.register(new MockBackend());
     const providers = new ProviderRegistry(backends);
-    expect(() => providers.get("nope")).toThrow("未找到 provider: nope");
+    expect(() => providers.get("nope")).toThrow("Provider not found: nope");
   });
 });

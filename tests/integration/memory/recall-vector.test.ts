@@ -37,18 +37,18 @@ describePg("recall vector PG", () => {
     await restoreIntegrationHome(prev);
   });
 
-  it("vector 路：embedding 对齐时可召回（FTS 无字面匹配）", async () => {
+  it("vector path: recall when embeddings align (no literal FTS match)", async () => {
     const store = getTestEngine().repos.semanticMemory;
 
     const targetId = await store.create({
-      content: "记忆整理依赖睡眠机制在后台运行",
+      content: "Memory consolidation relies on sleep mechanisms running in the background",
       type: "world",
     });
 
     await flushEmbeddingQueueForTest();
     await rebuildAllFtsSegments();
 
-    const hits = await store.searchFts("睡觉机制", { limit: 5 });
+    const hits = await store.searchFts("sleep mechanism", { limit: 5 });
     expect(hits.some((h) => h.id === targetId)).toBe(true);
   });
 

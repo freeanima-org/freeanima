@@ -35,12 +35,12 @@ function normalizeItems(args: ClarifyArgs): ClarifyItemType[] | string {
       }
       items.push(item);
     }
-    if (!items.length) return "items 中至少需要一个有效 question";
+    if (!items.length) return "items must contain at least one valid question";
     return items;
   }
 
   const question = typeof args.question === "string" ? args.question.trim() : "";
-  if (!question) return "question 或 items 必填";
+  if (!question) return "question or items required";
   const item: ClarifyItemType = { question };
   if (Array.isArray(args.choices)) {
     item.choices = args.choices
@@ -75,7 +75,7 @@ function handleClarify(args: ClarifyArgs): string {
   const missingDefault = items.filter((item) => !item.default);
   if (missingDefault.length > 0) {
     return toolError(
-      `required=false 时每个 item 必须提供 default：${missingDefault.map((i) => i.question).join("；")}`,
+      `When required=false each item must provide default: ${missingDefault.map((i) => i.question).join("; ")}`,
     );
   }
 
@@ -91,34 +91,34 @@ function handleClarify(args: ClarifyArgs): string {
 export function registerClarifyTool(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
     "clarify",
-    "向伙伴提问澄清",
+    "Ask partner for clarification",
     attachToolReturns(
       [
         {
           name: "clarify",
           description:
-            "向伙伴提问以获取继续所需的信息。支持批量提问（items）与可选自动推荐（required=false + default）。",
+            "Ask the partner for information needed to continue. Supports batch questions (items) and optional auto-recommendation (required=false + default).",
           parameters: {
             type: "object",
             properties: {
               items: {
                 type: "array",
-                description: "批量问题列表",
+                description: "Batch question list",
                 minItems: 1,
                 maxItems: 5,
                 items: {
                   type: "object",
                   properties: {
-                    question: { type: "string", description: "问题正文" },
+                    question: { type: "string", description: "Question text" },
                     choices: {
                       type: "array",
                       items: { type: "string" },
                       maxItems: 4,
-                      description: "可选选项",
+                      description: "Optional choices",
                     },
                     default: {
                       type: "string",
-                      description: "required=false 时的 LLM 推荐答案",
+                      description: "LLM recommended answer when required=false",
                     },
                   },
                   required: ["question"],
@@ -126,23 +126,24 @@ export function registerClarifyTool(toolSets: ToolSetRegistry): void {
               },
               question: {
                 type: "string",
-                description: "单个问题（与 items 二选一，向后兼容）",
+                description: "Single question (mutually exclusive with items, backward compatible)",
               },
               choices: {
                 type: "array",
                 items: { type: "string" },
                 maxItems: 4,
-                description: "单问题模式下的选项",
+                description: "Choices in single-question mode",
               },
               required: {
                 type: "boolean",
-                description: "是否必须等待伙伴确认；false 时需提供 default 并自动续跑",
+                description:
+                  "Whether partner confirmation is required; when false provide default and auto-continue",
                 default: true,
               },
               timeout_sec: {
                 type: "integer",
                 minimum: 60,
-                description: "required=true 时等待超时秒数",
+                description: "Timeout seconds when required=true",
               },
             },
           },

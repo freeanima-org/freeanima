@@ -1,6 +1,6 @@
 /**
- * 展开 config YAML 中的 `${VAR}` 与 `${VAR:-default}`。
- * 未设置且无默认值时替换为空字符串。
+ * Expand `${VAR}` and `${VAR:-default}` in config YAML.
+ * Replace with empty string when unset and no default.
  */
 const ENV_VAR_NAME = /^[A-Za-z_][A-Za-z0-9_]*$/;
 

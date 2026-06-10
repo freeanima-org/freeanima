@@ -6,13 +6,13 @@ import { ILINK_BASE_URL } from "./ilink-api.ts";
 export type WeixinCredentials = {
   token: string;
   base_url: string;
-  /** 已绑定的人类微信 ID（日志/参考，不用于过滤入站） */
+  /** Bound human WeChat ID (logging/reference; not used for inbound filtering) */
   user_id: string;
-  /** iLink 机器人账号 ID（token 冒号前段，如 `xxxxxxxx@im.bot`） */
+  /** iLink bot account ID (segment before colon in token, e.g. `xxxxxxxx@im.bot`) */
   account_id: string;
 };
 
-/** 从 iLink token 解析机器人 account_id（token 冒号前段） */
+/** Parse bot account_id from iLink token (segment before colon) */
 export function botAccountIdFromToken(token: string): string {
   const trimmed = token.trim();
   const colon = trimmed.indexOf(":");

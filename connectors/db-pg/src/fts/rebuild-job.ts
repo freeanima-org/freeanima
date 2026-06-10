@@ -42,7 +42,7 @@ function onProgress(progress: FtsRebuildProgress): void {
   };
 }
 
-/** 后台启动重建；若已在跑则返回当前状态 */
+/** Background rebuild on startup; returns current state if already running */
 export function startFtsRebuildJob(opts?: { onlyMissing?: boolean }): FtsRebuildJobStatus {
   if (jobPromise) return getFtsRebuildJobStatus();
 
@@ -87,7 +87,7 @@ export function getFtsRebuildJobStatus(): FtsRebuildJobStatus {
   return { ...status };
 }
 
-/** 测试 teardown */
+/** Test teardown */
 export function resetFtsRebuildJobForTest(): void {
   jobPromise = null;
   status = idleStatus();

@@ -5,7 +5,7 @@ export type RedisScanEntry = {
   value: string;
 };
 
-/** 写入字符串键；带 TTL 时用 SETEX。Redis 不可用时静默跳过。 */
+/** Write string key; use SETEX with TTL. Silently skip when Redis unavailable. */
 export async function redisSet(key: string, value: string, ttlSeconds?: number): Promise<void> {
   if (!isRedisConfigured()) return;
   try {
@@ -16,11 +16,11 @@ export async function redisSet(key: string, value: string, ttlSeconds?: number):
     }
     await redis.set(key, value);
   } catch {
-    /* Redis 不可用时静默跳过 */
+    /* Silently skip when Redis unavailable */
   }
 }
 
-/** 读取字符串键；不可用时返回 null。 */
+/** Read string key; returns null when unavailable. */
 export async function redisGet(key: string): Promise<string | null> {
   if (!isRedisConfigured()) return null;
   try {
@@ -30,17 +30,17 @@ export async function redisGet(key: string): Promise<string | null> {
   }
 }
 
-/** 删除键；不可用时静默跳过。 */
+/** Delete key; silently skip when unavailable. */
 export async function redisDel(key: string): Promise<void> {
   if (!isRedisConfigured()) return;
   try {
     await getRedis().del(key);
   } catch {
-    /* Redis 不可用时静默跳过 */
+    /* Silently skip when Redis unavailable */
   }
 }
 
-/** 读取键剩余 TTL（秒）；不可用时返回 null。语义对齐 Redis TTL 命令。 */
+/** Read key remaining TTL (seconds); returns null when unavailable. Matches Redis TTL semantics. */
 export async function redisTtl(key: string): Promise<number | null> {
   if (!isRedisConfigured()) return null;
   try {
@@ -50,7 +50,7 @@ export async function redisTtl(key: string): Promise<number | null> {
   }
 }
 
-/** SCAN 匹配键并批量取值；不可用时返回空数组。 */
+/** SCAN matching keys and batch get values; returns empty array when unavailable. */
 export async function redisScanEntries(pattern: string, count = 100): Promise<RedisScanEntry[]> {
   if (!isRedisConfigured()) return [];
   const results: RedisScanEntry[] = [];

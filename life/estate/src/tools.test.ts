@@ -17,7 +17,7 @@ const EMAIL_TOOL_NAMES = [
 ] as const;
 
 describe("registerEmailTools", () => {
-  it("注册 10 个邮件工具", () => {
+  it("registers 10 email tools", () => {
     const tools = new ToolSetRegistry();
     registerEmailTools(tools);
     const names = new Set(tools.listTools().map((t) => t.name));

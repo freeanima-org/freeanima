@@ -12,7 +12,7 @@ export type SessionCompressionFields = {
   systemPrompt: string;
 };
 
-/** 从 session meta（或缺省）解析压缩/分析共用字段 */
+/** Parse compression/analysis shared fields from session meta (or defaults) */
 export function resolveSessionCompressionFields(
   meta: SessionMetaLoadResult,
   fallbackModel: string,
@@ -22,7 +22,7 @@ export function resolveSessionCompressionFields(
   return { model, systemPrompt };
 }
 
-/** 构建 compress / analyzeCompression 共用选项 */
+/** Build shared options for compress / analyzeCompression */
 export function buildCompressOptions(
   meta: SessionMetaLoadResult,
   state: CompressionState | null,

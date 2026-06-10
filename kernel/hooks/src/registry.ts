@@ -50,7 +50,7 @@ function buildRunResult<P>(
   };
 }
 
-/** 同步 Hook 注册表；由 kernel / service 实例化，不提供全局单例 */
+/** Sync Hook registry; instantiated by kernel / service; no global singleton */
 export class HookRegistry {
   private handlers: Map<symbol, RegisteredHandler[]>;
   private readonly log: Logger;
@@ -74,14 +74,14 @@ export class HookRegistry {
     list.push(entry);
     list.sort((a, b) => a.priority - b.priority);
     this.handlers.set(hook.id, list);
-    this.log.debug("注册 hook handler", { hook: hook.qualifiedId, priority });
+    this.log.debug("Register hook handler", { hook: hook.qualifiedId, priority });
     return () => {
       const current = this.handlers.get(hook.id);
       if (!current) return;
       const idx = current.indexOf(entry);
       if (idx >= 0) current.splice(idx, 1);
       if (!current.length) this.handlers.delete(hook.id);
-      this.log.debug("注销 hook handler", { hook: hook.qualifiedId, priority });
+      this.log.debug("Unregister hook handler", { hook: hook.qualifiedId, priority });
     };
   }
 
@@ -92,14 +92,14 @@ export class HookRegistry {
     const list = this.handlers.get(hook.id) ?? [];
     const started = performance.now();
 
-    this.log.debug("hook run 开始", {
+    this.log.debug("hook run start", {
       hook: hook.qualifiedId,
       handlers: list.length,
     });
 
     const emptyMeta: HookRunMeta = { duration_ms: 0, handlers: 0 };
     if (!list.length) {
-      this.log.debug("hook run 跳过（无 handler）", { hook: hook.qualifiedId });
+      this.log.debug("hook run skipped (no handler)", { hook: hook.qualifiedId });
       return buildRunResult(context, null, false, false, emptyMeta);
     }
 
@@ -114,7 +114,7 @@ export class HookRegistry {
         const step = normalizeStep(raw);
         chain = linkStep(step, chain);
         if (step.status === "failed") anyFailed = true;
-        this.log.debug("hook handler 完成", {
+        this.log.debug("hook handler done", {
           hook: hook.qualifiedId,
           index,
           step_status: step.status,
@@ -131,7 +131,7 @@ export class HookRegistry {
         };
         chain = linkStep(step, chain);
         anyFailed = true;
-        this.log.error("hook handler 未处理异常", {
+        this.log.error("hook handler unhandled exception", {
           hook: hook.qualifiedId,
           index,
           err,
@@ -145,7 +145,7 @@ export class HookRegistry {
       duration_ms: performance.now() - started,
       handlers: list.length,
     };
-    this.log.debug("hook run 结束", {
+    this.log.debug("hook run end", {
       hook: hook.qualifiedId,
       ...meta,
       run_status: anyFailed ? "failed" : "ok",

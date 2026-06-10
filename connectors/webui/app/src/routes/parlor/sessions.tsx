@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { m } from "@/lib/i18n.ts";
 import { useSessionsStore } from "@/stores/sessions.ts";
 
 export const Route = createFileRoute("/parlor/sessions")({
@@ -19,21 +20,21 @@ function SessionsPage() {
 
   return (
     <div className="p-4">
-      <h2 className="text-lg font-bold mb-4">会话管理</h2>
+      <h2 className="text-lg font-bold mb-4">{m.webui_parlor_sessions_title()}</h2>
       <div className="overflow-x-auto">
         <table className="table table-sm">
           <thead>
             <tr>
-              <th>标题</th>
-              <th>会话 ID</th>
-              <th>创建时间</th>
-              <th>操作</th>
+              <th>{m.webui_parlor_sessions_col_title()}</th>
+              <th>{m.webui_parlor_sessions_col_id()}</th>
+              <th>{m.webui_parlor_sessions_col_created()}</th>
+              <th>{m.webui_parlor_sessions_col_actions()}</th>
             </tr>
           </thead>
           <tbody>
             {sessions.map((s) => (
               <tr key={s.id}>
-                <td className="font-medium">{s.title || "（无标题）"}</td>
+                <td className="font-medium">{s.title || m.webui_common_no_title()}</td>
                 <td className="font-mono text-xs">{s.id}</td>
                 <td>{formatTime(s.id)}</td>
                 <td>
@@ -47,7 +48,7 @@ function SessionsPage() {
                       })
                     }
                   >
-                    打开
+                    {m.webui_parlor_sessions_open()}
                   </button>
                 </td>
               </tr>

@@ -1,4 +1,4 @@
-/** PG cron_jobs 行（connectors-cron / API 消费） */
+/** PG cron_jobs row (consumed by connectors-cron / API) */
 export type CronJobRow = {
   id: string;
   name: string;
@@ -47,7 +47,7 @@ export type CronJobCreateInput = {
   last_output_ref?: string | null;
 };
 
-/** 内置任务 upsert：仅更新 name/schedule，不覆盖运行时字段 */
+/** Built-in job upsert: update name/schedule only; do not overwrite runtime fields */
 export type CronJobBuiltinUpsertInput = {
   id: string;
   name: string;
@@ -58,7 +58,7 @@ export type CronJobBuiltinUpsertInput = {
   timeout_sec?: number;
 };
 
-/** 覆盖式更新：仅传入的字段会被修改 */
+/** Overlay update: only passed fields change */
 export type CronJobUpdateInput = {
   id: string;
   name?: string;
@@ -81,7 +81,7 @@ export type CronJobUpdateInput = {
   updated_at?: string;
 };
 
-/** 定时任务持久化端口 */
+/** Cron job persistence port */
 export interface CronJobStorePort {
   create(row: CronJobCreateInput): Promise<void>;
   upsertBuiltin(row: CronJobBuiltinUpsertInput): Promise<boolean>;

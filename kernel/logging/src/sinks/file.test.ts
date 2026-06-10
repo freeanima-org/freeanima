@@ -27,7 +27,7 @@ describe("createFileSink", () => {
     timestamp: Date.parse("2026-06-03T00:00:00.000Z"),
   };
 
-  it("默认 json 格式每行追加一条 JSON", () => {
+  it("default json format appends one JSON per line", () => {
     const lines: Array<{ path: string; line: string }> = [];
     const sink = createFileSink({
       path: "/tmp/unused.log",
@@ -47,7 +47,7 @@ describe("createFileSink", () => {
     expect(parsed.attributes.pid).toBe(42);
   });
 
-  it("pretty 格式写入可读行", () => {
+  it("pretty format writes readable lines", () => {
     const lines: string[] = [];
     const sink = createFileSink({
       path: "/tmp/unused.log",
@@ -60,7 +60,7 @@ describe("createFileSink", () => {
     expect(lines[0]).toContain("boot complete");
   });
 
-  it("多次 emit 追加多行", () => {
+  it("multiple emit appends multiple lines", () => {
     const lines: string[] = [];
     const sink = createFileSink({
       path: "/tmp/unused.log",
@@ -73,7 +73,7 @@ describe("createFileSink", () => {
     expect(JSON.parse(lines[1] ?? "{}").message).toBe("second");
   });
 
-  it("默认 append 写入文件并自动创建父目录", () => {
+  it("default append writes file and creates parent dir", () => {
     const dir = mkdtempSync(join(tmpdir(), "freeanima-logging-"));
     tempDirs.push(dir);
     const path = join(dir, "nested", "logs", "app.log");
@@ -87,7 +87,7 @@ describe("createFileSink", () => {
     expect(JSON.parse(fileLines[1] ?? "{}").message).toBe("again");
   });
 
-  it("mkdir: false 时父目录不存在则抛错", () => {
+  it("mkdir: false throws when parent missing", () => {
     const dir = mkdtempSync(join(tmpdir(), "freeanima-logging-"));
     tempDirs.push(dir);
     const path = join(dir, "missing", "parent", "app.log");
@@ -95,7 +95,7 @@ describe("createFileSink", () => {
     expect(() => sink.emit(sampleRecord)).toThrow();
   });
 
-  it("可与 createLogger 组合", async () => {
+  it("composes with createLogger", async () => {
     const path = tempLogPath();
     const { createLogger } = await import("../index.ts");
     const { createFileSink: createSink } = await import("./file.ts");

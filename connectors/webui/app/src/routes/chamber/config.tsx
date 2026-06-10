@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getStatusConfig } from "@/lib/api.ts";
+import { m } from "@/lib/i18n.ts";
 
 export const Route = createFileRoute("/chamber/config")({
   loader: () => getStatusConfig().catch(() => null),
@@ -17,14 +18,14 @@ function maskSecret(key: string, value: unknown): string {
     key.toLowerCase().includes("token") ||
     key.toLowerCase().includes("secret")
   ) {
-    return s ? `${s.slice(0, 8)}…` : "(空)";
+    return s ? `${s.slice(0, 8)}…` : m.webui_common_empty();
   }
-  return s || "(空)";
+  return s || m.webui_common_empty();
 }
 
 function formatDisplayValue(key: string, value: unknown): string {
   if (value === null) return "null";
-  if (value === undefined) return "(空)";
+  if (value === undefined) return m.webui_common_empty();
   if (typeof value === "boolean" || typeof value === "number") return String(value);
   if (typeof value === "string") return maskSecret(key, value);
   if (Array.isArray(value)) {
@@ -69,14 +70,14 @@ function ConfigBlock({ name, value }: { name: string; value: unknown }) {
         <div className="card-body gap-3">
           <h3 className="font-bold font-mono text-sm">{name}</h3>
           {rows.length === 0 ? (
-            <p className="text-xs text-base-content/50">（空）</p>
+            <p className="text-xs text-base-content/50">{m.webui_common_empty()}</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="table table-sm">
                 <thead>
                   <tr>
-                    <th className="w-48">键</th>
-                    <th>值</th>
+                    <th className="w-48">{m.webui_common_key_label()}</th>
+                    <th>{m.webui_common_value_label()}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -115,8 +116,8 @@ function ConfigPage() {
   if (config === null) {
     return (
       <div>
-        <h2 className="text-lg font-bold mb-4">⚙️ 配置</h2>
-        <div className="alert alert-error text-sm">加载失败</div>
+        <h2 className="text-lg font-bold mb-4">{m.webui_chamber_nav_config()}</h2>
+        <div className="alert alert-error text-sm">{m.webui_common_load_failed_short()}</div>
       </div>
     );
   }
@@ -125,12 +126,10 @@ function ConfigPage() {
 
   return (
     <div>
-      <h2 className="text-lg font-bold mb-4">⚙️ 配置</h2>
-      <p className="text-sm text-base-content/60 mb-4">
-        逸灵风运行时配置，按 config.yaml 顶层块展示。密钥值已隐藏。
-      </p>
+      <h2 className="text-lg font-bold mb-4">{m.webui_chamber_nav_config()}</h2>
+      <p className="text-sm text-base-content/60 mb-4">{m.webui_chamber_config_desc()}</p>
       {blocks.length === 0 ? (
-        <div className="alert alert-info text-sm">暂无配置项</div>
+        <div className="alert alert-info text-sm">{m.webui_chamber_config_empty()}</div>
       ) : (
         <div className="space-y-4">
           {blocks.map(([name, value]) => (

@@ -45,13 +45,13 @@ export type MemoryJobsContext = {
   cleanup: () => Promise<void>;
 };
 
-/** 记忆批处理最小 bootstrap：PG + engine + wire，不启动 HTTP/Cron/Gateway */
+/** Minimal memory batch bootstrap: PG + engine + wire; no HTTP/Cron/Gateway */
 export async function bootstrapMemoryJobs(): Promise<MemoryJobsContext> {
   process.env.FREEANIMA_REPO_ROOT = REPO_ROOT;
   try {
     chdir(REPO_ROOT);
   } catch (err) {
-    logStartupError("无法切换到仓库根目录", err);
+    logStartupError("Failed to chdir to repo root", err);
     throw err;
   }
 
@@ -74,7 +74,7 @@ export async function bootstrapMemoryJobs(): Promise<MemoryJobsContext> {
     initRedis({ getRedisUrl: getConfiguredRedisUrl });
 
     if (!isPostgresPrimary()) {
-      throw new Error("PostgreSQL 不可用，记忆任务需要 PG");
+      throw new Error("PostgreSQL unavailable; memory jobs require PG");
     }
 
     const db = getDb();

@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * 迁移旧布局 po/<master>.{pot,zh_CN.po} → po/pot/<master>.pot + po/zh_CN/<master>.po
+ * Migrate legacy layout po/<master>.{pot,zh_CN.po} → po/pot/<master>.pot + po/zh_CN/<master>.po
  */
 import { existsSync, mkdirSync, readdirSync, renameSync, unlinkSync } from "node:fs";
 import { join } from "node:path";

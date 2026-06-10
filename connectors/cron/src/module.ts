@@ -13,12 +13,12 @@ let store: CronJobStorePort | null = null;
 let handles: CronHandleManager | null = null;
 
 export function getCronStore(): CronJobStorePort {
-  if (!store) throw new Error("Cron 模块未初始化");
+  if (!store) throw new Error("Cron module not initialized");
   return store;
 }
 
 export function getCronHandleManager(): CronHandleManager {
-  if (!handles) throw new Error("Cron 模块未初始化");
+  if (!handles) throw new Error("Cron module not initialized");
   return handles;
 }
 

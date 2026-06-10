@@ -10,12 +10,12 @@ describe("compression extended", () => {
     const s = parseCompressionState({
       l2: 8,
       l3: 10,
-      summary: "之前讨论了压缩",
+      summary: "Previously discussed compression",
       summary_at: "2026-05-28T00:00:00+08:00",
     });
     expect(s?.l2).toBe(8);
     expect(s?.l3).toBe(10);
-    expect(s?.summary).toContain("压缩");
+    expect(s?.summary).toContain("compression");
   });
 
   it("token mode triggers on estimated tokens", () => {
@@ -41,7 +41,7 @@ describe("compression extended", () => {
   });
 
   it("SUMMARY_USER_PREFIX is stable for injection", () => {
-    expect(SUMMARY_USER_PREFIX).toBe("[会话摘要]");
+    expect(SUMMARY_USER_PREFIX).toBe("[session summary]");
   });
 
   it("token mode does not re-compress when runtime view is below trigger after compress", () => {

@@ -2,7 +2,7 @@ import { describe, expect, it } from "bun:test";
 import { OPENAI_COMPATIBLE_BACKEND_ID, parseOpenAiCompatibleProviderSpec } from "./config.ts";
 
 describe("parseOpenAiCompatibleProviderSpec", () => {
-  it("解析 yaml 配置并去掉 base_url 尾部斜杠", () => {
+  it("parses yaml config and strips trailing slash from base_url", () => {
     const spec = parseOpenAiCompatibleProviderSpec("deepseek", {
       backend: OPENAI_COMPATIBLE_BACKEND_ID,
       base_url: "https://api.example.com/v1/",
@@ -20,7 +20,7 @@ describe("parseOpenAiCompatibleProviderSpec", () => {
     });
   });
 
-  it("无 timeout_ms 时不写入 context", () => {
+  it("does not write context when no timeout_ms", () => {
     const spec = parseOpenAiCompatibleProviderSpec("p", {
       backend: OPENAI_COMPATIBLE_BACKEND_ID,
       base_url: "https://api.example.com",
@@ -32,7 +32,7 @@ describe("parseOpenAiCompatibleProviderSpec", () => {
     });
   });
 
-  it("拒绝非法 backend 或缺字段", () => {
+  it("rejects invalid backend or missing fields", () => {
     expect(() =>
       parseOpenAiCompatibleProviderSpec("p", {
         backend: "other",

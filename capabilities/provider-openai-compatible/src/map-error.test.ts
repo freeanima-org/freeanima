@@ -4,12 +4,12 @@ import { ProviderError } from "@freeanima/engine-provider-llm";
 import { mapOpenAiCompatibleError } from "./map-error.ts";
 
 describe("mapOpenAiCompatibleError", () => {
-  it("透传已有 ProviderError", () => {
+  it("passes through existing ProviderError", () => {
     const original = new ProviderError("x", "cancelled", false);
     expect(mapOpenAiCompatibleError(original)).toBe(original);
   });
 
-  it("将 APIError 映射为 ProviderError", () => {
+  it("maps APIError to ProviderError", () => {
     const err = mapOpenAiCompatibleError(new APIError(429, {}, "rate", new Headers()), {
       providerId: "main",
     });
@@ -18,7 +18,7 @@ describe("mapOpenAiCompatibleError", () => {
     expect(err.providerId).toBe("main");
   });
 
-  it("识别 timeout 与 Abort", () => {
+  it("recognizes timeout and Abort", () => {
     const timeout = mapOpenAiCompatibleError(new Error("request timed out"));
     expect(timeout.code).toBe("timeout");
     expect(timeout.retryable).toBe(true);

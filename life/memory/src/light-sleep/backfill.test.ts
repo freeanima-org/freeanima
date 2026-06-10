@@ -36,7 +36,7 @@ function createSessionStore(earliestDay: string | null): SessionStorePort {
     listSessionIdsUpdatedBetween: async () => ["s-1"],
     getSessionMetaLite: async () => ({
       role: "session_meta",
-      title: "测试",
+      title: "Test",
       platform: "webui",
       timestamp: "2026-01-01T10:00:00+08:00",
     }),
@@ -60,7 +60,7 @@ function createAutoStore(): AutobiographicalMemoryStorePort {
 }
 
 describe("enumerateCstDays", () => {
-  it("逐日枚举含起止", () => {
+  it("enumerates days inclusively from start to end", () => {
     expect(enumerateCstDays("2026-01-01", "2026-01-03")).toEqual([
       "2026-01-01",
       "2026-01-02",
@@ -68,19 +68,19 @@ describe("enumerateCstDays", () => {
     ]);
   });
 
-  it("fromDay > toDay 返回空", () => {
+  it("returns empty when fromDay > toDay", () => {
     expect(enumerateCstDays("2026-01-05", "2026-01-01")).toEqual([]);
   });
 });
 
 describe("addCstDay", () => {
-  it("跨月递增", () => {
+  it("increments across month boundary", () => {
     expect(addCstDay("2026-01-31")).toBe("2026-02-01");
   });
 });
 
 describe("resolveBackfillDayRange", () => {
-  it("默认 from 取最早 session 日", async () => {
+  it("defaults from to earliest session day", async () => {
     const range = await resolveBackfillDayRange(createSessionStore("2026-03-01"), {
       toDay: "2026-03-05",
     });
@@ -88,9 +88,9 @@ describe("resolveBackfillDayRange", () => {
     expect(range.to_day).toBe("2026-03-05");
   });
 
-  it("无 session 时抛错", async () => {
+  it("throws when no sessions exist", async () => {
     await expect(resolveBackfillDayRange(createSessionStore(null), {})).rejects.toThrow(
-      "无可用 session",
+      "No sessions available",
     );
   });
 });
@@ -119,7 +119,7 @@ describe("runLightSleepBackfill", () => {
     registerLightSleepEngine(async (input) => {
       const isSemantic = input.toolNames.includes("memory_semantic_create");
       return {
-        summary: isSemantic ? "语义" : "感性",
+        summary: isSemantic ? "semantic" : "limbic",
         tool_calls: 0,
         semantic_memory_ids: [],
         limbic_memory_ids: [],
@@ -127,7 +127,7 @@ describe("runLightSleepBackfill", () => {
     });
 
     registerAutobiographyEngine(async () => ({
-      summary: "自传",
+      summary: "autobiography",
       tool_calls: 0,
     }));
 
@@ -146,7 +146,7 @@ describe("runLightSleepBackfill", () => {
     resetAutobiographyEngineForTests();
   });
 
-  it("按日补跑且仅末次刷新 summary", async () => {
+  it("runs per-day backfill and refreshes summary only on last day", async () => {
     const selfStore = { updateBlock: refreshSpy } as unknown as SelfLayerStorePort;
 
     const result = await runLightSleepBackfill({
@@ -168,7 +168,7 @@ describe("runLightSleepBackfill", () => {
     expect(refreshSpy).toHaveBeenCalledTimes(1);
   });
 
-  it("resume 跳过已完成日", async () => {
+  it("resume skips completed days", async () => {
     writeLightSleepBackfillState({
       from_day: "2026-01-01",
       to_day: "2026-01-03",
@@ -189,7 +189,7 @@ describe("runLightSleepBackfill", () => {
     expect(result.results[0]?.day).toBe("2026-01-03");
   });
 
-  it("写入进度文件", async () => {
+  it("writes progress file", async () => {
     await runLightSleepBackfill({
       sessionStore: createSessionStore("2026-01-01"),
       autoStore: createAutoStore(),

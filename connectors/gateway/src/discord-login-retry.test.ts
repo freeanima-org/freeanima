@@ -11,11 +11,11 @@ describe("discord login retry", () => {
     vi.useRealTimers();
   });
 
-  it("重试间隔为 5 分钟", () => {
+  it("retry interval is 5 minutes", () => {
     expect(DISCORD_LOGIN_RETRY_MS).toBe(5 * 60 * 1000);
   });
 
-  it("scheduleLoginRetry 在间隔后触发回调", () => {
+  it("scheduleLoginRetry triggers callback after interval", () => {
     const fn = vi.fn();
     let timer: ReturnType<typeof setTimeout> | null = null;
 

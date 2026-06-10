@@ -94,7 +94,7 @@ export async function loadMessagesWithRouting(
   return store(repos).listMessages(sessionId);
 }
 
-/** 已有压缩边界时，运行时只拉 pos > l2 的消息窗口 */
+/** When compression boundary exists, runtime loads message window with pos > l2 only */
 export async function loadMessagesForRuntimeWithRouting(
   repos: PgRepositories,
   sessionId: string,
@@ -171,7 +171,7 @@ export async function nextMessagePosWithRouting(
   sessionId: string,
 ): Promise<number> {
   if (!postgresAvailable(repos)) {
-    throw new Error("database.url 未配置");
+    throw new Error("database.url not configured");
   }
   return store(repos).nextMessagePos(sessionId);
 }

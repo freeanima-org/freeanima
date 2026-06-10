@@ -67,7 +67,7 @@ function wireEngine(): Engine {
   return engine;
 }
 
-/** Vitest 等根目录测试：注入 PG 连接并清表 */
+/** Root-level tests (Vitest, etc.): inject PG connection and clear tables */
 function createTestSql(url: string): { sql: SqlClient; db: Db } {
   const sql = new SQL(url);
   const db = drizzle({ client: sql, relations });
@@ -123,8 +123,8 @@ function writeDatabaseConfig(home: string, url: string, extraYaml?: string): voi
 }
 
 /**
- * 集成测试标准 setup：临时 FREEANIMA_HOME + database.url + PG 连接。
- * 同一进程内复用连接，每用例清表（避免 afterEach 关连接导致 CONNECTION_ENDED）。
+ * Standard integration test setup: temp FREEANIMA_HOME + database.url + PG connection.
+ * Reuses connection within the same process; clears tables per case (avoids CONNECTION_ENDED from closing in afterEach).
  */
 export async function setupIntegrationHome(opts: {
   url: string;
@@ -141,14 +141,14 @@ export async function setupIntegrationHome(opts: {
   return setupPgTestDb(opts.url);
 }
 
-/** 集成测试套件结束时关闭 PG 连接 */
+/** Close PG connection when integration test suite finishes */
 export async function teardownIntegrationHome(): Promise<void> {
   if (activeCtx) {
     await activeCtx.teardown();
   }
 }
 
-/** 在已有 config.yaml 末尾追加 YAML 并刷新配置缓存 */
+/** Append YAML to existing config.yaml and refresh config cache */
 export function appendIntegrationConfig(home: string, yaml: string): void {
   const path = join(home, "config.yaml");
   const existing = readFileSync(path, "utf-8");
@@ -156,7 +156,7 @@ export function appendIntegrationConfig(home: string, yaml: string): void {
   clearConfigCache();
 }
 
-/** 通过 Session 端口写入 session fixture */
+/** Write session fixture via Session port */
 export async function seedSession(
   engine: Engine,
   sessionId: string,
@@ -172,7 +172,7 @@ export async function seedSession(
 
 export function getTestEngine(): Engine {
   if (!activeCtx) {
-    throw new Error("集成测试 PG harness 未初始化；请先 beginIntegrationCase");
+    throw new Error("Integration test PG harness not initialized; call beginIntegrationCase first");
   }
   return activeCtx.engine;
 }

@@ -15,12 +15,12 @@ function acpMinimalConfig() {
   return parsed.data;
 }
 
-describe("AcpManager 异步进度轮询", () => {
+describe("AcpManager async progress polling", () => {
   afterEach(() => {
     resetConfigForTest();
   });
 
-  it("pollProgress 向 delivery port 推送有更新的任务", async () => {
+  it("pollProgress pushes updated tasks to delivery port", async () => {
     setConfigForTest(acpMinimalConfig());
     const delivered: string[] = [];
     const port: AcpProgressDeliveryPort = {
@@ -59,7 +59,7 @@ describe("AcpManager 异步进度轮询", () => {
     expect(delivered).toHaveLength(1);
   });
 
-  it("cancelAsyncTask 对未知任务返回错误", () => {
+  it("cancelAsyncTask returns error for unknown task", () => {
     setConfigForTest(acpMinimalConfig());
     const { mgr } = createTestAcpManager();
     mgr.registerTools();

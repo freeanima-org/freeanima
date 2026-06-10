@@ -62,7 +62,7 @@ export const semanticMemory = pgTable(
     observedAt: timestamp("observed_at", { withTimezone: true }),
     occurredAt: text("occurred_at"),
     status: text("status").notNull().default("active"),
-    /** 按 session 去重 + 30 天时间衰减后的引用权重合计（定期全量同步校准） */
+    /** Reference weight sum after per-session dedupe + 30-day decay (periodic full sync calibration) */
     referenceCount: real("reference_count").notNull().default(0),
     created: timestamp("created", { withTimezone: true }).notNull().defaultNow(),
     updated: timestamp("updated", { withTimezone: true }).notNull().defaultNow(),

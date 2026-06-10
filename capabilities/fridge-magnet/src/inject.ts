@@ -2,23 +2,23 @@ import type { FridgeMagnet } from "./types.ts";
 
 const FRIDGE_BLOCK_RE = /^```fridge\n[\s\S]*?\n```\n?/;
 
-/** 格式化冰箱贴列表为 Markdown 代码块 */
+/** Format fridge magnet list as Markdown code block */
 export function formatFridgeMagnets(magnets: FridgeMagnet[]): string {
   const lines = magnets.map((m) => `${m.key}: ${m.value}`);
   return "```fridge\n" + lines.join("\n") + "\n```\n";
 }
 
-/** 在消息内容前面注入冰箱贴块 */
+/** Inject fridge magnet block before message content */
 export function injectFridgeMagnets(content: string, magnets: FridgeMagnet[]): string {
   return formatFridgeMagnets(magnets) + content;
 }
 
-/** 从消息内容前面剪除冰箱贴块（幂等） */
+/** Strip fridge magnet block from message content (idempotent) */
 export function stripFridgeMagnets(content: string): string {
   return content.replace(FRIDGE_BLOCK_RE, "");
 }
 
-/** 找到最后一条 user 消息并注入冰箱贴 */
+/** Find last user message and inject fridge magnets */
 export function injectIntoMessages(
   messages: { role: string; content: string | null }[],
   magnets: FridgeMagnet[],
@@ -32,7 +32,7 @@ export function injectIntoMessages(
   }
 }
 
-/** 剪除所有 user 消息中的冰箱贴块 */
+/** strips fridge magnet blocks from all user messages */
 export function stripAllFromMessages(messages: { role: string; content: string | null }[]): void {
   for (const msg of messages) {
     if (msg.role === "user" && msg.content !== null) {

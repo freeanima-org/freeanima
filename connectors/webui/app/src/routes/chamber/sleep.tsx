@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Fragment, useCallback, useState } from "react";
 import { getDeepSleepRounds, getSleepSummary, listSleepRuns } from "@/lib/api.ts";
+import { m } from "@/lib/i18n.ts";
 
 type DateField = string | Date | null | undefined;
 
@@ -70,8 +71,8 @@ function formatTs(value: DateField): string {
 }
 
 function jobLabel(id: string) {
-  if (id === "builtin-light-sleep") return "浅睡";
-  if (id === "builtin-deep-sleep") return "深睡";
+  if (id === "builtin-light-sleep") return m.webui_chamber_sleep_light();
+  if (id === "builtin-deep-sleep") return m.webui_chamber_sleep_deep();
   return id;
 }
 
@@ -111,7 +112,11 @@ function SleepPage() {
       const data = await listSleepRuns({ limit: 50 });
       setRuns((data as { items?: CronLogRow[] }).items ?? []);
     } catch (e) {
-      setError(`加载失败: ${e instanceof Error ? e.message : String(e)}`);
+      setError(
+        m.webui_common_load_failed({
+          detail: e instanceof Error ? e.message : String(e),
+        }),
+      );
     } finally {
       setLoading(false);
     }
@@ -146,29 +151,35 @@ function SleepPage() {
 
   return (
     <div>
-      <h2 className="text-lg font-bold mb-1">😴 睡眠记录</h2>
-      <p className="text-sm text-base-content/60 mb-4">
-        浅睡 / 深睡 cron 运行历史（来自 cron_log）与最新运行态快照。
-      </p>
+      <h2 className="text-lg font-bold mb-1">{m.webui_chamber_nav_sleep()}</h2>
+      <p className="text-sm text-base-content/60 mb-4">{m.webui_chamber_sleep_desc()}</p>
 
       {summary && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
           <div className="card bg-base-200 p-4">
-            <h3 className="font-semibold mb-2">浅睡最新</h3>
-            <p className="text-sm">处理日: {formatDay(summary.light_sleep.last_day)}</p>
-            <p className="text-sm">运行: {formatTs(summary.light_sleep.last_run_at)}</p>
+            <h3 className="font-semibold mb-2">{m.webui_chamber_sleep_light_latest()}</h3>
             <p className="text-sm">
-              工具调用: {summary.light_sleep.stats?.tool_calls ?? 0} · sessions:{" "}
-              {summary.light_sleep.stats?.sessions ?? 0}
+              {m.webui_common_processing_day()}: {formatDay(summary.light_sleep.last_day)}
+            </p>
+            <p className="text-sm">
+              {m.webui_common_run_at()}: {formatTs(summary.light_sleep.last_run_at)}
+            </p>
+            <p className="text-sm">
+              {m.webui_common_tool_calls()}: {summary.light_sleep.stats?.tool_calls ?? 0} ·{" "}
+              {m.webui_common_sessions()}: {summary.light_sleep.stats?.sessions ?? 0}
             </p>
           </div>
           <div className="card bg-base-200 p-4">
-            <h3 className="font-semibold mb-2">深睡最新</h3>
-            <p className="text-sm">处理日: {formatDay(summary.deep_sleep.last_day)}</p>
-            <p className="text-sm">运行: {formatTs(summary.deep_sleep.last_run_at)}</p>
+            <h3 className="font-semibold mb-2">{m.webui_chamber_sleep_deep_latest()}</h3>
             <p className="text-sm">
-              工具调用: {summary.deep_sleep.stats?.total_tool_calls ?? 0} · 轮次:{" "}
-              {summary.deep_sleep.rounds_completed ?? 0}
+              {m.webui_common_processing_day()}: {formatDay(summary.deep_sleep.last_day)}
+            </p>
+            <p className="text-sm">
+              {m.webui_common_run_at()}: {formatTs(summary.deep_sleep.last_run_at)}
+            </p>
+            <p className="text-sm">
+              {m.webui_common_tool_calls()}: {summary.deep_sleep.stats?.total_tool_calls ?? 0} ·{" "}
+              {m.webui_common_rounds()}: {summary.deep_sleep.rounds_completed ?? 0}
             </p>
           </div>
         </div>
@@ -181,7 +192,7 @@ function SleepPage() {
           disabled={loading}
           onClick={() => void reload()}
         >
-          {loading ? "刷新中…" : "刷新列表"}
+          {loading ? m.webui_common_refreshing() : m.webui_common_refresh_list()}
         </button>
         {error && <span className="text-error text-sm">{error}</span>}
       </div>
@@ -190,11 +201,11 @@ function SleepPage() {
         <table className="table table-sm">
           <thead>
             <tr>
-              <th>时间</th>
-              <th>任务</th>
-              <th>处理日</th>
-              <th>状态</th>
-              <th>工具</th>
+              <th>{m.webui_common_time()}</th>
+              <th>{m.webui_common_task()}</th>
+              <th>{m.webui_common_processing_day()}</th>
+              <th>{m.webui_common_status()}</th>
+              <th>{m.webui_common_tools()}</th>
               <th />
             </tr>
           </thead>
@@ -205,11 +216,11 @@ function SleepPage() {
                   <td className="whitespace-nowrap">{formatTs(row.finished_at)}</td>
                   <td>{jobLabel(row.job_id)}</td>
                   <td>{outputDay(row)}</td>
-                  <td>{row.ok ? "成功" : "失败"}</td>
+                  <td>{row.ok ? m.webui_common_success() : m.webui_common_failed()}</td>
                   <td>{outputToolCalls(row)}</td>
                   <td>
                     <button type="button" className="btn btn-xs" onClick={() => toggleExpand(row)}>
-                      {expandedId === row.id ? "收起" : "详情"}
+                      {expandedId === row.id ? m.webui_common_collapse() : m.webui_common_details()}
                     </button>
                   </td>
                 </tr>
@@ -233,8 +244,12 @@ function SleepPage() {
                       )}
                       {row.job_id === "builtin-deep-sleep" && row.ok && outputDay(row) !== "—" && (
                         <div className="mt-3">
-                          <h4 className="font-semibold text-sm mb-1">深睡轮次日志</h4>
-                          {roundsLoading && <p className="text-xs">加载轮次…</p>}
+                          <h4 className="font-semibold text-sm mb-1">
+                            {m.webui_chamber_sleep_deep_rounds()}
+                          </h4>
+                          {roundsLoading && (
+                            <p className="text-xs">{m.webui_chamber_sleep_loading_rounds()}</p>
+                          )}
                           {!roundsLoading &&
                             rounds.map((r) => (
                               <div
@@ -242,12 +257,18 @@ function SleepPage() {
                                 className="mb-2 border-t border-base-300 pt-2"
                               >
                                 <p className="text-sm font-medium">
-                                  {r.round_index}. {r.round} ({r.output.tool_calls} 次工具)
+                                  {m.webui_chamber_sleep_round_tools({
+                                    index: String(r.round_index),
+                                    round: r.round,
+                                    count: String(r.output.tool_calls),
+                                  })}
                                 </p>
                                 <p className="text-xs text-base-content/70">
-                                  变更: +{r.change_log_snapshot.addedIds?.length ?? 0} / ~
-                                  {r.change_log_snapshot.modifiedIds?.length ?? 0} / -
-                                  {r.change_log_snapshot.deprecatedIds?.length ?? 0}
+                                  {m.webui_chamber_sleep_change_log({
+                                    added: String(r.change_log_snapshot.addedIds?.length ?? 0),
+                                    updated: String(r.change_log_snapshot.modifiedIds?.length ?? 0),
+                                  })}{" "}
+                                  / -{r.change_log_snapshot.deprecatedIds?.length ?? 0}
                                 </p>
                                 <p className="text-xs whitespace-pre-wrap">
                                   {r.output.summary.slice(0, 400)}
@@ -264,7 +285,7 @@ function SleepPage() {
             {!runs.length && (
               <tr>
                 <td colSpan={6} className="text-center text-base-content/50">
-                  暂无 cron_log 记录（部署后新运行会写入）
+                  {m.webui_chamber_sleep_no_cron_log()}
                 </td>
               </tr>
             )}

@@ -2,7 +2,7 @@ import { describe, it, expect } from "bun:test";
 import { sanitizeConfigForApi } from "./config-sanitize.ts";
 
 describe("sanitizeConfigForApi", () => {
-  it("脱敏 llm.providers.api_key", () => {
+  it("sanitizes llm.providers.api_key", () => {
     const out = sanitizeConfigForApi({
       llm: {
         default_profile: "chat",
@@ -23,7 +23,7 @@ describe("sanitizeConfigForApi", () => {
     expect(providers.main?.api_key).toBe("***");
   });
 
-  it("脱敏 database.url 中的密码", () => {
+  it("sanitizes password in database.url", () => {
     const out = sanitizeConfigForApi({
       database: { url: "postgresql://anima:secretpass@127.0.0.1:5432/anima" },
     } as never);
@@ -32,7 +32,7 @@ describe("sanitizeConfigForApi", () => {
     });
   });
 
-  it("脱敏 push.pushdeer.pushkey", () => {
+  it("sanitizes push.pushdeer.pushkey", () => {
     const out = sanitizeConfigForApi({
       push: {
         provider: "pushdeer",
@@ -45,7 +45,7 @@ describe("sanitizeConfigForApi", () => {
     });
   });
 
-  it("MCP env 仅保留 env_keys", () => {
+  it("MCP env keeps env_keys only", () => {
     const out = sanitizeConfigForApi({
       mcp_servers: {
         db: {

@@ -7,7 +7,7 @@ function logsDir(): string {
   return join(PATHS.home, "logs");
 }
 
-/** 每轮结束后写一份操作记录日志 */
+/** Write an operation log after each round */
 export function writeDeepSleepRoundLog(log: DeepSleepRoundLog): void {
   const dir = logsDir();
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
@@ -15,7 +15,7 @@ export function writeDeepSleepRoundLog(log: DeepSleepRoundLog): void {
   writeFileSync(join(dir, fileName), JSON.stringify(log, null, 2), "utf-8");
 }
 
-/** 创建日志条目 */
+/** Create a log entry */
 export function makeRoundLog(input: {
   day: string;
   round: DeepSleepRound;

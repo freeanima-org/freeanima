@@ -12,7 +12,7 @@ export type Mask = {
   credentials: CredentialPermission[];
 };
 
-/** 能力面罩注册表端口（connectors / service 通过 ServiceContext 访问） */
+/** Capability mask registry port (connectors / service via ServiceContext) */
 export interface MaskRegistryPort {
   get(name: string): Mask | undefined;
   list(): { name: string; mask: Mask }[];

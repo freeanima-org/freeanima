@@ -49,7 +49,7 @@ describePg("tasks tool", () => {
     await endIntegrationCase();
   });
 
-  it("create_task 写入 PG 并同步冰箱贴摘要", async () => {
+  it("create_task writes to PG and syncs fridge summary", async () => {
     const cfg = loadConfig();
     const sid = "sess-task-create";
     const repos = testConv().repos;
@@ -62,7 +62,7 @@ describePg("tasks tool", () => {
         const tool = toolSets.getTool("tasks_create")!;
         output = await Promise.resolve(
           tool.handler({
-            title: "讨论 UI 方案",
+            title: "Discuss UI plan",
             priority: "high",
           }),
         );
@@ -81,27 +81,27 @@ describePg("tasks tool", () => {
       };
     };
     expect(parsed.ok).toBe(true);
-    expect(parsed.task.title).toBe("讨论 UI 方案");
+    expect(parsed.task.title).toBe("Discuss UI plan");
     expect(parsed.task.status).toBe("pending");
     expect(parsed.task.priority).toBe("high");
     expect(parsed.task.source_session_id).toBe(sid);
 
     const row = await repos.tasks.get(parsed.task.id);
-    expect(row?.title).toBe("讨论 UI 方案");
+    expect(row?.title).toBe("Discuss UI plan");
 
     expect(summaryWrites.some((w) => w.module === "tasks" && w.id === "summary")).toBe(true);
-    expect(summaryWrites.at(-1)?.value).toContain("待办 (1)");
-    expect(summaryWrites.at(-1)?.value).toContain("讨论 UI 方案");
+    expect(summaryWrites.at(-1)?.value).toContain("Todos (1)");
+    expect(summaryWrites.at(-1)?.value).toContain("Discuss UI plan");
   });
 
-  it("list_tasks 默认仅 pending + in_progress", async () => {
+  it("list_tasks defaults to pending + in_progress only", async () => {
     const cfg = loadConfig();
     const sid = "sess-task-list";
     const repos = testConv().repos;
     await testConv().initSession(sid, getProfileHopModel(cfg), { platform: "parlor" });
 
     const created = await repos.tasks.create({
-      title: "活跃任务",
+      title: "Active task",
       source_session_id: sid,
     });
     await repos.tasks.update({
@@ -109,7 +109,7 @@ describePg("tasks tool", () => {
       status: "completed",
       completed_at: new Date().toISOString(),
     });
-    await repos.tasks.create({ title: "待办任务", source_session_id: sid });
+    await repos.tasks.create({ title: "Pending task", source_session_id: sid });
 
     let output = "";
     await runWithToolContext(
@@ -127,17 +127,17 @@ describePg("tasks tool", () => {
       tasks: { title: string }[];
     };
     expect(parsed.count).toBe(1);
-    expect(parsed.tasks[0]?.title).toBe("待办任务");
+    expect(parsed.tasks[0]?.title).toBe("Pending task");
   });
 
-  it("tasks_complete 更新状态", async () => {
+  it("tasks_complete updates status", async () => {
     const cfg = loadConfig();
     const sid = "sess-task-complete";
     const repos = testConv().repos;
     await testConv().initSession(sid, getProfileHopModel(cfg), { platform: "parlor" });
 
     const created = await repos.tasks.create({
-      title: "要完成的任务",
+      title: "Task to complete",
       source_session_id: sid,
     });
 
@@ -157,6 +157,6 @@ describePg("tasks tool", () => {
     };
     expect(parsed.task.status).toBe("completed");
     expect(parsed.task.completed_at).not.toBeNull();
-    expect(summaryWrites.at(-1)?.value).toBe("待办 (0)");
+    expect(summaryWrites.at(-1)?.value).toBe("Todos (0)");
   });
 });

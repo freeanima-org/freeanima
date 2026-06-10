@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import type { BunSQLDatabase } from "drizzle-orm/bun-sql/postgres";
 
-/** engine-db 包内 migrations 目录（相对本模块） */
+/** migrations directory inside engine-db package (relative to this module) */
 export const DEFAULT_MIGRATIONS_FOLDER = join(import.meta.dir, "../migrations");
 
 export type RunMigrationsOptions = {

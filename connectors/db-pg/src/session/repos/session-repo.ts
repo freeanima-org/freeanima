@@ -38,7 +38,7 @@ export async function getSessionMeta(sessionId: string): Promise<SessionMetaMess
   return rowToSessionMeta(rows[0]!);
 }
 
-/** 热路径 meta：保留 tools/loaded_tools，供运行时工具白名单与默认工具集判断 */
+/** Hot-path meta: keep tools/loaded_tools for runtime tool whitelist and default toolset checks */
 export async function getSessionMetaLite(sessionId: string): Promise<SessionMetaMessage | null> {
   const db = getDb();
   const rows = await db
@@ -307,8 +307,8 @@ export async function sessionExists(sessionId: string): Promise<boolean> {
 }
 
 /**
- * 按 platform + platform_extra 查找 session（JSONB @>，与 Discord findOrCreateSession 对齐）。
- * 多条命中时取最近更新的那条。
+ * Find session by platform + platform_extra (JSONB @>, aligned with Discord findOrCreateSession).
+ * When multiple matches, take the most recently updated.
  */
 export async function findSessionIdByPlatformInfo(
   platform: string,
@@ -326,7 +326,7 @@ export async function findSessionIdByPlatformInfo(
   return rows[0]?.id ?? null;
 }
 
-/** sessions.updated_at 落在 [fromIso, toIso) 内、非 debug 的 session id */
+/** Non-debug session ids with sessions.updated_at in [fromIso, toIso) */
 export async function listSessionIdsUpdatedBetween(
   fromIso: string,
   toIso: string,
@@ -344,7 +344,7 @@ export async function listSessionIdsUpdatedBetween(
   return rows.map((r) => r.id);
 }
 
-/** 最早非 debug session 的 CST 自然日 YYYY-MM-DD */
+/** Earliest non-debug session CST calendar day YYYY-MM-DD */
 export async function getEarliestSessionDay(): Promise<string | null> {
   const db = getDb();
   const rows = await db.execute<{ day: string | null }>(sql`

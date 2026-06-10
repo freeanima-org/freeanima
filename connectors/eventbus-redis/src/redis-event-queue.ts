@@ -10,7 +10,7 @@ export type RedisEventQueueOptions = {
   keyPrefix?: string;
   blockSec?: number;
   maxRetries?: number;
-  /** BRPOPLPUSH 超时返回 null 时的轮询间隔（毫秒）；默认 50 */
+  /** Poll interval (ms) when BRPOPLPUSH times out with null; default 50 */
   pollMs?: number;
 };
 
@@ -30,7 +30,7 @@ function isRedisConnectionClosedError(err: unknown): boolean {
   );
 }
 
-/** 关闭自管 Redis 连接；BRPOPLPUSH 阻塞中被 close 打断时 Bun 可能已关闭连接 */
+/** Close self-managed Redis connection; Bun may have closed connection if close interrupts blocked BRPOPLPUSH */
 export function safeCloseOwnedRedisClient(client: RedisClient): void {
   try {
     client.close();
@@ -56,7 +56,7 @@ function parseEnvelope(raw: string): EventEnvelope | null {
   }
 }
 
-/** Redis 持久化事件队列（Bun RedisClient + BRPOPLPUSH）；start 内 resetStuck + 阻塞消费 */
+/** Redis persistent event queue (Bun RedisClient + BRPOPLPUSH); resetStuck + blocking consume in start */
 export class RedisEventQueue implements EventQueueAdapter {
   private readonly redis: RedisClient;
   private readonly ownsClient: boolean;

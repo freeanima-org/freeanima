@@ -18,7 +18,7 @@ export type CommandHandler = (
   ctx: CommandContext,
 ) => string | CommandResult | Promise<string | CommandResult>;
 
-/** session：作用于当前 session；global：跨 session / 平台级（如 help、new） */
+/** session: affects current session; global: cross-session / platform-level (e.g. help, new) */
 export type CommandScope = "session" | "global";
 
 export type CommandDef = {
@@ -27,9 +27,9 @@ export type CommandDef = {
   handler: CommandHandler;
   aliases?: string[];
   hidden?: boolean;
-  /** 默认 session */
+  /** default session */
   scope?: CommandScope;
-  /** 白名单；未设置表示所有平台可用 */
+  /** whitelist; unset means all platforms */
   platforms?: string[];
 };
 
@@ -76,7 +76,7 @@ export function findCommand(text: string): [CommandDef | null, string[]] {
   return [cmd, parts.slice(1)];
 }
 
-/** 匹配命令并校验当前平台是否可用 */
+/** Match command and verify platform availability */
 export function resolveCommand(text: string, platform: string): [CommandDef | null, string[]] {
   const [cmd, args] = findCommand(text);
   if (!cmd) return [null, []];

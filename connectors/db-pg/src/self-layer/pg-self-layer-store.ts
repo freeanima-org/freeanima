@@ -2,7 +2,7 @@ import type { SelfLayerStorePort } from "@freeanima/engine-repos";
 
 import * as crudRepo from "./repos/self-crud-repo.ts";
 
-/** PostgreSQL SelfLayerStorePort 实现 */
+/** PostgreSQL SelfLayerStorePort implementation */
 export class PgSelfLayerStore implements SelfLayerStorePort {
   async getBlock(key: Parameters<SelfLayerStorePort["getBlock"]>[0]) {
     return crudRepo.getSelfBlock(key);

@@ -17,7 +17,7 @@ export type ServiceContext = {
   port: number;
 };
 
-/** WebUI SSR bundle 会复制一份模块；用 globalThis 与 anima service 主进程共享 */
+/** WebUI SSR bundle duplicates module; shared with anima service main process via globalThis */
 const GLOBAL_CTX_KEY = Symbol.for("freeanima.serviceContext");
 
 let ctx: ServiceContext | null = null;
@@ -40,7 +40,7 @@ export function getServiceContext(): ServiceContext {
   const shared = readGlobalContext();
   if (shared) return shared;
   if (!ctx) {
-    throw new Error("ServiceContext 未初始化");
+    throw new Error("ServiceContext not initialized");
   }
   return ctx;
 }

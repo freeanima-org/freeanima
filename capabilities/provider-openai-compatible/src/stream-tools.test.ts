@@ -6,14 +6,14 @@ import {
   mergeStreamingToolCalls,
 } from "./stream-tools.ts";
 
-/** OpenAI 流式 delta 在 ToolCall 上附带 index，且 function 字段可部分出现 */
+/** OpenAI streaming delta attaches index on ToolCall; function fields may appear partially */
 type StreamToolDelta = ToolCall & {
   index?: number;
   function?: Partial<{ name: string; arguments: string }>;
 };
 
 describe("mergeStreamingToolCalls", () => {
-  it("按 index 合并 arguments 碎片", () => {
+  it("merges argument fragments by index", () => {
     const acc: Record<number, ToolCall> = {};
     mergeStreamingToolCalls(acc, [
       { index: 0, id: "c1", type: "function", function: { name: "read", arguments: '{"a":' } },
@@ -28,7 +28,7 @@ describe("mergeStreamingToolCalls", () => {
 });
 
 describe("finalizeStreamingToolCalls", () => {
-  it("按 index 排序并丢弃无 id 或 name 的项", () => {
+  it("sorts by index and drops items without id or name", () => {
     const acc: Record<number, ToolCall> = {
       1: { id: "b", type: "function", function: { name: "b", arguments: "{}" } },
       0: { id: "a", type: "function", function: { name: "a", arguments: "{}" } },
@@ -39,7 +39,7 @@ describe("finalizeStreamingToolCalls", () => {
 });
 
 describe("cleanToolCallsForApi", () => {
-  it("trim name 并过滤空 id/name", () => {
+  it("trims name and filters empty id/name", () => {
     const out = cleanToolCallsForApi([
       { id: "", function: { name: " skip ", arguments: "{}" } },
       { id: "x", function: { name: " run ", arguments: "" } },

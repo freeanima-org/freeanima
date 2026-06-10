@@ -13,21 +13,21 @@ describe("resolveWebuiDevMode", () => {
     else process.env.ANIMA_WEBUI_DEV = prev;
   });
 
-  it("默认关闭 dev", () => {
+  it("dev off by default", () => {
     expect(resolveWebuiDevMode()).toBe(false);
     expect(resolveWebuiDevMode(false)).toBe(false);
   });
 
-  it("CLI --dev 开启", () => {
+  it("CLI --dev enables", () => {
     expect(resolveWebuiDevMode(true)).toBe(true);
   });
 
-  it("ANIMA_WEBUI_DEV=1 强制开启", () => {
+  it("ANIMA_WEBUI_DEV=1 forces on", () => {
     process.env.ANIMA_WEBUI_DEV = "1";
     expect(resolveWebuiDevMode(false)).toBe(true);
   });
 
-  it("ANIMA_WEBUI_DEV=0 强制关闭", () => {
+  it("ANIMA_WEBUI_DEV=0 forces off", () => {
     process.env.ANIMA_WEBUI_DEV = "0";
     expect(resolveWebuiDevMode(true)).toBe(false);
   });

@@ -4,7 +4,7 @@ export type SessionToolMaskFilter = (toolNames: string[], meta: SessionMetaMessa
 
 let sessionToolMaskFilter: SessionToolMaskFilter | null = null;
 
-/** 由 service 组合根注入（避免 engine-conversation 依赖 capabilities-mask） */
+/** Injected by service composition root (avoids engine-conversation depending on capabilities-mask) */
 export function registerSessionToolMaskFilter(filter: SessionToolMaskFilter): void {
   sessionToolMaskFilter = filter;
 }
@@ -17,7 +17,7 @@ export function applySessionToolMaskFilter(
   return sessionToolMaskFilter(toolNames, meta);
 }
 
-/** 是否配置了能力面罩 preset */
+/** Whether capability mask preset is configured */
 export function sessionHasCapabilityMask(meta: SessionMetaMessage): boolean {
   return (meta.capability_mask?.presets.length ?? 0) > 0;
 }

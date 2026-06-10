@@ -27,7 +27,9 @@ export async function runLightSleepEngine(
   input: LightSleepEngineInput,
 ): Promise<LightSleepEngineResult> {
   if (!engineFn) {
-    throw new Error("浅睡 LLM 未配置：请在服务启动时调用 registerLightSleepEngine()");
+    throw new Error(
+      "Light sleep LLM not configured: call registerLightSleepEngine() at service startup",
+    );
   }
   return engineFn(input);
 }

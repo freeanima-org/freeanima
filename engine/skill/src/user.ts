@@ -52,7 +52,9 @@ export function createUserSkill(
   const dir = ensureUserSkillsDir();
   const path = join(dir, `${trimmedName}.md`);
   if (existsSync(path)) {
-    return toolError(`技能 '${trimmedName}' 已存在。用不同的名字，或先删除再重建。`);
+    return toolError(
+      `Skill '${trimmedName}' already exists. Use a different name, or delete and recreate.`,
+    );
   }
   const skillText = SKILL_TEMPLATE(trimmedName, description, nowDate(), content.trim());
   writeFileSync(path, skillText, "utf-8");
@@ -66,16 +68,18 @@ export function createUserSkill(
     ok: true,
     name: trimmedName,
     description: description.trim(),
-    message: `技能 '${trimmedName}' 已创建并注册`,
+    message: `Skill '${trimmedName}' created and registered`,
   });
 }
 
 export function deleteUserSkill(skills: SkillRegistry, name: string): string {
   const trimmed = name.trim();
   const def = skills.get(trimmed);
-  if (!def) return toolError(`技能 '${trimmed}' 未注册`);
+  if (!def) return toolError(`Skill '${trimmed}' is not registered`);
   if (def.source !== USER_SKILLS_SOURCE) {
-    return toolError(`技能 '${trimmed}' 为内置技能（${def.source ?? "builtin"}），不可删除`);
+    return toolError(
+      `Skill '${trimmed}' is a built-in skill (${def.source ?? "builtin"}); cannot delete`,
+    );
   }
   const path = join(def.directory, `${trimmed}.md`);
   if (!existsSync(path)) {
@@ -83,17 +87,17 @@ export function deleteUserSkill(skills: SkillRegistry, name: string): string {
     return toolResult({
       ok: true,
       name: trimmed,
-      message: `技能 '${trimmed}' 文件不存在，已从注册表移除`,
+      message: `Skill '${trimmed}' file missing; removed from registry`,
     });
   }
   unlinkSync(path);
   skills.unregister(trimmed);
-  return toolResult({ ok: true, name: trimmed, message: `技能 '${trimmed}' 已删除` });
+  return toolResult({ ok: true, name: trimmed, message: `Skill '${trimmed}' deleted` });
 }
 
 export function viewUserSkill(skills: SkillRegistry, name: string): string {
   const trimmed = name.trim();
   const raw = readSkillFile(skills, trimmed);
-  if (raw == null) return toolError(`技能 '${trimmed}' 不存在`);
+  if (raw == null) return toolError(`Skill '${trimmed}' does not exist`);
   return toolResult({ name: trimmed, content: raw.trim() });
 }

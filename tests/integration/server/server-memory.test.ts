@@ -19,7 +19,7 @@ describePg("server memory API", () => {
   beforeEach(async () => {
     const ctx = await beginIntegrationCase("freeanima-memapi-");
     home = ctx.home;
-    writeFileSync(join(home, "MEMORY.md"), "# 记忆笔记\n", "utf-8");
+    writeFileSync(join(home, "MEMORY.md"), "# Memory notes\n", "utf-8");
   });
 
   afterEach(async () => {
@@ -29,20 +29,20 @@ describePg("server memory API", () => {
   it("listMemoryFiles returns objects with name and content", async () => {
     await getTestEngine().repos.semanticMemory.create({
       id: "f-000001-abcd",
-      content: "测试语义记忆",
+      content: "test semantic memory",
     });
     const { files } = await getServiceContext().service.listMemoryFiles();
     expect(files.length).toBeGreaterThan(0);
     const memory = files.find((f: { name: string }) => f.name === "MEMORY.md");
     expect(memory).toBeDefined();
-    expect(memory!.content).toContain("记忆笔记");
+    expect(memory!.content).toContain("Memory notes");
     expect(typeof memory!.size).toBe("number");
     expect(files.some((f: { name: string }) => f.name.startsWith("f-"))).toBe(true);
   });
 
   it("memorySearch returns structured semantic memory and PG dialogue hits", async () => {
     await getTestEngine().repos.semanticMemory.create({
-      content: "逸灵风记忆管道使用 compression 压缩",
+      content: "Freeanima memory pipeline uses compression",
       type: "world",
     });
 
@@ -63,7 +63,7 @@ describePg("server memory API", () => {
         {
           role: "user",
           timestamp: "2026-05-26T12:00:00+08:00",
-          content: "讨论 compression 算法",
+          content: "Discuss compression algorithm",
           pos: 1,
         },
       ],
@@ -84,7 +84,7 @@ describePg("server memory API", () => {
 
   it("countSemanticMemory returns semantic memory count", async () => {
     await getTestEngine().repos.semanticMemory.create({
-      content: "语义记忆计数探针 gamma",
+      content: "semantic memory count probe gamma",
       type: "world",
     });
 
@@ -98,11 +98,11 @@ describePg("server memory API", () => {
 
   it("listSemanticMemories supports filter offset and total", async () => {
     await getTestEngine().repos.semanticMemory.create({
-      content: "列表探针 alpha unique-token",
+      content: "list probe alpha unique-token",
       type: "preference",
     });
     await getTestEngine().repos.semanticMemory.create({
-      content: "列表探针 beta unique-token",
+      content: "list probe beta unique-token",
       type: "world",
     });
 
@@ -130,12 +130,12 @@ describePg("server memory API", () => {
     await getTestEngine().repos.limbicMemory.create({
       session_id: sid,
       kind: "spike",
-      content: "情感探针 spike 内容",
+      content: "limbic probe spike content",
     });
     await getTestEngine().repos.limbicMemory.create({
       session_id: sid,
       kind: "session_mood",
-      content: "情感探针 mood 内容",
+      content: "limbic probe mood content",
     });
 
     const spikes = await getServiceContext().service.listLimbicMemories({
@@ -155,13 +155,13 @@ describePg("server memory API", () => {
 
   it("listAutobiographicalMemories supports significance filter", async () => {
     await getTestEngine().repos.autobiographicalMemory.create({
-      title: "里程碑事件",
-      content: "自传列表探针 milestone",
+      title: "Milestone event",
+      content: "autobiography list probe milestone",
       significance: "milestone",
     });
     await getTestEngine().repos.autobiographicalMemory.create({
-      title: "日常记录",
-      content: "自传列表探针 normal",
+      title: "Daily record",
+      content: "autobiography list probe normal",
       significance: "normal",
     });
 
@@ -177,13 +177,13 @@ describePg("server memory API", () => {
       query: "milestone",
     });
     expect(searched.total).toBeGreaterThanOrEqual(1);
-    expect(searched.items.some((r: { title: string }) => r.title.includes("里程碑"))).toBe(true);
+    expect(searched.items.some((r: { title: string }) => r.title.includes("Milestone"))).toBe(true);
   });
 
   it("listSelfBlocks returns six blocks in order", async () => {
     await getTestEngine().repos.selfLayer.upsertBlock({
       block_key: "direction",
-      content: "自我层列表探针",
+      content: "self layer list probe",
       updated_by: "test",
     });
 
@@ -191,8 +191,8 @@ describePg("server memory API", () => {
     expect(blocks.length).toBe(SELF_BLOCK_KEYS.length);
     expect(blocks.map((b: { block_key: string }) => b.block_key)).toEqual([...SELF_BLOCK_KEYS]);
     const direction = blocks.find((b: { block_key: string }) => b.block_key === "direction");
-    expect(direction?.content).toBe("自我层列表探针");
-    expect(direction?.heading).toBe("方向意图");
+    expect(direction?.content).toBe("self layer list probe");
+    expect(direction?.heading).toBe("Direction and intent");
   });
 
   afterAll(async () => {

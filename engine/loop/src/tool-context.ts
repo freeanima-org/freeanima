@@ -6,7 +6,7 @@ type ToolContextStore = {
   sessionId: string;
   repos?: PgRepositories;
   tools: ToolSetRegistry;
-  /** 可变执行白名单；未设置时不做 loaded 门禁 */
+  /** Mutable execution allowlist; no loaded gate when unset */
   executableTools?: Set<string>;
 };
 
@@ -21,7 +21,7 @@ function isAsyncIterable(value: unknown): value is AsyncIterable<unknown> {
   );
 }
 
-/** 每次 next() 在 session 上下文中执行，供 runStream 等 async generator 使用 */
+/** Each next() runs in session context; for runStream and other async generators */
 async function* bindToolContext<T>(
   store: ToolContextStore,
   source: AsyncIterable<T>,
@@ -67,14 +67,12 @@ export function getToolRepos(): PgRepositories | undefined {
 export function getToolRegistry(): ToolSetRegistry {
   const tools = storage.getStore()?.tools;
   if (!tools) {
-    throw new Error(
-      "ToolSetRegistry 未在 tool context 中设置；请通过 runWithToolContext 传入 tools",
-    );
+    throw new Error("ToolSetRegistry not set in tool context; pass tools via runWithToolContext");
   }
   return tools;
 }
 
-/** tools_load 等同轮追加可执行工具名 */
+/** tools_load appends executable tool names in the same turn */
 export function grantExecutableTools(names: readonly string[]): void {
   const store = storage.getStore();
   if (!store?.executableTools) return;
@@ -83,7 +81,7 @@ export function grantExecutableTools(names: readonly string[]): void {
   }
 }
 
-/** 返回是否在执行白名单内；无白名单时 undefined（不门禁） */
+/** Whether name is in execution allowlist; undefined when no allowlist (no gate) */
 export function isExecutableTool(name: string): boolean | undefined {
   const set = storage.getStore()?.executableTools;
   if (!set) return undefined;

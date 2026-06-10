@@ -59,14 +59,14 @@ export function formatElapsed(ms: number): string {
 
 export function formatProgressBody(task: AcpAsyncTask): string {
   const elapsed = formatElapsed(Date.now() - task.startedAt);
-  const lines = [`Cursor 工作中 (task: ${task.taskId}, 已运行 ${elapsed})`];
+  const lines = [`Cursor working (task: ${task.taskId}, elapsed ${elapsed})`];
   const recent = task.progressNotes.slice(-5);
   if (recent.length) {
     for (const note of recent) {
-      lines.push(`  进度: ${note}`);
+      lines.push(`  Progress: ${note}`);
     }
   } else {
-    lines.push("  进度: 等待 Cursor 响应...");
+    lines.push("  Progress: waiting for Cursor response...");
   }
   return lines.join("\n");
 }

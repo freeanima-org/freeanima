@@ -20,7 +20,7 @@ function resolveLogLevel(): LogLevel {
   return "info";
 }
 
-/** 创建服务默认 Logger：stderr pretty + ~/.anima/error.log（每行一条 JSON） */
+/** Create default service Logger: stderr pretty + ~/.anima/error.log (one JSON per line) */
 export function createServiceLogger(options?: { level?: LogLevel }): Logger {
   return createLogger({
     level: options?.level ?? resolveLogLevel(),
@@ -35,7 +35,7 @@ export function setServiceLogger(logger: Logger): void {
   serviceLogger = logger;
 }
 
-/** 测试隔离：重置 lazy 单例 */
+/** Test isolation: reset lazy singleton */
 export function resetServiceLogger(): void {
   serviceLogger = null;
 }
@@ -63,12 +63,12 @@ export function formatError(err: unknown): string {
   }
 }
 
-/** 启动阶段标记：未捕获错误记录后退出进程（供 systemd 感知失败） */
+/** Startup phase marker: log uncaught errors then exit (for systemd failure detection) */
 export function markStartupPhase(active: boolean): void {
   inStartupPhase = active;
 }
 
-/** 服务启动失败（CLI foreground / serve 初始化） */
+/** Service startup failure (CLI foreground / serve init) */
 export function logStartupError(
   message: string,
   error: unknown,
@@ -77,7 +77,7 @@ export function logStartupError(
   logComponent("startup").error(message, { err: error, ...context });
 }
 
-/** HTTP API 返回 { error } 时记录 */
+/** Log when HTTP API returns { error } */
 export function logApiError(
   method: string,
   path: string,
@@ -93,7 +93,7 @@ export function logApiError(
   logComponent("api").error(`API ${method} ${path} → ${status}: ${summary}`, attributes);
 }
 
-/** SSE event:error 时记录 */
+/** Log on SSE event:error */
 export function logSseError(path: string, error: unknown, context?: Record<string, unknown>): void {
   const msg = typeof error === "string" ? error : formatError(error);
   const attributes: LogAttributes = { path, ...context };
@@ -103,7 +103,7 @@ export function logSseError(path: string, error: unknown, context?: Record<strin
   logComponent("sse").error(`SSE ${path}: ${msg}`, attributes);
 }
 
-/** 服务启动时安装全局未捕获错误处理 */
+/** Install global uncaught error handlers at service startup */
 export function installErrorLogHandlers(): void {
   if (handlersInstalled) return;
   handlersInstalled = true;

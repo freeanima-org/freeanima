@@ -15,7 +15,7 @@ import { MockBackend } from "@freeanima/engine-provider-llm/test-helpers/mock-ba
 import { Engine } from "./engine.ts";
 
 describe("Engine", () => {
-  it("组合 catalog 与 llm 组件群", () => {
+  it("composes catalog and llm component group", () => {
     const catalog = {
       toolSets: new ToolSetRegistry(),
       skills: new SkillRegistry(),

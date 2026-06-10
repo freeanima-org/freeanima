@@ -20,7 +20,7 @@ const loadToolsIntoSession = mock(async () => ({
   tools: [
     {
       name: "file_read_file",
-      description: "读文件",
+      description: "Read file",
       toolset: "file",
       parameters: { type: "object", properties: {} },
     },
@@ -40,7 +40,7 @@ describe("registerCatalogTools", () => {
     loadToolsIntoSession.mockClear();
   });
 
-  it("tools_load 返回 schema 并调用 loadToolsIntoSession", async () => {
+  it("tools_load returns schema and calls loadToolsIntoSession", async () => {
     const toolSets = new ToolSetRegistry();
     registerCatalogTools(toolSets);
     const def = toolSets.getTool("tools_load");
@@ -64,13 +64,13 @@ describe("registerCatalogTools", () => {
     );
   });
 
-  it("tools_list 无 query 时分页列出", async () => {
+  it("tools_list paginates when no query", async () => {
     const toolSets = new ToolSetRegistry();
     registerCatalogTools(toolSets);
-    toolSets.registerToolSet("file", "文件", [
+    toolSets.registerToolSet("file", "Files", [
       {
         name: "file_read_file",
-        description: "读",
+        description: "Read",
         parameters: { type: "object", properties: {} },
         handler: () => "ok",
       },
@@ -90,13 +90,13 @@ describe("registerCatalogTools", () => {
     );
   });
 
-  it("tools_list 有 query 时搜索过滤", async () => {
+  it("tools_list filters when query present", async () => {
     const toolSets = new ToolSetRegistry();
     registerCatalogTools(toolSets);
-    toolSets.registerToolSet("file", "文件", [
+    toolSets.registerToolSet("file", "Files", [
       {
         name: "file_read_file",
-        description: "读取文本",
+        description: "Read text",
         parameters: { type: "object", properties: {} },
         handler: () => "ok",
       },
@@ -106,9 +106,9 @@ describe("registerCatalogTools", () => {
     await runWithToolContext(
       "sess-1",
       async () => {
-        const raw = await listDef.handler({ query: "读取" });
+        const raw = await listDef.handler({ query: "read" });
         const parsed = JSON.parse(raw);
-        expect(parsed.query).toBe("读取");
+        expect(parsed.query).toBe("read");
         expect(parsed.tools.some((t: { name: string }) => t.name === "file_read_file")).toBe(true);
       },
       { tools: toolSets, repos: {} as never, executableTools: ["tools_list"] },

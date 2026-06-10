@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { normalizePgTimestamp } from "./timestamp.ts";
 
-/** 已知 Gateway / 通道（与 runtime/platforms.ts 保持一致） */
+/** Known Gateway / channels (aligned with runtime/platforms.ts) */
 export const PLATFORMS = [
   "parlor",
   "discord",
@@ -31,7 +31,7 @@ const cronPlatformInfoSchema = z.looseObject({
   platform: z.literal("cron"),
 });
 
-/** Discord session 绑定频道/线程（见 gateway/discord-policy extractOrigin） */
+/** Discord session bound channel/thread (see gateway/discord-policy extractOrigin) */
 const discordPlatformInfoSchema = z.object({
   platform: z.literal("discord"),
   channel_id: z.string(),
@@ -39,7 +39,7 @@ const discordPlatformInfoSchema = z.object({
   thread_id: z.string().optional(),
 });
 
-/** 微信 session 绑定 peer（见 gateway/weixin/weixin-message） */
+/** WeChat session bound peer (see gateway/weixin/weixin-message) */
 const weixinPlatformInfoSchema = z.object({
   platform: z.literal("weixin"),
   weixin_user_id: z.string(),
@@ -48,8 +48,8 @@ const weixinPlatformInfoSchema = z.object({
 });
 
 /**
- * sessions.platform_info：platform + 各通道 extra 合并为 discriminated union。
- * kernel 侧仍投影为 platform + platform_extra。
+ * sessions.platform_info: platform + per-channel extra merged as discriminated union.
+ * Kernel side still projects as platform + platform_extra.
  */
 export const platformInfoSchema = z.discriminatedUnion("platform", [
   parlorPlatformInfoSchema,
@@ -65,7 +65,7 @@ export type DiscordPlatformInfo = z.infer<typeof discordPlatformInfoSchema>;
 export type WeixinPlatformInfo = z.infer<typeof weixinPlatformInfoSchema>;
 export type StudioPairPlatformInfo = z.infer<typeof studioPairPlatformInfoSchema>;
 
-/** platform_extra 缺必填字段时的占位 */
+/** Placeholder when platform_extra missing required fields */
 export const PLATFORM_STRING_PLACEHOLDER = "nothing";
 
 const PLATFORM_EXTRA_DEFAULTS: Partial<Record<Platform, Record<string, unknown>>> = {
@@ -97,7 +97,7 @@ function normalizePlatformExtra(
   return out;
 }
 
-/** 补齐各 platform 必填 extra 字段 */
+/** Fill required extra fields per platform */
 export function applyPlatformExtraDefaults(
   platform: Platform,
   extra: Record<string, unknown>,

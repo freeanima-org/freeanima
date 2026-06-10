@@ -1,4 +1,4 @@
-/** Provider 层泛化错误码；HTTP/SDK 细节由 Backend 实现映射为此处 */
+/** Provider-layer generalized error codes; HTTP/SDK details mapped by Backend impl */
 export type ProviderErrorCode =
   | "rate_limited"
   | "unavailable"
@@ -31,7 +31,7 @@ export class ProviderError extends Error {
   }
 }
 
-/** Fallback 仅信任 ProviderError.retryable；未知错误一律 fatal */
+/** Fallback trusts ProviderError.retryable only; unknown errors are fatal */
 export function classifyProviderError(err: unknown): ErrorClassification {
   if (err instanceof ProviderError) {
     return err.retryable ? "retryable" : "fatal";
@@ -43,7 +43,7 @@ export function isProviderError(err: unknown): err is ProviderError {
   return err instanceof ProviderError;
 }
 
-/** Backend 实现侧辅助：按 HTTP 状态粗映射为 ProviderError（可选使用） */
+/** Backend impl helper: coarse HTTP status → ProviderError mapping (optional) */
 export function providerErrorFromHttpStatus(
   status: number,
   message: string,

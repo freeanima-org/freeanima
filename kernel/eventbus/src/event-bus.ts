@@ -6,7 +6,7 @@ function errMessage(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
 }
 
-/** 事件总线；handler 注册与 dispatch 在此，队列 I/O 由 adapter 注入 */
+/** Event bus; handler register/dispatch here; queue I/O injected by adapter */
 export class EventBus {
   private handlers = new Map<string, EventHandler<EventTopic<unknown>>[]>();
   private readonly log: Logger;
@@ -22,40 +22,40 @@ export class EventBus {
     const entry = handler as EventHandler<EventTopic<unknown>>;
     list.push(entry);
     this.handlers.set(topic.qualifiedId, list);
-    this.log.debug("注册 event handler", { topic: topic.qualifiedId });
+    this.log.debug("Register event handler", { topic: topic.qualifiedId });
     return () => {
       const current = this.handlers.get(topic.qualifiedId);
       if (!current) return;
       const idx = current.indexOf(entry);
       if (idx >= 0) current.splice(idx, 1);
       if (!current.length) this.handlers.delete(topic.qualifiedId);
-      this.log.debug("注销 event handler", { topic: topic.qualifiedId });
+      this.log.debug("Unregister event handler", { topic: topic.qualifiedId });
     };
   }
 
   emit<T extends EventTopic<unknown>>(topic: T, payload: PayloadOf<T>): void {
     this.queue.enqueue(topic.qualifiedId, payload);
-    this.log.debug("event 入队", { topic: topic.qualifiedId });
+    this.log.debug("event enqueued", { topic: topic.qualifiedId });
   }
 
   start(): void {
-    this.log.debug("event-bus 启动");
+    this.log.debug("event-bus start");
     this.queue.start((event) => this.process(event));
   }
 
   stop(): void {
-    this.log.debug("event-bus 停止");
+    this.log.debug("event-bus stop");
     this.queue.stop();
   }
 
   private async process(event: StoredEvent): Promise<DispatchOutcome> {
     const list = this.handlers.get(event.topicQualifiedId) ?? [];
     if (!list.length) {
-      this.log.debug("event 跳过（无 handler）", { topic: event.topicQualifiedId });
+      this.log.debug("event skipped (no handler)", { topic: event.topicQualifiedId });
       return "ack";
     }
 
-    this.log.debug("event 投递开始", {
+    this.log.debug("event dispatch start", {
       topic: event.topicQualifiedId,
       handlers: list.length,
     });
@@ -64,12 +64,12 @@ export class EventBus {
     for (const handler of list) {
       try {
         await handler(event.payload);
-        this.log.debug("event handler 完成", {
+        this.log.debug("event handler done", {
           topic: event.topicQualifiedId,
           index,
         });
       } catch (err) {
-        this.log.error("event handler 未处理异常", {
+        this.log.error("event handler unhandled exception", {
           topic: event.topicQualifiedId,
           index,
           err,
@@ -80,7 +80,7 @@ export class EventBus {
       index++;
     }
 
-    this.log.debug("event 投递结束", { topic: event.topicQualifiedId });
+    this.log.debug("event dispatch end", { topic: event.topicQualifiedId });
     return "ack";
   }
 }

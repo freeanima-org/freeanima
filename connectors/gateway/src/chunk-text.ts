@@ -1,11 +1,11 @@
 export type ChunkTextOptions = {
-  /** 切分前先 trim；空串返回 [] */
+  /** Trim before split; empty string returns [] */
   trimInput?: boolean;
-  /** 单段硬上限（默认同 limit） */
+  /** Hard max per segment (defaults to limit) */
   maxChunkLength?: number;
 };
 
-/** 将长文本切为多段（优先段落/换行/空格边界） */
+/** Split long text into segments (prefer paragraph/newline/space boundaries) */
 export function chunkText(text: string, limit: number, options?: ChunkTextOptions): string[] {
   const input = options?.trimInput ? text.trim() : text;
   if (options?.trimInput && !input) return [];

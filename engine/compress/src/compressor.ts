@@ -7,8 +7,8 @@ import { type CompressionState, parseCompressionState } from "@freeanima/engine-
 export type { CompressionState };
 export { parseCompressionState };
 
-export const SUMMARY_USER_PREFIX = "[会话摘要]";
-/** 运行时合成摘要 user 的 pos（≠ l4） */
+export const SUMMARY_USER_PREFIX = "[session summary]";
+/** Runtime synthetic summary user pos (≠ l4) */
 export const SUMMARY_SYNTHETIC_POS = 1;
 
 export function isCompressed(state: CompressionState | null | undefined): boolean {
@@ -42,7 +42,7 @@ export function findLastUserIndex(rest: SessionMessage[]): number {
   return -1;
 }
 
-/** 精简段单条；tool 丢弃，返回 null */
+/** Single slim-segment message; tool dropped, returns null */
 export function slimMessage(msg: SessionMessage): SessionMessage | null {
   const role = msg.role;
   if (role === "tool") return null;
@@ -63,7 +63,7 @@ export function slimMessage(msg: SessionMessage): SessionMessage | null {
       const names = calls
         .map((c) => c.function?.name?.trim())
         .filter((n): n is string => Boolean(n));
-      text = names.length ? `[已执行工具: ${names.join(", ")}]` : "[已执行工具调用]";
+      text = names.length ? `[tools executed: ${names.join(", ")}]` : "[tool call executed]";
     }
     if (!text) return null;
     const out: Extract<SessionMessage, { role: "assistant" }> = {
@@ -118,8 +118,8 @@ export type DeriveBoundariesConfig = {
 export type DeriveBoundariesResult = { l2: number; l3: number };
 
 /**
- * 自右向左推导 l3、l2（与 tool loop 无关）。
- * 无合法边界时返回 null。
+ * Derive l3, l2 right-to-left (independent of tool loop).
+ * Returns null when no valid boundary.
  */
 export function deriveBoundariesFromL4(
   messages: SessionMessage[],
@@ -176,7 +176,7 @@ export function shouldAdvance(opts: {
   emergencyRatio: number;
   forceEmergency?: boolean;
   force?: boolean;
-  /** 消息条数模式：无 usageRatio 时用 */
+  /** Message-count mode: used when usageRatio is absent */
   messageAdvance?: boolean;
 }): { advance: boolean; emergency: boolean } {
   if (opts.force) return { advance: true, emergency: false };
@@ -204,7 +204,7 @@ export function shouldAdvance(opts: {
   return { advance: false, emergency: false };
 }
 
-/** 四段运行时视图（不含持久化 system；摘要为合成 pos=1） */
+/** Four-segment runtime view (no persisted system; summary synthetic pos=1) */
 export function buildRuntimeFromLPoints(
   messages: SessionMessage[],
   state: CompressionState | null,
@@ -273,7 +273,7 @@ export type CompressOptions = {
   forceEmergency?: boolean;
   force?: boolean;
   effectiveBudgetOverride?: number;
-  /** 测试或调参：覆盖 derive 下限 */
+  /** Test or tuning: override derive minimums */
   boundaryOverrides?: Partial<DeriveBoundariesConfig>;
 };
 
@@ -344,7 +344,7 @@ export function analyzeCompression(
   };
 }
 
-/** 判断本轮是否会推进压缩边界（不执行 deriveBoundariesFromL4） */
+/** Whether this turn will advance compression boundary (does not run deriveBoundariesFromL4) */
 export function willAdvanceCompression(
   messages: SessionMessage[],
   opts?: CompressOptions,
@@ -389,7 +389,7 @@ export function willAdvanceCompression(
 }
 
 /**
- * 有状态压缩：存档不修改；运行时四段视图 + meta l2/l3。
+ * Stateful compression: archive unchanged; runtime four-segment view + meta l2/l3.
  */
 export function compress(
   messages: SessionMessage[],
@@ -428,7 +428,7 @@ export function compress(
   return [[...system, ...view], newState];
 }
 
-/** 摘要增量区间 (旧 l2, 新 l2] */
+/** Summary incremental range (old l2, new l2] */
 export function sliceForSummary(
   messages: SessionMessage[],
   prevL2: number | null,

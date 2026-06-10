@@ -49,7 +49,7 @@ async function drainQueue(): Promise<void> {
     try {
       await embedAndStoreJobs(jobs);
     } catch (err) {
-      log.warn("embedding 批量写入失败", { count: jobs.length, error: String(err) });
+      log.warn("embedding batch write failed", { count: jobs.length, error: String(err) });
     }
   })();
 
@@ -68,7 +68,7 @@ async function drainQueue(): Promise<void> {
   }
 }
 
-/** 入队异步 embedding（debounce 合并 batch） */
+/** Enqueue async embedding (debounce merged batch) */
 export function enqueueEmbedding(job: EmbeddingPendingJob): void {
   const trimmed = job.content.trim();
   if (!trimmed) return;
@@ -84,7 +84,7 @@ export function enqueueEmbedding(job: EmbeddingPendingJob): void {
   scheduleFlush();
 }
 
-/** 单测/集成测：立即 drain 队列 */
+/** Unit/integration test: drain queue immediately */
 export async function flushEmbeddingQueueForTest(): Promise<void> {
   clearFlushTimer();
   while (pending.size > 0 || flushPromise) {
@@ -92,7 +92,7 @@ export async function flushEmbeddingQueueForTest(): Promise<void> {
   }
 }
 
-/** 测试 teardown */
+/** Test teardown */
 export function resetEmbeddingQueueForTest(): void {
   clearFlushTimer();
   pending.clear();

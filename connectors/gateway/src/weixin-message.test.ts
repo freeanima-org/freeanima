@@ -13,9 +13,9 @@ import {
 describe("weixin-message", () => {
   it("extracts text from item_list", () => {
     const text = extractTextFromMessage({
-      item_list: [{ type: ITEM_TEXT, text_item: { text: "你好" } }],
+      item_list: [{ type: ITEM_TEXT, text_item: { text: "Hello" } }],
     });
-    expect(text).toBe("你好");
+    expect(text).toBe("Hello");
   });
 
   it("does not filter by linked human user_id (only bot account_id)", () => {
@@ -24,12 +24,12 @@ describe("weixin-message", () => {
     const parsed = parseUserTextMessage(
       {
         from_user_id: human,
-        item_list: [{ type: ITEM_TEXT, text_item: { text: "你好" } }],
+        item_list: [{ type: ITEM_TEXT, text_item: { text: "Hello" } }],
       },
       bot,
     );
     expect(parsed).not.toBeNull();
-    expect(parsed!.text).toBe("你好");
+    expect(parsed!.text).toBe("Hello");
     expect(
       parseUserTextMessage(
         {
@@ -63,7 +63,7 @@ describe("weixin-message", () => {
         message_type: MSG_TYPE_USER,
         from_user_id: "user-1",
         room_id: "room-9",
-        item_list: [{ type: ITEM_TEXT, text_item: { text: "群消息" } }],
+        item_list: [{ type: ITEM_TEXT, text_item: { text: "Group message" } }],
       },
       "",
     );
@@ -71,7 +71,7 @@ describe("weixin-message", () => {
     expect(parsed!.peerId).toBe("room-9");
   });
 
-  it("parses message without message_type (iLink 常见)", () => {
+  it("parses message without message_type (common in iLink)", () => {
     const parsed = parseUserTextMessage(
       {
         from_user_id: "wxid_user1",
@@ -97,7 +97,7 @@ describe("weixin-message", () => {
     expect(parsed).toBeNull();
   });
 
-  it("explainInboundSkip 给出跳过原因", () => {
+  it("explainInboundSkip gives skip reason", () => {
     expect(
       explainInboundSkip(
         {
@@ -120,21 +120,21 @@ describe("weixin-message", () => {
     const normalized = normalizeInboundMessage({
       msg: {
         fromUserId: "u2",
-        itemList: [{ type: "1", textItem: { text: "嗨" } }],
+        itemList: [{ type: "1", textItem: { text: "Hi" } }],
         messageId: "m2",
       },
     });
     expect(normalized.from_user_id).toBe("u2");
     const parsed = parseUserTextMessage(normalized, "");
-    expect(parsed!.text).toBe("嗨");
+    expect(parsed!.text).toBe("Hi");
     expect(parsed!.msgId).toBe("m2");
   });
 
   it("extracts voice transcript text", () => {
     const text = extractTextFromMessage({
-      item_list: [{ type: 2, voice_item: { text: "语音转文字" } }],
+      item_list: [{ type: 2, voice_item: { text: "Speech to text" } }],
     });
-    expect(text).toBe("语音转文字");
+    expect(text).toBe("Speech to text");
   });
 
   it("buildWeixinOrigin for session routing", () => {

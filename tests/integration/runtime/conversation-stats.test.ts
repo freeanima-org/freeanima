@@ -72,18 +72,18 @@ describePg("conversation-stats", () => {
 
   it("mergeStats aggregates", async () => {
     const a = await computeStats("no_such_session_xyz");
-    const merged = mergeStats([a], "汇总 (1 个 session)");
-    expect(merged.session).toContain("汇总");
+    const merged = mergeStats([a], "Summary (1 session)");
+    expect(merged.session).toContain("Summary");
   });
 
   it("statsReport for missing session", async () => {
-    expect(await statsReport("missing_session_xyz")).toContain("（空）");
+    expect(await statsReport("missing_session_xyz")).toContain("(empty)");
   });
 
   it("estimateTokens and estimateMessagesTokens", () => {
     expect(estimateTokens("")).toBe(0);
     expect(estimateTokens("abcd")).toBeGreaterThan(0);
-    expect(estimateMessagesTokens([{ role: "user", content: "你好世界" }])).toBeGreaterThan(0);
+    expect(estimateMessagesTokens([{ role: "user", content: "hello world" }])).toBeGreaterThan(0);
   });
 
   it("computeStats estimates when no usage in messages", async () => {
@@ -114,7 +114,7 @@ describePg("conversation-stats", () => {
     expect(stats.output_tokens).not.toBeNull();
     expect(stats.compression_l3).toBe(2);
     const report = await statsReport(sid);
-    expect(report).toContain("会话压缩:");
+    expect(report).toContain("Session compression:");
   });
 
   afterAll(async () => {

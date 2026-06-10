@@ -72,7 +72,7 @@ export async function appendMessage(
     .where(and(eq(messages.sessionId, sessionId), eq(messages.pos, insert.pos)))
     .limit(1);
   if (!rows.length) {
-    throw new Error(`messages 写入后未找到行: session=${sessionId} pos=${insert.pos}`);
+    throw new Error(`Row not found after messages write: session=${sessionId} pos=${insert.pos}`);
   }
   return rowToMessage(rows[0]!);
 }
@@ -123,7 +123,7 @@ export async function countMessages(sessionId: string): Promise<number> {
   return Number(rows[0]?.count ?? 0);
 }
 
-/** API / 历史分页：按 pos 顺序切片，避免全量 listMessages */
+/** API / history pagination: slice by pos order, avoid full listMessages */
 export async function listMessagesPage(
   sessionId: string,
   offset: number,
@@ -195,7 +195,7 @@ export async function listMessageRowsFromPos(
   return rows.map((r) => rowToMessageRowView(r));
 }
 
-/** 最近一条消息时间戳（避免 listMessages 全量加载） */
+/** Latest message timestamp (avoids full listMessages load) */
 export async function lastMessageTimestamp(sessionId: string): Promise<string | null> {
   const db = getDb();
   const rows = await db
@@ -218,7 +218,7 @@ export async function truncateMessagesAfter(
 }
 
 /**
- * 将会话内 pos > afterPos 的消息序号整体平移 delta（避免 unique 冲突：正 delta 从高到低，负 delta 从低到高）。
+ * Shift message pos > afterPos by delta (avoid unique conflicts: positive delta high-to-low, negative low-to-high).
  */
 export async function shiftMessagePositions(
   sessionId: string,

@@ -8,7 +8,11 @@ import {
   studioPatchConfig,
   studioSearch,
 } from "../../handlers/index.ts";
-import { closeTerminalSession, getTerminalSession } from "../terminal-session.ts";
+import {
+  closeTerminalSession,
+  getTerminalSession,
+  TerminalSessionError,
+} from "../terminal-session.ts";
 
 export const studioRoutes = new Elysia({ prefix: "/studio" })
   .get("/config", () => studioGetConfig())
@@ -22,7 +26,7 @@ export const studioRoutes = new Elysia({ prefix: "/studio" })
     "/terminal/:sessionId/write",
     ({ params, body }) => {
       const pty = getTerminalSession(params.sessionId);
-      if (!pty) throw new Error("终端会话不存在或已关闭");
+      if (!pty) throw new TerminalSessionError();
       pty.write(z.object({ data: z.string() }).parse(body).data);
       return { ok: true as const };
     },
@@ -32,7 +36,7 @@ export const studioRoutes = new Elysia({ prefix: "/studio" })
     "/terminal/:sessionId/resize",
     ({ params, body }) => {
       const pty = getTerminalSession(params.sessionId);
-      if (!pty) throw new Error("终端会话不存在或已关闭");
+      if (!pty) throw new TerminalSessionError();
       const { cols, rows } = z.object({ cols: z.number(), rows: z.number() }).parse(body);
       pty.resize(cols, rows);
       return { ok: true as const };

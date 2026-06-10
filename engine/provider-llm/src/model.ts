@@ -1,4 +1,4 @@
-/** LlmCallParams 顶层键 + 调用面能力（tools / streaming / reasoning） */
+/** LlmCallParams top-level keys + invocation capabilities (tools / streaming / reasoning) */
 export type LlmParamKey = keyof LlmCallParams;
 
 export type ExtendedParamKey = "tools" | "reasoning" | "streaming";

@@ -63,7 +63,7 @@ export async function embedAndStoreJobs(
     try {
       vectors = await embedTexts(texts);
     } catch (err) {
-      log.warn("embedding 批量请求失败", { count: pack.length, error: String(err) });
+      log.warn("embedding batch request failed", { count: pack.length, error: String(err) });
       continue;
     }
 

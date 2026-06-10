@@ -13,7 +13,7 @@ import { defaultModelInfo, fetchModelCatalog, findModelInCatalog } from "./catal
 import { mapOpenAiCompatibleError } from "./map-error.ts";
 import { runOpenAiChat, runOpenAiChatStream } from "./openai-chat.ts";
 
-/** OpenAI Chat Completions 兼容 backend（DeepSeek、OpenRouter 兼容模式等）。 */
+/** OpenAI Chat Completions compatible backend (DeepSeek, OpenRouter compatible mode, etc.). */
 export class OpenAiCompatibleBackend extends LlmBackend {
   private readonly catalogCache = new Map<string, ModelInfo[]>();
 

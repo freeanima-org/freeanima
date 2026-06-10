@@ -8,7 +8,7 @@ import { logComponent } from "@freeanima/service-logging";
 
 const log = logComponent("embedding");
 
-/** 按 config.embedding 注册 OpenAI 兼容 embedding 客户端 */
+/** Register OpenAI-compatible embedding client per config.embedding */
 export function wireEmbeddingRuntime(): void {
   const cfg = getResolvedEmbeddingConfig();
   if (!cfg) {
@@ -18,7 +18,7 @@ export function wireEmbeddingRuntime(): void {
   }
   registerEmbedTextFn(createOpenAiEmbeddingClient(cfg));
   registerEmbedTextsFn(createOpenAiEmbeddingBatchClient(cfg));
-  log.info("embedding 已启用", {
+  log.info("embedding enabled", {
     model: cfg.model,
     base_url: cfg.baseUrl,
     dimensions: cfg.dimensions,

@@ -195,7 +195,7 @@ export async function runCronJobNow(
   void enqueueRunJob(job);
   return {
     job: job.toJSON(),
-    message: `已触发立即运行: ${job.name}`,
+    message: `Triggered immediate run: ${job.name}`,
   };
 }
 

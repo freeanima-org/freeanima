@@ -4,16 +4,16 @@ import { REPO_ROOT } from "@freeanima/service";
 
 export const SERVICE_UNIT_NAME = "anima.service";
 
-/** systemctl 单元名（不含 `.service` 后缀） */
+/** systemctl unit name (without `.service` suffix) */
 export const SYSTEMD_UNIT = "anima";
 
-/** 崩溃/异常退出后等待多久再拉起（秒） */
+/** Seconds to wait before restart after crash/abnormal exit */
 export const SYSTEMD_RESTART_SEC = 180;
 
-/** 0 = 不因连续失败而放弃重启（仅 `systemctl stop` 可停） */
+/** 0 = never give up restarting on consecutive failures (only `systemctl stop` can stop) */
 export const SYSTEMD_START_LIMIT_INTERVAL_SEC = 0;
 
-/** 生成 anima systemd user unit 文件内容 */
+/** Generate anima systemd user unit file content */
 export function renderSystemdUnit(
   binPath: string,
   host = DEFAULT_BIND_HOST,
@@ -22,7 +22,7 @@ export function renderSystemdUnit(
 ): string {
   const execStart = `${binPath} service start --foreground --host ${host} --port ${port}`;
   return `[Unit]
-Description=逸灵风 Free Anima（单进程 HTTP 服务）
+Description=Free Anima Free Anima（single-process HTTP service）
 After=network.target
 
 [Service]
@@ -30,7 +30,7 @@ Type=simple
 WorkingDirectory=${workingDirectory}
 Environment=FREEANIMA_REPO_ROOT=${workingDirectory}
 ExecStart=${execStart}
-# 除 systemctl stop 外始终重启；崩溃后等待 ${SYSTEMD_RESTART_SEC}s 再拉起
+# Always restart except on systemctl stop; wait ${SYSTEMD_RESTART_SEC}s before restart
 Restart=always
 RestartSec=${SYSTEMD_RESTART_SEC}
 StartLimitIntervalSec=${SYSTEMD_START_LIMIT_INTERVAL_SEC}
@@ -41,7 +41,7 @@ WantedBy=default.target
 `;
 }
 
-/** 检测 systemctl --user 是否可用 */
+/** Check if systemctl --user is available */
 export function systemdUserAvailable(): boolean {
   try {
     const r = spawnSync("systemctl", ["--user", "status"], {

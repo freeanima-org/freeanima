@@ -29,7 +29,7 @@ function mcpTestConfig() {
 }
 
 describe("sanitizeMcpConfig", () => {
-  it("脱敏 env 值，仅保留键名", () => {
+  it("redacts env values, keeps key names only", () => {
     const view = sanitizeMcpConfig({
       command: "node",
       args: ["server.mjs"],
@@ -45,7 +45,7 @@ describe("sanitizeMcpConfig", () => {
     expect(view).not.toHaveProperty("env");
   });
 
-  it("enabled: false 时标记为禁用", () => {
+  it("marked disabled when enabled: false", () => {
     expect(isMcpServerEnabled({ enabled: false })).toBe(false);
     expect(sanitizeMcpConfig({ enabled: false, transport: "stdio" }).enabled).toBe(false);
   });
@@ -56,7 +56,7 @@ describe("MCPManager.getStatus", () => {
     resetConfigForTest();
   });
 
-  it("未启动时返回配置与 not_started 状态", async () => {
+  it("returns config and not_started when not started", async () => {
     setConfigForTest(mcpTestConfig());
     const mgr = new MCPManager(new ToolSetRegistry());
     const status = await mgr.getStatus();
@@ -78,7 +78,7 @@ describe("MCPManager.getStatus", () => {
     expect(remote.status).toBe("disabled");
   });
 
-  it("startAllAsync 立即返回且不阻塞 getStatus", async () => {
+  it("startAllAsync returns immediately without blocking getStatus", async () => {
     setConfigForTest(mcpTestConfig());
     const mgr = new MCPManager(new ToolSetRegistry());
     mgr.startAllAsync();

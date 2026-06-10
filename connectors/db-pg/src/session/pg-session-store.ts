@@ -3,7 +3,7 @@ import * as messageFtsRepo from "./repos/message-fts-repo.ts";
 import * as messageRepo from "./repos/message-repo.ts";
 import * as sessionRepo from "./repos/session-repo.ts";
 
-/** PostgreSQL SessionStorePort 实现 */
+/** PostgreSQL SessionStorePort implementation */
 export class PgSessionStore implements SessionStorePort {
   getSessionMeta = sessionRepo.getSessionMeta;
   upsertSessionMeta = sessionRepo.upsertSessionMeta;

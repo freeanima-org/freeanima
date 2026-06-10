@@ -9,24 +9,24 @@ import { ToolSetRegistry } from "./toolset.ts";
 
 function testRegistry(): ToolSetRegistry {
   const registry = new ToolSetRegistry();
-  registry.registerToolSet("file", "文件", [
+  registry.registerToolSet("file", "files", [
     {
       name: "file_read_file",
-      description: "读取文件",
+      description: "Read file",
       parameters: { type: "object", properties: { path: { type: "string" } } },
       handler: () => "ok",
     },
     {
       name: "file_write_file",
-      description: "写入文件",
+      description: "Write file",
       parameters: { type: "object", properties: {} },
       handler: () => "ok",
     },
   ]);
-  registry.registerToolSet("tools", "目录", [
+  registry.registerToolSet("tools", "catalog", [
     {
       name: "tools_list",
-      description: "列出工具",
+      description: "List tools",
       parameters: { type: "object", properties: {} },
       handler: () => "ok",
     },
@@ -35,14 +35,14 @@ function testRegistry(): ToolSetRegistry {
 }
 
 describe("expandToolNames", () => {
-  it("展开 @toolset", () => {
+  it("expands @toolset", () => {
     const registry = testRegistry();
     expect(expandToolNames(registry, ["@file"])).toEqual(["file_read_file", "file_write_file"]);
   });
 });
 
 describe("listToolsCatalog", () => {
-  it("分页与 toolset 过滤", () => {
+  it("pagination and toolset filter", () => {
     const registry = testRegistry();
     const all = listToolsCatalog(registry);
     expect(all.total).toBe(3);
@@ -53,15 +53,15 @@ describe("listToolsCatalog", () => {
 });
 
 describe("searchToolsCatalog", () => {
-  it("按名称或描述匹配", () => {
+  it("matches by name or description", () => {
     const registry = testRegistry();
-    const hit = searchToolsCatalog(registry, "读取");
+    const hit = searchToolsCatalog(registry, "read");
     expect(hit.tools.some((t) => t.name === "file_read_file")).toBe(true);
   });
 });
 
 describe("formatToolsForToolMessage", () => {
-  it("返回完整 parameters", () => {
+  it("returns full parameters", () => {
     const registry = testRegistry();
     const formatted = formatToolsForToolMessage(registry, ["file_read_file"]);
     expect(formatted).toHaveLength(1);

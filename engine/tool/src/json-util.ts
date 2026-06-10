@@ -1,7 +1,7 @@
 import type { z } from "zod";
 import { toolArgsSchema, toolErrorSchema, type ToolErrorResult } from "./tool-json.ts";
 
-/** 工具返回须为 JSON 字符串；错误格式 {"error":"..."} */
+/** Tool return must be JSON string; error shape {"error":"..."} */
 export function toolResult(value: unknown): string {
   if (typeof value === "string") return value;
   return JSON.stringify(value, (_, v) => v, 0);
@@ -19,7 +19,7 @@ export function isToolError(parsed: unknown): parsed is ToolErrorResult {
 
 export type ParsedToolResult<T> = { ok: true; data: T } | { ok: false; error: string };
 
-/** 解析工具返回 JSON 字符串；约定错误为 {"error":"..."} */
+/** Parse tool return JSON string; errors use {"error":"..."} */
 export function parseToolResult<T = unknown>(
   raw: string,
   schema?: z.ZodType<T>,
@@ -39,7 +39,7 @@ export function parseToolResult<T = unknown>(
   }
 }
 
-/** 解析 LLM tool_call arguments JSON */
+/** Parse LLM tool_call arguments JSON */
 export function parseToolArgs(
   raw: string | undefined | null,
 ): ParsedToolResult<Record<string, unknown>> {

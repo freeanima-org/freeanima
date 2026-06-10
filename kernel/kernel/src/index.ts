@@ -17,7 +17,7 @@ function defaultLogger(): Logger {
   return createLogger({ sinks: [createConsoleSink()] });
 }
 
-/** 构造 Kernel；未传入的依赖使用安全默认（console logger、内存 EventBus） */
+/** Construct Kernel; omitted deps use safe defaults (console logger, memory EventBus) */
 export function createKernel(deps: KernelDeps = {}): Kernel {
   const logger = deps.logger ?? defaultLogger();
   const hookRegistry = deps.hookRegistry ?? new HookRegistry(logger);
@@ -25,7 +25,7 @@ export function createKernel(deps: KernelDeps = {}): Kernel {
   return new Kernel(hookRegistry, logger, eventBus);
 }
 
-/** 内核组合视图（hooks / logger / eventBus） */
+/** Kernel composition view (hooks / logger / eventBus) */
 export class Kernel {
   constructor(
     readonly hookRegistry: HookRegistryType,

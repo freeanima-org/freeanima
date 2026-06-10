@@ -61,10 +61,10 @@ describePg("clarify session", () => {
       timeout_sec: 1800,
     });
 
-    const merged = await resolveUserContent(c, "s1", "我的回答");
+    const merged = await resolveUserContent(c, "s1", "my answer");
     expect(merged).toContain("Q1?");
     expect(merged).toContain("Q2?");
-    expect(merged).toContain("我的回答");
+    expect(merged).toContain("my answer");
     expect(await readAwaitingClarify(c, "s1")).toBeNull();
   });
 
@@ -79,7 +79,7 @@ describePg("clarify session", () => {
 
     expect((await guardAwaitingClarify(c, "s1", "/help")).ok).toBe(false);
     expect((await guardAwaitingClarify(c, "s1", "/cancel")).ok).toBe(true);
-    expect((await guardAwaitingClarify(c, "s1", "我的回答")).ok).toBe(true);
+    expect((await guardAwaitingClarify(c, "s1", "my answer")).ok).toBe(true);
   });
 
   it("expire clears pending and resolve prepends hint", async () => {
@@ -93,9 +93,9 @@ describePg("clarify session", () => {
       { asked_at: new Date(Date.now() - 120_000).toISOString().replace("Z", "+08:00") },
     );
 
-    const merged = await resolveUserContent(c, "s1", "新消息");
-    expect(merged).toContain("超时作废");
-    expect(merged).toContain("新消息");
+    const merged = await resolveUserContent(c, "s1", "new message");
+    expect(merged).toContain("expired");
+    expect(merged).toContain("new message");
     expect(await readAwaitingClarify(c, "s1")).toBeNull();
   });
 
@@ -130,7 +130,7 @@ describePg("clarify session", () => {
       args: [],
       raw: "/cancel",
     });
-    expect(result.text).toContain("已取消");
+    expect(result.text).toContain("cancelled");
     expect(await readAwaitingClarify(c, "s1")).toBeNull();
   });
 

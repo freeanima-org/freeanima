@@ -32,19 +32,19 @@ describePg("memory PG FTS", () => {
         functions: [],
         timestamp: "2026-05-26T12:00:00+08:00",
         platform: "web",
-        title: "测试",
+        title: "test",
       },
       [
         {
           role: "user",
           timestamp: "2026-05-26T12:00:00+08:00",
-          content: "你好 FTS",
+          content: "hello FTS",
           pos: 1,
         },
         {
           role: "assistant",
           timestamp: "2026-05-26T12:00:01+08:00",
-          content: "你好呀",
+          content: "hello there",
           pos: 2,
         },
         {
@@ -58,10 +58,10 @@ describePg("memory PG FTS", () => {
     );
 
     const store = testConv().repos.session;
-    const hits = await store.searchMessagesFts("你好", { limit: 10 });
+    const hits = await store.searchMessagesFts("hello", { limit: 10 });
     expect(hits.length).toBeGreaterThan(0);
     expect(hits.every((h) => h.role === "user" || h.role === "assistant")).toBe(true);
-    expect(hits.some((h) => h.content.includes("你好"))).toBe(true);
+    expect(hits.some((h) => h.content.includes("hello"))).toBe(true);
     expect(hits.every((h) => h.message_id.length > 0)).toBe(true);
   });
 

@@ -19,7 +19,7 @@ function parseSuites(): string[] {
   }
   const raw = process.argv[idx + 1];
   if (!raw?.trim()) {
-    throw new Error("[test] --suites 需要参数，例如 unit,integration,e2e");
+    throw new Error("[test] --suites requires an argument, e.g. unit,integration,e2e");
   }
   const suites = raw
     .split(",")
@@ -27,7 +27,7 @@ function parseSuites(): string[] {
     .filter(Boolean);
   for (const suite of suites) {
     if (!SUITE_SCRIPTS[suite]) {
-      throw new Error(`[test] 未知 suite: ${suite}（可选: unit, integration）`);
+      throw new Error(`[test] unknown suite: ${suite} (available: unit, integration)`);
     }
   }
   return suites;
@@ -56,7 +56,7 @@ if (needsPg) {
     teardown = await setupIntegrationPg();
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    console.warn(`[${label}] ${msg}\n[${label}] 继续运行（PG 相关用例将 skip）`);
+    console.warn(`[${label}] ${msg}\n[${label}] continuing (PG-related tests will be skipped)`);
   }
 }
 

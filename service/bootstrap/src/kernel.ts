@@ -4,7 +4,7 @@ import { createKernel, type Kernel } from "@freeanima/kernel";
 import { createServiceLogger, setServiceLogger } from "@freeanima/service-logging";
 import { createEventQueue } from "./event-queue.ts";
 
-/** 构造 service 用 Kernel（logger + config 选择的 EventBus 队列） */
+/** Build Kernel for service (logger + EventBus queue from config) */
 export function createServiceKernel(): Kernel {
   const logger = createServiceLogger();
   setServiceLogger(logger);

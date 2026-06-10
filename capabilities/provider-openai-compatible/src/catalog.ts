@@ -18,7 +18,7 @@ const DEFAULT_MODEL_INFO = {
   supportedParams: DEFAULT_SUPPORTED_PARAMS,
 } as const;
 
-/** 无 /models 条目时的兜底 catalog */
+/** Fallback catalog when no /models entries */
 export function defaultModelInfo(model: string): ModelInfo {
   return {
     model,

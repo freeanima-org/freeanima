@@ -69,7 +69,7 @@ export function registerClarifyHooks(opts: {
   });
 }
 
-/** stream 路径：收到 awaiting_clarify 事件时写入 session meta */
+/** Stream path: write to session meta on awaiting_clarify event */
 export async function applyClarifyStreamAwaiting(
   conversation: ConversationService,
   sessionId: string,

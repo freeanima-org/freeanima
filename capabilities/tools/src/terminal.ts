@@ -78,8 +78,8 @@ async function handleProcess(
   timeout = 30,
 ): Promise<string> {
   if (action === "list") {
-    if (!backgroundProcs.size) return "没有后台进程。";
-    const lines = ["后台进程："];
+    if (!backgroundProcs.size) return "No background processes.";
+    const lines = ["Background processes:"];
     for (const [sid, proc] of backgroundProcs) {
       const ret = proc.exitCode;
       const status = ret === null ? "running" : `exited (${ret})`;
@@ -134,7 +134,7 @@ async function handleProcess(
 export function registerTerminalTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
     "terminal",
-    "终端命令与后台进程",
+    "Terminal commands and background processes",
     attachToolReturns(
       [
         {

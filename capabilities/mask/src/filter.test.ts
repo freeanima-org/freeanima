@@ -10,11 +10,11 @@ const resolved: ResolvedMask = {
 };
 
 describe("checkTool", () => {
-  it("allowed 工具通过", () => {
+  it("allowed tools pass", () => {
     expect(checkTool("memory_recall", resolved)).toEqual({ ok: true });
   });
 
-  it("未允许工具拒绝", () => {
+  it("disallowed tools rejected", () => {
     const r = checkTool("code_execute", resolved);
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.reason).toContain("code_execute");
@@ -22,16 +22,16 @@ describe("checkTool", () => {
 });
 
 describe("checkCredential", () => {
-  it("未提及凭证默认允许", () => {
+  it("credentials not mentioned allowed by default", () => {
     expect(checkCredential("other", "read", resolved)).toEqual({ ok: true });
   });
 
-  it("deny read 拦截", () => {
+  it("deny read blocks", () => {
     const r = checkCredential("api_key", "read", resolved);
     expect(r.ok).toBe(false);
   });
 
-  it("allow write 通过", () => {
+  it("allow write passes", () => {
     expect(checkCredential("api_key", "write", resolved)).toEqual({ ok: true });
   });
 });

@@ -1,2 +1,2 @@
-/** 创作室结对编程 session 标识 */
+/** Studio pair-programming session identifier */
 export const STUDIO_PAIR_PLATFORM = "studio-pair-programming";

@@ -16,13 +16,13 @@ function parseBlockKey(raw: unknown): SelfBlockKey | null {
 export function registerSelfTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
     "self",
-    "自我层六块读写",
+    "Self layer six blocks (read/write)",
     attachToolReturns(
       [
         {
           name: "self_get_blocks",
           description:
-            "读取自我层六块（存在锚点、自我模型、人格基线、方向意图、元认知、自传概括）。",
+            "Read self layer six blocks (existence anchor, self model, personality baseline, direction, metacognition, autobiography summary).",
           parameters: {
             type: "object",
             properties: {},
@@ -39,7 +39,7 @@ export function registerSelfTools(toolSets: ToolSetRegistry): void {
         {
           name: "self_update_block",
           description:
-            "更新自我层指定块的内容。existence_anchor 默认 locked，需 force=true 才能修改。",
+            "Update a self layer block. existence_anchor is locked by default; use force=true to override.",
           parameters: {
             type: "object",
             properties: {
@@ -48,10 +48,10 @@ export function registerSelfTools(toolSets: ToolSetRegistry): void {
                 description:
                   "existence_anchor | self_model | personality_baseline | direction | metacognition | autobiography_summary",
               },
-              content: { type: "string", description: "块正文（Markdown）" },
+              content: { type: "string", description: "Block body (Markdown)" },
               force: {
                 type: "boolean",
-                description: "existence_anchor 等 locked 块是否强制更新",
+                description: "Force update locked blocks such as existence_anchor",
               },
             },
             required: ["block_key", "content"],

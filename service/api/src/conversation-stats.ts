@@ -19,7 +19,7 @@ export async function statsReport(
   opts?: StatsReportOpts,
 ): Promise<string> {
   if (!statsReportImpl) {
-    throw new Error("statsReport 未注册：请先加载 @freeanima/service");
+    throw new Error("statsReport not registered: load @freeanima/service first");
   }
   return statsReportImpl(session, opts);
 }

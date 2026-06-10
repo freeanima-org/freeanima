@@ -29,11 +29,11 @@ describePg("memory_references PG", () => {
     await restoreIntegrationHome(prev);
   });
 
-  it("消息引用写入、session 去重计数与全量同步", async () => {
+  it("message references write, session dedup count, and full sync", async () => {
     const { semanticMemory, memoryReference, session } = getTestEngine().repos;
 
     const memoryId = await semanticMemory.create({
-      content: "引用计数探针记忆",
+      content: "reference count probe memory",
       type: "world",
     });
 
@@ -42,13 +42,13 @@ describePg("memory_references PG", () => {
 
     await session.appendMessage(sessionId, {
       role: "assistant",
-      content: `参考 [记忆 #${memoryId}] 的内容`,
+      content: `See [memory #${memoryId}] for details`,
       pos: 1,
       timestamp: "2026-06-09T12:00:00+08:00",
     });
     await session.appendMessage(sessionId, {
       role: "assistant",
-      content: `再次引用 [记忆 #${memoryId}]`,
+      content: `Again [memory #${memoryId}]`,
       pos: 2,
       timestamp: "2026-06-09T12:01:00+08:00",
     });
@@ -63,18 +63,18 @@ describePg("memory_references PG", () => {
     expect(row?.reference_count).toBe(2);
   });
 
-  it("listResident 返回 pinned + 引用计数 top N", async () => {
+  it("listResident returns pinned + reference-count top N", async () => {
     const { semanticMemory, session } = getTestEngine().repos;
 
-    const pinnedId = await semanticMemory.create({ content: "置顶记忆", pinned: true });
-    const hotId = await semanticMemory.create({ content: "高热记忆" });
-    await semanticMemory.create({ content: "冷门记忆" });
+    const pinnedId = await semanticMemory.create({ content: "pinned memory", pinned: true });
+    const hotId = await semanticMemory.create({ content: "hot memory" });
+    await semanticMemory.create({ content: "cold memory" });
 
     const sessionId = "memref-resident";
     await seedSessionMeta(sessionId);
     await session.appendMessage(sessionId, {
       role: "assistant",
-      content: `[记忆 #${hotId}]`,
+      content: `[memory #${hotId}]`,
       pos: 1,
     });
 
@@ -86,15 +86,15 @@ describePg("memory_references PG", () => {
     expect((await semanticMemory.get(hotId))?.reference_count).toBe(2);
   });
 
-  it("session 删除后引用作废，全量同步归零", async () => {
+  it("session delete invalidates references and full sync zeroes counts", async () => {
     const { semanticMemory, memoryReference, session } = getTestEngine().repos;
 
-    const memoryId = await semanticMemory.create({ content: "待删除 session 引用" });
+    const memoryId = await semanticMemory.create({ content: "session reference pending delete" });
     const sessionId = "memref-delete";
     await seedSessionMeta(sessionId);
     await session.appendMessage(sessionId, {
       role: "user",
-      content: `[记忆 #${memoryId}]`,
+      content: `[memory #${memoryId}]`,
       pos: 1,
     });
 

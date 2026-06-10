@@ -65,7 +65,7 @@ function runCoverageTarget(target: string): boolean {
   try {
     runBunTest([target, "--pass-with-no-tests", "--coverage", "--coverage-reporter=lcov"]);
   } catch {
-    // 测试失败时仍尝试读取 lcov
+    // On test failure, still try to read lcov
   }
   return existsSync(join(coverageDir, "lcov.info"));
 }
@@ -91,10 +91,10 @@ function collectCoverageShards(): void {
       continue;
     }
 
-    console.warn(`[${label}] ${root} 未产出 lcov，改为按测试文件分片`);
+    console.warn(`[${label}] ${root} produced no lcov; falling back to per-test-file shards`);
     for (const file of listTestFiles(root)) {
       if (!runCoverageTarget(file)) {
-        console.warn(`[${label}] ${file} 未产出 lcov，跳过`);
+        console.warn(`[${label}] ${file} produced no lcov; skipping`);
         continue;
       }
       shardFiles.push(saveShard(file));
@@ -102,16 +102,16 @@ function collectCoverageShards(): void {
   }
 
   if (shardFiles.length === 0) {
-    throw new Error(`[${label}] 未收集到任何 lcov 分片`);
+    throw new Error(`[${label}] collected no lcov shards`);
   }
 
   mkdirSync(coverageDir, { recursive: true });
   writeFileSync(join(coverageDir, "lcov.info"), mergeLcovFiles(shardFiles));
-  console.log(`[${label}] 已合并 ${shardFiles.length} 个 lcov 分片 → coverage/lcov.info`);
+  console.log(`[${label}] merged ${shardFiles.length} lcov shards → coverage/lcov.info`);
 }
 
 if (!process.argv.includes("--coverage")) {
-  console.error("[run-tests] 仅支持 --coverage（由 coverage:cobertura 调用）");
+  console.error("[run-tests] only supports --coverage (invoked by coverage:cobertura)");
   process.exit(1);
 }
 
@@ -122,7 +122,7 @@ try {
   teardown = await setupIntegrationPg();
 } catch (err) {
   const msg = err instanceof Error ? err.message : String(err);
-  console.warn(`[${label}] ${msg}\n[${label}] 继续运行（PG 集成用例将 skip）`);
+  console.warn(`[${label}] ${msg}\n[${label}] continuing (PG integration tests will be skipped)`);
 }
 
 try {

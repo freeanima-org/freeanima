@@ -4,12 +4,12 @@ import { generateCompletion, SUPPORTED_SHELLS } from "../completion/generate.ts"
 export function registerCompletionCommand(root: Command): void {
   root
     .command("completion")
-    .description("生成 bash / zsh 补全脚本（写入 stdout）")
-    .argument("<shell>", `目标 shell (${SUPPORTED_SHELLS.join(" | ")})`)
+    .description("Generate bash / zsh completion script (stdout)")
+    .argument("<shell>", `Target shell (${SUPPORTED_SHELLS.join(" | ")})`)
     .addHelpText(
       "after",
       `
-安装示例:
+Install examples:
   eval "$(anima completion bash)"
   source <(anima completion zsh)
 `,

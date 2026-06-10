@@ -1,4 +1,4 @@
-/** 粗估 token（中英文混排约 3.5 字符/token） */
+/** Rough token estimate (~3.5 chars/token for mixed CJK/Latin) */
 export function estimateTokens(text: string): number {
   const len = text.trim().length;
   if (!len) return 0;

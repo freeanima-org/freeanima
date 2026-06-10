@@ -1,12 +1,12 @@
-/** 深睡三轮意图标签 */
+/** Deep sleep three-round intent labels */
 export type DeepSleepRound = "contradiction_expiry" | "split" | "merge";
 
-/** 单条变更记录 */
+/** Single change record */
 export type DeepSleepChangeEntry = {
   action: "added" | "modified" | "deprecated" | "merged_into";
   id: string;
-  detail: string; // 片段说明，如 "已合并到 f-003"、content 摘要
-  /** merged_into / added 时携带新记忆的简要信息以供消息1.5渲染 */
+  detail: string; // e.g. "merged into f-003", content summary
+  /** Brief info for message 1.5 rendering when merged_into / added */
   mergedTarget?: {
     id: string;
     type: string;
@@ -16,15 +16,15 @@ export type DeepSleepChangeEntry = {
   };
 };
 
-/** 内存中维护的变更日志：每个已处理条目按 id 索引 */
+/** In-memory change log: each processed entry indexed by id */
 export type DeepSleepChangeLog = {
-  /** 已被合并/废弃/拆分的旧条目 → 新状态 */
+  /** Old entries merged/deprecated/split → new state */
   entries: Record<string, DeepSleepChangeEntry>;
-  /** 本轮新增条目 id */
+  /** Entry ids added this round */
   addedIds: string[];
-  /** 本轮修改条目 id */
+  /** Entry ids modified this round */
   modifiedIds: string[];
-  /** 本轮废弃条目 id（包括被合并的源记忆） */
+  /** Entry ids deprecated this round (including merge source memories) */
   deprecatedIds: string[];
 };
 
@@ -54,7 +54,7 @@ export function applyChangeLog(
   }
 }
 
-/** 深度睡眠一轮运行记录（用于日志文件） */
+/** Deep sleep single-round run record (for log files) */
 export type DeepSleepRoundLog = {
   day: string;
   round: DeepSleepRound;
@@ -74,7 +74,7 @@ export type DeepSleepRoundLog = {
   change_log_snapshot: DeepSleepChangeLog;
 };
 
-/** 深睡全流程结果 */
+/** Deep sleep full-run result */
 export type DeepSleepResult = {
   ok: boolean;
   day: string;

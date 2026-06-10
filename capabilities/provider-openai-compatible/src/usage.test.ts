@@ -2,7 +2,7 @@ import { describe, expect, it } from "bun:test";
 import { normalizeUsage } from "./usage.ts";
 
 describe("normalizeUsage", () => {
-  it("映射 OpenAI 风格字段", () => {
+  it("maps OpenAI-style fields", () => {
     expect(
       normalizeUsage({
         prompt_tokens: 10,
@@ -16,7 +16,7 @@ describe("normalizeUsage", () => {
     });
   });
 
-  it("映射 input/output 别名与嵌套 cached", () => {
+  it("maps input/output aliases and nested cached", () => {
     expect(
       normalizeUsage({
         input_tokens: 100,
@@ -30,7 +30,7 @@ describe("normalizeUsage", () => {
     });
   });
 
-  it("空或无可映射字段时返回 null", () => {
+  it("returns null when empty or no mappable fields", () => {
     expect(normalizeUsage(null)).toBeNull();
     expect(normalizeUsage({})).toBeNull();
   });

@@ -16,7 +16,7 @@ describe("MaskRegistry", () => {
     expect(Object.isFrozen(reg.get("sleep"))).toBe(true);
   });
 
-  it("同名 register 抛错", () => {
+  it("duplicate register throws", () => {
     const reg = new MaskRegistry();
     const empty = {
       inherits: [],

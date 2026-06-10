@@ -2,7 +2,7 @@ import { Database } from "bun:sqlite";
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 
-/** 单元测轮询断言 */
+/** Unit test poll assertion */
 export async function waitFor(predicate: () => boolean, timeoutMs = 400): Promise<void> {
   const deadline = Date.now() + timeoutMs;
   while (!predicate()) {
@@ -13,7 +13,7 @@ export async function waitFor(predicate: () => boolean, timeoutMs = 400): Promis
   }
 }
 
-/** 测试用：写入一条 pending 事件 */
+/** For tests: write one pending event */
 export function seedPendingEvent(
   dbPath: string,
   topic: string,

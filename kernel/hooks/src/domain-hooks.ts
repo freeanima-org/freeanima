@@ -39,20 +39,20 @@ export type BeforeLlmCallContext = {
 
 export const messageIncoming = createHook<MessageIncomingContext>(
   "@freeanima/kernel-hooks/hooks/message-incoming",
-  "入站消息拦截",
+  "Inbound message intercept",
 );
 
 export const toolAfterCall = createHook<ToolAfterCallContext>(
   "@freeanima/kernel-hooks/hooks/tool-after-call",
-  "工具调用返回后",
+  "After tool call returns",
 );
 
 export const turnAfterComplete = createHook<TurnAfterCompleteContext>(
   "@freeanima/kernel-hooks/hooks/turn-after-complete",
-  "单轮对话结束后",
+  "After single turn ends",
 );
 
 export const beforeLlmCall = createHook<BeforeLlmCallContext>(
   "@freeanima/kernel-hooks/hooks/before-llm-call",
-  "每轮 LLM 调用前触发（首轮及工具循环每轮均触发）",
+  "Fires before each LLM call (first turn and every tool-loop turn)",
 );

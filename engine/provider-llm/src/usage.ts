@@ -1,4 +1,4 @@
-/** 将各厂商 usage 归一化为稳定字段（与 legacy llm.normalizeUsage 对齐） */
+/** Normalize vendor usage to stable fields (aligned with legacy llm.normalizeUsage) */
 export function normalizeUsage(
   raw: Record<string, unknown> | null | undefined,
 ): Record<string, number> | null {

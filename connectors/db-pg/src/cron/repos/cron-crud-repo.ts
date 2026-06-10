@@ -65,7 +65,7 @@ export async function createCronJob(row: CronJobCreateInput): Promise<void> {
   );
 }
 
-/** 内置任务 upsert：冲突时仅更新 name/schedule/updated_at；返回 schedule 是否变化 */
+/** Built-in job upsert: on conflict only updates name/schedule/updated_at; returns whether schedule changed */
 export async function upsertBuiltinCronJob(row: CronJobBuiltinUpsertInput): Promise<boolean> {
   const now = formatCstIso();
   const db = getDb();

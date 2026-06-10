@@ -5,7 +5,7 @@ import { resolveMask, resolveMaskByName } from "./resolve.ts";
 
 function toolSetRegistry(): ToolSetRegistry {
   const reg = new ToolSetRegistry();
-  reg.registerToolSet("browser", "浏览器", [
+  reg.registerToolSet("browser", "Browser", [
     {
       name: "browser_navigate",
       description: "nav",
@@ -23,7 +23,7 @@ function toolSetRegistry(): ToolSetRegistry {
 }
 
 describe("resolveMask", () => {
-  it("展开 inherits 并合并 allowed / denied", () => {
+  it("expands inherits and merges allowed / denied", () => {
     const masks = new MaskRegistry();
     masks.register("base", {
       inherits: [],
@@ -46,7 +46,7 @@ describe("resolveMask", () => {
     expect(resolved.auto_skills).toEqual(["skill_a", "skill_b"]);
   });
 
-  it("循环继承抛错", () => {
+  it("throws on circular inheritance", () => {
     const masks = new MaskRegistry();
     masks.register("a", {
       inherits: ["b"],
@@ -67,7 +67,7 @@ describe("resolveMask", () => {
     );
   });
 
-  it("deny 覆盖 allow", () => {
+  it("deny overrides allow", () => {
     const masks = new MaskRegistry();
     const mask = {
       inherits: [] as string[],
@@ -81,7 +81,7 @@ describe("resolveMask", () => {
     expect(resolved.denied_tools).toEqual(["grep"]);
   });
 
-  it("凭证合并取最严格（deny > allow > null）", () => {
+  it("credential merge uses strictest (deny > allow > null)", () => {
     const masks = new MaskRegistry();
     masks.register("p1", {
       inherits: [],
@@ -101,7 +101,7 @@ describe("resolveMask", () => {
     expect(resolved.credentials).toEqual([{ name: "api_key", read: "deny", write: "allow" }]);
   });
 
-  it("@ToolSet 展开为具体工具名", () => {
+  it("@ToolSet expands to concrete tool names", () => {
     const masks = new MaskRegistry();
     const mask = {
       inherits: [] as string[],

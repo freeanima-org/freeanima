@@ -136,19 +136,19 @@ export function resolveWorkspace(): string {
 
 function assertWorkspaceConfigured(): string {
   const root = resolveWorkspace();
-  if (!root) throw new Error("studio.workspace 未配置");
-  if (!existsSync(root)) throw new Error(`workspace 不存在: ${root}`);
+  if (!root) throw new Error("studio.workspace not configured");
+  if (!existsSync(root)) throw new Error(`workspace does not exist: ${root}`);
   return root;
 }
 
-/** 将相对路径解析为绝对路径，并校验在 workspace 内 */
+/** Resolve relative path to absolute and verify within workspace */
 export function resolveStudioPath(relPath: string): string {
   const root = assertWorkspaceConfigured();
   const rootReal = realpathSync(root);
   const abs = resolve(root, relPath.replace(/^\/+/, ""));
   const absReal = existsSync(abs) ? realpathSync(abs) : abs;
   if (!absReal.startsWith(rootReal + "/") && absReal !== rootReal) {
-    throw new Error("路径超出 workspace 范围");
+    throw new Error("Path outside workspace scope");
   }
   return abs;
 }
@@ -221,24 +221,24 @@ export function readStudioFile(relPath: string): {
   const parts = relPath.split("/");
   const name = parts[parts.length - 1] ?? relPath;
   if (!cfg.showHidden && name.startsWith(".")) {
-    throw new Error("隐藏文件不可读");
+    throw new Error("Hidden files are not readable");
   }
   const abs = resolveStudioPath(relPath);
   if (!existsSync(abs) || !statSync(abs).isFile()) {
-    throw new Error("文件不存在");
+    throw new Error("File does not exist");
   }
   if (!isTextFile(abs)) {
-    throw new Error("二进制或不可读文件");
+    throw new Error("Binary or unreadable file");
   }
   const size = statSync(abs).size;
   if (size > MAX_FILE_BYTES) {
-    throw new Error(`文件过大 (${size} 字节)，上限 ${MAX_FILE_BYTES} 字节`);
+    throw new Error(`File too large (${size} bytes); limit ${MAX_FILE_BYTES} bytes`);
   }
   let content: string;
   try {
     content = readFileSync(abs, "utf-8");
   } catch (e) {
-    throw new Error(`读取失败: ${e}`, { cause: e });
+    throw new Error(`Read failed: ${e}`, { cause: e });
   }
   return {
     path: relPath.replace(/^\/+/, ""),
@@ -265,7 +265,7 @@ function searchWithRipgrep(query: string, root: string): SearchHit[] | null {
   if (proc.error) return null;
   const code = proc.status ?? 1;
   if (code !== 0 && code !== 1) {
-    throw new Error(String(proc.stderr ?? proc.stdout ?? "rg 搜索失败"));
+    throw new Error(String(proc.stderr ?? proc.stdout ?? "rg search failed"));
   }
   const out = String(proc.stdout ?? "").trim();
   if (!out) return [];
@@ -343,7 +343,7 @@ function searchWalk(
 
 export function searchStudio(query: string): { results: SearchHit[] } {
   const q = query.trim();
-  if (!q) throw new Error("query 不能为空");
+  if (!q) throw new Error("query must not be empty");
   const root = assertWorkspaceConfigured();
   const cfg = getStudioConfig();
   const rgHits = searchWithRipgrep(q, root);

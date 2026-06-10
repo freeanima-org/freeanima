@@ -2,12 +2,12 @@ type SessionMessage = Record<string, unknown>;
 
 const lastToolAtBySession = new Map<string, number>();
 
-/** 伙伴新消息到达，结束工具循环抑制 */
+/** Partner new message arrives; end tool-loop suppression */
 export function clearToolLoopSuppression(sessionId: string): void {
   lastToolAtBySession.delete(sessionId);
 }
 
-/** engine 追加 tool / assistant+tool_calls 时调用 */
+/** Called when engine appends tool / assistant+tool_calls */
 export function markToolLoopActivity(sessionId: string): void {
   lastToolAtBySession.set(sessionId, Date.now());
 }
@@ -18,7 +18,7 @@ export function isToolLoopSuppressionActive(sessionId: string, timeoutSec: numbe
   return Date.now() - at < timeoutSec * 1000;
 }
 
-/** 自最后一条 user 起是否处于工具调用链中 */
+/** Whether in tool-call chain since last user message */
 export function isInToolLoop(messages: SessionMessage[]): boolean {
   const rest = messages.filter((m) => m.role !== "system" && m.role !== "session_meta");
   let lastUser = -1;

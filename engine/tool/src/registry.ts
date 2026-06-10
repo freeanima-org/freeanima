@@ -1,6 +1,6 @@
 import type { z } from "zod";
 
-/** JSON Schema object 子集（OpenAI function parameters） */
+/** JSON Schema object subset (OpenAI function parameters) */
 export type JsonSchemaObject = {
   type?: string;
   properties?: Record<string, unknown>;
@@ -14,7 +14,7 @@ export type ToolArgs = Record<string, unknown>;
 
 export type ToolHandler = (args: ToolArgs) => string | Promise<string>;
 
-/** 工具成功返回的约定形态：结构化 JSON（toolResult）或 LLM 可读纯文本 */
+/** Tool success return shape: structured JSON (toolResult) or LLM-readable plain text */
 export type ToolReturnKind = "json" | "text";
 
 export type ToolDef = {
@@ -24,17 +24,17 @@ export type ToolDef = {
   handler: ToolHandler;
   requiresEnv?: string[];
   returnKind?: ToolReturnKind;
-  /** 由 returnZod 推导；text 工具也可手写 */
+  /** Derived from returnZod; text tools may also be hand-written */
   returnSchema?: JsonSchemaObject;
-  /** 成功返回 Zod SSOT */
+  /** Success return Zod SSOT */
   returnZod?: z.ZodType;
-  /** 经 schema 校验的保真示例 */
+  /** Schema-validated faithful example */
   returnExample?: unknown;
-  /** text 工具的可读格式说明 */
+  /** Readable format hint for text tools */
   returnTextHint?: string;
 };
 
-/** 将 ToolDef 转为 OpenAI Chat Completions `tools[]` 项 */
+/** Convert ToolDef to OpenAI Chat Completions `tools[]` entry */
 export function openaiFunctionSchema(t: ToolDef): {
   type: "function";
   function: { name: string; description: string; parameters: JsonSchemaObject };

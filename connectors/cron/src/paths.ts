@@ -21,12 +21,12 @@ export function outputPath(jobId: string, runNumber: number): string {
   return join(OUTPUT_DIR(), `${jobId}-${String(runNumber).padStart(4, "0")}.txt`);
 }
 
-/** 绝对路径 → 相对 FREEANIMA_HOME 的路径（POSIX 斜杠） */
+/** Absolute path → path relative to FREEANIMA_HOME (POSIX slashes) */
 export function toOutputRef(absPath: string): string {
   return relative(PATHS.home, absPath).replace(/\\/g, "/");
 }
 
-/** 相对 FREEANIMA_HOME 的路径 → 绝对路径 */
+/** Path relative to FREEANIMA_HOME → absolute path */
 export function fromOutputRef(ref: string): string {
   if (!ref) return "";
   if (isAbsolute(ref)) return ref;

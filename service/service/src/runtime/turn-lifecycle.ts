@@ -23,7 +23,7 @@ import { isInsufficientToolMessagesError } from "@freeanima/engine-llm";
 import type { HookRegistry } from "@freeanima/kernel-hooks";
 import { SessionManager } from "./session-manager.ts";
 
-/** beginTurn / retryTurn 返回值：[runtimeMsgs, functions, effectiveUserText] */
+/** beginTurn / retryTurn return value: [runtimeMsgs, functions, effectiveUserText] */
 export type TurnPrepareResult = [SessionMessage[], string[], string];
 
 export type StreamTurnHost = {
@@ -68,7 +68,7 @@ export function lastAssistantText(msgs: Message[]): string {
   return "";
 }
 
-/** 引擎运行期间逐条 / 批量持久化到会话 */
+/** Persist to session per-message or in batch during engine run */
 export function createTurnMessageCallbacks(sessionId: string): {
   onMessageAppended: (msg: SessionMessage) => Promise<void>;
   onToolRoundComplete: (batch: SessionMessage[]) => Promise<void>;
@@ -85,7 +85,7 @@ export function createTurnMessageCallbacks(sessionId: string): {
   };
 }
 
-/** 流式 / 非流式共用：消息已在回调中写入，finishTurn 仅更新 meta */
+/** Shared by streaming / non-streaming: messages written in callbacks; finishTurn only updates meta */
 export async function finalizeTurn(
   sessionId: string,
   msgs: SessionMessage[],
@@ -100,13 +100,13 @@ export type RunSimpleTurnOpts = {
   sessionId: string;
   prompt: string;
   model: string;
-  /** 默认 conv().beginTurn；retry 等场景可传入 conv().retryTurn */
+  /** Default conv().beginTurn; pass conv().retryTurn for retry etc. */
   prepare?: (sessionId: string, prompt: string) => Promise<TurnPrepareResult>;
 };
 
 /**
- * 非流式整轮：beginTurn → engine.run → finishTurn。
- * cron / 脚本等无 SSE 场景使用。
+ * Non-streaming full turn: beginTurn → engine.run → finishTurn.
+ * Used by cron / scripts without SSE.
  */
 export async function runSimpleTurn(opts: RunSimpleTurnOpts): Promise<string> {
   const { sessionId, prompt, model, prepare = conv().beginTurn } = opts;
@@ -130,9 +130,9 @@ export async function runSimpleTurn(opts: RunSimpleTurnOpts): Promise<string> {
     );
   } catch (e) {
     if (e instanceof engine.MaxTurnsExceeded) {
-      return `[工具循环超限] ${e.message}`;
+      return `[tool loop limit exceeded] ${e.message}`;
     }
-    return `[引擎错误] ${e}`;
+    return `[engine error] ${e}`;
   } finally {
     await finalizeTurn(sessionId, msgs, effective, model, functions);
   }

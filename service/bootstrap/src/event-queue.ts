@@ -13,7 +13,7 @@ import {
 let sqliteDbPathForTest: string | null = null;
 let redisClientForTest: RedisClient | null = null;
 
-/** 单元测注入内存 SQLite 路径或 mock Redis 客户端 */
+/** Unit test inject in-memory SQLite path or mock Redis client */
 export function setEventQueueOverridesForTest(opts: {
   sqliteDbPath?: string;
   redisClient?: RedisClient;
@@ -27,7 +27,7 @@ export function resetEventQueueOverridesForTest(): void {
   redisClientForTest = null;
 }
 
-/** 按 config.yaml 构造 EventBus 队列适配器 */
+/** Build EventBus queue adapter per config.yaml */
 export function createEventQueue(): EventQueueAdapter {
   const backend = getEventbusBackend();
   if (backend === "redis") {

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { getCronJobs, pauseCronJob, resumeCronJob, runCronJob } from "@/lib/api.ts";
+import { m } from "@/lib/i18n.ts";
 
 export const Route = createFileRoute("/chamber/cron")({
   loader: () => getCronJobs().catch(() => ({ jobs: [] })),
@@ -40,7 +41,11 @@ function CronPage() {
       const data = await getCronJobs();
       setJobs(((data as { jobs?: CronJob[] }).jobs ?? []) as CronJob[]);
     } catch (e) {
-      setError(`加载失败: ${e instanceof Error ? e.message : String(e)}`);
+      setError(
+        m.webui_common_load_failed({
+          detail: e instanceof Error ? e.message : String(e),
+        }),
+      );
     } finally {
       setLoading(false);
     }
@@ -55,7 +60,11 @@ function CronPage() {
       if ((data as { job?: CronJob }).job) updateJob((data as { job: CronJob }).job);
     } catch (e) {
       setError(
-        `${job.name} ${enable ? "启用" : "暂停"}失败: ${e instanceof Error ? e.message : String(e)}`,
+        m.webui_chamber_cron_toggle_failed({
+          name: String(job.name ?? job.id),
+          action: enable ? m.webui_common_start() : m.webui_common_stop(),
+          detail: e instanceof Error ? e.message : String(e),
+        }),
       );
     } finally {
       setToggling((t) => {
@@ -74,7 +83,7 @@ function CronPage() {
       if ((data as { job?: CronJob }).job) updateJob((data as { job: CronJob }).job);
       setToast((t) => ({
         ...t,
-        [job.id]: (data as { message?: string }).message || "已触发",
+        [job.id]: (data as { message?: string }).message || m.webui_chamber_cron_triggered(),
       }));
       setTimeout(() => {
         setToast((t) => {
@@ -85,7 +94,12 @@ function CronPage() {
       }, 4000);
       setTimeout(() => void reload().catch(() => {}), 2000);
     } catch (e) {
-      setError(`${job.name} 触发失败: ${e instanceof Error ? e.message : String(e)}`);
+      setError(
+        m.webui_chamber_cron_trigger_failed({
+          name: String(job.name ?? job.id),
+          detail: e instanceof Error ? e.message : String(e),
+        }),
+      );
     } finally {
       setRunning((r) => {
         const next = { ...r };
@@ -99,10 +113,9 @@ function CronPage() {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <div>
-          <h2 className="text-lg font-bold">⏰ 定时任务</h2>
+          <h2 className="text-lg font-bold">{m.webui_chamber_nav_cron()}</h2>
           <p className="text-sm text-base-content/60 mt-1">
-            查看调度任务、启用/暂停与手动触发。新建或删除请使用{" "}
-            <code className="text-xs">cronjob</code> 工具。
+            {m.webui_chamber_cron_desc()} <code className="text-xs">cronjob</code>
           </p>
         </div>
         <button
@@ -111,7 +124,7 @@ function CronPage() {
           disabled={loading}
           onClick={() => void reload()}
         >
-          刷新
+          {m.webui_common_refresh()}
         </button>
       </div>
 
@@ -124,26 +137,26 @@ function CronPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="card bg-base-200">
               <div className="card-body py-4">
-                <h3 className="text-sm text-base-content/60">任务总数</h3>
+                <h3 className="text-sm text-base-content/60">{m.webui_chamber_cron_total()}</h3>
                 <p className="text-2xl font-mono">{jobs.length}</p>
               </div>
             </div>
             <div className="card bg-base-200">
               <div className="card-body py-4">
-                <h3 className="text-sm text-base-content/60">运行中</h3>
+                <h3 className="text-sm text-base-content/60">{m.webui_chamber_cron_active()}</h3>
                 <p className="text-2xl font-mono">{activeCount}</p>
               </div>
             </div>
             <div className="card bg-base-200">
               <div className="card-body py-4">
-                <h3 className="text-sm text-base-content/60">已暂停</h3>
+                <h3 className="text-sm text-base-content/60">{m.webui_chamber_cron_paused()}</h3>
                 <p className="text-2xl font-mono">{pausedCount}</p>
               </div>
             </div>
           </div>
 
           {jobs.length === 0 ? (
-            <div className="alert alert-info text-sm">暂无定时任务。</div>
+            <div className="alert alert-info text-sm">{m.webui_chamber_cron_empty()}</div>
           ) : (
             jobs.map((job) => (
               <div key={job.id} className="card bg-base-200">
@@ -154,12 +167,14 @@ function CronPage() {
                       <span
                         className={`badge badge-sm ${job.paused ? "badge-ghost" : "badge-success"}`}
                       >
-                        {job.paused ? "已暂停" : "运行中"}
+                        {job.paused
+                          ? m.webui_chamber_cron_status_paused()
+                          : m.webui_chamber_cron_status_active()}
                       </span>
                     </div>
                     <div className="flex flex-wrap items-center gap-3">
                       <label className="label cursor-pointer gap-2 py-0">
-                        <span className="label-text text-xs">启用</span>
+                        <span className="label-text text-xs">{m.webui_chamber_cron_enable()}</span>
                         <input
                           type="checkbox"
                           className="toggle toggle-sm toggle-primary"
@@ -177,7 +192,7 @@ function CronPage() {
                         {running[job.id] ? (
                           <span className="loading loading-spinner loading-xs" />
                         ) : null}
-                        立即运行
+                        {m.webui_chamber_cron_run_now()}
                       </button>
                     </div>
                   </div>
@@ -188,11 +203,11 @@ function CronPage() {
                         <td className="font-mono text-xs break-all">{job.id}</td>
                       </tr>
                       <tr>
-                        <td className="text-base-content/50">调度</td>
+                        <td className="text-base-content/50">{m.webui_chamber_cron_schedule()}</td>
                         <td className="font-mono">{String(job.schedule ?? "")}</td>
                       </tr>
                       <tr>
-                        <td className="text-base-content/50">下次运行</td>
+                        <td className="text-base-content/50">{m.webui_chamber_cron_next_run()}</td>
                         <td>{job.paused ? "—" : formatTs(Number(job.next_run_at))}</td>
                       </tr>
                     </tbody>

@@ -10,6 +10,9 @@ import {
   listSessionCommands,
   restartService,
 } from "@/lib/api.ts";
+import { m } from "@/lib/i18n.ts";
+import { translateApiPayload } from "@/lib/api-errors.ts";
+import { dependencyStatusLabel } from "@/lib/webui-status.ts";
 
 export const Route = createFileRoute("/chamber/dashboard")({
   loader: async () => {
@@ -29,10 +32,10 @@ export const Route = createFileRoute("/chamber/dashboard")({
 function formatUptime(seconds: number | null | undefined) {
   if (!seconds) return "";
   const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
+  const mins = Math.floor((seconds % 3600) / 60);
   const s = seconds % 60;
-  if (h > 0) return `${h}h ${m}m`;
-  if (m > 0) return `${m}m ${s}s`;
+  if (h > 0) return `${h}h ${mins}m`;
+  if (mins > 0) return `${mins}m ${s}s`;
   return `${s}s`;
 }
 
@@ -40,12 +43,6 @@ function dependencyBadgeClass(status: DependencyStatus["status"]) {
   if (status === "connected") return "badge-success";
   if (status === "error") return "badge-error";
   return "badge-ghost";
-}
-
-function dependencyLabel(dep: DependencyStatus) {
-  if (dep.status === "connected") return "已连接";
-  if (dep.status === "error") return "异常";
-  return "未配置";
 }
 
 function dependencyBadge(dep: DependencyStatus | undefined, name: string) {
@@ -57,7 +54,7 @@ function dependencyBadge(dep: DependencyStatus | undefined, name: string) {
   const title = dep.status === "error" && dep.error ? dep.error : undefined;
   return (
     <span className={`badge badge-sm ${dependencyBadgeClass(dep.status)}`} title={title}>
-      {name} {dependencyLabel(dep)}
+      {name} {dependencyStatusLabel(dep.status)}
       {latency}
     </span>
   );
@@ -68,8 +65,8 @@ function DashboardPage() {
   const [restarting, setRestarting] = useState(false);
 
   const svc = status as ServiceStatus | null;
-  const mcpError = mcpData ? "" : "MCP 状态加载失败";
-  const acpError = acpData ? "" : "ACP 状态加载失败";
+  const mcpError = mcpData ? "" : m.webui_chamber_dashboard_mcp_load_failed();
+  const acpError = acpData ? "" : m.webui_chamber_dashboard_acp_load_failed();
 
   const mcp = {
     server_count: (mcpData as Record<string, number> | null)?.server_count ?? 0,
@@ -108,28 +105,32 @@ function DashboardPage() {
       ? `${(processMemoryKb / 1024).toFixed(1)} MB`
       : `${processMemoryKb} KB`;
 
-  const mcpSummary = [
-    `${mcp.server_count} 服务器`,
-    `${mcp.connected_count} 已连接`,
-    ...(mcp.connecting_count > 0 ? [`${mcp.connecting_count} 连接中`] : []),
-    `${mcp.tool_count} 工具`,
-  ].join(" · ");
+  const mcpSummary = m.webui_chamber_dashboard_mcp_summary({
+    servers: String(mcp.server_count),
+    connected: String(mcp.connected_count),
+    connecting: String(mcp.connecting_count),
+    tools: String(mcp.tool_count),
+  });
 
-  const acpSummary = [
-    `${acp.agent_count} 代理`,
-    `${acp.connected_count} 已连接`,
-    `${acp.session_count} 会话`,
-    `${acp.tool_count} 工具`,
-  ].join(" · ");
+  const acpSummary = m.webui_chamber_dashboard_acp_summary({
+    agents: String(acp.agent_count),
+    connected: String(acp.connected_count),
+    sessions: String(acp.session_count),
+    tools: String(acp.tool_count),
+  });
 
   const confirmRestart = async () => {
-    if (!confirm("确定要重启服务吗？正在进行的对话将被中断。")) return;
+    if (!confirm(m.webui_chamber_dashboard_restart_confirm())) return;
     setRestarting(true);
     try {
       const res = await restartService();
-      alert((res as { message?: string }).message || "服务正在重启...");
+      alert(translateApiPayload(res as { code?: string; message?: string }));
     } catch (err) {
-      alert(`重启失败: ${err instanceof Error ? err.message : String(err)}`);
+      alert(
+        m.webui_chamber_dashboard_restart_failed({
+          detail: err instanceof Error ? err.message : String(err),
+        }),
+      );
       setRestarting(false);
     }
   };
@@ -137,18 +138,20 @@ function DashboardPage() {
   if (!svc) {
     return (
       <div>
-        <h2 className="text-lg font-bold mb-2">📊 仪表盘</h2>
-        <div className="alert alert-error text-sm">加载服务状态失败</div>
+        <h2 className="text-lg font-bold mb-2">{m.webui_chamber_dashboard_title()}</h2>
+        <div className="alert alert-error text-sm">{m.webui_chamber_dashboard_load_failed()}</div>
       </div>
     );
   }
 
   return (
     <div>
-      <h2 className="text-lg font-bold mb-2">📊 仪表盘</h2>
+      <h2 className="text-lg font-bold mb-2">{m.webui_chamber_dashboard_title()}</h2>
       <div className="space-y-4">
         <section>
-          <h3 className="text-sm font-semibold text-base-content/60 mb-1.5">运行态</h3>
+          <h3 className="text-sm font-semibold text-base-content/60 mb-1.5">
+            {m.webui_chamber_dashboard_runtime()}
+          </h3>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
             <RuntimeCard
               svc={svc}
@@ -163,7 +166,9 @@ function DashboardPage() {
         </section>
 
         <section>
-          <h3 className="text-sm font-semibold text-base-content/60 mb-1.5">会话与工具</h3>
+          <h3 className="text-sm font-semibold text-base-content/60 mb-1.5">
+            {m.webui_chamber_dashboard_sessions_tools()}
+          </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 items-stretch">
             <SessionStatCard total={svc.sessions?.total ?? 0} platformRows={sessionPlatformRows} />
             <CompactExtensionCard
@@ -172,9 +177,11 @@ function DashboardPage() {
               summary={acpSummary}
               error={acpError}
             />
-            <StatCard title="工具">
+            <StatCard title={m.webui_common_tools()}>
               <p className="text-xl font-mono mt-1">{toolCount}</p>
-              <p className="text-xs text-base-content/50">已注册</p>
+              <p className="text-xs text-base-content/50">
+                {m.webui_chamber_dashboard_tools_registered()}
+              </p>
             </StatCard>
             <CompactExtensionCard
               title="MCP"
@@ -183,37 +190,47 @@ function DashboardPage() {
               error={mcpError}
             />
             <StatCard
-              title="定时任务"
+              title={m.webui_chamber_dashboard_cron()}
               action={
                 <Link to="/chamber/cron" className="text-xs link link-hover">
-                  管理
+                  {m.webui_chamber_dashboard_manage()}
                 </Link>
               }
             >
               <p className="text-xl font-mono mt-1">{cronCount}</p>
-              <p className="text-xs text-base-content/50">{cronCount > 0 ? "已配置" : "无"}</p>
+              <p className="text-xs text-base-content/50">
+                {cronCount > 0
+                  ? m.webui_chamber_dashboard_cron_configured()
+                  : m.webui_chamber_dashboard_cron_none()}
+              </p>
             </StatCard>
-            <StatCard title="Slash 命令">
+            <StatCard title={m.webui_chamber_dashboard_slash_commands()}>
               <p className="text-xl font-mono mt-1">{commandCount ?? "—"}</p>
-              <p className="text-xs text-base-content/50">全平台</p>
+              <p className="text-xs text-base-content/50">
+                {m.webui_chamber_dashboard_all_platforms()}
+              </p>
             </StatCard>
           </div>
         </section>
 
         <section>
           <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
-            <h3 className="text-sm font-semibold text-base-content/60">记忆</h3>
+            <h3 className="text-sm font-semibold text-base-content/60">
+              {m.webui_chamber_dashboard_memory()}
+            </h3>
             <Link to="/chamber/memory" className="link link-hover text-xs">
-              记忆台
+              {m.webui_chamber_dashboard_memory_desk()}
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <StatCard title="语义记忆">
+            <StatCard title={m.webui_chamber_dashboard_semantic_memory()}>
               <p className="text-xl font-mono mt-1">{semanticMemoryCount}</p>
             </StatCard>
-            <StatCard title="对话消息">
+            <StatCard title={m.webui_chamber_dashboard_dialogue_messages()}>
               <p className="text-xl font-mono mt-1">{dialogueMessageCount}</p>
-              <p className="text-xs text-base-content/50">条消息</p>
+              <p className="text-xs text-base-content/50">
+                {m.webui_chamber_dashboard_messages_count()}
+              </p>
             </StatCard>
           </div>
         </section>
@@ -242,7 +259,9 @@ function RuntimeCard({
       <div className="card-body py-3 px-4">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-2">
           <div>
-            <h4 className="text-sm text-base-content/60">服务状态</h4>
+            <h4 className="text-sm text-base-content/60">
+              {m.webui_chamber_dashboard_service_status()}
+            </h4>
             <div className="flex items-center gap-2 mt-1">
               <span
                 className={`badge ${svc.status === "running" ? "badge-success" : "badge-error"}`}
@@ -253,22 +272,28 @@ function RuntimeCard({
             </div>
           </div>
           <div>
-            <h4 className="text-sm text-base-content/60">运行时长</h4>
+            <h4 className="text-sm text-base-content/60">{m.webui_chamber_dashboard_uptime()}</h4>
             <p className="text-xl font-mono mt-1">{formatUptime(svc.uptime_seconds) || "—"}</p>
           </div>
           <div>
-            <h4 className="text-sm text-base-content/60">进程内存</h4>
+            <h4 className="text-sm text-base-content/60">
+              {m.webui_chamber_dashboard_process_memory()}
+            </h4>
             <p className="text-xl font-mono mt-1">{processMemoryLabel}</p>
           </div>
           <div>
-            <h4 className="text-sm text-base-content/60">当前模型</h4>
+            <h4 className="text-sm text-base-content/60">
+              {m.webui_chamber_dashboard_current_model()}
+            </h4>
             <p className="text-base font-mono mt-1 truncate" title={svc.config?.model}>
               {svc.config?.model || "—"}
             </p>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-base-content/50 border-t border-base-300 pt-2 mt-2">
-          {svc.start_time_iso ? <span>启动于 {svc.start_time_iso}</span> : null}
+          {svc.start_time_iso ? (
+            <span>{m.webui_chamber_dashboard_started_at({ time: svc.start_time_iso })}</span>
+          ) : null}
           {svc.pid ? <span>PID {svc.pid}</span> : null}
           {dependencyBadge(postgres, "PG")}
           {dependencyBadge(redis, "Redis")}
@@ -279,7 +304,7 @@ function RuntimeCard({
               disabled={restarting}
               onClick={onRestart}
             >
-              {restarting ? "重启中…" : "重启服务"}
+              {restarting ? m.webui_common_restarting() : m.webui_common_restart_service()}
             </button>
           </div>
         </div>
@@ -294,9 +319,13 @@ function PlatformConnectionsCard({ platforms }: { platforms: Record<string, unkn
   return (
     <div className="card bg-base-200">
       <div className="card-body py-3 px-4">
-        <h3 className="text-sm text-base-content/60">平台连接</h3>
+        <h3 className="text-sm text-base-content/60">
+          {m.webui_chamber_dashboard_platform_connections()}
+        </h3>
         {entries.length === 0 ? (
-          <div className="text-xs text-base-content/50 mt-1">无平台接入</div>
+          <div className="text-xs text-base-content/50 mt-1">
+            {m.webui_chamber_dashboard_no_platforms()}
+          </div>
         ) : (
           <div className="mt-1 space-y-1 max-h-24 overflow-y-auto">
             {entries.map(([name, ps]) => (
@@ -328,16 +357,18 @@ function SessionStatCard({
 }) {
   return (
     <div className="group/session relative h-full">
-      <StatCard title="会话">
+      <StatCard title={m.webui_chamber_dashboard_sessions()}>
         <p className="text-xl font-mono mt-1">{total}</p>
-        <p className="text-xs text-base-content/50">悬停查看分平台</p>
+        <p className="text-xs text-base-content/50">
+          {m.webui_chamber_dashboard_hover_platforms()}
+        </p>
       </StatCard>
       <div
         role="tooltip"
         className="pointer-events-none absolute left-0 top-full z-50 mt-1 hidden min-w-[10rem] rounded-lg bg-neutral px-3 py-2 text-xs text-neutral-content shadow-lg group-hover/session:block"
       >
         {platformRows.length === 0 ? (
-          <p className="text-left">暂无分平台数据</p>
+          <p className="text-left">{m.webui_chamber_dashboard_no_platform_data()}</p>
         ) : (
           <ul className="list-none space-y-0.5 text-left">
             {platformRows.map((row) => (
@@ -369,7 +400,7 @@ function CompactExtensionCard({
         <div className="flex items-center justify-between gap-2">
           <h4 className="text-sm text-base-content/60">{title}</h4>
           <Link to={href} className="text-xs link link-hover">
-            管理
+            {m.webui_chamber_dashboard_manage()}
           </Link>
         </div>
         {error ? (

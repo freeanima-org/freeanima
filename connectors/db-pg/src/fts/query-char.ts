@@ -1,5 +1,5 @@
 /**
- * 将用户查询转为 PostgreSQL to_tsquery('simple', …) 参数字符串（逐字/词模式）。
+ * Convert user query to PostgreSQL to_tsquery('simple', …) param string (per-char/word mode).
  */
 export function buildCharModeTsQuery(raw: string): string {
   const trimmed = raw.trim();
@@ -22,7 +22,7 @@ export function buildCharModeTsQuery(raw: string): string {
   return parts.map(wrapTsqueryPart).join(" & ");
 }
 
-/** jieba 分词串：整词 AND 匹配 */
+/** jieba token string: whole-word AND match */
 export function buildJiebaModeTsQuery(segmented: string): string {
   const tokens = segmented
     .trim()

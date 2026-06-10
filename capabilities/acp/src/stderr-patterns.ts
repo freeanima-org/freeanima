@@ -1,4 +1,4 @@
-/** 从 stderr 尾行识别常见错误模式 */
+/** recognize common error patterns from stderr tail */
 
 export type StderrDiagnosis = {
   pattern: string;
@@ -9,32 +9,32 @@ const PATTERNS: Array<{ re: RegExp; pattern: string; hint: string }> = [
   {
     re: /auth|login|unauthorized|401|403/i,
     pattern: "authentication",
-    hint: "Cursor 认证失败，请运行 agent login",
+    hint: "Cursor authentication failed; run agent login",
   },
   {
     re: /ENOMEM|out of memory|heap out of memory/i,
     pattern: "memory",
-    hint: "内存不足，尝试减小任务范围或增加系统内存",
+    hint: "Out of memory; reduce task scope or add system memory",
   },
   {
     re: /ENOENT|command not found|not found/i,
     pattern: "missing_binary",
-    hint: "命令或依赖未找到，检查 command/args 配置",
+    hint: "Command or dependency not found; check command/args config",
   },
   {
     re: /EACCES|permission denied/i,
     pattern: "permission",
-    hint: "权限不足，检查 cwd 与文件权限",
+    hint: "Permission denied; check cwd and file permissions",
   },
   {
     re: /rate limit|429|too many requests/i,
     pattern: "rate_limit",
-    hint: "API 速率限制，稍后重试",
+    hint: "API rate limit; retry later",
   },
   {
     re: /network|ECONNREFUSED|ETIMEDOUT|fetch failed/i,
     pattern: "network",
-    hint: "网络连接问题，检查代理与防火墙",
+    hint: "Network issue; check proxy and firewall",
   },
 ];
 

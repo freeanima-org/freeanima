@@ -23,7 +23,7 @@ function assertExampleMatchesSchema(schema: z.ZodType, example: unknown, label: 
   }
 }
 
-/** 结构化 JSON 工具的成功返回契约 */
+/** Success return contract for structured JSON tools */
 export function defineToolReturn<T extends z.ZodType>(opts: {
   schema: T;
   example: z.infer<T>;
@@ -37,7 +37,7 @@ export function defineToolReturn<T extends z.ZodType>(opts: {
   };
 }
 
-/** LLM 可读纯文本工具的成功返回契约 */
+/** Success return contract for LLM-readable plain-text tools */
 export function defineTextToolReturn(opts: {
   hint: string;
   example: string;
@@ -56,7 +56,7 @@ export function defineTextToolReturn(opts: {
   };
 }
 
-/** 从 ToolDef 解析用于 status API 的返回字段 */
+/** Resolve return fields from ToolDef for status API */
 export function resolveToolReturnFields(def: ToolDef): {
   return_kind: ToolReturnKind;
   return_schema?: JsonSchemaObject;
@@ -87,7 +87,7 @@ export function resolveToolReturnFields(def: ToolDef): {
   return out;
 }
 
-/** 为 ToolDef 列表按名称附加返回契约 */
+/** Attach return contracts to ToolDef list by name */
 export function attachToolReturns(
   tools: ToolDef[],
   returns: Partial<Record<string, ToolReturnContractFields>>,
@@ -98,7 +98,7 @@ export function attachToolReturns(
   });
 }
 
-/** 全局错误返回契约（status API 层注入） */
+/** Global error return contract (injected at status API layer) */
 export function globalToolErrorContract(): {
   error_schema: JsonSchemaObject;
   error_example: typeof toolErrorReturnExample;

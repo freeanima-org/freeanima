@@ -22,7 +22,7 @@ const taskMutationSchema = z.object({
 
 const exampleTask = {
   id: "task-001",
-  title: "示例任务",
+  title: "Example task",
   description: null,
   status: "pending" as const,
   priority: "none" as const,

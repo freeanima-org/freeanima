@@ -3,12 +3,12 @@ import { resolveDefaultSessionTools } from "./default-session-tools.ts";
 import { ToolSetRegistry } from "./toolset.ts";
 
 describe("resolveDefaultSessionTools", () => {
-  it("仅返回 registry 中存在的默认工具名", () => {
+  it("returns only default tool names present in registry", () => {
     const registry = new ToolSetRegistry();
-    registry.registerToolSet("memory", "记忆", [
+    registry.registerToolSet("memory", "memory", [
       {
         name: "memory_recall",
-        description: "召回",
+        description: "Recall",
         parameters: { type: "object", properties: {} },
         handler: () => "ok",
       },

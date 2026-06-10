@@ -70,7 +70,7 @@ export async function memorySearch(args: {
   });
 }
 
-/** PG STORED content_fts 自动维护；返回 semantic_memory 行数 */
+/** PG STORED content_fts auto-maintained; returns semantic_memory row count */
 export async function countSemanticMemory(): Promise<{ index_rows: number }> {
   const count = await semanticRepos().count();
   return { index_rows: count };
@@ -100,7 +100,7 @@ export async function listMemoryFiles(): Promise<{ files: MemoryFileEntry[] }> {
       });
     }
   } catch {
-    /* PG 不可用时仅返回 Markdown 身份文件 */
+    /* When PG unavailable, return Markdown identity file only */
   }
 
   return { files };

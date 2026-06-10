@@ -122,7 +122,7 @@ export async function runExecuteCode(
     case "nodejs":
       return runNodejs(code, timeoutSec);
     default:
-      return toolError(`runtime '${runtime}' 不支持`);
+      return toolError(`runtime '${runtime}' is not supported`);
   }
 }
 

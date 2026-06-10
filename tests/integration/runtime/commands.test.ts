@@ -64,7 +64,7 @@ describePg("slash commands", () => {
     ).text;
     expect(text).toContain("/retry");
     expect(text).toContain("/help");
-    expect(text).toContain("当前 session");
+    expect(text).toContain("Current session");
     expect(text).not.toContain("/new");
   });
 
@@ -94,13 +94,13 @@ describePg("slash commands", () => {
         platform: "parlor",
       },
       [
-        { role: "user", content: "你好", pos: 1, timestamp: "t1" },
-        { role: "assistant", content: "旧回复", pos: 2, timestamp: "t2" },
+        { role: "user", content: "hello", pos: 1, timestamp: "t1" },
+        { role: "assistant", content: "old reply", pos: 2, timestamp: "t2" },
       ],
     );
 
     const content = await testConv().rollbackToLastUser(sid);
-    expect(content).toBe("你好");
+    expect(content).toBe("hello");
     const msgs = await testConv().load(sid);
     expect(msgs.filter((m) => m.role === "assistant")).toHaveLength(0);
     expect(msgs.filter((m) => m.role === "user")).toHaveLength(1);
@@ -134,7 +134,7 @@ describePg("slash commands", () => {
       args: [],
       raw: "/new",
     });
-    expect(result.text).toContain("新 session");
+    expect(result.text).toContain("New session");
     const data = result.data as { new_session_id?: string } | undefined;
     expect(data?.new_session_id).toBeTruthy();
     expect(String(data?.new_session_id)).not.toBe(sid);
@@ -145,7 +145,7 @@ describePg("slash commands", () => {
     const handoffSpy = spyOn(engineConversation, "generateSessionHandoffSummary").mockResolvedValue(
       {
         ok: true,
-        summary: "上一段对话摘要",
+        summary: "Previous conversation summary",
       },
     );
 
@@ -163,8 +163,8 @@ describePg("slash commands", () => {
           platform: "discord",
         },
         [
-          { role: "user", content: "你好", pos: 1, timestamp: "t1" },
-          { role: "assistant", content: "哈喽", pos: 2, timestamp: "t2" },
+          { role: "user", content: "hello", pos: 1, timestamp: "t1" },
+          { role: "assistant", content: "hi there", pos: 2, timestamp: "t2" },
         ],
       );
 
@@ -184,7 +184,7 @@ describePg("slash commands", () => {
       const msgs = await testConv().load(newSid);
       expect(msgs).toHaveLength(1);
       expect(msgs[0]?.role).toBe("assistant");
-      expect(msgs[0]?.content).toBe("上一段对话摘要");
+      expect(msgs[0]?.content).toBe("Previous conversation summary");
     } finally {
       handoffSpy.mockRestore();
     }
@@ -204,7 +204,7 @@ describePg("slash commands", () => {
       args: [],
       raw: "/reload_tools",
     });
-    expect(result.text).toContain("已重置 session 工具");
+    expect(result.text).toContain("Reset session tools");
 
     const meta = await testConv().loadSessionMeta(sid);
     expect(isSessionMeta(meta)).toBe(true);
@@ -225,15 +225,15 @@ describePg("slash commands", () => {
       args: [],
       raw: "/reload_tools",
     });
-    expect(result.text).toContain("不存在");
+    expect(result.text).toContain("does not exist");
   });
 
   it("reload_system_prompt rebuilds session meta", async () => {
-    const selfModel = "你是测试 Agent。";
+    const selfModel = "You are a test agent.";
     await syncIntegrationSelfLayer(pg, selfModel);
 
     const sid = await testConv().newSession("parlor");
-    await patchMetaForTest(sid, { system_prompt: "旧 prompt" });
+    await patchMetaForTest(sid, { system_prompt: "old prompt" });
 
     const [cmd] = findCommand("/reload_system_prompt");
     const result = await executeCommand(cmd!, {
@@ -252,11 +252,11 @@ describePg("slash commands", () => {
       expect(sp).toContain(`## ${heading}`);
     }
     expect(sp).toContain(selfModel);
-    expect(sp).not.toBe("旧 prompt");
+    expect(sp).not.toBe("old prompt");
   });
 
   it("reload_system_prompt only updates system_prompt", async () => {
-    const selfModel = "你是测试 Agent。";
+    const selfModel = "You are a test agent.";
     await syncIntegrationSelfLayer(pg, selfModel);
     const sid = await testConv().newSession("parlor");
     const metaBefore = await testConv().loadSessionMeta(sid);
@@ -265,8 +265,8 @@ describePg("slash commands", () => {
     await patchMetaForTest(sid, {
       cwd: preservedCwd,
       tools: preservedTools,
-      system_prompt: "旧 prompt",
-      title: "保留标题",
+      system_prompt: "old prompt",
+      title: "preserved title",
     });
 
     const [cmd] = findCommand("/reload_system_prompt");
@@ -280,9 +280,9 @@ describePg("slash commands", () => {
     const metaAfter = await testConv().loadSessionMeta(sid);
     expect(metaAfter.cwd).toBe(preservedCwd);
     expect(await getTestEngine().repos.session.getSessionTools(sid)).toEqual(preservedTools);
-    expect(metaAfter.title).toBe("保留标题");
+    expect(metaAfter.title).toBe("preserved title");
     expect(metaAfter.model).toBe(metaBefore.model);
-    expect(String(metaAfter.system_prompt ?? "")).not.toBe("旧 prompt");
+    expect(String(metaAfter.system_prompt ?? "")).not.toBe("old prompt");
   });
 
   it("stats command reports session", async () => {
@@ -304,10 +304,10 @@ describePg("slash commands", () => {
     await executeCommand(setCmd!, {
       sessionId: sid,
       platform: "parlor",
-      args: ["我的标题"],
-      raw: "/title 我的标题",
+      args: ["my title"],
+      raw: "/title my title",
     });
-    expect(await testConv().getSessionTitle(sid)).toBe("我的标题");
+    expect(await testConv().getSessionTitle(sid)).toBe("my title");
     const [getCmd] = findCommand("/title");
     const result = await executeCommand(getCmd!, {
       sessionId: sid,
@@ -315,7 +315,7 @@ describePg("slash commands", () => {
       args: [],
       raw: "/title",
     });
-    expect(result.text).toContain("我的标题");
+    expect(result.text).toContain("my title");
   });
 
   it("compress command reports compression state", async () => {
@@ -329,7 +329,7 @@ describePg("slash commands", () => {
       raw: "/compress",
     });
     expect(result.text).toContain("l3");
-    expect(result.text).toContain("存档");
+    expect(result.text).toContain("stored");
   });
 
   it("cwd command uses existing directory", async () => {
@@ -341,7 +341,7 @@ describePg("slash commands", () => {
       args: [home],
       raw: `/cwd ${home}`,
     });
-    expect(result.text).toContain("工作目录已切换");
+    expect(result.text).toContain("Working directory switched");
     expect(await testConv().getSessionCwd(sid)).toBe(home);
   });
 
@@ -372,19 +372,19 @@ describePg("slash commands", () => {
       raw: "/sethome",
       origin_extra: { weixin_peer_id: "peer@im.wechat" },
     });
-    expect(result.text).toContain("微信 home channel");
+    expect(result.text).toContain("WeChat home channel");
     const cfg = readFileSync(join(home, "config.yaml"), "utf-8");
     expect(cfg).toContain("home_channel: peer@im.wechat");
   });
 
-  it("/restart 在 parlor、discord、weixin 可解析", () => {
+  it("/restart resolves on parlor, discord, and weixin", () => {
     for (const platform of ["parlor", "discord", "weixin"] as const) {
       const [cmd] = resolveCommand("/restart", platform);
       expect(cmd?.name).toBe("restart");
     }
   });
 
-  it("/restart 返回 restart action 与提示文本", async () => {
+  it("/restart returns restart action and hint text", async () => {
     const [cmd] = findCommand("/restart");
     expect(cmd?.name).toBe("restart");
     const result = await executeCommand(cmd!, {
@@ -394,10 +394,10 @@ describePg("slash commands", () => {
       raw: "/restart",
     });
     expect(isRestartResult(result)).toBe(true);
-    expect(result.text).toContain("正在重启");
+    expect(result.text).toContain("Restarting service");
   });
 
-  it("listCommands 含 restart（parlor / discord / weixin）", () => {
+  it("listCommands includes restart (parlor / discord / weixin)", () => {
     const svc = getServiceContext().service;
     for (const platform of ["parlor", "discord", "weixin"] as const) {
       const names = svc.listCommands({ platform }).commands.map((c) => c.name);
@@ -405,7 +405,7 @@ describePg("slash commands", () => {
     }
   });
 
-  it("/restart 在 shuttingDown 时返回已在重启提示", async () => {
+  it("/restart returns already-restarting hint when shuttingDown", async () => {
     getServiceContext().service.startShutdown();
     const [cmd] = findCommand("/restart");
     const result = await executeCommand(cmd!, {
@@ -414,7 +414,7 @@ describePg("slash commands", () => {
       args: [],
       raw: "/restart",
     });
-    expect(result.text).toContain("已在重启");
+    expect(result.text).toContain("already restarting");
     expect(isRestartResult(result)).toBe(false);
   });
 

@@ -9,7 +9,7 @@ export type RedisConnectionConfig = {
 let redisUrlResolver: RedisUrlResolver | null = null;
 let client: RedisClient | null = null;
 
-/** 由 service 组合根注入 Redis URL 解析（启动时调用一次） */
+/** Redis URL resolver injected by service composition root (called once at startup) */
 export function initRedis(opts: { getRedisUrl: RedisUrlResolver }): void {
   redisUrlResolver = opts.getRedisUrl;
 }
@@ -32,7 +32,7 @@ export function getRedis(): RedisClient {
   if (client) return client;
   const cfg = getRedisConfig();
   if (!cfg?.url) {
-    throw new Error("Redis 未配置");
+    throw new Error("Redis not configured");
   }
   client = createClient(cfg.url);
   return client;
@@ -56,12 +56,12 @@ export async function closeRedis(): Promise<void> {
   client = null;
 }
 
-/** 测试注入 mock 客户端 */
+/** Inject mock client for tests */
 export function setRedisForTest(mock: RedisClient): void {
   client = mock;
 }
 
-/** 测试 teardown：重置 resolver 与连接 */
+/** Test teardown: reset resolver and connection */
 export function resetRedisForTest(): void {
   redisUrlResolver = null;
   client = null;

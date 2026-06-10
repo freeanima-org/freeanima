@@ -34,7 +34,7 @@ function parsePayload(raw: string): unknown | null {
   }
 }
 
-/** SQLite 持久化事件队列（bun:sqlite）；start 内 resetStuck + 轮询 */
+/** SQLite persistent event queue (bun:sqlite); resetStuck + polling in start */
 export class SqliteEventQueue implements EventQueueAdapter {
   private readonly db: Database;
   private readonly pollMs: number;

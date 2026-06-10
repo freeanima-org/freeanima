@@ -60,6 +60,15 @@ function createScriptTerminal(cwd: string): PtyProcess {
   };
 }
 
+export class TerminalSessionError extends Error {
+  readonly code = "terminal_session_not_found";
+
+  constructor(message = "Terminal session does not exist or has closed") {
+    super(message);
+    this.name = "TerminalSessionError";
+  }
+}
+
 const sessions = new Map<string, PtyProcess>();
 
 export function createTerminalSession(): { sessionId: string; pty: PtyProcess } {
@@ -67,10 +76,11 @@ export function createTerminalSession(): { sessionId: string; pty: PtyProcess } 
   try {
     cwd = resolveWorkspace();
     if (!cwd || !existsSync(cwd)) {
-      throw new Error("studio.workspace 未配置或不存在");
+      throw new TerminalSessionError();
     }
   } catch (e) {
-    throw new Error(String(e), { cause: e });
+    if (e instanceof TerminalSessionError) throw e;
+    throw new TerminalSessionError();
   }
 
   const sessionId = crypto.randomUUID();

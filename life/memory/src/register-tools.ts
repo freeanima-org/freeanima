@@ -13,16 +13,16 @@ function asFloat(value: unknown, defaultVal: number): number {
 }
 
 const FTS_SYNTAX =
-  "PG 检索语法（to_tsquery simple）：\n" +
-  "- **空格**分隔的词默认 **AND**（均需匹配）\n" +
-  "- **OR** 显式宽召回：`偏好 OR 简洁`（转为 |）\n" +
-  "- **AND** / **NOT**：`Free AND Anima`、`Free NOT Anima`\n" +
-  '- **双引号** 短语 / CJK 词：`"逸灵风"`、`偏好`（CJK 按字 **邻近** 连续匹配）';
+  "PG search syntax (to_tsquery simple):\n" +
+  "- **Space**-separated terms default to **AND** (all must match)\n" +
+  "- **OR** for broader recall: `preference OR concise` (becomes |)\n" +
+  "- **AND** / **NOT**: `Free AND Anima`, `Free NOT Anima`\n" +
+  '- **Double quotes** for phrases / CJK tokens: `"Free Anima"`, `preference` (CJK matches **adjacent** characters)';
 
 export function registerMemoryTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
     "memory",
-    "记忆检索与管理",
+    "Memory search and management",
     attachToolReturns(
       [
         ...semanticMemoryToolDefs,
@@ -31,37 +31,38 @@ export function registerMemoryTools(toolSets: ToolSetRegistry): void {
         {
           name: "memory_remember",
           description:
-            "管理持久化语义记忆：创建、更新或删除。\n" +
-            "- 默认 action=create：新增一条记忆（自动推断 source_sessions / observed_at）\n" +
-            "- action=update：根据 semantic_memory_id 更新已有记忆\n" +
-            "- action=delete：根据 semantic_memory_id 物理删除\n" +
-            "pinned=true 的记忆会优先出现在常驻上下文中。",
+            "Manage persistent semantic memories: create, update, or delete.\n" +
+            "- Default action=create: add a memory (auto-infers source_sessions / observed_at)\n" +
+            "- action=update: update by semantic_memory_id\n" +
+            "- action=delete: physical delete by semantic_memory_id\n" +
+            "pinned=true memories appear first in resident context.",
           parameters: {
             type: "object",
             properties: {
               action: {
                 type: "string",
-                description: "操作类型：create（默认）/ update / delete",
+                description: "Operation: create (default) / update / delete",
                 enum: ["create", "update", "delete"],
               },
               content: {
                 type: "string",
-                description: "记忆内容（一句话精炼描述），create 和 update 时必需",
+                description:
+                  "Memory content (one concise sentence); required for create and update",
               },
               semantic_memory_id: {
                 type: "string",
-                description: "语义记忆 ID，update 或 delete 时必需",
+                description: "Semantic memory ID; required for update or delete",
               },
               fact_id: {
                 type: "string",
-                description: "semantic_memory_id 的兼容别名，update 或 delete 时可用",
+                description: "Alias for semantic_memory_id on update or delete",
               },
               type: {
                 type: "string",
                 description:
-                  "记忆类型：world/experience/opinion/observation/preference/procedural/imprint",
+                  "Memory type: world/experience/opinion/observation/preference/procedural/imprint",
               },
-              pinned: { type: "boolean", description: "是否置顶到常驻记忆" },
+              pinned: { type: "boolean", description: "Pin to resident memory" },
             },
             required: [],
           },
@@ -70,10 +71,10 @@ export function registerMemoryTools(toolSets: ToolSetRegistry): void {
         {
           name: "memory_recall",
           description:
-            "统一检索记忆：语义记忆、历史会话消息、感性记忆、自传体记忆。\n" +
-            "跨类型重排后返回最相关的前 N 条（默认 10），结果在 results 数组中，用 memory_type 区分类型。\n" +
-            "session 类型仅返回匹配 snippet；全文上下文用 sessions_scroll；会话内细搜用 sessions_search。\n" +
-            "结构化语义过滤用 memory_semantic_search。\n\n" +
+            "Unified memory search: semantic memories, session messages, limbic memories, autobiographical narratives.\n" +
+            "Cross-type reranking returns top N (default 10) in results; use memory_type to distinguish.\n" +
+            "Session hits return snippets only; full context via sessions_scroll; in-session search via sessions_search.\n" +
+            "Structured semantic filters via memory_semantic_search.\n\n" +
             FTS_SYNTAX,
           parameters: {
             type: "object",
@@ -81,12 +82,13 @@ export function registerMemoryTools(toolSets: ToolSetRegistry): void {
               query: {
                 type: "string",
                 description:
-                  '搜索关键词。默认空格=AND；宽召回用 OR；CJK 短语邻近匹配。示例："偏好 简洁"、"偏好 OR 简洁"、"逸灵风"',
+                  'Search keywords. Default space=AND; use OR for broad recall; CJK phrase proximity. Examples: "preference concise", "preference OR concise", "Free Anima"',
               },
-              limit: { type: "number", description: "最多返回条数，默认 10，上限 20" },
+              limit: { type: "number", description: "Max results, default 10, cap 20" },
               session: {
                 type: "string",
-                description: "可选：仅在该 session 内搜索历史会话消息（memory_type=session）",
+                description:
+                  "Optional: search session messages only within this session (memory_type=session)",
               },
             },
             required: ["query"],

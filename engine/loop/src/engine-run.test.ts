@@ -11,7 +11,7 @@ describe("engine.run", () => {
     streamSpy = null;
   });
 
-  it("拼接 token 并在 done 后返回", async () => {
+  it("concatenates tokens and returns after done", async () => {
     streamSpy = spyOn(engine, "runStream").mockImplementation(async function* () {
       const events: StreamEvent[] = [
         { event: "token", data: { content: "hello " } },
@@ -24,7 +24,7 @@ describe("engine.run", () => {
     await expect(engine.run(msgs)).resolves.toBe("hello world");
   });
 
-  it("content_replace 覆盖先前 token", async () => {
+  it("content_replace overwrites prior tokens", async () => {
     streamSpy = spyOn(engine, "runStream").mockImplementation(async function* () {
       const events: StreamEvent[] = [
         { event: "token", data: { content: "draft" } },
@@ -36,7 +36,7 @@ describe("engine.run", () => {
     await expect(engine.run([])).resolves.toBe("final");
   });
 
-  it("Tool loop exceeded 映射为 MaxTurnsExceeded", async () => {
+  it("maps Tool loop exceeded to MaxTurnsExceeded", async () => {
     streamSpy = spyOn(engine, "runStream").mockImplementation(async function* () {
       yield { event: "error", data: { error: "Tool loop exceeded max turns" } };
     });

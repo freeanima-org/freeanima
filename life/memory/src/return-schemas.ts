@@ -112,14 +112,14 @@ export const MEMORY_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
       results: z.array(semanticMemoryResultSchema),
     }),
     example: {
-      query: "偏好",
+      query: "preference",
       count: 1,
       results: [
         {
           id: "sm-001",
           semantic_memory_id: "sm-001",
           type: "preference",
-          content: "偏好简洁的回复风格",
+          content: "Prefers concise reply style",
           pinned: false,
           source_sessions: ["sess-001"],
           observed_at: "2026-06-10T10:00:00+08:00",
@@ -151,7 +151,7 @@ export const MEMORY_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
   }),
   memory_autobiographical_create: defineToolReturn({
     schema: z.object({ ok: z.literal(true), id: z.string(), title: z.string() }),
-    example: { ok: true, id: "am-001", title: "第一次上线" },
+    example: { ok: true, id: "am-001", title: "First launch" },
   }),
   memory_autobiographical_deprecate: defineToolReturn({
     schema: z.object({ ok: z.boolean(), id: z.string() }),
@@ -183,7 +183,7 @@ export const MEMORY_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
       summary: z.string(),
     }),
     example: {
-      query: "压缩",
+      query: "compression",
       limit: 10,
       results: [
         {
@@ -192,14 +192,14 @@ export const MEMORY_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
           semantic_memory_id: "sm-001",
           type: "observation",
           pinned: false,
-          content: "对话压缩策略偏好简洁摘要",
+          content: "Conversation compression strategy prefers concise summaries",
           source_sessions: ["sess-001"],
           observed_at: "2026-06-10T10:00:00+08:00",
           occurred_at: null,
           status: "active",
         },
       ],
-      summary: "找到 1 条相关记忆",
+      summary: "Found 1 related memory",
     },
   }),
 };

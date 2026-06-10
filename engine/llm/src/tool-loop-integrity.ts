@@ -29,7 +29,7 @@ export function isInsufficientToolMessagesError(message: string): boolean {
   );
 }
 
-/** 扫描持久化/完整历史中的 tool_calls 配对缺失 */
+/** Scan persisted/full history for missing tool_calls pairing */
 export function detectToolLoopCorruption(messages: SessionMessage[]): ToolLoopCorruption[] {
   const out: ToolLoopCorruption[] = [];
   for (let i = 0; i < messages.length; i++) {
@@ -72,7 +72,7 @@ export type ToolLoopInsertPlan = {
   missingCalls: MissingToolCall[];
 };
 
-/** assistant 之后连续 tool 消息条数（遇非 tool 即停） */
+/** Count consecutive tool messages after assistant (stops at non-tool) */
 export function countFollowingToolMessages(
   messages: SessionMessage[],
   assistantIndex: number,
@@ -85,7 +85,7 @@ export function countFollowingToolMessages(
   return n;
 }
 
-/** 计算 synthetic tool 应插入的 pos（按 assistantPos 降序处理，与 PG repair 一致） */
+/** Compute synthetic tool insert pos (assistantPos descending; matches PG repair) */
 export function planToolLoopInserts(messages: SessionMessage[]): ToolLoopInsertPlan[] {
   const corruptions = detectToolLoopCorruption(messages);
   const ordered = [...corruptions].toSorted(
@@ -106,7 +106,7 @@ export function planToolLoopInserts(messages: SessionMessage[]): ToolLoopInsertP
   return plans;
 }
 
-/** 内存层修复：补 synthetic tool、剔除 orphan tool、strip 无效 tool_calls */
+/** In-memory repair: add synthetic tool, drop orphan tool, strip invalid tool_calls */
 export function repairToolLoopMessages(
   messages: SessionMessage[],
   reason = REPAIR_REASON_LOST,

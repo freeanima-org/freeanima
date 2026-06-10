@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * 采样 anima service 进程 RSS（VmRSS）与 /status 快照。
+ * Sample anima service process RSS (VmRSS) and /status snapshot.
  *
  *   bun run memory:sample -- --label idle
  *   bun run memory:sample -- --pid 12345 --label after-chat

@@ -24,22 +24,22 @@ function formatSummaryLine(title: string, priority: TaskPriority): string {
   return emoji ? `${emoji} ${title}` : title;
 }
 
-/** 将 pending + in_progress 待办摘要写入 fridge:tasks:summary */
+/** Write pending + in_progress todo summary to fridge:tasks:summary */
 export async function syncTasksSummary(store: TaskStorePort, bridge?: FridgeBridge): Promise<void> {
   if (!bridge) return;
   try {
     const rows = await store.list({ limit: SUMMARY_LIST_LIMIT });
     const count = rows.length;
     if (count === 0) {
-      await bridge.setMagnet("tasks", "summary", "待办 (0)", SUMMARY_TTL);
+      await bridge.setMagnet("tasks", "summary", "Todos (0)", SUMMARY_TTL);
       return;
     }
     const preview = rows
       .slice(0, SUMMARY_PREVIEW)
       .map((row) => formatSummaryLine(row.title, row.priority));
-    const content = `待办 (${count}) | ${preview.join(" | ")}`;
+    const content = `Todos (${count}) | ${preview.join(" | ")}`;
     await bridge.setMagnet("tasks", "summary", content, SUMMARY_TTL);
   } catch {
-    /* 摘要同步失败不影响主流程 */
+    /* Summary sync failure does not affect main flow */
   }
 }

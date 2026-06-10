@@ -1,6 +1,6 @@
 import type { StreamEvent } from "@freeanima/engine-loop";
 
-/** Gateway / 平台适配器所需的 AnimaService 窄接口 */
+/** Narrow AnimaService interface for Gateway / platform adapters */
 export type ServiceCommandInfo = {
   name: string;
   description: string;

@@ -3,7 +3,7 @@ import type { AssistantMessage, SessionMessage } from "@freeanima/engine-db/doma
 import { cleanToolCallsForApi } from "@freeanima/engine-provider-llm/stream-tools";
 import { repairToolLoopMessages } from "./tool-loop-integrity.ts";
 
-/** 确保 assistant 在发往 provider 前必有 content 或有效 tool_calls */
+/** Ensure assistant has content or valid tool_calls before sending to provider */
 export function normalizeAssistantTurn(msg: AssistantMessage): LlmTurnMessage | null {
   const cleaned = msg.tool_calls?.length ? cleanToolCallsForApi(msg.tool_calls) : [];
   if (cleaned.length) {
@@ -25,7 +25,7 @@ export type InvokeMessageInput = {
   systemPrompt?: string;
 };
 
-/** SessionMessage[] → LlmTurnMessage + 独立 systemPrompt（剥离首部连续 system） */
+/** SessionMessage[] → LlmTurnMessage + separate systemPrompt (strip leading system) */
 export function sessionMessagesToInvokeInput(messages: SessionMessage[]): InvokeMessageInput {
   const repaired = repairToolLoopMessages(messages);
   const systemParts: string[] = [];
@@ -57,7 +57,7 @@ export type SimpleChatMessage = {
   content: string;
 };
 
-/** reflect / 摘要等简单消息列表 */
+/** Simple message lists for reflect / summary etc. */
 export function simpleMessagesToInvokeInput(messages: SimpleChatMessage[]): InvokeMessageInput {
   let systemPrompt: string | undefined;
   const turns: LlmTurnMessage[] = [];

@@ -63,9 +63,9 @@ function parseRowAgeDays(row: AutobiographicalMemoryRow): number {
   return Math.floor((Date.now() - ms) / (24 * 60 * 60 * 1000));
 }
 
-/** 从 active 自传条目生成 summary（粒度随距离递减） */
+/** Build summary from active autobiographical entries (granularity decreases with age) */
 export function buildAutobiographySummary(rows: AutobiographicalMemoryRow[]): string {
-  if (!rows.length) return "（尚未形成自传概括）";
+  if (!rows.length) return "(No autobiography summary yet)";
 
   const lines: string[] = [];
   for (const row of rows) {
@@ -75,24 +75,24 @@ export function buildAutobiographySummary(rows: AutobiographicalMemoryRow[]): st
 
     const tag =
       row.significance === "turning_point"
-        ? "转折点"
+        ? "Turning point"
         : row.significance === "milestone"
-          ? "里程碑"
-          : "叙事";
+          ? "Milestone"
+          : "Narrative";
     const essence = ageDays <= 30 ? row.content.slice(0, 120) : row.title;
     lines.push(
-      `- [${tag}] ${row.title}：${essence}${essence.length < row.content.length ? "…" : ""}`,
+      `- [${tag}] ${row.title}: ${essence}${essence.length < row.content.length ? "…" : ""}`,
     );
   }
 
   if (!lines.length) {
     const turning = rows.filter((r) => r.significance === "turning_point");
     for (const row of turning.slice(0, 5)) {
-      lines.push(`- [转折点] ${row.title}`);
+      lines.push(`- [Turning point] ${row.title}`);
     }
   }
 
-  return lines.length ? lines.join("\n") : "（尚未形成自传概括）";
+  return lines.length ? lines.join("\n") : "(No autobiography summary yet)";
 }
 
 export async function refreshAutobiographySummaryBlock(
@@ -134,14 +134,14 @@ export async function runSelfAutobiography(
     const after = await opts.autoStore.listActive({ limit: 200 });
     narrativesCreated = Math.max(0, after.length - existing.length);
 
-    logComponent("memory").info("自传 cron 叙事阶段完成", {
+    logComponent("memory").info("autobiography cron narrative stage completed", {
       candidates: candidates.length,
       tool_calls: toolCalls,
       narratives_created: narrativesCreated,
       summary: engineResult.summary.slice(0, 200),
     });
   } else {
-    logComponent("memory").info("自传 cron 跳过叙事提取", {
+    logComponent("memory").info("autobiography cron skipped narrative extraction", {
       reason: "no_recent_experience_imprint",
       since: sinceIso,
     });
@@ -151,7 +151,10 @@ export async function runSelfAutobiography(
 
   return {
     ok: true,
-    skipped: candidates.length === 0 ? "无近期 experience/imprint，跳过叙事提取" : undefined,
+    skipped:
+      candidates.length === 0
+        ? "No recent experience/imprint; skipped narrative extraction"
+        : undefined,
     narratives_created: narrativesCreated,
     tool_calls: toolCalls,
     summary_refreshed: summaryRefreshed,
@@ -163,6 +166,6 @@ export async function runSelfAutobiographyWithLog(
 ): Promise<SelfAutobiographyResult> {
   const startedAt = formatCstIso();
   const result = await runSelfAutobiography(opts);
-  logComponent("memory").info("自传 cron 结束", { started_at: startedAt, ...result });
+  logComponent("memory").info("autobiography cron finished", { started_at: startedAt, ...result });
   return result;
 }

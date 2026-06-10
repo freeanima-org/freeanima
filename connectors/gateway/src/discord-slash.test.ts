@@ -4,8 +4,8 @@ import { buildDiscordSlashCommands, interactionToCommandText } from "@freeanima/
 describe("discord slash commands", () => {
   it("buildDiscordSlashCommands includes cwd options", () => {
     const body = buildDiscordSlashCommands([
-      { name: "help", description: "列出所有可用命令" },
-      { name: "cwd", description: "查看或设置当前 session 工作目录" },
+      { name: "help", description: "List all available commands" },
+      { name: "cwd", description: "View or set current session working directory" },
     ]);
     const cwd = body.find((c) => c.name === "cwd");
     expect(cwd?.options?.some((o) => o.name === "path")).toBe(true);

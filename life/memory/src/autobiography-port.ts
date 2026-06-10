@@ -27,7 +27,9 @@ export async function runAutobiographyEngine(
   input: AutobiographyEngineInput,
 ): Promise<AutobiographyEngineResult> {
   if (!engineFn) {
-    throw new Error("自传 cron LLM 未配置：请在服务启动时调用 registerAutobiographyEngine()");
+    throw new Error(
+      "Autobiography cron LLM not configured: call registerAutobiographyEngine() at service startup",
+    );
   }
   return engineFn(input);
 }

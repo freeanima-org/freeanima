@@ -40,7 +40,7 @@ describePg("sendMessageStream", () => {
     expect(events.some((e) => e.event === "token")).toBe(true);
     expect(events.filter((e) => e.event === "done")).toHaveLength(1);
     const token = events.find((e) => e.event === "token");
-    expect(String(token?.data.content)).toContain("未知命令");
+    expect(String(token?.data.content)).toContain("Unknown command");
   });
 
   afterAll(async () => {

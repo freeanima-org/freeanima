@@ -35,7 +35,7 @@ function emptyPlaceholderBlocks(): SelfBlockDisplay[] {
   }));
 }
 
-/** WebUI 自我层六块只读展示 */
+/** WebUI self-layer six blocks read-only display */
 export async function listSelfBlocks(): Promise<{ blocks: SelfBlockDisplay[] }> {
   try {
     const rows = await getServiceContext().engine.repos.selfLayer.listBlocks();

@@ -6,7 +6,7 @@ import { listCredentials } from "@freeanima/service-config";
 export function registerCredentialTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
     "credentials",
-    "凭证路径查询（不含值）",
+    "Credential path lookup (no values)",
     attachToolReturns(
       [
         {

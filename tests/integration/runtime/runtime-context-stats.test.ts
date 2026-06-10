@@ -28,7 +28,7 @@ compression:
   });
 
   it("breakdown includes tools and system parts from runtime view", async () => {
-    getTestEngine().toolSets.registerToolSet("__ctx_stats__", "测试", [
+    getTestEngine().toolSets.registerToolSet("__ctx_stats__", "test", [
       {
         name: "ctx_stats_big_tool",
         description: "y".repeat(5000),
@@ -40,7 +40,7 @@ compression:
     const sid = await c.newSession("parlor");
     await c.updateSessionMetaField(sid, {
       model: "m",
-      system_prompt: "自我层 block here\n\n## 常驻记忆\n- fact",
+      system_prompt: "self layer block here\n\n## Resident memory\n- fact",
       tools: ["ctx_stats_big_tool"],
     });
     await c.appendMessage({ role: "user", content: "hi", pos: 1 }, sid);
@@ -52,10 +52,10 @@ compression:
     expect(stats.compression_mode).toBe("token");
 
     const report = await statsReport(sid);
-    expect(report).toContain("工具 schema:");
-    expect(report).toContain("模式: token 占用率");
-    expect(report).not.toContain("按每轮 2 条估");
-    expect(report).toContain("运行时视图");
+    expect(report).toContain("Tool schema:");
+    expect(report).toContain("Mode: token utilization");
+    expect(report).not.toContain("message-count fallback");
+    expect(report).toContain("runtime view");
   });
 
   afterAll(async () => {

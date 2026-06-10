@@ -48,7 +48,7 @@ function toDisplayMagnet(
   };
 }
 
-/** WebUI 冰箱贴全局只读列表 */
+/** WebUI fridge magnet global read-only list */
 export async function listFridgeMagnets(): Promise<ListFridgeMagnetsResult> {
   const redisConfigured = isRedisConfigured();
   const hits = await scanMagnets("fridge:*");

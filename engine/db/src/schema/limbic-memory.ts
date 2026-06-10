@@ -5,7 +5,7 @@ export const limbicKindSchema = z.enum(["session_mood", "turning_point", "spike"
 
 export type LimbicKind = z.infer<typeof limbicKindSchema>;
 
-/** 边缘系统记忆（情感/强度；不注入 system prompt） */
+/** Limbic memory (emotion/intensity; not injected into system prompt) */
 export const limbicMemory = pgTable(
   "limbic_memory",
   {

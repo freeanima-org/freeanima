@@ -1,6 +1,6 @@
 import type { AnimaConfig } from "./schemas/config.ts";
 
-/** 键名匹配则整段值脱敏（不区分大小写） */
+/** Sanitize entire value when key name matches (case-insensitive) */
 const SECRET_KEY_PATTERN =
   /(?:^|_)(api[_-]?key|token|secret|password|pushkey|push_key|auth|credential)(?:$|_)/i;
 
@@ -61,7 +61,7 @@ function sanitizeRecord(obj: Record<string, unknown>, parentKey = ""): Record<st
   return out;
 }
 
-/** 供 HTTP / WebUI 展示的运行时配置快照（密钥已脱敏） */
+/** Runtime config snapshot for HTTP / WebUI display (secrets sanitized) */
 export function sanitizeConfigForApi(cfg: AnimaConfig): Record<string, unknown> {
   return sanitizeRecord(cfg as Record<string, unknown>);
 }

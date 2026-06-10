@@ -16,7 +16,7 @@ function sanitizeError(err: unknown): string {
 async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<never>((_, reject) => {
-    timer = setTimeout(() => reject(new Error("探活超时")), timeoutMs);
+    timer = setTimeout(() => reject(new Error("health check timeout")), timeoutMs);
   });
   try {
     return await Promise.race([promise, timeout]);
@@ -25,7 +25,7 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T
   }
 }
 
-/** 探测 PostgreSQL 连通性（SELECT 1，2s 超时） */
+/** Probe PostgreSQL connectivity (SELECT 1, 2s timeout) */
 export async function pingDatabase(): Promise<DatabasePingStatus> {
   if (!isPostgresPrimary()) {
     return { status: "not_configured" };

@@ -47,7 +47,7 @@ const exampleMessage = {
   to: "you@example.com",
   subject: "Hello",
   date: "2026-06-10T10:00:00+08:00",
-  preview: "邮件摘要…",
+  preview: "Email preview…",
   unread: true,
 };
 
@@ -99,7 +99,7 @@ export const EMAIL_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
     example: {
       message: {
         ...exampleMessage,
-        body: "邮件正文内容",
+        body: "Email body content",
         unread: false,
       },
     },

@@ -7,7 +7,7 @@ export type TextSearchSnippetOpts = {
   contextChars?: number;
 };
 
-/** 从 query 提取可用于匹配的词条（剥离 AND/OR/NOT 与引号短语） */
+/** Extract matchable terms from query (strip AND/OR/NOT and quoted phrases) */
 export function extractSearchTerms(query: string): string[] {
   const q = query.trim();
   if (!q) return [];
@@ -29,7 +29,7 @@ export function extractSearchTerms(query: string): string[] {
   return terms;
 }
 
-/** 围绕 query 关键词在 content 中提取短片段（trgm/vector 等非 headline 命中兜底） */
+/** Extract short snippet around query terms in content (fallback for trgm/vector non-headline hits) */
 export function buildTextSearchSnippet(
   query: string,
   content: string,
@@ -91,7 +91,7 @@ export type SessionMessageSearchHit = {
   rank: number;
 };
 
-/** 会话消息 FTS 命中 → 对外搜索 hit（snippet，不含全文 content） */
+/** Session message FTS hit → external search hit (snippet, no full content) */
 export function formatSessionMessageSearchHit(
   query: string,
   row: SessionMessageSearchFields,

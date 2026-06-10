@@ -35,7 +35,7 @@ const conversationRoles = z.discriminatedUnion("role", [
   toolMessageSchema,
 ]);
 
-/** 对话消息（不含 session_meta），供 compressor / LLM 使用 */
+/** Conversation messages (excludes session_meta) for compressor / LLM */
 export const conversationMessageSchema = conversationRoles;
 
 /** PG messages.payload */

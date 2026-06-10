@@ -2,7 +2,7 @@ import { describe, expect, it } from "bun:test";
 import { RateLimitedLogger } from "../src/rate-limited-logger.ts";
 
 describe("RateLimitedLogger", () => {
-  it("同 key 在窗口内只放行一次", () => {
+  it("same key allowed once per window", () => {
     const rl = new RateLimitedLogger([100, 200]);
     const t0 = 1_000;
     expect(rl.shouldLog("a", t0)).toBe(true);
@@ -12,7 +12,7 @@ describe("RateLimitedLogger", () => {
     expect(rl.shouldLog("a", t0 + 300)).toBe(true);
   });
 
-  it("不同 key 互不影响", () => {
+  it("different keys independent", () => {
     const rl = new RateLimitedLogger([50]);
     expect(rl.shouldLog("a", 0)).toBe(true);
     expect(rl.shouldLog("b", 0)).toBe(true);
@@ -20,7 +20,7 @@ describe("RateLimitedLogger", () => {
     expect(rl.shouldLog("b", 10)).toBe(false);
   });
 
-  it("reset 单 key 后重新放行", () => {
+  it("reset single key re-allows", () => {
     const rl = new RateLimitedLogger([1000]);
     expect(rl.shouldLog("x", 0)).toBe(true);
     expect(rl.shouldLog("x", 1)).toBe(false);
@@ -28,7 +28,7 @@ describe("RateLimitedLogger", () => {
     expect(rl.shouldLog("x", 2)).toBe(true);
   });
 
-  it("reset 无参清空全部", () => {
+  it("reset without args clears all", () => {
     const rl = new RateLimitedLogger([100]);
     expect(rl.shouldLog("a", 0)).toBe(true);
     rl.reset();

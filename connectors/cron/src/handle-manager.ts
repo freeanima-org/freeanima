@@ -61,7 +61,7 @@ export class CronHandleManager {
     this.register(job);
   }
 
-  /** schedule 变化时：stop 旧 handle 再注册新表达式 */
+  /** On schedule change: stop old handle then register new expression */
   reregister(job: CronJob): void {
     this.unregister(job.id);
     this.register(job);

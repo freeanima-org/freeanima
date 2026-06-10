@@ -17,7 +17,7 @@ export function formatClarifyPlain(items: ClarifyItem[]): string {
 }
 
 export function formatClarifyDiscord(payload: ClarifyPayload): string {
-  const lines = ["**需要你确认：**", ""];
+  const lines = ["**Confirmation needed:**", ""];
   for (let i = 0; i < payload.items.length; i++) {
     const item = payload.items[i]!;
     lines.push(`**${i + 1}. ${item.question}**`);
@@ -28,20 +28,22 @@ export function formatClarifyDiscord(payload: ClarifyPayload): string {
     }
     lines.push("");
   }
-  lines.push(`请在 ${Math.round(payload.timeout_sec / 60)} 分钟内回复，或发送 /cancel 取消。`);
+  lines.push(
+    `Reply within ${Math.round(payload.timeout_sec / 60)} minute(s), or send /cancel to abort.`,
+  );
   return lines.join("\n").trim();
 }
 
 export function formatClarifyWeixin(payload: ClarifyPayload): string {
-  const lines = ["【待确认】"];
+  const lines = ["[Pending confirmation]"];
   for (let i = 0; i < payload.items.length; i++) {
     const item = payload.items[i]!;
     lines.push(`${i + 1}. ${item.question}`);
     if (item.choices?.length) {
-      lines.push(`   选项：${item.choices.map((c, idx) => `${idx + 1}.${c}`).join(" ")}`);
+      lines.push(`   Options: ${item.choices.map((c, idx) => `${idx + 1}.${c}`).join(" ")}`);
     }
   }
-  lines.push("请一条消息回复全部问题，或发送 /cancel 取消。");
+  lines.push("Reply to all questions in one message, or send /cancel to abort.");
   return lines.join("\n");
 }
 

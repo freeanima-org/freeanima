@@ -41,7 +41,7 @@ describe("RedisEventQueue", () => {
     expect(seen).toEqual([1]);
   });
 
-  it("enqueue 后 start 可 dispatch", async () => {
+  it("start can dispatch after enqueue", async () => {
     const { queue } = createQueue();
     const bus = new EventBus(createLogger({ sinks: [createNullSink()] }), queue);
     const seen: number[] = [];
@@ -55,7 +55,7 @@ describe("RedisEventQueue", () => {
     expect(seen).toEqual([42]);
   });
 
-  it("handler 抛错且已达 maxRetries 时 fail", async () => {
+  it("fail when handler throws and maxRetries reached", async () => {
     const { queue, lists } = createQueue();
     seedPendingEvent(lists, testPing.qualifiedId, { n: 1 }, { id: 1, retries: 3 });
 
@@ -74,7 +74,7 @@ describe("RedisEventQueue", () => {
     expect(lists.processing).toHaveLength(0);
   });
 
-  it("start 重复调用为 no-op", async () => {
+  it("repeated start calls are no-op", async () => {
     const { queue, lists } = createQueue();
     seedPendingEvent(lists, testPing.qualifiedId, { n: 1 });
 
@@ -86,7 +86,7 @@ describe("RedisEventQueue", () => {
     expect(process).toHaveBeenCalledTimes(1);
   });
 
-  it("stop 后不再 dispatch", async () => {
+  it("no dispatch after stop", async () => {
     const { queue, lists } = createQueue();
     const process = vi.fn(async () => "ack" as const);
     queue.start(process);
@@ -96,7 +96,7 @@ describe("RedisEventQueue", () => {
     expect(process).not.toHaveBeenCalled();
   });
 
-  it("resetStuck 将 processing 迁回 pending", async () => {
+  it("resetStuck moves processing back to pending", async () => {
     const { queue, lists } = createQueue();
     seedProcessingEvent(lists, testPing.qualifiedId, { n: 7 }, { id: 1 });
 
@@ -112,7 +112,7 @@ describe("RedisEventQueue", () => {
     expect(lists.processing).toHaveLength(0);
   });
 
-  it("无效 JSON envelope 从 processing 移除", async () => {
+  it("invalid JSON envelope removed from processing", async () => {
     const { queue, lists } = createQueue();
     lists.processing.unshift("not-json");
 
@@ -124,7 +124,7 @@ describe("RedisEventQueue", () => {
     expect(lists.processing).toHaveLength(0);
   });
 
-  it("safeCloseOwnedRedisClient 吞掉 Connection closed", () => {
+  it("safeCloseOwnedRedisClient swallows Connection closed", () => {
     const client = {
       close: () => {
         throw Object.assign(new Error("Connection closed"), {

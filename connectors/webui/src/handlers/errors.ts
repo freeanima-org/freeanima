@@ -12,6 +12,19 @@ export class ApiHandlerError extends Error {
   }
 }
 
+export function apiErrorBody(error: ApiHandlerError): {
+  error: string;
+  code?: string;
+  params?: Record<string, string>;
+} {
+  const code = typeof error.context?.code === "string" ? error.context.code : undefined;
+  const params =
+    error.context?.params && typeof error.context.params === "object"
+      ? (error.context.params as Record<string, string>)
+      : undefined;
+  return { error: error.message, ...(code ? { code, params } : {}) };
+}
+
 export function logHandlerError(
   method: string,
   path: string,

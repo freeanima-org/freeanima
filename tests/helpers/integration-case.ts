@@ -34,7 +34,7 @@ async function flushActiveCompressionSummaries(): Promise<void> {
   }
 }
 
-/** 集成测标准 ServiceContext（builtins / AnimaService / WebUI handler） */
+/** Standard integration-test ServiceContext (builtins / AnimaService / WebUI handler) */
 export function wireIntegrationServiceContext(pg: PgTestContext): void {
   const kernel = createServiceKernel();
   const conversation = createConversationService(pg.engine.repos, pg.engine.catalog.toolSets);
@@ -70,7 +70,7 @@ export function wireIntegrationServiceContext(pg: PgTestContext): void {
   invalidateSelfLayerPromptCache();
 }
 
-/** 集成测：可选写入 self_model 并刷新 prompt 缓存 */
+/** Integration test: optionally write self_model and refresh prompt cache */
 export async function syncIntegrationSelfLayer(
   pg: PgTestContext,
   selfModel?: string,
@@ -85,7 +85,7 @@ export async function syncIntegrationSelfLayer(
   invalidateSelfLayerPromptCache();
 }
 
-/** 集成测 afterEach：先等待异步压缩摘要，再恢复 FREEANIMA_HOME */
+/** Integration test afterEach: wait for async compression summaries, then restore FREEANIMA_HOME */
 export async function restoreIntegrationHome(prevHome?: string): Promise<void> {
   await flushActiveCompressionSummaries();
   if (prevHome === undefined) delete process.env.FREEANIMA_HOME;
@@ -94,13 +94,13 @@ export async function restoreIntegrationHome(prevHome?: string): Promise<void> {
   clearConfigCache();
 }
 
-/** 集成测试用例标准开头：临时 home + PG harness + ServiceContext */
+/** Standard integration test case setup: temp home + PG harness + ServiceContext */
 export async function beginIntegrationCase(prefix: string): Promise<{
   home: string;
   pg: PgTestContext;
 }> {
   if (!pgTestUrl) {
-    throw new Error("ANIMA_TEST_PG_URL 未设置；请用 bun test");
+    throw new Error("ANIMA_TEST_PG_URL is not set; run bun test");
   }
   const home = beginLogIsolation(prefix);
   const { setupIntegrationHome } = await import("./pg-test.ts");
@@ -115,7 +115,7 @@ export async function beginIntegrationCaseWithConfig(
   configYaml: string,
 ): Promise<{ home: string; pg: PgTestContext }> {
   if (!pgTestUrl) {
-    throw new Error("ANIMA_TEST_PG_URL 未设置；请用 bun test");
+    throw new Error("ANIMA_TEST_PG_URL is not set; run bun test");
   }
   const home = beginLogIsolation(prefix);
   const { setupIntegrationHome } = await import("./pg-test.ts");

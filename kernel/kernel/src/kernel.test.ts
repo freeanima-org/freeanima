@@ -8,7 +8,7 @@ import { createLogger } from "@freeanima/kernel-logging";
 import { createKernel, Kernel } from "./index.ts";
 
 describe("Kernel", () => {
-  it("组合 hooks、eventBus 与 logger 端口", () => {
+  it("composes hooks, eventBus, and logger ports", () => {
     const memory = createMemorySink();
     const logger: Logger = createLogger({ sinks: [memory] });
     const hookRegistry = new HookRegistry(logger);
@@ -19,14 +19,14 @@ describe("Kernel", () => {
     expect(kernel.logger).toBe(logger);
   });
 
-  it("createKernel 未传参时使用默认 logger 与内存 EventBus", () => {
+  it("createKernel uses default logger and memory EventBus when omitted", () => {
     const kernel = createKernel();
     expect(kernel.hookRegistry).toBeDefined();
     expect(kernel.eventBus).toBeDefined();
     expect(kernel.logger).toBeDefined();
   });
 
-  it("setEventBus 可替换 eventBus 实例", () => {
+  it("setEventBus can replace eventBus instance", () => {
     const logger: Logger = createLogger({ sinks: [createMemorySink()] });
     const kernel = new Kernel(
       new HookRegistry(logger),

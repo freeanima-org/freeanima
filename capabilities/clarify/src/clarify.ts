@@ -90,7 +90,7 @@ export async function expireIfNeeded(
   if (!awaiting) return { expired: false };
   if (!isAwaitingClarifyExpired(awaiting)) return { expired: false };
   await clearAwaitingClarify(conversation, session);
-  return { expired: true, hint: "之前的问题已超时作废。" };
+  return { expired: true, hint: "Previous questions have expired." };
 }
 
 export function mergeClarifyResponse(items: ClarifyItem[], userText: string): string {
@@ -123,7 +123,7 @@ export async function guardAwaitingClarify(
 ): Promise<GuardAwaitingResult> {
   const expiry = await expireIfNeeded(conversation, session);
   if (expiry.expired) {
-    return { ok: true, expired: true, hint: expiry.hint ?? "之前的问题已超时作废。" };
+    return { ok: true, expired: true, hint: expiry.hint ?? "Previous questions have expired." };
   }
 
   const awaiting = await readAwaitingClarify(conversation, session);
@@ -135,7 +135,7 @@ export async function guardAwaitingClarify(
   if (trimmed.startsWith("/")) {
     return {
       ok: false,
-      reason: "请先回答上方问题，或发送 /cancel 取消提问。",
+      reason: "Please answer the questions above, or send /cancel to cancel.",
     };
   }
 
@@ -207,7 +207,7 @@ export async function resolveUserContent(
 ): Promise<string> {
   const expiry = await expireIfNeeded(conversation, session);
   if (expiry.expired) {
-    return `${expiry.hint ?? "之前的问题已超时作废。"}\n\n${userText}`;
+    return `${expiry.hint ?? "Previous questions have expired."}\n\n${userText}`;
   }
 
   const awaiting = await readAwaitingClarify(conversation, session);

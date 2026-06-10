@@ -3,7 +3,7 @@ export type RrfHit = {
   rank: number;
 };
 
-/** Reciprocal Rank Fusion：score(d) = Σ 1/(k + rank_i) */
+/** Reciprocal Rank Fusion: score(d) = Σ 1/(k + rank_i) */
 export function rrfMerge<T extends RrfHit>(
   rankedLists: Array<Array<T>>,
   opts?: { k?: number; limit?: number },

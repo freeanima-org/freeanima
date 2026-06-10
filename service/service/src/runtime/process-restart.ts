@@ -17,10 +17,13 @@ async function waitForDrainWithTimeout(runControl: EngineRunControl, maxMs: numb
       setTimeout(() => {
         const n = runControl.getInFlightCount();
         if (n > 0) {
-          logComponent("shutdown").warn(`请求排空超时，仍有 ${n} 个进行中请求`, {
-            max_ms: maxMs,
-            in_flight: n,
-          });
+          logComponent("shutdown").warn(
+            `Request drain timed out; ${n} in-flight request(s) remaining`,
+            {
+              max_ms: maxMs,
+              in_flight: n,
+            },
+          );
         }
         resolve();
       }, maxMs);
@@ -29,8 +32,8 @@ async function waitForDrainWithTimeout(runControl: EngineRunControl, maxMs: numb
 }
 
 /**
- * Slash /restart 专用：拒绝新请求 → abort 活跃 engine → drain → 触发重启。
- * fire-and-forget 调用，不阻塞命令响应。
+ * For slash /restart: reject new requests → abort active engine → drain → trigger restart.
+ * Fire-and-forget; does not block command response.
  */
 export function scheduleGracefulRestart(runControl: EngineRunControl): void {
   void (async () => {

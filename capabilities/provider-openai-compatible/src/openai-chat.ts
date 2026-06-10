@@ -26,7 +26,7 @@ export async function runOpenAiChat(
   const choice = completion.choices[0];
   const msg = choice?.message;
   if (!msg) {
-    throw new Error("空响应");
+    throw new Error("Empty response");
   }
 
   const base: ChatCompletion = {

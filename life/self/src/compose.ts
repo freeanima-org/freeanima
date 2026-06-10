@@ -26,7 +26,7 @@ export function toSelfBlockView(row: SelfBlockRow): SelfBlockView {
   };
 }
 
-/** 将六块渲染为常驻 Markdown */
+/** Render six blocks as resident Markdown */
 export function renderSelfLayerPrompt(blocks: SelfBlockRow[]): string {
   const lines: string[] = [];
   for (const row of blocks) {
@@ -37,7 +37,7 @@ export function renderSelfLayerPrompt(blocks: SelfBlockRow[]): string {
   return lines.join("\n\n");
 }
 
-/** 将六块 Markdown 包裹为 system prompt 自我层段（第二人称骨架 + 代码块） */
+/** Wrap six-block Markdown as self-layer system prompt segment (second-person frame + code fence) */
 export function wrapSelfLayerForSystemPrompt(innerMarkdown: string): string {
   const body = innerMarkdown.trim();
   if (!body) return "";

@@ -16,7 +16,7 @@ let databaseUrlResolver: DatabaseUrlResolver | null = null;
 let sqlClient: SqlClient | null = null;
 let dbInstance: Db | null = null;
 
-/** 由 service 层注入 database.url 解析（启动时调用一次） */
+/** database.url resolver injected by service layer (called once at startup) */
 export function initDatabase(opts: { getDatabaseUrl: DatabaseUrlResolver }): void {
   databaseUrlResolver = opts.getDatabaseUrl;
 }
@@ -27,7 +27,7 @@ export function getDatabaseConfig(): DatabaseConfig | null {
   return { url };
 }
 
-/** 已配置 database.url（Slice A 对话 Session 使用 PostgreSQL） */
+/** database.url configured (Slice A conversation sessions use PostgreSQL) */
 export function isPostgresPrimary(): boolean {
   return getDatabaseConfig() != null;
 }
@@ -42,7 +42,7 @@ export function getDb(): Db {
   if (dbInstance) return dbInstance;
   const dbCfg = getDatabaseConfig();
   if (!dbCfg?.url) {
-    throw new Error("database.url 未配置");
+    throw new Error("database.url not configured");
   }
   dbInstance = createDb(dbCfg.url);
   return dbInstance;
@@ -55,13 +55,13 @@ export async function closeDb(): Promise<void> {
   dbInstance = null;
 }
 
-/** 测试 / 迁移脚本注入连接 */
+/** Inject connection for tests / migration scripts */
 export function setDbForTest(db: Db, client?: SqlClient): void {
   dbInstance = db;
   if (client) sqlClient = client;
 }
 
-/** 测试 teardown：重置 resolver 与连接 */
+/** Test teardown: reset resolver and connection */
 export function resetDatabaseForTest(): void {
   databaseUrlResolver = null;
   sqlClient = null;
