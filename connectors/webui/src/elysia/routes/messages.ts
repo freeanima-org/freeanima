@@ -1,4 +1,4 @@
-import { Elysia } from "elysia";
+import { Elysia, sse } from "elysia";
 import { z } from "zod";
 import { streamApiEventSchema } from "../../api/schemas.ts";
 import { iterateMessageStream } from "../../handlers/index.ts";
@@ -16,7 +16,8 @@ const sendStreamInputSchema = z
 
 export const messagesRoutes = new Elysia({ prefix: "/messages" }).post(
   "/stream",
-  async function* ({ body, request }) {
+  async function* ({ body, request, set }) {
+    set.headers["X-Accel-Buffering"] = "no";
     const input = sendStreamInputSchema.parse(body);
     const signal = request.signal;
 
@@ -25,7 +26,8 @@ export const messagesRoutes = new Elysia({ prefix: "/messages" }).post(
         event: chunk.event,
         data: JSON.parse(chunk.data),
       });
-      yield `data: ${JSON.stringify(event)}\n\n`;
+      yield sse(JSON.stringify(event));
+      await Bun.sleep(0);
       if (signal.aborted) break;
       if (event.event === "done" || event.event === "error") break;
     }

@@ -5,6 +5,13 @@ import { createSession, getSessionMessages, listSessions, setSessionTitle } from
 
 export { PARLOR_PLATFORM };
 
+function hasNewReply(display: DisplayItem[], baselineCount: number): boolean {
+  const newItems = display.slice(baselineCount);
+  return newItems.some(
+    (item) => (item.type === "message" && item.role === "assistant") || item.type === "tool_block",
+  );
+}
+
 type SessionsState = {
   sessions: SessionListItem[];
   currentId: string | null;
@@ -15,6 +22,7 @@ type SessionsState = {
   newSession: () => Promise<string | null>;
   renameSession: (sessionId: string, newTitle: string) => Promise<void>;
   appendItem: (item: DisplayItem) => void;
+  refreshMessages: (sessionId: string, baselineCount: number) => Promise<boolean>;
 };
 
 export const useSessionsStore = create<SessionsState>((set, get) => ({
@@ -71,5 +79,17 @@ export const useSessionsStore = create<SessionsState>((set, get) => ({
 
   appendItem(item) {
     set({ display: [...get().display, item] });
+  },
+
+  async refreshMessages(sessionId, baselineCount) {
+    try {
+      const resp = await getSessionMessages(sessionId);
+      const display = (resp as { display?: DisplayItem[] }).display ?? [];
+      set({ display });
+      return hasNewReply(display, baselineCount);
+    } catch (e) {
+      console.error("refreshMessages:", e);
+      return false;
+    }
   },
 }));

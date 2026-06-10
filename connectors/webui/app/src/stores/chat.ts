@@ -3,6 +3,10 @@ import { marked } from "marked";
 import { create } from "zustand";
 import { subscribeMessageStream } from "@/lib/api.ts";
 
+type SendDoneOptions = {
+  recovered?: boolean;
+};
+
 type SendCallbacks = {
   onToken?: (text: string) => void;
   onToolBegin?: (data: Record<string, unknown>) => void;
@@ -10,7 +14,8 @@ type SendCallbacks = {
   onToolError?: (data: Record<string, unknown>) => void;
   onAwaitingClarify?: (data: Record<string, unknown>) => void;
   onError?: (msg: string) => void;
-  onDone?: () => void;
+  onDone?: (opts?: SendDoneOptions) => void;
+  recoverDisplay?: (sessionId: string) => Promise<boolean>;
 };
 
 type ChatState = {
@@ -58,11 +63,9 @@ function handleStreamEvent(
       break;
     case "error":
       receivedError = true;
-      callbacks.onError?.(ev.data.error || "服务端错误");
       break;
     case "done":
       receivedDone = true;
-      callbacks.onDone?.();
       break;
   }
 
@@ -78,6 +81,18 @@ function renderMd(text: string): string {
     div.textContent = text;
     return div.innerHTML;
   }
+}
+
+async function tryRecoverDisplay(
+  sessionId: string,
+  recoverDisplay?: (sessionId: string) => Promise<boolean>,
+): Promise<boolean> {
+  if (!recoverDisplay) return false;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    if (await recoverDisplay(sessionId)) return true;
+    await new Promise((resolve) => setTimeout(resolve, 500 * (attempt + 1)));
+  }
+  return false;
 }
 
 export const useChatStore = create<ChatState>(() => ({
@@ -109,13 +124,31 @@ export const useChatStore = create<ChatState>(() => ({
     let streamText = "";
     let receivedDone = false;
     let receivedError = false;
+    let serverErrorMsg: string | null = null;
+    let transportErrorMsg: string | null = null;
     let doneNotified = false;
 
-    const notifyDone = () => {
+    const notifyDone = (opts?: SendDoneOptions) => {
       if (doneNotified) return;
       doneNotified = true;
       receivedDone = true;
-      callbacks.onDone?.();
+      callbacks.onDone?.(opts);
+    };
+
+    const finishWithRecovery = async (fallbackError?: string) => {
+      const needsRecovery = !streamText.trim() || !receivedDone;
+      if (needsRecovery) {
+        const recovered = await tryRecoverDisplay(sessionId, callbacks.recoverDisplay);
+        if (recovered) {
+          notifyDone({ recovered: true });
+          return;
+        }
+      }
+      if (fallbackError) {
+        callbacks.onError?.(fallbackError);
+      } else if (!receivedDone && !streamText.trim()) {
+        callbacks.onError?.("无回复，请检查 API 密钥与服务端日志");
+      }
     };
 
     try {
@@ -126,21 +159,22 @@ export const useChatStore = create<ChatState>(() => ({
             onData: (ev) => {
               const result = handleStreamEvent(ev, streamText, callbacks);
               streamText = result.streamText;
-              if (result.receivedError) receivedError = true;
+              if (result.receivedError) {
+                receivedError = true;
+                if (ev.event === "error") {
+                  serverErrorMsg = ev.data.error || "服务端错误";
+                }
+              }
               if (result.receivedDone) notifyDone();
             },
             onError: (err) => {
               receivedError = true;
-              callbacks.onError?.(err.message || "服务端错误");
+              transportErrorMsg = err.message || "服务端错误";
               reject(err);
             },
             onComplete: () => {
-              if (!receivedDone) {
-                if (streamText.trim()) {
-                  notifyDone();
-                } else if (!receivedError) {
-                  callbacks.onError?.("无回复，请检查 API 密钥与服务端日志");
-                }
+              if (!receivedDone && streamText.trim() && !receivedError) {
+                notifyDone();
               }
               resolve();
             },
@@ -148,10 +182,21 @@ export const useChatStore = create<ChatState>(() => ({
         );
         _unsubscribe = () => sub.unsubscribe();
       });
+
+      if (serverErrorMsg) {
+        await finishWithRecovery(serverErrorMsg);
+      } else if (!doneNotified) {
+        await finishWithRecovery();
+      }
     } catch (e) {
       if (e instanceof Error && e.name === "AbortError") return;
       console.error("send error:", e);
-      if (!receivedError) callbacks.onError?.("网络错误");
+      const recovered = await tryRecoverDisplay(sessionId, callbacks.recoverDisplay);
+      if (recovered) {
+        notifyDone({ recovered: true });
+      } else if (!receivedError || transportErrorMsg) {
+        callbacks.onError?.(transportErrorMsg || "网络错误");
+      }
     } finally {
       useChatStore.setState({
         streaming: false,
