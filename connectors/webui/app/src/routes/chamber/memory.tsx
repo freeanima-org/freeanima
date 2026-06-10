@@ -58,7 +58,7 @@ function formatToolOutput(data: MemoryResult) {
       lines.push(`  ${hit.semantic_memory_id} (${hit.type}) ${hit.content}`);
       if (hit.observed_at || hit.occurred_at) {
         const parts: string[] = [];
-        if (hit.observed_at) parts.push(`observed=${hit.observed_at.slice(0, 19)}`);
+        if (hit.observed_at) parts.push(`observed=${String(hit.observed_at).slice(0, 19)}`);
         if (hit.occurred_at) parts.push(`occurred=${hit.occurred_at}`);
         lines.push(`  ${parts.join(" ")}`);
       }
@@ -107,7 +107,7 @@ function RecallHitCard({ hit, index }: { hit: MemoryRecallHit; index: number }) 
             <p className="text-sm whitespace-pre-wrap">{hit.content}</p>
             {hit.observed_at || hit.occurred_at ? (
               <p className="text-xs text-base-content/60 font-mono">
-                {hit.observed_at ? `observed ${hit.observed_at.slice(0, 19)}` : null}
+                {hit.observed_at ? `observed ${String(hit.observed_at).slice(0, 19)}` : null}
                 {hit.observed_at && hit.occurred_at ? " · " : null}
                 {hit.occurred_at ? `occurred ${hit.occurred_at}` : null}
               </p>
