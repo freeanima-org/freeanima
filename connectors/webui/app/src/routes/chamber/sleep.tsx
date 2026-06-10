@@ -2,12 +2,14 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Fragment, useCallback, useState } from "react";
 import { getDeepSleepRounds, getSleepSummary, listSleepRuns } from "@/lib/api.ts";
 
+type DateField = string | Date | null | undefined;
+
 type CronLogRow = {
   id: number;
   job_id: string;
   run_count: number;
   ok: boolean;
-  finished_at: string;
+  finished_at: DateField;
   output: Record<string, unknown> | null;
   output_text: string | null;
   error: string | null;
@@ -15,13 +17,13 @@ type CronLogRow = {
 
 type SleepSummaryView = {
   light_sleep: {
-    last_day?: string;
-    last_run_at?: string;
+    last_day?: DateField;
+    last_run_at?: DateField;
     stats?: { tool_calls?: number; sessions?: number };
   };
   deep_sleep: {
-    last_day?: string;
-    last_run_at?: string;
+    last_day?: DateField;
+    last_run_at?: DateField;
     stats?: { total_tool_calls?: number };
     rounds_completed?: number;
   };
@@ -49,12 +51,22 @@ export const Route = createFileRoute("/chamber/sleep")({
   component: SleepPage,
 });
 
-function formatTs(iso: string | undefined | null) {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  const p = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+const pad2 = (n: number) => String(n).padStart(2, "0");
+
+function formatDay(value: DateField): string {
+  if (!value) return "—";
+  if (value instanceof Date) {
+    if (Number.isNaN(value.getTime())) return "—";
+    return `${value.getFullYear()}-${pad2(value.getMonth() + 1)}-${pad2(value.getDate())}`;
+  }
+  return value;
+}
+
+function formatTs(value: DateField): string {
+  if (!value) return "—";
+  const d = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(d.getTime())) return typeof value === "string" ? value : "—";
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 }
 
 function jobLabel(id: string) {
@@ -65,7 +77,9 @@ function jobLabel(id: string) {
 
 function outputDay(row: CronLogRow): string {
   const day = row.output?.day;
-  return typeof day === "string" ? day : "—";
+  if (typeof day === "string") return day;
+  if (day instanceof Date) return formatDay(day);
+  return "—";
 }
 
 function outputToolCalls(row: CronLogRow): string {
@@ -141,7 +155,7 @@ function SleepPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
           <div className="card bg-base-200 p-4">
             <h3 className="font-semibold mb-2">浅睡最新</h3>
-            <p className="text-sm">处理日: {summary.light_sleep.last_day ?? "—"}</p>
+            <p className="text-sm">处理日: {formatDay(summary.light_sleep.last_day)}</p>
             <p className="text-sm">运行: {formatTs(summary.light_sleep.last_run_at)}</p>
             <p className="text-sm">
               工具调用: {summary.light_sleep.stats?.tool_calls ?? 0} · sessions:{" "}
@@ -150,7 +164,7 @@ function SleepPage() {
           </div>
           <div className="card bg-base-200 p-4">
             <h3 className="font-semibold mb-2">深睡最新</h3>
-            <p className="text-sm">处理日: {summary.deep_sleep.last_day ?? "—"}</p>
+            <p className="text-sm">处理日: {formatDay(summary.deep_sleep.last_day)}</p>
             <p className="text-sm">运行: {formatTs(summary.deep_sleep.last_run_at)}</p>
             <p className="text-sm">
               工具调用: {summary.deep_sleep.stats?.total_tool_calls ?? 0} · 轮次:{" "}
