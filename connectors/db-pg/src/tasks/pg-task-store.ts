@@ -25,4 +25,8 @@ export class PgTaskStore implements TaskStorePort {
   async list(opts?: TaskListOpts): Promise<TaskRow[]> {
     return crudRepo.listTasks(opts);
   }
+
+  async count(opts?: Omit<TaskListOpts, "offset" | "limit">): Promise<number> {
+    return crudRepo.countTasks(opts);
+  }
 }

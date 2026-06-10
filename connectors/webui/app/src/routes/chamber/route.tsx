@@ -4,6 +4,7 @@ import { ResponsiveSidebarLayout } from "@/components/ResponsiveSidebarLayout.ts
 const navItems = [
   { to: "/chamber/dashboard", label: "📊 仪表盘" },
   { to: "/chamber/sessions", label: "💬 会话列表" },
+  { to: "/chamber/tasks", label: "✅ 待办任务" },
   { to: "/chamber/memory", label: "🧠 记忆台" },
   { to: "/chamber/semantic-memory", label: "📝 语义记忆" },
   { to: "/chamber/fts", label: "🔍 全文检索" },

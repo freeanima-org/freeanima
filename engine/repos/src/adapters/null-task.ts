@@ -23,4 +23,7 @@ export const nullTaskStore: TaskStorePort = {
   async list(_opts?: TaskListOpts): Promise<TaskRow[]> {
     return notConfigured();
   },
+  async count(_opts?: Omit<TaskListOpts, "offset" | "limit">): Promise<number> {
+    return notConfigured();
+  },
 };

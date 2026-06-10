@@ -25,6 +25,7 @@ export type RuntimeService = AnimaService & {
   listSemanticMemories(opts?: any): Promise<any>;
   listLimbicMemories(opts?: any): Promise<any>;
   listAutobiographicalMemories(opts?: any): Promise<any>;
+  listTasks(opts?: any): Promise<any>;
   getFtsStatus(): Promise<any>;
   startRebuildFtsIndex(opts?: { onlyMissing?: boolean }): any;
   getRebuildFtsJobStatus(): any;

@@ -4,6 +4,8 @@ import {
   limbicKindSchema,
   semanticMemoryStatusSchema,
   semanticMemoryTypeSchema,
+  taskPrioritySchema,
+  taskStatusSchema,
 } from "@freeanima/engine-db/schema";
 import { z } from "zod";
 
@@ -30,6 +32,14 @@ export const autobiographicalMemoryListBodySchema = memoryListPaginationSchema.e
   status: autobiographicalStatusSchema.optional(),
   significance: autobiographicalSignificanceSchema.optional(),
   source_session: z.string().optional(),
+});
+
+export const taskListBodySchema = z.object({
+  query: z.string().optional(),
+  offset: z.number().int().min(0).optional(),
+  limit: z.number().int().min(1).max(100).optional(),
+  status: z.union([z.literal("all"), z.array(taskStatusSchema), taskStatusSchema]).optional(),
+  priority: taskPrioritySchema.optional(),
 });
 
 const clarifyItemSchema = z.object({
@@ -81,6 +91,7 @@ export type MemorySearchBody = z.infer<typeof memorySearchBodySchema>;
 export type SemanticMemoryListBody = z.infer<typeof semanticMemoryListBodySchema>;
 export type LimbicMemoryListBody = z.infer<typeof limbicMemoryListBodySchema>;
 export type AutobiographicalMemoryListBody = z.infer<typeof autobiographicalMemoryListBodySchema>;
+export type TaskListBody = z.infer<typeof taskListBodySchema>;
 export type StudioConfigPatch = z.infer<typeof studioConfigPatchSchema>;
 export type StudioSearchBody = z.infer<typeof studioSearchBodySchema>;
 

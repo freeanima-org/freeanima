@@ -300,6 +300,16 @@ export async function listAutobiographicalMemories(input: {
   return unwrap(apiClient.api.memory.autobiographical.list.post(input));
 }
 
+export async function listTasks(input: {
+  query?: string;
+  offset?: number;
+  limit?: number;
+  status?: "all" | string | string[];
+  priority?: string;
+}) {
+  return unwrap(apiClient.api.tasks.list.post(input));
+}
+
 export async function getFtsStatus() {
   return unwrap(apiClient.api.fts.status.get());
 }

@@ -36,6 +36,8 @@ export type TaskUpdateInput = {
 };
 
 export type TaskListOpts = {
+  query?: string;
+  offset?: number;
   status?: TaskStatus[];
   priority?: TaskPriority;
   limit?: number;
@@ -47,4 +49,5 @@ export interface TaskStorePort {
   get(id: string): Promise<TaskRow | null>;
   update(input: TaskUpdateInput): Promise<TaskRow | null>;
   list(opts?: TaskListOpts): Promise<TaskRow[]>;
+  count(opts?: Omit<TaskListOpts, "offset" | "limit">): Promise<number>;
 }
