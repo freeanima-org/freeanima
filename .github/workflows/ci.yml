@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Dispatch pr-verify to freeanima-testing
-        uses: peter-evans/repository-dispatch@v3
+        uses: peter-evans/repository-dispatch@v4
         with:
           token: ${{ secrets.TESTING_REPO_DISPATCH_PAT }}
           repository: freeanima-org/freeanima-testing
