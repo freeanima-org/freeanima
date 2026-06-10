@@ -1,6 +1,6 @@
 import { logSseError } from "@freeanima/service-logging";
 import { mapStreamEventToApi } from "../api-mappers.ts";
-import { getServiceContext } from "@freeanima/service-api";
+import { webuiCtx } from "./runtime.ts";
 import { resolveSessionPlatform } from "./sessions.ts";
 
 export async function* iterateMessageStream(
@@ -8,7 +8,7 @@ export async function* iterateMessageStream(
   message: string,
   streamPath = "/api/sessions/messages/stream",
 ): AsyncGenerator<{ event: string; data: string }> {
-  const { service } = getServiceContext();
+  const { service } = webuiCtx();
   const platform = await resolveSessionPlatform(sessionId);
   let sawDone = false;
   try {

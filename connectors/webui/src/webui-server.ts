@@ -1,6 +1,7 @@
 import { join } from "node:path";
 import { getRepoRoot } from "@freeanima/service-config";
 import { createApiApp, WEBUI_BASE_PATH } from "./elysia/app.ts";
+import { bindWebuiServiceContext } from "./handlers/runtime.ts";
 import { broadcastWsReconnect, shutdownWebui } from "./elysia/shutdown.ts";
 
 export type WebuiServerOptions = {
@@ -41,6 +42,7 @@ export async function startWebuiHttpServer(
   port: number,
   options: WebuiServerOptions = {},
 ): Promise<WebuiServerHandle> {
+  bindWebuiServiceContext();
   const development = options.development ?? process.env.NODE_ENV !== "production";
   if (development) {
     process.env.NODE_ENV = "development";

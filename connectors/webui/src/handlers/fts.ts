@@ -1,16 +1,16 @@
-import { getServiceContext } from "@freeanima/service-api";
+import { webuiCtx } from "./runtime.ts";
 
 export function getFtsStatus() {
-  const { service } = getServiceContext();
+  const { service } = webuiCtx();
   return service.getFtsStatus();
 }
 
 export function startRebuildFtsIndex(opts?: { onlyMissing?: boolean }) {
-  const { service } = getServiceContext();
+  const { service } = webuiCtx();
   return service.startRebuildFtsIndex(opts);
 }
 
 export function getRebuildFtsJobStatus() {
-  const { service } = getServiceContext();
+  const { service } = webuiCtx();
   return service.getRebuildFtsJobStatus();
 }
