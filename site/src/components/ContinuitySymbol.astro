@@ -1,0 +1,31 @@
+<div class="continuity-symbol">
+  <div class="continuity-symbol__dot"></div>
+  <div class="continuity-symbol__line"></div>
+</div>
+
+<style>
+  .continuity-symbol {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 48px;
+  }
+
+  .continuity-symbol__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: var(--fa-muted);
+    box-shadow:
+      0 0 12px 3px rgba(184, 180, 173, 0.25),
+      0 0 32px 8px rgba(184, 180, 173, 0.08);
+    flex-shrink: 0;
+  }
+
+  .continuity-symbol__line {
+    width: 1px;
+    height: 120px;
+    background: linear-gradient(to bottom, var(--fa-faint) 0%, var(--fa-border) 60%, transparent 100%);
+    margin-top: 8px;
+  }
+</style>

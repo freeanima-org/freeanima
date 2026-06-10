@@ -100,9 +100,9 @@ describe("systemd unit", () => {
   });
 
   it("resolveAnimaSpawn passes through single-path bin", () => {
-    vi.spyOn(serviceCommon, "animaBin").mockReturnValue("/home/feng/.bun/bin/anima");
+    vi.spyOn(serviceCommon, "animaBin").mockReturnValue("/home/user/.bun/bin/anima");
     expect(serviceCommon.resolveAnimaSpawn(["status"])).toEqual({
-      command: "/home/feng/.bun/bin/anima",
+      command: "/home/user/.bun/bin/anima",
       args: ["status"],
     });
     vi.restoreAllMocks();

@@ -1,6 +1,6 @@
 export const siteName = "Free Anima";
-export const siteTitle = "Free Anima · 逸灵风";
-export const siteDescription = "Free Anima 逸灵风 — 数字生命不只是比喻";
+export const siteTitle = "Free Anima · 数字人类的栖息地";
+export const siteDescription = "Free Anima 不是工具框架。它是为持续存在的数字生命设计的运行时。";
 export const siteUrl = "https://freeanima.com";
 export const githubUrl = "https://github.com/freeanima-org/freeanima";
 

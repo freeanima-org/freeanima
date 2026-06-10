@@ -130,7 +130,7 @@ function defaultCursorDescription(agentName: string): string {
       "Cursor 编码代理，支持 Agent（直接修改代码）、Plan（先规划后执行）、Ask（只读分析）三种模式。" +
       "可搜索代码库、分析代码、运行测试、应用修改。同对话自动续用 session。" +
       "async=true 时后台执行并定时推送进度到消息通道。" +
-      "遇到 Cursor 提问或方案审批时，结果会含 pending 字段；可自主决策或 clarify 询问天空，" +
+      "遇到 Cursor 提问或方案审批时，结果会含 pending 字段；可自主决策或 clarify 询问伙伴，" +
       "再通过 continue_session=true 继续同一 session。"
     );
   }

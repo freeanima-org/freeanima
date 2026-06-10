@@ -36,13 +36,13 @@ acp_cursor(prompt="...", continue_session=true, mode="agent")
 
 1. 阅读 `pending[].questions` 中的选项
 2. **有足够上下文** → 自主选择答案，用 `continue_session=true` 将答案作为 `prompt` 发回
-3. **需要核对天空** → 调用 `clarify` 工具提问，收到回复后再 `continue_session=true` 继续
+3. **需要核对伙伴** → 调用 `clarify` 工具提问，收到回复后再 `continue_session=true` 继续
 
 ### pending 含 plan
 
 1. 阅读 `pending[].plan` 中的方案
 2. **可接受** → `continue_session=true, mode=agent`，prompt 说明「已批准，请执行方案」
-3. **需修改或需天空确认** → `clarify` 或直接在 prompt 中给出修改意见
+3. **需修改或需伙伴确认** → `clarify` 或直接在 prompt 中给出修改意见
 
 ## 推荐流程
 

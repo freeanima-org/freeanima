@@ -51,7 +51,7 @@ export default defineConfig({
           ],
         },
       ],
-      customCss: ["./src/styles/global.css", "./src/styles/starlight.css"],
+      customCss: ["./src/styles/global.css", "./src/styles/starlight-custom.css"],
     }),
     react(),
   ],

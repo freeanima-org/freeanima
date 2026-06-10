@@ -12,7 +12,7 @@ export function registerWriteFridgeMagnetTool(toolSets: ToolSetRegistry): void {
       parameters: {
         type: "object",
         properties: {
-          key: { type: "string", description: "便签名称（可选），如 sky_mood；省略则自动生成" },
+          key: { type: "string", description: "便签名称（可选），如 user_mood；省略则自动生成" },
           value: { type: "string", description: "便签内容" },
           ttl_seconds: {
             type: "number",

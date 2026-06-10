@@ -9,14 +9,14 @@ import {
 import type { FridgeMagnet } from "./types.ts";
 
 const sampleMagnets: FridgeMagnet[] = [
-  { key: "sky_mood", value: "晴朗" },
+  { key: "user_mood", value: "晴朗" },
   { key: "task", value: "写测试" },
 ];
 
 describe("formatFridgeMagnets", () => {
   it("格式化为 fridge 代码块", () => {
     expect(formatFridgeMagnets(sampleMagnets)).toBe(
-      "```fridge\nsky_mood: 晴朗\ntask: 写测试\n```\n",
+      "```fridge\nuser_mood: 晴朗\ntask: 写测试\n```\n",
     );
   });
 
@@ -28,13 +28,13 @@ describe("formatFridgeMagnets", () => {
 describe("injectFridgeMagnets", () => {
   it("在内容前注入冰箱贴块", () => {
     const result = injectFridgeMagnets("你好", sampleMagnets);
-    expect(result).toBe("```fridge\nsky_mood: 晴朗\ntask: 写测试\n```\n你好");
+    expect(result).toBe("```fridge\nuser_mood: 晴朗\ntask: 写测试\n```\n你好");
   });
 });
 
 describe("stripFridgeMagnets", () => {
   it("剪除开头的冰箱贴块", () => {
-    const content = "```fridge\nsky_mood: 晴朗\n```\n你好";
+    const content = "```fridge\nuser_mood: 晴朗\n```\n你好";
     expect(stripFridgeMagnets(content)).toBe("你好");
   });
 

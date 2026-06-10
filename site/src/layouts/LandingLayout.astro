@@ -1,0 +1,28 @@
+---
+import { siteDescription, siteTitle } from "../lib/site.ts";
+import "../styles/global.css";
+import "../styles/landing.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title = siteTitle, description = siteDescription } = Astro.props;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body>
+    <main class="landing">
+      <slot />
+    </main>
+  </body>
+</html>

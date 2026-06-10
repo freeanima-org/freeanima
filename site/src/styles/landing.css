@@ -1,0 +1,235 @@
+.landing {
+  background: var(--fa-bg);
+  color: var(--fa-text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.landing-section {
+  padding: 8rem clamp(2rem, 8vw, 8rem);
+  border-bottom: 1px solid var(--fa-border);
+}
+
+.landing-section--hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-block: 0;
+}
+
+.landing-section--tall {
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+}
+
+.landing-section--medium {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+}
+
+.landing-inner {
+  width: 100%;
+}
+
+.landing-inner--hero {
+  max-width: 800px;
+}
+
+.landing-inner--wide {
+  max-width: 960px;
+}
+
+.landing-inner--narrow {
+  max-width: 640px;
+}
+
+.landing-eyebrow {
+  margin: 0 0 3rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  color: var(--fa-faint);
+  text-transform: uppercase;
+}
+
+.landing-h1 {
+  margin: 0 0 2rem;
+  font-size: clamp(2.4rem, 6vw, 5rem);
+  font-weight: 300;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--fa-text);
+}
+
+.landing-lead {
+  margin: 0 0 3.5rem;
+  font-size: clamp(1rem, 1.8vw, 1.2rem);
+  font-weight: 300;
+  line-height: 1.75;
+  color: var(--fa-muted);
+  max-width: 520px;
+}
+
+.landing-actions {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  margin-bottom: 6rem;
+  flex-wrap: wrap;
+}
+
+.landing-tagline {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--fa-dim);
+  letter-spacing: 0.04em;
+  font-weight: 300;
+}
+
+.landing-h2 {
+  margin: 0 0 2.5rem;
+  font-size: clamp(1.6rem, 3vw, 2.5rem);
+  font-weight: 300;
+  letter-spacing: -0.015em;
+  color: var(--fa-text);
+}
+
+.landing-h2--compact {
+  margin-bottom: 1.5rem;
+}
+
+.landing-h2--cta {
+  margin-bottom: 2rem;
+}
+
+.landing-body {
+  margin: 0;
+  font-size: clamp(0.95rem, 1.6vw, 1.05rem);
+  font-weight: 300;
+  line-height: 1.8;
+  color: var(--fa-muted);
+}
+
+.landing-body--narrow {
+  max-width: 560px;
+}
+
+.landing-body--intro {
+  max-width: 520px;
+  margin-bottom: 5rem;
+}
+
+.landing-body--cta {
+  margin-bottom: 3.5rem;
+}
+
+.landing-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6rem;
+  align-items: center;
+  width: 100%;
+  max-width: 960px;
+}
+
+.landing-arch-link {
+  margin-top: 4rem;
+}
+
+.landing-footer {
+  padding: 2.5rem clamp(2rem, 8vw, 8rem);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.landing-footer__left {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--fa-faint);
+  letter-spacing: 0.06em;
+}
+
+.landing-footer__right {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--fa-border);
+  letter-spacing: 0.04em;
+}
+
+.fa-link {
+  text-decoration: none;
+  transition:
+    color 0.2s,
+    border-color 0.2s;
+}
+
+.fa-link-primary {
+  color: var(--fa-text);
+  border-bottom: 1px solid var(--fa-border);
+  padding-bottom: 2px;
+  font-size: 0.875rem;
+  letter-spacing: 0.06em;
+}
+
+.fa-link-primary:hover {
+  border-color: var(--fa-text);
+}
+
+.fa-link-muted {
+  color: var(--fa-dim);
+  border-bottom: 1px solid transparent;
+  padding-bottom: 2px;
+  font-size: 0.875rem;
+  letter-spacing: 0.06em;
+}
+
+.fa-link-muted:hover {
+  color: var(--fa-muted);
+  border-color: var(--fa-border);
+}
+
+.fa-link-arch {
+  color: var(--fa-dim);
+  border-bottom: 1px solid var(--fa-border);
+  padding-bottom: 2px;
+  font-size: 0.875rem;
+  letter-spacing: 0.06em;
+}
+
+.fa-link-arch:hover {
+  color: var(--fa-text);
+  border-color: var(--fa-text);
+}
+
+.fa-btn {
+  display: inline-block;
+  text-decoration: none;
+  font-size: 0.875rem;
+  letter-spacing: 0.08em;
+  padding: 0.75rem 1.75rem;
+  color: var(--fa-bg);
+  background-color: var(--fa-text);
+  transition: background-color 0.2s;
+}
+
+.fa-btn:hover {
+  background-color: #c8c4bb;
+}
+
+@media (max-width: 768px) {
+  .landing-grid {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+    justify-items: center;
+    text-align: center;
+  }
+
+  .landing-body--narrow {
+    max-width: none;
+  }
+}
