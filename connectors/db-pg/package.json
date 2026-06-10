@@ -6,7 +6,6 @@
     "./fts": "./src/fts/index.ts"
   },
   "dependencies": {
-    "@freeanima/engine-conversation": "workspace:*",
     "@freeanima/engine-repos": "workspace:*",
     "@freeanima/life-memory": "workspace:*",
     "@freeanima/engine-db": "workspace:*",

@@ -186,7 +186,6 @@
     "connectors/db-pg": {
       "name": "@freeanima/connectors-db-pg",
       "dependencies": {
-        "@freeanima/engine-conversation": "workspace:*",
         "@freeanima/engine-db": "workspace:*",
         "@freeanima/engine-repos": "workspace:*",
         "@freeanima/kernel-util": "workspace:*",
@@ -242,12 +241,6 @@
     },
     "connectors/redis": {
       "name": "@freeanima/connectors-redis",
-      "devDependencies": {
-        "@types/bun": "catalog:",
-      },
-    },
-    "connectors/sqlite": {
-      "name": "@freeanima/connectors-sqlite",
       "devDependencies": {
         "@types/bun": "catalog:",
       },
@@ -903,8 +896,6 @@
     "@freeanima/connectors-gateway": ["@freeanima/connectors-gateway@workspace:connectors/gateway"],
 
     "@freeanima/connectors-redis": ["@freeanima/connectors-redis@workspace:connectors/redis"],
-
-    "@freeanima/connectors-sqlite": ["@freeanima/connectors-sqlite@workspace:connectors/sqlite"],
 
     "@freeanima/connectors-webui": ["@freeanima/connectors-webui@workspace:connectors/webui"],
 
