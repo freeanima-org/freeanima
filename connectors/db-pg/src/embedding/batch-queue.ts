@@ -1,7 +1,7 @@
 import { logComponent } from "@freeanima/service-logging";
 
 import { embedAndStoreJobs } from "./embed-jobs.ts";
-import { DEFAULT_MAX_BATCH_ITEMS } from "./batch-pack.ts";
+import { EMBEDDING_QUEUE_FLUSH_THRESHOLD } from "./batch-pack.ts";
 import type { EmbeddingPendingJob } from "./types.ts";
 
 const log = logComponent("embedding");
@@ -60,7 +60,7 @@ async function drainQueue(): Promise<void> {
   }
 
   if (pending.size > 0) {
-    if (pending.size >= DEFAULT_MAX_BATCH_ITEMS) {
+    if (pending.size >= EMBEDDING_QUEUE_FLUSH_THRESHOLD) {
       void drainQueue();
     } else {
       scheduleFlush();
@@ -75,7 +75,7 @@ export function enqueueEmbedding(job: EmbeddingPendingJob): void {
 
   pending.set(jobKey({ ...job, content: trimmed }), { ...job, content: trimmed });
 
-  if (pending.size >= DEFAULT_MAX_BATCH_ITEMS) {
+  if (pending.size >= EMBEDDING_QUEUE_FLUSH_THRESHOLD) {
     clearFlushTimer();
     void drainQueue();
     return;

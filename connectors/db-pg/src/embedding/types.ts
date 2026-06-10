@@ -8,3 +8,12 @@ export type EmbeddingPendingJob = {
   id: string;
   content: string;
 };
+
+/** Single API embed input derived from a job (full text or one chunk). */
+export type EmbeddingEmbedUnit = {
+  job: EmbeddingPendingJob;
+  /** Text passed to the embedding API (may be a chunk). */
+  text: string;
+  chunkIndex?: number;
+  chunkCount?: number;
+};
