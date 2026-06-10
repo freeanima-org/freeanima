@@ -5,7 +5,7 @@ import type { RecordMessageReferencesInput } from "@freeanima/engine-repos";
 import {
   parseMemoryReferenceMarkers,
   memoryReferenceWeight,
-} from "@freeanima/life-memory/memory-reference";
+} from "@freeanima/engine-repos/memory-reference/markers";
 
 import { getDb } from "../../client.ts";
 

@@ -7,7 +7,6 @@
   },
   "dependencies": {
     "@freeanima/engine-repos": "workspace:*",
-    "@freeanima/life-memory": "workspace:*",
     "@freeanima/engine-db": "workspace:*",
     "@freeanima/kernel-util": "workspace:*",
     "@freeanima/service-config": "workspace:*",
