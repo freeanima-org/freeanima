@@ -1,0 +1,52 @@
+import { describe, expect, test } from "bun:test";
+
+import { mapRow } from "./cron-log-repo.ts";
+
+describe("mapRow", () => {
+  test("将 bigint id 转为 number", () => {
+    const row = mapRow({
+      id: 42n,
+      job_id: "builtin-light-sleep",
+      run_count: 1,
+      ok: true,
+      finished_at: "2026-06-10T02:08:50.320+08:00",
+      output: { day: "2026-06-09" },
+      output_text: null,
+      error: null,
+    });
+
+    expect(row.id).toBe(42);
+    expect(typeof row.id).toBe("number");
+  });
+
+  test("将 Date finished_at 转为 ISO 字符串", () => {
+    const finishedAt = new Date("2026-06-10T02:08:50.320Z");
+    const row = mapRow({
+      id: 1,
+      job_id: "builtin-deep-sleep",
+      run_count: 2,
+      ok: false,
+      finished_at: finishedAt,
+      output: null,
+      output_text: null,
+      error: "timeout",
+    });
+
+    expect(row.finished_at).toBe(finishedAt.toISOString());
+  });
+
+  test("保留字符串 finished_at", () => {
+    const row = mapRow({
+      id: 3,
+      job_id: "builtin-light-sleep",
+      run_count: 3,
+      ok: true,
+      finished_at: "2026-06-09T18:07:32.000Z",
+      output: null,
+      output_text: "ok",
+      error: null,
+    });
+
+    expect(row.finished_at).toBe("2026-06-09T18:07:32.000Z");
+  });
+});

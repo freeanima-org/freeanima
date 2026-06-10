@@ -6,23 +6,24 @@ import { getDb } from "../../client.ts";
 import { pgSqlLiteral, pgTextArrayLiteral } from "../../utils/pg-sql.ts";
 
 type CronLogDbRow = {
-  id: number;
+  id: number | bigint;
   job_id: string;
   run_count: number;
   ok: boolean;
-  finished_at: string;
+  finished_at: string | Date;
   output: Record<string, unknown> | null;
   output_text: string | null;
   error: string | null;
 };
 
-function mapRow(raw: CronLogDbRow): CronLogRow {
+export function mapRow(raw: CronLogDbRow): CronLogRow {
   return {
-    id: raw.id,
+    id: typeof raw.id === "bigint" ? Number(raw.id) : raw.id,
     job_id: raw.job_id,
     run_count: raw.run_count,
     ok: raw.ok,
-    finished_at: raw.finished_at,
+    finished_at:
+      raw.finished_at instanceof Date ? raw.finished_at.toISOString() : String(raw.finished_at),
     output: raw.output,
     output_text: raw.output_text,
     error: raw.error,
