@@ -1,4 +1,5 @@
 import { resolveDefaultSessionTools } from "./default-session-tools.ts";
+import { globalToolErrorContract, resolveToolReturnFields } from "./return-contract.ts";
 import {
   openaiFunctionSchema,
   type JsonSchemaObject,
@@ -25,6 +26,10 @@ export type ToolsStatusToolItem = {
   definition: OpenAiToolEntry;
   return_kind: ToolReturnKind;
   return_schema?: JsonSchemaObject;
+  return_example?: unknown;
+  return_text_hint?: string;
+  error_schema: JsonSchemaObject;
+  error_example: { error: string };
 };
 
 export type ToolsStatusResponse = {
@@ -42,24 +47,44 @@ export function resolveReturnKind(toolset: string | undefined, def: ToolDef): To
   return "json";
 }
 
+const MCP_ACP_TEXT_HINT = 'MCP/ACP 服务器原始文本输出；失败时返回 {"error":"..."} JSON';
+
 export function buildToolsStatus(registry: ToolSetRegistry): ToolsStatusResponse {
   const toolSetByName = new Map<string, string>();
   for (const ts of registry.listToolSets()) {
     for (const n of ts.tools) toolSetByName.set(n, ts.name);
   }
 
+  const errorContract = globalToolErrorContract();
+
   const tools = registry.listTools().map((t) => {
     const toolset = toolSetByName.get(t.name);
+    const returnKind = resolveReturnKind(toolset, t);
+    const returnFields = resolveToolReturnFields({ ...t, returnKind });
+    const isDynamicRemote = toolset?.startsWith("mcp_") || toolset?.startsWith("acp_");
+
     const item: ToolsStatusToolItem = {
       name: t.name,
       description: t.description,
       toolset,
       parameters: t.parameters,
       definition: openaiFunctionSchema(t),
-      return_kind: resolveReturnKind(toolset, t),
+      return_kind: returnKind,
+      error_schema: errorContract.error_schema,
+      error_example: errorContract.error_example,
     };
     if (t.requiresEnv?.length) item.requires_env = [...t.requiresEnv];
-    if (t.returnSchema) item.return_schema = t.returnSchema;
+    if (returnFields.return_schema) item.return_schema = returnFields.return_schema;
+    if (returnFields.return_example !== undefined)
+      item.return_example = returnFields.return_example;
+    if (returnFields.return_text_hint) {
+      item.return_text_hint = returnFields.return_text_hint;
+    } else if (isDynamicRemote && returnKind === "text") {
+      item.return_text_hint = MCP_ACP_TEXT_HINT;
+      if (!item.return_schema) {
+        item.return_schema = { type: "string", description: MCP_ACP_TEXT_HINT };
+      }
+    }
     return item;
   });
 

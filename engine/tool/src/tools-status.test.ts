@@ -1,4 +1,7 @@
 import { describe, expect, it } from "bun:test";
+import { z } from "zod";
+
+import { defineToolReturn } from "./return-contract.ts";
 import { DEFAULT_SESSION_TOOL_NAMES } from "./default-session-tools.ts";
 import { ToolSetRegistry } from "./toolset.ts";
 import { buildToolsStatus, resolveReturnKind } from "./tools-status.ts";
@@ -55,7 +58,10 @@ describe("buildToolsStatus", () => {
         description: "写文件",
         parameters: { type: "object" },
         handler: () => '{"ok":true}',
-        returnSchema: { type: "object", properties: { ok: { type: "boolean" } } },
+        ...defineToolReturn({
+          schema: z.object({ ok: z.literal(true), path: z.string() }),
+          example: { ok: true, path: "/tmp/demo.txt" },
+        }),
       },
     ]);
     registry.registerToolSet("mcp_demo", "MCP", [
@@ -82,10 +88,10 @@ describe("buildToolsStatus", () => {
 
     const write = status.tools.find((t) => t.name === "file_write_file");
     expect(write?.return_kind).toBe("json");
-    expect(write?.return_schema).toEqual({
-      type: "object",
-      properties: { ok: { type: "boolean" } },
-    });
+    expect(write?.return_schema?.type).toBe("object");
+    expect(write?.return_example).toEqual({ ok: true, path: "/tmp/demo.txt" });
+    expect(write?.error_schema?.type).toBe("object");
+    expect(write?.error_example).toEqual({ error: "示例错误信息" });
 
     const mcp = status.tools.find((t) => t.name === "mcp_demo_ping");
     expect(mcp?.return_kind).toBe("text");

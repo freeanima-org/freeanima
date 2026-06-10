@@ -1,6 +1,7 @@
 import { getToolSessionId, getToolRepos } from "@freeanima/engine-loop";
 import type { ToolSetRegistry } from "@freeanima/engine-tool";
-import { toolError } from "@freeanima/engine-tool";
+import { attachToolReturns, toolError } from "@freeanima/engine-tool";
+import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
 import { handleSessionTodo } from "@freeanima/engine-conversation/session-todos";
 
 async function handleTodo(args: Record<string, unknown>): Promise<string> {
@@ -18,31 +19,38 @@ async function handleTodo(args: Record<string, unknown>): Promise<string> {
 }
 
 export function registerTodoTool(toolSets: ToolSetRegistry): void {
-  toolSets.registerToolSet("todo", "当前会话待办清单", [
-    {
-      name: "todo",
-      description:
-        "管理当前对话 session 的待办清单（与其他 session 隔离）。支持 list/add/update/delete",
-      parameters: {
-        type: "object",
-        properties: {
-          action: {
-            type: "string",
-            enum: ["list", "add", "update", "delete"],
-            description:
-              "list — 列出；add — 添加（需 content）；update — 更新状态（需 id+status）；delete — 删除（需 id）",
+  toolSets.registerToolSet(
+    "todo",
+    "当前会话待办清单",
+    attachToolReturns(
+      [
+        {
+          name: "todo",
+          description:
+            "管理当前对话 session 的待办清单（与其他 session 隔离）。支持 list/add/update/delete",
+          parameters: {
+            type: "object",
+            properties: {
+              action: {
+                type: "string",
+                enum: ["list", "add", "update", "delete"],
+                description:
+                  "list — 列出；add — 添加（需 content）；update — 更新状态（需 id+status）；delete — 删除（需 id）",
+              },
+              content: { type: "string", description: "待办内容（add 必需）" },
+              id: { type: "integer", description: "待办 ID（update/delete 必需）" },
+              status: {
+                type: "string",
+                enum: ["pending", "in_progress", "completed", "cancelled"],
+                description: "新状态（update 必需）",
+              },
+            },
+            required: ["action"],
           },
-          content: { type: "string", description: "待办内容（add 必需）" },
-          id: { type: "integer", description: "待办 ID（update/delete 必需）" },
-          status: {
-            type: "string",
-            enum: ["pending", "in_progress", "completed", "cancelled"],
-            description: "新状态（update 必需）",
-          },
+          handler: handleTodo,
         },
-        required: ["action"],
-      },
-      handler: handleTodo,
-    },
-  ]);
+      ],
+      CAPABILITIES_TOOLS_RETURNS,
+    ),
+  );
 }

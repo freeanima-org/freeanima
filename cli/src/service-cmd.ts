@@ -94,13 +94,10 @@ async function fetchHttpStatus(
 }
 
 function printWebui(host: string, port: number): void {
-  console.log("  WebUI:");
   for (const h of parseBindHosts(host)) {
     const base = `http://${h}:${port}/webui`;
-    console.log(`    ${base}/`);
-    console.log(`    会客厅: ${base}/parlor/chat`);
-    console.log(`    卧室: ${base}/chamber/dashboard`);
-    console.log(`    创作室: ${base}/studio/pair-programming`);
+
+    console.log(`  WebUI: ${base}`);
   }
 }
 

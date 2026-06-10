@@ -1,5 +1,6 @@
 import type { ToolSetRegistry } from "@freeanima/engine-tool";
-import { toolError, toolResult } from "@freeanima/engine-tool";
+import { attachToolReturns, toolError, toolResult } from "@freeanima/engine-tool";
+import { CRON_TOOL_RETURNS } from "./return-schemas.ts";
 import { computeNextRunAt } from "./bun-schedule.ts";
 import {
   createJob,
@@ -143,31 +144,41 @@ async function handleCronjob(args: Record<string, unknown>): Promise<string> {
 }
 
 export function registerCronjobTool(toolSets: ToolSetRegistry): void {
-  toolSets.registerToolSet("cron", "定时任务管理", [
-    {
-      name: "cron_job",
-      description: "管理定时任务：创建、列表、查看、暂停、恢复、删除、立即运行",
-      parameters: {
-        type: "object",
-        properties: {
-          action: {
-            type: "string",
-            enum: ["create", "list", "get", "remove", "pause", "resume", "run"],
-            description: "操作类型",
+  toolSets.registerToolSet(
+    "cron",
+    "定时任务管理",
+    attachToolReturns(
+      [
+        {
+          name: "cron_job",
+          description: "管理定时任务：创建、列表、查看、暂停、恢复、删除、立即运行",
+          parameters: {
+            type: "object",
+            properties: {
+              action: {
+                type: "string",
+                enum: ["create", "list", "get", "remove", "pause", "resume", "run"],
+                description: "操作类型",
+              },
+              job_id: {
+                type: "string",
+                description: "任务 ID（get/remove/pause/resume/run 需要）",
+              },
+              name: { type: "string", description: "任务名称（create 需要）" },
+              schedule: { type: "string", description: "调度表达式（create 需要）" },
+              prompt: { type: "string", description: "LLM 提示词（create 需要，除非 no_agent）" },
+              skills: { type: "array", items: { type: "string" }, description: "要加载的技能" },
+              script: { type: "string", description: "脚本路径（相对 cron/scripts）" },
+              no_agent: { type: "boolean", description: "仅脚本模式，不调用 LLM" },
+              deliver: { type: "string", description: "投递目标，默认 local" },
+              repeat: { type: "integer", description: "最大运行次数" },
+            },
+            required: ["action"],
           },
-          job_id: { type: "string", description: "任务 ID（get/remove/pause/resume/run 需要）" },
-          name: { type: "string", description: "任务名称（create 需要）" },
-          schedule: { type: "string", description: "调度表达式（create 需要）" },
-          prompt: { type: "string", description: "LLM 提示词（create 需要，除非 no_agent）" },
-          skills: { type: "array", items: { type: "string" }, description: "要加载的技能" },
-          script: { type: "string", description: "脚本路径（相对 cron/scripts）" },
-          no_agent: { type: "boolean", description: "仅脚本模式，不调用 LLM" },
-          deliver: { type: "string", description: "投递目标，默认 local" },
-          repeat: { type: "integer", description: "最大运行次数" },
+          handler: (args) => handleCronjob(args),
         },
-        required: ["action"],
-      },
-      handler: (args) => handleCronjob(args),
-    },
-  ]);
+      ],
+      CRON_TOOL_RETURNS,
+    ),
+  );
 }
