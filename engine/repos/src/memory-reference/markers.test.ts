@@ -6,9 +6,9 @@ import {
   memoryReferenceWeight,
   parseMemoryReferenceMarkers,
   MEMORY_REFERENCE_DECAY_DAYS,
-} from "./memory-reference.ts";
+} from "./markers.ts";
 
-describe("memory-reference", () => {
+describe("memory-reference markers", () => {
   it("formatMemoryReferenceMarker 生成固定格式", () => {
     expect(formatMemoryReferenceMarker("f-000001-abcd")).toBe("[记忆 #f-000001-abcd]");
   });
