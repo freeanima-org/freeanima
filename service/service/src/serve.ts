@@ -90,7 +90,7 @@ let cronInitialized = false;
 
 export function getService(): AnimaService {
   if (!service) {
-    throw new Error("AnimaService 未初始化；请先调用 serve()");
+    throw new Error("AnimaService not initialized; call serve() first");
   }
   return service;
 }
@@ -98,13 +98,13 @@ export function getService(): AnimaService {
 function scheduleDebugSessionCleanup(conv: ConversationService): void {
   void Promise.resolve()
     .then(async () => {
-      startupLog("后台清理 debug 会话…");
+      startupLog("Cleaning up debug sessions in background…");
       const cleaned = await conv.cleanupDebugSessions(12);
       if (cleaned > 0) {
         logComponent("startup").debug(`Cleaned ${cleaned} debug session(s)`, { count: cleaned });
       }
     })
-    .catch((e) => logStartupError("debug 会话清理失败", e));
+    .catch((e) => logStartupError("debug session cleanup failed", e));
 }
 
 function startupLog(message: string): void {
@@ -152,7 +152,7 @@ export type WebuiHooks = {
 };
 
 export type ServeOptions = {
-  /** CLI 前台阻塞运行（systemd/detached 子进程亦会传 true，不等于 WebUI dev） */
+  /** CLI foreground blocking run (systemd/detached child also passes true; not the same as WebUI dev) */
   foreground?: boolean;
   /** CLI --dev：WebUI Bun fullstack HMR */
   webuiDev?: boolean;
@@ -168,10 +168,13 @@ async function defaultWaitForDrain(anima: AnimaService, maxMs: number): Promise<
       setTimeout(() => {
         const n = anima.getInFlightCount();
         if (n > 0) {
-          logComponent("shutdown").warn(`请求排空超时，仍有 ${n} 个进行中请求`, {
-            max_ms: maxMs,
-            in_flight: n,
-          });
+          logComponent("shutdown").warn(
+            `Request drain timed out; ${n} in-flight request(s) remaining`,
+            {
+              max_ms: maxMs,
+              in_flight: n,
+            },
+          );
         }
         resolve();
       }, maxMs);
@@ -192,7 +195,7 @@ export async function serve(
   try {
     chdir(REPO_ROOT);
   } catch (err) {
-    logStartupError("无法切换到仓库根目录", err);
+    logStartupError("Failed to chdir to repo root", err);
     throw err;
   }
   const bindHosts = parseBindHosts(host);
@@ -202,11 +205,11 @@ export async function serve(
   writeStatusFile(statusHost, port, "starting");
   let servers: WebuiServerHandle[] = [];
   try {
-    startupLog("校验 config.yaml…");
+    startupLog("Validating config.yaml…");
     await validateConfigOnStartup();
     wireEmbeddingRuntime();
 
-    startupLog("注册工具…");
+    startupLog("Registering tools…");
     const catalog = createEngineCatalog();
     const masks = new MaskRegistry();
     registerServiceTools({ toolSets: catalog.toolSets, skills: catalog.skills });
@@ -222,10 +225,10 @@ export async function serve(
     const cfg = await resolveLlmProviderApiKeys(loadConfig());
     let repos = nullPgRepositories;
     if (isPostgresPrimary()) {
-      startupLog("初始化 PostgreSQL 连接池…");
+      startupLog("Initializing PostgreSQL connection pool…");
       const db = getDb();
       await runMigrations(db);
-      startupLog("数据库迁移已完成");
+      startupLog("Database migrations complete");
       repos = createPgRepositories({ getDb });
     }
     initLlmRuntime(cfg);
@@ -241,7 +244,7 @@ export async function serve(
 
     registerFridgeStore(createRedisFridgeStore());
 
-    startupLog("初始化 AnimaService / EventBus…");
+    startupLog("Initializing AnimaService / EventBus…");
     service = new AnimaService({ kernel, conversation });
     service.markStarted();
 
@@ -287,9 +290,9 @@ export async function serve(
 
       await initCronModule({ store: repos.cron, logStore: repos.cronLog });
       cronInitialized = true;
-      startupLog("Cron 调度器已启动 (Bun.cron)");
+      startupLog("Cron scheduler started (Bun.cron)");
     } else {
-      startupLog("PostgreSQL 不可用，跳过 Cron 模块");
+      startupLog("PostgreSQL unavailable; skipping Cron module");
     }
 
     mcp = new MCPManager(catalog.toolSets);
@@ -310,22 +313,22 @@ export async function serve(
     if (opts.webui) {
       startupLog(
         webuiDev
-          ? "启动 WebUI HTTP（dev 构建 + watch，静态 Serving）…"
-          : "启动 WebUI HTTP（生产 bundle，hash 缓存）…",
+          ? "Starting WebUI HTTP (dev build + watch, static serving)…"
+          : "Starting WebUI HTTP (production bundle, hash cache)…",
       );
       servers = await opts.webui.start(bindHosts, port, { development: webuiDev });
     } else {
-      startupLog("未注入 WebUI hooks，跳过 HTTP 监听");
+      startupLog("WebUI hooks not injected; skipping HTTP listen");
     }
 
     writeStatusFile(statusHost, port, "ready");
     for (const bindHost of bindHosts) {
-      logComponent("startup").info(`逸灵风 listening on http://${bindHost}:${port}`, {
+      logComponent("startup").info(`freeanima listening on http://${bindHost}:${port}`, {
         host: bindHost,
         port,
       });
     }
-    startupLog("HTTP 监听就绪");
+    startupLog("HTTP listen ready");
     markStartupPhase(false);
     scheduleDebugSessionCleanup(conversation);
   } catch (err) {
@@ -341,77 +344,80 @@ export async function serve(
       logComponent("shutdown").debug(label, { ms, elapsed_ms: Date.now() - t0 });
     };
 
-    logComponent("shutdown").info(`收到 ${signal}，开始优雅关停（优先等待未落盘消息）`, {
-      signal,
-    });
+    logComponent("shutdown").info(
+      `Received ${signal}; starting graceful shutdown (prioritize pending message flush)`,
+      {
+        signal,
+      },
+    );
 
     service!.startShutdown();
-    step("已拒绝新请求", Date.now() - t0);
+    step("New requests rejected", Date.now() - t0);
 
     {
       const s = Date.now();
       await (opts.webui?.waitForDrain ?? defaultWaitForDrain)(service!, 90_000);
-      step("请求排空完成", Date.now() - s);
+      step("Request drain complete", Date.now() - s);
     }
 
     if (opts.webui && servers.length > 0) {
       const s = Date.now();
-      logComponent("shutdown").debug("关闭 HTTP/WebSocket 监听…");
+      logComponent("shutdown").debug("Closing HTTP/WebSocket listener…");
       await opts.webui.close(servers, 3000);
-      step("HTTP/WebSocket 监听已关闭", Date.now() - s);
+      step("HTTP/WebSocket listener closed", Date.now() - s);
     }
 
     {
       const s = Date.now();
       if (cronInitialized) stopCronModule();
-      step("Cron 调度器已停止", Date.now() - s);
+      step("Cron scheduler stopped", Date.now() - s);
     }
 
     {
       const s = Date.now();
       if (platforms.length) {
-        logComponent("shutdown").debug(`停止 ${platforms.length} 个 Gateway 平台…`, {
+        logComponent("shutdown").debug(`Stopping ${platforms.length} Gateway platform(s)…`, {
           count: platforms.length,
         });
       } else {
-        logComponent("shutdown").debug("无 Gateway 平台");
+        logComponent("shutdown").debug("No Gateway platforms");
       }
       await stopPlatforms(platforms);
-      step("Gateway 平台已停止", Date.now() - s);
+      step("Gateway platforms stopped", Date.now() - s);
     }
 
     {
       const s = Date.now();
       kernel!.eventBus.stop();
-      step("EventBus 已停止", Date.now() - s);
+      step("EventBus stopped", Date.now() - s);
     }
 
     if (mcp) {
       const s = Date.now();
       await mcp.closeAll();
-      step("MCP 已关闭", Date.now() - s);
+      step("MCP closed", Date.now() - s);
     }
 
     {
       const s = Date.now();
       await acp.stopAll();
-      step("ACP 已停止", Date.now() - s);
+      step("ACP stopped", Date.now() - s);
     }
 
     if (isPostgresPrimary()) {
       const s = Date.now();
       await closeDb();
-      step("PostgreSQL 连接池已关闭", Date.now() - s);
+      step("PostgreSQL connection pool closed", Date.now() - s);
     }
 
     if (isRedisConfigured()) {
       const s = Date.now();
       await closeRedis();
-      step("Redis 连接已关闭", Date.now() - s);
+      step("Redis connection closed", Date.now() - s);
     }
 
     cleanStatusFile();
-    logComponent("shutdown").info("关停完成", { elapsed_ms: Date.now() - t0 });
+    logComponent("shutdown").info("Shutdown complete", { elapsed_ms: Date.now() - t0 });
     process.exit(0);
   };
 

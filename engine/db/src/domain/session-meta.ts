@@ -49,7 +49,7 @@ export const clarifyToolResultSchema = z.union([
 export type ClarifyToolAwaitingResult = z.infer<typeof clarifyToolAwaitingResultSchema>;
 export type ClarifyToolResolvedResult = z.infer<typeof clarifyToolResolvedResultSchema>;
 
-/** 领域层压缩状态（`compressionJsonSchema`） */
+/** Domain-layer compression state (`compressionJsonSchema`) */
 export const compressionStateSchema = compressionJsonSchema.nullable().catch(null);
 
 export type CompressionState = z.infer<typeof compressionJsonSchema>;

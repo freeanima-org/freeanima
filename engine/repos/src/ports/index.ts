@@ -76,7 +76,7 @@ import type { LimbicMemoryStorePort } from "./limbic-memory.ts";
 import type { SelfLayerStorePort } from "./self-layer.ts";
 import type { TaskStorePort } from "./task.ts";
 
-/** Engine 挂载的 PG 仓储聚合 */
+/** PG repository aggregate mounted on Engine */
 export interface PgRepositories {
   readonly pgAvailable: boolean;
   session: SessionStorePort;

@@ -70,11 +70,11 @@ async function runAutobiographyTurn(
     { repos: conversation.repos, tools: eng.catalog.toolSets },
   );
 
-  const summary = parts.join("").trim() || `完成 ${toolCalls} 次工具调用`;
+  const summary = parts.join("").trim() || `Completed ${toolCalls} tool call(s)`;
   return { summary: summary.slice(0, 2000), tool_calls: toolCalls };
 }
 
-/** 注册自传 cron LLM 引擎 */
+/** Register autobiography cron LLM engine */
 export function registerAutobiographyWire(): void {
   registerAutobiographyEngine(runAutobiographyTurn);
 }

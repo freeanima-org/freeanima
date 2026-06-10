@@ -3,18 +3,18 @@ import { join } from "node:path";
 
 import { getRepoRoot } from "./repo-root.ts";
 
-/** 读取 monorepo 根 package.json 的 version（User-Agent 等） */
+/** Read monorepo root package.json version (User-Agent etc.) */
 export function readAppVersion(repoRoot?: string): string {
   const root = repoRoot ?? getRepoRoot();
   const path = join(root, "package.json");
   const pkg = JSON.parse(readFileSync(path, "utf8")) as { version?: string };
   if (!pkg.version) {
-    throw new Error(`根 package.json 缺少 version 字段: ${path}`);
+    throw new Error(`root package.json missing version field: ${path}`);
   }
   return pkg.version;
 }
 
-/** 写入 monorepo 根 package.json 的 version */
+/** Write monorepo root package.json version */
 export function writeRootVersion(version: string, repoRoot?: string): void {
   const root = repoRoot ?? getRepoRoot();
   const path = join(root, "package.json");

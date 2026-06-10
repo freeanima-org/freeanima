@@ -7,7 +7,7 @@ import {
   withDiscordRetry,
 } from "./discord/discord-retry.ts";
 describe("discordErrorDetails", () => {
-  it("提取 http status 与 discord code", () => {
+  it("extracts http status and discord code", () => {
     expect(
       discordErrorDetails({
         status: 403,
@@ -21,26 +21,26 @@ describe("discordErrorDetails", () => {
     });
   });
 
-  it("非对象返回空", () => {
+  it("non-object returns empty", () => {
     expect(discordErrorDetails(null)).toEqual({});
   });
 });
 
 describe("isDiscordRetryableError", () => {
-  it("429 与 5xx 可重试", () => {
+  it("429 and 5xx are retryable", () => {
     expect(isDiscordRetryableError({ status: 429 })).toBe(true);
     expect(isDiscordRetryableError({ status: 503 })).toBe(true);
     expect(isDiscordRetryableError(new TypeError("fetch failed"))).toBe(true);
   });
 
-  it("4xx 业务错误不重试", () => {
+  it("4xx business errors not retried", () => {
     expect(isDiscordRetryableError({ status: 403 })).toBe(false);
     expect(isDiscordRetryableError(new Error("Session not found"))).toBe(false);
   });
 });
 
 describe("withDiscordRetry", () => {
-  it("瞬态错误重试后成功", async () => {
+  it("succeeds after transient error retry", async () => {
     let n = 0;
     const result = await withDiscordRetry(async () => {
       n++;
@@ -53,7 +53,7 @@ describe("withDiscordRetry", () => {
 });
 
 describe("tryDiscordInterimEdit", () => {
-  it("失败不抛出", async () => {
+  it("failure does not throw", async () => {
     await expect(
       tryDiscordInterimEdit(async () => {
         throw { status: 403 };
@@ -63,7 +63,7 @@ describe("tryDiscordInterimEdit", () => {
 });
 
 describe("deliverDiscordFinalContent", () => {
-  it("edit 失败时 fallback send", async () => {
+  it("fallback send when edit fails", async () => {
     const edit = vi.fn(async () => {
       throw { status: 403 };
     });

@@ -15,7 +15,7 @@ function asId(value: unknown): string {
   return String(value ?? "").trim();
 }
 
-/** 根据深睡工具 tool_result 更新内存变更日志 */
+/** Update in-memory change log from deep sleep tool_result */
 export function applyDeepSleepToolResult(
   log: DeepSleepChangeLog,
   toolName: string,
@@ -28,29 +28,29 @@ export function applyDeepSleepToolResult(
     case "memory_semantic_create": {
       const id = asId(parsed.semantic_memory_id ?? parsed.id);
       if (!id) return;
-      applyChangeLog(log, "added", id, "新建语义记忆");
+      applyChangeLog(log, "added", id, "new semantic memory");
       break;
     }
     case "memory_semantic_update": {
       const id = asId(parsed.semantic_memory_id ?? parsed.id);
       if (!id) return;
-      applyChangeLog(log, "modified", id, "更新语义记忆");
+      applyChangeLog(log, "modified", id, "updated semantic memory");
       break;
     }
     case "memory_semantic_deprecate": {
       const id = asId(parsed.semantic_memory_id ?? parsed.id);
       if (!id) return;
-      applyChangeLog(log, "deprecated", id, "废弃语义记忆");
+      applyChangeLog(log, "deprecated", id, "deprecated semantic memory");
       break;
     }
     case "memory_semantic_merge": {
       const newId = asId(parsed.id);
-      if (newId) applyChangeLog(log, "added", newId, "合并后新记忆");
+      if (newId) applyChangeLog(log, "added", newId, "merged new memory");
       const deprecated = parsed.deprecated_ids;
       if (Array.isArray(deprecated)) {
         for (const raw of deprecated) {
           const id = asId(raw);
-          if (id) applyChangeLog(log, "deprecated", id, `已合并到 ${newId || "?"}`);
+          if (id) applyChangeLog(log, "deprecated", id, `merged into ${newId || "?"}`);
         }
       }
       break;

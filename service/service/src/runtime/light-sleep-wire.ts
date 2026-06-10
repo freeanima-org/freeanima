@@ -111,7 +111,7 @@ async function runLightSleepTurn(input: LightSleepEngineInput): Promise<LightSle
     { repos: conversation.repos, tools: eng.catalog.toolSets },
   );
 
-  const summary = parts.join("").trim() || `完成 ${toolCalls} 次工具调用`;
+  const summary = parts.join("").trim() || `Completed ${toolCalls} tool call(s)`;
   return {
     summary: summary.slice(0, 2000),
     tool_calls: toolCalls,
@@ -120,7 +120,7 @@ async function runLightSleepTurn(input: LightSleepEngineInput): Promise<LightSle
   };
 }
 
-/** 注册浅睡 LLM 引擎（engine.run + 工具白名单） */
+/** Register light-sleep LLM engine (engine.run + tool whitelist) */
 export function registerLightSleepWire(): void {
   registerLightSleepEngine(runLightSleepTurn);
 }

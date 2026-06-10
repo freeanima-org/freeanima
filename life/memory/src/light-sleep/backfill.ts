@@ -47,7 +47,7 @@ export function enumerateCstDays(fromDay: string, toDay: string): string[] {
   return days;
 }
 
-/** 默认补跑截止日：CST 昨日（与浅睡 cron 默认处理日一致） */
+/** Default backfill end day: CST yesterday (same as light sleep cron default) */
 export function defaultBackfillToDay(): string {
   return cstDayRange().day;
 }
@@ -59,13 +59,13 @@ export async function resolveBackfillDayRange(
   const toDay = opts.toDay?.trim() || defaultBackfillToDay();
   const fromDay = opts.fromDay?.trim() || (await sessionStore.getEarliestSessionDay());
   if (!fromDay) {
-    throw new Error("无可用 session，无法推断 fromDay");
+    throw new Error("No sessions available; cannot infer fromDay");
   }
   if (!DAY_RE.test(fromDay) || !DAY_RE.test(toDay)) {
-    throw new Error("fromDay/toDay 须为 YYYY-MM-DD");
+    throw new Error("fromDay/toDay must be YYYY-MM-DD");
   }
   if (fromDay > toDay) {
-    throw new Error(`fromDay (${fromDay}) 不能晚于 toDay (${toDay})`);
+    throw new Error(`fromDay (${fromDay}) cannot be after toDay (${toDay})`);
   }
   return { from_day: fromDay, to_day: toDay };
 }
@@ -89,7 +89,7 @@ export async function runLightSleepBackfill(
   const daysFailed: string[] = [];
   let daysSkipped = 0;
 
-  logComponent("memory").info("浅睡历史补跑开始", {
+  logComponent("memory").info("light sleep historical backfill started", {
     from_day,
     to_day,
     days_total: allDays.length,
@@ -126,7 +126,7 @@ export async function runLightSleepBackfill(
         daysSkipped += 1;
       }
 
-      logComponent("memory").info("浅睡历史补跑单日完成", {
+      logComponent("memory").info("light sleep historical backfill day completed", {
         day,
         sessions: result.sessions,
         tool_calls: result.tool_calls,
@@ -141,7 +141,10 @@ export async function runLightSleepBackfill(
         completedDays: [...completedSet].toSorted(),
         lastErrorDay: day,
       });
-      logComponent("memory").error("浅睡历史补跑单日失败", { day, error: message });
+      logComponent("memory").error("light sleep historical backfill day failed", {
+        day,
+        error: message,
+      });
     }
   }
 
@@ -156,6 +159,6 @@ export async function runLightSleepBackfill(
     results,
   };
 
-  logComponent("memory").info("浅睡历史补跑结束", result);
+  logComponent("memory").info("light sleep historical backfill finished", result);
   return result;
 }

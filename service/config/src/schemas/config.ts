@@ -25,24 +25,24 @@ export const acpAgentSchema = z
     adapter: z.string().optional(),
     plan_mode: z.union([z.string(), z.boolean()]).optional(),
     agent_mode: z.string().optional(),
-    /** Cursor ACP 模型；`auto` 表示 Auto（default[]），缺省 cursor 适配器亦为 auto */
+    /** Cursor ACP model; `auto` means Auto (default[]); default cursor adapter is also auto */
     model: z.string().optional(),
     url: z.string().optional(),
     transport: z.enum(["stdio", "sse"]).optional(),
     name: z.string().optional(),
-    /** 连接超时（毫秒），默认 15000；用于 initialize / authenticate / session/new 等 */
+    /** Connection timeout (ms), default 15000; for initialize / authenticate / session/new etc. */
     connect_timeout_ms: z.number().int().positive().optional(),
-    /** prompt 超时（毫秒），默认 120000；用于 session/prompt */
+    /** Prompt timeout (ms), default 120000; for session/prompt */
     prompt_timeout_ms: z.number().int().positive().optional(),
-    /** 是否在逸灵风启动时自动连接，默认 true */
+    /** Auto-connect on freeanima startup, default true */
     enabled: z.boolean().optional(),
-    /** 健康检查间隔（毫秒），默认 60000；0 禁用 */
+    /** Health check interval (ms), default 60000; 0 disables */
     health_check_interval_ms: z.number().int().nonnegative().optional(),
-    /** Session TTL（毫秒），默认 0 不过期 */
+    /** Session TTL (ms), default 0 (no expiry) */
     session_ttl_ms: z.number().int().nonnegative().optional(),
-    /** prompt 超时后是否重试一次，默认 true */
+    /** Retry once after prompt timeout, default true */
     prompt_retry_once: z.boolean().optional(),
-    /** 子进程崩溃后是否自动重启，默认 true */
+    /** Auto-restart after child crash, default true */
     auto_restart: z.boolean().optional(),
   })
   .passthrough();
@@ -60,17 +60,17 @@ const firecrawlSchema = z.object({
 });
 
 const camofoxBrowserSchema = z.object({
-  /** Camofox REST 基址（browser.camofox.base_url） */
+  /** Camofox REST base URL (browser.camofox.base_url) */
   base_url: z.string().optional(),
-  /** 单次 HTTP 请求超时（毫秒），默认 30000 */
+  /** Single HTTP request timeout (ms), default 30000 */
   timeout_ms: z.number().int().positive().optional(),
-  /** 启用 profile 级持久化 browser profile（跨任务复用 userId） */
+  /** Enable profile-level persistent browser profile (reuse userId across tasks) */
   managed_persistence: z.boolean().optional(),
-  /** 进程重启后尝试 adopt 已有 Camofox tab */
+  /** Try to adopt existing Camofox tab after process restart */
   adopt_existing_tab: z.boolean().optional(),
-  /** 外部指定 Camofox userId（共享 browser profile） */
+  /** Externally specified Camofox userId (shared browser profile) */
   user_id: z.string().optional(),
-  /** 外部指定 sessionKey */
+  /** Externally specified sessionKey */
   session_key: z.string().optional(),
 });
 

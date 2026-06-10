@@ -39,32 +39,32 @@ async function requireSessionMeta(): Promise<
 > {
   const sessionId = getToolSessionId();
   const repos = getToolRepos();
-  if (!sessionId) return { ok: false, error: "无 session 上下文" };
-  if (!repos) return { ok: false, error: "无 repos 上下文" };
+  if (!sessionId) return { ok: false, error: "No session context" };
+  if (!repos) return { ok: false, error: "No repos context" };
   const meta = await loadSessionMeta(repos, sessionId);
-  if (!isSessionMeta(meta)) return { ok: false, error: "session 不存在" };
+  if (!isSessionMeta(meta)) return { ok: false, error: "Session does not exist" };
   return { ok: true, meta };
 }
 
 export function registerCatalogTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
     "tools",
-    "工具发现与按需加载",
+    "Tool discovery and on-demand loading",
     attachToolReturns(
       [
         {
           name: "tools_list",
           description:
-            "列出或搜索工具注册中心中的可用工具（索引，不含 parameters）。可选 query 按名称/描述/ToolSet 过滤；无 query 时分页浏览。加载完整 schema 请用 tools_load。",
+            "List or search available tools in the registry (index only, no parameters). Optional query filters by name/description/ToolSet; paginate when no query. Use tools_load for full schema.",
           parameters: {
             type: "object",
             properties: {
-              query: { type: "string", description: "可选：搜索关键词" },
-              toolset: { type: "string", description: "可选：限定 ToolSet 名称" },
-              offset: { type: "number", description: "无 query 时偏移，默认 0" },
+              query: { type: "string", description: "Optional: search keyword" },
+              toolset: { type: "string", description: "Optional: limit to ToolSet name" },
+              offset: { type: "number", description: "Offset when no query, default 0" },
               limit: {
                 type: "number",
-                description: "每页/最多条数，默认 30（有 query 时默认 20）",
+                description: "Page size / max items, default 30 (default 20 when query present)",
               },
             },
           },
@@ -103,14 +103,14 @@ export function registerCatalogTools(toolSets: ToolSetRegistry): void {
         {
           name: "tools_load",
           description:
-            "加载一个或多个工具的完整 schema 到当前对话（通过 tool 消息返回 name/description/parameters，不扩展 LLM tools 参数）。支持工具名或 @ToolSet。",
+            "Load full schema for one or more tools into the current conversation (returns name/description/parameters via tool message, does not expand LLM tool params). Supports tool names or @ToolSet.",
           parameters: {
             type: "object",
             properties: {
               names: {
                 type: "array",
                 items: { type: "string" },
-                description: "工具名或 @ToolSet（如 file_read_file、@file）",
+                description: "Tool name or @ToolSet (e.g. file_read_file, @file)",
               },
             },
             required: ["names"],
@@ -120,10 +120,10 @@ export function registerCatalogTools(toolSets: ToolSetRegistry): void {
             if (!ctx.ok) return toolError(ctx.error);
             const raw = args.names;
             if (!Array.isArray(raw) || raw.length === 0) {
-              return toolError("names 须为非空数组");
+              return toolError("names must be a non-empty array");
             }
             const names = raw.map((n) => String(n ?? "").trim()).filter(Boolean);
-            if (!names.length) return toolError("names 须为非空数组");
+            if (!names.length) return toolError("names must be a non-empty array");
             const sessionId = getToolSessionId()!;
             const repos = getToolRepos()!;
             const registry = getToolRegistry();

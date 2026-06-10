@@ -15,6 +15,7 @@ import java from "highlight.js/lib/languages/java";
 import sql from "highlight.js/lib/languages/sql";
 import ini from "highlight.js/lib/languages/ini";
 import "highlight.js/styles/github-dark.css";
+import { m } from "@/lib/i18n.ts";
 import type { StudioFileView } from "@/stores/pair-programming.ts";
 
 hljs.registerLanguage("typescript", typescript);
@@ -80,7 +81,7 @@ export function CodeViewerPanel({ file }: CodeViewerPanelProps) {
     return (
       <div className="h-full flex flex-col min-h-0 bg-base-100">
         <div className="flex-1 flex items-center justify-center text-base-content/40 text-sm">
-          选择文件以查看内容
+          {m.webui_studio_codeviewer_select_file()}
         </div>
       </div>
     );

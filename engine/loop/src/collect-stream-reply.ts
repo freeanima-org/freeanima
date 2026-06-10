@@ -1,6 +1,6 @@
 import type { StreamEvent } from "./engine.ts";
 
-/** 将引擎/Rruntime 流式事件收集为最终回复文本（供非 SSE 消费方使用）。 */
+/** Collect engine/runtime stream events into final reply text (for non-SSE consumers). */
 export async function collectStreamReply(events: AsyncIterable<StreamEvent>): Promise<string> {
   const parts: string[] = [];
   for await (const event of events) {

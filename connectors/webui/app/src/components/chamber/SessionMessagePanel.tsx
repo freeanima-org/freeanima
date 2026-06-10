@@ -1,5 +1,6 @@
 import { marked } from "marked";
 import type { DisplayItem } from "@freeanima/connectors-webui/api";
+import { m } from "@/lib/i18n.ts";
 import { ToolBlockBubble } from "./ToolBlockBubble.tsx";
 
 type SessionMessagePanelProps = {
@@ -39,7 +40,9 @@ export function SessionMessagePanel({
           <span className="loading loading-dots loading-sm" />
         </div>
       ) : items.length === 0 ? (
-        <div className="text-sm text-base-content/50 text-center py-4">此页无消息</div>
+        <div className="text-sm text-base-content/50 text-center py-4">
+          {m.webui_chamber_message_no_messages_on_page()}
+        </div>
       ) : (
         items.map((item, i) => {
           const key = `${pageOffset}-${i}`;
@@ -78,7 +81,11 @@ export function SessionMessagePanel({
       {total > pageSize ? (
         <div className="flex items-center justify-between gap-2 pt-2 border-t border-base-300/50 text-xs">
           <span className="text-base-content/60">
-            共 {total} 条 · 第 {currentPage} / {pageCount} 页
+            {m.webui_common_pagination({
+              total: String(total),
+              current: String(currentPage),
+              pages: String(pageCount),
+            })}
           </span>
           <div className="join">
             <button
@@ -87,7 +94,7 @@ export function SessionMessagePanel({
               disabled={currentPage <= 1 || loading}
               onClick={() => onPageChange(currentPage - 1)}
             >
-              上一页
+              {m.webui_common_previous_page()}
             </button>
             <button
               type="button"
@@ -95,7 +102,7 @@ export function SessionMessagePanel({
               disabled={currentPage >= pageCount || loading}
               onClick={() => onPageChange(currentPage + 1)}
             >
-              下一页
+              {m.webui_common_next_page()}
             </button>
           </div>
         </div>

@@ -3,9 +3,9 @@ import { formatClarifyForPlatform, parseClarifyStreamEvent } from "../clarify/in
 import { ToolRoundCollector } from "../stream-tool-format.ts";
 
 export type WeixinStreamDeps = {
-  /** 发送一条可见消息（短进度或最终正文，由调用方负责分片） */
+  /** Send one visible message (short progress or final body; caller handles chunking) */
   send: (text: string) => Promise<void>;
-  /** 长耗时阶段刷新「正在输入」（可选） */
+  /** Refresh typing indicator during long phases (optional) */
   refreshTyping?: () => Promise<void>;
 };
 
@@ -17,8 +17,8 @@ function sleep(ms: number): Promise<void> {
 }
 
 /**
- * 微信出站流式消费：每轮 tool 合并一条消息，助手正文在流结束后发送。
- * 微信无消息编辑 API，结构与 Discord 对齐但用多发消息模拟。
+ * WeChat outbound streaming: each tool round merged into one message, assistant body sent after stream ends.
+ * WeChat has no message edit API; structure aligned with Discord but simulated via multiple sends.
  */
 export async function streamReplyToWeixin(
   events: AsyncIterable<StreamEvent>,

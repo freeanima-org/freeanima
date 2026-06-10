@@ -1,2 +1,2 @@
-/** bge-m3（Ollama）默认输出维度 */
+/** bge-m3 (Ollama) default output dimension */
 export const SEMANTIC_EMBEDDING_DIMENSIONS = 1024;

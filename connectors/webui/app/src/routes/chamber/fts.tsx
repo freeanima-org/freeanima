@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getFtsStatus, getRebuildFtsJobStatus, startRebuildFtsIndex } from "@/lib/api.ts";
+import { m } from "@/lib/i18n.ts";
 
 export const Route = createFileRoute("/chamber/fts")({
   loader: () => getFtsStatus().catch(() => null),
@@ -51,12 +52,13 @@ type FtsStatus = {
   rebuild?: FtsRebuildJobStatus;
 };
 
-const PHASE_LABEL: Record<string, string> = {
-  semantic_memory_segmented: "语义记忆 · 分词",
-  messages_segmented: "对话消息 · 分词",
-  semantic_memory_embedding: "语义记忆 · 向量",
-  messages_embedding: "对话消息 · 向量",
-};
+function phaseLabel(phase: string): string {
+  if (phase === "semantic_memory_segmented") return m.webui_chamber_fts_semantic_seg();
+  if (phase === "messages_segmented") return m.webui_chamber_fts_messages_seg();
+  if (phase === "semantic_memory_embedding") return m.webui_chamber_fts_semantic_emb();
+  if (phase === "messages_embedding") return m.webui_chamber_fts_messages_emb();
+  return phase;
+}
 
 function formatRatio(n: number, total: number): string {
   return `${n}/${total}`;
@@ -72,12 +74,12 @@ function CoverageTable({ rows, cjkEnabled }: { rows: FtsTableCoverageRow[]; cjkE
       <table className="table table-sm font-mono text-xs">
         <thead>
           <tr>
-            <th>表</th>
-            <th>能力</th>
+            <th>{m.webui_common_table()}</th>
+            <th>{m.webui_common_capability()}</th>
             <th>FTS</th>
-            <th>分词</th>
+            <th>{m.webui_common_segmented()}</th>
             <th>trgm</th>
-            <th>向量</th>
+            <th>{m.webui_common_embedding()}</th>
           </tr>
         </thead>
         <tbody>
@@ -90,9 +92,9 @@ function CoverageTable({ rows, cjkEnabled }: { rows: FtsTableCoverageRow[]; cjkE
               <td className="text-base-content/60 whitespace-nowrap">
                 {[
                   row.capabilities.fts && "FTS",
-                  row.capabilities.segmented && "分词",
+                  row.capabilities.segmented && m.webui_common_segmented(),
                   row.capabilities.trgm && "trgm",
-                  row.capabilities.embedding && "向量",
+                  row.capabilities.embedding && m.webui_common_embedding(),
                 ]
                   .filter(Boolean)
                   .join(" · ")}
@@ -113,8 +115,7 @@ function CoverageTable({ rows, cjkEnabled }: { rows: FtsTableCoverageRow[]; cjkE
       </table>
       {!cjkEnabled ? (
         <p className="text-xs text-base-content/50 mt-2 font-sans">
-          * <code className="font-mono">cjk.enabled</code> 关闭时{" "}
-          <code className="font-mono">fts_segmented</code> 为空属正常；开启后需重建分词。
+          * {m.webui_chamber_fts_cjk_note()}
         </p>
       ) : null}
     </div>
@@ -125,21 +126,21 @@ function RebuildProgress({ job }: { job: FtsRebuildJobStatus }) {
   if (!job.running && !job.error && !job.result) return null;
 
   const pct = job.total > 0 ? Math.min(100, Math.round((job.current / job.total) * 100)) : 0;
-  const phaseLabel = job.phase ? (PHASE_LABEL[job.phase] ?? job.phase) : "准备中";
+  const label = job.phase ? phaseLabel(job.phase) : m.webui_common_preparing();
 
   return (
     <section className="card bg-base-200 mb-4">
       <div className="card-body gap-3">
-        <h3 className="font-bold text-sm">重建进度</h3>
+        <h3 className="font-bold text-sm">{m.webui_chamber_fts_rebuild_progress()}</h3>
         {job.running ? (
           <>
             <p className="text-sm font-sans">
-              {phaseLabel} · {formatRatio(job.current, job.total)}
-              {job.only_missing ? "（仅补缺失）" : "（全量）"}
+              {label} · {formatRatio(job.current, job.total)}
+              {job.only_missing ? m.webui_common_only_missing() : m.webui_common_full_rebuild()}
             </p>
             <progress className="progress progress-primary w-full" value={pct} max={100} />
             <p className="text-xs text-base-content/50 font-sans">
-              后台运行中，可关闭页面；刷新统计可查看覆盖度变化。
+              {m.webui_common_background_hint()}
             </p>
           </>
         ) : null}
@@ -169,7 +170,11 @@ function FtsPage() {
       setStatus(data);
       if (data.rebuild) setJob(data.rebuild);
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(
+        m.webui_common_load_failed({
+          detail: e instanceof Error ? e.message : String(e),
+        }),
+      );
     }
   }, []);
 
@@ -185,7 +190,7 @@ function FtsPage() {
         await reload();
       }
     } catch {
-      /* 轮询失败忽略 */
+      /* poll failure ignored */
     }
   }, [reload]);
 
@@ -213,7 +218,11 @@ function FtsPage() {
         pollRef.current = setInterval(() => void pollJob(), 2000);
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(
+        m.webui_common_operation_failed({
+          detail: e instanceof Error ? e.message : String(e),
+        }),
+      );
     } finally {
       setLoading(false);
     }
@@ -221,11 +230,8 @@ function FtsPage() {
 
   return (
     <div>
-      <h2 className="text-lg font-bold mb-4">🔍 全文检索</h2>
-      <p className="text-sm text-base-content/60 mb-4">
-        重建在<strong>后台</strong>执行，不会阻塞页面。默认<strong>仅补缺失</strong>
-        行，可断点续跑（如向量 68/13571 中断后再次点击即可继续）。
-      </p>
+      <h2 className="text-lg font-bold mb-4">{m.webui_chamber_fts_title()}</h2>
+      <p className="text-sm text-base-content/60 mb-4">{m.webui_chamber_fts_desc()}</p>
 
       {error ? <div className="alert alert-error text-sm mb-4">{error}</div> : null}
 
@@ -233,18 +239,18 @@ function FtsPage() {
 
       <section className="card bg-base-200 mb-4">
         <div className="card-body gap-3">
-          <h3 className="font-bold text-sm">索引覆盖度</h3>
+          <h3 className="font-bold text-sm">{m.webui_chamber_fts_coverage()}</h3>
           {status?.coverage?.tables?.length ? (
             <CoverageTable rows={status.coverage.tables} cjkEnabled={status.enabled} />
           ) : (
-            <p className="text-sm text-base-content/50">无法读取 PG 统计（未连接或非 PG 主存）</p>
+            <p className="text-sm text-base-content/50">{m.webui_chamber_fts_pg_unavailable()}</p>
           )}
         </div>
       </section>
 
       <section className="card bg-base-200 mb-4">
         <div className="card-body gap-3">
-          <h3 className="font-bold text-sm">配置</h3>
+          <h3 className="font-bold text-sm">{m.webui_common_config()}</h3>
           {status ? (
             <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm font-mono">
               <dt className="text-base-content/60">cjk.enabled</dt>
@@ -261,7 +267,7 @@ function FtsPage() {
               <dd className="break-all">{status.embedding.base_url ?? "—"}</dd>
             </dl>
           ) : (
-            <p className="text-sm text-base-content/50">加载失败</p>
+            <p className="text-sm text-base-content/50">{m.webui_common_load_failed_short()}</p>
           )}
           <div className="flex flex-wrap gap-2">
             <button
@@ -270,7 +276,7 @@ function FtsPage() {
               disabled={loading || job?.running === true}
               onClick={() => void onRebuild(true)}
             >
-              {job?.running ? "重建中…" : "续跑 / 补缺失"}
+              {job?.running ? m.webui_chamber_fts_rebuilding() : m.webui_chamber_fts_resume()}
             </button>
             <button
               type="button"
@@ -278,7 +284,7 @@ function FtsPage() {
               disabled={loading || job?.running === true}
               onClick={() => void onRebuild(false)}
             >
-              全量重建
+              {m.webui_chamber_fts_full_rebuild()}
             </button>
             <button
               type="button"
@@ -286,7 +292,7 @@ function FtsPage() {
               disabled={loading}
               onClick={() => void reload()}
             >
-              刷新统计
+              {m.webui_chamber_fts_refresh_stats()}
             </button>
           </div>
         </div>

@@ -3,12 +3,12 @@ import type { ToolSetRegistry } from "./toolset.ts";
 const TOOLSET_REF_RE = /^@(.+)$/;
 
 export type ExpandToolNamesOptions = {
-  /** 未知 @toolset 时保留原样；默认 true */
+  /** Keep unknown @toolset as-is; default true */
   keepUnknownRefs?: boolean;
   onUnknownToolSet?: (toolSetName: string, raw: string) => void;
 };
 
-/** `@ToolSetName` → ToolSetRegistry 中的工具名 */
+/** `@ToolSetName` → tool names in ToolSetRegistry */
 export function expandToolNames(
   registry: ToolSetRegistry,
   items: string[],

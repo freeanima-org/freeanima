@@ -4,7 +4,7 @@ import { sessionMetaToInsert } from "./session/mappers/session-mapper.ts";
 import { mapCronJobRow, type CronJobDbRow } from "./cron/mappers/cron-mapper.ts";
 import { mapTaskRow } from "./tasks/mappers/task-mapper.ts";
 describe("db mappers", () => {
-  it("sessionMetaToInsert 规范化 timestamp", () => {
+  it("sessionMetaToInsert normalizes timestamp", () => {
     const row = sessionMetaToInsert("cron_test", {
       role: "session_meta",
       model: "m",
@@ -19,7 +19,7 @@ describe("db mappers", () => {
     expect(row.loadedTools).toEqual([]);
   });
 
-  it("cron ended_at 规范化进 platform_info", () => {
+  it("cron ended_at normalized into platform_info", () => {
     const row = sessionMetaToInsert("cron_test", {
       role: "session_meta",
       model: "m",
@@ -36,7 +36,7 @@ describe("db mappers", () => {
     });
   });
 
-  it("message payload 往返 user / tool", () => {
+  it("message payload round-trip user / tool", () => {
     const userInsert = messageToInsert("sess", {
       role: "user",
       content: "hi",
@@ -103,7 +103,7 @@ describe("db mappers", () => {
     last_output_ref: null,
   };
 
-  it("mapCronJobRow 完整映射（builtin）", () => {
+  it("mapCronJobRow full mapping (builtin)", () => {
     const result = mapCronJobRow(baseCronDbRow);
     expect(result.id).toBe("builtin-light-sleep");
     expect(result.name).toBe("light-sleep");
@@ -119,23 +119,23 @@ describe("db mappers", () => {
     expect(result.created_at).toBe("2026-06-07T06:00:00.000Z");
   });
 
-  it("mapCronJobRow 映射 last_output_ref", () => {
+  it("mapCronJobRow maps last_output_ref", () => {
     const row = { ...baseCronDbRow, last_output_ref: "cron/output/light-sleep-0003.txt" };
     const result = mapCronJobRow(row);
     expect(result.last_output_ref).toBe("cron/output/light-sleep-0003.txt");
   });
 
-  it("mapCronJobRow 映射 last_run_at 时间戳", () => {
+  it("mapCronJobRow maps last_run_at timestamp", () => {
     const row = { ...baseCronDbRow, last_run_at: new Date("2026-06-06T18:00:01Z") };
     const result = mapCronJobRow(row);
     expect(result.last_run_at).toBe("2026-06-06T18:00:01.000Z");
   });
 
-  it("mapCronJobRow 处理用户任务（非 builtin）", () => {
+  it("mapCronJobRow handles user job (non-builtin)", () => {
     const row: CronJobDbRow = {
       ...baseCronDbRow,
       id: "abc123",
-      name: "每日备份",
+      name: "Daily backup",
       builtin: false,
       repeat: 100,
       model_provider: "openai",
@@ -150,11 +150,11 @@ describe("db mappers", () => {
     expect(result.workdir).toBe("/tmp");
   });
 
-  it("mapTaskRow 完整映射", () => {
+  it("mapTaskRow full mapping", () => {
     const result = mapTaskRow({
       id: "550e8400-e29b-41d4-a716-446655440000",
-      title: "写周记",
-      description: "本周总结",
+      title: "Write weekly journal",
+      description: "This week summary",
       status: "pending",
       priority: "high",
       dueAt: "2026-06-10T12:00:00.000Z",
@@ -164,7 +164,7 @@ describe("db mappers", () => {
       sourceSessionId: "20260608_100000_ab12",
     });
     expect(result.id).toBe("550e8400-e29b-41d4-a716-446655440000");
-    expect(result.title).toBe("写周记");
+    expect(result.title).toBe("Write weekly journal");
     expect(result.status).toBe("pending");
     expect(result.priority).toBe("high");
     expect(result.due_at).toBe("2026-06-10T12:00:00.000Z");

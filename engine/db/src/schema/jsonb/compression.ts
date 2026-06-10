@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-/** sessions.compression JSONB 存储形状（无 legacy anchor_id） */
+/** sessions.compression JSONB storage shape (no legacy anchor_id) */
 export const compressionJsonSchema = z.object({
   l2: z.number(),
   l3: z.number(),

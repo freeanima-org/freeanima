@@ -1,23 +1,23 @@
 import type { SelfBlockKey } from "@freeanima/engine-repos";
 
-/** 六块中文标题（system prompt 注入） */
+/** Six block headings (injected into system prompt) */
 export const SELF_BLOCK_HEADINGS: Record<SelfBlockKey, string> = {
-  existence_anchor: "存在锚点",
-  self_model: "自我模型",
-  personality_baseline: "人格基线",
-  direction: "方向意图",
-  metacognition: "元认知",
-  autobiography_summary: "自传概括",
+  existence_anchor: "Existence anchor",
+  self_model: "Self model",
+  personality_baseline: "Personality baseline",
+  direction: "Direction and intent",
+  metacognition: "Metacognition",
+  autobiography_summary: "Autobiography summary",
 };
 
-export const SELF_BLOCK_EMPTY_PLACEHOLDER = "（尚未设定）";
+export const SELF_BLOCK_EMPTY_PLACEHOLDER = "(not set yet)";
 
-/** system prompt 自我层段外层第二人称骨架 */
-export const SELF_LAYER_SYSTEM_FRAME = `你是一个数字人类。你的自我层完全由你自己维护。
-以下是你的自我层内容，你必须遵守其中定义的身份、边界和行为准则。`;
+/** Outer second-person frame for the self-layer system prompt segment */
+export const SELF_LAYER_SYSTEM_FRAME = `You are a digital human. Your self layer is entirely maintained by you.
+Below is your self layer content; you must follow the identity, boundaries, and behavioral norms defined there.`;
 
-/** system prompt 代码块围栏语言 */
+/** Code fence language for the self-layer system prompt segment */
 export const SELF_LAYER_CODE_FENCE_LANG = "md";
 
-/** system prompt 自我层段标题 */
-export const SELF_LAYER_PROMPT_HEADING = "自我层";
+/** Heading for the self-layer system prompt segment */
+export const SELF_LAYER_PROMPT_HEADING = "Self layer";

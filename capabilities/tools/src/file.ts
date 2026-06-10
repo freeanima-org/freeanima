@@ -55,7 +55,7 @@ function deniedWritePaths(): Set<string> {
     try {
       if (existsSync(p)) out.add(realpathSync(p));
     } catch {
-      /* 路径不存在或不可解析则跳过 */
+      /* skip when path missing or unparseable */
     }
   }
   return out;
@@ -144,7 +144,7 @@ function resolveSearchPath(path: string): string {
   return resolve(path);
 }
 
-/** 明显属于正则、而非 glob 的元字符 */
+/** meta chars that clearly indicate regex, not glob */
 const REGEX_ONLY_METACHAR = /[()[\]{}^$+]/;
 
 function looksLikeGlobPattern(pattern: string): boolean {
@@ -196,7 +196,7 @@ async function searchFilesByGlob(
   offset: number,
 ): Promise<string> {
   const base = resolveSearchPath(path);
-  if (!existsSync(base)) return toolError(`路径不存在: ${path}`);
+  if (!existsSync(base)) return toolError(`Path does not exist: ${path}`);
   const cap = Math.max(1, Math.min(limit, 5000));
   const off = Math.max(0, offset);
 
@@ -245,7 +245,7 @@ async function handleSearchFiles(
   regex = false,
 ): Promise<string> {
   const base = resolveSearchPath(path);
-  if (!existsSync(base)) return toolError(`路径不存在: ${path}`);
+  if (!existsSync(base)) return toolError(`Path does not exist: ${path}`);
   const cap = Math.max(1, Math.min(limit, 5000));
   const off = Math.max(0, offset);
 
@@ -280,14 +280,14 @@ async function handleSearchFiles(
   }
 
   if (proc.error?.message?.includes("ENOENT")) {
-    return toolError("未找到 rg（ripgrep）可执行文件");
+    return toolError("rg (ripgrep) executable not found");
   }
   if (proc.error) return toolError(proc.error.message);
 
   const code = proc.status ?? 1;
   if (code !== 0 && code !== 1) {
     const err = String(proc.stderr ?? proc.stdout ?? "").trim();
-    return toolError(err || `rg 退出码 ${code}`);
+    return toolError(err || `rg exit code ${code}`);
   }
 
   const out = String(proc.stdout ?? "").trim();
@@ -315,7 +315,7 @@ function handlePatch(
   const resolved = resolveFilePath(path);
   const deny = isDeniedWrite(resolved);
   if (deny) return toolError(deny);
-  if (!existsSync(resolved)) return toolError(`文件不存在: ${path}`);
+  if (!existsSync(resolved)) return toolError(`File does not exist: ${path}`);
   try {
     let content = readFileSync(resolved, "utf-8");
     if (!content.includes(old_string)) return toolError("old_string not found");
@@ -324,7 +324,7 @@ function handlePatch(
       return toolError(
         count === 0
           ? "old_string not found"
-          : `old_string 出现 ${count} 次，需唯一或改用 replace_all`,
+          : `old_string appears ${count} times; must be unique or use replace_all`,
       );
     }
     content = replace_all
@@ -339,7 +339,7 @@ function handlePatch(
 export function registerFileTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
     "file",
-    "文件读写与搜索",
+    "File read/write and search",
     attachToolReturns(
       [
         {
@@ -373,27 +373,30 @@ export function registerFileTools(toolSets: ToolSetRegistry): void {
         {
           name: "file_search_files",
           description:
-            "搜索文件。target=files：pattern 为 glob（支持 a|b 多段）。target=content：pattern 为搜索文字（默认字面量，regex=true 为正则）。" +
-            "output_mode=files_only 且 pattern 含 * ? 时自动按文件名匹配。",
+            "Search files. target=files: pattern is glob (supports a|b segments). target=content: pattern is search text (literal by default, regex=true for regex). " +
+            "When output_mode=files_only and pattern contains * ?, matches filenames automatically.",
           parameters: {
             type: "object",
             properties: {
               pattern: {
                 type: "string",
-                description: "glob（target=files）或搜索文字/正则（target=content）",
+                description: "glob (target=files) or search text/regex (target=content)",
               },
               target: {
                 type: "string",
                 enum: ["content", "files"],
                 default: "content",
-                description: "files=按文件名 glob；content=按文件内容搜索",
+                description: "files=search by filename glob; content=search file contents",
               },
               path: { type: "string", default: "." },
-              file_glob: { type: "string", description: "content 模式下限制搜索的文件 glob" },
+              file_glob: {
+                type: "string",
+                description: "File glob limiting search in content mode",
+              },
               regex: {
                 type: "boolean",
                 default: false,
-                description: "content 模式：true 时 pattern 为正则；默认 false 为字面量",
+                description: "content mode: true means pattern is regex; default false is literal",
               },
               limit: { type: "integer", default: 50 },
               offset: { type: "integer", default: 0 },
@@ -401,7 +404,7 @@ export function registerFileTools(toolSets: ToolSetRegistry): void {
                 type: "string",
                 enum: ["content", "files_only", "count"],
                 default: "content",
-                description: "content=带行内容；files_only=仅路径；count=计数",
+                description: "content=lines with content; files_only=paths only; count=count",
               },
               context: { type: "integer", default: 0 },
             },

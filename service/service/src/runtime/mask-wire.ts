@@ -60,23 +60,23 @@ function loadMasksFromYaml(masks: MaskRegistry): void {
   try {
     raw = parseYaml(readFileSync(path, "utf-8"));
   } catch (e) {
-    logComponent("mask").warn(`无法解析 ${path}: ${String(e)}`);
+    logComponent("mask").warn(`Failed to parse ${path}: ${String(e)}`);
     return;
   }
   const parsed = masksFileSchema.safeParse(raw);
   if (!parsed.success) {
-    logComponent("mask").warn(`masks.yaml 格式无效: ${parsed.error.message}`);
+    logComponent("mask").warn(`masks.yaml invalid format: ${parsed.error.message}`);
     return;
   }
   for (const [name, mask] of Object.entries(parsed.data.masks)) {
     if (masks.get(name)) {
-      logComponent("mask").warn(`跳过 masks.yaml 中的 '${name}'：内置面具已存在`);
+      logComponent("mask").warn(`Skipping '${name}' in masks.yaml: built-in mask already exists`);
       continue;
     }
     try {
       masks.register(name, mask);
     } catch (e) {
-      logComponent("mask").warn(`注册面具 '${name}' 失败: ${String(e)}`);
+      logComponent("mask").warn(`Failed to register mask '${name}': ${String(e)}`);
     }
   }
 }
@@ -122,7 +122,7 @@ export function runtimeToolMaskFromResolved(
   return { allowedTools: resolved.allowed_tools };
 }
 
-/** 启动时注册内置 / YAML 面具，并注入 session 工具过滤 */
+/** Register built-in / YAML masks at startup and inject session tool filtering */
 export function initMaskSystem(masks: MaskRegistry): void {
   registerBuiltinMasks(masks);
   loadMasksFromYaml(masks);

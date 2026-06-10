@@ -41,7 +41,7 @@ export function getModelsConfig(): Record<string, ModelConfig> {
   return models;
 }
 
-/** 模型上下文窗口；未配置时返回 null（回退消息条数模式） */
+/** Model context window; null when unset (fallback to message-count mode) */
 export function getContextWindow(model: string): number | null {
   const models = getModelsConfig();
   const entry = models[model];

@@ -16,7 +16,7 @@ export const cursorAcpAdapter: AcpAgentAdapter = {
     try {
       await client.call("authenticate", { methodId: "cursor_login" });
     } catch (e) {
-      logComponent("acp").warn("authenticate failed (可能需要 agent login)", { err: e });
+      logComponent("acp").warn("authenticate failed (agent login may be required)", { err: e });
     }
   },
 
@@ -64,7 +64,7 @@ function handleAskQuestion(
     const pending: CursorPendingQuestions = { kind: "questions", questions };
     ctx.capture.pending.push(pending);
     ctx.capture.notes.push(
-      `Cursor 提出问题（${questions.length} 个），已暂停等待决策。请自主回答或调用 clarify 询问伙伴，然后通过 acp_cursor（continue_session=true）继续。`,
+      `Cursor asked ${questions.length} question(s) and paused awaiting a decision. Answer autonomously or call clarify to ask your partner, then continue via acp_cursor (continue_session=true).`,
     );
   }
 
@@ -82,7 +82,7 @@ function handleCreatePlan(
     const pending: CursorPendingPlan = { kind: "plan", plan, planUri };
     ctx.capture.pending.push(pending);
     ctx.capture.notes.push(
-      "Cursor 提交方案等待审批。请审阅 output 中的 pending_plan，自主批准或通过 clarify 核对后，以 continue_session=true 继续执行。",
+      "Cursor submitted a plan awaiting approval. Review pending_plan in output, approve autonomously or verify via clarify, then continue with continue_session=true.",
     );
   }
 

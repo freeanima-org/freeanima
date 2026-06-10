@@ -16,6 +16,6 @@ const result = spawnSync("bun", bunArgs, {
 });
 
 if (result.status !== 0) {
-  console.error(`[${label}] bun test 退出码 ${result.status ?? "unknown"}`);
+  console.error(`[${label}] bun test exited with code ${result.status ?? "unknown"}`);
   process.exit(1);
 }

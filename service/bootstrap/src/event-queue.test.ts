@@ -29,13 +29,13 @@ describe("createEventQueue", () => {
     resetEventQueueOverridesForTest();
   });
 
-  it("默认返回 SqliteEventQueue", () => {
+  it("returns SqliteEventQueue by default", () => {
     setConfigForTest({ llm: minimalLlm });
     setEventQueueOverridesForTest({ sqliteDbPath: ":memory:" });
     expect(createEventQueue()).toBeInstanceOf(SqliteEventQueue);
   });
 
-  it("eventbus.backend=redis 时返回 RedisEventQueue", () => {
+  it("returns RedisEventQueue when eventbus.backend=redis", () => {
     const mockRedis = {
       close: () => {},
     } as unknown as RedisClient;

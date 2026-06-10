@@ -5,8 +5,8 @@ import { createFileSink } from "@freeanima/kernel-logging/file";
 import { createMemorySink } from "@freeanima/kernel-logging/memory";
 import { createNullSink } from "@freeanima/kernel-logging/null";
 
-describe("@freeanima/kernel-logging 子路径导出", () => {
-  it("sinks 子路径可组合使用", () => {
+describe("@freeanima/kernel-logging subpath exports", () => {
+  it("sinks subpath composes", () => {
     const memory = createMemorySink();
     const logger = createLogger({
       level: "debug",

@@ -27,7 +27,8 @@ export function createMemoryHandlers(service: RuntimeService) {
       return {
         ok: true as const,
         index_rows,
-        message: `语义记忆共 ${index_rows} 条（PG content_fts 自动维护，无需重建索引）`,
+        code: "semantic_memory_count" as const,
+        params: { count: String(index_rows) },
       };
     },
     listSemanticMemories: (body: SemanticMemoryListBody) => {

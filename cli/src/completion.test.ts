@@ -37,7 +37,7 @@ describe("shell completion", () => {
     for (const token of ["start", "stop", "restart", "status", "--foreground", "--dev"]) {
       expect(bash).toContain(token);
     }
-    // action 在 COMP_CWORD==2（anima service <TAB>）
+    // action at COMP_CWORD==2 (anima service <TAB>)
     expect(bash).toMatch(/_service\(\)[\s\S]*COMP_CWORD == 2/);
   });
 

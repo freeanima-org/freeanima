@@ -8,7 +8,7 @@ export const MAX_SINGLE_EMBEDDING_TOKENS = 8192;
 export const DEFAULT_MAX_BATCH_TOKENS = 7500;
 export const DEFAULT_MAX_BATCH_ITEMS = 64;
 
-/** 粗估 token（中英文混排约 3.5 字符/token） */
+/** Rough token estimate (~3.5 chars/token for mixed CJK/Latin) */
 export function estimateEmbeddingTokens(text: string): number {
   const len = text.trim().length;
   if (!len) return 0;
@@ -34,7 +34,11 @@ export function packEmbeddingJobs(
   for (const job of jobs) {
     const tokens = estimateEmbeddingTokens(job.content);
     if (tokens > MAX_SINGLE_EMBEDDING_TOKENS) {
-      log.warn("单条 embedding 超过 token 上限，跳过", { kind: job.kind, id: job.id, tokens });
+      log.warn("single embedding exceeds token limit, skipping", {
+        kind: job.kind,
+        id: job.id,
+        tokens,
+      });
       continue;
     }
 

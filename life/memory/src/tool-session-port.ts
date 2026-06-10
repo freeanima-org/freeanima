@@ -1,6 +1,6 @@
 let resolveSessionId: (() => string | undefined) | null = null;
 
-/** 由 service 启动时注入（避免 life-memory 依赖 engine-loop） */
+/** Injected by service at startup (avoids life-memory depending on engine-loop) */
 export function registerToolSessionResolver(fn: () => string | undefined): void {
   resolveSessionId = fn;
 }

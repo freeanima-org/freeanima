@@ -3,7 +3,7 @@ import { createConsoleSink } from "./console.ts";
 import type { LogRecord } from "../types.ts";
 
 describe("createConsoleSink", () => {
-  it("pretty 格式包含 level、component 与 attributes suffix", () => {
+  it("pretty format includes level, component, and attributes suffix", () => {
     const lines: string[] = [];
     const sink = createConsoleSink({
       format: "pretty",
@@ -26,7 +26,7 @@ describe("createConsoleSink", () => {
     expect(line).toContain("503");
   });
 
-  it("pretty 无 component 时不输出方括号前缀", () => {
+  it("pretty omits bracket prefix without component", () => {
     const lines: string[] = [];
     const sink = createConsoleSink({
       write: (line: string) => lines.push(line),
@@ -42,7 +42,7 @@ describe("createConsoleSink", () => {
     expect(lines[0]).toContain("boot");
   });
 
-  it("pretty 无额外 attributes 时不输出 JSON suffix", () => {
+  it("pretty omits JSON suffix without extra attributes", () => {
     const lines: string[] = [];
     const sink = createConsoleSink({
       write: (line: string) => lines.push(line),
@@ -57,7 +57,7 @@ describe("createConsoleSink", () => {
     expect(lines[0]?.endsWith("only message")).toBe(true);
   });
 
-  it("pretty 非 string component 不输出方括号", () => {
+  it("pretty omits brackets for non-string component", () => {
     const lines: string[] = [];
     const sink = createConsoleSink({
       write: (line: string) => lines.push(line),
@@ -71,7 +71,7 @@ describe("createConsoleSink", () => {
     expect(lines[0]).not.toContain("[");
   });
 
-  it("json 格式输出单行 JSON 并序列化 err", () => {
+  it("json format outputs single-line JSON and serializes err", () => {
     const lines: string[] = [];
     const sink = createConsoleSink({
       format: "json",
@@ -100,7 +100,7 @@ describe("createConsoleSink", () => {
     expect(parsed.attributes.err.message).toBe("fail");
   });
 
-  it("默认 write 走 console.error", () => {
+  it("default write uses console.error", () => {
     const spy = spyOn(console, "error").mockImplementation(() => {});
     const sink = createConsoleSink();
     sink.emit({
@@ -114,7 +114,7 @@ describe("createConsoleSink", () => {
     spy.mockRestore();
   });
 
-  it("默认 format 为 pretty", () => {
+  it("default format is pretty", () => {
     const lines: string[] = [];
     const sink = createConsoleSink({ write: (line: string) => lines.push(line) });
     sink.emit({

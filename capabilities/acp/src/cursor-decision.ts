@@ -1,4 +1,4 @@
-/** Cursor 阻塞交互（ask_question / create_plan）捕获，供 prompt 结果返回给 LLM 决策 */
+/** Cursor blocking interaction (ask_question / create_plan) capture for LLM decision in prompt result */
 
 export type CursorQuestionOption = {
   id: string;

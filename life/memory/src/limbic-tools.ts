@@ -23,29 +23,35 @@ export const limbicMemoryToolDefs: ToolDef[] = [
   {
     name: "memory_limbic_create",
     description:
-      "记录边缘系统情感记忆（第一人称「我感到…」）。kind：session_mood（会话整体情绪）| turning_point（情感转折）| spike（强烈瞬间）。" +
-      "克制使用：轻微情绪波动、intensity < 0.3 时不应调用；无明确情感信号时跳过。",
+      'Record limbic emotional memory (first person "I feel…"). kind: session_mood (session mood) | turning_point (emotional turn) | spike (intense moment). ' +
+      "Use sparingly: mild swings, intensity < 0.3 should not be recorded; skip when no clear emotional signal.",
     parameters: {
       type: "object",
       properties: {
-        session_id: { type: "string", description: "关联 session id" },
+        session_id: { type: "string", description: "Associated session id" },
         kind: {
           type: "string",
           enum: [...LIMBIC_KINDS],
           description: "session_mood | turning_point | spike",
         },
-        content: { type: "string", description: "第一人称情感描述，如「我感到…」" },
-        valence: { type: "number", description: "效价 -1.0 到 1.0（负-正）" },
-        arousal: { type: "number", description: "唤醒度 0.0 到 1.0" },
-        intensity: { type: "number", description: "强度 0.0 到 1.0，默认 0.5；< 0.3 不应调用" },
+        content: {
+          type: "string",
+          description: 'First-person emotional description, e.g. "I feel…"',
+        },
+        valence: { type: "number", description: "Valence -1.0 to 1.0 (negative to positive)" },
+        arousal: { type: "number", description: "Arousal 0.0 to 1.0" },
+        intensity: {
+          type: "number",
+          description: "Intensity 0.0 to 1.0, default 0.5; do not call if < 0.3",
+        },
         source_segment: {
           type: "string",
-          description: "对话位置：early | mid | late 或具体片段描述",
+          description: "Dialogue position: early | mid | late or specific segment",
         },
         semantic_memory_ids: {
           type: "array",
           items: { type: "string" },
-          description: "关联 semantic_memory id（通常来自 Phase 1 产出）",
+          description: "Linked semantic_memory ids (often from phase 1 output)",
         },
       },
       required: ["session_id", "kind", "content"],
@@ -66,7 +72,9 @@ export const limbicMemoryToolDefs: ToolDef[] = [
         return toolError("intensity must be between 0 and 1");
       }
       if (intensity < 0.3) {
-        return toolError("intensity < 0.3：轻微情绪波动不应写入 limbic_memory");
+        return toolError(
+          "intensity < 0.3: mild mood swings should not be written to limbic_memory",
+        );
       }
 
       const row: LimbicMemoryCreateInput = {

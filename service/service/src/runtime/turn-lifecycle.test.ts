@@ -41,7 +41,7 @@ describe("turn-lifecycle", () => {
     restores.length = 0;
   });
 
-  it("createTurnMessageCallbacks 写入 appendMessage", async () => {
+  it("createTurnMessageCallbacks writes appendMessage", async () => {
     const append = spyOn(conv, "appendMessage").mockResolvedValue(undefined);
     restores.push(append);
     wireTestService();
@@ -59,7 +59,7 @@ describe("turn-lifecycle", () => {
     );
   });
 
-  it("finalizeTurn 以 skipMessageAppend 调用 finishTurn", async () => {
+  it("finalizeTurn calls finishTurn with skipMessageAppend", async () => {
     const finish = spyOn(conv, "finishTurn").mockResolvedValue(undefined);
     restores.push(finish);
     wireTestService();
@@ -79,7 +79,7 @@ describe("turn-lifecycle", () => {
     );
   });
 
-  it("runSimpleTurn 走 beginTurn → run → finishTurn", async () => {
+  it("runSimpleTurn goes beginTurn → run → finishTurn", async () => {
     const msgs = [{ role: "user" as const, content: "cron prompt" }];
     restores.push(
       spyOn(conv, "beginTurn").mockResolvedValue([msgs, ["tool_a"], "cron prompt"]),
@@ -115,7 +115,7 @@ describe("turn-lifecycle", () => {
     );
   });
 
-  it("runSimpleTurn 捕获 MaxTurnsExceeded", async () => {
+  it("runSimpleTurn catches MaxTurnsExceeded", async () => {
     restores.push(
       spyOn(conv, "beginTurn").mockResolvedValue([
         [{ role: "user" as const, content: "x" }],
@@ -128,6 +128,6 @@ describe("turn-lifecycle", () => {
     wireTestService();
 
     const out = await runSimpleTurn({ sessionId: "s", prompt: "x", model: "m" });
-    expect(out).toBe("[工具循环超限] max 8");
+    expect(out).toBe("[tool loop limit exceeded] max 8");
   });
 });

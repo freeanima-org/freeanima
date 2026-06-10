@@ -127,14 +127,14 @@ function parseMode(raw: unknown): AcpCursorMode | undefined {
 function defaultCursorDescription(agentName: string): string {
   if (agentName === "cursor") {
     return (
-      "Cursor 编码代理，支持 Agent（直接修改代码）、Plan（先规划后执行）、Ask（只读分析）三种模式。" +
-      "可搜索代码库、分析代码、运行测试、应用修改。同对话自动续用 session。" +
-      "async=true 时后台执行并定时推送进度到消息通道。" +
-      "遇到 Cursor 提问或方案审批时，结果会含 pending 字段；可自主决策或 clarify 询问伙伴，" +
-      "再通过 continue_session=true 继续同一 session。"
+      "Cursor coding agent supporting Agent (direct code edits), Plan (plan first, then execute), and Ask (read-only analysis) modes. " +
+      "Can search the codebase, analyze code, run tests, and apply changes. Reuses the session within the same conversation automatically. " +
+      "When async=true, runs in the background and periodically pushes progress to the message channel. " +
+      "When Cursor asks questions or submits a plan for approval, results include a pending field; decide autonomously or use clarify to ask your partner, " +
+      "then continue the same session with continue_session=true."
     );
   }
-  return `ACP agent: ${agentName}（默认绑定当前逸灵风对话；continue_session 自动续用）`;
+  return `ACP agent: ${agentName}(bound to the current Free Anima conversation by default; continue_session reuses automatically)`;
 }
 
 function parseTimeoutMinutes(raw: unknown): number {
@@ -165,7 +165,7 @@ function registerAcpBuiltinSkills(skills: SkillRegistry): void {
   const dir = join(import.meta.dir, "..", "skills");
   const count = registerSkillsFromDirectory(skills, dir, { source: ACP_SKILLS_SOURCE });
   if (count > 0) {
-    logComponent("acp").info(`已注册 ${count} 个 ACP 内置 Skill`, {
+    logComponent("acp").info(`Registered ${count} built-in ACP Skill(s)`, {
       count,
       source: ACP_SKILLS_SOURCE,
     });
@@ -186,7 +186,7 @@ export class AcpManager {
   private progressDelivery: AcpProgressDeliveryPort | null = null;
   private readonly taskStore = new AcpAsyncTaskStore();
   private readonly taskAbortControllers = new Map<string, AbortController>();
-  /** agentName → taskId 或 "sync" */
+  /** agentName → taskId or "sync" */
   private readonly activePromptByAgent = new Map<string, string>();
   private progressTicker: ReturnType<typeof setInterval> | null = null;
   private toolSets: ToolSetRegistry | null = null;
@@ -220,7 +220,7 @@ export class AcpManager {
 
   private conv(): ConversationService {
     if (!this.conversation) {
-      throw new Error("AcpManager: conversation 未绑定，请先 wireConversation");
+      throw new Error("AcpManager: conversation not wired; call wireConversation first");
     }
     return this.conversation;
   }
@@ -237,7 +237,7 @@ export class AcpManager {
   registerTools(agentsCfg?: Record<string, AcpAgentConfig>): number {
     if (this.toolsRegistered && !agentsCfg) return 0;
     if (!this.toolSets || !this.skills) {
-      throw new Error("AcpManager: toolSets/skills 未绑定，请先 wireRegistries");
+      throw new Error("AcpManager: toolSets/skills not wired; call wireRegistries first");
     }
     const cfg = loadConfig();
     const agents = agentsCfg ?? cfg.acp_agents ?? {};
@@ -259,56 +259,57 @@ export class AcpManager {
             prompt: {
               type: "string",
               description:
-                "发送给 Cursor 的指令或回复。多轮交互中可为任务描述、问题回答或继续对话。",
+                "Instruction or reply sent to Cursor. In multi-turn interactions may be a task description, answer to a question, or continuation.",
             },
             goal: {
               type: "string",
-              description: "（已废弃，请用 prompt）任务目标描述。",
+              description: "(deprecated, use prompt) Task goal description.",
             },
             context: {
               type: "string",
-              description: "任务上下文：项目路径、相关文件、约束条件、模式说明等。",
+              description:
+                "Task context: project path, related files, constraints, mode notes, etc.",
               default: "",
             },
             mode: {
               type: "string",
               enum: ["agent", "plan", "ask"],
               description:
-                "Cursor 模式：agent=直接修改执行，plan=先出方案，ask=只读分析。默认 agent。",
+                "Cursor mode: agent=direct edits, plan=plan first, ask=read-only analysis. Default agent.",
               default: "agent",
             },
             continue_session: {
               type: "boolean",
               description:
-                "为 true 时自动续用当前逸灵风对话最近一次 acp session，无需手动传 session_id。",
+                "When true, reuses the most recent ACP session for the current Free Anima conversation without manually passing session_id.",
               default: false,
             },
             session_id: {
               type: "string",
               description:
-                "显式 ACP session ID（优先于逸灵风绑定）。一般无需填写，continue_session 或同对话自动续用。",
+                "Explicit ACP session ID (takes precedence over Free Anima binding). Usually unnecessary; continue_session or same-conversation reuse applies.",
               default: "",
             },
             new_session: {
               type: "boolean",
               description:
-                "为 true 时强制新建 ACP session，并更新当前逸灵风 session 对该 agent 的绑定。",
+                "When true, forces a new ACP session and updates the current Free Anima session binding for this agent.",
               default: false,
             },
             async: {
               type: "boolean",
               description:
-                "异步执行：立即返回 task_id，后台运行 Cursor 任务，进度通过消息通道定时推送。",
+                "Async execution: returns task_id immediately, runs the Cursor task in the background, progress pushed periodically via the message channel.",
               default: false,
             },
             timeout_minutes: {
               type: "integer",
-              description: "异步模式最大运行时间（分钟），默认 30。",
+              description: "Max runtime in async mode (minutes), default 30.",
               default: DEFAULT_ASYNC_TIMEOUT_MINUTES,
             },
             cancel: {
               type: "string",
-              description: "取消指定 task_id 的异步任务。",
+              description: "Cancel the async task with the given task_id.",
               default: "",
             },
           },
@@ -319,7 +320,7 @@ export class AcpManager {
           if (cancelId) return this.cancelAsyncTask(cancelId);
 
           const prompt = String(args.prompt ?? args.goal ?? "").trim();
-          if (!prompt) return toolError("prompt（或 goal）不能为空");
+          if (!prompt) return toolError("prompt (or goal) cannot be empty");
           const context = String(args.context ?? "");
           const explicitSid = String(args.session_id ?? "").trim() || undefined;
           const newSession = args.new_session === true || args.new_session === "true";
@@ -463,7 +464,7 @@ export class AcpManager {
     return { ok: true, agent: name, action: "stop" };
   }
 
-  /** 后台并行连接已启用的 ACP Agent，不阻塞 HTTP 启动 */
+  /** Connect enabled ACP agents in parallel in the background without blocking HTTP startup */
   startAllAsync(agentsCfg?: Record<string, AcpAgentConfig>): void {
     if (this.startTask || this.closed) return;
     this.startTask = this.runStartAll(agentsCfg, { enabledOnly: true }).finally(() => {
@@ -529,15 +530,18 @@ export class AcpManager {
     }
     const names = [...this.clients.keys()];
     if (names.length) {
-      logComponent("shutdown").debug(`ACP 停止 ${names.length} 个 agent: ${names.join(", ")}…`, {
-        count: names.length,
-        agents: names,
-      });
+      logComponent("shutdown").debug(
+        `ACP stopping ${names.length} agent(s): ${names.join(", ")}…`,
+        {
+          count: names.length,
+          agents: names,
+        },
+      );
     }
     for (const name of names) {
       const ts = Date.now();
       await this.stopAgent(name);
-      logComponent("shutdown").debug(`ACP '${name}' 已停止`, { ms: Date.now() - ts, agent: name });
+      logComponent("shutdown").debug(`ACP '${name}' stopped`, { ms: Date.now() - ts, agent: name });
     }
     return { ok: true, action: "stop" };
   }
@@ -585,7 +589,9 @@ export class AcpManager {
 
     if (client.isConnected && client.isProcessAlive()) return;
 
-    logComponent("acp").warn(`ACP agent '${name}' 进程异常，尝试重启`, { agent: name });
+    logComponent("acp").warn(`ACP agent '${name}' process unhealthy, attempting restart`, {
+      agent: name,
+    });
     this.clients.delete(name);
     if (agentCfg.auto_restart === false) {
       this.agentErrors.set(name, "process died");
@@ -596,10 +602,13 @@ export class AcpManager {
       await this.getOrStartClient(name, agentCfg);
       const sessions = this.sessionStore.listForAgent(name);
       if (sessions.length) {
-        logComponent("acp").info(`ACP '${name}' 已重启，${sessions.length} 个 session 待续用验证`, {
-          agent: name,
-          sessions: sessions.length,
-        });
+        logComponent("acp").info(
+          `ACP '${name}' restarted, ${sessions.length} session(s) pending reuse verification`,
+          {
+            agent: name,
+            sessions: sessions.length,
+          },
+        );
       }
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
@@ -689,7 +698,7 @@ export class AcpManager {
     return { id, newSession: true, reusedBinding: false, explicit: false };
   }
 
-  /** 绑定在 meta 但进程内未登记（如重启后）— 先试续用，失败则新建 */
+  /** Bound in meta but not registered in-process (e.g. after restart) — try reuse first, create new on failure */
   private async tryContinueOrRecreate(
     client: ACPClient,
     agentName: string,
@@ -703,7 +712,7 @@ export class AcpManager {
       this.sessionStore.add(boundId, agentName);
       return { id: boundId, newSession: false };
     } catch {
-      /* 会话可能已失效 */
+      /* Session may have expired */
     }
     try {
       await client.closeSession(boundId);
@@ -731,7 +740,7 @@ export class AcpManager {
   private agentBusyError(agentName: string): string {
     const active = this.activePromptByAgent.get(agentName);
     return toolResult({
-      error: `ACP agent '${agentName}' 忙碌中`,
+      error: `ACP agent '${agentName}' is busy`,
       active_task_id: active,
     });
   }
@@ -783,13 +792,13 @@ export class AcpManager {
       return toolError(`ACP agent '${agentName}' not configured`);
     }
     if (!opts.animaSessionId) {
-      return toolError("异步模式需要有效的逸灵风 session");
+      return toolError("Async mode requires a valid Free Anima session");
     }
 
     const activeTask = this.taskStore.findActive(agentName);
     if (activeTask) {
       return toolResult({
-        error: `ACP agent '${agentName}' 已有运行中的异步任务`,
+        error: `ACP agent '${agentName}' already has a running async task`,
         active_task_id: activeTask.taskId,
       });
     }
@@ -825,14 +834,14 @@ export class AcpManager {
       this.taskAbortControllers.set(taskId, ac);
 
       void this.runAsyncPrompt(task, client, promptText, resolved, mode).catch((err) => {
-        logComponent("acp").error("异步 ACP 任务异常", { taskId, err });
+        logComponent("acp").error("Async ACP task error", { taskId, err });
       });
 
       return toolResult({
         task_id: taskId,
         status: "started",
         session_id: sid,
-        hint: "进度将通过消息通道推送；完成后推送最终结果",
+        hint: "Progress will be pushed via the message channel; final result pushed on completion",
       });
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
@@ -881,7 +890,7 @@ export class AcpManager {
       const msg = e instanceof Error ? e.message : String(e);
       if (abort?.signal.aborted || msg.includes("aborted")) {
         task.status = "cancelled";
-        task.error = "任务已取消";
+        task.error = "Task cancelled";
         await this.deliverTaskError(task, task.error);
       } else if (msg.includes("timed out")) {
         task.status = "timed_out";
@@ -891,7 +900,7 @@ export class AcpManager {
         } catch {
           /* ignore */
         }
-        await this.deliverTaskError(task, `任务超时: ${msg}`);
+        await this.deliverTaskError(task, `Task timed out: ${msg}`);
       } else {
         task.status = "error";
         task.error = msg;
@@ -912,7 +921,7 @@ export class AcpManager {
 
   private cancelAsyncTask(taskId: string): string {
     const task = this.taskStore.get(taskId);
-    if (!task) return toolError(`未找到任务: ${taskId}`);
+    if (!task) return toolError(`Task not found: ${taskId}`);
     if (task.status !== "running") {
       return toolResult({ task_id: taskId, status: task.status });
     }
@@ -944,7 +953,7 @@ export class AcpManager {
         if (res?.progressMessageId) task.progressMessageId = res.progressMessageId;
         task.lastDeliveredAt = Date.now();
       } catch (e) {
-        logComponent("acp").warn("ACP 进度推送失败", { taskId: task.taskId, err: e });
+        logComponent("acp").warn("ACP progress delivery failed", { taskId: task.taskId, err: e });
       }
     }
   }
@@ -955,7 +964,7 @@ export class AcpManager {
     try {
       await port.deliverResult(toTaskSnapshot(task), result);
     } catch (e) {
-      logComponent("acp").warn("ACP 结果推送失败", { taskId: task.taskId, err: e });
+      logComponent("acp").warn("ACP result delivery failed", { taskId: task.taskId, err: e });
     }
   }
 
@@ -965,7 +974,7 @@ export class AcpManager {
     try {
       await port.deliverError(toTaskSnapshot(task), message);
     } catch (e) {
-      logComponent("acp").warn("ACP 错误推送失败", { taskId: task.taskId, err: e });
+      logComponent("acp").warn("ACP error delivery failed", { taskId: task.taskId, err: e });
     }
   }
 

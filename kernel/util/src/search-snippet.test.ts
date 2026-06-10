@@ -8,13 +8,13 @@ import {
 
 describe("search-snippet", () => {
   it("extractSearchTerms strips operators and quotes", () => {
-    expect(extractSearchTerms("偏好 OR 简洁")).toEqual(["偏好", "简洁"]);
-    expect(extractSearchTerms('"逸灵风" compression')).toEqual(["逸灵风", "compression"]);
+    expect(extractSearchTerms("preference OR concise")).toEqual(["preference", "concise"]);
+    expect(extractSearchTerms('"FreeAnima" compression')).toEqual(["FreeAnima", "compression"]);
   });
 
   it("buildTextSearchSnippet extracts window around match", () => {
     const content =
-      "前面很长的一段无关文字讨论别的主题，中间 compression 算法很重要，后面还有更多无关内容。";
+      "A long irrelevant paragraph about other topics; compression algorithm matters in the middle; more irrelevant content follows.";
     const snippet = buildTextSearchSnippet("compression", content, { contextChars: 10 });
     expect(snippet).toContain("compression");
     expect(snippet.length).toBeLessThan(content.length);

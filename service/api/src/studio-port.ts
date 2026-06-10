@@ -45,7 +45,7 @@ export function unregisterStudioPort(): void {
 }
 
 function assertRegistered<T>(impl: T | null, name: string): T {
-  if (!impl) throw new Error(`${name} 未注册：请先加载 @freeanima/service`);
+  if (!impl) throw new Error(`${name} not registered: load @freeanima/service first`);
   return impl;
 }
 

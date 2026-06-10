@@ -28,42 +28,42 @@ describe("createFridgeMagnetHandler", () => {
     resetFridgeStoreForTests();
   });
 
-  it("全局 scan 注入多 session 便签", async () => {
+  it("global scan injects magnets from multiple sessions", async () => {
     registerFridgeStore(
       createMemoryFridgeStore({
-        [magnetRedisKey("session", "sess-a:note1")]: "便签 A",
-        [magnetRedisKey("session", "sess-b:note2")]: "便签 B",
-        [magnetRedisKey("tasks", "summary")]: "待办 (1)",
+        [magnetRedisKey("session", "sess-a:note1")]: "Note A",
+        [magnetRedisKey("session", "sess-b:note2")]: "Note B",
+        [magnetRedisKey("tasks", "summary")]: "Todos (1)",
       }),
     );
 
-    const messages = [{ role: "user", content: "你好" }];
+    const messages = [{ role: "user", content: "Hello" }];
     await createFridgeMagnetHandler()({
       sessionId: "sess-a",
       messages,
     } as Parameters<ReturnType<typeof createFridgeMagnetHandler>>[0]);
 
     expect(messages[0]!.content).toBe(
-      "```fridge\nsession:sess-a:note1: 便签 A\nsession:sess-b:note2: 便签 B\ntasks:summary: 待办 (1)\n```\n你好",
+      "```fridge\nsession:sess-a:note1: Note A\nsession:sess-b:note2: Note B\ntasks:summary: Todos (1)\n```\nHello",
     );
   });
 
-  it("最后一条非 user 消息时不注入", async () => {
+  it("does not inject when last message is not user", async () => {
     registerFridgeStore(
       createMemoryFridgeStore({
-        [magnetRedisKey("tasks", "summary")]: "待办",
+        [magnetRedisKey("tasks", "summary")]: "Todos",
       }),
     );
 
     const messages = [
-      { role: "user", content: "你好" },
-      { role: "assistant", content: "回复" },
+      { role: "user", content: "Hello" },
+      { role: "assistant", content: "Reply" },
     ];
     await createFridgeMagnetHandler()({
       sessionId: "sess-a",
       messages,
     } as Parameters<ReturnType<typeof createFridgeMagnetHandler>>[0]);
 
-    expect(messages[0]!.content).toBe("你好");
+    expect(messages[0]!.content).toBe("Hello");
   });
 });

@@ -1,8 +1,8 @@
 // --- Event topic token ---
 
-/** 事件类型 token；仅通过 createEventTopic 创建 */
+/** Event type token; created only via createEventTopic */
 export abstract class EventTopic<Payload> {
-  /** @internal 携带 Payload 泛型，运行时不使用 */
+  /** @internal carries Payload generic; unused at runtime */
   declare protected readonly _payloadBrand?: Payload;
 
   readonly id: symbol;
@@ -24,7 +24,7 @@ class EventTopicToken<Payload> extends EventTopic<Payload> {
   }
 }
 
-/** 创建事件 topic token；qualifiedId 为唯一标识（持久化 topic 列），description 仅用于展示或文档 */
+/** Create event topic token; qualifiedId unique (persisted topic column); description for display/docs */
 export function createEventTopic<Payload>(
   qualifiedId: string,
   description?: string,

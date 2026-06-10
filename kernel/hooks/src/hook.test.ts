@@ -16,45 +16,45 @@ function link(step: Omit<HookStepLink, "prev">, prev?: HookStepLink): HookStepLi
 }
 
 describe("createHook", () => {
-  it("设置 qualifiedId 与 description", () => {
-    const hook = createHook("@freeanima/kernel-hooks/test/id", "展示文案");
+  it("sets qualifiedId and description", () => {
+    const hook = createHook("@freeanima/kernel-hooks/test/id", "Display label");
     expect(hook.qualifiedId).toBe("@freeanima/kernel-hooks/test/id");
-    expect(hook.description).toBe("展示文案");
+    expect(hook.description).toBe("Display label");
     expect(hook.id.description).toBe("@freeanima/kernel-hooks/test/id");
   });
 
-  it("未传 description 时为 undefined", () => {
+  it("description undefined when omitted", () => {
     const hook = createHook("@freeanima/kernel-hooks/test/no-desc");
     expect(hook.description).toBeUndefined();
   });
 
-  it("每次创建产生独立的 Symbol id", () => {
+  it("each create produces independent Symbol id", () => {
     const a = createHook("@freeanima/kernel-hooks/test/same-id");
     const b = createHook("@freeanima/kernel-hooks/test/same-id");
     expect(a.id).not.toBe(b.id);
     expect(a.id.description).toBe(b.id.description);
   });
 
-  it("不同 qualifiedId 产生不同 Symbol", () => {
+  it("different qualifiedId produces different Symbol", () => {
     const a = createHook("@freeanima/kernel-hooks/test/a");
     const b = createHook("@freeanima/kernel-hooks/test/b");
     expect(a.id).not.toBe(b.id);
   });
 
-  it("返回 Hook 实例", () => {
+  it("returns Hook instance", () => {
     const hook = createHook<{ n: number }>("@freeanima/kernel-hooks/test/instance");
     expect(hook).toBeInstanceOf(Hook);
   });
 });
 
-describe("Handler 类型", () => {
-  it("PayloadOf 从 Hook 实例推断负载类型", () => {
+describe("Handler types", () => {
+  it("PayloadOf infers payload type from Hook instance", () => {
     const hook = createHook<{ value: number }>("@freeanima/kernel-hooks/test/payload-of");
     type Payload = PayloadOf<typeof hook>;
     expectTypeOf<Payload>().toEqualTypeOf<{ value: number }>();
   });
 
-  it("HookHandler 接收推断后的 payload", () => {
+  it("HookHandler receives inferred payload", () => {
     const hook = createHook<{ ok: boolean }>("@freeanima/kernel-hooks/test/handler");
     const handler: HookHandler<typeof hook> = (payload) => {
       void payload.ok;
@@ -64,16 +64,16 @@ describe("Handler 类型", () => {
 });
 
 describe("walkHookChain", () => {
-  it("null 返回空数组", () => {
+  it("null returns empty array", () => {
     expect(walkHookChain(null)).toEqual([]);
   });
 
-  it("单步链", () => {
+  it("single-step chain", () => {
     const head = link({ status: "ok", data: { n: 1 } });
     expect(walkHookChain(head)).toEqual([head]);
   });
 
-  it("多步按链头到链尾顺序", () => {
+  it("multi-step head-to-tail order", () => {
     const first = link({ status: "ok", data: { n: 1 } });
     const head = link({ status: "ok", data: { n: 2 } }, first);
     expect(walkHookChain(head).map((s) => s.data?.n)).toEqual([2, 1]);
@@ -81,11 +81,11 @@ describe("walkHookChain", () => {
 });
 
 describe("walkHookChainOldestFirst", () => {
-  it("null 返回空数组", () => {
+  it("null returns empty array", () => {
     expect(walkHookChainOldestFirst(null)).toEqual([]);
   });
 
-  it("与 walkHookChain 顺序相反", () => {
+  it("opposite order from walkHookChain", () => {
     const first = link({ status: "ok", data: { n: 1 } });
     const head = link({ status: "failed", message: "x" }, first);
     expect(walkHookChainOldestFirst(head).map((s) => s.status)).toEqual(["ok", "failed"]);
@@ -93,16 +93,16 @@ describe("walkHookChainOldestFirst", () => {
 });
 
 describe("blockedMessageFromChain", () => {
-  it("null 返回 undefined", () => {
+  it("null returns undefined", () => {
     expect(blockedMessageFromChain(null)).toBeUndefined();
   });
 
-  it("无 blocked 步返回 undefined", () => {
+  it("no blocked step returns undefined", () => {
     const head = link({ status: "ok", data: { x: 1 } });
     expect(blockedMessageFromChain(head)).toBeUndefined();
   });
 
-  it("ok+blocked 步返回其 message", () => {
+  it("ok+blocked step returns its message", () => {
     const head = link({
       status: "ok",
       blocked: true,
@@ -111,17 +111,17 @@ describe("blockedMessageFromChain", () => {
     expect(blockedMessageFromChain(head)).toBe("awaiting clarify");
   });
 
-  it("blocked 无 message 时返回 undefined", () => {
+  it("blocked without message returns undefined", () => {
     const head = link({ status: "ok", blocked: true });
     expect(blockedMessageFromChain(head)).toBeUndefined();
   });
 
-  it("failed 步上的 blocked 不计入", () => {
+  it("blocked on failed step not counted", () => {
     const head = link({ status: "failed", blocked: true, message: "ignored" });
     expect(blockedMessageFromChain(head)).toBeUndefined();
   });
 
-  it("沿 prev 找到较早的 ok+blocked", () => {
+  it("walks prev to find earlier ok+blocked", () => {
     const first = link({
       status: "ok",
       blocked: true,
@@ -133,21 +133,21 @@ describe("blockedMessageFromChain", () => {
 });
 
 describe("headOkStepData", () => {
-  it("null 返回 undefined", () => {
+  it("null returns undefined", () => {
     expect(headOkStepData(null)).toBeUndefined();
   });
 
-  it("无 ok 步带 data 返回 undefined", () => {
+  it("no ok step with data returns undefined", () => {
     const head = link({ status: "failed", message: "err" });
     expect(headOkStepData(head)).toBeUndefined();
   });
 
-  it("链头 ok 步带 data 时返回该 data", () => {
+  it("returns chain-head ok step data when present", () => {
     const head = link({ status: "ok", data: { label: "x" } });
     expect(headOkStepData(head)).toEqual({ label: "x" });
   });
 
-  it("链头无 data 时沿 prev 找第一个 ok data", () => {
+  it("walks prev for first ok data when chain head has none", () => {
     const first = link({ status: "ok", data: { n: 1 } });
     const head = link({ status: "ok", blocked: true, message: "stop" }, first);
     expect(headOkStepData(head)).toEqual({ n: 1 });

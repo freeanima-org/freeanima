@@ -2,7 +2,7 @@ import { describe, it, expect } from "bun:test";
 import { AcpAgentQueue } from "./agent-queue.ts";
 
 describe("AcpAgentQueue", () => {
-  it("串行执行", async () => {
+  it("executes serially", async () => {
     const q = new AcpAgentQueue();
     const order: number[] = [];
     const a = q.run(async () => {

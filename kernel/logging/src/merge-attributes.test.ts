@@ -2,15 +2,15 @@ import { describe, expect, it } from "bun:test";
 import { hasComponent, mergeAttributes } from "./merge-attributes.ts";
 
 describe("mergeAttributes", () => {
-  it("无参数时返回空对象", () => {
+  it("returns empty object with no args", () => {
     expect(mergeAttributes()).toEqual({});
   });
 
-  it("跳过 undefined 部分", () => {
+  it("skips undefined parts", () => {
     expect(mergeAttributes({ a: 1 }, undefined, { b: 2 })).toEqual({ a: 1, b: 2 });
   });
 
-  it("浅合并，后者覆盖同键", () => {
+  it("shallow merge; later overwrites same key", () => {
     expect(mergeAttributes({ a: 1, nested: { x: 1 } }, { a: 2, b: 3 })).toEqual({
       a: 2,
       nested: { x: 1 },
@@ -18,7 +18,7 @@ describe("mergeAttributes", () => {
     });
   });
 
-  it("不深度合并嵌套对象", () => {
+  it("does not deep-merge nested objects", () => {
     expect(mergeAttributes({ meta: { a: 1 } }, { meta: { b: 2 } })).toEqual({
       meta: { b: 2 },
     });
@@ -26,11 +26,11 @@ describe("mergeAttributes", () => {
 });
 
 describe("hasComponent", () => {
-  it("非空字符串 component 为 true", () => {
+  it("non-empty string component is true", () => {
     expect(hasComponent({ component: "kernel" })).toBe(true);
   });
 
-  it("空字符串、缺失或非 string 为 false", () => {
+  it("empty string, missing, or non-string is false", () => {
     expect(hasComponent({ component: "" })).toBe(false);
     expect(hasComponent({})).toBe(false);
     expect(hasComponent({ component: 42 })).toBe(false);

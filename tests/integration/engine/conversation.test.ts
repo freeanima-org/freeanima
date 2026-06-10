@@ -98,11 +98,11 @@ describePg("conversation compression", () => {
     const countBefore = (await c.load(sid)).length;
     expect(countBefore).toBeGreaterThanOrEqual(100);
 
-    const [msgs, functions, effective] = await c.beginTurn(sid, "新问题");
+    const [msgs, functions, effective] = await c.beginTurn(sid, "new question");
     const meta = await c.loadSessionMeta(sid);
     expect(isSessionMeta(meta) && meta.compression).toBeTruthy();
 
-    msgs.push({ role: "assistant", content: "新回复" });
+    msgs.push({ role: "assistant", content: "new reply" });
     await c.finishTurn(sid, msgs, effective, "m", functions);
 
     expect((await c.load(sid)).length).toBe(countBefore + 2);
@@ -115,7 +115,7 @@ describePg("conversation compression", () => {
       await c.appendMessage({ role: "user", content: `u${i}`, pos: i * 2 + 1 }, sid);
       await c.appendMessage({ role: "assistant", content: `a${i}`, pos: i * 2 + 2 }, sid);
     }
-    await c.beginTurn(sid, "触发压缩");
+    await c.beginTurn(sid, "trigger compression");
 
     const session = c.repos.session;
     let fullListCalls = 0;
@@ -133,7 +133,7 @@ describePg("conversation compression", () => {
       },
     );
 
-    await c.beginTurn(sid, "窗口加载探针");
+    await c.beginTurn(sid, "window load probe");
 
     expect(rangeListCalls).toBeGreaterThan(0);
     expect(fullListCalls).toBe(0);

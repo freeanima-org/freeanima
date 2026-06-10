@@ -18,16 +18,16 @@ export function newMessageGlobalId(): string {
 
 function assertConversationMessage(msg: SessionMessage): ConversationMessage {
   if (msg.role === "session_meta") {
-    throw new Error("session_meta 不能写入 messages 表");
+    throw new Error("session_meta cannot be written to messages table");
   }
   if (msg.role === "system") {
-    throw new Error("system 消息不写入 messages 表（见 sessions.system_prompt）");
+    throw new Error("system messages not written to messages table (see sessions.system_prompt)");
   }
   if (!isUserMessage(msg) && !isAssistantMessage(msg) && !isToolMessage(msg)) {
-    throw new Error(`messages 表不支持的 role: ${(msg as SessionMessage).role}`);
+    throw new Error(`Unsupported role for messages table: ${(msg as SessionMessage).role}`);
   }
   if (msg.pos === undefined) {
-    throw new Error("messages 写入需要 pos");
+    throw new Error("messages write requires pos");
   }
   return conversationMessageSchema.parse(msg);
 }
@@ -37,7 +37,7 @@ function toPayload(msg: ConversationMessage): MessageInsert["payload"] {
   return conversationPayloadSchema.parse(rest);
 }
 
-/** 领域消息 → PG insert 行 */
+/** Domain message → PG insert row */
 export function messageToInsert(sessionId: string, msg: SessionMessage): MessageInsert {
   const parsed = assertConversationMessage(msg);
   return {
@@ -48,7 +48,7 @@ export function messageToInsert(sessionId: string, msg: SessionMessage): Message
   };
 }
 
-/** PG 行 → 领域对话消息（pos 列是唯一真相源） */
+/** PG row → domain Conversation messages (pos column is source of truth) */
 export function rowToMessage(row: unknown): ConversationMessage {
   const parsed = messageSelectSchema.parse(row);
   return conversationMessageSchema.parse({

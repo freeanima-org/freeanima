@@ -5,7 +5,7 @@ import type {
 
 export type { AutobiographicalSignificance, AutobiographicalStatus };
 
-/** PG autobiographical_memory 行 */
+/** PG autobiographical_memory row */
 export type AutobiographicalMemoryRow = {
   id: string;
   title: string;
@@ -42,11 +42,11 @@ export type AutobiographicalListOpts = {
   source_session?: string;
 };
 
-/** 自传体记忆持久化端口（只追加；无 content update） */
+/** Autobiographical memory persistence port (append-only; no content update) */
 export interface AutobiographicalMemoryStorePort {
   create(row: AutobiographicalMemoryCreateInput): Promise<string>;
   get(id: string): Promise<AutobiographicalMemoryRow | null>;
-  /** 软废弃；正文不变 */
+  /** Soft deprecate; body unchanged */
   deprecate(id: string): Promise<boolean>;
   count(opts?: Omit<AutobiographicalListOpts, "offset" | "limit">): Promise<number>;
   listActive(opts?: {

@@ -7,7 +7,7 @@ import type {
 } from "../ports/task.ts";
 
 function notConfigured(): never {
-  throw new Error("TaskStore 未配置（PostgreSQL 不可用）");
+  throw new Error("TaskStore not configured (PostgreSQL unavailable)");
 }
 
 export const nullTaskStore: TaskStorePort = {

@@ -2,7 +2,7 @@ import type { SelfBlockKey } from "@freeanima/engine-db/schema";
 
 export type { SelfBlockKey };
 
-/** 自我层六块固定顺序（system prompt 注入） */
+/** Self-layer six blocks fixed order (system prompt injection) */
 export const SELF_BLOCK_KEYS: SelfBlockKey[] = [
   "existence_anchor",
   "self_model",
@@ -12,7 +12,7 @@ export const SELF_BLOCK_KEYS: SelfBlockKey[] = [
   "autobiography_summary",
 ];
 
-/** PG self_blocks 行 */
+/** PG self_blocks row */
 export type SelfBlockRow = {
   block_key: SelfBlockKey;
   content: string;
@@ -37,12 +37,12 @@ export type SelfBlockUpdateInput = {
   updated_by?: string;
 };
 
-/** 自我层持久化端口 */
+/** Self-layer persistence port */
 export interface SelfLayerStorePort {
   getBlock(key: SelfBlockKey): Promise<SelfBlockRow | null>;
-  /** 按 SELF_BLOCK_KEYS 顺序返回；缺失键视为 content="" */
+  /** Return in SELF_BLOCK_KEYS order; missing keys as content="" */
   listBlocks(): Promise<SelfBlockRow[]>;
   upsertBlock(input: SelfBlockUpsertInput): Promise<void>;
-  /** locked 块默认拒绝更新；force=true 时允许 */
+  /** Locked blocks reject updates by default; force=true allows */
   updateBlock(input: SelfBlockUpdateInput, opts?: { force?: boolean }): Promise<void>;
 }

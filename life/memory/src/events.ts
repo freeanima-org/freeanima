@@ -10,15 +10,15 @@ export type SemanticMemoryUpdatedPayload = {
 
 export type TestPingPayload = Record<string, unknown>;
 
-/** 与 legacy events.db topic 列兼容 */
+/** Compatible with legacy events.db topic column */
 export const sessionUpdated = createEventTopic<SessionUpdatedPayload>(
   "session:updated",
-  "会话更新",
+  "Session updated",
 );
 
 export const semanticMemoryUpdated = createEventTopic<SemanticMemoryUpdatedPayload>(
   "semantic_memory:updated",
-  "语义记忆更新",
+  "Semantic memory updated",
 );
 
-export const testPing = createEventTopic<TestPingPayload>("test:ping", "测试 ping");
+export const testPing = createEventTopic<TestPingPayload>("test:ping", "Test ping");

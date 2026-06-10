@@ -8,7 +8,7 @@ import type {
 
 import * as crudRepo from "./repos/task-crud-repo.ts";
 
-/** PostgreSQL TaskStorePort 实现 */
+/** PostgreSQL TaskStorePort implementation */
 export class PgTaskStore implements TaskStorePort {
   async create(input: TaskCreateInput): Promise<TaskRow> {
     return crudRepo.createTask(input);

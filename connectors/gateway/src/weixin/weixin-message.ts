@@ -36,7 +36,7 @@ function coerceMessageType(value: unknown): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-/** 解包 getupdates 单条消息（兼容嵌套 msg、驼峰字段） */
+/** Unpack single getupdates message (nested msg, camelCase fields) */
 export function normalizeInboundMessage(raw: IlinkMessage): IlinkMessage {
   let msg = raw;
   const nested = raw.msg;
@@ -97,7 +97,7 @@ export function extractTextFromMessage(msg: IlinkMessage): string {
 }
 
 /**
- * 解析伙伴文本消息（不强制 message_type，仅排除 BOT 与自身发送者）
+ * Parse partner text messages (message_type not required; excludes BOT and self sender)
  */
 export function parseUserTextMessage(
   msg: IlinkMessage,
@@ -110,7 +110,7 @@ export function parseUserTextMessage(
 
   const msgType = coerceMessageType(normalized.message_type);
   if (msgType === MSG_TYPE_BOT) return null;
-  /** 仅过滤机器人自身发出的消息（account_id），勿用凭证里的 user_id（常为绑定人类 wxid） */
+  /** Filter only messages from the bot itself (account_id); do not use credential user_id (often bound human wxid) */
   if (botAccountId && fromUser === botAccountId) return null;
 
   const text = extractTextFromMessage(normalized).trim();
@@ -132,7 +132,7 @@ export function parseUserTextMessage(
   };
 }
 
-/** 入站消息被 parseUserTextMessage 跳过时的人类可读原因（诊断用） */
+/** Human-readable reason when inbound message skipped by parseUserTextMessage (diagnostics) */
 export function explainInboundSkip(msg: IlinkMessage, botAccountId: string): string {
   const normalized = normalizeInboundMessage(msg);
 

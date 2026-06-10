@@ -36,7 +36,7 @@ export async function listTodos(repos: PgRepositories, sessionId: string): Promi
   return toolResult({
     ok: true,
     todos: data.items,
-    message: data.items.length ? `共 ${data.items.length} 条待办` : "暂无待办",
+    message: data.items.length ? `Total ${data.items.length} todo item(s)` : "No todos",
   });
 }
 
@@ -60,7 +60,7 @@ export async function addTodo(
     ok: true,
     action: "add",
     todo: item,
-    message: `已添加 [#${item.id}] ${item.content}`,
+    message: `Added [#${item.id}] ${item.content}`,
   });
 }
 
@@ -101,7 +101,7 @@ export async function deleteTodo(
   data.items = data.items.filter((item) => item.id !== id);
   if (data.items.length < before) {
     await saveSessionTodos(repos, sessionId, data);
-    return toolResult({ ok: true, action: "delete", id, message: `已删除 [#${id}]` });
+    return toolResult({ ok: true, action: "delete", id, message: `Deleted [#${id}]` });
   }
   return toolError(`todo #${id} not found`);
 }

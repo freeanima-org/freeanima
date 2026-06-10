@@ -25,7 +25,7 @@ async function waitUntil(predicate: () => boolean, timeoutMs = 1000): Promise<vo
 }
 
 describe("EventBus + MemoryEventQueue", () => {
-  it("start 前 emit 入队，start 后 dispatch handler", async () => {
+  it("emit enqueues before start; dispatches after start", async () => {
     const bus = newBus(new MemoryEventQueue());
     const seen: number[] = [];
     bus.on(ping, (p) => {
@@ -39,7 +39,7 @@ describe("EventBus + MemoryEventQueue", () => {
     bus.stop();
   });
 
-  it("无 handler 时 emit 不抛错", async () => {
+  it("emit does not throw without handler", async () => {
     const bus = newBus(new MemoryEventQueue());
     bus.emit(ping, { n: 1 });
     bus.start();
@@ -47,7 +47,7 @@ describe("EventBus + MemoryEventQueue", () => {
     bus.stop();
   });
 
-  it("同 topic 多 handler 均被调用", async () => {
+  it("multiple handlers on same topic all called", async () => {
     const bus = newBus(new MemoryEventQueue());
     const order: string[] = [];
     bus.on(ping, () => {
@@ -63,7 +63,7 @@ describe("EventBus + MemoryEventQueue", () => {
     bus.stop();
   });
 
-  it("handler 抛错时中断同 event 的后续 handler", async () => {
+  it("handler throw aborts subsequent handlers for same event", async () => {
     const bus = newBus(new MemoryEventQueue());
     const second = vi.fn();
     bus.on(ping, () => {
@@ -77,7 +77,7 @@ describe("EventBus + MemoryEventQueue", () => {
     bus.stop();
   });
 
-  it("on 返回注销函数", async () => {
+  it("on returns unregister function", async () => {
     const bus = newBus(new MemoryEventQueue());
     const handler = vi.fn();
     const off = bus.on(ping, handler);
@@ -91,7 +91,7 @@ describe("EventBus + MemoryEventQueue", () => {
 });
 
 describe("EventBus + NullEventQueue", () => {
-  it("emit 后 handler 不被调用", async () => {
+  it("handler not called after emit when unregistered", async () => {
     const bus = newBus(new NullEventQueue());
     const handler = vi.fn();
     bus.on(ping, handler);

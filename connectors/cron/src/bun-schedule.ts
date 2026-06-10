@@ -3,7 +3,7 @@ import { cstCronToUtc } from "./timezone.ts";
 
 export type BunSchedule = { kind: "cron"; expr: string } | { kind: "oneshot"; atMs: number };
 
-/** interval 秒数 → cron step 表达式（UTC，无需时区转换） */
+/** interval seconds → cron step expression (UTC, no timezone conversion) */
 function intervalSecondsToCron(seconds: number): string {
   if (seconds % 3600 === 0) {
     const hours = seconds / 3600;
@@ -13,7 +13,7 @@ function intervalSecondsToCron(seconds: number): string {
   return `*/${minutes} * * * *`;
 }
 
-/** 将存储的 schedule 解析为 Bun 调度形式 */
+/** Parse stored schedule into Bun scheduling form */
 export function resolveBunSchedule(schedule: string): BunSchedule {
   const [schedType, value] = parseSchedule(schedule);
 
@@ -28,7 +28,7 @@ export function resolveBunSchedule(schedule: string): BunSchedule {
   return { kind: "oneshot", atMs: (value as number) * 1000 };
 }
 
-/** 计算下次运行 unix 秒；paused job 返回 0 */
+/** Compute next run unix seconds; paused job returns 0 */
 export function computeNextRunAt(schedule: string, paused = false): number | null {
   if (paused) return 0;
 

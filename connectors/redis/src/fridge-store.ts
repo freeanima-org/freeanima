@@ -1,7 +1,7 @@
 import type { FridgeStorePort } from "@freeanima/capabilities-fridge-magnet/fridge-store-port";
 import { redisDel, redisGet, redisScanEntries, redisSet } from "./kv.ts";
 
-/** 基于 connectors-redis 的 FridgeStorePort 实现 */
+/** FridgeStorePort implementation based on connectors-redis */
 export function createRedisFridgeStore(): FridgeStorePort {
   return {
     set: redisSet,

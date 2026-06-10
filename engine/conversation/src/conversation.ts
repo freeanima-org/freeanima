@@ -67,7 +67,7 @@ import type { PgRepositories } from "@freeanima/engine-repos";
 export type Message = SessionMessage;
 export { isSessionMeta } from "./message.ts";
 
-/** 新 session 默认工作目录（与 Python `init_session` 一致，隔离于 service 启动目录） */
+/** Default working directory for new session (matches Python init_session; isolated from service start dir) */
 export function allocateSessionCwd(sid: string): string {
   for (let attempt = 0; attempt < 8; attempt++) {
     const rand = randomBytes(4).toString("hex");
@@ -82,7 +82,7 @@ export function allocateSessionCwd(sid: string): string {
   return mkdtempSync(join(tmpdir(), "anima-cwd-"));
 }
 
-/** 读取 session 缓存的工具名并解析为 OpenAI schema；缺失时回退注册表并写回 meta */
+/** Read session-cached tool names and resolve to OpenAI schema; fallback to registry and write meta */
 export async function loadSessionTools(
   repos: PgRepositories,
   tools: ToolSetRegistry,
@@ -190,7 +190,7 @@ export async function listSessions(
   return listSessionsWithRouting(repos, platform);
 }
 
-/** session 是否存在（PostgreSQL） */
+/** Whether session exists (PostgreSQL) */
 export async function sessionExists(repos: PgRepositories, session: string): Promise<boolean> {
   return sessionExistsWithRouting(repos, session);
 }
@@ -309,7 +309,7 @@ function originExtraMatches(
   return true;
 }
 
-/** 按 platform + platform_extra 匹配已有 session（extra 中每项须与 meta 一致） */
+/** Match existing session by platform + platform_extra (each extra item must match meta) */
 export async function findSessionByOrigin(
   repos: PgRepositories,
   platform: string,
@@ -320,7 +320,7 @@ export async function findSessionByOrigin(
       const sid = await pgFindSessionIdByPlatformInfo(repos, platform, platformExtra);
       if (sid) return sid;
     } catch {
-      /* 回退扫描 */
+      /* fallback scan */
     }
   }
 
@@ -366,7 +366,7 @@ export async function patchSessionOrigin(
   const existing = meta.platform ?? "";
   if (existing && existing !== platform) {
     throw new Error(
-      `session ${session.slice(0, 16)}... platform 不可修改: ${existing} -> ${platform}`,
+      `session ${session.slice(0, 16)}... platform cannot be changed: ${existing} -> ${platform}`,
     );
   }
   if (!existing) meta.platform = platform;
@@ -386,7 +386,7 @@ export async function rebuildSessionSystemPrompt(
   await updateSessionMetaField(repos, session, { system_prompt: systemPrompt });
 }
 
-/** 重置 session 工具 schema 为默认集并清空 loaded_tools */
+/** Reset session tool schema to default set and clear loaded_tools */
 export async function reloadSessionTools(
   repos: PgRepositories,
   tools: ToolSetRegistry,
@@ -394,7 +394,7 @@ export async function reloadSessionTools(
 ): Promise<number> {
   const meta = await loadSessionMeta(repos, session);
   if (!isSessionMeta(meta)) {
-    throw new Error("session 不存在");
+    throw new Error("session does not exist");
   }
   const names = resolveDefaultSessionTools(tools);
   await updateSessionMetaField(repos, session, {
@@ -422,7 +422,7 @@ async function sessionLastActivityMs(
   return last;
 }
 
-/** 续接 session 时按条件刷新 system_prompt */
+/** Conditionally refresh system_prompt when resuming session */
 export async function refreshSystemPromptOnResume(
   repos: PgRepositories,
   session: string,
@@ -484,7 +484,7 @@ function defaultChatModel(): string {
 
 const pendingCompressionSummaries = new Map<string, Promise<void>>();
 
-/** 等待进行中的异步会话摘要（集成测 teardown 须在恢复 FREEANIMA_HOME 前调用） */
+/** Await in-flight async session summaries (integration teardown must call before restoring FREEANIMA_HOME) */
 export async function flushCompressionSummaries(
   _repos: PgRepositories,
   session?: string,
@@ -507,7 +507,9 @@ async function finalizeCompressionSummary(
   homeAtSchedule: string,
 ): Promise<void> {
   if ((process.env.FREEANIMA_HOME ?? "") !== homeAtSchedule) {
-    logComponent("compression").warn(`跳过会话摘要（FREEANIMA_HOME 已切换）: ${session}`);
+    logComponent("compression").warn(
+      `Skipping session summary (FREEANIMA_HOME changed): ${session}`,
+    );
     return;
   }
   const prevL2 = prevState?.l2 ?? null;
@@ -529,16 +531,21 @@ async function finalizeCompressionSummary(
   if (gen.ok) {
     merged.summary = gen.summary;
   } else {
-    logComponent("compression").error(`会话摘要生成失败: ${session}`, { err: gen.error });
+    logComponent("compression").error(`Session summary generation failed: ${session}`, {
+      err: gen.error,
+    });
   }
 
   await updateSessionMetaField(repos, session, { compression: merged });
   try {
     await rebuildSessionSystemPrompt(repos, session);
   } catch (e) {
-    logComponent("compression").error(`压缩后重建 system_prompt 失败: ${session}`, {
-      err: String(e),
-    });
+    logComponent("compression").error(
+      `Failed to rebuild system_prompt after compression: ${session}`,
+      {
+        err: String(e),
+      },
+    );
   }
 }
 
@@ -566,7 +573,9 @@ function scheduleCompressionSummary(
   };
   const p = run()
     .catch((e) => {
-      logComponent("compression").error(`会话摘要流水线异常: ${session}`, { err: String(e) });
+      logComponent("compression").error(`Session summary pipeline error: ${session}`, {
+        err: String(e),
+      });
     })
     .finally(() => {
       if (pendingCompressionSummaries.get(session) === p) {
@@ -576,7 +585,7 @@ function scheduleCompressionSummary(
   pendingCompressionSummaries.set(session, p);
 }
 
-/** 根据完整历史维护 meta.compression（不删消息；cut 变更时异步生成摘要） */
+/** Maintain meta.compression from full history (no message delete; async summary on cut change) */
 export async function advanceCompressionMeta(
   repos: PgRepositories,
   tools: ToolSetRegistry,
@@ -586,7 +595,7 @@ export async function advanceCompressionMeta(
   await recompressSession(repos, tools, session, undefined, preloaded);
 }
 
-/** 重新计算 session 裁剪（可选 force 忽略滞回） */
+/** Recompute session compression (optional force ignores hysteresis) */
 export async function recompressSession(
   repos: PgRepositories,
   registry: ToolSetRegistry,
@@ -652,7 +661,7 @@ export async function recompressSession(
   };
 }
 
-/** 将缺失 tool 响应写入 PG（在 assistant 后原位插入，后续 pos 后移） */
+/** Write missing tool responses to PG (insert in-place after assistant; shift later pos) */
 export async function repairAndPersistToolLoop(
   repos: PgRepositories,
   session: string,
@@ -696,7 +705,7 @@ export async function repairAndPersistToolLoop(
   }
 
   logComponent("tool-loop-integrity").error(
-    `tool loop 历史已修复: session=${session} 原位插入 ${inserted} 条 synthetic tool`,
+    `tool loop history repaired: session=${session} inserted in-place ${inserted} synthetic tool message(s)`,
   );
   return true;
 }
@@ -710,7 +719,7 @@ async function ensureSessionToolIntegrity(
   return repaired ? load(repos, session) : msgs;
 }
 
-/** 工具循环中单轮上下文 emergency：就地裁切内存中的 messages */
+/** Tool-loop single-turn emergency: in-place trim in-memory messages */
 export async function maybeApplyEmergencyCompression(
   repos: PgRepositories,
   session: string,
@@ -933,17 +942,17 @@ export async function setSessionCwd(
   const expanded = expandUserPath(cwd.trim());
   const resolved = resolve(expanded);
   if (!existsSync(resolved)) {
-    throw new Error(`路径不存在: ${cwd}`);
+    throw new Error(`Path does not exist: ${cwd}`);
   }
   await updateSessionMetaField(repos, session, { cwd: resolved });
   await rebuildSessionSystemPrompt(repos, session);
   return resolved;
 }
 
-/** 删除最后一轮 user 之后的 assistant/tool 消息，返回该 user 正文 */
+/** Delete assistant/tool messages after last user turn; return that user body */
 export async function rollbackToLastUser(repos: PgRepositories, session: string): Promise<string> {
   const parsed = await load(repos, session);
-  if (!parsed.length) throw new Error("没有可重试的伙伴消息");
+  if (!parsed.length) throw new Error("No partner message to retry");
 
   let lastUserIdx = -1;
   for (let i = parsed.length - 1; i >= 0; i--) {
@@ -952,20 +961,20 @@ export async function rollbackToLastUser(repos: PgRepositories, session: string)
       break;
     }
   }
-  if (lastUserIdx < 0) throw new Error("没有可重试的伙伴消息");
+  if (lastUserIdx < 0) throw new Error("No partner message to retry");
 
   const kept = parsed.slice(0, lastUserIdx + 1);
   const lastUser = kept[lastUserIdx]!;
   const keepThroughPos = lastUser.pos;
   if (keepThroughPos === undefined) {
-    throw new Error("没有可重试的伙伴消息");
+    throw new Error("No partner message to retry");
   }
   await pgWriteTruncate(repos, session, Number(keepThroughPos));
 
   return lastUser.role === "user" ? lastUser.content : "";
 }
 
-/** 重试回合：回滚末条 user，不追加新 user，返回运行时 messages */
+/** Retry turn: roll back to last user without appending new user; return runtime messages */
 export async function retryTurn(
   repos: PgRepositories,
   registry: ToolSetRegistry,

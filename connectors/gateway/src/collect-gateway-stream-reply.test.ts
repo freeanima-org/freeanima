@@ -8,18 +8,18 @@ async function* events(items: StreamEvent[]): AsyncGenerator<StreamEvent> {
 }
 
 describe("collectGatewayStreamReply", () => {
-  it("token 事件拼接为最终回复", async () => {
+  it("token events concatenated into final reply", async () => {
     const reply = await collectGatewayStreamReply(
       events([
-        { event: "token", data: { content: "你好" } },
+        { event: "token", data: { content: "Hello" } },
         { event: "done", data: {} },
       ]),
       "weixin",
     );
-    expect(reply).toBe("你好");
+    expect(reply).toBe("Hello");
   });
 
-  it("content_replace 覆盖先前 token", async () => {
+  it("content_replace overwrites prior token", async () => {
     const reply = await collectGatewayStreamReply(
       events([
         { event: "token", data: { content: "draft" } },
@@ -31,7 +31,7 @@ describe("collectGatewayStreamReply", () => {
     expect(reply).toBe("final");
   });
 
-  it("仅 done 时返回空串", async () => {
+  it("returns empty string on done only", async () => {
     const reply = await collectGatewayStreamReply(events([{ event: "done", data: {} }]), "weixin");
     expect(reply).toBe("");
   });

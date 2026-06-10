@@ -24,7 +24,7 @@ describe("batch-queue", () => {
     resetEmbeddingQueueForTest();
   });
 
-  it("flush 时合并多条入队任务", async () => {
+  it("flush merges multiple enqueued jobs", async () => {
     enqueueEmbedding({ kind: "message", id: "m1", content: "alpha" });
     enqueueEmbedding({ kind: "message", id: "m2", content: "beta" });
     await flushEmbeddingQueueForTest();
@@ -37,7 +37,7 @@ describe("batch-queue", () => {
     expect(jobs.map((j) => j.id).toSorted()).toEqual(["m1", "m2"]);
   });
 
-  it("同 kind:id 后写入覆盖先写入", async () => {
+  it("later write overwrites earlier for same kind:id", async () => {
     enqueueEmbedding({ kind: "semantic_memory", id: "s1", content: "old" });
     enqueueEmbedding({ kind: "semantic_memory", id: "s1", content: "new" });
     await flushEmbeddingQueueForTest();
@@ -49,7 +49,7 @@ describe("batch-queue", () => {
     expect(jobs[0]!.content).toBe("new");
   });
 
-  it("空白 content 不入队", async () => {
+  it("blank content not enqueued", async () => {
     enqueueEmbedding({ kind: "message", id: "m1", content: "   " });
     await flushEmbeddingQueueForTest();
     expect(embedAndStoreJobsMock).not.toHaveBeenCalled();

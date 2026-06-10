@@ -1,6 +1,6 @@
 import { parseYaml } from "./yaml.ts";
 
-/** 解析 pass 凭证正文，必须为 YAML 字典 */
+/** Parse pass credential body; must be YAML dict */
 export function parseCredentialDict(text: string, path: string): Record<string, unknown> {
   let data: unknown;
   try {

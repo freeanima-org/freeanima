@@ -7,7 +7,7 @@ import { isSessionMeta, parseCompressionState } from "@freeanima/engine-db/domai
 import type { PgRepositories } from "@freeanima/engine-repos";
 import { load, loadSessionMeta } from "./conversation.ts";
 
-/** /new 等场景：只读旧 session，生成可写入新 session 的交接摘要（不写旧 session） */
+/** /new etc.: read-only old session; generate handoff summary for new session (does not write old session) */
 export async function generateSessionHandoffSummary(
   repos: PgRepositories,
   sessionId: string,
@@ -15,12 +15,12 @@ export async function generateSessionHandoffSummary(
   const msgs = await load(repos, sessionId);
   const l4 = getL4(msgs);
   if (l4 === 0) {
-    return { ok: false, error: "无对话内容" };
+    return { ok: false, error: "No conversation content" };
   }
 
   const meta = await loadSessionMeta(repos, sessionId);
   if (!isSessionMeta(meta)) {
-    return { ok: false, error: "session 不存在" };
+    return { ok: false, error: "session does not exist" };
   }
 
   const prevState = parseCompressionState(meta.compression);

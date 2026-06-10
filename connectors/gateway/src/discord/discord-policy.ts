@@ -1,4 +1,4 @@
-/** Discord 响应策略（与 Python discord_adapter 对齐，便于单测） */
+/** Discord response policy (aligned with Python discord_adapter for unit tests) */
 
 export const DISCORD_CONFIG_DEFAULTS = {
   require_mention: true,
@@ -11,9 +11,9 @@ export const DISCORD_CONFIG_DEFAULTS = {
   reactions: true,
   channel_prompts: {} as Record<string, string>,
   dm_role_auth_guild: "",
-  /** 注册 Discord 原生 Slash Command（输入 / 时出现候选） */
+  /** Register native Discord Slash Commands (candidates when typing /) */
   slash_commands: true,
-  /** 若设置则仅注册到该 guild（即时生效）；留空则全局注册（最多约 1 小时传播） */
+  /** When set, register to that guild only (immediate); empty = global (up to ~1 hour propagation) */
   slash_commands_guild_id: "",
 };
 

@@ -60,7 +60,7 @@ export const toolPayloadSchema = messageBaseSchema.extend({
   name: z.string().optional(),
 });
 
-/** messages.payload JSONB — 不含 pos（pos 由列维护） */
+/** messages.payload JSONB — excludes pos (pos maintained by column) */
 export const messagePayloadSchema = z.discriminatedUnion("role", [
   userPayloadSchema,
   systemPayloadSchema,

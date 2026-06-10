@@ -14,22 +14,22 @@ function job(id: string, content: string): EmbeddingPendingJob {
 }
 
 describe("estimateEmbeddingTokens", () => {
-  it("空文本为 0", () => {
+  it("empty text is 0", () => {
     expect(estimateEmbeddingTokens("")).toBe(0);
     expect(estimateEmbeddingTokens("   ")).toBe(0);
   });
 
-  it("按 3.5 字符/token 粗估", () => {
+  it("rough estimate at 3.5 chars/token", () => {
     expect(estimateEmbeddingTokens("abcd")).toBe(2);
   });
 });
 
 describe("packEmbeddingJobs", () => {
-  it("空列表返回空", () => {
+  it("empty list returns empty", () => {
     expect(packEmbeddingJobs([])).toEqual([]);
   });
 
-  it("按 maxItems 切分", () => {
+  it("splits by maxItems", () => {
     const jobs = Array.from({ length: 5 }, (_, i) => job(`id-${i}`, `text-${i}`));
     const packs = packEmbeddingJobs(jobs, { maxItems: 2, maxTokens: DEFAULT_MAX_BATCH_TOKENS });
     expect(packs).toHaveLength(3);
@@ -37,7 +37,7 @@ describe("packEmbeddingJobs", () => {
     expect(packs[2]).toHaveLength(1);
   });
 
-  it("按 maxTokens 切分", () => {
+  it("splits by maxTokens", () => {
     const long = "a".repeat(Math.floor(DEFAULT_MAX_BATCH_TOKENS * 3.5));
     const packs = packEmbeddingJobs([job("a", long), job("b", "short")], {
       maxItems: DEFAULT_MAX_BATCH_ITEMS,
@@ -48,7 +48,7 @@ describe("packEmbeddingJobs", () => {
     expect(packs[1]).toHaveLength(1);
   });
 
-  it("单条超过 8K token 时跳过", () => {
+  it("skips single item exceeding 8K tokens", () => {
     const oversized = "x".repeat(Math.ceil(MAX_SINGLE_EMBEDDING_TOKENS * 3.5) + 10);
     const packs = packEmbeddingJobs([job("big", oversized), job("ok", "fine")]);
     expect(packs).toHaveLength(1);

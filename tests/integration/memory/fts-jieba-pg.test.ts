@@ -32,13 +32,13 @@ describePg("FTS jieba PG", () => {
     await restoreIntegrationHome(prev);
   });
 
-  it("cjk.enabled 时分词检索 + rebuild 刷新存量", async () => {
+  it("cjk.enabled: segmented search + rebuild refreshes existing rows", async () => {
     setConfigForTest({ ...minimalConfig(), cjk: { enabled: false } });
 
     const store = getTestEngine().repos.semanticMemory;
 
     const targetId = await store.create({
-      content: "办公室常备精品咖啡",
+      content: "Office keeps premium coffee on hand",
       type: "preference",
     });
 
@@ -48,14 +48,14 @@ describePg("FTS jieba PG", () => {
     expect(rebuilt.cjk_enabled).toBe(true);
     expect(rebuilt.tables.semantic_memory).toBeGreaterThanOrEqual(1);
 
-    const jiebaHits = await store.searchFts("咖啡", { limit: 5 });
+    const jiebaHits = await store.searchFts("coffee", { limit: 5 });
     expect(jiebaHits.some((h) => h.id === targetId)).toBe(true);
 
     const newId = await store.create({
-      content: "最近迷上了埃塞俄比亚浅烘豆",
+      content: "Recently hooked on Ethiopian light roast beans",
       type: "preference",
     });
-    const freshHits = await store.searchFts("埃塞俄比亚", { limit: 5 });
+    const freshHits = await store.searchFts("Ethiopian", { limit: 5 });
     expect(freshHits.some((h) => h.id === newId)).toBe(true);
   });
 

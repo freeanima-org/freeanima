@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 /**
- * Generate po4a.cfg: split mode，POT 在 po/pot/，各语言 PO 在 po/<lang>/。
- * Docs → text；Paraglide UI → xml（messages/po4a/en.xml）。
+ * Generate po4a.cfg: split mode; POT under po/pot/, per-language PO under po/<lang>/.
+ * Docs → text; Paraglide UI → xml (messages/po4a/en.xml).
  */
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";

@@ -9,7 +9,7 @@ import {
 } from "./registry.ts";
 import type { ToolSetRegistry } from "./toolset.ts";
 
-/** 内置 LLM 可读纯文本工具（无显式 returnKind 时回退） */
+/** Built-in LLM-readable plain-text tools (fallback when returnKind is unset) */
 export const TEXT_RETURN_TOOL_NAMES = [
   "file_read_file",
   "terminal_run",
@@ -47,7 +47,7 @@ export function resolveReturnKind(toolset: string | undefined, def: ToolDef): To
   return "json";
 }
 
-const MCP_ACP_TEXT_HINT = 'MCP/ACP 服务器原始文本输出；失败时返回 {"error":"..."} JSON';
+const MCP_ACP_TEXT_HINT = 'MCP/ACP server raw text output; on failure returns {"error":"..."} JSON';
 
 export function buildToolsStatus(registry: ToolSetRegistry): ToolsStatusResponse {
   const toolSetByName = new Map<string, string>();

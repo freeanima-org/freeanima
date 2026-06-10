@@ -9,7 +9,7 @@ const baseRequest: ChatRequest = {
 };
 
 describe("buildChatCompletionParams", () => {
-  it("组装非流式 body", () => {
+  it("assembles non-streaming body", () => {
     const body = buildChatCompletionParams("gpt-test", baseRequest);
     expect(body.stream).toBe(false);
     expect(body.model).toBe("gpt-test");
@@ -22,7 +22,7 @@ describe("buildChatCompletionParams", () => {
 });
 
 describe("buildStreamingChatCompletionParams", () => {
-  it("开启 stream 与 include_usage", () => {
+  it("enables stream and include_usage", () => {
     const body = buildStreamingChatCompletionParams("m", baseRequest);
     expect(body.stream).toBe(true);
     expect(body.stream_options).toEqual({ include_usage: true });

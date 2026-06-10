@@ -12,7 +12,7 @@ async function waitUntil(predicate: () => boolean, timeoutMs = 500): Promise<voi
 }
 
 describe("MemoryEventQueue", () => {
-  it("start 重复调用为 no-op", async () => {
+  it("repeated start is no-op", async () => {
     const queue = new MemoryEventQueue();
     const process = vi.fn(async () => "ack" as const);
     queue.start(process);
@@ -23,7 +23,7 @@ describe("MemoryEventQueue", () => {
     expect(process).toHaveBeenCalledTimes(1);
   });
 
-  it("running 时 enqueue 会 drain 后续事件", async () => {
+  it("enqueue while running drains subsequent events", async () => {
     const queue = new MemoryEventQueue();
     const seen: string[] = [];
     queue.start(async (event) => {
@@ -39,7 +39,7 @@ describe("MemoryEventQueue", () => {
     queue.stop();
   });
 
-  it("running 且 drain 进行中时 enqueue 在完成后继续 drain", async () => {
+  it("enqueue during drain continues after completion", async () => {
     const queue = new MemoryEventQueue();
     const seen: string[] = [];
     queue.start(async (event) => {
@@ -55,7 +55,7 @@ describe("MemoryEventQueue", () => {
     queue.stop();
   });
 
-  it("stop 后不再 dispatch", async () => {
+  it("no dispatch after stop", async () => {
     const queue = new MemoryEventQueue();
     const process = vi.fn(async () => "ack" as const);
     queue.start(process);
@@ -65,7 +65,7 @@ describe("MemoryEventQueue", () => {
     expect(process).not.toHaveBeenCalled();
   });
 
-  it("stop 可被多次调用", () => {
+  it("stop can be called multiple times", () => {
     const queue = new MemoryEventQueue();
     queue.start(async () => "ack");
     queue.stop();

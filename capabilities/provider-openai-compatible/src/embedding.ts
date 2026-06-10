@@ -7,11 +7,11 @@ export type EmbedTextsFn = (texts: string[]) => Promise<(number[] | null)[]>;
 
 function assertEmbeddingDimensions(vec: number[], expected: number): void {
   if (vec.length !== expected) {
-    throw new Error(`embedding 维度 ${vec.length} 与配置 ${expected} 不一致`);
+    throw new Error(`embedding dimension ${vec.length} does not match configured ${expected}`);
   }
 }
 
-/** OpenAI 兼容 /v1/embeddings 客户端（Ollama bge-m3 等） */
+/** OpenAI compatible /v1/embeddings client (Ollama bge-m3, etc.) */
 export function createOpenAiEmbeddingClient(cfg: ResolvedEmbeddingConfig): EmbedTextFn {
   const client = createOpenAiClientFromParsed({
     apiKey: cfg.apiKey,
@@ -34,7 +34,7 @@ export function createOpenAiEmbeddingClient(cfg: ResolvedEmbeddingConfig): Embed
   };
 }
 
-/** OpenAI 兼容 batch /v1/embeddings（input: string[]） */
+/** OpenAI compatible batch /v1/embeddings (input: string[]) */
 export function createOpenAiEmbeddingBatchClient(cfg: ResolvedEmbeddingConfig): EmbedTextsFn {
   const client = createOpenAiClientFromParsed({
     apiKey: cfg.apiKey,

@@ -1,4 +1,4 @@
-/** 展开 Drizzle / postgres 错误，便于 CLI 日志 */
+/** Unwrap Drizzle / postgres errors for CLI logging */
 import { formatZodError } from "@freeanima/kernel-util";
 import { ZodError } from "zod";
 
@@ -11,7 +11,7 @@ export function formatDbError(e: unknown): string {
   return parts.join(" | ");
 }
 
-/** CLI 展示：优先 PostgreSQL cause，去掉 Drizzle 整段 SQL */
+/** CLI display: prefer PostgreSQL cause, strip full Drizzle SQL */
 export function shortDbError(e: unknown, maxLen = 160): string {
   if (e instanceof ZodError) {
     return formatZodError(e).slice(0, maxLen);
@@ -27,7 +27,7 @@ export function shortDbError(e: unknown, maxLen = 160): string {
     return msg.slice(idx + causeTag.length).slice(0, maxLen);
   }
   if (msg.startsWith("Failed query:")) {
-    return "数据库写入失败";
+    return "Database write failed";
   }
   const firstLine = msg.split("\n")[0] ?? msg;
   return firstLine.slice(0, maxLen);

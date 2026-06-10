@@ -43,10 +43,10 @@ function printStartupErrorHints(): void {
       l.includes("unhandledRejection"),
   );
   if (startupLines.length) {
-    writeStatusLine("warning", "最近启动错误（error.log）:");
+    writeStatusLine("warning", "Recent startup errors (error.log):");
     for (const line of startupLines.slice(-4)) console.log(`    ${line}`);
   } else if (lines.length) {
-    writeStatusLine("warning", "最近 error.log:");
+    writeStatusLine("warning", "Recent error.log:");
     for (const line of lines.slice(-3)) console.log(`    ${line}`);
   }
 }
@@ -117,26 +117,26 @@ function printRunning(
   }
   const uptimeS = uptime != null ? prettyDuration(uptime) : "";
 
-  const headline = [`PID ${pid}`, uptimeS ? `运行 ${uptimeS}` : "", `版本 ${version}`]
+  const headline = [`PID ${pid}`, uptimeS ? `uptime ${uptimeS}` : "", `version ${version}`]
     .filter(Boolean)
     .join("    ");
-  console.log(`逸灵风 · 运行中`);
+  console.log(`Free Anima · running`);
   console.log(`  ${headline}`);
   const addrs = parseBindHosts(host)
     .map((h) => `http://${h}:${port}`)
     .join("  ");
-  console.log(`  地址: ${addrs}`);
+  console.log(`  address: ${addrs}`);
 
   const config = (api.config as Record<string, unknown>) ?? {};
   const model = config.model ?? statusFile.model;
   const apiBase = config.api_base ?? statusFile.api_base;
-  if (model) writeStatusLine("info", `模型: ${model}`);
+  if (model) writeStatusLine("info", `model: ${model}`);
   if (apiBase) writeStatusLine("info", `API: ${apiBase}`);
 
   const platforms = (api.platforms as Record<string, Record<string, unknown>>) ?? {};
   const names = Object.keys(platforms);
   if (names.length) {
-    console.log(`  平台 (${names.length}):`);
+    console.log(`  platforms (${names.length}):`);
     for (const name of names) {
       const ps = platforms[name] ?? {};
       const status = String(ps.status ?? "unknown");
@@ -148,14 +148,14 @@ function printRunning(
 
   const sessions = api.sessions as Record<string, unknown> | undefined;
   if (sessions && "total" in sessions) {
-    writeStatusLine("info", `会话: ${sessions.total} 个`);
+    writeStatusLine("info", `sessions: ${sessions.total}`);
   }
 
   const tools = api.tools;
-  if (tools) writeStatusLine("info", `工具: ${tools} 个`);
+  if (tools) writeStatusLine("info", `tools: ${tools}`);
 
   const memKb = api.memory_kb;
-  if (memKb) writeStatusLine("info", `内存: ${Number(memKb) / 1024} MB (RSS)`);
+  if (memKb) writeStatusLine("info", `memory: ${Number(memKb) / 1024} MB (RSS)`);
 }
 
 function printDeadStatus(statusFile: Record<string, unknown>): void {
@@ -166,24 +166,24 @@ function printDeadStatus(statusFile: Record<string, unknown>): void {
   let ranFor = "";
   if (startTs > 0) {
     const now = Date.now() / 1000;
-    if (startTs < now) ranFor = ` (曾运行 ${prettyDuration(now - startTs)})`;
+    if (startTs < now) ranFor = ` (ran for ${prettyDuration(now - startTs)})`;
   }
-  console.log("逸灵风 · 未运行");
+  console.log("Free Anima · not running");
   if (startTs > 0) {
     const when = startTime || new Date(startTs * 1000).toISOString();
-    console.log(`  最后启动: ${when}${ranFor}`);
+    console.log(`  last start: ${when}${ranFor}`);
   }
-  console.log(`  版本: ${version}`);
-  if (phase === "starting") writeStatusLine("warning", "启动未完成即退出");
-  else writeStatusLine("warning", "可能异常退出");
-  console.log(`  日志: ${LOG_FILE}`);
+  console.log(`  version: ${version}`);
+  if (phase === "starting") writeStatusLine("warning", "Exited before startup completed");
+  else writeStatusLine("warning", "May have exited abnormally");
+  console.log(`  log: ${LOG_FILE}`);
   printStartupErrorHints();
 }
 
 async function startDetachedWithoutSystemd(args: ServiceArgs): Promise<void> {
   const alive = isServerAlive();
   if (alive != null) {
-    console.log(`逸灵风已在运行 (PID ${alive})`);
+    console.log(`Free Anima already running (PID ${alive})`);
     process.exit(1);
   }
 
@@ -208,16 +208,16 @@ async function startDetachedWithoutSystemd(args: ServiceArgs): Promise<void> {
     await new Promise((res) => setTimeout(res, 500));
     const pid = isServerAlive();
     if (pid != null) {
-      writeStatusLine("ok", `已后台启动 (PID ${pid})`);
-      writeStatusLine("info", "未检测到 systemd --user，使用 detached 进程");
-      console.log(`  地址: http://${args.host}:${args.port}`);
-      console.log("  查看: anima service status");
-      console.log("  停止: anima service stop");
+      writeStatusLine("ok", `Started in background (PID ${pid})`);
+      writeStatusLine("info", "systemd --user not detected, using detached process");
+      console.log(`  address: http://${args.host}:${args.port}`);
+      console.log("  status: anima service status");
+      console.log("  stop: anima service stop");
       return;
     }
   }
 
-  console.error("启动超时：未检测到 PID，请查看 error.log 或改用 --foreground 排查");
+  console.error("Startup timeout: no PID detected; check error.log or use --foreground to debug");
   process.exit(1);
 }
 
@@ -233,7 +233,7 @@ async function cmdServiceStatus(args: ServiceArgs): Promise<void> {
 
   if (httpUp) {
     printRunning(body, statusFile, host, port);
-    writeStatusLine("ok", `health 在线 — ${healthMs.toFixed(0)}ms`);
+    writeStatusLine("ok", `health online — ${healthMs.toFixed(0)}ms`);
     printWebui(host, port);
     return;
   }
@@ -241,12 +241,15 @@ async function cmdServiceStatus(args: ServiceArgs): Promise<void> {
   if (pid != null) {
     const startTs = Number(statusFile.start_time ?? 0);
     const startingFor = startTs > 0 ? Date.now() / 1000 - startTs : 0;
-    console.log(`逸灵风 · 启动中 (PID ${pid})`);
+    console.log(`Free Anima · starting (PID ${pid})`);
     if (startingFor > 120) {
-      writeStatusLine("warning", `HTTP 未就绪已 ${prettyDuration(startingFor)}，可能卡在启动阶段`);
-      writeStatusLine("info", "建议: anima service stop && anima service start --foreground");
+      writeStatusLine(
+        "warning",
+        `HTTP not ready for ${prettyDuration(startingFor)}, may be stuck during startup`,
+      );
+      writeStatusLine("info", "Try: anima service stop && anima service start --foreground");
     } else {
-      writeStatusLine("warning", "HTTP 未就绪，可能正在启动或端口未监听");
+      writeStatusLine("warning", "HTTP not ready; may still be starting or port not listening");
     }
     if (sd && SYSTEMD_STARTING.has(sd)) writeStatusLine("info", `systemd: ${sd}`);
     printStartupErrorHints();
@@ -254,16 +257,16 @@ async function cmdServiceStatus(args: ServiceArgs): Promise<void> {
   }
 
   if (sd && SYSTEMD_STARTING.has(sd)) {
-    console.log("逸灵风 · 启动中…");
+    console.log("Free Anima · starting…");
     if (sd) writeStatusLine("info", `systemd: ${sd}`);
     return;
   }
 
   if (systemdFailed()) {
-    console.log("逸灵风 · 未运行");
-    writeStatusLine("warning", "systemd 报告 anima.service 启动失败");
-    writeStatusLine("info", "查看: journalctl --user -u anima -n 30 --no-pager");
-    console.log(`  日志: ${LOG_FILE}`);
+    console.log("Free Anima · not running");
+    writeStatusLine("warning", "systemd reports anima.service failed to start");
+    writeStatusLine("info", "See: journalctl --user -u anima -n 30 --no-pager");
+    console.log(`  log: ${LOG_FILE}`);
     printStartupErrorHints();
     return;
   }
@@ -273,11 +276,11 @@ async function cmdServiceStatus(args: ServiceArgs): Promise<void> {
     return;
   }
 
-  console.log("逸灵风 · 未运行");
+  console.log("Free Anima · not running");
   printStartupErrorHints();
-  console.log("  启动: anima service start");
-  console.log("  调试: anima service start --foreground");
-  console.log("  WebUI 开发: anima service start --dev");
+  console.log("  start: anima service start");
+  console.log("  debug: anima service start --foreground");
+  console.log("  WebUI dev: anima service start --dev");
 }
 
 export async function runServiceCommand(args: ServiceArgs): Promise<void> {
@@ -286,10 +289,10 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
   if (action === "start") {
     if (args.foreground) {
       if (isServerAlive()) {
-        console.log(`逸灵风已在运行 (PID ${isServerAlive()})`);
+        console.log(`Free Anima already running (PID ${isServerAlive()})`);
         process.exit(1);
       }
-      console.log("逸灵风 · 前台启动…");
+      console.log("Free Anima · starting in foreground…");
       installErrorLogHandlers();
       try {
         const { serve } = await import("@freeanima/service");
@@ -305,7 +308,7 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
           },
         });
       } catch (e) {
-        logStartupError("服务启动失败", e);
+        logStartupError("Service startup failed", e);
         process.exit(1);
       }
       return;
@@ -320,13 +323,13 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
     systemctl("daemon-reload");
     const r = systemctl("enable", "--now", SYSTEMD_UNIT);
     if (r.status !== 0) {
-      console.error(`启动失败: ${r.stderr || r.stdout}`);
+      console.error(`Startup failed: ${r.stderr || r.stdout}`);
       process.exit(1);
     }
-    writeStatusLine("ok", "已通过 systemd 启动");
+    writeStatusLine("ok", "Started via systemd");
     console.log(`  unit: ${serviceUnitPath()}`);
-    console.log(`  地址: http://${args.host}:${args.port}`);
-    console.log("  查看: anima service status");
+    console.log(`  address: http://${args.host}:${args.port}`);
+    console.log("  status: anima service status");
     return;
   }
 
@@ -334,24 +337,24 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
     if (systemdUserAvailable() && existsSync(serviceUnitPath())) {
       const r = systemctl("stop", SYSTEMD_UNIT);
       if (r.status === 0) {
-        console.log("逸灵风已停止 (systemd)");
+        console.log("Free Anima stopped (systemd)");
         return;
       }
     }
     const pid = checkServerAlive();
     if (pid == null) {
-      console.log("逸灵风未运行");
+      console.log("Free Anima not running");
       return;
     }
     process.kill(pid, "SIGTERM");
     for (let i = 0; i < 10; i++) {
       await new Promise((res) => setTimeout(res, 300));
       if (checkServerAlive() == null) {
-        console.log(`逸灵风 (PID ${pid}) 已停止`);
+        console.log(`Free Anima (PID ${pid}) stopped`);
         return;
       }
     }
-    console.log(`逸灵风 (PID ${pid}) 已发送 SIGTERM，等待超时`);
+    console.log(`Free Anima (PID ${pid}) sent SIGTERM, wait timed out`);
     return;
   }
 
@@ -361,7 +364,7 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
       systemctl("daemon-reload");
       const r = systemctl("restart", SYSTEMD_UNIT);
       if (r.status === 0) {
-        writeStatusLine("ok", "已重启 (systemd)");
+        writeStatusLine("ok", "Restarted (systemd)");
         return;
       }
     }
@@ -375,11 +378,11 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
     return;
   }
 
-  console.error(`未知操作: ${action}`);
+  console.error(`Unknown action: ${action}`);
   process.exit(1);
 }
 
-/** 供测试：探测服务是否 HTTP 可达 */
+/** For tests: probe whether service is HTTP reachable */
 export async function probeService(
   host: string,
   port: number,

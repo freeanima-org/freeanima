@@ -17,7 +17,7 @@ import { messages } from "./messages.ts";
 import { semanticMemory } from "./semantic-memory.ts";
 import { sessions } from "./sessions.ts";
 
-/** Drizzle 1.0：relations 为 drizzle() 必需配置 */
+/** Drizzle 1.0: relations required config for drizzle() */
 export const relations = defineRelations({ sessions, messages, semanticMemory }, (r) => ({
   sessions: {
     messages: r.many.messages({

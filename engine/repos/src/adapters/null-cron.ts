@@ -1,10 +1,10 @@
 import type { CronJobStorePort } from "../ports/cron.ts";
 
 const unavailable = (): never => {
-  throw new Error("database.url 未配置");
+  throw new Error("database.url not configured");
 };
 
-/** PG 不可用时的 Cron 端口空实现 */
+/** Null Cron port when PG unavailable */
 export const nullCronJobStore: CronJobStorePort = {
   async create() {
     return unavailable();

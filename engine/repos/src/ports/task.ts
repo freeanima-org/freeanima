@@ -43,7 +43,7 @@ export type TaskListOpts = {
   limit?: number;
 };
 
-/** 跨 session 待办持久化端口 */
+/** Cross-session todo persistence port */
 export interface TaskStorePort {
   create(input: TaskCreateInput): Promise<TaskRow>;
   get(id: string): Promise<TaskRow | null>;

@@ -23,7 +23,7 @@ function isRepoRoot(dir: string): boolean {
   return name === ROOT_PACKAGE_NAME || name === CLI_PACKAGE_NAME;
 }
 
-/** monorepo 或 @freeanima/cli 发布包根目录 */
+/** Monorepo or @freeanima/cli published package root */
 export function getRepoRoot(): string {
   if (cachedRepoRoot) return cachedRepoRoot;
 

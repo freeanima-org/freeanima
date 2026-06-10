@@ -20,22 +20,28 @@ export type DiscordSlashCommandMeta = {
 const OPTION_APPLIERS: Record<string, (builder: SlashCommandBuilder) => void> = {
   cwd: (b) => {
     b.addStringOption((o) =>
-      o.setName("path").setDescription("工作目录路径（留空则查看当前）").setRequired(false),
+      o
+        .setName("path")
+        .setDescription("Working directory path (empty to view current)")
+        .setRequired(false),
     );
   },
   title: (b) => {
     b.addStringOption((o) =>
-      o.setName("title").setDescription("新标题，最多 50 字（留空则查看当前）").setRequired(false),
+      o
+        .setName("title")
+        .setDescription("New title, max 50 chars (empty to view current)")
+        .setRequired(false),
     );
   },
   stats: (b) => {
     b.addBooleanOption((o) =>
-      o.setName("all").setDescription("汇总全部 session 的统计").setRequired(false),
+      o.setName("all").setDescription("Aggregate stats for all sessions").setRequired(false),
     );
   },
 };
 
-/** 由 AnimaService 命令列表生成 Discord Application Commands 定义 */
+/** Generate Discord Application Commands from AnimaService command list */
 export function buildDiscordSlashCommands(
   commands: DiscordSlashCommandMeta[],
 ): ReturnType<SlashCommandBuilder["toJSON"]>[] {
@@ -48,7 +54,7 @@ export function buildDiscordSlashCommands(
   });
 }
 
-/** Discord 交互 → 逸灵风 slash 文本（如 `/cwd path:/tmp` → `/cwd /tmp`） */
+/** Discord interaction → Free Anima slash text (e.g. `/cwd path:/tmp` → `/cwd /tmp`) */
 export function interactionToCommandText(interaction: ChatInputCommandInteraction): string {
   const name = interaction.commandName;
   const parts: string[] = [];
@@ -123,7 +129,7 @@ export async function replyDiscordInteraction(
 ): Promise<void> {
   const chunks = splitMessage(text);
   if (!chunks.length) {
-    await withDiscordRetry(() => interaction.editReply({ content: "（无输出）" }));
+    await withDiscordRetry(() => interaction.editReply({ content: "(no output)" }));
     return;
   }
   await deliverDiscordFinalContent(

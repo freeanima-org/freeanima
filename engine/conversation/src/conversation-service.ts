@@ -56,7 +56,7 @@ function bindReposAndTools<A extends unknown[], T>(
   return (...args: A) => fn(repos, tools, ...args);
 }
 
-/** 绑定 PgRepositories 与 ToolSetRegistry；由 service 组合根实例化 */
+/** Bind PgRepositories and ToolSetRegistry; instantiated by service composition root */
 export class ConversationService {
   readonly repos: PgRepositories;
   readonly tools: ToolSetRegistry;

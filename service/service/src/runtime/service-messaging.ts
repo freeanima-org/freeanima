@@ -91,7 +91,7 @@ export async function executeCommand(
     if (text.startsWith("/")) {
       const cmdName = text.split(/\s/)[0] ?? "/?";
       return {
-        text: `❌ 未知命令: ${cmdName}。输入 /help 查看可用命令。`,
+        text: `❌ Unknown command: ${cmdName}. Type /help for available commands.`,
         data: null,
         found: true,
       };
@@ -155,7 +155,7 @@ export async function* sendMessageStream(
     yield {
       event: "token",
       data: {
-        content: `❌ 未知命令: ${message.split(/\s/)[0]}。输入 /help 查看可用命令。`,
+        content: `❌ Unknown command: ${message.split(/\s/)[0]}. Type /help for available commands.`,
       },
     };
     yield { event: "done", data: {} };

@@ -16,13 +16,13 @@ describe("process-restart", () => {
     else process.env.INVOCATION_ID = prevInvocation;
   });
 
-  it("isSystemdManaged 检测 INVOCATION_ID", () => {
+  it("isSystemdManaged detects INVOCATION_ID", () => {
     expect(processRestart.isSystemdManaged()).toBe(false);
     process.env.INVOCATION_ID = "abc";
     expect(processRestart.isSystemdManaged()).toBe(true);
   });
 
-  it("systemd 托管时调用 systemctl restart", async () => {
+  it("calls systemctl restart when systemd managed", async () => {
     process.env.INVOCATION_ID = "run-1";
     const unref = mock(() => {});
     const spawnSpy = spyOn(childProcess, "spawn").mockReturnValue({
@@ -43,7 +43,7 @@ describe("process-restart", () => {
     }
   });
 
-  it("非 systemd 时发送 SIGTERM", async () => {
+  it("sends SIGTERM when not systemd", async () => {
     const killSpy = spyOn(process, "kill").mockImplementation(() => true);
 
     try {
@@ -55,7 +55,7 @@ describe("process-restart", () => {
     }
   });
 
-  it("scheduleGracefulRestart 同步 startShutdown 与 abortAll", async () => {
+  it("scheduleGracefulRestart syncs startShutdown and abortAll", async () => {
     const killSpy = spyOn(process, "kill").mockImplementation(() => true);
     const ctrl = new EngineRunControl();
     const startSpy = spyOn(ctrl, "startShutdown");

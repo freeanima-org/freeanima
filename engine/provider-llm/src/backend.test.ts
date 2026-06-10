@@ -16,12 +16,12 @@ describe("BackendRegistry", () => {
     const reg = new BackendRegistry();
     reg.register(new MockBackend({ id: "dup" }));
     expect(() => reg.register(new MockBackend({ id: "dup" }))).toThrow(
-      'backend adapter "dup" 已注册',
+      'backend adapter "dup" already registered',
     );
   });
 
   it("throws when backend missing", () => {
     const reg = new BackendRegistry();
-    expect(() => reg.get("missing")).toThrow("未找到 backend adapter: missing");
+    expect(() => reg.get("missing")).toThrow("Backend adapter not found: missing");
   });
 });

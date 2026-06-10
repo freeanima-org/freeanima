@@ -1,6 +1,6 @@
 const DEFAULT_PREFIX = "anima:events";
 
-/** 单元测轮询断言 */
+/** Unit test poll assertion */
 export async function waitFor(predicate: () => boolean, timeoutMs = 400): Promise<void> {
   const deadline = Date.now() + timeoutMs;
   while (!predicate()) {
@@ -17,7 +17,7 @@ type MockLists = {
   id: number;
 };
 
-/** 测试用：内存 Redis 列表 mock */
+/** For tests: in-memory Redis list mock */
 export function createMockRedisLists(prefix = DEFAULT_PREFIX): {
   lists: MockLists;
   client: {
@@ -106,7 +106,7 @@ export function createMockRedisLists(prefix = DEFAULT_PREFIX): {
   return { lists, client, keys };
 }
 
-/** 测试用：向 pending 队列写入一条事件 */
+/** For tests: write one event to pending queue */
 export function seedPendingEvent(
   lists: MockLists,
   topic: string,
@@ -124,7 +124,7 @@ export function seedPendingEvent(
   lists.pending.unshift(JSON.stringify(envelope));
 }
 
-/** 测试用：向 processing 队列写入一条事件（模拟 stuck） */
+/** For tests: write one event to processing queue (simulate stuck) */
 export function seedProcessingEvent(
   lists: MockLists,
   topic: string,

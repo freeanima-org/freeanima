@@ -13,7 +13,7 @@ export type AcpStatusResponse = {
   agents: unknown[];
 };
 
-/** ACP 运行时管理端口 */
+/** ACP runtime management port */
 export interface AcpManagerPort {
   getStatus(): AcpStatusResponse;
   startAll(): Promise<AcpControlResult>;

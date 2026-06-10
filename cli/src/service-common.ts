@@ -58,10 +58,10 @@ export function checkServerAlive(): number | null {
   return isServerAlive();
 }
 
-/** systemd ExecStart 使用的可执行路径（shebang 脚本或 bun + cli.js） */
+/** Executable path for systemd ExecStart (shebang script or bun + cli.js) */
 export function animaBin(): string {
   const script = process.argv[1];
-  // 当前进程即 TS CLI 时优先用它，避免 PATH 上遗留的旧 freeanima / Python 入口
+  // Prefer current process when it is the TS CLI, avoiding stale freeanima / Python entry on PATH
   if (script?.endsWith("cli.js") || script?.endsWith("cli.ts")) {
     return `${process.execPath} ${realpathSync(script)}`;
   }
@@ -77,7 +77,7 @@ export function animaBin(): string {
   return script ? realpathSync(script) : "anima";
 }
 
-/** 解析 animaBin() 为 spawn(command, args) 形态 */
+/** Resolve animaBin() to spawn(command, args) form */
 export function resolveAnimaSpawn(extraArgs: string[]): { command: string; args: string[] } {
   const bin = animaBin();
   if (bin.includes(" ")) {

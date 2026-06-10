@@ -11,7 +11,7 @@ import { loadSelfLayerPrompt } from "@freeanima/life-self";
 import { getServiceContext } from "../context.ts";
 
 export type RuntimeContextBreakdown = {
-  /** 发给 LLM 的视图（压缩后 + 摘要注入），非存档全量 */
+  /** View sent to LLM (post-compression + summary injection), not full archive */
   system_self: number;
   system_agents: number;
   system_resident: number;
@@ -25,7 +25,7 @@ function conv() {
   return getServiceContext().conversation;
 }
 
-/** 从运行时 message list 分项估算 token（与 compress 决策口径一致） */
+/** Estimate tokens by breakdown from runtime message list (same basis as compress decisions) */
 export async function computeRuntimeContextBreakdown(
   session: string,
 ): Promise<RuntimeContextBreakdown> {
@@ -70,7 +70,7 @@ export async function computeRuntimeContextBreakdown(
   };
 }
 
-/** 格式化为 k tokens 显示（保留 1 位小数，<1000 用 tokens） */
+/** Format as k tokens display (1 decimal; use tokens when <1000) */
 export function formatTokenK(tokens: number): string {
   if (tokens <= 0) return "0";
   if (tokens < 1000) return `${tokens}`;

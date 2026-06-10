@@ -13,23 +13,23 @@ describe("resolveValue", () => {
     else process.env.TEST_RESOLVE_KEY = prevEnv.TEST_RESOLVE_KEY;
   });
 
-  it("明文原样返回", async () => {
+  it("returns plaintext as-is", async () => {
     await expect(resolveValue("hello")).resolves.toBe("hello");
   });
 
-  it('展开 env("KEY")', async () => {
+  it('expands env("KEY")', async () => {
     process.env.TEST_RESOLVE_KEY = "secret";
     await expect(resolveValue('env("TEST_RESOLVE_KEY")')).resolves.toBe("secret");
   });
 
-  it("env 缺失时抛错", async () => {
+  it("throws when env missing", async () => {
     delete process.env.TEST_RESOLVE_KEY;
     await expect(resolveValue('env("TEST_RESOLVE_KEY")')).rejects.toThrow(
-      /环境变量 TEST_RESOLVE_KEY 未设置/,
+      /Environment variable TEST_RESOLVE_KEY is not set/,
     );
   });
 
-  it("混合字符串拼接 credential 引用", async () => {
+  it("mixed string concatenation with credential reference", async () => {
     await expect(
       resolveValue('user:credential("email/test-nonexistent-account-xyz", "password")'),
     ).rejects.toThrow();

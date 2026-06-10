@@ -64,7 +64,7 @@ function sanitizeTurnForApi(
     }
     default: {
       const _exhaustive: never = msg;
-      throw new Error(`未知消息 role: ${JSON.stringify(_exhaustive)}`);
+      throw new Error(`Unknown message role: ${JSON.stringify(_exhaustive)}`);
     }
   }
 }

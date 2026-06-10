@@ -55,8 +55,8 @@ describe("schemas/fact-extraction", () => {
 
   it("parses fact extraction JSON", () => {
     const result = factExtractionSchema.safeParse({
-      facts: [{ content: "张三偏好直接沟通" }],
-      summary: "偏好",
+      facts: [{ content: "Alice prefers direct communication" }],
+      summary: "preference",
     });
     expect(result.success).toBe(true);
   });
@@ -85,7 +85,7 @@ describe("schemas/clarify tool result", () => {
   it("parses awaiting clarify tool output", () => {
     const result = clarifyToolAwaitingResultSchema.safeParse({
       status: "awaiting",
-      items: [{ question: "选哪个？" }],
+      items: [{ question: "Which one?" }],
       timeout_sec: 120,
     });
     expect(result.success).toBe(true);

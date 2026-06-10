@@ -18,27 +18,27 @@ describePg("recall hybrid PG", () => {
     await restoreIntegrationHome(prev);
   });
 
-  it("pg_trgm 常开：错别字可召回", async () => {
+  it("pg_trgm always on: typo-tolerant recall", async () => {
     const store = getTestEngine().repos.semanticMemory;
 
     const targetId = await store.create({
-      content: "偏好简洁直接的沟通方式",
+      content: "Prefers concise direct communication",
       type: "preference",
     });
 
-    const hits = await store.searchFts("偏好简结直接", { limit: 5 });
+    const hits = await store.searchFts("Prefers concse direct", { limit: 5 });
     expect(hits.some((h) => h.id === targetId)).toBe(true);
   });
 
-  it("RRF 合并：FTS 与 trgm 同时命中时排序稳定", async () => {
+  it("RRF merge: stable ranking when FTS and trgm both hit", async () => {
     const store = getTestEngine().repos.semanticMemory;
 
     const exactId = await store.create({
-      content: "项目代号 Alpha 已上线",
+      content: "Project codename Alpha is live",
       type: "world",
     });
     await store.create({
-      content: "Beta 项目仍在开发",
+      content: "Beta project still in development",
       type: "world",
     });
 

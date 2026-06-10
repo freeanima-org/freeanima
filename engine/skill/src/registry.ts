@@ -4,9 +4,9 @@ import { readSkillDescriptionFromFile } from "./content.ts";
 export type SkillDef = {
   name: string;
   description: string;
-  /** 技能文件所在目录（文件名为 `{name}.md`） */
+  /** Skill file directory (filename `{name}.md`) */
   directory: string;
-  /** 注册来源，如 user / acp:cursor */
+  /** Registration source, e.g. user / acp:cursor */
   source?: string;
 };
 
@@ -56,7 +56,7 @@ export class SkillRegistry {
   }
 }
 
-/** 扫描目录下 `*.md` 并注册（description 优先 frontmatter，否则用注册时传入的默认值） */
+/** Scan `*.md` in directory and register (description from frontmatter, else default at register time) */
 export function registerSkillsFromDirectory(
   skills: SkillRegistry,
   directory: string,

@@ -18,7 +18,7 @@ function freezeMask(mask: Mask): Mask {
   });
 }
 
-/** 命名面具注册表；注册即冻结，不可修改或删除 */
+/** Named mask registry; frozen on register, cannot modify or delete */
 export class MaskRegistry {
   private readonly masks = new Map<string, Mask>();
 

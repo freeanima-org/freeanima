@@ -87,7 +87,7 @@ describe("service-prompt-debug", () => {
     resetSemanticMemoryStoreForTests();
   });
 
-  it("computeGlobalBreakdown 只统计 system 与 tools 分项", () => {
+  it("computeGlobalBreakdown counts only system and tools breakdown", () => {
     const items: PromptDebugToolItem[] = [
       {
         name: "file_read_file",
@@ -107,7 +107,7 @@ describe("service-prompt-debug", () => {
     );
   });
 
-  it("global 模式返回 registry 工具与 composed prompt", async () => {
+  it("global mode returns registry tools and composed prompt", async () => {
     const out = await getPromptDebug();
     expect(out.mode).toBe("global");
     expect(out.system.composed.length).toBeGreaterThan(0);
@@ -117,11 +117,11 @@ describe("service-prompt-debug", () => {
     expect(out.meta).toBeUndefined();
   });
 
-  it("session 不存在时抛错", async () => {
+  it("throws when session does not exist", async () => {
     await expect(getPromptDebug("missing")).rejects.toThrow("Session not found");
   });
 
-  it("session 模式对比 stored 与 live，并返回有效工具", async () => {
+  it("session mode compares stored vs live and returns effective tools", async () => {
     const preview = await getPromptDebug("sess_ok");
     mockConv.loadSessionMeta.mockImplementation(async () => ({
       role: "session_meta" as const,

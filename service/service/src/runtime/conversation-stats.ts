@@ -41,19 +41,19 @@ export type SessionStats = {
   compression_visible_messages: number;
   compression_hidden: number;
   compression_has_summary: boolean;
-  /** token 模式 */
+  /** token mode */
   compression_context_window: number | null;
   compression_effective_budget: number | null;
   compression_usage_ratio: number | null;
   compression_trigger_high: number;
   compression_trigger_low: number;
-  /** 消息条数回退模式 */
+  /** message-count fallback mode */
   compression_max_rounds: number;
   compression_threshold: number;
   compression_recompress_at: number;
   compression_messages_until_recompress: number | null;
   compression_rounds_until_recompress: number | null;
-  /** 运行时视图（压缩后）分项 */
+  /** Runtime view (post-compression) breakdown */
   context_breakdown: RuntimeContextBreakdown;
   context_tokens_est: number;
 };
@@ -279,7 +279,7 @@ export async function computeStats(session: string): Promise<SessionStats> {
   };
 }
 
-export function mergeStats(items: SessionStats[], label = "汇总"): SessionStats {
+export function mergeStats(items: SessionStats[], label = "Summary"): SessionStats {
   if (!items.length) {
     const cfg = getCompressionConfig();
     return {
@@ -406,7 +406,7 @@ export function mergeStats(items: SessionStats[], label = "汇总"): SessionStat
 }
 
 function formatDuration(seconds: number | null): string {
-  if (seconds == null) return "未知";
+  if (seconds == null) return "unknown";
   const total = Math.round(seconds);
   if (total < 60) return `${total}s`;
   const minutes = Math.floor(total / 60);
@@ -422,17 +422,17 @@ function formatNumber(
   opts?: { partial?: boolean; estimated?: boolean; digits?: number },
 ): string {
   if (value == null) {
-    if (opts?.partial === false && opts?.estimated === false) return "未知";
-    return "未知";
+    if (opts?.partial === false && opts?.estimated === false) return "unknown";
+    return "unknown";
   }
   const digits = opts?.digits ?? 1;
   const text =
     typeof value === "number" && !Number.isInteger(value) ? value.toFixed(digits) : String(value);
   const suffixes: string[] = [];
-  if (opts?.estimated) suffixes.push("估算");
-  if (opts?.partial) suffixes.push("部分");
+  if (opts?.estimated) suffixes.push("estimated");
+  if (opts?.partial) suffixes.push("partial");
   if (!suffixes.length) return text;
-  return `${opts?.estimated ? "~" : ""}${text}（${suffixes.join("，")}）`;
+  return `${opts?.estimated ? "~" : ""}${text} (${suffixes.join(", ")})`;
 }
 
 function formatPct(ratio: number | null): string {
@@ -441,65 +441,67 @@ function formatPct(ratio: number | null): string {
 }
 
 function formatCompression(stats: SessionStats): string {
-  if (!stats.compression_enabled) return "会话压缩: 已关闭";
+  if (!stats.compression_enabled) return "Session compression: disabled";
 
-  const lines = ["会话压缩: 已启用"];
+  const lines = ["Session compression: enabled"];
 
   if (stats.compression_mode === "token") {
     const win = stats.compression_context_window;
     const budget = stats.compression_effective_budget;
     lines.push(
-      `模式: token 占用率（窗口 ${win != null ? formatTokenK(win) : "—"} tokens，有效预算 ${budget != null ? formatTokenK(budget) : "—"}）`,
+      `Mode: token utilization (window ${win != null ? formatTokenK(win) : "—"} tokens, effective budget ${budget != null ? formatTokenK(budget) : "—"})`,
     );
     lines.push(
-      `触发阈: 压缩 ≥${formatPct(stats.compression_trigger_high)}，滞回 <${formatPct(stats.compression_trigger_low)}；当前占用 ${formatPct(stats.compression_usage_ratio)}`,
+      `Trigger: compress ≥${formatPct(stats.compression_trigger_high)}, hysteresis <${formatPct(stats.compression_trigger_low)}; current usage ${formatPct(stats.compression_usage_ratio)}`,
     );
   } else {
-    lines.push(`模式: 消息条数回退（max_rounds=${stats.compression_max_rounds}）`);
+    lines.push(`Mode: message-count fallback (max_rounds=${stats.compression_max_rounds})`);
     lines.push(
-      `触发阈: 首次 >${stats.compression_threshold} 条，再压缩窗口 >${stats.compression_recompress_at} 条`,
+      `Trigger: first >${stats.compression_threshold} messages, recompress window >${stats.compression_recompress_at} messages`,
     );
   }
 
   if (stats.compression_l3 == null) {
     lines.push(
-      `尚未压缩（存档 ${stats.compression_total_messages} 条；运行时约 ${formatTokenK(stats.context_tokens_est)} tokens）`,
+      `Not yet compressed (archive ${stats.compression_total_messages} messages; runtime ~${formatTokenK(stats.context_tokens_est)} tokens)`,
     );
     return lines.join("\n");
   }
 
   lines.push(
-    `l2=${stats.compression_l2 ?? 0} l3=${stats.compression_l3}；存档 ${stats.compression_total_messages} 条`,
+    `l2=${stats.compression_l2 ?? 0} l3=${stats.compression_l3}; archive ${stats.compression_total_messages} messages`,
   );
   lines.push(
-    `运行时可见 ${stats.compression_visible_messages} 条消息（相对全量隐藏 ${stats.compression_hidden} 条）`,
+    `Runtime visible ${stats.compression_visible_messages} messages (hidden vs full archive ${stats.compression_hidden})`,
   );
   if (stats.compression_has_summary) {
-    lines.push(`会话摘要: 已注入（约 ${formatTokenK(stats.context_breakdown.summary)} tokens）`);
+    lines.push(
+      `Session summary: injected (~${formatTokenK(stats.context_breakdown.summary)} tokens)`,
+    );
   }
 
   if (stats.compression_mode === "messages") {
     if (stats.compression_messages_until_recompress != null) {
       lines.push(
-        `距再次裁剪: 约 ${stats.compression_messages_until_recompress} 条消息（~${stats.compression_rounds_until_recompress} 轮）`,
+        `Until next trim: ~${stats.compression_messages_until_recompress} messages (~${stats.compression_rounds_until_recompress} turns)`,
       );
     } else if (
       stats.compression_visible_messages > 0 &&
       stats.compression_recompress_at > 0 &&
       stats.compression_total_messages - stats.compression_hidden > stats.compression_recompress_at
     ) {
-      lines.push("距再次裁剪: 已达阈，下次 beginTurn 将推进 l2/l3");
+      lines.push("Until next trim: threshold reached; next beginTurn will advance l2/l3");
     }
   } else if (
     stats.compression_usage_ratio != null &&
     stats.compression_usage_ratio >= stats.compression_trigger_high
   ) {
-    lines.push("距再次压缩: 占用已达上限，下次 beginTurn 将推进 l2/l3");
+    lines.push("Until next compress: usage at cap; next beginTurn will advance l2/l3");
   } else if (
     stats.compression_usage_ratio != null &&
     stats.compression_usage_ratio < stats.compression_trigger_low
   ) {
-    lines.push("距再次压缩: 占用低于滞回下限，暂不前移边界");
+    lines.push("Until next compress: usage below hysteresis floor; boundary not advanced yet");
   }
 
   return lines.join("\n");
@@ -509,30 +511,32 @@ function formatContextBreakdown(stats: SessionStats): string[] {
   const b = stats.context_breakdown;
   const systemTotal = b.system_self + b.system_agents + b.system_resident;
   const lines = [
-    `当前上下文（运行时视图，压缩后）: ~${formatTokenK(stats.context_tokens_est)} tokens`,
-    `  系统提示词合计: ~${formatTokenK(systemTotal)}`,
+    `Current context (runtime view, post-compression): ~${formatTokenK(stats.context_tokens_est)} tokens`,
+    `  System prompts total: ~${formatTokenK(systemTotal)}`,
   ];
-  if (b.system_self > 0) lines.push(`    自我层: ~${formatTokenK(b.system_self)}`);
+  if (b.system_self > 0) lines.push(`    Self-layer: ~${formatTokenK(b.system_self)}`);
   if (b.system_agents > 0) lines.push(`    AGENTS.md: ~${formatTokenK(b.system_agents)}`);
-  if (b.system_resident > 0) lines.push(`    常驻记忆: ~${formatTokenK(b.system_resident)}`);
-  if (b.summary > 0) lines.push(`  会话摘要: ~${formatTokenK(b.summary)}`);
-  lines.push(`  会话消息: ~${formatTokenK(b.messages)}`);
-  lines.push(`  工具 schema: ~${formatTokenK(b.tools)}`);
-  lines.push("（以上为字符粗估 ÷3.5；tools 为 API 请求体中的 schema，不计入 messages 数组）");
+  if (b.system_resident > 0) lines.push(`    Resident memory: ~${formatTokenK(b.system_resident)}`);
+  if (b.summary > 0) lines.push(`  Session summary: ~${formatTokenK(b.summary)}`);
+  lines.push(`  Session messages: ~${formatTokenK(b.messages)}`);
+  lines.push(`  Tool schema: ~${formatTokenK(b.tools)}`);
+  lines.push(
+    "(char estimate ÷3.5; tools are schema in API request body, not counted in messages array)",
+  );
   return lines;
 }
 
 function formatUsageNote(stats: SessionStats): string | null {
   if (stats.usage_turns > 0) {
     if (stats.partial_usage) {
-      return `usage 记录: ${stats.usage_turns}/${stats.assistant_turns} 轮（部分轮次无记录）`;
+      return `usage records: ${stats.usage_turns}/${stats.assistant_turns} turns (some turns missing records)`;
     }
     return null;
   }
   if (stats.estimated_usage) {
-    return `usage 记录: 0/${stats.assistant_turns} 轮（存档无 API usage，以下为内容粗估）`;
+    return `usage records: 0/${stats.assistant_turns} turns (no API usage in archive; estimates below from content)`;
   }
-  return `usage 记录: 0/${stats.assistant_turns} 轮`;
+  return `usage records: 0/${stats.assistant_turns} turns`;
 }
 
 export function formatStats(stats: SessionStats): string {
@@ -542,20 +546,20 @@ export function formatStats(stats: SessionStats): string {
   };
   const lines = [
     `Session: ${stats.session}`,
-    `消息数: ${stats.message_count}（全量，含已裁隐藏）`,
-    `assistant 轮次: ${stats.assistant_turns}`,
+    `Message count: ${stats.message_count} (full archive, including trimmed/hidden)`,
+    `assistant turns: ${stats.assistant_turns}`,
     formatCompression(stats),
     ...formatContextBreakdown(stats),
-    `输入 token: ${formatNumber(stats.input_tokens, usageOpts)}`,
-    `输出 token: ${formatNumber(stats.output_tokens, usageOpts)}`,
-    `缓存 token: ${formatNumber(stats.cached_tokens, { partial: stats.partial_cached })}`,
-    `平均 tps: ${formatNumber(stats.avg_tps, { digits: 1, estimated: stats.estimated_usage })}`,
-    `会话时长: ${formatDuration(stats.duration_seconds)}`,
-    `吞吐: ${formatNumber(stats.throughput_tpm, { digits: 1, estimated: stats.estimated_usage })} token/min`,
+    `Input tokens: ${formatNumber(stats.input_tokens, usageOpts)}`,
+    `Output tokens: ${formatNumber(stats.output_tokens, usageOpts)}`,
+    `Cached tokens: ${formatNumber(stats.cached_tokens, { partial: stats.partial_cached })}`,
+    `Avg tps: ${formatNumber(stats.avg_tps, { digits: 1, estimated: stats.estimated_usage })}`,
+    `Session duration: ${formatDuration(stats.duration_seconds)}`,
+    `Throughput: ${formatNumber(stats.throughput_tpm, { digits: 1, estimated: stats.estimated_usage })} token/min`,
   ];
   const usageNote = formatUsageNote(stats);
   if (usageNote) {
-    const tokenIdx = lines.findIndex((l) => l.startsWith("输入 token:"));
+    const tokenIdx = lines.findIndex((l) => l.startsWith("Input tokens:"));
     lines.splice(tokenIdx >= 0 ? tokenIdx : lines.length, 0, usageNote);
   }
   return lines.join("\n");
@@ -567,7 +571,7 @@ export async function statsReport(
 ): Promise<string> {
   if (opts?.allSessions) {
     const sessions = await getServiceContext().conversation.listSessions();
-    if (!sessions.length) return "（无 session）";
+    if (!sessions.length) return "(no sessions)";
     const parts: string[] = [];
     const perSession: SessionStats[] = [];
     for (const name of sessions) {
@@ -575,13 +579,13 @@ export async function statsReport(
       perSession.push(item);
       parts.push(formatStats(item));
     }
-    parts.push(formatStats(mergeStats(perSession, `汇总 (${sessions.length} 个 session)`)));
+    parts.push(formatStats(mergeStats(perSession, `Summary (${sessions.length} session(s))`)));
     return parts.join("\n\n");
   }
 
   const name = session;
   if (!name) return statsReport(null, { allSessions: true });
   if (!(await getServiceContext().conversation.sessionExists(name)))
-    return `Session: ${name}\n（空）`;
+    return `Session: ${name}\n(empty)`;
   return formatStats(await computeStats(name));
 }

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type { ToolsStatusResponse, ToolsStatusToolItem } from "@freeanima/connectors-webui/api";
 import { getToolsStatus } from "@/lib/api.ts";
+import { m } from "@/lib/i18n.ts";
 
 type ToolsLoaderData = ToolsStatusResponse;
 
@@ -44,14 +45,13 @@ function sortToolSets(toolSets: ToolsLoaderData["tool_sets"]): ToolsLoaderData["
 }
 
 function returnKindLabel(kind: ToolsStatusToolItem["return_kind"]): string {
-  return kind === "text" ? "纯文本" : "结构化 JSON";
+  return kind === "text" ? m.webui_chamber_tools_kind_text() : m.webui_chamber_tools_kind_json();
 }
 
 function returnKindHint(kind: ToolsStatusToolItem["return_kind"]): string {
-  if (kind === "text") {
-    return "成功时返回纯文本；失败时返回 JSON error";
-  }
-  return "成功时返回 toolResult JSON 对象；失败时返回 JSON error";
+  return kind === "text"
+    ? m.webui_chamber_tools_return_text()
+    : m.webui_chamber_tools_return_json();
 }
 
 function isDynamicRemoteTool(tool: ToolsStatusToolItem): boolean {
@@ -70,9 +70,9 @@ function formatReturnExample(tool: ToolsStatusToolItem): string {
 async function copyText(text: string, label: string): Promise<void> {
   try {
     await navigator.clipboard.writeText(text);
-    console.info(`已复制${label}`);
+    console.info(m.webui_common_copied({ label }));
   } catch {
-    console.warn(`复制${label}失败`);
+    console.warn(m.webui_common_copy_failed({ label }));
   }
 }
 
@@ -86,9 +86,9 @@ function DefaultToolsSection({ names }: { names: string[] }) {
   return (
     <div className="card bg-base-200 mb-4">
       <div className="card-body py-3 px-4 gap-2">
-        <h3 className="text-sm font-semibold">默认加载工具</h3>
+        <h3 className="text-sm font-semibold">{m.webui_chamber_tools_default_loaded()}</h3>
         <p className="text-xs text-base-content/60">
-          新会话自动注入 LLM tools 参数的默认集（tools_load 按需加载的工具不在此列）。
+          {m.webui_chamber_tools_default_loaded_hint()}
         </p>
         <div className="flex flex-wrap gap-1">
           {names.map((name) => (
@@ -118,10 +118,14 @@ function ToolCard({ tool }: { tool: ToolsStatusToolItem }) {
               {returnKindLabel(tool.return_kind)}
             </span>
             {tool.requires_env?.length ? (
-              <span className="badge badge-warning badge-xs">需密钥</span>
+              <span className="badge badge-warning badge-xs">
+                {m.webui_chamber_tools_needs_secret()}
+              </span>
             ) : null}
             {missingContract ? (
-              <span className="badge badge-error badge-xs">未记录返回契约</span>
+              <span className="badge badge-error badge-xs">
+                {m.webui_chamber_tools_no_contract()}
+              </span>
             ) : null}
           </div>
         </div>
@@ -134,7 +138,9 @@ function ToolCard({ tool }: { tool: ToolsStatusToolItem }) {
         ) : null}
 
         <details className="mt-1">
-          <summary className="text-xs cursor-pointer text-base-content/50">参数 schema</summary>
+          <summary className="text-xs cursor-pointer text-base-content/50">
+            {m.webui_chamber_tools_param_schema()}
+          </summary>
           <pre className="text-xs mt-1 bg-base-300 p-2 rounded overflow-x-auto">
             {JSON.stringify(tool.parameters, null, 2)}
           </pre>
@@ -143,7 +149,7 @@ function ToolCard({ tool }: { tool: ToolsStatusToolItem }) {
         {tool.return_schema ? (
           <details className="mt-1">
             <summary className="text-xs cursor-pointer text-base-content/50">
-              成功返回 schema
+              {m.webui_chamber_tools_success_schema()}
             </summary>
             <pre className="text-xs mt-1 bg-base-300 p-2 rounded overflow-x-auto">
               {JSON.stringify(tool.return_schema, null, 2)}
@@ -154,16 +160,16 @@ function ToolCard({ tool }: { tool: ToolsStatusToolItem }) {
         {exampleText ? (
           <details className="mt-1">
             <summary className="text-xs cursor-pointer text-base-content/50 flex items-center gap-2">
-              <span>保真示例（成功）</span>
+              <span>{m.webui_chamber_tools_fidelity_example()}</span>
               <button
                 type="button"
                 className="btn btn-ghost btn-xs"
                 onClick={(e) => {
                   e.preventDefault();
-                  void copyText(exampleText, "成功返回示例");
+                  void copyText(exampleText, m.webui_chamber_tools_success_example());
                 }}
               >
-                复制
+                {m.webui_common_copy()}
               </button>
             </summary>
             <pre className="text-xs mt-1 bg-base-300 p-2 rounded overflow-x-auto whitespace-pre-wrap">
@@ -173,12 +179,16 @@ function ToolCard({ tool }: { tool: ToolsStatusToolItem }) {
         ) : null}
 
         <details className="mt-1">
-          <summary className="text-xs cursor-pointer text-base-content/50">错误返回</summary>
-          <p className="text-xs text-base-content/50 mt-1">所有工具失败时统一返回 JSON：</p>
+          <summary className="text-xs cursor-pointer text-base-content/50">
+            {m.webui_chamber_tools_error_return()}
+          </summary>
+          <p className="text-xs text-base-content/50 mt-1">
+            {m.webui_chamber_tools_error_unified()}
+          </p>
           <pre className="text-xs mt-1 bg-base-300 p-2 rounded overflow-x-auto">
             {JSON.stringify(tool.error_schema, null, 2)}
           </pre>
-          <p className="text-xs text-base-content/50 mt-2">示例：</p>
+          <p className="text-xs text-base-content/50 mt-2">{m.webui_chamber_tools_example()}</p>
           <pre className="text-xs mt-1 bg-base-300 p-2 rounded overflow-x-auto">
             {JSON.stringify(tool.error_example, null, 2)}
           </pre>
@@ -186,7 +196,7 @@ function ToolCard({ tool }: { tool: ToolsStatusToolItem }) {
 
         <details className="mt-1">
           <summary className="text-xs cursor-pointer text-base-content/50">
-            完整 OpenAI 定义
+            {m.webui_chamber_tools_openai_def()}
           </summary>
           <pre className="text-xs mt-1 bg-base-300 p-2 rounded overflow-x-auto">
             {JSON.stringify(tool.definition, null, 2)}
@@ -207,8 +217,8 @@ function ToolsPage() {
   if (!toolSets.length) {
     return (
       <div>
-        <h2 className="text-lg font-bold mb-4">🔧 工具</h2>
-        <p className="text-sm text-base-content/60 mb-4">已注册的工具列表。</p>
+        <h2 className="text-lg font-bold mb-4">{m.webui_chamber_nav_tools()}</h2>
+        <p className="text-sm text-base-content/60 mb-4">{m.webui_chamber_tools_desc()}</p>
         <DefaultToolsSection names={defaultTools} />
         <div className="space-y-3">
           {tools.map((tool) => (
@@ -228,8 +238,8 @@ function ToolsPage() {
 
   return (
     <div>
-      <h2 className="text-lg font-bold mb-4">🔧 工具</h2>
-      <p className="text-sm text-base-content/60 mb-4">已注册的工具列表（按 ToolSet 分组）。</p>
+      <h2 className="text-lg font-bold mb-4">{m.webui_chamber_nav_tools()}</h2>
+      <p className="text-sm text-base-content/60 mb-4">{m.webui_chamber_tools_desc_grouped()}</p>
       <DefaultToolsSection names={defaultTools} />
 
       <div className="space-y-4">
@@ -258,7 +268,7 @@ function ToolsPage() {
 
         {ungroupedTools.length > 0 ? (
           <>
-            <h3 className="text-sm font-bold mt-4 mb-2">🔧 未分组工具</h3>
+            <h3 className="text-sm font-bold mt-4 mb-2">{m.webui_chamber_tools_ungrouped()}</h3>
             <div className="space-y-3">
               {ungroupedTools.map((tool) => (
                 <ToolCard key={tool.name} tool={tool} />

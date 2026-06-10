@@ -10,7 +10,7 @@ describe("format-record", () => {
     timestamp: Date.parse("2026-06-03T00:00:00.000Z"),
   };
 
-  it("formatPrettyRecord 包含 level、component 与 attributes suffix", () => {
+  it("formatPrettyRecord includes level, component, and attributes suffix", () => {
     const line = formatPrettyRecord(record);
     expect(line).toContain("2026-06-03T00:00:00.000Z");
     expect(line).toContain("ERROR");
@@ -20,7 +20,7 @@ describe("format-record", () => {
     expect(line).toContain("503");
   });
 
-  it("formatJsonRecord 输出单行 JSON 并序列化 err", () => {
+  it("formatJsonRecord outputs single-line JSON and serializes err", () => {
     const parsed = JSON.parse(formatJsonRecord(record)) as {
       level: string;
       message: string;

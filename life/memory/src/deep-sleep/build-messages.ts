@@ -4,9 +4,9 @@ import { getSemanticMemoryStore } from "../semantic-port.ts";
 import type { DeepSleepRound, DeepSleepChangeLog } from "./types.ts";
 import { formatChangeLogMessage } from "./change-log.ts";
 
-// ── 消息1：全量 active 语义记忆 JSON ──
+// ── Message 1: full active semantic memory JSON ──
 
-/** 每条记忆序列化为紧凑 JSON（多行展示） */
+/** Serialize each memory as compact JSON (multi-line display) */
 function rowToJsonCompact(row: SemanticMemoryRow): string {
   const obj: Record<string, unknown> = {
     id: row.id,
@@ -30,9 +30,9 @@ export function formatAllMemoriesMessage(rows: SemanticMemoryRow[]): {
   truncated: boolean;
 } {
   if (!rows.length) {
-    return { text: "（语义记忆库为空）", bytes: 0, truncated: false };
+    return { text: "(Semantic memory store is empty)", bytes: 0, truncated: false };
   }
-  const lines: string[] = [`# 全量语义记忆（${rows.length} 条 active）`];
+  const lines: string[] = [`# All semantic memories (${rows.length} active entries)`];
   for (const row of rows) {
     lines.push(rowToJsonCompact(row));
   }
@@ -48,113 +48,113 @@ export function checkJsonSize(bytes: number): "ok" | "warn" | "batch" | "error" 
   return "error";
 }
 
-// ── 消息3：各轮指令 ──
+// ── Message 3: per-round instructions ──
 
-const TOOL_INSTRUCTION_COMMON = `## 工具说明
+const TOOL_INSTRUCTION_COMMON = `## Tool reference
 
-所有工具覆盖式工作，仅修改传入字段。
+All tools use overwrite semantics: only passed fields are changed.
 
 ### memory_semantic_update
-- 修改已有记忆。未传字段保持不变。
-- 传 source_sessions: [] 可清空来源。
-- 传 status: "deprecated" 可废弃记忆（等价于 memory_semantic_deprecate）。
+- Update an existing memory. Omitted fields stay unchanged.
+- Pass source_sessions: [] to clear sources.
+- Pass status: "deprecated" to deprecate (equivalent to memory_semantic_deprecate).
 
 ### memory_semantic_deprecate
-- 软废弃一条记忆（status=deprecated），保留历史。
+- Soft-deprecate a memory (status=deprecated), history retained.
 
 ### memory_semantic_create
-- 创建新记忆。必填 content；建议填写 type、source_sessions、observed_at。
+- Create a new memory. Required: content; recommended: type, source_sessions, observed_at.
 
 ### memory_semantic_merge
-- 合并多条记忆为一条。程序自动处理 source_sessions 并集和 observed_at 取最早。
-- 参数：source_ids（2+条）、target_content（合并后正文）。
-- 可选 target_type / target_pinned / target_occurred_at。
-- 合并后自动废弃所有 source_ids 并创建新记忆。`;
+- Merge multiple memories into one. Program unions source_sessions and takes earliest observed_at.
+- Args: source_ids (2+ entries), target_content (merged body).
+- Optional target_type / target_pinned / target_occurred_at.
+- After merge, all source_ids are auto-deprecated and a new memory is created.`;
 
 const ROUND_INSTRUCTIONS: Record<DeepSleepRound, string> = {
-  contradiction_expiry: `# 深睡第一轮：矛盾检测 + 过期标记
+  contradiction_expiry: `# Deep sleep round 1: contradiction detection + expiry marking
 
-你是运行在逸灵风中的数字生命。请从上方全量语义记忆中检测排他性矛盾并标记过期。
+You are a digital life running in Free Anima. From the full semantic memories above, detect mutually exclusive contradictions and mark expired entries.
 
-## 矛盾定义（排他性）
-两条记忆在语义上互相否定，且无法用时间变化解释 → 矛盾。
-- ✓ 矛盾：「女儿属虎」vs「女儿属羊」（生肖唯一）
-- ✓ 矛盾：「不喜欢吃辣」vs「喜欢吃辣」（直接否定）
-- ✗ 不矛盾：「喜欢苹果」vs「喜欢樱桃」（可共存）
-- ✗ 不矛盾（变化）：「喜欢 Python」vs「现在更喜欢 TypeScript」（新旧都可对）
+## Contradiction definition (mutually exclusive)
+Two memories semantically negate each other and cannot be explained by change over time → contradiction.
+- ✓ Contradiction: "daughter born in Year of Tiger" vs "daughter born in Year of Goat" (zodiac is unique)
+- ✓ Contradiction: "dislikes spicy food" vs "likes spicy food" (direct negation)
+- ✗ Not a contradiction: "likes apples" vs "likes cherries" (can coexist)
+- ✗ Not a contradiction (change): "likes Python" vs "now prefers TypeScript" (both can be valid)
 
-## 处理方式
-- 确认为排他性矛盾 → deprecate 其中一条（通常是时间上更早或更不完整的）
-- 如果某条记忆已被新事实取代 → deprecate
-- 如果模糊不确定 → 跳过，不做操作
+## Handling
+- Confirmed mutually exclusive contradiction → deprecate one (usually earlier or less complete)
+- If a memory was superseded by newer facts → deprecate
+- If uncertain → skip, no action
 
-## 注意
-- 本轮只处理矛盾检测和过期标记，不要做合并或拆分。
-- 被废弃的记忆在后续轮次中会被自动忽略。
-
-${TOOL_INSTRUCTION_COMMON}
-
-请直接调用工具完成写入。`,
-
-  split: `# 深睡第二轮：拆分
-
-你是运行在逸灵风中的数字人类。请检查消息1中的全量语义记忆，找出包含多个独立事实的记忆并拆分。
-
-## 拆分标准
-一条记忆的 content 包含两个或以上可独立存在的陈述 → 拆分。
-- 拆："张三住在上海、在腾讯工作、喜欢 Python" → 三条独立记忆
-- 不拆："张三在腾讯负责微信支付后端开发" → 单一事实（只是修饰多）
-- 不拆："Free Anima 是一个数字人类框架，由维护者开发" → 关联紧密的一体信息
-
-## 处理方式
-- 拆分时：memory_semantic_create 创建各条新记忆 → deprecate 原始记忆
-- 如果原记忆过长但无法拆分 → 可用 memory_semantic_update 精简 content
-- 不确定时跳过
-
-## 注意
-- 本轮只做拆分，不要合并或检测矛盾。
-- 新增记忆的 source_sessions、observed_at 应与被拆分的原记忆一致。
+## Notes
+- This round only handles contradiction detection and expiry marking; do not merge or split.
+- Deprecated memories are ignored in later rounds.
 
 ${TOOL_INSTRUCTION_COMMON}
 
-请直接调用工具完成写入。`,
+Call tools directly to persist.`,
 
-  merge: `# 深睡第三轮：去重合并
+  split: `# Deep sleep round 2: split
 
-你是运行在逸灵风中的数字人类。请从上方全量语义记忆中检测重复或高度相似的条目并合并。
+You are a digital being running in Free Anima. Review the full semantic memories in message 1 and find entries that contain multiple independent facts to split.
 
-## 合并标准
-两条记忆在说同一件事 → 合并。
-- 合并："张三住在上海" + "张三说他家在上海" → "张三住在上海"
-- 合并："维护者使用 TypeScript" + "维护者主要用 TS 写代码" → "维护者使用 TypeScript"
-- 不合并："张三在腾讯工作" + "张三负责微信支付" → 有关联但不同事实（后续由实体系统关联）
+## Split criteria
+One memory's content has two or more independently valid statements → split.
+- Split: "Alice lives in Shanghai, works at Tencent, likes Python" → three independent memories
+- Do not split: "Alice at Tencent leads WeChat Pay backend" → single fact (extra modifiers only)
+- Do not split: "Free Anima is a digital being framework, built by maintainers" → tightly related single unit
 
-## 处理方式
-- 使用 memory_semantic_merge 合并 2+ 条为 1 条。
-- 如果只有 1 条需要修改 → 用 memory_semantic_update。
-- 优先保留更准确、更完整的那条的表述。
+## Handling
+- On split: memory_semantic_create for each new entry → deprecate the original
+- If too long but not splittable → memory_semantic_update to trim content
+- Skip when uncertain
 
-## 注意
-- 本轮只做合并，不要拆分。
-- 合并后程序自动处理 source_sessions 并集和 observed_at 取最早。
+## Notes
+- This round only splits; do not merge or detect contradictions.
+- New memories should keep source_sessions and observed_at from the split original.
 
 ${TOOL_INSTRUCTION_COMMON}
 
-请直接调用工具完成写入。`,
+Call tools directly to persist.`,
+
+  merge: `# Deep sleep round 3: deduplicate and merge
+
+You are a digital being running in Free Anima. From the full semantic memories above, detect duplicate or highly similar entries and merge them.
+
+## Merge criteria
+Two memories say the same thing → merge.
+- Merge: "Alice lives in Shanghai" + "Alice says home is in Shanghai" → "Alice lives in Shanghai"
+- Merge: "maintainer uses TypeScript" + "maintainer mainly codes in TS" → "maintainer uses TypeScript"
+- Do not merge: "Alice works at Tencent" + "Alice owns WeChat Pay" → related but distinct facts (entity linking later)
+
+## Handling
+- Use memory_semantic_merge for 2+ entries into one.
+- Single entry edit only → memory_semantic_update.
+- Prefer wording from the more accurate, complete entry.
+
+## Notes
+- This round only merges; do not split.
+- After merge, program unions source_sessions and takes earliest observed_at.
+
+${TOOL_INSTRUCTION_COMMON}
+
+Call tools directly to persist.`,
 };
 
-// ── 构建完整用户消息 ──
+// ── Build full user messages ──
 
 export type DeepSleepMessages = {
-  /** 消息1：全量 active 记忆 JSON（不变，可缓存） */
+  /** Message 1: full active memory JSON (stable, cacheable) */
   allMemoriesText: string;
-  /** 消息1 的字节大小 */
+  /** Message 1 byte size */
   allMemoriesBytes: number;
-  /** 消息2（首版为空） */
+  /** Message 2 (empty in v1) */
   preScreenText: string;
-  /** 消息3：各轮指令 */
+  /** Message 3: per-round instructions */
   instructionText: string;
-  /** 消息1.5：变更日志（随轮更新） */
+  /** Message 1.5: change log (updated each round) */
   changeLogText: string;
 };
 
@@ -167,19 +167,19 @@ export function buildDeepSleepMessages(
   return {
     allMemoriesText,
     allMemoriesBytes: bytes,
-    preScreenText: "（首版无预筛）",
+    preScreenText: "(No pre-screen in v1)",
     instructionText: ROUND_INSTRUCTIONS[round],
     changeLogText: formatChangeLogMessage(changeLog),
   };
 }
 
-/** 获取深睡所需的全量 active 记忆 */
+/** Fetch all active memories needed for deep sleep */
 export async function fetchAllActiveMemories(): Promise<SemanticMemoryRow[]> {
   const store = getSemanticMemoryStore();
-  return store.listAll(); // listAll 默认只返回 active
+  return store.listAll(); // listAll returns active only by default
 }
 
-/** 深睡 LLM 调用工具白名单 */
+/** Deep sleep LLM tool allowlist */
 export const DEEP_SLEEP_TOOL_NAMES = [
   "memory_semantic_update",
   "memory_semantic_deprecate",

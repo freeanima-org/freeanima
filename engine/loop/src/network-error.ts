@@ -25,7 +25,7 @@ function errorText(err: unknown): string {
   return String(err);
 }
 
-/** 是否为可重试的瞬态网络错误（代理抖动、握手超时、fetch 失败等） */
+/** Whether retryable transient network error (proxy jitter, handshake timeout, fetch failure, etc.) */
 export function isTransientNetworkError(err: unknown): boolean {
   if (!err) return false;
   if (err instanceof Error && TRANSIENT_NAMES.has(err.name)) return true;
@@ -33,17 +33,17 @@ export function isTransientNetworkError(err: unknown): boolean {
   return TRANSIENT_PATTERNS.some((re) => re.test(text));
 }
 
-/** 是否为引擎/LLM 流错误（非纯网络） */
+/** Whether engine/LLM stream error (not pure network) */
 export function isEngineStreamError(err: unknown): boolean {
   if (!(err instanceof Error)) return false;
   const msg = err.message;
-  return /LLM\s*调用失败/i.test(msg) || /engine error/i.test(msg);
+  return /LLM call failed/i.test(msg) || /engine error/i.test(msg);
 }
 
-const NETWORK_USER_HINT = "⚠️ 网络暂时不可用，请稍后再试";
-const ENGINE_USER_HINT = "⚠️ 引擎出错，请稍后再试";
+const NETWORK_USER_HINT = "⚠️ Network temporarily unavailable; try again later";
+const ENGINE_USER_HINT = "⚠️ Engine error; try again later";
 
-/** 供平台适配器向伙伴展示的错误提示 */
+/** Error hint for platform adapters to show partners */
 export function networkErrorUserHint(err: unknown): string {
   if (isEngineStreamError(err)) return ENGINE_USER_HINT;
   if (isTransientNetworkError(err)) return NETWORK_USER_HINT;

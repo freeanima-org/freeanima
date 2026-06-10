@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * 检测 workspace 包 production dependencies 是否存在循环。
+ * Detect cycles in workspace package production dependencies.
  */
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";

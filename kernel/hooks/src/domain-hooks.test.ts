@@ -10,7 +10,7 @@ describe("domain hooks", () => {
     expect(messageIncoming.qualifiedId).toBe("@freeanima/kernel-hooks/hooks/message-incoming");
   });
 
-  it("headOkStepData 读取链头 ok 步 data", async () => {
+  it("headOkStepData reads chain-head ok step data", async () => {
     const registry = new HookRegistry(nullLogger());
     registry.on(messageIncoming, () => ({
       status: "ok",

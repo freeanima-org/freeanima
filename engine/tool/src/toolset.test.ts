@@ -3,21 +3,21 @@ import { ToolSetRegistry } from "./index.ts";
 
 const sampleTool = {
   name: "test_tool",
-  description: "测试工具",
+  description: "Test tool",
   parameters: { type: "object", properties: {} },
   handler: () => '{"ok":true}',
 };
 
 describe("ToolSetRegistry", () => {
-  it("registerToolSet 后 getToolSet / listToolSets 返回冻结 ToolSet", () => {
+  it("getToolSet / listToolSets return frozen ToolSet after registerToolSet", () => {
     const registry = new ToolSetRegistry();
-    registry.registerToolSet("browser", "浏览器自动化", [
+    registry.registerToolSet("browser", "Browser automation", [
       { ...sampleTool, name: "browser_navigate" },
       { ...sampleTool, name: "browser_click" },
     ]);
     const ts = registry.getToolSet("browser");
     expect(ts).toBeDefined();
-    expect(ts?.description).toBe("浏览器自动化");
+    expect(ts?.description).toBe("Browser automation");
     expect(ts?.tools.map((t) => t.name)).toEqual(["browser_navigate", "browser_click"]);
     expect(Object.isFrozen(ts)).toBe(true);
     expect(Object.isFrozen(ts?.tools)).toBe(true);
@@ -25,26 +25,26 @@ describe("ToolSetRegistry", () => {
     expect(registry.listToolSets()[0]?.tools).toEqual(["browser_navigate", "browser_click"]);
   });
 
-  it("重复 registerToolSet 同名 ToolSet 抛错", () => {
+  it("duplicate registerToolSet same name throws", () => {
     const registry = new ToolSetRegistry();
-    registry.registerToolSet("local", "本地工具", [{ ...sampleTool, name: "read_file" }]);
+    registry.registerToolSet("local", "Local tools", [{ ...sampleTool, name: "read_file" }]);
     expect(() =>
-      registry.registerToolSet("local", "重复", [{ ...sampleTool, name: "write_file" }]),
+      registry.registerToolSet("local", "duplicate", [{ ...sampleTool, name: "write_file" }]),
     ).toThrow("ToolSet 'local' already registered");
   });
 
-  it("tools 数组为快照，registerToolSet 后修改原数组不影响 ToolSet", () => {
+  it("tools array is snapshot; mutating source after registerToolSet does not affect ToolSet", () => {
     const registry = new ToolSetRegistry();
     const defs = [
       { ...sampleTool, name: "a" },
       { ...sampleTool, name: "b" },
     ];
-    registry.registerToolSet("snap", "快照", defs);
+    registry.registerToolSet("snap", "snapshot", defs);
     defs.push({ ...sampleTool, name: "c" });
     expect(registry.getToolSet("snap")?.tools.map((t) => t.name)).toEqual(["a", "b"]);
   });
 
-  it("registerToolSet 保持工具注册顺序", () => {
+  it("registerToolSet preserves tool registration order", () => {
     const registry = new ToolSetRegistry();
     registry.registerToolSet("a", "A", [
       { ...sampleTool, name: "x" },
@@ -54,17 +54,17 @@ describe("ToolSetRegistry", () => {
     expect(registry.listTools().map((t) => t.name)).toEqual(["x", "y", "z"]);
   });
 
-  it("unregisterToolSet 移除整集与全局索引", () => {
+  it("unregisterToolSet removes set and global index", () => {
     const registry = new ToolSetRegistry();
     registry.registerToolSet("mcp1", "MCP", [{ ...sampleTool, name: "mcp_a" }]);
-    registry.registerToolSet("local", "本地", [{ ...sampleTool, name: "local_tool" }]);
+    registry.registerToolSet("local", "local", [{ ...sampleTool, name: "local_tool" }]);
     const removed = registry.unregisterToolSet("mcp1");
     expect(removed).toEqual(["mcp_a"]);
     expect(registry.listTools().map((t) => t.name)).toEqual(["local_tool"]);
     expect(registry.getToolSet("mcp1")).toBeUndefined();
   });
 
-  it("openaiSchemas 映射为 function schema", () => {
+  it("openaiSchemas maps to function schema", () => {
     const registry = new ToolSetRegistry();
     registry.registerToolSet("t", "T", [sampleTool]);
     const schemas = registry.openaiSchemas();
@@ -73,14 +73,14 @@ describe("ToolSetRegistry", () => {
         type: "function",
         function: {
           name: "test_tool",
-          description: "测试工具",
+          description: "Test tool",
           parameters: { type: "object", properties: {} },
         },
       },
     ]);
   });
 
-  it("openaiSchemasFromNames 按名解析 schema", () => {
+  it("openaiSchemasFromNames resolves schema by name", () => {
     const registry = new ToolSetRegistry();
     registry.registerToolSet("t", "T", [{ ...sampleTool, name: "named_tool" }]);
     expect(registry.toolNames()).toContain("named_tool");
@@ -89,18 +89,18 @@ describe("ToolSetRegistry", () => {
     expect(schemas[0]?.function.name).toBe("named_tool");
   });
 
-  it("resolveToolArgs 解析 JSON 对象", () => {
+  it("resolveToolArgs parses JSON object", () => {
     const registry = new ToolSetRegistry();
     const result = registry.resolveToolArgs('{"x":1}');
     expect(result).toEqual({ ok: true, data: { x: 1 } });
   });
 
-  it("resolveToolArgs 空参数默认为 {}", () => {
+  it("resolveToolArgs defaults empty args to {}", () => {
     const registry = new ToolSetRegistry();
     expect(registry.resolveToolArgs(null)).toEqual({ ok: true, data: {} });
   });
 
-  it("跨 ToolSet 重复工具名抛错", () => {
+  it("duplicate tool name across ToolSets throws", () => {
     const registry = new ToolSetRegistry();
     registry.registerToolSet("a", "A", [{ ...sampleTool, name: "dup" }]);
     expect(() => registry.registerToolSet("b", "B", [{ ...sampleTool, name: "dup" }])).toThrow(

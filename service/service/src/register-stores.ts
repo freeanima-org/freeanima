@@ -4,7 +4,7 @@ import type { PgRepositories } from "@freeanima/engine-repos";
 import { registerMemoryPipeline } from "@freeanima/life-memory";
 import { registerSelfLayerStore } from "@freeanima/life-self";
 
-/** 组合根一次性注入 PG 仓储端口（记忆 / 自我层 / 待办） */
+/** Composition root one-shot PG repository port injection (memory / self-layer / tasks) */
 export function registerServiceStores(
   repos: PgRepositories,
   opts?: { fridgeBridge?: FridgeBridge },

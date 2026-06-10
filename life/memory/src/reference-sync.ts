@@ -1,6 +1,6 @@
 import type { MemoryReferenceStorePort } from "@freeanima/engine-repos";
 
-/** 从 memory_references 全量重算 semantic_memory.reference_count */
+/** Recompute semantic_memory.reference_count from memory_references in full */
 export async function syncSemanticMemoryReferenceCounts(
   store: MemoryReferenceStorePort,
 ): Promise<{ updated: number }> {

@@ -163,7 +163,7 @@ async function handleMergeSemanticMemories(args: Record<string, unknown>): Promi
 
   const store = getSemanticMemoryStore();
 
-  // 查找所有源记忆
+  // Look up all source memories
   const sources: {
     id: string;
     source_sessions: string[];
@@ -188,10 +188,10 @@ async function handleMergeSemanticMemories(args: Record<string, unknown>): Promi
     );
   }
 
-  // 合并 source_sessions（并集去重）
+  // Union source_sessions (deduplicated)
   const mergedSessions = [...new Set(sources.flatMap((s) => s.source_sessions))];
 
-  // 合并 observed_at（取最早非空）
+  // Merge observed_at (earliest non-null)
   let earliestObserved: string | null = null;
   for (const s of sources) {
     if (!s.observed_at) continue;
@@ -200,7 +200,7 @@ async function handleMergeSemanticMemories(args: Record<string, unknown>): Promi
     }
   }
 
-  // 合并 occurred_at（取最早非空字符串；模糊时间按字典序近似）
+  // Merge occurred_at (earliest non-null string; fuzzy times approximated lexicographically)
   let earliestOccurred: string | null = null;
   for (const s of sources) {
     const raw = s.occurred_at?.trim();
@@ -215,7 +215,7 @@ async function handleMergeSemanticMemories(args: Record<string, unknown>): Promi
       ? String(args.target_occurred_at)
       : (earliestOccurred ?? undefined);
 
-  // 创建新记忆
+  // Create new memory
   const newId = await store.create({
     content: targetContent,
     type: args.target_type !== undefined ? String(args.target_type) : undefined,
@@ -226,7 +226,7 @@ async function handleMergeSemanticMemories(args: Record<string, unknown>): Promi
     status: "active",
   });
 
-  // 废弃所有源记忆
+  // Deprecate all source memories
   const deprecatedIds: string[] = [];
   for (const s of sources) {
     const ok = await store.deprecate(s.id);
@@ -254,7 +254,7 @@ function resolveObservedAt(
   return defaults?.observed_at ?? formatCstIso();
 }
 
-/** 供 remember 与浅睡共用的创建逻辑 */
+/** Shared create logic for remember and light sleep */
 export async function createSemanticMemoryFromArgs(
   args: Record<string, unknown>,
   defaults?: { source_sessions?: string[]; observed_at?: string },
@@ -284,20 +284,20 @@ export const semanticMemoryToolDefs: ToolDef[] = [
   {
     name: "memory_semantic_create",
     description:
-      "显式创建一条语义记忆。需提供 content；可选 type/pinned/source_sessions/observed_at/occurred_at。",
+      "Explicitly create a semantic memory. Requires content; optional type/pinned/source_sessions/observed_at/occurred_at.",
     parameters: {
       type: "object",
       properties: {
-        content: { type: "string", description: "记忆正文（一句话精炼描述）" },
-        type: { type: "string", enum: [...MEMORY_TYPES], description: "记忆类型" },
-        pinned: { type: "boolean", description: "是否置顶到常驻记忆" },
+        content: { type: "string", description: "Memory body (one concise sentence)" },
+        type: { type: "string", enum: [...MEMORY_TYPES], description: "Memory type" },
+        pinned: { type: "boolean", description: "Pin to resident context" },
         source_sessions: {
           type: "array",
           items: { type: "string" },
-          description: "来源 session ID 列表",
+          description: "Source session ID list",
         },
-        observed_at: { type: "string", description: "首次观察到该事实的时间（ISO8601）" },
-        occurred_at: { type: "string", description: "事实内容中描述的模糊发生时间" },
+        observed_at: { type: "string", description: "First observed time (ISO8601)" },
+        occurred_at: { type: "string", description: "Fuzzy occurrence time described in content" },
       },
       required: ["content"],
     },
@@ -306,22 +306,25 @@ export const semanticMemoryToolDefs: ToolDef[] = [
   {
     name: "memory_semantic_update",
     description:
-      "覆盖式更新语义记忆：仅修改传入的字段，未传字段保持不变。传 source_sessions=[] 可清空来源列表。",
+      "Overwrite-update semantic memory: only passed fields change; omitted fields stay as-is. Pass source_sessions=[] to clear sources.",
     parameters: {
       type: "object",
       properties: {
-        id: { type: "string", description: "记忆 ID" },
-        content: { type: "string", description: "新的记忆正文" },
-        type: { type: "string", enum: [...MEMORY_TYPES], description: "记忆类型" },
-        pinned: { type: "boolean", description: "是否置顶" },
+        id: { type: "string", description: "Memory ID" },
+        content: { type: "string", description: "New memory body" },
+        type: { type: "string", enum: [...MEMORY_TYPES], description: "Memory type" },
+        pinned: { type: "boolean", description: "Whether pinned" },
         source_sessions: {
           type: "array",
           items: { type: "string" },
-          description: "来源 session ID 列表；传 [] 清空",
+          description: "Source session ID list; pass [] to clear",
         },
-        observed_at: { type: "string", description: "首次观察时间（ISO8601）；传 null 清空" },
-        occurred_at: { type: "string", description: "模糊发生时间；传 null 清空" },
-        status: { type: "string", enum: ["active", "deprecated"], description: "记忆状态" },
+        observed_at: {
+          type: "string",
+          description: "First observed time (ISO8601); pass null to clear",
+        },
+        occurred_at: { type: "string", description: "Fuzzy occurrence time; pass null to clear" },
+        status: { type: "string", enum: ["active", "deprecated"], description: "Memory status" },
       },
       required: ["id"],
     },
@@ -329,11 +332,11 @@ export const semanticMemoryToolDefs: ToolDef[] = [
   },
   {
     name: "memory_semantic_deprecate",
-    description: "软废弃一条语义记忆（status=deprecated，保留历史）。",
+    description: "Soft-deprecate a semantic memory (status=deprecated, history retained).",
     parameters: {
       type: "object",
       properties: {
-        id: { type: "string", description: "记忆 ID" },
+        id: { type: "string", description: "Memory ID" },
       },
       required: ["id"],
     },
@@ -342,26 +345,26 @@ export const semanticMemoryToolDefs: ToolDef[] = [
   {
     name: "memory_semantic_search",
     description:
-      "结构化搜索语义记忆：支持 FTS query、type/status/source_sessions 过滤。默认仅返回 active。",
+      "Structured semantic memory search: FTS query plus type/status/source_sessions filters. Returns active by default.",
     parameters: {
       type: "object",
       properties: {
-        query: { type: "string", description: "全文检索关键词（可选）" },
-        limit: { type: "number", description: "最多返回条数，默认 10" },
+        query: { type: "string", description: "Full-text keywords (optional)" },
+        limit: { type: "number", description: "Max results, default 10" },
         types: {
           type: "array",
           items: { type: "string", enum: [...MEMORY_TYPES] },
-          description: "限定记忆类型",
+          description: "Restrict memory types",
         },
         status: {
           type: "string",
           enum: ["active", "deprecated", "all"],
-          description: "记忆状态过滤，默认 active",
+          description: "Status filter, default active",
         },
         source_sessions: {
           type: "array",
           items: { type: "string" },
-          description: "与给定 session 列表有交集的记忆",
+          description: "Memories intersecting given session list",
         },
       },
       required: [],
@@ -371,19 +374,19 @@ export const semanticMemoryToolDefs: ToolDef[] = [
   {
     name: "memory_semantic_merge",
     description:
-      "合并多条语义记忆为一条。程序自动处理 source_sessions 并集、observed_at 与 occurred_at 取最早。需 2+ 条 source_ids 和 target_content。合并后自动废弃源记忆。",
+      "Merge multiple semantic memories into one. Program unions source_sessions and takes earliest observed_at and occurred_at. Requires 2+ source_ids and target_content. Source memories are auto-deprecated after merge.",
     parameters: {
       type: "object",
       properties: {
         source_ids: {
           type: "array",
           items: { type: "string" },
-          description: "待合并的源记忆 ID（至少 2 条）",
+          description: "Source memory IDs to merge (at least 2)",
         },
-        target_content: { type: "string", description: "合并后的新记忆正文" },
-        target_type: { type: "string", enum: [...MEMORY_TYPES], description: "合并后的记忆类型" },
-        target_pinned: { type: "boolean", description: "是否置顶" },
-        target_occurred_at: { type: "string", description: "事实发生的模糊时间" },
+        target_content: { type: "string", description: "Merged memory body" },
+        target_type: { type: "string", enum: [...MEMORY_TYPES], description: "Merged memory type" },
+        target_pinned: { type: "boolean", description: "Whether pinned" },
+        target_occurred_at: { type: "string", description: "Fuzzy occurrence time" },
       },
       required: ["source_ids", "target_content"],
     },

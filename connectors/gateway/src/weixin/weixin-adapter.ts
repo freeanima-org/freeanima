@@ -92,7 +92,7 @@ export class WeixinAdapter implements PlatformAdapter {
   }
 
   async stop(): Promise<void> {
-    logComponent("shutdown").debug("微信 adapter 中止轮询…");
+    logComponent("shutdown").debug("WeChat adapter aborting poll…");
     unregisterWeixinCronDeliverer();
     void notifyStop(this.creds.base_url, this.creds.token).catch((e) => {
       logComponent("weixin").warn("WeChat notifyStop failed", { err: e });
@@ -109,7 +109,7 @@ export class WeixinAdapter implements PlatformAdapter {
     this.persistState();
     this.abort = null;
     this.loopPromise = null;
-    logComponent("shutdown").debug("微信 adapter 已停止");
+    logComponent("shutdown").debug("WeChat adapter stopped");
   }
 
   private async runLoop(signal: AbortSignal): Promise<void> {
@@ -313,7 +313,7 @@ export class WeixinAdapter implements PlatformAdapter {
         err: e,
         session_id: sid || undefined,
       });
-      await this.sendReply(parsed.peerId, "⚠️ 引擎出错，请稍后再试");
+      await this.sendReply(parsed.peerId, "⚠️ Engine error, please try again later");
     }
   }
 

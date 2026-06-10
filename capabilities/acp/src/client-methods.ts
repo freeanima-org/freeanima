@@ -378,11 +378,11 @@ function explainCode(
     path: resolved,
     language: lang || "text",
     content: read.content,
-    note: "代码内容供 Agent 解释；客户端不提供额外 AI 分析。",
+    note: "Code content for Agent interpretation; client provides no extra AI analysis.",
   };
 }
 
-/** ACP / Cursor 客户端方法（Agent → Client） */
+/** ACP / Cursor client methods (Agent → Client) */
 export function handleClientMethod(
   method: string,
   params: Record<string, unknown>,

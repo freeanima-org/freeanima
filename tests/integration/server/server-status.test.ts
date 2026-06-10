@@ -21,7 +21,7 @@ describePg("server status API", () => {
     await restoreIntegrationHome(prev);
   });
 
-  it("buildStatus matches WebUI / 卧室 contract", async () => {
+  it("buildStatus matches WebUI / bedroom contract", async () => {
     const svc = getServiceContext().service;
     svc.markStarted();
     const body = await svc.buildStatus("127.0.0.1", 8080);

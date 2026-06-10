@@ -1,6 +1,6 @@
 import type { ToolCall } from "./messages.ts";
 
-/** 流式 tool_calls 按 index 合并（与 legacy llm.py 一致，禁止 concat 碎片） */
+/** Merge streaming tool_calls by index (matches legacy llm.py; no fragment concat) */
 export function mergeStreamingToolCalls(
   acc: Record<number, ToolCall>,
   deltas: ToolCall[],

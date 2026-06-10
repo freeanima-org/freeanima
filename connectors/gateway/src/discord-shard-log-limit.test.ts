@@ -2,7 +2,7 @@ import { describe, expect, it } from "bun:test";
 import { RateLimitedLogger } from "@freeanima/kernel-retry";
 
 describe("Discord shard error log limiter", () => {
-  it("高频 shardError 仅阶梯放行", () => {
+  it("high-frequency shardError only stepped release", () => {
     const rl = new RateLimitedLogger([100, 200]);
     const key = "shard:0";
     const t0 = 0;

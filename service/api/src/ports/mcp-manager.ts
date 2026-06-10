@@ -13,7 +13,7 @@ export type McpStatusResponse = {
   servers: unknown[];
 };
 
-/** MCP 运行时管理端口 */
+/** MCP runtime management port */
 export interface McpManagerPort {
   getStatus(): McpStatusResponse | Promise<McpStatusResponse>;
   startAllEnabled(): Promise<McpControlResult>;

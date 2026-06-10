@@ -88,7 +88,7 @@ export class ACPClient {
     return this.connected;
   }
 
-  /** 子进程是否仍存活 */
+  /** Whether child process is still alive */
   isProcessAlive(): boolean {
     if (!this.proc) return false;
     if (this.proc.exitCode != null || this.proc.signalCode != null) return false;
@@ -205,7 +205,7 @@ export class ACPClient {
     this.sessionCwds.clear();
   }
 
-  /** 供适配器调用 JSON-RPC */
+  /** For adapter to call JSON-RPC */
   call(method: string, params?: Record<string, unknown>): Promise<Record<string, unknown>> {
     return this.request(method, params);
   }
@@ -243,7 +243,7 @@ export class ACPClient {
       await this.call("session/set_model", { sessionId, modelId });
       return;
     } catch {
-      /* 部分 agent 仅支持 set_config_option */
+      /* some agents only support set_config_option */
     }
     try {
       await this.call("session/set_config_option", {
@@ -252,7 +252,7 @@ export class ACPClient {
         value: modelId,
       });
     } catch {
-      /* 部分 agent 不支持 model 切换 */
+      /* some agents do not support model switching */
     }
   }
 
@@ -260,7 +260,7 @@ export class ACPClient {
     try {
       await this.call("session/set_mode", { sessionId, modeId });
     } catch {
-      /* 部分 agent 不支持 set_mode */
+      /* some agents do not support set_mode */
     }
   }
 
@@ -272,7 +272,7 @@ export class ACPClient {
       if (!retryOnce || !(e instanceof ACPError) || !e.message.includes("timed out")) {
         throw e;
       }
-      logComponent("acp").warn(`prompt 超时，重试一次`, { agent: this.name, sessionId });
+      logComponent("acp").warn(`prompt timed out, retrying once`, { agent: this.name, sessionId });
       return await this.runPrompt(sessionId, text);
     }
   }

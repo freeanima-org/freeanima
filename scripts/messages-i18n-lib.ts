@@ -40,7 +40,7 @@ export function sortedMessageKeys(catalog: MessageCatalog): string[] {
   return Object.keys(catalog).toSorted();
 }
 
-/** po4a XML master：每个 <msg id="key"> 为一条可译串（占位符 {…} 安全）。 */
+/** po4a XML master: each <msg id="key"> is one translatable string (placeholders {…} are safe). */
 export function catalogToPo4aXml(catalog: MessageCatalog): string {
   const lines = ['<?xml version="1.0" encoding="UTF-8"?>', "<messages>"];
   for (const key of sortedMessageKeys(catalog)) {
@@ -98,7 +98,7 @@ export function resolveMessagesZhXml(): string | null {
 
 const PO4A_CONFLICT_RE = /#-#-#-#-#([\s\S]*?)#-#-#-#-#/g;
 
-/** 去掉 po4a 在重复 msgid 上写入的冲突标记，保留第一段译文。 */
+/** Strip po4a conflict markers written on duplicate msgids; keep the first translation segment. */
 export function stripPo4aConflictMarkers(text: string): string {
   if (!text.includes("#-#-#-#-#")) return text;
   const first = PO4A_CONFLICT_RE.exec(text);
@@ -115,7 +115,7 @@ export function stripPo4aConflictMarkers(text: string): string {
 }
 
 /**
- * 同一英文 msgid 在 gettext 中只能有一条译文；按 key 字母序取首个中文作为 canonical。
+ * A single English msgid may only have one translation in gettext; use the first zh by key sort order as canonical.
  */
 function normalizeZhValue(enVal: string, zhVal: string): string {
   let cleaned = stripPo4aConflictMarkers(zhVal);

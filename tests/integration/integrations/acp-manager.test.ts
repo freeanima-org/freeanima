@@ -34,7 +34,7 @@ describe("acp manager", () => {
       test_agent: {
         command: "echo",
         args: [],
-        description: "测试 agent",
+        description: "test agent",
       },
     });
     expect(count).toBe(1);

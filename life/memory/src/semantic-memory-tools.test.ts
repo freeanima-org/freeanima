@@ -25,7 +25,7 @@ function createMockSemanticStore(): SemanticMemoryStorePort & {
           reference_count: 0,
           source_sessions: ["s-1"],
           observed_at: "2026-03-01T10:00:00+08:00",
-          occurred_at: "2025 春",
+          occurred_at: "2025 Spring",
           status: "active",
           created: "",
           updated: "",
@@ -40,7 +40,7 @@ function createMockSemanticStore(): SemanticMemoryStorePort & {
           reference_count: 0,
           source_sessions: ["s-2"],
           observed_at: "2026-04-01T10:00:00+08:00",
-          occurred_at: "2024 冬",
+          occurred_at: "2024 Winter",
           status: "active",
           created: "",
           updated: "",
@@ -64,17 +64,17 @@ describe("createSemanticMemoryFromArgs observed_at", () => {
     resetSemanticMemoryStoreForTests();
   });
 
-  it("优先使用 args.observed_at", async () => {
+  it("prefers args.observed_at when provided", async () => {
     await createSemanticMemoryFromArgs(
-      { content: "测试", observed_at: "2026-01-15T08:00:00+08:00" },
+      { content: "test", observed_at: "2026-01-15T08:00:00+08:00" },
       { observed_at: "2026-02-01T00:00:00+08:00" },
     );
     expect(store.created[0]?.observed_at).toBe("2026-01-15T08:00:00+08:00");
   });
 
-  it("无 args.observed_at 时使用 defaults", async () => {
+  it("uses defaults when args.observed_at is absent", async () => {
     await createSemanticMemoryFromArgs(
-      { content: "测试" },
+      { content: "test" },
       { observed_at: "2026-02-01T00:00:00+08:00" },
     );
     expect(store.created[0]?.observed_at).toBe("2026-02-01T00:00:00+08:00");
@@ -93,32 +93,32 @@ describe("memory_semantic_merge occurred_at", () => {
     resetSemanticMemoryStoreForTests();
   });
 
-  it("合并源记忆 occurred_at 取最早非空", async () => {
+  it("merge picks earliest non-empty occurred_at from source memories", async () => {
     const mergeDef = semanticMemoryToolDefs.find((d) => d.name === "memory_semantic_merge");
     expect(mergeDef).toBeDefined();
 
     const raw = await mergeDef!.handler({
       source_ids: ["f-a", "f-b"],
-      target_content: "合并后",
+      target_content: "merged content",
     });
     const parsed = JSON.parse(raw) as {
       merged_occurred_at: string | null;
       id: string;
     };
 
-    expect(parsed.merged_occurred_at).toBe("2024 冬");
-    expect(store.created[0]?.occurred_at).toBe("2024 冬");
+    expect(parsed.merged_occurred_at).toBe("2024 Winter");
+    expect(store.created[0]?.occurred_at).toBe("2024 Winter");
   });
 
-  it("target_occurred_at 覆盖程序合并", async () => {
+  it("target_occurred_at overrides programmatic merge", async () => {
     const mergeDef = semanticMemoryToolDefs.find((d) => d.name === "memory_semantic_merge");
     const raw = await mergeDef!.handler({
       source_ids: ["f-a", "f-b"],
-      target_content: "合并后",
-      target_occurred_at: "2026 夏",
+      target_content: "merged content",
+      target_occurred_at: "2026 Summer",
     });
     const parsed = JSON.parse(raw) as { merged_occurred_at: string | null };
-    expect(parsed.merged_occurred_at).toBe("2026 夏");
-    expect(store.created[0]?.occurred_at).toBe("2026 夏");
+    expect(parsed.merged_occurred_at).toBe("2026 Summer");
+    expect(store.created[0]?.occurred_at).toBe("2026 Summer");
   });
 });

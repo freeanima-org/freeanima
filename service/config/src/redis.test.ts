@@ -2,11 +2,11 @@ import { describe, expect, it } from "bun:test";
 import { buildRedisUrl } from "./redis.ts";
 
 describe("buildRedisUrl", () => {
-  it("默认本地 6379/0", () => {
+  it("defaults to local 6379/0", () => {
     expect(buildRedisUrl()).toBe("redis://127.0.0.1:6379/0");
   });
 
-  it("支持分项 host/port/password/db", () => {
+  it("supports host/port/password/db fields", () => {
     expect(
       buildRedisUrl({
         host: "redis",
@@ -17,7 +17,7 @@ describe("buildRedisUrl", () => {
     ).toBe("redis://:s3cret@redis:6380/2");
   });
 
-  it("url 优先于分项", () => {
+  it("url takes precedence over fields", () => {
     expect(
       buildRedisUrl({
         url: "redis://cache:6379/1",

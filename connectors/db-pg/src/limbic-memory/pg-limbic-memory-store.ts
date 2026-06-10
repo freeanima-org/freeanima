@@ -3,7 +3,7 @@ import type { LimbicMemoryStorePort } from "@freeanima/engine-repos";
 import * as crudRepo from "./repos/limbic-crud-repo.ts";
 import * as listRepo from "./repos/limbic-list-repo.ts";
 
-/** PostgreSQL LimbicMemoryStorePort 实现 */
+/** PostgreSQL LimbicMemoryStorePort implementation */
 export class PgLimbicMemoryStore implements LimbicMemoryStorePort {
   async create(row: Parameters<LimbicMemoryStorePort["create"]>[0]) {
     return crudRepo.createLimbicMemory(row);

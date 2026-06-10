@@ -1,4 +1,4 @@
-/** PG cron_log 行 */
+/** PG cron_log row */
 export type CronLogRow = {
   id: number;
   job_id: string;

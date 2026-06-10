@@ -8,13 +8,13 @@ async function* events(items: StreamEvent[]): AsyncGenerator<StreamEvent> {
 }
 
 describe("streamReplyToWeixin", () => {
-  it("一轮 tool 合并为一条，正文单独发送", async () => {
+  it("one tool round merged into one message, body sent separately", async () => {
     const sent: string[] = [];
     const result = await streamReplyToWeixin(
       events([
         { event: "tool_begin", data: { name: "grep", args: { pattern: "foo" } } },
         { event: "tool_result", data: { name: "grep", content: "matched" } },
-        { event: "token", data: { content: "微信通道正常。" } },
+        { event: "token", data: { content: "WeChat channel OK." } },
         { event: "done", data: {} },
       ]),
       {
@@ -30,10 +30,10 @@ describe("streamReplyToWeixin", () => {
     expect(sent[0]).toContain("🔧 grep");
     expect(sent[0]).toContain("foo");
     expect(sent[0]).toContain("matched");
-    expect(sent[1]).toBe("微信通道正常。");
+    expect(sent[1]).toBe("WeChat channel OK.");
   });
 
-  it("两轮 tool 各一条消息", async () => {
+  it("two tool rounds each one message", async () => {
     const sent: string[] = [];
     await streamReplyToWeixin(
       events([
@@ -58,7 +58,7 @@ describe("streamReplyToWeixin", () => {
     expect(sent[2]).toBe("done");
   });
 
-  it("空流不发送", async () => {
+  it("empty stream not sent", async () => {
     const sent: string[] = [];
     const result = await streamReplyToWeixin(events([{ event: "done", data: {} }]), {
       send: async (text) => {

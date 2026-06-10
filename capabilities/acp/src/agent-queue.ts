@@ -1,4 +1,4 @@
-/** 同一 ACP agent 子进程上串行执行 prompt，避免 stdio 交错 */
+/** Serialize prompts on the same ACP agent subprocess to avoid stdio interleaving */
 export class AcpAgentQueue {
   private tail: Promise<void> = Promise.resolve();
 

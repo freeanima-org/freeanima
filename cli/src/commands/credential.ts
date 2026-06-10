@@ -30,12 +30,12 @@ export function parseKeyValues(pairs: string[]): Record<string, string> {
   for (const pair of pairs) {
     const eq = pair.indexOf("=");
     if (eq <= 0) {
-      throw new Error(`无效参数 '${pair}'，格式应为 key=value`);
+      throw new Error(`Invalid argument '${pair}', format should be key=value`);
     }
     data[pair.slice(0, eq)] = pair.slice(eq + 1);
   }
   if (Object.keys(data).length === 0) {
-    throw new Error("至少需要一个 key=value 参数");
+    throw new Error("At least one key=value argument required");
   }
   return data;
 }
@@ -46,15 +46,15 @@ export function registerCredentialCommand(
 ): void {
   const credentialCmd = program
     .command("credential")
-    .description("管理 pass 凭证（不含密钥明文回显到日志）");
+    .description("Manage pass credentials (no secret plaintext echoed to logs)");
 
   credentialCmd
     .command("list")
-    .description("列出凭证路径与字段元数据")
+    .description("List credential paths and field metadata")
     .action(() => {
       const creds = deps.listCredentials();
       if (!creds.length) {
-        console.log("(无凭证)");
+        console.log("(no credentials)");
         return;
       }
       const rows = creds.map((c) => [c.path, c.tags.join(", "), c.desc, c.fields.join(", ")]);
@@ -63,9 +63,9 @@ export function registerCredentialCommand(
 
   credentialCmd
     .command("get")
-    .description("读取凭证值（输出到 stdout，供脚本使用）")
-    .argument("<path>", "凭证路径，如 services/discord")
-    .argument("<field>", "YAML 字段名，如 token、url")
+    .description("Read credential value (stdout, for scripts)")
+    .argument("<path>", "Credential path, e.g. services/discord")
+    .argument("<field>", "YAML field name, e.g. token, url")
     .action((path: string, field: string) => {
       try {
         console.log(deps.credential(path, field));
@@ -77,14 +77,14 @@ export function registerCredentialCommand(
 
   credentialCmd
     .command("add")
-    .description("新建或整份覆盖凭证（YAML），参数格式 key=value")
-    .argument("<path>", "凭证路径")
-    .argument("<kv...>", "字段，如 token=xxx desc=Discord bot")
+    .description("Create or fully overwrite credential (YAML), args format key=value")
+    .argument("<path>", "Credential path")
+    .argument("<kv...>", "Fields, e.g. token=xxx desc=Discord bot")
     .action((path: string, kv: string[]) => {
       try {
         const data = parseKeyValues(kv);
         deps.insertCredential(path, data);
-        writeStatusLine("ok", `已写入 ${path}`);
+        writeStatusLine("ok", `Written ${path}`);
       } catch (e) {
         printCliError(e);
         process.exit(1);
@@ -93,14 +93,14 @@ export function registerCredentialCommand(
 
   credentialCmd
     .command("set")
-    .description("更新凭证字段（合并已有 YAML，不覆盖未提及字段）")
-    .argument("<path>", "凭证路径")
-    .argument("<kv...>", "字段，如 npmtoken=xxx desc=updated")
+    .description("Update credential fields (merge into existing YAML, untouched fields preserved)")
+    .argument("<path>", "Credential path")
+    .argument("<kv...>", "Fields, e.g. npmtoken=xxx desc=updated")
     .action((path: string, kv: string[]) => {
       try {
         const data = parseKeyValues(kv);
         deps.updateCredential(path, data);
-        writeStatusLine("ok", `已更新 ${path}`);
+        writeStatusLine("ok", `Updated ${path}`);
       } catch (e) {
         printCliError(e);
         process.exit(1);

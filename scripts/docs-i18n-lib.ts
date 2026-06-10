@@ -10,7 +10,7 @@ export type DocMaster = {
   master: string;
 };
 
-/** gettext / po4a 语言目录名（如 zh_CN、ja） */
+/** gettext / po4a language directory names (e.g. zh_CN, ja) */
 export const DOC_PO_LANGS = ["zh_CN"] as const;
 export type DocPoLang = (typeof DOC_PO_LANGS)[number];
 
@@ -53,7 +53,7 @@ export function poPotPath(master: string): string {
   return join(potRoot, `${master}.pot`);
 }
 
-/** 语言 PO：po/<lang>/<master>.po（不含语言后缀） */
+/** Language PO: po/<lang>/<master>.po (no language suffix in filename) */
 export function poFilePath(master: string, lang: DocPoLang = "zh_CN"): string {
   return join(poLangDir(lang), `${master}.po`);
 }

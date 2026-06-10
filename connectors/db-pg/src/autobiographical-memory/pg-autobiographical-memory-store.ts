@@ -2,7 +2,7 @@ import type { AutobiographicalMemoryStorePort } from "@freeanima/engine-repos";
 
 import * as crudRepo from "./repos/autobiographical-crud-repo.ts";
 
-/** PostgreSQL AutobiographicalMemoryStorePort 实现 */
+/** PostgreSQL AutobiographicalMemoryStorePort implementation */
 export class PgAutobiographicalMemoryStore implements AutobiographicalMemoryStorePort {
   async create(row: Parameters<AutobiographicalMemoryStorePort["create"]>[0]) {
     return crudRepo.createAutobiographicalMemory(row);

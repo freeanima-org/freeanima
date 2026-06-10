@@ -7,7 +7,7 @@ import {
 } from "./async-task.ts";
 
 describe("AcpAsyncTaskStore", () => {
-  it("findActive 按 agent 查找运行中任务", () => {
+  it("findActive finds running task by agent", () => {
     const store = new AcpAsyncTaskStore();
     const now = Date.now();
     store.set({
@@ -43,7 +43,7 @@ describe("AcpAsyncTaskStore", () => {
 });
 
 describe("formatProgressBody", () => {
-  it("包含最近进度片段", () => {
+  it("includes recent progress snippet", () => {
     const now = Date.now();
     const body = formatProgressBody({
       taskId: "abc123",
@@ -54,18 +54,18 @@ describe("formatProgressBody", () => {
       status: "running",
       startedAt: now - 90_000,
       lastProgressAt: now,
-      progressNotes: ["分析代码", "实现方案"],
+      progressNotes: ["Analyzing code", "Implementing plan"],
       lastDeliveredAt: 0,
       timeoutAt: now + 60_000,
     });
     expect(body).toContain("task: abc123");
     expect(body).toContain("1m30s");
-    expect(body).toContain("分析代码");
+    expect(body).toContain("Analyzing code");
   });
 });
 
 describe("appendProgressNote", () => {
-  it("更新 lastProgressAt 并限制条数", () => {
+  it("updates lastProgressAt and limits count", () => {
     const now = Date.now();
     const task = {
       taskId: "t1",
@@ -87,7 +87,7 @@ describe("appendProgressNote", () => {
 });
 
 describe("formatElapsed", () => {
-  it("格式化分秒", () => {
+  it("formats minutes and seconds", () => {
     expect(formatElapsed(45_000)).toBe("45s");
     expect(formatElapsed(125_000)).toBe("2m5s");
   });

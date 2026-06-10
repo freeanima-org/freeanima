@@ -14,10 +14,10 @@ export function parseOpenAiCompatibleContext(context: BackendContext): OpenAiCom
   const timeoutRaw = context.timeoutMs ?? context.timeout_ms;
 
   if (typeof baseUrlRaw !== "string" || !baseUrlRaw.trim()) {
-    throw new Error("OpenAI 兼容 backend 需要 context.baseUrl");
+    throw new Error("OpenAI compatible backend requires context.baseUrl");
   }
   if (typeof apiKeyRaw !== "string" || !apiKeyRaw.trim()) {
-    throw new Error("OpenAI 兼容 backend 需要 context.apiKey");
+    throw new Error("OpenAI compatible backend requires context.apiKey");
   }
 
   const parsed: OpenAiCompatibleContext = {
@@ -27,7 +27,7 @@ export function parseOpenAiCompatibleContext(context: BackendContext): OpenAiCom
 
   if (timeoutRaw !== undefined) {
     if (typeof timeoutRaw !== "number" || timeoutRaw <= 0) {
-      throw new Error("context.timeoutMs 必须为正数");
+      throw new Error("context.timeoutMs must be positive");
     }
     parsed.timeoutMs = timeoutRaw;
   }

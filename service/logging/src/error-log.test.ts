@@ -35,14 +35,14 @@ describe("error-log", () => {
   });
 
   it("writes startup failure with source tag", () => {
-    logStartupError("服务启动失败", new Error("database.url 未配置"));
+    logStartupError("service startup failed", new Error("database.url not configured"));
 
-    expect(memory.records.some((r) => r.message.includes("服务启动失败"))).toBe(true);
+    expect(memory.records.some((r) => r.message.includes("service startup failed"))).toBe(true);
     expect(
       memory.records.some(
         (r) =>
           r.attributes.component === "startup" &&
-          String(r.attributes.err ?? "").includes("database.url 未配置"),
+          String(r.attributes.err ?? "").includes("database.url not configured"),
       ),
     ).toBe(true);
   });

@@ -46,7 +46,7 @@ describe("streamReplyToChannel", () => {
     return timeline.findIndex(pred);
   }
 
-  it("tool 轮单独 send，含参数与结果摘要", async () => {
+  it("tool round sent separately with params and result summary", async () => {
     const { channel, sends, edits } = fakeChannel();
     async function* gen(): AsyncGenerator<StreamEvent> {
       yield { event: "tool_begin", data: { name: "demo_tool", args: { q: "test" } } };
@@ -62,13 +62,13 @@ describe("streamReplyToChannel", () => {
     expect(sends[0]).toContain("🔧 demo_tool");
     expect(sends[0]).toContain("test");
     expect(sends[0]).toContain("SECRET");
-    expect(sends[1]).toContain("思考中");
+    expect(sends[1]).toContain("Thinking");
     const lastEdit = edits[edits.length - 1];
     expect(lastEdit).toBe("final z");
-    expect(lastEdit).not.toContain("思考中");
+    expect(lastEdit).not.toContain("Thinking");
   });
 
-  it("两轮 tool + 最终答案分多条消息", async () => {
+  it("two tool rounds + final answer as multiple messages", async () => {
     const { channel, sends, timeline } = fakeChannel();
     async function* gen(): AsyncGenerator<StreamEvent> {
       yield { event: "tool_begin", data: { name: "read", args: {} } };
@@ -96,7 +96,7 @@ describe("streamReplyToChannel", () => {
     expect(answerEditIdx).toBeGreaterThan(grepSendIdx);
   });
 
-  it("答案中途插入 tool 时 tool 在已固化片段之后、续答之前", async () => {
+  it("tool inserted after finalized segment and before continuation", async () => {
     const { channel, timeline } = fakeChannel();
     async function* gen(): AsyncGenerator<StreamEvent> {
       yield { event: "token", data: { content: "part1" } };
@@ -118,7 +118,7 @@ describe("streamReplyToChannel", () => {
     expect(part2EditIdx).toBeGreaterThan(toolSendIdx);
   });
 
-  it("长答案拆段时 tool 不插在段落中间", async () => {
+  it("tool not inserted mid-paragraph when splitting long answer", async () => {
     const { channel, timeline } = fakeChannel();
     const head = "a".repeat(1500);
     async function* gen(): AsyncGenerator<StreamEvent> {
@@ -146,7 +146,7 @@ describe("streamReplyToChannel", () => {
     }
   });
 
-  it("超长正文按 1000 字阈值拆条", async () => {
+  it("split body by 1000-char threshold", async () => {
     const { channel, edits, sends } = fakeChannel();
     const body = "a".repeat(1500);
     async function* gen(): AsyncGenerator<StreamEvent> {
@@ -159,13 +159,13 @@ describe("streamReplyToChannel", () => {
     expect(sends.length).toBeGreaterThanOrEqual(2);
   });
 
-  it("最终 edit 失败时 fallback 新发正文", async () => {
+  it("fallback new body when final edit fails", async () => {
     const edits: string[] = [];
     const sends: string[] = [];
     const sentMsg = {
       edit: vi.fn(async (opts: { content: string }) => {
         edits.push(opts.content);
-        if (!opts.content.includes("思考中")) throw { status: 403 };
+        if (!opts.content.includes("Thinking")) throw { status: 403 };
       }),
     } as unknown as Pick<Message, "edit">;
 
@@ -185,19 +185,19 @@ describe("streamReplyToChannel", () => {
     expect(sends.some((s) => s === "hello discord")).toBe(true);
   });
 
-  it("done 事件立即收尾", async () => {
+  it("done event finalizes immediately", async () => {
     const { channel, edits, sends } = fakeChannel();
     async function* gen(): AsyncGenerator<StreamEvent> {
       yield { event: "token", data: { content: "final answer" } };
       yield { event: "done", data: {} };
     }
     await streamReplyToChannel(channel, gen());
-    expect(sends[0]).toContain("思考中");
+    expect(sends[0]).toContain("Thinking");
     const lastEdit = edits[edits.length - 1];
     expect(lastEdit).toBe("final answer");
   });
 
-  it("多 tool 合并消息超过 Discord 上限时拆条发送", async () => {
+  it("split send when merged tool message exceeds Discord limit", async () => {
     const { channel, sends } = fakeChannel();
     async function* gen(): AsyncGenerator<StreamEvent> {
       for (let i = 0; i < 30; i++) {
@@ -219,7 +219,7 @@ describe("streamReplyToChannel", () => {
     }
   });
 
-  it("done 后 generator 仍挂起时不阻塞 finalize", async () => {
+  it("finalize not blocked when generator still pending after done", async () => {
     const { channel, edits } = fakeChannel();
     let hangResolve: () => void = () => {};
     const hangGate = new Promise<void>((resolve) => {

@@ -39,7 +39,7 @@ describe("messagesForApi", () => {
     expect(out[1]).toMatchObject({ role: "user", content: "hi" });
   });
 
-  it("assistant 无正文且 tool_calls 清洗后为空时使用空串 content", () => {
+  it("uses empty string content when assistant has no body and cleaned tool_calls empty", () => {
     const out = messagesForApi([
       {
         role: "assistant",

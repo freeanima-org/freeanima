@@ -3,7 +3,7 @@ import type { ProviderSpec } from "@freeanima/engine-provider-llm";
 
 export const OPENAI_COMPATIBLE_BACKEND_ID = "openai_compatible";
 
-/** yaml `llm.providers.<id>` 中 backend=openai_compatible 时的 schema */
+/** Schema when backend=openai_compatible in yaml `llm.providers.<id>` */
 export const openAiCompatibleProviderConfigSchema = z
   .object({
     backend: z.literal(OPENAI_COMPATIBLE_BACKEND_ID),
@@ -15,7 +15,7 @@ export const openAiCompatibleProviderConfigSchema = z
 
 export type OpenAiCompatibleProviderConfig = z.infer<typeof openAiCompatibleProviderConfigSchema>;
 
-/** 解析为 engine-provider-llm 的 ProviderSpec（id 由 yaml key 传入） */
+/** Parse as engine-provider-llm ProviderSpec (id from yaml key) */
 export function parseOpenAiCompatibleProviderSpec(id: string, raw: unknown): ProviderSpec {
   const cfg = openAiCompatibleProviderConfigSchema.parse(raw);
   return {

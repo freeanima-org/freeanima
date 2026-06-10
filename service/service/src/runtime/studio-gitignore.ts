@@ -7,7 +7,7 @@ export interface GitignoreRule {
   dirOnly: boolean;
 }
 
-/** 解析单个 .gitignore 文件 */
+/** Parse a single .gitignore file */
 export function parseGitignore(content: string): GitignoreRule[] {
   const rules: GitignoreRule[] = [];
   for (const raw of content.split("\n")) {
@@ -26,7 +26,7 @@ export function parseGitignore(content: string): GitignoreRule[] {
   return rules;
 }
 
-/** gitignore glob → RegExp（支持 *、?、**） */
+/** gitignore glob → RegExp (supports *, ?, **) */
 function globToRegex(pattern: string, rootAnchored: boolean): RegExp {
   const escaped = pattern
     .replace(/[.+^${}()|[\]\\]/g, "\\$&")
@@ -62,7 +62,7 @@ function ruleMatches(relPath: string, isDir: boolean, rule: GitignoreRule): bool
   return globToRegex(pat, false).test(base);
 }
 
-/** 按 gitignore 规则栈判断路径是否被忽略 */
+/** Whether path is ignored per gitignore rule stack */
 export function isIgnored(relPath: string, isDir: boolean, ruleSets: GitignoreRule[][]): boolean {
   let ignored = false;
   for (const rules of ruleSets) {
@@ -75,7 +75,7 @@ export function isIgnored(relPath: string, isDir: boolean, ruleSets: GitignoreRu
   return ignored;
 }
 
-/** 收集从根到 dir 路径上各层 .gitignore 规则（含根） */
+/** Collect .gitignore rules from root to dir path (including root) */
 export function loadGitignoreStack(workspaceRoot: string, absDir: string): GitignoreRule[][] {
   const stack: GitignoreRule[][] = [];
   const rel = relative(workspaceRoot, absDir);
@@ -103,5 +103,5 @@ export function loadGitignoreStack(workspaceRoot: string, absDir: string): Gitig
   return stack;
 }
 
-/** 默认始终跳过的目录名 */
+/** Directory names always skipped by default */
 export const DEFAULT_SKIP_DIRS = new Set(["node_modules", ".git"]);

@@ -42,7 +42,7 @@ export function resolveSessionDeliverTargets(
 }
 
 function formatResultBody(task: AcpAsyncTaskSnapshot, result: AcpPromptResult): string {
-  const lines = [`Cursor 任务完成 (task: ${task.taskId})`];
+  const lines = [`Cursor task completed (task: ${task.taskId})`];
   const output = result.output.trim();
   if (output) {
     const clipped = output.length > RESULT_MAX_LEN ? `${output.slice(0, RESULT_MAX_LEN)}…` : output;
@@ -50,13 +50,13 @@ function formatResultBody(task: AcpAsyncTaskSnapshot, result: AcpPromptResult): 
   }
   if (result.pending?.length) {
     lines.push("");
-    lines.push("待决策：请用 continue_session=true 继续同一 ACP session。");
+    lines.push("Decision pending: use continue_session=true to continue the same ACP session.");
   }
   return lines.join("\n");
 }
 
 function formatErrorBody(task: AcpAsyncTaskSnapshot, message: string): string {
-  return `Cursor 任务结束 (task: ${task.taskId}, ${task.status})\n${message}`;
+  return `Cursor task ended (task: ${task.taskId}, ${task.status})\n${message}`;
 }
 
 export function createAcpProgressDelivery(opts: {
@@ -90,10 +90,13 @@ export function createAcpProgressDelivery(opts: {
       if (targets.length) {
         await deliverToTargets(targets, body);
       } else {
-        logComponent("acp-deliver").debug("无外部投递目标，仅通知 session 更新", {
-          sessionId: task.animaSessionId,
-          taskId: task.taskId,
-        });
+        logComponent("acp-deliver").debug(
+          "No external delivery target; only notifying session update",
+          {
+            sessionId: task.animaSessionId,
+            taskId: task.taskId,
+          },
+        );
       }
       notifySession(task.animaSessionId);
     },

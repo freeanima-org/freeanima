@@ -1,6 +1,6 @@
 import type { DispatchOutcome, EventQueueAdapter, StoredEvent } from "../queue.ts";
 
-/** 空队列适配器；emit 丢弃，永不 dispatch */
+/** Null queue adapter; emit dropped, never dispatch */
 export class NullEventQueue implements EventQueueAdapter {
   enqueue(_topicQualifiedId: string, _payload: unknown): void {}
 

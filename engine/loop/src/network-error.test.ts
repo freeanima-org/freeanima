@@ -32,15 +32,15 @@ describe("network-error", () => {
   });
 
   it("classifies engine stream errors", () => {
-    expect(isEngineStreamError(new Error("LLM 调用失败: rate limit"))).toBe(true);
+    expect(isEngineStreamError(new Error("LLM call failed: rate limit"))).toBe(true);
     expect(isEngineStreamError(new Error("engine error"))).toBe(true);
     expect(isEngineStreamError(new Error("Connect Timeout Error"))).toBe(false);
   });
 
   it("returns appropriate user hints", () => {
     const net = new Error("fetch failed");
-    expect(networkErrorUserHint(net)).toContain("网络");
-    const engine = new Error("LLM 调用失败: x");
-    expect(networkErrorUserHint(engine)).toContain("引擎");
+    expect(networkErrorUserHint(net)).toContain("Network");
+    const engine = new Error("LLM call failed: x");
+    expect(networkErrorUserHint(engine)).toContain("Engine");
   });
 });

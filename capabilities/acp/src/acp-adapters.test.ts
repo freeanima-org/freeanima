@@ -5,7 +5,7 @@ import { resolveAcpAdapter } from "./adapters/registry.ts";
 import { createPromptCapture, parseCursorQuestions } from "./cursor-decision.ts";
 
 describe("parseSessionUpdateChunk", () => {
-  it("解析 Cursor sessionUpdate 蛇形命名", () => {
+  it("parses Cursor sessionUpdate snake_case names", () => {
     const text = parseSessionUpdateChunk({
       sessionUpdate: "agent_message_chunk",
       content: { text: "hello" },
@@ -13,7 +13,7 @@ describe("parseSessionUpdateChunk", () => {
     expect(text).toBe("hello");
   });
 
-  it("解析旧式 AgentMessageChunk", () => {
+  it("parses legacy AgentMessageChunk", () => {
     const text = parseSessionUpdateChunk({
       type: "AgentMessageChunk",
       content: { text: "world" },
@@ -23,12 +23,12 @@ describe("parseSessionUpdateChunk", () => {
 });
 
 describe("cursorAcpAdapter", () => {
-  it("自动批准权限", () => {
+  it("auto-approves permissions", () => {
     const r = cursorAcpAdapter.handleServerRequest("session/request_permission", {});
     expect(r).toEqual({ outcome: { outcome: "selected", optionId: "allow-once" } });
   });
 
-  it("create_plan 返回 rejected 并捕获方案", () => {
+  it("create_plan returns rejected and captures plan", () => {
     const capture = createPromptCapture();
     const r = cursorAcpAdapter.handleServerRequest(
       "cursor/create_plan",
@@ -40,7 +40,7 @@ describe("cursorAcpAdapter", () => {
     expect(capture.pending[0]?.kind).toBe("plan");
   });
 
-  it("ask_question 不盲选，返回 skipped 并捕获问题", () => {
+  it("ask_question does not auto-select, returns skipped and captures questions", () => {
     const capture = createPromptCapture();
     const r = cursorAcpAdapter.handleServerRequest(
       "cursor/ask_question",
@@ -67,7 +67,7 @@ describe("cursorAcpAdapter", () => {
 });
 
 describe("parseCursorQuestions", () => {
-  it("解析问题结构", () => {
+  it("parses question structure", () => {
     const qs = parseCursorQuestions({
       questions: [{ id: "1", prompt: "Hello?", options: [{ id: "x", label: "Yes" }] }],
     });
@@ -77,12 +77,12 @@ describe("parseCursorQuestions", () => {
 });
 
 describe("resolveAcpAdapter", () => {
-  it("显式 adapter", () => {
+  it("explicit adapter", () => {
     expect(resolveAcpAdapter({ adapter: "generic" }).id).toBe("generic");
     expect(resolveAcpAdapter({ adapter: "cursor" }).id).toBe("cursor");
   });
 
-  it("agent acp 推断 cursor", () => {
+  it("agent acp infers cursor", () => {
     expect(
       resolveAcpAdapter({
         command: "/usr/bin/agent",

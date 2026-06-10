@@ -15,7 +15,7 @@ function emitToSinks(sinks: LogSink[], record: LogRecord): void {
     try {
       sink.emit(record);
     } catch {
-      /* sink 失败不得影响主流程 */
+      /* sink failure must not affect main flow */
     }
   }
 }
@@ -57,7 +57,7 @@ export class LoggerImpl implements Logger {
   with(scope: LogAttributes & { component?: string }): Logger {
     const nextScope = mergeAttributes(this.scope, scope);
     if (!hasComponent(nextScope)) {
-      throw new Error("logger.with() 需要 component（首次建立 scope 时必填）");
+      throw new Error("logger.with() requires component (required when first establishing scope)");
     }
     return new LoggerImpl(
       {

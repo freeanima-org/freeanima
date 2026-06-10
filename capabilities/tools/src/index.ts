@@ -22,7 +22,7 @@ import { registerSkillsTools } from "./skills-tools.ts";
 import { registerTerminalTools } from "./terminal.ts";
 import { registerWebTools } from "./web.ts";
 
-/** 基础工具集 */
+/** Core tool sets */
 export function registerCoreTools(toolSets: ToolSetRegistry): void {
   registerCatalogTools(toolSets);
   registerSessionTools(toolSets);

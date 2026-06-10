@@ -2,12 +2,12 @@ import type { ChatCompletion, ChatRequest, ChatStreamEvent } from "./invoke.ts";
 import type { ModelInfo } from "./model.ts";
 import { ProviderError } from "./errors.ts";
 
-/** Backend adapter 持有的连接上下文；capabilities 从 config parse 后填入 */
+/** Connection context held by Backend adapter; capabilities fill from parsed config */
 export type BackendContext = Record<string, unknown>;
 
 /**
- * Backend：协议 adapter 基类（capabilities 继承实现）。
- * 多个 Provider 实例可绑定同一 Backend。
+ * Backend: protocol adapter base (capabilities subclass).
+ * Multiple Provider instances may bind one Backend.
  */
 export abstract class LlmBackend {
   constructor(readonly id: string) {}
@@ -36,14 +36,14 @@ export abstract class LlmBackend {
 }
 
 export class BackendRegistry {
-  /** 显式构造函数：避免 Bun coverage 将隐式构造计为未覆盖（oven-sh/bun#7025） */
+  /** Explicit constructor: avoid Bun coverage counting implicit ctor as uncovered (oven-sh/bun#7025) */
   constructor() {}
 
   private readonly backends = new Map<string, LlmBackend>();
 
   register(backend: LlmBackend): void {
     if (this.backends.has(backend.id)) {
-      throw new Error(`backend adapter "${backend.id}" 已注册`);
+      throw new Error(`backend adapter "${backend.id}" already registered`);
     }
     this.backends.set(backend.id, backend);
   }
@@ -51,7 +51,7 @@ export class BackendRegistry {
   get(id: string): LlmBackend {
     const backend = this.backends.get(id);
     if (!backend) {
-      throw new Error(`未找到 backend adapter: ${id}`);
+      throw new Error(`Backend adapter not found: ${id}`);
     }
     return backend;
   }

@@ -2,12 +2,12 @@ import { describe, expect, it } from "bun:test";
 import { createMemorySink } from "./memory.ts";
 
 describe("createMemorySink", () => {
-  it("初始 records 为空", () => {
+  it("initial records empty", () => {
     const sink = createMemorySink();
     expect(sink.records).toEqual([]);
   });
 
-  it("emit 追加完整 LogRecord", () => {
+  it("emit appends full LogRecord", () => {
     const sink = createMemorySink();
     const record = {
       level: "warn" as const,
@@ -20,7 +20,7 @@ describe("createMemorySink", () => {
     expect(sink.records[0]).toEqual(record);
   });
 
-  it("按 emit 顺序累积", () => {
+  it("accumulates in emit order", () => {
     const sink = createMemorySink();
     sink.emit({
       level: "info",

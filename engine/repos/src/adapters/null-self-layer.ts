@@ -4,7 +4,7 @@ import type { SelfBlockRow, SelfLayerStorePort } from "../ports/self-layer.ts";
 import { SELF_BLOCK_KEYS } from "../ports/self-layer.ts";
 
 const unavailable = (): never => {
-  throw new Error("database.url 未配置");
+  throw new Error("database.url not configured");
 };
 
 function emptyBlock(key: SelfBlockKey): SelfBlockRow {
@@ -19,7 +19,7 @@ function emptyBlock(key: SelfBlockKey): SelfBlockRow {
   };
 }
 
-/** PG 不可用时的自我层端口空实现 */
+/** Null self-layer port when PG unavailable */
 export const nullSelfLayerStore: SelfLayerStorePort = {
   async getBlock(key) {
     return emptyBlock(key);

@@ -1,4 +1,4 @@
-/** PG timestamptz 写入：统一为 ISO 8601（Z），避免 +00:00 等格式在驱动层解析失败 */
+/** PG timestamptz write: unified ISO 8601 (Z) to avoid driver parse failures on +00:00 etc. */
 export function normalizePgTimestamp(ts: string | Date | undefined | null): string {
   if (ts == null || ts === "") {
     return new Date().toISOString();

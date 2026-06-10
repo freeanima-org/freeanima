@@ -27,7 +27,7 @@ function emptyPlaceholderBlocks(): SelfBlockRow[] {
   }));
 }
 
-/** 结构化读取六块 */
+/** Load the six self blocks as structured views */
 export async function loadSelfBlocks(): Promise<SelfBlockView[]> {
   try {
     const rows = await getSelfLayerStore().listBlocks();
@@ -37,7 +37,7 @@ export async function loadSelfBlocks(): Promise<SelfBlockView[]> {
   }
 }
 
-/** 从 PG self_blocks 组装自我层 system prompt 段 */
+/** Assemble self-layer system prompt segment from PG self_blocks */
 export async function loadSelfLayerPrompt(): Promise<string> {
   const cached = getSelfLayerPromptCache();
   if (cached) return cached;
@@ -54,7 +54,7 @@ export async function loadSelfLayerPrompt(): Promise<string> {
   }
 }
 
-/** self 块更新后刷新缓存 */
+/** Refresh cache after self block updates */
 export function refreshSelfLayerPromptCache(prompt: string): void {
   setSelfLayerPromptCache(prompt);
 }

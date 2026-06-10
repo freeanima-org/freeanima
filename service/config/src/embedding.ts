@@ -33,7 +33,7 @@ function resolveEmbeddingBaseUrl(raw: string | undefined): string {
   return DEFAULT_OLLAMA_BASE_URL;
 }
 
-/** 是否启用向量检索（配置 embedding 且未显式 disabled） */
+/** Whether vector search is enabled (embedding configured and not explicitly disabled) */
 export function isEmbeddingEnabled(): boolean {
   const cfg = loadConfig().embedding;
   if (cfg?.enabled === false) return false;

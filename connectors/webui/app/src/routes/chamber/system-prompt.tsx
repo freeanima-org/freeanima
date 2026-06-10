@@ -2,21 +2,25 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import type { PromptDebugResponse } from "@freeanima/connectors-webui/api";
 import { useEffect, useMemo, useState } from "react";
 import { getPromptDebug } from "@/lib/api.ts";
+import { m } from "@/lib/i18n.ts";
 import { useChamberSessionsStore } from "@/stores/chamber-sessions.ts";
 
 type TabId = "parts" | "full" | "tools";
 
-const PART_LABELS = {
-  self: "自我层",
-  resident: "常驻记忆",
-  agents: "AGENTS.md",
-} as const;
+const PART_KEYS = ["self", "resident", "agents"] as const;
+type PartKey = (typeof PART_KEYS)[number];
 
 const PART_BREAKDOWN_KEY = {
   self: "system_self",
   resident: "system_resident",
   agents: "system_agents",
 } as const;
+
+function partLabel(key: PartKey): string {
+  if (key === "self") return m.webui_chamber_system_prompt_block_self();
+  if (key === "resident") return m.webui_chamber_system_prompt_block_resident();
+  return m.webui_chamber_system_prompt_block_agents();
+}
 
 function formatTokenK(tokens: number): string {
   if (tokens <= 0) return "0";
@@ -50,7 +54,9 @@ function ToolSchemaCard({ tool }: { tool: PromptDebugResponse["tools"]["items"][
           <p className="text-xs text-base-content/60">{tool.description}</p>
         ) : null}
         <details className="mt-1">
-          <summary className="text-xs cursor-pointer text-base-content/50">参数 schema</summary>
+          <summary className="text-xs cursor-pointer text-base-content/50">
+            {m.webui_chamber_tools_param_schema()}
+          </summary>
           <pre className="text-xs mt-1 bg-base-300 p-2 rounded overflow-x-auto">
             {JSON.stringify(tool.parameters, null, 2)}
           </pre>
@@ -65,35 +71,56 @@ function BreakdownBar({ data }: { data: PromptDebugResponse["system"]["breakdown
   return (
     <div className="card bg-base-200">
       <div className="card-body py-3 px-4 gap-2">
-        <h3 className="text-sm font-semibold">Token 分项（粗估）</h3>
+        <h3 className="text-sm font-semibold">{m.webui_chamber_system_prompt_token_breakdown()}</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
           <div>
-            <span className="text-base-content/50">系统提示词</span>
+            <span className="text-base-content/50">
+              {m.webui_chamber_system_prompt_token_system()}
+            </span>
             <div className="font-mono">~{formatTokenK(systemTotal)}</div>
           </div>
           <div>
-            <span className="text-base-content/50">会话消息</span>
+            <span className="text-base-content/50">
+              {m.webui_chamber_system_prompt_token_messages()}
+            </span>
             <div className="font-mono">~{formatTokenK(data.messages)}</div>
           </div>
           <div>
-            <span className="text-base-content/50">工具 schema</span>
+            <span className="text-base-content/50">
+              {m.webui_chamber_system_prompt_token_tools()}
+            </span>
             <div className="font-mono">~{formatTokenK(data.tools)}</div>
           </div>
           <div>
-            <span className="text-base-content/50">合计</span>
+            <span className="text-base-content/50">
+              {m.webui_chamber_system_prompt_token_total()}
+            </span>
             <div className="font-mono font-semibold">~{formatTokenK(data.total)}</div>
           </div>
         </div>
         {(data.system_self > 0 || data.system_agents > 0 || data.system_resident > 0) && (
           <div className="flex flex-wrap gap-2 text-xs text-base-content/60">
-            {data.system_self > 0 ? <span>自我层 ~{formatTokenK(data.system_self)}</span> : null}
+            {data.system_self > 0 ? (
+              <span>
+                {m.webui_chamber_system_prompt_block_self()} ~{formatTokenK(data.system_self)}
+              </span>
+            ) : null}
             {data.system_resident > 0 ? (
-              <span>常驻记忆 ~{formatTokenK(data.system_resident)}</span>
+              <span>
+                {m.webui_chamber_system_prompt_block_resident()} ~
+                {formatTokenK(data.system_resident)}
+              </span>
             ) : null}
             {data.system_agents > 0 ? (
-              <span>AGENTS.md ~{formatTokenK(data.system_agents)}</span>
+              <span>
+                {m.webui_chamber_system_prompt_block_agents()} ~{formatTokenK(data.system_agents)}
+              </span>
             ) : null}
-            {data.summary > 0 ? <span>摘要 ~{formatTokenK(data.summary)}</span> : null}
+            {data.summary > 0 ? (
+              <span>
+                {m.webui_chamber_system_prompt_block_summary()} ~{formatTokenK(data.summary)}
+              </span>
+            ) : null}
           </div>
         )}
       </div>
@@ -166,34 +193,38 @@ function SystemPromptPage() {
   const copyText = async (text: string, label: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      setCopyHint(`已复制${label}`);
+      setCopyHint(m.webui_common_copied({ label }));
       setTimeout(() => setCopyHint(""), 2000);
     } catch {
-      setCopyHint("复制失败");
+      setCopyHint(m.webui_common_copy_failed({ label: "" }));
       setTimeout(() => setCopyHint(""), 2000);
     }
   };
 
+  const toolsMode =
+    data?.tools.mode === "registry"
+      ? m.webui_chamber_system_prompt_tools_registry()
+      : m.webui_chamber_system_prompt_tools_effective();
+
   return (
     <div>
-      <h2 className="text-lg font-bold mb-1">📋 系统提示词</h2>
-      <p className="text-sm text-base-content/60 mb-4">
-        查看系统提示词分解、完整文本与会话有效工具 schema。默认全局模板；可选 session 对比 PG
-        持久化与实时重建结果。
-      </p>
+      <h2 className="text-lg font-bold mb-1">{m.webui_chamber_nav_system_prompt()}</h2>
+      <p className="text-sm text-base-content/60 mb-4">{m.webui_chamber_system_prompt_desc()}</p>
 
       <div className="flex flex-wrap items-end gap-3 mb-4">
         <label className="form-control w-full max-w-xl">
-          <span className="label-text text-xs mb-1">Session（可选）</span>
+          <span className="label-text text-xs mb-1">
+            {m.webui_chamber_system_prompt_session_optional()}
+          </span>
           <select
             className="select select-bordered select-sm w-full font-mono text-xs"
             value={selectedSession}
             onChange={(e) => handleSessionChange(e.target.value)}
           >
-            <option value="">— 全局模板 —</option>
+            <option value="">{m.webui_common_global_template()}</option>
             {sortedSessions.map((s) => (
               <option key={s.id} value={s.id}>
-                {(s.title || "（无标题）").slice(0, 24)} · {s.id.slice(0, 20)}…
+                {(s.title || m.webui_common_no_title()).slice(0, 24)} · {s.id.slice(0, 20)}…
               </option>
             ))}
           </select>
@@ -204,35 +235,43 @@ function SystemPromptPage() {
             params={{ sessionId: selectedSession }}
             className="btn btn-ghost btn-xs"
           >
-            会话详情 →
+            {m.webui_chamber_system_prompt_session_detail()}
           </Link>
         ) : null}
         <Link to="/chamber/self-layer" className="btn btn-ghost btn-xs">
-          自我层 →
+          {m.webui_chamber_system_prompt_self_layer()}
         </Link>
         <Link to="/chamber/tools" className="btn btn-ghost btn-xs">
-          工具列表 →
+          {m.webui_chamber_system_prompt_tools_list()}
         </Link>
       </div>
 
-      {loading ? <div className="text-sm text-base-content/60">加载中…</div> : null}
+      {loading ? (
+        <div className="text-sm text-base-content/60">{m.webui_common_loading()}</div>
+      ) : null}
       {error ? <div className="alert alert-error text-sm">{error}</div> : null}
 
       {data && !loading ? (
         <>
           <div className="flex flex-wrap items-center gap-2 mb-4">
             <span className="badge badge-ghost badge-sm">
-              {data.mode === "global" ? "全局模板" : "Session 对比"}
+              {data.mode === "global"
+                ? m.webui_chamber_system_prompt_mode_global()
+                : m.webui_chamber_system_prompt_mode_session()}
             </span>
             <span className="badge badge-ghost badge-sm">
-              工具 {data.tools.count} 个（
-              {data.tools.mode === "registry" ? "全量注册表" : "会话有效"}）
+              {m.webui_chamber_system_prompt_tools_count({
+                count: String(data.tools.count),
+                mode: toolsMode,
+              })}
             </span>
             {data.mode === "session" && data.system.in_sync !== undefined ? (
               <span
                 className={`badge badge-sm ${data.system.in_sync ? "badge-success" : "badge-warning"}`}
               >
-                {data.system.in_sync ? "stored 与 live 一致" : "stored 与 live 不一致"}
+                {data.system.in_sync
+                  ? m.webui_common_stored_live_sync()
+                  : m.webui_common_stored_live_diff()}
               </span>
             ) : null}
             {copyHint ? <span className="text-xs text-success">{copyHint}</span> : null}
@@ -249,7 +288,11 @@ function SystemPromptPage() {
                 <div>capability_mask: {data.meta.capability_mask.presets.join(", ")}</div>
               ) : null}
               {data.meta.tool_names?.length ? (
-                <div>session_meta.tools: {data.meta.tool_names.length} 个名称</div>
+                <div>
+                  {m.webui_chamber_system_prompt_meta_tools({
+                    count: String(data.meta.tool_names.length),
+                  })}
+                </div>
               ) : null}
             </div>
           ) : null}
@@ -261,9 +304,9 @@ function SystemPromptPage() {
           <div role="tablist" className="tabs tabs-boxed tabs-sm mb-4 w-fit">
             {(
               [
-                ["parts", "分项"],
-                ["full", "完整文本"],
-                ["tools", "工具 schema"],
+                ["parts", m.webui_chamber_system_prompt_tab_parts()],
+                ["full", m.webui_chamber_system_prompt_tab_full()],
+                ["tools", m.webui_chamber_system_prompt_tab_tools()],
               ] as const
             ).map(([id, label]) => (
               <button
@@ -280,22 +323,24 @@ function SystemPromptPage() {
 
           {tab === "parts" ? (
             <div className="space-y-4">
-              {(Object.keys(PART_LABELS) as Array<keyof typeof PART_LABELS>).map((key) => {
+              {PART_KEYS.map((key) => {
                 const text = data.system.parts[key];
                 return (
                   <details key={key} className="group card bg-base-200" open>
                     <summary className="cursor-pointer list-none card-body py-3 px-4">
                       <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="font-bold text-sm">{PART_LABELS[key]}</h3>
+                        <h3 className="font-bold text-sm">{partLabel(key)}</h3>
                         <span className="text-xs text-base-content/50">
-                          {estimateChars(text)} 字符 · ~
-                          {formatTokenK(data.system.breakdown[PART_BREAKDOWN_KEY[key]])}
+                          {m.webui_common_chars_estimate({
+                            chars: String(estimateChars(text)),
+                            tokens: formatTokenK(data.system.breakdown[PART_BREAKDOWN_KEY[key]]),
+                          })}
                         </span>
                       </div>
                     </summary>
                     <div className="px-4 pb-4">
                       <pre className="text-xs whitespace-pre-wrap bg-base-300 p-3 rounded max-h-96 overflow-auto">
-                        {text.trim() || "（空）"}
+                        {text.trim() || m.webui_common_empty()}
                       </pre>
                     </div>
                   </details>
@@ -312,7 +357,7 @@ function SystemPromptPage() {
                   className="btn btn-outline btn-xs"
                   onClick={() => void copyText(data.system.composed, " live prompt")}
                 >
-                  复制 live 全文
+                  {m.webui_chamber_system_prompt_copy_live()}
                 </button>
                 {data.system.stored != null ? (
                   <button
@@ -320,28 +365,32 @@ function SystemPromptPage() {
                     className="btn btn-outline btn-xs"
                     onClick={() => void copyText(data.system.stored ?? "", " stored prompt")}
                   >
-                    复制 stored 全文
+                    {m.webui_chamber_system_prompt_copy_stored()}
                   </button>
                 ) : null}
               </div>
               {data.mode === "session" && data.system.stored != null ? (
                 <div className="grid lg:grid-cols-2 gap-4">
                   <section>
-                    <h3 className="text-sm font-semibold mb-2">Live（实时重建）</h3>
+                    <h3 className="text-sm font-semibold mb-2">
+                      {m.webui_chamber_system_prompt_live()}
+                    </h3>
                     <pre className="text-xs whitespace-pre-wrap bg-base-300 p-3 rounded max-h-[32rem] overflow-auto">
-                      {data.system.composed || "（空）"}
+                      {data.system.composed || m.webui_common_empty()}
                     </pre>
                   </section>
                   <section>
-                    <h3 className="text-sm font-semibold mb-2">Stored（PG 持久化）</h3>
+                    <h3 className="text-sm font-semibold mb-2">
+                      {m.webui_chamber_system_prompt_stored()}
+                    </h3>
                     <pre className="text-xs whitespace-pre-wrap bg-base-300 p-3 rounded max-h-[32rem] overflow-auto">
-                      {data.system.stored || "（空）"}
+                      {data.system.stored || m.webui_common_empty()}
                     </pre>
                   </section>
                 </div>
               ) : (
                 <pre className="text-xs whitespace-pre-wrap bg-base-300 p-3 rounded max-h-[32rem] overflow-auto">
-                  {data.system.composed || "（空）"}
+                  {data.system.composed || m.webui_common_empty()}
                 </pre>
               )}
             </div>
@@ -353,7 +402,7 @@ function SystemPromptPage() {
                 <input
                   type="search"
                   className="input input-bordered input-sm w-full max-w-sm"
-                  placeholder="搜索工具名 / 描述 / toolset"
+                  placeholder={m.webui_chamber_system_prompt_search_tools()}
                   value={toolQuery}
                   onChange={(e) => setToolQuery(e.target.value)}
                 />
@@ -361,14 +410,17 @@ function SystemPromptPage() {
                   type="button"
                   className="btn btn-outline btn-xs"
                   onClick={() =>
-                    void copyText(JSON.stringify(data.tools.items, null, 2), "工具 schema JSON")
+                    void copyText(JSON.stringify(data.tools.items, null, 2), " tool schema JSON")
                   }
                 >
-                  复制 JSON
+                  {m.webui_chamber_system_prompt_copy_json()}
                 </button>
                 <span className="text-xs text-base-content/50">
-                  显示 {filteredTools.length} / {data.tools.count} · ~
-                  {formatTokenK(data.tools.tokens_est)} tokens
+                  {m.webui_chamber_system_prompt_tools_shown({
+                    shown: String(filteredTools.length),
+                    total: String(data.tools.count),
+                    tokens: formatTokenK(data.tools.tokens_est),
+                  })}
                 </span>
               </div>
               <div className="space-y-2">
@@ -376,7 +428,9 @@ function SystemPromptPage() {
                   <ToolSchemaCard key={tool.name} tool={tool} />
                 ))}
                 {!filteredTools.length ? (
-                  <div className="text-sm text-base-content/50">无匹配工具</div>
+                  <div className="text-sm text-base-content/50">
+                    {m.webui_chamber_system_prompt_no_tools()}
+                  </div>
                 ) : null}
               </div>
             </div>

@@ -4,14 +4,14 @@ import { createNullSink } from "@freeanima/kernel-logging/null";
 import { createHook, Hook, HookRegistry } from "./index.ts";
 import type { HookHandler, PayloadOf } from "./index.ts";
 
-describe("index 导出", () => {
-  it("导出 Hook、createHook、HookRegistry", () => {
+describe("index exports", () => {
+  it("exports Hook, createHook, HookRegistry", () => {
     expect(Hook).toBeDefined();
     expect(createHook).toBeTypeOf("function");
     expect(HookRegistry).toBeTypeOf("function");
   });
 
-  it("公开 API 可组合使用", async () => {
+  it("public API composes", async () => {
     const hook = createHook<{ count: number }>("@freeanima/kernel-hooks/test/index");
     const registry = new HookRegistry(createLogger({ level: "debug", sinks: [createNullSink()] }));
 

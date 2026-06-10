@@ -1,7 +1,7 @@
 import { homedir } from "node:os";
 import { join } from "node:path";
 
-/** 可通过 FREEANIMA_HOME 覆盖（测试隔离）。默认家目录仍为 `~/.anima`（与既有数据兼容）。 */
+/** Overridable via FREEANIMA_HOME (test isolation). Default home remains `~/.anima` (backward compatible). */
 export function getHomeDir(): string {
   return process.env.FREEANIMA_HOME ?? join(homedir(), ".anima");
 }

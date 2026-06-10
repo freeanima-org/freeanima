@@ -2,6 +2,7 @@ import { treaty } from "@elysiajs/eden";
 import type { FridgeMagnetsResponse, StreamApiEvent } from "@freeanima/connectors-webui/api";
 import type { App } from "@freeanima/connectors-webui/elysia";
 import { m } from "./i18n.ts";
+import { translateApiErrorValue } from "./api-errors.ts";
 import { apiPath } from "./api-path.ts";
 
 export const apiClient = treaty<App>(
@@ -13,8 +14,21 @@ type TreatyResult<T> = { data: T | null; error: unknown };
 export async function unwrap<T>(promise: Promise<TreatyResult<T>>): Promise<T> {
   const result = await promise;
   if (result.error) {
-    const err = result.error as { value?: unknown; message?: string };
-    throw new Error(String(err.value ?? err.message ?? m.webui_common_request_failed()));
+    const err = result.error as {
+      value?: unknown;
+      message?: string;
+      code?: string;
+      params?: Record<string, string>;
+    };
+    throw new Error(
+      translateApiErrorValue({
+        ...(typeof err.value === "object" && err.value !== null ? (err.value as object) : {}),
+        error: typeof err.value === "string" ? err.value : undefined,
+        message: err.message,
+        code: err.code,
+        params: err.params,
+      }),
+    );
   }
   if (result.data === null || result.data === undefined) {
     throw new Error(m.webui_common_empty_response());

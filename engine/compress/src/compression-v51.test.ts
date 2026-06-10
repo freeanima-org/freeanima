@@ -21,7 +21,7 @@ import {
 const smallBoundary = { rawMinMessages: 3, slimMinMessages: 4 };
 
 describe("compression v5.1", () => {
-  it("parseCompressionState 解析 l2/l3", () => {
+  it("parseCompressionState parses l2/l3", () => {
     const s = parseCompressionState({
       l2: 8,
       l3: 10,
@@ -46,7 +46,7 @@ describe("compression v5.1", () => {
     }
   });
 
-  it("slimMessage 为仅 tool_calls 的 assistant 生成占位正文", () => {
+  it("slimMessage generates placeholder body for assistant with tool_calls only", () => {
     const slim = slimMessage({
       role: "assistant",
       content: null,
@@ -56,10 +56,10 @@ describe("compression v5.1", () => {
       ],
       pos: 2,
     });
-    expect(slim?.content).toBe("[已执行工具: file_read_file, grep]");
+    expect(slim?.content).toBe("[tools executed: file_read_file, grep]");
   });
 
-  it("slimMessage 丢弃完全空白的 assistant", () => {
+  it("slimMessage drops completely empty assistant", () => {
     expect(slimMessage({ role: "assistant", content: null, pos: 2 })).toBeNull();
   });
 
@@ -133,10 +133,10 @@ describe("compression v5.1", () => {
     const view = buildRuntimeFromLPoints(msgs, {
       l2: 4,
       l3: 14,
-      summary: "此前聊过压缩",
+      summary: "Previously discussed compression",
     });
     expect(view[0]?.pos).toBe(SUMMARY_SYNTHETIC_POS);
-    expect(String(view[0]?.content)).toContain("此前聊过压缩");
+    expect(String(view[0]?.content)).toContain("Previously discussed compression");
   });
 
   it("compress advances l2/l3 monotonically", () => {

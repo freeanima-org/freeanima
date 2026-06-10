@@ -30,25 +30,43 @@ export async function listCronJobs() {
 export async function pauseCronJob(id: string) {
   const { service } = webuiCtx();
   const job = await service.pauseCronJob(id);
-  if (!job) throw new ApiHandlerError(404, `未找到任务: ${id}`, { job_id: id });
+  if (!job) {
+    throw new ApiHandlerError(404, `Cron job not found: ${id}`, {
+      job_id: id,
+      code: "cron_job_not_found",
+      params: { job_id: id },
+    });
+  }
   return { ok: true as const, job };
 }
 
 export async function resumeCronJob(id: string) {
   const { service } = webuiCtx();
   const job = await service.resumeCronJob(id);
-  if (!job) throw new ApiHandlerError(404, `未找到任务: ${id}`, { job_id: id });
+  if (!job) {
+    throw new ApiHandlerError(404, `Cron job not found: ${id}`, {
+      job_id: id,
+      code: "cron_job_not_found",
+      params: { job_id: id },
+    });
+  }
   return { ok: true as const, job };
 }
 
 export async function runCronJobNow(id: string) {
   const { service } = webuiCtx();
   const result = await service.runCronJobNow(id);
-  if (!result) throw new ApiHandlerError(404, `未找到任务: ${id}`, { job_id: id });
+  if (!result) {
+    throw new ApiHandlerError(404, `Cron job not found: ${id}`, {
+      job_id: id,
+      code: "cron_job_not_found",
+      params: { job_id: id },
+    });
+  }
   return { ok: true as const, message: result.message, job: result.job };
 }
 
 export function restartService() {
   scheduleServiceRestart();
-  return { ok: true as const, message: "服务正在重启..." };
+  return { ok: true as const, code: "service_restarting" };
 }

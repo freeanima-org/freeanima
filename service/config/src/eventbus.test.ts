@@ -22,13 +22,13 @@ describe("eventbus config", () => {
     clearConfigCache();
   });
 
-  it("eventbusConfigSchema 接受 sqlite / redis", () => {
+  it("eventbusConfigSchema accepts sqlite / redis", () => {
     expect(eventbusConfigSchema.safeParse({ backend: "sqlite" }).success).toBe(true);
     expect(eventbusConfigSchema.safeParse({ backend: "redis" }).success).toBe(true);
     expect(eventbusConfigSchema.safeParse({ backend: "kafka" }).success).toBe(false);
   });
 
-  it("缺省 backend 为 sqlite", () => {
+  it("default backend is sqlite", () => {
     writeFileSync(
       join(home, "config.yaml"),
       stringifyYaml({
@@ -52,7 +52,7 @@ describe("eventbus config", () => {
     expect(getEventbusKeyPrefix()).toBe("anima:events");
   });
 
-  it("读取 eventbus.backend 与 key_prefix", () => {
+  it("reads eventbus.backend and key_prefix", () => {
     writeFileSync(
       join(home, "config.yaml"),
       stringifyYaml({

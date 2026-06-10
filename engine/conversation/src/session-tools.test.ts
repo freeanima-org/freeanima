@@ -3,13 +3,13 @@ import { mergeSessionToolNames, resolveExecutableToolNames } from "./session-too
 import type { SessionMetaMessage } from "./message.ts";
 
 describe("mergeSessionToolNames", () => {
-  it("去重合并", () => {
+  it("dedupes and merges", () => {
     expect(mergeSessionToolNames(["a", "b"], ["b", "c"])).toEqual(["a", "b", "c"]);
   });
 });
 
 describe("resolveExecutableToolNames", () => {
-  it("合并 tools 与 loaded_tools", () => {
+  it("merges tools and loaded_tools", () => {
     const meta = {
       role: "session_meta",
       model: "m",

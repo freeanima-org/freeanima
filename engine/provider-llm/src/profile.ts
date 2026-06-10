@@ -9,7 +9,7 @@ export const PROFILE_SUMMARY = "summary";
 
 export const BUILTIN_PROFILE_IDS = [PROFILE_CHAT, PROFILE_REFLECT, PROFILE_SUMMARY] as const;
 
-/** profile chain 中的一跳；config 可配置多跳 fallback，运行时仅用 chain[0] */
+/** One hop in profile chain; config may multi-hop fallback; runtime uses chain[0] only */
 export type RouteHopSpec = {
   provider: string;
   model: string;
@@ -23,7 +23,7 @@ export type LlmProfileDef = {
 };
 
 export type ProfileBindOptions = {
-  /** 覆盖 chain[0].model（如 session meta.model） */
+  /** Override chain[0].model (e.g. session meta.model) */
   model?: string;
   requestParams?: Partial<LlmCallParams>;
 };
@@ -78,21 +78,21 @@ export function validateProfiles(
 
   for (const profile of profiles) {
     if (!profile.chain.length) {
-      issues.push({ profileId: profile.id, hopIndex: -1, message: "chain 不能为空" });
+      issues.push({ profileId: profile.id, hopIndex: -1, message: "chain cannot be empty" });
       continue;
     }
     profile.chain.forEach((hopSpec, hopIndex) => {
       if (!hopSpec.provider) {
-        issues.push({ profileId: profile.id, hopIndex, message: "hop.provider 不能为空" });
+        issues.push({ profileId: profile.id, hopIndex, message: "hop.provider cannot be empty" });
       } else if (!providers.has(hopSpec.provider)) {
         issues.push({
           profileId: profile.id,
           hopIndex,
-          message: `provider "${hopSpec.provider}" 未注册`,
+          message: `provider "${hopSpec.provider}" is not registered`,
         });
       }
       if (!hopSpec.model) {
-        issues.push({ profileId: profile.id, hopIndex, message: "hop.model 不能为空" });
+        issues.push({ profileId: profile.id, hopIndex, message: "hop.model cannot be empty" });
       }
     });
   }
@@ -106,12 +106,12 @@ export function assertProfilesValid(profiles: LlmProfileDef[], providers: Provid
     const detail = result.issues
       .map((i) => `${i.profileId}[${i.hopIndex}]: ${i.message}`)
       .join("; ");
-    throw new Error(`profile 配置无效: ${detail}`);
+    throw new Error(`Invalid profile config: ${detail}`);
   }
 }
 
 /**
- * Profile 实体：持 def + 绑定后的 provider/model/params；invoke 直委托 Backend。
+ * Profile entity: holds def + bound provider/model/params; invoke delegates to Backend.
  */
 export class LlmProfile {
   private _provider: LlmProvider | null = null;
@@ -128,7 +128,7 @@ export class LlmProfile {
 
   get provider(): LlmProvider {
     if (!this._provider) {
-      throw new Error(`profile "${this.def.id}" 尚未 bind`);
+      throw new Error(`profile "${this.def.id}" is not bound yet`);
     }
     return this._provider;
   }
@@ -141,11 +141,11 @@ export class LlmProfile {
     return this._params;
   }
 
-  /** 绑定 chain[0]：materialize provider + merge params + prepareParams */
+  /** Bind chain[0]: materialize provider + merge params + prepareParams */
   async bind(options: ProfileBindOptions = {}): Promise<void> {
     const hopSpec = this.def.chain[0];
     if (!hopSpec) {
-      throw new Error(`profile "${this.def.id}" chain 不能为空`);
+      throw new Error(`profile "${this.def.id}" chain cannot be empty`);
     }
 
     const model = options.model ?? hopSpec.model;
@@ -202,7 +202,7 @@ export class LlmProfile {
   }
 }
 
-/** 仅负责解析并返回 LlmProfile 实体 */
+/** Resolve and return LlmProfile entities only */
 export class ProfileRegistry {
   private readonly profiles = new Map<string, LlmProfile>();
 
@@ -213,12 +213,12 @@ export class ProfileRegistry {
   ) {
     for (const def of defs) {
       if (this.profiles.has(def.id)) {
-        throw new Error(`重复的 profile id: ${def.id}`);
+        throw new Error(`Duplicate profile id: ${def.id}`);
       }
       this.profiles.set(def.id, new LlmProfile(def, providers));
     }
     if (!this.profiles.has(defaultProfileId)) {
-      throw new Error(`default profile "${defaultProfileId}" 未定义`);
+      throw new Error(`default profile "${defaultProfileId}" is not defined`);
     }
   }
 
@@ -226,7 +226,7 @@ export class ProfileRegistry {
     const id = profileId !== undefined ? profileId : this.defaultProfileId;
     const profile = this.profiles.get(id);
     if (!profile) {
-      throw new Error(`未找到 profile: ${id}`);
+      throw new Error(`Profile not found: ${id}`);
     }
     return profile;
   }

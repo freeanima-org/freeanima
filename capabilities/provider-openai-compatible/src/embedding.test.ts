@@ -27,13 +27,13 @@ const cfg = {
 };
 
 describe("createOpenAiEmbeddingBatchClient", () => {
-  it("空数组直接返回空", async () => {
+  it("returns empty for empty array", async () => {
     const embed = createOpenAiEmbeddingBatchClient(cfg);
     expect(await embed([])).toEqual([]);
     expect(embeddingsCreate).not.toHaveBeenCalled();
   });
 
-  it("batch input 按 index 对齐，空白项为 null", async () => {
+  it("batch input aligned by index, blank items are null", async () => {
     embeddingsCreate.mockClear();
     const embed = createOpenAiEmbeddingBatchClient(cfg);
     const out = await embed(["hello", "  ", "world"]);

@@ -12,7 +12,7 @@ export function unregisterOnSessionCloseBeforeNew(): void {
 
 export async function onSessionCloseBeforeNew(sessionId: string): Promise<string | null> {
   if (!onSessionCloseBeforeNewImpl) {
-    throw new Error("onSessionCloseBeforeNew 未注册：请先加载 @freeanima/service");
+    throw new Error("onSessionCloseBeforeNew not registered: load @freeanima/service first");
   }
   return onSessionCloseBeforeNewImpl(sessionId);
 }

@@ -39,11 +39,11 @@ export class EngineRunControl {
 
   async waitForDrain(): Promise<void> {
     if (this.inFlightCount <= 0) {
-      logComponent("shutdown").debug("无进行中请求，跳过 drain");
+      logComponent("shutdown").debug("No in-flight requests; skipping drain");
       return;
     }
     logComponent("shutdown").debug(
-      `等待 ${this.inFlightCount} 个进行中的对话/工具请求落盘（engine.run/runStream）…`,
+      `Waiting for ${this.inFlightCount} in-flight conversation/tool request(s) to flush (engine.run/runStream)…`,
       { in_flight: this.inFlightCount },
     );
     await new Promise<void>((resolve) => {
@@ -53,7 +53,7 @@ export class EngineRunControl {
         resolve();
       }
     });
-    logComponent("shutdown").debug("进行中请求已排空");
+    logComponent("shutdown").debug("In-flight requests drained");
   }
 
   preemptSessionEngine(sessionId: string): void {

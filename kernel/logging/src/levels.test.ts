@@ -10,7 +10,7 @@ describe("shouldLog", () => {
     ["info", { debug: false, info: true, warn: true, error: true }],
     ["warn", { debug: false, info: false, warn: true, error: true }],
     ["error", { debug: false, info: false, warn: false, error: true }],
-  ] as const)("configured=%s 时各级别通过性", (configured, expected) => {
+  ] as const)("level passability when configured=%s", (configured, expected) => {
     for (const level of LEVELS) {
       expect(shouldLog(configured, level)).toBe(expected[level]);
     }

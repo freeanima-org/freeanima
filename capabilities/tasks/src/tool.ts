@@ -85,7 +85,7 @@ function parseStatusList(raw: unknown): TaskStatus[] | undefined {
 
 async function handleCreateTask(args: Record<string, unknown>): Promise<string> {
   const store = resolveStore();
-  if (!store) return toolError("任务存储未配置");
+  if (!store) return toolError("Task store not configured");
 
   const title = String(args.title ?? "").trim();
   if (!title) return toolError("title is required");
@@ -116,7 +116,7 @@ async function handleCreateTask(args: Record<string, unknown>): Promise<string> 
 
 async function handleUpdateTask(args: Record<string, unknown>): Promise<string> {
   const store = resolveStore();
-  if (!store) return toolError("任务存储未配置");
+  if (!store) return toolError("Task store not configured");
 
   const id = String(args.id ?? "").trim();
   if (!id) return toolError("id is required");
@@ -156,7 +156,7 @@ async function handleStatusChange(
   action: string,
 ): Promise<string> {
   const store = resolveStore();
-  if (!store) return toolError("任务存储未配置");
+  if (!store) return toolError("Task store not configured");
 
   const id = String(args.id ?? "").trim();
   if (!id) return toolError("id is required");
@@ -180,7 +180,7 @@ async function handleStatusChange(
 
 async function handleGetTask(args: Record<string, unknown>): Promise<string> {
   const store = resolveStore();
-  if (!store) return toolError("任务存储未配置");
+  if (!store) return toolError("Task store not configured");
 
   const id = String(args.id ?? "").trim();
   if (!id) return toolError("id is required");
@@ -192,7 +192,7 @@ async function handleGetTask(args: Record<string, unknown>): Promise<string> {
 
 async function handleListTasks(args: Record<string, unknown>): Promise<string> {
   const store = resolveStore();
-  if (!store) return toolError("任务存储未配置");
+  if (!store) return toolError("Task store not configured");
 
   const opts: TaskListOpts = {};
   const statuses = parseStatusList(args.status);
@@ -221,23 +221,23 @@ async function handleListTasks(args: Record<string, unknown>): Promise<string> {
 export function registerTaskTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
     "tasks",
-    "跨 session 持久待办",
+    "Cross-session persistent todos",
     attachToolReturns(
       [
         {
           name: "tasks_create",
-          description: "创建跨 session 持久待办任务",
+          description: "Create a cross-session persistent todo task",
           parameters: {
             type: "object",
             properties: {
-              title: { type: "string", description: "任务标题" },
-              description: { type: "string", description: "任务详情（可选）" },
+              title: { type: "string", description: "Task title" },
+              description: { type: "string", description: "Task details (optional)" },
               priority: {
                 type: "string",
                 enum: [...TASK_PRIORITIES],
-                description: "优先级，默认 none",
+                description: "Priority, default none",
               },
-              due_at: { type: "string", description: "截止时间 ISO8601（可选）" },
+              due_at: { type: "string", description: "Due time ISO8601 (optional)" },
             },
             required: ["title"],
           },
@@ -245,11 +245,11 @@ export function registerTaskTools(toolSets: ToolSetRegistry): void {
         },
         {
           name: "tasks_update",
-          description: "更新待办任务字段",
+          description: "Update todo task fields",
           parameters: {
             type: "object",
             properties: {
-              id: { type: "string", description: "任务 ID" },
+              id: { type: "string", description: "Task ID" },
               title: { type: "string" },
               description: { type: "string" },
               status: { type: "string", enum: [...TASK_STATUSES] },
@@ -262,57 +262,58 @@ export function registerTaskTools(toolSets: ToolSetRegistry): void {
         },
         {
           name: "tasks_complete",
-          description: "将任务标记为 completed",
+          description: "Mark task as completed",
           parameters: {
             type: "object",
-            properties: { id: { type: "string", description: "任务 ID" } },
+            properties: { id: { type: "string", description: "Task ID" } },
             required: ["id"],
           },
           handler: (args) => handleStatusChange(args, "completed", "complete"),
         },
         {
           name: "tasks_cancel",
-          description: "将任务标记为 cancelled",
+          description: "Mark task as cancelled",
           parameters: {
             type: "object",
-            properties: { id: { type: "string", description: "任务 ID" } },
+            properties: { id: { type: "string", description: "Task ID" } },
             required: ["id"],
           },
           handler: (args) => handleStatusChange(args, "cancelled", "cancel"),
         },
         {
           name: "tasks_reopen",
-          description: "将任务重新打开为 pending",
+          description: "Reopen task as pending",
           parameters: {
             type: "object",
-            properties: { id: { type: "string", description: "任务 ID" } },
+            properties: { id: { type: "string", description: "Task ID" } },
             required: ["id"],
           },
           handler: (args) => handleStatusChange(args, "pending", "reopen"),
         },
         {
           name: "tasks_list",
-          description: "列出待办；默认 pending + in_progress，按 priority 降序、created_at 升序",
+          description:
+            "List todos; default pending + in_progress, sorted by priority desc, created_at asc",
           parameters: {
             type: "object",
             properties: {
               status: {
                 type: "array",
                 items: { type: "string", enum: [...TASK_STATUSES] },
-                description: "状态过滤；默认 pending + in_progress",
+                description: "Status filter; default pending + in_progress",
               },
               priority: { type: "string", enum: [...TASK_PRIORITIES] },
-              limit: { type: "integer", description: "最大条数，默认 50" },
+              limit: { type: "integer", description: "Max items, default 50" },
             },
           },
           handler: handleListTasks,
         },
         {
           name: "tasks_get",
-          description: "按 ID 获取单条任务",
+          description: "Get a single task by ID",
           parameters: {
             type: "object",
-            properties: { id: { type: "string", description: "任务 ID" } },
+            properties: { id: { type: "string", description: "Task ID" } },
             required: ["id"],
           },
           handler: handleGetTask,

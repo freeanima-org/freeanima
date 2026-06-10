@@ -15,7 +15,7 @@ function sanitizeError(err: unknown): string {
 async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<never>((_, reject) => {
-    timer = setTimeout(() => reject(new Error("探活超时")), timeoutMs);
+    timer = setTimeout(() => reject(new Error("health check timeout")), timeoutMs);
   });
   try {
     return await Promise.race([promise, timeout]);
@@ -24,7 +24,7 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T
   }
 }
 
-/** 探测 Redis 连通性（PING，2s 超时） */
+/** Probe Redis connectivity (PING, 2s timeout) */
 export async function pingRedis(): Promise<RedisPingStatus> {
   if (!isRedisConfigured()) {
     return { status: "not_configured" };
@@ -33,7 +33,7 @@ export async function pingRedis(): Promise<RedisPingStatus> {
   try {
     const pong = await withTimeout(getRedis().ping(), PING_TIMEOUT_MS);
     if (pong !== "PONG") {
-      return { status: "error", error: `意外响应: ${pong}` };
+      return { status: "error", error: `Unexpected response: ${pong}` };
     }
     return { status: "connected", latency_ms: Date.now() - started };
   } catch (err) {

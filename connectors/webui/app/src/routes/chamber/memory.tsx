@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { m } from "@/lib/i18n.ts";
+import { translateApiPayload } from "@/lib/api-errors.ts";
 import { countSemanticMemory, searchMemory } from "@/lib/api.ts";
 import { memoryTypeLabel } from "@/lib/webui-status.ts";
 
@@ -158,8 +159,12 @@ function MemoryPage() {
     setStatusMessage("");
     setError("");
     try {
-      const d = (await fn()) as { message?: string };
-      setStatusMessage(d.message || m.webui_common_done());
+      const d = (await fn()) as {
+        message?: string;
+        code?: string;
+        params?: Record<string, string>;
+      };
+      setStatusMessage(translateApiPayload(d));
     } catch (e) {
       setError(
         m.webui_common_operation_failed({

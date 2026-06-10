@@ -25,17 +25,17 @@ export type FtsCoverageStats = {
 
 const SEMANTIC_MEMORY_META: Pick<FtsTableCoverageRow, "table" | "label" | "capabilities"> = {
   table: "semantic_memory",
-  label: "语义记忆",
+  label: "Semantic memory",
   capabilities: { fts: true, segmented: true, trgm: true, embedding: true },
 };
 
 const MESSAGES_META: Pick<FtsTableCoverageRow, "table" | "label" | "capabilities"> = {
   table: "messages",
-  label: "对话消息",
+  label: "Conversation messages",
   capabilities: { fts: true, segmented: true, trgm: true, embedding: true },
 };
 
-/** 各表 FTS / 分词 / 向量列覆盖度（可索引行基数） */
+/** FTS / segmentation / vector column coverage per table (indexable row base) */
 export async function getFtsCoverageStats(): Promise<FtsCoverageStats> {
   const db = getDb();
 

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-/** PG 持久化 + API 序列化 schema */
+/** PG persistence + API serialization schema */
 export const cronJobDataSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -23,9 +23,9 @@ export const cronJobDataSchema = z.object({
   updated_at: z.string().default(""),
   last_run_at: z.number().default(0),
   last_output_ref: z.string().nullable().default(null),
-  /** API 视图：运行时计算，不入 PG */
+  /** API view: computed at runtime, not stored in PG */
   next_run_at: z.number().default(0),
-  /** API 视图：从 last_output_ref 懒加载 */
+  /** API view: lazy-loaded from last_output_ref */
   last_output: z.string().default(""),
 });
 

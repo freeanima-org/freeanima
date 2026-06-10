@@ -1,10 +1,10 @@
 import type { AutobiographicalMemoryStorePort } from "../ports/autobiographical-memory.ts";
 
 const unavailable = (): never => {
-  throw new Error("database.url 未配置");
+  throw new Error("database.url not configured");
 };
 
-/** PG 不可用时的自传体记忆端口空实现 */
+/** Null autobiographical memory port when PG unavailable */
 export const nullAutobiographicalMemoryStore: AutobiographicalMemoryStorePort = {
   async create() {
     return unavailable();

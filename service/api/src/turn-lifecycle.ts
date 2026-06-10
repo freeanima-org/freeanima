@@ -16,10 +16,10 @@ export function unregisterRunSimpleTurn(): void {
   runSimpleTurnImpl = null;
 }
 
-/** cron / 脚本等非流式整轮；实现由 @freeanima/service 在启动时注册 */
+/** Non-streaming full turn for cron / scripts; implementation registered by @freeanima/service at startup */
 export async function runSimpleTurn(opts: RunSimpleTurnOpts): Promise<string> {
   if (!runSimpleTurnImpl) {
-    throw new Error("runSimpleTurn 未注册：请先加载 @freeanima/service");
+    throw new Error("runSimpleTurn not registered: load @freeanima/service first");
   }
   return runSimpleTurnImpl(opts);
 }

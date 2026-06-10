@@ -13,7 +13,7 @@ export type SessionSummaryRow = {
   platform: string;
 };
 
-/** PG messages FTS 命中行（memory_recall / sessions_search；对外映射 snippet） */
+/** PG messages FTS hit row (memory_recall / sessions_search; mapped to snippet externally) */
 export type MessageFtsHit = {
   message_id: string;
   content: string;
@@ -23,7 +23,7 @@ export type MessageFtsHit = {
   rank: number;
 };
 
-/** LLM 工具可读的消息行视图（含 PG 主键） */
+/** LLM-tool-readable message row view (includes PG primary key) */
 export type MessageRowView = {
   message_id: string;
   pos: number;
@@ -32,7 +32,7 @@ export type MessageRowView = {
   timestamp: string;
 };
 
-/** 对话 Session + Message 持久化端口（Slice A） */
+/** Conversation Session + Message persistence port (Slice A) */
 export interface SessionStorePort {
   getSessionMeta(sessionId: string): Promise<SessionMetaMessage | null>;
   getSessionMetaLite(sessionId: string): Promise<SessionMetaMessage | null>;
@@ -58,11 +58,11 @@ export interface SessionStorePort {
     limit: number,
   ): Promise<ConversationMessage[]>;
   countMessages(sessionId: string): Promise<number>;
-  /** 按 PG 主键查会话内 pos（scroll 锚点） */
+  /** Look up in-session pos by PG primary key (scroll anchor) */
   findMessagePos(sessionId: string, messageId: string): Promise<number | null>;
-  /** 按 pos 顺序分页，返回含 message_id 的 LLM 可读行 */
+  /** Paginate by pos order; return LLM-readable rows with message_id */
   listMessageRowsPage(sessionId: string, offset: number, limit: number): Promise<MessageRowView[]>;
-  /** 从指定 pos 起向后读取 limit 条（message_id 锚点 scroll） */
+  /** Read limit messages from pos onward (message_id anchor scroll) */
   listMessageRowsFromPos(
     sessionId: string,
     fromPos: number,
@@ -82,15 +82,15 @@ export interface SessionStorePort {
     platform: string,
     platformExtra?: Record<string, unknown>,
   ): Promise<string | null>;
-  /** PG messages.content_fts 全文检索（仅 user/assistant 可读 content） */
+  /** PG messages.content_fts full-text search (user/assistant readable content only) */
   searchMessagesFts(
     query: string,
     opts?: { sessionId?: string; limit?: number },
   ): Promise<MessageFtsHit[]>;
-  /** 可被 FTS 索引的消息行数（content_fts IS NOT NULL） */
+  /** Message row count indexable by FTS (content_fts IS NOT NULL) */
   countSearchableMessages(): Promise<number>;
-  /** sessions.updated_at 落在 [fromIso, toIso) 内的 session id（不含 debug） */
+  /** Session ids with sessions.updated_at in [fromIso, toIso) (excludes debug) */
   listSessionIdsUpdatedBetween(fromIso: string, toIso: string): Promise<string[]>;
-  /** 最早非 debug session 的 CST 自然日 YYYY-MM-DD；无 session 时 null */
+  /** Earliest non-debug session CST calendar day YYYY-MM-DD; null if none */
   getEarliestSessionDay(): Promise<string | null>;
 }

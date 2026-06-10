@@ -64,12 +64,12 @@ export type McpControlResult = {
   action?: "start" | "stop";
 };
 
-/** enabled 缺省或为 true 时视为启用 */
+/** treated as enabled when enabled is omitted or true */
 export function isMcpServerEnabled(cfg: McpServerConfig): boolean {
   return isEnabledByDefault(cfg);
 }
 
-/** 脱敏 MCP 配置供工作间 / API 展示 */
+/** Sanitized MCP config for workshop / API display */
 export function sanitizeMcpConfig(cfg: McpServerConfig): McpServerConfigView {
   const view: McpServerConfigView = {
     transport: cfg.transport ?? "stdio",

@@ -67,7 +67,7 @@ function resolveCredential(path: string, field: string): string {
   return String(val);
 }
 
-/** 读取 YAML 凭证全文（用于 weixin-ilink 等多字段配置） */
+/** Read full YAML credential (for multi-field configs like weixin-ilink) */
 export function credentialRaw(path: string): Record<string, unknown> {
   const raw = passShow(path);
   try {
@@ -146,7 +146,7 @@ export type CredentialDetail =
   | { yaml: true; fields: Record<string, unknown> }
   | { yaml: false; value: string };
 
-/** 读取凭证明文（仅限 listCredentials 已列出的路径） */
+/** Read credential plaintext (only paths listed by listCredentials) */
 export function getCredentialDetail(path: string): CredentialDetail {
   const meta = listCredentials().find((c) => c.path === path);
   if (!meta) {
@@ -172,7 +172,7 @@ function credentialNotFound(err: unknown): boolean {
   return err instanceof RuntimeError && err.message.startsWith("Failed to read credential");
 }
 
-/** 将 YAML 字典转为 string 记录（供 merge / 写回 pass） */
+/** Convert YAML dict to string record (for merge / pass write-back) */
 export function credentialDictToRecord(dict: Record<string, unknown>): Record<string, string> {
   const out: Record<string, string> = {};
   for (const [key, val] of Object.entries(dict)) {
@@ -184,7 +184,7 @@ export function credentialDictToRecord(dict: Record<string, unknown>): Record<st
   return out;
 }
 
-/** 合并已有字段与 patch（patch 同名键覆盖） */
+/** Merge existing fields with patch (patch overwrites same keys) */
 export function mergeCredentialData(
   existing: Record<string, unknown>,
   patch: Record<string, string>,
@@ -218,7 +218,7 @@ function writeCredential(path: string, content: string): string {
   return path;
 }
 
-/** 写入或覆盖 pass 凭证（YAML 字典） */
+/** Write or overwrite pass credential (YAML dict) */
 export function insertCredential(path: string, data: Record<string, string>): string {
   const content = stringifyYaml(data);
   try {
@@ -229,7 +229,7 @@ export function insertCredential(path: string, data: Record<string, string>): st
   return writeCredential(path, content);
 }
 
-/** 合并更新 pass 凭证字段；路径不存在时等同 insertCredential */
+/** Merge-update pass credential fields; same as insertCredential if path missing */
 export function updateCredential(path: string, patch: Record<string, string>): string {
   let merged: Record<string, string>;
   try {

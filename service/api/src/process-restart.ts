@@ -1,18 +1,18 @@
 import { spawn } from "node:child_process";
 import { logComponent } from "@freeanima/service-logging";
 
-/** systemctl 单元名（不含 `.service` 后缀） */
+/** systemctl unit name (without `.service` suffix) */
 export const SYSTEMD_UNIT = "anima";
 
-/** 是否由 systemd user unit 托管（INVOCATION_ID 由 systemd 注入） */
+/** Whether managed by systemd user unit (INVOCATION_ID injected by systemd) */
 export function isSystemdManaged(): boolean {
   return process.env.INVOCATION_ID != null;
 }
 
 /**
- * 触发进程重启。
- * - systemd 托管：`systemctl --user restart`（不受 Restart= 策略与 exit code 影响）
- * - 其他模式：SIGTERM 优雅关停（需进程管理器自行拉起）
+ * Trigger process restart.
+ * - systemd managed: `systemctl --user restart` (unaffected by Restart= policy or exit code)
+ * - other modes: SIGTERM graceful shutdown (process manager must restart)
  */
 export async function triggerServiceRestart(): Promise<void> {
   if (isSystemdManaged()) {

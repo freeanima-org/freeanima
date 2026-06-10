@@ -4,11 +4,11 @@ import { createMemorySink } from "./sinks/memory.ts";
 import { createNullSink } from "./sinks/null.ts";
 
 describe("createLogger", () => {
-  it("无 sink 时 throw", () => {
-    expect(() => createLogger({ sinks: [] })).toThrow("至少需要提供一个 sink");
+  it("throws when no sink", () => {
+    expect(() => createLogger({ sinks: [] })).toThrow("requires at least one sink");
   });
 
-  it("默认 level 为 info", () => {
+  it("default level is info", () => {
     const sink = createMemorySink();
     const logger = createLogger({ sinks: [sink] });
     logger.debug("d");
@@ -16,7 +16,7 @@ describe("createLogger", () => {
     expect(sink.records.map((r) => r.level)).toEqual(["info"]);
   });
 
-  it("debug 级别四级均可写入", () => {
+  it("debug level allows all four levels", () => {
     const sink = createMemorySink();
     const logger = createLogger({ level: "debug", sinks: [sink] });
     logger.debug("d");
@@ -26,7 +26,7 @@ describe("createLogger", () => {
     expect(sink.records.map((r) => r.level)).toEqual(["debug", "info", "warn", "error"]);
   });
 
-  it("error 级别仅 error 可写入", () => {
+  it("error level allows only error", () => {
     const sink = createMemorySink();
     const logger = createLogger({ level: "error", sinks: [sink] });
     logger.debug("d");
@@ -35,7 +35,7 @@ describe("createLogger", () => {
     expect(sink.records.map((r) => r.level)).toEqual(["error"]);
   });
 
-  it("根 logger 无 component 也可直接打日志", () => {
+  it("root logger logs without component", () => {
     const sink = createMemorySink();
     const root = createLogger({ sinks: [sink] });
     root.info("bootstrap");
@@ -43,7 +43,7 @@ describe("createLogger", () => {
     expect(sink.records[0]?.message).toBe("bootstrap");
   });
 
-  it("无单次 attributes 时仅 base + scope", () => {
+  it("base + scope only without per-call attributes", () => {
     const sink = createMemorySink();
     const root = createLogger({
       base: { service: "anima" },
@@ -56,7 +56,7 @@ describe("createLogger", () => {
     });
   });
 
-  it("base + scope + 单次 attributes 浅合并", () => {
+  it("shallow merge base + scope + per-call attributes", () => {
     const sink = createMemorySink();
     const root = createLogger({
       base: { service: "anima" },
@@ -77,27 +77,27 @@ describe("createLogger", () => {
     expect(typeof sink.records[0]?.timestamp).toBe("number");
   });
 
-  it("with 无 component 且 scope 为空时 throw", () => {
+  it("with throws without component and empty scope", () => {
     const sink = createMemorySink();
     const root = createLogger({ sinks: [sink] });
     expect(() => root.with({ sessionId: "x" })).toThrow("component");
   });
 
-  it("with 将 component 置空时 throw", () => {
+  it("with throws when component cleared", () => {
     const sink = createMemorySink();
     const root = createLogger({ sinks: [sink] });
     const discord = root.with({ component: "gateway.discord" });
     expect(() => discord.with({ component: "" })).toThrow("component");
   });
 
-  it("with 可显式覆盖 component", () => {
+  it("with can override component explicitly", () => {
     const sink = createMemorySink();
     const root = createLogger({ sinks: [sink] });
     root.with({ component: "gateway" }).with({ component: "gateway.discord" }).info("ok");
     expect(sink.records[0]?.attributes.component).toBe("gateway.discord");
   });
 
-  it("with 继承已有 component", () => {
+  it("with inherits existing component", () => {
     const sink = createMemorySink();
     const root = createLogger({ sinks: [sink] });
     const discord = root.with({ component: "gateway.discord" });
@@ -107,7 +107,7 @@ describe("createLogger", () => {
     expect(sink.records[0]?.attributes.sessionId).toBe("abc");
   });
 
-  it("with 返回新 logger，父级 scope 不变", () => {
+  it("with returns new logger; parent scope unchanged", () => {
     const sink = createMemorySink();
     const root = createLogger({ sinks: [sink] });
     const discord = root.with({ component: "gateway.discord" });
@@ -117,7 +117,7 @@ describe("createLogger", () => {
     expect(sink.records[0]?.attributes).toEqual({ component: "bootstrap" });
   });
 
-  it("多 sink fan-out", () => {
+  it("multi-sink fan-out", () => {
     const a = createMemorySink();
     const b = createMemorySink();
     const logger = createLogger({ sinks: [a, b] });
@@ -127,7 +127,7 @@ describe("createLogger", () => {
     expect(a.records[0]).toEqual(b.records[0]);
   });
 
-  it("sink throw 不冒泡，后续 sink 仍执行", () => {
+  it("sink throw does not bubble; later sinks still run", () => {
     const sink = createMemorySink();
     const bad: typeof sink = {
       records: sink.records,
@@ -141,7 +141,7 @@ describe("createLogger", () => {
     expect(sink.records).toHaveLength(1);
   });
 
-  it("可与 createNullSink 组合", () => {
+  it("composes with createNullSink", () => {
     const memory = createMemorySink();
     const logger = createLogger({ sinks: [createNullSink(), memory] });
     logger.with({ component: "x" }).info("i");

@@ -58,14 +58,14 @@ describe("email accounts", () => {
     serviceConfig.resetConfigForTest();
   });
 
-  it("listEmailAccounts 返回 password 引用", () => {
+  it("listEmailAccounts returns password references", () => {
     serviceConfig.patchConfigSection("email", { accounts: [sampleAccount] });
     const accounts = listEmailAccounts();
     expect(accounts).toHaveLength(1);
     expect(accounts[0]?.password).toBe('credential("email/example", "password")');
   });
 
-  it("editEmailAccount 更新字段并处理 default_sender 互斥", () => {
+  it("editEmailAccount updates fields and handles default_sender exclusivity", () => {
     serviceConfig.patchConfigSection("email", {
       accounts: [
         sampleAccount,
@@ -87,26 +87,26 @@ describe("email accounts", () => {
     expect(secondary?.default_sender).toBe(true);
   });
 
-  it("deleteEmailAccount 删除账户", () => {
+  it("deleteEmailAccount removes account", () => {
     serviceConfig.patchConfigSection("email", { accounts: [sampleAccount] });
     deleteEmailAccount("main-inbox");
     expect(listEmailAccounts()).toHaveLength(0);
   });
 
-  it("getDefaultSender 与 resolveAccount", () => {
+  it("getDefaultSender and resolveAccount", () => {
     serviceConfig.patchConfigSection("email", { accounts: [sampleAccount] });
     expect(getDefaultSender()?.id).toBe("main-inbox");
     expect(resolveAccount().id).toBe("main-inbox");
     expect(resolveAccount("main-inbox").address).toBe("you@example.com");
   });
 
-  it("registerEmailAccount 在 pass 缺失时报错", async () => {
+  it("registerEmailAccount throws when pass entry is missing", async () => {
     await expect(
       registerEmailAccount({
         ...sampleAccount,
         id: "test-nonexistent-account-xyz",
         password: 'credential("email/test-nonexistent-account-xyz", "password")',
       }),
-    ).rejects.toThrow(/邮件密码无法解析/);
+    ).rejects.toThrow(/Email password could not be resolved/);
   });
 });

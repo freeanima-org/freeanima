@@ -2,22 +2,22 @@ import { z } from "zod";
 
 import { toolErrorSchema } from "../tool-json.ts";
 
-/** 全局工具失败返回契约 */
+/** Global tool failure return contract */
 export const toolErrorReturnSchema = toolErrorSchema;
 
-export const toolErrorReturnExample = { error: "示例错误信息" } as const;
+export const toolErrorReturnExample = { error: "Example error message" } as const;
 
-/** text 工具成功返回的 JSON Schema 视图 */
+/** JSON Schema view for text tool success return */
 export const textReturnJsonSchema = {
   type: "string",
-  description: "LLM 可读纯文本",
+  description: "LLM-readable plain text",
 } as const;
 
-/** 常见 ok 包装 */
+/** Common ok wrapper */
 export const okObjectSchema = z.object({ ok: z.literal(true) });
 
-/** 行号前缀文本示例（file_read_file 等） */
-export const textLineNumberExample = "1|第一行内容\n2|第二行内容";
+/** Line-number-prefixed text example (file_read_file, etc.) */
+export const textLineNumberExample = "1|First line\n2|Second line";
 
 export function paginatedListSchema<T extends z.ZodType>(itemSchema: T) {
   return z.object({

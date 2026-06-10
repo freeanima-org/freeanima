@@ -26,7 +26,7 @@ function getFirecrawlConfig(): FirecrawlConfig {
 function checkConfig(): string | null {
   const cfg = getFirecrawlConfig();
   if (!cfg.apiUrl && !cfg.apiKey) {
-    return "未配置 Firecrawl。请设置 firecrawl.api_url 或 credential services/firecrawl。";
+    return "Firecrawl not configured. Set firecrawl.api_url or credential services/firecrawl.";
   }
   return null;
 }
@@ -57,14 +57,14 @@ async function handleWebSearch(query: string, limit = 5): Promise<string> {
       body: JSON.stringify({ query: query.trim(), limit: cap }),
       signal: AbortSignal.timeout(HTTP_TIMEOUT_MS),
     });
-    if (!resp.ok) return toolError(`搜索请求失败: HTTP ${resp.status}`);
+    if (!resp.ok) return toolError(`Search request failed: HTTP ${resp.status}`);
     data = (await resp.json()) as Record<string, unknown>;
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     if (msg.includes("abort") || msg.includes("timeout")) {
-      return toolError("搜索请求超时");
+      return toolError("Search request timed out");
     }
-    return toolError(`搜索请求失败: ${msg}`);
+    return toolError(`Search request failed: ${msg}`);
   }
 
   const results: Array<{ title: string; url: string; description: string }> = [];
@@ -115,7 +115,7 @@ async function handleWebExtract(urls: string[]): Promise<string> {
   for (const raw of urls.slice(0, MAX_EXTRACT_URLS)) {
     const url = raw?.trim() ?? "";
     if (!url) {
-      results.push({ url: raw, title: "", content: "", error: "空 URL" });
+      results.push({ url: raw, title: "", content: "", error: "Empty URL" });
       continue;
     }
 
@@ -138,11 +138,11 @@ async function handleWebExtract(urls: string[]): Promise<string> {
         let content = String(row.markdown ?? row.content ?? row.text ?? "");
         const maxChars = 100_000;
         if (content.length > maxChars) {
-          content = `${content.slice(0, maxChars)}\n\n[...截断：超过 ${maxChars} 字符]`;
+          content = `${content.slice(0, maxChars)}\n\n[...truncated: exceeds ${maxChars} characters]`;
         }
         results.push({ url, title, content, error: null });
       } else {
-        results.push({ url, title: "", content: "", error: "无法解析响应" });
+        results.push({ url, title: "", content: "", error: "Failed to parse response" });
       }
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
@@ -150,7 +150,7 @@ async function handleWebExtract(urls: string[]): Promise<string> {
         url,
         title: "",
         content: "",
-        error: msg.includes("abort") || msg.includes("timeout") ? "请求超时" : msg,
+        error: msg.includes("abort") || msg.includes("timeout") ? "Request timed out" : msg,
       });
     }
   }
@@ -161,7 +161,7 @@ async function handleWebExtract(urls: string[]): Promise<string> {
 export function registerWebTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
     "web",
-    "网页搜索与内容提取",
+    "Web search and content extraction",
     attachToolReturns(
       [
         {

@@ -75,11 +75,11 @@ async function runDeepSleepTurn(input: DeepSleepEngineInput): Promise<DeepSleepE
     { repos: conversation.repos, tools: eng.catalog.toolSets },
   );
 
-  const summary = parts.join("").trim() || `完成 ${toolCalls} 次工具调用`;
+  const summary = parts.join("").trim() || `Completed ${toolCalls} tool call(s)`;
   return { summary: summary.slice(0, 2000), tool_calls: toolCalls };
 }
 
-/** 注册深睡 LLM 引擎 */
+/** Register deep-sleep LLM engine */
 export function registerDeepSleepWire(): void {
   registerDeepSleepEngine(runDeepSleepTurn);
 }

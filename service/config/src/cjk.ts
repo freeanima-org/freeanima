@@ -3,12 +3,12 @@ import { existsSync } from "node:fs";
 import { loadConfig } from "./config.ts";
 import { PATHS } from "./paths.ts";
 
-/** 是否启用 CJK jieba 分词（默认 false） */
+/** Whether CJK jieba tokenization is enabled (default false) */
 export function isCjkJiebaEnabled(): boolean {
   return loadConfig().cjk?.enabled === true;
 }
 
-/** jieba 用户词典路径 */
+/** jieba user dictionary path */
 export function cjkJiebaDictPath(): string {
   const raw = loadConfig().cjk?.dict_path?.trim();
   return raw || PATHS.cjkUserDict;
@@ -20,7 +20,7 @@ export type CjkConfigSnapshot = {
   dict_exists: boolean;
 };
 
-/** WebUI / 状态展示用 */
+/** For WebUI / status display */
 export function getCjkConfigSnapshot(): CjkConfigSnapshot {
   const dict_path = cjkJiebaDictPath();
   return {

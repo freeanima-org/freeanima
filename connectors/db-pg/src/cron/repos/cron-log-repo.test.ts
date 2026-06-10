@@ -3,7 +3,7 @@ import { describe, expect, test } from "bun:test";
 import { mapRow } from "./cron-log-repo.ts";
 
 describe("mapRow", () => {
-  test("将 bigint id 转为 number", () => {
+  test("converts bigint id to number", () => {
     const row = mapRow({
       id: 42n,
       job_id: "builtin-light-sleep",
@@ -19,7 +19,7 @@ describe("mapRow", () => {
     expect(typeof row.id).toBe("number");
   });
 
-  test("将 Date finished_at 转为 ISO 字符串", () => {
+  test("converts Date finished_at to ISO string", () => {
     const finishedAt = new Date("2026-06-10T02:08:50.320Z");
     const row = mapRow({
       id: 1,
@@ -35,7 +35,7 @@ describe("mapRow", () => {
     expect(row.finished_at).toBe(finishedAt.toISOString());
   });
 
-  test("保留字符串 finished_at", () => {
+  test("preserves string finished_at", () => {
     const row = mapRow({
       id: 3,
       job_id: "builtin-light-sleep",

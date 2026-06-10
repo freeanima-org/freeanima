@@ -19,7 +19,7 @@ export function getEmbedTextsFn(): EmbedTextsFn | null {
   return embedTextsFn;
 }
 
-/** 测试 teardown */
+/** Test teardown */
 export function resetEmbedTextFnForTest(): void {
   embedTextFn = null;
 }

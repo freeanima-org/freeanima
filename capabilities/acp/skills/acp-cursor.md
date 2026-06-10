@@ -1,69 +1,69 @@
 ---
 name: acp-cursor
-description: 编排 acp_cursor 多轮交互（Plan / Ask / Agent、clarify 决策、continue_session 续用）
+description: Orchestrate acp_cursor multi-turn interaction (Plan / Ask / Agent, clarify decisions, continue_session reuse)
 created: 2026-06-06
 ---
 
-# ACP Cursor 编排
+# ACP Cursor Orchestration
 
-使用 `acp_cursor` 委托 Cursor 编码代理时的多轮流程指南。
+Multi-turn workflow guide when delegating to the Cursor coding agent via `acp_cursor`.
 
-## 模式选择
+## Mode Selection
 
-| mode    | 用途                     | 示例                                        |
-| ------- | ------------------------ | ------------------------------------------- |
-| `ask`   | 只读分析，不修改文件     | 「这段代码什么意思」「排查这个 bug 的原因」 |
-| `plan`  | 先出方案，等人审批再动手 | 「重新设计 API 层」「大规模重构方案」       |
-| `agent` | 直接修改代码、执行命令   | 「实现这个函数」「修复测试」                |
+| mode    | Purpose                                 | Examples                                                  |
+| ------- | --------------------------------------- | --------------------------------------------------------- |
+| `ask`   | Read-only analysis, no file edits       | "What does this code mean?" "Debug the cause of this bug" |
+| `plan`  | Plan first, wait for approval           | "Redesign the API layer" "Large-scale refactor plan"      |
+| `agent` | Direct code edits and command execution | "Implement this function" "Fix the tests"                 |
 
-## 基本用法
+## Basic Usage
 
 ```text
-acp_cursor(prompt="...", mode="agent", context="项目路径与约束")
+acp_cursor(prompt="...", mode="agent", context="project path and constraints")
 ```
 
-续用同一 Cursor session（回答问题、批准方案、继续执行）：
+Resume the same Cursor session (answer questions, approve plans, continue execution):
 
 ```text
 acp_cursor(prompt="...", continue_session=true, mode="agent")
 ```
 
-## 阻塞交互（pending）
+## Blocking Interaction (pending)
 
-当返回 JSON 含 `pending` 字段时，表示 Cursor 在等待决策：
+When the returned JSON contains a `pending` field, Cursor is waiting for a decision:
 
-### pending 含 questions
+### pending with questions
 
-1. 阅读 `pending[].questions` 中的选项
-2. **有足够上下文** → 自主选择答案，用 `continue_session=true` 将答案作为 `prompt` 发回
-3. **需要核对伙伴** → 调用 `clarify` 工具提问，收到回复后再 `continue_session=true` 继续
+1. Read choices in `pending[].questions`
+2. **Enough context** → choose an answer autonomously, send back as `prompt` with `continue_session=true`
+3. **Need partner input** → use the `clarify` tool, then `continue_session=true` after reply
 
-### pending 含 plan
+### pending with plan
 
-1. 阅读 `pending[].plan` 中的方案
-2. **可接受** → `continue_session=true, mode=agent`，prompt 说明「已批准，请执行方案」
-3. **需修改或需伙伴确认** → `clarify` 或直接在 prompt 中给出修改意见
+1. Read the plan in `pending[].plan`
+2. **Acceptable** → `continue_session=true, mode=agent`, prompt says "approved, please execute the plan"
+3. **Needs changes or partner confirmation** → `clarify` or give revision notes directly in prompt
 
-## 推荐流程
+## Recommended Flows
 
-### 执行型（重构、实现）
+### Execution (refactor, implement)
 
-1. `acp_cursor(prompt, mode=plan)` → 拿 plan，可能有 questions
-2. 处理 questions（自主或 clarify）
-3. `acp_cursor(prompt=批准/回答, continue_session=true, mode=agent)` → 执行
+1. `acp_cursor(prompt, mode=plan)` → get plan, may have questions
+2. Handle questions (autonomous or clarify)
+3. `acp_cursor(prompt=approval/answers, continue_session=true, mode=agent)` → execute
 
-### 调研型（代码分析）
+### Research (code analysis)
 
-1. `acp_cursor(prompt, mode=ask)` → 只读，直接返回分析
+1. `acp_cursor(prompt, mode=ask)` → read-only, returns analysis directly
 
-### 混合型（先看再改）
+### Hybrid (look then change)
 
-1. `acp_cursor(prompt, mode=ask)` → 调研
-2. 判断是否需要修改
-3. 需要 → `acp_cursor(prompt=改动描述, continue_session=true, mode=agent)`
+1. `acp_cursor(prompt, mode=ask)` → research
+2. Decide if changes are needed
+3. If needed → `acp_cursor(prompt=change description, continue_session=true, mode=agent)`
 
-## 注意
+## Notes
 
-- `continue_session` 会自动取当前逸灵风对话绑定的 Cursor session，无需手动传 `session_id`
-- `new_session=true` 强制新开 session（旧 binding 会被替换）
-- Cursor todo（`update_todos`）是 Cursor 内部执行检查点，与逸灵风任务系统无关
+- `continue_session` automatically uses the Cursor session bound to the current Free Anima conversation; no manual `session_id` needed
+- `new_session=true` forces a new session (old binding is replaced)
+- Cursor todos (`update_todos`) are Cursor internal checkpoints, unrelated to the Free Anima task system

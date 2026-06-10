@@ -34,13 +34,13 @@ function createSessionStore(): SessionStorePort {
     listSessionIdsUpdatedBetween: async () => ["s-1"],
     getSessionMetaLite: async () => ({
       role: "session_meta",
-      title: "测试",
+      title: "Test",
       platform: "webui",
       timestamp: "2026-06-08T10:00:00+08:00",
     }),
     listMessages: async () => [
-      { role: "user", content: "今天聊了很多", t: "2026-06-08T10:00:00+08:00" },
-      { role: "assistant", content: "是的", t: "2026-06-08T10:01:00+08:00" },
+      { role: "user", content: "We talked a lot today", t: "2026-06-08T10:00:00+08:00" },
+      { role: "assistant", content: "Yes", t: "2026-06-08T10:01:00+08:00" },
     ],
   } as unknown as SessionStorePort;
 }
@@ -51,7 +51,7 @@ function createSemanticStore(): SemanticMemoryStorePort {
     listBySourceSessions: async () => [
       {
         id: "f-000001-abcd",
-        content: "我帮张三完成了重构",
+        content: "I helped Zhang San complete a refactor",
         type: "experience",
         pinned: false,
         reference_count: 0,
@@ -67,7 +67,7 @@ function createSemanticStore(): SemanticMemoryStorePort {
       id === "f-000001-abcd"
         ? {
             id,
-            content: "我帮张三完成了重构",
+            content: "I helped Zhang San complete a refactor",
             type: "experience",
             pinned: false,
             reference_count: 0,
@@ -91,7 +91,7 @@ function createLimbicStore(): LimbicMemoryStorePort {
         kind: "spike",
         valence: 0.8,
         arousal: 0.7,
-        content: "我感到很有成就感",
+        content: "I felt a strong sense of accomplishment",
         intensity: 0.8,
         source_segment: "late",
         semantic_memory_ids: ["f-000001-abcd"],
@@ -106,7 +106,7 @@ function createLimbicStore(): LimbicMemoryStorePort {
             kind: "turning_point",
             valence: 0.5,
             arousal: 0.6,
-            content: "我感到转折",
+            content: "I felt a turning point",
             intensity: 0.7,
             source_segment: null,
             semantic_memory_ids: [],
@@ -141,17 +141,17 @@ describe("light-sleep build-messages", () => {
     resetAutobiographicalMemoryStoreForTests();
   });
 
-  it("buildLimbicUserMessages 含对话、已有 limbic 与指令", async () => {
+  it("buildLimbicUserMessages includes dialogue, existing limbic, and instruction", async () => {
     const messages = await buildLimbicUserMessages(createSessionStore(), ["s-1"]);
     expect(messages).toHaveLength(3);
-    expect(messages[0]).toContain("# 本日对话");
-    expect(messages[0]).toContain("今天聊了很多");
+    expect(messages[0]).toContain("# Today's dialogue");
+    expect(messages[0]).toContain("We talked a lot today");
     expect(messages[1]).toContain("limbic-1");
-    expect(messages[1]).toContain("我感到很有成就感");
+    expect(messages[1]).toContain("I felt a strong sense of accomplishment");
     expect(messages[2]).toBe(LIMBIC_INSTRUCTION);
   });
 
-  it("buildLightSleepAutobiographyUserMessages 含对话、semantic、limbic 与已有自传", async () => {
+  it("buildLightSleepAutobiographyUserMessages includes dialogue, semantic, limbic, and existing autobiography", async () => {
     const messages = await buildLightSleepAutobiographyUserMessages(
       createSessionStore(),
       ["s-1"],
@@ -159,12 +159,12 @@ describe("light-sleep build-messages", () => {
       ["limbic-new"],
     );
     expect(messages).toHaveLength(5);
-    expect(messages[0]).toContain("# 本日对话");
+    expect(messages[0]).toContain("# Today's dialogue");
     expect(messages[1]).toContain("f-000001-abcd");
     expect(messages[1]).toContain("experience");
     expect(messages[2]).toContain("limbic-1");
     expect(messages[2]).toContain("limbic-new");
-    expect(messages[3]).toContain("尚无自传体叙事");
+    expect(messages[3]).toContain("No autobiographical narratives yet");
     expect(messages[4]).toBe(LIGHT_SLEEP_AUTOBIOGRAPHY_INSTRUCTION);
   });
 });
@@ -197,7 +197,7 @@ describe("runLightSleep", () => {
       lightSleepCalls += 1;
       const isSemantic = input.toolNames.includes("memory_semantic_create");
       return {
-        summary: isSemantic ? "语义完成" : "感性完成",
+        summary: isSemantic ? "semantic done" : "limbic done",
         tool_calls: 0,
         semantic_memory_ids: [],
         limbic_memory_ids: isSemantic ? [] : ["limbic-new"],
@@ -206,7 +206,7 @@ describe("runLightSleep", () => {
 
     registerAutobiographyEngine(async () => {
       autobiographyCalls += 1;
-      return { summary: "自传完成", tool_calls: 0 };
+      return { summary: "autobiography done", tool_calls: 0 };
     });
   });
 
@@ -220,7 +220,7 @@ describe("runLightSleep", () => {
     resetAutobiographyEngineForTests();
   });
 
-  it("Stage 1 零工具调用时仍执行 Stage 2 与 Stage 3", async () => {
+  it("Stage 1 with zero tool calls still runs Stage 2 and Stage 3", async () => {
     const refreshSpy = mock(async () => true);
     const selfStore = {
       updateBlock: refreshSpy,
@@ -230,7 +230,7 @@ describe("runLightSleep", () => {
       sessionStore: createSessionStore(),
       autoStore: createAutoStore(),
       selfStore,
-      selfContent: "自我层",
+      selfContent: "self layer",
       day: "2026-06-08",
     });
 
@@ -241,8 +241,8 @@ describe("runLightSleep", () => {
     expect(result.autobiography_tool_calls).toBe(0);
     expect(result.summary_refreshed).toBe(true);
     expect(refreshSpy).toHaveBeenCalledTimes(1);
-    expect(result.summary).toContain("语义完成");
-    expect(result.summary).toContain("感性完成");
-    expect(result.summary).toContain("自传完成");
+    expect(result.summary).toContain("semantic done");
+    expect(result.summary).toContain("limbic done");
+    expect(result.summary).toContain("autobiography done");
   });
 });

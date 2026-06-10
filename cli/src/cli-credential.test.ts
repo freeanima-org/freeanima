@@ -37,16 +37,16 @@ async function runCredential(args: string[], deps: CredentialCommandDeps): Promi
 }
 
 describe("parseKeyValues", () => {
-  it("解析 key=value 对", () => {
+  it("parse key=value pairs", () => {
     expect(parseKeyValues(["token=abc", "desc=hello"])).toEqual({
       token: "abc",
       desc: "hello",
     });
   });
 
-  it("无效格式抛错", () => {
+  it("throws on invalid format", () => {
     expect(() => parseKeyValues(["notvalid"])).toThrow(/key=value/);
-    expect(() => parseKeyValues([])).toThrow(/至少需要一个/);
+    expect(() => parseKeyValues([])).toThrow(/At least one key=value argument required/);
   });
 });
 
@@ -65,12 +65,12 @@ describe("credential CLI", () => {
     logSpy.mockRestore();
   });
 
-  it("list 无凭证时输出占位", async () => {
+  it("list outputs placeholder when no credentials", async () => {
     await runCredential(["list"], mockDeps());
-    expect(logs).toEqual(["(无凭证)"]);
+    expect(logs).toEqual(["(no credentials)"]);
   });
 
-  it("list 有凭证时输出表格", async () => {
+  it("list outputs table when credentials exist", async () => {
     await runCredential(["list"], mockDeps({ listCredentials: () => [sampleMeta] }));
     const out = logs.join("\n");
     expect(out).toContain("services/discord");
@@ -78,7 +78,7 @@ describe("credential CLI", () => {
     expect(out).toContain("token");
   });
 
-  it("get 输出字段值", async () => {
+  it("get outputs field value", async () => {
     await runCredential(
       ["get", "services/discord", "token"],
       mockDeps({
@@ -92,7 +92,7 @@ describe("credential CLI", () => {
     expect(logs).toEqual(["my-token"]);
   });
 
-  it("get 失败时 exit 1", async () => {
+  it("get exits 1 on failure", async () => {
     const exitSpy = spyOn(process, "exit").mockImplementation(((code?: number) => {
       throw new Error(`exit:${code ?? 0}`);
     }) as typeof process.exit);
@@ -109,7 +109,7 @@ describe("credential CLI", () => {
     exitSpy.mockRestore();
   });
 
-  it("add 调用 insertCredential 并输出成功", async () => {
+  it("add calls insertCredential and outputs success", async () => {
     const inserted: Array<{ path: string; data: Record<string, string> }> = [];
     await runCredential(
       ["add", "services/new", "token=xyz", "desc=test"],
@@ -124,7 +124,7 @@ describe("credential CLI", () => {
       path: "services/new",
       data: { token: "xyz", desc: "test" },
     });
-    expect(logs.some((l) => l.includes("已写入 services/new"))).toBe(true);
+    expect(logs.some((l) => l.includes("Written services/new"))).toBe(true);
   });
 });
 

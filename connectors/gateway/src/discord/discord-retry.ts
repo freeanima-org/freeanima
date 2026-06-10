@@ -14,7 +14,7 @@ function errorStatus(err: unknown): number | null {
   return typeof status === "number" ? status : null;
 }
 
-/** 从 discord.js / REST 错误提取 HTTP status 与 Discord API code（如 50005） */
+/** Extract HTTP status and Discord API code from discord.js / REST errors (e.g. 50005) */
 export function discordErrorDetails(err: unknown): Record<string, unknown> {
   if (!err || typeof err !== "object") return {};
   const rec = err as Record<string, unknown>;
@@ -28,7 +28,7 @@ export function discordErrorDetails(err: unknown): Record<string, unknown> {
   return out;
 }
 
-/** Discord REST / 网关瞬态错误（含 429、5xx、底层网络） */
+/** Discord REST / gateway transient errors (429, 5xx, underlying network) */
 export function isDiscordRetryableError(err: unknown): boolean {
   if (isTransientNetworkError(err)) return true;
   const status = errorStatus(err);
@@ -67,7 +67,7 @@ export async function withDiscordRetry<T>(
   throw last;
 }
 
-/** 流式中间态：尽力 edit，失败只记日志不抛（避免打断后续 flush） */
+/** Streaming interim: best-effort edit, log failure without throw (avoid interrupting flush) */
 export async function tryDiscordInterimEdit(
   edit: () => Promise<void>,
   context?: Record<string, unknown>,
@@ -84,7 +84,7 @@ export async function tryDiscordInterimEdit(
   }
 }
 
-/** 最终交付：edit 失败则 fallback 新发一条（避免卡在「思考中」） */
+/** Final delivery: fallback new message if edit fails (avoid stuck on thinking) */
 export async function deliverDiscordFinalContent(
   edit: () => Promise<void>,
   sendFallback: () => Promise<void>,

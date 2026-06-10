@@ -8,14 +8,14 @@ import {
 } from "@freeanima/connectors-gateway";
 
 describe("formatToolBeginLine", () => {
-  it("包含序列化参数", () => {
+  it("includes serialized params", () => {
     const line = formatToolBeginLine("web_extract", { url: "https://example.com" });
     expect(line).toContain("web_extract");
     expect(line).toContain("https://example.com");
     expect(line).not.toContain("(...)");
   });
 
-  it("超长整行截断", () => {
+  it("truncates overlong single line", () => {
     const line = formatToolBeginLine("grep", { pattern: "a".repeat(200) }, 80);
     expect(line.length).toBeLessThanOrEqual(80);
     expect(line.endsWith("…")).toBe(true);
@@ -23,7 +23,7 @@ describe("formatToolBeginLine", () => {
 });
 
 describe("formatToolResultLine", () => {
-  it("截断结果摘要", () => {
+  it("truncates result summary", () => {
     const line = formatToolResultLine("grep", "x".repeat(300), 50);
     expect(line.startsWith(" → ")).toBe(true);
     expect(line.length).toBeLessThanOrEqual(50);
@@ -31,7 +31,7 @@ describe("formatToolResultLine", () => {
 });
 
 describe("ToolRoundCollector", () => {
-  it("合并一轮 begin + result", () => {
+  it("merges one round begin + result", () => {
     const c = new ToolRoundCollector();
     c.addBegin("read", { path: "/tmp/a" });
     c.addResult("read", '{"ok":true}');
@@ -42,7 +42,7 @@ describe("ToolRoundCollector", () => {
     expect(c.take()).toBeNull();
   });
 
-  it("clarify 工具跳过", () => {
+  it("clarify tool skipped", () => {
     const c = new ToolRoundCollector();
     c.addBegin("clarify", { q: 1 });
     c.addResult("clarify", "secret");
@@ -51,7 +51,7 @@ describe("ToolRoundCollector", () => {
 });
 
 describe("formatToolRoundMessage", () => {
-  it("多行用换行连接", () => {
+  it("multiline joined with newlines", () => {
     expect(formatToolRoundMessage(["line1", "line2"])).toBe("line1\nline2");
   });
 });

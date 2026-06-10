@@ -10,16 +10,16 @@ import {
 } from "@freeanima/connectors-gateway";
 
 describe("chunkWeixinText", () => {
-  it("空串返回空数组", () => {
+  it("empty string returns empty array", () => {
     expect(chunkWeixinText("")).toEqual([]);
     expect(chunkWeixinText("   ")).toEqual([]);
   });
 
-  it("短文本不切分", () => {
+  it("short text not split", () => {
     expect(chunkWeixinText("hello")).toEqual(["hello"]);
   });
 
-  it("超长文本按 limit 切分", () => {
+  it("splits overlong text by limit", () => {
     const body = "a".repeat(2500);
     const chunks = chunkWeixinText(body, WEIXIN_TEXT_CHUNK_LIMIT);
     expect(chunks.length).toBeGreaterThan(1);
@@ -29,7 +29,7 @@ describe("chunkWeixinText", () => {
     }
   });
 
-  it("优先在双换行处切分", () => {
+  it("prefers split at double newline", () => {
     const para1 = "a".repeat(100);
     const para2 = "b".repeat(100);
     const text = `${para1}\n\n${para2}`;
@@ -45,7 +45,7 @@ describe("weixin session pause", () => {
     _resetWeixinSessionPauseForTest();
   });
 
-  it("pause 后 isWeixinSessionPaused 为 true", () => {
+  it("isWeixinSessionPaused true after pause", () => {
     pauseWeixinSession("acct-1");
     expect(isWeixinSessionPaused("acct-1")).toBe(true);
     expect(isWeixinSessionPaused("acct-2")).toBe(false);
@@ -60,7 +60,7 @@ describe("sendTextChunked", () => {
     vi.restoreAllMocks();
   });
 
-  it("POST 请求含 X-WECHAT-UIN 与 base_info.bot_agent", async () => {
+  it("POST includes X-WECHAT-UIN and base_info.bot_agent", async () => {
     const seenHeaders: Record<string, string>[] = [];
     const seenBodies: string[] = [];
 
@@ -95,7 +95,7 @@ describe("sendTextChunked", () => {
     expect(body.msg.item_list[0]!.text_item.text).toBe("hello");
   });
 
-  it("长文本分多次 POST", async () => {
+  it("long text split into multiple POSTs", async () => {
     let postCount = 0;
     globalThis.fetch = vi.fn(async () => {
       postCount += 1;

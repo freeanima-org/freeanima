@@ -1,6 +1,6 @@
 import type { MemoryReferenceStorePort } from "../ports/memory-reference.ts";
 
-/** PG 不可用时的记忆引用端口空实现 */
+/** Null memory-reference port when PG unavailable */
 export const nullMemoryReferenceStore: MemoryReferenceStorePort = {
   async recordFromMessage() {
     return [];

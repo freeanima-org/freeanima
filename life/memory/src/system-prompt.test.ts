@@ -40,7 +40,7 @@ describe("system-prompt", () => {
     resetSemanticMemoryStoreForTests();
   });
 
-  it("composeSystemPrompt 顺序为 self → resident → agents", () => {
+  it("composeSystemPrompt order is self → resident → agents", () => {
     const composed = composeSystemPrompt({
       self: "SELF_MARKER",
       resident: "RESIDENT_MARKER",
@@ -53,31 +53,33 @@ describe("system-prompt", () => {
     expect(residentIdx).toBeLessThan(agentsIdx);
   });
 
-  it("常驻记忆段含第二人称骨架与代码块", async () => {
-    registerSemanticMemoryStore(createMockSemanticStore([{ content: "我喜欢测试", pinned: true }]));
-    const parts = await decomposeSystemPromptParts("自我层内容");
+  it("resident memory segment includes second-person frame and code fence", async () => {
+    registerSemanticMemoryStore(
+      createMockSemanticStore([{ content: "I like testing", pinned: true }]),
+    );
+    const parts = await decomposeSystemPromptParts("self layer content");
     expect(parts.resident).toContain(RESIDENT_MEMORY_SYSTEM_FRAME);
-    expect(parts.resident).toContain("## 常驻记忆");
+    expect(parts.resident).toContain("## Resident memory");
     expect(parts.resident).toContain("```md");
-    expect(parts.resident).toContain("- 📌 [记忆 #f-000000-abcd] 我喜欢测试");
+    expect(parts.resident).toContain("- 📌 [memory #f-000000-abcd] I like testing");
     expect(parts.resident).toContain(MEMORY_REFERENCE_CITATION_RULE);
   });
 
-  it("项目上下文段含代码块且无第二人称骨架", async () => {
+  it("project context segment includes code fence without second-person frame", async () => {
     const dir = mkdtempSync(join(tmpdir(), "anima-agents-"));
-    writeFileSync(join(dir, "AGENTS.md"), "# 项目规约\n遵守类型注解。", "utf-8");
+    writeFileSync(join(dir, "AGENTS.md"), "# Project conventions\nUse type annotations.", "utf-8");
     registerSemanticMemoryStore(createMockSemanticStore());
 
-    const parts = await decomposeSystemPromptParts("自我层", dir);
-    expect(parts.agents).toContain("## 项目上下文");
+    const parts = await decomposeSystemPromptParts("self layer", dir);
+    expect(parts.agents).toContain("## Project context");
     expect(parts.agents).toContain("```md");
-    expect(parts.agents).toContain("遵守类型注解");
+    expect(parts.agents).toContain("Use type annotations");
     expect(parts.agents).not.toContain(RESIDENT_MEMORY_SYSTEM_FRAME);
   });
 
-  it("空常驻记忆与无 AGENTS.md 时段被省略", async () => {
+  it("omits empty resident memory and missing AGENTS.md segments", async () => {
     registerSemanticMemoryStore(createMockSemanticStore());
-    const parts = await decomposeSystemPromptParts("自我层", null);
+    const parts = await decomposeSystemPromptParts("self layer", null);
     expect(parts.resident).toBe("");
     expect(parts.agents).toBe("");
   });

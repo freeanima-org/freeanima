@@ -1,13 +1,13 @@
-/** WebUI 消息展示视图（由 Slice A SessionMessage 投影） */
+/** WebUI message display view (projected from Slice A SessionMessage) */
 
 export type DisplayToolCall = {
   name: string;
   argsPreview: string;
   tool_call_id: string;
   status: string;
-  /** 完整工具参数（JSON 对象） */
+  /** Full tool arguments (JSON object) */
   args?: Record<string, unknown>;
-  /** tool role 消息内容 */
+  /** tool role message content */
   result?: string;
 };
 

@@ -21,7 +21,7 @@ export const CLARIFY_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
     ]),
     example: {
       status: "awaiting",
-      items: [{ question: "你希望使用哪种方案？", choices: ["A", "B"] }],
+      items: [{ question: "Which approach would you prefer?", choices: ["A", "B"] }],
       timeout_sec: 300,
     },
   }),

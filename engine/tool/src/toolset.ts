@@ -16,7 +16,7 @@ export type ToolSet = {
   tools: readonly ToolDef[];
 };
 
-/** WebUI / API 视图 */
+/** WebUI / API view */
 export type ToolSetView = {
   name: string;
   description: string;
@@ -27,7 +27,7 @@ function freezeToolDef(def: ToolDef): ToolDef {
   return Object.freeze({ ...def });
 }
 
-/** ToolSet 注册表：ToolSet 内嵌 ToolDef[]，LLM/执行层经 flat API 扁平化 */
+/** ToolSet registry: ToolSet embeds ToolDef[]; LLM/execution layer flattens via flat API */
 export class ToolSetRegistry {
   private readonly sets = new Map<string, ToolSet>();
   private readonly toolIndex = new Map<string, ToolDef>();

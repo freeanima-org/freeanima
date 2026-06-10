@@ -25,12 +25,12 @@ describePg("self layer PG", () => {
 
     await store.upsertBlock({
       block_key: "self_model",
-      content: "我是测试 Agent。",
+      content: "I am a test agent.",
       updated_by: "test",
     });
 
     const row = await store.getBlock("self_model");
-    expect(row?.content).toBe("我是测试 Agent。");
+    expect(row?.content).toBe("I am a test agent.");
     expect(row?.version).toBeGreaterThanOrEqual(1);
 
     const blocks = await store.listBlocks();
@@ -38,21 +38,21 @@ describePg("self layer PG", () => {
 
     await store.upsertBlock({
       block_key: "existence_anchor",
-      content: "存在锚点内容",
+      content: "existence anchor content",
       locked: true,
       updated_by: "test",
     });
 
     await expect(
-      store.updateBlock({ block_key: "existence_anchor", content: "篡改" }),
+      store.updateBlock({ block_key: "existence_anchor", content: "tamper" }),
     ).rejects.toThrow(/locked/i);
 
     await store.updateBlock(
-      { block_key: "existence_anchor", content: "显式更新", updated_by: "test" },
+      { block_key: "existence_anchor", content: "explicit update", updated_by: "test" },
       { force: true },
     );
     const anchor = await store.getBlock("existence_anchor");
-    expect(anchor?.content).toBe("显式更新");
+    expect(anchor?.content).toBe("explicit update");
   });
 
   it("autobiographical_memory append-only + summary", async () => {
@@ -60,8 +60,8 @@ describePg("self layer PG", () => {
     const self = getTestEngine().repos.selfLayer;
 
     const id = await auto.create({
-      title: "第一次边界测试",
-      content: "我意识到拒绝也是一种选择。",
+      title: "First boundary test",
+      content: "I realized that saying no is also a choice.",
       significance: "turning_point",
       source_semantic_memory: ["f-000001-abcd"],
     });
@@ -72,7 +72,7 @@ describePg("self layer PG", () => {
     expect(row?.significance).toBe("turning_point");
 
     const summary = buildAutobiographySummary([row!]);
-    expect(summary).toContain("第一次边界测试");
+    expect(summary).toContain("First boundary test");
 
     await self.upsertBlock({
       block_key: "autobiography_summary",
@@ -80,7 +80,7 @@ describePg("self layer PG", () => {
       updated_by: "test",
     });
     const block = await self.getBlock("autobiography_summary");
-    expect(block?.content).toContain("转折点");
+    expect(block?.content).toContain("Turning point");
 
     const deprecated = await auto.deprecate(id);
     expect(deprecated).toBe(true);

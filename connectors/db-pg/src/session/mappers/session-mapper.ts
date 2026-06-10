@@ -46,7 +46,7 @@ const META_KNOWN_KEYS = new Set([
   "capability_mask",
 ]);
 
-/** session_meta → PG insert 行 */
+/** session_meta → PG insert row */
 export function sessionMetaToInsert(sessionId: string, meta: SessionMetaMessage): SessionInsert {
   const passthrough: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(meta)) {
@@ -99,7 +99,7 @@ export function sessionMetaToInsert(sessionId: string, meta: SessionMetaMessage)
   };
 }
 
-/** PG 行 → session_meta（合成 role 供现有代码兼容） */
+/** PG row → session_meta (synthetic role for existing code compatibility) */
 export function rowToSessionMeta(row: unknown): SessionMetaMessage {
   const parsed = sessionSelectSchema.parse(row);
   const { platform, platform_extra } = splitPlatformInfo(parsed.platformInfo);

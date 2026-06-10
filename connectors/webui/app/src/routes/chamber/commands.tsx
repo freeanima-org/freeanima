@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { listSessionCommands } from "@/lib/api.ts";
+import { m } from "@/lib/i18n.ts";
 
 export const Route = createFileRoute("/chamber/commands")({
   loader: () => listSessionCommands({ all: true }).catch(() => ({ commands: [] })),
@@ -21,29 +22,27 @@ function CommandsPage() {
   const globalCommands = commands.filter((c) => c.scope === "global");
 
   const formatPlatforms = (platforms?: string[]) => {
-    if (!platforms?.length) return "全部";
+    if (!platforms?.length) return m.webui_common_all();
     return platforms.join(", ");
   };
 
   return (
     <div>
-      <h2 className="text-lg font-bold mb-1">⌨️ Slash 命令</h2>
-      <p className="text-sm text-base-content/60 mb-4">
-        在对话输入框以 <code className="text-xs">/</code> 开头即可触发。命令按作用域分为两类。
-      </p>
+      <h2 className="text-lg font-bold mb-1">{m.webui_chamber_nav_commands()}</h2>
+      <p className="text-sm text-base-content/60 mb-4">{m.webui_chamber_commands_desc()}</p>
 
       {sessionCommands.length > 0 ? (
         <section className="mb-6">
-          <h3 className="text-sm font-semibold mb-2">当前 session</h3>
+          <h3 className="text-sm font-semibold mb-2">{m.webui_chamber_commands_session_scope()}</h3>
           <p className="text-xs text-base-content/50 mb-2">
-            所有平台默认可用（共 {sessionCommands.length} 个）。
+            {m.webui_chamber_commands_session_hint({ count: String(sessionCommands.length) })}
           </p>
           <div className="overflow-x-auto">
             <table className="table table-sm">
               <thead>
                 <tr>
-                  <th className="w-48">命令</th>
-                  <th>说明</th>
+                  <th className="w-48">{m.webui_chamber_commands_command()}</th>
+                  <th>{m.webui_chamber_commands_description()}</th>
                 </tr>
               </thead>
               <tbody>
@@ -61,17 +60,17 @@ function CommandsPage() {
 
       {globalCommands.length > 0 ? (
         <section>
-          <h3 className="text-sm font-semibold mb-2">其它</h3>
+          <h3 className="text-sm font-semibold mb-2">{m.webui_chamber_commands_global_scope()}</h3>
           <p className="text-xs text-base-content/50 mb-2">
-            跨 session 或平台级操作（共 {globalCommands.length} 个）。
+            {m.webui_chamber_commands_global_hint({ count: String(globalCommands.length) })}
           </p>
           <div className="overflow-x-auto">
             <table className="table table-sm">
               <thead>
                 <tr>
-                  <th className="w-48">命令</th>
-                  <th>说明</th>
-                  <th className="w-40">平台</th>
+                  <th className="w-48">{m.webui_chamber_commands_command()}</th>
+                  <th>{m.webui_chamber_commands_description()}</th>
+                  <th className="w-40">{m.webui_chamber_commands_platform()}</th>
                 </tr>
               </thead>
               <tbody>
@@ -91,7 +90,7 @@ function CommandsPage() {
       ) : null}
 
       {!sessionCommands.length && !globalCommands.length ? (
-        <div className="alert alert-info text-sm">暂无已注册的 slash 命令。</div>
+        <div className="alert alert-info text-sm">{m.webui_chamber_commands_empty()}</div>
       ) : null}
     </div>
   );

@@ -300,7 +300,7 @@ describe("memory search", () => {
   it("searchSemanticMemory finds semantic memory via port", async () => {
     const store = createMockSemanticStore();
     registerSemanticMemoryStore(store);
-    await store.create({ content: "逸灵风使用 TypeScript 实现记忆管道" });
+    await store.create({ content: "FreeAnima implements the memory pipeline in TypeScript" });
 
     const results = await searchSemanticMemory("TypeScript", 5);
     expect(results.length).toBeGreaterThan(0);
@@ -314,7 +314,7 @@ describe("memory search", () => {
       sid,
       async () => {
         const out = await toolSets.getTool("memory_remember")!.handler({
-          content: "增量索引探针 beta",
+          content: "Incremental index probe beta",
           type: "world",
         });
         expect(out).toContain("semantic_memory_id");
@@ -329,7 +329,7 @@ describe("memory search", () => {
     const store = createMockSemanticStore();
     registerSemanticMemoryStore(store);
     const id = await store.create({
-      content: "带来源的 memory",
+      content: "memory with sources",
       source_sessions: ["s1", "s2"],
     });
     const out = await toolSets.getTool("memory_semantic_update")!.handler({
@@ -345,7 +345,7 @@ describe("memory search", () => {
   it("memory_recall returns unified results with memory_type", async () => {
     const store = createMockSemanticStore();
     registerSemanticMemoryStore(store);
-    await store.create({ content: "逸灵风记忆管道使用 compression 压缩" });
+    await store.create({ content: "FreeAnima memory pipeline uses compression" });
 
     const sid = "20260526_120000_abcd";
     registerMemorySessionStore(
@@ -354,7 +354,7 @@ describe("memory search", () => {
           return [
             {
               message_id: "msg-001",
-              content: "讨论 compression 算法",
+              content: "Discussing compression algorithms",
               role: "user",
               session_id: sid,
               timestamp: "2026-05-26T12:00:00+08:00",

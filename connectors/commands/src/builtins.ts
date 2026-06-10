@@ -22,15 +22,15 @@ function cmdHelp(ctx: CommandContext): string {
   const sessionCmds = available.filter((c) => (c.scope ?? "session") === "session");
   const globalCmds = available.filter((c) => c.scope === "global");
 
-  const lines = ["**可用命令：**"];
+  const lines = ["**Available commands:**"];
   if (sessionCmds.length) {
-    lines.push("", "**当前 session：**");
+    lines.push("", "**Current session:**");
     for (const cmd of sessionCmds) {
       lines.push(`  • \`/${cmd.name}\` — ${cmd.description}`);
     }
   }
   if (globalCmds.length) {
-    lines.push("", "**其它：**");
+    lines.push("", "**Other:**");
     for (const cmd of globalCmds) {
       lines.push(`  • \`/${cmd.name}\` — ${cmd.description}`);
     }
@@ -45,7 +45,7 @@ async function cmdNew(ctx: CommandContext): Promise<CommandResult> {
     await conv().appendMessage({ role: "assistant", content: summary }, sid);
   }
   return {
-    text: `🆕 新 session 已创建（${sid.slice(0, 8)}...）`,
+    text: `🆕 New session created (${sid.slice(0, 8)}...)`,
     data: { new_session_id: sid },
   };
 }
@@ -56,15 +56,15 @@ function cmdRetry(_ctx: CommandContext): CommandResult {
 
 async function cmdCancel(ctx: CommandContext): Promise<string> {
   const pending = await readAwaitingClarify(conv(), ctx.sessionId);
-  if (!pending) return "当前没有待回答的提问。";
+  if (!pending) return "No pending questions to answer.";
   await clearAwaitingClarify(conv(), ctx.sessionId);
-  return "已取消提问，可以继续对话。";
+  return "Question cancelled, you can continue the conversation.";
 }
 
 async function cmdReloadTools(ctx: CommandContext): Promise<string> {
   const meta = await conv().loadSessionMeta(ctx.sessionId);
   if (!isSessionMeta(meta)) {
-    return "⚠️ 当前 session 不存在，无法更新工具列表。";
+    return "⚠️ Current session does not exist, cannot update tool list.";
   }
   const beforeSchema = meta.tools.length;
   const beforeLoaded = meta.loaded_tools?.length ?? 0;
@@ -74,23 +74,23 @@ async function cmdReloadTools(ctx: CommandContext): Promise<string> {
     const names = isSessionMeta(after) ? after.tools : [];
     const preview = names.length <= 8 ? names.join(", ") : `${names.slice(0, 8).join(", ")}…`;
     return (
-      `✅ 已重置 session 工具：schema ${count} 个（此前 ${beforeSchema} 个），` +
-      `已清空 loaded_tools（此前 ${beforeLoaded} 个）。\n默认工具：${preview}`
+      `✅ Reset session tools: schema ${count} (was ${beforeSchema}),` +
+      `cleared loaded_tools (was ${beforeLoaded}).\nDefault tools: ${preview}`
     );
   } catch (e) {
-    return `⚠️ 更新工具列表失败：${String(e)}`;
+    return `⚠️ Failed to update tool list: ${String(e)}`;
   }
 }
 
 async function cmdReloadSystemPrompt(ctx: CommandContext): Promise<string> {
   const meta = await conv().loadSessionMeta(ctx.sessionId);
   if (!isSessionMeta(meta)) {
-    return "⚠️ 当前 session 不存在，无法重建 system prompt。";
+    return "⚠️ Current session does not exist, cannot rebuild system prompt.";
   }
   await conv().rebuildSessionSystemPrompt(ctx.sessionId);
   const after = await conv().loadSessionMeta(ctx.sessionId);
   const sp = isSessionMeta(after) ? (after.system_prompt ?? "") : "";
-  return `✅ 已重建 system prompt（${sp.length} 字符），仅更新 session_meta.system_prompt`;
+  return `✅ Rebuilt system prompt (${sp.length} chars), only updated session_meta.system_prompt`;
 }
 
 async function cmdStats(ctx: CommandContext): Promise<string> {
@@ -103,12 +103,12 @@ async function cmdStats(ctx: CommandContext): Promise<string> {
 async function cmdCwd(ctx: CommandContext): Promise<string> {
   if (!ctx.args.length) {
     const cwd = await conv().getSessionCwd(ctx.sessionId);
-    return `📁 当前工作目录: ${cwd ?? "（未设置）"}`;
+    return `📁 Current working directory: ${cwd ?? "(not set)"}`;
   }
   const newCwd = ctx.args.join(" ");
   try {
     const resolved = await conv().setSessionCwd(ctx.sessionId, newCwd);
-    return `✅ 工作目录已切换至: ${resolved}\n（如有 AGENTS.md，内容已注入 system prompt）`;
+    return `✅ Working directory switched to: ${resolved}\n(if AGENTS.md exists, content injected into system prompt)`;
   } catch (e) {
     return `❌ ${e instanceof Error ? e.message : String(e)}`;
   }
@@ -117,57 +117,57 @@ async function cmdCwd(ctx: CommandContext): Promise<string> {
 async function cmdTitle(ctx: CommandContext): Promise<string> {
   if (!ctx.args.length) {
     const title = await conv().getSessionTitle(ctx.sessionId);
-    return `📝 当前标题: ${title || "（空）"}`;
+    return `📝 Current title: ${title || "(empty)"}`;
   }
   const newTitle = ctx.args.join(" ").slice(0, 50);
   await conv().setSessionTitle(ctx.sessionId, newTitle);
-  return `✅ 标题已更新: ${newTitle}`;
+  return `✅ Title updated: ${newTitle}`;
 }
 
 function cmdSethome(ctx: CommandContext): string {
   const extra = ctx.origin_extra;
   if (!extra) {
-    return "⚠️ /sethome 仅能在 Discord 或微信聊天中使用。";
+    return "⚠️ /sethome only works in Discord or WeChat chat.";
   }
 
   if (ctx.platform === "discord") {
     const channelId = String(extra.channel_id ?? "").trim();
     if (!channelId) {
-      return "⚠️ 无法识别当前 Discord 频道。";
+      return "⚠️ Cannot identify current Discord channel.";
     }
     const threadId = String(extra.thread_id ?? "").trim();
     setHomeChannel("discord", channelId, threadId || undefined);
-    const where = threadId ? `频道 ${channelId} / thread ${threadId}` : `频道 ${channelId}`;
-    return `✅ 已将 Discord home channel 设为 ${where}（cron 投递等将默认发到这里）`;
+    const where = threadId ? `channel ${channelId} / thread ${threadId}` : `channel ${channelId}`;
+    return `✅ Set Discord home channel to ${where}(cron delivery etc. will default here)`;
   }
 
   if (ctx.platform === "weixin") {
     const peerId = String(extra.weixin_peer_id ?? "").trim();
     if (!peerId) {
-      return "⚠️ 无法识别当前微信会话。";
+      return "⚠️ Cannot identify current WeChat session.";
     }
     setHomeChannel("weixin", peerId);
-    return `✅ 已将微信 home channel 设为 ${peerId}（cron 投递等将默认发到这里）`;
+    return `✅ Set WeChat home channel to ${peerId}(cron delivery etc. will default here)`;
   }
 
-  return "⚠️ /sethome 仅能在 Discord 或微信聊天中使用。";
+  return "⚠️ /sethome only works in Discord or WeChat chat.";
 }
 
 async function cmdCompress(ctx: CommandContext): Promise<string> {
   const force = ctx.args.includes("--force") || ctx.args.includes("-f");
   const r = await conv().recompressSession(ctx.sessionId, { force });
   if (!r.enabled) {
-    return "会话压缩未启用（config.yaml → compression.enabled）";
+    return "Session compression not enabled (config.yaml → compression.enabled)";
   }
   const lines = [
-    r.updated ? "✅ 已更新 compression l2/l3" : "ℹ️ l2/l3 未变化",
-    `l2: ${r.l2 ?? "—"}  l3: ${r.l3 ?? "（无，未达压缩阈）"}`,
-    `存档 ${r.stored_total} 条 → 运行时 ${r.runtime_message_count} 条（隐藏 ${r.hidden_by_compression} 条）`,
-    `原始段 ${r.window_raw}/${r.recompress_at} 条（首次阈 ${r.threshold}）`,
+    r.updated ? "✅ Updated compression l2/l3" : "ℹ️ l2/l3 unchanged",
+    `l2: ${r.l2 ?? "—"}  l3: ${r.l3 ?? "(none, below compression threshold)"}`,
+    `stored ${r.stored_total} → runtime ${r.runtime_message_count} (hidden ${r.hidden_by_compression})`,
+    `raw segment ${r.window_raw}/${r.recompress_at} (first threshold ${r.threshold})`,
   ];
   if (r.messages_until_recompress != null) {
     lines.push(
-      `距再次裁剪: 约 ${r.messages_until_recompress} 条（~${r.rounds_until_recompress} 轮）`,
+      `Until next trim: ~${r.messages_until_recompress} messages (~${r.rounds_until_recompress} rounds)`,
     );
   }
   return lines.join("\n");
@@ -183,13 +183,13 @@ async function cmdMask(ctx: CommandContext): Promise<string> {
   const sub = ctx.args[0]?.toLowerCase();
   const meta = await conv().loadSessionMeta(ctx.sessionId);
   if (!isSessionMeta(meta)) {
-    return "⚠️ 当前 session 不存在，无法设置能力面罩。";
+    return "⚠️ Current session does not exist, cannot set capability mask.";
   }
 
   if (sub === "set") {
     const preset = ctx.args[1]?.trim();
     if (!preset) {
-      return "用法：`/mask set <preset-name>`";
+      return "Usage: `/mask set <preset-name>`";
     }
     const { masks, engine } = getServiceContext();
     if (!masks.get(preset)) {
@@ -197,45 +197,48 @@ async function cmdMask(ctx: CommandContext): Promise<string> {
         .list()
         .map((m) => m.name)
         .join(", ");
-      return `⚠️ 未知面具 '${preset}'。可用：${known || "（无）"}`;
+      return `⚠️ Unknown mask '${preset}'. Available: ${known || "(none)"}`;
     }
     await conv().updateSessionMetaField(ctx.sessionId, {
       capability_mask: { presets: [preset] },
     });
     await reloadMaskSideEffects(ctx.sessionId);
     const resolved = resolveMaskPresets([preset], masks, engine.catalog.toolSets);
-    return `✅ 已设置能力面罩 '${preset}'（${resolved.allowed_tools.length} 个工具）。已压缩并重载工具与 system prompt。`;
+    return `✅ Set capability mask '${preset}' (${resolved.allowed_tools.length} tools). Compressed and reloaded tools and system prompt.`;
   }
 
   if (sub === "clear") {
     await conv().updateSessionMetaField(ctx.sessionId, { capability_mask: undefined });
     await reloadMaskSideEffects(ctx.sessionId);
-    return "✅ 已移除能力面罩，恢复全能力。已压缩并重载工具与 system prompt。";
+    return "✅ Removed capability mask, restored full capabilities. Compressed and reloaded tools and system prompt.";
   }
 
   if (sub === "show") {
     const presets = meta.capability_mask?.presets ?? [];
     if (!presets.length) {
-      return "ℹ️ 当前 session 未设置能力面罩（全能力）。";
+      return "ℹ️ Current session has no capability mask (full capabilities).";
     }
     const { masks, engine } = getServiceContext();
     const resolved = resolveMaskPresets(presets, masks, engine.catalog.toolSets);
     const preview =
       resolved.allowed_tools.length <= 12
         ? resolved.allowed_tools.join(", ")
-        : `${resolved.allowed_tools.slice(0, 12).join(", ")}…（共 ${resolved.allowed_tools.length} 个）`;
-    return [`🎭 能力面罩：${presets.join(", ")}`, `允许工具：${preview || "（无）"}`].join("\n");
+        : `${resolved.allowed_tools.slice(0, 12).join(", ")}… (total ${resolved.allowed_tools.length})`;
+    return [
+      `🎭 Capability mask: ${presets.join(", ")}`,
+      `Allowed tools: ${preview || "(none)"}`,
+    ].join("\n");
   }
 
-  return "用法：`/mask set <preset>` | `/mask clear` | `/mask show`";
+  return "Usage: `/mask set <preset>` | `/mask clear` | `/mask show`";
 }
 
 function cmdRestart(_ctx: CommandContext): CommandResult | string {
   if (getServiceContext().service.isShuttingDown()) {
-    return "服务已在重启中…";
+    return "Service is already restarting…";
   }
   return {
-    text: "🔄 正在重启服务（等待进行中对话落盘后执行）…",
+    text: "🔄 Restarting service (waiting for in-flight conversations to flush)…",
     data: { action: "restart" },
   };
 }
@@ -243,34 +246,35 @@ function cmdRestart(_ctx: CommandContext): CommandResult | string {
 export function registerBuiltins(): void {
   registerCommand({
     name: "help",
-    description: "列出所有可用命令",
+    description: "List all available commands",
     handler: cmdHelp,
     aliases: ["commands"],
     scope: "global",
   });
   registerCommand({
     name: "new",
-    description: "创建新 session（承接上一 session 摘要）",
+    description: "Create new session (carries over previous session summary)",
     handler: cmdNew,
     scope: "global",
     platforms: ["discord", "weixin"],
   });
   registerCommand({
     name: "retry",
-    description: "重放最后一条伙伴消息并重新生成回复",
+    description: "Replay last partner message and regenerate reply",
     handler: cmdRetry,
     aliases: ["regenerate"],
     scope: "session",
   });
   registerCommand({
     name: "cancel",
-    description: "取消当前待回答的 clarify 提问",
+    description: "Cancel current pending clarify question",
     handler: cmdCancel,
     scope: "session",
   });
   registerCommand({
     name: "reload_tools",
-    description: "重置 session 工具 schema 为默认集，并清空 tools_load 累积的 loaded_tools",
+    description:
+      "Reset session tool schema to defaults and clear tools_load accumulated loaded_tools",
     handler: cmdReloadTools,
     aliases: ["reload-tools"],
     scope: "session",
@@ -278,32 +282,33 @@ export function registerBuiltins(): void {
   registerCommand({
     name: "reload_system_prompt",
     description:
-      "重建 system prompt（自我层、常驻记忆、session cwd 下 AGENTS.md），仅写回 system_prompt",
+      "Rebuild system prompt (self layer, resident memory, AGENTS.md under session cwd), only writes system_prompt",
     handler: cmdReloadSystemPrompt,
     aliases: ["reload-system-prompt"],
     scope: "session",
   });
   registerCommand({
     name: "stats",
-    description: "查看当前 session 对话消耗统计（--all 汇总全部 session）",
+    description: "View current session conversation usage stats (--all aggregates all sessions)",
     handler: cmdStats,
     scope: "session",
   });
   registerCommand({
     name: "cwd",
-    description: "查看或设置当前 session 工作目录",
+    description: "View or set current session working directory",
     handler: cmdCwd,
     scope: "session",
   });
   registerCommand({
     name: "title",
-    description: "查看或修改当前 session 标题",
+    description: "View or modify current session title",
     handler: cmdTitle,
     scope: "session",
   });
   registerCommand({
     name: "sethome",
-    description: "将当前聊天设为该平台 home channel（cron 等主动通知的默认投递目标）",
+    description:
+      "Set current chat as platform home channel (default delivery target for cron etc.)",
     handler: cmdSethome,
     aliases: ["set-home"],
     scope: "global",
@@ -311,20 +316,20 @@ export function registerBuiltins(): void {
   });
   registerCommand({
     name: "compress",
-    description: "重新计算当前 session 运行时压缩（--force 忽略滞回）",
+    description: "Recalculate current session runtime compression (--force ignores hysteresis)",
     handler: cmdCompress,
     scope: "session",
   });
   registerCommand({
     name: "mask",
-    description: "设置 / 查看 / 清除当前 session 能力面罩（仅会客厅）",
+    description: "Set / view / clear current session capability mask (parlor only)",
     handler: cmdMask,
     scope: "session",
     platforms: [PARLOR_PLATFORM],
   });
   registerCommand({
     name: "restart",
-    description: "重启逸灵风服务（等待进行中对话落盘后执行）",
+    description: "Restart Free Anima service (waits for in-flight conversations to flush)",
     handler: cmdRestart,
     scope: "global",
     platforms: ["parlor", "discord", "weixin"],

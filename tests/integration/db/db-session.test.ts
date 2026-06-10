@@ -25,7 +25,7 @@ describePg("db session (PostgreSQL)", () => {
     await endIntegrationCase();
   });
 
-  it("Bun.sql 原生连接可用", async () => {
+  it("Bun.sql native connection works", async () => {
     const db = getDb();
     const rows = await db.execute<{ n: number }>(drizzleSql`SELECT 1 AS n`);
     expect(Number(rows[0]?.n)).toBe(1);
@@ -107,7 +107,7 @@ describePg("db session (PostgreSQL)", () => {
     }
   });
 
-  it("并发 appendMessage", async () => {
+  it("concurrent appendMessage", async () => {
     const session = getTestEngine().repos.session;
     const sessionId = "db_concurrent_append";
     await session.upsertSessionMeta(sessionId, {
@@ -134,7 +134,7 @@ describePg("db session (PostgreSQL)", () => {
     expect(messages).toHaveLength(8);
   });
 
-  it("shiftMessagePositions 为中间插入腾出 pos", async () => {
+  it("shiftMessagePositions makes room for mid-stream insert", async () => {
     const session = getTestEngine().repos.session;
     const sessionId = "20260531_shift_test";
     await session.upsertSessionMeta(sessionId, {

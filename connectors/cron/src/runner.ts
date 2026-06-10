@@ -96,8 +96,8 @@ async function notifyDeliver(
 }
 
 /**
- * 下一事件循环再跑任务。runJob 内 no_agent 脚本用 spawnSync，若直接 void runJob()
- * 会在首个 await 之前阻塞调用方（HTTP /run 会卡满 timeout_sec）。
+ * Run job on next event loop tick. runJob uses spawnSync for no_agent scripts; calling void runJob() directly
+ * blocks caller before first await (HTTP /run would hang until timeout_sec).
  */
 export function enqueueRunJob(job: CronJob): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -191,7 +191,7 @@ async function runJobInternal(job: CronJob): Promise<void> {
   await finalizeJob(job, true);
 }
 
-/** 读取 output ref 绝对路径（deliver 等用） */
+/** Read output ref absolute path (for deliver etc.) */
 export function resolveJobOutputPath(job: CronJob): string {
   return job.last_output_ref ? fromOutputRef(job.last_output_ref) : "";
 }

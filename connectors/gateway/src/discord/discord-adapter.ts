@@ -47,14 +47,14 @@ import {
 import { ToolRoundCollector } from "../stream-tool-format.ts";
 
 const DISCORD_MAX_LEN = 2000;
-/** 最终答案 edit 节流间隔 */
+/** Final answer edit throttle interval */
 export const DISCORD_ANSWER_EDIT_MS = 3000;
-/** 最终答案分段阈值 */
+/** Final answer segment threshold */
 export const DISCORD_ANSWER_SPLIT_AT = 1000;
-/** Discord login 失败后自动重试间隔 */
+/** Discord login failure auto-retry interval */
 export const DISCORD_LOGIN_RETRY_MS = 5 * 60 * 1000;
-/** 流式回复开始时的占位 */
-const DISCORD_STREAM_PLACEHOLDER = "⏳ 思考中…";
+/** Placeholder at stream reply start */
+const DISCORD_STREAM_PLACEHOLDER = "⏳ Thinking…";
 
 function splitDiscordMessage(text: string, limit = DISCORD_MAX_LEN): string[] {
   return chunkText(text, limit, { maxChunkLength: DISCORD_MAX_LEN });
@@ -93,7 +93,7 @@ async function resolveReplyToBot(message: Message, botUserId: string): Promise<b
   }
 }
 
-/** Discord 网关：每轮 tool 单独消息，最终答案单独消息（3s 节流 edit）。 */
+/** Discord gateway: each tool round separate message, final answer separate (3s throttled edit). */
 export async function streamReplyToChannel(
   channel: TextBasedChannel,
   events: AsyncIterable<StreamEvent>,
@@ -116,7 +116,7 @@ export async function streamReplyToChannel(
     }
   };
 
-  /** 固化当前答案段，避免后续 tool send 插在已发出的占位消息之后 */
+  /** Finalize current answer segment so later tool sends do not insert after placeholder */
   const commitAnswerSegment = async (): Promise<void> => {
     clearThrottleTimer();
     await editTail;
@@ -287,13 +287,13 @@ async function finalizeUserReaction(
     try {
       await eyeReaction.users.remove(botId);
     } catch (e) {
-      logComponent("discord").warn("Discord 移除 👀 反应失败", { err: e });
+      logComponent("discord").warn("Discord failed to remove 👀 reaction", { err: e });
     }
   }
   try {
     await message.react(ok ? "✅" : "❌");
   } catch (e) {
-    logComponent("discord").warn(`Discord 添加 ${ok ? "✅" : "❌"} 反应失败`, { err: e });
+    logComponent("discord").warn(`Discord failed to add ${ok ? "✅" : "❌"} reaction`, { err: e });
   }
 }
 
@@ -399,7 +399,7 @@ export class DiscordAdapter implements PlatformAdapter {
     if (this.started) return;
     this.started = true;
     this.service.registerPlatform("discord");
-    // Cron 调度器先于平台启动；deliver 不依赖 gateway ready，仅发送时需已连接
+    // Cron scheduler starts before platforms; deliver does not require gateway ready, only needs connection to send
     registerDiscordCronDeliverer(this.client);
     await this.attemptLogin();
   }
@@ -413,7 +413,9 @@ export class DiscordAdapter implements PlatformAdapter {
   private scheduleLoginRetry(): void {
     if (!this.started || this.loginRetryTimer !== null || this.client.isReady()) return;
     const retryMin = Math.round(DISCORD_LOGIN_RETRY_MS / 60_000);
-    logComponent("discord").warn(`${retryMin} 分钟后重试登录…`, { retry_in_min: retryMin });
+    logComponent("discord").warn(`${retryMin} min later, retrying login…`, {
+      retry_in_min: retryMin,
+    });
     this.service.updatePlatformStatus("discord", "disconnected", {
       retry_in_sec: DISCORD_LOGIN_RETRY_MS / 1000,
     });
@@ -439,12 +441,12 @@ export class DiscordAdapter implements PlatformAdapter {
   }
 
   async stop(): Promise<void> {
-    logComponent("shutdown").debug("Discord 断开网关…");
+    logComponent("shutdown").debug("Discord disconnecting gateway…");
     this.started = false;
     this.clearLoginRetry();
     unregisterDiscordCronDeliverer();
     this.client.destroy();
-    logComponent("shutdown").debug("Discord 已断开");
+    logComponent("shutdown").debug("Discord disconnected");
   }
 
   private async onSlashCommand(interaction: ChatInputCommandInteraction): Promise<void> {
@@ -471,7 +473,7 @@ export class DiscordAdapter implements PlatformAdapter {
 
     await replyDiscordInteraction(
       interaction,
-      `❌ 未知命令: /${interaction.commandName}`,
+      `❌ Unknown command: /${interaction.commandName}`,
       splitDiscordMessage,
     );
   }
@@ -511,12 +513,12 @@ export class DiscordAdapter implements PlatformAdapter {
 
     if (!channel.isTextBased()) return;
 
-    // 👀 表示已收到消息
+    // 👀 indicates message received
     let eyeReaction: import("discord.js").MessageReaction | undefined;
     try {
       eyeReaction = await message.react("👀");
     } catch {
-      /* 反应失败不影响主流程 */
+      /* Reaction failure does not affect main flow */
     }
 
     try {
@@ -530,7 +532,7 @@ export class DiscordAdapter implements PlatformAdapter {
 
       await finalizeUserReaction(message, eyeReaction, true);
 
-      // 流式回复完成：用 auto-title 重命名子线程
+      // Stream reply complete: rename sub-thread with auto-title
       if (channel.isThread()) {
         try {
           const meta = await getServiceContext().conversation.loadSessionMeta(sid);
@@ -539,7 +541,7 @@ export class DiscordAdapter implements PlatformAdapter {
             await channel.setName(title.slice(0, 100));
           }
         } catch {
-          /* 重命名失败不影响主流程 */
+          /* Rename failure does not affect main flow */
         }
       }
     } catch (e) {
@@ -548,7 +550,7 @@ export class DiscordAdapter implements PlatformAdapter {
       try {
         await this.sendToChannel(channel, networkErrorUserHint(e));
       } catch {
-        /* 网络故障时可能无法回复 */
+        /* May fail to reply on network errors */
       }
     }
   }
@@ -594,7 +596,7 @@ export class DiscordAdapter implements PlatformAdapter {
       return message.channel;
     }
 
-    const fallbackName = `逸灵风 × ${message.member?.displayName ?? message.author.displayName}`;
+    const fallbackName = `Free Anima × ${message.member?.displayName ?? message.author.displayName}`;
     const threadName = (titleHint?.trim() ?? fallbackName).slice(0, 100) || fallbackName;
     try {
       const thread = await withDiscordRetry(() =>

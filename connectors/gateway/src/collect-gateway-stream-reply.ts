@@ -2,7 +2,7 @@ import type { StreamEvent } from "@freeanima/engine-loop";
 import { formatClarifyForPlatform, parseClarifyStreamEvent } from "./clarify/index.ts";
 import { ToolRoundCollector, isClarifyTool } from "./stream-tool-format.ts";
 
-/** 网关消费流式事件并拼接为平台可见的最终回复（含工具/clarify 格式化）。 */
+/** Gateway consumes stream events and assembles platform-visible final reply (incl. tool/clarify formatting). */
 export async function collectGatewayStreamReply(
   events: AsyncIterable<StreamEvent>,
   platform: "discord" | "weixin" | "parlor" = "parlor",

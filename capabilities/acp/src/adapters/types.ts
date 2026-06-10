@@ -6,15 +6,15 @@ export type AcpServerRequestContext = {
   capture: PromptCapture;
 };
 
-/** ACP Agent 方言适配：解析通知、应答服务端 RPC */
+/** ACP Agent dialect adapter: parse notifications, respond to server RPC */
 export interface AcpAgentAdapter {
   readonly id: string;
-  /** initialize 成功后（如 Cursor authenticate） */
+  /** After initialize succeeds (e.g. Cursor authenticate) */
   afterInitialize?(client: ACPClient): Promise<void>;
-  /** session/update → 可拼进工具返回的文本片段 */
+  /** session/update → text fragment for tool return */
   parseSessionUpdate(update: Record<string, unknown>): string | null;
   /**
-   * Agent 发起的带 id 请求；返回 null 表示不支持（回 -32601）
+   * Agent-initiated request with id; null means unsupported (returns -32601)
    * @see https://cursor.com/docs/cli/acp
    */
   handleServerRequest(

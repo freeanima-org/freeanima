@@ -37,10 +37,12 @@ function sortSemanticForAutobiography(a: SemanticMemoryRow, b: SemanticMemoryRow
 
 export function formatSemanticMemoriesForAutobiography(rows: SemanticMemoryRow[]): string {
   if (!rows.length) {
-    return "（本日无相关 semantic 记忆）";
+    return "(No related semantic memories for this day)";
   }
   const sorted = [...rows].toSorted(sortSemanticForAutobiography);
-  const lines = [`# 本日相关语义记忆（${sorted.length} 条；experience/imprint 优先）`];
+  const lines = [
+    `# Today's related semantic memories (${sorted.length} entries; experience/imprint first)`,
+  ];
   for (const row of sorted) {
     lines.push(rowToJsonCompact(row));
   }
@@ -49,16 +51,19 @@ export function formatSemanticMemoriesForAutobiography(rows: SemanticMemoryRow[]
 
 export function formatLimbicMemoriesForAutobiography(rows: LimbicMemoryRow[]): string {
   if (!rows.length) {
-    return "（本日无相关感性记忆）";
+    return "(No related limbic memories for this day)";
   }
-  return formatLimbicMemoriesMessage(rows).replace("# 已有感性记忆", "# 本日感性记忆");
+  return formatLimbicMemoriesMessage(rows).replace(
+    "# Existing limbic memories",
+    "# Today's limbic memories",
+  );
 }
 
 export function formatCandidateSemanticMemories(rows: SemanticMemoryRow[]): string {
   if (!rows.length) {
-    return "（无近期 experience/imprint 语义记忆）";
+    return "(No recent experience/imprint semantic memories)";
   }
-  const lines = [`# 候选语义记忆（${rows.length} 条 experience/imprint）`];
+  const lines = [`# Candidate semantic memories (${rows.length} experience/imprint entries)`];
   for (const row of rows) {
     lines.push(rowToJsonCompact(row));
   }
@@ -67,9 +72,9 @@ export function formatCandidateSemanticMemories(rows: SemanticMemoryRow[]): stri
 
 export function formatExistingAutobiographical(rows: AutobiographicalMemoryRow[]): string {
   if (!rows.length) {
-    return "（尚无自传体叙事）";
+    return "(No autobiographical narratives yet)";
   }
-  const lines = [`# 已有自传体叙事（${rows.length} 条 active）`];
+  const lines = [`# Existing autobiographical narratives (${rows.length} active entries)`];
   for (const row of rows) {
     lines.push(
       JSON.stringify({
@@ -86,40 +91,40 @@ export function formatExistingAutobiographical(rows: AutobiographicalMemoryRow[]
   return lines.join("\n");
 }
 
-export const AUTOBIOGRAPHY_INSTRUCTION = `# 自传体叙事提取
+export const AUTOBIOGRAPHY_INSTRUCTION = `# Autobiographical narrative extraction
 
-你从 **语义记忆（experience/imprint）** 中判断是否有「对我意味着什么」的叙事 worth 记录。
+From **semantic memories (experience/imprint)**, decide whether there is a narrative worth recording about "what this means to me".
 
-## 克制原则
-- 没有值得记录的叙事 → **不要调用任何工具**，直接回复「本轮跳过：无值得记录的叙事」
-- 不强行产出空条目、不重复已有叙事
+## Restraint
+- Nothing worth recording → **do not call any tool**; reply "Skipped this round: no narrative worth recording"
+- Do not force empty entries or duplicate existing narratives
 
-## 工具
-- memory_autobiographical_create：创建新叙事（只追加）
-- memory_autobiographical_deprecate：仅当发现重复/明显过时时软废弃
+## Tools
+- memory_autobiographical_create: create new narrative (append only)
+- memory_autobiographical_deprecate: soft-deprecate only when duplicate or clearly outdated
 
-## 要求
-- 每条叙事需关联 source_semantic_memory（semantic_memory id）
-- significance：turning_point（自我转折）> milestone（里程碑）> normal
-- period_start/period_end 可填模糊时间（如「2026-05」）`;
+## Requirements
+- Each narrative must link source_semantic_memory (semantic_memory id)
+- significance: turning_point (self turning point) > milestone > normal
+- period_start/period_end may be fuzzy (e.g. "2026-05")`;
 
-export const LIGHT_SLEEP_AUTOBIOGRAPHY_INSTRUCTION = `# 自传体叙事提取
+export const LIGHT_SLEEP_AUTOBIOGRAPHY_INSTRUCTION = `# Autobiographical narrative extraction
 
-综合上方「本日对话」「语义记忆」「感性记忆」判断是否有「对我意味着什么」的叙事 worth 记录。
+Using "Today's dialogue", semantic memories, and limbic memories above, decide whether there is a narrative worth recording about "what this means to me".
 
-## 克制原则
-- 没有值得记录的叙事 → **不要调用任何工具**，直接回复「本轮跳过：无值得记录的叙事」
-- 不强行产出空条目、不重复已有叙事
+## Restraint
+- Nothing worth recording → **do not call any tool**; reply "Skipped this round: no narrative worth recording"
+- Do not force empty entries or duplicate existing narratives
 
-## 工具
-- memory_autobiographical_create：创建新叙事（只追加）
-- memory_autobiographical_deprecate：仅当发现重复/明显过时时软废弃
+## Tools
+- memory_autobiographical_create: create new narrative (append only)
+- memory_autobiographical_deprecate: soft-deprecate only when duplicate or clearly outdated
 
-## 要求
-- 优先从 experience/imprint 语义记忆与 turning_point/spike 类感性锚点提炼叙事
-- 关联 source_semantic_memory / source_sessions 按需填写
-- significance：turning_point（自我转折）> milestone（里程碑）> normal；强烈情感转折可提升 significance
-- period_start/period_end 可填模糊时间（如「2026-05」）`;
+## Requirements
+- Prefer experience/imprint semantic memories and turning_point/spike limbic anchors
+- Link source_semantic_memory / source_sessions as needed
+- significance: turning_point (self turning point) > milestone > normal; strong emotional turns may raise significance
+- period_start/period_end may be fuzzy (e.g. "2026-05")`;
 
 async function mergeSemanticRowsForSessions(
   sessionIds: string[],

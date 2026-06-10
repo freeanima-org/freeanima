@@ -2,7 +2,7 @@ import type { CronJobStorePort } from "@freeanima/engine-repos";
 
 import * as crudRepo from "./repos/cron-crud-repo.ts";
 
-/** PostgreSQL CronJobStorePort 实现 */
+/** PostgreSQL CronJobStorePort implementation */
 export class PgCronJobStore implements CronJobStorePort {
   async create(row: Parameters<CronJobStorePort["create"]>[0]) {
     return crudRepo.createCronJob(row);

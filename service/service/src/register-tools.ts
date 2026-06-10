@@ -11,7 +11,7 @@ import { registerMemoryTools } from "@freeanima/life-memory";
 
 let registeredCatalog: { toolSets: ToolSetRegistry; skills: SkillRegistry } | null = null;
 
-/** 注册全部本地/MCP 无关工具（幂等：同一 catalog 实例只注册一次） */
+/** Register all local/non-MCP tools (idempotent: register once per catalog instance) */
 export function registerServiceTools(opts: {
   toolSets: ToolSetRegistry;
   skills: SkillRegistry;
@@ -31,7 +31,7 @@ export function registerServiceTools(opts: {
   registeredCatalog = opts;
 }
 
-/** 单测 reset */
+/** Unit test reset */
 export function resetRegisterServiceToolsForTest(): void {
   registeredCatalog = null;
 }

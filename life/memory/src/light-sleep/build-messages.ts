@@ -11,7 +11,7 @@ export type LightSleepDayRange = {
   toIso: string;
 };
 
-/** CST 自然日边界 [fromIso, toIso) */
+/** CST calendar-day boundary [fromIso, toIso) */
 export function cstDayRange(day?: string): LightSleepDayRange {
   const now = new Date(Date.now() + CST_OFFSET_MS);
   let y = now.getUTCFullYear();
@@ -26,7 +26,7 @@ export function cstDayRange(day?: string): LightSleepDayRange {
       d = Number(match[3]);
     }
   } else {
-    // 02:00 运行时默认处理「刚结束的 CST 自然日」
+    // At 02:00 runtime, default to the CST calendar day that just ended
     const prev = new Date(Date.UTC(y, m, d) - 24 * 60 * 60 * 1000);
     y = prev.getUTCFullYear();
     m = prev.getUTCMonth();
@@ -51,7 +51,7 @@ export type LightSleepSessionBlock = {
 const MAX_DIALOGUE_CHARS = 120_000;
 
 function roleLabel(role: string): string {
-  return role === "user" ? "张三" : "Agent";
+  return role === "user" ? "User" : "Agent";
 }
 
 export async function collectSessionBlocks(
@@ -70,7 +70,7 @@ export async function collectSessionBlocks(
     const platform = meta.platform ?? "unknown";
     const updatedAt = meta.timestamp ?? "";
     lines.push(
-      `（platform=${platform}${title ? `，title=${title}` : ""}，更新于 ${updatedAt.slice(0, 19)}）`,
+      `(platform=${platform}${title ? `, title=${title}` : ""}, updated ${updatedAt.slice(0, 19)})`,
     );
     lines.push("");
     for (const msg of messages) {
@@ -94,7 +94,7 @@ export function formatDialogueMessage(blocks: LightSleepSessionBlock[]): {
   truncatedSessions: number;
 } {
   if (!blocks.length) {
-    return { text: "（本日无有效对话）", truncatedSessions: 0 };
+    return { text: "(No valid dialogue for this day)", truncatedSessions: 0 };
   }
 
   let total = 0;
@@ -107,17 +107,17 @@ export function formatDialogueMessage(blocks: LightSleepSessionBlock[]): {
   }
 
   const truncatedSessions = blocks.length - selected.length;
-  const header = `# 本日对话（${selected.length} 个 session）`;
+  const header = `# Today's dialogue (${selected.length} session(s))`;
   let body = selected.map((b) => b.text).join("\n\n");
   if (truncatedSessions > 0) {
-    body += `\n\n[已截断 ${truncatedSessions} 个 session，超出上下文预算]`;
+    body += `\n\n[Truncated ${truncatedSessions} session(s) — context budget exceeded]`;
   }
   return { text: `${header}\n\n${body}`, truncatedSessions };
 }
 
 export function formatExistingMemoriesMessage(rows: SemanticMemoryRow[]): string {
-  if (!rows.length) return "（与本次 session 无交集的已有 active 记忆）";
-  const lines = [`# 已有相关记忆（${rows.length} 条，按 source_sessions 预筛选）`];
+  if (!rows.length) return "(No existing active memories overlapping these sessions)";
+  const lines = [`# Related existing memories (${rows.length}, pre-filtered by source_sessions)`];
   for (const row of rows) {
     const sources = row.source_sessions.length > 0 ? `[${row.source_sessions.join(", ")}]` : "[]";
     const observed = row.observed_at?.slice(0, 19) ?? "?";
@@ -131,54 +131,54 @@ export function formatExistingMemoriesMessage(rows: SemanticMemoryRow[]): string
   return lines.join("\n").trim();
 }
 
-export const LIGHT_SLEEP_INSTRUCTION_MESSAGE = `# 提取指令
+export const LIGHT_SLEEP_INSTRUCTION_MESSAGE = `# Extraction instructions
 
-你是运行在逸灵风中的数字生命。请从上方的「本日对话」中提取值得长期记住的事实（第一人称），并对照「已有相关记忆」决定创建、更新或废弃。
+You are a digital life running in Free Anima. From "Today's dialogue" above, extract facts worth remembering long-term (first person), and decide create / update / deprecate against "Related existing memories".
 
-## 记忆类型
+## Memory types
 - world / experience / opinion / observation / preference / procedural / imprint
 
-## 去重规则（局部）
-- **仅**与已有记忆中 source_sessions 有交集的条目比较
-- 已有更准确 → 跳过或 update
-- 新事实补充已有 → update
-- 已有不再适用 → memory_semantic_deprecate
-- 全新 → memory_semantic_create
+## Dedup rules (local)
+- Compare **only** against existing memories whose source_sessions overlap
+- Existing is more accurate → skip or update
+- New fact supplements existing → update
+- Existing no longer applies → memory_semantic_deprecate
+- Brand new → memory_semantic_create
 
-## 工具说明
+## Tools
 
 ### memory_semantic_create
-显式创建。必填 content；建议填写 type、source_sessions（来自对话 session）。
-- **observed_at**：对话中**首次提及**该事实的消息时间（ISO8601，取自上方对话行首时间戳）
-- **occurred_at**：事实**内容中描述**的发生时间（可模糊，如「2025 春」「上周」）；与 observed_at 不同
+Explicit create. Required: content; recommended: type, source_sessions (from dialogue sessions).
+- **observed_at**: message time when the fact was **first mentioned** (ISO8601, from line timestamp above)
+- **occurred_at**: when the fact **described in content** happened (may be fuzzy, e.g. "spring 2025", "last week"); distinct from observed_at
 
-### memory_semantic_update（覆盖式）
-**仅修改传入的字段，未传字段保持不变。**
-- 要改 content/type/pinned/observed_at/occurred_at/status → 传入对应字段
-- 要**清空** source_sessions → 显式传 \`source_sessions: []\`
-- 未传 source_sessions → 保持原值不变
+### memory_semantic_update (overwrite fields)
+**Only fields you pass are changed; omitted fields stay as-is.**
+- To change content/type/pinned/observed_at/occurred_at/status → pass the field
+- To **clear** source_sessions → pass \`source_sessions: []\` explicitly
+- Omit source_sessions → unchanged
 
 ### memory_semantic_deprecate
-软废弃（status=deprecated），保留历史。
+Soft deprecate (status=deprecated), keep history.
 
-请直接调用工具完成写入；无需输出 JSON 摘要。`;
+Call tools directly to persist; no JSON summary output needed.`;
 
-export const LIMBIC_INSTRUCTION = `# 情感提取
+export const LIMBIC_INSTRUCTION = `# Affective extraction
 
-你是运行在逸灵风中的数字生命。请从上方的「本日对话」中判断是否有值得记录的情感体验，并对照「已有感性记忆」避免重复。
+You are a digital life running in Free Anima. From "Today's dialogue" above, decide whether any emotional experience is worth recording; check "Existing limbic memories" to avoid duplicates.
 
-## 克制原则
-- 轻微情绪波动、intensity < 0.3 → **不要调用** memory_limbic_create
-- 无明确情感信号 → 直接回复「本轮跳过：无值得记录的情感」
-- 不重复记录同一 session 的相似情绪
+## Restraint
+- Mild mood swings, intensity < 0.3 → **do not** call memory_limbic_create
+- No clear emotional signal → reply "Skipped this round: no emotion worth recording"
+- Do not re-record similar feelings for the same session
 
-## 工具：memory_limbic_create
-- kind：session_mood（整体情绪）| turning_point（情感转折）| spike（强烈瞬间）
-- content：第一人称「我感到…」
-- valence：-1.0（负）到 1.0（正）；arousal：0.0 到 1.0
-- intensity：0.3 以上才写入；可选关联 semantic_memory_ids 与 session_id
+## Tool: memory_limbic_create
+- kind: session_mood (overall mood) | turning_point (emotional turn) | spike (intense moment)
+- content: first person "I feel…"
+- valence: -1.0 (negative) to 1.0 (positive); arousal: 0.0 to 1.0
+- intensity: write only if ≥ 0.3; optional semantic_memory_ids and session_id
 
-请直接调用工具；无需输出 JSON 摘要。`;
+Call the tool directly; no JSON summary output needed.`;
 
 export async function collectLimbicMemoriesForSessions(
   sessionIds: string[],
@@ -196,9 +196,9 @@ export async function collectLimbicMemoriesForSessions(
 
 export function formatLimbicMemoriesMessage(rows: LimbicMemoryRow[]): string {
   if (!rows.length) {
-    return "（与本次 session 无交集的已有感性记忆）";
+    return "(No existing limbic memories overlapping these sessions)";
   }
-  const lines = [`# 已有感性记忆（${rows.length} 条）`];
+  const lines = [`# Existing limbic memories (${rows.length})`];
   for (const row of rows) {
     const semanticIds =
       row.semantic_memory_ids.length > 0 ? `[${row.semantic_memory_ids.join(", ")}]` : "[]";

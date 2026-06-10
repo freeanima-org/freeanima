@@ -12,12 +12,12 @@ function entryToLine(entry: DeepSleepChangeEntry): string {
       const info = t
         ? ` → ${t.id} (${t.type}) "${t.content}" sources=${sourceLabel(t.source_sessions)} observed=${t.observed_at?.slice(0, 19) ?? "?"}`
         : "";
-      return `${entry.id} — 已被合并${info}`;
+      return `${entry.id} — merged${info}`;
     }
     case "deprecated":
-      return `${entry.id} — 已过期/废弃（${entry.detail}）`;
+      return `${entry.id} — expired/deprecated (${entry.detail})`;
     case "modified":
-      return `${entry.id} — 已修改：${entry.detail}`;
+      return `${entry.id} — modified: ${entry.detail}`;
     case "added": {
       const t = entry.mergedTarget;
       const info = t
@@ -28,17 +28,17 @@ function entryToLine(entry: DeepSleepChangeEntry): string {
   }
 }
 
-/** 将变更日志渲染为消息1.5 文本 */
+/** Render change log as message 1.5 text */
 export function formatChangeLogMessage(log: DeepSleepChangeLog): string {
   if (log.deprecatedIds.length === 0 && log.addedIds.length === 0 && log.modifiedIds.length === 0) {
-    return "（本深睡尚未执行任何变更）";
+    return "(No changes applied yet in this deep sleep run)";
   }
 
-  const lines: string[] = ["# 增量变更（以本内容为准）"];
+  const lines: string[] = ["# Incremental changes (authoritative over message 1)"];
 
   if (log.deprecatedIds.length > 0) {
     lines.push("");
-    lines.push("## 已处理（请忽略消息1中的以下原始条目）");
+    lines.push("## Processed (ignore these original entries in message 1)");
     for (const id of log.deprecatedIds) {
       const entry = log.entries[id];
       if (entry) lines.push(entryToLine(entry));
@@ -47,7 +47,7 @@ export function formatChangeLogMessage(log: DeepSleepChangeLog): string {
 
   if (log.modifiedIds.length > 0) {
     lines.push("");
-    lines.push("## 已修改条目（以本内容为准，覆盖消息1中的原始版本）");
+    lines.push("## Modified entries (authoritative; override message 1 originals)");
     for (const id of log.modifiedIds) {
       const entry = log.entries[id];
       if (entry) lines.push(entryToLine(entry));
@@ -56,7 +56,7 @@ export function formatChangeLogMessage(log: DeepSleepChangeLog): string {
 
   if (log.addedIds.length > 0) {
     lines.push("");
-    lines.push("## 新增条目（未在消息1中出现）");
+    lines.push("## New entries (not present in message 1)");
     for (const id of log.addedIds) {
       const entry = log.entries[id];
       if (entry) lines.push(entryToLine(entry));

@@ -9,7 +9,7 @@ export const autobiographicalStatusSchema = z.enum(["active", "deprecated"]);
 
 export type AutobiographicalStatus = z.infer<typeof autobiographicalStatusSchema>;
 
-/** 自传体叙事（只追加；正文不可 update，仅 deprecate） */
+/** Autobiographical narrative (append-only; body not updatable, deprecate only) */
 export const autobiographicalMemory = pgTable(
   "autobiographical_memory",
   {

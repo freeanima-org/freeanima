@@ -12,7 +12,7 @@ export type FtsRebuildProgress = {
 };
 
 export type FtsRebuildOptions = {
-  /** 仅处理 fts_segmented / content_embedding 仍为空的行（断点续跑） */
+  /** Only rows where fts_segmented / content_embedding still empty (resume checkpoint) */
   onlyMissing?: boolean;
   onProgress?: (progress: FtsRebuildProgress) => void;
 };

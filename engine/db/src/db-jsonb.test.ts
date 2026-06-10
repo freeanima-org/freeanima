@@ -6,7 +6,7 @@ import {
 } from "./schema/jsonb/session-meta-jsonb.ts";
 
 describe("platform_info schema", () => {
-  it("platformInfo 合并 platform 与 platform_extra", () => {
+  it("platformInfo merges platform and platform_extra", () => {
     const info = buildPlatformInfo("discord", {
       channel_id: "c1",
       guild_id: "123",
@@ -21,13 +21,13 @@ describe("platform_info schema", () => {
     expect(split.platform_extra).toEqual({ channel_id: "c1", guild_id: "123" });
   });
 
-  it("parlor platformInfo 无 extra", () => {
+  it("parlor platformInfo has no extra", () => {
     const info = buildPlatformInfo("parlor");
     expect(info).toEqual({ platform: "parlor" });
     expect(splitPlatformInfo(info)).toEqual({ platform: "parlor" });
   });
 
-  it("未知 platform 返回 null", () => {
+  it("unknown platform returns null", () => {
     expect(buildPlatformInfo("test")).toBeNull();
   });
 
@@ -37,7 +37,7 @@ describe("platform_info schema", () => {
     expect(splitPlatformInfo(info)).toEqual({ platform: "cron" });
   });
 
-  it("discord/weixin 缺必填 extra 时用 nothing 占位", () => {
+  it("discord/weixin uses nothing placeholder when required extra missing", () => {
     expect(buildPlatformInfo("discord", {})).toEqual({
       platform: "discord",
       channel_id: "nothing",
@@ -52,14 +52,14 @@ describe("platform_info schema", () => {
 });
 
 describe("session tools jsonb", () => {
-  it("normalizeSessionToolNames 保留工具名字符串", () => {
+  it("normalizeSessionToolNames keeps tool name strings", () => {
     expect(normalizeSessionToolNames(["file_read_file", "grep"])).toEqual([
       "file_read_file",
       "grep",
     ]);
   });
 
-  it("normalizeSessionToolNames 从旧版 OpenAI schema 提取 function.name", () => {
+  it("normalizeSessionToolNames extracts function.name from legacy OpenAI schema", () => {
     const legacy = [
       { type: "function", function: { name: "file_read_file", description: "read" } },
       { type: "function", function: { name: "grep" } },
@@ -68,7 +68,7 @@ describe("session tools jsonb", () => {
     expect(sessionToolsSchema.parse(legacy)).toEqual(["file_read_file", "grep"]);
   });
 
-  it("normalizeSessionToolNames 忽略无效项", () => {
+  it("normalizeSessionToolNames ignores invalid entries", () => {
     expect(normalizeSessionToolNames([null, "", {}, { function: {} }])).toEqual([]);
   });
 });

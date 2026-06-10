@@ -29,7 +29,7 @@ function mergeCredentials(all: CredentialPermission[]): CredentialPermission[] {
   return [...byName.values()];
 }
 
-/** 合并多条已展开面具（白名单并集 − deny 并集） */
+/** Merge multiple expanded masks (allow union − deny union) */
 export function mergeMaskChain(
   chain: readonly Mask[],
   toolSetRegistry: ToolSetRegistry,

@@ -1,4 +1,4 @@
-/** Hook → engine 流式事件子集（与 engine StreamEvent 对齐） */
+/** Hook → engine stream event subset (aligned with engine StreamEvent) */
 export type HookClarifyItem = {
   question: string;
   choices?: string[];

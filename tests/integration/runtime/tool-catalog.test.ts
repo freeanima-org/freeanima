@@ -31,7 +31,7 @@ describePg("tool catalog lazy load", () => {
     await endIntegrationCase();
   });
 
-  it("new session schema 仅含默认工具", async () => {
+  it("new session schema includes default tools only", async () => {
     const c = testConv();
     const sid = await c.newSession("parlor");
     const meta = await c.loadSessionMeta(sid);
@@ -50,7 +50,7 @@ describePg("tool catalog lazy load", () => {
     expect(meta.loaded_tools ?? []).toEqual([]);
   });
 
-  it("tools_load 写入 loaded_tools 但不扩展 schema", async () => {
+  it("tools_load writes loaded_tools without extending schema", async () => {
     const c = testConv();
     const sid = await c.newSession("parlor");
     const toolLoad = getTestEngine().toolSets.getTool("tools_load");
@@ -76,7 +76,7 @@ describePg("tool catalog lazy load", () => {
     expect(schemas.map((t) => t.function.name)).not.toContain("file_read_file");
   });
 
-  it("未 load 的工具被 executableTools 门禁拦截", async () => {
+  it("unloaded tools are blocked by executableTools gate", async () => {
     const c = testConv();
     const sid = await c.newSession("parlor");
     const meta = await c.loadSessionMeta(sid);
@@ -86,7 +86,7 @@ describePg("tool catalog lazy load", () => {
     const tools = await c.loadSessionTools(sid, meta);
     const executableTools = [...meta.tools, ...(meta.loaded_tools ?? [])];
 
-    getTestEngine().toolSets.registerToolSet("__gate_test__", "测试", [
+    getTestEngine().toolSets.registerToolSet("__gate_test__", "test", [
       {
         name: "gate_test_tool",
         description: "test",

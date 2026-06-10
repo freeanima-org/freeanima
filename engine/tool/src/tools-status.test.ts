@@ -14,48 +14,48 @@ describe("resolveReturnKind", () => {
     handler: () => "{}",
   };
 
-  it("显式 returnKind 优先", () => {
+  it("explicit returnKind takes precedence", () => {
     expect(resolveReturnKind("file", { ...base, returnKind: "json" })).toBe("json");
     expect(resolveReturnKind(undefined, { ...base, returnKind: "text" })).toBe("text");
   });
 
-  it("mcp_ / acp_ ToolSet 推断为 text", () => {
+  it("infers mcp_ / acp_ ToolSet as text", () => {
     expect(resolveReturnKind("mcp_github", base)).toBe("text");
     expect(resolveReturnKind("acp_cursor", base)).toBe("text");
   });
 
-  it("内置纯文本工具推断为 text", () => {
+  it("infers built-in plain-text tools as text", () => {
     expect(resolveReturnKind("file", { ...base, name: "file_read_file" })).toBe("text");
     expect(resolveReturnKind("terminal", { ...base, name: "terminal_run" })).toBe("text");
     expect(resolveReturnKind("code", { ...base, name: "code_execute" })).toBe("text");
   });
 
-  it("其余默认为 json", () => {
+  it("defaults others to json", () => {
     expect(resolveReturnKind("memory", { ...base, name: "memory_recall" })).toBe("json");
   });
 });
 
 describe("buildToolsStatus", () => {
-  it("组装 definition、return_kind 与 default_tools", () => {
+  it("assembles definition, return_kind, and default_tools", () => {
     const registry = new ToolSetRegistry();
-    registry.registerToolSet("tools", "发现", [
+    registry.registerToolSet("tools", "discovery", [
       {
         name: "tools_list",
-        description: "列出工具",
+        description: "List tools",
         parameters: { type: "object", properties: { query: { type: "string" } } },
         handler: () => "{}",
       },
     ]);
-    registry.registerToolSet("file", "文件", [
+    registry.registerToolSet("file", "files", [
       {
         name: "file_read_file",
-        description: "读文件",
+        description: "Read file",
         parameters: { type: "object", properties: { path: { type: "string" } } },
         handler: () => "content",
       },
       {
         name: "file_write_file",
-        description: "写文件",
+        description: "Write file",
         parameters: { type: "object" },
         handler: () => '{"ok":true}',
         ...defineToolReturn({
@@ -91,7 +91,7 @@ describe("buildToolsStatus", () => {
     expect(write?.return_schema?.type).toBe("object");
     expect(write?.return_example).toEqual({ ok: true, path: "/tmp/demo.txt" });
     expect(write?.error_schema?.type).toBe("object");
-    expect(write?.error_example).toEqual({ error: "示例错误信息" });
+    expect(write?.error_example).toEqual({ error: "Example error message" });
 
     const mcp = status.tools.find((t) => t.name === "mcp_demo_ping");
     expect(mcp?.return_kind).toBe("text");

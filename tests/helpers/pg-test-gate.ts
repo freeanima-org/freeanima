@@ -2,10 +2,10 @@ import "@freeanima/service/runtime/system-prompt-wire";
 import { describe } from "bun:test";
 
 /**
- * PG 集成测试门控。
+ * PG integration test gate.
  *
- * `bun test` 注入 `ANIMA_TEST_PG_URL`（Docker CLI 起临时 PG）。
- * 未设置 URL 时 skip（如 `bun test` 单元测试路径）。
+ * `bun test` injects `ANIMA_TEST_PG_URL` (Docker CLI starts a temp PG).
+ * Skips when URL is unset (e.g. unit-test-only `bun test` path).
  */
 export const pgTestUrl = process.env.ANIMA_TEST_PG_URL;
 export const describePg = pgTestUrl ? describe : describe.skip;

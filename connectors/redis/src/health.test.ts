@@ -8,12 +8,12 @@ describe("pingRedis", () => {
     resetRedisForTest();
   });
 
-  it("未 initRedis 时返回 not_configured", async () => {
+  it("Returns not_configured when initRedis not called", async () => {
     resetRedisForTest();
     expect(await pingRedis()).toEqual({ status: "not_configured" });
   });
 
-  it("PING 成功时返回 connected", async () => {
+  it("Returns connected on successful PING", async () => {
     initRedis({ getRedisUrl: () => "redis://127.0.0.1:6379" });
     setRedisForTest({
       ping: async () => "PONG",

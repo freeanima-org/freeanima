@@ -7,31 +7,31 @@ import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
 export function registerExecuteCodeTool(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
     "code",
-    "子进程代码执行",
+    "Subprocess code execution",
     attachToolReturns(
       [
         {
           name: "code_execute",
           description:
-            "在子进程中执行代码片段（无 shell）。runtime 默认 bun：TypeScript/JavaScript，可用 node:fs 等内置模块。" +
-            "可选 runtime=nodejs。Python 脚本请用 terminal。复杂 shell 操作用 terminal。",
+            "Execute code snippet in subprocess (no shell). Default runtime bun: TypeScript/JavaScript, can use node:fs etc. " +
+            "Optional runtime=nodejs. Use terminal for Python scripts. Use terminal for complex shell operations.",
           parameters: {
             type: "object",
             properties: {
               code: {
                 type: "string",
-                description: "TypeScript 或 JavaScript 源码（runtime=bun 或 nodejs 时）",
+                description: "TypeScript or JavaScript source (when runtime=bun or nodejs)",
               },
               runtime: {
                 type: "string",
                 enum: ["bun", "nodejs"],
                 default: "bun",
-                description: "执行运行时，默认 bun",
+                description: "Execution runtime, default bun",
               },
               timeout: {
                 type: "integer",
                 default: 300,
-                description: "超时秒数，上限 600",
+                description: "Timeout seconds, max 600",
               },
             },
             required: ["code"],

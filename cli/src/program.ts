@@ -6,13 +6,13 @@ import { registerCredentialCommand } from "./commands/credential.ts";
 import { registerCompletionCommand } from "./commands/completion.ts";
 import { registerMemoryCommand } from "./commands/memory.ts";
 
-/** 构建 CLI 程序（供 parse 与 completion 生成共用） */
+/** Build CLI program (shared by parse and completion generation) */
 export function buildProgram(): Command {
   const program = new Command()
     .name("anima")
-    .description("逸灵风 — 数字生命运行时")
-    .version(ANIMA_VERSION, "-V, --version", "显示版本号")
-    .showHelpAfterError("(使用 --help 查看用法)");
+    .description("Free Anima — digital life runtime")
+    .version(ANIMA_VERSION, "-V, --version", "show version")
+    .showHelpAfterError("(use --help for usage)");
 
   registerServiceCommand(program);
   registerCredentialCommand(program);

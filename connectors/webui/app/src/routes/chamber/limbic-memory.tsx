@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
 import { MemoryListPagination } from "@/components/chamber/MemoryListPagination.tsx";
 import { listLimbicMemories } from "@/lib/api.ts";
+import { m } from "@/lib/i18n.ts";
 
 const PAGE_SIZE = 20;
 
@@ -52,7 +53,11 @@ function LimbicMemoryPage() {
         setOffset(nextOffset);
         setLoaded(true);
       } catch (e) {
-        setError(`加载失败: ${e instanceof Error ? e.message : String(e)}`);
+        setError(
+          m.webui_common_load_failed({
+            detail: e instanceof Error ? e.message : String(e),
+          }),
+        );
       } finally {
         setLoading(false);
       }
@@ -70,10 +75,8 @@ function LimbicMemoryPage() {
 
   return (
     <div>
-      <h2 className="text-lg font-bold mb-1">💗 情感记忆</h2>
-      <p className="text-sm text-base-content/60 mb-4">
-        浏览 limbic_memory（边缘系统 / 情感强度记录）。
-      </p>
+      <h2 className="text-lg font-bold mb-1">{m.webui_chamber_nav_limbic()}</h2>
+      <p className="text-sm text-base-content/60 mb-4">{m.webui_chamber_limbic_desc()}</p>
 
       <form
         className="card bg-base-200 mb-4"
@@ -85,14 +88,14 @@ function LimbicMemoryPage() {
         <div className="card-body gap-3">
           <div className="form-control">
             <label className="label py-0">
-              <span className="label-text text-xs">搜索词（可选，内容 ILIKE）</span>
+              <span className="label-text text-xs">{m.webui_chamber_limbic_search()}</span>
             </label>
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               type="text"
               className="input input-bordered input-sm"
-              placeholder="关键词…"
+              placeholder={m.webui_common_keyword_placeholder()}
             />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -105,7 +108,7 @@ function LimbicMemoryPage() {
                 onChange={(e) => setSessionId(e.target.value)}
                 type="text"
                 className="input input-bordered input-sm font-mono"
-                placeholder="可选"
+                placeholder={m.webui_common_optional()}
               />
             </div>
             <div className="form-control">
@@ -117,7 +120,7 @@ function LimbicMemoryPage() {
                 value={kindFilter}
                 onChange={(e) => setKindFilter(e.target.value)}
               >
-                <option value="">全部</option>
+                <option value="">{m.webui_common_all()}</option>
                 {LIMBIC_KINDS.map((k) => (
                   <option key={k} value={k}>
                     {k}
@@ -128,7 +131,7 @@ function LimbicMemoryPage() {
           </div>
           <button type="submit" className="btn btn-sm btn-primary" disabled={loading}>
             {loading ? <span className="loading loading-spinner loading-xs" /> : null}
-            查询
+            {m.webui_common_query()}
           </button>
         </div>
       </form>
@@ -142,17 +145,17 @@ function LimbicMemoryPage() {
               <span className="loading loading-dots loading-sm" />
             </div>
           ) : items.length === 0 ? (
-            <div className="alert alert-info text-sm">无匹配记录。</div>
+            <div className="alert alert-info text-sm">{m.webui_common_no_results()}</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="table table-sm">
                 <thead>
                   <tr>
-                    <th>时间</th>
+                    <th>{m.webui_common_time()}</th>
                     <th>kind</th>
                     <th>session</th>
-                    <th>强度</th>
-                    <th>内容</th>
+                    <th>{m.webui_chamber_limbic_intensity()}</th>
+                    <th>{m.webui_chamber_limbic_content()}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -180,7 +183,7 @@ function LimbicMemoryPage() {
           />
         </div>
       ) : (
-        <p className="text-sm text-base-content/50">点击「查询」加载列表。</p>
+        <p className="text-sm text-base-content/50">{m.webui_common_click_query_hint()}</p>
       )}
     </div>
   );

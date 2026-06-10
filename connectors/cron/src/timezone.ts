@@ -1,6 +1,6 @@
 const SIMPLE_HOUR_RE = /^(\S+)\s+(\d+|\*|\*\/\d+|\d+-\d+|\d+(?:,\d+)+)\s+(\S+)\s+(\S+)\s+(\S+)$/;
 
-/** 5 段 cron 的 hour 字段是否为需 CST→UTC 转换的简单整数 */
+/** Whether 5-field cron hour is a simple integer needing CST→UTC conversion */
 function hasSimpleHourField(expr: string): boolean {
   const parts = expr.trim().split(/\s+/);
   if (parts.length !== 5) return false;
@@ -9,8 +9,8 @@ function hasSimpleHourField(expr: string): boolean {
 }
 
 /**
- * CST 语义 cron → UTC cron（Bun.cron 使用 UTC）。
- * 仅当 hour 为简单整数时转换；分钟级 step 等不变。
+ * CST semantic cron → UTC cron (Bun.cron uses UTC).
+ * Converts only when hour is a simple integer; minute-level steps unchanged.
  */
 export function cstCronToUtc(expr: string): string {
   const trimmed = expr.trim();
@@ -24,7 +24,7 @@ export function cstCronToUtc(expr: string): string {
   return parts.join(" ");
 }
 
-/** 测试用：判断表达式是否会被转换 */
+/** For tests: whether expression will be converted */
 export function isSimpleHourCron(expr: string): boolean {
   return SIMPLE_HOUR_RE.test(expr.trim()) && hasSimpleHourField(expr);
 }

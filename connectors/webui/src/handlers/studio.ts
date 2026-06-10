@@ -26,7 +26,12 @@ export function studioGetTree() {
     return buildFileTree();
   } catch (e) {
     const msg = String(e);
-    throw new ApiHandlerError(msg.includes("未配置") ? 400 : 404, msg);
+    if (msg.includes("未配置") || msg.toLowerCase().includes("not configured")) {
+      throw new ApiHandlerError(400, "studio.workspace is not configured or does not exist", {
+        code: "studio_workspace_missing",
+      });
+    }
+    throw new ApiHandlerError(404, msg);
   }
 }
 
@@ -46,6 +51,11 @@ export function studioSearch(body: unknown) {
     return searchStudio(query);
   } catch (e) {
     const msg = String(e);
-    throw new ApiHandlerError(msg.includes("未配置") ? 400 : 500, msg);
+    if (msg.includes("未配置") || msg.toLowerCase().includes("not configured")) {
+      throw new ApiHandlerError(400, "studio.workspace is not configured or does not exist", {
+        code: "studio_workspace_missing",
+      });
+    }
+    throw new ApiHandlerError(500, msg);
   }
 }

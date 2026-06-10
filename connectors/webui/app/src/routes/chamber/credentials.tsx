@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { getCredentialDetail, listCredentials } from "@/lib/api.ts";
+import { m } from "@/lib/i18n.ts";
 
 type CredentialMeta = {
   path: string;
@@ -53,7 +54,7 @@ function CredentialCard({ cred, onView }: { cred: CredentialMeta; onView: () => 
               </span>
             ))}
             <button type="button" className="btn btn-xs btn-outline" onClick={onView}>
-              查看详情
+              {m.webui_chamber_credentials_view_detail()}
             </button>
           </div>
         </div>
@@ -67,7 +68,9 @@ function CredentialCard({ cred, onView }: { cred: CredentialMeta; onView: () => 
             ))}
           </div>
         ) : (
-          <p className="text-xs text-base-content/40 mt-1">无结构化字段（纯文本凭证）</p>
+          <p className="text-xs text-base-content/40 mt-1">
+            {m.webui_chamber_credentials_no_structured_fields()}
+          </p>
         )}
       </div>
     </div>
@@ -104,7 +107,7 @@ function CredentialDetailModal({
         className="bg-base-100 rounded-xl p-5 shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="text-sm font-bold mb-1">凭证详情</h3>
+        <h3 className="text-sm font-bold mb-1">{m.webui_chamber_credentials_detail_title()}</h3>
         <p className="font-mono text-xs text-base-content/60 mb-3 break-all">{path}</p>
 
         <div className="flex-1 overflow-y-auto min-h-0">
@@ -127,7 +130,7 @@ function CredentialDetailModal({
                         className="btn btn-xs btn-ghost"
                         onClick={() => void copyText(text)}
                       >
-                        复制
+                        {m.webui_common_copy()}
                       </button>
                     </div>
                     <pre className="text-xs whitespace-pre-wrap break-all font-mono bg-base-200 p-2 rounded">
@@ -145,7 +148,7 @@ function CredentialDetailModal({
                   className="btn btn-xs btn-ghost"
                   onClick={() => void copyText(detail.value)}
                 >
-                  复制
+                  {m.webui_common_copy()}
                 </button>
               </div>
               <pre className="text-xs whitespace-pre-wrap break-all font-mono bg-base-200 p-3 rounded">
@@ -157,7 +160,7 @@ function CredentialDetailModal({
 
         <div className="flex justify-end gap-2 mt-4">
           <button type="button" className="btn btn-sm" onClick={onClose}>
-            关闭
+            {m.webui_common_close()}
           </button>
         </div>
       </div>
@@ -197,7 +200,7 @@ function CredentialsPage() {
 
   const byCategory = new Map<string, CredentialMeta[]>();
   for (const cred of credentials) {
-    const cat = cred.category || "(未分类)";
+    const cat = cred.category || m.webui_chamber_credentials_uncategorized();
     const list = byCategory.get(cat);
     if (list) list.push(cred);
     else byCategory.set(cat, [cred]);
@@ -208,15 +211,17 @@ function CredentialsPage() {
   return (
     <div>
       <div className="mb-4">
-        <h2 className="text-lg font-bold">🔐 凭证</h2>
+        <h2 className="text-lg font-bold">{m.webui_chamber_nav_credentials()}</h2>
         <p className="text-sm text-base-content/60 mt-1">
-          已存储的凭证列表（仅元数据）；点击「查看详情」可在弹窗中读取明文（本地服务）。
-          {credentials.length > 0 ? ` 共 ${credentials.length} 条。` : null}
+          {m.webui_chamber_credentials_desc()}
+          {credentials.length > 0
+            ? ` ${m.webui_chamber_credentials_count({ count: String(credentials.length) })}`
+            : null}
         </p>
       </div>
 
       {credentials.length === 0 ? (
-        <div className="alert alert-info text-sm">暂无凭证。</div>
+        <div className="alert alert-info text-sm">{m.webui_chamber_credentials_empty()}</div>
       ) : (
         <div className="space-y-6">
           {categories.map(([category, creds]) => (

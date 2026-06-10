@@ -4,7 +4,7 @@ import { messages } from "./messages.ts";
 import { semanticMemory } from "./semantic-memory.ts";
 import { sessions } from "./sessions.ts";
 
-/** 消息正文中的 `[记忆 #xxx]` 引用记录（session 删除时级联作废） */
+/** `[memory #xxx]` reference records in message body (cascade invalidate on session delete) */
 export const memoryReferences = pgTable(
   "memory_references",
   {

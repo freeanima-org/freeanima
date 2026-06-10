@@ -38,7 +38,7 @@ export type AwaitingClarifyJson = z.infer<typeof awaitingClarifySchema>;
 export const acpSessionsSchema = z.record(z.string(), z.string());
 export type AcpSessionsJson = z.infer<typeof acpSessionsSchema>;
 
-/** 旧版 sessions.tools 曾存 OpenAI tool schema；读取时归一化为工具名 */
+/** Legacy sessions.tools stored OpenAI tool schema; normalize to tool names on read */
 export function normalizeSessionToolNames(raw: unknown): string[] {
   if (!Array.isArray(raw)) return [];
   const names: string[] = [];
@@ -62,7 +62,7 @@ export function normalizeSessionToolNames(raw: unknown): string[] {
 export const sessionToolsSchema = z.preprocess(normalizeSessionToolNames, z.array(z.string()));
 export type SessionToolsJson = z.infer<typeof sessionToolsSchema>;
 
-/** sessions.loaded_tools — tools_load 累积的执行白名单 */
+/** sessions.loaded_tools — tools_load accumulated execution allowlist */
 export const sessionLoadedToolsSchema = z.preprocess(
   normalizeSessionToolNames,
   z.array(z.string()),

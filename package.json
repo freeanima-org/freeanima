@@ -19,6 +19,7 @@
     "anima": "./cli/src/cli.ts"
   },
   "description": "逸灵风 Free Anima (TypeScript)",
+  "license": "MIT",
   "engines": {
     "bun": ">=1.3.14"
   },

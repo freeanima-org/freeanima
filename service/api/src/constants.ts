@@ -1,5 +1,5 @@
-/** 会客厅 Web 通道 session 标识 */
+/** Parlor Web channel session identifier */
 export const PARLOR_PLATFORM = "parlor";
 
-/** WebUI 静态路由前缀 */
+/** WebUI static route prefix */
 export const WEBUI_BASE_PATH = "/webui";

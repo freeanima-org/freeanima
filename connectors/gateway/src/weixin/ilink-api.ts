@@ -1,6 +1,6 @@
 import { safeParseOrNull } from "@freeanima/kernel-util";
 import { chunkText } from "../chunk-text.ts";
-/** 腾讯 iLink Bot API（参考 @tencent-weixin/openclaw-weixin src/api/api.ts） */
+/** Tencent iLink Bot API (see @tencent-weixin/openclaw-weixin src/api/api.ts) */
 
 import { randomBytes } from "node:crypto";
 
@@ -10,7 +10,7 @@ export { type IlinkMessage };
 export const ILINK_BASE_URL = "https://ilinkai.weixin.qq.com";
 export const ILINK_APP_ID = "bot";
 export const CHANNEL_VERSION = "2.2.0";
-/** 微信文本单条上限（Unicode 字符，协议建议 2000） */
+/** WeChat text single-message limit (Unicode chars, protocol suggests 2000) */
 export const WEIXIN_TEXT_CHUNK_LIMIT = 2000;
 
 export const EP_GET_UPDATES = "ilink/bot/getupdates";
@@ -27,7 +27,7 @@ export const MAX_CONSECUTIVE_FAILURES = 3;
 export const RETRY_DELAY_MS = 2_000;
 export const BACKOFF_DELAY_MS = 30_000;
 
-/** 会话过期错误码（官方 session-guard） */
+/** Session expired error code (official session-guard) */
 export const SESSION_EXPIRED_ERRCODE = -14;
 const SESSION_PAUSE_MS = 60 * 60 * 1000;
 
@@ -44,7 +44,7 @@ const ILINK_APP_CLIENT_VERSION = buildClientVersion(CHANNEL_VERSION);
 const ilinkResponseSchema = ilinkMessageSchema;
 const sessionPauseUntil = new Map<string, number>();
 
-/** 版本号编码为 iLink-App-ClientVersion uint32（参考 openclaw-weixin） */
+/** Encode version as iLink-App-ClientVersion uint32 (see openclaw-weixin) */
 function buildClientVersion(version: string): number {
   const parts = version.split(".").map((p) => parseInt(p, 10));
   const major = parts[0] ?? 0;
@@ -53,7 +53,7 @@ function buildClientVersion(version: string): number {
   return ((major & 0xff) << 16) | ((minor & 0xff) << 8) | (patch & 0xff);
 }
 
-/** X-WECHAT-UIN：随机 uint32 → 十进制字符串 → base64 */
+/** X-WECHAT-UIN: random uint32 → decimal string → base64 */
 function randomWechatUin(): string {
   const uint32 = randomBytes(4).readUInt32BE(0);
   return Buffer.from(String(uint32), "utf-8").toString("base64");
@@ -96,7 +96,7 @@ export function isWeixinSessionPaused(accountId: string): boolean {
   return true;
 }
 
-/** 将长文本切为 ≤limit 字符的多段（优先段落/换行边界） */
+/** Split long text into ≤limit char segments (prefer paragraph/newline boundaries) */
 export function chunkWeixinText(text: string, limit = WEIXIN_TEXT_CHUNK_LIMIT): string[] {
   return chunkText(text, limit, { trimInput: true });
 }
@@ -253,7 +253,7 @@ export async function sendTyping(
   assertIlinkOk(resp, EP_SEND_TYPING);
 }
 
-/** 获取 typing_ticket 并发送「正在输入」 */
+/** Obtain typing_ticket and send typing indicator */
 export async function sendTypingIndicator(
   baseUrl: string,
   token: string,
@@ -281,7 +281,7 @@ export async function notifyStop(baseUrl: string, token: string): Promise<Record
   return resp;
 }
 
-/** @internal 测试用：重置 session 暂停状态 */
+/** @internal For tests: reset session paused state */
 export function _resetWeixinSessionPauseForTest(): void {
   sessionPauseUntil.clear();
 }

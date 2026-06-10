@@ -40,7 +40,7 @@ function parseLcovRates(lcov: string): { lines: number; functions: number } {
 }
 
 if (!existsSync(lcovPath)) {
-  console.error(`[coverage:check-threshold] 缺少 ${lcovPath}`);
+  console.error(`[coverage:check-threshold] missing ${lcovPath}`);
   process.exit(1);
 }
 
@@ -55,7 +55,7 @@ const minLinesPct = (minLines * 100).toFixed(2);
 const minFuncsPct = (minFunctions * 100).toFixed(2);
 
 console.log(
-  `[coverage:check-threshold] lines=${linesPct}% functions=${funcsPct}% (要求 ≥ ${minLinesPct}% / ${minFuncsPct}%)`,
+  `[coverage:check-threshold] lines=${linesPct}% functions=${funcsPct}% (required ≥ ${minLinesPct}% / ${minFuncsPct}%)`,
 );
 
 if (rates.lines < minLines || rates.functions < minFunctions) {

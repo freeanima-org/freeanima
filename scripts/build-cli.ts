@@ -1,9 +1,9 @@
 #!/usr/bin/env bun
 /**
- * 构建 @freeanima/cli 发布目录（cli/publish/）：
- * - dist/cli.js 单体 bundle
- * - connectors/webui/app/ Bun fullstack 静态资源
- * - migrations/ PG 迁移
+ * Build @freeanima/cli publish directory (cli/publish/):
+ * - dist/cli.js single-file bundle
+ * - connectors/webui/app/ Bun fullstack static assets
+ * - migrations/ PG migrations
  */
 import { $ } from "bun";
 import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -48,7 +48,7 @@ await import(join(root, "dist/cli.js"));
   const publishPkg = {
     name: "@freeanima/cli",
     version: ROOT_PKG.version,
-    description: "逸灵风 FreeAnima CLI（Bun 运行时）",
+    description: "FreeAnima CLI (Bun runtime)",
     type: "module",
     engines: { bun: ">=1.3.14" },
     bin: { anima: "./dist/anima" },
@@ -59,7 +59,7 @@ await import(join(root, "dist/cli.js"));
     },
     publishConfig: {
       access: "public",
-      // 须与 npm publishConfig.registry 一致（含尾斜杠），否则 OIDC 鉴权被跳过
+      // Must match npm publishConfig.registry (trailing slash included), or OIDC auth is skipped
       registry: "https://registry.npmjs.org/",
     },
   };

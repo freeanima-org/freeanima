@@ -1,4 +1,4 @@
-/** 面向终端的 CLI 错误文案（默认不打印 stack） */
+/** Terminal-facing CLI error messages (no stack by default) */
 export function cliError(err: unknown): string {
   if (err instanceof Error) return err.message;
   return String(err);

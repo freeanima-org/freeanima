@@ -8,11 +8,11 @@ import {
 import { renderSelfLayerPrompt, wrapSelfLayerForSystemPrompt } from "./compose.ts";
 
 describe("wrapSelfLayerForSystemPrompt", () => {
-  it("含第二人称骨架、自我层标题与 md 围栏", () => {
+  it("includes second-person frame, self-layer heading, and md fence", () => {
     const inner = renderSelfLayerPrompt([
       {
         block_key: "self_model",
-        content: "我是测试 Agent。",
+        content: "I am a test Agent.",
         locked: false,
         version: 1,
         updated_by: null,
@@ -26,20 +26,20 @@ describe("wrapSelfLayerForSystemPrompt", () => {
     expect(wrapped).toContain(`## ${SELF_LAYER_PROMPT_HEADING}`);
     expect(wrapped).toContain("```md");
     expect(wrapped).toContain(`## ${SELF_BLOCK_HEADINGS.self_model}`);
-    expect(wrapped).toContain("我是测试 Agent。");
+    expect(wrapped).toContain("I am a test Agent.");
   });
 
-  it("空内容返回空字符串", () => {
+  it("returns empty string for empty content", () => {
     expect(wrapSelfLayerForSystemPrompt("")).toBe("");
     expect(wrapSelfLayerForSystemPrompt("   \n  ")).toBe("");
   });
 
-  it("内层保留六块标题", () => {
+  it("preserves six-block headings in inner content", () => {
     const keys = Object.keys(SELF_BLOCK_HEADINGS) as SelfBlockKey[];
     const inner = renderSelfLayerPrompt(
       keys.map((key) => ({
         block_key: key,
-        content: `块-${key}`,
+        content: `block-${key}`,
         locked: false,
         version: 0,
         updated_by: null,

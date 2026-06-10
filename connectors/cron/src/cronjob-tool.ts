@@ -36,16 +36,16 @@ async function handleCronjob(args: Record<string, unknown>): Promise<string> {
         paused: j.paused,
         run_count: j.run_count,
         next_run: tsHuman(computeNextRunAt(j.schedule, j.paused) ?? 0),
-        summary: `${j.paused ? "暂停" : "活跃"} · ${j.name} · ${j.schedule}`,
+        summary: `${j.paused ? "paused" : "active"} · ${j.name} · ${j.schedule}`,
       })),
-      message: jobs.length ? `共 ${jobs.length} 个定时任务` : "没有定时任务",
+      message: jobs.length ? `Total ${jobs.length} scheduled jobs` : "No scheduled jobs",
     });
   }
 
   if (action === "get") {
-    if (!jobId) return toolError("需要 job_id");
+    if (!jobId) return toolError("job_id required");
     const j = await getJob(jobId);
-    if (!j) return toolError(`未找到 job: ${jobId}`);
+    if (!j) return toolError(`Job not found: ${jobId}`);
     const json = j.toJSON({ includeOutput: true });
     return toolResult({
       ok: true,
@@ -72,9 +72,10 @@ async function handleCronjob(args: Record<string, unknown>): Promise<string> {
     const schedule = String(args.schedule ?? "");
     const prompt = String(args.prompt ?? "");
     const noAgent = Boolean(args.no_agent);
-    if (!name) return toolError("创建任务需要 name");
-    if (!schedule) return toolError("创建任务需要 schedule");
-    if (!prompt && !noAgent) return toolError("创建任务需要 prompt（或 no_agent=true 仅脚本模式）");
+    if (!name) return toolError("name required to create job");
+    if (!schedule) return toolError("schedule required to create job");
+    if (!prompt && !noAgent)
+      return toolError("prompt required to create job (or no_agent=true for script-only mode)");
     try {
       const j = await createJob({
         name,
@@ -94,84 +95,90 @@ async function handleCronjob(args: Record<string, unknown>): Promise<string> {
         name: j.name,
         schedule: j.schedule,
         next_run: next > 0 ? tsHuman(next) : null,
-        message: `已创建任务 ${j.name}`,
+        message: `Created job ${j.name}`,
       });
     } catch (e) {
-      return toolError(`创建失败: ${e instanceof Error ? e.message : String(e)}`);
+      return toolError(`Create failed: ${e instanceof Error ? e.message : String(e)}`);
     }
   }
 
   if (action === "remove") {
-    if (!jobId) return toolError("需要 job_id");
+    if (!jobId) return toolError("job_id required");
     try {
       const ok = await removeJob(jobId);
-      if (!ok) return toolError(`未找到 ${jobId}`);
-      return toolResult({ ok: true, action: "remove", job_id: jobId, message: `已删除 ${jobId}` });
+      if (!ok) return toolError(`Not found ${jobId}`);
+      return toolResult({ ok: true, action: "remove", job_id: jobId, message: `Deleted ${jobId}` });
     } catch (e) {
       return toolError(String(e instanceof Error ? e.message : e));
     }
   }
 
   if (action === "pause") {
-    if (!jobId) return toolError("需要 job_id");
+    if (!jobId) return toolError("job_id required");
     const ok = await pauseJob(jobId);
-    if (!ok) return toolError(`未找到 ${jobId}`);
-    return toolResult({ ok: true, action: "pause", job_id: jobId, message: `已暂停 ${jobId}` });
+    if (!ok) return toolError(`Not found ${jobId}`);
+    return toolResult({ ok: true, action: "pause", job_id: jobId, message: `Paused ${jobId}` });
   }
 
   if (action === "resume") {
-    if (!jobId) return toolError("需要 job_id");
+    if (!jobId) return toolError("job_id required");
     const ok = await resumeJob(jobId);
-    if (!ok) return toolError(`未找到 ${jobId}`);
-    return toolResult({ ok: true, action: "resume", job_id: jobId, message: `已恢复 ${jobId}` });
+    if (!ok) return toolError(`Not found ${jobId}`);
+    return toolResult({ ok: true, action: "resume", job_id: jobId, message: `Resumed ${jobId}` });
   }
 
   if (action === "run") {
-    if (!jobId) return toolError("需要 job_id");
+    if (!jobId) return toolError("job_id required");
     const j = await getJob(jobId);
-    if (!j) return toolError(`未找到 ${jobId}`);
+    if (!j) return toolError(`Not found ${jobId}`);
     void enqueueRunJob(j);
     return toolResult({
       ok: true,
       action: "run",
       job_id: j.id,
       name: j.name,
-      message: `已触发立即运行: ${j.name}`,
+      message: `Triggered immediate run: ${j.name}`,
     });
   }
 
-  return toolError(`未知 action: ${action}`);
+  return toolError(`Unknown action: ${action}`);
 }
 
 export function registerCronjobTool(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
     "cron",
-    "定时任务管理",
+    "Scheduled job management",
     attachToolReturns(
       [
         {
           name: "cron_job",
-          description: "管理定时任务：创建、列表、查看、暂停、恢复、删除、立即运行",
+          description: "Manage cron jobs: create, list, view, pause, resume, delete, run now",
           parameters: {
             type: "object",
             properties: {
               action: {
                 type: "string",
                 enum: ["create", "list", "get", "remove", "pause", "resume", "run"],
-                description: "操作类型",
+                description: "Action type",
               },
               job_id: {
                 type: "string",
-                description: "任务 ID（get/remove/pause/resume/run 需要）",
+                description: "Job ID (required for get/remove/pause/resume/run)",
               },
-              name: { type: "string", description: "任务名称（create 需要）" },
-              schedule: { type: "string", description: "调度表达式（create 需要）" },
-              prompt: { type: "string", description: "LLM 提示词（create 需要，除非 no_agent）" },
-              skills: { type: "array", items: { type: "string" }, description: "要加载的技能" },
-              script: { type: "string", description: "脚本路径（相对 cron/scripts）" },
-              no_agent: { type: "boolean", description: "仅脚本模式，不调用 LLM" },
-              deliver: { type: "string", description: "投递目标，默认 local" },
-              repeat: { type: "integer", description: "最大运行次数" },
+              name: { type: "string", description: "Job name (required for create)" },
+              schedule: {
+                type: "string",
+                description: "Schedule expression (required for create)",
+              },
+              prompt: {
+                type: "string",
+                description: "LLM prompt (required for create, unless no_agent)",
+              },
+              skills: { type: "array", items: { type: "string" }, description: "Skills to load" },
+              script: { type: "string", description: "Script path (relative to cron/scripts)" },
+              no_agent: { type: "boolean", description: "Script-only mode, no LLM" },
+              deliver: { type: "string", description: "Delivery target, default local" },
+              repeat: { type: "integer", description: "Max run count" },
             },
             required: ["action"],
           },

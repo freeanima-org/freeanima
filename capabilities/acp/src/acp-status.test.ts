@@ -17,7 +17,7 @@ function parseMinimal(yaml: string) {
 }
 
 describe("isAcpAgentEnabled", () => {
-  it("缺省或为 true 时启用", () => {
+  it("enabled when omitted or true", () => {
     expect(isAcpAgentEnabled({})).toBe(true);
     expect(isAcpAgentEnabled({ enabled: true })).toBe(true);
     expect(isAcpAgentEnabled({ enabled: false })).toBe(false);
@@ -25,7 +25,7 @@ describe("isAcpAgentEnabled", () => {
 });
 
 describe("sanitizeAcpConfig", () => {
-  it("导出展示用字段", () => {
+  it("exports display fields", () => {
     const view = sanitizeAcpConfig({
       command: "/usr/bin/agent",
       args: ["--force", "acp"],
@@ -47,7 +47,7 @@ describe("sanitizeAcpConfig", () => {
 });
 
 describe("shortSessionId", () => {
-  it("长 ID 截断", () => {
+  it("truncates long IDs", () => {
     const id = "a".repeat(40);
     expect(shortSessionId(id)).toMatch(/…$/);
     expect(shortSessionId("short")).toBe("short");
@@ -59,7 +59,7 @@ describe("AcpManager.getStatus", () => {
     resetConfigForTest();
   });
 
-  it("未连接时返回配置与 not_started 状态", () => {
+  it("returns config and not_started when not connected", () => {
     setConfigForTest(
       acpConfigYaml(
         [
@@ -85,7 +85,7 @@ describe("AcpManager.getStatus", () => {
     expect(status.agents[0]?.tool?.name).toBe("acp_cursor");
   });
 
-  it("startAll 聚合失败", async () => {
+  it("startAll aggregates failures", async () => {
     setConfigForTest(
       acpConfigYaml(
         ["acp_agents:", "  cursor:", "    command: echo", "    args: [noop]"].join("\n"),
@@ -97,7 +97,7 @@ describe("AcpManager.getStatus", () => {
     expect(result.error).toMatch(/cursor:/);
   });
 
-  it("disabled agent 显示 disabled 状态", async () => {
+  it("disabled agent shows disabled status", async () => {
     setConfigForTest(
       acpConfigYaml(
         ["acp_agents:", "  cursor:", "    command: echo", "    enabled: false"].join("\n"),

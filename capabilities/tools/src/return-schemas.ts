@@ -210,7 +210,7 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
     },
   }),
   file_read_file: defineTextToolReturn({
-    hint: "带行号的纯文本，每行格式为 offset|line_content",
+    hint: "Plain text with line numbers; each line formatted as offset|line_content",
     example: textLineNumberExample,
   }),
   file_write_file: defineToolReturn({
@@ -230,15 +230,15 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
     example: { ok: true, path: "/home/user/project/src/app.ts" },
   }),
   terminal_run: defineTextToolReturn({
-    hint: "命令 stdout/stderr 纯文本；非零退出码附加 --- exit code: N ---；后台模式返回 session_id 提示",
+    hint: "Command stdout/stderr plain text; non-zero exit appends --- exit code: N ---; background mode returns session_id hint",
     example: "hello world\n--- exit code: 0 ---",
   }),
   terminal_process: defineTextToolReturn({
-    hint: "纯文本：list/poll/log/wait/kill 的状态与输出",
+    hint: "Plain text: list/poll/log/wait/kill status and output",
     example: "running\nprocess output line",
   }),
   code_execute: defineTextToolReturn({
-    hint: "子进程 stdout/stderr 纯文本；非零退出码附加 --- exit code: N ---",
+    hint: "Child stdout/stderr plain text; non-zero exit appends --- exit code: N ---",
     example: "42\n--- exit code: 0 ---",
   }),
   browser_navigate: defineToolReturn({
@@ -285,7 +285,7 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
       success: true,
       console_messages: [],
       js_errors: [],
-      note: "Camofox 后端暂不支持 console 抓取",
+      note: "Camofox backend does not support console capture yet",
     },
   }),
   browser_get_images: defineToolReturn({
@@ -301,9 +301,9 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
     example: {
       success: true,
       screenshot_path: "/home/user/.anima/browser_screenshots/browser_screenshot_a1b2c3d4.png",
-      question: "页面上有什么按钮？",
+      question: "What buttons are on the page?",
       analysis: null,
-      note: "逸灵风暂未接入 auxiliary vision LLM；已保存截图到 screenshot_path。",
+      note: "Free Anima has no auxiliary vision LLM yet; screenshot saved to screenshot_path.",
     },
   }),
   web_search: defineToolReturn({
@@ -342,8 +342,8 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
     example: {
       ok: true,
       name: "my-skill",
-      description: "示例技能",
-      message: "技能 'my-skill' 已创建并注册",
+      description: "Example skill",
+      message: "Skill 'my-skill' created and registered",
     },
   }),
   skills_load: defineToolReturn({
@@ -355,9 +355,9 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
     }),
     example: {
       skill: "my-skill",
-      description: "示例技能",
+      description: "Example skill",
       source: "user",
-      content: "# My Skill\n\n技能正文",
+      content: "# My Skill\n\nSkill body",
     },
   }),
   skills_list: defineToolReturn({
@@ -370,7 +370,7 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
       skills: [
         {
           name: "my-skill",
-          description: "示例技能",
+          description: "Example skill",
           source: "user",
           directory: "/home/user/.anima/skills",
         },
@@ -389,7 +389,7 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
       skills: [
         {
           name: "my-skill",
-          description: "示例技能",
+          description: "Example skill",
           source: "user",
           directory: "/home/user/.anima/skills",
         },
@@ -401,7 +401,7 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
     schema: z.object({ name: z.string(), content: z.string() }),
     example: {
       name: "my-skill",
-      content: "---\ndescription: 示例\n---\n\n# My Skill",
+      content: "---\ndescription: Example\n---\n\n# My Skill",
     },
   }),
   skills_delete: defineToolReturn({
@@ -410,7 +410,7 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
       name: z.string(),
       message: z.string(),
     }),
-    example: { ok: true, name: "my-skill", message: "技能 'my-skill' 已删除" },
+    example: { ok: true, name: "my-skill", message: "Skill 'my-skill' deleted" },
   }),
   credentials_list: defineToolReturn({
     schema: z.object({ credentials: z.array(credentialEntrySchema) }),
@@ -433,17 +433,17 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
       summary: z.string(),
     }),
     example: {
-      query: "压缩",
+      query: "compression",
       hits: [
         {
           session_id: "sess-001",
           message_id: "msg-001",
           role: "user",
           timestamp: "2026-06-10T10:00:00+08:00",
-          snippet: "…对话压缩…",
+          snippet: "…conversation compression…",
         },
       ],
-      summary: "找到 1 条历史对话",
+      summary: "Found 1 historical conversation",
     },
   }),
   sessions_scroll: defineToolReturn({
@@ -460,7 +460,7 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
         {
           id: "msg-001",
           role: "user",
-          content: "你好",
+          content: "Hello",
           pos: 1,
           timestamp: "2026-06-10T10:00:00+08:00",
         },
@@ -477,12 +477,12 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
       todos: [
         {
           id: 1,
-          content: "完成工具返回 schema",
+          content: "Tool return schema complete",
           status: "pending",
           created_at: "2026-06-10T10:00:00+08:00",
         },
       ],
-      message: "共 1 条待办",
+      message: "Total 1 todo item",
     },
   }),
 };

@@ -5,7 +5,7 @@ function normalizeUpdateKind(update: Record<string, unknown>): string {
   return String(raw).toLowerCase().replace(/_/g, "");
 }
 
-/** 从 session/update 提取文本或工具提示 */
+/** extract text or tool hint from session/update */
 export function parseSessionUpdateChunk(update: Record<string, unknown>): string | null {
   const kind = normalizeUpdateKind(update);
   if (kind === "agentmessagechunk") {
@@ -35,7 +35,7 @@ export const genericAcpAdapter: AcpAgentAdapter = {
   },
 };
 
-/** Cursor 文档：outcome.selected + optionId allow-once */
+/** Cursor docs: outcome.selected + optionId allow-once */
 export function permissionAllowOnce(_params: Record<string, unknown>): Record<string, unknown> {
   return { outcome: { outcome: "selected", optionId: "allow-once" } };
 }
