@@ -6,7 +6,7 @@ export type {
   DisplayToolBlockItem,
   DisplayToolCall,
   MessagesDisplay as MessagesResponse,
-} from "@freeanima/service/schemas/display";
+} from "@freeanima/service-api/schemas/display";
 
 export type { PromptDebugResponse, ToolsStatusResponse, ToolsStatusToolItem } from "./schemas.ts";
 
@@ -17,7 +17,7 @@ export type {
   SafeConfigSnapshot as SafeConfigResponse,
   ServiceSnapshot as ServiceStatus,
   SessionSummary as SessionListItem,
-} from "@freeanima/service/schemas/snapshot";
+} from "@freeanima/service-api/schemas/snapshot";
 
 export type { CronJobData as CronJobApi } from "@freeanima/connectors-cron";
 
