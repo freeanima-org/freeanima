@@ -15,7 +15,7 @@ const lines = [
   `[po4a_langs] ${DOC_PO_LANGS.join(" ")}`,
   "[po4a_paths] po/pot/$master.pot $lang:po/$lang/$master.po",
   "",
-  '[options] opt_encoding:"utf-8" opt_keep:"0"',
+  '[options] --master-charset utf-8 --keep 0',
   "",
   ...masters.map(({ rel }) => {
     const out = rel.replace(/^docs\//, "docs/.generated/$lang/");
