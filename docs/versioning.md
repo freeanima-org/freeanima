@@ -9,7 +9,7 @@ title: Versioning
 workspace 内其它 workspace 子包 `package.json` **不含** `version` 字段。
 运行时通过 `@freeanima/service` 的 `ANIMA_VERSION` 读取根版本。
 
-发版由 **[semantic-release](https://semantic-release.gitbook.io/)** 在 GitHub Actions 中自动完成（见 [`.github/workflows/release.yml`](../.github/workflows/release.yml)）。
+发版由 **[Release Please](https://github.com/googleapis/release-please)** 在 GitHub Actions 中完成（见 [`.github/workflows/release.yml`](../.github/workflows/release.yml)）。
 
 ## 何时 bump 哪一位
 
@@ -22,9 +22,11 @@ workspace 内其它 workspace 子包 `package.json` **不含** `version` 字段�
 | `BREAKING CHANGE:` 或 `feat!:`                     | **MINOR（x）** | `0.1.2` → `0.2.0` |
 | `chore:` / `docs:` / `refactor:` / `test:` / `ci:` | **不发版**     | —                 |
 
-**1.0.0** 不在 breaking commit 时自动发布；API 稳定后由维护者显式决定（例如专门 commit 或手动发版）。
+**1.0.0** 不在 breaking commit 时自动发布；API 稳定后由维护者显式决定（commit footer `Release-As: 1.0.0` 或专门发版）。
 
-同一 tag 区间内多个 commit 合并后 **只发一版**，取最高 bump（例如 `fix` + `feat` → patch；`feat` + breaking → minor）。
+同一 Release PR 内多个 commit 合并后 **只发一版**，取最高 bump（例如 `fix` + `feat` → patch；`feat` + breaking → minor）。
+
+Release Please 默认以 `feat` / `fix` / `deps` 作为可发版 commit 触发 Release PR 更新；`perf` / `revert` 会出现在 changelog 中，但单独提交时可能不会开 Release PR（可用 `fix:` 前缀或 `Release-As` footer）。
 
 ## 日常查看版本
 
@@ -34,14 +36,16 @@ bun -p "require('./package.json').version"
 bun run anima -- service status   # 读 status 文件 / health API 中的 version
 ```
 
-## 发版流程（自动）
+## 发版流程（Release PR）
 
 1. 在 feature 分支用 **Conventional Commits** 写 commit message（见下）
-2. PR 合并到 `main`
-3. CI `Release` workflow：`typecheck` → `build` → `test` → `semantic-release`
-4. 若有可发版 commit：bump 根 `package.json`、更新 `CHANGELOG.md` 顶部、打 `vX.Y.Z` tag、创建 GitHub Release、推送 `[skip ci]` 的 release commit
+2. PR 合并到 `main`（须过 `Quality` + `freeanima/blackbox`）
+3. `Release` workflow 运行 **release-please**：开或更新一条 **Release PR**（label `autorelease: pending`），累积自上次 tag 以来的 changelog 与版本 bump
+4. Release PR 同样跑完整 CI；**维护者决定何时发版**，merge Release PR
+5. merge 后同次 workflow：`release_created` → 打 `vX.Y.Z` tag、创建 GitHub Release → `build:cli` + `publish-cli.sh`（npm OIDC）
+6. push `v*` tag 触发 [`.github/workflows/release-docker.yml`](../.github/workflows/release-docker.yml)
 
-**不是**每个 `feat` 各发一版；是 **每次 merge 到 main 后至多发一版**（自上次 tag 以来有可发版 commit 时）。
+**不是**每个 `feat` 各发一版；是 **merge Release PR 时发一版**（PR 内累积多个 commit）。
 
 ### Commit message 格式
 
@@ -55,7 +59,7 @@ bun run anima -- service status   # 读 status 文件 / health API 中的 versio
 
 常用 type：`feat`、`fix`、`perf`、`docs`、`chore`、`refactor`、`test`、`ci`、`build`、`revert`。
 
-本地 **`git commit` 会强制校验**（Husky `commit-msg` + [commitlint](https://commitlint.js.org/)，配置见根目录 `commitlint.config.mjs`）。格式不符时提交会被拒绝；可用 `HUSKY=0 git commit …` 临时跳过（semantic-release 的 release commit 在 CI 中已设 `HUSKY=0`）。
+本地 **`git commit` 会强制校验**（Husky `commit-msg` + [commitlint](https://commitlint.js.org/)，配置见根目录 `commitlint.config.mjs`）。
 
 示例：
 
@@ -67,35 +71,23 @@ feat(api)!: 移除非 SSE 发消息端点
 BREAKING CHANGE: POST /api/sessions/:id/messages 已删除
 ```
 
-### 本地预览（可选）
+### 预览下一版
 
-```bash
-HUSKY=0 bun run release:dry-run
-```
+在 GitHub 上查看 **Release PR** 的 diff（`package.json` + `CHANGELOG.md`），即下一版内容与版本号。
 
-需要完整 git 历史（`fetch-depth: 0`）；本地无 `GITHUB_TOKEN` 时会在 GitHub Release 步骤前停止，仍可看算出的版本与 changelog 草稿。
+指定版本可在 commit body 写 `Release-As: x.y.z`（见 [Release Please 文档](https://github.com/googleapis/release-please)）。
 
-### 一次性基线 tag（接入后首次必做）
+### 版本 manifest
 
-若仓库尚无 `v*` tag，semantic-release 会把 **全部历史 commit** 纳入计算，版本可能从 `0.1.0` 起跳而非当前 `package.json` 版本。
-
-在 `main` 上对齐当前版本（仅需一次）：
-
-```bash
-git tag -a v0.1.0 -m "v0.1.0"
-git push origin v0.1.0
-```
-
-之后仅 **tag 之后** 的可发版 commit 会触发新版本。
+[`.release-please-manifest.json`](../.release-please-manifest.json) 记录当前已发布版本，须与最新 `v*` tag 及根 `package.json` 一致；由 Release Please 在发版后自动更新。
 
 ## Bun 全局包与 Docker 镜像
 
-Release workflow 在 semantic-release 成功后还会：
+Release PR merge 且 `release_created` 后：
 
 1. **`bun run build:cli`** — 产出 `cli/publish/`（`@freeanima/cli` tarball 内容）
-2. **`@semantic-release/npm`**（`npmPublish: false`）— 仅 bump 根 `package.json` 版本
-3. **`scripts/publish-cli.sh`** — `npm publish` + GitHub Actions OIDC（npm CLI ≥ 11.5.1）；本地手动发包用 `bun run publish:cli`（需 `npm login`）
-4. **Docker 镜像** — push `v*` tag 时由 [`.github/workflows/release-docker.yml`](../.github/workflows/release-docker.yml) 构建并推送到 `ghcr.io/freeanima-org/freeanima:latest` 与 `:vX.Y.Z`
+2. **`scripts/publish-cli.sh`** — `npm publish` + GitHub Actions OIDC（npm CLI ≥ 11.5.1）；本地手动发包用 `bun run publish:cli`（需 `npm login`）
+3. **Docker 镜像** — push `v*` tag 时由 [`.github/workflows/release-docker.yml`](../.github/workflows/release-docker.yml) 构建并推送到 `ghcr.io/freeanima-org/freeanima:latest` 与 `:vX.Y.Z`
 
 ### npm Trusted Publishing（唯一 CI 发布路径）
 
@@ -108,7 +100,7 @@ Release workflow 在 semantic-release 成功后还会：
 | Workflow filename    | `release.yml`   |
 | Allowed actions      | `npm publish`   |
 
-Release workflow 已设 `id-token: write`；发布用 `bunx npm@11 publish`（勿用 `setup-node` 的 `registry-url`，会阻断 OIDC）。`cli/publish/package.json` 的 `publishConfig.registry` 须为 `https://registry.npmjs.org/`（含尾斜杠）。首次发包若包尚不存在，需先在 npm 创建包并绑 Trusted Publisher。
+Release workflow 的 `publish` job 已设 `id-token: write`；发布用 `bunx npm@11 publish`（勿用 `setup-node` 的 `registry-url`，会阻断 OIDC）。`cli/publish/package.json` 的 `publishConfig.registry` 须为 `https://registry.npmjs.org/`（含尾斜杠）。
 
 验证通过后，可在包 Settings → Publishing access 选 **disallow tokens**，仅保留 OIDC 发布。
 
@@ -131,15 +123,21 @@ docker compose up --build
 
 - 不要在业务代码中硬编码 `X.Y.Z`；统一 `import { ANIMA_VERSION } from "@freeanima/service"`（或经 health/status 暴露）。
 - 不要在 workspace 子包 `package.json` 中维护 `version`。
-- 不要手改 `[Unreleased]` 或本地 `bun run release patch`（已废弃）；发布说明来自 commit，不是手写 CHANGELOG 节。
+- 不要手改 `CHANGELOG.md` 或 `[Unreleased]`；发布说明来自 commit 与 Release Please。
 
 ## 相关文件
 
-| 文件                                     | 作用                                                            |
-| ---------------------------------------- | --------------------------------------------------------------- |
-| `package.json`                           | 版本唯一写入源（CI 更新）                                       |
-| `.releaserc.cjs`                         | semantic-release 插件配置（含 changelog 列表符 `-` 对齐 oxfmt） |
-| `.github/workflows/release.yml`          | 发版 CI + npm publish                                           |
-| `.github/workflows/release-docker.yml`   | Docker 镜像推 GHCR                                              |
-| `service/service/src/runtime/version.ts` | 运行时读取根版本                                                |
-| `CHANGELOG.md`                           | 自动追加新版本节 + 历史条目                                     |
+| 文件                                     | 作用                               |
+| ---------------------------------------- | ---------------------------------- |
+| `package.json`                           | 版本唯一写入源（Release PR 更新）  |
+| `release-please-config.json`             | Release Please 策略与 changelog 节 |
+| `.release-please-manifest.json`          | 已发布版本 manifest                |
+| `.github/workflows/release.yml`          | release-please + npm publish       |
+| `.github/workflows/release-docker.yml`   | Docker 镜像推 GHCR                 |
+| `service/service/src/runtime/version.ts` | 运行时读取根版本                   |
+| `CHANGELOG.md`                           | Release PR 合并时追加新版本节      |
+
+## 仓库 Settings（维护者）
+
+- Actions → General → **Allow GitHub Actions to create and approve pull requests**
+- `RELEASE_PAT` 须能开 PR 并触发 Release PR 上的 CI（不能用默认 `GITHUB_TOKEN` 替代）

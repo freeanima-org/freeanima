@@ -59,7 +59,7 @@ await import(join(root, "dist/cli.js"));
     },
     publishConfig: {
       access: "public",
-      // 须与 @semantic-release/npm OFFICIAL_REGISTRY 一致（含尾斜杠），否则 OIDC 鉴权被跳过
+      // 须与 npm publishConfig.registry 一致（含尾斜杠），否则 OIDC 鉴权被跳过
       registry: "https://registry.npmjs.org/",
     },
   };
