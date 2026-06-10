@@ -3,6 +3,7 @@ import starlight from "@astrojs/starlight";
 import react from "@astrojs/react";
 import tailwindcss from "@tailwindcss/vite";
 import { paraglideVitePlugin } from "@inlang/paraglide-js";
+import mermaid from "astro-mermaid";
 
 import { starlightSidebar } from "./src/lib/sidebar.ts";
 import { docRedirects } from "./src/lib/doc-redirects.ts";
@@ -21,6 +22,10 @@ export default defineConfig({
     ],
   },
   integrations: [
+    mermaid({
+      autoTheme: true,
+      enableLog: false,
+    }),
     starlight({
       title: "Free Anima",
       description: "A runtime for digital humans — not a metaphor",
