@@ -2,7 +2,7 @@ import type { PgTestContext } from "./pg-test.ts";
 import { flushCompressionSummaries } from "@freeanima/engine-conversation";
 import { createConversationService } from "@freeanima/engine-conversation";
 import { createServiceKernel } from "@freeanima/service-bootstrap";
-import { AnimaService, initServiceContext } from "@freeanima/service";
+import { AnimaService, initServiceContext, wireServicePorts } from "@freeanima/service";
 import { getAcpManager } from "@freeanima/capabilities-acp";
 import { MaskRegistry } from "../../capabilities/mask/src/registry.ts";
 import { registerServiceTools, resetRegisterServiceToolsForTest } from "@freeanima/service";
@@ -37,6 +37,7 @@ async function flushActiveCompressionSummaries(): Promise<void> {
 /** Standard integration-test ServiceContext (builtins / AnimaService / WebUI handler) */
 export function wireIntegrationServiceContext(pg: PgTestContext): void {
   bindHomeChannelConfig(pg.config);
+  wireServicePorts();
   const kernel = createServiceKernel(pg.config);
   const conversation = createConversationService(pg.engine.repos, pg.engine.catalog.toolSets);
   const service = new AnimaService({ kernel, conversation });
