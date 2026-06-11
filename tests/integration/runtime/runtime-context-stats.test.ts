@@ -7,6 +7,13 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 import { getTestEngine, testConv } from "../../helpers/pg-test.ts";
+import { FALLBACK_TOKENIZER_REPO } from "@freeanima/engine-tokenizer";
+import {
+  bindModelToFallbackForTest,
+  ensureFallbackTokenizer,
+  resetTokenizerForTest,
+  setTokenizerEncodeForTest,
+} from "@freeanima/engine-tokenizer/testing";
 
 describePg("runtime context stats", () => {
   const prev = process.env.FREEANIMA_HOME;
@@ -21,9 +28,18 @@ compression:
   enabled: true
 `,
     );
+    setTokenizerEncodeForTest(FALLBACK_TOKENIZER_REPO, (text: string) => {
+      const len = text.trim().length;
+      if (!len) return [];
+      const n = Math.max(1, Math.ceil(len / 3.5));
+      return Array.from({ length: n }, (_, i) => i + 1);
+    });
+    await ensureFallbackTokenizer();
+    bindModelToFallbackForTest("m");
   });
 
   afterEach(async () => {
+    resetTokenizerForTest();
     await restoreIntegrationHome(prev);
   });
 
