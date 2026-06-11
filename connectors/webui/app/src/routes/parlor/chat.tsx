@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FridgeMagnetInjectPreview } from "@/components/FridgeMagnetInjectPreview.tsx";
+import { AcpProgressDock } from "@/components/AcpProgressDock.tsx";
+import { useAcpProgressDock } from "@/hooks/useAcpProgressDock.ts";
 import { m } from "@/lib/i18n.ts";
 import { getFridgeMagnets, listSessionCommands } from "@/lib/api.ts";
 import { useChatStore } from "@/stores/chat.ts";
@@ -42,6 +44,15 @@ function ChatPage() {
   const display = useSessionsStore((s) => s.display);
   const appendItem = useSessionsStore((s) => s.appendItem);
   const refreshMessages = useSessionsStore((s) => s.refreshMessages);
+  const patchProgressLine = useSessionsStore((s) => s.patchProgressLine);
+
+  const acpDock = useAcpProgressDock(currentId, {
+    patchProgress: patchProgressLine,
+    onDecision: async (sid) => {
+      const baseline = useSessionsStore.getState().display.length;
+      await refreshMessages(sid, baseline);
+    },
+  });
 
   const renderMd = useChatStore((s) => s.renderMd);
   const streaming = useChatStore((s) => s.streaming);
@@ -268,6 +279,11 @@ function ChatPage() {
 
   return (
     <div className="h-full flex flex-col">
+      {acpDock ? (
+        <div className="shrink-0 px-4 pt-3">
+          <AcpProgressDock dock={acpDock} />
+        </div>
+      ) : null}
       <div ref={msgAreaRef} className="flex-1 overflow-y-auto p-4 space-y-4">
         {!currentId ? (
           <div className="flex items-center justify-center h-full text-base-content/40 text-sm">

@@ -40,6 +40,9 @@ function mockSessionStore(overrides: Partial<SessionStorePort>): SessionStorePor
       throw new Error("not implemented");
     },
     async updateMessageContent() {},
+    async getMessageContentById() {
+      return null;
+    },
     async nextMessagePos() {
       return 1;
     },

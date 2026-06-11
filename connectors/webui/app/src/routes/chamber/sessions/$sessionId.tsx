@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { SessionMessagePanel } from "@/components/chamber/SessionMessagePanel.tsx";
+import { AcpProgressDock } from "@/components/AcpProgressDock.tsx";
+import { useAcpProgressDock } from "@/hooks/useAcpProgressDock.ts";
 import { m } from "@/lib/i18n.ts";
 import { useChamberSessionsStore } from "@/stores/chamber-sessions.ts";
 
@@ -23,6 +25,12 @@ function SessionDetailPage() {
   const { sessionId } = Route.useParams();
   const store = useChamberSessionsStore();
   const session = store.findSession(sessionId);
+
+  const acpDock = useAcpProgressDock(sessionId, {
+    onDecision: async (sid) => {
+      await useChamberSessionsStore.getState().selectSession(sid, store.currentPage());
+    },
+  });
 
   useEffect(() => {
     const state = useChamberSessionsStore.getState();
@@ -54,6 +62,11 @@ function SessionDetailPage() {
 
       <div className="card bg-base-200">
         <div className="card-body">
+          {acpDock ? (
+            <div className="mb-3">
+              <AcpProgressDock dock={acpDock} />
+            </div>
+          ) : null}
           <SessionMessagePanel
             items={store.display}
             total={store.total}

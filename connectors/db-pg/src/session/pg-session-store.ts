@@ -12,6 +12,7 @@ export class PgSessionStore implements SessionStorePort {
   updateTodos = sessionRepo.updateTodos;
   appendMessage = messageRepo.appendMessage;
   appendMessageReturningId = messageRepo.appendMessageReturningId;
+  getMessageContentById = messageRepo.getMessageContentById;
   updateMessageContent = messageRepo.updateMessageContent;
   nextMessagePos = messageRepo.nextMessagePos;
   truncateMessagesAfter = messageRepo.truncateMessagesAfter;

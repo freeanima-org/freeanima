@@ -15,7 +15,9 @@ export type RuntimeService = AnimaService & {
   runCronJobNow(id: string): any;
   listSessions(platform?: string | null): Promise<any>;
   createSession(platform: string): any;
-  getSessionInfo(sessionId: string, platform: string): Promise<any>;
+  getSessionInfo(sessionId: string, platform?: string): Promise<any>;
+  getSessionAcpDock(sessionId: string, platform?: string): Promise<any>;
+  watchSession(sessionId: string, cb: () => void): () => void;
   getMessages(sessionId: string, platform: string, opts?: { offset?: number; limit?: number }): any;
   setSessionTitle(sessionId: string, title: string, platform: string): Promise<any>;
   getStatus(): Record<string, unknown>;
