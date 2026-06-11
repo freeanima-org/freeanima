@@ -50,7 +50,6 @@ jobs:
           label: code-coverage/bun
   blackbox-dispatch:
     name: Blackbox dispatch
-    needs: [quality]
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
