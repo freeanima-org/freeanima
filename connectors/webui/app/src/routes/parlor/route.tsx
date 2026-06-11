@@ -70,7 +70,7 @@ function ParlorLayout() {
   }, [search.session, currentId, selectSession]);
 
   useEffect(() => {
-    const close = () => setContextMenu((m) => ({ ...m, visible: false }));
+    const close = () => setContextMenu((menu) => ({ ...menu, visible: false }));
     document.addEventListener("click", close);
     return () => document.removeEventListener("click", close);
   }, []);
@@ -89,7 +89,7 @@ function ParlorLayout() {
     const s = sessions.find((x) => x.id === contextMenu.sessionId);
     setRenameText((s && s.title) || "");
     setShowRenameDialog(true);
-    setContextMenu((m) => ({ ...m, visible: false }));
+    setContextMenu((menu) => ({ ...menu, visible: false }));
     requestAnimationFrame(() => renameInputRef.current?.focus());
   };
 
