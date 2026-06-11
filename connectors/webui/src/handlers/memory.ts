@@ -19,7 +19,6 @@ export function createMemoryHandlers(service: RuntimeService) {
       return service.memorySearch({
         query: parsed.query,
         limit: parsed.limit,
-        session: parsed.session,
       });
     },
     countSemanticMemory: async () => {

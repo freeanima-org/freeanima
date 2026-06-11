@@ -152,6 +152,11 @@ const en: Record<string, string> = {
   webui_chamber_memory_type_session: "Session messages",
   webui_chamber_memory_type_limbic: "Limbic memory",
   webui_chamber_memory_type_autobio: "Autobiographical",
+  webui_chamber_memory_query_required: "Search term (required)",
+  webui_chamber_memory_session_filter_hint:
+    "Filters session messages only; semantic, limbic, and autobiographical sources are unaffected.",
+  webui_chamber_memory_quick_links: "Browse",
+  webui_chamber_memory_type_filter_all: "All",
   webui_chamber_semantic_desc: "Browse PG semantic_memory with FTS search and filters.",
   webui_chamber_semantic_search_fts: "Search term (optional, FTS)",
   webui_chamber_semantic_source_session: "Source session (optional)",
@@ -546,6 +551,11 @@ const zh: Record<string, string> = {
   webui_chamber_memory_type_session: "会话消息",
   webui_chamber_memory_type_limbic: "感性记忆",
   webui_chamber_memory_type_autobio: "自传体",
+  webui_chamber_memory_query_required: "搜索词（必填）",
+  webui_chamber_memory_session_filter_hint:
+    "仅过滤会话消息源；语义、感性、自传体记忆不受此过滤影响。",
+  webui_chamber_memory_quick_links: "浏览",
+  webui_chamber_memory_type_filter_all: "全部",
   webui_chamber_semantic_desc: "浏览 PG semantic_memory 表，支持 FTS 搜索与过滤。",
   webui_chamber_semantic_search_fts: "搜索词（可选，FTS）",
   webui_chamber_semantic_source_session: "来源 session（可选）",
