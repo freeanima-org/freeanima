@@ -2,7 +2,7 @@ import { createInsertSchema, createSelectSchema } from "drizzle-orm/zod";
 import { z } from "zod";
 
 import {
-  acpSessionsSchema,
+  acpTasksSchema,
   awaitingClarifySchema,
   compressionJsonSchema,
   messagePayloadSchema,
@@ -28,7 +28,7 @@ const sessionJsonbRefine = {
   compression: compressionJsonSchema.nullable(),
   todos: sessionTodoStoreSchema,
   awaitingClarify: awaitingClarifySchema.nullable(),
-  acpSessions: acpSessionsSchema.nullable(),
+  acpTasks: acpTasksSchema.nullable(),
   tools: sessionToolsSchema,
   loadedTools: sessionLoadedToolsSchema,
   functions: sessionFunctionsSchema,

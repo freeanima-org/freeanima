@@ -6,11 +6,15 @@ export {
 } from "./session-meta-jsonb.ts";
 export { compressionJsonSchema, type CompressionJson } from "./compression.ts";
 export {
-  acpSessionsSchema,
+  acpTasksSchema,
+  acpTaskEntrySchema,
+  acpTaskStatusSchema,
   sessionFunctionsSchema,
   sessionLoadedToolsSchema,
   sessionToolsSchema,
-  type AcpSessionsJson,
+  type AcpTasksJson,
+  type AcpTaskEntryJson,
+  type AcpTaskStatusJson,
   type SessionFunctionsJson,
   type SessionLoadedToolsJson,
   type SessionToolsJson,

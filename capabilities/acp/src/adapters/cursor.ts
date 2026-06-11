@@ -51,6 +51,11 @@ export const cursorAcpAdapter: AcpAgentAdapter = {
   },
 };
 
+async function notifyDecisionNeeded(ctx: AcpServerRequestContext | undefined): Promise<void> {
+  if (!ctx?.onDecisionNeeded || !ctx.capture.pending.length) return;
+  await ctx.onDecisionNeeded([...ctx.capture.pending], [...ctx.capture.notes]);
+}
+
 function handleAskQuestion(
   params: Record<string, unknown>,
   ctx?: AcpServerRequestContext,
@@ -66,6 +71,7 @@ function handleAskQuestion(
     ctx.capture.notes.push(
       `Cursor asked ${questions.length} question(s) and paused awaiting a decision. Answer autonomously or call clarify to ask your partner, then continue via acp_cursor (continue_session=true).`,
     );
+    void notifyDecisionNeeded(ctx);
   }
 
   return { outcome: { outcome: "skipped", reason: "anima:awaiting_decision" } };
@@ -84,6 +90,7 @@ function handleCreatePlan(
     ctx.capture.notes.push(
       "Cursor submitted a plan awaiting approval. Review pending_plan in output, approve autonomously or verify via clarify, then continue with continue_session=true.",
     );
+    void notifyDecisionNeeded(ctx);
   }
 
   return { outcome: { outcome: "rejected", reason: "anima:awaiting_review" } };

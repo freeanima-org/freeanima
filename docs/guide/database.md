@@ -57,7 +57,7 @@ New PG domain (memory / cron / task): `engine-db/schema/{domain}` → add port i
 | `compression`      | JSONB         | `{ l2, l3, summary?, summary_at? }` — **compression boundaries** (see [`compression.md`](compression.md)) |
 | `todos`            | JSONB         | `{ items, next_id }`                                                                                      |
 | `awaiting_clarify` | JSONB         | clarify pause state                                                                                       |
-| `acp_sessions`     | JSONB         | ACP session uuid mapping                                                                                  |
+| `acp_tasks`        | JSONB         | ACP async task state per session (keyed by ACP session id)                                                |
 | `tools`            | JSONB         | OpenAI tools snapshot                                                                                     |
 | `functions`        | JSONB         | string[]                                                                                                  |
 | `debug`            | BOOLEAN       |                                                                                                           |

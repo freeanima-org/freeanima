@@ -1,9 +1,21 @@
 export {
-  bindAcpSession,
+  acpTasksNowIso,
+  bindAcpTaskRunning,
+  findUnhandledAcpTasks,
   getBoundAcpSession,
-  readAcpSessions,
+  patchAcpTaskEntry,
+  readAcpTasks,
+  readAcpTasksHandledAt,
+  removeAcpTaskEntry,
+  setAcpTasksHandledAt,
   unbindAcpSession,
-} from "./anima-binding.ts";
+  updateAcpTaskStatus,
+  upsertAcpTaskEntry,
+  type AcpTaskEntry,
+  type AcpTaskStatus,
+  type AcpTasksMeta,
+  type UnhandledAcpTask,
+} from "./acp-tasks.ts";
 export {
   AcpAsyncTaskStore,
   createTaskId,
@@ -19,6 +31,7 @@ export { AcpManager, getAcpManager, registerAcpTools } from "./manager.ts";
 export type {
   AcpProgressDeliveryPort,
   AcpProgressDeliveryResult,
+  AcpProgressDeliverOptions,
 } from "./ports/progress-delivery.ts";
 export {
   formatAcpPromptResult,

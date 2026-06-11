@@ -77,6 +77,63 @@ export async function appendMessage(
   return rowToMessage(rows[0]!);
 }
 
+export async function appendMessageReturningId(
+  sessionId: string,
+  msg: SessionMessage,
+): Promise<{ messageId: string }> {
+  const out: SessionMessage = { ...msg };
+  if (out.pos === undefined && out.role !== "session_meta") {
+    out.pos = await nextMessagePos(sessionId);
+  }
+  const db = getDb();
+  const insert = messageToInsert(sessionId, out);
+  const ftsSegmented = await resolveFtsSegmentedForWrite(extractIndexableContent(insert.payload));
+  const inserted = await db
+    .insert(messages)
+    .values({ ...insert, ftsSegmented })
+    .onConflictDoNothing({ target: [messages.sessionId, messages.pos] })
+    .returning();
+  if (inserted.length) {
+    return { messageId: inserted[0]!.id };
+  }
+
+  const rows = await db
+    .select({ id: messages.id })
+    .from(messages)
+    .where(and(eq(messages.sessionId, sessionId), eq(messages.pos, insert.pos)))
+    .limit(1);
+  if (!rows.length) {
+    throw new Error(`Row not found after messages write: session=${sessionId} pos=${insert.pos}`);
+  }
+  return { messageId: rows[0]!.id };
+}
+
+export async function updateMessageContent(
+  sessionId: string,
+  messageId: string,
+  content: string,
+): Promise<void> {
+  const db = getDb();
+  const rows = await db
+    .select({ id: messages.id, payload: messages.payload })
+    .from(messages)
+    .where(and(eq(messages.sessionId, sessionId), eq(messages.id, messageId)))
+    .limit(1);
+  if (!rows.length) return;
+
+  const payload = rows[0]!.payload;
+  if (payload.role !== "assistant" && payload.role !== "user") return;
+
+  const ftsSegmented = await resolveFtsSegmentedForWrite(content.trim());
+  await db
+    .update(messages)
+    .set({
+      payload: { ...payload, content },
+      ftsSegmented,
+    })
+    .where(eq(messages.id, messageId));
+}
+
 export async function nextMessagePos(sessionId: string): Promise<number> {
   const db = getDb();
   const rows = await db
