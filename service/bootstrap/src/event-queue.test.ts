@@ -1,6 +1,5 @@
 import { describe, expect, it, afterEach } from "bun:test";
 import { RedisClient } from "bun";
-import { SqliteEventQueue } from "@freeanima/connectors-eventbus-sqlite";
 import { RedisEventQueue } from "@freeanima/connectors-eventbus-redis";
 import { resetConfigForTest, setConfigForTest } from "@freeanima/service-config";
 import {
@@ -29,21 +28,11 @@ describe("createEventQueue", () => {
     resetEventQueueOverridesForTest();
   });
 
-  it("returns SqliteEventQueue by default", () => {
-    setConfigForTest({ llm: minimalLlm });
-    setEventQueueOverridesForTest({ sqliteDbPath: ":memory:" });
-    expect(createEventQueue()).toBeInstanceOf(SqliteEventQueue);
-  });
-
-  it("returns RedisEventQueue when eventbus.backend=redis", () => {
+  it("returns RedisEventQueue by default", () => {
     const mockRedis = {
       close: () => {},
     } as unknown as RedisClient;
-    setConfigForTest({
-      llm: minimalLlm,
-      eventbus: { backend: "redis", key_prefix: "test:events" },
-      redis: { url: "redis://127.0.0.1:6379/0" },
-    });
+    setConfigForTest({ llm: minimalLlm });
     setEventQueueOverridesForTest({ redisClient: mockRedis });
     expect(createEventQueue()).toBeInstanceOf(RedisEventQueue);
   });

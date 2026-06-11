@@ -125,7 +125,7 @@ const redisConfigSchema = z
 
 export const eventbusConfigSchema = z
   .object({
-    backend: z.enum(["sqlite", "redis"]).optional(),
+    backend: z.enum(["redis"]).optional(),
     key_prefix: z.string().min(1).optional(),
   })
   .optional();

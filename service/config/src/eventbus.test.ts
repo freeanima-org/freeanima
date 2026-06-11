@@ -22,13 +22,13 @@ describe("eventbus config", () => {
     clearConfigCache();
   });
 
-  it("eventbusConfigSchema accepts sqlite / redis", () => {
-    expect(eventbusConfigSchema.safeParse({ backend: "sqlite" }).success).toBe(true);
+  it("eventbusConfigSchema accepts redis only", () => {
     expect(eventbusConfigSchema.safeParse({ backend: "redis" }).success).toBe(true);
+    expect(eventbusConfigSchema.safeParse({ backend: "sqlite" }).success).toBe(false);
     expect(eventbusConfigSchema.safeParse({ backend: "kafka" }).success).toBe(false);
   });
 
-  it("default backend is sqlite", () => {
+  it("default backend is redis", () => {
     writeFileSync(
       join(home, "config.yaml"),
       stringifyYaml({
@@ -48,7 +48,7 @@ describe("eventbus config", () => {
       }),
     );
     clearConfigCache();
-    expect(getEventbusBackend()).toBe("sqlite");
+    expect(getEventbusBackend()).toBe("redis");
     expect(getEventbusKeyPrefix()).toBe("anima:events");
   });
 

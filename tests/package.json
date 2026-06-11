@@ -3,7 +3,6 @@
   "private": true,
   "type": "module",
   "devDependencies": {
-    "@freeanima/connectors-eventbus-sqlite": "workspace:*",
     "@freeanima/connectors-webui": "workspace:*",
     "@freeanima/engine": "workspace:*",
     "@freeanima/engine-compress": "workspace:*",
