@@ -8,11 +8,11 @@ The root `tests/` directory is workspace member `@freeanima/integration-tests`, 
 
 ## Layers
 
-| Layer         | Location                                                                | External I/O                                                |
-| ------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------- |
-| Unit          | `{pkg}/src/**/*.test.ts`                                                | mock + in-memory only (see AGENTS.md tier-1/2 mock exports) |
-| Integration   | `tests/integration/`                                                    | PG, Redis, temp `FREEANIMA_HOME`, `beginIntegrationCase`    |
-| Black-box E2E | [freeanima-testing](https://github.com/freeanima-org/freeanima-testing) | Docker PG/Redis + source start + Playwright                 |
+| Layer         | Location                                                                | External I/O                                                                        |
+| ------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Unit          | `{pkg}/src/**/*.test.ts`                                                | mock + in-memory only (see [`.agent/rules/testing.md`](../.agent/rules/testing.md)) |
+| Integration   | `tests/integration/`                                                    | PG, Redis, temp `FREEANIMA_HOME`, `beginIntegrationCase`                            |
+| Black-box E2E | [freeanima-testing](https://github.com/freeanima-org/freeanima-testing) | Docker PG/Redis + source start + Playwright                                         |
 
 ## Layout
 

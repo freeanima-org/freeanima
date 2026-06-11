@@ -39,7 +39,7 @@ msgstr "# docs/"
 #. type: Plain text
 #: docs/README.md:8
 msgid ""
-"See [AGENTS.md](../AGENTS.md#documentation-map) for the documentation index "
+"See [AGENTS.md](../AGENTS.md#doc-map) for the documentation index "
 "and maintenance conventions. Actionable tasks and discussion items live in "
 "[GitHub Issues](https://github.com/freeanima-org/freeanima/issues)."
 msgstr ""

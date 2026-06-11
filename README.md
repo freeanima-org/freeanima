@@ -55,7 +55,7 @@ Full blueprint: [`docs/concepts/architecture.md`](docs/concepts/architecture.md)
 | **Docs site**         | [freeanima.com/docs](https://freeanima.com/docs/) · [中文文档](https://freeanima.com/zh-cn/docs/) |
 | **Repo index**        | [`docs/README.md`](docs/README.md)                                                                |
 | Deployers / visitors  | Quick start below + [`docs/guide/security.md`](docs/guide/security.md)                            |
-| AI agents             | [`AGENTS.md`](AGENTS.md)                                                                          |
+| AI agents             | [`AGENTS.md`](AGENTS.md) · [`.agent/rules/`](.agent/rules/README.md)                              |
 | Architecture          | [`docs/concepts/architecture.md`](docs/concepts/architecture.md)                                  |
 | Digital-life identity | [`docs/concepts/identity.md`](docs/concepts/identity.md)                                          |
 

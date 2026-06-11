@@ -4,7 +4,7 @@ title: Documentation Index
 
 # docs/
 
-See [AGENTS.md](../AGENTS.md#documentation-map) for the documentation index and maintenance conventions. Actionable tasks and discussion items live in [GitHub Issues](https://github.com/freeanima-org/freeanima/issues).
+See [AGENTS.md](../AGENTS.md#doc-map) for the documentation index and maintenance conventions. Agent implementation rules: [`.agent/rules/`](../.agent/rules/README.md). Actionable tasks and discussion items live in [GitHub Issues](https://github.com/freeanima-org/freeanima/issues).
 
 ## Guide — 使用与维护
 
