@@ -1,8 +1,10 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { getTokenizerBindingSnapshot } from "@freeanima/engine-tokenizer";
 import {
   getDefaultProviderBaseUrl,
   getProfileHopModel,
+  isEmbeddingEnabled,
   loadConfig,
   sanitizeConfigForApi,
   PATHS,
@@ -132,6 +134,19 @@ export async function buildStatus(
     l2IndexRows = 0;
   }
 
+  const chatModel = getProfileHopModel(cfg, PROFILE_CHAT);
+  const tokenizerStatus: ServiceSnapshot["tokenizer"] = {};
+  const chatBinding = getTokenizerBindingSnapshot(chatModel);
+  if (chatBinding) tokenizerStatus.chat = chatBinding;
+
+  if (isEmbeddingEnabled()) {
+    const embeddingModel = cfg.embedding?.model?.trim();
+    if (embeddingModel) {
+      const embeddingBinding = getTokenizerBindingSnapshot(embeddingModel);
+      if (embeddingBinding) tokenizerStatus.embedding = embeddingBinding;
+    }
+  }
+
   const status: ServiceSnapshot = {
     status: "running",
     pid: process.pid,
@@ -139,9 +154,10 @@ export async function buildStatus(
     uptime_seconds: uptime,
     start_time_iso: startTimeIso(startTime),
     config: {
-      model: getProfileHopModel(cfg, PROFILE_CHAT),
+      model: chatModel,
       api_base: getDefaultProviderBaseUrl(cfg),
     },
+    tokenizer: tokenizerStatus.chat || tokenizerStatus.embedding ? tokenizerStatus : undefined,
     sessions: { total: sessionCount, by_platform: byPlatform },
     tools: toolCount,
     cron_jobs: cronJobCount,

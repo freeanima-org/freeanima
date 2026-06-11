@@ -6,12 +6,14 @@ import {
   bindModelToFallbackForTest,
   countTokens,
   ensureFallbackTokenizer,
+  ensureTokenizer,
   getActiveTokenizerRepo,
   isUsingFallbackTokenizer,
   resetTokenizerForTest,
   setTokenizerEncodeForTest,
   splitTextByTokenLimit,
 } from "./store.ts";
+import { NATIVE_TIKTOKEN_REPO } from "./native-tiktoken.ts";
 
 describe("toPascalCaseModel", () => {
   it("deepseek-v4-flash → DeepseekV4Flash", () => {
@@ -56,6 +58,13 @@ describe("countTokens with test encode", () => {
     expect(isUsingFallbackTokenizer("unknown-model-xyz")).toBe(true);
     expect(getActiveTokenizerRepo("unknown-model-xyz")).toBe(FALLBACK_TOKENIZER_REPO);
     expect(countTokens("abcd", "unknown-model-xyz")).toBe(1);
+  });
+
+  it("binds gpt models via tiktoken without fallback", async () => {
+    await ensureTokenizer("gpt-4o");
+    expect(isUsingFallbackTokenizer("gpt-4o")).toBe(false);
+    expect(getActiveTokenizerRepo("gpt-4o")).toBe(NATIVE_TIKTOKEN_REPO);
+    expect(countTokens("hello world", "gpt-4o")).toBeGreaterThan(0);
   });
 
   it("splitTextByTokenLimit respects max tokens", async () => {
