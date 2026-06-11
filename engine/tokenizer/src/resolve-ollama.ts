@@ -16,11 +16,19 @@ type OllamaShowResponse = {
   model_info?: Record<string, unknown>;
 };
 
+function stripTrailingSlashes(value: string): string {
+  let end = value.length;
+  while (end > 0 && value[end - 1] === "/") end -= 1;
+  return end === value.length ? value : value.slice(0, end);
+}
+
 /** OpenAI-compatible base URL → Ollama API root (strip /v1). */
 export function ollamaApiBaseFromOpenAiUrl(baseUrl: string): string | null {
-  const trimmed = baseUrl.trim().replace(/\/+$/, "");
+  const trimmed = stripTrailingSlashes(baseUrl.trim());
   if (!trimmed) return null;
-  if (/\/v1$/i.test(trimmed)) return trimmed.replace(/\/v1$/i, "");
+  if (trimmed.endsWith("/v1") || trimmed.endsWith("/V1")) {
+    return trimmed.slice(0, -3);
+  }
   if (trimmed.includes("11434")) return trimmed;
   return null;
 }

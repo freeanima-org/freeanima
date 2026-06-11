@@ -1,4 +1,4 @@
-import { describe, it, expect, mock, beforeEach } from "bun:test";
+import { describe, it, expect, mock, beforeEach, afterAll } from "bun:test";
 import type { SessionMessage, SessionMetaMessage } from "@freeanima/engine-db/domain";
 import { nullPgRepositories } from "@freeanima/engine-repos";
 import * as compressActual from "@freeanima/engine-compress";
@@ -30,6 +30,10 @@ const baseMeta: SessionMetaMessage = {
 };
 
 describe("generateSessionHandoffSummary", () => {
+  afterAll(() => {
+    mock.restore();
+  });
+
   beforeEach(() => {
     loadMock.mockReset();
     loadSessionMetaMock.mockReset();
