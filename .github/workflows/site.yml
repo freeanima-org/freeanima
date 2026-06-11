@@ -31,10 +31,21 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
-      - run: sudo apt-get update && sudo apt-get install -y po4a gettext
-      - run: bun install
+      - uses: actions/checkout@v6
+      - name: Cache apt packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            /var/cache/apt
+            /var/lib/apt/lists
+          key: apt-po4a-${{ runner.os }}-${{ hashFiles('.github/workflows/site.yml') }}
+          restore-keys: |
+            apt-po4a-${{ runner.os }}-
+      - name: Install po4a
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y po4a gettext
+      - uses: ./.github/actions/setup-bun
       - run: bun run i18n:po4a
       - run: bun scripts/check-paraglide-messages.ts
       - run: bun scripts/check-po-health.ts
