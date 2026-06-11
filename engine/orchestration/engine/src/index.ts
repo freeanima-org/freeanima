@@ -8,9 +8,11 @@ export {
   type EngineLlm,
 } from "./engine.ts";
 export {
-  registerRuntimeConfig,
+  Config,
+  bindActiveConfig,
+  getActiveConfig,
+  resetActiveConfigForTest,
   registerRuntimeLogger,
-  resetRuntimeConfigForTest,
   resetRuntimeLoggerForTest,
   type AnimaConfig,
 } from "@freeanima/engine-config";

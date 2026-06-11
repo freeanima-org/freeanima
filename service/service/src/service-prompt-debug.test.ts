@@ -14,7 +14,7 @@ import {
 import { MaskRegistry } from "@freeanima/capabilities-mask";
 import { createEngineCatalog } from "@freeanima/engine";
 import type { Engine } from "@freeanima/engine";
-import type { AnimaConfig } from "@freeanima/engine-config";
+import { Config } from "@freeanima/engine-config";
 import { createTestLogger } from "@freeanima/kernel-logging/testing";
 import { nullPgRepositories } from "@freeanima/engine-repos";
 import { registerServiceTools, resetRegisterServiceToolsForTest } from "./register.ts";
@@ -61,7 +61,7 @@ const mockConv = {
   buildRuntimeMessages: mock(async () => [[], null] as const),
 };
 
-const minimalCfg = {
+const minimalConfig = Config.fromSnapshot({
   llm: {
     default_profile: "chat",
     providers: {
@@ -73,7 +73,7 @@ const minimalCfg = {
     },
     profiles: { chat: { chain: [{ provider: "main", model: "gpt-4" }] } },
   },
-} as AnimaConfig;
+});
 
 function seedContext(catalog: ReturnType<typeof createEngineCatalog>) {
   initServiceContext({
@@ -83,7 +83,7 @@ function seedContext(catalog: ReturnType<typeof createEngineCatalog>) {
     engine: {
       catalog,
       repos: nullPgRepositories,
-      config: minimalCfg,
+      config: minimalConfig,
       logger: createTestLogger(),
     } as Engine,
     mcp: {} as never,
@@ -110,7 +110,11 @@ describe("service-prompt-debug", () => {
     await ensureFallbackTokenizer();
     bindModelToFallbackForTest("");
     catalog = createEngineCatalog();
-    registerServiceTools({ toolSets: catalog.toolSets, skills: catalog.skills });
+    registerServiceTools({
+      toolSets: catalog.toolSets,
+      skills: catalog.skills,
+      config: minimalConfig,
+    });
     registerSemanticMemoryStore(emptySemanticStore);
     seedContext(catalog);
     mockConv.sessionExists.mockClear();

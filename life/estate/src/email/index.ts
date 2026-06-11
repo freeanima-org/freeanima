@@ -1,4 +1,6 @@
 export {
+  bindEmailAccountsConfig,
+  resetEmailAccountsConfigForTest,
   deleteEmailAccount,
   editEmailAccount,
   getDefaultSender,

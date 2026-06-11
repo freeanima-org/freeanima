@@ -1,9 +1,11 @@
-import { afterEach, beforeEach, describe, expect, it, spyOn } from "bun:test";
-import * as serviceConfig from "@freeanima/service-config";
+import { afterEach, describe, expect, it } from "bun:test";
+import { Config } from "@freeanima/service-config";
 import { parseYaml } from "@freeanima/service-config";
 import { animaConfigSchema, type AnimaConfig } from "@freeanima/service-config/schemas/config";
 import { MINIMAL_LLM_YAML } from "@freeanima/service-config/test-helpers/minimal-llm-config";
 import {
+  bindEmailAccountsConfig,
+  resetEmailAccountsConfigForTest,
   deleteEmailAccount,
   editEmailAccount,
   getDefaultSender,
@@ -32,42 +34,25 @@ function emptyConfig(): AnimaConfig {
   return parsed.data;
 }
 
+function withEmailAccounts(accounts: EmailAccount[]): Config {
+  return Config.fromSnapshot({ ...emptyConfig(), email: { accounts } });
+}
+
 describe("email accounts", () => {
-  let config: AnimaConfig;
-  let patchSpy: ReturnType<typeof spyOn>;
-
-  beforeEach(() => {
-    config = emptyConfig();
-    serviceConfig.setConfigForTest(config);
-    patchSpy = spyOn(serviceConfig, "patchConfigSection").mockImplementation(
-      (section: string, patch: Record<string, unknown>) => {
-        const key = section as keyof AnimaConfig;
-        const existing = config[key];
-        const base =
-          typeof existing === "object" && existing !== null && !Array.isArray(existing)
-            ? (existing as Record<string, unknown>)
-            : {};
-        config = { ...config, [key]: { ...base, ...patch } } as AnimaConfig;
-        serviceConfig.setConfigForTest(config);
-      },
-    );
-  });
-
   afterEach(() => {
-    patchSpy.mockRestore();
-    serviceConfig.resetConfigForTest();
+    resetEmailAccountsConfigForTest();
   });
 
   it("listEmailAccounts returns password references", () => {
-    serviceConfig.patchConfigSection("email", { accounts: [sampleAccount] });
+    bindEmailAccountsConfig(withEmailAccounts([sampleAccount]));
     const accounts = listEmailAccounts();
     expect(accounts).toHaveLength(1);
     expect(accounts[0]?.password).toBe('credential("email/example", "password")');
   });
 
   it("editEmailAccount updates fields and handles default_sender exclusivity", () => {
-    serviceConfig.patchConfigSection("email", {
-      accounts: [
+    bindEmailAccountsConfig(
+      withEmailAccounts([
         sampleAccount,
         {
           ...sampleAccount,
@@ -76,8 +61,8 @@ describe("email accounts", () => {
           address: "backup@example.com",
           default_sender: false,
         },
-      ],
-    });
+      ]),
+    );
 
     editEmailAccount("backup-inbox", { default_sender: true });
     const accounts = listEmailAccounts();
@@ -88,25 +73,25 @@ describe("email accounts", () => {
   });
 
   it("deleteEmailAccount removes account", () => {
-    serviceConfig.patchConfigSection("email", { accounts: [sampleAccount] });
+    bindEmailAccountsConfig(withEmailAccounts([sampleAccount]));
     deleteEmailAccount("main-inbox");
     expect(listEmailAccounts()).toHaveLength(0);
   });
 
   it("getDefaultSender and resolveAccount", () => {
-    serviceConfig.patchConfigSection("email", { accounts: [sampleAccount] });
+    bindEmailAccountsConfig(withEmailAccounts([sampleAccount]));
     expect(getDefaultSender()?.id).toBe("main-inbox");
     expect(resolveAccount().id).toBe("main-inbox");
     expect(resolveAccount("main-inbox").address).toBe("you@example.com");
   });
 
   it("registerEmailAccount throws when pass entry is missing", async () => {
+    bindEmailAccountsConfig(withEmailAccounts([]));
     await expect(
       registerEmailAccount({
         ...sampleAccount,
-        id: "test-nonexistent-account-xyz",
-        password: 'credential("email/test-nonexistent-account-xyz", "password")',
+        password: 'credential("email/missing", "password")',
       }),
-    ).rejects.toThrow(/Email password could not be resolved/);
+    ).rejects.toThrow(/could not be resolved/);
   });
 });

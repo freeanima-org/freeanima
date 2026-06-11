@@ -28,7 +28,7 @@ function buildMessages(input: DeepSleepEngineInput): SessionMessage[] {
 
 async function runDeepSleepTurn(input: DeepSleepEngineInput): Promise<DeepSleepEngineResult> {
   const { conversation, engine: eng } = getServiceContext();
-  const model = getProfileHopModel(eng.config, PROFILE_REFLECT);
+  const model = getProfileHopModel(eng.config.data, PROFILE_REFLECT);
   const sleepMask = resolveSleepMask();
   const toolNames = filterToolNamesByMask(input.toolNames, sleepMask);
   const tools = eng.catalog.toolSets.openaiSchemasFromNames(toolNames);
@@ -44,7 +44,7 @@ async function runDeepSleepTurn(input: DeepSleepEngineInput): Promise<DeepSleepE
       for await (const ev of engine.runStream(messages, {
         model,
         tools,
-        config: eng.config,
+        config: eng.config.data,
         logger: eng.logger,
         llm: eng.llm,
         toolMask,

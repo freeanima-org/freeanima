@@ -1,7 +1,7 @@
-import { describe, it, expect, afterEach } from "bun:test";
+import { describe, it, expect } from "bun:test";
+import { Config } from "@freeanima/engine-config";
 import { parseYaml } from "@freeanima/service-config";
 import { animaConfigSchema } from "@freeanima/service-config/schemas/config";
-import { resetConfigForTest, setConfigForTest } from "@freeanima/service-config";
 import { MINIMAL_LLM_YAML } from "@freeanima/service-config/test-helpers/minimal-llm-config";
 import { sanitizeAcpConfig, shortSessionId, isAcpAgentEnabled } from "./status.ts";
 import { createTestAcpManager } from "./test-helpers/manager.ts";
@@ -55,12 +55,8 @@ describe("shortSessionId", () => {
 });
 
 describe("AcpManager.getStatus", () => {
-  afterEach(() => {
-    resetConfigForTest();
-  });
-
   it("returns config and not_started when not connected", () => {
-    setConfigForTest(
+    const config = Config.fromSnapshot(
       acpConfigYaml(
         [
           "acp_agents:",
@@ -72,7 +68,7 @@ describe("AcpManager.getStatus", () => {
         ].join("\n"),
       ),
     );
-    const { mgr } = createTestAcpManager();
+    const { mgr } = createTestAcpManager(config);
     mgr.registerTools();
     const status = mgr.getStatus();
 
@@ -86,24 +82,24 @@ describe("AcpManager.getStatus", () => {
   });
 
   it("startAll aggregates failures", async () => {
-    setConfigForTest(
+    const config = Config.fromSnapshot(
       acpConfigYaml(
         ["acp_agents:", "  cursor:", "    command: echo", "    args: [noop]"].join("\n"),
       ),
     );
-    const { mgr } = createTestAcpManager();
+    const { mgr } = createTestAcpManager(config);
     const result = await mgr.startAll();
     expect(result.ok).toBe(false);
     expect(result.error).toMatch(/cursor:/);
   });
 
   it("disabled agent shows disabled status", async () => {
-    setConfigForTest(
+    const config = Config.fromSnapshot(
       acpConfigYaml(
         ["acp_agents:", "  cursor:", "    command: echo", "    enabled: false"].join("\n"),
       ),
     );
-    const { mgr } = createTestAcpManager();
+    const { mgr } = createTestAcpManager(config);
     mgr.registerTools();
     const status = mgr.getStatus();
     expect(status.agents[0]?.status).toBe("disabled");

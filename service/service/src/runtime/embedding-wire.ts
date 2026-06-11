@@ -1,13 +1,14 @@
 import { createOpenAiEmbeddingClient } from "@freeanima/capabilities-provider-openai-compatible";
 import { registerEmbedTextFn, registerEmbedTextsFn } from "@freeanima/connectors-db-pg";
+import type { Config } from "@freeanima/engine-config";
 import { getResolvedEmbeddingConfig } from "@freeanima/service-config";
 import { logComponent } from "@freeanima/service-logging";
 
 const log = logComponent("embedding");
 
 /** Register OpenAI-compatible embedding client per config.embedding */
-export function wireEmbeddingRuntime(): void {
-  const cfg = getResolvedEmbeddingConfig();
+export function wireEmbeddingRuntime(config: Config): void {
+  const cfg = getResolvedEmbeddingConfig(config.data);
   if (!cfg) {
     registerEmbedTextFn(null);
     registerEmbedTextsFn(null);

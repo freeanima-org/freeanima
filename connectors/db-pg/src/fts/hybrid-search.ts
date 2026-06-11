@@ -1,5 +1,9 @@
 import type { MessageFtsHit, SemanticFtsHit } from "@freeanima/engine-repos";
-import { getFtsTrgmFallbackWhenHitsLt, getFtsTrgmMinSimilarity } from "@freeanima/service-config";
+import {
+  getActiveConfig,
+  getFtsTrgmFallbackWhenHitsLt,
+  getFtsTrgmMinSimilarity,
+} from "@freeanima/service-config";
 import { sql as drizzleSql } from "drizzle-orm";
 
 import { embedQueryText } from "../embedding/query.ts";
@@ -13,7 +17,7 @@ import { mapSemanticMemoryRow } from "../semantic-memory/mappers/semantic-mapper
 import { pgSemanticSourceSessionsFilter, pgSemanticTypeFilter } from "../utils/pg-sql.ts";
 
 function candidateLimit(requested: number, ftsCount: number): number {
-  const fallback = getFtsTrgmFallbackWhenHitsLt();
+  const fallback = getFtsTrgmFallbackWhenHitsLt(getActiveConfig().data);
   const base = Math.max(requested * 3, 20);
   if (fallback > 0 && ftsCount < fallback) {
     return Math.max(base, requested * 5);
@@ -124,7 +128,7 @@ export async function hybridCountSemanticMemory(
   const types = opts?.types?.filter(Boolean) ?? [];
   const status = opts?.status ?? "active";
   const sourceSessions = opts?.sourceSessions?.map((s) => s.trim()).filter(Boolean) ?? [];
-  const minSim = getFtsTrgmMinSimilarity();
+  const minSim = getFtsTrgmMinSimilarity(getActiveConfig().data);
   const queryEmbedding = await embedQueryText(q);
 
   const db = getDb();

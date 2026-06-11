@@ -3,6 +3,13 @@ export { expandConfigEnv } from "./env-expand.ts";
 export { parseYaml, stringifyYaml } from "./yaml.ts";
 export * from "./credential.ts";
 export * from "./config.ts";
+export { FileConfig } from "./file-config.ts";
+export {
+  Config,
+  bindActiveConfig,
+  getActiveConfig,
+  resetActiveConfigForTest,
+} from "@freeanima/engine-config";
 export * from "./database.ts";
 export * from "./redis.ts";
 export * from "./eventbus.ts";

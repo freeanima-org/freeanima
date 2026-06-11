@@ -1,9 +1,10 @@
+import { Config } from "@freeanima/engine-config";
 import { SkillRegistry } from "@freeanima/engine-skill";
 import { ToolSetRegistry } from "@freeanima/engine-tool";
 import { AcpManager } from "../manager.ts";
 
 /** For unit tests: AcpManager with isolated catalog */
-export function createTestAcpManager(): {
+export function createTestAcpManager(config: Config): {
   mgr: AcpManager;
   toolSets: ToolSetRegistry;
   skills: SkillRegistry;
@@ -11,6 +12,6 @@ export function createTestAcpManager(): {
   const toolSets = new ToolSetRegistry();
   const skills = new SkillRegistry();
   const mgr = new AcpManager();
-  mgr.wireRegistries({ toolSets, skills });
+  mgr.wireRegistries({ toolSets, skills, config });
   return { mgr, toolSets, skills };
 }

@@ -5,8 +5,10 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { spawnSync } from "node:child_process";
 
+import { Config } from "@freeanima/service-config";
 import { registerCoreTools } from "@freeanima/capabilities-tools";
-import { clearConfigCache } from "@freeanima/service-config";
+import { parseYaml } from "@freeanima/service-config";
+import { animaConfigSchema } from "@freeanima/service-config/schemas/config";
 
 const MIN_CONFIG = `
 llm:
@@ -33,7 +35,9 @@ describe("local tools", () => {
   const prevHome = process.env.FREEANIMA_HOME;
 
   beforeAll(() => {
-    registerCoreTools(tools);
+    const parsed = animaConfigSchema.safeParse(parseYaml(MIN_CONFIG));
+    if (!parsed.success) throw new Error(parsed.error.message);
+    registerCoreTools(tools, Config.fromSnapshot(parsed.data));
   });
 
   beforeEach(() => {
@@ -41,7 +45,6 @@ describe("local tools", () => {
     cwd = mkdtempSync(join(tmpdir(), "anima-cwd-"));
     process.env.FREEANIMA_HOME = home;
     writeFileSync(join(home, "config.yaml"), MIN_CONFIG, "utf-8");
-    clearConfigCache();
     process.chdir(cwd);
   });
 

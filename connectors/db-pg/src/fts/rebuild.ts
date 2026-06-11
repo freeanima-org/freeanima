@@ -1,6 +1,6 @@
 import { sql as drizzleSql, type SQL } from "drizzle-orm";
 
-import { isCjkJiebaEnabled, isEmbeddingEnabled } from "@freeanima/service-config";
+import { getActiveConfig, isCjkJiebaEnabled, isEmbeddingEnabled } from "@freeanima/service-config";
 import { logComponent } from "@freeanima/service-logging";
 
 import { EMBEDDING_QUEUE_FLUSH_THRESHOLD } from "../embedding/batch-pack.ts";
@@ -272,11 +272,11 @@ async function rebuildMessagesEmbeddings(opts: FtsRebuildOptions): Promise<numbe
 export async function rebuildAllFtsSegments(
   opts: FtsRebuildOptions = {},
 ): Promise<FtsRebuildResult> {
-  const useJieba = isCjkJiebaEnabled();
+  const useJieba = isCjkJiebaEnabled(getActiveConfig().data);
   const semantic_memory = await rebuildSemanticMemoryFtsSegmented(useJieba, opts);
   const messages = await rebuildMessagesFtsSegmented(useJieba, opts);
 
-  const embedding_enabled = isEmbeddingEnabled() && getEmbedTextFn() != null;
+  const embedding_enabled = isEmbeddingEnabled(getActiveConfig().data) && getEmbedTextFn() != null;
   let embeddings: Record<string, number> | undefined;
   if (embedding_enabled) {
     const smEmb = await rebuildSemanticMemoryEmbeddings(opts);

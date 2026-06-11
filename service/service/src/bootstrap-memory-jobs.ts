@@ -16,13 +16,13 @@ import {
   initDatabase,
   isPostgresPrimary,
 } from "@freeanima/connectors-db-pg";
-import { closeRedis, initRedis, isRedisConfigured } from "@freeanima/connectors-redis";
+import { closeRedis, initRedis } from "@freeanima/connectors-redis";
 import { runMigrations } from "@freeanima/engine-db";
 import type { PgRepositories } from "@freeanima/engine-repos";
 import {
+  FileConfig,
   getConfiguredDatabaseUrl,
   getConfiguredRedisUrl,
-  loadConfig,
   resolveLlmProviderApiKeys,
   validateConfigOnStartup,
 } from "@freeanima/service-config";
@@ -63,18 +63,21 @@ export async function bootstrapMemoryJobs(): Promise<MemoryJobsContext> {
 
   try {
     await validateConfigOnStartup();
+    const config = FileConfig.open();
+    config.update(await resolveLlmProviderApiKeys(config.data));
+
     wireEnginePorts();
     wireServicePorts();
-    wireEmbeddingRuntime();
+    wireEmbeddingRuntime(config);
 
     const catalog = createEngineCatalog();
     const masks = new MaskRegistry();
-    registerServiceTools({ toolSets: catalog.toolSets, skills: catalog.skills });
-    kernel = createServiceKernel();
+    registerServiceTools({ toolSets: catalog.toolSets, skills: catalog.skills, config });
+    kernel = createServiceKernel(config);
 
-    const dbUrl = await getConfiguredDatabaseUrl();
+    const dbUrl = await getConfiguredDatabaseUrl(config.data);
     initDatabase({ getDatabaseUrl: () => dbUrl });
-    initRedis({ getRedisUrl: getConfiguredRedisUrl });
+    initRedis({ getRedisUrl: () => getConfiguredRedisUrl(config.data) });
 
     if (!isPostgresPrimary()) {
       throw new Error("PostgreSQL unavailable; memory jobs require PG");
@@ -84,14 +87,13 @@ export async function bootstrapMemoryJobs(): Promise<MemoryJobsContext> {
     await runMigrations(db);
     const repos = createPgRepositories({ getDb });
 
-    const cfg = await resolveLlmProviderApiKeys(loadConfig());
-    initLlmRuntime(cfg);
+    initLlmRuntime(config.data);
     const { createServiceLogger } = await import("@freeanima/service-logging");
     const engine = createEngine({
       repos,
       llm: getLlmRuntime(),
       catalog,
-      config: cfg,
+      config,
       logger: createServiceLogger(),
     });
     const conversation = createConversationService(engine.repos, catalog.toolSets);
@@ -101,6 +103,7 @@ export async function bootstrapMemoryJobs(): Promise<MemoryJobsContext> {
       conversation,
       toolSets: catalog.toolSets,
       skills: catalog.skills,
+      config,
     });
 
     const service = new AnimaService({ kernel, conversation });
@@ -116,7 +119,7 @@ export async function bootstrapMemoryJobs(): Promise<MemoryJobsContext> {
     registerLightSleepWire();
     registerAutobiographyWire();
 
-    mcp = new MCPManager(catalog.toolSets);
+    mcp = new MCPManager(catalog.toolSets, config);
 
     initServiceContext({
       service,
@@ -130,16 +133,14 @@ export async function bootstrapMemoryJobs(): Promise<MemoryJobsContext> {
       port: 0,
     });
 
+    markStartupPhase(false);
+
     return {
       repos,
       selfContent,
-      cleanup: async () => {
-        kernel!.eventBus.stop();
-        if (mcp) await mcp.closeAll();
-        await acp.stopAll();
-        if (isPostgresPrimary()) await closeDb();
-        if (isRedisConfigured()) await closeRedis();
-        markStartupPhase(false);
+      async cleanup() {
+        await closeDb();
+        await closeRedis();
       },
     };
   } catch (err) {

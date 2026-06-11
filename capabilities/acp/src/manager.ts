@@ -4,7 +4,7 @@ import { registerSkillsFromDirectory } from "@freeanima/engine-skill";
 import { getToolSessionId } from "@freeanima/engine-tool";
 import type { ToolDef, ToolSetRegistry } from "@freeanima/engine-tool";
 import { acpToolsetId, toolError, toolResult } from "@freeanima/engine-tool";
-import { loadConfig } from "@freeanima/service-config";
+import type { Config } from "@freeanima/engine-config";
 import { logComponent } from "@freeanima/service-logging";
 
 import type { SessionConversationPort } from "@freeanima/engine-session-port";
@@ -191,10 +191,19 @@ export class AcpManager {
   private progressTicker: ReturnType<typeof setInterval> | null = null;
   private toolSets: ToolSetRegistry | null = null;
   private skills: SkillRegistry | null = null;
+  private config: Config | null = null;
 
-  wireRegistries(opts: { toolSets: ToolSetRegistry; skills: SkillRegistry }): void {
+  wireRegistries(opts: { toolSets: ToolSetRegistry; skills: SkillRegistry; config: Config }): void {
     this.toolSets = opts.toolSets;
     this.skills = opts.skills;
+    this.config = opts.config;
+  }
+
+  private requireConfig(): Config {
+    if (!this.config) {
+      throw new Error("AcpManager: config not wired; call wireRegistries first");
+    }
+    return this.config;
   }
 
   wireConversation(conversation: SessionConversationPort): void {
@@ -239,7 +248,7 @@ export class AcpManager {
     if (!this.toolSets || !this.skills) {
       throw new Error("AcpManager: toolSets/skills not wired; call wireRegistries first");
     }
-    const cfg = loadConfig();
+    const cfg = this.requireConfig().data;
     const agents = agentsCfg ?? cfg.acp_agents ?? {};
     if (!Object.keys(agents).length) return 0;
 
@@ -370,7 +379,7 @@ export class AcpManager {
   }
 
   getStatus(): AcpStatusResponse {
-    const cfg = loadConfig();
+    const cfg = this.requireConfig().data;
     const agents = cfg.acp_agents ?? {};
     const views: AcpAgentStatusView[] = [];
 
@@ -479,7 +488,7 @@ export class AcpManager {
     agentsCfg?: Record<string, AcpAgentConfig>,
     opts?: { enabledOnly: boolean },
   ): Promise<void> {
-    const cfg = loadConfig();
+    const cfg = this.requireConfig().data;
     const agents = agentsCfg ?? cfg.acp_agents ?? {};
     const names = Object.entries(agents)
       .filter(([, agentCfg]) => !opts?.enabledOnly || isAcpAgentEnabled(agentCfg))
@@ -504,7 +513,7 @@ export class AcpManager {
   }
 
   async startAll(): Promise<AcpControlResult> {
-    const cfg = loadConfig();
+    const cfg = this.requireConfig().data;
     const agents = cfg.acp_agents ?? {};
     const names = Object.keys(agents).filter((name) => isAcpAgentEnabled(agents[name]!));
     const errors: string[] = [];
@@ -547,7 +556,7 @@ export class AcpManager {
   }
 
   private getAgentConfig(name: string): AcpAgentConfig | undefined {
-    const cfg = loadConfig();
+    const cfg = this.requireConfig().data;
     const agents = cfg.acp_agents;
     return agents?.[name];
   }

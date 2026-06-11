@@ -1,4 +1,4 @@
-import type { AnimaConfig } from "@freeanima/engine-config";
+import type { Config } from "@freeanima/engine-config";
 import type { LlmRuntime } from "@freeanima/engine-llm";
 import type { PgRepositories } from "@freeanima/engine-repos";
 import type { SkillRegistry } from "@freeanima/engine-skill";
@@ -13,6 +13,6 @@ export type ServiceEnginePort = {
   llm: LlmRuntime;
   repos: PgRepositories;
   skills: SkillRegistry;
-  config: AnimaConfig;
+  config: Config;
   logger: Logger;
 };

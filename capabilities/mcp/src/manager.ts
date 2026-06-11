@@ -1,6 +1,6 @@
 import type { ToolDef, ToolSetRegistry } from "@freeanima/engine-tool";
 import { mcpToolsetId, toolError } from "@freeanima/engine-tool";
-import { loadConfig } from "@freeanima/service-config";
+import type { Config } from "@freeanima/service-config";
 import { logComponent } from "@freeanima/service-logging";
 
 import { McpClientSession, type McpServerConfig } from "./client.ts";
@@ -13,7 +13,7 @@ import {
   type McpStatusResponse,
 } from "./status.ts";
 
-type McpServersConfig = NonNullable<ReturnType<typeof loadConfig>["mcp_servers"]>;
+type McpServersConfig = NonNullable<import("@freeanima/service-config").AnimaConfig["mcp_servers"]>;
 
 /** MCP manager — start MCP Servers from config, discover and register tools */
 export class MCPManager {
@@ -25,7 +25,10 @@ export class MCPManager {
   private closed = false;
   private startTask: Promise<number> | null = null;
 
-  constructor(private readonly toolSets: ToolSetRegistry) {}
+  constructor(
+    private readonly toolSets: ToolSetRegistry,
+    private readonly config: Config,
+  ) {}
 
   /** Connect enabled MCP Servers in parallel in background without blocking HTTP startup */
   startAllAsync(serversCfg?: McpServersConfig): void {
@@ -103,7 +106,7 @@ export class MCPManager {
 
   /** Start all enabled and disconnected servers */
   async startAllEnabled(): Promise<McpControlResult> {
-    const cfg = loadConfig();
+    const cfg = this.config.data;
     const servers = cfg.mcp_servers ?? {};
     const tasks: Promise<void>[] = [];
 
@@ -129,7 +132,7 @@ export class MCPManager {
   }
 
   private resolveServerConfig(name: string): McpServerConfig | undefined {
-    const cfg = loadConfig();
+    const cfg = this.config.data;
     const fromCfg = cfg.mcp_servers?.[name] as McpServerConfig | undefined;
     return this.serverConfigs.get(name) ?? fromCfg;
   }
@@ -138,7 +141,7 @@ export class MCPManager {
     serversCfg?: McpServersConfig,
     opts?: { enabledOnly?: boolean },
   ): Promise<number> {
-    const cfg = loadConfig();
+    const cfg = this.config.data;
     const servers = serversCfg ?? cfg.mcp_servers ?? {};
     if (Object.keys(servers).length === 0) {
       return 0;
@@ -251,7 +254,7 @@ export class MCPManager {
   }
 
   async getStatus(): Promise<McpStatusResponse> {
-    const cfg = loadConfig();
+    const cfg = this.config.data;
     const serversCfg = cfg.mcp_servers ?? {};
     const serverNames = new Set([...Object.keys(serversCfg), ...this.serverConfigs.keys()]);
 

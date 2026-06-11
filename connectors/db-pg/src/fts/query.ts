@@ -1,4 +1,4 @@
-import { isCjkJiebaEnabled } from "@freeanima/service-config";
+import { getActiveConfig, isCjkJiebaEnabled } from "@freeanima/service-config";
 
 import { buildCharModeTsQuery, buildJiebaModeTsQuery } from "./query-char.ts";
 import { segmentForFts } from "./segment.ts";
@@ -16,7 +16,7 @@ export async function buildFtsTsQuery(raw: string): Promise<string> {
     return buildCharModeTsQuery(trimmed);
   }
 
-  if (isCjkJiebaEnabled()) {
+  if (isCjkJiebaEnabled(getActiveConfig().data)) {
     const segmented = await segmentForFts(trimmed);
     return buildJiebaModeTsQuery(segmented);
   }

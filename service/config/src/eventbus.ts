@@ -1,15 +1,15 @@
-import { loadConfig } from "./config.ts";
+import type { AnimaConfig } from "@freeanima/engine-config";
 
 export type EventbusBackend = "redis";
 
 const DEFAULT_KEY_PREFIX = "anima:events";
 
-/** Read EventBus backend from config.yaml; default redis */
-export function getEventbusBackend(): EventbusBackend {
-  return loadConfig().eventbus?.backend ?? "redis";
+/** Read EventBus backend from config; default redis */
+export function getEventbusBackend(cfg: AnimaConfig): EventbusBackend {
+  return cfg.eventbus?.backend ?? "redis";
 }
 
 /** EventBus Redis key prefix; default anima:events */
-export function getEventbusKeyPrefix(): string {
-  return loadConfig().eventbus?.key_prefix ?? DEFAULT_KEY_PREFIX;
+export function getEventbusKeyPrefix(cfg: AnimaConfig): string {
+  return cfg.eventbus?.key_prefix ?? DEFAULT_KEY_PREFIX;
 }

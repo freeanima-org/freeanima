@@ -1,7 +1,8 @@
 import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { extname, join, relative, resolve } from "node:path";
-import { loadConfig, patchConfigSection } from "@freeanima/service-config";
+import { FileConfig } from "@freeanima/service-config";
+import { getServiceContext } from "../context.ts";
 import { DEFAULT_SKIP_DIRS, isIgnored, loadGitignoreStack } from "./studio-gitignore.ts";
 
 export const MAX_FILE_BYTES = 1024 * 1024;
@@ -106,7 +107,7 @@ export interface SearchHit {
 }
 
 function studioSection(): Record<string, unknown> {
-  const cfg = loadConfig() as Record<string, unknown>;
+  const cfg = getServiceContext().engine.config.data as Record<string, unknown>;
   const studio = cfg.studio;
   if (typeof studio === "object" && studio !== null && !Array.isArray(studio)) {
     return studio as Record<string, unknown>;
@@ -124,7 +125,11 @@ export function getStudioConfig(): StudioConfig {
 }
 
 export function patchStudioConfig(patch: Partial<StudioConfig>): StudioConfig {
-  patchConfigSection("studio", patch as Record<string, unknown>);
+  const config = getServiceContext().engine.config;
+  if (!(config instanceof FileConfig)) {
+    throw new Error("patchStudioConfig requires FileConfig");
+  }
+  config.patchSection("studio", patch as Record<string, unknown>);
   return getStudioConfig();
 }
 

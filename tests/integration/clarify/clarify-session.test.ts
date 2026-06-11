@@ -7,7 +7,7 @@ import {
 } from "../../helpers/integration-case.ts";
 
 import { registerServiceTools } from "@freeanima/service";
-import { getTestEngine, testConv } from "../../helpers/pg-test.ts";
+import { getActivePgTestContext, getTestEngine, testConv } from "../../helpers/pg-test.ts";
 import {
   setAwaitingClarify,
   readAwaitingClarify,
@@ -24,7 +24,11 @@ describePg("clarify session", () => {
   beforeEach(async () => {
     await beginIntegrationCase("anima-clarify-");
     const engine = getTestEngine();
-    registerServiceTools({ toolSets: engine.toolSets, skills: engine.skills });
+    registerServiceTools({
+      toolSets: engine.toolSets,
+      skills: engine.skills,
+      config: getActivePgTestContext()!.config,
+    });
   });
 
   afterEach(async () => {

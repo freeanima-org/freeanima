@@ -22,8 +22,8 @@ import {
   invalidateSelfLayerPromptCache,
 } from "@freeanima/life-self";
 
+import { bindHomeChannelConfig } from "@freeanima/service-api/home-channel";
 import { beginLogIsolation, resetServiceLogger } from "./log-isolation.ts";
-import { clearConfigCache } from "@freeanima/service-config";
 import { pgTestUrl } from "./pg-test-gate.ts";
 import { getActivePgTestContext } from "./pg-test.ts";
 
@@ -36,14 +36,20 @@ async function flushActiveCompressionSummaries(): Promise<void> {
 
 /** Standard integration-test ServiceContext (builtins / AnimaService / WebUI handler) */
 export function wireIntegrationServiceContext(pg: PgTestContext): void {
-  const kernel = createServiceKernel();
+  bindHomeChannelConfig(pg.config);
+  const kernel = createServiceKernel(pg.config);
   const conversation = createConversationService(pg.engine.repos, pg.engine.catalog.toolSets);
   const service = new AnimaService({ kernel, conversation });
   resetRegisterServiceToolsForTest();
-  registerServiceTools({ toolSets: pg.engine.catalog.toolSets, skills: pg.engine.catalog.skills });
+  registerServiceTools({
+    toolSets: pg.engine.catalog.toolSets,
+    skills: pg.engine.catalog.skills,
+    config: pg.config,
+  });
   getAcpManager().wireRegistries({
     toolSets: pg.engine.catalog.toolSets,
     skills: pg.engine.catalog.skills,
+    config: pg.config,
   });
   getAcpManager().wireConversation(conversation);
   initServiceContext({
@@ -91,7 +97,6 @@ export async function restoreIntegrationHome(prevHome?: string): Promise<void> {
   if (prevHome === undefined) delete process.env.FREEANIMA_HOME;
   else process.env.FREEANIMA_HOME = prevHome;
   resetServiceLogger();
-  clearConfigCache();
 }
 
 /** Standard integration test case setup: temp home + PG harness + ServiceContext */

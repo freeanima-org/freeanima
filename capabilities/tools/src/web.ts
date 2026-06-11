@@ -1,7 +1,8 @@
 import type { ToolSetRegistry } from "@freeanima/engine-tool";
 import { attachToolReturns, toolError, toolResult } from "@freeanima/engine-tool";
 import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
-import { credential, loadConfig, readAppVersion } from "@freeanima/service-config";
+import type { Config } from "@freeanima/service-config";
+import { credential, readAppVersion } from "@freeanima/service-config";
 
 const USER_AGENT = `anima/${readAppVersion()}`;
 const HTTP_TIMEOUT_MS = 60_000;
@@ -10,8 +11,21 @@ const MAX_SEARCH_LIMIT = 20;
 
 type FirecrawlConfig = { apiUrl: string; apiKey: string };
 
+let webToolsConfig: Config | null = null;
+
+export function bindWebToolsConfig(config: Config): void {
+  webToolsConfig = config;
+}
+
+export function resetWebToolsConfigForTest(): void {
+  webToolsConfig = null;
+}
+
 function getFirecrawlConfig(): FirecrawlConfig {
-  const cfg = loadConfig() as Record<string, unknown>;
+  if (!webToolsConfig) {
+    return { apiUrl: "https://api.firecrawl.dev", apiKey: "" };
+  }
+  const cfg = webToolsConfig.data as Record<string, unknown>;
   const fc = (cfg.firecrawl as Record<string, unknown> | undefined) ?? {};
   const apiUrl = (fc.api_url as string) || "https://api.firecrawl.dev";
   let apiKey = "";

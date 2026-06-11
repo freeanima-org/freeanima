@@ -35,17 +35,17 @@ Engine internal: `orchestration → mechanism → foundation`; orchestration DAG
 | **capabilities**         | foundation + mechanism (**no** orchestration); session port via `engine-session-port`; tool context via `engine-tool` |
 | **service / connectors** | all (prefer `@freeanima/engine` facade)                                                                               |
 
-Port wiring at composition root: [`wire-engine-ports.ts`](../../service/service/src/wire-engine-ports.ts) (`wireEnginePorts()`); after `loadConfig()` + `createServiceLogger()`, `createEngine({ config, logger, ... })` injects runtime config and logging — **engine must not** depend on `service-config` / `service-logging`.
+Port wiring at composition root: [`wire-engine-ports.ts`](../../service/service/src/wire-engine-ports.ts) (`wireEnginePorts()`); after `FileConfig.open()` + `createServiceLogger()`, `createEngine({ config, logger, ... })` injects a shared `Config` instance and logging — **engine must not** depend on `service-config` / `service-logging` (use `@freeanima/engine-config` `Config` type only).
 
 ## Runtime infra satellite packages (not composition root)
 
 Under `service/` physically; dep-check allows life/capabilities/connectors; **engine forbidden**:
 
-| Package                      | Role                                                                                    | Lower layers import                                                                                                   |
-| ---------------------------- | --------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `@freeanima/engine-config`   | `AnimaConfig` Zod, pure helpers (`getLlmConfig`, `getCompressionConfig`, `PATHS`, etc.) | engine / life / capabilities for types and defaults                                                                   |
-| `@freeanima/service-config`  | Thin adapter: `loadConfig()`, YAML/credential, `validateConfigOnStartup`                | service / connectors / callers needing file I/O only                                                                  |
-| `@freeanima/service-logging` | Process bootstrap: `createServiceLogger`, `installErrorLogHandlers`, `markStartupPhase` | composition root / CLI startup only; no domain helpers (`logApiError` etc. live in connectors-webui, service/runtime) |
+| Package                      | Role                                                                                     | Lower layers import                                                                                                   |
+| ---------------------------- | ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `@freeanima/engine-config`   | `AnimaConfig` Zod, `Config` container (`data` / `update` / `fromSnapshot`), pure helpers | engine / life / capabilities for types, defaults, and injected config                                                 |
+| `@freeanima/service-config`  | `FileConfig extends Config`: `open()` / `reload()` / `patchSection()`, YAML/credential   | composition root / connectors / CLI only (file I/O)                                                                   |
+| `@freeanima/service-logging` | Process bootstrap: `createServiceLogger`, `installErrorLogHandlers`, `markStartupPhase`  | composition root / CLI startup only; no domain helpers (`logApiError` etc. live in connectors-webui, service/runtime) |
 
 ## Allowed dependencies (matches dep-check)
 

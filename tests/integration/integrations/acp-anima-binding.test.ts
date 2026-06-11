@@ -6,7 +6,6 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { clearConfigCache } from "@freeanima/service-config";
 import { testConv } from "../../helpers/pg-test.ts";
 import {
   bindAcpSession,
@@ -20,7 +19,6 @@ describePg("acp anima-binding", () => {
   const prev = process.env.FREEANIMA_HOME;
 
   beforeEach(async () => {
-    clearConfigCache();
     await beginIntegrationCase("freeanima-acp-bind-");
     animaSid = "20260527_test_bind";
     await testConv().initSession(animaSid, "test-model", { platform: "parlor" });

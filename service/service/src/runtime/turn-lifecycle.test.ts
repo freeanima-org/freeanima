@@ -4,20 +4,40 @@ import * as engine from "@freeanima/engine-loop";
 import { createConversationService } from "@freeanima/engine-conversation";
 import { nullPgRepositories } from "@freeanima/engine-repos";
 import { MaskRegistry } from "@freeanima/capabilities-mask";
-import { createEngineCatalog, type Engine } from "@freeanima/engine";
+import { Config } from "@freeanima/engine-config";
+import { createEngine, createEngineCatalog } from "@freeanima/engine";
+import { initLlmRuntime, registerLlmStackConfigurator } from "@freeanima/engine-llm";
+import { wireOpenAiCompatibleLlm } from "@freeanima/capabilities-provider-openai-compatible";
+import { createTestLogger } from "@freeanima/kernel-logging/testing";
 import { createServiceKernel } from "@freeanima/service-bootstrap";
+import { parseYaml } from "@freeanima/service-config";
+import { animaConfigSchema } from "@freeanima/service-config/schemas/config";
+import { MINIMAL_LLM_YAML } from "@freeanima/service-config/test-helpers/minimal-llm-config";
 import { getAcpManager } from "@freeanima/capabilities-acp";
 import { AnimaService } from "./anima-service.ts";
 import { initServiceContext } from "../context.ts";
 import { createTurnMessageCallbacks, finalizeTurn, runSimpleTurn } from "./turn-lifecycle.ts";
 
 const catalog = createEngineCatalog();
-const testEngine = { catalog, repos: nullPgRepositories } as Engine;
+const testConfig = Config.fromSnapshot(animaConfigSchema.parse(parseYaml(MINIMAL_LLM_YAML)));
+registerLlmStackConfigurator(wireOpenAiCompatibleLlm);
+const testEngine = createEngine({
+  catalog,
+  repos: nullPgRepositories,
+  config: testConfig,
+  llm: initLlmRuntime(testConfig.data),
+  logger: createTestLogger(),
+});
 
 function wireTestService(): AnimaService {
-  const kernel = createServiceKernel();
+  const kernel = createServiceKernel(testConfig);
   const conversation = createConversationService(nullPgRepositories, catalog.toolSets);
   const service = new AnimaService({ kernel, conversation });
+  getAcpManager().wireRegistries({
+    toolSets: catalog.toolSets,
+    skills: catalog.skills,
+    config: testConfig,
+  });
   getAcpManager().wireConversation(conversation);
   initServiceContext({
     service,

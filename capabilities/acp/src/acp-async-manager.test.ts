@@ -1,7 +1,7 @@
-import { describe, it, expect, afterEach } from "bun:test";
+import { describe, it, expect } from "bun:test";
+import { Config } from "@freeanima/engine-config";
 import { parseYaml } from "@freeanima/service-config";
 import { animaConfigSchema } from "@freeanima/service-config/schemas/config";
-import { resetConfigForTest, setConfigForTest } from "@freeanima/service-config";
 import { MINIMAL_LLM_YAML } from "@freeanima/service-config/test-helpers/minimal-llm-config";
 import { createTestAcpManager } from "./test-helpers/manager.ts";
 import type { AcpProgressDeliveryPort } from "./ports/progress-delivery.ts";
@@ -12,16 +12,11 @@ function acpMinimalConfig() {
   );
   const parsed = animaConfigSchema.safeParse(raw);
   if (!parsed.success) throw new Error(parsed.error.message);
-  return parsed.data;
+  return Config.fromSnapshot(parsed.data);
 }
 
 describe("AcpManager async progress polling", () => {
-  afterEach(() => {
-    resetConfigForTest();
-  });
-
   it("pollProgress pushes updated tasks to delivery port", async () => {
-    setConfigForTest(acpMinimalConfig());
     const delivered: string[] = [];
     const port: AcpProgressDeliveryPort = {
       deliverProgress: async (_task, body) => {
@@ -31,7 +26,7 @@ describe("AcpManager async progress polling", () => {
       deliverError: async () => {},
     };
 
-    const { mgr } = createTestAcpManager();
+    const { mgr } = createTestAcpManager(acpMinimalConfig());
     mgr.wireProgressDelivery(port);
     mgr.registerTools();
 
@@ -60,8 +55,7 @@ describe("AcpManager async progress polling", () => {
   });
 
   it("cancelAsyncTask returns error for unknown task", () => {
-    setConfigForTest(acpMinimalConfig());
-    const { mgr } = createTestAcpManager();
+    const { mgr } = createTestAcpManager(acpMinimalConfig());
     mgr.registerTools();
     const out = (mgr as unknown as { cancelAsyncTask: (id: string) => string }).cancelAsyncTask(
       "missing",

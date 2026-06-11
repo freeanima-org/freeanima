@@ -4,7 +4,8 @@ import { registerTaskTools } from "@freeanima/capabilities-tasks";
 import { registerCoreTools, registerSupplementalTools } from "@freeanima/capabilities-tools";
 import { registerCronjobTool } from "@freeanima/connectors-cron/cronjob-tool";
 import { registerSelfTools } from "@freeanima/life-self";
-import { registerEstateTools } from "@freeanima/life-estate";
+import { bindEmailAccountsConfig, registerEstateTools } from "@freeanima/life-estate";
+import type { Config } from "@freeanima/engine-config";
 import type { SkillRegistry } from "@freeanima/engine-skill";
 import type { ToolSetRegistry } from "@freeanima/engine-tool";
 import { registerMemoryTools } from "@freeanima/life-memory";
@@ -15,12 +16,14 @@ let registeredCatalog: { toolSets: ToolSetRegistry; skills: SkillRegistry } | nu
 export function registerServiceTools(opts: {
   toolSets: ToolSetRegistry;
   skills: SkillRegistry;
+  config: Config;
 }): void {
   if (registeredCatalog?.toolSets === opts.toolSets && registeredCatalog?.skills === opts.skills) {
     return;
   }
-  registerCoreTools(opts.toolSets);
-  registerSupplementalTools(opts.toolSets, opts.skills);
+  registerCoreTools(opts.toolSets, opts.config);
+  registerSupplementalTools(opts.toolSets, opts.skills, opts.config);
+  bindEmailAccountsConfig(opts.config);
   registerMemoryTools(opts.toolSets);
   registerSelfTools(opts.toolSets);
   registerEstateTools(opts.toolSets);

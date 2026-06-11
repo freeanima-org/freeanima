@@ -1,4 +1,6 @@
 import type { Kernel } from "@freeanima/kernel";
+import type { Config } from "@freeanima/service-config";
+import { bindClarifyConfig } from "./clarify.ts";
 import type { SessionConversationPort } from "@freeanima/engine-session-port";
 import {
   messageIncoming,
@@ -19,8 +21,10 @@ import {
 export function registerClarifyHooks(opts: {
   kernel: Kernel;
   conversation: SessionConversationPort;
+  config: Config;
 }): void {
-  const { kernel, conversation } = opts;
+  const { kernel, conversation, config } = opts;
+  bindClarifyConfig(config);
   const registry = kernel.hookRegistry;
 
   registry.on(messageIncoming, async (ctx) => {

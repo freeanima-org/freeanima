@@ -3,6 +3,7 @@ import { getAcpManager } from "@freeanima/capabilities-acp";
 import { registerClarifyHooks } from "@freeanima/capabilities-clarify";
 import { createAcpProgressDelivery } from "./acp-progress-delivery.ts";
 import type { Kernel } from "@freeanima/kernel";
+import type { Config } from "@freeanima/engine-config";
 import { beforeLlmCall } from "@freeanima/engine-hooks/loop";
 import type { ConversationService } from "@freeanima/engine-conversation";
 import type { SkillRegistry } from "@freeanima/engine-skill";
@@ -14,11 +15,16 @@ export function registerServiceIntegrations(opts: {
   conversation: ConversationService;
   toolSets: ToolSetRegistry;
   skills: SkillRegistry;
+  config: Config;
   onSessionUpdated?: ((sid: string) => void) | null;
 }): void {
-  registerClarifyHooks({ kernel: opts.kernel, conversation: opts.conversation });
+  registerClarifyHooks({
+    kernel: opts.kernel,
+    conversation: opts.conversation,
+    config: opts.config,
+  });
   const acp = getAcpManager();
-  acp.wireRegistries({ toolSets: opts.toolSets, skills: opts.skills });
+  acp.wireRegistries({ toolSets: opts.toolSets, skills: opts.skills, config: opts.config });
   acp.wireConversation(opts.conversation);
   acp.wireProgressDelivery(
     createAcpProgressDelivery({

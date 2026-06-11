@@ -3,8 +3,18 @@ import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { tmpdir } from "node:os";
 import { chdir } from "node:process";
+import { Config } from "@freeanima/service-config";
 import { registerCoreTools } from "@freeanima/capabilities-tools";
 import { ToolSetRegistry } from "@freeanima/engine-tool";
+import { parseYaml } from "@freeanima/service-config";
+import { animaConfigSchema } from "@freeanima/service-config/schemas/config";
+import { MINIMAL_LLM_YAML } from "@freeanima/service-config/test-helpers/minimal-llm-config";
+
+function testConfig() {
+  const parsed = animaConfigSchema.safeParse(parseYaml(MINIMAL_LLM_YAML));
+  if (!parsed.success) throw new Error(parsed.error.message);
+  return Config.fromSnapshot(parsed.data);
+}
 
 let toolSets: ToolSetRegistry;
 
@@ -19,7 +29,7 @@ describe("file tools", () => {
     cwd = mkdtempSync(join(tmpdir(), "anima-cwd-"));
     process.env.FREEANIMA_HOME = home;
     chdir(cwd);
-    registerCoreTools(toolSets);
+    registerCoreTools(toolSets, testConfig());
   });
 
   afterEach(() => {

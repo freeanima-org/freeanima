@@ -24,9 +24,9 @@ import {
 import { closeRedis, initRedis, isRedisConfigured } from "@freeanima/connectors-redis";
 import { runMigrations } from "@freeanima/engine-db";
 import {
+  FileConfig,
   getConfiguredDatabaseUrl,
   getConfiguredRedisUrl,
-  loadConfig,
   PATHS,
   resolveLlmProviderApiKeys,
   validateConfigOnStartup,
@@ -77,6 +77,7 @@ import { MCPManager } from "@freeanima/capabilities-mcp";
 import { getAcpManager } from "@freeanima/capabilities-acp";
 import { createFridgeBridge } from "@freeanima/capabilities-tasks";
 import { DEFAULT_BIND_HOST, parseBindHosts } from "./bind-hosts.ts";
+import { bindHomeChannelConfig } from "@freeanima/service-api/home-channel";
 import { initServiceContext } from "./context.ts";
 import { wireEmbeddingRuntime } from "./runtime/embedding-wire.ts";
 import { wireTokenizerRuntime } from "./runtime/tokenizer-wire.ts";
@@ -209,25 +210,28 @@ export async function serve(
   try {
     startupLog("Validating config.yaml…");
     await validateConfigOnStartup();
+    const config = FileConfig.open();
+    config.update(await resolveLlmProviderApiKeys(config.data));
+    bindHomeChannelConfig(config);
+
     wireEnginePorts();
     wireServicePorts();
-    wireEmbeddingRuntime();
-    await wireTokenizerRuntime();
+    wireEmbeddingRuntime(config);
+    await wireTokenizerRuntime(config);
 
     startupLog("Registering tools…");
     const catalog = createEngineCatalog();
     const masks = new MaskRegistry();
-    registerServiceTools({ toolSets: catalog.toolSets, skills: catalog.skills });
-    kernel = createServiceKernel();
+    registerServiceTools({ toolSets: catalog.toolSets, skills: catalog.skills, config });
+    kernel = createServiceKernel(config);
 
     mkdirSync(dirname(PATHS.pidFile), { recursive: true });
     writeFileSync(PATHS.pidFile, String(process.pid));
 
-    const dbUrl = await getConfiguredDatabaseUrl();
+    const dbUrl = await getConfiguredDatabaseUrl(config.data);
     initDatabase({ getDatabaseUrl: () => dbUrl });
-    initRedis({ getRedisUrl: getConfiguredRedisUrl });
+    initRedis({ getRedisUrl: () => getConfiguredRedisUrl(config.data) });
 
-    const cfg = await resolveLlmProviderApiKeys(loadConfig());
     let repos = nullPgRepositories;
     if (isPostgresPrimary()) {
       startupLog("Initializing PostgreSQL connection pool…");
@@ -236,9 +240,9 @@ export async function serve(
       startupLog("Database migrations complete");
       repos = createPgRepositories({ getDb });
     }
-    initLlmRuntime(cfg);
+    initLlmRuntime(config.data);
     const logger = createServiceLogger();
-    engine = createEngine({ repos, llm: getLlmRuntime(), catalog, config: cfg, logger });
+    engine = createEngine({ repos, llm: getLlmRuntime(), catalog, config, logger });
     conversation = createConversationService(engine.repos, catalog.toolSets);
 
     registerServiceIntegrations({
@@ -246,6 +250,7 @@ export async function serve(
       conversation,
       toolSets: catalog.toolSets,
       skills: catalog.skills,
+      config,
     });
 
     registerFridgeStore(createRedisFridgeStore());
@@ -301,7 +306,7 @@ export async function serve(
       startupLog("PostgreSQL unavailable; skipping Cron module");
     }
 
-    mcp = new MCPManager(catalog.toolSets);
+    mcp = new MCPManager(catalog.toolSets, config);
 
     initServiceContext({
       service,
@@ -433,7 +438,7 @@ export async function serve(
   mcp.startAllAsync();
   acp.startAllAsync();
   startAcpProgressTicker();
-  void discoverPlatforms(service!)
+  void discoverPlatforms(service!, engine!.config)
     .then(async (adapters) => {
       platforms = adapters;
       await startPlatforms(adapters);

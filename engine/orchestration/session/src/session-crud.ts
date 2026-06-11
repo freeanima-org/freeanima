@@ -4,7 +4,7 @@ import { join, resolve } from "node:path";
 import { randomBytes } from "node:crypto";
 import type { ToolSetRegistry } from "@freeanima/engine-tool";
 import { resolveDefaultSessionTools } from "@freeanima/engine-tool";
-import { getProfileHopModel, getRuntimeConfig } from "@freeanima/engine-config";
+import { getActiveConfig, getProfileHopModel } from "@freeanima/engine-config";
 import { CST_OFFSET_MS, formatCstIso } from "@freeanima/engine-util";
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
 import { buildSystemPrompt } from "@freeanima/engine-prompt";
@@ -264,7 +264,7 @@ export async function newSession(
   model?: string,
   platformExtra?: Record<string, unknown>,
 ): Promise<string> {
-  const cfg = getRuntimeConfig();
+  const cfg = getActiveConfig().data;
   const sid = generateSessionId();
   await initSession(repos, tools, sid, model ?? getProfileHopModel(cfg, PROFILE_CHAT), {
     platform,

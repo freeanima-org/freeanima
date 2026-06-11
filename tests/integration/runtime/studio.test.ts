@@ -16,8 +16,6 @@ import {
   patchStudioConfig,
   getStudioConfig,
 } from "@freeanima/service";
-import { clearConfigCache } from "@freeanima/service-config";
-
 describePg("studio", () => {
   let workspace: string;
   const prev = process.env.FREEANIMA_HOME;
@@ -32,7 +30,6 @@ describePg("studio", () => {
   showHidden: false
 `,
     );
-    clearConfigCache();
 
     mkdirSync(join(workspace, "src"), { recursive: true });
     writeFileSync(join(workspace, "src", "main.ts"), "export const foo = 42\n", "utf-8");
@@ -74,7 +71,6 @@ describePg("studio", () => {
   it("patchStudioConfig updates workspace", () => {
     const other = mkdtempSync(join(tmpdir(), "anima-ws2-"));
     patchStudioConfig({ workspace: other });
-    clearConfigCache();
     expect(getStudioConfig().workspace).toBe(other);
   });
 });
