@@ -1,193 +1,73 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import type { ServiceStatus } from "@freeanima/connectors-webui/api";
 import { useMemo, useState } from "react";
+import { formatMemoryRecallOutput } from "@/components/chamber/format-memory-recall-output.ts";
+import {
+  countByMemoryType,
+  MEMORY_RECALL_TYPES,
+  recallHitKey,
+  type MemoryRecallResult,
+  type MemoryRecallType,
+} from "@/components/chamber/memory-recall-types.ts";
+import { RecallHitCard } from "@/components/chamber/RecallHitCard.tsx";
 import { m } from "@/lib/i18n.ts";
-import { translateApiPayload } from "@/lib/api-errors.ts";
-import { countSemanticMemory, searchMemory } from "@/lib/api.ts";
+import { getStatus, searchMemory } from "@/lib/api.ts";
 import { memoryTypeLabel } from "@/lib/webui-status.ts";
 
 export const Route = createFileRoute("/chamber/memory")({
+  loader: async () => {
+    const status = await getStatus().catch(() => null);
+    return { status };
+  },
   component: MemoryPage,
 });
 
-type MemoryRecallHit = {
-  memory_type: string;
-  score: number;
-  semantic_memory_id?: string;
-  type?: string;
-  pinned?: boolean;
-  content?: string;
-  source_sessions?: string[];
-  observed_at?: string | null;
-  occurred_at?: string | null;
-  status?: string;
-  session_id?: string;
-  message_id?: string;
-  role?: string;
-  timestamp?: string;
-  snippet?: string;
-  limbic_memory_id?: string;
-  kind?: string;
-  intensity?: number;
-  valence?: number | null;
-  arousal?: number | null;
-  autobiographical_memory_id?: string;
-  title?: string;
-  significance?: string;
-};
-
-type MemoryResult = {
-  query: string;
-  limit: number;
-  results: MemoryRecallHit[];
-  summary: string;
-};
-
-function formatToolOutput(data: MemoryResult) {
-  if (!data.results?.length) {
-    return m.webui_chamber_memory_not_found({ query: data.query });
-  }
-  const lines = [data.summary, ""];
-  for (const [idx, hit] of data.results.entries()) {
-    const label = memoryTypeLabel(hit.memory_type);
-    lines.push(`${idx + 1}. [${label}] score ${hit.score.toFixed(4)}`);
-    if (hit.memory_type === "semantic") {
-      lines.push(`  ${hit.semantic_memory_id} (${hit.type}) ${hit.content}`);
-      if (hit.observed_at || hit.occurred_at) {
-        const parts: string[] = [];
-        if (hit.observed_at) parts.push(`observed=${String(hit.observed_at).slice(0, 19)}`);
-        if (hit.occurred_at) parts.push(`occurred=${hit.occurred_at}`);
-        lines.push(`  ${parts.join(" ")}`);
-      }
-    } else if (hit.memory_type === "session") {
-      lines.push(`  ${hit.session_id} / ${hit.message_id} ${hit.role}: ${hit.snippet}`);
-    } else if (hit.memory_type === "limbic") {
-      lines.push(`  ${hit.limbic_memory_id} (${hit.kind}) ${hit.content}`);
-    } else if (hit.memory_type === "autobiographical") {
-      lines.push(`  ${hit.autobiographical_memory_id} ${hit.title}: ${hit.snippet}`);
-    }
-  }
-  return lines.join("\n");
-}
-
-function RecallHitCard({ hit, index }: { hit: MemoryRecallHit; index: number }) {
-  const label = memoryTypeLabel(hit.memory_type);
-  return (
-    <div className="card bg-base-200">
-      <div className="card-body py-3 px-4 gap-2">
-        <div className="flex flex-wrap items-center gap-2 text-xs">
-          <span className="font-mono font-bold">{index + 1}.</span>
-          <span className="badge badge-primary badge-xs">{label}</span>
-          <span className="badge badge-ghost badge-xs">score {hit.score.toFixed(4)}</span>
-          {hit.memory_type === "semantic" ? (
-            <>
-              <span className="font-mono">{hit.semantic_memory_id}</span>
-              <span className="badge badge-outline badge-xs">{hit.type}</span>
-              {hit.pinned ? <span className="badge badge-warning badge-xs">pinned</span> : null}
-            </>
-          ) : null}
-          {hit.memory_type === "session" ? (
-            <>
-              <span className="badge badge-secondary badge-xs">{hit.role}</span>
-              <span className="font-mono text-base-content/70">{hit.session_id}</span>
-            </>
-          ) : null}
-          {hit.memory_type === "limbic" ? (
-            <span className="badge badge-outline badge-xs">{hit.kind}</span>
-          ) : null}
-          {hit.memory_type === "autobiographical" ? (
-            <span className="badge badge-outline badge-xs">{hit.significance}</span>
-          ) : null}
-        </div>
-        {hit.memory_type === "semantic" ? (
-          <>
-            <p className="text-sm whitespace-pre-wrap">{hit.content}</p>
-            {hit.observed_at || hit.occurred_at ? (
-              <p className="text-xs text-base-content/60 font-mono">
-                {hit.observed_at ? `observed ${String(hit.observed_at).slice(0, 19)}` : null}
-                {hit.observed_at && hit.occurred_at ? " · " : null}
-                {hit.occurred_at ? `occurred ${hit.occurred_at}` : null}
-              </p>
-            ) : null}
-          </>
-        ) : null}
-        {hit.memory_type === "session" ? (
-          <p className="text-sm whitespace-pre-wrap">{hit.snippet}</p>
-        ) : null}
-        {hit.memory_type === "limbic" ? (
-          <p className="text-sm whitespace-pre-wrap">{hit.content}</p>
-        ) : null}
-        {hit.memory_type === "autobiographical" ? (
-          <>
-            <p className="text-sm font-medium">{hit.title}</p>
-            <p className="text-sm whitespace-pre-wrap text-base-content/80">{hit.snippet}</p>
-          </>
-        ) : null}
-      </div>
-    </div>
-  );
-}
+const QUICK_LINKS = [
+  { to: "/chamber/semantic-memory", label: () => m.webui_chamber_nav_semantic() },
+  { to: "/chamber/limbic-memory", label: () => m.webui_chamber_nav_limbic() },
+  { to: "/chamber/autobiographical-memory", label: () => m.webui_chamber_nav_autobio() },
+  { to: "/chamber/fts", label: () => m.webui_chamber_nav_fts() },
+  { to: "/chamber/sessions", label: () => m.webui_chamber_nav_sessions() },
+] as const;
 
 function MemoryPage() {
+  const { status } = Route.useLoaderData();
+  const svc = status as ServiceStatus | null;
+  const semanticMemoryCount = svc?.memory?.semantic_memory_count ?? 0;
+  const dialogueMessageCount = svc?.memory?.dialogue_message_count ?? 0;
+
   const [query, setQuery] = useState("");
   const [limit, setLimit] = useState(10);
-  const [sessionFilter, setSessionFilter] = useState("");
   const [searching, setSearching] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [busyAction, setBusyAction] = useState("");
-  const [statusMessage, setStatusMessage] = useState("");
   const [searched, setSearched] = useState(false);
   const [error, setError] = useState("");
   const [lastQuery, setLastQuery] = useState("");
-  const [result, setResult] = useState<MemoryResult>({
+  const [typeFilter, setTypeFilter] = useState<MemoryRecallType | "all">("all");
+  const [result, setResult] = useState<MemoryRecallResult>({
     query: "",
     limit: 10,
     results: [],
     summary: "",
   });
 
-  const isEmpty = !result.results.length;
-  const toolPreview = useMemo(() => formatToolOutput(result), [result]);
+  const typeCounts = useMemo(() => countByMemoryType(result.results), [result.results]);
 
-  const postMemoryAction = async (
-    fn: () => Promise<unknown>,
-    action: string,
-    confirmText: string,
-  ) => {
-    if (!window.confirm(confirmText)) return;
-    setBusy(true);
-    setBusyAction(action);
-    setStatusMessage("");
-    setError("");
-    try {
-      const d = (await fn()) as {
-        message?: string;
-        code?: string;
-        params?: Record<string, string>;
-      };
-      setStatusMessage(translateApiPayload(d));
-    } catch (e) {
-      setError(
-        m.webui_common_operation_failed({
-          detail: e instanceof Error ? e.message : String(e),
-        }),
-      );
-    } finally {
-      setBusy(false);
-      setBusyAction("");
-    }
-  };
+  const filteredResults = useMemo(() => {
+    if (typeFilter === "all") return result.results;
+    return result.results.filter((hit) => hit.memory_type === typeFilter);
+  }, [result.results, typeFilter]);
+
+  const isEmpty = !result.results.length;
+  const toolPreview = useMemo(() => formatMemoryRecallOutput(result), [result]);
 
   const runSearch = async () => {
     const q = query.trim();
     if (!q) return;
     setSearching(true);
     setError("");
+    setTypeFilter("all");
     try {
-      const d = (await searchMemory({
-        query: q,
-        limit,
-        session: sessionFilter.trim() || undefined,
-      })) as MemoryResult;
+      const d = (await searchMemory({ query: q, limit })) as MemoryRecallResult;
       setResult(d);
       setLastQuery(q);
       setSearched(true);
@@ -204,35 +84,45 @@ function MemoryPage() {
 
   return (
     <div>
-      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-bold">{m.webui_chamber_nav_memory()}</h2>
-          <p className="text-sm text-base-content/60 mt-1">{m.webui_chamber_memory_desc()}</p>
+      <div className="mb-4">
+        <h2 className="text-lg font-bold">{m.webui_chamber_nav_memory()}</h2>
+        <p className="text-sm text-base-content/60 mt-1">{m.webui_chamber_memory_desc()}</p>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+        <div className="card bg-base-200">
+          <div className="card-body py-3 px-4">
+            <p className="text-xs text-base-content/60">
+              {m.webui_chamber_dashboard_semantic_memory()}
+            </p>
+            <p className="text-xl font-mono mt-1">{semanticMemoryCount}</p>
+            <p className="text-xs text-base-content/50 mt-1">
+              {m.webui_api_semantic_memory_count({ count: String(semanticMemoryCount) })}
+            </p>
+          </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            className="btn btn-sm btn-outline"
-            disabled={busy}
-            onClick={() =>
-              void postMemoryAction(
-                () => countSemanticMemory(),
-                "semantic-memory-count",
-                m.webui_chamber_memory_count_confirm(),
-              )
-            }
-          >
-            {busyAction === "semantic-memory-count" ? (
-              <span className="loading loading-spinner loading-xs" />
-            ) : null}
-            {m.webui_chamber_memory_count_btn()}
-          </button>
+        <div className="card bg-base-200">
+          <div className="card-body py-3 px-4">
+            <p className="text-xs text-base-content/60">
+              {m.webui_chamber_dashboard_dialogue_messages()}
+            </p>
+            <p className="text-xl font-mono mt-1">{dialogueMessageCount}</p>
+          </div>
         </div>
       </div>
 
-      {statusMessage ? (
-        <div className="alert alert-success text-sm mb-4">{statusMessage}</div>
-      ) : null}
+      <div className="mb-4">
+        <p className="text-xs text-base-content/60 mb-1.5">
+          {m.webui_chamber_memory_quick_links()}
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {QUICK_LINKS.map((link) => (
+            <Link key={link.to} to={link.to} className="btn btn-xs btn-outline">
+              {link.label()}
+            </Link>
+          ))}
+        </div>
+      </div>
 
       <form
         className="card bg-base-200 mb-4"
@@ -241,10 +131,10 @@ function MemoryPage() {
           void runSearch();
         }}
       >
-        <div className="card-body gap-4">
+        <div className="card-body gap-3">
           <div className="form-control">
             <label className="label py-0">
-              <span className="label-text text-xs">{m.webui_common_search_optional()}</span>
+              <span className="label-text text-xs">{m.webui_chamber_memory_query_required()}</span>
             </label>
             <input
               value={query}
@@ -255,34 +145,18 @@ function MemoryPage() {
               autoFocus
             />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="form-control">
-              <label className="label py-0">
-                <span className="label-text text-xs">{m.webui_chamber_memory_top_n()}</span>
-              </label>
-              <input
-                value={limit}
-                onChange={(e) => setLimit(Number(e.target.value))}
-                type="number"
-                min={1}
-                max={20}
-                className="input input-bordered input-sm"
-              />
-            </div>
-            <div className="form-control">
-              <label className="label py-0">
-                <span className="label-text text-xs">
-                  {m.webui_chamber_memory_session_filter()}
-                </span>
-              </label>
-              <input
-                value={sessionFilter}
-                onChange={(e) => setSessionFilter(e.target.value)}
-                type="text"
-                className="input input-bordered input-sm font-mono"
-                placeholder="session id"
-              />
-            </div>
+          <div className="form-control max-w-xs">
+            <label className="label py-0">
+              <span className="label-text text-xs">{m.webui_chamber_memory_top_n()}</span>
+            </label>
+            <input
+              value={limit}
+              onChange={(e) => setLimit(Number(e.target.value))}
+              type="number"
+              min={1}
+              max={20}
+              className="input input-bordered input-sm"
+            />
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -313,14 +187,43 @@ function MemoryPage() {
       {searched && !isEmpty ? (
         <div className="space-y-4">
           <section>
-            <h3 className="text-sm font-bold mb-2">
-              {m.webui_chamber_memory_recall_results()}
-              <span className="badge badge-ghost badge-sm ml-1">{result.results.length}</span>
-            </h3>
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <h3 className="text-sm font-bold">
+                {m.webui_chamber_memory_recall_results()}
+                <span className="badge badge-ghost badge-sm ml-1">{result.results.length}</span>
+              </h3>
+              <div className="flex flex-wrap gap-1">
+                <button
+                  type="button"
+                  className={`badge badge-sm cursor-pointer ${typeFilter === "all" ? "badge-primary" : "badge-ghost"}`}
+                  onClick={() => setTypeFilter("all")}
+                >
+                  {m.webui_chamber_memory_type_filter_all()} {result.results.length}
+                </button>
+                {MEMORY_RECALL_TYPES.map((type) => {
+                  const count = typeCounts[type] ?? 0;
+                  if (count === 0) return null;
+                  return (
+                    <button
+                      key={type}
+                      type="button"
+                      className={`badge badge-sm cursor-pointer ${typeFilter === type ? "badge-primary" : "badge-ghost"}`}
+                      onClick={() => setTypeFilter(type)}
+                    >
+                      {memoryTypeLabel(type)} {count}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
             <div className="space-y-2">
-              {result.results.map((hit, idx) => (
-                <RecallHitCard key={`${hit.memory_type}-${idx}`} hit={hit} index={idx} />
-              ))}
+              {filteredResults.length === 0 ? (
+                <p className="text-sm text-base-content/50">{m.webui_common_no_results()}</p>
+              ) : (
+                filteredResults.map((hit, idx) => (
+                  <RecallHitCard key={recallHitKey(hit)} hit={hit} index={idx} />
+                ))
+              )}
             </div>
           </section>
 

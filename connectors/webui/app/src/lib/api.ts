@@ -275,7 +275,7 @@ export async function markEmailRead(accountId: string, uid: number) {
   );
 }
 
-export async function searchMemory(input: { query: string; limit?: number; session?: string }) {
+export async function searchMemory(input: { query: string; limit?: number }) {
   return unwrap(apiClient.api.memory.search.post(input));
 }
 

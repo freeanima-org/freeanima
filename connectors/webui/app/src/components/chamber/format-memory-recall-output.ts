@@ -1,0 +1,54 @@
+import { m } from "@/lib/i18n.ts";
+import { memoryTypeLabel } from "@/lib/webui-status.ts";
+import type { MemoryRecallHit, MemoryRecallResult } from "./memory-recall-types.ts";
+
+function formatSemanticLines(hit: MemoryRecallHit): string[] {
+  const lines = [`  ${hit.semantic_memory_id} (${hit.type}) status=${hit.status} ${hit.content}`];
+  if (hit.source_sessions?.length) {
+    lines.push(`  source_sessions: ${hit.source_sessions.join(", ")}`);
+  }
+  if (hit.observed_at || hit.occurred_at) {
+    const parts: string[] = [];
+    if (hit.observed_at) parts.push(`observed=${String(hit.observed_at).slice(0, 19)}`);
+    if (hit.occurred_at) parts.push(`occurred=${hit.occurred_at}`);
+    lines.push(`  ${parts.join(" ")}`);
+  }
+  return lines;
+}
+
+function formatSessionLines(hit: MemoryRecallHit): string[] {
+  return [`  ${hit.session_id} / ${hit.message_id} ${hit.role} @ ${hit.timestamp}: ${hit.snippet}`];
+}
+
+function formatLimbicLines(hit: MemoryRecallHit): string[] {
+  const emotion = `intensity=${hit.intensity} valence=${hit.valence ?? "—"} arousal=${hit.arousal ?? "—"}`;
+  return [
+    `  ${hit.limbic_memory_id} (${hit.kind}) session=${hit.session_id} ${emotion}`,
+    `  ${hit.content}`,
+  ];
+}
+
+function formatAutobioLines(hit: MemoryRecallHit): string[] {
+  return [`  ${hit.autobiographical_memory_id} [${hit.significance}] ${hit.title}: ${hit.snippet}`];
+}
+
+export function formatMemoryRecallOutput(data: MemoryRecallResult): string {
+  if (!data.results?.length) {
+    return m.webui_chamber_memory_not_found({ query: data.query });
+  }
+  const lines = [data.summary, ""];
+  for (const [idx, hit] of data.results.entries()) {
+    const label = memoryTypeLabel(hit.memory_type);
+    lines.push(`${idx + 1}. [${label}] score ${hit.score.toFixed(4)}`);
+    if (hit.memory_type === "semantic") {
+      lines.push(...formatSemanticLines(hit));
+    } else if (hit.memory_type === "session") {
+      lines.push(...formatSessionLines(hit));
+    } else if (hit.memory_type === "limbic") {
+      lines.push(...formatLimbicLines(hit));
+    } else if (hit.memory_type === "autobiographical") {
+      lines.push(...formatAutobioLines(hit));
+    }
+  }
+  return lines.join("\n");
+}

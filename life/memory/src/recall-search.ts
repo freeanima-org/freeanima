@@ -180,16 +180,15 @@ function mapCandidateToHit(
 
 export async function memoryRecallSearch(
   query: string,
-  opts?: { limit?: number; sessionId?: string },
+  opts?: { limit?: number },
 ): Promise<MemoryRecallResult> {
   const q = query.trim();
   const limit = Math.max(1, Math.min(20, opts?.limit ?? 10));
   const pool = candidateLimit(limit);
-  const sessionId = opts?.sessionId?.trim() || undefined;
 
   const [semanticRows, sessionRows, limbicRows, autobiographicalRows] = await Promise.all([
     getSemanticMemoryStore().searchFts(q, { limit: pool }),
-    searchDialogue(q, { limit: pool, sessionId }).catch(() => []),
+    searchDialogue(q, { limit: pool }).catch(() => []),
     getLimbicMemoryStore()
       .list({ query: q, limit: pool })
       .catch(() => [] as LimbicMemoryRow[]),

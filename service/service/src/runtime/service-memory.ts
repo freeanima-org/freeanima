@@ -60,14 +60,10 @@ function semanticRepos() {
 export async function memorySearch(args: {
   query: string;
   limit?: number;
-  session?: string;
 }): Promise<MemoryRecallResult> {
   const query = args.query.trim();
   if (!query) throw new Error("query is required");
-  return memoryRecallSearch(query, {
-    limit: args.limit,
-    sessionId: args.session?.trim() || undefined,
-  });
+  return memoryRecallSearch(query, { limit: args.limit });
 }
 
 /** PG STORED content_fts auto-maintained; returns semantic_memory row count */

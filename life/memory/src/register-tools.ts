@@ -85,11 +85,6 @@ export function registerMemoryTools(toolSets: ToolSetRegistry): void {
                   'Search keywords. Default space=AND; use OR for broad recall; CJK phrase proximity. Examples: "preference concise", "preference OR concise", "Free Anima"',
               },
               limit: { type: "number", description: "Max results, default 10, cap 20" },
-              session: {
-                type: "string",
-                description:
-                  "Optional: search session messages only within this session (memory_type=session)",
-              },
             },
             required: ["query"],
           },
@@ -98,9 +93,8 @@ export function registerMemoryTools(toolSets: ToolSetRegistry): void {
             if (!query) return toolError("query is required");
 
             const limit = Math.max(1, Math.min(20, asFloat(args.limit, 10)));
-            const sessionId = String(args.session ?? "").trim() || undefined;
 
-            const result = await memoryRecallSearch(query, { limit, sessionId });
+            const result = await memoryRecallSearch(query, { limit });
             return toolResult(result);
           },
         },
