@@ -1,10 +1,18 @@
-import type { DispatchOutcome, EventQueueAdapter, StoredEvent } from "../queue.ts";
+import type { EventQueueAdapter, EventQueueProcess } from "../queue.ts";
 
 /** Null queue adapter; emit dropped, never dispatch */
 export class NullEventQueue implements EventQueueAdapter {
-  enqueue(_topicQualifiedId: string, _payload: unknown): void {}
+  constructor() {}
 
-  start(_process: (event: StoredEvent) => Promise<DispatchOutcome>): void {}
+  enqueue(_topicQualifiedId: string, _payload: unknown): void {
+    return;
+  }
 
-  stop(): void {}
+  start(_process: EventQueueProcess): void {
+    return;
+  }
+
+  stop(): void {
+    return;
+  }
 }

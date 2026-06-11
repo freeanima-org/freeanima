@@ -44,6 +44,10 @@ export abstract class Hook<
 > extends QualifiedToken<Payload> {
   /** @internal carries Effect generic; unused at runtime */
   declare protected readonly _effectBrand?: Effect;
+
+  protected constructor(qualifiedId: string, description?: string) {
+    super(qualifiedId, description);
+  }
 }
 
 class HookToken<

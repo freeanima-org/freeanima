@@ -16,6 +16,7 @@ describe("NullEventQueue", () => {
 
   it("repeated start / stop do not throw", () => {
     const queue = new NullEventQueue();
+    queue.enqueue("t", null);
     queue.start(async () => "ack");
     queue.start(async () => "ack");
     queue.stop();
