@@ -1,5 +1,5 @@
 name: Setup Bun
-description: 安装固定版本 Bun，可选 bun install --frozen-lockfile
+description: 安装固定版本 Bun，可选 bun install --frozen-lockfile（含依赖缓存）
 inputs:
   bun-version:
     description: Bun 版本（与 packageManager 对齐）
@@ -15,6 +15,16 @@ runs:
     - uses: oven-sh/setup-bun@v2
       with:
         bun-version: ${{ inputs.bun-version }}
+    - name: Cache Bun dependencies
+      if: inputs.install == 'true'
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.bun/install/cache
+          node_modules
+        key: bun-${{ runner.os }}-${{ hashFiles('bun.lock', 'package.json', 'patches/**') }}
+        restore-keys: |
+          bun-${{ runner.os }}-
     - name: Install dependencies
       if: inputs.install == 'true'
       shell: bash

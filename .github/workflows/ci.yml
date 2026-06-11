@@ -16,6 +16,21 @@ jobs:
     permissions:
       contents: read
       code-quality: write
+    env:
+      ANIMA_TEST_PG_URL: postgres://test:test@localhost:5432/test
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U test"
+          --health-interval 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v6
         with:
@@ -25,8 +40,7 @@ jobs:
       - run: bun run typecheck
       - run: bun run lint
       - run: bun run dep-check
-      - run: bun scripts/run-all-tests.ts --suites unit,integration
-      - run: bun run coverage:cobertura
+      - run: bun scripts/run-ci-tests.ts
       - name: Upload coverage report
         if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         uses: actions/upload-code-coverage@v1
@@ -34,8 +48,6 @@ jobs:
           file: coverage/cobertura.xml
           language: JavaScript
           label: code-coverage/bun
-      - run: bun run coverage:check-threshold
-
   blackbox-dispatch:
     name: Blackbox dispatch
     needs: [quality]
