@@ -1,12 +1,13 @@
 import { afterEach, describe, expect, it, mock } from "bun:test";
 
-import { resetResolveContextForTest } from "./resolve-context.ts";
-import { buildSearchQueries, stripOllamaTag } from "./normalize.ts";
+import { resetResolveContextForTest, setResolveContext } from "./resolve-context.ts";
+import { buildSearchQueries, deriveBaseModelNames, stripOllamaTag } from "./normalize.ts";
 import {
   generateCandidateRepos,
   resolveTokenizerRepoWithMeta,
   searchHubForTokenizerRepo,
 } from "./resolve.ts";
+import { isLikelyHubRepo, resolveOllamaModelHints } from "./resolve-ollama.ts";
 import { deleteRegistryEntry, loadUserRegistry, saveRegistryEntry } from "./registry.ts";
 import { getRegistryPath } from "./paths.ts";
 import { mkdirSync, rmSync } from "node:fs";
@@ -27,11 +28,62 @@ describe("stripOllamaTag", () => {
   });
 });
 
+describe("deriveBaseModelNames", () => {
+  it("strips quantization suffix for bge-m3-4t", () => {
+    expect(deriveBaseModelNames("bge-m3-4t")).toEqual(["bge-m3-4t", "bge-m3"]);
+  });
+
+  it("strips ollama tag before suffix stripping", () => {
+    expect(deriveBaseModelNames("bge-m3-4t:latest")).toEqual(["bge-m3-4t", "bge-m3"]);
+  });
+});
+
 describe("buildSearchQueries", () => {
   it("includes base name without tag", () => {
     const queries = buildSearchQueries("qwen2.5:7b");
     expect(queries).toContain("qwen2.5");
     expect(queries).toContain("qwen2.5:7b");
+  });
+  it("includes derived base name for quantized variants", () => {
+    const queries = buildSearchQueries("bge-m3-4t");
+    expect(queries).toContain("bge-m3");
+    expect(queries).toContain("bge-m3-4t");
+  });
+});
+
+describe("isLikelyHubRepo", () => {
+  it("accepts org/repo", () => {
+    expect(isLikelyHubRepo("BAAI/bge-m3")).toBe(true);
+  });
+
+  it("rejects local blob paths", () => {
+    expect(isLikelyHubRepo("/usr/share/ollama/.ollama/models/blobs/sha256-abc")).toBe(false);
+  });
+});
+
+describe("resolveOllamaModelHints", () => {
+  afterEach(() => {
+    globalThis.fetch = ORIGINAL_FETCH;
+  });
+
+  it("filters blob paths and keeps hub repos from modelfile", async () => {
+    mockFetch(async (url) => {
+      if (url.endsWith("/api/show")) {
+        return new Response(
+          JSON.stringify({
+            modelfile: "FROM BAAI/bge-m3",
+            model_info: {
+              "general.basename": "/usr/share/ollama/.ollama/models/blobs/sha256-abc",
+            },
+          }),
+          { status: 200 },
+        );
+      }
+      return new Response(null, { status: 404 });
+    });
+
+    const hints = await resolveOllamaModelHints("bge-m3-4t", ["http://127.0.0.1:11434/v1"]);
+    expect(hints).toEqual(["BAAI/bge-m3"]);
   });
 });
 
@@ -129,5 +181,23 @@ describe("resolveTokenizerRepoWithMeta", () => {
     expect(repo).toBe("org/good-repo");
     expect(loadUserRegistry()["stale-model"]).toBe("org/good-repo");
     deleteRegistryEntry("stale-model");
+  });
+
+  it("resolves bge-m3-4t via seed fallback to BAAI/bge-m3", async () => {
+    process.env.FREEANIMA_HOME = testHome;
+    mkdirSync(dirname(getRegistryPath()), { recursive: true });
+    setResolveContext({ ollamaBaseUrls: [] });
+
+    mockFetch(async (url, init) => {
+      if (init?.method === "HEAD" && url.includes("BAAI/bge-m3")) {
+        return new Response(null, { status: 200 });
+      }
+      return new Response(null, { status: 404 });
+    });
+
+    const { repo, meta } = await resolveTokenizerRepoWithMeta("bge-m3-4t");
+    expect(repo).toBe("BAAI/bge-m3");
+    expect(meta.candidatesTried).toContain("BAAI/bge-m3");
+    expect(loadUserRegistry()["bge-m3-4t"]).toBe("BAAI/bge-m3");
   });
 });

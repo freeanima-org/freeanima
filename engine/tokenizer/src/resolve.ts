@@ -1,6 +1,11 @@
 import { FALLBACK_TOKENIZER_REPO, HF_HUB_BASE } from "./constants.ts";
 import { mapWithConcurrency } from "./concurrency.ts";
-import { buildSearchQueries, stripOllamaTag, toTitleKebabModel } from "./normalize.ts";
+import {
+  buildSearchQueries,
+  deriveBaseModelNames,
+  stripOllamaTag,
+  toTitleKebabModel,
+} from "./normalize.ts";
 import { hubResolveUrl } from "./paths.ts";
 import { getResolveContext } from "./resolve-context.ts";
 import { resolveOllamaModelHints } from "./resolve-ollama.ts";
@@ -216,6 +221,19 @@ export async function resolveTokenizerRepoWithMeta(model: string): Promise<Resol
   const { ollamaBaseUrls = [] } = getResolveContext();
   const ollamaHints =
     ollamaBaseUrls.length > 0 ? await resolveOllamaModelHints(trimmed, ollamaBaseUrls) : [];
+
+  const seedRegistry = loadSeedRegistry();
+  const userRegistry = loadUserRegistry();
+  for (const baseName of deriveBaseModelNames(trimmed)) {
+    if (baseName === trimmed) continue;
+    const repo = userRegistry[baseName] ?? seedRegistry[baseName];
+    if (!repo) continue;
+    meta.candidatesTried.push(repo);
+    if (await headTokenizerJsonExists(repo)) {
+      saveRegistryEntry(trimmed, repo);
+      return { repo, meta };
+    }
+  }
 
   const heuristicCandidates = generateCandidateRepos(trimmed, ollamaHints);
   const heuristicHit = await tryCandidates(heuristicCandidates, meta);
