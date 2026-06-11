@@ -23,14 +23,30 @@ describePg("schemas/message", () => {
     await endIntegrationCase();
   });
 
-  it("updateSessionMetaField preserves acp_sessions", async () => {
+  it("updateSessionMetaField preserves acp_tasks", async () => {
     const c = testConv();
     const sid = "schema_test";
     await c.initSession(sid, "m", { platform: "parlor" });
-    await c.updateSessionMetaField(sid, { acp_sessions: { cursor: "uuid-1" } });
+    await c.updateSessionMetaField(sid, {
+      acp_tasks: {
+        "uuid-1": {
+          status: "running",
+          task_id: "t1",
+          agent_name: "cursor",
+          updated_at: "2026-06-11T00:00:00.000Z",
+        },
+      },
+    });
     const meta = await c.loadSessionMeta(sid);
     expect(meta.role).toBe("session_meta");
     if (meta.role !== "session_meta") return;
-    expect(meta.acp_sessions).toEqual({ cursor: "uuid-1" });
+    expect(meta.acp_tasks).toEqual({
+      "uuid-1": {
+        status: "running",
+        task_id: "t1",
+        agent_name: "cursor",
+        updated_at: "2026-06-11T00:00:00.000Z",
+      },
+    });
   });
 });

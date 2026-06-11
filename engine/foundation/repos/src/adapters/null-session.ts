@@ -30,6 +30,14 @@ export const nullSessionStore: SessionStorePort = {
   async appendMessage(..._args: Parameters<SessionStorePort["appendMessage"]>) {
     return unavailable();
   },
+  async appendMessageReturningId(
+    ..._args: Parameters<SessionStorePort["appendMessageReturningId"]>
+  ) {
+    return unavailable();
+  },
+  async updateMessageContent(..._args: Parameters<SessionStorePort["updateMessageContent"]>) {
+    return unavailable();
+  },
   async nextMessagePos(..._args: Parameters<SessionStorePort["nextMessagePos"]>) {
     return unavailable();
   },

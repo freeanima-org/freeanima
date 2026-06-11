@@ -16,6 +16,7 @@ export type AcpAsyncTask = {
   progressNotes: string[];
   lastDeliveredAt: number;
   progressMessageId?: string;
+  decisionNotified?: boolean;
   timeoutAt: number;
   result?: AcpPromptResult;
   error?: string;
@@ -60,11 +61,9 @@ export function formatElapsed(ms: number): string {
 export function formatProgressBody(task: AcpAsyncTask): string {
   const elapsed = formatElapsed(Date.now() - task.startedAt);
   const lines = [`Cursor working (task: ${task.taskId}, elapsed ${elapsed})`];
-  const recent = task.progressNotes.slice(-5);
-  if (recent.length) {
-    for (const note of recent) {
-      lines.push(`  Progress: ${note}`);
-    }
+  const merged = mergeProgressFragments(task.progressNotes);
+  if (merged.trim()) {
+    lines.push(merged);
   } else {
     lines.push("  Progress: waiting for Cursor response...");
   }
@@ -72,6 +71,32 @@ export function formatProgressBody(task: AcpAsyncTask): string {
 }
 
 const MAX_PROGRESS_NOTES = 20;
+export const PROGRESS_DEBOUNCE_MS = 2_000;
+
+/** Merge streaming fragments; drop duplicate tool hints */
+export function mergeProgressFragments(fragments: string[]): string {
+  const lines: string[] = [];
+  const seenTools = new Set<string>();
+  let textBuf = "";
+  for (const raw of fragments) {
+    const trimmed = raw.trim();
+    if (!trimmed) continue;
+    if (trimmed.startsWith("🔧")) {
+      if (textBuf) {
+        lines.push(textBuf.trim());
+        textBuf = "";
+      }
+      if (!seenTools.has(trimmed)) {
+        seenTools.add(trimmed);
+        lines.push(trimmed);
+      }
+      continue;
+    }
+    textBuf += trimmed;
+  }
+  if (textBuf.trim()) lines.push(textBuf.trim());
+  return lines.join("\n");
+}
 
 export function appendProgressNote(task: AcpAsyncTask, note: string): void {
   const trimmed = note.trim();
@@ -81,6 +106,47 @@ export function appendProgressNote(task: AcpAsyncTask, note: string): void {
     task.progressNotes.splice(0, task.progressNotes.length - MAX_PROGRESS_NOTES);
   }
   task.lastProgressAt = Date.now();
+}
+
+export type ProgressDebouncer = {
+  push(fragment: string): void;
+  flush(): void;
+  dispose(): void;
+};
+
+export function createProgressDebouncer(
+  onFlush: (merged: string) => void,
+  debounceMs = PROGRESS_DEBOUNCE_MS,
+): ProgressDebouncer {
+  let buffer: string[] = [];
+  let timer: ReturnType<typeof setTimeout> | null = null;
+
+  const flushNow = (): void => {
+    if (timer) {
+      clearTimeout(timer);
+      timer = null;
+    }
+    if (!buffer.length) return;
+    const merged = mergeProgressFragments(buffer);
+    buffer = [];
+    if (merged) onFlush(merged);
+  };
+
+  return {
+    push(fragment: string) {
+      const trimmed = fragment.trim();
+      if (!trimmed) return;
+      buffer.push(trimmed);
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(flushNow, debounceMs);
+    },
+    flush: flushNow,
+    dispose() {
+      if (timer) clearTimeout(timer);
+      timer = null;
+      buffer = [];
+    },
+  };
 }
 
 export class AcpAsyncTaskStore {

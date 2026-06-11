@@ -45,6 +45,8 @@ export interface SessionStorePort {
   updateCompression(sessionId: string, compression: CompressionState): Promise<void>;
   updateTodos(sessionId: string, todos: SessionTodoStore): Promise<void>;
   appendMessage(sessionId: string, msg: SessionMessage): Promise<ConversationMessage>;
+  appendMessageReturningId(sessionId: string, msg: SessionMessage): Promise<{ messageId: string }>;
+  updateMessageContent(sessionId: string, messageId: string, content: string): Promise<void>;
   nextMessagePos(sessionId: string): Promise<number>;
   listMessages(sessionId: string): Promise<ConversationMessage[]>;
   listMessagesByPosRange(

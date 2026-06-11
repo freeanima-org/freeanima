@@ -2,7 +2,7 @@ import { boolean, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
 import type { PlatformInfo } from "./jsonb/platform-info.ts";
 import type {
-  AcpSessionsJson,
+  AcpTasksJson,
   AwaitingClarifyJson,
   CompressionJson,
   SessionFunctionsJson,
@@ -21,7 +21,7 @@ export const sessions = pgTable("sessions", {
   compression: jsonb("compression").$type<CompressionJson | null>(),
   todos: jsonb("todos").$type<SessionTodosJson>().notNull().default({ items: [], next_id: 1 }),
   awaitingClarify: jsonb("awaiting_clarify").$type<AwaitingClarifyJson | null>(),
-  acpSessions: jsonb("acp_sessions").$type<AcpSessionsJson | null>(),
+  acpTasks: jsonb("acp_tasks").$type<AcpTasksJson | null>(),
   tools: jsonb("tools").$type<SessionToolsJson>().notNull().default([]),
   loadedTools: jsonb("loaded_tools").$type<SessionLoadedToolsJson>().notNull().default([]),
   functions: jsonb("functions").$type<SessionFunctionsJson>().notNull().default([]),

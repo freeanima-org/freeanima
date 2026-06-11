@@ -15,7 +15,7 @@ import {
 } from "@freeanima/engine-db/schema";
 
 import {
-  acpSessionsSchema,
+  acpTasksSchema,
   buildPlatformInfo,
   sessionSelectSchema,
   splitPlatformInfo,
@@ -36,7 +36,7 @@ const META_KNOWN_KEYS = new Set([
   "compression",
   "todos",
   "awaiting_clarify",
-  "acp_sessions",
+  "acp_tasks",
   "tools",
   "loaded_tools",
   "functions",
@@ -73,8 +73,8 @@ export function sessionMetaToInsert(sessionId: string, meta: SessionMetaMessage)
   const compressionParsed = compressionRaw ? compressionStateSchema.parse(compressionRaw) : null;
   const awaitingRaw = pgJsonbOrNull(meta.awaiting_clarify);
   const awaitingParsed = awaitingRaw ? awaitingClarifySchema.parse(awaitingRaw) : null;
-  const acpRaw = pgJsonbOrNull(meta.acp_sessions);
-  const acpParsed = acpRaw ? acpSessionsSchema.parse(acpRaw) : null;
+  const acpRaw = pgJsonbOrNull(meta.acp_tasks);
+  const acpParsed = acpRaw ? acpTasksSchema.parse(acpRaw) : null;
 
   return {
     id: sessionId,
@@ -89,7 +89,7 @@ export function sessionMetaToInsert(sessionId: string, meta: SessionMetaMessage)
     compression: compressionParsed,
     todos,
     awaitingClarify: awaitingParsed,
-    acpSessions: acpParsed,
+    acpTasks: acpParsed,
     tools,
     loadedTools,
     functions,
@@ -108,6 +108,13 @@ export function rowToSessionMeta(row: unknown): SessionMetaMessage {
     capabilityMaskRaw !== undefined ? capabilityMaskSchema.parse(capabilityMaskRaw) : undefined;
   const restExtra = platform_extra ? { ...platform_extra } : undefined;
   if (restExtra) delete restExtra.capability_mask;
+  const handledAt =
+    typeof restExtra?.acp_tasks_handled_at === "string"
+      ? restExtra.acp_tasks_handled_at
+      : undefined;
+  if (restExtra && "acp_tasks_handled_at" in restExtra) {
+    delete restExtra.acp_tasks_handled_at;
+  }
   const base = {
     role: "session_meta" as const,
     timestamp: parsed.createdAt,
@@ -119,7 +126,8 @@ export function rowToSessionMeta(row: unknown): SessionMetaMessage {
     compression: parsed.compression ?? undefined,
     todos: parsed.todos,
     awaiting_clarify: parsed.awaitingClarify ?? undefined,
-    acp_sessions: parsed.acpSessions ?? undefined,
+    acp_tasks: parsed.acpTasks ?? undefined,
+    acp_tasks_handled_at: handledAt,
     tools: parsed.tools,
     loaded_tools: parsed.loadedTools,
     functions: parsed.functions,

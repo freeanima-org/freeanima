@@ -56,6 +56,7 @@ import {
   registerServiceStores,
   registerServiceTools,
 } from "./register.ts";
+import { createAcpSessionUpdatedHandler } from "./acp-session-callback.ts";
 import { registerFridgeStore } from "@freeanima/capabilities-fridge-magnet";
 import { createRedisFridgeStore } from "@freeanima/connectors-redis";
 import { registerLightSleepWire } from "./runtime/light-sleep-wire.ts";
@@ -245,12 +246,14 @@ export async function serve(
     engine = createEngine({ repos, llm: getLlmRuntime(), catalog, config, logger });
     conversation = createConversationService(engine.repos, catalog.toolSets);
 
+    const acpSessionUpdatedRef: { handler: ((sid: string) => void) | null } = { handler: null };
     registerServiceIntegrations({
       kernel,
       conversation,
       toolSets: catalog.toolSets,
       skills: catalog.skills,
       config,
+      onSessionUpdated: (sid) => acpSessionUpdatedRef.handler?.(sid),
     });
 
     registerFridgeStore(createRedisFridgeStore());
@@ -258,6 +261,11 @@ export async function serve(
     startupLog("Initializing AnimaService / EventBus…");
     service = new AnimaService({ kernel, conversation });
     service.markStarted();
+    acpSessionUpdatedRef.handler = createAcpSessionUpdatedHandler({
+      conversation,
+      getService: () => service,
+    });
+    service.setOnSessionUpdated(acpSessionUpdatedRef.handler);
 
     registerServiceStores(repos, { fridgeBridge: createFridgeBridge() });
     registerFridgeMagnet({ kernel });

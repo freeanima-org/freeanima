@@ -9,7 +9,7 @@ import {
 
 import type { SessionSummaryRow } from "@freeanima/engine-repos";
 import {
-  acpSessionsSchema,
+  acpTasksSchema,
   awaitingClarifySchema,
   buildPlatformInfo,
   sessionFunctionsSchema,
@@ -52,7 +52,7 @@ export async function getSessionMetaLite(sessionId: string): Promise<SessionMeta
       compression: sessions.compression,
       todos: sessions.todos,
       awaitingClarify: sessions.awaitingClarify,
-      acpSessions: sessions.acpSessions,
+      acpTasks: sessions.acpTasks,
       tools: sessions.tools,
       loadedTools: sessions.loadedTools,
       functions: sessions.functions,
@@ -102,7 +102,7 @@ export async function upsertSessionMeta(
           compression: row.compression,
           todos: row.todos,
           awaitingClarify: row.awaitingClarify,
-          acpSessions: row.acpSessions,
+          acpTasks: row.acpTasks,
           tools: row.tools,
           loadedTools: row.loadedTools,
           functions: row.functions,
@@ -175,9 +175,9 @@ export async function patchSessionMeta(
     set.awaitingClarify = awaitingRaw ? awaitingClarifySchema.parse(awaitingRaw) : null;
     hasColumnPatch = true;
   }
-  if (patch.acp_sessions !== undefined) {
-    const acpRaw = pgJsonbOrNull(patch.acp_sessions);
-    set.acpSessions = acpRaw ? acpSessionsSchema.parse(acpRaw) : null;
+  if (patch.acp_tasks !== undefined) {
+    const acpRaw = pgJsonbOrNull(patch.acp_tasks);
+    set.acpTasks = acpRaw ? acpTasksSchema.parse(acpRaw) : null;
     hasColumnPatch = true;
   }
   if (patch.model !== undefined) {

@@ -1,11 +1,13 @@
 import { logComponent } from "@freeanima/service-logging";
-import { withDiscordRetry } from "./discord/discord-retry.ts";
+import { withDiscordRetry, deliverDiscordFinalContent } from "./discord/discord-retry.ts";
 import {
   registerCronDeliverer,
   unregisterCronDeliverer,
+  type CronDeliverOptions,
+  type CronDeliverResult,
   type CronDeliverTarget,
 } from "@freeanima/connectors-cron";
-import type { Client, TextBasedChannel } from "discord.js";
+import type { Client, Message, TextBasedChannel } from "discord.js";
 
 import { sendTextChunked } from "./weixin/ilink-api.ts";
 
@@ -25,7 +27,10 @@ function splitMessage(text: string): string[] {
   return chunks;
 }
 
-async function sendDiscord(client: Client, target: CronDeliverTarget, text: string): Promise<void> {
+async function resolveTextChannel(
+  client: Client,
+  target: CronDeliverTarget,
+): Promise<TextBasedChannel & { send: (content: string) => Promise<Message> }> {
   const channelId = target.thread_id ?? target.chat_id;
   const channel = await client.channels.fetch(channelId);
   if (!channel?.isTextBased()) {
@@ -35,15 +40,54 @@ async function sendDiscord(client: Client, target: CronDeliverTarget, text: stri
   if (!("send" in textChannel) || typeof textChannel.send !== "function") {
     throw new Error(`Discord channel ${channelId} cannot send messages`);
   }
-  for (const chunk of splitMessage(text)) {
-    await withDiscordRetry(async () => {
-      await textChannel.send(chunk);
-    });
+  return textChannel as TextBasedChannel & { send: (content: string) => Promise<Message> };
+}
+
+async function sendDiscord(
+  client: Client,
+  target: CronDeliverTarget,
+  text: string,
+  opts?: CronDeliverOptions,
+): Promise<CronDeliverResult | void> {
+  const textChannel = await resolveTextChannel(client, target);
+  const chunks = splitMessage(text);
+  const primary = chunks[0] ?? "";
+
+  if (opts?.editMessageId) {
+    const editId = opts.editMessageId;
+    await deliverDiscordFinalContent(
+      async () => {
+        const msg = await textChannel.messages.fetch(editId);
+        await msg.edit({ content: primary });
+      },
+      async () => {
+        const sent = await textChannel.send(primary);
+        if (sent.id !== editId) {
+          logComponent("cron-deliver").warn("Discord progress fallback sent new message", {
+            channelId: target.thread_id ?? target.chat_id,
+          });
+        }
+      },
+      { phase: "acp-progress" },
+    );
+    for (const chunk of chunks.slice(1)) {
+      await withDiscordRetry(async () => {
+        await textChannel.send(chunk);
+      });
+    }
+    return { messageId: editId };
   }
+
+  let firstId: string | undefined;
+  for (const chunk of chunks) {
+    const sent = await withDiscordRetry(async () => textChannel.send(chunk));
+    if (!firstId) firstId = sent.id;
+  }
+  return firstId ? { messageId: firstId } : undefined;
 }
 
 export function registerDiscordCronDeliverer(client: Client): void {
-  registerCronDeliverer("discord", (target, text) => sendDiscord(client, target, text));
+  registerCronDeliverer("discord", (target, text, opts) => sendDiscord(client, target, text, opts));
 }
 
 export function unregisterDiscordCronDeliverer(): void {
@@ -56,7 +100,7 @@ export function registerWeixinCronDeliverer(params: {
   clientId: string;
   contextTokens: Record<string, string>;
 }): void {
-  registerCronDeliverer("weixin", async (target, text) => {
+  registerCronDeliverer("weixin", async (target, text, _opts) => {
     const contextToken = params.contextTokens[target.chat_id] ?? "";
     await sendTextChunked(
       params.baseUrl,

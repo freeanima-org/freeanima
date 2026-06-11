@@ -34,9 +34,46 @@ export const awaitingClarifySchema = z.object({
 
 export type AwaitingClarifyJson = z.infer<typeof awaitingClarifySchema>;
 
-/** sessions.acp_sessions */
-export const acpSessionsSchema = z.record(z.string(), z.string());
-export type AcpSessionsJson = z.infer<typeof acpSessionsSchema>;
+export const acpTaskStatusSchema = z.enum([
+  "running",
+  "completed",
+  "awaiting_decision",
+  "cancelled",
+  "error",
+]);
+
+export const acpTaskPendingSchema = z.union([
+  z.object({
+    kind: z.literal("questions"),
+    questions: z.array(
+      z.object({
+        id: z.string(),
+        prompt: z.string(),
+        options: z.array(z.object({ id: z.string(), label: z.string() })).default([]),
+      }),
+    ),
+  }),
+  z.object({
+    kind: z.literal("plan"),
+    plan: z.string(),
+    planUri: z.string().optional(),
+  }),
+]);
+
+/** sessions.acp_tasks — keyed by ACP session id */
+export const acpTaskEntrySchema = z.object({
+  status: acpTaskStatusSchema,
+  task_id: z.string(),
+  agent_name: z.string(),
+  updated_at: z.string(),
+  pending: z.array(acpTaskPendingSchema).optional(),
+  progress_message_id: z.string().optional(),
+});
+
+export const acpTasksSchema = z.record(z.string(), acpTaskEntrySchema);
+export type AcpTaskStatusJson = z.infer<typeof acpTaskStatusSchema>;
+export type AcpTaskEntryJson = z.infer<typeof acpTaskEntrySchema>;
+export type AcpTasksJson = z.infer<typeof acpTasksSchema>;
 
 /** Legacy sessions.tools stored OpenAI tool schema; normalize to tool names on read */
 export function normalizeSessionToolNames(raw: unknown): string[] {

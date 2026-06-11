@@ -11,15 +11,26 @@ import type { SessionConversationPort } from "@freeanima/engine-session-port";
 import {
   AcpAsyncTaskStore,
   appendProgressNote,
+  createProgressDebouncer,
   createTaskId,
   formatProgressBody,
   toTaskSnapshot,
   type AcpAsyncTask,
 } from "./async-task.ts";
 import { AcpAgentQueue } from "./agent-queue.ts";
-import type { AcpProgressDeliveryPort } from "./ports/progress-delivery.ts";
+import type {
+  AcpProgressDeliveryPort,
+  AcpProgressDeliverOptions,
+} from "./ports/progress-delivery.ts";
 import { ACPClient } from "./client.ts";
-import { bindAcpSession, getBoundAcpSession, unbindAcpSession } from "./anima-binding.ts";
+import {
+  bindAcpTaskRunning,
+  getBoundAcpSession,
+  removeAcpTaskEntry,
+  unbindAcpSession,
+  updateAcpTaskStatus,
+} from "./acp-tasks.ts";
+import type { CursorPendingInteraction } from "./cursor-decision.ts";
 import {
   formatAcpPromptResult,
   type AcpCursorMode,
@@ -308,8 +319,8 @@ export class AcpManager {
             async: {
               type: "boolean",
               description:
-                "Async execution: returns task_id immediately, runs the Cursor task in the background, progress pushed periodically via the message channel.",
-              default: false,
+                "Async execution (default true): returns task_id immediately, runs the Cursor task in the background, progress pushed periodically via the message channel. Set false for blocking mode.",
+              default: true,
             },
             timeout_minutes: {
               type: "integer",
@@ -336,7 +347,7 @@ export class AcpManager {
           const continueSession =
             args.continue_session === true || args.continue_session === "true";
           const mode = parseMode(args.mode) ?? "agent";
-          const isAsync = args.async === true || args.async === "true";
+          const isAsync = args.async !== false && args.async !== "false";
           const timeoutMinutes = parseTimeoutMinutes(args.timeout_minutes);
           const animaSid = getToolSessionId();
 
@@ -741,7 +752,7 @@ export class AcpManager {
     const sid = await client.createSession(agentCfg.cwd);
     this.sessionStore.add(sid, agentName);
     if (animaSessionId) {
-      await bindAcpSession(this.conv(), animaSessionId, agentName, sid);
+      await bindAcpTaskRunning(this.conv(), animaSessionId, agentName, sid, `sync-${Date.now()}`);
     }
     return sid;
   }
@@ -783,6 +794,9 @@ export class AcpManager {
         /* ignore */
       }
       this.sessionStore.remove(previousBound);
+      if (opts.animaSessionId) {
+        await removeAcpTaskEntry(this.conv(), opts.animaSessionId, previousBound);
+      }
     }
 
     await client.setMode(sid, mode);
@@ -842,6 +856,8 @@ export class AcpManager {
       const ac = new AbortController();
       this.taskAbortControllers.set(taskId, ac);
 
+      await bindAcpTaskRunning(this.conv(), opts.animaSessionId, agentName, sid, taskId);
+
       void this.runAsyncPrompt(task, client, promptText, resolved, mode).catch((err) => {
         logComponent("acp").error("Async ACP task error", { taskId, err });
       });
@@ -870,14 +886,49 @@ export class AcpManager {
     const abort = this.taskAbortControllers.get(taskId);
     const remainingMs = Math.max(task.timeoutAt - Date.now(), 1_000);
 
+    const debouncer = createProgressDebouncer((merged) => {
+      appendProgressNote(task, merged);
+      void this.deliverProgressForTask(task, { weixinBatch: false });
+    });
+
+    const onDecisionNeeded = async (
+      pending: CursorPendingInteraction[],
+      notes: string[],
+    ): Promise<void> => {
+      if (task.decisionNotified) return;
+      task.decisionNotified = true;
+      debouncer.flush();
+      const partialResult: AcpPromptResult = {
+        session_id: acpSessionId,
+        output: notes.join("\n") || "[awaiting decision]",
+        new_session: resolved.newSession,
+        reused_binding: resolved.reusedBinding,
+        explicit_session: resolved.explicit,
+        mode,
+        pending: [...pending],
+      };
+      await updateAcpTaskStatus(
+        this.conv(),
+        task.animaSessionId,
+        acpSessionId,
+        "awaiting_decision",
+        {
+          pending,
+        },
+      );
+      await this.deliverTaskResult(task, partialResult);
+    };
+
     try {
       const output = await client.sendPromptWithOptions(acpSessionId, promptText, {
         promptTimeoutMs: remainingMs,
         abortSignal: abort?.signal,
         onNotification: (_note, parsed) => {
-          if (parsed) appendProgressNote(task, parsed);
+          if (parsed) debouncer.push(parsed);
         },
+        onDecisionNeeded,
       });
+      debouncer.flush();
       const capture = client.takeLastPromptCapture();
       const result: AcpPromptResult = {
         session_id: acpSessionId,
@@ -893,13 +944,20 @@ export class AcpManager {
       task.result = result;
       task.status = "completed";
       task.lastProgressAt = Date.now();
-      await this.deliverTaskResult(task, result);
+      const metaStatus = result.pending?.length ? "awaiting_decision" : "completed";
+      await updateAcpTaskStatus(this.conv(), task.animaSessionId, acpSessionId, metaStatus, {
+        pending: result.pending,
+      });
+      if (metaStatus === "completed" || !task.decisionNotified) {
+        await this.deliverTaskResult(task, result);
+      }
     } catch (e) {
       if (task.status === "cancelled") return;
       const msg = e instanceof Error ? e.message : String(e);
       if (abort?.signal.aborted || msg.includes("aborted")) {
         task.status = "cancelled";
         task.error = "Task cancelled";
+        await updateAcpTaskStatus(this.conv(), task.animaSessionId, acpSessionId, "cancelled");
         await this.deliverTaskError(task, task.error);
       } else if (msg.includes("timed out")) {
         task.status = "timed_out";
@@ -909,14 +967,17 @@ export class AcpManager {
         } catch {
           /* ignore */
         }
+        await updateAcpTaskStatus(this.conv(), task.animaSessionId, acpSessionId, "error");
         await this.deliverTaskError(task, `Task timed out: ${msg}`);
       } else {
         task.status = "error";
         task.error = msg;
         this.agentErrors.set(agentName, msg);
+        await updateAcpTaskStatus(this.conv(), task.animaSessionId, acpSessionId, "error");
         await this.deliverTaskError(task, msg);
       }
     } finally {
+      debouncer.dispose();
       this.releaseAsyncTask(taskId, agentName);
     }
   }
@@ -947,7 +1008,9 @@ export class AcpManager {
     ac?.abort();
     const client = this.clients.get(task.agentName);
     client?.abortActivePrompt();
-    void this.deliverTaskError(task, reason);
+    void updateAcpTaskStatus(this.conv(), task.animaSessionId, task.acpSessionId, "cancelled").then(
+      () => this.deliverTaskError(task, reason),
+    );
   }
 
   async pollProgress(): Promise<void> {
@@ -955,15 +1018,37 @@ export class AcpManager {
     if (!port) return;
 
     for (const task of this.taskStore.listRunning()) {
-      if (task.lastProgressAt <= task.lastDeliveredAt && task.lastDeliveredAt > 0) continue;
-      const body = formatProgressBody(task);
-      try {
-        const res = await port.deliverProgress(toTaskSnapshot(task), body);
-        if (res?.progressMessageId) task.progressMessageId = res.progressMessageId;
-        task.lastDeliveredAt = Date.now();
-      } catch (e) {
-        logComponent("acp").warn("ACP progress delivery failed", { taskId: task.taskId, err: e });
+      await this.deliverProgressForTask(task, { weixinBatch: true });
+    }
+  }
+
+  private async deliverProgressForTask(
+    task: AcpAsyncTask,
+    deliverOpts?: AcpProgressDeliverOptions,
+  ): Promise<void> {
+    const port = this.progressDelivery;
+    if (!port) return;
+    if (task.lastProgressAt <= task.lastDeliveredAt && task.lastDeliveredAt > 0) return;
+
+    const body = formatProgressBody(task);
+    try {
+      const res = await port.deliverProgress(toTaskSnapshot(task), body, deliverOpts);
+      if (res?.progressMessageId) {
+        const isNew = !task.progressMessageId;
+        task.progressMessageId = res.progressMessageId;
+        if (isNew && task.animaSessionId && task.acpSessionId) {
+          await updateAcpTaskStatus(
+            this.conv(),
+            task.animaSessionId,
+            task.acpSessionId,
+            "running",
+            { progress_message_id: res.progressMessageId },
+          );
+        }
       }
+      task.lastDeliveredAt = Date.now();
+    } catch (e) {
+      logComponent("acp").warn("ACP progress delivery failed", { taskId: task.taskId, err: e });
     }
   }
 

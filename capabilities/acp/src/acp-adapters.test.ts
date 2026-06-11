@@ -20,6 +20,17 @@ describe("parseSessionUpdateChunk", () => {
     });
     expect(text).toBe("world");
   });
+
+  it("formats toolcall with arguments", () => {
+    const text = parseSessionUpdateChunk({
+      sessionUpdate: "tool_call",
+      name: "read_file",
+      arguments: { path: "src/foo.ts" },
+    });
+    expect(text).toContain("read_file");
+    expect(text).toContain("src/foo.ts");
+    expect(text).not.toContain("read_file(...)");
+  });
 });
 
 describe("cursorAcpAdapter", () => {
