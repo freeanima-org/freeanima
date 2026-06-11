@@ -5,56 +5,51 @@
 
 ## [0.3.11](https://github.com/freeanima-org/freeanima/compare/v0.3.10...v0.3.11) (2026-06-10)
 
-
 ### Features
 
-* **embedding:** 按 6K token 动态拼批并支持超长文本分块 ([ef36080](https://github.com/freeanima-org/freeanima/commit/ef360802e6e9df224658ed47f381525f9aff2d4d))
-* **i18n:** 接入 Paraglide 与 po4a 统一双语管线 ([938da42](https://github.com/freeanima-org/freeanima/commit/938da4241b18f8a0579fe8b2318a737d841b5c52))
-* **site:** 文档站接入 Mermaid 图表渲染 ([5be636d](https://github.com/freeanima-org/freeanima/commit/5be636d26535e263d573a7c5effd9ae092ad2851))
-* **site:** 移植多区块落地页并接入 Starlight 暖灰主题 ([7ecfe5f](https://github.com/freeanima-org/freeanima/commit/7ecfe5f6e711754f8bb25ebf450c130f91c78635))
-* **tool:** 工具返回 Zod 契约与保真示例 ([937ad84](https://github.com/freeanima-org/freeanima/commit/937ad84485c970c457772f711002c5cf792209eb))
-* **webui:** AOT 静态构建与 --dev watch，修复创作室 tab 切换崩溃 ([4f9ae04](https://github.com/freeanima-org/freeanima/commit/4f9ae048a362a8818a8fc0aa4c3d1943d3e5c327))
-* **webui:** 卧室新增只读待办任务管理页 ([bddaf4b](https://github.com/freeanima-org/freeanima/commit/bddaf4b89cfbb638d0f5031812e1f0ab84fefc3a))
-* **webui:** 新增冰箱贴只读查看页与会客厅紧凑预览 ([4b8d60a](https://github.com/freeanima-org/freeanima/commit/4b8d60aacaa83abc2eb4934bbfe812dbcbb614b2))
-
+- **embedding:** 按 6K token 动态拼批并支持超长文本分块 ([ef36080](https://github.com/freeanima-org/freeanima/commit/ef360802e6e9df224658ed47f381525f9aff2d4d))
+- **i18n:** 接入 Paraglide 与 po4a 统一双语管线 ([938da42](https://github.com/freeanima-org/freeanima/commit/938da4241b18f8a0579fe8b2318a737d841b5c52))
+- **site:** 文档站接入 Mermaid 图表渲染 ([5be636d](https://github.com/freeanima-org/freeanima/commit/5be636d26535e263d573a7c5effd9ae092ad2851))
+- **site:** 移植多区块落地页并接入 Starlight 暖灰主题 ([7ecfe5f](https://github.com/freeanima-org/freeanima/commit/7ecfe5f6e711754f8bb25ebf450c130f91c78635))
+- **tool:** 工具返回 Zod 契约与保真示例 ([937ad84](https://github.com/freeanima-org/freeanima/commit/937ad84485c970c457772f711002c5cf792209eb))
+- **webui:** AOT 静态构建与 --dev watch，修复创作室 tab 切换崩溃 ([4f9ae04](https://github.com/freeanima-org/freeanima/commit/4f9ae048a362a8818a8fc0aa4c3d1943d3e5c327))
+- **webui:** 卧室新增只读待办任务管理页 ([bddaf4b](https://github.com/freeanima-org/freeanima/commit/bddaf4b89cfbb638d0f5031812e1f0ab84fefc3a))
+- **webui:** 新增冰箱贴只读查看页与会客厅紧凑预览 ([4b8d60a](https://github.com/freeanima-org/freeanima/commit/4b8d60aacaa83abc2eb4934bbfe812dbcbb614b2))
 
 ### Bug Fixes
 
-* **ci:** 修复 CodeQL 告警与 blackbox dispatch PAT 说明 ([a09fe9f](https://github.com/freeanima-org/freeanima/commit/a09fe9feca0914a8ec570acfffdc52bed9895514))
-* **dep-check:** 按包名首段校验 import 并同步 AGENTS ([a8caf2f](https://github.com/freeanima-org/freeanima/commit/a8caf2fe54062f13379208c816bf1566f2a915f5))
-* **i18n:** lower po4a opt_keep threshold to 0 to unblock site deploy ([32b2b24](https://github.com/freeanima-org/freeanima/commit/32b2b240b05ab155774320c89b7fde658e2ddb5c))
-* **i18n:** use valid po4a keep option syntax ([8e4e424](https://github.com/freeanima-org/freeanima/commit/8e4e424df1b9cb329197dab63082a71067b3eb36))
-* **webui:** 修复会客厅 SSE 流式消息丢失 ([27c5866](https://github.com/freeanima-org/freeanima/commit/27c586619d1e30948790cd93efbf3e6fad042502))
-* **webui:** 修复睡眠记录页 Date 渲染崩溃与 runs 列表加载失败 ([1f6993a](https://github.com/freeanima-org/freeanima/commit/1f6993a85ab055f05aa645bd8441fd9c1d43031b))
-* **webui:** 修复记忆台搜索 observed_at 渲染崩溃 ([87db654](https://github.com/freeanima-org/freeanima/commit/87db65412afd472b28cd04169fdd9c2298c691d3))
-
+- **ci:** 修复 CodeQL 告警与 blackbox dispatch PAT 说明 ([a09fe9f](https://github.com/freeanima-org/freeanima/commit/a09fe9feca0914a8ec570acfffdc52bed9895514))
+- **dep-check:** 按包名首段校验 import 并同步 AGENTS ([a8caf2f](https://github.com/freeanima-org/freeanima/commit/a8caf2fe54062f13379208c816bf1566f2a915f5))
+- **i18n:** lower po4a opt_keep threshold to 0 to unblock site deploy ([32b2b24](https://github.com/freeanima-org/freeanima/commit/32b2b240b05ab155774320c89b7fde658e2ddb5c))
+- **i18n:** use valid po4a keep option syntax ([8e4e424](https://github.com/freeanima-org/freeanima/commit/8e4e424df1b9cb329197dab63082a71067b3eb36))
+- **webui:** 修复会客厅 SSE 流式消息丢失 ([27c5866](https://github.com/freeanima-org/freeanima/commit/27c586619d1e30948790cd93efbf3e6fad042502))
+- **webui:** 修复睡眠记录页 Date 渲染崩溃与 runs 列表加载失败 ([1f6993a](https://github.com/freeanima-org/freeanima/commit/1f6993a85ab055f05aa645bd8441fd9c1d43031b))
+- **webui:** 修复记忆台搜索 observed_at 渲染崩溃 ([87db654](https://github.com/freeanima-org/freeanima/commit/87db65412afd472b28cd04169fdd9c2298c691d3))
 
 ### Miscellaneous
 
-* **ci:** 统一使用组织 secret FREEANIMA_CI ([d48215f](https://github.com/freeanima-org/freeanima/commit/d48215f3b8c030553130d905ed0a81aa1e984a69))
-* **deps:** 升级 nodemailer 与 astro ([503b1f4](https://github.com/freeanima-org/freeanima/commit/503b1f46afda8688e85288efb1371ef81f5a1aee))
-* **release:** 对齐 changelog 列表符与 oxfmt 并约束 Agent 勿改 CHANGELOG ([b10e9f8](https://github.com/freeanima-org/freeanima/commit/b10e9f8a065089641777d8adf9de20c9de5f8b32))
-* 删除未使用的 connectors-sqlite 包 ([c57c578](https://github.com/freeanima-org/freeanima/commit/c57c5789fba224f46afb426c85d386731433a28b))
-
+- **ci:** 统一使用组织 secret FREEANIMA_CI ([d48215f](https://github.com/freeanima-org/freeanima/commit/d48215f3b8c030553130d905ed0a81aa1e984a69))
+- **deps:** 升级 nodemailer 与 astro ([503b1f4](https://github.com/freeanima-org/freeanima/commit/503b1f46afda8688e85288efb1371ef81f5a1aee))
+- **release:** 对齐 changelog 列表符与 oxfmt 并约束 Agent 勿改 CHANGELOG ([b10e9f8](https://github.com/freeanima-org/freeanima/commit/b10e9f8a065089641777d8adf9de20c9de5f8b32))
+- 删除未使用的 connectors-sqlite 包 ([c57c578](https://github.com/freeanima-org/freeanima/commit/c57c5789fba224f46afb426c85d386731433a28b))
 
 ### Refactoring
 
-* **docs:** 重组文档目录并同步站点与 i18n ([691330d](https://github.com/freeanima-org/freeanima/commit/691330d05490683b608b07fcf72f05a8fc26f5e5))
-* **engine-db:** runMigrations 支持注入 migrationsFolder ([30239f3](https://github.com/freeanima-org/freeanima/commit/30239f3eebf8f34c0af208593f79bb0df4cfb102))
-* **engine-repos:** 下沉 memory-reference 标记解析 ([1ce2b9b](https://github.com/freeanima-org/freeanima/commit/1ce2b9b41d2f6d967b5592b44948e6a1046022b5))
-* **i18n:** 代码侧全面英文化 ([d618ea0](https://github.com/freeanima-org/freeanima/commit/d618ea049713a8329fbdb7d852ba711cdbe0ff6c))
-* **service-api:** ServiceContext 端口化并移除 capabilities/engine 依赖 ([28acf49](https://github.com/freeanima-org/freeanima/commit/28acf49f50f20d0f34ab9151c1f45cf1f21fa0e8))
-* **service-api:** 迁入 display/snapshot/restart 契约 ([c4c3a68](https://github.com/freeanima-org/freeanima/commit/c4c3a687b3ed0c4a2596db92f64c7a37aace17fe))
-* **service:** 拆分 register 为 tools/integrations/memory 模块 ([54afa0f](https://github.com/freeanima-org/freeanima/commit/54afa0f90894ec187e8ee867d9eb86680fa6c30a))
-* **test:** 黑盒 E2E 迁至 freeanima-testing ([4755120](https://github.com/freeanima-org/freeanima/commit/4755120f4deb8bd407746ea26eca04bf6d189d4e))
-* **webui:** handler runtime 绑定与 memory/self 工厂模式 ([727fb69](https://github.com/freeanima-org/freeanima/commit/727fb691b208e23ec29a97c4e215e50de5654da7))
-* 移除 [@deprecated](https://github.com/deprecated) API 并完成调用方迁移 ([30781d9](https://github.com/freeanima-org/freeanima/commit/30781d9e9bd5d4e81407d45ae1a9ac77ca51cac1))
-* 组合根 store 一次性注入与 FridgeStorePort 反转 ([be3d82f](https://github.com/freeanima-org/freeanima/commit/be3d82f720fd98cf8242409a872f834c66c1838f))
-
+- **docs:** 重组文档目录并同步站点与 i18n ([691330d](https://github.com/freeanima-org/freeanima/commit/691330d05490683b608b07fcf72f05a8fc26f5e5))
+- **engine-db:** runMigrations 支持注入 migrationsFolder ([30239f3](https://github.com/freeanima-org/freeanima/commit/30239f3eebf8f34c0af208593f79bb0df4cfb102))
+- **engine-repos:** 下沉 memory-reference 标记解析 ([1ce2b9b](https://github.com/freeanima-org/freeanima/commit/1ce2b9b41d2f6d967b5592b44948e6a1046022b5))
+- **i18n:** 代码侧全面英文化 ([d618ea0](https://github.com/freeanima-org/freeanima/commit/d618ea049713a8329fbdb7d852ba711cdbe0ff6c))
+- **service-api:** ServiceContext 端口化并移除 capabilities/engine 依赖 ([28acf49](https://github.com/freeanima-org/freeanima/commit/28acf49f50f20d0f34ab9151c1f45cf1f21fa0e8))
+- **service-api:** 迁入 display/snapshot/restart 契约 ([c4c3a68](https://github.com/freeanima-org/freeanima/commit/c4c3a687b3ed0c4a2596db92f64c7a37aace17fe))
+- **service:** 拆分 register 为 tools/integrations/memory 模块 ([54afa0f](https://github.com/freeanima-org/freeanima/commit/54afa0f90894ec187e8ee867d9eb86680fa6c30a))
+- **test:** 黑盒 E2E 迁至 freeanima-testing ([4755120](https://github.com/freeanima-org/freeanima/commit/4755120f4deb8bd407746ea26eca04bf6d189d4e))
+- **webui:** handler runtime 绑定与 memory/self 工厂模式 ([727fb69](https://github.com/freeanima-org/freeanima/commit/727fb691b208e23ec29a97c4e215e50de5654da7))
+- 移除 [@deprecated](https://github.com/deprecated) API 并完成调用方迁移 ([30781d9](https://github.com/freeanima-org/freeanima/commit/30781d9e9bd5d4e81407d45ae1a9ac77ca51cac1))
+- 组合根 store 一次性注入与 FridgeStorePort 反转 ([be3d82f](https://github.com/freeanima-org/freeanima/commit/be3d82f720fd98cf8242409a872f834c66c1838f))
 
 ### CI
 
-* **release:** 改用 Release Please 替代 semantic-release ([1510a68](https://github.com/freeanima-org/freeanima/commit/1510a688d5ec47e92b45d484b5efbafb17856d98))
+- **release:** 改用 Release Please 替代 semantic-release ([1510a68](https://github.com/freeanima-org/freeanima/commit/1510a688d5ec47e92b45d484b5efbafb17856d98))
 
 ## [0.3.10](https://github.com/freeanima-org/freeanima/compare/v0.3.9...v0.3.10) (2026-06-10)
 

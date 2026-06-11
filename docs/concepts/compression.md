@@ -151,7 +151,7 @@ compression:
 
 When `models.*.context_window` and `default_context_window` are both unset, falls back to **message count** mode: first trigger `> max_rounds×2` messages; after compression, raw segment `> max_rounds×4` triggers again.
 
-Token estimate: `engine/compress/src/token-estimate.ts` (shared with `conversation-stats`).
+Token estimate: `@freeanima/engine-tokenizer` (via `engine/compress/src/token-estimate.ts`, shared with `conversation-stats`). Models auto-resolve HuggingFace `tokenizer.json`; unresolved models use multilingual fallback `FacebookAI/xlm-roberta-base` (~9MB, cached under `~/.anima/tokenizers/`). No `config.yaml` tokenizer fields.
 
 ---
 

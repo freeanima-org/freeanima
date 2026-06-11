@@ -7,6 +7,8 @@ import {
   estimateTokens,
   estimateToolsTokens,
 } from "@freeanima/engine-compress";
+import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
+import { getProfileHopModel, loadConfig } from "@freeanima/service-config";
 import { loadSelfLayerPrompt } from "@freeanima/life-self";
 import { getServiceContext } from "../context.ts";
 
@@ -36,6 +38,7 @@ export async function computeRuntimeContextBreakdown(
   const selfContent = await loadSelfLayerPrompt();
   const cwd = isSessionMeta(meta) ? meta.cwd : undefined;
   const parts = await decomposeSystemPromptParts(selfContent, cwd);
+  const model = isSessionMeta(meta) ? meta.model : getProfileHopModel(loadConfig(), PROFILE_CHAT);
 
   let summary = 0;
   const messageRows: SessionMessage[] = [];
@@ -44,18 +47,18 @@ export async function computeRuntimeContextBreakdown(
     if (m.role === "user") {
       const content = m.content;
       if (content.startsWith(SUMMARY_USER_PREFIX)) {
-        summary += estimateTokens(content);
+        summary += estimateTokens(content, model);
         continue;
       }
     }
     messageRows.push(m);
   }
 
-  const system_self = estimateTokens(parts.self);
-  const system_agents = estimateTokens(parts.agents);
-  const system_resident = estimateTokens(parts.resident);
-  const messages = estimateMessagesTokens(messageRows);
-  const toolsTokens = estimateToolsTokens(tools);
+  const system_self = estimateTokens(parts.self, model);
+  const system_agents = estimateTokens(parts.agents, model);
+  const system_resident = estimateTokens(parts.resident, model);
+  const messages = estimateMessagesTokens(messageRows, model);
+  const toolsTokens = estimateToolsTokens(tools, model);
 
   const total = system_self + system_agents + system_resident + summary + messages + toolsTokens;
 

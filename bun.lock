@@ -180,6 +180,7 @@
       "dependencies": {
         "@freeanima/engine-db": "workspace:*",
         "@freeanima/engine-repos": "workspace:*",
+        "@freeanima/engine-tokenizer": "workspace:*",
         "@freeanima/kernel-util": "workspace:*",
         "@freeanima/service-config": "workspace:*",
         "@freeanima/service-logging": "workspace:*",
@@ -279,6 +280,7 @@
       "dependencies": {
         "@freeanima/engine-db": "workspace:*",
         "@freeanima/engine-llm": "workspace:*",
+        "@freeanima/engine-tokenizer": "workspace:*",
         "@freeanima/service-config": "workspace:*",
       },
       "devDependencies": {
@@ -394,6 +396,16 @@
         "@freeanima/engine-tool": "workspace:*",
         "@freeanima/kernel-util": "workspace:*",
         "@freeanima/service-config": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
+    "engine/tokenizer": {
+      "name": "@freeanima/engine-tokenizer",
+      "dependencies": {
+        "@freeanima/service-logging": "workspace:*",
+        "@huggingface/tokenizers": "^0.1.3",
       },
       "devDependencies": {
         "@types/bun": "catalog:",
@@ -575,6 +587,7 @@
         "@freeanima/engine-provider-llm": "workspace:*",
         "@freeanima/engine-repos": "workspace:*",
         "@freeanima/engine-skill": "workspace:*",
+        "@freeanima/engine-tokenizer": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
         "@freeanima/kernel": "workspace:*",
         "@freeanima/kernel-eventbus": "workspace:*",
@@ -634,6 +647,7 @@
         "@freeanima/engine-llm": "workspace:*",
         "@freeanima/engine-loop": "workspace:*",
         "@freeanima/engine-repos": "workspace:*",
+        "@freeanima/engine-tokenizer": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
         "@freeanima/kernel": "workspace:*",
         "@freeanima/kernel-eventbus": "workspace:*",
@@ -916,6 +930,8 @@
 
     "@freeanima/engine-skill": ["@freeanima/engine-skill@workspace:engine/skill"],
 
+    "@freeanima/engine-tokenizer": ["@freeanima/engine-tokenizer@workspace:engine/tokenizer"],
+
     "@freeanima/engine-tool": ["@freeanima/engine-tool@workspace:engine/tool"],
 
     "@freeanima/integration-tests": ["@freeanima/integration-tests@workspace:tests"],
@@ -951,6 +967,8 @@
     "@freeanima/site": ["@freeanima/site@workspace:site"],
 
     "@hono/node-server": ["@hono/node-server@1.19.14", "", { "peerDependencies": { "hono": "^4" } }, "sha512-GwtvgtXxnWsucXvbQXkRgqksiH2Qed37H9xHZocE5sA3N8O8O8/8FA3uclQXxXVzc9XBZuEOMK7+r02FmSpHtw=="],
+
+    "@huggingface/tokenizers": ["@huggingface/tokenizers@0.1.3", "", {}, "sha512-8rF/RRT10u+kn7YuUbUg0OF30K8rjTc78aHpxT+qJ1uWSqxT1MHi8+9ltwYfkFYJzT/oS+qw3JVfHtNMGAdqyA=="],
 
     "@iconify/types": ["@iconify/types@2.0.0", "", {}, "sha512-+wluvCrRhXrhyOmRDJ3q8mux9JkKy5SJ/v8ol2tu4FVjyYvtEzkc/3pK15ET6RKg4b4w4BmTk1+gsCUhf21Ykg=="],
 

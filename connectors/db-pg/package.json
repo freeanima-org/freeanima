@@ -8,6 +8,7 @@
   "dependencies": {
     "@freeanima/engine-repos": "workspace:*",
     "@freeanima/engine-db": "workspace:*",
+    "@freeanima/engine-tokenizer": "workspace:*",
     "@freeanima/kernel-util": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "@freeanima/service-logging": "workspace:*",

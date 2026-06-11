@@ -78,6 +78,7 @@ import { createFridgeBridge } from "@freeanima/capabilities-tasks";
 import { DEFAULT_BIND_HOST, parseBindHosts } from "./bind-hosts.ts";
 import { initServiceContext } from "./context.ts";
 import { wireEmbeddingRuntime } from "./runtime/embedding-wire.ts";
+import { wireTokenizerRuntime } from "./runtime/tokenizer-wire.ts";
 import { resolveWebuiDevMode } from "./webui-dev-mode.ts";
 
 let service: AnimaService | null = null;
@@ -208,6 +209,7 @@ export async function serve(
     startupLog("Validating config.yaml…");
     await validateConfigOnStartup();
     wireEmbeddingRuntime();
+    await wireTokenizerRuntime();
 
     startupLog("Registering tools…");
     const catalog = createEngineCatalog();

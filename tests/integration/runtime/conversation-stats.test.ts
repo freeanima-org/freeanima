@@ -8,6 +8,12 @@ import {
 
 import { normalizeUsage } from "@freeanima/engine-llm";
 import { estimateTokens, estimateMessagesTokens } from "@freeanima/engine-compress";
+import { FALLBACK_TOKENIZER_REPO } from "@freeanima/engine-tokenizer";
+import {
+  ensureFallbackTokenizer,
+  resetTokenizerForTest,
+  setTokenizerEncodeForTest,
+} from "@freeanima/engine-tokenizer/testing";
 import { computeStats, mergeStats, statsReport } from "@freeanima/service";
 import { testConv } from "../../helpers/pg-test.ts";
 
@@ -16,9 +22,17 @@ describePg("conversation-stats", () => {
 
   beforeEach(async () => {
     await beginIntegrationCase("anima-stats-");
+    setTokenizerEncodeForTest(FALLBACK_TOKENIZER_REPO, (text: string) => {
+      const len = text.trim().length;
+      if (!len) return [];
+      const n = Math.max(1, Math.ceil(len / 3.5));
+      return Array.from({ length: n }, (_, i) => i + 1);
+    });
+    await ensureFallbackTokenizer();
   });
 
   afterEach(async () => {
+    resetTokenizerForTest();
     await restoreIntegrationHome(prev);
   });
 

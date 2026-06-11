@@ -1,4 +1,5 @@
 import { logComponent } from "@freeanima/service-logging";
+import { getResolvedEmbeddingConfig } from "@freeanima/service-config";
 
 import { packEmbeddingJobs } from "./batch-pack.ts";
 import { getEmbedTextFn, getEmbedTextsFn } from "./runtime.ts";
@@ -101,7 +102,8 @@ export async function embedAndStoreJobs(
   }
   if (!validJobs.length) return 0;
 
-  const packs = packEmbeddingJobs(validJobs);
+  const embeddingModel = getResolvedEmbeddingConfig()?.model ?? "";
+  const packs = packEmbeddingJobs(validJobs, { model: embeddingModel });
 
   const vectorsByJob = new Map<string, number[][]>();
 

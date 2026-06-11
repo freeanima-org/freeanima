@@ -2,6 +2,7 @@ import { sql as drizzleSql } from "drizzle-orm";
 
 import { isCjkJiebaEnabled, isEmbeddingEnabled } from "@freeanima/service-config";
 
+import { EMBEDDING_QUEUE_FLUSH_THRESHOLD } from "../embedding/batch-pack.ts";
 import { embedAndStoreJobs } from "../embedding/embed-jobs.ts";
 import { getEmbedTextFn, getEmbedTextsFn } from "../embedding/runtime.ts";
 import type { EmbeddingPendingJob } from "../embedding/types.ts";
@@ -9,7 +10,8 @@ import { getDb } from "../client.ts";
 import { segmentForFts } from "./segment.ts";
 import type { FtsRebuildOptions, FtsRebuildPhase } from "./rebuild-types.ts";
 
-const BATCH_SIZE = 500;
+/** PG cursor page size only; Ollama API packing is token-based in packEmbeddingJobs. */
+const REBUILD_DB_PAGE_SIZE = EMBEDDING_QUEUE_FLUSH_THRESHOLD;
 
 export type FtsRebuildResult = {
   tables: Record<string, number>;
@@ -76,7 +78,10 @@ async function rebuildSemanticMemoryFtsSegmented(
 ): Promise<number> {
   const onlyMissing = opts.onlyMissing ?? false;
   const total = useJieba ? await countSemanticMemorySegmentedTargets(onlyMissing) : 0;
-  if (!useJieba) return 0;
+  if (useJieba) {
+    report(opts.onProgress, "semantic_memory_segmented", "semantic_memory", 0, total);
+  }
+  if (!useJieba || total === 0) return 0;
 
   const db = getDb();
   let updated = 0;
@@ -92,7 +97,7 @@ async function rebuildSemanticMemoryFtsSegmented(
       WHERE length(btrim(content)) > 0 ${missingFilter}
       ORDER BY id
       OFFSET ${offset}
-      LIMIT ${BATCH_SIZE}
+      LIMIT ${REBUILD_DB_PAGE_SIZE}
     `);
     if (!rows.length) break;
 
@@ -107,7 +112,7 @@ async function rebuildSemanticMemoryFtsSegmented(
       report(opts.onProgress, "semantic_memory_segmented", "semantic_memory", updated, total);
     }
     offset += rows.length;
-    if (rows.length < BATCH_SIZE) break;
+    if (rows.length < REBUILD_DB_PAGE_SIZE) break;
   }
 
   return updated;
@@ -119,7 +124,10 @@ async function rebuildMessagesFtsSegmented(
 ): Promise<number> {
   const onlyMissing = opts.onlyMissing ?? false;
   const total = useJieba ? await countMessagesSegmentedTargets(onlyMissing) : 0;
-  if (!useJieba) return 0;
+  if (useJieba) {
+    report(opts.onProgress, "messages_segmented", "messages", 0, total);
+  }
+  if (!useJieba || total === 0) return 0;
 
   const db = getDb();
   let updated = 0;
@@ -135,7 +143,7 @@ async function rebuildMessagesFtsSegmented(
       WHERE content_fts IS NOT NULL ${missingFilter}
       ORDER BY id
       OFFSET ${offset}
-      LIMIT ${BATCH_SIZE}
+      LIMIT ${REBUILD_DB_PAGE_SIZE}
     `);
     if (!rows.length) break;
 
@@ -151,7 +159,7 @@ async function rebuildMessagesFtsSegmented(
       report(opts.onProgress, "messages_segmented", "messages", updated, total);
     }
     offset += rows.length;
-    if (rows.length < BATCH_SIZE) break;
+    if (rows.length < REBUILD_DB_PAGE_SIZE) break;
   }
 
   return updated;
@@ -162,8 +170,12 @@ async function rebuildSemanticMemoryEmbeddings(opts: FtsRebuildOptions): Promise
 
   const onlyMissing = opts.onlyMissing ?? false;
   const total = await countSemanticMemoryEmbeddingTargets(onlyMissing);
+  report(opts.onProgress, "semantic_memory_embedding", "semantic_memory", 0, total);
+  if (total === 0) return 0;
+
   const db = getDb();
   let updated = 0;
+  let processed = 0;
   let offset = 0;
   const missingFilter = onlyMissing ? drizzleSql`AND content_embedding IS NULL` : drizzleSql``;
 
@@ -176,7 +188,7 @@ async function rebuildSemanticMemoryEmbeddings(opts: FtsRebuildOptions): Promise
         ${missingFilter}
       ORDER BY id
       OFFSET ${offset}
-      LIMIT ${BATCH_SIZE}
+      LIMIT ${REBUILD_DB_PAGE_SIZE}
     `);
     if (!rows.length) break;
 
@@ -186,15 +198,13 @@ async function rebuildSemanticMemoryEmbeddings(opts: FtsRebuildOptions): Promise
       content: row.content,
     }));
 
-    await embedAndStoreJobs(jobs, {
-      onStored: (count) => {
-        updated += count;
-        report(opts.onProgress, "semantic_memory_embedding", "semantic_memory", updated, total);
-      },
-    });
+    const stored = await embedAndStoreJobs(jobs);
+    updated += stored;
+    processed += rows.length;
+    report(opts.onProgress, "semantic_memory_embedding", "semantic_memory", processed, total);
 
     offset += rows.length;
-    if (rows.length < BATCH_SIZE) break;
+    if (rows.length < REBUILD_DB_PAGE_SIZE) break;
   }
 
   return updated;
@@ -205,8 +215,12 @@ async function rebuildMessagesEmbeddings(opts: FtsRebuildOptions): Promise<numbe
 
   const onlyMissing = opts.onlyMissing ?? false;
   const total = await countMessagesEmbeddingTargets(onlyMissing);
+  report(opts.onProgress, "messages_embedding", "messages", 0, total);
+  if (total === 0) return 0;
+
   const db = getDb();
   let updated = 0;
+  let processed = 0;
   let offset = 0;
   const missingFilter = onlyMissing ? drizzleSql`AND content_embedding IS NULL` : drizzleSql``;
 
@@ -217,7 +231,7 @@ async function rebuildMessagesEmbeddings(opts: FtsRebuildOptions): Promise<numbe
       WHERE content_fts IS NOT NULL ${missingFilter}
       ORDER BY id
       OFFSET ${offset}
-      LIMIT ${BATCH_SIZE}
+      LIMIT ${REBUILD_DB_PAGE_SIZE}
     `);
     if (!rows.length) break;
 
@@ -227,15 +241,13 @@ async function rebuildMessagesEmbeddings(opts: FtsRebuildOptions): Promise<numbe
       content: row.content ?? "",
     }));
 
-    await embedAndStoreJobs(jobs, {
-      onStored: (count) => {
-        updated += count;
-        report(opts.onProgress, "messages_embedding", "messages", updated, total);
-      },
-    });
+    const stored = await embedAndStoreJobs(jobs);
+    updated += stored;
+    processed += rows.length;
+    report(opts.onProgress, "messages_embedding", "messages", processed, total);
 
     offset += rows.length;
-    if (rows.length < BATCH_SIZE) break;
+    if (rows.length < REBUILD_DB_PAGE_SIZE) break;
   }
 
   return updated;

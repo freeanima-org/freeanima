@@ -1,4 +1,6 @@
 import { estimateTokens, estimateToolsTokens } from "@freeanima/engine-compress";
+import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
+import { getProfileHopModel, loadConfig } from "@freeanima/service-config";
 import { isSessionMeta } from "@freeanima/engine-db/domain";
 import type { JsonSchemaObject } from "@freeanima/engine-tool";
 import { loadSelfLayerPrompt } from "@freeanima/life-self";
@@ -47,9 +49,10 @@ export function computeGlobalBreakdown(
   parts: SystemPromptParts,
   items: PromptDebugToolItem[],
 ): RuntimeContextBreakdown {
-  const system_self = estimateTokens(parts.self);
-  const system_agents = estimateTokens(parts.agents);
-  const system_resident = estimateTokens(parts.resident);
+  const model = getProfileHopModel(loadConfig(), PROFILE_CHAT);
+  const system_self = estimateTokens(parts.self, model);
+  const system_agents = estimateTokens(parts.agents, model);
+  const system_resident = estimateTokens(parts.resident, model);
   const toolsTokens = estimateToolsTokens(
     items.map((t) => ({
       type: "function",
@@ -59,6 +62,7 @@ export function computeGlobalBreakdown(
         parameters: t.parameters,
       },
     })),
+    model,
   );
   const total = system_self + system_agents + system_resident + toolsTokens;
   return {
