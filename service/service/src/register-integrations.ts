@@ -2,6 +2,7 @@ import { createFridgeMagnetHandler } from "@freeanima/capabilities-fridge-magnet
 import { getAcpManager } from "@freeanima/capabilities-acp";
 import { registerClarifyHooks } from "@freeanima/capabilities-clarify";
 import { createAcpProgressDelivery } from "./acp-progress-delivery.ts";
+import { createAcpTaskQueryPort } from "./acp-task-query.ts";
 import type { Kernel } from "@freeanima/kernel";
 import type { Config } from "@freeanima/engine-config";
 import { beforeLlmCall } from "@freeanima/engine-hooks/loop";
@@ -26,6 +27,7 @@ export function registerServiceIntegrations(opts: {
   const acp = getAcpManager();
   acp.wireRegistries({ toolSets: opts.toolSets, skills: opts.skills, config: opts.config });
   acp.wireConversation(opts.conversation);
+  acp.wireTaskQuery(createAcpTaskQueryPort(opts.conversation));
   acp.wireProgressDelivery(
     createAcpProgressDelivery({
       conversation: opts.conversation,
