@@ -15,6 +15,7 @@ export type AcpAsyncTask = {
   lastProgressAt: number;
   progressNotes: string[];
   lastDeliveredAt: number;
+  lastDiscordDeliveredAt?: number;
   progressMessageId?: string;
   decisionNotified?: boolean;
   timeoutAt: number;
@@ -72,6 +73,55 @@ export function formatProgressBody(task: AcpAsyncTask): string {
 
 const MAX_PROGRESS_NOTES = 20;
 export const PROGRESS_DEBOUNCE_MS = 2_000;
+export const DISCORD_PROGRESS_DELIVER_MS = 5_000;
+const DISCORD_MAX_LEN = 2000;
+
+export function formatDiscordProgressBody(task: AcpAsyncTask): string {
+  const elapsed = formatElapsed(Date.now() - task.startedAt);
+  const statusLabel =
+    task.status === "running"
+      ? "🔄 Cursor running"
+      : task.status === "completed"
+        ? "✅ Cursor completed"
+        : "⚠️ Cursor task";
+  const header = `${statusLabel} (task: ${task.taskId}, ${elapsed})`;
+
+  const merged = mergeProgressFragments(task.progressNotes);
+  const outputLines = merged
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+  const tail = outputLines.slice(-2);
+
+  const lines = [header];
+  if (tail.length) {
+    lines.push(...tail);
+  } else {
+    lines.push("Waiting for Cursor response...");
+  }
+
+  let body = lines.join("\n");
+  if (body.length <= DISCORD_MAX_LEN) return body;
+
+  const tailOnly = tail.length ? tail.join("\n") : "Waiting for Cursor response...";
+  body = `${header}\n${tailOnly}`;
+  if (body.length <= DISCORD_MAX_LEN) return body;
+
+  const compactTail = tail.slice(-2);
+  while (
+    compactTail.length > 1 &&
+    `${header}\n${compactTail.join("\n")}`.length > DISCORD_MAX_LEN
+  ) {
+    compactTail.shift();
+  }
+  let lastLine = compactTail[compactTail.length - 1] ?? "…";
+  while (`${header}\n${lastLine}`.length > DISCORD_MAX_LEN && lastLine.length > 20) {
+    lastLine = `…${lastLine.slice(-(DISCORD_MAX_LEN - header.length - 4))}`;
+  }
+  return compactTail.length > 1
+    ? `${header}\n${compactTail.slice(0, -1).join("\n")}\n${lastLine}`
+    : `${header}\n${lastLine}`;
+}
 
 /** Merge streaming fragments; drop duplicate tool hints */
 export function mergeProgressFragments(fragments: string[]): string {
@@ -169,6 +219,10 @@ export class AcpAsyncTaskStore {
 
   listRunning(): AcpAsyncTask[] {
     return [...this.tasks.values()].filter((t) => t.status === "running");
+  }
+
+  listAll(): AcpAsyncTask[] {
+    return [...this.tasks.values()];
   }
 
   delete(taskId: string): void {

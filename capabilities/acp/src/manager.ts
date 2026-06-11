@@ -8,15 +8,20 @@ import type { Config } from "@freeanima/engine-config";
 import { logComponent } from "@freeanima/service-logging";
 
 import type { SessionConversationPort } from "@freeanima/engine-session-port";
+import { isSessionMeta } from "@freeanima/engine-db/domain";
 import {
   AcpAsyncTaskStore,
   appendProgressNote,
   createProgressDebouncer,
   createTaskId,
+  DISCORD_PROGRESS_DELIVER_MS,
+  formatDiscordProgressBody,
   formatProgressBody,
   toTaskSnapshot,
   type AcpAsyncTask,
 } from "./async-task.ts";
+import type { AcpTaskQueryPort } from "./ports/task-query.ts";
+import { queryAcpTaskStatus } from "./task-status.ts";
 import { AcpAgentQueue } from "./agent-queue.ts";
 import type {
   AcpProgressDeliveryPort,
@@ -195,6 +200,7 @@ export class AcpManager {
   private startTask: Promise<void> | null = null;
   private conversation: SessionConversationPort | null = null;
   private progressDelivery: AcpProgressDeliveryPort | null = null;
+  private taskQuery: AcpTaskQueryPort | null = null;
   private readonly taskStore = new AcpAsyncTaskStore();
   private readonly taskAbortControllers = new Map<string, AbortController>();
   /** agentName → taskId or "sync" */
@@ -223,6 +229,10 @@ export class AcpManager {
 
   wireProgressDelivery(port: AcpProgressDeliveryPort): void {
     this.progressDelivery = port;
+  }
+
+  wireTaskQuery(port: AcpTaskQueryPort): void {
+    this.taskQuery = port;
   }
 
   startProgressTicker(intervalMs = DEFAULT_PROGRESS_INTERVAL_MS): void {
@@ -380,13 +390,59 @@ export class AcpManager {
           );
         },
       };
+      const tools: ToolDef[] = [def];
+      if (agentName === "cursor") {
+        tools.push(this.buildTaskStatusToolDef());
+      }
       const setId = acpToolsetId(agentName);
       this.toolSets.unregisterToolSet(setId);
-      this.toolSets.registerToolSet(setId, description, [def]);
-      count += 1;
+      this.toolSets.registerToolSet(setId, description, tools);
+      count += tools.length;
     }
     this.toolsRegistered = true;
     return count;
+  }
+
+  private buildTaskStatusToolDef(): ToolDef {
+    return {
+      name: "acp_task_status",
+      description:
+        "Read-only query for ACP async task status, latest progress text, and final result when available. " +
+        "Does not send any message to Cursor. Omit task_id to query the latest task in the current session.",
+      parameters: {
+        type: "object",
+        properties: {
+          task_id: {
+            type: "string",
+            description:
+              "Optional task_id. When omitted, returns the most recently updated ACP task for this session.",
+            default: "",
+          },
+        },
+        required: [],
+      },
+      handler: (args) => this.handleTaskStatusQuery(args),
+    };
+  }
+
+  private async handleTaskStatusQuery(args: Record<string, unknown>): Promise<string> {
+    const animaSid = getToolSessionId();
+    if (!animaSid)
+      return toolError("No active session; acp_task_status requires a session context");
+    const taskId = String(args.task_id ?? "").trim() || undefined;
+    const view = await queryAcpTaskStatus({
+      conversation: this.conv(),
+      taskStore: this.taskStore,
+      taskQuery: this.taskQuery,
+      animaSessionId: animaSid,
+      taskId,
+    });
+    if (!view) {
+      return toolError(
+        taskId ? `No ACP task found for task_id: ${taskId}` : "No ACP task found for this session",
+      );
+    }
+    return toolResult(view);
   }
 
   getStatus(): AcpStatusResponse {
@@ -1022,15 +1078,32 @@ export class AcpManager {
     }
   }
 
+  private async sessionPlatform(animaSessionId: string): Promise<string> {
+    const meta = await this.conv().loadSessionMeta(animaSessionId);
+    return isSessionMeta(meta) && typeof meta.platform === "string" ? meta.platform : "";
+  }
+
   private async deliverProgressForTask(
     task: AcpAsyncTask,
     deliverOpts?: AcpProgressDeliverOptions,
   ): Promise<void> {
     const port = this.progressDelivery;
     if (!port) return;
-    if (task.lastProgressAt <= task.lastDeliveredAt && task.lastDeliveredAt > 0) return;
 
-    const body = formatProgressBody(task);
+    const isDiscord = (await this.sessionPlatform(task.animaSessionId)) === "discord";
+    if (isDiscord) {
+      if (task.lastDiscordDeliveredAt && task.lastProgressAt <= task.lastDiscordDeliveredAt) return;
+      if (
+        task.lastDiscordDeliveredAt &&
+        Date.now() - task.lastDiscordDeliveredAt < DISCORD_PROGRESS_DELIVER_MS
+      ) {
+        return;
+      }
+    } else if (task.lastProgressAt <= task.lastDeliveredAt && task.lastDeliveredAt > 0) {
+      return;
+    }
+
+    const body = isDiscord ? formatDiscordProgressBody(task) : formatProgressBody(task);
     try {
       const res = await port.deliverProgress(toTaskSnapshot(task), body, deliverOpts);
       if (res?.progressMessageId) {
@@ -1046,6 +1119,7 @@ export class AcpManager {
           );
         }
       }
+      if (isDiscord) task.lastDiscordDeliveredAt = Date.now();
       task.lastDeliveredAt = Date.now();
     } catch (e) {
       logComponent("acp").warn("ACP progress delivery failed", { taskId: task.taskId, err: e });

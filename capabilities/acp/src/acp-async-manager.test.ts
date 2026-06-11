@@ -27,6 +27,17 @@ describe("AcpManager async progress polling", () => {
     };
 
     const { mgr } = createTestAcpManager(acpMinimalConfig());
+    mgr.wireConversation({
+      loadSessionMeta: async () => ({
+        role: "session_meta" as const,
+        model: "test",
+        tools: [],
+        functions: [],
+        timestamp: "",
+        platform: "parlor",
+      }),
+      updateSessionMetaField: async () => {},
+    });
     mgr.wireProgressDelivery(port);
     mgr.registerTools();
 

@@ -21,6 +21,8 @@ export {
   createTaskId,
   formatElapsed,
   formatProgressBody,
+  formatDiscordProgressBody,
+  DISCORD_PROGRESS_DELIVER_MS,
   toTaskSnapshot,
   type AcpAsyncTask,
   type AcpAsyncTaskSnapshot,
@@ -33,6 +35,15 @@ export type {
   AcpProgressDeliveryResult,
   AcpProgressDeliverOptions,
 } from "./ports/progress-delivery.ts";
+export type { AcpTaskQueryPort } from "./ports/task-query.ts";
+export {
+  findAcpTaskByTaskId,
+  findLatestAcpTaskEntry,
+  normalizeAcpTaskViewStatus,
+  queryAcpTaskStatus,
+  type AcpTaskStatusView,
+  type AcpTaskStatusViewStatus,
+} from "./task-status.ts";
 export {
   formatAcpPromptResult,
   type AcpPromptResult,
