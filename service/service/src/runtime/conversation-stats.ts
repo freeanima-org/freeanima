@@ -167,13 +167,16 @@ async function readCompressionAndContextFields(
   };
 }
 
-function estimateUsageFromMessages(assistantMsgs: Record<string, unknown>[]): {
+function estimateUsageFromMessages(
+  assistantMsgs: Record<string, unknown>[],
+  model: string,
+): {
   input_tokens: number;
   output_tokens: number;
 } {
   let output = 0;
   for (const msg of assistantMsgs) {
-    output += estimateTokens(messageTextForEstimate(msg));
+    output += estimateTokens(messageTextForEstimate(msg), model);
   }
   const input = Math.round(output * 2.5);
   return { input_tokens: input, output_tokens: output };
@@ -186,6 +189,9 @@ export async function computeStats(session: string): Promise<SessionStats> {
   const messages = records.filter((r) => r.role !== "session_meta");
   const assistant_msgs = messages.filter((m) => m.role === "assistant");
   const assistant_turns = assistant_msgs.length;
+  const meta = message_count > 0 ? await conv.loadSessionMeta(session) : null;
+  const fallbackModel = getProfileHopModel(loadConfig(), PROFILE_CHAT);
+  const model = meta != null && isSessionMeta(meta) ? meta.model : fallbackModel;
 
   let input_tokens = 0;
   let output_tokens = 0;
@@ -245,7 +251,7 @@ export async function computeStats(session: string): Promise<SessionStats> {
 
   let estimated_usage = false;
   if (usage_turns === 0 && assistant_turns > 0) {
-    const est = estimateUsageFromMessages(assistant_msgs);
+    const est = estimateUsageFromMessages(assistant_msgs, model);
     input_tokens = est.input_tokens;
     output_tokens = est.output_tokens;
     estimated_usage = true;
@@ -521,7 +527,7 @@ function formatContextBreakdown(stats: SessionStats): string[] {
   lines.push(`  Session messages: ~${formatTokenK(b.messages)}`);
   lines.push(`  Tool schema: ~${formatTokenK(b.tools)}`);
   lines.push(
-    "(char estimate ÷3.5; tools are schema in API request body, not counted in messages array)",
+    "(tokenizer estimate via @freeanima/engine-tokenizer; tools are schema in API request body, not counted in messages array)",
   );
   return lines;
 }

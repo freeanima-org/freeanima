@@ -235,10 +235,11 @@ function buildRuntimeEstimate(
   runtimeBody: SessionMessage[],
   systemPrompt: string,
   tools: OpenAiToolSchema[] | undefined,
+  model?: string,
 ): number {
-  let total = estimateTokens(systemPrompt);
-  total += estimateMessagesTokens(runtimeBody);
-  total += estimateToolsTokens(tools);
+  let total = estimateTokens(systemPrompt, model);
+  total += estimateMessagesTokens(runtimeBody, model);
+  total += estimateToolsTokens(tools, model);
   return total;
 }
 
@@ -303,7 +304,7 @@ export function analyzeCompression(
   const runtimeBody = compressed.filter((m) => m.role !== "system");
   const runtimeMessageCount = runtimeBody.length;
   const systemPrompt = opts?.systemPrompt ?? "";
-  const tokensEst = buildRuntimeEstimate(runtimeBody, systemPrompt, opts?.tools);
+  const tokensEst = buildRuntimeEstimate(runtimeBody, systemPrompt, opts?.tools, model);
 
   let windowRaw = storedTotal;
   let windowSlim = 0;
@@ -363,7 +364,7 @@ export function willAdvanceCompression(
   const compressed = isCompressed(state);
 
   const runtimeBody = buildRuntimeFromLPoints(messages, state);
-  const tokensEst = buildRuntimeEstimate(runtimeBody, systemPrompt, opts?.tools);
+  const tokensEst = buildRuntimeEstimate(runtimeBody, systemPrompt, opts?.tools, model);
   const usageRatio = budget != null && budget > 0 ? tokensEst / budget : null;
 
   const inToolLoop = isInToolLoop(messages);

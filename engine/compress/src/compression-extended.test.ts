@@ -2,8 +2,11 @@ import { compress, SUMMARY_USER_PREFIX } from "@freeanima/engine-compress";
 import { parseCompressionState, type SessionMessage } from "@freeanima/engine-db/domain";
 import { describe, it, expect } from "bun:test";
 import { aa, ua } from "./test-helpers/session-fixtures.ts";
+import { installTokenizerMockForTests } from "./test-helpers/tokenizer-mock.ts";
 
 const testBoundary = { rawMinMessages: 2, slimMinMessages: 2 };
+
+installTokenizerMockForTests();
 
 describe("compression extended", () => {
   it("parseCompressionState reads l2/l3 summary", () => {

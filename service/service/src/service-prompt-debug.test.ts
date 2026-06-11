@@ -1,4 +1,11 @@
 import { describe, it, expect, mock, beforeEach, afterEach } from "bun:test";
+import { FALLBACK_TOKENIZER_REPO } from "@freeanima/engine-tokenizer";
+import {
+  bindModelToFallbackForTest,
+  ensureFallbackTokenizer,
+  resetTokenizerForTest,
+  setTokenizerEncodeForTest,
+} from "@freeanima/engine-tokenizer/testing";
 import type { SemanticMemoryStorePort } from "@freeanima/engine-repos";
 import {
   registerSemanticMemoryStore,
@@ -71,8 +78,16 @@ type PromptDebugToolItem = Awaited<ReturnType<typeof getPromptDebug>>["tools"]["
 describe("service-prompt-debug", () => {
   let catalog: ReturnType<typeof createEngineCatalog>;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     resetRegisterServiceToolsForTest();
+    setTokenizerEncodeForTest(FALLBACK_TOKENIZER_REPO, (text: string) => {
+      const len = text.trim().length;
+      if (!len) return [];
+      const n = Math.max(1, Math.ceil(len / 3.5));
+      return Array.from({ length: n }, (_, i) => i + 1);
+    });
+    await ensureFallbackTokenizer();
+    bindModelToFallbackForTest("");
     catalog = createEngineCatalog();
     registerServiceTools({ toolSets: catalog.toolSets, skills: catalog.skills });
     registerSemanticMemoryStore(emptySemanticStore);
@@ -85,6 +100,7 @@ describe("service-prompt-debug", () => {
 
   afterEach(() => {
     resetSemanticMemoryStoreForTests();
+    resetTokenizerForTest();
   });
 
   it("computeGlobalBreakdown counts only system and tools breakdown", () => {

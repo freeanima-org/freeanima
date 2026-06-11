@@ -200,6 +200,7 @@ Additional rules:
 | AnimaService internal snapshot (`ServiceSnapshot`, etc.)                         | `service/schemas`            | `snapshot.ts`                                             |
 | WeChat gateway persistence schema                                                | `connectors-gateway/schemas` | `weixin.ts`                                               |
 | JSON safeParse utilities                                                         | `kernel-util`                | `parseJsonFile`, `safeParseOrNull`, etc.                  |
+| Token counting / Hub resolve / fallback tokenizer                                | `engine-tokenizer`           | `countTokens`, `splitTextByTokenLimit`, `ensureTokenizer` |
 
 New PG domain: `engine-db/schema/{domain}` → add port in `engine-repos` → implement in `connectors-db-pg` → extend `PgRepositories` → wire in `serve.ts`. See [`docs/guide/database.md`](docs/guide/database.md).
 

@@ -1,9 +1,4 @@
-/** Rough token estimate (~3.5 chars/token for mixed CJK/Latin) */
-export function estimateTokens(text: string): number {
-  const len = text.trim().length;
-  if (!len) return 0;
-  return Math.max(1, Math.ceil(len / 3.5));
-}
+import { countTokens } from "@freeanima/engine-tokenizer";
 
 export function messageTextForEstimate(msg: Record<string, unknown>): string {
   const parts: string[] = [];
@@ -15,11 +10,21 @@ export function messageTextForEstimate(msg: Record<string, unknown>): string {
   return parts.join("\n");
 }
 
-export function estimateMessagesTokens(messages: Record<string, unknown>[]): number {
-  return messages.reduce((sum, m) => sum + estimateTokens(messageTextForEstimate(m)), 0);
+export function estimateTokens(text: string, model?: string): number {
+  return countTokens(text, model ?? "");
 }
 
-export function estimateToolsTokens(tools: Record<string, unknown>[] | undefined): number {
+export function estimateMessagesTokens(
+  messages: Record<string, unknown>[],
+  model?: string,
+): number {
+  return messages.reduce((sum, m) => sum + estimateTokens(messageTextForEstimate(m), model), 0);
+}
+
+export function estimateToolsTokens(
+  tools: Record<string, unknown>[] | undefined,
+  model?: string,
+): number {
   if (!tools?.length) return 0;
-  return estimateTokens(JSON.stringify(tools));
+  return estimateTokens(JSON.stringify(tools), model);
 }
