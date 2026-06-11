@@ -3,6 +3,59 @@
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 新版本节由 [Release Please](https://github.com/googleapis/release-please) 在 Release PR 合并时写入顶部。
 
+## [0.4.0](https://github.com/freeanima-org/freeanima/compare/v0.3.11...v0.4.0) (2026-06-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* **config:** 引入 Config/FileConfig 并移除 loadConfig 全局读
+* **agent:** 拆分 AGENTS.md 至 .agent/rules/ 并精简运行时入口
+* **eventbus:** 移除 SqliteEventQueue 并统一使用 Redis 后端
+* **engine:** 下沉 engine-config 并注入 config/logger，解除 engine 对 service 层依赖
+* **kernel:** 将 util/retry 上迁至 engine 层并拆分域 hook
+
+### Features
+
+* **tokenizer:** 增强 Hub 自动 resolve 与可观测性 ([72d260c](https://github.com/freeanima-org/freeanima/commit/72d260ce334f5ff63970c174ba17fa4a2bfd4fb7))
+* **tokenizer:** 统一 @huggingface/tokenizers 并收紧 embedding 分块 ([21ca800](https://github.com/freeanima-org/freeanima/commit/21ca8005192722db3e8dbd4026ff9c310f7adde1))
+* **webui:** 优化记忆台召回调试页并移除 memory_recall session 过滤 ([458b0b1](https://github.com/freeanima-org/freeanima/commit/458b0b1a7f75a753f28574fc5a2d9d113f4ba3de))
+
+
+### Bug Fixes
+
+* **ci:** 修复 context stats 集成测并提前触发黑盒 dispatch ([a7e6115](https://github.com/freeanima-org/freeanima/commit/a7e6115957ed676e59ef181a835128f68bfa2629))
+* **ci:** 修复 Quality、Gitleaks 与 CodeQL 三项 CI 失败 ([d0a226a](https://github.com/freeanima-org/freeanima/commit/d0a226a9eb7f3a303c99702a99182f3593e4d816))
+* **ci:** 修正 engine/foundation/db 路径并补全 email 测试 config 绑定 ([43ea509](https://github.com/freeanima-org/freeanima/commit/43ea5095fbe711c092699a8400054169888ec841))
+* **embedding:** 修复补向量 rebuild 分页与入库匹配失败 ([6ae9147](https://github.com/freeanima-org/freeanima/commit/6ae91479dd9147bad4cfd02ea7c82ce8db9bc952))
+* **test:** session-handoff 改用 spyOn 避免 mock.module 污染 ([c39e4d9](https://github.com/freeanima-org/freeanima/commit/c39e4d96e9837fc55751e20c45e02a8ce6c41a93))
+* **tokenizer:** 量化变体名回落 seed 并过滤 Ollama blob hint ([15ca2ad](https://github.com/freeanima-org/freeanima/commit/15ca2ad85652a671efa13415a9d692bf42e7d0e4))
+
+
+### Documentation
+
+* **agent:** 拆分 AGENTS.md 至 .agent/rules/ 并精简运行时入口 ([d83b5ab](https://github.com/freeanima-org/freeanima/commit/d83b5aba13f6ac0bc69450f582ef22fb3aa56465))
+
+
+### Refactoring
+
+* **config:** 引入 Config/FileConfig 并移除 loadConfig 全局读 ([97fcb24](https://github.com/freeanima-org/freeanima/commit/97fcb24395dd467fdcde8c78a28c3ef181fca90f))
+* **embedding:** 向量 rebuild 逐条读取并算完即入库 ([ca78c5e](https://github.com/freeanima-org/freeanima/commit/ca78c5efe1124f4f3398c4a7a4b39c4781e53875))
+* **embedding:** 简化向量写入路径，仅保留长文本切块 ([6875f17](https://github.com/freeanima-org/freeanima/commit/6875f17aa0ae1d1afde0e469472784554c4d2016))
+* **engine:** 下沉 engine-config 并注入 config/logger，解除 engine 对 service 层依赖 ([e010788](https://github.com/freeanima-org/freeanima/commit/e01078836f5c50ce4e0b8e3f62bf6449b8ffc57b))
+* **eventbus:** 移除 SqliteEventQueue 并统一使用 Redis 后端 ([00bea00](https://github.com/freeanima-org/freeanima/commit/00bea0022be5f58d3f7d7a8ed67c2f754a645db9))
+* **kernel:** 将 util/retry 上迁至 engine 层并拆分域 hook ([0c1863f](https://github.com/freeanima-org/freeanima/commit/0c1863f9e9d6906b937775b1ef5912509dbb6d45))
+
+
+### Tests
+
+* **integration:** wire service ports in test context ([8769501](https://github.com/freeanima-org/freeanima/commit/8769501c4e3a38a93688d82f1798a57e62b0dafc))
+* **kernel:** 修复 eventbus 与 hooks 的 func 覆盖率缺口 ([42f9b55](https://github.com/freeanima-org/freeanima/commit/42f9b55ce1ec46de889c257a344643b018f860cf))
+
+
+### CI
+
+* 优化 GitHub Actions 提速 ([b07a68d](https://github.com/freeanima-org/freeanima/commit/b07a68d4874196381a662e652548748ba0cb9d31))
+
 ## [0.3.11](https://github.com/freeanima-org/freeanima/compare/v0.3.10...v0.3.11) (2026-06-10)
 
 ### Features
