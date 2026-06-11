@@ -17,9 +17,6 @@ export const PATHS = {
   get configYaml() {
     return homePath("config.yaml");
   },
-  get eventsDb() {
-    return homePath("runtime", "events.db");
-  },
   get errorLog() {
     return homePath("error.log");
   },

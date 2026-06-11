@@ -201,16 +201,6 @@
         "@types/bun": "catalog:",
       },
     },
-    "connectors/eventbus-sqlite": {
-      "name": "@freeanima/connectors-eventbus-sqlite",
-      "dependencies": {
-        "@freeanima/kernel-eventbus": "workspace:*",
-      },
-      "devDependencies": {
-        "@freeanima/kernel-logging": "workspace:*",
-        "@types/bun": "catalog:",
-      },
-    },
     "connectors/gateway": {
       "name": "@freeanima/connectors-gateway",
       "dependencies": {
@@ -605,7 +595,6 @@
       "name": "@freeanima/service-bootstrap",
       "dependencies": {
         "@freeanima/connectors-eventbus-redis": "workspace:*",
-        "@freeanima/connectors-eventbus-sqlite": "workspace:*",
         "@freeanima/kernel": "workspace:*",
         "@freeanima/kernel-eventbus": "workspace:*",
         "@freeanima/kernel-hooks": "workspace:*",
@@ -716,7 +705,6 @@
         "@freeanima/connectors-commands": "workspace:*",
         "@freeanima/connectors-cron": "workspace:*",
         "@freeanima/connectors-db-pg": "workspace:*",
-        "@freeanima/connectors-eventbus-sqlite": "workspace:*",
         "@freeanima/connectors-gateway": "workspace:*",
         "@freeanima/connectors-webui": "workspace:*",
         "@freeanima/engine": "workspace:*",
@@ -980,8 +968,6 @@
     "@freeanima/connectors-db-pg": ["@freeanima/connectors-db-pg@workspace:connectors/db-pg"],
 
     "@freeanima/connectors-eventbus-redis": ["@freeanima/connectors-eventbus-redis@workspace:connectors/eventbus-redis"],
-
-    "@freeanima/connectors-eventbus-sqlite": ["@freeanima/connectors-eventbus-sqlite@workspace:connectors/eventbus-sqlite"],
 
     "@freeanima/connectors-gateway": ["@freeanima/connectors-gateway@workspace:connectors/gateway"],
 

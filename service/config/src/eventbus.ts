@@ -1,12 +1,12 @@
 import { loadConfig } from "./config.ts";
 
-export type EventbusBackend = "sqlite" | "redis";
+export type EventbusBackend = "redis";
 
 const DEFAULT_KEY_PREFIX = "anima:events";
 
-/** Read EventBus backend from config.yaml; default sqlite */
+/** Read EventBus backend from config.yaml; default redis */
 export function getEventbusBackend(): EventbusBackend {
-  return loadConfig().eventbus?.backend ?? "sqlite";
+  return loadConfig().eventbus?.backend ?? "redis";
 }
 
 /** EventBus Redis key prefix; default anima:events */
