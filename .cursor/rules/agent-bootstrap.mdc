@@ -1,0 +1,16 @@
+---
+description: FreeAnima agent bootstrap — read AGENTS.md and .agent/rules/ before coding
+alwaysApply: true
+---
+
+# Agent bootstrap
+
+1. Read root [`AGENTS.md`](../../AGENTS.md) for startup order, hard-constraint summary, and doc map.
+2. Before changing code, open the relevant file under [`.agent/rules/`](../../.agent/rules/README.md):
+   - layers / Registry / composition → `code-layers.md`
+   - tests → `testing.md`
+   - types / tools / security → `coding.md`
+   - PG migrations → `database.md`
+   - new packages → `packages.md`
+3. Product architecture (cognitive layers, tools, Gateway) → `docs/concepts/architecture.md`.
+4. Code and `scripts/check-layer-deps.ts` override docs when they conflict.
