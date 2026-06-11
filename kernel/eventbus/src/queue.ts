@@ -8,6 +8,9 @@ export type StoredEvent = {
 /** dispatch result; adapter decides how to ack */
 export type DispatchOutcome = "ack" | "retry" | "fail";
 
+/** Bus-supplied consumer; adapter invokes per dequeued event */
+export type EventQueueProcess = (event: StoredEvent) => Promise<DispatchOutcome>;
+
 export interface EventQueueAdapter {
   enqueue(topicQualifiedId: string, payload: unknown): void;
 
@@ -15,7 +18,7 @@ export interface EventQueueAdapter {
    * Start consumption; Bus passes process callback.
    * Persisted impl may do stuck recovery and polling internally.
    */
-  start(process: (event: StoredEvent) => Promise<DispatchOutcome>): void;
+  start(process: EventQueueProcess): void;
 
   stop(): void;
 }

@@ -1,7 +1,11 @@
 import { QualifiedToken } from "@freeanima/kernel-token";
 
 /** Event type token; created only via createEventTopic */
-export abstract class EventTopic<Payload> extends QualifiedToken<Payload> {}
+export abstract class EventTopic<Payload> extends QualifiedToken<Payload> {
+  protected constructor(qualifiedId: string, description?: string) {
+    super(qualifiedId, description);
+  }
+}
 
 class EventTopicToken<Payload> extends EventTopic<Payload> {
   constructor(qualifiedId: string, description?: string) {

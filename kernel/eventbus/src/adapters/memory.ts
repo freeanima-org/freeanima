@@ -1,11 +1,13 @@
-import type { DispatchOutcome, EventQueueAdapter, StoredEvent } from "../queue.ts";
+import type { EventQueueAdapter, EventQueueProcess, StoredEvent } from "../queue.ts";
 
 /** In-process memory queue; drain after start; no persistence. Ignores {@link DispatchOutcome} (no retry). */
 export class MemoryEventQueue implements EventQueueAdapter {
   private queue: StoredEvent[] = [];
   private running = false;
   private draining = false;
-  private process: ((event: StoredEvent) => Promise<DispatchOutcome>) | null = null;
+  private process: EventQueueProcess | null = null;
+
+  constructor() {}
 
   enqueue(topicQualifiedId: string, payload: unknown): void {
     this.queue.push({ topicQualifiedId, payload });
@@ -14,7 +16,7 @@ export class MemoryEventQueue implements EventQueueAdapter {
     }
   }
 
-  start(process: (event: StoredEvent) => Promise<DispatchOutcome>): void {
+  start(process: EventQueueProcess): void {
     if (this.running) return;
     this.process = process;
     this.running = true;

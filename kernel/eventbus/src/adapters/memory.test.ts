@@ -12,6 +12,20 @@ async function waitUntil(predicate: () => boolean, timeoutMs = 500): Promise<voi
 }
 
 describe("MemoryEventQueue", () => {
+  it("buffers events until start", async () => {
+    const queue = new MemoryEventQueue();
+    const seen: unknown[] = [];
+    queue.enqueue("t", "a");
+    queue.enqueue("t", "b");
+    queue.start(async (event) => {
+      seen.push(event.payload);
+      return "ack";
+    });
+    await waitUntil(() => seen.length === 2);
+    expect(seen).toEqual(["a", "b"]);
+    queue.stop();
+  });
+
   it("repeated start is no-op", async () => {
     const queue = new MemoryEventQueue();
     const process = vi.fn(async () => "ack" as const);
