@@ -1,0 +1,160 @@
+import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
+import { parseYaml } from "@freeanima/service-config";
+import { animaConfigSchema } from "@freeanima/service-config/schemas/config";
+import { clearConfigCache, resetConfigForTest, setConfigForTest } from "@freeanima/service-config";
+import { MINIMAL_LLM_YAML } from "@freeanima/service-config/test-helpers/minimal-llm-config";
+import {
+  awaitPendingEmbeddingsForTest,
+  getFtsCoverageStats,
+  rebuildAllFtsSegments,
+  registerEmbedTextFn,
+  resetEmbedTextFnForTest,
+  resetPendingEmbeddingsForTest,
+} from "@freeanima/connectors-db-pg";
+import { SEMANTIC_EMBEDDING_DIMENSIONS } from "@freeanima/engine-db/schema";
+import { describePg } from "../../helpers/pg-test-gate.ts";
+import {
+  beginIntegrationCase,
+  endIntegrationCase,
+  restoreIntegrationHome,
+} from "../../helpers/integration-case.ts";
+import { getActivePgTestContext, getTestEngine, seedSession } from "../../helpers/pg-test.ts";
+
+function minimalConfig() {
+  const parsed = animaConfigSchema.safeParse(parseYaml(MINIMAL_LLM_YAML));
+  if (!parsed.success) throw new Error(parsed.error.message);
+  return parsed.data;
+}
+
+function fixedEmbedding(value = 0.25): number[] {
+  return Array.from({ length: SEMANTIC_EMBEDDING_DIMENSIONS }, () => value);
+}
+
+function sessionMeta() {
+  return {
+    role: "session_meta" as const,
+    model: "test-model",
+    tools: [] as string[],
+    functions: [] as string[],
+    timestamp: new Date().toISOString(),
+    platform: "parlor",
+  };
+}
+
+describePg("FTS rebuild embedding PG", () => {
+  const prev = process.env.FREEANIMA_HOME;
+
+  beforeEach(async () => {
+    await beginIntegrationCase("freeanima-fts-rebuild-emb-");
+    setConfigForTest({
+      ...minimalConfig(),
+      embedding: {
+        enabled: true,
+        model: "test-embed-model",
+        dimensions: SEMANTIC_EMBEDDING_DIMENSIONS,
+      },
+    });
+    registerEmbedTextFn(async () => fixedEmbedding());
+  });
+
+  afterEach(async () => {
+    resetEmbedTextFnForTest();
+    resetPendingEmbeddingsForTest();
+    resetConfigForTest();
+    clearConfigCache();
+    await restoreIntegrationHome(prev);
+  });
+
+  it("onlyMissing=true stores all message embeddings without skipping rows", async () => {
+    const sessionId = "fts-rebuild-emb-msg";
+    await seedSession(getTestEngine(), sessionId, sessionMeta(), [
+      {
+        role: "user",
+        content: "hello rebuild embedding one",
+        pos: 1,
+        timestamp: new Date().toISOString(),
+      },
+      {
+        role: "assistant",
+        content: "reply rebuild embedding two",
+        pos: 2,
+        timestamp: new Date().toISOString(),
+      },
+      {
+        role: "user",
+        content: "third rebuild embedding row",
+        pos: 3,
+        timestamp: new Date().toISOString(),
+      },
+    ]);
+
+    const ctx = getActivePgTestContext();
+    expect(ctx).not.toBeNull();
+    await awaitPendingEmbeddingsForTest();
+    await ctx!.sql`UPDATE messages SET content_embedding = NULL`;
+
+    const before = await getFtsCoverageStats();
+    const msgBefore = before.tables.find((t) => t.table === "messages")!;
+    expect(msgBefore.embedding).toBe(0);
+    expect(msgBefore.total).toBeGreaterThanOrEqual(3);
+
+    const result = await rebuildAllFtsSegments({ onlyMissing: true });
+    expect(result.embeddings?.messages).toBe(msgBefore.total);
+
+    const after = await getFtsCoverageStats();
+    const msgAfter = after.tables.find((t) => t.table === "messages")!;
+    expect(msgAfter.embedding).toBe(msgAfter.total);
+  });
+
+  it("onlyMissing=true aborts when embed returns null (no silent skip)", async () => {
+    resetEmbedTextFnForTest();
+    registerEmbedTextFn(async () => null);
+
+    const sessionId = "fts-rebuild-emb-fail";
+    await seedSession(getTestEngine(), sessionId, sessionMeta(), [
+      {
+        role: "user",
+        content: "embedding should fail loudly",
+        pos: 1,
+        timestamp: new Date().toISOString(),
+      },
+    ]);
+
+    const ctx = getActivePgTestContext();
+    await awaitPendingEmbeddingsForTest();
+    await ctx!.sql`UPDATE messages SET content_embedding = NULL`;
+
+    await expect(rebuildAllFtsSegments({ onlyMissing: true })).rejects.toThrow(
+      /stored 0 embeddings/,
+    );
+
+    const after = await getFtsCoverageStats();
+    const msgAfter = after.tables.find((t) => t.table === "messages")!;
+    expect(msgAfter.embedding).toBe(0);
+  });
+
+  it("semantic_memory with padded content stores embedding on onlyMissing rebuild", async () => {
+    const ctx = getActivePgTestContext();
+    const store = getTestEngine().repos.semanticMemory;
+
+    const id = await store.create({
+      content: "  padded semantic memory content  ",
+      type: "world",
+    });
+
+    await awaitPendingEmbeddingsForTest();
+    await ctx!.sql`UPDATE semantic_memory SET content_embedding = NULL WHERE id = ${id}`;
+
+    const result = await rebuildAllFtsSegments({ onlyMissing: true });
+    expect(result.embeddings?.semantic_memory).toBeGreaterThanOrEqual(1);
+
+    const rows = await ctx!.sql<{ content_embedding: string | null }[]>`
+      SELECT content_embedding::text AS content_embedding FROM semantic_memory WHERE id = ${id}
+    `;
+    expect(rows[0]?.content_embedding).not.toBeNull();
+  });
+
+  afterAll(async () => {
+    await endIntegrationCase();
+  });
+});

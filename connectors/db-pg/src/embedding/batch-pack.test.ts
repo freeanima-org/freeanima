@@ -80,4 +80,15 @@ describe("expandJobsToUnits", () => {
       expect(countTokens(unit.text, TEST_MODEL)).toBeLessThanOrEqual(TARGET_BATCH_TOKENS);
     }
   });
+
+  it("chunked units keep full trimmed job.content (store keys by id, not chunk text)", () => {
+    const raw = `  ${"word ".repeat(TARGET_BATCH_TOKENS + 200)}  `;
+    const units = expandJobsToUnits([job("long", raw)], { model: TEST_MODEL });
+    expect(units.length).toBeGreaterThan(1);
+    const expected = raw.trim();
+    for (const unit of units) {
+      expect(unit.job.content).toBe(expected);
+      expect(unit.text).not.toBe(expected);
+    }
+  });
 });
