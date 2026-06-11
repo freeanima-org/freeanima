@@ -1,4 +1,4 @@
-import { runWithToolContext, getToolSessionId } from "@freeanima/engine-loop";
+import { runWithToolContext, getToolSessionId } from "@freeanima/engine-tool";
 import { ToolSetRegistry } from "@freeanima/engine-tool";
 import { describe, it, expect } from "bun:test";
 

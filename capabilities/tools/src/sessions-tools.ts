@@ -1,4 +1,4 @@
-import { getToolRepos } from "@freeanima/engine-loop";
+import { getToolRepos } from "@freeanima/engine-tool";
 import {
   attachToolReturns,
   toolError,

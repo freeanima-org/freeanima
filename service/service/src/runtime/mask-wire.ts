@@ -7,7 +7,6 @@ import type {
 } from "@freeanima/capabilities-mask";
 import type { ToolSetRegistry } from "@freeanima/engine-tool";
 import { isSessionMeta, type SessionMetaMessage } from "@freeanima/engine-db/domain";
-import { registerSessionToolMaskFilter } from "@freeanima/engine-conversation";
 import { parseYaml, PATHS } from "@freeanima/service-config";
 import { logComponent } from "@freeanima/service-logging";
 import { z } from "zod";
@@ -122,16 +121,10 @@ export function runtimeToolMaskFromResolved(
   return { allowedTools: resolved.allowed_tools };
 }
 
-/** Register built-in / YAML masks at startup and inject session tool filtering */
+/** Register built-in / YAML masks at startup (tool mask filter wired in wireEnginePorts) */
 export function initMaskSystem(masks: MaskRegistry): void {
   registerBuiltinMasks(masks);
   loadMasksFromYaml(masks);
-
-  registerSessionToolMaskFilter((toolNames, meta) => {
-    const resolved = resolveSessionMaskFromMeta(meta);
-    if (!resolved) return toolNames;
-    return filterToolNamesByMask(toolNames, resolved);
-  });
 }
 
 export { checkTool, checkCredential } from "@freeanima/capabilities-mask";

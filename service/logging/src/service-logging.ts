@@ -1,12 +1,7 @@
-import {
-  createLogger,
-  type LogAttributes,
-  type LogLevel,
-  type Logger,
-} from "@freeanima/kernel-logging";
+import { createLogger, type LogLevel, type Logger } from "@freeanima/kernel-logging";
 import { createConsoleSink } from "@freeanima/kernel-logging/console";
 import { createFileSink } from "@freeanima/kernel-logging/file";
-import { PATHS } from "@freeanima/service-config";
+import { PATHS } from "@freeanima/engine-config";
 
 let serviceLogger: Logger | null = null;
 let handlersInstalled = false;
@@ -51,18 +46,6 @@ export function logComponent(component: string): Logger {
   return getServiceLogger().with({ component });
 }
 
-export function formatError(err: unknown): string {
-  if (err instanceof Error) {
-    return err.stack ?? err.message;
-  }
-  if (typeof err === "string") return err;
-  try {
-    return JSON.stringify(err);
-  } catch {
-    return String(err);
-  }
-}
-
 /** Startup phase marker: log uncaught errors then exit (for systemd failure detection) */
 export function markStartupPhase(active: boolean): void {
   inStartupPhase = active;
@@ -75,32 +58,6 @@ export function logStartupError(
   context?: Record<string, unknown>,
 ): void {
   logComponent("startup").error(message, { err: error, ...context });
-}
-
-/** Log when HTTP API returns { error } */
-export function logApiError(
-  method: string,
-  path: string,
-  status: number,
-  error: unknown,
-  context?: Record<string, unknown>,
-): void {
-  const summary = typeof error === "string" ? error : formatError(error).split("\n")[0];
-  const attributes: LogAttributes = { method, path, status, ...context };
-  if (typeof error !== "string") {
-    attributes.err = error;
-  }
-  logComponent("api").error(`API ${method} ${path} → ${status}: ${summary}`, attributes);
-}
-
-/** Log on SSE event:error */
-export function logSseError(path: string, error: unknown, context?: Record<string, unknown>): void {
-  const msg = typeof error === "string" ? error : formatError(error);
-  const attributes: LogAttributes = { path, ...context };
-  if (typeof error !== "string") {
-    attributes.err = error;
-  }
-  logComponent("sse").error(`SSE ${path}: ${msg}`, attributes);
 }
 
 /** Install global uncaught error handlers at service startup */

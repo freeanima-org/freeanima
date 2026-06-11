@@ -3,16 +3,13 @@ import {
   getToolRepos,
   getToolSessionId,
   grantExecutableTools,
-} from "@freeanima/engine-loop";
+} from "@freeanima/engine-tool";
+import { isSessionMeta, type SessionMetaMessage } from "@freeanima/engine-db/domain";
 import {
-  isSessionMeta,
-  loadSessionMeta,
-  loadToolsIntoSession,
-} from "@freeanima/engine-conversation";
-import { applySessionToolMaskFilter } from "@freeanima/engine-conversation";
-import {
+  applySessionToolMaskFilter,
   attachToolReturns,
   listToolsCatalog,
+  loadToolsIntoSession,
   searchToolsCatalog,
   toolError,
   toolResult,
@@ -20,7 +17,6 @@ import {
   type ToolSetRegistry,
 } from "@freeanima/engine-tool";
 import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
-import type { SessionMetaMessage } from "@freeanima/engine-conversation";
 
 function catalogEntryWithAllowed(
   entries: ToolCatalogEntry[],
@@ -41,8 +37,9 @@ async function requireSessionMeta(): Promise<
   const repos = getToolRepos();
   if (!sessionId) return { ok: false, error: "No session context" };
   if (!repos) return { ok: false, error: "No repos context" };
-  const meta = await loadSessionMeta(repos, sessionId);
-  if (!isSessionMeta(meta)) return { ok: false, error: "Session does not exist" };
+  const raw = await repos.session.getSessionMeta(sessionId);
+  if (!raw || !isSessionMeta(raw)) return { ok: false, error: "Session does not exist" };
+  const meta = raw;
   return { ok: true, meta };
 }
 

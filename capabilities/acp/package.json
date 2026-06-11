@@ -7,11 +7,11 @@
     "./*": "./src/*.ts"
   },
   "dependencies": {
-    "@freeanima/engine-conversation": "workspace:*",
+    "@freeanima/engine-session-port": "workspace:*",
     "@freeanima/engine-skill": "workspace:*",
     "@freeanima/engine-db": "workspace:*",
-    "@freeanima/engine-loop": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",
+    "@freeanima/engine-config": "workspace:*",
     "@freeanima/engine-util": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "@freeanima/service-logging": "workspace:*",

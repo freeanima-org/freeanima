@@ -4,7 +4,8 @@ export {
   registerServiceTools,
   resetRegisterServiceToolsForTest,
 } from "./register.ts";
-import "./wire-api.ts";
+export { wireEnginePorts } from "./wire-engine-ports.ts";
+export { wireServicePorts } from "./wire-api.ts";
 export {
   initServiceContext,
   getServiceContext,

@@ -1,12 +1,12 @@
 import type { Kernel } from "@freeanima/kernel";
-import type { ConversationService } from "@freeanima/engine-conversation";
+import type { SessionConversationPort } from "@freeanima/engine-session-port";
 import {
   messageIncoming,
   turnAfterComplete,
   type MessageIncomingEffect,
   type TurnAfterCompleteEffect,
-} from "@freeanima/engine-conversation-hooks";
-import { toolAfterCall, type ToolAfterCallEffect } from "@freeanima/engine-loop-hooks";
+} from "@freeanima/engine-hooks/conversation";
+import { toolAfterCall, type ToolAfterCallEffect } from "@freeanima/engine-hooks/loop";
 import {
   findAwaitingClarifyInMessages,
   formatClarifyText,
@@ -18,7 +18,7 @@ import {
 
 export function registerClarifyHooks(opts: {
   kernel: Kernel;
-  conversation: ConversationService;
+  conversation: SessionConversationPort;
 }): void {
   const { kernel, conversation } = opts;
   const registry = kernel.hookRegistry;
@@ -72,7 +72,7 @@ export function registerClarifyHooks(opts: {
 
 /** Stream path: write to session meta on awaiting_clarify event */
 export async function applyClarifyStreamAwaiting(
-  conversation: ConversationService,
+  conversation: SessionConversationPort,
   sessionId: string,
   items: { question: string; choices?: string[]; default?: string }[],
   timeoutSec: number,

@@ -1,4 +1,4 @@
-import { emailAccountSchema, type EmailAccountConfig } from "@freeanima/service-config";
+import { emailAccountSchema, type EmailAccountConfig } from "@freeanima/engine-config";
 import { z } from "zod";
 
 export type EmailAccount = EmailAccountConfig;

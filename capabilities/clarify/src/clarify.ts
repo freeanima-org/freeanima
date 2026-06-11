@@ -12,7 +12,7 @@ import {
 } from "@freeanima/engine-db/domain";
 import { safeParseOrNull } from "@freeanima/engine-util";
 import { parseToolResult } from "@freeanima/engine-tool";
-import type { ConversationService } from "@freeanima/engine-conversation";
+import type { SessionConversationPort } from "@freeanima/engine-session-port";
 
 export type { ClarifyItem, AwaitingClarify };
 export type ClarifyAwaitingResult = ClarifyToolAwaitingResult;
@@ -46,7 +46,7 @@ export function getClarifyConfig(): { timeout_sec: number; max_items: number } {
 }
 
 export async function readAwaitingClarify(
-  conversation: ConversationService,
+  conversation: SessionConversationPort,
   session: string,
 ): Promise<AwaitingClarify | null> {
   const meta = await conversation.loadSessionMeta(session);
@@ -55,7 +55,7 @@ export async function readAwaitingClarify(
 }
 
 export async function setAwaitingClarify(
-  conversation: ConversationService,
+  conversation: SessionConversationPort,
   session: string,
   payload: { items: ClarifyItem[]; timeout_sec: number },
   opts?: { asked_at?: string },
@@ -70,7 +70,7 @@ export async function setAwaitingClarify(
 }
 
 export async function clearAwaitingClarify(
-  conversation: ConversationService,
+  conversation: SessionConversationPort,
   session: string,
 ): Promise<void> {
   await conversation.updateSessionMetaField(session, { awaiting_clarify: undefined });
@@ -83,7 +83,7 @@ export function isAwaitingClarifyExpired(awaiting: AwaitingClarify): boolean {
 }
 
 export async function expireIfNeeded(
-  conversation: ConversationService,
+  conversation: SessionConversationPort,
   session: string,
 ): Promise<{ expired: boolean; hint?: string }> {
   const awaiting = await readAwaitingClarify(conversation, session);
@@ -117,7 +117,7 @@ export function formatClarifyText(items: ClarifyItem[]): string {
 }
 
 export async function guardAwaitingClarify(
-  conversation: ConversationService,
+  conversation: SessionConversationPort,
   session: string,
   message: string,
 ): Promise<GuardAwaitingResult> {
@@ -201,7 +201,7 @@ export function findAwaitingClarifyInMessages(
 }
 
 export async function resolveUserContent(
-  conversation: ConversationService,
+  conversation: SessionConversationPort,
   session: string,
   userText: string,
 ): Promise<string> {

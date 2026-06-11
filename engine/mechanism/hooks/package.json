@@ -1,0 +1,15 @@
+{
+  "name": "@freeanima/engine-hooks",
+  "type": "module",
+  "exports": {
+    "./loop": "./src/loop/index.ts",
+    "./conversation": "./src/conversation/index.ts"
+  },
+  "dependencies": {
+    "@freeanima/engine-db": "workspace:*",
+    "@freeanima/kernel-hooks": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:"
+  }
+}

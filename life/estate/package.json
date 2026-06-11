@@ -5,6 +5,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "@freeanima/engine-config": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "imapflow": "^1.0.186",

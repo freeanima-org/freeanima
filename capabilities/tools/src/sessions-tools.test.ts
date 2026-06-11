@@ -2,7 +2,7 @@ import { describe, expect, it } from "bun:test";
 import type { SessionStorePort } from "@freeanima/engine-repos";
 import { nullPgRepositories } from "@freeanima/engine-repos";
 import { ToolSetRegistry } from "@freeanima/engine-tool";
-import { runWithToolContext } from "@freeanima/engine-loop";
+import { runWithToolContext } from "@freeanima/engine-tool";
 import { registerSessionTools } from "./sessions-tools.ts";
 
 function createMockSessionStore(overrides: Partial<SessionStorePort> = {}): SessionStorePort {

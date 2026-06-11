@@ -1,5 +1,5 @@
-import type { AnimaConfig } from "@freeanima/service-config";
-import { getLlmConfig } from "@freeanima/service-config";
+import type { AnimaConfig } from "@freeanima/engine-config";
+import { getLlmConfig } from "@freeanima/engine-config";
 import type { BackendRegistry, ProviderRegistry } from "@freeanima/engine-provider-llm";
 import {
   OpenAiCompatibleBackend,

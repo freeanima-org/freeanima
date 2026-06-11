@@ -1,4 +1,5 @@
-import "./wire-api.ts";
+import { wireEnginePorts } from "./wire-engine-ports.ts";
+import { wireServicePorts } from "./wire-api.ts";
 import { chdir } from "node:process";
 import {
   createEngine,
@@ -62,6 +63,8 @@ export async function bootstrapMemoryJobs(): Promise<MemoryJobsContext> {
 
   try {
     await validateConfigOnStartup();
+    wireEnginePorts();
+    wireServicePorts();
     wireEmbeddingRuntime();
 
     const catalog = createEngineCatalog();
@@ -83,7 +86,14 @@ export async function bootstrapMemoryJobs(): Promise<MemoryJobsContext> {
 
     const cfg = await resolveLlmProviderApiKeys(loadConfig());
     initLlmRuntime(cfg);
-    const engine = createEngine({ repos, llm: getLlmRuntime(), catalog });
+    const { createServiceLogger } = await import("@freeanima/service-logging");
+    const engine = createEngine({
+      repos,
+      llm: getLlmRuntime(),
+      catalog,
+      config: cfg,
+      logger: createServiceLogger(),
+    });
     const conversation = createConversationService(engine.repos, catalog.toolSets);
 
     registerServiceIntegrations({

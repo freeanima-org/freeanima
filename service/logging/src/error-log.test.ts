@@ -2,13 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 import { createLogger } from "@freeanima/kernel-logging";
 import { createMemorySink } from "@freeanima/kernel-logging/memory";
 import type { MemorySink } from "@freeanima/kernel-logging/memory";
-import {
-  logApiError,
-  logComponent,
-  logStartupError,
-  resetServiceLogger,
-  setServiceLogger,
-} from "./index.ts";
+import { logComponent, logStartupError, resetServiceLogger, setServiceLogger } from "./index.ts";
 
 describe("error-log", () => {
   let memory: MemorySink;
@@ -24,14 +18,9 @@ describe("error-log", () => {
 
   it("writes errors to memory sink", () => {
     logComponent("test").error("test message", { source: "test" });
-    logApiError("POST", "/api/sessions/x/messages/stream", 503, "LLM failed", {
-      session_id: "x",
-    });
 
     const messages = memory.records.map((r) => r.message).join("\n");
     expect(messages).toContain("test message");
-    expect(messages).toContain("API POST");
-    expect(messages).toContain("LLM failed");
   });
 
   it("writes startup failure with source tag", () => {

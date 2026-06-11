@@ -1,48 +1,40 @@
 import { describe, expect, it, mock, beforeEach } from "bun:test";
 import { ToolSetRegistry } from "@freeanima/engine-tool";
 import { registerCatalogTools } from "./catalog-tools.ts";
-import { runWithToolContext } from "@freeanima/engine-loop";
+import { runWithToolContext } from "@freeanima/engine-tool";
 
-const loadSessionMeta = mock(async () => ({
+const sessionMeta = {
   role: "session_meta" as const,
   model: "test",
   tools: ["tools_list", "tools_load"],
   loaded_tools: [] as string[],
   functions: [] as string[],
   timestamp: "2026-01-01T00:00:00+08:00",
-}));
+};
 
-const loadToolsIntoSession = mock(async () => ({
-  loaded: ["file_read_file"],
-  denied: [] as string[],
-  already_loaded: [] as string[],
-  unknown: [] as string[],
-  tools: [
-    {
-      name: "file_read_file",
-      description: "Read file",
-      toolset: "file",
-      parameters: { type: "object", properties: {} },
-    },
-  ],
-}));
+const getSessionMeta = mock(async () => sessionMeta);
 
-mock.module("@freeanima/engine-conversation", () => ({
-  isSessionMeta: (meta: { role?: string }) => meta.role === "session_meta",
-  loadSessionMeta,
-  loadToolsIntoSession,
-  applySessionToolMaskFilter: (names: string[]) => names,
-}));
+const repos = {
+  pgAvailable: false,
+  session: { getSessionMeta },
+} as never;
 
 describe("registerCatalogTools", () => {
   beforeEach(() => {
-    loadSessionMeta.mockClear();
-    loadToolsIntoSession.mockClear();
+    getSessionMeta.mockClear();
   });
 
   it("tools_load returns schema and calls loadToolsIntoSession", async () => {
     const toolSets = new ToolSetRegistry();
     registerCatalogTools(toolSets);
+    toolSets.registerToolSet("file", "Files", [
+      {
+        name: "file_read_file",
+        description: "Read file",
+        parameters: { type: "object", properties: {} },
+        handler: () => "ok",
+      },
+    ]);
     const def = toolSets.getTool("tools_load");
     expect(def).toBeDefined();
 
@@ -54,11 +46,11 @@ describe("registerCatalogTools", () => {
         expect(parsed.tools).toHaveLength(1);
         expect(parsed.tools[0].name).toBe("file_read_file");
         expect(parsed.tools[0].parameters).toBeDefined();
-        expect(loadToolsIntoSession).toHaveBeenCalled();
+        expect(getSessionMeta).toHaveBeenCalled();
       },
       {
         tools: toolSets,
-        repos: {} as never,
+        repos,
         executableTools: ["tools_load"],
       },
     );
@@ -86,7 +78,7 @@ describe("registerCatalogTools", () => {
         expect(parsed.total).toBeGreaterThanOrEqual(2);
         expect(parsed.tools.some((t: { name: string }) => t.name === "file_read_file")).toBe(true);
       },
-      { tools: toolSets, repos: {} as never, executableTools: ["tools_list"] },
+      { tools: toolSets, repos, executableTools: ["tools_list"] },
     );
   });
 
@@ -111,7 +103,7 @@ describe("registerCatalogTools", () => {
         expect(parsed.query).toBe("read");
         expect(parsed.tools.some((t: { name: string }) => t.name === "file_read_file")).toBe(true);
       },
-      { tools: toolSets, repos: {} as never, executableTools: ["tools_list"] },
+      { tools: toolSets, repos, executableTools: ["tools_list"] },
     );
   });
 });

@@ -23,6 +23,7 @@ import {
 } from "@freeanima/engine-conversation";
 import type { PgRepositories } from "@freeanima/engine-repos";
 import { clearConfigCache, loadConfig } from "@freeanima/service-config";
+import { createTestLogger } from "@freeanima/kernel-logging/testing";
 import type { SessionMessage, SessionMetaMessage } from "@freeanima/engine-db/domain";
 import { relations } from "@freeanima/engine-db/schema";
 import { drizzle } from "drizzle-orm/bun-sql/postgres";
@@ -58,7 +59,7 @@ function createTestEngine(repos: PgRepositories): Engine {
   registerLlmStackConfigurator(wireOpenAiCompatibleLlm);
   const cfg = loadConfig();
   const llm = initLlmRuntime(cfg);
-  return createEngine({ repos, llm });
+  return createEngine({ repos, llm, config: cfg, logger: createTestLogger() });
 }
 
 function wireEngine(): Engine {

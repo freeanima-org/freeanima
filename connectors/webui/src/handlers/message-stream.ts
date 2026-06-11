@@ -1,4 +1,4 @@
-import { logSseError } from "@freeanima/service-logging";
+import { logSseError } from "../api-logging.ts";
 import { mapStreamEventToApi } from "../api-mappers.ts";
 import { webuiCtx } from "./runtime.ts";
 import { resolveSessionPlatform } from "./sessions.ts";

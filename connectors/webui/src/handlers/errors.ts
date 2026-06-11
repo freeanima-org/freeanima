@@ -1,4 +1,4 @@
-import { logApiError } from "@freeanima/service-logging";
+import { logApiError } from "../api-logging.ts";
 
 export class ApiHandlerError extends Error {
   readonly status: 400 | 404 | 500 | 503;

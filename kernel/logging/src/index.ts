@@ -1,4 +1,5 @@
 export { createLogger } from "./create-logger.ts";
+export { formatError } from "./format-error.ts";
 export type {
   CreateLoggerOptions,
   LogAttributes,

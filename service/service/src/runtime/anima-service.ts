@@ -6,12 +6,12 @@ import type {
   ServiceSnapshot,
   SessionSummary,
 } from "@freeanima/service/schemas/snapshot";
-import type { StreamEvent } from "@freeanima/engine-loop";
+import type { StreamEvent } from "@freeanima/engine";
 import type { SessionMessage as Message } from "@freeanima/engine-db/domain";
 import type { ConversationService } from "@freeanima/engine-conversation";
 import type { CronJobData } from "@freeanima/connectors-cron";
 import type { Kernel } from "@freeanima/kernel";
-import { collectStreamReply } from "@freeanima/engine-loop";
+import { collectStreamReply } from "@freeanima/engine";
 import { createTurnMessageCallbacks, type StreamTurnHost } from "./turn-lifecycle.ts";
 import { EngineRunControl } from "./engine-run-control.ts";
 import { SessionManager } from "./session-manager.ts";
@@ -28,7 +28,7 @@ import * as messaging from "./service-messaging.ts";
 import { PARLOR_PLATFORM } from "./platforms.ts";
 
 export type { MemoryFileEntry } from "./service-memory.ts";
-export type { StreamEvent } from "@freeanima/engine-loop";
+export type { StreamEvent } from "@freeanima/engine";
 export { SessionManager } from "./session-manager.ts";
 
 export class AnimaService implements StreamTurnHost {

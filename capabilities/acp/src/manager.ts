@@ -1,13 +1,13 @@
 import { join } from "node:path";
 import type { SkillRegistry } from "@freeanima/engine-skill";
 import { registerSkillsFromDirectory } from "@freeanima/engine-skill";
-import { getToolSessionId } from "@freeanima/engine-loop";
+import { getToolSessionId } from "@freeanima/engine-tool";
 import type { ToolDef, ToolSetRegistry } from "@freeanima/engine-tool";
 import { acpToolsetId, toolError, toolResult } from "@freeanima/engine-tool";
 import { loadConfig } from "@freeanima/service-config";
 import { logComponent } from "@freeanima/service-logging";
 
-import type { ConversationService } from "@freeanima/engine-conversation";
+import type { SessionConversationPort } from "@freeanima/engine-session-port";
 import {
   AcpAsyncTaskStore,
   appendProgressNote,
@@ -182,7 +182,7 @@ export class AcpManager {
   private toolsRegistered = false;
   private closed = false;
   private startTask: Promise<void> | null = null;
-  private conversation: ConversationService | null = null;
+  private conversation: SessionConversationPort | null = null;
   private progressDelivery: AcpProgressDeliveryPort | null = null;
   private readonly taskStore = new AcpAsyncTaskStore();
   private readonly taskAbortControllers = new Map<string, AbortController>();
@@ -197,7 +197,7 @@ export class AcpManager {
     this.skills = opts.skills;
   }
 
-  wireConversation(conversation: ConversationService): void {
+  wireConversation(conversation: SessionConversationPort): void {
     this.conversation = conversation;
   }
 
@@ -218,7 +218,7 @@ export class AcpManager {
     this.progressTicker = null;
   }
 
-  private conv(): ConversationService {
+  private conv(): SessionConversationPort {
     if (!this.conversation) {
       throw new Error("AcpManager: conversation not wired; call wireConversation first");
     }

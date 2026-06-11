@@ -70,7 +70,7 @@
   "workspaces": {
     "packages": [
       "kernel/*",
-      "engine/*",
+      "engine/*/*",
       "life/*",
       "service/*",
       "capabilities/*",

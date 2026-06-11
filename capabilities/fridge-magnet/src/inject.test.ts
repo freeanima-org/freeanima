@@ -48,9 +48,11 @@ describe("stripFridgeMagnets", () => {
   });
 });
 
+import type { SessionMessage } from "@freeanima/engine-db/domain";
+
 describe("injectIntoMessages", () => {
   it("injects into last user message", () => {
-    const messages = [
+    const messages: SessionMessage[] = [
       { role: "user", content: "First message" },
       { role: "assistant", content: "Reply" },
       { role: "user", content: "Second message" },
@@ -61,7 +63,7 @@ describe("injectIntoMessages", () => {
   });
 
   it("does not modify when no user messages", () => {
-    const messages = [{ role: "assistant", content: "Assistant only" }];
+    const messages: SessionMessage[] = [{ role: "assistant", content: "Assistant only" }];
     injectIntoMessages(messages, sampleMagnets);
     expect(messages[0]!.content).toBe("Assistant only");
   });
@@ -69,7 +71,7 @@ describe("injectIntoMessages", () => {
 
 describe("stripAllFromMessages", () => {
   it("strips fridge magnet blocks from all user messages", () => {
-    const messages = [
+    const messages: SessionMessage[] = [
       { role: "user", content: "```fridge\na: 1\n```\nFirst message" },
       { role: "assistant", content: "```fridge\nb: 2\n```\nReply" },
       { role: "user", content: "```fridge\nc: 3\n```\nSecond message" },
@@ -81,8 +83,8 @@ describe("stripAllFromMessages", () => {
   });
 
   it("skips when content is null", () => {
-    const messages = [{ role: "user", content: null }];
+    const messages: SessionMessage[] = [{ role: "user", content: "" }];
     stripAllFromMessages(messages);
-    expect(messages[0]!.content).toBeNull();
+    expect(messages[0]!.content).toBe("");
   });
 });
