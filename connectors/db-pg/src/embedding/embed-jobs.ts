@@ -12,10 +12,6 @@ export type EmbedAndStoreJobsOpts = {
   onStored?: (count: number) => void;
 };
 
-function jobStoreKey(unit: EmbeddingEmbedUnit): string {
-  return `${unit.job.kind}:${unit.job.id}`;
-}
-
 /** L2-normalized mean of chunk vectors (single vector when only one chunk). */
 export function averageEmbeddings(vectors: number[][]): number[] | null {
   if (!vectors.length) return null;
@@ -54,6 +50,13 @@ async function embedUnit(unit: EmbeddingEmbedUnit): Promise<number[] | null> {
   }
 }
 
+async function storeJobEmbedding(job: EmbeddingPendingJob, merged: number[]): Promise<boolean> {
+  if (job.kind === "semantic_memory") {
+    return setSemanticMemoryEmbedding(job.id, job.content, merged);
+  }
+  return setMessageEmbedding(job.id, job.content, merged);
+}
+
 export async function embedAndStoreJobs(
   jobs: EmbeddingPendingJob[],
   opts?: EmbedAndStoreJobsOpts,
@@ -72,67 +75,31 @@ export async function embedAndStoreJobs(
   if (!validJobs.length) return 0;
 
   const embeddingModel = getResolvedEmbeddingConfig()?.model ?? "";
-  const units = expandJobsToUnits(validJobs, { model: embeddingModel });
-
-  const vectorsByJob = new Map<string, number[][]>();
-
-  for (const unit of units) {
-    const vec = await embedUnit(unit);
-    if (!vec) continue;
-    const key = jobStoreKey(unit);
-    const list = vectorsByJob.get(key) ?? [];
-    list.push(vec);
-    vectorsByJob.set(key, list);
-  }
-
   let updated = 0;
-  const storeTasks: Array<{ job: EmbeddingPendingJob; promise: Promise<boolean> }> = [];
 
-  for (const [, unitList] of groupUnitsByJob(units)) {
-    const unit = unitList[0]!;
-    const key = jobStoreKey(unit);
-    const chunkVectors = vectorsByJob.get(key);
-    if (!chunkVectors?.length) continue;
+  for (const job of validJobs) {
+    const units = expandJobsToUnits([job], { model: embeddingModel });
+    const chunkVectors: number[][] = [];
+    for (const unit of units) {
+      const vec = await embedUnit(unit);
+      if (vec) chunkVectors.push(vec);
+    }
+    if (!chunkVectors.length) continue;
 
     const merged = averageEmbeddings(chunkVectors);
     if (!merged) continue;
 
-    if (unit.job.kind === "semantic_memory") {
-      storeTasks.push({
-        job: unit.job,
-        promise: setSemanticMemoryEmbedding(unit.job.id, unit.job.content, merged),
-      });
-    } else {
-      storeTasks.push({
-        job: unit.job,
-        promise: setMessageEmbedding(unit.job.id, unit.job.content, merged),
-      });
-    }
-  }
-
-  const results = await Promise.all(storeTasks.map((task) => task.promise));
-  for (let i = 0; i < storeTasks.length; i++) {
-    if (results[i]) {
+    const ok = await storeJobEmbedding(job, merged);
+    if (ok) {
       updated += 1;
     } else {
-      const job = storeTasks[i]!.job;
       log.warn("embedding store skipped", { kind: job.kind, id: job.id });
     }
   }
+
   if (updated > 0) {
     opts?.onStored?.(updated);
   }
 
   return updated;
-}
-
-function groupUnitsByJob(units: EmbeddingEmbedUnit[]): Map<string, EmbeddingEmbedUnit[]> {
-  const grouped = new Map<string, EmbeddingEmbedUnit[]>();
-  for (const unit of units) {
-    const key = jobStoreKey(unit);
-    const list = grouped.get(key) ?? [];
-    if (!list.length) list.push(unit);
-    grouped.set(key, list);
-  }
-  return grouped;
 }

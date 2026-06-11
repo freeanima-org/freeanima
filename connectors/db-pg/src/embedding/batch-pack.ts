@@ -10,7 +10,7 @@ export const MAX_CHUNK_TOKENS = 4096;
 /** Long-text split budget: half of max chunk (headroom for tokenizer vs Ollama mismatch). */
 export const TARGET_BATCH_TOKENS = Math.floor(MAX_CHUNK_TOKENS * 0.5);
 
-/** PG cursor page size for FTS rebuild only (not embedding API batching). */
+/** PG page size for fts_segmented rebuild only (embedding rebuild uses one row per fetch). */
 export const EMBEDDING_QUEUE_FLUSH_THRESHOLD = 64;
 
 /** @deprecated Use TARGET_BATCH_TOKENS / MAX_CHUNK_TOKENS. */

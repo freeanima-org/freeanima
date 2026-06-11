@@ -6,13 +6,14 @@ import { logComponent } from "@freeanima/service-logging";
 import { EMBEDDING_QUEUE_FLUSH_THRESHOLD } from "../embedding/batch-pack.ts";
 import { embedAndStoreJobs } from "../embedding/embed-jobs.ts";
 import { getEmbedTextFn } from "../embedding/runtime.ts";
-import type { EmbeddingPendingJob } from "../embedding/types.ts";
 import { getDb } from "../client.ts";
 import { segmentForFts } from "./segment.ts";
 import type { FtsRebuildOptions, FtsRebuildPhase } from "./rebuild-types.ts";
 
-/** PG cursor page size only (not embedding API batching). */
+/** PG page size for fts_segmented rebuild. */
 const REBUILD_DB_PAGE_SIZE = EMBEDDING_QUEUE_FLUSH_THRESHOLD;
+/** Embedding rebuild: one row per round-trip; embed then store immediately. */
+const REBUILD_EMBEDDING_PAGE_SIZE = 1;
 
 const log = logComponent("embedding");
 
@@ -208,24 +209,20 @@ async function rebuildSemanticMemoryEmbeddings(opts: FtsRebuildOptions): Promise
         ${missingFilter}
         ${idCursorFilter(onlyMissing, lastId)}
       ORDER BY id
-      LIMIT ${REBUILD_DB_PAGE_SIZE}
+      LIMIT ${REBUILD_EMBEDDING_PAGE_SIZE}
     `);
     if (!rows.length) break;
 
-    const jobs: EmbeddingPendingJob[] = rows.map((row) => ({
-      kind: "semantic_memory",
-      id: row.id,
-      content: row.content,
-    }));
-
-    const stored = await embedAndStoreJobs(jobs);
+    const row = rows[0]!;
+    const stored = await embedAndStoreJobs([
+      { kind: "semantic_memory", id: row.id, content: row.content },
+    ]);
     assertEmbeddingBatchStored("semantic_memory_embedding", rows.length, stored);
     updated += stored;
     report(opts.onProgress, "semantic_memory_embedding", "semantic_memory", updated, total);
 
     if (!onlyMissing) {
-      lastId = rows[rows.length - 1]!.id;
-      if (rows.length < REBUILD_DB_PAGE_SIZE) break;
+      lastId = row.id;
     }
   }
 
@@ -251,24 +248,20 @@ async function rebuildMessagesEmbeddings(opts: FtsRebuildOptions): Promise<numbe
       FROM messages
       WHERE content_fts IS NOT NULL ${missingFilter} ${idCursorFilter(onlyMissing, lastId)}
       ORDER BY id
-      LIMIT ${REBUILD_DB_PAGE_SIZE}
+      LIMIT ${REBUILD_EMBEDDING_PAGE_SIZE}
     `);
     if (!rows.length) break;
 
-    const jobs: EmbeddingPendingJob[] = rows.map((row) => ({
-      kind: "message",
-      id: row.id,
-      content: row.content ?? "",
-    }));
-
-    const stored = await embedAndStoreJobs(jobs);
+    const row = rows[0]!;
+    const stored = await embedAndStoreJobs([
+      { kind: "message", id: row.id, content: row.content ?? "" },
+    ]);
     assertEmbeddingBatchStored("messages_embedding", rows.length, stored);
     updated += stored;
     report(opts.onProgress, "messages_embedding", "messages", updated, total);
 
     if (!onlyMissing) {
-      lastId = rows[rows.length - 1]!.id;
-      if (rows.length < REBUILD_DB_PAGE_SIZE) break;
+      lastId = row.id;
     }
   }
 
