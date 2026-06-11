@@ -1,12 +1,10 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import {
-  flushEmbeddingQueueForTest,
+  awaitPendingEmbeddingsForTest,
   rebuildAllFtsSegments,
   registerEmbedTextFn,
-  registerEmbedTextsFn,
   resetEmbedTextFnForTest,
-  resetEmbedTextsFnForTest,
-  resetEmbeddingQueueForTest,
+  resetPendingEmbeddingsForTest,
 } from "@freeanima/connectors-db-pg";
 import { SEMANTIC_EMBEDDING_DIMENSIONS } from "@freeanima/engine-db/schema";
 import { describePg } from "../../helpers/pg-test-gate.ts";
@@ -27,13 +25,11 @@ describePg("recall vector PG", () => {
   beforeEach(async () => {
     await beginIntegrationCase("freeanima-recall-vector-");
     registerEmbedTextFn(async () => fixedEmbedding());
-    registerEmbedTextsFn(async (texts) => texts.map(() => fixedEmbedding()));
   });
 
   afterEach(async () => {
     resetEmbedTextFnForTest();
-    resetEmbedTextsFnForTest();
-    resetEmbeddingQueueForTest();
+    resetPendingEmbeddingsForTest();
     await restoreIntegrationHome(prev);
   });
 
@@ -45,7 +41,7 @@ describePg("recall vector PG", () => {
       type: "world",
     });
 
-    await flushEmbeddingQueueForTest();
+    await awaitPendingEmbeddingsForTest();
     await rebuildAllFtsSegments();
 
     const hits = await store.searchFts("sleep mechanism", { limit: 5 });

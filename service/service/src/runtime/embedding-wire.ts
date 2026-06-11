@@ -1,7 +1,4 @@
-import {
-  createOpenAiEmbeddingBatchClient,
-  createOpenAiEmbeddingClient,
-} from "@freeanima/capabilities-provider-openai-compatible";
+import { createOpenAiEmbeddingClient } from "@freeanima/capabilities-provider-openai-compatible";
 import { registerEmbedTextFn, registerEmbedTextsFn } from "@freeanima/connectors-db-pg";
 import { getResolvedEmbeddingConfig } from "@freeanima/service-config";
 import { logComponent } from "@freeanima/service-logging";
@@ -17,7 +14,7 @@ export function wireEmbeddingRuntime(): void {
     return;
   }
   registerEmbedTextFn(createOpenAiEmbeddingClient(cfg));
-  registerEmbedTextsFn(createOpenAiEmbeddingBatchClient(cfg));
+  registerEmbedTextsFn(null);
   log.info("embedding enabled", {
     model: cfg.model,
     base_url: cfg.baseUrl,
