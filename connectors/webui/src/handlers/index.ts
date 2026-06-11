@@ -39,6 +39,7 @@ export {
   studioSearch,
 } from "./studio.ts";
 export { iterateMessageStream } from "./message-stream.ts";
+export { fetchSessionAcpDock, iterateSessionEvents } from "./session-events.ts";
 export {
   getEmailOverview,
   fetchAccountEmails,

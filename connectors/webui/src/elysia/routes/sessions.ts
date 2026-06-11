@@ -1,4 +1,4 @@
-import { Elysia } from "elysia";
+import { Elysia, sse } from "elysia";
 import { z } from "zod";
 import { createSessionBodySchema } from "../../api/schemas.ts";
 import { PARLOR_PLATFORM } from "../../api/constants.ts";
@@ -10,6 +10,7 @@ import {
   listSessions,
   setSessionTitle,
 } from "../../handlers/index.ts";
+import { fetchSessionAcpDock, iterateSessionEvents } from "../../handlers/session-events.ts";
 
 export const sessionsRoutes = new Elysia({ prefix: "/sessions" })
   .get("/", ({ query }) => listSessions(query.platform))
@@ -30,6 +31,20 @@ export const sessionsRoutes = new Elysia({ prefix: "/sessions" })
     },
   )
   .get("/:sessionId", ({ params }) => getSessionInfo(params.sessionId))
+  .get("/:sessionId/acp-dock", ({ params }) => fetchSessionAcpDock(params.sessionId))
+  .get(
+    "/:sessionId/events",
+    async function* ({ params, request, set }) {
+      set.headers["X-Accel-Buffering"] = "no";
+      const signal = request.signal;
+      for await (const chunk of iterateSessionEvents(params.sessionId, signal)) {
+        yield sse({ event: chunk.event, data: chunk.data });
+        await Bun.sleep(0);
+        if (signal.aborted) break;
+      }
+    },
+    { params: z.object({ sessionId: z.string() }) },
+  )
   .get(
     "/:sessionId/messages",
     ({ params, query }) =>

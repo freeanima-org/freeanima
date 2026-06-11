@@ -23,6 +23,7 @@ type SessionsState = {
   renameSession: (sessionId: string, newTitle: string) => Promise<void>;
   appendItem: (item: DisplayItem) => void;
   refreshMessages: (sessionId: string, baselineCount: number) => Promise<boolean>;
+  patchProgressLine: (text: string, messageId?: string) => void;
 };
 
 export const useSessionsStore = create<SessionsState>((set, get) => ({
@@ -90,6 +91,22 @@ export const useSessionsStore = create<SessionsState>((set, get) => ({
     } catch (e) {
       console.error("refreshMessages:", e);
       return false;
+    }
+  },
+
+  patchProgressLine(text: string, _messageId?: string) {
+    const display = [...get().display];
+    for (let i = display.length - 1; i >= 0; i--) {
+      const item = display[i];
+      if (
+        item?.type === "message" &&
+        item.role === "assistant" &&
+        item.content.includes("Cursor working")
+      ) {
+        display[i] = { ...item, content: text };
+        set({ display });
+        return;
+      }
     }
   },
 }));

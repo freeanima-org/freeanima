@@ -247,19 +247,24 @@ export async function serve(
     conversation = createConversationService(engine.repos, catalog.toolSets);
 
     const acpSessionUpdatedRef: { handler: ((sid: string) => void) | null } = { handler: null };
+    const serviceRef: { current: AnimaService | null } = { current: null };
     registerServiceIntegrations({
       kernel,
       conversation,
       toolSets: catalog.toolSets,
       skills: catalog.skills,
       config,
-      onSessionUpdated: (sid) => acpSessionUpdatedRef.handler?.(sid),
+      onSessionUpdated: (sid) => {
+        acpSessionUpdatedRef.handler?.(sid);
+        serviceRef.current?.pokeSessionWatchers(sid);
+      },
     });
 
     registerFridgeStore(createRedisFridgeStore());
 
     startupLog("Initializing AnimaService / EventBus…");
     service = new AnimaService({ kernel, conversation });
+    serviceRef.current = service;
     service.markStarted();
     acpSessionUpdatedRef.handler = createAcpSessionUpdatedHandler({
       conversation,

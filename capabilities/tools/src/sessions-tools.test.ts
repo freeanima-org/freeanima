@@ -27,6 +27,9 @@ function createMockSessionStore(overrides: Partial<SessionStorePort> = {}): Sess
       throw new Error("not implemented");
     },
     async updateMessageContent() {},
+    async getMessageContentById() {
+      return null;
+    },
     async nextMessagePos() {
       return 1;
     },

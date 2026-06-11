@@ -46,6 +46,7 @@ export interface SessionStorePort {
   updateTodos(sessionId: string, todos: SessionTodoStore): Promise<void>;
   appendMessage(sessionId: string, msg: SessionMessage): Promise<ConversationMessage>;
   appendMessageReturningId(sessionId: string, msg: SessionMessage): Promise<{ messageId: string }>;
+  getMessageContentById(sessionId: string, messageId: string): Promise<string | null>;
   updateMessageContent(sessionId: string, messageId: string, content: string): Promise<void>;
   nextMessagePos(sessionId: string): Promise<number>;
   listMessages(sessionId: string): Promise<ConversationMessage[]>;

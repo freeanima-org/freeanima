@@ -17,6 +17,7 @@ import { EngineRunControl } from "./engine-run-control.ts";
 import { SessionManager } from "./session-manager.ts";
 import * as status from "./service-status.ts";
 import * as sessions from "./service-sessions.ts";
+import * as acpDock from "./service-acp-dock.ts";
 import * as memory from "./service-memory.ts";
 import * as selfLayer from "./service-self.ts";
 import * as fts from "./service-fts.ts";
@@ -38,6 +39,7 @@ export class AnimaService implements StreamTurnHost {
   private readonly sessionManager = new SessionManager();
   private bus: EventBus | null = null;
   private onSessionUpdated: ((sid: string) => void) | null = null;
+  private readonly sessionWatchers = new Map<string, Set<() => void>>();
 
   constructor(
     private readonly deps: {
@@ -100,6 +102,35 @@ export class AnimaService implements StreamTurnHost {
       { bus: this.bus, onSessionUpdated: this.onSessionUpdated },
       sessionId,
     );
+    this.pokeSessionWatchers(sessionId);
+  }
+
+  /** WebUI SSE: wake watchers without re-running onSessionUpdated (ACP progress already notified). */
+  pokeSessionWatchers(sessionId: string): void {
+    const set = this.sessionWatchers.get(sessionId);
+    if (set) {
+      for (const cb of set) {
+        try {
+          cb();
+        } catch {
+          /* ignore watcher errors */
+        }
+      }
+    }
+  }
+
+  /** WebUI SSE: notify when session messages/meta change (ACP progress, callbacks). */
+  watchSession(sessionId: string, cb: () => void): () => void {
+    let set = this.sessionWatchers.get(sessionId);
+    if (!set) {
+      set = new Set();
+      this.sessionWatchers.set(sessionId, set);
+    }
+    set.add(cb);
+    return () => {
+      set?.delete(cb);
+      if (set && !set.size) this.sessionWatchers.delete(sessionId);
+    };
   }
 
   isShuttingDown(): boolean {
@@ -203,6 +234,10 @@ export class AnimaService implements StreamTurnHost {
 
   getSessionInfo(sessionId: string, platform = ""): Promise<Record<string, unknown>> {
     return sessions.getSessionInfo(sessionId, platform);
+  }
+
+  getSessionAcpDock(sessionId: string, platform = "") {
+    return acpDock.getSessionAcpDock(sessionId, platform);
   }
 
   getMessages(sessionId: string, platform = "", opts?: { offset?: number; limit?: number | null }) {
