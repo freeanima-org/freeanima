@@ -77,6 +77,23 @@ export async function appendMessage(
   return rowToMessage(rows[0]!);
 }
 
+export async function getMessageContentById(
+  sessionId: string,
+  messageId: string,
+): Promise<string | null> {
+  const db = getDb();
+  const rows = await db
+    .select({ payload: messages.payload })
+    .from(messages)
+    .where(and(eq(messages.sessionId, sessionId), eq(messages.id, messageId)))
+    .limit(1);
+  if (!rows.length) return null;
+  const payload = rows[0]!.payload;
+  if (payload.role !== "assistant" && payload.role !== "user") return null;
+  const raw = payload.content;
+  return typeof raw === "string" ? raw : null;
+}
+
 export async function appendMessageReturningId(
   sessionId: string,
   msg: SessionMessage,

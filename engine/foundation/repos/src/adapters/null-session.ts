@@ -35,6 +35,9 @@ export const nullSessionStore: SessionStorePort = {
   ) {
     return unavailable();
   },
+  async getMessageContentById(..._args: Parameters<SessionStorePort["getMessageContentById"]>) {
+    return unavailable();
+  },
   async updateMessageContent(..._args: Parameters<SessionStorePort["updateMessageContent"]>) {
     return unavailable();
   },

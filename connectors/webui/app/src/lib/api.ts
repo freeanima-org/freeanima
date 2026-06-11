@@ -152,6 +152,75 @@ export async function getSessionMessages(sessionId: string, offset?: number, lim
   );
 }
 
+export type SessionAcpDockTask = {
+  acp_session_id: string;
+  task_id: string;
+  agent_name: string;
+  status: string;
+  progress_message_id?: string;
+};
+
+export type SessionAcpDockSnapshot = {
+  session_id: string;
+  tasks: SessionAcpDockTask[];
+  progress_text: string;
+  highlight_decision: boolean;
+};
+
+export async function getSessionAcpDock(sessionId: string): Promise<SessionAcpDockSnapshot> {
+  const res = await fetch(apiPath(`/api/sessions/${encodeURIComponent(sessionId)}/acp-dock`));
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status}`);
+  }
+  return (await res.json()) as SessionAcpDockSnapshot;
+}
+
+export function subscribeSessionEvents(
+  sessionId: string,
+  onUpdate: () => void,
+): { unsubscribe: () => void } {
+  const controller = new AbortController();
+
+  void (async () => {
+    try {
+      const res = await fetch(apiPath(`/api/sessions/${encodeURIComponent(sessionId)}/events`), {
+        signal: controller.signal,
+        headers: { Accept: "text/event-stream" },
+      });
+      if (!res.ok) return;
+      const reader = res.body?.getReader();
+      if (!reader) return;
+      const decoder = new TextDecoder();
+      let buffer = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const parts = buffer.split("\n\n");
+        buffer = parts.pop() ?? "";
+        for (const part of parts) {
+          const lines = part.split("\n");
+          let eventName = "";
+          let data = "";
+          for (const line of lines) {
+            if (line.startsWith("event:")) eventName = line.slice(6).trim();
+            if (line.startsWith("data:")) data = line.slice(5).trim();
+          }
+          if (eventName === "session_updated" || data.includes("session_updated")) {
+            onUpdate();
+          }
+        }
+      }
+    } catch (e) {
+      if ((e as Error).name !== "AbortError") {
+        console.error("session events SSE:", e);
+      }
+    }
+  })();
+
+  return { unsubscribe: () => controller.abort() };
+}
+
 export async function setSessionTitle(sessionId: string, title: string) {
   return unwrap(apiClient.api.sessions({ sessionId }).title.patch({ title }));
 }
