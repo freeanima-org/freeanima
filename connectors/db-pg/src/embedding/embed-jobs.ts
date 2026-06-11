@@ -86,7 +86,7 @@ export async function embedAndStoreJobs(
   }
 
   let updated = 0;
-  const storePromises: Promise<boolean>[] = [];
+  const storeTasks: Array<{ job: EmbeddingPendingJob; promise: Promise<boolean> }> = [];
 
   for (const [, unitList] of groupUnitsByJob(units)) {
     const unit = unitList[0]!;
@@ -98,14 +98,27 @@ export async function embedAndStoreJobs(
     if (!merged) continue;
 
     if (unit.job.kind === "semantic_memory") {
-      storePromises.push(setSemanticMemoryEmbedding(unit.job.id, unit.job.content, merged));
+      storeTasks.push({
+        job: unit.job,
+        promise: setSemanticMemoryEmbedding(unit.job.id, unit.job.content, merged),
+      });
     } else {
-      storePromises.push(setMessageEmbedding(unit.job.id, unit.job.content, merged));
+      storeTasks.push({
+        job: unit.job,
+        promise: setMessageEmbedding(unit.job.id, unit.job.content, merged),
+      });
     }
   }
 
-  const results = await Promise.all(storePromises);
-  updated = results.filter(Boolean).length;
+  const results = await Promise.all(storeTasks.map((task) => task.promise));
+  for (let i = 0; i < storeTasks.length; i++) {
+    if (results[i]) {
+      updated += 1;
+    } else {
+      const job = storeTasks[i]!.job;
+      log.warn("embedding store skipped", { kind: job.kind, id: job.id });
+    }
+  }
   if (updated > 0) {
     opts?.onStored?.(updated);
   }

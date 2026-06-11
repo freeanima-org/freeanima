@@ -1,6 +1,7 @@
-import { sql as drizzleSql } from "drizzle-orm";
+import { sql as drizzleSql, type SQL } from "drizzle-orm";
 
 import { isCjkJiebaEnabled, isEmbeddingEnabled } from "@freeanima/service-config";
+import { logComponent } from "@freeanima/service-logging";
 
 import { EMBEDDING_QUEUE_FLUSH_THRESHOLD } from "../embedding/batch-pack.ts";
 import { embedAndStoreJobs } from "../embedding/embed-jobs.ts";
@@ -12,6 +13,8 @@ import type { FtsRebuildOptions, FtsRebuildPhase } from "./rebuild-types.ts";
 
 /** PG cursor page size only (not embedding API batching). */
 const REBUILD_DB_PAGE_SIZE = EMBEDDING_QUEUE_FLUSH_THRESHOLD;
+
+const log = logComponent("embedding");
 
 export type FtsRebuildResult = {
   tables: Record<string, number>;
@@ -28,6 +31,24 @@ function report(
   total: number,
 ): void {
   onProgress?.({ phase, table, current, total });
+}
+
+/** onlyMissing: head-of-queue LIMIT; full rebuild: keyset id cursor (OFFSET skips rows when filter shrinks). */
+function idCursorFilter(onlyMissing: boolean, lastId: string): SQL {
+  if (onlyMissing) return drizzleSql``;
+  return drizzleSql`AND id > ${lastId}`;
+}
+
+function assertEmbeddingBatchStored(
+  phase: FtsRebuildPhase,
+  batchSize: number,
+  stored: number,
+): void {
+  if (batchSize > 0 && stored === 0) {
+    const msg = `${phase}: batch of ${batchSize} rows stored 0 embeddings (check API, dimensions, config)`;
+    log.warn("embedding rebuild batch stored 0 rows", { phase, batch_size: batchSize });
+    throw new Error(msg);
+  }
 }
 
 async function countSemanticMemorySegmentedTargets(onlyMissing: boolean): Promise<number> {
@@ -85,7 +106,7 @@ async function rebuildSemanticMemoryFtsSegmented(
 
   const db = getDb();
   let updated = 0;
-  let offset = 0;
+  let lastId = "";
   const missingFilter = onlyMissing
     ? drizzleSql`AND nullif(btrim(fts_segmented), '') IS NULL`
     : drizzleSql``;
@@ -94,9 +115,8 @@ async function rebuildSemanticMemoryFtsSegmented(
     const rows = await db.execute<{ id: string; content: string }>(drizzleSql`
       SELECT id, content
       FROM semantic_memory
-      WHERE length(btrim(content)) > 0 ${missingFilter}
+      WHERE length(btrim(content)) > 0 ${missingFilter} ${idCursorFilter(onlyMissing, lastId)}
       ORDER BY id
-      OFFSET ${offset}
       LIMIT ${REBUILD_DB_PAGE_SIZE}
     `);
     if (!rows.length) break;
@@ -110,9 +130,10 @@ async function rebuildSemanticMemoryFtsSegmented(
       `);
       updated += 1;
       report(opts.onProgress, "semantic_memory_segmented", "semantic_memory", updated, total);
+      lastId = row.id;
     }
-    offset += rows.length;
-    if (rows.length < REBUILD_DB_PAGE_SIZE) break;
+
+    if (!onlyMissing && rows.length < REBUILD_DB_PAGE_SIZE) break;
   }
 
   return updated;
@@ -131,7 +152,7 @@ async function rebuildMessagesFtsSegmented(
 
   const db = getDb();
   let updated = 0;
-  let offset = 0;
+  let lastId = "";
   const missingFilter = onlyMissing
     ? drizzleSql`AND nullif(btrim(fts_segmented), '') IS NULL`
     : drizzleSql``;
@@ -140,9 +161,8 @@ async function rebuildMessagesFtsSegmented(
     const rows = await db.execute<{ id: string; content: string | null }>(drizzleSql`
       SELECT id, payload->>'content' AS content
       FROM messages
-      WHERE content_fts IS NOT NULL ${missingFilter}
+      WHERE content_fts IS NOT NULL ${missingFilter} ${idCursorFilter(onlyMissing, lastId)}
       ORDER BY id
-      OFFSET ${offset}
       LIMIT ${REBUILD_DB_PAGE_SIZE}
     `);
     if (!rows.length) break;
@@ -157,9 +177,10 @@ async function rebuildMessagesFtsSegmented(
       `);
       updated += 1;
       report(opts.onProgress, "messages_segmented", "messages", updated, total);
+      lastId = row.id;
     }
-    offset += rows.length;
-    if (rows.length < REBUILD_DB_PAGE_SIZE) break;
+
+    if (!onlyMissing && rows.length < REBUILD_DB_PAGE_SIZE) break;
   }
 
   return updated;
@@ -175,8 +196,7 @@ async function rebuildSemanticMemoryEmbeddings(opts: FtsRebuildOptions): Promise
 
   const db = getDb();
   let updated = 0;
-  let processed = 0;
-  let offset = 0;
+  let lastId = "";
   const missingFilter = onlyMissing ? drizzleSql`AND content_embedding IS NULL` : drizzleSql``;
 
   for (;;) {
@@ -186,8 +206,8 @@ async function rebuildSemanticMemoryEmbeddings(opts: FtsRebuildOptions): Promise
       WHERE status = 'active'
         AND length(btrim(content)) > 0
         ${missingFilter}
+        ${idCursorFilter(onlyMissing, lastId)}
       ORDER BY id
-      OFFSET ${offset}
       LIMIT ${REBUILD_DB_PAGE_SIZE}
     `);
     if (!rows.length) break;
@@ -199,12 +219,14 @@ async function rebuildSemanticMemoryEmbeddings(opts: FtsRebuildOptions): Promise
     }));
 
     const stored = await embedAndStoreJobs(jobs);
+    assertEmbeddingBatchStored("semantic_memory_embedding", rows.length, stored);
     updated += stored;
-    processed += rows.length;
-    report(opts.onProgress, "semantic_memory_embedding", "semantic_memory", processed, total);
+    report(opts.onProgress, "semantic_memory_embedding", "semantic_memory", updated, total);
 
-    offset += rows.length;
-    if (rows.length < REBUILD_DB_PAGE_SIZE) break;
+    if (!onlyMissing) {
+      lastId = rows[rows.length - 1]!.id;
+      if (rows.length < REBUILD_DB_PAGE_SIZE) break;
+    }
   }
 
   return updated;
@@ -220,17 +242,15 @@ async function rebuildMessagesEmbeddings(opts: FtsRebuildOptions): Promise<numbe
 
   const db = getDb();
   let updated = 0;
-  let processed = 0;
-  let offset = 0;
+  let lastId = "";
   const missingFilter = onlyMissing ? drizzleSql`AND content_embedding IS NULL` : drizzleSql``;
 
   for (;;) {
     const rows = await db.execute<{ id: string; content: string | null }>(drizzleSql`
       SELECT id, payload->>'content' AS content
       FROM messages
-      WHERE content_fts IS NOT NULL ${missingFilter}
+      WHERE content_fts IS NOT NULL ${missingFilter} ${idCursorFilter(onlyMissing, lastId)}
       ORDER BY id
-      OFFSET ${offset}
       LIMIT ${REBUILD_DB_PAGE_SIZE}
     `);
     if (!rows.length) break;
@@ -242,12 +262,14 @@ async function rebuildMessagesEmbeddings(opts: FtsRebuildOptions): Promise<numbe
     }));
 
     const stored = await embedAndStoreJobs(jobs);
+    assertEmbeddingBatchStored("messages_embedding", rows.length, stored);
     updated += stored;
-    processed += rows.length;
-    report(opts.onProgress, "messages_embedding", "messages", processed, total);
+    report(opts.onProgress, "messages_embedding", "messages", updated, total);
 
-    offset += rows.length;
-    if (rows.length < REBUILD_DB_PAGE_SIZE) break;
+    if (!onlyMissing) {
+      lastId = rows[rows.length - 1]!.id;
+      if (rows.length < REBUILD_DB_PAGE_SIZE) break;
+    }
   }
 
   return updated;
