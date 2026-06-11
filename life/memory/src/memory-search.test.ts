@@ -14,7 +14,7 @@ import {
 } from "@freeanima/life-memory";
 import { registerToolSessionResolver } from "@freeanima/life-memory/tool-session-port";
 import { ToolSetRegistry } from "@freeanima/engine-tool";
-import { runWithToolContext } from "@freeanima/engine-loop";
+import { runWithToolContext } from "@freeanima/engine-tool";
 
 let toolSets: ToolSetRegistry;
 

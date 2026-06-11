@@ -14,6 +14,8 @@ import {
 import { MaskRegistry } from "@freeanima/capabilities-mask";
 import { createEngineCatalog } from "@freeanima/engine";
 import type { Engine } from "@freeanima/engine";
+import type { AnimaConfig } from "@freeanima/engine-config";
+import { createTestLogger } from "@freeanima/kernel-logging/testing";
 import { nullPgRepositories } from "@freeanima/engine-repos";
 import { registerServiceTools, resetRegisterServiceToolsForTest } from "./register.ts";
 import { initServiceContext } from "./context.ts";
@@ -59,12 +61,31 @@ const mockConv = {
   buildRuntimeMessages: mock(async () => [[], null] as const),
 };
 
+const minimalCfg = {
+  llm: {
+    default_profile: "chat",
+    providers: {
+      main: {
+        backend: "openai_compatible",
+        base_url: "https://api.openai.com/v1",
+        api_key: "test",
+      },
+    },
+    profiles: { chat: { chain: [{ provider: "main", model: "gpt-4" }] } },
+  },
+} as AnimaConfig;
+
 function seedContext(catalog: ReturnType<typeof createEngineCatalog>) {
   initServiceContext({
     conversation: mockConv as never,
     service: {} as never,
     kernel: {} as never,
-    engine: { catalog, repos: nullPgRepositories } as Engine,
+    engine: {
+      catalog,
+      repos: nullPgRepositories,
+      config: minimalCfg,
+      logger: createTestLogger(),
+    } as Engine,
     mcp: {} as never,
     acp: {} as never,
     masks: new MaskRegistry(),

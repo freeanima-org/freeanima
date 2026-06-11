@@ -1,0 +1,22 @@
+{
+  "name": "@freeanima/engine-loop",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@freeanima/engine-compress": "workspace:*",
+    "@freeanima/engine-db": "workspace:*",
+    "@freeanima/engine-llm": "workspace:*",
+    "@freeanima/engine-provider-llm": "workspace:*",
+    "@freeanima/engine-tool": "workspace:*",
+    "@freeanima/engine-repos": "workspace:*",
+    "@freeanima/engine-hooks": "workspace:*",
+    "@freeanima/kernel-hooks": "workspace:*",
+    "@freeanima/engine-config": "workspace:*",
+    "@freeanima/kernel-logging": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:"
+  }
+}

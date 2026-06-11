@@ -1,12 +1,4 @@
-import { registerSystemPromptBuilder } from "@freeanima/engine-prompt";
-import { loadSelfLayerPrompt } from "@freeanima/life-self";
-import {
-  composeSystemPrompt,
-  decomposeSystemPromptParts as decomposeBase,
-} from "@freeanima/life-memory/system-prompt";
+import { wireEnginePorts } from "../wire-engine-ports.ts";
 
-registerSystemPromptBuilder(async (_functionNames, cwd) => {
-  const selfContent = await loadSelfLayerPrompt();
-  const parts = await decomposeBase(selfContent, cwd);
-  return composeSystemPrompt(parts);
-});
+/** @deprecated Prefer explicit wireEnginePorts() at composition root */
+wireEnginePorts();

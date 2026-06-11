@@ -1,5 +1,5 @@
-import "./wire-api.ts";
-import "@freeanima/service/runtime/system-prompt-wire";
+import { wireEnginePorts } from "./wire-engine-ports.ts";
+import { wireServicePorts } from "./wire-api.ts";
 import {
   createEngine,
   createEngineCatalog,
@@ -32,6 +32,7 @@ import {
   validateConfigOnStartup,
 } from "@freeanima/service-config";
 import {
+  createServiceLogger,
   installErrorLogHandlers,
   logComponent,
   logStartupError,
@@ -208,6 +209,8 @@ export async function serve(
   try {
     startupLog("Validating config.yaml…");
     await validateConfigOnStartup();
+    wireEnginePorts();
+    wireServicePorts();
     wireEmbeddingRuntime();
     await wireTokenizerRuntime();
 
@@ -234,7 +237,8 @@ export async function serve(
       repos = createPgRepositories({ getDb });
     }
     initLlmRuntime(cfg);
-    engine = createEngine({ repos, llm: getLlmRuntime(), catalog });
+    const logger = createServiceLogger();
+    engine = createEngine({ repos, llm: getLlmRuntime(), catalog, config: cfg, logger });
     conversation = createConversationService(engine.repos, catalog.toolSets);
 
     registerServiceIntegrations({

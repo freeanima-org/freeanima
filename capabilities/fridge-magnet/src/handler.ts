@@ -1,4 +1,4 @@
-import type { BeforeLlmCallContext } from "@freeanima/engine-loop-hooks";
+import type { BeforeLlmCallContext } from "@freeanima/engine-hooks/loop";
 import { scanMagnets } from "./store.ts";
 import { stripAllFromMessages, injectIntoMessages } from "./inject.ts";
 import type { FridgeMagnet } from "./types.ts";

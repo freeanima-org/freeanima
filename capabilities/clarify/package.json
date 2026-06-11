@@ -5,11 +5,10 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@freeanima/engine-conversation": "workspace:*",
+    "@freeanima/engine-session-port": "workspace:*",
     "@freeanima/engine-db": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",
-    "@freeanima/engine-conversation-hooks": "workspace:*",
-    "@freeanima/engine-loop-hooks": "workspace:*",
+    "@freeanima/engine-hooks": "workspace:*",
     "@freeanima/engine-util": "workspace:*",
     "@freeanima/kernel": "workspace:*",
     "@freeanima/service-config": "workspace:*"

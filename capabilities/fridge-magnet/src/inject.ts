@@ -1,3 +1,4 @@
+import type { SessionMessage } from "@freeanima/engine-db/domain";
 import type { FridgeMagnet } from "./types.ts";
 
 const FRIDGE_BLOCK_RE = /^```fridge\n[\s\S]*?\n```\n?/;
@@ -19,13 +20,10 @@ export function stripFridgeMagnets(content: string): string {
 }
 
 /** Find last user message and inject fridge magnets */
-export function injectIntoMessages(
-  messages: { role: string; content: string | null }[],
-  magnets: FridgeMagnet[],
-): void {
+export function injectIntoMessages(messages: SessionMessage[], magnets: FridgeMagnet[]): void {
   for (let i = messages.length - 1; i >= 0; i--) {
-    if (messages[i]!.role === "user") {
-      const msg = messages[i]!;
+    const msg = messages[i];
+    if (msg?.role === "user" && "content" in msg) {
       msg.content = injectFridgeMagnets(msg.content ?? "", magnets);
       return;
     }
@@ -33,9 +31,9 @@ export function injectIntoMessages(
 }
 
 /** strips fridge magnet blocks from all user messages */
-export function stripAllFromMessages(messages: { role: string; content: string | null }[]): void {
+export function stripAllFromMessages(messages: SessionMessage[]): void {
   for (const msg of messages) {
-    if (msg.role === "user" && msg.content !== null) {
+    if (msg.role === "user" && "content" in msg && msg.content !== null) {
       msg.content = stripFridgeMagnets(msg.content);
     }
   }

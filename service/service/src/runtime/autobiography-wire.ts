@@ -1,8 +1,8 @@
 import * as engine from "@freeanima/engine-loop";
-import { runWithToolContext } from "@freeanima/engine-loop";
+import { runWithToolContext } from "@freeanima/engine-tool";
 import type { SessionMessage } from "@freeanima/engine-db/domain";
 import { PROFILE_REFLECT } from "@freeanima/engine-provider-llm";
-import { getProfileHopModel, loadConfig } from "@freeanima/service-config";
+import { getProfileHopModel } from "@freeanima/engine-config";
 import {
   registerAutobiographyEngine,
   type AutobiographyEngineInput,
@@ -29,8 +29,7 @@ async function runAutobiographyTurn(
   input: AutobiographyEngineInput,
 ): Promise<AutobiographyEngineResult> {
   const { conversation, engine: eng } = getServiceContext();
-  const cfg = loadConfig();
-  const model = getProfileHopModel(cfg, PROFILE_REFLECT);
+  const model = getProfileHopModel(eng.config, PROFILE_REFLECT);
   const sleepMask = resolveSleepMask();
   const toolNames = filterToolNamesByMask(input.toolNames, sleepMask);
   const tools = eng.catalog.toolSets.openaiSchemasFromNames(toolNames);
@@ -46,6 +45,9 @@ async function runAutobiographyTurn(
       for await (const ev of engine.runStream(messages, {
         model,
         tools,
+        config: eng.config,
+        logger: eng.logger,
+        llm: eng.llm,
         toolMask,
         max_turns: 20,
       })) {

@@ -3,7 +3,7 @@ import { getAcpManager } from "@freeanima/capabilities-acp";
 import { registerClarifyHooks } from "@freeanima/capabilities-clarify";
 import { createAcpProgressDelivery } from "./acp-progress-delivery.ts";
 import type { Kernel } from "@freeanima/kernel";
-import { beforeLlmCall } from "@freeanima/engine-loop-hooks";
+import { beforeLlmCall } from "@freeanima/engine-hooks/loop";
 import type { ConversationService } from "@freeanima/engine-conversation";
 import type { SkillRegistry } from "@freeanima/engine-skill";
 import type { ToolSetRegistry } from "@freeanima/engine-tool";

@@ -1,4 +1,4 @@
-import { runWithToolContext } from "@freeanima/engine-loop";
+import { runWithToolContext } from "@freeanima/engine-tool";
 import { SkillRegistry } from "@freeanima/engine-skill";
 import { ToolSetRegistry } from "@freeanima/engine-tool";
 import { parseYaml } from "@freeanima/service-config";

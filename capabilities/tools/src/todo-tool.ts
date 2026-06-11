@@ -1,8 +1,8 @@
-import { getToolSessionId, getToolRepos } from "@freeanima/engine-loop";
+import { getToolSessionId, getToolRepos } from "@freeanima/engine-tool";
 import type { ToolSetRegistry } from "@freeanima/engine-tool";
 import { attachToolReturns, toolError } from "@freeanima/engine-tool";
 import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
-import { handleSessionTodo } from "@freeanima/engine-conversation/session-todos";
+import { handleSessionTodo } from "@freeanima/engine-tool";
 
 async function handleTodo(args: Record<string, unknown>): Promise<string> {
   const sessionId = getToolSessionId();

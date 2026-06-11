@@ -19,6 +19,7 @@
     "@freeanima/engine-loop": "workspace:*",
     "@freeanima/life-estate": "workspace:*",
     "@freeanima/service-api": "workspace:*",
+    "@freeanima/kernel-logging": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "@freeanima/service-logging": "workspace:*",
     "@tanstack/react-router": "^1.170.11",

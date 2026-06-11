@@ -84,27 +84,59 @@ New-stack workspace package names **prefix with layer name**:
 
 #### Layer rationale
 
-| Layer            | Responsibility (split criterion)                                                                                                        | Typical packages                                                                                                                   |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| **kernel**       | Business-agnostic runtime infra: Hook, EventBus, logging, qualified tokens                                                              | `kernel-hooks`, `kernel-eventbus`, `kernel-logging`, `kernel-token`                                                                |
-| **engine**       | Agent **mechanism**: conversation, LLM loop, tool registry, compression, repo ports, PG schema SSOT, shared utils, domain hook tokens   | `engine-conversation`, `engine-loop`, `engine-util`, `engine-loop-hooks`, `engine-conversation-hooks`, `engine-repos`, `engine-db` |
-| **life**         | Digital-life **continuity and memory pipeline** (semantic/episodic memory, light/deep sleep); reads conversation archive via ports only | `life-memory`, `life-self`                                                                                                         |
-| **capabilities** | Pluggable **capability packs** (local tools, MCP/ACP, clarify, LLM provider); no composition or I/O wiring                              | `capabilities-tools`, `capabilities-mcp`                                                                                           |
-| **connectors**   | **External-world adapters**: Gateway, WebUI, Cron, PG impl, command registration                                                        | `connectors-db-pg`, `connectors-gateway`                                                                                           |
-| **service**      | **Composition root**: creates Kernel/Engine/Conversation/AnimaService, injects context, process entry                                   | `service`, `service-bootstrap`                                                                                                     |
+| Layer            | Responsibility (split criterion)                                                                                                        | Typical packages                                                    |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| **kernel**       | Business-agnostic runtime infra: Hook, EventBus, logging, qualified tokens                                                              | `kernel-hooks`, `kernel-eventbus`, `kernel-logging`, `kernel-token` |
+| **engine**       | Agent **mechanism**: conversation, LLM loop, tool registry, compression, repo ports, PG schema SSOT, shared utils, domain hook tokens   | 见下「engine 内部三层」；聚合入口 `@freeanima/engine`               |
+| **life**         | Digital-life **continuity and memory pipeline** (semantic/episodic memory, light/deep sleep); reads conversation archive via ports only | `life-memory`, `life-self`                                          |
+| **capabilities** | Pluggable **capability packs** (local tools, MCP/ACP, clarify, LLM provider); no composition or I/O wiring                              | `capabilities-tools`, `capabilities-mcp`                            |
+| **connectors**   | **External-world adapters**: Gateway, WebUI, Cron, PG impl, command registration                                                        | `connectors-db-pg`, `connectors-gateway`                            |
+| **service**      | **Composition root**: creates Kernel/Engine/Conversation/AnimaService, injects context, process entry                                   | `service`, `service-bootstrap`                                      |
 
 Dependency direction: `service` wires layers → `connectors` implement ports → `engine` / `life` / `capabilities` consume ports and mechanisms → `kernel` provides infra.
 
+#### engine 内部三层（目录 + 包 tier）
+
+全仓仍为单一 repo 层 `engine/`；子目录与 `scripts/check-layer-deps.ts` 中 `enginePkgTier` 对齐：
+
+| 子层              | 目录                    | 包（`@freeanima/engine-*`）                                               |
+| ----------------- | ----------------------- | ------------------------------------------------------------------------- |
+| **foundation**    | `engine/foundation/`    | `db`, `repos`, `util`, `config`, `tokenizer`, `provider-llm`              |
+| **mechanism**     | `engine/mechanism/`     | `tool`, `skill`, `prompt`, `llm`, `compress`, `hooks`, `session-port`     |
+| **orchestration** | `engine/orchestration/` | `session`, `turn`, `conversation`（薄门面）, `loop`, `engine`（聚合门面） |
+
+依赖铁律（engine 内部）：`orchestration → mechanism → foundation`；编排子包 DAG：`engine-turn → engine-session`，`engine-conversation → engine-turn`；**禁止** `engine-loop` 依赖 `engine-conversation`。
+
+**外边界**（其他 repo 层 import engine 包）：
+
+| 调用方                   | 允许 tier                                                                                                         |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------- |
+| **life**                 | foundation（含 `engine-config`）+ `engine-tool`                                                                   |
+| **capabilities**         | foundation + mechanism（**禁止** orchestration 包）；会话端口用 `engine-session-port`；工具上下文用 `engine-tool` |
+| **service / connectors** | 全部（优先 `@freeanima/engine` 门面）                                                                             |
+
+注入端口在 composition root 一次性装配：[`wire-engine-ports.ts`](service/service/src/wire-engine-ports.ts)（`wireEnginePorts()`）；`loadConfig()` + `createServiceLogger()` 后 `createEngine({ config, logger, ... })` 注入运行时配置与日志（`engine` 层**禁止**依赖 `service-config` / `service-logging`）。
+
+#### 运行时基础设施卫星包（非 composition root）
+
+物理目录在 `service/`，但**不是** `@freeanima/service` 编排门面；dep-check 对 life/capabilities/connectors 放行，engine 禁止：
+
+| 包                           | 角色                                                                                 | 下层应 import                                                                                                                  |
+| ---------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| `@freeanima/engine-config`   | `AnimaConfig` Zod、纯函数（`getLlmConfig`、`getCompressionConfig`、`PATHS` 等）      | engine / life / capabilities 的类型与默认值                                                                                    |
+| `@freeanima/service-config`  | 薄 adapter：`loadConfig()`、YAML/credential、`validateConfigOnStartup`               | 仅 service / connectors / 需文件 I/O 的调用方                                                                                  |
+| `@freeanima/service-logging` | 进程 bootstrap：`createServiceLogger`、`installErrorLogHandlers`、`markStartupPhase` | 仅 composition root / CLI 启动路径；**不** export 领域 helper（`logApiError` 等由 connectors-webui、service/runtime 本地封装） |
+
 #### Allowed dependencies (matches dep-check)
 
-| Layer            | Allowed `@freeanima/*`                                                                                                       | Forbidden (highlights)                                          |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| **kernel**       | `kernel-*`, `kernel`                                                                                                         | `engine-*`, `service`                                           |
-| **engine**       | `kernel-*`, `engine-*`, `service-config`, `service-logging`, `capabilities-provider-*`                                       | `connectors-db-pg` (PG impl must not leak into mechanism layer) |
-| **life**         | `kernel-*`, `life-*`, `engine-tool`, `engine-repos`, `engine-util`, `service-config`, `service-logging`                      | `engine-db`, `connectors-db-pg`                                 |
-| **capabilities** | `kernel-*`, `engine-*`, `capabilities-*`, `life-memory` (as needed), `connectors-redis`, `service-config`, `service-logging` | `service`, `connectors-*` (except redis)                        |
-| **connectors**   | lower layers + `service-api` / `service-config` / `service-logging`, etc.                                                    | `@freeanima/service` (main composition root package)            |
-| **service**      | all layers (composition root)                                                                                                | —                                                               |
+| Layer            | Allowed `@freeanima/*`                                                                                                                          | Forbidden (highlights)                                                                |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| **kernel**       | `kernel-*`, `kernel`                                                                                                                            | `engine-*`, `service`                                                                 |
+| **engine**       | `kernel-*`, `engine-*`, `capabilities-provider-*`                                                                                               | `service-config`, `service-logging`, `connectors-db-pg`                               |
+| **life**         | `kernel-*`, `life-*`, `engine-tool`, `engine-repos`, `engine-util`, `engine-db`, `engine-config`, `service-config`, `service-logging`           | `engine-loop`, `engine-conversation`, `connectors-db-pg`                              |
+| **capabilities** | `kernel-*`, `engine-{foundation,mechanism}`（见上表）, `capabilities-*`, `life-memory`, `connectors-redis`, `service-config`, `service-logging` | `engine-conversation`, `engine-loop`, `engine`, `service`, `connectors-*`（除 redis） |
+| **connectors**   | lower layers + `service-api` / `service-config` / `service-logging`, etc.                                                                       | `@freeanima/service` (main composition root package)                                  |
+| **service**      | all layers (composition root)                                                                                                                   | —                                                                                     |
 
 #### Composition root and global singletons
 
@@ -113,8 +145,9 @@ Dependency direction: `service` wires layers → `connectors` implement ports �
 ```
 createServiceKernel()
 → catalog = createEngineCatalog(); masks = new MaskRegistry()
+→ wireEnginePorts(); wireServicePorts()
 → registerServiceTools(catalog); initMaskSystem(masks)
-→ createEngine({ catalog, repos, llm })
+→ createEngine({ catalog, repos, llm, config, logger })
 → createConversationService(engine.repos, catalog.toolSets)
 → new AnimaService({ kernel, conversation })
 → initServiceContext({ engine, masks, service, conversation, ... })
@@ -204,6 +237,9 @@ Additional rules:
 | Domain hook tokens (loop / conversation)                                         | `engine-loop-hooks`, `engine-conversation-hooks` | `beforeLlmCall`, `messageIncoming`, etc.                  |
 | Qualified token factory                                                          | `kernel-token`                                   | `createQualifiedToken`, `QualifiedToken`                  |
 | Token counting / Hub resolve / fallback tokenizer                                | `engine-tokenizer`                               | `countTokens`, `splitTextByTokenLimit`, `ensureTokenizer` |
+| `AnimaConfig` / LLM / compression Zod 与纯函数、`PATHS`                          | `engine-config`                                  | `schemas/`, `llm-config.ts`, `compression-config.ts`      |
+| `loadConfig()` / credential / 启动校验                                           | `service-config`                                 | `config.ts`, `credential.ts`（re-export `engine-config`） |
+| 进程默认 Logger 装配                                                             | `service-logging`                                | `createServiceLogger`, `installErrorLogHandlers`          |
 
 New PG domain: `engine-db/schema/{domain}` → add port in `engine-repos` → implement in `connectors-db-pg` → extend `PgRepositories` → wire in `serve.ts`. See [`docs/guide/database.md`](docs/guide/database.md).
 

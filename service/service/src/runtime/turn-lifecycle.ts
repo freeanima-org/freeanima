@@ -9,16 +9,19 @@ function conv() {
 function toolRegistry() {
   return getServiceContext().engine.catalog.toolSets;
 }
+
+function engineLlm() {
+  return getServiceContext().engine.llm;
+}
 import type { SessionMessage as Message } from "@freeanima/engine-db/domain";
 import type { SessionMessage } from "@freeanima/engine-db/domain";
-import * as engine from "@freeanima/engine-loop";
-import { runWithToolContext } from "@freeanima/engine-loop";
-import type { StreamEvent } from "@freeanima/engine-loop";
+import * as engine from "@freeanima/engine";
+import { runWithToolContext } from "@freeanima/engine-tool";
+import type { StreamEvent } from "@freeanima/engine";
 import { applyClarifyStreamAwaiting } from "@freeanima/capabilities-clarify";
 import { ProviderError } from "@freeanima/engine-provider-llm";
 import { getProfileHopModel, loadConfig } from "@freeanima/service-config";
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
-import { logComponent, logSseError } from "@freeanima/service-logging";
 import { isInsufficientToolMessagesError } from "@freeanima/engine-llm";
 import type { HookRegistry } from "@freeanima/kernel-hooks";
 import { SessionManager } from "./session-manager.ts";
@@ -47,12 +50,18 @@ export type StreamTurnHost = {
   emitSessionUpdated(sessionId: string): void;
 };
 
+function serviceLogger() {
+  return getServiceContext().engine.logger;
+}
+
 export function streamErrorEvent(sessionId: string, message: string, err?: unknown): StreamEvent {
-  logSseError(`/sessions/${sessionId}/messages/stream`, message, {
-    session_id: sessionId,
-  });
+  const path = `/sessions/${sessionId}/messages/stream`;
+  const attrs = { session_id: sessionId, path };
+  serviceLogger().with({ component: "sse" }).error(`SSE ${path}: ${message}`, attrs);
   if (err !== undefined) {
-    logComponent("anima-service").error(message, { err, session_id: sessionId });
+    serviceLogger()
+      .with({ component: "anima-service" })
+      .error(message, { err, session_id: sessionId });
   }
   return { event: "error", data: { error: message } };
 }
@@ -120,8 +129,11 @@ export async function runSimpleTurn(opts: RunSimpleTurnOpts): Promise<string> {
       sessionId,
       () =>
         engine.run(msgs, {
+          config: getServiceContext().engine.config,
+          logger: getServiceContext().engine.logger,
           model,
           tools,
+          llm: engineLlm(),
           toolMask,
           executableTools,
           ...createTurnMessageCallbacks(sessionId),
@@ -158,6 +170,9 @@ export async function* yieldEngineStream(
           engine.runStream(msgs, {
             model,
             tools,
+            config: getServiceContext().engine.config,
+            logger: getServiceContext().engine.logger,
+            llm: engineLlm(),
             toolMask,
             executableTools,
             ...host.engineStreamOpts(sessionId, signal),
@@ -177,17 +192,17 @@ export async function* yieldEngineStream(
       }
       if (e instanceof engine.MaxTurnsExceeded) {
         const msg = `tool loop exceeded: ${e.message}`;
-        logComponent("anima-service").error(msg, { err: e });
+        serviceLogger().with({ component: "anima-service" }).error(msg, { err: e });
         yield { event: "error", data: { error: msg } };
         return;
       }
       if (e instanceof ProviderError) {
-        logComponent("anima-service").error(e.message, { err: e });
+        serviceLogger().with({ component: "anima-service" }).error(e.message, { err: e });
         yield { event: "error", data: { error: e.message } };
         return;
       }
       const msg = String(e);
-      logComponent("anima-service").error(msg, { err: e });
+      serviceLogger().with({ component: "anima-service" }).error(msg, { err: e });
       yield { event: "error", data: { error: msg } };
     }
   } finally {

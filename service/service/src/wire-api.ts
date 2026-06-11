@@ -3,9 +3,7 @@ import { registerStatsReport } from "@freeanima/service-api/conversation-stats";
 import { registerStudioPort } from "@freeanima/service-api/studio-port";
 import { registerCronUseCases } from "@freeanima/service-api/cron-use-cases";
 import { registerOnSessionCloseBeforeNew } from "@freeanima/service-api/session-close";
-import { registerLlmStackConfigurator } from "@freeanima/engine-llm";
-import { getToolSessionId } from "@freeanima/engine-loop";
-import { wireOpenAiCompatibleLlm } from "@freeanima/capabilities-provider-openai-compatible";
+import { getToolSessionId } from "@freeanima/engine-tool";
 import { registerToolSessionResolver } from "@freeanima/life-memory/tool-session-port";
 import { runSimpleTurn } from "./runtime/turn-lifecycle.ts";
 import { statsReport } from "./runtime/conversation-stats.ts";
@@ -20,17 +18,19 @@ import {
   searchStudio,
 } from "./runtime/studio.ts";
 
-registerLlmStackConfigurator(wireOpenAiCompatibleLlm);
-registerToolSessionResolver(getToolSessionId);
-registerOnSessionCloseBeforeNew(onSessionCloseBeforeNew);
-registerCronUseCases({ runCronEngineTurn });
-registerRunSimpleTurn(runSimpleTurn);
-registerStatsReport(statsReport);
-registerStudioPort({
-  getStudioConfig,
-  patchStudioConfig,
-  buildFileTree,
-  readStudioFile,
-  searchStudio,
-  resolveWorkspace,
-});
+/** Register service-api ports (call wireEnginePorts before initLlmRuntime) */
+export function wireServicePorts(): void {
+  registerToolSessionResolver(getToolSessionId);
+  registerOnSessionCloseBeforeNew(onSessionCloseBeforeNew);
+  registerCronUseCases({ runCronEngineTurn });
+  registerRunSimpleTurn(runSimpleTurn);
+  registerStatsReport(statsReport);
+  registerStudioPort({
+    getStudioConfig,
+    patchStudioConfig,
+    buildFileTree,
+    readStudioFile,
+    searchStudio,
+    resolveWorkspace,
+  });
+}

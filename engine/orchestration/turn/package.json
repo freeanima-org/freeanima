@@ -1,0 +1,22 @@
+{
+  "name": "@freeanima/engine-turn",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@freeanima/engine-compress": "workspace:*",
+    "@freeanima/engine-db": "workspace:*",
+    "@freeanima/engine-llm": "workspace:*",
+    "@freeanima/engine-provider-llm": "workspace:*",
+    "@freeanima/engine-repos": "workspace:*",
+    "@freeanima/engine-session": "workspace:*",
+    "@freeanima/engine-tool": "workspace:*",
+    "@freeanima/engine-util": "workspace:*",
+    "@freeanima/engine-config": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:"
+  }
+}

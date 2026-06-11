@@ -9,12 +9,84 @@ import { join, relative } from "node:path";
 const ROOT = join(import.meta.dir, "..");
 
 type Violation = { file: string; line: number; pkg: string; reason: string };
+type EngineTier = "foundation" | "mechanism" | "orchestration";
 
 const IMPORT_RE = /from\s+["']@freeanima\/([^"']+)["']/g;
 
 /** First segment of import path is the workspace package name (e.g. service/schemas/display → service) */
 function workspacePkgName(importPath: string): string {
   return importPath.split("/")[0] ?? importPath;
+}
+
+const ENGINE_PKG_TIER: Record<string, EngineTier> = {
+  "engine-config": "foundation",
+  "engine-db": "foundation",
+  "engine-repos": "foundation",
+  "engine-util": "foundation",
+  "engine-tokenizer": "foundation",
+  "engine-provider-llm": "foundation",
+  "engine-tool": "mechanism",
+  "engine-skill": "mechanism",
+  "engine-prompt": "mechanism",
+  "engine-llm": "mechanism",
+  "engine-compress": "mechanism",
+  "engine-hooks": "mechanism",
+  "engine-session-port": "mechanism",
+  "engine-session": "orchestration",
+  "engine-turn": "orchestration",
+  "engine-conversation": "orchestration",
+  "engine-loop": "orchestration",
+  engine: "orchestration",
+};
+
+const LIFE_ENGINE_ALLOW = new Set([
+  "engine-tool",
+  "engine-repos",
+  "engine-util",
+  "engine-db",
+  "engine-config",
+]);
+
+const CAPABILITIES_ENGINE_DENY = new Set([
+  "engine-session",
+  "engine-turn",
+  "engine-conversation",
+  "engine-loop",
+  "engine",
+]);
+
+function engineSubTier(relPath: string): EngineTier | null {
+  const parts = relPath.split("/");
+  if (parts[0] !== "engine") return null;
+  const sub = parts[1];
+  if (sub === "foundation") return "foundation";
+  if (sub === "mechanism") return "mechanism";
+  if (sub === "orchestration") return "orchestration";
+  return null;
+}
+
+function enginePkgTier(pkg: string): EngineTier | null {
+  return ENGINE_PKG_TIER[workspacePkgName(pkg)] ?? null;
+}
+
+function tierRank(tier: EngineTier): number {
+  switch (tier) {
+    case "foundation":
+      return 0;
+    case "mechanism":
+      return 1;
+    case "orchestration":
+      return 2;
+  }
+}
+
+function sourceEnginePkg(relPath: string): string | null {
+  const parts = relPath.split("/");
+  if (parts[0] !== "engine" || parts.length < 3) return null;
+  const dir = parts[2];
+  if (!dir) return null;
+  if (dir === "engine") return "engine";
+  return `engine-${dir}`;
 }
 
 function isExempt(relPath: string): boolean {
@@ -49,21 +121,23 @@ function isAllowed(layer: string, pkg: string, _relPath: string): boolean {
     case "engine":
       if (root.startsWith("kernel-") || root === "kernel") return true;
       if (root.startsWith("engine-") || root === "engine") return true;
-      if (root === "service-config" || root === "service-logging") return true;
       if (root.startsWith("capabilities-provider")) return true;
       if (root === "connectors-db-pg") return false;
       return false;
     case "life":
       if (root.startsWith("kernel-") || root === "kernel") return true;
       if (root.startsWith("life-") || root === "life") return true;
-      if (root.startsWith("engine-tool")) return true;
-      if (root === "engine-repos" || root === "engine-util") return true;
+      if (root.startsWith("engine-") || root === "engine") {
+        return LIFE_ENGINE_ALLOW.has(root);
+      }
       if (root === "connectors-db-pg") return false;
       if (root === "service-config" || root === "service-logging") return true;
       return false;
     case "capabilities":
       if (root.startsWith("kernel-") || root === "kernel") return true;
-      if (root.startsWith("engine-") || root === "engine") return true;
+      if (root.startsWith("engine-") || root === "engine") {
+        return !CAPABILITIES_ENGINE_DENY.has(root);
+      }
       if (root.startsWith("capabilities-") || root === "capabilities") return true;
       if (root.startsWith("life-memory")) return true;
       if (root === "service-config" || root === "service-logging") return true;
@@ -76,6 +150,49 @@ function isAllowed(layer: string, pkg: string, _relPath: string): boolean {
     default:
       return true;
   }
+}
+
+function engineTierViolation(
+  relPath: string,
+  pkg: string,
+): { ok: true } | { ok: false; reason: string } {
+  const sourceTier = engineSubTier(relPath);
+  const importRoot = workspacePkgName(pkg);
+  const importTier = enginePkgTier(pkg);
+  if (!sourceTier || !importTier) return { ok: true };
+
+  const sourcePkg = sourceEnginePkg(relPath);
+  if (sourceTier === "orchestration" && importTier === "orchestration") {
+    if (sourcePkg === "engine-loop" && importRoot === "engine-conversation") {
+      return {
+        ok: false,
+        reason: "engine orchestration: engine-loop must not depend on engine-conversation",
+      };
+    }
+    const orchestrationAllows: Record<string, ReadonlySet<string>> = {
+      "engine-turn": new Set(["engine-session"]),
+      "engine-conversation": new Set(["engine-session", "engine-turn"]),
+      engine: new Set(["engine-session", "engine-turn", "engine-conversation", "engine-loop"]),
+    };
+    if (sourcePkg !== importRoot && sourcePkg !== "engine") {
+      const allowed = orchestrationAllows[sourcePkg ?? ""];
+      if (!allowed?.has(importRoot)) {
+        return {
+          ok: false,
+          reason: `engine orchestration: ${sourcePkg} must not depend on ${importRoot}`,
+        };
+      }
+    }
+  }
+
+  if (tierRank(importTier) > tierRank(sourceTier)) {
+    return {
+      ok: false,
+      reason: `engine ${sourceTier} must not depend on engine ${importTier} (@freeanima/${importRoot})`,
+    };
+  }
+
+  return { ok: true };
 }
 
 function reasonFor(layer: string, pkg: string): string {
@@ -129,6 +246,18 @@ function scan(): Violation[] {
             pkg,
             reason: reasonFor(layer, pkg),
           });
+          continue;
+        }
+        if (layer === "engine") {
+          const tierCheck = engineTierViolation(rel, pkg);
+          if (!tierCheck.ok) {
+            violations.push({
+              file: rel,
+              line: i + 1,
+              pkg,
+              reason: tierCheck.reason,
+            });
+          }
         }
       }
     }

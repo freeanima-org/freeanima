@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { PATHS } from "@freeanima/service-config";
+import { PATHS } from "@freeanima/engine-config";
 import type { DeepSleepRound, DeepSleepRoundLog, DeepSleepChangeLog } from "./types.ts";
 
 function logsDir(): string {

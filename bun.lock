@@ -22,9 +22,9 @@
     "capabilities/acp": {
       "name": "@freeanima/capabilities-acp",
       "dependencies": {
-        "@freeanima/engine-conversation": "workspace:*",
+        "@freeanima/engine-config": "workspace:*",
         "@freeanima/engine-db": "workspace:*",
-        "@freeanima/engine-loop": "workspace:*",
+        "@freeanima/engine-session-port": "workspace:*",
         "@freeanima/engine-skill": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
         "@freeanima/engine-util": "workspace:*",
@@ -39,10 +39,9 @@
     "capabilities/clarify": {
       "name": "@freeanima/capabilities-clarify",
       "dependencies": {
-        "@freeanima/engine-conversation": "workspace:*",
-        "@freeanima/engine-conversation-hooks": "workspace:*",
         "@freeanima/engine-db": "workspace:*",
-        "@freeanima/engine-loop-hooks": "workspace:*",
+        "@freeanima/engine-hooks": "workspace:*",
+        "@freeanima/engine-session-port": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
         "@freeanima/engine-util": "workspace:*",
         "@freeanima/kernel": "workspace:*",
@@ -55,8 +54,8 @@
     "capabilities/fridge-magnet": {
       "name": "@freeanima/capabilities-fridge-magnet",
       "dependencies": {
-        "@freeanima/engine-loop": "workspace:*",
-        "@freeanima/engine-loop-hooks": "workspace:*",
+        "@freeanima/engine-db": "workspace:*",
+        "@freeanima/engine-hooks": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
         "@freeanima/service-config": "workspace:*",
         "@freeanima/service-logging": "workspace:*",
@@ -93,8 +92,8 @@
     "capabilities/provider-openai-compatible": {
       "name": "@freeanima/capabilities-provider-openai-compatible",
       "dependencies": {
+        "@freeanima/engine-config": "workspace:*",
         "@freeanima/engine-provider-llm": "workspace:*",
-        "@freeanima/service-config": "workspace:*",
         "openai": "^6.42.0",
         "zod": "catalog:",
       },
@@ -118,8 +117,7 @@
     "capabilities/tools": {
       "name": "@freeanima/capabilities-tools",
       "dependencies": {
-        "@freeanima/engine-conversation": "workspace:*",
-        "@freeanima/engine-loop": "workspace:*",
+        "@freeanima/engine-db": "workspace:*",
         "@freeanima/engine-repos": "workspace:*",
         "@freeanima/engine-skill": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
@@ -249,6 +247,7 @@
         "@freeanima/engine-conversation": "workspace:*",
         "@freeanima/engine-db": "workspace:*",
         "@freeanima/engine-loop": "workspace:*",
+        "@freeanima/kernel-logging": "workspace:*",
         "@freeanima/life-estate": "workspace:*",
         "@freeanima/service-api": "workspace:*",
         "@freeanima/service-config": "workspace:*",
@@ -275,48 +274,17 @@
         "typescript": "^6.0.3",
       },
     },
-    "engine/compress": {
-      "name": "@freeanima/engine-compress",
+    "engine/foundation/config": {
+      "name": "@freeanima/engine-config",
       "dependencies": {
-        "@freeanima/engine-db": "workspace:*",
-        "@freeanima/engine-llm": "workspace:*",
-        "@freeanima/engine-tokenizer": "workspace:*",
-        "@freeanima/service-config": "workspace:*",
-      },
-      "devDependencies": {
-        "@freeanima/engine-conversation": "workspace:*",
-        "@types/bun": "catalog:",
-      },
-    },
-    "engine/conversation": {
-      "name": "@freeanima/engine-conversation",
-      "dependencies": {
-        "@freeanima/engine-compress": "workspace:*",
-        "@freeanima/engine-db": "workspace:*",
-        "@freeanima/engine-llm": "workspace:*",
-        "@freeanima/engine-prompt": "workspace:*",
-        "@freeanima/engine-provider-llm": "workspace:*",
-        "@freeanima/engine-repos": "workspace:*",
-        "@freeanima/engine-tool": "workspace:*",
-        "@freeanima/engine-util": "workspace:*",
-        "@freeanima/service-config": "workspace:*",
-        "@freeanima/service-logging": "workspace:*",
+        "@freeanima/kernel-logging": "workspace:*",
+        "zod": "catalog:",
       },
       "devDependencies": {
         "@types/bun": "catalog:",
       },
     },
-    "engine/conversation-hooks": {
-      "name": "@freeanima/engine-conversation-hooks",
-      "dependencies": {
-        "@freeanima/kernel-hooks": "workspace:*",
-      },
-      "devDependencies": {
-        "@freeanima/kernel-hooks": "workspace:*",
-        "@types/bun": "catalog:",
-      },
-    },
-    "engine/db": {
+    "engine/foundation/db": {
       "name": "@freeanima/engine-db",
       "dependencies": {
         "@freeanima/engine-util": "workspace:*",
@@ -328,71 +296,7 @@
         "drizzle-kit": "catalog:",
       },
     },
-    "engine/engine": {
-      "name": "@freeanima/engine",
-      "dependencies": {
-        "@freeanima/engine-compress": "workspace:*",
-        "@freeanima/engine-conversation": "workspace:*",
-        "@freeanima/engine-llm": "workspace:*",
-        "@freeanima/engine-loop": "workspace:*",
-        "@freeanima/engine-prompt": "workspace:*",
-        "@freeanima/engine-provider-llm": "workspace:*",
-        "@freeanima/engine-repos": "workspace:*",
-        "@freeanima/engine-skill": "workspace:*",
-        "@freeanima/engine-tool": "workspace:*",
-      },
-      "devDependencies": {
-        "@types/bun": "catalog:",
-      },
-    },
-    "engine/llm": {
-      "name": "@freeanima/engine-llm",
-      "dependencies": {
-        "@freeanima/engine-db": "workspace:*",
-        "@freeanima/engine-provider-llm": "workspace:*",
-        "@freeanima/engine-tool": "workspace:*",
-        "@freeanima/service-config": "workspace:*",
-      },
-      "devDependencies": {
-        "@freeanima/capabilities-provider-openai-compatible": "workspace:*",
-        "@types/bun": "catalog:",
-      },
-    },
-    "engine/loop": {
-      "name": "@freeanima/engine-loop",
-      "dependencies": {
-        "@freeanima/engine-compress": "workspace:*",
-        "@freeanima/engine-conversation": "workspace:*",
-        "@freeanima/engine-db": "workspace:*",
-        "@freeanima/engine-llm": "workspace:*",
-        "@freeanima/engine-loop-hooks": "workspace:*",
-        "@freeanima/engine-provider-llm": "workspace:*",
-        "@freeanima/engine-repos": "workspace:*",
-        "@freeanima/engine-tool": "workspace:*",
-        "@freeanima/kernel-hooks": "workspace:*",
-        "@freeanima/service-config": "workspace:*",
-        "@freeanima/service-logging": "workspace:*",
-      },
-      "devDependencies": {
-        "@types/bun": "catalog:",
-      },
-    },
-    "engine/loop-hooks": {
-      "name": "@freeanima/engine-loop-hooks",
-      "dependencies": {
-        "@freeanima/kernel-hooks": "workspace:*",
-      },
-      "devDependencies": {
-        "@types/bun": "catalog:",
-      },
-    },
-    "engine/prompt": {
-      "name": "@freeanima/engine-prompt",
-      "devDependencies": {
-        "@types/bun": "catalog:",
-      },
-    },
-    "engine/provider-llm": {
+    "engine/foundation/provider-llm": {
       "name": "@freeanima/engine-provider-llm",
       "dependencies": {
         "@freeanima/engine-db": "workspace:*",
@@ -401,7 +305,7 @@
         "@types/bun": "catalog:",
       },
     },
-    "engine/repos": {
+    "engine/foundation/repos": {
       "name": "@freeanima/engine-repos",
       "dependencies": {
         "@freeanima/engine-db": "workspace:*",
@@ -410,21 +314,10 @@
         "@types/bun": "catalog:",
       },
     },
-    "engine/skill": {
-      "name": "@freeanima/engine-skill",
-      "dependencies": {
-        "@freeanima/engine-tool": "workspace:*",
-        "@freeanima/engine-util": "workspace:*",
-        "@freeanima/service-config": "workspace:*",
-      },
-      "devDependencies": {
-        "@types/bun": "catalog:",
-      },
-    },
-    "engine/tokenizer": {
+    "engine/foundation/tokenizer": {
       "name": "@freeanima/engine-tokenizer",
       "dependencies": {
-        "@freeanima/service-logging": "workspace:*",
+        "@freeanima/engine-config": "workspace:*",
         "@huggingface/tokenizers": "^0.1.3",
         "tiktoken": "^1.0.22",
       },
@@ -432,8 +325,8 @@
         "@types/bun": "catalog:",
       },
     },
-    "engine/tool": {
-      "name": "@freeanima/engine-tool",
+    "engine/foundation/util": {
+      "name": "@freeanima/engine-util",
       "dependencies": {
         "zod": "catalog:",
       },
@@ -441,10 +334,165 @@
         "@types/bun": "catalog:",
       },
     },
-    "engine/util": {
-      "name": "@freeanima/engine-util",
+    "engine/mechanism/compress": {
+      "name": "@freeanima/engine-compress",
       "dependencies": {
+        "@freeanima/engine-config": "workspace:*",
+        "@freeanima/engine-db": "workspace:*",
+        "@freeanima/engine-llm": "workspace:*",
+        "@freeanima/engine-repos": "workspace:*",
+        "@freeanima/engine-tokenizer": "workspace:*",
+        "@freeanima/engine-util": "workspace:*",
+        "@freeanima/kernel-logging": "workspace:*",
+      },
+      "devDependencies": {
+        "@freeanima/engine-conversation": "workspace:*",
+        "@types/bun": "catalog:",
+      },
+    },
+    "engine/mechanism/hooks": {
+      "name": "@freeanima/engine-hooks",
+      "dependencies": {
+        "@freeanima/engine-db": "workspace:*",
+        "@freeanima/kernel-hooks": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
+    "engine/mechanism/llm": {
+      "name": "@freeanima/engine-llm",
+      "dependencies": {
+        "@freeanima/engine-config": "workspace:*",
+        "@freeanima/engine-db": "workspace:*",
+        "@freeanima/engine-provider-llm": "workspace:*",
+        "@freeanima/engine-repos": "workspace:*",
+        "@freeanima/engine-tool": "workspace:*",
+        "@freeanima/engine-util": "workspace:*",
+      },
+      "devDependencies": {
+        "@freeanima/capabilities-provider-openai-compatible": "workspace:*",
+        "@types/bun": "catalog:",
+      },
+    },
+    "engine/mechanism/prompt": {
+      "name": "@freeanima/engine-prompt",
+      "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
+    "engine/mechanism/session-port": {
+      "name": "@freeanima/engine-session-port",
+      "dependencies": {
+        "@freeanima/engine-db": "workspace:*",
+      },
+    },
+    "engine/mechanism/skill": {
+      "name": "@freeanima/engine-skill",
+      "dependencies": {
+        "@freeanima/engine-config": "workspace:*",
+        "@freeanima/engine-tool": "workspace:*",
+        "@freeanima/engine-util": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
+    "engine/mechanism/tool": {
+      "name": "@freeanima/engine-tool",
+      "dependencies": {
+        "@freeanima/engine-db": "workspace:*",
+        "@freeanima/engine-repos": "workspace:*",
+        "@freeanima/engine-util": "workspace:*",
         "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
+    "engine/orchestration/conversation": {
+      "name": "@freeanima/engine-conversation",
+      "dependencies": {
+        "@freeanima/engine-compress": "workspace:*",
+        "@freeanima/engine-db": "workspace:*",
+        "@freeanima/engine-repos": "workspace:*",
+        "@freeanima/engine-session": "workspace:*",
+        "@freeanima/engine-tool": "workspace:*",
+        "@freeanima/engine-turn": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
+    "engine/orchestration/engine": {
+      "name": "@freeanima/engine",
+      "dependencies": {
+        "@freeanima/engine-compress": "workspace:*",
+        "@freeanima/engine-config": "workspace:*",
+        "@freeanima/engine-conversation": "workspace:*",
+        "@freeanima/engine-db": "workspace:*",
+        "@freeanima/engine-llm": "workspace:*",
+        "@freeanima/engine-loop": "workspace:*",
+        "@freeanima/engine-prompt": "workspace:*",
+        "@freeanima/engine-provider-llm": "workspace:*",
+        "@freeanima/engine-repos": "workspace:*",
+        "@freeanima/engine-session": "workspace:*",
+        "@freeanima/engine-skill": "workspace:*",
+        "@freeanima/engine-tokenizer": "workspace:*",
+        "@freeanima/engine-tool": "workspace:*",
+        "@freeanima/engine-turn": "workspace:*",
+        "@freeanima/kernel-logging": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
+    "engine/orchestration/loop": {
+      "name": "@freeanima/engine-loop",
+      "dependencies": {
+        "@freeanima/engine-compress": "workspace:*",
+        "@freeanima/engine-config": "workspace:*",
+        "@freeanima/engine-db": "workspace:*",
+        "@freeanima/engine-hooks": "workspace:*",
+        "@freeanima/engine-llm": "workspace:*",
+        "@freeanima/engine-provider-llm": "workspace:*",
+        "@freeanima/engine-repos": "workspace:*",
+        "@freeanima/engine-tool": "workspace:*",
+        "@freeanima/kernel-hooks": "workspace:*",
+        "@freeanima/kernel-logging": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
+    "engine/orchestration/session": {
+      "name": "@freeanima/engine-session",
+      "dependencies": {
+        "@freeanima/engine-compress": "workspace:*",
+        "@freeanima/engine-config": "workspace:*",
+        "@freeanima/engine-db": "workspace:*",
+        "@freeanima/engine-prompt": "workspace:*",
+        "@freeanima/engine-provider-llm": "workspace:*",
+        "@freeanima/engine-repos": "workspace:*",
+        "@freeanima/engine-tool": "workspace:*",
+        "@freeanima/engine-util": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
+    "engine/orchestration/turn": {
+      "name": "@freeanima/engine-turn",
+      "dependencies": {
+        "@freeanima/engine-compress": "workspace:*",
+        "@freeanima/engine-config": "workspace:*",
+        "@freeanima/engine-db": "workspace:*",
+        "@freeanima/engine-llm": "workspace:*",
+        "@freeanima/engine-provider-llm": "workspace:*",
+        "@freeanima/engine-repos": "workspace:*",
+        "@freeanima/engine-session": "workspace:*",
+        "@freeanima/engine-tool": "workspace:*",
+        "@freeanima/engine-util": "workspace:*",
       },
       "devDependencies": {
         "@types/bun": "catalog:",
@@ -496,6 +544,7 @@
     "life/estate": {
       "name": "@freeanima/life-estate",
       "dependencies": {
+        "@freeanima/engine-config": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
         "@freeanima/service-config": "workspace:*",
         "imapflow": "^1.0.186",
@@ -510,6 +559,7 @@
     "life/memory": {
       "name": "@freeanima/life-memory",
       "dependencies": {
+        "@freeanima/engine-config": "workspace:*",
         "@freeanima/engine-repos": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
         "@freeanima/engine-util": "workspace:*",
@@ -519,7 +569,6 @@
         "zod": "catalog:",
       },
       "devDependencies": {
-        "@freeanima/engine-loop": "workspace:*",
         "@types/bun": "catalog:",
       },
     },
@@ -537,11 +586,14 @@
     "service/api": {
       "name": "@freeanima/service-api",
       "dependencies": {
+        "@freeanima/engine-config": "workspace:*",
         "@freeanima/engine-conversation": "workspace:*",
+        "@freeanima/engine-llm": "workspace:*",
         "@freeanima/engine-loop": "workspace:*",
         "@freeanima/engine-repos": "workspace:*",
         "@freeanima/engine-skill": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
+        "@freeanima/kernel-logging": "workspace:*",
         "@freeanima/service-config": "workspace:*",
         "@freeanima/service-logging": "workspace:*",
       },
@@ -567,6 +619,7 @@
     "service/config": {
       "name": "@freeanima/service-config",
       "dependencies": {
+        "@freeanima/engine-config": "workspace:*",
         "@freeanima/engine-util": "workspace:*",
         "zod": "catalog:",
       },
@@ -577,8 +630,8 @@
     "service/logging": {
       "name": "@freeanima/service-logging",
       "dependencies": {
+        "@freeanima/engine-config": "workspace:*",
         "@freeanima/kernel-logging": "workspace:*",
-        "@freeanima/service-config": "workspace:*",
       },
       "devDependencies": {
         "@types/bun": "catalog:",
@@ -602,12 +655,12 @@
         "@freeanima/connectors-redis": "workspace:*",
         "@freeanima/engine": "workspace:*",
         "@freeanima/engine-compress": "workspace:*",
+        "@freeanima/engine-config": "workspace:*",
         "@freeanima/engine-conversation": "workspace:*",
-        "@freeanima/engine-conversation-hooks": "workspace:*",
         "@freeanima/engine-db": "workspace:*",
+        "@freeanima/engine-hooks": "workspace:*",
         "@freeanima/engine-llm": "workspace:*",
         "@freeanima/engine-loop": "workspace:*",
-        "@freeanima/engine-loop-hooks": "workspace:*",
         "@freeanima/engine-prompt": "workspace:*",
         "@freeanima/engine-provider-llm": "workspace:*",
         "@freeanima/engine-repos": "workspace:*",
@@ -618,6 +671,7 @@
         "@freeanima/kernel": "workspace:*",
         "@freeanima/kernel-eventbus": "workspace:*",
         "@freeanima/kernel-hooks": "workspace:*",
+        "@freeanima/kernel-logging": "workspace:*",
         "@freeanima/life-estate": "workspace:*",
         "@freeanima/life-memory": "workspace:*",
         "@freeanima/life-self": "workspace:*",
@@ -935,35 +989,41 @@
 
     "@freeanima/connectors-webui": ["@freeanima/connectors-webui@workspace:connectors/webui"],
 
-    "@freeanima/engine": ["@freeanima/engine@workspace:engine/engine"],
+    "@freeanima/engine": ["@freeanima/engine@workspace:engine/orchestration/engine"],
 
-    "@freeanima/engine-compress": ["@freeanima/engine-compress@workspace:engine/compress"],
+    "@freeanima/engine-compress": ["@freeanima/engine-compress@workspace:engine/mechanism/compress"],
 
-    "@freeanima/engine-conversation": ["@freeanima/engine-conversation@workspace:engine/conversation"],
+    "@freeanima/engine-config": ["@freeanima/engine-config@workspace:engine/foundation/config"],
 
-    "@freeanima/engine-conversation-hooks": ["@freeanima/engine-conversation-hooks@workspace:engine/conversation-hooks"],
+    "@freeanima/engine-conversation": ["@freeanima/engine-conversation@workspace:engine/orchestration/conversation"],
 
-    "@freeanima/engine-db": ["@freeanima/engine-db@workspace:engine/db"],
+    "@freeanima/engine-db": ["@freeanima/engine-db@workspace:engine/foundation/db"],
 
-    "@freeanima/engine-llm": ["@freeanima/engine-llm@workspace:engine/llm"],
+    "@freeanima/engine-hooks": ["@freeanima/engine-hooks@workspace:engine/mechanism/hooks"],
 
-    "@freeanima/engine-loop": ["@freeanima/engine-loop@workspace:engine/loop"],
+    "@freeanima/engine-llm": ["@freeanima/engine-llm@workspace:engine/mechanism/llm"],
 
-    "@freeanima/engine-loop-hooks": ["@freeanima/engine-loop-hooks@workspace:engine/loop-hooks"],
+    "@freeanima/engine-loop": ["@freeanima/engine-loop@workspace:engine/orchestration/loop"],
 
-    "@freeanima/engine-prompt": ["@freeanima/engine-prompt@workspace:engine/prompt"],
+    "@freeanima/engine-prompt": ["@freeanima/engine-prompt@workspace:engine/mechanism/prompt"],
 
-    "@freeanima/engine-provider-llm": ["@freeanima/engine-provider-llm@workspace:engine/provider-llm"],
+    "@freeanima/engine-provider-llm": ["@freeanima/engine-provider-llm@workspace:engine/foundation/provider-llm"],
 
-    "@freeanima/engine-repos": ["@freeanima/engine-repos@workspace:engine/repos"],
+    "@freeanima/engine-repos": ["@freeanima/engine-repos@workspace:engine/foundation/repos"],
 
-    "@freeanima/engine-skill": ["@freeanima/engine-skill@workspace:engine/skill"],
+    "@freeanima/engine-session": ["@freeanima/engine-session@workspace:engine/orchestration/session"],
 
-    "@freeanima/engine-tokenizer": ["@freeanima/engine-tokenizer@workspace:engine/tokenizer"],
+    "@freeanima/engine-session-port": ["@freeanima/engine-session-port@workspace:engine/mechanism/session-port"],
 
-    "@freeanima/engine-tool": ["@freeanima/engine-tool@workspace:engine/tool"],
+    "@freeanima/engine-skill": ["@freeanima/engine-skill@workspace:engine/mechanism/skill"],
 
-    "@freeanima/engine-util": ["@freeanima/engine-util@workspace:engine/util"],
+    "@freeanima/engine-tokenizer": ["@freeanima/engine-tokenizer@workspace:engine/foundation/tokenizer"],
+
+    "@freeanima/engine-tool": ["@freeanima/engine-tool@workspace:engine/mechanism/tool"],
+
+    "@freeanima/engine-turn": ["@freeanima/engine-turn@workspace:engine/orchestration/turn"],
+
+    "@freeanima/engine-util": ["@freeanima/engine-util@workspace:engine/foundation/util"],
 
     "@freeanima/integration-tests": ["@freeanima/integration-tests@workspace:tests"],
 

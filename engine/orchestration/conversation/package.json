@@ -1,0 +1,19 @@
+{
+  "name": "@freeanima/engine-conversation",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@freeanima/engine-session": "workspace:*",
+    "@freeanima/engine-turn": "workspace:*",
+    "@freeanima/engine-compress": "workspace:*",
+    "@freeanima/engine-db": "workspace:*",
+    "@freeanima/engine-repos": "workspace:*",
+    "@freeanima/engine-tool": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:"
+  }
+}

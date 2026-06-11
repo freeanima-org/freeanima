@@ -1,11 +1,11 @@
-import type { ConversationService } from "@freeanima/engine-conversation";
+import type { SessionConversationPort } from "@freeanima/engine-session-port";
 import { isSessionMeta } from "@freeanima/engine-db/domain";
 
 export type AcpSessionsMeta = Record<string, string>;
 
 /** Read acp_sessions from Free Anima session_meta */
 export async function readAcpSessions(
-  conversation: ConversationService,
+  conversation: SessionConversationPort,
   animaSessionId: string,
 ): Promise<AcpSessionsMeta> {
   const meta = await conversation.loadSessionMeta(animaSessionId);
@@ -16,7 +16,7 @@ export async function readAcpSessions(
 }
 
 export async function getBoundAcpSession(
-  conversation: ConversationService,
+  conversation: SessionConversationPort,
   animaSessionId: string,
   agentName: string,
 ): Promise<string | undefined> {
@@ -25,7 +25,7 @@ export async function getBoundAcpSession(
 }
 
 export async function bindAcpSession(
-  conversation: ConversationService,
+  conversation: SessionConversationPort,
   animaSessionId: string,
   agentName: string,
   acpSessionId: string,
@@ -37,7 +37,7 @@ export async function bindAcpSession(
 }
 
 export async function unbindAcpSession(
-  conversation: ConversationService,
+  conversation: SessionConversationPort,
   animaSessionId: string,
   agentName: string,
 ): Promise<void> {
