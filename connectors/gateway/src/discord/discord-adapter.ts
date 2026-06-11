@@ -14,7 +14,7 @@ import {
   networkErrorUserHint,
 } from "@freeanima/engine-loop";
 import { getServiceContext } from "@freeanima/service-api";
-import { RateLimitedLogger } from "@freeanima/kernel-retry";
+import { KeyedRateLimiter } from "@freeanima/engine-util/backoff";
 import { logComponent } from "@freeanima/service-logging";
 import type { AnimaService } from "@freeanima/service-api";
 import type { PlatformAdapter } from "../platforms.ts";
@@ -319,7 +319,7 @@ export class DiscordAdapter implements PlatformAdapter {
   private readonly client: Client;
   private started = false;
   private loginRetryTimer: ReturnType<typeof setTimeout> | null = null;
-  private readonly shardErrorLogLimiter = new RateLimitedLogger();
+  private readonly shardErrorLogLimiter = new KeyedRateLimiter();
 
   constructor(
     private readonly service: AnimaService,
@@ -344,7 +344,7 @@ export class DiscordAdapter implements PlatformAdapter {
     });
 
     this.client.on("shardError", (error, shardId) => {
-      if (this.shardErrorLogLimiter.shouldLog(`shard:${shardId}`)) {
+      if (this.shardErrorLogLimiter.allow(`shard:${shardId}`)) {
         logComponent("discord").warn("Discord shard error", {
           err: error,
           shard_id: shardId,

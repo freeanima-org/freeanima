@@ -7,7 +7,7 @@ import type {
   SelfBlockUpsertInput,
 } from "@freeanima/engine-repos";
 import { SELF_BLOCK_KEYS } from "@freeanima/engine-repos";
-import { formatCstIso } from "@freeanima/kernel-util";
+import { formatCstIso } from "@freeanima/engine-util";
 
 import { getDb } from "../../client.ts";
 import { mapSelfBlockRow } from "../mappers/self-mapper.ts";

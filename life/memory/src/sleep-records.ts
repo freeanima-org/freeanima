@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { PATHS } from "@freeanima/service-config";
-import { safeParseOrNull } from "@freeanima/kernel-util";
+import { safeParseOrNull } from "@freeanima/engine-util";
 import { z } from "zod";
 
 import { readDeepSleepState, type DeepSleepState } from "./deep-sleep/state.ts";

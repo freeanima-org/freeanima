@@ -12,7 +12,7 @@
     "@freeanima/engine-db": "workspace:*",
     "@freeanima/engine-loop": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",
-    "@freeanima/kernel-util": "workspace:*",
+    "@freeanima/engine-util": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "@freeanima/service-logging": "workspace:*",
     "zod": "catalog:"

@@ -12,7 +12,7 @@
  * - Do not break caches (timestamps are fixed historical values)
  */
 
-import { formatCstIso } from "@freeanima/kernel-util";
+import { formatCstIso } from "@freeanima/engine-util";
 import { isUserMessage, type SessionMessage, type UserMessage } from "./message.ts";
 
 const CST_DATETIME_MINUTE_RE = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})/;

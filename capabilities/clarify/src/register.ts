@@ -1,11 +1,12 @@
 import type { Kernel } from "@freeanima/kernel";
 import type { ConversationService } from "@freeanima/engine-conversation";
-import type {
-  MessageIncomingEffect,
-  ToolAfterCallEffect,
-  TurnAfterCompleteEffect,
-} from "@freeanima/kernel-hooks";
-import { messageIncoming, toolAfterCall, turnAfterComplete } from "@freeanima/kernel-hooks";
+import {
+  messageIncoming,
+  turnAfterComplete,
+  type MessageIncomingEffect,
+  type TurnAfterCompleteEffect,
+} from "@freeanima/engine-conversation-hooks";
+import { toolAfterCall, type ToolAfterCallEffect } from "@freeanima/engine-loop-hooks";
 import {
   findAwaitingClarifyInMessages,
   formatClarifyText,

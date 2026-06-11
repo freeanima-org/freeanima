@@ -2,7 +2,7 @@ import { toolError, toolResult } from "@freeanima/engine-tool";
 import { existsSync, mkdirSync, unlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { PATHS } from "@freeanima/service-config";
-import { CST_OFFSET_MS } from "@freeanima/kernel-util";
+import { CST_OFFSET_MS } from "@freeanima/engine-util";
 import { readSkillFile } from "./content.ts";
 import { type SkillRegistry, registerSkillsFromDirectory } from "./registry.ts";
 

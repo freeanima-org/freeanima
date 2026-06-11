@@ -9,7 +9,7 @@
     "@freeanima/engine-tool": "workspace:*",
     "@freeanima/engine-repos": "workspace:*",
     "@freeanima/kernel-eventbus": "workspace:*",
-    "@freeanima/kernel-util": "workspace:*",
+    "@freeanima/engine-util": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "@freeanima/service-logging": "workspace:*",
     "zod": "catalog:"

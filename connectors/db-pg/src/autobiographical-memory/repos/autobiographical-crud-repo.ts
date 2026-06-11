@@ -11,7 +11,7 @@ import type {
   AutobiographicalMemoryRow,
   AutobiographicalStatus,
 } from "@freeanima/engine-repos";
-import { formatCstIso } from "@freeanima/kernel-util";
+import { formatCstIso } from "@freeanima/engine-util";
 
 import { getDb } from "../../client.ts";
 import { pgTextArrayOverlap } from "../../utils/pg-sql.ts";

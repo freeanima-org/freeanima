@@ -8,7 +8,7 @@
   "dependencies": {
     "@freeanima/engine-loop": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",
-    "@freeanima/kernel-hooks": "workspace:*",
+    "@freeanima/engine-loop-hooks": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "@freeanima/service-logging": "workspace:*"
   },

@@ -10,24 +10,9 @@ export { HookRegistry } from "./registry.ts";
 export type {
   HookHandler,
   PayloadOf,
+  HookEffectOf,
   HookStepResult,
   HookStepLink,
   HookRunResult,
   HookRunMeta,
 } from "./hook.ts";
-export type { HookClarifyItem, HookStreamEvent, TurnControl } from "./hook-stream.ts";
-export {
-  messageIncoming,
-  toolAfterCall,
-  turnAfterComplete,
-  beforeLlmCall,
-} from "./domain-hooks.ts";
-export type {
-  MessageIncomingContext,
-  MessageIncomingEffect,
-  ToolAfterCallContext,
-  ToolAfterCallEffect,
-  TurnAfterCompleteContext,
-  TurnAfterCompleteEffect,
-  BeforeLlmCallContext,
-} from "./domain-hooks.ts";

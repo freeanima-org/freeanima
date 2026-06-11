@@ -133,23 +133,27 @@ describe("blockedMessageFromChain", () => {
 });
 
 describe("headOkStepData", () => {
+  const testHook = createHook<{ value: number }, { label?: string; n?: number }>(
+    "@freeanima/kernel-hooks/test/head-ok",
+  );
+
   it("null returns undefined", () => {
-    expect(headOkStepData(null)).toBeUndefined();
+    expect(headOkStepData(testHook, null)).toBeUndefined();
   });
 
   it("no ok step with data returns undefined", () => {
     const head = link({ status: "failed", message: "err" });
-    expect(headOkStepData(head)).toBeUndefined();
+    expect(headOkStepData(testHook, head)).toBeUndefined();
   });
 
   it("returns chain-head ok step data when present", () => {
     const head = link({ status: "ok", data: { label: "x" } });
-    expect(headOkStepData(head)).toEqual({ label: "x" });
+    expect(headOkStepData(testHook, head)).toEqual({ label: "x" });
   });
 
   it("walks prev for first ok data when chain head has none", () => {
     const first = link({ status: "ok", data: { n: 1 } });
     const head = link({ status: "ok", blocked: true, message: "stop" }, first);
-    expect(headOkStepData(head)).toEqual({ n: 1 });
+    expect(headOkStepData(testHook, head)).toEqual({ n: 1 });
   });
 });

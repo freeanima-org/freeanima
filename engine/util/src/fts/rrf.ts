@@ -1,13 +1,14 @@
 export type RrfHit = {
   docKey: string;
-  rank: number;
 };
+
+export type RrfScoredHit<T extends RrfHit = RrfHit> = T & { score: number };
 
 /** Reciprocal Rank Fusion: score(d) = Σ 1/(k + rank_i) */
 export function rrfMerge<T extends RrfHit>(
   rankedLists: Array<Array<T>>,
   opts?: { k?: number; limit?: number },
-): Array<T & { rank: number }> {
+): Array<RrfScoredHit<T>> {
   const k = opts?.k ?? 60;
   const limit = opts?.limit;
   const scores = new Map<string, { score: number; hit: T }>();
@@ -27,7 +28,7 @@ export function rrfMerge<T extends RrfHit>(
 
   const merged = [...scores.values()]
     .toSorted((a, b) => b.score - a.score)
-    .map(({ score, hit }) => ({ ...hit, rank: score }));
+    .map(({ score, hit }) => ({ ...hit, score }));
 
   return limit ? merged.slice(0, limit) : merged;
 }

@@ -10,8 +10,8 @@ import { getServiceContext } from "../context.ts";
 function conv() {
   return getServiceContext().conversation;
 }
-import { headOkStepData, messageIncoming, turnAfterComplete } from "@freeanima/kernel-hooks";
-import type { MessageIncomingEffect, TurnAfterCompleteEffect } from "@freeanima/kernel-hooks";
+import { messageIncoming, turnAfterComplete } from "@freeanima/engine-conversation-hooks";
+import { headOkStepData } from "@freeanima/kernel-hooks";
 import type { SessionMessage as Message } from "@freeanima/engine-db/domain";
 import type { EventBus } from "@freeanima/kernel-eventbus";
 import { sessionUpdated } from "@freeanima/life-memory";
@@ -44,11 +44,11 @@ export async function runIncomingMessageHooks(
   if (run.blocked) {
     return { ok: false, reason: run.blockedMessage ?? "" };
   }
-  const effect = (headOkStepData(run.chain) ?? {}) as MessageIncomingEffect;
+  const effect = headOkStepData(messageIncoming, run.chain);
   return {
     ok: true,
-    message: effect.transformedMessage ?? message,
-    expiredHint: effect.expiredHint,
+    message: effect?.transformedMessage ?? message,
+    expiredHint: effect?.expiredHint,
   };
 }
 
@@ -61,8 +61,8 @@ export async function runTurnAfterCompleteHooks(
     sessionId,
     messages: messages as Record<string, unknown>[],
   });
-  const effect = (headOkStepData(run.chain) ?? {}) as TurnAfterCompleteEffect;
-  return effect.displayContent ?? defaultContent;
+  const effect = headOkStepData(turnAfterComplete, run.chain);
+  return effect?.displayContent ?? defaultContent;
 }
 
 export function emitSessionUpdated(

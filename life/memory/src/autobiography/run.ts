@@ -5,7 +5,7 @@ import type {
   SemanticMemoryStorePort,
 } from "@freeanima/engine-repos";
 import { logComponent } from "@freeanima/service-logging";
-import { formatCstIso } from "@freeanima/kernel-util";
+import { formatCstIso } from "@freeanima/engine-util";
 
 import { composeSystemPrompt, decomposeSystemPromptParts } from "../system-prompt.ts";
 import { runAutobiographyEngine } from "../autobiography-port.ts";

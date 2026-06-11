@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { CST_OFFSET_MS, formatCstIso } from "./util.ts";
+import { CST_OFFSET_MS, formatCstIso } from "./time.ts";
 
 describe("formatCstIso", () => {
   test("offset +08:00 suffix", () => {

@@ -1,4 +1,4 @@
-import { isEnabledByDefault } from "@freeanima/kernel-util";
+import { isEnabledByDefault } from "@freeanima/engine-util";
 import type { McpServerConfig } from "./client.ts";
 
 export type McpServerConfigView = {

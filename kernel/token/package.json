@@ -1,0 +1,10 @@
+{
+  "name": "@freeanima/kernel-token",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:"
+  }
+}

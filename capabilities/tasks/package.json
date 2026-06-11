@@ -10,7 +10,7 @@
     "@freeanima/engine-loop": "workspace:*",
     "@freeanima/engine-repos": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",
-    "@freeanima/kernel-util": "workspace:*"
+    "@freeanima/engine-util": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "catalog:"

@@ -1,6 +1,6 @@
 import type { ToolDef } from "@freeanima/engine-tool";
 import { toolError, toolResult } from "@freeanima/engine-tool";
-import { formatCstIso } from "@freeanima/kernel-util";
+import { formatCstIso } from "@freeanima/engine-util";
 import type { SemanticMemoryCreateInput, SemanticMemoryUpdateInput } from "@freeanima/engine-repos";
 
 import { getSemanticMemoryStore } from "./semantic-port.ts";

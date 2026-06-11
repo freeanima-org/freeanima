@@ -11,7 +11,7 @@
     "@freeanima/engine-repos": "workspace:*",
     "@freeanima/engine-skill": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",
-    "@freeanima/kernel-util": "workspace:*",
+    "@freeanima/engine-util": "workspace:*",
     "@freeanima/service-config": "workspace:*"
   },
   "devDependencies": {

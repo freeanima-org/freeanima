@@ -1,5 +1,5 @@
-import { SteppedBackoff } from "@freeanima/kernel-retry";
-import { safeParseOrNull } from "@freeanima/kernel-util";
+import { SteppedBackoff } from "@freeanima/engine-util/backoff";
+import { safeParseOrNull } from "@freeanima/engine-util";
 import { PATHS } from "@freeanima/service-config";
 import { logComponent } from "@freeanima/service-logging";
 import type { AnimaService } from "@freeanima/service-api";

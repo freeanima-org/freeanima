@@ -56,12 +56,12 @@
 
 #### Same-package mock exports (prefer in unit tests)
 
-| Tier                       | Packages                                                                                 | Usage                                                      |
-| -------------------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| Tier 1 in-memory adapters  | `kernel-logging/null`, `/memory`; `kernel-eventbus/memory`, `/null`; `engine-repos/null` | `createNullSink`, `MemoryEventQueue`, `nullPgRepositories` |
-| Tier 2 singleton injection | `connectors-redis`, `connectors-db-pg`, `service-config`, etc.                           | `setXForTest` / `resetXForTest`; `afterEach` must reset    |
-| Tier 3 composite factories | optional `@freeanima/{pkg}/testing`                                                      | Tier 1 only, e.g. `createTestLogger`                       |
-| Domain mocks               | `{pkg}/src/test-helpers/`                                                                | when package has no port (e.g. `MockBackend`)              |
+| Tier                       | Packages                                                                                                                                 | Usage                                                                                                                          |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Tier 1 in-memory adapters  | `kernel-logging/null`, `/memory`, `/testing`; `kernel-eventbus/memory`, `/null`, `/testing`; `kernel-hooks/testing`; `engine-repos/null` | `createNullSink`, `createTestLogger`, `createTestEventBus`, `createTestHookRegistry`, `MemoryEventQueue`, `nullPgRepositories` |
+| Tier 2 singleton injection | `connectors-redis`, `connectors-db-pg`, `service-config`, etc.                                                                           | `setXForTest` / `resetXForTest`; `afterEach` must reset                                                                        |
+| Tier 3 composite factories | optional `@freeanima/{pkg}/testing`                                                                                                      | Tier 1 only, e.g. `createTestLogger`                                                                                           |
+| Domain mocks               | `{pkg}/src/test-helpers/`                                                                                                                | when package has no port (e.g. `MockBackend`)                                                                                  |
 
 Unit tests **must not** `import` `tests/helpers/log-isolation.ts` or write `config.yaml`; use `setConfigForTest` for config and `createNullSink` / `createMemorySink` for logging.
 
@@ -84,14 +84,14 @@ New-stack workspace package names **prefix with layer name**:
 
 #### Layer rationale
 
-| Layer            | Responsibility (split criterion)                                                                                                        | Typical packages                                                  |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| **kernel**       | Business-agnostic runtime infra: Hook, EventBus, logging, cross-layer pure types/utils                                                  | `kernel-hooks`, `kernel-eventbus`, `kernel-logging`               |
-| **engine**       | Agent **mechanism**: conversation, LLM loop, tool registry, compression, repo ports, PG schema SSOT                                     | `engine-conversation`, `engine-loop`, `engine-repos`, `engine-db` |
-| **life**         | Digital-life **continuity and memory pipeline** (semantic/episodic memory, light/deep sleep); reads conversation archive via ports only | `life-memory`, `life-self`                                        |
-| **capabilities** | Pluggable **capability packs** (local tools, MCP/ACP, clarify, LLM provider); no composition or I/O wiring                              | `capabilities-tools`, `capabilities-mcp`                          |
-| **connectors**   | **External-world adapters**: Gateway, WebUI, Cron, PG impl, command registration                                                        | `connectors-db-pg`, `connectors-gateway`                          |
-| **service**      | **Composition root**: creates Kernel/Engine/Conversation/AnimaService, injects context, process entry                                   | `service`, `service-bootstrap`                                    |
+| Layer            | Responsibility (split criterion)                                                                                                        | Typical packages                                                                                                                   |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| **kernel**       | Business-agnostic runtime infra: Hook, EventBus, logging, qualified tokens                                                              | `kernel-hooks`, `kernel-eventbus`, `kernel-logging`, `kernel-token`                                                                |
+| **engine**       | Agent **mechanism**: conversation, LLM loop, tool registry, compression, repo ports, PG schema SSOT, shared utils, domain hook tokens   | `engine-conversation`, `engine-loop`, `engine-util`, `engine-loop-hooks`, `engine-conversation-hooks`, `engine-repos`, `engine-db` |
+| **life**         | Digital-life **continuity and memory pipeline** (semantic/episodic memory, light/deep sleep); reads conversation archive via ports only | `life-memory`, `life-self`                                                                                                         |
+| **capabilities** | Pluggable **capability packs** (local tools, MCP/ACP, clarify, LLM provider); no composition or I/O wiring                              | `capabilities-tools`, `capabilities-mcp`                                                                                           |
+| **connectors**   | **External-world adapters**: Gateway, WebUI, Cron, PG impl, command registration                                                        | `connectors-db-pg`, `connectors-gateway`                                                                                           |
+| **service**      | **Composition root**: creates Kernel/Engine/Conversation/AnimaService, injects context, process entry                                   | `service`, `service-bootstrap`                                                                                                     |
 
 Dependency direction: `service` wires layers → `connectors` implement ports → `engine` / `life` / `capabilities` consume ports and mechanisms → `kernel` provides infra.
 
@@ -101,7 +101,7 @@ Dependency direction: `service` wires layers → `connectors` implement ports �
 | ---------------- | ---------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
 | **kernel**       | `kernel-*`, `kernel`                                                                                                         | `engine-*`, `service`                                           |
 | **engine**       | `kernel-*`, `engine-*`, `service-config`, `service-logging`, `capabilities-provider-*`                                       | `connectors-db-pg` (PG impl must not leak into mechanism layer) |
-| **life**         | `kernel-*`, `life-*`, `engine-tool`, `engine-repos`, `service-config`, `service-logging`                                     | `engine-db`, `connectors-db-pg`                                 |
+| **life**         | `kernel-*`, `life-*`, `engine-tool`, `engine-repos`, `engine-util`, `service-config`, `service-logging`                      | `engine-db`, `connectors-db-pg`                                 |
 | **capabilities** | `kernel-*`, `engine-*`, `capabilities-*`, `life-memory` (as needed), `connectors-redis`, `service-config`, `service-logging` | `service`, `connectors-*` (except redis)                        |
 | **connectors**   | lower layers + `service-api` / `service-config` / `service-logging`, etc.                                                    | `@freeanima/service` (main composition root package)            |
 | **service**      | all layers (composition root)                                                                                                | —                                                               |
@@ -172,35 +172,38 @@ Additional rules:
 
 #### Type ownership table
 
-| Content                                                                          | Package                      | Path / notes                                              |
-| -------------------------------------------------------------------------------- | ---------------------------- | --------------------------------------------------------- |
-| Slice A message / session_meta storage Zod                                       | `engine-db/schema`           | JSONB and payload SSOT                                    |
-| Slice A domain convenience types (`SessionMessage`, `ConversationMessage`, etc.) | `engine-db/domain`           | Derived from schema; `engine-conversation` re-exports     |
-| `SessionStorePort` / `PgRepositories`                                            | `engine-repos`               | Repository ports                                          |
-| Light-sleep fact extraction schema                                               | `life-memory/schemas`        | `fact-extraction.ts`, `fact.ts`                           |
-| EventBus payload Zod (`session:updated`, etc.)                                   | `life-memory/schemas`        | `event-payloads.ts`; topic token in `events.ts`           |
-| `cron_jobs` PG schema (DDL)                                                      | `engine-db/migrations`       | SQL migration                                             |
-| Cron job API validation schema                                                   | `connectors-cron`            | `schema.ts`                                               |
-| `CronJobStorePort`                                                               | `engine-repos`               | `ports/cron.ts`                                           |
-| `tasks` DDL + status/priority Zod                                                | `engine-db/schema`           | `tasks.ts`                                                |
-| `TaskStorePort` / `TaskRow`                                                      | `engine-repos`               | `ports/task.ts`                                           |
-| Task tools + fridge summary bridge                                               | `capabilities-tasks`         | `tool.ts`, `fridge-bridge.ts`                             |
-| `self_blocks` DDL + `selfBlockKeySchema`                                         | `engine-db/schema`           | `self-layer.ts`                                           |
-| `SelfLayerStorePort` / `SelfBlockRow`                                            | `engine-repos`               | `ports/self-layer.ts`                                     |
-| Six-block prompt view (`SELF_BLOCK_HEADINGS`, etc.)                              | `life-self`                  | `blocks.ts`, `compose.ts`                                 |
-| `autobiographical_memory` DDL + significance/status Zod                          | `engine-db/schema`           | `autobiographical-memory.ts`                              |
-| `AutobiographicalMemoryStorePort`                                                | `engine-repos`               | `ports/autobiographical-memory.ts`                        |
-| Autobiography cron orchestration / tools                                         | `life-memory`                | `autobiography/`, `autobiographical-tools.ts`             |
-| `limbic_memory` DDL + `limbicKindSchema`                                         | `engine-db/schema`           | `limbic-memory.ts`                                        |
-| `LimbicMemoryStorePort`                                                          | `engine-repos`               | `ports/limbic-memory.ts`                                  |
-| Light-sleep Stage 2 limbic / Stage 3 autobiography / `memory_limbic_create`      | `life-memory`                | `limbic-tools.ts`, `light-sleep/run.ts`, `autobiography/` |
-| Capability masks (`Mask` / `ResolvedMask` / registry)                            | `capabilities-mask`          | `types.ts`, `registry.ts`, `resolve.ts`                   |
-| Session `capability_mask` storage shape                                          | `engine-db/schema`           | `jsonb/capability-mask.ts`                                |
-| WebUI display view (`MessagesDisplay`)                                           | `service/schemas`            | `display.ts`                                              |
-| AnimaService internal snapshot (`ServiceSnapshot`, etc.)                         | `service/schemas`            | `snapshot.ts`                                             |
-| WeChat gateway persistence schema                                                | `connectors-gateway/schemas` | `weixin.ts`                                               |
-| JSON safeParse utilities                                                         | `kernel-util`                | `parseJsonFile`, `safeParseOrNull`, etc.                  |
-| Token counting / Hub resolve / fallback tokenizer                                | `engine-tokenizer`           | `countTokens`, `splitTextByTokenLimit`, `ensureTokenizer` |
+| Content                                                                          | Package                                          | Path / notes                                              |
+| -------------------------------------------------------------------------------- | ------------------------------------------------ | --------------------------------------------------------- |
+| Slice A message / session_meta storage Zod                                       | `engine-db/schema`                               | JSONB and payload SSOT                                    |
+| Slice A domain convenience types (`SessionMessage`, `ConversationMessage`, etc.) | `engine-db/domain`                               | Derived from schema; `engine-conversation` re-exports     |
+| `SessionStorePort` / `PgRepositories`                                            | `engine-repos`                                   | Repository ports                                          |
+| Light-sleep fact extraction schema                                               | `life-memory/schemas`                            | `fact-extraction.ts`, `fact.ts`                           |
+| EventBus payload Zod (`session:updated`, etc.)                                   | `life-memory/schemas`                            | `event-payloads.ts`; topic token in `events.ts`           |
+| `cron_jobs` PG schema (DDL)                                                      | `engine-db/migrations`                           | SQL migration                                             |
+| Cron job API validation schema                                                   | `connectors-cron`                                | `schema.ts`                                               |
+| `CronJobStorePort`                                                               | `engine-repos`                                   | `ports/cron.ts`                                           |
+| `tasks` DDL + status/priority Zod                                                | `engine-db/schema`                               | `tasks.ts`                                                |
+| `TaskStorePort` / `TaskRow`                                                      | `engine-repos`                                   | `ports/task.ts`                                           |
+| Task tools + fridge summary bridge                                               | `capabilities-tasks`                             | `tool.ts`, `fridge-bridge.ts`                             |
+| `self_blocks` DDL + `selfBlockKeySchema`                                         | `engine-db/schema`                               | `self-layer.ts`                                           |
+| `SelfLayerStorePort` / `SelfBlockRow`                                            | `engine-repos`                                   | `ports/self-layer.ts`                                     |
+| Six-block prompt view (`SELF_BLOCK_HEADINGS`, etc.)                              | `life-self`                                      | `blocks.ts`, `compose.ts`                                 |
+| `autobiographical_memory` DDL + significance/status Zod                          | `engine-db/schema`                               | `autobiographical-memory.ts`                              |
+| `AutobiographicalMemoryStorePort`                                                | `engine-repos`                                   | `ports/autobiographical-memory.ts`                        |
+| Autobiography cron orchestration / tools                                         | `life-memory`                                    | `autobiography/`, `autobiographical-tools.ts`             |
+| `limbic_memory` DDL + `limbicKindSchema`                                         | `engine-db/schema`                               | `limbic-memory.ts`                                        |
+| `LimbicMemoryStorePort`                                                          | `engine-repos`                                   | `ports/limbic-memory.ts`                                  |
+| Light-sleep Stage 2 limbic / Stage 3 autobiography / `memory_limbic_create`      | `life-memory`                                    | `limbic-tools.ts`, `light-sleep/run.ts`, `autobiography/` |
+| Capability masks (`Mask` / `ResolvedMask` / registry)                            | `capabilities-mask`                              | `types.ts`, `registry.ts`, `resolve.ts`                   |
+| Session `capability_mask` storage shape                                          | `engine-db/schema`                               | `jsonb/capability-mask.ts`                                |
+| WebUI display view (`MessagesDisplay`)                                           | `service/schemas`                                | `display.ts`                                              |
+| AnimaService internal snapshot (`ServiceSnapshot`, etc.)                         | `service/schemas`                                | `snapshot.ts`                                             |
+| WeChat gateway persistence schema                                                | `connectors-gateway/schemas`                     | `weixin.ts`                                               |
+| JSON/Zod/time/FTS utilities                                                      | `engine-util`                                    | `safeParseOrNull`, `formatCstIso`, `rrfMerge`, etc.       |
+| Stepped backoff / keyed rate limit                                               | `engine-util/backoff`                            | `SteppedBackoff`, `KeyedRateLimiter`                      |
+| Domain hook tokens (loop / conversation)                                         | `engine-loop-hooks`, `engine-conversation-hooks` | `beforeLlmCall`, `messageIncoming`, etc.                  |
+| Qualified token factory                                                          | `kernel-token`                                   | `createQualifiedToken`, `QualifiedToken`                  |
+| Token counting / Hub resolve / fallback tokenizer                                | `engine-tokenizer`                               | `countTokens`, `splitTextByTokenLimit`, `ensureTokenizer` |
 
 New PG domain: `engine-db/schema/{domain}` → add port in `engine-repos` → implement in `connectors-db-pg` → extend `PgRepositories` → wire in `serve.ts`. See [`docs/guide/database.md`](docs/guide/database.md).
 

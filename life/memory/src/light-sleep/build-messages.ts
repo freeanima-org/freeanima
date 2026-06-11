@@ -1,4 +1,4 @@
-import { CST_OFFSET_MS } from "@freeanima/kernel-util";
+import { CST_OFFSET_MS } from "@freeanima/engine-util";
 import type { LimbicMemoryRow, SemanticMemoryRow, SessionStorePort } from "@freeanima/engine-repos";
 
 import { filterRecallableMessages } from "../message-filter.ts";

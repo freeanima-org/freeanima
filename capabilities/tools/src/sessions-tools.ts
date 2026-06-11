@@ -6,7 +6,7 @@ import {
   type ToolSetRegistry,
 } from "@freeanima/engine-tool";
 import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
-import { formatSessionMessageSearchHit } from "@freeanima/kernel-util";
+import { formatSessionMessageSearchHit } from "@freeanima/engine-util";
 
 const FTS_SYNTAX =
   "PG search syntax (to_tsquery simple):\n" +

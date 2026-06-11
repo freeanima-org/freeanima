@@ -1,22 +1,7 @@
-// --- Event topic token ---
+import { QualifiedToken } from "@freeanima/kernel-token";
 
 /** Event type token; created only via createEventTopic */
-export abstract class EventTopic<Payload> {
-  /** @internal carries Payload generic; unused at runtime */
-  declare protected readonly _payloadBrand?: Payload;
-
-  readonly id: symbol;
-  readonly qualifiedId: string;
-  readonly description?: string;
-
-  protected constructor(qualifiedId: string, description?: string) {
-    this.id = Symbol(qualifiedId);
-    this.qualifiedId = qualifiedId;
-    if (description !== undefined) {
-      this.description = description;
-    }
-  }
-}
+export abstract class EventTopic<Payload> extends QualifiedToken<Payload> {}
 
 class EventTopicToken<Payload> extends EventTopic<Payload> {
   constructor(qualifiedId: string, description?: string) {

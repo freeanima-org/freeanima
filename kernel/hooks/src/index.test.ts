@@ -1,8 +1,7 @@
 import { describe, expect, it } from "bun:test";
-import { createLogger } from "@freeanima/kernel-logging";
-import { createNullSink } from "@freeanima/kernel-logging/null";
 import { createHook, Hook, HookRegistry } from "./index.ts";
 import type { HookHandler, PayloadOf } from "./index.ts";
+import { createTestHookRegistry } from "./testing.ts";
 
 describe("index exports", () => {
   it("exports Hook, createHook, HookRegistry", () => {
@@ -13,7 +12,7 @@ describe("index exports", () => {
 
   it("public API composes", async () => {
     const hook = createHook<{ count: number }>("@freeanima/kernel-hooks/test/index");
-    const registry = new HookRegistry(createLogger({ level: "debug", sinks: [createNullSink()] }));
+    const registry = createTestHookRegistry();
 
     const handler: HookHandler<typeof hook> = () => ({
       status: "ok",

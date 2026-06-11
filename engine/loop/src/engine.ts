@@ -2,15 +2,13 @@ import { parseToolArgs, toolError, toolResult } from "@freeanima/engine-tool";
 import { getProfileHopModel, loadConfig } from "@freeanima/service-config";
 import { logComponent } from "@freeanima/service-logging";
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
-import type { HookClarifyItem, HookStreamEvent, TurnControl } from "@freeanima/kernel-hooks";
+import type { HookClarifyItem, HookStreamEvent, TurnControl } from "@freeanima/engine-loop-hooks";
 import {
-  headOkStepData,
-  toolAfterCall,
   beforeLlmCall,
+  toolAfterCall,
   type BeforeLlmCallContext,
-  type HookRegistry,
-  type ToolAfterCallEffect,
-} from "@freeanima/kernel-hooks";
+} from "@freeanima/engine-loop-hooks";
+import { headOkStepData, type HookRegistry } from "@freeanima/kernel-hooks";
 import * as llm from "@freeanima/engine-llm";
 import { cleanToolCallsForApi } from "@freeanima/engine-llm";
 import { markToolLoopActivity } from "@freeanima/engine-compress";
@@ -211,8 +209,8 @@ async function runToolAfterCallHooks(
     args,
     result,
   });
-  const effect = (headOkStepData(hookRun.chain) ?? {}) as ToolAfterCallEffect;
-  const tc = effect.turnControl;
+  const effect = headOkStepData(toolAfterCall, hookRun.chain);
+  const tc = effect?.turnControl;
   if (!tc?.pause || !Array.isArray(tc.streamEvents)) return null;
   return tc as TurnControl;
 }

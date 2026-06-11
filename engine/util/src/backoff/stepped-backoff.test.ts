@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { DEFAULT_STEPPED_DELAYS_MS, SteppedBackoff } from "../src/stepped-backoff.ts";
+import { DEFAULT_STEPPED_DELAYS_MS, SteppedBackoff } from "./stepped-backoff.ts";
 
 describe("SteppedBackoff", () => {
   it("steps up and holds last tier", () => {
