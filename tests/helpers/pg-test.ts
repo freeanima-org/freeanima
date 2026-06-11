@@ -22,7 +22,7 @@ import {
   type ConversationService,
 } from "@freeanima/engine-conversation";
 import type { PgRepositories } from "@freeanima/engine-repos";
-import { clearConfigCache, loadConfig } from "@freeanima/service-config";
+import { FileConfig, type Config } from "@freeanima/service-config";
 import { createTestLogger } from "@freeanima/kernel-logging/testing";
 import type { SessionMessage, SessionMetaMessage } from "@freeanima/engine-db/domain";
 import { relations } from "@freeanima/engine-db/schema";
@@ -34,6 +34,7 @@ export type PgTestContext = {
   sql: SqlClient;
   db: Db;
   engine: Engine;
+  config: Config;
   teardown: () => Promise<void>;
 };
 
@@ -55,15 +56,14 @@ async function clearPgTables(sql: SqlClient): Promise<void> {
   await sql`DELETE FROM cron_jobs`;
 }
 
-function createTestEngine(repos: PgRepositories): Engine {
+function createTestEngine(repos: PgRepositories, config: Config): Engine {
   registerLlmStackConfigurator(wireOpenAiCompatibleLlm);
-  const cfg = loadConfig();
-  const llm = initLlmRuntime(cfg);
-  return createEngine({ repos, llm, config: cfg, logger: createTestLogger() });
+  const llm = initLlmRuntime(config.data);
+  return createEngine({ repos, llm, config, logger: createTestLogger() });
 }
 
-function wireEngine(): Engine {
-  const engine = createTestEngine(createPgRepositories({ getDb }));
+function wireEngine(config: Config): Engine {
+  const engine = createTestEngine(createPgRepositories({ getDb }), config);
   if (activeCtx) activeCtx.engine = engine;
   return engine;
 }
@@ -75,16 +75,17 @@ function createTestSql(url: string): { sql: SqlClient; db: Db } {
   return { sql, db };
 }
 
-export async function setupPgTestDb(url: string): Promise<PgTestContext> {
+export async function setupPgTestDb(url: string, config: Config): Promise<PgTestContext> {
   initDatabase({ getDatabaseUrl: () => url });
   const { sql, db } = createTestSql(url);
   await clearPgTables(sql);
   setDbForTest(db, sql);
-  const engine = createTestEngine(createPgRepositories({ getDb }));
+  const engine = createTestEngine(createPgRepositories({ getDb }), config);
   activeCtx = {
     sql,
     db,
     engine,
+    config,
     async teardown() {
       sql.close();
       await closeDb();
@@ -133,13 +134,14 @@ export async function setupIntegrationHome(opts: {
   configYaml?: string;
 }): Promise<PgTestContext> {
   writeDatabaseConfig(opts.home, opts.url, opts.configYaml);
-  clearConfigCache();
+  const config = FileConfig.open();
   if (activeCtx) {
     await clearPgTables(activeCtx.sql);
-    wireEngine();
+    activeCtx.config = config;
+    wireEngine(config);
     return activeCtx;
   }
-  return setupPgTestDb(opts.url);
+  return setupPgTestDb(opts.url, config);
 }
 
 /** Close PG connection when integration test suite finishes */
@@ -149,12 +151,15 @@ export async function teardownIntegrationHome(): Promise<void> {
   }
 }
 
-/** Append YAML to existing config.yaml and refresh config cache */
+/** Append YAML to existing config.yaml and refresh config */
 export function appendIntegrationConfig(home: string, yaml: string): void {
   const path = join(home, "config.yaml");
   const existing = readFileSync(path, "utf-8");
   writeFileSync(path, `${existing.trimEnd()}\n${yaml}`, "utf-8");
-  clearConfigCache();
+  if (activeCtx) {
+    activeCtx.config = FileConfig.open();
+    wireEngine(activeCtx.config);
+  }
 }
 
 /** Write session fixture via Session port */

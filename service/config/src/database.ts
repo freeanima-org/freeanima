@@ -1,4 +1,4 @@
-import { loadConfig } from "./config.ts";
+import type { AnimaConfig } from "@freeanima/engine-config";
 import { resolveValue } from "./resolve.ts";
 
 /** Expand env/credential references in database.url */
@@ -6,9 +6,8 @@ export async function resolveDatabaseUrl(raw: string): Promise<string> {
   return resolveValue(raw);
 }
 
-/** Read database.url from config.yaml; null when not configured */
-export async function getConfiguredDatabaseUrl(): Promise<string | null> {
-  const cfg = loadConfig();
+/** Read database.url from config; null when not configured */
+export async function getConfiguredDatabaseUrl(cfg: AnimaConfig): Promise<string | null> {
   const db = cfg.database;
   if (!db?.url) return null;
   return resolveDatabaseUrl(db.url);

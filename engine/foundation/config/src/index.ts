@@ -4,5 +4,5 @@ export * from "./schemas/embedding.ts";
 export * from "./llm-config.ts";
 export * from "./compression-config.ts";
 export * from "./paths.ts";
-export * from "./runtime-config.ts";
+export * from "./config-store.ts";
 export * from "./runtime-logger.ts";

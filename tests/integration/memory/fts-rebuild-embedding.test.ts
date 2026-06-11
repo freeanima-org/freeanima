@@ -1,7 +1,7 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
+import { bindActiveConfig } from "@freeanima/service-config";
 import { parseYaml } from "@freeanima/service-config";
 import { animaConfigSchema } from "@freeanima/service-config/schemas/config";
-import { clearConfigCache, resetConfigForTest, setConfigForTest } from "@freeanima/service-config";
 import { MINIMAL_LLM_YAML } from "@freeanima/service-config/test-helpers/minimal-llm-config";
 import {
   awaitPendingEmbeddingsForTest,
@@ -26,6 +26,13 @@ function minimalConfig() {
   return parsed.data;
 }
 
+function applyTestConfig(patch: Record<string, unknown>): void {
+  const ctx = getActivePgTestContext();
+  if (!ctx) throw new Error("PG test context not initialized");
+  ctx.config.update({ ...minimalConfig(), ...patch });
+  bindActiveConfig(ctx.config);
+}
+
 function fixedEmbedding(value = 0.25): number[] {
   return Array.from({ length: SEMANTIC_EMBEDDING_DIMENSIONS }, () => value);
 }
@@ -46,8 +53,7 @@ describePg("FTS rebuild embedding PG", () => {
 
   beforeEach(async () => {
     await beginIntegrationCase("freeanima-fts-rebuild-emb-");
-    setConfigForTest({
-      ...minimalConfig(),
+    applyTestConfig({
       embedding: {
         enabled: true,
         model: "test-embed-model",
@@ -60,8 +66,6 @@ describePg("FTS rebuild embedding PG", () => {
   afterEach(async () => {
     resetEmbedTextFnForTest();
     resetPendingEmbeddingsForTest();
-    resetConfigForTest();
-    clearConfigCache();
     await restoreIntegrationHome(prev);
   });
 

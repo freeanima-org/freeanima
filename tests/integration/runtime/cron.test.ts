@@ -28,7 +28,8 @@ import {
   computeNextRunAt,
   readOutputRef,
 } from "@freeanima/connectors-cron";
-import { patchConfigSection } from "@freeanima/service-config";
+import { FileConfig } from "@freeanima/service-config";
+import { getActivePgTestContext } from "../../helpers/pg-test.ts";
 
 describePg("cron", () => {
   let home: string;
@@ -77,7 +78,9 @@ describePg("cron", () => {
     expect(resolveDeliverTargets("discord:123:456")).toEqual([
       { platform: "discord", chat_id: "123", thread_id: "456" },
     ]);
-    patchConfigSection("discord", { home_channel: "999", home_thread_id: "888" });
+    const config = getActivePgTestContext()!.config;
+    if (!(config instanceof FileConfig)) throw new Error("expected FileConfig");
+    config.patchSection("discord", { home_channel: "999", home_thread_id: "888" });
     expect(resolveDeliverTargets("discord")).toEqual([
       { platform: "discord", chat_id: "999", thread_id: "888" },
     ]);

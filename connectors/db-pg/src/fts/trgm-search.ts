@@ -1,5 +1,5 @@
 import { sql as drizzleSql } from "drizzle-orm";
-import { getFtsTrgmMinSimilarity } from "@freeanima/service-config";
+import { getActiveConfig, getFtsTrgmMinSimilarity } from "@freeanima/service-config";
 
 import { getDb } from "../client.ts";
 import type { SemanticMemoryDbRow } from "../semantic-memory/mappers/semantic-mapper.ts";
@@ -21,7 +21,7 @@ export async function searchSemanticMemoryTrgm(
   if (!q) return [];
 
   const limit = Math.max(1, Math.min(100, opts?.limit ?? 10));
-  const minSim = getFtsTrgmMinSimilarity();
+  const minSim = getFtsTrgmMinSimilarity(getActiveConfig().data);
   const types = opts?.types?.filter(Boolean) ?? [];
   const status = opts?.status ?? "active";
   const sourceSessions = opts?.sourceSessions?.map((s) => s.trim()).filter(Boolean) ?? [];
@@ -78,7 +78,7 @@ export async function searchMessagesTrgm(
   if (!q) return [];
 
   const limit = Math.max(1, Math.min(50, opts?.limit ?? 10));
-  const minSim = getFtsTrgmMinSimilarity();
+  const minSim = getFtsTrgmMinSimilarity(getActiveConfig().data);
   const sessionId = opts?.sessionId?.trim() || null;
 
   const db = getDb();

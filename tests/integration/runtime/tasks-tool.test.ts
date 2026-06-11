@@ -8,14 +8,20 @@ import {
 
 import { runWithToolContext } from "@freeanima/engine-loop";
 import { ToolSetRegistry } from "@freeanima/engine-tool";
-import { getProfileHopModel, loadConfig } from "@freeanima/service-config";
+import { getProfileHopModel } from "@freeanima/service-config";
 import {
   registerTaskTools,
   registerTasksModule,
   resetTasksModuleForTests,
 } from "@freeanima/capabilities-tasks";
 import { resetTaskStoreForTests } from "@freeanima/capabilities-tasks/task-port";
-import { testConv } from "../../helpers/pg-test.ts";
+import { getActivePgTestContext, testConv } from "../../helpers/pg-test.ts";
+
+function testCfg() {
+  const ctx = getActivePgTestContext();
+  if (!ctx) throw new Error("PG test context not initialized");
+  return ctx.config.data;
+}
 
 describePg("tasks tool", () => {
   const prev = process.env.FREEANIMA_HOME;
@@ -50,10 +56,11 @@ describePg("tasks tool", () => {
   });
 
   it("create_task writes to PG and syncs fridge summary", async () => {
-    const cfg = loadConfig();
     const sid = "sess-task-create";
     const repos = testConv().repos;
-    await testConv().initSession(sid, getProfileHopModel(cfg), { platform: "parlor" });
+    await testConv().initSession(sid, getProfileHopModel(testCfg(), "chat"), {
+      platform: "parlor",
+    });
 
     let output = "";
     await runWithToolContext(
@@ -95,10 +102,11 @@ describePg("tasks tool", () => {
   });
 
   it("list_tasks defaults to pending + in_progress only", async () => {
-    const cfg = loadConfig();
     const sid = "sess-task-list";
     const repos = testConv().repos;
-    await testConv().initSession(sid, getProfileHopModel(cfg), { platform: "parlor" });
+    await testConv().initSession(sid, getProfileHopModel(testCfg(), "chat"), {
+      platform: "parlor",
+    });
 
     const created = await repos.tasks.create({
       title: "Active task",
@@ -131,10 +139,11 @@ describePg("tasks tool", () => {
   });
 
   it("tasks_complete updates status", async () => {
-    const cfg = loadConfig();
     const sid = "sess-task-complete";
     const repos = testConv().repos;
-    await testConv().initSession(sid, getProfileHopModel(cfg), { platform: "parlor" });
+    await testConv().initSession(sid, getProfileHopModel(testCfg(), "chat"), {
+      platform: "parlor",
+    });
 
     const created = await repos.tasks.create({
       title: "Task to complete",

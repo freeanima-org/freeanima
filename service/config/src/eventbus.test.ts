@@ -2,7 +2,7 @@ import { describe, expect, it, beforeEach, afterEach } from "bun:test";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { clearConfigCache, loadConfig, stringifyYaml } from "./index.ts";
+import { FileConfig, stringifyYaml } from "./index.ts";
 import { getEventbusBackend, getEventbusKeyPrefix } from "./eventbus.ts";
 import { eventbusConfigSchema } from "./schemas/config.ts";
 
@@ -13,13 +13,11 @@ describe("eventbus config", () => {
   beforeEach(() => {
     home = mkdtempSync(join(tmpdir(), "freeanima-eventbus-cfg-"));
     process.env.FREEANIMA_HOME = home;
-    clearConfigCache();
   });
 
   afterEach(() => {
     if (prevHome === undefined) delete process.env.FREEANIMA_HOME;
     else process.env.FREEANIMA_HOME = prevHome;
-    clearConfigCache();
   });
 
   it("eventbusConfigSchema accepts redis only", () => {
@@ -47,9 +45,9 @@ describe("eventbus config", () => {
         },
       }),
     );
-    clearConfigCache();
-    expect(getEventbusBackend()).toBe("redis");
-    expect(getEventbusKeyPrefix()).toBe("anima:events");
+    const config = FileConfig.open();
+    expect(getEventbusBackend(config.data)).toBe("redis");
+    expect(getEventbusKeyPrefix(config.data)).toBe("anima:events");
   });
 
   it("reads eventbus.backend and key_prefix", () => {
@@ -72,9 +70,9 @@ describe("eventbus config", () => {
         eventbus: { backend: "redis", key_prefix: "custom:events" },
       }),
     );
-    clearConfigCache();
-    expect(getEventbusBackend()).toBe("redis");
-    expect(getEventbusKeyPrefix()).toBe("custom:events");
-    expect(loadConfig().eventbus?.backend).toBe("redis");
+    const config = FileConfig.open();
+    expect(getEventbusBackend(config.data)).toBe("redis");
+    expect(getEventbusKeyPrefix(config.data)).toBe("custom:events");
+    expect(config.data.eventbus?.backend).toBe("redis");
   });
 });

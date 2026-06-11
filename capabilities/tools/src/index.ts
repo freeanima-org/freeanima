@@ -10,8 +10,11 @@ export { registerCredentialTools } from "./credential-tool.ts";
 export { registerExecuteCodeTool } from "./execute-code.ts";
 export { clampTimeout, parseRuntime, runExecuteCode } from "./execute-code-runtimes.ts";
 
+import type { Config } from "@freeanima/service-config";
 import type { ToolSetRegistry } from "@freeanima/engine-tool";
 import type { SkillRegistry } from "@freeanima/engine-skill";
+import { bindBrowserToolsConfig } from "./browser-camofox.ts";
+import { bindWebToolsConfig } from "./web.ts";
 import { registerBrowserTools } from "./browser.ts";
 import { registerCatalogTools } from "./catalog-tools.ts";
 import { registerCredentialTools } from "./credential-tool.ts";
@@ -23,7 +26,8 @@ import { registerTerminalTools } from "./terminal.ts";
 import { registerWebTools } from "./web.ts";
 
 /** Core tool sets */
-export function registerCoreTools(toolSets: ToolSetRegistry): void {
+export function registerCoreTools(toolSets: ToolSetRegistry, config: Config): void {
+  bindWebToolsConfig(config);
   registerCatalogTools(toolSets);
   registerSessionTools(toolSets);
   registerFileTools(toolSets);
@@ -34,7 +38,12 @@ export function registerCoreTools(toolSets: ToolSetRegistry): void {
 }
 
 /** skills + browser */
-export function registerSupplementalTools(toolSets: ToolSetRegistry, skills: SkillRegistry): void {
+export function registerSupplementalTools(
+  toolSets: ToolSetRegistry,
+  skills: SkillRegistry,
+  config: Config,
+): void {
+  bindBrowserToolsConfig(config);
   registerSkillsTools(toolSets, skills);
   registerBrowserTools(toolSets);
 }

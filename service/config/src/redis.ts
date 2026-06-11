@@ -1,14 +1,13 @@
-import { loadConfig } from "./config.ts";
+import type { AnimaConfig } from "@freeanima/engine-config";
 
-export type RedisConfigInput = {
+type RedisConfigInput = {
   url?: string;
   host?: string;
   port?: number;
-  password?: string;
   db?: number;
+  password?: string;
 };
 
-/** Build Redis URL from field config (default 127.0.0.1:6379/0) */
 export function buildRedisUrl(config?: RedisConfigInput): string {
   if (config?.url) return config.url;
   const host = config?.host ?? "127.0.0.1";
@@ -18,8 +17,7 @@ export function buildRedisUrl(config?: RedisConfigInput): string {
   return `redis://${auth}${host}:${port}/${db}`;
 }
 
-/** Parse Redis URL from config.yaml; local default when redis section omitted */
-export function getConfiguredRedisUrl(): string {
-  const cfg = loadConfig();
+/** Parse Redis URL from config; local default when redis section omitted */
+export function getConfiguredRedisUrl(cfg: AnimaConfig): string {
   return buildRedisUrl(cfg.redis);
 }

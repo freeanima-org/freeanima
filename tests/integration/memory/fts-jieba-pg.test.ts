@@ -1,7 +1,7 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
+import { bindActiveConfig } from "@freeanima/service-config";
 import { parseYaml } from "@freeanima/service-config";
 import { animaConfigSchema } from "@freeanima/service-config/schemas/config";
-import { clearConfigCache, resetConfigForTest, setConfigForTest } from "@freeanima/service-config";
 import { MINIMAL_LLM_YAML } from "@freeanima/service-config/test-helpers/minimal-llm-config";
 import { rebuildAllFtsSegments, resetJiebaForTest } from "@freeanima/connectors-db-pg";
 import { describePg } from "../../helpers/pg-test-gate.ts";
@@ -10,12 +10,19 @@ import {
   endIntegrationCase,
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
-import { getTestEngine } from "../../helpers/pg-test.ts";
+import { getActivePgTestContext, getTestEngine } from "../../helpers/pg-test.ts";
 
 function minimalConfig() {
   const parsed = animaConfigSchema.safeParse(parseYaml(MINIMAL_LLM_YAML));
   if (!parsed.success) throw new Error(parsed.error.message);
   return parsed.data;
+}
+
+function applyTestConfig(patch: Record<string, unknown>): void {
+  const ctx = getActivePgTestContext();
+  if (!ctx) throw new Error("PG test context not initialized");
+  ctx.config.update({ ...minimalConfig(), ...patch });
+  bindActiveConfig(ctx.config);
 }
 
 describePg("FTS jieba PG", () => {
@@ -27,13 +34,11 @@ describePg("FTS jieba PG", () => {
 
   afterEach(async () => {
     resetJiebaForTest();
-    resetConfigForTest();
-    clearConfigCache();
     await restoreIntegrationHome(prev);
   });
 
   it("cjk.enabled: segmented search + rebuild refreshes existing rows", async () => {
-    setConfigForTest({ ...minimalConfig(), cjk: { enabled: false } });
+    applyTestConfig({ cjk: { enabled: false } });
 
     const store = getTestEngine().repos.semanticMemory;
 
@@ -42,7 +47,7 @@ describePg("FTS jieba PG", () => {
       type: "preference",
     });
 
-    setConfigForTest({ ...minimalConfig(), cjk: { enabled: true } });
+    applyTestConfig({ cjk: { enabled: true } });
 
     const rebuilt = await rebuildAllFtsSegments();
     expect(rebuilt.cjk_enabled).toBe(true);

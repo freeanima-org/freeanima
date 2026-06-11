@@ -1,4 +1,4 @@
-import { loadConfig } from "@freeanima/service-config";
+import type { Config } from "@freeanima/service-config";
 import { formatCstIso } from "@freeanima/engine-util";
 import {
   clarifyToolAwaitingResultSchema,
@@ -26,12 +26,29 @@ export type GuardAwaitingResult =
 const DEFAULT_TIMEOUT_SEC = 1800;
 const DEFAULT_MAX_ITEMS = 5;
 
+let clarifyConfig: Config | null = null;
+
+export function bindClarifyConfig(config: Config): void {
+  clarifyConfig = config;
+}
+
+export function resetClarifyConfigForTest(): void {
+  clarifyConfig = null;
+}
+
+function requireClarifyConfig(): Config {
+  if (!clarifyConfig) {
+    throw new Error("Clarify config not bound; call registerClarifyHooks first");
+  }
+  return clarifyConfig;
+}
+
 function parseAwaiting(raw: unknown): AwaitingClarify | null {
   return parseAwaitingClarify(raw);
 }
 
 export function getClarifyConfig(): { timeout_sec: number; max_items: number } {
-  const cfg = loadConfig();
+  const cfg = requireClarifyConfig().data;
   const clarify = cfg.clarify ?? {};
   return {
     timeout_sec:

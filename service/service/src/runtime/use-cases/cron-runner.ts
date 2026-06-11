@@ -1,6 +1,6 @@
 import * as conv from "@freeanima/engine-conversation";
 import { prependSkillsToPrompt } from "@freeanima/engine-skill";
-import { getProfileHopModel, loadConfig } from "@freeanima/service-config";
+import { getProfileHopModel } from "@freeanima/service-config";
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
 import { runSimpleTurn } from "@freeanima/service-api/turn-lifecycle";
 
@@ -13,7 +13,7 @@ export type CronEngineJobInput = {
 
 export async function runCronEngineTurn(job: CronEngineJobInput, prompt: string): Promise<string> {
   const { conversation, engine } = getServiceContext();
-  const cfg = loadConfig();
+  const cfg = getServiceContext().engine.config.data;
   const model = job.model_name ?? getProfileHopModel(cfg, PROFILE_CHAT);
   const sid = conv.generateSessionId();
   await conversation.initSession(sid, model, { platform: "cron" });

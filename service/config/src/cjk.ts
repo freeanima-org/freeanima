@@ -1,31 +1,27 @@
-import { existsSync } from "node:fs";
+import type { AnimaConfig } from "@freeanima/engine-config";
+import { homePath } from "./paths.ts";
 
-import { loadConfig } from "./config.ts";
-import { PATHS } from "./paths.ts";
-
-/** Whether CJK jieba tokenization is enabled (default false) */
-export function isCjkJiebaEnabled(): boolean {
-  return loadConfig().cjk?.enabled === true;
+/** Whether jieba Chinese tokenization is enabled */
+export function isCjkJiebaEnabled(cfg: AnimaConfig): boolean {
+  return cfg.cjk?.enabled === true;
 }
 
 /** jieba user dictionary path */
-export function cjkJiebaDictPath(): string {
-  const raw = loadConfig().cjk?.dict_path?.trim();
-  return raw || PATHS.cjkUserDict;
+export function cjkJiebaDictPath(cfg: AnimaConfig): string {
+  const raw = cfg.cjk?.dict_path?.trim();
+  if (raw) return raw;
+  return homePath("jieba_userdict.txt");
 }
 
 export type CjkConfigSnapshot = {
   enabled: boolean;
-  dict_path: string;
-  dict_exists: boolean;
+  dict_path: string | null;
 };
 
-/** For WebUI / status display */
-export function getCjkConfigSnapshot(): CjkConfigSnapshot {
-  const dict_path = cjkJiebaDictPath();
+export function getCjkConfigSnapshot(cfg: AnimaConfig): CjkConfigSnapshot {
+  const enabled = isCjkJiebaEnabled(cfg);
   return {
-    enabled: isCjkJiebaEnabled(),
-    dict_path,
-    dict_exists: existsSync(dict_path),
+    enabled,
+    dict_path: enabled ? cjkJiebaDictPath(cfg) : null,
   };
 }

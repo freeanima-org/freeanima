@@ -1,4 +1,5 @@
-import { credential, loadConfig } from "@freeanima/service-config";
+import type { Config } from "@freeanima/service-config";
+import { credential } from "@freeanima/service-config";
 import { logComponent } from "@freeanima/service-logging";
 import type { AnimaService } from "@freeanima/service-api";
 
@@ -10,12 +11,15 @@ export type PlatformAdapter = {
   stop: () => Promise<void>;
 };
 
-export async function discoverPlatforms(service: AnimaService): Promise<PlatformAdapter[]> {
+export async function discoverPlatforms(
+  service: AnimaService,
+  config: Config,
+): Promise<PlatformAdapter[]> {
   const adapters: PlatformAdapter[] = [];
 
   try {
     const token = credential("services/discord", "token");
-    const cfg = loadConfig() as Record<string, unknown>;
+    const cfg = config.data as Record<string, unknown>;
     const discordCfg = (cfg.discord ?? {}) as Record<string, unknown>;
     const { createDiscordAdapter } = await import("./discord/discord-adapter.ts");
     adapters.push(createDiscordAdapter(service, token, discordCfg));

@@ -20,7 +20,7 @@ import { runWithToolContext } from "@freeanima/engine-tool";
 import type { StreamEvent } from "@freeanima/engine";
 import { applyClarifyStreamAwaiting } from "@freeanima/capabilities-clarify";
 import { ProviderError } from "@freeanima/engine-provider-llm";
-import { getProfileHopModel, loadConfig } from "@freeanima/service-config";
+import { getProfileHopModel } from "@freeanima/service-config";
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
 import { isInsufficientToolMessagesError } from "@freeanima/engine-llm";
 import type { HookRegistry } from "@freeanima/kernel-hooks";
@@ -129,7 +129,7 @@ export async function runSimpleTurn(opts: RunSimpleTurnOpts): Promise<string> {
       sessionId,
       () =>
         engine.run(msgs, {
-          config: getServiceContext().engine.config,
+          config: getServiceContext().engine.config.data,
           logger: getServiceContext().engine.logger,
           model,
           tools,
@@ -170,7 +170,7 @@ export async function* yieldEngineStream(
           engine.runStream(msgs, {
             model,
             tools,
-            config: getServiceContext().engine.config,
+            config: getServiceContext().engine.config.data,
             logger: getServiceContext().engine.logger,
             llm: engineLlm(),
             toolMask,
@@ -226,7 +226,7 @@ export async function* runExclusiveStreamTurn(
 
   const work = sessionManager.runExclusive(sessionId, async () => {
     let [msgs, functions, effective] = await prepare();
-    const cfg = loadConfig();
+    const cfg = getServiceContext().engine.config.data;
     const model = getProfileHopModel(cfg, PROFILE_CHAT);
     let hadError = false;
     let sawDone = false;

@@ -1,7 +1,17 @@
 import { describe, it, expect } from "bun:test";
+import { Config } from "@freeanima/service-config";
 import { ToolSetRegistry } from "@freeanima/engine-tool";
+import { parseYaml } from "@freeanima/service-config";
+import { animaConfigSchema } from "@freeanima/service-config/schemas/config";
+import { MINIMAL_LLM_YAML } from "@freeanima/service-config/test-helpers/minimal-llm-config";
 import { parseRuntime, clampTimeout, runExecuteCode } from "./execute-code-runtimes.ts";
 import { registerCoreTools } from "@freeanima/capabilities-tools";
+
+function testConfig() {
+  const parsed = animaConfigSchema.safeParse(parseYaml(MINIMAL_LLM_YAML));
+  if (!parsed.success) throw new Error(parsed.error.message);
+  return Config.fromSnapshot(parsed.data);
+}
 
 describe("execute_code runtimes", () => {
   it("parseRuntime defaults to bun", () => {
@@ -36,7 +46,7 @@ describe("execute_code runtimes", () => {
 describe("openaiSchemas", () => {
   it("tools use flat parameters and top-level description", () => {
     const toolSets = new ToolSetRegistry();
-    registerCoreTools(toolSets);
+    registerCoreTools(toolSets, testConfig());
 
     const schemas = toolSets.openaiSchemas();
     expect(schemas.length).toBeGreaterThan(0);

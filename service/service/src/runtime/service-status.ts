@@ -5,7 +5,6 @@ import {
   getDefaultProviderBaseUrl,
   getProfileHopModel,
   isEmbeddingEnabled,
-  loadConfig,
   sanitizeConfigForApi,
   PATHS,
 } from "@freeanima/service-config";
@@ -89,7 +88,7 @@ export async function buildStatus(
   host: string,
   port: number,
 ): Promise<ServiceSnapshot> {
-  const cfg = loadConfig();
+  const cfg = getServiceContext().engine.config.data;
   const uptime = startTime > 0 ? Math.round(Date.now() / 1000 - startTime) : null;
 
   const byPlatform = await buildSessionsByPlatform();
@@ -135,7 +134,7 @@ export async function buildStatus(
   const chatBinding = getTokenizerBindingSnapshot(chatModel);
   if (chatBinding) tokenizerStatus.chat = chatBinding;
 
-  if (isEmbeddingEnabled()) {
+  if (isEmbeddingEnabled(cfg)) {
     const embeddingModel = cfg.embedding?.model?.trim();
     if (embeddingModel) {
       const embeddingBinding = getTokenizerBindingSnapshot(embeddingModel);
@@ -173,7 +172,7 @@ export async function buildStatus(
 }
 
 export function getConfig(): SafeConfigSnapshot {
-  const cfg = loadConfig();
+  const cfg = getServiceContext().engine.config.data;
   return { config: sanitizeConfigForApi(cfg) as SafeConfigSnapshot["config"] };
 }
 

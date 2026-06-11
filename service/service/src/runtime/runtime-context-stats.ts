@@ -8,7 +8,7 @@ import {
   estimateToolsTokens,
 } from "@freeanima/engine-compress";
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
-import { getProfileHopModel, loadConfig } from "@freeanima/service-config";
+import { getProfileHopModel } from "@freeanima/service-config";
 import { loadSelfLayerPrompt } from "@freeanima/life-self";
 import { getServiceContext } from "../context.ts";
 
@@ -38,7 +38,9 @@ export async function computeRuntimeContextBreakdown(
   const selfContent = await loadSelfLayerPrompt();
   const cwd = isSessionMeta(meta) ? meta.cwd : undefined;
   const parts = await decomposeSystemPromptParts(selfContent, cwd);
-  const model = isSessionMeta(meta) ? meta.model : getProfileHopModel(loadConfig(), PROFILE_CHAT);
+  const model = isSessionMeta(meta)
+    ? meta.model
+    : getProfileHopModel(getServiceContext().engine.config.data, PROFILE_CHAT);
 
   let summary = 0;
   const messageRows: SessionMessage[] = [];

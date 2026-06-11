@@ -18,11 +18,11 @@
 | Tier                       | Packages                                                                                                                                 | Usage                                                                                                                          |
 | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | Tier 1 in-memory adapters  | `kernel-logging/null`, `/memory`, `/testing`; `kernel-eventbus/memory`, `/null`, `/testing`; `kernel-hooks/testing`; `engine-repos/null` | `createNullSink`, `createTestLogger`, `createTestEventBus`, `createTestHookRegistry`, `MemoryEventQueue`, `nullPgRepositories` |
-| Tier 2 singleton injection | `connectors-redis`, `connectors-db-pg`, `service-config`, etc.                                                                           | `setXForTest` / `resetXForTest`; `afterEach` must reset                                                                        |
+| Tier 2 singleton injection | `connectors-redis`, `connectors-db-pg`, etc.                                                                                             | `setXForTest` / `resetXForTest`; `afterEach` must reset                                                                        |
 | Tier 3 composite factories | optional `@freeanima/{pkg}/testing`                                                                                                      | Tier 1 only, e.g. `createTestLogger`                                                                                           |
 | Domain mocks               | `{pkg}/src/test-helpers/`                                                                                                                | when package has no port (e.g. `MockBackend`)                                                                                  |
 
-Unit tests **must not** `import` `tests/helpers/log-isolation.ts` or write `config.yaml`; use `setConfigForTest` for config and `createNullSink` / `createMemorySink` for logging.
+Unit tests **must not** `import` `tests/helpers/log-isolation.ts` or write `config.yaml`; inject `Config.fromSnapshot()` (or bind package-specific config) and use `createNullSink` / `createMemorySink` for logging.
 
 ## Integration isolation
 

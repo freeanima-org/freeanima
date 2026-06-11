@@ -1,7 +1,7 @@
-import { describe, it, expect, afterEach } from "bun:test";
+import { describe, it, expect } from "bun:test";
+import { Config } from "@freeanima/service-config";
 import { parseYaml } from "@freeanima/service-config";
 import { animaConfigSchema } from "@freeanima/service-config/schemas/config";
-import { resetConfigForTest, setConfigForTest } from "@freeanima/service-config";
 import { MINIMAL_LLM_YAML } from "@freeanima/service-config/test-helpers/minimal-llm-config";
 import { sanitizeMcpConfig, isMcpServerEnabled } from "./status.ts";
 import { ToolSetRegistry } from "@freeanima/engine-tool";
@@ -25,7 +25,7 @@ function mcpTestConfig() {
   );
   const parsed = animaConfigSchema.safeParse(raw);
   if (!parsed.success) throw new Error(parsed.error.message);
-  return parsed.data;
+  return Config.fromSnapshot(parsed.data);
 }
 
 describe("sanitizeMcpConfig", () => {
@@ -52,13 +52,8 @@ describe("sanitizeMcpConfig", () => {
 });
 
 describe("MCPManager.getStatus", () => {
-  afterEach(() => {
-    resetConfigForTest();
-  });
-
   it("returns config and not_started when not started", async () => {
-    setConfigForTest(mcpTestConfig());
-    const mgr = new MCPManager(new ToolSetRegistry());
+    const mgr = new MCPManager(new ToolSetRegistry(), mcpTestConfig());
     const status = await mgr.getStatus();
 
     expect(status.server_count).toBe(2);
@@ -79,8 +74,7 @@ describe("MCPManager.getStatus", () => {
   });
 
   it("startAllAsync returns immediately without blocking getStatus", async () => {
-    setConfigForTest(mcpTestConfig());
-    const mgr = new MCPManager(new ToolSetRegistry());
+    const mgr = new MCPManager(new ToolSetRegistry(), mcpTestConfig());
     mgr.startAllAsync();
     const status = await mgr.getStatus();
     expect(status.server_count).toBe(2);

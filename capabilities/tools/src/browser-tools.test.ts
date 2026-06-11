@@ -1,9 +1,10 @@
 import { runWithToolContext } from "@freeanima/engine-tool";
 import { SkillRegistry } from "@freeanima/engine-skill";
 import { ToolSetRegistry } from "@freeanima/engine-tool";
+import { Config } from "@freeanima/service-config";
 import { parseYaml } from "@freeanima/service-config";
 import { animaConfigSchema } from "@freeanima/service-config/schemas/config";
-import { resetConfigForTest, setConfigForTest } from "@freeanima/service-config";
+import { bindBrowserToolsConfig, resetBrowserToolsConfigForTest } from "./browser-camofox.ts";
 import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from "bun:test";
 import { MINIMAL_LLM_YAML } from "@freeanima/service-config/test-helpers/minimal-llm-config";
 
@@ -60,11 +61,12 @@ function browserConfig(baseUrl?: string) {
 
 describe("browser tools", () => {
   beforeAll(() => {
-    registerSupplementalTools(toolSets, skills);
+    const config = Config.fromSnapshot(browserConfig("http://localhost:9377"));
+    registerSupplementalTools(toolSets, skills, config);
   });
 
   beforeEach(() => {
-    setConfigForTest(browserConfig("http://localhost:9377"));
+    bindBrowserToolsConfig(Config.fromSnapshot(browserConfig("http://localhost:9377")));
     resetCamofoxSessionsForTests();
     vi.restoreAllMocks();
   });
@@ -72,7 +74,7 @@ describe("browser tools", () => {
   afterEach(() => {
     restoreFetch();
     resetCamofoxSessionsForTests();
-    resetConfigForTest();
+    resetBrowserToolsConfigForTest();
   });
 
   it("registers browser_* tools", () => {
@@ -89,7 +91,7 @@ describe("browser tools", () => {
 
   it("isCamofoxConfigured reads browser.camofox.base_url from config.yaml", () => {
     expect(isCamofoxConfigured()).toBe(true);
-    setConfigForTest(browserConfig());
+    bindBrowserToolsConfig(Config.fromSnapshot(browserConfig()));
     expect(isCamofoxConfigured()).toBe(false);
   });
 
@@ -100,7 +102,7 @@ describe("browser tools", () => {
   });
 
   it("browser_navigate errors when camofox not configured", async () => {
-    setConfigForTest(browserConfig());
+    bindBrowserToolsConfig(Config.fromSnapshot(browserConfig()));
     const out = await toolSets.getTool("browser_navigate")!.handler({ url: "https://example.com" });
     const data = JSON.parse(out);
     expect(data.error).toContain("config.yaml");

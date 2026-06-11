@@ -12,7 +12,7 @@ import { SkillRegistry } from "@freeanima/engine-skill";
 import { ToolSetRegistry } from "@freeanima/engine-tool";
 import { nullPgRepositories } from "@freeanima/engine-repos";
 import { MockBackend } from "@freeanima/engine-provider-llm/test-helpers/mock-backend";
-import type { AnimaConfig } from "@freeanima/engine-config";
+import { Config, type AnimaConfig } from "@freeanima/engine-config";
 import { createTestLogger } from "@freeanima/kernel-logging/testing";
 import { Engine } from "./engine.ts";
 
@@ -51,12 +51,14 @@ describe("Engine", () => {
       providers,
     );
     const llm = { backends, providers, profiles };
-    const engine = new Engine(catalog, llm, nullPgRepositories, testCfg, createTestLogger());
+    const config = Config.fromSnapshot(testCfg);
+    const engine = new Engine(catalog, llm, nullPgRepositories, config, createTestLogger());
     expect(engine.toolSets).toBe(catalog.toolSets);
     expect(engine.catalog.skills).toBe(catalog.skills);
     expect(engine.llm.backends).toBe(backends);
     expect(engine.llm.providers).toBe(providers);
     expect(engine.llm.profiles).toBe(profiles);
-    expect(engine.config).toBe(testCfg);
+    expect(engine.config).toBe(config);
+    expect(engine.config.data).toBe(testCfg);
   });
 });

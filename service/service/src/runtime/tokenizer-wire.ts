@@ -4,19 +4,19 @@ import {
   setResolveContext,
   startTokenizerReconcile,
 } from "@freeanima/engine-tokenizer";
+import type { AnimaConfig, Config } from "@freeanima/engine-config";
 import {
   getDefaultProviderBaseUrl,
   getProfileHopModel,
   getResolvedEmbeddingConfig,
   isEmbeddingEnabled,
-  loadConfig,
 } from "@freeanima/service-config";
 import { logComponent } from "@freeanima/service-logging";
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
 
 const log = logComponent("tokenizer");
 
-function collectOllamaBaseUrls(cfg: ReturnType<typeof loadConfig>): string[] {
+function collectOllamaBaseUrls(cfg: AnimaConfig): string[] {
   const urls: string[] = [];
   const seen = new Set<string>();
 
@@ -27,8 +27,8 @@ function collectOllamaBaseUrls(cfg: ReturnType<typeof loadConfig>): string[] {
     urls.push(u);
   };
 
-  if (isEmbeddingEnabled()) {
-    const embedding = getResolvedEmbeddingConfig();
+  if (isEmbeddingEnabled(cfg)) {
+    const embedding = getResolvedEmbeddingConfig(cfg);
     if (embedding?.baseUrl) add(embedding.baseUrl);
   }
 
@@ -42,8 +42,8 @@ function collectOllamaBaseUrls(cfg: ReturnType<typeof loadConfig>): string[] {
 }
 
 /** Preload fallback + configured chat/embedding model tokenizers (non-blocking failures). */
-export async function wireTokenizerRuntime(): Promise<void> {
-  const cfg = loadConfig();
+export async function wireTokenizerRuntime(config: Config): Promise<void> {
+  const cfg = config.data;
   setResolveContext({ ollamaBaseUrls: collectOllamaBaseUrls(cfg) });
 
   const tasks: Promise<void>[] = [
@@ -63,7 +63,7 @@ export async function wireTokenizerRuntime(): Promise<void> {
     log.warn("chat model not configured for tokenizer preload", { error: String(err) });
   }
 
-  if (isEmbeddingEnabled()) {
+  if (isEmbeddingEnabled(cfg)) {
     const embeddingModel = cfg.embedding?.model?.trim();
     if (embeddingModel) {
       tasks.push(

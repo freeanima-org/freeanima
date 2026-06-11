@@ -1,4 +1,4 @@
-import { loadConfig } from "./config.ts";
+import type { AnimaConfig } from "@freeanima/engine-config";
 import { DEFAULT_EMBEDDING_DIMENSIONS, type ResolvedEmbeddingConfig } from "./schemas/embedding.ts";
 
 const DEFAULT_EMBEDDING_TIMEOUT_MS = 60_000;
@@ -28,37 +28,37 @@ function resolveEmbeddingBaseUrl(raw: string | undefined): string {
 }
 
 /** Whether vector search is enabled (embedding configured and not explicitly disabled) */
-export function isEmbeddingEnabled(): boolean {
-  const cfg = loadConfig().embedding;
-  if (cfg?.enabled === false) return false;
-  const model = cfg?.model?.trim();
+export function isEmbeddingEnabled(cfg: AnimaConfig): boolean {
+  const embedding = cfg.embedding;
+  if (embedding?.enabled === false) return false;
+  const model = embedding?.model?.trim();
   if (!model) return false;
   return true;
 }
 
-export function getResolvedEmbeddingConfig(): ResolvedEmbeddingConfig | null {
-  if (!isEmbeddingEnabled()) return null;
-  const cfg = loadConfig().embedding ?? {};
-  const model = cfg.model?.trim();
+export function getResolvedEmbeddingConfig(cfg: AnimaConfig): ResolvedEmbeddingConfig | null {
+  if (!isEmbeddingEnabled(cfg)) return null;
+  const embedding = cfg.embedding ?? {};
+  const model = embedding.model?.trim();
   if (!model) return null;
   const dimensions =
-    typeof cfg.dimensions === "number" && cfg.dimensions > 0
-      ? cfg.dimensions
+    typeof embedding.dimensions === "number" && embedding.dimensions > 0
+      ? embedding.dimensions
       : DEFAULT_EMBEDDING_DIMENSIONS;
   return {
-    baseUrl: resolveEmbeddingBaseUrl(cfg.base_url),
-    apiKey: cfg.api_key?.trim() || process.env.OLLAMA_API_KEY?.trim() || "ollama",
+    baseUrl: resolveEmbeddingBaseUrl(embedding.base_url),
+    apiKey: embedding.api_key?.trim() || process.env.OLLAMA_API_KEY?.trim() || "ollama",
     model,
     dimensions,
     timeoutMs:
-      typeof cfg.timeout_ms === "number" && cfg.timeout_ms > 0
-        ? cfg.timeout_ms
+      typeof embedding.timeout_ms === "number" && embedding.timeout_ms > 0
+        ? embedding.timeout_ms
         : DEFAULT_EMBEDDING_TIMEOUT_MS,
   };
 }
 
-export function getEmbeddingConfigSnapshot(): EmbeddingConfigSnapshot {
-  const resolved = getResolvedEmbeddingConfig();
+export function getEmbeddingConfigSnapshot(cfg: AnimaConfig): EmbeddingConfigSnapshot {
+  const resolved = getResolvedEmbeddingConfig(cfg);
   return {
     enabled: resolved != null,
     model: resolved?.model ?? null,

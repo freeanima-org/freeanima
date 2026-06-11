@@ -9,7 +9,7 @@ import {
   isCompressed,
   parseCompressionState,
 } from "@freeanima/engine-compress";
-import { getProfileHopModel, loadConfig } from "@freeanima/service-config";
+import { getProfileHopModel } from "@freeanima/service-config";
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
 import {
   computeRuntimeContextBreakdown,
@@ -126,7 +126,7 @@ async function readCompressionAndContextFields(
   const state = parseCompressionState(isSessionMeta(meta) ? meta.compression : undefined);
   const l2 = state?.l2 ?? null;
   const l3 = isCompressed(state) ? (state?.l3 ?? null) : null;
-  const fallbackModel = getProfileHopModel(loadConfig(), PROFILE_CHAT);
+  const fallbackModel = getProfileHopModel(getServiceContext().engine.config.data, PROFILE_CHAT);
   const tools = isSessionMeta(meta) ? await conv.loadSessionTools(session, meta) : [];
   const compressOpts = buildCompressOptions(meta, state, fallbackModel, { tools });
   const analysis = analyzeCompression(allMsgs, compressOpts);
@@ -190,7 +190,7 @@ export async function computeStats(session: string): Promise<SessionStats> {
   const assistant_msgs = messages.filter((m) => m.role === "assistant");
   const assistant_turns = assistant_msgs.length;
   const meta = message_count > 0 ? await conv.loadSessionMeta(session) : null;
-  const fallbackModel = getProfileHopModel(loadConfig(), PROFILE_CHAT);
+  const fallbackModel = getProfileHopModel(getServiceContext().engine.config.data, PROFILE_CHAT);
   const model = meta != null && isSessionMeta(meta) ? meta.model : fallbackModel;
 
   let input_tokens = 0;

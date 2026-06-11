@@ -1,7 +1,7 @@
 import { describe, expect, it, afterEach } from "bun:test";
 import { RedisClient } from "bun";
 import { RedisEventQueue } from "@freeanima/connectors-eventbus-redis";
-import { resetConfigForTest, setConfigForTest } from "@freeanima/service-config";
+import { Config } from "@freeanima/service-config";
 import {
   createEventQueue,
   resetEventQueueOverridesForTest,
@@ -24,7 +24,6 @@ const minimalLlm = {
 
 describe("createEventQueue", () => {
   afterEach(() => {
-    resetConfigForTest();
     resetEventQueueOverridesForTest();
   });
 
@@ -32,8 +31,8 @@ describe("createEventQueue", () => {
     const mockRedis = {
       close: () => {},
     } as unknown as RedisClient;
-    setConfigForTest({ llm: minimalLlm });
+    const config = Config.fromSnapshot({ llm: minimalLlm });
     setEventQueueOverridesForTest({ redisClient: mockRedis });
-    expect(createEventQueue()).toBeInstanceOf(RedisEventQueue);
+    expect(createEventQueue(config)).toBeInstanceOf(RedisEventQueue);
   });
 });

@@ -1,20 +1,38 @@
-import {
-  emailAccountSchema,
-  loadConfig,
-  patchConfigSection,
-  resolveValue,
-} from "@freeanima/service-config";
+import type { Config } from "@freeanima/engine-config";
+import { FileConfig, emailAccountSchema, resolveValue } from "@freeanima/service-config";
 
 import type { EmailAccount, EmailAccountInput, EmailAccountPatch } from "./types.ts";
 import { emailAccountInputSchema, emailAccountPatchSchema } from "./types.ts";
 
+let emailAccountsConfig: Config | null = null;
+
+export function bindEmailAccountsConfig(config: Config): void {
+  emailAccountsConfig = config;
+}
+
+export function resetEmailAccountsConfigForTest(): void {
+  emailAccountsConfig = null;
+}
+
+function requireEmailAccountsConfig(): Config {
+  if (!emailAccountsConfig) {
+    throw new Error("Email accounts config not bound; call bindEmailAccountsConfig first");
+  }
+  return emailAccountsConfig;
+}
+
 export function getEmailAccounts(): EmailAccount[] {
-  const cfg = loadConfig();
+  const cfg = requireEmailAccountsConfig().data;
   return cfg.email?.accounts ?? [];
 }
 
 function saveEmailAccounts(accounts: EmailAccount[]): void {
-  patchConfigSection("email", { accounts });
+  const config = requireEmailAccountsConfig();
+  if (config instanceof FileConfig) {
+    config.patchSection("email", { accounts });
+    return;
+  }
+  config.update({ ...config.data, email: { ...config.data.email, accounts } });
 }
 
 function normalizeDefaultSender(accounts: EmailAccount[]): EmailAccount[] {

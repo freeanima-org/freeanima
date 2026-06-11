@@ -10,7 +10,7 @@ import {
 import { isSessionMeta } from "@freeanima/engine-db/domain";
 import { DEFAULT_SESSION_TOOL_NAMES } from "@freeanima/engine-tool";
 import { registerServiceTools } from "@freeanima/service";
-import { getTestEngine, testConv } from "../../helpers/pg-test.ts";
+import { getActivePgTestContext, getTestEngine, testConv } from "../../helpers/pg-test.ts";
 
 describePg("conversation", () => {
   const prev = process.env.FREEANIMA_HOME;
@@ -47,7 +47,11 @@ describePg("conversation", () => {
 
   it("new session writes default tool names and loadSessionTools resolves schemas", async () => {
     const engine = getTestEngine();
-    registerServiceTools({ toolSets: engine.toolSets, skills: engine.skills });
+    registerServiceTools({
+      toolSets: engine.toolSets,
+      skills: engine.skills,
+      config: getActivePgTestContext()!.config,
+    });
     const c = testConv();
     const sid = await c.newSession("parlor");
     const meta = await c.loadSessionMeta(sid);

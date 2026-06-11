@@ -11,6 +11,7 @@ import {
   type CjkConfigSnapshot,
   type EmbeddingConfigSnapshot,
 } from "@freeanima/service-config";
+import { getServiceContext } from "../context.ts";
 
 export type { CjkConfigSnapshot, EmbeddingConfigSnapshot, FtsCoverageStats, FtsRebuildJobStatus };
 
@@ -27,9 +28,10 @@ export async function getFtsStatus(): Promise<FtsStatusSnapshot> {
   } catch {
     coverage = null;
   }
+  const cfg = getServiceContext().engine.config.data;
   return {
-    ...getCjkConfigSnapshot(),
-    embedding: getEmbeddingConfigSnapshot(),
+    ...getCjkConfigSnapshot(cfg),
+    embedding: getEmbeddingConfigSnapshot(cfg),
     coverage,
     rebuild: readFtsRebuildJobStatus(),
   };

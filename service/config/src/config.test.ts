@@ -1,8 +1,8 @@
-import { describe, it, expect, afterEach } from "bun:test";
+import { describe, it, expect } from "bun:test";
+import { Config } from "@freeanima/engine-config";
 import { parseYaml } from "./yaml.ts";
 import { animaConfigSchema } from "./schemas/config.ts";
 import { expandConfigEnv } from "./env-expand.ts";
-import { loadConfig, resetConfigForTest, setConfigForTest } from "./config.ts";
 import { getProfileHopModel } from "./llm-config.ts";
 import { MINIMAL_LLM_YAML } from "./test-helpers/minimal-llm-config.ts";
 
@@ -13,24 +13,18 @@ function parseMinimalConfig() {
 }
 
 describe("service-config", () => {
-  afterEach(() => {
-    resetConfigForTest();
-  });
-
   it("loads llm profiles and resolves default model", () => {
-    setConfigForTest(parseMinimalConfig());
-    const cfg = loadConfig();
-    expect(getProfileHopModel(cfg, "chat")).toBe("test-model");
-    expect(cfg.llm.default_profile).toBe("chat");
+    const config = Config.fromSnapshot(parseMinimalConfig());
+    expect(getProfileHopModel(config.data, "chat")).toBe("test-model");
+    expect(config.data.llm.default_profile).toBe("chat");
   });
 
   it("loads firecrawl with llm block", () => {
-    setConfigForTest({
+    const config = Config.fromSnapshot({
       ...parseMinimalConfig(),
       firecrawl: { api_url: "http://127.0.0.1:3002" },
     });
-    const cfg = loadConfig();
-    expect(cfg.firecrawl?.api_url).toBe("http://127.0.0.1:3002");
+    expect(config.data.firecrawl?.api_url).toBe("http://127.0.0.1:3002");
   });
 
   it("expands ${VAR} in config values via expandConfigEnv", () => {
@@ -39,8 +33,8 @@ describe("service-config", () => {
     const parsed = animaConfigSchema.safeParse(parseYaml(expanded));
     expect(parsed.success).toBe(true);
     if (parsed.success) {
-      setConfigForTest(parsed.data);
-      expect(getProfileHopModel(loadConfig(), "chat")).toBe("env-model");
+      const config = Config.fromSnapshot(parsed.data);
+      expect(getProfileHopModel(config.data, "chat")).toBe("env-model");
     }
     delete process.env.TEST_LLM_MODEL;
   });

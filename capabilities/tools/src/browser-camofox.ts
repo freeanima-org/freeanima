@@ -1,5 +1,6 @@
 import { toolError, toolResult } from "@freeanima/engine-tool";
-import { homePath, loadConfig } from "@freeanima/service-config";
+import type { Config } from "@freeanima/service-config";
+import { homePath } from "@freeanima/service-config";
 import { createHash, randomUUID } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
 
@@ -28,10 +29,20 @@ type CamofoxConfig = {
 const sessions = new Map<string, CamofoxSession>();
 let vncUrl: string | null = null;
 let vncUrlChecked = false;
+let browserConfig: Config | null = null;
+
+export function bindBrowserToolsConfig(config: Config): void {
+  browserConfig = config;
+}
+
+export function resetBrowserToolsConfigForTest(): void {
+  browserConfig = null;
+}
 
 function getCamofoxConfigBlock(): Record<string, unknown> {
   try {
-    const cfg = loadConfig() as Record<string, unknown>;
+    if (!browserConfig) return {};
+    const cfg = browserConfig.data as Record<string, unknown>;
     const browser = cfg.browser as Record<string, unknown> | undefined;
     const camofox = browser?.camofox;
     return typeof camofox === "object" && camofox !== null && !Array.isArray(camofox)

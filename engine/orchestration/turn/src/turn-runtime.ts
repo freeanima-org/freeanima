@@ -1,5 +1,5 @@
 import type { ToolSetRegistry } from "@freeanima/engine-tool";
-import { getProfileHopModel, getRuntimeConfig } from "@freeanima/engine-config";
+import { getActiveConfig, getProfileHopModel } from "@freeanima/engine-config";
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
 import {
   getCompressionConfig,
@@ -36,7 +36,7 @@ function compressionEnabled(): boolean {
 }
 
 function defaultChatModel(): string {
-  return getProfileHopModel(getRuntimeConfig(), PROFILE_CHAT);
+  return getProfileHopModel(getActiveConfig().data, PROFILE_CHAT);
 }
 
 /** Persist tool-loop repairs via engine-llm (detection) + session store */

@@ -1,5 +1,5 @@
 import { resolveDefaultSessionTools } from "@freeanima/engine-tool";
-import { getProfileHopModel, loadConfig } from "@freeanima/service-config";
+import { getProfileHopModel } from "@freeanima/service-config";
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
 import type { CommandResult } from "@freeanima/connectors-commands";
 import type { MessagesDisplay } from "@freeanima/service/schemas/display";
@@ -111,7 +111,7 @@ export async function setSessionTitle(
 }
 
 export async function appendSessionMetaForEngine(session: string): Promise<void> {
-  const cfg = loadConfig();
+  const cfg = getServiceContext().engine.config.data;
   const toolSets = getServiceContext().engine.catalog.toolSets;
   const names = resolveDefaultSessionTools(toolSets);
   await conv().appendSessionMeta(session, names, getProfileHopModel(cfg, PROFILE_CHAT), {});
