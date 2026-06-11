@@ -16,6 +16,12 @@ export type DependencyStatus =
   | { status: "error"; error?: string }
   | { status: "not_configured" };
 
+export type TokenizerBindingStatus = {
+  model: string;
+  repo: string;
+  using_fallback: boolean;
+};
+
 export type ServiceSnapshot = {
   status: "running";
   pid: number;
@@ -25,6 +31,10 @@ export type ServiceSnapshot = {
   config: {
     model?: string;
     api_base?: string;
+  };
+  tokenizer?: {
+    chat?: TokenizerBindingStatus;
+    embedding?: TokenizerBindingStatus;
   };
   sessions: {
     total: number;

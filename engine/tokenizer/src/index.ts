@@ -1,19 +1,35 @@
 export { FALLBACK_TOKENIZER_REPO, HF_HUB_BASE } from "./constants.ts";
 export {
+  setResolveContext,
+  getResolveContext,
+  resetResolveContextForTest,
+} from "./resolve-context.ts";
+export {
   countTokens,
   ensureFallbackTokenizer,
   ensureTokenizer,
   getActiveTokenizerRepo,
+  getTokenizerBindingSnapshot,
   isTokenizerReady,
   isUsingFallbackTokenizer,
+  listTokenizerBindings,
+  reconcileTokenizer,
   resetTokenizerForTest,
   setTokenizerEncodeForTest,
   splitTextByTokenLimit,
+  startTokenizerReconcile,
+  stopTokenizerReconcileForTest,
+  type TokenizerBindingSnapshot,
 } from "./store.ts";
 export {
   generateCandidateRepos,
   headTokenizerJsonExists,
   resolveTokenizerRepo,
+  resolveTokenizerRepoWithMeta,
   searchHubForTokenizerRepo,
   toPascalCaseModel,
+  type ResolveAttemptMeta,
+  type ResolveResult,
 } from "./resolve.ts";
+export { stripOllamaTag, buildSearchQueries, toTitleKebabModel } from "./normalize.ts";
+export { isTiktokenModel, NATIVE_TIKTOKEN_REPO } from "./native-tiktoken.ts";
