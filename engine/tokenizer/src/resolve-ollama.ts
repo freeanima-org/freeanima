@@ -2,6 +2,13 @@ import { stripOllamaTag } from "./normalize.ts";
 
 const HF_CO_RE = /(?:hf\.co|huggingface\.co)\/([A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+)/i;
 const FROM_LINE_RE = /^FROM\s+(.+)$/im;
+const HUB_REPO_RE = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
+
+/** HuggingFace org/repo，排除本地 blob 路径。 */
+export function isLikelyHubRepo(value: string): boolean {
+  const trimmed = value.trim();
+  return trimmed.length > 0 && !trimmed.startsWith("/") && HUB_REPO_RE.test(trimmed);
+}
 
 type OllamaShowResponse = {
   modelfile?: string;
@@ -30,7 +37,7 @@ function extractRepoFromModelfile(modelfile: string): string[] {
     return repos;
   }
 
-  if (from.includes("/") && !from.includes(":")) {
+  if (!from.includes(":") && isLikelyHubRepo(from)) {
     repos.push(from);
   }
   return repos;
@@ -45,7 +52,7 @@ function extractFromModelInfo(modelInfo: Record<string, unknown> | undefined): s
     if (typeof val !== "string" || !val.trim()) continue;
     const hfMatch = val.match(HF_CO_RE);
     if (hfMatch?.[1]) hints.push(hfMatch[1]);
-    else if (val.includes("/") && !val.includes(":")) hints.push(val.trim());
+    else if (!val.includes(":") && isLikelyHubRepo(val)) hints.push(val.trim());
   }
   return hints;
 }
@@ -61,7 +68,7 @@ export async function resolveOllamaModelHints(
   const hints: string[] = [];
   const add = (hint: string | undefined | null): void => {
     const h = hint?.trim();
-    if (!h || !h.includes("/") || seen.has(h)) return;
+    if (!h || !isLikelyHubRepo(h) || seen.has(h)) return;
     seen.add(h);
     hints.push(h);
   };
@@ -83,7 +90,7 @@ export async function resolveOllamaModelHints(
         for (const repo of extractRepoFromModelfile(data.modelfile)) add(repo);
       }
       for (const repo of extractFromModelInfo(data.model_info)) add(repo);
-      if (data.details?.parent_model?.includes("/")) add(data.details.parent_model);
+      if (data.details?.parent_model) add(data.details.parent_model);
     } catch {
       // 静默降级
     }
