@@ -10,7 +10,7 @@ import {
   messageDocKey,
   rrfMerge,
   semanticMemoryDocKey,
-} from "@freeanima/kernel-util";
+} from "@freeanima/engine-util";
 
 import { getAutobiographicalMemoryStore } from "./autobiographical-port.ts";
 import { getLimbicMemoryStore } from "./limbic-port.ts";
@@ -78,7 +78,6 @@ export type MemoryRecallResult = {
 
 type RecallCandidate = {
   docKey: string;
-  rank: number;
   memory_type: MemoryRecallHitType;
   semantic?: SemanticFtsHit;
   session?: {
@@ -199,14 +198,12 @@ export async function memoryRecallSearch(
 
   const semanticList: RecallCandidate[] = semanticRows.map((row) => ({
     docKey: semanticMemoryDocKey(row.id),
-    rank: 0,
     memory_type: "semantic",
     semantic: row,
   }));
 
   const sessionList: RecallCandidate[] = sessionRows.map((row) => ({
     docKey: messageDocKey(row.message_id),
-    rank: 0,
     memory_type: "session",
     session: {
       session_id: row.session_id,
@@ -219,21 +216,19 @@ export async function memoryRecallSearch(
 
   const limbicList: RecallCandidate[] = limbicRows.map((row) => ({
     docKey: limbicDocKey(row.id),
-    rank: 0,
     memory_type: "limbic",
     limbic: row,
   }));
 
   const autobiographicalList: RecallCandidate[] = autobiographicalRows.map((row) => ({
     docKey: autobiographicalDocKey(row.id),
-    rank: 0,
     memory_type: "autobiographical",
     autobiographical: row,
   }));
 
   const merged = rrfMerge([semanticList, sessionList, limbicList, autobiographicalList], { limit });
 
-  const results = merged.map((row) => mapCandidateToHit(q, row as RecallCandidate, row.rank));
+  const results = merged.map((row) => mapCandidateToHit(q, row as RecallCandidate, row.score));
 
   return {
     query: q,

@@ -9,7 +9,7 @@ import {
   sanitizeConfigForApi,
   PATHS,
 } from "@freeanima/service-config";
-import { CST_OFFSET_MS } from "@freeanima/kernel-util";
+import { formatCstIsoFromEpoch } from "@freeanima/engine-util";
 import { getServiceContext } from "../context.ts";
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
 import {
@@ -40,11 +40,7 @@ import { PARLOR_PLATFORM } from "./platforms.ts";
 import { ANIMA_VERSION } from "./version.ts";
 
 export function startTimeIso(epochSec: number): string {
-  if (epochSec <= 0) return "";
-  return new Date(epochSec * 1000 + CST_OFFSET_MS)
-    .toISOString()
-    .replace("Z", "+08:00")
-    .slice(0, 19);
+  return formatCstIsoFromEpoch(epochSec);
 }
 
 export function buildMemoryFileStats(): { files_count: number; files_bytes: number } {

@@ -3,8 +3,7 @@ import {
   buildTextSearchSnippet,
   extractSearchTerms,
   formatSessionMessageSearchHit,
-  stripHeadlineTags,
-} from "./search-snippet.ts";
+} from "./snippet.ts";
 
 describe("search-snippet", () => {
   it("extractSearchTerms strips operators and quotes", () => {
@@ -31,9 +30,5 @@ describe("search-snippet", () => {
     });
     expect(hit.snippet).toContain("hello");
     expect("content" in hit).toBe(false);
-  });
-
-  it("stripHeadlineTags removes b tags", () => {
-    expect(stripHeadlineTags("…<b>compression</b>…")).toBe("…compression…");
   });
 });

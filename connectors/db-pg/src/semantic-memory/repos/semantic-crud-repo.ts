@@ -9,7 +9,7 @@ import type {
   SemanticMemoryRow,
   SemanticMemoryUpdateInput,
 } from "@freeanima/engine-repos";
-import { formatCstIso } from "@freeanima/kernel-util";
+import { formatCstIso } from "@freeanima/engine-util";
 
 import { resolveFtsSegmentedForWrite } from "../../fts/write.ts";
 import { scheduleSemanticMemoryEmbedding } from "../../embedding/schedule.ts";

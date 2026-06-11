@@ -1,18 +1,21 @@
+import { QualifiedToken } from "@freeanima/kernel-token";
+
 // --- Result types ---
 
 /** Single-step handler return (handler fills; no prev) */
-export type HookStepResult = {
+export type HookStepResult<Effect extends Record<string, unknown> = Record<string, unknown>> = {
   status: "ok" | "failed";
   /** Effective only with status "ok" true: abort subsequent handlers; reason in message */
   blocked?: boolean;
   message?: string;
-  data?: Record<string, unknown>;
+  data?: Effect;
 };
 
 /** One step after Registry chaining */
-export type HookStepLink = HookStepResult & {
-  prev?: HookStepLink;
-};
+export type HookStepLink<Effect extends Record<string, unknown> = Record<string, unknown>> =
+  HookStepResult<Effect> & {
+    prev?: HookStepLink<Effect>;
+  };
 
 export type HookRunMeta = {
   duration_ms: number;
@@ -20,10 +23,10 @@ export type HookRunMeta = {
 };
 
 /** Aggregated result of one run */
-export type HookRunResult<P> = {
+export type HookRunResult<P, Effect extends Record<string, unknown> = Record<string, unknown>> = {
   context: P;
   /** Chain head = last executed step; effect data on chain steps, read by caller as needed */
-  chain: HookStepLink | null;
+  chain: HookStepLink<Effect> | null;
   status: "ok" | "failed";
   /** Whether chain stopped short due to ok+blocked */
   blocked: boolean;
@@ -35,46 +38,47 @@ export type HookRunResult<P> = {
 // --- Hook token ---
 
 /** Hook identity token; created only via createHook */
-export abstract class Hook<Payload> {
-  /** @internal carries Payload generic; unused at runtime */
-  declare protected readonly _payloadBrand?: Payload;
-
-  readonly id: symbol;
-  readonly qualifiedId: string;
-  readonly description?: string;
-
-  protected constructor(qualifiedId: string, description?: string) {
-    this.id = Symbol(qualifiedId);
-    this.qualifiedId = qualifiedId;
-    if (description !== undefined) {
-      this.description = description;
-    }
-  }
+export abstract class Hook<
+  Payload,
+  Effect extends Record<string, unknown> = Record<string, unknown>,
+> extends QualifiedToken<Payload> {
+  /** @internal carries Effect generic; unused at runtime */
+  declare protected readonly _effectBrand?: Effect;
 }
 
-class HookToken<Payload> extends Hook<Payload> {
+class HookToken<
+  Payload,
+  Effect extends Record<string, unknown> = Record<string, unknown>,
+> extends Hook<Payload, Effect> {
   constructor(qualifiedId: string, description?: string) {
     super(qualifiedId, description);
   }
 }
 
 /** Create Hook token; qualifiedId is unique id; description for display/docs only */
-export function createHook<Payload>(qualifiedId: string, description?: string): Hook<Payload> {
+export function createHook<
+  Payload,
+  Effect extends Record<string, unknown> = Record<string, unknown>,
+>(qualifiedId: string, description?: string): Hook<Payload, Effect> {
   return new HookToken(qualifiedId, description);
 }
 
-export type PayloadOf<H> = H extends Hook<infer P> ? P : never;
+export type PayloadOf<H> = H extends Hook<infer P, infer _E> ? P : never;
 
-export type HookHandler<H extends Hook<unknown>> = (
+export type HookEffectOf<H> = H extends Hook<unknown, infer E> ? E : never;
+
+export type HookHandler<H extends Hook<unknown, Record<string, unknown>>> = (
   context: Readonly<PayloadOf<H>>,
-) => HookStepResult | void | Promise<HookStepResult | void>;
+) => HookStepResult<HookEffectOf<H>> | void | Promise<HookStepResult<HookEffectOf<H>> | void>;
 
 // --- Result chain queries ---
 
 /** Chain head to tail (last executed handler → first executed handler) */
-export function walkHookChain(chain: HookStepLink | null): HookStepLink[] {
-  const steps: HookStepLink[] = [];
-  let cur: HookStepLink | null = chain;
+export function walkHookChain<Effect extends Record<string, unknown> = Record<string, unknown>>(
+  chain: HookStepLink<Effect> | null,
+): HookStepLink<Effect>[] {
+  const steps: HookStepLink<Effect>[] = [];
+  let cur: HookStepLink<Effect> | null = chain;
   while (cur) {
     steps.push(cur);
     cur = cur.prev ?? null;
@@ -83,12 +87,16 @@ export function walkHookChain(chain: HookStepLink | null): HookStepLink[] {
 }
 
 /** From first executed handler to chain head */
-export function walkHookChainOldestFirst(chain: HookStepLink | null): HookStepLink[] {
+export function walkHookChainOldestFirst<
+  Effect extends Record<string, unknown> = Record<string, unknown>,
+>(chain: HookStepLink<Effect> | null): HookStepLink<Effect>[] {
   return walkHookChain(chain).toReversed();
 }
 
 /** First ok+blocked step message from chain head direction */
-export function blockedMessageFromChain(chain: HookStepLink | null): string | undefined {
+export function blockedMessageFromChain<
+  Effect extends Record<string, unknown> = Record<string, unknown>,
+>(chain: HookStepLink<Effect> | null): string | undefined {
   if (!chain) return undefined;
   for (const step of walkHookChain(chain)) {
     if (step.status === "ok" && step.blocked) {
@@ -99,7 +107,11 @@ export function blockedMessageFromChain(chain: HookStepLink | null): string | un
 }
 
 /** First ok step with data from chain head (usually last executed handler) */
-export function headOkStepData(chain: HookStepLink | null): Record<string, unknown> | undefined {
+export function headOkStepData<H extends Hook<unknown, Record<string, unknown>>>(
+  hook: H,
+  chain: HookStepLink<HookEffectOf<H>> | null,
+): HookEffectOf<H> | undefined {
+  void hook;
   for (const step of walkHookChain(chain)) {
     if (step.status === "ok" && step.data) {
       return step.data;

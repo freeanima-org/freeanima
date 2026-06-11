@@ -5,7 +5,7 @@ import { randomBytes } from "node:crypto";
 import type { ToolSetRegistry } from "@freeanima/engine-tool";
 import { resolveDefaultSessionTools } from "@freeanima/engine-tool";
 import { getProfileHopModel, loadConfig } from "@freeanima/service-config";
-import { CST_OFFSET_MS, formatCstIso } from "@freeanima/kernel-util";
+import { CST_OFFSET_MS, formatCstIso } from "@freeanima/engine-util";
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
 import { buildSystemPrompt } from "@freeanima/engine-prompt";
 import {

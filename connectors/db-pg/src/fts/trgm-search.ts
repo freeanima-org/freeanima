@@ -3,7 +3,7 @@ import { getFtsTrgmMinSimilarity } from "@freeanima/service-config";
 
 import { getDb } from "../client.ts";
 import type { SemanticMemoryDbRow } from "../semantic-memory/mappers/semantic-mapper.ts";
-import { messageDocKey, semanticMemoryDocKey } from "./rrf.ts";
+import { messageDocKey, semanticMemoryDocKey } from "@freeanima/engine-util";
 import { pgSemanticSourceSessionsFilter, pgSemanticTypeFilter } from "../utils/pg-sql.ts";
 
 export type TrgmSemanticHit = SemanticMemoryDbRow & { docKey: string; rank: number };

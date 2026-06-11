@@ -65,6 +65,17 @@ describe("MemoryEventQueue", () => {
     expect(process).not.toHaveBeenCalled();
   });
 
+  it("ignores retry outcome and dequeues event", async () => {
+    const queue = new MemoryEventQueue();
+    const process = vi.fn(async () => "retry" as const);
+    queue.start(process);
+    queue.enqueue("t", { n: 1 });
+    await waitUntil(() => process.mock.calls.length === 1);
+    await new Promise((r) => setTimeout(r, 30));
+    expect(process).toHaveBeenCalledTimes(1);
+    queue.stop();
+  });
+
   it("stop can be called multiple times", () => {
     const queue = new MemoryEventQueue();
     queue.start(async () => "ack");

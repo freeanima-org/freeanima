@@ -1,7 +1,9 @@
 import type { Logger } from "@freeanima/kernel-logging";
+import { errMessage } from "@freeanima/kernel-token";
 import {
   blockedMessageFromChain,
   Hook,
+  type HookEffectOf,
   type HookHandler,
   type HookRunMeta,
   type HookRunResult,
@@ -11,16 +13,21 @@ import {
 } from "./hook.ts";
 
 type RegisteredHandler = {
-  handler: HookHandler<Hook<unknown>>;
+  handler: HookHandler<Hook<unknown, Record<string, unknown>>>;
   priority: number;
 };
 
-function normalizeStep(raw: HookStepResult | void): HookStepResult {
+function normalizeStep<Effect extends Record<string, unknown>>(
+  raw: HookStepResult<Effect> | void,
+): HookStepResult<Effect> {
   if (!raw) return { status: "ok" };
   return raw;
 }
 
-function linkStep(step: HookStepResult, prev: HookStepLink | null): HookStepLink {
+function linkStep<Effect extends Record<string, unknown>>(
+  step: HookStepResult<Effect>,
+  prev: HookStepLink<Effect> | null,
+): HookStepLink<Effect> {
   return prev ? { ...step, prev } : { ...step };
 }
 
@@ -28,17 +35,13 @@ function shouldStopChain(step: HookStepResult): boolean {
   return step.status === "ok" && step.blocked === true;
 }
 
-function errMessage(err: unknown): string {
-  return err instanceof Error ? err.message : String(err);
-}
-
-function buildRunResult<P>(
+function buildRunResult<P, Effect extends Record<string, unknown>>(
   context: P,
-  chain: HookStepLink | null,
+  chain: HookStepLink<Effect> | null,
   anyFailed: boolean,
   stoppedByBlocked: boolean,
   meta: HookRunMeta,
-): HookRunResult<P> {
+): HookRunResult<P, Effect> {
   const blockedMessage = stoppedByBlocked ? blockedMessageFromChain(chain) : undefined;
   return {
     context,
@@ -60,7 +63,7 @@ export class HookRegistry {
     this.log = logger.with({ component: "hooks" });
   }
 
-  on<H extends Hook<unknown>>(
+  on<H extends Hook<unknown, Record<string, unknown>>>(
     hook: H,
     handler: HookHandler<H>,
     opts?: { priority?: number },
@@ -68,7 +71,7 @@ export class HookRegistry {
     const priority = opts?.priority ?? 100;
     const list = this.handlers.get(hook.id) ?? [];
     const entry: RegisteredHandler = {
-      handler: handler as HookHandler<Hook<unknown>>,
+      handler: handler as HookHandler<Hook<unknown, Record<string, unknown>>>,
       priority,
     };
     list.push(entry);
@@ -85,10 +88,10 @@ export class HookRegistry {
     };
   }
 
-  async run<H extends Hook<unknown>>(
+  async run<H extends Hook<unknown, Record<string, unknown>>>(
     hook: H,
     context: PayloadOf<H>,
-  ): Promise<HookRunResult<PayloadOf<H>>> {
+  ): Promise<HookRunResult<PayloadOf<H>, HookEffectOf<H>>> {
     const list = this.handlers.get(hook.id) ?? [];
     const started = performance.now();
 
@@ -100,10 +103,10 @@ export class HookRegistry {
     const emptyMeta: HookRunMeta = { duration_ms: 0, handlers: 0 };
     if (!list.length) {
       this.log.debug("hook run skipped (no handler)", { hook: hook.qualifiedId });
-      return buildRunResult(context, null, false, false, emptyMeta);
+      return buildRunResult<PayloadOf<H>, HookEffectOf<H>>(context, null, false, false, emptyMeta);
     }
 
-    let chain: HookStepLink | null = null;
+    let chain: HookStepLink<HookEffectOf<H>> | null = null;
     let anyFailed = false;
     let stoppedByBlocked = false;
 
@@ -111,7 +114,7 @@ export class HookRegistry {
     for (const { handler } of list) {
       try {
         const raw = await (handler as HookHandler<H>)(context);
-        const step = normalizeStep(raw);
+        const step = normalizeStep<HookEffectOf<H>>(raw);
         chain = linkStep(step, chain);
         if (step.status === "failed") anyFailed = true;
         this.log.debug("hook handler done", {
@@ -125,7 +128,7 @@ export class HookRegistry {
           break;
         }
       } catch (err) {
-        const step: HookStepResult = {
+        const step: HookStepResult<HookEffectOf<H>> = {
           status: "failed",
           message: errMessage(err),
         };
@@ -152,6 +155,12 @@ export class HookRegistry {
       blocked: stoppedByBlocked,
     });
 
-    return buildRunResult(context, chain, anyFailed, stoppedByBlocked, meta);
+    return buildRunResult<PayloadOf<H>, HookEffectOf<H>>(
+      context,
+      chain,
+      anyFailed,
+      stoppedByBlocked,
+      meta,
+    );
   }
 }

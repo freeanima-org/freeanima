@@ -1,4 +1,4 @@
-import { safeParseOrNull } from "@freeanima/kernel-util";
+import { safeParseOrNull } from "@freeanima/engine-util";
 import { chunkText } from "../chunk-text.ts";
 /** Tencent iLink Bot API (see @tencent-weixin/openclaw-weixin src/api/api.ts) */
 

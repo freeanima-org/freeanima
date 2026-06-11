@@ -23,7 +23,12 @@ export interface Logger {
   warn(message: string, attributes?: LogAttributes): void;
   error(message: string, attributes?: LogAttributes): void;
 
+  /** Establish or extend scope; first call must include {@link LogScope.component} */
   with(scope: LogScope): Logger;
+  /**
+   * Extend scope with attributes when component already established on this logger.
+   * @throws when component is not yet set on the logger chain
+   */
   with(attributes: LogAttributes): Logger;
 }
 

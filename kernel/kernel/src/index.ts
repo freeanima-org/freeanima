@@ -41,3 +41,33 @@ export class Kernel {
     this._eventBus = bus;
   }
 }
+
+export type {
+  Logger,
+  LogLevel,
+  LogAttributes,
+  LogScope,
+  LogRecord,
+  LogSink,
+  CreateLoggerOptions,
+} from "@freeanima/kernel-logging";
+export type {
+  EventBus,
+  EventTopic,
+  EventHandler,
+  PayloadOf as EventPayloadOf,
+  DispatchOutcome,
+  EventQueueAdapter,
+  StoredEvent,
+} from "@freeanima/kernel-eventbus";
+export type {
+  HookRegistry,
+  Hook,
+  HookHandler,
+  PayloadOf as HookPayloadOf,
+  HookEffectOf,
+  HookStepResult,
+  HookStepLink,
+  HookRunResult,
+  HookRunMeta,
+} from "@freeanima/kernel-hooks";

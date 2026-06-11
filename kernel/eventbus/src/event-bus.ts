@@ -1,10 +1,7 @@
 import type { Logger } from "@freeanima/kernel-logging";
+import { errMessage } from "@freeanima/kernel-token";
 import type { DispatchOutcome, EventQueueAdapter, StoredEvent } from "./queue.ts";
 import type { EventHandler, EventTopic, PayloadOf } from "./topic.ts";
-
-function errMessage(err: unknown): string {
-  return err instanceof Error ? err.message : String(err);
-}
 
 /** Event bus; handler register/dispatch here; queue I/O injected by adapter */
 export class EventBus {

@@ -12,6 +12,7 @@
     "@freeanima/engine-provider-llm": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",
     "@freeanima/engine-repos": "workspace:*",
+    "@freeanima/engine-loop-hooks": "workspace:*",
     "@freeanima/kernel-hooks": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "@freeanima/service-logging": "workspace:*"

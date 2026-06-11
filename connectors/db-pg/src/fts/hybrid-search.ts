@@ -5,7 +5,7 @@ import { sql as drizzleSql } from "drizzle-orm";
 import { embedQueryText } from "../embedding/query.ts";
 import { getDb } from "../client.ts";
 import { buildFtsTsQuery } from "./query.ts";
-import { rrfMerge, messageDocKey, semanticMemoryDocKey } from "./rrf.ts";
+import { rrfMerge, messageDocKey, semanticMemoryDocKey } from "@freeanima/engine-util";
 import { searchMessagesTrgm, searchSemanticMemoryTrgm } from "./trgm-search.ts";
 import { searchSemanticMemoryFtsRaw, searchMessagesFtsRaw } from "./hybrid-raw.ts";
 import { searchMessagesVector, searchSemanticMemoryVector } from "./vector-search.ts";
@@ -71,7 +71,7 @@ export async function hybridSearchSemanticMemory(
   const merged = rrfMerge([ftsRanked, trgmRanked, vectorRanked], { limit: pool });
   return merged.slice(offset, offset + limit).map((row) => ({
     ...mapSemanticMemoryRow(row),
-    rank: row.rank,
+    rank: row.score,
   }));
 }
 
@@ -103,7 +103,7 @@ export async function hybridSearchMessages(
     role: row.role,
     session_id: row.session_id,
     timestamp: row.timestamp,
-    rank: row.rank,
+    rank: row.score,
   }));
 }
 

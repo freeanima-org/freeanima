@@ -4,13 +4,13 @@ import { autobiographicalDocKey, limbicDocKey, rrfMerge, semanticMemoryDocKey } 
 describe("rrfMerge", () => {
   it("merges ranked lists and limits output", () => {
     const semantic = [
-      { docKey: semanticMemoryDocKey("a"), rank: 0, label: "semantic-a" },
-      { docKey: semanticMemoryDocKey("b"), rank: 0, label: "semantic-b" },
+      { docKey: semanticMemoryDocKey("a"), label: "semantic-a" },
+      { docKey: semanticMemoryDocKey("b"), label: "semantic-b" },
     ];
-    const limbic = [{ docKey: limbicDocKey("l1"), rank: 0, label: "limbic-l1" }];
+    const limbic = [{ docKey: limbicDocKey("l1"), label: "limbic-l1" }];
     const merged = rrfMerge([semantic, limbic], { limit: 2 });
     expect(merged.length).toBe(2);
-    expect(merged[0]!.rank).toBeGreaterThan(0);
+    expect(merged[0]!.score).toBeGreaterThan(0);
   });
 
   it("autobiographicalDocKey is stable", () => {

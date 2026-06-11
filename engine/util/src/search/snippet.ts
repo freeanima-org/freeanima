@@ -1,7 +1,3 @@
-export function stripHeadlineTags(text: string): string {
-  return text.replace(/<b>/gi, "").replace(/<\/b>/gi, "");
-}
-
 export type TextSearchSnippetOpts = {
   maxLen?: number;
   contextChars?: number;

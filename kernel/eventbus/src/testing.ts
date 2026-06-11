@@ -1,10 +1,8 @@
-import { createLogger } from "@freeanima/kernel-logging";
-import { createNullSink } from "@freeanima/kernel-logging/null";
+import { createTestLogger } from "@freeanima/kernel-logging/testing";
 import { EventBus } from "./event-bus.ts";
 import { MemoryEventQueue } from "./adapters/memory.ts";
 
-/** Default unit-test EventBus: NullSink + memory queue */
+/** Default unit-test EventBus: memory sink logger + memory queue */
 export function createTestEventBus(): EventBus {
-  const logger = createLogger({ sinks: [createNullSink()] });
-  return new EventBus(logger, new MemoryEventQueue());
+  return new EventBus(createTestLogger(), new MemoryEventQueue());
 }

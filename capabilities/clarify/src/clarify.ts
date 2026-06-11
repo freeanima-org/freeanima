@@ -1,5 +1,5 @@
 import { loadConfig } from "@freeanima/service-config";
-import { formatCstIso } from "@freeanima/kernel-util";
+import { formatCstIso } from "@freeanima/engine-util";
 import {
   clarifyToolAwaitingResultSchema,
   clarifyToolResolvedResultSchema,
@@ -10,7 +10,7 @@ import {
   type ClarifyToolAwaitingResult,
   type ClarifyToolResolvedResult,
 } from "@freeanima/engine-db/domain";
-import { safeParseOrNull } from "@freeanima/kernel-util";
+import { safeParseOrNull } from "@freeanima/engine-util";
 import { parseToolResult } from "@freeanima/engine-tool";
 import type { ConversationService } from "@freeanima/engine-conversation";
 

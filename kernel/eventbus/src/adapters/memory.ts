@@ -1,6 +1,6 @@
 import type { DispatchOutcome, EventQueueAdapter, StoredEvent } from "../queue.ts";
 
-/** In-process memory queue; drain after start; no persistence or retry */
+/** In-process memory queue; drain after start; no persistence. Ignores {@link DispatchOutcome} (no retry). */
 export class MemoryEventQueue implements EventQueueAdapter {
   private queue: StoredEvent[] = [];
   private running = false;
@@ -33,6 +33,7 @@ export class MemoryEventQueue implements EventQueueAdapter {
       while (this.running && this.queue.length > 0) {
         const event = this.queue.shift();
         if (!event) break;
+        // Memory queue always dequeues; retry/fail outcomes are not acted on.
         await process(event);
       }
     } finally {

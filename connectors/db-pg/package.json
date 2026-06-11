@@ -9,7 +9,7 @@
     "@freeanima/engine-repos": "workspace:*",
     "@freeanima/engine-db": "workspace:*",
     "@freeanima/engine-tokenizer": "workspace:*",
-    "@freeanima/kernel-util": "workspace:*",
+    "@freeanima/engine-util": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "@freeanima/service-logging": "workspace:*",
     "@node-rs/jieba": "^2.0.1",

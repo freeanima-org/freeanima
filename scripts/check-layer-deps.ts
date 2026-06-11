@@ -57,7 +57,7 @@ function isAllowed(layer: string, pkg: string, _relPath: string): boolean {
       if (root.startsWith("kernel-") || root === "kernel") return true;
       if (root.startsWith("life-") || root === "life") return true;
       if (root.startsWith("engine-tool")) return true;
-      if (root === "engine-repos") return true;
+      if (root === "engine-repos" || root === "engine-util") return true;
       if (root === "connectors-db-pg") return false;
       if (root === "service-config" || root === "service-logging") return true;
       return false;

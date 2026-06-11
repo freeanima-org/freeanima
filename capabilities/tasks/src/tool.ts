@@ -2,7 +2,7 @@ import { getToolSessionId } from "@freeanima/engine-loop";
 import type { ToolSetRegistry } from "@freeanima/engine-tool";
 import { attachToolReturns, toolError, toolResult } from "@freeanima/engine-tool";
 import { TASKS_TOOL_RETURNS } from "./return-schemas.ts";
-import { formatCstIso } from "@freeanima/kernel-util";
+import { formatCstIso } from "@freeanima/engine-util";
 import type {
   TaskListOpts,
   TaskPriority,

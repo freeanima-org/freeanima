@@ -1,8 +1,7 @@
 import { describe, expect, it, vi } from "bun:test";
-import { createLogger } from "@freeanima/kernel-logging";
-import { createNullSink } from "@freeanima/kernel-logging/null";
 import { createHook, walkHookChain } from "./hook.ts";
 import { HookRegistry } from "./registry.ts";
+import { createTestHookRegistry } from "./testing.ts";
 
 type TestContext = {
   value: number;
@@ -11,7 +10,7 @@ type TestContext = {
 const testHook = createHook<TestContext>("@freeanima/kernel-hooks/test/example", "test hook");
 
 function newRegistry(): HookRegistry {
-  return new HookRegistry(createLogger({ level: "debug", sinks: [createNullSink()] }));
+  return createTestHookRegistry();
 }
 
 describe("HookRegistry", () => {

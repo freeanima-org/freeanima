@@ -1,4 +1,4 @@
-import { isEnabledByDefault } from "@freeanima/kernel-util";
+import { isEnabledByDefault } from "@freeanima/engine-util";
 import { acpAgentSchema } from "@freeanima/service-config";
 import type { z } from "zod";
 

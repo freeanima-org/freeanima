@@ -1,5 +1,5 @@
 import { toolError, toolResult } from "@freeanima/engine-tool";
-import { formatCstIso } from "@freeanima/kernel-util";
+import { formatCstIso } from "@freeanima/engine-util";
 import { loadSessionMeta, updateSessionMetaField } from "./conversation.ts";
 import type { PgRepositories } from "@freeanima/engine-repos";
 import { isSessionMeta } from "./message.ts";

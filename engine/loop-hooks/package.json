@@ -1,8 +1,11 @@
 {
-  "name": "@freeanima/kernel-retry",
+  "name": "@freeanima/engine-loop-hooks",
   "type": "module",
   "exports": {
     ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@freeanima/kernel-hooks": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "catalog:"

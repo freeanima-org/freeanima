@@ -1,5 +1,5 @@
 /** Unwrap Drizzle / postgres errors for CLI logging */
-import { formatZodError } from "@freeanima/kernel-util";
+import { formatZodError } from "@freeanima/engine-util";
 import { ZodError } from "zod";
 
 export function formatDbError(e: unknown): string {
