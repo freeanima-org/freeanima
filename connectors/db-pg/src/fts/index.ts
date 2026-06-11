@@ -30,6 +30,6 @@ export {
   resetEmbedTextsFnForTest,
 } from "../embedding/runtime.ts";
 export {
-  flushEmbeddingQueueForTest,
-  resetEmbeddingQueueForTest,
-} from "../embedding/batch-queue.ts";
+  awaitPendingEmbeddingsForTest,
+  resetPendingEmbeddingsForTest,
+} from "../embedding/schedule.ts";

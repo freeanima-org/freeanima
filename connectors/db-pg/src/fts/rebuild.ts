@@ -4,13 +4,13 @@ import { isCjkJiebaEnabled, isEmbeddingEnabled } from "@freeanima/service-config
 
 import { EMBEDDING_QUEUE_FLUSH_THRESHOLD } from "../embedding/batch-pack.ts";
 import { embedAndStoreJobs } from "../embedding/embed-jobs.ts";
-import { getEmbedTextFn, getEmbedTextsFn } from "../embedding/runtime.ts";
+import { getEmbedTextFn } from "../embedding/runtime.ts";
 import type { EmbeddingPendingJob } from "../embedding/types.ts";
 import { getDb } from "../client.ts";
 import { segmentForFts } from "./segment.ts";
 import type { FtsRebuildOptions, FtsRebuildPhase } from "./rebuild-types.ts";
 
-/** PG cursor page size only; Ollama API packing is token-based in packEmbeddingJobs. */
+/** PG cursor page size only (not embedding API batching). */
 const REBUILD_DB_PAGE_SIZE = EMBEDDING_QUEUE_FLUSH_THRESHOLD;
 
 export type FtsRebuildResult = {
@@ -166,7 +166,7 @@ async function rebuildMessagesFtsSegmented(
 }
 
 async function rebuildSemanticMemoryEmbeddings(opts: FtsRebuildOptions): Promise<number> {
-  if (!getEmbedTextFn() && !getEmbedTextsFn()) return 0;
+  if (!getEmbedTextFn()) return 0;
 
   const onlyMissing = opts.onlyMissing ?? false;
   const total = await countSemanticMemoryEmbeddingTargets(onlyMissing);
@@ -211,7 +211,7 @@ async function rebuildSemanticMemoryEmbeddings(opts: FtsRebuildOptions): Promise
 }
 
 async function rebuildMessagesEmbeddings(opts: FtsRebuildOptions): Promise<number> {
-  if (!getEmbedTextFn() && !getEmbedTextsFn()) return 0;
+  if (!getEmbedTextFn()) return 0;
 
   const onlyMissing = opts.onlyMissing ?? false;
   const total = await countMessagesEmbeddingTargets(onlyMissing);
@@ -261,8 +261,7 @@ export async function rebuildAllFtsSegments(
   const semantic_memory = await rebuildSemanticMemoryFtsSegmented(useJieba, opts);
   const messages = await rebuildMessagesFtsSegmented(useJieba, opts);
 
-  const embedding_enabled =
-    isEmbeddingEnabled() && (getEmbedTextFn() != null || getEmbedTextsFn() != null);
+  const embedding_enabled = isEmbeddingEnabled() && getEmbedTextFn() != null;
   let embeddings: Record<string, number> | undefined;
   if (embedding_enabled) {
     const smEmb = await rebuildSemanticMemoryEmbeddings(opts);
