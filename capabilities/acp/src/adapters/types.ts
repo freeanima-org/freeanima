@@ -1,9 +1,15 @@
-import type { PromptCapture } from "../cursor-decision.ts";
+import type { PromptCapture, CursorPendingInteraction } from "../cursor-decision.ts";
 import type { ACPClient } from "../client.ts";
+
+export type AcpDecisionNeededHandler = (
+  pending: CursorPendingInteraction[],
+  notes: string[],
+) => void | Promise<void>;
 
 export type AcpServerRequestContext = {
   client: ACPClient;
   capture: PromptCapture;
+  onDecisionNeeded?: AcpDecisionNeededHandler;
 };
 
 /** ACP Agent dialect adapter: parse notifications, respond to server RPC */

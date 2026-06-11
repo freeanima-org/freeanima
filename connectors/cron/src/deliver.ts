@@ -15,7 +15,19 @@ export type CronDeliverPayload = {
   error?: string;
 };
 
-export type CronDeliverFn = (target: CronDeliverTarget, text: string) => Promise<void>;
+export type CronDeliverOptions = {
+  editMessageId?: string;
+};
+
+export type CronDeliverResult = {
+  messageId?: string;
+};
+
+export type CronDeliverFn = (
+  target: CronDeliverTarget,
+  text: string,
+  opts?: CronDeliverOptions,
+) => Promise<CronDeliverResult | void>;
 
 const deliverers = new Map<string, CronDeliverFn>();
 
@@ -66,8 +78,13 @@ function formatDeliverText(job: CronJob, payload: CronDeliverPayload): string {
   return `⚠️ Cron job '${job.name}' failed:\n${err}`;
 }
 
-export async function deliverToTargets(targets: CronDeliverTarget[], text: string): Promise<void> {
+export async function deliverToTargets(
+  targets: CronDeliverTarget[],
+  text: string,
+  opts?: CronDeliverOptions,
+): Promise<CronDeliverResult | void> {
   if (!targets.length || !text.trim()) return;
+  let messageId: string | undefined;
   for (const target of targets) {
     const fn = deliverers.get(target.platform);
     if (!fn) {
@@ -77,13 +94,15 @@ export async function deliverToTargets(targets: CronDeliverTarget[], text: strin
       continue;
     }
     try {
-      await fn(target, text);
+      const res = await fn(target, text, opts);
+      if (res?.messageId && !messageId) messageId = res.messageId;
     } catch (e) {
       logComponent("cron-deliver").error(`deliver failed (${target.platform}:${target.chat_id})`, {
         err: e,
       });
     }
   }
+  return messageId ? { messageId } : undefined;
 }
 
 export async function deliverCronResult(job: CronJob, payload: CronDeliverPayload): Promise<void> {

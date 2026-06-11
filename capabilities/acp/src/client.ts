@@ -6,7 +6,7 @@ import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { createInterface, type Interface } from "node:readline";
 import { genericAcpAdapter, parseSessionUpdateChunk } from "./adapters/generic.ts";
 import { resolveAcpAdapter } from "./adapters/registry.ts";
-import type { AcpAgentAdapter } from "./adapters/types.ts";
+import type { AcpAgentAdapter, AcpDecisionNeededHandler } from "./adapters/types.ts";
 import { handleClientMethod } from "./client-methods.ts";
 import { createPromptCapture, type PromptCapture } from "./cursor-decision.ts";
 import type { AcpAgentConfig } from "./status.ts";
@@ -39,6 +39,7 @@ type PendingRequest = {
 export type RunPromptOptions = {
   promptTimeoutMs?: number;
   onNotification?: (note: JsonRpcMessage, parsed: string | null) => void;
+  onDecisionNeeded?: AcpDecisionNeededHandler;
   abortSignal?: AbortSignal;
 };
 
@@ -66,6 +67,7 @@ export class ACPClient {
   private activePromptSessionId: string | null = null;
   private activeCapture: PromptCapture | null = null;
   private activeNotificationHandler: RunPromptOptions["onNotification"] | null = null;
+  private activeDecisionHandler: RunPromptOptions["onDecisionNeeded"] | null = null;
   private lastStderrDiagnosis: ReturnType<typeof diagnoseStderr> = null;
 
   constructor(
@@ -306,6 +308,7 @@ export class ACPClient {
     this.activePromptSessionId = null;
     this.activeCapture = null;
     this.activeNotificationHandler = null;
+    this.activeDecisionHandler = null;
   }
 
   private async runPrompt(
@@ -317,6 +320,7 @@ export class ACPClient {
     this.activePromptSessionId = sessionId;
     this.activeCapture = createPromptCapture();
     this.activeNotificationHandler = opts?.onNotification ?? null;
+    this.activeDecisionHandler = opts?.onDecisionNeeded ?? null;
 
     const result = await this.request(
       "session/prompt",
@@ -342,6 +346,7 @@ export class ACPClient {
 
     this.activePromptSessionId = null;
     this.activeNotificationHandler = null;
+    this.activeDecisionHandler = null;
     return parts.join("");
   }
 
@@ -401,7 +406,13 @@ export class ACPClient {
         }
 
         const ctx =
-          this.activeCapture != null ? { client: this, capture: this.activeCapture } : undefined;
+          this.activeCapture != null
+            ? {
+                client: this,
+                capture: this.activeCapture,
+                onDecisionNeeded: this.activeDecisionHandler ?? undefined,
+              }
+            : undefined;
         const result =
           this.adapter.handleServerRequest(method, params, ctx) ??
           genericAcpAdapter.handleServerRequest(method, params, ctx);

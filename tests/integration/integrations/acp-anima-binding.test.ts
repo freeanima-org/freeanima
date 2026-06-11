@@ -8,13 +8,13 @@ import {
 
 import { testConv } from "../../helpers/pg-test.ts";
 import {
-  bindAcpSession,
+  bindAcpTaskRunning,
   getBoundAcpSession,
-  readAcpSessions,
+  readAcpTasks,
   unbindAcpSession,
 } from "@freeanima/capabilities-acp";
 
-describePg("acp anima-binding", () => {
+describePg("acp acp_tasks binding", () => {
   let animaSid: string;
   const prev = process.env.FREEANIMA_HOME;
 
@@ -28,12 +28,19 @@ describePg("acp anima-binding", () => {
     await restoreIntegrationHome(prev);
   });
 
-  it("bind / read / unbind acp_sessions on session_meta", async () => {
+  it("bind / read / unbind acp_tasks on session_meta", async () => {
     const c = testConv();
-    expect(await readAcpSessions(c, animaSid)).toEqual({});
-    await bindAcpSession(c, animaSid, "cursor", "acp-uuid-1");
+    expect(await readAcpTasks(c, animaSid)).toEqual({});
+    await bindAcpTaskRunning(c, animaSid, "cursor", "acp-uuid-1", "task-1");
     expect(await getBoundAcpSession(c, animaSid, "cursor")).toBe("acp-uuid-1");
-    expect(await readAcpSessions(c, animaSid)).toEqual({ cursor: "acp-uuid-1" });
+    expect(await readAcpTasks(c, animaSid)).toEqual({
+      "acp-uuid-1": {
+        status: "running",
+        task_id: "task-1",
+        agent_name: "cursor",
+        updated_at: expect.any(String),
+      },
+    });
     await unbindAcpSession(c, animaSid, "cursor");
     expect(await getBoundAcpSession(c, animaSid, "cursor")).toBeUndefined();
   });

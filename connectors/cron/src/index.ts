@@ -103,7 +103,9 @@ export {
   unregisterCronDeliverer,
   resolveDeliverTargets,
   type CronDeliverFn,
+  type CronDeliverOptions,
   type CronDeliverPayload,
+  type CronDeliverResult,
   type CronDeliverTarget,
 } from "./deliver.ts";
 export {

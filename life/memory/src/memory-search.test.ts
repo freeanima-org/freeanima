@@ -36,6 +36,10 @@ function mockSessionStore(overrides: Partial<SessionStorePort>): SessionStorePor
     async appendMessage() {
       throw new Error("not implemented");
     },
+    async appendMessageReturningId() {
+      throw new Error("not implemented");
+    },
+    async updateMessageContent() {},
     async nextMessagePos() {
       return 1;
     },
