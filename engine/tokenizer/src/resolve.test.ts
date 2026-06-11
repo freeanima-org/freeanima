@@ -7,7 +7,11 @@ import {
   resolveTokenizerRepoWithMeta,
   searchHubForTokenizerRepo,
 } from "./resolve.ts";
-import { isLikelyHubRepo, resolveOllamaModelHints } from "./resolve-ollama.ts";
+import {
+  isLikelyHubRepo,
+  ollamaApiBaseFromOpenAiUrl,
+  resolveOllamaModelHints,
+} from "./resolve-ollama.ts";
 import { deleteRegistryEntry, loadUserRegistry, saveRegistryEntry } from "./registry.ts";
 import { getRegistryPath } from "./paths.ts";
 import { mkdirSync, rmSync } from "node:fs";
@@ -58,6 +62,22 @@ describe("isLikelyHubRepo", () => {
 
   it("rejects local blob paths", () => {
     expect(isLikelyHubRepo("/usr/share/ollama/.ollama/models/blobs/sha256-abc")).toBe(false);
+  });
+});
+
+describe("ollamaApiBaseFromOpenAiUrl", () => {
+  it("strips trailing slashes and /v1 suffix", () => {
+    expect(ollamaApiBaseFromOpenAiUrl("http://127.0.0.1:11434/v1///")).toBe(
+      "http://127.0.0.1:11434",
+    );
+  });
+
+  it("recognizes ollama port without /v1", () => {
+    expect(ollamaApiBaseFromOpenAiUrl("http://localhost:11434/")).toBe("http://localhost:11434");
+  });
+
+  it("returns null for unrelated URLs", () => {
+    expect(ollamaApiBaseFromOpenAiUrl("https://api.openai.com")).toBeNull();
   });
 });
 
