@@ -8,10 +8,12 @@ For **FreeAnima users** — self-hosted deployment, talking to a digital life, c
 
 ## Guide — Usage and Maintenance
 
-| Topic    | File                                   |
-| -------- | -------------------------------------- |
-| Security | [guide/security.md](guide/security.md) |
-| Database | [guide/database.md](guide/database.md) |
+| Topic        | File                                   |
+| ------------ | -------------------------------------- |
+| Installation | [guide/install.md](guide/install.md)   |
+| Security     | [guide/security.md](guide/security.md) |
+| Database     | [guide/database.md](guide/database.md) |
+| Service      | [guide/service.md](guide/service.md)   |
 
 ## Concepts — Core Ideas
 

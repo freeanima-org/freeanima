@@ -33,6 +33,7 @@ Digital Humans</msg>
   <msg id="sidebar_guide">Guide</msg>
   <msg id="sidebar_home">Home</msg>
   <msg id="sidebar_identity">Identity</msg>
+  <msg id="sidebar_install">Installation</msg>
   <msg id="sidebar_memory">Memory</msg>
   <msg id="sidebar_migration_plan">Migration Plan</msg>
   <msg id="sidebar_overview">Overview</msg>
@@ -42,6 +43,7 @@ Digital Humans</msg>
   <msg id="sidebar_runtimes">Runtimes</msg>
   <msg id="sidebar_security">Security</msg>
   <msg id="sidebar_self_layer">Self Layer</msg>
+  <msg id="sidebar_service">Service</msg>
   <msg id="sidebar_sleep">Sleep</msg>
   <msg id="sidebar_time_perception">Time Perception</msg>
   <msg id="sidebar_tools">Tools</msg>

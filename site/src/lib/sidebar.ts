@@ -20,8 +20,10 @@ export const starlightSidebar = [
         ...t("sidebar_guide"),
         collapsed: true,
         items: [
+          { ...t("sidebar_install"), link: "/docs/guide/install/" },
           { ...t("sidebar_security"), link: "/docs/guide/security/" },
           { ...t("sidebar_database"), link: "/docs/guide/database/" },
+          { ...t("sidebar_service"), link: "/docs/guide/service/" },
         ],
       },
       {
