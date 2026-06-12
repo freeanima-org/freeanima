@@ -1,4 +1,4 @@
-import type { AnimaConfig } from "@freeanima/storage-config";
+import type { AnimaConfig } from "@freeanima/core/config";
 import { homePath } from "./paths.ts";
 
 /** Whether jieba Chinese tokenization is enabled */

@@ -1,6 +1,6 @@
-import type { ToolDef } from "@freeanima/mechanism-tool";
-import { toolError, toolResult } from "@freeanima/mechanism-tool";
-import type { LimbicKind, LimbicMemoryCreateInput } from "@freeanima/storage-repos";
+import type { ToolDef } from "@freeanima/core/tool";
+import { toolError, toolResult } from "@freeanima/core/tool";
+import type { LimbicKind, LimbicMemoryCreateInput } from "@freeanima/core/repos";
 
 import { getLimbicMemoryStore } from "./limbic-port.ts";
 

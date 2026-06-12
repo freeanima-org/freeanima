@@ -1,19 +1,15 @@
 import type { EngineCatalog } from "./catalog.ts";
 import { createEngineCatalog } from "./catalog.ts";
-import type {
-  BackendRegistry,
-  ProfileRegistry,
-  ProviderRegistry,
-} from "@freeanima/storage-provider-llm";
-import type { PgRepositories } from "@freeanima/storage-repos";
-import type { Config } from "@freeanima/storage-config";
+import type { BackendRegistry, ProfileRegistry, ProviderRegistry } from "@freeanima/core/provider";
+import type { PgRepositories } from "@freeanima/core/repos";
+import type { Config } from "@freeanima/core/config";
 import {
   bindActiveConfig,
   registerRuntimeLogger,
   resetActiveConfigForTest,
   resetRuntimeLoggerForTest,
-} from "@freeanima/storage-config";
-import { createLlmRuntime } from "@freeanima/mechanism-llm";
+} from "@freeanima/core/config";
+import { createLlmRuntime } from "@freeanima/core/llm";
 import type { Logger } from "@freeanima/kernel/logging";
 import { createLogger } from "@freeanima/kernel/logging";
 import { createNullSink } from "@freeanima/kernel/logging/null";

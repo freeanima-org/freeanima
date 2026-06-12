@@ -6,9 +6,9 @@ import {
   isUpdateResult,
 } from "@freeanima/service-commands";
 import type { CommandDef } from "@freeanima/service-commands";
-import { messageIncoming, turnAfterComplete } from "@freeanima/mechanism-hooks/conversation";
+import { messageIncoming, turnAfterComplete } from "@freeanima/core/hooks/conversation";
 import { headOkStepData } from "@freeanima/kernel/hooks";
-import type { SessionMessage as Message } from "@freeanima/storage-db/domain";
+import type { SessionMessage as Message } from "@freeanima/core/db/domain";
 import type { EventBus } from "@freeanima/kernel/eventbus";
 import { sessionUpdated } from "@freeanima/capabilities-memory";
 import { PARLOR_PLATFORM } from "./platforms.ts";

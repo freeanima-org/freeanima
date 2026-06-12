@@ -1,4 +1,4 @@
-import type { Config } from "@freeanima/storage-config";
+import type { Config } from "@freeanima/core/config";
 import { FileConfig, emailAccountSchema, resolveValue } from "@freeanima/service-config";
 
 import type { EmailAccount, EmailAccountInput, EmailAccountPatch } from "./types.ts";

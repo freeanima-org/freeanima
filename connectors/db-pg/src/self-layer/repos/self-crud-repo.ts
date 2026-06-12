@@ -1,13 +1,13 @@
 import { eq } from "drizzle-orm";
-import { selfBlockKeySchema, selfBlocks } from "@freeanima/storage-db/schema";
+import { selfBlockKeySchema, selfBlocks } from "@freeanima/core/db/schema";
 import type {
   SelfBlockKey,
   SelfBlockRow,
   SelfBlockUpdateInput,
   SelfBlockUpsertInput,
-} from "@freeanima/storage-repos";
-import { SELF_BLOCK_KEYS } from "@freeanima/storage-repos";
-import { formatCstIso } from "@freeanima/storage-util";
+} from "@freeanima/core/repos";
+import { SELF_BLOCK_KEYS } from "@freeanima/core/repos";
+import { formatCstIso } from "@freeanima/core/util";
 
 import { getDb } from "../../client.ts";
 import { mapSelfBlockRow } from "../mappers/self-mapper.ts";

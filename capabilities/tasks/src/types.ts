@@ -5,7 +5,7 @@ export type {
   TaskCreateInput,
   TaskUpdateInput,
   TaskListOpts,
-} from "@freeanima/storage-repos";
+} from "@freeanima/core/repos";
 
 export type FridgeBridge = {
   setMagnet(module: string, id: string, value: string, ttl?: number): Promise<void>;

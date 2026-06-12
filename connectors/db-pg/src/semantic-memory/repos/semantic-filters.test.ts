@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import { and, eq, inArray } from "drizzle-orm";
-import { semanticMemory } from "@freeanima/storage-db/schema";
+import { semanticMemory } from "@freeanima/core/db/schema";
 
 import {
   buildSemanticConditions,

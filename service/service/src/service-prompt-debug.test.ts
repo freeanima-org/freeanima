@@ -1,12 +1,12 @@
 import { describe, it, expect, mock, beforeEach, afterEach } from "bun:test";
-import { FALLBACK_TOKENIZER_REPO } from "@freeanima/storage-tokenizer";
+import { FALLBACK_TOKENIZER_REPO } from "@freeanima/core/tokenizer";
 import {
   bindModelToFallbackForTest,
   ensureFallbackTokenizer,
   resetTokenizerForTest,
   setTokenizerEncodeForTest,
-} from "@freeanima/storage-tokenizer/testing";
-import type { SemanticMemoryStorePort } from "@freeanima/storage-repos";
+} from "@freeanima/core/tokenizer/testing";
+import type { SemanticMemoryStorePort } from "@freeanima/core/repos";
 import {
   registerSemanticMemoryStore,
   resetSemanticMemoryStoreForTests,
@@ -14,10 +14,10 @@ import {
 import { MaskRegistry } from "@freeanima/capabilities-mask";
 import { createEngineCatalog } from "@freeanima/runtime";
 import type { Engine } from "@freeanima/runtime";
-import { Config } from "@freeanima/storage-config";
+import { Config } from "@freeanima/core/config";
 import type { Kernel } from "@freeanima/kernel";
 import { createTestLogger } from "@freeanima/kernel/logging/testing";
-import { nullPgRepositories } from "@freeanima/storage-repos";
+import { nullPgRepositories } from "@freeanima/core/repos";
 import { createServiceKernel } from "@freeanima/service-bootstrap";
 import { wireEnginePorts } from "./wire-engine-ports.ts";
 import { registerSystemPromptHooks } from "./register-prompt-hooks.ts";

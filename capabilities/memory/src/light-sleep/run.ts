@@ -1,10 +1,10 @@
-import { logCapability as logComponent } from "@freeanima/storage-config";
+import { logCapability as logComponent } from "@freeanima/core/config";
 import type {
   AutobiographicalMemoryStorePort,
   SelfLayerStorePort,
   SemanticMemoryStorePort,
   SessionStorePort,
-} from "@freeanima/storage-repos";
+} from "@freeanima/core/repos";
 
 import { buildLightSleepAutobiographyUserMessages } from "../autobiography/build-messages.ts";
 import { runAutobiographyEngine } from "../autobiography-port.ts";

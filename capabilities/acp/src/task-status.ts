@@ -1,4 +1,4 @@
-import type { SessionConversationPort } from "@freeanima/mechanism-tool/session-conversation-port";
+import type { SessionConversationPort } from "@freeanima/core/tool/session-conversation-port";
 import type { AcpTaskStatus } from "./acp-tasks.ts";
 import { readAcpTasks, type AcpTaskEntry, type AcpTasksMeta } from "./acp-tasks.ts";
 import {

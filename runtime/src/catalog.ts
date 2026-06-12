@@ -1,5 +1,5 @@
-import { SkillRegistry } from "@freeanima/mechanism-skill";
-import { ToolSetRegistry } from "@freeanima/mechanism-tool";
+import { SkillRegistry } from "@freeanima/core/skill";
+import { ToolSetRegistry } from "@freeanima/core/tool";
 
 /** Engine-layer runtime catalog: toolSets / skills */
 export type EngineCatalog = {

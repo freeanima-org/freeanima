@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, spyOn } from "bun:test";
-import type { SessionMessage, SessionMetaMessage } from "@freeanima/storage-db/domain";
-import * as compress from "@freeanima/mechanism-compress";
-import { nullPgRepositories } from "@freeanima/storage-repos";
+import type { SessionMessage, SessionMetaMessage } from "@freeanima/core/db/domain";
+import * as compress from "@freeanima/core/compress";
+import { nullPgRepositories } from "@freeanima/core/repos";
 import * as conversation from "./conversation.ts";
 import { generateSessionHandoffSummary } from "./session-handoff.ts";
 

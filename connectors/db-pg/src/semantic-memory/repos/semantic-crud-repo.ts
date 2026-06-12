@@ -3,14 +3,14 @@ import {
   normalizeSemanticMemoryType,
   semanticMemory,
   semanticMemoryStatusSchema,
-} from "@freeanima/storage-db/schema";
+} from "@freeanima/core/db/schema";
 import type {
   SemanticMemoryCreateInput,
   SemanticMemoryRow,
   SemanticMemoryUpdateInput,
-} from "@freeanima/storage-repos";
-import { RESIDENT_PINNED_MAX } from "@freeanima/storage-repos";
-import { formatCstIso } from "@freeanima/storage-util";
+} from "@freeanima/core/repos";
+import { RESIDENT_PINNED_MAX } from "@freeanima/core/repos";
+import { formatCstIso } from "@freeanima/core/util";
 import { logComponent } from "@freeanima/service-logging";
 
 const log = logComponent("memory");

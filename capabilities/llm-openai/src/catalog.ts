@@ -1,5 +1,5 @@
 import type OpenAI from "openai";
-import type { ModelInfo, SupportedParam } from "@freeanima/storage-provider-llm";
+import type { ModelInfo, SupportedParam } from "@freeanima/core/provider";
 
 const DEFAULT_SUPPORTED_PARAMS: SupportedParam[] = [
   "temperature",

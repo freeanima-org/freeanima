@@ -1,7 +1,7 @@
 import { describe, expect, it, spyOn, afterEach } from "bun:test";
 import * as engine from "./loop-engine.ts";
 import type { StreamEvent } from "./loop-engine.ts";
-import type { SessionMessage } from "@freeanima/storage-db/domain";
+import type { SessionMessage } from "@freeanima/core/db/domain";
 
 describe("engine.run", () => {
   let streamSpy: ReturnType<typeof spyOn<typeof engine, "runStream">> | null = null;

@@ -1,4 +1,4 @@
-import type { SessionStorePort } from "@freeanima/storage-repos";
+import type { SessionStorePort } from "@freeanima/core/repos";
 
 let memorySessionStore: SessionStorePort | null = null;
 

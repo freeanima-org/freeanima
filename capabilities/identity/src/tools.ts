@@ -1,8 +1,8 @@
-import type { ToolSetRegistry } from "@freeanima/mechanism-tool";
-import { attachToolReturns, toolError, toolResult } from "@freeanima/mechanism-tool";
+import type { ToolSetRegistry } from "@freeanima/core/tool";
+import { attachToolReturns, toolError, toolResult } from "@freeanima/core/tool";
 import { SELF_TOOL_RETURNS } from "./return-schemas.ts";
-import type { SelfBlockKey } from "@freeanima/storage-repos";
-import { SELF_BLOCK_KEYS } from "@freeanima/storage-repos";
+import type { SelfBlockKey } from "@freeanima/core/repos";
+import { SELF_BLOCK_KEYS } from "@freeanima/core/repos";
 
 import { invalidateSelfLayerPromptCache } from "./cache.ts";
 import { loadSelfBlocks, loadSelfLayerPrompt } from "./load.ts";

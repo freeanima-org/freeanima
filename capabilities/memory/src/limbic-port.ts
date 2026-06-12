@@ -1,4 +1,4 @@
-import type { LimbicMemoryStorePort } from "@freeanima/storage-repos";
+import type { LimbicMemoryStorePort } from "@freeanima/core/repos";
 
 let limbicMemoryStore: LimbicMemoryStorePort | null = null;
 

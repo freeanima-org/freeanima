@@ -9,10 +9,10 @@ import { resolveMaskPresets } from "@freeanima/capabilities-mask";
 import { statsReport } from "@freeanima/service-api/conversation-stats";
 import { PARLOR_PLATFORM } from "@freeanima/service-api/constants";
 import { onSessionCloseBeforeNew } from "@freeanima/service-api/session-close";
-import { isSessionMeta } from "@freeanima/storage-db/domain";
+import { isSessionMeta } from "@freeanima/core/db/domain";
 import { setHomeChannel } from "@freeanima/service-api/home-channel";
 import { getAppRuntime } from "@freeanima/service-api";
-import { getCliInstallKind } from "@freeanima/storage-config/cli-install";
+import { getCliInstallKind } from "@freeanima/core/config/cli-install";
 
 function conv() {
   return getAppRuntime().conversation;

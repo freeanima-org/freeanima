@@ -1,6 +1,6 @@
-import { getToolSessionId } from "@freeanima/mechanism-tool";
-import type { ToolSetRegistry } from "@freeanima/mechanism-tool";
-import { attachToolReturns, toolResult, toolError, type ToolArgs } from "@freeanima/mechanism-tool";
+import { getToolSessionId } from "@freeanima/core/tool";
+import type { ToolSetRegistry } from "@freeanima/core/tool";
+import { attachToolReturns, toolResult, toolError, type ToolArgs } from "@freeanima/core/tool";
 import { FRIDGE_TOOL_RETURNS } from "./return-schemas.ts";
 import { clampTtl, magnetRedisKey, randomBase62, setMagnet } from "./store.ts";
 

@@ -1,6 +1,6 @@
 import { spawnSync } from "node:child_process";
 import type { Command } from "commander";
-import { getCliInstallKind } from "@freeanima/storage-config/cli-install";
+import { getCliInstallKind } from "@freeanima/core/config/cli-install";
 
 const NPM_PACKAGE = "@freeanima/cli@latest";
 

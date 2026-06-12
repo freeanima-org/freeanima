@@ -2,13 +2,13 @@ import { existsSync, mkdirSync, mkdtempSync } from "node:fs";
 import { tmpdir, homedir } from "node:os";
 import { join, resolve } from "node:path";
 import { randomBytes } from "node:crypto";
-import type { ToolSetRegistry } from "@freeanima/mechanism-tool";
-import { resolveDefaultSessionTools } from "@freeanima/mechanism-tool";
-import { getActiveConfig, getProfileHopModel } from "@freeanima/storage-config";
-import { CST_OFFSET_MS, formatCstIso } from "@freeanima/storage-util";
-import { PROFILE_CHAT } from "@freeanima/storage-provider-llm";
-import { buildSystemPrompt } from "@freeanima/mechanism-hooks/prompt";
-import { capabilityMaskSchema } from "@freeanima/storage-db/schema";
+import type { ToolSetRegistry } from "@freeanima/core/tool";
+import { resolveDefaultSessionTools } from "@freeanima/core/tool";
+import { getActiveConfig, getProfileHopModel } from "@freeanima/core/config";
+import { CST_OFFSET_MS, formatCstIso } from "@freeanima/core/util";
+import { PROFILE_CHAT } from "@freeanima/core/provider";
+import { buildSystemPrompt } from "@freeanima/core/hooks/prompt";
+import { capabilityMaskSchema } from "@freeanima/core/db/schema";
 import { applySessionToolMaskFilter } from "./mask-port.ts";
 import {
   isSessionMeta,
@@ -40,7 +40,7 @@ import {
   sessionExistsWithRouting,
   nextMessagePosWithRouting,
 } from "./session-store-pg-bridge.ts";
-import type { PgRepositories } from "@freeanima/storage-repos";
+import type { PgRepositories } from "@freeanima/core/repos";
 
 export type Message = SessionMessage;
 

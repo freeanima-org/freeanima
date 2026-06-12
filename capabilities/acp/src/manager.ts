@@ -1,14 +1,14 @@
 import { join } from "node:path";
-import type { SkillRegistry } from "@freeanima/mechanism-skill";
-import { registerSkillsFromDirectory } from "@freeanima/mechanism-skill";
-import { getToolSessionId } from "@freeanima/mechanism-tool";
-import type { ToolDef, ToolSetRegistry } from "@freeanima/mechanism-tool";
-import { acpToolsetId, toolError, toolResult } from "@freeanima/mechanism-tool";
-import type { Config } from "@freeanima/storage-config";
-import { logCapability as logComponent } from "@freeanima/storage-config";
+import type { SkillRegistry } from "@freeanima/core/skill";
+import { registerSkillsFromDirectory } from "@freeanima/core/skill";
+import { getToolSessionId } from "@freeanima/core/tool";
+import type { ToolDef, ToolSetRegistry } from "@freeanima/core/tool";
+import { acpToolsetId, toolError, toolResult } from "@freeanima/core/tool";
+import type { Config } from "@freeanima/core/config";
+import { logCapability as logComponent } from "@freeanima/core/config";
 
-import type { SessionConversationPort } from "@freeanima/mechanism-tool/session-conversation-port";
-import { isSessionMeta } from "@freeanima/storage-db/domain";
+import type { SessionConversationPort } from "@freeanima/core/tool/session-conversation-port";
+import { isSessionMeta } from "@freeanima/core/db/domain";
 import {
   AcpAsyncTaskStore,
   appendProgressNote,

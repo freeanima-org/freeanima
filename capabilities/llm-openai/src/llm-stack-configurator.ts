@@ -1,6 +1,6 @@
-import type { AnimaConfig } from "@freeanima/storage-config";
-import { getLlmConfig } from "@freeanima/storage-config";
-import type { BackendRegistry, ProviderRegistry } from "@freeanima/storage-provider-llm";
+import type { AnimaConfig } from "@freeanima/core/config";
+import { getLlmConfig } from "@freeanima/core/config";
+import type { BackendRegistry, ProviderRegistry } from "@freeanima/core/provider";
 import {
   OpenAiCompatibleBackend,
   OPENAI_COMPATIBLE_BACKEND_ID,

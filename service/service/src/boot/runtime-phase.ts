@@ -3,7 +3,7 @@ import {
   invalidateSelfLayerPromptCache,
   loadSelfLayerPrompt,
 } from "@freeanima/capabilities-identity";
-import type { PgRepositories } from "@freeanima/storage-repos";
+import type { PgRepositories } from "@freeanima/core/repos";
 
 import { createAppRuntime, type AppRuntime } from "../runtime/app-runtime.ts";
 import { wireServicePorts } from "../wire-api.ts";

@@ -8,9 +8,9 @@ import {
   sanitizeConfigForApi,
   PATHS,
 } from "@freeanima/service-config";
-import { formatCstIsoFromEpoch } from "@freeanima/storage-util";
+import { formatCstIsoFromEpoch } from "@freeanima/core/util";
 import type { FullRuntimeDeps, RuntimeDeps } from "./runtime-deps.ts";
-import { PROFILE_CHAT } from "@freeanima/storage-provider-llm";
+import { PROFILE_CHAT } from "@freeanima/core/provider";
 import {
   ensureBuiltinCronJobs,
   getJob,
@@ -20,11 +20,11 @@ import {
   enqueueRunJob,
 } from "@freeanima/connectors-cron";
 import type { CronJobData } from "@freeanima/connectors-cron";
-import { buildToolsStatus } from "@freeanima/mechanism-tool";
+import { buildToolsStatus } from "@freeanima/core/tool";
 import { listCommandDefs, listCommandDefsForPlatform } from "@freeanima/service-commands";
 import { pingDatabase, isJiebaLoaded } from "@freeanima/connectors-db-pg";
 import { pingRedis } from "@freeanima/connectors-redis";
-import { listLoadedTokenizerRepos, listTokenizerBindings } from "@freeanima/storage-tokenizer";
+import { listLoadedTokenizerRepos, listTokenizerBindings } from "@freeanima/core/tokenizer";
 import type {
   DependencyStatus,
   HealthSnapshot,

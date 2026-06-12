@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { ProviderSpec } from "@freeanima/storage-provider-llm";
+import type { ProviderSpec } from "@freeanima/core/provider";
 
 export const OPENAI_COMPATIBLE_BACKEND_ID = "openai_compatible";
 

@@ -8,8 +8,7 @@
     "./usage": "./src/usage.ts"
   },
   "dependencies": {
-    "@freeanima/storage-config": "workspace:*",
-    "@freeanima/storage-provider-llm": "workspace:*",
+    "@freeanima/core": "workspace:*",
     "openai": "^6.42.0",
     "zod": "catalog:"
   },

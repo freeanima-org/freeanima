@@ -5,7 +5,8 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@freeanima/capabilities-fridge-magnet": "workspace:*"
+    "@freeanima/capabilities-fridge-magnet": "workspace:*",
+    "@freeanima/core": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "catalog:"

@@ -1,9 +1,9 @@
 import { closeDb, createPgRepositories, getDb, initDatabase } from "@freeanima/connectors-db-pg";
 import { initRedis } from "@freeanima/connectors-redis";
-import { runMigrations } from "@freeanima/storage-db";
+import { runMigrations } from "@freeanima/core/db";
 import { getConfiguredDatabaseUrl, getConfiguredRedisUrl } from "@freeanima/service-config";
 import type { FileConfig } from "@freeanima/service-config";
-import type { PgRepositories } from "@freeanima/storage-repos";
+import type { PgRepositories } from "@freeanima/core/repos";
 
 import { startupLog } from "./status.ts";
 

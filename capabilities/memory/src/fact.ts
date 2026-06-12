@@ -1,4 +1,4 @@
-import { formatCstIso } from "@freeanima/storage-util";
+import { formatCstIso } from "@freeanima/core/util";
 
 import { normalizeSemanticMemoryType, type SemanticMemory } from "./schemas/fact.ts";
 

@@ -1,4 +1,4 @@
-import type { MemoryReferenceStorePort } from "@freeanima/storage-repos";
+import type { MemoryReferenceStorePort } from "@freeanima/core/repos";
 
 import * as repo from "./repos/memory-reference-repo.ts";
 

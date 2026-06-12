@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { mergeSessionToolNames, resolveExecutableToolNames } from "./session-tools.ts";
-import type { SessionMetaMessage } from "@freeanima/storage-db/domain";
+import type { SessionMetaMessage } from "@freeanima/core/db/domain";
 
 describe("mergeSessionToolNames", () => {
   it("dedupes and merges", () => {

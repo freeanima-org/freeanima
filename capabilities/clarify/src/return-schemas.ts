@@ -1,4 +1,4 @@
-import { defineToolReturn, type ToolReturnContractFields, z } from "@freeanima/mechanism-tool";
+import { defineToolReturn, type ToolReturnContractFields, z } from "@freeanima/core/tool";
 
 const clarifyItemSchema = z.object({
   question: z.string(),

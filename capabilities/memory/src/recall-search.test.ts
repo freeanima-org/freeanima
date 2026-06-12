@@ -4,7 +4,7 @@ import type {
   LimbicMemoryStorePort,
   SemanticMemoryStorePort,
   SessionStorePort,
-} from "@freeanima/storage-repos";
+} from "@freeanima/core/repos";
 import {
   registerAutobiographicalMemoryStore,
   registerLimbicMemoryStore,

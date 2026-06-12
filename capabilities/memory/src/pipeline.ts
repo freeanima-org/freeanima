@@ -3,7 +3,7 @@ import type {
   LimbicMemoryStorePort,
   SemanticMemoryStorePort,
   SessionStorePort,
-} from "@freeanima/storage-repos";
+} from "@freeanima/core/repos";
 import { registerAutobiographicalMemoryStore } from "./autobiographical-port.ts";
 import { registerLimbicMemoryStore } from "./limbic-port.ts";
 import { registerMemorySessionStore } from "./session-port.ts";

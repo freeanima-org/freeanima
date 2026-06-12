@@ -6,10 +6,7 @@
     "./*": "./src/*.ts"
   },
   "dependencies": {
-    "@freeanima/storage-db": "workspace:*",
-    "@freeanima/mechanism-tool": "workspace:*",
-    "@freeanima/mechanism-hooks": "workspace:*",
-    "@freeanima/storage-config": "workspace:*"
+    "@freeanima/core": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "catalog:"

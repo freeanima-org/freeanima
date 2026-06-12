@@ -5,4 +5,4 @@ export {
   getToolRegistry,
   grantExecutableTools,
   isExecutableTool,
-} from "@freeanima/mechanism-tool";
+} from "@freeanima/core/tool";

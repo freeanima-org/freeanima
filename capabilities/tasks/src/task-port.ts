@@ -1,4 +1,4 @@
-import type { TaskStorePort } from "@freeanima/storage-repos";
+import type { TaskStorePort } from "@freeanima/core/repos";
 
 let taskStore: TaskStorePort | null = null;
 

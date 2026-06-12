@@ -1,6 +1,6 @@
 import type { HookRegistry } from "@freeanima/kernel/hooks";
-import { systemPromptBuild } from "@freeanima/mechanism-hooks/prompt";
-import type { ToolSetRegistry } from "@freeanima/mechanism-tool";
+import { systemPromptBuild } from "@freeanima/core/hooks/prompt";
+import type { ToolSetRegistry } from "@freeanima/core/tool";
 import { renderToolsetsSection } from "./toolset-prompt.ts";
 
 export function registerToolsetSystemPromptHooks(

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import type { CronLogAppendInput } from "@freeanima/storage-repos";
+import type { CronLogAppendInput } from "@freeanima/core/repos";
 
 import { setCronLogStore } from "./cron-log.ts";
 

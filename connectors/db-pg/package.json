@@ -6,10 +6,7 @@
     "./fts": "./src/fts/index.ts"
   },
   "dependencies": {
-    "@freeanima/storage-repos": "workspace:*",
-    "@freeanima/storage-db": "workspace:*",
-    "@freeanima/storage-tokenizer": "workspace:*",
-    "@freeanima/storage-util": "workspace:*",
+    "@freeanima/core": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "@freeanima/service-logging": "workspace:*",
     "@node-rs/jieba": "^2.0.1",

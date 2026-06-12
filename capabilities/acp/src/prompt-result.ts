@@ -1,4 +1,4 @@
-import { toolResult } from "@freeanima/mechanism-tool";
+import { toolResult } from "@freeanima/core/tool";
 import type { CursorPendingInteraction } from "./cursor-decision.ts";
 
 export type AcpCursorMode = "agent" | "plan" | "ask";

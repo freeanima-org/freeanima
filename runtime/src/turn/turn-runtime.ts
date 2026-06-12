@@ -1,6 +1,6 @@
-import type { ToolSetRegistry } from "@freeanima/mechanism-tool";
-import { getActiveConfig, getProfileHopModel } from "@freeanima/storage-config";
-import { PROFILE_CHAT } from "@freeanima/storage-provider-llm";
+import type { ToolSetRegistry } from "@freeanima/core/tool";
+import { getActiveConfig, getProfileHopModel } from "@freeanima/core/config";
+import { PROFILE_CHAT } from "@freeanima/core/provider";
 import {
   getCompressionConfig,
   clearToolLoopSuppression,
@@ -9,11 +9,11 @@ import {
   parseCompressionState,
   buildCompressOptions,
   willAdvanceCompression,
-} from "@freeanima/mechanism-compress";
-import { persistToolLoopRepair, REPAIR_REASON_LOST } from "@freeanima/mechanism-llm";
+} from "@freeanima/core/compress";
+import { persistToolLoopRepair, REPAIR_REASON_LOST } from "@freeanima/core/llm";
 import { injectTimePrefixes } from "./time-perception.ts";
 import { advanceCompressionMeta } from "./compression-orchestration.ts";
-import type { PgRepositories } from "@freeanima/storage-repos";
+import type { PgRepositories } from "@freeanima/core/repos";
 import {
   isSessionMeta,
   appendMessage,

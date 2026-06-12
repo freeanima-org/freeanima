@@ -1,5 +1,5 @@
 import { triggerServiceRestart } from "@freeanima/service-api/process-restart";
-import { resolveAnimaExecutable } from "@freeanima/storage-config/cli-install";
+import { resolveAnimaExecutable } from "@freeanima/core/config/cli-install";
 import { logComponent } from "@freeanima/service-logging";
 import { spawnSync } from "node:child_process";
 import type { EngineRunControl } from "./engine-run-control.ts";

@@ -1,6 +1,6 @@
-import type { ToolSetRegistry } from "@freeanima/mechanism-tool";
-import { getActiveConfig, getProfileHopModel } from "@freeanima/storage-config";
-import { PROFILE_CHAT } from "@freeanima/storage-provider-llm";
+import type { ToolSetRegistry } from "@freeanima/core/tool";
+import { getActiveConfig, getProfileHopModel } from "@freeanima/core/config";
+import { PROFILE_CHAT } from "@freeanima/core/provider";
 import {
   getCompressionConfig,
   analyzeCompression,
@@ -10,7 +10,7 @@ import {
   scheduleCompressionSummary,
   flushCompressionSummaries,
   maybeApplyEmergencyCompression,
-} from "@freeanima/mechanism-compress";
+} from "@freeanima/core/compress";
 import {
   isSessionMeta,
   load,
@@ -20,7 +20,7 @@ import {
   type Message,
   type SessionMetaLoadResult,
 } from "@freeanima/runtime/session";
-import type { PgRepositories } from "@freeanima/storage-repos";
+import type { PgRepositories } from "@freeanima/core/repos";
 
 function defaultChatModel(): string {
   return getProfileHopModel(getActiveConfig().data, PROFILE_CHAT);

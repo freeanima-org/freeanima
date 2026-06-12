@@ -5,9 +5,9 @@ import {
   type CompressionState,
   type SessionMetaMessage,
   type SessionTodoStore,
-} from "@freeanima/storage-db/domain";
+} from "@freeanima/core/db/domain";
 
-import type { SessionSummaryRow } from "@freeanima/storage-repos";
+import type { SessionSummaryRow } from "@freeanima/core/repos";
 import {
   acpTasksSchema,
   awaitingClarifySchema,
@@ -17,7 +17,7 @@ import {
   sessionLoadedToolsSchema,
   sessionToolsSchema,
   sessions,
-} from "@freeanima/storage-db/schema";
+} from "@freeanima/core/db/schema";
 
 import { getDb } from "../../client.ts";
 import {

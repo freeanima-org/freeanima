@@ -1,4 +1,4 @@
-import type { ClarifyItem } from "@freeanima/storage-db/domain";
+import type { ClarifyItem } from "@freeanima/core/db/domain";
 
 import type { ClarifyPayload } from "./types.ts";
 

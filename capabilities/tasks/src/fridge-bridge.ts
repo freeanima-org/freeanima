@@ -1,4 +1,4 @@
-import type { TaskPriority, TaskRow, TaskStorePort } from "@freeanima/storage-repos";
+import type { TaskPriority, TaskRow, TaskStorePort } from "@freeanima/core/repos";
 import type { FridgeBridge } from "./types.ts";
 
 const SUMMARY_PREVIEW = 5;

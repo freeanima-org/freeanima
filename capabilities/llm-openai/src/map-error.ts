@@ -3,7 +3,7 @@ import {
   ProviderError,
   providerErrorFromHttpStatus,
   type ProviderErrorCode,
-} from "@freeanima/storage-provider-llm";
+} from "@freeanima/core/provider";
 
 function mapOpenAiErrorCode(status: number | undefined): ProviderErrorCode {
   if (status === 429) return "rate_limited";

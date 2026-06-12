@@ -1,5 +1,5 @@
-import type { ToolSetRegistry } from "@freeanima/mechanism-tool";
-import { attachToolReturns, toolError, toolResult } from "@freeanima/mechanism-tool";
+import type { ToolSetRegistry } from "@freeanima/core/tool";
+import { attachToolReturns, toolError, toolResult } from "@freeanima/core/tool";
 import { MEMORY_TOOL_RETURNS } from "./return-schemas.ts";
 import { semanticMemoryToolDefs, rememberFromArgs } from "./semantic-memory-tools.ts";
 import { autobiographicalMemoryToolDefs } from "./autobiographical-tools.ts";

@@ -1,5 +1,5 @@
 import { sql as drizzleSql } from "drizzle-orm";
-import type { MessageFtsHit } from "@freeanima/storage-repos";
+import type { MessageFtsHit } from "@freeanima/core/repos";
 
 import { getDb } from "../../client.ts";
 import { hybridSearchMessages } from "../../fts/hybrid-search.ts";

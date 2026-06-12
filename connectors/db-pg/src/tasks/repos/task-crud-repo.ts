@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { and, asc, eq, inArray, or, sql } from "drizzle-orm";
-import { tasks, taskPrioritySchema, taskStatusSchema } from "@freeanima/storage-db/schema";
+import { tasks, taskPrioritySchema, taskStatusSchema } from "@freeanima/core/db/schema";
 import type {
   TaskCreateInput,
   TaskListOpts,
@@ -8,8 +8,8 @@ import type {
   TaskRow,
   TaskStatus,
   TaskUpdateInput,
-} from "@freeanima/storage-repos";
-import { formatCstIso } from "@freeanima/storage-util";
+} from "@freeanima/core/repos";
+import { formatCstIso } from "@freeanima/core/util";
 
 import { getDb } from "../../client.ts";
 import { mapTaskRow } from "../mappers/task-mapper.ts";

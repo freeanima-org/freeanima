@@ -4,7 +4,7 @@ import {
   parseOpenAiCompatibleContext,
   type OpenAiCompatibleContext,
 } from "./context.ts";
-import type { BackendContext } from "@freeanima/storage-provider-llm";
+import type { BackendContext } from "@freeanima/core/provider";
 
 export function createOpenAiClient(context: BackendContext): OpenAI {
   const cfg = parseOpenAiCompatibleContext(context);

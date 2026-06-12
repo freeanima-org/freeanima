@@ -1,4 +1,4 @@
-import type { CronLogListOpts, CronLogRow } from "@freeanima/storage-repos";
+import type { CronLogListOpts, CronLogRow } from "@freeanima/core/repos";
 import {
   buildSleepSummary,
   listDeepSleepRoundLogs,

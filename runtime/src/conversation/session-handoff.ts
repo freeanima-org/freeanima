@@ -2,9 +2,9 @@ import {
   generateSessionSummary,
   getL4,
   type GenerateSummaryResult,
-} from "@freeanima/mechanism-compress";
-import { isSessionMeta, parseCompressionState } from "@freeanima/storage-db/domain";
-import type { PgRepositories } from "@freeanima/storage-repos";
+} from "@freeanima/core/compress";
+import { isSessionMeta, parseCompressionState } from "@freeanima/core/db/domain";
+import type { PgRepositories } from "@freeanima/core/repos";
 import { load, loadSessionMeta } from "./conversation.ts";
 
 /** /new etc.: read-only old session; generate handoff summary for new session (does not write old session) */

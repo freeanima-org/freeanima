@@ -4,11 +4,11 @@ import { registerClarifyHooks } from "@freeanima/capabilities-clarify";
 import { createAcpProgressDelivery } from "./acp-progress-delivery.ts";
 import { createAcpTaskQueryPort } from "./acp-task-query.ts";
 import type { Kernel } from "@freeanima/kernel";
-import type { Config } from "@freeanima/storage-config";
-import { beforeLlmCall } from "@freeanima/mechanism-hooks/loop";
+import type { Config } from "@freeanima/core/config";
+import { beforeLlmCall } from "@freeanima/core/hooks/loop";
 import type { ConversationService } from "@freeanima/runtime/conversation";
-import type { SkillRegistry } from "@freeanima/mechanism-skill";
-import type { ToolSetRegistry } from "@freeanima/mechanism-tool";
+import type { SkillRegistry } from "@freeanima/core/skill";
+import type { ToolSetRegistry } from "@freeanima/core/tool";
 
 /** Register clarify hook and ACP tools (requires kernel + conversation) */
 export function registerServiceIntegrations(opts: {

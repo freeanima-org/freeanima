@@ -1,5 +1,5 @@
-import { logCapability as logComponent } from "@freeanima/storage-config";
-import { formatCstIso } from "@freeanima/storage-util";
+import { logCapability as logComponent } from "@freeanima/core/config";
+import { formatCstIso } from "@freeanima/core/util";
 
 import { composeSystemPrompt, decomposeSystemPromptParts } from "../system-prompt.ts";
 import { runDeepSleepEngine } from "../deep-sleep-port.ts";

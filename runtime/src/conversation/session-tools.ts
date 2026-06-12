@@ -4,4 +4,4 @@ export {
   resolveExecutableToolNames,
   resetSessionToolsToDefault,
   type LoadToolsIntoSessionResult,
-} from "@freeanima/mechanism-tool";
+} from "@freeanima/core/tool";

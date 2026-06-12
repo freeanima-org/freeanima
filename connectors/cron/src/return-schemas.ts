@@ -1,4 +1,4 @@
-import { defineToolReturn, type ToolReturnContractFields, z } from "@freeanima/mechanism-tool";
+import { defineToolReturn, type ToolReturnContractFields, z } from "@freeanima/core/tool";
 
 const cronJobListItemSchema = z.object({
   id: z.string(),

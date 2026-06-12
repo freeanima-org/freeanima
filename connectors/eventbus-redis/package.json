@@ -5,6 +5,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "@freeanima/core": "workspace:*",
     "@freeanima/kernel": "workspace:*"
   },
   "devDependencies": {

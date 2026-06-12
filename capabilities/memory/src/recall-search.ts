@@ -2,7 +2,7 @@ import type {
   AutobiographicalMemoryRow,
   LimbicMemoryRow,
   SemanticFtsHit,
-} from "@freeanima/storage-repos";
+} from "@freeanima/core/repos";
 import {
   autobiographicalDocKey,
   buildTextSearchSnippet,
@@ -10,7 +10,7 @@ import {
   messageDocKey,
   rrfMerge,
   semanticMemoryDocKey,
-} from "@freeanima/storage-util";
+} from "@freeanima/core/util";
 
 import { getAutobiographicalMemoryStore } from "./autobiographical-port.ts";
 import { getLimbicMemoryStore } from "./limbic-port.ts";

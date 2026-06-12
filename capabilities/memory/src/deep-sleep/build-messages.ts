@@ -1,5 +1,5 @@
-import type { SemanticMemoryRow } from "@freeanima/storage-repos";
-import { RESIDENT_PINNED_MAX } from "@freeanima/storage-repos";
+import type { SemanticMemoryRow } from "@freeanima/core/repos";
+import { RESIDENT_PINNED_MAX } from "@freeanima/core/repos";
 
 import { getSemanticMemoryStore } from "../semantic-port.ts";
 import type { DeepSleepRound, DeepSleepChangeLog } from "./types.ts";

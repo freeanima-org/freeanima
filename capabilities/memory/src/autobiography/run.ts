@@ -3,9 +3,9 @@ import type {
   AutobiographicalMemoryStorePort,
   SelfLayerStorePort,
   SemanticMemoryStorePort,
-} from "@freeanima/storage-repos";
-import { logCapability as logComponent } from "@freeanima/storage-config";
-import { formatCstIso } from "@freeanima/storage-util";
+} from "@freeanima/core/repos";
+import { logCapability as logComponent } from "@freeanima/core/config";
+import { formatCstIso } from "@freeanima/core/util";
 
 import { composeSystemPrompt, decomposeSystemPromptParts } from "../system-prompt.ts";
 import { runAutobiographyEngine } from "../autobiography-port.ts";

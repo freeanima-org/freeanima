@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
-import { Config, type AnimaConfig, animaConfigSchema } from "@freeanima/storage-config";
+import { Config, type AnimaConfig, animaConfigSchema } from "@freeanima/core/config";
 import { parseYaml, stringifyYaml } from "./yaml.ts";
 import { PATHS } from "./paths.ts";
 import { expandConfigEnv } from "./env-expand.ts";

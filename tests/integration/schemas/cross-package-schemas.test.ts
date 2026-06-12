@@ -6,11 +6,8 @@ import {
 } from "@freeanima/capabilities-memory/schemas/event-payloads";
 import { factExtractionSchema } from "@freeanima/capabilities-memory/schemas/fact-extraction";
 import { filterRecallableMessages } from "@freeanima/capabilities-memory";
-import { toolArgsSchema, toolErrorSchema } from "@freeanima/mechanism-tool";
-import {
-  parseCompressionState,
-  clarifyToolAwaitingResultSchema,
-} from "@freeanima/storage-db/domain";
+import { toolArgsSchema, toolErrorSchema } from "@freeanima/core/tool";
+import { parseCompressionState, clarifyToolAwaitingResultSchema } from "@freeanima/core/db/domain";
 import { jsonRpcMessageSchema } from "@freeanima/capabilities-acp/schemas/acp-jsonrpc";
 import {
   weixinContextTokensSchema,

@@ -1,4 +1,4 @@
-import { animaBinString } from "@freeanima/storage-config/cli-install";
+import { animaBinString } from "@freeanima/core/config/cli-install";
 import { PATHS } from "@freeanima/service-config";
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";

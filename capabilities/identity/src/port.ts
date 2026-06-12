@@ -1,4 +1,4 @@
-import type { SelfLayerStorePort } from "@freeanima/storage-repos";
+import type { SelfLayerStorePort } from "@freeanima/core/repos";
 
 let selfLayerStore: SelfLayerStorePort | null = null;
 

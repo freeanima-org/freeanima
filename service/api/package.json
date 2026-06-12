@@ -24,15 +24,11 @@
     "./stream-reply-state": "./src/stream-reply-state.ts"
   },
   "dependencies": {
+    "@freeanima/core": "workspace:*",
     "@freeanima/kernel": "workspace:*",
-    "@freeanima/mechanism-llm": "workspace:*",
-    "@freeanima/mechanism-skill": "workspace:*",
-    "@freeanima/mechanism-tool": "workspace:*",
     "@freeanima/runtime": "workspace:*",
     "@freeanima/service-config": "workspace:*",
-    "@freeanima/service-logging": "workspace:*",
-    "@freeanima/storage-config": "workspace:*",
-    "@freeanima/storage-repos": "workspace:*"
+    "@freeanima/service-logging": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "catalog:"

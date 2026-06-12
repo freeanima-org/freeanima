@@ -1,5 +1,5 @@
-import { defineToolReturn, type ToolReturnContractFields, z } from "@freeanima/mechanism-tool";
-import { TASK_PRIORITIES, TASK_STATUSES } from "@freeanima/storage-repos";
+import { defineToolReturn, type ToolReturnContractFields, z } from "@freeanima/core/tool";
+import { TASK_PRIORITIES, TASK_STATUSES } from "@freeanima/core/repos";
 
 const taskRowSchema = z.object({
   id: z.string(),

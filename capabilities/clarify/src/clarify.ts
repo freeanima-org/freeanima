@@ -1,5 +1,5 @@
-import type { Config } from "@freeanima/storage-config";
-import { formatCstIso } from "@freeanima/storage-util";
+import type { Config } from "@freeanima/core/config";
+import { formatCstIso } from "@freeanima/core/util";
 import {
   clarifyToolAwaitingResultSchema,
   clarifyToolResolvedResultSchema,
@@ -9,10 +9,10 @@ import {
   type ClarifyItem,
   type ClarifyToolAwaitingResult,
   type ClarifyToolResolvedResult,
-} from "@freeanima/storage-db/domain";
-import { safeParseOrNull } from "@freeanima/storage-util";
-import { parseToolResult } from "@freeanima/mechanism-tool";
-import type { SessionConversationPort } from "@freeanima/mechanism-tool/session-conversation-port";
+} from "@freeanima/core/db/domain";
+import { safeParseOrNull } from "@freeanima/core/util";
+import { parseToolResult } from "@freeanima/core/tool";
+import type { SessionConversationPort } from "@freeanima/core/tool/session-conversation-port";
 
 export type { ClarifyItem, AwaitingClarify };
 export type ClarifyAwaitingResult = ClarifyToolAwaitingResult;

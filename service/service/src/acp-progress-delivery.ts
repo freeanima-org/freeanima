@@ -6,7 +6,7 @@ import type {
 import { deliverToTargets, type CronDeliverTarget } from "@freeanima/connectors-cron/deliver";
 import { isSessionMeta } from "@freeanima/runtime/conversation";
 import type { ConversationService } from "@freeanima/runtime/conversation";
-import type { SessionMetaLoadResult } from "@freeanima/storage-db/domain";
+import type { SessionMetaLoadResult } from "@freeanima/core/db/domain";
 import type { EventBus } from "@freeanima/kernel/eventbus";
 import { sessionUpdated } from "@freeanima/capabilities-memory";
 import { logComponent } from "@freeanima/service-logging";

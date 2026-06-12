@@ -1,4 +1,4 @@
-import type { AutobiographicalMemoryStorePort } from "@freeanima/storage-repos";
+import type { AutobiographicalMemoryStorePort } from "@freeanima/core/repos";
 
 import * as crudRepo from "./repos/autobiographical-crud-repo.ts";
 

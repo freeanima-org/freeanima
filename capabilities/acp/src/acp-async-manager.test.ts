@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { Config } from "@freeanima/storage-config";
+import { Config } from "@freeanima/core/config";
 import { parseYaml } from "@freeanima/service-config";
 import { animaConfigSchema } from "@freeanima/service-config/schemas/config";
 import { MINIMAL_LLM_YAML } from "@freeanima/service-config/test-helpers/minimal-llm-config";

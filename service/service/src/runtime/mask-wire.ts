@@ -5,8 +5,8 @@ import type {
   ResolvedMask,
   SessionCapabilityMask,
 } from "@freeanima/capabilities-mask";
-import type { ToolSetRegistry } from "@freeanima/mechanism-tool";
-import { isSessionMeta, type SessionMetaMessage } from "@freeanima/storage-db/domain";
+import type { ToolSetRegistry } from "@freeanima/core/tool";
+import { isSessionMeta, type SessionMetaMessage } from "@freeanima/core/db/domain";
 import { parseYaml, PATHS } from "@freeanima/service-config";
 import { logComponent } from "@freeanima/service-logging";
 import { z } from "zod";

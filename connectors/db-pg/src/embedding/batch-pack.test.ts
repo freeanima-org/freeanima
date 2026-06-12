@@ -1,12 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
-import { FALLBACK_TOKENIZER_REPO } from "@freeanima/storage-tokenizer";
-import { countTokens } from "@freeanima/storage-tokenizer";
+import { FALLBACK_TOKENIZER_REPO } from "@freeanima/core/tokenizer";
+import { countTokens } from "@freeanima/core/tokenizer";
 import {
   bindModelToFallbackForTest,
   ensureFallbackTokenizer,
   resetTokenizerForTest,
   setTokenizerEncodeForTest,
-} from "@freeanima/storage-tokenizer/testing";
+} from "@freeanima/core/tokenizer/testing";
 
 import { expandJobsToUnits, MAX_CHUNK_TOKENS, TARGET_BATCH_TOKENS } from "./batch-pack.ts";
 import type { EmbeddingPendingJob } from "./types.ts";

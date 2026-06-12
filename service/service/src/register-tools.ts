@@ -18,9 +18,9 @@ import {
   sendEmail,
 } from "@freeanima/connectors-email";
 import { registerEstateTools } from "@freeanima/capabilities-estate";
-import type { Config } from "@freeanima/storage-config";
-import type { SkillRegistry } from "@freeanima/mechanism-skill";
-import type { ToolSetRegistry } from "@freeanima/mechanism-tool";
+import type { Config } from "@freeanima/core/config";
+import type { SkillRegistry } from "@freeanima/core/skill";
+import type { ToolSetRegistry } from "@freeanima/core/tool";
 import { registerMemoryTools } from "@freeanima/capabilities-memory";
 
 let registeredCatalog: { toolSets: ToolSetRegistry; skills: SkillRegistry } | null = null;

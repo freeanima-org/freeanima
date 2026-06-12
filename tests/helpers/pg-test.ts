@@ -15,17 +15,17 @@ import {
   initLlmRuntime,
   registerLlmStackConfigurator,
   resetLlmRuntimeForTests,
-} from "@freeanima/mechanism-llm";
+} from "@freeanima/core/llm";
 import { wireOpenAiCompatibleLlm } from "@freeanima/capabilities-llm-openai";
 import {
   createConversationService,
   type ConversationService,
 } from "@freeanima/runtime/conversation";
-import type { PgRepositories } from "@freeanima/storage-repos";
+import type { PgRepositories } from "@freeanima/core/repos";
 import { FileConfig, type Config } from "@freeanima/service-config";
 import { createTestLogger } from "@freeanima/kernel/logging/testing";
-import type { SessionMessage, SessionMetaMessage } from "@freeanima/storage-db/domain";
-import { relations } from "@freeanima/storage-db/schema";
+import type { SessionMessage, SessionMetaMessage } from "@freeanima/core/db/domain";
+import { relations } from "@freeanima/core/db/schema";
 import { drizzle } from "drizzle-orm/bun-sql/postgres";
 import { SQL } from "bun";
 import type { Engine } from "@freeanima/runtime";

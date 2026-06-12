@@ -13,7 +13,7 @@ import {
   SELF_LAYER_SYSTEM_FRAME,
 } from "@freeanima/capabilities-identity";
 
-import { isSessionMeta } from "@freeanima/storage-db/domain";
+import { isSessionMeta } from "@freeanima/core/db/domain";
 import { readFileSync, mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";

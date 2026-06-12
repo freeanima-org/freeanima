@@ -3,7 +3,7 @@ import type {
   ChatCompletionCreateParamsStreaming,
 } from "openai/resources/chat/completions";
 import type { ChatCompletionTool } from "openai/resources/chat/completions";
-import type { ChatRequest } from "@freeanima/storage-provider-llm";
+import type { ChatRequest } from "@freeanima/core/provider";
 import { messagesForApi } from "./messages.ts";
 
 const DEFAULT_MAX_OUTPUT_TOKENS = 100 * 1024;

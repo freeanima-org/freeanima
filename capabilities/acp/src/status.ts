@@ -1,5 +1,5 @@
-import { isEnabledByDefault } from "@freeanima/storage-util";
-import { acpAgentSchema } from "@freeanima/storage-config";
+import { isEnabledByDefault } from "@freeanima/core/util";
+import { acpAgentSchema } from "@freeanima/core/config";
 import type { z } from "zod";
 
 export type AcpAgentConfig = z.infer<typeof acpAgentSchema>;

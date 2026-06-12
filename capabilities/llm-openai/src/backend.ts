@@ -6,7 +6,7 @@ import {
   type ChatStreamEvent,
   type ModelInfo,
   type ProviderError,
-} from "@freeanima/storage-provider-llm";
+} from "@freeanima/core/provider";
 import { contextCacheKey, parseOpenAiCompatibleContext } from "./context.ts";
 import { createOpenAiClientFromParsed } from "./client.ts";
 import { defaultModelInfo, fetchModelCatalog, findModelInCatalog } from "./catalog.ts";

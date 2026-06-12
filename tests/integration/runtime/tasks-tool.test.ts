@@ -7,7 +7,7 @@ import {
 } from "../../helpers/integration-case.ts";
 
 import { runWithToolContext } from "@freeanima/runtime/loop";
-import { ToolSetRegistry } from "@freeanima/mechanism-tool";
+import { ToolSetRegistry } from "@freeanima/core/tool";
 import { getProfileHopModel } from "@freeanima/service-config";
 import {
   registerTaskTools,
