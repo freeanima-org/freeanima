@@ -26,6 +26,7 @@ export {
   listSemanticMemories,
   listLimbicMemories,
   listAutobiographicalMemories,
+  updateSemanticMemoryPinned,
 } from "./memory.ts";
 export { getPromptDebug } from "./prompt.ts";
 export { listSelfBlocks } from "./self.ts";

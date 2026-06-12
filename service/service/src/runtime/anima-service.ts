@@ -283,6 +283,10 @@ export class AnimaService implements StreamTurnHost {
     return memory.listSemanticMemories(args);
   }
 
+  updateSemanticMemoryPinned(id: string, pinned: boolean) {
+    return memory.updateSemanticMemoryPinned(id, pinned);
+  }
+
   listLimbicMemories(args?: Parameters<typeof memory.listLimbicMemories>[0]) {
     return memory.listLimbicMemories(args);
   }

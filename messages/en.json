@@ -245,6 +245,8 @@
   "webui_chamber_self_layer_updated": "Updated {time}",
   "webui_chamber_semantic_created": "Created",
   "webui_chamber_semantic_desc": "Browse PG semantic_memory with FTS search and filters.",
+  "webui_chamber_semantic_pin_toggle": "Pin to resident memory",
+  "webui_chamber_semantic_pinned": "Pinned",
   "webui_chamber_semantic_rank": "Rank",
   "webui_chamber_semantic_reference_count": "Refs",
   "webui_chamber_semantic_search_fts": "Search term (optional, FTS)",

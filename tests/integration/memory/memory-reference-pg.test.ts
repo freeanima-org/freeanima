@@ -86,6 +86,37 @@ describePg("memory_references PG", () => {
     expect((await semanticMemory.get(hotId))?.reference_count).toBe(2);
   });
 
+  it("listResident caps pinned at RESIDENT_PINNED_MAX", async () => {
+    const { semanticMemory } = getTestEngine().repos;
+    const { RESIDENT_PINNED_MAX } = await import("@freeanima/storage-repos");
+
+    for (let i = 0; i < RESIDENT_PINNED_MAX + 2; i++) {
+      await semanticMemory.create({
+        content: `pinned cap probe ${i}`,
+        pinned: true,
+      });
+    }
+
+    const resident = await semanticMemory.listResident(RESIDENT_PINNED_MAX);
+    expect(resident.length).toBe(RESIDENT_PINNED_MAX);
+    expect(resident.every((r) => r.pinned)).toBe(true);
+  });
+
+  it("deprecate clears pinned flag", async () => {
+    const { semanticMemory } = getTestEngine().repos;
+
+    const id = await semanticMemory.create({
+      content: "pinned then deprecated",
+      pinned: true,
+    });
+    expect((await semanticMemory.get(id))?.pinned).toBe(true);
+
+    const ok = await semanticMemory.deprecate(id);
+    expect(ok).toBe(true);
+    expect((await semanticMemory.get(id))?.pinned).toBe(false);
+    expect((await semanticMemory.get(id))?.status).toBe("deprecated");
+  });
+
   it("session delete invalidates references and full sync zeroes counts", async () => {
     const { semanticMemory, memoryReference, session } = getTestEngine().repos;
 

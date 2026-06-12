@@ -129,6 +129,23 @@ export async function listSemanticMemories(
   return { items, total, offset, limit };
 }
 
+export async function updateSemanticMemoryPinned(
+  id: string,
+  pinned: boolean,
+): Promise<{ ok: true; id: string; pinned: boolean }> {
+  const memoryId = id.trim();
+  if (!memoryId) throw new Error("id is required");
+
+  const existing = await semanticRepos().get(memoryId);
+  if (!existing) throw new Error(`Memory not found: ${memoryId}`);
+  if (existing.status !== "active") {
+    throw new Error(`Only active memories can be pinned: ${memoryId}`);
+  }
+
+  await semanticRepos().update({ id: memoryId, pinned });
+  return { ok: true, id: memoryId, pinned };
+}
+
 export async function listLimbicMemories(
   args: LimbicListOpts = {},
 ): Promise<MemoryListResult<LimbicMemoryRow>> {

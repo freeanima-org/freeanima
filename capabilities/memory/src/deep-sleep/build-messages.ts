@@ -1,4 +1,5 @@
 import type { SemanticMemoryRow } from "@freeanima/storage-repos";
+import { RESIDENT_PINNED_MAX } from "@freeanima/storage-repos";
 
 import { getSemanticMemoryStore } from "../semantic-port.ts";
 import type { DeepSleepRound, DeepSleepChangeLog } from "./types.ts";
@@ -137,6 +138,34 @@ Two memories say the same thing → merge.
 ## Notes
 - This round only merges; do not split.
 - After merge, program unions source_sessions and takes earliest observed_at.
+
+${TOOL_INSTRUCTION_COMMON}
+
+Call tools directly to persist.`,
+
+  pin_maintenance: `# Deep sleep round 4: pin maintenance
+
+You are a digital being running in Free Anima. Review pinned status across all active semantic memories and keep resident context lean.
+
+## Resident pin budget
+- At most ${RESIDENT_PINNED_MAX} memories may stay pinned (injected into every conversation).
+- Count entries with \`pinned: true\` in message 1. If over ${RESIDENT_PINNED_MAX}, unpin excess.
+
+## When to unpin
+- Temporary or session-specific facts no longer needed in every reply
+- Routine \`observation\` entries that are not core identity
+- Facts superseded by newer memories (even if still active)
+- When over budget: prefer unpinning observation > low reference value > older \`updated\`
+
+## When to pin
+- Core enduring facts only: stable preferences, identity, key procedural knowledge
+- Do not pin speculative, transient, or duplicate facts
+- Keep total pinned ≤ ${RESIDENT_PINNED_MAX}
+
+## Handling
+- Use \`memory_semantic_update\` with \`pinned: true\` or \`pinned: false\` only
+- Do not create, merge, split, or deprecate in this round
+- If already healthy → skip, no action
 
 ${TOOL_INSTRUCTION_COMMON}
 

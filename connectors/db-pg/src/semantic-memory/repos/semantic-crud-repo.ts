@@ -9,7 +9,11 @@ import type {
   SemanticMemoryRow,
   SemanticMemoryUpdateInput,
 } from "@freeanima/storage-repos";
+import { RESIDENT_PINNED_MAX } from "@freeanima/storage-repos";
 import { formatCstIso } from "@freeanima/storage-util";
+import { logComponent } from "@freeanima/service-logging";
+
+const log = logComponent("memory");
 
 import { resolveFtsSegmentedForWrite } from "../../fts/write.ts";
 import { scheduleSemanticMemoryEmbedding } from "../../embedding/schedule.ts";
@@ -118,7 +122,7 @@ export async function deprecateSemanticMemory(id: string): Promise<boolean> {
   const db = getDb();
   const updated = await db
     .update(semanticMemory)
-    .set({ status: "deprecated", updated: new Date(formatCstIso()) })
+    .set({ status: "deprecated", pinned: false, updated: new Date(formatCstIso()) })
     .where(eq(semanticMemory.id, id))
     .returning({ id: semanticMemory.id });
   return updated.length > 0;
@@ -144,12 +148,22 @@ export async function listResidentSemanticMemory(topN = 20): Promise<SemanticMem
   const limit = Math.max(1, Math.min(100, topN));
   const db = getDb();
 
-  const pinnedRows = await db
+  const allPinnedRows = await db
     .select()
     .from(semanticMemory)
     .where(and(eq(semanticMemory.status, "active"), eq(semanticMemory.pinned, true)))
     .orderBy(desc(semanticMemory.updated));
 
+  if (allPinnedRows.length > RESIDENT_PINNED_MAX) {
+    const omitted = allPinnedRows.slice(RESIDENT_PINNED_MAX);
+    log.warn("resident pinned count exceeds max; truncating", {
+      pinned_count: allPinnedRows.length,
+      pinned_max: RESIDENT_PINNED_MAX,
+      omitted_ids: omitted.map((r) => r.id),
+    });
+  }
+
+  const pinnedRows = allPinnedRows.slice(0, RESIDENT_PINNED_MAX);
   const pinnedIds = new Set(pinnedRows.map((r) => r.id));
   const remaining = Math.max(0, limit - pinnedRows.length);
 

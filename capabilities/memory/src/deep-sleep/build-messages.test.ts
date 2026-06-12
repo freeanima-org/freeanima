@@ -1,7 +1,11 @@
 import { afterEach, describe, expect, it } from "bun:test";
 import type { SemanticMemoryRow, SemanticMemoryStorePort } from "@freeanima/storage-repos";
 
-import { fetchAllActiveMemories, formatAllMemoriesMessage } from "./build-messages.ts";
+import {
+  fetchAllActiveMemories,
+  formatAllMemoriesMessage,
+  buildDeepSleepMessages,
+} from "./build-messages.ts";
 import { registerSemanticMemoryStore, resetSemanticMemoryStoreForTests } from "../semantic-port.ts";
 
 function makeRow(id: string, status: "active" | "deprecated"): SemanticMemoryRow {
@@ -87,5 +91,17 @@ describe("deep sleep build-messages", () => {
 
     const { text } = formatAllMemoriesMessage(result);
     expect(text).toContain("# All semantic memories (2 active entries)");
+  });
+
+  it("buildDeepSleepMessages includes pin_maintenance round instructions", () => {
+    const active = [makeRow("a-1", "active")];
+    const { instructionText } = buildDeepSleepMessages(active, "pin_maintenance", {
+      entries: {},
+      addedIds: [],
+      modifiedIds: [],
+      deprecatedIds: [],
+    });
+    expect(instructionText).toContain("round 4: pin maintenance");
+    expect(instructionText).toContain("memory_semantic_update");
   });
 });

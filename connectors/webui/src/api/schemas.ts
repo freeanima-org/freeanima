@@ -24,6 +24,11 @@ export const semanticMemoryListBodySchema = memoryListPaginationSchema.extend({
   sort_by: semanticMemorySortBySchema.optional(),
 });
 
+export const semanticMemoryPinBodySchema = z.object({
+  id: z.string().min(1),
+  pinned: z.boolean(),
+});
+
 export const limbicMemoryListBodySchema = memoryListPaginationSchema.extend({
   query: z.string().optional(),
   session_id: z.string().optional(),
@@ -91,6 +96,7 @@ export type PatchTitleBody = z.infer<typeof patchTitleBodySchema>;
 export type SendMessageBody = z.infer<typeof sendMessageBodySchema>;
 export type MemorySearchBody = z.infer<typeof memorySearchBodySchema>;
 export type SemanticMemoryListBody = z.infer<typeof semanticMemoryListBodySchema>;
+export type SemanticMemoryPinBody = z.infer<typeof semanticMemoryPinBodySchema>;
 export type LimbicMemoryListBody = z.infer<typeof limbicMemoryListBodySchema>;
 export type AutobiographicalMemoryListBody = z.infer<typeof autobiographicalMemoryListBodySchema>;
 export type TaskListBody = z.infer<typeof taskListBodySchema>;

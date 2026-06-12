@@ -126,7 +126,7 @@ Three-stage evolution from declarative knowledge → dynamic skills → crystall
 Conversion from working memory to long-term memory is handled by the sleep mechanism. See [`sleep.md`](sleep.md).
 
 - **Light sleep (✅):** daily 02:00; semantic + limbic + autobiographical extraction
-- **Deep sleep (✅):** daily 03:00; contradiction/expiry, split, merge
+- **Deep sleep (✅):** daily 03:00; contradiction/expiry, split, merge, pin maintenance
 
 **All conversions must carry identity context**—self layer six blocks + resident memory, not a generic extraction assistant.
 
@@ -145,7 +145,7 @@ Conversion from working memory to long-term memory is handled by the sleep mecha
 | `limbic`           | Emotional memory body                 |
 | `autobiographical` | Narrative title + content snippet     |
 
-Resident memory injected via system prompt: **all pinned** + **most-referenced top N** (default N=20); each carries ID marker; LLM cites same marker at reply end.
+Resident memory injected via system prompt: **up to 20 pinned** + **most-referenced top N** (default N=20); each carries ID marker; LLM cites same marker at reply end. Excess pinned entries are truncated at read time with a warn log; deep sleep round 4 maintains pin budget in the store.
 
 ---
 

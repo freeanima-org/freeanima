@@ -231,6 +231,21 @@ describePg("server memory API", () => {
     expect(searched.items.some((r: { title: string }) => r.title.includes("Milestone"))).toBe(true);
   });
 
+  it("updateSemanticMemoryPinned toggles pinned on active memory", async () => {
+    const id = await getTestEngine().repos.semanticMemory.create({
+      content: "service pin toggle probe",
+      type: "preference",
+    });
+
+    const pinned = await getServiceContext().service.updateSemanticMemoryPinned(id, true);
+    expect(pinned).toEqual({ ok: true, id, pinned: true });
+    expect((await getTestEngine().repos.semanticMemory.get(id))?.pinned).toBe(true);
+
+    const unpinned = await getServiceContext().service.updateSemanticMemoryPinned(id, false);
+    expect(unpinned).toEqual({ ok: true, id, pinned: false });
+    expect((await getTestEngine().repos.semanticMemory.get(id))?.pinned).toBe(false);
+  });
+
   it("listSelfBlocks returns six blocks in order", async () => {
     await getTestEngine().repos.selfLayer.upsertBlock({
       block_key: "direction",

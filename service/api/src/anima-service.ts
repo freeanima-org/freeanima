@@ -56,6 +56,10 @@ export type AnimaService = {
   memorySearch(opts: any): Promise<any>;
   countSemanticMemory(): any;
   listSemanticMemories(opts?: any): Promise<any>;
+  updateSemanticMemoryPinned(
+    id: string,
+    pinned: boolean,
+  ): Promise<{ ok: true; id: string; pinned: boolean }>;
   listLimbicMemories(opts?: any): Promise<any>;
   listAutobiographicalMemories(opts?: any): Promise<any>;
   listTasks(opts?: any): Promise<any>;

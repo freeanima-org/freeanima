@@ -15,6 +15,7 @@ const stateSchema = z.object({
       contradiction_expiry_calls: z.number().optional(),
       split_calls: z.number().optional(),
       merge_calls: z.number().optional(),
+      pin_maintenance_calls: z.number().optional(),
     })
     .optional(),
 });
@@ -49,6 +50,7 @@ export function recordDeepSleepRun(input: {
     contradiction_expiry_calls?: number;
     split_calls?: number;
     merge_calls?: number;
+    pin_maintenance_calls?: number;
   };
 }): void {
   writeDeepSleepState({

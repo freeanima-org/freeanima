@@ -245,6 +245,8 @@
   "webui_chamber_self_layer_updated": "更新 {time}",
   "webui_chamber_semantic_created": "创建时间",
   "webui_chamber_semantic_desc": "浏览 PG semantic_memory 表，支持 FTS 搜索与过滤。",
+  "webui_chamber_semantic_pin_toggle": "置顶到常驻记忆",
+  "webui_chamber_semantic_pinned": "置顶",
   "webui_chamber_semantic_rank": "相关度",
   "webui_chamber_semantic_reference_count": "引用",
   "webui_chamber_semantic_search_fts": "搜索词（可选，FTS）",
