@@ -1,4 +1,4 @@
-import { desc, eq, sql as drizzleSql, and } from "drizzle-orm";
+import { desc, eq, sql as drizzleSql, and, arrayOverlaps } from "drizzle-orm";
 import {
   normalizeSemanticMemoryType,
   semanticMemory,
@@ -19,7 +19,6 @@ import { resolveFtsSegmentedForWrite } from "../../fts/write.ts";
 import { scheduleSemanticMemoryEmbedding } from "../../embedding/schedule.ts";
 import { clearSemanticMemoryEmbedding } from "../../embedding/store.ts";
 import { getDb } from "../../client.ts";
-import { pgTextArrayOverlap } from "../../utils/pg-sql.ts";
 import { mapSemanticMemoryRow } from "../mappers/semantic-mapper.ts";
 import { nextSemanticMemoryId } from "./id-gen.ts";
 
@@ -138,9 +137,10 @@ export async function deleteSemanticMemory(id: string): Promise<boolean> {
 
 export async function countSemanticMemory(): Promise<number> {
   const db = getDb();
-  const rows = await db.execute<{ n: number }>(drizzleSql`
-    SELECT count(*)::int AS n FROM semantic_memory WHERE status = 'active'
-  `);
+  const rows = await db
+    .select({ n: drizzleSql<number>`count(*)::int` })
+    .from(semanticMemory)
+    .where(eq(semanticMemory.status, "active"));
   return Number(rows[0]?.n ?? 0);
 }
 
@@ -212,37 +212,17 @@ export async function listSemanticMemoryBySourceSessions(
   if (!ids.length) return [];
 
   const status = opts?.status ?? "active";
-  const statusFilter = status === "all" ? drizzleSql`` : drizzleSql`AND sm.status = ${status}`;
+  const conditions = [arrayOverlaps(semanticMemory.sourceSessions, ids)];
+  if (status !== "all") {
+    conditions.push(eq(semanticMemory.status, status));
+  }
 
   const db = getDb();
-  const rows = await db.execute<{
-    id: string;
-    type: string;
-    pinned: boolean;
-    content: string;
-    source_sessions: string[];
-    observed_at: Date | null;
-    occurred_at: string | null;
-    status: string;
-    created: Date;
-    updated: Date;
-  }>(drizzleSql`
-    SELECT
-      sm.id,
-      sm.type,
-      sm.pinned,
-      sm.content,
-      sm.source_sessions,
-      sm.observed_at,
-      sm.occurred_at,
-      sm.status,
-      sm.created,
-      sm.updated
-    FROM semantic_memory sm
-    WHERE ${pgTextArrayOverlap("sm.source_sessions", ids)}
-    ${statusFilter}
-    ORDER BY sm.updated DESC
-  `);
+  const rows = await db
+    .select()
+    .from(semanticMemory)
+    .where(and(...conditions))
+    .orderBy(desc(semanticMemory.updated));
   return rows.map(mapSemanticMemoryRow);
 }
 
@@ -253,25 +233,16 @@ export async function findSemanticMemoryByContent(
   if (!trimmed) return null;
 
   const db = getDb();
-  const rows = await db.execute<{
-    id: string;
-    type: string;
-    pinned: boolean;
-    content: string;
-    source_sessions: string[];
-    observed_at: Date | null;
-    occurred_at: string | null;
-    status: string;
-    created: Date;
-    updated: Date;
-  }>(drizzleSql`
-    SELECT
-      id, type, pinned, content, source_sessions, observed_at, occurred_at, status, created, updated
-    FROM semantic_memory
-    WHERE btrim(content) = btrim(${trimmed})
-      AND status = 'active'
-    LIMIT 1
-  `);
+  const rows = await db
+    .select()
+    .from(semanticMemory)
+    .where(
+      and(
+        eq(semanticMemory.status, "active"),
+        drizzleSql`btrim(${semanticMemory.content}) = btrim(${trimmed})`,
+      ),
+    )
+    .limit(1);
   const row = rows[0];
   return row ? mapSemanticMemoryRow(row) : null;
 }

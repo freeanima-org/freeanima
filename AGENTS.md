@@ -37,6 +37,7 @@ Detailed rules: [`.agent/rules/`](.agent/rules/README.md).
 - Layer deps and Registry injection enforced — see [`.agent/rules/code-layers.md`](.agent/rules/code-layers.md) and [`scripts/check-layer-deps.ts`](scripts/check-layer-deps.ts)
 - **Do not manually edit [`CHANGELOG.md`](CHANGELOG.md)** — Release Please only ([`.agent/rules/release.md`](.agent/rules/release.md))
 - PG migrations: `db:generate` then `db:migrate`; never skip `snapshot.json` — [`.agent/rules/coding.md`](.agent/rules/coding.md) § PG migrations
+- PG repository queries: prefer Drizzle ORM; `db.execute` only when necessary — [`.agent/rules/drizzle-db.md`](.agent/rules/drizzle-db.md)
 - Credentials and secrets never in git / logs / tool returns; memory/self-layer changes need extra care ([`docs/concepts/identity.md`](docs/concepts/identity.md))
 
 ### Type ownership (decision order only)
@@ -96,6 +97,7 @@ DATABASE_URL="…" bun run --filter @freeanima/storage-db db:migrate
 | Change type                              | Update                                                                                                  |
 | ---------------------------------------- | ------------------------------------------------------------------------------------------------------- |
 | PG schema / DDL                          | [`storage/db/src/schema/`](storage/db/src/schema/) + [`.agent/rules/coding.md`](.agent/rules/coding.md) |
+| PG query conventions (ORM vs execute)    | [`.agent/rules/drizzle-db.md`](.agent/rules/drizzle-db.md)                                              |
 | PG ops (install, backup, migrate UX)     | [`docs/guide/database.md`](docs/guide/database.md)                                                      |
 | Layer deps / composition root / Registry | [`.agent/rules/code-layers.md`](.agent/rules/code-layers.md) + confirm `check-layer-deps.ts`            |
 | Test strategy / mock tiers               | [`.agent/rules/testing.md`](.agent/rules/testing.md) + [`tests/README.md`](tests/README.md)             |
