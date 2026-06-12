@@ -1,5 +1,6 @@
 import type { FridgeBridge } from "@freeanima/capabilities-tasks";
-import { registerTasksModule } from "@freeanima/capabilities-tasks";
+import { registerTasksModule, syncTasksSummary } from "@freeanima/capabilities-tasks";
+import { isRedisConfigured } from "@freeanima/connectors-redis";
 import type { PgRepositories } from "@freeanima/engine-repos";
 import { registerMemoryPipeline } from "@freeanima/life-memory";
 import { registerSelfLayerStore } from "@freeanima/life-self";
@@ -20,4 +21,13 @@ export function registerServiceStores(
     taskStore: repos.tasks,
     fridgeBridge: opts?.fridgeBridge,
   });
+}
+
+/** Refresh tasks fridge summary on service startup (due titles + undated count) */
+export async function bootstrapTasksFridgeSummary(
+  repos: PgRepositories,
+  fridgeBridge?: FridgeBridge,
+): Promise<void> {
+  if (!repos.pgAvailable || !fridgeBridge || !isRedisConfigured()) return;
+  await syncTasksSummary(repos.tasks, fridgeBridge);
 }
