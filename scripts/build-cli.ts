@@ -7,7 +7,8 @@
  */
 import { $ } from "bun";
 import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { createRequire } from "node:module";
+import { dirname, join } from "node:path";
 
 const ROOT = join(import.meta.dir, "..");
 const CLI_DIR = join(ROOT, "cli");
@@ -16,13 +17,41 @@ const ROOT_PKG = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf-8")) a
   version: string;
 };
 
+/** Bun bundle bakes tiktoken's build-time __dirname; rewrite to load dist/tiktoken_bg.wasm at runtime. */
+const TIKTOKEN_WASM_LOADER_RE =
+  /KnH=__dirname\.split\(RK\.sep\)\.reduce\(\(H,\$,A,L\)=>\{let D=L\.slice\(0,A\+1\)\.join\(RK\.sep\)\+RK\.sep;if\(!D\.includes\("node_modules"\+RK\.sep\)\)H\.unshift\(RK\.join\(D,"node_modules","tiktoken","","\.\/tiktoken_bg\.wasm"\)\);return H\},\[\]\);KnH\.unshift\(RK\.join\(__dirname,"\.\/tiktoken_bg\.wasm"\)\);for\(let H of KnH\)try\{Q5H=BFA\.readFileSync\(H\);break\}catch\{\}/;
+
+const TIKTOKEN_WASM_LOADER_PATCH =
+  'KnH=[RK.join(process.env.FREEANIMA_REPO_ROOT?RK.join(process.env.FREEANIMA_REPO_ROOT,"dist"):RK.dirname(import.meta.path),"tiktoken_bg.wasm")];for(let H of KnH)try{Q5H=BFA.readFileSync(H);break}catch{}';
+
+function patchTiktokenWasmLoader(bundlePath: string): void {
+  const src = readFileSync(bundlePath, "utf-8");
+  if (!TIKTOKEN_WASM_LOADER_RE.test(src)) {
+    throw new Error(
+      "build-cli: tiktoken wasm loader pattern not found; bun bundle layout may have changed",
+    );
+  }
+  writeFileSync(bundlePath, src.replace(TIKTOKEN_WASM_LOADER_RE, TIKTOKEN_WASM_LOADER_PATCH));
+}
+
+function resolveTiktokenWasmPath(): string {
+  const require = createRequire(join(ROOT, "core/package.json"));
+  const tiktokenDir = dirname(require.resolve("tiktoken/package.json"));
+  return join(tiktokenDir, "tiktoken_bg.wasm");
+}
+
 async function main(): Promise<void> {
   rmSync(PUBLISH_DIR, { recursive: true, force: true });
   mkdirSync(join(PUBLISH_DIR, "dist"), { recursive: true });
   mkdirSync(join(PUBLISH_DIR, "connectors/webui"), { recursive: true });
 
   console.log("bundling cli…");
+  const bundlePath = join(PUBLISH_DIR, "dist/cli.js");
   await $`bun build ${join(CLI_DIR, "src/cli.ts")} --outdir ${join(PUBLISH_DIR, "dist")} --target bun --minify`;
+
+  console.log("patching tiktoken wasm loader…");
+  patchTiktokenWasmLoader(bundlePath);
+  cpSync(resolveTiktokenWasmPath(), join(PUBLISH_DIR, "dist/tiktoken_bg.wasm"));
 
   console.log("copying migrations…");
   cpSync(join(ROOT, "core/migrations"), join(PUBLISH_DIR, "migrations"), {
@@ -30,7 +59,7 @@ async function main(): Promise<void> {
   });
 
   console.log("copying webui app…");
-  cpSync(join(ROOT, "connectors/webui/app"), join(PUBLISH_DIR, "connectors/webui/app"), {
+  cpSync(join(ROOT, "platform/connectors/webui/app"), join(PUBLISH_DIR, "connectors/webui/app"), {
     recursive: true,
   });
 
