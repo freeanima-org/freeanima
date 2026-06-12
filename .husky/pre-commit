@@ -1,4 +1,5 @@
 bun run typecheck
 bun run lint
 bun run format
+bun run docs:check-frontmatter
 bun run test:changed

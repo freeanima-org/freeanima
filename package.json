@@ -47,6 +47,7 @@
     "i18n:messages:bootstrap-po": "bun scripts/bootstrap-messages-po.ts",
     "i18n:docs:cfg": "bun scripts/gen-po4a-cfg.ts",
     "i18n:docs:migrate-layout": "bun scripts/migrate-docs-po-layout.ts",
+    "docs:check-frontmatter": "bun scripts/check-docs-frontmatter.ts",
     "i18n:docs:check": "bun scripts/check-po-health.ts",
     "i18n:docs:check:strict": "bun scripts/check-po-health.ts --strict",
     "memory:sample": "bun scripts/memory-sample.ts",
