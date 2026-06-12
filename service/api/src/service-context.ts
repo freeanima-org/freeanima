@@ -1,57 +1,12 @@
-import type { ConversationService } from "@freeanima/orchestration-conversation";
-
-import type { AcpManagerPort } from "./ports/acp-manager.ts";
-import type { MaskRegistryPort } from "./ports/mask-registry.ts";
-import type { McpManagerPort } from "./ports/mcp-manager.ts";
-import type { ServiceEnginePort } from "./ports/service-engine.ts";
-import type { AnimaService } from "./anima-service.ts";
-
-export type ServiceContext = {
-  service: AnimaService;
-  conversation: ConversationService;
-  engine: ServiceEnginePort;
-  masks: MaskRegistryPort;
-  mcp: McpManagerPort | null;
-  acp: AcpManagerPort;
-  host: string;
-  port: number;
-};
-
-/** WebUI SSR bundle duplicates module; shared with anima service main process via globalThis */
-const GLOBAL_CTX_KEY = Symbol.for("freeanima.serviceContext");
-
-let ctx: ServiceContext | null = null;
-
-function readGlobalContext(): ServiceContext | null {
-  return (globalThis as Record<symbol, ServiceContext | undefined>)[GLOBAL_CTX_KEY] ?? null;
-}
-
-export function registerServiceContext(next: ServiceContext): void {
-  ctx = next;
-  (globalThis as Record<symbol, ServiceContext>)[GLOBAL_CTX_KEY] = next;
-}
-
-export function unregisterServiceContext(): void {
-  ctx = null;
-  delete (globalThis as Record<symbol, ServiceContext | undefined>)[GLOBAL_CTX_KEY];
-}
-
-export function getServiceContext(): ServiceContext {
-  const shared = readGlobalContext();
-  if (shared) return shared;
-  if (!ctx) {
-    throw new Error("ServiceContext not initialized");
-  }
-  return ctx;
-}
-
-export function isServiceContextReady(): boolean {
-  return readGlobalContext() !== null || ctx !== null;
-}
-
-export function assertNotShuttingDown(): void {
-  const { service } = getServiceContext();
-  if (service.isShuttingDown()) {
-    throw new Error("Server is shutting down");
-  }
-}
+export type { AppRuntimeContext, ServiceContext, AnimaService } from "./app-runtime-context.ts";
+export {
+  registerAppRuntime,
+  unregisterAppRuntime,
+  getAppRuntime,
+  isAppRuntimeReady,
+  assertNotShuttingDown,
+  registerServiceContext,
+  unregisterServiceContext,
+  getServiceContext,
+  isServiceContextReady,
+} from "./app-runtime-context.ts";

@@ -1,4 +1,4 @@
-import { computeStats, statsReport } from "@freeanima/service";
+import { computeStats, statsReport, getAppRuntime } from "@freeanima/service";
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
@@ -62,12 +62,12 @@ compression:
     await c.appendMessage({ role: "user", content: "hi", pos: 1 }, sid);
     await c.appendMessage({ role: "assistant", content: "ok", pos: 2 }, sid);
 
-    const stats = await computeStats(sid);
+    const stats = await computeStats(getAppRuntime().runtimeDeps(), sid);
     expect(stats.context_breakdown.tools).toBeGreaterThan(stats.context_breakdown.messages);
     expect(stats.context_tokens_est).toBe(stats.context_breakdown.total);
     expect(stats.compression_mode).toBe("token");
 
-    const report = await statsReport(sid);
+    const report = await statsReport(getAppRuntime().runtimeDeps(), sid);
     expect(report).toContain("Tool schema:");
     expect(report).toContain("Mode: token utilization");
     expect(report).not.toContain("message-count fallback");

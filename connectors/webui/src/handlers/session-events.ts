@@ -1,18 +1,14 @@
 import { webuiCtx } from "./runtime.ts";
 
 export async function fetchSessionAcpDock(sessionId: string) {
-  const { service } = webuiCtx();
-  return service.getSessionAcpDock(sessionId);
+  return webuiCtx().getSessionAcpDock(sessionId);
 }
 
 export async function* iterateSessionEvents(
   sessionId: string,
   signal: AbortSignal,
 ): AsyncGenerator<{ event: string; data: string }> {
-  const { service } = webuiCtx();
-  const svc = service as typeof service & {
-    watchSession(id: string, cb: () => void): () => void;
-  };
+  const ctx = webuiCtx();
 
   let pending: (() => void) | null = null;
   const wake = (): void => {
@@ -20,7 +16,7 @@ export async function* iterateSessionEvents(
     pending = null;
   };
 
-  const unwatch = svc.watchSession(sessionId, wake);
+  const unwatch = ctx.watchSession(sessionId, wake);
 
   try {
     yield { event: "ready", data: JSON.stringify({ session_id: sessionId }) };

@@ -14,9 +14,8 @@ import { parseYaml } from "@freeanima/service-config";
 import { animaConfigSchema } from "@freeanima/service-config/schemas/config";
 import { MINIMAL_LLM_YAML } from "@freeanima/service-config/test-helpers/minimal-llm-config";
 import { getAcpManager } from "@freeanima/capabilities-acp";
-import { AnimaService } from "./anima-service.ts";
-import { initServiceContext } from "../context.ts";
 import { createTurnMessageCallbacks, finalizeTurn, runSimpleTurn } from "./turn-lifecycle.ts";
+import type { FullRuntimeDeps } from "./runtime-deps.ts";
 
 const catalog = createEngineCatalog();
 const testConfig = Config.fromSnapshot(animaConfigSchema.parse(parseYaml(MINIMAL_LLM_YAML)));
@@ -29,18 +28,16 @@ const testEngine = createEngine({
   logger: createTestLogger(),
 });
 
-function wireTestService(): AnimaService {
+function wireTestDeps(): FullRuntimeDeps {
   const kernel = createServiceKernel(testConfig);
   const conversation = createConversationService(nullPgRepositories, catalog.toolSets);
-  const service = new AnimaService({ kernel, conversation });
   getAcpManager().wireRegistries({
     toolSets: catalog.toolSets,
     skills: catalog.skills,
     config: testConfig,
   });
   getAcpManager().wireConversation(conversation);
-  initServiceContext({
-    service,
+  return {
     kernel,
     engine: testEngine,
     conversation,
@@ -49,8 +46,7 @@ function wireTestService(): AnimaService {
     masks: new MaskRegistry(),
     host: "127.0.0.1",
     port: 2658,
-  });
-  return service;
+  };
 }
 
 describe("turn-lifecycle", () => {
@@ -64,9 +60,9 @@ describe("turn-lifecycle", () => {
   it("createTurnMessageCallbacks writes appendMessage", async () => {
     const append = spyOn(conv, "appendMessage").mockResolvedValue(undefined);
     restores.push(append);
-    wireTestService();
+    const deps = wireTestDeps();
 
-    const cb = createTurnMessageCallbacks("sid-1");
+    const cb = createTurnMessageCallbacks(deps, "sid-1");
     await cb.onMessageAppended({ role: "assistant", content: "hi" });
     await cb.onToolRoundComplete([{ role: "tool", tool_call_id: "1", name: "t", content: "{}" }]);
 
@@ -82,10 +78,10 @@ describe("turn-lifecycle", () => {
   it("finalizeTurn calls finishTurn with skipMessageAppend", async () => {
     const finish = spyOn(conv, "finishTurn").mockResolvedValue(undefined);
     restores.push(finish);
-    wireTestService();
+    const deps = wireTestDeps();
 
     const msgs = [{ role: "user" as const, content: "q" }];
-    await finalizeTurn("sid-2", msgs, "q", "model-x", ["fn"]);
+    await finalizeTurn(deps, "sid-2", msgs, "q", "model-x", ["fn"]);
 
     expect(finish).toHaveBeenCalledWith(
       nullPgRepositories,
@@ -107,9 +103,9 @@ describe("turn-lifecycle", () => {
       spyOn(conv, "finishTurn").mockResolvedValue(undefined),
       spyOn(engine, "run").mockResolvedValue("done reply"),
     );
-    wireTestService();
+    const deps = wireTestDeps();
 
-    const out = await runSimpleTurn({
+    const out = await runSimpleTurn(deps, {
       sessionId: "cron-sid",
       prompt: "cron prompt",
       model: "m1",
@@ -145,9 +141,9 @@ describe("turn-lifecycle", () => {
       spyOn(conv, "finishTurn").mockResolvedValue(undefined),
       spyOn(engine, "run").mockRejectedValue(new engine.MaxTurnsExceeded("max 8")),
     );
-    wireTestService();
+    const deps = wireTestDeps();
 
-    const out = await runSimpleTurn({ sessionId: "s", prompt: "x", model: "m" });
+    const out = await runSimpleTurn(deps, { sessionId: "s", prompt: "x", model: "m" });
     expect(out).toBe("[tool loop limit exceeded] max 8");
   });
 });

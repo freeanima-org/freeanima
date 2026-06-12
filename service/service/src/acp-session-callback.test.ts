@@ -68,7 +68,7 @@ describe("createAcpSessionUpdatedHandler recheck", () => {
           }
         },
       } as never,
-      getService: () =>
+      getRuntime: () =>
         ({
           sendMessage: async () => {
             sendCount++;

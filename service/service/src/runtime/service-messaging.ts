@@ -6,11 +6,6 @@ import {
   isUpdateResult,
 } from "@freeanima/service-commands";
 import type { CommandDef } from "@freeanima/service-commands";
-import { getServiceContext } from "../context.ts";
-
-function conv() {
-  return getServiceContext().conversation;
-}
 import { messageIncoming, turnAfterComplete } from "@freeanima/mechanism-hooks/conversation";
 import { headOkStepData } from "@freeanima/kernel/hooks";
 import type { SessionMessage as Message } from "@freeanima/storage-db/domain";
@@ -23,6 +18,7 @@ import { runExclusiveStreamTurn, streamErrorEvent, type StreamTurnHost } from ".
 import { applyCommandSessionEffects, checkPlatform } from "./service-sessions.ts";
 import { collectStreamReply, type StreamEvent } from "@freeanima/orchestration-loop";
 import { scheduleGracefulRestart, runAnimaCliUpdate } from "./process-restart.ts";
+import type { FullRuntimeDeps } from "./runtime-deps.ts";
 
 export type MessagingDeps = {
   runControl: EngineRunControl;
@@ -33,11 +29,12 @@ export type MessagingDeps = {
 };
 
 export async function runIncomingMessageHooks(
+  deps: FullRuntimeDeps,
   sessionId: string,
   message: string,
   platform: string,
 ): Promise<{ ok: true; message: string; expiredHint?: string } | { ok: false; reason: string }> {
-  const run = await getServiceContext().kernel.hookRegistry.run(messageIncoming, {
+  const run = await deps.kernel.hookRegistry.run(messageIncoming, {
     sessionId,
     message,
     platform,
@@ -54,11 +51,12 @@ export async function runIncomingMessageHooks(
 }
 
 export async function runTurnAfterCompleteHooks(
+  deps: FullRuntimeDeps,
   sessionId: string,
   messages: Message[],
   defaultContent: string,
 ): Promise<string> {
-  const run = await getServiceContext().kernel.hookRegistry.run(turnAfterComplete, {
+  const run = await deps.kernel.hookRegistry.run(turnAfterComplete, {
     sessionId,
     messages: messages as Record<string, unknown>[],
   });
@@ -67,15 +65,16 @@ export async function runTurnAfterCompleteHooks(
 }
 
 export function emitSessionUpdated(
-  deps: Pick<MessagingDeps, "bus" | "onSessionUpdated">,
+  msgDeps: Pick<MessagingDeps, "bus" | "onSessionUpdated">,
   sessionId: string,
 ): void {
-  deps.bus?.emit(sessionUpdated, { session_id: sessionId });
-  deps.onSessionUpdated?.(sessionId);
+  msgDeps.bus?.emit(sessionUpdated, { session_id: sessionId });
+  msgDeps.onSessionUpdated?.(sessionId);
 }
 
 export async function executeCommand(
-  deps: MessagingDeps,
+  deps: FullRuntimeDeps,
+  msgDeps: MessagingDeps,
   params: {
     session_id: string;
     text: string;
@@ -107,11 +106,11 @@ export async function executeCommand(
     raw: text,
     origin_extra: params.origin_extra,
   });
-  await applyCommandSessionEffects(result, sessionId, platform, params.origin_extra);
+  await applyCommandSessionEffects(deps, result, sessionId, platform, params.origin_extra);
 
   if (isRetryResult(result)) {
     try {
-      const reply = await collectStreamReply(runRetryStream(deps, sessionId));
+      const reply = await collectStreamReply(runRetryStream(deps, msgDeps, sessionId));
       return { text: reply, data: result.data, found: true };
     } catch (e) {
       return { text: `⚠️ ${e}`, data: result.data, found: true };
@@ -119,7 +118,7 @@ export async function executeCommand(
   }
 
   if (isRestartResult(result) || isUpdateResult(result)) {
-    scheduleGracefulRestart(deps.runControl, {
+    scheduleGracefulRestart(msgDeps.runControl, {
       beforeRestart: isUpdateResult(result) ? runAnimaCliUpdate : undefined,
     });
     return { text: result.text, data: result.data, found: true };
@@ -129,29 +128,30 @@ export async function executeCommand(
 }
 
 export async function* sendMessageStream(
-  deps: MessagingDeps,
+  deps: FullRuntimeDeps,
+  msgDeps: MessagingDeps,
   sessionId: string,
   message: string,
   platform = PARLOR_PLATFORM,
 ): AsyncGenerator<StreamEvent> {
   message = message.trim();
-  if (deps.runControl.isShuttingDown()) {
-    yield streamErrorEvent(sessionId, "Server is shutting down");
+  if (msgDeps.runControl.isShuttingDown()) {
+    yield streamErrorEvent(deps, sessionId, "Server is shutting down");
     return;
   }
-  if (!(await conv().sessionExists(sessionId))) {
-    yield streamErrorEvent(sessionId, `Session not found: ${sessionId}`);
+  if (!(await deps.conversation.sessionExists(sessionId))) {
+    yield streamErrorEvent(deps, sessionId, `Session not found: ${sessionId}`);
     return;
   }
   if (!message) {
-    yield streamErrorEvent(sessionId, "message is required");
+    yield streamErrorEvent(deps, sessionId, "message is required");
     return;
   }
-  await checkPlatform({ platform }, sessionId);
+  await checkPlatform(deps, { platform }, sessionId);
 
   const [cmd, args] = resolveCommand(message, platform);
   if (cmd) {
-    yield* dispatchCommandStream(deps, sessionId, platform, message, cmd, args);
+    yield* dispatchCommandStream(deps, msgDeps, sessionId, platform, message, cmd, args);
     return;
   }
   if (message.startsWith("/")) {
@@ -165,7 +165,7 @@ export async function* sendMessageStream(
     return;
   }
 
-  const guard = await runIncomingMessageHooks(sessionId, message, platform);
+  const guard = await runIncomingMessageHooks(deps, sessionId, message, platform);
   if (!guard.ok) {
     yield { event: "token", data: { content: guard.reason } };
     yield { event: "done", data: {} };
@@ -175,11 +175,12 @@ export async function* sendMessageStream(
     yield { event: "token", data: { content: `${guard.expiredHint}\n\n` } };
   }
 
-  yield* runTurnStream(deps, sessionId, guard.message);
+  yield* runTurnStream(deps, msgDeps, sessionId, guard.message);
 }
 
 async function* dispatchCommandStream(
-  deps: MessagingDeps,
+  deps: FullRuntimeDeps,
+  msgDeps: MessagingDeps,
   sessionId: string,
   platform: string,
   raw: string,
@@ -187,7 +188,7 @@ async function* dispatchCommandStream(
   args: string[],
 ): AsyncGenerator<StreamEvent> {
   if (cmd.name !== "cancel") {
-    const guard = await runIncomingMessageHooks(sessionId, raw, platform);
+    const guard = await runIncomingMessageHooks(deps, sessionId, raw, platform);
     if (!guard.ok) {
       yield { event: "token", data: { content: guard.reason } };
       yield { event: "done", data: {} };
@@ -202,7 +203,7 @@ async function* dispatchCommandStream(
   });
   if (isRetryResult(result)) {
     try {
-      yield* runRetryStream(deps, sessionId);
+      yield* runRetryStream(deps, msgDeps, sessionId);
     } catch (e) {
       yield { event: "token", data: { content: `⚠️ ${e}` } };
       yield { event: "done", data: {} };
@@ -214,7 +215,7 @@ async function* dispatchCommandStream(
       yield { event: "token", data: { content: result.text } };
     }
     yield { event: "done", data: {} };
-    scheduleGracefulRestart(deps.runControl, {
+    scheduleGracefulRestart(msgDeps.runControl, {
       beforeRestart: isUpdateResult(result) ? runAnimaCliUpdate : undefined,
     });
     return;
@@ -225,36 +226,43 @@ async function* dispatchCommandStream(
   yield { event: "done", data: {} };
 }
 
-function runRetryStream(deps: MessagingDeps, sessionId: string): AsyncGenerator<StreamEvent> {
-  deps.runControl.preemptSessionEngine(sessionId);
+function runRetryStream(
+  deps: FullRuntimeDeps,
+  msgDeps: MessagingDeps,
+  sessionId: string,
+): AsyncGenerator<StreamEvent> {
+  msgDeps.runControl.preemptSessionEngine(sessionId);
   return runExclusiveStreamTurn(
+    deps,
     sessionId,
-    async () => conv().retryTurn(sessionId),
-    deps.streamHost,
-    deps.sessionManager,
+    async () => deps.conversation.retryTurn(sessionId),
+    msgDeps.streamHost,
+    msgDeps.sessionManager,
   );
 }
 
 function runTurnStream(
-  deps: MessagingDeps,
+  deps: FullRuntimeDeps,
+  msgDeps: MessagingDeps,
   sessionId: string,
   message: string,
 ): AsyncGenerator<StreamEvent> {
-  deps.runControl.preemptSessionEngine(sessionId);
+  msgDeps.runControl.preemptSessionEngine(sessionId);
   let effectiveUserText = "";
   return runExclusiveStreamTurn(
+    deps,
     sessionId,
     {
       fast: async () => {
-        effectiveUserText = await conv().beginTurnFast(sessionId, message);
+        effectiveUserText = await deps.conversation.beginTurnFast(sessionId, message);
         return effectiveUserText;
       },
       prepare: async () => {
-        const [runtimeMsgs, functions] = await conv().beginTurnPrepare(sessionId);
+        const [runtimeMsgs, functions] = await deps.conversation.beginTurnPrepare(sessionId);
         return [runtimeMsgs, functions, effectiveUserText];
       },
     },
-    deps.streamHost,
-    deps.sessionManager,
+    msgDeps.streamHost,
+    msgDeps.sessionManager,
   );
 }

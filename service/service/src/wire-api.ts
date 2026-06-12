@@ -17,20 +17,23 @@ import {
   resolveWorkspace,
   searchStudio,
 } from "./runtime/studio.ts";
+import type { FullRuntimeDeps } from "./runtime/runtime-deps.ts";
 
-/** Register service-api ports (call wireEnginePorts before initLlmRuntime) */
-export function wireServicePorts(): void {
+/** Register service-api ports after AppRuntime deps are available */
+export function wireServicePorts(deps: FullRuntimeDeps): void {
   registerToolSessionResolver(getToolSessionId);
-  registerOnSessionCloseBeforeNew(onSessionCloseBeforeNew);
-  registerCronUseCases({ runCronEngineTurn });
-  registerRunSimpleTurn(runSimpleTurn);
-  registerStatsReport(statsReport);
+  registerOnSessionCloseBeforeNew((sessionId) => onSessionCloseBeforeNew(deps, sessionId));
+  registerCronUseCases({
+    runCronEngineTurn: (job, prompt) => runCronEngineTurn(deps, job, prompt),
+  });
+  registerRunSimpleTurn((opts) => runSimpleTurn(deps, opts));
+  registerStatsReport((session, opts) => statsReport(deps, session, opts));
   registerStudioPort({
-    getStudioConfig,
-    patchStudioConfig,
-    buildFileTree,
-    readStudioFile,
-    searchStudio,
-    resolveWorkspace,
+    getStudioConfig: () => getStudioConfig(deps),
+    patchStudioConfig: (patch) => patchStudioConfig(deps, patch),
+    buildFileTree: () => buildFileTree(deps),
+    readStudioFile: (path) => readStudioFile(deps, path),
+    searchStudio: (query) => searchStudio(deps, query),
+    resolveWorkspace: () => resolveWorkspace(deps),
   });
 }

@@ -22,7 +22,9 @@ import { createServiceKernel } from "@freeanima/service-bootstrap";
 import { wireEnginePorts } from "./wire-engine-ports.ts";
 import { registerSystemPromptHooks } from "./register-prompt-hooks.ts";
 import { registerServiceTools, resetRegisterServiceToolsForTest } from "./register.ts";
-import { initServiceContext } from "./context.ts";
+import { initAppRuntime } from "./context.ts";
+import { createAppRuntime } from "./runtime/app-runtime.ts";
+import type { RuntimeDeps } from "./runtime/runtime-deps.ts";
 import { computeGlobalBreakdown, getPromptDebug } from "./runtime/service-prompt-debug.ts";
 
 const emptySemanticStore = {
@@ -80,10 +82,11 @@ const minimalConfig = Config.fromSnapshot({
   },
 });
 
+let testDeps: RuntimeDeps;
+
 function seedContext(catalog: ReturnType<typeof createEngineCatalog>, kernel: Kernel) {
-  initServiceContext({
+  const runtime = createAppRuntime({
     conversation: mockConv as never,
-    service: {} as never,
     kernel,
     engine: {
       catalog,
@@ -91,12 +94,14 @@ function seedContext(catalog: ReturnType<typeof createEngineCatalog>, kernel: Ke
       config: minimalConfig,
       logger: createTestLogger(),
     } as Engine,
-    mcp: {} as never,
+    mcp: null,
     acp: {} as never,
     masks: new MaskRegistry(),
     host: "127.0.0.1",
     port: 2658,
   });
+  initAppRuntime(runtime);
+  testDeps = runtime.runtimeDeps();
 }
 
 type PromptDebugToolItem = Awaited<ReturnType<typeof getPromptDebug>>["tools"]["items"][number];
@@ -147,7 +152,7 @@ describe("service-prompt-debug", () => {
         parameters: { type: "object" },
       },
     ];
-    const breakdown = computeGlobalBreakdown(mockParts, items);
+    const breakdown = computeGlobalBreakdown(testDeps, mockParts, items);
     expect(breakdown.system_self).toBeGreaterThan(0);
     expect(breakdown.system_agents).toBeGreaterThan(0);
     expect(breakdown.system_resident).toBeGreaterThan(0);
@@ -165,7 +170,7 @@ describe("service-prompt-debug", () => {
   });
 
   it("global mode returns registry tools and composed prompt", async () => {
-    const out = await getPromptDebug();
+    const out = await getPromptDebug(testDeps);
     expect(out.mode).toBe("global");
     expect(out.system.composed.length).toBeGreaterThan(0);
     expect(out.tools.mode).toBe("registry");
@@ -175,11 +180,11 @@ describe("service-prompt-debug", () => {
   });
 
   it("throws when session does not exist", async () => {
-    await expect(getPromptDebug("missing")).rejects.toThrow("Session not found");
+    await expect(getPromptDebug(testDeps, "missing")).rejects.toThrow("Session not found");
   });
 
   it("session mode compares stored vs live and returns effective tools", async () => {
-    const preview = await getPromptDebug("sess_ok");
+    const preview = await getPromptDebug(testDeps, "sess_ok");
     mockConv.loadSessionMeta.mockImplementation(async () => ({
       role: "session_meta" as const,
       model: "gpt-4",
@@ -190,7 +195,7 @@ describe("service-prompt-debug", () => {
       cwd: "/tmp/project",
     }));
 
-    const out = await getPromptDebug("sess_ok");
+    const out = await getPromptDebug(testDeps, "sess_ok");
     expect(out.mode).toBe("session");
     expect(out.session_id).toBe("sess_ok");
     expect(out.system.in_sync).toBe(true);

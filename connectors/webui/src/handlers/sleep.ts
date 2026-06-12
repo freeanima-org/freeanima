@@ -2,13 +2,11 @@ import { webuiCtx } from "./runtime.ts";
 import { ApiHandlerError } from "./errors.ts";
 
 export async function getSleepSummary() {
-  const { service } = webuiCtx();
-  return service.getSleepSummary();
+  return webuiCtx().getSleepSummary();
 }
 
 export async function listSleepRuns(opts?: { limit?: number; offset?: number; ok?: boolean }) {
-  const { service } = webuiCtx();
-  return service.listSleepRuns(opts);
+  return webuiCtx().listSleepRuns(opts);
 }
 
 export async function listCronLogs(opts?: {
@@ -17,18 +15,15 @@ export async function listCronLogs(opts?: {
   offset?: number;
   ok?: boolean;
 }) {
-  const { service } = webuiCtx();
-  return service.listCronLogs(opts);
+  return webuiCtx().listCronLogs(opts);
 }
 
 export function getDeepSleepRounds(day: string) {
-  const { service } = webuiCtx();
-  return service.getDeepSleepRounds(day);
+  return webuiCtx().getDeepSleepRounds(day);
 }
 
 export async function startSleepBackfill(body?: { from?: string; to?: string; resume?: boolean }) {
-  const { service } = webuiCtx();
-  const result = await service.startLightSleepBackfill({
+  const result = await webuiCtx().startLightSleepBackfill({
     fromDay: body?.from,
     toDay: body?.to,
     resume: body?.resume,
@@ -40,6 +35,5 @@ export async function startSleepBackfill(body?: { from?: string; to?: string; re
 }
 
 export function getSleepBackfillStatus() {
-  const { service } = webuiCtx();
-  return service.getLightSleepBackfillStatus();
+  return webuiCtx().getLightSleepBackfillStatus();
 }

@@ -1,6 +1,6 @@
 import type { TaskPriority, TaskRow, TaskStatus } from "@freeanima/storage-repos";
 import { TASK_STATUSES } from "@freeanima/storage-repos";
-import { getServiceContext } from "../context.ts";
+import type { RuntimeDeps } from "./runtime-deps.ts";
 
 export type TaskListResult = {
   items: TaskRow[];
@@ -21,11 +21,8 @@ function resolveStatuses(status?: TaskStatus[] | "all"): TaskStatus[] {
   return ["pending", "in_progress"];
 }
 
-function repos() {
-  return getServiceContext().engine.repos;
-}
-
 export async function listTasks(
+  deps: RuntimeDeps,
   args: {
     query?: string;
     offset?: number;
@@ -42,8 +39,8 @@ export async function listTasks(
     priority: args.priority,
   };
   const [items, total] = await Promise.all([
-    repos().tasks.list({ ...filterOpts, offset, limit }),
-    repos().tasks.count(filterOpts),
+    deps.engine.repos.tasks.list({ ...filterOpts, offset, limit }),
+    deps.engine.repos.tasks.count(filterOpts),
   ]);
   return { items, total, offset, limit };
 }

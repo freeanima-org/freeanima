@@ -5,19 +5,12 @@ import { wireServicePorts } from "./wire-api.ts";
 import { createEngine, createEngineCatalog, type Engine } from "@freeanima/orchestration-runtime";
 import { getLlmRuntime, initLlmRuntime } from "@freeanima/mechanism-llm";
 import { createServiceKernel } from "@freeanima/service-bootstrap";
-import { nullPgRepositories } from "@freeanima/storage-repos";
 import {
   createConversationService,
   type ConversationService,
 } from "@freeanima/orchestration-conversation";
 import type { Kernel } from "@freeanima/kernel";
-import {
-  closeDb,
-  createPgRepositories,
-  getDb,
-  initDatabase,
-  isPostgresPrimary,
-} from "@freeanima/connectors-db-pg";
+import { closeDb, createPgRepositories, getDb, initDatabase } from "@freeanima/connectors-db-pg";
 import { closeRedis, initRedis, isRedisConfigured } from "@freeanima/connectors-redis";
 import { runMigrations } from "@freeanima/storage-db";
 import {
@@ -35,7 +28,7 @@ import {
   logStartupError,
   markStartupPhase,
 } from "@freeanima/service-logging";
-import { AnimaService, ANIMA_VERSION, REPO_ROOT } from "./runtime/index.ts";
+import { AppRuntime, ANIMA_VERSION, REPO_ROOT, createAppRuntime } from "./runtime/index.ts";
 import {
   initCronModule,
   stopCronModule,
@@ -80,12 +73,12 @@ import { getAcpManager } from "@freeanima/capabilities-acp";
 import { createFridgeBridge } from "./fridge-bridge-factory.ts";
 import { DEFAULT_BIND_HOST, parseBindHosts } from "./bind-hosts.ts";
 import { bindHomeChannelConfig } from "@freeanima/service-api/home-channel";
-import { initServiceContext } from "./context.ts";
+import { initAppRuntime } from "./context.ts";
 import { wireEmbeddingRuntime } from "./runtime/embedding-wire.ts";
 import { wireTokenizerRuntime } from "./runtime/tokenizer-wire.ts";
 import { resolveWebuiDevMode } from "./webui-dev-mode.ts";
 
-let service: AnimaService | null = null;
+let runtime: AppRuntime | null = null;
 let kernel: Kernel | null = null;
 let engine: Engine | null = null;
 let conversation: ConversationService | null = null;
@@ -93,12 +86,15 @@ let mcp: MCPManager | null = null;
 const acp = getAcpManager();
 let cronInitialized = false;
 
-export function getService(): AnimaService {
-  if (!service) {
-    throw new Error("AnimaService not initialized; call serve() first");
+export function getAppRuntime(): AppRuntime {
+  if (!runtime) {
+    throw new Error("AppRuntime not initialized; call serve() first");
   }
-  return service;
+  return runtime;
 }
+
+/** @deprecated 使用 getAppRuntime */
+export const getService = getAppRuntime;
 
 function scheduleDebugSessionCleanup(conv: ConversationService): void {
   void Promise.resolve()
@@ -153,7 +149,7 @@ export type WebuiHooks = {
     opts?: { development?: boolean },
   ) => Promise<WebuiServerHandle[]>;
   close: (handles: WebuiServerHandle[], timeoutMs?: number) => Promise<void>;
-  waitForDrain: (anima: AnimaService, maxMs: number) => Promise<void>;
+  waitForDrain: (app: AppRuntime, maxMs: number) => Promise<void>;
 };
 
 export type ServeOptions = {
@@ -166,12 +162,12 @@ export type ServeOptions = {
 
 export { resolveWebuiDevMode } from "./webui-dev-mode.ts";
 
-async function defaultWaitForDrain(anima: AnimaService, maxMs: number): Promise<void> {
+async function defaultWaitForDrain(app: AppRuntime, maxMs: number): Promise<void> {
   await Promise.race([
-    anima.waitForDrain(),
+    app.waitForDrain(),
     new Promise<void>((resolve) => {
       setTimeout(() => {
-        const n = anima.getInFlightCount();
+        const n = app.getInFlightCount();
         if (n > 0) {
           logComponent("shutdown").warn(
             `Request drain timed out; ${n} in-flight request(s) remaining`,
@@ -185,9 +181,9 @@ async function defaultWaitForDrain(anima: AnimaService, maxMs: number): Promise<
       }, maxMs);
     }),
   ]);
-  if (anima.getInFlightCount() > 0) {
-    anima.abortAll();
-    await anima.waitForDrain();
+  if (app.getInFlightCount() > 0) {
+    app.abortAll();
+    await app.waitForDrain();
   }
 }
 
@@ -218,7 +214,6 @@ export async function serve(
 
     wireEnginePorts();
     wireCapabilityInjection();
-    wireServicePorts();
     wireEmbeddingRuntime(config);
     await wireTokenizerRuntime(config);
 
@@ -232,24 +227,25 @@ export async function serve(
     writeFileSync(PATHS.pidFile, String(process.pid));
 
     const dbUrl = await getConfiguredDatabaseUrl(config.data);
+    if (!dbUrl) {
+      throw new Error("database.url is required; PostgreSQL is the only supported backend");
+    }
     initDatabase({ getDatabaseUrl: () => dbUrl });
     initRedis({ getRedisUrl: () => getConfiguredRedisUrl(config.data) });
 
-    let repos = nullPgRepositories;
-    if (isPostgresPrimary()) {
-      startupLog("Initializing PostgreSQL connection pool…");
-      const db = getDb();
-      await runMigrations(db);
-      startupLog("Database migrations complete");
-      repos = createPgRepositories({ getDb });
-    }
+    startupLog("Initializing PostgreSQL connection pool…");
+    const db = getDb();
+    await runMigrations(db);
+    startupLog("Database migrations complete");
+    const repos = createPgRepositories({ getDb });
+
     initLlmRuntime(config.data);
     const logger = createServiceLogger();
     engine = createEngine({ repos, llm: getLlmRuntime(), catalog, config, logger });
     conversation = createConversationService(engine.repos, catalog.toolSets);
 
     const acpSessionUpdatedRef: { handler: ((sid: string) => void) | null } = { handler: null };
-    const serviceRef: { current: AnimaService | null } = { current: null };
+    const runtimeRef: { current: AppRuntime | null } = { current: null };
     registerServiceIntegrations({
       kernel,
       conversation,
@@ -258,84 +254,79 @@ export async function serve(
       config,
       onSessionUpdated: (sid) => {
         acpSessionUpdatedRef.handler?.(sid);
-        serviceRef.current?.pokeSessionWatchers(sid);
+        runtimeRef.current?.pokeSessionWatchers(sid);
       },
     });
 
     registerFridgeStore(createRedisFridgeStore());
 
-    startupLog("Initializing AnimaService / EventBus…");
-    service = new AnimaService({ kernel, conversation });
-    serviceRef.current = service;
-    service.markStarted();
+    mcp = new MCPManager(catalog.toolSets, config);
+
+    startupLog("Initializing AppRuntime / EventBus…");
+    runtime = createAppRuntime({
+      kernel,
+      engine,
+      conversation,
+      masks,
+      mcp,
+      acp,
+      host: statusHost,
+      port,
+    });
+    runtimeRef.current = runtime;
+    runtime.markStarted();
     acpSessionUpdatedRef.handler = createAcpSessionUpdatedHandler({
       conversation,
-      getService: () => service,
+      getRuntime: () => runtime,
     });
-    service.setOnSessionUpdated(acpSessionUpdatedRef.handler);
+    runtime.setOnSessionUpdated(acpSessionUpdatedRef.handler);
+    runtime.setEventBus(kernel.eventBus);
+
+    const fullDeps = runtime.fullDeps();
+    wireServicePorts(fullDeps);
+    initAppRuntime(runtime);
 
     const fridgeBridge = createFridgeBridge();
     registerServiceStores(repos, { fridgeBridge });
     registerFridgeMagnet({ kernel });
     await bootstrapTasksFridgeSummary(repos, fridgeBridge);
     registerServiceMemoryBus({ kernel });
-    if (repos.pgAvailable) {
-      invalidateSelfLayerPromptCache();
-      await loadSelfLayerPrompt();
-    }
-    service.setEventBus(kernel.eventBus);
+    invalidateSelfLayerPromptCache();
+    await loadSelfLayerPrompt();
 
     initMaskSystem(masks);
-    registerLightSleepWire();
-    registerDeepSleepWire();
-    registerAutobiographyWire();
+    registerLightSleepWire(fullDeps);
+    registerDeepSleepWire(fullDeps);
+    registerAutobiographyWire(fullDeps);
 
-    if (repos.pgAvailable) {
-      registerCronBuiltinHandler("builtin-light-sleep", async () => {
-        const selfContent = await loadSelfLayerPrompt();
-        const result = await runLightSleep({
-          sessionStore: engine!.repos.session,
-          semanticStore: engine!.repos.semanticMemory,
-          autoStore: engine!.repos.autobiographicalMemory,
-          selfStore: engine!.repos.selfLayer,
-          selfContent,
-        });
-        invalidateSelfLayerPromptCache();
-        await loadSelfLayerPrompt();
-        return JSON.stringify(result);
+    registerCronBuiltinHandler("builtin-light-sleep", async () => {
+      const selfContent = await loadSelfLayerPrompt();
+      const result = await runLightSleep({
+        sessionStore: engine!.repos.session,
+        semanticStore: engine!.repos.semanticMemory,
+        autoStore: engine!.repos.autobiographicalMemory,
+        selfStore: engine!.repos.selfLayer,
+        selfContent,
       });
-
-      registerCronBuiltinHandler("builtin-deep-sleep", async () => {
-        const selfContent = await loadSelfLayerPrompt();
-        const result = await runDeepSleep({ selfContent });
-        return JSON.stringify(result);
-      });
-
-      registerCronBuiltinHandler("builtin-memory-reference-sync", async () => {
-        const result = await syncSemanticMemoryReferenceCounts(engine!.repos.memoryReference);
-        return JSON.stringify(result);
-      });
-
-      await initCronModule({ store: repos.cron, logStore: repos.cronLog });
-      cronInitialized = true;
-      startupLog("Cron scheduler started (Bun.cron)");
-    } else {
-      startupLog("PostgreSQL unavailable; skipping Cron module");
-    }
-
-    mcp = new MCPManager(catalog.toolSets, config);
-
-    initServiceContext({
-      service,
-      kernel,
-      engine,
-      masks,
-      conversation,
-      mcp,
-      acp,
-      host: statusHost,
-      port,
+      invalidateSelfLayerPromptCache();
+      await loadSelfLayerPrompt();
+      return JSON.stringify(result);
     });
+
+    registerCronBuiltinHandler("builtin-deep-sleep", async () => {
+      const selfContent = await loadSelfLayerPrompt();
+      const result = await runDeepSleep({ selfContent });
+      return JSON.stringify(result);
+    });
+
+    registerCronBuiltinHandler("builtin-memory-reference-sync", async () => {
+      const result = await syncSemanticMemoryReferenceCounts(engine!.repos.memoryReference);
+      return JSON.stringify(result);
+    });
+
+    await initCronModule({ store: repos.cron, logStore: repos.cronLog });
+    cronInitialized = true;
+    startupLog("Cron scheduler started (Bun.cron)");
 
     registerSystemPromptHooks({
       hookRegistry: kernel.hookRegistry,
@@ -384,12 +375,12 @@ export async function serve(
       },
     );
 
-    service!.startShutdown();
+    runtime!.startShutdown();
     step("New requests rejected", Date.now() - t0);
 
     {
       const s = Date.now();
-      await (opts.webui?.waitForDrain ?? defaultWaitForDrain)(service!, 90_000);
+      await (opts.webui?.waitForDrain ?? defaultWaitForDrain)(runtime!, 90_000);
       step("Request drain complete", Date.now() - s);
     }
 
@@ -437,7 +428,7 @@ export async function serve(
       step("ACP stopped", Date.now() - s);
     }
 
-    if (isPostgresPrimary()) {
+    {
       const s = Date.now();
       await closeDb();
       step("PostgreSQL connection pool closed", Date.now() - s);
@@ -460,7 +451,7 @@ export async function serve(
   mcp.startAllAsync();
   acp.startAllAsync();
   startAcpProgressTicker();
-  void discoverPlatforms(service!, engine!.config)
+  void discoverPlatforms(runtime!, engine!.config)
     .then(async (adapters) => {
       platforms = adapters;
       await startPlatforms(adapters);

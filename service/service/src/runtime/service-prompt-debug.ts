@@ -10,7 +10,7 @@ import {
   decomposeSystemPromptParts,
   type SystemPromptParts,
 } from "@freeanima/capabilities-memory/system-prompt";
-import { getServiceContext } from "../context.ts";
+import type { RuntimeDeps } from "./runtime-deps.ts";
 import {
   computeRuntimeContextBreakdown,
   type RuntimeContextBreakdown,
@@ -47,10 +47,11 @@ export type PromptDebugResponse = {
 };
 
 export function computeGlobalBreakdown(
+  deps: RuntimeDeps,
   parts: SystemPromptParts,
   items: PromptDebugToolItem[],
 ): RuntimeContextBreakdown {
-  const model = getProfileHopModel(getServiceContext().engine.config.data, PROFILE_CHAT);
+  const model = getProfileHopModel(deps.engine.config.data, PROFILE_CHAT);
   const system_self = estimateTokens(parts.self, model);
   const system_agents = estimateTokens(parts.agents, model);
   const system_resident = estimateTokens(parts.resident, model);
@@ -79,12 +80,8 @@ export function computeGlobalBreakdown(
   };
 }
 
-function catalogTools() {
-  return getServiceContext().engine.catalog.toolSets;
-}
-
-function registryToolItems(): PromptDebugToolItem[] {
-  const toolSets = catalogTools();
+function registryToolItems(deps: RuntimeDeps): PromptDebugToolItem[] {
+  const toolSets = deps.engine.catalog.toolSets;
   const toolSetByName = new Map<string, string>();
   for (const ts of toolSets.listToolSets()) {
     for (const n of ts.tools) toolSetByName.set(n, ts.name);
@@ -98,6 +95,7 @@ function registryToolItems(): PromptDebugToolItem[] {
 }
 
 function sessionToolItems(
+  deps: RuntimeDeps,
   schemas: Array<{
     type: "function";
     function: {
@@ -107,7 +105,7 @@ function sessionToolItems(
     };
   }>,
 ): PromptDebugToolItem[] {
-  const toolSets = catalogTools();
+  const toolSets = deps.engine.catalog.toolSets;
   const registry = new Map(toolSets.listTools().map((t) => [t.name, t]));
   const toolSetByName = new Map<string, string>();
   for (const ts of toolSets.listToolSets()) {
@@ -126,6 +124,7 @@ function sessionToolItems(
 }
 
 async function buildSystemView(
+  deps: RuntimeDeps,
   cwd?: string | null,
   meta?: import("@freeanima/storage-db/domain").SessionMetaMessage,
 ): Promise<{
@@ -134,20 +133,23 @@ async function buildSystemView(
 }> {
   const selfContent = await loadSelfLayerPrompt();
   const memoryParts = await decomposeSystemPromptParts(selfContent, cwd ?? undefined);
-  const toolsets = renderToolsetsSection(catalogTools());
+  const toolsets = renderToolsetsSection(deps.engine.catalog.toolSets);
   const parts: SystemPromptParts = { ...memoryParts, toolsets };
   const composed = await buildSystemPrompt([], cwd ?? undefined, meta);
   return { parts, composed };
 }
 
 /** WebUI system prompt debug view (read-only) */
-export async function getPromptDebug(sessionId?: string | null): Promise<PromptDebugResponse> {
+export async function getPromptDebug(
+  deps: RuntimeDeps,
+  sessionId?: string | null,
+): Promise<PromptDebugResponse> {
   const id = sessionId?.trim() || null;
 
   if (!id) {
-    const { parts, composed } = await buildSystemView(null);
-    const items = registryToolItems();
-    const breakdown = computeGlobalBreakdown(parts, items);
+    const { parts, composed } = await buildSystemView(deps, null);
+    const items = registryToolItems(deps);
+    const breakdown = computeGlobalBreakdown(deps, parts, items);
     return {
       mode: "global",
       system: {
@@ -164,29 +166,28 @@ export async function getPromptDebug(sessionId?: string | null): Promise<PromptD
     };
   }
 
-  const conv = getServiceContext().conversation;
-  if (!(await conv.sessionExists(id))) {
+  if (!(await deps.conversation.sessionExists(id))) {
     throw new Error(`Session not found: ${id}`);
   }
 
-  const meta = await conv.loadSessionMeta(id);
+  const meta = await deps.conversation.loadSessionMeta(id);
   if (!isSessionMeta(meta)) {
     throw new Error(`Session not found: ${id}`);
   }
 
   const cwd = meta.cwd;
-  const { parts, composed } = await buildSystemView(cwd, meta);
+  const { parts, composed } = await buildSystemView(deps, cwd, meta);
   const stored = meta.system_prompt ?? null;
   const in_sync = stored === composed;
 
-  const toolSchemas = await conv.loadSessionTools(id, meta);
-  const items = sessionToolItems(toolSchemas);
+  const toolSchemas = await deps.conversation.loadSessionTools(id, meta);
+  const items = sessionToolItems(deps, toolSchemas);
 
   let breakdown: RuntimeContextBreakdown;
   try {
-    breakdown = await computeRuntimeContextBreakdown(id);
+    breakdown = await computeRuntimeContextBreakdown(deps, id);
   } catch {
-    breakdown = computeGlobalBreakdown(parts, items);
+    breakdown = computeGlobalBreakdown(deps, parts, items);
   }
 
   return {

@@ -9,7 +9,7 @@ import {
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { createJob, initCronModule, stopCronModule } from "@freeanima/connectors-cron";
-import { getServiceContext } from "@freeanima/service";
+import { getAppRuntime } from "@freeanima/service";
 import {
   listCronJobs,
   pauseCronJob,
@@ -48,7 +48,7 @@ describePg("server cron API", () => {
   });
 
   it("AnimaService pause and resume cron job", async () => {
-    const svc = getServiceContext().service;
+    const svc = getAppRuntime();
 
     const paused = await svc.pauseCronJob(jobId);
     expect(paused).not.toBeNull();
@@ -62,7 +62,7 @@ describePg("server cron API", () => {
   });
 
   it("AnimaService runCronJobNow returns message for existing job", async () => {
-    const svc = getServiceContext().service;
+    const svc = getAppRuntime();
     const result = await svc.runCronJobNow(jobId);
     expect(result).not.toBeNull();
     expect(result!.message).toContain("api-test");
@@ -71,7 +71,7 @@ describePg("server cron API", () => {
   });
 
   it("AnimaService returns null for unknown job id", async () => {
-    const svc = getServiceContext().service;
+    const svc = getAppRuntime();
     expect(await svc.pauseCronJob("missing-id")).toBeNull();
     expect(await svc.resumeCronJob("missing-id")).toBeNull();
     expect(await svc.runCronJobNow("missing-id")).toBeNull();

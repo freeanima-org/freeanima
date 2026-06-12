@@ -16,22 +16,19 @@ export async function resolveSessionPlatform(sessionId: string): Promise<string>
 }
 
 export async function listSessions(platform?: string) {
-  const { service } = webuiCtx();
-  const { sessions } = await service.listSessions(platform);
+  const { sessions } = await webuiCtx().listSessions(platform);
   return { sessions };
 }
 
 export async function createSession(body: CreateSessionBody) {
   const parsed = createSessionBodySchema.parse(body);
-  const { service } = webuiCtx();
   const platform = parsed.platform ?? PARLOR_PLATFORM;
-  return service.createSession(platform);
+  return webuiCtx().createSession(platform);
 }
 
 export async function getSessionInfo(sessionId: string) {
-  const { service } = webuiCtx();
   try {
-    return await service.getSessionInfo(sessionId, await resolveSessionPlatform(sessionId));
+    return await webuiCtx().getSessionInfo(sessionId, await resolveSessionPlatform(sessionId));
   } catch (e) {
     throw new ApiHandlerError(404, String(e), { session_id: sessionId });
   }
@@ -41,9 +38,8 @@ export async function getSessionMessages(
   sessionId: string,
   opts?: { offset?: number; limit?: number },
 ) {
-  const { service } = webuiCtx();
   try {
-    return service.getMessages(sessionId, await resolveSessionPlatform(sessionId), opts);
+    return webuiCtx().getMessages(sessionId, await resolveSessionPlatform(sessionId), opts);
   } catch (e) {
     throw new ApiHandlerError(404, String(e), { session_id: sessionId });
   }
@@ -51,22 +47,23 @@ export async function getSessionMessages(
 
 export async function setSessionTitle(sessionId: string, body: PatchTitleBody) {
   const { title } = patchTitleBodySchema.parse(body);
-  const { service } = webuiCtx();
   try {
-    return await service.setSessionTitle(sessionId, title, await resolveSessionPlatform(sessionId));
+    return await webuiCtx().setSessionTitle(
+      sessionId,
+      title,
+      await resolveSessionPlatform(sessionId),
+    );
   } catch (e) {
     throw new ApiHandlerError(503, String(e), { session_id: sessionId });
   }
 }
 
 export function listCommands(opts: { platform?: string; all?: boolean }) {
-  const { service } = webuiCtx();
   const all = opts.all === true;
   const platform = opts.platform ?? PARLOR_PLATFORM;
-  return service.listCommands({ platform, all });
+  return webuiCtx().listCommands({ platform, all });
 }
 
 export function getPlatforms() {
-  const { service } = webuiCtx();
-  return { ok: true as const, data: service.getStatus().platforms };
+  return { ok: true as const, data: webuiCtx().getStatus().platforms };
 }

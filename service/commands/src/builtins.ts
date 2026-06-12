@@ -11,11 +11,11 @@ import { PARLOR_PLATFORM } from "@freeanima/service-api/constants";
 import { onSessionCloseBeforeNew } from "@freeanima/service-api/session-close";
 import { isSessionMeta } from "@freeanima/storage-db/domain";
 import { setHomeChannel } from "@freeanima/service-api/home-channel";
-import { getServiceContext } from "@freeanima/service-api";
+import { getAppRuntime } from "@freeanima/service-api";
 import { getCliInstallKind } from "@freeanima/storage-config/cli-install";
 
 function conv() {
-  return getServiceContext().conversation;
+  return getAppRuntime().conversation;
 }
 
 function cmdHelp(ctx: CommandContext): string {
@@ -192,7 +192,7 @@ async function cmdMask(ctx: CommandContext): Promise<string> {
     if (!preset) {
       return "Usage: `/mask set <preset-name>`";
     }
-    const { masks, engine } = getServiceContext();
+    const { masks, engine } = getAppRuntime();
     if (!masks.get(preset)) {
       const known = masks
         .list()
@@ -219,7 +219,7 @@ async function cmdMask(ctx: CommandContext): Promise<string> {
     if (!presets.length) {
       return "ℹ️ Current session has no capability mask (full capabilities).";
     }
-    const { masks, engine } = getServiceContext();
+    const { masks, engine } = getAppRuntime();
     const resolved = resolveMaskPresets(presets, masks, engine.catalog.toolSets);
     const preview =
       resolved.allowed_tools.length <= 12
@@ -235,7 +235,7 @@ async function cmdMask(ctx: CommandContext): Promise<string> {
 }
 
 function cmdRestart(_ctx: CommandContext): CommandResult | string {
-  if (getServiceContext().service.isShuttingDown()) {
+  if (getAppRuntime().isShuttingDown()) {
     return "Service is already restarting…";
   }
   return {
@@ -245,7 +245,7 @@ function cmdRestart(_ctx: CommandContext): CommandResult | string {
 }
 
 function cmdUpdate(_ctx: CommandContext): CommandResult | string {
-  if (getServiceContext().service.isShuttingDown()) {
+  if (getAppRuntime().isShuttingDown()) {
     return "Service is already restarting…";
   }
   if (getCliInstallKind() === "local") {

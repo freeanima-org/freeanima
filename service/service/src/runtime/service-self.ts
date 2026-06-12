@@ -1,7 +1,7 @@
 import type { SelfBlockKey } from "@freeanima/storage-repos";
 import { SELF_BLOCK_KEYS } from "@freeanima/storage-repos";
 import { toSelfBlockView } from "@freeanima/capabilities-identity";
-import { getServiceContext } from "../context.ts";
+import type { RuntimeDeps } from "./runtime-deps.ts";
 
 export type SelfBlockDisplay = {
   block_key: SelfBlockKey;
@@ -36,9 +36,9 @@ function emptyPlaceholderBlocks(): SelfBlockDisplay[] {
 }
 
 /** WebUI self-layer six blocks read-only display */
-export async function listSelfBlocks(): Promise<{ blocks: SelfBlockDisplay[] }> {
+export async function listSelfBlocks(deps: RuntimeDeps): Promise<{ blocks: SelfBlockDisplay[] }> {
   try {
-    const rows = await getServiceContext().engine.repos.selfLayer.listBlocks();
+    const rows = await deps.engine.repos.selfLayer.listBlocks();
     const blocks = rows.map((row) => {
       const view = toSelfBlockView(row);
       return {

@@ -8,7 +8,7 @@ import {
 
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { getServiceContext } from "@freeanima/service";
+import { getAppRuntime } from "@freeanima/service";
 import { SELF_BLOCK_KEYS } from "@freeanima/storage-repos";
 import { getTestEngine, getActivePgTestContext, seedSession } from "../../helpers/pg-test.ts";
 
@@ -31,7 +31,7 @@ describePg("server memory API", () => {
       id: "f-000001-abcd",
       content: "test semantic memory",
     });
-    const { files } = await getServiceContext().service.listMemoryFiles();
+    const { files } = await getAppRuntime().listMemoryFiles();
     expect(files.length).toBeGreaterThan(0);
     const memory = files.find((f: { name: string }) => f.name === "MEMORY.md");
     expect(memory).toBeDefined();
@@ -69,7 +69,7 @@ describePg("server memory API", () => {
       ],
     );
 
-    const out = await getServiceContext().service.memorySearch({ query: "compression" });
+    const out = await getAppRuntime().memorySearch({ query: "compression" });
     expect(out.results.length).toBeGreaterThan(0);
     const semantic = out.results.find((r: { memory_type: string }) => r.memory_type === "semantic");
     const session = out.results.find((r: { memory_type: string }) => r.memory_type === "session");
@@ -88,9 +88,9 @@ describePg("server memory API", () => {
       type: "world",
     });
 
-    const { index_rows } = await getServiceContext().service.countSemanticMemory();
+    const { index_rows } = await getAppRuntime().countSemanticMemory();
     expect(index_rows).toBeGreaterThan(0);
-    const hits = await getServiceContext().service.memorySearch({ query: "gamma" });
+    const hits = await getAppRuntime().memorySearch({ query: "gamma" });
     expect(hits.results.some((r: { memory_type: string }) => r.memory_type === "semantic")).toBe(
       true,
     );
@@ -106,7 +106,7 @@ describePg("server memory API", () => {
       type: "world",
     });
 
-    const filtered = await getServiceContext().service.listSemanticMemories({
+    const filtered = await getAppRuntime().listSemanticMemories({
       query: "unique-token",
       types: ["preference"],
       limit: 10,
@@ -116,7 +116,7 @@ describePg("server memory API", () => {
     expect(filtered.items.length).toBe(1);
     expect(filtered.items[0]?.type).toBe("preference");
 
-    const page = await getServiceContext().service.listSemanticMemories({
+    const page = await getAppRuntime().listSemanticMemories({
       limit: 1,
       offset: 0,
     });
@@ -142,7 +142,7 @@ describePg("server memory API", () => {
     await ctx.sql`UPDATE semantic_memory SET reference_count = ${1} WHERE id = ${lowId}`;
     await ctx.sql`UPDATE semantic_memory SET reference_count = ${5} WHERE id = ${highId}`;
 
-    const browseByRefs = await getServiceContext().service.listSemanticMemories({
+    const browseByRefs = await getAppRuntime().listSemanticMemories({
       sort_by: "reference_count",
       limit: 100,
     });
@@ -154,7 +154,7 @@ describePg("server memory API", () => {
       browseByRefs.items.find((row: { id: string }) => row.id === highId)?.reference_count,
     ).toBe(5);
 
-    const searched = await getServiceContext().service.listSemanticMemories({
+    const searched = await getAppRuntime().listSemanticMemories({
       query: "unique-sort-token",
       sort_by: "rank",
       limit: 10,
@@ -166,7 +166,7 @@ describePg("server memory API", () => {
       expect(searched.items[0]?.rank).toBeGreaterThanOrEqual(searched.items[1]?.rank ?? 0);
     }
 
-    const forcedRank = await getServiceContext().service.listSemanticMemories({
+    const forcedRank = await getAppRuntime().listSemanticMemories({
       query: "unique-sort-token",
       sort_by: "updated",
       limit: 10,
@@ -189,14 +189,14 @@ describePg("server memory API", () => {
       content: "limbic probe mood content",
     });
 
-    const spikes = await getServiceContext().service.listLimbicMemories({
+    const spikes = await getAppRuntime().listLimbicMemories({
       session_id: sid,
       kind: "spike",
     });
     expect(spikes.total).toBe(1);
     expect(spikes.items[0]?.kind).toBe("spike");
 
-    const searched = await getServiceContext().service.listLimbicMemories({
+    const searched = await getAppRuntime().listLimbicMemories({
       query: "spike",
       session_id: sid,
     });
@@ -216,7 +216,7 @@ describePg("server memory API", () => {
       significance: "normal",
     });
 
-    const milestones = await getServiceContext().service.listAutobiographicalMemories({
+    const milestones = await getAppRuntime().listAutobiographicalMemories({
       significance: "milestone",
     });
     expect(milestones.total).toBeGreaterThanOrEqual(1);
@@ -224,7 +224,7 @@ describePg("server memory API", () => {
       milestones.items.every((r: { significance: string }) => r.significance === "milestone"),
     ).toBe(true);
 
-    const searched = await getServiceContext().service.listAutobiographicalMemories({
+    const searched = await getAppRuntime().listAutobiographicalMemories({
       query: "milestone",
     });
     expect(searched.total).toBeGreaterThanOrEqual(1);
@@ -237,11 +237,11 @@ describePg("server memory API", () => {
       type: "preference",
     });
 
-    const pinned = await getServiceContext().service.updateSemanticMemoryPinned(id, true);
+    const pinned = await getAppRuntime().updateSemanticMemoryPinned(id, true);
     expect(pinned).toEqual({ ok: true, id, pinned: true });
     expect((await getTestEngine().repos.semanticMemory.get(id))?.pinned).toBe(true);
 
-    const unpinned = await getServiceContext().service.updateSemanticMemoryPinned(id, false);
+    const unpinned = await getAppRuntime().updateSemanticMemoryPinned(id, false);
     expect(unpinned).toEqual({ ok: true, id, pinned: false });
     expect((await getTestEngine().repos.semanticMemory.get(id))?.pinned).toBe(false);
   });
@@ -253,7 +253,7 @@ describePg("server memory API", () => {
       updated_by: "test",
     });
 
-    const { blocks } = await getServiceContext().service.listSelfBlocks();
+    const { blocks } = await getAppRuntime().listSelfBlocks();
     expect(blocks.length).toBe(SELF_BLOCK_KEYS.length);
     expect(blocks.map((b: { block_key: string }) => b.block_key)).toEqual([...SELF_BLOCK_KEYS]);
     const direction = blocks.find((b: { block_key: string }) => b.block_key === "direction");

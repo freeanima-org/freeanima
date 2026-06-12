@@ -10,7 +10,7 @@ import {
 } from "@freeanima/capabilities-memory";
 import { loadSelfLayerPrompt } from "@freeanima/capabilities-identity";
 
-import { getServiceContext } from "../context.ts";
+import type { RuntimeDeps } from "./runtime-deps.ts";
 import { listCronJobs } from "./service-status.ts";
 
 let backfillRunning = false;
@@ -26,18 +26,16 @@ export type LightSleepBackfillStatus = {
   last_result?: LightSleepBackfillResult | null;
 };
 
-export async function startLightSleepBackfill(opts?: {
-  fromDay?: string;
-  toDay?: string;
-  resume?: boolean;
-}): Promise<{ ok: true; started: true } | { ok: false; error: string }> {
+export async function startLightSleepBackfill(
+  deps: RuntimeDeps,
+  opts?: {
+    fromDay?: string;
+    toDay?: string;
+    resume?: boolean;
+  },
+): Promise<{ ok: true; started: true } | { ok: false; error: string }> {
   if (backfillRunning) {
     return { ok: false, error: "light sleep backfill already running" };
-  }
-
-  const { engine } = getServiceContext();
-  if (!engine.repos.pgAvailable) {
-    return { ok: false, error: "PostgreSQL unavailable" };
   }
 
   backfillRunning = true;
@@ -47,10 +45,10 @@ export async function startLightSleepBackfill(opts?: {
     try {
       const selfContent = await loadSelfLayerPrompt();
       lastBackfillResult = await runLightSleepBackfill({
-        sessionStore: engine.repos.session,
-        semanticStore: engine.repos.semanticMemory,
-        autoStore: engine.repos.autobiographicalMemory,
-        selfStore: engine.repos.selfLayer,
+        sessionStore: deps.engine.repos.session,
+        semanticStore: deps.engine.repos.semanticMemory,
+        autoStore: deps.engine.repos.autobiographicalMemory,
+        selfStore: deps.engine.repos.selfLayer,
         selfContent,
         fromDay: opts?.fromDay,
         toDay: opts?.toDay,
@@ -90,38 +88,38 @@ export async function getSleepSummary(): Promise<SleepSummary> {
   );
 }
 
-export async function listSleepRuns(opts?: {
-  limit?: number;
-  offset?: number;
-  ok?: boolean;
-}): Promise<{ items: CronLogRow[]; total: number }> {
-  const { engine } = getServiceContext();
-  if (!engine.repos.pgAvailable) {
-    return { items: [], total: 0 };
-  }
-
+export async function listSleepRuns(
+  deps: RuntimeDeps,
+  opts?: {
+    limit?: number;
+    offset?: number;
+    ok?: boolean;
+  },
+): Promise<{ items: CronLogRow[]; total: number }> {
   const listOpts: CronLogListOpts = {
     job_ids: [...SLEEP_JOB_IDS],
     limit: opts?.limit ?? 50,
     offset: opts?.offset ?? 0,
     ok: opts?.ok,
   };
-  const items = await engine.repos.cronLog.list(listOpts);
+  const items = await deps.engine.repos.cronLog.list(listOpts);
   return { items, total: items.length };
 }
 
-export async function listCronLogs(opts?: {
-  job_id?: string;
-  limit?: number;
-  offset?: number;
-  ok?: boolean;
-}): Promise<{ items: CronLogRow[]; total: number }> {
-  const { engine } = getServiceContext();
-  if (!engine.repos.pgAvailable) {
+export async function listCronLogs(
+  deps: RuntimeDeps,
+  opts?: {
+    job_id?: string;
+    limit?: number;
+    offset?: number;
+    ok?: boolean;
+  },
+): Promise<{ items: CronLogRow[]; total: number }> {
+  if (!deps.engine.repos.pgAvailable) {
     return { items: [], total: 0 };
   }
 
-  const items = await engine.repos.cronLog.list({
+  const items = await deps.engine.repos.cronLog.list({
     job_id: opts?.job_id,
     limit: opts?.limit ?? 50,
     offset: opts?.offset ?? 0,

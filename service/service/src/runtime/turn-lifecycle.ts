@@ -1,18 +1,6 @@
 import { isSessionMeta, resolveExecutableToolNames } from "@freeanima/orchestration-conversation";
-import { getServiceContext } from "../context.ts";
 import { resolveSessionMaskFromMeta, runtimeToolMaskFromResolved } from "./mask-wire.ts";
-
-function conv() {
-  return getServiceContext().conversation;
-}
-
-function toolRegistry() {
-  return getServiceContext().engine.catalog.toolSets;
-}
-
-function engineLlm() {
-  return getServiceContext().engine.llm;
-}
+import type { FullRuntimeDeps } from "./runtime-deps.ts";
 import type { SessionMessage as Message } from "@freeanima/storage-db/domain";
 import type { SessionMessage } from "@freeanima/storage-db/domain";
 import * as loopEngine from "@freeanima/orchestration-loop";
@@ -50,16 +38,17 @@ export type StreamTurnHost = {
   emitSessionUpdated(sessionId: string): void;
 };
 
-function serviceLogger() {
-  return getServiceContext().engine.logger;
-}
-
-export function streamErrorEvent(sessionId: string, message: string, err?: unknown): StreamEvent {
+export function streamErrorEvent(
+  deps: FullRuntimeDeps,
+  sessionId: string,
+  message: string,
+  err?: unknown,
+): StreamEvent {
   const path = `/sessions/${sessionId}/messages/stream`;
   const attrs = { session_id: sessionId, path };
-  serviceLogger().with({ component: "sse" }).error(`SSE ${path}: ${message}`, attrs);
+  deps.engine.logger.with({ component: "sse" }).error(`SSE ${path}: ${message}`, attrs);
   if (err !== undefined) {
-    serviceLogger()
+    deps.engine.logger
       .with({ component: "anima-service" })
       .error(message, { err, session_id: sessionId });
   }
@@ -78,17 +67,20 @@ export function lastAssistantText(msgs: Message[]): string {
 }
 
 /** Persist to session per-message or in batch during engine run */
-export function createTurnMessageCallbacks(sessionId: string): {
+export function createTurnMessageCallbacks(
+  deps: FullRuntimeDeps,
+  sessionId: string,
+): {
   onMessageAppended: (msg: SessionMessage) => Promise<void>;
   onToolRoundComplete: (batch: SessionMessage[]) => Promise<void>;
 } {
   return {
     onMessageAppended: async (msg) => {
-      await conv().appendMessage(msg, sessionId);
+      await deps.conversation.appendMessage(msg, sessionId);
     },
     onToolRoundComplete: async (batch) => {
       for (const msg of batch) {
-        await conv().appendMessage(msg, sessionId);
+        await deps.conversation.appendMessage(msg, sessionId);
       }
     },
   };
@@ -96,20 +88,21 @@ export function createTurnMessageCallbacks(sessionId: string): {
 
 /** Shared by streaming / non-streaming: messages written in callbacks; finishTurn only updates meta */
 export async function finalizeTurn(
+  deps: FullRuntimeDeps,
   sessionId: string,
   msgs: SessionMessage[],
   effectiveUserText: string,
   model: string,
   functions?: string[],
 ): Promise<void> {
-  await conv().finishTurn(sessionId, msgs, effectiveUserText, model, functions, true);
+  await deps.conversation.finishTurn(sessionId, msgs, effectiveUserText, model, functions, true);
 }
 
 export type RunSimpleTurnOpts = {
   sessionId: string;
   prompt: string;
   model: string;
-  /** Default conv().beginTurn; pass conv().retryTurn for retry etc. */
+  /** Default conversation.beginTurn; pass conversation.retryTurn for retry etc. */
   prepare?: (sessionId: string, prompt: string) => Promise<TurnPrepareResult>;
 };
 
@@ -117,28 +110,31 @@ export type RunSimpleTurnOpts = {
  * Non-streaming full turn: beginTurn → loopEngine.run → finishTurn.
  * Used by cron / scripts without SSE.
  */
-export async function runSimpleTurn(opts: RunSimpleTurnOpts): Promise<string> {
-  const { sessionId, prompt, model, prepare = conv().beginTurn } = opts;
+export async function runSimpleTurn(
+  deps: FullRuntimeDeps,
+  opts: RunSimpleTurnOpts,
+): Promise<string> {
+  const { sessionId, prompt, model, prepare = deps.conversation.beginTurn } = opts;
   const [msgs, functions, effective] = await prepare(sessionId, prompt);
-  const tools = await conv().loadSessionTools(sessionId);
-  const meta = await conv().loadSessionMeta(sessionId);
-  const toolMask = runtimeToolMaskFromResolved(resolveSessionMaskFromMeta(meta));
+  const tools = await deps.conversation.loadSessionTools(sessionId);
+  const meta = await deps.conversation.loadSessionMeta(sessionId);
+  const toolMask = runtimeToolMaskFromResolved(resolveSessionMaskFromMeta(deps, meta));
   const executableTools = isSessionMeta(meta) ? resolveExecutableToolNames(meta) : undefined;
   try {
     return await runWithToolContext(
       sessionId,
       () =>
         loopEngine.run(msgs, {
-          config: getServiceContext().engine.config.data,
-          logger: getServiceContext().engine.logger,
+          config: deps.engine.config.data,
+          logger: deps.engine.logger,
           model,
           tools,
-          llm: engineLlm(),
+          llm: deps.engine.llm,
           toolMask,
           executableTools,
-          ...createTurnMessageCallbacks(sessionId),
+          ...createTurnMessageCallbacks(deps, sessionId),
         }),
-      { repos: conv().repos, tools: toolRegistry(), executableTools },
+      { repos: deps.conversation.repos, tools: deps.engine.catalog.toolSets, executableTools },
     );
   } catch (e) {
     if (e instanceof loopEngine.MaxTurnsExceeded) {
@@ -146,20 +142,21 @@ export async function runSimpleTurn(opts: RunSimpleTurnOpts): Promise<string> {
     }
     return `[engine error] ${e}`;
   } finally {
-    await finalizeTurn(sessionId, msgs, effective, model, functions);
+    await finalizeTurn(deps, sessionId, msgs, effective, model, functions);
   }
 }
 
 export async function* yieldEngineStream(
+  deps: FullRuntimeDeps,
   host: Pick<StreamTurnHost, "acquireInFlight" | "releaseInFlight" | "engineStreamOpts">,
   sessionId: string,
   msgs: Message[],
   model: string,
   signal: AbortSignal,
 ): AsyncGenerator<StreamEvent> {
-  const tools = await conv().loadSessionTools(sessionId);
-  const meta = await conv().loadSessionMeta(sessionId);
-  const toolMask = runtimeToolMaskFromResolved(resolveSessionMaskFromMeta(meta));
+  const tools = await deps.conversation.loadSessionTools(sessionId);
+  const meta = await deps.conversation.loadSessionMeta(sessionId);
+  const toolMask = runtimeToolMaskFromResolved(resolveSessionMaskFromMeta(deps, meta));
   const executableTools = isSessionMeta(meta) ? resolveExecutableToolNames(meta) : undefined;
   host.acquireInFlight();
   try {
@@ -170,17 +167,22 @@ export async function* yieldEngineStream(
           loopEngine.runStream(msgs, {
             model,
             tools,
-            config: getServiceContext().engine.config.data,
-            logger: getServiceContext().engine.logger,
-            llm: engineLlm(),
+            config: deps.engine.config.data,
+            logger: deps.engine.logger,
+            llm: deps.engine.llm,
             toolMask,
             executableTools,
             ...host.engineStreamOpts(sessionId, signal),
           }),
-        { repos: conv().repos, tools: toolRegistry(), executableTools },
+        { repos: deps.conversation.repos, tools: deps.engine.catalog.toolSets, executableTools },
       )) {
         if (ev.event === "awaiting_clarify") {
-          await applyClarifyStreamAwaiting(conv(), sessionId, ev.data.items, ev.data.timeout_sec);
+          await applyClarifyStreamAwaiting(
+            deps.conversation,
+            sessionId,
+            ev.data.items,
+            ev.data.timeout_sec,
+          );
         }
         yield ev;
       }
@@ -192,17 +194,17 @@ export async function* yieldEngineStream(
       }
       if (e instanceof loopEngine.MaxTurnsExceeded) {
         const msg = `tool loop exceeded: ${e.message}`;
-        serviceLogger().with({ component: "anima-service" }).error(msg, { err: e });
+        deps.engine.logger.with({ component: "anima-service" }).error(msg, { err: e });
         yield { event: "error", data: { error: msg } };
         return;
       }
       if (e instanceof ProviderError) {
-        serviceLogger().with({ component: "anima-service" }).error(e.message, { err: e });
+        deps.engine.logger.with({ component: "anima-service" }).error(e.message, { err: e });
         yield { event: "error", data: { error: e.message } };
         return;
       }
       const msg = String(e);
-      serviceLogger().with({ component: "anima-service" }).error(msg, { err: e });
+      deps.engine.logger.with({ component: "anima-service" }).error(msg, { err: e });
       yield { event: "error", data: { error: msg } };
     }
   } finally {
@@ -217,6 +219,7 @@ export type StreamTurnPrepareOpts = {
 };
 
 export async function* runExclusiveStreamTurn(
+  deps: FullRuntimeDeps,
   sessionId: string,
   prepareOpts: StreamTurnPrepareOpts | (() => Promise<[Message[], string[], string]>),
   host: StreamTurnHost,
@@ -246,7 +249,7 @@ export async function* runExclusiveStreamTurn(
     } else {
       [msgs, functions, effective] = await opts.prepare();
     }
-    const cfg = getServiceContext().engine.config.data;
+    const cfg = deps.engine.config.data;
     const model = getProfileHopModel(cfg, PROFILE_CHAT);
     let hadError = false;
     let sawDone = false;
@@ -261,7 +264,7 @@ export async function* runExclusiveStreamTurn(
       const { signal, controller } = host.beginEngineRun(sessionId);
 
       try {
-        for await (const ev of yieldEngineStream(host, sessionId, msgs, model, signal)) {
+        for await (const ev of yieldEngineStream(deps, host, sessionId, msgs, model, signal)) {
           if (ev.event === "done") {
             pendingDone = ev;
             sawDone = true;
@@ -306,12 +309,12 @@ export async function* runExclusiveStreamTurn(
             signalReady();
           }
           await new Promise<void>((resolve) => setImmediate(resolve));
-          await finalizeTurn(sessionId, msgs, effective, model, functions);
+          await finalizeTurn(deps, sessionId, msgs, effective, model, functions);
         }
         break;
       } catch (e) {
         hadError = true;
-        buffer.push(streamErrorEvent(sessionId, String(e), e));
+        buffer.push(streamErrorEvent(deps, sessionId, String(e), e));
         signalReady();
         break;
       } finally {

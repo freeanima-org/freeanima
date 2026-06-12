@@ -1,7 +1,7 @@
 import type { Config } from "@freeanima/service-config";
 import { credential } from "@freeanima/service-config";
 import { logComponent } from "@freeanima/service-logging";
-import type { AnimaService } from "@freeanima/service-api";
+import type { MessagingPort } from "@freeanima/service-api/ports/messaging-port";
 
 import { loadWeixinCredentials } from "./weixin/weixin-credentials.ts";
 
@@ -12,7 +12,7 @@ export type PlatformAdapter = {
 };
 
 export async function discoverPlatforms(
-  service: AnimaService,
+  service: MessagingPort,
   config: Config,
 ): Promise<PlatformAdapter[]> {
   const adapters: PlatformAdapter[] = [];

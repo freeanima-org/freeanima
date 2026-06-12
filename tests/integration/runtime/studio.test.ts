@@ -12,10 +12,12 @@ import {
   buildFileTree,
   readStudioFile,
   searchStudio,
-  resolveStudioPath,
   patchStudioConfig,
   getStudioConfig,
-} from "@freeanima/service";
+} from "@freeanima/service-api/studio-port";
+import { resolveStudioPath } from "../../../service/service/src/runtime/studio.ts";
+import { getAppRuntime } from "@freeanima/service";
+
 describePg("studio", () => {
   let workspace: string;
   const prev = process.env.FREEANIMA_HOME;
@@ -42,7 +44,10 @@ describePg("studio", () => {
   });
 
   it("buildFileTree returns workspace files", () => {
-    const { tree, workspace: ws } = buildFileTree();
+    const { tree, workspace: ws } = buildFileTree() as {
+      tree: Array<{ name: string; children?: Array<{ name: string }> }>;
+      workspace: string;
+    };
     expect(ws).toBe(workspace);
     const names = tree.map((n) => n.name);
     expect(names).toContain("src");
@@ -52,7 +57,7 @@ describePg("studio", () => {
   });
 
   it("readStudioFile returns content and language", () => {
-    const f = readStudioFile("src/main.ts");
+    const f = readStudioFile("src/main.ts") as { content: string; language: string; path: string };
     expect(f.content).toContain("foo");
     expect(f.language).toBe("typescript");
     expect(f.path).toBe("src/main.ts");
@@ -65,7 +70,9 @@ describePg("studio", () => {
   });
 
   it("resolveStudioPath rejects path traversal", () => {
-    expect(() => resolveStudioPath("../../etc/passwd")).toThrow(/workspace/);
+    expect(() => resolveStudioPath(getAppRuntime().runtimeDeps(), "../../etc/passwd")).toThrow(
+      /workspace/,
+    );
   });
 
   it("patchStudioConfig updates workspace", () => {

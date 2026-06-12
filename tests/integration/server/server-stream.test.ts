@@ -6,7 +6,7 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { getServiceContext } from "@freeanima/service";
+import { getAppRuntime } from "@freeanima/service";
 import { getTestEngine, seedSession } from "../../helpers/pg-test.ts";
 
 describePg("sendMessageStream", () => {
@@ -31,7 +31,7 @@ describePg("sendMessageStream", () => {
       platform: "parlor",
     });
 
-    const svc = getServiceContext().service;
+    const svc = getAppRuntime();
     const events: { event: string; data: Record<string, unknown> }[] = [];
     for await (const ev of svc.sendMessageStream(sid, "/unknown-cmd", "parlor")) {
       events.push(ev);

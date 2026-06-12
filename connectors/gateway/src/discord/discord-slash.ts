@@ -1,5 +1,5 @@
 import { logComponent } from "@freeanima/service-logging";
-import type { AnimaService } from "@freeanima/service-api";
+import type { MessagingPort } from "@freeanima/service-api/ports/messaging-port";
 import {
   REST,
   Routes,
@@ -41,7 +41,7 @@ const OPTION_APPLIERS: Record<string, (builder: SlashCommandBuilder) => void> = 
   },
 };
 
-/** Generate Discord Application Commands from AnimaService command list */
+/** Generate Discord Application Commands from runtime command list */
 export function buildDiscordSlashCommands(
   commands: DiscordSlashCommandMeta[],
 ): ReturnType<SlashCommandBuilder["toJSON"]>[] {
@@ -90,7 +90,7 @@ export function originFromInteraction(interaction: ChatInputCommandInteraction):
 export async function syncDiscordSlashCommands(
   client: Client,
   token: string,
-  service: AnimaService,
+  service: MessagingPort,
   cfg: DiscordConfig,
 ): Promise<void> {
   if (cfg.slash_commands === false) return;

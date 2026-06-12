@@ -8,11 +8,15 @@ export { wireEnginePorts } from "./wire-engine-ports.ts";
 export { registerSystemPromptHooks } from "./register-prompt-hooks.ts";
 export { wireServicePorts } from "./wire-api.ts";
 export {
+  initAppRuntime,
+  getAppRuntime,
   initServiceContext,
   getServiceContext,
   assertNotShuttingDown,
+  isAppRuntimeReady,
   isServiceContextReady,
   type ServiceContext,
+  type AppRuntime,
 } from "./context.ts";
 export { isServerAlive, readStatusFile } from "./alive.ts";
 export {

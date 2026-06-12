@@ -1,6 +1,6 @@
 import { isSessionMeta } from "@freeanima/storage-db/domain";
 import type { AcpTaskStatusJson } from "@freeanima/storage-db/schema";
-import { getServiceContext } from "../context.ts";
+import type { RuntimeDeps } from "./runtime-deps.ts";
 import { checkPlatform } from "./service-sessions.ts";
 
 export type AcpDockTask = {
@@ -21,24 +21,21 @@ export type SessionAcpDockSnapshot = {
 
 const ACTIVE_STATUSES = new Set<AcpTaskStatusJson>(["queued", "running", "awaiting_decision"]);
 
-function conv() {
-  return getServiceContext().conversation;
-}
-
 function isParlorProgressId(id: string): boolean {
   return Boolean(id && !id.includes(":"));
 }
 
 export async function getSessionAcpDock(
+  deps: RuntimeDeps,
   sessionId: string,
   platform = "",
 ): Promise<SessionAcpDockSnapshot> {
-  if (!(await conv().sessionExists(sessionId))) {
+  if (!(await deps.conversation.sessionExists(sessionId))) {
     throw new Error(`Session not found: ${sessionId}`);
   }
-  await checkPlatform({ platform }, sessionId);
+  await checkPlatform(deps, { platform }, sessionId);
 
-  const meta = await conv().loadSessionMeta(sessionId);
+  const meta = await deps.conversation.loadSessionMeta(sessionId);
   const rawTasks =
     isSessionMeta(meta) && meta.acp_tasks && typeof meta.acp_tasks === "object"
       ? (meta.acp_tasks as Record<string, Record<string, unknown>>)
@@ -78,7 +75,8 @@ export async function getSessionAcpDock(
     });
     if (status === "awaiting_decision") highlightDecision = true;
     if (pmid && isParlorProgressId(pmid) && taskId) {
-      const text = (await conv().repos.session.getMessageContentById(sessionId, pmid)) ?? "";
+      const text =
+        (await deps.conversation.repos.session.getMessageContentById(sessionId, pmid)) ?? "";
       if (text.trim()) {
         taskProgress[taskId] = text;
         progressParts.push(`[${taskId}]\n${text}`);
