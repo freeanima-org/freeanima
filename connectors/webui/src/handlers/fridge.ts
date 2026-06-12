@@ -1,8 +1,8 @@
 import type { FridgeMagnetsResponse } from "@freeanima/connectors-webui/api";
-import type { RuntimeService } from "@freeanima/service-api/runtime-service";
+import type { AnimaService } from "@freeanima/service-api";
 import { webuiCtx } from "./runtime.ts";
 
-export function createFridgeHandlers(service: RuntimeService) {
+export function createFridgeHandlers(service: AnimaService) {
   return {
     listFridgeMagnets: (): Promise<FridgeMagnetsResponse> => service.listFridgeMagnets(),
   };

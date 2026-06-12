@@ -1,5 +1,4 @@
 export type { AnimaService, ServiceCommandInfo } from "./anima-service.ts";
-export type { RuntimeService } from "./runtime-service.ts";
 export { getHomeChannel, setHomeChannel, type HomeChannel } from "./home-channel.ts";
 export {
   runSimpleTurn,

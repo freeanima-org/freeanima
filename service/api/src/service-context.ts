@@ -4,10 +4,10 @@ import type { AcpManagerPort } from "./ports/acp-manager.ts";
 import type { MaskRegistryPort } from "./ports/mask-registry.ts";
 import type { McpManagerPort } from "./ports/mcp-manager.ts";
 import type { ServiceEnginePort } from "./ports/service-engine.ts";
-import type { RuntimeService } from "./runtime-service.ts";
+import type { AnimaService } from "./anima-service.ts";
 
 export type ServiceContext = {
-  service: RuntimeService;
+  service: AnimaService;
   conversation: ConversationService;
   engine: ServiceEnginePort;
   masks: MaskRegistryPort;

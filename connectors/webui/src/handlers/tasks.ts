@@ -1,5 +1,5 @@
 import { taskListBodySchema, type TaskListBody } from "@freeanima/connectors-webui/api";
-import type { RuntimeService } from "@freeanima/service-api/runtime-service";
+import type { AnimaService } from "@freeanima/service-api";
 import { webuiCtx } from "./runtime.ts";
 
 function normalizeStatus(status: TaskListBody["status"]): TaskListBody["status"] | undefined {
@@ -9,7 +9,7 @@ function normalizeStatus(status: TaskListBody["status"]): TaskListBody["status"]
   return [status];
 }
 
-export function createTasksHandlers(service: RuntimeService) {
+export function createTasksHandlers(service: AnimaService) {
   return {
     listTasks: (body: TaskListBody) => {
       const parsed = taskListBodySchema.parse(body);

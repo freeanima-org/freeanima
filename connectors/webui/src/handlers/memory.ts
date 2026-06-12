@@ -8,10 +8,10 @@ import {
   type MemorySearchBody,
   type SemanticMemoryListBody,
 } from "@freeanima/connectors-webui/api";
-import type { RuntimeService } from "@freeanima/service-api/runtime-service";
+import type { AnimaService } from "@freeanima/service-api";
 import { webuiCtx } from "./runtime.ts";
 
-export function createMemoryHandlers(service: RuntimeService) {
+export function createMemoryHandlers(service: AnimaService) {
   return {
     listMemoryFiles: () => service.listMemoryFiles(),
     memorySearch: (body: MemorySearchBody) => {
