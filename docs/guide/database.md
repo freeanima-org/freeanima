@@ -42,7 +42,7 @@ Full-text and vector search require PostgreSQL extensions. The app user usually 
 
 ```bash
 sudo apt install postgresql-17-pgvector   # match psql --version
-sudo -u postgres psql -d anima -f storage/db/scripts/ensure-pg-extensions.sql
+sudo -u postgres psql -d anima -f core/scripts/ensure-pg-extensions.sql
 ```
 
 Fresh Debian installs via `setup-postgres-debian.sh` handle extensions automatically.

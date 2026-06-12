@@ -59,17 +59,13 @@ function isAllowed(layer: Layer, pkg: string, _relPath: string): boolean {
     case "core":
       return root.startsWith("kernel-") || root === "kernel" || root === "core";
     case "runtime":
-      if (root === "service") return false;
+      if (root === "platform") return false;
       if (root.startsWith("capabilities-")) return false;
-      if (root.startsWith("connectors-")) return false;
       return (
         root.startsWith("kernel-") || root === "kernel" || root === "core" || root === "runtime"
       );
     case "capabilities": {
-      if (root === "runtime" || root.startsWith("runtime/")) return false;
-      if (root.startsWith("service")) return false;
-      if (root === "connectors-redis") return true;
-      if (root.startsWith("connectors-")) return false;
+      if (root === "runtime" || root === "platform") return false;
       if (root.startsWith("capabilities-")) return true;
       return root.startsWith("kernel-") || root === "kernel" || root === "core";
     }
