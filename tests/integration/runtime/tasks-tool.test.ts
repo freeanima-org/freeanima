@@ -26,12 +26,14 @@ function testCfg() {
 describePg("tasks tool", () => {
   const prev = process.env.FREEANIMA_HOME;
   const summaryWrites: { module: string; id: string; value: string }[] = [];
+  const summaryDeletes: { module: string; id: string }[] = [];
   let toolSets: ToolSetRegistry;
 
   beforeEach(async () => {
     toolSets = new ToolSetRegistry();
     await beginIntegrationCase("anima-tasks-");
     summaryWrites.length = 0;
+    summaryDeletes.length = 0;
     resetTaskStoreForTests();
     resetTasksModuleForTests();
     registerTasksModule({
@@ -39,6 +41,9 @@ describePg("tasks tool", () => {
       fridgeBridge: {
         setMagnet: async (module: string, id: string, value: string) => {
           summaryWrites.push({ module, id, value });
+        },
+        deleteMagnet: async (module: string, id: string) => {
+          summaryDeletes.push({ module, id });
         },
       },
     });
@@ -97,8 +102,8 @@ describePg("tasks tool", () => {
     expect(row?.title).toBe("Discuss UI plan");
 
     expect(summaryWrites.some((w) => w.module === "tasks" && w.id === "summary")).toBe(true);
-    expect(summaryWrites.at(-1)?.value).toContain("Todos (1)");
-    expect(summaryWrites.at(-1)?.value).toContain("Discuss UI plan");
+    expect(summaryWrites.at(-1)?.value).toBe("1 个待办");
+    expect(summaryWrites.at(-1)?.value).not.toContain("Discuss UI plan");
   });
 
   it("list_tasks defaults to pending + in_progress only", async () => {
@@ -166,6 +171,7 @@ describePg("tasks tool", () => {
     };
     expect(parsed.task.status).toBe("completed");
     expect(parsed.task.completed_at).not.toBeNull();
-    expect(summaryWrites.at(-1)?.value).toBe("Todos (0)");
+    expect(summaryWrites).toHaveLength(0);
+    expect(summaryDeletes.at(-1)).toEqual({ module: "tasks", id: "summary" });
   });
 });

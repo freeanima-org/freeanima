@@ -54,6 +54,7 @@ import {
   registerServiceIntegrations,
   startAcpProgressTicker,
   registerServiceMemoryBus,
+  bootstrapTasksFridgeSummary,
   registerServiceStores,
   registerServiceTools,
 } from "./register.ts";
@@ -273,8 +274,10 @@ export async function serve(
     });
     service.setOnSessionUpdated(acpSessionUpdatedRef.handler);
 
-    registerServiceStores(repos, { fridgeBridge: createFridgeBridge() });
+    const fridgeBridge = createFridgeBridge();
+    registerServiceStores(repos, { fridgeBridge });
     registerFridgeMagnet({ kernel });
+    await bootstrapTasksFridgeSummary(repos, fridgeBridge);
     registerServiceMemoryBus({ kernel });
     if (repos.pgAvailable) {
       invalidateSelfLayerPromptCache();
