@@ -9,24 +9,11 @@ import type {
 import * as crudRepo from "./repos/task-crud-repo.ts";
 
 /** PostgreSQL TaskStorePort implementation */
-export class PgTaskStore implements TaskStorePort {
-  async create(input: TaskCreateInput): Promise<TaskRow> {
-    return crudRepo.createTask(input);
-  }
-
-  async get(id: string): Promise<TaskRow | null> {
-    return crudRepo.getTask(id);
-  }
-
-  async update(input: TaskUpdateInput): Promise<TaskRow | null> {
-    return crudRepo.updateTask(input);
-  }
-
-  async list(opts?: TaskListOpts): Promise<TaskRow[]> {
-    return crudRepo.listTasks(opts);
-  }
-
-  async count(opts?: Omit<TaskListOpts, "offset" | "limit">): Promise<number> {
-    return crudRepo.countTasks(opts);
-  }
-}
+export const pgTaskStore: TaskStorePort = {
+  create: (input: TaskCreateInput): Promise<TaskRow> => crudRepo.createTask(input),
+  get: (id: string): Promise<TaskRow | null> => crudRepo.getTask(id),
+  update: (input: TaskUpdateInput): Promise<TaskRow | null> => crudRepo.updateTask(input),
+  list: (opts?: TaskListOpts): Promise<TaskRow[]> => crudRepo.listTasks(opts),
+  count: (opts?: Omit<TaskListOpts, "offset" | "limit">): Promise<number> =>
+    crudRepo.countTasks(opts),
+};

@@ -1,4 +1,4 @@
-import type { SessionConversationPort } from "@freeanima/mechanism-session-port";
+import type { SessionConversationPort } from "@freeanima/mechanism-tool/session-conversation-port";
 import { isSessionMeta } from "@freeanima/storage-db/domain";
 import type {
   AcpTaskEntryJson,

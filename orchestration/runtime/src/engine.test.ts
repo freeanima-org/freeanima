@@ -14,7 +14,7 @@ import { nullPgRepositories } from "@freeanima/storage-repos";
 import { MockBackend } from "@freeanima/storage-provider-llm/test-helpers/mock-backend";
 import { Config, type AnimaConfig } from "@freeanima/storage-config";
 import { createTestLogger } from "@freeanima/kernel/logging/testing";
-import { Engine } from "./engine.ts";
+import { RuntimeBundle } from "./engine.ts";
 
 const testCfg = {
   llm: {
@@ -52,7 +52,7 @@ describe("Engine", () => {
     );
     const llm = { backends, providers, profiles };
     const config = Config.fromSnapshot(testCfg);
-    const engine = new Engine(catalog, llm, nullPgRepositories, config, createTestLogger());
+    const engine = new RuntimeBundle(catalog, llm, nullPgRepositories, config, createTestLogger());
     expect(engine.toolSets).toBe(catalog.toolSets);
     expect(engine.catalog.skills).toBe(catalog.skills);
     expect(engine.llm.backends).toBe(backends);

@@ -22,7 +22,6 @@
     "capabilities/acp": {
       "name": "@freeanima/capabilities-acp",
       "dependencies": {
-        "@freeanima/mechanism-session-port": "workspace:*",
         "@freeanima/mechanism-skill": "workspace:*",
         "@freeanima/mechanism-tool": "workspace:*",
         "@freeanima/storage-config": "workspace:*",
@@ -40,7 +39,6 @@
       "dependencies": {
         "@freeanima/kernel": "workspace:*",
         "@freeanima/mechanism-hooks": "workspace:*",
-        "@freeanima/mechanism-session-port": "workspace:*",
         "@freeanima/mechanism-tool": "workspace:*",
         "@freeanima/storage-config": "workspace:*",
         "@freeanima/storage-db": "workspace:*",
@@ -344,12 +342,6 @@
       "devDependencies": {
         "@freeanima/capabilities-llm-openai": "workspace:*",
         "@types/bun": "catalog:",
-      },
-    },
-    "mechanism/session-port": {
-      "name": "@freeanima/mechanism-session-port",
-      "dependencies": {
-        "@freeanima/storage-db": "workspace:*",
       },
     },
     "mechanism/skill": {
@@ -946,8 +938,6 @@
     "@freeanima/mechanism-hooks": ["@freeanima/mechanism-hooks@workspace:mechanism/hooks"],
 
     "@freeanima/mechanism-llm": ["@freeanima/mechanism-llm@workspace:mechanism/llm"],
-
-    "@freeanima/mechanism-session-port": ["@freeanima/mechanism-session-port@workspace:mechanism/session-port"],
 
     "@freeanima/mechanism-skill": ["@freeanima/mechanism-skill@workspace:mechanism/skill"],
 

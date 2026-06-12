@@ -15,9 +15,9 @@ function engineLlm() {
 }
 import type { SessionMessage as Message } from "@freeanima/storage-db/domain";
 import type { SessionMessage } from "@freeanima/storage-db/domain";
-import * as engine from "@freeanima/orchestration-runtime";
+import * as loopEngine from "@freeanima/orchestration-loop";
 import { runWithToolContext } from "@freeanima/mechanism-tool";
-import type { StreamEvent } from "@freeanima/orchestration-runtime";
+import type { StreamEvent } from "@freeanima/orchestration-loop";
 import { applyClarifyStreamAwaiting } from "@freeanima/capabilities-clarify";
 import { ProviderError } from "@freeanima/storage-provider-llm";
 import { getProfileHopModel } from "@freeanima/service-config";
@@ -114,7 +114,7 @@ export type RunSimpleTurnOpts = {
 };
 
 /**
- * Non-streaming full turn: beginTurn → engine.run → finishTurn.
+ * Non-streaming full turn: beginTurn → loopEngine.run → finishTurn.
  * Used by cron / scripts without SSE.
  */
 export async function runSimpleTurn(opts: RunSimpleTurnOpts): Promise<string> {
@@ -128,7 +128,7 @@ export async function runSimpleTurn(opts: RunSimpleTurnOpts): Promise<string> {
     return await runWithToolContext(
       sessionId,
       () =>
-        engine.run(msgs, {
+        loopEngine.run(msgs, {
           config: getServiceContext().engine.config.data,
           logger: getServiceContext().engine.logger,
           model,
@@ -141,7 +141,7 @@ export async function runSimpleTurn(opts: RunSimpleTurnOpts): Promise<string> {
       { repos: conv().repos, tools: toolRegistry(), executableTools },
     );
   } catch (e) {
-    if (e instanceof engine.MaxTurnsExceeded) {
+    if (e instanceof loopEngine.MaxTurnsExceeded) {
       return `[tool loop limit exceeded] ${e.message}`;
     }
     return `[engine error] ${e}`;
@@ -167,7 +167,7 @@ export async function* yieldEngineStream(
       for await (const ev of runWithToolContext(
         sessionId,
         () =>
-          engine.runStream(msgs, {
+          loopEngine.runStream(msgs, {
             model,
             tools,
             config: getServiceContext().engine.config.data,
@@ -185,12 +185,12 @@ export async function* yieldEngineStream(
         yield ev;
       }
     } catch (e) {
-      if (e instanceof engine.EngineTurnInterrupted) {
+      if (e instanceof loopEngine.EngineTurnInterrupted) {
         yield { event: "interrupted", data: { reason: e.message } };
         yield { event: "done", data: { reason: "interrupted" } };
         return;
       }
-      if (e instanceof engine.MaxTurnsExceeded) {
+      if (e instanceof loopEngine.MaxTurnsExceeded) {
         const msg = `tool loop exceeded: ${e.message}`;
         serviceLogger().with({ component: "anima-service" }).error(msg, { err: e });
         yield { event: "error", data: { error: msg } };

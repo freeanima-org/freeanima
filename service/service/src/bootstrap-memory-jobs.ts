@@ -3,12 +3,8 @@ import { wireCapabilityInjection } from "./wire-capability-injection.ts";
 import { registerSystemPromptHooks } from "./register-prompt-hooks.ts";
 import { wireServicePorts } from "./wire-api.ts";
 import { chdir } from "node:process";
-import {
-  createEngine,
-  createEngineCatalog,
-  getLlmRuntime,
-  initLlmRuntime,
-} from "@freeanima/orchestration-runtime";
+import { createEngine, createEngineCatalog } from "@freeanima/orchestration-runtime";
+import { getLlmRuntime, initLlmRuntime } from "@freeanima/mechanism-llm";
 import { createServiceKernel } from "@freeanima/service-bootstrap";
 import { createConversationService } from "@freeanima/orchestration-conversation";
 import {

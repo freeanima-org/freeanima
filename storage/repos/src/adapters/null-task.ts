@@ -6,8 +6,10 @@ import type {
   TaskUpdateInput,
 } from "../ports/task.ts";
 
+import { pgUnavailableStore } from "./null-helpers.ts";
+
 function notConfigured(): never {
-  throw new Error("TaskStore not configured (PostgreSQL unavailable)");
+  return pgUnavailableStore("TaskStore");
 }
 
 export const nullTaskStore: TaskStorePort = {

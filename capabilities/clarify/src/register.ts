@@ -1,7 +1,7 @@
 import type { Kernel } from "@freeanima/kernel";
 import type { Config } from "@freeanima/storage-config";
 import { bindClarifyConfig } from "./clarify.ts";
-import type { SessionConversationPort } from "@freeanima/mechanism-session-port";
+import type { SessionConversationPort } from "@freeanima/mechanism-tool/session-conversation-port";
 import {
   messageIncoming,
   turnAfterComplete,

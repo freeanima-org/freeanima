@@ -58,103 +58,54 @@ function bindReposAndTools<A extends unknown[], T>(
   return (...args: A) => fn(repos, tools, ...args);
 }
 
-/** Bind PgRepositories and ToolSetRegistry; instantiated by service composition root */
-export class ConversationService {
-  readonly repos: PgRepositories;
-  readonly tools: ToolSetRegistry;
-
-  readonly loadSessionTools;
-  readonly loadSessionMeta;
-  readonly countSessionsByPlatform;
-  readonly listSessionSummaries;
-  readonly listSessions;
-  readonly sessionExists;
-  readonly load;
-  readonly loadMessagePage;
-  readonly countMessages;
-  readonly loadForRuntime;
-  readonly appendMessage;
-  readonly appendSessionMeta;
-  readonly initSession;
-  readonly newSession;
-  readonly findSessionByOrigin;
-  readonly updateSessionMetaField;
-  readonly patchSessionOrigin;
-  readonly rebuildSessionSystemPrompt;
-  readonly reloadSessionTools;
-  readonly refreshSystemPromptOnResume;
-  readonly assertSessionPlatform;
-  readonly appendUserTurn;
-  readonly advanceCompressionMeta;
-  readonly recompressSession;
-  readonly repairAndPersistToolLoop;
-  readonly maybeApplyEmergencyCompression;
-  readonly buildRuntimeMessages;
-  readonly beginTurn;
-  readonly beginTurnFast;
-  readonly beginTurnPrepare;
-  readonly finishTurn;
-  readonly updateSessionMeta;
-  readonly setSessionTitle;
-  readonly getSessionTitle;
-  readonly getSessionCwd;
-  readonly setSessionCwd;
-  readonly rollbackToLastUser;
-  readonly retryTurn;
-  readonly cleanupDebugSessions;
-
-  constructor(repos: PgRepositories, tools: ToolSetRegistry) {
-    this.repos = repos;
-    this.tools = tools;
-    this.loadSessionTools = bindReposAndTools(repos, tools, loadSessionTools);
-    this.loadSessionMeta = bindRepos(repos, loadSessionMeta);
-    this.countSessionsByPlatform = bindRepos(repos, countSessionsByPlatform);
-    this.listSessionSummaries = bindRepos(repos, listSessionSummaries);
-    this.listSessions = bindRepos(repos, listSessions);
-    this.sessionExists = bindRepos(repos, sessionExists);
-    this.load = bindRepos(repos, load);
-    this.loadMessagePage = bindRepos(repos, loadMessagePage);
-    this.countMessages = bindRepos(repos, countMessages);
-    this.loadForRuntime = bindRepos(repos, loadForRuntime);
-    this.appendMessage = (msg: SessionMessage, session: string) =>
-      appendMessage(repos, msg, session);
-    this.appendSessionMeta = bindRepos(repos, appendSessionMeta);
-    this.initSession = bindReposAndTools(repos, tools, initSession);
-    this.newSession = bindReposAndTools(repos, tools, newSession);
-    this.findSessionByOrigin = bindRepos(repos, findSessionByOrigin);
-    this.updateSessionMetaField = (
+/** Bound session/turn API for composition root */
+export function createConversationService(repos: PgRepositories, tools: ToolSetRegistry) {
+  return {
+    repos,
+    tools,
+    loadSessionTools: bindReposAndTools(repos, tools, loadSessionTools),
+    loadSessionMeta: bindRepos(repos, loadSessionMeta),
+    countSessionsByPlatform: bindRepos(repos, countSessionsByPlatform),
+    listSessionSummaries: bindRepos(repos, listSessionSummaries),
+    listSessions: bindRepos(repos, listSessions),
+    sessionExists: bindRepos(repos, sessionExists),
+    load: bindRepos(repos, load),
+    loadMessagePage: bindRepos(repos, loadMessagePage),
+    countMessages: bindRepos(repos, countMessages),
+    loadForRuntime: bindRepos(repos, loadForRuntime),
+    appendMessage: (msg: SessionMessage, session: string) => appendMessage(repos, msg, session),
+    appendSessionMeta: bindRepos(repos, appendSessionMeta),
+    initSession: bindReposAndTools(repos, tools, initSession),
+    newSession: bindReposAndTools(repos, tools, newSession),
+    findSessionByOrigin: bindRepos(repos, findSessionByOrigin),
+    updateSessionMetaField: (
       session: string,
       patch: Parameters<typeof updateSessionMetaField>[2],
-    ) => updateSessionMetaField(repos, session, patch);
-    this.patchSessionOrigin = bindRepos(repos, patchSessionOrigin);
-    this.rebuildSessionSystemPrompt = bindRepos(repos, rebuildSessionSystemPrompt);
-    this.reloadSessionTools = bindReposAndTools(repos, tools, reloadSessionTools);
-    this.refreshSystemPromptOnResume = bindRepos(repos, refreshSystemPromptOnResume);
-    this.assertSessionPlatform = bindRepos(repos, assertSessionPlatform);
-    this.appendUserTurn = bindRepos(repos, appendUserTurn);
-    this.advanceCompressionMeta = bindReposAndTools(repos, tools, advanceCompressionMeta);
-    this.recompressSession = bindReposAndTools(repos, tools, recompressSession);
-    this.repairAndPersistToolLoop = bindRepos(repos, repairAndPersistToolLoop);
-    this.maybeApplyEmergencyCompression = bindRepos(repos, maybeApplyEmergencyCompression);
-    this.buildRuntimeMessages = bindReposAndTools(repos, tools, buildRuntimeMessages);
-    this.beginTurn = bindReposAndTools(repos, tools, beginTurn);
-    this.beginTurnFast = bindRepos(repos, beginTurnFast);
-    this.beginTurnPrepare = bindReposAndTools(repos, tools, beginTurnPrepare);
-    this.finishTurn = bindReposAndTools(repos, tools, finishTurn);
-    this.updateSessionMeta = bindReposAndTools(repos, tools, updateSessionMeta);
-    this.setSessionTitle = bindRepos(repos, setSessionTitle);
-    this.getSessionTitle = bindRepos(repos, getSessionTitle);
-    this.getSessionCwd = bindRepos(repos, getSessionCwd);
-    this.setSessionCwd = bindRepos(repos, setSessionCwd);
-    this.rollbackToLastUser = bindRepos(repos, rollbackToLastUser);
-    this.retryTurn = bindReposAndTools(repos, tools, retryTurn);
-    this.cleanupDebugSessions = bindRepos(repos, cleanupDebugSessions);
-  }
+    ) => updateSessionMetaField(repos, session, patch),
+    patchSessionOrigin: bindRepos(repos, patchSessionOrigin),
+    rebuildSessionSystemPrompt: bindRepos(repos, rebuildSessionSystemPrompt),
+    reloadSessionTools: bindReposAndTools(repos, tools, reloadSessionTools),
+    refreshSystemPromptOnResume: bindRepos(repos, refreshSystemPromptOnResume),
+    assertSessionPlatform: bindRepos(repos, assertSessionPlatform),
+    appendUserTurn: bindRepos(repos, appendUserTurn),
+    advanceCompressionMeta: bindReposAndTools(repos, tools, advanceCompressionMeta),
+    recompressSession: bindReposAndTools(repos, tools, recompressSession),
+    repairAndPersistToolLoop: bindRepos(repos, repairAndPersistToolLoop),
+    maybeApplyEmergencyCompression: bindRepos(repos, maybeApplyEmergencyCompression),
+    buildRuntimeMessages: bindReposAndTools(repos, tools, buildRuntimeMessages),
+    beginTurn: bindReposAndTools(repos, tools, beginTurn),
+    beginTurnFast: bindRepos(repos, beginTurnFast),
+    beginTurnPrepare: bindReposAndTools(repos, tools, beginTurnPrepare),
+    finishTurn: bindReposAndTools(repos, tools, finishTurn),
+    updateSessionMeta: bindReposAndTools(repos, tools, updateSessionMeta),
+    setSessionTitle: bindRepos(repos, setSessionTitle),
+    getSessionTitle: bindRepos(repos, getSessionTitle),
+    getSessionCwd: bindRepos(repos, getSessionCwd),
+    setSessionCwd: bindRepos(repos, setSessionCwd),
+    rollbackToLastUser: bindRepos(repos, rollbackToLastUser),
+    retryTurn: bindReposAndTools(repos, tools, retryTurn),
+    cleanupDebugSessions: bindRepos(repos, cleanupDebugSessions),
+  };
 }
 
-export function createConversationService(
-  repos: PgRepositories,
-  tools: ToolSetRegistry,
-): ConversationService {
-  return new ConversationService(repos, tools);
-}
+export type ConversationService = ReturnType<typeof createConversationService>;

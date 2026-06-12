@@ -5,7 +5,6 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@freeanima/mechanism-session-port": "workspace:*",
     "@freeanima/storage-db": "workspace:*",
     "@freeanima/mechanism-tool": "workspace:*",
     "@freeanima/mechanism-hooks": "workspace:*",

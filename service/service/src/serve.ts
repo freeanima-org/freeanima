@@ -2,13 +2,8 @@ import { wireEnginePorts } from "./wire-engine-ports.ts";
 import { wireCapabilityInjection } from "./wire-capability-injection.ts";
 import { registerSystemPromptHooks } from "./register-prompt-hooks.ts";
 import { wireServicePorts } from "./wire-api.ts";
-import {
-  createEngine,
-  createEngineCatalog,
-  getLlmRuntime,
-  initLlmRuntime,
-  type Engine,
-} from "@freeanima/orchestration-runtime";
+import { createEngine, createEngineCatalog, type Engine } from "@freeanima/orchestration-runtime";
+import { getLlmRuntime, initLlmRuntime } from "@freeanima/mechanism-llm";
 import { createServiceKernel } from "@freeanima/service-bootstrap";
 import { nullPgRepositories } from "@freeanima/storage-repos";
 import {

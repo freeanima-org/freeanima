@@ -12,7 +12,7 @@ import {
 } from "@freeanima/storage-db/domain";
 import { safeParseOrNull } from "@freeanima/storage-util";
 import { parseToolResult } from "@freeanima/mechanism-tool";
-import type { SessionConversationPort } from "@freeanima/mechanism-session-port";
+import type { SessionConversationPort } from "@freeanima/mechanism-tool/session-conversation-port";
 
 export type { ClarifyItem, AwaitingClarify };
 export type ClarifyAwaitingResult = ClarifyToolAwaitingResult;
