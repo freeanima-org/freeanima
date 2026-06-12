@@ -48,21 +48,22 @@ Sleep is the digital life's memory consolidation mechanism—analogous to human 
 
 ## Deep Sleep
 
-| Attribute  | Value                                                                                |
-| ---------- | ------------------------------------------------------------------------------------ |
-| Trigger    | Cron only, daily 03:00, no manual trigger                                            |
-| Target     | All active semantic memory                                                           |
-| Operations | Contradiction detection + expiry marking, split, dedup merge—three sequential rounds |
+| Attribute  | Value                                                                                                |
+| ---------- | ---------------------------------------------------------------------------------------------------- |
+| Trigger    | Cron only, daily 03:00, no manual trigger                                                            |
+| Target     | All active semantic memory                                                                           |
+| Operations | Contradiction detection + expiry marking, split, dedup merge, pin maintenance—four sequential rounds |
 
-### Three Rounds
+### Four Rounds
 
 | Round | Intent                                   |
 | ----- | ---------------------------------------- |
 | 1     | Contradiction detection + expiry marking |
 | 2     | Split multi-fact entries                 |
 | 3     | Dedup merge similar entries              |
+| 4     | Pin maintenance (keep pinned ≤ 20)       |
 
-**Ordering rationale:** Clean problems first, then refine, then merge.
+**Ordering rationale:** Clean problems first, then refine, then merge, then trim resident pins.
 
 ### Contradiction Definition (Exclusive)
 

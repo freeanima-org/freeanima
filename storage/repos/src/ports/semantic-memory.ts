@@ -1,3 +1,9 @@
+/** Default resident memory slot count injected into system prompt */
+export const RESIDENT_TOP_N = 20;
+
+/** Max pinned memories included in resident context (excess triggers warn log) */
+export const RESIDENT_PINNED_MAX = 20;
+
 /** PG semantic_memory row (consumed by capabilities-memory / recall / remember) */
 export type SemanticMemoryRow = {
   id: string;

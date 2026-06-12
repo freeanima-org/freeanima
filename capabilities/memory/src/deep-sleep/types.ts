@@ -1,5 +1,5 @@
-/** Deep sleep three-round intent labels */
-export type DeepSleepRound = "contradiction_expiry" | "split" | "merge";
+/** Deep sleep round intent labels */
+export type DeepSleepRound = "contradiction_expiry" | "split" | "merge" | "pin_maintenance";
 
 /** Single change record */
 export type DeepSleepChangeEntry = {

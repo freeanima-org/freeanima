@@ -1,5 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { RESIDENT_TOP_N } from "@freeanima/storage-repos";
+
 import { getSemanticMemoryStore } from "./semantic-port.ts";
 import { formatResidentMemoryLine, MEMORY_REFERENCE_CITATION_RULE } from "./memory-reference.ts";
 
@@ -35,7 +37,7 @@ function readAgents(cwd: string | null | undefined): string {
 }
 
 async function renderResidentMemory(): Promise<string> {
-  const facts = await getSemanticMemoryStore().listResident(20);
+  const facts = await getSemanticMemoryStore().listResident(RESIDENT_TOP_N);
   if (!facts.length) return "";
   const lines = facts.map((f) => formatResidentMemoryLine(f.content, f.id, f.pinned));
   return wrapPromptSection("Resident memory", lines.join("\n"), RESIDENT_MEMORY_SYSTEM_FRAME);

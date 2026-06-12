@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
 import { MemoryListPagination } from "@/components/chamber/MemoryListPagination.tsx";
 import { m } from "@/lib/i18n.ts";
-import { listSemanticMemories } from "@/lib/api.ts";
+import { listSemanticMemories, updateSemanticMemoryPinned } from "@/lib/api.ts";
 
 const PAGE_SIZE = 20;
 
@@ -53,6 +53,7 @@ function SemanticMemoryPage() {
   const [items, setItems] = useState<SemanticRow[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [hasSearchQuery, setHasSearchQuery] = useState(false);
+  const [toggling, setToggling] = useState<Record<string, boolean>>({});
 
   const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
 
@@ -96,6 +97,30 @@ function SemanticMemoryPage() {
 
   const onPageChange = (page: number) => {
     void fetchList((page - 1) * PAGE_SIZE);
+  };
+
+  const onTogglePinned = async (row: SemanticRow, nextPinned: boolean) => {
+    if (row.status !== "active") return;
+    setToggling((prev) => ({ ...prev, [row.id]: true }));
+    setError("");
+    try {
+      await updateSemanticMemoryPinned({ id: row.id, pinned: nextPinned });
+      setItems((prev) =>
+        prev.map((item) => (item.id === row.id ? { ...item, pinned: nextPinned } : item)),
+      );
+    } catch (e) {
+      setError(
+        m.webui_common_load_failed({
+          detail: e instanceof Error ? e.message : String(e),
+        }),
+      );
+    } finally {
+      setToggling((prev) => {
+        const next = { ...prev };
+        delete next[row.id];
+        return next;
+      });
+    }
   };
 
   return (
@@ -211,7 +236,7 @@ function SemanticMemoryPage() {
                     <th>id</th>
                     <th>{m.webui_common_type_label()}</th>
                     <th>{m.webui_common_status_label()}</th>
-                    <th>pinned</th>
+                    <th>{m.webui_chamber_semantic_pinned()}</th>
                     <th>{m.webui_chamber_semantic_created()}</th>
                     <th>{m.webui_chamber_semantic_updated()}</th>
                     <th>{m.webui_chamber_semantic_reference_count()}</th>
@@ -227,8 +252,21 @@ function SemanticMemoryPage() {
                       <td className="text-xs">{row.type}</td>
                       <td className="text-xs">{row.status}</td>
                       <td className="text-xs">
-                        {row.pinned ? (
-                          <span className="badge badge-primary badge-xs">pinned</span>
+                        {row.status === "active" ? (
+                          <label className="label cursor-pointer gap-2 py-0 justify-start">
+                            <span className="label-text text-xs sr-only">
+                              {m.webui_chamber_semantic_pin_toggle()}
+                            </span>
+                            <input
+                              type="checkbox"
+                              className="toggle toggle-sm toggle-primary"
+                              checked={row.pinned}
+                              disabled={Boolean(toggling[row.id])}
+                              onChange={(e) => void onTogglePinned(row, e.target.checked)}
+                            />
+                          </label>
+                        ) : row.pinned ? (
+                          <span className="badge badge-ghost badge-xs">pinned</span>
                         ) : (
                           "-"
                         )}

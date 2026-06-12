@@ -8,6 +8,7 @@ export type {
   MessageFtsHit,
   MessageRowView,
 } from "./session.ts";
+export { RESIDENT_PINNED_MAX, RESIDENT_TOP_N } from "./semantic-memory.ts";
 export type {
   SemanticMemoryRow,
   SemanticFtsHit,

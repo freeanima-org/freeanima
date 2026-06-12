@@ -365,6 +365,10 @@ export async function listSemanticMemories(input: {
   return unwrap(apiClient.api.memory.semantic.list.post(input));
 }
 
+export async function updateSemanticMemoryPinned(input: { id: string; pinned: boolean }) {
+  return unwrap(apiClient.api.memory.semantic.pinned.patch(input));
+}
+
 export async function listLimbicMemories(input: {
   query?: string;
   offset?: number;

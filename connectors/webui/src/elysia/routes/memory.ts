@@ -4,6 +4,7 @@ import {
   limbicMemoryListBodySchema,
   memorySearchBodySchema,
   semanticMemoryListBodySchema,
+  semanticMemoryPinBodySchema,
 } from "../../api/schemas.ts";
 import {
   countSemanticMemory,
@@ -12,6 +13,7 @@ import {
   listMemoryFiles,
   listSemanticMemories,
   memorySearch,
+  updateSemanticMemoryPinned,
 } from "../../handlers/index.ts";
 
 export const memoryRoutes = new Elysia({ prefix: "/memory" })
@@ -20,6 +22,9 @@ export const memoryRoutes = new Elysia({ prefix: "/memory" })
   .post("/semantic-memory/count", () => countSemanticMemory())
   .post("/semantic/list", ({ body }) =>
     listSemanticMemories(semanticMemoryListBodySchema.parse(body)),
+  )
+  .patch("/semantic/pinned", ({ body }) =>
+    updateSemanticMemoryPinned(semanticMemoryPinBodySchema.parse(body)),
   )
   .post("/limbic/list", ({ body }) => listLimbicMemories(limbicMemoryListBodySchema.parse(body)))
   .post("/autobiographical/list", ({ body }) =>

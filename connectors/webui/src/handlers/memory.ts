@@ -3,10 +3,12 @@ import {
   limbicMemoryListBodySchema,
   memorySearchBodySchema,
   semanticMemoryListBodySchema,
+  semanticMemoryPinBodySchema,
   type AutobiographicalMemoryListBody,
   type LimbicMemoryListBody,
   type MemorySearchBody,
   type SemanticMemoryListBody,
+  type SemanticMemoryPinBody,
 } from "@freeanima/connectors-webui/api";
 import { webuiCtx } from "./runtime.ts";
 
@@ -66,4 +68,9 @@ export async function listAutobiographicalMemories(body: AutobiographicalMemoryL
     significance: parsed.significance,
     source_session: parsed.source_session?.trim() || undefined,
   });
+}
+
+export async function updateSemanticMemoryPinned(body: SemanticMemoryPinBody) {
+  const parsed = semanticMemoryPinBodySchema.parse(body);
+  return webuiCtx().service.updateSemanticMemoryPinned(parsed.id.trim(), parsed.pinned);
 }

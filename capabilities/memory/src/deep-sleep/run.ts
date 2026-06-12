@@ -20,15 +20,21 @@ export type RunDeepSleepOpts = {
   day?: string;
 };
 
-const DEEP_SLEEP_ROUNDS: DeepSleepRound[] = ["contradiction_expiry", "split", "merge"];
+const DEEP_SLEEP_ROUNDS: DeepSleepRound[] = [
+  "contradiction_expiry",
+  "split",
+  "merge",
+  "pin_maintenance",
+];
 
 /**
- * Deep sleep orchestration: three LLM rounds maintain semantic memories.
+ * Deep sleep orchestration: four LLM rounds maintain semantic memories.
  *
  * Round order:
  * 1. Contradiction detection + expiry marking
  * 2. Split
  * 3. Deduplicate and merge
+ * 4. Pin maintenance
  *
  * Message 1 stays fixed (full active memory JSON); message 1.5 appends change log each round.
  */
@@ -144,6 +150,7 @@ export async function runDeepSleep(opts: RunDeepSleepOpts): Promise<DeepSleepRes
       contradiction_expiry_calls: roundStats["contradiction_expiry"],
       split_calls: roundStats["split"],
       merge_calls: roundStats["merge"],
+      pin_maintenance_calls: roundStats["pin_maintenance"],
     },
   });
 

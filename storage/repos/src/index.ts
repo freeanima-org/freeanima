@@ -48,7 +48,13 @@ export type {
   MemoryReferenceStorePort,
   RecordMessageReferencesInput,
 } from "./ports/index.ts";
-export { SELF_BLOCK_KEYS, TASK_STATUSES, TASK_PRIORITIES } from "./ports/index.ts";
+export {
+  SELF_BLOCK_KEYS,
+  TASK_STATUSES,
+  TASK_PRIORITIES,
+  RESIDENT_PINNED_MAX,
+  RESIDENT_TOP_N,
+} from "./ports/index.ts";
 export type {
   CompressionState,
   ConversationMessage,
