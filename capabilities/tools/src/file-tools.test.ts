@@ -3,12 +3,12 @@ import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { tmpdir } from "node:os";
 import { chdir } from "node:process";
-import { Config } from "@freeanima/service-config";
+import { Config } from "@freeanima/platform/config";
 import { registerCoreTools } from "@freeanima/capabilities-tools";
 import { ToolSetRegistry } from "@freeanima/core/tool";
-import { parseYaml } from "@freeanima/service-config";
-import { animaConfigSchema } from "@freeanima/service-config/schemas/config";
-import { MINIMAL_LLM_YAML } from "@freeanima/service-config/test-helpers/minimal-llm-config";
+import { parseYaml } from "@freeanima/platform/config";
+import { animaConfigSchema } from "@freeanima/platform/config/schemas/config";
+import { MINIMAL_LLM_YAML } from "@freeanima/platform/config/test-helpers/minimal-llm-config";
 
 function testConfig() {
   const parsed = animaConfigSchema.safeParse(parseYaml(MINIMAL_LLM_YAML));

@@ -43,7 +43,7 @@ const PKG_RENAMES: [string, string][] = [
   ["@freeanima/capabilities-memory", "@freeanima/capabilities-memory"],
   ["@freeanima/capabilities-tools/estate", "@freeanima/capabilities-tools/estate"],
   ["@freeanima/capabilities-identity", "@freeanima/capabilities-identity"],
-  ["@freeanima/service-commands", "@freeanima/service-commands"],
+  ["@freeanima/platform/commands", "@freeanima/platform/commands"],
   ["@freeanima/runtime", "@freeanima/runtime"],
 ];
 

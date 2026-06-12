@@ -1,16 +1,16 @@
 import type { PgTestContext } from "./pg-test.ts";
 import { flushCompressionSummaries } from "@freeanima/runtime/conversation";
 import { createConversationService } from "@freeanima/runtime/conversation";
-import { createServiceKernel } from "@freeanima/service-bootstrap";
+import { createServiceKernel } from "@freeanima/platform/bootstrap";
 import {
   createAppRuntime,
   initAppRuntime,
   wireServicePorts,
   registerSystemPromptHooks,
-} from "@freeanima/service";
+} from "@freeanima/platform";
 import { getAcpManager } from "@freeanima/capabilities-acp";
 import { MaskRegistry } from "@freeanima/capabilities-tasks/mask";
-import { registerServiceTools, resetRegisterServiceToolsForTest } from "@freeanima/service";
+import { registerServiceTools, resetRegisterServiceToolsForTest } from "@freeanima/platform";
 import {
   registerMemorySessionStore,
   registerSemanticMemoryStore,
@@ -27,7 +27,7 @@ import {
   invalidateSelfLayerPromptCache,
 } from "@freeanima/capabilities-identity";
 
-import { bindHomeChannelConfig } from "@freeanima/service-api/home-channel";
+import { bindHomeChannelConfig } from "@freeanima/platform/ports/home-channel";
 import { beginLogIsolation, resetServiceLogger } from "./log-isolation.ts";
 import { pgTestUrl } from "./pg-test-gate.ts";
 import { getActivePgTestContext } from "./pg-test.ts";

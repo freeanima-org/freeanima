@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { cronJobDataSchema } from "@freeanima/connectors-cron";
+import { cronJobDataSchema } from "@freeanima/platform/connectors/cron";
 import {
   eventPayloadSchemas,
   sessionUpdatedPayloadSchema,
@@ -12,7 +12,7 @@ import { jsonRpcMessageSchema } from "@freeanima/capabilities-acp/schemas/acp-js
 import {
   weixinContextTokensSchema,
   weixinSyncSchema,
-} from "@freeanima/connectors-gateway/schemas/weixin";
+} from "@freeanima/platform/connectors/gateway/schemas/weixin";
 
 describe("schemas/cron", () => {
   it("parses minimal cron job", () => {

@@ -27,8 +27,8 @@ import {
   stopCronModule,
   computeNextRunAt,
   readOutputRef,
-} from "@freeanima/connectors-cron";
-import { FileConfig } from "@freeanima/service-config";
+} from "@freeanima/platform/connectors/cron";
+import { FileConfig } from "@freeanima/platform/config";
 import { getActivePgTestContext } from "../../helpers/pg-test.ts";
 
 describePg("cron", () => {

@@ -30,8 +30,8 @@ import {
   isRestartResult,
   isUpdateResult,
   resolveCommand,
-} from "@freeanima/service-commands";
-import { getAppRuntime } from "@freeanima/service";
+} from "@freeanima/platform/commands";
+import { getAppRuntime } from "@freeanima/platform";
 import * as engineConversation from "@freeanima/runtime/conversation";
 
 async function patchMetaForTest(sessionId: string, patch: Record<string, unknown>): Promise<void> {

@@ -8,7 +8,7 @@ import {
 
 import { runWithToolContext } from "@freeanima/runtime/loop";
 import { ToolSetRegistry } from "@freeanima/core/tool";
-import { getProfileHopModel } from "@freeanima/service-config";
+import { getProfileHopModel } from "@freeanima/platform/config";
 import {
   registerTaskTools,
   registerTasksModule,

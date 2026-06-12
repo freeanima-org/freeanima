@@ -8,14 +8,12 @@
     ".": "./src/cli.ts"
   },
   "dependencies": {
-    "@freeanima/connectors-webui": "workspace:*",
     "@freeanima/core": "workspace:*",
-    "@freeanima/service": "workspace:*",
-    "@freeanima/service-config": "workspace:*",
-    "@freeanima/service-logging": "workspace:*",
+    "@freeanima/platform": "workspace:*",
     "commander": "^15.0.0"
   },
   "devDependencies": {
+    "@freeanima/platform": "workspace:*",
     "@types/bun": "catalog:"
   }
 }

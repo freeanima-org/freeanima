@@ -7,7 +7,7 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 import { getActivePgTestContext, getTestEngine, testConv } from "../../helpers/pg-test.ts";
-import { registerServiceTools } from "@freeanima/service";
+import { registerServiceTools } from "@freeanima/platform";
 import { isSessionMeta } from "@freeanima/core/db/domain";
 import { DEFAULT_SESSION_TOOL_NAMES } from "@freeanima/core/tool";
 import { runWithToolContext } from "@freeanima/runtime/loop";

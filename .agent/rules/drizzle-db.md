@@ -1,6 +1,6 @@
 # Drizzle / PostgreSQL query conventions
 
-Repository query patterns for `@freeanima/connectors-db-pg`. Schema DDL and migrations → [`coding.md`](coding.md) § PG migrations.
+Repository query patterns for `@freeanima/platform/connectors/db-pg`. Schema DDL and migrations → [`coding.md`](coding.md) § PG migrations.
 
 **Conflict priority**: implementation in `connectors/db-pg/` > this file.
 

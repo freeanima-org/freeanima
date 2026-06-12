@@ -23,7 +23,7 @@ export function applyLlmStackConfigurator(
   providers: ProviderRegistry,
 ): void {
   if (!configurator) {
-    throw new Error("LlmStackConfigurator not registered: load @freeanima/service first");
+    throw new Error("LlmStackConfigurator not registered: load @freeanima/platform first");
   }
   configurator(cfg, backends, providers);
 }

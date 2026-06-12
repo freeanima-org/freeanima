@@ -6,7 +6,7 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { getAppRuntime } from "@freeanima/service";
+import { getAppRuntime } from "@freeanima/platform";
 import { getTestEngine, seedSession } from "../../helpers/pg-test.ts";
 
 describePg("sendMessageStream", () => {

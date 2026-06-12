@@ -1,4 +1,4 @@
-import "@freeanima/service/runtime/system-prompt-wire";
+import "@freeanima/platform/runtime/system-prompt-wire";
 import { describe } from "bun:test";
 
 /**

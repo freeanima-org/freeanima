@@ -42,11 +42,11 @@ After `FileConfig.open()` + `createServiceLogger()`:
 
 ## Runtime infra satellite packages (transitional)
 
-| Package                      | Role                                                                                    | Who may import                                          |
-| ---------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| `@freeanima/core/config`     | `AnimaConfig` Zod, `Config` container, `logCapability`, capability injection ports      | core / runtime / capabilities (types + injected config) |
-| `@freeanima/service-config`  | `FileConfig extends Config`: `open()` / `reload()` / YAML/credential file I/O           | composition root / connectors / CLI only                |
-| `@freeanima/service-logging` | Process bootstrap: `createServiceLogger`, `installErrorLogHandlers`, `markStartupPhase` | composition root / CLI startup only                     |
+| Package                       | Role                                                                                    | Who may import                                          |
+| ----------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| `@freeanima/core/config`      | `AnimaConfig` Zod, `Config` container, `logCapability`, capability injection ports      | core / runtime / capabilities (types + injected config) |
+| `@freeanima/platform/config`  | `FileConfig extends Config`: `open()` / `reload()` / YAML/credential file I/O           | composition root / connectors / CLI only                |
+| `@freeanima/platform/logging` | Process bootstrap: `createServiceLogger`, `installErrorLogHandlers`, `markStartupPhase` | composition root / CLI startup only                     |
 
 ## RuntimeContext (composition root)
 
@@ -55,7 +55,7 @@ Single process-wide context after boot (`initRuntimeContext`):
 - `deps: FullRuntimeDeps` — engine, conversation, masks, MCP/ACP
 - `app: AppRuntimePort` — HTTP/Gateway-facing API
 
-Consumers in connectors/commands import `@freeanima/service-api` (→ future `@freeanima/platform/ports`) — **not** `@freeanima/service` implementation.
+Consumers in connectors/commands import `@freeanima/platform/ports` (→ future `@freeanima/platform/ports`) — **not** `@freeanima/platform` implementation.
 
 ## Runtime Catalog (Registry instances)
 

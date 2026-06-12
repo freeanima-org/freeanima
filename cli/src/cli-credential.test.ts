@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, spyOn } from "bun:test";
 import { Command } from "commander";
-import type { CredentialMeta } from "@freeanima/service-config";
+import type { CredentialMeta } from "@freeanima/platform/config";
 import {
   parseKeyValues,
   registerCredentialCommand,

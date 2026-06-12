@@ -14,7 +14,7 @@ import {
   resetTokenizerForTest,
   setTokenizerEncodeForTest,
 } from "@freeanima/core/tokenizer/testing";
-import { computeStats, mergeStats, statsReport, getAppRuntime } from "@freeanima/service";
+import { computeStats, mergeStats, statsReport, getAppRuntime } from "@freeanima/platform";
 import { testConv } from "../../helpers/pg-test.ts";
 
 function deps() {

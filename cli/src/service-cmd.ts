@@ -1,7 +1,7 @@
-import { installErrorLogHandlers, logStartupError } from "@freeanima/service-logging";
+import { installErrorLogHandlers, logStartupError } from "@freeanima/platform/logging";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { spawnSync, spawn } from "node:child_process";
-import { isServerAlive, readStatusFile } from "@freeanima/service/alive";
+import { isServerAlive, readStatusFile } from "@freeanima/platform/alive";
 import {
   apiGet,
   checkServerAlive,
@@ -16,7 +16,7 @@ import {
   writeStatusLine,
 } from "./service-common.ts";
 
-import { REPO_ROOT } from "@freeanima/service";
+import { REPO_ROOT } from "@freeanima/platform";
 import { renderSystemdUnit, systemdUserAvailable, SYSTEMD_UNIT } from "./systemd-unit.ts";
 import { printServiceRunningStatus } from "./output/service-status-display.ts";
 
@@ -234,9 +234,9 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
       console.log("Free Anima · starting in foreground…");
       installErrorLogHandlers();
       try {
-        const { serve } = await import("@freeanima/service");
+        const { serve } = await import("@freeanima/platform");
         const { startWebuiHttpServers, closeHttpServers, waitForDrainWithTimeout } =
-          await import("@freeanima/connectors-webui");
+          await import("@freeanima/platform/connectors/webui");
         await serve(args.host, args.port, {
           foreground: true,
           webuiDev: args.dev,

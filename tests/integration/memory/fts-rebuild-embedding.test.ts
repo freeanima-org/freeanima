@@ -1,8 +1,8 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
-import { bindActiveConfig } from "@freeanima/service-config";
-import { parseYaml } from "@freeanima/service-config";
-import { animaConfigSchema } from "@freeanima/service-config/schemas/config";
-import { MINIMAL_LLM_YAML } from "@freeanima/service-config/test-helpers/minimal-llm-config";
+import { bindActiveConfig } from "@freeanima/platform/config";
+import { parseYaml } from "@freeanima/platform/config";
+import { animaConfigSchema } from "@freeanima/platform/config/schemas/config";
+import { MINIMAL_LLM_YAML } from "@freeanima/platform/config/test-helpers/minimal-llm-config";
 import {
   awaitPendingEmbeddingsForTest,
   getFtsCoverageStats,
@@ -10,7 +10,7 @@ import {
   registerEmbedTextFn,
   resetEmbedTextFnForTest,
   resetPendingEmbeddingsForTest,
-} from "@freeanima/connectors-db-pg";
+} from "@freeanima/platform/connectors/db-pg";
 import { SEMANTIC_EMBEDDING_DIMENSIONS } from "@freeanima/core/db/schema";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
