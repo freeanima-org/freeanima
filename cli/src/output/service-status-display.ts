@@ -4,6 +4,7 @@ import { prettyDuration, writeStatusLine } from "./status.ts";
 type MemoryDetail = {
   heap_used_kb?: number;
   external_kb?: number;
+  vm_size_kb?: number;
   tokenizer_repos?: string[];
   jieba_loaded?: boolean;
   mcp?: { server_count?: number; connected_count?: number };
@@ -12,6 +13,11 @@ type MemoryDetail = {
 
 function formatMb(kb: number): string {
   return `${(kb / 1024).toFixed(1)} MB`;
+}
+
+function formatVirtualKb(kb: number): string {
+  if (kb >= 1024 * 1024) return `${(kb / 1024 / 1024).toFixed(1)} GB`;
+  return formatMb(kb);
 }
 
 function shortRepo(repo: string): string {
@@ -119,12 +125,15 @@ export function printServiceRunningStatus(opts: {
   const memDetail = api.memory_detail as MemoryDetail | undefined;
   if (memKb) {
     printSection("memory");
-    printField("rss", formatMb(Number(memKb)));
+    printField("rss (phys)", formatMb(Number(memKb)));
     if (memDetail?.heap_used_kb != null) {
-      printField("heap", formatMb(memDetail.heap_used_kb));
+      printField("heap (jsc)", formatMb(memDetail.heap_used_kb));
     }
     if (memDetail?.external_kb != null) {
       printField("native", formatMb(memDetail.external_kb));
+    }
+    if (memDetail?.vm_size_kb != null && memDetail.vm_size_kb > 0) {
+      printField("virtual", formatVirtualKb(memDetail.vm_size_kb));
     }
     const repos = memDetail?.tokenizer_repos ?? [];
     if (repos.length) {

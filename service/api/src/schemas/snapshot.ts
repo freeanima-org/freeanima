@@ -23,7 +23,10 @@ export type TokenizerBindingStatus = {
 };
 
 export type ProcessMemoryDetail = {
+  /** Physical resident set (VmRSS or process.memoryUsage().rss). */
   rss_kb: number;
+  /** Virtual address space (VmSize); JSC Gigacage reservation, not physical RAM. */
+  vm_size_kb: number;
   heap_used_kb: number;
   heap_total_kb: number;
   external_kb: number;

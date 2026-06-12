@@ -59,11 +59,11 @@ export function buildMemoryFileStats(): { files_count: number; files_bytes: numb
   return { files_count, files_bytes };
 }
 
-function readProcessRssKb(): number {
+function readProcStatusKb(field: string): number {
   try {
     const statusText = readFileSync(`/proc/${process.pid}/status`, "utf-8");
     for (const line of statusText.split("\n")) {
-      if (line.startsWith("VmRSS:")) {
+      if (line.startsWith(`${field}:`)) {
         return parseInt(line.split(/\s+/)[1] ?? "0", 10);
       }
     }
@@ -71,6 +71,14 @@ function readProcessRssKb(): number {
     /* non-Linux */
   }
   return 0;
+}
+
+function readProcessRssKb(): number {
+  return readProcStatusKb("VmRSS");
+}
+
+function readProcessVmSizeKb(): number {
+  return readProcStatusKb("VmSize");
 }
 
 function buildProcessMemoryDetail(deps: FullRuntimeDeps): ProcessMemoryDetail {
@@ -88,8 +96,12 @@ function buildProcessMemoryDetail(deps: FullRuntimeDeps): ProcessMemoryDetail {
     };
   }
 
+  const rssFromProc = readProcessRssKb();
+  const rssMuKb = Math.round(mu.rss / 1024);
+
   return {
-    rss_kb: readProcessRssKb(),
+    rss_kb: rssFromProc > 0 ? rssFromProc : rssMuKb,
+    vm_size_kb: readProcessVmSizeKb(),
     heap_used_kb: Math.round(mu.heapUsed / 1024),
     heap_total_kb: Math.round(mu.heapTotal / 1024),
     external_kb: Math.round(mu.external / 1024),

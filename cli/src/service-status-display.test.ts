@@ -27,6 +27,7 @@ describe("printServiceRunningStatus", () => {
           memory_detail: {
             heap_used_kb: 280000,
             external_kb: 32000,
+            vm_size_kb: 75 * 1024 * 1024,
             tokenizer_repos: ["BAAI/bge-m3", "deepseek-ai/deepseek-v4-pro"],
             jieba_loaded: false,
             mcp: { server_count: 0, connected_count: 0 },
@@ -55,6 +56,9 @@ describe("printServiceRunningStatus", () => {
     expect(text).toContain("workload");
     expect(text).toContain("10 sessions · 64 tools · 3 cron");
     expect(text).toContain("memory");
+    expect(text).toContain("rss (phys)");
+    expect(text).toContain("heap (jsc)");
+    expect(text).toContain("virtual     75.0 GB");
     expect(text).toContain("tokenizers  2 loaded (bge-m3, deepseek-v4-pro)");
     expect(text).toContain("connectors  ACP 1/1");
   });

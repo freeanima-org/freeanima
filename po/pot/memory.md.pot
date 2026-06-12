@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-12 11:55+0800\n"
+"POT-Creation-Date: 2026-06-12 16:32+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -317,7 +317,9 @@ msgstr ""
 
 #. type: Bullet: '- '
 #: docs/concepts/memory.md:130
-msgid "**Deep sleep (✅):** daily 03:00; contradiction/expiry, split, merge"
+msgid ""
+"**Deep sleep (✅):** daily 03:00; contradiction/expiry, split, merge, pin "
+"maintenance"
 msgstr ""
 
 #. type: Plain text
@@ -358,9 +360,10 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/memory.md:149
 msgid ""
-"Resident memory injected via system prompt: **all pinned** + **most-"
+"Resident memory injected via system prompt: **up to 20 pinned** + **most-"
 "referenced top N** (default N=20); each carries ID marker; LLM cites same "
-"marker at reply end."
+"marker at reply end. Excess pinned entries are truncated at read time with a "
+"warn log; deep sleep round 4 maintains pin budget in the store."
 msgstr ""
 
 #. type: Plain text

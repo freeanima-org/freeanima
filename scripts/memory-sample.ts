@@ -12,6 +12,7 @@ import { readFileSync } from "node:fs";
 
 type MemoryDetail = {
   rss_kb?: number;
+  vm_size_kb?: number;
   heap_used_kb?: number;
   heap_total_kb?: number;
   external_kb?: number;
@@ -78,6 +79,7 @@ function appendMemoryDetail(
 ): void {
   if (!detail || stage === "basic") return;
   if (detail.heap_used_kb != null) parts.push(`heap_used_kb=${detail.heap_used_kb}`);
+  if (detail.vm_size_kb != null) parts.push(`vm_size_kb=${detail.vm_size_kb}`);
   if (detail.external_kb != null) parts.push(`external_kb=${detail.external_kb}`);
   if (detail.tokenizer_repos) {
     parts.push(`tokenizer_repos=${detail.tokenizer_repos.length}`);

@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-12 11:55+0800\n"
+"POT-Creation-Date: 2026-06-12 16:32+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -231,11 +231,11 @@ msgstr "## 深睡 (Deep Sleep)"
 #| "| Operations | Contradiction detection + expiry marking, split, dedup merge—three sequential rounds |\n"
 #| "| Tools | `memory_semantic_create` / `memory_semantic_update` / `memory_semantic_deprecate` / `memory_semantic_merge` |\n"
 msgid ""
-"| Attribute  | Value                                                                                |\n"
-"| ---------- | ------------------------------------------------------------------------------------ |\n"
-"| Trigger    | Cron only, daily 03:00, no manual trigger                                            |\n"
-"| Target     | All active semantic memory                                                           |\n"
-"| Operations | Contradiction detection + expiry marking, split, dedup merge—three sequential rounds |\n"
+"| Attribute  | Value                                                                                                |\n"
+"| ---------- | ---------------------------------------------------------------------------------------------------- |\n"
+"| Trigger    | Cron only, daily 03:00, no manual trigger                                                            |\n"
+"| Target     | All active semantic memory                                                                           |\n"
+"| Operations | Contradiction detection + expiry marking, split, dedup merge, pin maintenance—four sequential rounds |\n"
 msgstr ""
 "| 属性     | 值                                                                                                          |\n"
 "| -------- | ----------------------------------------------------------------------------------------------------------- |\n"
@@ -246,11 +246,13 @@ msgstr ""
 
 #. type: Plain text
 #: docs/concepts/sleep.md:58
-msgid "### Three Rounds"
-msgstr "### 三轮处理"
+#, fuzzy
+#| msgid "## Threat Sources"
+msgid "### Four Rounds"
+msgstr "## 威胁源"
 
 #. type: Plain text
-#: docs/concepts/sleep.md:64
+#: docs/concepts/sleep.md:65
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Check | Description |\n"
@@ -264,6 +266,7 @@ msgid ""
 "| 1     | Contradiction detection + expiry marking |\n"
 "| 2     | Split multi-fact entries                 |\n"
 "| 3     | Dedup merge similar entries              |\n"
+"| 4     | Pin maintenance (keep pinned ≤ 20)       |\n"
 msgstr ""
 "| 检查            | 说明               |\n"
 "| --------------- | ------------------ |\n"
@@ -272,26 +275,26 @@ msgstr ""
 "| `新 l2 > 旧 l2` | 严格右移，否则放弃 |\n"
 
 #. type: Plain text
-#: docs/concepts/sleep.md:66
+#: docs/concepts/sleep.md:67
 #, fuzzy, no-wrap
 #| msgid "**Ordering rationale:** Clean problems first (contradiction+expiry), then refine (split), then merge. Each round sees clean data after prior rounds.\n"
-msgid "**Ordering rationale:** Clean problems first, then refine, then merge.\n"
+msgid "**Ordering rationale:** Clean problems first, then refine, then merge, then trim resident pins.\n"
 msgstr "**顺序理由**：先清理问题（矛盾+过期），再细化（拆分），最后合并。每轮看到的是前序轮处理后的干净数据。\n"
 
 #. type: Plain text
-#: docs/concepts/sleep.md:68
+#: docs/concepts/sleep.md:69
 msgid "### Contradiction Definition (Exclusive)"
 msgstr "### 矛盾定义（排他性）"
 
 #. type: Plain text
-#: docs/concepts/sleep.md:70
+#: docs/concepts/sleep.md:71
 msgid ""
 "Two memories semantically negate each other and cannot be explained by "
 "temporal change → contradiction."
 msgstr "两条记忆在语义上互相否定，且无法用时间变化解释 → 矛盾。"
 
 #. type: Bullet: '- '
-#: docs/concepts/sleep.md:74
+#: docs/concepts/sleep.md:75
 #, fuzzy
 #| msgid ""
 #| "✓ Contradiction: \"daughter born Year of Tiger\" vs \"daughter born Year "
@@ -302,13 +305,13 @@ msgid ""
 msgstr "✓ 矛盾：「女儿属虎」vs「女儿属羊」（生肖唯一）"
 
 #. type: Bullet: '- '
-#: docs/concepts/sleep.md:74
+#: docs/concepts/sleep.md:75
 msgid ""
 "✗ Not contradiction: \"likes apples\" vs \"likes cherries\" (can coexist)"
 msgstr "✗ 不矛盾：「喜欢苹果」vs「喜欢樱桃」（可共存）"
 
 #. type: Bullet: '- '
-#: docs/concepts/sleep.md:74
+#: docs/concepts/sleep.md:75
 #, fuzzy
 #| msgid ""
 #| "✗ Not contradiction (change): \"likes Python\" vs \"now prefers "
@@ -319,12 +322,12 @@ msgstr ""
 "✗ 不矛盾（变化）：「喜欢 Python」vs「现在更喜欢 TypeScript」（新旧都可对）"
 
 #. type: Plain text
-#: docs/concepts/sleep.md:76
+#: docs/concepts/sleep.md:77
 msgid "## Trigger Mechanism"
 msgstr "## 触发机制"
 
 #. type: Plain text
-#: docs/concepts/sleep.md:82
+#: docs/concepts/sleep.md:83
 #, fuzzy, no-wrap
 #| msgid ""
 #| "```cron\n"
@@ -346,7 +349,7 @@ msgstr ""
 "```\n"
 
 #. type: Plain text
-#: docs/concepts/sleep.md:84
+#: docs/concepts/sleep.md:85
 #, fuzzy
 #| msgid ""
 #| "After downtime, next scheduled run catches up; not a real-time system."
@@ -354,26 +357,45 @@ msgid "After downtime, next scheduled run catches up."
 msgstr "宕机后下次对应时刻补跑即可；非实时系统。"
 
 #. type: Plain text
-#: docs/concepts/sleep.md:86
-msgid "## Historical Backfill (One-Time CLI)"
+#: docs/concepts/sleep.md:87
+#, fuzzy
+#| msgid "## Historical Backfill (One-Time CLI)"
+msgid "## Historical Backfill (Chamber WebUI)"
 msgstr "## 历史补跑（一次性 CLI）"
 
 #. type: Plain text
-#: docs/concepts/sleep.md:88
-msgid "For historical conversations before go-live or after migration:"
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/sleep.md:92
+#: docs/concepts/sleep.md:89
 msgid ""
-"```bash anima memory sleep backfill [--from YYYY-MM-DD] [--to YYYY-MM-DD] [--"
-"resume] ```"
+"For historical conversations before go-live or after migration, use "
+"**Chamber → Sleep records** (`/webui/chamber/sleep`):"
 msgstr ""
-"```bash anima memory sleep backfill [--from YYYY-MM-DD] [--to YYYY-MM-DD] [--"
-"resume] ```"
+
+#. type: Bullet: '1. '
+#: docs/concepts/sleep.md:94
+msgid "Open the **Historical light sleep backfill** card"
+msgstr ""
+
+#. type: Bullet: '2. '
+#: docs/concepts/sleep.md:94
+msgid ""
+"Optionally set **From** / **To** (CST calendar days, `YYYY-MM-DD`); defaults "
+"match the 02:00 cron (earliest session → yesterday)"
+msgstr ""
+
+#. type: Bullet: '3. '
+#: docs/concepts/sleep.md:94
+msgid ""
+"Check **Resume from saved progress** to continue from `~/.anima/runtime/"
+"light_sleep_backfill_state.json`"
+msgstr ""
+
+#. type: Bullet: '4. '
+#: docs/concepts/sleep.md:94
+msgid "Click **Start backfill**; progress polls automatically while running"
+msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:98
+#: docs/concepts/sleep.md:100
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Option | Description |\n"
@@ -382,11 +404,11 @@ msgstr ""
 #| "| `--to` | End date; if omitted, **yesterday CST** (same as 02:00 cron default day) |\n"
 #| "| `--resume` | Continue from progress file, skip completed days |\n"
 msgid ""
-"| Option     | Description                                                          |\n"
+"| Field      | Description                                                          |\n"
 "| ---------- | -------------------------------------------------------------------- |\n"
-"| `--from`   | Start date; if omitted, earliest session day in archive              |\n"
-"| `--to`     | End date; if omitted, **yesterday** (same as 02:00 cron default day) |\n"
-"| `--resume` | Continue from progress file, skip completed days                     |\n"
+"| **From**   | Start date; if omitted, earliest session day in archive              |\n"
+"| **To**     | End date; if omitted, **yesterday** (same as 02:00 cron default day) |\n"
+"| **Resume** | Continue from progress file, skip completed days                     |\n"
 msgstr ""
 "| 选项       | 说明                                                          |\n"
 "| ---------- | ------------------------------------------------------------- |\n"
@@ -395,13 +417,13 @@ msgstr ""
 "| `--resume` | 从进度文件续跑，跳过已完成日                                  |\n"
 
 #. type: Plain text
-#: docs/concepts/sleep.md:100
+#: docs/concepts/sleep.md:102
 #, no-wrap
 msgid "**Behavior notes:**\n"
 msgstr "**行为要点**：\n"
 
 #. type: Bullet: '- '
-#: docs/concepts/sleep.md:105
+#: docs/concepts/sleep.md:107
 #, fuzzy
 #| msgid ""
 #| "Each day independently calls `runLightSleep({ day })`; single-day failure "
@@ -411,7 +433,7 @@ msgid ""
 msgstr "每日独立调用 `runLightSleep({ day })`；单日失败记录后继续下一天"
 
 #. type: Bullet: '- '
-#: docs/concepts/sleep.md:105
+#: docs/concepts/sleep.md:107
 #, fuzzy
 #| msgid ""
 #| "Stage 3b (autobiography summary refresh) runs only on **last day** by "
@@ -421,7 +443,7 @@ msgstr ""
 "Stage 3b（自传概括刷新）默认仅在 **最后一天** 执行，中间日跳过以节省 token"
 
 #. type: Bullet: '- '
-#: docs/concepts/sleep.md:105
+#: docs/concepts/sleep.md:107
 #, fuzzy
 #| msgid ""
 #| "Backfill only writes semantic / limbic / autobiographical; **cross-"
@@ -435,7 +457,7 @@ msgstr ""
 "睡**——补跑结束后建议手动等一次 03:00 深睡或自行触发"
 
 #. type: Bullet: '- '
-#: docs/concepts/sleep.md:105
+#: docs/concepts/sleep.md:107
 #, fuzzy
 #| msgid ""
 #| "No conflict with 02:00 cron, but pause service or avoid early-morning "
@@ -446,12 +468,12 @@ msgid ""
 msgstr "与 02:00 cron 无冲突，但建议补跑时暂停服务或错开凌晨窗口"
 
 #. type: Plain text
-#: docs/concepts/sleep.md:107
+#: docs/concepts/sleep.md:109
 msgid "## Relationship to Existing Architecture"
 msgstr "## 与现有架构的关系"
 
 #. type: Plain text
-#: docs/concepts/sleep.md:122
+#: docs/concepts/sleep.md:124
 #, fuzzy, no-wrap
 #| msgid ""
 #| "```\n"
@@ -500,12 +522,12 @@ msgstr ""
 "```\n"
 
 #. type: Plain text
-#: docs/concepts/sleep.md:124
+#: docs/concepts/sleep.md:126
 msgid "## `memory_remember` Tool"
 msgstr "## memory_remember 工具"
 
 #. type: Plain text
-#: docs/concepts/sleep.md:125
+#: docs/concepts/sleep.md:127
 msgid ""
 "In-conversation `memory_remember` is a convenience wrapper for creating "
 "semantic memory during dialogue. Soft deprecation via deprecate action; "

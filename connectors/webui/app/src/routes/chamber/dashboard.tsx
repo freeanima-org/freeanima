@@ -39,6 +39,10 @@ function formatUptime(seconds: number | null | undefined) {
   return `${s}s`;
 }
 
+function formatProcessMemoryKb(kb: number): string {
+  return kb / 1024 >= 1 ? `${(kb / 1024).toFixed(1)} MB` : `${kb} KB`;
+}
+
 function dependencyBadgeClass(status: DependencyStatus["status"]) {
   if (status === "connected") return "badge-success";
   if (status === "error") return "badge-error";
@@ -99,11 +103,12 @@ function DashboardPage() {
     .toSorted((a, b) => b.count - a.count);
 
   const processMemoryKb = svc?.memory_kb ?? 0;
-  const processMemoryLabel = !processMemoryKb
-    ? "—"
-    : processMemoryKb / 1024 >= 1
-      ? `${(processMemoryKb / 1024).toFixed(1)} MB`
-      : `${processMemoryKb} KB`;
+  const heapUsedKb = svc?.memory_detail?.heap_used_kb;
+  const processMemoryLabel = processMemoryKb ? formatProcessMemoryKb(processMemoryKb) : "—";
+  const heapMemoryHint =
+    heapUsedKb != null
+      ? m.webui_chamber_dashboard_jsc_heap({ size: formatProcessMemoryKb(heapUsedKb) })
+      : null;
 
   const mcpSummary = m.webui_chamber_dashboard_mcp_summary({
     servers: String(mcp.server_count),
@@ -156,6 +161,7 @@ function DashboardPage() {
             <RuntimeCard
               svc={svc}
               processMemoryLabel={processMemoryLabel}
+              heapMemoryHint={heapMemoryHint}
               postgres={postgres}
               redis={redis}
               restarting={restarting}
@@ -242,6 +248,7 @@ function DashboardPage() {
 function RuntimeCard({
   svc,
   processMemoryLabel,
+  heapMemoryHint,
   postgres,
   redis,
   restarting,
@@ -249,6 +256,7 @@ function RuntimeCard({
 }: {
   svc: ServiceStatus;
   processMemoryLabel: string;
+  heapMemoryHint: string | null;
   postgres: DependencyStatus | undefined;
   redis: DependencyStatus | undefined;
   restarting: boolean;
@@ -280,6 +288,9 @@ function RuntimeCard({
               {m.webui_chamber_dashboard_process_memory()}
             </h4>
             <p className="text-xl font-mono mt-1">{processMemoryLabel}</p>
+            {heapMemoryHint ? (
+              <p className="text-xs text-base-content/50 mt-0.5">{heapMemoryHint}</p>
+            ) : null}
           </div>
           <div>
             <h4 className="text-sm text-base-content/60">
