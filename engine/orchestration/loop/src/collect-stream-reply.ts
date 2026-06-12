@@ -5,6 +5,8 @@ export async function collectStreamReply(events: AsyncIterable<StreamEvent>): Pr
   const parts: string[] = [];
   for await (const event of events) {
     switch (event.event) {
+      case "accepted":
+        break;
       case "token":
         parts.push(event.data.content);
         break;

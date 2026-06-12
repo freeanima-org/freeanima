@@ -94,6 +94,11 @@ export type TaskListBody = z.infer<typeof taskListBodySchema>;
 export type StudioConfigPatch = z.infer<typeof studioConfigPatchSchema>;
 export type StudioSearchBody = z.infer<typeof studioSearchBodySchema>;
 
+const streamAcceptedEventSchema = z.object({
+  event: z.literal("accepted"),
+  data: z.object({}),
+});
+
 const streamTokenEventSchema = z.object({
   event: z.literal("token"),
   data: z.object({ content: z.string() }),
@@ -149,6 +154,7 @@ const streamErrorEventSchema = z.object({
 });
 
 export const streamApiEventSchema = z.discriminatedUnion("event", [
+  streamAcceptedEventSchema,
   streamTokenEventSchema,
   streamContentReplaceEventSchema,
   streamToolBeginEventSchema,

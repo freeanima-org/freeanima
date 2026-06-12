@@ -137,18 +137,36 @@ async function prepareTurnMessages(
   return { msgs, tools };
 }
 
+/** 快路径：仅持久化用户消息 */
+export async function beginTurnFast(
+  repos: PgRepositories,
+  session: string,
+  userText: string,
+): Promise<string> {
+  clearToolLoopSuppression(session);
+  return appendUserTurn(repos, session, userText);
+}
+
+/** 慢路径：加载历史、压缩、构建 runtime 消息 */
+export async function beginTurnPrepare(
+  repos: PgRepositories,
+  registry: ToolSetRegistry,
+  session: string,
+): Promise<[SessionMessage[], string[]]> {
+  const meta = await loadSessionMeta(repos, session);
+  const { msgs, tools } = await prepareTurnMessages(repos, registry, session, meta);
+  await advanceCompressionMeta(repos, registry, session, { meta, msgs });
+  return buildRuntimeMessagesFrom(session, meta, msgs, tools);
+}
+
 export async function beginTurn(
   repos: PgRepositories,
   registry: ToolSetRegistry,
   session: string,
   userText: string,
 ): Promise<[SessionMessage[], string[], string]> {
-  clearToolLoopSuppression(session);
-  const effective = await appendUserTurn(repos, session, userText);
-  const meta = await loadSessionMeta(repos, session);
-  const { msgs, tools } = await prepareTurnMessages(repos, registry, session, meta);
-  await advanceCompressionMeta(repos, registry, session, { meta, msgs });
-  const [runtimeMsgs, functions] = buildRuntimeMessagesFrom(session, meta, msgs, tools);
+  const effective = await beginTurnFast(repos, session, userText);
+  const [runtimeMsgs, functions] = await beginTurnPrepare(repos, registry, session);
   return [runtimeMsgs, functions, effective];
 }
 

@@ -19,7 +19,8 @@
     "./ports/mcp-manager": "./src/ports/mcp-manager.ts",
     "./ports/acp-manager": "./src/ports/acp-manager.ts",
     "./ports/mask-registry": "./src/ports/mask-registry.ts",
-    "./ports/service-engine": "./src/ports/service-engine.ts"
+    "./ports/service-engine": "./src/ports/service-engine.ts",
+    "./stream-reply-state": "./src/stream-reply-state.ts"
   },
   "dependencies": {
     "@freeanima/engine-config": "workspace:*",

@@ -65,16 +65,13 @@ describe("sendMessageStream done order", () => {
     restores.push(
       spyOn(conv, "sessionExists").mockResolvedValue(true),
       spyOn(conv, "assertSessionPlatform").mockResolvedValue(undefined),
-      spyOn(conv, "beginTurn").mockResolvedValue([
-        [{ role: "user", content: "hello" }],
-        [],
-        "hello",
-      ]),
+      spyOn(conv, "beginTurnFast").mockResolvedValue("hello"),
+      spyOn(conv, "beginTurnPrepare").mockResolvedValue([[{ role: "user", content: "hello" }], []]),
       spyOn(conv, "loadSessionTools").mockResolvedValue([]),
     );
 
     let finishTurnStarted = false;
-    let doneSeenBeforeFinishTurn = false;
+    const eventOrder: string[] = [];
 
     restores.push(
       spyOn(conv, "finishTurn").mockImplementation(async () => {
@@ -94,12 +91,12 @@ describe("sendMessageStream done order", () => {
 
     const svc = wireTestService();
     for await (const ev of svc.sendMessageStream("test-sid", "hello", "parlor")) {
-      if (ev.event === "done") {
-        doneSeenBeforeFinishTurn = !finishTurnStarted;
-      }
+      eventOrder.push(ev.event);
     }
 
-    expect(doneSeenBeforeFinishTurn).toBe(true);
+    expect(eventOrder.indexOf("accepted")).toBeLessThan(eventOrder.indexOf("token"));
+    expect(eventOrder.indexOf("token")).toBeLessThan(eventOrder.indexOf("done"));
+    expect(eventOrder.at(-1)).toBe("done");
     expect(finishTurnStarted).toBe(true);
   });
 });

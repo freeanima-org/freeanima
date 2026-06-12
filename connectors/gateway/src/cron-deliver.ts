@@ -9,23 +9,8 @@ import {
 } from "@freeanima/connectors-cron";
 import type { Client, Message, TextBasedChannel } from "discord.js";
 
+import { splitDeliverText } from "./stream-strategies/deliver-text.ts";
 import { sendTextChunked } from "./weixin/ilink-api.ts";
-
-const DISCORD_MAX_LEN = 2000;
-
-function splitMessage(text: string): string[] {
-  if (text.length <= DISCORD_MAX_LEN) return [text];
-  const chunks: string[] = [];
-  let rest = text;
-  while (rest.length > DISCORD_MAX_LEN) {
-    let cut = rest.lastIndexOf("\n", DISCORD_MAX_LEN);
-    if (cut < DISCORD_MAX_LEN / 2) cut = DISCORD_MAX_LEN;
-    chunks.push(rest.slice(0, cut));
-    rest = rest.slice(cut).trimStart();
-  }
-  if (rest) chunks.push(rest);
-  return chunks;
-}
 
 async function resolveTextChannel(
   client: Client,
@@ -50,7 +35,7 @@ async function sendDiscord(
   opts?: CronDeliverOptions,
 ): Promise<CronDeliverResult | void> {
   const textChannel = await resolveTextChannel(client, target);
-  const chunks = splitMessage(text);
+  const chunks = splitDeliverText(text);
   const primary = chunks[0] ?? "";
 
   if (opts?.editMessageId) {
