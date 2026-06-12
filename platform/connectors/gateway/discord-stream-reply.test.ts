@@ -193,6 +193,8 @@ describe("streamReplyToChannel", () => {
     }
     await streamReplyToChannel(channel, gen());
     expect(sends[0]).toContain("Thinking");
+    expect(sends.filter((s) => s === "final answer")).toHaveLength(0);
+    expect(sends).toHaveLength(1);
     const lastEdit = edits[edits.length - 1];
     expect(lastEdit).toBe("final answer");
   });

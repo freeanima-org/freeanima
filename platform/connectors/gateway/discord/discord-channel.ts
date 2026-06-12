@@ -77,7 +77,10 @@ export async function streamReplyToChannel(
     if (effect.kind === "answer_finalize") {
       clearThrottleInBag(ctx);
       const text = effect.content.trim();
-      if (!text) return [];
+      if (!text) {
+        clearAnswerBagInCtx(ctx);
+        return [];
+      }
       const chunks = splitDiscordMessage(text, DISCORD_ANSWER_SPLIT_AT);
       if (!answerMsg) {
         for (const chunk of chunks) {
@@ -85,6 +88,7 @@ export async function streamReplyToChannel(
             await channelSend(chunk);
           });
         }
+        clearAnswerBagInCtx(ctx);
         return [];
       }
       const first = chunks[0] ?? "\u3164";
@@ -103,6 +107,7 @@ export async function streamReplyToChannel(
         });
       }
       answerMsg = null;
+      clearAnswerBagInCtx(ctx);
       return [];
     }
     if (effect.kind === "answer_commit") {
@@ -131,4 +136,11 @@ function clearThrottleInBag(ctx: { bag: Map<string, unknown> }): void {
     clearTimeout(timer);
     ctx.bag.delete(key);
   }
+}
+
+/** 与 discord-answer 策略 answer_finalize 分支的 bag 清理保持一致 */
+function clearAnswerBagInCtx(ctx: { bag: Map<string, unknown> }): void {
+  ctx.bag.delete("discord.answerOpen");
+  ctx.bag.delete("discord.answerBuffer");
+  ctx.bag.delete("discord.firstFlush");
 }
