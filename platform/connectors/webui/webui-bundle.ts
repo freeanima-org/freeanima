@@ -167,21 +167,51 @@ type BuildWebuiOptions = {
   sourcemap?: boolean;
 };
 
-function compileParaglideMessages(repoRoot: string): void {
-  const result = spawnSync("bun", ["run", "paraglide"], {
-    cwd: join(repoRoot, "site"),
-    encoding: "utf8",
-  });
+function paraglideBuildDir(): string {
+  return join(PATHS.webuiBuildDir, "paraglide");
+}
+
+/** 编译到 ~/.anima/runtime/webui-build/paraglide，避免写入仓库 messages/paraglide（可能被其他用户/sandbox 占用）。 */
+function compileParaglideMessages(repoRoot: string): string {
+  const outdir = paraglideBuildDir();
+  rmSync(outdir, { recursive: true, force: true });
+  mkdirSync(outdir, { recursive: true });
+  const result = spawnSync(
+    "bun",
+    [
+      "x",
+      "@inlang/paraglide-js",
+      "compile",
+      "--project",
+      join(repoRoot, "project.inlang"),
+      "--outdir",
+      outdir,
+    ],
+    { cwd: repoRoot, encoding: "utf8" },
+  );
   if (result.status !== 0) {
     throw new Error(
       `paraglide compile failed: ${result.stderr || result.stdout || "unknown error"}`,
     );
   }
+  return outdir;
+}
+
+function createParaglideResolvePlugin(paraglideDir: string): import("bun").BunPlugin {
+  return {
+    name: "paraglide-runtime-cache",
+    setup(build) {
+      build.onResolve({ filter: /messages\/paraglide\// }, (args) => {
+        const rel = args.path.replace(/^.*messages\/paraglide\//, "");
+        return { path: join(paraglideDir, rel) };
+      });
+    },
+  };
 }
 
 async function buildWebuiToDir(appDir: string, opts: BuildWebuiOptions): Promise<void> {
   const repoRoot = getRepoRoot();
-  compileParaglideMessages(repoRoot);
+  const paraglideDir = compileParaglideMessages(repoRoot);
   const htmlPath = join(appDir, WEBUI_HTML_NAME);
   mkdirSync(opts.outdir, { recursive: true });
   const tailwind = await loadTailwindPlugin();
@@ -191,7 +221,7 @@ async function buildWebuiToDir(appDir: string, opts: BuildWebuiOptions): Promise
     minify: opts.minify,
     outdir: opts.outdir,
     publicPath: WEBUI_PUBLIC_PATH,
-    plugins: [tailwind],
+    plugins: [createParaglideResolvePlugin(paraglideDir), tailwind],
     ...(opts.sourcemap ? { sourcemap: "linked" as const } : {}),
     ...(opts.watch
       ? {
