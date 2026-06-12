@@ -1,10 +1,14 @@
 import { existsSync, readFileSync } from "node:fs";
-import { MaskRegistry, resolveMaskByName, resolveMaskPresets } from "@freeanima/capabilities-mask";
+import {
+  MaskRegistry,
+  resolveMaskByName,
+  resolveMaskPresets,
+} from "@freeanima/capabilities-tasks/mask";
 import type {
   MaskRegistryLookup,
   ResolvedMask,
   SessionCapabilityMask,
-} from "@freeanima/capabilities-mask";
+} from "@freeanima/capabilities-tasks/mask";
 import type { ToolSetRegistry } from "@freeanima/core/tool";
 import { isSessionMeta, type SessionMetaMessage } from "@freeanima/core/db/domain";
 import { parseYaml, PATHS } from "@freeanima/service-config";
@@ -131,4 +135,4 @@ export function initMaskSystem(masks: MaskRegistry): void {
   loadMasksFromYaml(masks);
 }
 
-export { checkTool, checkCredential } from "@freeanima/capabilities-mask";
+export { checkTool, checkCredential } from "@freeanima/capabilities-tasks/mask";

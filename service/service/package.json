@@ -16,12 +16,8 @@
   },
   "dependencies": {
     "@freeanima/capabilities-acp": "workspace:*",
-    "@freeanima/capabilities-clarify": "workspace:*",
-    "@freeanima/capabilities-estate": "workspace:*",
-    "@freeanima/capabilities-fridge-magnet": "workspace:*",
     "@freeanima/capabilities-identity": "workspace:*",
     "@freeanima/capabilities-llm-openai": "workspace:*",
-    "@freeanima/capabilities-mask": "workspace:*",
     "@freeanima/capabilities-mcp": "workspace:*",
     "@freeanima/capabilities-memory": "workspace:*",
     "@freeanima/capabilities-tasks": "workspace:*",

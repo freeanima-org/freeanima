@@ -1,6 +1,6 @@
-import { createFridgeMagnetHandler } from "@freeanima/capabilities-fridge-magnet";
+import { createFridgeMagnetHandler } from "@freeanima/capabilities-tasks/fridge-magnet";
 import { getAcpManager } from "@freeanima/capabilities-acp";
-import { registerClarifyHooks } from "@freeanima/capabilities-clarify";
+import { registerClarifyHooks } from "@freeanima/capabilities-tools/clarify";
 import { createAcpProgressDelivery } from "./acp-progress-delivery.ts";
 import { createAcpTaskQueryPort } from "./acp-task-query.ts";
 import type { Kernel } from "@freeanima/kernel";

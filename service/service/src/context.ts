@@ -23,5 +23,5 @@ export { assertNotShuttingDown } from "@freeanima/service-api/app-runtime-contex
 
 export type { AppRuntime } from "./runtime/index.ts";
 export type { Engine } from "@freeanima/runtime";
-export type { MaskRegistry } from "@freeanima/capabilities-mask";
+export type { MaskRegistry } from "@freeanima/capabilities-tasks/mask";
 export type { ServiceAppRuntime as ServiceContext } from "./runtime/runtime-context.ts";

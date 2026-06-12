@@ -3,11 +3,14 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./clarify": "./src/clarify/index.ts",
+    "./estate": "./src/estate/index.ts",
     "./*": "./src/*.ts"
   },
   "dependencies": {
     "@freeanima/core": "workspace:*",
-    "@freeanima/kernel": "workspace:*"
+    "@freeanima/kernel": "workspace:*",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@freeanima/service-config": "workspace:*",

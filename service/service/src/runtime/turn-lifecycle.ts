@@ -6,7 +6,7 @@ import type { SessionMessage } from "@freeanima/core/db/domain";
 import * as loopEngine from "@freeanima/runtime/loop";
 import { runWithToolContext } from "@freeanima/core/tool";
 import type { StreamEvent } from "@freeanima/runtime/loop";
-import { applyClarifyStreamAwaiting } from "@freeanima/capabilities-clarify";
+import { applyClarifyStreamAwaiting } from "@freeanima/capabilities-tools/clarify";
 import { ProviderError } from "@freeanima/core/provider";
 import { getProfileHopModel } from "@freeanima/service-config";
 import { PROFILE_CHAT } from "@freeanima/core/provider";

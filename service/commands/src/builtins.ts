@@ -4,8 +4,8 @@ import {
   listCommandDefsForPlatform,
   registerCommand,
 } from "./registry.ts";
-import { clearAwaitingClarify, readAwaitingClarify } from "@freeanima/capabilities-clarify";
-import { resolveMaskPresets } from "@freeanima/capabilities-mask";
+import { clearAwaitingClarify, readAwaitingClarify } from "@freeanima/capabilities-tools/clarify";
+import { resolveMaskPresets } from "@freeanima/capabilities-tasks/mask";
 import { statsReport } from "@freeanima/service-api/conversation-stats";
 import { PARLOR_PLATFORM } from "@freeanima/service-api/constants";
 import { onSessionCloseBeforeNew } from "@freeanima/service-api/session-close";

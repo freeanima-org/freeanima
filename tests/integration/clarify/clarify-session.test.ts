@@ -15,7 +15,7 @@ import {
   resolveUserContent,
   guardAwaitingClarify,
   findAwaitingClarifyInMessages,
-} from "@freeanima/capabilities-clarify";
+} from "@freeanima/capabilities-tools/clarify";
 import { executeCommand, getCommand } from "@freeanima/service-commands";
 
 describePg("clarify session", () => {

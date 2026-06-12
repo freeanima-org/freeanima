@@ -30,35 +30,6 @@
         "@types/bun": "catalog:",
       },
     },
-    "capabilities/clarify": {
-      "name": "@freeanima/capabilities-clarify",
-      "dependencies": {
-        "@freeanima/core": "workspace:*",
-        "@freeanima/kernel": "workspace:*",
-      },
-      "devDependencies": {
-        "@types/bun": "catalog:",
-      },
-    },
-    "capabilities/estate": {
-      "name": "@freeanima/capabilities-estate",
-      "dependencies": {
-        "@freeanima/core": "workspace:*",
-        "zod": "catalog:",
-      },
-      "devDependencies": {
-        "@types/bun": "catalog:",
-      },
-    },
-    "capabilities/fridge-magnet": {
-      "name": "@freeanima/capabilities-fridge-magnet",
-      "dependencies": {
-        "@freeanima/core": "workspace:*",
-      },
-      "devDependencies": {
-        "@types/bun": "catalog:",
-      },
-    },
     "capabilities/identity": {
       "name": "@freeanima/capabilities-identity",
       "dependencies": {
@@ -74,15 +45,6 @@
         "@freeanima/core": "workspace:*",
         "openai": "^6.42.0",
         "zod": "catalog:",
-      },
-      "devDependencies": {
-        "@types/bun": "catalog:",
-      },
-    },
-    "capabilities/mask": {
-      "name": "@freeanima/capabilities-mask",
-      "dependencies": {
-        "@freeanima/core": "workspace:*",
       },
       "devDependencies": {
         "@types/bun": "catalog:",
@@ -125,6 +87,7 @@
       "dependencies": {
         "@freeanima/core": "workspace:*",
         "@freeanima/kernel": "workspace:*",
+        "zod": "catalog:",
       },
       "devDependencies": {
         "@freeanima/service-config": "workspace:*",
@@ -218,7 +181,7 @@
     "connectors/redis": {
       "name": "@freeanima/connectors-redis",
       "dependencies": {
-        "@freeanima/capabilities-fridge-magnet": "workspace:*",
+        "@freeanima/capabilities-tasks": "workspace:*",
         "@freeanima/core": "workspace:*",
       },
       "devDependencies": {
@@ -230,7 +193,6 @@
       "dependencies": {
         "@elysiajs/eden": "^1.4.9",
         "@elysiajs/static": "^1.4.10",
-        "@freeanima/capabilities-estate": "workspace:*",
         "@freeanima/connectors-cron": "workspace:*",
         "@freeanima/connectors-email": "workspace:*",
         "@freeanima/core": "workspace:*",
@@ -322,8 +284,8 @@
     "service/commands": {
       "name": "@freeanima/service-commands",
       "dependencies": {
-        "@freeanima/capabilities-clarify": "workspace:*",
-        "@freeanima/capabilities-mask": "workspace:*",
+        "@freeanima/capabilities-tasks": "workspace:*",
+        "@freeanima/capabilities-tools": "workspace:*",
         "@freeanima/core": "workspace:*",
         "@freeanima/runtime": "workspace:*",
         "@freeanima/service-api": "workspace:*",
@@ -356,12 +318,8 @@
       "name": "@freeanima/service",
       "dependencies": {
         "@freeanima/capabilities-acp": "workspace:*",
-        "@freeanima/capabilities-clarify": "workspace:*",
-        "@freeanima/capabilities-estate": "workspace:*",
-        "@freeanima/capabilities-fridge-magnet": "workspace:*",
         "@freeanima/capabilities-identity": "workspace:*",
         "@freeanima/capabilities-llm-openai": "workspace:*",
-        "@freeanima/capabilities-mask": "workspace:*",
         "@freeanima/capabilities-mcp": "workspace:*",
         "@freeanima/capabilities-memory": "workspace:*",
         "@freeanima/capabilities-tasks": "workspace:*",
@@ -415,11 +373,11 @@
       },
       "devDependencies": {
         "@freeanima/capabilities-acp": "workspace:*",
-        "@freeanima/capabilities-clarify": "workspace:*",
         "@freeanima/capabilities-identity": "workspace:*",
         "@freeanima/capabilities-llm-openai": "workspace:*",
         "@freeanima/capabilities-memory": "workspace:*",
         "@freeanima/capabilities-tasks": "workspace:*",
+        "@freeanima/capabilities-tools": "workspace:*",
         "@freeanima/connectors-cron": "workspace:*",
         "@freeanima/connectors-db-pg": "workspace:*",
         "@freeanima/connectors-gateway": "workspace:*",
@@ -651,17 +609,9 @@
 
     "@freeanima/capabilities-acp": ["@freeanima/capabilities-acp@workspace:capabilities/acp"],
 
-    "@freeanima/capabilities-clarify": ["@freeanima/capabilities-clarify@workspace:capabilities/clarify"],
-
-    "@freeanima/capabilities-estate": ["@freeanima/capabilities-estate@workspace:capabilities/estate"],
-
-    "@freeanima/capabilities-fridge-magnet": ["@freeanima/capabilities-fridge-magnet@workspace:capabilities/fridge-magnet"],
-
     "@freeanima/capabilities-identity": ["@freeanima/capabilities-identity@workspace:capabilities/identity"],
 
     "@freeanima/capabilities-llm-openai": ["@freeanima/capabilities-llm-openai@workspace:capabilities/llm-openai"],
-
-    "@freeanima/capabilities-mask": ["@freeanima/capabilities-mask@workspace:capabilities/mask"],
 
     "@freeanima/capabilities-mcp": ["@freeanima/capabilities-mcp@workspace:capabilities/mcp"],
 

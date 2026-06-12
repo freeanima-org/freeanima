@@ -1,1 +1,0 @@
-ALTER TABLE "sessions" ADD COLUMN "loaded_tools" jsonb DEFAULT '[]' NOT NULL;

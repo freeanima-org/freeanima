@@ -13,7 +13,6 @@
   "dependencies": {
     "@elysiajs/eden": "^1.4.9",
     "@elysiajs/static": "^1.4.10",
-    "@freeanima/capabilities-estate": "workspace:*",
     "@freeanima/connectors-cron": "workspace:*",
     "@freeanima/connectors-email": "workspace:*",
     "@freeanima/core": "workspace:*",

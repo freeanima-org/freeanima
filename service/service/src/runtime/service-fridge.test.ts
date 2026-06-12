@@ -1,10 +1,10 @@
 import { afterEach, describe, expect, it } from "bun:test";
-import type { FridgeStorePort } from "@freeanima/capabilities-fridge-magnet/fridge-store-port";
+import type { FridgeStorePort } from "@freeanima/capabilities-tasks/fridge-magnet/fridge-store-port";
 import {
   registerFridgeStore,
   resetFridgeStoreForTests,
-} from "@freeanima/capabilities-fridge-magnet";
-import { magnetRedisKey } from "@freeanima/capabilities-fridge-magnet";
+} from "@freeanima/capabilities-tasks/fridge-magnet";
+import { magnetRedisKey } from "@freeanima/capabilities-tasks/fridge-magnet";
 import { initRedis, setRedisForTest, resetRedisForTest } from "@freeanima/connectors-redis";
 import { listFridgeMagnets } from "./service-fridge.ts";
 

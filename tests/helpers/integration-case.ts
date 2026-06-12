@@ -9,7 +9,7 @@ import {
   registerSystemPromptHooks,
 } from "@freeanima/service";
 import { getAcpManager } from "@freeanima/capabilities-acp";
-import { MaskRegistry } from "../../capabilities/mask/src/registry.ts";
+import { MaskRegistry } from "@freeanima/capabilities-tasks/mask";
 import { registerServiceTools, resetRegisterServiceToolsForTest } from "@freeanima/service";
 import {
   registerMemorySessionStore,
