@@ -10,7 +10,7 @@ import {
   type Db,
   type SqlClient,
 } from "@freeanima/connectors-db-pg";
-import { createEngine } from "@freeanima/orchestration-runtime";
+import { createEngine } from "@freeanima/runtime";
 import {
   initLlmRuntime,
   registerLlmStackConfigurator,
@@ -20,7 +20,7 @@ import { wireOpenAiCompatibleLlm } from "@freeanima/capabilities-llm-openai";
 import {
   createConversationService,
   type ConversationService,
-} from "@freeanima/orchestration-conversation";
+} from "@freeanima/runtime/conversation";
 import type { PgRepositories } from "@freeanima/storage-repos";
 import { FileConfig, type Config } from "@freeanima/service-config";
 import { createTestLogger } from "@freeanima/kernel/logging/testing";
@@ -28,7 +28,7 @@ import type { SessionMessage, SessionMetaMessage } from "@freeanima/storage-db/d
 import { relations } from "@freeanima/storage-db/schema";
 import { drizzle } from "drizzle-orm/bun-sql/postgres";
 import { SQL } from "bun";
-import type { Engine } from "@freeanima/orchestration-runtime";
+import type { Engine } from "@freeanima/runtime";
 
 export type PgTestContext = {
   sql: SqlClient;

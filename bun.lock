@@ -237,8 +237,7 @@
       "name": "@freeanima/connectors-gateway",
       "dependencies": {
         "@freeanima/connectors-cron": "workspace:*",
-        "@freeanima/orchestration-conversation": "workspace:*",
-        "@freeanima/orchestration-loop": "workspace:*",
+        "@freeanima/runtime": "workspace:*",
         "@freeanima/service-api": "workspace:*",
         "@freeanima/service-config": "workspace:*",
         "@freeanima/service-logging": "workspace:*",
@@ -269,8 +268,7 @@
         "@freeanima/connectors-cron": "workspace:*",
         "@freeanima/connectors-email": "workspace:*",
         "@freeanima/kernel": "workspace:*",
-        "@freeanima/orchestration-conversation": "workspace:*",
-        "@freeanima/orchestration-loop": "workspace:*",
+        "@freeanima/runtime": "workspace:*",
         "@freeanima/service-api": "workspace:*",
         "@freeanima/service-config": "workspace:*",
         "@freeanima/service-logging": "workspace:*",
@@ -308,6 +306,7 @@
       "dependencies": {
         "@freeanima/kernel": "workspace:*",
         "@freeanima/mechanism-llm": "workspace:*",
+        "@freeanima/runtime": "workspace:*",
         "@freeanima/storage-config": "workspace:*",
         "@freeanima/storage-db": "workspace:*",
         "@freeanima/storage-repos": "workspace:*",
@@ -315,7 +314,7 @@
         "@freeanima/storage-util": "workspace:*",
       },
       "devDependencies": {
-        "@freeanima/orchestration-conversation": "workspace:*",
+        "@freeanima/runtime": "workspace:*",
         "@types/bun": "catalog:",
       },
     },
@@ -367,39 +366,8 @@
         "@types/bun": "catalog:",
       },
     },
-    "orchestration/conversation": {
-      "name": "@freeanima/orchestration-conversation",
-      "dependencies": {
-        "@freeanima/mechanism-compress": "workspace:*",
-        "@freeanima/mechanism-tool": "workspace:*",
-        "@freeanima/orchestration-session": "workspace:*",
-        "@freeanima/orchestration-turn": "workspace:*",
-        "@freeanima/storage-db": "workspace:*",
-        "@freeanima/storage-repos": "workspace:*",
-      },
-      "devDependencies": {
-        "@types/bun": "catalog:",
-      },
-    },
-    "orchestration/loop": {
-      "name": "@freeanima/orchestration-loop",
-      "dependencies": {
-        "@freeanima/kernel": "workspace:*",
-        "@freeanima/mechanism-compress": "workspace:*",
-        "@freeanima/mechanism-hooks": "workspace:*",
-        "@freeanima/mechanism-llm": "workspace:*",
-        "@freeanima/mechanism-tool": "workspace:*",
-        "@freeanima/storage-config": "workspace:*",
-        "@freeanima/storage-db": "workspace:*",
-        "@freeanima/storage-provider-llm": "workspace:*",
-        "@freeanima/storage-repos": "workspace:*",
-      },
-      "devDependencies": {
-        "@types/bun": "catalog:",
-      },
-    },
-    "orchestration/runtime": {
-      "name": "@freeanima/orchestration-runtime",
+    "runtime": {
+      "name": "@freeanima/runtime",
       "dependencies": {
         "@freeanima/kernel": "workspace:*",
         "@freeanima/mechanism-compress": "workspace:*",
@@ -407,47 +375,11 @@
         "@freeanima/mechanism-llm": "workspace:*",
         "@freeanima/mechanism-skill": "workspace:*",
         "@freeanima/mechanism-tool": "workspace:*",
-        "@freeanima/orchestration-conversation": "workspace:*",
-        "@freeanima/orchestration-loop": "workspace:*",
-        "@freeanima/orchestration-session": "workspace:*",
-        "@freeanima/orchestration-turn": "workspace:*",
         "@freeanima/storage-config": "workspace:*",
         "@freeanima/storage-db": "workspace:*",
         "@freeanima/storage-provider-llm": "workspace:*",
         "@freeanima/storage-repos": "workspace:*",
         "@freeanima/storage-tokenizer": "workspace:*",
-      },
-      "devDependencies": {
-        "@types/bun": "catalog:",
-      },
-    },
-    "orchestration/session": {
-      "name": "@freeanima/orchestration-session",
-      "dependencies": {
-        "@freeanima/mechanism-compress": "workspace:*",
-        "@freeanima/mechanism-hooks": "workspace:*",
-        "@freeanima/mechanism-tool": "workspace:*",
-        "@freeanima/storage-config": "workspace:*",
-        "@freeanima/storage-db": "workspace:*",
-        "@freeanima/storage-provider-llm": "workspace:*",
-        "@freeanima/storage-repos": "workspace:*",
-        "@freeanima/storage-util": "workspace:*",
-      },
-      "devDependencies": {
-        "@types/bun": "catalog:",
-      },
-    },
-    "orchestration/turn": {
-      "name": "@freeanima/orchestration-turn",
-      "dependencies": {
-        "@freeanima/mechanism-compress": "workspace:*",
-        "@freeanima/mechanism-llm": "workspace:*",
-        "@freeanima/mechanism-tool": "workspace:*",
-        "@freeanima/orchestration-session": "workspace:*",
-        "@freeanima/storage-config": "workspace:*",
-        "@freeanima/storage-db": "workspace:*",
-        "@freeanima/storage-provider-llm": "workspace:*",
-        "@freeanima/storage-repos": "workspace:*",
         "@freeanima/storage-util": "workspace:*",
       },
       "devDependencies": {
@@ -461,8 +393,7 @@
         "@freeanima/mechanism-llm": "workspace:*",
         "@freeanima/mechanism-skill": "workspace:*",
         "@freeanima/mechanism-tool": "workspace:*",
-        "@freeanima/orchestration-conversation": "workspace:*",
-        "@freeanima/orchestration-loop": "workspace:*",
+        "@freeanima/runtime": "workspace:*",
         "@freeanima/service-config": "workspace:*",
         "@freeanima/service-logging": "workspace:*",
         "@freeanima/storage-config": "workspace:*",
@@ -490,7 +421,7 @@
         "@freeanima/capabilities-clarify": "workspace:*",
         "@freeanima/capabilities-mask": "workspace:*",
         "@freeanima/mechanism-tool": "workspace:*",
-        "@freeanima/orchestration-conversation": "workspace:*",
+        "@freeanima/runtime": "workspace:*",
         "@freeanima/service-api": "workspace:*",
         "@freeanima/storage-config": "workspace:*",
         "@freeanima/storage-db": "workspace:*",
@@ -545,9 +476,7 @@
         "@freeanima/mechanism-llm": "workspace:*",
         "@freeanima/mechanism-skill": "workspace:*",
         "@freeanima/mechanism-tool": "workspace:*",
-        "@freeanima/orchestration-conversation": "workspace:*",
-        "@freeanima/orchestration-loop": "workspace:*",
-        "@freeanima/orchestration-runtime": "workspace:*",
+        "@freeanima/runtime": "workspace:*",
         "@freeanima/service-api": "workspace:*",
         "@freeanima/service-bootstrap": "workspace:*",
         "@freeanima/service-commands": "workspace:*",
@@ -648,6 +577,9 @@
     },
     "tests": {
       "name": "@freeanima/integration-tests",
+      "dependencies": {
+        "@freeanima/runtime": "workspace:*",
+      },
       "devDependencies": {
         "@freeanima/capabilities-acp": "workspace:*",
         "@freeanima/capabilities-clarify": "workspace:*",
@@ -663,9 +595,7 @@
         "@freeanima/mechanism-compress": "workspace:*",
         "@freeanima/mechanism-llm": "workspace:*",
         "@freeanima/mechanism-tool": "workspace:*",
-        "@freeanima/orchestration-conversation": "workspace:*",
-        "@freeanima/orchestration-loop": "workspace:*",
-        "@freeanima/orchestration-runtime": "workspace:*",
+        "@freeanima/runtime": "workspace:*",
         "@freeanima/service": "workspace:*",
         "@freeanima/service-api": "workspace:*",
         "@freeanima/service-bootstrap": "workspace:*",
@@ -944,15 +874,7 @@
 
     "@freeanima/mechanism-tool": ["@freeanima/mechanism-tool@workspace:mechanism/tool"],
 
-    "@freeanima/orchestration-conversation": ["@freeanima/orchestration-conversation@workspace:orchestration/conversation"],
-
-    "@freeanima/orchestration-loop": ["@freeanima/orchestration-loop@workspace:orchestration/loop"],
-
-    "@freeanima/orchestration-runtime": ["@freeanima/orchestration-runtime@workspace:orchestration/runtime"],
-
-    "@freeanima/orchestration-session": ["@freeanima/orchestration-session@workspace:orchestration/session"],
-
-    "@freeanima/orchestration-turn": ["@freeanima/orchestration-turn@workspace:orchestration/turn"],
+    "@freeanima/runtime": ["@freeanima/runtime@workspace:runtime"],
 
     "@freeanima/service": ["@freeanima/service@workspace:service/service"],
 

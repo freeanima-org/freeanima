@@ -22,6 +22,6 @@ export { isRuntimeContextReady as isServiceContextReady } from "./runtime/runtim
 export { assertNotShuttingDown } from "@freeanima/service-api/app-runtime-context";
 
 export type { AppRuntime } from "./runtime/index.ts";
-export type { Engine } from "@freeanima/orchestration-runtime";
+export type { Engine } from "@freeanima/runtime";
 export type { MaskRegistry } from "@freeanima/capabilities-mask";
 export type { ServiceAppRuntime as ServiceContext } from "./runtime/runtime-context.ts";

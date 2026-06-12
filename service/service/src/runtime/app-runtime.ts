@@ -6,9 +6,9 @@ import type {
   ServiceSnapshot,
   SessionSummary,
 } from "@freeanima/service/schemas/snapshot";
-import type { StreamEvent } from "@freeanima/orchestration-loop";
+import type { StreamEvent } from "@freeanima/runtime/loop";
 import type { SessionMessage as Message } from "@freeanima/storage-db/domain";
-import type { ConversationService } from "@freeanima/orchestration-conversation";
+import type { ConversationService } from "@freeanima/runtime/conversation";
 import type { CronJobData } from "@freeanima/connectors-cron";
 import type { Kernel } from "@freeanima/kernel";
 import type { AppRuntimePort } from "@freeanima/service-api/app-runtime-port";
@@ -16,7 +16,7 @@ import type { AcpManagerPort } from "@freeanima/service-api/ports/acp-manager";
 import type { MaskRegistryPort } from "@freeanima/service-api/ports/mask-registry";
 import type { McpManagerPort } from "@freeanima/service-api/ports/mcp-manager";
 import type { ServiceEnginePort } from "@freeanima/service-api/ports/service-engine";
-import { collectStreamReply } from "@freeanima/orchestration-loop";
+import { collectStreamReply } from "@freeanima/runtime/loop";
 import { createTurnMessageCallbacks, type StreamTurnHost } from "./turn-lifecycle.ts";
 import { EngineRunControl } from "./engine-run-control.ts";
 import { SessionManager } from "./session-manager.ts";
@@ -35,7 +35,7 @@ import * as messaging from "./service-messaging.ts";
 import { PARLOR_PLATFORM } from "./platforms.ts";
 
 export type { MemoryFileEntry } from "./service-memory.ts";
-export type { StreamEvent } from "@freeanima/orchestration-loop";
+export type { StreamEvent } from "@freeanima/runtime/loop";
 export { SessionManager } from "./session-manager.ts";
 
 export type CreateAppRuntimeInput = FullRuntimeDeps;

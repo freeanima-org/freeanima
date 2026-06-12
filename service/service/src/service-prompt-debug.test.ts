@@ -12,8 +12,8 @@ import {
   resetSemanticMemoryStoreForTests,
 } from "@freeanima/capabilities-memory";
 import { MaskRegistry } from "@freeanima/capabilities-mask";
-import { createEngineCatalog } from "@freeanima/orchestration-runtime";
-import type { Engine } from "@freeanima/orchestration-runtime";
+import { createEngineCatalog } from "@freeanima/runtime";
+import type { Engine } from "@freeanima/runtime";
 import { Config } from "@freeanima/storage-config";
 import type { Kernel } from "@freeanima/kernel";
 import { createTestLogger } from "@freeanima/kernel/logging/testing";

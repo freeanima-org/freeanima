@@ -20,12 +20,12 @@ export type BeforeLlmCallContext = {
 };
 
 export const toolAfterCall = createHook<ToolAfterCallContext, ToolAfterCallEffect>(
-  "@freeanima/orchestration-loop-hooks/tool-after-call",
+  "@freeanima/runtime/loop-hooks/tool-after-call",
   "After tool call returns",
 );
 
 export const beforeLlmCall = createHook<BeforeLlmCallContext>(
-  "@freeanima/orchestration-loop-hooks/before-llm-call",
+  "@freeanima/runtime/loop-hooks/before-llm-call",
   "Fires before each LLM call (first turn and every tool-loop turn)",
 );
 

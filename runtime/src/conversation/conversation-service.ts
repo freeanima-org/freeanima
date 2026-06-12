@@ -1,6 +1,6 @@
 import type { PgRepositories } from "@freeanima/storage-repos";
 import type { ToolSetRegistry } from "@freeanima/mechanism-tool";
-import type { SessionMessage } from "@freeanima/orchestration-session";
+import type { SessionMessage } from "@freeanima/runtime/session";
 import {
   advanceCompressionMeta,
   appendMessage,

@@ -3,6 +3,6 @@ import { toolAfterCall } from "./index.ts";
 
 describe("loop hooks", () => {
   it("toolAfterCall qualifiedId", () => {
-    expect(toolAfterCall.qualifiedId).toBe("@freeanima/orchestration-loop-hooks/tool-after-call");
+    expect(toolAfterCall.qualifiedId).toBe("@freeanima/runtime/loop-hooks/tool-after-call");
   });
 });

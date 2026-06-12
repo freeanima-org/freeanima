@@ -4,8 +4,8 @@ import type {
   AcpPromptResult,
 } from "@freeanima/capabilities-acp";
 import { deliverToTargets, type CronDeliverTarget } from "@freeanima/connectors-cron/deliver";
-import { isSessionMeta } from "@freeanima/orchestration-conversation";
-import type { ConversationService } from "@freeanima/orchestration-conversation";
+import { isSessionMeta } from "@freeanima/runtime/conversation";
+import type { ConversationService } from "@freeanima/runtime/conversation";
 import type { SessionMetaLoadResult } from "@freeanima/storage-db/domain";
 import type { EventBus } from "@freeanima/kernel/eventbus";
 import { sessionUpdated } from "@freeanima/capabilities-memory";

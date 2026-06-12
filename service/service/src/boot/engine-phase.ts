@@ -3,13 +3,13 @@ import {
   createEngineCatalog,
   type Engine,
   type EngineCatalog,
-} from "@freeanima/orchestration-runtime";
+} from "@freeanima/runtime";
 import { getLlmRuntime, initLlmRuntime } from "@freeanima/mechanism-llm";
 import { createServiceKernel } from "@freeanima/service-bootstrap";
 import {
   createConversationService,
   type ConversationService,
-} from "@freeanima/orchestration-conversation";
+} from "@freeanima/runtime/conversation";
 import { createServiceLogger } from "@freeanima/service-logging";
 import { MaskRegistry } from "@freeanima/capabilities-mask";
 import { MCPManager } from "@freeanima/capabilities-mcp";

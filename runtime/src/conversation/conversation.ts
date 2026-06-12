@@ -1,5 +1,5 @@
-export type { Message } from "@freeanima/orchestration-session";
-export { isSessionMeta } from "@freeanima/orchestration-session";
+export type { Message } from "@freeanima/runtime/session";
+export { isSessionMeta } from "@freeanima/runtime/session";
 
 export {
   allocateSessionCwd,
@@ -33,14 +33,14 @@ export {
   setSessionCwd,
   rollbackToLastUser,
   cleanupDebugSessions,
-} from "@freeanima/orchestration-session";
+} from "@freeanima/runtime/session";
 
 export {
   flushCompressionSummaries,
   maybeApplyEmergencyCompression,
   advanceCompressionMeta,
   recompressSession,
-} from "@freeanima/orchestration-turn";
+} from "@freeanima/runtime/turn";
 
 export {
   repairAndPersistToolLoop,
@@ -50,4 +50,4 @@ export {
   beginTurnPrepare,
   finishTurn,
   retryTurn,
-} from "@freeanima/orchestration-turn";
+} from "@freeanima/runtime/turn";

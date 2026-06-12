@@ -1,4 +1,4 @@
-import { isTransientNetworkError } from "@freeanima/orchestration-loop";
+import { isTransientNetworkError } from "@freeanima/runtime/loop";
 import { logComponent } from "@freeanima/service-logging";
 
 const DEFAULT_ATTEMPTS = 5;

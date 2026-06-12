@@ -21,11 +21,11 @@ export type TurnAfterCompleteEffect = {
 };
 
 export const messageIncoming = createHook<MessageIncomingContext, MessageIncomingEffect>(
-  "@freeanima/orchestration-conversation-hooks/message-incoming",
+  "@freeanima/runtime/conversation-hooks/message-incoming",
   "Inbound message intercept",
 );
 
 export const turnAfterComplete = createHook<TurnAfterCompleteContext, TurnAfterCompleteEffect>(
-  "@freeanima/orchestration-conversation-hooks/turn-after-complete",
+  "@freeanima/runtime/conversation-hooks/turn-after-complete",
   "After single turn ends",
 );

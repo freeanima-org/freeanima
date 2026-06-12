@@ -1,5 +1,5 @@
 import type { Message, TextBasedChannel } from "discord.js";
-import type { StreamEvent } from "@freeanima/orchestration-loop";
+import type { StreamEvent } from "@freeanima/runtime/loop";
 import { chunkText } from "../chunk-text.ts";
 import {
   createDiscordAnswerStrategy,

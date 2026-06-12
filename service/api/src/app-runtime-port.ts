@@ -1,4 +1,4 @@
-import type { StreamEvent } from "@freeanima/orchestration-loop";
+import type { StreamEvent } from "@freeanima/runtime/loop";
 
 export type { MessagingPort } from "./ports/messaging-port.ts";
 

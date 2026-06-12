@@ -1,0 +1,32 @@
+{
+  "name": "@freeanima/runtime",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./session": "./src/session/index.ts",
+    "./session/*": "./src/session/*.ts",
+    "./turn": "./src/turn/index.ts",
+    "./turn/*": "./src/turn/*.ts",
+    "./loop": "./src/loop/index.ts",
+    "./loop/*": "./src/loop/*.ts",
+    "./conversation": "./src/conversation/index.ts",
+    "./conversation/*": "./src/conversation/*.ts"
+  },
+  "dependencies": {
+    "@freeanima/kernel": "workspace:*",
+    "@freeanima/mechanism-compress": "workspace:*",
+    "@freeanima/mechanism-hooks": "workspace:*",
+    "@freeanima/mechanism-llm": "workspace:*",
+    "@freeanima/mechanism-skill": "workspace:*",
+    "@freeanima/mechanism-tool": "workspace:*",
+    "@freeanima/storage-config": "workspace:*",
+    "@freeanima/storage-db": "workspace:*",
+    "@freeanima/storage-provider-llm": "workspace:*",
+    "@freeanima/storage-repos": "workspace:*",
+    "@freeanima/storage-tokenizer": "workspace:*",
+    "@freeanima/storage-util": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:"
+  }
+}

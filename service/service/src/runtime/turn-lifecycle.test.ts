@@ -1,11 +1,11 @@
 import { describe, it, expect, spyOn, afterEach } from "bun:test";
-import * as conv from "@freeanima/orchestration-conversation";
-import * as engine from "@freeanima/orchestration-loop";
-import { createConversationService } from "@freeanima/orchestration-conversation";
+import * as conv from "@freeanima/runtime/conversation";
+import * as engine from "@freeanima/runtime/loop";
+import { createConversationService } from "@freeanima/runtime/conversation";
 import { nullPgRepositories } from "@freeanima/storage-repos";
 import { MaskRegistry } from "@freeanima/capabilities-mask";
 import { Config } from "@freeanima/storage-config";
-import { createEngine, createEngineCatalog } from "@freeanima/orchestration-runtime";
+import { createEngine, createEngineCatalog } from "@freeanima/runtime";
 import { initLlmRuntime, registerLlmStackConfigurator } from "@freeanima/mechanism-llm";
 import { wireOpenAiCompatibleLlm } from "@freeanima/capabilities-llm-openai";
 import { createTestLogger } from "@freeanima/kernel/logging/testing";

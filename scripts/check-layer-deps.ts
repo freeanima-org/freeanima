@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * Layer boundary dependency check: scan @freeanima/* imports against eight-layer architecture rules.
+ * Layer boundary dependency check: scan @freeanima/* imports against layer architecture rules.
  * Tests and test-helpers directories are exempt.
  */
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
@@ -16,7 +16,7 @@ const LAYER_DIRS = [
   "kernel",
   "storage",
   "mechanism",
-  "orchestration",
+  "runtime",
   "capabilities",
   "connectors",
   "service",
@@ -51,49 +51,6 @@ function isExempt(relPath: string): boolean {
   return false;
 }
 
-const ORCHESTRATION_PKG = new Set([
-  "orchestration-session",
-  "orchestration-turn",
-  "orchestration-conversation",
-  "orchestration-loop",
-  "orchestration-runtime",
-]);
-
-const ORCHESTRATION_ALLOWS: Record<string, ReadonlySet<string>> = {
-  "orchestration-turn": new Set(["orchestration-session"]),
-  "orchestration-conversation": new Set(["orchestration-session", "orchestration-turn"]),
-  "orchestration-runtime": new Set([
-    "orchestration-session",
-    "orchestration-turn",
-    "orchestration-conversation",
-    "orchestration-loop",
-  ]),
-};
-
-function orchestrationViolation(sourcePkg: string | null, importRoot: string): string | null {
-  if (!ORCHESTRATION_PKG.has(sourcePkg ?? "") && sourcePkg !== "orchestration-runtime") {
-    if (sourcePkg === "orchestration-loop" && importRoot === "orchestration-conversation") {
-      return "orchestration-loop must not depend on orchestration-conversation";
-    }
-    if (sourcePkg && ORCHESTRATION_PKG.has(sourcePkg) && importRoot !== sourcePkg) {
-      const allowed = ORCHESTRATION_ALLOWS[sourcePkg];
-      if (allowed?.has(importRoot)) return null;
-      if (ORCHESTRATION_PKG.has(importRoot)) {
-        return `orchestration: ${sourcePkg} must not depend on ${importRoot}`;
-      }
-    }
-  }
-  return null;
-}
-
-function sourceOrchestrationPkg(relPath: string): string | null {
-  const parts = relPath.split("/");
-  if (parts[0] !== "orchestration" || parts.length < 2) return null;
-  const dir = parts[1];
-  if (dir === "runtime") return "orchestration-runtime";
-  return `orchestration-${dir}`;
-}
-
 function isAllowed(layer: Layer, pkg: string, _relPath: string): boolean {
   if (!layer) return true;
   const root = workspacePkgName(pkg);
@@ -104,7 +61,7 @@ function isAllowed(layer: Layer, pkg: string, _relPath: string): boolean {
     case "storage":
       return root.startsWith("kernel-") || root === "kernel" || root.startsWith("storage-");
     case "mechanism":
-      if (root.startsWith("orchestration-")) return false;
+      if (root.startsWith("runtime")) return false;
       if (root.startsWith("service")) return false;
       if (root.startsWith("connectors-")) return false;
       if (root.startsWith("capabilities-") && !root.startsWith("capabilities-provider-"))
@@ -116,7 +73,7 @@ function isAllowed(layer: Layer, pkg: string, _relPath: string): boolean {
         root.startsWith("mechanism-") ||
         root.startsWith("capabilities-provider-")
       );
-    case "orchestration":
+    case "runtime":
       if (root === "service") return false;
       if (root.startsWith("capabilities-")) return false;
       if (root.startsWith("connectors-")) return false;
@@ -125,10 +82,10 @@ function isAllowed(layer: Layer, pkg: string, _relPath: string): boolean {
         root === "kernel" ||
         root.startsWith("storage-") ||
         root.startsWith("mechanism-") ||
-        root.startsWith("orchestration-")
+        root === "runtime"
       );
     case "capabilities": {
-      if (root.startsWith("orchestration-")) return false;
+      if (root === "runtime" || root.startsWith("runtime/")) return false;
       if (root.startsWith("service")) return false;
       if (root === "connectors-redis") return true;
       if (root.startsWith("connectors-")) return false;
@@ -205,15 +162,6 @@ function scanImports(): Violation[] {
         }
         if (!isAllowed(layer, pkg, rel)) {
           violations.push({ file: rel, line: i + 1, pkg, reason: reasonFor(layer, pkg) });
-          continue;
-        }
-        if (layer === "orchestration") {
-          const srcPkg = sourceOrchestrationPkg(rel);
-          const importRoot = workspacePkgName(pkg);
-          const orchErr = orchestrationViolation(srcPkg, importRoot);
-          if (orchErr) {
-            violations.push({ file: rel, line: i + 1, pkg, reason: orchErr });
-          }
         }
       }
     }

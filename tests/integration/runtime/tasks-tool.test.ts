@@ -6,7 +6,7 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { runWithToolContext } from "@freeanima/orchestration-loop";
+import { runWithToolContext } from "@freeanima/runtime/loop";
 import { ToolSetRegistry } from "@freeanima/mechanism-tool";
 import { getProfileHopModel } from "@freeanima/service-config";
 import {

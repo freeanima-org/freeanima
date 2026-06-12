@@ -4,12 +4,10 @@
   "type": "module",
   "devDependencies": {
     "@freeanima/connectors-webui": "workspace:*",
-    "@freeanima/orchestration-runtime": "workspace:*",
+    "@freeanima/runtime": "workspace:*",
     "@freeanima/mechanism-compress": "workspace:*",
     "@freeanima/storage-tokenizer": "workspace:*",
-    "@freeanima/orchestration-conversation": "workspace:*",
     "@freeanima/mechanism-llm": "workspace:*",
-    "@freeanima/orchestration-loop": "workspace:*",
     "@freeanima/mechanism-tool": "workspace:*",
     "@freeanima/capabilities-clarify": "workspace:*",
     "@freeanima/capabilities-tasks": "workspace:*",
@@ -31,5 +29,8 @@
     "@freeanima/service-config": "workspace:*",
     "@freeanima/service-logging": "workspace:*",
     "@types/node": "catalog:"
+  },
+  "dependencies": {
+    "@freeanima/runtime": "workspace:*"
   }
 }

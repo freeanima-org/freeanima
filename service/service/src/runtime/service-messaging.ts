@@ -16,7 +16,7 @@ import type { EngineRunControl } from "./engine-run-control.ts";
 import type { SessionManager } from "./session-manager.ts";
 import { runExclusiveStreamTurn, streamErrorEvent, type StreamTurnHost } from "./turn-lifecycle.ts";
 import { applyCommandSessionEffects, checkPlatform } from "./service-sessions.ts";
-import { collectStreamReply, type StreamEvent } from "@freeanima/orchestration-loop";
+import { collectStreamReply, type StreamEvent } from "@freeanima/runtime/loop";
 import { scheduleGracefulRestart, runAnimaCliUpdate } from "./process-restart.ts";
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
 

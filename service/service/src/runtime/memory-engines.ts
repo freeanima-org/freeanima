@@ -1,4 +1,4 @@
-import * as engine from "@freeanima/orchestration-loop";
+import * as engine from "@freeanima/runtime/loop";
 import { runWithToolContext } from "@freeanima/mechanism-tool";
 import type { SessionMessage } from "@freeanima/storage-db/domain";
 import { PROFILE_REFLECT } from "@freeanima/storage-provider-llm";

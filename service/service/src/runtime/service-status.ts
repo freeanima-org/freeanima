@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { getTokenizerBindingSnapshot } from "@freeanima/orchestration-runtime";
+import { getTokenizerBindingSnapshot } from "@freeanima/runtime";
 import {
   getDefaultProviderBaseUrl,
   getProfileHopModel,

@@ -6,7 +6,7 @@ import {
   invalidateSelfLayerPromptCache,
   loadSelfLayerPrompt,
 } from "@freeanima/capabilities-identity";
-import type { Engine } from "@freeanima/orchestration-runtime";
+import type { Engine } from "@freeanima/runtime";
 
 /** 注册内置 cron handler（light/deep sleep、记忆引用同步） */
 export function registerBootCronHandlers(engine: Engine): void {

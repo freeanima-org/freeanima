@@ -1,5 +1,5 @@
 import type { Kernel } from "@freeanima/kernel";
-import type { ConversationService } from "@freeanima/orchestration-conversation";
+import type { ConversationService } from "@freeanima/runtime/conversation";
 import type { AcpManagerPort } from "@freeanima/service-api/ports/acp-manager";
 import type { MaskRegistryPort } from "@freeanima/service-api/ports/mask-registry";
 import type { McpManagerPort } from "@freeanima/service-api/ports/mcp-manager";

@@ -10,8 +10,8 @@ import { getActivePgTestContext, getTestEngine, testConv } from "../../helpers/p
 import { registerServiceTools } from "@freeanima/service";
 import { isSessionMeta } from "@freeanima/storage-db/domain";
 import { DEFAULT_SESSION_TOOL_NAMES } from "@freeanima/mechanism-tool";
-import { runWithToolContext } from "@freeanima/orchestration-loop";
-import * as engine from "@freeanima/orchestration-loop";
+import { runWithToolContext } from "@freeanima/runtime/loop";
+import * as engine from "@freeanima/runtime/loop";
 import * as llm from "@freeanima/mechanism-llm";
 
 describePg("tool catalog lazy load", () => {
