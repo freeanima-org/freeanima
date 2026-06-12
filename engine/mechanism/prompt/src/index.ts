@@ -1,5 +1,7 @@
 export {
-  registerSystemPromptBuilder,
+  registerSystemPromptHookRunner,
+  resetSystemPromptHookRunnerForTest,
   buildSystemPrompt,
-  type SystemPromptBuilder,
+  type SystemPromptBuildContext,
+  type SystemPromptHookRunner,
 } from "./system-prompt-registry.ts";

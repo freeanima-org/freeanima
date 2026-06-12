@@ -15,8 +15,12 @@ import { MaskRegistry } from "@freeanima/capabilities-mask";
 import { createEngineCatalog } from "@freeanima/engine";
 import type { Engine } from "@freeanima/engine";
 import { Config } from "@freeanima/engine-config";
+import type { Kernel } from "@freeanima/kernel";
 import { createTestLogger } from "@freeanima/kernel-logging/testing";
 import { nullPgRepositories } from "@freeanima/engine-repos";
+import { createServiceKernel } from "@freeanima/service-bootstrap";
+import { wireEnginePorts } from "./wire-engine-ports.ts";
+import { registerSystemPromptHooks } from "./register-prompt-hooks.ts";
 import { registerServiceTools, resetRegisterServiceToolsForTest } from "./register.ts";
 import { initServiceContext } from "./context.ts";
 import { computeGlobalBreakdown, getPromptDebug } from "./runtime/service-prompt-debug.ts";
@@ -31,6 +35,7 @@ const mockParts = {
   self: "self block",
   agents: "agents block",
   resident: "resident block",
+  toolsets: "toolsets block",
 };
 
 const mockConv = {
@@ -75,11 +80,11 @@ const minimalConfig = Config.fromSnapshot({
   },
 });
 
-function seedContext(catalog: ReturnType<typeof createEngineCatalog>) {
+function seedContext(catalog: ReturnType<typeof createEngineCatalog>, kernel: Kernel) {
   initServiceContext({
     conversation: mockConv as never,
     service: {} as never,
-    kernel: {} as never,
+    kernel,
     engine: {
       catalog,
       repos: nullPgRepositories,
@@ -101,6 +106,7 @@ describe("service-prompt-debug", () => {
 
   beforeEach(async () => {
     resetRegisterServiceToolsForTest();
+    wireEnginePorts();
     setTokenizerEncodeForTest(FALLBACK_TOKENIZER_REPO, (text: string) => {
       const len = text.trim().length;
       if (!len) return [];
@@ -116,7 +122,12 @@ describe("service-prompt-debug", () => {
       config: minimalConfig,
     });
     registerSemanticMemoryStore(emptySemanticStore);
-    seedContext(catalog);
+    const kernel = createServiceKernel(minimalConfig);
+    registerSystemPromptHooks({
+      hookRegistry: kernel.hookRegistry,
+      getToolRegistry: () => catalog.toolSets,
+    });
+    seedContext(catalog, kernel);
     mockConv.sessionExists.mockClear();
     mockConv.loadSessionMeta.mockClear();
     mockConv.loadSessionTools.mockClear();
@@ -140,11 +151,16 @@ describe("service-prompt-debug", () => {
     expect(breakdown.system_self).toBeGreaterThan(0);
     expect(breakdown.system_agents).toBeGreaterThan(0);
     expect(breakdown.system_resident).toBeGreaterThan(0);
+    expect(breakdown.system_toolsets).toBeGreaterThan(0);
     expect(breakdown.messages).toBe(0);
     expect(breakdown.summary).toBe(0);
     expect(breakdown.tools).toBeGreaterThan(0);
     expect(breakdown.total).toBe(
-      breakdown.system_self + breakdown.system_agents + breakdown.system_resident + breakdown.tools,
+      breakdown.system_self +
+        breakdown.system_agents +
+        breakdown.system_resident +
+        breakdown.system_toolsets +
+        breakdown.tools,
     );
   });
 

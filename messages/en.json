@@ -261,6 +261,7 @@
   "webui_chamber_system_prompt_block_agents": "AGENTS.md",
   "webui_chamber_system_prompt_block_resident": "Resident memory",
   "webui_chamber_system_prompt_block_self": "Self layer",
+  "webui_chamber_system_prompt_block_toolsets": "ToolSets",
   "webui_chamber_system_prompt_block_summary": "Summary",
   "webui_chamber_system_prompt_copy_json": "Copy JSON",
   "webui_chamber_system_prompt_copy_live": "Copy live full text",

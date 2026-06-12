@@ -1,23 +1,34 @@
-export type SystemPromptBuilder = (
-  functionNames: string[],
-  cwd?: string | null,
-) => string | Promise<string>;
+import type { SessionMetaMessage } from "@freeanima/engine-db/domain";
 
-let builder: SystemPromptBuilder | null = null;
+export type SystemPromptBuildContext = {
+  functionNames: string[];
+  cwd?: string | null;
+  meta?: SessionMetaMessage;
+};
 
-/** Injected at runtime/system-prompt-wire startup (avoids engine depending on memory) */
-export function registerSystemPromptBuilder(fn: SystemPromptBuilder): void {
-  builder = fn;
+export type SystemPromptHookRunner = (ctx: SystemPromptBuildContext) => string | Promise<string>;
+
+let runner: SystemPromptHookRunner | null = null;
+
+/** Injected at composition root; runs systemPromptBuild hooks and folds sections */
+export function registerSystemPromptHookRunner(fn: SystemPromptHookRunner): void {
+  runner = fn;
 }
 
 export async function buildSystemPrompt(
   functionNames: string[],
   cwd?: string | null,
+  meta?: SessionMetaMessage,
 ): Promise<string> {
-  if (!builder) {
+  if (!runner) {
     throw new Error(
-      "SystemPromptBuilder not registered: call wireEnginePorts() or registerSystemPromptBuilder",
+      "SystemPromptHookRunner not registered: call wireEnginePorts() or registerSystemPromptHookRunner",
     );
   }
-  return builder(functionNames, cwd);
+  return runner({ functionNames, cwd, meta });
+}
+
+/** Unit test reset */
+export function resetSystemPromptHookRunnerForTest(): void {
+  runner = null;
 }

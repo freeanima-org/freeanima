@@ -1,4 +1,5 @@
 import { wireEnginePorts } from "./wire-engine-ports.ts";
+import { registerSystemPromptHooks } from "./register-prompt-hooks.ts";
 import { wireServicePorts } from "./wire-api.ts";
 import {
   createEngine,
@@ -331,6 +332,11 @@ export async function serve(
       acp,
       host: statusHost,
       port,
+    });
+
+    registerSystemPromptHooks({
+      hookRegistry: kernel.hookRegistry,
+      getToolRegistry: () => catalog.toolSets,
     });
 
     const webuiDev = resolveWebuiDevMode(opts.webuiDev);

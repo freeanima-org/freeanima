@@ -118,10 +118,12 @@
       "name": "@freeanima/capabilities-tools",
       "dependencies": {
         "@freeanima/engine-db": "workspace:*",
+        "@freeanima/engine-hooks": "workspace:*",
         "@freeanima/engine-repos": "workspace:*",
         "@freeanima/engine-skill": "workspace:*",
         "@freeanima/engine-tool": "workspace:*",
         "@freeanima/engine-util": "workspace:*",
+        "@freeanima/kernel-hooks": "workspace:*",
         "@freeanima/service-config": "workspace:*",
       },
       "devDependencies": {
@@ -367,6 +369,9 @@
     },
     "engine/mechanism/prompt": {
       "name": "@freeanima/engine-prompt",
+      "dependencies": {
+        "@freeanima/engine-db": "workspace:*",
+      },
       "devDependencies": {
         "@types/bun": "catalog:",
       },

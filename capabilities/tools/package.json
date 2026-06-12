@@ -7,6 +7,8 @@
   },
   "dependencies": {
     "@freeanima/engine-db": "workspace:*",
+    "@freeanima/engine-hooks": "workspace:*",
+    "@freeanima/kernel-hooks": "workspace:*",
     "@freeanima/engine-repos": "workspace:*",
     "@freeanima/engine-skill": "workspace:*",
     "@freeanima/engine-tool": "workspace:*",

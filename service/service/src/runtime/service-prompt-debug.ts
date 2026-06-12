@@ -3,9 +3,10 @@ import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
 import { getProfileHopModel } from "@freeanima/service-config";
 import { isSessionMeta } from "@freeanima/engine-db/domain";
 import type { JsonSchemaObject } from "@freeanima/engine-tool";
+import { buildSystemPrompt } from "@freeanima/engine-prompt";
+import { renderToolsetsSection } from "@freeanima/capabilities-tools/toolset-prompt";
 import { loadSelfLayerPrompt } from "@freeanima/life-self";
 import {
-  composeSystemPrompt,
   decomposeSystemPromptParts,
   type SystemPromptParts,
 } from "@freeanima/life-memory/system-prompt";
@@ -53,6 +54,7 @@ export function computeGlobalBreakdown(
   const system_self = estimateTokens(parts.self, model);
   const system_agents = estimateTokens(parts.agents, model);
   const system_resident = estimateTokens(parts.resident, model);
+  const system_toolsets = estimateTokens(parts.toolsets, model);
   const toolsTokens = estimateToolsTokens(
     items.map((t) => ({
       type: "function",
@@ -64,11 +66,12 @@ export function computeGlobalBreakdown(
     })),
     model,
   );
-  const total = system_self + system_agents + system_resident + toolsTokens;
+  const total = system_self + system_agents + system_resident + system_toolsets + toolsTokens;
   return {
     system_self,
     system_agents,
     system_resident,
+    system_toolsets,
     summary: 0,
     messages: 0,
     tools: toolsTokens,
@@ -122,13 +125,18 @@ function sessionToolItems(
   });
 }
 
-async function buildSystemView(cwd?: string | null): Promise<{
+async function buildSystemView(
+  cwd?: string | null,
+  meta?: import("@freeanima/engine-db/domain").SessionMetaMessage,
+): Promise<{
   parts: SystemPromptParts;
   composed: string;
 }> {
   const selfContent = await loadSelfLayerPrompt();
-  const parts = await decomposeSystemPromptParts(selfContent, cwd ?? undefined);
-  const composed = composeSystemPrompt(parts);
+  const memoryParts = await decomposeSystemPromptParts(selfContent, cwd ?? undefined);
+  const toolsets = renderToolsetsSection(catalogTools());
+  const parts: SystemPromptParts = { ...memoryParts, toolsets };
+  const composed = await buildSystemPrompt([], cwd ?? undefined, meta);
   return { parts, composed };
 }
 
@@ -167,7 +175,7 @@ export async function getPromptDebug(sessionId?: string | null): Promise<PromptD
   }
 
   const cwd = meta.cwd;
-  const { parts, composed } = await buildSystemView(cwd);
+  const { parts, composed } = await buildSystemView(cwd, meta);
   const stored = meta.system_prompt ?? null;
   const in_sync = stored === composed;
 

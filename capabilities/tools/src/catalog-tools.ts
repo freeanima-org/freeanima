@@ -52,45 +52,31 @@ export function registerCatalogTools(toolSets: ToolSetRegistry): void {
         {
           name: "tools_list",
           description:
-            "List or search available tools in the registry (index only, no parameters). Optional query filters by name/description/ToolSet; paginate when no query. Use tools_load for full schema.",
+            "List tool names in the registry (index only). System prompt already lists ToolSets; use optional toolset and keyword to find concrete tool names, then tools_load for full schema.",
           parameters: {
             type: "object",
             properties: {
-              query: { type: "string", description: "Optional: search keyword" },
               toolset: { type: "string", description: "Optional: limit to ToolSet name" },
-              offset: { type: "number", description: "Offset when no query, default 0" },
-              limit: {
-                type: "number",
-                description: "Page size / max items, default 30 (default 20 when query present)",
-              },
+              keyword: { type: "string", description: "Optional: search tool name/description" },
             },
           },
           handler: async (args) => {
             const ctx = await requireSessionMeta();
             if (!ctx.ok) return toolError(ctx.error);
             const registry = getToolRegistry();
-            const query = String(args.query ?? "").trim();
-            const toolset = args.toolset != null ? String(args.toolset) : undefined;
+            const keyword = String(args.keyword ?? "").trim();
+            const toolset = args.toolset != null ? String(args.toolset).trim() : undefined;
 
-            if (query) {
-              const limit = args.limit != null ? Number(args.limit) : 20;
-              const result = searchToolsCatalog(registry, query, {
-                toolset,
-                limit: Number.isFinite(limit) ? limit : 20,
-              });
+            if (keyword) {
+              const result = searchToolsCatalog(registry, keyword, { toolset });
               return toolResult({
-                ...result,
+                keyword,
                 tools: catalogEntryWithAllowed(result.tools, ctx.meta),
+                total: result.total,
               });
             }
 
-            const offset = args.offset != null ? Number(args.offset) : 0;
-            const limit = args.limit != null ? Number(args.limit) : 30;
-            const result = listToolsCatalog(registry, {
-              toolset,
-              offset: Number.isFinite(offset) ? offset : 0,
-              limit: Number.isFinite(limit) ? limit : 30,
-            });
+            const result = listToolsCatalog(registry, { toolset });
             return toolResult({
               tools: catalogEntryWithAllowed(result.tools, ctx.meta),
               total: result.total,

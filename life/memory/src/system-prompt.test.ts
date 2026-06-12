@@ -45,6 +45,7 @@ describe("system-prompt", () => {
       self: "SELF_MARKER",
       resident: "RESIDENT_MARKER",
       agents: "AGENTS_MARKER",
+      toolsets: "",
     });
     const selfIdx = composed.indexOf("SELF_MARKER");
     const residentIdx = composed.indexOf("RESIDENT_MARKER");

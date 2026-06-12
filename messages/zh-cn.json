@@ -261,6 +261,7 @@
   "webui_chamber_system_prompt_block_agents": "AGENTS.md",
   "webui_chamber_system_prompt_block_resident": "常驻记忆",
   "webui_chamber_system_prompt_block_self": "自我层",
+  "webui_chamber_system_prompt_block_toolsets": "ToolSets",
   "webui_chamber_system_prompt_block_summary": "摘要",
   "webui_chamber_system_prompt_copy_json": "复制 JSON",
   "webui_chamber_system_prompt_copy_live": "复制 live 全文",

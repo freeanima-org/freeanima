@@ -172,7 +172,7 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
     schema: z.object({
       tools: z.array(catalogEntrySchema),
       total: z.number(),
-      query: z.string().optional(),
+      keyword: z.string().optional(),
     }),
     example: {
       tools: [

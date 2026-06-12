@@ -4,6 +4,9 @@
   "exports": {
     ".": "./src/index.ts"
   },
+  "dependencies": {
+    "@freeanima/engine-db": "workspace:*"
+  },
   "devDependencies": {
     "@types/bun": "catalog:"
   }

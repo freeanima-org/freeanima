@@ -84,6 +84,7 @@ function emptyBreakdown(): RuntimeContextBreakdown {
     system_self: 0,
     system_agents: 0,
     system_resident: 0,
+    system_toolsets: 0,
     summary: 0,
     messages: 0,
     tools: 0,
@@ -368,6 +369,7 @@ export function mergeStats(items: SessionStats[], label = "Summary"): SessionSta
     bd.system_self += s.context_breakdown.system_self;
     bd.system_agents += s.context_breakdown.system_agents;
     bd.system_resident += s.context_breakdown.system_resident;
+    bd.system_toolsets += s.context_breakdown.system_toolsets;
     bd.summary += s.context_breakdown.summary;
     bd.messages += s.context_breakdown.messages;
     bd.tools += s.context_breakdown.tools;
@@ -515,12 +517,13 @@ function formatCompression(stats: SessionStats): string {
 
 function formatContextBreakdown(stats: SessionStats): string[] {
   const b = stats.context_breakdown;
-  const systemTotal = b.system_self + b.system_agents + b.system_resident;
+  const systemTotal = b.system_self + b.system_agents + b.system_resident + b.system_toolsets;
   const lines = [
     `Current context (runtime view, post-compression): ~${formatTokenK(stats.context_tokens_est)} tokens`,
     `  System prompts total: ~${formatTokenK(systemTotal)}`,
   ];
   if (b.system_self > 0) lines.push(`    Self-layer: ~${formatTokenK(b.system_self)}`);
+  if (b.system_toolsets > 0) lines.push(`    ToolSets: ~${formatTokenK(b.system_toolsets)}`);
   if (b.system_agents > 0) lines.push(`    AGENTS.md: ~${formatTokenK(b.system_agents)}`);
   if (b.system_resident > 0) lines.push(`    Resident memory: ~${formatTokenK(b.system_resident)}`);
   if (b.summary > 0) lines.push(`  Session summary: ~${formatTokenK(b.summary)}`);

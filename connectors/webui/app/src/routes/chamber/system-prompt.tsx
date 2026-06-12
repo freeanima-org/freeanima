@@ -7,17 +7,19 @@ import { useChamberSessionsStore } from "@/stores/chamber-sessions.ts";
 
 type TabId = "parts" | "full" | "tools";
 
-const PART_KEYS = ["self", "resident", "agents"] as const;
+const PART_KEYS = ["self", "toolsets", "resident", "agents"] as const;
 type PartKey = (typeof PART_KEYS)[number];
 
 const PART_BREAKDOWN_KEY = {
   self: "system_self",
+  toolsets: "system_toolsets",
   resident: "system_resident",
   agents: "system_agents",
 } as const;
 
 function partLabel(key: PartKey): string {
   if (key === "self") return m.webui_chamber_system_prompt_block_self();
+  if (key === "toolsets") return m.webui_chamber_system_prompt_block_toolsets();
   if (key === "resident") return m.webui_chamber_system_prompt_block_resident();
   return m.webui_chamber_system_prompt_block_agents();
 }
@@ -67,7 +69,8 @@ function ToolSchemaCard({ tool }: { tool: PromptDebugResponse["tools"]["items"][
 }
 
 function BreakdownBar({ data }: { data: PromptDebugResponse["system"]["breakdown"] }) {
-  const systemTotal = data.system_self + data.system_agents + data.system_resident;
+  const systemTotal =
+    data.system_self + data.system_agents + data.system_resident + data.system_toolsets;
   return (
     <div className="card bg-base-200">
       <div className="card-body py-3 px-4 gap-2">
@@ -98,11 +101,20 @@ function BreakdownBar({ data }: { data: PromptDebugResponse["system"]["breakdown
             <div className="font-mono font-semibold">~{formatTokenK(data.total)}</div>
           </div>
         </div>
-        {(data.system_self > 0 || data.system_agents > 0 || data.system_resident > 0) && (
+        {(data.system_self > 0 ||
+          data.system_toolsets > 0 ||
+          data.system_agents > 0 ||
+          data.system_resident > 0) && (
           <div className="flex flex-wrap gap-2 text-xs text-base-content/60">
             {data.system_self > 0 ? (
               <span>
                 {m.webui_chamber_system_prompt_block_self()} ~{formatTokenK(data.system_self)}
+              </span>
+            ) : null}
+            {data.system_toolsets > 0 ? (
+              <span>
+                {m.webui_chamber_system_prompt_block_toolsets()} ~
+                {formatTokenK(data.system_toolsets)}
               </span>
             ) : null}
             {data.system_resident > 0 ? (

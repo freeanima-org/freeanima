@@ -45,6 +45,7 @@ export type SystemPromptParts = {
   self: string;
   agents: string;
   resident: string;
+  toolsets: string;
 };
 
 /** self / agents / resident; skills are injected via load_skill tool messages, not system prompt */
@@ -56,6 +57,7 @@ export async function decomposeSystemPromptParts(
     self: selfContent.trim(),
     agents: readAgents(cwd),
     resident: await renderResidentMemory(),
+    toolsets: "",
   };
 }
 
