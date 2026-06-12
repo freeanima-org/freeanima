@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-12 11:55+0800\n"
+"POT-Creation-Date: 2026-06-12 16:32+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -173,20 +173,20 @@ msgstr ""
 #: docs/concepts/sleep.md:56
 #, no-wrap
 msgid ""
-"| Attribute  | Value                                                                                |\n"
-"| ---------- | ------------------------------------------------------------------------------------ |\n"
-"| Trigger    | Cron only, daily 03:00, no manual trigger                                            |\n"
-"| Target     | All active semantic memory                                                           |\n"
-"| Operations | Contradiction detection + expiry marking, split, dedup merge—three sequential rounds |\n"
+"| Attribute  | Value                                                                                                |\n"
+"| ---------- | ---------------------------------------------------------------------------------------------------- |\n"
+"| Trigger    | Cron only, daily 03:00, no manual trigger                                                            |\n"
+"| Target     | All active semantic memory                                                                           |\n"
+"| Operations | Contradiction detection + expiry marking, split, dedup merge, pin maintenance—four sequential rounds |\n"
 msgstr ""
 
 #. type: Plain text
 #: docs/concepts/sleep.md:58
-msgid "### Three Rounds"
+msgid "### Four Rounds"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:64
+#: docs/concepts/sleep.md:65
 #, no-wrap
 msgid ""
 "| Round | Intent                                   |\n"
@@ -194,52 +194,53 @@ msgid ""
 "| 1     | Contradiction detection + expiry marking |\n"
 "| 2     | Split multi-fact entries                 |\n"
 "| 3     | Dedup merge similar entries              |\n"
+"| 4     | Pin maintenance (keep pinned ≤ 20)       |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:66
+#: docs/concepts/sleep.md:67
 #, no-wrap
-msgid "**Ordering rationale:** Clean problems first, then refine, then merge.\n"
+msgid "**Ordering rationale:** Clean problems first, then refine, then merge, then trim resident pins.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:68
+#: docs/concepts/sleep.md:69
 msgid "### Contradiction Definition (Exclusive)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:70
+#: docs/concepts/sleep.md:71
 msgid ""
 "Two memories semantically negate each other and cannot be explained by "
 "temporal change → contradiction."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/sleep.md:74
+#: docs/concepts/sleep.md:75
 msgid ""
 "✓ Contradiction: \"daughter born Year of Tiger\" vs \"daughter born Year of "
 "Goat\""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/sleep.md:74
+#: docs/concepts/sleep.md:75
 msgid ""
 "✗ Not contradiction: \"likes apples\" vs \"likes cherries\" (can coexist)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/sleep.md:74
+#: docs/concepts/sleep.md:75
 msgid ""
 "✗ Not contradiction (change): \"likes Python\" vs \"now prefers TypeScript\""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:76
+#: docs/concepts/sleep.md:77
 msgid "## Trigger Mechanism"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:82
+#: docs/concepts/sleep.md:83
 #, no-wrap
 msgid ""
 "```cron\n"
@@ -250,76 +251,95 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:84
+#: docs/concepts/sleep.md:85
 msgid "After downtime, next scheduled run catches up."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:86
-msgid "## Historical Backfill (One-Time CLI)"
+#: docs/concepts/sleep.md:87
+msgid "## Historical Backfill (Chamber WebUI)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:88
-msgid "For historical conversations before go-live or after migration:"
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/sleep.md:92
+#: docs/concepts/sleep.md:89
 msgid ""
-"```bash anima memory sleep backfill [--from YYYY-MM-DD] [--to YYYY-MM-DD] [--"
-"resume] ```"
+"For historical conversations before go-live or after migration, use "
+"**Chamber → Sleep records** (`/webui/chamber/sleep`):"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/sleep.md:98
-#, no-wrap
+#. type: Bullet: '1. '
+#: docs/concepts/sleep.md:94
+msgid "Open the **Historical light sleep backfill** card"
+msgstr ""
+
+#. type: Bullet: '2. '
+#: docs/concepts/sleep.md:94
 msgid ""
-"| Option     | Description                                                          |\n"
-"| ---------- | -------------------------------------------------------------------- |\n"
-"| `--from`   | Start date; if omitted, earliest session day in archive              |\n"
-"| `--to`     | End date; if omitted, **yesterday** (same as 02:00 cron default day) |\n"
-"| `--resume` | Continue from progress file, skip completed days                     |\n"
+"Optionally set **From** / **To** (CST calendar days, `YYYY-MM-DD`); defaults "
+"match the 02:00 cron (earliest session → yesterday)"
+msgstr ""
+
+#. type: Bullet: '3. '
+#: docs/concepts/sleep.md:94
+msgid ""
+"Check **Resume from saved progress** to continue from `~/.anima/runtime/"
+"light_sleep_backfill_state.json`"
+msgstr ""
+
+#. type: Bullet: '4. '
+#: docs/concepts/sleep.md:94
+msgid "Click **Start backfill**; progress polls automatically while running"
 msgstr ""
 
 #. type: Plain text
 #: docs/concepts/sleep.md:100
 #, no-wrap
+msgid ""
+"| Field      | Description                                                          |\n"
+"| ---------- | -------------------------------------------------------------------- |\n"
+"| **From**   | Start date; if omitted, earliest session day in archive              |\n"
+"| **To**     | End date; if omitted, **yesterday** (same as 02:00 cron default day) |\n"
+"| **Resume** | Continue from progress file, skip completed days                     |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/sleep.md:102
+#, no-wrap
 msgid "**Behavior notes:**\n"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/sleep.md:105
+#: docs/concepts/sleep.md:107
 msgid ""
 "Each day independently processed; single-day failure recorded then continue"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/sleep.md:105
+#: docs/concepts/sleep.md:107
 msgid "Autobiography summary refresh runs on **last day** by default"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/sleep.md:105
+#: docs/concepts/sleep.md:107
 msgid ""
 "Backfill writes semantic / limbic / autobiographical; **cross-session merge "
 "still relies on deep sleep**"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/sleep.md:105
+#: docs/concepts/sleep.md:107
 msgid ""
 "No conflict with 02:00 cron, but pause service during early-morning backfill "
 "if possible"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:107
+#: docs/concepts/sleep.md:109
 msgid "## Relationship to Existing Architecture"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:122
+#: docs/concepts/sleep.md:124
 #, no-wrap
 msgid ""
 "```\n"
@@ -339,12 +359,12 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:124
+#: docs/concepts/sleep.md:126
 msgid "## `memory_remember` Tool"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/sleep.md:125
+#: docs/concepts/sleep.md:127
 msgid ""
 "In-conversation `memory_remember` is a convenience wrapper for creating "
 "semantic memory during dialogue. Soft deprecation via deprecate action; "

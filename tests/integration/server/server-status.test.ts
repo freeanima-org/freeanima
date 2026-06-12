@@ -60,6 +60,7 @@ describePg("server status API", () => {
     expect(body.memory_detail).toEqual(
       expect.objectContaining({
         rss_kb: expect.any(Number),
+        vm_size_kb: expect.any(Number),
         heap_used_kb: expect.any(Number),
         heap_total_kb: expect.any(Number),
         external_kb: expect.any(Number),
