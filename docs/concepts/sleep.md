@@ -83,19 +83,20 @@ Two memories semantically negate each other and cannot be explained by temporal 
 
 After downtime, next scheduled run catches up.
 
-## Historical Backfill (One-Time CLI)
+## Historical Backfill (Chamber WebUI)
 
-For historical conversations before go-live or after migration:
+For historical conversations before go-live or after migration, use **Chamber → Sleep records** (`/webui/chamber/sleep`):
 
-```bash
-anima memory sleep backfill [--from YYYY-MM-DD] [--to YYYY-MM-DD] [--resume]
-```
+1. Open the **Historical light sleep backfill** card
+2. Optionally set **From** / **To** (CST calendar days, `YYYY-MM-DD`); defaults match the 02:00 cron (earliest session → yesterday)
+3. Check **Resume from saved progress** to continue from `~/.anima/runtime/light_sleep_backfill_state.json`
+4. Click **Start backfill**; progress polls automatically while running
 
-| Option     | Description                                                          |
+| Field      | Description                                                          |
 | ---------- | -------------------------------------------------------------------- |
-| `--from`   | Start date; if omitted, earliest session day in archive              |
-| `--to`     | End date; if omitted, **yesterday** (same as 02:00 cron default day) |
-| `--resume` | Continue from progress file, skip completed days                     |
+| **From**   | Start date; if omitted, earliest session day in archive              |
+| **To**     | End date; if omitted, **yesterday** (same as 02:00 cron default day) |
+| **Resume** | Continue from progress file, skip completed days                     |
 
 **Behavior notes:**
 

@@ -14,8 +14,9 @@ import {
 } from "@freeanima/capabilities-identity";
 
 import { isSessionMeta } from "@freeanima/storage-db/domain";
-import { readFileSync } from "node:fs";
+import { readFileSync, mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { tmpdir } from "node:os";
 import {
   getTestEngine,
   seedSession,
@@ -27,6 +28,7 @@ import {
   executeCommand,
   isRetryResult,
   isRestartResult,
+  isUpdateResult,
   resolveCommand,
 } from "@freeanima/service-commands";
 import { getServiceContext } from "@freeanima/service";
@@ -416,6 +418,65 @@ describePg("slash commands", () => {
     });
     expect(result.text).toContain("already restarting");
     expect(isRestartResult(result)).toBe(false);
+  });
+
+  it("/update resolves on parlor, discord, and weixin", () => {
+    for (const platform of ["parlor", "discord", "weixin"] as const) {
+      const [cmd] = resolveCommand("/update", platform);
+      expect(cmd?.name).toBe("update");
+    }
+  });
+
+  it("/update returns update action on npm install layout", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "freeanima-cli-npm-cmd-"));
+    const cliJs = join(dir, "node_modules", "@freeanima", "cli", "dist", "cli.js");
+    mkdirSync(join(dir, "node_modules", "@freeanima", "cli", "dist"), { recursive: true });
+    writeFileSync(cliJs, "// cli\n");
+    const prevArgv1 = process.argv[1];
+    process.argv[1] = cliJs;
+    try {
+      const [cmd] = findCommand("/update");
+      const result = await executeCommand(cmd!, {
+        sessionId: "x",
+        platform: "parlor",
+        args: [],
+        raw: "/update",
+      });
+      expect(isUpdateResult(result)).toBe(true);
+      expect(result.text).toContain("Updating");
+    } finally {
+      process.argv[1] = prevArgv1;
+    }
+  });
+
+  it("/update is disabled for local cli.ts installs", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "freeanima-cli-local-cmd-"));
+    const cliPath = join(dir, "cli", "src", "cli.ts");
+    mkdirSync(join(dir, "cli", "src"), { recursive: true });
+    writeFileSync(cliPath, "#!/usr/bin/env bun\n");
+    const prevArgv1 = process.argv[1];
+    process.argv[1] = cliPath;
+    try {
+      const [cmd] = findCommand("/update");
+      const result = await executeCommand(cmd!, {
+        sessionId: "x",
+        platform: "parlor",
+        args: [],
+        raw: "/update",
+      });
+      expect(isUpdateResult(result)).toBe(false);
+      expect(result.text).toContain("disabled for local CLI");
+    } finally {
+      process.argv[1] = prevArgv1;
+    }
+  });
+
+  it("listCommands includes update (parlor / discord / weixin)", () => {
+    const svc = getServiceContext().service;
+    for (const platform of ["parlor", "discord", "weixin"] as const) {
+      const names = svc.listCommands({ platform }).commands.map((c) => c.name);
+      expect(names).toContain("update");
+    }
   });
 
   afterAll(async () => {

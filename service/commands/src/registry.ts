@@ -1,5 +1,6 @@
 import type { CommandRestartData } from "./restart-data.ts";
 import type { CommandRetryData } from "./retry-data.ts";
+import type { CommandUpdateData } from "./update-data.ts";
 
 export type CommandContext = {
   sessionId: string;
@@ -11,7 +12,7 @@ export type CommandContext = {
 
 export type CommandResult = {
   text: string;
-  data?: CommandRetryData | CommandRestartData | Record<string, unknown> | null;
+  data?: CommandRetryData | CommandRestartData | CommandUpdateData | Record<string, unknown> | null;
 };
 
 export type CommandHandler = (
@@ -100,4 +101,10 @@ export function isRestartResult(result: CommandResult): result is CommandResult 
   data: CommandRestartData;
 } {
   return result.data?.action === "restart";
+}
+
+export function isUpdateResult(result: CommandResult): result is CommandResult & {
+  data: CommandUpdateData;
+} {
+  return result.data?.action === "update";
 }

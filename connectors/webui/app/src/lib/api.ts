@@ -293,6 +293,14 @@ export async function getDeepSleepRounds(day: string) {
   return unwrap(apiClient.api.sleep["deep-sleep"]({ day }).rounds.get());
 }
 
+export async function startSleepBackfill(body?: { from?: string; to?: string; resume?: boolean }) {
+  return unwrap(apiClient.api.sleep.backfill.post(body ?? {}));
+}
+
+export async function getSleepBackfillStatus() {
+  return unwrap(apiClient.api.sleep.backfill.status.get());
+}
+
 export async function listCronLogs(opts?: {
   job_id?: string;
   limit?: number;

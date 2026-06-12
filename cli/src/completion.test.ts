@@ -26,7 +26,7 @@ describe("shell completion", () => {
   it("covers top-level commands", () => {
     const bash = generateCompletion("bash", buildProgram());
     const zsh = generateCompletion("zsh", buildProgram());
-    for (const token of ["service", "credential", "completion"]) {
+    for (const token of ["service", "credential", "completion", "update"]) {
       expect(bash).toContain(token);
       expect(zsh).toContain(token);
     }

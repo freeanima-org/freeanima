@@ -1,6 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Fragment, useCallback, useState } from "react";
-import { getDeepSleepRounds, getSleepSummary, listSleepRuns } from "@/lib/api.ts";
+import { Fragment, useCallback, useEffect, useState } from "react";
+import {
+  getDeepSleepRounds,
+  getSleepBackfillStatus,
+  getSleepSummary,
+  listSleepRuns,
+  startSleepBackfill,
+} from "@/lib/api.ts";
 import { m } from "@/lib/i18n.ts";
 
 type DateField = string | Date | null | undefined;
@@ -91,6 +97,15 @@ function outputToolCalls(row: CronLogRow): string {
   return n != null ? String(n) : "—";
 }
 
+type BackfillStatus = {
+  running: boolean;
+  from_day?: string;
+  to_day?: string;
+  completed_days: string[];
+  last_error_day?: string | null;
+  updated_at?: string;
+};
+
 function SleepPage() {
   const initial = Route.useLoaderData() as {
     summary: SleepSummaryView | null;
@@ -104,8 +119,14 @@ function SleepPage() {
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [rounds, setRounds] = useState<DeepSleepRound[]>([]);
   const [roundsLoading, setRoundsLoading] = useState(false);
+  const [backfillFrom, setBackfillFrom] = useState("");
+  const [backfillTo, setBackfillTo] = useState("");
+  const [backfillResume, setBackfillResume] = useState(false);
+  const [backfillStarting, setBackfillStarting] = useState(false);
+  const [backfillError, setBackfillError] = useState("");
+  const [backfillStatus, setBackfillStatus] = useState<BackfillStatus | null>(null);
 
-  const reload = async () => {
+  const reload = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
@@ -119,6 +140,51 @@ function SleepPage() {
       );
     } finally {
       setLoading(false);
+    }
+  }, []);
+
+  const refreshBackfillStatus = useCallback(async () => {
+    try {
+      const status = (await getSleepBackfillStatus()) as BackfillStatus;
+      setBackfillStatus(status);
+      return status;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  useEffect(() => {
+    void refreshBackfillStatus();
+  }, [refreshBackfillStatus]);
+
+  useEffect(() => {
+    if (!backfillStatus?.running) return;
+    const timer = setInterval(() => {
+      void refreshBackfillStatus();
+    }, 2500);
+    return () => clearInterval(timer);
+  }, [backfillStatus?.running, refreshBackfillStatus]);
+
+  useEffect(() => {
+    if (backfillStatus?.running) return;
+    if (!backfillStatus?.updated_at) return;
+    void reload();
+  }, [backfillStatus?.running, backfillStatus?.updated_at, reload]);
+
+  const startBackfill = async () => {
+    setBackfillStarting(true);
+    setBackfillError("");
+    try {
+      await startSleepBackfill({
+        from: backfillFrom.trim() || undefined,
+        to: backfillTo.trim() || undefined,
+        resume: backfillResume,
+      });
+      await refreshBackfillStatus();
+    } catch (e) {
+      setBackfillError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBackfillStarting(false);
     }
   };
 
@@ -184,6 +250,77 @@ function SleepPage() {
           </div>
         </div>
       )}
+
+      <div className="card bg-base-200 p-4 mb-4">
+        <h3 className="font-semibold mb-1">{m.webui_chamber_sleep_backfill_title()}</h3>
+        <p className="text-sm text-base-content/60 mb-3">{m.webui_chamber_sleep_backfill_desc()}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+          <label className="form-control">
+            <span className="label-text text-xs">{m.webui_chamber_sleep_backfill_from()}</span>
+            <input
+              type="text"
+              className="input input-sm input-bordered"
+              placeholder="YYYY-MM-DD"
+              value={backfillFrom}
+              onChange={(e) => setBackfillFrom(e.target.value)}
+              disabled={backfillStatus?.running || backfillStarting}
+            />
+          </label>
+          <label className="form-control">
+            <span className="label-text text-xs">{m.webui_chamber_sleep_backfill_to()}</span>
+            <input
+              type="text"
+              className="input input-sm input-bordered"
+              placeholder="YYYY-MM-DD"
+              value={backfillTo}
+              onChange={(e) => setBackfillTo(e.target.value)}
+              disabled={backfillStatus?.running || backfillStarting}
+            />
+          </label>
+        </div>
+        <label className="label cursor-pointer justify-start gap-2 mb-3">
+          <input
+            type="checkbox"
+            className="checkbox checkbox-sm"
+            checked={backfillResume}
+            onChange={(e) => setBackfillResume(e.target.checked)}
+            disabled={backfillStatus?.running || backfillStarting}
+          />
+          <span className="label-text">{m.webui_chamber_sleep_backfill_resume()}</span>
+        </label>
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            type="button"
+            className="btn btn-sm btn-secondary"
+            disabled={backfillStatus?.running || backfillStarting}
+            onClick={() => void startBackfill()}
+          >
+            {backfillStarting || backfillStatus?.running
+              ? m.webui_chamber_sleep_backfill_running()
+              : m.webui_chamber_sleep_backfill_start()}
+          </button>
+          {backfillStatus && (
+            <span className="text-sm text-base-content/70">
+              {backfillStatus.running
+                ? m.webui_chamber_sleep_backfill_running()
+                : m.webui_chamber_sleep_backfill_done()}
+              {" · "}
+              {m.webui_chamber_sleep_backfill_progress({
+                count: String(backfillStatus.completed_days.length),
+              })}
+              {backfillStatus.from_day && backfillStatus.to_day
+                ? ` (${backfillStatus.from_day} → ${backfillStatus.to_day})`
+                : ""}
+            </span>
+          )}
+        </div>
+        {backfillStatus?.last_error_day && (
+          <p className="text-sm text-error mt-2">
+            {m.webui_chamber_sleep_backfill_last_error({ day: backfillStatus.last_error_day })}
+          </p>
+        )}
+        {backfillError && <p className="text-sm text-error mt-2">{backfillError}</p>}
+      </div>
 
       <div className="flex items-center gap-2 mb-3">
         <button

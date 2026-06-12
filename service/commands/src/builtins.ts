@@ -12,6 +12,7 @@ import { onSessionCloseBeforeNew } from "@freeanima/service-api/session-close";
 import { isSessionMeta } from "@freeanima/storage-db/domain";
 import { setHomeChannel } from "@freeanima/service-api/home-channel";
 import { getServiceContext } from "@freeanima/service-api";
+import { getCliInstallKind } from "@freeanima/storage-config/cli-install";
 
 function conv() {
   return getServiceContext().conversation;
@@ -243,6 +244,19 @@ function cmdRestart(_ctx: CommandContext): CommandResult | string {
   };
 }
 
+function cmdUpdate(_ctx: CommandContext): CommandResult | string {
+  if (getServiceContext().service.isShuttingDown()) {
+    return "Service is already restarting…";
+  }
+  if (getCliInstallKind() === "local") {
+    return "⛔ Update is disabled for local CLI installs. Use git pull or link:global instead.";
+  }
+  return {
+    text: "⬆️ Updating Free Anima from npm, then restarting (waiting for in-flight conversations to flush)…",
+    data: { action: "update" },
+  };
+}
+
 export function registerBuiltins(): void {
   registerCommand({
     name: "help",
@@ -331,6 +345,13 @@ export function registerBuiltins(): void {
     name: "restart",
     description: "Restart Free Anima service (waits for in-flight conversations to flush)",
     handler: cmdRestart,
+    scope: "global",
+    platforms: ["parlor", "discord", "weixin"],
+  });
+  registerCommand({
+    name: "update",
+    description: "Update @freeanima/cli from npm and restart service",
+    handler: cmdUpdate,
     scope: "global",
     platforms: ["parlor", "discord", "weixin"],
   });
