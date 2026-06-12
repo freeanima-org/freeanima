@@ -39,6 +39,7 @@ Detailed rules: [`.agent/rules/`](.agent/rules/README.md).
 - PG migrations: `db:generate` then `db:migrate`; never skip `snapshot.json` — [`.agent/rules/coding.md`](.agent/rules/coding.md) § PG migrations
 - PG repository queries: prefer Drizzle ORM; `db.execute` only when necessary — [`.agent/rules/drizzle-db.md`](.agent/rules/drizzle-db.md)
 - Credentials and secrets never in git / logs / tool returns; memory/self-layer changes need extra care ([`docs/concepts/identity.md`](docs/concepts/identity.md))
+- **Principle maintenance**: corrections or refinements to direction, principles, philosophy, or agent behavior norms must be written to the appropriate doc layer in the same task/PR — not code-only. Triage: product/cognitive → `docs/concepts/`; implementation constraints → `.agent/rules/`; bootstrap summary → `AGENTS.md` (see [Principle & direction maintenance](#principle--direction-maintenance) below)
 
 ### Type ownership (decision order only)
 
@@ -86,6 +87,32 @@ DATABASE_URL="…" bun run --filter @freeanima/storage-db db:migrate
 
 ---
 
+## Principle & direction maintenance
+
+Corrections or refinements to direction, principles, philosophy, or agent behavior norms **must not live only in code or conversation**. Code remains SSOT for behavior, but agent-readable principles must be written to disk in the same task/PR.
+
+### Triage
+
+| Change nature                                                       | Where to write                                                                                                              | Examples                                                  |
+| ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| Product / cognitive architecture, long-lived design direction       | [`docs/concepts/architecture.md`](docs/concepts/architecture.md) → topic doc when needed (`memory.md`, `identity.md`, etc.) | Four-layer model, memory pipeline principles              |
+| Agent implementation constraints (coding, testing, layers, release) | [`.agent/rules/*.md`](.agent/rules/README.md) — matching topic file                                                         | Drizzle query conventions, layer deps, test mock strategy |
+| Bootstrap summary, hard-constraint list, doc-map-level changes      | [`AGENTS.md`](AGENTS.md) — keep brief; link to detail docs                                                                  | New global hard constraint, conflict-priority adjustment  |
+
+### Triggers
+
+- User or maintainer explicitly corrects or refines a principle in conversation
+- Code implements a principle that contradicts or extends existing docs
+- Issue or PR changes architecture direction or expected agent behavior
+
+### Agent checklist
+
+- Principle change and doc diff land in the **same PR** (or same commit batch) — not "code now, docs later"
+- After editing `.agent/rules/`, check whether `AGENTS.md` hard-constraint summary needs a one-line update
+- After editing `docs/concepts/`, check whether `AGENTS.md` doc map and conflict priority remain accurate
+
+---
+
 ## Conflict priority
 
 1. **Code implementation** > all docs
@@ -94,27 +121,28 @@ DATABASE_URL="…" bun run --filter @freeanima/storage-db db:migrate
 
 ## Docs to update when code changes
 
-| Change type                              | Update                                                                                                  |
-| ---------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| PG schema / DDL                          | [`storage/db/src/schema/`](storage/db/src/schema/) + [`.agent/rules/coding.md`](.agent/rules/coding.md) |
-| PG query conventions (ORM vs execute)    | [`.agent/rules/drizzle-db.md`](.agent/rules/drizzle-db.md)                                              |
-| PG ops (install, backup, migrate UX)     | [`docs/guide/database.md`](docs/guide/database.md)                                                      |
-| Layer deps / composition root / Registry | [`.agent/rules/code-layers.md`](.agent/rules/code-layers.md) + confirm `check-layer-deps.ts`            |
-| Test strategy / mock tiers               | [`.agent/rules/testing.md`](.agent/rules/testing.md) + [`tests/README.md`](tests/README.md)             |
-| Memory pipeline / retrieval              | [`docs/concepts/memory.md`](docs/concepts/memory.md) + architecture                                     |
-| Security / threat surface                | [`docs/guide/security.md`](docs/guide/security.md) + architecture                                       |
-| Architecture principles                  | [`docs/concepts/architecture.md`](docs/concepts/architecture.md)                                        |
-| New RFC package / rename                 | [`.agent/rules/packages.md`](.agent/rules/packages.md)                                                  |
-| Release                                  | [`.agent/rules/release.md`](.agent/rules/release.md)                                                    |
-| Compression algorithm                    | [`.agent/rules/compression.md`](.agent/rules/compression.md)                                            |
-| UI / docs i18n (Paraglide, po4a, PO)     | [`.agent/rules/i18n.md`](.agent/rules/i18n.md)                                                          |
-| Task done                                | close corresponding GitHub Issue; user-visible changes use Conventional Commits                         |
+| Change type                                                | Update                                                                                                  |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| PG schema / DDL                                            | [`storage/db/src/schema/`](storage/db/src/schema/) + [`.agent/rules/coding.md`](.agent/rules/coding.md) |
+| PG query conventions (ORM vs execute)                      | [`.agent/rules/drizzle-db.md`](.agent/rules/drizzle-db.md)                                              |
+| PG ops (install, backup, migrate UX)                       | [`docs/guide/database.md`](docs/guide/database.md)                                                      |
+| Layer deps / composition root / Registry                   | [`.agent/rules/code-layers.md`](.agent/rules/code-layers.md) + confirm `check-layer-deps.ts`            |
+| Test strategy / mock tiers                                 | [`.agent/rules/testing.md`](.agent/rules/testing.md) + [`tests/README.md`](tests/README.md)             |
+| Memory pipeline / retrieval                                | [`docs/concepts/memory.md`](docs/concepts/memory.md) + architecture                                     |
+| Security / threat surface                                  | [`docs/guide/security.md`](docs/guide/security.md) + architecture                                       |
+| Architecture principles                                    | [`docs/concepts/architecture.md`](docs/concepts/architecture.md)                                        |
+| Principle / direction / philosophy correction (any source) | Triage per [Principle & direction maintenance](#principle--direction-maintenance); same PR as code      |
+| New RFC package / rename                                   | [`.agent/rules/packages.md`](.agent/rules/packages.md)                                                  |
+| Release                                                    | [`.agent/rules/release.md`](.agent/rules/release.md)                                                    |
+| Compression algorithm                                      | [`.agent/rules/compression.md`](.agent/rules/compression.md)                                            |
+| UI / docs i18n (Paraglide, po4a, PO)                       | [`.agent/rules/i18n.md`](.agent/rules/i18n.md)                                                          |
+| Task done                                                  | close corresponding GitHub Issue; user-visible changes use Conventional Commits                         |
 
 Tool tables, module trees, API lists **are not maintained in docs** — use registration code and service router as source of truth.
 
 ## Maintenance conventions
 
-- Principle changes first in [`docs/concepts/architecture.md`](docs/concepts/architecture.md), then decide on a topic doc
+- Principle / direction corrections: triage per [Principle & direction maintenance](#principle--direction-maintenance) — product/cognitive → `docs/concepts/`; implementation constraints → `.agent/rules/`; bootstrap summary → `AGENTS.md`
 - New topic >50 lines and long-lived → `docs/` or `.agent/rules/`; actionable items → GitHub Issue
 - Close Issue when task done; do not keep completed items in docs
 - **docs layout**: deploy/credentials → `docs/guide/`; cognitive mechanisms → `docs/concepts/`; major product features → `docs/features/`; general tools → `docs/tools/`; agent implementation rules → `.agent/rules/`
