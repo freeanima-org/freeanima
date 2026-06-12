@@ -1,17 +1,17 @@
 import { animaBinString } from "@freeanima/core/config/cli-install";
-import { PATHS } from "@freeanima/service-config";
+import { PATHS } from "@freeanima/platform/config";
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
-import { isServerAlive } from "@freeanima/service/alive";
+import { isServerAlive } from "@freeanima/platform/alive";
 import { prettyDuration, writeStatusLine } from "./output/status.ts";
 
 export { prettyDuration, writeStatusLine };
 
 export const LOG_FILE = join(PATHS.home, "error.log");
 
-export { resolveProbeHost } from "@freeanima/service/bind-hosts";
+export { resolveProbeHost } from "@freeanima/platform/bind-hosts";
 
 export function readRecentErrorLogTail(maxLines = 10): string[] {
   if (!existsSync(LOG_FILE)) return [];

@@ -1,4 +1,4 @@
-import { ANIMA_VERSION } from "@freeanima/service";
+import { ANIMA_VERSION } from "@freeanima/platform";
 import { Command } from "commander";
 
 import { registerServiceCommand } from "./commands/service.ts";

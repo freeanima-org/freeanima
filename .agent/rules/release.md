@@ -3,7 +3,7 @@
 FreeAnima follows [Semantic Versioning 2.0.0](https://semver.org/) (`MAJOR.MINOR.PATCH`).
 The **sole write source** is `"version"` in the root [`package.json`](../../package.json);
 other workspace sub-package `package.json` files **do not** include a `version` field.
-Runtime reads the root version via `ANIMA_VERSION` from `@freeanima/service`.
+Runtime reads the root version via `ANIMA_VERSION` from `@freeanima/platform`.
 
 Release is handled by **[Release Please](https://github.com/googleapis/release-please)** in GitHub Actions (see [`.github/workflows/release.yml`](../../.github/workflows/release.yml)).
 
@@ -117,7 +117,7 @@ docker compose up --build
 
 ## Prohibited
 
-- Do not hardcode `X.Y.Z` in business code; use `import { ANIMA_VERSION } from "@freeanima/service"` (or expose via health/status).
+- Do not hardcode `X.Y.Z` in business code; use `import { ANIMA_VERSION } from "@freeanima/platform"` (or expose via health/status).
 - Do not maintain `version` in workspace sub-package `package.json`.
 - Do not manually edit `CHANGELOG.md` or `[Unreleased]`; release notes come from commits and Release Please.
 

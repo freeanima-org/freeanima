@@ -14,9 +14,9 @@ import {
   searchStudio,
   patchStudioConfig,
   getStudioConfig,
-} from "@freeanima/service-api/studio-port";
-import { resolveStudioPath } from "../../../service/service/src/runtime/studio.ts";
-import { getAppRuntime } from "@freeanima/service";
+} from "@freeanima/platform/ports/studio-port";
+import { resolveStudioPath } from "@freeanima/platform/runtime/studio";
+import { getAppRuntime } from "@freeanima/platform";
 
 describePg("studio", () => {
   let workspace: string;

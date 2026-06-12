@@ -5,10 +5,10 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { spawnSync } from "node:child_process";
 
-import { Config } from "@freeanima/service-config";
+import { Config } from "@freeanima/platform/config";
 import { registerCoreTools } from "@freeanima/capabilities-tools";
-import { parseYaml } from "@freeanima/service-config";
-import { animaConfigSchema } from "@freeanima/service-config/schemas/config";
+import { parseYaml } from "@freeanima/platform/config";
+import { animaConfigSchema } from "@freeanima/platform/config/schemas/config";
 
 const MIN_CONFIG = `
 llm:

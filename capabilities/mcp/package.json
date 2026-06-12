@@ -11,7 +11,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@freeanima/service-config": "workspace:*",
+    "@freeanima/platform": "workspace:*",
     "@types/bun": "catalog:"
   }
 }

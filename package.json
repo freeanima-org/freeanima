@@ -70,13 +70,12 @@
     "packages": [
       "kernel",
       "capabilities/*",
-      "connectors/*",
-      "service/*",
       "cli",
       "site",
       "tests",
       "runtime",
-      "core"
+      "core",
+      "platform"
     ],
     "catalog": {
       "@types/node": "^24.12.4",

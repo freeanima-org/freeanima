@@ -9,7 +9,7 @@ import {
   setDbForTest,
   type Db,
   type SqlClient,
-} from "@freeanima/connectors-db-pg";
+} from "@freeanima/platform/connectors/db-pg";
 import { createEngine } from "@freeanima/runtime";
 import {
   initLlmRuntime,
@@ -22,7 +22,7 @@ import {
   type ConversationService,
 } from "@freeanima/runtime/conversation";
 import type { PgRepositories } from "@freeanima/core/repos";
-import { FileConfig, type Config } from "@freeanima/service-config";
+import { FileConfig, type Config } from "@freeanima/platform/config";
 import { createTestLogger } from "@freeanima/kernel/logging/testing";
 import type { SessionMessage, SessionMetaMessage } from "@freeanima/core/db/domain";
 import { relations } from "@freeanima/core/db/schema";

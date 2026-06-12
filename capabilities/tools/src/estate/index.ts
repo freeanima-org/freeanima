@@ -1,4 +1,4 @@
-/** Estate capability tools (email); I/O in @freeanima/connectors-email */
+/** Estate capability tools (email); I/O in @freeanima/platform/connectors/email */
 import type { ToolSetRegistry } from "@freeanima/core/tool";
 import type { EmailApi } from "./email-api.ts";
 import { registerEmailTools } from "./tools.ts";

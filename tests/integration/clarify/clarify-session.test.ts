@@ -6,7 +6,7 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { registerServiceTools } from "@freeanima/service";
+import { registerServiceTools } from "@freeanima/platform";
 import { getActivePgTestContext, getTestEngine, testConv } from "../../helpers/pg-test.ts";
 import {
   setAwaitingClarify,
@@ -16,7 +16,7 @@ import {
   guardAwaitingClarify,
   findAwaitingClarifyInMessages,
 } from "@freeanima/capabilities-tools/clarify";
-import { executeCommand, getCommand } from "@freeanima/service-commands";
+import { executeCommand, getCommand } from "@freeanima/platform/commands";
 
 describePg("clarify session", () => {
   const prevHome = process.env.FREEANIMA_HOME;

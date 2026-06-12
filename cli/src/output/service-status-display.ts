@@ -1,4 +1,4 @@
-import { parseBindHosts } from "@freeanima/service/bind-hosts";
+import { parseBindHosts } from "@freeanima/platform/bind-hosts";
 import { prettyDuration, writeStatusLine } from "./status.ts";
 
 type MemoryDetail = {

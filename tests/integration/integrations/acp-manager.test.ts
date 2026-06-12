@@ -1,8 +1,8 @@
 import { describe, it, expect } from "bun:test";
-import { Config } from "@freeanima/service-config";
-import { parseYaml } from "@freeanima/service-config";
-import { animaConfigSchema } from "@freeanima/service-config/schemas/config";
-import { MINIMAL_LLM_YAML } from "@freeanima/service-config/test-helpers/minimal-llm-config";
+import { Config } from "@freeanima/platform/config";
+import { parseYaml } from "@freeanima/platform/config";
+import { animaConfigSchema } from "@freeanima/platform/config/schemas/config";
+import { MINIMAL_LLM_YAML } from "@freeanima/platform/config/test-helpers/minimal-llm-config";
 import { getAcpManager, registerAcpTools } from "@freeanima/capabilities-acp";
 import { createEngineCatalog } from "@freeanima/runtime";
 

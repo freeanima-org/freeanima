@@ -26,7 +26,7 @@
         "zod": "catalog:",
       },
       "devDependencies": {
-        "@freeanima/service-config": "workspace:*",
+        "@freeanima/platform": "workspace:*",
         "@types/bun": "catalog:",
       },
     },
@@ -58,7 +58,7 @@
         "zod": "catalog:",
       },
       "devDependencies": {
-        "@freeanima/service-config": "workspace:*",
+        "@freeanima/platform": "workspace:*",
         "@types/bun": "catalog:",
       },
     },
@@ -90,7 +90,7 @@
         "zod": "catalog:",
       },
       "devDependencies": {
-        "@freeanima/service-config": "workspace:*",
+        "@freeanima/platform": "workspace:*",
         "@types/bun": "catalog:",
       },
     },
@@ -100,127 +100,13 @@
         "anima": "./src/cli.ts",
       },
       "dependencies": {
-        "@freeanima/connectors-webui": "workspace:*",
         "@freeanima/core": "workspace:*",
-        "@freeanima/service": "workspace:*",
-        "@freeanima/service-config": "workspace:*",
-        "@freeanima/service-logging": "workspace:*",
+        "@freeanima/platform": "workspace:*",
         "commander": "^15.0.0",
       },
       "devDependencies": {
+        "@freeanima/platform": "workspace:*",
         "@types/bun": "catalog:",
-      },
-    },
-    "connectors/cron": {
-      "name": "@freeanima/connectors-cron",
-      "dependencies": {
-        "@freeanima/core": "workspace:*",
-        "@freeanima/service-api": "workspace:*",
-        "@freeanima/service-config": "workspace:*",
-        "@freeanima/service-logging": "workspace:*",
-        "zod": "catalog:",
-      },
-      "devDependencies": {
-        "@types/bun": "catalog:",
-      },
-    },
-    "connectors/db-pg": {
-      "name": "@freeanima/connectors-db-pg",
-      "dependencies": {
-        "@freeanima/core": "workspace:*",
-        "@freeanima/service-config": "workspace:*",
-        "@freeanima/service-logging": "workspace:*",
-        "@node-rs/jieba": "^2.0.1",
-        "drizzle-orm": "catalog:",
-        "zod": "catalog:",
-      },
-      "devDependencies": {
-        "@types/bun": "catalog:",
-      },
-    },
-    "connectors/email": {
-      "name": "@freeanima/connectors-email",
-      "dependencies": {
-        "@freeanima/core": "workspace:*",
-        "@freeanima/service-config": "workspace:*",
-        "imapflow": "^1.0.186",
-        "nodemailer": "^8.0.10",
-        "zod": "catalog:",
-      },
-      "devDependencies": {
-        "@types/bun": "catalog:",
-        "@types/nodemailer": "^6.4.17",
-      },
-    },
-    "connectors/eventbus-redis": {
-      "name": "@freeanima/connectors-eventbus-redis",
-      "dependencies": {
-        "@freeanima/core": "workspace:*",
-        "@freeanima/kernel": "workspace:*",
-      },
-      "devDependencies": {
-        "@types/bun": "catalog:",
-      },
-    },
-    "connectors/gateway": {
-      "name": "@freeanima/connectors-gateway",
-      "dependencies": {
-        "@freeanima/connectors-cron": "workspace:*",
-        "@freeanima/core": "workspace:*",
-        "@freeanima/runtime": "workspace:*",
-        "@freeanima/service-api": "workspace:*",
-        "@freeanima/service-config": "workspace:*",
-        "@freeanima/service-logging": "workspace:*",
-        "discord.js": "^14.26.4",
-        "zod": "catalog:",
-      },
-      "devDependencies": {
-        "@types/bun": "catalog:",
-      },
-    },
-    "connectors/redis": {
-      "name": "@freeanima/connectors-redis",
-      "dependencies": {
-        "@freeanima/capabilities-tasks": "workspace:*",
-        "@freeanima/core": "workspace:*",
-      },
-      "devDependencies": {
-        "@types/bun": "catalog:",
-      },
-    },
-    "connectors/webui": {
-      "name": "@freeanima/connectors-webui",
-      "dependencies": {
-        "@elysiajs/eden": "^1.4.9",
-        "@elysiajs/static": "^1.4.10",
-        "@freeanima/connectors-cron": "workspace:*",
-        "@freeanima/connectors-email": "workspace:*",
-        "@freeanima/core": "workspace:*",
-        "@freeanima/kernel": "workspace:*",
-        "@freeanima/runtime": "workspace:*",
-        "@freeanima/service-api": "workspace:*",
-        "@freeanima/service-config": "workspace:*",
-        "@freeanima/service-logging": "workspace:*",
-        "@tanstack/react-router": "^1.170.11",
-        "@xterm/addon-fit": "^0.11.0",
-        "elysia": "^1.4.28",
-        "highlight.js": "^11.11.1",
-        "marked": "^18.0.4",
-        "react": "19",
-        "react-dom": "19",
-        "xterm": "^5.3.0",
-        "zod": "catalog:",
-        "zustand": "^5.0.14",
-      },
-      "devDependencies": {
-        "@types/bun": "catalog:",
-        "@types/node": "catalog:",
-        "@types/react": "^19.2.16",
-        "@types/react-dom": "^19.2.3",
-        "bun-plugin-tailwind": "^0.1.2",
-        "daisyui": "^5.5.20",
-        "tailwindcss": "^4.3.0",
-        "typescript": "^6.0.3",
       },
     },
     "core": {
@@ -245,78 +131,11 @@
         "@types/bun": "catalog:",
       },
     },
-    "runtime": {
-      "name": "@freeanima/runtime",
+    "platform": {
+      "name": "@freeanima/platform",
       "dependencies": {
-        "@freeanima/core": "workspace:*",
-        "@freeanima/kernel": "workspace:*",
-      },
-      "devDependencies": {
-        "@types/bun": "catalog:",
-      },
-    },
-    "service/api": {
-      "name": "@freeanima/service-api",
-      "dependencies": {
-        "@freeanima/core": "workspace:*",
-        "@freeanima/kernel": "workspace:*",
-        "@freeanima/runtime": "workspace:*",
-        "@freeanima/service-config": "workspace:*",
-        "@freeanima/service-logging": "workspace:*",
-      },
-      "devDependencies": {
-        "@types/bun": "catalog:",
-      },
-    },
-    "service/bootstrap": {
-      "name": "@freeanima/service-bootstrap",
-      "dependencies": {
-        "@freeanima/connectors-eventbus-redis": "workspace:*",
-        "@freeanima/core": "workspace:*",
-        "@freeanima/kernel": "workspace:*",
-        "@freeanima/service-config": "workspace:*",
-        "@freeanima/service-logging": "workspace:*",
-      },
-      "devDependencies": {
-        "@types/bun": "catalog:",
-      },
-    },
-    "service/commands": {
-      "name": "@freeanima/service-commands",
-      "dependencies": {
-        "@freeanima/capabilities-tasks": "workspace:*",
-        "@freeanima/capabilities-tools": "workspace:*",
-        "@freeanima/core": "workspace:*",
-        "@freeanima/runtime": "workspace:*",
-        "@freeanima/service-api": "workspace:*",
-      },
-      "devDependencies": {
-        "@types/bun": "catalog:",
-      },
-    },
-    "service/config": {
-      "name": "@freeanima/service-config",
-      "dependencies": {
-        "@freeanima/core": "workspace:*",
-        "zod": "catalog:",
-      },
-      "devDependencies": {
-        "@types/bun": "catalog:",
-      },
-    },
-    "service/logging": {
-      "name": "@freeanima/service-logging",
-      "dependencies": {
-        "@freeanima/core": "workspace:*",
-        "@freeanima/kernel": "workspace:*",
-      },
-      "devDependencies": {
-        "@types/bun": "catalog:",
-      },
-    },
-    "service/service": {
-      "name": "@freeanima/service",
-      "dependencies": {
+        "@elysiajs/eden": "^1.4.9",
+        "@elysiajs/static": "^1.4.10",
         "@freeanima/capabilities-acp": "workspace:*",
         "@freeanima/capabilities-identity": "workspace:*",
         "@freeanima/capabilities-llm-openai": "workspace:*",
@@ -324,20 +143,42 @@
         "@freeanima/capabilities-memory": "workspace:*",
         "@freeanima/capabilities-tasks": "workspace:*",
         "@freeanima/capabilities-tools": "workspace:*",
-        "@freeanima/connectors-cron": "workspace:*",
-        "@freeanima/connectors-db-pg": "workspace:*",
-        "@freeanima/connectors-email": "workspace:*",
-        "@freeanima/connectors-gateway": "workspace:*",
-        "@freeanima/connectors-redis": "workspace:*",
         "@freeanima/core": "workspace:*",
         "@freeanima/kernel": "workspace:*",
         "@freeanima/runtime": "workspace:*",
-        "@freeanima/service-api": "workspace:*",
-        "@freeanima/service-bootstrap": "workspace:*",
-        "@freeanima/service-commands": "workspace:*",
-        "@freeanima/service-config": "workspace:*",
-        "@freeanima/service-logging": "workspace:*",
+        "@node-rs/jieba": "^2.0.1",
+        "@tanstack/react-router": "^1.170.11",
+        "@xterm/addon-fit": "^0.11.0",
+        "discord.js": "^14.26.4",
+        "drizzle-orm": "catalog:",
+        "elysia": "^1.4.28",
+        "highlight.js": "^11.11.1",
+        "imapflow": "^1.0.186",
+        "marked": "^18.0.4",
+        "nodemailer": "^8.0.10",
+        "react": "19",
+        "react-dom": "19",
+        "xterm": "^5.3.0",
         "zod": "catalog:",
+        "zustand": "^5.0.14",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+        "@types/node": "catalog:",
+        "@types/nodemailer": "^7.0.11",
+        "@types/react": "^19.2.16",
+        "@types/react-dom": "^19.2.3",
+        "bun-plugin-tailwind": "^0.1.2",
+        "daisyui": "^5.5.20",
+        "tailwindcss": "^4.3.0",
+        "typescript": "^6.0.3",
+      },
+    },
+    "runtime": {
+      "name": "@freeanima/runtime",
+      "dependencies": {
+        "@freeanima/core": "workspace:*",
+        "@freeanima/kernel": "workspace:*",
       },
       "devDependencies": {
         "@types/bun": "catalog:",
@@ -378,18 +219,9 @@
         "@freeanima/capabilities-memory": "workspace:*",
         "@freeanima/capabilities-tasks": "workspace:*",
         "@freeanima/capabilities-tools": "workspace:*",
-        "@freeanima/connectors-cron": "workspace:*",
-        "@freeanima/connectors-db-pg": "workspace:*",
-        "@freeanima/connectors-gateway": "workspace:*",
-        "@freeanima/connectors-webui": "workspace:*",
         "@freeanima/kernel": "workspace:*",
+        "@freeanima/platform": "workspace:*",
         "@freeanima/runtime": "workspace:*",
-        "@freeanima/service": "workspace:*",
-        "@freeanima/service-api": "workspace:*",
-        "@freeanima/service-bootstrap": "workspace:*",
-        "@freeanima/service-commands": "workspace:*",
-        "@freeanima/service-config": "workspace:*",
-        "@freeanima/service-logging": "workspace:*",
         "@types/node": "catalog:",
         "drizzle-orm": "catalog:",
       },
@@ -623,39 +455,15 @@
 
     "@freeanima/cli": ["@freeanima/cli@workspace:cli"],
 
-    "@freeanima/connectors-cron": ["@freeanima/connectors-cron@workspace:connectors/cron"],
-
-    "@freeanima/connectors-db-pg": ["@freeanima/connectors-db-pg@workspace:connectors/db-pg"],
-
-    "@freeanima/connectors-email": ["@freeanima/connectors-email@workspace:connectors/email"],
-
-    "@freeanima/connectors-eventbus-redis": ["@freeanima/connectors-eventbus-redis@workspace:connectors/eventbus-redis"],
-
-    "@freeanima/connectors-gateway": ["@freeanima/connectors-gateway@workspace:connectors/gateway"],
-
-    "@freeanima/connectors-redis": ["@freeanima/connectors-redis@workspace:connectors/redis"],
-
-    "@freeanima/connectors-webui": ["@freeanima/connectors-webui@workspace:connectors/webui"],
-
     "@freeanima/core": ["@freeanima/core@workspace:core"],
 
     "@freeanima/integration-tests": ["@freeanima/integration-tests@workspace:tests"],
 
     "@freeanima/kernel": ["@freeanima/kernel@workspace:kernel"],
 
+    "@freeanima/platform": ["@freeanima/platform@workspace:platform"],
+
     "@freeanima/runtime": ["@freeanima/runtime@workspace:runtime"],
-
-    "@freeanima/service": ["@freeanima/service@workspace:service/service"],
-
-    "@freeanima/service-api": ["@freeanima/service-api@workspace:service/api"],
-
-    "@freeanima/service-bootstrap": ["@freeanima/service-bootstrap@workspace:service/bootstrap"],
-
-    "@freeanima/service-commands": ["@freeanima/service-commands@workspace:service/commands"],
-
-    "@freeanima/service-config": ["@freeanima/service-config@workspace:service/config"],
-
-    "@freeanima/service-logging": ["@freeanima/service-logging@workspace:service/logging"],
 
     "@freeanima/site": ["@freeanima/site@workspace:site"],
 
@@ -1137,7 +945,7 @@
 
     "@types/node": ["@types/node@24.13.1", "", { "dependencies": { "undici-types": "~7.18.0" } }, "sha512-RSpUJGmvsJ1ZeBehQZFhIdpsz+bIpES0nIQXko4Ybq+N+kX6XvOq3Jo+iJ82FWLdblFq85AsMikd3m35jgezYg=="],
 
-    "@types/nodemailer": ["@types/nodemailer@6.4.23", "", { "dependencies": { "@types/node": "*" } }, "sha512-aFV3/NsYFLSx9mbb5gtirBSXJnAlrusoKNuPbxsASWc7vrKLmIrTQRpdcxNcSFL3VW2A2XpeLEavwb2qMi6nlQ=="],
+    "@types/nodemailer": ["@types/nodemailer@7.0.12", "", { "dependencies": { "@types/node": "*" } }, "sha512-80vKwiIsVSyFA1rRovH59jNPLBOuc6dRZIHEu40gXTkBkZnQv8vog1xSGEb9j5q/tdMAs5ivvDR2pLTU0hGHXA=="],
 
     "@types/react": ["@types/react@19.2.16", "", { "dependencies": { "csstype": "^3.2.2" } }, "sha512-esJiCAnl0kfpNdE69f3So4WJUXy95dLZydX0KwK46riIHDzHM7O9Vtf9xCHW0PXIqvgqNrswl522kA/5yx+F4w=="],
 
@@ -1425,7 +1233,7 @@
 
     "dagre-d3-es": ["dagre-d3-es@7.0.14", "", { "dependencies": { "d3": "^7.9.0", "lodash-es": "^4.17.21" } }, "sha512-P4rFMVq9ESWqmOgK+dlXvOtLwYg0i7u0HBGJER0LZDJT2VHIPAMZ/riPxqJceWMStH5+E61QxFra9kIS3AqdMg=="],
 
-    "daisyui": ["daisyui@5.5.20", "", {}, "sha512-HemJcjl0Gk9rQ8BcgofN6p+EURrqftQG9wK1Hkxs98i49xe68+QxpNvry+PyxwkIUgrbMpNmZ5ZWjmtffAjfhQ=="],
+    "daisyui": ["daisyui@5.5.23", "", {}, "sha512-xuheNUSL4T6ZVtWXoioqcNkjoyGX85QTDz4HTw2aBPfqk4fuMjax5HDo8qCmpV6M1YN8bGvfx5BpYCoDeRlt+A=="],
 
     "dayjs": ["dayjs@1.11.21", "", {}, "sha512-98IT+HOahAisibz/yjKbzuOBwYcjJ7BCLPzARyHiyEBmRz4fatF+KPJszEHXsGYjUG234aH/cOjW1wwTbKUZlA=="],
 
@@ -2485,8 +2293,6 @@
 
     "@types/better-sqlite3/@types/node": ["@types/node@24.12.4", "", { "dependencies": { "undici-types": "~7.16.0" } }, "sha512-GUUEShf+PBCGW2KaXwcIt3Yk+e3pkKwWKb9GSyM9WQVE+ep2jzmHdGsHzu4wgcZy5fN9FBdVzjpBQsYlpfpgLA=="],
 
-    "@types/nodemailer/@types/node": ["@types/node@24.12.4", "", { "dependencies": { "undici-types": "~7.16.0" } }, "sha512-GUUEShf+PBCGW2KaXwcIt3Yk+e3pkKwWKb9GSyM9WQVE+ep2jzmHdGsHzu4wgcZy5fN9FBdVzjpBQsYlpfpgLA=="],
-
     "@types/sax/@types/node": ["@types/node@24.12.4", "", { "dependencies": { "undici-types": "~7.16.0" } }, "sha512-GUUEShf+PBCGW2KaXwcIt3Yk+e3pkKwWKb9GSyM9WQVE+ep2jzmHdGsHzu4wgcZy5fN9FBdVzjpBQsYlpfpgLA=="],
 
     "@types/ws/@types/node": ["@types/node@24.12.4", "", { "dependencies": { "undici-types": "~7.16.0" } }, "sha512-GUUEShf+PBCGW2KaXwcIt3Yk+e3pkKwWKb9GSyM9WQVE+ep2jzmHdGsHzu4wgcZy5fN9FBdVzjpBQsYlpfpgLA=="],
@@ -2636,8 +2442,6 @@
     "@expressive-code/plugin-shiki/shiki/@shikijs/types": ["@shikijs/types@3.23.0", "", { "dependencies": { "@shikijs/vscode-textmate": "^10.0.2", "@types/hast": "^3.0.4" } }, "sha512-3JZ5HXOZfYjsYSk0yPwBrkupyYSLpAE26Qc0HLghhZNGTZg/SKxXIIgoxOpmmeQP0RRSDJTk1/vPfw9tbw+jSQ=="],
 
     "@types/better-sqlite3/@types/node/undici-types": ["undici-types@7.16.0", "", {}, "sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw=="],
-
-    "@types/nodemailer/@types/node/undici-types": ["undici-types@7.16.0", "", {}, "sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw=="],
 
     "@types/sax/@types/node/undici-types": ["undici-types@7.16.0", "", {}, "sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw=="],
 

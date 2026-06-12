@@ -8,15 +8,15 @@ import {
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { createJob, initCronModule, stopCronModule } from "@freeanima/connectors-cron";
-import { getAppRuntime } from "@freeanima/service";
+import { createJob, initCronModule, stopCronModule } from "@freeanima/platform/connectors/cron";
+import { getAppRuntime } from "@freeanima/platform";
 import {
   listCronJobs,
   pauseCronJob,
   resumeCronJob,
   runCronJobNow,
   ApiHandlerError,
-} from "@freeanima/connectors-webui/handlers";
+} from "@freeanima/platform/connectors/webui/handlers";
 
 describePg("server cron API", () => {
   let home: string;

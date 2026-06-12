@@ -4,7 +4,7 @@ import {
   listCredentials,
   updateCredential,
   type CredentialMeta,
-} from "@freeanima/service-config";
+} from "@freeanima/platform/config";
 import type { Command } from "commander";
 
 import { printCliError } from "../output/errors.ts";

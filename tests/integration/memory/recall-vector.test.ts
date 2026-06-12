@@ -5,7 +5,7 @@ import {
   registerEmbedTextFn,
   resetEmbedTextFnForTest,
   resetPendingEmbeddingsForTest,
-} from "@freeanima/connectors-db-pg";
+} from "@freeanima/platform/connectors/db-pg";
 import { SEMANTIC_EMBEDDING_DIMENSIONS } from "@freeanima/core/db/schema";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {

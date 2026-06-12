@@ -1,12 +1,12 @@
 import { runWithToolContext } from "@freeanima/core/tool";
 import { SkillRegistry } from "@freeanima/core/skill";
 import { ToolSetRegistry } from "@freeanima/core/tool";
-import { Config } from "@freeanima/service-config";
-import { parseYaml } from "@freeanima/service-config";
-import { animaConfigSchema } from "@freeanima/service-config/schemas/config";
+import { Config } from "@freeanima/platform/config";
+import { parseYaml } from "@freeanima/platform/config";
+import { animaConfigSchema } from "@freeanima/platform/config/schemas/config";
 import { bindBrowserToolsConfig, resetBrowserToolsConfigForTest } from "./browser-camofox.ts";
 import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from "bun:test";
-import { MINIMAL_LLM_YAML } from "@freeanima/service-config/test-helpers/minimal-llm-config";
+import { MINIMAL_LLM_YAML } from "@freeanima/platform/config/test-helpers/minimal-llm-config";
 
 import { registerSupplementalTools } from "@freeanima/capabilities-tools";
 import {

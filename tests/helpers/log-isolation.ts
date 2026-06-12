@@ -2,7 +2,7 @@ import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { resetServiceLogger } from "@freeanima/service-logging";
+import { resetServiceLogger } from "@freeanima/platform/logging";
 
 export { resetServiceLogger };
 

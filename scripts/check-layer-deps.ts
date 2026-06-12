@@ -17,8 +17,7 @@ const LAYER_DIRS = [
   "core",
   "runtime",
   "capabilities",
-  "connectors",
-  "service",
+  "platform",
   "cli",
   "tests",
 ] as const;
@@ -74,9 +73,7 @@ function isAllowed(layer: Layer, pkg: string, _relPath: string): boolean {
       if (root.startsWith("capabilities-")) return true;
       return root.startsWith("kernel-") || root === "kernel" || root === "core";
     }
-    case "connectors":
-      return root !== "service";
-    case "service":
+    case "platform":
     case "cli":
     case "tests":
       return true;
