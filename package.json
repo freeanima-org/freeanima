@@ -45,7 +45,6 @@
     "i18n:messages:master": "bun scripts/gen-messages-po4a-master.ts",
     "i18n:messages:compile": "bun scripts/compile-messages-from-po4a.ts",
     "i18n:messages:bootstrap-po": "bun scripts/bootstrap-messages-po.ts",
-    "i18n:webui:messages": "bun scripts/merge-webui-messages.ts",
     "i18n:docs:cfg": "bun scripts/gen-po4a-cfg.ts",
     "i18n:docs:migrate-layout": "bun scripts/migrate-docs-po-layout.ts",
     "i18n:docs:check": "bun scripts/check-po-health.ts",

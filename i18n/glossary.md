@@ -1,6 +1,8 @@
 # Glossary
 
-译者维护 Paraglide（`messages/en.json`、编译产物 `messages/zh-cn.json`）与 gettext PO（`po/zh_CN/*.po`，含 UI 的 `en.xml.po`）时，请统一使用下列术语。
+管线、工作流与命令见 [`.agent/rules/i18n.md`](../.agent/rules/i18n.md)（SSOT）。本文件仅维护术语对照。
+
+译者维护 Paraglide PO（`po/zh_CN/en.xml.po`）与文档 PO（`po/zh_CN/*.po`）时，请统一使用下列术语。
 
 | English (canonical) | 中文      | Notes                                  |
 | ------------------- | --------- | -------------------------------------- |

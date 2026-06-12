@@ -107,6 +107,7 @@ DATABASE_URL="…" bun run --filter @freeanima/storage-db db:migrate
 | New RFC package / rename                 | [`.agent/rules/packages.md`](.agent/rules/packages.md)                                                  |
 | Release                                  | [`.agent/rules/release.md`](.agent/rules/release.md)                                                    |
 | Compression algorithm                    | [`.agent/rules/compression.md`](.agent/rules/compression.md)                                            |
+| UI / docs i18n (Paraglide, po4a, PO)     | [`.agent/rules/i18n.md`](.agent/rules/i18n.md)                                                          |
 | Task done                                | close corresponding GitHub Issue; user-visible changes use Conventional Commits                         |
 
 Tool tables, module trees, API lists **are not maintained in docs** — use registration code and service router as source of truth.
