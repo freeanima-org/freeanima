@@ -2,8 +2,11 @@ import { compress } from "@freeanima/core/compress";
 import type { SessionMessage } from "@freeanima/core/db/domain";
 import { describe, it, expect } from "bun:test";
 import { aa, assistantToolCall, toolMsg, ua } from "./test-helpers/session-fixtures.ts";
+import { installCompressionConfigForTests } from "./test-helpers/config-bind.ts";
 
 const testBoundary = { rawMinMessages: 3, slimMinMessages: 4 };
+
+installCompressionConfigForTests();
 
 describe("compressor", () => {
   it("returns original when below threshold", () => {

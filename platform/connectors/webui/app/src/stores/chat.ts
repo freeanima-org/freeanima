@@ -1,8 +1,9 @@
 import type { StreamApiEvent } from "@freeanima/platform/connectors/webui/api";
+import { pollUntilAssistantReply } from "@freeanima/platform/connectors/webui/display-recovery";
 import { marked } from "marked";
 import { create } from "zustand";
 import { m } from "@/lib/i18n.ts";
-import { subscribeMessageStream } from "@/lib/api.ts";
+import { subscribeMessageStream, subscribeSessionEvents } from "@/lib/api.ts";
 
 type SendDoneOptions = {
   recovered?: boolean;
@@ -14,6 +15,7 @@ type SendCallbacks = {
   onToolResult?: (data: Record<string, unknown>) => void;
   onToolError?: (data: Record<string, unknown>) => void;
   onAwaitingClarify?: (data: Record<string, unknown>) => void;
+  onRecovering?: (active: boolean) => void;
   onError?: (msg: string) => void;
   onDone?: (opts?: SendDoneOptions) => void;
   recoverDisplay?: (sessionId: string) => Promise<boolean>;
@@ -21,6 +23,7 @@ type SendCallbacks = {
 
 type ChatState = {
   streaming: boolean;
+  recovering: boolean;
   streamingSessionId: string | null;
   streamText: string;
   renderMd: (text: string) => string;
@@ -65,11 +68,16 @@ function handleStreamEvent(
     case "tool_error":
       callbacks.onToolError?.(ev.data as Record<string, unknown>);
       break;
+    case "interrupted":
+      receivedDone = true;
+      break;
     case "error":
       receivedError = true;
       break;
     case "done":
       receivedDone = true;
+      break;
+    case "ping":
       break;
   }
 
@@ -87,20 +95,74 @@ function renderMd(text: string): string {
   }
 }
 
+async function waitForAssistantViaSessionEvents(
+  sessionId: string,
+  recoverDisplay: (sessionId: string) => Promise<boolean>,
+  maxDurationMs: number,
+): Promise<boolean> {
+  return new Promise((resolve) => {
+    let settled = false;
+    let pollTimer: ReturnType<typeof setTimeout> | null = null;
+    const deadline = Date.now() + maxDurationMs;
+
+    const finish = (ok: boolean) => {
+      if (settled) return;
+      settled = true;
+      sub.unsubscribe();
+      if (pollTimer !== null) clearTimeout(pollTimer);
+      resolve(ok);
+    };
+
+    const tryRefresh = async (): Promise<boolean> => {
+      if (await recoverDisplay(sessionId)) {
+        finish(true);
+        return true;
+      }
+      return false;
+    };
+
+    const sub = subscribeSessionEvents(sessionId, () => {
+      void tryRefresh();
+    });
+
+    const schedulePoll = () => {
+      if (settled) return;
+      if (Date.now() >= deadline) {
+        finish(false);
+        return;
+      }
+      pollTimer = setTimeout(async () => {
+        await tryRefresh();
+        schedulePoll();
+      }, 2_000);
+    };
+
+    void (async () => {
+      if (await tryRefresh()) return;
+      schedulePoll();
+      setTimeout(() => finish(false), maxDurationMs);
+    })();
+  });
+}
+
 async function tryRecoverDisplay(
   sessionId: string,
   recoverDisplay?: (sessionId: string) => Promise<boolean>,
+  onRecovering?: (active: boolean) => void,
 ): Promise<boolean> {
   if (!recoverDisplay) return false;
-  for (let attempt = 0; attempt < 3; attempt++) {
-    if (await recoverDisplay(sessionId)) return true;
-    await new Promise((resolve) => setTimeout(resolve, 500 * (attempt + 1)));
+  onRecovering?.(true);
+  try {
+    if (await pollUntilAssistantReply(sessionId, recoverDisplay)) return true;
+    return await waitForAssistantViaSessionEvents(sessionId, recoverDisplay, 60_000);
+  } finally {
+    onRecovering?.(false);
   }
-  return false;
 }
 
 export const useChatStore = create<ChatState>(() => ({
   streaming: false,
+  recovering: false,
   streamingSessionId: null,
   streamText: "",
   renderMd,
@@ -112,6 +174,7 @@ export const useChatStore = create<ChatState>(() => ({
     }
     useChatStore.setState({
       streaming: false,
+      recovering: false,
       streamingSessionId: null,
     });
   },
@@ -121,6 +184,7 @@ export const useChatStore = create<ChatState>(() => ({
 
     useChatStore.setState({
       streaming: true,
+      recovering: false,
       streamingSessionId: sessionId,
       streamText: "",
     });
@@ -140,17 +204,18 @@ export const useChatStore = create<ChatState>(() => ({
     };
 
     const finishWithRecovery = async (fallbackError?: string) => {
-      const needsRecovery = !streamText.trim() || !receivedDone;
-      if (needsRecovery) {
-        const recovered = await tryRecoverDisplay(sessionId, callbacks.recoverDisplay);
-        if (recovered) {
-          notifyDone({ recovered: true });
-          return;
-        }
+      if (receivedDone) return;
+      const recovered = await tryRecoverDisplay(sessionId, callbacks.recoverDisplay, (active) => {
+        useChatStore.setState({ recovering: active });
+        callbacks.onRecovering?.(active);
+      });
+      if (recovered) {
+        notifyDone({ recovered: true });
+        return;
       }
       if (fallbackError) {
         callbacks.onError?.(fallbackError);
-      } else if (!receivedDone && !streamText.trim()) {
+      } else if (!streamText.trim()) {
         callbacks.onError?.(m.webui_common_no_reply());
       }
     };
@@ -177,9 +242,6 @@ export const useChatStore = create<ChatState>(() => ({
               reject(err);
             },
             onComplete: () => {
-              if (!receivedDone && streamText.trim() && !receivedError) {
-                notifyDone();
-              }
               resolve();
             },
           },
@@ -195,7 +257,10 @@ export const useChatStore = create<ChatState>(() => ({
     } catch (e) {
       if (e instanceof Error && e.name === "AbortError") return;
       console.error("send error:", e);
-      const recovered = await tryRecoverDisplay(sessionId, callbacks.recoverDisplay);
+      const recovered = await tryRecoverDisplay(sessionId, callbacks.recoverDisplay, (active) => {
+        useChatStore.setState({ recovering: active });
+        callbacks.onRecovering?.(active);
+      });
       if (recovered) {
         notifyDone({ recovered: true });
       } else if (!receivedError || transportErrorMsg) {
@@ -204,6 +269,7 @@ export const useChatStore = create<ChatState>(() => ({
     } finally {
       useChatStore.setState({
         streaming: false,
+        recovering: false,
         streamingSessionId: null,
       });
       _unsubscribe = null;

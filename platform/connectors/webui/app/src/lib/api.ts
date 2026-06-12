@@ -45,6 +45,20 @@ type SubscribeCallbacks<T> = {
   onComplete?: () => void;
 };
 
+function parseSseJsonFrames(buffer: string, onFrame: (json: string) => void): string {
+  const parts = buffer.split("\n\n");
+  const rest = parts.pop() ?? "";
+  for (const part of parts) {
+    if (part.startsWith(":")) continue;
+    const line = part.trim();
+    if (!line.startsWith("data:")) continue;
+    const json = line.slice(5).trim();
+    if (!json) continue;
+    onFrame(json);
+  }
+  return rest;
+}
+
 export function subscribeMessageStream(
   input: { sessionId: string; message: string },
   callbacks: SubscribeCallbacks<StreamApiEvent>,
@@ -74,15 +88,26 @@ export function subscribeMessageStream(
         const { done, value } = await reader.read();
         if (done) break;
         buffer += decoder.decode(value, { stream: true });
-        const parts = buffer.split("\n\n");
-        buffer = parts.pop() ?? "";
-        for (const part of parts) {
-          const line = part.trim();
-          if (!line.startsWith("data:")) continue;
-          const json = line.slice(5).trim();
-          if (!json) continue;
-          callbacks.onData?.(JSON.parse(json) as StreamApiEvent);
-        }
+        buffer = parseSseJsonFrames(buffer, (json) => {
+          try {
+            const ev = JSON.parse(json) as StreamApiEvent;
+            if (ev.event === "ping") return;
+            callbacks.onData?.(ev);
+          } catch {
+            /* 忽略畸形 SSE 帧 */
+          }
+        });
+      }
+      if (buffer.trim()) {
+        parseSseJsonFrames(`${buffer}\n\n`, (json) => {
+          try {
+            const ev = JSON.parse(json) as StreamApiEvent;
+            if (ev.event === "ping") return;
+            callbacks.onData?.(ev);
+          } catch {
+            /* 忽略畸形 SSE 帧 */
+          }
+        });
       }
     } catch (e) {
       if (e instanceof Error && e.name === "AbortError") return;
@@ -183,46 +208,76 @@ export function subscribeSessionEvents(
   sessionId: string,
   onUpdate: () => void,
 ): { unsubscribe: () => void } {
-  const controller = new AbortController();
+  let closed = false;
+  let reconnectAttempt = 0;
+  let controller: AbortController | null = null;
 
-  void (async () => {
-    try {
-      const res = await fetch(apiPath(`/api/sessions/${encodeURIComponent(sessionId)}/events`), {
-        signal: controller.signal,
-        headers: { Accept: "text/event-stream" },
-      });
-      if (!res.ok) return;
-      const reader = res.body?.getReader();
-      if (!reader) return;
-      const decoder = new TextDecoder();
-      let buffer = "";
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        const parts = buffer.split("\n\n");
-        buffer = parts.pop() ?? "";
-        for (const part of parts) {
-          const lines = part.split("\n");
-          let eventName = "";
-          let data = "";
-          for (const line of lines) {
-            if (line.startsWith("event:")) eventName = line.slice(6).trim();
-            if (line.startsWith("data:")) data = line.slice(5).trim();
-          }
-          if (eventName === "session_updated" || data.includes("session_updated")) {
-            onUpdate();
+  const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  const run = async (): Promise<void> => {
+    while (!closed) {
+      controller = new AbortController();
+      try {
+        const res = await fetch(apiPath(`/api/sessions/${encodeURIComponent(sessionId)}/events`), {
+          signal: controller.signal,
+          headers: { Accept: "text/event-stream" },
+        });
+        if (res.status === 404) {
+          console.warn(
+            "session events SSE: 404 — 若持续出现请重启 anima service 以加载 /events 路由",
+          );
+          return;
+        }
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+        const reader = res.body?.getReader();
+        if (!reader) {
+          throw new Error(m.webui_common_no_response_stream());
+        }
+        reconnectAttempt = 0;
+        const decoder = new TextDecoder();
+        let buffer = "";
+        while (!closed) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const parts = buffer.split("\n\n");
+          buffer = parts.pop() ?? "";
+          for (const part of parts) {
+            if (part.startsWith(":")) continue;
+            const lines = part.split("\n");
+            let eventName = "";
+            let data = "";
+            for (const line of lines) {
+              if (line.startsWith("event:")) eventName = line.slice(6).trim();
+              if (line.startsWith("data:")) data = line.slice(5).trim();
+            }
+            if (eventName === "ping") continue;
+            if (eventName === "session_updated" || data.includes("session_updated")) {
+              onUpdate();
+            }
           }
         }
-      }
-    } catch (e) {
-      if ((e as Error).name !== "AbortError") {
+      } catch (e) {
+        if (closed || (e as Error).name === "AbortError") return;
         console.error("session events SSE:", e);
       }
+      if (closed) return;
+      const delay = Math.min(1_000 * 2 ** reconnectAttempt, 30_000);
+      reconnectAttempt++;
+      await sleep(delay);
     }
-  })();
+  };
 
-  return { unsubscribe: () => controller.abort() };
+  void run();
+
+  return {
+    unsubscribe: () => {
+      closed = true;
+      controller?.abort();
+    },
+  };
 }
 
 export async function setSessionTitle(sessionId: string, title: string) {

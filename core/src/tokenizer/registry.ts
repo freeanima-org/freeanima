@@ -8,7 +8,7 @@ export type TokenizerRegistry = Record<string, string>;
 
 const SEED_REGISTRY_PATH = join(
   dirname(fileURLToPath(import.meta.url)),
-  "../data/seed-registry.json",
+  "../../data/seed-registry.json",
 );
 
 function parseRegistryJson(raw: string): TokenizerRegistry {

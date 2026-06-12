@@ -3,9 +3,11 @@ import { parseCompressionState, type SessionMessage } from "@freeanima/core/db/d
 import { describe, it, expect } from "bun:test";
 import { aa, ua } from "./test-helpers/session-fixtures.ts";
 import { installTokenizerMockForTests } from "./test-helpers/tokenizer-mock.ts";
+import { installCompressionConfigForTests } from "./test-helpers/config-bind.ts";
 
 const testBoundary = { rawMinMessages: 2, slimMinMessages: 2 };
 
+installCompressionConfigForTests();
 installTokenizerMockForTests();
 
 describe("compression extended", () => {

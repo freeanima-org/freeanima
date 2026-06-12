@@ -1,16 +1,10 @@
 import type { DisplayItem, SessionListItem } from "@freeanima/platform/connectors/webui/api";
 import { PARLOR_PLATFORM } from "@freeanima/platform/connectors/webui/api";
+import { hasNewAssistantReply } from "@freeanima/platform/connectors/webui/display-recovery";
 import { create } from "zustand";
 import { createSession, getSessionMessages, listSessions, setSessionTitle } from "@/lib/api.ts";
 
 export { PARLOR_PLATFORM };
-
-function hasNewReply(display: DisplayItem[], baselineCount: number): boolean {
-  const newItems = display.slice(baselineCount);
-  return newItems.some(
-    (item) => (item.type === "message" && item.role === "assistant") || item.type === "tool_block",
-  );
-}
 
 type SessionsState = {
   sessions: SessionListItem[];
@@ -87,7 +81,7 @@ export const useSessionsStore = create<SessionsState>((set, get) => ({
       const resp = await getSessionMessages(sessionId);
       const display = (resp as { display?: DisplayItem[] }).display ?? [];
       set({ display });
-      return hasNewReply(display, baselineCount);
+      return hasNewAssistantReply(display, baselineCount);
     } catch (e) {
       console.error("refreshMessages:", e);
       return false;

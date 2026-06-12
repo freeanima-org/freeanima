@@ -11,6 +11,7 @@ import {
   setSessionTitle,
 } from "../../handlers/index.ts";
 import { fetchSessionAcpDock, iterateSessionEvents } from "../../handlers/session-events.ts";
+import { withSseKeepalive } from "../../sse-keepalive.ts";
 
 export const sessionsRoutes = new Elysia({ prefix: "/sessions" })
   .get("/", ({ query }) => listSessions(query.platform))
@@ -37,7 +38,11 @@ export const sessionsRoutes = new Elysia({ prefix: "/sessions" })
     async function* ({ params, request, set }) {
       set.headers["X-Accel-Buffering"] = "no";
       const signal = request.signal;
-      for await (const chunk of iterateSessionEvents(params.sessionId, signal)) {
+      for await (const chunk of withSseKeepalive(
+        iterateSessionEvents(params.sessionId, signal),
+        () => ({ event: "ping", data: JSON.stringify({}) }),
+        signal,
+      )) {
         yield sse({ event: chunk.event, data: chunk.data });
         await Bun.sleep(0);
         if (signal.aborted) break;

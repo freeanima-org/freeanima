@@ -1,4 +1,5 @@
 import type { DisplayItem, SessionListItem } from "@freeanima/platform/connectors/webui/api";
+import { hasNewAssistantReply } from "@freeanima/platform/connectors/webui/display-recovery";
 import { create } from "zustand";
 import {
   createSession,
@@ -12,13 +13,6 @@ import {
 } from "@/lib/api.ts";
 
 export const STUDIO_PAIR_PLATFORM = "studio-pair-programming";
-
-function hasNewReply(display: DisplayItem[], baselineCount: number): boolean {
-  const newItems = display.slice(baselineCount);
-  return newItems.some(
-    (item) => (item.type === "message" && item.role === "assistant") || item.type === "tool_block",
-  );
-}
 
 export type StudioFileView = Record<string, unknown> & { highlightLine?: number | null };
 
@@ -138,7 +132,7 @@ export const usePairProgrammingStore = create<PairProgrammingState>((set, get) =
       const resp = await getSessionMessages(sessionId);
       const display = (resp as { display?: DisplayItem[] }).display ?? [];
       set({ display });
-      return hasNewReply(display, baselineCount);
+      return hasNewAssistantReply(display, baselineCount);
     } catch (e) {
       console.error("refreshMessages:", e);
       return false;

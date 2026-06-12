@@ -132,7 +132,7 @@ export async function queryAcpTaskStatus(opts: {
   const meta = await readAcpTasks(opts.conversation, opts.animaSessionId);
   const memoryTask = findMemoryTask(opts.taskStore, opts.animaSessionId, taskId);
 
-  let acpSessionId = memoryTask?.acpSessionId ?? "";
+  let acpSessionId: string;
   let entry: AcpTaskEntry | undefined;
 
   if (taskId) {

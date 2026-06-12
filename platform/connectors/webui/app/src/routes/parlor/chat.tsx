@@ -56,6 +56,7 @@ function ChatPage() {
 
   const renderMd = useChatStore((s) => s.renderMd);
   const streaming = useChatStore((s) => s.streaming);
+  const recovering = useChatStore((s) => s.recovering);
   const send = useChatStore((s) => s.send);
 
   const msgAreaRef = useRef<HTMLDivElement>(null);
@@ -379,7 +380,7 @@ function ChatPage() {
           </div>
         ) : null}
 
-        {streaming && streamAccumulated && toolCalls.length === 0 ? (
+        {streaming && streamAccumulated ? (
           <div className="chat chat-start">
             <div className="chat-bubble">
               <div
@@ -387,6 +388,15 @@ function ChatPage() {
                 dangerouslySetInnerHTML={{ __html: renderMd(streamAccumulated) }}
               />
               {!streamDone ? <span className="loading loading-dots loading-xs" /> : null}
+            </div>
+          </div>
+        ) : null}
+
+        {recovering ? (
+          <div className="chat chat-start">
+            <div className="chat-bubble text-base-content/60 text-sm flex items-center gap-2">
+              <span className="loading loading-spinner loading-xs" />
+              {m.webui_chamber_message_waiting_result()}
             </div>
           </div>
         ) : null}

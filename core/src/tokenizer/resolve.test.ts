@@ -209,7 +209,7 @@ describe("resolveTokenizerRepoWithMeta", () => {
     setResolveContext({ ollamaBaseUrls: [] });
 
     mockFetch(async (url, init) => {
-      if (init?.method === "HEAD" && url.includes("BAAI/bge-m3")) {
+      if (init?.method === "HEAD" && /BAAI\/bge-m3\/resolve\//.test(url)) {
         return new Response(null, { status: 200 });
       }
       return new Response(null, { status: 404 });

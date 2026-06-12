@@ -101,12 +101,10 @@ function replaceInFile(abs: string): boolean {
     content = content.split(from).join(to);
   }
 
-  // Legacy package constant strings
+  // Legacy package import strings
   content = content.replace(/@freeanima\/life-self/g, "@freeanima/capabilities-identity");
-  content = content.replace(/CAPABILITIES_IDENTITY_PACKAGE/g, "CAPABILITIES_IDENTITY_PACKAGE");
   content = content.replace(/@freeanima\/life-memory/g, "@freeanima/capabilities-memory");
   content = content.replace(/@freeanima\/life-estate/g, "@freeanima/capabilities-tools/estate");
-  content = content.replace(/CAPABILITIES_ESTATE_PACKAGE/g, "CAPABILITIES_ESTATE_PACKAGE");
 
   if (content !== orig) {
     writeFileSync(abs, content);

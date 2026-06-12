@@ -1,7 +1,8 @@
 # 默认：根目录 bun test（单元测试；覆盖率用 bun test --coverage）
 # 勿写 coverage = false：Bun #12216 会导致 --coverage 失效
 [test]
-coverageReporter = ["text", "lcov"]
+# lcov only — text reporter overflows stdout on large shards (Bun WriteFailed in CI)
+coverageReporter = ["lcov"]
 coverageDir = "coverage"
 coverageThreshold = 0
 
