@@ -9,10 +9,10 @@
   },
   "dependencies": {
     "@freeanima/connectors-webui": "workspace:*",
+    "@freeanima/core": "workspace:*",
     "@freeanima/service": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "@freeanima/service-logging": "workspace:*",
-    "@freeanima/storage-config": "workspace:*",
     "commander": "^15.0.0"
   },
   "devDependencies": {

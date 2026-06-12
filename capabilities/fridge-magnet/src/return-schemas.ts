@@ -1,4 +1,4 @@
-import { defineToolReturn, type ToolReturnContractFields, z } from "@freeanima/mechanism-tool";
+import { defineToolReturn, type ToolReturnContractFields, z } from "@freeanima/core/tool";
 
 export const FRIDGE_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
   fridge_magnet_write: defineToolReturn({

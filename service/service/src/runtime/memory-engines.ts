@@ -1,8 +1,8 @@
 import * as engine from "@freeanima/runtime/loop";
-import { runWithToolContext } from "@freeanima/mechanism-tool";
-import type { SessionMessage } from "@freeanima/storage-db/domain";
-import { PROFILE_REFLECT } from "@freeanima/storage-provider-llm";
-import { getProfileHopModel } from "@freeanima/storage-config";
+import { runWithToolContext } from "@freeanima/core/tool";
+import type { SessionMessage } from "@freeanima/core/db/domain";
+import { PROFILE_REFLECT } from "@freeanima/core/provider";
+import { getProfileHopModel } from "@freeanima/core/config";
 import { applyDeepSleepToolResult } from "@freeanima/capabilities-memory";
 import {
   registerLightSleepEngine,

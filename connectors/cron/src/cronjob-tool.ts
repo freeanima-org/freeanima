@@ -1,5 +1,5 @@
-import type { ToolSetRegistry } from "@freeanima/mechanism-tool";
-import { attachToolReturns, toolError, toolResult } from "@freeanima/mechanism-tool";
+import type { ToolSetRegistry } from "@freeanima/core/tool";
+import { attachToolReturns, toolError, toolResult } from "@freeanima/core/tool";
 import { CRON_TOOL_RETURNS } from "./return-schemas.ts";
 import { computeNextRunAt } from "./bun-schedule.ts";
 import {

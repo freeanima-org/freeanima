@@ -1,16 +1,16 @@
 import { isSessionMeta, resolveExecutableToolNames } from "@freeanima/runtime/conversation";
 import { resolveSessionMaskFromMeta, runtimeToolMaskFromResolved } from "./mask-wire.ts";
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
-import type { SessionMessage as Message } from "@freeanima/storage-db/domain";
-import type { SessionMessage } from "@freeanima/storage-db/domain";
+import type { SessionMessage as Message } from "@freeanima/core/db/domain";
+import type { SessionMessage } from "@freeanima/core/db/domain";
 import * as loopEngine from "@freeanima/runtime/loop";
-import { runWithToolContext } from "@freeanima/mechanism-tool";
+import { runWithToolContext } from "@freeanima/core/tool";
 import type { StreamEvent } from "@freeanima/runtime/loop";
 import { applyClarifyStreamAwaiting } from "@freeanima/capabilities-clarify";
-import { ProviderError } from "@freeanima/storage-provider-llm";
+import { ProviderError } from "@freeanima/core/provider";
 import { getProfileHopModel } from "@freeanima/service-config";
-import { PROFILE_CHAT } from "@freeanima/storage-provider-llm";
-import { isInsufficientToolMessagesError } from "@freeanima/mechanism-llm";
+import { PROFILE_CHAT } from "@freeanima/core/provider";
+import { isInsufficientToolMessagesError } from "@freeanima/core/llm";
 import type { HookRegistry } from "@freeanima/kernel/hooks";
 import { SessionManager } from "./session-manager.ts";
 

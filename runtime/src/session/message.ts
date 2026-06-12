@@ -1,1 +1,1 @@
-export * from "@freeanima/storage-db/domain";
+export * from "@freeanima/core/db/domain";

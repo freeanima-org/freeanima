@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import type { SemanticMemoryStorePort } from "@freeanima/storage-repos";
+import type { SemanticMemoryStorePort } from "@freeanima/core/repos";
 import {
   composeSystemPrompt,
   decomposeSystemPromptParts,

@@ -7,11 +7,7 @@
     "./*": "./src/*.ts"
   },
   "dependencies": {
-    "@freeanima/mechanism-skill": "workspace:*",
-    "@freeanima/storage-db": "workspace:*",
-    "@freeanima/mechanism-tool": "workspace:*",
-    "@freeanima/storage-config": "workspace:*",
-    "@freeanima/storage-util": "workspace:*",
+    "@freeanima/core": "workspace:*",
     "zod": "catalog:"
   },
   "devDependencies": {

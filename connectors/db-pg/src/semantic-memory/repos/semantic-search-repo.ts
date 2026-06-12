@@ -1,10 +1,10 @@
 import { and, desc, sql as drizzleSql } from "drizzle-orm";
-import { semanticMemory } from "@freeanima/storage-db/schema";
+import { semanticMemory } from "@freeanima/core/db/schema";
 import type {
   SemanticFtsHit,
   SemanticMemorySearchOpts,
   SemanticMemorySortBy,
-} from "@freeanima/storage-repos";
+} from "@freeanima/core/repos";
 
 import { getDb } from "../../client.ts";
 import { hybridCountSemanticMemory, hybridSearchSemanticMemory } from "../../fts/hybrid-search.ts";

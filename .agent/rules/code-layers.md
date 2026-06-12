@@ -37,14 +37,14 @@ After `FileConfig.open()` + `createServiceLogger()`:
 
 - `createEngine({ config, logger, ... })` injects shared `Config` and logging
 - `registerCapabilityInjection({ listCredentials, credential, readAppVersion })` wires service-config helpers for capabilities
-- **runtime / core must not** depend on `service-config` / `service-logging` (use `@freeanima/storage-config` `Config` type and `logCapability` only)
+- **runtime / core must not** depend on `service-config` / `service-logging` (use `@freeanima/core/config` `Config` type and `logCapability` only)
 - **capabilities must not** depend on `service-config` / `service-logging` in production code (tests may use `service-config` as devDependency)
 
 ## Runtime infra satellite packages (transitional)
 
 | Package                      | Role                                                                                    | Who may import                                          |
 | ---------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| `@freeanima/storage-config`  | `AnimaConfig` Zod, `Config` container, `logCapability`, capability injection ports      | core / runtime / capabilities (types + injected config) |
+| `@freeanima/core/config`     | `AnimaConfig` Zod, `Config` container, `logCapability`, capability injection ports      | core / runtime / capabilities (types + injected config) |
 | `@freeanima/service-config`  | `FileConfig extends Config`: `open()` / `reload()` / YAML/credential file I/O           | composition root / connectors / CLI only                |
 | `@freeanima/service-logging` | Process bootstrap: `createServiceLogger`, `installErrorLogHandlers`, `markStartupPhase` | composition root / CLI startup only                     |
 

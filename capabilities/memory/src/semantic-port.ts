@@ -1,4 +1,4 @@
-import type { SemanticMemoryStorePort } from "@freeanima/storage-repos";
+import type { SemanticMemoryStorePort } from "@freeanima/core/repos";
 
 let semanticMemoryStore: SemanticMemoryStorePort | null = null;
 

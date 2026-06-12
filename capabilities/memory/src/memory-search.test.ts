@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "bun:test";
-import type { SemanticMemoryStorePort, SessionStorePort } from "@freeanima/storage-repos";
+import type { SemanticMemoryStorePort, SessionStorePort } from "@freeanima/core/repos";
 import {
   registerMemoryTools,
   searchSemanticMemory,
@@ -13,8 +13,8 @@ import {
   resetSemanticMemoryStoreForTests,
 } from "@freeanima/capabilities-memory";
 import { registerToolSessionResolver } from "@freeanima/capabilities-memory/tool-session-port";
-import { ToolSetRegistry } from "@freeanima/mechanism-tool";
-import { runWithToolContext } from "@freeanima/mechanism-tool";
+import { ToolSetRegistry } from "@freeanima/core/tool";
+import { runWithToolContext } from "@freeanima/core/tool";
 
 let toolSets: ToolSetRegistry;
 

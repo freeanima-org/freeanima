@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import type { ToolCall } from "@freeanima/storage-provider-llm";
+import type { ToolCall } from "@freeanima/core/provider";
 import {
   cleanToolCallsForApi,
   finalizeStreamingToolCalls,

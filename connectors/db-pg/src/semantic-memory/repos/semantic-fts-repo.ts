@@ -1,4 +1,4 @@
-import type { SemanticFtsHit } from "@freeanima/storage-repos";
+import type { SemanticFtsHit } from "@freeanima/core/repos";
 
 import { hybridSearchSemanticMemory } from "../../fts/hybrid-search.ts";
 

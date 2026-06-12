@@ -1,5 +1,5 @@
 import { describe, it } from "bun:test";
-import { nullPgRepositories } from "@freeanima/storage-repos";
+import { nullPgRepositories } from "@freeanima/core/repos";
 import { flushCompressionSummaries } from "./conversation.ts";
 
 describe("flushCompressionSummaries", () => {

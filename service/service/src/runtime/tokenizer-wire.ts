@@ -2,8 +2,8 @@ import {
   ensureTokenizer,
   setResolveContext,
   startTokenizerReconcile,
-} from "@freeanima/storage-tokenizer";
-import type { AnimaConfig, Config } from "@freeanima/storage-config";
+} from "@freeanima/core/tokenizer";
+import type { AnimaConfig, Config } from "@freeanima/core/config";
 import {
   getDefaultProviderBaseUrl,
   getProfileHopModel,
@@ -11,7 +11,7 @@ import {
   isEmbeddingEnabled,
 } from "@freeanima/service-config";
 import { logComponent } from "@freeanima/service-logging";
-import { PROFILE_CHAT } from "@freeanima/storage-provider-llm";
+import { PROFILE_CHAT } from "@freeanima/core/provider";
 
 const log = logComponent("tokenizer");
 

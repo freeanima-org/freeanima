@@ -1,5 +1,5 @@
-import { logCapability as logComponent } from "@freeanima/storage-config";
-import type { SessionStorePort } from "@freeanima/storage-repos";
+import { logCapability as logComponent } from "@freeanima/core/config";
+import type { SessionStorePort } from "@freeanima/core/repos";
 
 import { getMemorySessionStore } from "../session-port.ts";
 import { cstDayRange } from "./build-messages.ts";

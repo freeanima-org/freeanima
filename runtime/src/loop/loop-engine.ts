@@ -1,44 +1,37 @@
-import { parseToolArgs, toolError, toolResult } from "@freeanima/mechanism-tool";
+import { parseToolArgs, toolError, toolResult } from "@freeanima/core/tool";
 import {
   getActiveConfig,
   getProfileHopModel,
   getRuntimeLogger,
   type AnimaConfig,
-} from "@freeanima/storage-config";
+} from "@freeanima/core/config";
 import type { Logger } from "@freeanima/kernel/logging";
-import { PROFILE_CHAT } from "@freeanima/storage-provider-llm";
-import type {
-  HookClarifyItem,
-  HookStreamEvent,
-  TurnControl,
-} from "@freeanima/mechanism-hooks/loop";
+import { PROFILE_CHAT } from "@freeanima/core/provider";
+import type { HookClarifyItem, HookStreamEvent, TurnControl } from "@freeanima/core/hooks/loop";
 import {
   beforeLlmCall,
   toolAfterCall,
   type BeforeLlmCallContext,
-} from "@freeanima/mechanism-hooks/loop";
+} from "@freeanima/core/hooks/loop";
 import { headOkStepData, type HookRegistry } from "@freeanima/kernel/hooks";
-import * as llm from "@freeanima/mechanism-llm";
-import type { LlmRuntime } from "@freeanima/mechanism-llm";
-import { cleanToolCallsForApi } from "@freeanima/mechanism-llm";
-import {
-  markToolLoopActivity,
-  maybeApplyEmergencyCompression,
-} from "@freeanima/mechanism-compress";
+import * as llm from "@freeanima/core/llm";
+import type { LlmRuntime } from "@freeanima/core/llm";
+import { cleanToolCallsForApi } from "@freeanima/core/llm";
+import { markToolLoopActivity, maybeApplyEmergencyCompression } from "@freeanima/core/compress";
 import {
   getToolRegistry,
   getToolSessionId,
   getToolRepos,
   isExecutableTool,
-} from "@freeanima/mechanism-tool";
-import { REPAIR_REASON_INTERRUPT } from "@freeanima/mechanism-llm";
+} from "@freeanima/core/tool";
+import { REPAIR_REASON_INTERRUPT } from "@freeanima/core/llm";
 import {
   resolveMaxTurns,
   type AssistantMessage,
   type SessionMessage,
   type ToolMessage,
   type OpenAiToolSchema,
-} from "@freeanima/storage-db/domain";
+} from "@freeanima/core/db/domain";
 
 export class MaxTurnsExceeded extends Error {
   override name = "MaxTurnsExceeded";

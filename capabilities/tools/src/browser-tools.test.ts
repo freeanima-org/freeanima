@@ -1,6 +1,6 @@
-import { runWithToolContext } from "@freeanima/mechanism-tool";
-import { SkillRegistry } from "@freeanima/mechanism-skill";
-import { ToolSetRegistry } from "@freeanima/mechanism-tool";
+import { runWithToolContext } from "@freeanima/core/tool";
+import { SkillRegistry } from "@freeanima/core/skill";
+import { ToolSetRegistry } from "@freeanima/core/tool";
 import { Config } from "@freeanima/service-config";
 import { parseYaml } from "@freeanima/service-config";
 import { animaConfigSchema } from "@freeanima/service-config/schemas/config";

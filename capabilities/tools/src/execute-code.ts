@@ -1,5 +1,5 @@
-import type { ToolSetRegistry } from "@freeanima/mechanism-tool";
-import { attachToolReturns } from "@freeanima/mechanism-tool";
+import type { ToolSetRegistry } from "@freeanima/core/tool";
+import { attachToolReturns } from "@freeanima/core/tool";
 
 import { clampTimeout, parseRuntime, runExecuteCode } from "./execute-code-runtimes.ts";
 import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";

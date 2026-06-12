@@ -1,6 +1,6 @@
-import { Config } from "@freeanima/storage-config";
-import { SkillRegistry } from "@freeanima/mechanism-skill";
-import { ToolSetRegistry } from "@freeanima/mechanism-tool";
+import { Config } from "@freeanima/core/config";
+import { SkillRegistry } from "@freeanima/core/skill";
+import { ToolSetRegistry } from "@freeanima/core/tool";
 import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 import { parseYaml } from "@freeanima/service-config";
 import { animaConfigSchema } from "@freeanima/service-config/schemas/config";

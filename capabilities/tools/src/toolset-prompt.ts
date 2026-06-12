@@ -1,4 +1,4 @@
-import type { ToolSetRegistry } from "@freeanima/mechanism-tool";
+import type { ToolSetRegistry } from "@freeanima/core/tool";
 
 const PROMPT_CODE_FENCE_LANG = "md";
 

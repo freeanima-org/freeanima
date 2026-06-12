@@ -1,10 +1,10 @@
-import type { TaskPriority, TaskRow, TaskStatus } from "@freeanima/storage-repos";
+import type { TaskPriority, TaskRow, TaskStatus } from "@freeanima/core/repos";
 import {
   normalizePgTimestamp,
   taskPrioritySchema,
   taskStatusSchema,
-} from "@freeanima/storage-db/schema";
-import type { tasks } from "@freeanima/storage-db/schema";
+} from "@freeanima/core/db/schema";
+import type { tasks } from "@freeanima/core/db/schema";
 
 export type TaskDbRow = typeof tasks.$inferSelect;
 

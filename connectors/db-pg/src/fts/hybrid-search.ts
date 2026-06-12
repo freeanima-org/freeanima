@@ -1,4 +1,4 @@
-import type { MessageFtsHit, SemanticFtsHit } from "@freeanima/storage-repos";
+import type { MessageFtsHit, SemanticFtsHit } from "@freeanima/core/repos";
 import {
   getActiveConfig,
   getFtsTrgmFallbackWhenHitsLt,
@@ -9,7 +9,7 @@ import { sql as drizzleSql } from "drizzle-orm";
 import { embedQueryText } from "../embedding/query.ts";
 import { getDb } from "../client.ts";
 import { buildFtsTsQuery } from "./query.ts";
-import { rrfMerge, messageDocKey, semanticMemoryDocKey } from "@freeanima/storage-util";
+import { rrfMerge, messageDocKey, semanticMemoryDocKey } from "@freeanima/core/util";
 import { searchMessagesTrgm, searchSemanticMemoryTrgm } from "./trgm-search.ts";
 import { searchSemanticMemoryFtsRaw, searchMessagesFtsRaw } from "./hybrid-raw.ts";
 import { searchMessagesVector, searchSemanticMemoryVector } from "./vector-search.ts";

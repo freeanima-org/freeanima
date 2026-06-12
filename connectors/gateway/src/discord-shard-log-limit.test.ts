@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { KeyedRateLimiter } from "@freeanima/storage-util/backoff";
+import { KeyedRateLimiter } from "@freeanima/core/util/backoff";
 
 describe("Discord shard error log limiter", () => {
   it("steps backoff per shard key", () => {

@@ -1,16 +1,16 @@
-import { getToolSessionId } from "@freeanima/mechanism-tool";
-import type { ToolSetRegistry } from "@freeanima/mechanism-tool";
-import { attachToolReturns, toolError, toolResult } from "@freeanima/mechanism-tool";
+import { getToolSessionId } from "@freeanima/core/tool";
+import type { ToolSetRegistry } from "@freeanima/core/tool";
+import { attachToolReturns, toolError, toolResult } from "@freeanima/core/tool";
 import { TASKS_TOOL_RETURNS } from "./return-schemas.ts";
-import { formatCstIso } from "@freeanima/storage-util";
+import { formatCstIso } from "@freeanima/core/util";
 import type {
   TaskListOpts,
   TaskPriority,
   TaskRow,
   TaskStatus,
   TaskStorePort,
-} from "@freeanima/storage-repos";
-import { TASK_PRIORITIES, TASK_STATUSES } from "@freeanima/storage-repos";
+} from "@freeanima/core/repos";
+import { TASK_PRIORITIES, TASK_STATUSES } from "@freeanima/core/repos";
 
 import type { FridgeBridge } from "./types.ts";
 import { syncTasksSummary } from "./fridge-bridge.ts";

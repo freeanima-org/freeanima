@@ -1,5 +1,5 @@
-import { readAppVersionForCapability as readAppVersion } from "@freeanima/storage-config";
-import { logCapability as logComponent } from "@freeanima/storage-config";
+import { readAppVersionForCapability as readAppVersion } from "@freeanima/core/config";
+import { logCapability as logComponent } from "@freeanima/core/config";
 
 import { existsSync } from "node:fs";
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";

@@ -3,4 +3,4 @@ export {
   applySessionToolMaskFilter,
   sessionHasCapabilityMask,
   type SessionToolMaskFilter,
-} from "@freeanima/mechanism-tool";
+} from "@freeanima/core/tool";

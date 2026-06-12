@@ -14,6 +14,7 @@
     "@astrojs/react": "^4.2.1",
     "@astrojs/starlight": "^0.34.3",
     "@astrojs/tailwind": "^6.0.2",
+    "@freeanima/core": "workspace:*",
     "@inlang/paraglide-js": "^2.18.2",
     "@tailwindcss/vite": "^4.3.0",
     "astro": "^6.4.4",

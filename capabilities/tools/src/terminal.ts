@@ -1,5 +1,5 @@
-import type { ToolSetRegistry } from "@freeanima/mechanism-tool";
-import { attachToolReturns, toolError } from "@freeanima/mechanism-tool";
+import type { ToolSetRegistry } from "@freeanima/core/tool";
+import { attachToolReturns, toolError } from "@freeanima/core/tool";
 import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
 import { spawn, spawnSync, type ChildProcess } from "node:child_process";
 

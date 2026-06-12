@@ -1,1 +1,1 @@
-export { MINIMAL_LLM_YAML } from "@freeanima/storage-config/test-helpers/minimal-llm-config";
+export { MINIMAL_LLM_YAML } from "@freeanima/core/config/test-helpers/minimal-llm-config";

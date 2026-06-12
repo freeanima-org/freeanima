@@ -8,7 +8,7 @@ import type {
   SelfLayerStorePort,
   SessionStorePort,
   SemanticMemoryStorePort,
-} from "@freeanima/storage-repos";
+} from "@freeanima/core/repos";
 
 import {
   buildLightSleepAutobiographyUserMessages,

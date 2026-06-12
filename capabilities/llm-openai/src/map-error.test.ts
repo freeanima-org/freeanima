@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { APIError } from "openai";
-import { ProviderError } from "@freeanima/storage-provider-llm";
+import { ProviderError } from "@freeanima/core/provider";
 import { mapOpenAiCompatibleError } from "./map-error.ts";
 
 describe("mapOpenAiCompatibleError", () => {

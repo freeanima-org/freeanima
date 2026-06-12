@@ -14,8 +14,7 @@ const IMPORT_RE = /from\s+["']@freeanima\/([^"']+)["']/g;
 
 const LAYER_DIRS = [
   "kernel",
-  "storage",
-  "mechanism",
+  "core",
   "runtime",
   "capabilities",
   "connectors",
@@ -58,31 +57,14 @@ function isAllowed(layer: Layer, pkg: string, _relPath: string): boolean {
   switch (layer) {
     case "kernel":
       return root.startsWith("kernel-") || root === "kernel";
-    case "storage":
-      return root.startsWith("kernel-") || root === "kernel" || root.startsWith("storage-");
-    case "mechanism":
-      if (root.startsWith("runtime")) return false;
-      if (root.startsWith("service")) return false;
-      if (root.startsWith("connectors-")) return false;
-      if (root.startsWith("capabilities-") && !root.startsWith("capabilities-provider-"))
-        return false;
-      return (
-        root.startsWith("kernel-") ||
-        root === "kernel" ||
-        root.startsWith("storage-") ||
-        root.startsWith("mechanism-") ||
-        root.startsWith("capabilities-provider-")
-      );
+    case "core":
+      return root.startsWith("kernel-") || root === "kernel" || root === "core";
     case "runtime":
       if (root === "service") return false;
       if (root.startsWith("capabilities-")) return false;
       if (root.startsWith("connectors-")) return false;
       return (
-        root.startsWith("kernel-") ||
-        root === "kernel" ||
-        root.startsWith("storage-") ||
-        root.startsWith("mechanism-") ||
-        root === "runtime"
+        root.startsWith("kernel-") || root === "kernel" || root === "core" || root === "runtime"
       );
     case "capabilities": {
       if (root === "runtime" || root.startsWith("runtime/")) return false;
@@ -90,12 +72,7 @@ function isAllowed(layer: Layer, pkg: string, _relPath: string): boolean {
       if (root === "connectors-redis") return true;
       if (root.startsWith("connectors-")) return false;
       if (root.startsWith("capabilities-")) return true;
-      return (
-        root.startsWith("kernel-") ||
-        root === "kernel" ||
-        root.startsWith("storage-") ||
-        root.startsWith("mechanism-")
-      );
+      return root.startsWith("kernel-") || root === "kernel" || root === "core";
     }
     case "connectors":
       return root !== "service";

@@ -1,1 +1,1 @@
-export { getHomeDir, homePath, PATHS } from "@freeanima/storage-config/paths";
+export { getHomeDir, homePath, PATHS } from "@freeanima/core/config/paths";

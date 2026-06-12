@@ -1,4 +1,4 @@
-import type { MessageFtsHit } from "@freeanima/storage-repos";
+import type { MessageFtsHit } from "@freeanima/core/repos";
 import { getSemanticMemoryStore } from "./semantic-port.ts";
 import { getMemorySessionStore } from "./session-port.ts";
 

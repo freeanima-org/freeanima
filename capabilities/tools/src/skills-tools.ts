@@ -1,4 +1,4 @@
-import type { SkillRegistry } from "@freeanima/mechanism-skill";
+import type { SkillRegistry } from "@freeanima/core/skill";
 import {
   createUserSkill,
   deleteUserSkill,
@@ -7,9 +7,9 @@ import {
   registerUserSkillsFromHome,
   searchSkillsForTool,
   viewUserSkill,
-} from "@freeanima/mechanism-skill";
-import type { ToolSetRegistry } from "@freeanima/mechanism-tool";
-import { attachToolReturns } from "@freeanima/mechanism-tool";
+} from "@freeanima/core/skill";
+import type { ToolSetRegistry } from "@freeanima/core/tool";
+import { attachToolReturns } from "@freeanima/core/tool";
 import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
 
 let userSkillsRegistered = false;

@@ -1,4 +1,4 @@
-import type { SelfBlockKey } from "@freeanima/storage-repos";
+import type { SelfBlockKey } from "@freeanima/core/repos";
 
 /** Six block headings (injected into system prompt) */
 export const SELF_BLOCK_HEADINGS: Record<SelfBlockKey, string> = {

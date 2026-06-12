@@ -1,11 +1,11 @@
-import type { ToolSetRegistry } from "@freeanima/mechanism-tool";
-import { attachToolReturns, toolError, toolResult } from "@freeanima/mechanism-tool";
+import type { ToolSetRegistry } from "@freeanima/core/tool";
+import { attachToolReturns, toolError, toolResult } from "@freeanima/core/tool";
 import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
-import type { Config } from "@freeanima/storage-config";
+import type { Config } from "@freeanima/core/config";
 import {
   credentialForCapability as credential,
   readAppVersionForCapability as readAppVersion,
-} from "@freeanima/storage-config";
+} from "@freeanima/core/config";
 
 function userAgent(): string {
   return `anima/${readAppVersion()}`;

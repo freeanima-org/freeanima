@@ -4,7 +4,7 @@ import { parseYaml } from "@freeanima/service-config";
 import { animaConfigSchema } from "@freeanima/service-config/schemas/config";
 import { MINIMAL_LLM_YAML } from "@freeanima/service-config/test-helpers/minimal-llm-config";
 import { sanitizeMcpConfig, isMcpServerEnabled } from "./status.ts";
-import { ToolSetRegistry } from "@freeanima/mechanism-tool";
+import { ToolSetRegistry } from "@freeanima/core/tool";
 import { MCPManager } from "./manager.ts";
 
 function mcpTestConfig() {

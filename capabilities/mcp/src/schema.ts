@@ -1,4 +1,4 @@
-import { toolError } from "@freeanima/mechanism-tool";
+import { toolError } from "@freeanima/core/tool";
 
 /** MCP tools/list inputSchema → OpenAI function parameters (flat JSON Schema) */
 export function mcpToolParameters(mcpTool: {

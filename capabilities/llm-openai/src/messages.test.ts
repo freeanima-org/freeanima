@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import type { LlmTurnMessage } from "@freeanima/storage-provider-llm";
+import type { LlmTurnMessage } from "@freeanima/core/provider";
 import { messagesForApi } from "./messages.ts";
 
 describe("messagesForApi", () => {

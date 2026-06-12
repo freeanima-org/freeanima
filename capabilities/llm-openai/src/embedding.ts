@@ -1,4 +1,4 @@
-import type { ResolvedEmbeddingConfig } from "@freeanima/storage-config";
+import type { ResolvedEmbeddingConfig } from "@freeanima/core/config";
 
 import { createOpenAiClientFromParsed } from "./client.ts";
 

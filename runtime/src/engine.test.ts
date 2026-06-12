@@ -7,12 +7,12 @@ import {
   profileDef,
   ProfileRegistry,
   ProviderRegistry,
-} from "@freeanima/storage-provider-llm";
-import { SkillRegistry } from "@freeanima/mechanism-skill";
-import { ToolSetRegistry } from "@freeanima/mechanism-tool";
-import { nullPgRepositories } from "@freeanima/storage-repos";
-import { MockBackend } from "@freeanima/storage-provider-llm/test-helpers/mock-backend";
-import { Config, type AnimaConfig } from "@freeanima/storage-config";
+} from "@freeanima/core/provider";
+import { SkillRegistry } from "@freeanima/core/skill";
+import { ToolSetRegistry } from "@freeanima/core/tool";
+import { nullPgRepositories } from "@freeanima/core/repos";
+import { MockBackend } from "@freeanima/core/provider/test-helpers/mock-backend";
+import { Config, type AnimaConfig } from "@freeanima/core/config";
 import { createTestLogger } from "@freeanima/kernel/logging/testing";
 import { RuntimeBundle } from "./engine.ts";
 

@@ -7,13 +7,13 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 import { getTestEngine, testConv } from "../../helpers/pg-test.ts";
-import { FALLBACK_TOKENIZER_REPO } from "@freeanima/storage-tokenizer";
+import { FALLBACK_TOKENIZER_REPO } from "@freeanima/core/tokenizer";
 import {
   bindModelToFallbackForTest,
   ensureFallbackTokenizer,
   resetTokenizerForTest,
   setTokenizerEncodeForTest,
-} from "@freeanima/storage-tokenizer/testing";
+} from "@freeanima/core/tokenizer/testing";
 
 describePg("runtime context stats", () => {
   const prev = process.env.FREEANIMA_HOME;

@@ -1,5 +1,5 @@
-import { runWithToolContext, getToolSessionId } from "@freeanima/mechanism-tool";
-import { ToolSetRegistry } from "@freeanima/mechanism-tool";
+import { runWithToolContext, getToolSessionId } from "@freeanima/core/tool";
+import { ToolSetRegistry } from "@freeanima/core/tool";
 import { describe, it, expect } from "bun:test";
 
 const tools = new ToolSetRegistry();

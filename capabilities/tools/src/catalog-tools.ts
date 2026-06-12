@@ -3,8 +3,8 @@ import {
   getToolRepos,
   getToolSessionId,
   grantExecutableTools,
-} from "@freeanima/mechanism-tool";
-import { isSessionMeta, type SessionMetaMessage } from "@freeanima/storage-db/domain";
+} from "@freeanima/core/tool";
+import { isSessionMeta, type SessionMetaMessage } from "@freeanima/core/db/domain";
 import {
   applySessionToolMaskFilter,
   attachToolReturns,
@@ -15,7 +15,7 @@ import {
   toolResult,
   type ToolCatalogEntry,
   type ToolSetRegistry,
-} from "@freeanima/mechanism-tool";
+} from "@freeanima/core/tool";
 import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
 
 function catalogEntryWithAllowed(

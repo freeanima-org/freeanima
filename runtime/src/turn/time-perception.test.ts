@@ -1,6 +1,6 @@
 import { describe, it, expect } from "bun:test";
 import { injectTimePrefixes } from "./time-perception.ts";
-import type { SessionMessage, UserMessage } from "@freeanima/storage-db/domain";
+import type { SessionMessage, UserMessage } from "@freeanima/core/db/domain";
 
 //** Build ISO+08 timestamp string */
 function ts(isoLocal: string): string {

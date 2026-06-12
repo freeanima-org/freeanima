@@ -1,9 +1,9 @@
 import type { HookRegistry } from "@freeanima/kernel/hooks";
-import { systemPromptBuild } from "@freeanima/mechanism-hooks/prompt";
+import { systemPromptBuild } from "@freeanima/core/hooks/prompt";
 import { registerToolsetSystemPromptHooks } from "@freeanima/capabilities-tools/toolset-prompt-hooks";
 import { buildMemorySystemPromptSections } from "@freeanima/capabilities-memory/system-prompt-sections";
 import { loadSelfLayerPrompt } from "@freeanima/capabilities-identity";
-import type { ToolSetRegistry } from "@freeanima/mechanism-tool";
+import type { ToolSetRegistry } from "@freeanima/core/tool";
 
 export function registerMemorySystemPromptHooks(registry: HookRegistry): void {
   registry.on(systemPromptBuild, async (ctx) => {

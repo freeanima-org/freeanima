@@ -1,11 +1,11 @@
-import type { AutobiographicalMemoryRow } from "@freeanima/storage-repos";
+import type { AutobiographicalMemoryRow } from "@freeanima/core/repos";
 import {
   autobiographicalSignificanceSchema,
   autobiographicalStatusSchema,
   normalizePgTimestamp,
   type AutobiographicalSignificance,
   type AutobiographicalStatus,
-} from "@freeanima/storage-db/schema";
+} from "@freeanima/core/db/schema";
 
 export type AutobiographicalMemoryDbRow = {
   id: string;

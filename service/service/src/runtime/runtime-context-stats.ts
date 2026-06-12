@@ -1,13 +1,13 @@
-import { SUMMARY_USER_PREFIX } from "@freeanima/mechanism-compress";
-import { isSessionMeta } from "@freeanima/storage-db/domain";
+import { SUMMARY_USER_PREFIX } from "@freeanima/core/compress";
+import { isSessionMeta } from "@freeanima/core/db/domain";
 import { decomposeSystemPromptParts } from "@freeanima/capabilities-memory/system-prompt";
-import type { SessionMessage } from "@freeanima/storage-db/domain";
+import type { SessionMessage } from "@freeanima/core/db/domain";
 import {
   estimateMessagesTokens,
   estimateTokens,
   estimateToolsTokens,
-} from "@freeanima/mechanism-compress";
-import { PROFILE_CHAT } from "@freeanima/storage-provider-llm";
+} from "@freeanima/core/compress";
+import { PROFILE_CHAT } from "@freeanima/core/provider";
 import { getProfileHopModel } from "@freeanima/service-config";
 import { loadSelfLayerPrompt } from "@freeanima/capabilities-identity";
 import { renderToolsetsSection } from "@freeanima/capabilities-tools/toolset-prompt";

@@ -1,9 +1,9 @@
-import { estimateTokens, estimateToolsTokens } from "@freeanima/mechanism-compress";
-import { PROFILE_CHAT } from "@freeanima/storage-provider-llm";
+import { estimateTokens, estimateToolsTokens } from "@freeanima/core/compress";
+import { PROFILE_CHAT } from "@freeanima/core/provider";
 import { getProfileHopModel } from "@freeanima/service-config";
-import { isSessionMeta } from "@freeanima/storage-db/domain";
-import type { JsonSchemaObject } from "@freeanima/mechanism-tool";
-import { buildSystemPrompt } from "@freeanima/mechanism-hooks/prompt";
+import { isSessionMeta } from "@freeanima/core/db/domain";
+import type { JsonSchemaObject } from "@freeanima/core/tool";
+import { buildSystemPrompt } from "@freeanima/core/hooks/prompt";
 import { renderToolsetsSection } from "@freeanima/capabilities-tools/toolset-prompt";
 import { loadSelfLayerPrompt } from "@freeanima/capabilities-identity";
 import {
@@ -126,7 +126,7 @@ function sessionToolItems(
 async function buildSystemView(
   deps: RuntimeDeps,
   cwd?: string | null,
-  meta?: import("@freeanima/storage-db/domain").SessionMetaMessage,
+  meta?: import("@freeanima/core/db/domain").SessionMetaMessage,
 ): Promise<{
   parts: SystemPromptParts;
   composed: string;

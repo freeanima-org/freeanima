@@ -1,5 +1,5 @@
-import type { PgRepositories } from "@freeanima/storage-repos";
-import type { ToolSetRegistry } from "@freeanima/mechanism-tool";
+import type { PgRepositories } from "@freeanima/core/repos";
+import type { ToolSetRegistry } from "@freeanima/core/tool";
 import type { SessionMessage } from "@freeanima/runtime/session";
 import {
   advanceCompressionMeta,

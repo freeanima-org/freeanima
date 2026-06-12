@@ -2,7 +2,7 @@ import { writeFileSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { getRepoRoot } from "./repo-root.ts";
-export { readAppVersion } from "@freeanima/storage-config";
+export { readAppVersion } from "@freeanima/core/config";
 
 /** Write monorepo root package.json version */
 export function writeRootVersion(version: string, repoRoot?: string): void {

@@ -13,7 +13,7 @@ import {
   networkErrorUserHint,
 } from "@freeanima/runtime/loop";
 import { getServiceContext } from "@freeanima/service-api";
-import { KeyedRateLimiter } from "@freeanima/storage-util/backoff";
+import { KeyedRateLimiter } from "@freeanima/core/util/backoff";
 import { logComponent } from "@freeanima/service-logging";
 import type { MessagingPort } from "@freeanima/service-api/ports/messaging-port";
 import type { PlatformAdapter } from "../platforms.ts";

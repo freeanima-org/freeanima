@@ -3,7 +3,7 @@ import { registerStatsReport } from "@freeanima/service-api/conversation-stats";
 import { registerStudioPort } from "@freeanima/service-api/studio-port";
 import { registerCronUseCases } from "@freeanima/service-api/cron-use-cases";
 import { registerOnSessionCloseBeforeNew } from "@freeanima/service-api/session-close";
-import { getToolSessionId } from "@freeanima/mechanism-tool";
+import { getToolSessionId } from "@freeanima/core/tool";
 import { registerToolSessionResolver } from "@freeanima/capabilities-memory/tool-session-port";
 import { runSimpleTurn } from "./runtime/turn-lifecycle.ts";
 import { statsReport } from "./runtime/conversation-stats.ts";

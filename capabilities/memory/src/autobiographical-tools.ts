@@ -1,9 +1,9 @@
-import type { ToolDef } from "@freeanima/mechanism-tool";
-import { toolError, toolResult } from "@freeanima/mechanism-tool";
+import type { ToolDef } from "@freeanima/core/tool";
+import { toolError, toolResult } from "@freeanima/core/tool";
 import type {
   AutobiographicalSignificance,
   AutobiographicalMemoryCreateInput,
-} from "@freeanima/storage-repos";
+} from "@freeanima/core/repos";
 
 import { getAutobiographicalMemoryStore } from "./autobiographical-port.ts";
 

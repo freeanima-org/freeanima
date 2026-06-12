@@ -7,7 +7,7 @@ import type {
   LimbicMemoryRow,
   SemanticFtsHit,
   SemanticMemorySearchOpts,
-} from "@freeanima/storage-repos";
+} from "@freeanima/core/repos";
 import { PATHS } from "@freeanima/service-config";
 import { memoryRecallSearch, type MemoryRecallResult } from "@freeanima/capabilities-memory/search";
 import type { RuntimeDeps } from "./runtime-deps.ts";

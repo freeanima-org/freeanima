@@ -80,8 +80,8 @@ bun run service start --dev # WebUI source watch rebuild (not HMR; refresh page 
 anima credential list # credential paths; values in pass
 
 # PG schema changes (must generate snapshot.json; see .agent/rules/coding.md)
-DATABASE_URL="…" bun run --filter @freeanima/storage-db db:generate
-DATABASE_URL="…" bun run --filter @freeanima/storage-db db:migrate
+DATABASE_URL="…" bun run --filter @freeanima/core/db db:generate
+DATABASE_URL="…" bun run --filter @freeanima/core/db db:migrate
 ```
 
 - WebUI parlor: `http://127.0.0.1:2658/webui/parlor/chat`

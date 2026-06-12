@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import type { ChatRequest } from "@freeanima/storage-provider-llm";
+import type { ChatRequest } from "@freeanima/core/provider";
 import { buildChatCompletionParams, buildStreamingChatCompletionParams } from "./request-params.ts";
 
 const baseRequest: ChatRequest = {

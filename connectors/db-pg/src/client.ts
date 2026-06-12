@@ -1,4 +1,4 @@
-import { relations, type DbRelations } from "@freeanima/storage-db/schema";
+import { relations, type DbRelations } from "@freeanima/core/db/schema";
 import { drizzle, type BunSQLDatabase } from "drizzle-orm/bun-sql/postgres";
 import { SQL } from "bun";
 

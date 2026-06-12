@@ -2,4 +2,4 @@ export {
   cleanToolCallsForApi,
   finalizeStreamingToolCalls,
   mergeStreamingToolCalls,
-} from "@freeanima/storage-provider-llm/stream-tools";
+} from "@freeanima/core/provider/stream-tools";

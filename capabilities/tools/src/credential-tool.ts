@@ -1,7 +1,7 @@
-import type { ToolSetRegistry } from "@freeanima/mechanism-tool";
-import { attachToolReturns, toolResult } from "@freeanima/mechanism-tool";
+import type { ToolSetRegistry } from "@freeanima/core/tool";
+import { attachToolReturns, toolResult } from "@freeanima/core/tool";
 import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
-import { listCredentialsForCapability as listCredentials } from "@freeanima/storage-config";
+import { listCredentialsForCapability as listCredentials } from "@freeanima/core/config";
 
 export function registerCredentialTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(

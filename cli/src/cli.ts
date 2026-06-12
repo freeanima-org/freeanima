@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 import { buildProgram, ANIMA_VERSION } from "./program.ts";
 import { printCliError } from "./output/errors.ts";
-import { formatCliVersion } from "@freeanima/storage-config/cli-install";
+import { formatCliVersion } from "@freeanima/core/config/cli-install";
 
 async function main(): Promise<void> {
   const argv = process.argv;

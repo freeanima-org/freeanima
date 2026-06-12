@@ -1,6 +1,6 @@
-import { getToolSessionId } from "@freeanima/mechanism-tool";
-import type { ToolSetRegistry } from "@freeanima/mechanism-tool";
-import { attachToolReturns, toolError } from "@freeanima/mechanism-tool";
+import { getToolSessionId } from "@freeanima/core/tool";
+import type { ToolSetRegistry } from "@freeanima/core/tool";
+import { attachToolReturns, toolError } from "@freeanima/core/tool";
 import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
 
 import {

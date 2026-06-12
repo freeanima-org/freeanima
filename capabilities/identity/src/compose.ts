@@ -1,4 +1,4 @@
-import type { SelfBlockKey, SelfBlockRow } from "@freeanima/storage-repos";
+import type { SelfBlockKey, SelfBlockRow } from "@freeanima/core/repos";
 
 import {
   SELF_BLOCK_EMPTY_PLACEHOLDER,

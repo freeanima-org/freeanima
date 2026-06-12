@@ -1,7 +1,7 @@
 import * as conv from "@freeanima/runtime/conversation";
-import { prependSkillsToPrompt } from "@freeanima/mechanism-skill";
+import { prependSkillsToPrompt } from "@freeanima/core/skill";
 import { getProfileHopModel } from "@freeanima/service-config";
-import { PROFILE_CHAT } from "@freeanima/storage-provider-llm";
+import { PROFILE_CHAT } from "@freeanima/core/provider";
 import { runSimpleTurn } from "../turn-lifecycle.ts";
 import type { FullRuntimeDeps } from "../runtime-deps.ts";
 

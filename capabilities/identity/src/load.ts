@@ -1,5 +1,5 @@
-import type { SelfBlockRow } from "@freeanima/storage-repos";
-import { SELF_BLOCK_KEYS } from "@freeanima/storage-repos";
+import type { SelfBlockRow } from "@freeanima/core/repos";
+import { SELF_BLOCK_KEYS } from "@freeanima/core/repos";
 
 import {
   getSelfLayerPromptCache,

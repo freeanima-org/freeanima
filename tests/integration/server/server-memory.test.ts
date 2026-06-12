@@ -9,7 +9,7 @@ import {
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { getAppRuntime } from "@freeanima/service";
-import { SELF_BLOCK_KEYS } from "@freeanima/storage-repos";
+import { SELF_BLOCK_KEYS } from "@freeanima/core/repos";
 import { getTestEngine, getActivePgTestContext, seedSession } from "../../helpers/pg-test.ts";
 
 describePg("server memory API", () => {

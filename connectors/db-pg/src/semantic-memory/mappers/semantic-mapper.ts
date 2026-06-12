@@ -1,5 +1,5 @@
-import type { SemanticMemoryRow } from "@freeanima/storage-repos";
-import { semanticMemory, normalizePgTimestamp } from "@freeanima/storage-db/schema";
+import type { SemanticMemoryRow } from "@freeanima/core/repos";
+import { semanticMemory, normalizePgTimestamp } from "@freeanima/core/db/schema";
 
 export type SemanticMemoryDbRow = typeof semanticMemory.$inferSelect;
 

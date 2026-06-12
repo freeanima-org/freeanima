@@ -1,8 +1,8 @@
-import { getToolSessionId, getToolRepos } from "@freeanima/mechanism-tool";
-import type { ToolSetRegistry } from "@freeanima/mechanism-tool";
-import { attachToolReturns, toolError } from "@freeanima/mechanism-tool";
+import { getToolSessionId, getToolRepos } from "@freeanima/core/tool";
+import type { ToolSetRegistry } from "@freeanima/core/tool";
+import { attachToolReturns, toolError } from "@freeanima/core/tool";
 import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
-import { handleSessionTodo } from "@freeanima/mechanism-tool";
+import { handleSessionTodo } from "@freeanima/core/tool";
 
 async function handleTodo(args: Record<string, unknown>): Promise<string> {
   const sessionId = getToolSessionId();

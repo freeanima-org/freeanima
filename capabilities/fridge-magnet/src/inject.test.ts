@@ -61,7 +61,7 @@ describe("stripFridgeMagnets", () => {
   });
 });
 
-import type { SessionMessage } from "@freeanima/storage-db/domain";
+import type { SessionMessage } from "@freeanima/core/db/domain";
 
 describe("injectIntoMessages", () => {
   it("injects into last user message", () => {

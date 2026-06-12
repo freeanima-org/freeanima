@@ -1,5 +1,5 @@
 import type { CredentialPermission, Mask, ResolvedMask } from "./types.ts";
-import type { ToolSetRegistry } from "@freeanima/mechanism-tool";
+import type { ToolSetRegistry } from "@freeanima/core/tool";
 import { expandToolSets } from "./expand.ts";
 
 type PermLevel = CredentialPermission["read"];

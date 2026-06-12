@@ -1,11 +1,11 @@
 import type { FullRuntimeDeps } from "./runtime/runtime-deps.ts";
-import { registerLlmStackConfigurator } from "@freeanima/mechanism-llm";
-import { registerSystemPromptHookRunner } from "@freeanima/mechanism-hooks/prompt";
+import { registerLlmStackConfigurator } from "@freeanima/core/llm";
+import { registerSystemPromptHookRunner } from "@freeanima/core/hooks/prompt";
 import { rebuildSessionSystemPrompt } from "@freeanima/runtime/conversation";
-import { registerSessionToolMaskFilter } from "@freeanima/mechanism-tool";
-import { registerCompressionSummaryPostCut } from "@freeanima/mechanism-compress";
+import { registerSessionToolMaskFilter } from "@freeanima/core/tool";
+import { registerCompressionSummaryPostCut } from "@freeanima/core/compress";
 import { wireOpenAiCompatibleLlm } from "@freeanima/capabilities-llm-openai";
-import { foldSystemPromptSections, systemPromptBuild } from "@freeanima/mechanism-hooks/prompt";
+import { foldSystemPromptSections, systemPromptBuild } from "@freeanima/core/hooks/prompt";
 import { filterToolNamesByMask, resolveSessionMaskFromMeta } from "./runtime/mask-wire.ts";
 import { getAppRuntime } from "./context.ts";
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import type { SessionMetaLoadResult } from "@freeanima/storage-db/domain";
+import type { SessionMetaLoadResult } from "@freeanima/core/db/domain";
 import { resolveSessionDeliverTargets } from "./acp-progress-delivery.ts";
 
 function metaFixture(

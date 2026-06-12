@@ -1,6 +1,6 @@
 import { desc, eq } from "drizzle-orm";
-import { limbicKindSchema, limbicMemory } from "@freeanima/storage-db/schema";
-import type { LimbicMemoryCreateInput, LimbicMemoryRow } from "@freeanima/storage-repos";
+import { limbicKindSchema, limbicMemory } from "@freeanima/core/db/schema";
+import type { LimbicMemoryCreateInput, LimbicMemoryRow } from "@freeanima/core/repos";
 
 import { getDb } from "../../client.ts";
 import { mapLimbicMemoryRow } from "../mappers/limbic-mapper.ts";

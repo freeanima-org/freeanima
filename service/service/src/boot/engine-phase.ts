@@ -4,7 +4,7 @@ import {
   type Engine,
   type EngineCatalog,
 } from "@freeanima/runtime";
-import { getLlmRuntime, initLlmRuntime } from "@freeanima/mechanism-llm";
+import { getLlmRuntime, initLlmRuntime } from "@freeanima/core/llm";
 import { createServiceKernel } from "@freeanima/service-bootstrap";
 import {
   createConversationService,
@@ -18,7 +18,7 @@ import { registerFridgeStore } from "@freeanima/capabilities-fridge-magnet";
 import { createRedisFridgeStore } from "@freeanima/connectors-redis";
 import type { Kernel } from "@freeanima/kernel";
 import type { FileConfig } from "@freeanima/service-config";
-import type { PgRepositories } from "@freeanima/storage-repos";
+import type { PgRepositories } from "@freeanima/core/repos";
 
 import { registerServiceTools } from "../register.ts";
 import { registerServiceIntegrations } from "../register.ts";

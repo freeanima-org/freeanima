@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
-import type { SemanticMemoryStorePort } from "@freeanima/storage-repos";
-import type { SemanticMemoryCreateInput } from "@freeanima/storage-repos";
+import type { SemanticMemoryStorePort } from "@freeanima/core/repos";
+import type { SemanticMemoryCreateInput } from "@freeanima/core/repos";
 
 import { registerSemanticMemoryStore, resetSemanticMemoryStoreForTests } from "./semantic-port.ts";
 import { createSemanticMemoryFromArgs, semanticMemoryToolDefs } from "./semantic-memory-tools.ts";

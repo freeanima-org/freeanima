@@ -1,1 +1,1 @@
-export { getRepoRoot } from "@freeanima/storage-config";
+export { getRepoRoot } from "@freeanima/core/config";

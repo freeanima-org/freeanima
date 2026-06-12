@@ -1,4 +1,4 @@
-import type { BackendContext } from "@freeanima/storage-provider-llm";
+import type { BackendContext } from "@freeanima/core/provider";
 
 export type OpenAiCompatibleContext = {
   baseUrl: string;

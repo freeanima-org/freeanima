@@ -1,4 +1,4 @@
-import { toolError } from "@freeanima/mechanism-tool";
+import { toolError } from "@freeanima/core/tool";
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, writeFileSync, unlinkSync } from "node:fs";
 import { tmpdir } from "node:os";

@@ -1,5 +1,5 @@
-import type { TaskPriority, TaskRow, TaskStatus } from "@freeanima/storage-repos";
-import { TASK_STATUSES } from "@freeanima/storage-repos";
+import type { TaskPriority, TaskRow, TaskStatus } from "@freeanima/core/repos";
+import { TASK_STATUSES } from "@freeanima/core/repos";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 
 export type TaskListResult = {

@@ -1,4 +1,4 @@
-import type { AutobiographicalMemoryStorePort } from "@freeanima/storage-repos";
+import type { AutobiographicalMemoryStorePort } from "@freeanima/core/repos";
 
 let autobiographicalMemoryStore: AutobiographicalMemoryStorePort | null = null;
 

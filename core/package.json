@@ -1,0 +1,54 @@
+{
+  "name": "@freeanima/core",
+  "type": "module",
+  "scripts": {
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate"
+  },
+  "exports": {
+    "./config": "./src/config/index.ts",
+    "./config/*": "./src/config/*.ts",
+    "./db": "./src/db/index.ts",
+    "./db/schema": "./src/db/schema/index.ts",
+    "./db/domain": "./src/db/domain/index.ts",
+    "./db/domain/*": "./src/db/domain/*.ts",
+    "./repos": "./src/repos/index.ts",
+    "./repos/*": "./src/repos/*.ts",
+    "./util": "./src/util/index.ts",
+    "./util/*": "./src/util/*.ts",
+    "./util/backoff": "./src/util/backoff/index.ts",
+    "./util/backoff/*": "./src/util/backoff/*.ts",
+    "./util/fts/*": "./src/util/fts/*.ts",
+    "./util/search/*": "./src/util/search/*.ts",
+    "./tokenizer": "./src/tokenizer/index.ts",
+    "./tokenizer/*": "./src/tokenizer/*.ts",
+    "./provider": "./src/provider/index.ts",
+    "./provider/*": "./src/provider/*.ts",
+    "./tool": "./src/tool/index.ts",
+    "./tool/session-conversation-port": "./src/tool/session-conversation-port.ts",
+    "./tool/*": "./src/tool/*.ts",
+    "./llm": "./src/llm/index.ts",
+    "./llm/*": "./src/llm/*.ts",
+    "./compress": "./src/compress/index.ts",
+    "./compress/*": "./src/compress/*.ts",
+    "./hooks/loop": "./src/hooks/loop/index.ts",
+    "./hooks/conversation": "./src/hooks/conversation/index.ts",
+    "./hooks/prompt": "./src/hooks/prompt/index.ts",
+    "./hooks/*": "./src/hooks/*.ts",
+    "./skill": "./src/skill/index.ts",
+    "./skill/*": "./src/skill/*.ts"
+  },
+  "dependencies": {
+    "@freeanima/kernel": "workspace:*",
+    "@huggingface/tokenizers": "^0.1.3",
+    "drizzle-orm": "catalog:",
+    "tiktoken": "^1.0.22",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@freeanima/capabilities-llm-openai": "workspace:*",
+    "@freeanima/runtime": "workspace:*",
+    "@types/bun": "catalog:",
+    "drizzle-kit": "catalog:"
+  }
+}

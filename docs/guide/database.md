@@ -54,7 +54,7 @@ Fresh Debian installs via `setup-postgres-debian.sh` handle extensions automatic
 
 ```bash
 DATABASE_URL="$(anima credential get services/postgres/anima url)" \
-  bun run --filter @freeanima/storage-db db:migrate
+  bun run --filter @freeanima/core/db db:migrate
 ```
 
 Run after extensions are installed, or restart `anima service`.

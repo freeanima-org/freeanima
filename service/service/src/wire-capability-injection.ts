@@ -1,5 +1,5 @@
 import { credential, listCredentials, readAppVersion } from "@freeanima/service-config";
-import { registerCapabilityInjection } from "@freeanima/storage-config";
+import { registerCapabilityInjection } from "@freeanima/core/config";
 
 /** Wire service-config I/O helpers for capabilities packages */
 export function wireCapabilityInjection(): void {

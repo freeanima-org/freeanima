@@ -5,8 +5,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@freeanima/storage-config": "workspace:*",
-    "@freeanima/mechanism-tool": "workspace:*",
+    "@freeanima/core": "workspace:*",
     "zod": "catalog:"
   },
   "devDependencies": {

@@ -69,15 +69,14 @@
   "workspaces": {
     "packages": [
       "kernel",
-      "storage/*",
-      "mechanism/*",
       "capabilities/*",
       "connectors/*",
       "service/*",
       "cli",
       "site",
       "tests",
-      "runtime"
+      "runtime",
+      "core"
     ],
     "catalog": {
       "@types/node": "^24.12.4",

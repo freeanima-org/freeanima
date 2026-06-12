@@ -1,7 +1,7 @@
 import { buildMessagesDisplay, paginateMessagesDisplay } from "./build-messages-display.ts";
 import { describe, expect, it } from "bun:test";
 
-import type { SessionMessage } from "@freeanima/storage-db/domain";
+import type { SessionMessage } from "@freeanima/core/db/domain";
 
 describe("buildMessagesDisplay", () => {
   it("aggregates assistant tool_calls and tool results into tool_block", () => {

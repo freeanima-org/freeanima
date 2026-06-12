@@ -8,9 +8,9 @@ import {
   isUserMessage,
   type ConversationMessage,
   type SessionMessage,
-} from "@freeanima/storage-db/domain";
+} from "@freeanima/core/db/domain";
 
-import { type MessageInsert, messageSelectSchema } from "@freeanima/storage-db/schema";
+import { type MessageInsert, messageSelectSchema } from "@freeanima/core/db/schema";
 
 export function newMessageGlobalId(): string {
   return randomUUID();

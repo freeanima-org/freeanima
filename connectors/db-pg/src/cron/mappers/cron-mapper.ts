@@ -1,5 +1,5 @@
-import type { CronJobRow } from "@freeanima/storage-repos";
-import { normalizePgTimestamp } from "@freeanima/storage-db/schema";
+import type { CronJobRow } from "@freeanima/core/repos";
+import { normalizePgTimestamp } from "@freeanima/core/db/schema";
 
 export type CronJobDbRow = {
   id: string;

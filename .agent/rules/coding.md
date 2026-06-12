@@ -15,8 +15,8 @@
 
 When adding or moving types / Zod / ports, decide in this order:
 
-1. **PG storage shape (DDL + JSONB Zod)** → `@freeanima/storage-db` (sole SSOT) — [`storage/db/src/schema/`](../../storage/db/src/schema/)
-2. **Repository ports and aggregates** → `@freeanima/storage-repos` (`*StorePort`, `PgRepositories`; includes `null*` adapters) — [`storage/repos/src/ports/`](../../storage/repos/src/ports/)
+1. **PG storage shape (DDL + JSONB Zod)** → `@freeanima/core/db` (sole SSOT) — [`storage/db/src/schema/`](../../storage/db/src/schema/)
+2. **Repository ports and aggregates** → `@freeanima/core/repos` (`*StorePort`, `PgRepositories`; includes `null*` adapters) — [`storage/repos/src/ports/`](../../storage/repos/src/ports/)
 3. **Domain types** → owner package (`{layer}-{slug}`); hoist to kernel pure-type packages only when shared across domains
 
 Additional rules:
@@ -39,11 +39,11 @@ Do not maintain a domain-to-package inventory in docs — use source and `grep`.
 
 **Flow**: change `storage/db/src/schema/` → **`drizzle-kit generate`** → **`migrate`**.
 
-| Step | Command / action                                                    | Output                                                               |
-| ---- | ------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| 1    | Change Drizzle schema (`storage/db/src/schema/`)                    | TypeScript SSOT                                                      |
-| 2    | `DATABASE_URL=… bun run --filter @freeanima/storage-db db:generate` | `migrations/{ts}_{name}/migration.sql` + **`snapshot.json`**         |
-| 3    | `DATABASE_URL=… bun run --filter @freeanima/storage-db db:migrate`  | PG applies DDL; production may auto-migrate on `anima service` start |
+| Step | Command / action                                                 | Output                                                               |
+| ---- | ---------------------------------------------------------------- | -------------------------------------------------------------------- |
+| 1    | Change Drizzle schema (`storage/db/src/schema/`)                 | TypeScript SSOT                                                      |
+| 2    | `DATABASE_URL=… bun run --filter @freeanima/core/db db:generate` | `migrations/{ts}_{name}/migration.sql` + **`snapshot.json`**         |
+| 3    | `DATABASE_URL=… bun run --filter @freeanima/core/db db:migrate`  | PG applies DDL; production may auto-migrate on `anima service` start |
 
 **Forbidden**:
 

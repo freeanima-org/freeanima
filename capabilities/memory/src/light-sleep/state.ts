@@ -1,9 +1,9 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { PATHS } from "@freeanima/storage-config";
-import { formatCstIso } from "@freeanima/storage-util";
+import { PATHS } from "@freeanima/core/config";
+import { formatCstIso } from "@freeanima/core/util";
 import { z } from "zod";
-import { safeParseOrNull } from "@freeanima/storage-util";
+import { safeParseOrNull } from "@freeanima/core/util";
 
 const stateSchema = z.object({
   last_run_at: z.string().optional(),

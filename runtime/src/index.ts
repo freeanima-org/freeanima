@@ -16,7 +16,7 @@ export {
   registerRuntimeLogger,
   resetRuntimeLoggerForTest,
   type AnimaConfig,
-} from "@freeanima/storage-config";
-export { runMigrations } from "@freeanima/storage-db";
-export { nullPgRepositories, type PgRepositories } from "@freeanima/storage-repos";
-export { getTokenizerBindingSnapshot } from "@freeanima/storage-tokenizer";
+} from "@freeanima/core/config";
+export { runMigrations } from "@freeanima/core/db";
+export { nullPgRepositories, type PgRepositories } from "@freeanima/core/repos";
+export { getTokenizerBindingSnapshot } from "@freeanima/core/tokenizer";

@@ -1,7 +1,7 @@
 import type { FridgeBridge } from "@freeanima/capabilities-tasks";
 import { registerTasksModule, syncTasksSummary } from "@freeanima/capabilities-tasks";
 import { isRedisConfigured } from "@freeanima/connectors-redis";
-import type { PgRepositories } from "@freeanima/storage-repos";
+import type { PgRepositories } from "@freeanima/core/repos";
 import { registerMemoryPipeline } from "@freeanima/capabilities-memory";
 import { registerSelfLayerStore } from "@freeanima/capabilities-identity";
 

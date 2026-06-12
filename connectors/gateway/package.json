@@ -12,12 +12,11 @@
   },
   "dependencies": {
     "@freeanima/connectors-cron": "workspace:*",
+    "@freeanima/core": "workspace:*",
     "@freeanima/runtime": "workspace:*",
     "@freeanima/service-api": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "@freeanima/service-logging": "workspace:*",
-    "@freeanima/storage-db": "workspace:*",
-    "@freeanima/storage-util": "workspace:*",
     "discord.js": "^14.26.4",
     "zod": "catalog:"
   },

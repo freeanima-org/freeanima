@@ -1,6 +1,6 @@
 import { sql as drizzleSql } from "drizzle-orm";
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
-import type { ConversationMessage } from "@freeanima/storage-db/domain";
+import type { ConversationMessage } from "@freeanima/core/db/domain";
 import { getDb } from "@freeanima/connectors-db-pg";
 import { getTestEngine } from "../../helpers/pg-test.ts";
 import { describePg } from "../../helpers/pg-test-gate.ts";

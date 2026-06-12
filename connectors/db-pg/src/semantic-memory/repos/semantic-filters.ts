@@ -1,5 +1,5 @@
 import { arrayOverlaps, eq, inArray, type SQL } from "drizzle-orm";
-import { semanticMemory } from "@freeanima/storage-db/schema";
+import { semanticMemory } from "@freeanima/core/db/schema";
 
 export function buildSemanticTypeCondition(types: readonly string[]): SQL | undefined {
   if (types.length === 0) return undefined;

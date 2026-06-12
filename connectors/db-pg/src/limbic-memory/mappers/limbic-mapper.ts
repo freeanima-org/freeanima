@@ -1,9 +1,5 @@
-import type { LimbicMemoryRow } from "@freeanima/storage-repos";
-import {
-  limbicKindSchema,
-  normalizePgTimestamp,
-  type LimbicKind,
-} from "@freeanima/storage-db/schema";
+import type { LimbicMemoryRow } from "@freeanima/core/repos";
+import { limbicKindSchema, normalizePgTimestamp, type LimbicKind } from "@freeanima/core/db/schema";
 
 export type LimbicMemoryDbRow = {
   id: string;

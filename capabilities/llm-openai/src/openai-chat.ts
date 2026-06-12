@@ -4,7 +4,7 @@ import type {
   ChatRequest,
   ChatStreamEvent,
   ToolCall,
-} from "@freeanima/storage-provider-llm";
+} from "@freeanima/core/provider";
 import type { ChatCompletionMessageFunctionToolCall } from "openai/resources/chat/completions";
 import { createOpenAiClient } from "./client.ts";
 import { buildChatCompletionParams, buildStreamingChatCompletionParams } from "./request-params.ts";

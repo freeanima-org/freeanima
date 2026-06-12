@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { RESIDENT_TOP_N } from "@freeanima/storage-repos";
+import { RESIDENT_TOP_N } from "@freeanima/core/repos";
 
 import { getSemanticMemoryStore } from "./semantic-port.ts";
 import { formatResidentMemoryLine, MEMORY_REFERENCE_CITATION_RULE } from "./memory-reference.ts";
