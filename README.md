@@ -50,42 +50,32 @@ Full blueprint: [`docs/concepts/architecture.md`](docs/concepts/architecture.md)
 
 ## Documentation
 
-| Audience              | Entry                                                                                             |
-| --------------------- | ------------------------------------------------------------------------------------------------- |
-| **Docs site**         | [freeanima.com/docs](https://freeanima.com/docs/) · [中文文档](https://freeanima.com/zh-cn/docs/) |
-| **Repo index**        | [`docs/README.md`](docs/README.md)                                                                |
-| Deployers / visitors  | Quick start below + [`docs/guide/security.md`](docs/guide/security.md)                            |
-| AI agents             | [`AGENTS.md`](AGENTS.md) · [`.agent/rules/`](.agent/rules/README.md)                              |
-| Architecture          | [`docs/concepts/architecture.md`](docs/concepts/architecture.md)                                  |
-| Digital-life identity | [`docs/concepts/identity.md`](docs/concepts/identity.md)                                          |
+| Audience              | Entry                                                                                                 |
+| --------------------- | ----------------------------------------------------------------------------------------------------- |
+| **Docs site**         | [freeanima.com/docs](https://freeanima.com/docs/) · [中文文档](https://freeanima.com/zh-cn/docs/)     |
+| **Repo index**        | [`docs/README.md`](docs/README.md)                                                                    |
+| Deployers / visitors  | [`docs/guide/install.md`](docs/guide/install.md) · [`docs/guide/security.md`](docs/guide/security.md) |
+| AI agents             | [`AGENTS.md`](AGENTS.md) · [`.agent/rules/`](.agent/rules/README.md)                                  |
+| Architecture          | [`docs/concepts/architecture.md`](docs/concepts/architecture.md)                                      |
+| Digital-life identity | [`docs/concepts/identity.md`](docs/concepts/identity.md)                                              |
 
 ## Quick start
 
-### Docker Compose (recommended for a quick trial)
+Install via **npm CLI**, **Docker Compose**, or **from source** — full steps in [`docs/guide/install.md`](docs/guide/install.md).
 
 ```bash
-cp .env.example .env   # set PG_PASSWORD, OPENAI_API_KEY, etc.
-docker compose up --build
+# npm CLI (requires Bun)
+bun install -g @freeanima/cli
+
+# Docker Compose (quick trial)
+cp .env.example .env && docker compose up --build
+
+# Source
+git clone https://github.com/freeanima-org/freeanima.git && cd freeanima
+bun install && bun run link:global
 ```
 
-See [Issue #3](https://github.com/freeanima-org/freeanima/issues/3) for details.
-
-### Local development
-
-**Prerequisites:** Bun >= 1.3.14 · PostgreSQL (pgvector) · Redis · [pass](https://www.passwordstore.org/)
-
-```bash
-bun install
-bun run check    # typecheck + lint + dep-check + format + changed unit tests
-bun run test     # full unit + integration
-
-mkdir -p ~/.anima
-cp config.example.yaml ~/.anima/config.yaml
-# Configure pass credentials + database (see docs/guide/database.md)
-anima service start
-```
-
-Credential path conventions: [`docs/guide/security.md`](docs/guide/security.md#credential-responsibilities). Database migrations: [`docs/guide/database.md`](docs/guide/database.md).
+Then configure `~/.anima/config.yaml` (or `.env` for Docker) and run `anima service start`. See [`docs/guide/install.md`](docs/guide/install.md), [`docs/guide/database.md`](docs/guide/database.md), [`docs/guide/security.md`](docs/guide/security.md).
 
 ## WebUI
 
