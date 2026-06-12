@@ -59,6 +59,7 @@ function ChatPage() {
   const recovering = useChatStore((s) => s.recovering);
   const send = useChatStore((s) => s.send);
 
+  const sendingRef = useRef(false);
   const msgAreaRef = useRef<HTMLDivElement>(null);
   const msgInputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -145,107 +146,115 @@ function ChatPage() {
 
   const sendMessage = async () => {
     const text = inputText.trim();
-    if (!text || !currentId || streaming) return;
+    if (!text || !currentId || streaming || sendingRef.current) return;
+    if (useChatStore.getState().streaming) return;
+
+    sendingRef.current = true;
+    useChatStore.setState({ streaming: true });
 
     setInputText("");
     requestAnimationFrame(resizeInput);
 
     appendItem({ type: "message", role: "user", content: text });
-    const displayBaseline = useSessionsStore.getState().display.length;
-    if (clarifyPending) setClarifyPending(null);
-    scrollDown();
+    try {
+      const displayBaseline = useSessionsStore.getState().display.length;
+      if (clarifyPending) setClarifyPending(null);
+      scrollDown();
 
-    setStreamAccumulated("");
-    setStreamDone(false);
-    setToolCalls([]);
-    setClarifyPending(null);
+      setStreamAccumulated("");
+      setStreamDone(false);
+      setToolCalls([]);
+      setClarifyPending(null);
 
-    let accumulated = "";
-    let pendingTools: ToolCallState[] = [];
+      let accumulated = "";
+      let pendingTools: ToolCallState[] = [];
 
-    await send(currentId, text, {
-      recoverDisplay: (id) => refreshMessages(id, displayBaseline),
-      onToken: (fullText) => {
-        accumulated = fullText;
-        setStreamAccumulated(fullText);
-        scrollDown();
-      },
-      onToolBegin: (data) => {
-        const tool = String(data.tool || "?");
-        const args = (data.args || {}) as Record<string, unknown>;
-        const preview = Object.keys(args)
-          .slice(0, 2)
-          .map((k) => `${k}=${String(args[k]).slice(0, 30)}`)
-          .join(", ");
-        pendingTools = [...pendingTools, { name: tool, argsPreview: preview, status: "running" }];
-        setToolCalls(pendingTools);
-        scrollDown();
-      },
-      onToolResult: (data) => {
-        const tool = String(data.tool || "");
-        if (tool === "clarify") return;
-        pendingTools = pendingTools.map((t) =>
-          t.name === tool && (t.status === "running" || t.status === "pending")
-            ? { ...t, status: "done" }
-            : t,
-        );
-        setToolCalls(pendingTools);
-        scrollDown();
-      },
-      onAwaitingClarify: (data) => {
-        if (Array.isArray(data.items) && data.items.length) {
-          setClarifyPending({
-            items: data.items as ClarifyPending["items"],
-            timeout_sec: (data.timeout_sec as number | undefined) ?? 1800,
-          });
-        }
-        scrollDown();
-      },
-      onToolError: (data) => {
-        const tool = String(data.tool || "");
-        pendingTools = pendingTools.map((t) =>
-          t.name === tool && (t.status === "running" || t.status === "pending")
-            ? { ...t, status: "error" }
-            : t,
-        );
-        setToolCalls(pendingTools);
-        scrollDown();
-      },
-      onError: (msg) => {
-        setStreamDone(true);
-        appendItem({ type: "message", role: "assistant", content: `⚠️ ${msg}` });
-        setStreamAccumulated("");
-        setToolCalls([]);
-        scrollDown();
-      },
-      onDone: (opts) => {
-        setStreamDone(true);
-        if (opts?.recovered) {
+      await send(currentId, text, {
+        recoverDisplay: (id) => refreshMessages(id, displayBaseline),
+        onToken: (fullText) => {
+          accumulated = fullText;
+          setStreamAccumulated(fullText);
+          scrollDown();
+        },
+        onToolBegin: (data) => {
+          const tool = String(data.tool || "?");
+          const args = (data.args || {}) as Record<string, unknown>;
+          const preview = Object.keys(args)
+            .slice(0, 2)
+            .map((k) => `${k}=${String(args[k]).slice(0, 30)}`)
+            .join(", ");
+          pendingTools = [...pendingTools, { name: tool, argsPreview: preview, status: "running" }];
+          setToolCalls(pendingTools);
+          scrollDown();
+        },
+        onToolResult: (data) => {
+          const tool = String(data.tool || "");
+          if (tool === "clarify") return;
+          pendingTools = pendingTools.map((t) =>
+            t.name === tool && (t.status === "running" || t.status === "pending")
+              ? { ...t, status: "done" }
+              : t,
+          );
+          setToolCalls(pendingTools);
+          scrollDown();
+        },
+        onAwaitingClarify: (data) => {
+          if (Array.isArray(data.items) && data.items.length) {
+            setClarifyPending({
+              items: data.items as ClarifyPending["items"],
+              timeout_sec: (data.timeout_sec as number | undefined) ?? 1800,
+            });
+          }
+          scrollDown();
+        },
+        onToolError: (data) => {
+          const tool = String(data.tool || "");
+          pendingTools = pendingTools.map((t) =>
+            t.name === tool && (t.status === "running" || t.status === "pending")
+              ? { ...t, status: "error" }
+              : t,
+          );
+          setToolCalls(pendingTools);
+          scrollDown();
+        },
+        onError: (msg) => {
+          setStreamDone(true);
+          appendItem({ type: "message", role: "assistant", content: `⚠️ ${msg}` });
           setStreamAccumulated("");
           setToolCalls([]);
           scrollDown();
-          return;
-        }
-        if (pendingTools.length > 0) {
-          appendItem({
-            type: "tool_block",
-            calls: pendingTools.map((t, i) => ({
-              name: t.name,
-              argsPreview: t.argsPreview,
-              status: "done" as const,
-              tool_call_id: `stream-${i}`,
-            })),
-          });
-          pendingTools = [];
-          setToolCalls([]);
-        }
-        const content = accumulated.trim();
-        if (content) appendItem({ type: "message", role: "assistant", content });
-        setStreamAccumulated("");
-        scrollDown();
-        void refreshFridgeMagnets();
-      },
-    });
+        },
+        onDone: (opts) => {
+          setStreamDone(true);
+          if (opts?.recovered) {
+            setStreamAccumulated("");
+            setToolCalls([]);
+            scrollDown();
+            return;
+          }
+          if (pendingTools.length > 0) {
+            appendItem({
+              type: "tool_block",
+              calls: pendingTools.map((t, i) => ({
+                name: t.name,
+                argsPreview: t.argsPreview,
+                status: "done" as const,
+                tool_call_id: `stream-${i}`,
+              })),
+            });
+            pendingTools = [];
+            setToolCalls([]);
+          }
+          const content = accumulated.trim();
+          if (content) appendItem({ type: "message", role: "assistant", content });
+          setStreamAccumulated("");
+          scrollDown();
+          void refreshFridgeMagnets();
+        },
+      });
+    } finally {
+      sendingRef.current = false;
+    }
   };
 
   const onInputKeydown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
