@@ -13,6 +13,7 @@ import { join, relative } from "node:path";
 import { getRepoRoot, PATHS } from "@freeanima/platform/config";
 
 const WEBUI_APP_REL = join("connectors", "webui", "app");
+const WEBUI_PLATFORM_APP_REL = join("platform", "connectors", "webui", "app");
 const WEBUI_HTML_NAME = "index.html";
 const WEBUI_PUBLIC_PATH = "/webui/";
 /** 缓存 manifest 格式版本；构建/layout 变更时递增以作废旧缓存 */
@@ -66,8 +67,17 @@ export function computeWebuiSourceHash(appDir: string, repoRoot = getRepoRoot())
   return hash.digest("hex");
 }
 
+/** Published @freeanima/cli layout, or monorepo `platform/connectors/webui/app`. */
+export function resolveWebuiAppDir(repoRoot = getRepoRoot()): string {
+  const legacy = join(repoRoot, WEBUI_APP_REL);
+  if (existsSync(legacy)) return legacy;
+  const platform = join(repoRoot, WEBUI_PLATFORM_APP_REL);
+  if (existsSync(platform)) return platform;
+  return legacy;
+}
+
 function webuiAppDir(): string {
-  return join(getRepoRoot(), WEBUI_APP_REL);
+  return resolveWebuiAppDir();
 }
 
 function cacheDirForHash(hash: string): string {
