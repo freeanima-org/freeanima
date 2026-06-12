@@ -1,6 +1,6 @@
 import type { StreamEvent } from "@freeanima/orchestration-loop";
 
-/** Narrow AnimaService interface for Gateway / platform adapters */
+/** Service runtime interface for Gateway, WebUI, and ServiceContext */
 export type ServiceCommandInfo = {
   name: string;
   description: string;
@@ -33,4 +33,45 @@ export type AnimaService = {
   waitForDrain(): Promise<void>;
   getInFlightCount(): number;
   abortAll(): void;
+  isShuttingDown(): boolean;
+  startShutdown(): void;
+  markStarted(): void;
+  health(): any;
+  buildStatus(host: string, port: number): Promise<any>;
+  getConfig(): any;
+  listToolsApi(): any;
+  listCronJobs(): any;
+  pauseCronJob(id: string): any;
+  resumeCronJob(id: string): any;
+  runCronJobNow(id: string): any;
+  listSessions(platform?: string | null): Promise<any>;
+  createSession(platform: string): any;
+  getSessionInfo(sessionId: string, platform?: string): Promise<any>;
+  getSessionAcpDock(sessionId: string, platform?: string): Promise<any>;
+  watchSession(sessionId: string, cb: () => void): () => void;
+  getMessages(sessionId: string, platform: string, opts?: { offset?: number; limit?: number }): any;
+  setSessionTitle(sessionId: string, title: string, platform: string): Promise<any>;
+  getStatus(): Record<string, unknown>;
+  listMemoryFiles(): any;
+  memorySearch(opts: any): Promise<any>;
+  countSemanticMemory(): any;
+  listSemanticMemories(opts?: any): Promise<any>;
+  listLimbicMemories(opts?: any): Promise<any>;
+  listAutobiographicalMemories(opts?: any): Promise<any>;
+  listTasks(opts?: any): Promise<any>;
+  getFtsStatus(): Promise<any>;
+  startRebuildFtsIndex(opts?: { onlyMissing?: boolean }): any;
+  getRebuildFtsJobStatus(): any;
+  listSelfBlocks(): Promise<any>;
+  listFridgeMagnets(): Promise<any>;
+  getPromptDebug(sessionId?: string | null): Promise<any>;
+  getSleepSummary(): Promise<any>;
+  listSleepRuns(opts?: { limit?: number; offset?: number; ok?: boolean }): Promise<any>;
+  listCronLogs(opts?: {
+    job_id?: string;
+    limit?: number;
+    offset?: number;
+    ok?: boolean;
+  }): Promise<any>;
+  getDeepSleepRounds(day: string): { day: string; rounds: unknown[] };
 };

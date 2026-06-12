@@ -1,7 +1,7 @@
-import type { RuntimeService } from "@freeanima/service-api/runtime-service";
+import type { AnimaService } from "@freeanima/service-api";
 import { webuiCtx } from "./runtime.ts";
 
-export function createSelfHandlers(service: RuntimeService) {
+export function createSelfHandlers(service: AnimaService) {
   return {
     listSelfBlocks: () => service.listSelfBlocks(),
   };
