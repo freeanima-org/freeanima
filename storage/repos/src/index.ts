@@ -9,6 +9,7 @@ export type {
   SemanticMemoryCreateInput,
   SemanticMemoryUpdateInput,
   SemanticMemorySearchOpts,
+  SemanticMemorySortBy,
   SemanticMemoryStorePort,
   SelfBlockKey,
   SelfBlockRow,

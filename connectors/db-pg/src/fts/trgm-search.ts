@@ -41,6 +41,7 @@ export async function searchSemanticMemoryTrgm(
       sm.observed_at,
       sm.occurred_at,
       sm.status,
+      sm.reference_count,
       sm.created,
       sm.updated,
       similarity(sm.content, ${q}) AS rank

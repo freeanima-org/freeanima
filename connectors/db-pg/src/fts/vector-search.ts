@@ -41,6 +41,7 @@ export async function searchSemanticMemoryVector(
       sm.observed_at,
       sm.occurred_at,
       sm.status,
+      sm.reference_count,
       sm.created,
       sm.updated,
       1 - (sm.content_embedding <=> ${queryVec}::vector) AS rank

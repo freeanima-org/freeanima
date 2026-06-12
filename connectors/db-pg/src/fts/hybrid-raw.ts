@@ -43,6 +43,7 @@ export async function searchSemanticMemoryFtsRaw(
       sm.observed_at,
       sm.occurred_at,
       sm.status,
+      sm.reference_count,
       sm.created,
       sm.updated,
       ts_rank_cd(sm.content_fts, q, 32) AS rank
