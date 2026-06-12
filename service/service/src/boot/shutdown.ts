@@ -1,0 +1,108 @@
+import { closeRedis, isRedisConfigured } from "@freeanima/connectors-redis";
+import { stopCronModule } from "@freeanima/connectors-cron";
+import { stopPlatforms } from "@freeanima/connectors-gateway";
+import { logComponent } from "@freeanima/service-logging";
+import type { Kernel } from "@freeanima/kernel";
+import type { MCPManager } from "@freeanima/capabilities-mcp";
+import type { AcpManagerPort } from "@freeanima/service-api/ports/acp-manager";
+import type { PlatformAdapter } from "@freeanima/connectors-gateway";
+
+import { closeDb } from "./persistence-phase.ts";
+import { cleanStatusFile } from "./status.ts";
+import type { AppRuntime } from "../runtime/app-runtime.ts";
+import type { WebuiHooks, WebuiServerHandle } from "./types.ts";
+
+export type ShutdownParams = {
+  signal: string;
+  runtime: AppRuntime;
+  kernel: Kernel;
+  mcp: MCPManager | null;
+  acp: AcpManagerPort;
+  platforms: PlatformAdapter[];
+  cronInitialized: boolean;
+  webui?: WebuiHooks;
+  servers: WebuiServerHandle[];
+  waitForDrain: (app: AppRuntime, maxMs: number) => Promise<void>;
+};
+
+export async function gracefulShutdown(params: ShutdownParams): Promise<void> {
+  const { signal, runtime, kernel, mcp, acp, platforms, cronInitialized, webui, servers } = params;
+  const t0 = Date.now();
+  const step = (label: string, ms: number) => {
+    logComponent("shutdown").debug(label, { ms, elapsed_ms: Date.now() - t0 });
+  };
+
+  logComponent("shutdown").info(
+    `Received ${signal}; starting graceful shutdown (prioritize pending message flush)`,
+    { signal },
+  );
+
+  runtime.startShutdown();
+  step("New requests rejected", Date.now() - t0);
+
+  {
+    const s = Date.now();
+    await params.waitForDrain(runtime, 90_000);
+    step("Request drain complete", Date.now() - s);
+  }
+
+  if (webui && servers.length > 0) {
+    const s = Date.now();
+    logComponent("shutdown").debug("Closing HTTP/WebSocket listener…");
+    await webui.close(servers, 3000);
+    step("HTTP/WebSocket listener closed", Date.now() - s);
+  }
+
+  {
+    const s = Date.now();
+    if (cronInitialized) stopCronModule();
+    step("Cron scheduler stopped", Date.now() - s);
+  }
+
+  {
+    const s = Date.now();
+    if (platforms.length) {
+      logComponent("shutdown").debug(`Stopping ${platforms.length} Gateway platform(s)…`, {
+        count: platforms.length,
+      });
+    } else {
+      logComponent("shutdown").debug("No Gateway platforms");
+    }
+    await stopPlatforms(platforms);
+    step("Gateway platforms stopped", Date.now() - s);
+  }
+
+  {
+    const s = Date.now();
+    kernel.eventBus.stop();
+    step("EventBus stopped", Date.now() - s);
+  }
+
+  if (mcp) {
+    const s = Date.now();
+    await mcp.closeAll();
+    step("MCP closed", Date.now() - s);
+  }
+
+  {
+    const s = Date.now();
+    await acp.stopAll();
+    step("ACP stopped", Date.now() - s);
+  }
+
+  {
+    const s = Date.now();
+    await closeDb();
+    step("PostgreSQL connection pool closed", Date.now() - s);
+  }
+
+  if (isRedisConfigured()) {
+    const s = Date.now();
+    await closeRedis();
+    step("Redis connection closed", Date.now() - s);
+  }
+
+  cleanStatusFile();
+  logComponent("shutdown").info("Shutdown complete", { elapsed_ms: Date.now() - t0 });
+  process.exit(0);
+}
