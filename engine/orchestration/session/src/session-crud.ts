@@ -8,6 +8,7 @@ import { getActiveConfig, getProfileHopModel } from "@freeanima/engine-config";
 import { CST_OFFSET_MS, formatCstIso } from "@freeanima/engine-util";
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
 import { buildSystemPrompt } from "@freeanima/engine-prompt";
+import { capabilityMaskSchema } from "@freeanima/engine-db/schema";
 import { applySessionToolMaskFilter } from "./mask-port.ts";
 import {
   isSessionMeta,
@@ -239,8 +240,13 @@ export async function initSession(
   opts: { platform: string; functions?: string[]; platform_extra?: Record<string, unknown> },
 ): Promise<void> {
   const cwd = allocateSessionCwd(sid);
-  const systemPrompt = await buildSystemPrompt(opts.functions ?? [], cwd);
-  const meta: SessionMetaMessage = {
+  const capabilityMaskRaw = opts.platform_extra?.capability_mask;
+  const capability_mask =
+    capabilityMaskRaw !== undefined ? capabilityMaskSchema.parse(capabilityMaskRaw) : undefined;
+  const platform_extra = opts.platform_extra ? { ...opts.platform_extra } : undefined;
+  if (platform_extra) delete platform_extra.capability_mask;
+
+  const metaDraft: SessionMetaMessage = {
     role: "session_meta",
     model,
     tools: resolveDefaultSessionTools(tools),
@@ -248,12 +254,13 @@ export async function initSession(
     functions: opts.functions ?? [],
     timestamp: formatCstIso(),
     platform: opts.platform,
-    system_prompt: systemPrompt,
     cwd,
+    capability_mask,
+    platform_extra:
+      platform_extra && Object.keys(platform_extra).length > 0 ? platform_extra : undefined,
   };
-  if (opts.platform_extra && Object.keys(opts.platform_extra).length > 0) {
-    meta.platform_extra = opts.platform_extra;
-  }
+  const systemPrompt = await buildSystemPrompt(opts.functions ?? [], cwd, metaDraft);
+  const meta: SessionMetaMessage = { ...metaDraft, system_prompt: systemPrompt };
   await pgWriteMeta(repos, sid, meta);
 }
 
@@ -358,7 +365,7 @@ export async function rebuildSessionSystemPrompt(
   if (!isSessionMeta(meta)) return;
   const functions = meta.functions ?? [];
   const cwd = meta.cwd;
-  const systemPrompt = await buildSystemPrompt(functions, cwd);
+  const systemPrompt = await buildSystemPrompt(functions, cwd, meta);
   await updateSessionMetaField(repos, session, { system_prompt: systemPrompt });
 }
 

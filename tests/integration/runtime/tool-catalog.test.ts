@@ -35,6 +35,18 @@ describePg("tool catalog lazy load", () => {
     await endIntegrationCase();
   });
 
+  it("new session system_prompt lists ToolSets", async () => {
+    const c = testConv();
+    const sid = await c.newSession("parlor");
+    const meta = await c.loadSessionMeta(sid);
+    expect(isSessionMeta(meta)).toBe(true);
+    if (!isSessionMeta(meta)) return;
+    const sp = meta.system_prompt ?? "";
+    expect(sp).toContain("## ToolSets");
+    expect(sp).toContain("### file");
+    expect(sp).toContain("tools_list");
+  });
+
   it("new session schema includes default tools only", async () => {
     const c = testConv();
     const sid = await c.newSession("parlor");
@@ -139,5 +151,24 @@ describePg("tool catalog lazy load", () => {
 
     const toolMsg = msgs.find((m) => m.role === "tool");
     expect(toolMsg?.content).toContain("tools_load");
+  });
+
+  it("tools_list supports keyword and toolset filters", async () => {
+    const c = testConv();
+    const sid = await c.newSession("parlor");
+    const listDef = getTestEngine().toolSets.getTool("tools_list");
+    expect(listDef).toBeDefined();
+
+    await runWithToolContext(
+      sid,
+      async () => {
+        const raw = await listDef!.handler({ keyword: "read", toolset: "file" });
+        const parsed = JSON.parse(raw);
+        expect(parsed.keyword).toBe("read");
+        expect(parsed.tools.every((t: { toolset: string }) => t.toolset === "file")).toBe(true);
+        expect(parsed.tools.some((t: { name: string }) => t.name === "file_read_file")).toBe(true);
+      },
+      { repos: c.repos, tools: getTestEngine().toolSets, executableTools: ["tools_list"] },
+    );
   });
 });

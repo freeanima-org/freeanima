@@ -56,7 +56,7 @@ describe("registerCatalogTools", () => {
     );
   });
 
-  it("tools_list paginates when no query", async () => {
+  it("tools_list returns all tools when no filters", async () => {
     const toolSets = new ToolSetRegistry();
     registerCatalogTools(toolSets);
     toolSets.registerToolSet("file", "Files", [
@@ -82,7 +82,7 @@ describe("registerCatalogTools", () => {
     );
   });
 
-  it("tools_list filters when query present", async () => {
+  it("tools_list filters by keyword and toolset", async () => {
     const toolSets = new ToolSetRegistry();
     registerCatalogTools(toolSets);
     toolSets.registerToolSet("file", "Files", [
@@ -93,15 +93,25 @@ describe("registerCatalogTools", () => {
         handler: () => "ok",
       },
     ]);
+    toolSets.registerToolSet("web", "Web", [
+      {
+        name: "web_search",
+        description: "Search web",
+        parameters: { type: "object", properties: {} },
+        handler: () => "ok",
+      },
+    ]);
     const listDef = toolSets.getTool("tools_list")!;
 
     await runWithToolContext(
       "sess-1",
       async () => {
-        const raw = await listDef.handler({ query: "read" });
+        const raw = await listDef.handler({ keyword: "read", toolset: "file" });
         const parsed = JSON.parse(raw);
-        expect(parsed.query).toBe("read");
+        expect(parsed.keyword).toBe("read");
+        expect(parsed.tools.every((t: { toolset: string }) => t.toolset === "file")).toBe(true);
         expect(parsed.tools.some((t: { name: string }) => t.name === "file_read_file")).toBe(true);
+        expect(parsed.tools.some((t: { name: string }) => t.name === "web_search")).toBe(false);
       },
       { tools: toolSets, repos, executableTools: ["tools_list"] },
     );

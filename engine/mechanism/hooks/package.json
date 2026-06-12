@@ -3,7 +3,8 @@
   "type": "module",
   "exports": {
     "./loop": "./src/loop/index.ts",
-    "./conversation": "./src/conversation/index.ts"
+    "./conversation": "./src/conversation/index.ts",
+    "./prompt": "./src/prompt/index.ts"
   },
   "dependencies": {
     "@freeanima/engine-db": "workspace:*",

@@ -10,6 +10,7 @@ import {
 import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
 import { getProfileHopModel } from "@freeanima/service-config";
 import { loadSelfLayerPrompt } from "@freeanima/life-self";
+import { renderToolsetsSection } from "@freeanima/capabilities-tools/toolset-prompt";
 import { getServiceContext } from "../context.ts";
 
 export type RuntimeContextBreakdown = {
@@ -17,6 +18,7 @@ export type RuntimeContextBreakdown = {
   system_self: number;
   system_agents: number;
   system_resident: number;
+  system_toolsets: number;
   summary: number;
   messages: number;
   tools: number;
@@ -38,6 +40,7 @@ export async function computeRuntimeContextBreakdown(
   const selfContent = await loadSelfLayerPrompt();
   const cwd = isSessionMeta(meta) ? meta.cwd : undefined;
   const parts = await decomposeSystemPromptParts(selfContent, cwd);
+  const toolsets = renderToolsetsSection(getServiceContext().engine.catalog.toolSets);
   const model = isSessionMeta(meta)
     ? meta.model
     : getProfileHopModel(getServiceContext().engine.config.data, PROFILE_CHAT);
@@ -59,15 +62,24 @@ export async function computeRuntimeContextBreakdown(
   const system_self = estimateTokens(parts.self, model);
   const system_agents = estimateTokens(parts.agents, model);
   const system_resident = estimateTokens(parts.resident, model);
+  const system_toolsets = estimateTokens(toolsets, model);
   const messages = estimateMessagesTokens(messageRows, model);
   const toolsTokens = estimateToolsTokens(tools, model);
 
-  const total = system_self + system_agents + system_resident + summary + messages + toolsTokens;
+  const total =
+    system_self +
+    system_agents +
+    system_resident +
+    system_toolsets +
+    summary +
+    messages +
+    toolsTokens;
 
   return {
     system_self,
     system_agents,
     system_resident,
+    system_toolsets,
     summary,
     messages,
     tools: toolsTokens,

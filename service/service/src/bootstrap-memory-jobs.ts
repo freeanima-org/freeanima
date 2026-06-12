@@ -1,4 +1,5 @@
 import { wireEnginePorts } from "./wire-engine-ports.ts";
+import { registerSystemPromptHooks } from "./register-prompt-hooks.ts";
 import { wireServicePorts } from "./wire-api.ts";
 import { chdir } from "node:process";
 import {
@@ -131,6 +132,11 @@ export async function bootstrapMemoryJobs(): Promise<MemoryJobsContext> {
       acp,
       host: "127.0.0.1",
       port: 0,
+    });
+
+    registerSystemPromptHooks({
+      hookRegistry: kernel.hookRegistry,
+      getToolRegistry: () => catalog.toolSets,
     });
 
     markStartupPhase(false);
