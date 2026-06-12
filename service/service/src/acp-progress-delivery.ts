@@ -3,7 +3,7 @@ import type {
   AcpProgressDeliveryPort,
   AcpPromptResult,
 } from "@freeanima/capabilities-acp";
-import { deliverToTargets, type CronDeliverTarget } from "@freeanima/connectors-cron";
+import { deliverToTargets, type CronDeliverTarget } from "@freeanima/connectors-cron/deliver";
 import { isSessionMeta } from "@freeanima/engine-conversation";
 import type { ConversationService } from "@freeanima/engine-conversation";
 import type { SessionMetaLoadResult } from "@freeanima/engine-db/domain";
@@ -97,10 +97,7 @@ async function appendAcpAssistantMessage(
   animaSessionId: string,
   content: string,
 ): Promise<void> {
-  await conversation.repos.session.appendMessage(animaSessionId, {
-    role: "assistant",
-    content,
-  });
+  await conversation.appendMessage({ role: "assistant", content }, animaSessionId);
 }
 
 export function createAcpProgressDelivery(opts: {

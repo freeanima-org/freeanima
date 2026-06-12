@@ -3,8 +3,12 @@ import type { AcpAsyncTaskSnapshot } from "@freeanima/capabilities-acp";
 
 const deliverToTargets = vi.fn();
 
-vi.mock("@freeanima/connectors-cron", () => ({
+vi.mock("@freeanima/connectors-cron/deliver", () => ({
   deliverToTargets: (...args: unknown[]) => deliverToTargets(...args),
+  deliverCronResult: async () => {},
+  registerCronDeliverer: () => {},
+  unregisterCronDeliverer: () => {},
+  resolveDeliverTargets: () => [],
 }));
 
 const { createAcpProgressDelivery } = await import("./acp-progress-delivery.ts");
