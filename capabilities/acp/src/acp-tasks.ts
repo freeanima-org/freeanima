@@ -75,7 +75,7 @@ export async function patchAcpTaskEntry(
   });
 }
 
-/** Most recently updated ACP session for agent (continue_session / default reuse) */
+/** Most recently updated ACP session for agent (e.g. new_session cleanup) */
 export async function getBoundAcpSession(
   conversation: SessionConversationPort,
   animaSessionId: string,
@@ -85,6 +85,7 @@ export async function getBoundAcpSession(
   let best: { id: string; updated_at: string } | undefined;
   for (const [acpSessionId, entry] of Object.entries(tasks)) {
     if (entry.agent_name !== agentName) continue;
+    if (acpSessionId.startsWith("queued:")) continue;
     if (entry.status === "cancelled" || entry.status === "error") continue;
     if (!best || entry.updated_at > best.updated_at) {
       best = { id: acpSessionId, updated_at: entry.updated_at };
@@ -106,6 +107,41 @@ export async function bindAcpTaskRunning(
     agent_name: agentName,
     updated_at: acpTasksNowIso(),
   });
+}
+
+export async function bindAcpTaskQueued(
+  conversation: SessionConversationPort,
+  animaSessionId: string,
+  agentName: string,
+  taskId: string,
+): Promise<void> {
+  const placeholderSessionId = `queued:${taskId}`;
+  await upsertAcpTaskEntry(conversation, animaSessionId, placeholderSessionId, {
+    status: "queued",
+    task_id: taskId,
+    agent_name: agentName,
+    updated_at: acpTasksNowIso(),
+  });
+}
+
+export async function promoteQueuedTaskToRunning(
+  conversation: SessionConversationPort,
+  animaSessionId: string,
+  agentName: string,
+  taskId: string,
+  acpSessionId: string,
+): Promise<void> {
+  const tasks = await readAcpTasks(conversation, animaSessionId);
+  const placeholderKey = `queued:${taskId}`;
+  const next = { ...tasks };
+  delete next[placeholderKey];
+  next[acpSessionId] = {
+    status: "running",
+    task_id: taskId,
+    agent_name: agentName,
+    updated_at: acpTasksNowIso(),
+  };
+  await conversation.updateSessionMetaField(animaSessionId, { acp_tasks: next });
 }
 
 export async function updateAcpTaskStatus(

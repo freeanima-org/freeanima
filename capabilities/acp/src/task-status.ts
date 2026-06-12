@@ -11,7 +11,12 @@ import {
 import type { AcpTaskQueryPort } from "./ports/task-query.ts";
 import type { AcpPromptResult } from "./prompt-result.ts";
 
-export type AcpTaskStatusViewStatus = "running" | "awaiting_decision" | "completed" | "failed";
+export type AcpTaskStatusViewStatus =
+  | "queued"
+  | "running"
+  | "awaiting_decision"
+  | "completed"
+  | "failed";
 
 export type AcpTaskStatusView = {
   task_id: string;
@@ -20,6 +25,7 @@ export type AcpTaskStatusView = {
   status: AcpTaskStatusViewStatus;
   progress_text: string;
   elapsed?: string;
+  queue_position?: number;
   result?: Pick<AcpPromptResult, "output" | "pending">;
   pending?: AcpTaskEntry["pending"];
 };
@@ -27,6 +33,7 @@ export type AcpTaskStatusView = {
 export function normalizeAcpTaskViewStatus(
   status: AcpTaskStatus | AcpAsyncTask["status"],
 ): AcpTaskStatusViewStatus {
+  if (status === "queued") return "queued";
   if (status === "running") return "running";
   if (status === "awaiting_decision") return "awaiting_decision";
   if (status === "completed") return "completed";
@@ -179,12 +186,42 @@ export async function queryAcpTaskStatus(opts: {
 
   return {
     task_id: resolvedTaskId,
-    acp_session_id: acpSessionId,
+    acp_session_id: acpSessionId.startsWith("queued:") ? "" : acpSessionId,
     agent_name: memoryTask?.agentName ?? entry?.agent_name ?? "cursor",
     status: viewStatus,
     progress_text: progressText,
+    ...(memoryTask?.queuePosition ? { queue_position: memoryTask.queuePosition } : {}),
     ...(startedAt ? { elapsed: formatElapsed(Date.now() - startedAt) } : {}),
     ...(result ? { result } : {}),
     ...(entry?.pending?.length ? { pending: entry.pending } : {}),
   };
+}
+
+export async function queryAcpTaskStatusList(opts: {
+  conversation: SessionConversationPort;
+  taskStore: AcpAsyncTaskStore;
+  taskQuery?: AcpTaskQueryPort | null;
+  animaSessionId: string;
+}): Promise<AcpTaskStatusView[]> {
+  const meta = await readAcpTasks(opts.conversation, opts.animaSessionId);
+  const taskIds = new Set<string>();
+
+  for (const entry of Object.values(meta)) {
+    if (entry.task_id) taskIds.add(entry.task_id);
+  }
+  for (const task of opts.taskStore.listAll()) {
+    if (task.animaSessionId === opts.animaSessionId) taskIds.add(task.taskId);
+  }
+
+  const views: AcpTaskStatusView[] = [];
+  for (const id of taskIds) {
+    const view = await queryAcpTaskStatus({ ...opts, taskId: id });
+    if (view) views.push(view);
+  }
+  views.sort((a, b) => {
+    const order = (s: AcpTaskStatusViewStatus) =>
+      s === "awaiting_decision" ? 0 : s === "running" ? 1 : s === "queued" ? 2 : 3;
+    return order(a.status) - order(b.status) || a.task_id.localeCompare(b.task_id);
+  });
+  return views;
 }

@@ -1,9 +1,11 @@
 export {
   acpTasksNowIso,
   bindAcpTaskRunning,
+  bindAcpTaskQueued,
   findUnhandledAcpTasks,
   getBoundAcpSession,
   patchAcpTaskEntry,
+  promoteQueuedTaskToRunning,
   readAcpTasks,
   readAcpTasksHandledAt,
   removeAcpTaskEntry,
@@ -41,6 +43,7 @@ export {
   findLatestAcpTaskEntry,
   normalizeAcpTaskViewStatus,
   queryAcpTaskStatus,
+  queryAcpTaskStatusList,
   type AcpTaskStatusView,
   type AcpTaskStatusViewStatus,
 } from "./task-status.ts";

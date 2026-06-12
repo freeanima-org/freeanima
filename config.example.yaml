@@ -82,6 +82,7 @@ firecrawl:
 #     session_ttl_ms: 0
 #     prompt_retry_once: true
 #     auto_restart: true
+#     max_concurrent_tasks: 3  # 同 agent 并行 async 任务上限（每任务独立子进程）
 
 # 模型上下文窗口（用于 token 占用率压缩；未配置则回退 max_rounds 条数模式）
 models:

@@ -15,10 +15,11 @@ export type SessionAcpDockSnapshot = {
   session_id: string;
   tasks: AcpDockTask[];
   progress_text: string;
+  task_progress: Record<string, string>;
   highlight_decision: boolean;
 };
 
-const ACTIVE_STATUSES = new Set<AcpTaskStatusJson>(["running", "awaiting_decision"]);
+const ACTIVE_STATUSES = new Set<AcpTaskStatusJson>(["queued", "running", "awaiting_decision"]);
 
 function conv() {
   return getServiceContext().conversation;
@@ -44,10 +45,24 @@ export async function getSessionAcpDock(
       : {};
 
   const tasks: AcpDockTask[] = [];
-  let progressMessageId: string | undefined;
+  const taskProgress: Record<string, string> = {};
+  let progressParts: string[] = [];
   let highlightDecision = false;
 
   for (const [acpSessionId, entry] of Object.entries(rawTasks)) {
+    if (acpSessionId.startsWith("queued:")) {
+      const status = entry.status as AcpTaskStatusJson;
+      if (status !== "queued") continue;
+      const taskId = typeof entry.task_id === "string" ? entry.task_id : "";
+      const agentName = typeof entry.agent_name === "string" ? entry.agent_name : "cursor";
+      tasks.push({
+        acp_session_id: acpSessionId,
+        task_id: taskId,
+        agent_name: agentName,
+        status,
+      });
+      continue;
+    }
     const status = entry.status as AcpTaskStatusJson;
     if (!ACTIVE_STATUSES.has(status)) continue;
     const taskId = typeof entry.task_id === "string" ? entry.task_id : "";
@@ -62,19 +77,22 @@ export async function getSessionAcpDock(
       progress_message_id: pmid,
     });
     if (status === "awaiting_decision") highlightDecision = true;
-    if (pmid && isParlorProgressId(pmid)) progressMessageId = pmid;
+    if (pmid && isParlorProgressId(pmid) && taskId) {
+      const text = (await conv().repos.session.getMessageContentById(sessionId, pmid)) ?? "";
+      if (text.trim()) {
+        taskProgress[taskId] = text;
+        progressParts.push(`[${taskId}]\n${text}`);
+      }
+    }
   }
 
-  let progressText = "";
-  if (progressMessageId) {
-    progressText =
-      (await conv().repos.session.getMessageContentById(sessionId, progressMessageId)) ?? "";
-  }
+  const progressText = progressParts.join("\n\n---\n\n");
 
   return {
     session_id: sessionId,
     tasks,
     progress_text: progressText,
+    task_progress: taskProgress,
     highlight_decision: highlightDecision,
   };
 }

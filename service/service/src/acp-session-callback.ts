@@ -13,25 +13,32 @@ import { PARLOR_PLATFORM } from "./runtime/platforms.ts";
 export function buildAcpCallbackPrompt(tasks: ReturnType<typeof findUnhandledAcpTasks>): string {
   const lines = tasks.map((t) => {
     const label = t.status === "awaiting_decision" ? "需要决策（请立即处理）" : "已完成";
-    return `- task ${t.task_id} (${t.agent_name}, ${label})`;
+    return `- task ${t.task_id} (session ${t.acp_session_id}, ${t.agent_name}, ${label})`;
   });
   return [
     "[ACP 回调] Cursor 异步任务已更新，请查看上方 [ACP result] assistant 消息中的 JSON 结果。",
-    "若需继续同一 Cursor 会话，使用 acp_cursor(continue_session=true)。",
+    "若需继续同一 Cursor 会话，使用 acp_cursor(acp_session_id=...) 指定结果中的 acp_session_id。",
     "",
     ...lines,
   ].join("\n");
 }
+
+const RECHECK_DELAY_MS = 500;
 
 export function createAcpSessionUpdatedHandler(opts: {
   conversation: ConversationService;
   getService: () => AnimaService | null;
 }): (sessionId: string) => void {
   const inflight = new Set<string>();
+  const pendingRecheck = new Set<string>();
+  const recheckTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
-  return (sessionId: string) => {
+  const run = (sessionId: string): void => {
     void (async () => {
-      if (inflight.has(sessionId)) return;
+      if (inflight.has(sessionId)) {
+        pendingRecheck.add(sessionId);
+        return;
+      }
       inflight.add(sessionId);
       try {
         const tasks = await readAcpTasks(opts.conversation, sessionId);
@@ -59,7 +66,21 @@ export function createAcpSessionUpdatedHandler(opts: {
         logComponent("acp-callback").warn("ACP callback turn failed", { sessionId, err: e });
       } finally {
         inflight.delete(sessionId);
+        if (pendingRecheck.has(sessionId)) {
+          pendingRecheck.delete(sessionId);
+          const existing = recheckTimers.get(sessionId);
+          if (existing) clearTimeout(existing);
+          recheckTimers.set(
+            sessionId,
+            setTimeout(() => {
+              recheckTimers.delete(sessionId);
+              run(sessionId);
+            }, RECHECK_DELAY_MS),
+          );
+        }
       }
     })();
   };
+
+  return run;
 }

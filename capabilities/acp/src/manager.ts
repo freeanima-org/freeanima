@@ -21,8 +21,10 @@ import {
   type AcpAsyncTask,
 } from "./async-task.ts";
 import type { AcpTaskQueryPort } from "./ports/task-query.ts";
-import { queryAcpTaskStatus } from "./task-status.ts";
+import { queryAcpTaskStatus, queryAcpTaskStatusList } from "./task-status.ts";
 import { AcpAgentQueue } from "./agent-queue.ts";
+import { AcpClientPool, type ClientLease } from "./client-pool.ts";
+import { AcpTaskScheduler, type AsyncLaunchSpec } from "./task-scheduler.ts";
 import type {
   AcpProgressDeliveryPort,
   AcpProgressDeliverOptions,
@@ -30,7 +32,9 @@ import type {
 import { ACPClient } from "./client.ts";
 import {
   bindAcpTaskRunning,
+  bindAcpTaskQueued,
   getBoundAcpSession,
+  promoteQueuedTaskToRunning,
   removeAcpTaskEntry,
   unbindAcpSession,
   updateAcpTaskStatus,
@@ -54,14 +58,15 @@ import {
 const DEFAULT_HEALTH_CHECK_MS = 60_000;
 const DEFAULT_ASYNC_TIMEOUT_MINUTES = 30;
 const DEFAULT_PROGRESS_INTERVAL_MS = 30_000;
+const DEFAULT_MAX_CONCURRENT_TASKS = 3;
 const ACP_SKILLS_SOURCE = "acp";
 
 type AcpPromptOptions = {
   animaSessionId?: string;
   acpSessionId?: string;
   newSession?: boolean;
-  continueSession?: boolean;
   mode?: AcpCursorMode;
+  isAsync?: boolean;
 };
 
 type SessionMeta = {
@@ -144,13 +149,13 @@ function defaultCursorDescription(agentName: string): string {
   if (agentName === "cursor") {
     return (
       "Cursor coding agent supporting Agent (direct code edits), Plan (plan first, then execute), and Ask (read-only analysis) modes. " +
-      "Can search the codebase, analyze code, run tests, and apply changes. Reuses the session within the same conversation automatically. " +
+      "Can search the codebase, analyze code, run tests, and apply changes. " +
       "When async=true, runs in the background and periodically pushes progress to the message channel. " +
       "When Cursor asks questions or submits a plan for approval, results include a pending field; decide autonomously or use clarify to ask your partner, " +
-      "then continue the same session with continue_session=true."
+      "then continue the same session with acp_session_id from the prior result."
     );
   }
-  return `ACP agent: ${agentName}(bound to the current Free Anima conversation by default; continue_session reuses automatically)`;
+  return `ACP agent: ${agentName} (pass acp_session_id to reuse a Cursor session; omit to start a new session)`;
 }
 
 function parseTimeoutMinutes(raw: unknown): number {
@@ -189,7 +194,8 @@ function registerAcpBuiltinSkills(skills: SkillRegistry): void {
 }
 
 export class AcpManager {
-  private readonly clients = new Map<string, ACPClient>();
+  private readonly clientPools = new Map<string, AcpClientPool>();
+  private readonly schedulers = new Map<string, AcpTaskScheduler>();
   private readonly sessionStore = new ACPSessionStore();
   private readonly agentQueues = new Map<string, AcpAgentQueue>();
   private readonly agentErrors = new Map<string, string>();
@@ -203,8 +209,7 @@ export class AcpManager {
   private taskQuery: AcpTaskQueryPort | null = null;
   private readonly taskStore = new AcpAsyncTaskStore();
   private readonly taskAbortControllers = new Map<string, AbortController>();
-  /** agentName → taskId or "sync" */
-  private readonly activePromptByAgent = new Map<string, string>();
+  private readonly syncLeases = new Map<string, ClientLease>();
   private progressTicker: ReturnType<typeof setInterval> | null = null;
   private toolSets: ToolSetRegistry | null = null;
   private skills: SkillRegistry | null = null;
@@ -308,16 +313,10 @@ export class AcpManager {
                 "Cursor mode: agent=direct edits, plan=plan first, ask=read-only analysis. Default agent.",
               default: "agent",
             },
-            continue_session: {
-              type: "boolean",
-              description:
-                "When true, reuses the most recent ACP session for the current Free Anima conversation without manually passing session_id.",
-              default: false,
-            },
-            session_id: {
+            acp_session_id: {
               type: "string",
               description:
-                "Explicit ACP session ID (takes precedence over Free Anima binding). Usually unnecessary; continue_session or same-conversation reuse applies.",
+                "ACP session ID to reuse (from a prior acp_cursor result). Omit to start a new session.",
               default: "",
             },
             new_session: {
@@ -352,30 +351,26 @@ export class AcpManager {
           const prompt = String(args.prompt ?? args.goal ?? "").trim();
           if (!prompt) return toolError("prompt (or goal) cannot be empty");
           const context = String(args.context ?? "");
-          const explicitSid = String(args.session_id ?? "").trim() || undefined;
+          const explicitSid = String(args.acp_session_id ?? "").trim() || undefined;
           const newSession = args.new_session === true || args.new_session === "true";
-          const continueSession =
-            args.continue_session === true || args.continue_session === "true";
           const mode = parseMode(args.mode) ?? "agent";
           const isAsync = args.async !== false && args.async !== "false";
           const timeoutMinutes = parseTimeoutMinutes(args.timeout_minutes);
           const animaSid = getToolSessionId();
 
           if (isAsync) {
-            return this.queueFor(agentName).run(() =>
-              this.launchAsync(
-                agentName,
-                prompt,
-                context,
-                {
-                  animaSessionId: animaSid,
-                  acpSessionId: explicitSid,
-                  newSession,
-                  continueSession,
-                  mode,
-                },
-                timeoutMinutes,
-              ),
+            return this.launchAsync(
+              agentName,
+              prompt,
+              context,
+              {
+                animaSessionId: animaSid,
+                acpSessionId: explicitSid,
+                newSession,
+                mode,
+                isAsync: true,
+              },
+              timeoutMinutes,
             );
           }
 
@@ -384,7 +379,6 @@ export class AcpManager {
               animaSessionId: animaSid,
               acpSessionId: explicitSid,
               newSession,
-              continueSession,
               mode,
             }),
           );
@@ -418,6 +412,12 @@ export class AcpManager {
               "Optional task_id. When omitted, returns the most recently updated ACP task for this session.",
             default: "",
           },
+          list_all: {
+            type: "boolean",
+            description:
+              "When true, returns all active/recent ACP tasks for this session instead of a single task.",
+            default: false,
+          },
         },
         required: [],
       },
@@ -429,7 +429,19 @@ export class AcpManager {
     const animaSid = getToolSessionId();
     if (!animaSid)
       return toolError("No active session; acp_task_status requires a session context");
+    const listAll = args.list_all === true || args.list_all === "true";
     const taskId = String(args.task_id ?? "").trim() || undefined;
+
+    if (listAll) {
+      const views = await queryAcpTaskStatusList({
+        conversation: this.conv(),
+        taskStore: this.taskStore,
+        taskQuery: this.taskQuery,
+        animaSessionId: animaSid,
+      });
+      return toolResult({ tasks: views });
+    }
+
     const view = await queryAcpTaskStatus({
       conversation: this.conv(),
       taskStore: this.taskStore,
@@ -445,17 +457,73 @@ export class AcpManager {
     return toolResult(view);
   }
 
+  private getMaxConcurrent(agentCfg: AcpAgentConfig): number {
+    const n = agentCfg.max_concurrent_tasks;
+    if (typeof n === "number" && Number.isFinite(n) && n > 0) {
+      return Math.min(Math.floor(n), 16);
+    }
+    return DEFAULT_MAX_CONCURRENT_TASKS;
+  }
+
+  private ensurePool(agentName: string, agentCfg: AcpAgentConfig): AcpClientPool {
+    let pool = this.clientPools.get(agentName);
+    if (!pool) {
+      pool = new AcpClientPool(this.getMaxConcurrent(agentCfg), () =>
+        this.createClientInstance(agentName, agentCfg),
+      );
+      this.clientPools.set(agentName, pool);
+    }
+    return pool;
+  }
+
+  private ensureScheduler(agentName: string, agentCfg: AcpAgentConfig): AcpTaskScheduler {
+    let scheduler = this.schedulers.get(agentName);
+    if (!scheduler) {
+      const pool = this.ensurePool(agentName, agentCfg);
+      const max = this.getMaxConcurrent(agentCfg);
+      scheduler = new AcpTaskScheduler(pool, max, {
+        onStart: (spec, lease) => this.executeAsyncTask(spec, lease),
+        onQueueTimeout: (spec) => this.handleQueueTimeout(spec),
+      });
+      this.schedulers.set(agentName, scheduler);
+    }
+    return scheduler;
+  }
+
+  private async createClientInstance(
+    agentName: string,
+    agentCfg: AcpAgentConfig,
+  ): Promise<ACPClient> {
+    const command = agentCfg.command ?? "";
+    if (!command) throw new Error(`ACP agent '${agentName}' missing command`);
+    const client = new ACPClient(agentName, command, agentCfg.args ?? [], agentCfg.cwd, agentCfg);
+    await client.start();
+    this.agentErrors.delete(agentName);
+    if (!this.healthTimers.has(agentName)) {
+      this.startHealthCheck(agentName, agentCfg);
+    }
+    return client;
+  }
+
+  private poolFor(agentName: string): AcpClientPool | undefined {
+    return this.clientPools.get(agentName);
+  }
+
+  private schedulerFor(agentName: string): AcpTaskScheduler | undefined {
+    return this.schedulers.get(agentName);
+  }
+
   getStatus(): AcpStatusResponse {
     const cfg = this.requireConfig().data;
     const agents = cfg.acp_agents ?? {};
     const views: AcpAgentStatusView[] = [];
 
     for (const [name, agentCfg] of Object.entries(agents)) {
-      const client = this.clients.get(name);
+      const pool = this.clientPools.get(name);
       let status: AcpAgentStatusView["status"] = "not_started";
       if (!isAcpAgentEnabled(agentCfg)) status = "disabled";
       else if (this.starting.has(name)) status = "starting";
-      else if (client?.isConnected && client.isProcessAlive()) status = "connected";
+      else if (pool?.isAnyAlive()) status = "connected";
       else if (this.agentErrors.has(name)) status = "error";
 
       const registered = this.toolSets!.getTool(`acp_${name}`);
@@ -498,17 +566,18 @@ export class AcpManager {
     if (!isAcpAgentEnabled(agentCfg)) {
       return { ok: false, error: `ACP agent '${name}' is disabled`, agent: name, action: "start" };
     }
-    if (this.clients.get(name)?.isConnected && this.clients.get(name)?.isProcessAlive()) {
+    if (this.starting.has(name)) {
       return { ok: true, agent: name, action: "start" };
     }
-    if (this.starting.has(name)) {
+    const pool = this.poolFor(name);
+    if (pool?.isAnyAlive()) {
       return { ok: true, agent: name, action: "start" };
     }
 
     this.starting.add(name);
     this.agentErrors.delete(name);
     try {
-      await this.getOrStartClient(name, agentCfg);
+      await this.ensurePool(name, agentCfg).prewarm();
       return { ok: true, agent: name, action: "start" };
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
@@ -530,11 +599,15 @@ export class AcpManager {
     }
 
     this.stopHealthCheck(name);
-    const client = this.clients.get(name);
-    if (client) {
-      client.stop();
-      this.clients.delete(name);
+    const scheduler = this.schedulers.get(name);
+    scheduler?.cancelAll("agent stopped");
+    this.schedulers.delete(name);
+    const pool = this.clientPools.get(name);
+    if (pool) {
+      await pool.stopAll();
+      this.clientPools.delete(name);
     }
+    this.syncLeases.delete(name);
     this.agentErrors.delete(name);
     this.sessionStore.removeByAgent(name);
     return { ok: true, agent: name, action: "stop" };
@@ -601,10 +674,16 @@ export class AcpManager {
   async stopAll(): Promise<AcpControlResult> {
     this.closed = true;
     this.stopProgressTicker();
-    for (const task of this.taskStore.listRunning()) {
-      this.cancelAsyncTaskInternal(task.taskId, "service shutdown");
+    for (const task of this.taskStore.listActive()) {
+      if (task.status === "queued") {
+        this.schedulerFor(task.agentName)?.cancelQueued(task.taskId);
+        task.status = "cancelled";
+        this.taskStore.delete(task.taskId);
+      } else if (task.status === "running") {
+        this.cancelAsyncTaskInternal(task.taskId, "service shutdown");
+      }
     }
-    const names = [...this.clients.keys()];
+    const names = [...new Set([...this.clientPools.keys(), ...this.schedulers.keys()])];
     if (names.length) {
       logComponent("shutdown").debug(
         `ACP stopping ${names.length} agent(s): ${names.join(", ")}…`,
@@ -648,34 +727,36 @@ export class AcpManager {
   }
 
   private async runHealthCheck(name: string, agentCfg: AcpAgentConfig): Promise<void> {
-    const client = this.clients.get(name);
-    if (!client) return;
+    const pool = this.clientPools.get(name);
+    if (!pool) return;
 
     const ttl = agentCfg.session_ttl_ms ?? 0;
     if (ttl > 0) {
       const expired = this.sessionStore.pruneExpired(ttl);
       for (const sid of expired) {
-        try {
-          await client.closeSession(sid);
-        } catch {
-          /* ignore */
+        for (const client of pool.listClients()) {
+          try {
+            await client.closeSession(sid);
+          } catch {
+            /* ignore */
+          }
         }
       }
     }
 
-    if (client.isConnected && client.isProcessAlive()) return;
+    if (pool.isAnyAlive()) return;
 
     logComponent("acp").warn(`ACP agent '${name}' process unhealthy, attempting restart`, {
       agent: name,
     });
-    this.clients.delete(name);
+    await pool.stopAll();
     if (agentCfg.auto_restart === false) {
       this.agentErrors.set(name, "process died");
       return;
     }
 
     try {
-      await this.getOrStartClient(name, agentCfg);
+      await pool.prewarm();
       const sessions = this.sessionStore.listForAgent(name);
       if (sessions.length) {
         logComponent("acp").info(
@@ -692,25 +773,6 @@ export class AcpManager {
     }
   }
 
-  private async getOrStartClient(name: string, agentCfg: AcpAgentConfig): Promise<ACPClient> {
-    const existing = this.clients.get(name);
-    if (existing?.isConnected && existing.isProcessAlive()) return existing;
-    if (existing) {
-      existing.stop();
-      this.clients.delete(name);
-    }
-
-    const command = agentCfg.command ?? "";
-    if (!command) throw new Error(`ACP agent '${name}' missing command`);
-
-    const client = new ACPClient(name, command, agentCfg.args ?? [], agentCfg.cwd, agentCfg);
-    await client.start();
-    this.clients.set(name, client);
-    this.agentErrors.delete(name);
-    this.startHealthCheck(name, agentCfg);
-    return client;
-  }
-
   private async resolveAcpSession(
     client: ACPClient,
     agentName: string,
@@ -719,58 +781,32 @@ export class AcpManager {
   ): Promise<{ id: string; newSession: boolean; reusedBinding: boolean; explicit: boolean }> {
     if (opts.acpSessionId) {
       const id = opts.acpSessionId;
-      if (!this.sessionStore.has(id, agentName)) {
-        this.sessionStore.add(id, agentName);
-      } else {
+      if (this.sessionStore.has(id, agentName)) {
         this.sessionStore.touch(id);
+        return { id, newSession: false, reusedBinding: false, explicit: true };
       }
-      return { id, newSession: false, reusedBinding: false, explicit: true };
+      const retried = await this.tryContinueOrRecreate(
+        client,
+        agentName,
+        agentCfg,
+        opts.animaSessionId ?? "",
+        id,
+        opts.mode ?? "agent",
+        opts.isAsync,
+      );
+      return { ...retried, reusedBinding: false, explicit: true };
     }
 
     if (opts.newSession) {
-      const id = await this.createAcpSession(client, agentName, agentCfg, opts.animaSessionId);
+      const id = await this.createAcpSession(client, agentName, agentCfg, opts.animaSessionId, {
+        skipMetaBind: opts.isAsync,
+      });
       return { id, newSession: true, reusedBinding: false, explicit: false };
     }
 
-    if (opts.continueSession && opts.animaSessionId) {
-      const bound = await getBoundAcpSession(this.conv(), opts.animaSessionId, agentName);
-      if (bound) {
-        if (this.sessionStore.has(bound, agentName)) {
-          this.sessionStore.touch(bound);
-          return { id: bound, newSession: false, reusedBinding: true, explicit: false };
-        }
-        const retried = await this.tryContinueOrRecreate(
-          client,
-          agentName,
-          agentCfg,
-          opts.animaSessionId,
-          bound,
-          opts.mode ?? "agent",
-        );
-        return { ...retried, reusedBinding: !retried.newSession, explicit: false };
-      }
-    }
-
-    if (opts.animaSessionId) {
-      const bound = await getBoundAcpSession(this.conv(), opts.animaSessionId, agentName);
-      if (bound) {
-        if (this.sessionStore.has(bound, agentName)) {
-          this.sessionStore.touch(bound);
-          return { id: bound, newSession: false, reusedBinding: true, explicit: false };
-        }
-        const retried = await this.tryContinueOrRecreate(
-          client,
-          agentName,
-          agentCfg,
-          opts.animaSessionId,
-          bound,
-          opts.mode ?? "agent",
-        );
-        return { ...retried, reusedBinding: !retried.newSession, explicit: false };
-      }
-    }
-
-    const id = await this.createAcpSession(client, agentName, agentCfg, opts.animaSessionId);
+    const id = await this.createAcpSession(client, agentName, agentCfg, opts.animaSessionId, {
+      skipMetaBind: opts.isAsync,
+    });
     return { id, newSession: true, reusedBinding: false, explicit: false };
   }
 
@@ -782,6 +818,7 @@ export class AcpManager {
     animaSessionId: string,
     boundId: string,
     mode: AcpCursorMode,
+    isAsync?: boolean,
   ): Promise<{ id: string; newSession: boolean }> {
     try {
       await client.setMode(boundId, mode);
@@ -795,7 +832,9 @@ export class AcpManager {
     } catch {
       /* ignore */
     }
-    const id = await this.createAcpSession(client, agentName, agentCfg, animaSessionId);
+    const id = await this.createAcpSession(client, agentName, agentCfg, animaSessionId, {
+      skipMetaBind: isAsync,
+    });
     return { id, newSession: true };
   }
 
@@ -804,34 +843,26 @@ export class AcpManager {
     agentName: string,
     agentCfg: AcpAgentConfig,
     animaSessionId?: string,
+    opts?: { skipMetaBind?: boolean },
   ): Promise<string> {
     const sid = await client.createSession(agentCfg.cwd);
     this.sessionStore.add(sid, agentName);
-    if (animaSessionId) {
+    if (animaSessionId && !opts?.skipMetaBind) {
       await bindAcpTaskRunning(this.conv(), animaSessionId, agentName, sid, `sync-${Date.now()}`);
     }
     return sid;
   }
 
-  private agentBusyError(agentName: string): string {
-    const active = this.activePromptByAgent.get(agentName);
-    return toolResult({
-      error: `ACP agent '${agentName}' is busy`,
-      active_task_id: active,
-    });
-  }
-
-  private async preparePromptSession(
+  private async preparePromptSessionWithClient(
+    client: ACPClient,
     agentName: string,
     agentCfg: AcpAgentConfig,
     opts: AcpPromptOptions,
   ): Promise<{
-    client: ACPClient;
     sid: string;
     resolved: { id: string; newSession: boolean; reusedBinding: boolean; explicit: boolean };
     mode: AcpCursorMode;
   }> {
-    const client = await this.getOrStartClient(agentName, agentCfg);
     const mode = opts.mode ?? "agent";
 
     const previousBound =
@@ -856,7 +887,32 @@ export class AcpManager {
     }
 
     await client.setMode(sid, mode);
-    return { client, sid, resolved, mode };
+    return { sid, resolved, mode };
+  }
+
+  private async preparePromptSession(
+    agentName: string,
+    agentCfg: AcpAgentConfig,
+    opts: AcpPromptOptions,
+  ): Promise<{
+    client: ACPClient;
+    lease: ClientLease;
+    sid: string;
+    resolved: { id: string; newSession: boolean; reusedBinding: boolean; explicit: boolean };
+    mode: AcpCursorMode;
+  }> {
+    const pool = this.ensurePool(agentName, agentCfg);
+    const lease = await pool.tryAcquire(`sync-${Date.now()}`);
+    if (!lease) {
+      throw new Error(`ACP agent '${agentName}' is busy (all client slots in use)`);
+    }
+    const { sid, resolved, mode } = await this.preparePromptSessionWithClient(
+      lease.client,
+      agentName,
+      agentCfg,
+      opts,
+    );
+    return { client: lease.client, lease, sid, resolved, mode };
   }
 
   private async launchAsync(
@@ -874,71 +930,154 @@ export class AcpManager {
       return toolError("Async mode requires a valid Free Anima session");
     }
 
-    const activeTask = this.taskStore.findActive(agentName);
-    if (activeTask) {
-      return toolResult({
-        error: `ACP agent '${agentName}' already has a running async task`,
-        active_task_id: activeTask.taskId,
-      });
+    const now = Date.now();
+    const taskId = createTaskId();
+    const deadlineAt = now + timeoutMinutes * 60_000;
+    const scheduler = this.ensureScheduler(agentName, agentCfg);
+    const willQueue = !scheduler.hasCapacity();
+
+    const task: AcpAsyncTask = {
+      taskId,
+      agentName,
+      acpSessionId: "",
+      animaSessionId: opts.animaSessionId,
+      mode: opts.mode ?? "agent",
+      status: willQueue ? "queued" : "running",
+      startedAt: now,
+      lastProgressAt: now,
+      progressNotes: [],
+      lastDeliveredAt: 0,
+      timeoutAt: deadlineAt,
+      ...(willQueue ? { queuePosition: 1 } : {}),
+    };
+    this.taskStore.set(task);
+
+    if (willQueue) {
+      await bindAcpTaskQueued(this.conv(), opts.animaSessionId, agentName, taskId);
     }
-    if (this.activePromptByAgent.has(agentName)) {
-      return this.agentBusyError(agentName);
-    }
 
-    try {
-      const { client, sid, resolved, mode } = await this.preparePromptSession(
-        agentName,
-        agentCfg,
-        opts,
-      );
-      const promptText = buildPromptText(prompt, context, resolved, mode);
-      const now = Date.now();
-      const taskId = createTaskId();
-      const task: AcpAsyncTask = {
-        taskId,
-        agentName,
-        acpSessionId: sid,
-        animaSessionId: opts.animaSessionId,
-        mode,
-        status: "running",
-        startedAt: now,
-        lastProgressAt: now,
-        progressNotes: [],
-        lastDeliveredAt: 0,
-        timeoutAt: now + timeoutMinutes * 60_000,
-      };
-      this.taskStore.set(task);
-      this.activePromptByAgent.set(agentName, taskId);
-      const ac = new AbortController();
-      this.taskAbortControllers.set(taskId, ac);
+    const spec: AsyncLaunchSpec = {
+      taskId,
+      agentName,
+      prompt,
+      context,
+      animaSessionId: opts.animaSessionId,
+      acpSessionId: opts.acpSessionId,
+      newSession: opts.newSession,
+      mode: opts.mode,
+      timeoutMinutes,
+      enqueuedAt: now,
+      deadlineAt,
+      wasQueued: willQueue,
+    };
 
-      await bindAcpTaskRunning(this.conv(), opts.animaSessionId, agentName, sid, taskId);
-
-      void this.runAsyncPrompt(task, client, promptText, resolved, mode).catch((err) => {
-        logComponent("acp").error("Async ACP task error", { taskId, err });
-      });
-
+    const result = scheduler.enqueue(spec);
+    if (result.status === "queued") {
+      task.queuePosition = result.queuePosition;
       return toolResult({
         task_id: taskId,
-        status: "started",
-        session_id: sid,
-        hint: "Progress will be pushed via the message channel; final result pushed on completion",
+        status: "queued",
+        queue_position: result.queuePosition,
+        hint: "Task queued; will start when a client slot is available",
       });
+    }
+
+    return toolResult({
+      task_id: taskId,
+      status: "started",
+      hint: "Progress will be pushed via the message channel; final result pushed on completion",
+    });
+  }
+
+  private async executeAsyncTask(spec: AsyncLaunchSpec, lease: ClientLease): Promise<void> {
+    const agentCfg = this.getAgentConfig(spec.agentName);
+    if (!agentCfg) return;
+
+    const task = this.taskStore.get(spec.taskId);
+    if (!task || task.status === "cancelled") {
+      this.schedulerFor(spec.agentName)?.onTaskTerminal(spec.taskId);
+      return;
+    }
+
+    const ac = new AbortController();
+    this.taskAbortControllers.set(spec.taskId, ac);
+
+    try {
+      const promptOpts: AcpPromptOptions = {
+        animaSessionId: spec.animaSessionId,
+        acpSessionId: spec.acpSessionId,
+        newSession: spec.newSession,
+        mode: spec.mode,
+        isAsync: true,
+      };
+      const { sid, resolved, mode } = await this.preparePromptSessionWithClient(
+        lease.client,
+        spec.agentName,
+        agentCfg,
+        promptOpts,
+      );
+      const promptText = buildPromptText(spec.prompt, spec.context, resolved, mode);
+
+      task.acpSessionId = sid;
+      task.mode = mode;
+      task.status = "running";
+      task.clientSlot = lease.slotId;
+      delete task.queuePosition;
+
+      if (spec.wasQueued) {
+        await promoteQueuedTaskToRunning(
+          this.conv(),
+          spec.animaSessionId,
+          spec.agentName,
+          spec.taskId,
+          sid,
+        );
+      } else {
+        await bindAcpTaskRunning(
+          this.conv(),
+          spec.animaSessionId,
+          spec.agentName,
+          sid,
+          spec.taskId,
+        );
+      }
+
+      await this.runAsyncPrompt(task, lease, promptText, resolved, mode);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      this.agentErrors.set(agentName, msg);
-      return toolError(msg);
+      logComponent("acp").error("Async ACP task start failed", { taskId: spec.taskId, err: e });
+      task.status = "error";
+      task.error = msg;
+      if (task.acpSessionId) {
+        await updateAcpTaskStatus(this.conv(), task.animaSessionId, task.acpSessionId, "error");
+      }
+      await this.deliverTaskError(task, msg);
+      this.releaseAsyncTask(spec.taskId, spec.agentName);
     }
+  }
+
+  private async handleQueueTimeout(spec: AsyncLaunchSpec): Promise<void> {
+    const task = this.taskStore.get(spec.taskId);
+    if (!task) return;
+    task.status = "cancelled";
+    task.error = "Task queue timeout";
+    this.taskAbortControllers.delete(spec.taskId);
+    const placeholderKey = `queued:${spec.taskId}`;
+    await removeAcpTaskEntry(this.conv(), spec.animaSessionId, placeholderKey).catch(() => {});
+    await this.deliverTaskError(task, "Task queue timeout before start");
+    this.taskStore.delete(spec.taskId);
+    this.schedulerFor(spec.agentName)?.onTaskTerminal(spec.taskId);
   }
 
   private async runAsyncPrompt(
     task: AcpAsyncTask,
-    client: ACPClient,
+    lease: ClientLease,
     promptText: string,
     resolved: { newSession: boolean; reusedBinding: boolean; explicit: boolean },
     mode: AcpCursorMode,
   ): Promise<void> {
     const { taskId, agentName, acpSessionId } = task;
+    const client = lease.client;
     const abort = this.taskAbortControllers.get(taskId);
     const remainingMs = Math.max(task.timeoutAt - Date.now(), 1_000);
 
@@ -1040,21 +1179,32 @@ export class AcpManager {
 
   private purgeTerminalTask(taskId: string): void {
     const task = this.taskStore.get(taskId);
-    if (!task || task.status === "running") return;
+    if (!task || task.status === "running" || task.status === "queued") return;
     this.taskStore.delete(taskId);
   }
 
   private releaseAsyncTask(taskId: string, agentName: string): void {
     this.taskAbortControllers.delete(taskId);
-    if (this.activePromptByAgent.get(agentName) === taskId) {
-      this.activePromptByAgent.delete(agentName);
-    }
+    this.schedulerFor(agentName)?.onTaskTerminal(taskId);
     this.purgeTerminalTask(taskId);
   }
 
   private cancelAsyncTask(taskId: string): string {
     const task = this.taskStore.get(taskId);
     if (!task) return toolError(`Task not found: ${taskId}`);
+
+    if (task.status === "queued") {
+      const scheduler = this.schedulerFor(task.agentName);
+      if (scheduler?.cancelQueued(taskId)) {
+        task.status = "cancelled";
+        void removeAcpTaskEntry(this.conv(), task.animaSessionId, `queued:${taskId}`).catch(
+          () => {},
+        );
+        this.taskStore.delete(taskId);
+        return toolResult({ task_id: taskId, status: "cancelled" });
+      }
+    }
+
     if (task.status !== "running") {
       return toolResult({ task_id: taskId, status: task.status });
     }
@@ -1064,25 +1214,41 @@ export class AcpManager {
 
   private cancelAsyncTaskInternal(taskId: string, reason: string): void {
     const task = this.taskStore.get(taskId);
-    if (!task || task.status !== "running") return;
+    if (!task || (task.status !== "running" && task.status !== "queued")) return;
     task.status = "cancelled";
     task.error = reason;
     const ac = this.taskAbortControllers.get(taskId);
     ac?.abort();
-    const client = this.clients.get(task.agentName);
-    client?.abortActivePrompt();
-    void updateAcpTaskStatus(this.conv(), task.animaSessionId, task.acpSessionId, "cancelled").then(
-      () => this.deliverTaskError(task, reason),
-    );
+    const lease =
+      this.schedulerFor(task.agentName)?.getLease(taskId) ??
+      this.poolFor(task.agentName)?.findLease(taskId);
+    if (lease) {
+      lease.client.abortActivePrompt();
+    }
+    if (task.acpSessionId) {
+      void updateAcpTaskStatus(
+        this.conv(),
+        task.animaSessionId,
+        task.acpSessionId,
+        "cancelled",
+      ).then(() => this.deliverTaskError(task, reason));
+    } else {
+      void removeAcpTaskEntry(this.conv(), task.animaSessionId, `queued:${taskId}`).then(() =>
+        this.deliverTaskError(task, reason),
+      );
+    }
+    this.releaseAsyncTask(taskId, task.agentName);
   }
 
   async pollProgress(): Promise<void> {
     const port = this.progressDelivery;
     if (!port) return;
 
-    for (const task of this.taskStore.listRunning()) {
-      await this.deliverProgressForTask(task, { weixinBatch: true });
-    }
+    await Promise.all(
+      this.taskStore
+        .listRunning()
+        .map((task) => this.deliverProgressForTask(task, { weixinBatch: true })),
+    );
   }
 
   private async sessionPlatform(animaSessionId: string): Promise<string> {
@@ -1168,18 +1334,23 @@ export class AcpManager {
       return toolError(`ACP agent '${agentName}' not configured`);
     }
 
-    if (this.activePromptByAgent.has(agentName)) {
-      return this.agentBusyError(agentName);
+    if (this.syncLeases.has(agentName)) {
+      return toolResult({
+        error: `ACP agent '${agentName}' is busy`,
+      });
     }
-    this.activePromptByAgent.set(agentName, "sync");
 
     const mode = opts.mode ?? "agent";
+    let lease: ClientLease | undefined;
 
     try {
-      const { client, sid, resolved } = await this.preparePromptSession(agentName, agentCfg, opts);
+      const prepared = await this.preparePromptSession(agentName, agentCfg, opts);
+      lease = prepared.lease;
+      this.syncLeases.set(agentName, lease);
+      const { sid, resolved } = prepared;
       const promptText = buildPromptText(prompt, context, resolved, mode);
-      const output = await client.sendPrompt(sid, promptText);
-      const capture = client.takeLastPromptCapture();
+      const output = await prepared.client.sendPrompt(sid, promptText);
+      const capture = prepared.client.takeLastPromptCapture();
 
       const result: AcpPromptResult = {
         session_id: sid,
@@ -1196,13 +1367,14 @@ export class AcpManager {
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       this.agentErrors.set(agentName, msg);
-      if (opts.animaSessionId && !opts.acpSessionId && !opts.continueSession) {
+      if (opts.animaSessionId && !opts.acpSessionId) {
         await unbindAcpSession(this.conv(), opts.animaSessionId, agentName);
       }
       return toolError(msg);
     } finally {
-      if (this.activePromptByAgent.get(agentName) === "sync") {
-        this.activePromptByAgent.delete(agentName);
+      if (lease) {
+        this.poolFor(agentName)?.release(lease);
+        this.syncLeases.delete(agentName);
       }
     }
   }

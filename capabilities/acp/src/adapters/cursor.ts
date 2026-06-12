@@ -69,7 +69,7 @@ function handleAskQuestion(
     const pending: CursorPendingQuestions = { kind: "questions", questions };
     ctx.capture.pending.push(pending);
     ctx.capture.notes.push(
-      `Cursor asked ${questions.length} question(s) and paused awaiting a decision. Answer autonomously or call clarify to ask your partner, then continue via acp_cursor (continue_session=true).`,
+      `Cursor asked ${questions.length} question(s) and paused awaiting a decision. Answer autonomously or call clarify to ask your partner, then continue via acp_cursor(acp_session_id=...) from the prior result.`,
     );
     void notifyDecisionNeeded(ctx);
   }
@@ -88,7 +88,7 @@ function handleCreatePlan(
     const pending: CursorPendingPlan = { kind: "plan", plan, planUri };
     ctx.capture.pending.push(pending);
     ctx.capture.notes.push(
-      "Cursor submitted a plan awaiting approval. Review pending_plan in output, approve autonomously or verify via clarify, then continue with continue_session=true.",
+      "Cursor submitted a plan awaiting approval. Review pending_plan in output, approve autonomously or verify via clarify, then continue with acp_session_id from the prior result.",
     );
     void notifyDecisionNeeded(ctx);
   }
