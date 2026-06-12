@@ -2,90 +2,50 @@
 
 > **Repository** layering (distinct from cognitive Consciousness/Self/Memory/Estate in [`docs/concepts/architecture.md`](../../docs/concepts/architecture.md)). Enforced by [`scripts/check-layer-deps.ts`](../../scripts/check-layer-deps.ts).
 
-## Target: five-layer model
-
-Migration from the historical eight-layer layout is in progress. **Target** dependency direction:
+## Five-layer model
 
 ```
 platform → capabilities → runtime → core → kernel
 ```
 
-| Layer            | Responsibility                                                             | Target package(s)                                       |
-| ---------------- | -------------------------------------------------------------------------- | ------------------------------------------------------- |
-| **kernel**       | Business-agnostic runtime infra: Hook, EventBus, logging, qualified tokens | `@freeanima/kernel`                                     |
-| **core**         | PG schema, repos, Config, tool registry, LLM, compression, hooks, skills   | `@freeanima/core`（subpath：`/db`、`/tool`、`/llm` 等） |
-| **runtime**      | Session, turn, conversation, LLM↔tool loop, Engine factory                 | `@freeanima/runtime`                                    |
-| **capabilities** | Pluggable capability packs (identity, memory, tools, MCP/ACP, …)           | `capabilities-*`（组内可依赖，禁止环）                  |
-| **platform**     | Composition root, Gateway, WebUI, Cron, PG/Redis impl, CLI                 | `@freeanima/platform` + `@freeanima/platform/ports`     |
+| Layer            | Directory       | Package               | Responsibility                                    |
+| ---------------- | --------------- | --------------------- | ------------------------------------------------- |
+| **kernel**       | `kernel/`       | `@freeanima/kernel`   | Hook, EventBus, logging                           |
+| **core**         | `core/`         | `@freeanima/core`     | PG schema, repos, config, tool/LLM/compress/hooks |
+| **runtime**      | `runtime/`      | `@freeanima/runtime`  | Session, turn, loop, Engine factory               |
+| **capabilities** | `capabilities/` | `capabilities-*` (7)  | Identity, memory, tools, MCP/ACP, tasks, …        |
+| **platform**     | `platform/`     | `@freeanima/platform` | Composition root, ports, connectors, CLI wiring   |
+| **entry**        | `cli/`          | `@freeanima/cli`      | `anima` CLI                                       |
 
-### Migration map (v3.1 → target)
+### `@freeanima/core` subpaths
 
-| Historical layer / prefix          | Target                        |
-| ---------------------------------- | ----------------------------- |
-| `storage-*`, `mechanism-*`         | `@freeanima/core` subpaths    |
-| `orchestration-*`                  | `@freeanima/runtime`          |
-| `service-*`, `connectors-*`, `cli` | `@freeanima/platform`         |
-| `capabilities-*`                   | merged fewer `capabilities-*` |
+`db`, `repos`, `config`, `util`, `tokenizer`, `provider`, `tool`, `llm`, `compress`, `hooks`, `skill`
 
-Until migration completes, `scripts/check-layer-deps.ts` may still reference legacy directory names (`storage/`, `orchestration/`, etc.).
+### `@freeanima/runtime` subpaths
+
+`session`, `turn`, `loop`, `conversation`
+
+### `@freeanima/platform` subpaths
+
+`ports`, `config`, `logging`, `commands`, `bootstrap`, `connectors/*`
 
 ## Port wiring at composition root
 
-Boot phases live under [`service/service/src/boot/`](../../service/service/src/boot/) (moving to `platform/boot/`). Entry: [`serve.ts`](../../service/service/src/serve.ts).
+Boot phases: [`platform/src/boot/`](../../platform/src/boot/). Entry: [`platform/src/serve.ts`](../../platform/src/serve.ts).
 
-After `FileConfig.open()` + `createServiceLogger()`:
+- `registerCapabilityInjection()` wires credential helpers from `@freeanima/platform/config` into `@freeanima/core/config`
+- **runtime / core / capabilities** must not depend on `@freeanima/platform` in production code (tests may use platform test helpers as devDependency)
+- Connectors and WebUI import `@freeanima/platform/ports` only — not the full boot graph
 
-- `createEngine({ config, logger, ... })` injects shared `Config` and logging
-- `registerCapabilityInjection({ listCredentials, credential, readAppVersion })` wires service-config helpers for capabilities
-- **runtime / core must not** depend on `service-config` / `service-logging` (use `@freeanima/core/config` `Config` type and `logCapability` only)
-- **capabilities must not** depend on `service-config` / `service-logging` in production code (tests may use `service-config` as devDependency)
+## RuntimeContext
 
-## Runtime infra satellite packages (transitional)
+Single process-wide context after boot (`initRuntimeContext` in [`platform/src/runtime/runtime-context.ts`](../../platform/src/runtime/runtime-context.ts)):
 
-| Package                       | Role                                                                                    | Who may import                                          |
-| ----------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| `@freeanima/core/config`      | `AnimaConfig` Zod, `Config` container, `logCapability`, capability injection ports      | core / runtime / capabilities (types + injected config) |
-| `@freeanima/platform/config`  | `FileConfig extends Config`: `open()` / `reload()` / YAML/credential file I/O           | composition root / connectors / CLI only                |
-| `@freeanima/platform/logging` | Process bootstrap: `createServiceLogger`, `installErrorLogHandlers`, `markStartupPhase` | composition root / CLI startup only                     |
-
-## RuntimeContext (composition root)
-
-Single process-wide context after boot (`initRuntimeContext`):
-
-- `deps: FullRuntimeDeps` — engine, conversation, masks, MCP/ACP
-- `app: AppRuntimePort` — HTTP/Gateway-facing API
-
-Consumers in connectors/commands import `@freeanima/platform/ports` (→ future `@freeanima/platform/ports`) — **not** `@freeanima/platform` implementation.
+- `deps: FullRuntimeDeps`
+- `app: AppRuntimePort`
 
 ## Runtime Catalog (Registry instances)
 
-**Instance acquisition**: `ToolSetRegistry` / `SkillRegistry` / `MaskRegistry` — **`new` one or obtain from context**.
+**Forbidden**: module-level registry singletons; direct PG connections inside runtime / capabilities.
 
-| Scenario                    | Approach                                                                                                         |
-| --------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Composition root `serve.ts` | `new` each Registry → `Engine.catalog` and runtime context `masks`                                               |
-| Runtime read/write          | `getRuntimeContext().deps.engine.catalog.*`; per turn `runWithToolContext(..., { tools })` / `getToolRegistry()` |
-| Pass down                   | Explicit params OK; **must come from composition-root `new` or context**, not module defaults                    |
-| Unit tests                  | `new ToolSetRegistry()` etc.; no process-wide catalog pollution                                                  |
-
-**Forbidden**:
-
-- `export const default*Registry` and module-level `registerTool()` bound on import
-- capabilities / runtime importing module-level registry singletons
-- `bindKernel` / `getKernel` / `Kernel.repos` inner globals
-- Direct `new` PG connections or `import connectors-db-pg` inside runtime / capabilities
-
-**Allowed**:
-
-- `ConversationService` at composition root; runtime via context or explicit params
-- Tool context: `runWithToolContext(sessionId, fn, { repos, tools })` — [`orchestration/loop/src/tool-context.ts`](../../orchestration/loop/src/tool-context.ts) (→ `@freeanima/runtime/loop`)
-
-## Historical package rename (v3.1)
-
-| Old prefix                       | New prefix                                      |
-| -------------------------------- | ----------------------------------------------- |
-| `engine-db` etc. foundation      | `storage-*`                                     |
-| `engine-tool` etc. mechanism     | `mechanism-*`                                   |
-| `engine-loop` etc. orchestration | `orchestration-*` → **`runtime`** (target)      |
-| `life-self` / `life-memory`      | `capabilities-identity` / `capabilities-memory` |
-| `connectors-commands`            | `service-commands`                              |
+**Allowed**: `runWithToolContext` — [`runtime/src/loop/tool-context.ts`](../../runtime/src/loop/tool-context.ts)
