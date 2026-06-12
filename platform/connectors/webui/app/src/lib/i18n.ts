@@ -1,5 +1,5 @@
-import * as m from "../../../../../messages/paraglide/messages.js";
-import { getLocale, locales, setLocale } from "../../../../../messages/paraglide/runtime.js";
+import * as m from "../../../../../../messages/paraglide/messages.js";
+import { getLocale, locales, setLocale } from "../../../../../../messages/paraglide/runtime.js";
 
 export type WebUiLocale = (typeof locales)[number];
 
