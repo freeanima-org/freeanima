@@ -36,7 +36,6 @@ import {
   getBoundAcpSession,
   promoteQueuedTaskToRunning,
   removeAcpTaskEntry,
-  unbindAcpSession,
   updateAcpTaskStatus,
 } from "./acp-tasks.ts";
 import type { CursorPendingInteraction } from "./cursor-decision.ts";
@@ -1368,7 +1367,8 @@ export class AcpManager {
       const msg = e instanceof Error ? e.message : String(e);
       this.agentErrors.set(agentName, msg);
       if (opts.animaSessionId && !opts.acpSessionId) {
-        await unbindAcpSession(this.conv(), opts.animaSessionId, agentName);
+        const bound = await getBoundAcpSession(this.conv(), opts.animaSessionId, agentName);
+        if (bound) await removeAcpTaskEntry(this.conv(), opts.animaSessionId, bound);
       }
       return toolError(msg);
     } finally {

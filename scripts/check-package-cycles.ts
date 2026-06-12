@@ -7,17 +7,7 @@ import { join } from "node:path";
 
 const ROOT = join(import.meta.dir, "..");
 
-const WORKSPACE_DIRS = [
-  "kernel",
-  "storage",
-  "mechanism",
-  "orchestration",
-  "capabilities",
-  "connectors",
-  "service",
-  "cli",
-  "tests",
-];
+const WORKSPACE_DIRS = ["kernel", "core", "runtime", "capabilities", "platform", "cli", "tests"];
 
 type PkgGraph = Map<string, string[]>;
 
@@ -29,14 +19,26 @@ function collectPackages(): PkgGraph {
     if (!existsSync(base)) continue;
 
     const entries =
-      top === "cli" || top === "tests" || top === "kernel"
+      top === "cli" ||
+      top === "tests" ||
+      top === "kernel" ||
+      top === "core" ||
+      top === "runtime" ||
+      top === "platform"
         ? [{ name: ".", isDirectory: () => true }]
         : readdirSync(base, { withFileTypes: true });
 
     for (const ent of entries) {
       if (!ent.isDirectory()) continue;
       const pkgDir =
-        top === "cli" || top === "tests" || top === "kernel" ? base : join(base, ent.name);
+        top === "cli" ||
+        top === "tests" ||
+        top === "kernel" ||
+        top === "core" ||
+        top === "runtime" ||
+        top === "platform"
+          ? base
+          : join(base, ent.name);
       const pjPath = join(pkgDir, "package.json");
       if (!existsSync(pjPath)) continue;
 
@@ -52,7 +54,15 @@ function collectPackages(): PkgGraph {
         .map(([name]) => name);
 
       graph.set(manifest.name, workspaceDeps);
-      if (top === "cli" || top === "tests" || top === "kernel") break;
+      if (
+        top === "cli" ||
+        top === "tests" ||
+        top === "kernel" ||
+        top === "core" ||
+        top === "runtime" ||
+        top === "platform"
+      )
+        break;
     }
   }
 

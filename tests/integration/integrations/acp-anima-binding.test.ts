@@ -11,7 +11,7 @@ import {
   bindAcpTaskRunning,
   getBoundAcpSession,
   readAcpTasks,
-  unbindAcpSession,
+  removeAcpTaskEntry,
 } from "@freeanima/capabilities-acp";
 
 describePg("acp acp_tasks binding", () => {
@@ -41,7 +41,7 @@ describePg("acp acp_tasks binding", () => {
         updated_at: expect.any(String),
       },
     });
-    await unbindAcpSession(c, animaSid, "cursor");
+    await removeAcpTaskEntry(c, animaSid, "acp-uuid-1");
     expect(await getBoundAcpSession(c, animaSid, "cursor")).toBeUndefined();
   });
 

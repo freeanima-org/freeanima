@@ -6,7 +6,7 @@ import type {
   EmailMessage,
 } from "./types.ts";
 
-/** Email I/O surface injected from connectors-email at composition root */
+/** Email I/O surface injected from platform/connectors/email at composition root */
 export type EmailApi = {
   registerEmailAccount: (input: EmailAccountInput) => Promise<EmailAccount>;
   editEmailAccount: (id: string, patch: EmailAccountPatch) => EmailAccount;

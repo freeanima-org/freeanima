@@ -21,7 +21,7 @@ tests/
   helpers/           # integration: describePg, beginIntegrationCase, pg-test, etc.
   integration/
     db/
-    orchestration/
+    runtime/
     ...
 ```
 

@@ -4,7 +4,7 @@ import { createConversationService } from "@freeanima/runtime/conversation";
 import { createServiceKernel } from "@freeanima/platform/bootstrap";
 import {
   createAppRuntime,
-  initAppRuntime,
+  initRuntimeContext,
   wireServicePorts,
   registerSystemPromptHooks,
 } from "@freeanima/platform";
@@ -40,7 +40,7 @@ async function flushActiveCompressionSummaries(): Promise<void> {
 }
 
 /** Standard integration-test AppRuntime (builtins / WebUI handler) */
-export function wireIntegrationServiceContext(pg: PgTestContext): void {
+export function wireIntegrationRuntimeContext(pg: PgTestContext): void {
   bindHomeChannelConfig(pg.config);
   const kernel = createServiceKernel(pg.config);
   const conversation = createConversationService(pg.engine.repos, pg.engine.catalog.toolSets);
@@ -57,7 +57,7 @@ export function wireIntegrationServiceContext(pg: PgTestContext): void {
   };
   const runtime = createAppRuntime(fullDeps);
   wireServicePorts(fullDeps);
-  initAppRuntime(runtime);
+  initRuntimeContext(runtime);
   resetRegisterServiceToolsForTest();
   registerServiceTools({
     toolSets: pg.engine.catalog.toolSets,
@@ -110,7 +110,7 @@ export async function restoreIntegrationHome(prevHome?: string): Promise<void> {
   resetServiceLogger();
 }
 
-/** Standard integration test case setup: temp home + PG harness + ServiceContext */
+/** Standard integration test case setup: temp home + PG harness + AppRuntime */
 export async function beginIntegrationCase(prefix: string): Promise<{
   home: string;
   pg: PgTestContext;
@@ -121,7 +121,7 @@ export async function beginIntegrationCase(prefix: string): Promise<{
   const home = beginLogIsolation(prefix);
   const { setupIntegrationHome } = await import("./pg-test.ts");
   const pg = await setupIntegrationHome({ url: pgTestUrl, home });
-  wireIntegrationServiceContext(pg);
+  wireIntegrationRuntimeContext(pg);
   await syncIntegrationSelfLayer(pg);
   return { home, pg };
 }
@@ -136,7 +136,7 @@ export async function beginIntegrationCaseWithConfig(
   const home = beginLogIsolation(prefix);
   const { setupIntegrationHome } = await import("./pg-test.ts");
   const pg = await setupIntegrationHome({ url: pgTestUrl, home, configYaml });
-  wireIntegrationServiceContext(pg);
+  wireIntegrationRuntimeContext(pg);
   await syncIntegrationSelfLayer(pg);
   return { home, pg };
 }

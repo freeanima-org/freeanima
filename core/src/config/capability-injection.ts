@@ -18,7 +18,7 @@ export type CapabilityInjection = {
 
 let injection: CapabilityInjection = {};
 
-/** Composition root wires service-config helpers for capabilities */
+/** Composition root wires platform config helpers for capabilities */
 export function registerCapabilityInjection(next: CapabilityInjection): void {
   injection = { ...injection, ...next };
 }

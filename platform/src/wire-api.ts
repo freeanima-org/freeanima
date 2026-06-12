@@ -19,7 +19,7 @@ import {
 } from "./runtime/studio.ts";
 import type { FullRuntimeDeps } from "./runtime/runtime-deps.ts";
 
-/** Register service-api ports after AppRuntime deps are available */
+/** Register platform API ports after AppRuntime deps are available */
 export function wireServicePorts(deps: FullRuntimeDeps): void {
   registerToolSessionResolver(getToolSessionId);
   registerOnSessionCloseBeforeNew((sessionId) => onSessionCloseBeforeNew(deps, sessionId));

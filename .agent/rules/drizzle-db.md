@@ -2,7 +2,7 @@
 
 Repository query patterns for `@freeanima/platform/connectors/db-pg`. Schema DDL and migrations → [`coding.md`](coding.md) § PG migrations.
 
-**Conflict priority**: implementation in `connectors/db-pg/` > this file.
+**Conflict priority**: implementation in `platform/connectors/db-pg/` > this file.
 
 ---
 
@@ -10,11 +10,11 @@ Repository query patterns for `@freeanima/platform/connectors/db-pg`. Schema DDL
 
 | In scope                                                 | Out of scope                                                                                |
 | -------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `connectors/db-pg/` repository / FTS query code          | Migration DDL (`db:generate`, `snapshot.json`) — see [`coding.md`](coding.md)               |
+| `platform/connectors/db-pg/` repository / FTS query code | Migration DDL (`db:generate`, `snapshot.json`) — see [`coding.md`](coding.md)               |
 | ORM vs `db.execute` choice, type safety, dynamic filters | Product memory pipeline — see [`docs/concepts/memory.md`](../../docs/concepts/memory.md)    |
 | Mapper / DbRow typing                                    | User PG install, backup, ops — see [`docs/guide/database.md`](../../docs/guide/database.md) |
 
-Driver: `drizzle-orm/bun-sql/postgres` via [`connectors/db-pg/src/client.ts`](../../connectors/db-pg/src/client.ts).
+Driver: `drizzle-orm/bun-sql/postgres` via [`platform/connectors/db-pg/client.ts`](../../platform/connectors/db-pg/client.ts).
 
 ---
 
@@ -50,7 +50,7 @@ Derive storage row types from Drizzle schema — do not hand-write column struct
 export type TaskDbRow = typeof tasks.$inferSelect;
 ```
 
-Reference: [`connectors/db-pg/src/tasks/mappers/task-mapper.ts`](../../connectors/db-pg/src/tasks/mappers/task-mapper.ts).
+Reference: [`platform/connectors/db-pg/tasks/mappers/task-mapper.ts`](../../platform/connectors/db-pg/tasks/mappers/task-mapper.ts).
 
 Patch objects: `Partial<typeof {table}.$inferInsert>`.
 
@@ -72,17 +72,17 @@ Prefer quoted SQL aliases aligned with schema camelCase (`AS "referenceCount"`) 
 
 Link to source — do not maintain function inventories here.
 
-| Pattern                                          | Reference                                                                                                                                                                                                                          |
-| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Simple CRUD (select / insert / update / delete)  | [`semantic-crud-repo.ts`](../../connectors/db-pg/src/semantic-memory/repos/semantic-crud-repo.ts) — `getSemanticMemory`, `createSemanticMemory`                                                                                    |
-| Count via ORM                                    | [`message-repo.ts`](../../connectors/db-pg/src/session/repos/message-repo.ts) — `countMessages`; [`task-crud-repo.ts`](../../connectors/db-pg/src/tasks/repos/task-crud-repo.ts) — `countTasks`                                    |
-| Dynamic filters (`buildListConditions` + `and`)  | [`task-crud-repo.ts`](../../connectors/db-pg/src/tasks/repos/task-crud-repo.ts) — `buildListConditions`; [`semantic-filters.ts`](../../connectors/db-pg/src/semantic-memory/repos/semantic-filters.ts) — `buildSemanticConditions` |
-| PG function in predicate (`ILIKE`, `CASE` order) | [`task-crud-repo.ts`](../../connectors/db-pg/src/tasks/repos/task-crud-repo.ts) — query / priority sort                                                                                                                            |
-| Text array overlap                               | Drizzle `arrayOverlaps(column, values)` in `.where()` — verify with integration test on bun-sql driver ([drizzle#4034](https://github.com/drizzle-team/drizzle-orm/issues/4034))                                                   |
-| FTS / hybrid search (Tier 3)                     | [`fts/hybrid-raw.ts`](../../connectors/db-pg/src/fts/hybrid-raw.ts), [`fts/hybrid-search.ts`](../../connectors/db-pg/src/fts/hybrid-search.ts)                                                                                     |
-| Domain row mapping                               | [`task-mapper.ts`](../../connectors/db-pg/src/tasks/mappers/task-mapper.ts)                                                                                                                                                        |
+| Pattern                                          | Reference                                                                                                                                                                                                                                    |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Simple CRUD (select / insert / update / delete)  | [`semantic-crud-repo.ts`](../../platform/connectors/db-pg/semantic-memory/repos/semantic-crud-repo.ts) — `getSemanticMemory`, `createSemanticMemory`                                                                                         |
+| Count via ORM                                    | [`message-repo.ts`](../../platform/connectors/db-pg/session/repos/message-repo.ts) — `countMessages`; [`task-crud-repo.ts`](../../platform/connectors/db-pg/tasks/repos/task-crud-repo.ts) — `countTasks`                                    |
+| Dynamic filters (`buildListConditions` + `and`)  | [`task-crud-repo.ts`](../../platform/connectors/db-pg/tasks/repos/task-crud-repo.ts) — `buildListConditions`; [`semantic-filters.ts`](../../platform/connectors/db-pg/semantic-memory/repos/semantic-filters.ts) — `buildSemanticConditions` |
+| PG function in predicate (`ILIKE`, `CASE` order) | [`task-crud-repo.ts`](../../platform/connectors/db-pg/tasks/repos/task-crud-repo.ts) — query / priority sort                                                                                                                                 |
+| Text array overlap                               | Drizzle `arrayOverlaps(column, values)` in `.where()` — verify with integration test on bun-sql driver ([drizzle#4034](https://github.com/drizzle-team/drizzle-orm/issues/4034))                                                             |
+| FTS / hybrid search (Tier 3)                     | [`fts/hybrid-raw.ts`](../../platform/connectors/db-pg/fts/hybrid-raw.ts), [`fts/hybrid-search.ts`](../../platform/connectors/db-pg/fts/hybrid-search.ts)                                                                                     |
+| Domain row mapping                               | [`task-mapper.ts`](../../platform/connectors/db-pg/tasks/mappers/task-mapper.ts)                                                                                                                                                             |
 
-Table shapes: [`storage/db/src/schema/`](../../storage/db/src/schema/). Port types: [`storage/repos/src/ports/`](../../storage/repos/src/ports/).
+Table shapes: [`core/src/db/schema/`](../../core/src/db/schema/). Port types: [`core/src/repos/ports/`](../../core/src/repos/ports/).
 
 ---
 

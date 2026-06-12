@@ -1,4 +1,4 @@
-/** AnimaService internal snapshot types */
+/** AppRuntime internal snapshot types */
 
 export type HealthSnapshot = {
   status: "ok";

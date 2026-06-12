@@ -4,22 +4,20 @@
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
     "paths": {
-      "@/*": ["./connectors/webui/app/src/*"]
+      "@/*": ["./platform/connectors/webui/app/src/*"]
     }
   },
   "include": [
     "types/**/*.d.ts",
     "kernel/**/*.ts",
-    "storage/**/*.ts",
-    "mechanism/**/*.ts",
-    "orchestration/**/*.ts",
-    "service/**/*.ts",
+    "core/**/*.ts",
+    "runtime/**/*.ts",
+    "platform/**/*.ts",
     "capabilities/**/*.ts",
-    "connectors/**/*.ts",
     "cli/**/*.ts",
-    "connectors/webui/app/**/*.ts",
-    "connectors/webui/app/**/*.tsx",
-    "connectors/webui/app/index.html",
+    "platform/connectors/webui/app/**/*.ts",
+    "platform/connectors/webui/app/**/*.tsx",
+    "platform/connectors/webui/app/index.html",
     "scripts/**/*.ts",
     "tests/**/*.ts"
   ],

@@ -2,7 +2,7 @@ import type { SessionStorePort } from "@freeanima/core/repos";
 
 let memorySessionStore: SessionStorePort | null = null;
 
-/** Injected by service at startup (avoids life ↔ connectors-db-pg direct dependency) */
+/** Injected by platform at startup (avoids capabilities ↔ db-pg direct dependency) */
 export function registerMemorySessionStore(store: SessionStorePort): void {
   memorySessionStore = store;
 }

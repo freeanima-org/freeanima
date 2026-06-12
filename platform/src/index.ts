@@ -8,14 +8,14 @@ export { wireEnginePorts } from "./wire-engine-ports.ts";
 export { registerSystemPromptHooks } from "./register-prompt-hooks.ts";
 export { wireServicePorts } from "./wire-api.ts";
 export {
-  initAppRuntime,
+  initRuntimeContext,
+  getRuntimeContext,
   getAppRuntime,
-  initServiceContext,
-  getServiceContext,
+  getRuntimeDeps,
+  isRuntimeContextReady,
   assertNotShuttingDown,
-  isAppRuntimeReady,
-  isServiceContextReady,
-  type ServiceContext,
+  type RuntimeContext,
+  type ServiceAppRuntime,
   type AppRuntime,
 } from "./context.ts";
 export { isServerAlive, readStatusFile } from "./alive.ts";
@@ -25,11 +25,5 @@ export {
   parseBindHosts,
   resolveProbeHost,
 } from "./bind-hosts.ts";
-export {
-  serve,
-  getService,
-  type ServeOptions,
-  type WebuiHooks,
-  type WebuiServerHandle,
-} from "./serve.ts";
+export { serve, type ServeOptions, type WebuiHooks, type WebuiServerHandle } from "./serve.ts";
 export * from "./runtime/index.ts";
