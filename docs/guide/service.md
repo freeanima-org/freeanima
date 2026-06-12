@@ -1,3 +1,7 @@
+---
+title: Service
+---
+
 # Service operations
 
 > Runtime status, memory metrics, and common commands.
