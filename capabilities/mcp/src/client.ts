@@ -1,4 +1,4 @@
-import { readAppVersion } from "@freeanima/service-config";
+import { readAppVersionForCapability as readAppVersion } from "@freeanima/storage-config";
 
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import {

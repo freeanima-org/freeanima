@@ -1,4 +1,4 @@
-import type { ConversationService } from "@freeanima/engine-conversation";
+import type { ConversationService } from "@freeanima/orchestration-conversation";
 
 import type { AcpManagerPort } from "./ports/acp-manager.ts";
 import type { MaskRegistryPort } from "./ports/mask-registry.ts";

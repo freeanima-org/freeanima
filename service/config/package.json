@@ -13,8 +13,8 @@
     "./test-helpers/minimal-llm-config": "./src/test-helpers/minimal-llm-config.ts"
   },
   "dependencies": {
-    "@freeanima/engine-config": "workspace:*",
-    "@freeanima/engine-util": "workspace:*",
+    "@freeanima/storage-config": "workspace:*",
+    "@freeanima/storage-util": "workspace:*",
     "zod": "catalog:"
   },
   "devDependencies": {

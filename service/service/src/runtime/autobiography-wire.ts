@@ -1,13 +1,13 @@
-import * as engine from "@freeanima/engine-loop";
-import { runWithToolContext } from "@freeanima/engine-tool";
-import type { SessionMessage } from "@freeanima/engine-db/domain";
-import { PROFILE_REFLECT } from "@freeanima/engine-provider-llm";
-import { getProfileHopModel } from "@freeanima/engine-config";
+import * as engine from "@freeanima/orchestration-loop";
+import { runWithToolContext } from "@freeanima/mechanism-tool";
+import type { SessionMessage } from "@freeanima/storage-db/domain";
+import { PROFILE_REFLECT } from "@freeanima/storage-provider-llm";
+import { getProfileHopModel } from "@freeanima/storage-config";
 import {
   registerAutobiographyEngine,
   type AutobiographyEngineInput,
   type AutobiographyEngineResult,
-} from "@freeanima/life-memory/autobiography-port";
+} from "@freeanima/capabilities-memory/autobiography-port";
 
 import { getServiceContext } from "../context.ts";
 import {

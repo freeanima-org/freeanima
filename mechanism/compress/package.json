@@ -1,0 +1,20 @@
+{
+  "name": "@freeanima/mechanism-compress",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@freeanima/storage-db": "workspace:*",
+    "@freeanima/mechanism-llm": "workspace:*",
+    "@freeanima/storage-repos": "workspace:*",
+    "@freeanima/storage-tokenizer": "workspace:*",
+    "@freeanima/storage-config": "workspace:*",
+    "@freeanima/storage-util": "workspace:*",
+    "@freeanima/kernel-logging": "workspace:*"
+  },
+  "devDependencies": {
+    "@freeanima/orchestration-conversation": "workspace:*",
+    "@types/bun": "catalog:"
+  }
+}

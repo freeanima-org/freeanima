@@ -6,7 +6,7 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { filterRecallableMessages } from "@freeanima/life-memory";
+import { filterRecallableMessages } from "@freeanima/capabilities-memory";
 import { getTestEngine, seedSession, testConv } from "../../helpers/pg-test.ts";
 
 describePg("memory PG FTS", () => {

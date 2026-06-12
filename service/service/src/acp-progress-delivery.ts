@@ -4,11 +4,11 @@ import type {
   AcpPromptResult,
 } from "@freeanima/capabilities-acp";
 import { deliverToTargets, type CronDeliverTarget } from "@freeanima/connectors-cron/deliver";
-import { isSessionMeta } from "@freeanima/engine-conversation";
-import type { ConversationService } from "@freeanima/engine-conversation";
-import type { SessionMetaLoadResult } from "@freeanima/engine-db/domain";
+import { isSessionMeta } from "@freeanima/orchestration-conversation";
+import type { ConversationService } from "@freeanima/orchestration-conversation";
+import type { SessionMetaLoadResult } from "@freeanima/storage-db/domain";
 import type { EventBus } from "@freeanima/kernel-eventbus";
-import { sessionUpdated } from "@freeanima/life-memory";
+import { sessionUpdated } from "@freeanima/capabilities-memory";
 import { logComponent } from "@freeanima/service-logging";
 
 const DISCORD_PROGRESS_PREFIX = "discord:";

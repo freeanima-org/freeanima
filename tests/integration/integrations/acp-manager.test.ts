@@ -4,7 +4,7 @@ import { parseYaml } from "@freeanima/service-config";
 import { animaConfigSchema } from "@freeanima/service-config/schemas/config";
 import { MINIMAL_LLM_YAML } from "@freeanima/service-config/test-helpers/minimal-llm-config";
 import { getAcpManager, registerAcpTools } from "@freeanima/capabilities-acp";
-import { createEngineCatalog } from "@freeanima/engine";
+import { createEngineCatalog } from "@freeanima/orchestration-runtime";
 
 function emptyConfig() {
   const parsed = animaConfigSchema.safeParse(parseYaml(MINIMAL_LLM_YAML));

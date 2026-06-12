@@ -4,7 +4,7 @@ import type {
   TaskRow,
   TaskStorePort,
   TaskUpdateInput,
-} from "@freeanima/engine-repos";
+} from "@freeanima/storage-repos";
 
 import * as crudRepo from "./repos/task-crud-repo.ts";
 

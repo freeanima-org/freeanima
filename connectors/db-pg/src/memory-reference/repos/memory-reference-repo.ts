@@ -1,11 +1,11 @@
 import { and, eq, ne, sql as drizzleSql } from "drizzle-orm";
-import { memoryReferences, semanticMemory } from "@freeanima/engine-db/schema";
-import { formatCstIso } from "@freeanima/engine-util";
-import type { RecordMessageReferencesInput } from "@freeanima/engine-repos";
+import { memoryReferences, semanticMemory } from "@freeanima/storage-db/schema";
+import { formatCstIso } from "@freeanima/storage-util";
+import type { RecordMessageReferencesInput } from "@freeanima/storage-repos";
 import {
   parseMemoryReferenceMarkers,
   memoryReferenceWeight,
-} from "@freeanima/engine-repos/memory-reference/markers";
+} from "@freeanima/storage-repos/memory-reference/markers";
 
 import { getDb } from "../../client.ts";
 

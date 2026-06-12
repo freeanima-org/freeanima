@@ -11,9 +11,9 @@ import {
   isEngineStreamError,
   isTransientNetworkError,
   networkErrorUserHint,
-} from "@freeanima/engine-loop";
+} from "@freeanima/orchestration-loop";
 import { getServiceContext } from "@freeanima/service-api";
-import { KeyedRateLimiter } from "@freeanima/engine-util/backoff";
+import { KeyedRateLimiter } from "@freeanima/storage-util/backoff";
 import { logComponent } from "@freeanima/service-logging";
 import type { AnimaService } from "@freeanima/service-api";
 import type { PlatformAdapter } from "../platforms.ts";

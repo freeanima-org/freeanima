@@ -1,4 +1,4 @@
-import { countTokens, splitTextByTokenLimit } from "@freeanima/engine-tokenizer";
+import { countTokens, splitTextByTokenLimit } from "@freeanima/storage-tokenizer";
 import { logComponent } from "@freeanima/service-logging";
 
 import type { EmbeddingEmbedUnit, EmbeddingPendingJob } from "./types.ts";

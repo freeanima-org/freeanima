@@ -1,5 +1,5 @@
-import type { ToolSetRegistry } from "@freeanima/engine-tool";
-import { attachToolReturns, toolError, toolResult } from "@freeanima/engine-tool";
+import type { ToolSetRegistry } from "@freeanima/mechanism-tool";
+import { attachToolReturns, toolError, toolResult } from "@freeanima/mechanism-tool";
 import { CLARIFY_TOOL_RETURNS } from "./return-schemas.ts";
 import { getClarifyConfig } from "./clarify.ts";
 import type { ClarifyItem as ClarifyItemType } from "./clarify.ts";

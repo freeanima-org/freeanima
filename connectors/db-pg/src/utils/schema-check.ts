@@ -15,7 +15,7 @@ export async function assertMessagesSchema(db: Db): Promise<void> {
   if (pkCols.length !== 1 || pkCols[0] !== "id") {
     throw new Error(
       `messages table PK should be (id), currently (${pkCols.join(", ") || "unknown"}).` +
-        "Run: bun run --filter @freeanima/engine-db db:migrate",
+        "Run: bun run --filter @freeanima/storage-db db:migrate",
     );
   }
 
@@ -27,7 +27,7 @@ export async function assertMessagesSchema(db: Db): Promise<void> {
   `);
   if (!posCol[0]?.exists) {
     throw new Error(
-      "messages table missing pos column (in-session sequence). Run: bun run --filter @freeanima/engine-db db:migrate",
+      "messages table missing pos column (in-session sequence). Run: bun run --filter @freeanima/storage-db db:migrate",
     );
   }
 
@@ -39,7 +39,7 @@ export async function assertMessagesSchema(db: Db): Promise<void> {
   `);
   if (!payloadCol[0]?.exists) {
     throw new Error(
-      "messages table missing payload column. Run: bun run --filter @freeanima/engine-db db:migrate",
+      "messages table missing payload column. Run: bun run --filter @freeanima/storage-db db:migrate",
     );
   }
 
@@ -54,7 +54,7 @@ export async function assertMessagesSchema(db: Db): Promise<void> {
   `);
   if (Number(uqRows[0]?.cnt ?? 0) < 1) {
     throw new Error(
-      "messages table missing unique index on (session_id, pos). Run: bun run --filter @freeanima/engine-db db:migrate",
+      "messages table missing unique index on (session_id, pos). Run: bun run --filter @freeanima/storage-db db:migrate",
     );
   }
 }

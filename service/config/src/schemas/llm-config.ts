@@ -1,1 +1,1 @@
-export * from "@freeanima/engine-config";
+export * from "@freeanima/storage-config";

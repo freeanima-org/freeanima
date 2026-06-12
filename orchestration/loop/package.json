@@ -1,0 +1,22 @@
+{
+  "name": "@freeanima/orchestration-loop",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@freeanima/mechanism-compress": "workspace:*",
+    "@freeanima/storage-db": "workspace:*",
+    "@freeanima/mechanism-llm": "workspace:*",
+    "@freeanima/storage-provider-llm": "workspace:*",
+    "@freeanima/mechanism-tool": "workspace:*",
+    "@freeanima/storage-repos": "workspace:*",
+    "@freeanima/mechanism-hooks": "workspace:*",
+    "@freeanima/kernel-hooks": "workspace:*",
+    "@freeanima/storage-config": "workspace:*",
+    "@freeanima/kernel-logging": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:"
+  }
+}

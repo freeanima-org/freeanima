@@ -1,4 +1,4 @@
-import type { SessionStorePort } from "@freeanima/engine-repos";
+import type { SessionStorePort } from "@freeanima/storage-repos";
 import * as messageFtsRepo from "./repos/message-fts-repo.ts";
 import * as messageRepo from "./repos/message-repo.ts";
 import * as sessionRepo from "./repos/session-repo.ts";

@@ -10,8 +10,9 @@
   "include": [
     "types/**/*.d.ts",
     "kernel/**/*.ts",
-    "engine/**/*.ts",
-    "life/**/*.ts",
+    "storage/**/*.ts",
+    "mechanism/**/*.ts",
+    "orchestration/**/*.ts",
     "service/**/*.ts",
     "capabilities/**/*.ts",
     "connectors/**/*.ts",

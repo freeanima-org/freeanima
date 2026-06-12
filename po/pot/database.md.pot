@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-10 17:45+0800\n"
+"POT-Creation-Date: 2026-06-12 11:40+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,17 +17,18 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Plain text
-#: docs/README.md:1 docs/concepts/compression.md:1
-#: docs/concepts/compression.md:11 docs/concepts/compression.md:22
-#: docs/concepts/compression.md:49 docs/concepts/compression.md:96
-#: docs/concepts/compression.md:118 docs/concepts/compression.md:156
-#: docs/concepts/compression.md:180 docs/concepts/compression.md:228
-#: docs/concepts/compression.md:262 docs/concepts/compression.md:275
-#: docs/concepts/compression.md:327 docs/concepts/compression.md:348
-#: docs/concepts/compression.md:368 docs/concepts/compression.md:384
-#: docs/concepts/identity.md:1 docs/concepts/identity.md:10
-#: docs/concepts/identity.md:28 docs/concepts/identity.md:45
-#: docs/concepts/identity.md:55 docs/concepts/memory.md:1
+#: docs/README.md:1 docs/concepts/architecture.md:1
+#: docs/concepts/compression.md:1 docs/concepts/compression.md:11
+#: docs/concepts/compression.md:22 docs/concepts/compression.md:49
+#: docs/concepts/compression.md:96 docs/concepts/compression.md:118
+#: docs/concepts/compression.md:156 docs/concepts/compression.md:180
+#: docs/concepts/compression.md:228 docs/concepts/compression.md:262
+#: docs/concepts/compression.md:275 docs/concepts/compression.md:327
+#: docs/concepts/compression.md:348 docs/concepts/compression.md:368
+#: docs/concepts/compression.md:384 docs/concepts/identity.md:1
+#: docs/concepts/identity.md:10 docs/concepts/identity.md:28
+#: docs/concepts/identity.md:45 docs/concepts/identity.md:55
+#: docs/concepts/layer-structure-rfc.md:1 docs/concepts/memory.md:1
 #: docs/concepts/memory.md:17 docs/concepts/memory.md:53
 #: docs/concepts/memory.md:160 docs/concepts/memory.md:191
 #: docs/concepts/memory.md:211 docs/concepts/memory.md:232
@@ -87,7 +88,8 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/database.md:19
 msgid ""
-"Code source of truth: [`engine/db/src/schema/`](../../engine/db/src/schema/)."
+"Code source of truth: [`storage/db/src/schema/`](../../storage/db/src/"
+"schema/)."
 msgstr ""
 
 #. type: Plain text
@@ -99,12 +101,12 @@ msgstr ""
 #: docs/guide/database.md:28
 #, no-wrap
 msgid ""
-"| Package                          | Responsibility                                                                                   |\n"
-"| -------------------------------- | ------------------------------------------------------------------------------------------------ |\n"
-"| `@freeanima/engine-db`           | PG table DDL, migrations, JSONB storage Zod and Slice A **domain types** (`schema/` + `domain/`) |\n"
-"| `@freeanima/engine-repos`        | `SessionStorePort`, `PgRepositories` and other **ports**; `null*` adapters                       |\n"
-"| `@freeanima/engine-conversation` | Session runtime; re-exports `engine-db/domain` convenience types                                 |\n"
-"| `@freeanima/connectors-db-pg`    | `PgSessionStore` implementation, connection pool, mapper, repos                                  |\n"
+"| Package                                 | Responsibility                                                                                   |\n"
+"| --------------------------------------- | ------------------------------------------------------------------------------------------------ |\n"
+"| `@freeanima/storage-db`                 | PG table DDL, migrations, JSONB storage Zod and Slice A **domain types** (`schema/` + `domain/`) |\n"
+"| `@freeanima/storage-repos`              | `SessionStorePort`, `PgRepositories` and other **ports**; `null*` adapters                       |\n"
+"| `@freeanima/orchestration-conversation` | Session runtime; re-exports `storage-db/domain` convenience types                                |\n"
+"| `@freeanima/connectors-db-pg`           | `PgSessionStore` implementation, connection pool, mapper, repos                                  |\n"
 msgstr ""
 
 #. type: Plain text
@@ -121,8 +123,8 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/database.md:32
 msgid ""
-"New PG domain (memory / cron / task): `engine-db/schema/{domain}` → add port "
-"in `engine-repos` → implement in `connectors-db-pg` → extend "
+"New PG domain (memory / cron / task): `storage-db/schema/{domain}` → add "
+"port in `storage-repos` → implement in `connectors-db-pg` → extend "
 "`PgRepositories` fields → wire in `serve.ts`."
 msgstr ""
 
@@ -153,8 +155,8 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/guide/database.md:44
 msgid ""
-"**Storage Zod authoritative in `engine-db/schema`**; domain convenience "
-"types in `engine-db/domain` (`engine-conversation` re-exports)"
+"**Storage Zod authoritative in `storage-db/schema`**; domain convenience "
+"types in `storage-db/domain` (`orchestration-conversation` re-exports)"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -197,7 +199,7 @@ msgid ""
 "| `compression`      | JSONB         | `{ l2, l3, summary?, summary_at? }` — **compression boundaries** (see [`compression.md`](compression.md)) |\n"
 "| `todos`            | JSONB         | `{ items, next_id }`                                                                                      |\n"
 "| `awaiting_clarify` | JSONB         | clarify pause state                                                                                       |\n"
-"| `acp_sessions`     | JSONB         | ACP session uuid mapping                                                                                  |\n"
+"| `acp_tasks`        | JSONB         | ACP async task state per session (keyed by ACP session id)                                                |\n"
 "| `tools`            | JSONB         | OpenAI tools snapshot                                                                                     |\n"
 "| `functions`        | JSONB         | string[]                                                                                                  |\n"
 "| `debug`            | BOOLEAN       |                                                                                                           |\n"
@@ -290,7 +292,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/guide/database.md:102
 msgid ""
-"**Manual:** `bun run --filter @freeanima/engine-db db:migrate` — applies "
+"**Manual:** `bun run --filter @freeanima/storage-db db:migrate` — applies "
 "Drizzle migrations (including columnized → payload JSONB backfill)."
 msgstr ""
 
@@ -309,7 +311,7 @@ msgstr ""
 msgid ""
 "```bash\n"
 "sudo apt install postgresql-17-pgvector   # version matches psql --version\n"
-"sudo -u postgres psql -d anima -f engine/db/scripts/ensure-pg-extensions.sql\n"
+"sudo -u postgres psql -d anima -f storage/db/scripts/ensure-pg-extensions.sql\n"
 "```\n"
 msgstr ""
 
@@ -363,7 +365,7 @@ msgstr ""
 msgid ""
 "# Schema\n"
 "DATABASE_URL=\"$(anima credential get services/postgres/anima url)\" \\\n"
-"  bun run --filter @freeanima/engine-db db:migrate\n"
+"  bun run --filter @freeanima/storage-db db:migrate\n"
 msgstr ""
 
 #. type: Plain text
@@ -476,9 +478,10 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/database.md:181
 msgid ""
-"Port: `MemoryReferenceStorePort` (`engine-repos`) → `PgMemoryReferenceStore` "
-"(`connectors-db-pg`); incremental on `appendMessage`; cron `builtin-memory-"
-"reference-sync` full rebuild and calibrates `reference_count`."
+"Port: `MemoryReferenceStorePort` (`storage-repos`) → "
+"`PgMemoryReferenceStore` (`connectors-db-pg`); incremental on "
+"`appendMessage`; cron `builtin-memory-reference-sync` full rebuild and "
+"calibrates `reference_count`."
 msgstr ""
 
 #. type: Plain text
@@ -504,8 +507,8 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/database.md:187
 msgid ""
-"Port: `SemanticMemoryStorePort` (`engine-repos`) → `PgSemanticMemoryStore` "
-"(`connectors-db-pg`) → `registerSemanticMemoryStore` (`life-memory`)."
+"Port: `SemanticMemoryStorePort` (`storage-repos`) → `PgSemanticMemoryStore` "
+"(`connectors-db-pg`) → `registerSemanticMemoryStore` (`capabilities-memory`)."
 msgstr ""
 
 #. type: Plain text
@@ -544,8 +547,8 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/database.md:205
 msgid ""
-"Port: `SelfLayerStorePort` (`engine-repos`) → `PgSelfLayerStore` "
-"(`connectors-db-pg`) → `registerSelfLayerStore` (`life-self`)."
+"Port: `SelfLayerStorePort` (`storage-repos`) → `PgSelfLayerStore` "
+"(`connectors-db-pg`) → `registerSelfLayerStore` (`capabilities-identity`)."
 msgstr ""
 
 #. type: Plain text
@@ -598,7 +601,7 @@ msgstr ""
 #: docs/guide/database.md:229
 msgid ""
 "Port: `AutobiographicalMemoryStorePort` → `PgAutobiographicalMemoryStore` → "
-"`registerAutobiographicalMemoryStore` (`life-memory`)."
+"`registerAutobiographicalMemoryStore` (`capabilities-memory`)."
 msgstr ""
 
 #. type: Plain text
@@ -621,8 +624,8 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/database.md:235
 msgid ""
-"Migration: [`engine/db/migrations/20260607150000_self_and_autobiographical/"
-"migration.sql`](../../engine/db/migrations/"
+"Migration: [`storage/db/migrations/20260607150000_self_and_autobiographical/"
+"migration.sql`](../../storage/db/migrations/"
 "20260607150000_self_and_autobiographical/migration.sql)."
 msgstr ""
 
@@ -660,7 +663,7 @@ msgstr ""
 #: docs/guide/database.md:254
 msgid ""
 "Port: `LimbicMemoryStorePort` → `PgLimbicMemoryStore` → "
-"`registerLimbicMemoryStore` (`life-memory`)."
+"`registerLimbicMemoryStore` (`capabilities-memory`)."
 msgstr ""
 
 #. type: Plain text
@@ -673,8 +676,8 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/database.md:258
 msgid ""
-"Migration: [`engine/db/migrations/20260607160000_limbic_memory/"
-"migration.sql`](../../engine/db/migrations/20260607160000_limbic_memory/"
+"Migration: [`storage/db/migrations/20260607160000_limbic_memory/"
+"migration.sql`](../../storage/db/migrations/20260607160000_limbic_memory/"
 "migration.sql)."
 msgstr ""
 
@@ -735,15 +738,15 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/database.md:294
 msgid ""
-"Port: `CronJobStorePort` (`engine-repos`) → `PgCronJobStore` (`connectors-db-"
-"pg`) → `initCronModule` (`connectors-cron` / `serve.ts`)."
+"Port: `CronJobStorePort` (`storage-repos`) → `PgCronJobStore` (`connectors-"
+"db-pg`) → `initCronModule` (`connectors-cron` / `serve.ts`)."
 msgstr ""
 
 #. type: Plain text
 #: docs/guide/database.md:296
 msgid ""
-"Migration: [`engine/db/migrations/20260607140000_cron_jobs/migration.sql`]"
-"(../../engine/db/migrations/20260607140000_cron_jobs/migration.sql) (hand-"
+"Migration: [`storage/db/migrations/20260607140000_cron_jobs/migration.sql`]"
+"(../../storage/db/migrations/20260607140000_cron_jobs/migration.sql) (hand-"
 "written SQL, no Drizzle schema file)."
 msgstr ""
 
@@ -786,15 +789,15 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/database.md:315
 msgid ""
-"Port: `CronLogStorePort` (`engine-repos`) → `PgCronLogStore` (`connectors-db-"
-"pg`); write site `connectors/cron/src/runner.ts` (`appendCronRunLog`)."
+"Port: `CronLogStorePort` (`storage-repos`) → `PgCronLogStore` (`connectors-"
+"db-pg`); write site `connectors/cron/src/runner.ts` (`appendCronRunLog`)."
 msgstr ""
 
 #. type: Plain text
 #: docs/guide/database.md:317
 msgid ""
-"Schema: `engine/db/src/schema/cron-log.ts`. Migration: [`engine/db/"
-"migrations/20260612120000_cron_log/migration.sql`](../../engine/db/"
+"Schema: `storage/db/src/schema/cron-log.ts`. Migration: [`storage/db/"
+"migrations/20260612120000_cron_log/migration.sql`](../../storage/db/"
 "migrations/20260612120000_cron_log/migration.sql)."
 msgstr ""
 
@@ -807,7 +810,7 @@ msgstr ""
 #: docs/guide/database.md:321
 msgid ""
 "Cross-session persistent todos; `status` / `priority` TEXT + Zod enum "
-"(`engine-db/schema/tasks.ts`)."
+"(`storage-db/schema/tasks.ts`)."
 msgstr ""
 
 #. type: Plain text
@@ -837,13 +840,13 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/database.md:338
 msgid ""
-"Port: `TaskStorePort` (`engine-repos`) → `PgTaskStore` (`connectors-db-pg`) "
+"Port: `TaskStorePort` (`storage-repos`) → `PgTaskStore` (`connectors-db-pg`) "
 "→ `capabilities/tasks` tools."
 msgstr ""
 
 #. type: Plain text
 #: docs/guide/database.md:339
 msgid ""
-"Migration: [`engine/db/migrations/20260608120000_tasks/migration.sql`](../../"
-"engine/db/migrations/20260608120000_tasks/migration.sql)."
+"Migration: [`storage/db/migrations/20260608120000_tasks/migration.sql`]"
+"(../../storage/db/migrations/20260608120000_tasks/migration.sql)."
 msgstr ""

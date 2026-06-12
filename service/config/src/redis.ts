@@ -1,4 +1,4 @@
-import type { AnimaConfig } from "@freeanima/engine-config";
+import type { AnimaConfig } from "@freeanima/storage-config";
 
 type RedisConfigInput = {
   url?: string;

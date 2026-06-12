@@ -14,7 +14,26 @@ title: Architecture
 - 资产管理是系统一等公民
 - 系统提示词是架构的一部分，不是零散字符串拼接
 
-## 存储全景（Four-Layer Storage Architecture）
+## 工程八层（repo layout）
+
+认知四层（感知 / 自我 / 记忆 / 资源）与 **工程分层** 不同：后者由 [`scripts/check-layer-deps.ts`](../../scripts/check-layer-deps.ts) 强制执行。
+
+```
+entry/service → connectors → capabilities → orchestration → mechanism → storage → kernel
+```
+
+| 层            | 目录             | 职责摘要                                                          |
+| ------------- | ---------------- | ----------------------------------------------------------------- |
+| kernel        | `kernel/`        | Hook、EventBus、Logger                                            |
+| storage       | `storage/`       | PG schema、repos ports、Config 类型                               |
+| mechanism     | `mechanism/`     | tool、llm、compress、hooks                                        |
+| orchestration | `orchestration/` | session、turn、conversation、loop                                 |
+| capabilities  | `capabilities/`  | identity、memory、tools、MCP/ACP、estate 等（**包间禁止互依赖**） |
+| connectors    | `connectors/`    | Gateway、WebUI、PG 实现、email I/O                                |
+| service       | `service/`       | 组合根                                                            |
+| entry         | `cli/`           | CLI                                                               |
+
+`life/` 与 `engine/` umbrella 已解散：`capabilities-identity` / `capabilities-memory` 取代 `life-*`；`storage-*` / `mechanism-*` / `orchestration-*` 取代 `engine-*`。详见 [`layer-structure-rfc.md`](layer-structure-rfc.md) 与 [`.agent/rules/code-layers.md`](../../.agent/rules/code-layers.md)。
 
 数字生命的存在从内到外由四个大的层级构成，每一层回答一个不同的核心问题：
 
@@ -172,7 +191,7 @@ LLM 视角 — flat tool list:
 
 ### 第一层：本地工具（Local）
 
-本地工具写在 `capabilities/tools/`，通过 `registerTool()` 注册到 `@freeanima/engine-tool` 的 registry。
+本地工具写在 `capabilities/tools/`，通过 `registerTool()` 注册到 `@freeanima/mechanism-tool` 的 registry。
 
 **特征：**
 
@@ -415,7 +434,7 @@ conversation 落盘 → emit("session:updated")
 | 错误语义     | 链中断                         | failed 步可继续；`ok`+`blocked` 短路                        |
 | 实现状态     | ✅ `registerMemoryPipeline` 等 | ✅ `@freeanima/kernel-hooks` + `@freeanima/service-logging` |
 
-记忆管道入口为 `registerMemoryPipeline`（`@freeanima/life-memory`）。Hooks 不是 EventBus 的替代品，两者互补。
+记忆管道入口为 `registerMemoryPipeline`（`@freeanima/capabilities-memory`）。Hooks 不是 EventBus 的替代品，两者互补。
 
 ## 版本与发布
 

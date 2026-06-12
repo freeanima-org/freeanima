@@ -1,9 +1,9 @@
-import type { SelfBlockRow } from "@freeanima/engine-repos";
+import type { SelfBlockRow } from "@freeanima/storage-repos";
 import {
   normalizePgTimestamp,
   selfBlockKeySchema,
   type SelfBlockKey,
-} from "@freeanima/engine-db/schema";
+} from "@freeanima/storage-db/schema";
 
 export type SelfBlockDbRow = {
   block_key?: string;

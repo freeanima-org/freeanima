@@ -1,6 +1,6 @@
-import { Config } from "@freeanima/engine-config";
-import { SkillRegistry } from "@freeanima/engine-skill";
-import { ToolSetRegistry } from "@freeanima/engine-tool";
+import { Config } from "@freeanima/storage-config";
+import { SkillRegistry } from "@freeanima/mechanism-skill";
+import { ToolSetRegistry } from "@freeanima/mechanism-tool";
 import { AcpManager } from "../manager.ts";
 
 /** For unit tests: AcpManager with isolated catalog */

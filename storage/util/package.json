@@ -1,0 +1,14 @@
+{
+  "name": "@freeanima/storage-util",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./backoff": "./src/backoff/index.ts"
+  },
+  "dependencies": {
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:"
+  }
+}

@@ -1,6 +1,6 @@
 import type { Mask, ResolvedMask } from "./types.ts";
 import { mergeMaskChain } from "./merge.ts";
-import type { ToolSetRegistry } from "@freeanima/engine-tool";
+import type { ToolSetRegistry } from "@freeanima/mechanism-tool";
 
 /** Narrow registry interface for mask resolution (satisfied by MaskRegistry and ServiceContext port) */
 export type MaskRegistryLookup = {

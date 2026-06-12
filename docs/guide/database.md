@@ -15,20 +15,20 @@ title: Database
 | **Slice B** | `semantic_memory`, `limbic_memory`                                                  | **✅ Complete** (standalone procedural table: Issue #41) |
 | **Slice C** | `self_blocks` + `autobiographical_memory` (self layer + autobiographical narrative) | **✅ Complete**                                          |
 
-Code source of truth: [`engine/db/src/schema/`](../../engine/db/src/schema/).
+Code source of truth: [`storage/db/src/schema/`](../../storage/db/src/schema/).
 
 ## PG Multi-Domain Architecture (Path C)
 
-| Package                          | Responsibility                                                                                   |
-| -------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `@freeanima/engine-db`           | PG table DDL, migrations, JSONB storage Zod and Slice A **domain types** (`schema/` + `domain/`) |
-| `@freeanima/engine-repos`        | `SessionStorePort`, `PgRepositories` and other **ports**; `null*` adapters                       |
-| `@freeanima/engine-conversation` | Session runtime; re-exports `engine-db/domain` convenience types                                 |
-| `@freeanima/connectors-db-pg`    | `PgSessionStore` implementation, connection pool, mapper, repos                                  |
+| Package                                 | Responsibility                                                                                   |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `@freeanima/storage-db`                 | PG table DDL, migrations, JSONB storage Zod and Slice A **domain types** (`schema/` + `domain/`) |
+| `@freeanima/storage-repos`              | `SessionStorePort`, `PgRepositories` and other **ports**; `null*` adapters                       |
+| `@freeanima/orchestration-conversation` | Session runtime; re-exports `storage-db/domain` convenience types                                |
+| `@freeanima/connectors-db-pg`           | `PgSessionStore` implementation, connection pool, mapper, repos                                  |
 
 Wiring: [`service/service/src/serve.ts`](../../service/service/src/serve.ts) calls `createPgRepositories` → `createEngine({ repos })` → `createConversationService(engine.repos)` → `initServiceContext`. Runtime conversation archive reads/writes via `getServiceContext().conversation` or explicit `ConversationService` / `SessionStorePort`, not direct connector dependency.
 
-New PG domain (memory / cron / task): `engine-db/schema/{domain}` → add port in `engine-repos` → implement in `connectors-db-pg` → extend `PgRepositories` fields → wire in `serve.ts`.
+New PG domain (memory / cron / task): `storage-db/schema/{domain}` → add port in `storage-repos` → implement in `connectors-db-pg` → extend `PgRepositories` fields → wire in `serve.ts`.
 
 ---
 
@@ -38,7 +38,7 @@ New PG domain (memory / cron / task): `engine-db/schema/{domain}` → add port i
 
 - `sessions` **one row = `session_meta`** (compression, todos, clarify, tools, etc.)
 - `messages` **append-only**; `payload` JSONB stores `MessagePayload` (no `pos`); `pos` column is per-session sequence source of truth
-- **Storage Zod authoritative in `engine-db/schema`**; domain convenience types in `engine-db/domain` (`engine-conversation` re-exports)
+- **Storage Zod authoritative in `storage-db/schema`**; domain convenience types in `storage-db/domain` (`orchestration-conversation` re-exports)
 - Drizzle manages DDL + migration; `sessions` still columnizes common meta fields
 - Read/write: `connectors-db-pg` mapper (`pos` column + payload merged into `ConversationMessage`)
 
@@ -97,12 +97,12 @@ Production must configure `database.url`.
 ### Migrations
 
 - **✅ Production:** On `anima service` startup with PG as primary store, [`serve.ts`](../../service/service/src/serve.ts) auto-calls `runMigrations()`.
-- **Manual:** `bun run --filter @freeanima/engine-db db:migrate` — applies Drizzle migrations (including columnized → payload JSONB backfill).
+- **Manual:** `bun run --filter @freeanima/storage-db db:migrate` — applies Drizzle migrations (including columnized → payload JSONB backfill).
 - **Extensions (one-time, requires superuser):** `pg_trgm` / `vector` cannot be `CREATE EXTENSION` by app user. On local Debian, [`setup-postgres-debian.sh`](../../scripts/setup-postgres-debian.sh) installs automatically; for existing DB:
 
 ```bash
 sudo apt install postgresql-17-pgvector   # version matches psql --version
-sudo -u postgres psql -d anima -f engine/db/scripts/ensure-pg-extensions.sql
+sudo -u postgres psql -d anima -f storage/db/scripts/ensure-pg-extensions.sql
 ```
 
 Then `db:migrate` or restart `anima service`.
@@ -123,7 +123,7 @@ anima credential add services/postgres/anima url=… host=… password=… datab
 
 # Schema
 DATABASE_URL="$(anima credential get services/postgres/anima url)" \
-  bun run --filter @freeanima/engine-db db:migrate
+  bun run --filter @freeanima/storage-db db:migrate
 
 # database:
 #   url: pass:services/postgres/anima
@@ -177,13 +177,13 @@ Unit tests (mapper, no PG): `bun run test:unit` or `bun test connectors/db-pg/sr
 
 Unique index: `(message_id, semantic_memory_id)`. Same memory cited multiple times in one session counts once for weight; references within 30 days weight ×2.
 
-Port: `MemoryReferenceStorePort` (`engine-repos`) → `PgMemoryReferenceStore` (`connectors-db-pg`); incremental on `appendMessage`; cron `builtin-memory-reference-sync` full rebuild and calibrates `reference_count`.
+Port: `MemoryReferenceStorePort` (`storage-repos`) → `PgMemoryReferenceStore` (`connectors-db-pg`); incremental on `appendMessage`; cron `builtin-memory-reference-sync` full rebuild and calibrates `reference_count`.
 
 Indexes: `idx_semantic_memory_fts` (GIN), `idx_semantic_memory_content_trgm` (GIN trgm), `idx_semantic_memory_embedding_hnsw` (HNSW cosine), `idx_semantic_memory_type`, `idx_semantic_memory_pinned`, `idx_semantic_memory_source_sessions` (GIN), `idx_semantic_memory_status`. Retrieval: **FTS + pg_trgm + pgvector three-way RRF** (always on; vector path requires `embedding` config and non-null column).
 
 Port methods: `create` / `update` (overwrite, omitted fields unchanged; `source_sessions: []` clears) / `deprecate` / `listBySourceSessions` / `search` / `searchFts`; `listResident` = **all pinned** + **reference_count top N** (default N=20, `status=active` only).
 
-Port: `SemanticMemoryStorePort` (`engine-repos`) → `PgSemanticMemoryStore` (`connectors-db-pg`) → `registerSemanticMemoryStore` (`life-memory`).
+Port: `SemanticMemoryStorePort` (`storage-repos`) → `PgSemanticMemoryStore` (`connectors-db-pg`) → `registerSemanticMemoryStore` (`capabilities-memory`).
 
 `limbic_memory` in following §Slice C section of this file; standalone `procedural` table: [Issue #41](https://github.com/freeanima-org/freeanima/issues/41).
 
@@ -201,7 +201,7 @@ Port: `SemanticMemoryStorePort` (`engine-repos`) → `PgSemanticMemoryStore` (`c
 | `created_at` | TIMESTAMPTZ |                                                                                                                      |
 | `updated_at` | TIMESTAMPTZ |                                                                                                                      |
 
-Port: `SelfLayerStorePort` (`engine-repos`) → `PgSelfLayerStore` (`connectors-db-pg`) → `registerSelfLayerStore` (`life-self`).
+Port: `SelfLayerStorePort` (`storage-repos`) → `PgSelfLayerStore` (`connectors-db-pg`) → `registerSelfLayerStore` (`capabilities-identity`).
 
 Methods: `getBlock` / `listBlocks` / `upsertBlock` / `updateBlock` (`locked` blocks need `force`).
 
@@ -225,13 +225,13 @@ Runtime read via `loadSelfLayerPrompt()`; maintenance via `get_self_blocks` / `u
 
 Indexes: `status`, `significance`, `updated_at`, `source_facts` (GIN), `source_sessions` (GIN).
 
-Port: `AutobiographicalMemoryStorePort` → `PgAutobiographicalMemoryStore` → `registerAutobiographicalMemoryStore` (`life-memory`).
+Port: `AutobiographicalMemoryStorePort` → `PgAutobiographicalMemoryStore` → `registerAutobiographicalMemoryStore` (`capabilities-memory`).
 
 Methods: `create` / `get` / `deprecate` / `count` / `listActive` / `listCreatedSince` / `listBySourceSemanticMemory` / `listBySourceSessions` (**no** content `update`).
 
 Maintenance: `builtin-self-autobiography` cron (04:00 CST) processes narrative from `experience`/`imprint` semantic memories; `autobiography_summary` block compressed/refreshed from this table in same job.
 
-Migration: [`engine/db/migrations/20260607150000_self_and_autobiographical/migration.sql`](../../engine/db/migrations/20260607150000_self_and_autobiographical/migration.sql).
+Migration: [`storage/db/migrations/20260607150000_self_and_autobiographical/migration.sql`](../../storage/db/migrations/20260607150000_self_and_autobiographical/migration.sql).
 
 ### `limbic_memory` (Limbic Emotional Memory)
 
@@ -250,11 +250,11 @@ Migration: [`engine/db/migrations/20260607150000_self_and_autobiographical/migra
 
 Indexes: `semantic_memory_ids` (GIN), `session_id`, `created_at`, `kind`, `intensity`, `valence`, `arousal`.
 
-Port: `LimbicMemoryStorePort` → `PgLimbicMemoryStore` → `registerLimbicMemoryStore` (`life-memory`).
+Port: `LimbicMemoryStorePort` → `PgLimbicMemoryStore` → `registerLimbicMemoryStore` (`capabilities-memory`).
 
 Methods: `create` / `get` / `listBySession`. **Not injected** into system prompt; light sleep Phase 2 writes via `create_limbic_memory`.
 
-Migration: [`engine/db/migrations/20260607160000_limbic_memory/migration.sql`](../../engine/db/migrations/20260607160000_limbic_memory/migration.sql).
+Migration: [`storage/db/migrations/20260607160000_limbic_memory/migration.sql`](../../storage/db/migrations/20260607160000_limbic_memory/migration.sql).
 
 ## cron_jobs (Live)
 
@@ -290,9 +290,9 @@ Index: `idx_cron_jobs_paused`.
 
 Scheduling: `Bun.cron` in-process; 5-field cron validation and `next_run_at` via `Bun.cron.parse` (CST→UTC before register). `next_run_at` not stored; computed at API layer.
 
-Port: `CronJobStorePort` (`engine-repos`) → `PgCronJobStore` (`connectors-db-pg`) → `initCronModule` (`connectors-cron` / `serve.ts`).
+Port: `CronJobStorePort` (`storage-repos`) → `PgCronJobStore` (`connectors-db-pg`) → `initCronModule` (`connectors-cron` / `serve.ts`).
 
-Migration: [`engine/db/migrations/20260607140000_cron_jobs/migration.sql`](../../engine/db/migrations/20260607140000_cron_jobs/migration.sql) (hand-written SQL, no Drizzle schema file).
+Migration: [`storage/db/migrations/20260607140000_cron_jobs/migration.sql`](../../storage/db/migrations/20260607140000_cron_jobs/migration.sql) (hand-written SQL, no Drizzle schema file).
 
 ## cron_log (Live)
 
@@ -311,13 +311,13 @@ One row appended per cron run end (success and failure); WebUI `/chamber/sleep` 
 
 Unique constraint: `(job_id, run_count)`. Index: `idx_cron_log_job_finished (job_id, finished_at DESC)`.
 
-Port: `CronLogStorePort` (`engine-repos`) → `PgCronLogStore` (`connectors-db-pg`); write site `connectors/cron/src/runner.ts` (`appendCronRunLog`).
+Port: `CronLogStorePort` (`storage-repos`) → `PgCronLogStore` (`connectors-db-pg`); write site `connectors/cron/src/runner.ts` (`appendCronRunLog`).
 
-Schema: `engine/db/src/schema/cron-log.ts`. Migration: [`engine/db/migrations/20260612120000_cron_log/migration.sql`](../../engine/db/migrations/20260612120000_cron_log/migration.sql).
+Schema: `storage/db/src/schema/cron-log.ts`. Migration: [`storage/db/migrations/20260612120000_cron_log/migration.sql`](../../storage/db/migrations/20260612120000_cron_log/migration.sql).
 
 ## tasks (Live)
 
-Cross-session persistent todos; `status` / `priority` TEXT + Zod enum (`engine-db/schema/tasks.ts`).
+Cross-session persistent todos; `status` / `priority` TEXT + Zod enum (`storage-db/schema/tasks.ts`).
 
 | Column              | Type        | Description                                          |
 | ------------------- | ----------- | ---------------------------------------------------- |
@@ -334,6 +334,6 @@ Cross-session persistent todos; `status` / `priority` TEXT + Zod enum (`engine-d
 
 Indexes: `idx_tasks_status`, `idx_tasks_list` (status, priority, created_at).
 
-Port: `TaskStorePort` (`engine-repos`) → `PgTaskStore` (`connectors-db-pg`) → `capabilities/tasks` tools.
+Port: `TaskStorePort` (`storage-repos`) → `PgTaskStore` (`connectors-db-pg`) → `capabilities/tasks` tools.
 
-Migration: [`engine/db/migrations/20260608120000_tasks/migration.sql`](../../engine/db/migrations/20260608120000_tasks/migration.sql).
+Migration: [`storage/db/migrations/20260608120000_tasks/migration.sql`](../../storage/db/migrations/20260608120000_tasks/migration.sql).

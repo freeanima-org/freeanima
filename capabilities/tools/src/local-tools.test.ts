@@ -1,4 +1,4 @@
-import { ToolSetRegistry } from "@freeanima/engine-tool";
+import { ToolSetRegistry } from "@freeanima/mechanism-tool";
 import { describe, it, expect, beforeAll, beforeEach, afterEach } from "bun:test";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";

@@ -1,4 +1,4 @@
-import type { CronJobStorePort } from "@freeanima/engine-repos";
+import type { CronJobStorePort } from "@freeanima/storage-repos";
 
 import * as crudRepo from "./repos/cron-crud-repo.ts";
 

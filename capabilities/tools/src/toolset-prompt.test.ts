@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { ToolSetRegistry } from "@freeanima/engine-tool";
+import { ToolSetRegistry } from "@freeanima/mechanism-tool";
 import { renderToolsetsSection } from "./toolset-prompt.ts";
 
 describe("renderToolsetsSection", () => {

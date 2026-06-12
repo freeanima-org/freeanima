@@ -25,7 +25,7 @@ async function main(): Promise<void> {
   await $`bun build ${join(CLI_DIR, "src/cli.ts")} --outdir ${join(PUBLISH_DIR, "dist")} --target bun --minify`;
 
   console.log("copying migrations…");
-  cpSync(join(ROOT, "engine/foundation/db/migrations"), join(PUBLISH_DIR, "migrations"), {
+  cpSync(join(ROOT, "storage/db/migrations"), join(PUBLISH_DIR, "migrations"), {
     recursive: true,
   });
 

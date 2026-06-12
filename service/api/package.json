@@ -23,14 +23,14 @@
     "./stream-reply-state": "./src/stream-reply-state.ts"
   },
   "dependencies": {
-    "@freeanima/engine-config": "workspace:*",
-    "@freeanima/engine-conversation": "workspace:*",
+    "@freeanima/storage-config": "workspace:*",
+    "@freeanima/orchestration-conversation": "workspace:*",
     "@freeanima/kernel-logging": "workspace:*",
-    "@freeanima/engine-llm": "workspace:*",
-    "@freeanima/engine-loop": "workspace:*",
-    "@freeanima/engine-repos": "workspace:*",
-    "@freeanima/engine-skill": "workspace:*",
-    "@freeanima/engine-tool": "workspace:*",
+    "@freeanima/mechanism-llm": "workspace:*",
+    "@freeanima/orchestration-loop": "workspace:*",
+    "@freeanima/storage-repos": "workspace:*",
+    "@freeanima/mechanism-skill": "workspace:*",
+    "@freeanima/mechanism-tool": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "@freeanima/service-logging": "workspace:*"
   },

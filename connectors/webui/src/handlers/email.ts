@@ -4,7 +4,7 @@ import {
   listEmails,
   markAsRead,
   readEmail,
-} from "@freeanima/life-estate";
+} from "@freeanima/connectors-email";
 
 function accountNotFound(id: string) {
   return {

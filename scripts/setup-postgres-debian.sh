@@ -58,7 +58,7 @@ sudo -u postgres psql -d "${DB_NAME}" -v ON_ERROR_STOP=1 -c \
 
 # pg_trgm / vector 须 superuser 安装（应用 migrate 用户无权限）
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-sudo -u postgres psql -d "${DB_NAME}" -v ON_ERROR_STOP=1 -f "${REPO_ROOT}/engine/foundation/db/scripts/ensure-pg-extensions.sql"
+sudo -u postgres psql -d "${DB_NAME}" -v ON_ERROR_STOP=1 -f "${REPO_ROOT}/storage/db/scripts/ensure-pg-extensions.sql"
 
 # 生产向参数（4C / 8G 本机参考值；可按机器调整）
 mkdir -p "$(dirname "${PG_SNIPPET}")"

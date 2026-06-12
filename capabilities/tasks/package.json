@@ -6,11 +6,9 @@
     "./*": "./src/*.ts"
   },
   "dependencies": {
-    "@freeanima/capabilities-fridge-magnet": "workspace:*",
-    "@freeanima/engine-loop": "workspace:*",
-    "@freeanima/engine-repos": "workspace:*",
-    "@freeanima/engine-tool": "workspace:*",
-    "@freeanima/engine-util": "workspace:*"
+    "@freeanima/storage-repos": "workspace:*",
+    "@freeanima/mechanism-tool": "workspace:*",
+    "@freeanima/storage-util": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "catalog:"

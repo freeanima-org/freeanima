@@ -1,4 +1,4 @@
-import type { ClarifyItem } from "@freeanima/engine-db/domain";
+import type { ClarifyItem } from "@freeanima/storage-db/domain";
 
 export type ClarifyPayload = {
   items: ClarifyItem[];

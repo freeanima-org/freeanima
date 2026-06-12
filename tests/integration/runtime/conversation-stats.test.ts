@@ -6,14 +6,14 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { normalizeUsage } from "@freeanima/engine-llm";
-import { estimateTokens, estimateMessagesTokens } from "@freeanima/engine-compress";
-import { FALLBACK_TOKENIZER_REPO } from "@freeanima/engine-tokenizer";
+import { normalizeUsage } from "@freeanima/mechanism-llm";
+import { estimateTokens, estimateMessagesTokens } from "@freeanima/mechanism-compress";
+import { FALLBACK_TOKENIZER_REPO } from "@freeanima/storage-tokenizer";
 import {
   ensureFallbackTokenizer,
   resetTokenizerForTest,
   setTokenizerEncodeForTest,
-} from "@freeanima/engine-tokenizer/testing";
+} from "@freeanima/storage-tokenizer/testing";
 import { computeStats, mergeStats, statsReport } from "@freeanima/service";
 import { testConv } from "../../helpers/pg-test.ts";
 

@@ -1,4 +1,4 @@
-import type { LimbicMemoryStorePort } from "@freeanima/engine-repos";
+import type { LimbicMemoryStorePort } from "@freeanima/storage-repos";
 
 import * as crudRepo from "./repos/limbic-crud-repo.ts";
 import * as listRepo from "./repos/limbic-list-repo.ts";

@@ -4,7 +4,7 @@ title: Time Perception
 
 # Time Perception Module
 
-> **✅ Core implemented** — [`engine/conversation/src/time-perception.ts`](../../engine/conversation/src/time-perception.ts), `buildRuntimeMessages` calls `injectTimePrefixes`.
+> **✅ Core implemented** — [`orchestration/conversation/src/time-perception.ts`](../../orchestration/conversation/src/time-perception.ts), `buildRuntimeMessages` calls `injectTimePrefixes`.
 
 ## Problem
 
@@ -109,7 +109,7 @@ Planned: compressed summary should also have time range marker:
 
 ## Implementation Notes (✅)
 
-Implemented in [`engine/conversation/src/time-perception.ts`](../../engine/conversation/src/time-perception.ts):
+Implemented in [`orchestration/conversation/src/time-perception.ts`](../../orchestration/conversation/src/time-perception.ts):
 
 ```
 function injectTimePrefixes(messages: Message[]): Message[]

@@ -1,10 +1,10 @@
-import type { SessionConversationPort } from "@freeanima/engine-session-port";
-import { isSessionMeta } from "@freeanima/engine-db/domain";
+import type { SessionConversationPort } from "@freeanima/mechanism-session-port";
+import { isSessionMeta } from "@freeanima/storage-db/domain";
 import type {
   AcpTaskEntryJson,
   AcpTaskStatusJson,
   AcpTasksJson,
-} from "@freeanima/engine-db/schema";
+} from "@freeanima/storage-db/schema";
 import type { CursorPendingInteraction } from "./cursor-decision.ts";
 
 export type AcpTaskEntry = AcpTaskEntryJson;

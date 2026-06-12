@@ -5,13 +5,13 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@freeanima/engine-session-port": "workspace:*",
-    "@freeanima/engine-db": "workspace:*",
-    "@freeanima/engine-tool": "workspace:*",
-    "@freeanima/engine-hooks": "workspace:*",
-    "@freeanima/engine-util": "workspace:*",
+    "@freeanima/mechanism-session-port": "workspace:*",
+    "@freeanima/storage-db": "workspace:*",
+    "@freeanima/mechanism-tool": "workspace:*",
+    "@freeanima/mechanism-hooks": "workspace:*",
+    "@freeanima/storage-util": "workspace:*",
     "@freeanima/kernel": "workspace:*",
-    "@freeanima/service-config": "workspace:*"
+    "@freeanima/storage-config": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "catalog:"

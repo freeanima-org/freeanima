@@ -6,8 +6,8 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 import { getTestEngine } from "../../helpers/pg-test.ts";
-import { SELF_BLOCK_KEYS } from "@freeanima/engine-repos";
-import { buildAutobiographySummary } from "@freeanima/life-memory/autobiography/run";
+import { SELF_BLOCK_KEYS } from "@freeanima/storage-repos";
+import { buildAutobiographySummary } from "@freeanima/capabilities-memory/autobiography/run";
 
 describePg("self layer PG", () => {
   const prev = process.env.FREEANIMA_HOME;

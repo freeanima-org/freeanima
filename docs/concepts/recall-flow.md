@@ -4,7 +4,7 @@ title: Recall Flow
 
 # Unified Recall Retrieval and Loading Flow
 
-> **v1 ✅ Implemented:** `memory_recall(query)` four-source unified recall + RRF reranking, returns `results[]` (distinguished by `memory_type`); session hits are snippets ([`life/memory/src/recall-search.ts`](../../life/memory/src/recall-search.ts)).
+> **v1 ✅ Implemented:** `memory_recall(query)` four-source unified recall + RRF reranking, returns `results[]` (distinguished by `memory_type`); session hits are snippets ([`capabilities/memory/src/recall-search.ts`](../../capabilities/memory/src/recall-search.ts)).
 > **v2 target design** (not implemented): resource layer + preset + lean index loading chain, see [Issue #47](https://github.com/freeanima-org/freeanima/issues/47).
 
 ## v1 Implemented

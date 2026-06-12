@@ -1,10 +1,15 @@
-import type { ToolSetRegistry } from "@freeanima/engine-tool";
-import { attachToolReturns, toolError, toolResult } from "@freeanima/engine-tool";
+import type { ToolSetRegistry } from "@freeanima/mechanism-tool";
+import { attachToolReturns, toolError, toolResult } from "@freeanima/mechanism-tool";
 import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
-import type { Config } from "@freeanima/service-config";
-import { credential, readAppVersion } from "@freeanima/service-config";
+import type { Config } from "@freeanima/storage-config";
+import {
+  credentialForCapability as credential,
+  readAppVersionForCapability as readAppVersion,
+} from "@freeanima/storage-config";
 
-const USER_AGENT = `anima/${readAppVersion()}`;
+function userAgent(): string {
+  return `anima/${readAppVersion()}`;
+}
 const HTTP_TIMEOUT_MS = 60_000;
 const MAX_EXTRACT_URLS = 5;
 const MAX_SEARCH_LIMIT = 20;
@@ -47,7 +52,7 @@ function checkConfig(): string | null {
 
 function headers(cfg: FirecrawlConfig): Record<string, string> {
   const h: Record<string, string> = {
-    "User-Agent": USER_AGENT,
+    "User-Agent": userAgent(),
     "Content-Type": "application/json",
   };
   if (cfg.apiKey) h.Authorization = `Bearer ${cfg.apiKey}`;

@@ -1,10 +1,10 @@
-import type { CronLogListOpts, CronLogRow } from "@freeanima/engine-repos";
+import type { CronLogListOpts, CronLogRow } from "@freeanima/storage-repos";
 import {
   buildSleepSummary,
   listDeepSleepRoundLogs,
   SLEEP_JOB_IDS,
   type SleepSummary,
-} from "@freeanima/life-memory";
+} from "@freeanima/capabilities-memory";
 
 import { getServiceContext } from "../context.ts";
 import { listCronJobs } from "./service-status.ts";

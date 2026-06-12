@@ -1,12 +1,12 @@
-import { getToolRepos } from "@freeanima/engine-tool";
+import { getToolRepos } from "@freeanima/mechanism-tool";
 import {
   attachToolReturns,
   toolError,
   toolResult,
   type ToolSetRegistry,
-} from "@freeanima/engine-tool";
+} from "@freeanima/mechanism-tool";
 import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
-import { formatSessionMessageSearchHit } from "@freeanima/engine-util";
+import { formatSessionMessageSearchHit } from "@freeanima/storage-util";
 
 const FTS_SYNTAX =
   "PG search syntax (to_tsquery simple):\n" +

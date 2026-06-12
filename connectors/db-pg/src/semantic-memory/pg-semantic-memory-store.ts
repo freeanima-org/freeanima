@@ -1,4 +1,4 @@
-import type { SemanticMemoryStorePort } from "@freeanima/engine-repos";
+import type { SemanticMemoryStorePort } from "@freeanima/storage-repos";
 
 import * as crudRepo from "./repos/semantic-crud-repo.ts";
 import * as ftsRepo from "./repos/semantic-fts-repo.ts";

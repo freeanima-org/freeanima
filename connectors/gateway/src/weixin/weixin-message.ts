@@ -1,4 +1,4 @@
-import { safeParseOrNull } from "@freeanima/engine-util";
+import { safeParseOrNull } from "@freeanima/storage-util";
 import { ITEM_TEXT, MSG_TYPE_BOT, MSG_TYPE_USER, type IlinkMessage } from "./ilink-api.ts";
 import { ilinkMessageSchema } from "../schemas/weixin.ts";
 

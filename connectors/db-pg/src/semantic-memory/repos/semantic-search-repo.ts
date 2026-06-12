@@ -1,5 +1,5 @@
 import { sql as drizzleSql } from "drizzle-orm";
-import type { SemanticFtsHit, SemanticMemorySearchOpts } from "@freeanima/engine-repos";
+import type { SemanticFtsHit, SemanticMemorySearchOpts } from "@freeanima/storage-repos";
 
 import { getDb } from "../../client.ts";
 import { pgSemanticSourceSessionsFilter, pgSemanticTypeFilter } from "../../utils/pg-sql.ts";

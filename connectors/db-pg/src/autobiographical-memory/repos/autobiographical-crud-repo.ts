@@ -4,14 +4,14 @@ import { desc, eq, sql as drizzleSql } from "drizzle-orm";
 import {
   autobiographicalMemory,
   autobiographicalSignificanceSchema,
-} from "@freeanima/engine-db/schema";
+} from "@freeanima/storage-db/schema";
 import type {
   AutobiographicalListOpts,
   AutobiographicalMemoryCreateInput,
   AutobiographicalMemoryRow,
   AutobiographicalStatus,
-} from "@freeanima/engine-repos";
-import { formatCstIso } from "@freeanima/engine-util";
+} from "@freeanima/storage-repos";
+import { formatCstIso } from "@freeanima/storage-util";
 
 import { getDb } from "../../client.ts";
 import { pgTextArrayOverlap } from "../../utils/pg-sql.ts";

@@ -3,13 +3,13 @@ import {
   normalizeSemanticMemoryType,
   semanticMemory,
   semanticMemoryStatusSchema,
-} from "@freeanima/engine-db/schema";
+} from "@freeanima/storage-db/schema";
 import type {
   SemanticMemoryCreateInput,
   SemanticMemoryRow,
   SemanticMemoryUpdateInput,
-} from "@freeanima/engine-repos";
-import { formatCstIso } from "@freeanima/engine-util";
+} from "@freeanima/storage-repos";
+import { formatCstIso } from "@freeanima/storage-util";
 
 import { resolveFtsSegmentedForWrite } from "../../fts/write.ts";
 import { scheduleSemanticMemoryEmbedding } from "../../embedding/schedule.ts";

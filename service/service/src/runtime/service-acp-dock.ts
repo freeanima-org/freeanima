@@ -1,5 +1,5 @@
-import { isSessionMeta } from "@freeanima/engine-db/domain";
-import type { AcpTaskStatusJson } from "@freeanima/engine-db/schema";
+import { isSessionMeta } from "@freeanima/storage-db/domain";
+import type { AcpTaskStatusJson } from "@freeanima/storage-db/schema";
 import { getServiceContext } from "../context.ts";
 import { checkPlatform } from "./service-sessions.ts";
 

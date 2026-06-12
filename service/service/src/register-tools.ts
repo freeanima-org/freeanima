@@ -3,12 +3,25 @@ import { registerWriteFridgeMagnetTool } from "@freeanima/capabilities-fridge-ma
 import { registerTaskTools } from "@freeanima/capabilities-tasks";
 import { registerCoreTools, registerSupplementalTools } from "@freeanima/capabilities-tools";
 import { registerCronjobTool } from "@freeanima/connectors-cron/cronjob-tool";
-import { registerSelfTools } from "@freeanima/life-self";
-import { bindEmailAccountsConfig, registerEstateTools } from "@freeanima/life-estate";
-import type { Config } from "@freeanima/engine-config";
-import type { SkillRegistry } from "@freeanima/engine-skill";
-import type { ToolSetRegistry } from "@freeanima/engine-tool";
-import { registerMemoryTools } from "@freeanima/life-memory";
+import { registerSelfTools } from "@freeanima/capabilities-identity";
+import {
+  bindEmailAccountsConfig,
+  deleteEmail,
+  deleteEmailAccount,
+  editEmailAccount,
+  fetchEmails,
+  listEmailAccounts,
+  listEmails,
+  markAsRead,
+  readEmail,
+  registerEmailAccount,
+  sendEmail,
+} from "@freeanima/connectors-email";
+import { registerEstateTools } from "@freeanima/capabilities-estate";
+import type { Config } from "@freeanima/storage-config";
+import type { SkillRegistry } from "@freeanima/mechanism-skill";
+import type { ToolSetRegistry } from "@freeanima/mechanism-tool";
+import { registerMemoryTools } from "@freeanima/capabilities-memory";
 
 let registeredCatalog: { toolSets: ToolSetRegistry; skills: SkillRegistry } | null = null;
 
@@ -24,9 +37,21 @@ export function registerServiceTools(opts: {
   registerCoreTools(opts.toolSets, opts.config);
   registerSupplementalTools(opts.toolSets, opts.skills, opts.config);
   bindEmailAccountsConfig(opts.config);
+  const emailApi = {
+    registerEmailAccount,
+    editEmailAccount,
+    listEmailAccounts,
+    deleteEmailAccount,
+    sendEmail,
+    fetchEmails,
+    listEmails,
+    readEmail,
+    markAsRead,
+    deleteEmail,
+  };
   registerMemoryTools(opts.toolSets);
   registerSelfTools(opts.toolSets);
-  registerEstateTools(opts.toolSets);
+  registerEstateTools(opts.toolSets, emailApi);
   registerClarifyTool(opts.toolSets);
   registerCronjobTool(opts.toolSets);
   registerWriteFridgeMagnetTool(opts.toolSets);

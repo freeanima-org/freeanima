@@ -1,6 +1,6 @@
 import type { AnimaService } from "./runtime/anima-service.ts";
 import type { Kernel } from "@freeanima/kernel";
-import type { Engine } from "@freeanima/engine";
+import type { Engine } from "@freeanima/orchestration-runtime";
 import type { MaskRegistry } from "@freeanima/capabilities-mask";
 import {
   registerServiceContext,

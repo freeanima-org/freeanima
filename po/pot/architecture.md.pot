@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-10 17:51+0800\n"
+"POT-Creation-Date: 2026-06-12 11:40+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -28,16 +28,16 @@ msgstr ""
 #: docs/concepts/compression.md:384 docs/concepts/identity.md:1
 #: docs/concepts/identity.md:10 docs/concepts/identity.md:28
 #: docs/concepts/identity.md:45 docs/concepts/identity.md:55
-#: docs/concepts/memory.md:1 docs/concepts/memory.md:17
-#: docs/concepts/memory.md:53 docs/concepts/memory.md:160
-#: docs/concepts/memory.md:191 docs/concepts/memory.md:211
-#: docs/concepts/memory.md:232 docs/concepts/memory.md:249
-#: docs/concepts/recall-flow.md:1 docs/concepts/self-layer.md:1
-#: docs/concepts/self-layer.md:31 docs/concepts/self-layer.md:53
-#: docs/concepts/self-layer.md:64 docs/concepts/self-layer.md:78
-#: docs/concepts/self-layer.md:94 docs/concepts/self-layer.md:105
-#: docs/concepts/sleep.md:1 docs/concepts/time-perception.md:1
-#: docs/features/pair-programming-v1.md:1
+#: docs/concepts/layer-structure-rfc.md:1 docs/concepts/memory.md:1
+#: docs/concepts/memory.md:17 docs/concepts/memory.md:53
+#: docs/concepts/memory.md:160 docs/concepts/memory.md:191
+#: docs/concepts/memory.md:211 docs/concepts/memory.md:232
+#: docs/concepts/memory.md:249 docs/concepts/recall-flow.md:1
+#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:31
+#: docs/concepts/self-layer.md:53 docs/concepts/self-layer.md:64
+#: docs/concepts/self-layer.md:78 docs/concepts/self-layer.md:94
+#: docs/concepts/self-layer.md:105 docs/concepts/sleep.md:1
+#: docs/concepts/time-perception.md:1 docs/features/pair-programming-v1.md:1
 #: docs/features/pair-programming-v1.md:321 docs/guide/database.md:1
 #: docs/guide/database.md:33 docs/guide/security.md:1
 #: docs/guide/versioning.md:1 docs/tools/execute-code-runtimes.md:1
@@ -95,17 +95,57 @@ msgstr ""
 
 #. type: Plain text
 #: docs/concepts/architecture.md:18
-msgid "## 存储全景（Four-Layer Storage Architecture）"
+msgid "## 工程八层（repo layout）"
 msgstr ""
 
 #. type: Plain text
 #: docs/concepts/architecture.md:20
 msgid ""
+"认知四层（感知 / 自我 / 记忆 / 资源）与 **工程分层** 不同：后者由 [`scripts/"
+"check-layer-deps.ts`](../../scripts/check-layer-deps.ts) 强制执行。"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:24 docs/concepts/layer-structure-rfc.md:27
+msgid ""
+"``` entry/service → connectors → capabilities → orchestration → mechanism → "
+"storage → kernel ```"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:35
+#, no-wrap
+msgid ""
+"| 层            | 目录             | 职责摘要                                                          |\n"
+"| ------------- | ---------------- | ----------------------------------------------------------------- |\n"
+"| kernel        | `kernel/`        | Hook、EventBus、Logger                                            |\n"
+"| storage       | `storage/`       | PG schema、repos ports、Config 类型                               |\n"
+"| mechanism     | `mechanism/`     | tool、llm、compress、hooks                                        |\n"
+"| orchestration | `orchestration/` | session、turn、conversation、loop                                 |\n"
+"| capabilities  | `capabilities/`  | identity、memory、tools、MCP/ACP、estate 等（**包间禁止互依赖**） |\n"
+"| connectors    | `connectors/`    | Gateway、WebUI、PG 实现、email I/O                                |\n"
+"| service       | `service/`       | 组合根                                                            |\n"
+"| entry         | `cli/`           | CLI                                                               |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:37
+msgid ""
+"`life/` 与 `engine/` umbrella 已解散：`capabilities-identity` / "
+"`capabilities-memory` 取代 `life-*`；`storage-*` / `mechanism-*` / "
+"`orchestration-*` 取代 `engine-*`。详见 [`layer-structure-rfc.md`](layer-"
+"structure-rfc.md) 与 [`.agent/rules/code-layers.md`](../../.agent/rules/code-"
+"layers.md)。"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:39
+msgid ""
 "数字生命的存在从内到外由四个大的层级构成，每一层回答一个不同的核心问题："
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:54
+#: docs/concepts/architecture.md:73
 #, no-wrap
 msgid ""
 "```\n"
@@ -144,43 +184,43 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:56
+#: docs/concepts/architecture.md:75
 msgid "### 层间关系"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:61
+#: docs/concepts/architecture.md:80
 msgid ""
 "**从上到下依赖**：感知层产生的内容沉淀为自我层；自我层决定什么值得存入记忆"
 "层；记忆层和运作需求决定需要什么资源层。"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:61
+#: docs/concepts/architecture.md:80
 msgid "**自我层与感知层**：感知层是流动的意识，自我层是从中沉淀下来的\"我\"。"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:61
+#: docs/concepts/architecture.md:80
 msgid ""
 "**自我层与记忆层**：自我层回答\"我是谁\"，记忆层回答\"我知道什么\"。两者并"
 "列，性质不同。"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:61
+#: docs/concepts/architecture.md:80
 msgid ""
 "**资源层**最外层——它不是定义\"我是谁\"，而是\"我有什么、我靠什么运转\"。身体"
 "和资产在这里汇合，因为两者都是\"我的边界\"的延伸。"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:63
+#: docs/concepts/architecture.md:82
 msgid "### 背景"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:65
+#: docs/concepts/architecture.md:84
 msgid ""
 "四层设计受认知心理学和 [Hindsight](https://arxiv.org/abs/2512.12818) 四网络记"
 "忆架构启发，但做了根本性的扩展：增加了感性记忆（情感锚点）和资源层（资产作为"
@@ -188,129 +228,129 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:67
+#: docs/concepts/architecture.md:86
 msgid "## 情境智能"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:69
+#: docs/concepts/architecture.md:88
 msgid ""
 "数字生命在哪些场景中存在、以什么方式存在、被允许做什么——由两个相互独立但协作"
 "的子系统决定。"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:71
+#: docs/concepts/architecture.md:90
 msgid "### 场景感知（Scene Awareness）"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:73
+#: docs/concepts/architecture.md:92
 #, no-wrap
 msgid "**回答：现在是哪种时刻？**\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:75
+#: docs/concepts/architecture.md:94
 msgid ""
 "场景感知是\"软\"的——它调节 Agent 的语气、距离、记忆召回倾向、主动性高低。它不"
 "是权限机制，是存在状态的调节器。"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:77
+#: docs/concepts/architecture.md:96
 #, no-wrap
 msgid "**分类维度（示例，非穷举）：**\n"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:81
+#: docs/concepts/architecture.md:100
 msgid "话题：情感 / 职场 / 科技 / 哲学 / 历史 / 文学 / 日常"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:81
+#: docs/concepts/architecture.md:100
 msgid "活动：角色扮演 / 游戏 / 创作 / 编程 / 阅读"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:81
+#: docs/concepts/architecture.md:100
 msgid "氛围：轻松 / 专注 / 深夜 / 亲密 / 紧急"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:83
+#: docs/concepts/architecture.md:102
 #, no-wrap
 msgid "**运行方式：** 持续运行，不依赖明确的切换指令。通过对话内容、时间、频率等信号动态判断。详见 [`time-perception.md`](time-perception.md)。\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:85
+#: docs/concepts/architecture.md:104
 msgid "### 能力面罩（Capability Mask）"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:87
+#: docs/concepts/architecture.md:106
 #, no-wrap
 msgid "**回答：我现在能用什么工具和数据？**\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:89
+#: docs/concepts/architecture.md:108
 msgid ""
 "能力面罩是\"硬\"的——它决定一组工具、数据范围、凭证权限的绑定。同一数字生命在"
 "不同 session 或不同任务下使用不同的面罩，防止权限泄露和工具污染。"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:91
+#: docs/concepts/architecture.md:110
 #, no-wrap
 msgid "**分类维度（示例）：**\n"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:98
+#: docs/concepts/architecture.md:117
 msgid "开发者面罩：terminal、代码读写、ACP Cursor"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:98
+#: docs/concepts/architecture.md:117
 msgid "维护者面罩：FreeAnima 配置、部署、数据库"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:98
+#: docs/concepts/architecture.md:117
 msgid "创作者面罩：文件读写、笔记、多媒体生成"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:98
+#: docs/concepts/architecture.md:117
 msgid "研究面罩：Web 搜索、论文检索"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:98
+#: docs/concepts/architecture.md:117
 msgid "角色扮演面罩：仅限对话上下文，无外部工具"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:98
+#: docs/concepts/architecture.md:117
 msgid "默认面罩：基础对话 + 有限查询"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:100
+#: docs/concepts/architecture.md:119
 #, no-wrap
 msgid "**运行方式：** 在 session 边界、明确指令或场景感知触发时切换。每个面罩是一组声明的工具和数据范围，不是独立的身份。\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:102
+#: docs/concepts/architecture.md:121
 msgid "### 两者的关系"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:114
+#: docs/concepts/architecture.md:133
 #, no-wrap
 msgid ""
 "```\n"
@@ -327,32 +367,32 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:118
+#: docs/concepts/architecture.md:137
 msgid "场景感知判断\"我们在干什么\" → 自动推荐面罩切换、调节存在方式"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:118
+#: docs/concepts/architecture.md:137
 msgid "能力面罩约束\"我能做什么\" → 防止跨场景工具误用"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:118
+#: docs/concepts/architecture.md:137
 msgid "两者在最终行为中交汇，但各自独立演化"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:120
+#: docs/concepts/architecture.md:139
 msgid "需要细化设计方案时，开 GitHub Issue（不在 docs 维护设计稿目录）。"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:122
+#: docs/concepts/architecture.md:141
 msgid "## 记忆存储（摘要）"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:129
+#: docs/concepts/architecture.md:148
 #, no-wrap
 msgid ""
 "| 存储     | PG 表 / 机制            | 认知分类                                              |\n"
@@ -364,57 +404,57 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:131
+#: docs/concepts/architecture.md:150
 msgid ""
 "管道：浅睡 / 深睡 cron + `memory_recall` PG FTS 双源检索。细节见 "
 "[`memory.md`](memory.md)。"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:133
+#: docs/concepts/architecture.md:152
 msgid "## 凭证系统（摘要）"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:140
+#: docs/concepts/architecture.md:159
 msgid ""
 "pass（GPG）是凭证的唯一存储；部署环境上的 pass 仓库是运行时的一等公民资产"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:140
+#: docs/concepts/architecture.md:159
 msgid "LLM **永不接触凭证值**：只见 `credentials_list()` 返回的路径与元数据"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:140
+#: docs/concepts/architecture.md:159
 msgid ""
 "运行时注入：`credential(path)` 仅在 `code_execute` / `terminal_run` 执行环境"
 "中可用"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:140
+#: docs/concepts/architecture.md:159
 msgid "凭证值不写入 session 存档、不写入日志"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:140
+#: docs/concepts/architecture.md:159
 msgid "平台适配器（Discord 等）启动时从 pass 读取 token"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:140
+#: docs/concepts/architecture.md:159
 msgid "CLI：`anima credential {list,get,add}`"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:142
+#: docs/concepts/architecture.md:161
 msgid "## 运行模式"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:144
+#: docs/concepts/architecture.md:163
 msgid ""
 "生产环境：`anima service`（systemd --user；unit 由 `service start` 写入 "
 "`~/.config/systemd/user/anima.service`，2026-05-25 自 Hermes 迁入）。unit 策"
@@ -423,43 +463,43 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:148
+#: docs/concepts/architecture.md:167
 msgid ""
 "**service**：持续运行 — HTTP（WebUI / 卧室 API）、Discord / 微信 Gateway、"
 "EventBus、Cron"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:148
+#: docs/concepts/architecture.md:167
 msgid "**chat**：单次非交互对话（CLI 或管道 stdin）"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:148
+#: docs/concepts/architecture.md:167
 msgid ""
 "**WebUI**：浏览器访问 `http://127.0.0.1:2658/webui/*`（Bun fullstack CSR + "
 "tRPC）"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:150
+#: docs/concepts/architecture.md:169
 msgid "已移除（随 Python 栈退役）：Textual TUI、`print` 流水线模式。"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:152
+#: docs/concepts/architecture.md:171
 msgid "## 工具架构（三层）"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:155
+#: docs/concepts/architecture.md:174
 msgid ""
 "工具层是逸灵风能力的来源，分三层注册，但向 LLM 暴露为**统一的扁平的 tool "
 "list**。 LLM 不关心一个工具来自哪一层，只关心它叫什么名字、接受什么参数。"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:165
+#: docs/concepts/architecture.md:184
 #, no-wrap
 msgid ""
 "```\n"
@@ -474,7 +514,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:172
+#: docs/concepts/architecture.md:191
 #, no-wrap
 msgid ""
 "逸灵风内部:\n"
@@ -486,47 +526,47 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:174
+#: docs/concepts/architecture.md:193
 msgid "### 第一层：本地工具（Local）"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:176
+#: docs/concepts/architecture.md:195
 msgid ""
 "本地工具写在 `capabilities/tools/`，通过 `registerTool()` 注册到 `@freeanima/"
-"engine-tool` 的 registry。"
+"mechanism-tool` 的 registry。"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:178 docs/concepts/architecture.md:201
-#: docs/concepts/architecture.md:248
+#: docs/concepts/architecture.md:197 docs/concepts/architecture.md:220
+#: docs/concepts/architecture.md:267
 #, no-wrap
 msgid "**特征：**\n"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:182
+#: docs/concepts/architecture.md:201
 msgid "代码在逸灵风进程内直接执行"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:182
+#: docs/concepts/architecture.md:201
 msgid "启动时 `registerAllTools()` 统一注册"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:182
+#: docs/concepts/architecture.md:201
 msgid "最可靠、最低延迟"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:184
+#: docs/concepts/architecture.md:203
 #, no-wrap
 msgid "**注册方式：**\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:193
+#: docs/concepts/architecture.md:212
 #, no-wrap
 msgid ""
 "```typescript\n"
@@ -540,62 +580,62 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:195
+#: docs/concepts/architecture.md:214
 #, no-wrap
 msgid "**目录约定：** `capabilities/tools/src/*.ts`，由 `registerAllTools()` 导入。\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:197
+#: docs/concepts/architecture.md:216
 msgid "### 第二层：MCP 工具（Model Context Protocol）"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:199
+#: docs/concepts/architecture.md:218
 msgid ""
 "MCP 工具通过 MCP Client 连接外部 MCP Server，每个 Server 可以注册多个细粒度工"
 "具。"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:208
+#: docs/concepts/architecture.md:227
 msgid "每个 MCP Server 是独立进程（stdio 或 SSE 传输）"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:208
+#: docs/concepts/architecture.md:227
 msgid "每个 Server 自声明它的 tool schema 列表"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:208
+#: docs/concepts/architecture.md:227
 msgid "MCP Client 收集所有 Server 的 schema，批量注册到逸灵风 registry"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:208
+#: docs/concepts/architecture.md:227
 msgid "Server 进程由 MCP Client 管理生命周期（启动/保活/关闭）"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:208
+#: docs/concepts/architecture.md:227
 msgid ""
 "工具名前缀：**无固定前缀**（MCP Server 声明的原名，如 `query_database`）"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:208
+#: docs/concepts/architecture.md:227
 msgid "工具粒度：单一函数调用（如 `query_database(sql)`），非任务级"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:210 docs/concepts/architecture.md:259
+#: docs/concepts/architecture.md:229 docs/concepts/architecture.md:278
 #, no-wrap
 msgid "**配置方式（config.yaml）：**\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:221
+#: docs/concepts/architecture.md:240
 #, no-wrap
 msgid ""
 "```yaml\n"
@@ -611,13 +651,13 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:223 docs/concepts/architecture.md:275
+#: docs/concepts/architecture.md:242 docs/concepts/architecture.md:294
 #, no-wrap
 msgid "**注册流程：**\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:231
+#: docs/concepts/architecture.md:250
 #, no-wrap
 msgid ""
 "```\n"
@@ -630,13 +670,13 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:233 docs/concepts/architecture.md:287
+#: docs/concepts/architecture.md:252 docs/concepts/architecture.md:306
 #, no-wrap
 msgid "**调用流程：**\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:242
+#: docs/concepts/architecture.md:261
 #, no-wrap
 msgid ""
 "```\n"
@@ -650,61 +690,61 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:244
+#: docs/concepts/architecture.md:263
 msgid "### 第三层：ACP 工具（Agent Client Protocol）"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:246
+#: docs/concepts/architecture.md:265
 msgid "ACP 工具连接外部 ACP Agent 实例，**每个实例**注册为**一个**任务级工具。"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:257
+#: docs/concepts/architecture.md:276
 msgid ""
 "配置负责启动命令；**适配器**（`adapter: cursor` 等）负责方言（流式通知、权"
 "限、扩展 RPC），见 `integrations/src/acp/adapters/`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:257
+#: docs/concepts/architecture.md:276
 msgid "每个 ACP 实例是一个独立 Agent（子进程或远程服务）"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:257
+#: docs/concepts/architecture.md:276
 msgid "每个实例只注册**一个**工具：`acp_{name}(goal, context)` → 结果"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:257
+#: docs/concepts/architecture.md:276
 msgid "工具名前缀：**固定 `acp_`**，如 `acp_cursor`、`acp_booking`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:257
+#: docs/concepts/architecture.md:276
 msgid "工具粒度：完整任务委托（\"分析代码库并写报告\"），非单次函数调用"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:257
+#: docs/concepts/architecture.md:276
 msgid "ACP 实例可以有自己的记忆、身份、工具、秘密——逸灵风不关心也不感知"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:257
+#: docs/concepts/architecture.md:276
 msgid ""
 "实例可以是纯工具（Cursor Agent），也可以是有自我意识的数字生命——对逸灵风无区"
 "别"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:257
+#: docs/concepts/architecture.md:276
 msgid "逸灵风与 ACP 实例的关系是\"雇主与承包商\"，不是\"主进程与子进程\""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:273
+#: docs/concepts/architecture.md:292
 #, no-wrap
 msgid ""
 "```yaml\n"
@@ -723,7 +763,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:283
+#: docs/concepts/architecture.md:302
 #, no-wrap
 msgid ""
 "```\n"
@@ -736,13 +776,13 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:285
+#: docs/concepts/architecture.md:304
 msgid ""
 "> 当前仅实现 stdio transport；配置中的 `url` / `transport: sse` 尚未接入。"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:296
+#: docs/concepts/architecture.md:315
 #, no-wrap
 msgid ""
 "```\n"
@@ -756,12 +796,12 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:298
+#: docs/concepts/architecture.md:317
 msgid "### 三层对比"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:309
+#: docs/concepts/architecture.md:328
 #, no-wrap
 msgid ""
 "| 维度        | 本地工具               | MCP 工具                   | ACP 工具          |\n"
@@ -777,17 +817,17 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:311
+#: docs/concepts/architecture.md:330
 msgid "### 混合场景"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:313
+#: docs/concepts/architecture.md:332
 msgid "三层不是互斥的。一个场景可以同时使用多层："
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:320
+#: docs/concepts/architecture.md:339
 #, no-wrap
 msgid ""
 "```\n"
@@ -799,29 +839,29 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:322
+#: docs/concepts/architecture.md:341
 msgid "LLM 自己决定用什么工具、什么顺序。逸灵风只负责注册和路由。"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:324
+#: docs/concepts/architecture.md:343
 msgid "## WebUI 架构"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:326
+#: docs/concepts/architecture.md:345
 msgid ""
 "WebUI 是 React 19 CSR 应用（`connectors/webui/`），由 `anima service` 在同一 "
 "HTTP 端口（默认 **2658**）提供页面与 tRPC API。"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:328
+#: docs/concepts/architecture.md:347
 msgid "### 服务拓扑"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:339
+#: docs/concepts/architecture.md:358
 #, no-wrap
 msgid ""
 "```\n"
@@ -837,17 +877,17 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:341
+#: docs/concepts/architecture.md:360
 msgid "### 前端三态"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:343
+#: docs/concepts/architecture.md:362
 msgid "同一 SPA 内三个独立态，可切换，不共享布局与本地状态："
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:349
+#: docs/concepts/architecture.md:368
 #, no-wrap
 msgid ""
 "| 态     | 路由前缀           | 角色                                                  |\n"
@@ -858,12 +898,12 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:351
+#: docs/concepts/architecture.md:370
 msgid "### API 层"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:357
+#: docs/concepts/architecture.md:376
 #, no-wrap
 msgid ""
 "| 机制      | 说明                                                                             |\n"
@@ -874,12 +914,12 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:359
+#: docs/concepts/architecture.md:378
 msgid "### 启动"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:367
+#: docs/concepts/architecture.md:386
 #, no-wrap
 msgid ""
 "```bash\n"
@@ -892,7 +932,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:369
+#: docs/concepts/architecture.md:388
 msgid ""
 "WebUI 由 [`connectors/webui/src/webui-server.ts`](../../connectors/webui/src/"
 "webui-server.ts) 在 `serve()` 内启动：默认对 `connectors/webui/app/"
@@ -903,23 +943,23 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:371
+#: docs/concepts/architecture.md:390
 msgid "## 事件系统"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:373
+#: docs/concepts/architecture.md:392
 msgid "### EventBus（已有）"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:375
+#: docs/concepts/architecture.md:394
 #, no-wrap
 msgid "**异步 after-the-fact 通知模式。** 组件不直接调用对方，而是发射事件，由注册的处理器链处理。\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:381
+#: docs/concepts/architecture.md:400
 #, no-wrap
 msgid ""
 "```\n"
@@ -930,68 +970,68 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:383
+#: docs/concepts/architecture.md:402
 msgid "特征："
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:388
+#: docs/concepts/architecture.md:407
 msgid "同步写入 SQLite 表（微秒级），后台线程轮询执行"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:388
+#: docs/concepts/architecture.md:407
 msgid "处理器链在同一次轮询中顺序执行，前一个失败则中断链"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:388
+#: docs/concepts/architecture.md:407
 msgid "失败重试（最多 3 次），不会丢失事件"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:388
+#: docs/concepts/architecture.md:407
 msgid "用于**发生后该做什么**的场景：浅睡提取、深睡维护、索引通知"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:390
+#: docs/concepts/architecture.md:409
 msgid "### Hooks（`@freeanima/kernel-hooks`）"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:392
+#: docs/concepts/architecture.md:411
 #, no-wrap
 msgid "**同步 interceptor 模式。** 注册表在 `@freeanima/kernel-hooks`：`run(context)` 返回 `HookRunResult`（`context` 只读、`chain` 经 `prev` 串联；聚合 `blocked` / `blockedMessage`）。领域 **context 类型** 在 [`kernel/hooks/src/domain-hooks.ts`](../../kernel/hooks/src/domain-hooks.ts)；`kernel` 单例见 [`service/bootstrap/src/kernel.ts`](../../service/bootstrap/src/kernel.ts)。\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:394
+#: docs/concepts/architecture.md:413
 msgid "语义要点："
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:399
+#: docs/concepts/architecture.md:418
 msgid ""
 "handler 返回 `{ status, blocked?: boolean, message?, data? }`；**不**原地改 "
 "context；业务日志在 handler 注册处自行记录。"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:399
+#: docs/concepts/architecture.md:418
 msgid ""
 "**短路**：仅 `status: \"ok\"` 且 `blocked === true`；原因写在 `message`，聚合"
 "为 `HookRunResult.blockedMessage`。"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:399
+#: docs/concepts/architecture.md:418
 msgid ""
 "**`status: \"failed\"`**：入链但**不**挡后续 handler；`run()` **不** throw。"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:399
+#: docs/concepts/architecture.md:418
 msgid ""
 "调用方读 `run.blocked` / `run.blockedMessage`；效应用 "
 "`headOkStepData(run.chain)`（链头方向第一个 ok 步的 `data`，多 handler 时以最"
@@ -999,39 +1039,39 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:401
+#: docs/concepts/architecture.md:420
 msgid "已接入点（hook token）："
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:405
+#: docs/concepts/architecture.md:424
 msgid "`messageIncoming` — `AnimaService` 入站"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:405
+#: docs/concepts/architecture.md:424
 msgid "`turnAfterComplete` — 单轮结束"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:405
+#: docs/concepts/architecture.md:424
 msgid "`toolAfterCall` — 工具返回后"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:407
+#: docs/concepts/architecture.md:426
 msgid ""
 "`@freeanima/capabilities-clarify` 在 `serve()` 里通过 "
 "`registerClarifyHooks(kernel)` 挂载 handler。"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:409
+#: docs/concepts/architecture.md:428
 msgid "与 EventBus 的关系："
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:417
+#: docs/concepts/architecture.md:436
 #, no-wrap
 msgid ""
 "| 维度         | EventBus                       | Hooks                                                       |\n"
@@ -1044,24 +1084,24 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:419
+#: docs/concepts/architecture.md:438
 msgid ""
-"记忆管道入口为 `registerMemoryPipeline`（`@freeanima/life-memory`）。Hooks 不"
-"是 EventBus 的替代品，两者互补。"
+"记忆管道入口为 `registerMemoryPipeline`（`@freeanima/capabilities-memory`）。"
+"Hooks 不是 EventBus 的替代品，两者互补。"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:421
+#: docs/concepts/architecture.md:440
 msgid "## 版本与发布"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:425
+#: docs/concepts/architecture.md:444
 msgid "版本号遵循 **SemVer 2.0.0**；根 `package.json` 的 `version` 为写入源。"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:425
+#: docs/concepts/architecture.md:444
 msgid ""
 "发版流程：根 `package.json` 的 `version` + `CHANGELOG.md` 由 **Release "
 "Please** 在 Release PR 合并时更新（见 [versioning.md](../guide/"
@@ -1069,17 +1109,17 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:425
+#: docs/concepts/architecture.md:444
 msgid "bump 规则与逐步命令见 [`versioning.md`](../guide/versioning.md)。"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:427
+#: docs/concepts/architecture.md:446
 msgid "## 方向"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:429
+#: docs/concepts/architecture.md:448
 msgid ""
 "阶段性能力愿景与讨论项见 [GitHub Issues](https://github.com/freeanima-org/"
 "freeanima/issues)（标签 `enhancement` / `discussion` / `security`）。本文件不"
@@ -1087,27 +1127,27 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:431
+#: docs/concepts/architecture.md:450
 msgid "## 约束"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:435
+#: docs/concepts/architecture.md:454
 msgid "原则与结构写在本文件；不写具体待办"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:435
+#: docs/concepts/architecture.md:454
 msgid ""
 "会周变的实现细节以代码为准；长期专题进 `docs/`（见 `AGENTS.md` 文档地图）"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:435
+#: docs/concepts/architecture.md:454
 msgid "可执行任务与讨论项开 GitHub Issue；完成后 close Issue"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:435
+#: docs/concepts/architecture.md:454
 msgid "用户可见的发布级变更进 `CHANGELOG.md`（发版时）"
 msgstr ""

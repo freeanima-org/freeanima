@@ -3,4 +3,4 @@ export {
   embeddingConfigSchema,
   type EmbeddingConfigInput,
   type ResolvedEmbeddingConfig,
-} from "@freeanima/engine-config";
+} from "@freeanima/storage-config";

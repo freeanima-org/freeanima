@@ -1,4 +1,4 @@
-import type { CronLogStorePort } from "@freeanima/engine-repos";
+import type { CronLogStorePort } from "@freeanima/storage-repos";
 
 import * as repo from "./repos/cron-log-repo.ts";
 

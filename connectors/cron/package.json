@@ -6,9 +6,9 @@
     "./*": "./src/*.ts"
   },
   "dependencies": {
-    "@freeanima/engine-repos": "workspace:*",
-    "@freeanima/engine-tool": "workspace:*",
-    "@freeanima/engine-util": "workspace:*",
+    "@freeanima/storage-repos": "workspace:*",
+    "@freeanima/mechanism-tool": "workspace:*",
+    "@freeanima/storage-util": "workspace:*",
     "@freeanima/service-api": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "@freeanima/service-logging": "workspace:*",

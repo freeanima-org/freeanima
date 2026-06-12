@@ -1,5 +1,4 @@
-import { deleteMagnet, setMagnet } from "@freeanima/capabilities-fridge-magnet";
-import type { TaskPriority, TaskRow, TaskStorePort } from "@freeanima/engine-repos";
+import type { TaskPriority, TaskRow, TaskStorePort } from "@freeanima/storage-repos";
 import type { FridgeBridge } from "./types.ts";
 
 const SUMMARY_PREVIEW = 5;
@@ -12,13 +11,6 @@ const PRIORITY_EMOJI: Record<TaskPriority, string> = {
   low: "⚪",
   none: "",
 };
-
-export function createFridgeBridge(): FridgeBridge {
-  return {
-    setMagnet,
-    deleteMagnet,
-  };
-}
 
 function formatSummaryLine(title: string, priority: TaskPriority): string {
   const emoji = PRIORITY_EMOJI[priority];

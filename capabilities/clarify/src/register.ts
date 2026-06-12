@@ -1,14 +1,14 @@
 import type { Kernel } from "@freeanima/kernel";
-import type { Config } from "@freeanima/service-config";
+import type { Config } from "@freeanima/storage-config";
 import { bindClarifyConfig } from "./clarify.ts";
-import type { SessionConversationPort } from "@freeanima/engine-session-port";
+import type { SessionConversationPort } from "@freeanima/mechanism-session-port";
 import {
   messageIncoming,
   turnAfterComplete,
   type MessageIncomingEffect,
   type TurnAfterCompleteEffect,
-} from "@freeanima/engine-hooks/conversation";
-import { toolAfterCall, type ToolAfterCallEffect } from "@freeanima/engine-hooks/loop";
+} from "@freeanima/mechanism-hooks/conversation";
+import { toolAfterCall, type ToolAfterCallEffect } from "@freeanima/mechanism-hooks/loop";
 import {
   findAwaitingClarifyInMessages,
   formatClarifyText,

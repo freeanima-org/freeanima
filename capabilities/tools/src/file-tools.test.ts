@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { chdir } from "node:process";
 import { Config } from "@freeanima/service-config";
 import { registerCoreTools } from "@freeanima/capabilities-tools";
-import { ToolSetRegistry } from "@freeanima/engine-tool";
+import { ToolSetRegistry } from "@freeanima/mechanism-tool";
 import { parseYaml } from "@freeanima/service-config";
 import { animaConfigSchema } from "@freeanima/service-config/schemas/config";
 import { MINIMAL_LLM_YAML } from "@freeanima/service-config/test-helpers/minimal-llm-config";

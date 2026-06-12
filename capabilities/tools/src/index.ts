@@ -10,9 +10,9 @@ export { registerCredentialTools } from "./credential-tool.ts";
 export { registerExecuteCodeTool } from "./execute-code.ts";
 export { clampTimeout, parseRuntime, runExecuteCode } from "./execute-code-runtimes.ts";
 
-import type { Config } from "@freeanima/service-config";
-import type { ToolSetRegistry } from "@freeanima/engine-tool";
-import type { SkillRegistry } from "@freeanima/engine-skill";
+import type { Config } from "@freeanima/storage-config";
+import type { ToolSetRegistry } from "@freeanima/mechanism-tool";
+import type { SkillRegistry } from "@freeanima/mechanism-skill";
 import { bindBrowserToolsConfig } from "./browser-camofox.ts";
 import { bindWebToolsConfig } from "./web.ts";
 import { registerBrowserTools } from "./browser.ts";
