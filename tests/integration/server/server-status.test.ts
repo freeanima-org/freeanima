@@ -57,6 +57,27 @@ describePg("server status API", () => {
       }),
     );
     expect(body.dependencies.postgres.status).toBe("connected");
+    expect(body.memory_detail).toEqual(
+      expect.objectContaining({
+        rss_kb: expect.any(Number),
+        heap_used_kb: expect.any(Number),
+        heap_total_kb: expect.any(Number),
+        external_kb: expect.any(Number),
+        array_buffers_kb: expect.any(Number),
+        tokenizer_repos: expect.any(Array),
+        tokenizer_bindings: expect.any(Array),
+        jieba_loaded: expect.any(Boolean),
+        mcp: expect.objectContaining({
+          server_count: expect.any(Number),
+          connected_count: expect.any(Number),
+          connecting_count: expect.any(Number),
+        }),
+        acp: expect.objectContaining({
+          agent_count: expect.any(Number),
+          connected_count: expect.any(Number),
+        }),
+      }),
+    );
   });
 
   it("health returns status ok", () => {

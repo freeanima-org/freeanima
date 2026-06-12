@@ -22,8 +22,9 @@ import {
 import type { CronJobData } from "@freeanima/connectors-cron";
 import { buildToolsStatus } from "@freeanima/mechanism-tool";
 import { listCommandDefs, listCommandDefsForPlatform } from "@freeanima/service-commands";
-import { pingDatabase } from "@freeanima/connectors-db-pg";
+import { pingDatabase, isJiebaLoaded } from "@freeanima/connectors-db-pg";
 import { pingRedis } from "@freeanima/connectors-redis";
+import { listLoadedTokenizerRepos, listTokenizerBindings } from "@freeanima/storage-tokenizer";
 
 function conv() {
   return getServiceContext().conversation;
@@ -32,6 +33,7 @@ import type {
   DependencyStatus,
   HealthSnapshot,
   PlatformStatusSnapshot,
+  ProcessMemoryDetail,
   SafeConfigSnapshot,
   ServiceSnapshot,
 } from "@freeanima/service/schemas/snapshot";
@@ -59,6 +61,54 @@ export function buildMemoryFileStats(): { files_count: number; files_bytes: numb
   add(join(PATHS.home, "USER.md"));
 
   return { files_count, files_bytes };
+}
+
+function readProcessRssKb(): number {
+  try {
+    const statusText = readFileSync(`/proc/${process.pid}/status`, "utf-8");
+    for (const line of statusText.split("\n")) {
+      if (line.startsWith("VmRSS:")) {
+        return parseInt(line.split(/\s+/)[1] ?? "0", 10);
+      }
+    }
+  } catch {
+    /* non-Linux */
+  }
+  return 0;
+}
+
+function buildProcessMemoryDetail(): ProcessMemoryDetail {
+  const mu = process.memoryUsage();
+  let mcp = { server_count: 0, connected_count: 0, connecting_count: 0 };
+  let acp = { agent_count: 0, connected_count: 0 };
+  try {
+    const ctx = getServiceContext();
+    if (ctx.mcp) {
+      mcp = ctx.mcp.getConnectionSummary();
+    }
+    if (ctx.acp) {
+      const acpStatus = ctx.acp.getStatus();
+      acp = {
+        agent_count: acpStatus.agent_count,
+        connected_count: acpStatus.connected_count,
+      };
+    }
+  } catch {
+    /* context not ready */
+  }
+
+  return {
+    rss_kb: readProcessRssKb(),
+    heap_used_kb: Math.round(mu.heapUsed / 1024),
+    heap_total_kb: Math.round(mu.heapTotal / 1024),
+    external_kb: Math.round(mu.external / 1024),
+    array_buffers_kb: Math.round(mu.arrayBuffers / 1024),
+    tokenizer_repos: listLoadedTokenizerRepos(),
+    tokenizer_bindings: listTokenizerBindings(),
+    jieba_loaded: isJiebaLoaded(),
+    mcp,
+    acp,
+  };
 }
 
 export async function buildSessionsByPlatform(): Promise<Record<string, number>> {
@@ -101,18 +151,7 @@ export async function buildStatus(
     toolCount = 0;
   }
 
-  let memoryKb = 0;
-  try {
-    const statusText = readFileSync(`/proc/${process.pid}/status`, "utf-8");
-    for (const line of statusText.split("\n")) {
-      if (line.startsWith("VmRSS:")) {
-        memoryKb = parseInt(line.split(/\s+/)[1] ?? "0", 10);
-        break;
-      }
-    }
-  } catch {
-    /* non-Linux */
-  }
+  const memoryDetail = buildProcessMemoryDetail();
 
   const fileStats = buildMemoryFileStats();
   const dependencies = await buildDependenciesStatus();
@@ -157,7 +196,8 @@ export async function buildStatus(
     tools: toolCount,
     cron_jobs: cronJobCount,
     platforms: { ...platformStatus },
-    memory_kb: memoryKb,
+    memory_kb: memoryDetail.rss_kb,
+    memory_detail: memoryDetail,
     memory: {
       files_count: fileStats.files_count,
       files_bytes: fileStats.files_bytes,

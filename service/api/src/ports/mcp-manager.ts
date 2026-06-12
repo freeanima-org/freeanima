@@ -15,6 +15,11 @@ export type McpStatusResponse = {
 
 /** MCP runtime management port */
 export interface McpManagerPort {
+  getConnectionSummary(): {
+    server_count: number;
+    connected_count: number;
+    connecting_count: number;
+  };
   getStatus(): McpStatusResponse | Promise<McpStatusResponse>;
   startAllEnabled(): Promise<McpControlResult>;
   stopAll(): Promise<McpControlResult>;

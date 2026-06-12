@@ -1,5 +1,4 @@
 import {
-  ensureFallbackTokenizer,
   ensureTokenizer,
   setResolveContext,
   startTokenizerReconcile,
@@ -41,16 +40,12 @@ function collectOllamaBaseUrls(cfg: AnimaConfig): string[] {
   return urls;
 }
 
-/** Preload fallback + configured chat/embedding model tokenizers (non-blocking failures). */
+/** Preload configured chat/embedding model tokenizers; fallback loads only on resolve failure. */
 export async function wireTokenizerRuntime(config: Config): Promise<void> {
   const cfg = config.data;
   setResolveContext({ ollamaBaseUrls: collectOllamaBaseUrls(cfg) });
 
-  const tasks: Promise<void>[] = [
-    ensureFallbackTokenizer().catch((err) => {
-      log.warn("fallback tokenizer preload failed", { error: String(err) });
-    }),
-  ];
+  const tasks: Promise<void>[] = [];
 
   try {
     const chatModel = getProfileHopModel(cfg, PROFILE_CHAT);

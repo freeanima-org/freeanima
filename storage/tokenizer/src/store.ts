@@ -90,6 +90,34 @@ function bindModel(model: string, primaryRepo: string | null, activeRepo: string
     activeRepo,
     usingFallback: primaryRepo == null || activeRepo !== primaryRepo,
   });
+  maybeReleaseUnusedFallback(activeRepo);
+}
+
+function isRepoReferenced(repo: string): boolean {
+  for (const binding of modelBindings.values()) {
+    if (binding.activeRepo === repo) return true;
+  }
+  return false;
+}
+
+/** Drop cached tokenizer instance when no model binding references it. */
+export function releaseTokenizerRepo(repo: string): boolean {
+  if (!repoInstances.has(repo)) return false;
+  if (isRepoReferenced(repo)) return false;
+  repoInstances.delete(repo);
+  loadPromises.delete(repo);
+  return true;
+}
+
+function maybeReleaseUnusedFallback(activeRepo: string): void {
+  if (activeRepo === FALLBACK_TOKENIZER_REPO) return;
+  if (isRepoReferenced(FALLBACK_TOKENIZER_REPO)) return;
+  releaseTokenizerRepo(FALLBACK_TOKENIZER_REPO);
+}
+
+/** Unit tests: bind model to a resolved primary repo. */
+export function bindModelForTest(model: string, primaryRepo: string, activeRepo: string): void {
+  bindModel(model.trim(), primaryRepo, activeRepo);
 }
 
 /** Unit tests: bind model to loaded fallback without Hub resolve. */
@@ -242,6 +270,10 @@ export function listTokenizerBindings(): TokenizerBindingSnapshot[] {
     repo: b.activeRepo,
     using_fallback: b.usingFallback,
   }));
+}
+
+export function listLoadedTokenizerRepos(): string[] {
+  return [...repoInstances.keys()];
 }
 
 function encodeWithRepo(text: string, repo: string): number[] {

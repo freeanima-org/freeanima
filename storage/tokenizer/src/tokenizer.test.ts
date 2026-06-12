@@ -3,12 +3,15 @@ import { afterEach, describe, expect, it } from "bun:test";
 import { FALLBACK_TOKENIZER_REPO } from "./constants.ts";
 import { generateCandidateRepos, toPascalCaseModel } from "./resolve.ts";
 import {
+  bindModelForTest,
   bindModelToFallbackForTest,
   countTokens,
   ensureFallbackTokenizer,
   ensureTokenizer,
   getActiveTokenizerRepo,
   isUsingFallbackTokenizer,
+  listLoadedTokenizerRepos,
+  releaseTokenizerRepo,
   resetTokenizerForTest,
   setTokenizerEncodeForTest,
   splitTextByTokenLimit,
@@ -77,5 +80,25 @@ describe("countTokens with test encode", () => {
     for (const chunk of chunks) {
       expect(countTokens(chunk, "split-test")).toBeLessThanOrEqual(3);
     }
+  });
+
+  it("evicts unused fallback after primary bind", async () => {
+    wireFallback(4);
+    setTokenizerEncodeForTest("Org/model", (text) => {
+      const len = text.trim().length;
+      return len ? [1] : [];
+    });
+    await ensureFallbackTokenizer();
+    expect(listLoadedTokenizerRepos()).toContain(FALLBACK_TOKENIZER_REPO);
+    bindModelForTest("chat", "Org/model", "Org/model");
+    expect(listLoadedTokenizerRepos()).toEqual(["Org/model"]);
+  });
+
+  it("releaseTokenizerRepo refuses when repo still referenced", async () => {
+    wireFallback(4);
+    await ensureFallbackTokenizer();
+    bindModelToFallbackForTest("needs-fallback");
+    expect(releaseTokenizerRepo(FALLBACK_TOKENIZER_REPO)).toBe(false);
+    expect(listLoadedTokenizerRepos()).toContain(FALLBACK_TOKENIZER_REPO);
   });
 });

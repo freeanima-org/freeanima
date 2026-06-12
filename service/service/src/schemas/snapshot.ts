@@ -2,6 +2,7 @@ export type {
   DependencyStatus,
   HealthSnapshot,
   PlatformStatusSnapshot,
+  ProcessMemoryDetail,
   SafeConfigSnapshot,
   ServiceSnapshot,
   SessionSummary,
