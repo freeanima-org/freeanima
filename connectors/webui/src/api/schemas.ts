@@ -14,11 +14,14 @@ const memoryListPaginationSchema = z.object({
   limit: z.number().int().min(1).max(100).optional(),
 });
 
+export const semanticMemorySortBySchema = z.enum(["created", "updated", "reference_count", "rank"]);
+
 export const semanticMemoryListBodySchema = memoryListPaginationSchema.extend({
   query: z.string().optional(),
   types: z.array(semanticMemoryTypeSchema).optional(),
   status: semanticMemoryStatusSchema.or(z.literal("all")).optional(),
   source_session: z.string().optional(),
+  sort_by: semanticMemorySortBySchema.optional(),
 });
 
 export const limbicMemoryListBodySchema = memoryListPaginationSchema.extend({

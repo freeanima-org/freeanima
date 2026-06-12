@@ -14,6 +14,7 @@ export type {
   SemanticMemoryCreateInput,
   SemanticMemoryUpdateInput,
   SemanticMemorySearchOpts,
+  SemanticMemorySortBy,
   SemanticMemoryStorePort,
 } from "./semantic-memory.ts";
 export type {

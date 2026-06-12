@@ -360,6 +360,7 @@ export async function listSemanticMemories(input: {
   types?: string[];
   status?: string;
   source_session?: string;
+  sort_by?: "created" | "updated" | "reference_count" | "rank";
 }) {
   return unwrap(apiClient.api.memory.semantic.list.post(input));
 }

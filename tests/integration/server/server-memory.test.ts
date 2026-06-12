@@ -10,7 +10,7 @@ import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { getServiceContext } from "@freeanima/service";
 import { SELF_BLOCK_KEYS } from "@freeanima/storage-repos";
-import { getTestEngine, seedSession } from "../../helpers/pg-test.ts";
+import { getTestEngine, getActivePgTestContext, seedSession } from "../../helpers/pg-test.ts";
 
 describePg("server memory API", () => {
   let home: string;
@@ -110,6 +110,7 @@ describePg("server memory API", () => {
       query: "unique-token",
       types: ["preference"],
       limit: 10,
+      sort_by: "rank",
     });
     expect(filtered.total).toBe(1);
     expect(filtered.items.length).toBe(1);
@@ -123,6 +124,56 @@ describePg("server memory API", () => {
     expect(page.items.length).toBe(1);
     expect(page.offset).toBe(0);
     expect(page.limit).toBe(1);
+  });
+
+  it("listSemanticMemories supports sort_by and reference_count", async () => {
+    const { semanticMemory } = getTestEngine().repos;
+    const lowId = await semanticMemory.create({
+      content: "sort probe low refs unique-sort-token",
+      type: "world",
+    });
+    const highId = await semanticMemory.create({
+      content: "sort probe high refs unique-sort-token",
+      type: "world",
+    });
+
+    const ctx = getActivePgTestContext();
+    if (!ctx) throw new Error("PG test context missing");
+    await ctx.sql`UPDATE semantic_memory SET reference_count = ${1} WHERE id = ${lowId}`;
+    await ctx.sql`UPDATE semantic_memory SET reference_count = ${5} WHERE id = ${highId}`;
+
+    const browseByRefs = await getServiceContext().service.listSemanticMemories({
+      sort_by: "reference_count",
+      limit: 100,
+    });
+    const probeIds = browseByRefs.items
+      .filter((row: { content: string }) => row.content.includes("unique-sort-token"))
+      .map((row: { id: string }) => row.id);
+    expect(probeIds.indexOf(highId)).toBeLessThan(probeIds.indexOf(lowId));
+    expect(
+      browseByRefs.items.find((row: { id: string }) => row.id === highId)?.reference_count,
+    ).toBe(5);
+
+    const searched = await getServiceContext().service.listSemanticMemories({
+      query: "unique-sort-token",
+      sort_by: "rank",
+      limit: 10,
+    });
+    expect(
+      searched.items.every((row: { reference_count: number }) => row.reference_count > 0),
+    ).toBe(true);
+    if (searched.items.length >= 2) {
+      expect(searched.items[0]?.rank).toBeGreaterThanOrEqual(searched.items[1]?.rank ?? 0);
+    }
+
+    const forcedRank = await getServiceContext().service.listSemanticMemories({
+      query: "unique-sort-token",
+      sort_by: "updated",
+      limit: 10,
+    });
+    if (forcedRank.items.length >= 2) {
+      expect(forcedRank.items[0]?.rank).toBeGreaterThanOrEqual(forcedRank.items[1]?.rank ?? 0);
+    }
   });
 
   it("listLimbicMemories supports session and kind filter", async () => {

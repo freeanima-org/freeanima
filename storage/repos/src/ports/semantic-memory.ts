@@ -43,6 +43,8 @@ export type SemanticMemoryUpdateInput = {
   status?: string;
 };
 
+export type SemanticMemorySortBy = "created" | "updated" | "reference_count" | "rank";
+
 export type SemanticMemorySearchOpts = {
   query?: string;
   offset?: number;
@@ -50,6 +52,7 @@ export type SemanticMemorySearchOpts = {
   types?: string[];
   status?: "active" | "deprecated" | "all";
   source_sessions?: string[];
+  sort_by?: SemanticMemorySortBy;
 };
 
 /** Semantic memory persistence port (Slice B — semantic_memory table) */

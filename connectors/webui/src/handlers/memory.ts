@@ -39,6 +39,7 @@ export function createMemoryHandlers(service: AnimaService) {
         types: parsed.types,
         status: parsed.status,
         source_session: parsed.source_session?.trim() || undefined,
+        sort_by: parsed.sort_by,
       });
     },
     listLimbicMemories: (body: LimbicMemoryListBody) => {

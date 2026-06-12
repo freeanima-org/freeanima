@@ -1,5 +1,9 @@
-import { sql as drizzleSql } from "drizzle-orm";
-import type { SemanticFtsHit, SemanticMemorySearchOpts } from "@freeanima/storage-repos";
+import { sql as drizzleSql, type SQL } from "drizzle-orm";
+import type {
+  SemanticFtsHit,
+  SemanticMemorySearchOpts,
+  SemanticMemorySortBy,
+} from "@freeanima/storage-repos";
 
 import { getDb } from "../../client.ts";
 import { pgSemanticSourceSessionsFilter, pgSemanticTypeFilter } from "../../utils/pg-sql.ts";
@@ -27,6 +31,25 @@ function buildSemanticFilters(
   return { typeFilter, statusFilter, sourceFilter };
 }
 
+function resolveEffectiveSort(
+  q: string,
+  sortBy: SemanticMemorySortBy | undefined,
+): SemanticMemorySortBy {
+  const resolved = sortBy ?? (q ? "rank" : "updated");
+  if (q && resolved !== "rank") return "rank";
+  if (!q && resolved === "rank") return "updated";
+  return resolved;
+}
+
+function browseOrderBy(sortBy: Exclude<SemanticMemorySortBy, "rank">): SQL {
+  const orderBy: Record<Exclude<SemanticMemorySortBy, "rank">, SQL> = {
+    created: drizzleSql`sm.created DESC`,
+    updated: drizzleSql`sm.updated DESC`,
+    reference_count: drizzleSql`sm.reference_count DESC, sm.updated DESC`,
+  };
+  return orderBy[sortBy];
+}
+
 export async function searchSemanticMemory(
   opts: SemanticMemorySearchOpts,
 ): Promise<SemanticFtsHit[]> {
@@ -38,9 +61,20 @@ export async function searchSemanticMemory(
     status,
     sourceSessions,
   );
+  const effectiveSort = resolveEffectiveSort(q, opts.sort_by);
 
   const db = getDb();
-  if (q) {
+  if (effectiveSort === "rank") {
+    if (!q) {
+      return searchSemanticMemoryBrowse(db, {
+        typeFilter,
+        statusFilter,
+        sourceFilter,
+        sortBy: "updated",
+        offset,
+        limit,
+      });
+    }
     return hybridSearchSemanticMemory(q, {
       limit,
       offset,
@@ -50,6 +84,29 @@ export async function searchSemanticMemory(
     });
   }
 
+  return searchSemanticMemoryBrowse(db, {
+    typeFilter,
+    statusFilter,
+    sourceFilter,
+    sortBy: effectiveSort,
+    offset,
+    limit,
+  });
+}
+
+async function searchSemanticMemoryBrowse(
+  db: ReturnType<typeof getDb>,
+  args: {
+    typeFilter: SQL;
+    statusFilter: SQL;
+    sourceFilter: SQL;
+    sortBy: Exclude<SemanticMemorySortBy, "rank">;
+    offset: number;
+    limit: number;
+  },
+): Promise<SemanticFtsHit[]> {
+  const { typeFilter, statusFilter, sourceFilter, sortBy, offset, limit } = args;
+  const orderBy = browseOrderBy(sortBy);
   const rows = await db.execute<SemanticMemoryDbRow & { rank: number }>(drizzleSql`
     SELECT
       sm.id,
@@ -60,6 +117,7 @@ export async function searchSemanticMemory(
       sm.observed_at,
       sm.occurred_at,
       sm.status,
+      sm.reference_count,
       sm.created,
       sm.updated,
       1.0 AS rank
@@ -68,7 +126,7 @@ export async function searchSemanticMemory(
     ${typeFilter}
     ${statusFilter}
     ${sourceFilter}
-    ORDER BY sm.updated DESC
+    ORDER BY ${orderBy}
     OFFSET ${offset}
     LIMIT ${limit}
   `);

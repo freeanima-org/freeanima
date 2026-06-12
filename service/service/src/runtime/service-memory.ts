@@ -110,6 +110,7 @@ export async function listSemanticMemories(
     types?: string[];
     status?: SemanticMemorySearchOpts["status"];
     source_session?: string;
+    sort_by?: SemanticMemorySearchOpts["sort_by"];
   } = {},
 ): Promise<MemoryListResult<SemanticFtsHit>> {
   const { offset, limit } = clampPagination(args.offset, args.limit);
@@ -119,6 +120,7 @@ export async function listSemanticMemories(
     types: args.types,
     status: args.status,
     source_sessions: sourceSession ? [sourceSession] : undefined,
+    sort_by: args.sort_by,
   };
   const [items, total] = await Promise.all([
     semanticRepos().search({ ...filterOpts, offset, limit }),
