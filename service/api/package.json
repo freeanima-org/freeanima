@@ -3,7 +3,9 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./anima-service": "./src/anima-service.ts",
+    "./app-runtime-port": "./src/app-runtime-port.ts",
+    "./app-runtime-context": "./src/app-runtime-context.ts",
+    "./ports/messaging-port": "./src/ports/messaging-port.ts",
     "./home-channel": "./src/home-channel.ts",
     "./turn-lifecycle": "./src/turn-lifecycle.ts",
     "./conversation-stats": "./src/conversation-stats.ts",

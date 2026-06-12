@@ -9,7 +9,7 @@ import {
   type AutobiographyEngineResult,
 } from "@freeanima/capabilities-memory/autobiography-port";
 
-import { getServiceContext } from "../context.ts";
+import type { FullRuntimeDeps } from "./runtime-deps.ts";
 import {
   filterToolNamesByMask,
   resolveSleepMask,
@@ -26,13 +26,13 @@ function buildMessages(input: AutobiographyEngineInput): SessionMessage[] {
 }
 
 async function runAutobiographyTurn(
+  deps: FullRuntimeDeps,
   input: AutobiographyEngineInput,
 ): Promise<AutobiographyEngineResult> {
-  const { conversation, engine: eng } = getServiceContext();
-  const model = getProfileHopModel(eng.config.data, PROFILE_REFLECT);
-  const sleepMask = resolveSleepMask();
+  const model = getProfileHopModel(deps.engine.config.data, PROFILE_REFLECT);
+  const sleepMask = resolveSleepMask(deps);
   const toolNames = filterToolNamesByMask(input.toolNames, sleepMask);
-  const tools = eng.catalog.toolSets.openaiSchemasFromNames(toolNames);
+  const tools = deps.engine.catalog.toolSets.openaiSchemasFromNames(toolNames);
   const toolMask = runtimeToolMaskFromResolved(sleepMask);
   const messages = buildMessages(input);
 
@@ -45,9 +45,9 @@ async function runAutobiographyTurn(
       for await (const ev of engine.runStream(messages, {
         model,
         tools,
-        config: eng.config.data,
-        logger: eng.logger,
-        llm: eng.llm,
+        config: deps.engine.config.data,
+        logger: deps.engine.logger,
+        llm: deps.engine.llm,
         toolMask,
         max_turns: 20,
       })) {
@@ -69,7 +69,7 @@ async function runAutobiographyTurn(
         }
       }
     },
-    { repos: conversation.repos, tools: eng.catalog.toolSets },
+    { repos: deps.conversation.repos, tools: deps.engine.catalog.toolSets },
   );
 
   const summary = parts.join("").trim() || `Completed ${toolCalls} tool call(s)`;
@@ -77,6 +77,6 @@ async function runAutobiographyTurn(
 }
 
 /** Register autobiography cron LLM engine */
-export function registerAutobiographyWire(): void {
-  registerAutobiographyEngine(runAutobiographyTurn);
+export function registerAutobiographyWire(deps: FullRuntimeDeps): void {
+  registerAutobiographyEngine((input) => runAutobiographyTurn(deps, input));
 }

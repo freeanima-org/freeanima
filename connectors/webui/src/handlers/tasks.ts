@@ -10,7 +10,7 @@ function normalizeStatus(status: TaskListBody["status"]): TaskListBody["status"]
 
 export async function listTasks(body: TaskListBody) {
   const parsed = taskListBodySchema.parse(body);
-  return webuiCtx().service.listTasks({
+  return webuiCtx().listTasks({
     query: parsed.query?.trim() || undefined,
     offset: parsed.offset,
     limit: parsed.limit,

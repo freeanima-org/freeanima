@@ -14,8 +14,12 @@ import {
   resetTokenizerForTest,
   setTokenizerEncodeForTest,
 } from "@freeanima/storage-tokenizer/testing";
-import { computeStats, mergeStats, statsReport } from "@freeanima/service";
+import { computeStats, mergeStats, statsReport, getAppRuntime } from "@freeanima/service";
 import { testConv } from "../../helpers/pg-test.ts";
+
+function deps() {
+  return getAppRuntime().runtimeDeps();
+}
 
 describePg("conversation-stats", () => {
   const prev = process.env.FREEANIMA_HOME;
@@ -50,7 +54,7 @@ describePg("conversation-stats", () => {
   });
 
   it("computeStats empty session", async () => {
-    const stats = await computeStats("no_such_session_xyz");
+    const stats = await computeStats(deps(), "no_such_session_xyz");
     expect(stats.message_count).toBe(0);
     expect(stats.input_tokens).toBeNull();
   });
@@ -77,7 +81,7 @@ describePg("conversation-stats", () => {
       },
       sid,
     );
-    const stats = await computeStats(sid);
+    const stats = await computeStats(deps(), sid);
     expect(stats.message_count).toBe(2);
     expect(stats.input_tokens).toBe(10);
     expect(stats.output_tokens).toBe(5);
@@ -85,13 +89,13 @@ describePg("conversation-stats", () => {
   });
 
   it("mergeStats aggregates", async () => {
-    const a = await computeStats("no_such_session_xyz");
+    const a = await computeStats(deps(), "no_such_session_xyz");
     const merged = mergeStats([a], "Summary (1 session)");
     expect(merged.session).toContain("Summary");
   });
 
   it("statsReport for missing session", async () => {
-    expect(await statsReport("missing_session_xyz")).toContain("(empty)");
+    expect(await statsReport(deps(), "missing_session_xyz")).toContain("(empty)");
   });
 
   it("estimateTokens and estimateMessagesTokens", () => {
@@ -122,12 +126,12 @@ describePg("conversation-stats", () => {
       },
       sid,
     );
-    const stats = await computeStats(sid);
+    const stats = await computeStats(deps(), sid);
     expect(stats.estimated_usage).toBe(true);
     expect(stats.input_tokens).not.toBeNull();
     expect(stats.output_tokens).not.toBeNull();
     expect(stats.compression_l3).toBe(2);
-    const report = await statsReport(sid);
+    const report = await statsReport(deps(), sid);
     expect(report).toContain("Session compression:");
   });
 

@@ -1,15 +1,15 @@
-import type { ServiceContext } from "@freeanima/service-api/service-context";
-import { getServiceContext as defaultGetServiceContext } from "@freeanima/service-api";
+import type { AppRuntimeContext } from "@freeanima/service-api/service-context";
+import { getAppRuntime as defaultGetAppRuntime } from "@freeanima/service-api";
 
-type ServiceContextAccessor = () => ServiceContext;
+type AppRuntimeContextAccessor = () => AppRuntimeContext;
 
-let access: ServiceContextAccessor = defaultGetServiceContext;
+let access: AppRuntimeContextAccessor = defaultGetAppRuntime;
 
-/** 组合根可注入 accessor（测试 / 显式 ctx）；默认仍走 global ServiceContext（SSR 兼容）。 */
-export function bindWebuiServiceContext(accessor?: ServiceContextAccessor): void {
-  access = accessor ?? defaultGetServiceContext;
+/** 组合根可注入 accessor（测试 / 显式 ctx）；默认仍走 global AppRuntimeContext（SSR 兼容）。 */
+export function bindWebuiServiceContext(accessor?: AppRuntimeContextAccessor): void {
+  access = accessor ?? defaultGetAppRuntime;
 }
 
-export function webuiCtx(): ServiceContext {
+export function webuiCtx(): AppRuntimeContext {
   return access();
 }

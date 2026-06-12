@@ -10,7 +10,7 @@ import {
   type DeepSleepEngineResult,
 } from "@freeanima/capabilities-memory/deep-sleep-port";
 
-import { getServiceContext } from "../context.ts";
+import type { FullRuntimeDeps } from "./runtime-deps.ts";
 import {
   filterToolNamesByMask,
   resolveSleepMask,
@@ -26,12 +26,14 @@ function buildMessages(input: DeepSleepEngineInput): SessionMessage[] {
   return msgs;
 }
 
-async function runDeepSleepTurn(input: DeepSleepEngineInput): Promise<DeepSleepEngineResult> {
-  const { conversation, engine: eng } = getServiceContext();
-  const model = getProfileHopModel(eng.config.data, PROFILE_REFLECT);
-  const sleepMask = resolveSleepMask();
+async function runDeepSleepTurn(
+  deps: FullRuntimeDeps,
+  input: DeepSleepEngineInput,
+): Promise<DeepSleepEngineResult> {
+  const model = getProfileHopModel(deps.engine.config.data, PROFILE_REFLECT);
+  const sleepMask = resolveSleepMask(deps);
   const toolNames = filterToolNamesByMask(input.toolNames, sleepMask);
-  const tools = eng.catalog.toolSets.openaiSchemasFromNames(toolNames);
+  const tools = deps.engine.catalog.toolSets.openaiSchemasFromNames(toolNames);
   const toolMask = runtimeToolMaskFromResolved(sleepMask);
   const messages = buildMessages(input);
 
@@ -44,9 +46,9 @@ async function runDeepSleepTurn(input: DeepSleepEngineInput): Promise<DeepSleepE
       for await (const ev of engine.runStream(messages, {
         model,
         tools,
-        config: eng.config.data,
-        logger: eng.logger,
-        llm: eng.llm,
+        config: deps.engine.config.data,
+        logger: deps.engine.logger,
+        llm: deps.engine.llm,
         toolMask,
         max_turns: 50,
       })) {
@@ -74,7 +76,7 @@ async function runDeepSleepTurn(input: DeepSleepEngineInput): Promise<DeepSleepE
         }
       }
     },
-    { repos: conversation.repos, tools: eng.catalog.toolSets },
+    { repos: deps.conversation.repos, tools: deps.engine.catalog.toolSets },
   );
 
   const summary = parts.join("").trim() || `Completed ${toolCalls} tool call(s)`;
@@ -82,6 +84,6 @@ async function runDeepSleepTurn(input: DeepSleepEngineInput): Promise<DeepSleepE
 }
 
 /** Register deep-sleep LLM engine */
-export function registerDeepSleepWire(): void {
-  registerDeepSleepEngine(runDeepSleepTurn);
+export function registerDeepSleepWire(deps: FullRuntimeDeps): void {
+  registerDeepSleepEngine((input) => runDeepSleepTurn(deps, input));
 }

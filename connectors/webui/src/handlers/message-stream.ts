@@ -8,11 +8,10 @@ export async function* iterateMessageStream(
   message: string,
   streamPath = "/api/sessions/messages/stream",
 ): AsyncGenerator<{ event: string; data: string }> {
-  const { service } = webuiCtx();
   const platform = await resolveSessionPlatform(sessionId);
   let sawDone = false;
   try {
-    for await (const event of service.sendMessageStream(sessionId, message, platform)) {
+    for await (const event of webuiCtx().sendMessageStream(sessionId, message, platform)) {
       const apiEvent = mapStreamEventToApi(event);
       if (apiEvent.event === "error") {
         logSseError(streamPath, apiEvent.data.error, { session_id: sessionId });

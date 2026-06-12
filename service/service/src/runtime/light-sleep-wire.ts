@@ -9,7 +9,7 @@ import {
   type LightSleepEngineResult,
 } from "@freeanima/capabilities-memory/light-sleep-port";
 
-import { getServiceContext } from "../context.ts";
+import type { FullRuntimeDeps } from "./runtime-deps.ts";
 import {
   filterToolNamesByMask,
   resolveSleepMask,
@@ -55,12 +55,14 @@ function extractLimbicMemoryId(toolName: string, content: string): string | null
   }
 }
 
-async function runLightSleepTurn(input: LightSleepEngineInput): Promise<LightSleepEngineResult> {
-  const { conversation, engine: eng } = getServiceContext();
-  const model = getProfileHopModel(eng.config.data, PROFILE_REFLECT);
-  const sleepMask = resolveSleepMask();
+async function runLightSleepTurn(
+  deps: FullRuntimeDeps,
+  input: LightSleepEngineInput,
+): Promise<LightSleepEngineResult> {
+  const model = getProfileHopModel(deps.engine.config.data, PROFILE_REFLECT);
+  const sleepMask = resolveSleepMask(deps);
   const toolNames = filterToolNamesByMask(input.toolNames, sleepMask);
-  const tools = eng.catalog.toolSets.openaiSchemasFromNames(toolNames);
+  const tools = deps.engine.catalog.toolSets.openaiSchemasFromNames(toolNames);
   const toolMask = runtimeToolMaskFromResolved(sleepMask);
   const messages = buildMessages(input);
 
@@ -75,9 +77,9 @@ async function runLightSleepTurn(input: LightSleepEngineInput): Promise<LightSle
       for await (const ev of engine.runStream(messages, {
         model,
         tools,
-        config: eng.config.data,
-        logger: eng.logger,
-        llm: eng.llm,
+        config: deps.engine.config.data,
+        logger: deps.engine.logger,
+        llm: deps.engine.llm,
         toolMask,
         max_turns: 50,
       })) {
@@ -110,7 +112,7 @@ async function runLightSleepTurn(input: LightSleepEngineInput): Promise<LightSle
         }
       }
     },
-    { repos: conversation.repos, tools: eng.catalog.toolSets },
+    { repos: deps.conversation.repos, tools: deps.engine.catalog.toolSets },
   );
 
   const summary = parts.join("").trim() || `Completed ${toolCalls} tool call(s)`;
@@ -123,6 +125,6 @@ async function runLightSleepTurn(input: LightSleepEngineInput): Promise<LightSle
 }
 
 /** Register light-sleep LLM engine (engine.run + tool whitelist) */
-export function registerLightSleepWire(): void {
-  registerLightSleepEngine(runLightSleepTurn);
+export function registerLightSleepWire(deps: FullRuntimeDeps): void {
+  registerLightSleepEngine((input) => runLightSleepTurn(deps, input));
 }

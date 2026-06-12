@@ -1,4 +1,4 @@
-import { getServiceContext } from "../context.ts";
+import type { RuntimeDeps } from "./runtime-deps.ts";
 import { isSessionMeta } from "@freeanima/storage-db/domain";
 import type { SessionMessage } from "@freeanima/storage-db/domain";
 import {
@@ -93,6 +93,7 @@ function emptyBreakdown(): RuntimeContextBreakdown {
 }
 
 async function readCompressionAndContextFields(
+  deps: RuntimeDeps,
   session: string,
   preloaded?: SessionMessage[],
 ): Promise<
@@ -121,22 +122,21 @@ async function readCompressionAndContextFields(
   >
 > {
   const cfg = getCompressionConfig();
-  const conv = getServiceContext().conversation;
-  const meta = await conv.loadSessionMeta(session);
-  const allMsgs = preloaded ?? (await conv.loadForRuntime(session));
+  const meta = await deps.conversation.loadSessionMeta(session);
+  const allMsgs = preloaded ?? (await deps.conversation.loadForRuntime(session));
   const state = parseCompressionState(isSessionMeta(meta) ? meta.compression : undefined);
   const l2 = state?.l2 ?? null;
   const l3 = isCompressed(state) ? (state?.l3 ?? null) : null;
-  const fallbackModel = getProfileHopModel(getServiceContext().engine.config.data, PROFILE_CHAT);
-  const tools = isSessionMeta(meta) ? await conv.loadSessionTools(session, meta) : [];
+  const fallbackModel = getProfileHopModel(deps.engine.config.data, PROFILE_CHAT);
+  const tools = isSessionMeta(meta) ? await deps.conversation.loadSessionTools(session, meta) : [];
   const compressOpts = buildCompressOptions(meta, state, fallbackModel, { tools });
   const analysis = analyzeCompression(allMsgs, compressOpts);
-  const storedTotal = await conv.countMessages(session);
+  const storedTotal = await deps.conversation.countMessages(session);
 
   let breakdown = emptyBreakdown();
   if (allMsgs.length > 0) {
     try {
-      breakdown = await computeRuntimeContextBreakdown(session);
+      breakdown = await computeRuntimeContextBreakdown(deps, session);
     } catch {
       breakdown = emptyBreakdown();
     }
@@ -183,15 +183,14 @@ function estimateUsageFromMessages(
   return { input_tokens: input, output_tokens: output };
 }
 
-export async function computeStats(session: string): Promise<SessionStats> {
-  const conv = getServiceContext().conversation;
-  const message_count = await conv.countMessages(session);
-  const records = message_count > 0 ? await conv.load(session) : [];
+export async function computeStats(deps: RuntimeDeps, session: string): Promise<SessionStats> {
+  const message_count = await deps.conversation.countMessages(session);
+  const records = message_count > 0 ? await deps.conversation.load(session) : [];
   const messages = records.filter((r) => r.role !== "session_meta");
   const assistant_msgs = messages.filter((m) => m.role === "assistant");
   const assistant_turns = assistant_msgs.length;
-  const meta = message_count > 0 ? await conv.loadSessionMeta(session) : null;
-  const fallbackModel = getProfileHopModel(getServiceContext().engine.config.data, PROFILE_CHAT);
+  const meta = message_count > 0 ? await deps.conversation.loadSessionMeta(session) : null;
+  const fallbackModel = getProfileHopModel(deps.engine.config.data, PROFILE_CHAT);
   const model = meta != null && isSessionMeta(meta) ? meta.model : fallbackModel;
 
   let input_tokens = 0;
@@ -282,7 +281,7 @@ export async function computeStats(session: string): Promise<SessionStats> {
     partial_usage,
     partial_cached,
     estimated_usage,
-    ...(await readCompressionAndContextFields(session, records)),
+    ...(await readCompressionAndContextFields(deps, session, records)),
   };
 }
 
@@ -575,16 +574,17 @@ export function formatStats(stats: SessionStats): string {
 }
 
 export async function statsReport(
+  deps: RuntimeDeps,
   session?: string | null,
   opts?: { allSessions?: boolean },
 ): Promise<string> {
   if (opts?.allSessions) {
-    const sessions = await getServiceContext().conversation.listSessions();
+    const sessions = await deps.conversation.listSessions();
     if (!sessions.length) return "(no sessions)";
     const parts: string[] = [];
     const perSession: SessionStats[] = [];
     for (const name of sessions) {
-      const item = await computeStats(name);
+      const item = await computeStats(deps, name);
       perSession.push(item);
       parts.push(formatStats(item));
     }
@@ -593,8 +593,7 @@ export async function statsReport(
   }
 
   const name = session;
-  if (!name) return statsReport(null, { allSessions: true });
-  if (!(await getServiceContext().conversation.sessionExists(name)))
-    return `Session: ${name}\n(empty)`;
-  return formatStats(await computeStats(name));
+  if (!name) return statsReport(deps, null, { allSessions: true });
+  if (!(await deps.conversation.sessionExists(name))) return `Session: ${name}\n(empty)`;
+  return formatStats(await computeStats(deps, name));
 }

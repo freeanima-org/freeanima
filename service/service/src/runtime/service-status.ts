@@ -9,7 +9,7 @@ import {
   PATHS,
 } from "@freeanima/service-config";
 import { formatCstIsoFromEpoch } from "@freeanima/storage-util";
-import { getServiceContext } from "../context.ts";
+import type { FullRuntimeDeps, RuntimeDeps } from "./runtime-deps.ts";
 import { PROFILE_CHAT } from "@freeanima/storage-provider-llm";
 import {
   ensureBuiltinCronJobs,
@@ -25,10 +25,6 @@ import { listCommandDefs, listCommandDefsForPlatform } from "@freeanima/service-
 import { pingDatabase, isJiebaLoaded } from "@freeanima/connectors-db-pg";
 import { pingRedis } from "@freeanima/connectors-redis";
 import { listLoadedTokenizerRepos, listTokenizerBindings } from "@freeanima/storage-tokenizer";
-
-function conv() {
-  return getServiceContext().conversation;
-}
 import type {
   DependencyStatus,
   HealthSnapshot,
@@ -77,24 +73,19 @@ function readProcessRssKb(): number {
   return 0;
 }
 
-function buildProcessMemoryDetail(): ProcessMemoryDetail {
+function buildProcessMemoryDetail(deps: FullRuntimeDeps): ProcessMemoryDetail {
   const mu = process.memoryUsage();
   let mcp = { server_count: 0, connected_count: 0, connecting_count: 0 };
   let acp = { agent_count: 0, connected_count: 0 };
-  try {
-    const ctx = getServiceContext();
-    if (ctx.mcp) {
-      mcp = ctx.mcp.getConnectionSummary();
-    }
-    if (ctx.acp) {
-      const acpStatus = ctx.acp.getStatus();
-      acp = {
-        agent_count: acpStatus.agent_count,
-        connected_count: acpStatus.connected_count,
-      };
-    }
-  } catch {
-    /* context not ready */
+  if (deps.mcp) {
+    mcp = deps.mcp.getConnectionSummary();
+  }
+  if (deps.acp) {
+    const acpStatus = deps.acp.getStatus();
+    acp = {
+      agent_count: acpStatus.agent_count,
+      connected_count: acpStatus.connected_count,
+    };
   }
 
   return {
@@ -111,9 +102,9 @@ function buildProcessMemoryDetail(): ProcessMemoryDetail {
   };
 }
 
-export async function buildSessionsByPlatform(): Promise<Record<string, number>> {
+export async function buildSessionsByPlatform(deps: RuntimeDeps): Promise<Record<string, number>> {
   try {
-    return await conv().countSessionsByPlatform();
+    return await deps.conversation.countSessionsByPlatform();
   } catch {
     return {};
   }
@@ -132,38 +123,39 @@ export async function buildDependenciesStatus(): Promise<{
 }
 
 export async function buildStatus(
+  deps: FullRuntimeDeps,
   startTime: number,
   platformStatus: Record<string, PlatformStatusSnapshot>,
   cronJobCount: number,
   host: string,
   port: number,
 ): Promise<ServiceSnapshot> {
-  const cfg = getServiceContext().engine.config.data;
+  const cfg = deps.engine.config.data;
   const uptime = startTime > 0 ? Math.round(Date.now() / 1000 - startTime) : null;
 
-  const byPlatform = await buildSessionsByPlatform();
+  const byPlatform = await buildSessionsByPlatform(deps);
   const sessionCount = Object.values(byPlatform).reduce((a, b) => a + b, 0);
 
   let toolCount = 0;
   try {
-    toolCount = getServiceContext().engine.catalog.toolSets.listTools().length;
+    toolCount = deps.engine.catalog.toolSets.listTools().length;
   } catch {
     toolCount = 0;
   }
 
-  const memoryDetail = buildProcessMemoryDetail();
+  const memoryDetail = buildProcessMemoryDetail(deps);
 
   const fileStats = buildMemoryFileStats();
   const dependencies = await buildDependenciesStatus();
   let factsCount = 0;
   let l2IndexRows = 0;
   try {
-    factsCount = await getServiceContext().engine.repos.semanticMemory.count();
+    factsCount = await deps.engine.repos.semanticMemory.count();
   } catch {
     factsCount = 0;
   }
   try {
-    l2IndexRows = await conv().repos.session.countSearchableMessages();
+    l2IndexRows = await deps.conversation.repos.session.countSearchableMessages();
   } catch {
     l2IndexRows = 0;
   }
@@ -211,14 +203,13 @@ export async function buildStatus(
   return status;
 }
 
-export function getConfig(): SafeConfigSnapshot {
-  const cfg = getServiceContext().engine.config.data;
+export function getConfig(deps: RuntimeDeps): SafeConfigSnapshot {
+  const cfg = deps.engine.config.data;
   return { config: sanitizeConfigForApi(cfg) as SafeConfigSnapshot["config"] };
 }
 
-export function listToolsApi() {
-  const { engine } = getServiceContext();
-  return buildToolsStatus(engine.catalog.toolSets);
+export function listToolsApi(deps: RuntimeDeps) {
+  return buildToolsStatus(deps.engine.catalog.toolSets);
 }
 
 export async function listCronJobs(): Promise<{ jobs: CronJobData[] }> {

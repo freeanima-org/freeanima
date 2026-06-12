@@ -2,23 +2,25 @@ import * as conv from "@freeanima/orchestration-conversation";
 import { prependSkillsToPrompt } from "@freeanima/mechanism-skill";
 import { getProfileHopModel } from "@freeanima/service-config";
 import { PROFILE_CHAT } from "@freeanima/storage-provider-llm";
-import { runSimpleTurn } from "@freeanima/service-api/turn-lifecycle";
-
-import { getServiceContext } from "../../context.ts";
+import { runSimpleTurn } from "../turn-lifecycle.ts";
+import type { FullRuntimeDeps } from "../runtime-deps.ts";
 
 export type CronEngineJobInput = {
   model_name?: string | null;
   skills: string[];
 };
 
-export async function runCronEngineTurn(job: CronEngineJobInput, prompt: string): Promise<string> {
-  const { conversation, engine } = getServiceContext();
-  const cfg = getServiceContext().engine.config.data;
+export async function runCronEngineTurn(
+  deps: FullRuntimeDeps,
+  job: CronEngineJobInput,
+  prompt: string,
+): Promise<string> {
+  const cfg = deps.engine.config.data;
   const model = job.model_name ?? getProfileHopModel(cfg, PROFILE_CHAT);
   const sid = conv.generateSessionId();
-  await conversation.initSession(sid, model, { platform: "cron" });
+  await deps.conversation.initSession(sid, model, { platform: "cron" });
 
-  const fullPrompt = prependSkillsToPrompt(engine.skills, prompt, job.skills);
+  const fullPrompt = prependSkillsToPrompt(deps.engine.skills, prompt, job.skills);
 
-  return runSimpleTurn({ sessionId: sid, prompt: fullPrompt, model });
+  return runSimpleTurn(deps, { sessionId: sid, prompt: fullPrompt, model });
 }

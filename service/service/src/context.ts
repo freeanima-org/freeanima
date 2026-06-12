@@ -1,44 +1,42 @@
-import type { AnimaService } from "./runtime/anima-service.ts";
+import type { AppRuntime } from "./runtime/app-runtime.ts";
 import type { Kernel } from "@freeanima/kernel";
 import type { Engine } from "@freeanima/orchestration-runtime";
 import type { MaskRegistry } from "@freeanima/capabilities-mask";
 import {
-  registerServiceContext,
-  type ServiceContext as ServiceContextPort,
-} from "@freeanima/service-api/service-context";
+  registerAppRuntime,
+  type AppRuntimeContext,
+} from "@freeanima/service-api/app-runtime-context";
 
-export type ServiceContext = ServiceContextPort & {
-  kernel: Kernel;
-};
+export type ServiceAppRuntime = AppRuntime & { kernel: Kernel };
 
-const GLOBAL_CTX_KEY = Symbol.for("freeanima.serviceContextFull");
+let runtime: ServiceAppRuntime | null = null;
 
-let ctx: ServiceContext | null = null;
-
-function readGlobalContext(): ServiceContext | null {
-  return (globalThis as Record<symbol, ServiceContext | undefined>)[GLOBAL_CTX_KEY] ?? null;
+export function initAppRuntime(next: ServiceAppRuntime): void {
+  runtime = next;
+  registerAppRuntime(next);
 }
 
-export function initServiceContext(next: ServiceContext): void {
-  ctx = next;
-  (globalThis as Record<symbol, ServiceContext>)[GLOBAL_CTX_KEY] = next;
-  const { service, conversation, engine, masks, mcp, acp, host, port } = next;
-  registerServiceContext({ service, conversation, engine, masks, mcp, acp, host, port });
-}
-
-export function getServiceContext(): ServiceContext {
-  const shared = readGlobalContext();
-  if (shared) return shared;
-  if (!ctx) {
-    throw new Error("ServiceContext not initialized");
+export function getAppRuntime(): ServiceAppRuntime {
+  if (!runtime) {
+    throw new Error("AppRuntime not initialized");
   }
-  return ctx;
+  return runtime;
 }
 
-export function isServiceContextReady(): boolean {
-  return readGlobalContext() !== null || ctx !== null;
+/** @deprecated 使用 getAppRuntime */
+export const getServiceContext = (): AppRuntimeContext & { kernel: Kernel } => getAppRuntime();
+
+/** @deprecated 使用 initAppRuntime */
+export const initServiceContext = initAppRuntime;
+
+export function isAppRuntimeReady(): boolean {
+  return runtime !== null;
 }
 
-export { assertNotShuttingDown } from "@freeanima/service-api/service-context";
+/** @deprecated 使用 isAppRuntimeReady */
+export const isServiceContextReady = isAppRuntimeReady;
 
-export type { AnimaService, Engine, MaskRegistry };
+export { assertNotShuttingDown } from "@freeanima/service-api/app-runtime-context";
+
+export type { AppRuntime, Engine, MaskRegistry };
+export type ServiceContext = ServiceAppRuntime;

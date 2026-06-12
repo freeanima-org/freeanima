@@ -10,7 +10,7 @@ import { isSessionMeta, type SessionMetaMessage } from "@freeanima/storage-db/do
 import { parseYaml, PATHS } from "@freeanima/service-config";
 import { logComponent } from "@freeanima/service-logging";
 import { z } from "zod";
-import { getServiceContext } from "../context.ts";
+import type { FullRuntimeDeps } from "./runtime-deps.ts";
 
 const credentialPermissionSchema = z.object({
   name: z.string(),
@@ -80,29 +80,33 @@ function loadMasksFromYaml(masks: MaskRegistry): void {
   }
 }
 
-function catalogFromContext(): { masks: MaskRegistryLookup; toolSets: ToolSetRegistry } {
-  const { masks, engine } = getServiceContext();
-  return { masks, toolSets: engine.catalog.toolSets };
+function catalogFromDeps(deps: FullRuntimeDeps): {
+  masks: MaskRegistryLookup;
+  toolSets: ToolSetRegistry;
+} {
+  return { masks: deps.masks, toolSets: deps.engine.catalog.toolSets };
 }
 
 export function resolveSessionCapabilityMask(
+  deps: FullRuntimeDeps,
   capabilityMask: SessionCapabilityMask | undefined,
 ): ResolvedMask | null {
   const presets = capabilityMask?.presets ?? [];
   if (!presets.length) return null;
-  const { masks, toolSets } = catalogFromContext();
+  const { masks, toolSets } = catalogFromDeps(deps);
   return resolveMaskPresets(presets, masks, toolSets);
 }
 
 export function resolveSessionMaskFromMeta(
+  deps: FullRuntimeDeps,
   meta: SessionMetaMessage | Record<string, never>,
 ): ResolvedMask | null {
   if (!isSessionMeta(meta)) return null;
-  return resolveSessionCapabilityMask(meta.capability_mask);
+  return resolveSessionCapabilityMask(deps, meta.capability_mask);
 }
 
-export function resolveSleepMask(): ResolvedMask {
-  const { masks, toolSets } = catalogFromContext();
+export function resolveSleepMask(deps: FullRuntimeDeps): ResolvedMask {
+  const { masks, toolSets } = catalogFromDeps(deps);
   return resolveMaskByName("sleep", masks, toolSets);
 }
 

@@ -13,19 +13,19 @@ import {
 import { webuiCtx } from "./runtime.ts";
 
 export async function listMemoryFiles() {
-  return webuiCtx().service.listMemoryFiles();
+  return webuiCtx().listMemoryFiles();
 }
 
 export async function memorySearch(body: MemorySearchBody) {
   const parsed = memorySearchBodySchema.parse(body);
-  return webuiCtx().service.memorySearch({
+  return webuiCtx().memorySearch({
     query: parsed.query,
     limit: parsed.limit,
   });
 }
 
 export async function countSemanticMemory() {
-  const { index_rows } = await webuiCtx().service.countSemanticMemory();
+  const { index_rows } = await webuiCtx().countSemanticMemory();
   return {
     ok: true as const,
     index_rows,
@@ -36,7 +36,7 @@ export async function countSemanticMemory() {
 
 export async function listSemanticMemories(body: SemanticMemoryListBody) {
   const parsed = semanticMemoryListBodySchema.parse(body);
-  return webuiCtx().service.listSemanticMemories({
+  return webuiCtx().listSemanticMemories({
     query: parsed.query?.trim() || undefined,
     offset: parsed.offset,
     limit: parsed.limit,
@@ -49,7 +49,7 @@ export async function listSemanticMemories(body: SemanticMemoryListBody) {
 
 export async function listLimbicMemories(body: LimbicMemoryListBody) {
   const parsed = limbicMemoryListBodySchema.parse(body);
-  return webuiCtx().service.listLimbicMemories({
+  return webuiCtx().listLimbicMemories({
     query: parsed.query?.trim() || undefined,
     offset: parsed.offset,
     limit: parsed.limit,
@@ -60,7 +60,7 @@ export async function listLimbicMemories(body: LimbicMemoryListBody) {
 
 export async function listAutobiographicalMemories(body: AutobiographicalMemoryListBody) {
   const parsed = autobiographicalMemoryListBodySchema.parse(body);
-  return webuiCtx().service.listAutobiographicalMemories({
+  return webuiCtx().listAutobiographicalMemories({
     query: parsed.query?.trim() || undefined,
     offset: parsed.offset,
     limit: parsed.limit,
@@ -72,5 +72,5 @@ export async function listAutobiographicalMemories(body: AutobiographicalMemoryL
 
 export async function updateSemanticMemoryPinned(body: SemanticMemoryPinBody) {
   const parsed = semanticMemoryPinBodySchema.parse(body);
-  return webuiCtx().service.updateSemanticMemoryPinned(parsed.id.trim(), parsed.pinned);
+  return webuiCtx().updateSemanticMemoryPinned(parsed.id.trim(), parsed.pinned);
 }

@@ -7,7 +7,7 @@ import {
 import { isSessionMeta } from "@freeanima/orchestration-conversation";
 import type { ConversationService } from "@freeanima/orchestration-conversation";
 import { logComponent } from "@freeanima/service-logging";
-import type { AnimaService } from "./runtime/anima-service.ts";
+import type { AppRuntime } from "./runtime/app-runtime.ts";
 import { PARLOR_PLATFORM } from "./runtime/platforms.ts";
 
 export function buildAcpCallbackPrompt(tasks: ReturnType<typeof findUnhandledAcpTasks>): string {
@@ -27,7 +27,7 @@ const RECHECK_DELAY_MS = 500;
 
 export function createAcpSessionUpdatedHandler(opts: {
   conversation: ConversationService;
-  getService: () => AnimaService | null;
+  getRuntime: () => AppRuntime | null;
 }): (sessionId: string) => void {
   const inflight = new Set<string>();
   const pendingRecheck = new Set<string>();
@@ -49,8 +49,8 @@ export function createAcpSessionUpdatedHandler(opts: {
         const latestAt = unhandled[unhandled.length - 1]!.updated_at;
         await setAcpTasksHandledAt(opts.conversation, sessionId, latestAt);
 
-        const service = opts.getService();
-        if (!service) return;
+        const app = opts.getRuntime();
+        if (!app) return;
 
         const meta = await opts.conversation.loadSessionMeta(sessionId);
         const platform = isSessionMeta(meta) && meta.platform ? meta.platform : PARLOR_PLATFORM;
@@ -61,7 +61,7 @@ export function createAcpSessionUpdatedHandler(opts: {
           taskCount: unhandled.length,
         });
 
-        await service.sendMessage(sessionId, prompt, platform);
+        await app.sendMessage(sessionId, prompt, platform);
       } catch (e) {
         logComponent("acp-callback").warn("ACP callback turn failed", { sessionId, err: e });
       } finally {

@@ -2,7 +2,7 @@ import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from "n
 import { spawnSync } from "node:child_process";
 import { extname, join, relative, resolve } from "node:path";
 import { FileConfig } from "@freeanima/service-config";
-import { getServiceContext } from "../context.ts";
+import type { RuntimeDeps } from "./runtime-deps.ts";
 import { DEFAULT_SKIP_DIRS, isIgnored, loadGitignoreStack } from "./studio-gitignore.ts";
 
 export const MAX_FILE_BYTES = 1024 * 1024;
@@ -106,8 +106,8 @@ export interface SearchHit {
   match: string;
 }
 
-function studioSection(): Record<string, unknown> {
-  const cfg = getServiceContext().engine.config.data as Record<string, unknown>;
+function studioSection(deps: RuntimeDeps): Record<string, unknown> {
+  const cfg = deps.engine.config.data as Record<string, unknown>;
   const studio = cfg.studio;
   if (typeof studio === "object" && studio !== null && !Array.isArray(studio)) {
     return studio as Record<string, unknown>;
@@ -115,8 +115,8 @@ function studioSection(): Record<string, unknown> {
   return {};
 }
 
-export function getStudioConfig(): StudioConfig {
-  const s = studioSection();
+export function getStudioConfig(deps: RuntimeDeps): StudioConfig {
+  const s = studioSection(deps);
   return {
     workspace: typeof s.workspace === "string" ? s.workspace : "",
     gitignore: s.gitignore !== false,
@@ -124,31 +124,31 @@ export function getStudioConfig(): StudioConfig {
   };
 }
 
-export function patchStudioConfig(patch: Partial<StudioConfig>): StudioConfig {
-  const config = getServiceContext().engine.config;
+export function patchStudioConfig(deps: RuntimeDeps, patch: Partial<StudioConfig>): StudioConfig {
+  const config = deps.engine.config;
   if (!(config instanceof FileConfig)) {
     throw new Error("patchStudioConfig requires FileConfig");
   }
   config.patchSection("studio", patch as Record<string, unknown>);
-  return getStudioConfig();
+  return getStudioConfig(deps);
 }
 
-export function resolveWorkspace(): string {
-  const ws = getStudioConfig().workspace.trim();
+export function resolveWorkspace(deps: RuntimeDeps): string {
+  const ws = getStudioConfig(deps).workspace.trim();
   if (!ws) return "";
   return resolve(ws);
 }
 
-function assertWorkspaceConfigured(): string {
-  const root = resolveWorkspace();
+function assertWorkspaceConfigured(deps: RuntimeDeps): string {
+  const root = resolveWorkspace(deps);
   if (!root) throw new Error("studio.workspace not configured");
   if (!existsSync(root)) throw new Error(`workspace does not exist: ${root}`);
   return root;
 }
 
 /** Resolve relative path to absolute and verify within workspace */
-export function resolveStudioPath(relPath: string): string {
-  const root = assertWorkspaceConfigured();
+export function resolveStudioPath(deps: RuntimeDeps, relPath: string): string {
+  const root = assertWorkspaceConfigured(deps);
   const rootReal = realpathSync(root);
   const abs = resolve(root, relPath.replace(/^\/+/, ""));
   const absReal = existsSync(abs) ? realpathSync(abs) : abs;
@@ -177,8 +177,13 @@ function isTextFile(filePath: string): boolean {
   return true;
 }
 
-function buildTreeDir(absDir: string, relDir: string, cfg: StudioConfig): TreeNode[] {
-  const root = resolveWorkspace();
+function buildTreeDir(
+  deps: RuntimeDeps,
+  absDir: string,
+  relDir: string,
+  cfg: StudioConfig,
+): TreeNode[] {
+  const root = resolveWorkspace(deps);
   const giStack = cfg.gitignore ? loadGitignoreStack(root, absDir) : [];
   let entries;
   try {
@@ -194,7 +199,7 @@ function buildTreeDir(absDir: string, relDir: string, cfg: StudioConfig): TreeNo
     if (cfg.gitignore && isIgnored(relPath, ent.isDirectory(), giStack)) continue;
     if (ent.isDirectory()) {
       if (DEFAULT_SKIP_DIRS.has(ent.name)) continue;
-      const children = buildTreeDir(join(absDir, ent.name), relPath, cfg);
+      const children = buildTreeDir(deps, join(absDir, ent.name), relPath, cfg);
       nodes.push({ name: ent.name, type: "directory", children });
     } else if (ent.isFile()) {
       let size = 0;
@@ -209,26 +214,29 @@ function buildTreeDir(absDir: string, relDir: string, cfg: StudioConfig): TreeNo
   return nodes;
 }
 
-export function buildFileTree(): { tree: TreeNode[]; workspace: string } {
-  const root = assertWorkspaceConfigured();
-  const cfg = getStudioConfig();
-  const tree = buildTreeDir(root, "", cfg);
+export function buildFileTree(deps: RuntimeDeps): { tree: TreeNode[]; workspace: string } {
+  const root = assertWorkspaceConfigured(deps);
+  const cfg = getStudioConfig(deps);
+  const tree = buildTreeDir(deps, root, "", cfg);
   return { tree, workspace: root };
 }
 
-export function readStudioFile(relPath: string): {
+export function readStudioFile(
+  deps: RuntimeDeps,
+  relPath: string,
+): {
   path: string;
   content: string;
   language: string;
   size: number;
 } {
-  const cfg = getStudioConfig();
+  const cfg = getStudioConfig(deps);
   const parts = relPath.split("/");
   const name = parts[parts.length - 1] ?? relPath;
   if (!cfg.showHidden && name.startsWith(".")) {
     throw new Error("Hidden files are not readable");
   }
-  const abs = resolveStudioPath(relPath);
+  const abs = resolveStudioPath(deps, relPath);
   if (!existsSync(abs) || !statSync(abs).isFile()) {
     throw new Error("File does not exist");
   }
@@ -294,6 +302,7 @@ function searchWithRipgrep(query: string, root: string): SearchHit[] | null {
 }
 
 function searchWalk(
+  deps: RuntimeDeps,
   query: string,
   absDir: string,
   relDir: string,
@@ -301,7 +310,7 @@ function searchWalk(
   hits: SearchHit[],
 ): void {
   if (hits.length >= MAX_SEARCH_RESULTS) return;
-  const root = resolveWorkspace();
+  const root = resolveWorkspace(deps);
   const giStack = cfg.gitignore ? loadGitignoreStack(root, absDir) : [];
   let entries;
   try {
@@ -317,7 +326,7 @@ function searchWalk(
     const full = join(absDir, ent.name);
     if (ent.isDirectory()) {
       if (DEFAULT_SKIP_DIRS.has(ent.name)) continue;
-      searchWalk(query, full, relPath, cfg, hits);
+      searchWalk(deps, query, full, relPath, cfg, hits);
     } else if (ent.isFile() && isTextFile(full)) {
       let content: string;
       try {
@@ -346,14 +355,14 @@ function searchWalk(
   }
 }
 
-export function searchStudio(query: string): { results: SearchHit[] } {
+export function searchStudio(deps: RuntimeDeps, query: string): { results: SearchHit[] } {
   const q = query.trim();
   if (!q) throw new Error("query must not be empty");
-  const root = assertWorkspaceConfigured();
-  const cfg = getStudioConfig();
+  const root = assertWorkspaceConfigured(deps);
+  const cfg = getStudioConfig(deps);
   const rgHits = searchWithRipgrep(q, root);
   if (rgHits !== null) return { results: rgHits };
   const hits: SearchHit[] = [];
-  searchWalk(q, root, "", cfg, hits);
+  searchWalk(deps, q, root, "", cfg, hits);
   return { results: hits };
 }

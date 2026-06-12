@@ -11,7 +11,7 @@ import { PROFILE_CHAT } from "@freeanima/storage-provider-llm";
 import { getProfileHopModel } from "@freeanima/service-config";
 import { loadSelfLayerPrompt } from "@freeanima/capabilities-identity";
 import { renderToolsetsSection } from "@freeanima/capabilities-tools/toolset-prompt";
-import { getServiceContext } from "../context.ts";
+import type { RuntimeDeps } from "./runtime-deps.ts";
 
 export type RuntimeContextBreakdown = {
   /** View sent to LLM (post-compression + summary injection), not full archive */
@@ -25,25 +25,22 @@ export type RuntimeContextBreakdown = {
   total: number;
 };
 
-function conv() {
-  return getServiceContext().conversation;
-}
-
 /** Estimate tokens by breakdown from runtime message list (same basis as compress decisions) */
 export async function computeRuntimeContextBreakdown(
+  deps: RuntimeDeps,
   session: string,
 ): Promise<RuntimeContextBreakdown> {
-  const meta = await conv().loadSessionMeta(session);
-  const [runtimeMsgs] = await conv().buildRuntimeMessages(session);
-  const tools = isSessionMeta(meta) ? await conv().loadSessionTools(session, meta) : [];
+  const meta = await deps.conversation.loadSessionMeta(session);
+  const [runtimeMsgs] = await deps.conversation.buildRuntimeMessages(session);
+  const tools = isSessionMeta(meta) ? await deps.conversation.loadSessionTools(session, meta) : [];
 
   const selfContent = await loadSelfLayerPrompt();
   const cwd = isSessionMeta(meta) ? meta.cwd : undefined;
   const parts = await decomposeSystemPromptParts(selfContent, cwd);
-  const toolsets = renderToolsetsSection(getServiceContext().engine.catalog.toolSets);
+  const toolsets = renderToolsetsSection(deps.engine.catalog.toolSets);
   const model = isSessionMeta(meta)
     ? meta.model
-    : getProfileHopModel(getServiceContext().engine.config.data, PROFILE_CHAT);
+    : getProfileHopModel(deps.engine.config.data, PROFILE_CHAT);
 
   let summary = 0;
   const messageRows: SessionMessage[] = [];

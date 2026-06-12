@@ -3,33 +3,28 @@ import { scheduleServiceRestart } from "../service-restart.ts";
 import { ApiHandlerError } from "./errors.ts";
 
 export function getHealth() {
-  const { service } = webuiCtx();
-  return service.health();
+  return webuiCtx().health();
 }
 
 export async function getStatus() {
-  const { service, host, port } = webuiCtx();
-  return service.buildStatus(host, port);
+  const ctx = webuiCtx();
+  return ctx.buildStatus(ctx.host, ctx.port);
 }
 
 export function getConfig() {
-  const { service } = webuiCtx();
-  return service.getConfig().config;
+  return webuiCtx().getConfig().config;
 }
 
 export function listTools() {
-  const { service } = webuiCtx();
-  return service.listToolsApi();
+  return webuiCtx().listToolsApi();
 }
 
 export async function listCronJobs() {
-  const { service } = webuiCtx();
-  return { jobs: (await service.listCronJobs()).jobs };
+  return { jobs: (await webuiCtx().listCronJobs()).jobs };
 }
 
 export async function pauseCronJob(id: string) {
-  const { service } = webuiCtx();
-  const job = await service.pauseCronJob(id);
+  const job = await webuiCtx().pauseCronJob(id);
   if (!job) {
     throw new ApiHandlerError(404, `Cron job not found: ${id}`, {
       job_id: id,
@@ -41,8 +36,7 @@ export async function pauseCronJob(id: string) {
 }
 
 export async function resumeCronJob(id: string) {
-  const { service } = webuiCtx();
-  const job = await service.resumeCronJob(id);
+  const job = await webuiCtx().resumeCronJob(id);
   if (!job) {
     throw new ApiHandlerError(404, `Cron job not found: ${id}`, {
       job_id: id,
@@ -54,8 +48,7 @@ export async function resumeCronJob(id: string) {
 }
 
 export async function runCronJobNow(id: string) {
-  const { service } = webuiCtx();
-  const result = await service.runCronJobNow(id);
+  const result = await webuiCtx().runCronJobNow(id);
   if (!result) {
     throw new ApiHandlerError(404, `Cron job not found: ${id}`, {
       job_id: id,

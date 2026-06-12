@@ -6,7 +6,6 @@ import type {
   ProviderRegistry,
 } from "@freeanima/storage-provider-llm";
 import type { PgRepositories } from "@freeanima/storage-repos";
-import { nullPgRepositories } from "@freeanima/storage-repos";
 import type { Config } from "@freeanima/storage-config";
 import {
   bindActiveConfig,
@@ -32,7 +31,7 @@ export type EngineLlm = {
 export type EngineDeps = {
   catalog?: EngineCatalog;
   llm?: EngineLlm;
-  repos?: PgRepositories;
+  repos: PgRepositories;
   config: Config;
   logger?: Logger;
 };
@@ -53,7 +52,7 @@ export function createEngine(deps: EngineDeps): RuntimeBundle {
   return new RuntimeBundle(
     deps.catalog ?? createEngineCatalog(),
     deps.llm ?? defaultLlm(deps.config),
-    deps.repos ?? nullPgRepositories,
+    deps.repos,
     deps.config,
     logger,
   );

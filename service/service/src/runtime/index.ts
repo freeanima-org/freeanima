@@ -1,6 +1,7 @@
 export * from "./build-messages-display.ts";
 export { SessionManager } from "./session-manager.ts";
-export * from "./anima-service.ts";
+export * from "./app-runtime.ts";
+export type { RuntimeDeps, FullRuntimeDeps } from "./runtime-deps.ts";
 export * from "./home-channel.ts";
 export * from "./platforms.ts";
 export * from "./studio.ts";

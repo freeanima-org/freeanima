@@ -15,7 +15,7 @@ import {
 import { getServiceContext } from "@freeanima/service-api";
 import { KeyedRateLimiter } from "@freeanima/storage-util/backoff";
 import { logComponent } from "@freeanima/service-logging";
-import type { AnimaService } from "@freeanima/service-api";
+import type { MessagingPort } from "@freeanima/service-api/ports/messaging-port";
 import type { PlatformAdapter } from "../platforms.ts";
 import { registerDiscordCronDeliverer, unregisterDiscordCronDeliverer } from "../cron-deliver.ts";
 import { streamReplyToChannel } from "./discord-channel.ts";
@@ -130,7 +130,7 @@ export class DiscordAdapter implements PlatformAdapter {
   private readonly shardErrorLogLimiter = new KeyedRateLimiter();
 
   constructor(
-    private readonly service: AnimaService,
+    private readonly service: MessagingPort,
     private readonly token: string,
     config?: Record<string, unknown>,
   ) {
@@ -441,7 +441,7 @@ export class DiscordAdapter implements PlatformAdapter {
 }
 
 export function createDiscordAdapter(
-  service: AnimaService,
+  service: MessagingPort,
   token: string,
   config?: Record<string, unknown>,
 ): DiscordAdapter {

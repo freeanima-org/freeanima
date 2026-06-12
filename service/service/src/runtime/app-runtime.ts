@@ -11,10 +11,16 @@ import type { SessionMessage as Message } from "@freeanima/storage-db/domain";
 import type { ConversationService } from "@freeanima/orchestration-conversation";
 import type { CronJobData } from "@freeanima/connectors-cron";
 import type { Kernel } from "@freeanima/kernel";
+import type { AppRuntimePort } from "@freeanima/service-api/app-runtime-port";
+import type { AcpManagerPort } from "@freeanima/service-api/ports/acp-manager";
+import type { MaskRegistryPort } from "@freeanima/service-api/ports/mask-registry";
+import type { McpManagerPort } from "@freeanima/service-api/ports/mcp-manager";
+import type { ServiceEnginePort } from "@freeanima/service-api/ports/service-engine";
 import { collectStreamReply } from "@freeanima/orchestration-loop";
 import { createTurnMessageCallbacks, type StreamTurnHost } from "./turn-lifecycle.ts";
 import { EngineRunControl } from "./engine-run-control.ts";
 import { SessionManager } from "./session-manager.ts";
+import type { FullRuntimeDeps, RuntimeDeps } from "./runtime-deps.ts";
 import * as status from "./service-status.ts";
 import * as sessions from "./service-sessions.ts";
 import * as acpDock from "./service-acp-dock.ts";
@@ -32,7 +38,9 @@ export type { MemoryFileEntry } from "./service-memory.ts";
 export type { StreamEvent } from "@freeanima/orchestration-loop";
 export { SessionManager } from "./session-manager.ts";
 
-export class AnimaService implements StreamTurnHost {
+export type CreateAppRuntimeInput = FullRuntimeDeps;
+
+export class AppRuntime implements StreamTurnHost, AppRuntimePort {
   private startTime = 0;
   private platformStatus: Record<string, PlatformStatusSnapshot> = {};
   private readonly runControl = new EngineRunControl();
@@ -41,12 +49,46 @@ export class AnimaService implements StreamTurnHost {
   private onSessionUpdated: ((sid: string) => void) | null = null;
   private readonly sessionWatchers = new Map<string, Set<() => void>>();
 
-  constructor(
-    private readonly deps: {
-      kernel: Kernel;
-      conversation: ConversationService;
-    },
-  ) {}
+  readonly kernel: Kernel;
+  readonly engine: ServiceEnginePort;
+  readonly conversation: ConversationService;
+  readonly masks: MaskRegistryPort;
+  readonly mcp: McpManagerPort | null;
+  readonly acp: AcpManagerPort;
+  readonly host: string;
+  readonly port: number;
+
+  constructor(input: CreateAppRuntimeInput) {
+    this.kernel = input.kernel;
+    this.engine = input.engine;
+    this.conversation = input.conversation;
+    this.masks = input.masks;
+    this.mcp = input.mcp;
+    this.acp = input.acp;
+    this.host = input.host;
+    this.port = input.port;
+  }
+
+  fullDeps(): FullRuntimeDeps {
+    return {
+      kernel: this.kernel,
+      engine: this.engine,
+      conversation: this.conversation,
+      masks: this.masks,
+      mcp: this.mcp,
+      acp: this.acp,
+      host: this.host,
+      port: this.port,
+    };
+  }
+
+  runtimeDeps(): RuntimeDeps {
+    return {
+      kernel: this.kernel,
+      engine: this.engine,
+      conversation: this.conversation,
+    };
+  }
 
   private messagingDeps(): messaging.MessagingDeps {
     return {
@@ -80,21 +122,23 @@ export class AnimaService implements StreamTurnHost {
 
   engineStreamOpts(sessionId: string, signal: AbortSignal) {
     return {
-      hookRegistry: this.deps.kernel.hookRegistry,
-      ...createTurnMessageCallbacks(sessionId),
+      hookRegistry: this.kernel.hookRegistry,
+      ...createTurnMessageCallbacks(this.fullDeps(), sessionId),
       signal,
       shouldStop: () => this.runControl.isShuttingDown(),
     };
   }
 
   async reloadRuntimeAfterRepair(sessionId: string): Promise<[Message[], string[]]> {
-    const { conversation } = this.deps;
-    await conversation.repairAndPersistToolLoop(sessionId, await conversation.load(sessionId));
-    return conversation.buildRuntimeMessages(sessionId);
+    await this.conversation.repairAndPersistToolLoop(
+      sessionId,
+      await this.conversation.load(sessionId),
+    );
+    return this.conversation.buildRuntimeMessages(sessionId);
   }
 
   async onTurnAfterComplete(sessionId: string, msgs: Message[], reply: string): Promise<string> {
-    return messaging.runTurnAfterCompleteHooks(sessionId, msgs, reply);
+    return messaging.runTurnAfterCompleteHooks(this.fullDeps(), sessionId, msgs, reply);
   }
 
   emitSessionUpdated(sessionId: string): void {
@@ -192,6 +236,7 @@ export class AnimaService implements StreamTurnHost {
   async buildStatus(host: string, port: number): Promise<ServiceSnapshot> {
     const cronJobs = await status.listCronJobs();
     return status.buildStatus(
+      this.fullDeps(),
       this.startTime,
       this.platformStatus,
       cronJobs.jobs.length,
@@ -201,18 +246,18 @@ export class AnimaService implements StreamTurnHost {
   }
 
   listSessions(platform?: string | null): Promise<{ sessions: SessionSummary[] }> {
-    return sessions.listSessions(platform);
+    return sessions.listSessions(this.runtimeDeps(), platform);
   }
 
   createSession(platform = PARLOR_PLATFORM): Promise<{ session_id: string }> {
-    return sessions.createSession(platform);
+    return sessions.createSession(this.runtimeDeps(), platform);
   }
 
   findOrCreateSession(
     platform: string,
     platform_extra: Record<string, unknown> = {},
   ): Promise<{ session_id: string }> {
-    return sessions.findOrCreateSession(platform, platform_extra);
+    return sessions.findOrCreateSession(this.runtimeDeps(), platform, platform_extra);
   }
 
   patchSessionOrigin(
@@ -220,7 +265,7 @@ export class AnimaService implements StreamTurnHost {
     platform: string,
     platform_extra?: Record<string, unknown>,
   ): Promise<{ ok: boolean }> {
-    return sessions.patchSessionOrigin(session_id, platform, platform_extra);
+    return sessions.patchSessionOrigin(this.runtimeDeps(), session_id, platform, platform_extra);
   }
 
   executeCommand(params: {
@@ -229,23 +274,23 @@ export class AnimaService implements StreamTurnHost {
     platform?: string;
     origin_extra?: Record<string, unknown>;
   }): Promise<{ text: string; data: unknown; found: boolean }> {
-    return messaging.executeCommand(this.messagingDeps(), params);
+    return messaging.executeCommand(this.fullDeps(), this.messagingDeps(), params);
   }
 
   getSessionInfo(sessionId: string, platform = ""): Promise<Record<string, unknown>> {
-    return sessions.getSessionInfo(sessionId, platform);
+    return sessions.getSessionInfo(this.runtimeDeps(), sessionId, platform);
   }
 
   getSessionAcpDock(sessionId: string, platform = "") {
-    return acpDock.getSessionAcpDock(sessionId, platform);
+    return acpDock.getSessionAcpDock(this.runtimeDeps(), sessionId, platform);
   }
 
   getMessages(sessionId: string, platform = "", opts?: { offset?: number; limit?: number | null }) {
-    return sessions.getMessages(sessionId, platform, opts);
+    return sessions.getMessages(this.runtimeDeps(), sessionId, platform, opts);
   }
 
   setSessionTitle(sessionId: string, title: string, platform = ""): Promise<{ ok: boolean }> {
-    return sessions.setSessionTitle(sessionId, title, platform);
+    return sessions.setSessionTitle(this.runtimeDeps(), sessionId, title, platform);
   }
 
   async sendMessage(
@@ -254,7 +299,13 @@ export class AnimaService implements StreamTurnHost {
     platform = PARLOR_PLATFORM,
   ): Promise<{ session_id: string; content: string }> {
     const content = await collectStreamReply(
-      messaging.sendMessageStream(this.messagingDeps(), sessionId, message, platform),
+      messaging.sendMessageStream(
+        this.fullDeps(),
+        this.messagingDeps(),
+        sessionId,
+        message,
+        platform,
+      ),
     );
     return { session_id: sessionId, content };
   }
@@ -264,7 +315,13 @@ export class AnimaService implements StreamTurnHost {
     message: string,
     platform = PARLOR_PLATFORM,
   ): AsyncGenerator<StreamEvent> {
-    return messaging.sendMessageStream(this.messagingDeps(), sessionId, message, platform);
+    return messaging.sendMessageStream(
+      this.fullDeps(),
+      this.messagingDeps(),
+      sessionId,
+      message,
+      platform,
+    );
   }
 
   memorySearch(args: { query: string; limit?: number }) {
@@ -272,35 +329,35 @@ export class AnimaService implements StreamTurnHost {
   }
 
   countSemanticMemory(): Promise<{ index_rows: number }> {
-    return memory.countSemanticMemory();
+    return memory.countSemanticMemory(this.runtimeDeps());
   }
 
   listMemoryFiles(): Promise<{ files: memory.MemoryFileEntry[] }> {
-    return memory.listMemoryFiles();
+    return memory.listMemoryFiles(this.runtimeDeps());
   }
 
-  listSemanticMemories(args?: Parameters<typeof memory.listSemanticMemories>[0]) {
-    return memory.listSemanticMemories(args);
+  listSemanticMemories(args?: Parameters<typeof memory.listSemanticMemories>[1]) {
+    return memory.listSemanticMemories(this.runtimeDeps(), args);
   }
 
   updateSemanticMemoryPinned(id: string, pinned: boolean) {
-    return memory.updateSemanticMemoryPinned(id, pinned);
+    return memory.updateSemanticMemoryPinned(this.runtimeDeps(), id, pinned);
   }
 
-  listLimbicMemories(args?: Parameters<typeof memory.listLimbicMemories>[0]) {
-    return memory.listLimbicMemories(args);
+  listLimbicMemories(args?: Parameters<typeof memory.listLimbicMemories>[1]) {
+    return memory.listLimbicMemories(this.runtimeDeps(), args);
   }
 
-  listAutobiographicalMemories(args?: Parameters<typeof memory.listAutobiographicalMemories>[0]) {
-    return memory.listAutobiographicalMemories(args);
+  listAutobiographicalMemories(args?: Parameters<typeof memory.listAutobiographicalMemories>[1]) {
+    return memory.listAutobiographicalMemories(this.runtimeDeps(), args);
   }
 
-  listTasks(args?: Parameters<typeof tasks.listTasks>[0]) {
-    return tasks.listTasks(args);
+  listTasks(args?: Parameters<typeof tasks.listTasks>[1]) {
+    return tasks.listTasks(this.runtimeDeps(), args);
   }
 
   getFtsStatus(): Promise<fts.FtsStatusSnapshot> {
-    return fts.getFtsStatus();
+    return fts.getFtsStatus(this.runtimeDeps());
   }
 
   startRebuildFtsIndex(opts?: { onlyMissing?: boolean }): fts.FtsRebuildJobStatus {
@@ -312,7 +369,7 @@ export class AnimaService implements StreamTurnHost {
   }
 
   listSelfBlocks(): Promise<{ blocks: selfLayer.SelfBlockDisplay[] }> {
-    return selfLayer.listSelfBlocks();
+    return selfLayer.listSelfBlocks(this.runtimeDeps());
   }
 
   listFridgeMagnets(): Promise<fridge.ListFridgeMagnetsResult> {
@@ -320,15 +377,15 @@ export class AnimaService implements StreamTurnHost {
   }
 
   getPromptDebug(sessionId?: string | null): Promise<promptDebug.PromptDebugResponse> {
-    return promptDebug.getPromptDebug(sessionId);
+    return promptDebug.getPromptDebug(this.runtimeDeps(), sessionId);
   }
 
   getConfig(): SafeConfigSnapshot {
-    return status.getConfig();
+    return status.getConfig(this.runtimeDeps());
   }
 
   listToolsApi() {
-    return status.listToolsApi();
+    return status.listToolsApi(this.runtimeDeps());
   }
 
   listCronJobs(): Promise<{ jobs: CronJobData[] }> {
@@ -351,20 +408,20 @@ export class AnimaService implements StreamTurnHost {
     return sleep.getSleepSummary();
   }
 
-  listSleepRuns(opts?: Parameters<typeof sleep.listSleepRuns>[0]) {
-    return sleep.listSleepRuns(opts);
+  listSleepRuns(opts?: Parameters<typeof sleep.listSleepRuns>[1]) {
+    return sleep.listSleepRuns(this.runtimeDeps(), opts);
   }
 
-  listCronLogs(opts?: Parameters<typeof sleep.listCronLogs>[0]) {
-    return sleep.listCronLogs(opts);
+  listCronLogs(opts?: Parameters<typeof sleep.listCronLogs>[1]) {
+    return sleep.listCronLogs(this.runtimeDeps(), opts);
   }
 
   getDeepSleepRounds(day: string) {
     return sleep.getDeepSleepRounds(day);
   }
 
-  startLightSleepBackfill(opts?: Parameters<typeof sleep.startLightSleepBackfill>[0]) {
-    return sleep.startLightSleepBackfill(opts);
+  startLightSleepBackfill(opts?: Parameters<typeof sleep.startLightSleepBackfill>[1]) {
+    return sleep.startLightSleepBackfill(this.runtimeDeps(), opts);
   }
 
   getLightSleepBackfillStatus() {
@@ -384,6 +441,13 @@ export class AnimaService implements StreamTurnHost {
   }
 }
 
-export async function appendSessionMetaForEngine(session: string): Promise<void> {
-  return sessions.appendSessionMetaForEngine(session);
+export function createAppRuntime(input: CreateAppRuntimeInput): AppRuntime {
+  return new AppRuntime(input);
+}
+
+export async function appendSessionMetaForEngine(
+  deps: RuntimeDeps,
+  session: string,
+): Promise<void> {
+  return sessions.appendSessionMetaForEngine(deps, session);
 }

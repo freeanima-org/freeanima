@@ -3,8 +3,8 @@ import { flushCompressionSummaries } from "@freeanima/orchestration-conversation
 import { createConversationService } from "@freeanima/orchestration-conversation";
 import { createServiceKernel } from "@freeanima/service-bootstrap";
 import {
-  AnimaService,
-  initServiceContext,
+  createAppRuntime,
+  initAppRuntime,
   wireServicePorts,
   registerSystemPromptHooks,
 } from "@freeanima/service";
@@ -39,13 +39,25 @@ async function flushActiveCompressionSummaries(): Promise<void> {
   }
 }
 
-/** Standard integration-test ServiceContext (builtins / AnimaService / WebUI handler) */
+/** Standard integration-test AppRuntime (builtins / WebUI handler) */
 export function wireIntegrationServiceContext(pg: PgTestContext): void {
   bindHomeChannelConfig(pg.config);
-  wireServicePorts();
   const kernel = createServiceKernel(pg.config);
   const conversation = createConversationService(pg.engine.repos, pg.engine.catalog.toolSets);
-  const service = new AnimaService({ kernel, conversation });
+  const masks = new MaskRegistry();
+  const fullDeps = {
+    kernel,
+    engine: pg.engine,
+    conversation,
+    masks,
+    mcp: null,
+    acp: getAcpManager(),
+    host: "127.0.0.1",
+    port: 2658,
+  };
+  const runtime = createAppRuntime(fullDeps);
+  wireServicePorts(fullDeps);
+  initAppRuntime(runtime);
   resetRegisterServiceToolsForTest();
   registerServiceTools({
     toolSets: pg.engine.catalog.toolSets,
@@ -58,17 +70,6 @@ export function wireIntegrationServiceContext(pg: PgTestContext): void {
     config: pg.config,
   });
   getAcpManager().wireConversation(conversation);
-  initServiceContext({
-    service,
-    kernel,
-    engine: pg.engine,
-    conversation,
-    mcp: null,
-    acp: getAcpManager(),
-    masks: new MaskRegistry(),
-    host: "127.0.0.1",
-    port: 2658,
-  });
   registerSystemPromptHooks({
     hookRegistry: kernel.hookRegistry,
     getToolRegistry: () => pg.engine.catalog.toolSets,

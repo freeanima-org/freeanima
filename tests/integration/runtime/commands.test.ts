@@ -31,7 +31,7 @@ import {
   isUpdateResult,
   resolveCommand,
 } from "@freeanima/service-commands";
-import { getServiceContext } from "@freeanima/service";
+import { getAppRuntime } from "@freeanima/service";
 import * as engineConversation from "@freeanima/orchestration-conversation";
 
 async function patchMetaForTest(sessionId: string, patch: Record<string, unknown>): Promise<void> {
@@ -109,7 +109,7 @@ describePg("slash commands", () => {
   });
 
   it("listCommands includes help and retry", async () => {
-    const svc = getServiceContext().service;
+    const svc = getAppRuntime();
     const parlor = svc.listCommands({ platform: "parlor" }).commands.map((c) => c.name);
     expect(parlor).toContain("help");
     expect(parlor).toContain("retry");
@@ -400,7 +400,7 @@ describePg("slash commands", () => {
   });
 
   it("listCommands includes restart (parlor / discord / weixin)", () => {
-    const svc = getServiceContext().service;
+    const svc = getAppRuntime();
     for (const platform of ["parlor", "discord", "weixin"] as const) {
       const names = svc.listCommands({ platform }).commands.map((c) => c.name);
       expect(names).toContain("restart");
@@ -408,7 +408,7 @@ describePg("slash commands", () => {
   });
 
   it("/restart returns already-restarting hint when shuttingDown", async () => {
-    getServiceContext().service.startShutdown();
+    getAppRuntime().startShutdown();
     const [cmd] = findCommand("/restart");
     const result = await executeCommand(cmd!, {
       sessionId: "x",
@@ -472,7 +472,7 @@ describePg("slash commands", () => {
   });
 
   it("listCommands includes update (parlor / discord / weixin)", () => {
-    const svc = getServiceContext().service;
+    const svc = getAppRuntime();
     for (const platform of ["parlor", "discord", "weixin"] as const) {
       const names = svc.listCommands({ platform }).commands.map((c) => c.name);
       expect(names).toContain("update");

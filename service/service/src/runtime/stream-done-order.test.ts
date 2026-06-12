@@ -15,8 +15,8 @@ import { parseYaml } from "@freeanima/service-config";
 import { animaConfigSchema } from "@freeanima/service-config/schemas/config";
 import { MINIMAL_LLM_YAML } from "@freeanima/service-config/test-helpers/minimal-llm-config";
 import { getAcpManager } from "@freeanima/capabilities-acp";
-import { AnimaService } from "./anima-service.ts";
-import { initServiceContext } from "../context.ts";
+import { createAppRuntime } from "./app-runtime.ts";
+import { initAppRuntime } from "../context.ts";
 
 const catalog = createEngineCatalog();
 const testConfig = Config.fromSnapshot(animaConfigSchema.parse(parseYaml(MINIMAL_LLM_YAML)));
@@ -29,18 +29,16 @@ const testEngine = createEngine({
   logger: createTestLogger(),
 });
 
-function wireTestService(): AnimaService {
+function wireTestRuntime() {
   const kernel = createServiceKernel(testConfig);
   const conversation = createConversationService(nullPgRepositories, catalog.toolSets);
-  const service = new AnimaService({ kernel, conversation });
   getAcpManager().wireRegistries({
     toolSets: catalog.toolSets,
     skills: catalog.skills,
     config: testConfig,
   });
   getAcpManager().wireConversation(conversation);
-  initServiceContext({
-    service,
+  const runtime = createAppRuntime({
     kernel,
     engine: testEngine,
     conversation,
@@ -50,7 +48,8 @@ function wireTestService(): AnimaService {
     host: "127.0.0.1",
     port: 2658,
   });
-  return service;
+  initAppRuntime(runtime);
+  return runtime;
 }
 
 describe("sendMessageStream done order", () => {
@@ -89,8 +88,8 @@ describe("sendMessageStream done order", () => {
       ),
     );
 
-    const svc = wireTestService();
-    for await (const ev of svc.sendMessageStream("test-sid", "hello", "parlor")) {
+    const app = wireTestRuntime();
+    for await (const ev of app.sendMessageStream("test-sid", "hello", "parlor")) {
       eventOrder.push(ev.event);
     }
 
