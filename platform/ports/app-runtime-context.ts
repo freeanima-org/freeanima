@@ -53,21 +53,3 @@ export function assertNotShuttingDown(): void {
     throw new Error("Server is shutting down");
   }
 }
-
-/** @deprecated 使用 getAppRuntime */
-export const getServiceContext = getAppRuntime;
-
-/** @deprecated 使用 registerAppRuntime */
-export const registerServiceContext = registerAppRuntime;
-
-/** @deprecated 使用 unregisterAppRuntime */
-export const unregisterServiceContext = unregisterAppRuntime;
-
-/** @deprecated 使用 isAppRuntimeReady */
-export const isServiceContextReady = isAppRuntimeReady;
-
-/** @deprecated 使用 AppRuntimeContext */
-export type ServiceContext = AppRuntimeContext;
-
-/** @deprecated 使用 AppRuntimePort */
-export type AnimaService = AppRuntimePort;

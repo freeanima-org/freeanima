@@ -16,7 +16,7 @@ import { animaConfigSchema } from "@freeanima/platform/config/schemas/config";
 import { MINIMAL_LLM_YAML } from "@freeanima/platform/config/test-helpers/minimal-llm-config";
 import { getAcpManager } from "@freeanima/capabilities-acp";
 import { createAppRuntime } from "./app-runtime.ts";
-import { initAppRuntime } from "../context.ts";
+import { initRuntimeContext } from "../context.ts";
 
 const catalog = createEngineCatalog();
 const testConfig = Config.fromSnapshot(animaConfigSchema.parse(parseYaml(MINIMAL_LLM_YAML)));
@@ -48,7 +48,7 @@ function wireTestRuntime() {
     host: "127.0.0.1",
     port: 2658,
   });
-  initAppRuntime(runtime);
+  initRuntimeContext(runtime);
   return runtime;
 }
 

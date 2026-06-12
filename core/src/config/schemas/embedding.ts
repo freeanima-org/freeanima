@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-/** bge-m3 default dimensions (matches storage-db SEMANTIC_EMBEDDING_DIMENSIONS) */
+/** bge-m3 default dimensions (matches core/db SEMANTIC_EMBEDDING_DIMENSIONS) */
 export const DEFAULT_EMBEDDING_DIMENSIONS = 1024;
 
 export const embeddingConfigSchema = z

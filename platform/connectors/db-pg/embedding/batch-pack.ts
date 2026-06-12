@@ -13,13 +13,6 @@ export const TARGET_BATCH_TOKENS = Math.floor(MAX_CHUNK_TOKENS * 0.5);
 /** PG page size for fts_segmented rebuild only (embedding rebuild uses one row per fetch). */
 export const EMBEDDING_QUEUE_FLUSH_THRESHOLD = 64;
 
-/** @deprecated Use TARGET_BATCH_TOKENS / MAX_CHUNK_TOKENS. */
-export const MAX_SINGLE_EMBEDDING_TOKENS = MAX_CHUNK_TOKENS;
-/** @deprecated Use TARGET_BATCH_TOKENS. */
-export const DEFAULT_MAX_BATCH_TOKENS = TARGET_BATCH_TOKENS;
-/** @deprecated Use EMBEDDING_QUEUE_FLUSH_THRESHOLD. */
-export const DEFAULT_MAX_BATCH_ITEMS = EMBEDDING_QUEUE_FLUSH_THRESHOLD;
-
 export type ExpandEmbeddingJobsOpts = {
   model: string;
   maxChunkTokens?: number;

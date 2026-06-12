@@ -1,4 +1,4 @@
-/** PG cron_jobs row (consumed by connectors-cron / API) */
+/** PG cron_jobs row (consumed by platform/connectors/cron / API) */
 export type CronJobRow = {
   id: string;
   name: string;

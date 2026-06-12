@@ -10,7 +10,6 @@ export {
   readAcpTasksHandledAt,
   removeAcpTaskEntry,
   setAcpTasksHandledAt,
-  unbindAcpSession,
   updateAcpTaskStatus,
   upsertAcpTaskEntry,
   type AcpTaskEntry,

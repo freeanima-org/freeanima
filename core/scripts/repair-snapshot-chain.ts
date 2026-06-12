@@ -1,6 +1,6 @@
 /**
  * Repair snapshot chain for historical migrations missing snapshot.json (no new migration dir).
- * Usage: bun storage/db/scripts/repair-snapshot-chain.ts
+ * Usage: bun core/scripts/repair-snapshot-chain.ts
  */
 import { randomUUID } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";

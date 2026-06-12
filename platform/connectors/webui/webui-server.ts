@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { createApiApp, WEBUI_BASE_PATH } from "./elysia/app.ts";
 import { bindWebuiApiLogging } from "./api-logging.ts";
-import { bindWebuiServiceContext, webuiCtx } from "./handlers/runtime.ts";
+import { bindWebuiRuntimeContext, webuiCtx } from "./handlers/runtime.ts";
 import { broadcastWsReconnect, shutdownWebui } from "./elysia/shutdown.ts";
 import {
   ensureWebuiDevCacheDir,
@@ -79,7 +79,7 @@ export async function startWebuiHttpServer(
   port: number,
   options: WebuiServerOptions = {},
 ): Promise<WebuiServerHandle> {
-  bindWebuiServiceContext();
+  bindWebuiRuntimeContext();
   bindWebuiApiLogging(webuiCtx().engine.logger);
   const development = options.development ?? false;
 

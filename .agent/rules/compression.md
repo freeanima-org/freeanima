@@ -96,15 +96,15 @@ Legacy meta **read-time migration** (`parseCompressionState`):
 
 ## Implementation Entry Points
 
-| Module                                              | Responsibility                                                                                |
-| --------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `mechanism/compress/src/compressor.ts`              | l-points, `deriveBoundariesFromL4`, `shouldAdvance`, `buildRuntimeFromLPoints`, `slimMessage` |
-| `mechanism/compress/src/compression-config.ts`      | Config and `context_window` / effective budget                                                |
-| `mechanism/compress/src/compression-summary.ts`     | Summary LLM                                                                                   |
-| `mechanism/compress/src/compression-tool-loop.ts`   | `isInToolLoop`                                                                                |
-| `orchestration/conversation/src/conversation.ts`    | `recompressSession`, `buildRuntimeMessages`, `maybeApplyEmergencyCompression`                 |
-| `orchestration/loop/src/engine.ts`                  | Emergency call site                                                                           |
-| `service/service/src/runtime/conversation-stats.ts` | `/stats` shows `l2`/`l3`/occupancy                                                            |
+| Module                                       | Responsibility                                                                                |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `core/src/compress/compressor.ts`            | l-points, `deriveBoundariesFromL4`, `shouldAdvance`, `buildRuntimeFromLPoints`, `slimMessage` |
+| `core/src/compress/compression-config.ts`    | Config and `context_window` / effective budget                                                |
+| `core/src/compress/compression-summary.ts`   | Summary LLM                                                                                   |
+| `core/src/compress/compression-tool-loop.ts` | `isInToolLoop`                                                                                |
+| `runtime/src/conversation/conversation.ts`   | `recompressSession`, `buildRuntimeMessages`, `maybeApplyEmergencyCompression`                 |
+| `runtime/src/loop/engine.ts`                 | Emergency call site                                                                           |
+| `platform/src/runtime/conversation-stats.ts` | `/stats` shows `l2`/`l3`/occupancy                                                            |
 
 Manual: `/compress` (`--force` ignores hysteresis).
 

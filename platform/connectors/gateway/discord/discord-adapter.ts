@@ -12,7 +12,7 @@ import {
   isTransientNetworkError,
   networkErrorUserHint,
 } from "@freeanima/runtime/loop";
-import { getServiceContext } from "@freeanima/platform/ports";
+import { getAppRuntime } from "@freeanima/platform/ports";
 import { KeyedRateLimiter } from "@freeanima/core/util/backoff";
 import { logComponent } from "@freeanima/platform/logging";
 import type { MessagingPort } from "@freeanima/platform/ports/ports/messaging-port";
@@ -343,7 +343,7 @@ export class DiscordAdapter implements PlatformAdapter {
       // Stream reply complete: rename sub-thread with auto-title
       if (channel.isThread()) {
         try {
-          const meta = await getServiceContext().conversation.loadSessionMeta(sid);
+          const meta = await getAppRuntime().conversation.loadSessionMeta(sid);
           const title = (meta.title as string)?.trim();
           if (title) {
             await channel.setName(title.slice(0, 100));

@@ -167,16 +167,6 @@ export async function removeAcpTaskEntry(
   await conversation.updateSessionMetaField(animaSessionId, { acp_tasks: next });
 }
 
-/** @deprecated use removeAcpTaskEntry after resolving session id */
-export async function unbindAcpSession(
-  conversation: SessionConversationPort,
-  animaSessionId: string,
-  agentName: string,
-): Promise<void> {
-  const bound = await getBoundAcpSession(conversation, animaSessionId, agentName);
-  if (bound) await removeAcpTaskEntry(conversation, animaSessionId, bound);
-}
-
 export function findUnhandledAcpTasks(tasks: AcpTasksMeta, handledAt: string): UnhandledAcpTask[] {
   const out: UnhandledAcpTask[] = [];
   for (const [acpSessionId, entry] of Object.entries(tasks)) {

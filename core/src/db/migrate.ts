@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import type { BunSQLDatabase } from "drizzle-orm/bun-sql/postgres";
 
-/** migrations directory inside storage-db package (relative to this module) */
+/** migrations directory inside @freeanima/core (relative to this module) */
 export const DEFAULT_MIGRATIONS_FOLDER = join(import.meta.dir, "../../migrations");
 
 export type RunMigrationsOptions = {

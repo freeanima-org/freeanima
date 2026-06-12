@@ -1,4 +1,7 @@
-import "@freeanima/platform/runtime/system-prompt-wire";
+import { wireEnginePorts } from "@freeanima/platform";
+
+wireEnginePorts();
+
 import { describe } from "bun:test";
 
 /**

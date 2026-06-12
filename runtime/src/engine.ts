@@ -41,11 +41,11 @@ function defaultLogger(): Logger {
 }
 
 /** Construct Engine; binds active Config and logger for mechanism layers */
-export function createEngine(deps: EngineDeps): RuntimeBundle {
+export function createEngine(deps: EngineDeps): Engine {
   const logger = deps.logger ?? defaultLogger();
   bindActiveConfig(deps.config);
   registerRuntimeLogger(logger);
-  return new RuntimeBundle(
+  return new Engine(
     deps.catalog ?? createEngineCatalog(),
     deps.llm ?? defaultLlm(deps.config),
     deps.repos,
@@ -61,7 +61,7 @@ export function resetEngineRuntimeForTests(): void {
 }
 
 /** Engine-layer composition view */
-export class RuntimeBundle {
+export class Engine {
   constructor(
     readonly catalog: EngineCatalog,
     readonly llm: EngineLlm,
@@ -78,6 +78,3 @@ export class RuntimeBundle {
     return this.catalog.skills;
   }
 }
-
-/** @deprecated Prefer RuntimeBundle */
-export type Engine = RuntimeBundle;

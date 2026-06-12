@@ -22,7 +22,7 @@ import { createServiceKernel } from "@freeanima/platform/bootstrap";
 import { wireEnginePorts } from "./wire-engine-ports.ts";
 import { registerSystemPromptHooks } from "./register-prompt-hooks.ts";
 import { registerServiceTools, resetRegisterServiceToolsForTest } from "./register.ts";
-import { initAppRuntime } from "./context.ts";
+import { initRuntimeContext } from "./context.ts";
 import { createAppRuntime } from "./runtime/app-runtime.ts";
 import type { RuntimeDeps } from "./runtime/runtime-deps.ts";
 import { computeGlobalBreakdown, getPromptDebug } from "./runtime/service-prompt-debug.ts";
@@ -100,7 +100,7 @@ function seedContext(catalog: ReturnType<typeof createEngineCatalog>, kernel: Ke
     host: "127.0.0.1",
     port: 2658,
   });
-  initAppRuntime(runtime);
+  initRuntimeContext(runtime);
   testDeps = runtime.runtimeDeps();
 }
 

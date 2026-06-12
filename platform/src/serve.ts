@@ -23,7 +23,6 @@ import type { EnginePhaseResult } from "./boot/engine-phase.ts";
 
 export type { ServeOptions, WebuiHooks, WebuiServerHandle } from "./boot/types.ts";
 export { resolveWebuiDevMode } from "./webui-dev-mode.ts";
-export { getAppRuntime, getAppRuntime as getService } from "./runtime/runtime-context.ts";
 
 async function defaultWaitForDrain(app: AppRuntime, maxMs: number): Promise<void> {
   await Promise.race([

@@ -1,4 +1,4 @@
-export type { AppRuntimePort, AnimaService, ServiceCommandInfo } from "./anima-service.ts";
+export type { AppRuntimePort, ServiceCommandInfo } from "./anima-service.ts";
 export type { MessagingPort } from "./ports/messaging-port.ts";
 export { getHomeChannel, setHomeChannel, type HomeChannel } from "./home-channel.ts";
 export {
@@ -20,14 +20,9 @@ export {
   registerAppRuntime,
   unregisterAppRuntime,
   isAppRuntimeReady,
-  getServiceContext,
-  registerServiceContext,
-  unregisterServiceContext,
-  isServiceContextReady,
   assertNotShuttingDown,
-  type ServiceContext,
   type AppRuntimeContext,
-} from "./service-context.ts";
+} from "./app-runtime-context.ts";
 export type { AcpControlResult, AcpManagerPort, AcpStatusResponse } from "./ports/acp-manager.ts";
 export type { Mask, MaskRegistryPort, CredentialPermission } from "./ports/mask-registry.ts";
 export type { McpControlResult, McpManagerPort, McpStatusResponse } from "./ports/mcp-manager.ts";

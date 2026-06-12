@@ -1,9 +1,8 @@
 export {
-  RuntimeBundle,
+  Engine,
   createEngine,
   createEngineCatalog,
   resetEngineRuntimeForTests,
-  type Engine,
   type EngineCatalog,
   type EngineDeps,
   type EngineLlm,

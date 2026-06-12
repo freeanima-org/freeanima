@@ -47,7 +47,7 @@ describePg("server cron API", () => {
     await restoreIntegrationHome(prev);
   });
 
-  it("AnimaService pause and resume cron job", async () => {
+  it("AppRuntime pause and resume cron job", async () => {
     const svc = getAppRuntime();
 
     const paused = await svc.pauseCronJob(jobId);
@@ -61,7 +61,7 @@ describePg("server cron API", () => {
     expect(resumed!.next_run_at).toBeGreaterThan(0);
   });
 
-  it("AnimaService runCronJobNow returns message for existing job", async () => {
+  it("AppRuntime runCronJobNow returns message for existing job", async () => {
     const svc = getAppRuntime();
     const result = await svc.runCronJobNow(jobId);
     expect(result).not.toBeNull();
@@ -70,7 +70,7 @@ describePg("server cron API", () => {
     await new Promise((r) => setTimeout(r, 150));
   });
 
-  it("AnimaService returns null for unknown job id", async () => {
+  it("AppRuntime returns null for unknown job id", async () => {
     const svc = getAppRuntime();
     expect(await svc.pauseCronJob("missing-id")).toBeNull();
     expect(await svc.resumeCronJob("missing-id")).toBeNull();

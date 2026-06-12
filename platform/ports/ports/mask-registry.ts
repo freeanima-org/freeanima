@@ -12,7 +12,7 @@ export type Mask = {
   credentials: CredentialPermission[];
 };
 
-/** Capability mask registry port (connectors / service via ServiceContext) */
+/** Capability mask registry port (connectors / platform via AppRuntime) */
 export interface MaskRegistryPort {
   get(name: string): Mask | undefined;
   list(): { name: string; mask: Mask }[];
