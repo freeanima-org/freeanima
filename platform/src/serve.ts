@@ -96,7 +96,14 @@ export async function serve(
       runtimeRef.current?.pokeSessionWatchers(sid);
     });
 
-    const { runtime } = await bootRuntimePhase(enginePhase, repos, statusHost, port, runtimeRef);
+    const { runtime } = await bootRuntimePhase(
+      enginePhase,
+      repos,
+      statusHost,
+      port,
+      runtimeRef,
+      acpSessionUpdatedRef,
+    );
     cronInitialized = true;
 
     const webuiDev = resolveWebuiDevMode(opts.webuiDev);
