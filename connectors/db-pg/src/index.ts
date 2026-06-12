@@ -18,6 +18,7 @@ export {
   buildFtsTsQuery,
   rebuildAllFtsSegments,
   resetJiebaForTest,
+  isJiebaLoaded,
   registerEmbedTextFn,
   registerEmbedTextsFn,
   resetEmbedTextFnForTest,

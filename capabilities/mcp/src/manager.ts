@@ -253,6 +253,22 @@ export class MCPManager {
       .reduce((n, ts) => n + ts.tools.length, 0);
   }
 
+  /** Lightweight connection counts for /status memory_detail (no listTools RPC). */
+  getConnectionSummary(): {
+    server_count: number;
+    connected_count: number;
+    connecting_count: number;
+  } {
+    const cfg = this.config.data;
+    const serversCfg = cfg.mcp_servers ?? {};
+    const serverNames = new Set([...Object.keys(serversCfg), ...this.serverConfigs.keys()]);
+    return {
+      server_count: serverNames.size,
+      connected_count: this.clients.size,
+      connecting_count: this.connecting.size,
+    };
+  }
+
   async getStatus(): Promise<McpStatusResponse> {
     const cfg = this.config.data;
     const serversCfg = cfg.mcp_servers ?? {};

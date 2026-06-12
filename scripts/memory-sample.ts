@@ -1,13 +1,26 @@
 #!/usr/bin/env bun
 /**
- * Sample anima service process RSS (VmRSS) and /status snapshot.
+ * Sample anima service process RSS (VmRSS) and /api/status snapshot.
  *
  *   bun run memory:sample -- --label idle
  *   bun run memory:sample -- --pid 12345 --label after-chat
- *   bun run memory:sample -- --url http://127.0.0.1:2658/status
+ *   bun run memory:sample -- --url http://127.0.0.1:2658/api/status
+ *   bun run memory:sample -- --url http://127.0.0.1:2658/api/status --stage full
  */
 
 import { readFileSync } from "node:fs";
+
+type MemoryDetail = {
+  rss_kb?: number;
+  heap_used_kb?: number;
+  heap_total_kb?: number;
+  external_kb?: number;
+  array_buffers_kb?: number;
+  tokenizer_repos?: string[];
+  jieba_loaded?: boolean;
+  mcp?: { server_count?: number; connected_count?: number };
+  acp?: { agent_count?: number; connected_count?: number };
+};
 
 function readRssKb(pid: number): number {
   try {
@@ -23,10 +36,16 @@ function readRssKb(pid: number): number {
   return 0;
 }
 
-function parseArgs(argv: string[]): { pid: number; label: string; url: string | null } {
+function parseArgs(argv: string[]): {
+  pid: number;
+  label: string;
+  url: string | null;
+  stage: string;
+} {
   let pid = process.pid;
   let label = "";
   let url: string | null = null;
+  let stage = "basic";
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === "--pid" && argv[i + 1]) {
@@ -35,9 +54,11 @@ function parseArgs(argv: string[]): { pid: number; label: string; url: string | 
       label = argv[++i]!;
     } else if (arg === "--url" && argv[i + 1]) {
       url = argv[++i]!;
+    } else if (arg === "--stage" && argv[i + 1]) {
+      stage = argv[++i]!;
     }
   }
-  return { pid, label, url };
+  return { pid, label, url, stage };
 }
 
 async function fetchStatus(url: string): Promise<Record<string, unknown> | null> {
@@ -50,12 +71,34 @@ async function fetchStatus(url: string): Promise<Record<string, unknown> | null>
   }
 }
 
-const { pid, label, url } = parseArgs(process.argv.slice(2));
+function appendMemoryDetail(
+  parts: string[],
+  detail: MemoryDetail | undefined,
+  stage: string,
+): void {
+  if (!detail || stage === "basic") return;
+  if (detail.heap_used_kb != null) parts.push(`heap_used_kb=${detail.heap_used_kb}`);
+  if (detail.external_kb != null) parts.push(`external_kb=${detail.external_kb}`);
+  if (detail.tokenizer_repos) {
+    parts.push(`tokenizer_repos=${detail.tokenizer_repos.length}`);
+    parts.push(`tokenizer_repos_list=${detail.tokenizer_repos.join(",")}`);
+  }
+  if (detail.jieba_loaded != null) parts.push(`jieba_loaded=${detail.jieba_loaded}`);
+  if (detail.mcp?.connected_count != null) {
+    parts.push(`mcp_connected=${detail.mcp.connected_count}`);
+  }
+  if (detail.acp?.connected_count != null) {
+    parts.push(`acp_connected=${detail.acp.connected_count}`);
+  }
+}
+
+const { pid, label, url, stage } = parseArgs(process.argv.slice(2));
 const rssKb = readRssKb(pid);
 const rssMb = (rssKb / 1024).toFixed(1);
 
 const parts: string[] = [];
 if (label) parts.push(`label=${label}`);
+if (stage !== "basic") parts.push(`stage=${stage}`);
 parts.push(`pid=${pid}`);
 parts.push(`rss_kb=${rssKb}`);
 parts.push(`rss_mb=${rssMb}`);
@@ -66,6 +109,7 @@ if (url) {
     if (typeof status.memory_kb === "number") {
       parts.push(`status_memory_kb=${status.memory_kb}`);
     }
+    appendMemoryDetail(parts, status.memory_detail as MemoryDetail | undefined, stage);
     const sessions = status.sessions as { total?: number } | undefined;
     if (sessions?.total != null) {
       parts.push(`sessions=${sessions.total}`);

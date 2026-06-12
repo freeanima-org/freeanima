@@ -1038,11 +1038,18 @@ export class AcpManager {
     }
   }
 
+  private purgeTerminalTask(taskId: string): void {
+    const task = this.taskStore.get(taskId);
+    if (!task || task.status === "running") return;
+    this.taskStore.delete(taskId);
+  }
+
   private releaseAsyncTask(taskId: string, agentName: string): void {
     this.taskAbortControllers.delete(taskId);
     if (this.activePromptByAgent.get(agentName) === taskId) {
       this.activePromptByAgent.delete(agentName);
     }
+    this.purgeTerminalTask(taskId);
   }
 
   private cancelAsyncTask(taskId: string): string {
@@ -1133,6 +1140,8 @@ export class AcpManager {
       await port.deliverResult(toTaskSnapshot(task), result);
     } catch (e) {
       logComponent("acp").warn("ACP result delivery failed", { taskId: task.taskId, err: e });
+    } finally {
+      this.purgeTerminalTask(task.taskId);
     }
   }
 
@@ -1143,6 +1152,8 @@ export class AcpManager {
       await port.deliverError(toTaskSnapshot(task), message);
     } catch (e) {
       logComponent("acp").warn("ACP error delivery failed", { taskId: task.taskId, err: e });
+    } finally {
+      this.purgeTerminalTask(task.taskId);
     }
   }
 

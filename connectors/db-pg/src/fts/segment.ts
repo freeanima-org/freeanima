@@ -30,6 +30,11 @@ async function getJieba(): Promise<Jieba | null> {
   }
 }
 
+/** Whether jieba singleton has been loaded in this process. */
+export function isJiebaLoaded(): boolean {
+  return jiebaInstance != null;
+}
+
 /** Reset jieba singleton (test teardown) */
 export function resetJiebaForTest(): void {
   jiebaInstance = null;

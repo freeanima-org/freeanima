@@ -5,6 +5,8 @@ export {
   resetResolveContextForTest,
 } from "./resolve-context.ts";
 export {
+  bindModelForTest,
+  bindModelToFallbackForTest,
   countTokens,
   ensureFallbackTokenizer,
   ensureTokenizer,
@@ -13,7 +15,9 @@ export {
   isTokenizerReady,
   isUsingFallbackTokenizer,
   listTokenizerBindings,
+  listLoadedTokenizerRepos,
   reconcileTokenizer,
+  releaseTokenizerRepo,
   resetTokenizerForTest,
   setTokenizerEncodeForTest,
   splitTextByTokenLimit,

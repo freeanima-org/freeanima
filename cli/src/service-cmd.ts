@@ -16,9 +16,9 @@ import {
   writeStatusLine,
 } from "./service-common.ts";
 
-import { parseBindHosts } from "@freeanima/service/bind-hosts";
 import { REPO_ROOT } from "@freeanima/service";
 import { renderSystemdUnit, systemdUserAvailable, SYSTEMD_UNIT } from "./systemd-unit.ts";
+import { printServiceRunningStatus } from "./output/service-status-display.ts";
 
 export type ServiceArgs = {
   action: string;
@@ -93,71 +93,6 @@ async function fetchHttpStatus(
   return [true, body, ms];
 }
 
-function printWebui(host: string, port: number): void {
-  for (const h of parseBindHosts(host)) {
-    const base = `http://${h}:${port}/webui`;
-
-    console.log(`  WebUI: ${base}`);
-  }
-}
-
-function printRunning(
-  body: Record<string, unknown> | null,
-  statusFile: Record<string, unknown>,
-  host: string,
-  port: number,
-): void {
-  const api = body ?? {};
-  const pid = api.pid ?? statusFile.pid ?? isServerAlive() ?? "?";
-  const version = api.version ?? statusFile.version ?? "?";
-
-  let uptime = api.uptime_seconds as number | undefined;
-  if (uptime == null && statusFile.start_time) {
-    uptime = Date.now() / 1000 - Number(statusFile.start_time);
-  }
-  const uptimeS = uptime != null ? prettyDuration(uptime) : "";
-
-  const headline = [`PID ${pid}`, uptimeS ? `uptime ${uptimeS}` : "", `version ${version}`]
-    .filter(Boolean)
-    .join("    ");
-  console.log(`Free Anima · running`);
-  console.log(`  ${headline}`);
-  const addrs = parseBindHosts(host)
-    .map((h) => `http://${h}:${port}`)
-    .join("  ");
-  console.log(`  address: ${addrs}`);
-
-  const config = (api.config as Record<string, unknown>) ?? {};
-  const model = config.model ?? statusFile.model;
-  const apiBase = config.api_base ?? statusFile.api_base;
-  if (model) writeStatusLine("info", `model: ${model}`);
-  if (apiBase) writeStatusLine("info", `API: ${apiBase}`);
-
-  const platforms = (api.platforms as Record<string, Record<string, unknown>>) ?? {};
-  const names = Object.keys(platforms);
-  if (names.length) {
-    console.log(`  platforms (${names.length}):`);
-    for (const name of names) {
-      const ps = platforms[name] ?? {};
-      const status = String(ps.status ?? "unknown");
-      let line = `    ${name}: [${status}]`;
-      if (ps.bot_name) line += ` (${ps.bot_name})`;
-      console.log(line);
-    }
-  }
-
-  const sessions = api.sessions as Record<string, unknown> | undefined;
-  if (sessions && "total" in sessions) {
-    writeStatusLine("info", `sessions: ${sessions.total}`);
-  }
-
-  const tools = api.tools;
-  if (tools) writeStatusLine("info", `tools: ${tools}`);
-
-  const memKb = api.memory_kb;
-  if (memKb) writeStatusLine("info", `memory: ${Number(memKb) / 1024} MB (RSS)`);
-}
-
 function printDeadStatus(statusFile: Record<string, unknown>): void {
   const startTime = statusFile.start_time_iso ?? "";
   const version = statusFile.version ?? "?";
@@ -226,15 +161,19 @@ async function cmdServiceStatus(args: ServiceArgs): Promise<void> {
   const [host, port] = hostPort(statusFile, args);
   const sd = systemdState();
 
-  if (sd) writeStatusLine("info", `systemd: ${sd}`);
-
   const [httpUp, body, healthMs] = await fetchHttpStatus(host, port);
   const pid = isServerAlive();
 
   if (httpUp) {
-    printRunning(body, statusFile, host, port);
-    writeStatusLine("ok", `health online — ${healthMs.toFixed(0)}ms`);
-    printWebui(host, port);
+    printServiceRunningStatus({
+      body,
+      statusFile,
+      host,
+      port,
+      healthMs,
+      systemd: sd,
+      pidOverride: pid,
+    });
     return;
   }
 

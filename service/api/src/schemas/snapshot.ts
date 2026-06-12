@@ -22,6 +22,26 @@ export type TokenizerBindingStatus = {
   using_fallback: boolean;
 };
 
+export type ProcessMemoryDetail = {
+  rss_kb: number;
+  heap_used_kb: number;
+  heap_total_kb: number;
+  external_kb: number;
+  array_buffers_kb: number;
+  tokenizer_repos: string[];
+  tokenizer_bindings: TokenizerBindingStatus[];
+  jieba_loaded: boolean;
+  mcp: {
+    server_count: number;
+    connected_count: number;
+    connecting_count: number;
+  };
+  acp: {
+    agent_count: number;
+    connected_count: number;
+  };
+};
+
 export type ServiceSnapshot = {
   status: "running";
   pid: number;
@@ -44,6 +64,7 @@ export type ServiceSnapshot = {
   cron_jobs: number;
   platforms: Record<string, PlatformStatusSnapshot>;
   memory_kb: number;
+  memory_detail?: ProcessMemoryDetail;
   memory: {
     files_count: number;
     files_bytes: number;
