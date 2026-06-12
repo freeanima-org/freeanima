@@ -135,7 +135,7 @@ export async function deleteSemanticMemory(id: string): Promise<boolean> {
 export async function countSemanticMemory(): Promise<number> {
   const db = getDb();
   const rows = await db.execute<{ n: number }>(drizzleSql`
-    SELECT count(*)::int AS n FROM semantic_memory
+    SELECT count(*)::int AS n FROM semantic_memory WHERE status = 'active'
   `);
   return Number(rows[0]?.n ?? 0);
 }
@@ -177,6 +177,16 @@ export async function listResidentSemanticMemory(topN = 20): Promise<SemanticMem
 export async function listAllSemanticMemory(): Promise<SemanticMemoryRow[]> {
   const db = getDb();
   const rows = await db.select().from(semanticMemory).orderBy(desc(semanticMemory.updated));
+  return rows.map(mapSemanticMemoryRow);
+}
+
+export async function listActiveSemanticMemory(): Promise<SemanticMemoryRow[]> {
+  const db = getDb();
+  const rows = await db
+    .select()
+    .from(semanticMemory)
+    .where(eq(semanticMemory.status, "active"))
+    .orderBy(desc(semanticMemory.updated));
   return rows.map(mapSemanticMemoryRow);
 }
 

@@ -30,6 +30,9 @@ export const nullSemanticMemoryStore: SemanticMemoryStorePort = {
   async listAll() {
     return [];
   },
+  async listActive() {
+    return [];
+  },
   async listBySourceSessions() {
     return [];
   },

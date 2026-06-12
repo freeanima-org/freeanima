@@ -177,7 +177,7 @@ function createMockSemanticStore(): SemanticMemoryStorePort {
       return rows.delete(id);
     },
     async count() {
-      return rows.size;
+      return [...rows.values()].filter((r) => r.status === "active").length;
     },
     async listResident(topN = 20) {
       return [...rows.values()]
@@ -187,6 +187,9 @@ function createMockSemanticStore(): SemanticMemoryStorePort {
     },
     async listAll() {
       return [...rows.values()];
+    },
+    async listActive() {
+      return [...rows.values()].filter((r) => r.status === "active");
     },
     async listBySourceSessions(sessionIds, opts) {
       const status = opts?.status ?? "active";

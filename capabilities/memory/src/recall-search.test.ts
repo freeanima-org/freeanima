@@ -140,13 +140,16 @@ function createMockSemanticStore(rows: MockSemanticRow[]): SemanticMemoryStorePo
       return false;
     },
     async count() {
-      return map.size;
+      return [...map.values()].filter((r) => r.status === "active").length;
     },
     async listResident() {
       return [...map.values()];
     },
     async listAll() {
       return [...map.values()];
+    },
+    async listActive() {
+      return [...map.values()].filter((r) => r.status === "active");
     },
     async listBySourceSessions() {
       return [];

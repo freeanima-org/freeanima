@@ -38,6 +38,10 @@ export class PgSemanticMemoryStore implements SemanticMemoryStorePort {
     return crudRepo.listAllSemanticMemory();
   }
 
+  async listActive() {
+    return crudRepo.listActiveSemanticMemory();
+  }
+
   async listBySourceSessions(
     sessionIds: string[],
     opts?: { status?: "active" | "deprecated" | "all" },

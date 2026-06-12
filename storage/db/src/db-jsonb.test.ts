@@ -1,6 +1,8 @@
 import { describe, expect, it } from "bun:test";
 import { buildPlatformInfo, splitPlatformInfo } from "./schema/jsonb/platform-info.ts";
 import {
+  acpTasksSchema,
+  normalizeAcpTasks,
   normalizeSessionToolNames,
   sessionToolsSchema,
 } from "./schema/jsonb/session-meta-jsonb.ts";
@@ -70,5 +72,52 @@ describe("session tools jsonb", () => {
 
   it("normalizeSessionToolNames ignores invalid entries", () => {
     expect(normalizeSessionToolNames([null, "", {}, { function: {} }])).toEqual([]);
+  });
+});
+
+describe("acp_tasks jsonb", () => {
+  it("normalizeAcpTasks converts legacy agent-keyed string bindings", () => {
+    expect(normalizeAcpTasks({ cursor: "acp-uuid-1" })).toEqual({
+      "acp-uuid-1": {
+        status: "completed",
+        task_id: "legacy",
+        agent_name: "cursor",
+        updated_at: "1970-01-01T00:00:00.000Z",
+      },
+    });
+    expect(acpTasksSchema.parse({ cursor: "acp-uuid-1" })).toEqual({
+      "acp-uuid-1": {
+        status: "completed",
+        task_id: "legacy",
+        agent_name: "cursor",
+        updated_at: "1970-01-01T00:00:00.000Z",
+      },
+    });
+  });
+
+  it("normalizeAcpTasks keeps new-format entries and mixed legacy", () => {
+    const mixed = {
+      cursor: "legacy-session-id",
+      "acp-uuid-2": {
+        status: "running",
+        task_id: "task-2",
+        agent_name: "cursor",
+        updated_at: "2026-06-12T10:00:00.000Z",
+      },
+    };
+    expect(acpTasksSchema.parse(mixed)).toEqual({
+      "legacy-session-id": {
+        status: "completed",
+        task_id: "legacy",
+        agent_name: "cursor",
+        updated_at: "1970-01-01T00:00:00.000Z",
+      },
+      "acp-uuid-2": {
+        status: "running",
+        task_id: "task-2",
+        agent_name: "cursor",
+        updated_at: "2026-06-12T10:00:00.000Z",
+      },
+    });
   });
 });

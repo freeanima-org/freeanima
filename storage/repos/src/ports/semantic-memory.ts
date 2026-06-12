@@ -59,9 +59,11 @@ export interface SemanticMemoryStorePort {
   update(row: SemanticMemoryUpdateInput): Promise<void>;
   deprecate(id: string): Promise<boolean>;
   delete(id: string): Promise<boolean>;
+  /** Active semantic memory row count */
   count(): Promise<number>;
   listResident(topN?: number): Promise<SemanticMemoryRow[]>;
   listAll(): Promise<SemanticMemoryRow[]>;
+  listActive(): Promise<SemanticMemoryRow[]>;
   listBySourceSessions(
     sessionIds: string[],
     opts?: { status?: "active" | "deprecated" | "all" },
