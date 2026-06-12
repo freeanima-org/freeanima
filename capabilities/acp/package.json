@@ -7,17 +7,16 @@
     "./*": "./src/*.ts"
   },
   "dependencies": {
-    "@freeanima/engine-session-port": "workspace:*",
-    "@freeanima/engine-skill": "workspace:*",
-    "@freeanima/engine-db": "workspace:*",
-    "@freeanima/engine-tool": "workspace:*",
-    "@freeanima/engine-config": "workspace:*",
-    "@freeanima/engine-util": "workspace:*",
-    "@freeanima/service-config": "workspace:*",
-    "@freeanima/service-logging": "workspace:*",
+    "@freeanima/mechanism-session-port": "workspace:*",
+    "@freeanima/mechanism-skill": "workspace:*",
+    "@freeanima/storage-db": "workspace:*",
+    "@freeanima/mechanism-tool": "workspace:*",
+    "@freeanima/storage-config": "workspace:*",
+    "@freeanima/storage-util": "workspace:*",
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@freeanima/service-config": "workspace:*",
     "@types/bun": "catalog:"
   }
 }

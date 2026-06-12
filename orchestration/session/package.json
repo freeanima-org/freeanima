@@ -1,0 +1,21 @@
+{
+  "name": "@freeanima/orchestration-session",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@freeanima/mechanism-compress": "workspace:*",
+    "@freeanima/storage-db": "workspace:*",
+    "@freeanima/mechanism-hooks": "workspace:*",
+    "@freeanima/storage-provider-llm": "workspace:*",
+    "@freeanima/storage-repos": "workspace:*",
+    "@freeanima/mechanism-tool": "workspace:*",
+    "@freeanima/storage-util": "workspace:*",
+    "@freeanima/storage-config": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:"
+  }
+}

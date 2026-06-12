@@ -4,7 +4,7 @@ import { getDb } from "../client.ts";
 import { formatPgVector } from "../embedding/format.ts";
 import type { SemanticMemoryDbRow } from "../semantic-memory/mappers/semantic-mapper.ts";
 import { mapSemanticMemoryRow } from "../semantic-memory/mappers/semantic-mapper.ts";
-import { messageDocKey, semanticMemoryDocKey } from "@freeanima/engine-util";
+import { messageDocKey, semanticMemoryDocKey } from "@freeanima/storage-util";
 import { pgSemanticSourceSessionsFilter, pgSemanticTypeFilter } from "../utils/pg-sql.ts";
 
 export type VectorSemanticHit = SemanticMemoryDbRow & { docKey: string; rank: number };

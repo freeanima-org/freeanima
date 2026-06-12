@@ -1,0 +1,20 @@
+{
+  "name": "@freeanima/storage-config",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schemas/config": "./src/schemas/config.ts",
+    "./schemas/llm-config": "./src/schemas/llm-config.ts",
+    "./compression": "./src/compression-config.ts",
+    "./paths": "./src/paths.ts",
+    "./test-helpers/minimal-llm-config": "./src/test-helpers/minimal-llm-config.ts",
+    "./test-helpers/capability-injection": "./src/test-helpers/capability-injection.ts"
+  },
+  "dependencies": {
+    "@freeanima/kernel-logging": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:"
+  }
+}

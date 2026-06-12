@@ -2,19 +2,19 @@
 
 ## New PG domain
 
-`engine-db/schema/{domain}` → add port in `engine-repos` → implement in `connectors-db-pg` → extend `PgRepositories` → wire in [`serve.ts`](../../service/service/src/serve.ts).
+`storage-db/schema/{domain}` → add port in `storage-repos` → implement in `connectors-db-pg` → extend `PgRepositories` → wire in [`serve.ts`](../../service/service/src/serve.ts).
 
 Design detail: [`docs/guide/database.md`](../../docs/guide/database.md).
 
 ## PG schema migrations (mandatory)
 
-**Flow**: change `engine/db/src/schema/` → **`drizzle-kit generate`** → **`migrate`**.
+**Flow**: change `storage/db/src/schema/` → **`drizzle-kit generate`** → **`migrate`**.
 
-| Step | Command / action                                                   | Output                                                               |
-| ---- | ------------------------------------------------------------------ | -------------------------------------------------------------------- |
-| 1    | Change Drizzle schema (`engine/db/src/schema/`)                    | TypeScript SSOT                                                      |
-| 2    | `DATABASE_URL=… bun run --filter @freeanima/engine-db db:generate` | `migrations/{ts}_{name}/migration.sql` + **`snapshot.json`**         |
-| 3    | `DATABASE_URL=… bun run --filter @freeanima/engine-db db:migrate`  | PG applies DDL; production may auto-migrate on `anima service` start |
+| Step | Command / action                                                    | Output                                                               |
+| ---- | ------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| 1    | Change Drizzle schema (`storage/db/src/schema/`)                    | TypeScript SSOT                                                      |
+| 2    | `DATABASE_URL=… bun run --filter @freeanima/storage-db db:generate` | `migrations/{ts}_{name}/migration.sql` + **`snapshot.json`**         |
+| 3    | `DATABASE_URL=… bun run --filter @freeanima/storage-db db:migrate`  | PG applies DDL; production may auto-migrate on `anima service` start |
 
 **Forbidden**:
 

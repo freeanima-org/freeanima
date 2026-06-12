@@ -54,9 +54,9 @@ FreeAnima Storage Architecture
 
 ## Storage and Ports
 
-- **Table:** `self_blocks` ([`engine/db/src/schema/self-layer.ts`](../../engine/db/src/schema/self-layer.ts))
-- **Port:** `SelfLayerStorePort` (`engine-repos`) → `PgSelfLayerStore` (`connectors-db-pg`)
-- **Consumer:** `@freeanima/life-self` (prompt assembly, tools `get_self_blocks` / `update_self_block`)
+- **Table:** `self_blocks` ([`storage/db/src/schema/self-layer.ts`](../../storage/db/src/schema/self-layer.ts))
+- **Port:** `SelfLayerStorePort` (`storage-repos`) → `PgSelfLayerStore` (`connectors-db-pg`)
+- **Consumer:** `@freeanima/capabilities-identity` (prompt assembly, tools `get_self_blocks` / `update_self_block`)
 - **Wiring:** `serve.ts` calls `registerSelfLayerStore` and warms `loadSelfLayerPrompt()` cache
 
 `existence_anchor` defaults to `locked=true`; updates require tool parameter `force=true` or explicit CLI operation.
@@ -79,7 +79,7 @@ See [`sleep.md`](sleep.md) §Autobiography cron.
 
 ## System Prompt Injection
 
-Assembly order ([`life-memory/system-prompt`](../../life/memory/src/system-prompt.ts) + [`system-prompt-wire`](../../service/service/src/runtime/system-prompt-wire.ts)):
+Assembly order ([`capabilities-memory/system-prompt`](../../capabilities/memory/src/system-prompt.ts) + [`system-prompt-wire`](../../service/service/src/runtime/system-prompt-wire.ts)):
 
 ````
 1. Self layer (second-person skeleton + six blocks embedded in ```md)  ← loadSelfLayerPrompt() / self_blocks

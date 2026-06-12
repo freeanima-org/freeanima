@@ -1,10 +1,10 @@
-import { registerLlmStackConfigurator } from "@freeanima/engine-llm";
-import { registerSystemPromptHookRunner } from "@freeanima/engine-prompt";
-import { rebuildSessionSystemPrompt } from "@freeanima/engine-conversation";
-import { registerSessionToolMaskFilter } from "@freeanima/engine-tool";
-import { registerCompressionSummaryPostCut } from "@freeanima/engine-compress";
-import { wireOpenAiCompatibleLlm } from "@freeanima/capabilities-provider-openai-compatible";
-import { foldSystemPromptSections, systemPromptBuild } from "@freeanima/engine-hooks/prompt";
+import { registerLlmStackConfigurator } from "@freeanima/mechanism-llm";
+import { registerSystemPromptHookRunner } from "@freeanima/mechanism-hooks/prompt";
+import { rebuildSessionSystemPrompt } from "@freeanima/orchestration-conversation";
+import { registerSessionToolMaskFilter } from "@freeanima/mechanism-tool";
+import { registerCompressionSummaryPostCut } from "@freeanima/mechanism-compress";
+import { wireOpenAiCompatibleLlm } from "@freeanima/capabilities-llm-openai";
+import { foldSystemPromptSections, systemPromptBuild } from "@freeanima/mechanism-hooks/prompt";
 import { filterToolNamesByMask, resolveSessionMaskFromMeta } from "./runtime/mask-wire.ts";
 import { getServiceContext } from "./context.ts";
 

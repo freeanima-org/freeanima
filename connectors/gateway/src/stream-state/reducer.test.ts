@@ -1,4 +1,4 @@
-import type { StreamEvent } from "@freeanima/engine-loop";
+import type { StreamEvent } from "@freeanima/orchestration-loop";
 import { describe, expect, it } from "bun:test";
 import { ToolRoundCollector } from "../stream-tool-format.ts";
 import { applyStreamEvent, initialStreamReplyState, reduceStreamEvents } from "./reducer.ts";

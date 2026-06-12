@@ -1,4 +1,4 @@
-import { logComponent } from "@freeanima/service-logging";
+import { logCapability as logComponent } from "@freeanima/storage-config";
 import {
   parseCursorPlan,
   parseCursorQuestions,

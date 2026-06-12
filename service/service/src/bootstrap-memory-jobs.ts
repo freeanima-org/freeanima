@@ -1,4 +1,5 @@
 import { wireEnginePorts } from "./wire-engine-ports.ts";
+import { wireCapabilityInjection } from "./wire-capability-injection.ts";
 import { registerSystemPromptHooks } from "./register-prompt-hooks.ts";
 import { wireServicePorts } from "./wire-api.ts";
 import { chdir } from "node:process";
@@ -7,9 +8,9 @@ import {
   createEngineCatalog,
   getLlmRuntime,
   initLlmRuntime,
-} from "@freeanima/engine";
+} from "@freeanima/orchestration-runtime";
 import { createServiceKernel } from "@freeanima/service-bootstrap";
-import { createConversationService } from "@freeanima/engine-conversation";
+import { createConversationService } from "@freeanima/orchestration-conversation";
 import {
   closeDb,
   createPgRepositories,
@@ -18,8 +19,8 @@ import {
   isPostgresPrimary,
 } from "@freeanima/connectors-db-pg";
 import { closeRedis, initRedis } from "@freeanima/connectors-redis";
-import { runMigrations } from "@freeanima/engine-db";
-import type { PgRepositories } from "@freeanima/engine-repos";
+import { runMigrations } from "@freeanima/storage-db";
+import type { PgRepositories } from "@freeanima/storage-repos";
 import {
   FileConfig,
   getConfiguredDatabaseUrl,
@@ -31,7 +32,10 @@ import { logStartupError, markStartupPhase } from "@freeanima/service-logging";
 import { MCPManager } from "@freeanima/capabilities-mcp";
 import { getAcpManager } from "@freeanima/capabilities-acp";
 import { MaskRegistry } from "@freeanima/capabilities-mask";
-import { invalidateSelfLayerPromptCache, loadSelfLayerPrompt } from "@freeanima/life-self";
+import {
+  invalidateSelfLayerPromptCache,
+  loadSelfLayerPrompt,
+} from "@freeanima/capabilities-identity";
 import { registerServiceIntegrations, registerServiceTools } from "./register.ts";
 import { registerServiceStores } from "./register-stores.ts";
 import { AnimaService, REPO_ROOT } from "./runtime/index.ts";
@@ -68,6 +72,7 @@ export async function bootstrapMemoryJobs(): Promise<MemoryJobsContext> {
     config.update(await resolveLlmProviderApiKeys(config.data));
 
     wireEnginePorts();
+    wireCapabilityInjection();
     wireServicePorts();
     wireEmbeddingRuntime(config);
 

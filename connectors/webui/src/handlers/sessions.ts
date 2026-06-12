@@ -1,5 +1,5 @@
 import { webuiCtx } from "./runtime.ts";
-import { isSessionMeta } from "@freeanima/engine-db/domain";
+import { isSessionMeta } from "@freeanima/storage-db/domain";
 import { PARLOR_PLATFORM } from "../api/constants.ts";
 import {
   createSessionBodySchema,

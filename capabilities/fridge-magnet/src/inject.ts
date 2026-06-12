@@ -1,4 +1,4 @@
-import type { SessionMessage } from "@freeanima/engine-db/domain";
+import type { SessionMessage } from "@freeanima/storage-db/domain";
 import type { FridgeMagnet } from "./types.ts";
 
 export const FRIDGE_MAGNET_FENCE = "fridge-magnet";

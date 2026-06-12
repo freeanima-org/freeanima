@@ -1,9 +1,9 @@
 import type { FridgeBridge } from "@freeanima/capabilities-tasks";
 import { registerTasksModule, syncTasksSummary } from "@freeanima/capabilities-tasks";
 import { isRedisConfigured } from "@freeanima/connectors-redis";
-import type { PgRepositories } from "@freeanima/engine-repos";
-import { registerMemoryPipeline } from "@freeanima/life-memory";
-import { registerSelfLayerStore } from "@freeanima/life-self";
+import type { PgRepositories } from "@freeanima/storage-repos";
+import { registerMemoryPipeline } from "@freeanima/capabilities-memory";
+import { registerSelfLayerStore } from "@freeanima/capabilities-identity";
 
 /** Composition root one-shot PG repository port injection (memory / self-layer / tasks) */
 export function registerServiceStores(

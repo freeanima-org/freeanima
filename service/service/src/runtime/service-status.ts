@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { getTokenizerBindingSnapshot } from "@freeanima/engine";
+import { getTokenizerBindingSnapshot } from "@freeanima/orchestration-runtime";
 import {
   getDefaultProviderBaseUrl,
   getProfileHopModel,
@@ -8,9 +8,9 @@ import {
   sanitizeConfigForApi,
   PATHS,
 } from "@freeanima/service-config";
-import { formatCstIsoFromEpoch } from "@freeanima/engine-util";
+import { formatCstIsoFromEpoch } from "@freeanima/storage-util";
 import { getServiceContext } from "../context.ts";
-import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
+import { PROFILE_CHAT } from "@freeanima/storage-provider-llm";
 import {
   ensureBuiltinCronJobs,
   getJob,
@@ -20,8 +20,8 @@ import {
   enqueueRunJob,
 } from "@freeanima/connectors-cron";
 import type { CronJobData } from "@freeanima/connectors-cron";
-import { buildToolsStatus } from "@freeanima/engine-tool";
-import { listCommandDefs, listCommandDefsForPlatform } from "@freeanima/connectors-commands";
+import { buildToolsStatus } from "@freeanima/mechanism-tool";
+import { listCommandDefs, listCommandDefsForPlatform } from "@freeanima/service-commands";
 import { pingDatabase } from "@freeanima/connectors-db-pg";
 import { pingRedis } from "@freeanima/connectors-redis";
 

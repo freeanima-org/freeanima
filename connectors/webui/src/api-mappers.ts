@@ -1,4 +1,4 @@
-import type { StreamEvent } from "@freeanima/engine-loop";
+import type { StreamEvent } from "@freeanima/orchestration-loop";
 import type { StreamApiEvent } from "@freeanima/connectors-webui/api";
 
 export function mapStreamEventToApi(ev: StreamEvent): StreamApiEvent {

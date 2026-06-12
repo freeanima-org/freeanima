@@ -6,7 +6,7 @@ import {
   semanticMemoryTypeSchema,
   taskPrioritySchema,
   taskStatusSchema,
-} from "@freeanima/engine-db/schema";
+} from "@freeanima/storage-db/schema";
 import { z } from "zod";
 
 const memoryListPaginationSchema = z.object({

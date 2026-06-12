@@ -1,6 +1,6 @@
 import { expect, it, beforeEach, afterEach, afterAll, spyOn } from "bun:test";
 import { describePg } from "../../helpers/pg-test-gate.ts";
-import type { SessionMessage } from "@freeanima/engine-db/domain";
+import type { SessionMessage } from "@freeanima/storage-db/domain";
 import {
   beginIntegrationCase,
   endIntegrationCase,
@@ -8,11 +8,11 @@ import {
 } from "../../helpers/integration-case.ts";
 import { getActivePgTestContext, getTestEngine, testConv } from "../../helpers/pg-test.ts";
 import { registerServiceTools } from "@freeanima/service";
-import { isSessionMeta } from "@freeanima/engine-db/domain";
-import { DEFAULT_SESSION_TOOL_NAMES } from "@freeanima/engine-tool";
-import { runWithToolContext } from "@freeanima/engine-loop";
-import * as engine from "@freeanima/engine-loop";
-import * as llm from "@freeanima/engine-llm";
+import { isSessionMeta } from "@freeanima/storage-db/domain";
+import { DEFAULT_SESSION_TOOL_NAMES } from "@freeanima/mechanism-tool";
+import { runWithToolContext } from "@freeanima/orchestration-loop";
+import * as engine from "@freeanima/orchestration-loop";
+import * as llm from "@freeanima/mechanism-llm";
 
 describePg("tool catalog lazy load", () => {
   const prev = process.env.FREEANIMA_HOME;

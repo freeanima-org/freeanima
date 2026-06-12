@@ -21,7 +21,7 @@ export {
   messageDocKey,
   limbicDocKey,
   autobiographicalDocKey,
-} from "@freeanima/engine-util";
+} from "@freeanima/storage-util";
 export { hybridSearchSemanticMemory, hybridSearchMessages } from "./hybrid-search.ts";
 export {
   registerEmbedTextFn,

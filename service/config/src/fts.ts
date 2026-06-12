@@ -1,4 +1,4 @@
-import type { AnimaConfig } from "@freeanima/engine-config";
+import type { AnimaConfig } from "@freeanima/storage-config";
 
 const DEFAULT_TRGM_MIN_SIMILARITY = 0.3;
 const DEFAULT_TRGM_FALLBACK_WHEN_HITS_LT = 3;

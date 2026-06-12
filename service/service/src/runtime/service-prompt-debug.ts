@@ -1,15 +1,15 @@
-import { estimateTokens, estimateToolsTokens } from "@freeanima/engine-compress";
-import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
+import { estimateTokens, estimateToolsTokens } from "@freeanima/mechanism-compress";
+import { PROFILE_CHAT } from "@freeanima/storage-provider-llm";
 import { getProfileHopModel } from "@freeanima/service-config";
-import { isSessionMeta } from "@freeanima/engine-db/domain";
-import type { JsonSchemaObject } from "@freeanima/engine-tool";
-import { buildSystemPrompt } from "@freeanima/engine-prompt";
+import { isSessionMeta } from "@freeanima/storage-db/domain";
+import type { JsonSchemaObject } from "@freeanima/mechanism-tool";
+import { buildSystemPrompt } from "@freeanima/mechanism-hooks/prompt";
 import { renderToolsetsSection } from "@freeanima/capabilities-tools/toolset-prompt";
-import { loadSelfLayerPrompt } from "@freeanima/life-self";
+import { loadSelfLayerPrompt } from "@freeanima/capabilities-identity";
 import {
   decomposeSystemPromptParts,
   type SystemPromptParts,
-} from "@freeanima/life-memory/system-prompt";
+} from "@freeanima/capabilities-memory/system-prompt";
 import { getServiceContext } from "../context.ts";
 import {
   computeRuntimeContextBreakdown,
@@ -127,7 +127,7 @@ function sessionToolItems(
 
 async function buildSystemView(
   cwd?: string | null,
-  meta?: import("@freeanima/engine-db/domain").SessionMetaMessage,
+  meta?: import("@freeanima/storage-db/domain").SessionMetaMessage,
 ): Promise<{
   parts: SystemPromptParts;
   composed: string;

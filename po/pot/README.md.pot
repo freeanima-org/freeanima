@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-10 17:52+0800\n"
+"POT-Creation-Date: 2026-06-12 11:40+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -28,16 +28,16 @@ msgstr ""
 #: docs/concepts/compression.md:384 docs/concepts/identity.md:1
 #: docs/concepts/identity.md:10 docs/concepts/identity.md:28
 #: docs/concepts/identity.md:45 docs/concepts/identity.md:55
-#: docs/concepts/memory.md:1 docs/concepts/memory.md:17
-#: docs/concepts/memory.md:53 docs/concepts/memory.md:160
-#: docs/concepts/memory.md:191 docs/concepts/memory.md:211
-#: docs/concepts/memory.md:232 docs/concepts/memory.md:249
-#: docs/concepts/recall-flow.md:1 docs/concepts/self-layer.md:1
-#: docs/concepts/self-layer.md:31 docs/concepts/self-layer.md:53
-#: docs/concepts/self-layer.md:64 docs/concepts/self-layer.md:78
-#: docs/concepts/self-layer.md:94 docs/concepts/self-layer.md:105
-#: docs/concepts/sleep.md:1 docs/concepts/time-perception.md:1
-#: docs/features/pair-programming-v1.md:1
+#: docs/concepts/layer-structure-rfc.md:1 docs/concepts/memory.md:1
+#: docs/concepts/memory.md:17 docs/concepts/memory.md:53
+#: docs/concepts/memory.md:160 docs/concepts/memory.md:191
+#: docs/concepts/memory.md:211 docs/concepts/memory.md:232
+#: docs/concepts/memory.md:249 docs/concepts/recall-flow.md:1
+#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:31
+#: docs/concepts/self-layer.md:53 docs/concepts/self-layer.md:64
+#: docs/concepts/self-layer.md:78 docs/concepts/self-layer.md:94
+#: docs/concepts/self-layer.md:105 docs/concepts/sleep.md:1
+#: docs/concepts/time-perception.md:1 docs/features/pair-programming-v1.md:1
 #: docs/features/pair-programming-v1.md:321 docs/guide/database.md:1
 #: docs/guide/database.md:33 docs/guide/security.md:1
 #: docs/guide/versioning.md:1 docs/tools/execute-code-runtimes.md:1
@@ -61,8 +61,9 @@ msgstr ""
 #. type: Plain text
 #: docs/README.md:8
 msgid ""
-"See [AGENTS.md](../AGENTS.md#doc-map) for the documentation index "
-"and maintenance conventions. Actionable tasks and discussion items live in "
+"See [AGENTS.md](../AGENTS.md#doc-map) for the documentation index and "
+"maintenance conventions. Agent implementation rules: [`.agent/rules/`]"
+"(../.agent/rules/README.md). Actionable tasks and discussion items live in "
 "[GitHub Issues](https://github.com/freeanima-org/freeanima/issues)."
 msgstr ""
 

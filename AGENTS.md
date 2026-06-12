@@ -7,13 +7,13 @@
 
 `freeanima` (FreeAnima) is a **TypeScript-only** agent runtime: `anima service` starts the Bun service (WebUI + tRPC + Gateway + engine).
 
-| Capability     | Highlights                                                                                                                                              |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Memory         | Conversation archive (PG) → light-sleep extraction → `semantic_memory` → PG FTS retrieval; see [`docs/concepts/memory.md`](docs/concepts/memory.md)     |
-| Tools          | Local / MCP / ACP flat registration; implemented in `capabilities/tools/`, `capabilities/mcp/`, `capabilities/acp/`                                     |
-| Credentials    | pass GPG; injected at runtime; LLM **sees paths, not values**                                                                                           |
-| Data directory | `~/.anima/` (override with `FREEANIMA_HOME`); back up this directory to preserve state                                                                  |
-| Code layout    | `kernel/`, `engine/`, `life/`, `capabilities/`, `connectors/`, `service/`, `cli/`; see [`docs/concepts/architecture.md`](docs/concepts/architecture.md) |
+| Capability     | Highlights                                                                                                                                                                      |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Memory         | Conversation archive (PG) → light-sleep extraction → `semantic_memory` → PG FTS retrieval; see [`docs/concepts/memory.md`](docs/concepts/memory.md)                             |
+| Tools          | Local / MCP / ACP flat registration; implemented in `capabilities/tools/`, `capabilities/mcp/`, `capabilities/acp/`                                                             |
+| Credentials    | pass GPG; injected at runtime; LLM **sees paths, not values**                                                                                                                   |
+| Data directory | `~/.anima/` (override with `FREEANIMA_HOME`); back up this directory to preserve state                                                                                          |
+| Code layout    | `kernel/`, `storage/`, `mechanism/`, `orchestration/`, `capabilities/`, `connectors/`, `service/`, `cli/`; see [`docs/concepts/architecture.md`](docs/concepts/architecture.md) |
 
 **Code is the source of truth**; do not invent tool names, endpoints, or directories from docs alone. Read source or `grep` when needed.
 
@@ -41,8 +41,8 @@ Detailed rules: [`.agent/rules/`](.agent/rules/README.md).
 
 ### Type ownership (decision order only)
 
-1. PG storage (DDL + JSONB Zod) → `engine-db` — [`engine/db/src/schema/`](engine/db/src/schema/)
-2. Repository ports → `engine-repos` — [`engine/repos/src/ports/`](engine/repos/src/ports/)
+1. PG storage (DDL + JSONB Zod) → `storage-db` — [`storage/db/src/schema/`](storage/db/src/schema/)
+2. Repository ports → `storage-repos` — [`storage/repos/src/ports/`](storage/repos/src/ports/)
 3. Domain types → owner package; do not duplicate storage Zod in docs — use source as SSOT
 
 ---
@@ -60,8 +60,8 @@ bun run service start --dev # WebUI source watch rebuild (not HMR; refresh page 
 anima credential list # credential paths; values in pass
 
 # PG schema changes (must generate snapshot.json; see .agent/rules/database.md)
-DATABASE_URL="…" bun run --filter @freeanima/engine-db db:generate
-DATABASE_URL="…" bun run --filter @freeanima/engine-db db:migrate
+DATABASE_URL="…" bun run --filter @freeanima/storage-db db:generate
+DATABASE_URL="…" bun run --filter @freeanima/storage-db db:migrate
 ```
 
 - WebUI parlor: `http://127.0.0.1:2658/webui/parlor/chat`

@@ -11,9 +11,9 @@ import {
   SELF_BLOCK_HEADINGS,
   SELF_LAYER_PROMPT_HEADING,
   SELF_LAYER_SYSTEM_FRAME,
-} from "@freeanima/life-self";
+} from "@freeanima/capabilities-identity";
 
-import { isSessionMeta } from "@freeanima/engine-db/domain";
+import { isSessionMeta } from "@freeanima/storage-db/domain";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
@@ -28,9 +28,9 @@ import {
   isRetryResult,
   isRestartResult,
   resolveCommand,
-} from "@freeanima/connectors-commands";
+} from "@freeanima/service-commands";
 import { getServiceContext } from "@freeanima/service";
-import * as engineConversation from "@freeanima/engine-conversation";
+import * as engineConversation from "@freeanima/orchestration-conversation";
 
 async function patchMetaForTest(sessionId: string, patch: Record<string, unknown>): Promise<void> {
   await getTestEngine().repos.session.patchSessionMeta(sessionId, patch as never);

@@ -1,4 +1,4 @@
-import { generateSessionHandoffSummary } from "@freeanima/engine-conversation";
+import { generateSessionHandoffSummary } from "@freeanima/orchestration-conversation";
 import { getServiceContext } from "@freeanima/service-api";
 import { logComponent } from "@freeanima/service-logging";
 

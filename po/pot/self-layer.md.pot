@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-10 17:45+0800\n"
+"POT-Creation-Date: 2026-06-12 11:40+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,17 +17,18 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Plain text
-#: docs/README.md:1 docs/concepts/compression.md:1
-#: docs/concepts/compression.md:11 docs/concepts/compression.md:22
-#: docs/concepts/compression.md:49 docs/concepts/compression.md:96
-#: docs/concepts/compression.md:118 docs/concepts/compression.md:156
-#: docs/concepts/compression.md:180 docs/concepts/compression.md:228
-#: docs/concepts/compression.md:262 docs/concepts/compression.md:275
-#: docs/concepts/compression.md:327 docs/concepts/compression.md:348
-#: docs/concepts/compression.md:368 docs/concepts/compression.md:384
-#: docs/concepts/identity.md:1 docs/concepts/identity.md:10
-#: docs/concepts/identity.md:28 docs/concepts/identity.md:45
-#: docs/concepts/identity.md:55 docs/concepts/memory.md:1
+#: docs/README.md:1 docs/concepts/architecture.md:1
+#: docs/concepts/compression.md:1 docs/concepts/compression.md:11
+#: docs/concepts/compression.md:22 docs/concepts/compression.md:49
+#: docs/concepts/compression.md:96 docs/concepts/compression.md:118
+#: docs/concepts/compression.md:156 docs/concepts/compression.md:180
+#: docs/concepts/compression.md:228 docs/concepts/compression.md:262
+#: docs/concepts/compression.md:275 docs/concepts/compression.md:327
+#: docs/concepts/compression.md:348 docs/concepts/compression.md:368
+#: docs/concepts/compression.md:384 docs/concepts/identity.md:1
+#: docs/concepts/identity.md:10 docs/concepts/identity.md:28
+#: docs/concepts/identity.md:45 docs/concepts/identity.md:55
+#: docs/concepts/layer-structure-rfc.md:1 docs/concepts/memory.md:1
 #: docs/concepts/memory.md:17 docs/concepts/memory.md:53
 #: docs/concepts/memory.md:160 docs/concepts/memory.md:191
 #: docs/concepts/memory.md:211 docs/concepts/memory.md:232
@@ -170,21 +171,21 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/concepts/self-layer.md:61
 msgid ""
-"**Table:** `self_blocks` ([`engine/db/src/schema/self-layer.ts`](../../"
-"engine/db/src/schema/self-layer.ts))"
+"**Table:** `self_blocks` ([`storage/db/src/schema/self-layer.ts`](../../"
+"storage/db/src/schema/self-layer.ts))"
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/concepts/self-layer.md:61
 msgid ""
-"**Port:** `SelfLayerStorePort` (`engine-repos`) → `PgSelfLayerStore` "
+"**Port:** `SelfLayerStorePort` (`storage-repos`) → `PgSelfLayerStore` "
 "(`connectors-db-pg`)"
 msgstr ""
 
 #. type: Bullet: '- '
 #: docs/concepts/self-layer.md:61
 msgid ""
-"**Consumer:** `@freeanima/life-self` (prompt assembly, tools "
+"**Consumer:** `@freeanima/capabilities-identity` (prompt assembly, tools "
 "`get_self_blocks` / `update_self_block`)"
 msgstr ""
 
@@ -233,9 +234,9 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/self-layer.md:83
 msgid ""
-"Assembly order ([`life-memory/system-prompt`](../../life/memory/src/system-"
-"prompt.ts) + [`system-prompt-wire`](../../service/service/src/runtime/system-"
-"prompt-wire.ts)):"
+"Assembly order ([`capabilities-memory/system-prompt`](../../capabilities/"
+"memory/src/system-prompt.ts) + [`system-prompt-wire`](../../service/service/"
+"src/runtime/system-prompt-wire.ts)):"
 msgstr ""
 
 #. type: Plain text

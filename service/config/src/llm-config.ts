@@ -5,4 +5,4 @@ export {
   getProfileHopProviderId,
   getProviderBaseUrl,
   getDefaultProviderBaseUrl,
-} from "@freeanima/engine-config";
+} from "@freeanima/storage-config";

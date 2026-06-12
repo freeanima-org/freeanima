@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-10 17:45+0800\n"
+"POT-Creation-Date: 2026-06-12 11:40+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,17 +16,18 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Plain text
-#: docs/README.md:1 docs/concepts/compression.md:1
-#: docs/concepts/compression.md:11 docs/concepts/compression.md:22
-#: docs/concepts/compression.md:49 docs/concepts/compression.md:96
-#: docs/concepts/compression.md:118 docs/concepts/compression.md:156
-#: docs/concepts/compression.md:180 docs/concepts/compression.md:228
-#: docs/concepts/compression.md:262 docs/concepts/compression.md:275
-#: docs/concepts/compression.md:327 docs/concepts/compression.md:348
-#: docs/concepts/compression.md:368 docs/concepts/compression.md:384
-#: docs/concepts/identity.md:1 docs/concepts/identity.md:10
-#: docs/concepts/identity.md:28 docs/concepts/identity.md:45
-#: docs/concepts/identity.md:55 docs/concepts/memory.md:1
+#: docs/README.md:1 docs/concepts/architecture.md:1
+#: docs/concepts/compression.md:1 docs/concepts/compression.md:11
+#: docs/concepts/compression.md:22 docs/concepts/compression.md:49
+#: docs/concepts/compression.md:96 docs/concepts/compression.md:118
+#: docs/concepts/compression.md:156 docs/concepts/compression.md:180
+#: docs/concepts/compression.md:228 docs/concepts/compression.md:262
+#: docs/concepts/compression.md:275 docs/concepts/compression.md:327
+#: docs/concepts/compression.md:348 docs/concepts/compression.md:368
+#: docs/concepts/compression.md:384 docs/concepts/identity.md:1
+#: docs/concepts/identity.md:10 docs/concepts/identity.md:28
+#: docs/concepts/identity.md:45 docs/concepts/identity.md:55
+#: docs/concepts/layer-structure-rfc.md:1 docs/concepts/memory.md:1
 #: docs/concepts/memory.md:17 docs/concepts/memory.md:53
 #: docs/concepts/memory.md:160 docs/concepts/memory.md:191
 #: docs/concepts/memory.md:211 docs/concepts/memory.md:232
@@ -97,8 +98,13 @@ msgstr ""
 
 #. type: Plain text
 #: docs/guide/database.md:19
+#, fuzzy
+#| msgid ""
+#| "Code source of truth: [`engine/db/src/schema/`](../../engine/db/src/"
+#| "schema/)."
 msgid ""
-"Code source of truth: [`engine/db/src/schema/`](../../engine/db/src/schema/)."
+"Code source of truth: [`storage/db/src/schema/`](../../storage/db/src/"
+"schema/)."
 msgstr "代码真相源：[`engine/db/src/schema/`](../engine/db/src/schema/)。"
 
 #. type: Plain text
@@ -108,14 +114,21 @@ msgstr "## PG 多域架构（路径 C）"
 
 #. type: Plain text
 #: docs/guide/database.md:28
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Package                          | Responsibility                                                                                   |\n"
+#| "| -------------------------------- | ------------------------------------------------------------------------------------------------ |\n"
+#| "| `@freeanima/engine-db`           | PG table DDL, migrations, JSONB storage Zod and Slice A **domain types** (`schema/` + `domain/`) |\n"
+#| "| `@freeanima/engine-repos`        | `SessionStorePort`, `PgRepositories` and other **ports**; `null*` adapters                       |\n"
+#| "| `@freeanima/engine-conversation` | Session runtime; re-exports `engine-db/domain` convenience types                                 |\n"
+#| "| `@freeanima/connectors-db-pg`    | `PgSessionStore` implementation, connection pool, mapper, repos                                  |\n"
 msgid ""
-"| Package                          | Responsibility                                                                                   |\n"
-"| -------------------------------- | ------------------------------------------------------------------------------------------------ |\n"
-"| `@freeanima/engine-db`           | PG table DDL, migrations, JSONB storage Zod and Slice A **domain types** (`schema/` + `domain/`) |\n"
-"| `@freeanima/engine-repos`        | `SessionStorePort`, `PgRepositories` and other **ports**; `null*` adapters                       |\n"
-"| `@freeanima/engine-conversation` | Session runtime; re-exports `engine-db/domain` convenience types                                 |\n"
-"| `@freeanima/connectors-db-pg`    | `PgSessionStore` implementation, connection pool, mapper, repos                                  |\n"
+"| Package                                 | Responsibility                                                                                   |\n"
+"| --------------------------------------- | ------------------------------------------------------------------------------------------------ |\n"
+"| `@freeanima/storage-db`                 | PG table DDL, migrations, JSONB storage Zod and Slice A **domain types** (`schema/` + `domain/`) |\n"
+"| `@freeanima/storage-repos`              | `SessionStorePort`, `PgRepositories` and other **ports**; `null*` adapters                       |\n"
+"| `@freeanima/orchestration-conversation` | Session runtime; re-exports `storage-db/domain` convenience types                                |\n"
+"| `@freeanima/connectors-db-pg`           | `PgSessionStore` implementation, connection pool, mapper, repos                                  |\n"
 msgstr ""
 "| 包                               | 职责                                                                                  |\n"
 "| -------------------------------- | ------------------------------------------------------------------------------------- |\n"
@@ -142,9 +155,14 @@ msgstr ""
 
 #. type: Plain text
 #: docs/guide/database.md:32
+#, fuzzy
+#| msgid ""
+#| "New PG domain (memory / cron / task): `engine-db/schema/{domain}` → add "
+#| "port in `engine-repos` → implement in `connectors-db-pg` → extend "
+#| "`PgRepositories` fields → wire in `serve.ts`."
 msgid ""
-"New PG domain (memory / cron / task): `engine-db/schema/{domain}` → add port "
-"in `engine-repos` → implement in `connectors-db-pg` → extend "
+"New PG domain (memory / cron / task): `storage-db/schema/{domain}` → add "
+"port in `storage-repos` → implement in `connectors-db-pg` → extend "
 "`PgRepositories` fields → wire in `serve.ts`."
 msgstr ""
 "新增 PG 域（memory / cron / task）：`engine-db/schema/{domain}` → `engine-"
@@ -181,9 +199,13 @@ msgstr ""
 
 #. type: Bullet: '- '
 #: docs/guide/database.md:44
+#, fuzzy
+#| msgid ""
+#| "**Storage Zod authoritative in `engine-db/schema`**; domain convenience "
+#| "types in `engine-db/domain` (`engine-conversation` re-exports)"
 msgid ""
-"**Storage Zod authoritative in `engine-db/schema`**; domain convenience "
-"types in `engine-db/domain` (`engine-conversation` re-exports)"
+"**Storage Zod authoritative in `storage-db/schema`**; domain convenience "
+"types in `storage-db/domain` (`orchestration-conversation` re-exports)"
 msgstr ""
 "**存储 Zod 以 `engine-db/schema` 为准**；领域便利类型见 `engine-db/domain`"
 "（`engine-conversation` re-export）"
@@ -217,7 +239,31 @@ msgstr "#### `sessions`"
 
 #. type: Plain text
 #: docs/guide/database.md:66
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Column            | Type        | Description                                       |\n"
+#| "| ----------------- | ----------- | ------------------------------------------------- |\n"
+#| "| `id`              | TEXT PK     | 16 hex or `builtin-*`                             |\n"
+#| "| `name`            | TEXT        | Task name                                         |\n"
+#| "| `schedule`        | TEXT        | CST semantic schedule (cron / interval / oneshot) |\n"
+#| "| `prompt`          | TEXT        | LLM prompt                                        |\n"
+#| "| `skills`          | TEXT[]      | Skill list                                        |\n"
+#| "| `script`          | TEXT        | Script path (relative to `cron/scripts`)          |\n"
+#| "| `no_agent`        | BOOLEAN     | Script/builtin only, no LLM                       |\n"
+#| "| `model_provider`  | TEXT        | Model provider                                    |\n"
+#| "| `model_name`      | TEXT        | Model name                                        |\n"
+#| "| `workdir`         | TEXT        | Working directory                                 |\n"
+#| "| `context_from`    | TEXT[]      | Upstream task IDs                                 |\n"
+#| "| `deliver`         | TEXT        | Delivery target                                   |\n"
+#| "| `timeout_sec`     | INTEGER     | Timeout seconds                                   |\n"
+#| "| `builtin`         | BOOLEAN     | Built-in task                                     |\n"
+#| "| `repeat`          | INTEGER     | Max run count                                     |\n"
+#| "| `run_count`       | INTEGER     | Runs completed                                    |\n"
+#| "| `paused`          | BOOLEAN     | Paused state                                      |\n"
+#| "| `created_at`      | TIMESTAMPTZ |                                                   |\n"
+#| "| `updated_at`      | TIMESTAMPTZ |                                                   |\n"
+#| "| `last_run_at`     | TIMESTAMPTZ | Last run time                                     |\n"
+#| "| `last_output_ref` | TEXT        | Output file path relative to `FREEANIMA_HOME`     |\n"
 msgid ""
 "| Column             | Type          | Description                                                                                               |\n"
 "| ------------------ | ------------- | --------------------------------------------------------------------------------------------------------- |\n"
@@ -230,13 +276,36 @@ msgid ""
 "| `compression`      | JSONB         | `{ l2, l3, summary?, summary_at? }` — **compression boundaries** (see [`compression.md`](compression.md)) |\n"
 "| `todos`            | JSONB         | `{ items, next_id }`                                                                                      |\n"
 "| `awaiting_clarify` | JSONB         | clarify pause state                                                                                       |\n"
-"| `acp_sessions`     | JSONB         | ACP session uuid mapping                                                                                  |\n"
+"| `acp_tasks`        | JSONB         | ACP async task state per session (keyed by ACP session id)                                                |\n"
 "| `tools`            | JSONB         | OpenAI tools snapshot                                                                                     |\n"
 "| `functions`        | JSONB         | string[]                                                                                                  |\n"
 "| `debug`            | BOOLEAN       |                                                                                                           |\n"
 "| `created_at`       | TIMESTAMPTZ   |                                                                                                           |\n"
 "| `updated_at`       | TIMESTAMPTZ   |                                                                                                           |\n"
 msgstr ""
+"| 列                | 类型        | 说明                                            |\n"
+"| ----------------- | ----------- | ----------------------------------------------- |\n"
+"| `id`              | TEXT PK     | 16 hex 或 `builtin-*`                           |\n"
+"| `name`            | TEXT        | 任务名称                                        |\n"
+"| `schedule`        | TEXT        | CST 语义调度表达式（cron / interval / oneshot） |\n"
+"| `prompt`          | TEXT        | LLM 提示词                                      |\n"
+"| `skills`          | TEXT[]      | 技能列表                                        |\n"
+"| `script`          | TEXT        | 脚本路径（相对 `cron/scripts`）                 |\n"
+"| `no_agent`        | BOOLEAN     | 仅脚本/builtin，不调用 LLM                      |\n"
+"| `model_provider`  | TEXT        | 模型 provider                                   |\n"
+"| `model_name`      | TEXT        | 模型名                                          |\n"
+"| `workdir`         | TEXT        | 工作目录                                        |\n"
+"| `context_from`    | TEXT[]      | 上游任务 ID                                     |\n"
+"| `deliver`         | TEXT        | 投递目标                                        |\n"
+"| `timeout_sec`     | INTEGER     | 超时秒数                                        |\n"
+"| `builtin`         | BOOLEAN     | 内置任务                                        |\n"
+"| `repeat`          | INTEGER     | 最大运行次数                                    |\n"
+"| `run_count`       | INTEGER     | 已运行次数                                      |\n"
+"| `paused`          | BOOLEAN     | 暂停状态                                        |\n"
+"| `created_at`      | TIMESTAMPTZ |                                                 |\n"
+"| `updated_at`      | TIMESTAMPTZ |                                                 |\n"
+"| `last_run_at`     | TIMESTAMPTZ | 上次运行时间                                    |\n"
+"| `last_output_ref` | TEXT        | output 文件相对 `FREEANIMA_HOME` 路径           |\n"
 
 #. type: Plain text
 #: docs/guide/database.md:68
@@ -343,8 +412,12 @@ msgstr ""
 
 #. type: Bullet: '- '
 #: docs/guide/database.md:102
+#, fuzzy
+#| msgid ""
+#| "**Manual:** `bun run --filter @freeanima/engine-db db:migrate` — applies "
+#| "Drizzle migrations (including columnized → payload JSONB backfill)."
 msgid ""
-"**Manual:** `bun run --filter @freeanima/engine-db db:migrate` — applies "
+"**Manual:** `bun run --filter @freeanima/storage-db db:migrate` — applies "
 "Drizzle migrations (including columnized → payload JSONB backfill)."
 msgstr ""
 "**手动**：`bun run --filter @freeanima/engine-db db:migrate` — 应用 Drizzle "
@@ -364,11 +437,16 @@ msgstr ""
 
 #. type: Plain text
 #: docs/guide/database.md:107
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "```bash\n"
+#| "sudo apt install postgresql-17-pgvector   # version matches psql --version\n"
+#| "sudo -u postgres psql -d anima -f engine/db/scripts/ensure-pg-extensions.sql\n"
+#| "```\n"
 msgid ""
 "```bash\n"
 "sudo apt install postgresql-17-pgvector   # version matches psql --version\n"
-"sudo -u postgres psql -d anima -f engine/db/scripts/ensure-pg-extensions.sql\n"
+"sudo -u postgres psql -d anima -f storage/db/scripts/ensure-pg-extensions.sql\n"
 "```\n"
 msgstr ""
 "```bash\n"
@@ -428,11 +506,15 @@ msgstr ""
 
 #. type: Plain text
 #: docs/guide/database.md:127
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "# Schema\n"
+#| "DATABASE_URL=\"$(anima credential get services/postgres/anima url)\" \\\n"
+#| "  bun run --filter @freeanima/engine-db db:migrate\n"
 msgid ""
 "# Schema\n"
 "DATABASE_URL=\"$(anima credential get services/postgres/anima url)\" \\\n"
-"  bun run --filter @freeanima/engine-db db:migrate\n"
+"  bun run --filter @freeanima/storage-db db:migrate\n"
 msgstr ""
 "# Schema\n"
 "DATABASE_URL=\"$(anima credential get services/postgres/anima url)\" \\\n"
@@ -572,10 +654,17 @@ msgstr ""
 
 #. type: Plain text
 #: docs/guide/database.md:181
+#, fuzzy
+#| msgid ""
+#| "Port: `MemoryReferenceStorePort` (`engine-repos`) → "
+#| "`PgMemoryReferenceStore` (`connectors-db-pg`); incremental on "
+#| "`appendMessage`; cron `builtin-memory-reference-sync` full rebuild and "
+#| "calibrates `reference_count`."
 msgid ""
-"Port: `MemoryReferenceStorePort` (`engine-repos`) → `PgMemoryReferenceStore` "
-"(`connectors-db-pg`); incremental on `appendMessage`; cron `builtin-memory-"
-"reference-sync` full rebuild and calibrates `reference_count`."
+"Port: `MemoryReferenceStorePort` (`storage-repos`) → "
+"`PgMemoryReferenceStore` (`connectors-db-pg`); incremental on "
+"`appendMessage`; cron `builtin-memory-reference-sync` full rebuild and "
+"calibrates `reference_count`."
 msgstr ""
 "端口：`MemoryReferenceStorePort`（`engine-repos`）→ `PgMemoryReferenceStore`"
 "（`connectors-db-pg`）；`appendMessage` 增量写入；cron `builtin-memory-"
@@ -613,9 +702,14 @@ msgstr ""
 
 #. type: Plain text
 #: docs/guide/database.md:187
+#, fuzzy
+#| msgid ""
+#| "Port: `SemanticMemoryStorePort` (`engine-repos`) → "
+#| "`PgSemanticMemoryStore` (`connectors-db-pg`) → "
+#| "`registerSemanticMemoryStore` (`life-memory`)."
 msgid ""
-"Port: `SemanticMemoryStorePort` (`engine-repos`) → `PgSemanticMemoryStore` "
-"(`connectors-db-pg`) → `registerSemanticMemoryStore` (`life-memory`)."
+"Port: `SemanticMemoryStorePort` (`storage-repos`) → `PgSemanticMemoryStore` "
+"(`connectors-db-pg`) → `registerSemanticMemoryStore` (`capabilities-memory`)."
 msgstr ""
 "端口：`SemanticMemoryStorePort`（`engine-repos`）→ `PgSemanticMemoryStore`"
 "（`connectors-db-pg`）→ `registerSemanticMemoryStore`（`life-memory`）。"
@@ -657,9 +751,13 @@ msgstr ""
 
 #. type: Plain text
 #: docs/guide/database.md:205
+#, fuzzy
+#| msgid ""
+#| "Port: `SelfLayerStorePort` (`engine-repos`) → `PgSelfLayerStore` "
+#| "(`connectors-db-pg`) → `registerSelfLayerStore` (`life-self`)."
 msgid ""
-"Port: `SelfLayerStorePort` (`engine-repos`) → `PgSelfLayerStore` "
-"(`connectors-db-pg`) → `registerSelfLayerStore` (`life-self`)."
+"Port: `SelfLayerStorePort` (`storage-repos`) → `PgSelfLayerStore` "
+"(`connectors-db-pg`) → `registerSelfLayerStore` (`capabilities-identity`)."
 msgstr ""
 "端口：`SelfLayerStorePort`（`engine-repos`）→ `PgSelfLayerStore`"
 "（`connectors-db-pg`）→ `registerSelfLayerStore`（`life-self`）。"
@@ -718,9 +816,13 @@ msgstr ""
 
 #. type: Plain text
 #: docs/guide/database.md:229
+#, fuzzy
+#| msgid ""
+#| "Port: `AutobiographicalMemoryStorePort` → `PgAutobiographicalMemoryStore` "
+#| "→ `registerAutobiographicalMemoryStore` (`life-memory`)."
 msgid ""
 "Port: `AutobiographicalMemoryStorePort` → `PgAutobiographicalMemoryStore` → "
-"`registerAutobiographicalMemoryStore` (`life-memory`)."
+"`registerAutobiographicalMemoryStore` (`capabilities-memory`)."
 msgstr ""
 "端口：`AutobiographicalMemoryStorePort` → `PgAutobiographicalMemoryStore` → "
 "`registerAutobiographicalMemoryStore`（`life-memory`）。"
@@ -750,9 +852,14 @@ msgstr ""
 
 #. type: Plain text
 #: docs/guide/database.md:235
+#, fuzzy
+#| msgid ""
+#| "Migration: [`engine/db/migrations/"
+#| "20260607150000_self_and_autobiographical/migration.sql`](../../engine/db/"
+#| "migrations/20260607150000_self_and_autobiographical/migration.sql)."
 msgid ""
-"Migration: [`engine/db/migrations/20260607150000_self_and_autobiographical/"
-"migration.sql`](../../engine/db/migrations/"
+"Migration: [`storage/db/migrations/20260607150000_self_and_autobiographical/"
+"migration.sql`](../../storage/db/migrations/"
 "20260607150000_self_and_autobiographical/migration.sql)."
 msgstr ""
 "Migration：[`engine/db/migrations/20260607150000_self_and_autobiographical/"
@@ -805,9 +912,13 @@ msgstr ""
 
 #. type: Plain text
 #: docs/guide/database.md:254
+#, fuzzy
+#| msgid ""
+#| "Port: `LimbicMemoryStorePort` → `PgLimbicMemoryStore` → "
+#| "`registerLimbicMemoryStore` (`life-memory`)."
 msgid ""
 "Port: `LimbicMemoryStorePort` → `PgLimbicMemoryStore` → "
-"`registerLimbicMemoryStore` (`life-memory`)."
+"`registerLimbicMemoryStore` (`capabilities-memory`)."
 msgstr ""
 "端口：`LimbicMemoryStorePort` → `PgLimbicMemoryStore` → "
 "`registerLimbicMemoryStore`（`life-memory`）。"
@@ -823,9 +934,14 @@ msgstr ""
 
 #. type: Plain text
 #: docs/guide/database.md:258
+#, fuzzy
+#| msgid ""
+#| "Migration: [`engine/db/migrations/20260607160000_limbic_memory/"
+#| "migration.sql`](../../engine/db/migrations/20260607160000_limbic_memory/"
+#| "migration.sql)."
 msgid ""
-"Migration: [`engine/db/migrations/20260607160000_limbic_memory/"
-"migration.sql`](../../engine/db/migrations/20260607160000_limbic_memory/"
+"Migration: [`storage/db/migrations/20260607160000_limbic_memory/"
+"migration.sql`](../../storage/db/migrations/20260607160000_limbic_memory/"
 "migration.sql)."
 msgstr ""
 "Migration：[`engine/db/migrations/20260607160000_limbic_memory/"
@@ -916,18 +1032,27 @@ msgstr ""
 
 #. type: Plain text
 #: docs/guide/database.md:294
+#, fuzzy
+#| msgid ""
+#| "Port: `CronJobStorePort` (`engine-repos`) → `PgCronJobStore` (`connectors-"
+#| "db-pg`) → `initCronModule` (`connectors-cron` / `serve.ts`)."
 msgid ""
-"Port: `CronJobStorePort` (`engine-repos`) → `PgCronJobStore` (`connectors-db-"
-"pg`) → `initCronModule` (`connectors-cron` / `serve.ts`)."
+"Port: `CronJobStorePort` (`storage-repos`) → `PgCronJobStore` (`connectors-"
+"db-pg`) → `initCronModule` (`connectors-cron` / `serve.ts`)."
 msgstr ""
 "端口：`CronJobStorePort`（`engine-repos`）→ `PgCronJobStore`（`connectors-db-"
 "pg`）→ `initCronModule`（`connectors-cron` / `serve.ts`）。"
 
 #. type: Plain text
 #: docs/guide/database.md:296
+#, fuzzy
+#| msgid ""
+#| "Migration: [`engine/db/migrations/20260607140000_cron_jobs/migration.sql`]"
+#| "(../../engine/db/migrations/20260607140000_cron_jobs/migration.sql) (hand-"
+#| "written SQL, no Drizzle schema file)."
 msgid ""
-"Migration: [`engine/db/migrations/20260607140000_cron_jobs/migration.sql`]"
-"(../../engine/db/migrations/20260607140000_cron_jobs/migration.sql) (hand-"
+"Migration: [`storage/db/migrations/20260607140000_cron_jobs/migration.sql`]"
+"(../../storage/db/migrations/20260607140000_cron_jobs/migration.sql) (hand-"
 "written SQL, no Drizzle schema file)."
 msgstr ""
 "Migration：[`engine/db/migrations/20260607140000_cron_jobs/migration.sql`]"
@@ -986,18 +1111,27 @@ msgstr ""
 
 #. type: Plain text
 #: docs/guide/database.md:315
+#, fuzzy
+#| msgid ""
+#| "Port: `CronLogStorePort` (`engine-repos`) → `PgCronLogStore` (`connectors-"
+#| "db-pg`); write site `connectors/cron/src/runner.ts` (`appendCronRunLog`)."
 msgid ""
-"Port: `CronLogStorePort` (`engine-repos`) → `PgCronLogStore` (`connectors-db-"
-"pg`); write site `connectors/cron/src/runner.ts` (`appendCronRunLog`)."
+"Port: `CronLogStorePort` (`storage-repos`) → `PgCronLogStore` (`connectors-"
+"db-pg`); write site `connectors/cron/src/runner.ts` (`appendCronRunLog`)."
 msgstr ""
 "端口：`CronLogStorePort`（`engine-repos`）→ `PgCronLogStore`（`connectors-db-"
 "pg`）；写入点 `connectors/cron/src/runner.ts`（`appendCronRunLog`）。"
 
 #. type: Plain text
 #: docs/guide/database.md:317
+#, fuzzy
+#| msgid ""
+#| "Schema: `engine/db/src/schema/cron-log.ts`. Migration: [`engine/db/"
+#| "migrations/20260612120000_cron_log/migration.sql`](../../engine/db/"
+#| "migrations/20260612120000_cron_log/migration.sql)."
 msgid ""
-"Schema: `engine/db/src/schema/cron-log.ts`. Migration: [`engine/db/"
-"migrations/20260612120000_cron_log/migration.sql`](../../engine/db/"
+"Schema: `storage/db/src/schema/cron-log.ts`. Migration: [`storage/db/"
+"migrations/20260612120000_cron_log/migration.sql`](../../storage/db/"
 "migrations/20260612120000_cron_log/migration.sql)."
 msgstr ""
 "Schema：`engine/db/src/schema/cron-log.ts`。Migration：[`engine/db/"
@@ -1011,9 +1145,13 @@ msgstr "## tasks（已落地）"
 
 #. type: Plain text
 #: docs/guide/database.md:321
+#, fuzzy
+#| msgid ""
+#| "Cross-session persistent todos; `status` / `priority` TEXT + Zod enum "
+#| "(`engine-db/schema/tasks.ts`)."
 msgid ""
 "Cross-session persistent todos; `status` / `priority` TEXT + Zod enum "
-"(`engine-db/schema/tasks.ts`)."
+"(`storage-db/schema/tasks.ts`)."
 msgstr ""
 "跨 session 持久待办；`status` / `priority` 为 TEXT + Zod enum（`engine-db/"
 "schema/tasks.ts`）。"
@@ -1057,8 +1195,12 @@ msgstr ""
 
 #. type: Plain text
 #: docs/guide/database.md:338
+#, fuzzy
+#| msgid ""
+#| "Port: `TaskStorePort` (`engine-repos`) → `PgTaskStore` (`connectors-db-"
+#| "pg`) → `capabilities/tasks` tools."
 msgid ""
-"Port: `TaskStorePort` (`engine-repos`) → `PgTaskStore` (`connectors-db-pg`) "
+"Port: `TaskStorePort` (`storage-repos`) → `PgTaskStore` (`connectors-db-pg`) "
 "→ `capabilities/tasks` tools."
 msgstr ""
 "端口：`TaskStorePort`（`engine-repos`）→ `PgTaskStore`（`connectors-db-pg`）"
@@ -1066,9 +1208,13 @@ msgstr ""
 
 #. type: Plain text
 #: docs/guide/database.md:339
+#, fuzzy
+#| msgid ""
+#| "Migration: [`engine/db/migrations/20260608120000_tasks/migration.sql`]"
+#| "(../../engine/db/migrations/20260608120000_tasks/migration.sql)."
 msgid ""
-"Migration: [`engine/db/migrations/20260608120000_tasks/migration.sql`](../../"
-"engine/db/migrations/20260608120000_tasks/migration.sql)."
+"Migration: [`storage/db/migrations/20260608120000_tasks/migration.sql`]"
+"(../../storage/db/migrations/20260608120000_tasks/migration.sql)."
 msgstr ""
 "Migration：[`engine/db/migrations/20260608120000_tasks/migration.sql`](../"
 "engine/db/migrations/20260608120000_tasks/migration.sql)。"

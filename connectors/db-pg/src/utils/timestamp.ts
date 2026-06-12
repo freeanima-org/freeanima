@@ -1,4 +1,4 @@
-export { normalizePgTimestamp } from "@freeanima/engine-db/schema";
+export { normalizePgTimestamp } from "@freeanima/storage-db/schema";
 
 function emptyToNull<T>(value: T | null | undefined | ""): T | null {
   if (value === undefined || value === null || value === "") return null;

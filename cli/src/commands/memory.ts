@@ -1,6 +1,6 @@
 import type { Command } from "commander";
 import { bootstrapMemoryJobs } from "@freeanima/service/bootstrap-memory-jobs";
-import { runLightSleepBackfill } from "@freeanima/life-memory/light-sleep/backfill";
+import { runLightSleepBackfill } from "@freeanima/capabilities-memory/light-sleep/backfill";
 
 export function registerMemoryCommand(program: Command): void {
   const memory = program.command("memory").description("Memory pipeline CLI");

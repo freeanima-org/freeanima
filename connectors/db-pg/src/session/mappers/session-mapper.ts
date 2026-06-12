@@ -6,13 +6,13 @@ import {
   type CompressionState,
   type SessionMetaMessage,
   type SessionTodoStore,
-} from "@freeanima/engine-db/domain";
-import { capabilityMaskSchema } from "@freeanima/engine-db/schema";
+} from "@freeanima/storage-db/domain";
+import { capabilityMaskSchema } from "@freeanima/storage-db/schema";
 import {
   sessionFunctionsSchema,
   sessionLoadedToolsSchema,
   sessionToolsSchema,
-} from "@freeanima/engine-db/schema";
+} from "@freeanima/storage-db/schema";
 
 import {
   acpTasksSchema,
@@ -20,7 +20,7 @@ import {
   sessionSelectSchema,
   splitPlatformInfo,
   type SessionInsert,
-} from "@freeanima/engine-db/schema";
+} from "@freeanima/storage-db/schema";
 
 import { normalizePgTimestamp, pgJsonbOrNull, pgTextOrNull } from "../../utils/timestamp.ts";
 

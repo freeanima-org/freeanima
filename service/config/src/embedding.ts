@@ -1,4 +1,4 @@
-import type { AnimaConfig } from "@freeanima/engine-config";
+import type { AnimaConfig } from "@freeanima/storage-config";
 import { DEFAULT_EMBEDDING_DIMENSIONS, type ResolvedEmbeddingConfig } from "./schemas/embedding.ts";
 
 const DEFAULT_EMBEDDING_TIMEOUT_MS = 60_000;

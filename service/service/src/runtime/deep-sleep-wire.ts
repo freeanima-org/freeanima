@@ -1,14 +1,14 @@
-import * as engine from "@freeanima/engine-loop";
-import { runWithToolContext } from "@freeanima/engine-tool";
-import type { SessionMessage } from "@freeanima/engine-db/domain";
-import { PROFILE_REFLECT } from "@freeanima/engine-provider-llm";
-import { getProfileHopModel } from "@freeanima/engine-config";
-import { applyDeepSleepToolResult } from "@freeanima/life-memory";
+import * as engine from "@freeanima/orchestration-loop";
+import { runWithToolContext } from "@freeanima/mechanism-tool";
+import type { SessionMessage } from "@freeanima/storage-db/domain";
+import { PROFILE_REFLECT } from "@freeanima/storage-provider-llm";
+import { getProfileHopModel } from "@freeanima/storage-config";
+import { applyDeepSleepToolResult } from "@freeanima/capabilities-memory";
 import {
   registerDeepSleepEngine,
   type DeepSleepEngineInput,
   type DeepSleepEngineResult,
-} from "@freeanima/life-memory/deep-sleep-port";
+} from "@freeanima/capabilities-memory/deep-sleep-port";
 
 import { getServiceContext } from "../context.ts";
 import {

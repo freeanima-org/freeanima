@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import type { TaskRow, TaskStorePort } from "@freeanima/engine-repos";
+import type { TaskRow, TaskStorePort } from "@freeanima/storage-repos";
 import { buildTasksSummaryContent, syncTasksSummary } from "./fridge-bridge.ts";
 import type { FridgeBridge } from "./types.ts";
 

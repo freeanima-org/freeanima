@@ -46,7 +46,7 @@ Sleep is the digital life's memory consolidation mechanism—analogous to human 
 
 **Dedup (semantic):** **Local only**—compare only against existing memories with same `source_sessions`; cross-thread merging left to deep sleep.
 
-Implementation: [`life/memory/src/light-sleep/run.ts`](../../life/memory/src/light-sleep/run.ts); wiring: [`serve.ts`](../../service/service/src/serve.ts).
+Implementation: [`capabilities/memory/src/light-sleep/run.ts`](../../capabilities/memory/src/light-sleep/run.ts); wiring: [`serve.ts`](../../service/service/src/serve.ts).
 
 ### Stage 1 Message Structure
 
@@ -198,7 +198,7 @@ anima memory sleep backfill [--from YYYY-MM-DD] [--to YYYY-MM-DD] [--resume]
 - No conflict with 02:00 cron, but pause service or avoid early-morning window during backfill
 - Single conversation input still capped at ~**120k characters** (see "Context Too Large" above)
 
-Implementation: [`life/memory/src/light-sleep/backfill.ts`](../../life/memory/src/light-sleep/backfill.ts); CLI bootstrap: [`bootstrap-memory-jobs.ts`](../../service/service/src/bootstrap-memory-jobs.ts).
+Implementation: [`capabilities/memory/src/light-sleep/backfill.ts`](../../capabilities/memory/src/light-sleep/backfill.ts); CLI bootstrap: [`bootstrap-memory-jobs.ts`](../../service/service/src/bootstrap-memory-jobs.ts).
 
 ## Relationship to Existing Architecture
 

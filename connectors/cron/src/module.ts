@@ -3,7 +3,7 @@ import type {
   CronJobStorePort,
   CronJobUpdateInput,
   CronLogStorePort,
-} from "@freeanima/engine-repos";
+} from "@freeanima/storage-repos";
 import { setCronLogStore } from "./cron-log.ts";
 import { CronHandleManager } from "./handle-manager.ts";
 import { CronJob } from "./models.ts";

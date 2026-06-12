@@ -1,4 +1,4 @@
-import type { StreamEvent } from "@freeanima/engine-loop";
+import type { StreamEvent } from "@freeanima/orchestration-loop";
 import type { ApplyStreamEventResult, StreamEffect, StreamReplyState } from "./types.ts";
 import { formatClarifyForPlatform, parseClarifyStreamEvent } from "../clarify/index.ts";
 import { ToolRoundCollector } from "../stream-tool-format.ts";

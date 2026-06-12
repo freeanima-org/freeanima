@@ -6,12 +6,11 @@
     "./*": "./src/*.ts"
   },
   "dependencies": {
-    "@freeanima/engine-tool": "workspace:*",
-    "@freeanima/engine-util": "workspace:*",
-    "@freeanima/service-config": "workspace:*",
-    "@freeanima/service-logging": "workspace:*",
+    "@freeanima/mechanism-tool": "workspace:*",
+    "@freeanima/storage-util": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.29.0",
-    "zod": "catalog:"
+    "zod": "catalog:",
+    "@freeanima/storage-config": "workspace:*"
   },
   "devDependencies": {
     "@freeanima/service-config": "workspace:*",

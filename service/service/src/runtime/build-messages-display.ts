@@ -1,4 +1,4 @@
-import type { SessionMessage } from "@freeanima/engine-db/domain";
+import type { SessionMessage } from "@freeanima/storage-db/domain";
 import type { DisplayItem, DisplayToolBlockItem } from "@freeanima/service/schemas/display";
 
 function parseArgs(raw: string): Record<string, unknown> {

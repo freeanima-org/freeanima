@@ -1,7 +1,7 @@
 import { describe, expect, it, mock, beforeEach } from "bun:test";
-import { ToolSetRegistry } from "@freeanima/engine-tool";
+import { ToolSetRegistry } from "@freeanima/mechanism-tool";
 import { registerCatalogTools } from "./catalog-tools.ts";
-import { runWithToolContext } from "@freeanima/engine-tool";
+import { runWithToolContext } from "@freeanima/mechanism-tool";
 
 const sessionMeta = {
   role: "session_meta" as const,

@@ -1,6 +1,6 @@
-import type { SelfBlockKey } from "@freeanima/engine-repos";
-import { SELF_BLOCK_KEYS } from "@freeanima/engine-repos";
-import { toSelfBlockView } from "@freeanima/life-self";
+import type { SelfBlockKey } from "@freeanima/storage-repos";
+import { SELF_BLOCK_KEYS } from "@freeanima/storage-repos";
+import { toSelfBlockView } from "@freeanima/capabilities-identity";
 import { getServiceContext } from "../context.ts";
 
 export type SelfBlockDisplay = {

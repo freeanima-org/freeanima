@@ -1,7 +1,7 @@
-import type { ToolDef, ToolSetRegistry } from "@freeanima/engine-tool";
-import { mcpToolsetId, toolError } from "@freeanima/engine-tool";
-import type { Config } from "@freeanima/service-config";
-import { logComponent } from "@freeanima/service-logging";
+import type { ToolDef, ToolSetRegistry } from "@freeanima/mechanism-tool";
+import { mcpToolsetId, toolError } from "@freeanima/mechanism-tool";
+import type { Config } from "@freeanima/storage-config";
+import { logCapability as logComponent } from "@freeanima/storage-config";
 
 import { McpClientSession, type McpServerConfig } from "./client.ts";
 import { extractMcpResult, mcpToolParameters } from "./schema.ts";
@@ -13,7 +13,7 @@ import {
   type McpStatusResponse,
 } from "./status.ts";
 
-type McpServersConfig = NonNullable<import("@freeanima/service-config").AnimaConfig["mcp_servers"]>;
+type McpServersConfig = NonNullable<import("@freeanima/storage-config").AnimaConfig["mcp_servers"]>;
 
 /** MCP manager — start MCP Servers from config, discover and register tools */
 export class MCPManager {

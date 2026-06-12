@@ -1,4 +1,4 @@
-import type { Config } from "@freeanima/engine-config";
+import type { Config } from "@freeanima/storage-config";
 import { FileConfig } from "@freeanima/service-config";
 
 export type HomeChannel = {

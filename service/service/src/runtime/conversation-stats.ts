@@ -1,6 +1,6 @@
 import { getServiceContext } from "../context.ts";
-import { isSessionMeta } from "@freeanima/engine-db/domain";
-import type { SessionMessage } from "@freeanima/engine-db/domain";
+import { isSessionMeta } from "@freeanima/storage-db/domain";
+import type { SessionMessage } from "@freeanima/storage-db/domain";
 import {
   analyzeCompression,
   buildCompressOptions,
@@ -8,16 +8,16 @@ import {
   getContextWindow,
   isCompressed,
   parseCompressionState,
-} from "@freeanima/engine-compress";
+} from "@freeanima/mechanism-compress";
 import { getProfileHopModel } from "@freeanima/service-config";
-import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
+import { PROFILE_CHAT } from "@freeanima/storage-provider-llm";
 import {
   computeRuntimeContextBreakdown,
   formatTokenK,
   type RuntimeContextBreakdown,
 } from "./runtime-context-stats.ts";
-import { estimateTokens, messageTextForEstimate } from "@freeanima/engine-compress";
-import { normalizeUsage } from "@freeanima/engine-llm";
+import { estimateTokens, messageTextForEstimate } from "@freeanima/mechanism-compress";
+import { normalizeUsage } from "@freeanima/mechanism-llm";
 
 export type SessionStats = {
   session: string;
@@ -77,7 +77,7 @@ export {
   estimateMessagesTokens,
   estimateTokens,
   messageTextForEstimate,
-} from "@freeanima/engine-compress";
+} from "@freeanima/mechanism-compress";
 
 function emptyBreakdown(): RuntimeContextBreakdown {
   return {
@@ -530,7 +530,7 @@ function formatContextBreakdown(stats: SessionStats): string[] {
   lines.push(`  Session messages: ~${formatTokenK(b.messages)}`);
   lines.push(`  Tool schema: ~${formatTokenK(b.tools)}`);
   lines.push(
-    "(tokenizer estimate via @freeanima/engine-tokenizer; tools are schema in API request body, not counted in messages array)",
+    "(tokenizer estimate via @freeanima/storage-tokenizer; tools are schema in API request body, not counted in messages array)",
   );
   return lines;
 }

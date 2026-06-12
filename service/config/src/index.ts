@@ -9,7 +9,7 @@ export {
   bindActiveConfig,
   getActiveConfig,
   resetActiveConfigForTest,
-} from "@freeanima/engine-config";
+} from "@freeanima/storage-config";
 export * from "./database.ts";
 export * from "./redis.ts";
 export * from "./eventbus.ts";

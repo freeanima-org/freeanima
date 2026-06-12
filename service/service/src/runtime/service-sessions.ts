@@ -1,7 +1,7 @@
-import { resolveDefaultSessionTools } from "@freeanima/engine-tool";
+import { resolveDefaultSessionTools } from "@freeanima/mechanism-tool";
 import { getProfileHopModel } from "@freeanima/service-config";
-import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
-import type { CommandResult } from "@freeanima/connectors-commands";
+import { PROFILE_CHAT } from "@freeanima/storage-provider-llm";
+import type { CommandResult } from "@freeanima/service-commands";
 import type { MessagesDisplay } from "@freeanima/service/schemas/display";
 import type { SessionSummary } from "@freeanima/service/schemas/snapshot";
 import { getServiceContext } from "../context.ts";

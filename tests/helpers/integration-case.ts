@@ -1,6 +1,6 @@
 import type { PgTestContext } from "./pg-test.ts";
-import { flushCompressionSummaries } from "@freeanima/engine-conversation";
-import { createConversationService } from "@freeanima/engine-conversation";
+import { flushCompressionSummaries } from "@freeanima/orchestration-conversation";
+import { createConversationService } from "@freeanima/orchestration-conversation";
 import { createServiceKernel } from "@freeanima/service-bootstrap";
 import {
   AnimaService,
@@ -20,12 +20,12 @@ import {
   resetMemorySessionStoreForTests,
   resetAutobiographicalMemoryStoreForTests,
   resetLimbicMemoryStoreForTests,
-} from "@freeanima/life-memory";
+} from "@freeanima/capabilities-memory";
 import {
   registerSelfLayerStore,
   resetSelfLayerStoreForTests,
   invalidateSelfLayerPromptCache,
-} from "@freeanima/life-self";
+} from "@freeanima/capabilities-identity";
 
 import { bindHomeChannelConfig } from "@freeanima/service-api/home-channel";
 import { beginLogIsolation, resetServiceLogger } from "./log-isolation.ts";

@@ -1,4 +1,4 @@
-import type { StreamEvent } from "@freeanima/engine-loop";
+import type { StreamEvent } from "@freeanima/orchestration-loop";
 
 /** Narrow AnimaService interface for Gateway / platform adapters */
 export type ServiceCommandInfo = {

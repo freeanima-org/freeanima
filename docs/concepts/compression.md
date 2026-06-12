@@ -151,7 +151,7 @@ compression:
 
 When `models.*.context_window` and `default_context_window` are both unset, falls back to **message count** mode: first trigger `> max_rounds×2` messages; after compression, raw segment `> max_rounds×4` triggers again.
 
-Token estimate: `@freeanima/engine-tokenizer` (via `engine/compress/src/token-estimate.ts`, shared with `conversation-stats`). Models auto-resolve HuggingFace `tokenizer.json`; unresolved models use multilingual fallback `FacebookAI/xlm-roberta-base` (~9MB, cached under `~/.anima/tokenizers/`). No `config.yaml` tokenizer fields.
+Token estimate: `@freeanima/storage-tokenizer` (via `mechanism/compress/src/token-estimate.ts`, shared with `conversation-stats`). Models auto-resolve HuggingFace `tokenizer.json`; unresolved models use multilingual fallback `FacebookAI/xlm-roberta-base` (~9MB, cached under `~/.anima/tokenizers/`). No `config.yaml` tokenizer fields.
 
 ---
 
@@ -371,12 +371,12 @@ stateDiagram-v2
 
 | Module                                              | Responsibility                                                                                |
 | --------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `engine/compress/src/compressor.ts`                 | l-points, `deriveBoundariesFromL4`, `shouldAdvance`, `buildRuntimeFromLPoints`, `slimMessage` |
-| `engine/compress/src/compression-config.ts`         | Config and `context_window` / effective budget                                                |
-| `engine/compress/src/compression-summary.ts`        | Summary LLM                                                                                   |
-| `engine/compress/src/compression-tool-loop.ts`      | `isInToolLoop`                                                                                |
-| `engine/conversation/src/conversation.ts`           | `recompressSession`, `buildRuntimeMessages`, `maybeApplyEmergencyCompression`                 |
-| `engine/loop/src/engine.ts`                         | Emergency call site                                                                           |
+| `mechanism/compress/src/compressor.ts`              | l-points, `deriveBoundariesFromL4`, `shouldAdvance`, `buildRuntimeFromLPoints`, `slimMessage` |
+| `mechanism/compress/src/compression-config.ts`      | Config and `context_window` / effective budget                                                |
+| `mechanism/compress/src/compression-summary.ts`     | Summary LLM                                                                                   |
+| `mechanism/compress/src/compression-tool-loop.ts`   | `isInToolLoop`                                                                                |
+| `orchestration/conversation/src/conversation.ts`    | `recompressSession`, `buildRuntimeMessages`, `maybeApplyEmergencyCompression`                 |
+| `orchestration/loop/src/engine.ts`                  | Emergency call site                                                                           |
 | `service/service/src/runtime/conversation-stats.ts` | `/stats` shows `l2`/`l3`/occupancy                                                            |
 
 Manual: `/compress` (`--force` ignores hysteresis).

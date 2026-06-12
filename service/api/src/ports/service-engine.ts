@@ -1,8 +1,8 @@
-import type { Config } from "@freeanima/engine-config";
-import type { LlmRuntime } from "@freeanima/engine-llm";
-import type { PgRepositories } from "@freeanima/engine-repos";
-import type { SkillRegistry } from "@freeanima/engine-skill";
-import type { ToolSetRegistry } from "@freeanima/engine-tool";
+import type { Config } from "@freeanima/storage-config";
+import type { LlmRuntime } from "@freeanima/mechanism-llm";
+import type { PgRepositories } from "@freeanima/storage-repos";
+import type { SkillRegistry } from "@freeanima/mechanism-skill";
+import type { ToolSetRegistry } from "@freeanima/mechanism-tool";
 import type { Logger } from "@freeanima/kernel-logging";
 
 /** Narrow engine view required by ServiceContext */

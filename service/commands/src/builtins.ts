@@ -1,0 +1,337 @@
+import {
+  type CommandContext,
+  type CommandResult,
+  listCommandDefsForPlatform,
+  registerCommand,
+} from "./registry.ts";
+import { clearAwaitingClarify, readAwaitingClarify } from "@freeanima/capabilities-clarify";
+import { resolveMaskPresets } from "@freeanima/capabilities-mask";
+import { statsReport } from "@freeanima/service-api/conversation-stats";
+import { PARLOR_PLATFORM } from "@freeanima/service-api/constants";
+import { onSessionCloseBeforeNew } from "@freeanima/service-api/session-close";
+import { isSessionMeta } from "@freeanima/storage-db/domain";
+import { setHomeChannel } from "@freeanima/service-api/home-channel";
+import { getServiceContext } from "@freeanima/service-api";
+
+function conv() {
+  return getServiceContext().conversation;
+}
+
+function cmdHelp(ctx: CommandContext): string {
+  const available = listCommandDefsForPlatform(ctx.platform);
+  const sessionCmds = available.filter((c) => (c.scope ?? "session") === "session");
+  const globalCmds = available.filter((c) => c.scope === "global");
+
+  const lines = ["**Available commands:**"];
+  if (sessionCmds.length) {
+    lines.push("", "**Current session:**");
+    for (const cmd of sessionCmds) {
+      lines.push(`  • \`/${cmd.name}\` — ${cmd.description}`);
+    }
+  }
+  if (globalCmds.length) {
+    lines.push("", "**Other:**");
+    for (const cmd of globalCmds) {
+      lines.push(`  • \`/${cmd.name}\` — ${cmd.description}`);
+    }
+  }
+  return lines.join("\n");
+}
+
+async function cmdNew(ctx: CommandContext): Promise<CommandResult> {
+  const summary = await onSessionCloseBeforeNew(ctx.sessionId);
+  const sid = await conv().newSession(ctx.platform);
+  if (summary) {
+    await conv().appendMessage({ role: "assistant", content: summary }, sid);
+  }
+  return {
+    text: `🆕 New session created (${sid.slice(0, 8)}...)`,
+    data: { new_session_id: sid },
+  };
+}
+
+function cmdRetry(_ctx: CommandContext): CommandResult {
+  return { text: "", data: { action: "retry" } };
+}
+
+async function cmdCancel(ctx: CommandContext): Promise<string> {
+  const pending = await readAwaitingClarify(conv(), ctx.sessionId);
+  if (!pending) return "No pending questions to answer.";
+  await clearAwaitingClarify(conv(), ctx.sessionId);
+  return "Question cancelled, you can continue the conversation.";
+}
+
+async function cmdReloadTools(ctx: CommandContext): Promise<string> {
+  const meta = await conv().loadSessionMeta(ctx.sessionId);
+  if (!isSessionMeta(meta)) {
+    return "⚠️ Current session does not exist, cannot update tool list.";
+  }
+  const beforeSchema = meta.tools.length;
+  const beforeLoaded = meta.loaded_tools?.length ?? 0;
+  try {
+    const count = await conv().reloadSessionTools(ctx.sessionId);
+    const after = await conv().loadSessionMeta(ctx.sessionId);
+    const names = isSessionMeta(after) ? after.tools : [];
+    const preview = names.length <= 8 ? names.join(", ") : `${names.slice(0, 8).join(", ")}…`;
+    return (
+      `✅ Reset session tools: schema ${count} (was ${beforeSchema}),` +
+      `cleared loaded_tools (was ${beforeLoaded}).\nDefault tools: ${preview}`
+    );
+  } catch (e) {
+    return `⚠️ Failed to update tool list: ${String(e)}`;
+  }
+}
+
+async function cmdReloadSystemPrompt(ctx: CommandContext): Promise<string> {
+  const meta = await conv().loadSessionMeta(ctx.sessionId);
+  if (!isSessionMeta(meta)) {
+    return "⚠️ Current session does not exist, cannot rebuild system prompt.";
+  }
+  await conv().rebuildSessionSystemPrompt(ctx.sessionId);
+  const after = await conv().loadSessionMeta(ctx.sessionId);
+  const sp = isSessionMeta(after) ? (after.system_prompt ?? "") : "";
+  return `✅ Rebuilt system prompt (${sp.length} chars), only updated session_meta.system_prompt`;
+}
+
+async function cmdStats(ctx: CommandContext): Promise<string> {
+  if (ctx.args[0] === "--all" || ctx.args[0] === "-a") {
+    return statsReport(null, { allSessions: true });
+  }
+  return statsReport(ctx.sessionId);
+}
+
+async function cmdCwd(ctx: CommandContext): Promise<string> {
+  if (!ctx.args.length) {
+    const cwd = await conv().getSessionCwd(ctx.sessionId);
+    return `📁 Current working directory: ${cwd ?? "(not set)"}`;
+  }
+  const newCwd = ctx.args.join(" ");
+  try {
+    const resolved = await conv().setSessionCwd(ctx.sessionId, newCwd);
+    return `✅ Working directory switched to: ${resolved}\n(if AGENTS.md exists, content injected into system prompt)`;
+  } catch (e) {
+    return `❌ ${e instanceof Error ? e.message : String(e)}`;
+  }
+}
+
+async function cmdTitle(ctx: CommandContext): Promise<string> {
+  if (!ctx.args.length) {
+    const title = await conv().getSessionTitle(ctx.sessionId);
+    return `📝 Current title: ${title || "(empty)"}`;
+  }
+  const newTitle = ctx.args.join(" ").slice(0, 50);
+  await conv().setSessionTitle(ctx.sessionId, newTitle);
+  return `✅ Title updated: ${newTitle}`;
+}
+
+function cmdSethome(ctx: CommandContext): string {
+  const extra = ctx.origin_extra;
+  if (!extra) {
+    return "⚠️ /sethome only works in Discord or WeChat chat.";
+  }
+
+  if (ctx.platform === "discord") {
+    const channelId = String(extra.channel_id ?? "").trim();
+    if (!channelId) {
+      return "⚠️ Cannot identify current Discord channel.";
+    }
+    const threadId = String(extra.thread_id ?? "").trim();
+    setHomeChannel("discord", channelId, threadId || undefined);
+    const where = threadId ? `channel ${channelId} / thread ${threadId}` : `channel ${channelId}`;
+    return `✅ Set Discord home channel to ${where}(cron delivery etc. will default here)`;
+  }
+
+  if (ctx.platform === "weixin") {
+    const peerId = String(extra.weixin_peer_id ?? "").trim();
+    if (!peerId) {
+      return "⚠️ Cannot identify current WeChat session.";
+    }
+    setHomeChannel("weixin", peerId);
+    return `✅ Set WeChat home channel to ${peerId}(cron delivery etc. will default here)`;
+  }
+
+  return "⚠️ /sethome only works in Discord or WeChat chat.";
+}
+
+async function cmdCompress(ctx: CommandContext): Promise<string> {
+  const force = ctx.args.includes("--force") || ctx.args.includes("-f");
+  const r = await conv().recompressSession(ctx.sessionId, { force });
+  if (!r.enabled) {
+    return "Session compression not enabled (config.yaml → compression.enabled)";
+  }
+  const lines = [
+    r.updated ? "✅ Updated compression l2/l3" : "ℹ️ l2/l3 unchanged",
+    `l2: ${r.l2 ?? "—"}  l3: ${r.l3 ?? "(none, below compression threshold)"}`,
+    `stored ${r.stored_total} → runtime ${r.runtime_message_count} (hidden ${r.hidden_by_compression})`,
+    `raw segment ${r.window_raw}/${r.recompress_at} (first threshold ${r.threshold})`,
+  ];
+  if (r.messages_until_recompress != null) {
+    lines.push(
+      `Until next trim: ~${r.messages_until_recompress} messages (~${r.rounds_until_recompress} rounds)`,
+    );
+  }
+  return lines.join("\n");
+}
+
+async function reloadMaskSideEffects(sessionId: string): Promise<void> {
+  await conv().recompressSession(sessionId, { force: true });
+  await conv().reloadSessionTools(sessionId);
+  await conv().rebuildSessionSystemPrompt(sessionId);
+}
+
+async function cmdMask(ctx: CommandContext): Promise<string> {
+  const sub = ctx.args[0]?.toLowerCase();
+  const meta = await conv().loadSessionMeta(ctx.sessionId);
+  if (!isSessionMeta(meta)) {
+    return "⚠️ Current session does not exist, cannot set capability mask.";
+  }
+
+  if (sub === "set") {
+    const preset = ctx.args[1]?.trim();
+    if (!preset) {
+      return "Usage: `/mask set <preset-name>`";
+    }
+    const { masks, engine } = getServiceContext();
+    if (!masks.get(preset)) {
+      const known = masks
+        .list()
+        .map((m) => m.name)
+        .join(", ");
+      return `⚠️ Unknown mask '${preset}'. Available: ${known || "(none)"}`;
+    }
+    await conv().updateSessionMetaField(ctx.sessionId, {
+      capability_mask: { presets: [preset] },
+    });
+    await reloadMaskSideEffects(ctx.sessionId);
+    const resolved = resolveMaskPresets([preset], masks, engine.catalog.toolSets);
+    return `✅ Set capability mask '${preset}' (${resolved.allowed_tools.length} tools). Compressed and reloaded tools and system prompt.`;
+  }
+
+  if (sub === "clear") {
+    await conv().updateSessionMetaField(ctx.sessionId, { capability_mask: undefined });
+    await reloadMaskSideEffects(ctx.sessionId);
+    return "✅ Removed capability mask, restored full capabilities. Compressed and reloaded tools and system prompt.";
+  }
+
+  if (sub === "show") {
+    const presets = meta.capability_mask?.presets ?? [];
+    if (!presets.length) {
+      return "ℹ️ Current session has no capability mask (full capabilities).";
+    }
+    const { masks, engine } = getServiceContext();
+    const resolved = resolveMaskPresets(presets, masks, engine.catalog.toolSets);
+    const preview =
+      resolved.allowed_tools.length <= 12
+        ? resolved.allowed_tools.join(", ")
+        : `${resolved.allowed_tools.slice(0, 12).join(", ")}… (total ${resolved.allowed_tools.length})`;
+    return [
+      `🎭 Capability mask: ${presets.join(", ")}`,
+      `Allowed tools: ${preview || "(none)"}`,
+    ].join("\n");
+  }
+
+  return "Usage: `/mask set <preset>` | `/mask clear` | `/mask show`";
+}
+
+function cmdRestart(_ctx: CommandContext): CommandResult | string {
+  if (getServiceContext().service.isShuttingDown()) {
+    return "Service is already restarting…";
+  }
+  return {
+    text: "🔄 Restarting service (waiting for in-flight conversations to flush)…",
+    data: { action: "restart" },
+  };
+}
+
+export function registerBuiltins(): void {
+  registerCommand({
+    name: "help",
+    description: "List all available commands",
+    handler: cmdHelp,
+    aliases: ["commands"],
+    scope: "global",
+  });
+  registerCommand({
+    name: "new",
+    description: "Create new session (carries over previous session summary)",
+    handler: cmdNew,
+    scope: "global",
+    platforms: ["discord", "weixin"],
+  });
+  registerCommand({
+    name: "retry",
+    description: "Replay last partner message and regenerate reply",
+    handler: cmdRetry,
+    aliases: ["regenerate"],
+    scope: "session",
+  });
+  registerCommand({
+    name: "cancel",
+    description: "Cancel current pending clarify question",
+    handler: cmdCancel,
+    scope: "session",
+  });
+  registerCommand({
+    name: "reload_tools",
+    description:
+      "Reset session tool schema to defaults and clear tools_load accumulated loaded_tools",
+    handler: cmdReloadTools,
+    aliases: ["reload-tools"],
+    scope: "session",
+  });
+  registerCommand({
+    name: "reload_system_prompt",
+    description:
+      "Rebuild system prompt (self layer, resident memory, AGENTS.md under session cwd), only writes system_prompt",
+    handler: cmdReloadSystemPrompt,
+    aliases: ["reload-system-prompt"],
+    scope: "session",
+  });
+  registerCommand({
+    name: "stats",
+    description: "View current session conversation usage stats (--all aggregates all sessions)",
+    handler: cmdStats,
+    scope: "session",
+  });
+  registerCommand({
+    name: "cwd",
+    description: "View or set current session working directory",
+    handler: cmdCwd,
+    scope: "session",
+  });
+  registerCommand({
+    name: "title",
+    description: "View or modify current session title",
+    handler: cmdTitle,
+    scope: "session",
+  });
+  registerCommand({
+    name: "sethome",
+    description:
+      "Set current chat as platform home channel (default delivery target for cron etc.)",
+    handler: cmdSethome,
+    aliases: ["set-home"],
+    scope: "global",
+    platforms: ["discord", "weixin"],
+  });
+  registerCommand({
+    name: "compress",
+    description: "Recalculate current session runtime compression (--force ignores hysteresis)",
+    handler: cmdCompress,
+    scope: "session",
+  });
+  registerCommand({
+    name: "mask",
+    description: "Set / view / clear current session capability mask (parlor only)",
+    handler: cmdMask,
+    scope: "session",
+    platforms: [PARLOR_PLATFORM],
+  });
+  registerCommand({
+    name: "restart",
+    description: "Restart Free Anima service (waits for in-flight conversations to flush)",
+    handler: cmdRestart,
+    scope: "global",
+    platforms: ["parlor", "discord", "weixin"],
+  });
+}

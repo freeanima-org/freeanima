@@ -1,4 +1,4 @@
-import { isSessionMeta, resolveExecutableToolNames } from "@freeanima/engine-conversation";
+import { isSessionMeta, resolveExecutableToolNames } from "@freeanima/orchestration-conversation";
 import { getServiceContext } from "../context.ts";
 import { resolveSessionMaskFromMeta, runtimeToolMaskFromResolved } from "./mask-wire.ts";
 
@@ -13,16 +13,16 @@ function toolRegistry() {
 function engineLlm() {
   return getServiceContext().engine.llm;
 }
-import type { SessionMessage as Message } from "@freeanima/engine-db/domain";
-import type { SessionMessage } from "@freeanima/engine-db/domain";
-import * as engine from "@freeanima/engine";
-import { runWithToolContext } from "@freeanima/engine-tool";
-import type { StreamEvent } from "@freeanima/engine";
+import type { SessionMessage as Message } from "@freeanima/storage-db/domain";
+import type { SessionMessage } from "@freeanima/storage-db/domain";
+import * as engine from "@freeanima/orchestration-runtime";
+import { runWithToolContext } from "@freeanima/mechanism-tool";
+import type { StreamEvent } from "@freeanima/orchestration-runtime";
 import { applyClarifyStreamAwaiting } from "@freeanima/capabilities-clarify";
-import { ProviderError } from "@freeanima/engine-provider-llm";
+import { ProviderError } from "@freeanima/storage-provider-llm";
 import { getProfileHopModel } from "@freeanima/service-config";
-import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
-import { isInsufficientToolMessagesError } from "@freeanima/engine-llm";
+import { PROFILE_CHAT } from "@freeanima/storage-provider-llm";
+import { isInsufficientToolMessagesError } from "@freeanima/mechanism-llm";
 import type { HookRegistry } from "@freeanima/kernel-hooks";
 import { SessionManager } from "./session-manager.ts";
 

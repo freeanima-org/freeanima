@@ -1,4 +1,4 @@
-import type { SelfLayerStorePort } from "@freeanima/engine-repos";
+import type { SelfLayerStorePort } from "@freeanima/storage-repos";
 
 import * as crudRepo from "./repos/self-crud-repo.ts";
 

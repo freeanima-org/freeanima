@@ -4,7 +4,7 @@ import {
   textLineNumberExample,
   type ToolReturnContractFields,
   z,
-} from "@freeanima/engine-tool";
+} from "@freeanima/mechanism-tool";
 
 const catalogEntrySchema = z.object({
   name: z.string(),

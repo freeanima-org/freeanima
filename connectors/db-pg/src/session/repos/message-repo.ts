@@ -1,8 +1,8 @@
 import { and, asc, desc, eq, gte, lte, sql } from "drizzle-orm";
-import type { ConversationMessage, SessionMessage } from "@freeanima/engine-db/domain";
-import type { MessageRowView } from "@freeanima/engine-repos";
+import type { ConversationMessage, SessionMessage } from "@freeanima/storage-db/domain";
+import type { MessageRowView } from "@freeanima/storage-repos";
 
-import { messages } from "@freeanima/engine-db/schema";
+import { messages } from "@freeanima/storage-db/schema";
 
 import { resolveFtsSegmentedForWrite } from "../../fts/write.ts";
 import { scheduleMessageEmbedding } from "../../embedding/schedule.ts";

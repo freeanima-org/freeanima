@@ -1,4 +1,5 @@
 import { wireEnginePorts } from "./wire-engine-ports.ts";
+import { wireCapabilityInjection } from "./wire-capability-injection.ts";
 import { registerSystemPromptHooks } from "./register-prompt-hooks.ts";
 import { wireServicePorts } from "./wire-api.ts";
 import {
@@ -7,13 +8,13 @@ import {
   getLlmRuntime,
   initLlmRuntime,
   type Engine,
-} from "@freeanima/engine";
+} from "@freeanima/orchestration-runtime";
 import { createServiceKernel } from "@freeanima/service-bootstrap";
-import { nullPgRepositories } from "@freeanima/engine-repos";
+import { nullPgRepositories } from "@freeanima/storage-repos";
 import {
   createConversationService,
   type ConversationService,
-} from "@freeanima/engine-conversation";
+} from "@freeanima/orchestration-conversation";
 import type { Kernel } from "@freeanima/kernel";
 import {
   closeDb,
@@ -23,7 +24,7 @@ import {
   isPostgresPrimary,
 } from "@freeanima/connectors-db-pg";
 import { closeRedis, initRedis, isRedisConfigured } from "@freeanima/connectors-redis";
-import { runMigrations } from "@freeanima/engine-db";
+import { runMigrations } from "@freeanima/storage-db";
 import {
   FileConfig,
   getConfiguredDatabaseUrl,
@@ -66,10 +67,13 @@ import { registerDeepSleepWire } from "./runtime/deep-sleep-wire.ts";
 import { registerAutobiographyWire } from "./runtime/autobiography-wire.ts";
 import { initMaskSystem } from "./runtime/mask-wire.ts";
 import { MaskRegistry } from "@freeanima/capabilities-mask";
-import { runLightSleep } from "@freeanima/life-memory/light-sleep/run";
-import { runDeepSleep } from "@freeanima/life-memory/deep-sleep/run";
-import { invalidateSelfLayerPromptCache, loadSelfLayerPrompt } from "@freeanima/life-self";
-import { syncSemanticMemoryReferenceCounts } from "@freeanima/life-memory";
+import { runLightSleep } from "@freeanima/capabilities-memory/light-sleep/run";
+import { runDeepSleep } from "@freeanima/capabilities-memory/deep-sleep/run";
+import {
+  invalidateSelfLayerPromptCache,
+  loadSelfLayerPrompt,
+} from "@freeanima/capabilities-identity";
+import { syncSemanticMemoryReferenceCounts } from "@freeanima/capabilities-memory";
 import {
   discoverPlatforms,
   startPlatforms,
@@ -78,7 +82,7 @@ import {
 } from "@freeanima/connectors-gateway";
 import { MCPManager } from "@freeanima/capabilities-mcp";
 import { getAcpManager } from "@freeanima/capabilities-acp";
-import { createFridgeBridge } from "@freeanima/capabilities-tasks";
+import { createFridgeBridge } from "./fridge-bridge-factory.ts";
 import { DEFAULT_BIND_HOST, parseBindHosts } from "./bind-hosts.ts";
 import { bindHomeChannelConfig } from "@freeanima/service-api/home-channel";
 import { initServiceContext } from "./context.ts";
@@ -218,6 +222,7 @@ export async function serve(
     bindHomeChannelConfig(config);
 
     wireEnginePorts();
+    wireCapabilityInjection();
     wireServicePorts();
     wireEmbeddingRuntime(config);
     await wireTokenizerRuntime(config);

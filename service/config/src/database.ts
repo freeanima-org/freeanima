@@ -1,4 +1,4 @@
-import type { AnimaConfig } from "@freeanima/engine-config";
+import type { AnimaConfig } from "@freeanima/storage-config";
 import { resolveValue } from "./resolve.ts";
 
 /** Expand env/credential references in database.url */

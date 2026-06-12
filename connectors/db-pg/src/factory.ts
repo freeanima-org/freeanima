@@ -1,4 +1,4 @@
-import type { PgRepositories } from "@freeanima/engine-repos";
+import type { PgRepositories } from "@freeanima/storage-repos";
 import type { Db } from "./client.ts";
 import { PgAutobiographicalMemoryStore } from "./autobiographical-memory/pg-autobiographical-memory-store.ts";
 import { PgCronJobStore } from "./cron/pg-cron-job-store.ts";

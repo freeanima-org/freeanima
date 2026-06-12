@@ -1,5 +1,5 @@
-import type { SemanticMemoryRow } from "@freeanima/engine-repos";
-import { normalizePgTimestamp } from "@freeanima/engine-db/schema";
+import type { SemanticMemoryRow } from "@freeanima/storage-repos";
+import { normalizePgTimestamp } from "@freeanima/storage-db/schema";
 
 export type SemanticMemoryDbRow = {
   id: string;

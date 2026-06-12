@@ -1,7 +1,7 @@
-import * as conv from "@freeanima/engine-conversation";
-import { prependSkillsToPrompt } from "@freeanima/engine-skill";
+import * as conv from "@freeanima/orchestration-conversation";
+import { prependSkillsToPrompt } from "@freeanima/mechanism-skill";
 import { getProfileHopModel } from "@freeanima/service-config";
-import { PROFILE_CHAT } from "@freeanima/engine-provider-llm";
+import { PROFILE_CHAT } from "@freeanima/storage-provider-llm";
 import { runSimpleTurn } from "@freeanima/service-api/turn-lifecycle";
 
 import { getServiceContext } from "../../context.ts";

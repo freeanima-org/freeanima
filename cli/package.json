@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@freeanima/connectors-webui": "workspace:*",
-    "@freeanima/life-memory": "workspace:*",
+    "@freeanima/capabilities-memory": "workspace:*",
     "@freeanima/service": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "@freeanima/service-logging": "workspace:*",

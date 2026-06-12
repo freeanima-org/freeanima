@@ -1,0 +1,15 @@
+{
+  "name": "@freeanima/capabilities-estate",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@freeanima/storage-config": "workspace:*",
+    "@freeanima/mechanism-tool": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:"
+  }
+}

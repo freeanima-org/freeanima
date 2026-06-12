@@ -3,24 +3,24 @@ import {
   resolveCommand,
   isRetryResult,
   isRestartResult,
-} from "@freeanima/connectors-commands";
-import type { CommandDef } from "@freeanima/connectors-commands";
+} from "@freeanima/service-commands";
+import type { CommandDef } from "@freeanima/service-commands";
 import { getServiceContext } from "../context.ts";
 
 function conv() {
   return getServiceContext().conversation;
 }
-import { messageIncoming, turnAfterComplete } from "@freeanima/engine-hooks/conversation";
+import { messageIncoming, turnAfterComplete } from "@freeanima/mechanism-hooks/conversation";
 import { headOkStepData } from "@freeanima/kernel-hooks";
-import type { SessionMessage as Message } from "@freeanima/engine-db/domain";
+import type { SessionMessage as Message } from "@freeanima/storage-db/domain";
 import type { EventBus } from "@freeanima/kernel-eventbus";
-import { sessionUpdated } from "@freeanima/life-memory";
+import { sessionUpdated } from "@freeanima/capabilities-memory";
 import { PARLOR_PLATFORM } from "./platforms.ts";
 import type { EngineRunControl } from "./engine-run-control.ts";
 import type { SessionManager } from "./session-manager.ts";
 import { runExclusiveStreamTurn, streamErrorEvent, type StreamTurnHost } from "./turn-lifecycle.ts";
 import { applyCommandSessionEffects, checkPlatform } from "./service-sessions.ts";
-import { collectStreamReply, type StreamEvent } from "@freeanima/engine";
+import { collectStreamReply, type StreamEvent } from "@freeanima/orchestration-runtime";
 import { scheduleGracefulRestart } from "./process-restart.ts";
 
 export type MessagingDeps = {

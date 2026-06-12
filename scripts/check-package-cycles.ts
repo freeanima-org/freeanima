@@ -9,11 +9,12 @@ const ROOT = join(import.meta.dir, "..");
 
 const WORKSPACE_DIRS = [
   "kernel",
-  "engine",
-  "life",
-  "service",
+  "storage",
+  "mechanism",
+  "orchestration",
   "capabilities",
   "connectors",
+  "service",
   "cli",
   "tests",
 ];
