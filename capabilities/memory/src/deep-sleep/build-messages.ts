@@ -176,7 +176,7 @@ export function buildDeepSleepMessages(
 /** Fetch all active memories needed for deep sleep */
 export async function fetchAllActiveMemories(): Promise<SemanticMemoryRow[]> {
   const store = getSemanticMemoryStore();
-  return store.listAll(); // listAll returns active only by default
+  return store.listActive();
 }
 
 /** Deep sleep LLM tool allowlist */

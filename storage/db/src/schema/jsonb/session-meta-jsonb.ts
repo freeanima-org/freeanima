@@ -71,7 +71,36 @@ export const acpTaskEntrySchema = z.object({
   progress_message_id: z.string().optional(),
 });
 
-export const acpTasksSchema = z.record(z.string(), acpTaskEntrySchema);
+const LEGACY_ACP_TASK_UPDATED_AT = "1970-01-01T00:00:00.000Z";
+
+/** Legacy acp_tasks keyed by agent name with string acp session id; normalize to ACP session id keys */
+export function normalizeAcpTasks(raw: unknown): unknown {
+  if (raw === null || raw === undefined) return raw;
+  if (typeof raw !== "object" || Array.isArray(raw)) return raw;
+
+  const obj = raw as Record<string, unknown>;
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      out[key] = value;
+      continue;
+    }
+    if (typeof value === "string" && value.length > 0) {
+      out[value] = {
+        status: "completed",
+        task_id: "legacy",
+        agent_name: key,
+        updated_at: LEGACY_ACP_TASK_UPDATED_AT,
+      };
+    }
+  }
+  return out;
+}
+
+export const acpTasksSchema = z.preprocess(
+  normalizeAcpTasks,
+  z.record(z.string(), acpTaskEntrySchema),
+);
 export type AcpTaskStatusJson = z.infer<typeof acpTaskStatusSchema>;
 export type AcpTaskEntryJson = z.infer<typeof acpTaskEntrySchema>;
 export type AcpTasksJson = z.infer<typeof acpTasksSchema>;
