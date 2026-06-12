@@ -363,6 +363,14 @@ export class AnimaService implements StreamTurnHost {
     return sleep.getDeepSleepRounds(day);
   }
 
+  startLightSleepBackfill(opts?: Parameters<typeof sleep.startLightSleepBackfill>[0]) {
+    return sleep.startLightSleepBackfill(opts);
+  }
+
+  getLightSleepBackfillStatus() {
+    return sleep.getLightSleepBackfillStatus();
+  }
+
   ensureBuiltinCronJobs(): Promise<void> {
     return status.ensureBuiltinCronJobsRegistered();
   }

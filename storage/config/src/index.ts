@@ -9,3 +9,4 @@ export * from "./runtime-logger.ts";
 export * from "./capability-injection.ts";
 export * from "./repo-root.ts";
 export * from "./version.ts";
+export * from "./cli-install.ts";

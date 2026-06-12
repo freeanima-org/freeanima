@@ -1,8 +1,8 @@
+import { animaBinString } from "@freeanima/storage-config/cli-install";
 import { PATHS } from "@freeanima/service-config";
-import { existsSync, readFileSync, realpathSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { spawnSync } from "node:child_process";
 
 import { isServerAlive } from "@freeanima/service/alive";
 import { prettyDuration, writeStatusLine } from "./output/status.ts";
@@ -60,21 +60,7 @@ export function checkServerAlive(): number | null {
 
 /** Executable path for systemd ExecStart (shebang script or bun + cli.js) */
 export function animaBin(): string {
-  const script = process.argv[1];
-  // Prefer current process when it is the TS CLI, avoiding stale freeanima / Python entry on PATH
-  if (script?.endsWith("cli.js") || script?.endsWith("cli.ts")) {
-    return `${process.execPath} ${realpathSync(script)}`;
-  }
-
-  try {
-    const r = spawnSync("sh", ["-c", "command -v anima"], { encoding: "utf-8" });
-    const found = r.stdout?.trim();
-    if (r.status === 0 && found) return found;
-  } catch {
-    /* ignore */
-  }
-
-  return script ? realpathSync(script) : "anima";
+  return animaBinString();
 }
 
 /** Resolve animaBin() to spawn(command, args) form */

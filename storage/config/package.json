@@ -8,7 +8,8 @@
     "./compression": "./src/compression-config.ts",
     "./paths": "./src/paths.ts",
     "./test-helpers/minimal-llm-config": "./src/test-helpers/minimal-llm-config.ts",
-    "./test-helpers/capability-injection": "./src/test-helpers/capability-injection.ts"
+    "./test-helpers/capability-injection": "./src/test-helpers/capability-injection.ts",
+    "./cli-install": "./src/cli-install.ts"
   },
   "dependencies": {
     "@freeanima/kernel": "workspace:*",
