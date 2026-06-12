@@ -7,7 +7,7 @@ import { acpToolsetId, toolError, toolResult } from "@freeanima/mechanism-tool";
 import type { Config } from "@freeanima/storage-config";
 import { logCapability as logComponent } from "@freeanima/storage-config";
 
-import type { SessionConversationPort } from "@freeanima/mechanism-session-port";
+import type { SessionConversationPort } from "@freeanima/mechanism-tool/session-conversation-port";
 import { isSessionMeta } from "@freeanima/storage-db/domain";
 import {
   AcpAsyncTaskStore,

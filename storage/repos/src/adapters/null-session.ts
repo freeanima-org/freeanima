@@ -1,8 +1,8 @@
 import type { SessionStorePort } from "../ports/session.ts";
 
-const unavailable = (): never => {
-  throw new Error("database.url not configured");
-};
+import { pgUnavailable } from "./null-helpers.ts";
+
+const unavailable = pgUnavailable;
 
 /** Null Session port when PG unavailable */
 export const nullSessionStore: SessionStorePort = {

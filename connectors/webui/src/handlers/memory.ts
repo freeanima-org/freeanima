@@ -8,100 +8,62 @@ import {
   type MemorySearchBody,
   type SemanticMemoryListBody,
 } from "@freeanima/connectors-webui/api";
-import type { AnimaService } from "@freeanima/service-api";
 import { webuiCtx } from "./runtime.ts";
 
-export function createMemoryHandlers(service: AnimaService) {
-  return {
-    listMemoryFiles: () => service.listMemoryFiles(),
-    memorySearch: (body: MemorySearchBody) => {
-      const parsed = memorySearchBodySchema.parse(body);
-      return service.memorySearch({
-        query: parsed.query,
-        limit: parsed.limit,
-      });
-    },
-    countSemanticMemory: async () => {
-      const { index_rows } = await service.countSemanticMemory();
-      return {
-        ok: true as const,
-        index_rows,
-        code: "semantic_memory_count" as const,
-        params: { count: String(index_rows) },
-      };
-    },
-    listSemanticMemories: (body: SemanticMemoryListBody) => {
-      const parsed = semanticMemoryListBodySchema.parse(body);
-      return service.listSemanticMemories({
-        query: parsed.query?.trim() || undefined,
-        offset: parsed.offset,
-        limit: parsed.limit,
-        types: parsed.types,
-        status: parsed.status,
-        source_session: parsed.source_session?.trim() || undefined,
-        sort_by: parsed.sort_by,
-      });
-    },
-    listLimbicMemories: (body: LimbicMemoryListBody) => {
-      const parsed = limbicMemoryListBodySchema.parse(body);
-      return service.listLimbicMemories({
-        query: parsed.query?.trim() || undefined,
-        offset: parsed.offset,
-        limit: parsed.limit,
-        session_id: parsed.session_id?.trim() || undefined,
-        kind: parsed.kind,
-      });
-    },
-    listAutobiographicalMemories: (body: AutobiographicalMemoryListBody) => {
-      const parsed = autobiographicalMemoryListBodySchema.parse(body);
-      return service.listAutobiographicalMemories({
-        query: parsed.query?.trim() || undefined,
-        offset: parsed.offset,
-        limit: parsed.limit,
-        status: parsed.status,
-        significance: parsed.significance,
-        source_session: parsed.source_session?.trim() || undefined,
-      });
-    },
-  };
-}
-
-type MemoryHandlers = ReturnType<typeof createMemoryHandlers>;
-
-let handlers: MemoryHandlers | null = null;
-
-function memoryHandlers(): MemoryHandlers {
-  if (!handlers) {
-    handlers = createMemoryHandlers(webuiCtx().service);
-  }
-  return handlers;
-}
-
 export async function listMemoryFiles() {
-  return memoryHandlers().listMemoryFiles();
+  return webuiCtx().service.listMemoryFiles();
 }
 
 export async function memorySearch(body: MemorySearchBody) {
-  return memoryHandlers().memorySearch(body);
+  const parsed = memorySearchBodySchema.parse(body);
+  return webuiCtx().service.memorySearch({
+    query: parsed.query,
+    limit: parsed.limit,
+  });
 }
 
 export async function countSemanticMemory() {
-  return memoryHandlers().countSemanticMemory();
+  const { index_rows } = await webuiCtx().service.countSemanticMemory();
+  return {
+    ok: true as const,
+    index_rows,
+    code: "semantic_memory_count" as const,
+    params: { count: String(index_rows) },
+  };
 }
 
 export async function listSemanticMemories(body: SemanticMemoryListBody) {
-  return memoryHandlers().listSemanticMemories(body);
+  const parsed = semanticMemoryListBodySchema.parse(body);
+  return webuiCtx().service.listSemanticMemories({
+    query: parsed.query?.trim() || undefined,
+    offset: parsed.offset,
+    limit: parsed.limit,
+    types: parsed.types,
+    status: parsed.status,
+    source_session: parsed.source_session?.trim() || undefined,
+    sort_by: parsed.sort_by,
+  });
 }
 
 export async function listLimbicMemories(body: LimbicMemoryListBody) {
-  return memoryHandlers().listLimbicMemories(body);
+  const parsed = limbicMemoryListBodySchema.parse(body);
+  return webuiCtx().service.listLimbicMemories({
+    query: parsed.query?.trim() || undefined,
+    offset: parsed.offset,
+    limit: parsed.limit,
+    session_id: parsed.session_id?.trim() || undefined,
+    kind: parsed.kind,
+  });
 }
 
 export async function listAutobiographicalMemories(body: AutobiographicalMemoryListBody) {
-  return memoryHandlers().listAutobiographicalMemories(body);
-}
-
-/** 单测 / 显式注入后重置懒加载缓存 */
-export function resetMemoryHandlersForTests(): void {
-  handlers = null;
+  const parsed = autobiographicalMemoryListBodySchema.parse(body);
+  return webuiCtx().service.listAutobiographicalMemories({
+    query: parsed.query?.trim() || undefined,
+    offset: parsed.offset,
+    limit: parsed.limit,
+    status: parsed.status,
+    significance: parsed.significance,
+    source_session: parsed.source_session?.trim() || undefined,
+  });
 }

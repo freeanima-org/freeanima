@@ -20,7 +20,7 @@ import type { EngineRunControl } from "./engine-run-control.ts";
 import type { SessionManager } from "./session-manager.ts";
 import { runExclusiveStreamTurn, streamErrorEvent, type StreamTurnHost } from "./turn-lifecycle.ts";
 import { applyCommandSessionEffects, checkPlatform } from "./service-sessions.ts";
-import { collectStreamReply, type StreamEvent } from "@freeanima/orchestration-runtime";
+import { collectStreamReply, type StreamEvent } from "@freeanima/orchestration-loop";
 import { scheduleGracefulRestart } from "./process-restart.ts";
 
 export type MessagingDeps = {

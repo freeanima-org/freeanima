@@ -22,7 +22,10 @@ const PKG_RENAMES: [string, string][] = [
   ["@freeanima/capabilities-llm-openai", "@freeanima/capabilities-llm-openai"],
   ["@freeanima/storage-provider-llm", "@freeanima/storage-provider-llm"],
   ["@freeanima/orchestration-conversation", "@freeanima/orchestration-conversation"],
-  ["@freeanima/mechanism-session-port", "@freeanima/mechanism-session-port"],
+  [
+    "@freeanima/mechanism-tool/session-conversation-port",
+    "@freeanima/mechanism-tool/session-conversation-port",
+  ],
   ["@freeanima/storage-tokenizer", "@freeanima/storage-tokenizer"],
   ["@freeanima/orchestration-session", "@freeanima/orchestration-session"],
   ["@freeanima/storage-config", "@freeanima/storage-config"],
