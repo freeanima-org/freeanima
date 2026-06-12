@@ -5,6 +5,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "@freeanima/kernel": "workspace:*",
     "@freeanima/mechanism-compress": "workspace:*",
     "@freeanima/storage-db": "workspace:*",
     "@freeanima/mechanism-llm": "workspace:*",
@@ -12,9 +13,7 @@
     "@freeanima/mechanism-tool": "workspace:*",
     "@freeanima/storage-repos": "workspace:*",
     "@freeanima/mechanism-hooks": "workspace:*",
-    "@freeanima/kernel-hooks": "workspace:*",
-    "@freeanima/storage-config": "workspace:*",
-    "@freeanima/kernel-logging": "workspace:*"
+    "@freeanima/storage-config": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "catalog:"

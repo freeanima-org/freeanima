@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import { headOkStepData } from "@freeanima/kernel-hooks";
-import { createTestHookRegistry } from "@freeanima/kernel-hooks/testing";
+import { headOkStepData } from "@freeanima/kernel/hooks";
+import { createTestHookRegistry } from "@freeanima/kernel/hooks/testing";
 import { messageIncoming } from "./index.ts";
 
 describe("conversation hooks", () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { createTestHookRegistry } from "@freeanima/kernel-hooks/testing";
+import { createTestHookRegistry } from "@freeanima/kernel/hooks/testing";
 import { systemPromptBuild } from "./hooks.ts";
 import { foldSystemPromptSections } from "./fold.ts";
 

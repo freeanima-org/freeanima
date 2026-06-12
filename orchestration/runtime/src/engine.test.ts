@@ -13,7 +13,7 @@ import { ToolSetRegistry } from "@freeanima/mechanism-tool";
 import { nullPgRepositories } from "@freeanima/storage-repos";
 import { MockBackend } from "@freeanima/storage-provider-llm/test-helpers/mock-backend";
 import { Config, type AnimaConfig } from "@freeanima/storage-config";
-import { createTestLogger } from "@freeanima/kernel-logging/testing";
+import { createTestLogger } from "@freeanima/kernel/logging/testing";
 import { Engine } from "./engine.ts";
 
 const testCfg = {

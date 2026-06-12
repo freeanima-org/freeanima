@@ -1,5 +1,5 @@
 import { RedisClient } from "bun";
-import type { DispatchOutcome, EventQueueAdapter, StoredEvent } from "@freeanima/kernel-eventbus";
+import type { DispatchOutcome, EventQueueAdapter, StoredEvent } from "@freeanima/kernel/eventbus";
 
 const DEFAULT_KEY_PREFIX = "anima:events";
 const DEFAULT_BLOCK_SEC = 1;

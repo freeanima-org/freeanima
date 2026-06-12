@@ -29,13 +29,14 @@ function collectPackages(): PkgGraph {
     if (!existsSync(base)) continue;
 
     const entries =
-      top === "cli" || top === "tests"
+      top === "cli" || top === "tests" || top === "kernel"
         ? [{ name: ".", isDirectory: () => true }]
         : readdirSync(base, { withFileTypes: true });
 
     for (const ent of entries) {
       if (!ent.isDirectory()) continue;
-      const pkgDir = top === "cli" || top === "tests" ? base : join(base, ent.name);
+      const pkgDir =
+        top === "cli" || top === "tests" || top === "kernel" ? base : join(base, ent.name);
       const pjPath = join(pkgDir, "package.json");
       if (!existsSync(pjPath)) continue;
 
@@ -51,7 +52,7 @@ function collectPackages(): PkgGraph {
         .map(([name]) => name);
 
       graph.set(manifest.name, workspaceDeps);
-      if (top === "cli" || top === "tests") break;
+      if (top === "cli" || top === "tests" || top === "kernel") break;
     }
   }
 

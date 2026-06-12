@@ -5,7 +5,7 @@ import {
   getRuntimeLogger,
   type AnimaConfig,
 } from "@freeanima/storage-config";
-import type { Logger } from "@freeanima/kernel-logging";
+import type { Logger } from "@freeanima/kernel/logging";
 import { PROFILE_CHAT } from "@freeanima/storage-provider-llm";
 import type {
   HookClarifyItem,
@@ -17,7 +17,7 @@ import {
   toolAfterCall,
   type BeforeLlmCallContext,
 } from "@freeanima/mechanism-hooks/loop";
-import { headOkStepData, type HookRegistry } from "@freeanima/kernel-hooks";
+import { headOkStepData, type HookRegistry } from "@freeanima/kernel/hooks";
 import * as llm from "@freeanima/mechanism-llm";
 import type { LlmRuntime } from "@freeanima/mechanism-llm";
 import { cleanToolCallsForApi } from "@freeanima/mechanism-llm";

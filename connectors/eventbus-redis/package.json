@@ -5,10 +5,9 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@freeanima/kernel-eventbus": "workspace:*"
+    "@freeanima/kernel": "workspace:*"
   },
   "devDependencies": {
-    "@freeanima/kernel-logging": "workspace:*",
     "@types/bun": "catalog:"
   }
 }

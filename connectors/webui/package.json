@@ -11,6 +11,7 @@
     "./service-restart": "./src/service-restart.ts"
   },
   "dependencies": {
+    "@freeanima/kernel": "workspace:*",
     "@elysiajs/eden": "^1.4.9",
     "@elysiajs/static": "^1.4.10",
     "@freeanima/connectors-cron": "workspace:*",
@@ -20,7 +21,6 @@
     "@freeanima/orchestration-loop": "workspace:*",
     "@freeanima/capabilities-estate": "workspace:*",
     "@freeanima/service-api": "workspace:*",
-    "@freeanima/kernel-logging": "workspace:*",
     "@freeanima/service-config": "workspace:*",
     "@freeanima/service-logging": "workspace:*",
     "@tanstack/react-router": "^1.170.11",

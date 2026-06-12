@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "bun:test";
-import { createLogger } from "@freeanima/kernel-logging";
-import { createNullSink } from "@freeanima/kernel-logging/null";
+import { createLogger } from "../logging/index.ts";
+import { createNullSink } from "../logging/sinks/null.ts";
 import { MemoryEventQueue } from "./adapters/memory.ts";
 import { NullEventQueue } from "./adapters/null.ts";
 import { EventBus } from "./event-bus.ts";

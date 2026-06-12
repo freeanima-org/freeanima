@@ -1,5 +1,5 @@
-import { HookRegistry } from "@freeanima/kernel-hooks";
-import { EventBus } from "@freeanima/kernel-eventbus";
+import { HookRegistry } from "@freeanima/kernel/hooks";
+import { EventBus } from "@freeanima/kernel/eventbus";
 import { createKernel, type Kernel } from "@freeanima/kernel";
 import type { Config } from "@freeanima/service-config";
 import { createServiceLogger, setServiceLogger } from "@freeanima/service-logging";

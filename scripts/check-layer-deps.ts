@@ -227,12 +227,13 @@ function scanPackageJson(): Violation[] {
     const base = join(ROOT, dir);
     if (!existsSync(base)) continue;
     const entries =
-      dir === "cli" || dir === "tests"
+      dir === "cli" || dir === "tests" || dir === "kernel"
         ? [{ name: ".", isDirectory: () => true }]
         : readdirSync(base, { withFileTypes: true });
     for (const ent of entries) {
       if (!ent.isDirectory()) continue;
-      const pkgDir = dir === "cli" || dir === "tests" ? base : join(base, ent.name);
+      const pkgDir =
+        dir === "cli" || dir === "tests" || dir === "kernel" ? base : join(base, ent.name);
       const pjPath = join(pkgDir, "package.json");
       if (!existsSync(pjPath)) continue;
       const relDir = relative(ROOT, pkgDir);

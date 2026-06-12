@@ -1,4 +1,4 @@
-import { createTestLogger } from "@freeanima/kernel-logging/testing";
+import { createTestLogger } from "../logging/testing.ts";
 import { HookRegistry } from "./registry.ts";
 
 export function createTestHookRegistry(): HookRegistry {

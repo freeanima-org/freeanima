@@ -1,4 +1,4 @@
-import { createTestLogger } from "@freeanima/kernel-logging/testing";
+import { createTestLogger } from "../logging/testing.ts";
 import { EventBus } from "./event-bus.ts";
 import { MemoryEventQueue } from "./adapters/memory.ts";
 

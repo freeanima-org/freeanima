@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from "bun:test";
 import type { RedisClient } from "bun";
-import { createLogger } from "@freeanima/kernel-logging";
-import { createNullSink } from "@freeanima/kernel-logging/null";
-import { EventBus, createEventTopic } from "@freeanima/kernel-eventbus";
+import { createLogger } from "@freeanima/kernel/logging";
+import { createNullSink } from "@freeanima/kernel/logging/null";
+import { EventBus, createEventTopic } from "@freeanima/kernel/eventbus";
 import { RedisEventQueue, safeCloseOwnedRedisClient } from "./redis-event-queue.ts";
 import {
   createMockRedisLists,

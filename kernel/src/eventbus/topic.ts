@@ -1,4 +1,4 @@
-import { QualifiedToken } from "@freeanima/kernel-token";
+import { QualifiedToken } from "../token/index.ts";
 
 /** Event type token; created only via createEventTopic */
 export abstract class EventTopic<Payload> extends QualifiedToken<Payload> {

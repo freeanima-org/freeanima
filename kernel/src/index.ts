@@ -1,11 +1,11 @@
-import { HookRegistry } from "@freeanima/kernel-hooks";
-import { EventBus } from "@freeanima/kernel-eventbus";
-import { MemoryEventQueue } from "@freeanima/kernel-eventbus/memory";
-import { createLogger } from "@freeanima/kernel-logging";
-import { createConsoleSink } from "@freeanima/kernel-logging/console";
-import type { HookRegistry as HookRegistryType } from "@freeanima/kernel-hooks";
-import type { EventBus as EventBusType } from "@freeanima/kernel-eventbus";
-import type { Logger } from "@freeanima/kernel-logging";
+import { HookRegistry } from "./hooks/index.ts";
+import { EventBus } from "./eventbus/index.ts";
+import { MemoryEventQueue } from "./eventbus/adapters/memory.ts";
+import { createLogger } from "./logging/index.ts";
+import { createConsoleSink } from "./logging/sinks/console.ts";
+import type { HookRegistry as HookRegistryType } from "./hooks/index.ts";
+import type { EventBus as EventBusType } from "./eventbus/index.ts";
+import type { Logger } from "./logging/index.ts";
 
 export type KernelDeps = {
   hookRegistry?: HookRegistryType;
@@ -50,7 +50,7 @@ export type {
   LogRecord,
   LogSink,
   CreateLoggerOptions,
-} from "@freeanima/kernel-logging";
+} from "./logging/index.ts";
 export type {
   EventBus,
   EventTopic,
@@ -59,7 +59,7 @@ export type {
   DispatchOutcome,
   EventQueueAdapter,
   StoredEvent,
-} from "@freeanima/kernel-eventbus";
+} from "./eventbus/index.ts";
 export type {
   HookRegistry,
   Hook,
@@ -70,4 +70,4 @@ export type {
   HookStepLink,
   HookRunResult,
   HookRunMeta,
-} from "@freeanima/kernel-hooks";
+} from "./hooks/index.ts";

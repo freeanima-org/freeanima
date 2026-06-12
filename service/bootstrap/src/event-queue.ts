@@ -1,6 +1,6 @@
 import { RedisClient } from "bun";
 import { RedisEventQueue } from "@freeanima/connectors-eventbus-redis";
-import type { EventQueueAdapter } from "@freeanima/kernel-eventbus";
+import type { EventQueueAdapter } from "@freeanima/kernel/eventbus";
 import type { Config } from "@freeanima/service-config";
 import { buildRedisUrl, getEventbusKeyPrefix } from "@freeanima/service-config";
 

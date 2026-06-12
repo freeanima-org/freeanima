@@ -1,5 +1,5 @@
-import type { Logger } from "@freeanima/kernel-logging";
-import { errMessage } from "@freeanima/kernel-token";
+import type { Logger } from "../logging/index.ts";
+import { errMessage } from "../token/index.ts";
 import {
   blockedMessageFromChain,
   Hook,

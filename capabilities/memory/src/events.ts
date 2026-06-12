@@ -1,4 +1,4 @@
-import { createEventTopic } from "@freeanima/kernel-eventbus";
+import { createEventTopic } from "@freeanima/kernel/eventbus";
 
 export type SessionUpdatedPayload = {
   session_id: string;

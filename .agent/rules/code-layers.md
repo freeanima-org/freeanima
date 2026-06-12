@@ -6,7 +6,7 @@
 
 | Layer             | Responsibility                                                                                         | Typical packages                                                                             |
 | ----------------- | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------- |
-| **kernel**        | Business-agnostic runtime infra: Hook, EventBus, logging, qualified tokens                             | `kernel-hooks`, `kernel-eventbus`, `kernel-logging`, `kernel-token`                          |
+| **kernel**        | Business-agnostic runtime infra: Hook, EventBus, logging, qualified tokens                             | `@freeanima/kernel`（subpath：`/logging`、`/hooks`、`/eventbus`）                            |
 | **storage**       | PG schema SSOT, repo ports, Config types, util, tokenizer, LLM provider protocol                       | `storage-db`, `storage-repos`, `storage-config`, `storage-util`, …                           |
 | **mechanism**     | Tool registry, LLM client, compression, hooks, skills, session port                                    | `mechanism-tool`, `mechanism-llm`, `mechanism-hooks`, `mechanism-compress`, …                |
 | **orchestration** | Session, turn, conversation, loop, runtime facade                                                      | `orchestration-session`, `orchestration-turn`, `orchestration-loop`, `orchestration-runtime` |

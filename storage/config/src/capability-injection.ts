@@ -1,4 +1,4 @@
-import type { Logger } from "@freeanima/kernel-logging";
+import type { Logger } from "@freeanima/kernel/logging";
 import { getRuntimeLogger } from "./runtime-logger.ts";
 import { readAppVersion } from "./version.ts";
 

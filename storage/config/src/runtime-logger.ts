@@ -1,5 +1,5 @@
-import { createLogger, type Logger } from "@freeanima/kernel-logging";
-import { createNullSink } from "@freeanima/kernel-logging/null";
+import { createLogger, type Logger } from "@freeanima/kernel/logging";
+import { createNullSink } from "@freeanima/kernel/logging/null";
 
 let runtimeLogger: Logger | null = null;
 

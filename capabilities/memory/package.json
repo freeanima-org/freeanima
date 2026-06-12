@@ -6,9 +6,9 @@
     "./*": "./src/*.ts"
   },
   "dependencies": {
+    "@freeanima/kernel": "workspace:*",
     "@freeanima/mechanism-tool": "workspace:*",
     "@freeanima/storage-repos": "workspace:*",
-    "@freeanima/kernel-eventbus": "workspace:*",
     "@freeanima/storage-config": "workspace:*",
     "@freeanima/storage-util": "workspace:*",
     "zod": "catalog:"

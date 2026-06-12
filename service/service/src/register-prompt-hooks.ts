@@ -1,4 +1,4 @@
-import type { HookRegistry } from "@freeanima/kernel-hooks";
+import type { HookRegistry } from "@freeanima/kernel/hooks";
 import { systemPromptBuild } from "@freeanima/mechanism-hooks/prompt";
 import { registerToolsetSystemPromptHooks } from "@freeanima/capabilities-tools/toolset-prompt-hooks";
 import { buildMemorySystemPromptSections } from "@freeanima/capabilities-memory/system-prompt-sections";

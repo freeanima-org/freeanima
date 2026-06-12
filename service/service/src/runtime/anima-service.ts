@@ -1,4 +1,4 @@
-import type { EventBus } from "@freeanima/kernel-eventbus";
+import type { EventBus } from "@freeanima/kernel/eventbus";
 import type {
   HealthSnapshot,
   PlatformStatusSnapshot,
