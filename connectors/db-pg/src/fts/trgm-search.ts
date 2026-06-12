@@ -2,11 +2,11 @@ import { sql as drizzleSql } from "drizzle-orm";
 import { getActiveConfig, getFtsTrgmMinSimilarity } from "@freeanima/service-config";
 
 import { getDb } from "../client.ts";
-import type { SemanticMemoryDbRow } from "../semantic-memory/mappers/semantic-mapper.ts";
+import type { SemanticMemoryFtsDbRow } from "../semantic-memory/mappers/semantic-mapper.ts";
 import { messageDocKey, semanticMemoryDocKey } from "@freeanima/storage-util";
 import { pgSemanticSourceSessionsFilter, pgSemanticTypeFilter } from "../utils/pg-sql.ts";
 
-export type TrgmSemanticHit = SemanticMemoryDbRow & { docKey: string; rank: number };
+export type TrgmSemanticHit = SemanticMemoryFtsDbRow & { docKey: string };
 
 export async function searchSemanticMemoryTrgm(
   query: string,
@@ -31,7 +31,7 @@ export async function searchSemanticMemoryTrgm(
   const statusFilter = status === "all" ? drizzleSql`` : drizzleSql`AND sm.status = ${status}`;
   const sourceFilter = pgSemanticSourceSessionsFilter(sourceSessions);
 
-  const rows = await db.execute<SemanticMemoryDbRow & { rank: number }>(drizzleSql`
+  const rows = await db.execute<SemanticMemoryFtsDbRow>(drizzleSql`
     SELECT
       sm.id,
       sm.type,

@@ -4,7 +4,7 @@ import { getDb } from "../client.ts";
 import { buildFtsTsQuery } from "./query.ts";
 import {
   mapSemanticMemoryRow,
-  type SemanticMemoryDbRow,
+  type SemanticMemoryFtsDbRow,
 } from "../semantic-memory/mappers/semantic-mapper.ts";
 import { pgSemanticSourceSessionsFilter, pgSemanticTypeFilter } from "../utils/pg-sql.ts";
 
@@ -16,7 +16,7 @@ export async function searchSemanticMemoryFtsRaw(
     status?: "active" | "deprecated" | "all";
     sourceSessions?: string[];
   },
-): Promise<Array<SemanticMemoryDbRow & { rank: number }>> {
+): Promise<SemanticMemoryFtsDbRow[]> {
   const q = query.trim();
   if (!q) return [];
 
@@ -33,7 +33,7 @@ export async function searchSemanticMemoryFtsRaw(
   const statusFilter = status === "all" ? drizzleSql`` : drizzleSql`AND sm.status = ${status}`;
   const sourceFilter = pgSemanticSourceSessionsFilter(sourceSessions);
 
-  const rows = await db.execute<SemanticMemoryDbRow & { rank: number }>(drizzleSql`
+  const rows = await db.execute<SemanticMemoryFtsDbRow>(drizzleSql`
     SELECT
       sm.id,
       sm.type,

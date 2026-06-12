@@ -54,6 +54,8 @@ Do not maintain a domain-to-package inventory in docs — use source and `grep`.
 
 Table shapes SSOT: [`storage/db/src/schema/`](../../storage/db/src/schema/). User ops (install, backup): [`docs/guide/database.md`](../../docs/guide/database.md).
 
+Repository query conventions (ORM vs `db.execute`, DbRow typing): [`drizzle-db.md`](drizzle-db.md).
+
 ## Release
 
 - **Do not manually edit [`CHANGELOG.md`](../../CHANGELOG.md)** — Release Please only

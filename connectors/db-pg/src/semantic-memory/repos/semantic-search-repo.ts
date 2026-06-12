@@ -1,4 +1,5 @@
-import { sql as drizzleSql, type SQL } from "drizzle-orm";
+import { and, desc, sql as drizzleSql } from "drizzle-orm";
+import { semanticMemory } from "@freeanima/storage-db/schema";
 import type {
   SemanticFtsHit,
   SemanticMemorySearchOpts,
@@ -6,9 +7,9 @@ import type {
 } from "@freeanima/storage-repos";
 
 import { getDb } from "../../client.ts";
-import { pgSemanticSourceSessionsFilter, pgSemanticTypeFilter } from "../../utils/pg-sql.ts";
 import { hybridCountSemanticMemory, hybridSearchSemanticMemory } from "../../fts/hybrid-search.ts";
-import { mapSemanticMemoryRow, type SemanticMemoryDbRow } from "../mappers/semantic-mapper.ts";
+import { mapSemanticMemoryRow } from "../mappers/semantic-mapper.ts";
+import { buildSemanticConditions } from "./semantic-filters.ts";
 
 type SemanticSearchFilterOpts = Omit<SemanticMemorySearchOpts, "limit" | "offset">;
 
@@ -18,17 +19,6 @@ function normalizeSearchOpts(opts: SemanticSearchFilterOpts) {
   const sourceSessions = opts.source_sessions?.map((s: string) => s.trim()).filter(Boolean) ?? [];
   const q = opts.query?.trim() ?? "";
   return { types, status, sourceSessions, q };
-}
-
-function buildSemanticFilters(
-  types: string[],
-  status: "active" | "deprecated" | "all",
-  sourceSessions: string[],
-) {
-  const typeFilter = pgSemanticTypeFilter(types);
-  const statusFilter = status === "all" ? drizzleSql`` : drizzleSql`AND sm.status = ${status}`;
-  const sourceFilter = pgSemanticSourceSessionsFilter(sourceSessions);
-  return { typeFilter, statusFilter, sourceFilter };
 }
 
 function resolveEffectiveSort(
@@ -41,12 +31,12 @@ function resolveEffectiveSort(
   return resolved;
 }
 
-function browseOrderBy(sortBy: Exclude<SemanticMemorySortBy, "rank">): SQL {
-  const orderBy: Record<Exclude<SemanticMemorySortBy, "rank">, SQL> = {
-    created: drizzleSql`sm.created DESC`,
-    updated: drizzleSql`sm.updated DESC`,
-    reference_count: drizzleSql`sm.reference_count DESC, sm.updated DESC`,
-  };
+function browseOrderBy(sortBy: Exclude<SemanticMemorySortBy, "rank">) {
+  const orderBy = {
+    created: [desc(semanticMemory.created)],
+    updated: [desc(semanticMemory.updated)],
+    reference_count: [desc(semanticMemory.referenceCount), desc(semanticMemory.updated)],
+  } as const;
   return orderBy[sortBy];
 }
 
@@ -56,20 +46,15 @@ export async function searchSemanticMemory(
   const limit = Math.max(1, Math.min(100, opts.limit ?? 10));
   const offset = Math.max(0, opts.offset ?? 0);
   const { types, status, sourceSessions, q } = normalizeSearchOpts(opts);
-  const { typeFilter, statusFilter, sourceFilter } = buildSemanticFilters(
-    types,
-    status,
-    sourceSessions,
-  );
   const effectiveSort = resolveEffectiveSort(q, opts.sort_by);
 
   const db = getDb();
   if (effectiveSort === "rank") {
     if (!q) {
       return searchSemanticMemoryBrowse(db, {
-        typeFilter,
-        statusFilter,
-        sourceFilter,
+        types,
+        status,
+        sourceSessions,
         sortBy: "updated",
         offset,
         limit,
@@ -85,9 +70,9 @@ export async function searchSemanticMemory(
   }
 
   return searchSemanticMemoryBrowse(db, {
-    typeFilter,
-    statusFilter,
-    sourceFilter,
+    types,
+    status,
+    sourceSessions,
     sortBy: effectiveSort,
     offset,
     limit,
@@ -97,65 +82,41 @@ export async function searchSemanticMemory(
 async function searchSemanticMemoryBrowse(
   db: ReturnType<typeof getDb>,
   args: {
-    typeFilter: SQL;
-    statusFilter: SQL;
-    sourceFilter: SQL;
+    types: string[];
+    status: "active" | "deprecated" | "all";
+    sourceSessions: string[];
     sortBy: Exclude<SemanticMemorySortBy, "rank">;
     offset: number;
     limit: number;
   },
 ): Promise<SemanticFtsHit[]> {
-  const { typeFilter, statusFilter, sourceFilter, sortBy, offset, limit } = args;
-  const orderBy = browseOrderBy(sortBy);
-  const rows = await db.execute<SemanticMemoryDbRow & { rank: number }>(drizzleSql`
-    SELECT
-      sm.id,
-      sm.type,
-      sm.pinned,
-      sm.content,
-      sm.source_sessions,
-      sm.observed_at,
-      sm.occurred_at,
-      sm.status,
-      sm.reference_count,
-      sm.created,
-      sm.updated,
-      1.0 AS rank
-    FROM semantic_memory sm
-    WHERE true
-    ${typeFilter}
-    ${statusFilter}
-    ${sourceFilter}
-    ORDER BY ${orderBy}
-    OFFSET ${offset}
-    LIMIT ${limit}
-  `);
+  const { types, status, sourceSessions, sortBy, offset, limit } = args;
+  const conditions = buildSemanticConditions({ types, status, sourceSessions });
+  const rows = await db
+    .select()
+    .from(semanticMemory)
+    .where(conditions.length > 0 ? and(...conditions) : undefined)
+    .orderBy(...browseOrderBy(sortBy))
+    .offset(offset)
+    .limit(limit);
   return rows.map((r) => ({
     ...mapSemanticMemoryRow(r),
-    rank: Number(r.rank),
+    rank: 1.0,
   }));
 }
 
 export async function countSemanticMemorySearch(opts: SemanticSearchFilterOpts): Promise<number> {
   const { types, status, sourceSessions, q } = normalizeSearchOpts(opts);
-  const { typeFilter, statusFilter, sourceFilter } = buildSemanticFilters(
-    types,
-    status,
-    sourceSessions,
-  );
 
   const db = getDb();
   if (q) {
     return hybridCountSemanticMemory(q, { types, status, sourceSessions });
   }
 
-  const rows = await db.execute<{ n: number }>(drizzleSql`
-    SELECT count(*)::int AS n
-    FROM semantic_memory sm
-    WHERE true
-    ${typeFilter}
-    ${statusFilter}
-    ${sourceFilter}
-  `);
+  const conditions = buildSemanticConditions({ types, status, sourceSessions });
+  const rows = await db
+    .select({ n: drizzleSql<number>`count(*)::int` })
+    .from(semanticMemory)
+    .where(conditions.length > 0 ? and(...conditions) : undefined);
   return Number(rows[0]?.n ?? 0);
 }

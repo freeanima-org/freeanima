@@ -5,6 +5,7 @@ Detailed implementation constraints for AI agents working in this repository. St
 | File                               | When to read                                                              |
 | ---------------------------------- | ------------------------------------------------------------------------- |
 | [`coding.md`](coding.md)           | Editing any TypeScript; tool handlers; types / Zod / ports; PG migrations |
+| [`drizzle-db.md`](drizzle-db.md)   | `connectors/db-pg` repository queries; ORM vs `db.execute`; DbRow typing  |
 | [`testing.md`](testing.md)         | Adding or moving tests; mock strategy; CI tiers                           |
 | [`packages.md`](packages.md)       | New workspace package or rename (RFC #1)                                  |
 | [`code-layers.md`](code-layers.md) | Eight-layer deps, composition root, Registry injection                    |

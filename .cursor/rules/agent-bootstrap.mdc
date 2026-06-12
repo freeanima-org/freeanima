@@ -10,6 +10,7 @@ alwaysApply: true
    - layers / Registry / composition → `code-layers.md`
    - tests → `testing.md`
    - types / tools / security / PG migrations → `coding.md`
+   - `connectors/db-pg` / Drizzle queries → `drizzle-db.md`
    - release / Conventional Commits → `release.md`
    - compression algorithm → `compression.md`
    - new packages → `packages.md`
