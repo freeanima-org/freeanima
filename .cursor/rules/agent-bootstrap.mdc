@@ -9,8 +9,9 @@ alwaysApply: true
 2. Before changing code, open the relevant file under [`.agent/rules/`](../../.agent/rules/README.md):
    - layers / Registry / composition → `code-layers.md`
    - tests → `testing.md`
-   - types / tools / security → `coding.md`
-   - PG migrations → `database.md`
+   - types / tools / security / PG migrations → `coding.md`
+   - release / Conventional Commits → `release.md`
+   - compression algorithm → `compression.md`
    - new packages → `packages.md`
 3. Product architecture (cognitive layers, tools, Gateway) → `docs/concepts/architecture.md`.
 4. Code and `scripts/check-layer-deps.ts` override docs when they conflict.

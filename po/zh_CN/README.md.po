@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-12 11:40+0800\n"
+"POT-Creation-Date: 2026-06-12 11:55+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,13 +16,26 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Plain text
-#: /home/feng/workspace/freeanima/docs/README.md:1
+#: docs/README.md:1 docs/concepts/architecture.md:1
+#: docs/concepts/compression.md:1 docs/concepts/identity.md:1
+#: docs/concepts/identity.md:10 docs/concepts/identity.md:28
+#: docs/concepts/identity.md:45 docs/concepts/identity.md:55
+#: docs/concepts/memory.md:1 docs/concepts/memory.md:17
+#: docs/concepts/memory.md:53 docs/concepts/memory.md:122
+#: docs/concepts/memory.md:133 docs/concepts/memory.md:150
+#: docs/concepts/recall-flow.md:1 docs/concepts/self-layer.md:1
+#: docs/concepts/self-layer.md:30 docs/concepts/self-layer.md:52
+#: docs/concepts/self-layer.md:66 docs/concepts/self-layer.md:80
+#: docs/concepts/self-layer.md:91 docs/concepts/sleep.md:1
+#: docs/concepts/time-perception.md:1 docs/features/pair-programming-v1.md:1
+#: docs/guide/database.md:1 docs/guide/security.md:1
+#: docs/tools/execute-code-runtimes.md:1
 #, no-wrap
 msgid "---\n"
 msgstr "---\n"
 
 #. type: Plain text
-#: /home/feng/workspace/freeanima/docs/README.md:3
+#: docs/README.md:3
 #, no-wrap
 msgid ""
 "title: Documentation Index\n"
@@ -32,35 +45,40 @@ msgstr ""
 "---\n"
 
 #. type: Plain text
-#: /home/feng/workspace/freeanima/docs/README.md:6
+#: docs/README.md:6
 msgid "# docs/"
 msgstr "# docs/"
 
 #. type: Plain text
-#: /home/feng/workspace/freeanima/docs/README.md:8
+#: docs/README.md:8
 msgid ""
-"See [AGENTS.md](../AGENTS.md#doc-map) for the documentation index and "
-"maintenance conventions. Agent implementation rules: [`.agent/rules/`]"
-"(../.agent/rules/README.md). Actionable tasks and discussion items live in "
-"[GitHub Issues](https://github.com/freeanima-org/freeanima/issues)."
+"For **FreeAnima users** — self-hosted deployment, talking to a digital life, "
+"configuring tools and memory. Contributor rules: [`.agent/rules/`](../.agent/"
+"rules/README.md). Tasks: [GitHub Issues](https://github.com/freeanima-org/"
+"freeanima/issues)."
 msgstr ""
-"文档索引与维护规约见 [AGENTS.md](../AGENTS.md#文档地图)。可执行任务与讨论项"
-"见 [GitHub Issues](https://github.com/freeanima-org/freeanima/issues)。"
 
 #. type: Plain text
-#: /home/feng/workspace/freeanima/docs/README.md:10
-msgid "## Guide — 使用与维护"
-msgstr "## 使用指南"
+#: docs/README.md:10
+#, fuzzy
+#| msgid "### P2 — Config Redaction Maintenance"
+msgid "## Guide — Usage and Maintenance"
+msgstr "### P2 — 配置脱敏维护"
 
 #. type: Plain text
-#: /home/feng/workspace/freeanima/docs/README.md:16
-#, no-wrap
+#: docs/README.md:15
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Topic    | File                                       |\n"
+#| "| -------- | ------------------------------------------ |\n"
+#| "| Security | [guide/security.md](guide/security.md)     |\n"
+#| "| Database | [guide/database.md](guide/database.md)     |\n"
+#| "| Release  | [guide/versioning.md](guide/versioning.md) |\n"
 msgid ""
-"| Topic    | File                                       |\n"
-"| -------- | ------------------------------------------ |\n"
-"| Security | [guide/security.md](guide/security.md)     |\n"
-"| Database | [guide/database.md](guide/database.md)     |\n"
-"| Release  | [guide/versioning.md](guide/versioning.md) |\n"
+"| Topic    | File                                   |\n"
+"| -------- | -------------------------------------- |\n"
+"| Security | [guide/security.md](guide/security.md) |\n"
+"| Database | [guide/database.md](guide/database.md) |\n"
 msgstr ""
 "| 主题   | 文件                                           |\n"
 "| ------ | ---------------------------------------------- |\n"
@@ -69,12 +87,12 @@ msgstr ""
 "| 发版   | [guide/versioning.md](guide/versioning.md)     |\n"
 
 #. type: Plain text
-#: /home/feng/workspace/freeanima/docs/README.md:18
-msgid "## Concepts — 核心概念"
-msgstr "## 核心概念"
+#: docs/README.md:17
+msgid "## Concepts — Core Ideas"
+msgstr ""
 
 #. type: Plain text
-#: /home/feng/workspace/freeanima/docs/README.md:29
+#: docs/README.md:28
 #, no-wrap
 msgid ""
 "| Topic           | File                                                       |\n"
@@ -100,12 +118,12 @@ msgstr ""
 "| 回忆检索 | [concepts/recall-flow.md](concepts/recall-flow.md)         |\n"
 
 #. type: Plain text
-#: /home/feng/workspace/freeanima/docs/README.md:31
-msgid "## Features — 重要产品能力"
-msgstr "## 功能"
+#: docs/README.md:30
+msgid "## Features — Major Capabilities"
+msgstr ""
 
 #. type: Plain text
-#: /home/feng/workspace/freeanima/docs/README.md:35
+#: docs/README.md:34
 #, no-wrap
 msgid ""
 "| Topic            | File                                                               |\n"
@@ -117,12 +135,12 @@ msgstr ""
 "| 结对编程 | [features/pair-programming-v1.md](features/pair-programming-v1.md) |\n"
 
 #. type: Plain text
-#: /home/feng/workspace/freeanima/docs/README.md:37
-msgid "## Tools — 通用内置工具"
-msgstr "## 工具"
+#: docs/README.md:36
+msgid "## Tools — Built-in Tools"
+msgstr ""
 
 #. type: Plain text
-#: /home/feng/workspace/freeanima/docs/README.md:40
+#: docs/README.md:39
 #, no-wrap
 msgid ""
 "| Topic         | File                                                             |\n"

@@ -4,17 +4,16 @@ title: Documentation Index
 
 # docs/
 
-See [AGENTS.md](../AGENTS.md#doc-map) for the documentation index and maintenance conventions. Agent implementation rules: [`.agent/rules/`](../.agent/rules/README.md). Actionable tasks and discussion items live in [GitHub Issues](https://github.com/freeanima-org/freeanima/issues).
+For **FreeAnima users** — self-hosted deployment, talking to a digital life, configuring tools and memory. Contributor rules: [`.agent/rules/`](../.agent/rules/README.md). Tasks: [GitHub Issues](https://github.com/freeanima-org/freeanima/issues).
 
-## Guide — 使用与维护
+## Guide — Usage and Maintenance
 
-| Topic    | File                                       |
-| -------- | ------------------------------------------ |
-| Security | [guide/security.md](guide/security.md)     |
-| Database | [guide/database.md](guide/database.md)     |
-| Release  | [guide/versioning.md](guide/versioning.md) |
+| Topic    | File                                   |
+| -------- | -------------------------------------- |
+| Security | [guide/security.md](guide/security.md) |
+| Database | [guide/database.md](guide/database.md) |
 
-## Concepts — 核心概念
+## Concepts — Core Ideas
 
 | Topic           | File                                                       |
 | --------------- | ---------------------------------------------------------- |
@@ -27,13 +26,13 @@ See [AGENTS.md](../AGENTS.md#doc-map) for the documentation index and maintenanc
 | Time perception | [concepts/time-perception.md](concepts/time-perception.md) |
 | Recall flow     | [concepts/recall-flow.md](concepts/recall-flow.md)         |
 
-## Features — 重要产品能力
+## Features — Major Capabilities
 
 | Topic            | File                                                               |
 | ---------------- | ------------------------------------------------------------------ |
 | Pair programming | [features/pair-programming-v1.md](features/pair-programming-v1.md) |
 
-## Tools — 通用内置工具
+## Tools — Built-in Tools
 
 | Topic         | File                                                             |
 | ------------- | ---------------------------------------------------------------- |

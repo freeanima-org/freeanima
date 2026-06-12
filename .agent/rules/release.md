@@ -1,7 +1,3 @@
----
-title: Versioning
----
-
 # Versioning and Release
 
 FreeAnima follows [Semantic Versioning 2.0.0](https://semver.org/) (`MAJOR.MINOR.PATCH`).
@@ -127,15 +123,14 @@ docker compose up --build
 
 ## Related Files
 
-| File                                     | Role                                              |
-| ---------------------------------------- | ------------------------------------------------- |
-| `package.json`                           | Sole version write source (updated by Release PR) |
-| `release-please-config.json`             | Release Please strategy and changelog sections    |
-| `.release-please-manifest.json`          | Published version manifest                        |
-| `.github/workflows/release.yml`          | release-please + npm publish                      |
-| `.github/workflows/release-docker.yml`   | Docker image push to GHCR                         |
-| `service/service/src/runtime/version.ts` | Runtime root version read                         |
-| `CHANGELOG.md`                           | New version section appended on Release PR merge  |
+| File                                   | Role                                              |
+| -------------------------------------- | ------------------------------------------------- |
+| `package.json`                         | Sole version write source (updated by Release PR) |
+| `release-please-config.json`           | Release Please strategy and changelog sections    |
+| `.release-please-manifest.json`        | Published version manifest                        |
+| `.github/workflows/release.yml`        | release-please + npm publish                      |
+| `.github/workflows/release-docker.yml` | Docker image push to GHCR                         |
+| `CHANGELOG.md`                         | New version section appended on Release PR merge  |
 
 ## Repository Settings (Maintainers)
 

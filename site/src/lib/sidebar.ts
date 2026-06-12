@@ -21,7 +21,6 @@ export const starlightSidebar = [
         collapsed: true,
         items: [
           { ...t("sidebar_security"), link: "/docs/guide/security/" },
-          { ...t("sidebar_versioning"), link: "/docs/guide/versioning/" },
           { ...t("sidebar_database"), link: "/docs/guide/database/" },
         ],
       },

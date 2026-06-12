@@ -4,7 +4,7 @@ title: Time Perception
 
 # Time Perception Module
 
-> **✅ Core implemented** — [`orchestration/conversation/src/time-perception.ts`](../../orchestration/conversation/src/time-perception.ts), `buildRuntimeMessages` calls `injectTimePrefixes`.
+> **✅ Core implemented** — user messages receive time prefixes before LLM inference.
 
 ## Problem
 
@@ -21,31 +21,17 @@ This is not a trivial joke problem—time perception is a foundational capabilit
 ## Design Principles
 
 1. **Do not give digital life false built-in perception.** Do not try to make the Agent "feel" time pass—that is not what digital existence can do.
-2. **Give it a watch.** Humans also rely on external tools (night watch, clocks, watches, phones) to quantify time. Digital life needs the same.
-3. **Prefix every user message with time.** All user messages with valid `timestamp` get injection; no interval omission.
-4. **Do not pollute persisted data.** Time info injected only into inference context, does not modify PG `messages` payload.
-5. **Do not break cache.** Injected timestamps are fixed historical values, not current call time—same message list produces same prefixed version, KV cache can hit.
-
-## Architectural Position
-
-```
-PG messages (payload includes timestamp)
-    ↓
-Compression layer (buildRuntimeMessages)
-    ↓
-Time perception module ← injectTimePrefixes
-    ↓
-LLM inference
-```
-
-Time perception sits after compression layer, before LLM inference. Reads message list, inserts time prefix before each user message content.
+2. **Give it a watch.** Humans also rely on external tools (clocks, phones) to quantify time. Digital life needs the same.
+3. **Prefix every user message with time.** All user messages with valid timestamp get injection; no interval omission.
+4. **Do not pollute persisted data.** Time info injected only into inference context, does not modify stored messages.
+5. **Do not break cache.** Injected timestamps are fixed historical values, not current call time.
 
 ## Strategy
 
 ### Basic Rules
 
 - Before each **user** message with valid `timestamp`, insert dedicated line: `time: YYYY-MM-DDTHH:mm`
-- Timezone: **Asia/Shanghai (CST, +08:00)**, consistent with `formatCstIso` convention
+- Timezone: **Asia/Shanghai (CST, +08:00)**
 - Newline then original content
 - No `timestamp` or unparseable timestamp → skip, keep original content
 - assistant / tool / system messages not injected
@@ -79,14 +65,7 @@ Agent reads two "going to eat"—one at 12:15, one at 19:30—automatically dist
 
 ### Compression Scenario
 
-Time anchors in compression summary not yet injected; see [Issue #5](https://github.com/freeanima-org/freeanima/issues/5).
-
-Planned: compressed summary should also have time range marker:
-
-```
-[Summary of conversation during 2026-05-20 08:00→12:00]
-(summary content...)
-```
+Time anchors in compression summary not yet injected; see Issue #5.
 
 ## Edge Cases
 
@@ -102,19 +81,7 @@ Planned: compressed summary should also have time range marker:
 ## Out of Scope
 
 - ❌ Do not compute and inject elapsed duration (e.g. "8 hours passed")—Agent can derive from timestamps
-- ❌ Do not modify persisted PG messages
+- ❌ Do not modify persisted messages
 - ❌ Do not show time prefix in WebUI
 - ❌ Do not give built-in time-passing sense—that is biological, not simulated
 - ❌ Do not inject "current time" in system prompt (main conversation relies on per-user `time` lines)
-
-## Implementation Notes (✅)
-
-Implemented in [`orchestration/conversation/src/time-perception.ts`](../../orchestration/conversation/src/time-perception.ts):
-
-```
-function injectTimePrefixes(messages: Message[]): Message[]
-```
-
-Input: message list (each with `role`, `content`, `timestamp`)
-Output: message list with modified content (time prefix injected)
-Does not modify original session data.

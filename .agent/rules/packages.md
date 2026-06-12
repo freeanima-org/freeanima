@@ -26,4 +26,4 @@ New-stack workspace package names **prefix with layer name**:
 - Compound slugs without inner hyphens (`eventbus`, not `event-bus`)
 - Hook / EventTopic `qualifiedId` is independent of npm package name
 
-Layer dependency rules: [`code-layers.md`](code-layers.md). Full rename table: [`docs/concepts/layer-structure-rfc.md`](../../docs/concepts/layer-structure-rfc.md).
+Layer dependency rules and historical rename table: [`code-layers.md`](code-layers.md).

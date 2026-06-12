@@ -7,13 +7,13 @@
 
 `freeanima` (FreeAnima) is a **TypeScript-only** agent runtime: `anima service` starts the Bun service (WebUI + tRPC + Gateway + engine).
 
-| Capability     | Highlights                                                                                                                                                                      |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Memory         | Conversation archive (PG) → light-sleep extraction → `semantic_memory` → PG FTS retrieval; see [`docs/concepts/memory.md`](docs/concepts/memory.md)                             |
-| Tools          | Local / MCP / ACP flat registration; implemented in `capabilities/tools/`, `capabilities/mcp/`, `capabilities/acp/`                                                             |
-| Credentials    | pass GPG; injected at runtime; LLM **sees paths, not values**                                                                                                                   |
-| Data directory | `~/.anima/` (override with `FREEANIMA_HOME`); back up this directory to preserve state                                                                                          |
-| Code layout    | `kernel/`, `storage/`, `mechanism/`, `orchestration/`, `capabilities/`, `connectors/`, `service/`, `cli/`; see [`docs/concepts/architecture.md`](docs/concepts/architecture.md) |
+| Capability     | Highlights                                                                                                                                                                  |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Memory         | Conversation archive (PG) → light-sleep extraction → `semantic_memory` → PG FTS retrieval; see [`docs/concepts/memory.md`](docs/concepts/memory.md)                         |
+| Tools          | Local / MCP / ACP flat registration; implemented in `capabilities/tools/`, `capabilities/mcp/`, `capabilities/acp/`                                                         |
+| Credentials    | pass GPG; injected at runtime; LLM **sees paths, not values**                                                                                                               |
+| Data directory | `~/.anima/` (override with `FREEANIMA_HOME`); back up this directory to preserve state                                                                                      |
+| Code layout    | `kernel/`, `storage/`, `mechanism/`, `orchestration/`, `capabilities/`, `connectors/`, `service/`, `cli/`; see [`.agent/rules/code-layers.md`](.agent/rules/code-layers.md) |
 
 **Code is the source of truth**; do not invent tool names, endpoints, or directories from docs alone. Read source or `grep` when needed.
 
@@ -35,8 +35,8 @@ Detailed rules: [`.agent/rules/`](.agent/rules/README.md).
 - Tool failures: `toolError(msg)`; structured successes: `toolResult(obj)`; LLM-readable tools may return plain-text stdout
 - New features need colocated unit tests; integration in `tests/integration/` — see [`.agent/rules/testing.md`](.agent/rules/testing.md)
 - Layer deps and Registry injection enforced — see [`.agent/rules/code-layers.md`](.agent/rules/code-layers.md) and [`scripts/check-layer-deps.ts`](scripts/check-layer-deps.ts)
-- **Do not manually edit [`CHANGELOG.md`](CHANGELOG.md)** — Release Please only ([`docs/guide/versioning.md`](docs/guide/versioning.md))
-- PG migrations: `db:generate` then `db:migrate`; never skip `snapshot.json` — [`.agent/rules/database.md`](.agent/rules/database.md)
+- **Do not manually edit [`CHANGELOG.md`](CHANGELOG.md)** — Release Please only ([`.agent/rules/release.md`](.agent/rules/release.md))
+- PG migrations: `db:generate` then `db:migrate`; never skip `snapshot.json` — [`.agent/rules/coding.md`](.agent/rules/coding.md) § PG migrations
 - Credentials and secrets never in git / logs / tool returns; memory/self-layer changes need extra care ([`docs/concepts/identity.md`](docs/concepts/identity.md))
 
 ### Type ownership (decision order only)
@@ -59,14 +59,14 @@ bun run service start --foreground # foreground block (logs to stdout)
 bun run service start --dev # WebUI source watch rebuild (not HMR; refresh page after frontend edits)
 anima credential list # credential paths; values in pass
 
-# PG schema changes (must generate snapshot.json; see .agent/rules/database.md)
+# PG schema changes (must generate snapshot.json; see .agent/rules/coding.md)
 DATABASE_URL="…" bun run --filter @freeanima/storage-db db:generate
 DATABASE_URL="…" bun run --filter @freeanima/storage-db db:migrate
 ```
 
 - WebUI parlor: `http://127.0.0.1:2658/webui/parlor/chat`
-- Release: [`docs/guide/versioning.md`](docs/guide/versioning.md)
-- PG design: [`docs/guide/database.md`](docs/guide/database.md)
+- Release: [`.agent/rules/release.md`](.agent/rules/release.md)
+- PG ops (install, backup): [`docs/guide/database.md`](docs/guide/database.md)
 
 ---
 
@@ -79,7 +79,7 @@ DATABASE_URL="…" bun run --filter @freeanima/storage-db db:migrate
 | [GitHub Issues](https://github.com/freeanima-org/freeanima/issues) | Actionable tasks and discussions                                 |
 | [`docs/concepts/architecture.md`](docs/concepts/architecture.md)   | Architecture principles and direction                            |
 | [`docs/concepts/`](docs/concepts/)                                 | Core concepts (memory, self layer, etc.)                         |
-| [`docs/guide/`](docs/guide/)                                       | Usage and maintenance (security, database, release)              |
+| [`docs/guide/`](docs/guide/)                                       | Usage and maintenance (security, database ops)                   |
 | [`docs/features/`](docs/features/)                                 | Major product capabilities                                       |
 | [`docs/tools/`](docs/tools/)                                       | General/minor built-in tools                                     |
 
@@ -93,17 +93,19 @@ DATABASE_URL="…" bun run --filter @freeanima/storage-db db:migrate
 
 ## Docs to update when code changes
 
-| Change type                              | Update                                                                                       |
-| ---------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Slice A / PG schema                      | [`docs/guide/database.md`](docs/guide/database.md)                                           |
-| Layer deps / composition root / Registry | [`.agent/rules/code-layers.md`](.agent/rules/code-layers.md) + confirm `check-layer-deps.ts` |
-| Test strategy / mock tiers               | [`.agent/rules/testing.md`](.agent/rules/testing.md) + [`tests/README.md`](tests/README.md)  |
-| Memory pipeline / retrieval              | [`docs/concepts/memory.md`](docs/concepts/memory.md) + architecture                          |
-| Security / threat surface                | [`docs/guide/security.md`](docs/guide/security.md) + architecture                            |
-| Architecture principles                  | [`docs/concepts/architecture.md`](docs/concepts/architecture.md)                             |
-| New RFC package / rename                 | [`.agent/rules/packages.md`](.agent/rules/packages.md)                                       |
-| Release                                  | [`docs/guide/versioning.md`](docs/guide/versioning.md)                                       |
-| Task done                                | close corresponding GitHub Issue; user-visible changes use Conventional Commits              |
+| Change type                              | Update                                                                                                  |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| PG schema / DDL                          | [`storage/db/src/schema/`](storage/db/src/schema/) + [`.agent/rules/coding.md`](.agent/rules/coding.md) |
+| PG ops (install, backup, migrate UX)     | [`docs/guide/database.md`](docs/guide/database.md)                                                      |
+| Layer deps / composition root / Registry | [`.agent/rules/code-layers.md`](.agent/rules/code-layers.md) + confirm `check-layer-deps.ts`            |
+| Test strategy / mock tiers               | [`.agent/rules/testing.md`](.agent/rules/testing.md) + [`tests/README.md`](tests/README.md)             |
+| Memory pipeline / retrieval              | [`docs/concepts/memory.md`](docs/concepts/memory.md) + architecture                                     |
+| Security / threat surface                | [`docs/guide/security.md`](docs/guide/security.md) + architecture                                       |
+| Architecture principles                  | [`docs/concepts/architecture.md`](docs/concepts/architecture.md)                                        |
+| New RFC package / rename                 | [`.agent/rules/packages.md`](.agent/rules/packages.md)                                                  |
+| Release                                  | [`.agent/rules/release.md`](.agent/rules/release.md)                                                    |
+| Compression algorithm                    | [`.agent/rules/compression.md`](.agent/rules/compression.md)                                            |
+| Task done                                | close corresponding GitHub Issue; user-visible changes use Conventional Commits                         |
 
 Tool tables, module trees, API lists **are not maintained in docs** — use registration code and service router as source of truth.
 
@@ -112,7 +114,7 @@ Tool tables, module trees, API lists **are not maintained in docs** — use regi
 - Principle changes first in [`docs/concepts/architecture.md`](docs/concepts/architecture.md), then decide on a topic doc
 - New topic >50 lines and long-lived → `docs/` or `.agent/rules/`; actionable items → GitHub Issue
 - Close Issue when task done; do not keep completed items in docs
-- **docs layout**: deploy/credentials/release → `docs/guide/`; mechanisms → `docs/concepts/`; major product features → `docs/features/`; general tools → `docs/tools/`; agent implementation rules → `.agent/rules/`
+- **docs layout**: deploy/credentials → `docs/guide/`; cognitive mechanisms → `docs/concepts/`; major product features → `docs/features/`; general tools → `docs/tools/`; agent implementation rules → `.agent/rules/`
 
 ## What each file must not contain
 

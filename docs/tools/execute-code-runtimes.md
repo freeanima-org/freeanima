@@ -2,20 +2,13 @@
 title: Execute Code Runtimes
 ---
 
-# execute_code Multi-Runtime Design
+# execute_code Multi-Runtime
 
-> One tool, multiple runtimes; default Node.js, extend Python / Deno on demand.
+> One tool, multiple runtimes; default Bun; extend with Python / Deno as needed.
 
 ## Background
 
-`execute_code` was hardcoded to Node.js, but the tool schema exposed only `"Run code"` to the LLM, causing models to frequently write Python and fail execution.
-
-Goals:
-
-1. **Clear semantics** — LLM knows which language to write and which runtime to pick
-2. **Default Bun** — same stack as FreeAnima, preferred for TS/JS snippets
-3. **Extensible** — reserve Python, Deno, enable progressively via config
-4. **Division from terminal** — structured subprocess vs shell
+`execute_code` runs short scripts in a controlled subprocess. The LLM must know which language to write and which runtime to pick — otherwise Python sent to Node fails.
 
 ## Division from terminal
 
@@ -23,53 +16,31 @@ Goals:
 | --------- | -------------------------------------------- | --------------------------------------- |
 | Execution | No shell, fixed runtime                      | shell=true                              |
 | Best for  | Short scripts, data processing, logic checks | System commands, pipes, git, long tasks |
-| Output    | 50KB cap, controllable timeout               | Same limits but more freedom            |
-| Security  | Smaller attack surface (no shell injection)  | Larger attack surface                   |
+| Output    | 50KB cap, configurable timeout               | Same limits but more freedom            |
+| Security  | Smaller surface (no shell injection)         | Larger surface                          |
 
-Python batch jobs should use `execute_code(runtime="python")`, not `python3 -c "..."` in terminal.
+Use `execute_code(runtime="python")` for Python batches, not `python3 -c "..."` in terminal.
 
 ## API
 
 ```typescript
 execute_code({
-  code: string,           // source
+  code: string,
   runtime?: "bun" | "nodejs" | "python" | "deno",  // default bun
   timeout?: number,       // seconds, default 300, max 600
 })
 ```
 
-### LLM-Visible Description (Principles)
+## Available Runtimes
 
-- Top-level `description` is LLM's sole source of truth (flat JSON Schema, no nested wrapper)
-- State default runtime, each runtime's language, alternatives when runtime disabled
+| runtime    | Language                | Status                  |
+| ---------- | ----------------------- | ----------------------- |
+| **bun**    | TypeScript / JavaScript | ✅ default              |
+| **nodejs** | TypeScript / JavaScript | ✅ implemented          |
+| **python** | Python                  | 🔲 reserved (Issue #40) |
+| **deno**   | TypeScript              | 🔲 reserved (Issue #40) |
 
-## Runtime Registry
-
-```typescript
-interface CodeRuntime {
-  id: "nodejs" | "python" | "deno";
-  enabled: boolean;
-  extension: string; // .mts / .py / .ts
-  preamble?: string; // bootstrap before writing file
-  command: string[]; // spawn command and args (last item is file path placeholder)
-}
-```
-
-| runtime    | command                           | file   | preamble                      | status         |
-| ---------- | --------------------------------- | ------ | ----------------------------- | -------------- |
-| **bun**    | `bun` (`Bun.spawn`)               | `.ts`  | common `node:fs` imports etc. | ✅ implemented |
-| **nodejs** | `node --experimental-strip-types` | `.mts` | common `node:fs` imports etc. | ✅ implemented |
-| **python** | `python3`                         | `.py`  | optional `os`/`pathlib`       | 🔲 reserved    |
-| **deno**   | `deno run --allow-read=...`       | `.ts`  | Deno stdlib                   | 🔲 reserved    |
-
-### Phase Plan
-
-| Phase            | Content                                               | Status                                                          |
-| ---------------- | ----------------------------------------------------- | --------------------------------------------------------------- |
-| **P0** (current) | Flat schema + `runtime` param + bun/nodejs enabled    | ✅ implemented                                                  |
-| **P1–P4**        | python / config toggles / deno / credential injection | see [#40](https://github.com/freeanima-org/freeanima/issues/40) |
-
-## Configuration (P2 Reserved)
+## Configuration (Reserved)
 
 ```yaml
 execute_code:
@@ -82,85 +53,18 @@ execute_code:
       command: python3
     deno:
       enabled: false
-      command: deno
 ```
 
-Disabled runtime returns:
-
-```json
-{ "error": "runtime 'python' not enabled; available: nodejs" }
-```
-
-## Execution Flow
-
-```
-LLM calls execute_code(code, runtime?)
-        │
-        ▼
-  Resolve runtime (default nodejs)
-        │
-        ▼
-  Lookup registry → enabled?
-        │ no ──→ {"error": "..."}
-        ▼ yes
-  mkdtemp → write preamble + code → spawn
-        │
-        ▼
-  Merge stdout/stderr; non-zero exit → JSON { output, exit_code }
-        │
-        ▼
-  Clean temp files
-```
+Disabled runtimes return a clear error listing available runtimes.
 
 ## Security
 
-- Always `shell: false` (consistent with [`guide/security.md`](../guide/security.md))
-- Timeout and `maxBuffer` same as current implementation
-- Before enabling Deno, define `--allow-*` whitelist policy
-- **Do not** auto-guess runtime from code content (avoid misjudgment)
+- Always `shell: false` (see [`security.md`](../guide/security.md))
+- Timeout and output size limits match current implementation
+- **Do not** auto-guess runtime from code content
 
-## Credential Injection (P4, Issue #40)
+## Credential Injection (Planned)
 
-ARCHITECTURE specifies `credential(path)` available in `execute_code` execution environment, **not yet implemented**.
+Architecture allows credential path injection in `execute_code` environments — **not yet implemented**. See [Issue #40](https://github.com/freeanima-org/freeanima/issues/40).
 
-Suggested unified multi-runtime approach:
-
-1. Parent process resolves `credential("...")` calls in code before spawn (or explicit params)
-2. Inject via environment: `ANIMA_CRED_<PATH>` (path escaped)
-3. Each runtime preamble provides same-name helper reading env
-
-Do not call pass CLI inside each runtime.
-
-## Tool Schema Flattening
-
-FreeAnima local tools use standard OpenAI shape:
-
-```typescript
-registerTool({
-  name: "execute_code",
-  description: "……full description LLM sees……",
-  parameters: {
-    type: "object",
-    properties: { … },
-    required: […],
-  },
-  handler: …,
-});
-```
-
-Forbidden: nested `{ name, description, parameters: { … } }` wrapper; `openaiFunctionSchema` maps top-level fields directly.
-
-## File Layout
-
-```
-capabilities/tools/src/
-  execute-code.ts          # tool registration + routing
-  execute-code-runtimes.ts # runtime registry and spawn logic (P1+ extension)
-```
-
-## Tests
-
-- Default `runtime` nodejs executes TS/JS
-- Disabled runtime returns error JSON
-- `openaiSchemas()` `execute_code.description` includes Node.js note
-- Nested parameters format regression: should not reappear
+Credential values are never exposed to the LLM; injected from pass at runtime — no pass CLI inside runtimes.

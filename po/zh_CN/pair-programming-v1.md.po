@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-10 17:45+0800\n"
+"POT-Creation-Date: 2026-06-12 11:56+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,35 +16,26 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Plain text
-#: docs/README.md:1 docs/concepts/compression.md:1
-#: docs/concepts/compression.md:11 docs/concepts/compression.md:22
-#: docs/concepts/compression.md:49 docs/concepts/compression.md:96
-#: docs/concepts/compression.md:118 docs/concepts/compression.md:156
-#: docs/concepts/compression.md:180 docs/concepts/compression.md:228
-#: docs/concepts/compression.md:262 docs/concepts/compression.md:275
-#: docs/concepts/compression.md:327 docs/concepts/compression.md:348
-#: docs/concepts/compression.md:368 docs/concepts/compression.md:384
-#: docs/concepts/identity.md:1 docs/concepts/identity.md:10
-#: docs/concepts/identity.md:28 docs/concepts/identity.md:45
-#: docs/concepts/identity.md:55 docs/concepts/memory.md:1
-#: docs/concepts/memory.md:17 docs/concepts/memory.md:53
-#: docs/concepts/memory.md:160 docs/concepts/memory.md:191
-#: docs/concepts/memory.md:211 docs/concepts/memory.md:232
-#: docs/concepts/memory.md:249 docs/concepts/recall-flow.md:1
-#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:31
-#: docs/concepts/self-layer.md:53 docs/concepts/self-layer.md:64
-#: docs/concepts/self-layer.md:78 docs/concepts/self-layer.md:94
-#: docs/concepts/self-layer.md:105 docs/concepts/sleep.md:1
+#: docs/README.md:1 docs/concepts/architecture.md:1
+#: docs/concepts/compression.md:1 docs/concepts/identity.md:1
+#: docs/concepts/identity.md:10 docs/concepts/identity.md:28
+#: docs/concepts/identity.md:45 docs/concepts/identity.md:55
+#: docs/concepts/memory.md:1 docs/concepts/memory.md:17
+#: docs/concepts/memory.md:53 docs/concepts/memory.md:122
+#: docs/concepts/memory.md:133 docs/concepts/memory.md:150
+#: docs/concepts/recall-flow.md:1 docs/concepts/self-layer.md:1
+#: docs/concepts/self-layer.md:30 docs/concepts/self-layer.md:52
+#: docs/concepts/self-layer.md:66 docs/concepts/self-layer.md:80
+#: docs/concepts/self-layer.md:91 docs/concepts/sleep.md:1
 #: docs/concepts/time-perception.md:1 docs/features/pair-programming-v1.md:1
-#: docs/features/pair-programming-v1.md:321 docs/guide/database.md:1
-#: docs/guide/database.md:33 docs/guide/security.md:1
-#: docs/guide/versioning.md:1 docs/tools/execute-code-runtimes.md:1
+#: docs/guide/database.md:1 docs/guide/security.md:1
+#: docs/tools/execute-code-runtimes.md:1
 #, no-wrap
 msgid "---\n"
 msgstr "---\n"
 
 #. type: Plain text
-#: docs/concepts/compression.md:14 docs/concepts/sleep.md:14
+#: docs/concepts/compression.md:11 docs/concepts/sleep.md:14
 #: docs/concepts/time-perception.md:22 docs/features/pair-programming-v1.md:11
 msgid "## Design Principles"
 msgstr "## 设计原则"
@@ -61,108 +52,90 @@ msgstr ""
 
 #. type: Plain text
 #: docs/features/pair-programming-v1.md:6
-msgid "# Pair Programming v1 — Workbench Design"
-msgstr "# 结对编程 v1 — 工作台设计"
+#, fuzzy
+#| msgid "Pair Programming v1"
+msgid "# Pair Programming (Studio)"
+msgstr "结对编程 v1"
 
 #. type: Plain text
 #: docs/features/pair-programming-v1.md:9
 msgid ""
-"> **Phase 1 ✅ Implemented** (2026-05-29): three-column UI, highlight.js "
-"viewer, studio tree/file/search, xterm terminal, `studio-pair-programming` "
-"platform.  > API shape is **tRPC** (`connectors/webui/src/trpc/routers/"
-"studio.ts`), not REST examples below."
+"> **Phase 1 ✅ shipped**: three-column layout, syntax-highlighted viewer, "
+"file tree/search, terminal, dedicated session platform id.  > Future work: "
+"[Issue #37](https://github.com/freeanima-org/freeanima/issues/37)."
 msgstr ""
-"> **Phase 1 ✅ 已实现**（2026-05-29）：三列 UI、highlight.js 查看、studio "
-"tree/file/search、xterm 终端、`studio-pair-programming` platform。 > API 形态"
-"为 **tRPC**（`connectors/webui/src/trpc/routers/studio.ts`），非下文 REST 示"
-"例。"
 
 #. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:19
+#: docs/features/pair-programming-v1.md:16
 msgid ""
-"**Ship fast, not feature-complete:** Minimal viable scope to close the loop "
-"of \"review code with Agent in Studio\""
+"**Close the loop first**: read and discuss code with the agent in Studio"
 msgstr ""
-"**快速实现，不求功能完整**：用最小的可行范围跑通\"在 Studio 里和 Agent 一起看"
-"代码\"的闭环"
 
 #. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:19
+#: docs/features/pair-programming-v1.md:16
 msgid ""
-"**Lightweight start:** File tree + file viewer + global search + chat + "
-"terminal; no Monaco Editor yet"
+"**Read-only first**: v1 focuses on reading; agent analyzes and suggests — no "
+"direct edit/save yet"
 msgstr ""
-"**轻量化起步**：文件树 + 文件查看 + 全局搜索 + 对话 + 终端，暂不嵌入 Monaco "
-"Editor"
 
 #. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:19
+#: docs/features/pair-programming-v1.md:16
 msgid ""
-"**Syntax highlighting via highlight.js** (not Monaco Editor) to reduce first "
-"implementation cost"
-msgstr "**代码高亮用 highlight.js**（而非 Monaco Editor），降低首次实现成本"
+"**Platform isolation**: pair-programming sessions use a separate platform "
+"from parlor chat"
+msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:19
+#: docs/features/pair-programming-v1.md:16
 msgid ""
-"**Read-only first:** v1 focuses on reading code; Agent analyzes and "
-"suggests, no direct edit/save yet"
+"**Local reads**: server reads files from a configured workspace path (set in "
+"Chamber)"
 msgstr ""
-"**只读起步**：v1 以读代码为主，Agent 分析、提建议，暂不提供直接编辑/保存"
-
-#. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:19
-msgid ""
-"**Platform identity separation:** Pair programming sessions use dedicated "
-"platform id, isolated from parlor chat sessions"
-msgstr ""
-"**平台身份分离**：结对编程会话用独立 platform 标识，与会客厅的聊天会话隔离"
-
-#. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:19
-msgid ""
-"**Local direct read:** Files read server-side (not Probe); workspace path "
-"configured in chamber settings"
-msgstr ""
-"**本地直读**：文件由服务端直接读取（非 Probe），workspace 路径在卧室配置"
-
-#. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:19
-msgid ""
-"**Terminal in Phase 1** (promoted from original Phase 2)—important for "
-"debugging and ops"
-msgstr ""
-"**终端放在 Phase 1**（从原 Phase 2 提到 Phase 1），因为它对调试和运维很重要"
 
 #. type: Plain text
-#: docs/features/pair-programming-v1.md:21
-msgid "## Overall Layout"
-msgstr "## 整体布局"
+#: docs/features/pair-programming-v1.md:18
+msgid "## Layout"
+msgstr ""
 
 #. type: Plain text
-#: docs/features/pair-programming-v1.md:43
-#, no-wrap
+#: docs/features/pair-programming-v1.md:33
+#, fuzzy, no-wrap
+#| msgid ""
+#| "```\n"
+#| "┌──────────────────────────────────────────────────────────┐\n"
+#| "│  Studio                     [Pair Programming] [Novel] … │  ← StudioLayout sidebar\n"
+#| "├──────────┬────────────────────────┬──────────────────────┤\n"
+#| "│ 🔍 Search│                       │  💬 Session list      │\n"
+#| "│ Files    │                       │  ┌──────────────────┐ │\n"
+#| "│ ─────── │     Code viewer        │  │ session-001      │ │\n"
+#| "│ src/     │    (highlight.js)      │  │ session-002      │ │\n"
+#| "│   main.ts│                       │  │ session-003      │ │\n"
+#| "│   utils/ │   Shows selected file  │  ├──────────────────┤ │\n"
+#| "│   ...    │   syntax highlight,    │  │                  │ │\n"
+#| "│          │   line numbers         │  │  Chat area        │ │\n"
+#| "│ index.html│                      │  │  Agent: this code │ │\n"
+#| "│ package.json│                    │  │  has a potential… │ │\n"
+#| "│          │                       │  │                  │ │\n"
+#| "│          │                       │  │  ┌──input──┐     │ │\n"
+#| "│          │                       │  │  │         │     │ │\n"
+#| "└──────────┴────────────────────────┴──────────────────────┘\n"
+#| "   Left              Center                   Right\n"
+#| "  file tree      highlight.js code viewer   session list + chat\n"
+#| "```\n"
 msgid ""
 "```\n"
 "┌──────────────────────────────────────────────────────────┐\n"
-"│  Studio                     [Pair Programming] [Novel] … │  ← StudioLayout sidebar\n"
+"│  Studio                  [Pair Programming] [Novel] …    │\n"
 "├──────────┬────────────────────────┬──────────────────────┤\n"
-"│ 🔍 Search│                       │  💬 Session list      │\n"
-"│ Files    │                       │  ┌──────────────────┐ │\n"
-"│ ─────── │     Code viewer        │  │ session-001      │ │\n"
-"│ src/     │    (highlight.js)      │  │ session-002      │ │\n"
-"│   main.ts│                       │  │ session-003      │ │\n"
-"│   utils/ │   Shows selected file  │  ├──────────────────┤ │\n"
-"│   ...    │   syntax highlight,    │  │                  │ │\n"
-"│          │   line numbers         │  │  Chat area        │ │\n"
-"│ index.html│                      │  │  Agent: this code │ │\n"
-"│ package.json│                    │  │  has a potential… │ │\n"
-"│          │                       │  │                  │ │\n"
-"│          │                       │  │  ┌──input──┐     │ │\n"
-"│          │                       │  │  │         │     │ │\n"
+"│ Search   │                        │  Session list        │\n"
+"│ Files    │     Code viewer        │  ┌────────────────┐  │\n"
+"│          │   (syntax highlight)   │  │ session-001    │  │\n"
+"│ src/     │                        │  │ session-002    │  │\n"
+"│   …      │   Read-only selected   │  ├────────────────┤  │\n"
+"│          │   file view            │  │  Chat area     │  │\n"
 "└──────────┴────────────────────────┴──────────────────────┘\n"
-"   Left              Center                   Right\n"
-"  file tree      highlight.js code viewer   session list + chat\n"
+"   Left              Center                  Right\n"
+"  file tree        code viewer           session + chat\n"
 "```\n"
 msgstr ""
 "```\n"
@@ -188,770 +161,101 @@ msgstr ""
 "```\n"
 
 #. type: Plain text
-#: docs/features/pair-programming-v1.md:45
-msgid "### Three-Column Widths"
-msgstr "### 三列宽度"
+#: docs/features/pair-programming-v1.md:39
+#, no-wrap
+msgid ""
+"| Column       | Default width | Resizable |\n"
+"| ------------ | ------------- | --------- |\n"
+"| Left (tree)  | 260px         | 180–400px |\n"
+"| Center       | flex          | —         |\n"
+"| Right (chat) | 360px         | 280–500px |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/features/pair-programming-v1.md:41
+msgid "## Usage"
+msgstr ""
+
+#. type: Bullet: '1. '
+#: docs/features/pair-programming-v1.md:47
+#, fuzzy
+#| msgid ""
+#| "**WebUI**：浏览器访问 `http://127.0.0.1:2658/webui/*`（Bun fullstack CSR "
+#| "+ tRPC）"
+msgid "Open `http://127.0.0.1:2658/webui/studio/pair-programming`"
+msgstr ""
+"**WebUI**：浏览器访问 `http://127.0.0.1:2658/webui/*`（Bun fullstack CSR + "
+"tRPC）"
+
+#. type: Bullet: '2. '
+#: docs/features/pair-programming-v1.md:47
+msgid "Set workspace path in Chamber (local project directory)"
+msgstr ""
+
+#. type: Bullet: '3. '
+#: docs/features/pair-programming-v1.md:47
+msgid "Browse/search files on the left; view selection in the center"
+msgstr ""
+
+#. type: Bullet: '4. '
+#: docs/features/pair-programming-v1.md:47
+msgid "Create or select a session on the right; discuss code with the agent"
+msgstr ""
+
+#. type: Bullet: '5. '
+#: docs/features/pair-programming-v1.md:47
+msgid "Bottom terminal for debug/ops (isolated from chat session)"
+msgstr ""
+
+#. type: Plain text
+#: docs/features/pair-programming-v1.md:49
+#, fuzzy
+#| msgid "Session (optional)"
+msgid "## Session Isolation"
+msgstr "Session（可选）"
 
 #. type: Plain text
 #: docs/features/pair-programming-v1.md:51
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Column | Default | Resizable |\n"
-#| "| ------ | ------- | --------- |\n"
-#| "| Left (file tree) | 260px | Drag 180–400px |\n"
-#| "| Center (editor) | 1fr | — |\n"
-#| "| Right (sessions) | 360px | Drag 280–500px |\n"
 msgid ""
-"| Column           | Default | Resizable      |\n"
-"| ---------------- | ------- | -------------- |\n"
-"| Left (file tree) | 260px   | Drag 180–400px |\n"
-"| Center (editor)  | 1fr     | —              |\n"
-"| Right (sessions) | 360px   | Drag 280–500px |\n"
+"Pair programming uses platform `studio-pair-programming`, separate from "
+"parlor (`parlor`) and other platform session lists."
 msgstr ""
-"| 列           | 默认  | 可调               |\n"
-"| ------------ | ----- | ------------------ |\n"
-"| 左（文件树） | 260px | 拖拽调整 180–400px |\n"
-"| 中（编辑器） | 1fr   | —                  |\n"
-"| 右（会话）   | 360px | 拖拽调整 280–500px |\n"
 
 #. type: Plain text
 #: docs/features/pair-programming-v1.md:53
-msgid "## I. Platform-Aware Sessions"
-msgstr "## 一、Platform 感知的会话"
+#, fuzzy
+#| msgid "## Current State"
+msgid "## Current Limitations"
+msgstr "## 当前状态"
+
+#. type: Bullet: '- '
+#: docs/features/pair-programming-v1.md:57
+msgid "Read-only viewer (highlight.js), not Monaco"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/features/pair-programming-v1.md:57
+msgid "Agent cannot directly edit and save files (Phase 2)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/features/pair-programming-v1.md:57
+msgid "Workspace must be a path readable by the server process"
+msgstr ""
 
 #. type: Plain text
-#: docs/features/pair-programming-v1.md:55
-msgid "### Change: Frontend API Client"
-msgstr "### 改动：前端 API client"
+#: docs/features/pair-programming-v1.md:59
+msgid "## Related Docs"
+msgstr ""
 
-#. type: Plain text
+#. type: Bullet: '- '
 #: docs/features/pair-programming-v1.md:61
-#, no-wrap
-msgid ""
-"```ts\n"
-"// api/client.ts\n"
-"export function createSession(platform = \"parlor\") {\n"
-"  return postJSON(\"/sessions\", { platform });\n"
-"}\n"
+msgid "WebUI three modes: [`architecture.md`](../concepts/architecture.md)"
 msgstr ""
-"```ts\n"
-"// api/client.ts\n"
-"export function createSession(platform = \"parlor\") {\n"
-"  return postJSON(\"/sessions\", { platform });\n"
-"}\n"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:67
-#, no-wrap
-msgid ""
-"export function listSessions(platform?: string) {\n"
-"  const q = platform ? `?platform=${encodeURIComponent(platform)}` : \"\";\n"
-"  return getJSON(`/sessions${q}`).then((d) => d.sessions || []);\n"
-"}\n"
-"```\n"
-msgstr ""
-"export function listSessions(platform?: string) {\n"
-"  const q = platform ? `?platform=${encodeURIComponent(platform)}` : \"\";\n"
-"  return getJSON(`/sessions${q}`).then((d) => d.sessions || []);\n"
-"}\n"
-"```\n"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:69
-msgid "### Change: Backend HTTP Layer"
-msgstr "### 改动：后端 HTTP 层"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:72
-msgid "```ts // http-app.ts"
-msgstr "```ts // http-app.ts"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:79
-#, no-wrap
-msgid ""
-"// Create session — read platform from body\n"
-"api.post(\"/sessions\", async (c) => {\n"
-"  const body = await c.req.json().catch(() => ({}));\n"
-"  const platform = body.platform ?? PARLOR_PLATFORM;\n"
-"  return c.json(service.createSession(platform));\n"
-"});\n"
-msgstr ""
-"// 创建会话 — 从 body 读取 platform\n"
-"api.post(\"/sessions\", async (c) => {\n"
-"  const body = await c.req.json().catch(() => ({}));\n"
-"  const platform = body.platform ?? PARLOR_PLATFORM;\n"
-"  return c.json(service.createSession(platform));\n"
-"});\n"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:86
-#, no-wrap
-msgid ""
-"// List sessions — optional platform filter\n"
-"api.get(\"/sessions\", (c) => {\n"
-"  const platform = c.req.query(\"platform\") ?? undefined;\n"
-"  return c.json(service.listSessions(platform));\n"
-"});\n"
-"```\n"
-msgstr ""
-"// 列出会话 — 可选 platform 过滤\n"
-"api.get(\"/sessions\", (c) => {\n"
-"  const platform = c.req.query(\"platform\") ?? undefined;\n"
-"  return c.json(service.listSessions(platform));\n"
-"});\n"
-"```\n"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:88
-msgid ""
-"> Note: `conversation.ts` `newSession(platform)` and "
-"`listSessions(platform?)` already support platform; HTTP layer only needs "
-"passthrough."
-msgstr ""
-"> 注意：`conversation.ts` 中的 `newSession(platform)` 和 "
-"`listSessions(platform?)` 已支持 platform，只需 HTTP 层透传。"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:90
-msgid "### Pair Programming Platform Value"
-msgstr "### 结对编程的 platform 取值"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:94
-msgid "``` platform = \"studio-pair-programming\" ```"
-msgstr "``` platform = \"studio-pair-programming\" ```"
 
 #. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:98
-msgid ""
-"Sessions created in PairProgrammingView automatically carry this platform"
-msgstr "在 PairProgrammingView 中创建的会话自动带上此 platform"
-
-#. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:98
-msgid "Session list filtered accordingly—pair programming sessions only"
-msgstr "会话列表按此过滤，只显示结对编程相关的会话"
-
-#. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:98
-msgid "Isolated from parlor (`parlor`) and other platform sessions"
-msgstr "与会客厅 (`parlor`) 和其他平台的会话互不干扰"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:100
-msgid "## II. Code Viewer"
-msgstr "## 二、代码查看器"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:102
-msgid ""
-"v1 does not embed Monaco Editor; **highlight.js** for syntax highlighting to "
-"reduce first implementation cost."
-msgstr ""
-"v1 不嵌入 Monaco Editor，使用 **highlight.js** 提供语法高亮，降低首次实现成"
-"本。"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:104
-msgid "### Dependencies"
-msgstr "### 依赖"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:112
-#, no-wrap
-msgid ""
-"```json\n"
-"{\n"
-"  \"dependencies\": {\n"
-"    \"highlight.js\": \"^11.9.0\"\n"
-"  }\n"
-"}\n"
-"```\n"
-msgstr ""
-"```json\n"
-"{\n"
-"  \"dependencies\": {\n"
-"    \"highlight.js\": \"^11.9.0\"\n"
-"  }\n"
-"}\n"
-"```\n"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:114
-msgid "### Component Structure"
-msgstr "### 组件结构"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:123
-#, no-wrap
-msgid ""
-"```\n"
-"PairProgrammingView.vue\n"
-"├── FileTreePanel.vue          ← left column\n"
-"├── CodeViewerPanel.vue       ← center (highlight.js)\n"
-"├── SessionPanel.vue           ← right column\n"
-"│   ├── SessionList.vue        ← session list (platform filter)\n"
-"│   └── ChatPanel.vue          ← chat (shares SSE channel with parlor)\n"
-"```\n"
-msgstr ""
-"```\n"
-"PairProgrammingView.vue\n"
-"├── FileTreePanel.vue          ← 左列\n"
-"├── CodeViewerPanel.vue       ← 中列 (highlight.js)\n"
-"├── SessionPanel.vue           ← 右列\n"
-"│   ├── SessionList.vue        ← 会话列表（按 platform 过滤）\n"
-"│   └── ChatPanel.vue          ← 对话（与会客厅共用 SSE 通道）\n"
-"```\n"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:125
-msgid "### CodeViewerPanel Responsibilities"
-msgstr "### CodeViewerPanel 职责"
-
-#. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:131
-msgid "Accept `{ filePath, content, language }` props"
-msgstr "接收 `{ filePath, content, language }` props"
-
-#. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:131
-msgid "Render syntax highlighting with highlight.js"
-msgstr "使用 highlight.js 渲染语法高亮"
-
-#. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:131
-msgid "Show line numbers"
-msgstr "显示行号"
-
-#. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:131
-msgid "Optional basic code folding (v1 can skip)"
-msgstr "支持基础代码折叠（可选，v1 可不做）"
-
-#. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:131
-msgid ""
-"Click line number to select/copy (later for \"Agent, look at this line\")"
-msgstr "点击行号可选中/复制（后续可用于\"Agent，看这行\"）"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:133
-msgid "### Future Upgrade Path"
-msgstr "### 未来升级路径"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:135
-msgid ""
-"When editing is needed, upgrade to Monaco Editor (read-only→editable); file "
-"tree and chat unchanged."
-msgstr ""
-"当需要编辑功能时，可升级为 Monaco Editor（只读→可编辑），highlight.js 替换为 "
-"Monaco 的 Editor，文件树和对话区不做改动。"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:137
-msgid "## III. File Tree"
-msgstr "## 三、文件树"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:139
-msgid "### Data Source"
-msgstr "### 数据来源"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:143
-msgid "``` GET /api/studio/tree?path=<workspace> ```"
-msgstr "``` GET /api/studio/tree?path=<workspace> ```"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:145
-msgid "Return structure:"
-msgstr "返回结构："
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:165
-#, no-wrap
-msgid ""
-"```json\n"
-"{\n"
-"  \"tree\": [\n"
-"    {\n"
-"      \"name\": \"src\",\n"
-"      \"type\": \"directory\",\n"
-"      \"children\": [\n"
-"        { \"name\": \"main.ts\", \"type\": \"file\", \"size\": 1234 },\n"
-"        { \"name\": \"utils\", \"type\": \"directory\", \"children\": [...] }\n"
-"      ]\n"
-"    },\n"
-"    {\n"
-"      \"name\": \"package.json\",\n"
-"      \"type\": \"file\",\n"
-"      \"size\": 567\n"
-"    }\n"
-"  ]\n"
-"}\n"
-"```\n"
-msgstr ""
-"```json\n"
-"{\n"
-"  \"tree\": [\n"
-"    {\n"
-"      \"name\": \"src\",\n"
-"      \"type\": \"directory\",\n"
-"      \"children\": [\n"
-"        { \"name\": \"main.ts\", \"type\": \"file\", \"size\": 1234 },\n"
-"        { \"name\": \"utils\", \"type\": \"directory\", \"children\": [...] }\n"
-"      ]\n"
-"    },\n"
-"    {\n"
-"      \"name\": \"package.json\",\n"
-"      \"type\": \"file\",\n"
-"      \"size\": 567\n"
-"    }\n"
-"  ]\n"
-"}\n"
-"```\n"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:167
-msgid "### File Tree Component"
-msgstr "### 文件树组件"
-
-#. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:171
-msgid "Recursive directory tree, expand/collapse"
-msgstr "递归渲染目录树，可展开/折叠"
-
-#. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:171
-msgid "Click file → load content to viewer"
-msgstr "点击文件 → 加载内容到 Monaco"
-
-#. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:171
-msgid ""
-"Root from chamber config `workspace` (v1 can hardcode or read from config)"
-msgstr "根目录由卧室配置中的 `workspace` 指定（v1 可先硬编码或从配置读取）"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:173
-msgid "### Filename Search"
-msgstr "### 文件名搜索"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:181
-msgid ""
-"``` Search box (top of left column)  ├── Keyword → real-time filter tree "
-"nodes ├── Matching files/dirs highlighted/kept ├── Fuzzy match (fuse.js or "
-"simple includes)  └── Select result → auto scroll and expand path ```"
-msgstr ""
-"``` 搜索框（左列顶部） ├── 输入关键词 → 实时过滤文件树节点 ├── 匹配的文件和目"
-"录高亮/保留 ├── 支持模糊匹配（fuse.js 或简单 includes） └── 选中搜索结果 → 自"
-"动滚动并展开路径 ```"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:183
-msgid "### Workspace Configuration"
-msgstr "### 配置 workspace"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:185
-msgid "New chamber config keys:"
-msgstr "在卧室新增配置项："
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:190
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| key | Type | Default | Description |\n"
-#| "| --- | ---- | ------- | ----------- |\n"
-#| "| `studio.workspace` | string | `\"\"` | Pair programming workspace path |\n"
-#| "| `studio.gitignore` | boolean | `true` | Filter file tree by .gitignore |\n"
-msgid ""
-"| key                | Type    | Default | Description                     |\n"
-"| ------------------ | ------- | ------- | ------------------------------- |\n"
-"| `studio.workspace` | string  | `\"\"`    | Pair programming workspace path |\n"
-"| `studio.gitignore` | boolean | `true`  | Filter file tree by .gitignore  |\n"
-msgstr ""
-"| key                | 类型    | 默认   | 说明                         |\n"
-"| ------------------ | ------- | ------ | ---------------------------- |\n"
-"| `studio.workspace` | string  | `\"\"`   | 结对编程工作目录路径         |\n"
-"| `studio.gitignore` | boolean | `true` | 是否按 .gitignore 过滤文件树 |\n"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:192
-msgid ""
-"If workspace unset on first visit, show guide prompt linking to chamber "
-"config page."
-msgstr "首次进入时若未配置 workspace，显示引导提示，跳转到卧室配置页。"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:194
-msgid "## IV. Global Search"
-msgstr "## 四、全局搜索"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:196
-msgid "### API"
-msgstr "### API"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:212
-#, no-wrap
-msgid ""
-"```\n"
-"POST /api/studio/search\n"
-"Body: { query: string, path: string }\n"
-"Response: {\n"
-"  results: [\n"
-"    {\n"
-"      \"file\": \"src/main.ts\",\n"
-"      \"line\": 42,\n"
-"      \"column\": 8,\n"
-"      \"content\": \"  const x = foo()\",\n"
-"      \"match\": \"foo\"\n"
-"    }\n"
-"  ]\n"
-"}\n"
-"```\n"
-msgstr ""
-"```\n"
-"POST /api/studio/search\n"
-"Body: { query: string, path: string }\n"
-"Response: {\n"
-"  results: [\n"
-"    {\n"
-"      file: \"src/main.ts\",\n"
-"      line: 42,\n"
-"      column: 8,\n"
-"      content: \"  const x = foo()\",\n"
-"      match: \"foo\"\n"
-"    }\n"
-"  ]\n"
-"}\n"
-"```\n"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:214
-msgid "### Implementation"
-msgstr "### 实现方式"
-
-#. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:220
-msgid "Backend recursively scans workspace directory"
-msgstr "后端递归扫描 workspace 目录"
-
-#. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:220
-msgid "Read `.gitignore`, apply gitignore rules"
-msgstr "读取 `.gitignore` 文件，应用 gitignore 规则过滤"
-
-#. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:220
-msgid "Support nested `.gitignore` (subdirectory rules stack)"
-msgstr "支持 `.gitignore` 嵌套（子目录中的 `.gitignore` 叠加生效）"
-
-#. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:220
-msgid "Use ripgrep if available, else Node.js line-by-line search"
-msgstr "使用 ripgrep（如果有）或 Node.js 原生逐行搜索"
-
-#. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:220
-msgid "Scope: all plain text files (configurable include extensions)"
-msgstr "搜索范围：所有纯文本文件（可配置 include 扩展名）"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:222
-msgid "### Frontend Interaction"
-msgstr "### 前端交互"
-
-#. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:226
-msgid "Global search entry at bottom of left column or top of center column"
-msgstr "左列底部或中列顶部增加全局搜索入口"
-
-#. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:226
-msgid "Results: filename + line + matching line snippet"
-msgstr "搜索结果展示：文件名 + 行号 + 匹配行片段"
-
-#. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:226
-msgid "Click result → jump to file + line in viewer"
-msgstr "点击结果 → 跳转到 Monaco 的对应文件 + 行号"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:228
-msgid "## V. New Backend APIs"
-msgstr "## 五、后端新增 API"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:236
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Method | Path | Description |\n"
-#| "| ------ | ---- | ----------- |\n"
-#| "| `GET` | `/api/studio/tree` | Workspace file tree |\n"
-#| "| `GET` | `/api/studio/file` | Read file content (query: `path`) |\n"
-#| "| `POST` | `/api/studio/search` | Global text search |\n"
-#| "| `GET` | `/api/studio/config` | Studio config (includes workspace) |\n"
-#| "| `PUT` | `/api/studio/config` | Update studio config |\n"
-msgid ""
-"| Method | Path                 | Description                        |\n"
-"| ------ | -------------------- | ---------------------------------- |\n"
-"| `GET`  | `/api/studio/tree`   | Workspace file tree                |\n"
-"| `GET`  | `/api/studio/file`   | Read file content (query: `path`)  |\n"
-"| `POST` | `/api/studio/search` | Global text search                 |\n"
-"| `GET`  | `/api/studio/config` | Studio config (includes workspace) |\n"
-"| `PUT`  | `/api/studio/config` | Update studio config               |\n"
-msgstr ""
-"| 方法   | 路径                 | 说明                             |\n"
-"| ------ | -------------------- | -------------------------------- |\n"
-"| `GET`  | `/api/studio/tree`   | 获取 workspace 文件树            |\n"
-"| `GET`  | `/api/studio/file`   | 读取文件内容（query: `path`）    |\n"
-"| `POST` | `/api/studio/search` | 全局文本搜索                     |\n"
-"| `GET`  | `/api/studio/config` | 获取 studio 配置（含 workspace） |\n"
-"| `PUT`  | `/api/studio/config` | 更新 studio 配置                 |\n"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:238
-msgid "### File Read"
-msgstr "### 文件读取"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:249
-#, no-wrap
-msgid ""
-"```\n"
-"GET /api/studio/file?path=src/main.ts\n"
-"Response:\n"
-"{\n"
-"  \"path\": \"src/main.ts\",\n"
-"  \"content\": \"import { ... }\",\n"
-"  \"language\": \"typescript\",\n"
-"  \"size\": 1234\n"
-"}\n"
-"```\n"
-msgstr ""
-"```\n"
-"GET /api/studio/file?path=src/main.ts\n"
-"Response:\n"
-"{\n"
-"  \"path\": \"src/main.ts\",\n"
-"  \"content\": \"import { ... }\",\n"
-"  \"language\": \"typescript\",\n"
-"  \"size\": 1234\n"
-"}\n"
-"```\n"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:251
-msgid "Safety limits:"
-msgstr "安全限制："
-
-#. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:255
-msgid "Path must be under workspace directory"
-msgstr "路径必须位于 workspace 目录下"
-
-#. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:255
-msgid "Reject hidden files (leading `.`) unless `showHidden` config allows"
-msgstr "拒绝隐藏文件（以 `.` 开头）除非在 `showHidden` 配置中允许"
-
-#. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:255
-msgid "File size cap: 1MB (over limit returns notice)"
-msgstr "文件大小上限：1MB（超过返回提示信息）"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:257
-msgid "## VI. Frontend Store and State"
-msgstr "## 六、前端的 store 与状态管理"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:259
-msgid "### New Store"
-msgstr "### 新增 store"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:269
-#, no-wrap
-msgid ""
-"```ts\n"
-"// stores/studio/pair-programming.js\n"
-"export const usePairProgrammingStore = defineStore('pair-programming', () => {\n"
-"  const sessions = ref([])\n"
-"  const currentSessionId = ref(null)\n"
-"  const fileTree = ref([])\n"
-"  const currentFile = ref(null)      // { path, content, language }\n"
-"  const searchResults = ref([])\n"
-"  const workspace = ref('')\n"
-msgstr ""
-"```ts\n"
-"// stores/studio/pair-programming.js\n"
-"export const usePairProgrammingStore = defineStore('pair-programming', () => {\n"
-"  const sessions = ref([])\n"
-"  const currentSessionId = ref(null)\n"
-"  const fileTree = ref([])\n"
-"  const currentFile = ref(null)      // { path, content, language }\n"
-"  const searchResults = ref([])\n"
-"  const workspace = ref('')\n"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:275
-#, no-wrap
-msgid ""
-"  async function fetchSessions() { /* filter by platform */ }\n"
-"  async function createSession() { /* platform = studio-pair-programming */ }\n"
-"  async function fetchTree() { /* GET /api/studio/tree */ }\n"
-"  async function openFile(path) { /* GET /api/studio/file */ }\n"
-"  async function globalSearch(query) { /* POST /api/studio/search */ }\n"
-msgstr ""
-"  async function fetchSessions() { /* 按 platform 过滤 */ }\n"
-"  async function createSession() { /* platform = studio-pair-programming */ }\n"
-"  async function fetchTree() { /* GET /api/studio/tree */ }\n"
-"  async function openFile(path) { /* GET /api/studio/file */ }\n"
-"  async function globalSearch(query) { /* POST /api/studio/search */ }\n"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:279
-#, no-wrap
-msgid ""
-"  return { ... }\n"
-"})\n"
-"```\n"
-msgstr ""
-"  return { ... }\n"
-"})\n"
-"```\n"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:281
-msgid "## VII. Routing and Navigation"
-msgstr "## 七、路由与导航"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:285
-msgid "``` GET /studio/pair-programming → PairProgrammingView.vue ```"
-msgstr "``` GET /studio/pair-programming → PairProgrammingView.vue ```"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:287
-msgid "Route in place:"
-msgstr "当前路由已就位："
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:295
-#, no-wrap
-msgid ""
-"```ts\n"
-"{\n"
-"  path: '/studio/pair-programming',\n"
-"  name: 'studio-pair-programming',\n"
-"  component: () => import('../views/studio/PairProgrammingView.vue'),\n"
-"}\n"
-"```\n"
-msgstr ""
-"```ts\n"
-"{\n"
-"  path: '/studio/pair-programming',\n"
-"  name: 'studio-pair-programming',\n"
-"  component: () => import('../views/studio/PairProgrammingView.vue'),\n"
-"}\n"
-"```\n"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:297
-msgid ""
-"StudioLayout sidebar keeps existing style; pair programming as first entry."
-msgstr "StudioLayout 侧边栏保持现有风格，结对编程作为第一个入口。"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:299
-msgid "## VIII. Implementation Plan"
-msgstr "## 八、实施计划"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:301
-msgid "### Phase 1"
-msgstr "### Phase 1"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:312
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Step | Content | Estimate |\n"
-#| "| ---- | ------- | -------- |\n"
-#| "| 1.1 | API: POST/GET sessions support platform | 2h |\n"
-#| "| 1.2 | API: studio/tree, studio/file, studio/search endpoints | 4h |\n"
-#| "| 1.3 | Frontend: three-column layout + FileTreePanel | 3h |\n"
-#| "| 1.4 | Frontend: CodeViewerPanel (highlight.js) | 1.5h |\n"
-#| "| 1.5 | Frontend: SessionPanel (session list + chat) | 3h |\n"
-#| "| 1.6 | Frontend: filename search + navigation | 2h |\n"
-#| "| 1.7 | Frontend: global search UI + result navigation | 2h |\n"
-#| "| 1.8 | Terminal panel (xterm.js) | 2h |\n"
-msgid ""
-"| Step | Content                                                | Estimate |\n"
-"| ---- | ------------------------------------------------------ | -------- |\n"
-"| 1.1  | API: POST/GET sessions support platform                | 2h       |\n"
-"| 1.2  | API: studio/tree, studio/file, studio/search endpoints | 4h       |\n"
-"| 1.3  | Frontend: three-column layout + FileTreePanel          | 3h       |\n"
-"| 1.4  | Frontend: CodeViewerPanel (highlight.js)               | 1.5h     |\n"
-"| 1.5  | Frontend: SessionPanel (session list + chat)           | 3h       |\n"
-"| 1.6  | Frontend: filename search + navigation                 | 2h       |\n"
-"| 1.7  | Frontend: global search UI + result navigation         | 2h       |\n"
-"| 1.8  | Terminal panel (xterm.js)                              | 2h       |\n"
-msgstr ""
-"| 步骤 | 内容                                              | 预估 |\n"
-"| ---- | ------------------------------------------------- | ---- |\n"
-"| 1.1  | API: POST/GET sessions 支持 platform              | 2h   |\n"
-"| 1.2  | API: studio/tree, studio/file, studio/search 端点 | 4h   |\n"
-"| 1.3  | 前端: 三列布局框架 + FileTreePanel                | 3h   |\n"
-"| 1.4  | 前端: CodeViewerPanel (highlight.js 代码查看)     | 1.5h |\n"
-"| 1.5  | 前端: SessionPanel (会话列表 + 聊天)              | 3h   |\n"
-"| 1.6  | 前端: 文件名搜索 + 跳转                           | 2h   |\n"
-"| 1.7  | 前端: 全局搜索 UI + 结果跳转                      | 2h   |\n"
-"| 1.8  | 终端面板 (xterm.js)                               | 2h   |\n"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:314
-msgid "### Phase 2 (Later)"
-msgstr "### Phase 2（后续版本）"
-
-#. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:320
-msgid "Upgrade highlight.js to Monaco Editor (editable)"
-msgstr "从 highlight.js 升级为 Monaco Editor（可编辑）"
-
-#. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:320
-msgid "File edit + diff preview + apply/reject"
-msgstr "文件编辑 + diff 预览 + 应用/拒绝"
-
-#. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:320
-msgid "Git panel (diff/stage/commit)"
-msgstr "Git 面板 (diff/stage/commit)"
-
-#. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:320
-msgid "Multi-workspace support"
-msgstr "多 workspace 支持"
-
-#. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:320
-msgid "More collaboration features"
-msgstr "更多协作功能"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:324
-msgid ""
-"> Design document · 2026-05-28 > Status: **Phase 1 ✅ Implemented** "
-"(2026-05-29); Phase 2 see [Issue #37](https://github.com/freeanima-org/"
-"freeanima/issues/37)"
-msgstr ""
-"> 设计文档 · 2026-05-28 > 状态：**Phase 1 ✅ 已实现**（2026-05-29）；Phase 2 "
-"见 [Issue #37](https://github.com/freeanima-org/freeanima/issues/37)"
+#: docs/features/pair-programming-v1.md:61
+#, fuzzy
+#| msgid "Always `shell: false` (consistent with `docs/security.md`)"
+msgid "Security and tool risks: [`security.md`](../guide/security.md)"
+msgstr "始终 `shell: false`（与 `docs/security.md` 一致）"

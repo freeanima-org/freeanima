@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-12 11:40+0800\n"
+"POT-Creation-Date: 2026-06-12 11:56+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,29 +17,19 @@ msgstr ""
 
 #. type: Plain text
 #: docs/README.md:1 docs/concepts/architecture.md:1
-#: docs/concepts/compression.md:1 docs/concepts/compression.md:11
-#: docs/concepts/compression.md:22 docs/concepts/compression.md:49
-#: docs/concepts/compression.md:96 docs/concepts/compression.md:118
-#: docs/concepts/compression.md:156 docs/concepts/compression.md:180
-#: docs/concepts/compression.md:228 docs/concepts/compression.md:262
-#: docs/concepts/compression.md:275 docs/concepts/compression.md:327
-#: docs/concepts/compression.md:348 docs/concepts/compression.md:368
-#: docs/concepts/compression.md:384 docs/concepts/identity.md:1
+#: docs/concepts/compression.md:1 docs/concepts/identity.md:1
 #: docs/concepts/identity.md:10 docs/concepts/identity.md:28
 #: docs/concepts/identity.md:45 docs/concepts/identity.md:55
-#: docs/concepts/layer-structure-rfc.md:1 docs/concepts/memory.md:1
-#: docs/concepts/memory.md:17 docs/concepts/memory.md:53
-#: docs/concepts/memory.md:160 docs/concepts/memory.md:191
-#: docs/concepts/memory.md:211 docs/concepts/memory.md:232
-#: docs/concepts/memory.md:249 docs/concepts/recall-flow.md:1
-#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:31
-#: docs/concepts/self-layer.md:53 docs/concepts/self-layer.md:64
-#: docs/concepts/self-layer.md:78 docs/concepts/self-layer.md:94
-#: docs/concepts/self-layer.md:105 docs/concepts/sleep.md:1
+#: docs/concepts/memory.md:1 docs/concepts/memory.md:17
+#: docs/concepts/memory.md:53 docs/concepts/memory.md:122
+#: docs/concepts/memory.md:133 docs/concepts/memory.md:150
+#: docs/concepts/recall-flow.md:1 docs/concepts/self-layer.md:1
+#: docs/concepts/self-layer.md:30 docs/concepts/self-layer.md:52
+#: docs/concepts/self-layer.md:66 docs/concepts/self-layer.md:80
+#: docs/concepts/self-layer.md:91 docs/concepts/sleep.md:1
 #: docs/concepts/time-perception.md:1 docs/features/pair-programming-v1.md:1
-#: docs/features/pair-programming-v1.md:321 docs/guide/database.md:1
-#: docs/guide/database.md:33 docs/guide/security.md:1
-#: docs/guide/versioning.md:1 docs/tools/execute-code-runtimes.md:1
+#: docs/guide/database.md:1 docs/guide/security.md:1
+#: docs/tools/execute-code-runtimes.md:1
 #, no-wrap
 msgid "---\n"
 msgstr "---\n"
@@ -56,1104 +46,156 @@ msgstr ""
 
 #. type: Plain text
 #: docs/concepts/compression.md:6
-msgid "# Compression Design (l-point v5.1)"
-msgstr "# 压缩优化方案（l 点 v5.1）"
+#, fuzzy
+#| msgid "Compression"
+msgid "# Context Compression"
+msgstr "压缩"
 
 #. type: Plain text
-#: docs/concepts/compression.md:10
+#: docs/concepts/compression.md:9
 msgid ""
-"> Runtime context compression: PG `messages` **fully append-only**; only the "
-"**four-segment view** sent to the LLM is trimmed.  > **l0–l4 are compression "
-"boundaries** (terminology in [`compression.md`](compression.md)); unrelated "
-"to memory layer PG storage.  > Related: sleep [`sleep.md`](sleep.md), memory "
-"system [`memory.md`](memory.md)."
+"> Runtime context compression: conversations are **fully retained in the "
+"database**; only the **four-segment view** sent to the LLM is trimmed.  > "
+"Related: [`sleep.md`](sleep.md), [`memory.md`](memory.md)."
 msgstr ""
-"> 运行时上下文压缩：PG `messages` **全量只追加**，仅裁切发给 LLM 的**四段视图"
-"**。 > **l0–l4 为压缩边界**（术语见 [`compression.md`](compression.md)）；与"
-"记忆层 PG 存储无关。 > 关联：睡眠见 [`sleep.md`](sleep.md)，记忆体系见 "
-"[`memory.md`](memory.md)。"
 
 #. type: Plain text
-#: docs/concepts/compression.md:14 docs/concepts/sleep.md:14
+#: docs/concepts/compression.md:11 docs/concepts/sleep.md:14
 #: docs/concepts/time-perception.md:22 docs/features/pair-programming-v1.md:11
 msgid "## Design Principles"
 msgstr "## 设计原则"
 
 #. type: Plain text
-#: docs/concepts/compression.md:21
+#: docs/concepts/compression.md:18
 #, fuzzy, no-wrap
 #| msgid ""
-#| "| Principle | Description |\n"
-#| "| --------- | ----------- |\n"
-#| "| PG never deletes | `messages` always retains full conversation; compression only changes **runtime view** and `session_meta.compression` |\n"
-#| "| l4 real-time | `l4 = max(pos)`, grows with append, **not written to meta** |\n"
-#| "| Monotonic boundaries | On successful compression: `new l2 > old l2`, `new l3 ≥ old l3`; otherwise abort |\n"
-#| "| Separation of concerns | **Boundary setting** (`deriveBoundariesFromL4`) decoupled from **trigger** (`shouldAdvance`); only trigger distinguishes tool loop |\n"
+#| "| Attribute | Value |\n"
+#| "| --------- | ----- |\n"
+#| "| Trigger | Cron only, daily 03:00 (`0 3 * * *`), no manual trigger |\n"
+#| "| Target | All active `semantic_memory` |\n"
+#| "| Operations | Contradiction detection + expiry marking, split, dedup merge—three sequential rounds |\n"
+#| "| Tools | `memory_semantic_create` / `memory_semantic_update` / `memory_semantic_deprecate` / `memory_semantic_merge` |\n"
 msgid ""
-"| Principle              | Description                                                                                                                        |\n"
-"| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |\n"
-"| PG never deletes       | `messages` always retains full conversation; compression only changes **runtime view** and `session_meta.compression`              |\n"
-"| l4 real-time           | `l4 = max(pos)`, grows with append, **not written to meta**                                                                        |\n"
-"| Monotonic boundaries   | On successful compression: `new l2 > old l2`, `new l3 ≥ old l3`; otherwise abort                                                   |\n"
-"| Separation of concerns | **Boundary setting** (`deriveBoundariesFromL4`) decoupled from **trigger** (`shouldAdvance`); only trigger distinguishes tool loop |\n"
+"| Principle           | Description                                                                    |\n"
+"| ------------------- | ------------------------------------------------------------------------------ |\n"
+"| No message deletion | History is kept; compression only changes runtime view and session meta        |\n"
+"| Four segments       | LLM context = system + summary + slim + raw                                    |\n"
+"| On-demand trigger   | Compress when usage nears window limits; higher thresholds in tool loops       |\n"
+"| Memory-independent  | Compression does not trigger semantic extraction; light sleep cron is separate |\n"
 msgstr ""
-"| 原则     | 说明                                                                                         |\n"
-"| -------- | -------------------------------------------------------------------------------------------- |\n"
-"| PG 不删  | `messages` 永远保留完整对话；压缩只改**运行时视图**与 `session_meta.compression`             |\n"
-"| l4 实时  | `l4 = max(pos)`，随 append 增长，**不写入 meta**                                             |\n"
-"| 边界单调 | 压缩成功时 `新 l2 > 旧 l2`、`新 l3 ≥ 旧 l3`；否则放弃本次压缩                                |\n"
-"| 职责分离 | **定界**（`deriveBoundariesFromL4`）与 **触发**（`shouldAdvance`）解耦；仅触发区分 tool loop |\n"
+"| 属性     | 值                                                                                                          |\n"
+"| -------- | ----------------------------------------------------------------------------------------------------------- |\n"
+"| 触发     | 仅 cron，每天 03:00（`0 3 * * *`），不支持手动触发                                                          |\n"
+"| 处理对象 | `semantic_memory` 全量 active 记忆                                                                          |\n"
+"| 操作     | 矛盾检测 + 过期标记、拆分、去重合并，三轮顺序执行                                                           |\n"
+"| 工具     | `memory_semantic_create` / `memory_semantic_update` / `memory_semantic_deprecate` / `memory_semantic_merge` |\n"
 
 #. type: Plain text
-#: docs/concepts/compression.md:25
-msgid "## Two-Layer Storage"
-msgstr "## 两层存储"
+#: docs/concepts/compression.md:20
+msgid "## Runtime Four Segments"
+msgstr ""
 
 #. type: Plain text
-#: docs/concepts/compression.md:34
+#: docs/concepts/compression.md:27
 #, no-wrap
 msgid ""
-"```mermaid\n"
-"flowchart LR\n"
-"  subgraph pgMessages[\"PG messages (full, never deleted)\"]\n"
-"    m1[\"pos=1 user\"]\n"
-"    m2[\"pos=2 assistant\"]\n"
-"    dots1[\"…\"]\n"
-"    mN[\"pos=N …\"]\n"
-"  end\n"
-msgstr ""
-"```mermaid\n"
-"flowchart LR\n"
-"  subgraph pgMessages[\"PG messages（全量，永不删）\"]\n"
-"    m1[\"pos=1 user\"]\n"
-"    m2[\"pos=2 assistant\"]\n"
-"    dots1[\"…\"]\n"
-"    mN[\"pos=N …\"]\n"
-"  end\n"
-
-#. type: Plain text
-#: docs/concepts/compression.md:42
-#, no-wrap
-msgid ""
-"  subgraph RT[\"Runtime sent to LLM\"]\n"
-"    l0[\"system l0\"]\n"
-"    l1[\"summary user pos=1\"]\n"
-"    slim[\"slim (l2,l3]\"]\n"
-"    raw[\"raw (l3,l4]\"]\n"
-"    l0 --> l1 --> slim --> raw\n"
-"  end\n"
-msgstr ""
-"  subgraph RT[\"运行时发给 LLM\"]\n"
-"    l0[\"system l0\"]\n"
-"    l1[\"摘要 user pos=1\"]\n"
-"    slim[\"精简 (l2,l3]\"]\n"
-"    raw[\"原始 (l3,l4]\"]\n"
-"    l0 --> l1 --> slim --> raw\n"
-"  end\n"
-
-#. type: Plain text
-#: docs/concepts/compression.md:45
-#, no-wrap
-msgid ""
-"  pgMessages -->|\"compress + buildRuntime\"| RT\n"
+"```\n"
+"① system  — system prompt (self layer + resident memory + project context)\n"
+"② summary — text summary of compressed portion (synthetic; not stored in messages)\n"
+"③ slim    — middle segment: trimmed user/assistant messages\n"
+"④ raw     — recent segment: full messages including tool calls\n"
 "```\n"
 msgstr ""
-"  pgMessages -->|\"compress + buildRuntime\"| RT\n"
-"```\n"
-
-#. type: Bullet: '- '
-#: docs/concepts/compression.md:48
-msgid ""
-"**Non-compression path:** read meta only; `l2/l3/summary` unchanged; `(l3, "
-"l4]` grows with new messages."
-msgstr ""
-"**非压缩路径**：只读 meta，`l2/l3/summary` 不变；`(l3, l4]` 随新消息变长。"
-
-#. type: Bullet: '- '
-#: docs/concepts/compression.md:48
-msgid ""
-"**Compression path:** after `shouldAdvance` passes → "
-"`deriveBoundariesFromL4` → write `l2/l3` → async summary LLM."
-msgstr ""
-"**压缩路径**：`shouldAdvance` 通过后 → `deriveBoundariesFromL4` → 写 `l2/l3` "
-"→ 异步摘要 LLM。"
 
 #. type: Plain text
-#: docs/concepts/compression.md:52
-msgid "## Boundary Points l0–l4"
-msgstr "## 边界点 l0–l4"
+#: docs/concepts/compression.md:29
+msgid ""
+"Non-compression path: append new messages to raw only; boundaries unchanged."
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/compression.md:31
+msgid ""
+"Compression path: when usage exceeds thresholds, older messages move into "
+"summary/slim; summary text updated asynchronously."
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/compression.md:33
+#, fuzzy
+#| msgid "Configured"
+msgid "## Configuration"
+msgstr "已配置"
+
+#. type: Plain text
+#: docs/concepts/compression.md:35
+msgid ""
+"Adjust in `config.yaml` (full example: repo root `config.example.yaml`):"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/compression.md:40
+#, no-wrap
+msgid ""
+"```yaml\n"
+"models:\n"
+"  deepseek-v4-flash:\n"
+"    context_window: 1000000\n"
+msgstr ""
+"```yaml\n"
+"models:\n"
+"  deepseek-v4-flash:\n"
+"    context_window: 1000000\n"
+
+#. type: Plain text
+#: docs/concepts/compression.md:51
+#, no-wrap
+msgid ""
+"compression:\n"
+"  enabled: true\n"
+"  reserved_tokens: 8192\n"
+"  trigger_low: 0.60 # outside tool loop: compress at 60% usage\n"
+"  trigger_high: 0.80 # inside tool loop: compress at 80% usage\n"
+"  emergency_ratio: 0.92\n"
+"  raw_min_messages: 5\n"
+"  slim_min_messages: 50\n"
+"  summary_max_tokens: 4000\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/compression.md:58
+#, no-wrap
+msgid ""
+"| Setting             | Default | Description                         |\n"
+"| ------------------- | ------- | ----------------------------------- |\n"
+"| `trigger_low`       | 0.60    | Threshold in normal conversation    |\n"
+"| `trigger_high`      | 0.80    | Threshold inside tool loop          |\n"
+"| `raw_min_messages`  | 5       | Minimum messages in raw segment     |\n"
+"| `slim_min_messages` | 50      | Minimum messages in slim after trim |\n"
+msgstr ""
 
 #. type: Plain text
 #: docs/concepts/compression.md:60
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Point | Meaning | When it changes | Persisted |\n"
-#| "| ----- | ------- | --------------- | --------- |\n"
-#| "| **l0** | System prompt anchor, always **0** | Never | No |\n"
-#| "| **l1** | Runtime synthetic summary user **pos**, always **1** (**≠ l4**) | Never | No |\n"
-#| "| **l2** | Summary segment right boundary (`pos ≤ l2` already summarized) | **Only on successful compression** | Yes |\n"
-#| "| **l3** | Slim segment right boundary | **Only on successful compression** | Yes |\n"
-#| "| **l4** | Rightmost message pos, `max(pos)` | **Real-time** append | No |\n"
-msgid ""
-"| Point  | Meaning                                                         | When it changes                    | Persisted |\n"
-"| ------ | --------------------------------------------------------------- | ---------------------------------- | --------- |\n"
-"| **l0** | System prompt anchor, always **0**                              | Never                              | No        |\n"
-"| **l1** | Runtime synthetic summary user **pos**, always **1** (**≠ l4**) | Never                              | No        |\n"
-"| **l2** | Summary segment right boundary (`pos ≤ l2` already summarized)  | **Only on successful compression** | Yes       |\n"
-"| **l3** | Slim segment right boundary                                     | **Only on successful compression** | Yes       |\n"
-"| **l4** | Rightmost message pos, `max(pos)`                               | **Real-time** append               | No        |\n"
+msgid "Without `context_window`, falls back to message-count triggers."
 msgstr ""
-"| 点     | 含义                                                 | 何时变          | 持久化 |\n"
-"| ------ | ---------------------------------------------------- | --------------- | ------ |\n"
-"| **l0** | 系统提示词锚点，恒 **0**                             | 不变            | 否     |\n"
-"| **l1** | 运行时合成摘要 user 的 **pos**，恒 **1**（**≠ l4**） | 不变            | 否     |\n"
-"| **l2** | 摘要段右界（`pos ≤ l2` 已进入摘要）                  | **仅压缩成功**  | 是     |\n"
-"| **l3** | 精简段右界                                           | **仅压缩成功**  | 是     |\n"
-"| **l4** | 消息列表最右 pos，`max(pos)`                         | **实时** append | 否     |\n"
 
 #. type: Plain text
 #: docs/concepts/compression.md:62
-msgid "### Hard Conventions"
-msgstr "### 硬性约定"
-
-#. type: Bullet: '1. '
-#: docs/concepts/compression.md:67
-msgid ""
-"**`l1 ≠ l4`:** `l1` is fixed synthetic row pos, unrelated to `max(pos)`."
-msgstr "**`l1 ≠ l4`**：`l1` 是合成行固定 pos，与 `max(pos)` 无关。"
-
-#. type: Bullet: '2. '
-#: docs/concepts/compression.md:67
-msgid "**`l4` has no policy**, not written to meta."
-msgstr "**`l4` 无策略**，不写入 meta。"
-
-#. type: Bullet: '3. '
-#: docs/concepts/compression.md:67
-msgid ""
-"**Non-compression path reads meta only**; only successful compression "
-"updates `l2`, `l3`, `summary`."
-msgstr "**非压缩路径只读 meta**；仅压缩成功时更新 `l2`、`l3`、`summary`。"
-
-#. type: Bullet: '4. '
-#: docs/concepts/compression.md:67
-msgid ""
-"**No `l2l`:** summary semantics = **`pos ≤ l2`** (not legacy \"before last "
-"user\" cut semantics)."
+msgid "Force compression in chat: `/compress` (`--force` ignores hysteresis)."
 msgstr ""
-"**无 `l2l`**：摘要语义 = **`pos ≤ l2`**（不是「最后 user 之前」的旧 cut 语"
-"义）。"
 
 #. type: Plain text
-#: docs/concepts/compression.md:69
-msgid "Uncompressed: `l2 = l3 = 0`, no `summary`, no `pos=1` injection."
-msgstr "未压缩：`l2 = l3 = 0`，无 `summary`，不注入 `pos=1`。"
-
-#. type: Plain text
-#: docs/concepts/compression.md:71
-msgid "### Segment Sketch on messages"
-msgstr "### messages 上的分段示意"
-
-#. type: Plain text
-#: docs/concepts/compression.md:73
-msgid "Example `l2=80, l3=145, l4=200` (**pos axis**, not message count):"
-msgstr "以 `l2=80, l3=145, l4=200` 为例（**pos 轴**，非条数轴）："
-
-#. type: Plain text
-#: docs/concepts/compression.md:87
-#, no-wrap
-msgid ""
-"```mermaid\n"
-"flowchart LR\n"
-"  subgraph archived[\"Summarized pos ≤ l2\"]\n"
-"    A[\"1 … 80\"]\n"
-"  end\n"
-"  subgraph slimZone[\"Slim (l2, l3]\"]\n"
-"    B[\"81 … 145\"]\n"
-"  end\n"
-"  subgraph rawZone[\"Raw (l3, l4]\"]\n"
-"    C[\"146 … 200\"]\n"
-"  end\n"
-"  archived --> slimZone --> rawZone\n"
-"```\n"
-msgstr ""
-"```mermaid\n"
-"flowchart LR\n"
-"  subgraph archived[\"已摘要 pos ≤ l2\"]\n"
-"    A[\"1 … 80\"]\n"
-"  end\n"
-"  subgraph slimZone[\"精简 (l2, l3]\"]\n"
-"    B[\"81 … 145\"]\n"
-"  end\n"
-"  subgraph rawZone[\"原始 (l3, l4]\"]\n"
-"    C[\"146 … 200\"]\n"
-"  end\n"
-"  archived --> slimZone --> rawZone\n"
-"```\n"
-
-#. type: Plain text
-#: docs/concepts/compression.md:93
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| pos range | Runtime destination |\n"
-#| "| --------- | ------------------- |\n"
-#| "| `pos ≤ l2` | Not in message list → synthesized `pos=1` summary user (`meta.summary`) |\n"
-#| "| `(l2, l3]` | Slim segment (UA after `slimMessage`) |\n"
-#| "| `(l3, l4]` | Raw segment (full, including tools) |\n"
-msgid ""
-"| pos range  | Runtime destination                                                     |\n"
-"| ---------- | ----------------------------------------------------------------------- |\n"
-"| `pos ≤ l2` | Not in message list → synthesized `pos=1` summary user (`meta.summary`) |\n"
-"| `(l2, l3]` | Slim segment (UA after `slimMessage`)                                   |\n"
-"| `(l3, l4]` | Raw segment (full, including tools)                                     |\n"
-msgstr ""
-"| pos 区间   | 运行时去向                                              |\n"
-"| ---------- | ------------------------------------------------------- |\n"
-"| `pos ≤ l2` | 不进消息列表 → 合成 `pos=1` 摘要 user（`meta.summary`） |\n"
-"| `(l2, l3]` | 精简段（`slimMessage` 后 UA）                           |\n"
-"| `(l3, l4]` | 原始段（全量，含 tool）                                 |\n"
-
-#. type: Plain text
-#: docs/concepts/compression.md:95
-msgid ""
-"Between two compressions: **l2 / l3 / summary frozen**; only **`(l3, l4]`** "
-"grows with append."
-msgstr ""
-"两次压缩之间：**l2 / l3 / summary 冻结**，仅 **`(l3, l4]`** 随 append 变长。"
-
-#. type: Plain text
-#: docs/concepts/compression.md:99
-msgid "## Runtime Four Segments (Sent to LLM)"
-msgstr "## 运行时四段（发给 LLM）"
-
-#. type: Plain text
-#: docs/concepts/compression.md:108
-#, no-wrap
-msgid ""
-"```mermaid\n"
-"flowchart TB\n"
-"  sys[\"① system<br/>l0 · meta.system_prompt\"]\n"
-"  sum[\"② summary user<br/>l1 · pos=1 · [session summary]\"]\n"
-"  slim[\"③ slim segment<br/>(l2, l3] · slimMessage\"]\n"
-"  raw[\"④ raw segment<br/>(l3, l4] · full\"]\n"
-"  sys --> sum --> slim --> raw\n"
-"```\n"
-msgstr ""
-"```mermaid\n"
-"flowchart TB\n"
-"  sys[\"① system<br/>l0 · meta.system_prompt\"]\n"
-"  sum[\"② 摘要 user<br/>l1 · pos=1 · [会话摘要]\"]\n"
-"  slim[\"③ 精简段<br/>(l2, l3] · slimMessage\"]\n"
-"  raw[\"④ 原始段<br/>(l3, l4] · 全量\"]\n"
-"  sys --> sum --> slim --> raw\n"
-"```\n"
-
-#. type: Plain text
-#: docs/concepts/compression.md:115
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Segment | pos range | Description |\n"
-#| "| ------- | --------- | ----------- |\n"
-#| "| system | l0 | `session_meta.system_prompt`, not in messages conversation rows |\n"
-#| "| summary | `≤ l2` | Synthetic `pos=1` + `summary` text; **not written to messages** |\n"
-#| "| slim | `(l2, l3]` | Slimmed user/assistant (tools dropped) |\n"
-#| "| raw | `(l3, l4]` | Full messages, **not slimmed** |\n"
-msgid ""
-"| Segment | pos range  | Description                                                     |\n"
-"| ------- | ---------- | --------------------------------------------------------------- |\n"
-"| system  | l0         | `session_meta.system_prompt`, not in messages conversation rows |\n"
-"| summary | `≤ l2`     | Synthetic `pos=1` + `summary` text; **not written to messages** |\n"
-"| slim    | `(l2, l3]` | Slimmed user/assistant (tools dropped)                          |\n"
-"| raw     | `(l3, l4]` | Full messages, **not slimmed**                                  |\n"
-msgstr ""
-"| 段     | pos 范围   | 说明                                                 |\n"
-"| ------ | ---------- | ---------------------------------------------------- |\n"
-"| system | l0         | `session_meta.system_prompt`，不在 messages 对话行里 |\n"
-"| 摘要   | `≤ l2`     | 合成 `pos=1` + `summary` 文本；**不写 messages**     |\n"
-"| 精简   | `(l2, l3]` | slim 后 user/assistant（tool 丢弃）                  |\n"
-"| 原始   | `(l3, l4]` | 全量消息，**不 slim**                                |\n"
-
-#. type: Plain text
-#: docs/concepts/compression.md:117
-msgid ""
-"Implementation: `buildRuntimeFromLPoints` → `buildRuntimeMessages` prepends "
-"`system`."
-msgstr ""
-"实现：`buildRuntimeFromLPoints` → `buildRuntimeMessages` 前置 `system`。"
-
-#. type: Plain text
-#: docs/concepts/compression.md:121
-msgid "## Configuration"
-msgstr "## 配置"
-
-#. type: Plain text
-#: docs/concepts/compression.md:123
+#: docs/concepts/compression.md:64
 #, fuzzy
-#| msgid ""
-#| "`config.yaml` example (full file: [`config.example.yaml`](../"
-#| "config.example.yaml)):"
-msgid ""
-"`config.yaml` example (full file: [`config.example.yaml`](../../"
-"config.example.yaml)):"
-msgstr ""
-"`config.yaml` 示例（完整见 [`config.example.yaml`](../"
-"config.example.yaml)）："
-
-#. type: Plain text
-#: docs/concepts/compression.md:128
-#, no-wrap
-msgid ""
-"```yaml\n"
-"models:\n"
-"  deepseek-v4-flash:\n"
-"    context_window: 1000000\n"
-msgstr ""
-"```yaml\n"
-"models:\n"
-"  deepseek-v4-flash:\n"
-"    context_window: 1000000\n"
-
-#. type: Plain text
-#: docs/concepts/compression.md:140
-#, no-wrap
-msgid ""
-"compression:\n"
-"  enabled: true\n"
-"  reserved_tokens: 8192\n"
-"  trigger_low: 0.60 # outside tool loop: eligible to compress\n"
-"  trigger_high: 0.80 # inside tool loop: eligible to compress\n"
-"  emergency_ratio: 0.92 # hard cap inside tool loop\n"
-"  raw_min_messages: 5 # raw segment (l3, l4] minimum count\n"
-"  slim_min_messages: 50 # slim segment (l2, l3] minimum after slim\n"
-"  summary_max_tokens: 4000\n"
-"  max_rounds: 50 # fallback message-count mode when context_window unset\n"
-"```\n"
-msgstr ""
-"compression:\n"
-"  enabled: true\n"
-"  reserved_tokens: 8192\n"
-"  trigger_low: 0.60 # 工具循环外：达到可压\n"
-"  trigger_high: 0.80 # 工具循环内：达到可压\n"
-"  emergency_ratio: 0.92 # 工具循环内硬顶\n"
-"  raw_min_messages: 5 # 原始段 (l3, l4] 最少条数\n"
-"  slim_min_messages: 50 # 精简段 (l2, l3] slim 后最少条数\n"
-"  summary_max_tokens: 4000\n"
-"  max_rounds: 50 # 未配置 context_window 时回退条数模式\n"
-"```\n"
-
-#. type: Plain text
-#: docs/concepts/compression.md:149
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Item | Default | Description |\n"
-#| "| ---- | ------- | ----------- |\n"
-#| "| Effective budget | `context_window - reserved_tokens` (floor 4096) | Token mode occupancy denominator |\n"
-#| "| `trigger_low` | 0.60 | **Outside** loop first/re-compress threshold |\n"
-#| "| `trigger_high` | 0.80 | **Inside** loop compress threshold |\n"
-#| "| `emergency_ratio` | 0.92 | Inside loop hard cap + emergency path |\n"
-#| "| `raw_min_messages` | 5 | Raw segment floor when setting l3 |\n"
-#| "| `slim_min_messages` | 50 | Slim segment floor after slim when setting l2 |\n"
-msgid ""
-"| Item                | Default                                         | Description                                   |\n"
-"| ------------------- | ----------------------------------------------- | --------------------------------------------- |\n"
-"| Effective budget    | `context_window - reserved_tokens` (floor 4096) | Token mode occupancy denominator              |\n"
-"| `trigger_low`       | 0.60                                            | **Outside** loop first/re-compress threshold  |\n"
-"| `trigger_high`      | 0.80                                            | **Inside** loop compress threshold            |\n"
-"| `emergency_ratio`   | 0.92                                            | Inside loop hard cap + emergency path         |\n"
-"| `raw_min_messages`  | 5                                               | Raw segment floor when setting l3             |\n"
-"| `slim_min_messages` | 50                                              | Slim segment floor after slim when setting l2 |\n"
-msgstr ""
-"| 项                  | 默认                                            | 说明                        |\n"
-"| ------------------- | ----------------------------------------------- | --------------------------- |\n"
-"| 有效预算            | `context_window - reserved_tokens`（下限 4096） | token 模式占用率分母        |\n"
-"| `trigger_low`       | 0.60                                            | 循环**外**首次/再次压缩阈   |\n"
-"| `trigger_high`      | 0.80                                            | 循环**内**压缩阈            |\n"
-"| `emergency_ratio`   | 0.92                                            | 循环内硬顶 + emergency 路径 |\n"
-"| `raw_min_messages`  | 5                                               | 定 l3 时原始段下限          |\n"
-"| `slim_min_messages` | 50                                              | 定 l2 时精简段 slim 后下限  |\n"
-
-#. type: Plain text
-#: docs/concepts/compression.md:151
-#, no-wrap
-msgid "**Removed** (v5.1 no longer reads): `tool_loop_suppress_sec`, `slim_user_shift`, `tool_loop_user_shift`, `l2l`.\n"
-msgstr "**已删除**（v5.1 不再读取）：`tool_loop_suppress_sec`、`slim_user_shift`、`tool_loop_user_shift`、`l2l`。\n"
-
-#. type: Plain text
-#: docs/concepts/compression.md:153
-msgid ""
-"When `models.*.context_window` and `default_context_window` are both unset, "
-"falls back to **message count** mode: first trigger `> max_rounds×2` "
-"messages; after compression, raw segment `> max_rounds×4` triggers again."
-msgstr ""
-"未配置 `models.*.context_window` 且无 `default_context_window` 时，回退**消息"
-"条数**模式：首次 `> max_rounds×2` 条触发，已压后原始段 `> max_rounds×4` 再"
-"压。"
-
-#. type: Plain text
-#: docs/concepts/compression.md:155
-msgid ""
-"Token estimate: `@freeanima/storage-tokenizer` (via `mechanism/compress/src/"
-"token-estimate.ts`, shared with `conversation-stats`). Models auto-resolve "
-"HuggingFace `tokenizer.json`; unresolved models use multilingual fallback "
-"`FacebookAI/xlm-roberta-base` (~9MB, cached under `~/.anima/tokenizers/`). "
-"No `config.yaml` tokenizer fields."
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/compression.md:159
-msgid "## Compression Decision Pipeline"
-msgstr "## 压缩决策流水线"
-
-#. type: Plain text
-#: docs/concepts/compression.md:171
-#, no-wrap
-msgid ""
-"```mermaid\n"
-"flowchart TD\n"
-"  in[\"Full messages + meta + l4\"]\n"
-"  in --> view[\"buildRuntimeFromLPoints<br/>estimate usage_ratio\"]\n"
-"  view --> adv{\"shouldAdvance<br/>(only tool loop branch)\"}\n"
-"  adv -->|no| frozen[\"Keep l2/l3<br/>only (l3,l4] grows\"]\n"
-"  adv -->|yes| derive[\"deriveBoundariesFromL4<br/>(tool loop agnostic)\"]\n"
-"  derive -->|no valid boundary| frozen\n"
-"  derive -->|l2,l3| meta[\"Write meta l2,l3\"]\n"
-"  meta --> sum[\"Async summary LLM<br/>(old l2, new l2]\"]\n"
-"```\n"
-msgstr ""
-"```mermaid\n"
-"flowchart TD\n"
-"  in[\"完整消息 + meta + l4\"]\n"
-"  in --> view[\"buildRuntimeFromLPoints<br/>估算 usage_ratio\"]\n"
-"  view --> adv{\"shouldAdvance<br/>（唯一 tool loop 分支）\"}\n"
-"  adv -->|否| frozen[\"保持 l2/l3<br/>仅 (l3,l4] 增长\"]\n"
-"  adv -->|是| derive[\"deriveBoundariesFromL4<br/>（与 tool loop 无关）\"]\n"
-"  derive -->|无合法边界| frozen\n"
-"  derive -->|l2,l3| meta[\"写 meta l2,l3\"]\n"
-"  meta --> sum[\"异步摘要 LLM<br/>(旧l2, 新l2]\"]\n"
-"```\n"
-
-#. type: Plain text
-#: docs/concepts/compression.md:173
-msgid "### Separation of Concerns"
-msgstr "### 职责分离"
-
-#. type: Plain text
-#: docs/concepts/compression.md:179
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Module | Cares about tool loop? |\n"
-#| "| ------ | ---------------------- |\n"
-#| "| `deriveBoundariesFromL4` | **No** — same right-to-left algorithm |\n"
-#| "| `shouldAdvance` | **Yes** — different thresholds inside/outside |\n"
-#| "| `buildRuntimeFromLPoints` | **No** |\n"
-msgid ""
-"| Module                    | Cares about tool loop?                        |\n"
-"| ------------------------- | --------------------------------------------- |\n"
-"| `deriveBoundariesFromL4`  | **No** — same right-to-left algorithm         |\n"
-"| `shouldAdvance`           | **Yes** — different thresholds inside/outside |\n"
-"| `buildRuntimeFromLPoints` | **No**                                        |\n"
-msgstr ""
-"| 模块                      | 是否关心 tool loop          |\n"
-"| ------------------------- | --------------------------- |\n"
-"| `deriveBoundariesFromL4`  | **否** — 同一套自右向左算法 |\n"
-"| `shouldAdvance`           | **是** — 内外不同阈值       |\n"
-"| `buildRuntimeFromLPoints` | **否**                      |\n"
-
-#. type: Plain text
-#: docs/concepts/compression.md:183
-msgid "## Boundary Derivation: `deriveBoundariesFromL4`"
-msgstr "## 边界推导：`deriveBoundariesFromL4`"
-
-#. type: Plain text
-#: docs/concepts/compression.md:185
-msgid "Input: full message list, current **`l4`**, old `l2/l3`."
-msgstr "输入：完整消息列表、当前 **`l4`**、旧 `l2/l3`。"
-
-#. type: Plain text
-#: docs/concepts/compression.md:196
-#, no-wrap
-msgid ""
-"```mermaid\n"
-"flowchart TD\n"
-"  start[\"l4 = max(pos)\"]\n"
-"  start --> s1[\"Step 1: max l3<br/>so (l3,l4] satisfies raw constraints\"]\n"
-"  s1 -->|no valid l3| abort[\"Abort compression\"]\n"
-"  s1 --> s2[\"Step 2: max l2<br/>so (l2,l3] after slim ≥ slim_min\"]\n"
-"  s2 -->|no valid l2 or monotonicity violation| abort\n"
-"  s2 --> s3[\"Step 3: summary increment (old l2, new l2]\"]\n"
-"  s3 --> write[\"Write l2, l3; async write summary\"]\n"
-"```\n"
-msgstr ""
-"```mermaid\n"
-"flowchart TD\n"
-"  start[\"l4 = max(pos)\"]\n"
-"  start --> s1[\"Step 1：取最大 l3<br/>使 (l3,l4] 满足 raw 约束\"]\n"
-"  s1 -->|无合法 l3| abort[\"放弃压缩\"]\n"
-"  s1 --> s2[\"Step 2：取最大 l2<br/>使 (l2,l3] slim 后 ≥ slim_min\"]\n"
-"  s2 -->|无合法 l2 或违反单调| abort\n"
-"  s2 --> s3[\"Step 3：摘要增量 (旧l2, 新l2]\"]\n"
-"  s3 --> write[\"写入 l2, l3；异步写 summary\"]\n"
-"```\n"
-
-#. type: Plain text
-#: docs/concepts/compression.md:198
-msgid "### Step 1: Set `l3`"
-msgstr "### Step 1：定 `l3`"
-
-#. type: Plain text
-#: docs/concepts/compression.md:200
-msgid ""
-"Take the **largest** `l3` (push right, raw segment as narrow as possible) so "
-"**`(l3, l4]`** satisfies:"
-msgstr ""
-"取**最大的** `l3`（右推，原始段尽量窄、靠右），使 **`(l3, l4]`** 满足："
-
-#. type: Plain text
-#: docs/concepts/compression.md:206
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Constraint | Description |\n"
-#| "| ---------- | ----------- |\n"
-#| "| Count | ≥ `raw_min_messages` (default 5) |\n"
-#| "| Has user | At least 1 `role=user` |\n"
-#| "| Hot-tail start | **`min{ pos | pos > l3 }`** must be `user` (handles non-contiguous pos) |\n"
-msgid ""
-"| Constraint     | Description                      |\n"
-"| -------------- | -------------------------------- | --------------------------------------------------------- |\n"
-"| Count          | ≥ `raw_min_messages` (default 5) |\n"
-"| Has user       | At least 1 `role=user`           |\n"
-"| Hot-tail start | \\*\\*`min{ pos                    | pos > l3 }`** must be `user` (handles non-contiguous pos) |\n"
-msgstr ""
-"| 约束     | 说明                                                          |\n"
-"| -------- | ------------------------------------------------------------- |\n"
-"| 条数     | ≥ `raw_min_messages`（默认 5）                                |\n"
-"| 含 user  | 至少 1 条 `role=user`                                         |\n"
-"| 热尾起点 | **`min{ pos \\| pos > l3 }`** 必须是 `user`（兼容 pos 不连续） |\n"
-
-#. type: Plain text
-#: docs/concepts/compression.md:208
-msgid ""
-"> **Note:** `l3` ensures raw hot-tail **starts** with `user`, not that hot-"
-"tail **ends** with a complete tool loop; trailing dangling `tool_calls` "
-"repaired by engine `tool-loop-integrity` before outbound/persist."
-msgstr ""
-"> **注意**：`l3` 保证 raw 热尾以 `user` **起笔**，不保证热尾以完整 tool loop "
-"**收笔**；尾部 dangling `tool_calls` 由 engine `tool-loop-integrity` 在出站/"
-"落盘前 repair。"
-
-#. type: Plain text
-#: docs/concepts/compression.md:210
-msgid "No valid `l3` → abort compression."
-msgstr "无合法 `l3` → 放弃压缩。"
-
-#. type: Plain text
-#: docs/concepts/compression.md:212
-msgid "### Step 2: Set `l2`"
-msgstr "### Step 2：定 `l2`"
-
-#. type: Plain text
-#: docs/concepts/compression.md:214
-msgid ""
-"Take the **largest** `l2` so **`(l2, l3]`** after `slimMessage` has count ≥ "
-"`slim_min_messages` (default 50)."
-msgstr ""
-"取**最大的** `l2`，使 **`(l2, l3]`** 经 `slimMessage` 后条数 ≥ "
-"`slim_min_messages`（默认 50）。"
-
-#. type: Plain text
-#: docs/concepts/compression.md:220
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Check | Description |\n"
-#| "| ----- | ----------- |\n"
-#| "| `l2 < l3` | Otherwise invalid |\n"
-#| "| `new l3 ≥ old l3` | Monotonic |\n"
-#| "| `new l2 > old l2` | Strict right shift, else abort |\n"
-msgid ""
-"| Check             | Description                    |\n"
-"| ----------------- | ------------------------------ |\n"
-"| `l2 < l3`         | Otherwise invalid              |\n"
-"| `new l3 ≥ old l3` | Monotonic                      |\n"
-"| `new l2 > old l2` | Strict right shift, else abort |\n"
-msgstr ""
-"| 检查            | 说明               |\n"
-"| --------------- | ------------------ |\n"
-"| `l2 < l3`       | 否则无效           |\n"
-"| `新 l3 ≥ 旧 l3` | 单调               |\n"
-"| `新 l2 > 旧 l2` | 严格右移，否则放弃 |\n"
-
-#. type: Plain text
-#: docs/concepts/compression.md:222
-msgid "### Step 3: Summary"
-msgstr "### Step 3：摘要"
-
-#. type: Bullet: '- '
-#: docs/concepts/compression.md:225
-msgid ""
-"Increment message range: **`(old l2, new l2]`** (first compression **`(0, "
-"new l2]`**)"
-msgstr "增量 messages 区间：**`(旧 l2, 新 l2]`**（首压 **`(0, 新 l2]`**）"
-
-#. type: Bullet: '- '
-#: docs/concepts/compression.md:225
-msgid ""
-"LLM merges into `meta.summary`; runtime injects **`pos=1`** summary user"
-msgstr "LLM 合并进 `meta.summary`；运行时注入 **`pos=1`** 摘要 user"
-
-#. type: Plain text
-#: docs/concepts/compression.md:227
-msgid ""
-"Step 1 already ensures raw segment starts with user—**no** post-boundary l3/"
-"l2 shift for tool loop."
-msgstr ""
-"定 l3 时已保证原始段以 user 开头，**无需**定界后再因 tool loop 左移 l3/l2。"
-
-#. type: Plain text
-#: docs/concepts/compression.md:231
-msgid "## Trigger: `shouldAdvance`"
-msgstr "## 触发：`shouldAdvance`"
-
-#. type: Plain text
-#: docs/concepts/compression.md:233
-msgid ""
-"`isInToolLoop(messages)` **only used here**, **not** in "
-"`deriveBoundariesFromL4`."
-msgstr ""
-"`isInToolLoop(messages)` **仅用于此处**，**不参与** "
-"`deriveBoundariesFromL4`。"
-
-#. type: Plain text
-#: docs/concepts/compression.md:235
-#, no-wrap
-msgid "**Tool loop detection** (`compression-tool-loop.ts`): after last `user`, if tail ends with `tool` or `assistant` with `tool_calls`, inside loop.\n"
-msgstr "**工具循环判定**（`compression-tool-loop.ts`）：自最后一条 `user` 之后，若尾部以 `tool` 或带 `tool_calls` 的 `assistant` 结尾，则为循环内。\n"
-
-#. type: Plain text
-#: docs/concepts/compression.md:251
-#, no-wrap
-msgid ""
-"```mermaid\n"
-"flowchart TD\n"
-"  start[\"usage_ratio = tokens / budget\"]\n"
-"  start --> force{\"/compress --force<br/>or forceEmergency?\"}\n"
-"  force -->|yes| go[\"Advance compression\"]\n"
-"  force -->|no| loop{isInToolLoop?}\n"
-"  loop -->|no| out[\"usage ≥ trigger_low ?\"]\n"
-"  out -->|yes| go\n"
-"  out -->|no| hold[\"Keep boundaries\"]\n"
-"  loop -->|yes| emerg[\"usage ≥ emergency_ratio ?\"]\n"
-"  emerg -->|yes| go\n"
-"  emerg -->|no| high[\"usage ≥ trigger_high ?\"]\n"
-"  high -->|yes| go\n"
-"  high -->|no| hold\n"
-"```\n"
-msgstr ""
-"```mermaid\n"
-"flowchart TD\n"
-"  start[\"usage_ratio = tokens / budget\"]\n"
-"  start --> force{\"/compress --force<br/>或 forceEmergency?\"}\n"
-"  force -->|是| go[\"推进压缩\"]\n"
-"  force -->|否| loop{isInToolLoop?}\n"
-"  loop -->|否| out[\"usage ≥ trigger_low ?\"]\n"
-"  out -->|是| go\n"
-"  out -->|否| hold[\"保持边界\"]\n"
-"  loop -->|是| emerg[\"usage ≥ emergency_ratio ?\"]\n"
-"  emerg -->|是| go\n"
-"  emerg -->|否| high[\"usage ≥ trigger_high ?\"]\n"
-"  high -->|是| go\n"
-"  high -->|否| hold\n"
-"```\n"
-
-#. type: Plain text
-#: docs/concepts/compression.md:257
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Scenario | Advance compression? |\n"
-#| "| -------- | -------------------- |\n"
-#| "| **Outside tool loop** | `usage ≥ trigger_low` (0.60); `< trigger_low` do not compress |\n"
-#| "| **Inside tool loop** | Only `usage ≥ trigger_high` (0.80) or `≥ emergency_ratio` (0.92) |\n"
-#| "| **Inside tool loop** otherwise | Do not compress |\n"
-msgid ""
-"| Scenario                       | Advance compression?                                             |\n"
-"| ------------------------------ | ---------------------------------------------------------------- |\n"
-"| **Outside tool loop**          | `usage ≥ trigger_low` (0.60); `< trigger_low` do not compress    |\n"
-"| **Inside tool loop**           | Only `usage ≥ trigger_high` (0.80) or `≥ emergency_ratio` (0.92) |\n"
-"| **Inside tool loop** otherwise | Do not compress                                                  |\n"
-msgstr ""
-"| 场景                | 是否推进压缩                                                    |\n"
-"| ------------------- | --------------------------------------------------------------- |\n"
-"| **工具循环外**      | `usage ≥ trigger_low`（0.60）；`< trigger_low` 不压             |\n"
-"| **工具循环内**      | 仅 `usage ≥ trigger_high`（0.80）或 `≥ emergency_ratio`（0.92） |\n"
-"| **工具循环内** 其余 | 不压                                                            |\n"
-
-#. type: Plain text
-#: docs/concepts/compression.md:259
-msgid ""
-"Occupancy estimated from four-segment runtime view at current **l4** (system "
-"+ summary + slim + raw + tools), **not** full messages."
-msgstr ""
-"占用率按当前 **l4** 下四段 runtime 视图（system + 摘要 + 精简 + 原始 + "
-"tools）估算，**不用 messages 全量**。"
-
-#. type: Plain text
-#: docs/concepts/compression.md:261
-msgid ""
-"> v5.1 removed `tool_loop_suppress_sec` time suppression; "
-"`markToolLoopActivity` / `clearToolLoopSuppression` still called by engine / "
-"`beginTurn`, but **no longer** gate compression."
-msgstr ""
-"> v5.1 已移除 `tool_loop_suppress_sec` 时间抑制；`markToolLoopActivity` / "
-"`clearToolLoopSuppression` 仍由 engine / `beginTurn` 调用，但**不再**参与压缩"
-"门控。"
-
-#. type: Plain text
-#: docs/concepts/compression.md:265
-msgid "## Slim Segment: `slimMessage`"
-msgstr "## 精简段：`slimMessage`"
-
-#. type: Plain text
-#: docs/concepts/compression.md:267
-msgid "Raw segment **not** slimmed."
-msgstr "原始段 **不** slim。"
-
-#. type: Plain text
-#: docs/concepts/compression.md:274
-#, no-wrap
-msgid ""
-"| role                           | Behavior                                                                                 |\n"
-"| ------------------------------ | ---------------------------------------------------------------------------------------- |\n"
-"| `tool`                         | **Dropped**                                                                              |\n"
-"| `user`                         | Kept (strip `reasoning` / `tool_calls` fields)                                           |\n"
-"| `assistant` + `tool_calls`     | Non-empty `content` uses content, **else `reasoning`**; strip `tool_calls` / `reasoning` |\n"
-"| `assistant` without tool_calls | Keep `content`, strip `reasoning`                                                        |\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/compression.md:278
-msgid "## Session Summary"
-msgstr "## 会话摘要"
-
-#. type: Plain text
-#: docs/concepts/compression.md:280
-msgid "### meta Structure"
-msgstr "### meta 结构"
-
-#. type: Plain text
-#: docs/concepts/compression.md:289
-#, no-wrap
-msgid ""
-"```json\n"
-"{\n"
-"  \"l2\": 80,\n"
-"  \"l3\": 145,\n"
-"  \"summary\": \"Merged single summary…\",\n"
-"  \"summary_at\": \"2026-05-28T02:00:00+08:00\"\n"
-"}\n"
-"```\n"
-msgstr ""
-"```json\n"
-"{\n"
-"  \"l2\": 80,\n"
-"  \"l3\": 145,\n"
-"  \"summary\": \"合并后的唯一摘要…\",\n"
-"  \"summary_at\": \"2026-05-28T02:00:00+08:00\"\n"
-"}\n"
-"```\n"
-
-#. type: Plain text
-#: docs/concepts/compression.md:291
-msgid "### Summary Pipeline"
-msgstr "### 摘要流水线"
-
-#. type: Plain text
-#: docs/concepts/compression.md:300
-#, no-wrap
-msgid ""
-"```mermaid\n"
-"sequenceDiagram\n"
-"  participant BT as beginTurn / engine\n"
-"  participant RC as recompressSession\n"
-"  participant CP as compress\n"
-"  participant DB as deriveBoundariesFromL4\n"
-"  participant LLM as compression-summary\n"
-"  participant SP as rebuildSessionSystemPrompt\n"
-msgstr ""
-"```mermaid\n"
-"sequenceDiagram\n"
-"  participant BT as beginTurn / engine\n"
-"  participant RC as recompressSession\n"
-"  participant CP as compress\n"
-"  participant DB as deriveBoundariesFromL4\n"
-"  participant LLM as compression-summary\n"
-"  participant SP as rebuildSessionSystemPrompt\n"
-
-#. type: Plain text
-#: docs/concepts/compression.md:311
-#, no-wrap
-msgid ""
-"  BT->>RC: advanceCompressionMeta\n"
-"  RC->>CP: full messages + meta\n"
-"  CP->>CP: shouldAdvance?\n"
-"  CP->>DB: yes → new l2,l3\n"
-"  DB-->>CP: l2,l3\n"
-"  CP-->>RC: boundary change\n"
-"  RC->>LLM: slice (old l2, new l2] + old summary\n"
-"  LLM-->>RC: overwrite summary\n"
-"  RC->>SP: refresh system_prompt\n"
-"```\n"
-msgstr ""
-"  BT->>RC: advanceCompressionMeta\n"
-"  RC->>CP: 全量 messages + meta\n"
-"  CP->>CP: shouldAdvance?\n"
-"  CP->>DB: 是 → 新 l2,l3\n"
-"  DB-->>CP: l2,l3\n"
-"  CP-->>RC: 边界变化\n"
-"  RC->>LLM: slice (旧l2, 新l2] + 旧 summary\n"
-"  LLM-->>RC: 覆盖 summary\n"
-"  RC->>SP: 刷新 system_prompt\n"
-"```\n"
-
-#. type: Plain text
-#: docs/concepts/compression.md:318
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Step | Description |\n"
-#| "| ---- | ----------- |\n"
-#| "| Trigger | `beginTurn` → `advanceCompressionMeta`; or `/compress`; or emergency |\n"
-#| "| Slice | `sliceForSummary(messages, prevL2, newL2)` |\n"
-#| "| LLM | `system` = pre-compression `system_prompt` **snapshot**; no tools |\n"
-#| "| Write-back | Overwrite `summary` + `summary_at`; `rebuildSessionSystemPrompt()` |\n"
-msgid ""
-"| Step       | Description                                                          |\n"
-"| ---------- | -------------------------------------------------------------------- |\n"
-"| Trigger    | `beginTurn` → `advanceCompressionMeta`; or `/compress`; or emergency |\n"
-"| Slice      | `sliceForSummary(messages, prevL2, newL2)`                           |\n"
-"| LLM        | `system` = pre-compression `system_prompt` **snapshot**; no tools    |\n"
-"| Write-back | Overwrite `summary` + `summary_at`; `rebuildSessionSystemPrompt()`   |\n"
-msgstr ""
-"| 步骤 | 说明                                                                 |\n"
-"| ---- | -------------------------------------------------------------------- |\n"
-"| 触发 | `beginTurn` → `advanceCompressionMeta`；或 `/compress`；或 emergency |\n"
-"| 切片 | `sliceForSummary(messages, prevL2, newL2)`                           |\n"
-"| LLM  | `system` = 压缩前 `system_prompt` **快照**；不传 tools               |\n"
-"| 写回 | 覆盖 `summary` + `summary_at`；`rebuildSessionSystemPrompt()`        |\n"
-
-#. type: Plain text
-#: docs/concepts/compression.md:320
-msgid "Legacy meta **read-time migration** (`parseCompressionState`):"
-msgstr "旧 meta **读时迁移**（`parseCompressionState`）："
-
-#. type: Plain text
-#: docs/concepts/compression.md:326
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Old field | → New field |\n"
-#| "| --------- | ----------- |\n"
-#| "| `anchor_id` | `l3` |\n"
-#| "| `cut_id` (no anchor) | `l3` |\n"
-#| "| `last_summarized_cut_id` | `l2` |\n"
-msgid ""
-"| Old field                | → New field |\n"
-"| ------------------------ | ----------- |\n"
-"| `anchor_id`              | `l3`        |\n"
-"| `cut_id` (no anchor)     | `l3`        |\n"
-"| `last_summarized_cut_id` | `l2`        |\n"
-msgstr ""
-"| 旧字段                   | → 新字段 |\n"
-"| ------------------------ | -------- |\n"
-"| `anchor_id`              | `l3`     |\n"
-"| `cut_id`（无 anchor）    | `l3`     |\n"
-"| `last_summarized_cut_id` | `l2`     |\n"
-
-#. type: Plain text
-#: docs/concepts/compression.md:330
-msgid "## Emergency (Single-Turn Hard Cap)"
-msgstr "## Emergency（单轮硬顶）"
-
-#. type: Plain text
-#: docs/concepts/compression.md:332
-msgid "`maybeApplyEmergencyCompression` (called from engine tool loop):"
-msgstr "`maybeApplyEmergencyCompression`（`engine` 工具循环中调用）："
-
-#. type: Plain text
-#: docs/concepts/compression.md:342
-#, no-wrap
-msgid ""
-"```mermaid\n"
-"flowchart LR\n"
-"  e1[\"In-memory runtime messages\"]\n"
-"  e2[\"usage ≥ emergency_ratio\"]\n"
-"  e3[\"forceEmergency + deriveBoundariesFromL4\"]\n"
-"  e4[\"Replace messages[] in place\"]\n"
-"  e5[\"Write meta + async summary\"]\n"
-"  e1 --> e2 --> e3 --> e4 --> e5\n"
-"```\n"
-msgstr ""
-"```mermaid\n"
-"flowchart LR\n"
-"  e1[\"内存 runtime messages\"]\n"
-"  e2[\"usage ≥ emergency_ratio\"]\n"
-"  e3[\"forceEmergency + deriveBoundariesFromL4\"]\n"
-"  e4[\"就地替换 messages[]\"]\n"
-"  e5[\"写 meta + 异步摘要\"]\n"
-"  e1 --> e2 --> e3 --> e4 --> e5\n"
-"```\n"
-
-#. type: Bullet: '1. '
-#: docs/concepts/compression.md:347
-msgid "`l4` = current in-memory message `max(pos)`"
-msgstr "`l4` = 当前内存消息 `max(pos)`"
-
-#. type: Bullet: '2. '
-#: docs/concepts/compression.md:347
-msgid ""
-"Thresholds follow **inside tool loop** rules (`trigger_high` / "
-"`emergency_ratio`)"
-msgstr "阈值走**工具循环内**规则（`trigger_high` / `emergency_ratio`）"
-
-#. type: Bullet: '3. '
-#: docs/concepts/compression.md:347
-msgid "Boundary derivation same as normal; **no extra shift**"
-msgstr "边界推导与常规定界相同，**无额外 shift**"
-
-#. type: Bullet: '4. '
-#: docs/concepts/compression.md:347
-msgid ""
-"After meta write, async summary; in-memory view immediately becomes four "
-"segments"
-msgstr "写 meta 后异步摘要；内存视图立即变为四段"
-
-#. type: Plain text
-#: docs/concepts/compression.md:351
-msgid "## Message Lifecycle"
-msgstr "## 消息生命周期"
-
-#. type: Plain text
-#: docs/concepts/compression.md:360
-#, no-wrap
-msgid ""
-"```mermaid\n"
-"stateDiagram-v2\n"
-"  [*] --> Uncompressed: new session\n"
-"  Uncompressed --> Compressed: usage ≥ trigger_low<br/>derive success\n"
-"  Compressed --> Compressed: append only lengthens (l3,l4]\n"
-"  Compressed --> Compressed: usage hits threshold again<br/>l2,l3 shift right\n"
-"  Compressed --> Compressed: emergency in-place trim\n"
-"```\n"
-msgstr ""
-"```mermaid\n"
-"stateDiagram-v2\n"
-"  [*] --> 未压缩: 新 session\n"
-"  未压缩 --> 已压缩: usage ≥ trigger_low<br/>derive 成功\n"
-"  已压缩 --> 已压缩: append 仅拉长 (l3,l4]\n"
-"  已压缩 --> 已压缩: usage 再达阈<br/>l2,l3 右移\n"
-"  已压缩 --> 已压缩: emergency 就地裁切\n"
-"```\n"
-
-#. type: Plain text
-#: docs/concepts/compression.md:367
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Timing | Behavior |\n"
-#| "| ------ | -------- |\n"
-#| "| `beginTurn` | `clearToolLoopSuppression` → append user → `advanceCompressionMeta` → `buildRuntimeMessages` |\n"
-#| "| Each tool/assistant turn | engine `markToolLoopActivity` (does not affect v5.1 compression threshold) |\n"
-#| "| `buildRuntimeMessages` | `compress` reads meta only unless `shouldAdvance` true |\n"
-#| "| `/compress --force` | Ignore hysteresis, recompute boundaries from `l2=l3=0` |\n"
-msgid ""
-"| Timing                   | Behavior                                                                                     |\n"
-"| ------------------------ | -------------------------------------------------------------------------------------------- |\n"
-"| `beginTurn`              | `clearToolLoopSuppression` → append user → `advanceCompressionMeta` → `buildRuntimeMessages` |\n"
-"| Each tool/assistant turn | engine `markToolLoopActivity` (does not affect v5.1 compression threshold)                   |\n"
-"| `buildRuntimeMessages`   | `compress` reads meta only unless `shouldAdvance` true                                       |\n"
-"| `/compress --force`      | Ignore hysteresis, recompute boundaries from `l2=l3=0`                                       |\n"
-msgstr ""
-"| 时机                   | 行为                                                                                         |\n"
-"| ---------------------- | -------------------------------------------------------------------------------------------- |\n"
-"| `beginTurn`            | `clearToolLoopSuppression` → append user → `advanceCompressionMeta` → `buildRuntimeMessages` |\n"
-"| 每轮 tool/assistant    | engine `markToolLoopActivity`（不影响 v5.1 压缩阈）                                          |\n"
-"| `buildRuntimeMessages` | `compress` 只读 meta，除非 `shouldAdvance` 为真                                              |\n"
-"| `/compress --force`    | 忽略滞回，从 `l2=l3=0` 重算边界                                                              |\n"
-
-#. type: Plain text
-#: docs/concepts/compression.md:371
-msgid "## Implementation Entry Points"
-msgstr "## 实现入口"
-
-#. type: Plain text
-#: docs/concepts/compression.md:381
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Module | Responsibility |\n"
-#| "| ------ | -------------- |\n"
-#| "| `engine/compress/src/compressor.ts` | l-points, `deriveBoundariesFromL4`, `shouldAdvance`, `buildRuntimeFromLPoints`, `slimMessage` |\n"
-#| "| `engine/compress/src/compression-config.ts` | Config and `context_window` / effective budget |\n"
-#| "| `engine/compress/src/compression-summary.ts` | Summary LLM |\n"
-#| "| `engine/compress/src/compression-tool-loop.ts` | `isInToolLoop` |\n"
-#| "| `engine/conversation/src/conversation.ts` | `recompressSession`, `buildRuntimeMessages`, `maybeApplyEmergencyCompression` |\n"
-#| "| `engine/loop/src/engine.ts` | Emergency call site |\n"
-#| "| `service/service/src/runtime/conversation-stats.ts` | `/stats` shows `l2`/`l3`/occupancy |\n"
-msgid ""
-"| Module                                              | Responsibility                                                                                |\n"
-"| --------------------------------------------------- | --------------------------------------------------------------------------------------------- |\n"
-"| `mechanism/compress/src/compressor.ts`              | l-points, `deriveBoundariesFromL4`, `shouldAdvance`, `buildRuntimeFromLPoints`, `slimMessage` |\n"
-"| `mechanism/compress/src/compression-config.ts`      | Config and `context_window` / effective budget                                                |\n"
-"| `mechanism/compress/src/compression-summary.ts`     | Summary LLM                                                                                   |\n"
-"| `mechanism/compress/src/compression-tool-loop.ts`   | `isInToolLoop`                                                                                |\n"
-"| `orchestration/conversation/src/conversation.ts`    | `recompressSession`, `buildRuntimeMessages`, `maybeApplyEmergencyCompression`                 |\n"
-"| `orchestration/loop/src/engine.ts`                  | Emergency call site                                                                           |\n"
-"| `service/service/src/runtime/conversation-stats.ts` | `/stats` shows `l2`/`l3`/occupancy                                                            |\n"
-msgstr ""
-"| 模块                                                | 职责                                                                                      |\n"
-"| --------------------------------------------------- | ----------------------------------------------------------------------------------------- |\n"
-"| `engine/compress/src/compressor.ts`                 | l 点、`deriveBoundariesFromL4`、`shouldAdvance`、`buildRuntimeFromLPoints`、`slimMessage` |\n"
-"| `engine/compress/src/compression-config.ts`         | 配置与 `context_window` / 有效预算                                                        |\n"
-"| `engine/compress/src/compression-summary.ts`        | 摘要 LLM                                                                                  |\n"
-"| `engine/compress/src/compression-tool-loop.ts`      | `isInToolLoop`                                                                            |\n"
-"| `engine/conversation/src/conversation.ts`           | `recompressSession`、`buildRuntimeMessages`、`maybeApplyEmergencyCompression`             |\n"
-"| `engine/loop/src/engine.ts`                         | emergency 调用点                                                                          |\n"
-"| `service/service/src/runtime/conversation-stats.ts` | `/stats` 展示 `l2`/`l3`/占用率                                                            |\n"
-
-#. type: Plain text
-#: docs/concepts/compression.md:383
-msgid "Manual: `/compress` (`--force` ignores hysteresis)."
-msgstr "手动：`/compress`（`--force` 忽略滞回）。"
-
-#. type: Plain text
-#: docs/concepts/compression.md:387
+#| msgid "## Relationship to Memory Layer"
 msgid "## Relationship to Memory Pipeline"
-msgstr "## 与记忆管道"
+msgstr "## 与记忆层的关系"
 
 #. type: Plain text
-#: docs/concepts/compression.md:389
+#: docs/concepts/compression.md:65
 msgid ""
-"Compression **does not** trigger semantic memory extraction; light sleep "
-"cron runs independently (see [`sleep.md`](sleep.md))."
+"Compression and light/deep sleep run **independently**: compression manages "
+"the current session's LLM window; memory extraction runs nightly from the "
+"full conversation archive."
 msgstr ""
-"压缩**不**触发语义记忆提取；浅睡 cron 独立运行（见 [`sleep.md`](sleep.md)）。"
-
-#. type: Plain text
-#: docs/concepts/compression.md:398
-#, no-wrap
-msgid ""
-"```mermaid\n"
-"flowchart TB\n"
-"  PG[\"PG messages full\"]\n"
-"  RT[\"Runtime four segments + summary\"]\n"
-"  Sleep[\"Light sleep cron → semantic_memory\"]\n"
-"  PG --> RT\n"
-"  PG -->|\"Independent cron 02:00\"| Sleep\n"
-"```\n"
-msgstr ""
-"```mermaid\n"
-"flowchart TB\n"
-"  PG[\"PG messages 全量\"]\n"
-"  RT[\"运行时四段 + 摘要\"]\n"
-"  Sleep[\"浅睡 cron → semantic_memory\"]\n"
-"  PG --> RT\n"
-"  PG -->|\"独立 cron 02:00\"| Sleep\n"
-"```\n"
-
-#. type: Plain text
-#: docs/concepts/compression.md:399
-msgid "PG `messages` **never deleted** (append-only)."
-msgstr "PG `messages` **永不删**（只追加）。"
