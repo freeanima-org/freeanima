@@ -1,4 +1,4 @@
-import type { StreamEvent } from "./engine.ts";
+import type { StreamEvent } from "./loop-engine.ts";
 
 /** Collect engine/runtime stream events into final reply text (for non-SSE consumers). */
 export async function collectStreamReply(events: AsyncIterable<StreamEvent>): Promise<string> {

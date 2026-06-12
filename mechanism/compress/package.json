@@ -6,15 +6,15 @@
   },
   "dependencies": {
     "@freeanima/kernel": "workspace:*",
-    "@freeanima/storage-db": "workspace:*",
     "@freeanima/mechanism-llm": "workspace:*",
+    "@freeanima/storage-config": "workspace:*",
+    "@freeanima/storage-db": "workspace:*",
     "@freeanima/storage-repos": "workspace:*",
     "@freeanima/storage-tokenizer": "workspace:*",
-    "@freeanima/storage-config": "workspace:*",
     "@freeanima/storage-util": "workspace:*"
   },
   "devDependencies": {
-    "@freeanima/orchestration-conversation": "workspace:*",
+    "@freeanima/runtime": "workspace:*",
     "@types/bun": "catalog:"
   }
 }

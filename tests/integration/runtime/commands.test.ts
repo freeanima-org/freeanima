@@ -32,7 +32,7 @@ import {
   resolveCommand,
 } from "@freeanima/service-commands";
 import { getAppRuntime } from "@freeanima/service";
-import * as engineConversation from "@freeanima/orchestration-conversation";
+import * as engineConversation from "@freeanima/runtime/conversation";
 
 async function patchMetaForTest(sessionId: string, patch: Record<string, unknown>): Promise<void> {
   await getTestEngine().repos.session.patchSessionMeta(sessionId, patch as never);

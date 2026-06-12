@@ -19,7 +19,7 @@ import {
   updateSessionMetaField,
   type Message,
   type SessionMetaLoadResult,
-} from "@freeanima/orchestration-session";
+} from "@freeanima/runtime/session";
 import type { PgRepositories } from "@freeanima/storage-repos";
 
 function defaultChatModel(): string {

@@ -1,5 +1,5 @@
 import type { AcpPromptResult, AcpTaskQueryPort } from "@freeanima/capabilities-acp";
-import type { ConversationService } from "@freeanima/orchestration-conversation";
+import type { ConversationService } from "@freeanima/runtime/conversation";
 
 const ACP_RESULT_PREFIX = "[ACP result]";
 

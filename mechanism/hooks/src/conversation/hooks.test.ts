@@ -6,7 +6,7 @@ import { messageIncoming } from "./index.ts";
 describe("conversation hooks", () => {
   it("messageIncoming qualifiedId", () => {
     expect(messageIncoming.qualifiedId).toBe(
-      "@freeanima/orchestration-conversation-hooks/message-incoming",
+      "@freeanima/runtime/conversation-hooks/message-incoming",
     );
   });
 

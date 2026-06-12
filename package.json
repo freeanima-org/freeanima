@@ -71,13 +71,13 @@
       "kernel",
       "storage/*",
       "mechanism/*",
-      "orchestration/*",
       "capabilities/*",
       "connectors/*",
       "service/*",
       "cli",
       "site",
-      "tests"
+      "tests",
+      "runtime"
     ],
     "catalog": {
       "@types/node": "^24.12.4",

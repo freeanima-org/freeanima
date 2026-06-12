@@ -1,7 +1,7 @@
 import type { FullRuntimeDeps } from "./runtime/runtime-deps.ts";
 import { registerLlmStackConfigurator } from "@freeanima/mechanism-llm";
 import { registerSystemPromptHookRunner } from "@freeanima/mechanism-hooks/prompt";
-import { rebuildSessionSystemPrompt } from "@freeanima/orchestration-conversation";
+import { rebuildSessionSystemPrompt } from "@freeanima/runtime/conversation";
 import { registerSessionToolMaskFilter } from "@freeanima/mechanism-tool";
 import { registerCompressionSummaryPostCut } from "@freeanima/mechanism-compress";
 import { wireOpenAiCompatibleLlm } from "@freeanima/capabilities-llm-openai";

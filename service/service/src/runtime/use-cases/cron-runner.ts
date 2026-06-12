@@ -1,4 +1,4 @@
-import * as conv from "@freeanima/orchestration-conversation";
+import * as conv from "@freeanima/runtime/conversation";
 import { prependSkillsToPrompt } from "@freeanima/mechanism-skill";
 import { getProfileHopModel } from "@freeanima/service-config";
 import { PROFILE_CHAT } from "@freeanima/storage-provider-llm";

@@ -1,4 +1,4 @@
-import type { StreamEvent } from "@freeanima/orchestration-loop";
+import type { StreamEvent } from "@freeanima/runtime/loop";
 
 import type { Message, TextBasedChannel } from "discord.js";
 import { describe, expect, it, vi } from "bun:test";

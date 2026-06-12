@@ -7,11 +7,11 @@
   "dependencies": {
     "@freeanima/capabilities-clarify": "workspace:*",
     "@freeanima/capabilities-mask": "workspace:*",
-    "@freeanima/orchestration-conversation": "workspace:*",
-    "@freeanima/storage-db": "workspace:*",
     "@freeanima/mechanism-tool": "workspace:*",
+    "@freeanima/runtime": "workspace:*",
     "@freeanima/service-api": "workspace:*",
-    "@freeanima/storage-config": "workspace:*"
+    "@freeanima/storage-config": "workspace:*",
+    "@freeanima/storage-db": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "catalog:"

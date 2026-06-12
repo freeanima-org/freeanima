@@ -1,4 +1,4 @@
-import type { ConversationService } from "@freeanima/orchestration-conversation";
+import type { ConversationService } from "@freeanima/runtime/conversation";
 
 import type { AppRuntimePort } from "./app-runtime-port.ts";
 import type { AcpManagerPort } from "./ports/acp-manager.ts";

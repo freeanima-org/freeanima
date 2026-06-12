@@ -4,8 +4,8 @@ import {
   readAcpTasksHandledAt,
   setAcpTasksHandledAt,
 } from "@freeanima/capabilities-acp";
-import { isSessionMeta } from "@freeanima/orchestration-conversation";
-import type { ConversationService } from "@freeanima/orchestration-conversation";
+import { isSessionMeta } from "@freeanima/runtime/conversation";
+import type { ConversationService } from "@freeanima/runtime/conversation";
 import { logComponent } from "@freeanima/service-logging";
 import type { AppRuntime } from "./runtime/app-runtime.ts";
 import { PARLOR_PLATFORM } from "./runtime/platforms.ts";

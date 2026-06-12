@@ -29,7 +29,7 @@ import {
   type SessionMessage,
   type SessionMetaLoadResult,
   type OpenAiToolSchema,
-} from "@freeanima/orchestration-session";
+} from "@freeanima/runtime/session";
 
 function compressionEnabled(): boolean {
   return getCompressionConfig().enabled;

@@ -1,11 +1,11 @@
-import { isSessionMeta, resolveExecutableToolNames } from "@freeanima/orchestration-conversation";
+import { isSessionMeta, resolveExecutableToolNames } from "@freeanima/runtime/conversation";
 import { resolveSessionMaskFromMeta, runtimeToolMaskFromResolved } from "./mask-wire.ts";
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
 import type { SessionMessage as Message } from "@freeanima/storage-db/domain";
 import type { SessionMessage } from "@freeanima/storage-db/domain";
-import * as loopEngine from "@freeanima/orchestration-loop";
+import * as loopEngine from "@freeanima/runtime/loop";
 import { runWithToolContext } from "@freeanima/mechanism-tool";
-import type { StreamEvent } from "@freeanima/orchestration-loop";
+import type { StreamEvent } from "@freeanima/runtime/loop";
 import { applyClarifyStreamAwaiting } from "@freeanima/capabilities-clarify";
 import { ProviderError } from "@freeanima/storage-provider-llm";
 import { getProfileHopModel } from "@freeanima/service-config";

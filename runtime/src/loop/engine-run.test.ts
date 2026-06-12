@@ -1,6 +1,6 @@
 import { describe, expect, it, spyOn, afterEach } from "bun:test";
-import * as engine from "./engine.ts";
-import type { StreamEvent } from "./engine.ts";
+import * as engine from "./loop-engine.ts";
+import type { StreamEvent } from "./loop-engine.ts";
 import type { SessionMessage } from "@freeanima/storage-db/domain";
 
 describe("engine.run", () => {

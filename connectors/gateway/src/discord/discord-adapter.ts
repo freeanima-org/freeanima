@@ -11,7 +11,7 @@ import {
   isEngineStreamError,
   isTransientNetworkError,
   networkErrorUserHint,
-} from "@freeanima/orchestration-loop";
+} from "@freeanima/runtime/loop";
 import { getServiceContext } from "@freeanima/service-api";
 import { KeyedRateLimiter } from "@freeanima/storage-util/backoff";
 import { logComponent } from "@freeanima/service-logging";

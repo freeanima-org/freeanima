@@ -1,6 +1,6 @@
 import type { PgTestContext } from "./pg-test.ts";
-import { flushCompressionSummaries } from "@freeanima/orchestration-conversation";
-import { createConversationService } from "@freeanima/orchestration-conversation";
+import { flushCompressionSummaries } from "@freeanima/runtime/conversation";
+import { createConversationService } from "@freeanima/runtime/conversation";
 import { createServiceKernel } from "@freeanima/service-bootstrap";
 import {
   createAppRuntime,

@@ -1,4 +1,4 @@
-import type { StreamEvent } from "@freeanima/orchestration-loop";
+import type { StreamEvent } from "@freeanima/runtime/loop";
 import { describe, expect, it } from "bun:test";
 import {
   createStreamChannelComposer,

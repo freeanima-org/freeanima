@@ -25,15 +25,14 @@
   },
   "dependencies": {
     "@freeanima/kernel": "workspace:*",
-    "@freeanima/storage-config": "workspace:*",
-    "@freeanima/orchestration-conversation": "workspace:*",
     "@freeanima/mechanism-llm": "workspace:*",
-    "@freeanima/orchestration-loop": "workspace:*",
-    "@freeanima/storage-repos": "workspace:*",
     "@freeanima/mechanism-skill": "workspace:*",
     "@freeanima/mechanism-tool": "workspace:*",
+    "@freeanima/runtime": "workspace:*",
     "@freeanima/service-config": "workspace:*",
-    "@freeanima/service-logging": "workspace:*"
+    "@freeanima/service-logging": "workspace:*",
+    "@freeanima/storage-config": "workspace:*",
+    "@freeanima/storage-repos": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "catalog:"

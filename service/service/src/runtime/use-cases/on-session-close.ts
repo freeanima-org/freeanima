@@ -1,4 +1,4 @@
-import { generateSessionHandoffSummary } from "@freeanima/orchestration-conversation";
+import { generateSessionHandoffSummary } from "@freeanima/runtime/conversation";
 import { logComponent } from "@freeanima/service-logging";
 import type { RuntimeDeps } from "../runtime-deps.ts";
 

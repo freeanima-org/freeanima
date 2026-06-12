@@ -17,13 +17,31 @@
 
 **Code is the source of truth**; do not invent tool names, endpoints, or directories from docs alone. Read source or `grep` when needed.
 
+## Current phase: codebase attitude
+
+The repository is in an active reshaping phase (layer migration, structural cleanup). When proposing or implementing changes, optimize for the **end-state codebase**, not for preserving today's layout.
+
+| Priority      | Attitude                                                                                                                                                                                             |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Design goals  | **Elegant, minimal, clear** — prefer the simplest correct structure; readability and coherent boundaries beat cleverness                                                                             |
+| Compatibility | **Breaking changes are fine** — do not optimize for forward compatibility, deprecation shims, or dual-path APIs unless explicitly requested                                                          |
+| Cost model    | **Do not budget by human effort** — large refactors, renames, and file moves are normal; estimate scope in **AI agent turns** (read / search / edit / test cycles), not person-days or team capacity |
+
+**Agent implications:**
+
+- Prefer a clean end state over incremental compromise or patch-on-patch layering
+- Delete and rewrite when that yields clearer structure; do not keep legacy indirection "just in case"
+- Do not reject a better design because the diff is large — size is not a constraint in this phase
+- When comparing options, weight structural clarity and long-term readability above migration effort
+
 ---
 
 ## Startup order
 
 1. [GitHub Issues](https://github.com/freeanima-org/freeanima/issues) — actionable tasks and discussions
-2. [`docs/concepts/architecture.md`](docs/concepts/architecture.md) — read before changing architecture / memory / credentials
-3. Expand `docs/` and [`.agent/rules/`](.agent/rules/README.md) per task (see doc map below)
+2. [Current phase: codebase attitude](#current-phase-codebase-attitude) — design goals, breaking-change policy, agent cost model
+3. [`docs/concepts/architecture.md`](docs/concepts/architecture.md) — read before changing architecture / memory / credentials
+4. Expand `docs/` and [`.agent/rules/`](.agent/rules/README.md) per task (see doc map below)
 
 ---
 
@@ -76,7 +94,7 @@ DATABASE_URL="…" bun run --filter @freeanima/storage-db db:migrate
 
 | File                                                               | Role                                                             |
 | ------------------------------------------------------------------ | ---------------------------------------------------------------- |
-| [`AGENTS.md`](AGENTS.md)                                           | Bootstrap protocol (this file)                                   |
+| [`AGENTS.md`](AGENTS.md)                                           | Bootstrap protocol, current-phase codebase attitude (this file)  |
 | [`.agent/rules/`](.agent/rules/README.md)                          | Implementation constraints (layers, tests, coding, DB, packages) |
 | [GitHub Issues](https://github.com/freeanima-org/freeanima/issues) | Actionable tasks and discussions                                 |
 | [`docs/concepts/architecture.md`](docs/concepts/architecture.md)   | Architecture principles and direction                            |

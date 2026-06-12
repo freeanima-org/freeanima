@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { collectStreamReply } from "./collect-stream-reply.ts";
-import type { StreamEvent } from "./engine.ts";
+import type { StreamEvent } from "./loop-engine.ts";
 
 describe("collectStreamReply", () => {
   it("concatenates tokens and replaces full text on content_replace", async () => {

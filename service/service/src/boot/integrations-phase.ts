@@ -6,7 +6,7 @@ import {
 } from "@freeanima/connectors-gateway";
 import { startAcpProgressTicker } from "../register.ts";
 import type { AppRuntime } from "../runtime/app-runtime.ts";
-import type { Engine } from "@freeanima/orchestration-runtime";
+import type { Engine } from "@freeanima/runtime";
 import { getAcpManager } from "@freeanima/capabilities-acp";
 import type { MCPManager } from "@freeanima/capabilities-mcp";
 

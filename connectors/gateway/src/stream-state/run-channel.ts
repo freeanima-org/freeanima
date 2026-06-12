@@ -1,4 +1,4 @@
-import type { StreamEvent } from "@freeanima/orchestration-loop";
+import type { StreamEvent } from "@freeanima/runtime/loop";
 import { ToolRoundCollector } from "../stream-tool-format.ts";
 import type { StreamChannelComposer } from "../stream-strategies/composer.ts";
 import { applyStreamEvent, initialStreamReplyState, type StreamReducePlatform } from "./reducer.ts";

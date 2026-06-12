@@ -21,19 +21,19 @@ const ROOT = join(import.meta.dir, "..");
 const PKG_RENAMES: [string, string][] = [
   ["@freeanima/capabilities-llm-openai", "@freeanima/capabilities-llm-openai"],
   ["@freeanima/storage-provider-llm", "@freeanima/storage-provider-llm"],
-  ["@freeanima/orchestration-conversation", "@freeanima/orchestration-conversation"],
+  ["@freeanima/runtime/conversation", "@freeanima/runtime/conversation"],
   [
     "@freeanima/mechanism-tool/session-conversation-port",
     "@freeanima/mechanism-tool/session-conversation-port",
   ],
   ["@freeanima/storage-tokenizer", "@freeanima/storage-tokenizer"],
-  ["@freeanima/orchestration-session", "@freeanima/orchestration-session"],
+  ["@freeanima/runtime/session", "@freeanima/runtime/session"],
   ["@freeanima/storage-config", "@freeanima/storage-config"],
   ["@freeanima/storage-repos", "@freeanima/storage-repos"],
-  ["@freeanima/orchestration-turn", "@freeanima/orchestration-turn"],
+  ["@freeanima/runtime/turn", "@freeanima/runtime/turn"],
   ["@freeanima/mechanism-compress", "@freeanima/mechanism-compress"],
   ["@freeanima/mechanism-hooks", "@freeanima/mechanism-hooks"],
-  ["@freeanima/orchestration-loop", "@freeanima/orchestration-loop"],
+  ["@freeanima/runtime/loop", "@freeanima/runtime/loop"],
   ["@freeanima/mechanism-hooks", "@freeanima/mechanism-hooks"],
   ["@freeanima/mechanism-tool", "@freeanima/mechanism-tool"],
   ["@freeanima/mechanism-llm", "@freeanima/mechanism-llm"],
@@ -44,7 +44,7 @@ const PKG_RENAMES: [string, string][] = [
   ["@freeanima/capabilities-estate", "@freeanima/capabilities-estate"],
   ["@freeanima/capabilities-identity", "@freeanima/capabilities-identity"],
   ["@freeanima/service-commands", "@freeanima/service-commands"],
-  ["@freeanima/orchestration-runtime", "@freeanima/orchestration-runtime"],
+  ["@freeanima/runtime", "@freeanima/runtime"],
 ];
 
 const PATH_RENAMES: [string, string][] = [

@@ -1,5 +1,5 @@
 import { chdir } from "node:process";
-import type { ConversationService } from "@freeanima/orchestration-conversation";
+import type { ConversationService } from "@freeanima/runtime/conversation";
 import {
   installErrorLogHandlers,
   logComponent,
