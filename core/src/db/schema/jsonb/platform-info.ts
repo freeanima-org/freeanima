@@ -19,33 +19,43 @@ export function isPlatform(value: string): value is Platform {
   return (PLATFORMS as readonly string[]).includes(value);
 }
 
-const parlorPlatformInfoSchema = z.looseObject({
-  platform: z.literal("parlor"),
-});
+const parlorPlatformInfoSchema = z
+  .object({
+    platform: z.literal("parlor"),
+  })
+  .passthrough();
 
-const studioPairPlatformInfoSchema = z.looseObject({
-  platform: z.literal("studio-pair-programming"),
-});
+const studioPairPlatformInfoSchema = z
+  .object({
+    platform: z.literal("studio-pair-programming"),
+  })
+  .passthrough();
 
-const cronPlatformInfoSchema = z.looseObject({
-  platform: z.literal("cron"),
-});
+const cronPlatformInfoSchema = z
+  .object({
+    platform: z.literal("cron"),
+  })
+  .passthrough();
 
 /** Discord session bound channel/thread (see gateway/discord-policy extractOrigin) */
-const discordPlatformInfoSchema = z.object({
-  platform: z.literal("discord"),
-  channel_id: z.string(),
-  guild_id: z.string().optional(),
-  thread_id: z.string().optional(),
-});
+const discordPlatformInfoSchema = z
+  .object({
+    platform: z.literal("discord"),
+    channel_id: z.string(),
+    guild_id: z.string().optional(),
+    thread_id: z.string().optional(),
+  })
+  .passthrough();
 
 /** WeChat session bound peer (see gateway/weixin/weixin-message) */
-const weixinPlatformInfoSchema = z.object({
-  platform: z.literal("weixin"),
-  weixin_user_id: z.string(),
-  weixin_peer_id: z.string(),
-  is_group: z.boolean(),
-});
+const weixinPlatformInfoSchema = z
+  .object({
+    platform: z.literal("weixin"),
+    weixin_user_id: z.string(),
+    weixin_peer_id: z.string(),
+    is_group: z.boolean(),
+  })
+  .passthrough();
 
 /**
  * sessions.platform_info: platform + per-channel extra merged as discriminated union.
