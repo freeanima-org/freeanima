@@ -162,6 +162,11 @@ const streamErrorEventSchema = z.object({
   data: z.object({ error: z.string() }),
 });
 
+const streamPingEventSchema = z.object({
+  event: z.literal("ping"),
+  data: z.object({}),
+});
+
 export const streamApiEventSchema = z.discriminatedUnion("event", [
   streamAcceptedEventSchema,
   streamTokenEventSchema,
@@ -173,6 +178,7 @@ export const streamApiEventSchema = z.discriminatedUnion("event", [
   streamInterruptedEventSchema,
   streamDoneEventSchema,
   streamErrorEventSchema,
+  streamPingEventSchema,
 ]);
 
 export type StreamApiEvent = z.infer<typeof streamApiEventSchema>;

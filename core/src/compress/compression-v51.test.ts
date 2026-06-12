@@ -17,8 +17,11 @@ import {
   toolMsg,
   ua,
 } from "./test-helpers/session-fixtures.ts";
+import { installCompressionConfigForTests } from "./test-helpers/config-bind.ts";
 
 const smallBoundary = { rawMinMessages: 3, slimMinMessages: 4 };
+
+installCompressionConfigForTests();
 
 describe("compression v5.1", () => {
   it("parseCompressionState parses l2/l3", () => {
