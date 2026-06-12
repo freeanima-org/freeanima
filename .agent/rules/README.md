@@ -2,6 +2,8 @@
 
 Detailed implementation constraints for AI agents working in this repository. Start with root [`AGENTS.md`](../../AGENTS.md), then open the files below as needed.
 
+**Principle maintenance**: when correcting or refining implementation constraints or agent behavior norms, update the matching topic file in this directory in the same task/PR as code — do not leave changes code-only. Product / cognitive architecture principles belong in [`docs/concepts/`](../../docs/concepts/) instead. Full triage → [`AGENTS.md` § Principle & direction maintenance](../../AGENTS.md#principle--direction-maintenance).
+
 | File                               | When to read                                                              |
 | ---------------------------------- | ------------------------------------------------------------------------- |
 | [`coding.md`](coding.md)           | Editing any TypeScript; tool handlers; types / Zod / ports; PG migrations |
