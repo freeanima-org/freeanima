@@ -41,7 +41,7 @@ const PKG_RENAMES: [string, string][] = [
   ["@freeanima/core/util", "@freeanima/core/util"],
   ["@freeanima/core/db", "@freeanima/core/db"],
   ["@freeanima/capabilities-memory", "@freeanima/capabilities-memory"],
-  ["@freeanima/capabilities-estate", "@freeanima/capabilities-estate"],
+  ["@freeanima/capabilities-tools/estate", "@freeanima/capabilities-tools/estate"],
   ["@freeanima/capabilities-identity", "@freeanima/capabilities-identity"],
   ["@freeanima/service-commands", "@freeanima/service-commands"],
   ["@freeanima/runtime", "@freeanima/runtime"],
@@ -105,7 +105,7 @@ function replaceInFile(abs: string): boolean {
   content = content.replace(/@freeanima\/life-self/g, "@freeanima/capabilities-identity");
   content = content.replace(/CAPABILITIES_IDENTITY_PACKAGE/g, "CAPABILITIES_IDENTITY_PACKAGE");
   content = content.replace(/@freeanima\/life-memory/g, "@freeanima/capabilities-memory");
-  content = content.replace(/@freeanima\/life-estate/g, "@freeanima/capabilities-estate");
+  content = content.replace(/@freeanima\/life-estate/g, "@freeanima/capabilities-tools/estate");
   content = content.replace(/CAPABILITIES_ESTATE_PACKAGE/g, "CAPABILITIES_ESTATE_PACKAGE");
 
   if (content !== orig) {

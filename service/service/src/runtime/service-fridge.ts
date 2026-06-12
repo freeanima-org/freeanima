@@ -3,9 +3,9 @@ import {
   FRIDGE_MAGNET_SCAN_PATTERN,
   scanMagnets,
   stripMagnetRedisKeyPrefix,
-} from "@freeanima/capabilities-fridge-magnet";
+} from "@freeanima/capabilities-tasks/fridge-magnet";
 import { isRedisConfigured, redisTtl } from "@freeanima/connectors-redis";
-import type { FridgeMagnet } from "@freeanima/capabilities-fridge-magnet";
+import type { FridgeMagnet } from "@freeanima/capabilities-tasks/fridge-magnet";
 
 export type FridgeMagnetDisplay = {
   key: string;

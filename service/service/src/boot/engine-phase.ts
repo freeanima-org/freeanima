@@ -11,10 +11,10 @@ import {
   type ConversationService,
 } from "@freeanima/runtime/conversation";
 import { createServiceLogger } from "@freeanima/service-logging";
-import { MaskRegistry } from "@freeanima/capabilities-mask";
+import { MaskRegistry } from "@freeanima/capabilities-tasks/mask";
 import { MCPManager } from "@freeanima/capabilities-mcp";
 import { getAcpManager } from "@freeanima/capabilities-acp";
-import { registerFridgeStore } from "@freeanima/capabilities-fridge-magnet";
+import { registerFridgeStore } from "@freeanima/capabilities-tasks/fridge-magnet";
 import { createRedisFridgeStore } from "@freeanima/connectors-redis";
 import type { Kernel } from "@freeanima/kernel";
 import type { FileConfig } from "@freeanima/service-config";

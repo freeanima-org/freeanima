@@ -4,7 +4,7 @@ import * as engine from "@freeanima/runtime/loop";
 import type { StreamEvent } from "@freeanima/runtime/loop";
 import { createConversationService } from "@freeanima/runtime/conversation";
 import { nullPgRepositories } from "@freeanima/core/repos";
-import { MaskRegistry } from "@freeanima/capabilities-mask";
+import { MaskRegistry } from "@freeanima/capabilities-tasks/mask";
 import { Config } from "@freeanima/core/config";
 import { createEngine, createEngineCatalog } from "@freeanima/runtime";
 import { initLlmRuntime, registerLlmStackConfigurator } from "@freeanima/core/llm";

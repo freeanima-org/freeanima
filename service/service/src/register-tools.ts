@@ -1,5 +1,5 @@
-import { registerClarifyTool } from "@freeanima/capabilities-clarify";
-import { registerWriteFridgeMagnetTool } from "@freeanima/capabilities-fridge-magnet";
+import { registerClarifyTool } from "@freeanima/capabilities-tools/clarify";
+import { registerWriteFridgeMagnetTool } from "@freeanima/capabilities-tasks/fridge-magnet";
 import { registerTaskTools } from "@freeanima/capabilities-tasks";
 import { registerCoreTools, registerSupplementalTools } from "@freeanima/capabilities-tools";
 import { registerCronjobTool } from "@freeanima/connectors-cron/cronjob-tool";
@@ -17,7 +17,7 @@ import {
   registerEmailAccount,
   sendEmail,
 } from "@freeanima/connectors-email";
-import { registerEstateTools } from "@freeanima/capabilities-estate";
+import { registerEstateTools } from "@freeanima/capabilities-tools/estate";
 import type { Config } from "@freeanima/core/config";
 import type { SkillRegistry } from "@freeanima/core/skill";
 import type { ToolSetRegistry } from "@freeanima/core/tool";
