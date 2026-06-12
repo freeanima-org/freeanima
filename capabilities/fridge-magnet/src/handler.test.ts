@@ -44,7 +44,7 @@ describe("createFridgeMagnetHandler", () => {
     } as Parameters<ReturnType<typeof createFridgeMagnetHandler>>[0]);
 
     expect(messages[0]!.content).toBe(
-      "```fridge\nsession:sess-a:note1: Note A\nsession:sess-b:note2: Note B\ntasks:summary: Todos (1)\n```\nHello",
+      "```fridge-magnet\nsession:sess-a:note1: Note A\nsession:sess-b:note2: Note B\ntasks:summary: Todos (1)\n```\nHello",
     );
   });
 

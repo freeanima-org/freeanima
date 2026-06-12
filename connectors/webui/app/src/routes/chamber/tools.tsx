@@ -20,7 +20,7 @@ const STATIC_TOOLSET_ORDER = [
   "tasks",
   "cron",
   "clarify",
-  "fridge",
+  "fridge-magnet",
   "memory",
   "self",
   "email",

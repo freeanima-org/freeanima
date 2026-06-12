@@ -5,7 +5,7 @@ export function chamberNavItems(): { to: string; label: string }[] {
     { to: "/chamber/dashboard", label: m.webui_chamber_nav_dashboard() },
     { to: "/chamber/sessions", label: m.webui_chamber_nav_sessions() },
     { to: "/chamber/tasks", label: m.webui_chamber_nav_tasks() },
-    { to: "/chamber/fridge", label: m.webui_chamber_nav_fridge() },
+    { to: "/chamber/fridge-magnet", label: m.webui_chamber_nav_fridge() },
     { to: "/chamber/memory", label: m.webui_chamber_nav_memory() },
     { to: "/chamber/semantic-memory", label: m.webui_chamber_nav_semantic() },
     { to: "/chamber/fts", label: m.webui_chamber_nav_fts() },

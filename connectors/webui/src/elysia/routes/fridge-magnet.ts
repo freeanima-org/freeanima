@@ -1,6 +1,6 @@
 import { Elysia } from "elysia";
 import { listFridgeMagnets } from "../../handlers/index.ts";
 
-export const fridgeRoutes = new Elysia({ prefix: "/fridge" }).get("/magnets", () =>
+export const fridgeMagnetRoutes = new Elysia({ prefix: "/fridge-magnet" }).get("/magnets", () =>
   listFridgeMagnets(),
 );

@@ -2,6 +2,7 @@ import { describe, expect, it } from "bun:test";
 import {
   clampTtl,
   deleteMagnet,
+  FRIDGE_MAGNET_SCAN_PATTERN,
   getMagnet,
   magnetRedisKey,
   randomBase62,
@@ -11,8 +12,8 @@ import {
 
 describe("magnetRedisKey", () => {
   it("three-part namespace", () => {
-    expect(magnetRedisKey("session", "abc:r1a2")).toBe("fridge:session:abc:r1a2");
-    expect(magnetRedisKey("tasks", "summary")).toBe("fridge:tasks:summary");
+    expect(magnetRedisKey("session", "abc:r1a2")).toBe("fridge-magnet:session:abc:r1a2");
+    expect(magnetRedisKey("tasks", "summary")).toBe("fridge-magnet:tasks:summary");
   });
 });
 
@@ -37,6 +38,8 @@ describe("silent degradation when Redis is not initialized", () => {
     await expect(setMagnet("session", "x:y", "v")).resolves.toBeUndefined();
     await expect(getMagnet("session", "x:y")).resolves.toBeNull();
     await expect(deleteMagnet("session", "x:y")).resolves.toBeUndefined();
-    await expect(scanMagnets("fridge:session:*")).resolves.toEqual([]);
+    await expect(
+      scanMagnets(`${FRIDGE_MAGNET_SCAN_PATTERN.slice(0, -1)}session:*`),
+    ).resolves.toEqual([]);
   });
 });

@@ -19,7 +19,7 @@ import { studioRoutes } from "./routes/studio.ts";
 import { terminalWsRoutes } from "./routes/terminal-ws.ts";
 import { TerminalSessionError } from "./terminal-session.ts";
 import { tasksRoutes } from "./routes/tasks.ts";
-import { fridgeRoutes } from "./routes/fridge.ts";
+import { fridgeMagnetRoutes } from "./routes/fridge-magnet.ts";
 
 /** API 路由（Eden Treaty 类型真源） */
 export const apiApp = new Elysia({ prefix: "/api" })
@@ -39,7 +39,7 @@ export const apiApp = new Elysia({ prefix: "/api" })
   .use(emailRoutes)
   .use(studioRoutes)
   .use(tasksRoutes)
-  .use(fridgeRoutes)
+  .use(fridgeMagnetRoutes)
   .use(terminalWsRoutes);
 
 export type App = typeof apiApp;

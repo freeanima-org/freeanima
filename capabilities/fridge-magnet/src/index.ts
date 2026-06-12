@@ -5,7 +5,10 @@ export {
   type FridgeStorePort,
 } from "./fridge-store-port.ts";
 export {
+  FRIDGE_MAGNET_KEY_PREFIX,
+  FRIDGE_MAGNET_SCAN_PATTERN,
   magnetRedisKey,
+  stripMagnetRedisKeyPrefix,
   randomBase62,
   clampTtl,
   setMagnet,
@@ -14,6 +17,7 @@ export {
   scanMagnets,
 } from "./store.ts";
 export {
+  FRIDGE_MAGNET_FENCE,
   formatFridgeMagnets,
   injectFridgeMagnets,
   stripFridgeMagnets,

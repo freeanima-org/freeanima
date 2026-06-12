@@ -3,8 +3,17 @@ import { getFridgeStore } from "./fridge-store-port.ts";
 
 const BASE62 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
+export const FRIDGE_MAGNET_KEY_PREFIX = "fridge-magnet:";
+export const FRIDGE_MAGNET_SCAN_PATTERN = `${FRIDGE_MAGNET_KEY_PREFIX}*`;
+
 export function magnetRedisKey(module: string, id: string): string {
-  return `fridge:${module}:${id}`;
+  return `${FRIDGE_MAGNET_KEY_PREFIX}${module}:${id}`;
+}
+
+export function stripMagnetRedisKeyPrefix(key: string): string {
+  return key.startsWith(FRIDGE_MAGNET_KEY_PREFIX)
+    ? key.slice(FRIDGE_MAGNET_KEY_PREFIX.length)
+    : key;
 }
 
 export function randomBase62(length: number): string {

@@ -13,7 +13,7 @@ describe("redis KV", () => {
     await expect(redisSet("k", "v", 60)).resolves.toBeUndefined();
     await expect(redisGet("k")).resolves.toBeNull();
     await expect(redisDel("k")).resolves.toBeUndefined();
-    await expect(redisScanEntries("fridge:*")).resolves.toEqual([]);
+    await expect(redisScanEntries("fridge-magnet:*")).resolves.toEqual([]);
   });
 
   it("setex/get/del/scan via Bun client", async () => {
@@ -40,12 +40,12 @@ describe("redis KV", () => {
       },
     } as unknown as RedisClient);
 
-    await redisSet("fridge:session:a:b", "hello", 60);
-    expect(await redisGet("fridge:session:a:b")).toBe("hello");
-    expect(await redisScanEntries("fridge:session:*")).toEqual([
-      { key: "fridge:session:a:b", value: "hello" },
+    await redisSet("fridge-magnet:session:a:b", "hello", 60);
+    expect(await redisGet("fridge-magnet:session:a:b")).toBe("hello");
+    expect(await redisScanEntries("fridge-magnet:session:*")).toEqual([
+      { key: "fridge-magnet:session:a:b", value: "hello" },
     ]);
-    await redisDel("fridge:session:a:b");
-    expect(await redisGet("fridge:session:a:b")).toBeNull();
+    await redisDel("fridge-magnet:session:a:b");
+    expect(await redisGet("fridge-magnet:session:a:b")).toBeNull();
   });
 });

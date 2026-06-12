@@ -1,17 +1,22 @@
 import type { SessionMessage } from "@freeanima/engine-db/domain";
 import type { FridgeMagnet } from "./types.ts";
 
-const FRIDGE_BLOCK_RE = /^```fridge\n[\s\S]*?\n```\n?/;
+export const FRIDGE_MAGNET_FENCE = "fridge-magnet";
+
+const FRIDGE_BLOCK_RE = /^```(?:fridge-magnet|fridge)\n[\s\S]*?\n```\n?/;
 
 /** Format fridge magnet list as Markdown code block */
 export function formatFridgeMagnets(magnets: FridgeMagnet[]): string {
-  const lines = magnets.map((m) => `${m.key}: ${m.value}`);
-  return "```fridge\n" + lines.join("\n") + "\n```\n";
+  const lines = magnets.filter((m) => m.value.trim().length > 0).map((m) => `${m.key}: ${m.value}`);
+  if (lines.length === 0) return "";
+  return "```" + FRIDGE_MAGNET_FENCE + "\n" + lines.join("\n") + "\n```\n";
 }
 
 /** Inject fridge magnet block before message content */
 export function injectFridgeMagnets(content: string, magnets: FridgeMagnet[]): string {
-  return formatFridgeMagnets(magnets) + content;
+  const block = formatFridgeMagnets(magnets);
+  if (!block) return content;
+  return block + content;
 }
 
 /** Strip fridge magnet block from message content (idempotent) */
