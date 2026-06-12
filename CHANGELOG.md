@@ -3,6 +3,77 @@
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 新版本节由 [Release Please](https://github.com/googleapis/release-please) 在 Release PR 合并时写入顶部。
 
+## [0.5.0](https://github.com/freeanima-org/freeanima/compare/v0.4.0...v0.5.0) (2026-06-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* **docs:** 重组文档为英文 SSOT 并拆分贡献者规则
+* 顶层包结构重构为八层工程模型
+
+### Features
+
+* **acp:** acp_task_status 查询工具 + Discord 5s 就地编辑 tail ([198f89a](https://github.com/freeanima-org/freeanima/commit/198f89ab6ea2fbb3766b03ef07909ddccbcc7d41))
+* **acp:** acp_tasks 异步委托 Phase A/B 与多通道 progress 投递 ([b267f03](https://github.com/freeanima-org/freeanima/commit/b267f03eada35fe6c289abd10680160649012975))
+* **acp:** 支持同 agent 多任务并行并统一以 acp_session_id 续聊 ([ca2f847](https://github.com/freeanima-org/freeanima/commit/ca2f847c995d28f92ed5e65d1aa4d45a456486b1))
+* **cli:** 新增 update 命令并将 memory 回填迁移至 WebUI ([9a29ed5](https://github.com/freeanima-org/freeanima/commit/9a29ed513a997563b0ac9c275fe3b75ca2e437c8))
+* **fridge-magnet:** 空内容不注入并统一全称命名 ([9ba42a6](https://github.com/freeanima-org/freeanima/commit/9ba42a605f89c0a4f61f7773dfb967ec2105d4b8))
+* **gateway:** 统一消息通道状态层与策略组合出站架构 ([b82a566](https://github.com/freeanima-org/freeanima/commit/b82a5660a3df5e36c91d4a04f1468f946a9ea6da))
+* **memory:** 完善语义记忆 pin 生命周期维护 ([e1875f0](https://github.com/freeanima-org/freeanima/commit/e1875f0a67af06b9f4fd453039cd57477e026947))
+* **prompt:** Hook 组装系统提示词并常驻 ToolSet 索引 ([37bcc36](https://github.com/freeanima-org/freeanima/commit/37bcc3618eff75c4f9fa8400fb07e628f6dd1260))
+* **tasks:** 优化冰箱贴摘要并在启动时同步 ([0047395](https://github.com/freeanima-org/freeanima/commit/0047395cf572cfd90539e45b7ba6a4c4f1b9e443))
+* **webui:** Parlor ACP progress dock + SSE 实时推送 ([c53eae3](https://github.com/freeanima-org/freeanima/commit/c53eae3da1cf8db2fe56022ab2c92338c8329245))
+* **webui:** 语义记忆页表格化并支持 sort_by 服务端排序 ([4fc8a76](https://github.com/freeanima-org/freeanima/commit/4fc8a767a0186d74a40822fb54ccb1414532e87c))
+
+
+### Bug Fixes
+
+* **acp:** 修复 ACP 结果未写入 conversation 表 ([3d32e8a](https://github.com/freeanima-org/freeanima/commit/3d32e8ac743931a0be2ff0345efc46da45f2ddf4))
+* **ci:** 修复 Quality 检查与 PR 审查意见 ([3d6af39](https://github.com/freeanima-org/freeanima/commit/3d6af39e9b2f0150a91b1d22517790ae9158ca6c))
+* **cli:** 修复 npm 包缺少 tiktoken_bg.wasm 导致启动失败 ([4880a59](https://github.com/freeanima-org/freeanima/commit/4880a592477aa48fd7940322fd59cdfd9d4b6c9f))
+* **docs:** add missing frontmatter title to docs/guide/service.md ([b8218ee](https://github.com/freeanima-org/freeanima/commit/b8218eef058a801a9467f55104395c43304fdc4e))
+* **gateway:** 修复 Discord 助手消息重复发送 ([9265d45](https://github.com/freeanima-org/freeanima/commit/9265d4542bdad85a0a7fa0b26c1c521c9f109ef4))
+* **memory:** 修复浅睡 acp_tasks 遗留格式与深睡活跃记忆计数 ([ad67666](https://github.com/freeanima-org/freeanima/commit/ad6766675d990030881eb56f8b697bf691b4708f))
+* **service:** 澄清 status 内存指标（RSS 物理内存 vs JSC heap） ([87e33bd](https://github.com/freeanima-org/freeanima/commit/87e33bdecb40214fef4cef69c04f41adf822ae71))
+* **webui:** resolveWebuiAppDir 兼容 monorepo 与发布包路径 ([dc203c9](https://github.com/freeanima-org/freeanima/commit/dc203c900d7c53c53090422f10755c0ade27c06a))
+* **webui:** 修正 Paraglide 相对路径以适配 platform 层目录 ([f28fdca](https://github.com/freeanima-org/freeanima/commit/f28fdca54895d44f05c369a387d390f796bc14ce))
+
+
+### Performance
+
+* **service:** 降低启动 RSS 并增强 status 可观测性与 CLI 布局 ([5971544](https://github.com/freeanima-org/freeanima/commit/5971544ec77b8d722050d21606d1ab2c3e707a3a))
+
+
+### Documentation
+
+* **agents:** 新增原则维护硬约束与分层分流规则 ([f8a726c](https://github.com/freeanima-org/freeanima/commit/f8a726cab89bb302a0b68f0d893ffd7ffd2938bb))
+* **guide:** 新增安装文档（npm CLI / Docker / 源码） ([bd22219](https://github.com/freeanima-org/freeanima/commit/bd22219fdaa10f788213ffb55caa8e6d8bfc3a5b))
+* 定义五层架构目标与迁移映射 ([833efab](https://github.com/freeanima-org/freeanima/commit/833efabb68bee2b146d4dcc4d28408e3bde19c6d))
+
+
+### Miscellaneous
+
+* add docs frontmatter title check to pre-commit and CI ([8979cd2](https://github.com/freeanima-org/freeanima/commit/8979cd2df8d50d20d9dbf06b4b8d5b930e908c37))
+* 五层架构收尾与文档路径更新 ([611d89a](https://github.com/freeanima-org/freeanima/commit/611d89a0b23ffbc57c430fd8ac6a0e00ca151c5c))
+* 清理 deprecated 别名并更新旧路径引用 ([d47c554](https://github.com/freeanima-org/freeanima/commit/d47c554e36d83730b4e12ae87f4bc55853408b61))
+
+
+### Refactoring
+
+* **capabilities:** 十一包合并为七包 ([68cf1da](https://github.com/freeanima-org/freeanima/commit/68cf1da858d240fae682e2f46bc61b69d58fd480))
+* **core:** storage 与 mechanism 十一包合并为 @freeanima/core ([f1840d0](https://github.com/freeanima-org/freeanima/commit/f1840d0afbb1f2327978edbc9ff19cb2306e29b6))
+* **db-pg:** 语义记忆 ORM 化并新增 Drizzle 查询规范 ([d63da67](https://github.com/freeanima-org/freeanima/commit/d63da6767af8263d0d55da38528698f80b8ad296))
+* **docs:** 重组文档为英文 SSOT 并拆分贡献者规则 ([47de79d](https://github.com/freeanima-org/freeanima/commit/47de79de0a42d54014ae84fa8b2d985d1985fcc5))
+* **i18n:** 删除 merge-webui-messages 并统一管线文档 ([18e4e3e](https://github.com/freeanima-org/freeanima/commit/18e4e3eb3ba8300f1abe165248636914eb45893d))
+* **kernel:** 合并五子包为单层单包 @freeanima/kernel ([762bb7c](https://github.com/freeanima-org/freeanima/commit/762bb7c3bca228da3b01a8b937086184b8008c5a))
+* **platform:** service 与 connectors 合并为 @freeanima/platform ([a5dbc4a](https://github.com/freeanima-org/freeanima/commit/a5dbc4a9b0591abb51e6f8c03915f9376408f389))
+* **runtime:** orchestration 五包合并为 @freeanima/runtime ([231f9cb](https://github.com/freeanima-org/freeanima/commit/231f9cb2655db6719af534b5afafe35c8f18e262))
+* **service-api:** 合并 RuntimeService 到 AnimaService 统一接口 ([8408199](https://github.com/freeanima-org/freeanima/commit/84081993fdc9e5d9ae3853a045565a110e60ff39))
+* **service:** 以 AppRuntime 替代 AnimaService 宽 Facade ([0800485](https://github.com/freeanima-org/freeanima/commit/0800485b1e73f9d48f5332807bc22bc3eed3aca0))
+* **service:** 拆分 boot 阶段并统一 RuntimeContext ([affee06](https://github.com/freeanima-org/freeanima/commit/affee06a2d6b63ba2fb933bf5c975fe3d1ba4561))
+* 架构瘦身——ConversationService、PgStore、runtime barrel 等 ([281205b](https://github.com/freeanima-org/freeanima/commit/281205b1901f4d0ca74dff04518ef158348855a1))
+* 顶层包结构重构为八层工程模型 ([661d767](https://github.com/freeanima-org/freeanima/commit/661d76763ce69ad52640caa235ddf9f03c653b4b))
+
 ## [0.4.0](https://github.com/freeanima-org/freeanima/compare/v0.3.11...v0.4.0) (2026-06-11)
 
 ### ⚠ BREAKING CHANGES
