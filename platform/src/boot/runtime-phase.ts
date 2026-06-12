@@ -34,6 +34,7 @@ export async function bootRuntimePhase(
   host: string,
   port: number,
   runtimeRef: { current: AppRuntime | null },
+  acpSessionUpdatedRef?: { handler: ((sid: string) => void) | null },
 ): Promise<RuntimePhaseResult> {
   const { kernel, engine, conversation, catalog, masks, mcp, acp } = phase;
 
@@ -57,6 +58,10 @@ export async function bootRuntimePhase(
   });
   runtime.setOnSessionUpdated(acpHandler);
   runtime.setEventBus(kernel.eventBus);
+
+  // Bridge ACP result delivery → acp callback handler so completed/awaiting_decision
+  // tasks trigger callback turns immediately, not just at next user-turn boundary.
+  if (acpSessionUpdatedRef) acpSessionUpdatedRef.handler = acpHandler;
 
   wireServicePorts(runtime.fullDeps());
   initRuntimeContext(runtime);
