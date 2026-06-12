@@ -15,9 +15,9 @@ import {
   resetRuntimeLoggerForTest,
 } from "@freeanima/storage-config";
 import { createLlmRuntime } from "@freeanima/mechanism-llm";
-import type { Logger } from "@freeanima/kernel-logging";
-import { createLogger } from "@freeanima/kernel-logging";
-import { createNullSink } from "@freeanima/kernel-logging/null";
+import type { Logger } from "@freeanima/kernel/logging";
+import { createLogger } from "@freeanima/kernel/logging";
+import { createNullSink } from "@freeanima/kernel/logging/null";
 
 export type { EngineCatalog } from "./catalog.ts";
 export { createEngineCatalog } from "./catalog.ts";

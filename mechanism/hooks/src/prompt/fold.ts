@@ -1,4 +1,4 @@
-import { walkHookChainOldestFirst, type HookStepLink } from "@freeanima/kernel-hooks";
+import { walkHookChainOldestFirst, type HookStepLink } from "@freeanima/kernel/hooks";
 import type { SystemPromptBuildEffect, SystemPromptSection } from "./hooks.ts";
 
 export function foldSystemPromptSections(

@@ -1,4 +1,4 @@
-import { createHook, type HookEffectOf } from "@freeanima/kernel-hooks";
+import { createHook, type HookEffectOf } from "@freeanima/kernel/hooks";
 import type { SessionMessage } from "@freeanima/storage-db/domain";
 import type { TurnControl } from "./hook-stream.ts";
 

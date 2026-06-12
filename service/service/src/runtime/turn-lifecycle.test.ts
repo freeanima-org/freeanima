@@ -8,7 +8,7 @@ import { Config } from "@freeanima/storage-config";
 import { createEngine, createEngineCatalog } from "@freeanima/orchestration-runtime";
 import { initLlmRuntime, registerLlmStackConfigurator } from "@freeanima/mechanism-llm";
 import { wireOpenAiCompatibleLlm } from "@freeanima/capabilities-llm-openai";
-import { createTestLogger } from "@freeanima/kernel-logging/testing";
+import { createTestLogger } from "@freeanima/kernel/logging/testing";
 import { createServiceKernel } from "@freeanima/service-bootstrap";
 import { parseYaml } from "@freeanima/service-config";
 import { animaConfigSchema } from "@freeanima/service-config/schemas/config";

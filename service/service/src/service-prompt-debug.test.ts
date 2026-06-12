@@ -16,7 +16,7 @@ import { createEngineCatalog } from "@freeanima/orchestration-runtime";
 import type { Engine } from "@freeanima/orchestration-runtime";
 import { Config } from "@freeanima/storage-config";
 import type { Kernel } from "@freeanima/kernel";
-import { createTestLogger } from "@freeanima/kernel-logging/testing";
+import { createTestLogger } from "@freeanima/kernel/logging/testing";
 import { nullPgRepositories } from "@freeanima/storage-repos";
 import { createServiceKernel } from "@freeanima/service-bootstrap";
 import { wireEnginePorts } from "./wire-engine-ports.ts";

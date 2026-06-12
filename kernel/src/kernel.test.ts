@@ -1,10 +1,10 @@
 import { describe, expect, it } from "bun:test";
-import { HookRegistry } from "@freeanima/kernel-hooks";
-import { EventBus } from "@freeanima/kernel-eventbus";
-import { NullEventQueue } from "@freeanima/kernel-eventbus/null";
-import type { Logger } from "@freeanima/kernel-logging";
-import { createMemorySink } from "@freeanima/kernel-logging/memory";
-import { createLogger } from "@freeanima/kernel-logging";
+import { HookRegistry } from "./hooks/index.ts";
+import { EventBus } from "./eventbus/index.ts";
+import { NullEventQueue } from "./eventbus/adapters/null.ts";
+import type { Logger } from "./logging/index.ts";
+import { createMemorySink } from "./logging/sinks/memory.ts";
+import { createLogger } from "./logging/index.ts";
 import { createKernel, Kernel } from "./index.ts";
 
 describe("Kernel", () => {

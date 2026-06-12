@@ -1,4 +1,4 @@
-import { QualifiedToken } from "@freeanima/kernel-token";
+import { QualifiedToken } from "../token/index.ts";
 
 // --- Result types ---
 

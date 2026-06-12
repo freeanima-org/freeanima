@@ -7,8 +7,8 @@
     "./prompt": "./src/prompt/index.ts"
   },
   "dependencies": {
-    "@freeanima/storage-db": "workspace:*",
-    "@freeanima/kernel-hooks": "workspace:*"
+    "@freeanima/kernel": "workspace:*",
+    "@freeanima/storage-db": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "catalog:"

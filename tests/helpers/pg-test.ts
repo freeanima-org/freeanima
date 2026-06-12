@@ -23,7 +23,7 @@ import {
 } from "@freeanima/orchestration-conversation";
 import type { PgRepositories } from "@freeanima/storage-repos";
 import { FileConfig, type Config } from "@freeanima/service-config";
-import { createTestLogger } from "@freeanima/kernel-logging/testing";
+import { createTestLogger } from "@freeanima/kernel/logging/testing";
 import type { SessionMessage, SessionMetaMessage } from "@freeanima/storage-db/domain";
 import { relations } from "@freeanima/storage-db/schema";
 import { drizzle } from "drizzle-orm/bun-sql/postgres";

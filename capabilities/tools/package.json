@@ -6,9 +6,9 @@
     "./*": "./src/*.ts"
   },
   "dependencies": {
+    "@freeanima/kernel": "workspace:*",
     "@freeanima/storage-db": "workspace:*",
     "@freeanima/mechanism-hooks": "workspace:*",
-    "@freeanima/kernel-hooks": "workspace:*",
     "@freeanima/storage-repos": "workspace:*",
     "@freeanima/mechanism-skill": "workspace:*",
     "@freeanima/mechanism-tool": "workspace:*",

@@ -2,7 +2,7 @@ import { describe, expect, it } from "bun:test";
 import { createLogger } from "./index.ts";
 import type { LogSink } from "./types.ts";
 
-describe("@freeanima/kernel-logging main entry", () => {
+describe("@freeanima/kernel/logging main entry", () => {
   it("exports only createLogger and types; sinks via subpath", () => {
     const records: unknown[] = [];
     const sink: LogSink = {

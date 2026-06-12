@@ -23,7 +23,7 @@ import { ProviderError } from "@freeanima/storage-provider-llm";
 import { getProfileHopModel } from "@freeanima/service-config";
 import { PROFILE_CHAT } from "@freeanima/storage-provider-llm";
 import { isInsufficientToolMessagesError } from "@freeanima/mechanism-llm";
-import type { HookRegistry } from "@freeanima/kernel-hooks";
+import type { HookRegistry } from "@freeanima/kernel/hooks";
 import { SessionManager } from "./session-manager.ts";
 
 /** beginTurn / retryTurn return value: [runtimeMsgs, functions, effectiveUserText] */

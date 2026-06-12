@@ -5,8 +5,8 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@freeanima/storage-config": "workspace:*",
-    "@freeanima/kernel-logging": "workspace:*"
+    "@freeanima/kernel": "workspace:*",
+    "@freeanima/storage-config": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "catalog:"

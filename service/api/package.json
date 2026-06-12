@@ -22,9 +22,9 @@
     "./stream-reply-state": "./src/stream-reply-state.ts"
   },
   "dependencies": {
+    "@freeanima/kernel": "workspace:*",
     "@freeanima/storage-config": "workspace:*",
     "@freeanima/orchestration-conversation": "workspace:*",
-    "@freeanima/kernel-logging": "workspace:*",
     "@freeanima/mechanism-llm": "workspace:*",
     "@freeanima/orchestration-loop": "workspace:*",
     "@freeanima/storage-repos": "workspace:*",

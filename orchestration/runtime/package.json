@@ -5,6 +5,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "@freeanima/kernel": "workspace:*",
     "@freeanima/mechanism-compress": "workspace:*",
     "@freeanima/orchestration-conversation": "workspace:*",
     "@freeanima/orchestration-session": "workspace:*",
@@ -16,7 +17,6 @@
     "@freeanima/storage-repos": "workspace:*",
     "@freeanima/storage-config": "workspace:*",
     "@freeanima/storage-db": "workspace:*",
-    "@freeanima/kernel-logging": "workspace:*",
     "@freeanima/mechanism-skill": "workspace:*",
     "@freeanima/storage-tokenizer": "workspace:*",
     "@freeanima/mechanism-tool": "workspace:*"

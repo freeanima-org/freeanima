@@ -1,11 +1,11 @@
 import { describe, expect, it } from "bun:test";
-import { createLogger } from "@freeanima/kernel-logging";
-import { createConsoleSink } from "@freeanima/kernel-logging/console";
-import { createFileSink } from "@freeanima/kernel-logging/file";
-import { createMemorySink } from "@freeanima/kernel-logging/memory";
-import { createNullSink } from "@freeanima/kernel-logging/null";
+import { createLogger } from "../logging/index.ts";
+import { createConsoleSink } from "../logging/sinks/console.ts";
+import { createFileSink } from "../logging/sinks/file.ts";
+import { createMemorySink } from "../logging/sinks/memory.ts";
+import { createNullSink } from "../logging/sinks/null.ts";
 
-describe("@freeanima/kernel-logging subpath exports", () => {
+describe("@freeanima/kernel/logging subpath exports", () => {
   it("sinks subpath composes", () => {
     const memory = createMemorySink();
     const logger = createLogger({

@@ -11,8 +11,6 @@
     "@freeanima/mechanism-llm": "workspace:*",
     "@freeanima/orchestration-loop": "workspace:*",
     "@freeanima/mechanism-tool": "workspace:*",
-    "@freeanima/kernel-eventbus": "workspace:*",
-    "@freeanima/kernel-logging": "workspace:*",
     "@freeanima/capabilities-clarify": "workspace:*",
     "@freeanima/capabilities-tasks": "workspace:*",
     "@freeanima/capabilities-llm-openai": "workspace:*",

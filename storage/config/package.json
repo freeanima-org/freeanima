@@ -11,7 +11,7 @@
     "./test-helpers/capability-injection": "./src/test-helpers/capability-injection.ts"
   },
   "dependencies": {
-    "@freeanima/kernel-logging": "workspace:*",
+    "@freeanima/kernel": "workspace:*",
     "zod": "catalog:"
   },
   "devDependencies": {

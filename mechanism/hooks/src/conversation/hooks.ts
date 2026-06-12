@@ -1,4 +1,4 @@
-import { createHook } from "@freeanima/kernel-hooks";
+import { createHook } from "@freeanima/kernel/hooks";
 
 export type MessageIncomingContext = {
   sessionId: string;

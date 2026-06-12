@@ -1,6 +1,6 @@
-import { createLogger, type LogLevel, type Logger } from "@freeanima/kernel-logging";
-import { createConsoleSink } from "@freeanima/kernel-logging/console";
-import { createFileSink } from "@freeanima/kernel-logging/file";
+import { createLogger, type LogLevel, type Logger } from "@freeanima/kernel/logging";
+import { createConsoleSink } from "@freeanima/kernel/logging/console";
+import { createFileSink } from "@freeanima/kernel/logging/file";
 import { PATHS } from "@freeanima/storage-config";
 
 let serviceLogger: Logger | null = null;

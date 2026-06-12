@@ -1,5 +1,5 @@
 import type { SessionMetaMessage } from "@freeanima/storage-db/domain";
-import { createHook } from "@freeanima/kernel-hooks";
+import { createHook } from "@freeanima/kernel/hooks";
 
 export type SystemPromptBuildContext = {
   functionNames: string[];
