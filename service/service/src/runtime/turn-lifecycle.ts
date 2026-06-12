@@ -210,12 +210,20 @@ export async function* yieldEngineStream(
   }
 }
 
+export type StreamTurnPrepareOpts = {
+  /** 快路径：append 用户消息后 yield accepted */
+  fast?: () => Promise<string>;
+  prepare: () => Promise<[Message[], string[], string]>;
+};
+
 export async function* runExclusiveStreamTurn(
   sessionId: string,
-  prepare: () => Promise<[Message[], string[], string]>,
+  prepareOpts: StreamTurnPrepareOpts | (() => Promise<[Message[], string[], string]>),
   host: StreamTurnHost,
   sessionManager: SessionManager,
 ): AsyncGenerator<StreamEvent> {
+  const opts: StreamTurnPrepareOpts =
+    typeof prepareOpts === "function" ? { prepare: prepareOpts } : prepareOpts;
   const buffer: StreamEvent[] = [];
   let closed = false;
   let wake: (() => void) | null = null;
@@ -225,7 +233,19 @@ export async function* runExclusiveStreamTurn(
   };
 
   const work = sessionManager.runExclusive(sessionId, async () => {
-    let [msgs, functions, effective] = await prepare();
+    let msgs: Message[];
+    let functions: string[];
+    let effective: string;
+    if (opts.fast) {
+      effective = await opts.fast();
+      buffer.push({ event: "accepted", data: {} });
+      signalReady();
+      const prepared = await opts.prepare();
+      msgs = prepared[0];
+      functions = prepared[1];
+    } else {
+      [msgs, functions, effective] = await opts.prepare();
+    }
     const cfg = getServiceContext().engine.config.data;
     const model = getProfileHopModel(cfg, PROFILE_CHAT);
     let hadError = false;

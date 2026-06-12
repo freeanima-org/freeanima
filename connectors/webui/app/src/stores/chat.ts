@@ -40,6 +40,9 @@ function handleStreamEvent(
   let nextText = streamText;
 
   switch (ev.event) {
+    case "accepted":
+      useChatStore.setState({ streaming: true });
+      break;
     case "token":
       nextText += ev.data.content || "";
       useChatStore.setState({ streamText: nextText });

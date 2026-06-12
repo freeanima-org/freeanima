@@ -236,9 +236,19 @@ function runTurnStream(
   message: string,
 ): AsyncGenerator<StreamEvent> {
   deps.runControl.preemptSessionEngine(sessionId);
+  let effectiveUserText = "";
   return runExclusiveStreamTurn(
     sessionId,
-    async () => conv().beginTurn(sessionId, message),
+    {
+      fast: async () => {
+        effectiveUserText = await conv().beginTurnFast(sessionId, message);
+        return effectiveUserText;
+      },
+      prepare: async () => {
+        const [runtimeMsgs, functions] = await conv().beginTurnPrepare(sessionId);
+        return [runtimeMsgs, functions, effectiveUserText];
+      },
+    },
     deps.streamHost,
     deps.sessionManager,
   );

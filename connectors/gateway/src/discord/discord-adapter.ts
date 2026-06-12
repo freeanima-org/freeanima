@@ -7,7 +7,6 @@ import {
   Partials,
   type TextBasedChannel,
 } from "discord.js";
-import type { StreamEvent } from "@freeanima/engine-loop";
 import {
   isEngineStreamError,
   isTransientNetworkError,
@@ -18,8 +17,8 @@ import { KeyedRateLimiter } from "@freeanima/engine-util/backoff";
 import { logComponent } from "@freeanima/service-logging";
 import type { AnimaService } from "@freeanima/service-api";
 import type { PlatformAdapter } from "../platforms.ts";
-import { formatClarifyForPlatform, parseClarifyStreamEvent } from "../clarify/index.ts";
 import { registerDiscordCronDeliverer, unregisterDiscordCronDeliverer } from "../cron-deliver.ts";
+import { streamReplyToChannel } from "./discord-channel.ts";
 import {
   extractOrigin,
   mergeDiscordConfig,
@@ -38,23 +37,14 @@ import {
   syncDiscordSlashCommands,
 } from "./discord-slash.ts";
 
+import { withDiscordRetry } from "./discord-retry.ts";
 import { chunkText } from "../chunk-text.ts";
-import {
-  deliverDiscordFinalContent,
-  tryDiscordInterimEdit,
-  withDiscordRetry,
-} from "./discord-retry.ts";
-import { ToolRoundCollector } from "../stream-tool-format.ts";
 
 const DISCORD_MAX_LEN = 2000;
-/** Final answer edit throttle interval */
-export const DISCORD_ANSWER_EDIT_MS = 3000;
-/** Final answer segment threshold */
-export const DISCORD_ANSWER_SPLIT_AT = 1000;
 /** Discord login failure auto-retry interval */
 export const DISCORD_LOGIN_RETRY_MS = 5 * 60 * 1000;
-/** Placeholder at stream reply start */
-const DISCORD_STREAM_PLACEHOLDER = "⏳ Thinking…";
+
+export { DISCORD_ANSWER_EDIT_MS, DISCORD_ANSWER_SPLIT_AT } from "./discord-channel.ts";
 
 function splitDiscordMessage(text: string, limit = DISCORD_MAX_LEN): string[] {
   return chunkText(text, limit, { maxChunkLength: DISCORD_MAX_LEN });
@@ -93,189 +83,7 @@ async function resolveReplyToBot(message: Message, botUserId: string): Promise<b
   }
 }
 
-/** Discord gateway: each tool round separate message, final answer separate (3s throttled edit). */
-export async function streamReplyToChannel(
-  channel: TextBasedChannel,
-  events: AsyncIterable<StreamEvent>,
-): Promise<void> {
-  if (!("send" in channel) || typeof channel.send !== "function") return;
-  const channelSend = channel.send.bind(channel) as (content: string) => Promise<Message>;
-
-  const toolRound = new ToolRoundCollector();
-  let answerBuffer = "";
-  let answerMsg: Message | null = null;
-  let throttleTimer: ReturnType<typeof setTimeout> | null = null;
-  let editTail: Promise<void> = Promise.resolve();
-
-  const discordEmptyFallback = "\u3164";
-
-  const clearThrottleTimer = (): void => {
-    if (throttleTimer !== null) {
-      clearTimeout(throttleTimer);
-      throttleTimer = null;
-    }
-  };
-
-  /** Finalize current answer segment so later tool sends do not insert after placeholder */
-  const commitAnswerSegment = async (): Promise<void> => {
-    clearThrottleTimer();
-    await editTail;
-    if (!answerMsg) return;
-
-    const trimmed = answerBuffer.trim();
-    if (trimmed) {
-      const content = trimmed.length <= DISCORD_MAX_LEN ? trimmed : trimmed.slice(-DISCORD_MAX_LEN);
-      await deliverDiscordFinalContent(
-        async () => {
-          await answerMsg!.edit({ content });
-        },
-        async () => {
-          await channelSend(content);
-        },
-        { phase: "commit-segment" },
-      );
-    } else {
-      await tryDiscordInterimEdit(
-        async () => {
-          await answerMsg!.edit({ content: discordEmptyFallback });
-        },
-        { phase: "commit-empty" },
-      );
-    }
-    answerMsg = null;
-    answerBuffer = "";
-  };
-
-  const sendChunked = async (text: string): Promise<void> => {
-    for (const chunk of splitDiscordMessage(text)) {
-      await withDiscordRetry(async (): Promise<void> => {
-        await channelSend(chunk);
-      });
-    }
-  };
-
-  const flushToolRound = async (): Promise<void> => {
-    const text = toolRound.take();
-    if (!text) return;
-    await commitAnswerSegment();
-    await sendChunked(text);
-  };
-
-  const ensureAnswerMsg = async (): Promise<Message> => {
-    if (answerMsg) return answerMsg;
-    answerMsg = await withDiscordRetry(async (): Promise<Message> => {
-      return await channelSend(DISCORD_STREAM_PLACEHOLDER);
-    });
-    return answerMsg;
-  };
-
-  const flushAnswerEdit = (): void => {
-    editTail = editTail.then(async () => {
-      if (!answerMsg) return;
-      const trimmed = answerBuffer.trim();
-      const content =
-        trimmed.length > 0
-          ? trimmed.length <= DISCORD_MAX_LEN
-            ? trimmed
-            : trimmed.slice(-DISCORD_MAX_LEN)
-          : DISCORD_STREAM_PLACEHOLDER;
-      await tryDiscordInterimEdit(
-        async () => {
-          await answerMsg!.edit({ content });
-        },
-        { content_len: content.length },
-      );
-    });
-  };
-
-  const scheduleAnswerEdit = (): void => {
-    clearThrottleTimer();
-    throttleTimer = setTimeout(() => {
-      throttleTimer = null;
-      flushAnswerEdit();
-    }, DISCORD_ANSWER_EDIT_MS);
-  };
-
-  const finalizeDiscordStream = async (): Promise<void> => {
-    clearThrottleTimer();
-    await editTail;
-    await flushToolRound();
-
-    const trimmed = answerBuffer.trim();
-    if (!trimmed) return;
-
-    const chunks = splitDiscordMessage(trimmed, DISCORD_ANSWER_SPLIT_AT);
-
-    if (!answerMsg) {
-      for (const chunk of chunks) {
-        await withDiscordRetry(async (): Promise<void> => {
-          await channelSend(chunk);
-        });
-      }
-      return;
-    }
-
-    const first = chunks[0] ?? discordEmptyFallback;
-    await deliverDiscordFinalContent(
-      async () => {
-        await answerMsg!.edit({ content: first });
-      },
-      async () => {
-        await channelSend(first);
-      },
-      { chunk: 0, total: chunks.length },
-    );
-    for (let i = 1; i < chunks.length; i++) {
-      const chunk = chunks[i]!;
-      await withDiscordRetry(async (): Promise<void> => {
-        await channelSend(chunk);
-      });
-    }
-  };
-
-  for await (const event of events) {
-    switch (event.event) {
-      case "token":
-        await flushToolRound();
-        answerBuffer += event.data.content;
-        await ensureAnswerMsg();
-        scheduleAnswerEdit();
-        break;
-      case "content_replace":
-        await flushToolRound();
-        answerBuffer = event.data.content;
-        await ensureAnswerMsg();
-        flushAnswerEdit();
-        break;
-      case "awaiting_clarify": {
-        await flushToolRound();
-        const payload = parseClarifyStreamEvent(event.data);
-        if (payload) {
-          await sendChunked(formatClarifyForPlatform("discord", payload));
-        }
-        break;
-      }
-      case "tool_begin":
-        clearThrottleTimer();
-        toolRound.addBegin(event.data.name, event.data.args);
-        break;
-      case "tool_result":
-        toolRound.addResult(event.data.name, event.data.content);
-        break;
-      case "tool_error":
-        toolRound.addError(event.data.content);
-        break;
-      case "error":
-        clearThrottleTimer();
-        throw new Error(event.data.error);
-      case "done":
-        await finalizeDiscordStream();
-        return;
-    }
-  }
-
-  await finalizeDiscordStream();
-}
+export { streamReplyToChannel } from "./discord-channel.ts";
 
 async function finalizeUserReaction(
   message: Message,

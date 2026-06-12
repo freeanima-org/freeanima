@@ -7,7 +7,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
 
 import type { PlatformAdapter } from "../platforms.ts";
-import { streamReplyToWeixin } from "./stream-reply-weixin.ts";
+import { streamReplyToWeixin } from "./weixin-channel.ts";
 import { registerWeixinCronDeliverer, unregisterWeixinCronDeliverer } from "../cron-deliver.ts";
 import {
   MAX_CONSECUTIVE_FAILURES,

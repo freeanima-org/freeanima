@@ -3,6 +3,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./stream-state": "./src/stream-state/index.ts",
+    "./stream-strategies": "./src/stream-strategies/index.ts",
     "./schemas/weixin": "./src/schemas/weixin.ts"
   },
   "scripts": {

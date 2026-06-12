@@ -228,6 +228,8 @@ export async function run(messages: SessionMessage[], opts?: EngineOpts): Promis
   const parts: string[] = [];
   for await (const ev of runStream(messages, opts)) {
     switch (ev.event) {
+      case "accepted":
+        break;
       case "token":
         parts.push(ev.data.content);
         break;
@@ -258,6 +260,7 @@ export async function run(messages: SessionMessage[], opts?: EngineOpts): Promis
 export type StreamDoneData = { reason?: "awaiting_clarify" | "interrupted" };
 
 export type StreamEvent =
+  | { event: "accepted"; data: Record<string, never> }
   | { event: "token"; data: { content: string } }
   | { event: "content_replace"; data: { content: string } }
   | { event: "tool_begin"; data: { name: string; args: Record<string, unknown> } }

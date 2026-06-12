@@ -3,6 +3,8 @@ import type { StreamApiEvent } from "@freeanima/connectors-webui/api";
 
 export function mapStreamEventToApi(ev: StreamEvent): StreamApiEvent {
   switch (ev.event) {
+    case "accepted":
+      return { event: "accepted", data: {} };
     case "token":
       return { event: "token", data: { content: ev.data.content } };
     case "content_replace":

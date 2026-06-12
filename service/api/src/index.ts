@@ -53,3 +53,11 @@ export {
   type StudioSearchHit,
 } from "./studio-port.ts";
 export { PARLOR_PLATFORM, WEBUI_BASE_PATH } from "./constants.ts";
+export type {
+  AnswerSegment,
+  ApplyStreamEventResult,
+  StreamEffect,
+  StreamReplyPhase,
+  StreamReplyState,
+  StreamReplyTerminal,
+} from "./stream-reply-state.ts";

@@ -8,6 +8,8 @@ import {
   appendUserTurn,
   assertSessionPlatform,
   beginTurn,
+  beginTurnFast,
+  beginTurnPrepare,
   buildRuntimeMessages,
   cleanupDebugSessions,
   countMessages,
@@ -89,6 +91,8 @@ export class ConversationService {
   readonly maybeApplyEmergencyCompression;
   readonly buildRuntimeMessages;
   readonly beginTurn;
+  readonly beginTurnFast;
+  readonly beginTurnPrepare;
   readonly finishTurn;
   readonly updateSessionMeta;
   readonly setSessionTitle;
@@ -134,6 +138,8 @@ export class ConversationService {
     this.maybeApplyEmergencyCompression = bindRepos(repos, maybeApplyEmergencyCompression);
     this.buildRuntimeMessages = bindReposAndTools(repos, tools, buildRuntimeMessages);
     this.beginTurn = bindReposAndTools(repos, tools, beginTurn);
+    this.beginTurnFast = bindRepos(repos, beginTurnFast);
+    this.beginTurnPrepare = bindReposAndTools(repos, tools, beginTurnPrepare);
     this.finishTurn = bindReposAndTools(repos, tools, finishTurn);
     this.updateSessionMeta = bindReposAndTools(repos, tools, updateSessionMeta);
     this.setSessionTitle = bindRepos(repos, setSessionTitle);
