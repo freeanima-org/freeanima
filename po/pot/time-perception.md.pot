@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-12 11:40+0800\n"
+"POT-Creation-Date: 2026-06-12 11:54+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,47 +18,26 @@ msgstr ""
 
 #. type: Plain text
 #: docs/README.md:1 docs/concepts/architecture.md:1
-#: docs/concepts/compression.md:1 docs/concepts/compression.md:11
-#: docs/concepts/compression.md:22 docs/concepts/compression.md:49
-#: docs/concepts/compression.md:96 docs/concepts/compression.md:118
-#: docs/concepts/compression.md:156 docs/concepts/compression.md:180
-#: docs/concepts/compression.md:228 docs/concepts/compression.md:262
-#: docs/concepts/compression.md:275 docs/concepts/compression.md:327
-#: docs/concepts/compression.md:348 docs/concepts/compression.md:368
-#: docs/concepts/compression.md:384 docs/concepts/identity.md:1
+#: docs/concepts/compression.md:1 docs/concepts/identity.md:1
 #: docs/concepts/identity.md:10 docs/concepts/identity.md:28
 #: docs/concepts/identity.md:45 docs/concepts/identity.md:55
-#: docs/concepts/layer-structure-rfc.md:1 docs/concepts/memory.md:1
-#: docs/concepts/memory.md:17 docs/concepts/memory.md:53
-#: docs/concepts/memory.md:160 docs/concepts/memory.md:191
-#: docs/concepts/memory.md:211 docs/concepts/memory.md:232
-#: docs/concepts/memory.md:249 docs/concepts/recall-flow.md:1
-#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:31
-#: docs/concepts/self-layer.md:53 docs/concepts/self-layer.md:64
-#: docs/concepts/self-layer.md:78 docs/concepts/self-layer.md:94
-#: docs/concepts/self-layer.md:105 docs/concepts/sleep.md:1
+#: docs/concepts/memory.md:1 docs/concepts/memory.md:17
+#: docs/concepts/memory.md:53 docs/concepts/memory.md:122
+#: docs/concepts/memory.md:133 docs/concepts/memory.md:150
+#: docs/concepts/recall-flow.md:1 docs/concepts/self-layer.md:1
+#: docs/concepts/self-layer.md:30 docs/concepts/self-layer.md:52
+#: docs/concepts/self-layer.md:66 docs/concepts/self-layer.md:80
+#: docs/concepts/self-layer.md:91 docs/concepts/sleep.md:1
 #: docs/concepts/time-perception.md:1 docs/features/pair-programming-v1.md:1
-#: docs/features/pair-programming-v1.md:321 docs/guide/database.md:1
-#: docs/guide/database.md:33 docs/guide/security.md:1
-#: docs/guide/versioning.md:1 docs/tools/execute-code-runtimes.md:1
+#: docs/guide/database.md:1 docs/guide/security.md:1
+#: docs/tools/execute-code-runtimes.md:1
 #, no-wrap
 msgid "---\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/compression.md:14 docs/concepts/sleep.md:14
-#: docs/concepts/time-perception.md:22 docs/features/pair-programming-v1.md:11
+#: docs/concepts/sleep.md:14 docs/concepts/time-perception.md:22
 msgid "## Design Principles"
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/recall-flow.md:122 docs/concepts/time-perception.md:54
-msgid "### Example"
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/self-layer.md:11 docs/concepts/time-perception.md:30
-msgid "## Architectural Position"
 msgstr ""
 
 #. type: Plain text
@@ -77,9 +56,8 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/time-perception.md:8
 msgid ""
-"> **✅ Core implemented** — [`orchestration/conversation/src/time-"
-"perception.ts`](../../orchestration/conversation/src/time-perception.ts), "
-"`buildRuntimeMessages` calls `injectTimePrefixes`."
+"> **✅ Core implemented** — user messages receive time prefixes before LLM "
+"inference."
 msgstr ""
 
 #. type: Plain text
@@ -138,112 +116,92 @@ msgstr ""
 #. type: Bullet: '2. '
 #: docs/concepts/time-perception.md:28
 msgid ""
-"**Give it a watch.** Humans also rely on external tools (night watch, "
-"clocks, watches, phones) to quantify time. Digital life needs the same."
+"**Give it a watch.** Humans also rely on external tools (clocks, phones) to "
+"quantify time. Digital life needs the same."
 msgstr ""
 
 #. type: Bullet: '3. '
 #: docs/concepts/time-perception.md:28
 msgid ""
 "**Prefix every user message with time.** All user messages with valid "
-"`timestamp` get injection; no interval omission."
+"timestamp get injection; no interval omission."
 msgstr ""
 
 #. type: Bullet: '4. '
 #: docs/concepts/time-perception.md:28
 msgid ""
 "**Do not pollute persisted data.** Time info injected only into inference "
-"context, does not modify PG `messages` payload."
+"context, does not modify stored messages."
 msgstr ""
 
 #. type: Bullet: '5. '
 #: docs/concepts/time-perception.md:28
 msgid ""
 "**Do not break cache.** Injected timestamps are fixed historical values, not "
-"current call time—same message list produces same prefixed version, KV cache "
-"can hit."
+"current call time."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/time-perception.md:40
-#, no-wrap
-msgid ""
-"```\n"
-"PG messages (payload includes timestamp)\n"
-"    ↓\n"
-"Compression layer (buildRuntimeMessages)\n"
-"    ↓\n"
-"Time perception module ← injectTimePrefixes\n"
-"    ↓\n"
-"LLM inference\n"
-"```\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/time-perception.md:42
-msgid ""
-"Time perception sits after compression layer, before LLM inference. Reads "
-"message list, inserts time prefix before each user message content."
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/time-perception.md:44
+#: docs/concepts/time-perception.md:30
 msgid "## Strategy"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/time-perception.md:46
+#: docs/concepts/time-perception.md:32
 msgid "### Basic Rules"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/time-perception.md:52
+#: docs/concepts/time-perception.md:38
 msgid ""
 "Before each **user** message with valid `timestamp`, insert dedicated line: "
 "`time: YYYY-MM-DDTHH:mm`"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/time-perception.md:52
-msgid ""
-"Timezone: **Asia/Shanghai (CST, +08:00)**, consistent with `formatCstIso` "
-"convention"
+#: docs/concepts/time-perception.md:38
+msgid "Timezone: **Asia/Shanghai (CST, +08:00)**"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/time-perception.md:52
+#: docs/concepts/time-perception.md:38
 msgid "Newline then original content"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/time-perception.md:52
+#: docs/concepts/time-perception.md:38
 msgid "No `timestamp` or unparseable timestamp → skip, keep original content"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/time-perception.md:52
+#: docs/concepts/time-perception.md:38
 msgid "assistant / tool / system messages not injected"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/time-perception.md:56
+#: docs/concepts/time-perception.md:40
+msgid "### Example"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/time-perception.md:42
 msgid "Original message list:"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/time-perception.md:64
+#: docs/concepts/time-perception.md:50
 msgid ""
 "``` user: good morning assistant: morning ☀️ user: going to eat assistant: "
 "what are you having user: going to eat ```"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/time-perception.md:66
+#: docs/concepts/time-perception.md:52
 msgid "After time perception (context sent to LLM):"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/time-perception.md:77
+#: docs/concepts/time-perception.md:63
 msgid ""
 "``` user: time: 2026-05-20T08:02 good morning assistant: morning ☀️ user: "
 "time: 2026-05-20T12:15 going to eat assistant: what are you having user: "
@@ -251,43 +209,29 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/time-perception.md:79
+#: docs/concepts/time-perception.md:65
 msgid ""
 "Agent reads two \"going to eat\"—one at 12:15, one at 19:30—automatically "
 "distinguishing lunch and dinner."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/time-perception.md:81
+#: docs/concepts/time-perception.md:67
 msgid "### Compression Scenario"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/time-perception.md:83
-msgid ""
-"Time anchors in compression summary not yet injected; see [Issue #5](https://"
-"github.com/freeanima-org/freeanima/issues/5)."
+#: docs/concepts/time-perception.md:69
+msgid "Time anchors in compression summary not yet injected; see Issue #5."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/time-perception.md:85
-msgid "Planned: compressed summary should also have time range marker:"
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/time-perception.md:90
-msgid ""
-"``` [Summary of conversation during 2026-05-20 08:00→12:00] (summary "
-"content...)  ```"
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/time-perception.md:92
+#: docs/concepts/time-perception.md:71
 msgid "## Edge Cases"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/time-perception.md:101
+#: docs/concepts/time-perception.md:80
 #, no-wrap
 msgid ""
 "| Scenario                           | Handling                                                                 |\n"
@@ -301,61 +245,36 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/time-perception.md:103
+#: docs/concepts/time-perception.md:82
 msgid "## Out of Scope"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/time-perception.md:109
+#: docs/concepts/time-perception.md:87
 msgid ""
 "❌ Do not compute and inject elapsed duration (e.g. \"8 hours passed\")—"
 "Agent can derive from timestamps"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/time-perception.md:109
-msgid "❌ Do not modify persisted PG messages"
+#: docs/concepts/time-perception.md:87
+msgid "❌ Do not modify persisted messages"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/time-perception.md:109
+#: docs/concepts/time-perception.md:87
 msgid "❌ Do not show time prefix in WebUI"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/time-perception.md:109
+#: docs/concepts/time-perception.md:87
 msgid ""
 "❌ Do not give built-in time-passing sense—that is biological, not simulated"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/time-perception.md:109
+#: docs/concepts/time-perception.md:87
 msgid ""
 "❌ Do not inject \"current time\" in system prompt (main conversation relies "
 "on per-user `time` lines)"
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/time-perception.md:111
-msgid "## Implementation Notes (✅)"
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/time-perception.md:113
-msgid ""
-"Implemented in [`orchestration/conversation/src/time-perception.ts`](../../"
-"orchestration/conversation/src/time-perception.ts):"
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/time-perception.md:117
-msgid "``` function injectTimePrefixes(messages: Message[]): Message[] ```"
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/time-perception.md:120
-msgid ""
-"Input: message list (each with `role`, `content`, `timestamp`)  Output: "
-"message list with modified content (time prefix injected)  Does not modify "
-"original session data."
 msgstr ""

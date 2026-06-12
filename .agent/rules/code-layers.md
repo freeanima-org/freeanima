@@ -97,3 +97,15 @@ After `FileConfig.open()` + `createServiceLogger()`:
 - `ConversationService` at composition root; runtime via `getServiceContext().conversation` or explicit params
 - `SessionStorePort` via `registerMemoryPipeline({ sessionStore })`
 - Tool context: `runWithToolContext(sessionId, fn, { repos, tools })` + `getToolRepos()` / `getToolRegistry()` — [`orchestration/loop/src/tool-context.ts`](../../orchestration/loop/src/tool-context.ts)
+
+## Historical package rename (v3.1)
+
+| Old prefix                       | New prefix                                      |
+| -------------------------------- | ----------------------------------------------- |
+| `engine-db` etc. foundation      | `storage-*`                                     |
+| `engine-tool` etc. mechanism     | `mechanism-*`                                   |
+| `engine-loop` etc. orchestration | `orchestration-*`                               |
+| `life-self` / `life-memory`      | `capabilities-identity` / `capabilities-memory` |
+| `connectors-commands`            | `service-commands`                              |
+
+`life/` dissolved into `capabilities/identity` and `capabilities/memory`. Estate tools: `capabilities/estate`; email I/O: `connectors/email`.

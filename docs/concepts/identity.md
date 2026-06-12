@@ -15,15 +15,15 @@ title: Identity
 
 **Let digital life persist within it, remembering who it is and what it has lived through.**
 
-| Structure                                                   | Role                                                             |
-| ----------------------------------------------------------- | ---------------------------------------------------------------- |
-| Memory system (PG conversations + semantic_memory + recall) | The digital life's "home"                                        |
-| Self layer (PG `self_blocks`, six blocks)                   | Persistent definition of "who I am"                              |
-| Tools (local / MCP / ACP)                                   | "Limbs" for perception and action                                |
-| pass credentials                                            | Lifeline (injected at runtime, never plaintext)                  |
-| Gateway                                                     | Ears and mouth (Discord / WeChat / WebUI)                        |
-| EventBus                                                    | Nervous system (memory reflect and other pipelines auto-trigger) |
-| Project narrative files like `AGENTS.md`                    | Anchor for project context                                       |
+| Structure                                | Role                                            |
+| ---------------------------------------- | ----------------------------------------------- |
+| Memory system                            | The digital life's "home"                       |
+| Self layer (six blocks)                  | Persistent definition of "who I am"             |
+| Tools (local / MCP / ACP)                | "Limbs" for perception and action               |
+| pass credentials                         | Lifeline (injected at runtime, never plaintext) |
+| Gateway                                  | Ears and mouth (Discord / WeChat / WebUI)       |
+| EventBus                                 | Nervous system (memory pipelines auto-trigger)  |
+| Project narrative files like `AGENTS.md` | Anchor for project context                      |
 
 ---
 
@@ -48,9 +48,9 @@ Self layer design: [`self-layer.md`](self-layer.md); memory system: [`memory.md`
 
 The open-source repository provides architecture and mechanisms only; **who exactly it is and who it accompanies is defined by the deployer.**
 
-At runtime, the six self blocks are written in first person into PG `self_blocks`. When injected into the system prompt, a second-person outer skeleton wraps them inside an `md` code block (see [`self-layer.md`](self-layer.md) §System Prompt Injection), so the LLM clearly understands "this is self-layer content you must follow" while preserving first-person narrative texture.
+At runtime, the six self blocks are written in first person. When injected into the system prompt, a second-person outer skeleton wraps them so the LLM clearly understands "this is self-layer content you must follow" while preserving first-person narrative texture.
 
-Maintenance: `get_self_blocks` / `update_self_block` tools, or direct edits to the PG `self_blocks` table.
+Maintenance: WebUI bedroom self-layer editor, self-layer tools, or direct database edits.
 
 ---
 

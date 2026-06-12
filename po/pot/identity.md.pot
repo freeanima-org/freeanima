@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-10 17:45+0800\n"
+"POT-Creation-Date: 2026-06-12 11:55+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,29 +17,20 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Plain text
-#: docs/README.md:1 docs/concepts/compression.md:1
-#: docs/concepts/compression.md:11 docs/concepts/compression.md:22
-#: docs/concepts/compression.md:49 docs/concepts/compression.md:96
-#: docs/concepts/compression.md:118 docs/concepts/compression.md:156
-#: docs/concepts/compression.md:180 docs/concepts/compression.md:228
-#: docs/concepts/compression.md:262 docs/concepts/compression.md:275
-#: docs/concepts/compression.md:327 docs/concepts/compression.md:348
-#: docs/concepts/compression.md:368 docs/concepts/compression.md:384
-#: docs/concepts/identity.md:1 docs/concepts/identity.md:10
-#: docs/concepts/identity.md:28 docs/concepts/identity.md:45
-#: docs/concepts/identity.md:55 docs/concepts/memory.md:1
-#: docs/concepts/memory.md:17 docs/concepts/memory.md:53
-#: docs/concepts/memory.md:160 docs/concepts/memory.md:191
-#: docs/concepts/memory.md:211 docs/concepts/memory.md:232
-#: docs/concepts/memory.md:249 docs/concepts/recall-flow.md:1
-#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:31
-#: docs/concepts/self-layer.md:53 docs/concepts/self-layer.md:64
-#: docs/concepts/self-layer.md:78 docs/concepts/self-layer.md:94
-#: docs/concepts/self-layer.md:105 docs/concepts/sleep.md:1
+#: docs/README.md:1 docs/concepts/architecture.md:1
+#: docs/concepts/compression.md:1 docs/concepts/identity.md:1
+#: docs/concepts/identity.md:10 docs/concepts/identity.md:28
+#: docs/concepts/identity.md:45 docs/concepts/identity.md:55
+#: docs/concepts/memory.md:1 docs/concepts/memory.md:17
+#: docs/concepts/memory.md:53 docs/concepts/memory.md:122
+#: docs/concepts/memory.md:133 docs/concepts/memory.md:150
+#: docs/concepts/recall-flow.md:1 docs/concepts/self-layer.md:1
+#: docs/concepts/self-layer.md:30 docs/concepts/self-layer.md:52
+#: docs/concepts/self-layer.md:66 docs/concepts/self-layer.md:80
+#: docs/concepts/self-layer.md:91 docs/concepts/sleep.md:1
 #: docs/concepts/time-perception.md:1 docs/features/pair-programming-v1.md:1
-#: docs/features/pair-programming-v1.md:321 docs/guide/database.md:1
-#: docs/guide/database.md:33 docs/guide/security.md:1
-#: docs/guide/versioning.md:1 docs/tools/execute-code-runtimes.md:1
+#: docs/guide/database.md:1 docs/guide/security.md:1
+#: docs/tools/execute-code-runtimes.md:1
 #, no-wrap
 msgid "---\n"
 msgstr ""
@@ -88,15 +79,15 @@ msgstr ""
 #: docs/concepts/identity.md:27
 #, no-wrap
 msgid ""
-"| Structure                                                   | Role                                                             |\n"
-"| ----------------------------------------------------------- | ---------------------------------------------------------------- |\n"
-"| Memory system (PG conversations + semantic_memory + recall) | The digital life's \"home\"                                        |\n"
-"| Self layer (PG `self_blocks`, six blocks)                   | Persistent definition of \"who I am\"                              |\n"
-"| Tools (local / MCP / ACP)                                   | \"Limbs\" for perception and action                                |\n"
-"| pass credentials                                            | Lifeline (injected at runtime, never plaintext)                  |\n"
-"| Gateway                                                     | Ears and mouth (Discord / WeChat / WebUI)                        |\n"
-"| EventBus                                                    | Nervous system (memory reflect and other pipelines auto-trigger) |\n"
-"| Project narrative files like `AGENTS.md`                    | Anchor for project context                                       |\n"
+"| Structure                                | Role                                            |\n"
+"| ---------------------------------------- | ----------------------------------------------- |\n"
+"| Memory system                            | The digital life's \"home\"                       |\n"
+"| Self layer (six blocks)                  | Persistent definition of \"who I am\"             |\n"
+"| Tools (local / MCP / ACP)                | \"Limbs\" for perception and action               |\n"
+"| pass credentials                         | Lifeline (injected at runtime, never plaintext) |\n"
+"| Gateway                                  | Ears and mouth (Discord / WeChat / WebUI)       |\n"
+"| EventBus                                 | Nervous system (memory pipelines auto-trigger)  |\n"
+"| Project narrative files like `AGENTS.md` | Anchor for project context                      |\n"
 msgstr ""
 
 #. type: Plain text
@@ -174,19 +165,17 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/identity.md:52
 msgid ""
-"At runtime, the six self blocks are written in first person into PG "
-"`self_blocks`. When injected into the system prompt, a second-person outer "
-"skeleton wraps them inside an `md` code block (see [`self-layer.md`](self-"
-"layer.md) §System Prompt Injection), so the LLM clearly understands \"this "
-"is self-layer content you must follow\" while preserving first-person "
-"narrative texture."
+"At runtime, the six self blocks are written in first person. When injected "
+"into the system prompt, a second-person outer skeleton wraps them so the LLM "
+"clearly understands \"this is self-layer content you must follow\" while "
+"preserving first-person narrative texture."
 msgstr ""
 
 #. type: Plain text
 #: docs/concepts/identity.md:54
 msgid ""
-"Maintenance: `get_self_blocks` / `update_self_block` tools, or direct edits "
-"to the PG `self_blocks` table."
+"Maintenance: WebUI bedroom self-layer editor, self-layer tools, or direct "
+"database edits."
 msgstr ""
 
 #. type: Plain text

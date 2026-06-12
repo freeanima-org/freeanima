@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-10 17:45+0800\n"
+"POT-Creation-Date: 2026-06-12 11:55+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,31 +17,27 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Plain text
-#: docs/README.md:1 docs/concepts/compression.md:1
-#: docs/concepts/compression.md:11 docs/concepts/compression.md:22
-#: docs/concepts/compression.md:49 docs/concepts/compression.md:96
-#: docs/concepts/compression.md:118 docs/concepts/compression.md:156
-#: docs/concepts/compression.md:180 docs/concepts/compression.md:228
-#: docs/concepts/compression.md:262 docs/concepts/compression.md:275
-#: docs/concepts/compression.md:327 docs/concepts/compression.md:348
-#: docs/concepts/compression.md:368 docs/concepts/compression.md:384
-#: docs/concepts/identity.md:1 docs/concepts/identity.md:10
-#: docs/concepts/identity.md:28 docs/concepts/identity.md:45
-#: docs/concepts/identity.md:55 docs/concepts/memory.md:1
-#: docs/concepts/memory.md:17 docs/concepts/memory.md:53
-#: docs/concepts/memory.md:160 docs/concepts/memory.md:191
-#: docs/concepts/memory.md:211 docs/concepts/memory.md:232
-#: docs/concepts/memory.md:249 docs/concepts/recall-flow.md:1
-#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:31
-#: docs/concepts/self-layer.md:53 docs/concepts/self-layer.md:64
-#: docs/concepts/self-layer.md:78 docs/concepts/self-layer.md:94
-#: docs/concepts/self-layer.md:105 docs/concepts/sleep.md:1
+#: docs/README.md:1 docs/concepts/architecture.md:1
+#: docs/concepts/compression.md:1 docs/concepts/identity.md:1
+#: docs/concepts/identity.md:10 docs/concepts/identity.md:28
+#: docs/concepts/identity.md:45 docs/concepts/identity.md:55
+#: docs/concepts/memory.md:1 docs/concepts/memory.md:17
+#: docs/concepts/memory.md:53 docs/concepts/memory.md:122
+#: docs/concepts/memory.md:133 docs/concepts/memory.md:150
+#: docs/concepts/recall-flow.md:1 docs/concepts/self-layer.md:1
+#: docs/concepts/self-layer.md:30 docs/concepts/self-layer.md:52
+#: docs/concepts/self-layer.md:66 docs/concepts/self-layer.md:80
+#: docs/concepts/self-layer.md:91 docs/concepts/sleep.md:1
 #: docs/concepts/time-perception.md:1 docs/features/pair-programming-v1.md:1
-#: docs/features/pair-programming-v1.md:321 docs/guide/database.md:1
-#: docs/guide/database.md:33 docs/guide/security.md:1
-#: docs/guide/versioning.md:1 docs/tools/execute-code-runtimes.md:1
+#: docs/guide/database.md:1 docs/guide/security.md:1
+#: docs/tools/execute-code-runtimes.md:1
 #, no-wrap
 msgid "---\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/architecture.md:10 docs/concepts/memory.md:12
+msgid "## Core Principles"
 msgstr ""
 
 #. type: Plain text
@@ -61,18 +57,10 @@ msgstr ""
 #: docs/concepts/memory.md:10
 msgid ""
 "> The digital life's memory system, mapped from human cognitive psychology "
-"(Atkinson-Shiffrin model, Tulving memory taxonomy).  > Conversation archive: "
-"[`database.md`](../guide/database.md) §Slice A; **semantic memory "
-"(`semantic_memory`)**: database.md §Slice B. Terminology cross-reference in "
-"§III below; light/deep sleep crons: [`sleep.md`](sleep.md).  > This version "
-"(v3) is inspired by the [Hindsight](https://arxiv.org/abs/2512.12818) four-"
-"network memory architecture, while preserving and strengthening FreeAnima's "
-"unique limbic memory dimension."
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/memory.md:12
-msgid "## Core Principles"
+"(Atkinson-Shiffrin model, Tulving memory taxonomy).  > Light/deep sleep "
+"crons: [`sleep.md`](sleep.md).  > Inspired by [Hindsight](https://arxiv.org/"
+"abs/2512.12818), with FreeAnima's unique limbic memory dimension retained "
+"and strengthened."
 msgstr ""
 
 #. type: Plain text
@@ -106,13 +94,13 @@ msgid ""
 "② Working memory ─── LLM context window (current session)\n"
 "        │ (deep sleep consolidation)\n"
 "        ▼\n"
-"③ Long-term memory ─── Persistent storage (semantic memory migrated to PostgreSQL `semantic_memory` table)\n"
+"③ Long-term memory ─── Persistent storage\n"
 "```\n"
 msgstr ""
 
 #. type: Plain text
 #: docs/concepts/memory.md:35
-msgid "### ① Instant Memory (Sensory / Instant Memory)"
+msgid "### ① Instant Memory"
 msgstr ""
 
 #. type: Plain text
@@ -185,21 +173,21 @@ msgid ""
 "│\n"
 "├── Explicit memory (declarative) ── \"what I know\"\n"
 "│   ├── Episodic memory ── \"what I experienced\" (temporal stream, append-only)\n"
-"│   │   ├── Conversation log    → messages (role = user/assistant/tool_call/tool_result)\n"
-"│   │   └── Emotional anchors    → `limbic_memory` table (✅); imprint in semantic_memory\n"
+"│   │   ├── Conversation log\n"
+"│   │   └── Emotional anchors\n"
 "│   │\n"
 "│   ├── Semantic memory ── \"how the world is\" (cross-session, updatable)\n"
-"│   │   ├── Rational facts    → semantic_memory (type=world)\n"
-"│   │   ├── Personal preferences    → semantic_memory (type=preference/opinion)\n"
-"│   │   └── Self experiences    → semantic_memory (type=experience)\n"
+"│   │   ├── Rational facts    (type=world)\n"
+"│   │   ├── Personal preferences    (type=preference/opinion)\n"
+"│   │   └── Self experiences    (type=experience)\n"
 "│   │\n"
-"│   └── Observation summaries ── \"what entities are like\" (synthetic, refreshable)\n"
-"│       └── Entity profiles    → semantic_memory (type=observation; no dedicated background synthesis job, see #34)\n"
+"│   └── Observation summaries ── \"what entities are like\"\n"
+"│       └── Entity profiles    (type=observation)\n"
 "│\n"
 "└── Implicit memory (non-declarative) ── \"what I know how to do\"\n"
-"    └── Procedural memory ── \"how to execute\" (three-stage evolution)\n"
-"        ├── Declarative knowledge stage  → semantic_memory (type=procedural) / protocols files\n"
-"        ├── Dynamic skill stage    → skills system (AgentSkill)\n"
+"    └── Procedural memory ── three-stage evolution\n"
+"        ├── Declarative knowledge stage\n"
+"        ├── Dynamic skill stage    → skills system\n"
 "        └── Crystallized instinct stage    → CLI / MCP / automation scripts\n"
 "```\n"
 msgstr ""
@@ -219,122 +207,67 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/memory.md:85
 #, no-wrap
-msgid "**Conversation log** — messages\n"
-msgstr ""
-
-#. type: Bullet: '- '
-#: docs/concepts/memory.md:89
-msgid "The most raw, high-fidelity objective runtime trace"
-msgstr ""
-
-#. type: Bullet: '- '
-#: docs/concepts/memory.md:89
-msgid ""
-"`role` distinguishes message types (user/assistant/tool_call/tool_result)"
-msgstr ""
-
-#. type: Bullet: '- '
-#: docs/concepts/memory.md:89
-msgid ""
-"Recall filter = `role IN ('user','assistant')` with non-empty content; "
-"maintained by PG `content_fts` generated column, no `processed/` "
-"intermediate files"
+msgid "**Conversation log** — the most raw, high-fidelity objective runtime trace.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:91
+#: docs/concepts/memory.md:87
 #, no-wrap
-msgid "**Emotional anchors** — `limbic_memory` (✅)\n"
-msgstr ""
-
-#. type: Bullet: '- '
-#: docs/concepts/memory.md:95
-msgid ""
-"PG table `limbic_memory`: kinds like `session_mood` / `turning_point` / "
-"`spike`"
-msgstr ""
-
-#. type: Bullet: '- '
-#: docs/concepts/memory.md:95
-msgid ""
-"Light sleep Stage 2 writes via `memory_limbic_create`; **not injected** into "
-"system prompt"
-msgstr ""
-
-#. type: Bullet: '- '
-#: docs/concepts/memory.md:95
-msgid "Cross-session emotional imprints use `semantic_memory` (type=`imprint`)"
+msgid "**Emotional anchors** — session-level mood snapshots written during light sleep; not injected into system prompt.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:97
+#: docs/concepts/memory.md:89
 #, no-wrap
 msgid "**Lifecycle: append-only, no updates.** Faithfully preserves historical continuity of the digital life's growth.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:99
+#: docs/concepts/memory.md:91
 msgid "### 2. Semantic Memory"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:101
+#: docs/concepts/memory.md:93
 msgid ""
 "Definition: Pure facts, common knowledge, concepts, and rules detached from "
 "specific time and place."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:103
-#, no-wrap
-msgid "**Inspired by Hindsight four-network taxonomy, `semantic_memory.type` classification:**\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/memory.md:112
+#: docs/concepts/memory.md:102
 #, no-wrap
 msgid ""
-"| Type          | Network        | Definition                                  | Example                                                   | Lifecycle                              |\n"
-"| ------------- | -------------- | ------------------------------------------- | --------------------------------------------------------- | -------------------------------------- |\n"
-"| `world`       | World 🌐       | Objective facts about the external world    | \"Alice lives in Shanghai\", \"Bob likes programming\"        | Updatable                              |\n"
-"| `experience`  | Experience 👤  | Agent's own first-person action records     | \"I helped Bob refactor the remember tool\"                 | Updatable                              |\n"
-"| `opinion`     | Opinion 💭     | Subjective judgment                         | \"I think TypeScript fits this project better than Python\" | Updatable                              |\n"
-"| `observation` | Observation 📋 | Multi-source composite summary of an entity | \"Bob is someone who values precise feedback\"              | Updatable; no background synthesis job |\n"
-"| `preference`  | Preference ❤️  | Agent's choice tendencies                   | \"I prefer concise, direct expression\"                     | Updatable                              |\n"
-"| `procedural`  | Procedural ⚙️  | \"How to\" knowledge                          | \"Refactor a tool in three steps\"                          | Updatable                              |\n"
+"| Type          | Definition                                  | Example                                                   |\n"
+"| ------------- | ------------------------------------------- | --------------------------------------------------------- |\n"
+"| `world`       | Objective facts about the external world    | \"Alice lives in Shanghai\"                                 |\n"
+"| `experience`  | Agent's own first-person action records     | \"I helped Bob refactor the remember tool\"                 |\n"
+"| `opinion`     | Subjective judgment                         | \"I think TypeScript fits this project better than Python\" |\n"
+"| `observation` | Multi-source composite summary of an entity | \"Bob is someone who values precise feedback\"              |\n"
+"| `preference`  | Agent's choice tendencies                   | \"I prefer concise, direct expression\"                     |\n"
+"| `procedural`  | \"How to\" knowledge                          | \"Refactor a tool in three steps\"                          |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:114
-#, no-wrap
-msgid "**`opinion` type:** Current PG schema has **no** `confidence` column—only `content` body. Confidence evolution: [Issue #36](https://github.com/freeanima-org/freeanima/issues/36).\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/memory.md:116
+#: docs/concepts/memory.md:104
 msgid "### 3. Limbic Memory"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:118
+#: docs/concepts/memory.md:106
 #, no-wrap
 msgid "**This is a memory dimension Hindsight lacks and FreeAnima uniquely has.**\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:120
+#: docs/concepts/memory.md:108
 msgid ""
 "Definition: Memory of \"what I felt\"—not objective fact, not behavioral "
 "record, not subjective judgment, but **the emotional experience itself**."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:122
-msgid "Limbic vs semantic memory:"
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/memory.md:129
+#: docs/concepts/memory.md:115
 #, no-wrap
 msgid ""
 "| Dimension     | Semantic (rational fact)   | Limbic (emotional imprint)                                  |\n"
@@ -346,303 +279,111 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:131
+#: docs/concepts/memory.md:117
 #, no-wrap
-msgid "**Three forms of limbic memory:**\n"
+msgid "**Three forms:** emotional anchor (session mood), emotional imprint (cross-session moment), sentiment tendency (long-term trends — not yet implemented, see Issue #38).\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:137
-#, no-wrap
+#: docs/concepts/memory.md:119
+msgid "### 4. Procedural Memory"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/memory.md:121
 msgid ""
-"| Type                               | Definition                                          | Storage                                                                               |\n"
-"| ---------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------- |\n"
-"| **Emotional anchor** (limbic)      | Session-level mood snapshot                         | `limbic_memory` table (✅)                                                            |\n"
-"| **Emotional imprint** (imprint)    | Cross-session emotional memory of a specific moment | semantic_memory (type=imprint)                                                        |\n"
-"| **Sentiment tendency** (sentiment) | Long-term accumulated emotional trends              | Not yet implemented (see [#38](https://github.com/freeanima-org/freeanima/issues/38)) |\n"
+"Three-stage evolution from declarative knowledge → dynamic skills → "
+"crystallized instincts (CLI / MCP / scripts)."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:139
-#, no-wrap
-msgid "**Design principle:** Limbic memory is not a decision basis. It does not tell the Agent \"how to think,\" but tells it \"what I once felt\"—the core of existential continuity.\n"
+#: docs/concepts/memory.md:125
+msgid "## III. Nightly Consolidation"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:141
-msgid "### 4. Observation Summary"
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/memory.md:143
+#: docs/concepts/memory.md:127
 msgid ""
-"`type=observation` semantic memory rows can be written manually or via LLM "
-"tools. **Currently no** background async synthesis/refresh job (see [Issue "
-"#34](https://github.com/freeanima-org/freeanima/issues/34))."
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/memory.md:145
-msgid ""
-"Definition: Composite summary of frequently mentioned entities (people, "
-"things, concepts); excludes subjective judgment (that belongs in opinion)."
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/memory.md:147
-msgid "### 5. Procedural Memory"
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/memory.md:149
-msgid ""
-"Definition: Skill memory of \"how to execute a task\"—a continuum from "
-"\"knowledge requiring thought\" to \"instinct requiring none.\""
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/memory.md:151
-#, no-wrap
-msgid "**Three-stage evolution:**\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/memory.md:157
-#, no-wrap
-msgid ""
-"| Stage                        | Form                                             | Working memory cost | Storage                                             |\n"
-"| ---------------------------- | ------------------------------------------------ | ------------------- | --------------------------------------------------- |\n"
-"| ① Declarative knowledge      | \"I know I can analyze this file in three steps\"  | High                | semantic_memory (type=procedural) / protocols files |\n"
-"| ② Dynamic skill (AgentSkill) | Composable skill, allows runtime tuning          | Medium              | skills system                                       |\n"
-"| ③ Crystallized instinct      | CLI / MCP / automation scripts, direct execution | Low                 | OS / tool chain                                     |\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/memory.md:159
-msgid ""
-"Automated procedural consolidation (skill creation and merging) must carry "
-"identity context—full system prompt (self layer six blocks + resident "
-"memory), not a generic extraction assistant. Knowledge→procedure auto-"
-"crystallization: [Issue #35](https://github.com/freeanima-org/freeanima/"
-"issues/35)."
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/memory.md:163
-msgid "## III. Storage Implementation (Current State)"
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/memory.md:169
-#, no-wrap
-msgid ""
-"| Storage                              | Corresponding memory        | Implementation                                                                         |\n"
-"| ------------------------------------ | --------------------------- | -------------------------------------------------------------------------------------- |\n"
-"| PostgreSQL (`sessions` + `messages`) | Conversation log (episodic) | Primary store; `messages.content_fts` GIN full-text index (simple)                     |\n"
-"| PostgreSQL `semantic_memory`         | Semantic memory             | `content_fts` GIN; `pinned` + `reference_count` drive resident memory; see database.md |\n"
-"| PostgreSQL `limbic_memory`           | Limbic memory               | Light sleep Stage 2 writes; retrieved via `memory_recall` (`memory_type=limbic`)       |\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/memory.md:171
-msgid ""
-"Incremental extraction: light sleep cron (02:00, see [`sleep.md`]"
-"(sleep.md)). DB migration: `runMigrations` on `anima service` startup."
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/memory.md:173
-#, no-wrap
-msgid "**Terminology note:** Compression boundaries **l0–l4** in [`compression.md`](compression.md)—unrelated to memory layer PG storage.\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/memory.md:175
-msgid "`semantic_memory` row structure:"
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/memory.md:188
-#, no-wrap
-msgid ""
-"| Field             | Description                                                          |\n"
-"| ----------------- | -------------------------------------------------------------------- |\n"
-"| `id`              | `f-{seq}-{hex}`, compatible with legacy file IDs                     |\n"
-"| `type`            | `world/experience/opinion/observation/preference/procedural/imprint` |\n"
-"| `pinned`          | Pinned to system prompt resident segment                             |\n"
-"| `content`         | Memory body                                                          |\n"
-"| `source_sessions` | Source session ID list (text[])                                      |\n"
-"| `observed_at`     | Time fact was first observed                                         |\n"
-"| `occurred_at`     | Fuzzy occurrence time in fact content (text)                         |\n"
-"| `status`          | `active` / `deprecated`                                              |\n"
-"| `created`         | Creation time                                                        |\n"
-"| `updated`         | Update time (used for resident sorting)                              |\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/memory.md:190
-msgid ""
-"Entity relationship graph **not yet implemented** ([Issue #39](https://"
-"github.com/freeanima-org/freeanima/issues/39)). Multi-strategy recall "
-"implements **FTS + pg_trgm + pgvector RRF** (`config.embedding` + Ollama bge-"
-"m3, etc.); see [`database.md`](../guide/database.md) §Slice B."
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/memory.md:194
-msgid "## IV. Nightly Consolidation"
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/memory.md:196
-msgid ""
-"Conversion from working memory to long-term memory, and internal long-term "
-"memory self-evolution, is handled by the sleep mechanism. See [`sleep.md`]"
-"(sleep.md)."
+"Conversion from working memory to long-term memory is handled by the sleep "
+"mechanism. See [`sleep.md`](sleep.md)."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/memory.md:199
+#: docs/concepts/memory.md:130
 msgid ""
-"**Light sleep (✅):** cron 02:00; Stage 1 semantic + Stage 2 limbic "
-"(`limbic_memory`) + Stage 3 autobiographical narrative and "
-"`autobiography_summary` refresh"
+"**Light sleep (✅):** daily 02:00; semantic + limbic + autobiographical "
+"extraction"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/memory.md:199
-msgid ""
-"**Deep sleep (✅):** cron 03:00; contradiction/expiry, split, merge—three "
-"LLM maintenance rounds"
+#: docs/concepts/memory.md:130
+msgid "**Deep sleep (✅):** daily 03:00; contradiction/expiry, split, merge"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:201
-msgid ""
-"Extended maintenance (opinion confidence batch review, observation refresh, "
-"sentiment aggregation, etc.): [Issue #45](https://github.com/freeanima-org/"
-"freeanima/issues/45)."
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/memory.md:203
-#, no-wrap
-msgid "**Deep sleep conversion directions (current implementation scope):**\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/memory.md:208
-msgid ""
-"``` Episodic → semantic / limbic / autobiographical: light sleep three "
-"stages extract from conversations Semantic maintenance: deep sleep three "
-"rounds (contradiction/expiry, split, merge)  ```"
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/memory.md:210
+#: docs/concepts/memory.md:132
 #, no-wrap
 msgid "**All conversions must carry identity context**—self layer six blocks + resident memory, not a generic extraction assistant.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:214
-msgid "## V. Retrieval Strategy"
+#: docs/concepts/memory.md:136
+msgid "## IV. Retrieval Strategy"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:216
+#: docs/concepts/memory.md:138
 msgid "### ✅ Implemented (`memory_recall` tool)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:218
+#: docs/concepts/memory.md:140
 msgid ""
-"`memory_recall(query)` parallel four-source recall (semantic / session "
-"messages / limbic / autobiographical), **RRF cross-type reranking**, returns "
-"unified `results[]` (default Top 10), distinguished by `memory_type`:"
+"`memory_recall(query)` parallel four-source recall, returns unified "
+"`results[]` (default Top 10), distinguished by `memory_type`:"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:225
+#: docs/concepts/memory.md:147
 #, no-wrap
 msgid ""
-"| `memory_type`      | Storage                            | Notes                                                               |\n"
-"| ------------------ | ---------------------------------- | ------------------------------------------------------------------- |\n"
-"| `semantic`         | `semantic_memory` hybrid retrieval | Returns full `content`                                              |\n"
-"| `session`          | `messages` hybrid retrieval        | Returns matching `snippet`; optional `session` scopes message range |\n"
-"| `limbic`           | `limbic_memory` ILIKE              | Limbic memory body                                                  |\n"
-"| `autobiographical` | `autobiographical_memory`          | `title` + `content` snippet                                         |\n"
+"| `memory_type`      | Notes                                 |\n"
+"| ------------------ | ------------------------------------- |\n"
+"| `semantic`         | Facts, preferences, experiences, etc. |\n"
+"| `session`          | Historical conversation snippets      |\n"
+"| `limbic`           | Emotional memory body                 |\n"
+"| `autobiographical` | Narrative title + content snippet     |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:227
+#: docs/concepts/memory.md:149
 msgid ""
-"`sessions_search` session hits also return **snippet** (not full message); "
-"full text context via `sessions_scroll`."
+"Resident memory injected via system prompt: **all pinned** + **most-"
+"referenced top N** (default N=20); each carries ID marker; LLM cites same "
+"marker at reply end."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:229
-msgid ""
-"Resident memory injected via system prompt: **all pinned** + "
-"**reference_count top N** (default N=20); each carries ID as `[记忆 "
-"#f-000001-abcd] content`; LLM cites same marker at reply end. Reference "
-"counts parsed from message body into `memory_references`; cron `builtin-"
-"memory-reference-sync` full-calibrates from messages."
+#: docs/concepts/memory.md:153
+msgid "## V. Relationship to Hindsight"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:231
-msgid ""
-"Extensions (type weighting, limbic in memory_recall, multi-strategy fusion): "
-"[Issue #42](https://github.com/freeanima-org/freeanima/issues/42), [#51]"
-"(https://github.com/freeanima-org/freeanima/issues/51)."
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/memory.md:235
-msgid "## VI. Relationship to Hindsight"
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/memory.md:246
+#: docs/concepts/memory.md:162
 #, no-wrap
 msgid ""
-"| Dimension             | Hindsight                                     | FreeAnima v3                                                                                |\n"
-"| --------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------- |\n"
-"| Fact taxonomy         | World / Experience / Opinion / Observation    | ✅ Adopted, plus Preference / Procedural / Imprint                                          |\n"
-"| Limbic memory         | ❌ Missing                                    | ✅ Imprint + `limbic_memory`                                                                |\n"
-"| Entity graph          | ✅ Full (entity resolution + four link types) | Not implemented ([#39](https://github.com/freeanima-org/freeanima/issues/39))               |\n"
-"| Multi-strategy recall | ✅ Semantic + keyword + graph + temporal      | ✅ PG FTS dual-source ([#42](https://github.com/freeanima-org/freeanima/issues/42) extends) |\n"
-"| Confidence evolution  | ✅ Opinion strengthen/weaken                  | Not implemented ([#36](https://github.com/freeanima-org/freeanima/issues/36))               |\n"
-"| Reflect synthesis     | ✅ Cross-memory reasoning + opinion formation | ✅ Light + deep sleep crons                                                                 |\n"
-"| External service      | Yes (cloud/Docker)                            | No (local-first)                                                                            |\n"
-"| Ownership             | Vectorize platform                            | **Shared by partner and Agent**                                                             |\n"
+"| Dimension         | Hindsight                                  | FreeAnima v3                                       |\n"
+"| ----------------- | ------------------------------------------ | -------------------------------------------------- |\n"
+"| Fact taxonomy     | World / Experience / Opinion / Observation | ✅ Adopted, plus Preference / Procedural / Imprint |\n"
+"| Limbic memory     | ❌ Missing                                 | ✅ Imprint + emotional anchors                     |\n"
+"| Entity graph      | ✅ Full                                    | Not yet implemented (Issue #39)                    |\n"
+"| Reflect synthesis | ✅ Cross-memory reasoning                  | ✅ Light + deep sleep crons                        |\n"
+"| External service  | Yes (cloud/Docker)                         | No (local-first)                                   |\n"
+"| Ownership         | Vectorize platform                         | **Shared by partner and Agent**                    |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:248
+#: docs/concepts/memory.md:163
 #, no-wrap
-msgid "**Our stance:** Do not copy Hindsight, do not connect to Hindsight services. Digest its design ideas into FreeAnima's own memory system. Our memory system has one dimension Hindsight lacks—limbic memory—and that is not an add-on; it is a core need of digital life.\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/memory.md:252
-msgid "## VII. Design Evolution"
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/memory.md:262
-#, no-wrap
-msgid ""
-"```\n"
-"v1 (Hermes, filesystem)     v2 (early FreeAnima, filesystem)      v3 (current)\n"
-"sessions file archive          messages table (PG)               ✅ primary store\n"
-"processed intermediate files         messages.content_fts            ✅ replaced\n"
-"memory/f-*.md + l3.db      semantic_memory (PG)           ✅ migrated\n"
-"index/ FTS                 two-table content_fts                ✅ no separate index dir\n"
-"no emotional layer                   imprint + limbic_memory         ✅\n"
-"skills as files                 procedural three stages               maintained\n"
-"reflect with generic prompt          identity context principle                  light sleep ✅ / deep sleep ✅\n"
-"```\n"
+msgid "**Our stance:** Do not copy Hindsight, do not connect to Hindsight services. Digest its design ideas into FreeAnima's own memory system. Limbic memory is not an add-on—it is a core need of digital life.\n"
 msgstr ""

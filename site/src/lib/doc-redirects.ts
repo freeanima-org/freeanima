@@ -7,7 +7,7 @@ const docMoves: Record<string, string> = {
   "/docs/sleep/": "/docs/concepts/sleep/",
   "/docs/security/": "/docs/guide/security/",
   "/docs/database/": "/docs/guide/database/",
-  "/docs/versioning/": "/docs/guide/versioning/",
+  "/docs/versioning/": "/docs/",
   "/docs/designs/recall-flow/": "/docs/concepts/recall-flow/",
   "/docs/designs/time-perception/": "/docs/concepts/time-perception/",
   "/docs/designs/pair-programming-v1/": "/docs/features/pair-programming-v1/",
