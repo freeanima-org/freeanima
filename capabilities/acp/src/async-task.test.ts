@@ -39,6 +39,28 @@ describe("AcpAsyncTaskStore", () => {
     expect(store.findActive("cursor")?.taskId).toBe("a1");
     expect(store.findActive("other")).toBeUndefined();
     expect(store.listRunning()).toHaveLength(1);
+    expect(store.countRunning("cursor")).toBe(1);
+    expect(store.listQueued()).toHaveLength(0);
+  });
+
+  it("listQueued returns queued tasks", () => {
+    const store = new AcpAsyncTaskStore();
+    const now = Date.now();
+    store.set({
+      taskId: "q1",
+      agentName: "cursor",
+      acpSessionId: "",
+      animaSessionId: "n1",
+      mode: "agent",
+      status: "queued",
+      startedAt: now,
+      lastProgressAt: now,
+      progressNotes: [],
+      lastDeliveredAt: 0,
+      timeoutAt: now + 60_000,
+      queuePosition: 2,
+    });
+    expect(store.listQueued("cursor")).toHaveLength(1);
   });
 });
 

@@ -2,7 +2,13 @@ import { randomBytes } from "node:crypto";
 
 import type { AcpCursorMode, AcpPromptResult } from "./prompt-result.ts";
 
-export type AcpAsyncTaskStatus = "running" | "completed" | "error" | "cancelled" | "timed_out";
+export type AcpAsyncTaskStatus =
+  | "queued"
+  | "running"
+  | "completed"
+  | "error"
+  | "cancelled"
+  | "timed_out";
 
 export type AcpAsyncTask = {
   taskId: string;
@@ -19,6 +25,8 @@ export type AcpAsyncTask = {
   progressMessageId?: string;
   decisionNotified?: boolean;
   timeoutAt: number;
+  queuePosition?: number;
+  clientSlot?: number;
   result?: AcpPromptResult;
   error?: string;
 };
@@ -217,8 +225,33 @@ export class AcpAsyncTaskStore {
     return undefined;
   }
 
+  countRunning(agentName?: string): number {
+    let n = 0;
+    for (const task of this.tasks.values()) {
+      if (task.status !== "running") continue;
+      if (agentName && task.agentName !== agentName) continue;
+      n++;
+    }
+    return n;
+  }
+
+  listQueued(agentName?: string): AcpAsyncTask[] {
+    return [...this.tasks.values()]
+      .filter((t) => t.status === "queued")
+      .filter((t) => !agentName || t.agentName === agentName)
+      .sort((a, b) => a.startedAt - b.startedAt);
+  }
+
+  listForAgent(agentName: string): AcpAsyncTask[] {
+    return [...this.tasks.values()].filter((t) => t.agentName === agentName);
+  }
+
   listRunning(): AcpAsyncTask[] {
     return [...this.tasks.values()].filter((t) => t.status === "running");
+  }
+
+  listActive(): AcpAsyncTask[] {
+    return [...this.tasks.values()].filter((t) => t.status === "running" || t.status === "queued");
   }
 
   listAll(): AcpAsyncTask[] {

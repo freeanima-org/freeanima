@@ -20,6 +20,7 @@ export type AcpAgentConfigView = {
   session_ttl_ms?: number;
   prompt_retry_once?: boolean;
   auto_restart?: boolean;
+  max_concurrent_tasks?: number;
 };
 
 export type AcpSessionView = {
@@ -82,6 +83,7 @@ export function sanitizeAcpConfig(cfg: AcpAgentConfig): AcpAgentConfigView {
   if (cfg.session_ttl_ms != null) view.session_ttl_ms = cfg.session_ttl_ms;
   if (cfg.prompt_retry_once != null) view.prompt_retry_once = cfg.prompt_retry_once;
   if (cfg.auto_restart != null) view.auto_restart = cfg.auto_restart;
+  if (cfg.max_concurrent_tasks != null) view.max_concurrent_tasks = cfg.max_concurrent_tasks;
   return view;
 }
 

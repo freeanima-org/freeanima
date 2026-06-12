@@ -4,9 +4,15 @@ type AcpProgressDockProps = {
   dock: SessionAcpDockSnapshot;
 };
 
+function statusLabel(status: string): string {
+  if (status === "awaiting_decision") return "需要决策";
+  if (status === "queued") return "排队中";
+  return "运行中";
+}
+
 export function AcpProgressDock({ dock }: AcpProgressDockProps) {
   const decision = dock.highlight_decision;
-  const primary = dock.tasks[0];
+  const taskProgress = dock.task_progress ?? {};
 
   return (
     <div
@@ -21,21 +27,29 @@ export function AcpProgressDock({ dock }: AcpProgressDockProps) {
         <span className="font-semibold">Cursor ACP</span>
         {dock.tasks.map((t) => (
           <span key={t.task_id} className="badge badge-sm badge-outline font-mono">
-            {t.agent_name} · {t.status === "awaiting_decision" ? "需要决策" : "运行中"}
+            {t.agent_name} · {statusLabel(t.status)}
           </span>
         ))}
       </div>
       {decision ? (
         <p className="text-warning font-medium">
-          Cursor 等待决策，请查看会话消息并 continue_session。
+          Cursor 等待决策，请查看会话消息并使用 acp_session_id 续聊。
         </p>
       ) : null}
-      {dock.progress_text ? (
+      {Object.keys(taskProgress).length > 0 ? (
+        <div className="mt-1 space-y-2 max-h-48 overflow-y-auto">
+          {Object.entries(taskProgress).map(([taskId, text]) => (
+            <pre key={taskId} className="whitespace-pre-wrap text-xs opacity-90 font-mono">
+              {`[${taskId}]\n${text}`}
+            </pre>
+          ))}
+        </div>
+      ) : dock.progress_text ? (
         <pre className="whitespace-pre-wrap text-xs opacity-90 max-h-40 overflow-y-auto mt-1 font-mono">
           {dock.progress_text}
         </pre>
-      ) : primary ? (
-        <p className="text-xs opacity-70">task {primary.task_id} · 等待进度…</p>
+      ) : dock.tasks.length ? (
+        <p className="text-xs opacity-70">等待进度…</p>
       ) : null}
     </div>
   );

@@ -44,6 +44,8 @@ export const acpAgentSchema = z
     prompt_retry_once: z.boolean().optional(),
     /** Auto-restart after child crash, default true */
     auto_restart: z.boolean().optional(),
+    /** Max concurrent async tasks per agent (separate subprocess each), default 3 */
+    max_concurrent_tasks: z.number().int().positive().optional(),
   })
   .passthrough();
 

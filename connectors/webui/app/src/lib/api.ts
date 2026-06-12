@@ -164,6 +164,7 @@ export type SessionAcpDockSnapshot = {
   session_id: string;
   tasks: SessionAcpDockTask[];
   progress_text: string;
+  task_progress: Record<string, string>;
   highlight_decision: boolean;
 };
 

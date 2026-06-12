@@ -35,6 +35,7 @@ export const awaitingClarifySchema = z.object({
 export type AwaitingClarifyJson = z.infer<typeof awaitingClarifySchema>;
 
 export const acpTaskStatusSchema = z.enum([
+  "queued",
   "running",
   "completed",
   "awaiting_decision",
