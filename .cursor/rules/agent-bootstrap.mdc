@@ -14,5 +14,6 @@ alwaysApply: true
    - release / Conventional Commits → `release.md`
    - compression algorithm → `compression.md`
    - new packages → `packages.md`
+   - i18n / Paraglide / PO / UI strings → `i18n.md`
 3. Product architecture (cognitive layers, tools, Gateway) → `docs/concepts/architecture.md`.
 4. Code and `scripts/check-layer-deps.ts` override docs when they conflict.
