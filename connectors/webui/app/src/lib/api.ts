@@ -415,7 +415,7 @@ export async function getSelfBlocks() {
 }
 
 export async function getFridgeMagnets(): Promise<FridgeMagnetsResponse> {
-  return unwrap<FridgeMagnetsResponse>(apiClient.api.fridge.magnets.get());
+  return unwrap<FridgeMagnetsResponse>(apiClient.api["fridge-magnet"].magnets.get());
 }
 
 export async function getMcpStatus() {

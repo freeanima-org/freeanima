@@ -1,11 +1,11 @@
 import type { BeforeLlmCallContext } from "@freeanima/engine-hooks/loop";
-import { scanMagnets } from "./store.ts";
+import { FRIDGE_MAGNET_SCAN_PATTERN, scanMagnets, stripMagnetRedisKeyPrefix } from "./store.ts";
 import { stripAllFromMessages, injectIntoMessages } from "./inject.ts";
 import type { FridgeMagnet } from "./types.ts";
 
 function toDisplayMagnets(hits: { key: string; value: string }[]): FridgeMagnet[] {
   return hits.map(({ key, value }) => ({
-    key: key.startsWith("fridge:") ? key.slice("fridge:".length) : key,
+    key: stripMagnetRedisKeyPrefix(key),
     value,
   }));
 }
@@ -17,8 +17,8 @@ export function createFridgeMagnetHandler() {
     const lastMsg = ctx.messages[ctx.messages.length - 1];
     if (!lastMsg || lastMsg.role !== "user") return;
 
-    const hits = await scanMagnets("fridge:*");
-    const magnets = toDisplayMagnets(hits);
+    const hits = await scanMagnets(FRIDGE_MAGNET_SCAN_PATTERN);
+    const magnets = toDisplayMagnets(hits).filter((m) => m.value.trim().length > 0);
     if (magnets.length === 0) return;
 
     injectIntoMessages(ctx.messages, magnets);

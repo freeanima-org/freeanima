@@ -162,7 +162,7 @@
   "webui_chamber_email_to": "To:",
   "webui_chamber_fridge_badge_session": "Session note",
   "webui_chamber_fridge_badge_task": "Task summary",
-  "webui_chamber_fridge_desc": "Redis cross-turn sticky notes (24h TTL by default). Use the fridge_write tool; task summaries sync via tasks bridge.",
+  "webui_chamber_fridge_desc": "Redis cross-turn sticky notes (24h TTL by default). Use the fridge_magnet_write tool; task summaries sync via tasks bridge.",
   "webui_chamber_fridge_empty": "No fridge magnets.",
   "webui_chamber_fridge_expiry_hours": "{hours}h {minutes}m left",
   "webui_chamber_fridge_expiry_minutes": "{minutes}m left",

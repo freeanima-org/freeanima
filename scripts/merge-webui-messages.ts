@@ -125,7 +125,7 @@ const en: Record<string, string> = {
   webui_parlor_message_placeholder:
     "Type a message (Shift+Enter for newline, Enter to send; / for commands)",
   webui_chamber_fridge_desc:
-    "Redis cross-turn sticky notes (24h TTL by default). Use the fridge_write tool; task summaries sync via tasks bridge.",
+    "Redis cross-turn sticky notes (24h TTL by default). Use the fridge_magnet_write tool; task summaries sync via tasks bridge.",
   webui_chamber_fridge_redis_down: "Redis is not configured; fridge magnets are degraded.",
   webui_chamber_fridge_empty: "No fridge magnets.",
   webui_chamber_fridge_redis_unavailable: "Redis not configured; fridge unavailable.",
@@ -527,7 +527,7 @@ const zh: Record<string, string> = {
   webui_parlor_clarify_hint: "需要你确认（一条消息回复全部，或发送 /cancel）",
   webui_parlor_message_placeholder: "输入消息（Shift+Enter 换行，Enter 发送；/ 开头是命令）",
   webui_chamber_fridge_desc:
-    "Redis 跨轮临时便签（默认 24h TTL）；写入请使用 fridge_write 工具，待办摘要由 tasks 桥接同步。",
+    "Redis 跨轮临时便签（默认 24h TTL）；写入请使用 fridge_magnet_write 工具，待办摘要由 tasks 桥接同步。",
   webui_chamber_fridge_redis_down: "Redis 未配置或不可用，冰箱贴功能已静默降级。",
   webui_chamber_fridge_empty: "当前无冰箱贴便签。",
   webui_chamber_fridge_redis_unavailable: "Redis 未配置，冰箱贴不可用。",

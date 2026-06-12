@@ -6,14 +6,14 @@ import { clampTtl, magnetRedisKey, randomBase62, setMagnet } from "./store.ts";
 
 export function registerWriteFridgeMagnetTool(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
-    "fridge",
+    "fridge-magnet",
     "Cross-turn fridge magnet notes",
     attachToolReturns(
       [
         {
-          name: "fridge_write",
+          name: "fridge_magnet_write",
           description:
-            "Write a note on the fridge magnet board. The fridge is a temporary cross-turn shared state blackboard attached to the current session with an expiry time. key is optional; if omitted a 4-character random ID is generated.",
+            "Write a note on the fridge magnet board. The fridge magnet board is a temporary cross-turn shared state blackboard attached to the current session with an expiry time. key is optional; if omitted a 4-character random ID is generated.",
           parameters: {
             type: "object",
             properties: {

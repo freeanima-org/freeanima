@@ -4,7 +4,7 @@ import { FridgeMagnetDetailList } from "@/components/FridgeMagnetDetailList.tsx"
 import { m } from "@/lib/i18n.ts";
 import { getFridgeMagnets } from "@/lib/api.ts";
 
-export const Route = createFileRoute("/chamber/fridge")({
+export const Route = createFileRoute("/chamber/fridge-magnet")({
   loader: () =>
     getFridgeMagnets().catch(() => ({ redis_configured: false, magnets: [], inject_text: "" })),
   component: FridgePage,

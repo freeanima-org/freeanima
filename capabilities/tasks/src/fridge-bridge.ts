@@ -41,7 +41,7 @@ export function buildTasksSummaryContent(rows: TaskRow[], nowArg?: Date): string
   return parts.length > 0 ? parts.join(" | ") : null;
 }
 
-/** Write pending + in_progress todo summary to fridge:tasks:summary */
+/** Write pending + in_progress todo summary to fridge-magnet:tasks:summary */
 export async function syncTasksSummary(store: TaskStorePort, bridge?: FridgeBridge): Promise<void> {
   if (!bridge) return;
   try {

@@ -69,7 +69,7 @@ describe("listFridgeMagnets", () => {
       ttl_seconds: -1,
     });
     expect(result.inject_text).toBe(
-      "```fridge\nsession:sess-1:note: note content\ntasks:summary: tasks (2)\n```\n",
+      "```fridge-magnet\nsession:sess-1:note: note content\ntasks:summary: tasks (2)\n```\n",
     );
   });
 
@@ -78,6 +78,6 @@ describe("listFridgeMagnets", () => {
     const result = await listFridgeMagnets();
     expect(result.redis_configured).toBe(false);
     expect(result.magnets).toEqual([]);
-    expect(result.inject_text).toBe("```fridge\n\n```\n");
+    expect(result.inject_text).toBe("");
   });
 });
