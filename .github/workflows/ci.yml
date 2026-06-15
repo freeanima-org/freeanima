@@ -49,6 +49,40 @@ jobs:
           file: coverage/cobertura.xml
           language: JavaScript
           label: code-coverage/bun
+  build-cli:
+    name: Build CLI
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: ./.github/actions/setup-bun
+      - run: bun run build:cli
+      - run: cd cli/publish && bun pm pack
+  build-site:
+    name: Build site
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: ./.github/actions/build-site
+  build-webui:
+    name: Build WebUI
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: ./.github/actions/setup-bun
+      - uses: ./.github/actions/setup-anima-home
+      - run: bun run build:webui
   blackbox-dispatch:
     name: Blackbox dispatch
     if: github.event_name == 'pull_request'

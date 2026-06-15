@@ -1,0 +1,32 @@
+name: Build site
+description: po4a + i18n checks + Astro site build (shared by CI and GitHub Pages deploy)
+runs:
+  using: composite
+  steps:
+    - name: Cache apt packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          /var/cache/apt
+          /var/lib/apt/lists
+        key: apt-po4a-${{ runner.os }}-${{ hashFiles('.github/actions/build-site/action.yml') }}
+        restore-keys: |
+          apt-po4a-${{ runner.os }}-
+    - name: Install po4a
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y po4a gettext
+    - uses: ./.github/actions/setup-bun
+    - name: i18n po4a
+      shell: bash
+      run: bun run i18n:po4a
+    - name: Check Paraglide messages
+      shell: bash
+      run: bun scripts/check-paraglide-messages.ts
+    - name: Check PO health
+      shell: bash
+      run: bun scripts/check-po-health.ts
+    - name: Astro build
+      shell: bash
+      run: cd site && bun run build
