@@ -34,7 +34,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: ./.github/actions/build-site
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: site/dist
       - uses: actions/deploy-pages@v4
