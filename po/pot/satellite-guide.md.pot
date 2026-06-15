@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 17:27+0800\n"
+"POT-Creation-Date: 2026-06-15 17:52+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,41 +16,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. type: Plain text
-#: docs/README.md:1 docs/concepts/architecture.md:1
-#: docs/concepts/compression.md:1 docs/concepts/dream.md:1
-#: docs/concepts/identity.md:1 docs/concepts/identity.md:10
-#: docs/concepts/identity.md:28 docs/concepts/identity.md:45
-#: docs/concepts/identity.md:55 docs/concepts/memory.md:1
-#: docs/concepts/memory.md:17 docs/concepts/memory.md:53
-#: docs/concepts/memory.md:124 docs/concepts/memory.md:135
-#: docs/concepts/memory.md:160 docs/concepts/recall-flow.md:1
-#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:30
-#: docs/concepts/self-layer.md:52 docs/concepts/self-layer.md:66
-#: docs/concepts/self-layer.md:80 docs/concepts/self-layer.md:91
-#: docs/concepts/sleep.md:1 docs/concepts/time-perception.md:1
-#: docs/features/pair-programming-v1.md:1 docs/guide/database.md:1
-#: docs/guide/install.md:1 docs/guide/install.md:31 docs/guide/install.md:106
-#: docs/guide/install.md:167 docs/guide/install.md:234 docs/guide/security.md:1
-#: docs/guide/service.md:1 docs/sap/events.md:1 docs/sap/methods.md:1
-#: docs/sap/overview.md:1 docs/sap/satellite-guide.md:1
-#: docs/sap/security-model.md:1 docs/sap/tools.md:1 docs/sap/transport.md:1
-#: docs/tools/execute-code-runtimes.md:1
+#. type: Content of: <messages><msg>
+#: docs/sap/satellite-guide.md:1 docs/sap/satellite-guide.md:5
+#: messages/po4a/en.xml:48
 #, no-wrap
-msgid "---\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/satellite-guide.md:3
-#, no-wrap
-msgid ""
-"title: Satellite Guide\n"
-"---\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/satellite-guide.md:6
-msgid "# Satellite Guide"
+msgid "Satellite Guide"
 msgstr ""
 
 #. type: Plain text
@@ -58,9 +28,10 @@ msgstr ""
 msgid "How to run, configure, and implement a Satellite app that speaks SAP."
 msgstr ""
 
-#. type: Plain text
-#: docs/sap/satellite-guide.md:10
-msgid "## Deployment modes"
+#. type: Title ##
+#: docs/sap/satellite-guide.md:9
+#, no-wrap
+msgid "Deployment modes"
 msgstr ""
 
 #. type: Plain text
@@ -68,24 +39,22 @@ msgstr ""
 msgid "Hub learns about Satellites in two ways:"
 msgstr ""
 
-#. type: Plain text
-#: docs/sap/satellite-guide.md:14
-msgid "### Managed (config + systemd)"
+#. type: Title ###
+#: docs/sap/satellite-guide.md:13
+#, no-wrap
+msgid "Managed (config + systemd)"
 msgstr ""
 
 #. type: Plain text
 #: docs/sap/satellite-guide.md:16
-msgid ""
-"Declare a process in `~/.anima/config.yaml`. `anima service start/stop/"
-"restart` writes `anima-satellite-<name>.service` user units (when systemd is "
-"available) and starts/stops them with `anima.service`."
+#, no-wrap
+msgid "Declare a process in `~/.anima/config.yaml`. `anima service start/stop/restart` writes `anima-satellite-<name>.service` user units (when systemd is available) and starts/stops them with `anima.service`.\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/sap/satellite-guide.md:33
+#. type: Fenced code block (yaml)
+#: docs/sap/satellite-guide.md:17
 #, no-wrap
 msgid ""
-"```yaml\n"
 "satellites:\n"
 "  parlor:\n"
 "    enabled: true\n"
@@ -100,17 +69,16 @@ msgid ""
 "    env:\n"
 "      STUDIO_WORKSPACE: /path/to/project\n"
 "      SATELLITE_PORT: \"4173\"\n"
-"```\n"
 msgstr ""
 
 #. type: Plain text
 #: docs/sap/satellite-guide.md:38
 #, no-wrap
 msgid ""
-"| Field | Role |\n"
-"| ----- | ---- |\n"
+"| Field              | Role                                             |\n"
+"| ------------------ | ------------------------------------------------ |\n"
 "| `command` / `args` | Process to run (required for managed satellites) |\n"
-"| `env` | Extra environment variables |\n"
+"| `env`              | Extra environment variables                      |\n"
 msgstr ""
 
 #. type: Plain text
@@ -133,9 +101,10 @@ msgid ""
 "order."
 msgstr ""
 
-#. type: Plain text
-#: docs/sap/satellite-guide.md:46
-msgid "### Dynamic (SAP connect)"
+#. type: Title ###
+#: docs/sap/satellite-guide.md:45
+#, no-wrap
+msgid "Dynamic (SAP connect)"
 msgstr ""
 
 #. type: Plain text
@@ -167,234 +136,279 @@ msgstr ""
 msgid "Pair-programming: `http://127.0.0.1:4173`"
 msgstr ""
 
-#. type: Plain text
-#: docs/sap/satellite-guide.md:57
-msgid "## Architecture patterns"
+#. type: Title ##
+#: docs/sap/satellite-guide.md:56
+#, no-wrap
+msgid "Satellite access modes"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:80
+#: docs/sap/satellite-guide.md:59
+#, no-wrap
+msgid "**Rule:** each `app_id + instance_id` has **at most one** Hub WebSocket (`/sap/v1`).\n"
+msgstr ""
+
+#. type: Title ###
+#: docs/sap/satellite-guide.md:60
+#, no-wrap
+msgid "Type A — Browser-direct (Parlor)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sap/satellite-guide.md:65
+msgid ""
+"Browser `createSapBrowserClient` → Hub `/sap/v1` (this is the instance's "
+"only Hub WS)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sap/satellite-guide.md:65
+msgid "Satellite HTTP serves static UI + `/config.json` only."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sap/satellite-guide.md:65
+msgid ""
+"**Limits:** no `tool.register` or local workspace tools; browser must reach "
+"Hub on the LAN; multiple tabs share one `instance_id` (last connect wins in "
+"Hub today)."
+msgstr ""
+
+#. type: Title ###
+#: docs/sap/satellite-guide.md:66
+#, no-wrap
+msgid "Type B — Process gateway + local relay (pair-programming)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sap/satellite-guide.md:71
+msgid "Satellite **process** holds the sole Hub WS via `runSapTransport`."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sap/satellite-guide.md:71
+msgid ""
+"Browser uses `createSapRelayBrowserClient` → satellite `/sap/relay/v1` (SAP "
+"frame pass-through, **not** REST hub-api)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sap/satellite-guide.md:71
+msgid ""
+"Local FS/terminal stay on satellite HTTP/WS; agent tools run in the process "
+"via `tool.register`."
+msgstr ""
+
+#. type: Fenced code block (mermaid)
+#: docs/sap/satellite-guide.md:72
 #, no-wrap
 msgid ""
-"```mermaid\n"
 "flowchart TB\n"
-"  subgraph browser [Browser]\n"
-"    UI[Satellite UI]\n"
+"  subgraph parlor [Parlor Type A]\n"
+"    B1[Browser] -->|唯一 SAP WS| Hub1[Hub]\n"
+"    S1[静态 server] -.->|/config.json| B1\n"
 "  end\n"
-"  subgraph satelliteProcess [Satellite process]\n"
-"    HTTP[HTTP server]\n"
-"    HubApi[hub-api proxy]\n"
-"    SapClient[SAP client runSapTransport]\n"
-"    LocalTools[Local tool handlers]\n"
+"\n"
+"  subgraph ppy [Pair-programming Type B]\n"
+"    B2[Browser] -->|relay WS| Relay[\"/sap/relay/v1\"]\n"
+"    Relay --> ProcSAP[runSapTransport]\n"
+"    ProcSAP -->|唯一 SAP WS| Hub2[Hub]\n"
+"    B2 --> LocalFS[\"/api/studio/*\"]\n"
+"    B2 --> LocalPTY[本地 terminal WS]\n"
+"    ProcSAP --> ToolExec[tool executor]\n"
 "  end\n"
-"  subgraph hub [Hub]\n"
-"    SapWs[\"/sap/v1\"]\n"
-"    Runtime[AgentRuntime]\n"
-"  end\n"
-"  UI --> HTTP\n"
-"  HTTP --> HubApi\n"
-"  HubApi --> SapClient\n"
-"  SapClient --> SapWs\n"
-"  SapWs --> Runtime\n"
-"  SapClient --> LocalTools\n"
-"```\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:82
-msgid "### Parlor satellite"
+#: docs/sap/satellite-guide.md:90
+#, no-wrap
+msgid "**Deprecated:** HTTP hub-api REST→SAP proxy (removed).\n"
+msgstr ""
+
+#. type: Title ###
+#: docs/sap/satellite-guide.md:91
+#, no-wrap
+msgid "Parlor satellite"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:84
+#: docs/sap/satellite-guide.md:94
 msgid ""
 "Browser connects to Hub via SAP WebSocket from the client ([`browser-"
 "client.ts`](../../packages/sap-contract/src/browser-client.ts)); static "
-"server only serves UI + `/config.json`. No server-side hub-api proxy."
+"server only serves UI + `/config.json`."
 msgstr ""
 
-#. type: Plain text
-#: docs/sap/satellite-guide.md:86
-msgid "### Pair-programming satellite"
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/satellite-guide.md:88
-msgid ""
-"HTTP API forwards to SAP RPC; SSE streams map from SAP `stream.*` events. "
-"Terminal WebSocket bridges to SAP `terminal.*`."
-msgstr ""
-
-#. type: Plain text
+#. type: Title ###
 #: docs/sap/satellite-guide.md:95
 #, no-wrap
-msgid ""
-"```mermaid\n"
-"sequenceDiagram\n"
-"  participant Browser\n"
-"  participant HTTP as Satellite HTTP\n"
-"  participant SAP as SapClient\n"
-"  participant Hub as Hub\n"
+msgid "Pair-programming satellite"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:111
-#, no-wrap
+#: docs/sap/satellite-guide.md:98
 msgid ""
-"  Browser->>HTTP: POST /api/sessions\n"
-"  HTTP->>SAP: request session.create\n"
-"  SAP->>Hub: req session.create\n"
-"  Hub->>SAP: res session_id\n"
-"  SAP->>HTTP: session_id\n"
-"  HTTP->>Browser: JSON response\n"
-"  Browser->>HTTP: POST /api/messages SSE\n"
-"  HTTP->>SAP: request message.send\n"
-"  SAP->>Hub: req message.send\n"
-"  loop stream events\n"
-"    Hub-->>SAP: evt stream.*\n"
-"    SAP-->>HTTP: map to SSE\n"
-"    HTTP-->>Browser: SSE event\n"
-"  end\n"
-"```\n"
+"Browser connects to [`/sap/relay/v1`](../../satellites/pair-programming/"
+"server/sap/relay.ts); the process multiplexes session/stream/tool traffic on "
+"one Hub WS. Terminal PTY runs locally ([`terminal-session.ts`](../../"
+"satellites/pair-programming/server/terminal-session.ts))."
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:113
+#: docs/sap/satellite-guide.md:100
 msgid "Reference files:"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:117
+#: docs/sap/satellite-guide.md:105
 msgid ""
 "[`satellites/pair-programming/server/sap/hub.ts`](../../satellites/pair-"
 "programming/server/sap/hub.ts)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:117
+#: docs/sap/satellite-guide.md:105
 msgid ""
-"[`satellites/pair-programming/server/http/hub-api.ts`](../../satellites/pair-"
-"programming/server/http/hub-api.ts)"
+"[`satellites/pair-programming/server/sap/relay.ts`](../../satellites/pair-"
+"programming/server/sap/relay.ts)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:117
+#: docs/sap/satellite-guide.md:105
+msgid ""
+"[`packages/sap-contract/src/relay-browser-client.ts`](../../packages/sap-"
+"contract/src/relay-browser-client.ts)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sap/satellite-guide.md:105
 msgid ""
 "[`satellites/pair-programming/server/http/terminal-bridge.ts`](../../"
 "satellites/pair-programming/server/http/terminal-bridge.ts)"
 msgstr ""
 
-#. type: Plain text
-#: docs/sap/satellite-guide.md:119
-msgid "## Minimal SAP client"
+#. type: Title ##
+#: docs/sap/satellite-guide.md:106
+#, no-wrap
+msgid "Minimal SAP client"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:121
+#: docs/sap/satellite-guide.md:109
 msgid "Use `runSapTransport` from `@freeanima/sap-contract`:"
 msgstr ""
 
-#. type: Plain text
-#: docs/sap/satellite-guide.md:124
-msgid ""
-"```typescript import { runSapTransport } from \"@freeanima/sap-contract\";"
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/satellite-guide.md:141
+#. type: Fenced code block (typescript)
+#: docs/sap/satellite-guide.md:110
 #, no-wrap
 msgid ""
+"import { runSapTransport } from \"@freeanima/sap-contract\";\n"
+"\n"
 "const transport = runSapTransport({\n"
 "  hubUrl: process.env.FREEANIMA_URL ?? \"http://127.0.0.1:2658\",\n"
 "  connect: {\n"
 "    app_id: \"my-app\",\n"
 "    instance_id: process.env.SATELLITE_INSTANCE_ID ?? crypto.randomUUID(),\n"
-"    features_requested: [\"server_info\"],\n"
+"    features_requested: [\"server_info\", \"capability_mask\"],\n"
 "    http_url: `http://127.0.0.1:${process.env.SATELLITE_PORT ?? 4173}`,\n"
 "  },\n"
 "  onConnected: async (client) => {\n"
 "    client.onEvent(\"tool.call\", (payload) => {\n"
 "      /* handle */\n"
 "    });\n"
-"    await client.request(\"tool.register\", { tools: [/* ... */] });\n"
+"    await client.request(\"tool.register\", {\n"
+"      tools: [\n"
+"        /* ... */\n"
+"      ],\n"
+"    });\n"
 "  },\n"
 "});\n"
-"```\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:143
+#: docs/sap/satellite-guide.md:135
+msgid ""
+"Browser UI on Type B satellites uses `createSapRelayBrowserClient()` instead "
+"of talking to Hub directly."
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/satellite-guide.md:137
 msgid ""
 "Transport handles WebSocket open, `connect` handshake, heartbeat, and "
 "reconnect with exponential backoff."
 msgstr ""
 
-#. type: Plain text
-#: docs/sap/satellite-guide.md:145
-msgid "## Environment variables"
+#. type: Title ##
+#: docs/sap/satellite-guide.md:138
+#, no-wrap
+msgid "Environment variables"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:153
+#: docs/sap/satellite-guide.md:147
 #, no-wrap
 msgid ""
-"| Variable | Role |\n"
-"| -------- | ---- |\n"
-"| `FREEANIMA_URL` | Hub HTTP base URL |\n"
-"| `SATELLITE_PORT` | Satellite HTTP listen port |\n"
-"| `SATELLITE_INSTANCE_ID` | Stable instance id (optional; random if unset) |\n"
-"| `STUDIO_WORKSPACE` | Pair-programming workspace root |\n"
-"| `STUDIO_GITIGNORE` / `STUDIO_SHOW_HIDDEN` | File tree filters |\n"
+"| Variable                                  | Role                                           |\n"
+"| ----------------------------------------- | ---------------------------------------------- |\n"
+"| `FREEANIMA_URL`                           | Hub HTTP base URL                              |\n"
+"| `SATELLITE_PORT`                          | Satellite HTTP listen port                     |\n"
+"| `SATELLITE_INSTANCE_ID`                   | Stable instance id (optional; random if unset) |\n"
+"| `STUDIO_WORKSPACE`                        | Pair-programming workspace root                |\n"
+"| `STUDIO_GITIGNORE` / `STUDIO_SHOW_HIDDEN` | File tree filters                              |\n"
+msgstr ""
+
+#. type: Title ##
+#: docs/sap/satellite-guide.md:148
+#, no-wrap
+msgid "Layer dependencies"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:155
-msgid "## Layer dependencies"
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/satellite-guide.md:157
+#: docs/sap/satellite-guide.md:151
 msgid ""
 "Per [`scripts/check-layer-deps.ts`](../../scripts/check-layer-deps.ts): "
 "`satellites/*` may depend only on `@freeanima/sap-contract` and `@freeanima/"
 "kernel`. Do not import platform or runtime packages from Satellite code."
 msgstr ""
 
-#. type: Plain text
-#: docs/sap/satellite-guide.md:159
-msgid "## Chamber visibility"
+#. type: Title ##
+#: docs/sap/satellite-guide.md:152
+#, no-wrap
+msgid "Chamber visibility"
 msgstr ""
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:161
+#: docs/sap/satellite-guide.md:155
 msgid ""
 "`GET /api/satellites/status` (Chamber → Satellites) reads "
 "`SatelliteManager.getStatus()`: connected instances, `http_url`, registered "
 "tools, heartbeat timestamps."
 msgstr ""
 
-#. type: Plain text
-#: docs/sap/satellite-guide.md:163
-msgid "## Further reading"
+#. type: Title ##
+#: docs/sap/satellite-guide.md:156
+#, no-wrap
+msgid "Further reading"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:167
+#: docs/sap/satellite-guide.md:161
 msgid "[overview.md](overview.md) — protocol goals"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:167
+#: docs/sap/satellite-guide.md:161
 msgid "[transport.md](transport.md) — envelopes and handshake"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:167
+#: docs/sap/satellite-guide.md:161
 msgid "[tools.md](tools.md) — tool registration and routing"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:167
+#: docs/sap/satellite-guide.md:161
 msgid ""
 "[pair-programming v1](../features/pair-programming-v1.md) — Studio product "
 "docs"

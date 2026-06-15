@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 15:48+0800\n"
+"POT-Creation-Date: 2026-06-15 18:02+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,50 +16,29 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. type: Plain text
-#: docs/README.md:1 docs/concepts/architecture.md:1
-#: docs/concepts/compression.md:1 docs/concepts/dream.md:1
-#: docs/concepts/identity.md:1 docs/concepts/identity.md:10
-#: docs/concepts/identity.md:28 docs/concepts/identity.md:45
-#: docs/concepts/identity.md:55 docs/concepts/memory.md:1
-#: docs/concepts/memory.md:17 docs/concepts/memory.md:53
-#: docs/concepts/memory.md:124 docs/concepts/memory.md:135
-#: docs/concepts/memory.md:160 docs/concepts/recall-flow.md:1
-#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:30
-#: docs/concepts/self-layer.md:52 docs/concepts/self-layer.md:66
-#: docs/concepts/self-layer.md:80 docs/concepts/self-layer.md:91
-#: docs/concepts/sleep.md:1 docs/concepts/time-perception.md:1
-#: docs/features/pair-programming-v1.md:1 docs/guide/database.md:1
-#: docs/guide/install.md:1 docs/guide/install.md:31 docs/guide/install.md:106
-#: docs/guide/install.md:167 docs/guide/install.md:234 docs/guide/security.md:1
-#: docs/guide/service.md:1 docs/tools/execute-code-runtimes.md:1
+#. type: Content of: <messages><msg>
+#: docs/concepts/dream.md:1 messages/po4a/en.xml:316
 #, no-wrap
-msgid "---\n"
+msgid "Dream"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/dream.md:3
+#. type: Title #
+#: docs/concepts/dream.md:5
 #, no-wrap
-msgid ""
-"title: Dream\n"
-"---\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/dream.md:6
-msgid "# Dream Mechanism"
+msgid "Dream Mechanism"
 msgstr ""
 
 #. type: Plain text
 #: docs/concepts/dream.md:8
-msgid ""
-"> Nightly creative narratives generated after light sleep; not factual "
-"memory."
+#, no-wrap
+msgid "> Nightly creative narratives generated after light sleep; not factual memory.\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/dream.md:10 docs/concepts/sleep.md:10
-msgid "## Overview"
+#. type: Content of: <messages><msg>
+#: docs/concepts/dream.md:9 docs/concepts/sleep.md:9 messages/po4a/en.xml:39
+#: messages/po4a/en.xml:47
+#, no-wrap
+msgid "Overview"
 msgstr ""
 
 #. type: Plain text
@@ -71,9 +50,10 @@ msgid ""
 "random episodic fragments."
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/dream.md:14
-msgid "## Trigger"
+#. type: Content of: <messages><msg>
+#: docs/concepts/dream.md:13 messages/po4a/en.xml:320
+#, no-wrap
+msgid "Trigger"
 msgstr ""
 
 #. type: Plain text
@@ -93,9 +73,10 @@ msgstr ""
 msgid "Trigger is **purely emotion-driven** (no random dice)."
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/dream.md:25
-msgid "## Input"
+#. type: Title ##
+#: docs/concepts/dream.md:24
+#, no-wrap
+msgid "Input"
 msgstr ""
 
 #. type: Bullet: '1. '
@@ -117,9 +98,10 @@ msgstr ""
 msgid "Light sleep stage 2 must complete first so limbic anchors exist."
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/dream.md:32
-msgid "## Output"
+#. type: Title ##
+#: docs/concepts/dream.md:31
+#, no-wrap
+msgid "Output"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -141,9 +123,10 @@ msgid ""
 "when a dream is created."
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/dream.md:38 docs/concepts/sleep.md:32
-msgid "## Orchestration"
+#. type: Title ##
+#: docs/concepts/dream.md:37 docs/concepts/sleep.md:31
+#, no-wrap
+msgid "Orchestration"
 msgstr ""
 
 #. type: Plain text
@@ -151,16 +134,14 @@ msgstr ""
 msgid "Sleep-cycle DAG node `dream`:"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/dream.md:47
+#. type: Fenced code block (text)
+#: docs/concepts/dream.md:41
 #, no-wrap
 msgid ""
-"```\n"
 "light-sleep\n"
 "  ├─► deep-sleep ──► memory-ref-sync\n"
 "  ├─► dream        (parallel with deep-sleep / self-layer-refresh)\n"
 "  └─► self-layer-refresh\n"
-"```\n"
 msgstr ""
 
 #. type: Plain text
@@ -170,9 +151,10 @@ msgid ""
 "tools**, single completion."
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/dream.md:51
-msgid "## Tools & UI"
+#. type: Title ##
+#: docs/concepts/dream.md:50
+#, no-wrap
+msgid "Tools & UI"
 msgstr ""
 
 #. type: Plain text
@@ -186,9 +168,10 @@ msgid ""
 "| WebUI `/webui/chamber/dream` | Browse dream history                                              |\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/dream.md:59
-msgid "## Design Notes"
+#. type: Title ##
+#: docs/concepts/dream.md:58
+#, no-wrap
+msgid "Design Notes"
 msgstr ""
 
 #. type: Bullet: '- '

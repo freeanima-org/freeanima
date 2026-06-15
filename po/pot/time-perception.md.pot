@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-12 11:54+0800\n"
+"POT-Creation-Date: 2026-06-15 18:02+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,53 +16,35 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. type: Plain text
-#: docs/README.md:1 docs/concepts/architecture.md:1
-#: docs/concepts/compression.md:1 docs/concepts/identity.md:1
-#: docs/concepts/identity.md:10 docs/concepts/identity.md:28
-#: docs/concepts/identity.md:45 docs/concepts/identity.md:55
-#: docs/concepts/memory.md:1 docs/concepts/memory.md:17
-#: docs/concepts/memory.md:53 docs/concepts/memory.md:122
-#: docs/concepts/memory.md:133 docs/concepts/memory.md:150
-#: docs/concepts/recall-flow.md:1 docs/concepts/self-layer.md:1
-#: docs/concepts/self-layer.md:30 docs/concepts/self-layer.md:52
-#: docs/concepts/self-layer.md:66 docs/concepts/self-layer.md:80
-#: docs/concepts/self-layer.md:91 docs/concepts/sleep.md:1
-#: docs/concepts/time-perception.md:1 docs/features/pair-programming-v1.md:1
-#: docs/guide/database.md:1 docs/guide/security.md:1
-#: docs/tools/execute-code-runtimes.md:1
+#. type: Title ##
+#: docs/concepts/compression.md:10 docs/concepts/sleep.md:13
+#: docs/concepts/time-perception.md:21 docs/features/pair-programming-v1.md:10
 #, no-wrap
-msgid "---\n"
+msgid "Design Principles"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/sleep.md:14 docs/concepts/time-perception.md:22
-msgid "## Design Principles"
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/time-perception.md:3
+#. type: Content of: <messages><msg>
+#: docs/concepts/time-perception.md:1 messages/po4a/en.xml:56
 #, no-wrap
-msgid ""
-"title: Time Perception\n"
-"---\n"
+msgid "Time Perception"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/time-perception.md:6
-msgid "# Time Perception Module"
+#. type: Title #
+#: docs/concepts/time-perception.md:5
+#, no-wrap
+msgid "Time Perception Module"
 msgstr ""
 
 #. type: Plain text
 #: docs/concepts/time-perception.md:8
-msgid ""
-"> **✅ Core implemented** — user messages receive time prefixes before LLM "
-"inference."
+#, no-wrap
+msgid "> **✅ Core implemented** — user messages receive time prefixes before LLM inference.\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/time-perception.md:10
-msgid "## Problem"
+#. type: Title ##
+#: docs/concepts/time-perception.md:9
+#, no-wrap
+msgid "Problem"
 msgstr ""
 
 #. type: Plain text
@@ -141,14 +123,16 @@ msgid ""
 "current call time."
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/time-perception.md:30
-msgid "## Strategy"
+#. type: Title ##
+#: docs/concepts/time-perception.md:29
+#, no-wrap
+msgid "Strategy"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/time-perception.md:32
-msgid "### Basic Rules"
+#. type: Title ###
+#: docs/concepts/time-perception.md:31
+#, no-wrap
+msgid "Basic Rules"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -178,9 +162,10 @@ msgstr ""
 msgid "assistant / tool / system messages not injected"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/time-perception.md:40
-msgid "### Example"
+#. type: Title ###
+#: docs/concepts/time-perception.md:39
+#, no-wrap
+msgid "Example"
 msgstr ""
 
 #. type: Plain text
@@ -188,11 +173,15 @@ msgstr ""
 msgid "Original message list:"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/time-perception.md:50
+#. type: Fenced code block (text)
+#: docs/concepts/time-perception.md:43
+#, no-wrap
 msgid ""
-"``` user: good morning assistant: morning ☀️ user: going to eat assistant: "
-"what are you having user: going to eat ```"
+"user: good morning\n"
+"assistant: morning ☀️\n"
+"user: going to eat\n"
+"assistant: what are you having\n"
+"user: going to eat\n"
 msgstr ""
 
 #. type: Plain text
@@ -200,12 +189,18 @@ msgstr ""
 msgid "After time perception (context sent to LLM):"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/time-perception.md:63
+#. type: Fenced code block (text)
+#: docs/concepts/time-perception.md:53
+#, no-wrap
 msgid ""
-"``` user: time: 2026-05-20T08:02 good morning assistant: morning ☀️ user: "
-"time: 2026-05-20T12:15 going to eat assistant: what are you having user: "
-"time: 2026-05-20T19:30 going to eat ```"
+"user: time: 2026-05-20T08:02\n"
+"good morning\n"
+"assistant: morning ☀️\n"
+"user: time: 2026-05-20T12:15\n"
+"going to eat\n"
+"assistant: what are you having\n"
+"user: time: 2026-05-20T19:30\n"
+"going to eat\n"
 msgstr ""
 
 #. type: Plain text
@@ -215,9 +210,10 @@ msgid ""
 "distinguishing lunch and dinner."
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/time-perception.md:67
-msgid "### Compression Scenario"
+#. type: Title ###
+#: docs/concepts/time-perception.md:66
+#, no-wrap
+msgid "Compression Scenario"
 msgstr ""
 
 #. type: Plain text
@@ -225,9 +221,10 @@ msgstr ""
 msgid "Time anchors in compression summary not yet injected; see Issue #5."
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/time-perception.md:71
-msgid "## Edge Cases"
+#. type: Title ##
+#: docs/concepts/time-perception.md:70
+#, no-wrap
+msgid "Edge Cases"
 msgstr ""
 
 #. type: Plain text
@@ -244,9 +241,10 @@ msgid ""
 "| No timestamp                       | Skip, no injection                                                       |\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/time-perception.md:82
-msgid "## Out of Scope"
+#. type: Title ##
+#: docs/concepts/time-perception.md:81
+#, no-wrap
+msgid "Out of Scope"
 msgstr ""
 
 #. type: Bullet: '- '

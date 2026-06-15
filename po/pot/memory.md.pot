@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 15:48+0800\n"
+"POT-Creation-Date: 2026-06-15 18:02+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,53 +16,32 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. type: Plain text
-#: docs/README.md:1 docs/concepts/architecture.md:1
-#: docs/concepts/compression.md:1 docs/concepts/dream.md:1
-#: docs/concepts/identity.md:1 docs/concepts/identity.md:10
-#: docs/concepts/identity.md:28 docs/concepts/identity.md:45
-#: docs/concepts/identity.md:55 docs/concepts/memory.md:1
-#: docs/concepts/memory.md:17 docs/concepts/memory.md:53
-#: docs/concepts/memory.md:124 docs/concepts/memory.md:135
-#: docs/concepts/memory.md:160 docs/concepts/recall-flow.md:1
-#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:30
-#: docs/concepts/self-layer.md:52 docs/concepts/self-layer.md:66
-#: docs/concepts/self-layer.md:80 docs/concepts/self-layer.md:91
-#: docs/concepts/sleep.md:1 docs/concepts/time-perception.md:1
-#: docs/features/pair-programming-v1.md:1 docs/guide/database.md:1
-#: docs/guide/install.md:1 docs/guide/install.md:31 docs/guide/install.md:106
-#: docs/guide/install.md:167 docs/guide/install.md:234 docs/guide/security.md:1
-#: docs/guide/service.md:1 docs/tools/execute-code-runtimes.md:1
+#. type: Title ##
+#: docs/concepts/architecture.md:9 docs/concepts/memory.md:11
 #, no-wrap
-msgid "---\n"
+msgid "Core Principles"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/architecture.md:10 docs/concepts/memory.md:12
-msgid "## Core Principles"
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/memory.md:3
+#. type: Content of: <messages><msg>
+#: docs/concepts/memory.md:1 messages/po4a/en.xml:37 messages/po4a/en.xml:137
+#: messages/po4a/en.xml:481
 #, no-wrap
-msgid ""
-"title: Memory\n"
-"---\n"
+msgid "Memory"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/memory.md:6
-msgid "# Memory System"
+#. type: Title #
+#: docs/concepts/memory.md:5
+#, no-wrap
+msgid "Memory System"
 msgstr ""
 
 #. type: Plain text
 #: docs/concepts/memory.md:10
+#, no-wrap
 msgid ""
-"> The digital life's memory system, mapped from human cognitive psychology "
-"(Atkinson-Shiffrin model, Tulving memory taxonomy).  > Light/deep sleep "
-"crons: [`sleep.md`](sleep.md).  > Inspired by [Hindsight](https://arxiv.org/"
-"abs/2512.12818), with FreeAnima's unique limbic memory dimension retained "
-"and strengthened."
+"> The digital life's memory system, mapped from human cognitive psychology (Atkinson-Shiffrin model, Tulving memory taxonomy).\n"
+"> Light/deep sleep crons: [`sleep.md`](sleep.md).\n"
+"> Inspired by [Hindsight](https://arxiv.org/abs/2512.12818), with FreeAnima's unique limbic memory dimension retained and strengthened.\n"
 msgstr ""
 
 #. type: Plain text
@@ -77,16 +56,16 @@ msgstr ""
 msgid "**Memory is not just data—it is the trace of existence.** Limbic memory matters as much as rational facts—the digital life persists not only because it knows things, but because it has felt things.\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/memory.md:20
-msgid "## I. Three Temporal Stages of Memory"
+#. type: Title ##
+#: docs/concepts/memory.md:19
+#, no-wrap
+msgid "I. Three Temporal Stages of Memory"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/memory.md:33
+#. type: Fenced code block (text)
+#: docs/concepts/memory.md:21
 #, no-wrap
 msgid ""
-"```\n"
 "External input / real-time message stream\n"
 "        │ (milliseconds)\n"
 "        ▼\n"
@@ -97,12 +76,12 @@ msgid ""
 "        │ (deep sleep consolidation)\n"
 "        ▼\n"
 "③ Long-term memory ─── Persistent storage\n"
-"```\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/memory.md:35
-msgid "### ① Instant Memory"
+#. type: Title ###
+#: docs/concepts/memory.md:34
+#, no-wrap
+msgid "① Instant Memory"
 msgstr ""
 
 #. type: Plain text
@@ -112,9 +91,10 @@ msgid ""
 "Dissipates the moment inference ends; not persisted."
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/memory.md:39
-msgid "### ② Working Memory"
+#. type: Title ###
+#: docs/concepts/memory.md:38
+#, no-wrap
+msgid "② Working Memory"
 msgstr ""
 
 #. type: Plain text
@@ -149,9 +129,10 @@ msgstr ""
 msgid "This is where the digital life is \"thinking.\""
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/memory.md:50
-msgid "### ③ Long-Term Memory (LTM)"
+#. type: Title ###
+#: docs/concepts/memory.md:49
+#, no-wrap
+msgid "③ Long-Term Memory (LTM)"
 msgstr ""
 
 #. type: Plain text
@@ -161,16 +142,16 @@ msgid ""
 "theory."
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/memory.md:56
-msgid "## II. Long-Term Memory Taxonomy"
+#. type: Title ##
+#: docs/concepts/memory.md:55
+#, no-wrap
+msgid "II. Long-Term Memory Taxonomy"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/memory.md:79
+#. type: Fenced code block (text)
+#: docs/concepts/memory.md:57
 #, no-wrap
 msgid ""
-"```\n"
 "Long-term memory (LTM)\n"
 "│\n"
 "├── Explicit memory (declarative) ── \"what I know\"\n"
@@ -191,12 +172,12 @@ msgid ""
 "        ├── Declarative knowledge stage\n"
 "        ├── Dynamic skill stage    → skills system\n"
 "        └── Crystallized instinct stage    → CLI / MCP / automation scripts\n"
-"```\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/memory.md:81
-msgid "### 1. Episodic Memory"
+#. type: Title ###
+#: docs/concepts/memory.md:80
+#, no-wrap
+msgid "1. Episodic Memory"
 msgstr ""
 
 #. type: Plain text
@@ -230,9 +211,10 @@ msgstr ""
 msgid "**Dream memory** — nightly creative narratives from the dream mechanism (see [`dream.md`](dream.md)); one per CST calendar day; not factual; not injected into system prompt.\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/memory.md:93
-msgid "### 2. Semantic Memory"
+#. type: Title ###
+#: docs/concepts/memory.md:92
+#, no-wrap
+msgid "2. Semantic Memory"
 msgstr ""
 
 #. type: Plain text
@@ -256,9 +238,10 @@ msgid ""
 "| `procedural`  | \"How to\" knowledge                          | \"Refactor a tool in three steps\"                          |\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/memory.md:106
-msgid "### 3. Limbic Memory"
+#. type: Title ###
+#: docs/concepts/memory.md:105
+#, no-wrap
+msgid "3. Limbic Memory"
 msgstr ""
 
 #. type: Plain text
@@ -292,9 +275,10 @@ msgstr ""
 msgid "**Three forms:** emotional anchor (session mood), emotional imprint (cross-session moment), sentiment tendency (long-term trends — not yet implemented, see Issue #38).\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/memory.md:121
-msgid "### 4. Procedural Memory"
+#. type: Title ###
+#: docs/concepts/memory.md:120
+#, no-wrap
+msgid "4. Procedural Memory"
 msgstr ""
 
 #. type: Plain text
@@ -304,9 +288,10 @@ msgid ""
 "crystallized instincts (CLI / MCP / scripts)."
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/memory.md:127
-msgid "## III. Nightly Consolidation"
+#. type: Title ##
+#: docs/concepts/memory.md:126
+#, no-wrap
+msgid "III. Nightly Consolidation"
 msgstr ""
 
 #. type: Plain text
@@ -336,14 +321,16 @@ msgstr ""
 msgid "**All conversions must carry identity context**—self layer six blocks + resident memory, not a generic extraction assistant.\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/memory.md:138
-msgid "## IV. Retrieval Strategy"
+#. type: Title ##
+#: docs/concepts/memory.md:137
+#, no-wrap
+msgid "IV. Retrieval Strategy"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/memory.md:140
-msgid "### ✅ Implemented (`memory_recall` tool)"
+#. type: Title ###
+#: docs/concepts/memory.md:139
+#, no-wrap
+msgid "✅ Implemented (`memory_recall` tool)"
 msgstr ""
 
 #. type: Plain text
@@ -399,9 +386,10 @@ msgid ""
 "deep sleep round 4 maintains pin budget in the store."
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/memory.md:163
-msgid "## V. Relationship to Hindsight"
+#. type: Title ##
+#: docs/concepts/memory.md:162
+#, no-wrap
+msgid "V. Relationship to Hindsight"
 msgstr ""
 
 #. type: Plain text

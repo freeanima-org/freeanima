@@ -8,7 +8,7 @@ SAP runs over a single WebSocket per Satellite instance. Each message is one UTF
 
 ## Endpoint
 
-```
+```text
 ws://{hub_host}:{port}/sap/v1
 ```
 

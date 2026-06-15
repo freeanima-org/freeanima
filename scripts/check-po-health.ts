@@ -99,12 +99,33 @@ if (!existsSync(messagesOut)) {
 }
 
 const po4aCfg = readFileSync(join(root, "po4a.cfg"), "utf8");
-const textEntries = (po4aCfg.match(/^\[type: text\]/gm) ?? []).length;
+const docEntries = (po4aCfg.match(/^\[type: docmd\]/gm) ?? []).length;
 const xmlEntries = (po4aCfg.match(/^\[type: xml\]/gm) ?? []).length;
-if (textEntries !== masters.length || xmlEntries !== 1) {
+if (docEntries !== masters.length || xmlEntries !== 1) {
   warn(
-    `po4a.cfg has ${textEntries} text + ${xmlEntries} xml entries; run bun scripts/gen-po4a-cfg.ts`,
+    `po4a.cfg has ${docEntries} docmd + ${xmlEntries} xml entries; run bun scripts/gen-po4a-cfg.ts`,
   );
+}
+
+const generatedCheck = spawnSync("bun", ["scripts/check-generated-docs-i18n.ts"], {
+  cwd: root,
+  encoding: "utf8",
+  stdio: "pipe",
+});
+if (generatedCheck.status !== 0) {
+  fail(generatedCheck.stdout || generatedCheck.stderr || "check-generated-docs-i18n failed");
+}
+
+const englishCheck = spawnSync("bun", ["scripts/check-po-english-msgstr.ts"], {
+  cwd: root,
+  encoding: "utf8",
+  stdio: "pipe",
+});
+if (englishCheck.status !== 0) {
+  fail(englishCheck.stdout || englishCheck.stderr || "check-po-english-msgstr failed");
+}
+if (englishCheck.stdout) {
+  process.stdout.write(englishCheck.stdout);
 }
 
 console.log(`check-po-health: ok (${strict ? "strict" : "warn"} mode)`);

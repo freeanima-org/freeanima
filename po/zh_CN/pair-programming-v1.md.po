@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 17:27+0800\n"
+"POT-Creation-Date: 2026-06-15 18:02+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,63 +15,34 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. type: Plain text
-#: docs/README.md:1 docs/concepts/architecture.md:1
-#: docs/concepts/compression.md:1 docs/concepts/dream.md:1
-#: docs/concepts/identity.md:1 docs/concepts/identity.md:10
-#: docs/concepts/identity.md:28 docs/concepts/identity.md:45
-#: docs/concepts/identity.md:55 docs/concepts/memory.md:1
-#: docs/concepts/memory.md:17 docs/concepts/memory.md:53
-#: docs/concepts/memory.md:124 docs/concepts/memory.md:135
-#: docs/concepts/memory.md:160 docs/concepts/recall-flow.md:1
-#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:30
-#: docs/concepts/self-layer.md:52 docs/concepts/self-layer.md:66
-#: docs/concepts/self-layer.md:80 docs/concepts/self-layer.md:91
-#: docs/concepts/sleep.md:1 docs/concepts/time-perception.md:1
-#: docs/features/pair-programming-v1.md:1 docs/guide/database.md:1
-#: docs/guide/install.md:1 docs/guide/install.md:31 docs/guide/install.md:106
-#: docs/guide/install.md:167 docs/guide/install.md:234 docs/guide/security.md:1
-#: docs/guide/service.md:1 docs/sap/events.md:1 docs/sap/methods.md:1
-#: docs/sap/overview.md:1 docs/sap/satellite-guide.md:1
-#: docs/sap/security-model.md:1 docs/sap/tools.md:1 docs/sap/transport.md:1
-#: docs/tools/execute-code-runtimes.md:1
+#. type: Title ##
+#: docs/concepts/compression.md:10 docs/concepts/sleep.md:13
+#: docs/concepts/time-perception.md:21 docs/features/pair-programming-v1.md:10
 #, no-wrap
-msgid "---\n"
-msgstr "---\n"
+msgid "Design Principles"
+msgstr "设计原则"
 
-#. type: Plain text
-#: docs/concepts/compression.md:11 docs/concepts/sleep.md:14
-#: docs/concepts/time-perception.md:22 docs/features/pair-programming-v1.md:11
-msgid "## Design Principles"
-msgstr "## 设计原则"
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:3
+#. type: Yaml Front Matter Hash Value: title
+#: docs/features/pair-programming-v1.md:1
 #, no-wrap
-msgid ""
-"title: Pair Programming V1\n"
-"---\n"
-msgstr ""
-"title: Pair Programming V1\n"
-"---\n"
+msgid "Pair Programming V1"
+msgstr "结对编程 V1"
 
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:6
-#, fuzzy
-#| msgid "Pair Programming v1"
-msgid "# Pair Programming (Studio)"
-msgstr "结对编程 v1"
+#. type: Title #
+#: docs/features/pair-programming-v1.md:5
+#, no-wrap
+msgid "Pair Programming (Studio)"
+msgstr "结对编程（创作室）"
 
 #. type: Plain text
 #: docs/features/pair-programming-v1.md:9
+#, no-wrap
 msgid ""
-"> **Phase 1 ✅ shipped**: three-column layout, syntax-highlighted viewer, "
-"file tree/search, terminal, dedicated session platform id.  > Future work: "
-"[Issue #37](https://github.com/freeanima-org/freeanima/issues/37)."
+"> **Phase 1 ✅ shipped**: three-column layout, syntax-highlighted viewer, file tree/search, terminal, dedicated session platform id.\n"
+"> Future work: [Issue #37](https://github.com/freeanima-org/freeanima/issues/37).\n"
 msgstr ""
-"> **阶段 1 ✅ 已交付**：三栏布局、语法高亮查看器、文件树/搜索、终端、独立 "
-"session 平台 id。 > 后续工作：[Issue #37](https://github.com/freeanima-org/"
-"freeanima/issues/37)。"
+"> **阶段 1 ✅ 已交付**：三列布局、语法高亮查看器、文件树/搜索、终端、独立 session 平台 id。\n"
+"> 后续工作：[Issue #37](https://github.com/freeanima-org/freeanima/issues/37)。\n"
 
 #. type: Bullet: '- '
 #: docs/features/pair-programming-v1.md:16
@@ -100,38 +71,16 @@ msgid ""
 "Chamber)"
 msgstr "**本地读取**：服务端从配置的工作区路径读取文件（在卧室中设置）"
 
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:18
-msgid "## Layout"
-msgstr "## 布局"
+#. type: Title ##
+#: docs/features/pair-programming-v1.md:17
+#, no-wrap
+msgid "Layout"
+msgstr "布局"
 
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:33
-#, fuzzy, no-wrap
-#| msgid ""
-#| "```\n"
-#| "┌──────────────────────────────────────────────────────────┐\n"
-#| "│  Studio                     [Pair Programming] [Novel] … │  ← StudioLayout sidebar\n"
-#| "├──────────┬────────────────────────┬──────────────────────┤\n"
-#| "│ 🔍 Search│                       │  💬 Session list      │\n"
-#| "│ Files    │                       │  ┌──────────────────┐ │\n"
-#| "│ ─────── │     Code viewer        │  │ session-001      │ │\n"
-#| "│ src/     │    (highlight.js)      │  │ session-002      │ │\n"
-#| "│   main.ts│                       │  │ session-003      │ │\n"
-#| "│   utils/ │   Shows selected file  │  ├──────────────────┤ │\n"
-#| "│   ...    │   syntax highlight,    │  │                  │ │\n"
-#| "│          │   line numbers         │  │  Chat area        │ │\n"
-#| "│ index.html│                      │  │  Agent: this code │ │\n"
-#| "│ package.json│                    │  │  has a potential… │ │\n"
-#| "│          │                       │  │                  │ │\n"
-#| "│          │                       │  │  ┌──input──┐     │ │\n"
-#| "│          │                       │  │  │         │     │ │\n"
-#| "└──────────┴────────────────────────┴──────────────────────┘\n"
-#| "   Left              Center                   Right\n"
-#| "  file tree      highlight.js code viewer   session list + chat\n"
-#| "```\n"
+#. type: Fenced code block (text)
+#: docs/features/pair-programming-v1.md:19
+#, no-wrap
 msgid ""
-"```\n"
 "┌──────────────────────────────────────────────────────────┐\n"
 "│  Studio                  [Pair Programming] [Novel] …    │\n"
 "├──────────┬────────────────────────┬──────────────────────┤\n"
@@ -144,29 +93,19 @@ msgid ""
 "└──────────┴────────────────────────┴──────────────────────┘\n"
 "   Left              Center                  Right\n"
 "  file tree        code viewer           session + chat\n"
-"```\n"
 msgstr ""
-"```\n"
 "┌──────────────────────────────────────────────────────────┐\n"
-"│  创作室 Studio              [结对编程] [小说] [短视频]   │  ← StudioLayout 侧边栏\n"
+"│  Studio                  [Pair Programming] [Novel] …    │\n"
 "├──────────┬────────────────────────┬──────────────────────┤\n"
-"│ 🔍 搜索  │                       │  💬 会话列表          │\n"
-"│ 文件     │                       │  ┌──────────────────┐ │\n"
-"│ ─────── │     代码查看器         │  │ session-001      │ │\n"
-"│ src/     │    (highlight.js)      │  │ session-002      │ │\n"
-"│   main.ts│                       │  │ session-003      │ │\n"
-"│   utils/ │   显示当前选中文件     │  ├──────────────────┤ │\n"
-"│   ...    │   语法高亮、行号       │  │                  │ │\n"
-"│          │                       │  │  对话区           │ │\n"
-"│ index.html│                      │  │  Agent：这段代码     │ │\n"
-"│ package.json│                    │  │  有个潜在问题…   │ │\n"
-"│          │                       │  │                  │ │\n"
-"│          │                       │  │  ┌──输入框──┐   │ │\n"
-"│          │                       │  │  │          │   │ │\n"
+"│ Search   │                        │  Session list        │\n"
+"│ Files    │     Code viewer        │  ┌────────────────┐  │\n"
+"│          │   (syntax highlight)   │  │ session-001    │  │\n"
+"│ src/     │                        │  │ session-002    │  │\n"
+"│   …      │   Read-only selected   │  ├────────────────┤  │\n"
+"│          │   file view            │  │  Chat area     │  │\n"
 "└──────────┴────────────────────────┴──────────────────────┘\n"
-"   左列             中列                   右列\n"
-"  文件树        highlight.js 代码查看    会话列表 + 对话\n"
-"```\n"
+"   Left              Center                  Right\n"
+"  file tree        code viewer           session + chat\n"
 
 #. type: Plain text
 #: docs/features/pair-programming-v1.md:39
@@ -184,10 +123,11 @@ msgstr ""
 "| 中           | flex          | —          |\n"
 "| 右（对话）   | 360px         | 280–500px  |\n"
 
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:41
-msgid "## Usage"
-msgstr "## 用法"
+#. type: Title ##
+#: docs/features/pair-programming-v1.md:40
+#, no-wrap
+msgid "Usage"
+msgstr "用法"
 
 #. type: Bullet: '1. '
 #: docs/features/pair-programming-v1.md:48
@@ -200,19 +140,13 @@ msgstr ""
 
 #. type: Bullet: '2. '
 #: docs/features/pair-programming-v1.md:48
-#, fuzzy
-#| msgid "anima service start --foreground ```"
 msgid "`anima service start`"
-msgstr ""
-"anima service start --foreground\n"
-"```"
+msgstr "`anima service start`"
 
 #. type: Bullet: '3. '
 #: docs/features/pair-programming-v1.md:48
-#, fuzzy
-#| msgid "Open: `http://127.0.0.1:2658/webui/parlor/chat`"
 msgid "Open `http://127.0.0.1:4173`"
-msgstr "打开：`http://127.0.0.1:2658/webui/parlor/chat`"
+msgstr "打开 `http://127.0.0.1:4173`"
 
 #. type: Bullet: '4. '
 #: docs/features/pair-programming-v1.md:48
@@ -229,12 +163,11 @@ msgstr "右侧创建或选择 session；与 Agent 讨论代码"
 msgid "Bottom terminal for debug/ops (isolated from chat session)"
 msgstr "底部终端用于调试/运维（与对话 session 隔离）"
 
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:50
-#, fuzzy
-#| msgid "Session (optional)"
-msgid "## Session Isolation"
-msgstr "Session（可选）"
+#. type: Title ##
+#: docs/features/pair-programming-v1.md:49
+#, no-wrap
+msgid "Session Isolation"
+msgstr "会话隔离"
 
 #. type: Plain text
 #: docs/features/pair-programming-v1.md:52
@@ -245,12 +178,11 @@ msgstr ""
 "结对编程使用平台 `studio-pair-programming`，与会客厅（`parlor`）及其他平台 "
 "session 列表分离。"
 
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:54
-#, fuzzy
-#| msgid "## Current State"
-msgid "## Current Limitations"
-msgstr "## 当前状态"
+#. type: Title ##
+#: docs/features/pair-programming-v1.md:53
+#, no-wrap
+msgid "Current Limitations"
+msgstr "当前限制"
 
 #. type: Bullet: '- '
 #: docs/features/pair-programming-v1.md:58
@@ -267,10 +199,11 @@ msgstr "Agent 无法直接编辑并保存文件（阶段 2）"
 msgid "Workspace must be a path readable by the server process"
 msgstr "工作区必须是服务端进程可读的路径"
 
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:60
-msgid "## Related Docs"
-msgstr "## 相关文档"
+#. type: Title ##
+#: docs/features/pair-programming-v1.md:59
+#, no-wrap
+msgid "Related Docs"
+msgstr "相关文档"
 
 #. type: Bullet: '- '
 #: docs/features/pair-programming-v1.md:62
@@ -279,7 +212,5 @@ msgstr "WebUI 三种模式：[`architecture.md`](../concepts/architecture.md)"
 
 #. type: Bullet: '- '
 #: docs/features/pair-programming-v1.md:62
-#, fuzzy
-#| msgid "Always `shell: false` (consistent with `docs/security.md`)"
 msgid "Security and tool risks: [`security.md`](../guide/security.md)"
-msgstr "始终 `shell: false`（与 `docs/security.md` 一致）"
+msgstr "安全与工具风险：[`security.md`](../guide/security.md)"

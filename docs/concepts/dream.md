@@ -38,7 +38,7 @@ Light sleep stage 2 must complete first so limbic anchors exist.
 
 Sleep-cycle DAG node `dream`:
 
-```
+```text
 light-sleep
   ├─► deep-sleep ──► memory-ref-sync
   ├─► dream        (parallel with deep-sleep / self-layer-refresh)

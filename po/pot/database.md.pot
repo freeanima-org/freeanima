@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 09:46+0800\n"
+"POT-Creation-Date: 2026-06-15 17:52+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,52 +16,31 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. type: Plain text
-#: docs/README.md:1 docs/concepts/architecture.md:1
-#: docs/concepts/compression.md:1 docs/concepts/identity.md:1
-#: docs/concepts/identity.md:10 docs/concepts/identity.md:28
-#: docs/concepts/identity.md:45 docs/concepts/identity.md:55
-#: docs/concepts/memory.md:1 docs/concepts/memory.md:17
-#: docs/concepts/memory.md:53 docs/concepts/memory.md:122
-#: docs/concepts/memory.md:133 docs/concepts/memory.md:150
-#: docs/concepts/recall-flow.md:1 docs/concepts/self-layer.md:1
-#: docs/concepts/self-layer.md:30 docs/concepts/self-layer.md:52
-#: docs/concepts/self-layer.md:66 docs/concepts/self-layer.md:80
-#: docs/concepts/self-layer.md:91 docs/concepts/sleep.md:1
-#: docs/concepts/time-perception.md:1 docs/features/pair-programming-v1.md:1
-#: docs/guide/database.md:1 docs/guide/install.md:1 docs/guide/install.md:31
-#: docs/guide/install.md:106 docs/guide/install.md:167
-#: docs/guide/install.md:234 docs/guide/security.md:1 docs/guide/service.md:1
-#: docs/tools/execute-code-runtimes.md:1
+#. type: Content of: <messages><msg>
+#: docs/guide/database.md:1 messages/po4a/en.xml:30
 #, no-wrap
-msgid "---\n"
+msgid "Database"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/database.md:3
+#. type: Title #
+#: docs/guide/database.md:5
 #, no-wrap
-msgid ""
-"title: Database\n"
-"---\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/guide/database.md:6
-msgid "# PostgreSQL Setup and Operations"
+msgid "PostgreSQL Setup and Operations"
 msgstr ""
 
 #. type: Plain text
 #: docs/guide/database.md:10
+#, no-wrap
 msgid ""
-"> FreeAnima uses PostgreSQL for conversation archives, semantic memory, self "
-"layer, and related data.  > Related concepts: [`memory.md`](../concepts/"
-"memory.md), [`sleep.md`](../concepts/sleep.md).  > Security and credentials: "
-"[`security.md`](security.md)."
+"> FreeAnima uses PostgreSQL for conversation archives, semantic memory, self layer, and related data.\n"
+"> Related concepts: [`memory.md`](../concepts/memory.md), [`sleep.md`](../concepts/sleep.md).\n"
+"> Security and credentials: [`security.md`](security.md).\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/database.md:12
-msgid "## Connection Configuration"
+#. type: Title ##
+#: docs/guide/database.md:11
+#, no-wrap
+msgid "Connection Configuration"
 msgstr ""
 
 #. type: Plain text
@@ -69,16 +48,14 @@ msgstr ""
 msgid "Set the database URL in `config.yaml`:"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/database.md:21
+#. type: Fenced code block (yaml)
+#: docs/guide/database.md:15
 #, no-wrap
 msgid ""
-"```yaml\n"
 "database:\n"
 "  url: postgresql://user:pass@localhost:5432/anima\n"
 "  # or inject from pass:\n"
 "  # url: pass:services/postgres/anima\n"
-"```\n"
 msgstr ""
 
 #. type: Plain text
@@ -89,32 +66,24 @@ msgid ""
 "(security.md#credential-responsibilities)."
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/database.md:25
-msgid "## Local Install (Debian)"
+#. type: Title ##
+#: docs/guide/database.md:24
+#, no-wrap
+msgid "Local Install (Debian)"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/database.md:29
-msgid ""
-"```bash # Install PostgreSQL, create anima db/user (requires sudo)  sudo ./"
-"scripts/setup-postgres-debian.sh"
-msgstr ""
-
-#. type: Plain text
-#: docs/guide/database.md:32
-msgid ""
-"# Write credentials to pass (script prints anima credential add …)  anima "
-"credential add services/postgres/anima url=… host=… password=… database=anima"
-msgstr ""
-
-#. type: Plain text
-#: docs/guide/database.md:36
+#. type: Fenced code block (bash)
+#: docs/guide/database.md:26
 #, no-wrap
 msgid ""
+"# Install PostgreSQL, create anima db/user (requires sudo)\n"
+"sudo ./scripts/setup-postgres-debian.sh\n"
+"\n"
+"# Write credentials to pass (script prints anima credential add …)\n"
+"anima credential add services/postgres/anima url=… host=… password=… database=anima\n"
+"\n"
 "# config.yaml:\n"
 "#   url: pass:services/postgres/anima\n"
-"```\n"
 msgstr ""
 
 #. type: Plain text
@@ -124,9 +93,10 @@ msgid ""
 "`anima` database and user."
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/database.md:40
-msgid "## Extensions (One-Time)"
+#. type: Title ##
+#: docs/guide/database.md:39
+#, no-wrap
+msgid "Extensions (One-Time)"
 msgstr ""
 
 #. type: Plain text
@@ -136,14 +106,12 @@ msgid ""
 "usually cannot `CREATE EXTENSION`; run as superuser:"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/database.md:47
+#. type: Fenced code block (bash)
+#: docs/guide/database.md:43
 #, no-wrap
 msgid ""
-"```bash\n"
 "sudo apt install postgresql-17-pgvector   # match psql --version\n"
 "sudo -u postgres psql -d anima -f core/scripts/ensure-pg-extensions.sql\n"
-"```\n"
 msgstr ""
 
 #. type: Plain text
@@ -153,9 +121,10 @@ msgid ""
 "automatically."
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/database.md:51
-msgid "## Schema Migrations"
+#. type: Title ##
+#: docs/guide/database.md:50
+#, no-wrap
+msgid "Schema Migrations"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -170,14 +139,12 @@ msgstr ""
 msgid "**Manual:**"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/database.md:59
+#. type: Fenced code block (bash)
+#: docs/guide/database.md:55
 #, no-wrap
 msgid ""
-"```bash\n"
 "DATABASE_URL=\"$(anima credential get services/postgres/anima url)\" \\\n"
 "  bun run --filter @freeanima/core/db db:migrate\n"
-"```\n"
 msgstr ""
 
 #. type: Plain text
@@ -185,9 +152,10 @@ msgstr ""
 msgid "Run after extensions are installed, or restart `anima service`."
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/database.md:63
-msgid "## Backups"
+#. type: Title ##
+#: docs/guide/database.md:62
+#, no-wrap
+msgid "Backups"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -209,9 +177,10 @@ msgid ""
 "[`security.md`](security.md#data-persistence)."
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/database.md:69
-msgid "## Integration Tests (Developers)"
+#. type: Title ##
+#: docs/guide/database.md:68
+#, no-wrap
+msgid "Integration Tests (Developers)"
 msgstr ""
 
 #. type: Plain text
@@ -221,14 +190,12 @@ msgid ""
 "instance:"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/database.md:76
+#. type: Fenced code block (bash)
+#: docs/guide/database.md:72
 #, no-wrap
 msgid ""
-"```bash\n"
 "bun run test:integration\n"
 "bun run test              # unit + integration in parallel\n"
-"```\n"
 msgstr ""
 
 #. type: Plain text
@@ -236,9 +203,10 @@ msgstr ""
 msgid "pre-commit `test:changed` does **not** run integration tests."
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/database.md:80
-msgid "## Troubleshooting"
+#. type: Title ##
+#: docs/guide/database.md:79
+#, no-wrap
+msgid "Troubleshooting"
 msgstr ""
 
 #. type: Plain text

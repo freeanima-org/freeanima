@@ -1,11 +1,16 @@
 #!/usr/bin/env bun
 /**
  * Generate po4a.cfg: split mode; POT under po/pot/, per-language PO under po/<lang>/.
- * Docs → text; Paraglide UI → xml (messages/po4a/en.xml).
+ * Docs → text (markdown mode); Paraglide UI → xml (messages/po4a/en.xml).
  */
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { assertUniqueMasters, DOC_PO_LANGS, listDocMasters } from "./docs-i18n-lib.ts";
+import {
+  assertUniqueMasters,
+  DOC_PO_LANGS,
+  listDocMasters,
+  PO4A_DOCMD_ALIAS,
+} from "./docs-i18n-lib.ts";
 
 const root = join(import.meta.dir, "..");
 const masters = listDocMasters();
@@ -17,9 +22,11 @@ const lines = [
   "",
   "[options] --master-charset utf-8 --keep 0",
   "",
+  PO4A_DOCMD_ALIAS,
+  "",
   ...masters.map(({ rel }) => {
     const out = rel.replace(/^docs\//, "docs/.generated/$lang/");
-    return `[type: text] ${rel} $lang:${out}`;
+    return `[type: docmd] ${rel} $lang:${out}`;
   }),
   "",
   "[type: xml] messages/po4a/en.xml $lang:messages/.generated/zh_CN.xml",

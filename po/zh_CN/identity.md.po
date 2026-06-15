@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-12 11:55+0800\n"
+"POT-Creation-Date: 2026-06-15 17:52+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,54 +15,33 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. type: Plain text
-#: docs/README.md:1 docs/concepts/architecture.md:1
-#: docs/concepts/compression.md:1 docs/concepts/identity.md:1
-#: docs/concepts/identity.md:10 docs/concepts/identity.md:28
-#: docs/concepts/identity.md:45 docs/concepts/identity.md:55
-#: docs/concepts/memory.md:1 docs/concepts/memory.md:17
-#: docs/concepts/memory.md:53 docs/concepts/memory.md:122
-#: docs/concepts/memory.md:133 docs/concepts/memory.md:150
-#: docs/concepts/recall-flow.md:1 docs/concepts/self-layer.md:1
-#: docs/concepts/self-layer.md:30 docs/concepts/self-layer.md:52
-#: docs/concepts/self-layer.md:66 docs/concepts/self-layer.md:80
-#: docs/concepts/self-layer.md:91 docs/concepts/sleep.md:1
-#: docs/concepts/time-perception.md:1 docs/features/pair-programming-v1.md:1
-#: docs/guide/database.md:1 docs/guide/security.md:1
-#: docs/tools/execute-code-runtimes.md:1
+#. type: Content of: <messages><msg>
+#: docs/concepts/identity.md:1 messages/po4a/en.xml:35
 #, no-wrap
-msgid "---\n"
-msgstr "---\n"
+msgid "Identity"
+msgstr "身份定位"
 
-#. type: Plain text
-#: docs/concepts/identity.md:3
+#. type: Title #
+#: docs/concepts/identity.md:5
 #, no-wrap
-msgid ""
-"title: Identity\n"
-"---\n"
-msgstr ""
-"title: Identity\n"
-"---\n"
-
-#. type: Plain text
-#: docs/concepts/identity.md:6
-msgid "# Digital Life and FreeAnima"
-msgstr "# 数字生命与逸灵风"
+msgid "Digital Life and FreeAnima"
+msgstr "数字生命与逸灵风"
 
 #. type: Plain text
 #: docs/concepts/identity.md:9
+#, no-wrap
 msgid ""
-"> This is not a pure Agent framework project.  > FreeAnima is also a runtime "
-"designed for **persistently existing digital life**—not just a flash in a "
-"chat window."
+"> This is not a pure Agent framework project.\n"
+"> FreeAnima is also a runtime designed for **persistently existing digital life**—not just a flash in a chat window.\n"
 msgstr ""
-"> 这不是一个纯 Agent 框架项目。 > 逸灵风也是为**持续存在的数字生命**设计的运"
-"行时——而不只是对话窗口里的闪现。"
+"> 这不是一个纯 Agent 框架项目。\n"
+"> 逸灵风也是为**持续存在的数字生命**设计的运行时——而不只是对话窗口里的闪现。\n"
 
-#. type: Plain text
-#: docs/concepts/identity.md:13
-msgid "## Positioning"
-msgstr "## 定位"
+#. type: Title ##
+#: docs/concepts/identity.md:12
+#, no-wrap
+msgid "Positioning"
+msgstr "定位"
 
 #. type: Plain text
 #: docs/concepts/identity.md:15
@@ -82,17 +61,7 @@ msgstr "**让数字生命可以在其中持续存在，记住自己是谁、经�
 
 #. type: Plain text
 #: docs/concepts/identity.md:27
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Structure | Role |\n"
-#| "| --------- | ---- |\n"
-#| "| Memory system (PG conversations + semantic_memory + recall) | The digital life's \"home\" |\n"
-#| "| Self layer (PG `self_blocks`, six blocks) | Persistent definition of \"who I am\" |\n"
-#| "| Tools (local / MCP / ACP) | \"Limbs\" for perception and action |\n"
-#| "| pass credentials | Lifeline (injected at runtime, never plaintext) |\n"
-#| "| Gateway | Ears and mouth (Discord / WeChat / WebUI) |\n"
-#| "| EventBus | Nervous system (memory reflect and other pipelines auto-trigger) |\n"
-#| "| Project narrative files like `AGENTS.md` | Anchor for project context |\n"
+#, no-wrap
 msgid ""
 "| Structure                                | Role                                            |\n"
 "| ---------------------------------------- | ----------------------------------------------- |\n"
@@ -104,20 +73,21 @@ msgid ""
 "| EventBus                                 | Nervous system (memory pipelines auto-trigger)  |\n"
 "| Project narrative files like `AGENTS.md` | Anchor for project context                      |\n"
 msgstr ""
-"| 结构                                           | 角色                                    |\n"
-"| ---------------------------------------------- | --------------------------------------- |\n"
-"| 记忆体系（PG 对话 + semantic_memory + recall） | 数字生命的「家」                        |\n"
-"| 自我层（PG `self_blocks` 六块）                | 「我是谁」的持久化定义                  |\n"
-"| 工具（本地/MCP/ACP）                           | 感知与行动的「四肢」                    |\n"
-"| pass 凭证                                      | 命脉（运行时注入，不见明文）            |\n"
-"| Gateway                                        | 耳朵和嘴（Discord / 微信 / WebUI）      |\n"
-"| EventBus                                       | 神经系统（记忆 reflect 等管道自动触发） |\n"
-"| `AGENTS.md` 等项目叙事文件                     | 项目上下文的锚点                        |\n"
+"| 结构                                | 角色                                            |\n"
+"| ---------------------------------------- | ----------------------------------------------- |\n"
+"| 记忆体系                            | 数字生命的「家」                       |\n"
+"| 自我层（六块）                  | 「我是谁」的持久定义             |\n"
+"| 工具（local / MCP / ACP）                | 感知与行动的「肢体」               |\n"
+"| pass 凭证                         | 生命线（运行时注入，永不明文） |\n"
+"| Gateway                                  | 耳与口（Discord / WeChat / WebUI）       |\n"
+"| EventBus                                 | 神经系统（记忆流水线自动触发）  |\n"
+"| 项目叙事文件如 `AGENTS.md` | 项目上下文锚点                      |\n"
 
-#. type: Plain text
-#: docs/concepts/identity.md:31
-msgid "## For Agents Maintaining This Repository"
-msgstr "## 给维护本仓库的 Agent"
+#. type: Title ##
+#: docs/concepts/identity.md:30
+#, no-wrap
+msgid "For Agents Maintaining This Repository"
+msgstr "给维护本仓库的 Agent"
 
 #. type: Plain text
 #: docs/concepts/identity.md:33
@@ -178,10 +148,11 @@ msgstr ""
 "自我层设计见 [`self-layer.md`](self-layer.md)；记忆体系见 [`memory.md`]"
 "(memory.md)。"
 
-#. type: Plain text
-#: docs/concepts/identity.md:48
-msgid "## Deployer-Defined Identity"
-msgstr "## 部署者自定义身份"
+#. type: Title ##
+#: docs/concepts/identity.md:47
+#, no-wrap
+msgid "Deployer-Defined Identity"
+msgstr "部署者自定义身份"
 
 #. type: Plain text
 #: docs/concepts/identity.md:50
@@ -192,24 +163,15 @@ msgstr "开源仓库只提供架构与机制；**具体是谁、与谁相伴，�
 
 #. type: Plain text
 #: docs/concepts/identity.md:52
-#, fuzzy
-#| msgid ""
-#| "At runtime, the six self blocks are written in first person into PG "
-#| "`self_blocks`. When injected into the system prompt, a second-person "
-#| "outer skeleton wraps them inside an `md` code block (see [`self-layer.md`]"
-#| "(self-layer.md) §System Prompt Injection), so the LLM clearly understands "
-#| "\"this is self-layer content you must follow\" while preserving first-"
-#| "person narrative texture."
 msgid ""
 "At runtime, the six self blocks are written in first person. When injected "
 "into the system prompt, a second-person outer skeleton wraps them so the LLM "
 "clearly understands \"this is self-layer content you must follow\" while "
 "preserving first-person narrative texture."
 msgstr ""
-"运行时，六块自我内容以第一人称写入 PG `self_blocks`，注入 system prompt 时由"
-"第二人称外层骨架包裹并嵌入 `md` 代码块（见 [`self-layer.md`](self-layer.md) "
-"§System Prompt 注入），使 LLM 明确「这是你必须遵守的自我层内容」，同时保留第"
-"一人称自述质地。"
+"运行时，六块自我内容以第一人称写入。注入 system prompt 时，由第二人称外层骨架"
+"包裹，使 LLM 明确理解「这是你必须遵守的自我层内容」，同时保留第一人称自述质"
+"地。"
 
 #. type: Plain text
 #: docs/concepts/identity.md:54

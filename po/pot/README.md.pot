@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 17:27+0800\n"
+"POT-Creation-Date: 2026-06-15 17:52+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,41 +16,16 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. type: Plain text
-#: docs/README.md:1 docs/concepts/architecture.md:1
-#: docs/concepts/compression.md:1 docs/concepts/dream.md:1
-#: docs/concepts/identity.md:1 docs/concepts/identity.md:10
-#: docs/concepts/identity.md:28 docs/concepts/identity.md:45
-#: docs/concepts/identity.md:55 docs/concepts/memory.md:1
-#: docs/concepts/memory.md:17 docs/concepts/memory.md:53
-#: docs/concepts/memory.md:124 docs/concepts/memory.md:135
-#: docs/concepts/memory.md:160 docs/concepts/recall-flow.md:1
-#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:30
-#: docs/concepts/self-layer.md:52 docs/concepts/self-layer.md:66
-#: docs/concepts/self-layer.md:80 docs/concepts/self-layer.md:91
-#: docs/concepts/sleep.md:1 docs/concepts/time-perception.md:1
-#: docs/features/pair-programming-v1.md:1 docs/guide/database.md:1
-#: docs/guide/install.md:1 docs/guide/install.md:31 docs/guide/install.md:106
-#: docs/guide/install.md:167 docs/guide/install.md:234 docs/guide/security.md:1
-#: docs/guide/service.md:1 docs/sap/events.md:1 docs/sap/methods.md:1
-#: docs/sap/overview.md:1 docs/sap/satellite-guide.md:1
-#: docs/sap/security-model.md:1 docs/sap/tools.md:1 docs/sap/transport.md:1
-#: docs/tools/execute-code-runtimes.md:1
+#. type: Yaml Front Matter Hash Value: title
+#: docs/README.md:1
 #, no-wrap
-msgid "---\n"
+msgid "Documentation Index"
 msgstr ""
 
-#. type: Plain text
-#: docs/README.md:3
+#. type: Title #
+#: docs/README.md:5
 #, no-wrap
-msgid ""
-"title: Documentation Index\n"
-"---\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/README.md:6
-msgid "# docs/"
+msgid "docs/"
 msgstr ""
 
 #. type: Plain text
@@ -62,9 +37,10 @@ msgid ""
 "freeanima/issues)."
 msgstr ""
 
-#. type: Plain text
-#: docs/README.md:10
-msgid "## Guide — Usage and Maintenance"
+#. type: Title ##
+#: docs/README.md:9
+#, no-wrap
+msgid "Guide — Usage and Maintenance"
 msgstr ""
 
 #. type: Plain text
@@ -79,9 +55,10 @@ msgid ""
 "| Service      | [guide/service.md](guide/service.md)   |\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/README.md:19
-msgid "## Concepts — Core Ideas"
+#. type: Title ##
+#: docs/README.md:18
+#, no-wrap
+msgid "Concepts — Core Ideas"
 msgstr ""
 
 #. type: Plain text
@@ -100,9 +77,10 @@ msgid ""
 "| Recall flow     | [concepts/recall-flow.md](concepts/recall-flow.md)         |\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/README.md:32
-msgid "## Features — Major Capabilities"
+#. type: Title ##
+#: docs/README.md:31
+#, no-wrap
+msgid "Features — Major Capabilities"
 msgstr ""
 
 #. type: Plain text
@@ -114,29 +92,31 @@ msgid ""
 "| Pair programming | [features/pair-programming-v1.md](features/pair-programming-v1.md) |\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/README.md:38
-msgid "## SAP — Satellite Application Protocol"
+#. type: Title ##
+#: docs/README.md:37
+#, no-wrap
+msgid "SAP — Satellite Application Protocol"
 msgstr ""
 
 #. type: Plain text
 #: docs/README.md:48
 #, no-wrap
 msgid ""
-"| Topic              | File                                       |\n"
-"| ------------------ | ------------------------------------------ |\n"
-"| Overview           | [sap/overview.md](sap/overview.md)         |\n"
-"| Transport          | [sap/transport.md](sap/transport.md)     |\n"
-"| RPC methods        | [sap/methods.md](sap/methods.md)           |\n"
-"| Events             | [sap/events.md](sap/events.md)             |\n"
-"| Tools              | [sap/tools.md](sap/tools.md)               |\n"
-"| Satellite guide    | [sap/satellite-guide.md](sap/satellite-guide.md) |\n"
-"| Security           | [sap/security-model.md](sap/security-model.md)         |\n"
+"| Topic           | File                                             |\n"
+"| --------------- | ------------------------------------------------ |\n"
+"| Overview        | [sap/overview.md](sap/overview.md)               |\n"
+"| Transport       | [sap/transport.md](sap/transport.md)             |\n"
+"| RPC methods     | [sap/methods.md](sap/methods.md)                 |\n"
+"| Events          | [sap/events.md](sap/events.md)                   |\n"
+"| Tools           | [sap/tools.md](sap/tools.md)                     |\n"
+"| Satellite guide | [sap/satellite-guide.md](sap/satellite-guide.md) |\n"
+"| Security        | [sap/security-model.md](sap/security-model.md)   |\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/README.md:50
-msgid "## Tools — Built-in Tools"
+#. type: Title ##
+#: docs/README.md:49
+#, no-wrap
+msgid "Tools — Built-in Tools"
 msgstr ""
 
 #. type: Plain text

@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-12 11:55+0800\n"
+"POT-Creation-Date: 2026-06-15 17:52+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,48 +16,28 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. type: Plain text
-#: docs/README.md:1 docs/concepts/architecture.md:1
-#: docs/concepts/compression.md:1 docs/concepts/identity.md:1
-#: docs/concepts/identity.md:10 docs/concepts/identity.md:28
-#: docs/concepts/identity.md:45 docs/concepts/identity.md:55
-#: docs/concepts/memory.md:1 docs/concepts/memory.md:17
-#: docs/concepts/memory.md:53 docs/concepts/memory.md:122
-#: docs/concepts/memory.md:133 docs/concepts/memory.md:150
-#: docs/concepts/recall-flow.md:1 docs/concepts/self-layer.md:1
-#: docs/concepts/self-layer.md:30 docs/concepts/self-layer.md:52
-#: docs/concepts/self-layer.md:66 docs/concepts/self-layer.md:80
-#: docs/concepts/self-layer.md:91 docs/concepts/sleep.md:1
-#: docs/concepts/time-perception.md:1 docs/features/pair-programming-v1.md:1
-#: docs/guide/database.md:1 docs/guide/security.md:1
-#: docs/tools/execute-code-runtimes.md:1
+#. type: Content of: <messages><msg>
+#: docs/concepts/recall-flow.md:1 messages/po4a/en.xml:42
 #, no-wrap
-msgid "---\n"
+msgid "Recall Flow"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/recall-flow.md:3
+#. type: Title #
+#: docs/concepts/recall-flow.md:5
 #, no-wrap
-msgid ""
-"title: Recall Flow\n"
-"---\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/recall-flow.md:6
-msgid "# Unified Recall Retrieval"
+msgid "Unified Recall Retrieval"
 msgstr ""
 
 #. type: Plain text
 #: docs/concepts/recall-flow.md:8
-msgid ""
-"> **v1 ✅ Implemented:** `memory_recall(query)` four-source unified recall, "
-"returns `results[]` (distinguished by `memory_type`)."
+#, no-wrap
+msgid "> **v1 ✅ Implemented:** `memory_recall(query)` four-source unified recall, returns `results[]` (distinguished by `memory_type`).\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/recall-flow.md:10
-msgid "## v1 Implemented"
+#. type: Title ##
+#: docs/concepts/recall-flow.md:9
+#, no-wrap
+msgid "v1 Implemented"
 msgstr ""
 
 #. type: Plain text
@@ -72,9 +52,10 @@ msgid ""
 "| Resident memory   | System prompt injection (not recall)                                                         |\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/recall-flow.md:19
-msgid "### Four Sources"
+#. type: Title ###
+#: docs/concepts/recall-flow.md:18
+#, no-wrap
+msgid "Four Sources"
 msgstr ""
 
 #. type: Plain text
@@ -89,9 +70,10 @@ msgid ""
 "| `autobiographical` | Narrative title + content snippet     |\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/recall-flow.md:28
-msgid "### Resident Memory"
+#. type: Title ###
+#: docs/concepts/recall-flow.md:27
+#, no-wrap
+msgid "Resident Memory"
 msgstr ""
 
 #. type: Plain text
@@ -102,9 +84,10 @@ msgid ""
 "markers in replies; reference counts sync via nightly cron."
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/recall-flow.md:32
-msgid "## Relationship to Self Layer"
+#. type: Title ##
+#: docs/concepts/recall-flow.md:31
+#, no-wrap
+msgid "Relationship to Self Layer"
 msgstr ""
 
 #. type: Plain text
@@ -124,9 +107,10 @@ msgid ""
 "| Memory layer | `memory_recall` on demand | Large, dynamic, search when needed                |\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/recall-flow.md:41
-msgid "## Future Direction"
+#. type: Title ##
+#: docs/concepts/recall-flow.md:40
+#, no-wrap
+msgid "Future Direction"
 msgstr ""
 
 #. type: Plain text
@@ -137,9 +121,10 @@ msgid ""
 "freeanima/issues/47). Not current runtime behavior."
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/recall-flow.md:45
-msgid "## Naming Rationale"
+#. type: Title ##
+#: docs/concepts/recall-flow.md:44
+#, no-wrap
+msgid "Naming Rationale"
 msgstr ""
 
 #. type: Plain text

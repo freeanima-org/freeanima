@@ -97,7 +97,7 @@ Two memories semantically negate each other and cannot be explained by temporal 
 
 DAG (macro layer):
 
-```
+```text
 light-sleep
   ├─► deep-sleep ──► memory-ref-sync (optional step)
   ├─► dream (optional step)
@@ -119,7 +119,7 @@ Each step run is logged in the **Pipeline history** table on the sleep page. Cro
 
 ## Relationship to Existing Architecture
 
-```
+```text
 Conversation archive
   │ sleep-cycle pipeline (02:00)
   │   step light-sleep (three internal stages)

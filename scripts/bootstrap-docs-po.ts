@@ -46,7 +46,22 @@ for (const { abs: master, master: slug, rel } of listDocMasters()) {
 
     const r = spawnSync(
       "po4a-gettextize",
-      ["--format", "text", "--master", master, "--localized", localized, "--po", po],
+      [
+        "--format",
+        "text",
+        "-o",
+        "markdown",
+        "-o",
+        "yfm_keys=title",
+        "-o",
+        "yfm_lenient",
+        "--master",
+        master,
+        "--localized",
+        localized,
+        "--po",
+        po,
+      ],
       { cwd: root, encoding: "utf8" },
     );
     if (r.status !== 0) {

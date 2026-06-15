@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 17:27+0800\n"
+"POT-Creation-Date: 2026-06-15 18:02+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,55 +16,31 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. type: Plain text
-#: docs/README.md:1 docs/concepts/architecture.md:1
-#: docs/concepts/compression.md:1 docs/concepts/dream.md:1
-#: docs/concepts/identity.md:1 docs/concepts/identity.md:10
-#: docs/concepts/identity.md:28 docs/concepts/identity.md:45
-#: docs/concepts/identity.md:55 docs/concepts/memory.md:1
-#: docs/concepts/memory.md:17 docs/concepts/memory.md:53
-#: docs/concepts/memory.md:124 docs/concepts/memory.md:135
-#: docs/concepts/memory.md:160 docs/concepts/recall-flow.md:1
-#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:30
-#: docs/concepts/self-layer.md:52 docs/concepts/self-layer.md:66
-#: docs/concepts/self-layer.md:80 docs/concepts/self-layer.md:91
-#: docs/concepts/sleep.md:1 docs/concepts/time-perception.md:1
-#: docs/features/pair-programming-v1.md:1 docs/guide/database.md:1
-#: docs/guide/install.md:1 docs/guide/install.md:31 docs/guide/install.md:106
-#: docs/guide/install.md:167 docs/guide/install.md:234 docs/guide/security.md:1
-#: docs/guide/service.md:1 docs/sap/events.md:1 docs/sap/methods.md:1
-#: docs/sap/overview.md:1 docs/sap/satellite-guide.md:1
-#: docs/sap/security-model.md:1 docs/sap/tools.md:1 docs/sap/transport.md:1
-#: docs/tools/execute-code-runtimes.md:1
+#. type: Title ##
+#: docs/concepts/compression.md:10 docs/concepts/sleep.md:13
+#: docs/concepts/time-perception.md:21 docs/features/pair-programming-v1.md:10
 #, no-wrap
-msgid "---\n"
+msgid "Design Principles"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/compression.md:11 docs/concepts/sleep.md:14
-#: docs/concepts/time-perception.md:22 docs/features/pair-programming-v1.md:11
-msgid "## Design Principles"
-msgstr ""
-
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:3
+#. type: Yaml Front Matter Hash Value: title
+#: docs/features/pair-programming-v1.md:1
 #, no-wrap
-msgid ""
-"title: Pair Programming V1\n"
-"---\n"
+msgid "Pair Programming V1"
 msgstr ""
 
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:6
-msgid "# Pair Programming (Studio)"
+#. type: Title #
+#: docs/features/pair-programming-v1.md:5
+#, no-wrap
+msgid "Pair Programming (Studio)"
 msgstr ""
 
 #. type: Plain text
 #: docs/features/pair-programming-v1.md:9
+#, no-wrap
 msgid ""
-"> **Phase 1 ✅ shipped**: three-column layout, syntax-highlighted viewer, "
-"file tree/search, terminal, dedicated session platform id.  > Future work: "
-"[Issue #37](https://github.com/freeanima-org/freeanima/issues/37)."
+"> **Phase 1 ✅ shipped**: three-column layout, syntax-highlighted viewer, file tree/search, terminal, dedicated session platform id.\n"
+"> Future work: [Issue #37](https://github.com/freeanima-org/freeanima/issues/37).\n"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -94,16 +70,16 @@ msgid ""
 "Chamber)"
 msgstr ""
 
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:18
-msgid "## Layout"
+#. type: Title ##
+#: docs/features/pair-programming-v1.md:17
+#, no-wrap
+msgid "Layout"
 msgstr ""
 
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:33
+#. type: Fenced code block (text)
+#: docs/features/pair-programming-v1.md:19
 #, no-wrap
 msgid ""
-"```\n"
 "┌──────────────────────────────────────────────────────────┐\n"
 "│  Studio                  [Pair Programming] [Novel] …    │\n"
 "├──────────┬────────────────────────┬──────────────────────┤\n"
@@ -116,7 +92,6 @@ msgid ""
 "└──────────┴────────────────────────┴──────────────────────┘\n"
 "   Left              Center                  Right\n"
 "  file tree        code viewer           session + chat\n"
-"```\n"
 msgstr ""
 
 #. type: Plain text
@@ -130,9 +105,10 @@ msgid ""
 "| Right (chat) | 360px         | 280–500px |\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:41
-msgid "## Usage"
+#. type: Title ##
+#: docs/features/pair-programming-v1.md:40
+#, no-wrap
+msgid "Usage"
 msgstr ""
 
 #. type: Bullet: '1. '
@@ -167,9 +143,10 @@ msgstr ""
 msgid "Bottom terminal for debug/ops (isolated from chat session)"
 msgstr ""
 
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:50
-msgid "## Session Isolation"
+#. type: Title ##
+#: docs/features/pair-programming-v1.md:49
+#, no-wrap
+msgid "Session Isolation"
 msgstr ""
 
 #. type: Plain text
@@ -179,9 +156,10 @@ msgid ""
 "parlor (`parlor`) and other platform session lists."
 msgstr ""
 
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:54
-msgid "## Current Limitations"
+#. type: Title ##
+#: docs/features/pair-programming-v1.md:53
+#, no-wrap
+msgid "Current Limitations"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -199,9 +177,10 @@ msgstr ""
 msgid "Workspace must be a path readable by the server process"
 msgstr ""
 
-#. type: Plain text
-#: docs/features/pair-programming-v1.md:60
-msgid "## Related Docs"
+#. type: Title ##
+#: docs/features/pair-programming-v1.md:59
+#, no-wrap
+msgid "Related Docs"
 msgstr ""
 
 #. type: Bullet: '- '

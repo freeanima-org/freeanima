@@ -9,7 +9,7 @@ title: Self Layer
 
 ## Architectural Position
 
-```
+```text
 FreeAnima Storage Architecture
 │
 ├── Memory Layer — see memory.md

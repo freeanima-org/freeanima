@@ -40,7 +40,7 @@ This is not a trivial joke problem—time perception is a foundational capabilit
 
 Original message list:
 
-```
+```text
 user: good morning
 assistant: morning ☀️
 user: going to eat
@@ -50,7 +50,7 @@ user: going to eat
 
 After time perception (context sent to LLM):
 
-```
+```text
 user: time: 2026-05-20T08:02
 good morning
 assistant: morning ☀️
