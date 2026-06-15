@@ -34,6 +34,18 @@ For **FreeAnima users** — self-hosted deployment, talking to a digital life, c
 | ---------------- | ------------------------------------------------------------------ |
 | Pair programming | [features/pair-programming-v1.md](features/pair-programming-v1.md) |
 
+## SAP — Satellite Application Protocol
+
+| Topic           | File                                             |
+| --------------- | ------------------------------------------------ |
+| Overview        | [sap/overview.md](sap/overview.md)               |
+| Transport       | [sap/transport.md](sap/transport.md)             |
+| RPC methods     | [sap/methods.md](sap/methods.md)                 |
+| Events          | [sap/events.md](sap/events.md)                   |
+| Tools           | [sap/tools.md](sap/tools.md)                     |
+| Satellite guide | [sap/satellite-guide.md](sap/satellite-guide.md) |
+| Security        | [sap/security-model.md](sap/security-model.md)   |
+
 ## Tools — Built-in Tools
 
 | Topic         | File                                                             |

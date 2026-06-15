@@ -1,0 +1,241 @@
+# Chinese translations for PACKAGE package
+# Copyright (C) 2026 Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-06-15 17:27+0800\n"
+"PO-Revision-Date: 2026-06-15 17:27+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Plain text
+#: docs/README.md:1 docs/concepts/architecture.md:1
+#: docs/concepts/compression.md:1 docs/concepts/dream.md:1
+#: docs/concepts/identity.md:1 docs/concepts/identity.md:10
+#: docs/concepts/identity.md:28 docs/concepts/identity.md:45
+#: docs/concepts/identity.md:55 docs/concepts/memory.md:1
+#: docs/concepts/memory.md:17 docs/concepts/memory.md:53
+#: docs/concepts/memory.md:124 docs/concepts/memory.md:135
+#: docs/concepts/memory.md:160 docs/concepts/recall-flow.md:1
+#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:30
+#: docs/concepts/self-layer.md:52 docs/concepts/self-layer.md:66
+#: docs/concepts/self-layer.md:80 docs/concepts/self-layer.md:91
+#: docs/concepts/sleep.md:1 docs/concepts/time-perception.md:1
+#: docs/features/pair-programming-v1.md:1 docs/guide/database.md:1
+#: docs/guide/install.md:1 docs/guide/install.md:31 docs/guide/install.md:106
+#: docs/guide/install.md:167 docs/guide/install.md:234 docs/guide/security.md:1
+#: docs/guide/service.md:1 docs/sap/events.md:1 docs/sap/methods.md:1
+#: docs/sap/overview.md:1 docs/sap/satellite-guide.md:1
+#: docs/sap/security-model.md:1 docs/sap/tools.md:1 docs/sap/transport.md:1
+#: docs/tools/execute-code-runtimes.md:1
+#, no-wrap
+msgid "---\n"
+msgstr "---\n"
+
+#. type: Plain text
+#: docs/sap/security-model.md:3
+#, no-wrap
+msgid ""
+"title: SAP Security\n"
+"---\n"
+msgstr ""
+"title: SAP 安全\n"
+"---\n"
+
+#. type: Plain text
+#: docs/sap/security-model.md:6
+msgid "# SAP Security"
+msgstr "# SAP 安全"
+
+#. type: Plain text
+#: docs/sap/security-model.md:8
+msgid ""
+"Current SAP deployment assumes a **trusted local machine**. There is no "
+"application-layer authentication on the WebSocket."
+msgstr ""
+"当前 SAP 部署假定运行在**受信任的本地机器**上。WebSocket 上没有应用层身份验"
+"证。"
+
+#. type: Plain text
+#: docs/sap/security-model.md:10
+msgid "## Trust boundary"
+msgstr "## 信任边界"
+
+#. type: Plain text
+#: docs/sap/security-model.md:28
+#, no-wrap
+msgid ""
+"```mermaid\n"
+"flowchart TB\n"
+"  subgraph trusted [Trusted local host assumption]\n"
+"    Hub[\"Hub anima service :2658\"]\n"
+"    SapEndpoint[\"/sap/v1 WebSocket\"]\n"
+"    SatA[Satellite pair-programming]\n"
+"    SatB[Satellite parlor]\n"
+"    Other[Any local process]\n"
+"  end\n"
+"  Browser[Browser loopback]\n"
+"  Browser --> SatA\n"
+"  Browser --> SatB\n"
+"  SatA --> SapEndpoint\n"
+"  SatB --> SapEndpoint\n"
+"  Other -.->|\"no auth today\"| SapEndpoint\n"
+"  SapEndpoint --> Hub\n"
+"```\n"
+msgstr ""
+"```mermaid\n"
+"flowchart TB\n"
+"  subgraph trusted [Trusted local host assumption]\n"
+"    Hub[\"Hub anima service :2658\"]\n"
+"    SapEndpoint[\"/sap/v1 WebSocket\"]\n"
+"    SatA[Satellite pair-programming]\n"
+"    SatB[Satellite parlor]\n"
+"    Other[Any local process]\n"
+"  end\n"
+"  Browser[Browser loopback]\n"
+"  Browser --> SatA\n"
+"  Browser --> SatB\n"
+"  SatA --> SapEndpoint\n"
+"  SatB --> SapEndpoint\n"
+"  Other -.->|\"no auth today\"| SapEndpoint\n"
+"  SapEndpoint --> Hub\n"
+"```\n"
+
+#. type: Plain text
+#: docs/sap/security-model.md:30
+msgid "## Current controls"
+msgstr "## 当前控制措施"
+
+#. type: Plain text
+#: docs/sap/security-model.md:38
+#, no-wrap
+msgid ""
+"| Control | Status |\n"
+"| ------- | ------ |\n"
+"| TLS on SAP | Not required; typical bind is loopback |\n"
+"| Token / API key on connect | **None** |\n"
+"| Origin check on WebSocket | **None** |\n"
+"| Session-scoped tool routing | **Yes** — [strict routing](tools.md) |\n"
+"| Credential values in SAP frames | **No** — credentials stay in pass; LLM sees paths only |\n"
+msgstr ""
+"| 控制项 | 状态 |\n"
+"| ------- | ------ |\n"
+"| SAP 上的 TLS | 非必需；通常绑定到 loopback |\n"
+"| 连接时的 Token / API key | **无** |\n"
+"| WebSocket Origin 检查 | **无** |\n"
+"| 会话作用域的工具路由 | **有** — [严格路由](tools.md) |\n"
+"| SAP 帧中的凭证值 | **无** — 凭证保留在 pass 中；LLM 仅见路径 |\n"
+
+#. type: Plain text
+#: docs/sap/security-model.md:40
+msgid ""
+"Any process on the host that can reach `ws://127.0.0.1:2658/sap/v1` can:"
+msgstr "任何能够访问 `ws://127.0.0.1:2658/sap/v1` 的主机进程都可以："
+
+#. type: Bullet: '- '
+#: docs/sap/security-model.md:44
+msgid "Register tools as any `app_id` / `instance_id`"
+msgstr "以任意 `app_id` / `instance_id` 注册工具"
+
+#. type: Bullet: '- '
+#: docs/sap/security-model.md:44
+msgid "Create sessions and send messages through the Hub runtime"
+msgstr "通过 Hub 运行时创建会话并发送消息"
+
+#. type: Bullet: '- '
+#: docs/sap/security-model.md:44
+msgid "Receive `tool.call` events for registered tools"
+msgstr "接收已注册工具的 `tool.call` 事件"
+
+#. type: Plain text
+#: docs/sap/security-model.md:46
+msgid ""
+"Operational guidance: bind Hub to loopback; do not expose port 2658 to "
+"untrusted networks without additional controls. See [security guide](../"
+"guide/security.md)."
+msgstr ""
+"运维建议：将 Hub 绑定到 loopback；在未添加额外控制措施的情况下，不要将 2658 "
+"端口暴露给不可信网络。参见 [安全指南](../guide/security.md)。"
+
+#. type: Plain text
+#: docs/sap/security-model.md:48
+msgid "## Protocol hardening (transport layer)"
+msgstr "## 协议加固（传输层）"
+
+#. type: Plain text
+#: docs/sap/security-model.md:50
+msgid ""
+"Invalid frames close the socket with **1003**. Protocol violations (double "
+"connect, RPC before handshake) close with **1008**. These are integrity "
+"checks, not authentication."
+msgstr ""
+"无效帧会以 **1003** 关闭套接字。协议违规（重复连接、握手前 RPC）会以 "
+"**1008** 关闭。这些是完整性检查，而非身份验证。"
+
+#. type: Plain text
+#: docs/sap/security-model.md:52
+msgid "## Future directions (not implemented)"
+msgstr "## 未来方向（尚未实现）"
+
+#. type: Plain text
+#: docs/sap/security-model.md:54
+msgid ""
+"Possible hardening items — not committed; track via GitHub Issues if "
+"prioritized:"
+msgstr "可能的加固项 — 尚未承诺；若优先处理则通过 GitHub Issues 跟踪："
+
+#. type: Bullet: '- '
+#: docs/sap/security-model.md:59
+msgid "Shared secret or mTLS on `/sap/v1`"
+msgstr "`/sap/v1` 上的共享密钥或 mTLS"
+
+#. type: Bullet: '- '
+#: docs/sap/security-model.md:59
+msgid "Instance attestation tied to managed satellite systemd units"
+msgstr "与托管 satellite systemd 单元绑定的实例证明"
+
+#. type: Bullet: '- '
+#: docs/sap/security-model.md:59
+msgid "Rate limits on connect and `tool.register`"
+msgstr "对 connect 和 `tool.register` 的速率限制"
+
+#. type: Bullet: '- '
+#: docs/sap/security-model.md:59
+msgid "Explicit disconnect on missed heartbeats"
+msgstr "心跳丢失时显式断开连接"
+
+#. type: Plain text
+#: docs/sap/security-model.md:61
+msgid ""
+"When adding auth, preserve backward compatibility only if explicitly "
+"requested; this codebase phase accepts breaking changes."
+msgstr ""
+"添加身份验证时，仅在明确要求时才保持向后兼容；本代码库阶段接受破坏性变更。"
+
+#. type: Plain text
+#: docs/sap/security-model.md:63
+msgid "## Related surfaces"
+msgstr "## 相关接口"
+
+#. type: Plain text
+#: docs/sap/security-model.md:68
+#, no-wrap
+msgid ""
+"| Surface | Doc |\n"
+"| ------- | --- |\n"
+"| Hub HTTP / WebUI | [security.md](../guide/security.md) |\n"
+"| Credentials (pass) | [security.md](../guide/security.md), [identity.md](../concepts/identity.md) |\n"
+"| Tool execution | [tools.md](tools.md) |\n"
+msgstr ""
+"| 接口 | 文档 |\n"
+"| ------- | --- |\n"
+"| Hub HTTP / WebUI | [security.md](../guide/security.md) |\n"
+"| 凭证 (pass) | [security.md](../guide/security.md), [identity.md](../concepts/identity.md) |\n"
+"| 工具执行 | [tools.md](tools.md) |\n"

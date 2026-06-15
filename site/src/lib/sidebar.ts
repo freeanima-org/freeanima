@@ -46,6 +46,19 @@ export const starlightSidebar = [
         items: [{ ...t("sidebar_pair_programming"), link: "/docs/features/pair-programming-v1/" }],
       },
       {
+        ...t("sidebar_sap"),
+        collapsed: true,
+        items: [
+          { ...t("sidebar_sap_overview"), link: "/docs/sap/overview/" },
+          { ...t("sidebar_sap_transport"), link: "/docs/sap/transport/" },
+          { ...t("sidebar_sap_methods"), link: "/docs/sap/methods/" },
+          { ...t("sidebar_sap_events"), link: "/docs/sap/events/" },
+          { ...t("sidebar_sap_tools"), link: "/docs/sap/tools/" },
+          { ...t("sidebar_sap_satellite_guide"), link: "/docs/sap/satellite-guide/" },
+          { ...t("sidebar_sap_security"), link: "/docs/sap/security-model/" },
+        ],
+      },
+      {
         ...t("sidebar_tools"),
         collapsed: true,
         items: [{ ...t("sidebar_runtimes"), link: "/docs/tools/execute-code-runtimes/" }],

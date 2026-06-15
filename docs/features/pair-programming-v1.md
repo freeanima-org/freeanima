@@ -39,7 +39,7 @@ title: Pair Programming V1
 
 ## Usage
 
-1. Configure `satellites.pair-programming` in `~/.anima/config.yaml` (see [`satellites.md`](../guide/satellites.md))
+1. Configure `satellites.pair-programming` in `~/.anima/config.yaml` (see [`satellite-guide.md`](../sap/satellite-guide.md))
 2. `anima service start`
 3. Open `http://127.0.0.1:4173`
 4. Browse/search files on the left; view selection in the center

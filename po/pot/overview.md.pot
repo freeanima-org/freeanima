@@ -1,0 +1,238 @@
+# SOME DESCRIPTIVE TITLE
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-06-15 17:27+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Plain text
+#: docs/README.md:1 docs/concepts/architecture.md:1
+#: docs/concepts/compression.md:1 docs/concepts/dream.md:1
+#: docs/concepts/identity.md:1 docs/concepts/identity.md:10
+#: docs/concepts/identity.md:28 docs/concepts/identity.md:45
+#: docs/concepts/identity.md:55 docs/concepts/memory.md:1
+#: docs/concepts/memory.md:17 docs/concepts/memory.md:53
+#: docs/concepts/memory.md:124 docs/concepts/memory.md:135
+#: docs/concepts/memory.md:160 docs/concepts/recall-flow.md:1
+#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:30
+#: docs/concepts/self-layer.md:52 docs/concepts/self-layer.md:66
+#: docs/concepts/self-layer.md:80 docs/concepts/self-layer.md:91
+#: docs/concepts/sleep.md:1 docs/concepts/time-perception.md:1
+#: docs/features/pair-programming-v1.md:1 docs/guide/database.md:1
+#: docs/guide/install.md:1 docs/guide/install.md:31 docs/guide/install.md:106
+#: docs/guide/install.md:167 docs/guide/install.md:234 docs/guide/security.md:1
+#: docs/guide/service.md:1 docs/sap/events.md:1 docs/sap/methods.md:1
+#: docs/sap/overview.md:1 docs/sap/satellite-guide.md:1
+#: docs/sap/security-model.md:1 docs/sap/tools.md:1 docs/sap/transport.md:1
+#: docs/tools/execute-code-runtimes.md:1
+#, no-wrap
+msgid "---\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/events.md:18 docs/sap/overview.md:55 docs/sap/tools.md:38
+#, no-wrap
+msgid ""
+"```mermaid\n"
+"sequenceDiagram\n"
+"  participant Sat as Satellite\n"
+"  participant Hub as Hub\n"
+"  participant Agent as AgentRuntime\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/overview.md:3
+#, no-wrap
+msgid ""
+"title: SAP Overview\n"
+"---\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/overview.md:6
+msgid "# SAP Overview"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/overview.md:8
+#, no-wrap
+msgid "**SAP** (Satellite Application Protocol, version `SAP/1.0`) is the WebSocket JSON protocol between the FreeAnima **Hub** (`anima service`) and **Satellite** processes. Satellites are standalone apps (e.g. pair-programming Studio) that expose their own HTTP UI while delegating agent runtime capabilities to the Hub.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/overview.md:10
+msgid ""
+"Schemas and client SDK live in [`packages/sap-contract/`](../../packages/sap-"
+"contract/). Hub server implementation: [`platform/src/sap/`](../../platform/"
+"src/sap/)."
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/overview.md:12
+msgid "## Design goals"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sap/overview.md:16
+msgid ""
+"**Origin isolation**: the browser talks only to the Satellite HTTP origin; "
+"the Hub is reached over a separate WebSocket from the Satellite process."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sap/overview.md:16
+msgid ""
+"**Centralized runtime**: sessions, message streaming, PTY terminals, and LLM "
+"tool execution run on the Hub; Satellites proxy UI and local tools."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sap/overview.md:16
+msgid ""
+"**Shared contract**: both sides import `@freeanima/sap-contract` for "
+"envelopes, RPC types, and `createSapClient` / `runSapTransport`."
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/overview.md:18
+msgid "## Topology"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/overview.md:37
+#, no-wrap
+msgid ""
+"```mermaid\n"
+"flowchart LR\n"
+"  Browser -->|HTTP| Satellite\n"
+"  Satellite -->|WebSocket SAP/1.0| Hub\n"
+"  Hub --> Runtime[AgentRuntime]\n"
+"  subgraph hubWebUI [Hub WebUI]\n"
+"    Parlor[Parlor chat]\n"
+"    Chamber[Chamber admin]\n"
+"  end\n"
+"  Browser -.->|optional| hubWebUI\n"
+"  subgraph sapContract [\"@freeanima/sap-contract\"]\n"
+"    Protocol[protocol.ts]\n"
+"    Frames[frames/*]\n"
+"    Client[client.ts]\n"
+"  end\n"
+"  Satellite -.-> sapContract\n"
+"  Hub -.-> sapContract\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/overview.md:43
+#, no-wrap
+msgid ""
+"| Role | Default | Responsibility |\n"
+"| ---- | ------- | -------------- |\n"
+"| Hub | `http://127.0.0.1:2658` | Agent runtime, SAP WebSocket server at `/sap/v1`, Parlor + Chamber WebUI |\n"
+"| Satellite | e.g. `:4173` / `:4174` | Own HTTP UI; outbound SAP connection to Hub |\n"
+"| Browser | Satellite origin | Loads Satellite UI; may also open Hub Parlor/Chamber |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/overview.md:45
+#, no-wrap
+msgid "**Parlor** and **Chamber** are Hub-only WebUI modes. **Studio** apps (pair-programming) run as Satellites with a dedicated UI origin.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/overview.md:47
+msgid ""
+"See also: [architecture WebUI section](../concepts/architecture.md#webui)."
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/overview.md:49
+msgid "## End-to-end happy path"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/overview.md:72
+#, no-wrap
+msgid ""
+"  Sat->>Hub: connect\n"
+"  Hub->>Sat: connected\n"
+"  Sat->>Hub: req tool.register\n"
+"  Hub->>Sat: res ok\n"
+"  Sat->>Hub: req session.create\n"
+"  Hub->>Sat: res session_id\n"
+"  Sat->>Hub: req message.send\n"
+"  Hub->>Sat: res stream_id\n"
+"  Hub-->>Sat: evt stream.accepted\n"
+"  Hub-->>Sat: evt stream.token\n"
+"  Agent->>Hub: invoke sap tool\n"
+"  Hub-->>Sat: evt tool.call\n"
+"  Sat->>Hub: req tool.result\n"
+"  Hub-->>Sat: evt stream.tool_result\n"
+"  Hub-->>Sat: evt stream.done\n"
+"```\n"
+msgstr ""
+
+#. type: Bullet: '1. '
+#: docs/sap/overview.md:79
+msgid "Satellite opens `ws://{hub}/sap/v1` and sends `connect`."
+msgstr ""
+
+#. type: Bullet: '2. '
+#: docs/sap/overview.md:79
+msgid ""
+"Hub replies `connected` and registers the instance in `SatelliteManager`."
+msgstr ""
+
+#. type: Bullet: '3. '
+#: docs/sap/overview.md:79
+msgid "Satellite registers local tools via `tool.register`."
+msgstr ""
+
+#. type: Bullet: '4. '
+#: docs/sap/overview.md:79
+msgid ""
+"Satellite creates a session; Hub writes `platform_extra.satellite_*` for "
+"strict tool routing."
+msgstr ""
+
+#. type: Bullet: '5. '
+#: docs/sap/overview.md:79
+msgid "`message.send` returns a `stream_id`; Hub pushes `stream.*` events."
+msgstr ""
+
+#. type: Bullet: '6. '
+#: docs/sap/overview.md:79
+msgid ""
+"When the agent calls a Satellite tool, Hub sends `tool.call`; Satellite "
+"replies with `tool.result` or `tool.error`."
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/overview.md:81
+msgid "## Document map"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/overview.md:89
+#, no-wrap
+msgid ""
+"| Topic | File |\n"
+"| ----- | ---- |\n"
+"| Transport, envelopes, heartbeat | [transport.md](transport.md) |\n"
+"| RPC methods | [methods.md](methods.md) |\n"
+"| Async events | [events.md](events.md) |\n"
+"| Tool naming and routing | [tools.md](tools.md) |\n"
+"| Config and implementation | [satellite-guide.md](satellite-guide.md) |\n"
+"| Security model | [security-model.md](security-model.md) |\n"
+msgstr ""

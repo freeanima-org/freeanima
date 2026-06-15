@@ -41,6 +41,14 @@ Digital Humans</msg>
   <msg id="sidebar_probe_architecture">Probe Architecture</msg>
   <msg id="sidebar_recall_flow">Recall Flow</msg>
   <msg id="sidebar_runtimes">Runtimes</msg>
+  <msg id="sidebar_sap">SAP</msg>
+  <msg id="sidebar_sap_events">Events</msg>
+  <msg id="sidebar_sap_methods">RPC Methods</msg>
+  <msg id="sidebar_sap_overview">Overview</msg>
+  <msg id="sidebar_sap_satellite_guide">Satellite Guide</msg>
+  <msg id="sidebar_sap_security">Security</msg>
+  <msg id="sidebar_sap_tools">Tools</msg>
+  <msg id="sidebar_sap_transport">Transport</msg>
   <msg id="sidebar_security">Security</msg>
   <msg id="sidebar_self_layer">Self Layer</msg>
   <msg id="sidebar_service">Service</msg>

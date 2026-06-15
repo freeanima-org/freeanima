@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 15:48+0800\n"
+"POT-Creation-Date: 2026-06-15 17:27+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -32,7 +32,10 @@ msgstr ""
 #: docs/features/pair-programming-v1.md:1 docs/guide/database.md:1
 #: docs/guide/install.md:1 docs/guide/install.md:31 docs/guide/install.md:106
 #: docs/guide/install.md:167 docs/guide/install.md:234 docs/guide/security.md:1
-#: docs/guide/service.md:1 docs/tools/execute-code-runtimes.md:1
+#: docs/guide/service.md:1 docs/sap/events.md:1 docs/sap/methods.md:1
+#: docs/sap/overview.md:1 docs/sap/satellite-guide.md:1
+#: docs/sap/security-model.md:1 docs/sap/tools.md:1 docs/sap/transport.md:1
+#: docs/tools/execute-code-runtimes.md:1
 #, no-wrap
 msgid "---\n"
 msgstr ""
@@ -133,92 +136,80 @@ msgid "## Usage"
 msgstr ""
 
 #. type: Bullet: '1. '
-#: docs/features/pair-programming-v1.md:44
-msgid "Start Hub: `anima service start --foreground` (or `--dev`)"
+#: docs/features/pair-programming-v1.md:48
+msgid ""
+"Configure `satellites.pair-programming` in `~/.anima/config.yaml` (see "
+"[`satellite-guide.md`](../sap/satellite-guide.md))"
 msgstr ""
 
 #. type: Bullet: '2. '
-#: docs/features/pair-programming-v1.md:44
-msgid "Start the pair-programming satellite:"
-msgstr ""
-
-#. type: Plain text
 #: docs/features/pair-programming-v1.md:48
-#, no-wrap
-msgid ""
-"   ```bash\n"
-"   FREEANIMA_URL=http://127.0.0.1:2658 STUDIO_WORKSPACE=/path/to/project bun satellites/pair-programming/dev.ts\n"
-"   ```\n"
+msgid "`anima service start`"
 msgstr ""
 
 #. type: Bullet: '3. '
-#: docs/features/pair-programming-v1.md:54
-msgid "Open `http://127.0.0.1:4173` (Hub Studio tab links here as well)"
+#: docs/features/pair-programming-v1.md:48
+msgid "Open `http://127.0.0.1:4173`"
 msgstr ""
 
 #. type: Bullet: '4. '
-#: docs/features/pair-programming-v1.md:54
-msgid "Set workspace path in Chamber if not passed via `STUDIO_WORKSPACE`"
-msgstr ""
-
-#. type: Bullet: '5. '
-#: docs/features/pair-programming-v1.md:54
+#: docs/features/pair-programming-v1.md:48
 msgid "Browse/search files on the left; view selection in the center"
 msgstr ""
 
-#. type: Bullet: '6. '
-#: docs/features/pair-programming-v1.md:54
+#. type: Bullet: '5. '
+#: docs/features/pair-programming-v1.md:48
 msgid "Create or select a session on the right; discuss code with the agent"
 msgstr ""
 
-#. type: Bullet: '7. '
-#: docs/features/pair-programming-v1.md:54
+#. type: Bullet: '6. '
+#: docs/features/pair-programming-v1.md:48
 msgid "Bottom terminal for debug/ops (isolated from chat session)"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/pair-programming-v1.md:56
+#: docs/features/pair-programming-v1.md:50
 msgid "## Session Isolation"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/pair-programming-v1.md:58
+#: docs/features/pair-programming-v1.md:52
 msgid ""
 "Pair programming uses platform `studio-pair-programming`, separate from "
 "parlor (`parlor`) and other platform session lists."
 msgstr ""
 
 #. type: Plain text
-#: docs/features/pair-programming-v1.md:60
+#: docs/features/pair-programming-v1.md:54
 msgid "## Current Limitations"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:64
+#: docs/features/pair-programming-v1.md:58
 msgid "Read-only viewer (highlight.js), not Monaco"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:64
+#: docs/features/pair-programming-v1.md:58
 msgid "Agent cannot directly edit and save files (Phase 2)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:64
+#: docs/features/pair-programming-v1.md:58
 msgid "Workspace must be a path readable by the server process"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/pair-programming-v1.md:66
+#: docs/features/pair-programming-v1.md:60
 msgid "## Related Docs"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:68
+#: docs/features/pair-programming-v1.md:62
 msgid "WebUI three modes: [`architecture.md`](../concepts/architecture.md)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:68
+#: docs/features/pair-programming-v1.md:62
 msgid "Security and tool risks: [`security.md`](../guide/security.md)"
 msgstr ""

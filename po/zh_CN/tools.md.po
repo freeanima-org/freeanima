@@ -1,0 +1,358 @@
+# Chinese translations for PACKAGE package
+# Copyright (C) 2026 Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-06-15 17:27+0800\n"
+"PO-Revision-Date: 2026-06-15 17:27+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Plain text
+#: docs/README.md:1 docs/concepts/architecture.md:1
+#: docs/concepts/compression.md:1 docs/concepts/dream.md:1
+#: docs/concepts/identity.md:1 docs/concepts/identity.md:10
+#: docs/concepts/identity.md:28 docs/concepts/identity.md:45
+#: docs/concepts/identity.md:55 docs/concepts/memory.md:1
+#: docs/concepts/memory.md:17 docs/concepts/memory.md:53
+#: docs/concepts/memory.md:124 docs/concepts/memory.md:135
+#: docs/concepts/memory.md:160 docs/concepts/recall-flow.md:1
+#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:30
+#: docs/concepts/self-layer.md:52 docs/concepts/self-layer.md:66
+#: docs/concepts/self-layer.md:80 docs/concepts/self-layer.md:91
+#: docs/concepts/sleep.md:1 docs/concepts/time-perception.md:1
+#: docs/features/pair-programming-v1.md:1 docs/guide/database.md:1
+#: docs/guide/install.md:1 docs/guide/install.md:31 docs/guide/install.md:106
+#: docs/guide/install.md:167 docs/guide/install.md:234 docs/guide/security.md:1
+#: docs/guide/service.md:1 docs/sap/events.md:1 docs/sap/methods.md:1
+#: docs/sap/overview.md:1 docs/sap/satellite-guide.md:1
+#: docs/sap/security-model.md:1 docs/sap/tools.md:1 docs/sap/transport.md:1
+#: docs/tools/execute-code-runtimes.md:1
+#, no-wrap
+msgid "---\n"
+msgstr "---\n"
+
+#. type: Plain text
+#: docs/sap/events.md:18 docs/sap/overview.md:55 docs/sap/tools.md:38
+#, no-wrap
+msgid ""
+"```mermaid\n"
+"sequenceDiagram\n"
+"  participant Sat as Satellite\n"
+"  participant Hub as Hub\n"
+"  participant Agent as AgentRuntime\n"
+msgstr ""
+"```mermaid\n"
+"sequenceDiagram\n"
+"  participant Sat as Satellite\n"
+"  participant Hub as Hub\n"
+"  participant Agent as AgentRuntime\n"
+
+#. type: Plain text
+#: docs/sap/tools.md:3
+#, no-wrap
+msgid ""
+"title: SAP Tools\n"
+"---\n"
+msgstr ""
+"title: SAP 工具\n"
+"---\n"
+
+#. type: Plain text
+#: docs/sap/tools.md:6
+msgid "# SAP Tools"
+msgstr "# SAP 工具"
+
+#. type: Plain text
+#: docs/sap/tools.md:8
+msgid ""
+"Satellites register **local tools** on the Hub. The agent invokes them "
+"during a bound session; Hub forwards execution to the Satellite via "
+"`tool.call` and waits for `tool.result` / `tool.error`."
+msgstr ""
+"Satellite 在 Hub 上注册**本地工具**。代理在已绑定的会话期间调用它们；Hub 通"
+"过 `tool.call` 将执行转发给 Satellite，并等待 `tool.result` / `tool.error`。"
+
+#. type: Plain text
+#: docs/sap/tools.md:10
+msgid ""
+"Implementation: [`capabilities/satellite/src/manager.ts`](../../capabilities/"
+"satellite/src/manager.ts)."
+msgstr ""
+"实现：[`capabilities/satellite/src/manager.ts`](../../capabilities/satellite/"
+"src/manager.ts)。"
+
+#. type: Plain text
+#: docs/sap/tools.md:12
+msgid "## Naming"
+msgstr "## 命名"
+
+#. type: Plain text
+#: docs/sap/tools.md:14
+msgid ""
+"Canonical name format ([`packages/sap-contract/src/naming.ts`](../../"
+"packages/sap-contract/src/naming.ts)):"
+msgstr ""
+"规范名称格式（[`packages/sap-contract/src/naming.ts`](../../packages/sap-"
+"contract/src/naming.ts)）："
+
+#. type: Plain text
+#: docs/sap/tools.md:18
+msgid "``` sap_{app_slug}_{instance_id_norm}_{local_name} ```"
+msgstr "``` sap_{app_slug}_{instance_id_norm}_{local_name} ```"
+
+#. type: Plain text
+#: docs/sap/tools.md:20
+msgid "Alias (also accepted):"
+msgstr "别名（同样接受）："
+
+#. type: Plain text
+#: docs/sap/tools.md:24
+msgid "``` sap:{app_slug}:{instance_id_norm}:{local_name} ```"
+msgstr "``` sap:{app_slug}:{instance_id_norm}:{local_name} ```"
+
+#. type: Bullet: '- '
+#: docs/sap/tools.md:28
+msgid "`app_slug` — lowercased app id without `-` / `_`"
+msgstr "`app_slug` — 去掉 `-` / `_` 后小写的 app id"
+
+#. type: Bullet: '- '
+#: docs/sap/tools.md:28
+msgid "`instance_id_norm` — lowercased instance id without `-`"
+msgstr "`instance_id_norm` — 去掉 `-` 后小写的 instance id"
+
+#. type: Bullet: '- '
+#: docs/sap/tools.md:28
+msgid "`local_name` — tool name as registered by the Satellite"
+msgstr "`local_name` — Satellite 注册时的工具名称"
+
+#. type: Plain text
+#: docs/sap/tools.md:30
+msgid ""
+"Example: `sap_pairprogramming_a1b2c3d4e5f6789012345678abcdef01_scan_code`"
+msgstr "示例：`sap_pairprogramming_a1b2c3d4e5f6789012345678abcdef01_scan_code`"
+
+#. type: Plain text
+#: docs/sap/tools.md:32
+msgid "## Registration flow"
+msgstr "## 注册流程"
+
+#. type: Plain text
+#: docs/sap/tools.md:49
+#, no-wrap
+msgid ""
+"  Sat->>Hub: req tool.register tools local_name description parameters\n"
+"  Hub->>Hub: SatelliteManager.registerTools\n"
+"  Hub->>Sat: res registered canonical names\n"
+"  Note over Agent: later during message.send stream\n"
+"  Agent->>Hub: invoke sap_* tool\n"
+"  Hub->>Sat: evt tool.call call_id local_name args\n"
+"  Sat->>Sat: execute local handler\n"
+"  Sat->>Hub: req tool.result call_id content\n"
+"  Hub->>Agent: resume turn\n"
+"```\n"
+msgstr ""
+"  Sat->>Hub: req tool.register tools local_name description parameters\n"
+"  Hub->>Hub: SatelliteManager.registerTools\n"
+"  Hub->>Sat: res registered canonical names\n"
+"  Note over Agent: later during message.send stream\n"
+"  Agent->>Hub: invoke sap_* tool\n"
+"  Hub->>Sat: evt tool.call call_id local_name args\n"
+"  Sat->>Sat: execute local handler\n"
+"  Sat->>Hub: req tool.result call_id content\n"
+"  Hub->>Agent: resume turn\n"
+"```\n"
+
+#. type: Plain text
+#: docs/sap/tools.md:51
+msgid ""
+"Register via `tool.register` with `SapToolDefInput`: `local_name`, "
+"`description`, `parameters` (JSON Schema object), optional `return_kind` "
+"(`json` | `text`)."
+msgstr ""
+"通过 `tool.register` 注册，参数为 `SapToolDefInput`：`local_name`、"
+"`description`、`parameters`（JSON Schema 对象），可选 `return_kind`（`json` "
+"| `text`）。"
+
+#. type: Plain text
+#: docs/sap/tools.md:53
+msgid "On disconnect, Hub unregisters all tools for that app/instance."
+msgstr "断开连接时，Hub 会注销该 app/instance 的所有工具。"
+
+#. type: Plain text
+#: docs/sap/tools.md:55
+msgid "## Strict routing"
+msgstr "## 严格路由"
+
+#. type: Plain text
+#: docs/sap/tools.md:57
+msgid ""
+"SAP-prefixed tool names **never fall back** to Hub-local tools with the same "
+"name. `SatelliteManager.installToolRouting()` wraps "
+"`ToolSetRegistry.getTool` to enforce this."
+msgstr ""
+"以 SAP 为前缀的工具名称**绝不会回退**到 Hub 上同名的本地工具。"
+"`SatelliteManager.installToolRouting()` 包装 `ToolSetRegistry.getTool` 以强制"
+"执行此规则。"
+
+#. type: Plain text
+#: docs/sap/tools.md:67
+#, no-wrap
+msgid ""
+"```mermaid\n"
+"flowchart TD\n"
+"  Invoke[Agent invokes sap_* tool]\n"
+"  Parse[parseSapToolName]\n"
+"  BindCheck{Session platform_extra matches app and instance?}\n"
+"  Online{Instance connected?}\n"
+"  Registered{Tool in toolIndex?}\n"
+"  Proxy[Forward tool.call to Satellite]\n"
+"  Reject[toolError with reason]\n"
+msgstr ""
+"```mermaid\n"
+"flowchart TD\n"
+"  Invoke[Agent invokes sap_* tool]\n"
+"  Parse[parseSapToolName]\n"
+"  BindCheck{Session platform_extra matches app and instance?}\n"
+"  Online{Instance connected?}\n"
+"  Registered{Tool in toolIndex?}\n"
+"  Proxy[Forward tool.call to Satellite]\n"
+"  Reject[toolError with reason]\n"
+
+#. type: Plain text
+#: docs/sap/tools.md:77
+#, no-wrap
+msgid ""
+"  Invoke --> Parse\n"
+"  Parse --> BindCheck\n"
+"  BindCheck -->|no| Reject\n"
+"  BindCheck -->|yes| Online\n"
+"  Online -->|no| Reject\n"
+"  Online -->|yes| Registered\n"
+"  Registered -->|no| Reject\n"
+"  Registered -->|yes| Proxy\n"
+"```\n"
+msgstr ""
+"  Invoke --> Parse\n"
+"  Parse --> BindCheck\n"
+"  BindCheck -->|no| Reject\n"
+"  BindCheck -->|yes| Online\n"
+"  Online -->|no| Reject\n"
+"  Online -->|yes| Registered\n"
+"  Registered -->|no| Reject\n"
+"  Registered -->|yes| Proxy\n"
+"```\n"
+
+#. type: Plain text
+#: docs/sap/tools.md:79
+msgid "Common rejection reasons:"
+msgstr "常见拒绝原因："
+
+#. type: Plain text
+#: docs/sap/tools.md:86
+#, no-wrap
+msgid ""
+"| Condition | Result |\n"
+"| --------- | ------ |\n"
+"| Session not bound to satellite app/instance | Reject |\n"
+"| Instance offline | Reject |\n"
+"| Tool not registered on connected instance | Reject |\n"
+"| Unregistered `sap_*` name | Guard handler returns error (no Hub fallback) |\n"
+msgstr ""
+"| 条件 | 结果 |\n"
+"| --------- | ------ |\n"
+"| 会话未绑定到 satellite app/instance | 拒绝 |\n"
+"| 实例离线 | 拒绝 |\n"
+"| 工具未在已连接实例上注册 | 拒绝 |\n"
+"| 未注册的 `sap_*` 名称 | 守卫处理器返回错误（不回退到 Hub） |\n"
+
+#. type: Plain text
+#: docs/sap/tools.md:88
+msgid ""
+"Session binding requires `platform_extra.satellite_app_id` and "
+"`platform_extra.satellite_instance_id` set at `session.create` time."
+msgstr ""
+"会话绑定要求在 `session.create` 时设置 `platform_extra.satellite_app_id` 和 "
+"`platform_extra.satellite_instance_id`。"
+
+#. type: Plain text
+#: docs/sap/tools.md:90
+msgid ""
+"Integration tests: [`tests/integration/sap/sap-routing.test.ts`](../../tests/"
+"integration/sap/sap-routing.test.ts)."
+msgstr ""
+"集成测试：[`tests/integration/sap/sap-routing.test.ts`](../../tests/"
+"integration/sap/sap-routing.test.ts)。"
+
+#. type: Plain text
+#: docs/sap/tools.md:92
+msgid "## Platform mapping"
+msgstr "## 平台映射"
+
+#. type: Plain text
+#: docs/sap/tools.md:94
+msgid "`resolvePlatformForApp` maps satellite app ids to session platforms:"
+msgstr "`resolvePlatformForApp` 将 satellite app id 映射到会话平台："
+
+#. type: Plain text
+#: docs/sap/tools.md:99
+#, no-wrap
+msgid ""
+"| `app_id` | Platform |\n"
+"| -------- | -------- |\n"
+"| `pair-programming` | `studio-pair-programming` |\n"
+"| `parlor` | `parlor` |\n"
+msgstr ""
+"| `app_id` | 平台 |\n"
+"| -------- | -------- |\n"
+"| `pair-programming` | `studio-pair-programming` |\n"
+"| `parlor` | `parlor` |\n"
+
+#. type: Plain text
+#: docs/sap/tools.md:101
+msgid "Hub also returns this map in `connected.server_info.platform_for_app`."
+msgstr "Hub 还会在 `connected.server_info.platform_for_app` 中返回此映射。"
+
+#. type: Plain text
+#: docs/sap/tools.md:103
+msgid "## Completing a call"
+msgstr "## 完成一次调用"
+
+#. type: Plain text
+#: docs/sap/tools.md:105
+msgid "Satellite receives `tool.call` with `call_id`. Reply with:"
+msgstr "Satellite 收到带 `call_id` 的 `tool.call`。回复方式："
+
+#. type: Bullet: '- '
+#: docs/sap/tools.md:108
+msgid "`tool.result` — `{ call_id, content }`"
+msgstr "`tool.result` — `{ call_id, content }`"
+
+#. type: Bullet: '- '
+#: docs/sap/tools.md:108
+msgid "`tool.error` — `{ call_id, error }`"
+msgstr "`tool.error` — `{ call_id, error }`"
+
+#. type: Plain text
+#: docs/sap/tools.md:110
+msgid ""
+"Hub resolves the pending promise and continues the agent turn. Timeout or "
+"disconnect fails the call."
+msgstr ""
+"Hub 解析待处理的 promise 并继续代理轮次。超时或断开连接会导致调用失败。"
+
+#. type: Plain text
+#: docs/sap/tools.md:111
+msgid ""
+"Reference handler: [`satellites/pair-programming/server/sap/hub.ts`](../../"
+"satellites/pair-programming/server/sap/hub.ts)."
+msgstr ""
+"参考处理器：[`satellites/pair-programming/server/sap/hub.ts`](../../"
+"satellites/pair-programming/server/sap/hub.ts)。"
