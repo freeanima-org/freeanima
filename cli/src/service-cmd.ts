@@ -19,6 +19,7 @@ import {
 import { REPO_ROOT } from "@freeanima/platform";
 import { renderSystemdUnit, systemdUserAvailable, SYSTEMD_UNIT } from "./systemd-unit.ts";
 import { printServiceRunningStatus } from "./output/service-status-display.ts";
+import { startAllSatellites, stopAllSatellites } from "./satellite-supervisor.ts";
 
 export type ServiceArgs = {
   action: string;
@@ -233,7 +234,13 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
       }
       console.log("Free Anima · starting in foreground…");
       installErrorLogHandlers();
+      const onStop = (): void => {
+        stopAllSatellites();
+      };
+      process.once("SIGINT", onStop);
+      process.once("SIGTERM", onStop);
       try {
+        startAllSatellites({ foreground: true });
         const { serve } = await import("@freeanima/platform");
         const { startWebuiHttpServers, closeHttpServers, waitForDrainWithTimeout } =
           await import("@freeanima/platform/connectors/webui");
@@ -255,6 +262,7 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
 
     if (!systemdUserAvailable()) {
       await startDetachedWithoutSystemd(args);
+      startAllSatellites();
       return;
     }
 
@@ -269,10 +277,12 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
     console.log(`  unit: ${serviceUnitPath()}`);
     console.log(`  address: http://${args.host}:${args.port}`);
     console.log("  status: anima service status");
+    startAllSatellites();
     return;
   }
 
   if (action === "stop") {
+    stopAllSatellites();
     if (systemdUserAvailable() && existsSync(serviceUnitPath())) {
       const r = systemctl("stop", SYSTEMD_UNIT);
       if (r.status === 0) {

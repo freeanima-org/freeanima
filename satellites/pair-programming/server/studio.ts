@@ -15,18 +15,13 @@ export type TreeNode = {
 };
 
 let config: StudioConfig = {
-  workspace: process.env.STUDIO_WORKSPACE ?? process.cwd(),
-  gitignore: true,
-  showHidden: false,
+  workspace: process.env.STUDIO_WORKSPACE ?? "",
+  gitignore: process.env.STUDIO_GITIGNORE !== "false",
+  showHidden: process.env.STUDIO_SHOW_HIDDEN === "true",
 };
 
 export function getStudioConfig(): StudioConfig {
   return { ...config };
-}
-
-export function patchStudioConfig(patch: Partial<StudioConfig>): StudioConfig {
-  config = { ...config, ...patch };
-  return getStudioConfig();
 }
 
 export function resolveWorkspace(): string {

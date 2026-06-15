@@ -76,6 +76,23 @@ export type {
   SapToolDefInput,
 } from "./frames/tool.ts";
 
+export {
+  terminalAttachInputSchema,
+  terminalAttachOutputSchema,
+  terminalWriteInputSchema,
+  terminalResizeInputSchema,
+  terminalCloseInputSchema,
+  TERMINAL_EVENT_METHODS,
+} from "./frames/terminal.ts";
+export type {
+  TerminalAttachInput,
+  TerminalAttachOutput,
+  TerminalWriteInput,
+  TerminalResizeInput,
+  TerminalCloseInput,
+  TerminalEventMethod,
+} from "./frames/terminal.ts";
+
 export { defineSapRouter, SAP_METHODS } from "./router.ts";
 export type {
   SapMethod,

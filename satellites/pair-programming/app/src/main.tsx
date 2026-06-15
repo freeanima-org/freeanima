@@ -18,7 +18,6 @@ function App() {
   const [leftWidth, setLeftWidth] = useState(260);
   const [rightWidth, setRightWidth] = useState(380);
   const [terminalHeight, setTerminalHeight] = useState(200);
-  const [workspaceInput, setWorkspaceInput] = useState("");
   const [leftVisible, setLeftVisible] = useState(true);
   const [rightVisible, setRightVisible] = useState(true);
   const [terminalVisible, setTerminalVisible] = useState(true);
@@ -46,16 +45,6 @@ function App() {
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    setWorkspaceInput(store.config.workspace || "");
-  }, [store.config.workspace]);
-
-  const saveWorkspace = async () => {
-    const ws = workspaceInput.trim();
-    if (!ws) return;
-    await store.saveWorkspace(ws);
-  };
 
   const startResize = (edge: "left" | "right" | "bottom", evt: React.MouseEvent) => {
     evt.preventDefault();
@@ -103,24 +92,14 @@ function App() {
           <div className="max-w-md text-center space-y-4">
             <h3 className="text-lg font-bold">{m.webui_studio_workdir_title()}</h3>
             <p className="text-sm text-base-content/60">{m.webui_studio_workdir_lead()}</p>
-            <form
-              className="flex gap-2"
-              onSubmit={(e) => {
-                e.preventDefault();
-                void saveWorkspace();
-              }}
-            >
-              <input
-                value={workspaceInput}
-                onChange={(e) => setWorkspaceInput(e.target.value)}
-                type="text"
-                className="input input-bordered flex-1 font-mono text-sm"
-                placeholder="/path/to/project"
-              />
-              <button type="submit" className="btn btn-primary" disabled={!workspaceInput.trim()}>
-                {m.webui_common_save()}
-              </button>
-            </form>
+            <p className="text-sm font-mono text-left bg-base-300/40 p-3 rounded">
+              satellites:
+              <br />
+              {"  pair-programming:"}
+              <br />
+              {"    workspace: /path/to/project"}
+            </p>
+            <p className="text-xs text-base-content/50">anima service restart</p>
           </div>
         </div>
       </div>

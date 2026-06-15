@@ -1,5 +1,5 @@
-import { resolveWorkspace } from "@freeanima/platform/ports";
 import { existsSync } from "node:fs";
+import { resolve } from "node:path";
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { EventEmitter } from "node:events";
 
@@ -71,20 +71,20 @@ export class TerminalSessionError extends Error {
 
 const sessions = new Map<string, PtyProcess>();
 
-export function createTerminalSession(): { sessionId: string; pty: PtyProcess } {
-  let cwd: string;
-  try {
-    cwd = resolveWorkspace();
-    if (!cwd || !existsSync(cwd)) {
-      throw new TerminalSessionError();
+export function createTerminalSession(cwd?: string): { sessionId: string; pty: PtyProcess } {
+  let workDir: string;
+  const trimmed = cwd?.trim();
+  if (trimmed) {
+    workDir = resolve(trimmed);
+    if (!existsSync(workDir)) {
+      throw new TerminalSessionError(`workspace does not exist: ${workDir}`);
     }
-  } catch (e) {
-    if (e instanceof TerminalSessionError) throw e;
-    throw new TerminalSessionError();
+  } else {
+    workDir = process.cwd();
   }
 
   const sessionId = crypto.randomUUID();
-  const pty = createScriptTerminal(cwd);
+  const pty = createScriptTerminal(workDir);
   sessions.set(sessionId, pty);
   return { sessionId, pty };
 }

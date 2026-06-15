@@ -16,6 +16,13 @@ import type {
   ToolUnregisterInput,
 } from "./frames/tool.ts";
 import type { ConnectPayload, ConnectedPayload } from "./frames/lifecycle.ts";
+import type {
+  TerminalAttachInput,
+  TerminalAttachOutput,
+  TerminalCloseInput,
+  TerminalResizeInput,
+  TerminalWriteInput,
+} from "./frames/terminal.ts";
 
 export const SAP_METHODS = [
   "session.create",
@@ -24,6 +31,10 @@ export const SAP_METHODS = [
   "session.patchTitle",
   "session.subscribe",
   "message.send",
+  "terminal.attach",
+  "terminal.write",
+  "terminal.resize",
+  "terminal.close",
   "tool.register",
   "tool.unregister",
   "tool.result",
@@ -39,6 +50,10 @@ export type SapRouterInputs = {
   "session.patchTitle": SessionPatchTitleInput;
   "session.subscribe": SessionSubscribeInput;
   "message.send": MessageSendInput;
+  "terminal.attach": TerminalAttachInput;
+  "terminal.write": TerminalWriteInput;
+  "terminal.resize": TerminalResizeInput;
+  "terminal.close": TerminalCloseInput;
   "tool.register": ToolRegisterInput;
   "tool.unregister": ToolUnregisterInput;
   "tool.result": ToolResultInput;
@@ -52,6 +67,10 @@ export type SapRouterOutputs = {
   "session.patchTitle": { ok: true };
   "session.subscribe": { ok: true };
   "message.send": MessageSendOutput;
+  "terminal.attach": TerminalAttachOutput;
+  "terminal.write": { ok: true };
+  "terminal.resize": { ok: true };
+  "terminal.close": { ok: true };
   "tool.register": ToolRegisterOutput;
   "tool.unregister": { ok: true };
   "tool.result": { ok: true };

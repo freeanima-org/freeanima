@@ -8,7 +8,6 @@ import {
   getStudioFile,
   getStudioTree,
   listSessions,
-  patchStudioConfig,
   searchStudio,
   setSessionTitle,
 } from "@/lib/api.ts";
@@ -45,7 +44,6 @@ type PairProgrammingState = {
   loading: boolean;
   error: string;
   fetchConfig: () => Promise<void>;
-  saveWorkspace: (workspace: string) => Promise<void>;
   fetchSessions: () => Promise<SessionListItem[]>;
   selectSession: (id: string) => Promise<void>;
   createNewSession: () => Promise<string | null>;
@@ -77,14 +75,6 @@ export const usePairProgrammingStore = create<PairProgrammingState>((set, get) =
     } catch (e) {
       console.error("fetchConfig:", e);
     }
-  },
-
-  async saveWorkspace(workspace) {
-    const ws = workspace.trim();
-    if (!ws) return;
-    await patchStudioConfig({ workspace: ws });
-    await get().fetchConfig();
-    await get().fetchTree();
   },
 
   async fetchSessions() {
