@@ -11,6 +11,7 @@ import {
   restartService,
 } from "@/lib/api.ts";
 import { m } from "@/lib/i18n.ts";
+import { formatDisplayDateTime } from "@/lib/format-datetime.ts";
 import { translateApiPayload } from "@/lib/api-errors.ts";
 import { dependencyStatusLabel } from "@/lib/webui-status.ts";
 
@@ -303,7 +304,11 @@ function RuntimeCard({
         </div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-base-content/50 border-t border-base-300 pt-2 mt-2">
           {svc.start_time_iso ? (
-            <span>{m.webui_chamber_dashboard_started_at({ time: svc.start_time_iso })}</span>
+            <span>
+              {m.webui_chamber_dashboard_started_at({
+                time: formatDisplayDateTime(svc.start_time_iso),
+              })}
+            </span>
           ) : null}
           {svc.pid ? <span>PID {svc.pid}</span> : null}
           {dependencyBadge(postgres, "PG")}

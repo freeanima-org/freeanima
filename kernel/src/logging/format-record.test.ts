@@ -12,7 +12,7 @@ describe("format-record", () => {
 
   it("formatPrettyRecord includes level, component, and attributes suffix", () => {
     const line = formatPrettyRecord(record);
-    expect(line).toContain("2026-06-03T00:00:00.000Z");
+    expect(line).toContain("2026/06/03 08:00:00");
     expect(line).toContain("ERROR");
     expect(line).toContain("[gateway]");
     expect(line).toContain("login failed");

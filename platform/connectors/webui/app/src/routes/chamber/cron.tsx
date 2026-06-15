@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { getCronJobs, pauseCronJob, resumeCronJob, runCronJob } from "@/lib/api.ts";
+import { formatDisplayDateTime } from "@/lib/format-datetime.ts";
 import { m } from "@/lib/i18n.ts";
 
 export const Route = createFileRoute("/chamber/cron")({
@@ -9,13 +10,6 @@ export const Route = createFileRoute("/chamber/cron")({
 });
 
 type CronJob = Record<string, unknown> & { id: string; name?: string; paused?: boolean };
-
-function formatTs(ts: number) {
-  if (!ts || ts <= 0) return "—";
-  const d = new Date(ts * 1000);
-  const p = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
-}
 
 function CronPage() {
   const initial = Route.useLoaderData() as { jobs?: CronJob[] };
@@ -208,7 +202,11 @@ function CronPage() {
                       </tr>
                       <tr>
                         <td className="text-base-content/50">{m.webui_chamber_cron_next_run()}</td>
-                        <td>{job.paused ? "—" : formatTs(Number(job.next_run_at))}</td>
+                        <td>
+                          {job.paused
+                            ? "—"
+                            : formatDisplayDateTime(Number(job.next_run_at), { seconds: true })}
+                        </td>
                       </tr>
                     </tbody>
                   </table>

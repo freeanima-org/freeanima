@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { formatDisplayDateTime } from "@/lib/format-datetime.ts";
 import { m } from "@/lib/i18n.ts";
 import { memoryTypeLabel } from "@/lib/webui-status.ts";
 import type { MemoryRecallHit } from "./memory-recall-types.ts";
@@ -63,7 +64,7 @@ export function RecallHitCard({ hit, index }: { hit: MemoryRecallHit; index: num
               <SessionLink sessionId={hit.session_id} />
               <span className="font-mono text-base-content/60">{hit.message_id}</span>
               {hit.timestamp ? (
-                <span className="text-base-content/50">{String(hit.timestamp).slice(0, 19)}</span>
+                <span className="text-base-content/50">{formatDisplayDateTime(hit.timestamp)}</span>
               ) : null}
             </>
           ) : null}
@@ -92,7 +93,7 @@ export function RecallHitCard({ hit, index }: { hit: MemoryRecallHit; index: num
             <SessionLinks sessionIds={hit.source_sessions ?? []} />
             {hit.observed_at || hit.occurred_at ? (
               <p className="text-xs text-base-content/60 font-mono">
-                {hit.observed_at ? `observed ${String(hit.observed_at).slice(0, 19)}` : null}
+                {hit.observed_at ? `observed ${formatDisplayDateTime(hit.observed_at)}` : null}
                 {hit.observed_at && hit.occurred_at ? " · " : null}
                 {hit.occurred_at ? `occurred ${hit.occurred_at}` : null}
               </p>

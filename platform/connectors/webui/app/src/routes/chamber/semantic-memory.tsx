@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
 import { MemoryListPagination } from "@/components/chamber/MemoryListPagination.tsx";
 import { m } from "@/lib/i18n.ts";
+import { formatDisplayDateTime } from "@/lib/format-datetime.ts";
 import { listSemanticMemories, updateSemanticMemoryPinned } from "@/lib/api.ts";
 
 const PAGE_SIZE = 20;
@@ -31,10 +32,6 @@ type SemanticRow = {
   updated: string;
   rank?: number;
 };
-
-function formatTimestamp(value: string): string {
-  return String(value).slice(0, 19);
-}
 
 export const Route = createFileRoute("/chamber/semantic-memory")({
   component: SemanticMemoryPage,
@@ -271,8 +268,12 @@ function SemanticMemoryPage() {
                           "-"
                         )}
                       </td>
-                      <td className="text-xs whitespace-nowrap">{formatTimestamp(row.created)}</td>
-                      <td className="text-xs whitespace-nowrap">{formatTimestamp(row.updated)}</td>
+                      <td className="text-xs whitespace-nowrap">
+                        {formatDisplayDateTime(row.created)}
+                      </td>
+                      <td className="text-xs whitespace-nowrap">
+                        {formatDisplayDateTime(row.updated)}
+                      </td>
                       <td className="text-xs">{Number(row.reference_count).toFixed(2)}</td>
                       <td className="text-sm max-w-md whitespace-pre-wrap">{row.content}</td>
                       <td className="font-mono text-xs max-w-32 truncate">

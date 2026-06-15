@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
 import { MemoryListPagination } from "@/components/chamber/MemoryListPagination.tsx";
 import { listAutobiographicalMemories } from "@/lib/api.ts";
+import { formatDisplayDateTime } from "@/lib/format-datetime.ts";
 import { m } from "@/lib/i18n.ts";
 
 const PAGE_SIZE = 20;
@@ -173,7 +174,7 @@ function AutobiographicalMemoryPage() {
                       <span className="badge badge-ghost badge-xs">{row.status}</span>
                       <span className="font-mono text-base-content/50">{row.id}</span>
                       <span className="text-base-content/50">
-                        {String(row.updated).slice(0, 19)}
+                        {formatDisplayDateTime(row.updated)}
                       </span>
                     </div>
                     <p className="text-sm whitespace-pre-wrap">{row.content}</p>

@@ -2,19 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
 import { MemoryListPagination } from "@/components/chamber/MemoryListPagination.tsx";
 import { listDreamMemories } from "@/lib/api.ts";
+import { formatDisplayDate, formatDisplayDateTime } from "@/lib/format-datetime.ts";
 import { m } from "@/lib/i18n.ts";
 
 const PAGE_SIZE = 20;
-
-function formatDreamDay(value: string | Date): string {
-  if (value instanceof Date) return value.toISOString().slice(0, 10);
-  return String(value).slice(0, 10);
-}
-
-function formatCreated(value: string | Date): string {
-  if (value instanceof Date) return value.toISOString().slice(0, 19);
-  return String(value).slice(0, 19);
-}
 
 type DreamRow = {
   id: string;
@@ -96,7 +87,7 @@ function DreamMemoryPage() {
       {items.length > 0 ? (
         <div className="space-y-3">
           {items.map((row) => {
-            const dreamDay = formatDreamDay(row.dream_day);
+            const dreamDay = formatDisplayDate(row.dream_day);
             const expanded = expandedDay === dreamDay;
             return (
               <div key={row.id} className="card bg-base-200 shadow-sm">
@@ -105,7 +96,7 @@ function DreamMemoryPage() {
                     <div>
                       <span className="font-semibold">{dreamDay}</span>
                       <span className="text-xs text-base-content/50 ml-2">
-                        {formatCreated(row.created)}
+                        {formatDisplayDateTime(row.created)}
                       </span>
                     </div>
                     <button

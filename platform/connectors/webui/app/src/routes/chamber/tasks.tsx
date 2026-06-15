@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
 import { MemoryListPagination } from "@/components/chamber/MemoryListPagination.tsx";
 import { m } from "@/lib/i18n.ts";
+import { formatDisplayDateTime } from "@/lib/format-datetime.ts";
 import { listTasks } from "@/lib/api.ts";
 
 const PAGE_SIZE = 20;
@@ -61,11 +62,6 @@ function priorityBadgeClass(priority: string): string {
     default:
       return "badge-ghost";
   }
-}
-
-function formatTime(value: string | null): string {
-  if (!value) return "—";
-  return String(value).slice(0, 19);
 }
 
 export const Route = createFileRoute("/chamber/tasks")({
@@ -225,11 +221,11 @@ function TasksPage() {
                       <span>
                         id: <span className="font-mono">{row.id}</span>
                       </span>
-                      <span>due: {formatTime(row.due_at)}</span>
-                      <span>created: {formatTime(row.created_at)}</span>
-                      <span>updated: {formatTime(row.updated_at)}</span>
+                      <span>due: {formatDisplayDateTime(row.due_at)}</span>
+                      <span>created: {formatDisplayDateTime(row.created_at)}</span>
+                      <span>updated: {formatDisplayDateTime(row.updated_at)}</span>
                       {row.completed_at ? (
-                        <span>completed: {formatTime(row.completed_at)}</span>
+                        <span>completed: {formatDisplayDateTime(row.completed_at)}</span>
                       ) : null}
                     </div>
                     {row.source_session_id ? (

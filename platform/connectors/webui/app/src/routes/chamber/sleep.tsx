@@ -8,6 +8,7 @@ import {
   startSleepCycle,
   startSleepPipelineStep,
 } from "@/lib/api.ts";
+import { formatDisplayDate, formatDisplayDateTime } from "@/lib/format-datetime.ts";
 import { m } from "@/lib/i18n.ts";
 
 type DateField = string | Date | null | undefined;
@@ -60,24 +61,6 @@ export const Route = createFileRoute("/chamber/sleep")({
 });
 
 const SLEEP_STEP_JOB_PREFIX = "sleep-step:";
-
-const pad2 = (n: number) => String(n).padStart(2, "0");
-
-function formatDay(value: DateField): string {
-  if (!value) return "—";
-  if (value instanceof Date) {
-    if (Number.isNaN(value.getTime())) return "—";
-    return `${value.getFullYear()}-${pad2(value.getMonth() + 1)}-${pad2(value.getDate())}`;
-  }
-  return value;
-}
-
-function formatTs(value: DateField): string {
-  if (!value) return "—";
-  const d = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(d.getTime())) return typeof value === "string" ? value : "—";
-  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
-}
 
 function stepLabel(stepId: string): string {
   switch (stepId) {
@@ -141,8 +124,8 @@ type PipelineStatus = {
 
 function outputDay(row: CronLogRow): string {
   const day = row.output?.day;
-  if (typeof day === "string") return day;
-  if (day instanceof Date) return formatDay(day);
+  if (typeof day === "string") return formatDisplayDate(day);
+  if (day instanceof Date) return formatDisplayDate(day);
   return "—";
 }
 
@@ -331,10 +314,10 @@ function SleepPage() {
           <div className="card bg-base-200 p-4">
             <h3 className="font-semibold mb-2">{m.webui_chamber_sleep_light_latest()}</h3>
             <p className="text-sm">
-              {m.webui_common_processing_day()}: {formatDay(summary.light_sleep.last_day)}
+              {m.webui_common_processing_day()}: {formatDisplayDate(summary.light_sleep.last_day)}
             </p>
             <p className="text-sm">
-              {m.webui_common_run_at()}: {formatTs(summary.light_sleep.last_run_at)}
+              {m.webui_common_run_at()}: {formatDisplayDateTime(summary.light_sleep.last_run_at)}
             </p>
             <p className="text-sm">
               {m.webui_common_tool_calls()}: {summary.light_sleep.stats?.tool_calls ?? 0} ·{" "}
@@ -344,10 +327,10 @@ function SleepPage() {
           <div className="card bg-base-200 p-4">
             <h3 className="font-semibold mb-2">{m.webui_chamber_sleep_deep_latest()}</h3>
             <p className="text-sm">
-              {m.webui_common_processing_day()}: {formatDay(summary.deep_sleep.last_day)}
+              {m.webui_common_processing_day()}: {formatDisplayDate(summary.deep_sleep.last_day)}
             </p>
             <p className="text-sm">
-              {m.webui_common_run_at()}: {formatTs(summary.deep_sleep.last_run_at)}
+              {m.webui_common_run_at()}: {formatDisplayDateTime(summary.deep_sleep.last_run_at)}
             </p>
             <p className="text-sm">
               {m.webui_common_tool_calls()}: {summary.deep_sleep.stats?.total_tool_calls ?? 0} ·{" "}
@@ -476,7 +459,7 @@ function SleepPage() {
             {runs.map((row) => (
               <Fragment key={row.id}>
                 <tr className={row.ok ? "" : "bg-error/10"}>
-                  <td className="whitespace-nowrap">{formatTs(row.finished_at)}</td>
+                  <td className="whitespace-nowrap">{formatDisplayDateTime(row.finished_at)}</td>
                   <td>{jobLabel(row.job_id)}</td>
                   <td>{outputDay(row)}</td>
                   <td>{row.ok ? m.webui_common_success() : m.webui_common_failed()}</td>

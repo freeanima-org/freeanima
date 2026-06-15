@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { SessionListItem } from "@freeanima/platform/connectors/webui/api";
+import { formatSessionIdDateTime } from "@/lib/format-datetime.ts";
 import { m } from "@/lib/i18n.ts";
 import { useChatStore } from "@/stores/chat.ts";
 import { usePairProgrammingStore } from "@/stores/pair-programming.ts";
@@ -7,9 +8,9 @@ import { usePairProgrammingStore } from "@/stores/pair-programming.ts";
 function sessionLabel(item: SessionListItem) {
   const id = item.id;
   if (item.title) return item.title;
-  const p = id.split("_");
-  if (p.length >= 2) return `${p[0].slice(0, 4)}-${p[0].slice(4, 6)}-${p[0].slice(6)}`;
-  return id;
+  const formatted = formatSessionIdDateTime(id);
+  const space = formatted.indexOf(" ");
+  return space > 0 ? formatted.slice(0, space) : formatted;
 }
 
 function truncatePreview(text: string, maxLen = 30) {
