@@ -19,12 +19,8 @@ export const mcpServerSchema = z
 export const satelliteEntrySchema = z
   .object({
     enabled: z.boolean().optional(),
-    command: z.string().min(1),
+    command: z.string().min(1).optional(),
     args: z.array(z.string()).default([]),
-    cwd: z.string().optional(),
-    workspace: z.string().optional(),
-    gitignore: z.boolean().optional(),
-    showHidden: z.boolean().optional(),
     env: z.record(z.string(), z.string()).optional(),
   })
   .passthrough();

@@ -86,17 +86,6 @@ export const memorySearchBodySchema = z
   .transform((b) => ({ ...b, query: b.query.trim() }))
   .refine((b) => b.query.length > 0, { message: "query is required" });
 
-export const studioConfigPatchSchema = z.object({
-  workspace: z.string().optional(),
-  gitignore: z.boolean().optional(),
-  showHidden: z.boolean().optional(),
-});
-
-export const studioSearchBodySchema = z
-  .object({ query: z.string() })
-  .transform((b) => ({ query: b.query.trim() }))
-  .refine((b) => b.query.length > 0, { message: "query is required" });
-
 export type CreateSessionBody = z.infer<typeof createSessionBodySchema>;
 export type PatchTitleBody = z.infer<typeof patchTitleBodySchema>;
 export type SendMessageBody = z.infer<typeof sendMessageBodySchema>;
@@ -107,8 +96,6 @@ export type LimbicMemoryListBody = z.infer<typeof limbicMemoryListBodySchema>;
 export type AutobiographicalMemoryListBody = z.infer<typeof autobiographicalMemoryListBodySchema>;
 export type DreamMemoryListBody = z.infer<typeof dreamMemoryListBodySchema>;
 export type TaskListBody = z.infer<typeof taskListBodySchema>;
-export type StudioConfigPatch = z.infer<typeof studioConfigPatchSchema>;
-export type StudioSearchBody = z.infer<typeof studioSearchBodySchema>;
 
 const streamAcceptedEventSchema = z.object({
   event: z.literal("accepted"),

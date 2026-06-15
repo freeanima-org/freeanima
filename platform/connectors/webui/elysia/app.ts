@@ -16,8 +16,6 @@ import { messagesRoutes } from "./routes/messages.ts";
 import { sessionsRoutes } from "./routes/sessions.ts";
 import { cronLogRoutes, sleepRoutes } from "./routes/sleep.ts";
 import { statusRoutes } from "./routes/status.ts";
-import { studioRoutes } from "./routes/studio.ts";
-import { terminalWsRoutes } from "./routes/terminal-ws.ts";
 import { TerminalSessionError } from "./terminal-session.ts";
 import { tasksRoutes } from "./routes/tasks.ts";
 import { fridgeMagnetRoutes } from "./routes/fridge-magnet.ts";
@@ -39,10 +37,8 @@ export const apiApp = new Elysia({ prefix: "/api" })
   .use(acpRoutes)
   .use(credentialsRoutes)
   .use(emailRoutes)
-  .use(studioRoutes)
   .use(tasksRoutes)
-  .use(fridgeMagnetRoutes)
-  .use(terminalWsRoutes);
+  .use(fridgeMagnetRoutes);
 
 export type App = typeof apiApp;
 
