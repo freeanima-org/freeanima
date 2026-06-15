@@ -33,7 +33,8 @@ function AppShell() {
         navigate({ to: "/chamber/dashboard" });
       }
     } else if (!pathname.startsWith("/studio")) {
-      navigate({ to: "/studio/pair-programming" });
+      window.location.href =
+        localStorage.getItem("pair-programming-url") ?? "http://127.0.0.1:4173";
     }
   };
 

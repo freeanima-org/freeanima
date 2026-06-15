@@ -1,4 +1,5 @@
-import { join } from "node:path";
+import { existsSync, statSync } from "node:fs";
+import { join, extname } from "node:path";
 import {
   getStudioConfig,
   patchStudioConfig,
@@ -11,8 +12,18 @@ import { corsPreflight, jsonResponse, withCors } from "./http/cors.ts";
 import { handleHubApi } from "./http/hub-api.ts";
 
 const PORT = Number(process.env.SATELLITE_PORT ?? 4173);
-const APP_DIR = join(import.meta.dir, "..", "app");
-const INDEX_FILE = Bun.file(join(APP_DIR, "index.html"));
+const DIST_DIR = join(import.meta.dir, "..", "dist");
+const HUB_URL = (process.env.FREEANIMA_URL ?? "http://127.0.0.1:2658").replace(/\/$/, "");
+
+const MIME: Record<string, string> = {
+  ".html": "text/html; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".map": "application/json",
+  ".svg": "image/svg+xml",
+  ".png": "image/png",
+  ".woff2": "font/woff2",
+};
 
 async function route(req: Request): Promise<Response> {
   const url = new URL(req.url);
@@ -21,12 +32,13 @@ async function route(req: Request): Promise<Response> {
     return corsPreflight();
   }
 
+  if (url.pathname === "/api/meta" && req.method === "GET") {
+    return jsonResponse({ hub_url: HUB_URL, app: "pair-programming" });
+  }
+
   const hubApi = await handleHubApi(req, url);
   if (hubApi) return hubApi;
 
-  if (url.pathname === "/" || url.pathname === "/index.html") {
-    return withCors(new Response(INDEX_FILE));
-  }
   if (url.pathname === "/health") {
     return jsonResponse({ ok: true, app: "pair-programming" });
   }
@@ -58,6 +70,34 @@ async function route(req: Request): Promise<Response> {
     return jsonResponse(searchStudio(query));
   }
 
+  return serveStatic(url.pathname);
+}
+
+function serveStatic(pathname: string): Response {
+  if (!existsSync(DIST_DIR)) {
+    return jsonResponse(
+      { error: "UI not built; run `bun satellites/pair-programming/dev.ts` or `bun build.ts`" },
+      503,
+    );
+  }
+
+  const rel = pathname === "/" ? "/index.html" : pathname;
+  const filePath = join(DIST_DIR, rel);
+  if (existsSync(filePath) && statSync(filePath).isFile()) {
+    const ext = extname(filePath);
+    const headers = MIME[ext] ? { "Content-Type": MIME[ext]! } : undefined;
+    return withCors(new Response(Bun.file(filePath), { headers }));
+  }
+
+  const indexPath = join(DIST_DIR, "index.html");
+  if (existsSync(indexPath)) {
+    return withCors(
+      new Response(Bun.file(indexPath), {
+        headers: { "Content-Type": "text/html; charset=utf-8" },
+      }),
+    );
+  }
+
   return jsonResponse({ error: "Not Found" }, 404);
 }
 
@@ -68,9 +108,8 @@ const server = Bun.serve({
   },
 });
 
-console.log(`pair-programming satellite server http://127.0.0.1:${server.port}`);
+console.log(`pair-programming satellite http://127.0.0.1:${server.port}`);
 
-const hub = process.env.FREEANIMA_URL ?? "http://127.0.0.1:2658";
-void connectSap(hub).catch((e) => {
+void connectSap(HUB_URL).catch((e) => {
   console.warn("SAP connect deferred:", e.message);
 });

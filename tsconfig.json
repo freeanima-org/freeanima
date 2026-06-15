@@ -25,5 +25,11 @@
     "scripts/**/*.ts",
     "tests/**/*.ts"
   ],
-  "exclude": ["node_modules", "**/dist/**", "**/.turbo/**", "cli/publish/**"]
+  "exclude": [
+    "node_modules",
+    "**/dist/**",
+    "**/.turbo/**",
+    "cli/publish/**",
+    "satellites/pair-programming/app/**"
+  ]
 }

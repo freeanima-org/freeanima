@@ -16,7 +16,6 @@ import { Route as ChamberRouteRouteImport } from "./routes/chamber/route";
 import { Route as IndexRouteImport } from "./routes/index";
 import { Route as WorkshopPathRouteImport } from "./routes/workshop/$path";
 import { Route as StudioShortVideoRouteImport } from "./routes/studio/short-video";
-import { Route as StudioPairProgrammingRouteImport } from "./routes/studio/pair-programming";
 import { Route as StudioNovelRouteImport } from "./routes/studio/novel";
 import { Route as ParlorSessionsRouteImport } from "./routes/parlor/sessions";
 import { Route as ParlorChatRouteImport } from "./routes/parlor/chat";
@@ -78,11 +77,6 @@ const WorkshopPathRoute = WorkshopPathRouteImport.update({
 const StudioShortVideoRoute = StudioShortVideoRouteImport.update({
   id: "/short-video",
   path: "/short-video",
-  getParentRoute: () => StudioRouteRoute,
-} as any);
-const StudioPairProgrammingRoute = StudioPairProgrammingRouteImport.update({
-  id: "/pair-programming",
-  path: "/pair-programming",
   getParentRoute: () => StudioRouteRoute,
 } as any);
 const StudioNovelRoute = StudioNovelRouteImport.update({
@@ -252,7 +246,6 @@ export interface FileRoutesByFullPath {
   "/parlor/chat": typeof ParlorChatRoute;
   "/parlor/sessions": typeof ParlorSessionsRoute;
   "/studio/novel": typeof StudioNovelRoute;
-  "/studio/pair-programming": typeof StudioPairProgrammingRoute;
   "/studio/short-video": typeof StudioShortVideoRoute;
   "/workshop/$path": typeof WorkshopPathRoute;
   "/chamber/sessions/$sessionId": typeof ChamberSessionsSessionIdRoute;
@@ -288,7 +281,6 @@ export interface FileRoutesByTo {
   "/parlor/chat": typeof ParlorChatRoute;
   "/parlor/sessions": typeof ParlorSessionsRoute;
   "/studio/novel": typeof StudioNovelRoute;
-  "/studio/pair-programming": typeof StudioPairProgrammingRoute;
   "/studio/short-video": typeof StudioShortVideoRoute;
   "/workshop/$path": typeof WorkshopPathRoute;
   "/chamber/sessions/$sessionId": typeof ChamberSessionsSessionIdRoute;
@@ -326,7 +318,6 @@ export interface FileRoutesById {
   "/parlor/chat": typeof ParlorChatRoute;
   "/parlor/sessions": typeof ParlorSessionsRoute;
   "/studio/novel": typeof StudioNovelRoute;
-  "/studio/pair-programming": typeof StudioPairProgrammingRoute;
   "/studio/short-video": typeof StudioShortVideoRoute;
   "/workshop/$path": typeof WorkshopPathRoute;
   "/chamber/sessions/$sessionId": typeof ChamberSessionsSessionIdRoute;
@@ -365,7 +356,6 @@ export interface FileRouteTypes {
     | "/parlor/chat"
     | "/parlor/sessions"
     | "/studio/novel"
-    | "/studio/pair-programming"
     | "/studio/short-video"
     | "/workshop/$path"
     | "/chamber/sessions/$sessionId"
@@ -401,7 +391,6 @@ export interface FileRouteTypes {
     | "/parlor/chat"
     | "/parlor/sessions"
     | "/studio/novel"
-    | "/studio/pair-programming"
     | "/studio/short-video"
     | "/workshop/$path"
     | "/chamber/sessions/$sessionId"
@@ -438,7 +427,6 @@ export interface FileRouteTypes {
     | "/parlor/chat"
     | "/parlor/sessions"
     | "/studio/novel"
-    | "/studio/pair-programming"
     | "/studio/short-video"
     | "/workshop/$path"
     | "/chamber/sessions/$sessionId"
@@ -502,13 +490,6 @@ declare module "@tanstack/react-router" {
       path: "/short-video";
       fullPath: "/studio/short-video";
       preLoaderRoute: typeof StudioShortVideoRouteImport;
-      parentRoute: typeof StudioRouteRoute;
-    };
-    "/studio/pair-programming": {
-      id: "/studio/pair-programming";
-      path: "/pair-programming";
-      fullPath: "/studio/pair-programming";
-      preLoaderRoute: typeof StudioPairProgrammingRouteImport;
       parentRoute: typeof StudioRouteRoute;
     };
     "/studio/novel": {
@@ -783,13 +764,11 @@ const ParlorRouteRouteWithChildren = ParlorRouteRoute._addFileChildren(ParlorRou
 
 interface StudioRouteRouteChildren {
   StudioNovelRoute: typeof StudioNovelRoute;
-  StudioPairProgrammingRoute: typeof StudioPairProgrammingRoute;
   StudioShortVideoRoute: typeof StudioShortVideoRoute;
 }
 
 const StudioRouteRouteChildren: StudioRouteRouteChildren = {
   StudioNovelRoute: StudioNovelRoute,
-  StudioPairProgrammingRoute: StudioPairProgrammingRoute,
   StudioShortVideoRoute: StudioShortVideoRoute,
 };
 
