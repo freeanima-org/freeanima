@@ -216,7 +216,7 @@ msgstr ""
 msgid ""
 "Maintenance: WebUI bedroom self-layer editor, self-layer tools, or direct "
 "database edits."
-msgstr ""
+msgstr "维护方式：WebUI 卧室自我层编辑器、自我层工具，或直接编辑数据库。"
 
 #. type: Plain text
 #: docs/concepts/identity.md:57

@@ -64,38 +64,41 @@ msgid ""
 "file tree/search, terminal, dedicated session platform id.  > Future work: "
 "[Issue #37](https://github.com/freeanima-org/freeanima/issues/37)."
 msgstr ""
+"> **阶段 1 ✅ 已交付**：三栏布局、语法高亮查看器、文件树/搜索、终端、独立 "
+"session 平台 id。 > 后续工作：[Issue #37](https://github.com/freeanima-org/"
+"freeanima/issues/37)。"
 
 #. type: Bullet: '- '
 #: docs/features/pair-programming-v1.md:16
 msgid ""
 "**Close the loop first**: read and discuss code with the agent in Studio"
-msgstr ""
+msgstr "**先闭环**：在创作室与 Agent 阅读并讨论代码"
 
 #. type: Bullet: '- '
 #: docs/features/pair-programming-v1.md:16
 msgid ""
 "**Read-only first**: v1 focuses on reading; agent analyzes and suggests — no "
 "direct edit/save yet"
-msgstr ""
+msgstr "**只读优先**：v1 聚焦阅读；Agent 分析与建议 — 尚不能直接编辑/保存"
 
 #. type: Bullet: '- '
 #: docs/features/pair-programming-v1.md:16
 msgid ""
 "**Platform isolation**: pair-programming sessions use a separate platform "
 "from parlor chat"
-msgstr ""
+msgstr "**平台隔离**：结对编程 session 与会客厅对话使用独立平台"
 
 #. type: Bullet: '- '
 #: docs/features/pair-programming-v1.md:16
 msgid ""
 "**Local reads**: server reads files from a configured workspace path (set in "
 "Chamber)"
-msgstr ""
+msgstr "**本地读取**：服务端从配置的工作区路径读取文件（在卧室中设置）"
 
 #. type: Plain text
 #: docs/features/pair-programming-v1.md:18
 msgid "## Layout"
-msgstr ""
+msgstr "## 布局"
 
 #. type: Plain text
 #: docs/features/pair-programming-v1.md:33
@@ -170,11 +173,16 @@ msgid ""
 "| Center       | flex          | —         |\n"
 "| Right (chat) | 360px         | 280–500px |\n"
 msgstr ""
+"| 列           | 默认宽度      | 可调整范围 |\n"
+"| ------------ | ------------- | ---------- |\n"
+"| 左（树）     | 260px         | 180–400px  |\n"
+"| 中           | flex          | —          |\n"
+"| 右（对话）   | 360px         | 280–500px  |\n"
 
 #. type: Plain text
 #: docs/features/pair-programming-v1.md:41
 msgid "## Usage"
-msgstr ""
+msgstr "## 用法"
 
 #. type: Bullet: '1. '
 #: docs/features/pair-programming-v1.md:47
@@ -190,22 +198,22 @@ msgstr ""
 #. type: Bullet: '2. '
 #: docs/features/pair-programming-v1.md:47
 msgid "Set workspace path in Chamber (local project directory)"
-msgstr ""
+msgstr "在卧室中设置工作区路径（本地项目目录）"
 
 #. type: Bullet: '3. '
 #: docs/features/pair-programming-v1.md:47
 msgid "Browse/search files on the left; view selection in the center"
-msgstr ""
+msgstr "左侧浏览/搜索文件；中间查看选中项"
 
 #. type: Bullet: '4. '
 #: docs/features/pair-programming-v1.md:47
 msgid "Create or select a session on the right; discuss code with the agent"
-msgstr ""
+msgstr "右侧创建或选择 session；与 Agent 讨论代码"
 
 #. type: Bullet: '5. '
 #: docs/features/pair-programming-v1.md:47
 msgid "Bottom terminal for debug/ops (isolated from chat session)"
-msgstr ""
+msgstr "底部终端用于调试/运维（与对话 session 隔离）"
 
 #. type: Plain text
 #: docs/features/pair-programming-v1.md:49
@@ -220,6 +228,8 @@ msgid ""
 "Pair programming uses platform `studio-pair-programming`, separate from "
 "parlor (`parlor`) and other platform session lists."
 msgstr ""
+"结对编程使用平台 `studio-pair-programming`，与会客厅（`parlor`）及其他平台 "
+"session 列表分离。"
 
 #. type: Plain text
 #: docs/features/pair-programming-v1.md:53
@@ -231,27 +241,27 @@ msgstr "## 当前状态"
 #. type: Bullet: '- '
 #: docs/features/pair-programming-v1.md:57
 msgid "Read-only viewer (highlight.js), not Monaco"
-msgstr ""
+msgstr "只读查看器（highlight.js），非 Monaco"
 
 #. type: Bullet: '- '
 #: docs/features/pair-programming-v1.md:57
 msgid "Agent cannot directly edit and save files (Phase 2)"
-msgstr ""
+msgstr "Agent 无法直接编辑并保存文件（阶段 2）"
 
 #. type: Bullet: '- '
 #: docs/features/pair-programming-v1.md:57
 msgid "Workspace must be a path readable by the server process"
-msgstr ""
+msgstr "工作区必须是服务端进程可读的路径"
 
 #. type: Plain text
 #: docs/features/pair-programming-v1.md:59
 msgid "## Related Docs"
-msgstr ""
+msgstr "## 相关文档"
 
 #. type: Bullet: '- '
 #: docs/features/pair-programming-v1.md:61
 msgid "WebUI three modes: [`architecture.md`](../concepts/architecture.md)"
-msgstr ""
+msgstr "WebUI 三种模式：[`architecture.md`](../concepts/architecture.md)"
 
 #. type: Bullet: '- '
 #: docs/features/pair-programming-v1.md:61

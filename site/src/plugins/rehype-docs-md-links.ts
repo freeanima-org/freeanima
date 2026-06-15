@@ -5,6 +5,14 @@ import type { VFile } from "vfile";
 import { resolveDocsMdHref, type DocsMdLinksOptions } from "../lib/docs-md-links.ts";
 
 function visitElements(node: Root | Element, visit: (element: Element) => void): void {
+  if (node.type === "root") {
+    for (const child of node.children) {
+      if (child.type === "element") {
+        visitElements(child, visit);
+      }
+    }
+    return;
+  }
   if (node.type !== "element") {
     return;
   }
@@ -18,7 +26,7 @@ function visitElements(node: Root | Element, visit: (element: Element) => void):
 
 /** Rehype plugin: rewrite in-repo docs `.md` links to Starlight doc URLs. */
 export function rehypeDocsMdLinks(options: DocsMdLinksOptions): Plugin<[], Root> {
-  return () => (tree: Root, file: VFile) => {
+  return (tree: Root, file: VFile) => {
     if (!file.path) {
       return;
     }

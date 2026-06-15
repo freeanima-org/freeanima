@@ -1,4 +1,5 @@
 import { defineConfig } from "astro/config";
+import { unified } from "@astrojs/markdown-remark";
 import starlight from "@astrojs/starlight";
 import react from "@astrojs/react";
 import tailwindcss from "@tailwindcss/vite";
@@ -10,15 +11,18 @@ import { starlightSidebar } from "./src/lib/sidebar.ts";
 import { docRedirects } from "./src/lib/doc-redirects.ts";
 import { rehypeDocsMdLinks } from "./src/plugins/rehype-docs-md-links.ts";
 
-const docsRoot = fileURLToPath(new URL("../docs", import.meta.url));
+const docsRoot = fileURLToPath(new URL("./src/content/docs", import.meta.url));
 const docsZhRoot = fileURLToPath(new URL("../docs/.generated/zh_CN", import.meta.url));
 
 export default defineConfig({
   base: "/",
   site: "https://freeanima.com",
+  cacheDir: fileURLToPath(new URL("./.astro", import.meta.url)),
   redirects: docRedirects,
   markdown: {
-    rehypePlugins: [[rehypeDocsMdLinks, { enRoot: docsRoot, zhRoot: docsZhRoot }]],
+    processor: unified({
+      rehypePlugins: [[rehypeDocsMdLinks, { enRoot: docsRoot, zhRoot: docsZhRoot }]],
+    }),
   },
   vite: {
     plugins: [
@@ -59,6 +63,9 @@ export default defineConfig({
         themes: ["starlight-dark", "starlight-light"],
         useStarlightDarkModeSwitch: true,
         styleOverrides: { borderRadius: "0px" },
+      },
+      markdown: {
+        processedDirs: ["../docs/.generated/zh_CN"],
       },
     }),
     react(),

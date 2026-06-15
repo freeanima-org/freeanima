@@ -57,6 +57,8 @@ msgid ""
 "> **v1 ✅ Implemented:** `memory_recall(query)` four-source unified recall, "
 "returns `results[]` (distinguished by `memory_type`)."
 msgstr ""
+"> **v1 ✅ 已实现：** `memory_recall(query)` 四源统一召回，返回 `results[]`"
+"（以 `memory_type` 区分）。"
 
 #. type: Plain text
 #: docs/concepts/recall-flow.md:10
@@ -106,6 +108,12 @@ msgid ""
 "| `limbic`           | Emotional memory                      |\n"
 "| `autobiographical` | Narrative title + content snippet     |\n"
 msgstr ""
+"| `memory_type`      | 内容类型                         |\n"
+"| ------------------ | -------------------------------- |\n"
+"| `semantic`         | 事实、偏好、经历等               |\n"
+"| `session`          | 历史对话片段                     |\n"
+"| `limbic`           | 感性记忆                         |\n"
+"| `autobiographical` | 叙事标题 + 内容片段              |\n"
 
 #. type: Plain text
 #: docs/concepts/recall-flow.md:28
@@ -121,6 +129,8 @@ msgid ""
 "entries are always injected into the system prompt. LLM cites memory ID "
 "markers in replies; reference counts sync via nightly cron."
 msgstr ""
+"与 recall 分开：**置顶**语义记忆与**引用最多**条目始终注入 system prompt。"
+"LLM 在回复中标注记忆 ID 标记；引用计数通过夜间 cron 同步。"
 
 #. type: Plain text
 #: docs/concepts/recall-flow.md:32
@@ -171,6 +181,8 @@ msgid ""
 "preset weighting is tracked in [Issue #47](https://github.com/freeanima-org/"
 "freeanima/issues/47). Not current runtime behavior."
 msgstr ""
+"扩展到资源层（工具、技能、资产）的统一 recall 及预设权重见 [Issue #47]"
+"(https://github.com/freeanima-org/freeanima/issues/47)。非当前运行时行为。"
 
 #. type: Plain text
 #: docs/concepts/recall-flow.md:45

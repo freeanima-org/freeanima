@@ -58,6 +58,8 @@ msgid ""
 "database**; only the **four-segment view** sent to the LLM is trimmed.  > "
 "Related: [`sleep.md`](sleep.md), [`memory.md`](memory.md)."
 msgstr ""
+"> 运行时上下文压缩：对话在**数据库中完整保留**；仅裁剪发给 LLM 的**四段视图"
+"**。 > 相关：[`sleep.md`](sleep.md)、[`memory.md`](memory.md)。"
 
 #. type: Plain text
 #: docs/concepts/compression.md:11 docs/concepts/sleep.md:14
@@ -93,7 +95,7 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/compression.md:20
 msgid "## Runtime Four Segments"
-msgstr ""
+msgstr "## 运行时四段结构"
 
 #. type: Plain text
 #: docs/concepts/compression.md:27
@@ -106,12 +108,18 @@ msgid ""
 "④ raw     — recent segment: full messages including tool calls\n"
 "```\n"
 msgstr ""
+"```\n"
+"① system  — 系统提示词（自我层 + 常驻记忆 + 项目上下文）\n"
+"② summary — 被压缩部分的文本摘要（合成；不存入 messages）\n"
+"③ slim    — 中间段：裁剪后的 user/assistant 消息\n"
+"④ raw     — 最近段：完整消息（含 tool 调用）\n"
+"```\n"
 
 #. type: Plain text
 #: docs/concepts/compression.md:29
 msgid ""
 "Non-compression path: append new messages to raw only; boundaries unchanged."
-msgstr ""
+msgstr "非压缩路径：新消息仅追加到 raw；边界不变。"
 
 #. type: Plain text
 #: docs/concepts/compression.md:31
@@ -119,6 +127,7 @@ msgid ""
 "Compression path: when usage exceeds thresholds, older messages move into "
 "summary/slim; summary text updated asynchronously."
 msgstr ""
+"压缩路径：用量超过阈值时，较早消息移入 summary/slim；摘要文本异步更新。"
 
 #. type: Plain text
 #: docs/concepts/compression.md:33
@@ -132,6 +141,7 @@ msgstr "已配置"
 msgid ""
 "Adjust in `config.yaml` (full example: repo root `config.example.yaml`):"
 msgstr ""
+"在 `config.yaml` 中调整（完整示例见仓库根目录 `config.example.yaml`）："
 
 #. type: Plain text
 #: docs/concepts/compression.md:40
@@ -162,6 +172,16 @@ msgid ""
 "  summary_max_tokens: 4000\n"
 "```\n"
 msgstr ""
+"compression:\n"
+"  enabled: true\n"
+"  reserved_tokens: 8192\n"
+"  trigger_low: 0.60 # 工具循环外：60% 用量时压缩\n"
+"  trigger_high: 0.80 # 工具循环内：80% 用量时压缩\n"
+"  emergency_ratio: 0.92\n"
+"  raw_min_messages: 5\n"
+"  slim_min_messages: 50\n"
+"  summary_max_tokens: 4000\n"
+"```\n"
 
 #. type: Plain text
 #: docs/concepts/compression.md:58
@@ -174,16 +194,22 @@ msgid ""
 "| `raw_min_messages`  | 5       | Minimum messages in raw segment     |\n"
 "| `slim_min_messages` | 50      | Minimum messages in slim after trim |\n"
 msgstr ""
+"| 设置                | 默认值  | 说明                                |\n"
+"| ------------------- | ------- | ----------------------------------- |\n"
+"| `trigger_low`       | 0.60    | 普通对话中的阈值                    |\n"
+"| `trigger_high`      | 0.80    | 工具循环内的阈值                    |\n"
+"| `raw_min_messages`  | 5       | raw 段最少消息数                    |\n"
+"| `slim_min_messages` | 50      | 裁剪后 slim 段最少消息数            |\n"
 
 #. type: Plain text
 #: docs/concepts/compression.md:60
 msgid "Without `context_window`, falls back to message-count triggers."
-msgstr ""
+msgstr "未配置 `context_window` 时，回退到按消息数触发。"
 
 #. type: Plain text
 #: docs/concepts/compression.md:62
 msgid "Force compression in chat: `/compress` (`--force` ignores hysteresis)."
-msgstr ""
+msgstr "在对话中强制压缩：`/compress`（`--force` 忽略迟滞）。"
 
 #. type: Plain text
 #: docs/concepts/compression.md:64
@@ -199,3 +225,5 @@ msgid ""
 "the current session's LLM window; memory extraction runs nightly from the "
 "full conversation archive."
 msgstr ""
+"压缩与浅睡/深睡**独立运行**：压缩管理当前 session 的 LLM 窗口；记忆提取每晚从"
+"完整对话存档运行。"

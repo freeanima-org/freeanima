@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-12 11:56+0800\n"
+"POT-Creation-Date: 2026-06-15 09:46+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -28,7 +28,9 @@ msgstr ""
 #: docs/concepts/self-layer.md:66 docs/concepts/self-layer.md:80
 #: docs/concepts/self-layer.md:91 docs/concepts/sleep.md:1
 #: docs/concepts/time-perception.md:1 docs/features/pair-programming-v1.md:1
-#: docs/guide/database.md:1 docs/guide/security.md:1
+#: docs/guide/database.md:1 docs/guide/install.md:1 docs/guide/install.md:31
+#: docs/guide/install.md:106 docs/guide/install.md:167
+#: docs/guide/install.md:234 docs/guide/security.md:1 docs/guide/service.md:1
 #: docs/tools/execute-code-runtimes.md:1
 #, no-wrap
 msgid "---\n"
@@ -47,7 +49,7 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/database.md:6
 msgid "# PostgreSQL Setup and Operations"
-msgstr ""
+msgstr "# PostgreSQL 安装与运维"
 
 #. type: Plain text
 #: docs/guide/database.md:10
@@ -57,16 +59,19 @@ msgid ""
 "memory.md), [`sleep.md`](../concepts/sleep.md).  > Security and credentials: "
 "[`security.md`](security.md)."
 msgstr ""
+"> FreeAnima 使用 PostgreSQL 存储对话存档、语义记忆、自我层及相关数据。 > 相关"
+"概念：[`memory.md`](../concepts/memory.md)、[`sleep.md`](../concepts/"
+"sleep.md)。 > 安全与凭证：[`security.md`](security.md)。"
 
 #. type: Plain text
 #: docs/guide/database.md:12
 msgid "## Connection Configuration"
-msgstr ""
+msgstr "## 连接配置"
 
 #. type: Plain text
 #: docs/guide/database.md:14
 msgid "Set the database URL in `config.yaml`:"
-msgstr ""
+msgstr "在 `config.yaml` 中设置数据库 URL："
 
 #. type: Plain text
 #: docs/guide/database.md:21
@@ -98,11 +103,13 @@ msgid ""
 "plaintext in config. Path conventions: [`security.md`]"
 "(security.md#credential-responsibilities)."
 msgstr ""
+"生产环境**必须**设置 `database.url`。密码优先使用 pass，避免在配置中明文存"
+"放。路径约定见 [`security.md`](security.md#credential-responsibilities)。"
 
 #. type: Plain text
 #: docs/guide/database.md:25
 msgid "## Local Install (Debian)"
-msgstr ""
+msgstr "## 本地安装（Debian）"
 
 #. type: Plain text
 #: docs/guide/database.md:29
@@ -110,6 +117,9 @@ msgid ""
 "```bash # Install PostgreSQL, create anima db/user (requires sudo)  sudo ./"
 "scripts/setup-postgres-debian.sh"
 msgstr ""
+"```bash\n"
+"# 安装 PostgreSQL，创建 anima 数据库/用户（需要 sudo）\n"
+"sudo ./scripts/setup-postgres-debian.sh"
 
 #. type: Plain text
 #: docs/guide/database.md:32
@@ -147,11 +157,13 @@ msgid ""
 "Defaults: PostgreSQL 17, `localhost` only, `scram-sha-256`, dedicated "
 "`anima` database and user."
 msgstr ""
+"默认：PostgreSQL 17、仅 `localhost`、`scram-sha-256`、专用 `anima` 数据库与用"
+"户。"
 
 #. type: Plain text
 #: docs/guide/database.md:40
 msgid "## Extensions (One-Time)"
-msgstr ""
+msgstr "## 扩展（一次性）"
 
 #. type: Plain text
 #: docs/guide/database.md:42
@@ -159,6 +171,8 @@ msgid ""
 "Full-text and vector search require PostgreSQL extensions. The app user "
 "usually cannot `CREATE EXTENSION`; run as superuser:"
 msgstr ""
+"全文与向量检索需要 PostgreSQL 扩展。应用用户通常无法 `CREATE EXTENSION`；请以"
+"超级用户执行："
 
 #. type: Plain text
 #: docs/guide/database.md:47
@@ -171,7 +185,7 @@ msgstr ""
 msgid ""
 "```bash\n"
 "sudo apt install postgresql-17-pgvector   # match psql --version\n"
-"sudo -u postgres psql -d anima -f storage/db/scripts/ensure-pg-extensions.sql\n"
+"sudo -u postgres psql -d anima -f core/scripts/ensure-pg-extensions.sql\n"
 "```\n"
 msgstr ""
 "```bash\n"
@@ -184,12 +198,12 @@ msgstr ""
 msgid ""
 "Fresh Debian installs via `setup-postgres-debian.sh` handle extensions "
 "automatically."
-msgstr ""
+msgstr "通过 `setup-postgres-debian.sh` 全新安装的 Debian 会自动处理扩展。"
 
 #. type: Plain text
 #: docs/guide/database.md:51
 msgid "## Schema Migrations"
-msgstr ""
+msgstr "## Schema 迁移"
 
 #. type: Bullet: '- '
 #: docs/guide/database.md:54
@@ -197,11 +211,13 @@ msgid ""
 "**Production (recommended):** When PostgreSQL is configured, `anima service` "
 "**auto-applies** pending schema migrations on startup."
 msgstr ""
+"**生产环境（推荐）：** 配置 PostgreSQL 后，`anima service` 启动时会**自动应用"
+"**待执行的 schema 迁移。"
 
 #. type: Bullet: '- '
 #: docs/guide/database.md:54
 msgid "**Manual:**"
-msgstr ""
+msgstr "**手动：**"
 
 #. type: Plain text
 #: docs/guide/database.md:59
@@ -213,7 +229,7 @@ msgstr ""
 msgid ""
 "```bash\n"
 "DATABASE_URL=\"$(anima credential get services/postgres/anima url)\" \\\n"
-"  bun run --filter @freeanima/storage-db db:migrate\n"
+"  bun run --filter @freeanima/core/db db:migrate\n"
 "```\n"
 msgstr ""
 "# Schema\n"
@@ -223,7 +239,7 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/database.md:61
 msgid "Run after extensions are installed, or restart `anima service`."
-msgstr ""
+msgstr "安装扩展后执行，或重启 `anima service`。"
 
 #. type: Plain text
 #: docs/guide/database.md:63
@@ -237,12 +253,12 @@ msgstr "### 基础规则"
 msgid ""
 "**Migrations do not replace backups** — schedule regular full backups (e.g. "
 "`pg_dump`)."
-msgstr ""
+msgstr "**迁移不能替代备份** — 请定期安排全量备份（如 `pg_dump`）。"
 
 #. type: Bullet: '- '
 #: docs/guide/database.md:67
 msgid "Back up before destructive changes."
-msgstr ""
+msgstr "破坏性变更前先备份。"
 
 #. type: Bullet: '- '
 #: docs/guide/database.md:67
@@ -250,18 +266,20 @@ msgid ""
 "Include `~/.anima/` (`FREEANIMA_HOME` overridable) in backup policy — see "
 "[`security.md`](security.md#data-persistence)."
 msgstr ""
+"备份策略应包含 `~/.anima/`（可用 `FREEANIMA_HOME` 覆盖）——见 [`security.md`]"
+"(security.md#data-persistence)。"
 
 #. type: Plain text
 #: docs/guide/database.md:69
 msgid "## Integration Tests (Developers)"
-msgstr ""
+msgstr "## 集成测试（开发者）"
 
 #. type: Plain text
 #: docs/guide/database.md:71
 msgid ""
 "Full integration tests require **Docker** for a temporary PostgreSQL "
 "instance:"
-msgstr ""
+msgstr "完整集成测试需要 **Docker** 提供临时 PostgreSQL 实例："
 
 #. type: Plain text
 #: docs/guide/database.md:76
@@ -285,12 +303,12 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/database.md:78
 msgid "pre-commit `test:changed` does **not** run integration tests."
-msgstr ""
+msgstr "pre-commit 的 `test:changed` **不会**运行集成测试。"
 
 #. type: Plain text
 #: docs/guide/database.md:80
 msgid "## Troubleshooting"
-msgstr ""
+msgstr "## 故障排查"
 
 #. type: Plain text
 #: docs/guide/database.md:86
@@ -319,4 +337,4 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/database.md:87
 msgid "More deployment security: [`security.md`](security.md)."
-msgstr ""
+msgstr "更多部署安全事项：[`security.md`](security.md)。"

@@ -3,8 +3,8 @@ import { glob } from "astro/loaders";
 import { docsSchema } from "@astrojs/starlight/schema";
 import { fileURLToPath } from "node:url";
 
-const docsRoot = fileURLToPath(new URL("../../docs", import.meta.url));
-const docsZhRoot = fileURLToPath(new URL("../../docs/.generated/zh_CN", import.meta.url));
+const docsRoot = fileURLToPath(new URL("./content/docs", import.meta.url));
+const docsZhRoot = fileURLToPath(new URL("../docs/.generated/zh_CN", import.meta.url));
 
 function docsEntryId(entry: string, localePrefix?: string): string {
   let id = entry.replace(/\.(md|mdx)$/i, "");

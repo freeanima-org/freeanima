@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-12 11:55+0800\n"
+"POT-Creation-Date: 2026-06-15 09:46+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -29,7 +29,9 @@ msgstr ""
 #: docs/concepts/self-layer.md:66 docs/concepts/self-layer.md:80
 #: docs/concepts/self-layer.md:91 docs/concepts/sleep.md:1
 #: docs/concepts/time-perception.md:1 docs/features/pair-programming-v1.md:1
-#: docs/guide/database.md:1 docs/guide/security.md:1
+#: docs/guide/database.md:1 docs/guide/install.md:1 docs/guide/install.md:31
+#: docs/guide/install.md:106 docs/guide/install.md:167
+#: docs/guide/install.md:234 docs/guide/security.md:1 docs/guide/service.md:1
 #: docs/tools/execute-code-runtimes.md:1
 #, no-wrap
 msgid "---\n"
@@ -63,22 +65,24 @@ msgid "## Guide — Usage and Maintenance"
 msgstr ""
 
 #. type: Plain text
-#: docs/README.md:15
+#: docs/README.md:17
 #, no-wrap
 msgid ""
-"| Topic    | File                                   |\n"
-"| -------- | -------------------------------------- |\n"
-"| Security | [guide/security.md](guide/security.md) |\n"
-"| Database | [guide/database.md](guide/database.md) |\n"
+"| Topic        | File                                   |\n"
+"| ------------ | -------------------------------------- |\n"
+"| Installation | [guide/install.md](guide/install.md)   |\n"
+"| Security     | [guide/security.md](guide/security.md) |\n"
+"| Database     | [guide/database.md](guide/database.md) |\n"
+"| Service      | [guide/service.md](guide/service.md)   |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/README.md:17
+#: docs/README.md:19
 msgid "## Concepts — Core Ideas"
 msgstr ""
 
 #. type: Plain text
-#: docs/README.md:28
+#: docs/README.md:30
 #, no-wrap
 msgid ""
 "| Topic           | File                                                       |\n"
@@ -94,12 +98,12 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/README.md:30
+#: docs/README.md:32
 msgid "## Features — Major Capabilities"
 msgstr ""
 
 #. type: Plain text
-#: docs/README.md:34
+#: docs/README.md:36
 #, no-wrap
 msgid ""
 "| Topic            | File                                                               |\n"
@@ -108,12 +112,12 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/README.md:36
+#: docs/README.md:38
 msgid "## Tools — Built-in Tools"
 msgstr ""
 
 #. type: Plain text
-#: docs/README.md:39
+#: docs/README.md:41
 #, no-wrap
 msgid ""
 "| Topic         | File                                                             |\n"
