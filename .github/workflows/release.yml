@@ -19,7 +19,7 @@ jobs:
       release_created: ${{ steps.release.outputs.release_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
     steps:
-      - uses: googleapis/release-please-action@v4
+      - uses: googleapis/release-please-action@v5
         id: release
         with:
           # GITHUB_TOKEN 开的 PR 不触发下游 workflow；须 PAT 以便 Release PR 跑 ci.yml（Quality + blackbox）
