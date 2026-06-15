@@ -1,107 +1,111 @@
 import { satelliteEntrySchema, type SatelliteEntryConfig } from "@freeanima/core/config";
-import { PATHS } from "@freeanima/platform/config";
 import { FileConfig } from "@freeanima/platform/config";
-import { REPO_ROOT } from "@freeanima/platform";
-import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { spawnSync, spawn, type ChildProcess } from "node:child_process";
 import { join } from "node:path";
-import { spawn, type ChildProcess } from "node:child_process";
+import { resolveSatelliteLaunch, type SatelliteLaunch } from "./satellite-launch.ts";
+import {
+  renderSatelliteSystemdUnit,
+  satelliteServiceUnitFileName,
+  satelliteSystemdUnitName,
+} from "./satellite-systemd-unit.ts";
+import { serviceUnitDir, writeStatusLine } from "./service-common.ts";
+import { systemdUserAvailable } from "./systemd-unit.ts";
 
-export type EnabledSatellite = {
+export type ManagedSatellite = {
   name: string;
   config: SatelliteEntryConfig;
 };
 
 const foregroundChildren = new Map<string, ChildProcess>();
 
-function pidPath(name: string): string {
-  return join(PATHS.satellitesRuntimeDir, `${name}.pid`);
+function systemctl(...args: string[]): ReturnType<typeof spawnSync> {
+  return spawnSync("systemctl", ["--user", ...args], { encoding: "utf-8" });
 }
 
-export function loadEnabledSatellites(): EnabledSatellite[] {
+/** Config entries with command and enabled !== false (managed satellites only). */
+export function loadManagedSatellites(): ManagedSatellite[] {
   const cfg = FileConfig.open().data;
   const entries = cfg.satellites ?? {};
-  const out: EnabledSatellite[] = [];
+  const out: ManagedSatellite[] = [];
   for (const [name, raw] of Object.entries(entries)) {
     const parsed = satelliteEntrySchema.safeParse(raw);
     if (!parsed.success) continue;
     if (parsed.data.enabled === false) continue;
+    if (!parsed.data.command?.trim()) continue;
     out.push({ name, config: parsed.data });
   }
   return out;
 }
 
-function buildEnv(name: string, entry: SatelliteEntryConfig): Record<string, string> {
-  const env: Record<string, string> = {
-    ...process.env,
-    FREEANIMA_REPO_ROOT: REPO_ROOT,
-    ...entry.env,
-  };
-  if (entry.workspace?.trim()) {
-    env.STUDIO_WORKSPACE = entry.workspace.trim();
-  }
-  if (entry.gitignore !== undefined) {
-    env.STUDIO_GITIGNORE = entry.gitignore ? "true" : "false";
-  }
-  if (entry.showHidden !== undefined) {
-    env.STUDIO_SHOW_HIDDEN = entry.showHidden ? "true" : "false";
-  }
-  if (name === "pair-programming" && !env.SATELLITE_PORT) {
-    env.SATELLITE_PORT = "4173";
-  }
-  const hub = process.env.FREEANIMA_URL ?? "http://127.0.0.1:2658";
-  env.FREEANIMA_URL = hub;
-  return env;
+function hubUrl(host: string, port: number): string {
+  return process.env.FREEANIMA_URL ?? `http://${host}:${port}`;
 }
 
-function writePid(name: string, pid: number): void {
-  mkdirSync(PATHS.satellitesRuntimeDir, { recursive: true });
-  writeFileSync(pidPath(name), String(pid), "utf-8");
+function satelliteUnitPath(name: string): string {
+  return join(serviceUnitDir(), satelliteServiceUnitFileName(name));
 }
 
-function readPid(name: string): number | null {
-  const p = pidPath(name);
-  if (!existsSync(p)) return null;
-  const n = Number.parseInt(readFileSync(p, "utf-8").trim(), 10);
-  return Number.isFinite(n) && n > 0 ? n : null;
-}
-
-function clearPid(name: string): void {
-  try {
-    unlinkSync(pidPath(name));
-  } catch {
-    /* ignore */
-  }
-}
-
-function killPid(pid: number, signal: NodeJS.Signals = "SIGTERM"): void {
-  try {
-    process.kill(pid, signal);
-  } catch {
-    /* already dead */
-  }
-}
-
-export function startSatellite(
-  name: string,
+function resolveLaunchForSatellite(
   entry: SatelliteEntryConfig,
-  opts?: { foreground?: boolean },
-): void {
-  const existing = readPid(name);
-  if (existing !== null) {
-    try {
-      process.kill(existing, 0);
-      console.log(`Satellite ${name} already running (PID ${existing})`);
-      return;
-    } catch {
-      clearPid(name);
+  host: string,
+  port: number,
+): SatelliteLaunch {
+  return resolveSatelliteLaunch(entry, { hubUrl: hubUrl(host, port) });
+}
+
+export function ensureSatelliteUnitFiles(host: string, port: number): boolean {
+  const dir = serviceUnitDir();
+  mkdirSync(dir, { recursive: true });
+  let changed = false;
+  for (const { name, config } of loadManagedSatellites()) {
+    const launch = resolveLaunchForSatellite(config, host, port);
+    const content = renderSatelliteSystemdUnit(name, launch);
+    const path = satelliteUnitPath(name);
+    if (!existsSync(path) || readFileSync(path, "utf-8") !== content) {
+      writeFileSync(path, content, "utf-8");
+      changed = true;
     }
   }
+  return changed;
+}
 
-  const cwd = entry.cwd?.trim() || REPO_ROOT;
-  const env = buildEnv(name, entry);
-  const child = spawn(entry.command, entry.args ?? [], {
-    cwd,
-    env,
+export function startManagedSatellitesViaSystemd(host: string, port: number): void {
+  if (!systemdUserAvailable()) return;
+  const list = loadManagedSatellites();
+  if (list.length === 0) return;
+
+  ensureSatelliteUnitFiles(host, port);
+  systemctl("daemon-reload");
+
+  for (const { name } of list) {
+    const unit = satelliteSystemdUnitName(name);
+    const r = systemctl("enable", "--now", unit);
+    if (r.status !== 0) {
+      writeStatusLine("warning", `Satellite ${name} start failed: ${r.stderr || r.stdout}`);
+      continue;
+    }
+    writeStatusLine("ok", `Satellite ${name} started (systemd ${unit})`);
+  }
+}
+
+export function stopManagedSatellitesViaSystemd(): void {
+  if (!systemdUserAvailable()) return;
+  for (const { name } of loadManagedSatellites()) {
+    const unit = satelliteSystemdUnitName(name);
+    systemctl("stop", unit);
+    writeStatusLine("info", `Satellite ${name} stopped (systemd ${unit})`);
+  }
+}
+
+function spawnSatellite(
+  name: string,
+  launch: SatelliteLaunch,
+  opts?: { foreground?: boolean },
+): void {
+  const child = spawn(launch.command, launch.args, {
+    cwd: launch.workingDirectory,
+    env: { ...process.env, ...launch.environment },
     detached: !opts?.foreground,
     stdio: opts?.foreground ? "inherit" : "ignore",
   });
@@ -116,35 +120,43 @@ export function startSatellite(
     child.unref();
   }
 
-  writePid(name, child.pid);
   console.log(`Satellite ${name} started (PID ${child.pid})`);
 }
 
-export function startAllSatellites(opts?: { foreground?: boolean }): void {
-  const list = loadEnabledSatellites();
+export function startAllSatellites(opts?: {
+  foreground?: boolean;
+  host?: string;
+  port?: number;
+  useSystemd?: boolean;
+}): void {
+  const host = opts?.host ?? "127.0.0.1";
+  const port = opts?.port ?? 2658;
+  const useSystemd = opts?.useSystemd ?? (systemdUserAvailable() && !opts?.foreground);
+
+  if (useSystemd) {
+    startManagedSatellitesViaSystemd(host, port);
+    return;
+  }
+
+  const list = loadManagedSatellites();
   if (list.length === 0) return;
   for (const { name, config } of list) {
-    startSatellite(name, config, opts);
+    const launch = resolveLaunchForSatellite(config, host, port);
+    spawnSatellite(name, launch, opts);
   }
 }
 
 export function stopAllSatellites(): void {
   for (const [name, child] of foregroundChildren) {
-    killPid(child.pid ?? 0);
+    try {
+      process.kill(child.pid ?? 0, "SIGTERM");
+    } catch {
+      /* already dead */
+    }
     foregroundChildren.delete(name);
-    clearPid(name);
   }
 
-  const dir = PATHS.satellitesRuntimeDir;
-  if (!existsSync(dir)) return;
-  for (const { name } of loadEnabledSatellites()) {
-    const pid = readPid(name);
-    if (pid != null) {
-      killPid(pid);
-      clearPid(name);
-      console.log(`Satellite ${name} stopped (PID ${pid})`);
-    }
-  }
+  stopManagedSatellitesViaSystemd();
 }
 
 export function stopSatellitesBeforeExit(): void {

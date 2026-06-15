@@ -35,13 +35,6 @@ export { listSelfBlocks } from "./self.ts";
 export { getMcpStatus, mcpStartAll, mcpStopAll, mcpStartServer, mcpStopServer } from "./mcp.ts";
 export { getSatellitesStatus } from "./satellites.ts";
 export { getAcpStatus, acpStartAll, acpStopAll, acpStartAgent, acpStopAgent } from "./acp.ts";
-export {
-  studioGetConfig,
-  studioPatchConfig,
-  studioGetTree,
-  studioGetFile,
-  studioSearch,
-} from "./studio.ts";
 export { iterateMessageStream } from "./message-stream.ts";
 export { fetchSessionAcpDock, iterateSessionEvents } from "./session-events.ts";
 export {

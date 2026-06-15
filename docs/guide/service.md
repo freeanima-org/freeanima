@@ -34,6 +34,9 @@ anima service start          # background (systemd user unit when available)
 anima service start --foreground
 anima service status
 anima service stop
+anima service restart
 ```
+
+Managed satellites get user units `~/.config/systemd/user/anima-satellite-<name>.service`, enabled on `service start` and stopped with `service stop`. See [`satellites.md`](satellites.md).
 
 WebUI chamber dashboard: `http://127.0.0.1:2658/webui/chamber/dashboard`

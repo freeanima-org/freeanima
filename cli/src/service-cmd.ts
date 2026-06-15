@@ -19,7 +19,12 @@ import {
 import { REPO_ROOT } from "@freeanima/platform";
 import { renderSystemdUnit, systemdUserAvailable, SYSTEMD_UNIT } from "./systemd-unit.ts";
 import { printServiceRunningStatus } from "./output/service-status-display.ts";
-import { startAllSatellites, stopAllSatellites } from "./satellite-supervisor.ts";
+import {
+  startAllSatellites,
+  stopAllSatellites,
+  ensureSatelliteUnitFiles,
+  startManagedSatellitesViaSystemd,
+} from "./satellite-supervisor.ts";
 
 export type ServiceArgs = {
   action: string;
@@ -240,7 +245,12 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
       process.once("SIGINT", onStop);
       process.once("SIGTERM", onStop);
       try {
-        startAllSatellites({ foreground: true });
+        startAllSatellites({
+          foreground: true,
+          host: args.host,
+          port: args.port,
+          useSystemd: false,
+        });
         const { serve } = await import("@freeanima/platform");
         const { startWebuiHttpServers, closeHttpServers, waitForDrainWithTimeout } =
           await import("@freeanima/platform/connectors/webui");
@@ -262,11 +272,12 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
 
     if (!systemdUserAvailable()) {
       await startDetachedWithoutSystemd(args);
-      startAllSatellites();
+      startAllSatellites({ host: args.host, port: args.port, useSystemd: false });
       return;
     }
 
     ensureUnitFile(args.host, args.port);
+    ensureSatelliteUnitFiles(args.host, args.port);
     systemctl("daemon-reload");
     const r = systemctl("enable", "--now", SYSTEMD_UNIT);
     if (r.status !== 0) {
@@ -277,7 +288,7 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
     console.log(`  unit: ${serviceUnitPath()}`);
     console.log(`  address: http://${args.host}:${args.port}`);
     console.log("  status: anima service status");
-    startAllSatellites();
+    startManagedSatellitesViaSystemd(args.host, args.port);
     return;
   }
 
@@ -310,9 +321,11 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
   if (action === "restart") {
     if (systemdUserAvailable() && existsSync(serviceUnitPath())) {
       ensureUnitFile(args.host, args.port);
+      ensureSatelliteUnitFiles(args.host, args.port);
       systemctl("daemon-reload");
       const r = systemctl("restart", SYSTEMD_UNIT);
       if (r.status === 0) {
+        startManagedSatellitesViaSystemd(args.host, args.port);
         writeStatusLine("ok", "Restarted (systemd)");
         return;
       }

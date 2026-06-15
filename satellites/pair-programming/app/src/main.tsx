@@ -97,7 +97,13 @@ function App() {
               <br />
               {"  pair-programming:"}
               <br />
-              {"    workspace: /path/to/project"}
+              {"    command: bun"}
+              <br />
+              {'    args: ["satellites/pair-programming/dev.ts"]'}
+              <br />
+              {"    env:"}
+              <br />
+              {"      STUDIO_WORKSPACE: /path/to/project"}
             </p>
             <p className="text-xs text-base-content/50">anima service restart</p>
           </div>

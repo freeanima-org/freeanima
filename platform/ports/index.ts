@@ -45,18 +45,6 @@ export {
   type CronEngineJobInput,
   type RunCronEngineTurnFn,
 } from "./cron-use-cases.ts";
-export {
-  getStudioConfig,
-  patchStudioConfig,
-  buildFileTree,
-  readStudioFile,
-  searchStudio,
-  resolveWorkspace,
-  registerStudioPort,
-  unregisterStudioPort,
-  type StudioConfig,
-  type StudioSearchHit,
-} from "./studio-port.ts";
 export { PARLOR_PLATFORM, WEBUI_BASE_PATH } from "./constants.ts";
 export type {
   AnswerSegment,

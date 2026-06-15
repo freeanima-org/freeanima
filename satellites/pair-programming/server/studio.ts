@@ -14,18 +14,20 @@ export type TreeNode = {
   children?: TreeNode[];
 };
 
-let config: StudioConfig = {
-  workspace: process.env.STUDIO_WORKSPACE ?? "",
-  gitignore: process.env.STUDIO_GITIGNORE !== "false",
-  showHidden: process.env.STUDIO_SHOW_HIDDEN === "true",
-};
+function readConfig(): StudioConfig {
+  return {
+    workspace: process.env.STUDIO_WORKSPACE ?? "",
+    gitignore: process.env.STUDIO_GITIGNORE !== "false",
+    showHidden: process.env.STUDIO_SHOW_HIDDEN === "true",
+  };
+}
 
 export function getStudioConfig(): StudioConfig {
-  return { ...config };
+  return { ...readConfig() };
 }
 
 export function resolveWorkspace(): string {
-  const ws = config.workspace.trim();
+  const ws = readConfig().workspace.trim();
   if (!ws || !existsSync(ws)) {
     throw new Error("studio.workspace is not configured or does not exist");
   }
@@ -42,6 +44,7 @@ function resolveStudioPath(relPath: string): string {
 }
 
 export function buildFileTree(): { tree: TreeNode[]; workspace: string } {
+  const config = readConfig();
   const root = resolveWorkspace();
   const walk = (dir: string): TreeNode[] => {
     const entries = readdirSync(dir, { withFileTypes: true })
@@ -83,6 +86,7 @@ export function readStudioFile(relPath: string): {
 }
 
 export function searchStudio(query: string): { results: Array<Record<string, unknown>> } {
+  const config = readConfig();
   const root = resolveWorkspace();
   const results: Array<Record<string, unknown>> = [];
   const walk = (dir: string): void => {
