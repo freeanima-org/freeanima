@@ -10,7 +10,20 @@ import {
   listSessions,
   searchStudio,
   setSessionTitle,
+  patchStudioConfig,
 } from "@/lib/api.ts";
+import {
+  resolvePairProgrammingSatelliteBase,
+  satelliteCreateSession,
+  satelliteGetSessionMessages,
+  satelliteGetStudioConfig,
+  satelliteGetStudioFile,
+  satelliteGetStudioTree,
+  satelliteListSessions,
+  satellitePatchStudioConfig,
+  satelliteSearchStudio,
+  satelliteSetSessionTitle,
+} from "@/lib/pair-programming-satellite.ts";
 
 export const STUDIO_PAIR_PLATFORM = "studio-pair-programming";
 
@@ -33,6 +46,7 @@ type SearchHit = {
 };
 
 type PairProgrammingState = {
+  satelliteBase: string | null;
   sessions: SessionListItem[];
   currentSessionId: string | null;
   display: DisplayItem[];
@@ -43,7 +57,9 @@ type PairProgrammingState = {
   config: StudioConfig;
   loading: boolean;
   error: string;
+  initSatellite: () => Promise<string | null>;
   fetchConfig: () => Promise<void>;
+  saveWorkspace: (workspace: string) => Promise<void>;
   fetchSessions: () => Promise<SessionListItem[]>;
   selectSession: (id: string) => Promise<void>;
   createNewSession: () => Promise<string | null>;
@@ -57,6 +73,7 @@ type PairProgrammingState = {
 };
 
 export const usePairProgrammingStore = create<PairProgrammingState>((set, get) => ({
+  satelliteBase: null,
   sessions: [],
   currentSessionId: null,
   display: [],
@@ -68,18 +85,43 @@ export const usePairProgrammingStore = create<PairProgrammingState>((set, get) =
   loading: false,
   error: "",
 
+  async initSatellite() {
+    const base = await resolvePairProgrammingSatelliteBase();
+    set({ satelliteBase: base });
+    return base;
+  },
+
   async fetchConfig() {
     try {
-      const cfg = (await getStudioConfig()) as StudioConfig;
+      const base = get().satelliteBase ?? (await get().initSatellite());
+      const cfg = base
+        ? ((await satelliteGetStudioConfig(base)) as StudioConfig)
+        : ((await getStudioConfig()) as StudioConfig);
       set({ config: cfg, workspace: cfg.workspace || "" });
     } catch (e) {
       console.error("fetchConfig:", e);
     }
   },
 
+  async saveWorkspace(workspace) {
+    const ws = workspace.trim();
+    if (!ws) return;
+    const base = get().satelliteBase ?? (await get().initSatellite());
+    if (base) {
+      await satellitePatchStudioConfig(base, { workspace: ws });
+    } else {
+      await patchStudioConfig({ workspace: ws });
+    }
+    await get().fetchConfig();
+    await get().fetchTree();
+  },
+
   async fetchSessions() {
     try {
-      const resp = await listSessions(STUDIO_PAIR_PLATFORM);
+      const base = get().satelliteBase ?? (await get().initSatellite());
+      const resp = base
+        ? await satelliteListSessions(base, STUDIO_PAIR_PLATFORM)
+        : await listSessions(STUDIO_PAIR_PLATFORM);
       const sessions = (resp as { sessions?: SessionListItem[] }).sessions ?? [];
       set({ sessions });
       return sessions;
@@ -92,7 +134,10 @@ export const usePairProgrammingStore = create<PairProgrammingState>((set, get) =
   async selectSession(id) {
     set({ currentSessionId: id, display: [] });
     try {
-      const resp = await getSessionMessages(id);
+      const base = get().satelliteBase ?? (await get().initSatellite());
+      const resp = base
+        ? await satelliteGetSessionMessages(base, id)
+        : await getSessionMessages(id);
       set({ display: (resp as { display?: DisplayItem[] }).display ?? [] });
     } catch (e) {
       console.error("selectSession:", e);
@@ -101,7 +146,10 @@ export const usePairProgrammingStore = create<PairProgrammingState>((set, get) =
 
   async createNewSession() {
     try {
-      const d = await createSession(STUDIO_PAIR_PLATFORM);
+      const base = get().satelliteBase ?? (await get().initSatellite());
+      const d = base
+        ? await satelliteCreateSession(base, STUDIO_PAIR_PLATFORM)
+        : await createSession(STUDIO_PAIR_PLATFORM);
       await get().fetchSessions();
       const sessionId = (d as { session_id: string }).session_id;
       await get().selectSession(sessionId);
@@ -114,7 +162,12 @@ export const usePairProgrammingStore = create<PairProgrammingState>((set, get) =
 
   async renameSession(sessionId, newTitle) {
     try {
-      await setSessionTitle(sessionId, newTitle);
+      const base = get().satelliteBase ?? (await get().initSatellite());
+      if (base) {
+        await satelliteSetSessionTitle(base, sessionId, newTitle);
+      } else {
+        await setSessionTitle(sessionId, newTitle);
+      }
       set({
         sessions: get().sessions.map((s) => (s.id === sessionId ? { ...s, title: newTitle } : s)),
       });
@@ -129,7 +182,10 @@ export const usePairProgrammingStore = create<PairProgrammingState>((set, get) =
 
   async refreshMessages(sessionId, baselineCount) {
     try {
-      const resp = await getSessionMessages(sessionId);
+      const base = get().satelliteBase ?? (await get().initSatellite());
+      const resp = base
+        ? await satelliteGetSessionMessages(base, sessionId)
+        : await getSessionMessages(sessionId);
       const display = (resp as { display?: DisplayItem[] }).display ?? [];
       set({ display });
       return hasNewAssistantReply(display, baselineCount);
@@ -142,7 +198,10 @@ export const usePairProgrammingStore = create<PairProgrammingState>((set, get) =
   async fetchTree() {
     set({ loading: true, error: "" });
     try {
-      const d = (await getStudioTree()) as { tree?: FileTreeNode[]; workspace?: string };
+      const base = get().satelliteBase ?? (await get().initSatellite());
+      const d = base
+        ? ((await satelliteGetStudioTree(base)) as { tree?: FileTreeNode[]; workspace?: string })
+        : ((await getStudioTree()) as { tree?: FileTreeNode[]; workspace?: string });
       set({
         fileTree: d.tree || [],
         workspace: d.workspace || get().workspace,
@@ -159,7 +218,8 @@ export const usePairProgrammingStore = create<PairProgrammingState>((set, get) =
 
   async openFile(path, highlightLine) {
     try {
-      const file = await getStudioFile(path);
+      const base = get().satelliteBase ?? (await get().initSatellite());
+      const file = base ? await satelliteGetStudioFile(base, path) : await getStudioFile(path);
       set({
         currentFile: {
           ...(file as Record<string, unknown>),
@@ -177,7 +237,8 @@ export const usePairProgrammingStore = create<PairProgrammingState>((set, get) =
       return;
     }
     try {
-      const d = await searchStudio(query);
+      const base = get().satelliteBase ?? (await get().initSatellite());
+      const d = base ? await satelliteSearchStudio(base, query) : await searchStudio(query);
       set({ searchResults: ((d as { results?: SearchHit[] }).results || []) as SearchHit[] });
     } catch (e) {
       set({

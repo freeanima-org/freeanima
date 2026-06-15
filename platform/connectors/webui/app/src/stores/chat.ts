@@ -4,6 +4,7 @@ import { marked } from "marked";
 import { create } from "zustand";
 import { m } from "@/lib/i18n.ts";
 import { subscribeMessageStream, subscribeSessionEvents } from "@/lib/api.ts";
+import { usePairProgrammingStore } from "@/stores/pair-programming.ts";
 
 type SendDoneOptions = {
   recovered?: boolean;
@@ -221,6 +222,7 @@ export const useChatStore = create<ChatState>(() => ({
     };
 
     try {
+      const satelliteBase = usePairProgrammingStore.getState().satelliteBase;
       await new Promise<void>((resolve, reject) => {
         const sub = subscribeMessageStream(
           { sessionId, message: text },
@@ -245,6 +247,7 @@ export const useChatStore = create<ChatState>(() => ({
               resolve();
             },
           },
+          satelliteBase ? { baseUrl: satelliteBase } : undefined,
         );
         _unsubscribe = () => sub.unsubscribe();
       });

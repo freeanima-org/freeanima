@@ -47,6 +47,7 @@ export {
   messageSendOutputSchema,
   mapStreamApiEventToSap,
   mapRuntimeStreamEventToSap,
+  mapSapStreamMethodToApi,
   streamEventMethods,
 } from "./frames/message.ts";
 export type {

@@ -162,3 +162,69 @@ export function mapRuntimeStreamEventToSap(
       return null;
   }
 }
+
+/** 将 Hub 下发的 SAP stream.* evt 映射为 WebUI SSE 事件名与 payload */
+export function mapSapStreamMethodToApi(
+  method: StreamEventMethod,
+  payload: Record<string, unknown>,
+): StreamApiLikeEvent | null {
+  switch (method) {
+    case "stream.accepted":
+      return { event: "accepted", data: {} };
+    case "stream.token":
+      return { event: "token", data: { content: String(payload.content ?? "") } };
+    case "stream.content_replace":
+      return { event: "content_replace", data: { content: String(payload.content ?? "") } };
+    case "stream.tool_begin":
+      return {
+        event: "tool_begin",
+        data: {
+          tool: String(payload.tool ?? "?"),
+          args: (payload.args as Record<string, unknown>) ?? {},
+          content: "",
+        },
+      };
+    case "stream.tool_result":
+      return {
+        event: "tool_result",
+        data: {
+          tool: String(payload.tool ?? "?"),
+          content: String(payload.content ?? ""),
+        },
+      };
+    case "stream.tool_error":
+      return {
+        event: "tool_error",
+        data: {
+          tool: String(payload.tool ?? "?"),
+          content: String(payload.content ?? ""),
+        },
+      };
+    case "stream.awaiting_clarify":
+      return {
+        event: "awaiting_clarify",
+        data: {
+          items:
+            (payload.items as StreamApiLikeEvent extends { event: "awaiting_clarify" }
+              ? StreamApiLikeEvent["data"]["items"]
+              : never) ?? [],
+          timeout_sec: Number(payload.timeout_sec ?? 0),
+        },
+      };
+    case "stream.interrupted":
+      return { event: "interrupted", data: { reason: String(payload.reason ?? "") } };
+    case "stream.done":
+      return {
+        event: "done",
+        data: {
+          reason: payload.reason as "awaiting_clarify" | "interrupted" | undefined,
+        },
+      };
+    case "stream.error":
+      return { event: "error", data: { error: String(payload.error ?? "error") } };
+    case "stream.ping":
+      return { event: "ping", data: {} };
+    default:
+      return null;
+  }
+}
