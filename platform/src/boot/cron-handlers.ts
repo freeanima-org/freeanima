@@ -1,37 +1,23 @@
 import { registerCronBuiltinHandler } from "@freeanima/platform/connectors/cron";
-import { runLightSleep } from "@freeanima/capabilities-memory/light-sleep/run";
-import { runDeepSleep } from "@freeanima/capabilities-memory/deep-sleep/run";
-import { syncSemanticMemoryReferenceCounts } from "@freeanima/capabilities-memory";
-import {
-  invalidateSelfLayerPromptCache,
-  loadSelfLayerPrompt,
-} from "@freeanima/capabilities-identity";
+import { registerSleepPipeline, runSleepCycle, resolveSleepCycleDay } from "./pipeline-handlers.ts";
 import type { Engine } from "@freeanima/runtime";
 
-/** 注册内置 cron handler（light/deep sleep、记忆引用同步） */
+/** 注册内置 cron handler（睡眠周期 pipeline） */
 export function registerBootCronHandlers(engine: Engine): void {
-  registerCronBuiltinHandler("builtin-light-sleep", async () => {
-    const selfContent = await loadSelfLayerPrompt();
-    const result = await runLightSleep({
-      sessionStore: engine.repos.session,
-      semanticStore: engine.repos.semanticMemory,
-      autoStore: engine.repos.autobiographicalMemory,
-      selfStore: engine.repos.selfLayer,
-      selfContent,
+  registerSleepPipeline(engine);
+
+  registerCronBuiltinHandler("builtin-sleep-cycle", async () => {
+    const result = await runSleepCycle(resolveSleepCycleDay());
+    return JSON.stringify({
+      ok: result.ok,
+      day: result.day,
+      status: result.status,
+      steps: Object.fromEntries(
+        Object.entries(result.steps).map(([id, s]) => [
+          id,
+          { status: s.status, error: s.error, skipped_reason: s.skipped_reason },
+        ]),
+      ),
     });
-    invalidateSelfLayerPromptCache();
-    await loadSelfLayerPrompt();
-    return JSON.stringify(result);
-  });
-
-  registerCronBuiltinHandler("builtin-deep-sleep", async () => {
-    const selfContent = await loadSelfLayerPrompt();
-    const result = await runDeepSleep({ selfContent });
-    return JSON.stringify(result);
-  });
-
-  registerCronBuiltinHandler("builtin-memory-reference-sync", async () => {
-    const result = await syncSemanticMemoryReferenceCounts(engine.repos.memoryReference);
-    return JSON.stringify(result);
   });
 }

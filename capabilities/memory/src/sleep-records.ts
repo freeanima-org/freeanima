@@ -22,7 +22,10 @@ const roundLogSchema = z.object({
   change_log_snapshot: z.record(z.string(), z.unknown()),
 });
 
-const SLEEP_JOB_IDS = ["builtin-light-sleep", "builtin-deep-sleep"] as const;
+const SLEEP_CYCLE_JOB_ID = "builtin-sleep-cycle" as const;
+
+/** @deprecated 使用 SLEEP_CYCLE_JOB_ID；保留以兼容旧引用 */
+const SLEEP_JOB_IDS = [SLEEP_CYCLE_JOB_ID] as const;
 
 export type SleepSummary = {
   light_sleep: LightSleepState;
@@ -75,4 +78,4 @@ export function buildSleepSummary(
   };
 }
 
-export { SLEEP_JOB_IDS };
+export { SLEEP_JOB_IDS, SLEEP_CYCLE_JOB_ID };

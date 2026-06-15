@@ -9,12 +9,22 @@ import {
   type SleepSummary,
 } from "@freeanima/capabilities-memory";
 import { loadSelfLayerPrompt } from "@freeanima/capabilities-identity";
+import type { PipelineRunState } from "@freeanima/runtime/pipeline";
 
+import {
+  getSleepPipelineStatus as readSleepPipelineStatus,
+  runSleepCycle,
+  runSleepStep,
+} from "../boot/pipeline-handlers.ts";
+import { sleepCycleDefinition, SLEEP_CYCLE_PIPELINE_ID } from "../boot/sleep-cycle.ts";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 import { listCronJobs } from "./service-status.ts";
 
 let backfillRunning = false;
 let lastBackfillResult: LightSleepBackfillResult | null = null;
+let sleepCycleRunning = false;
+let lastSleepCycleResult: Awaited<ReturnType<typeof runSleepCycle>> | null = null;
+let sleepStepRunning = false;
 
 export type LightSleepBackfillStatus = {
   running: boolean;
@@ -130,4 +140,76 @@ export async function listCronLogs(
 
 export function getDeepSleepRounds(day: string) {
   return { day, rounds: listDeepSleepRoundLogs(day) };
+}
+
+export type SleepPipelineStatus = {
+  running: boolean;
+  step_running: boolean;
+  pipeline_id: string;
+  definition: typeof sleepCycleDefinition;
+  last_result: Awaited<ReturnType<typeof runSleepCycle>> | null;
+  run_state: PipelineRunState | null;
+};
+
+export function getSleepPipelineStatus(): SleepPipelineStatus {
+  return {
+    running: sleepCycleRunning,
+    step_running: sleepStepRunning,
+    pipeline_id: SLEEP_CYCLE_PIPELINE_ID,
+    definition: sleepCycleDefinition,
+    last_result: lastSleepCycleResult,
+    run_state: readSleepPipelineStatus(),
+  };
+}
+
+export async function startSleepCycle(opts?: {
+  day?: string;
+}): Promise<{ ok: true; started: true } | { ok: false; error: string }> {
+  if (sleepCycleRunning || sleepStepRunning) {
+    return { ok: false, error: "sleep pipeline already running" };
+  }
+  if (backfillRunning) {
+    return { ok: false, error: "light sleep backfill already running" };
+  }
+
+  sleepCycleRunning = true;
+  lastSleepCycleResult = null;
+
+  void (async () => {
+    try {
+      lastSleepCycleResult = await runSleepCycle(opts?.day);
+    } finally {
+      sleepCycleRunning = false;
+    }
+  })();
+
+  return { ok: true, started: true };
+}
+
+export async function startSleepPipelineStep(opts: {
+  stepId: string;
+  day?: string;
+  force?: boolean;
+}): Promise<
+  { ok: true; result: Awaited<ReturnType<typeof runSleepStep>> } | { ok: false; error: string }
+> {
+  if (sleepCycleRunning || sleepStepRunning) {
+    return { ok: false, error: "sleep pipeline already running" };
+  }
+
+  const known = sleepCycleDefinition.nodes.some((n) => n.id === opts.stepId);
+  if (!known) {
+    return { ok: false, error: `unknown sleep step: ${opts.stepId}` };
+  }
+
+  sleepStepRunning = true;
+  try {
+    const result = await runSleepStep(opts.stepId, {
+      day: opts.day,
+      force: opts.force,
+    });
+    return { ok: true, result };
+  } finally {
+    sleepStepRunning = false;
+  }
 }

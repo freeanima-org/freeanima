@@ -19,16 +19,29 @@ Sleep is the digital life's memory consolidation mechanism—analogous to human 
 
 ## Current State
 
-| Mechanism        | Status         | Notes       |
-| ---------------- | -------------- | ----------- |
-| Light sleep cron | ✅ Implemented | Daily 02:00 |
-| Deep sleep cron  | ✅ Implemented | Daily 03:00 |
+| Mechanism              | Status         | Notes                                         |
+| ---------------------- | -------------- | --------------------------------------------- |
+| Sleep cycle pipeline   | ✅ Implemented | Single cron `builtin-sleep-cycle` @ 02:00     |
+| Light sleep (in-cycle) | ✅ Implemented | Step `light-sleep` in sleep-cycle DAG         |
+| Deep sleep (in-cycle)  | ✅ Implemented | Step `deep-sleep`, depends on light-sleep     |
+| Memory ref sync        | ✅ Implemented | Step `memory-ref-sync`, depends on deep-sleep |
+| Self-layer refresh     | ✅ Implemented | Step `self-layer-refresh`, after light-sleep  |
+
+## Orchestration
+
+Sleep uses a **macro DAG** (`sleep-cycle` pipeline) orchestrated by `PipelineRunner` (`@freeanima/runtime/pipeline`). A single cron job triggers the full cycle; step order and dependencies are explicit in code ([`platform/src/boot/sleep-cycle.ts`](../../platform/src/boot/sleep-cycle.ts)).
+
+**Light sleep** and **deep sleep** keep their **internal** multi-stage / multi-round sequencing inside `runLightSleep()` / `runDeepSleep()` — not promoted to macro DAG nodes.
+
+Chamber WebUI (`/webui/chamber/sleep`) supports **diagnostic** runs: full cycle or individual steps (`force` skips dependency checks).
+
+Pipeline run state is persisted at `~/.anima/runtime/pipeline_sleep-cycle_run.json` (SSOT for step status; no EventBus).
 
 ## Light Sleep
 
 | Attribute     | Value                                                                           |
 | ------------- | ------------------------------------------------------------------------------- |
-| Trigger       | Cron only, daily 02:00, no manual trigger                                       |
+| Trigger       | Sleep-cycle step `light-sleep` (cron @ 02:00 or Chamber diagnostics)            |
 | Scope         | Sessions with activity in previous calendar day                                 |
 | Input         | Full day's conversations (user+assistant, tools stripped), segmented by session |
 | Orchestration | Three stages sequential (separate LLM calls each)                               |
@@ -50,7 +63,7 @@ Sleep is the digital life's memory consolidation mechanism—analogous to human 
 
 | Attribute  | Value                                                                                                |
 | ---------- | ---------------------------------------------------------------------------------------------------- |
-| Trigger    | Cron only, daily 03:00, no manual trigger                                                            |
+| Trigger    | Sleep-cycle step `deep-sleep` (after light-sleep in DAG)                                             |
 | Target     | All active semantic memory                                                                           |
 | Operations | Contradiction detection + expiry marking, split, dedup merge, pin maintenance—four sequential rounds |
 
@@ -76,12 +89,20 @@ Two memories semantically negate each other and cannot be explained by temporal 
 ## Trigger Mechanism
 
 ```cron
-0 2 * * *  light-sleep           # semantic + limbic + autobiographical
-0 3 * * *  deep-sleep            # semantic maintenance
-30 5 * * *  memory-reference-sync
+0 2 * * *  sleep-cycle   # builtin-sleep-cycle: light → deep → self-layer-refresh ∥ memory-ref-sync
 ```
 
-After downtime, next scheduled run catches up.
+DAG (macro layer):
+
+```
+light-sleep
+  ├─► deep-sleep ──► memory-ref-sync (optional step)
+  └─► self-layer-refresh (optional step)
+```
+
+After downtime, the next scheduled run catches up.
+
+**Compression** stays session-scoped (turn-time `advanceCompressionMeta`); it is **not** a sleep-cycle step. Nightly consolidation does not replace per-session compression.
 
 ## Historical Backfill (Chamber WebUI)
 
@@ -109,14 +130,16 @@ For historical conversations before go-live or after migration, use **Chamber �
 
 ```
 Conversation archive
-  │ light sleep cron (02:00, three stages)
+  │ sleep-cycle pipeline (02:00)
+  │   step light-sleep (three internal stages)
   ├─► semantic memory
   ├─► emotional anchors
   └─► autobiographical narrative ──compress──► self-layer autobiography summary
   │
-  │ deep sleep cron (03:00)
+  │   step deep-sleep (four internal rounds)
   ▼
 semantic memory (consolidated)
+  │   step memory-ref-sync
   │ memory_recall (real-time retrieval in conversation)
   ▼
 Agent identity and recalled fragments in current context
