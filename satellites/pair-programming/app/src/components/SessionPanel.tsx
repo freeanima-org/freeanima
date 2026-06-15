@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { SessionListItem } from "@freeanima/platform/connectors/webui/api";
+import type { SessionListItem } from "@/lib/types.ts";
 import { formatSessionIdDateTime } from "@/lib/format-datetime.ts";
 import { m } from "@/lib/i18n.ts";
 import { useChatStore } from "@/stores/chat.ts";

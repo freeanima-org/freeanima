@@ -1,20 +1,19 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { FileTreePanel } from "@/components/studio/FileTreePanel.tsx";
-import { CodeViewerPanel } from "@/components/studio/CodeViewerPanel.tsx";
-import { TerminalPanel } from "@/components/studio/TerminalPanel.tsx";
-import { SessionPanel } from "@/components/studio/SessionPanel.tsx";
+import { StrictMode, useEffect, useState } from "react";
+import { createRoot } from "react-dom/client";
+import { FileTreePanel } from "@/components/FileTreePanel.tsx";
+import { CodeViewerPanel } from "@/components/CodeViewerPanel.tsx";
+import { TerminalPanel } from "@/components/TerminalPanel.tsx";
+import { SessionPanel } from "@/components/SessionPanel.tsx";
 import { useMediaQuery } from "@/hooks/useMediaQuery.ts";
 import { usePairProgrammingStore } from "@/stores/pair-programming.ts";
-import { m } from "@/lib/i18n.ts";
+import { getAppLocale, initAppLocale, m, setLocale } from "@/lib/i18n.ts";
 
-export const Route = createFileRoute("/studio/pair-programming")({
-  component: PairProgrammingPage,
-});
+initAppLocale();
 
-function PairProgrammingPage() {
+function App() {
   const store = usePairProgrammingStore();
   const isMobile = useMediaQuery("(max-width: 1023px)");
+  const [locale, setLocaleState] = useState(getAppLocale());
 
   const [leftWidth, setLeftWidth] = useState(260);
   const [rightWidth, setRightWidth] = useState(380);
@@ -36,7 +35,6 @@ function PairProgrammingPage() {
 
   useEffect(() => {
     void (async () => {
-      await store.initSatellite();
       await store.fetchConfig();
       const sessions = await store.fetchSessions();
       if (sessions.length && !usePairProgrammingStore.getState().currentSessionId) {
@@ -86,43 +84,59 @@ function PairProgrammingPage() {
     document.addEventListener("mouseup", onUp);
   };
 
+  const toggleLocale = () => {
+    const next = locale === "zh-cn" ? "en" : "zh-cn";
+    setLocale(next);
+    setLocaleState(next);
+  };
+
   if (!configured && !store.loading) {
     return (
-      <div className="flex-1 flex items-center justify-center p-8">
-        <div className="max-w-md text-center space-y-4">
-          <h3 className="text-lg font-bold">{m.webui_studio_workdir_title()}</h3>
-          <p className="text-sm text-base-content/60">
-            {m.webui_studio_workdir_lead()}{" "}
-            <code className="text-xs bg-base-300 px-1 rounded">studio.workspace</code>。
-          </p>
-          <form
-            className="flex gap-2"
-            onSubmit={(e) => {
-              e.preventDefault();
-              void saveWorkspace();
-            }}
-          >
-            <input
-              value={workspaceInput}
-              onChange={(e) => setWorkspaceInput(e.target.value)}
-              type="text"
-              className="input input-bordered flex-1 font-mono text-sm"
-              placeholder="/path/to/project"
-            />
-            <button type="submit" className="btn btn-primary" disabled={!workspaceInput.trim()}>
-              {m.webui_common_save()}
-            </button>
-          </form>
-          <Link to="/chamber/config" className="btn btn-ghost btn-sm">
-            {m.webui_studio_workdir_goto_chamber()}
-          </Link>
+      <div className="h-screen flex flex-col">
+        <header className="shrink-0 flex items-center justify-between px-3 py-2 border-b border-base-300 bg-base-200">
+          <span className="text-sm font-medium">{m.webui_studio_nav_pair()}</span>
+          <button type="button" className="btn btn-xs btn-ghost" onClick={toggleLocale}>
+            {locale === "zh-cn" ? "EN" : "中文"}
+          </button>
+        </header>
+        <div className="flex-1 flex items-center justify-center p-8">
+          <div className="max-w-md text-center space-y-4">
+            <h3 className="text-lg font-bold">{m.webui_studio_workdir_title()}</h3>
+            <p className="text-sm text-base-content/60">{m.webui_studio_workdir_lead()}</p>
+            <form
+              className="flex gap-2"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void saveWorkspace();
+              }}
+            >
+              <input
+                value={workspaceInput}
+                onChange={(e) => setWorkspaceInput(e.target.value)}
+                type="text"
+                className="input input-bordered flex-1 font-mono text-sm"
+                placeholder="/path/to/project"
+              />
+              <button type="submit" className="btn btn-primary" disabled={!workspaceInput.trim()}>
+                {m.webui_common_save()}
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="h-full flex flex-col min-h-0 overflow-hidden relative">
+    <div className="h-screen flex flex-col min-h-0 overflow-hidden relative">
+      <header className="shrink-0 flex items-center gap-2 px-2 py-1 border-b border-base-300 bg-base-200/80 text-sm">
+        <span className="font-medium">{m.webui_studio_nav_pair()}</span>
+        <span className="flex-1" />
+        <button type="button" className="btn btn-xs btn-ghost" onClick={toggleLocale}>
+          {locale === "zh-cn" ? "EN" : "中文"}
+        </button>
+      </header>
+
       <div className="shrink-0 flex items-center gap-0.5 px-2 py-1 border-b border-base-300 bg-base-200/40 text-xs">
         <button
           type="button"
@@ -216,3 +230,9 @@ function PairProgrammingPage() {
     </div>
   );
 }
+
+createRoot(document.getElementById("root")!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+);

@@ -39,11 +39,18 @@ title: Pair Programming V1
 
 ## Usage
 
-1. Open `http://127.0.0.1:2658/webui/studio/pair-programming`
-2. Set workspace path in Chamber (local project directory)
-3. Browse/search files on the left; view selection in the center
-4. Create or select a session on the right; discuss code with the agent
-5. Bottom terminal for debug/ops (isolated from chat session)
+1. Start Hub: `anima service start --foreground` (or `--dev`)
+2. Start the pair-programming satellite:
+
+   ```bash
+   FREEANIMA_URL=http://127.0.0.1:2658 STUDIO_WORKSPACE=/path/to/project bun satellites/pair-programming/dev.ts
+   ```
+
+3. Open `http://127.0.0.1:4173` (Hub Studio tab links here as well)
+4. Set workspace path in Chamber if not passed via `STUDIO_WORKSPACE`
+5. Browse/search files on the left; view selection in the center
+6. Create or select a session on the right; discuss code with the agent
+7. Bottom terminal for debug/ops (isolated from chat session)
 
 ## Session Isolation
 

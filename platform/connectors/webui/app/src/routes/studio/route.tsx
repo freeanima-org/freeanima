@@ -1,13 +1,17 @@
-import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import { ResponsiveSidebarLayout } from "@/components/ResponsiveSidebarLayout.tsx";
 import { m } from "@/lib/i18n.ts";
 
-const CHROMELESS_KEY = "studio-chromeless";
+const PAIR_PROGRAMMING_URL =
+  typeof window !== "undefined"
+    ? (localStorage.getItem("pair-programming-url") ?? "http://127.0.0.1:4173")
+    : "http://127.0.0.1:4173";
 
-function studioNavItems(): { to: string; label: string; comingSoon?: boolean }[] {
+function studioNavItems(): Array<
+  { to: string; label: string; comingSoon?: boolean } | { href: string; label: string }
+> {
   return [
-    { to: "/studio/pair-programming", label: m.webui_studio_nav_pair() },
+    { href: PAIR_PROGRAMMING_URL, label: m.webui_studio_nav_pair() },
     { to: "/studio/novel", label: m.webui_studio_nav_novel(), comingSoon: true },
     { to: "/studio/short-video", label: m.webui_studio_nav_short_video(), comingSoon: true },
   ];
@@ -18,78 +22,6 @@ export const Route = createFileRoute("/studio")({
 });
 
 function StudioLayout() {
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const isPairProgramming = pathname.includes("/studio/pair-programming");
-  const [chromeless, setChromeless] = useState(false);
-
-  useEffect(() => {
-    try {
-      setChromeless(localStorage.getItem(CHROMELESS_KEY) === "1");
-    } catch {
-      setChromeless(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    document.documentElement.classList.toggle("studio-chromeless", isPairProgramming && chromeless);
-  }, [isPairProgramming, chromeless]);
-
-  const toggleChromeless = () => {
-    setChromeless((v) => {
-      const next = !v;
-      try {
-        localStorage.setItem(CHROMELESS_KEY, next ? "1" : "0");
-      } catch {
-        /* ignore */
-      }
-      return next;
-    });
-  };
-
-  if (isPairProgramming) {
-    return (
-      <div className="h-full flex flex-col min-h-0 overflow-hidden">
-        <header className="shrink-0 flex items-center gap-2 px-2 py-1 border-b border-base-300 bg-base-200/80 text-sm">
-          <div className="dropdown">
-            <button type="button" tabIndex={0} className="btn btn-ghost btn-xs gap-1">
-              {m.webui_studio_nav_pair()}
-              <span className="opacity-50">▾</span>
-            </button>
-            <ul
-              tabIndex={0}
-              className="dropdown-content menu z-50 mt-1 p-1 shadow-lg bg-base-200 rounded-lg w-48 border border-base-300"
-            >
-              {studioNavItems().map((item) => (
-                <li key={item.to}>
-                  <Link to={item.to} className="text-sm" activeProps={{ className: "active" }}>
-                    {item.label}
-                    {"comingSoon" in item && item.comingSoon ? (
-                      <span className="badge badge-xs badge-ghost ml-1">
-                        {m.webui_common_coming_soon()}
-                      </span>
-                    ) : null}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <span className="flex-1" />
-          <button
-            type="button"
-            className="btn btn-ghost btn-xs"
-            title={chromeless ? m.webui_studio_show_header() : m.webui_studio_focus_mode()}
-            onClick={toggleChromeless}
-          >
-            {chromeless ? "⊞" : "⛶"}
-          </button>
-        </header>
-        <div className="flex-1 min-h-0 overflow-hidden">
-          <Outlet />
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="h-full flex flex-col min-h-0 overflow-hidden">
       <ResponsiveSidebarLayout
@@ -97,21 +29,33 @@ function StudioLayout() {
         subtitle="Studio"
         sidebar={() => (
           <nav className="flex-1 px-2 pb-3 space-y-1 overflow-y-auto">
-            {studioNavItems().map((item) => (
-              <Link
-                key={item.to}
-                to={item.to}
-                className="nav-link"
-                activeProps={{ className: "nav-link sidebar-nav-active" }}
-              >
-                {item.label}
-                {"comingSoon" in item && item.comingSoon ? (
-                  <span className="ml-1 badge badge-xs badge-ghost">
-                    {m.webui_common_coming_soon()}
-                  </span>
-                ) : null}
-              </Link>
-            ))}
+            {studioNavItems().map((item) =>
+              "href" in item ? (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  className="nav-link block"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {item.label}
+                </a>
+              ) : (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className="nav-link"
+                  activeProps={{ className: "nav-link sidebar-nav-active" }}
+                >
+                  {item.label}
+                  {"comingSoon" in item && item.comingSoon ? (
+                    <span className="ml-1 badge badge-xs badge-ghost">
+                      {m.webui_common_coming_soon()}
+                    </span>
+                  ) : null}
+                </Link>
+              ),
+            )}
           </nav>
         )}
       >

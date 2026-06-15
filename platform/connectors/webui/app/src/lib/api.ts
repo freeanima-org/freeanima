@@ -62,16 +62,12 @@ function parseSseJsonFrames(buffer: string, onFrame: (json: string) => void): st
 export function subscribeMessageStream(
   input: { sessionId: string; message: string },
   callbacks: SubscribeCallbacks<StreamApiEvent>,
-  opts?: { baseUrl?: string },
 ): { unsubscribe: () => void } {
   const controller = new AbortController();
-  const streamUrl = opts?.baseUrl
-    ? `${opts.baseUrl.replace(/\/$/, "")}/api/messages/stream`
-    : apiPath("/api/messages/stream");
 
   void (async () => {
     try {
-      const res = await fetch(streamUrl, {
+      const res = await fetch(apiPath("/api/messages/stream"), {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
         body: JSON.stringify(input),
