@@ -19,19 +19,28 @@ const ROOT_PKG = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf-8")) a
 
 /** Bun bundle bakes tiktoken's build-time __dirname; rewrite to load dist/tiktoken_bg.wasm at runtime. */
 const TIKTOKEN_WASM_LOADER_RE =
-  /KnH=__dirname\.split\(RK\.sep\)\.reduce\(\(H,\$,A,L\)=>\{let D=L\.slice\(0,A\+1\)\.join\(RK\.sep\)\+RK\.sep;if\(!D\.includes\("node_modules"\+RK\.sep\)\)H\.unshift\(RK\.join\(D,"node_modules","tiktoken","","\.\/tiktoken_bg\.wasm"\)\);return H\},\[\]\);KnH\.unshift\(RK\.join\(__dirname,"\.\/tiktoken_bg\.wasm"\)\);for\(let H of KnH\)try\{Q5H=BFA\.readFileSync\(H\);break\}catch\{\}/;
+  /([A-Za-z_$][\w$]*)=__dirname\.split\(([A-Za-z_$][\w$]*)\.sep\)\.reduce\(\(H,\$,A,L\)=>\{let D=L\.slice\(0,A\+1\)\.join\(\2\.sep\)\+\2\.sep;if\(!D\.includes\("node_modules"\+\2\.sep\)\)H\.unshift\(\2\.join\(D,"node_modules","tiktoken","",".\/tiktoken_bg\.wasm"\)\);return H\},\[\]\);\1\.unshift\(\2\.join\(__dirname,".\/tiktoken_bg\.wasm"\)\);for\(let H of \1\)try\{([A-Za-z_$][\w$]*)=([A-Za-z_$][\w$]*)\.readFileSync\(H\);break\}catch\{\}/;
 
-const TIKTOKEN_WASM_LOADER_PATCH =
-  'KnH=[RK.join(process.env.FREEANIMA_REPO_ROOT?RK.join(process.env.FREEANIMA_REPO_ROOT,"dist"):RK.dirname(import.meta.path),"tiktoken_bg.wasm")];for(let H of KnH)try{Q5H=BFA.readFileSync(H);break}catch{}';
+function buildTiktokenWasmLoaderPatch(
+  arr: string,
+  pathMod: string,
+  bytes: string,
+  fsMod: string,
+): string {
+  return `${arr}=[${pathMod}.join(process.env.FREEANIMA_REPO_ROOT?${pathMod}.join(process.env.FREEANIMA_REPO_ROOT,"dist"):${pathMod}.dirname(import.meta.path),"tiktoken_bg.wasm")];for(let H of ${arr})try{${bytes}=${fsMod}.readFileSync(H);break}catch{}`;
+}
 
 function patchTiktokenWasmLoader(bundlePath: string): void {
   const src = readFileSync(bundlePath, "utf-8");
-  if (!TIKTOKEN_WASM_LOADER_RE.test(src)) {
+  const match = src.match(TIKTOKEN_WASM_LOADER_RE);
+  if (!match) {
     throw new Error(
       "build-cli: tiktoken wasm loader pattern not found; bun bundle layout may have changed",
     );
   }
-  writeFileSync(bundlePath, src.replace(TIKTOKEN_WASM_LOADER_RE, TIKTOKEN_WASM_LOADER_PATCH));
+  const [, arr, pathMod, bytes, fsMod] = match;
+  const patch = buildTiktokenWasmLoaderPatch(arr!, pathMod!, bytes!, fsMod!);
+  writeFileSync(bundlePath, src.replace(TIKTOKEN_WASM_LOADER_RE, patch));
 }
 
 function resolveTiktokenWasmPath(): string {
