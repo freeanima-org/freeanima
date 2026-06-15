@@ -6,13 +6,23 @@ import { m } from "@/lib/i18n.ts";
 
 const PAGE_SIZE = 20;
 
+function formatDreamDay(value: string | Date): string {
+  if (value instanceof Date) return value.toISOString().slice(0, 10);
+  return String(value).slice(0, 10);
+}
+
+function formatCreated(value: string | Date): string {
+  if (value instanceof Date) return value.toISOString().slice(0, 19);
+  return String(value).slice(0, 19);
+}
+
 type DreamRow = {
   id: string;
-  dream_day: string;
+  dream_day: string | Date;
   content: string;
   source_limbic_ids: string[];
   source_session_ids: string[];
-  created: string;
+  created: string | Date;
 };
 
 export const Route = createFileRoute("/chamber/dream")({
@@ -86,21 +96,22 @@ function DreamMemoryPage() {
       {items.length > 0 ? (
         <div className="space-y-3">
           {items.map((row) => {
-            const expanded = expandedDay === row.dream_day;
+            const dreamDay = formatDreamDay(row.dream_day);
+            const expanded = expandedDay === dreamDay;
             return (
               <div key={row.id} className="card bg-base-200 shadow-sm">
                 <div className="card-body p-4 gap-2">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div>
-                      <span className="font-semibold">{row.dream_day}</span>
+                      <span className="font-semibold">{dreamDay}</span>
                       <span className="text-xs text-base-content/50 ml-2">
-                        {row.created.slice(0, 19)}
+                        {formatCreated(row.created)}
                       </span>
                     </div>
                     <button
                       type="button"
                       className="btn btn-ghost btn-xs"
-                      onClick={() => setExpandedDay(expanded ? null : row.dream_day)}
+                      onClick={() => setExpandedDay(expanded ? null : dreamDay)}
                     >
                       {expanded ? m.webui_common_collapse() : m.webui_common_expand()}
                     </button>
