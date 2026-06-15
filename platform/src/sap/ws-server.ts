@@ -1,5 +1,6 @@
 import type { AppRuntime } from "../runtime/app-runtime.ts";
 import type { SatelliteManager } from "@freeanima/capabilities-satellite";
+import type { MaskRegistryPort } from "../../ports/ports/mask-registry.ts";
 import {
   connectPayloadSchema,
   defineSapRouter,
@@ -50,6 +51,7 @@ export type SapServerDeps = {
   runtime: AppRuntime;
   satelliteManager: SatelliteManager;
   animaVersion: string;
+  masks: MaskRegistryPort;
 };
 
 type SapWsSend = {
@@ -63,6 +65,7 @@ export function createSapServerHandlers(deps: SapServerDeps): SapServerHandlers 
   const handlers: SapServerHandlers = {
     onConnect(payload) {
       const parsed = connectPayloadSchema.parse(payload);
+      const wantsMaskPresets = parsed.features_requested.includes("capability_mask");
       return {
         protocol: SAP_VERSION,
         features_enabled: parsed.features_requested,
@@ -73,6 +76,16 @@ export function createSapServerHandlers(deps: SapServerDeps): SapServerHandlers 
             "pair-programming": "studio-pair-programming",
             parlor: "parlor",
           },
+          ...(wantsMaskPresets
+            ? {
+                capability_mask: {
+                  presets: deps.masks.list().map((entry) => ({
+                    name: entry.name,
+                    allowed_tools_summary: entry.mask.allowed_tools.slice(0, 32),
+                  })),
+                },
+              }
+            : {}),
         },
         heartbeat_interval_sec: HEARTBEAT_INTERVAL_SEC,
       };

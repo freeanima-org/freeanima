@@ -13,6 +13,12 @@ export const connectPayloadSchema = z.object({
 
 export type ConnectPayload = z.infer<typeof connectPayloadSchema>;
 
+export const capabilityMaskPresetSchema = z.object({
+  name: z.string(),
+  description: z.string().optional(),
+  allowed_tools_summary: z.array(z.string()).optional(),
+});
+
 export const connectedPayloadSchema = z.object({
   protocol: z.literal(SAP_VERSION),
   features_enabled: z.array(z.string()),
@@ -21,6 +27,11 @@ export const connectedPayloadSchema = z.object({
       anima_version: z.string(),
       sap_version: z.string(),
       platform_for_app: z.record(z.string(), z.string()),
+      capability_mask: z
+        .object({
+          presets: z.array(capabilityMaskPresetSchema),
+        })
+        .optional(),
     })
     .optional(),
   heartbeat_interval_sec: z.number().int().positive(),

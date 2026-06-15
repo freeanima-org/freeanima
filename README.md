@@ -79,9 +79,13 @@ Then configure `~/.anima/config.yaml` (or `.env` for Docker) and run `anima serv
 
 ## WebUI
 
-After starting the service, open the parlor chat:
+After starting the service, open the parlor chat (satellite app):
 
-**http://127.0.0.1:2658/webui/parlor/chat**
+**http://127.0.0.1:4174**
+
+Pair-programming studio (when configured): **http://127.0.0.1:4173**
+
+Hub Chamber admin: **http://127.0.0.1:2658/chamber/dashboard**
 
 (default bind: `127.0.0.1:2658`)
 

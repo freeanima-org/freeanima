@@ -42,4 +42,16 @@ describe("pair-programming studio", () => {
     const { results } = searchStudio("foo");
     expect(results.length).toBeGreaterThan(0);
   });
+
+  it("executeLocalTool supports file_search_files and terminal_run", async () => {
+    const { executeLocalTool } = await import("./tools/executor.ts");
+    const searchOut = await executeLocalTool("file_search_files", { query: "foo" }, workspace);
+    expect(JSON.parse(searchOut).count).toBeGreaterThan(0);
+    const termOut = await executeLocalTool(
+      "terminal_run",
+      { command: "echo relay_ok", timeout: 5 },
+      workspace,
+    );
+    expect(termOut).toContain("relay_ok");
+  });
 });

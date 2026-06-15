@@ -102,6 +102,7 @@ export async function bootRuntimePhase(
     runtime,
     satelliteManager: satellite,
     animaVersion: ANIMA_VERSION,
+    masks,
   });
 
   return { runtime };
