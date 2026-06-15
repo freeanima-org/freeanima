@@ -67,7 +67,6 @@
       "dependencies": {
         "@freeanima/core": "workspace:*",
         "@freeanima/kernel": "workspace:*",
-        "@freeanima/runtime": "workspace:*",
         "zod": "catalog:",
       },
       "devDependencies": {

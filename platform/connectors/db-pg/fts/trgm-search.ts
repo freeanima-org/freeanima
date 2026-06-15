@@ -1,10 +1,14 @@
-import { sql as drizzleSql } from "drizzle-orm";
+import { and, desc, eq, getColumns, isNotNull, notLike, sql } from "drizzle-orm";
 import { getActiveConfig, getFtsTrgmMinSimilarity } from "@freeanima/platform/config";
+import { messageDocKey, semanticMemoryDocKey } from "@freeanima/core/util";
+import { messages, semanticMemory } from "@freeanima/core/db/schema";
 
 import { getDb } from "../client.ts";
-import type { SemanticMemoryFtsDbRow } from "../semantic-memory/mappers/semantic-mapper.ts";
-import { messageDocKey, semanticMemoryDocKey } from "@freeanima/core/util";
-import { pgSemanticSourceSessionsFilter, pgSemanticTypeFilter } from "../utils/pg-sql.ts";
+import { buildSemanticConditions } from "../semantic-memory/repos/semantic-filters.ts";
+import {
+  mapSemanticMemoryRow,
+  type SemanticMemoryFtsDbRow,
+} from "../semantic-memory/mappers/semantic-mapper.ts";
 
 export type TrgmSemanticHit = SemanticMemoryFtsDbRow & { docKey: string };
 
@@ -27,35 +31,24 @@ export async function searchSemanticMemoryTrgm(
   const sourceSessions = opts?.sourceSessions?.map((s) => s.trim()).filter(Boolean) ?? [];
 
   const db = getDb();
-  const typeFilter = pgSemanticTypeFilter(types);
-  const statusFilter = status === "all" ? drizzleSql`` : drizzleSql`AND sm.status = ${status}`;
-  const sourceFilter = pgSemanticSourceSessionsFilter(sourceSessions);
+  const rankExpr = sql<number>`similarity(${semanticMemory.content}, ${q})`.as("rank");
+  const conditions = [
+    sql`word_similarity(${semanticMemory.content}, ${q}) >= ${minSim}`,
+    ...buildSemanticConditions({ types, status, sourceSessions }),
+  ];
 
-  const rows = await db.execute<SemanticMemoryFtsDbRow>(drizzleSql`
-    SELECT
-      sm.id,
-      sm.type,
-      sm.pinned,
-      sm.content,
-      sm.source_sessions,
-      sm.observed_at,
-      sm.occurred_at,
-      sm.status,
-      sm.reference_count,
-      sm.created,
-      sm.updated,
-      similarity(sm.content, ${q}) AS rank
-    FROM semantic_memory sm
-    WHERE word_similarity(sm.content, ${q}) >= ${minSim}
-    ${statusFilter}
-    ${typeFilter}
-    ${sourceFilter}
-    ORDER BY rank DESC
-    LIMIT ${limit}
-  `);
+  const rows = await db
+    .select({
+      ...getColumns(semanticMemory),
+      rank: rankExpr,
+    })
+    .from(semanticMemory)
+    .where(and(...conditions))
+    .orderBy(desc(rankExpr))
+    .limit(limit);
 
   return rows.map((r) => ({
-    ...r,
+    ...mapSemanticMemoryRow(r),
     docKey: semanticMemoryDocKey(r.id),
     rank: Number(r.rank),
   }));
@@ -81,31 +74,32 @@ export async function searchMessagesTrgm(
   const limit = Math.max(1, Math.min(50, opts?.limit ?? 10));
   const minSim = getFtsTrgmMinSimilarity(getActiveConfig().data);
   const sessionId = opts?.sessionId?.trim() || null;
+  const msgContent = sql<string>`${messages.payload}->>'content'`;
 
   const db = getDb();
-  const rows = await db.execute<{
-    id: string;
-    content: string;
-    role: string;
-    session_id: string;
-    timestamp: string;
-    rank: number;
-  }>(drizzleSql`
-    SELECT
-      m.id,
-      m.payload->>'content' AS content,
-      m.payload->>'role' AS role,
-      m.session_id,
-      m.payload->>'timestamp' AS timestamp,
-      similarity(m.payload->>'content', ${q}) AS rank
-    FROM messages m
-    WHERE m.content_fts IS NOT NULL
-      AND word_similarity(m.payload->>'content', ${q}) >= ${minSim}
-      AND NOT m.session_id LIKE 'debug-%'
-      AND (${sessionId}::text IS NULL OR m.session_id = ${sessionId})
-    ORDER BY rank DESC
-    LIMIT ${limit}
-  `);
+  const rankExpr = sql<number>`similarity(${msgContent}, ${q})`.as("rank");
+  const conditions = [
+    isNotNull(messages.contentFts),
+    sql`word_similarity(${msgContent}, ${q}) >= ${minSim}`,
+    notLike(messages.sessionId, "debug-%"),
+  ];
+  if (sessionId) {
+    conditions.push(eq(messages.sessionId, sessionId));
+  }
+
+  const rows = await db
+    .select({
+      id: messages.id,
+      content: msgContent,
+      role: sql<string>`${messages.payload}->>'role'`,
+      session_id: messages.sessionId,
+      timestamp: sql<string>`${messages.payload}->>'timestamp'`,
+      rank: rankExpr,
+    })
+    .from(messages)
+    .where(and(...conditions))
+    .orderBy(desc(rankExpr))
+    .limit(limit);
 
   return rows.map((r) => ({
     id: r.id,

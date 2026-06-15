@@ -1,4 +1,5 @@
-import { sql as drizzleSql } from "drizzle-orm";
+import { and, eq, isNotNull, sql } from "drizzle-orm";
+import { messages, semanticMemory } from "@freeanima/core/db/schema";
 
 import { getDb } from "../client.ts";
 
@@ -40,35 +41,26 @@ export async function getFtsCoverageStats(): Promise<FtsCoverageStats> {
   const db = getDb();
 
   const [smRows, msgRows] = await Promise.all([
-    db.execute<{
-      total: number;
-      fts: number;
-      segmented: number;
-      embedding: number;
-    }>(drizzleSql`
-      SELECT
-        count(*)::int AS total,
-        count(*) FILTER (WHERE content_fts IS NOT NULL)::int AS fts,
-        count(*) FILTER (WHERE nullif(btrim(fts_segmented), '') IS NOT NULL)::int AS segmented,
-        count(*) FILTER (WHERE content_embedding IS NOT NULL)::int AS embedding
-      FROM semantic_memory
-      WHERE status = 'active'
-        AND length(btrim(content)) > 0
-    `),
-    db.execute<{
-      total: number;
-      fts: number;
-      segmented: number;
-      embedding: number;
-    }>(drizzleSql`
-      SELECT
-        count(*)::int AS total,
-        count(*) FILTER (WHERE content_fts IS NOT NULL)::int AS fts,
-        count(*) FILTER (WHERE nullif(btrim(fts_segmented), '') IS NOT NULL)::int AS segmented,
-        count(*) FILTER (WHERE content_embedding IS NOT NULL)::int AS embedding
-      FROM messages
-      WHERE content_fts IS NOT NULL
-    `),
+    db
+      .select({
+        total: sql<number>`count(*)::int`,
+        fts: sql<number>`count(*) FILTER (WHERE ${semanticMemory.contentFts} IS NOT NULL)::int`,
+        segmented: sql<number>`count(*) FILTER (WHERE nullif(btrim(${semanticMemory.ftsSegmented}), '') IS NOT NULL)::int`,
+        embedding: sql<number>`count(*) FILTER (WHERE ${semanticMemory.contentEmbedding} IS NOT NULL)::int`,
+      })
+      .from(semanticMemory)
+      .where(
+        and(eq(semanticMemory.status, "active"), sql`length(btrim(${semanticMemory.content})) > 0`),
+      ),
+    db
+      .select({
+        total: sql<number>`count(*)::int`,
+        fts: sql<number>`count(*) FILTER (WHERE ${messages.contentFts} IS NOT NULL)::int`,
+        segmented: sql<number>`count(*) FILTER (WHERE nullif(btrim(${messages.ftsSegmented}), '') IS NOT NULL)::int`,
+        embedding: sql<number>`count(*) FILTER (WHERE ${messages.contentEmbedding} IS NOT NULL)::int`,
+      })
+      .from(messages)
+      .where(isNotNull(messages.contentFts)),
   ]);
 
   const sm = smRows[0] ?? { total: 0, fts: 0, segmented: 0, embedding: 0 };

@@ -1,12 +1,13 @@
-import { sql as drizzleSql } from "drizzle-orm";
+import { and, desc, eq, getColumns, notLike, sql } from "drizzle-orm";
+import { messages, semanticMemory } from "@freeanima/core/db/schema";
 
 import { getDb } from "../client.ts";
-import { buildFtsTsQuery } from "./query.ts";
+import { buildSemanticConditions } from "../semantic-memory/repos/semantic-filters.ts";
 import {
   mapSemanticMemoryRow,
   type SemanticMemoryFtsDbRow,
 } from "../semantic-memory/mappers/semantic-mapper.ts";
-import { pgSemanticSourceSessionsFilter, pgSemanticTypeFilter } from "../utils/pg-sql.ts";
+import { buildFtsTsQuery } from "./query.ts";
 
 export async function searchSemanticMemoryFtsRaw(
   query: string,
@@ -29,33 +30,24 @@ export async function searchSemanticMemoryFtsRaw(
   const sourceSessions = opts?.sourceSessions?.map((s) => s.trim()).filter(Boolean) ?? [];
 
   const db = getDb();
-  const typeFilter = pgSemanticTypeFilter(types);
-  const statusFilter = status === "all" ? drizzleSql`` : drizzleSql`AND sm.status = ${status}`;
-  const sourceFilter = pgSemanticSourceSessionsFilter(sourceSessions);
+  const tsqueryExpr = sql`to_tsquery('simple', ${tsquery})`;
+  const rankExpr = sql<number>`ts_rank_cd(${semanticMemory.contentFts}, ${tsqueryExpr}, 32)`.as(
+    "rank",
+  );
+  const conditions = [
+    sql`${semanticMemory.contentFts} @@ ${tsqueryExpr}`,
+    ...buildSemanticConditions({ types, status, sourceSessions }),
+  ];
 
-  const rows = await db.execute<SemanticMemoryFtsDbRow>(drizzleSql`
-    SELECT
-      sm.id,
-      sm.type,
-      sm.pinned,
-      sm.content,
-      sm.source_sessions,
-      sm.observed_at,
-      sm.occurred_at,
-      sm.status,
-      sm.reference_count,
-      sm.created,
-      sm.updated,
-      ts_rank_cd(sm.content_fts, q, 32) AS rank
-    FROM semantic_memory sm,
-         to_tsquery('simple', ${tsquery}) q
-    WHERE sm.content_fts @@ q
-    ${statusFilter}
-    ${typeFilter}
-    ${sourceFilter}
-    ORDER BY rank DESC
-    LIMIT ${limit}
-  `);
+  const rows = await db
+    .select({
+      ...getColumns(semanticMemory),
+      rank: rankExpr,
+    })
+    .from(semanticMemory)
+    .where(and(...conditions))
+    .orderBy(desc(rankExpr))
+    .limit(limit);
 
   return rows.map((r) => ({ ...mapSemanticMemoryRow(r), rank: Number(r.rank) }));
 }
@@ -83,29 +75,29 @@ export async function searchMessagesFtsRaw(
   const sessionId = opts?.sessionId?.trim() || null;
 
   const db = getDb();
-  const rows = await db.execute<{
-    id: string;
-    content: string;
-    role: string;
-    session_id: string;
-    timestamp: string;
-    rank: number;
-  }>(drizzleSql`
-    SELECT
-      m.id,
-      m.payload->>'content' AS content,
-      m.payload->>'role' AS role,
-      m.session_id,
-      m.payload->>'timestamp' AS timestamp,
-      ts_rank_cd(m.content_fts, q, 32) AS rank
-    FROM messages m,
-         to_tsquery('simple', ${tsquery}) q
-    WHERE m.content_fts @@ q
-      AND NOT m.session_id LIKE 'debug-%'
-      AND (${sessionId}::text IS NULL OR m.session_id = ${sessionId})
-    ORDER BY rank DESC
-    LIMIT ${limit}
-  `);
+  const tsqueryExpr = sql`to_tsquery('simple', ${tsquery})`;
+  const rankExpr = sql<number>`ts_rank_cd(${messages.contentFts}, ${tsqueryExpr}, 32)`.as("rank");
+  const conditions = [
+    sql`${messages.contentFts} @@ ${tsqueryExpr}`,
+    notLike(messages.sessionId, "debug-%"),
+  ];
+  if (sessionId) {
+    conditions.push(eq(messages.sessionId, sessionId));
+  }
+
+  const rows = await db
+    .select({
+      id: messages.id,
+      content: sql<string>`${messages.payload}->>'content'`,
+      role: sql<string>`${messages.payload}->>'role'`,
+      session_id: messages.sessionId,
+      timestamp: sql<string>`${messages.payload}->>'timestamp'`,
+      rank: rankExpr,
+    })
+    .from(messages)
+    .where(and(...conditions))
+    .orderBy(desc(rankExpr))
+    .limit(limit);
 
   return rows.map((r) => ({
     id: r.id,

@@ -28,7 +28,7 @@
   "type": "module",
   "scripts": {
     "check": "bun run typecheck && bun run lint && bun run dep-check && bun run format && bun run test:changed",
-    "dep-check": "bun scripts/check-layer-deps.ts && bun scripts/check-package-cycles.ts",
+    "dep-check": "bun scripts/check-layer-deps.ts && bun scripts/check-package-cycles.ts && bun scripts/check-no-db-execute.ts",
     "format": "oxfmt --check .",
     "format:fix": "oxfmt .",
     "lint": "oxlint .",

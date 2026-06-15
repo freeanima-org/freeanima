@@ -86,21 +86,21 @@ describe("db mappers", () => {
     prompt: "",
     skills: [],
     script: null,
-    no_agent: false,
-    model_provider: null,
-    model_name: null,
+    noAgent: false,
+    modelProvider: null,
+    modelName: null,
     workdir: null,
-    context_from: [],
+    contextFrom: [],
     deliver: "local",
-    timeout_sec: 300,
+    timeoutSec: 300,
     builtin: true,
     repeat: null,
-    run_count: 0,
+    runCount: 0,
     paused: false,
-    created_at: new Date("2026-06-07T06:00:00Z"),
-    updated_at: new Date("2026-06-07T06:00:00Z"),
-    last_run_at: null,
-    last_output_ref: null,
+    createdAt: "2026-06-07T06:00:00.000Z",
+    updatedAt: "2026-06-07T06:00:00.000Z",
+    lastRunAt: null,
+    lastOutputRef: null,
   };
 
   it("mapCronJobRow full mapping (builtin)", () => {
@@ -120,13 +120,13 @@ describe("db mappers", () => {
   });
 
   it("mapCronJobRow maps last_output_ref", () => {
-    const row = { ...baseCronDbRow, last_output_ref: "cron/output/light-sleep-0003.txt" };
+    const row = { ...baseCronDbRow, lastOutputRef: "cron/output/light-sleep-0003.txt" };
     const result = mapCronJobRow(row);
     expect(result.last_output_ref).toBe("cron/output/light-sleep-0003.txt");
   });
 
   it("mapCronJobRow maps last_run_at timestamp", () => {
-    const row = { ...baseCronDbRow, last_run_at: new Date("2026-06-06T18:00:01Z") };
+    const row = { ...baseCronDbRow, lastRunAt: "2026-06-06T18:00:01.000Z" };
     const result = mapCronJobRow(row);
     expect(result.last_run_at).toBe("2026-06-06T18:00:01.000Z");
   });
@@ -138,8 +138,8 @@ describe("db mappers", () => {
       name: "Daily backup",
       builtin: false,
       repeat: 100,
-      model_provider: "openai",
-      model_name: "gpt-4o",
+      modelProvider: "openai",
+      modelName: "gpt-4o",
       workdir: "/tmp",
     };
     const result = mapCronJobRow(row);

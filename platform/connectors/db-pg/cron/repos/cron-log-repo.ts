@@ -1,67 +1,52 @@
-import { sql as drizzleSql } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
+import { cronLog } from "@freeanima/core/db/schema";
 import type { CronLogAppendInput, CronLogListOpts, CronLogRow } from "@freeanima/core/repos";
 import { formatCstIso } from "@freeanima/core/util";
 
 import { getDb } from "../../client.ts";
-import { pgSqlLiteral, pgTextArrayLiteral } from "../../utils/pg-sql.ts";
 
-type CronLogDbRow = {
-  id: number | bigint;
-  job_id: string;
-  run_count: number;
-  ok: boolean;
-  finished_at: string | Date;
-  output: Record<string, unknown> | null;
-  output_text: string | null;
-  error: string | null;
-};
+export type CronLogDbRow = typeof cronLog.$inferSelect;
 
 export function mapRow(raw: CronLogDbRow): CronLogRow {
   return {
-    id: typeof raw.id === "bigint" ? Number(raw.id) : raw.id,
-    job_id: raw.job_id,
-    run_count: raw.run_count,
+    id: raw.id,
+    job_id: raw.jobId,
+    run_count: raw.runCount,
     ok: raw.ok,
-    finished_at:
-      raw.finished_at instanceof Date ? raw.finished_at.toISOString() : String(raw.finished_at),
-    output: raw.output,
-    output_text: raw.output_text,
+    finished_at: String(raw.finishedAt),
+    output: raw.output as Record<string, unknown> | null,
+    output_text: raw.outputText,
     error: raw.error,
   };
 }
 
-function jsonLiteral(value: Record<string, unknown> | null | undefined): string {
-  if (!value) return "NULL";
-  return `${pgSqlLiteral(JSON.stringify(value))}::jsonb`;
-}
-
 export async function appendCronLog(row: CronLogAppendInput): Promise<void> {
   const finishedAt = row.finished_at ?? formatCstIso();
-  const outputText =
-    row.output_text != null ? pgSqlLiteral(row.output_text.slice(0, 10_000)) : "NULL";
-  const errorText = row.error != null ? pgSqlLiteral(row.error.slice(0, 2000)) : "NULL";
+  const outputText = row.output_text != null ? row.output_text.slice(0, 10_000) : null;
+  const errorText = row.error != null ? row.error.slice(0, 2000) : null;
 
   const db = getDb();
-  await db.execute(
-    drizzleSql.raw(`
-    INSERT INTO cron_log (job_id, run_count, ok, finished_at, output, output_text, error)
-    VALUES (
-      ${pgSqlLiteral(row.job_id)},
-      ${row.run_count},
-      ${row.ok},
-      ${pgSqlLiteral(finishedAt)}::timestamptz,
-      ${jsonLiteral(row.output ?? null)},
-      ${outputText},
-      ${errorText}
-    )
-    ON CONFLICT (job_id, run_count) DO UPDATE SET
-      ok = EXCLUDED.ok,
-      finished_at = EXCLUDED.finished_at,
-      output = EXCLUDED.output,
-      output_text = EXCLUDED.output_text,
-      error = EXCLUDED.error
-  `),
-  );
+  await db
+    .insert(cronLog)
+    .values({
+      jobId: row.job_id,
+      runCount: row.run_count,
+      ok: row.ok,
+      finishedAt,
+      output: row.output ?? null,
+      outputText,
+      error: errorText,
+    })
+    .onConflictDoUpdate({
+      target: [cronLog.jobId, cronLog.runCount],
+      set: {
+        ok: row.ok,
+        finishedAt,
+        output: row.output ?? null,
+        outputText,
+        error: errorText,
+      },
+    });
 }
 
 export async function listCronLogs(opts?: CronLogListOpts): Promise<CronLogRow[]> {
@@ -74,27 +59,23 @@ export async function listCronLogs(opts?: CronLogListOpts): Promise<CronLogRow[]
       ? [opts.job_id.trim()].filter(Boolean)
       : [];
 
-  const jobFilter =
-    jobIds.length === 0
-      ? ""
-      : jobIds.length === 1
-        ? `AND job_id = ${pgSqlLiteral(jobIds[0]!)}`
-        : `AND job_id = ANY(${pgTextArrayLiteral(jobIds)})`;
-
-  const okFilter = opts?.ok === undefined ? "" : `AND ok = ${opts.ok}`;
+  const conditions = [];
+  if (jobIds.length === 1) {
+    conditions.push(eq(cronLog.jobId, jobIds[0]!));
+  } else if (jobIds.length > 1) {
+    conditions.push(inArray(cronLog.jobId, jobIds));
+  }
+  if (opts?.ok !== undefined) {
+    conditions.push(eq(cronLog.ok, opts.ok));
+  }
 
   const db = getDb();
-  const rows = await db.execute<CronLogDbRow>(
-    drizzleSql.raw(`
-    SELECT id, job_id, run_count, ok, finished_at, output, output_text, error
-    FROM cron_log
-    WHERE true
-    ${jobFilter}
-    ${okFilter}
-    ORDER BY finished_at DESC
-    OFFSET ${offset}
-    LIMIT ${limit}
-  `),
-  );
+  const rows = await db
+    .select()
+    .from(cronLog)
+    .where(conditions.length ? and(...conditions) : undefined)
+    .orderBy(desc(cronLog.finishedAt))
+    .offset(offset)
+    .limit(limit);
   return rows.map(mapRow);
 }

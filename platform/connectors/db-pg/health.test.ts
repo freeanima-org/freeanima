@@ -15,7 +15,9 @@ describe("pingDatabase", () => {
   it("Returns connected on successful SELECT 1", async () => {
     initDatabase({ getDatabaseUrl: () => "postgresql://localhost/test" });
     setDbForTest({
-      execute: async () => [{ "?column?": 1 }],
+      select: () => ({
+        from: async () => [{ n: 1 }],
+      }),
     } as never);
     const result = await pingDatabase();
     expect(result.status).toBe("connected");
@@ -27,9 +29,11 @@ describe("pingDatabase", () => {
   it("Returns error on query failure", async () => {
     initDatabase({ getDatabaseUrl: () => "postgresql://localhost/test" });
     setDbForTest({
-      execute: async () => {
-        throw new Error("connection refused");
-      },
+      select: () => ({
+        from: async () => {
+          throw new Error("connection refused");
+        },
+      }),
     } as never);
     expect(await pingDatabase()).toEqual({ status: "error", error: "connection refused" });
   });

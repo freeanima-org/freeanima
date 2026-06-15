@@ -347,14 +347,15 @@ export async function listSessionIdsUpdatedBetween(
 /** Earliest non-debug session CST calendar day YYYY-MM-DD */
 export async function getEarliestSessionDay(): Promise<string | null> {
   const db = getDb();
-  const rows = await db.execute<{ day: string | null }>(sql`
-    SELECT to_char(
-      (MIN(${sessions.createdAt}) AT TIME ZONE 'Asia/Shanghai')::date,
-      'YYYY-MM-DD'
-    ) AS day
-    FROM ${sessions}
-    WHERE ${sessions.debug} = false
-  `);
+  const rows = await db
+    .select({
+      day: sql<string | null>`to_char(
+        (MIN(${sessions.createdAt}) AT TIME ZONE 'Asia/Shanghai')::date,
+        'YYYY-MM-DD'
+      )`,
+    })
+    .from(sessions)
+    .where(eq(sessions.debug, false));
   const day = rows[0]?.day?.trim();
   return day || null;
 }

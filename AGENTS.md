@@ -55,7 +55,7 @@ Detailed rules: [`.agent/rules/`](.agent/rules/README.md).
 - Layer deps and Registry injection enforced — see [`.agent/rules/code-layers.md`](.agent/rules/code-layers.md) and [`scripts/check-layer-deps.ts`](scripts/check-layer-deps.ts)
 - **Do not manually edit [`CHANGELOG.md`](CHANGELOG.md)** — Release Please only ([`.agent/rules/release.md`](.agent/rules/release.md))
 - PG migrations: `db:generate` then `db:migrate`; never skip `snapshot.json` — [`.agent/rules/coding.md`](.agent/rules/coding.md) § PG migrations
-- PG repository queries: prefer Drizzle ORM; `db.execute` only when necessary — [`.agent/rules/drizzle-db.md`](.agent/rules/drizzle-db.md)
+- PG repository queries: Drizzle ORM only — **`db.execute` forbidden** in `db-pg` / `tests/integration` — [`.agent/rules/drizzle-db.md`](.agent/rules/drizzle-db.md)
 - Credentials and secrets never in git / logs / tool returns; memory/self-layer changes need extra care ([`docs/concepts/identity.md`](docs/concepts/identity.md))
 - **Principle maintenance**: corrections or refinements to direction, principles, philosophy, or agent behavior norms must be written to the appropriate doc layer in the same task/PR — not code-only. Triage: product/cognitive → `docs/concepts/`; implementation constraints → `.agent/rules/`; bootstrap summary → `AGENTS.md` (see [Principle & direction maintenance](#principle--direction-maintenance) below)
 

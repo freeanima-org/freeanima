@@ -1,5 +1,5 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
-import { sql as drizzleSql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
   beginIntegrationCase,
@@ -104,9 +104,9 @@ describePg("memory PG FTS", () => {
     expect(tsquery).not.toMatch(/\)\s+\(/);
 
     const db = getDb();
-    const parsed = await db.execute<{ q: string }>(drizzleSql`
-      SELECT to_tsquery('simple', ${tsquery})::text AS q
-    `);
+    const parsed = await db
+      .select({ q: sql<string>`to_tsquery('simple', ${tsquery})::text` })
+      .from(sql`(SELECT 1) AS _`);
     expect(parsed[0]?.q).toBeTruthy();
 
     const sid = "20260615_120000_cjk";

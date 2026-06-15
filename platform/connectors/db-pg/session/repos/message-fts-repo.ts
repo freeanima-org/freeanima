@@ -1,4 +1,5 @@
-import { sql as drizzleSql } from "drizzle-orm";
+import { and, isNotNull, notLike, sql } from "drizzle-orm";
+import { messages } from "@freeanima/core/db/schema";
 import type { MessageFtsHit } from "@freeanima/core/repos";
 
 import { getDb } from "../../client.ts";
@@ -13,11 +14,9 @@ export async function searchMessagesFts(
 
 export async function countSearchableMessages(): Promise<number> {
   const db = getDb();
-  const rows = await db.execute<{ n: number }>(drizzleSql`
-    SELECT count(*)::int AS n
-    FROM messages
-    WHERE content_fts IS NOT NULL
-      AND NOT session_id LIKE 'debug-%'
-  `);
+  const rows = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(messages)
+    .where(and(isNotNull(messages.contentFts), notLike(messages.sessionId, "debug-%")));
   return Number(rows[0]?.n ?? 0);
 }

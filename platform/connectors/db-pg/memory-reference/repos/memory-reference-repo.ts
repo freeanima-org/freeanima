@@ -1,5 +1,5 @@
 import { and, eq, ne, sql as drizzleSql } from "drizzle-orm";
-import { memoryReferences, semanticMemory } from "@freeanima/core/db/schema";
+import { memoryReferences, messages, semanticMemory } from "@freeanima/core/db/schema";
 import { formatCstIso } from "@freeanima/core/util";
 import type { RecordMessageReferencesInput } from "@freeanima/core/repos";
 import {
@@ -74,21 +74,20 @@ export async function rebuildMemoryReferencesFromMessages(): Promise<number> {
   const db = getDb();
   await db.delete(memoryReferences);
 
-  const rows = await db.execute<{
-    id: string;
-    session_id: string;
-    content: string;
-    timestamp: string | null;
-  }>(drizzleSql`
-    SELECT
-      m.id,
-      m.session_id,
-      btrim((m.payload)->>'content') AS content,
-      (m.payload)->>'timestamp' AS timestamp
-    FROM messages m
-    WHERE (m.payload)->>'role' IN ('user', 'assistant')
-      AND length(btrim((m.payload)->>'content')) > 0
-  `);
+  const rows = await db
+    .select({
+      id: messages.id,
+      sessionId: messages.sessionId,
+      content: drizzleSql<string>`btrim((${messages.payload})->>'content')`,
+      timestamp: drizzleSql<string | null>`(${messages.payload})->>'timestamp'`,
+    })
+    .from(messages)
+    .where(
+      and(
+        drizzleSql`(${messages.payload})->>'role' IN ('user', 'assistant')`,
+        drizzleSql`length(btrim((${messages.payload})->>'content')) > 0`,
+      ),
+    );
 
   let inserted = 0;
   for (const row of rows) {
@@ -109,7 +108,7 @@ export async function rebuildMemoryReferencesFromMessages(): Promise<number> {
         .values({
           messageId: row.id,
           semanticMemoryId,
-          sessionId: row.session_id,
+          sessionId: row.sessionId,
           createdAt,
         })
         .onConflictDoNothing({
@@ -128,33 +127,36 @@ export async function syncAllReferenceCounts(): Promise<{ updated: number; rebui
   const db = getDb();
   await db.update(semanticMemory).set({ referenceCount: 0 });
 
-  const rows = await db.execute<{ semantic_memory_id: string; weighted_count: number }>(drizzleSql`
-    WITH deduped AS (
-      SELECT DISTINCT ON (session_id, semantic_memory_id)
-        session_id,
+  const rows = await db.select({
+    semanticMemoryId: drizzleSql<string>`semantic_memory_id`,
+    weightedCount: drizzleSql<number>`weighted_count`,
+  }).from(drizzleSql`(
+      WITH deduped AS (
+        SELECT DISTINCT ON (session_id, semantic_memory_id)
+          session_id,
+          semantic_memory_id,
+          created_at
+        FROM memory_references
+        ORDER BY session_id, semantic_memory_id, created_at DESC
+      )
+      SELECT
         semantic_memory_id,
-        created_at
-      FROM memory_references
-      ORDER BY session_id, semantic_memory_id, created_at DESC
-    )
-    SELECT
-      semantic_memory_id,
-      SUM(
-        CASE
-          WHEN created_at >= NOW() - INTERVAL '30 days' THEN 2.0
-          ELSE 1.0
-        END
-      )::float8 AS weighted_count
-    FROM deduped
-    GROUP BY semantic_memory_id
-  `);
+        SUM(
+          CASE
+            WHEN created_at >= NOW() - INTERVAL '30 days' THEN 2.0
+            ELSE 1.0
+          END
+        )::float8 AS weighted_count
+      FROM deduped
+      GROUP BY semantic_memory_id
+    ) AS ref_counts`);
 
   const now = new Date(formatCstIso());
   for (const row of rows) {
     await db
       .update(semanticMemory)
-      .set({ referenceCount: row.weighted_count, updated: now })
-      .where(eq(semanticMemory.id, row.semantic_memory_id));
+      .set({ referenceCount: row.weightedCount, updated: now })
+      .where(eq(semanticMemory.id, row.semanticMemoryId));
   }
 
   return { updated: rows.length, rebuilt };

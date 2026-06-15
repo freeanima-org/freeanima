@@ -1,11 +1,14 @@
-import { sql as drizzleSql } from "drizzle-orm";
-
-import { getDb } from "../client.ts";
-import { formatPgVector } from "../embedding/format.ts";
-import type { SemanticMemoryFtsDbRow } from "../semantic-memory/mappers/semantic-mapper.ts";
-import { mapSemanticMemoryRow } from "../semantic-memory/mappers/semantic-mapper.ts";
+import { and, asc, eq, getColumns, isNotNull, notLike, sql } from "drizzle-orm";
 import { messageDocKey, semanticMemoryDocKey } from "@freeanima/core/util";
-import { pgSemanticSourceSessionsFilter, pgSemanticTypeFilter } from "../utils/pg-sql.ts";
+import { messages, semanticMemory } from "@freeanima/core/db/schema";
+
+import { formatPgVector } from "../embedding/format.ts";
+import { getDb } from "../client.ts";
+import { buildSemanticConditions } from "../semantic-memory/repos/semantic-filters.ts";
+import {
+  mapSemanticMemoryRow,
+  type SemanticMemoryFtsDbRow,
+} from "../semantic-memory/mappers/semantic-mapper.ts";
 
 export type VectorSemanticHit = SemanticMemoryFtsDbRow & { docKey: string };
 
@@ -27,32 +30,22 @@ export async function searchSemanticMemoryVector(
   const queryVec = formatPgVector(queryEmbedding);
 
   const db = getDb();
-  const typeFilter = pgSemanticTypeFilter(types);
-  const statusFilter = status === "all" ? drizzleSql`` : drizzleSql`AND sm.status = ${status}`;
-  const sourceFilter = pgSemanticSourceSessionsFilter(sourceSessions);
+  const distanceExpr = sql`${semanticMemory.contentEmbedding} <=> ${queryVec}::vector`;
+  const rankExpr = sql<number>`1 - (${distanceExpr})`.as("rank");
+  const conditions = [
+    isNotNull(semanticMemory.contentEmbedding),
+    ...buildSemanticConditions({ types, status, sourceSessions }),
+  ];
 
-  const rows = await db.execute<SemanticMemoryFtsDbRow>(drizzleSql`
-    SELECT
-      sm.id,
-      sm.type,
-      sm.pinned,
-      sm.content,
-      sm.source_sessions,
-      sm.observed_at,
-      sm.occurred_at,
-      sm.status,
-      sm.reference_count,
-      sm.created,
-      sm.updated,
-      1 - (sm.content_embedding <=> ${queryVec}::vector) AS rank
-    FROM semantic_memory sm
-    WHERE sm.content_embedding IS NOT NULL
-    ${statusFilter}
-    ${typeFilter}
-    ${sourceFilter}
-    ORDER BY sm.content_embedding <=> ${queryVec}::vector
-    LIMIT ${limit}
-  `);
+  const rows = await db
+    .select({
+      ...getColumns(semanticMemory),
+      rank: rankExpr,
+    })
+    .from(semanticMemory)
+    .where(and(...conditions))
+    .orderBy(asc(distanceExpr))
+    .limit(limit);
 
   return rows.map((r) => ({
     ...mapSemanticMemoryRow(r),
@@ -82,29 +75,30 @@ export async function searchMessagesVector(
   const queryVec = formatPgVector(queryEmbedding);
 
   const db = getDb();
-  const rows = await db.execute<{
-    id: string;
-    content: string;
-    role: string;
-    session_id: string;
-    timestamp: string;
-    rank: number;
-  }>(drizzleSql`
-    SELECT
-      m.id,
-      m.payload->>'content' AS content,
-      m.payload->>'role' AS role,
-      m.session_id,
-      m.payload->>'timestamp' AS timestamp,
-      1 - (m.content_embedding <=> ${queryVec}::vector) AS rank
-    FROM messages m
-    WHERE m.content_embedding IS NOT NULL
-      AND m.content_fts IS NOT NULL
-      AND NOT m.session_id LIKE 'debug-%'
-      AND (${sessionId}::text IS NULL OR m.session_id = ${sessionId})
-    ORDER BY m.content_embedding <=> ${queryVec}::vector
-    LIMIT ${limit}
-  `);
+  const distanceExpr = sql`${messages.contentEmbedding} <=> ${queryVec}::vector`;
+  const rankExpr = sql<number>`1 - (${distanceExpr})`.as("rank");
+  const conditions = [
+    isNotNull(messages.contentEmbedding),
+    isNotNull(messages.contentFts),
+    notLike(messages.sessionId, "debug-%"),
+  ];
+  if (sessionId) {
+    conditions.push(eq(messages.sessionId, sessionId));
+  }
+
+  const rows = await db
+    .select({
+      id: messages.id,
+      content: sql<string>`${messages.payload}->>'content'`,
+      role: sql<string>`${messages.payload}->>'role'`,
+      session_id: messages.sessionId,
+      timestamp: sql<string>`${messages.payload}->>'timestamp'`,
+      rank: rankExpr,
+    })
+    .from(messages)
+    .where(and(...conditions))
+    .orderBy(asc(distanceExpr))
+    .limit(limit);
 
   return rows.map((r) => ({
     id: r.id,
