@@ -10,13 +10,10 @@
 
 import { Route as rootRouteImport } from "./routes/__root";
 import { Route as WorkshopRouteImport } from "./routes/workshop";
-import { Route as StudioRouteRouteImport } from "./routes/studio/route";
 import { Route as ParlorRouteRouteImport } from "./routes/parlor/route";
 import { Route as ChamberRouteRouteImport } from "./routes/chamber/route";
 import { Route as IndexRouteImport } from "./routes/index";
 import { Route as WorkshopPathRouteImport } from "./routes/workshop/$path";
-import { Route as StudioShortVideoRouteImport } from "./routes/studio/short-video";
-import { Route as StudioNovelRouteImport } from "./routes/studio/novel";
 import { Route as ParlorSessionsRouteImport } from "./routes/parlor/sessions";
 import { Route as ParlorChatRouteImport } from "./routes/parlor/chat";
 import { Route as ChamberToolsRouteImport } from "./routes/chamber/tools";
@@ -49,11 +46,6 @@ const WorkshopRoute = WorkshopRouteImport.update({
   path: "/workshop",
   getParentRoute: () => rootRouteImport,
 } as any);
-const StudioRouteRoute = StudioRouteRouteImport.update({
-  id: "/studio",
-  path: "/studio",
-  getParentRoute: () => rootRouteImport,
-} as any);
 const ParlorRouteRoute = ParlorRouteRouteImport.update({
   id: "/parlor",
   path: "/parlor",
@@ -73,16 +65,6 @@ const WorkshopPathRoute = WorkshopPathRouteImport.update({
   id: "/$path",
   path: "/$path",
   getParentRoute: () => WorkshopRoute,
-} as any);
-const StudioShortVideoRoute = StudioShortVideoRouteImport.update({
-  id: "/short-video",
-  path: "/short-video",
-  getParentRoute: () => StudioRouteRoute,
-} as any);
-const StudioNovelRoute = StudioNovelRouteImport.update({
-  id: "/novel",
-  path: "/novel",
-  getParentRoute: () => StudioRouteRoute,
 } as any);
 const ParlorSessionsRoute = ParlorSessionsRouteImport.update({
   id: "/sessions",
@@ -219,7 +201,6 @@ export interface FileRoutesByFullPath {
   "/": typeof IndexRoute;
   "/chamber": typeof ChamberRouteRouteWithChildren;
   "/parlor": typeof ParlorRouteRouteWithChildren;
-  "/studio": typeof StudioRouteRouteWithChildren;
   "/workshop": typeof WorkshopRouteWithChildren;
   "/chamber/sessions": typeof ChamberSessionsRouteRouteWithChildren;
   "/chamber/acp": typeof ChamberAcpRoute;
@@ -245,8 +226,6 @@ export interface FileRoutesByFullPath {
   "/chamber/tools": typeof ChamberToolsRoute;
   "/parlor/chat": typeof ParlorChatRoute;
   "/parlor/sessions": typeof ParlorSessionsRoute;
-  "/studio/novel": typeof StudioNovelRoute;
-  "/studio/short-video": typeof StudioShortVideoRoute;
   "/workshop/$path": typeof WorkshopPathRoute;
   "/chamber/sessions/$sessionId": typeof ChamberSessionsSessionIdRoute;
   "/chamber/sessions/": typeof ChamberSessionsIndexRoute;
@@ -255,7 +234,6 @@ export interface FileRoutesByTo {
   "/": typeof IndexRoute;
   "/chamber": typeof ChamberRouteRouteWithChildren;
   "/parlor": typeof ParlorRouteRouteWithChildren;
-  "/studio": typeof StudioRouteRouteWithChildren;
   "/workshop": typeof WorkshopRouteWithChildren;
   "/chamber/acp": typeof ChamberAcpRoute;
   "/chamber/autobiographical-memory": typeof ChamberAutobiographicalMemoryRoute;
@@ -280,8 +258,6 @@ export interface FileRoutesByTo {
   "/chamber/tools": typeof ChamberToolsRoute;
   "/parlor/chat": typeof ParlorChatRoute;
   "/parlor/sessions": typeof ParlorSessionsRoute;
-  "/studio/novel": typeof StudioNovelRoute;
-  "/studio/short-video": typeof StudioShortVideoRoute;
   "/workshop/$path": typeof WorkshopPathRoute;
   "/chamber/sessions/$sessionId": typeof ChamberSessionsSessionIdRoute;
   "/chamber/sessions": typeof ChamberSessionsIndexRoute;
@@ -291,7 +267,6 @@ export interface FileRoutesById {
   "/": typeof IndexRoute;
   "/chamber": typeof ChamberRouteRouteWithChildren;
   "/parlor": typeof ParlorRouteRouteWithChildren;
-  "/studio": typeof StudioRouteRouteWithChildren;
   "/workshop": typeof WorkshopRouteWithChildren;
   "/chamber/sessions": typeof ChamberSessionsRouteRouteWithChildren;
   "/chamber/acp": typeof ChamberAcpRoute;
@@ -317,8 +292,6 @@ export interface FileRoutesById {
   "/chamber/tools": typeof ChamberToolsRoute;
   "/parlor/chat": typeof ParlorChatRoute;
   "/parlor/sessions": typeof ParlorSessionsRoute;
-  "/studio/novel": typeof StudioNovelRoute;
-  "/studio/short-video": typeof StudioShortVideoRoute;
   "/workshop/$path": typeof WorkshopPathRoute;
   "/chamber/sessions/$sessionId": typeof ChamberSessionsSessionIdRoute;
   "/chamber/sessions/": typeof ChamberSessionsIndexRoute;
@@ -329,7 +302,6 @@ export interface FileRouteTypes {
     | "/"
     | "/chamber"
     | "/parlor"
-    | "/studio"
     | "/workshop"
     | "/chamber/sessions"
     | "/chamber/acp"
@@ -355,8 +327,6 @@ export interface FileRouteTypes {
     | "/chamber/tools"
     | "/parlor/chat"
     | "/parlor/sessions"
-    | "/studio/novel"
-    | "/studio/short-video"
     | "/workshop/$path"
     | "/chamber/sessions/$sessionId"
     | "/chamber/sessions/";
@@ -365,7 +335,6 @@ export interface FileRouteTypes {
     | "/"
     | "/chamber"
     | "/parlor"
-    | "/studio"
     | "/workshop"
     | "/chamber/acp"
     | "/chamber/autobiographical-memory"
@@ -390,8 +359,6 @@ export interface FileRouteTypes {
     | "/chamber/tools"
     | "/parlor/chat"
     | "/parlor/sessions"
-    | "/studio/novel"
-    | "/studio/short-video"
     | "/workshop/$path"
     | "/chamber/sessions/$sessionId"
     | "/chamber/sessions";
@@ -400,7 +367,6 @@ export interface FileRouteTypes {
     | "/"
     | "/chamber"
     | "/parlor"
-    | "/studio"
     | "/workshop"
     | "/chamber/sessions"
     | "/chamber/acp"
@@ -426,8 +392,6 @@ export interface FileRouteTypes {
     | "/chamber/tools"
     | "/parlor/chat"
     | "/parlor/sessions"
-    | "/studio/novel"
-    | "/studio/short-video"
     | "/workshop/$path"
     | "/chamber/sessions/$sessionId"
     | "/chamber/sessions/";
@@ -437,7 +401,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute;
   ChamberRouteRoute: typeof ChamberRouteRouteWithChildren;
   ParlorRouteRoute: typeof ParlorRouteRouteWithChildren;
-  StudioRouteRoute: typeof StudioRouteRouteWithChildren;
   WorkshopRoute: typeof WorkshopRouteWithChildren;
 }
 
@@ -448,13 +411,6 @@ declare module "@tanstack/react-router" {
       path: "/workshop";
       fullPath: "/workshop";
       preLoaderRoute: typeof WorkshopRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/studio": {
-      id: "/studio";
-      path: "/studio";
-      fullPath: "/studio";
-      preLoaderRoute: typeof StudioRouteRouteImport;
       parentRoute: typeof rootRouteImport;
     };
     "/parlor": {
@@ -484,20 +440,6 @@ declare module "@tanstack/react-router" {
       fullPath: "/workshop/$path";
       preLoaderRoute: typeof WorkshopPathRouteImport;
       parentRoute: typeof WorkshopRoute;
-    };
-    "/studio/short-video": {
-      id: "/studio/short-video";
-      path: "/short-video";
-      fullPath: "/studio/short-video";
-      preLoaderRoute: typeof StudioShortVideoRouteImport;
-      parentRoute: typeof StudioRouteRoute;
-    };
-    "/studio/novel": {
-      id: "/studio/novel";
-      path: "/novel";
-      fullPath: "/studio/novel";
-      preLoaderRoute: typeof StudioNovelRouteImport;
-      parentRoute: typeof StudioRouteRoute;
     };
     "/parlor/sessions": {
       id: "/parlor/sessions";
@@ -762,18 +704,6 @@ const ParlorRouteRouteChildren: ParlorRouteRouteChildren = {
 
 const ParlorRouteRouteWithChildren = ParlorRouteRoute._addFileChildren(ParlorRouteRouteChildren);
 
-interface StudioRouteRouteChildren {
-  StudioNovelRoute: typeof StudioNovelRoute;
-  StudioShortVideoRoute: typeof StudioShortVideoRoute;
-}
-
-const StudioRouteRouteChildren: StudioRouteRouteChildren = {
-  StudioNovelRoute: StudioNovelRoute,
-  StudioShortVideoRoute: StudioShortVideoRoute,
-};
-
-const StudioRouteRouteWithChildren = StudioRouteRoute._addFileChildren(StudioRouteRouteChildren);
-
 interface WorkshopRouteChildren {
   WorkshopPathRoute: typeof WorkshopPathRoute;
 }
@@ -788,7 +718,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ChamberRouteRoute: ChamberRouteRouteWithChildren,
   ParlorRouteRoute: ParlorRouteRouteWithChildren,
-  StudioRouteRoute: StudioRouteRouteWithChildren,
   WorkshopRoute: WorkshopRouteWithChildren,
 };
 export const routeTree = rootRouteImport

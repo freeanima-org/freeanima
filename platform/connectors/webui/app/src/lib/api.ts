@@ -120,43 +120,6 @@ export function subscribeMessageStream(
   return { unsubscribe: () => controller.abort() };
 }
 
-type TerminalStreamEvent = {
-  type: string;
-  sessionId?: string;
-  data?: string;
-  code?: number;
-  message?: string;
-};
-
-export function subscribeTerminalStream(callbacks: SubscribeCallbacks<TerminalStreamEvent>): {
-  unsubscribe: () => void;
-} {
-  const ws = apiClient.api.studio.terminal.ws.subscribe();
-  let closed = false;
-
-  ws.subscribe((message) => {
-    if (closed) return;
-    callbacks.onData?.(message as TerminalStreamEvent);
-  });
-
-  ws.on("error", () => {
-    if (closed) return;
-    callbacks.onError?.(new Error(m.webui_common_websocket_failed()));
-  });
-
-  ws.on("close", () => {
-    if (closed) return;
-    callbacks.onComplete?.();
-  });
-
-  return {
-    unsubscribe: () => {
-      closed = true;
-      ws.close();
-    },
-  };
-}
-
 export async function listSessions(platform?: string) {
   return unwrap(apiClient.api.sessions.get({ query: { platform } }));
 }
@@ -562,40 +525,4 @@ export async function listCredentials() {
 
 export async function getCredentialDetail(path: string) {
   return unwrap(apiClient.api.credentials.detail.get({ query: { path } }));
-}
-
-export async function getStudioConfig() {
-  return unwrap(apiClient.api.studio.config.get());
-}
-
-export async function patchStudioConfig(input: {
-  workspace?: string;
-  gitignore?: boolean;
-  showHidden?: boolean;
-}) {
-  return unwrap(apiClient.api.studio.config.patch(input));
-}
-
-export async function getStudioTree() {
-  return unwrap(apiClient.api.studio.tree.get());
-}
-
-export async function getStudioFile(path: string) {
-  return unwrap(apiClient.api.studio.file.get({ query: { path } }));
-}
-
-export async function searchStudio(query: string) {
-  return unwrap(apiClient.api.studio.search.post({ query }));
-}
-
-export async function terminalWrite(sessionId: string, data: string) {
-  return unwrap(apiClient.api.studio.terminal({ sessionId }).write.post({ data }));
-}
-
-export async function terminalResize(sessionId: string, cols: number, rows: number) {
-  return unwrap(apiClient.api.studio.terminal({ sessionId }).resize.post({ cols, rows }));
-}
-
-export async function terminalClose(sessionId: string) {
-  return unwrap(apiClient.api.studio.terminal({ sessionId }).close.post());
 }

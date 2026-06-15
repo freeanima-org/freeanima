@@ -218,13 +218,14 @@ Layers can be mixed; the LLM chooses order; FreeAnima registers and routes.
 
 WebUI shares the same HTTP port as `anima service` (default **2658**).
 
-### Three Modes
+### Hub Modes
 
-| Mode    | Route prefix       | Role                                       |
-| ------- | ------------------ | ------------------------------------------ |
-| Parlor  | `/webui/parlor/*`  | Chat with the agent                        |
-| Chamber | `/webui/chamber/*` | Memory, config, tools, system maintenance  |
-| Studio  | `/webui/studio/*`  | Collaborative workspace (pair programming) |
+| Mode    | Route prefix       | Role                                      |
+| ------- | ------------------ | ----------------------------------------- |
+| Parlor  | `/webui/parlor/*`  | Chat with the agent                       |
+| Chamber | `/webui/chamber/*` | Memory, config, tools, system maintenance |
+
+**Studio** (pair programming and future creative workspaces) runs as **satellite processes** with their own HTTP UI (default pair-programming: `http://127.0.0.1:4173`). Hub WebUI header links out to the satellite; Hub still exposes `/api/studio/*` for workspace FS and terminal when satellites proxy through SAP.
 
 Open: `http://127.0.0.1:2658/webui/parlor/chat`
 
