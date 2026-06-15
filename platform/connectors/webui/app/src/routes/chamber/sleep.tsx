@@ -3,7 +3,6 @@ import { Fragment, useCallback, useEffect, useState } from "react";
 import {
   getDeepSleepRounds,
   getSleepPipelineStatus,
-  getSleepSummary,
   listPipelineStepRuns,
   startSleepCycle,
   startSleepPipelineStep,
@@ -29,20 +28,6 @@ type PipelineRunRow = {
   skipped_reason: string | null;
 };
 
-type SleepSummaryView = {
-  light_sleep: {
-    last_day?: DateField;
-    last_run_at?: DateField;
-    stats?: { tool_calls?: number; sessions?: number };
-  };
-  deep_sleep: {
-    last_day?: DateField;
-    last_run_at?: DateField;
-    stats?: { total_tool_calls?: number };
-    rounds_completed?: number;
-  };
-};
-
 type DeepSleepRound = {
   round: string;
   round_index: number;
@@ -56,11 +41,8 @@ type DeepSleepRound = {
 
 export const Route = createFileRoute("/chamber/sleep")({
   loader: async () => {
-    const [summary, runs] = await Promise.all([
-      getSleepSummary().catch(() => null),
-      listPipelineStepRuns({ limit: 50 }).catch(() => ({ items: [] })),
-    ]);
-    return { summary, runs: (runs as { items?: PipelineRunRow[] }).items ?? [] };
+    const runs = await listPipelineStepRuns({ limit: 50 }).catch(() => ({ items: [] }));
+    return { runs: (runs as { items?: PipelineRunRow[] }).items ?? [] };
   },
   component: SleepPage,
 });
@@ -150,11 +132,9 @@ function outputToolCalls(output: Record<string, unknown> | null): string {
 
 function SleepPage() {
   const initial = Route.useLoaderData() as {
-    summary: SleepSummaryView | null;
     runs: PipelineRunRow[];
   };
 
-  const [summary, setSummary] = useState<SleepSummaryView | null>(initial.summary);
   const [runs, setRuns] = useState(initial.runs);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -185,18 +165,9 @@ function SleepPage() {
     }
   }, []);
 
-  const refreshSummary = useCallback(async () => {
-    try {
-      const data = (await getSleepSummary()) as SleepSummaryView;
-      setSummary(data);
-    } catch {
-      /* keep prior summary */
-    }
-  }, []);
-
   const refreshAfterRun = useCallback(async () => {
-    await Promise.all([reloadRuns(), refreshSummary()]);
-  }, [reloadRuns, refreshSummary]);
+    await reloadRuns();
+  }, [reloadRuns]);
 
   const refreshPipelineStatus = useCallback(async () => {
     try {
@@ -310,37 +281,6 @@ function SleepPage() {
     <div>
       <h2 className="text-lg font-bold mb-1">{m.webui_chamber_nav_sleep()}</h2>
       <p className="text-sm text-base-content/60 mb-4">{m.webui_chamber_sleep_desc()}</p>
-
-      {summary && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-          <div className="card bg-base-200 p-4">
-            <h3 className="font-semibold mb-2">{m.webui_chamber_sleep_light_latest()}</h3>
-            <p className="text-sm">
-              {m.webui_common_processing_day()}: {formatDisplayDate(summary.light_sleep.last_day)}
-            </p>
-            <p className="text-sm">
-              {m.webui_common_run_at()}: {formatDisplayDateTime(summary.light_sleep.last_run_at)}
-            </p>
-            <p className="text-sm">
-              {m.webui_common_tool_calls()}: {summary.light_sleep.stats?.tool_calls ?? 0} ·{" "}
-              {m.webui_common_sessions()}: {summary.light_sleep.stats?.sessions ?? 0}
-            </p>
-          </div>
-          <div className="card bg-base-200 p-4">
-            <h3 className="font-semibold mb-2">{m.webui_chamber_sleep_deep_latest()}</h3>
-            <p className="text-sm">
-              {m.webui_common_processing_day()}: {formatDisplayDate(summary.deep_sleep.last_day)}
-            </p>
-            <p className="text-sm">
-              {m.webui_common_run_at()}: {formatDisplayDateTime(summary.deep_sleep.last_run_at)}
-            </p>
-            <p className="text-sm">
-              {m.webui_common_tool_calls()}: {summary.deep_sleep.stats?.total_tool_calls ?? 0} ·{" "}
-              {m.webui_common_rounds()}: {summary.deep_sleep.rounds_completed ?? 0}
-            </p>
-          </div>
-        </div>
-      )}
 
       <div className="card bg-base-200 p-4 mb-4">
         <h3 className="font-semibold mb-1">{m.webui_chamber_sleep_cycle_title()}</h3>
