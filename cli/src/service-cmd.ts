@@ -25,6 +25,7 @@ import {
   ensureSatelliteUnitFiles,
   startManagedSatellitesViaSystemd,
 } from "./satellite-supervisor.ts";
+import { waitForHubReadyOrWarn } from "./wait-hub-ready.ts";
 
 export type ServiceArgs = {
   action: string;
@@ -245,12 +246,6 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
       process.once("SIGINT", onStop);
       process.once("SIGTERM", onStop);
       try {
-        startAllSatellites({
-          foreground: true,
-          host: args.host,
-          port: args.port,
-          useSystemd: false,
-        });
         const { serve } = await import("@freeanima/platform");
         const { startWebuiHttpServers, closeHttpServers, waitForDrainWithTimeout } =
           await import("@freeanima/platform/connectors/webui");
@@ -262,6 +257,13 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
             close: closeHttpServers,
             waitForDrain: waitForDrainWithTimeout,
           },
+          onReady: () =>
+            startAllSatellites({
+              foreground: true,
+              host: args.host,
+              port: args.port,
+              useSystemd: false,
+            }),
         });
       } catch (e) {
         logStartupError("Service startup failed", e);
@@ -272,7 +274,9 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
 
     if (!systemdUserAvailable()) {
       await startDetachedWithoutSystemd(args);
-      startAllSatellites({ host: args.host, port: args.port, useSystemd: false });
+      if (await waitForHubReadyOrWarn(args.host, args.port)) {
+        startAllSatellites({ host: args.host, port: args.port, useSystemd: false });
+      }
       return;
     }
 
@@ -288,7 +292,9 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
     console.log(`  unit: ${serviceUnitPath()}`);
     console.log(`  address: http://${args.host}:${args.port}`);
     console.log("  status: anima service status");
-    startManagedSatellitesViaSystemd(args.host, args.port);
+    if (await waitForHubReadyOrWarn(args.host, args.port)) {
+      startManagedSatellitesViaSystemd(args.host, args.port);
+    }
     return;
   }
 
@@ -325,7 +331,9 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
       systemctl("daemon-reload");
       const r = systemctl("restart", SYSTEMD_UNIT);
       if (r.status === 0) {
-        startManagedSatellitesViaSystemd(args.host, args.port);
+        if (await waitForHubReadyOrWarn(args.host, args.port)) {
+          startManagedSatellitesViaSystemd(args.host, args.port);
+        }
         writeStatusLine("ok", "Restarted (systemd)");
         return;
       }

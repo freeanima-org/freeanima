@@ -104,3 +104,10 @@ export type {
 } from "./router.ts";
 
 export { createSapClient } from "./client.ts";
+export type { CreateSapClientOptions } from "./client.ts";
+export { runSapTransport } from "./transport.ts";
+export type {
+  RunSapTransportOptions,
+  SapReconnectPolicy,
+  SapTransportHandle,
+} from "./transport.ts";

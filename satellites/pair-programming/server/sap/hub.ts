@@ -1,7 +1,7 @@
 import {
-  createSapClient,
-  serializeSapEnvelope,
+  runSapTransport,
   type SapClient,
+  type SapTransportHandle,
   type ToolCallPayload,
 } from "@freeanima/sap-contract";
 import { executeLocalTool } from "../tools/executor.ts";
@@ -9,46 +9,18 @@ import { getStudioConfig } from "../studio.ts";
 
 const APP_ID = "pair-programming";
 
-let client: SapClient | null = null;
-let instanceId = "";
-let connectPromise: Promise<SapClient> | null = null;
-let heartbeatTimer: ReturnType<typeof setInterval> | null = null;
+const instanceId = process.env.SATELLITE_INSTANCE_ID ?? crypto.randomUUID();
+let transport: SapTransportHandle | null = null;
 
 export function getSapInstanceId(): string {
   return instanceId;
 }
 
 export function isSapConnected(): boolean {
-  return client !== null;
+  return transport?.getClient() !== null;
 }
 
-export async function getSapClient(hubUrl: string, httpUrl?: string): Promise<SapClient> {
-  if (client) return client;
-  if (connectPromise) return connectPromise;
-  connectPromise = connectInternal(hubUrl, httpUrl).finally(() => {
-    connectPromise = null;
-  });
-  return connectPromise;
-}
-
-async function connectInternal(hubUrl: string, httpUrl?: string): Promise<SapClient> {
-  instanceId = process.env.SATELLITE_INSTANCE_ID ?? crypto.randomUUID();
-  const wsUrl = hubUrl.replace(/^http/, "ws").replace(/\/$/, "") + "/sap/v1";
-  const ws = new WebSocket(wsUrl);
-  await new Promise<void>((resolve, reject) => {
-    ws.addEventListener("open", () => resolve());
-    ws.addEventListener("error", () => reject(new Error(`SAP connect failed: ${wsUrl}`)));
-  });
-
-  const sap = createSapClient({ ws });
-  const connected = await sap.connect({
-    app_id: APP_ID,
-    instance_id: instanceId,
-    features_requested: ["server_info"],
-    http_url: httpUrl ?? `http://127.0.0.1:${process.env.SATELLITE_PORT ?? 4173}`,
-  });
-  console.log("SAP connected", connected);
-
+async function registerToolsAndHandlers(sap: SapClient): Promise<void> {
   sap.onEvent("tool.call", (payload) => {
     void handleToolCall(sap, payload as ToolCallPayload);
   });
@@ -73,23 +45,6 @@ async function connectInternal(hubUrl: string, httpUrl?: string): Promise<SapCli
       },
     ],
   });
-
-  if (heartbeatTimer) clearInterval(heartbeatTimer);
-  heartbeatTimer = setInterval(
-    () => {
-      ws.send(
-        serializeSapEnvelope({
-          kind: "evt",
-          method: "heartbeat",
-          payload: { ts: Date.now() },
-        }),
-      );
-    },
-    (connected.heartbeat_interval_sec ?? 30) * 1000,
-  );
-
-  client = sap;
-  return sap;
 }
 
 async function handleToolCall(sap: SapClient, payload: ToolCallPayload): Promise<void> {
@@ -106,4 +61,30 @@ async function handleToolCall(sap: SapClient, payload: ToolCallPayload): Promise
       error: e instanceof Error ? e.message : String(e),
     });
   }
+}
+
+export function startSapTransport(hubUrl: string, httpUrl?: string): SapTransportHandle {
+  if (transport) return transport;
+
+  const resolvedHttpUrl = httpUrl ?? `http://127.0.0.1:${process.env.SATELLITE_PORT ?? 4173}`;
+
+  transport = runSapTransport({
+    hubUrl,
+    connect: {
+      app_id: APP_ID,
+      instance_id: instanceId,
+      features_requested: ["server_info"],
+      http_url: resolvedHttpUrl,
+    },
+    onConnected: async (sap) => {
+      console.log("SAP connected");
+      await registerToolsAndHandlers(sap);
+    },
+  });
+
+  return transport;
+}
+
+export async function getSapClient(hubUrl: string, httpUrl?: string): Promise<SapClient> {
+  return startSapTransport(hubUrl, httpUrl).whenConnected();
 }

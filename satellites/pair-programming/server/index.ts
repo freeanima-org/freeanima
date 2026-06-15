@@ -148,8 +148,6 @@ const server = Bun.serve<TerminalWsData>({
 
 console.log(`pair-programming satellite ${HTTP_URL}`);
 
-void connectSap(HUB_URL, HTTP_URL).catch((e) => {
-  console.warn("SAP connect deferred:", e.message);
-});
+void connectSap(HUB_URL, HTTP_URL);
 
 export { server, HTTP_URL };

@@ -20,4 +20,6 @@ export type ServeOptions = {
   /** CLI --dev：WebUI Bun fullstack HMR */
   webuiDev?: boolean;
   webui?: WebuiHooks;
+  /** Called after HTTP listen and status phase=ready (before async integrations). */
+  onReady?: () => void | Promise<void>;
 };
