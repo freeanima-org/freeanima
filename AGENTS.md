@@ -101,6 +101,7 @@ DATABASE_URL="…" bun run --filter @freeanima/core db:migrate
 | [`docs/concepts/`](docs/concepts/)                                 | Core concepts (memory, self layer, etc.)                         |
 | [`docs/guide/`](docs/guide/)                                       | Usage and maintenance (security, database ops)                   |
 | [`docs/features/`](docs/features/)                                 | Major product capabilities                                       |
+| [`docs/sap/`](docs/sap/)                                           | Satellite Application Protocol (SAP)                             |
 | [`docs/tools/`](docs/tools/)                                       | General/minor built-in tools                                     |
 
 ---

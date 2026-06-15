@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 15:48+0800\n"
+"POT-Creation-Date: 2026-06-15 17:27+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -32,7 +32,10 @@ msgstr ""
 #: docs/features/pair-programming-v1.md:1 docs/guide/database.md:1
 #: docs/guide/install.md:1 docs/guide/install.md:31 docs/guide/install.md:106
 #: docs/guide/install.md:167 docs/guide/install.md:234 docs/guide/security.md:1
-#: docs/guide/service.md:1 docs/tools/execute-code-runtimes.md:1
+#: docs/guide/service.md:1 docs/sap/events.md:1 docs/sap/methods.md:1
+#: docs/sap/overview.md:1 docs/sap/satellite-guide.md:1
+#: docs/sap/security-model.md:1 docs/sap/tools.md:1 docs/sap/transport.md:1
+#: docs/tools/execute-code-runtimes.md:1
 #, no-wrap
 msgid "---\n"
 msgstr ""
@@ -631,7 +634,7 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/architecture.md:229
 #, no-wrap
-msgid "**Studio** (pair programming and future creative workspaces) runs as **satellite processes** with their own HTTP UI (default pair-programming: `http://127.0.0.1:4173`). Hub WebUI header links out to the satellite; Hub still exposes `/api/studio/*` for workspace FS and terminal when satellites proxy through SAP.\n"
+msgid "**Studio** runs as **satellite processes** (configure `satellites:` in `~/.anima/config.yaml`; pair-programming default `http://127.0.0.1:4173`). Browser talks only to the satellite origin; Hub capabilities reach satellites via [SAP/WS](../sap/overview.md). Hub WebUI is **Parlor + Chamber** only.\n"
 msgstr ""
 
 #. type: Plain text

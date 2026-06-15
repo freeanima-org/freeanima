@@ -1,0 +1,330 @@
+# Chinese translations for PACKAGE package
+# Copyright (C) 2026 Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-06-15 17:27+0800\n"
+"PO-Revision-Date: 2026-06-15 17:27+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Plain text
+#: docs/README.md:1 docs/concepts/architecture.md:1
+#: docs/concepts/compression.md:1 docs/concepts/dream.md:1
+#: docs/concepts/identity.md:1 docs/concepts/identity.md:10
+#: docs/concepts/identity.md:28 docs/concepts/identity.md:45
+#: docs/concepts/identity.md:55 docs/concepts/memory.md:1
+#: docs/concepts/memory.md:17 docs/concepts/memory.md:53
+#: docs/concepts/memory.md:124 docs/concepts/memory.md:135
+#: docs/concepts/memory.md:160 docs/concepts/recall-flow.md:1
+#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:30
+#: docs/concepts/self-layer.md:52 docs/concepts/self-layer.md:66
+#: docs/concepts/self-layer.md:80 docs/concepts/self-layer.md:91
+#: docs/concepts/sleep.md:1 docs/concepts/time-perception.md:1
+#: docs/features/pair-programming-v1.md:1 docs/guide/database.md:1
+#: docs/guide/install.md:1 docs/guide/install.md:31 docs/guide/install.md:106
+#: docs/guide/install.md:167 docs/guide/install.md:234 docs/guide/security.md:1
+#: docs/guide/service.md:1 docs/sap/events.md:1 docs/sap/methods.md:1
+#: docs/sap/overview.md:1 docs/sap/satellite-guide.md:1
+#: docs/sap/security-model.md:1 docs/sap/tools.md:1 docs/sap/transport.md:1
+#: docs/tools/execute-code-runtimes.md:1
+#, no-wrap
+msgid "---\n"
+msgstr "---\n"
+
+#. type: Plain text
+#: docs/sap/methods.md:3
+#, no-wrap
+msgid ""
+"title: SAP RPC Methods\n"
+"---\n"
+msgstr ""
+"title: SAP RPC 方法\n"
+"---\n"
+
+#. type: Plain text
+#: docs/sap/methods.md:6
+msgid "# SAP RPC Methods"
+msgstr "# SAP RPC 方法"
+
+#. type: Plain text
+#: docs/sap/methods.md:8
+msgid ""
+"RPC calls use envelope `kind: \"req\"` with a unique `id`. Hub responds with "
+"matching `kind: \"res\"`."
+msgstr ""
+"RPC 调用使用信封 `kind: \"req\"`，并携带唯一 `id`。Hub 以匹配的 `kind: "
+"\"res\"` 响应。"
+
+#. type: Plain text
+#: docs/sap/methods.md:10
+msgid ""
+"The authoritative method list is `SAP_METHODS` in [`packages/sap-contract/"
+"src/router.ts`](../../packages/sap-contract/src/router.ts). Input/output Zod "
+"schemas live under [`packages/sap-contract/src/frames/`](../../packages/sap-"
+"contract/src/frames/)."
+msgstr ""
+"权威方法列表为 [`packages/sap-contract/src/router.ts`](../../packages/sap-"
+"contract/src/router.ts) 中的 `SAP_METHODS`。输入/输出 Zod schema 位于 "
+"[`packages/sap-contract/src/frames/`](../../packages/sap-contract/src/"
+"frames/)。"
+
+#. type: Plain text
+#: docs/sap/methods.md:12
+msgid "## Domain map"
+msgstr "## 领域映射"
+
+#. type: Plain text
+#: docs/sap/methods.md:32
+#, no-wrap
+msgid ""
+"```mermaid\n"
+"flowchart TB\n"
+"  subgraph satellite [Satellite]\n"
+"    Client[SapClient.request]\n"
+"  end\n"
+"  subgraph hub [Hub ws-server]\n"
+"    Router[SAP_METHODS router]\n"
+"    Sessions[service-sessions]\n"
+"    Runtime[AppRuntime]\n"
+"    Terminals[terminal-session]\n"
+"    SatMgr[SatelliteManager]\n"
+"  end\n"
+"  Client -->|req| Router\n"
+"  Router --> Sessions\n"
+"  Router --> Runtime\n"
+"  Router --> Terminals\n"
+"  Router --> SatMgr\n"
+"  Router -->|res| Client\n"
+"```\n"
+msgstr ""
+"```mermaid\n"
+"flowchart TB\n"
+"  subgraph satellite [Satellite]\n"
+"    Client[SapClient.request]\n"
+"  end\n"
+"  subgraph hub [Hub ws-server]\n"
+"    Router[SAP_METHODS router]\n"
+"    Sessions[service-sessions]\n"
+"    Runtime[AppRuntime]\n"
+"    Terminals[terminal-session]\n"
+"    SatMgr[SatelliteManager]\n"
+"  end\n"
+"  Client -->|req| Router\n"
+"  Router --> Sessions\n"
+"  Router --> Runtime\n"
+"  Router --> Terminals\n"
+"  Router --> SatMgr\n"
+"  Router -->|res| Client\n"
+"```\n"
+
+#. type: Plain text
+#: docs/sap/methods.md:34
+msgid "## Session"
+msgstr "## 会话"
+
+#. type: Plain text
+#: docs/sap/methods.md:44
+#, no-wrap
+msgid ""
+"| Method | Schema | Hub behavior |\n"
+"| ------ | ------ | ------------ |\n"
+"| `session.create` | [`session.ts`](../../packages/sap-contract/src/frames/session.ts) | Creates session; sets `platform_extra.satellite_app_id`, `satellite_instance_id`, optional workspace fields |\n"
+"| `session.list` | `session.ts` | Lists sessions, optional `platform` filter |\n"
+"| `session.messages` | `session.ts` | Message history with `offset` / `limit` |\n"
+"| `session.patchTitle` | `session.ts` | Updates session title |\n"
+"| `session.subscribe` | `session.ts` | Subscribes to `session.updated` events for one session |\n"
+"| `session.commands` | `session.ts` | Lists slash commands for a platform |\n"
+"| `session.acpDock` | [`acp.ts`](../../packages/sap-contract/src/frames/acp.ts) | ACP dock operations for a session |\n"
+msgstr ""
+"| Method | Schema | Hub behavior |\n"
+"| ------ | ------ | ------------ |\n"
+"| `session.create` | [`session.ts`](../../packages/sap-contract/src/frames/session.ts) | 创建会话；设置 `platform_extra.satellite_app_id`、`satellite_instance_id`，以及可选的工作区字段 |\n"
+"| `session.list` | `session.ts` | 列出会话，可选 `platform` 过滤 |\n"
+"| `session.messages` | `session.ts` | 消息历史，支持 `offset` / `limit` |\n"
+"| `session.patchTitle` | `session.ts` | 更新会话标题 |\n"
+"| `session.subscribe` | `session.ts` | 订阅单个会话的 `session.updated` 事件 |\n"
+"| `session.commands` | `session.ts` | 列出某平台的斜杠命令 |\n"
+"| `session.acpDock` | [`acp.ts`](../../packages/sap-contract/src/frames/acp.ts) | 会话的 ACP dock 操作 |\n"
+
+#. type: Plain text
+#: docs/sap/methods.md:46
+msgid "### `session.create` platform binding"
+msgstr "### `session.create` 平台绑定"
+
+#. type: Plain text
+#: docs/sap/methods.md:48
+msgid ""
+"Hub resolves `platform` from input or `resolvePlatformForApp(app_id)` (e.g. "
+"`pair-programming` → `studio-pair-programming`). Writes into session "
+"`platform_extra`:"
+msgstr ""
+"Hub 从输入或 `resolvePlatformForApp(app_id)` 解析 `platform`（例如 `pair-"
+"programming` → `studio-pair-programming`）。写入会话的 `platform_extra`："
+
+#. type: Bullet: '- '
+#: docs/sap/methods.md:52
+msgid "`satellite_app_id` — normalized app slug"
+msgstr "`satellite_app_id` — 规范化后的 app slug"
+
+#. type: Bullet: '- '
+#: docs/sap/methods.md:52
+msgid "`satellite_instance_id` — instance id from connect context"
+msgstr "`satellite_instance_id` — 来自 connect 上下文的 instance id"
+
+#. type: Bullet: '- '
+#: docs/sap/methods.md:52
+msgid ""
+"Optional: `workspace_root`, `workspace_gitignore`, `workspace_show_hidden`, "
+"`capability_mask`"
+msgstr ""
+"可选：`workspace_root`、`workspace_gitignore`、`workspace_show_hidden`、"
+"`capability_mask`"
+
+#. type: Plain text
+#: docs/sap/methods.md:54
+msgid "This binding is required for [strict tool routing](tools.md)."
+msgstr "此绑定是 [严格工具路由](tools.md) 所必需的。"
+
+#. type: Plain text
+#: docs/sap/methods.md:56
+msgid "## Message"
+msgstr "## 消息"
+
+#. type: Plain text
+#: docs/sap/methods.md:60
+#, no-wrap
+msgid ""
+"| Method | Schema | Returns |\n"
+"| ------ | ------ | ------- |\n"
+"| `message.send` | [`message.ts`](../../packages/sap-contract/src/frames/message.ts) | `{ stream_id }`; stream events follow on `evt` |\n"
+msgstr ""
+"| Method | Schema | Returns |\n"
+"| ------ | ------ | ------- |\n"
+"| `message.send` | [`message.ts`](../../packages/sap-contract/src/frames/message.ts) | `{ stream_id }`；后续流事件通过 `evt` 推送 |\n"
+
+#. type: Plain text
+#: docs/sap/methods.md:62
+msgid ""
+"Payload: `session_id`, `message` (user text). Hub bridges runtime stream to "
+"SAP `stream.*` events — see [events.md](events.md)."
+msgstr ""
+"载荷：`session_id`、`message`（用户文本）。Hub 将 runtime 流桥接到 SAP "
+"`stream.*` 事件 — 见 [events.md](events.md)。"
+
+#. type: Plain text
+#: docs/sap/methods.md:64
+msgid "## Fridge"
+msgstr "## Fridge"
+
+#. type: Plain text
+#: docs/sap/methods.md:68
+#, no-wrap
+msgid ""
+"| Method | Schema | Role |\n"
+"| ------ | ------ | ---- |\n"
+"| `fridge.list` | [`fridge.ts`](../../packages/sap-contract/src/frames/fridge.ts) | List fridge items for the runtime |\n"
+msgstr ""
+"| Method | Schema | Role |\n"
+"| ------ | ------ | ---- |\n"
+"| `fridge.list` | [`fridge.ts`](../../packages/sap-contract/src/frames/fridge.ts) | 列出 runtime 的 Fridge 条目 |\n"
+
+#. type: Plain text
+#: docs/sap/methods.md:70
+msgid "## Terminal"
+msgstr "## 终端"
+
+#. type: Plain text
+#: docs/sap/methods.md:72
+msgid ""
+"Hub-side PTY sessions. Events: `terminal.ready`, `terminal.output`, "
+"`terminal.exit`, `terminal.error`."
+msgstr ""
+"Hub 端 PTY 会话。事件：`terminal.ready`、`terminal.output`、`terminal.exit`、"
+"`terminal.error`。"
+
+#. type: Plain text
+#: docs/sap/methods.md:79
+#, no-wrap
+msgid ""
+"| Method | Schema |\n"
+"| ------ | ------ |\n"
+"| `terminal.attach` | [`terminal.ts`](../../packages/sap-contract/src/frames/terminal.ts) — optional `cwd`; returns `terminal_id` |\n"
+"| `terminal.write` | `terminal_id`, `data` |\n"
+"| `terminal.resize` | `terminal_id`, `cols`, `rows` |\n"
+"| `terminal.close` | `terminal_id` |\n"
+msgstr ""
+"| Method | Schema |\n"
+"| ------ | ------ |\n"
+"| `terminal.attach` | [`terminal.ts`](../../packages/sap-contract/src/frames/terminal.ts) — 可选 `cwd`；返回 `terminal_id` |\n"
+"| `terminal.write` | `terminal_id`, `data` |\n"
+"| `terminal.resize` | `terminal_id`, `cols`, `rows` |\n"
+"| `terminal.close` | `terminal_id` |\n"
+
+#. type: Plain text
+#: docs/sap/methods.md:81
+msgid "## Tool (Satellite → Hub)"
+msgstr "## 工具（Satellite → Hub）"
+
+#. type: Plain text
+#: docs/sap/methods.md:88
+#, no-wrap
+msgid ""
+"| Method | Direction | Role |\n"
+"| ------ | --------- | ---- |\n"
+"| `tool.register` | Satellite → Hub | Register local tools; returns canonical names |\n"
+"| `tool.unregister` | Satellite → Hub | Remove tools by `local_names` |\n"
+"| `tool.result` | Satellite → Hub | Complete a `tool.call` |\n"
+"| `tool.error` | Satellite → Hub | Fail a `tool.call` |\n"
+msgstr ""
+"| Method | Direction | Role |\n"
+"| ------ | --------- | ---- |\n"
+"| `tool.register` | Satellite → Hub | 注册本地工具；返回规范名称 |\n"
+"| `tool.unregister` | Satellite → Hub | 按 `local_names` 移除工具 |\n"
+"| `tool.result` | Satellite → Hub | 完成一次 `tool.call` |\n"
+"| `tool.error` | Satellite → Hub | 使 `tool.call` 失败 |\n"
+
+#. type: Plain text
+#: docs/sap/methods.md:90
+msgid ""
+"`tool.call` is an **event**, not RPC — see [tools.md](tools.md) and "
+"[events.md](events.md)."
+msgstr ""
+"`tool.call` 是**事件**，不是 RPC — 见 [tools.md](tools.md) 与 [events.md]"
+"(events.md)。"
+
+#. type: Plain text
+#: docs/sap/methods.md:92
+msgid "## Request context"
+msgstr "## 请求上下文"
+
+#. type: Plain text
+#: docs/sap/methods.md:94
+msgid "Every RPC handler receives `SapRequestContext`:"
+msgstr "每个 RPC 处理器都会收到 `SapRequestContext`："
+
+#. type: Bullet: '- '
+#: docs/sap/methods.md:97
+msgid "`app_id`, `instance_id` from the connect handshake"
+msgstr "来自 connect 握手的 `app_id`、`instance_id`"
+
+#. type: Bullet: '- '
+#: docs/sap/methods.md:97
+msgid "`sendEvent(method, payload)` — push async events on the same WebSocket"
+msgstr "`sendEvent(method, payload)` — 在同一 WebSocket 上推送异步事件"
+
+#. type: Plain text
+#: docs/sap/methods.md:98
+msgid ""
+"Implementations: [`platform/src/sap/ws-server.ts`](../../platform/src/sap/ws-"
+"server.ts) `createSapServerHandlers`."
+msgstr ""
+"实现：[`platform/src/sap/ws-server.ts`](../../platform/src/sap/ws-server.ts) "
+"中的 `createSapServerHandlers`。"

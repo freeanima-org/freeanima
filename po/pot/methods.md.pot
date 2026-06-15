@@ -1,0 +1,265 @@
+# SOME DESCRIPTIVE TITLE
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-06-15 17:27+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Plain text
+#: docs/README.md:1 docs/concepts/architecture.md:1
+#: docs/concepts/compression.md:1 docs/concepts/dream.md:1
+#: docs/concepts/identity.md:1 docs/concepts/identity.md:10
+#: docs/concepts/identity.md:28 docs/concepts/identity.md:45
+#: docs/concepts/identity.md:55 docs/concepts/memory.md:1
+#: docs/concepts/memory.md:17 docs/concepts/memory.md:53
+#: docs/concepts/memory.md:124 docs/concepts/memory.md:135
+#: docs/concepts/memory.md:160 docs/concepts/recall-flow.md:1
+#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:30
+#: docs/concepts/self-layer.md:52 docs/concepts/self-layer.md:66
+#: docs/concepts/self-layer.md:80 docs/concepts/self-layer.md:91
+#: docs/concepts/sleep.md:1 docs/concepts/time-perception.md:1
+#: docs/features/pair-programming-v1.md:1 docs/guide/database.md:1
+#: docs/guide/install.md:1 docs/guide/install.md:31 docs/guide/install.md:106
+#: docs/guide/install.md:167 docs/guide/install.md:234 docs/guide/security.md:1
+#: docs/guide/service.md:1 docs/sap/events.md:1 docs/sap/methods.md:1
+#: docs/sap/overview.md:1 docs/sap/satellite-guide.md:1
+#: docs/sap/security-model.md:1 docs/sap/tools.md:1 docs/sap/transport.md:1
+#: docs/tools/execute-code-runtimes.md:1
+#, no-wrap
+msgid "---\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/methods.md:3
+#, no-wrap
+msgid ""
+"title: SAP RPC Methods\n"
+"---\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/methods.md:6
+msgid "# SAP RPC Methods"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/methods.md:8
+msgid ""
+"RPC calls use envelope `kind: \"req\"` with a unique `id`. Hub responds with "
+"matching `kind: \"res\"`."
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/methods.md:10
+msgid ""
+"The authoritative method list is `SAP_METHODS` in [`packages/sap-contract/"
+"src/router.ts`](../../packages/sap-contract/src/router.ts). Input/output Zod "
+"schemas live under [`packages/sap-contract/src/frames/`](../../packages/sap-"
+"contract/src/frames/)."
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/methods.md:12
+msgid "## Domain map"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/methods.md:32
+#, no-wrap
+msgid ""
+"```mermaid\n"
+"flowchart TB\n"
+"  subgraph satellite [Satellite]\n"
+"    Client[SapClient.request]\n"
+"  end\n"
+"  subgraph hub [Hub ws-server]\n"
+"    Router[SAP_METHODS router]\n"
+"    Sessions[service-sessions]\n"
+"    Runtime[AppRuntime]\n"
+"    Terminals[terminal-session]\n"
+"    SatMgr[SatelliteManager]\n"
+"  end\n"
+"  Client -->|req| Router\n"
+"  Router --> Sessions\n"
+"  Router --> Runtime\n"
+"  Router --> Terminals\n"
+"  Router --> SatMgr\n"
+"  Router -->|res| Client\n"
+"```\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/methods.md:34
+msgid "## Session"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/methods.md:44
+#, no-wrap
+msgid ""
+"| Method | Schema | Hub behavior |\n"
+"| ------ | ------ | ------------ |\n"
+"| `session.create` | [`session.ts`](../../packages/sap-contract/src/frames/session.ts) | Creates session; sets `platform_extra.satellite_app_id`, `satellite_instance_id`, optional workspace fields |\n"
+"| `session.list` | `session.ts` | Lists sessions, optional `platform` filter |\n"
+"| `session.messages` | `session.ts` | Message history with `offset` / `limit` |\n"
+"| `session.patchTitle` | `session.ts` | Updates session title |\n"
+"| `session.subscribe` | `session.ts` | Subscribes to `session.updated` events for one session |\n"
+"| `session.commands` | `session.ts` | Lists slash commands for a platform |\n"
+"| `session.acpDock` | [`acp.ts`](../../packages/sap-contract/src/frames/acp.ts) | ACP dock operations for a session |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/methods.md:46
+msgid "### `session.create` platform binding"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/methods.md:48
+msgid ""
+"Hub resolves `platform` from input or `resolvePlatformForApp(app_id)` (e.g. "
+"`pair-programming` → `studio-pair-programming`). Writes into session "
+"`platform_extra`:"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sap/methods.md:52
+msgid "`satellite_app_id` — normalized app slug"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sap/methods.md:52
+msgid "`satellite_instance_id` — instance id from connect context"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sap/methods.md:52
+msgid ""
+"Optional: `workspace_root`, `workspace_gitignore`, `workspace_show_hidden`, "
+"`capability_mask`"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/methods.md:54
+msgid "This binding is required for [strict tool routing](tools.md)."
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/methods.md:56
+msgid "## Message"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/methods.md:60
+#, no-wrap
+msgid ""
+"| Method | Schema | Returns |\n"
+"| ------ | ------ | ------- |\n"
+"| `message.send` | [`message.ts`](../../packages/sap-contract/src/frames/message.ts) | `{ stream_id }`; stream events follow on `evt` |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/methods.md:62
+msgid ""
+"Payload: `session_id`, `message` (user text). Hub bridges runtime stream to "
+"SAP `stream.*` events — see [events.md](events.md)."
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/methods.md:64
+msgid "## Fridge"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/methods.md:68
+#, no-wrap
+msgid ""
+"| Method | Schema | Role |\n"
+"| ------ | ------ | ---- |\n"
+"| `fridge.list` | [`fridge.ts`](../../packages/sap-contract/src/frames/fridge.ts) | List fridge items for the runtime |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/methods.md:70
+msgid "## Terminal"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/methods.md:72
+msgid ""
+"Hub-side PTY sessions. Events: `terminal.ready`, `terminal.output`, "
+"`terminal.exit`, `terminal.error`."
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/methods.md:79
+#, no-wrap
+msgid ""
+"| Method | Schema |\n"
+"| ------ | ------ |\n"
+"| `terminal.attach` | [`terminal.ts`](../../packages/sap-contract/src/frames/terminal.ts) — optional `cwd`; returns `terminal_id` |\n"
+"| `terminal.write` | `terminal_id`, `data` |\n"
+"| `terminal.resize` | `terminal_id`, `cols`, `rows` |\n"
+"| `terminal.close` | `terminal_id` |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/methods.md:81
+msgid "## Tool (Satellite → Hub)"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/methods.md:88
+#, no-wrap
+msgid ""
+"| Method | Direction | Role |\n"
+"| ------ | --------- | ---- |\n"
+"| `tool.register` | Satellite → Hub | Register local tools; returns canonical names |\n"
+"| `tool.unregister` | Satellite → Hub | Remove tools by `local_names` |\n"
+"| `tool.result` | Satellite → Hub | Complete a `tool.call` |\n"
+"| `tool.error` | Satellite → Hub | Fail a `tool.call` |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/methods.md:90
+msgid ""
+"`tool.call` is an **event**, not RPC — see [tools.md](tools.md) and "
+"[events.md](events.md)."
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/methods.md:92
+msgid "## Request context"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/methods.md:94
+msgid "Every RPC handler receives `SapRequestContext`:"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sap/methods.md:97
+msgid "`app_id`, `instance_id` from the connect handshake"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sap/methods.md:97
+msgid "`sendEvent(method, payload)` — push async events on the same WebSocket"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/methods.md:98
+msgid ""
+"Implementations: [`platform/src/sap/ws-server.ts`](../../platform/src/sap/ws-"
+"server.ts) `createSapServerHandlers`."
+msgstr ""

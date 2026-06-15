@@ -37,7 +37,7 @@ anima service stop
 anima service restart
 ```
 
-Managed satellites get user units `~/.config/systemd/user/anima-satellite-<name>.service`, enabled on `service start` and stopped with `service stop`. See [`satellites.md`](satellites.md).
+Managed satellites get user units `~/.config/systemd/user/anima-satellite-<name>.service`, enabled on `service start` and stopped with `service stop`. See [`satellite-guide.md`](../sap/satellite-guide.md).
 
 **Startup order:** Hub must pass `GET /api/health` (`status: ok`) before managed satellites are started (foreground uses `serve()` `onReady`; background CLI polls health). SAP disconnects are retried by `@freeanima/sap-contract` transport (exponential backoff).
 

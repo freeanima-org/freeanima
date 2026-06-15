@@ -28,6 +28,7 @@ export const collections = {
           "guide/**/*.{md,mdx}",
           "concepts/**/*.{md,mdx}",
           "features/**/*.{md,mdx}",
+          "sap/**/*.{md,mdx}",
           "tools/**/*.{md,mdx}",
         ],
         generateId: ({ entry }) => docsEntryId(entry),
