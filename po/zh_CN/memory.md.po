@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 11:47+0800\n"
+"POT-Creation-Date: 2026-06-15 15:48+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,21 +17,21 @@ msgstr ""
 
 #. type: Plain text
 #: docs/README.md:1 docs/concepts/architecture.md:1
-#: docs/concepts/compression.md:1 docs/concepts/identity.md:1
-#: docs/concepts/identity.md:10 docs/concepts/identity.md:28
-#: docs/concepts/identity.md:45 docs/concepts/identity.md:55
-#: docs/concepts/memory.md:1 docs/concepts/memory.md:17
-#: docs/concepts/memory.md:53 docs/concepts/memory.md:122
-#: docs/concepts/memory.md:133 docs/concepts/memory.md:158
-#: docs/concepts/recall-flow.md:1 docs/concepts/self-layer.md:1
-#: docs/concepts/self-layer.md:30 docs/concepts/self-layer.md:52
-#: docs/concepts/self-layer.md:66 docs/concepts/self-layer.md:80
-#: docs/concepts/self-layer.md:91 docs/concepts/sleep.md:1
-#: docs/concepts/time-perception.md:1 docs/features/pair-programming-v1.md:1
-#: docs/guide/database.md:1 docs/guide/install.md:1 docs/guide/install.md:31
-#: docs/guide/install.md:106 docs/guide/install.md:167
-#: docs/guide/install.md:234 docs/guide/security.md:1 docs/guide/service.md:1
-#: docs/tools/execute-code-runtimes.md:1
+#: docs/concepts/compression.md:1 docs/concepts/dream.md:1
+#: docs/concepts/identity.md:1 docs/concepts/identity.md:10
+#: docs/concepts/identity.md:28 docs/concepts/identity.md:45
+#: docs/concepts/identity.md:55 docs/concepts/memory.md:1
+#: docs/concepts/memory.md:17 docs/concepts/memory.md:53
+#: docs/concepts/memory.md:124 docs/concepts/memory.md:135
+#: docs/concepts/memory.md:160 docs/concepts/recall-flow.md:1
+#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:30
+#: docs/concepts/self-layer.md:52 docs/concepts/self-layer.md:66
+#: docs/concepts/self-layer.md:80 docs/concepts/self-layer.md:91
+#: docs/concepts/sleep.md:1 docs/concepts/time-perception.md:1
+#: docs/features/pair-programming-v1.md:1 docs/guide/database.md:1
+#: docs/guide/install.md:1 docs/guide/install.md:31 docs/guide/install.md:106
+#: docs/guide/install.md:167 docs/guide/install.md:234 docs/guide/security.md:1
+#: docs/guide/service.md:1 docs/tools/execute-code-runtimes.md:1
 #, no-wrap
 msgid "---\n"
 msgstr "---\n"
@@ -307,18 +307,24 @@ msgstr "**生命周期：只追加，不更新。** 忠实保护数字生命成�
 
 #. type: Plain text
 #: docs/concepts/memory.md:91
+#, no-wrap
+msgid "**Dream memory** — nightly creative narratives from the dream mechanism (see [`dream.md`](dream.md)); one per CST calendar day; not factual; not injected into system prompt.\n"
+msgstr "**梦境记忆** — 梦境机制产出的夜间创意叙事（见 [`dream.md`](dream.md)）；每个 CST 自然日一条；非事实性；不注入系统提示。\n"
+
+#. type: Plain text
+#: docs/concepts/memory.md:93
 msgid "### 2. Semantic Memory"
 msgstr "### 2. 语义记忆 (Semantic Memory)"
 
 #. type: Plain text
-#: docs/concepts/memory.md:93
+#: docs/concepts/memory.md:95
 msgid ""
 "Definition: Pure facts, common knowledge, concepts, and rules detached from "
 "specific time and place."
 msgstr "定义：脱离了具体时间、空间的纯粹事实、常识、概念和规则。"
 
 #. type: Plain text
-#: docs/concepts/memory.md:102
+#: docs/concepts/memory.md:104
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Type | Network | Definition | Example | Lifecycle |\n"
@@ -349,18 +355,18 @@ msgstr ""
 "| `procedural`  | 程序 ⚙️ | \"如何做\"的知识               | \"通过三步重构一个工具\"                       | 可更新                 |\n"
 
 #. type: Plain text
-#: docs/concepts/memory.md:104
+#: docs/concepts/memory.md:106
 msgid "### 3. Limbic Memory"
 msgstr "### 3. 感性记忆 (Limbic Memory)"
 
 #. type: Plain text
-#: docs/concepts/memory.md:106
+#: docs/concepts/memory.md:108
 #, no-wrap
 msgid "**This is a memory dimension Hindsight lacks and FreeAnima uniquely has.**\n"
 msgstr "**这是 Hindsight 没有、而逸灵风独有的记忆维度。**\n"
 
 #. type: Plain text
-#: docs/concepts/memory.md:108
+#: docs/concepts/memory.md:110
 msgid ""
 "Definition: Memory of \"what I felt\"—not objective fact, not behavioral "
 "record, not subjective judgment, but **the emotional experience itself**."
@@ -369,7 +375,7 @@ msgstr ""
 "断，而是**情感体验本身**。"
 
 #. type: Plain text
-#: docs/concepts/memory.md:115
+#: docs/concepts/memory.md:117
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Dimension | Semantic (rational fact) | Limbic (emotional imprint) |\n"
@@ -394,34 +400,34 @@ msgstr ""
 "| 检索用途 | 决策依据             | 情感共鸣、存在连续性                   |\n"
 
 #. type: Plain text
-#: docs/concepts/memory.md:117
+#: docs/concepts/memory.md:119
 #, no-wrap
 msgid "**Three forms:** emotional anchor (session mood), emotional imprint (cross-session moment), sentiment tendency (long-term trends — not yet implemented, see Issue #38).\n"
 msgstr "**三种形态：** 情感锚点（session 情绪）、情感印记（跨 session 时刻）、情感倾向（长期趋势 — 尚未实现，见 Issue #38）。\n"
 
 #. type: Plain text
-#: docs/concepts/memory.md:119
+#: docs/concepts/memory.md:121
 #, fuzzy
 #| msgid "### 5. Procedural Memory"
 msgid "### 4. Procedural Memory"
 msgstr "### 5. 程序记忆 (Procedural Memory)"
 
 #. type: Plain text
-#: docs/concepts/memory.md:121
+#: docs/concepts/memory.md:123
 msgid ""
 "Three-stage evolution from declarative knowledge → dynamic skills → "
 "crystallized instincts (CLI / MCP / scripts)."
 msgstr "三阶段演化：陈述性知识 → 动态技能 → 固化本能（CLI / MCP / 脚本）。"
 
 #. type: Plain text
-#: docs/concepts/memory.md:125
+#: docs/concepts/memory.md:127
 #, fuzzy
 #| msgid "## IV. Nightly Consolidation"
 msgid "## III. Nightly Consolidation"
 msgstr "## 四、夜间巩固 (Nightly Consolidation)"
 
 #. type: Plain text
-#: docs/concepts/memory.md:127
+#: docs/concepts/memory.md:129
 #, fuzzy
 #| msgid ""
 #| "Conversion from working memory to long-term memory, and internal long-"
@@ -435,7 +441,7 @@ msgstr ""
 "[`sleep.md`](sleep.md)。"
 
 #. type: Bullet: '- '
-#: docs/concepts/memory.md:130
+#: docs/concepts/memory.md:132
 #, fuzzy
 #| msgid ""
 #| "**Light sleep (✅):** cron 02:00; Stage 1 semantic + Stage 2 limbic "
@@ -449,7 +455,7 @@ msgstr ""
 "Stage 3 自传叙事与 `autobiography_summary` 刷新"
 
 #. type: Bullet: '- '
-#: docs/concepts/memory.md:130
+#: docs/concepts/memory.md:132
 #, fuzzy
 #| msgid ""
 #| "**Deep sleep (✅):** cron 03:00; contradiction/expiry, split, merge—three "
@@ -460,25 +466,25 @@ msgid ""
 msgstr "**深睡（✅）**：cron 03:00；矛盾/过期、拆分、合并三轮 LLM 维护"
 
 #. type: Plain text
-#: docs/concepts/memory.md:132
+#: docs/concepts/memory.md:134
 #, no-wrap
 msgid "**All conversions must carry identity context**—self layer six blocks + resident memory, not a generic extraction assistant.\n"
 msgstr "**所有转化须携带身份上下文**——自我层六块 + 常驻记忆，而非通用提取助手。\n"
 
 #. type: Plain text
-#: docs/concepts/memory.md:136
+#: docs/concepts/memory.md:138
 #, fuzzy
 #| msgid "## V. Retrieval Strategy"
 msgid "## IV. Retrieval Strategy"
 msgstr "## 五、检索策略"
 
 #. type: Plain text
-#: docs/concepts/memory.md:138
+#: docs/concepts/memory.md:140
 msgid "### ✅ Implemented (`memory_recall` tool)"
 msgstr "### ✅ 已实现（`memory_recall` 工具）"
 
 #. type: Plain text
-#: docs/concepts/memory.md:140
+#: docs/concepts/memory.md:142
 #, fuzzy
 #| msgid ""
 #| "`memory_recall(query)` parallel four-source recall (semantic / session "
@@ -494,7 +500,7 @@ msgstr ""
 "分："
 
 #. type: Plain text
-#: docs/concepts/memory.md:147
+#: docs/concepts/memory.md:149
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| `memory_type` | Storage | Notes |\n"
@@ -519,7 +525,7 @@ msgstr ""
 "| `autobiographical` | `autobiographical_memory`     | `title` + `content` snippet                         |\n"
 
 #. type: Plain text
-#: docs/concepts/memory.md:149
+#: docs/concepts/memory.md:151
 #, fuzzy
 #| msgid ""
 #| "Resident memory injected via system prompt: **all pinned** + "
@@ -538,25 +544,25 @@ msgstr ""
 "`builtin-memory-reference-sync` 从 messages 全量校准。"
 
 #. type: Plain text
-#: docs/concepts/memory.md:151
-#, no-wrap
-msgid "**Citation obligation:** whenever an assistant reply uses semantic memory—resident list, `memory_recall` / `memory_semantic_search` semantic hits, or prior message markers—it must append each cited `[[f-id]]` at the **end of the reply body**. Use the inline marker or `semantic_memory_id` from tool results. Session, limbic, and autobiographical hits do not use this marker.\n"
-msgstr ""
-
-#. type: Plain text
 #: docs/concepts/memory.md:153
 #, no-wrap
-msgid "**Where the rule is communicated:** global system prompt `memory-citation` section; `memory_recall` and `memory_semantic_search` tool descriptions. Tool response JSON is not modified for this.\n"
-msgstr ""
+msgid "**Citation obligation:** whenever an assistant reply uses semantic memory—resident list, `memory_recall` / `memory_semantic_search` semantic hits, or prior message markers—it must append each cited `[[f-id]]` at the **end of the reply body**. Use the inline marker or `semantic_memory_id` from tool results. Session, limbic, and autobiographical hits do not use this marker.\n"
+msgstr "**引用义务：** 助手回复若使用语义记忆——常驻列表、`memory_recall` / `memory_semantic_search` 的语义命中，或历史消息中的标记——须在**回复正文末尾**追加每条被引用的 `[[f-id]]`。可使用行内标记或工具结果中的 `semantic_memory_id`。会话、感性、自传体命中不使用此标记。\n"
 
 #. type: Plain text
 #: docs/concepts/memory.md:155
 #, no-wrap
-msgid "**What counts as a reference:** only `[[f-id]]` markers in **user/assistant** message bodies are parsed into `memory_references` and contribute to `reference_count`. Tool returns (including `semantic_memory_id` fields) are **not** references. Bare `f-id` text without `[[ ]]` is also not counted.\n"
-msgstr ""
+msgid "**Where the rule is communicated:** global system prompt `memory-citation` section; `memory_recall` and `memory_semantic_search` tool descriptions. Tool response JSON is not modified for this.\n"
+msgstr "**规则传达位置：** 全局系统提示的 `memory-citation` 小节；`memory_recall` 与 `memory_semantic_search` 工具描述。工具返回 JSON 不为此修改。\n"
 
 #. type: Plain text
 #: docs/concepts/memory.md:157
+#, no-wrap
+msgid "**What counts as a reference:** only `[[f-id]]` markers in **user/assistant** message bodies are parsed into `memory_references` and contribute to `reference_count`. Tool returns (including `semantic_memory_id` fields) are **not** references. Bare `f-id` text without `[[ ]]` is also not counted.\n"
+msgstr "**何谓引用：** 仅 **user/assistant** 消息正文中的 `[[f-id]]` 标记会解析进 `memory_references` 并计入 `reference_count`。工具返回（含 `semantic_memory_id` 字段）**不算**引用。无 `[[ ]]` 包裹的裸 `f-id` 文本也不计入。\n"
+
+#. type: Plain text
+#: docs/concepts/memory.md:159
 #, fuzzy
 #| msgid ""
 #| "Resident memory injected via system prompt: **all pinned** + "
@@ -575,14 +581,14 @@ msgstr ""
 "`builtin-memory-reference-sync` 从 messages 全量校准。"
 
 #. type: Plain text
-#: docs/concepts/memory.md:161
+#: docs/concepts/memory.md:163
 #, fuzzy
 #| msgid "## VI. Relationship to Hindsight"
 msgid "## V. Relationship to Hindsight"
 msgstr "## 六、与 Hindsight 的关系"
 
 #. type: Plain text
-#: docs/concepts/memory.md:170
+#: docs/concepts/memory.md:172
 #, fuzzy, no-wrap
 #| msgid ""
 #| "| Dimension | Hindsight | FreeAnima v3 |\n"
@@ -617,7 +623,7 @@ msgstr ""
 "| 所有权       | Vectorize 平台                             | **伙伴与 Agent 共同拥有**                                                          |\n"
 
 #. type: Plain text
-#: docs/concepts/memory.md:171
+#: docs/concepts/memory.md:173
 #, fuzzy, no-wrap
 #| msgid "**Our stance:** Do not copy Hindsight, do not connect to Hindsight services. Digest its design ideas into FreeAnima's own memory system. Our memory system has one dimension Hindsight lacks—limbic memory—and that is not an add-on; it is a core need of digital life.\n"
 msgid "**Our stance:** Do not copy Hindsight, do not connect to Hindsight services. Digest its design ideas into FreeAnima's own memory system. Limbic memory is not an add-on—it is a core need of digital life.\n"
