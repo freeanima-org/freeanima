@@ -13,6 +13,7 @@ import {
 import { createServiceLogger } from "@freeanima/platform/logging";
 import { MaskRegistry } from "@freeanima/capabilities-tasks/mask";
 import { MCPManager } from "@freeanima/capabilities-mcp";
+import { SatelliteManager } from "@freeanima/capabilities-satellite";
 import { getAcpManager } from "@freeanima/capabilities-acp";
 import { registerFridgeStore } from "@freeanima/capabilities-tasks/fridge-magnet";
 import { createRedisFridgeStore } from "@freeanima/platform/connectors/redis";
@@ -31,6 +32,7 @@ export type EnginePhaseResult = {
   catalog: EngineCatalog;
   masks: MaskRegistry;
   mcp: MCPManager;
+  satellite: SatelliteManager;
   acp: ReturnType<typeof getAcpManager>;
 };
 
@@ -62,7 +64,9 @@ export function bootEnginePhase(
 
   registerFridgeStore(createRedisFridgeStore());
   const mcp = new MCPManager(catalog.toolSets, config);
+  const satellite = new SatelliteManager(catalog.toolSets);
+  satellite.installToolRouting();
   const acp = getAcpManager();
 
-  return { kernel, engine, conversation, catalog, masks, mcp, acp };
+  return { kernel, engine, conversation, catalog, masks, mcp, satellite, acp };
 }

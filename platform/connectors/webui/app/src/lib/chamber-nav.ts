@@ -18,6 +18,7 @@ export function chamberNavItems(): { to: string; label: string }[] {
     { to: "/chamber/tools", label: m.webui_chamber_nav_tools() },
     { to: "/chamber/commands", label: m.webui_chamber_nav_commands() },
     { to: "/chamber/mcp", label: m.webui_chamber_nav_mcp() },
+    { to: "/chamber/satellites", label: m.webui_chamber_nav_satellites() },
     { to: "/chamber/acp", label: m.webui_chamber_nav_acp() },
     { to: "/chamber/credentials", label: m.webui_chamber_nav_credentials() },
     { to: "/chamber/cron", label: m.webui_chamber_nav_cron() },

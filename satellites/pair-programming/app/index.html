@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pair Programming Satellite</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: system-ui, sans-serif;
+        line-height: 1.5;
+      }
+      body {
+        max-width: 720px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+      }
+      code {
+        background: color-mix(in srgb, CanvasText 8%, Canvas);
+        padding: 0.1rem 0.35rem;
+        border-radius: 0.25rem;
+      }
+      .ok {
+        color: #0a7a2f;
+      }
+      .warn {
+        color: #a65d00;
+      }
+      ul {
+        padding-left: 1.2rem;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>结对编程卫星</h1>
+    <p id="status">正在检查服务状态…</p>
+    <h2>说明</h2>
+    <p>
+      当前为 <strong>P2 开发入口</strong>：本地 FS API + SAP 连 Hub。完整三栏 UI
+      尚未迁入此进程；开发期可继续使用 Hub WebUI：
+    </p>
+    <p>
+      <a id="hub-link" href="http://127.0.0.1:2658/webui/studio/pair-programming"
+        >Hub Studio（嵌入式）</a
+      >
+    </p>
+    <h2>本地 API</h2>
+    <ul>
+      <li><code>GET /health</code></li>
+      <li><code>GET /api/studio/config</code></li>
+      <li><code>GET /api/studio/tree</code></li>
+      <li><code>GET /api/studio/file?path=…</code></li>
+      <li><code>POST /api/studio/search</code></li>
+    </ul>
+    <h2>Workspace</h2>
+    <pre id="workspace">—</pre>
+    <script>
+      const hub = new URLSearchParams(location.search).get("hub") || "http://127.0.0.1:2658";
+      document.getElementById("hub-link").href = `${hub}/webui/studio/pair-programming`;
+
+      async function load() {
+        const status = document.getElementById("status");
+        const workspace = document.getElementById("workspace");
+        try {
+          const health = await fetch("/health").then((r) => r.json());
+          const cfg = await fetch("/api/studio/config").then((r) => r.json());
+          status.innerHTML = `<span class="ok">卫星 HTTP 正常</span> · app=${health.app}`;
+          workspace.textContent = JSON.stringify(cfg, null, 2);
+          if (!cfg.workspace) {
+            status.innerHTML +=
+              ' · <span class="warn">未配置 workspace，请设置 STUDIO_WORKSPACE</span>';
+          }
+        } catch (e) {
+          status.innerHTML = `<span class="warn">无法读取状态：${e}</span>`;
+        }
+      }
+      void load();
+    </script>
+  </body>
+</html>

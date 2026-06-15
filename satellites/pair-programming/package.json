@@ -1,0 +1,16 @@
+{
+  "name": "@freeanima/satellite-pair-programming",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun dev.ts",
+    "start": "bun server/index.ts"
+  },
+  "dependencies": {
+    "@freeanima/sap-contract": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:"
+  }
+}

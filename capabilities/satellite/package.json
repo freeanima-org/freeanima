@@ -1,0 +1,17 @@
+{
+  "name": "@freeanima/capabilities-satellite",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@freeanima/core": "workspace:*",
+    "@freeanima/sap-contract": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@freeanima/platform": "workspace:*",
+    "@types/bun": "catalog:"
+  }
+}

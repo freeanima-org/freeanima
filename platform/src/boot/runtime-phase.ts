@@ -23,6 +23,9 @@ import { registerBootCronHandlers } from "./cron-handlers.ts";
 import { registerSleepPipelineStepRecorder } from "../runtime/pipeline-step-run-log.ts";
 import { startupLog } from "./status.ts";
 import type { EnginePhaseResult } from "./engine-phase.ts";
+import { bindSapServerDeps } from "../sap/runtime-context.ts";
+import { isSessionMeta } from "@freeanima/core/db/domain";
+import { ANIMA_VERSION } from "../runtime/version.ts";
 
 export type RuntimePhaseResult = {
   runtime: AppRuntime;
@@ -37,7 +40,7 @@ export async function bootRuntimePhase(
   runtimeRef: { current: AppRuntime | null },
   acpSessionUpdatedRef?: { handler: ((sid: string) => void) | null },
 ): Promise<RuntimePhaseResult> {
-  const { kernel, engine, conversation, catalog, masks, mcp, acp } = phase;
+  const { kernel, engine, conversation, catalog, masks, mcp, satellite, acp } = phase;
 
   startupLog("Initializing AppRuntime / EventBus…");
   const runtime = createAppRuntime({
@@ -46,6 +49,7 @@ export async function bootRuntimePhase(
     conversation,
     masks,
     mcp,
+    satellite,
     acp,
     host,
     port,
@@ -86,6 +90,18 @@ export async function bootRuntimePhase(
   registerSystemPromptHooks({
     hookRegistry: kernel.hookRegistry,
     getToolRegistry: () => catalog.toolSets,
+  });
+
+  satellite.loadSessionPlatformExtra = async (sessionId) => {
+    const meta = await conversation.loadSessionMeta(sessionId);
+    if (!isSessionMeta(meta)) return undefined;
+    return meta.platform_extra;
+  };
+
+  bindSapServerDeps({
+    runtime,
+    satelliteManager: satellite,
+    animaVersion: ANIMA_VERSION,
   });
 
   return { runtime };

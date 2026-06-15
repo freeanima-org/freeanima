@@ -4,16 +4,20 @@
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
     "paths": {
-      "@/*": ["./platform/connectors/webui/app/src/*"]
+      "@/*": ["./platform/connectors/webui/app/src/*"],
+      "@freeanima/sap-contract": ["./packages/sap-contract/src/index.ts"],
+      "@freeanima/capabilities-satellite": ["./capabilities/satellite/src/index.ts"]
     }
   },
   "include": [
     "types/**/*.d.ts",
     "kernel/**/*.ts",
+    "packages/**/*.ts",
     "core/**/*.ts",
     "runtime/**/*.ts",
     "platform/**/*.ts",
     "capabilities/**/*.ts",
+    "satellites/**/*.ts",
     "cli/**/*.ts",
     "platform/connectors/webui/app/**/*.ts",
     "platform/connectors/webui/app/**/*.tsx",

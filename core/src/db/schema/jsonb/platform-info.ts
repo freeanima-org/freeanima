@@ -25,6 +25,11 @@ const parlorPlatformInfoSchema = z.looseObject({
 
 const studioPairPlatformInfoSchema = z.looseObject({
   platform: z.literal("studio-pair-programming"),
+  satellite_app_id: z.string().optional(),
+  satellite_instance_id: z.string().optional(),
+  workspace_root: z.string().optional(),
+  workspace_gitignore: z.boolean().optional(),
+  workspace_show_hidden: z.boolean().optional(),
 });
 
 const cronPlatformInfoSchema = z.looseObject({

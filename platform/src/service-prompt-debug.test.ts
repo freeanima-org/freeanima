@@ -95,6 +95,7 @@ function seedContext(catalog: ReturnType<typeof createEngineCatalog>, kernel: Ke
       logger: createTestLogger(),
     } as Engine,
     mcp: null,
+    satellite: null,
     acp: {} as never,
     masks: new MaskRegistry(),
     host: "127.0.0.1",

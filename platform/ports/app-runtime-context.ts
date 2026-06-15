@@ -4,6 +4,7 @@ import type { AppRuntimePort } from "./app-runtime-port.ts";
 import type { AcpManagerPort } from "./ports/acp-manager.ts";
 import type { MaskRegistryPort } from "./ports/mask-registry.ts";
 import type { McpManagerPort } from "./ports/mcp-manager.ts";
+import type { SatelliteManagerPort } from "./ports/satellite-manager.ts";
 import type { ServiceEnginePort } from "./ports/service-engine.ts";
 
 export type AppRuntimeContext = {
@@ -11,6 +12,7 @@ export type AppRuntimeContext = {
   engine: ServiceEnginePort;
   masks: MaskRegistryPort;
   mcp: McpManagerPort | null;
+  satellite: SatelliteManagerPort | null;
   acp: AcpManagerPort;
   host: string;
   port: number;

@@ -28,6 +28,7 @@ import { Route as ChamberSemanticMemoryRouteImport } from "./routes/chamber/sema
 import { Route as ChamberSelfLayerRouteImport } from "./routes/chamber/self-layer";
 import { Route as ChamberMemoryRouteImport } from "./routes/chamber/memory";
 import { Route as ChamberMcpRouteImport } from "./routes/chamber/mcp";
+import { Route as ChamberSatellitesRouteImport } from "./routes/chamber/satellites";
 import { Route as ChamberLimbicMemoryRouteImport } from "./routes/chamber/limbic-memory";
 import { Route as ChamberFtsRouteImport } from "./routes/chamber/fts";
 import { Route as ChamberFridgeMagnetRouteImport } from "./routes/chamber/fridge-magnet";
@@ -139,6 +140,11 @@ const ChamberMcpRoute = ChamberMcpRouteImport.update({
   path: "/mcp",
   getParentRoute: () => ChamberRouteRoute,
 } as any);
+const ChamberSatellitesRoute = ChamberSatellitesRouteImport.update({
+  id: "/satellites",
+  path: "/satellites",
+  getParentRoute: () => ChamberRouteRoute,
+} as any);
 const ChamberLimbicMemoryRoute = ChamberLimbicMemoryRouteImport.update({
   id: "/limbic-memory",
   path: "/limbic-memory",
@@ -235,6 +241,7 @@ export interface FileRoutesByFullPath {
   "/chamber/fts": typeof ChamberFtsRoute;
   "/chamber/limbic-memory": typeof ChamberLimbicMemoryRoute;
   "/chamber/mcp": typeof ChamberMcpRoute;
+  "/chamber/satellites": typeof ChamberSatellitesRoute;
   "/chamber/memory": typeof ChamberMemoryRoute;
   "/chamber/self-layer": typeof ChamberSelfLayerRoute;
   "/chamber/semantic-memory": typeof ChamberSemanticMemoryRoute;
@@ -270,6 +277,7 @@ export interface FileRoutesByTo {
   "/chamber/fts": typeof ChamberFtsRoute;
   "/chamber/limbic-memory": typeof ChamberLimbicMemoryRoute;
   "/chamber/mcp": typeof ChamberMcpRoute;
+  "/chamber/satellites": typeof ChamberSatellitesRoute;
   "/chamber/memory": typeof ChamberMemoryRoute;
   "/chamber/self-layer": typeof ChamberSelfLayerRoute;
   "/chamber/semantic-memory": typeof ChamberSemanticMemoryRoute;
@@ -307,6 +315,7 @@ export interface FileRoutesById {
   "/chamber/fts": typeof ChamberFtsRoute;
   "/chamber/limbic-memory": typeof ChamberLimbicMemoryRoute;
   "/chamber/mcp": typeof ChamberMcpRoute;
+  "/chamber/satellites": typeof ChamberSatellitesRoute;
   "/chamber/memory": typeof ChamberMemoryRoute;
   "/chamber/self-layer": typeof ChamberSelfLayerRoute;
   "/chamber/semantic-memory": typeof ChamberSemanticMemoryRoute;
@@ -345,6 +354,7 @@ export interface FileRouteTypes {
     | "/chamber/fts"
     | "/chamber/limbic-memory"
     | "/chamber/mcp"
+    | "/chamber/satellites"
     | "/chamber/memory"
     | "/chamber/self-layer"
     | "/chamber/semantic-memory"
@@ -380,6 +390,7 @@ export interface FileRouteTypes {
     | "/chamber/fts"
     | "/chamber/limbic-memory"
     | "/chamber/mcp"
+    | "/chamber/satellites"
     | "/chamber/memory"
     | "/chamber/self-layer"
     | "/chamber/semantic-memory"
@@ -416,6 +427,7 @@ export interface FileRouteTypes {
     | "/chamber/fts"
     | "/chamber/limbic-memory"
     | "/chamber/mcp"
+    | "/chamber/satellites"
     | "/chamber/memory"
     | "/chamber/self-layer"
     | "/chamber/semantic-memory"
@@ -576,6 +588,13 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof ChamberMcpRouteImport;
       parentRoute: typeof ChamberRouteRoute;
     };
+    "/chamber/satellites": {
+      id: "/chamber/satellites";
+      path: "/satellites";
+      fullPath: "/chamber/satellites";
+      preLoaderRoute: typeof ChamberSatellitesRouteImport;
+      parentRoute: typeof ChamberRouteRoute;
+    };
     "/chamber/limbic-memory": {
       id: "/chamber/limbic-memory";
       path: "/limbic-memory";
@@ -713,6 +732,7 @@ interface ChamberRouteRouteChildren {
   ChamberFtsRoute: typeof ChamberFtsRoute;
   ChamberLimbicMemoryRoute: typeof ChamberLimbicMemoryRoute;
   ChamberMcpRoute: typeof ChamberMcpRoute;
+  ChamberSatellitesRoute: typeof ChamberSatellitesRoute;
   ChamberMemoryRoute: typeof ChamberMemoryRoute;
   ChamberSelfLayerRoute: typeof ChamberSelfLayerRoute;
   ChamberSemanticMemoryRoute: typeof ChamberSemanticMemoryRoute;
@@ -737,6 +757,7 @@ const ChamberRouteRouteChildren: ChamberRouteRouteChildren = {
   ChamberFtsRoute: ChamberFtsRoute,
   ChamberLimbicMemoryRoute: ChamberLimbicMemoryRoute,
   ChamberMcpRoute: ChamberMcpRoute,
+  ChamberSatellitesRoute: ChamberSatellitesRoute,
   ChamberMemoryRoute: ChamberMemoryRoute,
   ChamberSelfLayerRoute: ChamberSelfLayerRoute,
   ChamberSemanticMemoryRoute: ChamberSemanticMemoryRoute,
