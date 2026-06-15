@@ -15,4 +15,14 @@ export const FRIDGE_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
       ttl: 86400,
     },
   }),
+  fridge_magnet_dismiss: defineToolReturn({
+    schema: z.object({
+      ok: z.literal(true),
+      dismissed: z.string(),
+    }),
+    example: {
+      ok: true,
+      dismissed: "fridge-magnet:dream:reminder:2026-06-14",
+    },
+  }),
 };

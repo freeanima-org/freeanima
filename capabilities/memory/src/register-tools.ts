@@ -6,6 +6,7 @@ import { semanticMemoryToolDefs, rememberFromArgs } from "./semantic-memory-tool
 import { MEMORY_SEMANTIC_CITATION_TOOL_HINT } from "./memory-reference.ts";
 import { autobiographicalMemoryToolDefs } from "./autobiographical-tools.ts";
 import { limbicMemoryToolDefs } from "./limbic-tools.ts";
+import { registerDreamTools } from "./dream-tools.ts";
 import { memoryRecallSearch } from "./recall-search.ts";
 
 function asFloat(value: unknown, defaultVal: number): number {
@@ -111,4 +112,5 @@ export function registerMemoryTools(toolSets: ToolSetRegistry): void {
       MEMORY_TOOL_RETURNS,
     ),
   );
+  registerDreamTools(toolSets);
 }

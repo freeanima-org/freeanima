@@ -36,11 +36,18 @@ export type LimbicListOpts = {
   kind?: LimbicKind;
 };
 
+export type LimbicListBySessionsOpts = {
+  minIntensity?: number;
+  limit?: number;
+  orderBy?: "intensity_desc";
+};
+
 /** Limbic memory persistence port */
 export interface LimbicMemoryStorePort {
   create(row: LimbicMemoryCreateInput): Promise<string>;
   get(id: string): Promise<LimbicMemoryRow | null>;
   listBySession(sessionId: string, opts?: { limit?: number }): Promise<LimbicMemoryRow[]>;
+  listBySessions(sessionIds: string[], opts?: LimbicListBySessionsOpts): Promise<LimbicMemoryRow[]>;
   list(opts?: LimbicListOpts): Promise<LimbicMemoryRow[]>;
   count(opts?: Omit<LimbicListOpts, "offset" | "limit">): Promise<number>;
 }

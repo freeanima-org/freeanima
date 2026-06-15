@@ -32,6 +32,7 @@ import { Route as ChamberLimbicMemoryRouteImport } from "./routes/chamber/limbic
 import { Route as ChamberFtsRouteImport } from "./routes/chamber/fts";
 import { Route as ChamberFridgeMagnetRouteImport } from "./routes/chamber/fridge-magnet";
 import { Route as ChamberEmailRouteImport } from "./routes/chamber/email";
+import { Route as ChamberDreamRouteImport } from "./routes/chamber/dream";
 import { Route as ChamberDashboardRouteImport } from "./routes/chamber/dashboard";
 import { Route as ChamberCronRouteImport } from "./routes/chamber/cron";
 import { Route as ChamberCredentialsRouteImport } from "./routes/chamber/credentials";
@@ -158,6 +159,11 @@ const ChamberEmailRoute = ChamberEmailRouteImport.update({
   path: "/email",
   getParentRoute: () => ChamberRouteRoute,
 } as any);
+const ChamberDreamRoute = ChamberDreamRouteImport.update({
+  id: "/dream",
+  path: "/dream",
+  getParentRoute: () => ChamberRouteRoute,
+} as any);
 const ChamberDashboardRoute = ChamberDashboardRouteImport.update({
   id: "/dashboard",
   path: "/dashboard",
@@ -223,6 +229,7 @@ export interface FileRoutesByFullPath {
   "/chamber/credentials": typeof ChamberCredentialsRoute;
   "/chamber/cron": typeof ChamberCronRoute;
   "/chamber/dashboard": typeof ChamberDashboardRoute;
+  "/chamber/dream": typeof ChamberDreamRoute;
   "/chamber/email": typeof ChamberEmailRoute;
   "/chamber/fridge-magnet": typeof ChamberFridgeMagnetRoute;
   "/chamber/fts": typeof ChamberFtsRoute;
@@ -257,6 +264,7 @@ export interface FileRoutesByTo {
   "/chamber/credentials": typeof ChamberCredentialsRoute;
   "/chamber/cron": typeof ChamberCronRoute;
   "/chamber/dashboard": typeof ChamberDashboardRoute;
+  "/chamber/dream": typeof ChamberDreamRoute;
   "/chamber/email": typeof ChamberEmailRoute;
   "/chamber/fridge-magnet": typeof ChamberFridgeMagnetRoute;
   "/chamber/fts": typeof ChamberFtsRoute;
@@ -293,6 +301,7 @@ export interface FileRoutesById {
   "/chamber/credentials": typeof ChamberCredentialsRoute;
   "/chamber/cron": typeof ChamberCronRoute;
   "/chamber/dashboard": typeof ChamberDashboardRoute;
+  "/chamber/dream": typeof ChamberDreamRoute;
   "/chamber/email": typeof ChamberEmailRoute;
   "/chamber/fridge-magnet": typeof ChamberFridgeMagnetRoute;
   "/chamber/fts": typeof ChamberFtsRoute;
@@ -330,6 +339,7 @@ export interface FileRouteTypes {
     | "/chamber/credentials"
     | "/chamber/cron"
     | "/chamber/dashboard"
+    | "/chamber/dream"
     | "/chamber/email"
     | "/chamber/fridge-magnet"
     | "/chamber/fts"
@@ -364,6 +374,7 @@ export interface FileRouteTypes {
     | "/chamber/credentials"
     | "/chamber/cron"
     | "/chamber/dashboard"
+    | "/chamber/dream"
     | "/chamber/email"
     | "/chamber/fridge-magnet"
     | "/chamber/fts"
@@ -399,6 +410,7 @@ export interface FileRouteTypes {
     | "/chamber/credentials"
     | "/chamber/cron"
     | "/chamber/dashboard"
+    | "/chamber/dream"
     | "/chamber/email"
     | "/chamber/fridge-magnet"
     | "/chamber/fts"
@@ -592,6 +604,13 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof ChamberEmailRouteImport;
       parentRoute: typeof ChamberRouteRoute;
     };
+    "/chamber/dream": {
+      id: "/chamber/dream";
+      path: "/dream";
+      fullPath: "/chamber/dream";
+      preLoaderRoute: typeof ChamberDreamRouteImport;
+      parentRoute: typeof ChamberRouteRoute;
+    };
     "/chamber/dashboard": {
       id: "/chamber/dashboard";
       path: "/dashboard";
@@ -688,6 +707,7 @@ interface ChamberRouteRouteChildren {
   ChamberCredentialsRoute: typeof ChamberCredentialsRoute;
   ChamberCronRoute: typeof ChamberCronRoute;
   ChamberDashboardRoute: typeof ChamberDashboardRoute;
+  ChamberDreamRoute: typeof ChamberDreamRoute;
   ChamberEmailRoute: typeof ChamberEmailRoute;
   ChamberFridgeMagnetRoute: typeof ChamberFridgeMagnetRoute;
   ChamberFtsRoute: typeof ChamberFtsRoute;
@@ -711,6 +731,7 @@ const ChamberRouteRouteChildren: ChamberRouteRouteChildren = {
   ChamberCredentialsRoute: ChamberCredentialsRoute,
   ChamberCronRoute: ChamberCronRoute,
   ChamberDashboardRoute: ChamberDashboardRoute,
+  ChamberDreamRoute: ChamberDreamRoute,
   ChamberEmailRoute: ChamberEmailRoute,
   ChamberFridgeMagnetRoute: ChamberFridgeMagnetRoute,
   ChamberFtsRoute: ChamberFtsRoute,

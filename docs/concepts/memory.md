@@ -87,6 +87,8 @@ Definition: Memory of "when, where, and what I experienced"—with a distinct te
 
 **Lifecycle: append-only, no updates.** Faithfully preserves historical continuity of the digital life's growth.
 
+**Dream memory** — nightly creative narratives from the dream mechanism (see [`dream.md`](dream.md)); one per CST calendar day; not factual; not injected into system prompt.
+
 ### 2. Semantic Memory
 
 Definition: Pure facts, common knowledge, concepts, and rules detached from specific time and place.

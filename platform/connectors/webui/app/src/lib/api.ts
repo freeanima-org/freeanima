@@ -472,6 +472,14 @@ export async function listAutobiographicalMemories(input: {
   return unwrap(apiClient.api.memory.autobiographical.list.post(input));
 }
 
+export async function listDreamMemories(input: { offset?: number; limit?: number }) {
+  return unwrap(apiClient.api.memory.dream.list.post(input));
+}
+
+export async function getDreamMemory(day: string) {
+  return unwrap(apiClient.api.memory.dream({ day }).get());
+}
+
 export async function listTasks(input: {
   query?: string;
   offset?: number;

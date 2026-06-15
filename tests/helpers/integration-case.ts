@@ -15,11 +15,15 @@ import {
   registerMemorySessionStore,
   registerSemanticMemoryStore,
   registerAutobiographicalMemoryStore,
+  registerDreamMemoryStore,
   registerLimbicMemoryStore,
   resetSemanticMemoryStoreForTests,
   resetMemorySessionStoreForTests,
   resetAutobiographicalMemoryStoreForTests,
+  resetDreamMemoryStoreForTests,
   resetLimbicMemoryStoreForTests,
+  registerDreamFridge,
+  resetDreamFridgeForTests,
 } from "@freeanima/capabilities-memory";
 import {
   registerSelfLayerStore,
@@ -77,12 +81,19 @@ export function wireIntegrationRuntimeContext(pg: PgTestContext): void {
   resetSemanticMemoryStoreForTests();
   resetMemorySessionStoreForTests();
   resetAutobiographicalMemoryStoreForTests();
+  resetDreamMemoryStoreForTests();
   resetLimbicMemoryStoreForTests();
+  resetDreamFridgeForTests();
   resetSelfLayerStoreForTests();
   registerMemorySessionStore(pg.engine.repos.session);
   registerSemanticMemoryStore(pg.engine.repos.semanticMemory);
   registerAutobiographicalMemoryStore(pg.engine.repos.autobiographicalMemory);
   registerLimbicMemoryStore(pg.engine.repos.limbicMemory);
+  registerDreamMemoryStore(pg.engine.repos.dreamMemory);
+  registerDreamFridge({
+    setReminder: async () => {},
+    dismissReminder: async () => {},
+  });
   registerSelfLayerStore(pg.engine.repos.selfLayer);
   invalidateSelfLayerPromptCache();
 }

@@ -3,6 +3,7 @@ import type { Db } from "./client.ts";
 import { pgAutobiographicalMemoryStore } from "./autobiographical-memory/pg-autobiographical-memory-store.ts";
 import { pgCronJobStore } from "./cron/pg-cron-job-store.ts";
 import { pgCronLogStore } from "./cron/pg-cron-log-store.ts";
+import { pgDreamMemoryStore } from "./dream-memory/pg-dream-memory-store.ts";
 import { pgLimbicMemoryStore } from "./limbic-memory/pg-limbic-memory-store.ts";
 import { pgSelfLayerStore } from "./self-layer/pg-self-layer-store.ts";
 import { pgMemoryReferenceStore } from "./memory-reference/pg-memory-reference-store.ts";
@@ -19,6 +20,7 @@ export function createPgRepositories(_opts: { getDb: () => Db }): PgRepositories
     selfLayer: pgSelfLayerStore,
     autobiographicalMemory: pgAutobiographicalMemoryStore,
     limbicMemory: pgLimbicMemoryStore,
+    dreamMemory: pgDreamMemoryStore,
     cron: pgCronJobStore,
     cronLog: pgCronLogStore,
     tasks: pgTaskStore,

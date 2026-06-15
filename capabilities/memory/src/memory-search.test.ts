@@ -261,6 +261,9 @@ describe("memory search", () => {
       async listBySession() {
         return [];
       },
+      async listBySessions() {
+        return [];
+      },
       async list() {
         return [];
       },

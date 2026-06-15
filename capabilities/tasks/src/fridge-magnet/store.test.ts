@@ -14,6 +14,9 @@ describe("magnetRedisKey", () => {
   it("three-part namespace", () => {
     expect(magnetRedisKey("session", "abc:r1a2")).toBe("fridge-magnet:session:abc:r1a2");
     expect(magnetRedisKey("tasks", "summary")).toBe("fridge-magnet:tasks:summary");
+    expect(magnetRedisKey("dream", "reminder:2026-06-14")).toBe(
+      "fridge-magnet:dream:reminder:2026-06-14",
+    );
   });
 });
 

@@ -135,3 +135,37 @@ export {
   SLEEP_CYCLE_JOB_ID,
   type SleepSummary,
 } from "./sleep-records.ts";
+export {
+  registerDreamMemoryStore,
+  getDreamMemoryStore,
+  resetDreamMemoryStoreForTests,
+} from "./dream-port.ts";
+export {
+  registerDreamFridge,
+  getDreamFridge,
+  resetDreamFridgeForTests,
+} from "./dream-fridge-port.ts";
+export {
+  registerDreamEngine,
+  resetDreamEngineForTests,
+  runDreamEngine,
+  type DreamEngineFn,
+  type DreamEngineInput,
+  type DreamEngineResult,
+} from "./dream-engine-port.ts";
+export {
+  runDream,
+  dismissDreamReminder,
+  type DreamFridgePort,
+  type DreamResult,
+  type RunDreamOpts,
+} from "./dream/run.ts";
+export {
+  gatherDreamInput,
+  hasDreamFuel,
+  DREAM_MIN_INTENSITY,
+  DREAM_LLM_TEMPERATURE,
+  type DreamGatherInput,
+} from "./dream/gather-input.ts";
+export { readDreamState, recordDreamRun, type DreamState } from "./dream/state.ts";
+export { registerDreamTools } from "./dream-tools.ts";

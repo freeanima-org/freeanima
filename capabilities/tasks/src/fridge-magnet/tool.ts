@@ -2,7 +2,9 @@ import { getToolSessionId } from "@freeanima/core/tool";
 import type { ToolSetRegistry } from "@freeanima/core/tool";
 import { attachToolReturns, toolResult, toolError, type ToolArgs } from "@freeanima/core/tool";
 import { FRIDGE_TOOL_RETURNS } from "./return-schemas.ts";
-import { clampTtl, magnetRedisKey, randomBase62, setMagnet } from "./store.ts";
+import { clampTtl, deleteMagnet, magnetRedisKey, randomBase62, setMagnet } from "./store.ts";
+
+const FRIDGE_MODULES = new Set(["session", "dream", "tasks"]);
 
 export function registerWriteFridgeMagnetTool(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
@@ -43,6 +45,49 @@ export function registerWriteFridgeMagnetTool(toolSets: ToolSetRegistry): void {
               redis_key: magnetRedisKey("session", magnetId),
               label,
               ttl,
+            });
+          },
+        },
+        {
+          name: "fridge_magnet_dismiss",
+          description:
+            "Dismiss (tear off) a fridge magnet note. For session notes, key may be label only (current session is implied) or full sessionId:label.",
+          parameters: {
+            type: "object",
+            properties: {
+              module: {
+                type: "string",
+                description: "Magnet module: session, dream, or tasks",
+                enum: ["session", "dream", "tasks"],
+              },
+              key: {
+                type: "string",
+                description:
+                  "Magnet id within module, e.g. reminder:2026-06-14 for dream, or label for session",
+              },
+            },
+            required: ["module", "key"],
+          },
+          handler: async (args: ToolArgs) => {
+            const module = String(args.module ?? "").trim();
+            if (!FRIDGE_MODULES.has(module)) {
+              return toolError("module must be session, dream, or tasks");
+            }
+            let key = String(args.key ?? "").trim();
+            if (!key) return toolError("key is required");
+
+            if (module === "session") {
+              const sessionId = getToolSessionId();
+              if (!sessionId) return toolError("Unable to get current session ID");
+              if (!key.includes(":")) {
+                key = `${sessionId}:${key}`;
+              }
+            }
+
+            await deleteMagnet(module, key);
+            return toolResult({
+              ok: true,
+              dismissed: magnetRedisKey(module, key),
             });
           },
         },

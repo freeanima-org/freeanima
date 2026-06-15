@@ -15,6 +15,9 @@ export const nullLimbicMemoryStore: LimbicMemoryStorePort = {
   async listBySession() {
     return [];
   },
+  async listBySessions() {
+    return [];
+  },
   async list() {
     return [];
   },
