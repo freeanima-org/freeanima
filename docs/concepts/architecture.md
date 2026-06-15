@@ -127,7 +127,7 @@ For design drafts, open a GitHub Issue (no design-doc directory in docs).
 | Limbic           | Emotional anchors and imprints — "what was felt"          |
 | Autobiographical | Meaning of important experiences; recalled on demand      |
 
-Pipeline: nightly light/deep sleep crons extract and maintain memory; `memory_recall` retrieves on demand during chat. Details: [`memory.md`](memory.md), [`sleep.md`](sleep.md).
+Pipeline: nightly **sleep-cycle** pipeline (`builtin-sleep-cycle` cron) extracts and maintains memory; `memory_recall` retrieves on demand during chat. Details: [`memory.md`](memory.md), [`sleep.md`](sleep.md).
 
 ## Credential System (Summary)
 
@@ -230,10 +230,11 @@ Open: `http://127.0.0.1:2658/webui/parlor/chat`
 
 ## Events and Hooks (Summary)
 
-- **EventBus**: async notifications — after messages persist, triggers light/deep sleep pipelines without blocking chat
+- **EventBus**: async notification transport (Redis queue); production code currently emits topics such as `session:updated` with **no registered handlers** — ACP callbacks use direct `onSessionUpdated` instead. **Not** used for sleep orchestration.
+- **Pipeline Runner**: explicit DAG for background cycles (sleep-cycle: light → deep → cross-domain maintenance steps). State in `~/.anima/runtime/pipeline_*_run.json`; Chamber API for diagnostics.
 - **Hooks**: sync interceptors — validation or clarification at message ingress, turn end, tool return, etc.
 
-Complementary: EventBus handles "what to do after"; Hooks handle "may this proceed before/during".
+Complementary: Pipeline Runner handles scheduled multi-step background work; Hooks handle "may this proceed before/during"; EventBus remains available for future cross-process fan-out but is not on the sleep path.
 
 ## Direction
 

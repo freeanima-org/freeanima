@@ -428,6 +428,18 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     return sleep.getLightSleepBackfillStatus();
   }
 
+  getSleepPipelineStatus() {
+    return sleep.getSleepPipelineStatus();
+  }
+
+  startSleepCycle(opts?: Parameters<typeof sleep.startSleepCycle>[0]) {
+    return sleep.startSleepCycle(opts);
+  }
+
+  startSleepPipelineStep(opts: Parameters<typeof sleep.startSleepPipelineStep>[0]) {
+    return sleep.startSleepPipelineStep(opts);
+  }
+
   ensureBuiltinCronJobs(): Promise<void> {
     return status.ensureBuiltinCronJobsRegistered();
   }

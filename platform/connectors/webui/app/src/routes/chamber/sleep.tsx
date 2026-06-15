@@ -3,9 +3,12 @@ import { Fragment, useCallback, useEffect, useState } from "react";
 import {
   getDeepSleepRounds,
   getSleepBackfillStatus,
+  getSleepPipelineStatus,
   getSleepSummary,
   listSleepRuns,
   startSleepBackfill,
+  startSleepCycle,
+  startSleepPipelineStep,
 } from "@/lib/api.ts";
 import { m } from "@/lib/i18n.ts";
 
@@ -77,10 +80,28 @@ function formatTs(value: DateField): string {
 }
 
 function jobLabel(id: string) {
+  if (id === "builtin-sleep-cycle") return m.webui_chamber_sleep_job_cycle();
   if (id === "builtin-light-sleep") return m.webui_chamber_sleep_light();
   if (id === "builtin-deep-sleep") return m.webui_chamber_sleep_deep();
   return id;
 }
+
+type PipelineStepState = {
+  status: string;
+  error?: string;
+  skipped_reason?: string;
+};
+
+type PipelineStatus = {
+  running: boolean;
+  step_running: boolean;
+  definition: { nodes: Array<{ id: string; dependsOn?: string[] }> };
+  run_state: {
+    day?: string;
+    status?: string;
+    steps?: Record<string, PipelineStepState>;
+  } | null;
+};
 
 function outputDay(row: CronLogRow): string {
   const day = row.output?.day;
@@ -125,6 +146,12 @@ function SleepPage() {
   const [backfillStarting, setBackfillStarting] = useState(false);
   const [backfillError, setBackfillError] = useState("");
   const [backfillStatus, setBackfillStatus] = useState<BackfillStatus | null>(null);
+  const [pipelineDay, setPipelineDay] = useState("");
+  const [pipelineStep, setPipelineStep] = useState("light-sleep");
+  const [pipelineForce, setPipelineForce] = useState(false);
+  const [pipelineStarting, setPipelineStarting] = useState(false);
+  const [pipelineError, setPipelineError] = useState("");
+  const [pipelineStatus, setPipelineStatus] = useState<PipelineStatus | null>(null);
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -142,6 +169,69 @@ function SleepPage() {
       setLoading(false);
     }
   }, []);
+
+  const refreshPipelineStatus = useCallback(async () => {
+    try {
+      const status = (await getSleepPipelineStatus()) as PipelineStatus;
+      setPipelineStatus(status);
+      return status;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  useEffect(() => {
+    void refreshPipelineStatus();
+  }, [refreshPipelineStatus]);
+
+  useEffect(() => {
+    if (!pipelineStatus?.running && !pipelineStatus?.step_running) return;
+    const timer = setInterval(() => {
+      void refreshPipelineStatus();
+    }, 2500);
+    return () => clearInterval(timer);
+  }, [pipelineStatus?.running, pipelineStatus?.step_running, refreshPipelineStatus]);
+
+  useEffect(() => {
+    if (pipelineStatus?.running || pipelineStatus?.step_running) return;
+    if (!pipelineStatus?.run_state?.status) return;
+    void reload();
+  }, [
+    pipelineStatus?.running,
+    pipelineStatus?.step_running,
+    pipelineStatus?.run_state?.status,
+    reload,
+  ]);
+
+  const startCycle = async () => {
+    setPipelineStarting(true);
+    setPipelineError("");
+    try {
+      await startSleepCycle({ day: pipelineDay.trim() || undefined });
+      await refreshPipelineStatus();
+    } catch (e) {
+      setPipelineError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setPipelineStarting(false);
+    }
+  };
+
+  const startStep = async () => {
+    setPipelineStarting(true);
+    setPipelineError("");
+    try {
+      await startSleepPipelineStep({
+        step_id: pipelineStep,
+        day: pipelineDay.trim() || undefined,
+        force: pipelineForce,
+      });
+      await refreshPipelineStatus();
+    } catch (e) {
+      setPipelineError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setPipelineStarting(false);
+    }
+  };
 
   const refreshBackfillStatus = useCallback(async () => {
     try {
@@ -208,7 +298,11 @@ function SleepPage() {
     }
     setExpandedId(row.id);
     const day = outputDay(row);
-    if (day !== "—" && row.job_id === "builtin-deep-sleep" && row.ok) {
+    if (
+      day !== "—" &&
+      row.ok &&
+      (row.job_id === "builtin-deep-sleep" || row.job_id === "builtin-sleep-cycle")
+    ) {
       void loadRounds(day);
     } else {
       setRounds([]);
@@ -250,6 +344,94 @@ function SleepPage() {
           </div>
         </div>
       )}
+
+      <div className="card bg-base-200 p-4 mb-4">
+        <h3 className="font-semibold mb-1">{m.webui_chamber_sleep_cycle_title()}</h3>
+        <p className="text-sm text-base-content/60 mb-3">{m.webui_chamber_sleep_cycle_status()}</p>
+        <label className="form-control mb-3 max-w-xs">
+          <span className="label-text text-xs">{m.webui_chamber_sleep_cycle_day()}</span>
+          <input
+            type="text"
+            className="input input-sm input-bordered"
+            placeholder="YYYY-MM-DD"
+            value={pipelineDay}
+            onChange={(e) => setPipelineDay(e.target.value)}
+            disabled={pipelineStatus?.running || pipelineStatus?.step_running || pipelineStarting}
+          />
+        </label>
+        <div className="flex items-center gap-2 flex-wrap mb-3">
+          <button
+            type="button"
+            className="btn btn-sm btn-primary"
+            disabled={pipelineStatus?.running || pipelineStatus?.step_running || pipelineStarting}
+            onClick={() => void startCycle()}
+          >
+            {pipelineStatus?.running || pipelineStarting
+              ? m.webui_chamber_sleep_cycle_running()
+              : m.webui_chamber_sleep_cycle_run()}
+          </button>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3 items-end">
+          <label className="form-control">
+            <span className="label-text text-xs">{m.webui_chamber_sleep_cycle_step()}</span>
+            <select
+              className="select select-sm select-bordered"
+              value={pipelineStep}
+              onChange={(e) => setPipelineStep(e.target.value)}
+              disabled={pipelineStatus?.running || pipelineStatus?.step_running || pipelineStarting}
+            >
+              {(pipelineStatus?.definition?.nodes ?? []).map((n) => (
+                <option key={n.id} value={n.id}>
+                  {n.id}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="label cursor-pointer justify-start gap-2 pb-1">
+            <input
+              type="checkbox"
+              className="checkbox checkbox-sm"
+              checked={pipelineForce}
+              onChange={(e) => setPipelineForce(e.target.checked)}
+              disabled={pipelineStatus?.running || pipelineStatus?.step_running || pipelineStarting}
+            />
+            <span className="label-text">{m.webui_chamber_sleep_cycle_force()}</span>
+          </label>
+          <button
+            type="button"
+            className="btn btn-sm btn-secondary"
+            disabled={pipelineStatus?.running || pipelineStatus?.step_running || pipelineStarting}
+            onClick={() => void startStep()}
+          >
+            {m.webui_chamber_sleep_cycle_step_run()}
+          </button>
+        </div>
+        {pipelineStatus?.run_state?.steps && (
+          <div className="overflow-x-auto">
+            <table className="table table-xs">
+              <thead>
+                <tr>
+                  <th>{m.webui_chamber_sleep_cycle_step()}</th>
+                  <th>{m.webui_common_status()}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.entries(pipelineStatus.run_state.steps).map(([id, step]) => (
+                  <tr key={id}>
+                    <td>{id}</td>
+                    <td>
+                      {step.status}
+                      {step.skipped_reason ? ` (${step.skipped_reason})` : ""}
+                      {step.error ? ` — ${step.error}` : ""}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        {pipelineError && <p className="text-sm text-error mt-2">{pipelineError}</p>}
+      </div>
 
       <div className="card bg-base-200 p-4 mb-4">
         <h3 className="font-semibold mb-1">{m.webui_chamber_sleep_backfill_title()}</h3>
@@ -379,41 +561,46 @@ function SleepPage() {
                           {row.output_text}
                         </pre>
                       )}
-                      {row.job_id === "builtin-deep-sleep" && row.ok && outputDay(row) !== "—" && (
-                        <div className="mt-3">
-                          <h4 className="font-semibold text-sm mb-1">
-                            {m.webui_chamber_sleep_deep_rounds()}
-                          </h4>
-                          {roundsLoading && (
-                            <p className="text-xs">{m.webui_chamber_sleep_loading_rounds()}</p>
-                          )}
-                          {!roundsLoading &&
-                            rounds.map((r) => (
-                              <div
-                                key={r.round_index}
-                                className="mb-2 border-t border-base-300 pt-2"
-                              >
-                                <p className="text-sm font-medium">
-                                  {m.webui_chamber_sleep_round_tools({
-                                    index: String(r.round_index),
-                                    round: r.round,
-                                    count: String(r.output.tool_calls),
-                                  })}
-                                </p>
-                                <p className="text-xs text-base-content/70">
-                                  {m.webui_chamber_sleep_change_log({
-                                    added: String(r.change_log_snapshot.addedIds?.length ?? 0),
-                                    updated: String(r.change_log_snapshot.modifiedIds?.length ?? 0),
-                                  })}{" "}
-                                  / -{r.change_log_snapshot.deprecatedIds?.length ?? 0}
-                                </p>
-                                <p className="text-xs whitespace-pre-wrap">
-                                  {r.output.summary.slice(0, 400)}
-                                </p>
-                              </div>
-                            ))}
-                        </div>
-                      )}
+                      {(row.job_id === "builtin-deep-sleep" ||
+                        row.job_id === "builtin-sleep-cycle") &&
+                        row.ok &&
+                        outputDay(row) !== "—" && (
+                          <div className="mt-3">
+                            <h4 className="font-semibold text-sm mb-1">
+                              {m.webui_chamber_sleep_deep_rounds()}
+                            </h4>
+                            {roundsLoading && (
+                              <p className="text-xs">{m.webui_chamber_sleep_loading_rounds()}</p>
+                            )}
+                            {!roundsLoading &&
+                              rounds.map((r) => (
+                                <div
+                                  key={r.round_index}
+                                  className="mb-2 border-t border-base-300 pt-2"
+                                >
+                                  <p className="text-sm font-medium">
+                                    {m.webui_chamber_sleep_round_tools({
+                                      index: String(r.round_index),
+                                      round: r.round,
+                                      count: String(r.output.tool_calls),
+                                    })}
+                                  </p>
+                                  <p className="text-xs text-base-content/70">
+                                    {m.webui_chamber_sleep_change_log({
+                                      added: String(r.change_log_snapshot.addedIds?.length ?? 0),
+                                      updated: String(
+                                        r.change_log_snapshot.modifiedIds?.length ?? 0,
+                                      ),
+                                    })}{" "}
+                                    / -{r.change_log_snapshot.deprecatedIds?.length ?? 0}
+                                  </p>
+                                  <p className="text-xs whitespace-pre-wrap">
+                                    {r.output.summary.slice(0, 400)}
+                                  </p>
+                                </div>
+                              ))}
+                          </div>
+                        )}
                     </td>
                   </tr>
                 )}

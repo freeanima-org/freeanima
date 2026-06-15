@@ -95,4 +95,13 @@ export type AppRuntimePort = {
     updated_at?: string;
     last_result?: unknown;
   };
+  getSleepPipelineStatus(): any;
+  startSleepCycle(opts?: {
+    day?: string;
+  }): Promise<{ ok: true; started: true } | { ok: false; error: string }>;
+  startSleepPipelineStep(opts: {
+    stepId: string;
+    day?: string;
+    force?: boolean;
+  }): Promise<{ ok: true; result: unknown } | { ok: false; error: string }>;
 };

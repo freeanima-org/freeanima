@@ -359,6 +359,22 @@ export async function getSleepBackfillStatus() {
   return unwrap(apiClient.api.sleep.backfill.status.get());
 }
 
+export async function getSleepPipelineStatus() {
+  return unwrap(apiClient.api.sleep.pipeline.status.get());
+}
+
+export async function startSleepCycle(body?: { day?: string }) {
+  return unwrap(apiClient.api.sleep.pipeline.run.post(body ?? {}));
+}
+
+export async function startSleepPipelineStep(body: {
+  step_id: string;
+  day?: string;
+  force?: boolean;
+}) {
+  return unwrap(apiClient.api.sleep.pipeline["run-step"].post(body));
+}
+
 export async function listCronLogs(opts?: {
   job_id?: string;
   limit?: number;

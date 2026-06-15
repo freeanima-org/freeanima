@@ -2,10 +2,13 @@ import { Elysia, t } from "elysia";
 import {
   getDeepSleepRounds,
   getSleepBackfillStatus,
+  getSleepPipelineStatus,
   getSleepSummary,
   listCronLogs,
   listSleepRuns,
   startSleepBackfill,
+  startSleepCycle,
+  startSleepPipelineStep,
 } from "../../handlers/sleep.ts";
 
 export const sleepRoutes = new Elysia({ prefix: "/sleep" })
@@ -45,7 +48,29 @@ export const sleepRoutes = new Elysia({ prefix: "/sleep" })
       }),
     },
   )
-  .get("/backfill/status", () => getSleepBackfillStatus());
+  .get("/backfill/status", () => getSleepBackfillStatus())
+  .get("/pipeline/status", () => getSleepPipelineStatus())
+  .post("/pipeline/run", ({ body }) => startSleepCycle({ day: body.day }), {
+    body: t.Object({
+      day: t.Optional(t.String()),
+    }),
+  })
+  .post(
+    "/pipeline/run-step",
+    ({ body }) =>
+      startSleepPipelineStep({
+        step_id: body.step_id,
+        day: body.day,
+        force: body.force,
+      }),
+    {
+      body: t.Object({
+        step_id: t.String(),
+        day: t.Optional(t.String()),
+        force: t.Optional(t.Boolean()),
+      }),
+    },
+  );
 
 export const cronLogRoutes = new Elysia({ prefix: "/cron-logs" }).get(
   "/",

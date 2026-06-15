@@ -82,12 +82,14 @@ export function rowToPatch(job: CronJob): CronJobUpdateInput {
 
 export async function ensureBuiltinCronJobs(): Promise<void> {
   await _removeDeprecatedBuiltinSelfAutobiographyCronJob();
-  await _ensureBuiltinLightSleepCronJob();
-  await _ensureBuiltinDeepSleepCronJob();
-  await _ensureBuiltinMemoryReferenceSyncCronJob();
+  await _removeDeprecatedBuiltinSleepCronJobs();
+  await _ensureBuiltinSleepCycleCronJob();
 }
 
 const DEPRECATED_SELF_AUTOBIOGRAPHY_ID = "builtin-self-autobiography";
+const DEPRECATED_LIGHT_SLEEP_ID = "builtin-light-sleep";
+const DEPRECATED_DEEP_SLEEP_ID = "builtin-deep-sleep";
+const DEPRECATED_MEMORY_REF_SYNC_ID = "builtin-memory-reference-sync";
 
 async function _removeDeprecatedBuiltinSelfAutobiographyCronJob(): Promise<void> {
   const cronStore = getCronStore();
@@ -97,48 +99,30 @@ async function _removeDeprecatedBuiltinSelfAutobiographyCronJob(): Promise<void>
   await cronStore.delete(DEPRECATED_SELF_AUTOBIOGRAPHY_ID);
 }
 
-async function _ensureBuiltinLightSleepCronJob(): Promise<void> {
-  const id = "builtin-light-sleep";
+async function _removeDeprecatedBuiltinSleepCronJobs(): Promise<void> {
+  const cronStore = getCronStore();
+  for (const id of [
+    DEPRECATED_LIGHT_SLEEP_ID,
+    DEPRECATED_DEEP_SLEEP_ID,
+    DEPRECATED_MEMORY_REF_SYNC_ID,
+  ]) {
+    const existing = await cronStore.get(id);
+    if (!existing) continue;
+    handles?.unregister(id);
+    await cronStore.delete(id);
+  }
+}
+
+async function _ensureBuiltinSleepCycleCronJob(): Promise<void> {
+  const id = "builtin-sleep-cycle";
   const scheduleChanged = await getCronStore().upsertBuiltin({
     id,
-    name: "light-sleep",
+    name: "sleep-cycle",
     schedule: "0 2 * * *",
     prompt: "",
     no_agent: true,
     deliver: "local",
-    timeout_sec: 3600,
-  });
-  const job = await getJob(id);
-  if (!job || !handles) return;
-  if (scheduleChanged) handles.reregister(job);
-}
-
-async function _ensureBuiltinDeepSleepCronJob(): Promise<void> {
-  const id = "builtin-deep-sleep";
-  const scheduleChanged = await getCronStore().upsertBuiltin({
-    id,
-    name: "deep-sleep",
-    schedule: "0 3 * * *",
-    prompt: "",
-    no_agent: true,
-    deliver: "local",
-    timeout_sec: 3600,
-  });
-  const job = await getJob(id);
-  if (!job || !handles) return;
-  if (scheduleChanged) handles.reregister(job);
-}
-
-async function _ensureBuiltinMemoryReferenceSyncCronJob(): Promise<void> {
-  const id = "builtin-memory-reference-sync";
-  const scheduleChanged = await getCronStore().upsertBuiltin({
-    id,
-    name: "memory-reference-sync",
-    schedule: "30 5 * * *",
-    prompt: "",
-    no_agent: true,
-    deliver: "local",
-    timeout_sec: 600,
+    timeout_sec: 7200,
   });
   const job = await getJob(id);
   if (!job || !handles) return;

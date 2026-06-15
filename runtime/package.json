@@ -10,11 +10,14 @@
     "./loop": "./src/loop/index.ts",
     "./loop/*": "./src/loop/*.ts",
     "./conversation": "./src/conversation/index.ts",
-    "./conversation/*": "./src/conversation/*.ts"
+    "./conversation/*": "./src/conversation/*.ts",
+    "./pipeline": "./src/pipeline/index.ts",
+    "./pipeline/*": "./src/pipeline/*.ts"
   },
   "dependencies": {
     "@freeanima/core": "workspace:*",
-    "@freeanima/kernel": "workspace:*"
+    "@freeanima/kernel": "workspace:*",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@types/bun": "catalog:"
