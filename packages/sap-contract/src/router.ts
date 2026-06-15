@@ -7,7 +7,11 @@ import type {
   SessionMessagesInput,
   SessionPatchTitleInput,
   SessionSubscribeInput,
+  SessionCommandsInput,
+  SessionCommandsOutput,
 } from "./frames/session.ts";
+import type { SessionAcpDockInput, SessionAcpDockOutput } from "./frames/acp.ts";
+import type { FridgeListInput, FridgeListOutput } from "./frames/fridge.ts";
 import type {
   ToolErrorInput,
   ToolRegisterInput,
@@ -30,7 +34,10 @@ export const SAP_METHODS = [
   "session.messages",
   "session.patchTitle",
   "session.subscribe",
+  "session.acpDock",
+  "session.commands",
   "message.send",
+  "fridge.list",
   "terminal.attach",
   "terminal.write",
   "terminal.resize",
@@ -49,7 +56,10 @@ export type SapRouterInputs = {
   "session.messages": SessionMessagesInput;
   "session.patchTitle": SessionPatchTitleInput;
   "session.subscribe": SessionSubscribeInput;
+  "session.acpDock": SessionAcpDockInput;
+  "session.commands": SessionCommandsInput;
   "message.send": MessageSendInput;
+  "fridge.list": FridgeListInput;
   "terminal.attach": TerminalAttachInput;
   "terminal.write": TerminalWriteInput;
   "terminal.resize": TerminalResizeInput;
@@ -66,7 +76,10 @@ export type SapRouterOutputs = {
   "session.messages": Record<string, unknown>;
   "session.patchTitle": { ok: true };
   "session.subscribe": { ok: true };
+  "session.acpDock": SessionAcpDockOutput;
+  "session.commands": SessionCommandsOutput;
   "message.send": MessageSendOutput;
+  "fridge.list": FridgeListOutput;
   "terminal.attach": TerminalAttachOutput;
   "terminal.write": { ok: true };
   "terminal.resize": { ok: true };

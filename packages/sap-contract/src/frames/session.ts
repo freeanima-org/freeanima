@@ -68,3 +68,26 @@ export const sessionUpdatedPayloadSchema = z.object({
 });
 
 export type SessionUpdatedPayload = z.infer<typeof sessionUpdatedPayloadSchema>;
+
+export const sessionCommandsInputSchema = z.object({
+  platform: z.string().optional(),
+  all: z.boolean().optional(),
+});
+
+export type SessionCommandsInput = z.infer<typeof sessionCommandsInputSchema>;
+
+export const sessionCommandItemSchema = z.object({
+  name: z.string(),
+  description: z.string(),
+  scope: z.string(),
+  platforms: z.array(z.string()).nullable(),
+});
+
+export type SessionCommandItem = z.infer<typeof sessionCommandItemSchema>;
+
+export const sessionCommandsOutputSchema = z.object({
+  commands: z.array(sessionCommandItemSchema),
+  platform: z.string().optional(),
+});
+
+export type SessionCommandsOutput = z.infer<typeof sessionCommandsOutputSchema>;

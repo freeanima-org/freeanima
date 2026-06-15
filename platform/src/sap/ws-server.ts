@@ -11,6 +11,9 @@ import {
   sessionMessagesInputSchema,
   sessionPatchTitleInputSchema,
   sessionSubscribeInputSchema,
+  sessionAcpDockInputSchema,
+  sessionCommandsInputSchema,
+  fridgeListInputSchema,
   messageSendInputSchema,
   toolRegisterInputSchema,
   toolUnregisterInputSchema,
@@ -31,6 +34,9 @@ import {
 import { isSessionMeta } from "@freeanima/core/db/domain";
 import { bridgeMessageStream, bridgeSessionUpdates } from "./stream-bridge.ts";
 import * as serviceSessions from "../runtime/service-sessions.ts";
+import * as serviceAcpDock from "../runtime/service-acp-dock.ts";
+import * as serviceStatus from "../runtime/service-status.ts";
+import * as serviceFridge from "../runtime/service-fridge.ts";
 import {
   closeTerminalSession,
   createTerminalSession,
@@ -145,6 +151,27 @@ export function createSapServerHandlers(deps: SapServerDeps): SapServerHandlers 
           const input = sessionSubscribeInputSchema.parse(payload);
           void pumpSessionUpdates(deps, ctx, input.session_id);
           return { ok: true as const };
+        }
+        case "session.acpDock": {
+          const input = sessionAcpDockInputSchema.parse(payload);
+          const platform = await resolveSessionPlatform(deps, input.session_id);
+          return serviceAcpDock.getSessionAcpDock(
+            deps.runtime.runtimeDeps(),
+            input.session_id,
+            platform,
+          );
+        }
+        case "session.commands": {
+          const input = sessionCommandsInputSchema.parse(payload);
+          const platform = input.platform ?? resolvePlatformForApp(ctx.app_id) ?? "parlor";
+          return serviceStatus.listCommands({
+            platform: input.all ? undefined : platform,
+            all: input.all,
+          });
+        }
+        case "fridge.list": {
+          fridgeListInputSchema.parse(payload);
+          return serviceFridge.listFridgeMagnets();
         }
         case "message.send": {
           const input = messageSendInputSchema.parse(payload);

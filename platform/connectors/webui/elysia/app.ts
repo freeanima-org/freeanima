@@ -12,7 +12,6 @@ import { satellitesRoutes } from "./routes/satellites.ts";
 import { memoryRoutes } from "./routes/memory.ts";
 import { promptRoutes } from "./routes/prompt.ts";
 import { selfRoutes } from "./routes/self.ts";
-import { messagesRoutes } from "./routes/messages.ts";
 import { sessionsRoutes } from "./routes/sessions.ts";
 import { cronLogRoutes, sleepRoutes } from "./routes/sleep.ts";
 import { statusRoutes } from "./routes/status.ts";
@@ -24,7 +23,6 @@ import { fridgeMagnetRoutes } from "./routes/fridge-magnet.ts";
 export const apiApp = new Elysia({ prefix: "/api" })
   .use(healthRoutes)
   .use(sessionsRoutes)
-  .use(messagesRoutes)
   .use(statusRoutes)
   .use(sleepRoutes)
   .use(cronLogRoutes)
@@ -42,7 +40,7 @@ export const apiApp = new Elysia({ prefix: "/api" })
 
 export type App = typeof apiApp;
 
-const WEBUI_CHAT_PATH = `${WEBUI_BASE_PATH}/parlor/chat`;
+const WEBUI_CHAT_PATH = `${WEBUI_BASE_PATH}/chamber/dashboard`;
 
 /** 仅 API + 根重定向；SPA 由 Bun.serve routes 提供（见 webui-server.ts） */
 export function createApiApp() {

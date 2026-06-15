@@ -30,6 +30,7 @@
     "**/dist/**",
     "**/.turbo/**",
     "cli/publish/**",
-    "satellites/pair-programming/app/**"
+    "satellites/pair-programming/app/**",
+    "satellites/parlor/app/**"
   ]
 }

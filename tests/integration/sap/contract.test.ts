@@ -2,10 +2,13 @@ import { describe, expect, it } from "bun:test";
 import {
   connectPayloadSchema,
   formatSapToolName,
+  fridgeListInputSchema,
   mapSapStreamMethodToApi,
   messageSendInputSchema,
   parseSapEnvelope,
   serializeSapEnvelope,
+  sessionAcpDockInputSchema,
+  sessionCommandsInputSchema,
   toolRegisterInputSchema,
 } from "@freeanima/sap-contract";
 
@@ -23,13 +26,19 @@ describe("sap-contract envelopes", () => {
 
   it("validates connect payload with http_url", () => {
     const payload = connectPayloadSchema.parse({
-      app_id: "pair-programming",
+      app_id: "parlor",
       instance_id: "550e8400-e29b-41d4-a716-446655440000",
       protocol: "SAP/1.0",
       features_requested: [],
-      http_url: "http://127.0.0.1:4173",
+      http_url: "http://127.0.0.1:4174",
     });
-    expect(payload.http_url).toBe("http://127.0.0.1:4173");
+    expect(payload.http_url).toBe("http://127.0.0.1:4174");
+  });
+
+  it("validates parlor SAP procedure schemas", () => {
+    sessionAcpDockInputSchema.parse({ session_id: "sid" });
+    sessionCommandsInputSchema.parse({ platform: "parlor" });
+    fridgeListInputSchema.parse({});
   });
 
   it("validates tool register and message send", () => {

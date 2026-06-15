@@ -10,21 +10,18 @@
 
 import { Route as rootRouteImport } from "./routes/__root";
 import { Route as WorkshopRouteImport } from "./routes/workshop";
-import { Route as ParlorRouteRouteImport } from "./routes/parlor/route";
 import { Route as ChamberRouteRouteImport } from "./routes/chamber/route";
 import { Route as IndexRouteImport } from "./routes/index";
 import { Route as WorkshopPathRouteImport } from "./routes/workshop/$path";
-import { Route as ParlorSessionsRouteImport } from "./routes/parlor/sessions";
-import { Route as ParlorChatRouteImport } from "./routes/parlor/chat";
 import { Route as ChamberToolsRouteImport } from "./routes/chamber/tools";
 import { Route as ChamberTasksRouteImport } from "./routes/chamber/tasks";
 import { Route as ChamberSystemPromptRouteImport } from "./routes/chamber/system-prompt";
 import { Route as ChamberSleepRouteImport } from "./routes/chamber/sleep";
 import { Route as ChamberSemanticMemoryRouteImport } from "./routes/chamber/semantic-memory";
 import { Route as ChamberSelfLayerRouteImport } from "./routes/chamber/self-layer";
+import { Route as ChamberSatellitesRouteImport } from "./routes/chamber/satellites";
 import { Route as ChamberMemoryRouteImport } from "./routes/chamber/memory";
 import { Route as ChamberMcpRouteImport } from "./routes/chamber/mcp";
-import { Route as ChamberSatellitesRouteImport } from "./routes/chamber/satellites";
 import { Route as ChamberLimbicMemoryRouteImport } from "./routes/chamber/limbic-memory";
 import { Route as ChamberFtsRouteImport } from "./routes/chamber/fts";
 import { Route as ChamberFridgeMagnetRouteImport } from "./routes/chamber/fridge-magnet";
@@ -46,11 +43,6 @@ const WorkshopRoute = WorkshopRouteImport.update({
   path: "/workshop",
   getParentRoute: () => rootRouteImport,
 } as any);
-const ParlorRouteRoute = ParlorRouteRouteImport.update({
-  id: "/parlor",
-  path: "/parlor",
-  getParentRoute: () => rootRouteImport,
-} as any);
 const ChamberRouteRoute = ChamberRouteRouteImport.update({
   id: "/chamber",
   path: "/chamber",
@@ -65,16 +57,6 @@ const WorkshopPathRoute = WorkshopPathRouteImport.update({
   id: "/$path",
   path: "/$path",
   getParentRoute: () => WorkshopRoute,
-} as any);
-const ParlorSessionsRoute = ParlorSessionsRouteImport.update({
-  id: "/sessions",
-  path: "/sessions",
-  getParentRoute: () => ParlorRouteRoute,
-} as any);
-const ParlorChatRoute = ParlorChatRouteImport.update({
-  id: "/chat",
-  path: "/chat",
-  getParentRoute: () => ParlorRouteRoute,
 } as any);
 const ChamberToolsRoute = ChamberToolsRouteImport.update({
   id: "/tools",
@@ -106,6 +88,11 @@ const ChamberSelfLayerRoute = ChamberSelfLayerRouteImport.update({
   path: "/self-layer",
   getParentRoute: () => ChamberRouteRoute,
 } as any);
+const ChamberSatellitesRoute = ChamberSatellitesRouteImport.update({
+  id: "/satellites",
+  path: "/satellites",
+  getParentRoute: () => ChamberRouteRoute,
+} as any);
 const ChamberMemoryRoute = ChamberMemoryRouteImport.update({
   id: "/memory",
   path: "/memory",
@@ -114,11 +101,6 @@ const ChamberMemoryRoute = ChamberMemoryRouteImport.update({
 const ChamberMcpRoute = ChamberMcpRouteImport.update({
   id: "/mcp",
   path: "/mcp",
-  getParentRoute: () => ChamberRouteRoute,
-} as any);
-const ChamberSatellitesRoute = ChamberSatellitesRouteImport.update({
-  id: "/satellites",
-  path: "/satellites",
   getParentRoute: () => ChamberRouteRoute,
 } as any);
 const ChamberLimbicMemoryRoute = ChamberLimbicMemoryRouteImport.update({
@@ -200,7 +182,6 @@ const ChamberSessionsSessionIdRoute = ChamberSessionsSessionIdRouteImport.update
 export interface FileRoutesByFullPath {
   "/": typeof IndexRoute;
   "/chamber": typeof ChamberRouteRouteWithChildren;
-  "/parlor": typeof ParlorRouteRouteWithChildren;
   "/workshop": typeof WorkshopRouteWithChildren;
   "/chamber/sessions": typeof ChamberSessionsRouteRouteWithChildren;
   "/chamber/acp": typeof ChamberAcpRoute;
@@ -216,16 +197,14 @@ export interface FileRoutesByFullPath {
   "/chamber/fts": typeof ChamberFtsRoute;
   "/chamber/limbic-memory": typeof ChamberLimbicMemoryRoute;
   "/chamber/mcp": typeof ChamberMcpRoute;
-  "/chamber/satellites": typeof ChamberSatellitesRoute;
   "/chamber/memory": typeof ChamberMemoryRoute;
+  "/chamber/satellites": typeof ChamberSatellitesRoute;
   "/chamber/self-layer": typeof ChamberSelfLayerRoute;
   "/chamber/semantic-memory": typeof ChamberSemanticMemoryRoute;
   "/chamber/sleep": typeof ChamberSleepRoute;
   "/chamber/system-prompt": typeof ChamberSystemPromptRoute;
   "/chamber/tasks": typeof ChamberTasksRoute;
   "/chamber/tools": typeof ChamberToolsRoute;
-  "/parlor/chat": typeof ParlorChatRoute;
-  "/parlor/sessions": typeof ParlorSessionsRoute;
   "/workshop/$path": typeof WorkshopPathRoute;
   "/chamber/sessions/$sessionId": typeof ChamberSessionsSessionIdRoute;
   "/chamber/sessions/": typeof ChamberSessionsIndexRoute;
@@ -233,7 +212,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   "/": typeof IndexRoute;
   "/chamber": typeof ChamberRouteRouteWithChildren;
-  "/parlor": typeof ParlorRouteRouteWithChildren;
   "/workshop": typeof WorkshopRouteWithChildren;
   "/chamber/acp": typeof ChamberAcpRoute;
   "/chamber/autobiographical-memory": typeof ChamberAutobiographicalMemoryRoute;
@@ -248,16 +226,14 @@ export interface FileRoutesByTo {
   "/chamber/fts": typeof ChamberFtsRoute;
   "/chamber/limbic-memory": typeof ChamberLimbicMemoryRoute;
   "/chamber/mcp": typeof ChamberMcpRoute;
-  "/chamber/satellites": typeof ChamberSatellitesRoute;
   "/chamber/memory": typeof ChamberMemoryRoute;
+  "/chamber/satellites": typeof ChamberSatellitesRoute;
   "/chamber/self-layer": typeof ChamberSelfLayerRoute;
   "/chamber/semantic-memory": typeof ChamberSemanticMemoryRoute;
   "/chamber/sleep": typeof ChamberSleepRoute;
   "/chamber/system-prompt": typeof ChamberSystemPromptRoute;
   "/chamber/tasks": typeof ChamberTasksRoute;
   "/chamber/tools": typeof ChamberToolsRoute;
-  "/parlor/chat": typeof ParlorChatRoute;
-  "/parlor/sessions": typeof ParlorSessionsRoute;
   "/workshop/$path": typeof WorkshopPathRoute;
   "/chamber/sessions/$sessionId": typeof ChamberSessionsSessionIdRoute;
   "/chamber/sessions": typeof ChamberSessionsIndexRoute;
@@ -266,7 +242,6 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport;
   "/": typeof IndexRoute;
   "/chamber": typeof ChamberRouteRouteWithChildren;
-  "/parlor": typeof ParlorRouteRouteWithChildren;
   "/workshop": typeof WorkshopRouteWithChildren;
   "/chamber/sessions": typeof ChamberSessionsRouteRouteWithChildren;
   "/chamber/acp": typeof ChamberAcpRoute;
@@ -282,16 +257,14 @@ export interface FileRoutesById {
   "/chamber/fts": typeof ChamberFtsRoute;
   "/chamber/limbic-memory": typeof ChamberLimbicMemoryRoute;
   "/chamber/mcp": typeof ChamberMcpRoute;
-  "/chamber/satellites": typeof ChamberSatellitesRoute;
   "/chamber/memory": typeof ChamberMemoryRoute;
+  "/chamber/satellites": typeof ChamberSatellitesRoute;
   "/chamber/self-layer": typeof ChamberSelfLayerRoute;
   "/chamber/semantic-memory": typeof ChamberSemanticMemoryRoute;
   "/chamber/sleep": typeof ChamberSleepRoute;
   "/chamber/system-prompt": typeof ChamberSystemPromptRoute;
   "/chamber/tasks": typeof ChamberTasksRoute;
   "/chamber/tools": typeof ChamberToolsRoute;
-  "/parlor/chat": typeof ParlorChatRoute;
-  "/parlor/sessions": typeof ParlorSessionsRoute;
   "/workshop/$path": typeof WorkshopPathRoute;
   "/chamber/sessions/$sessionId": typeof ChamberSessionsSessionIdRoute;
   "/chamber/sessions/": typeof ChamberSessionsIndexRoute;
@@ -301,7 +274,6 @@ export interface FileRouteTypes {
   fullPaths:
     | "/"
     | "/chamber"
-    | "/parlor"
     | "/workshop"
     | "/chamber/sessions"
     | "/chamber/acp"
@@ -317,16 +289,14 @@ export interface FileRouteTypes {
     | "/chamber/fts"
     | "/chamber/limbic-memory"
     | "/chamber/mcp"
-    | "/chamber/satellites"
     | "/chamber/memory"
+    | "/chamber/satellites"
     | "/chamber/self-layer"
     | "/chamber/semantic-memory"
     | "/chamber/sleep"
     | "/chamber/system-prompt"
     | "/chamber/tasks"
     | "/chamber/tools"
-    | "/parlor/chat"
-    | "/parlor/sessions"
     | "/workshop/$path"
     | "/chamber/sessions/$sessionId"
     | "/chamber/sessions/";
@@ -334,7 +304,6 @@ export interface FileRouteTypes {
   to:
     | "/"
     | "/chamber"
-    | "/parlor"
     | "/workshop"
     | "/chamber/acp"
     | "/chamber/autobiographical-memory"
@@ -349,16 +318,14 @@ export interface FileRouteTypes {
     | "/chamber/fts"
     | "/chamber/limbic-memory"
     | "/chamber/mcp"
-    | "/chamber/satellites"
     | "/chamber/memory"
+    | "/chamber/satellites"
     | "/chamber/self-layer"
     | "/chamber/semantic-memory"
     | "/chamber/sleep"
     | "/chamber/system-prompt"
     | "/chamber/tasks"
     | "/chamber/tools"
-    | "/parlor/chat"
-    | "/parlor/sessions"
     | "/workshop/$path"
     | "/chamber/sessions/$sessionId"
     | "/chamber/sessions";
@@ -366,7 +333,6 @@ export interface FileRouteTypes {
     | "__root__"
     | "/"
     | "/chamber"
-    | "/parlor"
     | "/workshop"
     | "/chamber/sessions"
     | "/chamber/acp"
@@ -382,16 +348,14 @@ export interface FileRouteTypes {
     | "/chamber/fts"
     | "/chamber/limbic-memory"
     | "/chamber/mcp"
-    | "/chamber/satellites"
     | "/chamber/memory"
+    | "/chamber/satellites"
     | "/chamber/self-layer"
     | "/chamber/semantic-memory"
     | "/chamber/sleep"
     | "/chamber/system-prompt"
     | "/chamber/tasks"
     | "/chamber/tools"
-    | "/parlor/chat"
-    | "/parlor/sessions"
     | "/workshop/$path"
     | "/chamber/sessions/$sessionId"
     | "/chamber/sessions/";
@@ -400,7 +364,6 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute;
   ChamberRouteRoute: typeof ChamberRouteRouteWithChildren;
-  ParlorRouteRoute: typeof ParlorRouteRouteWithChildren;
   WorkshopRoute: typeof WorkshopRouteWithChildren;
 }
 
@@ -411,13 +374,6 @@ declare module "@tanstack/react-router" {
       path: "/workshop";
       fullPath: "/workshop";
       preLoaderRoute: typeof WorkshopRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/parlor": {
-      id: "/parlor";
-      path: "/parlor";
-      fullPath: "/parlor";
-      preLoaderRoute: typeof ParlorRouteRouteImport;
       parentRoute: typeof rootRouteImport;
     };
     "/chamber": {
@@ -440,20 +396,6 @@ declare module "@tanstack/react-router" {
       fullPath: "/workshop/$path";
       preLoaderRoute: typeof WorkshopPathRouteImport;
       parentRoute: typeof WorkshopRoute;
-    };
-    "/parlor/sessions": {
-      id: "/parlor/sessions";
-      path: "/sessions";
-      fullPath: "/parlor/sessions";
-      preLoaderRoute: typeof ParlorSessionsRouteImport;
-      parentRoute: typeof ParlorRouteRoute;
-    };
-    "/parlor/chat": {
-      id: "/parlor/chat";
-      path: "/chat";
-      fullPath: "/parlor/chat";
-      preLoaderRoute: typeof ParlorChatRouteImport;
-      parentRoute: typeof ParlorRouteRoute;
     };
     "/chamber/tools": {
       id: "/chamber/tools";
@@ -497,6 +439,13 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof ChamberSelfLayerRouteImport;
       parentRoute: typeof ChamberRouteRoute;
     };
+    "/chamber/satellites": {
+      id: "/chamber/satellites";
+      path: "/satellites";
+      fullPath: "/chamber/satellites";
+      preLoaderRoute: typeof ChamberSatellitesRouteImport;
+      parentRoute: typeof ChamberRouteRoute;
+    };
     "/chamber/memory": {
       id: "/chamber/memory";
       path: "/memory";
@@ -509,13 +458,6 @@ declare module "@tanstack/react-router" {
       path: "/mcp";
       fullPath: "/chamber/mcp";
       preLoaderRoute: typeof ChamberMcpRouteImport;
-      parentRoute: typeof ChamberRouteRoute;
-    };
-    "/chamber/satellites": {
-      id: "/chamber/satellites";
-      path: "/satellites";
-      fullPath: "/chamber/satellites";
-      preLoaderRoute: typeof ChamberSatellitesRouteImport;
       parentRoute: typeof ChamberRouteRoute;
     };
     "/chamber/limbic-memory": {
@@ -655,8 +597,8 @@ interface ChamberRouteRouteChildren {
   ChamberFtsRoute: typeof ChamberFtsRoute;
   ChamberLimbicMemoryRoute: typeof ChamberLimbicMemoryRoute;
   ChamberMcpRoute: typeof ChamberMcpRoute;
-  ChamberSatellitesRoute: typeof ChamberSatellitesRoute;
   ChamberMemoryRoute: typeof ChamberMemoryRoute;
+  ChamberSatellitesRoute: typeof ChamberSatellitesRoute;
   ChamberSelfLayerRoute: typeof ChamberSelfLayerRoute;
   ChamberSemanticMemoryRoute: typeof ChamberSemanticMemoryRoute;
   ChamberSleepRoute: typeof ChamberSleepRoute;
@@ -680,8 +622,8 @@ const ChamberRouteRouteChildren: ChamberRouteRouteChildren = {
   ChamberFtsRoute: ChamberFtsRoute,
   ChamberLimbicMemoryRoute: ChamberLimbicMemoryRoute,
   ChamberMcpRoute: ChamberMcpRoute,
-  ChamberSatellitesRoute: ChamberSatellitesRoute,
   ChamberMemoryRoute: ChamberMemoryRoute,
+  ChamberSatellitesRoute: ChamberSatellitesRoute,
   ChamberSelfLayerRoute: ChamberSelfLayerRoute,
   ChamberSemanticMemoryRoute: ChamberSemanticMemoryRoute,
   ChamberSleepRoute: ChamberSleepRoute,
@@ -691,18 +633,6 @@ const ChamberRouteRouteChildren: ChamberRouteRouteChildren = {
 };
 
 const ChamberRouteRouteWithChildren = ChamberRouteRoute._addFileChildren(ChamberRouteRouteChildren);
-
-interface ParlorRouteRouteChildren {
-  ParlorChatRoute: typeof ParlorChatRoute;
-  ParlorSessionsRoute: typeof ParlorSessionsRoute;
-}
-
-const ParlorRouteRouteChildren: ParlorRouteRouteChildren = {
-  ParlorChatRoute: ParlorChatRoute,
-  ParlorSessionsRoute: ParlorSessionsRoute,
-};
-
-const ParlorRouteRouteWithChildren = ParlorRouteRoute._addFileChildren(ParlorRouteRouteChildren);
 
 interface WorkshopRouteChildren {
   WorkshopPathRoute: typeof WorkshopPathRoute;
@@ -717,7 +647,6 @@ const WorkshopRouteWithChildren = WorkshopRoute._addFileChildren(WorkshopRouteCh
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ChamberRouteRoute: ChamberRouteRouteWithChildren,
-  ParlorRouteRoute: ParlorRouteRouteWithChildren,
   WorkshopRoute: WorkshopRouteWithChildren,
 };
 export const routeTree = rootRouteImport
