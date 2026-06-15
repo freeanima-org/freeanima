@@ -3,6 +3,56 @@
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 新版本节由 [Release Please](https://github.com/googleapis/release-please) 在 Release PR 合并时写入顶部。
 
+## [0.6.0](https://github.com/freeanima-org/freeanima/compare/v0.5.0...v0.6.0) (2026-06-15)
+
+
+### Features
+
+* **i18n:** po4a markdown 管线与 zh_CN PO 全文补译 ([dbf36fa](https://github.com/freeanima-org/freeanima/commit/dbf36faa29741c405bf73f3169ad3baed03bbd79))
+* **memory:** 新增做梦机制 ([3bbaa88](https://github.com/freeanima-org/freeanima/commit/3bbaa889015c3016a6aafe7b7cfee0d89e24ccb4))
+* **memory:** 统一记忆引用为 [[f-id]] 并扩展语义记忆引用规则 ([ba5db65](https://github.com/freeanima-org/freeanima/commit/ba5db655c359083c9cb24ab0fb6d404445095e65))
+* **memory:** 自传概括改为按 significance 分组的提纲式输出 ([526e4cd](https://github.com/freeanima-org/freeanima/commit/526e4cd6af4ae49ea0428839fcda8e2bb36b9a85))
+* **sap:** 结对编程 relay 单 Hub WS 与卫星侧 PTY/工具 ([21ea322](https://github.com/freeanima-org/freeanima/commit/21ea322ceb5dc4321e3300988a4b62c36176f7a4))
+* **sap:** 落地 SAP/1.0 卫星协议与结对编程卫星骨架 ([a28e66e](https://github.com/freeanima-org/freeanima/commit/a28e66e5f133d042ff6094e5ef1d4577a02a9265))
+* **satellite:** 会客厅 Managed 卫星接入 SAP 浏览器直连 ([1b76d33](https://github.com/freeanima-org/freeanima/commit/1b76d3352127f6c2b03c48bfa4ec99a1c4306a81))
+* **satellite:** 声明式 satellites 配置与浏览器零 Hub 直连 ([0af2532](https://github.com/freeanima-org/freeanima/commit/0af2532eddb88020c77063a75cb6d5e1b1fa369e))
+* **satellite:** 结对编程 API 经 SAP 代理并在 Hub WebUI 自动探测 ([59a8a7c](https://github.com/freeanima-org/freeanima/commit/59a8a7c0412922b2f49bf0439e8e70879ac27395))
+* **satellite:** 结对编程 UI 迁出 Hub WebUI 至卫星进程 ([03bc015](https://github.com/freeanima-org/freeanima/commit/03bc0159d98b2c9d4baaf7575507c2563e1d90c2))
+* **sleep:** 优化睡眠页、手动运行记日志并修复做梦查询 ([7f9f9d2](https://github.com/freeanima-org/freeanima/commit/7f9f9d236eabbcfc8edf96e07d7b676525f113d0))
+* **sleep:** 引入 Pipeline Runner 并将睡眠 cron 合并为 sleep-cycle DAG ([4761ca2](https://github.com/freeanima-org/freeanima/commit/4761ca2eec7150ba40533f81ea2a4351343c68c4))
+* **sleep:** 拆分流水线节点历史与 Cron 运行记录 ([2a97561](https://github.com/freeanima-org/freeanima/commit/2a97561a9abeae792c08eef3121c292129ab813e))
+* **webui:** 统一 WebUI 与 error.log 的 CST 时间展示格式 ([069c372](https://github.com/freeanima-org/freeanima/commit/069c372a7d6592c0d3f882d11bb2670bf4011f64))
+
+
+### Bug Fixes
+
+* **acp:** bridge acpSessionUpdatedRef.handler so ACP callbacks fire immediately ([1403926](https://github.com/freeanima-org/freeanima/commit/140392669e66c8fc04d92dcf6b96a9d20e8e5748))
+* **cli:** 修复 tiktoken wasm 补丁并补全 CI 构建前置检测 ([887c888](https://github.com/freeanima-org/freeanima/commit/887c8887b48bc35000682de9444ae7ebb9141cc1))
+* **db-pg:** 修复 CJK OR 查询非法 tsquery 并增加校验 ([51f3ead](https://github.com/freeanima-org/freeanima/commit/51f3ead40f30b9ca779f03f45c035056b7d74b29))
+* **satellite:** Hub ready 后再启托管卫星并统一 SAP transport 重连 ([0b21dc7](https://github.com/freeanima-org/freeanima/commit/0b21dc791633d0b0d71e1c949d83c9d397776122))
+* **site:** 修复 Astro 6 文档页正文为空 ([2ea2098](https://github.com/freeanima-org/freeanima/commit/2ea209878b79c9c11e4471c42feb5fb01c41517e))
+* **webui:** 修复梦境列表刷新时 Date 字段渲染报错 ([9ada9cd](https://github.com/freeanima-org/freeanima/commit/9ada9cd7f55861260552f85f911fbc5583277700))
+* **webui:** 加发送锁防止 Parlor 消息重复发送 ([6b22be5](https://github.com/freeanima-org/freeanima/commit/6b22be5d12aabe2370e0eba24c28baec05d30c14))
+
+
+### Documentation
+
+* **i18n:** 补全 zh_CN 未翻译条目并同步 po4a 产物 ([2a9f745](https://github.com/freeanima-org/freeanima/commit/2a9f745cf2edc145579fbf7041cbc7aa8dcfe6a6))
+* **sap:** 新增 SAP 协议文档目录与中英文翻译 ([000617b](https://github.com/freeanima-org/freeanima/commit/000617b56105dd4a201afdd6640de53c1a48ff95))
+
+
+### Miscellaneous
+
+* **release:** 将 CHANGELOG 排除出 oxfmt 并统一列表符为 * ([5aa4b21](https://github.com/freeanima-org/freeanima/commit/5aa4b21ac4ddab4fa2a0e62cee03b658563d83bb))
+
+
+### Refactoring
+
+* **db-pg:** 清零 db.execute 并统一为 Drizzle ORM 查询 ([d6bad7d](https://github.com/freeanima-org/freeanima/commit/d6bad7dc07667ac770e9ce1a3e0967b991c78e8d))
+* **platform:** 移除 Hub studio runtime 与 satellites systemd unit ([80fb6df](https://github.com/freeanima-org/freeanima/commit/80fb6df1650a628f332df2ffe59eeb46a5a0f0d4))
+* **webui:** 移除 Hub Studio 路由，顶栏改为外链卫星 ([75bd787](https://github.com/freeanima-org/freeanima/commit/75bd787ef68da118ddd4c983c3e292cd890017c5))
+* **webui:** 移除睡眠页浅睡/深睡最新卡片 ([9701383](https://github.com/freeanima-org/freeanima/commit/9701383ecf0b67322c8462d8ae89ea699684d6f7))
+
 ## [0.5.0](https://github.com/freeanima-org/freeanima/compare/v0.4.0...v0.5.0) (2026-06-12)
 
 ### ⚠ BREAKING CHANGES
