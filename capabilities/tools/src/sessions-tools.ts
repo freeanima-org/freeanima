@@ -6,7 +6,11 @@ import {
   type ToolSetRegistry,
 } from "@freeanima/core/tool";
 import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
-import { formatSessionMessageSearchHit } from "@freeanima/core/util";
+import {
+  formatSessionMessageSearchHit,
+  formatFtsToolError,
+  isFtsQueryError,
+} from "@freeanima/core/util";
 
 const FTS_SYNTAX =
   "PG search syntax (to_tsquery simple):\n" +
@@ -67,16 +71,21 @@ export function registerSessionTools(toolSets: ToolSetRegistry): void {
 
             const limit = asInt(args.limit, 10, 1, 50);
             const sessionId = String(args.session ?? "").trim() || undefined;
-            const rows = await ctx.store.searchMessagesFts(query, { sessionId, limit });
-            const hits = rows.map((r) => formatSessionMessageSearchHit(query, r));
+            try {
+              const rows = await ctx.store.searchMessagesFts(query, { sessionId, limit });
+              const hits = rows.map((r) => formatSessionMessageSearchHit(query, r));
 
-            return toolResult({
-              query,
-              hits,
-              summary: hits.length
-                ? `Found ${hits.length} historical conversations`
-                : `No historical conversations matching '${query}'`,
-            });
+              return toolResult({
+                query,
+                hits,
+                summary: hits.length
+                  ? `Found ${hits.length} historical conversations`
+                  : `No historical conversations matching '${query}'`,
+              });
+            } catch (e) {
+              if (isFtsQueryError(e)) return toolError(formatFtsToolError(e));
+              throw e;
+            }
           },
         },
         {

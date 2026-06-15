@@ -10,6 +10,7 @@ import {
   messageDocKey,
   rrfMerge,
   semanticMemoryDocKey,
+  validateFtsQueryInput,
 } from "@freeanima/core/util";
 
 import { getAutobiographicalMemoryStore } from "./autobiographical-port.ts";
@@ -184,6 +185,8 @@ export async function memoryRecallSearch(
   const q = query.trim();
   const limit = Math.max(1, Math.min(20, opts?.limit ?? 10));
   const pool = candidateLimit(limit);
+
+  validateFtsQueryInput(q);
 
   const [semanticRows, sessionRows, limbicRows, autobiographicalRows] = await Promise.all([
     getSemanticMemoryStore().searchFts(q, { limit: pool }),
