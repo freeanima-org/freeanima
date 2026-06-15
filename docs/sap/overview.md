@@ -4,44 +4,43 @@ title: SAP Overview
 
 # SAP Overview
 
-**SAP** (Satellite Application Protocol, version `SAP/1.0`) is the WebSocket JSON protocol between the FreeAnima **Hub** (`anima service`) and **Satellite** processes. Satellites are standalone apps (e.g. pair-programming Studio) that expose their own HTTP UI while delegating agent runtime capabilities to the Hub.
+**SAP** (Satellite Application Protocol, version `SAP/1.0`) is the WebSocket JSON protocol between the FreeAnima **Hub** (`anima service`) and **Satellite** processes. Satellites are standalone apps (Parlor, pair-programming Studio) that expose their own HTTP UI while delegating agent runtime to the Hub.
 
 Schemas and client SDK live in [`packages/sap-contract/`](../../packages/sap-contract/). Hub server implementation: [`platform/src/sap/`](../../platform/src/sap/).
 
 ## Design goals
 
-- **Origin isolation**: the browser talks only to the Satellite HTTP origin; the Hub is reached over a separate WebSocket from the Satellite process.
-- **Centralized runtime**: sessions, message streaming, PTY terminals, and LLM tool execution run on the Hub; Satellites proxy UI and local tools.
-- **Shared contract**: both sides import `@freeanima/sap-contract` for envelopes, RPC types, and `createSapClient` / `runSapTransport`.
+- **One Hub WS per instance**: each satellite instance opens exactly one `/sap/v1` connection to the Hub (multiplex sessions, streams, tools).
+- **Origin isolation**: browsers load Satellite HTTP UI; pair-programming uses a local SAP relay (`/sap/relay/v1`) instead of REST hub-api.
+- **Local execution**: pair-programming workspace, terminal PTY, and registered tools run on the Satellite process.
+- **Shared contract**: both sides import `@freeanima/sap-contract` for envelopes, RPC types, `runSapTransport`, `createSapBrowserClient`, and `createSapRelayBrowserClient`.
 
 ## Topology
 
 ```mermaid
 flowchart LR
-  Browser -->|HTTP| Satellite
-  Satellite -->|WebSocket SAP/1.0| Hub
+  subgraph parlor [Parlor satellite]
+    B1[Browser] -->|SAP WS| Hub
+    P1[Static HTTP] -.-> B1
+  end
+  subgraph ppy [Pair-programming satellite]
+    B2[Browser] -->|relay WS| Relay["/sap/relay/v1"]
+    Relay --> Proc[Process SAP client]
+    Proc -->|唯一 SAP WS| Hub
+    B2 --> Local[Local FS + PTY]
+  end
   Hub --> Runtime[AgentRuntime]
   subgraph hubWebUI [Hub WebUI]
-    Parlor[Parlor chat]
     Chamber[Chamber admin]
   end
-  Browser -.->|optional| hubWebUI
-  subgraph sapContract ["@freeanima/sap-contract"]
-    Protocol[protocol.ts]
-    Frames[frames/*]
-    Client[client.ts]
-  end
-  Satellite -.-> sapContract
-  Hub -.-> sapContract
 ```
 
-| Role      | Default                 | Responsibility                                                           |
-| --------- | ----------------------- | ------------------------------------------------------------------------ |
-| Hub       | `http://127.0.0.1:2658` | Agent runtime, SAP WebSocket server at `/sap/v1`, Parlor + Chamber WebUI |
-| Satellite | e.g. `:4173` / `:4174`  | Own HTTP UI; outbound SAP connection to Hub                              |
-| Browser   | Satellite origin        | Loads Satellite UI; may also open Hub Parlor/Chamber                     |
-
-**Parlor** and **Chamber** are Hub-only WebUI modes. **Studio** apps (pair-programming) run as Satellites with a dedicated UI origin.
+| Role      | Default                 | Responsibility                                   |
+| --------- | ----------------------- | ------------------------------------------------ |
+| Hub       | `http://127.0.0.1:2658` | Agent runtime, SAP WebSocket server at `/sap/v1` |
+| Parlor    | `http://127.0.0.1:4174` | Chat UI; browser-direct SAP (Type A)             |
+| Pair-prog | `http://127.0.0.1:4173` | Studio UI; process gateway + relay (Type B)      |
+| Chamber   | Hub `/chamber/*`        | Memory, config, tools, satellite status          |
 
 See also: [architecture WebUI section](../concepts/architecture.md#webui).
 
@@ -49,7 +48,7 @@ See also: [architecture WebUI section](../concepts/architecture.md#webui).
 
 ```mermaid
 sequenceDiagram
-  participant Sat as Satellite
+  participant Sat as Satellite process
   participant Hub as Hub
   participant Agent as AgentRuntime
 
@@ -70,11 +69,11 @@ sequenceDiagram
   Hub-->>Sat: evt stream.done
 ```
 
-1. Satellite opens `ws://{hub}/sap/v1` and sends `connect`.
+1. Satellite process opens `ws://{hub}/sap/v1` and sends `connect`.
 2. Hub replies `connected` and registers the instance in `SatelliteManager`.
 3. Satellite registers local tools via `tool.register`.
-4. Satellite creates a session; Hub writes `platform_extra.satellite_*` for strict tool routing.
-5. `message.send` returns a `stream_id`; Hub pushes `stream.*` events.
+4. UI traffic (Type B) goes Browser → `/sap/relay/v1` → same process SAP client.
+5. `message.send` returns a `stream_id`; Hub pushes `stream.*` events (fan-out on relay).
 6. When the agent calls a Satellite tool, Hub sends `tool.call`; Satellite replies with `tool.result` or `tool.error`.
 
 ## Document map

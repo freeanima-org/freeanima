@@ -83,12 +83,13 @@ Schema: [`frames/lifecycle.ts`](../../packages/sap-contract/src/frames/lifecycle
 
 ### `connected` payload
 
-| Field                    | Role                                                   |
-| ------------------------ | ------------------------------------------------------ |
-| `protocol`               | `SAP/1.0`                                              |
-| `features_enabled`       | Enabled features                                       |
-| `server_info`            | `anima_version`, `sap_version`, `platform_for_app` map |
-| `heartbeat_interval_sec` | Hub default: 30                                        |
+| Field                         | Role                                                                                       |
+| ----------------------------- | ------------------------------------------------------------------------------------------ |
+| `protocol`                    | `SAP/1.0`                                                                                  |
+| `features_enabled`            | Enabled features                                                                           |
+| `server_info`                 | `anima_version`, `sap_version`, `platform_for_app` map                                     |
+| `server_info.capability_mask` | When `capability_mask` is in `features_requested`: mask preset list (no credential values) |
+| `heartbeat_interval_sec`      | Hub default: 30                                                                            |
 
 ### Heartbeat
 
@@ -99,6 +100,16 @@ Satellite sends `evt { method: "heartbeat" }` on an interval derived from `heart
 ## Reconnect
 
 Satellites should use `runSapTransport` ([`transport.ts`](../../packages/sap-contract/src/transport.ts)) for connect, heartbeat, and exponential backoff reconnect (default 1s → 30s cap). On disconnect, Hub calls `onDisconnect` and unregisters tools for that instance.
+
+## Local SAP relay (Type B satellites)
+
+Pair-programming exposes `ws://{satellite_host}:{port}/sap/relay/v1` for browser UI. The satellite **process** holds the sole Hub `/sap/v1` connection; relay clients send standard `req`/`res`/`evt` frames without a `connect` handshake.
+
+| Event         | Direction           | Meaning                            |
+| ------------- | ------------------- | ---------------------------------- |
+| `relay.ready` | Satellite → browser | Relay attached; safe to send `req` |
+
+Use `createSapRelayClient` / `createSapRelayBrowserClient` from `@freeanima/sap-contract`.
 
 ## RPC errors
 

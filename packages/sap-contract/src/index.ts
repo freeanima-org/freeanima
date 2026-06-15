@@ -140,4 +140,16 @@ export type {
   ParlorSatelliteConfig,
   SapBrowserClient,
   SapBrowserClientOptions,
+  SubscribeCallbacks,
 } from "./browser-client.ts";
+export {
+  createSapRelayClient,
+  resolveSapRelayWsUrl,
+  SAP_RELAY_READY_METHOD,
+} from "./relay-client.ts";
+export type { CreateSapRelayClientOptions, SapRelayClient } from "./relay-client.ts";
+export { createSapRelayBrowserClient } from "./relay-browser-client.ts";
+export type {
+  SapRelayBrowserClient,
+  SapRelayBrowserClientOptions,
+} from "./relay-browser-client.ts";

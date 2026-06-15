@@ -1,9 +1,16 @@
 import { existsSync, statSync } from "node:fs";
 import { join, extname } from "node:path";
+import type { ServerWebSocket } from "bun";
 import { getStudioConfig, buildFileTree, readStudioFile, searchStudio } from "./studio.ts";
 import { connectSap } from "./sap/run.ts";
+import { getSapClient, getSapInstanceId } from "./sap/hub.ts";
 import { corsPreflight, jsonResponse, withCors } from "./http/cors.ts";
-import { handleHubApi } from "./http/hub-api.ts";
+import {
+  handleRelayWsClose,
+  handleRelayWsMessage,
+  handleRelayWsOpen,
+  type RelayWsData,
+} from "./sap/relay.ts";
 import {
   handleTerminalWsClose,
   handleTerminalWsOpen,
@@ -18,6 +25,10 @@ const DIST_DIR = join(import.meta.dir, "..", "dist");
 const HUB_URL = (process.env.FREEANIMA_URL ?? "http://127.0.0.1:2658").replace(/\/$/, "");
 const HTTP_URL = `http://127.0.0.1:${PORT}`;
 
+type ServerWsData =
+  | ({ channel: "relay" } & RelayWsData)
+  | ({ channel: "terminal" } & TerminalWsData);
+
 const MIME: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
@@ -28,26 +39,42 @@ const MIME: Record<string, string> = {
   ".woff2": "font/woff2",
 };
 
-async function route(req: Request, server: Bun.Server<TerminalWsData>): Promise<Response> {
+function hubUrl(): string {
+  return HUB_URL;
+}
+
+async function route(req: Request, server: Bun.Server<ServerWsData>): Promise<Response> {
   const url = new URL(req.url);
 
   if (req.method === "OPTIONS") {
     return corsPreflight();
   }
 
-  if (url.pathname === "/api/studio/terminal/ws") {
-    if (server.upgrade(req, { data: { terminalId: "", cleanups: [] } })) {
+  if (url.pathname === "/sap/relay/v1") {
+    if (server.upgrade(req, { data: { channel: "relay", cleanups: [] } })) {
       return new Response(null, { status: 101 });
     }
     return jsonResponse({ error: "WebSocket upgrade failed" }, 400);
   }
 
+  if (url.pathname === "/api/studio/terminal/ws") {
+    if (server.upgrade(req, { data: { channel: "terminal", terminalId: "", cleanups: [] } })) {
+      return new Response(null, { status: 101 });
+    }
+    return jsonResponse({ error: "WebSocket upgrade failed" }, 400);
+  }
+
+  if (url.pathname === "/config.json" && req.method === "GET") {
+    return jsonResponse({
+      app_id: "pair-programming",
+      instance_id: getSapInstanceId(),
+      relay_ws_url: `${HTTP_URL.replace(/^http/, "ws")}/sap/relay/v1`,
+    });
+  }
+
   if (url.pathname === "/api/meta" && req.method === "GET") {
     return jsonResponse({ app: "pair-programming" });
   }
-
-  const hubApi = await handleHubApi(req, url);
-  if (hubApi) return hubApi;
 
   if (url.pathname === "/health") {
     return jsonResponse({ ok: true, app: "pair-programming" });
@@ -128,20 +155,33 @@ function serveStatic(pathname: string): Response {
   return jsonResponse({ error: "Not Found" }, 404);
 }
 
-const server = Bun.serve<TerminalWsData>({
+const server = Bun.serve<ServerWsData>({
   port: PORT,
   fetch(req, srv) {
     return route(req, srv);
   },
   websocket: {
     open(ws) {
-      void handleTerminalWsOpen(ws);
+      if (ws.data.channel === "terminal") {
+        void handleTerminalWsOpen(ws as ServerWebSocket<TerminalWsData & { channel: "terminal" }>);
+        return;
+      }
+      handleRelayWsOpen(ws as ServerWebSocket<RelayWsData & { channel: "relay" }>);
     },
-    message() {
-      /* terminal input via HTTP write */
+    message(ws, message) {
+      if (ws.data.channel !== "relay") return;
+      void handleRelayWsMessage(
+        ws as ServerWebSocket<RelayWsData & { channel: "relay" }>,
+        String(message),
+        () => getSapClient(hubUrl(), HTTP_URL),
+      );
     },
     close(ws) {
-      handleTerminalWsClose(ws);
+      if (ws.data.channel === "terminal") {
+        handleTerminalWsClose(ws as ServerWebSocket<TerminalWsData & { channel: "terminal" }>);
+        return;
+      }
+      handleRelayWsClose(ws as ServerWebSocket<RelayWsData & { channel: "relay" }>);
     },
   },
 });

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import {
   connectPayloadSchema,
+  connectedPayloadSchema,
   formatSapToolName,
   fridgeListInputSchema,
   mapSapStreamMethodToApi,
@@ -59,6 +60,23 @@ describe("sap-contract envelopes", () => {
     expect(
       formatSapToolName("pair-programming", "550e8400-e29b-41d4-a716-446655440000", "scan_code"),
     ).toBe("sap_pairprogramming_550e8400e29b41d4a716446655440000_scan_code");
+  });
+
+  it("validates connected capability_mask presets shape", () => {
+    const parsed = connectedPayloadSchema.parse({
+      protocol: "SAP/1.0",
+      features_enabled: ["capability_mask"],
+      server_info: {
+        anima_version: "0.5.0",
+        sap_version: "SAP/1.0",
+        platform_for_app: { parlor: "parlor" },
+        capability_mask: {
+          presets: [{ name: "developer", allowed_tools_summary: ["file_read_file"] }],
+        },
+      },
+      heartbeat_interval_sec: 30,
+    });
+    expect(parsed.server_info?.capability_mask?.presets[0]?.name).toBe("developer");
   });
 
   it("maps sap stream events to webui sse shape", () => {

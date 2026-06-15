@@ -53,66 +53,54 @@ Open managed satellite UI at the URL from Chamber (SAP `http_url`), typically:
 - Parlor: `http://127.0.0.1:4174`
 - Pair-programming: `http://127.0.0.1:4173`
 
-## Architecture patterns
+## Satellite access modes
+
+**Rule:** each `app_id + instance_id` has **at most one** Hub WebSocket (`/sap/v1`).
+
+### Type A — Browser-direct (Parlor)
+
+- Browser `createSapBrowserClient` → Hub `/sap/v1` (this is the instance's only Hub WS).
+- Satellite HTTP serves static UI + `/config.json` only.
+- **Limits:** no `tool.register` or local workspace tools; browser must reach Hub on the LAN; multiple tabs share one `instance_id` (last connect wins in Hub today).
+
+### Type B — Process gateway + local relay (pair-programming)
+
+- Satellite **process** holds the sole Hub WS via `runSapTransport`.
+- Browser uses `createSapRelayBrowserClient` → satellite `/sap/relay/v1` (SAP frame pass-through, **not** REST hub-api).
+- Local FS/terminal stay on satellite HTTP/WS; agent tools run in the process via `tool.register`.
 
 ```mermaid
 flowchart TB
-  subgraph browser [Browser]
-    UI[Satellite UI]
+  subgraph parlor [Parlor Type A]
+    B1[Browser] -->|唯一 SAP WS| Hub1[Hub]
+    S1[静态 server] -.->|/config.json| B1
   end
-  subgraph satelliteProcess [Satellite process]
-    HTTP[HTTP server]
-    HubApi[hub-api proxy]
-    SapClient[SAP client runSapTransport]
-    LocalTools[Local tool handlers]
+
+  subgraph ppy [Pair-programming Type B]
+    B2[Browser] -->|relay WS| Relay["/sap/relay/v1"]
+    Relay --> ProcSAP[runSapTransport]
+    ProcSAP -->|唯一 SAP WS| Hub2[Hub]
+    B2 --> LocalFS["/api/studio/*"]
+    B2 --> LocalPTY[本地 terminal WS]
+    ProcSAP --> ToolExec[tool executor]
   end
-  subgraph hub [Hub]
-    SapWs["/sap/v1"]
-    Runtime[AgentRuntime]
-  end
-  UI --> HTTP
-  HTTP --> HubApi
-  HubApi --> SapClient
-  SapClient --> SapWs
-  SapWs --> Runtime
-  SapClient --> LocalTools
 ```
+
+**Deprecated:** HTTP hub-api REST→SAP proxy (removed).
 
 ### Parlor satellite
 
-Browser connects to Hub via SAP WebSocket from the client ([`browser-client.ts`](../../packages/sap-contract/src/browser-client.ts)); static server only serves UI + `/config.json`. No server-side hub-api proxy.
+Browser connects to Hub via SAP WebSocket from the client ([`browser-client.ts`](../../packages/sap-contract/src/browser-client.ts)); static server only serves UI + `/config.json`.
 
 ### Pair-programming satellite
 
-HTTP API forwards to SAP RPC; SSE streams map from SAP `stream.*` events. Terminal WebSocket bridges to SAP `terminal.*`.
-
-```mermaid
-sequenceDiagram
-  participant Browser
-  participant HTTP as Satellite HTTP
-  participant SAP as SapClient
-  participant Hub as Hub
-
-  Browser->>HTTP: POST /api/sessions
-  HTTP->>SAP: request session.create
-  SAP->>Hub: req session.create
-  Hub->>SAP: res session_id
-  SAP->>HTTP: session_id
-  HTTP->>Browser: JSON response
-  Browser->>HTTP: POST /api/messages SSE
-  HTTP->>SAP: request message.send
-  SAP->>Hub: req message.send
-  loop stream events
-    Hub-->>SAP: evt stream.*
-    SAP-->>HTTP: map to SSE
-    HTTP-->>Browser: SSE event
-  end
-```
+Browser connects to [`/sap/relay/v1`](../../satellites/pair-programming/server/sap/relay.ts); the process multiplexes session/stream/tool traffic on one Hub WS. Terminal PTY runs locally ([`terminal-session.ts`](../../satellites/pair-programming/server/terminal-session.ts)).
 
 Reference files:
 
 - [`satellites/pair-programming/server/sap/hub.ts`](../../satellites/pair-programming/server/sap/hub.ts)
-- [`satellites/pair-programming/server/http/hub-api.ts`](../../satellites/pair-programming/server/http/hub-api.ts)
+- [`satellites/pair-programming/server/sap/relay.ts`](../../satellites/pair-programming/server/sap/relay.ts)
+- [`packages/sap-contract/src/relay-browser-client.ts`](../../packages/sap-contract/src/relay-browser-client.ts)
 - [`satellites/pair-programming/server/http/terminal-bridge.ts`](../../satellites/pair-programming/server/http/terminal-bridge.ts)
 
 ## Minimal SAP client
@@ -127,7 +115,7 @@ const transport = runSapTransport({
   connect: {
     app_id: "my-app",
     instance_id: process.env.SATELLITE_INSTANCE_ID ?? crypto.randomUUID(),
-    features_requested: ["server_info"],
+    features_requested: ["server_info", "capability_mask"],
     http_url: `http://127.0.0.1:${process.env.SATELLITE_PORT ?? 4173}`,
   },
   onConnected: async (client) => {
@@ -142,6 +130,8 @@ const transport = runSapTransport({
   },
 });
 ```
+
+Browser UI on Type B satellites uses `createSapRelayBrowserClient()` instead of talking to Hub directly.
 
 Transport handles WebSocket open, `connect` handshake, heartbeat, and reconnect with exponential backoff.
 

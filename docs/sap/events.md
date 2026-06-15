@@ -56,7 +56,7 @@ flowchart LR
     StreamToken["stream.token"]
     StreamDone["stream.done"]
   end
-  subgraph sse [SSE event]
+  subgraph ui [Relay / browser client]
     TokenEvent["token"]
     DoneEvent["done"]
   end
@@ -64,7 +64,7 @@ flowchart LR
   StreamDone --> DoneEvent
 ```
 
-Reference: [`satellites/pair-programming/server/http/hub-api.ts`](../../satellites/pair-programming/server/http/hub-api.ts).
+Type B satellites fan out Hub `stream.*` events over [`/sap/relay/v1`](../../satellites/pair-programming/server/sap/relay.ts); the browser uses `createSapRelayBrowserClient` and `mapSapStreamMethodToApi`.
 
 ## Session events
 

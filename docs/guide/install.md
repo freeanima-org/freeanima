@@ -89,9 +89,9 @@ anima service start --foreground # debug — logs to stdout
 anima service status
 ```
 
-Default bind: `127.0.0.1:2658`. Open parlor chat:
+Default bind: `127.0.0.1:2658`. Open parlor chat (satellite):
 
-**http://127.0.0.1:2658/webui/parlor/chat**
+**http://127.0.0.1:4174**
 
 Schema migrations run automatically on startup when `database.url` is set.
 
@@ -144,8 +144,10 @@ On first start, `docker/entrypoint.sh` copies `docker/config.docker.yaml` to `$F
 ### 3. Access WebUI
 
 ```text
-http://127.0.0.1:2658/webui/parlor/chat
+http://127.0.0.1:4174
 ```
+
+Hub Chamber: `http://127.0.0.1:2658/chamber/dashboard`
 
 (Use `ANIMA_PORT` if you changed the host mapping.)
 

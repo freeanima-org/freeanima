@@ -1,15 +1,16 @@
 import type { ServerWebSocket } from "bun";
-import { getSapClient } from "../sap/hub.ts";
+import {
+  closeTerminalSession,
+  createTerminalSession,
+  getTerminalSession,
+  TerminalSessionError,
+} from "../terminal-session.ts";
 import { getStudioConfig } from "../studio.ts";
 
-type TerminalWsData = {
+export type TerminalWsData = {
   terminalId: string;
   cleanups: Array<() => void>;
 };
-
-function hubUrl(): string {
-  return (process.env.FREEANIMA_URL ?? "http://127.0.0.1:2658").replace(/\/$/, "");
-}
 
 function sendJson(ws: ServerWebSocket<TerminalWsData>, event: Record<string, unknown>): void {
   ws.send(JSON.stringify(event));
@@ -18,37 +19,24 @@ function sendJson(ws: ServerWebSocket<TerminalWsData>, event: Record<string, unk
 export async function handleTerminalWsOpen(ws: ServerWebSocket<TerminalWsData>): Promise<void> {
   const cleanups: Array<() => void> = [];
   try {
-    const client = await getSapClient(hubUrl());
     const cfg = getStudioConfig();
-    const { terminal_id: terminalId } = await client.request("terminal.attach", {
-      cwd: cfg.workspace?.trim() || undefined,
-    });
+    const { sessionId, pty } = createTerminalSession(cfg.workspace?.trim() || undefined);
 
-    ws.data = { terminalId, cleanups };
+    ws.data = { terminalId: sessionId, cleanups, ...(ws.data as object) };
 
     cleanups.push(
-      client.onEvent("terminal.output", (payload) => {
-        const p = payload as { terminal_id?: string; data?: string };
-        if (p.terminal_id !== terminalId || p.data === undefined) return;
-        sendJson(ws, { type: "output", data: p.data });
+      pty.onData((data) => {
+        sendJson(ws, { type: "output", data });
       }),
     );
     cleanups.push(
-      client.onEvent("terminal.exit", (payload) => {
-        const p = payload as { terminal_id?: string; code?: number };
-        if (p.terminal_id !== terminalId) return;
-        sendJson(ws, { type: "exit", code: p.code ?? 0 });
-      }),
-    );
-    cleanups.push(
-      client.onEvent("terminal.error", (payload) => {
-        const p = payload as { terminal_id?: string; message?: string };
-        if (p.terminal_id !== terminalId) return;
-        sendJson(ws, { type: "error", message: p.message ?? "terminal error" });
+      pty.onExit((code) => {
+        sendJson(ws, { type: "exit", code });
+        closeTerminalSession(sessionId);
       }),
     );
 
-    sendJson(ws, { type: "ready", sessionId: terminalId });
+    sendJson(ws, { type: "ready", sessionId });
   } catch (e) {
     sendJson(ws, { type: "error", message: e instanceof Error ? e.message : String(e) });
   }
@@ -59,25 +47,22 @@ export function handleTerminalWsClose(ws: ServerWebSocket<TerminalWsData>): void
   for (const off of data?.cleanups ?? []) off();
   const terminalId = data?.terminalId;
   if (terminalId) {
-    void getSapClient(hubUrl())
-      .then((client) => client.request("terminal.close", { terminal_id: terminalId }))
-      .catch(() => {});
+    closeTerminalSession(terminalId);
   }
 }
 
 export async function terminalWrite(sessionId: string, data: string): Promise<void> {
-  const client = await getSapClient(hubUrl());
-  await client.request("terminal.write", { terminal_id: sessionId, data });
+  const pty = getTerminalSession(sessionId);
+  if (!pty) throw new TerminalSessionError();
+  pty.write(data);
 }
 
 export async function terminalResize(sessionId: string, cols: number, rows: number): Promise<void> {
-  const client = await getSapClient(hubUrl());
-  await client.request("terminal.resize", { terminal_id: sessionId, cols, rows });
+  const pty = getTerminalSession(sessionId);
+  if (!pty) throw new TerminalSessionError();
+  pty.resize(cols, rows);
 }
 
 export async function terminalClose(sessionId: string): Promise<void> {
-  const client = await getSapClient(hubUrl());
-  await client.request("terminal.close", { terminal_id: sessionId });
+  closeTerminalSession(sessionId);
 }
-
-export type { TerminalWsData };

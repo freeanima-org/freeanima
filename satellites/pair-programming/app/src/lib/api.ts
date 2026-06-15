@@ -1,11 +1,22 @@
 import type { StreamApiEvent } from "./types.ts";
 import { m } from "./i18n.ts";
+import { createSapRelayBrowserClient, type SapRelayBrowserClient } from "@freeanima/sap-contract";
+import { STUDIO_PAIR_PLATFORM } from "@/stores/pair-programming.ts";
 
 type SubscribeCallbacks<T> = {
   onData?: (data: T) => void;
   onError?: (err: Error) => void;
   onComplete?: () => void;
 };
+
+let relayClient: SapRelayBrowserClient | null = null;
+
+function sap(): SapRelayBrowserClient {
+  if (!relayClient) {
+    relayClient = createSapRelayBrowserClient();
+  }
+  return relayClient;
+}
 
 async function apiJson<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, init);
@@ -16,18 +27,22 @@ async function apiJson<T>(path: string, init?: RequestInit): Promise<T> {
   return (await res.json()) as T;
 }
 
-function parseSseJsonFrames(buffer: string, onFrame: (json: string) => void): string {
-  const parts = buffer.split("\n\n");
-  const rest = parts.pop() ?? "";
-  for (const part of parts) {
-    if (part.startsWith(":")) continue;
-    const line = part.trim();
-    if (!line.startsWith("data:")) continue;
-    const json = line.slice(5).trim();
-    if (!json) continue;
-    onFrame(json);
-  }
-  return rest;
+function mapSessionList(raw: {
+  sessions: Array<{
+    session_id: string;
+    title?: string;
+    platform?: string;
+    updated_at?: string;
+  }>;
+}) {
+  return {
+    sessions: raw.sessions.map((s) => ({
+      id: s.session_id,
+      title: s.title ?? "",
+      platform: s.platform ?? STUDIO_PAIR_PLATFORM,
+      created: s.updated_at ?? "",
+    })),
+  };
 }
 
 export async function getStudioConfig() {
@@ -51,82 +66,43 @@ export async function searchStudio(query: string) {
 }
 
 export async function listSessions(platform: string) {
-  return apiJson<{ sessions: unknown[] }>(`/api/sessions?platform=${encodeURIComponent(platform)}`);
+  const client = await sap().whenReady();
+  const result = await client.request("session.list", { platform });
+  return mapSessionList(result);
 }
 
 export async function createSession(platform: string) {
-  return apiJson<{ session_id: string }>("/api/sessions", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ platform }),
+  const client = await sap().whenReady();
+  const cfg = await getStudioConfig();
+  const result = await client.request("session.create", {
+    platform,
+    workspace_root: String(cfg.workspace ?? "") || undefined,
+    workspace_gitignore: Boolean(cfg.gitignore),
+    workspace_show_hidden: Boolean(cfg.showHidden),
   });
+  return { session_id: result.session_id };
 }
 
 export async function getSessionMessages(sessionId: string, offset?: number, limit?: number) {
-  const params = new URLSearchParams();
-  if (offset !== undefined) params.set("offset", String(offset));
-  if (limit !== undefined) params.set("limit", String(limit));
-  const qs = params.toString();
-  return apiJson<Record<string, unknown>>(
-    `/api/sessions/${encodeURIComponent(sessionId)}/messages${qs ? `?${qs}` : ""}`,
-  );
+  const client = await sap().whenReady();
+  return client.request("session.messages", {
+    session_id: sessionId,
+    offset: offset ?? 0,
+    limit: limit ?? 500,
+  });
 }
 
 export async function setSessionTitle(sessionId: string, title: string) {
-  return apiJson<{ ok: boolean }>(`/api/sessions/${encodeURIComponent(sessionId)}/title`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ title }),
-  });
+  const client = await sap().whenReady();
+  await client.request("session.patchTitle", { session_id: sessionId, title });
+  return { ok: true as const };
 }
 
 export function subscribeMessageStream(
   input: { sessionId: string; message: string },
   callbacks: SubscribeCallbacks<StreamApiEvent>,
 ): { unsubscribe: () => void } {
-  const controller = new AbortController();
-
-  void (async () => {
-    try {
-      const res = await fetch("/api/messages/stream", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
-        body: JSON.stringify(input),
-        signal: controller.signal,
-      });
-      if (!res.ok) {
-        callbacks.onError?.(new Error(`HTTP ${res.status}`));
-        return;
-      }
-      const reader = res.body?.getReader();
-      if (!reader) {
-        callbacks.onError?.(new Error(m.webui_common_no_response_stream()));
-        return;
-      }
-      const decoder = new TextDecoder();
-      let buffer = "";
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        buffer = parseSseJsonFrames(buffer, (json) => {
-          try {
-            const ev = JSON.parse(json) as StreamApiEvent;
-            if (ev.event === "ping") return;
-            callbacks.onData?.(ev);
-          } catch {
-            /* ignore malformed frame */
-          }
-        });
-      }
-      callbacks.onComplete?.();
-    } catch (e) {
-      if (e instanceof Error && e.name === "AbortError") return;
-      callbacks.onError?.(e instanceof Error ? e : new Error(String(e)));
-    }
-  })();
-
-  return { unsubscribe: () => controller.abort() };
+  return sap().sendMessageStream(input, callbacks);
 }
 
 type TerminalStreamEvent = {
@@ -203,43 +179,7 @@ export function subscribeSessionEvents(
   sessionId: string,
   onUpdate: () => void,
 ): { unsubscribe: () => void } {
-  let closed = false;
-  let controller: AbortController | null = null;
-
-  void (async () => {
-    while (!closed) {
-      controller = new AbortController();
-      try {
-        const res = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/events`, {
-          signal: controller.signal,
-          headers: { Accept: "text/event-stream" },
-        });
-        if (!res.ok) return;
-        const reader = res.body?.getReader();
-        if (!reader) return;
-        const decoder = new TextDecoder();
-        let buffer = "";
-        while (!closed) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-          const parts = buffer.split("\n\n");
-          buffer = parts.pop() ?? "";
-          for (const part of parts) {
-            if (part.includes("event: session.updated")) onUpdate();
-          }
-        }
-      } catch {
-        if (closed) return;
-        await new Promise((r) => setTimeout(r, 2000));
-      }
-    }
-  })();
-
-  return {
-    unsubscribe: () => {
-      closed = true;
-      controller?.abort();
-    },
-  };
+  return sap().subscribeSessionEvents(sessionId, onUpdate);
 }
+
+export { STUDIO_PAIR_PLATFORM };
