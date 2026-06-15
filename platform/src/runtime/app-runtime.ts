@@ -352,6 +352,14 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     return memory.listAutobiographicalMemories(this.runtimeDeps(), args);
   }
 
+  listDreamMemories(args?: Parameters<typeof memory.listDreamMemories>[1]) {
+    return memory.listDreamMemories(this.runtimeDeps(), args);
+  }
+
+  getDreamMemoryByDay(day: string) {
+    return memory.getDreamMemoryByDay(this.runtimeDeps(), day);
+  }
+
   listTasks(args?: Parameters<typeof tasks.listTasks>[1]) {
     return tasks.listTasks(this.runtimeDeps(), args);
   }

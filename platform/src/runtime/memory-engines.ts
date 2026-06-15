@@ -2,6 +2,8 @@ import * as engine from "@freeanima/runtime/loop";
 import { runWithToolContext } from "@freeanima/core/tool";
 import type { SessionMessage } from "@freeanima/core/db/domain";
 import { PROFILE_REFLECT } from "@freeanima/core/provider";
+import { chat } from "@freeanima/core/llm";
+import { DREAM_LLM_TEMPERATURE } from "@freeanima/capabilities-memory/dream/gather-input";
 import { getProfileHopModel } from "@freeanima/core/config";
 import { applyDeepSleepToolResult } from "@freeanima/capabilities-memory";
 import {
@@ -19,6 +21,11 @@ import {
   type AutobiographyEngineInput,
   type AutobiographyEngineResult,
 } from "@freeanima/capabilities-memory/autobiography-port";
+import {
+  registerDreamEngine,
+  type DreamEngineInput,
+  type DreamEngineResult,
+} from "@freeanima/capabilities-memory/dream-engine-port";
 
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
 import {
@@ -188,9 +195,28 @@ async function runAutobiographyTurn(
   return { summary, tool_calls: toolCalls };
 }
 
-/** Register light/deep/autobiography LLM engines (shared runStream template) */
+async function runDreamTurn(
+  deps: FullRuntimeDeps,
+  input: DreamEngineInput,
+): Promise<DreamEngineResult> {
+  const response = await chat(
+    [
+      { role: "system", content: input.systemPrompt },
+      { role: "user", content: input.userMessage },
+    ],
+    {
+      profileId: PROFILE_REFLECT,
+      runtime: deps.engine.llm,
+      requestParams: { temperature: DREAM_LLM_TEMPERATURE },
+    },
+  );
+  return { content: String(response.content ?? "").trim() };
+}
+
+/** Register light/deep/autobiography/dream LLM engines (shared runStream template) */
 export function registerMemoryEngineWires(deps: FullRuntimeDeps): void {
   registerLightSleepEngine((input) => runLightSleepTurn(deps, input));
   registerDeepSleepEngine((input) => runDeepSleepTurn(deps, input));
   registerAutobiographyEngine((input) => runAutobiographyTurn(deps, input));
+  registerDreamEngine((input) => runDreamTurn(deps, input));
 }

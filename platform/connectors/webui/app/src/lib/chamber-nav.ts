@@ -10,6 +10,7 @@ export function chamberNavItems(): { to: string; label: string }[] {
     { to: "/chamber/semantic-memory", label: m.webui_chamber_nav_semantic() },
     { to: "/chamber/fts", label: m.webui_chamber_nav_fts() },
     { to: "/chamber/limbic-memory", label: m.webui_chamber_nav_limbic() },
+    { to: "/chamber/dream", label: m.webui_chamber_nav_dream() },
     { to: "/chamber/autobiographical-memory", label: m.webui_chamber_nav_autobio() },
     { to: "/chamber/self-layer", label: m.webui_chamber_nav_self_layer() },
     { to: "/chamber/system-prompt", label: m.webui_chamber_nav_system_prompt() },

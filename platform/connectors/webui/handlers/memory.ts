@@ -1,10 +1,12 @@
 import {
   autobiographicalMemoryListBodySchema,
+  dreamMemoryListBodySchema,
   limbicMemoryListBodySchema,
   memorySearchBodySchema,
   semanticMemoryListBodySchema,
   semanticMemoryPinBodySchema,
   type AutobiographicalMemoryListBody,
+  type DreamMemoryListBody,
   type LimbicMemoryListBody,
   type MemorySearchBody,
   type SemanticMemoryListBody,
@@ -68,6 +70,18 @@ export async function listAutobiographicalMemories(body: AutobiographicalMemoryL
     significance: parsed.significance,
     source_session: parsed.source_session?.trim() || undefined,
   });
+}
+
+export async function listDreamMemories(body: DreamMemoryListBody) {
+  const parsed = dreamMemoryListBodySchema.parse(body);
+  return webuiCtx().listDreamMemories({
+    offset: parsed.offset,
+    limit: parsed.limit,
+  });
+}
+
+export async function getDreamMemory(day: string) {
+  return webuiCtx().getDreamMemoryByDay(day);
 }
 
 export async function updateSemanticMemoryPinned(body: SemanticMemoryPinBody) {

@@ -19,13 +19,14 @@ Sleep is the digital life's memory consolidation mechanism—analogous to human 
 
 ## Current State
 
-| Mechanism              | Status         | Notes                                         |
-| ---------------------- | -------------- | --------------------------------------------- |
-| Sleep cycle pipeline   | ✅ Implemented | Single cron `builtin-sleep-cycle` @ 02:00     |
-| Light sleep (in-cycle) | ✅ Implemented | Step `light-sleep` in sleep-cycle DAG         |
-| Deep sleep (in-cycle)  | ✅ Implemented | Step `deep-sleep`, depends on light-sleep     |
-| Memory ref sync        | ✅ Implemented | Step `memory-ref-sync`, depends on deep-sleep |
-| Self-layer refresh     | ✅ Implemented | Step `self-layer-refresh`, after light-sleep  |
+| Mechanism              | Status         | Notes                                                          |
+| ---------------------- | -------------- | -------------------------------------------------------------- |
+| Sleep cycle pipeline   | ✅ Implemented | Single cron `builtin-sleep-cycle` @ 02:00                      |
+| Light sleep (in-cycle) | ✅ Implemented | Step `light-sleep` in sleep-cycle DAG                          |
+| Deep sleep (in-cycle)  | ✅ Implemented | Step `deep-sleep`, depends on light-sleep                      |
+| Memory ref sync        | ✅ Implemented | Step `memory-ref-sync`, depends on deep-sleep                  |
+| Self-layer refresh     | ✅ Implemented | Step `self-layer-refresh`, after light-sleep                   |
+| Dream (in-cycle)       | ✅ Implemented | Step `dream`, depends on light-sleep; parallel with deep-sleep |
 
 ## Orchestration
 
@@ -89,7 +90,7 @@ Two memories semantically negate each other and cannot be explained by temporal 
 ## Trigger Mechanism
 
 ```cron
-0 2 * * *  sleep-cycle   # builtin-sleep-cycle: light → deep → self-layer-refresh ∥ memory-ref-sync
+0 2 * * *  sleep-cycle   # builtin-sleep-cycle: light → deep ∥ dream ∥ self-layer-refresh → memory-ref-sync
 ```
 
 DAG (macro layer):
@@ -97,6 +98,7 @@ DAG (macro layer):
 ```
 light-sleep
   ├─► deep-sleep ──► memory-ref-sync (optional step)
+  ├─► dream (optional step)
   └─► self-layer-refresh (optional step)
 ```
 

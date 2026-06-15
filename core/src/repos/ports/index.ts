@@ -68,12 +68,20 @@ export type {
   LimbicMemoryRow,
   LimbicMemoryCreateInput,
   LimbicListOpts,
+  LimbicListBySessionsOpts,
   LimbicMemoryStorePort,
 } from "./limbic-memory.ts";
+export type {
+  DreamEpisodicSnippet,
+  DreamMemoryRow,
+  DreamMemoryCreateInput,
+  DreamMemoryStorePort,
+} from "./dream-memory.ts";
 
 import type { AutobiographicalMemoryStorePort } from "./autobiographical-memory.ts";
 import type { CronJobStorePort } from "./cron.ts";
 import type { CronLogStorePort } from "./cron-log.ts";
+import type { DreamMemoryStorePort } from "./dream-memory.ts";
 import type { LimbicMemoryStorePort } from "./limbic-memory.ts";
 import type { SelfLayerStorePort } from "./self-layer.ts";
 import type { TaskStorePort } from "./task.ts";
@@ -87,6 +95,7 @@ export interface PgRepositories {
   selfLayer: SelfLayerStorePort;
   autobiographicalMemory: AutobiographicalMemoryStorePort;
   limbicMemory: LimbicMemoryStorePort;
+  dreamMemory: DreamMemoryStorePort;
   cron: CronJobStorePort;
   cronLog: CronLogStorePort;
   tasks: TaskStorePort;

@@ -42,6 +42,12 @@ export const autobiographicalMemoryListBodySchema = memoryListPaginationSchema.e
   source_session: z.string().optional(),
 });
 
+export const dreamMemoryListBodySchema = memoryListPaginationSchema;
+
+export const dreamMemoryDayParamsSchema = z.object({
+  day: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+});
+
 export const taskListBodySchema = z.object({
   query: z.string().optional(),
   offset: z.number().int().min(0).optional(),
@@ -99,6 +105,7 @@ export type SemanticMemoryListBody = z.infer<typeof semanticMemoryListBodySchema
 export type SemanticMemoryPinBody = z.infer<typeof semanticMemoryPinBodySchema>;
 export type LimbicMemoryListBody = z.infer<typeof limbicMemoryListBodySchema>;
 export type AutobiographicalMemoryListBody = z.infer<typeof autobiographicalMemoryListBodySchema>;
+export type DreamMemoryListBody = z.infer<typeof dreamMemoryListBodySchema>;
 export type TaskListBody = z.infer<typeof taskListBodySchema>;
 export type StudioConfigPatch = z.infer<typeof studioConfigPatchSchema>;
 export type StudioSearchBody = z.infer<typeof studioSearchBodySchema>;

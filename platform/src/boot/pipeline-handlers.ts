@@ -1,5 +1,6 @@
 import { runLightSleep } from "@freeanima/capabilities-memory/light-sleep/run";
 import { runDeepSleep } from "@freeanima/capabilities-memory/deep-sleep/run";
+import { runDream } from "@freeanima/capabilities-memory/dream/run";
 import { cstDayRange, syncSemanticMemoryReferenceCounts } from "@freeanima/capabilities-memory";
 import {
   invalidateSelfLayerPromptCache,
@@ -8,6 +9,7 @@ import {
 import { getPipelineRunner } from "@freeanima/runtime/pipeline";
 import type { Engine } from "@freeanima/runtime";
 
+import { createDreamFridgePort } from "../dream-fridge-factory.ts";
 import { sleepCycleDefinition, SLEEP_CYCLE_PIPELINE_ID, SLEEP_STEP_IDS } from "./sleep-cycle.ts";
 
 /** 注册睡眠周期 pipeline 定义与各 step handler */
@@ -42,6 +44,21 @@ export function registerSleepPipeline(engine: Engine): void {
       output: result,
       error: result.ok ? undefined : (result.skipped ?? "deep sleep failed"),
     };
+  });
+
+  runner.registerStep(SLEEP_STEP_IDS.dream, async (ctx) => {
+    const selfContent = await loadSelfLayerPrompt();
+    const result = await runDream({
+      day: ctx.day,
+      selfContent,
+      sessionStore: engine.repos.session,
+      dreamStore: engine.repos.dreamMemory,
+      fridge: createDreamFridgePort(),
+    });
+    if (result.skipped) {
+      return { ok: true, skipped: result.skipped, output: result };
+    }
+    return { ok: result.ok, output: result, error: result.ok ? undefined : result.summary };
   });
 
   runner.registerStep(SLEEP_STEP_IDS.selfLayerRefresh, async () => {

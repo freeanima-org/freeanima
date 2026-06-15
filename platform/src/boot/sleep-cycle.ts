@@ -7,6 +7,7 @@ export const SLEEP_CYCLE_PIPELINE_ID = "sleep-cycle";
 export const SLEEP_STEP_IDS = {
   lightSleep: "light-sleep",
   deepSleep: "deep-sleep",
+  dream: "dream",
   memoryRefSync: "memory-ref-sync",
   selfLayerRefresh: "self-layer-refresh",
 } as const;
@@ -26,6 +27,12 @@ export const sleepCycleDefinition: PipelineDefinition = {
       id: SLEEP_STEP_IDS.deepSleep,
       handler: SLEEP_STEP_IDS.deepSleep,
       dependsOn: [SLEEP_STEP_IDS.lightSleep],
+    },
+    {
+      id: SLEEP_STEP_IDS.dream,
+      handler: SLEEP_STEP_IDS.dream,
+      dependsOn: [SLEEP_STEP_IDS.lightSleep],
+      optional: true,
     },
     {
       id: SLEEP_STEP_IDS.selfLayerRefresh,

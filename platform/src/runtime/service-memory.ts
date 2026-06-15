@@ -3,6 +3,7 @@ import { join } from "node:path";
 import type {
   AutobiographicalListOpts,
   AutobiographicalMemoryRow,
+  DreamMemoryRow,
   LimbicListOpts,
   LimbicMemoryRow,
   SemanticFtsHit,
@@ -175,4 +176,24 @@ export async function listAutobiographicalMemories(
     deps.engine.repos.autobiographicalMemory.count(filterOpts),
   ]);
   return { items, total, offset, limit };
+}
+
+export async function listDreamMemories(
+  deps: RuntimeDeps,
+  args: { offset?: number; limit?: number } = {},
+): Promise<MemoryListResult<DreamMemoryRow>> {
+  const { offset, limit } = clampPagination(args.offset, args.limit);
+  const [items, total] = await Promise.all([
+    deps.engine.repos.dreamMemory.list({ offset, limit }),
+    deps.engine.repos.dreamMemory.count(),
+  ]);
+  return { items, total, offset, limit };
+}
+
+export async function getDreamMemoryByDay(deps: RuntimeDeps, day: string) {
+  const dreamDay = day.trim();
+  if (!dreamDay) throw new Error("day is required");
+  const row = await deps.engine.repos.dreamMemory.getByDay(dreamDay);
+  if (!row) throw new Error(`No dream found for ${dreamDay}`);
+  return row;
 }
