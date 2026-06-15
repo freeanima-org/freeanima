@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
 import { MemoryListPagination } from "@/components/chamber/MemoryListPagination.tsx";
 import { listLimbicMemories } from "@/lib/api.ts";
+import { formatDisplayDateTime } from "@/lib/format-datetime.ts";
 import { m } from "@/lib/i18n.ts";
 
 const PAGE_SIZE = 20;
@@ -162,7 +163,7 @@ function LimbicMemoryPage() {
                   {items.map((row) => (
                     <tr key={row.id}>
                       <td className="text-xs whitespace-nowrap">
-                        {String(row.created).slice(0, 19)}
+                        {formatDisplayDateTime(row.created)}
                       </td>
                       <td className="text-xs">{row.kind}</td>
                       <td className="font-mono text-xs max-w-32 truncate">{row.session_id}</td>

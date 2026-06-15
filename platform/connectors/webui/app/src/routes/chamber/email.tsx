@@ -8,6 +8,7 @@ import {
   markEmailRead,
 } from "@/lib/api.ts";
 import { m } from "@/lib/i18n.ts";
+import { formatDisplayDateTime } from "@/lib/format-datetime.ts";
 import { translateApiPayload } from "@/lib/api-errors.ts";
 
 export const Route = createFileRoute("/chamber/email")({
@@ -46,14 +47,6 @@ type Overview = {
   messages: EmailMessage[];
   errors: Record<string, string>;
 };
-
-function formatDate(iso: string) {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  const p = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
-}
 
 function accountLabel(account: EmailAccount) {
   return account.display_name || account.address;
@@ -408,7 +401,7 @@ function EmailPage() {
                             {msg.subject || m.webui_chamber_email_no_subject()}
                           </div>
                           <div className="text-xs text-base-content/50 mt-0.5">
-                            {formatDate(msg.date)}
+                            {formatDisplayDateTime(msg.date)}
                           </div>
                         </div>
                       </div>
@@ -441,7 +434,7 @@ function EmailPage() {
                     </div>
                     <div>
                       <span className="text-base-content/50">{m.webui_chamber_email_date()}</span>
-                      {formatDate(detail.date)}
+                      {formatDisplayDateTime(detail.date)}
                     </div>
                   </div>
                 </div>

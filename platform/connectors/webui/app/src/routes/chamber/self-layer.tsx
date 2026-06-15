@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getSelfBlocks } from "@/lib/api.ts";
+import { formatDisplayDateTime } from "@/lib/format-datetime.ts";
 import { m } from "@/lib/i18n.ts";
 
 export const Route = createFileRoute("/chamber/self-layer")({
@@ -50,7 +51,7 @@ function SelfLayerPage() {
                     {block.updated ? (
                       <span>
                         {m.webui_chamber_self_layer_updated({
-                          time: String(block.updated).slice(0, 19),
+                          time: formatDisplayDateTime(block.updated),
                         })}
                       </span>
                     ) : null}

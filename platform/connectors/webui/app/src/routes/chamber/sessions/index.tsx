@@ -1,22 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { formatDisplayDateTime } from "@/lib/format-datetime.ts";
 import { m } from "@/lib/i18n.ts";
 import { useChamberSessionsStore } from "@/stores/chamber-sessions.ts";
 
 export const Route = createFileRoute("/chamber/sessions/")({
   component: ChamberSessionsPage,
 });
-
-function formatCreated(iso: string) {
-  if (!iso) return "";
-  try {
-    const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) return iso.slice(0, 16);
-    return d.toLocaleString("zh-CN", { hour12: false });
-  } catch {
-    return iso.slice(0, 16);
-  }
-}
 
 function ChamberSessionsPage() {
   const store = useChamberSessionsStore();
@@ -75,7 +65,7 @@ function ChamberSessionsPage() {
                       </span>
                       {s.created ? (
                         <span className="text-[10px] text-base-content/40 shrink-0 hidden md:inline">
-                          {formatCreated(s.created)}
+                          {formatDisplayDateTime(s.created)}
                         </span>
                       ) : null}
                     </Link>

@@ -3,23 +3,13 @@ import { useEffect } from "react";
 import { SessionMessagePanel } from "@/components/chamber/SessionMessagePanel.tsx";
 import { AcpProgressDock } from "@/components/AcpProgressDock.tsx";
 import { useAcpProgressDock } from "@/hooks/useAcpProgressDock.ts";
+import { formatDisplayDateTime } from "@/lib/format-datetime.ts";
 import { m } from "@/lib/i18n.ts";
 import { useChamberSessionsStore } from "@/stores/chamber-sessions.ts";
 
 export const Route = createFileRoute("/chamber/sessions/$sessionId")({
   component: SessionDetailPage,
 });
-
-function formatCreated(iso: string) {
-  if (!iso) return "";
-  try {
-    const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) return iso.slice(0, 16);
-    return d.toLocaleString("zh-CN", { hour12: false });
-  } catch {
-    return iso.slice(0, 16);
-  }
-}
 
 function SessionDetailPage() {
   const { sessionId } = Route.useParams();
@@ -56,7 +46,7 @@ function SessionDetailPage() {
 
       <div className="flex flex-wrap items-center gap-2 mb-4 text-xs text-base-content/60">
         <span className="badge badge-ghost badge-xs">{session?.platform || "legacy"}</span>
-        {session?.created ? <span>{formatCreated(session.created)}</span> : null}
+        {session?.created ? <span>{formatDisplayDateTime(session.created)}</span> : null}
         <span className="font-mono break-all">{sessionId}</span>
       </div>
 

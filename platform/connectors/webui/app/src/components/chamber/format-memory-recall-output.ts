@@ -1,3 +1,4 @@
+import { formatDisplayDateTime } from "@/lib/format-datetime.ts";
 import { m } from "@/lib/i18n.ts";
 import { memoryTypeLabel } from "@/lib/webui-status.ts";
 import type { MemoryRecallHit, MemoryRecallResult } from "./memory-recall-types.ts";
@@ -9,7 +10,7 @@ function formatSemanticLines(hit: MemoryRecallHit): string[] {
   }
   if (hit.observed_at || hit.occurred_at) {
     const parts: string[] = [];
-    if (hit.observed_at) parts.push(`observed=${String(hit.observed_at).slice(0, 19)}`);
+    if (hit.observed_at) parts.push(`observed=${formatDisplayDateTime(hit.observed_at)}`);
     if (hit.occurred_at) parts.push(`occurred=${hit.occurred_at}`);
     lines.push(`  ${parts.join(" ")}`);
   }
@@ -17,7 +18,8 @@ function formatSemanticLines(hit: MemoryRecallHit): string[] {
 }
 
 function formatSessionLines(hit: MemoryRecallHit): string[] {
-  return [`  ${hit.session_id} / ${hit.message_id} ${hit.role} @ ${hit.timestamp}: ${hit.snippet}`];
+  const ts = hit.timestamp ? formatDisplayDateTime(hit.timestamp) : "—";
+  return [`  ${hit.session_id} / ${hit.message_id} ${hit.role} @ ${ts}: ${hit.snippet}`];
 }
 
 function formatLimbicLines(hit: MemoryRecallHit): string[] {

@@ -15,13 +15,13 @@ function resolveLogLevel(): LogLevel {
   return "info";
 }
 
-/** Create default service Logger: stderr pretty + ~/.anima/error.log (one JSON per line) */
+/** Create default service Logger: stderr pretty + ~/.anima/error.log (pretty text lines) */
 export function createServiceLogger(options?: { level?: LogLevel }): Logger {
   return createLogger({
     level: options?.level ?? resolveLogLevel(),
     sinks: [
       createConsoleSink({ format: "pretty" }),
-      createFileSink({ path: PATHS.errorLog, format: "json" }),
+      createFileSink({ path: PATHS.errorLog, format: "pretty" }),
     ],
   });
 }

@@ -1,18 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { formatSessionIdDateTime } from "@/lib/format-datetime.ts";
 import { m } from "@/lib/i18n.ts";
 import { useSessionsStore } from "@/stores/sessions.ts";
 
 export const Route = createFileRoute("/parlor/sessions")({
   component: SessionsPage,
 });
-
-function formatTime(id: string) {
-  const p = id.split("_");
-  if (p.length >= 2) {
-    return `${p[0].slice(0, 4)}-${p[0].slice(4, 6)}-${p[0].slice(6)} ${p[1].slice(0, 2)}:${p[1].slice(2, 4)}:${p[1].slice(4, 6)}`;
-  }
-  return id;
-}
 
 function SessionsPage() {
   const sessions = useSessionsStore((s) => s.sessions);
@@ -36,7 +29,7 @@ function SessionsPage() {
               <tr key={s.id}>
                 <td className="font-medium">{s.title || m.webui_common_no_title()}</td>
                 <td className="font-mono text-xs">{s.id}</td>
-                <td>{formatTime(s.id)}</td>
+                <td>{formatSessionIdDateTime(s.id, { seconds: true })}</td>
                 <td>
                   <button
                     type="button"

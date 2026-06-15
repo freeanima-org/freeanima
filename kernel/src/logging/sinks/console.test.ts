@@ -18,7 +18,7 @@ describe("createConsoleSink", () => {
     sink.emit(record);
     expect(lines).toHaveLength(1);
     const line = lines[0] ?? "";
-    expect(line).toContain("2026-06-03T00:00:00.000Z");
+    expect(line).toContain("2026/06/03 08:00:00");
     expect(line).toContain("ERROR");
     expect(line).toContain("[gateway.discord]");
     expect(line).toContain("login failed");

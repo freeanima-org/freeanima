@@ -2,6 +2,7 @@ import { createFileRoute, Outlet, useNavigate, useSearch } from "@tanstack/react
 import type { SessionListItem } from "@freeanima/platform/connectors/webui/api";
 import { useEffect, useRef, useState } from "react";
 import { ResponsiveSidebarLayout } from "@/components/ResponsiveSidebarLayout.tsx";
+import { formatSessionIdDateTime } from "@/lib/format-datetime.ts";
 import { m } from "@/lib/i18n.ts";
 import { useSessionsStore } from "@/stores/sessions.ts";
 
@@ -13,11 +14,7 @@ function sessionLabel(item: SessionListItem) {
   const id = item.id;
   const title = item.title || "";
   if (title) return title;
-  const p = id.split("_");
-  if (p.length >= 2) {
-    return `${p[0].slice(0, 4)}-${p[0].slice(4, 6)}-${p[0].slice(6)} ${p[1].slice(0, 2)}:${p[1].slice(2, 4)}`;
-  }
-  return id;
+  return formatSessionIdDateTime(id);
 }
 
 function ParlorLayout() {
