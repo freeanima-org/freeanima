@@ -26,6 +26,11 @@ export {
 export type { AcpControlResult, AcpManagerPort, AcpStatusResponse } from "./ports/acp-manager.ts";
 export type { Mask, MaskRegistryPort, CredentialPermission } from "./ports/mask-registry.ts";
 export type { McpControlResult, McpManagerPort, McpStatusResponse } from "./ports/mcp-manager.ts";
+export type {
+  SatelliteInstanceStatus,
+  SatelliteManagerPort,
+  SatellitesStatusResponse,
+} from "./ports/satellite-manager.ts";
 export type { ServiceEnginePort } from "./ports/service-engine.ts";
 export {
   onSessionCloseBeforeNew,

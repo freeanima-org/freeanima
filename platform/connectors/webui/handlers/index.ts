@@ -33,6 +33,7 @@ export {
 export { getPromptDebug } from "./prompt.ts";
 export { listSelfBlocks } from "./self.ts";
 export { getMcpStatus, mcpStartAll, mcpStopAll, mcpStartServer, mcpStopServer } from "./mcp.ts";
+export { getSatellitesStatus } from "./satellites.ts";
 export { getAcpStatus, acpStartAll, acpStopAll, acpStartAgent, acpStopAgent } from "./acp.ts";
 export {
   studioGetConfig,

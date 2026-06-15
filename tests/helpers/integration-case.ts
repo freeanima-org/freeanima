@@ -55,6 +55,7 @@ export function wireIntegrationRuntimeContext(pg: PgTestContext): void {
     conversation,
     masks,
     mcp: null,
+    satellite: null,
     acp: getAcpManager(),
     host: "127.0.0.1",
     port: 2658,

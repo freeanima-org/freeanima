@@ -1,0 +1,14 @@
+{
+  "name": "@freeanima/satellite-parlor",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun dev.ts"
+  },
+  "dependencies": {
+    "@freeanima/sap-contract": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:"
+  }
+}

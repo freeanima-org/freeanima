@@ -3,6 +3,8 @@ import { createApiApp, WEBUI_BASE_PATH } from "./elysia/app.ts";
 import { bindWebuiApiLogging } from "./api-logging.ts";
 import { bindWebuiRuntimeContext, webuiCtx } from "./handlers/runtime.ts";
 import { broadcastWsReconnect, shutdownWebui } from "./elysia/shutdown.ts";
+import { getSapServerDeps } from "@freeanima/platform/sap/runtime-context";
+import { createSapBunHandlers } from "@freeanima/platform/sap/bun-route";
 import {
   ensureWebuiDevCacheDir,
   ensureWebuiProductionCacheDir,
@@ -87,12 +89,26 @@ export async function startWebuiHttpServer(
     ? await ensureWebuiDevCacheDir()
     : await ensureWebuiProductionCacheDir();
   const apiApp = createApiApp().compile();
+  const sapDeps = getSapServerDeps();
+  const sapHandlers = sapDeps ? createSapBunHandlers(sapDeps) : null;
 
   const server = Bun.serve({
     hostname: host,
     port,
     development: false,
     routes: buildRoutes(apiApp, cacheDir),
+    fetch(req, bunServer) {
+      if (sapHandlers) {
+        const sapRes = sapHandlers.fetch(req, bunServer as never);
+        if (sapRes !== undefined) return sapRes;
+      }
+      return new Response("Not Found", { status: 404 });
+    },
+    websocket: sapHandlers?.websocket ?? {
+      open() {},
+      message() {},
+      close() {},
+    },
   });
 
   if (!server.port) {

@@ -43,6 +43,7 @@ function wireTestRuntime() {
     engine: testEngine,
     conversation,
     mcp: null,
+    satellite: null,
     acp: getAcpManager(),
     masks: new MaskRegistry(),
     host: "127.0.0.1",

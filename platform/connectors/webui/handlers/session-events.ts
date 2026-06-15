@@ -1,3 +1,4 @@
+import { bridgeSessionUpdates } from "@freeanima/platform/sap/stream-bridge";
 import { webuiCtx } from "./runtime.ts";
 
 export async function fetchSessionAcpDock(sessionId: string) {
@@ -10,25 +11,16 @@ export async function* iterateSessionEvents(
 ): AsyncGenerator<{ event: string; data: string }> {
   const ctx = webuiCtx();
 
-  let pending: (() => void) | null = null;
-  const wake = (): void => {
-    pending?.();
-    pending = null;
-  };
-
-  const unwatch = ctx.watchSession(sessionId, wake);
-
-  try {
-    yield { event: "ready", data: JSON.stringify({ session_id: sessionId }) };
-    while (!signal.aborted) {
-      await new Promise<void>((resolve) => {
-        pending = resolve;
-      });
-      if (signal.aborted) break;
-      yield { event: "session_updated", data: JSON.stringify({ session_id: sessionId }) };
-    }
-  } finally {
-    unwatch();
-    pending = null;
+  yield { event: "ready", data: JSON.stringify({ session_id: sessionId }) };
+  for await (const mapped of bridgeSessionUpdates(
+    sessionId,
+    (cb) => ctx.watchSession(sessionId, cb),
+    signal,
+  )) {
+    if (signal.aborted) break;
+    yield {
+      event: mapped.method === "session.updated" ? "session_updated" : mapped.method,
+      data: JSON.stringify(mapped.payload),
+    };
   }
 }

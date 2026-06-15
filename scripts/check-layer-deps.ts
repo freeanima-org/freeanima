@@ -14,13 +14,17 @@ const IMPORT_RE = /from\s+["']@freeanima\/([^"']+)["']/g;
 
 const LAYER_DIRS = [
   "kernel",
+  "packages",
   "core",
   "runtime",
   "capabilities",
   "platform",
+  "satellites",
   "cli",
   "tests",
 ] as const;
+
+const SATELLITE_ALLOWED = new Set(["sap-contract", "kernel", "kernel-logging"]);
 
 type Layer = (typeof LAYER_DIRS)[number] | null;
 
@@ -49,9 +53,27 @@ function isExempt(relPath: string): boolean {
   return false;
 }
 
-function isAllowed(layer: Layer, pkg: string, _relPath: string): boolean {
+function isSatelliteAllowed(pkg: string): boolean {
+  const root = workspacePkgName(pkg);
+  if (SATELLITE_ALLOWED.has(root)) return true;
+  if (root.startsWith("kernel-")) return true;
+  return false;
+}
+
+function isAllowed(layer: Layer, pkg: string, relPath: string): boolean {
   if (!layer) return true;
   const root = workspacePkgName(pkg);
+
+  if (layer === "satellites") {
+    return isSatelliteAllowed(pkg);
+  }
+
+  if (layer === "packages") {
+    if (relPath.startsWith("packages/sap-contract")) {
+      return root === "kernel" || root.startsWith("kernel-") || root === "sap-contract";
+    }
+    return false;
+  }
 
   switch (layer) {
     case "kernel":
@@ -66,6 +88,7 @@ function isAllowed(layer: Layer, pkg: string, _relPath: string): boolean {
       );
     case "capabilities": {
       if (root === "runtime" || root === "platform") return false;
+      if (root === "sap-contract") return true;
       if (root.startsWith("capabilities-")) return true;
       return root.startsWith("kernel-") || root === "kernel" || root === "core";
     }
@@ -87,6 +110,12 @@ function capabilitiesCrossViolation(relPath: string, pkg: string): string | null
   const importSlug = root.slice("capabilities-".length);
   if (importSlug === srcPkg) return null;
   return `capabilities/${srcPkg} must not depend on @freeanima/${root}`;
+}
+
+function satelliteViolation(relPath: string, pkg: string): string | null {
+  if (layerOf(relPath) !== "satellites") return null;
+  if (isSatelliteAllowed(pkg)) return null;
+  return `satellites/* must not depend on @freeanima/${workspacePkgName(pkg)} (allowed: sap-contract + generic deps)`;
 }
 
 function reasonFor(layer: Layer, pkg: string): string {
@@ -130,6 +159,11 @@ function scanImports(): Violation[] {
           violations.push({ file: rel, line: i + 1, pkg, reason: capCross });
           continue;
         }
+        const satCross = satelliteViolation(rel, pkg);
+        if (satCross) {
+          violations.push({ file: rel, line: i + 1, pkg, reason: satCross });
+          continue;
+        }
         if (!isAllowed(layer, pkg, rel)) {
           violations.push({ file: rel, line: i + 1, pkg, reason: reasonFor(layer, pkg) });
         }
@@ -167,6 +201,11 @@ function scanPackageJson(): Violation[] {
           violations.push({ file: fakeLine, line: 0, pkg: fakePkg, reason: capCross });
           continue;
         }
+        const satCross = satelliteViolation(fakeLine, fakePkg);
+        if (satCross) {
+          violations.push({ file: fakeLine, line: 0, pkg: fakePkg, reason: satCross });
+          continue;
+        }
         if (!isAllowed(layerOf(relDir), fakePkg, join(relDir, "src/index.ts"))) {
           violations.push({
             file: fakeLine,
@@ -176,9 +215,34 @@ function scanPackageJson(): Violation[] {
           });
         }
       }
-      if (dir === "cli" || dir === "tests") break;
+      if (dir === "cli" || dir === "tests" || dir === "kernel") break;
     }
   }
+
+  if (existsSync(join(ROOT, "satellites"))) {
+    for (const ent of readdirSync(join(ROOT, "satellites"), { withFileTypes: true })) {
+      if (!ent.isDirectory()) continue;
+      const pjPath = join(ROOT, "satellites", ent.name, "package.json");
+      if (!existsSync(pjPath)) continue;
+      const manifest = JSON.parse(readFileSync(pjPath, "utf-8")) as {
+        dependencies?: Record<string, string>;
+      };
+      for (const dep of Object.keys(manifest.dependencies ?? {})) {
+        if (!dep.startsWith("@freeanima/")) continue;
+        const fakePkg = dep.replace("@freeanima/", "");
+        const satCross = satelliteViolation(`satellites/${ent.name}/package.json`, fakePkg);
+        if (satCross) {
+          violations.push({
+            file: `satellites/${ent.name}/package.json`,
+            line: 0,
+            pkg: fakePkg,
+            reason: satCross,
+          });
+        }
+      }
+    }
+  }
+
   return violations;
 }
 

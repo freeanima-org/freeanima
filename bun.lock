@@ -73,6 +73,18 @@
         "@types/bun": "catalog:",
       },
     },
+    "capabilities/satellite": {
+      "name": "@freeanima/capabilities-satellite",
+      "dependencies": {
+        "@freeanima/core": "workspace:*",
+        "@freeanima/sap-contract": "workspace:*",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@freeanima/platform": "workspace:*",
+        "@types/bun": "catalog:",
+      },
+    },
     "capabilities/tasks": {
       "name": "@freeanima/capabilities-tasks",
       "dependencies": {
@@ -131,6 +143,15 @@
         "@types/bun": "catalog:",
       },
     },
+    "packages/sap-contract": {
+      "name": "@freeanima/sap-contract",
+      "dependencies": {
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
     "platform": {
       "name": "@freeanima/platform",
       "dependencies": {
@@ -141,11 +162,13 @@
         "@freeanima/capabilities-llm-openai": "workspace:*",
         "@freeanima/capabilities-mcp": "workspace:*",
         "@freeanima/capabilities-memory": "workspace:*",
+        "@freeanima/capabilities-satellite": "workspace:*",
         "@freeanima/capabilities-tasks": "workspace:*",
         "@freeanima/capabilities-tools": "workspace:*",
         "@freeanima/core": "workspace:*",
         "@freeanima/kernel": "workspace:*",
         "@freeanima/runtime": "workspace:*",
+        "@freeanima/sap-contract": "workspace:*",
         "@node-rs/jieba": "^2.0.1",
         "@tanstack/react-router": "^1.170.11",
         "@xterm/addon-fit": "^0.11.0",
@@ -185,6 +208,25 @@
         "@types/bun": "catalog:",
       },
     },
+    "satellites/pair-programming": {
+      "name": "@freeanima/satellite-pair-programming",
+      "dependencies": {
+        "@freeanima/sap-contract": "workspace:*",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
+    "satellites/parlor": {
+      "name": "@freeanima/satellite-parlor",
+      "dependencies": {
+        "@freeanima/sap-contract": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+      },
+    },
     "site": {
       "name": "@freeanima/site",
       "dependencies": {
@@ -219,11 +261,13 @@
         "@freeanima/capabilities-identity": "workspace:*",
         "@freeanima/capabilities-llm-openai": "workspace:*",
         "@freeanima/capabilities-memory": "workspace:*",
+        "@freeanima/capabilities-satellite": "workspace:*",
         "@freeanima/capabilities-tasks": "workspace:*",
         "@freeanima/capabilities-tools": "workspace:*",
         "@freeanima/kernel": "workspace:*",
         "@freeanima/platform": "workspace:*",
         "@freeanima/runtime": "workspace:*",
+        "@freeanima/sap-contract": "workspace:*",
         "@types/node": "catalog:",
         "drizzle-orm": "catalog:",
       },
@@ -449,6 +493,8 @@
 
     "@freeanima/capabilities-memory": ["@freeanima/capabilities-memory@workspace:capabilities/memory"],
 
+    "@freeanima/capabilities-satellite": ["@freeanima/capabilities-satellite@workspace:capabilities/satellite"],
+
     "@freeanima/capabilities-tasks": ["@freeanima/capabilities-tasks@workspace:capabilities/tasks"],
 
     "@freeanima/capabilities-tools": ["@freeanima/capabilities-tools@workspace:capabilities/tools"],
@@ -464,6 +510,12 @@
     "@freeanima/platform": ["@freeanima/platform@workspace:platform"],
 
     "@freeanima/runtime": ["@freeanima/runtime@workspace:runtime"],
+
+    "@freeanima/sap-contract": ["@freeanima/sap-contract@workspace:packages/sap-contract"],
+
+    "@freeanima/satellite-pair-programming": ["@freeanima/satellite-pair-programming@workspace:satellites/pair-programming"],
+
+    "@freeanima/satellite-parlor": ["@freeanima/satellite-parlor@workspace:satellites/parlor"],
 
     "@freeanima/site": ["@freeanima/site@workspace:site"],
 

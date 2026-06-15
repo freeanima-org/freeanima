@@ -516,6 +516,10 @@ export async function getMcpStatus() {
   return unwrap(apiClient.api.mcp.status.get());
 }
 
+export async function getSatellitesStatus() {
+  return unwrap(apiClient.api.satellites.status.get());
+}
+
 export async function startMcp(name: string) {
   return unwrap(apiClient.api.mcp({ name }).start.post());
 }

@@ -31,7 +31,9 @@
     "./connectors/cron/*": "./connectors/cron/*.ts",
     "./connectors/email": "./connectors/email/index.ts",
     "./connectors/redis": "./connectors/redis/index.ts",
-    "./connectors/eventbus-redis": "./connectors/eventbus-redis/index.ts"
+    "./connectors/eventbus-redis": "./connectors/eventbus-redis/index.ts",
+    "./sap": "./src/sap/index.ts",
+    "./sap/*": "./src/sap/*.ts"
   },
   "dependencies": {
     "@elysiajs/eden": "^1.4.9",
@@ -41,8 +43,10 @@
     "@freeanima/capabilities-llm-openai": "workspace:*",
     "@freeanima/capabilities-mcp": "workspace:*",
     "@freeanima/capabilities-memory": "workspace:*",
+    "@freeanima/capabilities-satellite": "workspace:*",
     "@freeanima/capabilities-tasks": "workspace:*",
     "@freeanima/capabilities-tools": "workspace:*",
+    "@freeanima/sap-contract": "workspace:*",
     "@freeanima/core": "workspace:*",
     "@freeanima/kernel": "workspace:*",
     "@freeanima/runtime": "workspace:*",
