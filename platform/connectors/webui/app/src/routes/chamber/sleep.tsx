@@ -4,7 +4,7 @@ import {
   getDeepSleepRounds,
   getSleepPipelineStatus,
   getSleepSummary,
-  listSleepRuns,
+  listPipelineStepRuns,
   startSleepCycle,
   startSleepPipelineStep,
 } from "@/lib/api.ts";
@@ -13,15 +13,20 @@ import { m } from "@/lib/i18n.ts";
 
 type DateField = string | Date | null | undefined;
 
-type CronLogRow = {
+type PipelineRunRow = {
   id: number;
-  job_id: string;
-  run_count: number;
-  ok: boolean;
+  pipeline_id: string;
+  run_id: string;
+  step_id: string;
+  attempt: number;
+  day: string;
+  trigger: string;
+  status: string;
+  started_at: DateField;
   finished_at: DateField;
   output: Record<string, unknown> | null;
-  output_text: string | null;
   error: string | null;
+  skipped_reason: string | null;
 };
 
 type SleepSummaryView = {
@@ -53,14 +58,12 @@ export const Route = createFileRoute("/chamber/sleep")({
   loader: async () => {
     const [summary, runs] = await Promise.all([
       getSleepSummary().catch(() => null),
-      listSleepRuns({ limit: 50 }).catch(() => ({ items: [] })),
+      listPipelineStepRuns({ limit: 50 }).catch(() => ({ items: [] })),
     ]);
-    return { summary, runs: (runs as { items?: CronLogRow[] }).items ?? [] };
+    return { summary, runs: (runs as { items?: PipelineRunRow[] }).items ?? [] };
   },
   component: SleepPage,
 });
-
-const SLEEP_STEP_JOB_PREFIX = "sleep-step:";
 
 function stepLabel(stepId: string): string {
   switch (stepId) {
@@ -79,15 +82,17 @@ function stepLabel(stepId: string): string {
   }
 }
 
-function jobLabel(id: string): string {
-  if (id === "builtin-sleep-cycle") return m.webui_chamber_sleep_job_cycle();
-  if (id === "builtin-light-sleep") return m.webui_chamber_sleep_light();
-  if (id === "builtin-deep-sleep") return m.webui_chamber_sleep_deep();
-  if (id.startsWith(SLEEP_STEP_JOB_PREFIX)) {
-    const stepId = id.slice(SLEEP_STEP_JOB_PREFIX.length);
-    return m.webui_chamber_sleep_job_step_manual({ step: stepLabel(stepId) });
+function triggerLabel(trigger: string): string {
+  switch (trigger) {
+    case "scheduled":
+      return m.webui_chamber_sleep_trigger_scheduled();
+    case "manual_cycle":
+      return m.webui_chamber_sleep_trigger_manual_cycle();
+    case "manual_step":
+      return m.webui_chamber_sleep_trigger_manual_step();
+    default:
+      return trigger;
   }
-  return id;
 }
 
 function stepStatusBadgeClass(status: string | undefined): string {
@@ -102,6 +107,19 @@ function stepStatusBadgeClass(status: string | undefined): string {
       return "badge-warning";
     default:
       return "badge-ghost";
+  }
+}
+
+function pipelineStatusLabel(status: string): string {
+  switch (status) {
+    case "completed":
+      return m.webui_common_success();
+    case "failed":
+      return m.webui_common_failed();
+    case "skipped":
+      return status;
+    default:
+      return status;
   }
 }
 
@@ -122,33 +140,18 @@ type PipelineStatus = {
   } | null;
 };
 
-function outputDay(row: CronLogRow): string {
-  const day = row.output?.day;
-  if (typeof day === "string") return formatDisplayDate(day);
-  if (day instanceof Date) return formatDisplayDate(day);
-  return "—";
-}
-
-function outputToolCalls(row: CronLogRow): string {
-  if (!row.ok || !row.output) return "—";
-  const total = row.output.total_tool_calls;
-  const toolCalls = row.output.tool_calls;
+function outputToolCalls(output: Record<string, unknown> | null): string {
+  if (!output) return "—";
+  const total = output.total_tool_calls;
+  const toolCalls = output.tool_calls;
   const n = typeof total === "number" ? total : typeof toolCalls === "number" ? toolCalls : null;
   return n != null ? String(n) : "—";
-}
-
-function isDeepSleepRelatedJob(jobId: string): boolean {
-  return (
-    jobId === "builtin-deep-sleep" ||
-    jobId === "builtin-sleep-cycle" ||
-    jobId === `${SLEEP_STEP_JOB_PREFIX}deep-sleep`
-  );
 }
 
 function SleepPage() {
   const initial = Route.useLoaderData() as {
     summary: SleepSummaryView | null;
-    runs: CronLogRow[];
+    runs: PipelineRunRow[];
   };
 
   const [summary, setSummary] = useState<SleepSummaryView | null>(initial.summary);
@@ -169,8 +172,8 @@ function SleepPage() {
     setLoading(true);
     setError("");
     try {
-      const data = await listSleepRuns({ limit: 50 });
-      setRuns((data as { items?: CronLogRow[] }).items ?? []);
+      const data = await listPipelineStepRuns({ limit: 50 });
+      setRuns((data as { items?: PipelineRunRow[] }).items ?? []);
     } catch (e) {
       setError(
         m.webui_common_load_failed({
@@ -286,16 +289,15 @@ function SleepPage() {
     }
   }, []);
 
-  const toggleExpand = (row: CronLogRow) => {
+  const toggleExpand = (row: PipelineRunRow) => {
     if (expandedId === row.id) {
       setExpandedId(null);
       setRounds([]);
       return;
     }
     setExpandedId(row.id);
-    const day = outputDay(row);
-    if (day !== "—" && row.ok && isDeepSleepRelatedJob(row.job_id)) {
-      void loadRounds(day);
+    if (row.step_id === "deep-sleep" && row.status === "completed" && row.day) {
+      void loadRounds(row.day);
     } else {
       setRounds([]);
     }
@@ -431,7 +433,7 @@ function SleepPage() {
       </div>
 
       <div className="flex items-center gap-2 mb-3">
-        <h3 className="font-semibold flex-1">{m.webui_chamber_sleep_history_title()}</h3>
+        <h3 className="font-semibold flex-1">{m.webui_chamber_sleep_pipeline_history_title()}</h3>
         <button
           type="button"
           className="btn btn-sm btn-ghost"
@@ -448,9 +450,11 @@ function SleepPage() {
           <thead>
             <tr>
               <th>{m.webui_common_time()}</th>
-              <th>{m.webui_common_task()}</th>
+              <th>{m.webui_chamber_sleep_cycle_step()}</th>
+              <th>{m.webui_chamber_sleep_trigger()}</th>
               <th>{m.webui_common_processing_day()}</th>
               <th>{m.webui_common_status()}</th>
+              <th>{m.webui_chamber_sleep_attempt()}</th>
               <th>{m.webui_common_tools()}</th>
               <th />
             </tr>
@@ -458,12 +462,18 @@ function SleepPage() {
           <tbody>
             {runs.map((row) => (
               <Fragment key={row.id}>
-                <tr className={row.ok ? "" : "bg-error/10"}>
+                <tr className={row.status === "failed" ? "bg-error/10" : ""}>
                   <td className="whitespace-nowrap">{formatDisplayDateTime(row.finished_at)}</td>
-                  <td>{jobLabel(row.job_id)}</td>
-                  <td>{outputDay(row)}</td>
-                  <td>{row.ok ? m.webui_common_success() : m.webui_common_failed()}</td>
-                  <td>{outputToolCalls(row)}</td>
+                  <td>{stepLabel(row.step_id)}</td>
+                  <td>{triggerLabel(row.trigger)}</td>
+                  <td>{formatDisplayDate(row.day)}</td>
+                  <td>
+                    <span className={`badge badge-sm ${stepStatusBadgeClass(row.status)}`}>
+                      {pipelineStatusLabel(row.status)}
+                    </span>
+                  </td>
+                  <td className="font-mono text-xs">{row.attempt}</td>
+                  <td>{outputToolCalls(row.output)}</td>
                   <td>
                     <button type="button" className="btn btn-xs" onClick={() => toggleExpand(row)}>
                       {expandedId === row.id ? m.webui_common_collapse() : m.webui_common_details()}
@@ -472,23 +482,21 @@ function SleepPage() {
                 </tr>
                 {expandedId === row.id && (
                   <tr>
-                    <td colSpan={6} className="bg-base-200">
-                      {!row.ok && row.error && (
+                    <td colSpan={8} className="bg-base-200">
+                      {row.error && (
                         <pre className="text-xs text-error whitespace-pre-wrap break-all">
                           {row.error}
                         </pre>
                       )}
-                      {row.ok && row.output && (
+                      {row.skipped_reason && (
+                        <p className="text-xs text-base-content/70 mb-2">{row.skipped_reason}</p>
+                      )}
+                      {row.output && (
                         <pre className="text-xs whitespace-pre-wrap break-all max-h-48 overflow-auto">
                           {JSON.stringify(row.output, null, 2)}
                         </pre>
                       )}
-                      {row.ok && !row.output && row.output_text && (
-                        <pre className="text-xs whitespace-pre-wrap break-all max-h-48 overflow-auto">
-                          {row.output_text}
-                        </pre>
-                      )}
-                      {isDeepSleepRelatedJob(row.job_id) && row.ok && outputDay(row) !== "—" && (
+                      {row.step_id === "deep-sleep" && row.status === "completed" && row.day && (
                         <div className="mt-3">
                           <h4 className="font-semibold text-sm mb-1">
                             {m.webui_chamber_sleep_deep_rounds()}
@@ -530,7 +538,7 @@ function SleepPage() {
             ))}
             {!runs.length && (
               <tr>
-                <td colSpan={6} className="text-center text-base-content/50">
+                <td colSpan={8} className="text-center text-base-content/50">
                   {m.webui_chamber_sleep_no_runs()}
                 </td>
               </tr>

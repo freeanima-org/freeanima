@@ -1,6 +1,5 @@
 import { afterEach, describe, expect, it, mock } from "bun:test";
-import type { CronLogAppendInput, CronLogRow } from "@freeanima/core/repos";
-import { SLEEP_CYCLE_JOB_ID, sleepStepJobId } from "@freeanima/capabilities-memory";
+import type { PipelineStepRunAppendInput, PipelineStepRunRow } from "@freeanima/core/repos";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 
 const runSleepCycleMock = mock(async () => ({
@@ -29,25 +28,31 @@ mock.module("../boot/pipeline-handlers.ts", () => ({
   registerSleepPipeline: () => {},
 }));
 
-function createDeps(appendRows: CronLogAppendInput[]): RuntimeDeps {
-  const rows: CronLogRow[] = [];
+function createDeps(appended: PipelineStepRunAppendInput[]): RuntimeDeps {
+  const rows: PipelineStepRunRow[] = [];
   return {
     kernel: {} as RuntimeDeps["kernel"],
     engine: {
       repos: {
         pgAvailable: true,
-        cronLog: {
-          append: async (row: CronLogAppendInput) => {
-            appendRows.push(row);
+        pipelineStepRun: {
+          append: async (row: PipelineStepRunAppendInput) => {
+            appended.push(row);
             rows.push({
-              id: rows.length,
-              job_id: row.job_id,
-              run_count: row.run_count,
-              ok: row.ok,
+              id: rows.length + 1,
+              pipeline_id: row.pipeline_id,
+              run_id: row.run_id,
+              step_id: row.step_id,
+              attempt: rows.filter((r) => r.run_id === row.run_id && r.step_id === row.step_id)
+                .length,
+              day: row.day,
+              trigger: row.trigger,
+              status: row.status,
+              started_at: row.started_at ?? null,
               finished_at: row.finished_at ?? "",
               output: row.output ?? null,
-              output_text: row.output_text ?? null,
               error: row.error ?? null,
+              skipped_reason: row.skipped_reason ?? null,
             });
           },
           list: async () => rows,
@@ -58,14 +63,14 @@ function createDeps(appendRows: CronLogAppendInput[]): RuntimeDeps {
   };
 }
 
-describe("service-sleep cron_log", () => {
+describe("service-sleep pipeline runs", () => {
   afterEach(() => {
     runSleepCycleMock.mockClear();
     runSleepStepMock.mockClear();
   });
 
-  it("startSleepPipelineStep appends sleep-step job_id", async () => {
-    const appended: CronLogAppendInput[] = [];
+  it("startSleepPipelineStep does not write cron_log", async () => {
+    const appended: PipelineStepRunAppendInput[] = [];
     const deps = createDeps(appended);
     const { startSleepPipelineStep } = await import("./service-sleep.ts");
 
@@ -75,16 +80,12 @@ describe("service-sleep cron_log", () => {
     });
 
     expect(result.ok).toBe(true);
-    expect(appended).toHaveLength(1);
-    expect(appended[0]?.job_id).toBe(sleepStepJobId("light-sleep"));
-    expect(appended[0]?.ok).toBe(true);
-    expect(appended[0]?.output?.source).toBe("manual");
-    expect(appended[0]?.output?.step_id).toBe("light-sleep");
-    expect(appended[0]?.output?.day).toBe("2026-06-14");
+    expect(appended).toHaveLength(0);
+    expect(runSleepStepMock).toHaveBeenCalled();
   });
 
-  it("startSleepCycle appends builtin-sleep-cycle after async run", async () => {
-    const appended: CronLogAppendInput[] = [];
+  it("startSleepCycle does not write cron_log", async () => {
+    const appended: PipelineStepRunAppendInput[] = [];
     const deps = createDeps(appended);
     const { startSleepCycle } = await import("./service-sleep.ts");
 
@@ -94,35 +95,26 @@ describe("service-sleep cron_log", () => {
     await new Promise((r) => setTimeout(r, 50));
 
     expect(runSleepCycleMock).toHaveBeenCalled();
-    expect(appended).toHaveLength(1);
-    expect(appended[0]?.job_id).toBe(SLEEP_CYCLE_JOB_ID);
-    expect(appended[0]?.output?.source).toBe("manual");
-    expect(appended[0]?.output?.day).toBe("2026-06-14");
-  });
-
-  it("skips cron_log append when PG unavailable", async () => {
-    const appended: CronLogAppendInput[] = [];
-    const base = createDeps(appended);
-    const deps: RuntimeDeps = {
-      ...base,
-      engine: {
-        ...base.engine,
-        repos: {
-          ...base.engine.repos,
-          pgAvailable: false,
-        },
-      } as RuntimeDeps["engine"],
-    };
-    const { startSleepPipelineStep } = await import("./service-sleep.ts");
-
-    await startSleepPipelineStep(deps, { stepId: "light-sleep" });
-
     expect(appended).toHaveLength(0);
   });
-});
 
-describe("sleepStepJobId", () => {
-  it("prefixes step id", () => {
-    expect(sleepStepJobId("deep-sleep")).toBe("sleep-step:deep-sleep");
+  it("listPipelineStepRuns returns rows from store", async () => {
+    const appended: PipelineStepRunAppendInput[] = [];
+    const deps = createDeps(appended);
+    await deps.engine.repos.pipelineStepRun.append({
+      pipeline_id: "sleep-cycle",
+      run_id: "r1",
+      step_id: "light-sleep",
+      day: "2026-06-14",
+      trigger: "manual_step",
+      status: "completed",
+      finished_at: "2026-06-14T10:00:00+08:00",
+      output: { tool_calls: 2 },
+    });
+
+    const { listPipelineStepRuns } = await import("./service-sleep.ts");
+    const result = await listPipelineStepRuns(deps, { limit: 10 });
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0]?.step_id).toBe("light-sleep");
   });
 });

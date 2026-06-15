@@ -8,6 +8,8 @@ import type {
   PipelineNodeDefinition,
   PipelineRunResult,
   PipelineRunState,
+  PipelineStepFinishedEvent,
+  PipelineStepFinishedListener,
   PipelineStepResult,
   PipelineStepState,
   RunStepResult,
@@ -31,6 +33,7 @@ function pendingSteps(nodes: PipelineNodeDefinition[]): Record<string, PipelineS
 export class PipelineRunner {
   private readonly definitions = new Map<string, PipelineDefinition>();
   private readonly handlers = new Map<string, StepHandler>();
+  private stepFinishedListener: PipelineStepFinishedListener | null = null;
 
   registerDefinition(def: PipelineDefinition): void {
     topologicalSort(def.nodes);
@@ -39,6 +42,10 @@ export class PipelineRunner {
 
   registerStep(handlerId: string, fn: StepHandler): void {
     this.handlers.set(handlerId, fn);
+  }
+
+  setStepFinishedListener(listener: PipelineStepFinishedListener | null): void {
+    this.stepFinishedListener = listener;
   }
 
   getDefinition(pipelineId: string): PipelineDefinition | undefined {
@@ -69,11 +76,14 @@ export class PipelineRunner {
 
     for (const node of order) {
       if (!this.canRunAfterPriorSteps(node, runState)) {
+        const finishedAt = formatCstIso();
         runState.steps[node.id] = {
           status: "skipped",
+          finished_at: finishedAt,
           skipped_reason: "upstream_failed",
         };
         writePipelineRunState(runState);
+        await this.emitStepFinished(pipelineId, runState, node.id, ctx, runState.steps[node.id]!);
         continue;
       }
 
@@ -108,6 +118,16 @@ export class PipelineRunner {
     if (!ctx.force) {
       const depErr = this.checkDependencies(node, def, readPipelineRunState(def.id));
       if (depErr) {
+        const runState = readPipelineRunState(def.id);
+        const finishedAt = formatCstIso();
+        const stepState: PipelineStepState = {
+          status: "failed",
+          finished_at: finishedAt,
+          error: depErr,
+        };
+        if (runState) {
+          await this.emitStepFinished(def.id, runState, stepId, ctx, stepState);
+        }
         return {
           ok: false,
           step_id: stepId,
@@ -184,6 +204,32 @@ export class PipelineRunner {
     return undefined;
   }
 
+  private async emitStepFinished(
+    pipelineId: string,
+    runState: PipelineRunState,
+    stepId: string,
+    ctx: PipelineContext,
+    stepState: PipelineStepState,
+  ): Promise<void> {
+    if (!this.stepFinishedListener) return;
+    if (stepState.status === "pending" || stepState.status === "running") return;
+
+    const event: PipelineStepFinishedEvent = {
+      pipeline_id: pipelineId,
+      run_id: runState.run_id,
+      step_id: stepId,
+      day: runState.day ?? ctx.day,
+      trigger: ctx.trigger,
+      status: stepState.status,
+      started_at: stepState.started_at,
+      finished_at: stepState.finished_at ?? formatCstIso(),
+      output: stepState.output,
+      error: stepState.error,
+      skipped_reason: stepState.skipped_reason,
+    };
+    await this.stepFinishedListener(event);
+  }
+
   private async executeNode(
     node: PipelineNodeDefinition,
     ctx: PipelineContext,
@@ -195,25 +241,30 @@ export class PipelineRunner {
     error?: string;
     skipped_reason?: string;
   }> {
+    const pipelineId = runState.pipeline_id;
     const handler = this.handlers.get(node.handler);
     if (!handler) {
       const err = `No handler registered for: ${node.handler}`;
+      const finishedAt = formatCstIso();
       runState.steps[node.id] = {
         status: "failed",
-        started_at: formatCstIso(),
-        finished_at: formatCstIso(),
+        started_at: finishedAt,
+        finished_at: finishedAt,
         error: err,
       };
+      await this.emitStepFinished(pipelineId, runState, node.id, ctx, runState.steps[node.id]!);
       return { ok: false, status: "failed", error: err };
     }
 
     if (node.skipIf && (await node.skipIf(ctx))) {
+      const finishedAt = formatCstIso();
       runState.steps[node.id] = {
         status: "skipped",
-        started_at: formatCstIso(),
-        finished_at: formatCstIso(),
+        started_at: finishedAt,
+        finished_at: finishedAt,
         skipped_reason: "skipIf",
       };
+      await this.emitStepFinished(pipelineId, runState, node.id, ctx, runState.steps[node.id]!);
       return { ok: true, status: "skipped", skipped_reason: "skipIf" };
     }
 
@@ -236,6 +287,7 @@ export class PipelineRunner {
           output: result.output,
           skipped_reason: result.skipped,
         };
+        await this.emitStepFinished(pipelineId, runState, node.id, ctx, runState.steps[node.id]!);
         return {
           ok: true,
           status: "skipped",
@@ -252,6 +304,7 @@ export class PipelineRunner {
           output: result.output,
           error: result.error ?? "step failed",
         };
+        await this.emitStepFinished(pipelineId, runState, node.id, ctx, runState.steps[node.id]!);
         return {
           ok: false,
           status: "failed",
@@ -266,6 +319,7 @@ export class PipelineRunner {
         finished_at: finishedAt,
         output: result.output,
       };
+      await this.emitStepFinished(pipelineId, runState, node.id, ctx, runState.steps[node.id]!);
       return { ok: true, status: "completed", output: result.output };
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
@@ -275,6 +329,7 @@ export class PipelineRunner {
         finished_at: formatCstIso(),
         error: message,
       };
+      await this.emitStepFinished(pipelineId, runState, node.id, ctx, runState.steps[node.id]!);
       return { ok: false, status: "failed", error: message };
     }
   }

@@ -118,8 +118,6 @@ export {
   listDeepSleepRoundLogs,
   SLEEP_JOB_IDS,
   SLEEP_CYCLE_JOB_ID,
-  SLEEP_STEP_JOB_PREFIX,
-  sleepStepJobId,
   type SleepSummary,
 } from "./sleep-records.ts";
 export {

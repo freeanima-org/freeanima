@@ -1,18 +1,13 @@
-import type { CronLogListOpts, CronLogRow } from "@freeanima/core/repos";
-import { formatCstIso } from "@freeanima/core/util";
+import type { PipelineStepRunListOpts, PipelineStepRunRow } from "@freeanima/core/repos";
 import {
   buildSleepSummary,
   listDeepSleepRoundLogs,
-  SLEEP_CYCLE_JOB_ID,
-  SLEEP_JOB_IDS,
-  sleepStepJobId,
   type SleepSummary,
 } from "@freeanima/capabilities-memory";
 import type { PipelineRunState } from "@freeanima/runtime/pipeline";
 
 import {
   getSleepPipelineStatus as readSleepPipelineStatus,
-  resolveSleepCycleDay,
   runSleepCycle,
   runSleepStep,
 } from "../boot/pipeline-handlers.ts";
@@ -23,61 +18,6 @@ import { listCronJobs } from "./service-status.ts";
 let sleepCycleRunning = false;
 let lastSleepCycleResult: Awaited<ReturnType<typeof runSleepCycle>> | null = null;
 let sleepStepRunning = false;
-
-async function appendSleepRunLog(
-  deps: RuntimeDeps,
-  input: {
-    job_id: string;
-    ok: boolean;
-    output?: Record<string, unknown>;
-    error?: string;
-  },
-): Promise<void> {
-  if (!deps.engine.repos.pgAvailable) return;
-
-  await deps.engine.repos.cronLog.append({
-    job_id: input.job_id,
-    run_count: 0,
-    ok: input.ok,
-    finished_at: formatCstIso(),
-    output: input.ok ? (input.output ?? null) : null,
-    error: input.ok ? null : (input.error ?? "sleep run failed"),
-  });
-}
-
-function cycleLogOutput(
-  result: Awaited<ReturnType<typeof runSleepCycle>>,
-): Record<string, unknown> {
-  return {
-    source: "manual",
-    day: result.day,
-    status: result.status,
-    steps: Object.fromEntries(
-      Object.entries(result.steps).map(([id, s]) => [
-        id,
-        { status: s.status, error: s.error, skipped_reason: s.skipped_reason },
-      ]),
-    ),
-  };
-}
-
-function stepLogOutput(
-  stepId: string,
-  day: string,
-  result: Awaited<ReturnType<typeof runSleepStep>>,
-): Record<string, unknown> {
-  const base: Record<string, unknown> = {
-    source: "manual",
-    step_id: stepId,
-    day,
-    status: result.status,
-  };
-  if (result.output && typeof result.output === "object" && !Array.isArray(result.output)) {
-    Object.assign(base, result.output as Record<string, unknown>);
-  }
-  if (result.skipped_reason) base.skipped_reason = result.skipped_reason;
-  return base;
-}
 
 export async function getSleepSummary(): Promise<SleepSummary> {
   const { jobs } = await listCronJobs();
@@ -92,43 +32,27 @@ export async function getSleepSummary(): Promise<SleepSummary> {
   );
 }
 
-export async function listSleepRuns(
+export async function listPipelineStepRuns(
   deps: RuntimeDeps,
   opts?: {
+    step_id?: string;
+    run_id?: string;
     limit?: number;
     offset?: number;
-    ok?: boolean;
   },
-): Promise<{ items: CronLogRow[]; total: number }> {
-  const listOpts: CronLogListOpts = {
-    job_ids: [...SLEEP_JOB_IDS],
-    limit: opts?.limit ?? 50,
-    offset: opts?.offset ?? 0,
-    ok: opts?.ok,
-  };
-  const items = await deps.engine.repos.cronLog.list(listOpts);
-  return { items, total: items.length };
-}
-
-export async function listCronLogs(
-  deps: RuntimeDeps,
-  opts?: {
-    job_id?: string;
-    limit?: number;
-    offset?: number;
-    ok?: boolean;
-  },
-): Promise<{ items: CronLogRow[]; total: number }> {
+): Promise<{ items: PipelineStepRunRow[]; total: number }> {
   if (!deps.engine.repos.pgAvailable) {
     return { items: [], total: 0 };
   }
 
-  const items = await deps.engine.repos.cronLog.list({
-    job_id: opts?.job_id,
+  const listOpts: PipelineStepRunListOpts = {
+    pipeline_id: SLEEP_CYCLE_PIPELINE_ID,
+    step_id: opts?.step_id,
+    run_id: opts?.run_id,
     limit: opts?.limit ?? 50,
     offset: opts?.offset ?? 0,
-    ok: opts?.ok,
-  });
+  };
+  const items = await deps.engine.repos.pipelineStepRun.list(listOpts);
   return { items, total: items.length };
 }
 
@@ -157,7 +81,7 @@ export function getSleepPipelineStatus(): SleepPipelineStatus {
 }
 
 export async function startSleepCycle(
-  deps: RuntimeDeps,
+  _deps: RuntimeDeps,
   opts?: { day?: string },
 ): Promise<{ ok: true; started: true } | { ok: false; error: string }> {
   if (sleepCycleRunning || sleepStepRunning) {
@@ -169,13 +93,7 @@ export async function startSleepCycle(
 
   void (async () => {
     try {
-      lastSleepCycleResult = await runSleepCycle(opts?.day);
-      await appendSleepRunLog(deps, {
-        job_id: SLEEP_CYCLE_JOB_ID,
-        ok: lastSleepCycleResult.ok,
-        output: cycleLogOutput(lastSleepCycleResult),
-        error: lastSleepCycleResult.ok ? undefined : lastSleepCycleResult.status,
-      });
+      lastSleepCycleResult = await runSleepCycle(opts?.day, { trigger: "manual_cycle" });
     } finally {
       sleepCycleRunning = false;
     }
@@ -185,7 +103,7 @@ export async function startSleepCycle(
 }
 
 export async function startSleepPipelineStep(
-  deps: RuntimeDeps,
+  _deps: RuntimeDeps,
   opts: {
     stepId: string;
     day?: string;
@@ -203,22 +121,37 @@ export async function startSleepPipelineStep(
     return { ok: false, error: `unknown sleep step: ${opts.stepId}` };
   }
 
-  const resolvedDay = resolveSleepCycleDay(opts.day);
-
   sleepStepRunning = true;
   try {
     const result = await runSleepStep(opts.stepId, {
       day: opts.day,
       force: opts.force,
-    });
-    await appendSleepRunLog(deps, {
-      job_id: sleepStepJobId(opts.stepId),
-      ok: result.ok,
-      output: stepLogOutput(opts.stepId, resolvedDay, result),
-      error: result.error ?? result.dependency_error,
+      trigger: "manual_step",
     });
     return { ok: true, result };
   } finally {
     sleepStepRunning = false;
   }
+}
+
+export async function listCronLogs(
+  deps: RuntimeDeps,
+  opts?: {
+    job_id?: string;
+    limit?: number;
+    offset?: number;
+    ok?: boolean;
+  },
+): Promise<{ items: import("@freeanima/core/repos").CronLogRow[]; total: number }> {
+  if (!deps.engine.repos.pgAvailable) {
+    return { items: [], total: 0 };
+  }
+
+  const items = await deps.engine.repos.cronLog.list({
+    job_id: opts?.job_id,
+    limit: opts?.limit ?? 50,
+    offset: opts?.offset ?? 0,
+    ok: opts?.ok,
+  });
+  return { items, total: items.length };
 }

@@ -4,7 +4,7 @@ import {
   getSleepPipelineStatus,
   getSleepSummary,
   listCronLogs,
-  listSleepRuns,
+  listPipelineStepRuns,
   startSleepCycle,
   startSleepPipelineStep,
 } from "../../handlers/sleep.ts";
@@ -12,18 +12,20 @@ import {
 export const sleepRoutes = new Elysia({ prefix: "/sleep" })
   .get("/summary", () => getSleepSummary())
   .get(
-    "/runs",
+    "/pipeline-runs",
     ({ query }) =>
-      listSleepRuns({
+      listPipelineStepRuns({
+        step_id: query.step_id,
+        run_id: query.run_id,
         limit: query.limit,
         offset: query.offset,
-        ok: query.ok,
       }),
     {
       query: t.Object({
+        step_id: t.Optional(t.String()),
+        run_id: t.Optional(t.String()),
         limit: t.Optional(t.Numeric()),
         offset: t.Optional(t.Numeric()),
-        ok: t.Optional(t.Boolean()),
       }),
     },
   )

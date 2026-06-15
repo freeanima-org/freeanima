@@ -32,6 +32,12 @@ export type {
   CronLogStorePort,
 } from "./cron-log.ts";
 export type {
+  PipelineStepRunRow,
+  PipelineStepRunAppendInput,
+  PipelineStepRunListOpts,
+  PipelineStepRunStorePort,
+} from "./pipeline-step-run.ts";
+export type {
   TaskStorePort,
   TaskRow,
   TaskCreateInput,
@@ -81,6 +87,7 @@ export type {
 import type { AutobiographicalMemoryStorePort } from "./autobiographical-memory.ts";
 import type { CronJobStorePort } from "./cron.ts";
 import type { CronLogStorePort } from "./cron-log.ts";
+import type { PipelineStepRunStorePort } from "./pipeline-step-run.ts";
 import type { DreamMemoryStorePort } from "./dream-memory.ts";
 import type { LimbicMemoryStorePort } from "./limbic-memory.ts";
 import type { SelfLayerStorePort } from "./self-layer.ts";
@@ -98,5 +105,6 @@ export interface PgRepositories {
   dreamMemory: DreamMemoryStorePort;
   cron: CronJobStorePort;
   cronLog: CronLogStorePort;
+  pipelineStepRun: PipelineStepRunStorePort;
   tasks: TaskStorePort;
 }

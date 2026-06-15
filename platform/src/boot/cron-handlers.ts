@@ -7,7 +7,7 @@ export function registerBootCronHandlers(engine: Engine): void {
   registerSleepPipeline(engine);
 
   registerCronBuiltinHandler("builtin-sleep-cycle", async () => {
-    const result = await runSleepCycle(resolveSleepCycleDay());
+    const result = await runSleepCycle(resolveSleepCycleDay(), { trigger: "scheduled" });
     return JSON.stringify({
       ok: result.ok,
       day: result.day,

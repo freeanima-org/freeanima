@@ -335,13 +335,19 @@ export async function getSleepSummary() {
   return unwrap(apiClient.api.sleep.summary.get());
 }
 
-export async function listSleepRuns(opts?: { limit?: number; offset?: number; ok?: boolean }) {
+export async function listPipelineStepRuns(opts?: {
+  step_id?: string;
+  run_id?: string;
+  limit?: number;
+  offset?: number;
+}) {
   return unwrap(
-    apiClient.api.sleep.runs.get({
+    apiClient.api.sleep["pipeline-runs"].get({
       query: {
+        step_id: opts?.step_id,
+        run_id: opts?.run_id,
         limit: opts?.limit,
         offset: opts?.offset,
-        ok: opts?.ok,
       },
     }),
   );

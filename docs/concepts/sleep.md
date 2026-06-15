@@ -36,6 +36,8 @@ Sleep uses a **macro DAG** (`sleep-cycle` pipeline) orchestrated by `PipelineRun
 
 Chamber WebUI (`/webui/chamber/sleep`) supports **diagnostic** runs: full cycle or individual steps (`force` skips dependency checks).
 
+**Pipeline step history** is persisted in PG `pipeline_step_run` (one row per node execution, including failures and manual retries via `attempt`). **Cron run history** for `builtin-sleep-cycle` lives in `cron_log` and is viewed from **Chamber → Cron** via each task's **Run history** button.
+
 Pipeline run state is persisted at `~/.anima/runtime/pipeline_sleep-cycle_run.json` (SSOT for step status; no EventBus).
 
 ## Light Sleep
@@ -113,7 +115,7 @@ For a single past CST calendar day (e.g. before go-live or after migration), use
 1. Set **Day** to `YYYY-MM-DD`
 2. Run the **light-sleep** step (check **Force** to skip dependency checks if needed)
 
-Each run is logged in the run history table. Cross-session merge for that day still relies on a subsequent **deep-sleep** run.
+Each step run is logged in the **Pipeline history** table on the sleep page. Cross-session merge for that day still relies on a subsequent **deep-sleep** run. Cron-triggered cycle runs appear in **Chamber → Cron → Run history** on the sleep-cycle task.
 
 ## Relationship to Existing Architecture
 

@@ -6,7 +6,7 @@ import {
   invalidateSelfLayerPromptCache,
   loadSelfLayerPrompt,
 } from "@freeanima/capabilities-identity";
-import { getPipelineRunner } from "@freeanima/runtime/pipeline";
+import { getPipelineRunner, type PipelineStepTrigger } from "@freeanima/runtime/pipeline";
 import type { Engine } from "@freeanima/runtime";
 
 import { createDreamFridgePort } from "../dream-fridge-factory.ts";
@@ -77,16 +77,26 @@ export function resolveSleepCycleDay(day?: string): string {
   return cstDayRange(day).day;
 }
 
-export async function runSleepCycle(day?: string) {
+export async function runSleepCycle(day?: string, opts?: { trigger?: PipelineStepTrigger }) {
   const runner = getPipelineRunner();
   const resolvedDay = resolveSleepCycleDay(day);
-  return runner.run(SLEEP_CYCLE_PIPELINE_ID, { day: resolvedDay });
+  return runner.run(SLEEP_CYCLE_PIPELINE_ID, {
+    day: resolvedDay,
+    trigger: opts?.trigger ?? "manual_cycle",
+  });
 }
 
-export async function runSleepStep(stepId: string, opts?: { day?: string; force?: boolean }) {
+export async function runSleepStep(
+  stepId: string,
+  opts?: { day?: string; force?: boolean; trigger?: PipelineStepTrigger },
+) {
   const runner = getPipelineRunner();
   const resolvedDay = opts?.day ? resolveSleepCycleDay(opts.day) : resolveSleepCycleDay();
-  return runner.runStep(stepId, { day: resolvedDay, force: opts?.force });
+  return runner.runStep(stepId, {
+    day: resolvedDay,
+    force: opts?.force,
+    trigger: opts?.trigger ?? "manual_step",
+  });
 }
 
 export function getSleepPipelineStatus() {
