@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { getSessionAcpDock, type SessionAcpDockSnapshot } from "@/lib/api.ts";
+import { getSessionAcpDock, subscribeSessionEvents } from "@/lib/api.ts";
+import type { SessionAcpDockSnapshot } from "@/lib/types.ts";
 
 export type AcpProgressDockOptions = {
   patchProgress?: (text: string, progressMessageId?: string) => void;
   onDecision?: (sessionId: string) => void | Promise<void>;
 };
-
-const ACP_POLL_MS = 3_000;
 
 export function useAcpProgressDock(
   sessionId: string | null | undefined,
@@ -46,8 +45,10 @@ export function useAcpProgressDock(
       return;
     }
     void refresh();
-    const timer = setInterval(() => void refresh(), ACP_POLL_MS);
-    return () => clearInterval(timer);
+    const sub = subscribeSessionEvents(sessionId, () => {
+      void refresh();
+    });
+    return () => sub.unsubscribe();
   }, [sessionId, refresh]);
 
   return dock?.tasks.length ? dock : null;

@@ -33,7 +33,7 @@
     "format:fix": "oxfmt .",
     "lint": "oxlint .",
     "lint:fix": "oxlint --fix .",
-    "typecheck": "bunx tsgo -p tsconfig.json --noEmit && bunx tsgo -p satellites/pair-programming/tsconfig.json --noEmit",
+    "typecheck": "bunx tsgo -p tsconfig.json --noEmit && bunx tsgo -p satellites/pair-programming/tsconfig.json --noEmit && bunx tsgo -p satellites/parlor/tsconfig.json --noEmit",
     "build:cli": "bun scripts/build-cli.ts",
     "build:webui": "bun scripts/build-webui.ts",
     "publish:cli": "bun scripts/build-cli.ts && cd cli/publish && bun pm pack && bun publish --access public",

@@ -1,6 +1,6 @@
-import type { DisplayItem, SessionListItem } from "@freeanima/platform/connectors/webui/api";
-import { PARLOR_PLATFORM } from "@freeanima/platform/connectors/webui/api";
-import { hasNewAssistantReply } from "@freeanima/platform/connectors/webui/display-recovery";
+import type { DisplayItem, SessionListItem } from "@/lib/types.ts";
+import { PARLOR_PLATFORM } from "@/lib/sap-client.ts";
+import { hasNewAssistantReply } from "@/lib/display-recovery.ts";
 import { create } from "zustand";
 import { createSession, getSessionMessages, listSessions, setSessionTitle } from "@/lib/api.ts";
 
@@ -29,9 +29,8 @@ export const useSessionsStore = create<SessionsState>((set, get) => ({
   async fetchSessions() {
     try {
       const resp = await listSessions(PARLOR_PLATFORM);
-      const sessions = (resp as { sessions?: SessionListItem[] }).sessions ?? [];
-      set({ sessions });
-      return sessions;
+      set({ sessions: resp.sessions });
+      return resp.sessions;
     } catch (e) {
       console.error("fetchSessions:", e);
       return [];
@@ -52,7 +51,7 @@ export const useSessionsStore = create<SessionsState>((set, get) => ({
     try {
       const d = await createSession(PARLOR_PLATFORM);
       await get().fetchSessions();
-      const sessionId = (d as { session_id: string }).session_id;
+      const sessionId = d.session_id;
       await get().selectSession(sessionId);
       return sessionId;
     } catch (e) {
@@ -88,7 +87,7 @@ export const useSessionsStore = create<SessionsState>((set, get) => ({
     }
   },
 
-  patchProgressLine(text: string, _messageId?: string) {
+  patchProgressLine(text: string) {
     const display = [...get().display];
     for (let i = display.length - 1; i >= 0; i--) {
       const item = display[i];

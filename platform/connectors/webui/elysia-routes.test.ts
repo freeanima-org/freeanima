@@ -13,13 +13,6 @@ describe("elysia apiApp", () => {
     expect(res.status).not.toBe(404);
   });
 
-  it("GET /api/sessions/:sessionId/events 路由已注册", async () => {
-    const res = await apiApp.handle(
-      new Request("http://127.0.0.1/api/sessions/test-session/events"),
-    );
-    expect(res.status).not.toBe(404);
-  });
-
   it("GET /api/email 路由已注册", async () => {
     const spy = spyOn(emailHandlers, "getEmailOverview").mockResolvedValue({
       accounts: [],

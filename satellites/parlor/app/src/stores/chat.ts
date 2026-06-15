@@ -1,5 +1,5 @@
-import type { StreamApiEvent } from "@freeanima/platform/connectors/webui/api";
-import { pollUntilAssistantReply } from "@freeanima/platform/connectors/webui/display-recovery";
+import type { StreamApiEvent } from "@/lib/types.ts";
+import { pollUntilAssistantReply } from "@/lib/display-recovery.ts";
 import { marked } from "marked";
 import { create } from "zustand";
 import { m } from "@/lib/i18n.ts";

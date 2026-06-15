@@ -1,0 +1,51 @@
+@import "tailwindcss";
+@plugin "daisyui";
+
+.md-content {
+  line-height: 1.6;
+}
+.md-content p {
+  margin: 0.3em 0;
+}
+.md-content p:first-child {
+  margin-top: 0;
+}
+.md-content p:last-child {
+  margin-bottom: 0;
+}
+.md-content pre {
+  overflow-x: auto;
+  max-width: 100%;
+}
+.md-content code {
+  @apply bg-base-300 rounded px-1;
+  font-size: 0.875em;
+}
+.md-content pre code {
+  @apply block p-3 overflow-x-auto;
+  background: oklch(var(--b2));
+}
+
+.session-item {
+  @apply block px-3 py-2 rounded-lg text-sm text-base-content/65 transition-colors cursor-pointer;
+}
+.session-item:hover {
+  @apply bg-base-300/50 text-base-content;
+}
+.session-item.sidebar-nav-active {
+  @apply bg-primary/20 text-base-content font-semibold;
+  box-shadow: inset 3px 0 0 oklch(var(--p));
+}
+
+.tool-bubble {
+  @apply rounded-2xl bg-base-300/60;
+}
+
+@media (max-width: 1023px) {
+  .chat .chat-bubble {
+    max-width: min(92vw, 100%);
+  }
+  .textarea {
+    font-size: 16px;
+  }
+}

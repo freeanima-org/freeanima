@@ -30,6 +30,9 @@ export {
   sessionPatchTitleInputSchema,
   sessionSubscribeInputSchema,
   sessionUpdatedPayloadSchema,
+  sessionCommandsInputSchema,
+  sessionCommandsOutputSchema,
+  sessionCommandItemSchema,
 } from "./frames/session.ts";
 export type {
   SessionCreateInput,
@@ -40,7 +43,24 @@ export type {
   SessionPatchTitleInput,
   SessionSubscribeInput,
   SessionUpdatedPayload,
+  SessionCommandsInput,
+  SessionCommandsOutput,
+  SessionCommandItem,
 } from "./frames/session.ts";
+
+export {
+  sessionAcpDockInputSchema,
+  sessionAcpDockOutputSchema,
+  acpDockTaskSchema,
+} from "./frames/acp.ts";
+export type { SessionAcpDockInput, SessionAcpDockOutput, AcpDockTask } from "./frames/acp.ts";
+
+export {
+  fridgeListInputSchema,
+  fridgeListOutputSchema,
+  fridgeMagnetItemSchema,
+} from "./frames/fridge.ts";
+export type { FridgeListInput, FridgeListOutput, FridgeMagnetItem } from "./frames/fridge.ts";
 
 export {
   messageSendInputSchema,
@@ -111,3 +131,13 @@ export type {
   SapReconnectPolicy,
   SapTransportHandle,
 } from "./transport.ts";
+export {
+  createSapBrowserClient,
+  loadParlorSatelliteConfig,
+  PARLOR_PLATFORM,
+} from "./browser-client.ts";
+export type {
+  ParlorSatelliteConfig,
+  SapBrowserClient,
+  SapBrowserClientOptions,
+} from "./browser-client.ts";

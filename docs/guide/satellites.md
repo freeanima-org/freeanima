@@ -12,6 +12,12 @@ Declare a process in `~/.anima/config.yaml`. `anima service start/stop/restart` 
 
 ```yaml
 satellites:
+  parlor:
+    enabled: true
+    command: bun
+    args: ["satellites/parlor/dev.ts"]
+    env:
+      SATELLITE_PORT: "4174"
   pair-programming:
     enabled: true
     command: bun
@@ -28,7 +34,9 @@ satellites:
 
 Working directory is derived by anima from the install layout (monorepo root or CLI package root), not configured here.
 
-Pair-programming env conventions: `STUDIO_WORKSPACE`, optional `STUDIO_GITIGNORE`, `STUDIO_SHOW_HIDDEN`, `SATELLITE_PORT`.
+**Parlor** (`satellites/parlor`): browser connects to Hub via SAP WebSocket (`/sap/v1`); static server only serves UI + `/config.json`. No server-side SAP or hub-api proxy.
+
+**Pair-programming** env conventions: `STUDIO_WORKSPACE`, optional `STUDIO_GITIGNORE`, `STUDIO_SHOW_HIDDEN`, `SATELLITE_PORT`.
 
 **Startup:** managed satellites start only after Hub `GET /api/health` returns `status: ok` (not when you first open the satellite UI).
 
@@ -40,4 +48,7 @@ No `command` in config. Start the satellite yourself (terminal, your own unit, e
 
 There is **no** global `studio:` section in `config.yaml`.
 
-Open managed satellite UI at the URL from Chamber (SAP `http_url`), typically `http://127.0.0.1:4173`.
+Open managed satellite UI at the URL from Chamber (SAP `http_url`), typically:
+
+- Parlor: `http://127.0.0.1:4174`
+- Pair-programming: `http://127.0.0.1:4173`

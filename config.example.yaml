@@ -147,3 +147,19 @@ compression:
 #   api_key: ollama
 #   model: bge-m3
 #   dimensions: 1024
+
+# 卫星应用（Managed：anima service 托管启停；浏览器 UI 独立进程）
+# satellites:
+#   parlor:
+#     enabled: true
+#     command: bun
+#     args: ["satellites/parlor/dev.ts"]
+#     env:
+#       SATELLITE_PORT: "4174"
+#   pair-programming:
+#     enabled: true
+#     command: bun
+#     args: ["satellites/pair-programming/dev.ts"]
+#     env:
+#       STUDIO_WORKSPACE: /path/to/project
+#       SATELLITE_PORT: "4173"

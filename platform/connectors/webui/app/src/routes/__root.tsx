@@ -2,6 +2,8 @@ import { Outlet, createRootRoute, useNavigate, useRouterState } from "@tanstack/
 import { useState } from "react";
 import { getWebUiLocale, m, toggleWebUiLocale } from "@/lib/i18n.ts";
 
+const PARLOR_SATELLITE_URL = "http://127.0.0.1:4174";
+
 export const Route = createRootRoute({
   component: RootComponent,
 });
@@ -14,7 +16,7 @@ type AppMode = "parlor" | "chamber";
 
 function resolveMode(pathname: string): AppMode {
   if (pathname.startsWith("/chamber") || pathname.startsWith("/workshop")) return "chamber";
-  return "parlor";
+  return "chamber";
 }
 
 function AppShell() {
@@ -25,9 +27,10 @@ function AppShell() {
 
   const switchMode = (target: AppMode) => {
     if (target === "parlor") {
-      if (!pathname.startsWith("/parlor"))
-        navigate({ to: "/parlor/chat", search: { session: undefined } });
-    } else if (target === "chamber") {
+      window.open(PARLOR_SATELLITE_URL, "_blank", "noopener,noreferrer");
+      return;
+    }
+    if (target === "chamber") {
       if (!pathname.startsWith("/chamber") && !pathname.startsWith("/workshop")) {
         navigate({ to: "/chamber/dashboard" });
       }

@@ -234,9 +234,18 @@
       "name": "@freeanima/satellite-parlor",
       "dependencies": {
         "@freeanima/sap-contract": "workspace:*",
+        "marked": "^18.0.4",
+        "react": "19",
+        "react-dom": "19",
+        "zustand": "^5.0.14",
       },
       "devDependencies": {
         "@types/bun": "catalog:",
+        "@types/react": "^19.2.16",
+        "@types/react-dom": "^19.2.3",
+        "bun-plugin-tailwind": "^0.1.2",
+        "daisyui": "^5.5.20",
+        "tailwindcss": "^4.3.0",
       },
     },
     "site": {
