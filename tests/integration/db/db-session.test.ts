@@ -1,7 +1,6 @@
-import { sql as drizzleSql } from "drizzle-orm";
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import type { ConversationMessage } from "@freeanima/core/db/domain";
-import { getDb } from "@freeanima/platform/connectors/db-pg";
+import { pingDatabase } from "@freeanima/platform/connectors/db-pg";
 import { getTestEngine } from "../../helpers/pg-test.ts";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
@@ -26,9 +25,8 @@ describePg("db session (PostgreSQL)", () => {
   });
 
   it("Bun.sql native connection works", async () => {
-    const db = getDb();
-    const rows = await db.execute<{ n: number }>(drizzleSql`SELECT 1 AS n`);
-    expect(Number(rows[0]?.n)).toBe(1);
+    const ping = await pingDatabase();
+    expect(ping.status).toBe("connected");
   });
 
   it("append/read session meta and messages", async () => {

@@ -1,4 +1,5 @@
-import { sql as drizzleSql, type SQL } from "drizzle-orm";
+import { and, asc, eq, gt, isNotNull, isNull, sql as drizzleSql, type SQL } from "drizzle-orm";
+import { messages, semanticMemory } from "@freeanima/core/db/schema";
 
 import { getActiveConfig, isCjkJiebaEnabled, isEmbeddingEnabled } from "@freeanima/platform/config";
 import { logComponent } from "@freeanima/platform/logging";
@@ -34,10 +35,14 @@ function report(
   onProgress?.({ phase, table, current, total });
 }
 
-/** onlyMissing: head-of-queue LIMIT; full rebuild: keyset id cursor (OFFSET skips rows when filter shrinks). */
-function idCursorFilter(onlyMissing: boolean, lastId: string): SQL {
-  if (onlyMissing) return drizzleSql``;
-  return drizzleSql`AND id > ${lastId}`;
+function idCursorCondition(onlyMissing: boolean, lastId: string): SQL | undefined {
+  if (onlyMissing) return undefined;
+  return gt(semanticMemory.id, lastId);
+}
+
+function messageIdCursorCondition(onlyMissing: boolean, lastId: string): SQL | undefined {
+  if (onlyMissing) return undefined;
+  return gt(messages.id, lastId);
 }
 
 function assertEmbeddingBatchStored(
@@ -54,43 +59,52 @@ function assertEmbeddingBatchStored(
 
 async function countSemanticMemorySegmentedTargets(onlyMissing: boolean): Promise<number> {
   const db = getDb();
-  const missing = onlyMissing
-    ? drizzleSql`AND nullif(btrim(fts_segmented), '') IS NULL`
-    : drizzleSql``;
-  const rows = await db.execute<{ n: number }>(drizzleSql`
-    SELECT count(*)::int AS n FROM semantic_memory WHERE length(btrim(content)) > 0 ${missing}
-  `);
+  const conditions = [drizzleSql`length(btrim(${semanticMemory.content})) > 0`];
+  if (onlyMissing) {
+    conditions.push(drizzleSql`nullif(btrim(${semanticMemory.ftsSegmented}), '') IS NULL`);
+  }
+  const rows = await db
+    .select({ n: drizzleSql<number>`count(*)::int` })
+    .from(semanticMemory)
+    .where(and(...conditions));
   return Number(rows[0]?.n ?? 0);
 }
 
 async function countMessagesSegmentedTargets(onlyMissing: boolean): Promise<number> {
   const db = getDb();
-  const missing = onlyMissing
-    ? drizzleSql`AND nullif(btrim(fts_segmented), '') IS NULL`
-    : drizzleSql``;
-  const rows = await db.execute<{ n: number }>(drizzleSql`
-    SELECT count(*)::int AS n FROM messages WHERE content_fts IS NOT NULL ${missing}
-  `);
+  const conditions = [isNotNull(messages.contentFts)];
+  if (onlyMissing) {
+    conditions.push(drizzleSql`nullif(btrim(${messages.ftsSegmented}), '') IS NULL`);
+  }
+  const rows = await db
+    .select({ n: drizzleSql<number>`count(*)::int` })
+    .from(messages)
+    .where(and(...conditions));
   return Number(rows[0]?.n ?? 0);
 }
 
 async function countSemanticMemoryEmbeddingTargets(onlyMissing: boolean): Promise<number> {
   const db = getDb();
-  const missing = onlyMissing ? drizzleSql`AND content_embedding IS NULL` : drizzleSql``;
-  const rows = await db.execute<{ n: number }>(drizzleSql`
-    SELECT count(*)::int AS n
-    FROM semantic_memory
-    WHERE status = 'active' AND length(btrim(content)) > 0 ${missing}
-  `);
+  const conditions = [
+    eq(semanticMemory.status, "active"),
+    drizzleSql`length(btrim(${semanticMemory.content})) > 0`,
+  ];
+  if (onlyMissing) conditions.push(isNull(semanticMemory.contentEmbedding));
+  const rows = await db
+    .select({ n: drizzleSql<number>`count(*)::int` })
+    .from(semanticMemory)
+    .where(and(...conditions));
   return Number(rows[0]?.n ?? 0);
 }
 
 async function countMessagesEmbeddingTargets(onlyMissing: boolean): Promise<number> {
   const db = getDb();
-  const missing = onlyMissing ? drizzleSql`AND content_embedding IS NULL` : drizzleSql``;
-  const rows = await db.execute<{ n: number }>(drizzleSql`
-    SELECT count(*)::int AS n FROM messages WHERE content_fts IS NOT NULL ${missing}
-  `);
+  const conditions = [isNotNull(messages.contentFts)];
+  if (onlyMissing) conditions.push(isNull(messages.contentEmbedding));
+  const rows = await db
+    .select({ n: drizzleSql<number>`count(*)::int` })
+    .from(messages)
+    .where(and(...conditions));
   return Number(rows[0]?.n ?? 0);
 }
 
@@ -108,27 +122,26 @@ async function rebuildSemanticMemoryFtsSegmented(
   const db = getDb();
   let updated = 0;
   let lastId = "";
-  const missingFilter = onlyMissing
-    ? drizzleSql`AND nullif(btrim(fts_segmented), '') IS NULL`
-    : drizzleSql``;
 
   for (;;) {
-    const rows = await db.execute<{ id: string; content: string }>(drizzleSql`
-      SELECT id, content
-      FROM semantic_memory
-      WHERE length(btrim(content)) > 0 ${missingFilter} ${idCursorFilter(onlyMissing, lastId)}
-      ORDER BY id
-      LIMIT ${REBUILD_DB_PAGE_SIZE}
-    `);
+    const baseConditions = [drizzleSql`length(btrim(${semanticMemory.content})) > 0`];
+    if (onlyMissing) {
+      baseConditions.push(drizzleSql`nullif(btrim(${semanticMemory.ftsSegmented}), '') IS NULL`);
+    }
+    const cursorCond = idCursorCondition(onlyMissing, lastId);
+    if (cursorCond) baseConditions.push(cursorCond);
+
+    const rows = await db
+      .select({ id: semanticMemory.id, content: semanticMemory.content })
+      .from(semanticMemory)
+      .where(and(...baseConditions))
+      .orderBy(asc(semanticMemory.id))
+      .limit(REBUILD_DB_PAGE_SIZE);
     if (!rows.length) break;
 
     for (const row of rows) {
       const ftsSegmented = await segmentForFts(row.content);
-      await db.execute(drizzleSql`
-        UPDATE semantic_memory
-        SET fts_segmented = ${ftsSegmented}
-        WHERE id = ${row.id}
-      `);
+      await db.update(semanticMemory).set({ ftsSegmented }).where(eq(semanticMemory.id, row.id));
       updated += 1;
       report(opts.onProgress, "semantic_memory_segmented", "semantic_memory", updated, total);
       lastId = row.id;
@@ -154,28 +167,30 @@ async function rebuildMessagesFtsSegmented(
   const db = getDb();
   let updated = 0;
   let lastId = "";
-  const missingFilter = onlyMissing
-    ? drizzleSql`AND nullif(btrim(fts_segmented), '') IS NULL`
-    : drizzleSql``;
 
   for (;;) {
-    const rows = await db.execute<{ id: string; content: string | null }>(drizzleSql`
-      SELECT id, payload->>'content' AS content
-      FROM messages
-      WHERE content_fts IS NOT NULL ${missingFilter} ${idCursorFilter(onlyMissing, lastId)}
-      ORDER BY id
-      LIMIT ${REBUILD_DB_PAGE_SIZE}
-    `);
+    const baseConditions = [isNotNull(messages.contentFts)];
+    if (onlyMissing) {
+      baseConditions.push(drizzleSql`nullif(btrim(${messages.ftsSegmented}), '') IS NULL`);
+    }
+    const cursorCond = messageIdCursorCondition(onlyMissing, lastId);
+    if (cursorCond) baseConditions.push(cursorCond);
+
+    const rows = await db
+      .select({
+        id: messages.id,
+        content: drizzleSql<string | null>`${messages.payload}->>'content'`,
+      })
+      .from(messages)
+      .where(and(...baseConditions))
+      .orderBy(asc(messages.id))
+      .limit(REBUILD_DB_PAGE_SIZE);
     if (!rows.length) break;
 
     for (const row of rows) {
       const content = row.content ?? "";
       const ftsSegmented = content ? await segmentForFts(content) : null;
-      await db.execute(drizzleSql`
-        UPDATE messages
-        SET fts_segmented = ${ftsSegmented}
-        WHERE id = ${row.id}
-      `);
+      await db.update(messages).set({ ftsSegmented }).where(eq(messages.id, row.id));
       updated += 1;
       report(opts.onProgress, "messages_segmented", "messages", updated, total);
       lastId = row.id;
@@ -198,19 +213,22 @@ async function rebuildSemanticMemoryEmbeddings(opts: FtsRebuildOptions): Promise
   const db = getDb();
   let updated = 0;
   let lastId = "";
-  const missingFilter = onlyMissing ? drizzleSql`AND content_embedding IS NULL` : drizzleSql``;
 
   for (;;) {
-    const rows = await db.execute<{ id: string; content: string }>(drizzleSql`
-      SELECT id, content
-      FROM semantic_memory
-      WHERE status = 'active'
-        AND length(btrim(content)) > 0
-        ${missingFilter}
-        ${idCursorFilter(onlyMissing, lastId)}
-      ORDER BY id
-      LIMIT ${REBUILD_EMBEDDING_PAGE_SIZE}
-    `);
+    const baseConditions = [
+      eq(semanticMemory.status, "active"),
+      drizzleSql`length(btrim(${semanticMemory.content})) > 0`,
+    ];
+    if (onlyMissing) baseConditions.push(isNull(semanticMemory.contentEmbedding));
+    const cursorCond = idCursorCondition(onlyMissing, lastId);
+    if (cursorCond) baseConditions.push(cursorCond);
+
+    const rows = await db
+      .select({ id: semanticMemory.id, content: semanticMemory.content })
+      .from(semanticMemory)
+      .where(and(...baseConditions))
+      .orderBy(asc(semanticMemory.id))
+      .limit(REBUILD_EMBEDDING_PAGE_SIZE);
     if (!rows.length) break;
 
     const row = rows[0]!;
@@ -240,16 +258,22 @@ async function rebuildMessagesEmbeddings(opts: FtsRebuildOptions): Promise<numbe
   const db = getDb();
   let updated = 0;
   let lastId = "";
-  const missingFilter = onlyMissing ? drizzleSql`AND content_embedding IS NULL` : drizzleSql``;
 
   for (;;) {
-    const rows = await db.execute<{ id: string; content: string | null }>(drizzleSql`
-      SELECT id, payload->>'content' AS content
-      FROM messages
-      WHERE content_fts IS NOT NULL ${missingFilter} ${idCursorFilter(onlyMissing, lastId)}
-      ORDER BY id
-      LIMIT ${REBUILD_EMBEDDING_PAGE_SIZE}
-    `);
+    const baseConditions = [isNotNull(messages.contentFts)];
+    if (onlyMissing) baseConditions.push(isNull(messages.contentEmbedding));
+    const cursorCond = messageIdCursorCondition(onlyMissing, lastId);
+    if (cursorCond) baseConditions.push(cursorCond);
+
+    const rows = await db
+      .select({
+        id: messages.id,
+        content: drizzleSql<string | null>`${messages.payload}->>'content'`,
+      })
+      .from(messages)
+      .where(and(...baseConditions))
+      .orderBy(asc(messages.id))
+      .limit(REBUILD_EMBEDDING_PAGE_SIZE);
     if (!rows.length) break;
 
     const row = rows[0]!;
@@ -274,7 +298,7 @@ export async function rebuildAllFtsSegments(
 ): Promise<FtsRebuildResult> {
   const useJieba = isCjkJiebaEnabled(getActiveConfig().data);
   const semantic_memory = await rebuildSemanticMemoryFtsSegmented(useJieba, opts);
-  const messages = await rebuildMessagesFtsSegmented(useJieba, opts);
+  const messagesCount = await rebuildMessagesFtsSegmented(useJieba, opts);
 
   const embedding_enabled = isEmbeddingEnabled(getActiveConfig().data) && getEmbedTextFn() != null;
   let embeddings: Record<string, number> | undefined;
@@ -285,7 +309,7 @@ export async function rebuildAllFtsSegments(
   }
 
   return {
-    tables: { semantic_memory, messages },
+    tables: { semantic_memory, messages: messagesCount },
     cjk_enabled: useJieba,
     embedding_enabled,
     embeddings,

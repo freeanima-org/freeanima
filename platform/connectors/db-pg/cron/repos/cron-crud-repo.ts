@@ -1,4 +1,5 @@
-import { sql as drizzleSql } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
+import { cronJobs } from "@freeanima/core/db/schema";
 import type {
   CronJobBuiltinUpsertInput,
   CronJobCreateInput,
@@ -8,61 +9,41 @@ import type {
 import { formatCstIso } from "@freeanima/core/util";
 
 import { getDb } from "../../client.ts";
-import { mapCronJobRow, type CronJobDbRow } from "../mappers/cron-mapper.ts";
+import { mapCronJobRow } from "../mappers/cron-mapper.ts";
 
 function normalizeStringArray(raw: string[] | undefined | null): string[] {
   if (!raw) return [];
   return raw.map((s) => s.trim()).filter(Boolean);
 }
 
-function rowFromDb(raw: CronJobDbRow): CronJobRow {
-  return mapCronJobRow(raw);
-}
-
-function textArrayLiteral(values: string[]): string {
-  if (!values.length) return "'{}'::text[]";
-  return `ARRAY[${values.map((v) => sqlLiteral(v)).join(", ")}]::text[]`;
-}
-
 export async function createCronJob(row: CronJobCreateInput): Promise<void> {
   const now = formatCstIso();
   const created = row.created_at ?? now;
   const updated = row.updated_at ?? created;
-  const skills = normalizeStringArray(row.skills);
-  const contextFrom = normalizeStringArray(row.context_from);
-
   const db = getDb();
-  await db.execute(
-    drizzleSql.raw(`
-    INSERT INTO cron_jobs (
-      id, name, schedule, prompt, skills, script, no_agent,
-      model_provider, model_name, workdir, context_from, deliver, timeout_sec,
-      builtin, repeat, run_count, paused, created_at, updated_at, last_run_at, last_output_ref
-    ) VALUES (
-      ${sqlLiteral(row.id)},
-      ${sqlLiteral(row.name)},
-      ${sqlLiteral(row.schedule)},
-      ${sqlLiteral(row.prompt ?? "")},
-      ${textArrayLiteral(skills)},
-      ${row.script != null ? sqlLiteral(row.script) : "NULL"},
-      ${row.no_agent ?? false},
-      ${row.model_provider != null ? sqlLiteral(row.model_provider) : "NULL"},
-      ${row.model_name != null ? sqlLiteral(row.model_name) : "NULL"},
-      ${row.workdir != null ? sqlLiteral(row.workdir) : "NULL"},
-      ${textArrayLiteral(contextFrom)},
-      ${sqlLiteral(row.deliver ?? "local")},
-      ${row.timeout_sec ?? 300},
-      ${row.builtin ?? false},
-      ${row.repeat ?? null},
-      ${row.run_count ?? 0},
-      ${row.paused ?? false},
-      ${sqlLiteral(created)}::timestamptz,
-      ${sqlLiteral(updated)}::timestamptz,
-      ${row.last_run_at != null ? `${sqlLiteral(row.last_run_at)}::timestamptz` : "NULL"},
-      ${row.last_output_ref != null ? sqlLiteral(row.last_output_ref) : "NULL"}
-    )
-  `),
-  );
+  await db.insert(cronJobs).values({
+    id: row.id,
+    name: row.name,
+    schedule: row.schedule,
+    prompt: row.prompt ?? "",
+    skills: normalizeStringArray(row.skills),
+    script: row.script ?? null,
+    noAgent: row.no_agent ?? false,
+    modelProvider: row.model_provider ?? null,
+    modelName: row.model_name ?? null,
+    workdir: row.workdir ?? null,
+    contextFrom: normalizeStringArray(row.context_from),
+    deliver: row.deliver ?? "local",
+    timeoutSec: row.timeout_sec ?? 300,
+    builtin: row.builtin ?? false,
+    repeat: row.repeat ?? null,
+    runCount: row.run_count ?? 0,
+    paused: row.paused ?? false,
+    createdAt: created,
+    updatedAt: updated,
+    lastRunAt: row.last_run_at ?? null,
+    lastOutputRef: row.last_output_ref ?? null,
+  });
 }
 
 /** Built-in job upsert: on conflict only updates name/schedule/updated_at; returns whether schedule changed */
@@ -73,135 +54,84 @@ export async function upsertBuiltinCronJob(row: CronJobBuiltinUpsertInput): Prom
   const existing = await getCronJob(row.id);
   const scheduleChanged = existing != null && existing.schedule !== row.schedule;
 
-  await db.execute(drizzleSql`
-    INSERT INTO cron_jobs (
-      id, name, schedule, prompt, no_agent, builtin, deliver, timeout_sec,
-      created_at, updated_at
-    ) VALUES (
-      ${row.id},
-      ${row.name},
-      ${row.schedule},
-      ${row.prompt ?? ""},
-      ${row.no_agent ?? true},
-      true,
-      ${row.deliver ?? "local"},
-      ${row.timeout_sec ?? 1800},
-      ${now}::timestamptz,
-      ${now}::timestamptz
-    )
-    ON CONFLICT (id) DO UPDATE SET
-      name = EXCLUDED.name,
-      schedule = EXCLUDED.schedule,
-      updated_at = EXCLUDED.updated_at
-  `);
+  await db
+    .insert(cronJobs)
+    .values({
+      id: row.id,
+      name: row.name,
+      schedule: row.schedule,
+      prompt: row.prompt ?? "",
+      noAgent: row.no_agent ?? true,
+      builtin: true,
+      deliver: row.deliver ?? "local",
+      timeoutSec: row.timeout_sec ?? 1800,
+      createdAt: now,
+      updatedAt: now,
+    })
+    .onConflictDoUpdate({
+      target: cronJobs.id,
+      set: {
+        name: row.name,
+        schedule: row.schedule,
+        updatedAt: now,
+      },
+    });
 
   return scheduleChanged;
 }
 
 export async function getCronJob(id: string): Promise<CronJobRow | null> {
   const db = getDb();
-  const rows = await db.execute<CronJobDbRow>(drizzleSql`
-    SELECT
-      id, name, schedule, prompt, skills, script, no_agent,
-      model_provider, model_name, workdir, context_from, deliver, timeout_sec,
-      builtin, repeat, run_count, paused, created_at, updated_at, last_run_at, last_output_ref
-    FROM cron_jobs
-    WHERE id = ${id}
-    LIMIT 1
-  `);
+  const rows = await db.select().from(cronJobs).where(eq(cronJobs.id, id)).limit(1);
   const row = rows[0];
-  return row ? rowFromDb(row) : null;
+  return row ? mapCronJobRow(row) : null;
 }
 
 export async function updateCronJob(patch: CronJobUpdateInput): Promise<boolean> {
-  const sets: string[] = [];
-  sets.push(`updated_at = ${sqlLiteral(patch.updated_at ?? formatCstIso())}::timestamptz`);
-  if (patch.name !== undefined) sets.push(`name = ${sqlLiteral(patch.name)}`);
-  if (patch.schedule !== undefined) sets.push(`schedule = ${sqlLiteral(patch.schedule)}`);
-  if (patch.prompt !== undefined) sets.push(`prompt = ${sqlLiteral(patch.prompt)}`);
-  if (patch.skills !== undefined) {
-    sets.push(`skills = ${textArrayLiteral(normalizeStringArray(patch.skills))}`);
-  }
-  if (patch.script !== undefined) {
-    sets.push(patch.script == null ? "script = NULL" : `script = ${sqlLiteral(patch.script)}`);
-  }
-  if (patch.no_agent !== undefined) sets.push(`no_agent = ${patch.no_agent}`);
-  if (patch.model_provider !== undefined) {
-    sets.push(
-      patch.model_provider == null
-        ? "model_provider = NULL"
-        : `model_provider = ${sqlLiteral(patch.model_provider)}`,
-    );
-  }
-  if (patch.model_name !== undefined) {
-    sets.push(
-      patch.model_name == null
-        ? "model_name = NULL"
-        : `model_name = ${sqlLiteral(patch.model_name)}`,
-    );
-  }
-  if (patch.workdir !== undefined) {
-    sets.push(patch.workdir == null ? "workdir = NULL" : `workdir = ${sqlLiteral(patch.workdir)}`);
-  }
-  if (patch.context_from !== undefined) {
-    sets.push(`context_from = ${textArrayLiteral(normalizeStringArray(patch.context_from))}`);
-  }
-  if (patch.deliver !== undefined) sets.push(`deliver = ${sqlLiteral(patch.deliver)}`);
-  if (patch.timeout_sec !== undefined) sets.push(`timeout_sec = ${patch.timeout_sec}`);
-  if (patch.repeat !== undefined) {
-    sets.push(patch.repeat == null ? "repeat = NULL" : `repeat = ${patch.repeat}`);
-  }
-  if (patch.run_count !== undefined) sets.push(`run_count = ${patch.run_count}`);
-  if (patch.paused !== undefined) sets.push(`paused = ${patch.paused}`);
-  if (patch.last_run_at !== undefined) {
-    sets.push(
-      patch.last_run_at == null
-        ? "last_run_at = NULL"
-        : `last_run_at = ${sqlLiteral(patch.last_run_at)}::timestamptz`,
-    );
-  }
-  if (patch.last_output_ref !== undefined) {
-    sets.push(
-      patch.last_output_ref == null
-        ? "last_output_ref = NULL"
-        : `last_output_ref = ${sqlLiteral(patch.last_output_ref)}`,
-    );
-  }
+  const trimmed = patch.id.trim();
+  if (!trimmed) return false;
 
-  if (sets.length === 1) return true;
+  const set: Partial<typeof cronJobs.$inferInsert> = {
+    updatedAt: patch.updated_at ?? formatCstIso(),
+  };
+  if (patch.name !== undefined) set.name = patch.name;
+  if (patch.schedule !== undefined) set.schedule = patch.schedule;
+  if (patch.prompt !== undefined) set.prompt = patch.prompt;
+  if (patch.skills !== undefined) set.skills = normalizeStringArray(patch.skills);
+  if (patch.script !== undefined) set.script = patch.script;
+  if (patch.no_agent !== undefined) set.noAgent = patch.no_agent;
+  if (patch.model_provider !== undefined) set.modelProvider = patch.model_provider;
+  if (patch.model_name !== undefined) set.modelName = patch.model_name;
+  if (patch.workdir !== undefined) set.workdir = patch.workdir;
+  if (patch.context_from !== undefined) {
+    set.contextFrom = normalizeStringArray(patch.context_from);
+  }
+  if (patch.deliver !== undefined) set.deliver = patch.deliver;
+  if (patch.timeout_sec !== undefined) set.timeoutSec = patch.timeout_sec;
+  if (patch.repeat !== undefined) set.repeat = patch.repeat;
+  if (patch.run_count !== undefined) set.runCount = patch.run_count;
+  if (patch.paused !== undefined) set.paused = patch.paused;
+  if (patch.last_run_at !== undefined) set.lastRunAt = patch.last_run_at;
+  if (patch.last_output_ref !== undefined) set.lastOutputRef = patch.last_output_ref;
 
   const db = getDb();
-  const updated = await db.execute<{ id: string }>(
-    drizzleSql.raw(`
-    UPDATE cron_jobs SET ${sets.join(", ")}
-    WHERE id = ${sqlLiteral(patch.id)}
-    RETURNING id
-  `),
-  );
-  return updated.length > 0;
+  const rows = await db.update(cronJobs).set(set).where(eq(cronJobs.id, trimmed)).returning({
+    id: cronJobs.id,
+  });
+  return rows.length > 0;
 }
 
 export async function deleteCronJob(id: string): Promise<boolean> {
   const db = getDb();
-  const deleted = await db.execute<{ id: string }>(drizzleSql`
-    DELETE FROM cron_jobs WHERE id = ${id} RETURNING id
-  `);
+  const deleted = await db
+    .delete(cronJobs)
+    .where(eq(cronJobs.id, id))
+    .returning({ id: cronJobs.id });
   return deleted.length > 0;
 }
 
 export async function listAllCronJobs(): Promise<CronJobRow[]> {
   const db = getDb();
-  const rows = await db.execute<CronJobDbRow>(drizzleSql`
-    SELECT
-      id, name, schedule, prompt, skills, script, no_agent,
-      model_provider, model_name, workdir, context_from, deliver, timeout_sec,
-      builtin, repeat, run_count, paused, created_at, updated_at, last_run_at, last_output_ref
-    FROM cron_jobs
-    ORDER BY created_at ASC
-  `);
-  return rows.map(rowFromDb);
-}
-
-function sqlLiteral(value: string): string {
-  return `'${value.replace(/'/g, "''")}'`;
+  const rows = await db.select().from(cronJobs).orderBy(asc(cronJobs.createdAt));
+  return rows.map(mapCronJobRow);
 }

@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { desc, eq, sql as drizzleSql } from "drizzle-orm";
+import { and, arrayOverlaps, asc, desc, eq, or, sql } from "drizzle-orm";
 import {
   autobiographicalMemory,
   autobiographicalSignificanceSchema,
@@ -14,11 +14,13 @@ import type {
 import { formatCstIso } from "@freeanima/core/util";
 
 import { getDb } from "../../client.ts";
-import { pgTextArrayOverlap } from "../../utils/pg-sql.ts";
-import {
-  mapAutobiographicalMemoryRow,
-  type AutobiographicalMemoryDbRow,
-} from "../mappers/autobiographical-mapper.ts";
+import { mapAutobiographicalMemoryRow } from "../mappers/autobiographical-mapper.ts";
+
+const significanceOrderSql = sql`CASE ${autobiographicalMemory.significance}
+  WHEN 'turning_point' THEN 1
+  WHEN 'milestone' THEN 2
+  ELSE 3
+END`;
 
 function normalizeSignificance(raw: string | undefined) {
   const parsed = autobiographicalSignificanceSchema.safeParse(String(raw ?? "normal").trim());
@@ -46,6 +48,29 @@ function normalizeAutobiographicalListOpts(opts?: AutobiographicalListOpts) {
       : null;
   const sourceSession = opts?.source_session?.trim() ?? "";
   return { query, status, significance, sourceSession };
+}
+
+function buildAutobiographicalConditions(
+  opts?: Omit<AutobiographicalListOpts, "offset" | "limit">,
+) {
+  const { query, status, significance, sourceSession } = normalizeAutobiographicalListOpts(opts);
+  const conditions = [eq(autobiographicalMemory.status, status)];
+  if (significance) {
+    conditions.push(eq(autobiographicalMemory.significance, significance));
+  }
+  if (sourceSession) {
+    conditions.push(arrayOverlaps(autobiographicalMemory.sourceSessions, [sourceSession]));
+  }
+  if (query) {
+    const pattern = `%${escapeIlikePattern(query)}%`;
+    conditions.push(
+      or(
+        sql`${autobiographicalMemory.title} ILIKE ${pattern} ESCAPE '\\'`,
+        sql`${autobiographicalMemory.content} ILIKE ${pattern} ESCAPE '\\'`,
+      )!,
+    );
+  }
+  return conditions;
 }
 
 export async function createAutobiographicalMemory(
@@ -107,27 +132,12 @@ export async function deprecateAutobiographicalMemory(id: string): Promise<boole
 export async function countAutobiographicalMemory(
   opts?: Omit<AutobiographicalListOpts, "offset" | "limit">,
 ): Promise<number> {
-  const { query, status, significance, sourceSession } = normalizeAutobiographicalListOpts(opts);
-
+  const conditions = buildAutobiographicalConditions(opts);
   const db = getDb();
-  const significanceFilter = significance
-    ? drizzleSql`AND significance = ${significance}`
-    : drizzleSql``;
-  const sourceFilter = sourceSession
-    ? drizzleSql`AND ${pgTextArrayOverlap("source_sessions", [sourceSession])}`
-    : drizzleSql``;
-  const queryFilter = query
-    ? drizzleSql`AND (title ILIKE ${"%" + escapeIlikePattern(query) + "%"} ESCAPE '\\' OR content ILIKE ${"%" + escapeIlikePattern(query) + "%"} ESCAPE '\\')`
-    : drizzleSql``;
-
-  const rows = await db.execute<{ n: number }>(drizzleSql`
-    SELECT count(*)::int AS n
-    FROM autobiographical_memory
-    WHERE status = ${status}
-    ${significanceFilter}
-    ${sourceFilter}
-    ${queryFilter}
-  `);
+  const rows = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(autobiographicalMemory)
+    .where(and(...conditions));
   return Number(rows[0]?.n ?? 0);
 }
 
@@ -149,30 +159,12 @@ export async function listActiveAutobiographicalMemory(opts?: {
     return rows.map(mapAutobiographicalMemoryRow);
   }
 
-  const rows = await db.execute<AutobiographicalMemoryDbRow>(drizzleSql`
-    SELECT
-      id,
-      title,
-      content,
-      significance,
-      period_start,
-      period_end,
-      source_facts,
-      source_sessions,
-      status,
-      created_at,
-      updated_at
-    FROM autobiographical_memory
-    WHERE status = 'active'
-    ORDER BY
-      CASE significance
-        WHEN 'turning_point' THEN 1
-        WHEN 'milestone' THEN 2
-        ELSE 3
-      END,
-      updated_at DESC
-    LIMIT ${limit}
-  `);
+  const rows = await db
+    .select()
+    .from(autobiographicalMemory)
+    .where(eq(autobiographicalMemory.status, "active"))
+    .orderBy(asc(significanceOrderSql), desc(autobiographicalMemory.updatedAt))
+    .limit(limit);
   return rows.map(mapAutobiographicalMemoryRow);
 }
 
@@ -184,25 +176,17 @@ export async function listAutobiographicalMemoryCreatedSince(
   if (!since) return [];
   const limit = Math.max(1, Math.min(500, opts?.limit ?? 100));
   const db = getDb();
-  const rows = await db.execute<AutobiographicalMemoryDbRow>(drizzleSql`
-    SELECT
-      id,
-      title,
-      content,
-      significance,
-      period_start,
-      period_end,
-      source_facts,
-      source_sessions,
-      status,
-      created_at,
-      updated_at
-    FROM autobiographical_memory
-    WHERE status = 'active'
-      AND created_at >= ${since}::timestamptz
-    ORDER BY created_at DESC
-    LIMIT ${limit}
-  `);
+  const rows = await db
+    .select()
+    .from(autobiographicalMemory)
+    .where(
+      and(
+        eq(autobiographicalMemory.status, "active"),
+        sql`${autobiographicalMemory.createdAt} >= ${since}::timestamptz`,
+      ),
+    )
+    .orderBy(desc(autobiographicalMemory.createdAt))
+    .limit(limit);
   return rows.map(mapAutobiographicalMemoryRow);
 }
 
@@ -214,26 +198,17 @@ export async function listAutobiographicalMemoryBySourceSemanticMemory(
   if (!ids.length) return [];
 
   const status = opts?.status ?? "active";
+  const conditions = [
+    arrayOverlaps(autobiographicalMemory.sourceFacts, ids),
+    eq(autobiographicalMemory.status, status),
+  ];
 
   const db = getDb();
-  const rows = await db.execute<AutobiographicalMemoryDbRow>(drizzleSql`
-    SELECT
-      id,
-      title,
-      content,
-      significance,
-      period_start,
-      period_end,
-      source_facts,
-      source_sessions,
-      status,
-      created_at,
-      updated_at
-    FROM autobiographical_memory
-    WHERE ${pgTextArrayOverlap("source_facts", ids)}
-      AND status = ${status}
-    ORDER BY updated_at DESC
-  `);
+  const rows = await db
+    .select()
+    .from(autobiographicalMemory)
+    .where(and(...conditions))
+    .orderBy(desc(autobiographicalMemory.updatedAt));
   return rows.map(mapAutobiographicalMemoryRow);
 }
 
@@ -245,26 +220,17 @@ export async function listAutobiographicalMemoryBySourceSessions(
   if (!ids.length) return [];
 
   const status = opts?.status ?? "active";
+  const conditions = [
+    arrayOverlaps(autobiographicalMemory.sourceSessions, ids),
+    eq(autobiographicalMemory.status, status),
+  ];
 
   const db = getDb();
-  const rows = await db.execute<AutobiographicalMemoryDbRow>(drizzleSql`
-    SELECT
-      id,
-      title,
-      content,
-      significance,
-      period_start,
-      period_end,
-      source_facts,
-      source_sessions,
-      status,
-      created_at,
-      updated_at
-    FROM autobiographical_memory
-    WHERE ${pgTextArrayOverlap("source_sessions", ids)}
-      AND status = ${status}
-    ORDER BY updated_at DESC
-  `);
+  const rows = await db
+    .select()
+    .from(autobiographicalMemory)
+    .where(and(...conditions))
+    .orderBy(desc(autobiographicalMemory.updatedAt));
   return rows.map(mapAutobiographicalMemoryRow);
 }
 
@@ -273,40 +239,15 @@ export async function listAutobiographicalMemory(
 ): Promise<AutobiographicalMemoryRow[]> {
   const limit = Math.max(1, Math.min(100, opts?.limit ?? 20));
   const offset = Math.max(0, opts?.offset ?? 0);
-  const { query, status, significance, sourceSession } = normalizeAutobiographicalListOpts(opts);
+  const conditions = buildAutobiographicalConditions(opts);
 
   const db = getDb();
-  const significanceFilter = significance
-    ? drizzleSql`AND significance = ${significance}`
-    : drizzleSql``;
-  const sourceFilter = sourceSession
-    ? drizzleSql`AND ${pgTextArrayOverlap("source_sessions", [sourceSession])}`
-    : drizzleSql``;
-  const queryFilter = query
-    ? drizzleSql`AND (title ILIKE ${"%" + escapeIlikePattern(query) + "%"} ESCAPE '\\' OR content ILIKE ${"%" + escapeIlikePattern(query) + "%"} ESCAPE '\\')`
-    : drizzleSql``;
-
-  const rows = await db.execute<AutobiographicalMemoryDbRow>(drizzleSql`
-    SELECT
-      id,
-      title,
-      content,
-      significance,
-      period_start,
-      period_end,
-      source_facts,
-      source_sessions,
-      status,
-      created_at,
-      updated_at
-    FROM autobiographical_memory
-    WHERE status = ${status}
-    ${significanceFilter}
-    ${sourceFilter}
-    ${queryFilter}
-    ORDER BY updated_at DESC
-    OFFSET ${offset}
-    LIMIT ${limit}
-  `);
+  const rows = await db
+    .select()
+    .from(autobiographicalMemory)
+    .where(and(...conditions))
+    .orderBy(desc(autobiographicalMemory.updatedAt))
+    .offset(offset)
+    .limit(limit);
   return rows.map(mapAutobiographicalMemoryRow);
 }

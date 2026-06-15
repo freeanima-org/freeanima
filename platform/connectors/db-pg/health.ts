@@ -1,4 +1,4 @@
-import { sql as drizzleSql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { getDb, isPostgresPrimary } from "./client.ts";
 
 const PING_TIMEOUT_MS = 2000;
@@ -33,7 +33,10 @@ export async function pingDatabase(): Promise<DatabasePingStatus> {
   const started = Date.now();
   try {
     const db = getDb();
-    await withTimeout(db.execute(drizzleSql`SELECT 1`), PING_TIMEOUT_MS);
+    await withTimeout(
+      db.select({ n: sql<number>`1` }).from(sql`(SELECT 1) AS _ping`),
+      PING_TIMEOUT_MS,
+    );
     return { status: "connected", latency_ms: Date.now() - started };
   } catch (err) {
     return { status: "error", error: sanitizeError(err) };

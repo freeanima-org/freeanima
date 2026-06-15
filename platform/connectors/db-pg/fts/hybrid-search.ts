@@ -4,17 +4,19 @@ import {
   getFtsTrgmFallbackWhenHitsLt,
   getFtsTrgmMinSimilarity,
 } from "@freeanima/platform/config";
-import { sql as drizzleSql } from "drizzle-orm";
+import { and, isNotNull, sql } from "drizzle-orm";
+import { union } from "drizzle-orm/pg-core";
+import { semanticMemory } from "@freeanima/core/db/schema";
+import { rrfMerge, messageDocKey, semanticMemoryDocKey } from "@freeanima/core/util";
 
 import { embedQueryText } from "../embedding/query.ts";
 import { getDb } from "../client.ts";
+import { buildSemanticConditions } from "../semantic-memory/repos/semantic-filters.ts";
 import { buildFtsTsQuery } from "./query.ts";
-import { rrfMerge, messageDocKey, semanticMemoryDocKey } from "@freeanima/core/util";
 import { searchMessagesTrgm, searchSemanticMemoryTrgm } from "./trgm-search.ts";
 import { searchSemanticMemoryFtsRaw, searchMessagesFtsRaw } from "./hybrid-raw.ts";
 import { searchMessagesVector, searchSemanticMemoryVector } from "./vector-search.ts";
 import { mapSemanticMemoryRow } from "../semantic-memory/mappers/semantic-mapper.ts";
-import { pgSemanticSourceSessionsFilter, pgSemanticTypeFilter } from "../utils/pg-sql.ts";
 
 function candidateLimit(requested: number, ftsCount: number): number {
   const fallback = getFtsTrgmFallbackWhenHitsLt(getActiveConfig().data);
@@ -132,40 +134,38 @@ export async function hybridCountSemanticMemory(
   const queryEmbedding = await embedQueryText(q);
 
   const db = getDb();
-  const typeFilter = pgSemanticTypeFilter(types);
-  const statusFilter = status === "all" ? drizzleSql`` : drizzleSql`AND sm.status = ${status}`;
-  const sourceFilter = pgSemanticSourceSessionsFilter(sourceSessions);
+  const semanticConditions = buildSemanticConditions({ types, status, sourceSessions });
+  const whereSemantic = semanticConditions.length > 0 ? and(...semanticConditions) : undefined;
 
-  const vectorUnion =
+  const tsqueryExpr = sql`to_tsquery('simple', ${tsquery})`;
+  const ftsBranch = db
+    .select({ id: semanticMemory.id })
+    .from(semanticMemory)
+    .where(
+      and(
+        sql`${semanticMemory.contentFts} @@ ${tsqueryExpr}`,
+        ...(semanticConditions.length > 0 ? semanticConditions : []),
+      ),
+    );
+  const trgmBranch = db
+    .select({ id: semanticMemory.id })
+    .from(semanticMemory)
+    .where(
+      and(
+        sql`word_similarity(${semanticMemory.content}, ${q}) >= ${minSim}`,
+        ...(semanticConditions.length > 0 ? semanticConditions : []),
+      ),
+    );
+
+  const vectorBranch = db
+    .select({ id: semanticMemory.id })
+    .from(semanticMemory)
+    .where(and(isNotNull(semanticMemory.contentEmbedding), whereSemantic));
+
+  const merged =
     queryEmbedding && queryEmbedding.length > 0
-      ? drizzleSql`
-      UNION
-      SELECT sm.id
-      FROM semantic_memory sm
-      WHERE sm.content_embedding IS NOT NULL
-      ${statusFilter}
-      ${typeFilter}
-      ${sourceFilter}
-    `
-      : drizzleSql``;
-
-  const rows = await db.execute<{ n: number }>(drizzleSql`
-    SELECT count(*)::int AS n FROM (
-      SELECT sm.id
-      FROM semantic_memory sm, to_tsquery('simple', ${tsquery}) q
-      WHERE sm.content_fts @@ q
-      ${statusFilter}
-      ${typeFilter}
-      ${sourceFilter}
-      UNION
-      SELECT sm.id
-      FROM semantic_memory sm
-      WHERE word_similarity(sm.content, ${q}) >= ${minSim}
-      ${statusFilter}
-      ${typeFilter}
-      ${sourceFilter}
-      ${vectorUnion}
-    ) merged
-  `);
+      ? union(ftsBranch, trgmBranch, vectorBranch).as("merged")
+      : union(ftsBranch, trgmBranch).as("merged");
+  const rows = await db.select({ n: sql<number>`count(*)::int` }).from(merged);
   return Number(rows[0]?.n ?? 0);
 }

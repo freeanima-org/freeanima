@@ -1,5 +1,6 @@
 import { randomBytes } from "node:crypto";
-import { sql as drizzleSql } from "drizzle-orm";
+import { desc, sql } from "drizzle-orm";
+import { semanticMemory } from "@freeanima/core/db/schema";
 
 import { getDb } from "../../client.ts";
 
@@ -17,13 +18,12 @@ export function formatSemanticMemoryId(seq: number): string {
 
 export async function nextSemanticMemoryId(): Promise<string> {
   const db = getDb();
-  const rows = await db.execute<{ id: string }>(drizzleSql`
-    SELECT id
-    FROM semantic_memory
-    WHERE id ~ '^f-[0-9]{6}-[0-9a-f]{4}$'
-    ORDER BY id DESC
-    LIMIT 1
-  `);
+  const rows = await db
+    .select({ id: semanticMemory.id })
+    .from(semanticMemory)
+    .where(sql`${semanticMemory.id} ~ '^f-[0-9]{6}-[0-9a-f]{4}$'`)
+    .orderBy(desc(semanticMemory.id))
+    .limit(1);
   const lastSeq = rows[0]?.id ? (parseSeqFromId(rows[0].id) ?? 0) : 0;
   return formatSemanticMemoryId(lastSeq + 1);
 }
