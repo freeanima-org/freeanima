@@ -120,17 +120,18 @@ docker compose up --build
 - Do not hardcode `X.Y.Z` in business code; use `import { ANIMA_VERSION } from "@freeanima/platform"` (or expose via health/status).
 - Do not maintain `version` in workspace sub-package `package.json`.
 - Do not manually edit `CHANGELOG.md` or `[Unreleased]`; release notes come from commits and Release Please.
+- Do not run oxfmt on `CHANGELOG.md`; it is excluded in [`.oxfmtrc.jsonc`](../../.oxfmtrc.jsonc) `ignorePatterns`. Release Please writes `*` list markers (conventional-changelog default); do not convert them locally.
 
 ## Related Files
 
-| File                                   | Role                                              |
-| -------------------------------------- | ------------------------------------------------- |
-| `package.json`                         | Sole version write source (updated by Release PR) |
-| `release-please-config.json`           | Release Please strategy and changelog sections    |
-| `.release-please-manifest.json`        | Published version manifest                        |
-| `.github/workflows/release.yml`        | release-please + npm publish                      |
-| `.github/workflows/release-docker.yml` | Docker image push to GHCR                         |
-| `CHANGELOG.md`                         | New version section appended on Release PR merge  |
+| File                                   | Role                                                                                     |
+| -------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `package.json`                         | Sole version write source (updated by Release PR)                                        |
+| `release-please-config.json`           | Release Please strategy and changelog sections                                           |
+| `.release-please-manifest.json`        | Published version manifest                                                               |
+| `.github/workflows/release.yml`        | release-please + npm publish                                                             |
+| `.github/workflows/release-docker.yml` | Docker image push to GHCR                                                                |
+| `CHANGELOG.md`                         | New version section appended on Release PR merge; excluded from oxfmt (`*` list markers) |
 
 ## Repository Settings (Maintainers)
 
