@@ -18,7 +18,7 @@ title: Compression
 
 ## Runtime Four Segments
 
-```
+```text
 ① system  — system prompt (self layer + resident memory + project context)
 ② summary — text summary of compressed portion (synthetic; not stored in messages)
 ③ slim    — middle segment: trimmed user/assistant messages

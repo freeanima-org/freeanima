@@ -17,6 +17,7 @@ runs:
       run: |
         sudo apt-get update
         sudo apt-get install -y po4a gettext
+        po4a --version | grep -E 'po4a version 0\.(6[7-9]|[7-9][0-9])\.'
     - uses: ./.github/actions/setup-bun
     - name: i18n po4a
       shell: bash

@@ -21,6 +21,13 @@ export const potRoot = join(poRoot, "pot");
 export const generatedZhRoot = join(root, "docs/.generated/zh_CN");
 export const zhRefRoot = join(root, "docs/.zh-cn-ref");
 
+/** Subdirectories included in Starlight docs collection (see site/src/content.config.ts). */
+export const DOC_COLLECTION_DIRS = ["guide", "concepts", "features", "sap", "tools"] as const;
+
+/** po4a text+markdown alias options (see gen-po4a-cfg.ts). */
+export const PO4A_DOCMD_ALIAS =
+  '[po4a_alias:docmd] text opt:"-o markdown -o yfm_keys=title -o yfm_lenient"';
+
 /** po4a $master token: basename including .md */
 export function masterFilename(rel: string): string {
   return basename(rel);
@@ -83,4 +90,30 @@ export function assertUniqueMasters(masters: DocMaster[]): void {
     }
     seen.set(master, rel);
   }
+}
+
+function collectMarkdownFiles(dir: string): string[] {
+  const out: string[] = [];
+  if (!existsSync(dir)) return out;
+  for (const name of readdirSync(dir).toSorted()) {
+    const path = join(dir, name);
+    const st = statSync(path);
+    if (st.isDirectory()) {
+      out.push(...collectMarkdownFiles(path));
+    } else if (/\.mdx?$/i.test(name)) {
+      out.push(path);
+    }
+  }
+  return out;
+}
+
+/** Markdown files in the Starlight docs collection (English source). */
+export function listCollectionDocFiles(): string[] {
+  const files: string[] = [];
+  const readme = join(docsRoot, "README.md");
+  if (existsSync(readme)) files.push(readme);
+  for (const dir of DOC_COLLECTION_DIRS) {
+    files.push(...collectMarkdownFiles(join(docsRoot, dir)));
+  }
+  return files.toSorted();
 }

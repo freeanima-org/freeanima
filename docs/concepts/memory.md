@@ -18,7 +18,7 @@ title: Memory
 
 ## I. Three Temporal Stages of Memory
 
-```
+```text
 External input / real-time message stream
         │ (milliseconds)
         ▼
@@ -54,7 +54,7 @@ Persistent multimodal storage network. Organized internally by human memory theo
 
 ## II. Long-Term Memory Taxonomy
 
-```
+```text
 Long-term memory (LTM)
 │
 ├── Explicit memory (declarative) ── "what I know"

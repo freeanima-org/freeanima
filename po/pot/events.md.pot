@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 17:27+0800\n"
+"POT-Creation-Date: 2026-06-15 17:52+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,41 +16,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. type: Plain text
-#: docs/README.md:1 docs/concepts/architecture.md:1
-#: docs/concepts/compression.md:1 docs/concepts/dream.md:1
-#: docs/concepts/identity.md:1 docs/concepts/identity.md:10
-#: docs/concepts/identity.md:28 docs/concepts/identity.md:45
-#: docs/concepts/identity.md:55 docs/concepts/memory.md:1
-#: docs/concepts/memory.md:17 docs/concepts/memory.md:53
-#: docs/concepts/memory.md:124 docs/concepts/memory.md:135
-#: docs/concepts/memory.md:160 docs/concepts/recall-flow.md:1
-#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:30
-#: docs/concepts/self-layer.md:52 docs/concepts/self-layer.md:66
-#: docs/concepts/self-layer.md:80 docs/concepts/self-layer.md:91
-#: docs/concepts/sleep.md:1 docs/concepts/time-perception.md:1
-#: docs/features/pair-programming-v1.md:1 docs/guide/database.md:1
-#: docs/guide/install.md:1 docs/guide/install.md:31 docs/guide/install.md:106
-#: docs/guide/install.md:167 docs/guide/install.md:234 docs/guide/security.md:1
-#: docs/guide/service.md:1 docs/sap/events.md:1 docs/sap/methods.md:1
-#: docs/sap/overview.md:1 docs/sap/satellite-guide.md:1
-#: docs/sap/security-model.md:1 docs/sap/tools.md:1 docs/sap/transport.md:1
-#: docs/tools/execute-code-runtimes.md:1
+#. type: Title #
+#: docs/sap/events.md:1 docs/sap/events.md:5
 #, no-wrap
-msgid "---\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/events.md:3
-#, no-wrap
-msgid ""
-"title: SAP Events\n"
-"---\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/events.md:6
-msgid "# SAP Events"
+msgid "SAP Events"
 msgstr ""
 
 #. type: Plain text
@@ -61,9 +30,10 @@ msgid ""
 "pushed after an RPC or subscription."
 msgstr ""
 
-#. type: Plain text
-#: docs/sap/events.md:10
-msgid "## Stream events (`message.send`)"
+#. type: Title ##
+#: docs/sap/events.md:9
+#, no-wrap
+msgid "Stream events (`message.send`)"
 msgstr ""
 
 #. type: Plain text
@@ -74,21 +44,15 @@ msgid ""
 "sap-contract/src/frames/message.ts) as `streamEventMethods`."
 msgstr ""
 
-#. type: Plain text
-#: docs/sap/events.md:18 docs/sap/overview.md:55 docs/sap/tools.md:38
+#. type: Fenced code block (mermaid)
+#: docs/sap/events.md:13
 #, no-wrap
 msgid ""
-"```mermaid\n"
 "sequenceDiagram\n"
 "  participant Sat as Satellite\n"
 "  participant Hub as Hub\n"
 "  participant Agent as AgentRuntime\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/events.md:32
-#, no-wrap
-msgid ""
+"\n"
 "  Sat->>Hub: req message.send\n"
 "  Hub->>Sat: res stream_id\n"
 "  Hub-->>Sat: evt stream.accepted\n"
@@ -101,26 +65,25 @@ msgid ""
 "  Sat->>Hub: req tool.result\n"
 "  Hub-->>Sat: evt stream.tool_result\n"
 "  Hub-->>Sat: evt stream.done\n"
-"```\n"
 msgstr ""
 
 #. type: Plain text
 #: docs/sap/events.md:46
 #, no-wrap
 msgid ""
-"| Method | Typical payload fields |\n"
-"| ------ | -------------------- |\n"
-"| `stream.accepted` | `stream_id` |\n"
-"| `stream.token` | `stream_id`, `content` |\n"
-"| `stream.content_replace` | `stream_id`, `content` |\n"
-"| `stream.tool_begin` | `stream_id`, `tool`, `args` |\n"
-"| `stream.tool_result` | `stream_id`, `tool`, `content` |\n"
-"| `stream.tool_error` | `stream_id`, `tool`, `content` |\n"
+"| Method                    | Typical payload fields              |\n"
+"| ------------------------- | ----------------------------------- |\n"
+"| `stream.accepted`         | `stream_id`                         |\n"
+"| `stream.token`            | `stream_id`, `content`              |\n"
+"| `stream.content_replace`  | `stream_id`, `content`              |\n"
+"| `stream.tool_begin`       | `stream_id`, `tool`, `args`         |\n"
+"| `stream.tool_result`      | `stream_id`, `tool`, `content`      |\n"
+"| `stream.tool_error`       | `stream_id`, `tool`, `content`      |\n"
 "| `stream.awaiting_clarify` | `stream_id`, `items`, `timeout_sec` |\n"
-"| `stream.interrupted` | `stream_id`, `reason` |\n"
-"| `stream.done` | `stream_id`, optional `reason` |\n"
-"| `stream.error` | `stream_id`, `error` |\n"
-"| `stream.ping` | `stream_id` |\n"
+"| `stream.interrupted`      | `stream_id`, `reason`               |\n"
+"| `stream.done`             | `stream_id`, optional `reason`      |\n"
+"| `stream.error`            | `stream_id`, `error`                |\n"
+"| `stream.ping`             | `stream_id`                         |\n"
 msgstr ""
 
 #. type: Plain text
@@ -130,9 +93,10 @@ msgid ""
 "the same file."
 msgstr ""
 
-#. type: Plain text
-#: docs/sap/events.md:50
-msgid "## SAP stream → WebUI SSE"
+#. type: Title ##
+#: docs/sap/events.md:49
+#, no-wrap
+msgid "SAP stream → WebUI SSE"
 msgstr ""
 
 #. type: Plain text
@@ -142,43 +106,43 @@ msgid ""
 "via `mapSapStreamMethodToApi`:"
 msgstr ""
 
-#. type: Plain text
-#: docs/sap/events.md:66
+#. type: Fenced code block (mermaid)
+#: docs/sap/events.md:53
 #, no-wrap
 msgid ""
-"```mermaid\n"
 "flowchart LR\n"
 "  subgraph sap [SAP evt]\n"
 "    StreamToken[\"stream.token\"]\n"
 "    StreamDone[\"stream.done\"]\n"
 "  end\n"
-"  subgraph sse [SSE event]\n"
+"  subgraph ui [Relay / browser client]\n"
 "    TokenEvent[\"token\"]\n"
 "    DoneEvent[\"done\"]\n"
 "  end\n"
 "  StreamToken --> TokenEvent\n"
 "  StreamDone --> DoneEvent\n"
-"```\n"
 msgstr ""
 
 #. type: Plain text
 #: docs/sap/events.md:68
 msgid ""
-"Reference: [`satellites/pair-programming/server/http/hub-api.ts`](../../"
-"satellites/pair-programming/server/http/hub-api.ts)."
+"Type B satellites fan out Hub `stream.*` events over [`/sap/relay/v1`](../../"
+"satellites/pair-programming/server/sap/relay.ts); the browser uses "
+"`createSapRelayBrowserClient` and `mapSapStreamMethodToApi`."
 msgstr ""
 
-#. type: Plain text
-#: docs/sap/events.md:70
-msgid "## Session events"
+#. type: Title ##
+#: docs/sap/events.md:69
+#, no-wrap
+msgid "Session events"
 msgstr ""
 
 #. type: Plain text
 #: docs/sap/events.md:74
 #, no-wrap
 msgid ""
-"| Method | When | Payload |\n"
-"| ------ | ---- | ------- |\n"
+"| Method            | When                      | Payload      |\n"
+"| ----------------- | ------------------------- | ------------ |\n"
 "| `session.updated` | After `session.subscribe` | `session_id` |\n"
 msgstr ""
 
@@ -189,21 +153,22 @@ msgid ""
 "(../../platform/src/sap/stream-bridge.ts)."
 msgstr ""
 
-#. type: Plain text
-#: docs/sap/events.md:78
-msgid "## Terminal events"
+#. type: Title ##
+#: docs/sap/events.md:77
+#, no-wrap
+msgid "Terminal events"
 msgstr ""
 
 #. type: Plain text
 #: docs/sap/events.md:85
 #, no-wrap
 msgid ""
-"| Method | Payload highlights |\n"
-"| ------ | ------------------ |\n"
-"| `terminal.ready` | `terminal_id` |\n"
-"| `terminal.output` | `terminal_id`, output data |\n"
-"| `terminal.exit` | `terminal_id`, exit code |\n"
-"| `terminal.error` | `terminal_id`, error message |\n"
+"| Method            | Payload highlights           |\n"
+"| ----------------- | ---------------------------- |\n"
+"| `terminal.ready`  | `terminal_id`                |\n"
+"| `terminal.output` | `terminal_id`, output data   |\n"
+"| `terminal.exit`   | `terminal_id`, exit code     |\n"
+"| `terminal.error`  | `terminal_id`, error message |\n"
 msgstr ""
 
 #. type: Plain text
@@ -213,17 +178,18 @@ msgid ""
 "sap-contract/src/frames/terminal.ts)."
 msgstr ""
 
-#. type: Plain text
-#: docs/sap/events.md:89
-msgid "## Tool events"
+#. type: Title ##
+#: docs/sap/events.md:88
+#, no-wrap
+msgid "Tool events"
 msgstr ""
 
 #. type: Plain text
 #: docs/sap/events.md:93
 #, no-wrap
 msgid ""
-"| Method | Direction | Role |\n"
-"| ------ | --------- | ---- |\n"
+"| Method      | Direction       | Role                            |\n"
+"| ----------- | --------------- | ------------------------------- |\n"
 "| `tool.call` | Hub → Satellite | Execute a registered local tool |\n"
 msgstr ""
 
@@ -242,16 +208,17 @@ msgid ""
 "`call_id`."
 msgstr ""
 
-#. type: Plain text
-#: docs/sap/events.md:99
-msgid "## Lifecycle events"
+#. type: Title ##
+#: docs/sap/events.md:98
+#, no-wrap
+msgid "Lifecycle events"
 msgstr ""
 
 #. type: Plain text
 #: docs/sap/events.md:102
 #, no-wrap
 msgid ""
-"| Method | Direction | Role |\n"
-"| ------ | --------- | ---- |\n"
-"| `heartbeat` | Both | Keep-alive; see [transport.md](transport.md) |\n"
+"| Method      | Direction | Role                                         |\n"
+"| ----------- | --------- | -------------------------------------------- |\n"
+"| `heartbeat` | Both      | Keep-alive; see [transport.md](transport.md) |\n"
 msgstr ""

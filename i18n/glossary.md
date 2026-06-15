@@ -1,8 +1,6 @@
 # Glossary
 
-管线、工作流与命令见 [`.agent/rules/i18n.md`](../.agent/rules/i18n.md)（SSOT）。本文件仅维护术语对照。
-
-译者维护 Paraglide PO（`po/zh_CN/en.xml.po`）与文档 PO（`po/zh_CN/*.po`）时，请统一使用下列术语。
+管线与工作流： [`.agent/rules/i18n.md`](../.agent/rules/i18n.md)（SSOT）；写 docs / 填 PO： [`.agent/rules/docs-i18n.md`](../.agent/rules/docs-i18n.md)。**无人工译者** — AI agent 维护 PO 时必读本表。
 
 | English (canonical) | 中文      | Notes                                  |
 | ------------------- | --------- | -------------------------------------- |

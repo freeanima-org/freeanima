@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-12 11:55+0800\n"
+"POT-Creation-Date: 2026-06-15 17:52+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,66 +15,33 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. type: Plain text
-#: docs/README.md:1 docs/concepts/architecture.md:1
-#: docs/concepts/compression.md:1 docs/concepts/identity.md:1
-#: docs/concepts/identity.md:10 docs/concepts/identity.md:28
-#: docs/concepts/identity.md:45 docs/concepts/identity.md:55
-#: docs/concepts/memory.md:1 docs/concepts/memory.md:17
-#: docs/concepts/memory.md:53 docs/concepts/memory.md:122
-#: docs/concepts/memory.md:133 docs/concepts/memory.md:150
-#: docs/concepts/recall-flow.md:1 docs/concepts/self-layer.md:1
-#: docs/concepts/self-layer.md:30 docs/concepts/self-layer.md:52
-#: docs/concepts/self-layer.md:66 docs/concepts/self-layer.md:80
-#: docs/concepts/self-layer.md:91 docs/concepts/sleep.md:1
-#: docs/concepts/time-perception.md:1 docs/features/pair-programming-v1.md:1
-#: docs/guide/database.md:1 docs/guide/security.md:1
-#: docs/tools/execute-code-runtimes.md:1
+#. type: Content of: <messages><msg>
+#: docs/concepts/recall-flow.md:1 messages/po4a/en.xml:42
 #, no-wrap
-msgid "---\n"
-msgstr "---\n"
+msgid "Recall Flow"
+msgstr "Recall 流程"
 
-#. type: Plain text
-#: docs/concepts/recall-flow.md:3
+#. type: Title #
+#: docs/concepts/recall-flow.md:5
 #, no-wrap
-msgid ""
-"title: Recall Flow\n"
-"---\n"
-msgstr ""
-"title: Recall Flow\n"
-"---\n"
-
-#. type: Plain text
-#: docs/concepts/recall-flow.md:6
-#, fuzzy
-#| msgid "# Unified Recall Retrieval and Loading Flow"
-msgid "# Unified Recall Retrieval"
-msgstr "# Recall 统一检索与加载流程"
+msgid "Unified Recall Retrieval"
+msgstr "统一 Recall 检索"
 
 #. type: Plain text
 #: docs/concepts/recall-flow.md:8
-msgid ""
-"> **v1 ✅ Implemented:** `memory_recall(query)` four-source unified recall, "
-"returns `results[]` (distinguished by `memory_type`)."
-msgstr ""
-"> **v1 ✅ 已实现：** `memory_recall(query)` 四源统一召回，返回 `results[]`"
-"（以 `memory_type` 区分）。"
+#, no-wrap
+msgid "> **v1 ✅ Implemented:** `memory_recall(query)` four-source unified recall, returns `results[]` (distinguished by `memory_type`).\n"
+msgstr "> **v1 ✅ 已实现：** `memory_recall(query)` 四源统一召回，返回 `results[]`（以 `memory_type` 区分）。\n"
 
-#. type: Plain text
-#: docs/concepts/recall-flow.md:10
-msgid "## v1 Implemented"
-msgstr "## v1 已实现"
+#. type: Title ##
+#: docs/concepts/recall-flow.md:9
+#, no-wrap
+msgid "v1 Implemented"
+msgstr "v1 已实现"
 
 #. type: Plain text
 #: docs/concepts/recall-flow.md:17
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Capability | Description |\n"
-#| "| ---------- | ----------- |\n"
-#| "| `memory_recall` | Four sources: semantic / session / limbic / autobiographical; Top N; session returns snippet |\n"
-#| "| `sessions_search` | Session message FTS; returns snippet (not full content) |\n"
-#| "| `memory_remember` | semantic_memory CRUD |\n"
-#| "| Resident memory | system prompt injection (not recall) |\n"
+#, no-wrap
 msgid ""
 "| Capability        | Description                                                                                  |\n"
 "| ----------------- | -------------------------------------------------------------------------------------------- |\n"
@@ -83,19 +50,18 @@ msgid ""
 "| `memory_remember` | Semantic memory CRUD during conversation                                                     |\n"
 "| Resident memory   | System prompt injection (not recall)                                                         |\n"
 msgstr ""
-"| 能力              | 说明                                                                           |\n"
-"| ----------------- | ------------------------------------------------------------------------------ |\n"
-"| `memory_recall`   | semantic / session / limbic / autobiographical 四源；Top N；session 为 snippet |\n"
-"| `sessions_search` | 会话消息 FTS；返回 snippet（非整条 content）                                   |\n"
-"| `memory_remember` | semantic_memory CRUD                                                           |\n"
-"| 常驻记忆          | system prompt 注入（非 recall）                                                |\n"
+"| 能力        | 说明                                                                                  |\n"
+"| ----------------- | -------------------------------------------------------------------------------------------- |\n"
+"| `memory_recall`   | 四源：semantic / session / limbic / autobiographical；Top N；session 返回 snippet |\n"
+"| `sessions_search` | 会话消息搜索；返回 snippet（非全文）                                   |\n"
+"| `memory_remember` | 对话中语义记忆 CRUD                                                     |\n"
+"| 常驻记忆   | system prompt 注入（非 recall）                                                         |\n"
 
-#. type: Plain text
-#: docs/concepts/recall-flow.md:19
-#, fuzzy
-#| msgid "## Threat Sources"
-msgid "### Four Sources"
-msgstr "## 威胁源"
+#. type: Title ###
+#: docs/concepts/recall-flow.md:18
+#, no-wrap
+msgid "Four Sources"
+msgstr "四源"
 
 #. type: Plain text
 #: docs/concepts/recall-flow.md:26
@@ -115,11 +81,10 @@ msgstr ""
 "| `limbic`           | 感性记忆                         |\n"
 "| `autobiographical` | 叙事标题 + 内容片段              |\n"
 
-#. type: Plain text
-#: docs/concepts/recall-flow.md:28
-#, fuzzy
-#| msgid "Resident memory"
-msgid "### Resident Memory"
+#. type: Title ###
+#: docs/concepts/recall-flow.md:27
+#, no-wrap
+msgid "Resident Memory"
 msgstr "常驻记忆"
 
 #. type: Plain text
@@ -132,47 +97,39 @@ msgstr ""
 "与 recall 分开：**置顶**语义记忆与**引用最多**条目始终注入 system prompt。"
 "LLM 在回复中标注记忆 ID 标记；引用计数通过夜间 cron 同步。"
 
-#. type: Plain text
-#: docs/concepts/recall-flow.md:32
-msgid "## Relationship to Self Layer"
-msgstr "## 与自我层的关系"
+#. type: Title ##
+#: docs/concepts/recall-flow.md:31
+#, no-wrap
+msgid "Relationship to Self Layer"
+msgstr "与自我层的关系"
 
 #. type: Plain text
 #: docs/concepts/recall-flow.md:34
-#, fuzzy
-#| msgid "Self layer (six blocks) is not retrieved via `recall`."
 msgid ""
 "Self layer (six blocks) is **not** retrieved via `memory_recall`—it is "
 "always in the system prompt."
-msgstr "自我层（六块）不通过 `recall` 检索。"
+msgstr ""
+"自我层（六块）**不**通过 `memory_recall` 检索——始终位于 system prompt 中。"
 
 #. type: Plain text
 #: docs/concepts/recall-flow.md:39
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Layer | Injection | Reason |\n"
-#| "| ----- | --------- | ------ |\n"
-#| "| Self layer | Always in system prompt | Small, fixed, every conversation needs \"who I am\" |\n"
-#| "| Memory layer | `recall` + downstream load | Large, dynamic, search on demand |\n"
-#| "| Resource layer | `recall` + downstream load | Tool definitions needed temporarily, load before call |\n"
+#, no-wrap
 msgid ""
 "| Layer        | Injection                 | Reason                                            |\n"
 "| ------------ | ------------------------- | ------------------------------------------------- |\n"
 "| Self layer   | Always in system prompt   | Small, fixed, every conversation needs \"who I am\" |\n"
 "| Memory layer | `memory_recall` on demand | Large, dynamic, search when needed                |\n"
 msgstr ""
-"| 层     | 注入方式               | 理由                                   |\n"
-"| ------ | ---------------------- | -------------------------------------- |\n"
-"| 自我层 | 始终注入 system prompt | 量小、固定、每次对话都需要定义\"我是谁\" |\n"
-"| 记忆层 | `recall` + 下游加载    | 量大、动态、按需搜索                   |\n"
-"| 资源层 | `recall` + 下游加载    | 工具定义是临时需要的，调之前才加载     |\n"
+"| 层        | 注入                 | 原因                                            |\n"
+"| ------------ | ------------------------- | ------------------------------------------------- |\n"
+"| 自我层   | 始终位于 system prompt   | 体量小、固定，每次对话都需要「我是谁」 |\n"
+"| 记忆层 | 按需 `memory_recall` | 体量大、动态，需要时再搜                |\n"
 
-#. type: Plain text
-#: docs/concepts/recall-flow.md:41
-#, fuzzy
-#| msgid "### Future Upgrade Path"
-msgid "## Future Direction"
-msgstr "### 未来升级路径"
+#. type: Title ##
+#: docs/concepts/recall-flow.md:40
+#, no-wrap
+msgid "Future Direction"
+msgstr "未来方向"
 
 #. type: Plain text
 #: docs/concepts/recall-flow.md:43
@@ -184,25 +141,18 @@ msgstr ""
 "扩展到资源层（工具、技能、资产）的统一 recall 及预设权重见 [Issue #47]"
 "(https://github.com/freeanima-org/freeanima/issues/47)。非当前运行时行为。"
 
-#. type: Plain text
-#: docs/concepts/recall-flow.md:45
-msgid "## Naming Rationale"
-msgstr "## 命名说明"
+#. type: Title ##
+#: docs/concepts/recall-flow.md:44
+#, no-wrap
+msgid "Naming Rationale"
+msgstr "命名说明"
 
 #. type: Plain text
 #: docs/concepts/recall-flow.md:46
-#, fuzzy
-#| msgid ""
-#| "In cognitive psychology, Recall is the standard term for actively pulling "
-#| "stored information from memory—no external cue, no prompt, you "
-#| "\"remember\" yourself. This is not exploring the unknown (discover/find), "
-#| "but retrieving what you already stored. Even when scope extends from "
-#| "memory layer to resource layer, the action's essence is unchanged."
 msgid ""
 "In cognitive psychology, **Recall** is actively pulling stored information "
 "from memory—retrieving what you already stored. Even when scope extends to "
 "resources, the action's essence is unchanged."
 msgstr ""
-"认知心理学中，Recall 正是\"主动从记忆中拉取已有信息\"的标准术语——不需要外部线"
-"索，不需要提示，自己\"想起来\"。这不是探索未知（discover/find），而是回想自己"
-"已经存储的东西。即使检索范围从记忆层扩展到资源层，动作的本质没变。"
+"认知心理学中，**Recall** 正是「主动从记忆中拉取已有信息」——回想已存储的内容。"
+"即使范围扩展到资源层，动作本质不变。"

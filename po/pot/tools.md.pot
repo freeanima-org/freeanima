@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 17:27+0800\n"
+"POT-Creation-Date: 2026-06-15 18:02+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,52 +16,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. type: Plain text
-#: docs/README.md:1 docs/concepts/architecture.md:1
-#: docs/concepts/compression.md:1 docs/concepts/dream.md:1
-#: docs/concepts/identity.md:1 docs/concepts/identity.md:10
-#: docs/concepts/identity.md:28 docs/concepts/identity.md:45
-#: docs/concepts/identity.md:55 docs/concepts/memory.md:1
-#: docs/concepts/memory.md:17 docs/concepts/memory.md:53
-#: docs/concepts/memory.md:124 docs/concepts/memory.md:135
-#: docs/concepts/memory.md:160 docs/concepts/recall-flow.md:1
-#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:30
-#: docs/concepts/self-layer.md:52 docs/concepts/self-layer.md:66
-#: docs/concepts/self-layer.md:80 docs/concepts/self-layer.md:91
-#: docs/concepts/sleep.md:1 docs/concepts/time-perception.md:1
-#: docs/features/pair-programming-v1.md:1 docs/guide/database.md:1
-#: docs/guide/install.md:1 docs/guide/install.md:31 docs/guide/install.md:106
-#: docs/guide/install.md:167 docs/guide/install.md:234 docs/guide/security.md:1
-#: docs/guide/service.md:1 docs/sap/events.md:1 docs/sap/methods.md:1
-#: docs/sap/overview.md:1 docs/sap/satellite-guide.md:1
-#: docs/sap/security-model.md:1 docs/sap/tools.md:1 docs/sap/transport.md:1
-#: docs/tools/execute-code-runtimes.md:1
+#. type: Title #
+#: docs/sap/tools.md:1 docs/sap/tools.md:5
 #, no-wrap
-msgid "---\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/events.md:18 docs/sap/overview.md:55 docs/sap/tools.md:38
-#, no-wrap
-msgid ""
-"```mermaid\n"
-"sequenceDiagram\n"
-"  participant Sat as Satellite\n"
-"  participant Hub as Hub\n"
-"  participant Agent as AgentRuntime\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/tools.md:3
-#, no-wrap
-msgid ""
-"title: SAP Tools\n"
-"---\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/tools.md:6
-msgid "# SAP Tools"
+msgid "SAP Tools"
 msgstr ""
 
 #. type: Plain text
@@ -79,9 +37,10 @@ msgid ""
 "satellite/src/manager.ts)."
 msgstr ""
 
-#. type: Plain text
-#: docs/sap/tools.md:12
-msgid "## Naming"
+#. type: Title ##
+#: docs/sap/tools.md:11
+#, no-wrap
+msgid "Naming"
 msgstr ""
 
 #. type: Plain text
@@ -91,9 +50,10 @@ msgid ""
 "packages/sap-contract/src/naming.ts)):"
 msgstr ""
 
-#. type: Plain text
-#: docs/sap/tools.md:18
-msgid "``` sap_{app_slug}_{instance_id_norm}_{local_name} ```"
+#. type: Fenced code block (text)
+#: docs/sap/tools.md:15
+#, no-wrap
+msgid "sap_{app_slug}_{instance_id_norm}_{local_name}\n"
 msgstr ""
 
 #. type: Plain text
@@ -101,9 +61,10 @@ msgstr ""
 msgid "Alias (also accepted):"
 msgstr ""
 
-#. type: Plain text
-#: docs/sap/tools.md:24
-msgid "``` sap:{app_slug}:{instance_id_norm}:{local_name} ```"
+#. type: Fenced code block (text)
+#: docs/sap/tools.md:21
+#, no-wrap
+msgid "sap:{app_slug}:{instance_id_norm}:{local_name}\n"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -127,15 +88,21 @@ msgid ""
 "Example: `sap_pairprogramming_a1b2c3d4e5f6789012345678abcdef01_scan_code`"
 msgstr ""
 
-#. type: Plain text
-#: docs/sap/tools.md:32
-msgid "## Registration flow"
+#. type: Title ##
+#: docs/sap/tools.md:31
+#, no-wrap
+msgid "Registration flow"
 msgstr ""
 
-#. type: Plain text
-#: docs/sap/tools.md:49
+#. type: Fenced code block (mermaid)
+#: docs/sap/tools.md:33
 #, no-wrap
 msgid ""
+"sequenceDiagram\n"
+"  participant Sat as Satellite\n"
+"  participant Hub as Hub\n"
+"  participant Agent as AgentRuntime\n"
+"\n"
 "  Sat->>Hub: req tool.register tools local_name description parameters\n"
 "  Hub->>Hub: SatelliteManager.registerTools\n"
 "  Hub->>Sat: res registered canonical names\n"
@@ -145,7 +112,6 @@ msgid ""
 "  Sat->>Sat: execute local handler\n"
 "  Sat->>Hub: req tool.result call_id content\n"
 "  Hub->>Agent: resume turn\n"
-"```\n"
 msgstr ""
 
 #. type: Plain text
@@ -161,9 +127,10 @@ msgstr ""
 msgid "On disconnect, Hub unregisters all tools for that app/instance."
 msgstr ""
 
-#. type: Plain text
-#: docs/sap/tools.md:55
-msgid "## Strict routing"
+#. type: Title ##
+#: docs/sap/tools.md:54
+#, no-wrap
+msgid "Strict routing"
 msgstr ""
 
 #. type: Plain text
@@ -174,11 +141,10 @@ msgid ""
 "`ToolSetRegistry.getTool` to enforce this."
 msgstr ""
 
-#. type: Plain text
-#: docs/sap/tools.md:67
+#. type: Fenced code block (mermaid)
+#: docs/sap/tools.md:58
 #, no-wrap
 msgid ""
-"```mermaid\n"
 "flowchart TD\n"
 "  Invoke[Agent invokes sap_* tool]\n"
 "  Parse[parseSapToolName]\n"
@@ -187,12 +153,7 @@ msgid ""
 "  Registered{Tool in toolIndex?}\n"
 "  Proxy[Forward tool.call to Satellite]\n"
 "  Reject[toolError with reason]\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/tools.md:77
-#, no-wrap
-msgid ""
+"\n"
 "  Invoke --> Parse\n"
 "  Parse --> BindCheck\n"
 "  BindCheck -->|no| Reject\n"
@@ -201,7 +162,6 @@ msgid ""
 "  Online -->|yes| Registered\n"
 "  Registered -->|no| Reject\n"
 "  Registered -->|yes| Proxy\n"
-"```\n"
 msgstr ""
 
 #. type: Plain text
@@ -213,12 +173,12 @@ msgstr ""
 #: docs/sap/tools.md:86
 #, no-wrap
 msgid ""
-"| Condition | Result |\n"
-"| --------- | ------ |\n"
-"| Session not bound to satellite app/instance | Reject |\n"
-"| Instance offline | Reject |\n"
-"| Tool not registered on connected instance | Reject |\n"
-"| Unregistered `sap_*` name | Guard handler returns error (no Hub fallback) |\n"
+"| Condition                                   | Result                                        |\n"
+"| ------------------------------------------- | --------------------------------------------- |\n"
+"| Session not bound to satellite app/instance | Reject                                        |\n"
+"| Instance offline                            | Reject                                        |\n"
+"| Tool not registered on connected instance   | Reject                                        |\n"
+"| Unregistered `sap_*` name                   | Guard handler returns error (no Hub fallback) |\n"
 msgstr ""
 
 #. type: Plain text
@@ -235,9 +195,10 @@ msgid ""
 "integration/sap/sap-routing.test.ts)."
 msgstr ""
 
-#. type: Plain text
-#: docs/sap/tools.md:92
-msgid "## Platform mapping"
+#. type: Title ##
+#: docs/sap/tools.md:91
+#, no-wrap
+msgid "Platform mapping"
 msgstr ""
 
 #. type: Plain text
@@ -249,10 +210,10 @@ msgstr ""
 #: docs/sap/tools.md:99
 #, no-wrap
 msgid ""
-"| `app_id` | Platform |\n"
-"| -------- | -------- |\n"
+"| `app_id`           | Platform                  |\n"
+"| ------------------ | ------------------------- |\n"
 "| `pair-programming` | `studio-pair-programming` |\n"
-"| `parlor` | `parlor` |\n"
+"| `parlor`           | `parlor`                  |\n"
 msgstr ""
 
 #. type: Plain text
@@ -260,9 +221,10 @@ msgstr ""
 msgid "Hub also returns this map in `connected.server_info.platform_for_app`."
 msgstr ""
 
-#. type: Plain text
-#: docs/sap/tools.md:103
-msgid "## Completing a call"
+#. type: Title ##
+#: docs/sap/tools.md:102
+#, no-wrap
+msgid "Completing a call"
 msgstr ""
 
 #. type: Plain text

@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 17:27+0800\n"
+"POT-Creation-Date: 2026-06-15 17:52+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,6 +15,125 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+
+#. type: Content of: <messages><msg>
+#: docs/concepts/architecture.md:1 messages/po4a/en.xml:27
+#, no-wrap
+msgid "Architecture"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: docs/concepts/compression.md:1 messages/po4a/en.xml:28
+#, no-wrap
+msgid "Compression"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: docs/concepts/dream.md:1 messages/po4a/en.xml:316
+#, no-wrap
+msgid "Dream"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: docs/concepts/dream.md:9 docs/concepts/sleep.md:9 messages/po4a/en.xml:39
+#: messages/po4a/en.xml:47
+#, no-wrap
+msgid "Overview"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: docs/concepts/dream.md:13 messages/po4a/en.xml:320
+#, no-wrap
+msgid "Trigger"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: docs/concepts/identity.md:1 messages/po4a/en.xml:35
+#, no-wrap
+msgid "Identity"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: docs/concepts/memory.md:1 messages/po4a/en.xml:37 messages/po4a/en.xml:137
+#: messages/po4a/en.xml:481
+#, no-wrap
+msgid "Memory"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: docs/concepts/recall-flow.md:1 messages/po4a/en.xml:42
+#, no-wrap
+msgid "Recall Flow"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:5
+#: messages/po4a/en.xml:53
+#, no-wrap
+msgid "Self Layer"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: docs/concepts/sleep.md:1 messages/po4a/en.xml:55 messages/po4a/en.xml:484
+#, no-wrap
+msgid "Sleep"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: docs/concepts/time-perception.md:1 messages/po4a/en.xml:56
+#, no-wrap
+msgid "Time Perception"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: docs/guide/database.md:1 messages/po4a/en.xml:30
+#, no-wrap
+msgid "Database"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: docs/guide/install.md:1 docs/guide/install.md:5 messages/po4a/en.xml:36
+#, no-wrap
+msgid "Installation"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: docs/guide/security.md:1 docs/tools/execute-code-runtimes.md:60
+#: messages/po4a/en.xml:49 messages/po4a/en.xml:52
+#, no-wrap
+msgid "Security"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: docs/guide/service.md:1 messages/po4a/en.xml:54
+#, no-wrap
+msgid "Service"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: docs/sap/methods.md:33 messages/po4a/en.xml:449
+#, no-wrap
+msgid "Session"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: docs/sap/methods.md:69 messages/po4a/en.xml:520
+#, no-wrap
+msgid "Terminal"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: docs/sap/satellite-guide.md:1 docs/sap/satellite-guide.md:5
+#: messages/po4a/en.xml:48
+#, no-wrap
+msgid "Satellite Guide"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: docs/sap/transport.md:100 messages/po4a/en.xml:432
+#, no-wrap
+msgid "Reconnect"
+msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:3
@@ -151,27 +270,9 @@ msgid "Site navigation"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:27
-#, no-wrap
-msgid "Architecture"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:28
-#, no-wrap
-msgid "Compression"
-msgstr ""
-
-#. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:29
 #, no-wrap
 msgid "Concepts"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:30
-#, no-wrap
-msgid "Database"
 msgstr ""
 
 #. type: Content of: <messages><msg>
@@ -193,33 +294,9 @@ msgid "Guide"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:35
-#, no-wrap
-msgid "Identity"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:36
-#, no-wrap
-msgid "Installation"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:37 messages/po4a/en.xml:137 messages/po4a/en.xml:481
-#, no-wrap
-msgid "Memory"
-msgstr ""
-
-#. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:38
 #, no-wrap
 msgid "Migration Plan"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:39 messages/po4a/en.xml:47
-#, no-wrap
-msgid "Overview"
 msgstr ""
 
 #. type: Content of: <messages><msg>
@@ -232,12 +309,6 @@ msgstr ""
 #: messages/po4a/en.xml:41
 #, no-wrap
 msgid "Probe Architecture"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:42
-#, no-wrap
-msgid "Recall Flow"
 msgstr ""
 
 #. type: Content of: <messages><msg>
@@ -265,18 +336,6 @@ msgid "RPC Methods"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:48
-#, no-wrap
-msgid "Satellite Guide"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:49 messages/po4a/en.xml:52
-#, no-wrap
-msgid "Security"
-msgstr ""
-
-#. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:50 messages/po4a/en.xml:57 messages/po4a/en.xml:466
 #: messages/po4a/en.xml:488
 #, no-wrap
@@ -287,30 +346,6 @@ msgstr ""
 #: messages/po4a/en.xml:51
 #, no-wrap
 msgid "Transport"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:53
-#, no-wrap
-msgid "Self Layer"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:54
-#, no-wrap
-msgid "Service"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:55 messages/po4a/en.xml:484
-#, no-wrap
-msgid "Sleep"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:56
-#, no-wrap
-msgid "Time Perception"
 msgstr ""
 
 #. type: Content of: <messages><msg>
@@ -1766,12 +1801,6 @@ msgid "{index}. {round} ({count} tool calls)"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:316
-#, no-wrap
-msgid "Dream"
-msgstr ""
-
-#. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:318
 #, no-wrap
 msgid "Memory ref sync"
@@ -1781,12 +1810,6 @@ msgstr ""
 #: messages/po4a/en.xml:319
 #, no-wrap
 msgid "Self layer refresh"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:320
-#, no-wrap
-msgid "Trigger"
 msgstr ""
 
 #. type: Content of: <messages><msg>
@@ -2432,12 +2455,6 @@ msgid "Search"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:432
-#, no-wrap
-msgid "Reconnect"
-msgstr ""
-
-#. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:433
 #, no-wrap
 msgid "Refresh"
@@ -2525,12 +2542,6 @@ msgstr ""
 #: messages/po4a/en.xml:448
 #, no-wrap
 msgid "Server error"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:449
-#, no-wrap
-msgid "Session"
 msgstr ""
 
 #. type: Content of: <messages><msg>
@@ -2849,12 +2860,6 @@ msgstr ""
 #: messages/po4a/en.xml:519
 #, no-wrap
 msgid "Show header"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:520
-#, no-wrap
-msgid "Terminal"
 msgstr ""
 
 #. type: Content of: <messages><msg>

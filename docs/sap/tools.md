@@ -12,13 +12,13 @@ Implementation: [`capabilities/satellite/src/manager.ts`](../../capabilities/sat
 
 Canonical name format ([`packages/sap-contract/src/naming.ts`](../../packages/sap-contract/src/naming.ts)):
 
-```
+```text
 sap_{app_slug}_{instance_id_norm}_{local_name}
 ```
 
 Alias (also accepted):
 
-```
+```text
 sap:{app_slug}:{instance_id_norm}:{local_name}
 ```
 

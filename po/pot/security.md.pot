@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 09:46+0800\n"
+"POT-Creation-Date: 2026-06-15 17:52+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,52 +16,31 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. type: Plain text
-#: docs/README.md:1 docs/concepts/architecture.md:1
-#: docs/concepts/compression.md:1 docs/concepts/identity.md:1
-#: docs/concepts/identity.md:10 docs/concepts/identity.md:28
-#: docs/concepts/identity.md:45 docs/concepts/identity.md:55
-#: docs/concepts/memory.md:1 docs/concepts/memory.md:17
-#: docs/concepts/memory.md:53 docs/concepts/memory.md:122
-#: docs/concepts/memory.md:133 docs/concepts/memory.md:150
-#: docs/concepts/recall-flow.md:1 docs/concepts/self-layer.md:1
-#: docs/concepts/self-layer.md:30 docs/concepts/self-layer.md:52
-#: docs/concepts/self-layer.md:66 docs/concepts/self-layer.md:80
-#: docs/concepts/self-layer.md:91 docs/concepts/sleep.md:1
-#: docs/concepts/time-perception.md:1 docs/features/pair-programming-v1.md:1
-#: docs/guide/database.md:1 docs/guide/install.md:1 docs/guide/install.md:31
-#: docs/guide/install.md:106 docs/guide/install.md:167
-#: docs/guide/install.md:234 docs/guide/security.md:1 docs/guide/service.md:1
-#: docs/tools/execute-code-runtimes.md:1
+#. type: Content of: <messages><msg>
+#: docs/guide/security.md:1 docs/tools/execute-code-runtimes.md:60
+#: messages/po4a/en.xml:49 messages/po4a/en.xml:52
 #, no-wrap
-msgid "---\n"
+msgid "Security"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/security.md:3
+#. type: Title #
+#: docs/guide/security.md:5
 #, no-wrap
-msgid ""
-"title: Security\n"
-"---\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/guide/security.md:6
-msgid "# FreeAnima Security"
+msgid "FreeAnima Security"
 msgstr ""
 
 #. type: Plain text
 #: docs/guide/security.md:9
+#, no-wrap
 msgid ""
-"> Adopted principles: [architecture.md](../concepts/architecture.md).  > "
-"Security review and implementation items: [GitHub Issue #33](https://"
-"github.com/freeanima-org/freeanima/issues/33), [#46](https://github.com/"
-"freeanima-org/freeanima/issues/46)."
+"> Adopted principles: [architecture.md](../concepts/architecture.md).\n"
+"> Security review and implementation items: [GitHub Issue #33](https://github.com/freeanima-org/freeanima/issues/33), [#46](https://github.com/freeanima-org/freeanima/issues/46).\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/security.md:11
-msgid "## Trust Model (Required Reading for Open-Source Deployment)"
+#. type: Title ##
+#: docs/guide/security.md:10
+#, no-wrap
+msgid "Trust Model (Required Reading for Open-Source Deployment)"
 msgstr ""
 
 #. type: Plain text
@@ -91,9 +70,10 @@ msgid ""
 "authentication."
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/security.md:19
-msgid "## Credential Responsibilities"
+#. type: Title ##
+#: docs/guide/security.md:18
+#, no-wrap
+msgid "Credential Responsibilities"
 msgstr ""
 
 #. type: Plain text
@@ -117,9 +97,10 @@ msgid ""
 "secrets injected at runtime from pass."
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/security.md:32
-msgid "## Data Persistence"
+#. type: Title ##
+#: docs/guide/security.md:31
+#, no-wrap
+msgid "Data Persistence"
 msgstr ""
 
 #. type: Plain text
@@ -137,9 +118,10 @@ msgstr ""
 msgid "Disk backup = data access. Protect backup media accordingly."
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/security.md:41
-msgid "## LLM Tool Risks"
+#. type: Title ##
+#: docs/guide/security.md:40
+#, no-wrap
+msgid "LLM Tool Risks"
 msgstr ""
 
 #. type: Plain text
@@ -157,9 +139,10 @@ msgid ""
 "| `credentials_list`     | Returns pass path metadata only, no values                                                                     |\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/security.md:53
-msgid "## Measures in Place"
+#. type: Title ##
+#: docs/guide/security.md:52
+#, no-wrap
+msgid "Measures in Place"
 msgstr ""
 
 #. type: Plain text
@@ -179,9 +162,10 @@ msgid ""
 "| `.gitignore`            | `.env.*`, `config.yaml`, private key suffixes                                                                      |\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/security.md:67
-msgid "## Known Gaps (Documentation ≠ Fully Implemented)"
+#. type: Title ##
+#: docs/guide/security.md:66
+#, no-wrap
+msgid "Known Gaps (Documentation ≠ Fully Implemented)"
 msgstr ""
 
 #. type: Plain text
@@ -206,9 +190,10 @@ msgid ""
 "| P3       | Session disk encryption                               | None            |\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/security.md:81
-msgid "## Threat Sources"
+#. type: Title ##
+#: docs/guide/security.md:80
+#, no-wrap
+msgid "Threat Sources"
 msgstr ""
 
 #. type: Plain text
@@ -224,9 +209,10 @@ msgid ""
 "| **E** | Data security       | Conversation leak, key leak, memory tampering                    |\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/security.md:91
-msgid "## Security Matrix"
+#. type: Title ##
+#: docs/guide/security.md:90
+#, no-wrap
+msgid "Security Matrix"
 msgstr ""
 
 #. type: Plain text
@@ -242,14 +228,16 @@ msgid ""
 "| **MCP / ACP**    | SSE auth undefined      | Malicious params                                                    | Wrong delegation          | Server compromised | Context may contain sensitive data |\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/security.md:101
-msgid "## Proposals Pending Review"
+#. type: Title ##
+#: docs/guide/security.md:100
+#, no-wrap
+msgid "Proposals Pending Review"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/security.md:103
-msgid "### P0 — file_read_file Path Safety"
+#. type: Title ###
+#: docs/guide/security.md:102
+#, no-wrap
+msgid "P0 — file_read_file Path Safety"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -262,9 +250,10 @@ msgstr ""
 msgid "Optional `FREEANIMA_READ_SAFE_ROOT`"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/security.md:108
-msgid "### P0 — Shell Execution Policy"
+#. type: Title ###
+#: docs/guide/security.md:107
+#, no-wrap
+msgid "P0 — Shell Execution Policy"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -277,9 +266,10 @@ msgstr ""
 msgid "`FREEANIMA_ALLOW_SHELL=true` required for shell pipes"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/security.md:113
-msgid "### P1 — Runtime / Gateway"
+#. type: Title ###
+#: docs/guide/security.md:112
+#, no-wrap
+msgid "P1 — Runtime / Gateway"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -292,9 +282,10 @@ msgstr ""
 msgid "Write safe root default cwd (`FREEANIMA_WRITE_SAFE_ROOT`)"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/security.md:118
-msgid "### P2 — Config Redaction Maintenance"
+#. type: Title ###
+#: docs/guide/security.md:117
+#, no-wrap
+msgid "P2 — Config Redaction Maintenance"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -304,9 +295,10 @@ msgid ""
 "(../../service/config/src/config-sanitize.ts)"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/security.md:122
-msgid "## First-Deployment Security Checklist"
+#. type: Title ##
+#: docs/guide/security.md:121
+#, no-wrap
+msgid "First-Deployment Security Checklist"
 msgstr ""
 
 #. type: Bullet: '1. '

@@ -18,7 +18,7 @@ System-level constraints and long-lived design principles.
 
 A digital life is structured from the inside out. Each layer answers a different core question:
 
-```
+```text
 ┌───────────────────────────────────────────────┐
 │ ① Consciousness                                │
 │    "What am I aware of right now?"             │
@@ -100,7 +100,7 @@ The capability mask is **hard** — it binds tool sets, data scope, and credenti
 
 ### How They Interact
 
-```
+```text
 Scene awareness (soft tuning)
      │  tone, distance, recall bias
      │
@@ -159,7 +159,7 @@ anima service status
 
 Tools are registered in three layers but exposed to the LLM as one **flat tool list**. The LLM cares about names and parameters, not origin.
 
-```
+```text
 LLM view — flat tool list:
   file_read_file(path)           ← local
   file_write_file(path, content) ← local

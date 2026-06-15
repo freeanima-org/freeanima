@@ -1,74 +1,25 @@
-# Chinese translations for PACKAGE package
-# Copyright (C) 2026 Free Software Foundation, Inc.
+# SOME DESCRIPTIVE TITLE
+# Copyright (C) YEAR Free Software Foundation, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-# Automatically generated, 2026.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 17:27+0800\n"
-"PO-Revision-Date: 2026-06-15 17:27+0800\n"
-"Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
+"POT-Creation-Date: 2026-06-15 18:02+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. type: Plain text
-#: docs/README.md:1 docs/concepts/architecture.md:1
-#: docs/concepts/compression.md:1 docs/concepts/dream.md:1
-#: docs/concepts/identity.md:1 docs/concepts/identity.md:10
-#: docs/concepts/identity.md:28 docs/concepts/identity.md:45
-#: docs/concepts/identity.md:55 docs/concepts/memory.md:1
-#: docs/concepts/memory.md:17 docs/concepts/memory.md:53
-#: docs/concepts/memory.md:124 docs/concepts/memory.md:135
-#: docs/concepts/memory.md:160 docs/concepts/recall-flow.md:1
-#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:30
-#: docs/concepts/self-layer.md:52 docs/concepts/self-layer.md:66
-#: docs/concepts/self-layer.md:80 docs/concepts/self-layer.md:91
-#: docs/concepts/sleep.md:1 docs/concepts/time-perception.md:1
-#: docs/features/pair-programming-v1.md:1 docs/guide/database.md:1
-#: docs/guide/install.md:1 docs/guide/install.md:31 docs/guide/install.md:106
-#: docs/guide/install.md:167 docs/guide/install.md:234 docs/guide/security.md:1
-#: docs/guide/service.md:1 docs/sap/events.md:1 docs/sap/methods.md:1
-#: docs/sap/overview.md:1 docs/sap/satellite-guide.md:1
-#: docs/sap/security-model.md:1 docs/sap/tools.md:1 docs/sap/transport.md:1
-#: docs/tools/execute-code-runtimes.md:1
+#. type: Title #
+#: docs/sap/tools.md:1 docs/sap/tools.md:5
 #, no-wrap
-msgid "---\n"
-msgstr "---\n"
-
-#. type: Plain text
-#: docs/sap/events.md:18 docs/sap/overview.md:55 docs/sap/tools.md:38
-#, no-wrap
-msgid ""
-"```mermaid\n"
-"sequenceDiagram\n"
-"  participant Sat as Satellite\n"
-"  participant Hub as Hub\n"
-"  participant Agent as AgentRuntime\n"
-msgstr ""
-"```mermaid\n"
-"sequenceDiagram\n"
-"  participant Sat as Satellite\n"
-"  participant Hub as Hub\n"
-"  participant Agent as AgentRuntime\n"
-
-#. type: Plain text
-#: docs/sap/tools.md:3
-#, no-wrap
-msgid ""
-"title: SAP Tools\n"
-"---\n"
-msgstr ""
-"title: SAP 工具\n"
-"---\n"
-
-#. type: Plain text
-#: docs/sap/tools.md:6
-msgid "# SAP Tools"
-msgstr "# SAP 工具"
+msgid "SAP Tools"
+msgstr "SAP 工具"
 
 #. type: Plain text
 #: docs/sap/tools.md:8
@@ -89,10 +40,11 @@ msgstr ""
 "实现：[`capabilities/satellite/src/manager.ts`](../../capabilities/satellite/"
 "src/manager.ts)。"
 
-#. type: Plain text
-#: docs/sap/tools.md:12
-msgid "## Naming"
-msgstr "## 命名"
+#. type: Title ##
+#: docs/sap/tools.md:11
+#, no-wrap
+msgid "Naming"
+msgstr "命名"
 
 #. type: Plain text
 #: docs/sap/tools.md:14
@@ -103,20 +55,22 @@ msgstr ""
 "规范名称格式（[`packages/sap-contract/src/naming.ts`](../../packages/sap-"
 "contract/src/naming.ts)）："
 
-#. type: Plain text
-#: docs/sap/tools.md:18
-msgid "``` sap_{app_slug}_{instance_id_norm}_{local_name} ```"
-msgstr "``` sap_{app_slug}_{instance_id_norm}_{local_name} ```"
+#. type: Fenced code block (text)
+#: docs/sap/tools.md:15
+#, no-wrap
+msgid "sap_{app_slug}_{instance_id_norm}_{local_name}\n"
+msgstr "sap_{app_slug}_{instance_id_norm}_{local_name}\n"
 
 #. type: Plain text
 #: docs/sap/tools.md:20
 msgid "Alias (also accepted):"
 msgstr "别名（同样接受）："
 
-#. type: Plain text
-#: docs/sap/tools.md:24
-msgid "``` sap:{app_slug}:{instance_id_norm}:{local_name} ```"
-msgstr "``` sap:{app_slug}:{instance_id_norm}:{local_name} ```"
+#. type: Fenced code block (text)
+#: docs/sap/tools.md:21
+#, no-wrap
+msgid "sap:{app_slug}:{instance_id_norm}:{local_name}\n"
+msgstr "sap:{app_slug}:{instance_id_norm}:{local_name}\n"
 
 #. type: Bullet: '- '
 #: docs/sap/tools.md:28
@@ -139,15 +93,21 @@ msgid ""
 "Example: `sap_pairprogramming_a1b2c3d4e5f6789012345678abcdef01_scan_code`"
 msgstr "示例：`sap_pairprogramming_a1b2c3d4e5f6789012345678abcdef01_scan_code`"
 
-#. type: Plain text
-#: docs/sap/tools.md:32
-msgid "## Registration flow"
-msgstr "## 注册流程"
+#. type: Title ##
+#: docs/sap/tools.md:31
+#, no-wrap
+msgid "Registration flow"
+msgstr "注册流程"
 
-#. type: Plain text
-#: docs/sap/tools.md:49
+#. type: Fenced code block (mermaid)
+#: docs/sap/tools.md:33
 #, no-wrap
 msgid ""
+"sequenceDiagram\n"
+"  participant Sat as Satellite\n"
+"  participant Hub as Hub\n"
+"  participant Agent as AgentRuntime\n"
+"\n"
 "  Sat->>Hub: req tool.register tools local_name description parameters\n"
 "  Hub->>Hub: SatelliteManager.registerTools\n"
 "  Hub->>Sat: res registered canonical names\n"
@@ -157,8 +117,12 @@ msgid ""
 "  Sat->>Sat: execute local handler\n"
 "  Sat->>Hub: req tool.result call_id content\n"
 "  Hub->>Agent: resume turn\n"
-"```\n"
 msgstr ""
+"sequenceDiagram\n"
+"  participant Sat as Satellite\n"
+"  participant Hub as Hub\n"
+"  participant Agent as AgentRuntime\n"
+"\n"
 "  Sat->>Hub: req tool.register tools local_name description parameters\n"
 "  Hub->>Hub: SatelliteManager.registerTools\n"
 "  Hub->>Sat: res registered canonical names\n"
@@ -168,7 +132,6 @@ msgstr ""
 "  Sat->>Sat: execute local handler\n"
 "  Sat->>Hub: req tool.result call_id content\n"
 "  Hub->>Agent: resume turn\n"
-"```\n"
 
 #. type: Plain text
 #: docs/sap/tools.md:51
@@ -186,10 +149,11 @@ msgstr ""
 msgid "On disconnect, Hub unregisters all tools for that app/instance."
 msgstr "断开连接时，Hub 会注销该 app/instance 的所有工具。"
 
-#. type: Plain text
-#: docs/sap/tools.md:55
-msgid "## Strict routing"
-msgstr "## 严格路由"
+#. type: Title ##
+#: docs/sap/tools.md:54
+#, no-wrap
+msgid "Strict routing"
+msgstr "严格路由"
 
 #. type: Plain text
 #: docs/sap/tools.md:57
@@ -202,11 +166,10 @@ msgstr ""
 "`SatelliteManager.installToolRouting()` 包装 `ToolSetRegistry.getTool` 以强制"
 "执行此规则。"
 
-#. type: Plain text
-#: docs/sap/tools.md:67
+#. type: Fenced code block (mermaid)
+#: docs/sap/tools.md:58
 #, no-wrap
 msgid ""
-"```mermaid\n"
 "flowchart TD\n"
 "  Invoke[Agent invokes sap_* tool]\n"
 "  Parse[parseSapToolName]\n"
@@ -215,8 +178,16 @@ msgid ""
 "  Registered{Tool in toolIndex?}\n"
 "  Proxy[Forward tool.call to Satellite]\n"
 "  Reject[toolError with reason]\n"
+"\n"
+"  Invoke --> Parse\n"
+"  Parse --> BindCheck\n"
+"  BindCheck -->|no| Reject\n"
+"  BindCheck -->|yes| Online\n"
+"  Online -->|no| Reject\n"
+"  Online -->|yes| Registered\n"
+"  Registered -->|no| Reject\n"
+"  Registered -->|yes| Proxy\n"
 msgstr ""
-"```mermaid\n"
 "flowchart TD\n"
 "  Invoke[Agent invokes sap_* tool]\n"
 "  Parse[parseSapToolName]\n"
@@ -225,11 +196,7 @@ msgstr ""
 "  Registered{Tool in toolIndex?}\n"
 "  Proxy[Forward tool.call to Satellite]\n"
 "  Reject[toolError with reason]\n"
-
-#. type: Plain text
-#: docs/sap/tools.md:77
-#, no-wrap
-msgid ""
+"\n"
 "  Invoke --> Parse\n"
 "  Parse --> BindCheck\n"
 "  BindCheck -->|no| Reject\n"
@@ -238,17 +205,6 @@ msgid ""
 "  Online -->|yes| Registered\n"
 "  Registered -->|no| Reject\n"
 "  Registered -->|yes| Proxy\n"
-"```\n"
-msgstr ""
-"  Invoke --> Parse\n"
-"  Parse --> BindCheck\n"
-"  BindCheck -->|no| Reject\n"
-"  BindCheck -->|yes| Online\n"
-"  Online -->|no| Reject\n"
-"  Online -->|yes| Registered\n"
-"  Registered -->|no| Reject\n"
-"  Registered -->|yes| Proxy\n"
-"```\n"
 
 #. type: Plain text
 #: docs/sap/tools.md:79
@@ -259,19 +215,19 @@ msgstr "常见拒绝原因："
 #: docs/sap/tools.md:86
 #, no-wrap
 msgid ""
-"| Condition | Result |\n"
-"| --------- | ------ |\n"
-"| Session not bound to satellite app/instance | Reject |\n"
-"| Instance offline | Reject |\n"
-"| Tool not registered on connected instance | Reject |\n"
-"| Unregistered `sap_*` name | Guard handler returns error (no Hub fallback) |\n"
+"| Condition                                   | Result                                        |\n"
+"| ------------------------------------------- | --------------------------------------------- |\n"
+"| Session not bound to satellite app/instance | Reject                                        |\n"
+"| Instance offline                            | Reject                                        |\n"
+"| Tool not registered on connected instance   | Reject                                        |\n"
+"| Unregistered `sap_*` name                   | Guard handler returns error (no Hub fallback) |\n"
 msgstr ""
-"| 条件 | 结果 |\n"
-"| --------- | ------ |\n"
-"| 会话未绑定到 satellite app/instance | 拒绝 |\n"
-"| 实例离线 | 拒绝 |\n"
-"| 工具未在已连接实例上注册 | 拒绝 |\n"
-"| 未注册的 `sap_*` 名称 | 守卫处理器返回错误（不回退到 Hub） |\n"
+"| 条件                                        | 结果                                          |\n"
+"| ------------------------------------------- | --------------------------------------------- |\n"
+"| 会话未绑定到 satellite app/instance         | 拒绝                                          |\n"
+"| 实例离线                                    | 拒绝                                          |\n"
+"| 工具未在已连接实例上注册                    | 拒绝                                          |\n"
+"| 未注册的 `sap_*` 名称                       | 守卫处理器返回错误（不回退到 Hub）            |\n"
 
 #. type: Plain text
 #: docs/sap/tools.md:88
@@ -291,10 +247,11 @@ msgstr ""
 "集成测试：[`tests/integration/sap/sap-routing.test.ts`](../../tests/"
 "integration/sap/sap-routing.test.ts)。"
 
-#. type: Plain text
-#: docs/sap/tools.md:92
-msgid "## Platform mapping"
-msgstr "## 平台映射"
+#. type: Title ##
+#: docs/sap/tools.md:91
+#, no-wrap
+msgid "Platform mapping"
+msgstr "平台映射"
 
 #. type: Plain text
 #: docs/sap/tools.md:94
@@ -305,25 +262,26 @@ msgstr "`resolvePlatformForApp` 将 satellite app id 映射到会话平台："
 #: docs/sap/tools.md:99
 #, no-wrap
 msgid ""
-"| `app_id` | Platform |\n"
-"| -------- | -------- |\n"
+"| `app_id`           | Platform                  |\n"
+"| ------------------ | ------------------------- |\n"
 "| `pair-programming` | `studio-pair-programming` |\n"
-"| `parlor` | `parlor` |\n"
+"| `parlor`           | `parlor`                  |\n"
 msgstr ""
-"| `app_id` | 平台 |\n"
-"| -------- | -------- |\n"
+"| `app_id`           | 平台                      |\n"
+"| ------------------ | ------------------------- |\n"
 "| `pair-programming` | `studio-pair-programming` |\n"
-"| `parlor` | `parlor` |\n"
+"| `parlor`           | `parlor`                  |\n"
 
 #. type: Plain text
 #: docs/sap/tools.md:101
 msgid "Hub also returns this map in `connected.server_info.platform_for_app`."
 msgstr "Hub 还会在 `connected.server_info.platform_for_app` 中返回此映射。"
 
-#. type: Plain text
-#: docs/sap/tools.md:103
-msgid "## Completing a call"
-msgstr "## 完成一次调用"
+#. type: Title ##
+#: docs/sap/tools.md:102
+#, no-wrap
+msgid "Completing a call"
+msgstr "完成一次调用"
 
 #. type: Plain text
 #: docs/sap/tools.md:105
@@ -333,12 +291,12 @@ msgstr "Satellite 收到带 `call_id` 的 `tool.call`。回复方式："
 #. type: Bullet: '- '
 #: docs/sap/tools.md:108
 msgid "`tool.result` — `{ call_id, content }`"
-msgstr "`tool.result` — `{ call_id, content }`"
+msgstr "`tool.result` — `{ call_id, content }`（完成调用）"
 
 #. type: Bullet: '- '
 #: docs/sap/tools.md:108
 msgid "`tool.error` — `{ call_id, error }`"
-msgstr "`tool.error` — `{ call_id, error }`"
+msgstr "`tool.error` — `{ call_id, error }`（失败调用）"
 
 #. type: Plain text
 #: docs/sap/tools.md:110

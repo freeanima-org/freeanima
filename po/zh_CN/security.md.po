@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 09:46+0800\n"
+"POT-Creation-Date: 2026-06-15 17:52+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,58 +15,34 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. type: Plain text
-#: docs/README.md:1 docs/concepts/architecture.md:1
-#: docs/concepts/compression.md:1 docs/concepts/identity.md:1
-#: docs/concepts/identity.md:10 docs/concepts/identity.md:28
-#: docs/concepts/identity.md:45 docs/concepts/identity.md:55
-#: docs/concepts/memory.md:1 docs/concepts/memory.md:17
-#: docs/concepts/memory.md:53 docs/concepts/memory.md:122
-#: docs/concepts/memory.md:133 docs/concepts/memory.md:150
-#: docs/concepts/recall-flow.md:1 docs/concepts/self-layer.md:1
-#: docs/concepts/self-layer.md:30 docs/concepts/self-layer.md:52
-#: docs/concepts/self-layer.md:66 docs/concepts/self-layer.md:80
-#: docs/concepts/self-layer.md:91 docs/concepts/sleep.md:1
-#: docs/concepts/time-perception.md:1 docs/features/pair-programming-v1.md:1
-#: docs/guide/database.md:1 docs/guide/install.md:1 docs/guide/install.md:31
-#: docs/guide/install.md:106 docs/guide/install.md:167
-#: docs/guide/install.md:234 docs/guide/security.md:1 docs/guide/service.md:1
-#: docs/tools/execute-code-runtimes.md:1
+#. type: Content of: <messages><msg>
+#: docs/guide/security.md:1 docs/tools/execute-code-runtimes.md:60
+#: messages/po4a/en.xml:49 messages/po4a/en.xml:52
 #, no-wrap
-msgid "---\n"
-msgstr "---\n"
+msgid "Security"
+msgstr "安全"
 
-#. type: Plain text
-#: docs/guide/security.md:3
+#. type: Title #
+#: docs/guide/security.md:5
 #, no-wrap
-msgid ""
-"title: Security\n"
-"---\n"
-msgstr ""
-"title: Security\n"
-"---\n"
-
-#. type: Plain text
-#: docs/guide/security.md:6
-msgid "# FreeAnima Security"
-msgstr "# 逸灵风安全"
+msgid "FreeAnima Security"
+msgstr "逸灵风安全"
 
 #. type: Plain text
 #: docs/guide/security.md:9
+#, no-wrap
 msgid ""
-"> Adopted principles: [architecture.md](../concepts/architecture.md).  > "
-"Security review and implementation items: [GitHub Issue #33](https://"
-"github.com/freeanima-org/freeanima/issues/33), [#46](https://github.com/"
-"freeanima-org/freeanima/issues/46)."
+"> Adopted principles: [architecture.md](../concepts/architecture.md).\n"
+"> Security review and implementation items: [GitHub Issue #33](https://github.com/freeanima-org/freeanima/issues/33), [#46](https://github.com/freeanima-org/freeanima/issues/46).\n"
 msgstr ""
-"> 已采纳原则见 [ARCHITECTURE.md](../ARCHITECTURE.md)。 > 安全评审与落地项见 "
-"[GitHub Issue #33](https://github.com/freeanima-org/freeanima/issues/33)、"
-"[#46](https://github.com/freeanima-org/freeanima/issues/46)。"
+"> 已采纳原则：[architecture.md](../concepts/architecture.md)。\n"
+"> 安全审查与实现项：[GitHub Issue #33](https://github.com/freeanima-org/freeanima/issues/33)、[#46](https://github.com/freeanima-org/freeanima/issues/46)。\n"
 
-#. type: Plain text
-#: docs/guide/security.md:11
-msgid "## Trust Model (Required Reading for Open-Source Deployment)"
-msgstr "## 信任模型（开源部署必读）"
+#. type: Title ##
+#: docs/guide/security.md:10
+#, no-wrap
+msgid "Trust Model (Required Reading for Open-Source Deployment)"
+msgstr "信任模型（开源部署必读）"
 
 #. type: Plain text
 #: docs/guide/security.md:13
@@ -97,10 +73,11 @@ msgid ""
 "authentication."
 msgstr "**不要**将服务暴露到公网而不加反向代理鉴权。"
 
-#. type: Plain text
-#: docs/guide/security.md:19
-msgid "## Credential Responsibilities"
-msgstr "## 凭证责任"
+#. type: Title ##
+#: docs/guide/security.md:18
+#, no-wrap
+msgid "Credential Responsibilities"
+msgstr "凭证职责"
 
 #. type: Plain text
 #: docs/guide/security.md:28
@@ -133,10 +110,11 @@ msgstr ""
 "`config.yaml` 支持 `database.url: pass:services/postgres/anima` 等形式；密钥"
 "由运行时从 pass 注入。"
 
-#. type: Plain text
-#: docs/guide/security.md:32
-msgid "## Data Persistence"
-msgstr "## 数据持久化"
+#. type: Title ##
+#: docs/guide/security.md:31
+#, no-wrap
+msgid "Data Persistence"
+msgstr "数据持久化"
 
 #. type: Plain text
 #: docs/guide/security.md:37
@@ -157,10 +135,11 @@ msgstr ""
 msgid "Disk backup = data access. Protect backup media accordingly."
 msgstr "磁盘备份 = 数据访问。请妥善保护备份介质。"
 
-#. type: Plain text
-#: docs/guide/security.md:41
-msgid "## LLM Tool Risks"
-msgstr "## LLM 工具风险"
+#. type: Title ##
+#: docs/guide/security.md:40
+#, no-wrap
+msgid "LLM Tool Risks"
+msgstr "LLM 工具风险"
 
 #. type: Plain text
 #: docs/guide/security.md:51
@@ -186,26 +165,15 @@ msgstr ""
 "| ACP（Cursor）      | 默认 **自动批准** 所有 `session/request_permission`（`allow-once`）                   |\n"
 "| `credentials_list` | 仅返回 pass 路径元数据，不含值                                                        |\n"
 
-#. type: Plain text
-#: docs/guide/security.md:53
-msgid "## Measures in Place"
-msgstr "## 已覆盖措施"
+#. type: Title ##
+#: docs/guide/security.md:52
+#, no-wrap
+msgid "Measures in Place"
+msgstr "已有措施"
 
 #. type: Plain text
 #: docs/guide/security.md:65
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Measure                 | Description                                                                                                          |\n"
-#| "| ----------------------- | -------------------------------------------------------------------------------------------------------------------- |\n"
-#| "| Same-origin RPC         | TanStack Start server functions same-origin by default, no CORS whitelist needed                                     |\n"
-#| "| Config secret redaction | `AnimaService.getConfig()` → `sanitizeConfigForApi()` (`api_key`, `database.url`, nested `pushkey`, `mcp env`, etc.) |\n"
-#| "| MCP config redaction    | `sanitizeMcpConfig`: `env` exposes only `env_keys`                                                                   |\n"
-#| "| Write path safety       | `file_write_file` deny list (partial `/etc/*`, `.ssh` private keys, etc.)                                            |\n"
-#| "| Slash commands          | Whitelist routing                                                                                                    |\n"
-#| "| MCP default stdio       | Reduces port exposure                                                                                                |\n"
-#| "| Credential isolation    | LLM sees pass paths only, not values                                                                                 |\n"
-#| "| CI secret scanning      | `.github/workflows/security.yml` (Gitleaks); GitHub Secret scanning + Push protection (free for public repos)        |\n"
-#| "| `.gitignore`            | `.env.*`, `config.yaml`, private key suffixes                                                                        |\n"
+#, no-wrap
 msgid ""
 "| Measure                 | Description                                                                                                        |\n"
 "| ----------------------- | ------------------------------------------------------------------------------------------------------------------ |\n"
@@ -219,22 +187,23 @@ msgid ""
 "| CI secret scanning      | `.github/workflows/security.yml` (Gitleaks); GitHub Secret scanning + Push protection (free for public repos)      |\n"
 "| `.gitignore`            | `.env.*`, `config.yaml`, private key suffixes                                                                      |\n"
 msgstr ""
-"| 措施           | 说明                                                                                                             |\n"
-"| -------------- | ---------------------------------------------------------------------------------------------------------------- |\n"
-"| 同域 RPC       | TanStack Start server functions 默认同源，无需 CORS 白名单                                                       |\n"
-"| 配置密钥脱敏   | `AnimaService.getConfig()` → `sanitizeConfigForApi()`（`api_key`、`database.url`、嵌套 `pushkey`、`mcp env` 等） |\n"
-"| MCP 配置脱敏   | `sanitizeMcpConfig`：`env` 仅暴露 `env_keys`                                                                     |\n"
-"| 写路径安全     | `file_write_file` deny list（部分 `/etc/*`、`.ssh` 私钥等）                                                      |\n"
-"| Slash 命令     | 白名单路由                                                                                                       |\n"
-"| MCP 默认 stdio | 减少端口暴露                                                                                                     |\n"
-"| 凭证隔离       | LLM 只见 pass 路径，不见值                                                                                       |\n"
-"| CI 密钥扫描    | `.github/workflows/security.yml`（Gitleaks）；GitHub Secret scanning + Push protection（公开仓库免费）           |\n"
-"| `.gitignore`   | `.env.*`、`config.yaml`、私钥后缀                                                                                |\n"
+"| 措施                 | 说明                                                                                                               |\n"
+"| -------------------- | ------------------------------------------------------------------------------------------------------------------ |\n"
+"| 同源 RPC             | TanStack Start server functions 默认同源，无需 CORS 白名单                                                          |\n"
+"| 配置密钥脱敏         | `AppRuntime.getConfig()` → `sanitizeConfigForApi()`（`api_key`、`database.url`、嵌套 `pushkey`、`mcp env` 等）      |\n"
+"| MCP 配置脱敏         | `sanitizeMcpConfig`：`env` 仅暴露 `env_keys`                                                                        |\n"
+"| 写路径安全           | `file_write_file` deny list（部分 `/etc/*`、`.ssh` 私钥等）                                                         |\n"
+"| 斜杠命令             | 白名单路由                                                                                                          |\n"
+"| MCP 默认 stdio       | 减少端口暴露                                                                                                        |\n"
+"| 凭证隔离             | LLM 仅见 pass 路径，不见值                                                                                          |\n"
+"| CI 密钥扫描          | `.github/workflows/security.yml`（Gitleaks）；GitHub Secret scanning + Push protection（公开仓库免费）                |\n"
+"| `.gitignore`         | `.env.*`、`config.yaml`、私钥后缀                                                                                   |\n"
 
-#. type: Plain text
-#: docs/guide/security.md:67
-msgid "## Known Gaps (Documentation ≠ Fully Implemented)"
-msgstr "## 已知缺口（文档 ≠ 已全部落地）"
+#. type: Title ##
+#: docs/guide/security.md:66
+#, no-wrap
+msgid "Known Gaps (Documentation ≠ Fully Implemented)"
+msgstr "已知缺口（文档 ≠ 已完全实现）"
 
 #. type: Plain text
 #: docs/guide/security.md:69
@@ -267,10 +236,11 @@ msgstr ""
 "| P3     | IPC / LLM 速率限制                                 | 无       |\n"
 "| P3     | Session 磁盘加密                                   | 无       |\n"
 
-#. type: Plain text
-#: docs/guide/security.md:81
-msgid "## Threat Sources"
-msgstr "## 威胁源"
+#. type: Title ##
+#: docs/guide/security.md:80
+#, no-wrap
+msgid "Threat Sources"
+msgstr "威胁来源"
 
 #. type: Plain text
 #: docs/guide/security.md:89
@@ -292,10 +262,11 @@ msgstr ""
 "| **D** | 依赖链     | 三方库 / MCP / ACP 被攻陷           |\n"
 "| **E** | 数据安全   | 对话泄露、密钥泄露、记忆篡改        |\n"
 
-#. type: Plain text
-#: docs/guide/security.md:91
-msgid "## Security Matrix"
-msgstr "## 安全矩阵"
+#. type: Title ##
+#: docs/guide/security.md:90
+#, no-wrap
+msgid "Security Matrix"
+msgstr "安全矩阵"
 
 #. type: Plain text
 #: docs/guide/security.md:99
@@ -317,15 +288,17 @@ msgstr ""
 "| **HTTP / WebUI** | 无鉴权；CORS 白名单 | BFF 不直连 LLM 参数                                             | config 展示      | Vue/axios       | SSE 明文         |\n"
 "| **MCP / ACP**    | SSE 认证未定义      | 恶意参数                                                        | 错误委托         | Server 被攻陷   | 上下文含敏感数据 |\n"
 
-#. type: Plain text
-#: docs/guide/security.md:101
-msgid "## Proposals Pending Review"
-msgstr "## 待评审方案"
+#. type: Title ##
+#: docs/guide/security.md:100
+#, no-wrap
+msgid "Proposals Pending Review"
+msgstr "待评审提案"
 
-#. type: Plain text
-#: docs/guide/security.md:103
-msgid "### P0 — file_read_file Path Safety"
-msgstr "### P0 — file_read_file 路径安全"
+#. type: Title ###
+#: docs/guide/security.md:102
+#, no-wrap
+msgid "P0 — file_read_file Path Safety"
+msgstr "P0 — file_read_file 路径安全"
 
 #. type: Bullet: '- '
 #: docs/guide/security.md:106
@@ -337,10 +310,11 @@ msgstr "读侧 deny：`/etc/`、`/proc/`、`~/.ssh/` 等"
 msgid "Optional `FREEANIMA_READ_SAFE_ROOT`"
 msgstr "可选 `FREEANIMA_READ_SAFE_ROOT`"
 
-#. type: Plain text
-#: docs/guide/security.md:108
-msgid "### P0 — Shell Execution Policy"
-msgstr "### P0 — shell 执行策略"
+#. type: Title ###
+#: docs/guide/security.md:107
+#, no-wrap
+msgid "P0 — Shell Execution Policy"
+msgstr "P0 — Shell 执行策略"
 
 #. type: Bullet: '- '
 #: docs/guide/security.md:111
@@ -352,10 +326,11 @@ msgstr "`terminal_run()` / `code_execute` 默认 `shell=False`"
 msgid "`FREEANIMA_ALLOW_SHELL=true` required for shell pipes"
 msgstr "`FREEANIMA_ALLOW_SHELL=true` 才允许 shell 管道"
 
-#. type: Plain text
-#: docs/guide/security.md:113
-msgid "### P1 — Runtime / Gateway"
-msgstr "### P1 — Runtime / Gateway"
+#. type: Title ###
+#: docs/guide/security.md:112
+#, no-wrap
+msgid "P1 — Runtime / Gateway"
+msgstr "P1 — 运行时 / Gateway"
 
 #. type: Bullet: '- '
 #: docs/guide/security.md:116
@@ -367,10 +342,11 @@ msgstr "Unix socket `chmod 600` + 可选握手 token"
 msgid "Write safe root default cwd (`FREEANIMA_WRITE_SAFE_ROOT`)"
 msgstr "写安全根默认 cwd（`FREEANIMA_WRITE_SAFE_ROOT`）"
 
-#. type: Plain text
-#: docs/guide/security.md:118
-msgid "### P2 — Config Redaction Maintenance"
-msgstr "### P2 — 配置脱敏维护"
+#. type: Title ###
+#: docs/guide/security.md:117
+#, no-wrap
+msgid "P2 — Config Redaction Maintenance"
+msgstr "P2 — 配置脱敏维护"
 
 #. type: Bullet: '- '
 #: docs/guide/security.md:120
@@ -381,10 +357,11 @@ msgstr ""
 "新增密钥字段时同步更新 [`service/config/src/config-sanitize.ts`](../service/"
 "config/src/config-sanitize.ts)"
 
-#. type: Plain text
-#: docs/guide/security.md:122
-msgid "## First-Deployment Security Checklist"
-msgstr "## 首次部署安全清单"
+#. type: Title ##
+#: docs/guide/security.md:121
+#, no-wrap
+msgid "First-Deployment Security Checklist"
+msgstr "首次部署安全清单"
 
 #. type: Bullet: '1. '
 #: docs/guide/security.md:129

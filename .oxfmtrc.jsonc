@@ -14,4 +14,13 @@
     "connectors/webui/app/src/routeTree.gen.ts",
     "CHANGELOG.md",
   ],
+  "overrides": [
+    {
+      "files": ["docs/**/*.md"],
+      "options": {
+        "proseWrap": "preserve",
+        "embeddedLanguageFormatting": "auto",
+      },
+    },
+  ],
 }

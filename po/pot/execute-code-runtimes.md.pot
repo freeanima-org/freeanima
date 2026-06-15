@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-12 11:56+0800\n"
+"POT-Creation-Date: 2026-06-15 17:52+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,48 +16,35 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. type: Plain text
-#: docs/README.md:1 docs/concepts/architecture.md:1
-#: docs/concepts/compression.md:1 docs/concepts/identity.md:1
-#: docs/concepts/identity.md:10 docs/concepts/identity.md:28
-#: docs/concepts/identity.md:45 docs/concepts/identity.md:55
-#: docs/concepts/memory.md:1 docs/concepts/memory.md:17
-#: docs/concepts/memory.md:53 docs/concepts/memory.md:122
-#: docs/concepts/memory.md:133 docs/concepts/memory.md:150
-#: docs/concepts/recall-flow.md:1 docs/concepts/self-layer.md:1
-#: docs/concepts/self-layer.md:30 docs/concepts/self-layer.md:52
-#: docs/concepts/self-layer.md:66 docs/concepts/self-layer.md:80
-#: docs/concepts/self-layer.md:91 docs/concepts/sleep.md:1
-#: docs/concepts/time-perception.md:1 docs/features/pair-programming-v1.md:1
-#: docs/guide/database.md:1 docs/guide/security.md:1
+#. type: Title ##
+#: docs/concepts/architecture.md:62 docs/tools/execute-code-runtimes.md:9
+#, no-wrap
+msgid "Background"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: docs/guide/security.md:1 docs/tools/execute-code-runtimes.md:60
+#: messages/po4a/en.xml:49 messages/po4a/en.xml:52
+#, no-wrap
+msgid "Security"
+msgstr ""
+
+#. type: Yaml Front Matter Hash Value: title
 #: docs/tools/execute-code-runtimes.md:1
 #, no-wrap
-msgid "---\n"
+msgid "Execute Code Runtimes"
 msgstr ""
 
-#. type: Plain text
-#: docs/tools/execute-code-runtimes.md:3
+#. type: Title #
+#: docs/tools/execute-code-runtimes.md:5
 #, no-wrap
-msgid ""
-"title: Execute Code Runtimes\n"
-"---\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/tools/execute-code-runtimes.md:6
-msgid "# execute_code Multi-Runtime"
+msgid "execute_code Multi-Runtime"
 msgstr ""
 
 #. type: Plain text
 #: docs/tools/execute-code-runtimes.md:8
-msgid ""
-"> One tool, multiple runtimes; default Bun; extend with Python / Deno as "
-"needed."
-msgstr ""
-
-#. type: Plain text
-#: docs/tools/execute-code-runtimes.md:10
-msgid "## Background"
+#, no-wrap
+msgid "> One tool, multiple runtimes; default Bun; extend with Python / Deno as needed.\n"
 msgstr ""
 
 #. type: Plain text
@@ -68,9 +55,10 @@ msgid ""
 "sent to Node fails."
 msgstr ""
 
-#. type: Plain text
-#: docs/tools/execute-code-runtimes.md:14
-msgid "## Division from terminal"
+#. type: Title ##
+#: docs/tools/execute-code-runtimes.md:13
+#, no-wrap
+msgid "Division from terminal"
 msgstr ""
 
 #. type: Plain text
@@ -92,27 +80,27 @@ msgid ""
 "\"...\"` in terminal."
 msgstr ""
 
-#. type: Plain text
-#: docs/tools/execute-code-runtimes.md:25
-msgid "## API"
+#. type: Title ##
+#: docs/tools/execute-code-runtimes.md:24
+#, no-wrap
+msgid "API"
 msgstr ""
 
-#. type: Plain text
-#: docs/tools/execute-code-runtimes.md:33
+#. type: Fenced code block (typescript)
+#: docs/tools/execute-code-runtimes.md:26
 #, no-wrap
 msgid ""
-"```typescript\n"
 "execute_code({\n"
 "  code: string,\n"
 "  runtime?: \"bun\" | \"nodejs\" | \"python\" | \"deno\",  // default bun\n"
 "  timeout?: number,       // seconds, default 300, max 600\n"
 "})\n"
-"```\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/tools/execute-code-runtimes.md:35
-msgid "## Available Runtimes"
+#. type: Title ##
+#: docs/tools/execute-code-runtimes.md:34
+#, no-wrap
+msgid "Available Runtimes"
 msgstr ""
 
 #. type: Plain text
@@ -127,16 +115,16 @@ msgid ""
 "| **deno**   | TypeScript              | 🔲 reserved (Issue #40) |\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/tools/execute-code-runtimes.md:44
-msgid "## Configuration (Reserved)"
+#. type: Title ##
+#: docs/tools/execute-code-runtimes.md:43
+#, no-wrap
+msgid "Configuration (Reserved)"
 msgstr ""
 
-#. type: Plain text
-#: docs/tools/execute-code-runtimes.md:57
+#. type: Fenced code block (yaml)
+#: docs/tools/execute-code-runtimes.md:45
 #, no-wrap
 msgid ""
-"```yaml\n"
 "execute_code:\n"
 "  default_runtime: bun\n"
 "  runtimes:\n"
@@ -147,17 +135,11 @@ msgid ""
 "      command: python3\n"
 "    deno:\n"
 "      enabled: false\n"
-"```\n"
 msgstr ""
 
 #. type: Plain text
 #: docs/tools/execute-code-runtimes.md:59
 msgid "Disabled runtimes return a clear error listing available runtimes."
-msgstr ""
-
-#. type: Plain text
-#: docs/tools/execute-code-runtimes.md:61
-msgid "## Security"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -175,9 +157,10 @@ msgstr ""
 msgid "**Do not** auto-guess runtime from code content"
 msgstr ""
 
-#. type: Plain text
-#: docs/tools/execute-code-runtimes.md:67
-msgid "## Credential Injection (Planned)"
+#. type: Title ##
+#: docs/tools/execute-code-runtimes.md:66
+#, no-wrap
+msgid "Credential Injection (Planned)"
 msgstr ""
 
 #. type: Plain text

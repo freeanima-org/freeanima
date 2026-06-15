@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 17:27+0800\n"
+"POT-Creation-Date: 2026-06-15 18:02+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,41 +16,16 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. type: Plain text
-#: docs/README.md:1 docs/concepts/architecture.md:1
-#: docs/concepts/compression.md:1 docs/concepts/dream.md:1
-#: docs/concepts/identity.md:1 docs/concepts/identity.md:10
-#: docs/concepts/identity.md:28 docs/concepts/identity.md:45
-#: docs/concepts/identity.md:55 docs/concepts/memory.md:1
-#: docs/concepts/memory.md:17 docs/concepts/memory.md:53
-#: docs/concepts/memory.md:124 docs/concepts/memory.md:135
-#: docs/concepts/memory.md:160 docs/concepts/recall-flow.md:1
-#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:30
-#: docs/concepts/self-layer.md:52 docs/concepts/self-layer.md:66
-#: docs/concepts/self-layer.md:80 docs/concepts/self-layer.md:91
-#: docs/concepts/sleep.md:1 docs/concepts/time-perception.md:1
-#: docs/features/pair-programming-v1.md:1 docs/guide/database.md:1
-#: docs/guide/install.md:1 docs/guide/install.md:31 docs/guide/install.md:106
-#: docs/guide/install.md:167 docs/guide/install.md:234 docs/guide/security.md:1
-#: docs/guide/service.md:1 docs/sap/events.md:1 docs/sap/methods.md:1
-#: docs/sap/overview.md:1 docs/sap/satellite-guide.md:1
-#: docs/sap/security-model.md:1 docs/sap/tools.md:1 docs/sap/transport.md:1
-#: docs/tools/execute-code-runtimes.md:1
+#. type: Content of: <messages><msg>
+#: docs/concepts/architecture.md:1 messages/po4a/en.xml:27
 #, no-wrap
-msgid "---\n"
+msgid "Architecture"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/architecture.md:3
+#. type: Title #
+#: docs/concepts/architecture.md:5
 #, no-wrap
-msgid ""
-"title: Architecture\n"
-"---\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/concepts/architecture.md:6
-msgid "# FreeAnima Architecture"
+msgid "FreeAnima Architecture"
 msgstr ""
 
 #. type: Plain text
@@ -58,9 +33,10 @@ msgstr ""
 msgid "System-level constraints and long-lived design principles."
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/architecture.md:10 docs/concepts/memory.md:12
-msgid "## Core Principles"
+#. type: Title ##
+#: docs/concepts/architecture.md:9 docs/concepts/memory.md:11
+#, no-wrap
+msgid "Core Principles"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -93,9 +69,10 @@ msgid ""
 "The system prompt is part of architecture, not ad-hoc string concatenation"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/architecture.md:18
-msgid "## Four Cognitive Layers"
+#. type: Title ##
+#: docs/concepts/architecture.md:17
+#, no-wrap
+msgid "Four Cognitive Layers"
 msgstr ""
 
 #. type: Plain text
@@ -105,11 +82,10 @@ msgid ""
 "different core question:"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/architecture.md:54
+#. type: Fenced code block (text)
+#: docs/concepts/architecture.md:21
 #, no-wrap
 msgid ""
-"```\n"
 "┌───────────────────────────────────────────────┐\n"
 "│ ① Consciousness                                │\n"
 "│    \"What am I aware of right now?\"             │\n"
@@ -141,12 +117,12 @@ msgid ""
 "│    └── External assets: email, accounts, creds│\n"
 "│    Credentials: see \"Credential System\" below  │\n"
 "└───────────────────────────────────────────────┘\n"
-"```\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/architecture.md:56
-msgid "### Layer Relationships"
+#. type: Title ###
+#: docs/concepts/architecture.md:55
+#, no-wrap
+msgid "Layer Relationships"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -178,9 +154,10 @@ msgid ""
 "on\". Body and assets meet here as extensions of my boundary."
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/architecture.md:63
-msgid "### Background"
+#. type: Title ##
+#: docs/concepts/architecture.md:62 docs/tools/execute-code-runtimes.md:9
+#, no-wrap
+msgid "Background"
 msgstr ""
 
 #. type: Plain text
@@ -192,9 +169,10 @@ msgid ""
 "first-class citizens), plus Self split out from Memory."
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/architecture.md:67
-msgid "## Situational Intelligence"
+#. type: Title ##
+#: docs/concepts/architecture.md:66
+#, no-wrap
+msgid "Situational Intelligence"
 msgstr ""
 
 #. type: Plain text
@@ -204,9 +182,10 @@ msgid ""
 "two independent but cooperating subsystems."
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/architecture.md:71
-msgid "### Scene Awareness"
+#. type: Title ###
+#: docs/concepts/architecture.md:70
+#, no-wrap
+msgid "Scene Awareness"
 msgstr ""
 
 #. type: Plain text
@@ -251,9 +230,10 @@ msgstr ""
 msgid "**Operation:** Runs continuously without explicit switch commands. Inferred from dialogue, time, frequency, etc. See [`time-perception.md`](time-perception.md).\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/architecture.md:85
-msgid "### Capability Mask"
+#. type: Title ###
+#: docs/concepts/architecture.md:84
+#, no-wrap
+msgid "Capability Mask"
 msgstr ""
 
 #. type: Plain text
@@ -312,16 +292,16 @@ msgstr ""
 msgid "**Operation:** Switches at session boundaries, explicit commands, or scene-awareness triggers. Each mask is a declared tool/data scope, not a separate identity.\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/architecture.md:102
-msgid "### How They Interact"
+#. type: Title ###
+#: docs/concepts/architecture.md:101
+#, no-wrap
+msgid "How They Interact"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/architecture.md:114
+#. type: Fenced code block (text)
+#: docs/concepts/architecture.md:103
 #, no-wrap
 msgid ""
-"```\n"
 "Scene awareness (soft tuning)\n"
 "     │  tone, distance, recall bias\n"
 "     │\n"
@@ -331,7 +311,6 @@ msgid ""
 "     │\n"
 "     ▼\n"
 "Agent behavior\n"
-"```\n"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -359,9 +338,10 @@ msgid ""
 "For design drafts, open a GitHub Issue (no design-doc directory in docs)."
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/architecture.md:122
-msgid "## Memory Storage (Summary)"
+#. type: Title ##
+#: docs/concepts/architecture.md:121
+#, no-wrap
+msgid "Memory Storage (Summary)"
 msgstr ""
 
 #. type: Plain text
@@ -384,9 +364,10 @@ msgid ""
 "chat. Details: [`memory.md`](memory.md), [`sleep.md`](sleep.md)."
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/architecture.md:133
-msgid "## Credential System (Summary)"
+#. type: Title ##
+#: docs/concepts/architecture.md:132
+#, no-wrap
+msgid "Credential System (Summary)"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -428,9 +409,10 @@ msgstr ""
 msgid "See [`guide/security.md`](../guide/security.md)."
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/architecture.md:144
-msgid "## Runtime Modes"
+#. type: Title ##
+#: docs/concepts/architecture.md:143
+#, no-wrap
+msgid "Runtime Modes"
 msgstr ""
 
 #. type: Plain text
@@ -457,21 +439,20 @@ msgstr ""
 msgid "**WebUI**: browser at `http://127.0.0.1:2658/webui/*`"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/architecture.md:157
+#. type: Fenced code block (bash)
+#: docs/concepts/architecture.md:151
 #, no-wrap
 msgid ""
-"```bash\n"
 "anima service start              # default: systemd --user\n"
 "anima service start --foreground # foreground (logs to stdout)\n"
 "anima service start --dev        # WebUI source watch rebuild (refresh page after edits)\n"
 "anima service status\n"
-"```\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/architecture.md:159
-msgid "## Tool Architecture (Three Layers)"
+#. type: Title ##
+#: docs/concepts/architecture.md:158
+#, no-wrap
+msgid "Tool Architecture (Three Layers)"
 msgstr ""
 
 #. type: Plain text
@@ -481,11 +462,10 @@ msgid ""
 "tool list**. The LLM cares about names and parameters, not origin."
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/architecture.md:171
+#. type: Fenced code block (text)
+#: docs/concepts/architecture.md:162
 #, no-wrap
 msgid ""
-"```\n"
 "LLM view — flat tool list:\n"
 "  file_read_file(path)           ← local\n"
 "  file_write_file(path, content) ← local\n"
@@ -493,12 +473,12 @@ msgid ""
 "  query_database(sql)            ← MCP server\n"
 "  send_email(to, subject)        ← MCP server\n"
 "  acp_cursor(goal, context)      ← ACP agent\n"
-"```\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/architecture.md:173
-msgid "### Layer 1: Local Tools"
+#. type: Title ###
+#: docs/concepts/architecture.md:172
+#, no-wrap
+msgid "Layer 1: Local Tools"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -511,9 +491,10 @@ msgstr ""
 msgid "Registered automatically at service startup"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/architecture.md:178
-msgid "### Layer 2: MCP Tools (Model Context Protocol)"
+#. type: Title ###
+#: docs/concepts/architecture.md:177
+#, no-wrap
+msgid "Layer 2: MCP Tools (Model Context Protocol)"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -532,22 +513,21 @@ msgstr ""
 msgid "Configure in `config.yaml` under `mcp_servers`"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/architecture.md:190
+#. type: Fenced code block (yaml)
+#: docs/concepts/architecture.md:183
 #, no-wrap
 msgid ""
-"```yaml\n"
 "mcp_servers:\n"
 "  database:\n"
 "    command: npx @modelcontextprotocol/server-postgres\n"
 "    args: [\"--connection\", \"postgresql://...\"]\n"
 "    transport: stdio\n"
-"```\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/architecture.md:192
-msgid "### Layer 3: ACP Tools (Agent Client Protocol)"
+#. type: Title ###
+#: docs/concepts/architecture.md:191
+#, no-wrap
+msgid "Layer 3: ACP Tools (Agent Client Protocol)"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -569,23 +549,22 @@ msgstr ""
 msgid "Configure in `config.yaml` under `acp_agents`"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/architecture.md:205
+#. type: Fenced code block (yaml)
+#: docs/concepts/architecture.md:197
 #, no-wrap
 msgid ""
-"```yaml\n"
 "acp_agents:\n"
 "  cursor:\n"
 "    command: ~/.local/bin/agent\n"
 "    args: [\"--force\", \"acp\"]\n"
 "    name: cursor\n"
 "    description: \"Delegate coding, refactoring, and code review\"\n"
-"```\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/architecture.md:207
-msgid "### Comparison"
+#. type: Title ###
+#: docs/concepts/architecture.md:206
+#, no-wrap
+msgid "Comparison"
 msgstr ""
 
 #. type: Plain text
@@ -606,9 +585,10 @@ msgid ""
 "Layers can be mixed; the LLM chooses order; FreeAnima registers and routes."
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/architecture.md:218
-msgid "## WebUI"
+#. type: Title ##
+#: docs/concepts/architecture.md:217
+#, no-wrap
+msgid "WebUI"
 msgstr ""
 
 #. type: Plain text
@@ -616,35 +596,37 @@ msgstr ""
 msgid "WebUI shares the same HTTP port as `anima service` (default **2658**)."
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/architecture.md:222
-msgid "### Hub Modes"
+#. type: Title ###
+#: docs/concepts/architecture.md:221
+#, no-wrap
+msgid "Hub Modes"
 msgstr ""
 
 #. type: Plain text
 #: docs/concepts/architecture.md:227
 #, no-wrap
 msgid ""
-"| Mode    | Route prefix       | Role                                      |\n"
-"| ------- | ------------------ | ----------------------------------------- |\n"
-"| Parlor  | `/webui/parlor/*`  | Chat with the agent                       |\n"
-"| Chamber | `/webui/chamber/*` | Memory, config, tools, system maintenance |\n"
+"| Mode    | Route / URL                         | Role                                      |\n"
+"| ------- | ----------------------------------- | ----------------------------------------- |\n"
+"| Parlor  | `http://127.0.0.1:4174` (satellite) | Chat with the agent                       |\n"
+"| Chamber | `/chamber/*` on Hub                 | Memory, config, tools, system maintenance |\n"
 msgstr ""
 
 #. type: Plain text
 #: docs/concepts/architecture.md:229
 #, no-wrap
-msgid "**Studio** runs as **satellite processes** (configure `satellites:` in `~/.anima/config.yaml`; pair-programming default `http://127.0.0.1:4173`). Browser talks only to the satellite origin; Hub capabilities reach satellites via [SAP/WS](../sap/overview.md). Hub WebUI is **Parlor + Chamber** only.\n"
+msgid "**Studio** runs as **satellite processes** (configure `satellites:` in `~/.anima/config.yaml`; pair-programming default `http://127.0.0.1:4173`). Browser talks only to the satellite origin; Hub capabilities reach satellites via [SAP/WS](../sap/overview.md). Hub WebUI is **Chamber** only; Parlor is a satellite app.\n"
 msgstr ""
 
 #. type: Plain text
 #: docs/concepts/architecture.md:231
-msgid "Open: `http://127.0.0.1:2658/webui/parlor/chat`"
+msgid "Open Parlor: `http://127.0.0.1:4174`"
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/architecture.md:233
-msgid "## Events and Hooks (Summary)"
+#. type: Title ##
+#: docs/concepts/architecture.md:232
+#, no-wrap
+msgid "Events and Hooks (Summary)"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -679,9 +661,10 @@ msgid ""
 "for future cross-process fan-out but is not on the sleep path."
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/architecture.md:241
-msgid "## Direction"
+#. type: Title ##
+#: docs/concepts/architecture.md:240
+#, no-wrap
+msgid "Direction"
 msgstr ""
 
 #. type: Plain text
@@ -692,9 +675,10 @@ msgid ""
 "`security`). This file does not track todos."
 msgstr ""
 
-#. type: Plain text
-#: docs/concepts/architecture.md:245
-msgid "## Constraints"
+#. type: Title ##
+#: docs/concepts/architecture.md:244
+#, no-wrap
+msgid "Constraints"
 msgstr ""
 
 #. type: Bullet: '- '

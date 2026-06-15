@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 17:27+0800\n"
+"POT-Creation-Date: 2026-06-15 17:52+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,51 +16,28 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. type: Plain text
-#: docs/README.md:1 docs/concepts/architecture.md:1
-#: docs/concepts/compression.md:1 docs/concepts/dream.md:1
-#: docs/concepts/identity.md:1 docs/concepts/identity.md:10
-#: docs/concepts/identity.md:28 docs/concepts/identity.md:45
-#: docs/concepts/identity.md:55 docs/concepts/memory.md:1
-#: docs/concepts/memory.md:17 docs/concepts/memory.md:53
-#: docs/concepts/memory.md:124 docs/concepts/memory.md:135
-#: docs/concepts/memory.md:160 docs/concepts/recall-flow.md:1
-#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:30
-#: docs/concepts/self-layer.md:52 docs/concepts/self-layer.md:66
-#: docs/concepts/self-layer.md:80 docs/concepts/self-layer.md:91
-#: docs/concepts/sleep.md:1 docs/concepts/time-perception.md:1
-#: docs/features/pair-programming-v1.md:1 docs/guide/database.md:1
-#: docs/guide/install.md:1 docs/guide/install.md:31 docs/guide/install.md:106
-#: docs/guide/install.md:167 docs/guide/install.md:234 docs/guide/security.md:1
-#: docs/guide/service.md:1 docs/sap/events.md:1 docs/sap/methods.md:1
-#: docs/sap/overview.md:1 docs/sap/satellite-guide.md:1
-#: docs/sap/security-model.md:1 docs/sap/tools.md:1 docs/sap/transport.md:1
-#: docs/tools/execute-code-runtimes.md:1
+#. type: Content of: <messages><msg>
+#: docs/guide/service.md:1 messages/po4a/en.xml:54
 #, no-wrap
-msgid "---\n"
+msgid "Service"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/service.md:3
+#. type: Title #
+#: docs/guide/service.md:5
 #, no-wrap
-msgid ""
-"title: Service\n"
-"---\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/guide/service.md:6
-msgid "# Service operations"
+msgid "Service operations"
 msgstr ""
 
 #. type: Plain text
 #: docs/guide/service.md:8
-msgid "> Runtime status, memory metrics, and common commands."
+#, no-wrap
+msgid "> Runtime status, memory metrics, and common commands.\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/service.md:10
-msgid "## Status and memory metrics"
+#. type: Title ##
+#: docs/guide/service.md:9
+#, no-wrap
+msgid "Status and memory metrics"
 msgstr ""
 
 #. type: Plain text
@@ -95,39 +72,36 @@ msgstr ""
 msgid "Verify from the shell:"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/service.md:29
-msgid ""
-"```bash curl -s http://127.0.0.1:2658/api/status | jq "
-"'.memory_kb, .memory_detail' grep -E '^(VmRSS|VmSize):' /proc/$(pgrep -f "
-"'anima service' | head -1)/status bun run memory:sample -- --url http://"
-"127.0.0.1:2658/api/status --stage full ```"
-msgstr ""
-
-#. type: Plain text
-#: docs/guide/service.md:31
-msgid "## Common commands"
-msgstr ""
-
-#. type: Plain text
-#: docs/guide/service.md:39
+#. type: Fenced code block (bash)
+#: docs/guide/service.md:24
 #, no-wrap
 msgid ""
-"```bash\n"
+"curl -s http://127.0.0.1:2658/api/status | jq '.memory_kb, .memory_detail'\n"
+"grep -E '^(VmRSS|VmSize):' /proc/$(pgrep -f 'anima service' | head -1)/status\n"
+"bun run memory:sample -- --url http://127.0.0.1:2658/api/status --stage full\n"
+msgstr ""
+
+#. type: Title ##
+#: docs/guide/service.md:30
+#, no-wrap
+msgid "Common commands"
+msgstr ""
+
+#. type: Fenced code block (bash)
+#: docs/guide/service.md:32
+#, no-wrap
+msgid ""
 "anima service start          # background (systemd user unit when available)\n"
 "anima service start --foreground\n"
 "anima service status\n"
 "anima service stop\n"
 "anima service restart\n"
-"```\n"
 msgstr ""
 
 #. type: Plain text
 #: docs/guide/service.md:41
-msgid ""
-"Managed satellites get user units `~/.config/systemd/user/anima-satellite-"
-"<name>.service`, enabled on `service start` and stopped with `service stop`. "
-"See [`satellite-guide.md`](../sap/satellite-guide.md)."
+#, no-wrap
+msgid "Managed satellites get user units `~/.config/systemd/user/anima-satellite-<name>.service`, enabled on `service start` and stopped with `service stop`. See [`satellite-guide.md`](../sap/satellite-guide.md).\n"
 msgstr ""
 
 #. type: Plain text

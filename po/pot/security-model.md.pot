@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 17:27+0800\n"
+"POT-Creation-Date: 2026-06-15 17:52+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,41 +16,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. type: Plain text
-#: docs/README.md:1 docs/concepts/architecture.md:1
-#: docs/concepts/compression.md:1 docs/concepts/dream.md:1
-#: docs/concepts/identity.md:1 docs/concepts/identity.md:10
-#: docs/concepts/identity.md:28 docs/concepts/identity.md:45
-#: docs/concepts/identity.md:55 docs/concepts/memory.md:1
-#: docs/concepts/memory.md:17 docs/concepts/memory.md:53
-#: docs/concepts/memory.md:124 docs/concepts/memory.md:135
-#: docs/concepts/memory.md:160 docs/concepts/recall-flow.md:1
-#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:30
-#: docs/concepts/self-layer.md:52 docs/concepts/self-layer.md:66
-#: docs/concepts/self-layer.md:80 docs/concepts/self-layer.md:91
-#: docs/concepts/sleep.md:1 docs/concepts/time-perception.md:1
-#: docs/features/pair-programming-v1.md:1 docs/guide/database.md:1
-#: docs/guide/install.md:1 docs/guide/install.md:31 docs/guide/install.md:106
-#: docs/guide/install.md:167 docs/guide/install.md:234 docs/guide/security.md:1
-#: docs/guide/service.md:1 docs/sap/events.md:1 docs/sap/methods.md:1
-#: docs/sap/overview.md:1 docs/sap/satellite-guide.md:1
-#: docs/sap/security-model.md:1 docs/sap/tools.md:1 docs/sap/transport.md:1
-#: docs/tools/execute-code-runtimes.md:1
+#. type: Title #
+#: docs/sap/security-model.md:1 docs/sap/security-model.md:5
 #, no-wrap
-msgid "---\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/security-model.md:3
-#, no-wrap
-msgid ""
-"title: SAP Security\n"
-"---\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/sap/security-model.md:6
-msgid "# SAP Security"
+msgid "SAP Security"
 msgstr ""
 
 #. type: Plain text
@@ -60,16 +29,16 @@ msgid ""
 "application-layer authentication on the WebSocket."
 msgstr ""
 
-#. type: Plain text
-#: docs/sap/security-model.md:10
-msgid "## Trust boundary"
+#. type: Title ##
+#: docs/sap/security-model.md:9
+#, no-wrap
+msgid "Trust boundary"
 msgstr ""
 
-#. type: Plain text
-#: docs/sap/security-model.md:28
+#. type: Fenced code block (mermaid)
+#: docs/sap/security-model.md:11
 #, no-wrap
 msgid ""
-"```mermaid\n"
 "flowchart TB\n"
 "  subgraph trusted [Trusted local host assumption]\n"
 "    Hub[\"Hub anima service :2658\"]\n"
@@ -85,24 +54,24 @@ msgid ""
 "  SatB --> SapEndpoint\n"
 "  Other -.->|\"no auth today\"| SapEndpoint\n"
 "  SapEndpoint --> Hub\n"
-"```\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/sap/security-model.md:30
-msgid "## Current controls"
+#. type: Title ##
+#: docs/sap/security-model.md:29
+#, no-wrap
+msgid "Current controls"
 msgstr ""
 
 #. type: Plain text
 #: docs/sap/security-model.md:38
 #, no-wrap
 msgid ""
-"| Control | Status |\n"
-"| ------- | ------ |\n"
-"| TLS on SAP | Not required; typical bind is loopback |\n"
-"| Token / API key on connect | **None** |\n"
-"| Origin check on WebSocket | **None** |\n"
-"| Session-scoped tool routing | **Yes** — [strict routing](tools.md) |\n"
+"| Control                         | Status                                                 |\n"
+"| ------------------------------- | ------------------------------------------------------ |\n"
+"| TLS on SAP                      | Not required; typical bind is loopback                 |\n"
+"| Token / API key on connect      | **None**                                               |\n"
+"| Origin check on WebSocket       | **None**                                               |\n"
+"| Session-scoped tool routing     | **Yes** — [strict routing](tools.md)                   |\n"
 "| Credential values in SAP frames | **No** — credentials stay in pass; LLM sees paths only |\n"
 msgstr ""
 
@@ -135,9 +104,10 @@ msgid ""
 "guide/security.md)."
 msgstr ""
 
-#. type: Plain text
-#: docs/sap/security-model.md:48
-msgid "## Protocol hardening (transport layer)"
+#. type: Title ##
+#: docs/sap/security-model.md:47
+#, no-wrap
+msgid "Protocol hardening (transport layer)"
 msgstr ""
 
 #. type: Plain text
@@ -148,9 +118,10 @@ msgid ""
 "checks, not authentication."
 msgstr ""
 
-#. type: Plain text
-#: docs/sap/security-model.md:52
-msgid "## Future directions (not implemented)"
+#. type: Title ##
+#: docs/sap/security-model.md:51
+#, no-wrap
+msgid "Future directions (not implemented)"
 msgstr ""
 
 #. type: Plain text
@@ -187,18 +158,19 @@ msgid ""
 "requested; this codebase phase accepts breaking changes."
 msgstr ""
 
-#. type: Plain text
-#: docs/sap/security-model.md:63
-msgid "## Related surfaces"
+#. type: Title ##
+#: docs/sap/security-model.md:62
+#, no-wrap
+msgid "Related surfaces"
 msgstr ""
 
 #. type: Plain text
 #: docs/sap/security-model.md:68
 #, no-wrap
 msgid ""
-"| Surface | Doc |\n"
-"| ------- | --- |\n"
-"| Hub HTTP / WebUI | [security.md](../guide/security.md) |\n"
+"| Surface            | Doc                                                                         |\n"
+"| ------------------ | --------------------------------------------------------------------------- |\n"
+"| Hub HTTP / WebUI   | [security.md](../guide/security.md)                                         |\n"
 "| Credentials (pass) | [security.md](../guide/security.md), [identity.md](../concepts/identity.md) |\n"
-"| Tool execution | [tools.md](tools.md) |\n"
+"| Tool execution     | [tools.md](tools.md)                                                        |\n"
 msgstr ""

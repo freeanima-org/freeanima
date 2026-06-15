@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 09:44+0800\n"
+"POT-Creation-Date: 2026-06-15 17:52+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,52 +16,24 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. type: Plain text
-#: docs/README.md:1 docs/concepts/architecture.md:1
-#: docs/concepts/compression.md:1 docs/concepts/identity.md:1
-#: docs/concepts/identity.md:10 docs/concepts/identity.md:28
-#: docs/concepts/identity.md:45 docs/concepts/identity.md:55
-#: docs/concepts/memory.md:1 docs/concepts/memory.md:17
-#: docs/concepts/memory.md:53 docs/concepts/memory.md:122
-#: docs/concepts/memory.md:133 docs/concepts/memory.md:150
-#: docs/concepts/recall-flow.md:1 docs/concepts/self-layer.md:1
-#: docs/concepts/self-layer.md:30 docs/concepts/self-layer.md:52
-#: docs/concepts/self-layer.md:66 docs/concepts/self-layer.md:80
-#: docs/concepts/self-layer.md:91 docs/concepts/sleep.md:1
-#: docs/concepts/time-perception.md:1 docs/features/pair-programming-v1.md:1
-#: docs/guide/database.md:1 docs/guide/install.md:1 docs/guide/install.md:31
-#: docs/guide/install.md:106 docs/guide/install.md:167
-#: docs/guide/install.md:234 docs/guide/security.md:1 docs/guide/service.md:1
-#: docs/tools/execute-code-runtimes.md:1
+#. type: Content of: <messages><msg>
+#: docs/guide/install.md:1 docs/guide/install.md:5 messages/po4a/en.xml:36
 #, no-wrap
-msgid "---\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/guide/install.md:3
-#, no-wrap
-msgid ""
-"title: Installation\n"
-"---\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/guide/install.md:6
-msgid "# Installation"
+msgid "Installation"
 msgstr ""
 
 #. type: Plain text
 #: docs/guide/install.md:9
+#, no-wrap
 msgid ""
-"> Deploy FreeAnima on your machine — npm CLI, Docker Compose, or from "
-"source.  > After install: [`security.md`](security.md) (credentials, bind "
-"address) · [`database.md`](database.md) (PostgreSQL) · [`service.md`]"
-"(service.md) (runtime commands)."
+"> Deploy FreeAnima on your machine — npm CLI, Docker Compose, or from source.\n"
+"> After install: [`security.md`](security.md) (credentials, bind address) · [`database.md`](database.md) (PostgreSQL) · [`service.md`](service.md) (runtime commands).\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/install.md:11
-msgid "## Choose a path"
+#. type: Title ##
+#: docs/guide/install.md:10
+#, no-wrap
+msgid "Choose a path"
 msgstr ""
 
 #. type: Plain text
@@ -84,9 +56,10 @@ msgid ""
 "Docker and production setups should still run it."
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/install.md:21
-msgid "## Shared prerequisites"
+#. type: Title ##
+#: docs/guide/install.md:20
+#, no-wrap
+msgid "Shared prerequisites"
 msgstr ""
 
 #. type: Plain text
@@ -108,9 +81,10 @@ msgid ""
 "with your database."
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/install.md:34
-msgid "## npm CLI"
+#. type: Title ##
+#: docs/guide/install.md:33
+#, no-wrap
+msgid "npm CLI"
 msgstr ""
 
 #. type: Plain text
@@ -120,26 +94,24 @@ msgid ""
 "@freeanima/cli) on npm. The binary is `anima`; runtime is Bun (not Node)."
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/install.md:38
-msgid "### 1. Install Bun and the CLI"
+#. type: Title ###
+#: docs/guide/install.md:37
+#, no-wrap
+msgid "1. Install Bun and the CLI"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/install.md:42
+#. type: Fenced code block (bash)
+#: docs/guide/install.md:39
+#, no-wrap
 msgid ""
-"```bash # Install Bun (https://bun.sh/docs/installation)  curl -fsSL https://"
-"bun.sh/install | bash"
-msgstr ""
-
-#. type: Plain text
-#: docs/guide/install.md:45
-msgid "# Global CLI from npm registry bun install -g @freeanima/cli"
-msgstr ""
-
-#. type: Plain text
-#: docs/guide/install.md:49
-msgid "# Verify anima --help ```"
+"# Install Bun (https://bun.sh/docs/installation)\n"
+"curl -fsSL https://bun.sh/install | bash\n"
+"\n"
+"# Global CLI from npm registry\n"
+"bun install -g @freeanima/cli\n"
+"\n"
+"# Verify\n"
+"anima --help\n"
 msgstr ""
 
 #. type: Plain text
@@ -149,20 +121,19 @@ msgid ""
 "Bun — ensure `bun` is on your `PATH`."
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/install.md:53
-msgid "### 2. Configure"
+#. type: Title ###
+#: docs/guide/install.md:52
+#, no-wrap
+msgid "2. Configure"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/install.md:59
+#. type: Fenced code block (bash)
+#: docs/guide/install.md:54
 #, no-wrap
 msgid ""
-"```bash\n"
 "mkdir -p ~/.anima\n"
 "chmod 700 ~/.anima\n"
 "cp config.example.yaml ~/.anima/config.yaml   # from repo clone, or write manually\n"
-"```\n"
 msgstr ""
 
 #. type: Plain text
@@ -187,12 +158,12 @@ msgstr ""
 msgid "Prefer pass for secrets:"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/install.md:71
+#. type: Fenced code block (bash)
+#: docs/guide/install.md:67
+#, no-wrap
 msgid ""
-"```bash anima credential add api/openai token=sk-… anima credential add "
-"services/postgres/anima url=postgresql://… host=… password=… database=anima "
-"```"
+"anima credential add api/openai token=sk-…\n"
+"anima credential add services/postgres/anima url=postgresql://… host=… password=… database=anima\n"
 msgstr ""
 
 #. type: Plain text
@@ -216,42 +187,39 @@ msgid ""
 "Optional Redis block in config (defaults shown in `config.example.yaml`):"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/install.md:83
+#. type: Fenced code block (yaml)
+#: docs/guide/install.md:78
 #, no-wrap
 msgid ""
-"```yaml\n"
 "redis:\n"
 "  host: 127.0.0.1\n"
 "  port: 6379\n"
-"```\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/install.md:85
-msgid "### 3. Start the service"
+#. type: Title ###
+#: docs/guide/install.md:84
+#, no-wrap
+msgid "3. Start the service"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/install.md:91
+#. type: Fenced code block (bash)
+#: docs/guide/install.md:86
 #, no-wrap
 msgid ""
-"```bash\n"
 "anima service start              # background (systemd user unit when available)\n"
 "anima service start --foreground # debug — logs to stdout\n"
 "anima service status\n"
-"```\n"
 msgstr ""
 
 #. type: Plain text
 #: docs/guide/install.md:93
-msgid "Default bind: `127.0.0.1:2658`. Open parlor chat:"
+msgid "Default bind: `127.0.0.1:2658`. Open parlor chat (satellite):"
 msgstr ""
 
 #. type: Plain text
 #: docs/guide/install.md:95
 #, no-wrap
-msgid "**http://127.0.0.1:2658/webui/parlor/chat**\n"
+msgid "**http://127.0.0.1:4174**\n"
 msgstr ""
 
 #. type: Plain text
@@ -260,14 +228,16 @@ msgid ""
 "Schema migrations run automatically on startup when `database.url` is set."
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/install.md:99
-msgid "### 4. Upgrade"
+#. type: Title ###
+#: docs/guide/install.md:98
+#, no-wrap
+msgid "4. Upgrade"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/install.md:103
-msgid "```bash anima update ```"
+#. type: Fenced code block (bash)
+#: docs/guide/install.md:100
+#, no-wrap
+msgid "anima update\n"
 msgstr ""
 
 #. type: Plain text
@@ -277,9 +247,10 @@ msgid ""
 "link installs — use git pull or rebuild instead."
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/install.md:109
-msgid "## Docker Compose"
+#. type: Title ##
+#: docs/guide/install.md:108
+#, no-wrap
+msgid "Docker Compose"
 msgstr ""
 
 #. type: Plain text
@@ -290,9 +261,10 @@ msgid ""
 "`0.0.0.0:2658` inside the container."
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/install.md:113
-msgid "### 1. Prepare environment"
+#. type: Title ###
+#: docs/guide/install.md:112
+#, no-wrap
+msgid "1. Prepare environment"
 msgstr ""
 
 #. type: Plain text
@@ -302,9 +274,10 @@ msgid ""
 "`.env.example`):"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/install.md:119
-msgid "```bash cp .env.example .env ```"
+#. type: Fenced code block (bash)
+#: docs/guide/install.md:116
+#, no-wrap
+msgid "cp .env.example .env\n"
 msgstr ""
 
 #. type: Plain text
@@ -325,14 +298,16 @@ msgid ""
 "| `ANIMA_PORT`      | no       | Host port mapped to container `2658` (default `2658`) |\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/install.md:131
-msgid "### 2. Start the stack"
+#. type: Title ###
+#: docs/guide/install.md:130
+#, no-wrap
+msgid "2. Start the stack"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/install.md:135
-msgid "```bash docker compose up --build ```"
+#. type: Fenced code block (bash)
+#: docs/guide/install.md:132
+#, no-wrap
+msgid "docker compose up --build\n"
 msgstr ""
 
 #. type: Plain text
@@ -365,45 +340,57 @@ msgid ""
 "`anima_data`."
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/install.md:145
-msgid "### 3. Access WebUI"
+#. type: Title ###
+#: docs/guide/install.md:144
+#, no-wrap
+msgid "3. Access WebUI"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/install.md:149
-msgid "```text http://127.0.0.1:2658/webui/parlor/chat ```"
+#. type: Fenced code block (text)
+#: docs/guide/install.md:146
+#, no-wrap
+msgid "http://127.0.0.1:4174\n"
 msgstr ""
 
 #. type: Plain text
 #: docs/guide/install.md:151
-msgid "(Use `ANIMA_PORT` if you changed the host mapping.)"
+msgid "Hub Chamber: `http://127.0.0.1:2658/chamber/dashboard`"
 msgstr ""
 
 #. type: Plain text
 #: docs/guide/install.md:153
-msgid "### 4. Pull a release image (no local build)"
+msgid "(Use `ANIMA_PORT` if you changed the host mapping.)"
+msgstr ""
+
+#. type: Title ###
+#: docs/guide/install.md:154
+#, no-wrap
+msgid "4. Pull a release image (no local build)"
+msgstr ""
+
+#. type: Fenced code block (bash)
+#: docs/guide/install.md:156
+#, no-wrap
+msgid ""
+"docker compose pull\n"
+"docker compose up -d\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/install.md:158
-msgid "```bash docker compose pull docker compose up -d ```"
-msgstr ""
-
-#. type: Plain text
-#: docs/guide/install.md:160
+#: docs/guide/install.md:162
 msgid ""
 "Images are published to `ghcr.io/freeanima-org/freeanima` on each release "
 "tag."
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/install.md:162
-msgid "### Docker notes"
+#. type: Title ###
+#: docs/guide/install.md:163
+#, no-wrap
+msgid "Docker notes"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/install.md:166
+#: docs/guide/install.md:168
 msgid ""
 "Secrets live in `.env` — do not commit `.env` to git. For production, prefer "
 "a secret manager or pass on the host and mount config instead of plaintext "
@@ -411,188 +398,206 @@ msgid ""
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/install.md:166
+#: docs/guide/install.md:168
 msgid ""
 "The container binds `0.0.0.0` — restrict access with firewall or reverse "
 "proxy auth before exposing beyond localhost ([`security.md`](security.md))."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/guide/install.md:166
+#: docs/guide/install.md:168
 msgid ""
 "pass is **not** used inside the default Compose stack; LLM and DB "
 "credentials come from environment variable expansion in `docker/"
 "config.docker.yaml`."
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/install.md:170
-msgid "## Source (repository)"
-msgstr ""
-
-#. type: Plain text
-#: docs/guide/install.md:172
-msgid "For development, unreleased fixes, or running from a git checkout."
+#. type: Title ##
+#: docs/guide/install.md:171
+#, no-wrap
+msgid "Source (repository)"
 msgstr ""
 
 #. type: Plain text
 #: docs/guide/install.md:174
-msgid "### 1. Clone and install dependencies"
+msgid "For development, unreleased fixes, or running from a git checkout."
+msgstr ""
+
+#. type: Title ###
+#: docs/guide/install.md:175
+#, no-wrap
+msgid "1. Clone and install dependencies"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/install.md:176
+#: docs/guide/install.md:178
 #, no-wrap
 msgid "**Prerequisites:** Bun >= 1.3.14 · PostgreSQL (pgvector) · Redis (recommended) · pass (recommended)\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/install.md:182
+#. type: Fenced code block (bash)
+#: docs/guide/install.md:179
+#, no-wrap
 msgid ""
-"```bash git clone https://github.com/freeanima-org/freeanima.git cd "
-"freeanima bun install ```"
+"git clone https://github.com/freeanima-org/freeanima.git\n"
+"cd freeanima\n"
+"bun install\n"
+msgstr ""
+
+#. type: Title ###
+#: docs/guide/install.md:185
+#, no-wrap
+msgid "2. Expose the `anima` command"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/install.md:184
-msgid "### 2. Expose the `anima` command"
-msgstr ""
-
-#. type: Plain text
-#: docs/guide/install.md:186
+#: docs/guide/install.md:188
 msgid ""
 "Link the workspace CLI into your Bun global bin (editable without rebuild):"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/install.md:191
-msgid "```bash bun run link:global anima --help ```"
+#. type: Fenced code block (bash)
+#: docs/guide/install.md:189
+#, no-wrap
+msgid ""
+"bun run link:global\n"
+"anima --help\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/install.md:193
+#: docs/guide/install.md:195
 msgid "Alternatively, use the repo binary directly:"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/install.md:199
-msgid "```bash bun run anima -- --help # or ./cli/src/cli.ts --help ```"
+#. type: Fenced code block (bash)
+#: docs/guide/install.md:196
+#, no-wrap
+msgid ""
+"bun run anima -- --help\n"
+"# or\n"
+"./cli/src/cli.ts --help\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/install.md:201
+#: docs/guide/install.md:203
 msgid "For a publish-shaped local install (closer to npm users):"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/install.md:206
-msgid "```bash bun run build:cli bun install -g ./cli/publish ```"
+#. type: Fenced code block (bash)
+#: docs/guide/install.md:204
+#, no-wrap
+msgid ""
+"bun run build:cli\n"
+"bun install -g ./cli/publish\n"
+msgstr ""
+
+#. type: Title ###
+#: docs/guide/install.md:209
+#, no-wrap
+msgid "3. Configure and start"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/install.md:208
-msgid "### 3. Configure and start"
-msgstr ""
-
-#. type: Plain text
-#: docs/guide/install.md:210
+#: docs/guide/install.md:212
 msgid ""
 "Same as npm CLI — `~/.anima/config.yaml`, PostgreSQL, optional Redis and "
 "pass:"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/install.md:215
+#. type: Fenced code block (bash)
+#: docs/guide/install.md:213
+#, no-wrap
 msgid ""
-"```bash mkdir -p ~/.anima cp config.example.yaml ~/.anima/config.yaml # "
-"configure database + LLM (see database.md, security.md)"
+"mkdir -p ~/.anima\n"
+"cp config.example.yaml ~/.anima/config.yaml\n"
+"# configure database + LLM (see database.md, security.md)\n"
+"\n"
+"anima service start --foreground\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/install.md:218
-msgid "anima service start --foreground ```"
-msgstr ""
-
-#. type: Plain text
-#: docs/guide/install.md:220
+#: docs/guide/install.md:222
 msgid ""
 "WebUI dev mode (source watch rebuild — refresh the page after frontend "
 "edits):"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/install.md:224
-msgid "```bash anima service start --dev --foreground ```"
+#. type: Fenced code block (bash)
+#: docs/guide/install.md:223
+#, no-wrap
+msgid "anima service start --dev --foreground\n"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/install.md:226
-msgid "### 4. Development checks"
+#. type: Title ###
+#: docs/guide/install.md:227
+#, no-wrap
+msgid "4. Development checks"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/install.md:231
+#. type: Fenced code block (bash)
+#: docs/guide/install.md:229
 #, no-wrap
 msgid ""
-"```bash\n"
 "bun run check    # typecheck + lint + dep-check + format + changed unit tests\n"
 "bun run test     # full unit + integration (integration uses Docker for temp PG)\n"
-"```\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/install.md:233
+#: docs/guide/install.md:235
 msgid ""
 "Upgrade a link install: `git pull`, `bun install`, restart the service. Do "
 "not use `anima update`."
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/install.md:237
-msgid "## Verify installation"
+#. type: Title ##
+#: docs/guide/install.md:238
+#, no-wrap
+msgid "Verify installation"
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/install.md:242
+#. type: Fenced code block (bash)
+#: docs/guide/install.md:240
+#, no-wrap
 msgid ""
-"```bash anima service status curl -s http://127.0.0.1:2658/api/status | jq "
-"'.version, .memory_kb' ```"
+"anima service status\n"
+"curl -s http://127.0.0.1:2658/api/status | jq '.version, .memory_kb'\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/install.md:244
+#: docs/guide/install.md:246
 msgid ""
 "If status fails, check PostgreSQL connectivity and that migrations completed "
 "([`database.md`](database.md#troubleshooting))."
 msgstr ""
 
-#. type: Plain text
-#: docs/guide/install.md:246
-msgid "## Next steps"
+#. type: Title ##
+#: docs/guide/install.md:247
+#, no-wrap
+msgid "Next steps"
 msgstr ""
 
 #. type: Bullet: '1. '
-#: docs/guide/install.md:250
+#: docs/guide/install.md:252
 msgid ""
 "**Security** — pass-only secrets, `chmod 700 ~/.anima`, do not expose WebUI "
 "without auth ([`security.md`](security.md))"
 msgstr ""
 
 #. type: Bullet: '2. '
-#: docs/guide/install.md:250
+#: docs/guide/install.md:252
 msgid ""
 "**Database** — backups, extensions, manual migrations if needed "
 "([`database.md`](database.md))"
 msgstr ""
 
 #. type: Bullet: '3. '
-#: docs/guide/install.md:250
+#: docs/guide/install.md:252
 msgid ""
 "**Operations** — start/stop, memory metrics ([`service.md`](service.md))"
 msgstr ""
 
 #. type: Bullet: '4. '
-#: docs/guide/install.md:250
+#: docs/guide/install.md:252
 msgid ""
 "**Architecture** — memory pipeline, self layer, tools ([`../concepts/"
 "architecture.md`](../concepts/architecture.md))"

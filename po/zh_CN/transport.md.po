@@ -1,58 +1,25 @@
-# Chinese translations for PACKAGE package
-# Copyright (C) 2026 Free Software Foundation, Inc.
+# SOME DESCRIPTIVE TITLE
+# Copyright (C) YEAR Free Software Foundation, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-# Automatically generated, 2026.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 17:27+0800\n"
-"PO-Revision-Date: 2026-06-15 17:27+0800\n"
-"Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
+"POT-Creation-Date: 2026-06-15 18:02+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. type: Plain text
-#: docs/README.md:1 docs/concepts/architecture.md:1
-#: docs/concepts/compression.md:1 docs/concepts/dream.md:1
-#: docs/concepts/identity.md:1 docs/concepts/identity.md:10
-#: docs/concepts/identity.md:28 docs/concepts/identity.md:45
-#: docs/concepts/identity.md:55 docs/concepts/memory.md:1
-#: docs/concepts/memory.md:17 docs/concepts/memory.md:53
-#: docs/concepts/memory.md:124 docs/concepts/memory.md:135
-#: docs/concepts/memory.md:160 docs/concepts/recall-flow.md:1
-#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:30
-#: docs/concepts/self-layer.md:52 docs/concepts/self-layer.md:66
-#: docs/concepts/self-layer.md:80 docs/concepts/self-layer.md:91
-#: docs/concepts/sleep.md:1 docs/concepts/time-perception.md:1
-#: docs/features/pair-programming-v1.md:1 docs/guide/database.md:1
-#: docs/guide/install.md:1 docs/guide/install.md:31 docs/guide/install.md:106
-#: docs/guide/install.md:167 docs/guide/install.md:234 docs/guide/security.md:1
-#: docs/guide/service.md:1 docs/sap/events.md:1 docs/sap/methods.md:1
-#: docs/sap/overview.md:1 docs/sap/satellite-guide.md:1
-#: docs/sap/security-model.md:1 docs/sap/tools.md:1 docs/sap/transport.md:1
-#: docs/tools/execute-code-runtimes.md:1
+#. type: Title #
+#: docs/sap/transport.md:1 docs/sap/transport.md:5
 #, no-wrap
-msgid "---\n"
-msgstr "---\n"
-
-#. type: Plain text
-#: docs/sap/transport.md:3
-#, no-wrap
-msgid ""
-"title: SAP Transport\n"
-"---\n"
-msgstr ""
-"title: SAP 传输\n"
-"---\n"
-
-#. type: Plain text
-#: docs/sap/transport.md:6
-msgid "# SAP Transport"
-msgstr "# SAP 传输"
+msgid "SAP Transport"
+msgstr "SAP 传输"
 
 #. type: Plain text
 #: docs/sap/transport.md:8
@@ -63,15 +30,17 @@ msgstr ""
 "SAP 在每个 Satellite 实例上使用单一 WebSocket 连接。每条消息是一个包含 JSON "
 "**envelope** 的 UTF-8 文本帧。"
 
-#. type: Plain text
-#: docs/sap/transport.md:10
-msgid "## Endpoint"
-msgstr "## 端点"
+#. type: Title ##
+#: docs/sap/transport.md:9
+#, no-wrap
+msgid "Endpoint"
+msgstr "端点"
 
-#. type: Plain text
-#: docs/sap/transport.md:14
-msgid "``` ws://{hub_host}:{port}/sap/v1 ```"
-msgstr "``` ws://{hub_host}:{port}/sap/v1 ```"
+#. type: Fenced code block (text)
+#: docs/sap/transport.md:11
+#, no-wrap
+msgid "ws://{hub_host}:{port}/sap/v1\n"
+msgstr "ws://{hub_host}:{port}/sap/v1\n"
 
 #. type: Plain text
 #: docs/sap/transport.md:16
@@ -90,13 +59,14 @@ msgid ""
 "contract/src/transport.ts) (`hubWsUrl`)."
 msgstr ""
 "实现位于 [`platform/src/sap/bun-route.ts`](../../platform/src/sap/bun-"
-"route.ts) 与 [`packages/sap-contract/src/transport.ts`](../../packages/sap-"
+"route.ts)  与 [`packages/sap-contract/src/transport.ts`](../../packages/sap-"
 "contract/src/transport.ts)（`hubWsUrl`）。"
 
-#. type: Plain text
-#: docs/sap/transport.md:20
-msgid "## Envelope kinds"
-msgstr "## 信封类型"
+#. type: Title ##
+#: docs/sap/transport.md:19
+#, no-wrap
+msgid "Envelope kinds"
+msgstr "信封类型"
 
 #. type: Plain text
 #: docs/sap/transport.md:22
@@ -111,21 +81,21 @@ msgstr ""
 #: docs/sap/transport.md:30
 #, no-wrap
 msgid ""
-"| `kind` | Direction | Purpose |\n"
-"| ------ | --------- | ------- |\n"
-"| `connect` | Satellite → Hub | First frame; handshake |\n"
-"| `connected` | Hub → Satellite | Handshake reply |\n"
-"| `req` | Satellite → Hub | RPC request (`id`, `method`, `payload`) |\n"
-"| `res` | Hub → Satellite | RPC response (`id`, `ok`, `payload` or `error`) |\n"
-"| `evt` | Both | Async event (`method`, `payload`) |\n"
+"| `kind`      | Direction       | Purpose                                         |\n"
+"| ----------- | --------------- | ----------------------------------------------- |\n"
+"| `connect`   | Satellite → Hub | First frame; handshake                          |\n"
+"| `connected` | Hub → Satellite | Handshake reply                                 |\n"
+"| `req`       | Satellite → Hub | RPC request (`id`, `method`, `payload`)         |\n"
+"| `res`       | Hub → Satellite | RPC response (`id`, `ok`, `payload` or `error`) |\n"
+"| `evt`       | Both            | Async event (`method`, `payload`)               |\n"
 msgstr ""
-"| `kind` | 方向 | 用途 |\n"
-"| ------ | --------- | ------- |\n"
-"| `connect` | Satellite → Hub | 首帧；握手 |\n"
-"| `connected` | Hub → Satellite | 握手回复 |\n"
-"| `req` | Satellite → Hub | RPC 请求（`id`、`method`、`payload`） |\n"
-"| `res` | Hub → Satellite | RPC 响应（`id`、`ok`、`payload` 或 `error`） |\n"
-"| `evt` | Both | 异步事件（`method`、`payload`） |\n"
+"| `kind`      | 方向            | 用途                                            |\n"
+"| ----------- | --------------- | ----------------------------------------------- |\n"
+"| `connect`   | Satellite → Hub | 首帧；握手                                      |\n"
+"| `connected` | Hub → Satellite | 握手回复                                        |\n"
+"| `req`       | Satellite → Hub | RPC 请求（`id`、`method`、`payload`）           |\n"
+"| `res`       | Hub → Satellite | RPC 响应（`id`、`ok`、`payload` 或 `error`）    |\n"
+"| `evt`       | 双向            | 异步事件（`method`、`payload`）                 |\n"
 
 #. type: Plain text
 #: docs/sap/transport.md:32
@@ -136,16 +106,16 @@ msgstr ""
 "使用 `parseSapEnvelope` / `serializeSapEnvelope` 解析/序列化。无效 JSON 或 "
 "schema → WebSocket 关闭 **1003**（`invalid frame`）。"
 
-#. type: Plain text
-#: docs/sap/transport.md:34
-msgid "## Connection state machine"
-msgstr "## 连接状态机"
+#. type: Title ##
+#: docs/sap/transport.md:33
+#, no-wrap
+msgid "Connection state machine"
+msgstr "连接状态机"
 
-#. type: Plain text
-#: docs/sap/transport.md:47
+#. type: Fenced code block (mermaid)
+#: docs/sap/transport.md:35
 #, no-wrap
 msgid ""
-"```mermaid\n"
 "stateDiagram-v2\n"
 "  [*] --> Disconnected\n"
 "  Disconnected --> AwaitingConnect: WebSocket open\n"
@@ -156,9 +126,7 @@ msgid ""
 "  Active --> Disconnected: WebSocket close\n"
 "  Connected --> Disconnected: duplicate connect close 1008\n"
 "  AwaitingConnect --> Disconnected: req before connect close 1008\n"
-"```\n"
 msgstr ""
-"```mermaid\n"
 "stateDiagram-v2\n"
 "  [*] --> Disconnected\n"
 "  Disconnected --> AwaitingConnect: WebSocket open\n"
@@ -169,7 +137,6 @@ msgstr ""
 "  Active --> Disconnected: WebSocket close\n"
 "  Connected --> Disconnected: duplicate connect close 1008\n"
 "  AwaitingConnect --> Disconnected: req before connect close 1008\n"
-"```\n"
 
 #. type: Plain text
 #: docs/sap/transport.md:49
@@ -177,8 +144,8 @@ msgid ""
 "Rules ([`platform/src/sap/ws-server.ts`](../../platform/src/sap/ws-"
 "server.ts) `attachSapWebSocket`):"
 msgstr ""
-"规则（[`platform/src/sap/ws-server.ts`](../../platform/src/sap/ws-server.ts) "
-"`attachSapWebSocket`）："
+"规则（[`platform/src/sap/ws-server.ts`](../../platform/src/sap/ws-"
+"server.ts)  `attachSapWebSocket`）："
 
 #. type: Bullet: '- '
 #: docs/sap/transport.md:53
@@ -198,29 +165,20 @@ msgid ""
 "connected`)."
 msgstr "握手前发送 `req` 或非心跳 `evt` → 关闭 **1008**（`not connected`）。"
 
-#. type: Plain text
-#: docs/sap/transport.md:55
-msgid "## Handshake and heartbeat"
-msgstr "## 握手与心跳"
+#. type: Title ##
+#: docs/sap/transport.md:54
+#, no-wrap
+msgid "Handshake and heartbeat"
+msgstr "握手与心跳"
 
-#. type: Plain text
-#: docs/sap/transport.md:60
+#. type: Fenced code block (mermaid)
+#: docs/sap/transport.md:56
 #, no-wrap
 msgid ""
-"```mermaid\n"
 "sequenceDiagram\n"
 "  participant Sat as Satellite\n"
 "  participant Hub as Hub\n"
-msgstr ""
-"```mermaid\n"
-"sequenceDiagram\n"
-"  participant Sat as Satellite\n"
-"  participant Hub as Hub\n"
-
-#. type: Plain text
-#: docs/sap/transport.md:70
-#, no-wrap
-msgid ""
+"\n"
 "  Sat->>Hub: connect app_id instance_id protocol SAP/1.0\n"
 "  Hub->>Hub: registerConnection SatelliteManager\n"
 "  Hub->>Sat: connected features_enabled heartbeat_interval_sec\n"
@@ -229,8 +187,11 @@ msgid ""
 "    Hub->>Hub: touchHeartbeat\n"
 "    Hub->>Sat: evt heartbeat ts\n"
 "  end\n"
-"```\n"
 msgstr ""
+"sequenceDiagram\n"
+"  participant Sat as Satellite\n"
+"  participant Hub as Hub\n"
+"\n"
 "  Sat->>Hub: connect app_id instance_id protocol SAP/1.0\n"
 "  Hub->>Hub: registerConnection SatelliteManager\n"
 "  Hub->>Sat: connected features_enabled heartbeat_interval_sec\n"
@@ -239,12 +200,12 @@ msgstr ""
 "    Hub->>Hub: touchHeartbeat\n"
 "    Hub->>Sat: evt heartbeat ts\n"
 "  end\n"
-"```\n"
 
-#. type: Plain text
-#: docs/sap/transport.md:72
-msgid "### `connect` payload"
-msgstr "### `connect` payload"
+#. type: Title ###
+#: docs/sap/transport.md:71
+#, no-wrap
+msgid "`connect` payload"
+msgstr "`connect` 载荷"
 
 #. type: Plain text
 #: docs/sap/transport.md:74
@@ -253,60 +214,64 @@ msgid ""
 "lifecycle.ts) `connectPayloadSchema`."
 msgstr ""
 "Schema：[`frames/lifecycle.ts`](../../packages/sap-contract/src/frames/"
-"lifecycle.ts) `connectPayloadSchema`。"
+"lifecycle.ts)  `connectPayloadSchema`。"
 
 #. type: Plain text
 #: docs/sap/transport.md:83
 #, no-wrap
 msgid ""
-"| Field | Required | Role |\n"
-"| ----- | -------- | ---- |\n"
-"| `app_id` | yes | Satellite app id (e.g. `pair-programming`) |\n"
-"| `instance_id` | yes | Stable or generated instance UUID |\n"
-"| `protocol` | yes | Must be `SAP/1.0` |\n"
-"| `features_requested` | no | Feature flags (Hub echoes as `features_enabled`) |\n"
-"| `http_url` | no | Satellite UI URL for Chamber → Satellites |\n"
-"| `instance_label` | no | Display label |\n"
+"| Field                | Required | Role                                             |\n"
+"| -------------------- | -------- | ------------------------------------------------ |\n"
+"| `app_id`             | yes      | Satellite app id (e.g. `pair-programming`)       |\n"
+"| `instance_id`        | yes      | Stable or generated instance UUID                |\n"
+"| `protocol`           | yes      | Must be `SAP/1.0`                                |\n"
+"| `features_requested` | no       | Feature flags (Hub echoes as `features_enabled`) |\n"
+"| `http_url`           | no       | Satellite UI URL for Chamber → Satellites        |\n"
+"| `instance_label`     | no       | Display label                                    |\n"
 msgstr ""
-"| 字段 | 必填 | 作用 |\n"
-"| ----- | -------- | ---- |\n"
-"| `app_id` | yes | Satellite 应用 id（例如 `pair-programming`） |\n"
-"| `instance_id` | yes | 稳定或生成的实例 UUID |\n"
-"| `protocol` | yes | 必须为 `SAP/1.0` |\n"
-"| `features_requested` | no | 功能标志（Hub 回显为 `features_enabled`） |\n"
-"| `http_url` | no | Satellite UI URL，供 Chamber → Satellites 使用 |\n"
-"| `instance_label` | no | 显示标签 |\n"
+"| 字段                 | 必填     | 作用                                             |\n"
+"| -------------------- | -------- | ------------------------------------------------ |\n"
+"| `app_id`             | 是       | Satellite app id（例如 `pair-programming`）      |\n"
+"| `instance_id`        | 是       | 稳定或生成的 instance UUID                       |\n"
+"| `protocol`           | 是       | 必须为 `SAP/1.0`                                 |\n"
+"| `features_requested` | 否       | 功能标志（Hub 回显为 `features_enabled`）        |\n"
+"| `http_url`           | 否       | 卧室 → 卫星的 Satellite UI URL                   |\n"
+"| `instance_label`     | 否       | 显示标签                                         |\n"
+
+#. type: Title ###
+#: docs/sap/transport.md:84
+#, no-wrap
+msgid "`connected` payload"
+msgstr "`connected` 载荷"
 
 #. type: Plain text
-#: docs/sap/transport.md:85
-msgid "### `connected` payload"
-msgstr "### `connected` payload"
-
-#. type: Plain text
-#: docs/sap/transport.md:92
+#: docs/sap/transport.md:93
 #, no-wrap
 msgid ""
-"| Field | Role |\n"
-"| ----- | ---- |\n"
-"| `protocol` | `SAP/1.0` |\n"
-"| `features_enabled` | Enabled features |\n"
-"| `server_info` | `anima_version`, `sap_version`, `platform_for_app` map |\n"
-"| `heartbeat_interval_sec` | Hub default: 30 |\n"
+"| Field                         | Role                                                                                       |\n"
+"| ----------------------------- | ------------------------------------------------------------------------------------------ |\n"
+"| `protocol`                    | `SAP/1.0`                                                                                  |\n"
+"| `features_enabled`            | Enabled features                                                                           |\n"
+"| `server_info`                 | `anima_version`, `sap_version`, `platform_for_app` map                                     |\n"
+"| `server_info.capability_mask` | When `capability_mask` is in `features_requested`: mask preset list (no credential values) |\n"
+"| `heartbeat_interval_sec`      | Hub default: 30                                                                            |\n"
 msgstr ""
-"| 字段 | 作用 |\n"
-"| ----- | ---- |\n"
-"| `protocol` | `SAP/1.0` |\n"
-"| `features_enabled` | 已启用的功能 |\n"
-"| `server_info` | `anima_version`、`sap_version`、`platform_for_app` 映射 |\n"
-"| `heartbeat_interval_sec` | Hub 默认值：30 |\n"
+"| 字段                          | 作用                                                                                       |\n"
+"| ----------------------------- | ------------------------------------------------------------------------------------------ |\n"
+"| `protocol`                    | `SAP/1.0`                                                                                  |\n"
+"| `features_enabled`            | 已启用的功能                                                                               |\n"
+"| `server_info`                 | `anima_version`、`sap_version`、`platform_for_app` 映射                                    |\n"
+"| `server_info.capability_mask` | 当 `capability_mask` 在 `features_requested` 中时：掩码预设列表（不含凭证值）              |\n"
+"| `heartbeat_interval_sec`      | Hub 默认值：30                                                                             |\n"
 
-#. type: Plain text
+#. type: Title ###
 #: docs/sap/transport.md:94
-msgid "### Heartbeat"
-msgstr "### 心跳"
+#, no-wrap
+msgid "Heartbeat"
+msgstr "心跳"
 
 #. type: Plain text
-#: docs/sap/transport.md:96
+#: docs/sap/transport.md:97
 msgid ""
 "Satellite sends `evt { method: \"heartbeat\" }` on an interval derived from "
 "`heartbeat_interval_sec`. Hub updates `last_heartbeat_at` and replies with "
@@ -317,7 +282,7 @@ msgstr ""
 "\"heartbeat\", payload: { ts } }` 回复。"
 
 #. type: Plain text
-#: docs/sap/transport.md:98
+#: docs/sap/transport.md:99
 msgid ""
 "`runSapTransport` in sap-contract starts the heartbeat timer automatically "
 "after connect. Hub does not actively disconnect idle satellites based on "
@@ -326,13 +291,14 @@ msgstr ""
 "sap-contract 中的 `runSapTransport` 在 connect 后自动启动心跳定时器。目前 "
 "Hub 不会因错过心跳而主动断开空闲 Satellite。"
 
-#. type: Plain text
-#: docs/sap/transport.md:100
-msgid "## Reconnect"
-msgstr "## 重连"
+#. type: Content of: <messages><msg>
+#: docs/sap/transport.md:100 messages/po4a/en.xml:432
+#, no-wrap
+msgid "Reconnect"
+msgstr "重连"
 
 #. type: Plain text
-#: docs/sap/transport.md:102
+#: docs/sap/transport.md:103
 msgid ""
 "Satellites should use `runSapTransport` ([`transport.ts`](../../packages/sap-"
 "contract/src/transport.ts)) for connect, heartbeat, and exponential backoff "
@@ -343,22 +309,63 @@ msgstr ""
 "contract/src/transport.ts)）处理 connect、心跳与指数退避重连（默认 1s → 上限 "
 "30s）。断开时 Hub 调用 `onDisconnect` 并注销该实例的工具。"
 
-#. type: Plain text
+#. type: Title ##
 #: docs/sap/transport.md:104
-msgid "## RPC errors"
-msgstr "## RPC 错误"
+#, no-wrap
+msgid "Local SAP relay (Type B satellites)"
+msgstr "本地 SAP 中继（Type B 卫星）"
 
 #. type: Plain text
-#: docs/sap/transport.md:106
-msgid "Failed RPCs return `res` with `ok: false` and:"
-msgstr "失败的 RPC 返回 `ok: false` 的 `res`，并附带："
-
-#. type: Plain text
-#: docs/sap/transport.md:110
-msgid "```json { \"code\": \"sap_error\", \"message\": \"...\" } ```"
-msgstr "```json { \"code\": \"sap_error\", \"message\": \"...\" } ```"
+#: docs/sap/transport.md:107
+msgid ""
+"Pair-programming exposes `ws://{satellite_host}:{port}/sap/relay/v1` for "
+"browser UI. The satellite **process** holds the sole Hub `/sap/v1` "
+"connection; relay clients send standard `req`/`res`/`evt` frames without a "
+"`connect` handshake."
+msgstr ""
+"结对编程为浏览器 UI 暴露 `ws://{satellite_host}:{port}/sap/relay/v1`。"
+"satellite **进程**持有唯一的 Hub `/sap/v1` 连接；中继客户端发送标准 `req`/"
+"`res`/`evt` 帧，无需 `connect` 握手。"
 
 #. type: Plain text
 #: docs/sap/transport.md:111
+#, no-wrap
+msgid ""
+"| Event         | Direction           | Meaning                            |\n"
+"| ------------- | ------------------- | ---------------------------------- |\n"
+"| `relay.ready` | Satellite → browser | Relay attached; safe to send `req` |\n"
+msgstr ""
+"| 事件          | 方向                | 含义                               |\n"
+"| ------------- | ------------------- | ---------------------------------- |\n"
+"| `relay.ready` | Satellite → browser | 中继已附着；可安全发送 `req`       |\n"
+
+#. type: Plain text
+#: docs/sap/transport.md:113
+msgid ""
+"Use `createSapRelayClient` / `createSapRelayBrowserClient` from `@freeanima/"
+"sap-contract`."
+msgstr ""
+"使用 `@freeanima/sap-contract` 中的 `createSapRelayClient` / "
+"`createSapRelayBrowserClient`。"
+
+#. type: Title ##
+#: docs/sap/transport.md:114
+#, no-wrap
+msgid "RPC errors"
+msgstr "RPC 错误"
+
+#. type: Plain text
+#: docs/sap/transport.md:117
+msgid "Failed RPCs return `res` with `ok: false` and:"
+msgstr "失败的 RPC 返回 `ok: false` 的 `res`，并附带："
+
+#. type: Fenced code block (json)
+#: docs/sap/transport.md:118
+#, no-wrap
+msgid "{ \"code\": \"sap_error\", \"message\": \"...\" }\n"
+msgstr "{ \"code\": \"sap_error\", \"message\": \"...\" }\n"
+
+#. type: Plain text
+#: docs/sap/transport.md:122
 msgid "See [methods.md](methods.md) for method-specific behavior."
 msgstr "各方法的具体行为见 [methods.md](methods.md)。"
