@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 09:46+0800\n"
+"POT-Creation-Date: 2026-06-15 11:23+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -133,13 +133,13 @@ msgid "Home"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:24 messages/po4a/en.xml:439
+#: messages/po4a/en.xml:24 messages/po4a/en.xml:449
 #, no-wrap
 msgid "English"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:25 messages/po4a/en.xml:440
+#: messages/po4a/en.xml:25 messages/po4a/en.xml:450
 #, no-wrap
 msgid "中文"
 msgstr ""
@@ -205,7 +205,7 @@ msgid "Installation"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:37 messages/po4a/en.xml:126 messages/po4a/en.xml:442
+#: messages/po4a/en.xml:37 messages/po4a/en.xml:126 messages/po4a/en.xml:452
 #, no-wrap
 msgid "Memory"
 msgstr ""
@@ -265,7 +265,7 @@ msgid "Service"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:47 messages/po4a/en.xml:445
+#: messages/po4a/en.xml:47 messages/po4a/en.xml:455
 #, no-wrap
 msgid "Sleep"
 msgstr ""
@@ -277,7 +277,7 @@ msgid "Time Perception"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:49 messages/po4a/en.xml:427 messages/po4a/en.xml:449
+#: messages/po4a/en.xml:49 messages/po4a/en.xml:437 messages/po4a/en.xml:459
 #, no-wrap
 msgid "Tools"
 msgstr ""
@@ -787,7 +787,7 @@ msgid "Service status"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:139 messages/po4a/en.xml:411 messages/po4a/en.xml:444
+#: messages/po4a/en.xml:139 messages/po4a/en.xml:421 messages/po4a/en.xml:454
 #, no-wrap
 msgid "Sessions"
 msgstr ""
@@ -811,7 +811,7 @@ msgid "Started at {time}"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:143 messages/po4a/en.xml:437
+#: messages/po4a/en.xml:143 messages/po4a/en.xml:447
 #, no-wrap
 msgid "Dashboard"
 msgstr ""
@@ -1231,7 +1231,7 @@ msgid "Autobiographical"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:216 messages/po4a/en.xml:341
+#: messages/po4a/en.xml:216 messages/po4a/en.xml:351
 #, no-wrap
 msgid "All"
 msgstr ""
@@ -1243,7 +1243,7 @@ msgid "Limbic memory"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:219 messages/po4a/en.xml:308
+#: messages/po4a/en.xml:219 messages/po4a/en.xml:318
 #, no-wrap
 msgid "Session messages"
 msgstr ""
@@ -1429,7 +1429,7 @@ msgid "Updated {time}"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:250 messages/po4a/en.xml:258 messages/po4a/en.xml:455
+#: messages/po4a/en.xml:250 messages/po4a/en.xml:258 messages/po4a/en.xml:465
 #, no-wrap
 msgid "Created"
 msgstr ""
@@ -1567,1159 +1567,1213 @@ msgid "Changes: +{added} / ~{updated}"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:276
+#: messages/po4a/en.xml:276 messages/po4a/en.xml:289
 #, no-wrap
-msgid "Deep sleep"
+msgid "Sleep cycle"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:277
 #, no-wrap
-msgid "Deep sleep (latest)"
+msgid "Day (YYYY-MM-DD, optional)"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:278
 #, no-wrap
-msgid "Deep sleep round log"
+msgid "Force (skip dependency check)"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:279
 #, no-wrap
-msgid "Light/deep sleep cron history (cron_log) and latest run snapshots."
+msgid "Run full cycle"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:280
 #, no-wrap
-msgid "Light sleep"
+msgid "Sleep cycle running…"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:281
 #, no-wrap
-msgid "Light sleep (latest)"
+msgid "Pipeline status"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:282
 #, no-wrap
-msgid "Loading rounds…"
+msgid "Step"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:283
 #, no-wrap
-msgid "No cron_log entries yet (new runs will appear after deploy)."
+msgid "Run step"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:284
 #, no-wrap
-msgid "{index}. {round} ({count} tool calls)"
+msgid "Sleep pipeline (diagnostics)"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:285
 #, no-wrap
-msgid "AGENTS.md"
+msgid "Deep sleep"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:286
 #, no-wrap
-msgid "Resident memory"
+msgid "Deep sleep (latest)"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:287
 #, no-wrap
-msgid "Self layer"
+msgid "Deep sleep round log"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:288
 #, no-wrap
-msgid "Summary"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:289
-#, no-wrap
-msgid "ToolSets"
+msgid "Sleep cycle pipeline (builtin-sleep-cycle cron) history and latest run snapshots."
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:290
 #, no-wrap
-msgid "Copy JSON"
+msgid "Light sleep"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:291
 #, no-wrap
-msgid "Copy live full text"
+msgid "Light sleep (latest)"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:292
 #, no-wrap
-msgid "Copy stored full text"
+msgid "Loading rounds…"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:293
 #, no-wrap
-msgid "View system prompt breakdown, full text, and effective tool schemas. Global template by default; optional session compares PG stored vs live rebuild."
+msgid "No cron_log entries yet (new runs will appear after deploy)."
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:294
 #, no-wrap
-msgid "Live (rebuilt)"
+msgid "{index}. {round} ({count} tool calls)"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:295
 #, no-wrap
-msgid "session_meta.tools: {count} names"
+msgid "AGENTS.md"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:296
 #, no-wrap
-msgid "Global template"
+msgid "Resident memory"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:297
 #, no-wrap
-msgid "Session compare"
+msgid "Self layer"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:298
 #, no-wrap
-msgid "No matching tools"
+msgid "Summary"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:299
 #, no-wrap
-msgid "Search tool name / description / toolset"
+msgid "ToolSets"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:300
 #, no-wrap
-msgid "Self layer →"
+msgid "Copy JSON"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:301
 #, no-wrap
-msgid "Session detail →"
+msgid "Copy live full text"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:302
 #, no-wrap
-msgid "Session (optional)"
+msgid "Copy stored full text"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:303
 #, no-wrap
-msgid "Stored (PG)"
+msgid "View system prompt breakdown, full text, and effective tool schemas. Global template by default; optional session compares PG stored vs live rebuild."
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:304
 #, no-wrap
-msgid "Full text"
+msgid "Live (rebuilt)"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:305
 #, no-wrap
-msgid "Breakdown"
+msgid "session_meta.tools: {count} names"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:306 messages/po4a/en.xml:310
+#: messages/po4a/en.xml:306
 #, no-wrap
-msgid "Tool schema"
+msgid "Global template"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:307
 #, no-wrap
-msgid "Token breakdown (estimate)"
+msgid "Session compare"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:308
+#, no-wrap
+msgid "No matching tools"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:309
 #, no-wrap
-msgid "System prompt"
+msgid "Search tool name / description / toolset"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:310
+#, no-wrap
+msgid "Self layer →"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:311
 #, no-wrap
-msgid "Total"
+msgid "Session detail →"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:312
 #, no-wrap
-msgid "{count} tools ({mode})"
+msgid "Session (optional)"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:313
 #, no-wrap
-msgid "session effective"
+msgid "Stored (PG)"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:314
 #, no-wrap
-msgid "Tools list →"
+msgid "Full text"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:315
 #, no-wrap
-msgid "full registry"
+msgid "Breakdown"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:316
+#: messages/po4a/en.xml:316 messages/po4a/en.xml:320
 #, no-wrap
-msgid "Showing {shown} / {total} · ~{tokens} tokens"
+msgid "Tool schema"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:317
 #, no-wrap
-msgid "Browse PG tasks with keyword search and status/priority filters (read-only)."
+msgid "Token breakdown (estimate)"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:318
+#: messages/po4a/en.xml:319
 #, no-wrap
-msgid "Search term (optional, title/description)"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:319 messages/po4a/en.xml:431 messages/po4a/en.xml:434
-#, no-wrap
-msgid "Chamber"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:320
-#, no-wrap
-msgid "Default loaded tools"
+msgid "System prompt"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:321
 #, no-wrap
-msgid "Tool sets auto-injected into new sessions (tools_load on-demand tools not listed)."
+msgid "Total"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:322
 #, no-wrap
-msgid "Registered tools list."
+msgid "{count} tools ({mode})"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:323
 #, no-wrap
-msgid "Registered tools (grouped by ToolSet)."
+msgid "session effective"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:324
 #, no-wrap
-msgid "Error return"
+msgid "Tools list →"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:325
 #, no-wrap
-msgid "All tool failures return JSON:"
+msgid "full registry"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:326
 #, no-wrap
-msgid "Example:"
+msgid "Showing {shown} / {total} · ~{tokens} tokens"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:327
 #, no-wrap
-msgid "Fidelity example (success)"
+msgid "Browse PG tasks with keyword search and status/priority filters (read-only)."
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:328
 #, no-wrap
-msgid "Structured JSON"
+msgid "Search term (optional, title/description)"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:329
+#: messages/po4a/en.xml:329 messages/po4a/en.xml:441 messages/po4a/en.xml:444
 #, no-wrap
-msgid "Plain text"
+msgid "Chamber"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:330
 #, no-wrap
-msgid "Needs secret"
+msgid "Default loaded tools"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:331
 #, no-wrap
-msgid "Return contract not recorded"
+msgid "Tool sets auto-injected into new sessions (tools_load on-demand tools not listed)."
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:332
 #, no-wrap
-msgid "Full OpenAI definition"
+msgid "Registered tools list."
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:333
 #, no-wrap
-msgid "Parameter schema"
+msgid "Registered tools (grouped by ToolSet)."
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:334
 #, no-wrap
-msgid "Returns toolResult JSON on success; JSON error on failure"
+msgid "Error return"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:335
 #, no-wrap
-msgid "Returns plain text on success; JSON error on failure"
+msgid "All tool failures return JSON:"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:336
 #, no-wrap
-msgid "success return example"
+msgid "Example:"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:337
 #, no-wrap
-msgid "Success return schema"
+msgid "Fidelity example (success)"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:338
 #, no-wrap
-msgid "Ungrouped tools"
+msgid "Structured JSON"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:339
 #, no-wrap
-msgid "Abnormal"
+msgid "Plain text"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:340
 #, no-wrap
-msgid "Active (pending + in_progress)"
+msgid "Needs secret"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:341
+#, no-wrap
+msgid "Return contract not recorded"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:342
 #, no-wrap
-msgid "Rebuild runs in the background; you may close this page."
+msgid "Full OpenAI definition"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:343
 #, no-wrap
-msgid "Cancel"
+msgid "Parameter schema"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:344
 #, no-wrap
-msgid "Capability"
+msgid "Returns toolResult JSON on success; JSON error on failure"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:345
 #, no-wrap
-msgid "{chars} chars · ~{tokens} tokens"
+msgid "Returns plain text on success; JSON error on failure"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:346
 #, no-wrap
-msgid "Click \"Search\" to load the list."
+msgid "success return example"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:347
 #, no-wrap
-msgid "Close"
+msgid "Success return schema"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:348
 #, no-wrap
-msgid "Collapse"
+msgid "Ungrouped tools"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:349
 #, no-wrap
-msgid "Coming soon"
+msgid "Abnormal"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:350
 #, no-wrap
-msgid "Config"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:351
-#, no-wrap
-msgid "OK"
+msgid "Active (pending + in_progress)"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:352
 #, no-wrap
-msgid "Connected"
+msgid "Rebuild runs in the background; you may close this page."
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:353
 #, no-wrap
-msgid "Connecting"
+msgid "Cancel"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:354
 #, no-wrap
-msgid "Copied {label}"
+msgid "Capability"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:355
 #, no-wrap
-msgid "Copy"
+msgid "{chars} chars · ~{tokens} tokens"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:356
 #, no-wrap
-msgid "Failed to copy {label}"
+msgid "Click \"Search\" to load the list."
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:357
 #, no-wrap
-msgid "Details"
+msgid "Close"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:358
 #, no-wrap
-msgid "Disabled"
+msgid "Collapse"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:359
 #, no-wrap
-msgid "Done"
+msgid "Coming soon"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:360
 #, no-wrap
-msgid "Edit title"
+msgid "Config"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:361
 #, no-wrap
-msgid "Embedding"
+msgid "OK"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:362
 #, no-wrap
-msgid "(empty)"
+msgid "Connected"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:363
 #, no-wrap
-msgid "Empty response"
+msgid "Connecting"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:364
 #, no-wrap
-msgid "Error"
+msgid "Copied {label}"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:365
 #, no-wrap
-msgid "Expand"
+msgid "Copy"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:366
 #, no-wrap
-msgid "Failed"
+msgid "Failed to copy {label}"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:367
 #, no-wrap
-msgid "(full rebuild)"
+msgid "Details"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:368
 #, no-wrap
-msgid "— Global template —"
+msgid "Disabled"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:369
 #, no-wrap
-msgid "Key"
+msgid "Done"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:370
 #, no-wrap
-msgid "Keywords…"
+msgid "Edit title"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:371
 #, no-wrap
-msgid "Load failed: {detail}"
+msgid "Embedding"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:372
 #, no-wrap
-msgid "Load failed"
+msgid "(empty)"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:373
 #, no-wrap
-msgid "Loading…"
+msgid "Empty response"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:374
 #, no-wrap
-msgid "Network error"
+msgid "Error"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:375
 #, no-wrap
-msgid "New session"
+msgid "Expand"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:376
 #, no-wrap
-msgid "Next"
+msgid "Failed"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:377
 #, no-wrap
-msgid "No reply; check API keys and server logs"
+msgid "(full rebuild)"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:378
 #, no-wrap
-msgid "No response stream"
+msgid "— Global template —"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:379
 #, no-wrap
-msgid "No matching records."
+msgid "Key"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:380
 #, no-wrap
-msgid "(no title)"
+msgid "Keywords…"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:381
 #, no-wrap
-msgid "Not configured"
+msgid "Load failed: {detail}"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:382
 #, no-wrap
-msgid "Not connected"
+msgid "Load failed"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:383
 #, no-wrap
-msgid "Not started"
+msgid "Loading…"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:384
 #, no-wrap
-msgid "(missing only)"
+msgid "Network error"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:385
 #, no-wrap
-msgid "Operation failed: {detail}"
+msgid "New session"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:386
 #, no-wrap
-msgid "Optional"
+msgid "Next"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:387
 #, no-wrap
-msgid "{total} items · page {current} / {pages}"
+msgid "No reply; check API keys and server logs"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:388
 #, no-wrap
-msgid "Preparing"
+msgid "No response stream"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:389
 #, no-wrap
-msgid "Previous"
+msgid "No matching records."
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:390
 #, no-wrap
-msgid "Priority"
+msgid "(no title)"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:391
 #, no-wrap
-msgid "Processing day"
+msgid "Not configured"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:392 messages/po4a/en.xml:404 messages/po4a/en.xml:467
+#: messages/po4a/en.xml:392
 #, no-wrap
-msgid "Search"
+msgid "Not connected"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:393
 #, no-wrap
-msgid "Reconnect"
+msgid "Not started"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:394
 #, no-wrap
-msgid "Refresh"
+msgid "(missing only)"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:395
 #, no-wrap
-msgid "Refresh list"
+msgid "Operation failed: {detail}"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:396
 #, no-wrap
-msgid "Refreshing…"
+msgid "Optional"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:397
 #, no-wrap
-msgid "Rename"
+msgid "{total} items · page {current} / {pages}"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:398
 #, no-wrap
-msgid "Request failed"
+msgid "Preparing"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:399
 #, no-wrap
-msgid "Restart service"
+msgid "Previous"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:400
 #, no-wrap
-msgid "Restarting…"
+msgid "Priority"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:401
 #, no-wrap
-msgid "Rounds"
+msgid "Processing day"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:402
+#: messages/po4a/en.xml:402 messages/po4a/en.xml:414 messages/po4a/en.xml:477
 #, no-wrap
-msgid "Run at"
+msgid "Search"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:403
 #, no-wrap
-msgid "Save"
+msgid "Reconnect"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:404
+#, no-wrap
+msgid "Refresh"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:405
 #, no-wrap
-msgid "Search failed: {detail}"
+msgid "Refresh list"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:406
 #, no-wrap
-msgid "Search term (optional)"
+msgid "Refreshing…"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:407
 #, no-wrap
-msgid "Segmented"
+msgid "Rename"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:408
 #, no-wrap
-msgid "Send"
+msgid "Request failed"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:409
 #, no-wrap
-msgid "Server error"
+msgid "Restart service"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:410
 #, no-wrap
-msgid "Session"
+msgid "Restarting…"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:411
+#, no-wrap
+msgid "Rounds"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:412
 #, no-wrap
-msgid "Start"
+msgid "Run at"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:413
 #, no-wrap
-msgid "Start all"
+msgid "Save"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:414 messages/po4a/en.xml:415
+#: messages/po4a/en.xml:415
 #, no-wrap
-msgid "Status"
+msgid "Search failed: {detail}"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:416
 #, no-wrap
-msgid "Stop"
+msgid "Search term (optional)"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:417
 #, no-wrap
-msgid "Stop all"
+msgid "Segmented"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:418
 #, no-wrap
-msgid "stored and live differ"
+msgid "Send"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:419
 #, no-wrap
-msgid "stored and live match"
+msgid "Server error"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:420
 #, no-wrap
-msgid "Success"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:421
-#, no-wrap
-msgid "Table"
+msgid "Session"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:422
 #, no-wrap
-msgid "Task"
+msgid "Start"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:423
 #, no-wrap
-msgid "Time"
+msgid "Start all"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:424
+#: messages/po4a/en.xml:424 messages/po4a/en.xml:425
 #, no-wrap
-msgid "Enter a new title"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:425
-#, no-wrap
-msgid "Toggle navigation"
+msgid "Status"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:426
 #, no-wrap
-msgid "Tool calls"
+msgid "Stop"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:427
+#, no-wrap
+msgid "Stop all"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:428
 #, no-wrap
-msgid "Type"
+msgid "stored and live differ"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:429
 #, no-wrap
-msgid "Value"
+msgid "stored and live match"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:430
 #, no-wrap
-msgid "WebSocket connection failed"
+msgid "Success"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:432 messages/po4a/en.xml:443 messages/po4a/en.xml:460
+#: messages/po4a/en.xml:431
 #, no-wrap
-msgid "Parlor"
+msgid "Table"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:433 messages/po4a/en.xml:446 messages/po4a/en.xml:482
+#: messages/po4a/en.xml:432
 #, no-wrap
-msgid "Studio"
+msgid "Task"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:433
+#, no-wrap
+msgid "Time"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:434
+#, no-wrap
+msgid "Enter a new title"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:435
 #, no-wrap
-msgid "Credentials"
+msgid "Toggle navigation"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:436
 #, no-wrap
-msgid "Cron"
+msgid "Tool calls"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:438
 #, no-wrap
-msgid "Memory Search"
+msgid "Type"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:441
+#: messages/po4a/en.xml:439
 #, no-wrap
-msgid "Mailbox"
+msgid "Value"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:447
+#: messages/po4a/en.xml:440
 #, no-wrap
-msgid "System Prompt"
+msgid "WebSocket connection failed"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:442 messages/po4a/en.xml:453 messages/po4a/en.xml:470
+#, no-wrap
+msgid "Parlor"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:443 messages/po4a/en.xml:456 messages/po4a/en.xml:492
+#, no-wrap
+msgid "Studio"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:445
+#, no-wrap
+msgid "Credentials"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:446
+#, no-wrap
+msgid "Cron"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:448
 #, no-wrap
-msgid "Tasks"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:450
-#, no-wrap
-msgid "Your confirmation is needed (reply in one message, or send /cancel)"
+msgid "Memory Search"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:451
 #, no-wrap
-msgid "Type a message (Shift+Enter for newline, Enter to send; / for commands)"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:452
-#, no-wrap
-msgid "Select a session to start"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:453
-#, no-wrap
-msgid "Send the first message"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:454
-#, no-wrap
-msgid "Actions"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:456
-#, no-wrap
-msgid "Session ID"
+msgid "Mailbox"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:457
 #, no-wrap
-msgid "Title"
+msgid "System Prompt"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:458
 #, no-wrap
-msgid "Open"
+msgid "Tasks"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:459
+#: messages/po4a/en.xml:460
 #, no-wrap
-msgid "Session management"
+msgid "Your confirmation is needed (reply in one message, or send /cancel)"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:461
 #, no-wrap
-msgid "Chat with Agent…"
+msgid "Type a message (Shift+Enter for newline, Enter to send; / for commands)"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:462
 #, no-wrap
-msgid "Select a file to view its contents"
+msgid "Select a session to start"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:463
 #, no-wrap
-msgid "Create or select a session"
+msgid "Send the first message"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:464
 #, no-wrap
-msgid "Disconnected"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:465
-#, no-wrap
-msgid "Filter filenames…"
+msgid "Actions"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:466
 #, no-wrap
-msgid "No matching files"
+msgid "Session ID"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:467
+#, no-wrap
+msgid "Title"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:468
 #, no-wrap
-msgid "Enter keywords to search project files"
+msgid "Open"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:469
 #, no-wrap
-msgid "Search file contents…"
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:470
-#, no-wrap
-msgid "🔍 Search"
+msgid "Session management"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:471
 #, no-wrap
-msgid "📁 File tree"
+msgid "Chat with Agent…"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:472
 #, no-wrap
-msgid "Focus mode"
+msgid "Select a file to view its contents"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:473
 #, no-wrap
-msgid "📖 Novel (coming soon)"
+msgid "Create or select a session"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:474
 #, no-wrap
-msgid "🤝 Pair Programming"
+msgid "Disconnected"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:475
 #, no-wrap
-msgid "🎬 Short Video (coming soon)"
+msgid "Filter filenames…"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:476
 #, no-wrap
-msgid "Long-form collaborative writing workspace is planned."
-msgstr ""
-
-#. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:477
-#, no-wrap
-msgid "Panels"
+msgid "No matching files"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:478
 #, no-wrap
-msgid "Process exited ({code})"
+msgid "Enter keywords to search project files"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:479
 #, no-wrap
-msgid "Short video creation workspace is planned."
+msgid "Search file contents…"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:480
 #, no-wrap
-msgid "Show header"
+msgid "🔍 Search"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:481
 #, no-wrap
-msgid "Terminal"
+msgid "📁 File tree"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:482
+#, no-wrap
+msgid "Focus mode"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:483
 #, no-wrap
-msgid "Toggle left panel"
+msgid "📖 Novel (coming soon)"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:484
 #, no-wrap
-msgid "Collapse session list"
+msgid "🤝 Pair Programming"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:485
 #, no-wrap
-msgid "Expand session list"
+msgid "🎬 Short Video (coming soon)"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:486
 #, no-wrap
-msgid "Toggle session panel"
+msgid "Long-form collaborative writing workspace is planned."
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:487
 #, no-wrap
-msgid "Toggle terminal panel"
+msgid "Panels"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:488
 #, no-wrap
-msgid "Open Chamber config"
+msgid "Process exited ({code})"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:489
 #, no-wrap
-msgid "Pair programming requires a working directory. Set"
+msgid "Short video creation workspace is planned."
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:490
+#, no-wrap
+msgid "Show header"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:491
+#, no-wrap
+msgid "Terminal"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:493
+#, no-wrap
+msgid "Toggle left panel"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:494
+#, no-wrap
+msgid "Collapse session list"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:495
+#, no-wrap
+msgid "Expand session list"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:496
+#, no-wrap
+msgid "Toggle session panel"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:497
+#, no-wrap
+msgid "Toggle terminal panel"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:498
+#, no-wrap
+msgid "Open Chamber config"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:499
+#, no-wrap
+msgid "Pair programming requires a working directory. Set"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:500
 #, no-wrap
 msgid "Configure working directory"
 msgstr ""

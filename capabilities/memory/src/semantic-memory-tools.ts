@@ -9,6 +9,7 @@ import {
 import type { SemanticMemoryCreateInput, SemanticMemoryUpdateInput } from "@freeanima/core/repos";
 
 import { getSemanticMemoryStore } from "./semantic-port.ts";
+import { MEMORY_SEMANTIC_CITATION_TOOL_HINT } from "./memory-reference.ts";
 import { getToolSessionIdForMemory } from "./tool-session-port.ts";
 
 const MEMORY_TYPES = [
@@ -357,7 +358,8 @@ export const semanticMemoryToolDefs: ToolDef[] = [
   {
     name: "memory_semantic_search",
     description:
-      "Structured semantic memory search: FTS query plus type/status/source_sessions filters. Returns active by default.",
+      "Structured semantic memory search: FTS query plus type/status/source_sessions filters. Returns active by default.\n\n" +
+      MEMORY_SEMANTIC_CITATION_TOOL_HINT,
     parameters: {
       type: "object",
       properties: {

@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-12 16:32+0800\n"
+"POT-Creation-Date: 2026-06-15 11:47+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,13 +23,15 @@ msgstr ""
 #: docs/concepts/identity.md:45 docs/concepts/identity.md:55
 #: docs/concepts/memory.md:1 docs/concepts/memory.md:17
 #: docs/concepts/memory.md:53 docs/concepts/memory.md:122
-#: docs/concepts/memory.md:133 docs/concepts/memory.md:150
+#: docs/concepts/memory.md:133 docs/concepts/memory.md:158
 #: docs/concepts/recall-flow.md:1 docs/concepts/self-layer.md:1
 #: docs/concepts/self-layer.md:30 docs/concepts/self-layer.md:52
 #: docs/concepts/self-layer.md:66 docs/concepts/self-layer.md:80
 #: docs/concepts/self-layer.md:91 docs/concepts/sleep.md:1
 #: docs/concepts/time-perception.md:1 docs/features/pair-programming-v1.md:1
-#: docs/guide/database.md:1 docs/guide/security.md:1
+#: docs/guide/database.md:1 docs/guide/install.md:1 docs/guide/install.md:31
+#: docs/guide/install.md:106 docs/guide/install.md:167
+#: docs/guide/install.md:234 docs/guide/security.md:1 docs/guide/service.md:1
 #: docs/tools/execute-code-runtimes.md:1
 #, no-wrap
 msgid "---\n"
@@ -361,18 +363,43 @@ msgstr ""
 #: docs/concepts/memory.md:149
 msgid ""
 "Resident memory injected via system prompt: **up to 20 pinned** + **most-"
-"referenced top N** (default N=20); each carries ID marker; LLM cites same "
-"marker at reply end. Excess pinned entries are truncated at read time with a "
-"warn log; deep sleep round 4 maintains pin budget in the store."
+"referenced top N** (default N=20). Each line carries a citation marker "
+"`[[f-000001-abcd]]` (ID only, no language prefix)."
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/memory.md:151
+#, no-wrap
+msgid "**Citation obligation:** whenever an assistant reply uses semantic memory—resident list, `memory_recall` / `memory_semantic_search` semantic hits, or prior message markers—it must append each cited `[[f-id]]` at the **end of the reply body**. Use the inline marker or `semantic_memory_id` from tool results. Session, limbic, and autobiographical hits do not use this marker.\n"
 msgstr ""
 
 #. type: Plain text
 #: docs/concepts/memory.md:153
+#, no-wrap
+msgid "**Where the rule is communicated:** global system prompt `memory-citation` section; `memory_recall` and `memory_semantic_search` tool descriptions. Tool response JSON is not modified for this.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/memory.md:155
+#, no-wrap
+msgid "**What counts as a reference:** only `[[f-id]]` markers in **user/assistant** message bodies are parsed into `memory_references` and contribute to `reference_count`. Tool returns (including `semantic_memory_id` fields) are **not** references. Bare `f-id` text without `[[ ]]` is also not counted.\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/memory.md:157
+msgid ""
+"Nightly sleep-cycle step `memory-ref-sync` full-calibrates counts from "
+"messages. Excess pinned entries are truncated at read time with a warn log; "
+"deep sleep round 4 maintains pin budget in the store."
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/memory.md:161
 msgid "## V. Relationship to Hindsight"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:162
+#: docs/concepts/memory.md:170
 #, no-wrap
 msgid ""
 "| Dimension         | Hindsight                                  | FreeAnima v3                                       |\n"
@@ -386,7 +413,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:163
+#: docs/concepts/memory.md:171
 #, no-wrap
 msgid "**Our stance:** Do not copy Hindsight, do not connect to Hindsight services. Digest its design ideas into FreeAnima's own memory system. Limbic memory is not an add-on—it is a core need of digital life.\n"
 msgstr ""

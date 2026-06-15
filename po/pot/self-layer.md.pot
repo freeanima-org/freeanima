@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-12 11:55+0800\n"
+"POT-Creation-Date: 2026-06-15 11:23+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,13 +23,15 @@ msgstr ""
 #: docs/concepts/identity.md:45 docs/concepts/identity.md:55
 #: docs/concepts/memory.md:1 docs/concepts/memory.md:17
 #: docs/concepts/memory.md:53 docs/concepts/memory.md:122
-#: docs/concepts/memory.md:133 docs/concepts/memory.md:150
+#: docs/concepts/memory.md:133 docs/concepts/memory.md:154
 #: docs/concepts/recall-flow.md:1 docs/concepts/self-layer.md:1
 #: docs/concepts/self-layer.md:30 docs/concepts/self-layer.md:52
 #: docs/concepts/self-layer.md:66 docs/concepts/self-layer.md:80
 #: docs/concepts/self-layer.md:91 docs/concepts/sleep.md:1
 #: docs/concepts/time-perception.md:1 docs/features/pair-programming-v1.md:1
-#: docs/guide/database.md:1 docs/guide/security.md:1
+#: docs/guide/database.md:1 docs/guide/install.md:1 docs/guide/install.md:31
+#: docs/guide/install.md:106 docs/guide/install.md:167
+#: docs/guide/install.md:234 docs/guide/security.md:1 docs/guide/service.md:1
 #: docs/tools/execute-code-runtimes.md:1
 #, no-wrap
 msgid "---\n"
@@ -108,14 +110,14 @@ msgstr ""
 #: docs/concepts/self-layer.md:42
 #, no-wrap
 msgid ""
-"| #   | Block                 | Content                                                                           | Update frequency                                     |\n"
-"| --- | --------------------- | --------------------------------------------------------------------------------- | ---------------------------------------------------- |\n"
-"| 1   | Existence anchor      | What I am, origin, non-negotiable bottom line                                     | Almost never (requires explicit force to update)     |\n"
-"| 2   | Self model            | Identity, capability boundaries, expression style, belonging                      | Slow change (periodic review + major events)         |\n"
-"| 3   | Personality baseline  | Communication style, conflict patterns, default trust                             | Semi-stable (slow evolution from long-term evidence) |\n"
-"| 4   | Direction             | Long-term intent, current focus, growth direction, things not to do               | Active declaration + periodic review                 |\n"
-"| 5   | Metacognition         | How to think, how to remember, four-layer architecture and presence               | Slow change                                          |\n"
-"| 6   | Autobiography summary | Key turning points / self-discovery summary (granularity decreases with distance) | Maintained automatically by sleep cron               |\n"
+"| #   | Block                 | Content                                                                                                    | Update frequency                                     |\n"
+"| --- | --------------------- | ---------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |\n"
+"| 1   | Existence anchor      | What I am, origin, non-negotiable bottom line                                                              | Almost never (requires explicit force to update)     |\n"
+"| 2   | Self model            | Identity, capability boundaries, expression style, belonging                                               | Slow change (periodic review + major events)         |\n"
+"| 3   | Personality baseline  | Communication style, conflict patterns, default trust                                                      | Semi-stable (slow evolution from long-term evidence) |\n"
+"| 4   | Direction             | Long-term intent, current focus, growth direction, things not to do                                        | Active declaration + periodic review                 |\n"
+"| 5   | Metacognition         | How to think, how to remember, four-layer architecture and presence                                        | Slow change                                          |\n"
+"| 6   | Autobiography summary | Key turning points / self-discovery outline (grouped by significance; granularity decreases with distance) | Maintained automatically by sleep cron               |\n"
 msgstr ""
 
 #. type: Plain text
@@ -144,13 +146,13 @@ msgstr ""
 #: docs/concepts/self-layer.md:63
 #, no-wrap
 msgid ""
-"| Dimension   | Autobiography summary (self layer)                | Autobiographical narrative (memory layer)           |\n"
-"| ----------- | ------------------------------------------------- | --------------------------------------------------- |\n"
-"| Question    | \"What is the main thread of my life story?\"       | \"What did a given experience mean to me?\"           |\n"
-"| Form        | One of six blocks, Markdown summary               | Separate entries, title + content narrative         |\n"
-"| Injection   | **Always resident** in system prompt              | **Not** resident; recall / list on demand           |\n"
-"| Maintenance | Sleep cron compresses from narrative into summary | Sleep cron writes narratives from daily experiences |\n"
-"| Mutability  | Periodically overwrites summary block             | **Append-only**; soft deprecation only              |\n"
+"| Dimension   | Autobiography summary (self layer)                                                                                               | Autobiographical narrative (memory layer)           |\n"
+"| ----------- | -------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |\n"
+"| Question    | \"What is the main thread of my life story?\"                                                                                      | \"What did a given experience mean to me?\"           |\n"
+"| Form        | One of six blocks; grouped Markdown outline (`## Turning points` / `## Milestones` / `## Recent narratives`, title-only bullets) | Separate entries, title + content narrative         |\n"
+"| Injection   | **Always resident** in system prompt                                                                                             | **Not** resident; recall / list on demand           |\n"
+"| Maintenance | Sleep cron compresses narratives into grouped outline (no body preview)                                                          | Sleep cron writes narratives from daily experiences |\n"
+"| Mutability  | Periodically overwrites summary block                                                                                            | **Append-only**; soft deprecation only              |\n"
 msgstr ""
 
 #. type: Plain text

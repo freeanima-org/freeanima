@@ -3,6 +3,7 @@ import { attachToolReturns, toolError, toolResult } from "@freeanima/core/tool";
 import { formatFtsToolError, isFtsQueryError } from "@freeanima/core/util";
 import { MEMORY_TOOL_RETURNS } from "./return-schemas.ts";
 import { semanticMemoryToolDefs, rememberFromArgs } from "./semantic-memory-tools.ts";
+import { MEMORY_SEMANTIC_CITATION_TOOL_HINT } from "./memory-reference.ts";
 import { autobiographicalMemoryToolDefs } from "./autobiographical-tools.ts";
 import { limbicMemoryToolDefs } from "./limbic-tools.ts";
 import { memoryRecallSearch } from "./recall-search.ts";
@@ -76,7 +77,9 @@ export function registerMemoryTools(toolSets: ToolSetRegistry): void {
             "Cross-type reranking returns top N (default 10) in results; use memory_type to distinguish.\n" +
             "Session hits return snippets only; full context via sessions_scroll; in-session search via sessions_search.\n" +
             "Structured semantic filters via memory_semantic_search.\n\n" +
-            FTS_SYNTAX,
+            FTS_SYNTAX +
+            "\n\n" +
+            MEMORY_SEMANTIC_CITATION_TOOL_HINT,
           parameters: {
             type: "object",
             properties: {

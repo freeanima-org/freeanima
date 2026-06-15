@@ -69,7 +69,7 @@ export async function recordMessageReferences(
   return recorded;
 }
 
-/** Rescan `[memory #xxx]` in message bodies, rebuild memory_references (full calibration) */
+/** Rescan `[[f-xxx]]` in message bodies, rebuild memory_references (full calibration) */
 export async function rebuildMemoryReferencesFromMessages(): Promise<number> {
   const db = getDb();
   await db.delete(memoryReferences);

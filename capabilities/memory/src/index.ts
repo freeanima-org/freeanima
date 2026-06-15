@@ -13,6 +13,7 @@ export {
   formatResidentMemoryLine,
   parseMemoryReferenceMarkers,
   MEMORY_REFERENCE_CITATION_RULE,
+  MEMORY_SEMANTIC_CITATION_TOOL_HINT,
   memoryReferenceWeight,
 } from "./memory-reference.ts";
 export { syncSemanticMemoryReferenceCounts } from "./reference-sync.ts";
