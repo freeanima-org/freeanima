@@ -47,19 +47,19 @@ msgstr ""
 #. type: Plain text
 #: docs/tools/execute-code-runtimes.md:6
 msgid "# execute_code Multi-Runtime"
-msgstr ""
+msgstr "# execute_code 多运行时"
 
 #. type: Plain text
 #: docs/tools/execute-code-runtimes.md:8
 msgid ""
 "> One tool, multiple runtimes; default Bun; extend with Python / Deno as "
 "needed."
-msgstr ""
+msgstr "> 一个工具、多种运行时；默认 Bun；可按需扩展 Python / Deno。"
 
 #. type: Plain text
 #: docs/tools/execute-code-runtimes.md:10
 msgid "## Background"
-msgstr ""
+msgstr "## 背景"
 
 #. type: Plain text
 #: docs/tools/execute-code-runtimes.md:12
@@ -68,11 +68,13 @@ msgid ""
 "know which language to write and which runtime to pick — otherwise Python "
 "sent to Node fails."
 msgstr ""
+"`execute_code` 在受控子进程中运行短脚本。LLM 必须知道写什么语言、选哪个运行时"
+"——否则把 Python 发给 Node 会失败。"
 
 #. type: Plain text
 #: docs/tools/execute-code-runtimes.md:14
 msgid "## Division from terminal"
-msgstr ""
+msgstr "## 与 terminal 的分工"
 
 #. type: Plain text
 #: docs/tools/execute-code-runtimes.md:21
@@ -105,6 +107,8 @@ msgid ""
 "Use `execute_code(runtime=\"python\")` for Python batches, not `python3 -c "
 "\"...\"` in terminal."
 msgstr ""
+"Python 批处理请用 `execute_code(runtime=\"python\")`，不要在 terminal 里 "
+"`python3 -c \"...\"`。"
 
 #. type: Plain text
 #: docs/tools/execute-code-runtimes.md:25
@@ -142,7 +146,7 @@ msgstr ""
 #. type: Plain text
 #: docs/tools/execute-code-runtimes.md:35
 msgid "## Available Runtimes"
-msgstr ""
+msgstr "## 可用运行时"
 
 #. type: Plain text
 #: docs/tools/execute-code-runtimes.md:42
@@ -155,11 +159,17 @@ msgid ""
 "| **python** | Python                  | 🔲 reserved (Issue #40) |\n"
 "| **deno**   | TypeScript              | 🔲 reserved (Issue #40) |\n"
 msgstr ""
+"| runtime    | 语言                    | 状态                    |\n"
+"| ---------- | ----------------------- | ----------------------- |\n"
+"| **bun**    | TypeScript / JavaScript | ✅ 默认                 |\n"
+"| **nodejs** | TypeScript / JavaScript | ✅ 已实现               |\n"
+"| **python** | Python                  | 🔲 预留（Issue #40）    |\n"
+"| **deno**   | TypeScript              | 🔲 预留（Issue #40）    |\n"
 
 #. type: Plain text
 #: docs/tools/execute-code-runtimes.md:44
 msgid "## Configuration (Reserved)"
-msgstr ""
+msgstr "## 配置（预留）"
 
 #. type: Plain text
 #: docs/tools/execute-code-runtimes.md:57
@@ -209,7 +219,7 @@ msgstr ""
 #. type: Plain text
 #: docs/tools/execute-code-runtimes.md:59
 msgid "Disabled runtimes return a clear error listing available runtimes."
-msgstr ""
+msgstr "禁用的运行时会返回明确错误，并列出可用运行时。"
 
 #. type: Plain text
 #: docs/tools/execute-code-runtimes.md:61
@@ -228,12 +238,12 @@ msgstr "始终 `shell: false`（与 `docs/security.md` 一致）"
 #. type: Bullet: '- '
 #: docs/tools/execute-code-runtimes.md:65
 msgid "Timeout and output size limits match current implementation"
-msgstr ""
+msgstr "超时与输出大小限制与当前实现一致"
 
 #. type: Bullet: '- '
 #: docs/tools/execute-code-runtimes.md:65
 msgid "**Do not** auto-guess runtime from code content"
-msgstr ""
+msgstr "**不要**根据代码内容自动猜测运行时"
 
 #. type: Plain text
 #: docs/tools/execute-code-runtimes.md:67
@@ -249,10 +259,12 @@ msgid ""
 "— **not yet implemented**. See [Issue #40](https://github.com/freeanima-org/"
 "freeanima/issues/40)."
 msgstr ""
+"架构允许在 `execute_code` 环境中注入凭证路径 — **尚未实现**。见 [Issue #40]"
+"(https://github.com/freeanima-org/freeanima/issues/40)。"
 
 #. type: Plain text
 #: docs/tools/execute-code-runtimes.md:70
 msgid ""
 "Credential values are never exposed to the LLM; injected from pass at "
 "runtime — no pass CLI inside runtimes."
-msgstr ""
+msgstr "凭证值永不暴露给 LLM；运行时从 pass 注入 — 运行时内不提供 pass CLI。"

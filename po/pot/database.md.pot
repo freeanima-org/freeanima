@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-12 11:56+0800\n"
+"POT-Creation-Date: 2026-06-15 09:46+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -29,7 +29,9 @@ msgstr ""
 #: docs/concepts/self-layer.md:66 docs/concepts/self-layer.md:80
 #: docs/concepts/self-layer.md:91 docs/concepts/sleep.md:1
 #: docs/concepts/time-perception.md:1 docs/features/pair-programming-v1.md:1
-#: docs/guide/database.md:1 docs/guide/security.md:1
+#: docs/guide/database.md:1 docs/guide/install.md:1 docs/guide/install.md:31
+#: docs/guide/install.md:106 docs/guide/install.md:167
+#: docs/guide/install.md:234 docs/guide/security.md:1 docs/guide/service.md:1
 #: docs/tools/execute-code-runtimes.md:1
 #, no-wrap
 msgid "---\n"
@@ -140,7 +142,7 @@ msgstr ""
 msgid ""
 "```bash\n"
 "sudo apt install postgresql-17-pgvector   # match psql --version\n"
-"sudo -u postgres psql -d anima -f storage/db/scripts/ensure-pg-extensions.sql\n"
+"sudo -u postgres psql -d anima -f core/scripts/ensure-pg-extensions.sql\n"
 "```\n"
 msgstr ""
 
@@ -174,7 +176,7 @@ msgstr ""
 msgid ""
 "```bash\n"
 "DATABASE_URL=\"$(anima credential get services/postgres/anima url)\" \\\n"
-"  bun run --filter @freeanima/storage-db db:migrate\n"
+"  bun run --filter @freeanima/core/db db:migrate\n"
 "```\n"
 msgstr ""
 

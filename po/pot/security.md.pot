@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-10 17:45+0800\n"
+"POT-Creation-Date: 2026-06-15 09:46+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,29 +17,22 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Plain text
-#: docs/README.md:1 docs/concepts/compression.md:1
-#: docs/concepts/compression.md:11 docs/concepts/compression.md:22
-#: docs/concepts/compression.md:49 docs/concepts/compression.md:96
-#: docs/concepts/compression.md:118 docs/concepts/compression.md:156
-#: docs/concepts/compression.md:180 docs/concepts/compression.md:228
-#: docs/concepts/compression.md:262 docs/concepts/compression.md:275
-#: docs/concepts/compression.md:327 docs/concepts/compression.md:348
-#: docs/concepts/compression.md:368 docs/concepts/compression.md:384
-#: docs/concepts/identity.md:1 docs/concepts/identity.md:10
-#: docs/concepts/identity.md:28 docs/concepts/identity.md:45
-#: docs/concepts/identity.md:55 docs/concepts/memory.md:1
-#: docs/concepts/memory.md:17 docs/concepts/memory.md:53
-#: docs/concepts/memory.md:160 docs/concepts/memory.md:191
-#: docs/concepts/memory.md:211 docs/concepts/memory.md:232
-#: docs/concepts/memory.md:249 docs/concepts/recall-flow.md:1
-#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:31
-#: docs/concepts/self-layer.md:53 docs/concepts/self-layer.md:64
-#: docs/concepts/self-layer.md:78 docs/concepts/self-layer.md:94
-#: docs/concepts/self-layer.md:105 docs/concepts/sleep.md:1
+#: docs/README.md:1 docs/concepts/architecture.md:1
+#: docs/concepts/compression.md:1 docs/concepts/identity.md:1
+#: docs/concepts/identity.md:10 docs/concepts/identity.md:28
+#: docs/concepts/identity.md:45 docs/concepts/identity.md:55
+#: docs/concepts/memory.md:1 docs/concepts/memory.md:17
+#: docs/concepts/memory.md:53 docs/concepts/memory.md:122
+#: docs/concepts/memory.md:133 docs/concepts/memory.md:150
+#: docs/concepts/recall-flow.md:1 docs/concepts/self-layer.md:1
+#: docs/concepts/self-layer.md:30 docs/concepts/self-layer.md:52
+#: docs/concepts/self-layer.md:66 docs/concepts/self-layer.md:80
+#: docs/concepts/self-layer.md:91 docs/concepts/sleep.md:1
 #: docs/concepts/time-perception.md:1 docs/features/pair-programming-v1.md:1
-#: docs/features/pair-programming-v1.md:321 docs/guide/database.md:1
-#: docs/guide/database.md:33 docs/guide/security.md:1
-#: docs/guide/versioning.md:1 docs/tools/execute-code-runtimes.md:1
+#: docs/guide/database.md:1 docs/guide/install.md:1 docs/guide/install.md:31
+#: docs/guide/install.md:106 docs/guide/install.md:167
+#: docs/guide/install.md:234 docs/guide/security.md:1 docs/guide/service.md:1
+#: docs/tools/execute-code-runtimes.md:1
 #, no-wrap
 msgid "---\n"
 msgstr ""
@@ -173,17 +166,17 @@ msgstr ""
 #: docs/guide/security.md:65
 #, no-wrap
 msgid ""
-"| Measure                 | Description                                                                                                          |\n"
-"| ----------------------- | -------------------------------------------------------------------------------------------------------------------- |\n"
-"| Same-origin RPC         | TanStack Start server functions same-origin by default, no CORS whitelist needed                                     |\n"
-"| Config secret redaction | `AnimaService.getConfig()` → `sanitizeConfigForApi()` (`api_key`, `database.url`, nested `pushkey`, `mcp env`, etc.) |\n"
-"| MCP config redaction    | `sanitizeMcpConfig`: `env` exposes only `env_keys`                                                                   |\n"
-"| Write path safety       | `file_write_file` deny list (partial `/etc/*`, `.ssh` private keys, etc.)                                            |\n"
-"| Slash commands          | Whitelist routing                                                                                                    |\n"
-"| MCP default stdio       | Reduces port exposure                                                                                                |\n"
-"| Credential isolation    | LLM sees pass paths only, not values                                                                                 |\n"
-"| CI secret scanning      | `.github/workflows/security.yml` (Gitleaks); GitHub Secret scanning + Push protection (free for public repos)        |\n"
-"| `.gitignore`            | `.env.*`, `config.yaml`, private key suffixes                                                                        |\n"
+"| Measure                 | Description                                                                                                        |\n"
+"| ----------------------- | ------------------------------------------------------------------------------------------------------------------ |\n"
+"| Same-origin RPC         | TanStack Start server functions same-origin by default, no CORS whitelist needed                                   |\n"
+"| Config secret redaction | `AppRuntime.getConfig()` → `sanitizeConfigForApi()` (`api_key`, `database.url`, nested `pushkey`, `mcp env`, etc.) |\n"
+"| MCP config redaction    | `sanitizeMcpConfig`: `env` exposes only `env_keys`                                                                 |\n"
+"| Write path safety       | `file_write_file` deny list (partial `/etc/*`, `.ssh` private keys, etc.)                                          |\n"
+"| Slash commands          | Whitelist routing                                                                                                  |\n"
+"| MCP default stdio       | Reduces port exposure                                                                                              |\n"
+"| Credential isolation    | LLM sees pass paths only, not values                                                                               |\n"
+"| CI secret scanning      | `.github/workflows/security.yml` (Gitleaks); GitHub Secret scanning + Push protection (free for public repos)      |\n"
+"| `.gitignore`            | `.env.*`, `config.yaml`, private key suffixes                                                                      |\n"
 msgstr ""
 
 #. type: Plain text

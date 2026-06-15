@@ -59,7 +59,7 @@ msgstr "# 时间感知模块"
 msgid ""
 "> **✅ Core implemented** — user messages receive time prefixes before LLM "
 "inference."
-msgstr ""
+msgstr "> **✅ 核心已实现** — user 消息在 LLM 推理前会加上时间前缀。"
 
 #. type: Plain text
 #: docs/concepts/time-perception.md:10

@@ -255,7 +255,7 @@ msgstr "## System Prompt 注入"
 #. type: Plain text
 #: docs/concepts/self-layer.md:71
 msgid "Assembly order:"
-msgstr ""
+msgstr "组装顺序："
 
 #. type: Bullet: '1. '
 #: docs/concepts/self-layer.md:75
@@ -274,7 +274,7 @@ msgstr "常驻记忆"
 #. type: Bullet: '3. '
 #: docs/concepts/self-layer.md:75
 msgid "Project context (session working directory AGENTS.md if present)"
-msgstr ""
+msgstr "项目上下文（session 工作目录中的 AGENTS.md，若存在）"
 
 #. type: Plain text
 #: docs/concepts/self-layer.md:77
@@ -283,13 +283,15 @@ msgid ""
 "wrapping first-person self-statement content, so the LLM clearly understands "
 "\"this is self-layer content you must follow.\""
 msgstr ""
+"自我层与常驻记忆使用第二人称指令骨架包裹第一人称自述内容，使 LLM 明确理解「这"
+"是你必须遵守的自我层内容」。"
 
 #. type: Plain text
 #: docs/concepts/self-layer.md:79
 msgid ""
 "Maintenance: self-layer tools in WebUI bedroom, or direct edits via CLI / "
 "bedroom UI."
-msgstr ""
+msgstr "维护方式：WebUI 卧室中的自我层工具，或通过 CLI / 卧室 UI 直接编辑。"
 
 #. type: Plain text
 #: docs/concepts/self-layer.md:83

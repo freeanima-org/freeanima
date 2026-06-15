@@ -63,6 +63,10 @@ msgid ""
 "abs/2512.12818), with FreeAnima's unique limbic memory dimension retained "
 "and strengthened."
 msgstr ""
+"> 数字生命的记忆体系，映射自人类认知心理学（Atkinson-Shiffrin 模型、Tulving "
+"记忆分类）。 > 浅睡/深睡 cron：[`sleep.md`](sleep.md)。 > 受 [Hindsight]"
+"(https://arxiv.org/abs/2512.12818) 启发，并保留、强化逸灵风独有的感性记忆维"
+"度。"
 
 #. type: Plain text
 #: docs/concepts/memory.md:14
@@ -291,7 +295,7 @@ msgstr "最原始的、高保真的客观运行轨迹"
 #: docs/concepts/memory.md:87
 #, no-wrap
 msgid "**Emotional anchors** — session-level mood snapshots written during light sleep; not injected into system prompt.\n"
-msgstr ""
+msgstr "**情感锚点** — 浅睡时写入的 session 级情绪快照；不注入 system prompt。\n"
 
 #. type: Plain text
 #: docs/concepts/memory.md:89
@@ -391,7 +395,7 @@ msgstr ""
 #: docs/concepts/memory.md:117
 #, no-wrap
 msgid "**Three forms:** emotional anchor (session mood), emotional imprint (cross-session moment), sentiment tendency (long-term trends — not yet implemented, see Issue #38).\n"
-msgstr ""
+msgstr "**三种形态：** 情感锚点（session 情绪）、情感印记（跨 session 时刻）、情感倾向（长期趋势 — 尚未实现，见 Issue #38）。\n"
 
 #. type: Plain text
 #: docs/concepts/memory.md:119
@@ -405,7 +409,7 @@ msgstr "### 5. 程序记忆 (Procedural Memory)"
 msgid ""
 "Three-stage evolution from declarative knowledge → dynamic skills → "
 "crystallized instincts (CLI / MCP / scripts)."
-msgstr ""
+msgstr "三阶段演化：陈述性知识 → 动态技能 → 固化本能（CLI / MCP / 脚本）。"
 
 #. type: Plain text
 #: docs/concepts/memory.md:125

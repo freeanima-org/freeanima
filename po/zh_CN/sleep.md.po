@@ -369,11 +369,13 @@ msgid ""
 "For historical conversations before go-live or after migration, use "
 "**Chamber → Sleep records** (`/webui/chamber/sleep`):"
 msgstr ""
+"对于上线前或迁移后的历史对话，使用 **卧室 → 睡眠记录**（`/webui/chamber/"
+"sleep`）："
 
 #. type: Bullet: '1. '
 #: docs/concepts/sleep.md:94
 msgid "Open the **Historical light sleep backfill** card"
-msgstr ""
+msgstr "打开 **历史浅睡补跑** 卡片"
 
 #. type: Bullet: '2. '
 #: docs/concepts/sleep.md:94
@@ -381,6 +383,8 @@ msgid ""
 "Optionally set **From** / **To** (CST calendar days, `YYYY-MM-DD`); defaults "
 "match the 02:00 cron (earliest session → yesterday)"
 msgstr ""
+"可选设置 **起始** / **截止**（CST 日历日，`YYYY-MM-DD`）；默认与 02:00 cron "
+"一致（最早 session → 昨日）"
 
 #. type: Bullet: '3. '
 #: docs/concepts/sleep.md:94
@@ -388,11 +392,13 @@ msgid ""
 "Check **Resume from saved progress** to continue from `~/.anima/runtime/"
 "light_sleep_backfill_state.json`"
 msgstr ""
+"勾选 **从已保存进度续跑**，从 `~/.anima/runtime/"
+"light_sleep_backfill_state.json` 继续"
 
 #. type: Bullet: '4. '
 #: docs/concepts/sleep.md:94
 msgid "Click **Start backfill**; progress polls automatically while running"
-msgstr ""
+msgstr "点击 **开始补跑**；运行期间进度自动轮询"
 
 #. type: Plain text
 #: docs/concepts/sleep.md:100
@@ -533,3 +539,5 @@ msgid ""
 "semantic memory during dialogue. Soft deprecation via deprecate action; "
 "physical delete also supported."
 msgstr ""
+"对话中的 `memory_remember` 是创建语义记忆的便捷封装。可通过 deprecate 软废"
+"弃；也支持物理删除。"

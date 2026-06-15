@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-12 16:32+0800\n"
+"POT-Creation-Date: 2026-06-15 09:46+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,41 +17,70 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Plain text
-#: docs/guide/service.md:2
-msgid "# Service operations"
+#: docs/README.md:1 docs/concepts/architecture.md:1
+#: docs/concepts/compression.md:1 docs/concepts/identity.md:1
+#: docs/concepts/identity.md:10 docs/concepts/identity.md:28
+#: docs/concepts/identity.md:45 docs/concepts/identity.md:55
+#: docs/concepts/memory.md:1 docs/concepts/memory.md:17
+#: docs/concepts/memory.md:53 docs/concepts/memory.md:122
+#: docs/concepts/memory.md:133 docs/concepts/memory.md:150
+#: docs/concepts/recall-flow.md:1 docs/concepts/self-layer.md:1
+#: docs/concepts/self-layer.md:30 docs/concepts/self-layer.md:52
+#: docs/concepts/self-layer.md:66 docs/concepts/self-layer.md:80
+#: docs/concepts/self-layer.md:91 docs/concepts/sleep.md:1
+#: docs/concepts/time-perception.md:1 docs/features/pair-programming-v1.md:1
+#: docs/guide/database.md:1 docs/guide/install.md:1 docs/guide/install.md:31
+#: docs/guide/install.md:106 docs/guide/install.md:167
+#: docs/guide/install.md:234 docs/guide/security.md:1 docs/guide/service.md:1
+#: docs/tools/execute-code-runtimes.md:1
+#, no-wrap
+msgid "---\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/service.md:4
-msgid "> Runtime status, memory metrics, and common commands."
+#: docs/guide/service.md:3
+#, no-wrap
+msgid ""
+"title: Service\n"
+"---\n"
 msgstr ""
 
 #. type: Plain text
 #: docs/guide/service.md:6
-msgid "## Status and memory metrics"
+msgid "# Service operations"
 msgstr ""
 
 #. type: Plain text
 #: docs/guide/service.md:8
+msgid "> Runtime status, memory metrics, and common commands."
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/service.md:10
+msgid "## Status and memory metrics"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/service.md:12
 msgid ""
 "`anima service status` and `/api/status` report process memory under "
 "`memory_kb` and `memory_detail`."
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/service.md:15
+#: docs/guide/service.md:19
 #, no-wrap
 msgid ""
-"| Field / label | Source | Meaning |\n"
-"| ------------- | ------ | ------- |\n"
-"| `rss (phys)` / `memory_kb` | Linux `VmRSS`, or `process.memoryUsage().rss` fallback | Physical RAM currently resident for the process |\n"
-"| `heap (jsc)` / `heap_used_kb` | `process.memoryUsage().heapUsed` | JavaScriptCore heap accounting (not OS physical memory) |\n"
-"| `native` / `external_kb` | `process.memoryUsage().external` | Native objects bound to JS |\n"
-"| `virtual` / `vm_size_kb` | Linux `VmSize` | Virtual address space reserved (Gigacage moats); not actual RAM use |\n"
+"| Field / label                 | Source                                                 | Meaning                                                             |\n"
+"| ----------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------- |\n"
+"| `rss (phys)` / `memory_kb`    | Linux `VmRSS`, or `process.memoryUsage().rss` fallback | Physical RAM currently resident for the process                     |\n"
+"| `heap (jsc)` / `heap_used_kb` | `process.memoryUsage().heapUsed`                       | JavaScriptCore heap accounting (not OS physical memory)             |\n"
+"| `native` / `external_kb`      | `process.memoryUsage().external`                       | Native objects bound to JS                                          |\n"
+"| `virtual` / `vm_size_kb`      | Linux `VmSize`                                         | Virtual address space reserved (Gigacage moats); not actual RAM use |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/service.md:17
+#: docs/guide/service.md:21
 msgid ""
 "On Bun + JavaScriptCore, `heap (jsc)` can be **much larger than** `rss "
 "(phys)`. Use RSS for “how much RAM does anima use?” Use heap trends (over "
@@ -59,12 +88,12 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/service.md:19
+#: docs/guide/service.md:23
 msgid "Verify from the shell:"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/service.md:25
+#: docs/guide/service.md:29
 msgid ""
 "```bash curl -s http://127.0.0.1:2658/api/status | jq "
 "'.memory_kb, .memory_detail' grep -E '^(VmRSS|VmSize):' /proc/$(pgrep -f "
@@ -73,12 +102,12 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/service.md:27
+#: docs/guide/service.md:31
 msgid "## Common commands"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/service.md:34
+#: docs/guide/service.md:38
 #, no-wrap
 msgid ""
 "```bash\n"
@@ -90,7 +119,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/service.md:35
+#: docs/guide/service.md:39
 msgid ""
 "WebUI chamber dashboard: `http://127.0.0.1:2658/webui/chamber/dashboard`"
 msgstr ""
