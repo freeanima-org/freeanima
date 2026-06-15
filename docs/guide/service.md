@@ -39,4 +39,6 @@ anima service restart
 
 Managed satellites get user units `~/.config/systemd/user/anima-satellite-<name>.service`, enabled on `service start` and stopped with `service stop`. See [`satellites.md`](satellites.md).
 
+**Startup order:** Hub must pass `GET /api/health` (`status: ok`) before managed satellites are started (foreground uses `serve()` `onReady`; background CLI polls health). SAP disconnects are retried by `@freeanima/sap-contract` transport (exponential backoff).
+
 WebUI chamber dashboard: `http://127.0.0.1:2658/webui/chamber/dashboard`

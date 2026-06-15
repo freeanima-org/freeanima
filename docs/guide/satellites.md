@@ -30,6 +30,10 @@ Working directory is derived by anima from the install layout (monorepo root or 
 
 Pair-programming env conventions: `STUDIO_WORKSPACE`, optional `STUDIO_GITIGNORE`, `STUDIO_SHOW_HIDDEN`, `SATELLITE_PORT`.
 
+**Startup:** managed satellites start only after Hub `GET /api/health` returns `status: ok` (not when you first open the satellite UI).
+
+**SAP:** satellite processes use `@freeanima/sap-contract` `runSapTransport` for WebSocket connect and reconnect with backoff; register tools in `onConnected`.
+
 ## Dynamic (SAP connect)
 
 No `command` in config. Start the satellite yourself (terminal, your own unit, etc.); it connects to Hub via SAP WebSocket. Instances appear on Chamber → Satellites after connect.

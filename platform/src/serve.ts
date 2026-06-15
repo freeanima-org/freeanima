@@ -127,6 +127,7 @@ export async function serve(
     }
     startupLog("HTTP listen ready");
     markStartupPhase(false);
+    await opts.onReady?.();
     scheduleDebugSessionCleanup(enginePhase.conversation);
 
     startAsyncIntegrations({
