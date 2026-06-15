@@ -17,11 +17,6 @@ function resolveMode(pathname: string): AppMode {
   return "parlor";
 }
 
-const PAIR_PROGRAMMING_URL =
-  typeof localStorage !== "undefined"
-    ? (localStorage.getItem("pair-programming-url") ?? "http://127.0.0.1:4173")
-    : "http://127.0.0.1:4173";
-
 function AppShell() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
@@ -37,10 +32,6 @@ function AppShell() {
         navigate({ to: "/chamber/dashboard" });
       }
     }
-  };
-
-  const openStudio = () => {
-    window.location.href = PAIR_PROGRAMMING_URL;
   };
 
   const toggleLocale = () => {
@@ -70,14 +61,6 @@ function AppShell() {
             onClick={() => switchMode("chamber")}
           >
             {m.webui_mode_chamber()}
-          </button>
-          <button
-            type="button"
-            className="btn btn-xs flex-1 sm:flex-none min-w-0 btn-ghost"
-            title={m.webui_mode_studio()}
-            onClick={openStudio}
-          >
-            {m.webui_mode_studio()}
           </button>
           <button type="button" className="btn btn-xs btn-ghost" onClick={toggleLocale}>
             {locale === "zh-cn" ? m.webui_nav_language_en() : m.webui_nav_language_zh()}

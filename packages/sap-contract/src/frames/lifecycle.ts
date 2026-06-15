@@ -8,6 +8,7 @@ export const connectPayloadSchema = z.object({
   instance_label: z.string().optional(),
   protocol: z.literal(SAP_VERSION),
   features_requested: z.array(z.string()).default([]),
+  http_url: z.string().url().optional(),
 });
 
 export type ConnectPayload = z.infer<typeof connectPayloadSchema>;

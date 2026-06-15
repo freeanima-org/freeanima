@@ -16,6 +16,10 @@ import {
   toolUnregisterInputSchema,
   toolResultInputSchema,
   toolErrorInputSchema,
+  terminalAttachInputSchema,
+  terminalWriteInputSchema,
+  terminalResizeInputSchema,
+  terminalCloseInputSchema,
   normalizeAppSlug,
   resolvePlatformForApp,
   type SapMethod,
@@ -27,6 +31,12 @@ import {
 import { isSessionMeta } from "@freeanima/core/db/domain";
 import { bridgeMessageStream, bridgeSessionUpdates } from "./stream-bridge.ts";
 import * as serviceSessions from "../runtime/service-sessions.ts";
+import {
+  closeTerminalSession,
+  createTerminalSession,
+  getTerminalSession,
+  TerminalSessionError,
+} from "../../connectors/webui/elysia/terminal-session.ts";
 
 const HEARTBEAT_INTERVAL_SEC = 30;
 
@@ -142,6 +152,38 @@ export function createSapServerHandlers(deps: SapServerDeps): SapServerHandlers 
           const platform = await resolveSessionPlatform(deps, input.session_id);
           void pumpMessageStream(deps, ctx, streamId, input.session_id, input.message, platform);
           return { stream_id: streamId };
+        }
+        case "terminal.attach": {
+          const input = terminalAttachInputSchema.parse(payload);
+          const { sessionId, pty } = createTerminalSession(input.cwd);
+          pty.onData((data) => {
+            ctx.sendEvent("terminal.output", { terminal_id: sessionId, data });
+          });
+          pty.onExit((code) => {
+            ctx.sendEvent("terminal.exit", { terminal_id: sessionId, code });
+            closeTerminalSession(sessionId);
+          });
+          ctx.sendEvent("terminal.ready", { terminal_id: sessionId, sessionId });
+          return { terminal_id: sessionId };
+        }
+        case "terminal.write": {
+          const input = terminalWriteInputSchema.parse(payload);
+          const pty = getTerminalSession(input.terminal_id);
+          if (!pty) throw new TerminalSessionError();
+          pty.write(input.data);
+          return { ok: true as const };
+        }
+        case "terminal.resize": {
+          const input = terminalResizeInputSchema.parse(payload);
+          const pty = getTerminalSession(input.terminal_id);
+          if (!pty) throw new TerminalSessionError();
+          pty.resize(input.cols, input.rows);
+          return { ok: true as const };
+        }
+        case "terminal.close": {
+          const input = terminalCloseInputSchema.parse(payload);
+          closeTerminalSession(input.terminal_id);
+          return { ok: true as const };
         }
         case "tool.register": {
           const input = toolRegisterInputSchema.parse(payload);
@@ -263,16 +305,20 @@ export function attachSapWebSocket(
       connState = { appId: parsed.app_id, instanceId: parsed.instance_id };
       connected = true;
       satelliteConnKey = deps.satelliteManager.connectionKey(parsed.app_id, parsed.instance_id);
-      deps.satelliteManager.registerConnection(satelliteConnKey, {
-        appId: parsed.app_id,
-        instanceId: parsed.instance_id,
-        sendEvent(method, payload) {
-          sendEnvelope({ kind: "evt", method, payload });
+      deps.satelliteManager.registerConnection(
+        satelliteConnKey,
+        {
+          appId: parsed.app_id,
+          instanceId: parsed.instance_id,
+          sendEvent(method, payload) {
+            sendEnvelope({ kind: "evt", method, payload });
+          },
+          sendRequest: async () => {
+            throw new Error("satellite sendRequest not implemented on hub");
+          },
         },
-        sendRequest: async () => {
-          throw new Error("satellite sendRequest not implemented on hub");
-        },
-      });
+        { httpUrl: parsed.http_url },
+      );
       sendEnvelope({ kind: "connected", payload: connectedPayload });
       return;
     }

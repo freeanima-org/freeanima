@@ -17,6 +17,7 @@ type SatelliteInstance = {
   platform: string | null;
   connected_at: string;
   last_heartbeat_at: string | null;
+  http_url: string | null;
   tool_count: number;
   tools: string[];
 };
@@ -101,6 +102,16 @@ function SatellitesPage() {
                   <span className="badge badge-sm badge-success">{m.webui_common_connected()}</span>
                   {inst.platform ? (
                     <span className="badge badge-sm badge-outline">{inst.platform}</span>
+                  ) : null}
+                  {inst.http_url ? (
+                    <a
+                      href={inst.http_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="link link-primary text-xs"
+                    >
+                      {inst.http_url}
+                    </a>
                   ) : null}
                 </div>
 

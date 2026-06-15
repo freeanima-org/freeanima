@@ -7,21 +7,6 @@ type SubscribeCallbacks<T> = {
   onComplete?: () => void;
 };
 
-let hubUrlPromise: Promise<string> | null = null;
-
-export async function getHubUrl(): Promise<string> {
-  if (!hubUrlPromise) {
-    hubUrlPromise = fetch("/api/meta")
-      .then(async (res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const body = (await res.json()) as { hub_url?: string };
-        return (body.hub_url ?? "http://127.0.0.1:2658").replace(/\/$/, "");
-      })
-      .catch(() => "http://127.0.0.1:2658");
-  }
-  return hubUrlPromise;
-}
-
 async function apiJson<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, init);
   if (!res.ok) {
@@ -47,18 +32,6 @@ function parseSseJsonFrames(buffer: string, onFrame: (json: string) => void): st
 
 export async function getStudioConfig() {
   return apiJson<Record<string, unknown>>("/api/studio/config");
-}
-
-export async function patchStudioConfig(input: {
-  workspace?: string;
-  gitignore?: boolean;
-  showHidden?: boolean;
-}) {
-  return apiJson<Record<string, unknown>>("/api/studio/config", {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(input),
-  });
 }
 
 export async function getStudioTree() {
@@ -164,33 +137,34 @@ type TerminalStreamEvent = {
   message?: string;
 };
 
+function terminalWsUrl(): string {
+  const proto = location.protocol === "https:" ? "wss:" : "ws:";
+  return `${proto}//${location.host}/api/studio/terminal/ws`;
+}
+
 export function subscribeTerminalStream(callbacks: SubscribeCallbacks<TerminalStreamEvent>): {
   unsubscribe: () => void;
 } {
   let ws: WebSocket | null = null;
   let closed = false;
 
-  void (async () => {
-    const hub = await getHubUrl();
-    const wsUrl = `${hub.replace(/^http/, "ws")}/api/studio/terminal/ws`;
-    ws = new WebSocket(wsUrl);
-    ws.addEventListener("message", (ev) => {
-      if (closed || typeof ev.data !== "string") return;
-      try {
-        callbacks.onData?.(JSON.parse(ev.data) as TerminalStreamEvent);
-      } catch {
-        /* ignore */
-      }
-    });
-    ws.addEventListener("error", () => {
-      if (closed) return;
-      callbacks.onError?.(new Error(m.webui_common_websocket_failed()));
-    });
-    ws.addEventListener("close", () => {
-      if (closed) return;
-      callbacks.onComplete?.();
-    });
-  })();
+  ws = new WebSocket(terminalWsUrl());
+  ws.addEventListener("message", (ev) => {
+    if (closed || typeof ev.data !== "string") return;
+    try {
+      callbacks.onData?.(JSON.parse(ev.data) as TerminalStreamEvent);
+    } catch {
+      /* ignore */
+    }
+  });
+  ws.addEventListener("error", () => {
+    if (closed) return;
+    callbacks.onError?.(new Error(m.webui_common_websocket_failed()));
+  });
+  ws.addEventListener("close", () => {
+    if (closed) return;
+    callbacks.onComplete?.();
+  });
 
   return {
     unsubscribe: () => {
@@ -201,8 +175,7 @@ export function subscribeTerminalStream(callbacks: SubscribeCallbacks<TerminalSt
 }
 
 export async function terminalWrite(sessionId: string, data: string): Promise<void> {
-  const hub = await getHubUrl();
-  const res = await fetch(`${hub}/api/studio/terminal/${encodeURIComponent(sessionId)}/write`, {
+  const res = await fetch(`/api/studio/terminal/${encodeURIComponent(sessionId)}/write`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ data }),
@@ -211,8 +184,7 @@ export async function terminalWrite(sessionId: string, data: string): Promise<vo
 }
 
 export async function terminalResize(sessionId: string, cols: number, rows: number): Promise<void> {
-  const hub = await getHubUrl();
-  const res = await fetch(`${hub}/api/studio/terminal/${encodeURIComponent(sessionId)}/resize`, {
+  const res = await fetch(`/api/studio/terminal/${encodeURIComponent(sessionId)}/resize`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ cols, rows }),
@@ -221,8 +193,7 @@ export async function terminalResize(sessionId: string, cols: number, rows: numb
 }
 
 export async function terminalClose(sessionId: string): Promise<void> {
-  const hub = await getHubUrl();
-  const res = await fetch(`${hub}/api/studio/terminal/${encodeURIComponent(sessionId)}/close`, {
+  const res = await fetch(`/api/studio/terminal/${encodeURIComponent(sessionId)}/close`, {
     method: "POST",
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -236,11 +207,10 @@ export function subscribeSessionEvents(
   let controller: AbortController | null = null;
 
   void (async () => {
-    const hub = await getHubUrl();
     while (!closed) {
       controller = new AbortController();
       try {
-        const res = await fetch(`${hub}/api/sessions/${encodeURIComponent(sessionId)}/events`, {
+        const res = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/events`, {
           signal: controller.signal,
           headers: { Accept: "text/event-stream" },
         });

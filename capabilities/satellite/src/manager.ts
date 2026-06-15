@@ -38,6 +38,7 @@ type InstanceMeta = {
   instanceId: string;
   connectedAt: string;
   lastHeartbeatAt: string | null;
+  httpUrl: string | null;
 };
 
 export type SatelliteInstanceStatus = {
@@ -48,6 +49,7 @@ export type SatelliteInstanceStatus = {
   platform: string | null;
   connected_at: string;
   last_heartbeat_at: string | null;
+  http_url: string | null;
   tool_count: number;
   tools: string[];
 };
@@ -87,9 +89,9 @@ export class SatelliteManager {
     };
   }
 
-  registerConnection(key: string, conn: SatelliteConnection): void {
+  registerConnection(key: string, conn: SatelliteConnection, opts?: { httpUrl?: string }): void {
     this.connections.set(key, conn);
-    this.noteConnection(conn.appId, conn.instanceId);
+    this.noteConnection(conn.appId, conn.instanceId, { httpUrl: opts?.httpUrl });
   }
 
   unregisterConnection(key: string): void {
@@ -100,13 +102,19 @@ export class SatelliteManager {
     this.instanceMeta.delete(key);
   }
 
-  noteConnection(appId: string, instanceId: string): void {
+  noteConnection(
+    appId: string,
+    instanceId: string,
+    opts?: { httpUrl?: string; instance_label?: string },
+  ): void {
     const key = this.connectionKey(appId, instanceId);
+    const prev = this.instanceMeta.get(key);
     this.instanceMeta.set(key, {
       appId,
       instanceId,
-      connectedAt: new Date().toISOString(),
-      lastHeartbeatAt: null,
+      connectedAt: prev?.connectedAt ?? new Date().toISOString(),
+      lastHeartbeatAt: prev?.lastHeartbeatAt ?? null,
+      httpUrl: opts?.httpUrl ?? prev?.httpUrl ?? null,
     });
   }
 
@@ -138,6 +146,7 @@ export class SatelliteManager {
         platform: resolvePlatformForApp(conn.appId) ?? null,
         connected_at: meta?.connectedAt ?? new Date(0).toISOString(),
         last_heartbeat_at: meta?.lastHeartbeatAt ?? null,
+        http_url: meta?.httpUrl ?? null,
         tool_count: tools.length,
         tools,
       });

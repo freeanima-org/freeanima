@@ -53,4 +53,7 @@ export const PATHS = {
   get webuiDevBuildDir() {
     return homePath("runtime", "webui-dev-build");
   },
+  get satellitesRuntimeDir() {
+    return homePath("runtime", "satellites");
+  },
 } as const;

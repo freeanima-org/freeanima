@@ -22,16 +22,16 @@ export function isSapConnected(): boolean {
   return client !== null;
 }
 
-export async function getSapClient(hubUrl: string): Promise<SapClient> {
+export async function getSapClient(hubUrl: string, httpUrl?: string): Promise<SapClient> {
   if (client) return client;
   if (connectPromise) return connectPromise;
-  connectPromise = connectInternal(hubUrl).finally(() => {
+  connectPromise = connectInternal(hubUrl, httpUrl).finally(() => {
     connectPromise = null;
   });
   return connectPromise;
 }
 
-async function connectInternal(hubUrl: string): Promise<SapClient> {
+async function connectInternal(hubUrl: string, httpUrl?: string): Promise<SapClient> {
   instanceId = process.env.SATELLITE_INSTANCE_ID ?? crypto.randomUUID();
   const wsUrl = hubUrl.replace(/^http/, "ws").replace(/\/$/, "") + "/sap/v1";
   const ws = new WebSocket(wsUrl);
@@ -45,6 +45,7 @@ async function connectInternal(hubUrl: string): Promise<SapClient> {
     app_id: APP_ID,
     instance_id: instanceId,
     features_requested: ["server_info"],
+    http_url: httpUrl ?? `http://127.0.0.1:${process.env.SATELLITE_PORT ?? 4173}`,
   });
   console.log("SAP connected", connected);
 

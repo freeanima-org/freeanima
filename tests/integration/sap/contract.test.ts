@@ -21,14 +21,15 @@ describe("sap-contract envelopes", () => {
     expect(parsed).toEqual(frame);
   });
 
-  it("validates connect payload", () => {
+  it("validates connect payload with http_url", () => {
     const payload = connectPayloadSchema.parse({
       app_id: "pair-programming",
       instance_id: "550e8400-e29b-41d4-a716-446655440000",
       protocol: "SAP/1.0",
       features_requested: [],
+      http_url: "http://127.0.0.1:4173",
     });
-    expect(payload.app_id).toBe("pair-programming");
+    expect(payload.http_url).toBe("http://127.0.0.1:4173");
   });
 
   it("validates tool register and message send", () => {

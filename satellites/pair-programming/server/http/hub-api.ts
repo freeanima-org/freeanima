@@ -86,7 +86,60 @@ export async function handleHubApi(req: Request, url: URL): Promise<Response | n
     return handleMessageStream(req);
   }
 
+  const eventsMatch = /^\/api\/sessions\/([^/]+)\/events$/.exec(path);
+  if (eventsMatch && req.method === "GET") {
+    const sessionId = decodeURIComponent(eventsMatch[1] ?? "");
+    return handleSessionEvents(sessionId, req.signal);
+  }
+
   return null;
+}
+
+async function handleSessionEvents(sessionId: string, signal: AbortSignal): Promise<Response> {
+  const client = await sap();
+  await client.request("session.subscribe", { session_id: sessionId });
+
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream<Uint8Array>({
+    start(controller) {
+      const cleanups: Array<() => void> = [];
+      let closed = false;
+
+      const closeStream = (): void => {
+        if (closed) return;
+        closed = true;
+        for (const off of cleanups) off();
+        try {
+          controller.close();
+        } catch {
+          /* already closed */
+        }
+      };
+
+      cleanups.push(
+        client.onEvent("session.updated", (payload) => {
+          const p = payload as { session_id?: string };
+          if (p.session_id !== sessionId) return;
+          controller.enqueue(
+            encoder.encode(
+              `event: session.updated\ndata: ${JSON.stringify({ session_id: sessionId })}\n\n`,
+            ),
+          );
+        }),
+      );
+
+      signal.addEventListener("abort", closeStream, { once: true });
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+      "Access-Control-Allow-Origin": "*",
+    },
+  });
 }
 
 async function handleMessageStream(req: Request): Promise<Response> {
