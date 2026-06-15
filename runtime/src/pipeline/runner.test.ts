@@ -100,6 +100,22 @@ describe("PipelineRunner", () => {
     expect(result.status).toBe("completed");
   });
 
+  it("invokes stepFinishedListener on each finished step", async () => {
+    bindTestHome();
+    const events: string[] = [];
+    const runner = new PipelineRunner();
+    runner.registerDefinition(linearDef);
+    runner.setStepFinishedListener(async (event) => {
+      events.push(`${event.step_id}:${event.status}`);
+    });
+    runner.registerStep("a", async () => ({ ok: true }));
+    runner.registerStep("b", async () => ({ ok: true }));
+    runner.registerStep("c", async () => ({ ok: true }));
+
+    await runner.run("test-linear", { day: "2026-06-14", trigger: "scheduled" });
+    expect(events).toEqual(["a:completed", "b:completed", "c:completed"]);
+  });
+
   it("stops required downstream after failure", async () => {
     bindTestHome();
     const runner = new PipelineRunner();

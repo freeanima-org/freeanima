@@ -52,7 +52,12 @@ export {
 } from "./email.ts";
 export { listCredentialMetas, getCredentialDetailHandler } from "./credentials.ts";
 export { getFtsStatus, startRebuildFtsIndex, getRebuildFtsJobStatus } from "./fts.ts";
-export { getSleepSummary, listSleepRuns, listCronLogs, getDeepSleepRounds } from "./sleep.ts";
+export {
+  getSleepSummary,
+  listPipelineStepRuns,
+  listCronLogs,
+  getDeepSleepRounds,
+} from "./sleep.ts";
 export { listTasks } from "./tasks.ts";
 export { listFridgeMagnets } from "./fridge.ts";
 export { ApiHandlerError } from "./errors.ts";

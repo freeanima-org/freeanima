@@ -20,6 +20,7 @@ import { initRuntimeContext } from "../runtime/runtime-context.ts";
 import { registerMemoryEngineWires } from "../runtime/memory-engines.ts";
 import { initMaskSystem } from "../runtime/mask-wire.ts";
 import { registerBootCronHandlers } from "./cron-handlers.ts";
+import { registerSleepPipelineStepRecorder } from "../runtime/pipeline-step-run-log.ts";
 import { startupLog } from "./status.ts";
 import type { EnginePhaseResult } from "./engine-phase.ts";
 
@@ -77,6 +78,7 @@ export async function bootRuntimePhase(
   initMaskSystem(masks);
   registerMemoryEngineWires(runtime.fullDeps());
   registerBootCronHandlers(engine);
+  registerSleepPipelineStepRecorder(repos);
 
   await initCronModule({ store: repos.cron, logStore: repos.cronLog });
   startupLog("Cron scheduler started (Bun.cron)");

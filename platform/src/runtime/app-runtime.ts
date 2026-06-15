@@ -416,8 +416,8 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     return sleep.getSleepSummary();
   }
 
-  listSleepRuns(opts?: Parameters<typeof sleep.listSleepRuns>[1]) {
-    return sleep.listSleepRuns(this.runtimeDeps(), opts);
+  listPipelineStepRuns(opts?: Parameters<typeof sleep.listPipelineStepRuns>[1]) {
+    return sleep.listPipelineStepRuns(this.runtimeDeps(), opts);
   }
 
   listCronLogs(opts?: Parameters<typeof sleep.listCronLogs>[1]) {

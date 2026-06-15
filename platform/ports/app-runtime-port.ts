@@ -75,7 +75,12 @@ export type AppRuntimePort = {
   listFridgeMagnets(): Promise<any>;
   getPromptDebug(sessionId?: string | null): Promise<any>;
   getSleepSummary(): Promise<any>;
-  listSleepRuns(opts?: { limit?: number; offset?: number; ok?: boolean }): Promise<any>;
+  listPipelineStepRuns(opts?: {
+    step_id?: string;
+    run_id?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<any>;
   listCronLogs(opts?: {
     job_id?: string;
     limit?: number;

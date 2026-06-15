@@ -3,6 +3,7 @@ import { useState } from "react";
 import { getCronJobs, pauseCronJob, resumeCronJob, runCronJob } from "@/lib/api.ts";
 import { formatDisplayDateTime } from "@/lib/format-datetime.ts";
 import { m } from "@/lib/i18n.ts";
+import { CronRunLogModal } from "./cron-run-log-modal.tsx";
 
 export const Route = createFileRoute("/chamber/cron")({
   loader: () => getCronJobs().catch(() => ({ jobs: [] })),
@@ -20,6 +21,7 @@ function CronPage() {
   const [toggling, setToggling] = useState<Record<string, string>>({});
   const [running, setRunning] = useState<Record<string, boolean>>({});
   const [toast, setToast] = useState<Record<string, string>>({});
+  const [historyJob, setHistoryJob] = useState<CronJob | null>(null);
 
   const activeCount = jobs.filter((j) => !j.paused).length;
   const pausedCount = jobs.filter((j) => j.paused).length;
@@ -179,6 +181,14 @@ function CronPage() {
                       </label>
                       <button
                         type="button"
+                        className="btn btn-xs btn-ghost"
+                        disabled={!!toggling[job.id] || !!running[job.id]}
+                        onClick={() => setHistoryJob(job)}
+                      >
+                        {m.webui_chamber_cron_run_history()}
+                      </button>
+                      <button
+                        type="button"
                         className="btn btn-xs btn-outline"
                         disabled={!!toggling[job.id] || !!running[job.id]}
                         onClick={() => void runNow(job)}
@@ -221,6 +231,14 @@ function CronPage() {
       )}
 
       {error ? <div className="alert alert-error text-sm mt-4">{error}</div> : null}
+
+      {historyJob ? (
+        <CronRunLogModal
+          jobId={historyJob.id}
+          jobName={String(historyJob.name ?? historyJob.id)}
+          onClose={() => setHistoryJob(null)}
+        />
+      ) : null}
     </div>
   );
 }

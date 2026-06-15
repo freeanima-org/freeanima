@@ -2,6 +2,7 @@ import type { PgRepositories } from "../ports/index.ts";
 import { nullAutobiographicalMemoryStore } from "./null-autobiographical-memory.ts";
 import { nullCronJobStore } from "./null-cron.ts";
 import { nullCronLogStore } from "./null-cron-log.ts";
+import { nullPipelineStepRunStore } from "./null-pipeline-step-run.ts";
 import { nullDreamMemoryStore } from "./null-dream-memory.ts";
 import { nullLimbicMemoryStore } from "./null-limbic-memory.ts";
 import { nullSelfLayerStore } from "./null-self-layer.ts";
@@ -21,5 +22,6 @@ export const nullPgRepositories: PgRepositories = {
   dreamMemory: nullDreamMemoryStore,
   cron: nullCronJobStore,
   cronLog: nullCronLogStore,
+  pipelineStepRun: nullPipelineStepRunStore,
   tasks: nullTaskStore,
 };

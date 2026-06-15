@@ -13,6 +13,7 @@ export * from "./dream-memory.ts";
 export * from "./tasks.ts";
 export * from "./cron-jobs.ts";
 export * from "./cron-log.ts";
+export * from "./pipeline-step-run.ts";
 export * from "./zod-schemas.ts";
 
 import { messages } from "./messages.ts";

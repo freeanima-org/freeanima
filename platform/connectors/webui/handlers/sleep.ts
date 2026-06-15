@@ -5,8 +5,13 @@ export async function getSleepSummary() {
   return webuiCtx().getSleepSummary();
 }
 
-export async function listSleepRuns(opts?: { limit?: number; offset?: number; ok?: boolean }) {
-  return webuiCtx().listSleepRuns(opts);
+export async function listPipelineStepRuns(opts?: {
+  step_id?: string;
+  run_id?: string;
+  limit?: number;
+  offset?: number;
+}) {
+  return webuiCtx().listPipelineStepRuns(opts);
 }
 
 export async function listCronLogs(opts?: {
