@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 11:47+0800\n"
+"POT-Creation-Date: 2026-06-15 15:48+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,21 +18,21 @@ msgstr ""
 
 #. type: Plain text
 #: docs/README.md:1 docs/concepts/architecture.md:1
-#: docs/concepts/compression.md:1 docs/concepts/identity.md:1
-#: docs/concepts/identity.md:10 docs/concepts/identity.md:28
-#: docs/concepts/identity.md:45 docs/concepts/identity.md:55
-#: docs/concepts/memory.md:1 docs/concepts/memory.md:17
-#: docs/concepts/memory.md:53 docs/concepts/memory.md:122
-#: docs/concepts/memory.md:133 docs/concepts/memory.md:158
-#: docs/concepts/recall-flow.md:1 docs/concepts/self-layer.md:1
-#: docs/concepts/self-layer.md:30 docs/concepts/self-layer.md:52
-#: docs/concepts/self-layer.md:66 docs/concepts/self-layer.md:80
-#: docs/concepts/self-layer.md:91 docs/concepts/sleep.md:1
-#: docs/concepts/time-perception.md:1 docs/features/pair-programming-v1.md:1
-#: docs/guide/database.md:1 docs/guide/install.md:1 docs/guide/install.md:31
-#: docs/guide/install.md:106 docs/guide/install.md:167
-#: docs/guide/install.md:234 docs/guide/security.md:1 docs/guide/service.md:1
-#: docs/tools/execute-code-runtimes.md:1
+#: docs/concepts/compression.md:1 docs/concepts/dream.md:1
+#: docs/concepts/identity.md:1 docs/concepts/identity.md:10
+#: docs/concepts/identity.md:28 docs/concepts/identity.md:45
+#: docs/concepts/identity.md:55 docs/concepts/memory.md:1
+#: docs/concepts/memory.md:17 docs/concepts/memory.md:53
+#: docs/concepts/memory.md:124 docs/concepts/memory.md:135
+#: docs/concepts/memory.md:160 docs/concepts/recall-flow.md:1
+#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:30
+#: docs/concepts/self-layer.md:52 docs/concepts/self-layer.md:66
+#: docs/concepts/self-layer.md:80 docs/concepts/self-layer.md:91
+#: docs/concepts/sleep.md:1 docs/concepts/time-perception.md:1
+#: docs/features/pair-programming-v1.md:1 docs/guide/database.md:1
+#: docs/guide/install.md:1 docs/guide/install.md:31 docs/guide/install.md:106
+#: docs/guide/install.md:167 docs/guide/install.md:234 docs/guide/security.md:1
+#: docs/guide/service.md:1 docs/tools/execute-code-runtimes.md:1
 #, no-wrap
 msgid "---\n"
 msgstr ""
@@ -226,18 +226,24 @@ msgstr ""
 
 #. type: Plain text
 #: docs/concepts/memory.md:91
-msgid "### 2. Semantic Memory"
+#, no-wrap
+msgid "**Dream memory** — nightly creative narratives from the dream mechanism (see [`dream.md`](dream.md)); one per CST calendar day; not factual; not injected into system prompt.\n"
 msgstr ""
 
 #. type: Plain text
 #: docs/concepts/memory.md:93
+msgid "### 2. Semantic Memory"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/memory.md:95
 msgid ""
 "Definition: Pure facts, common knowledge, concepts, and rules detached from "
 "specific time and place."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:102
+#: docs/concepts/memory.md:104
 #, no-wrap
 msgid ""
 "| Type          | Definition                                  | Example                                                   |\n"
@@ -251,25 +257,25 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:104
+#: docs/concepts/memory.md:106
 msgid "### 3. Limbic Memory"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:106
+#: docs/concepts/memory.md:108
 #, no-wrap
 msgid "**This is a memory dimension Hindsight lacks and FreeAnima uniquely has.**\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:108
+#: docs/concepts/memory.md:110
 msgid ""
 "Definition: Memory of \"what I felt\"—not objective fact, not behavioral "
 "record, not subjective judgment, but **the emotional experience itself**."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:115
+#: docs/concepts/memory.md:117
 #, no-wrap
 msgid ""
 "| Dimension     | Semantic (rational fact)   | Limbic (emotional imprint)                                  |\n"
@@ -281,74 +287,74 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:117
+#: docs/concepts/memory.md:119
 #, no-wrap
 msgid "**Three forms:** emotional anchor (session mood), emotional imprint (cross-session moment), sentiment tendency (long-term trends — not yet implemented, see Issue #38).\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:119
+#: docs/concepts/memory.md:121
 msgid "### 4. Procedural Memory"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:121
+#: docs/concepts/memory.md:123
 msgid ""
 "Three-stage evolution from declarative knowledge → dynamic skills → "
 "crystallized instincts (CLI / MCP / scripts)."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:125
+#: docs/concepts/memory.md:127
 msgid "## III. Nightly Consolidation"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:127
+#: docs/concepts/memory.md:129
 msgid ""
 "Conversion from working memory to long-term memory is handled by the sleep "
 "mechanism. See [`sleep.md`](sleep.md)."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/memory.md:130
+#: docs/concepts/memory.md:132
 msgid ""
 "**Light sleep (✅):** daily 02:00; semantic + limbic + autobiographical "
 "extraction"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/memory.md:130
+#: docs/concepts/memory.md:132
 msgid ""
 "**Deep sleep (✅):** daily 03:00; contradiction/expiry, split, merge, pin "
 "maintenance"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:132
+#: docs/concepts/memory.md:134
 #, no-wrap
 msgid "**All conversions must carry identity context**—self layer six blocks + resident memory, not a generic extraction assistant.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:136
+#: docs/concepts/memory.md:138
 msgid "## IV. Retrieval Strategy"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:138
+#: docs/concepts/memory.md:140
 msgid "### ✅ Implemented (`memory_recall` tool)"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:140
+#: docs/concepts/memory.md:142
 msgid ""
 "`memory_recall(query)` parallel four-source recall, returns unified "
 "`results[]` (default Top 10), distinguished by `memory_type`:"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:147
+#: docs/concepts/memory.md:149
 #, no-wrap
 msgid ""
 "| `memory_type`      | Notes                                 |\n"
@@ -360,7 +366,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:149
+#: docs/concepts/memory.md:151
 msgid ""
 "Resident memory injected via system prompt: **up to 20 pinned** + **most-"
 "referenced top N** (default N=20). Each line carries a citation marker "
@@ -368,25 +374,25 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:151
+#: docs/concepts/memory.md:153
 #, no-wrap
 msgid "**Citation obligation:** whenever an assistant reply uses semantic memory—resident list, `memory_recall` / `memory_semantic_search` semantic hits, or prior message markers—it must append each cited `[[f-id]]` at the **end of the reply body**. Use the inline marker or `semantic_memory_id` from tool results. Session, limbic, and autobiographical hits do not use this marker.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:153
+#: docs/concepts/memory.md:155
 #, no-wrap
 msgid "**Where the rule is communicated:** global system prompt `memory-citation` section; `memory_recall` and `memory_semantic_search` tool descriptions. Tool response JSON is not modified for this.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:155
+#: docs/concepts/memory.md:157
 #, no-wrap
 msgid "**What counts as a reference:** only `[[f-id]]` markers in **user/assistant** message bodies are parsed into `memory_references` and contribute to `reference_count`. Tool returns (including `semantic_memory_id` fields) are **not** references. Bare `f-id` text without `[[ ]]` is also not counted.\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:157
+#: docs/concepts/memory.md:159
 msgid ""
 "Nightly sleep-cycle step `memory-ref-sync` full-calibrates counts from "
 "messages. Excess pinned entries are truncated at read time with a warn log; "
@@ -394,12 +400,12 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:161
+#: docs/concepts/memory.md:163
 msgid "## V. Relationship to Hindsight"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:170
+#: docs/concepts/memory.md:172
 #, no-wrap
 msgid ""
 "| Dimension         | Hindsight                                  | FreeAnima v3                                       |\n"
@@ -413,7 +419,7 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/memory.md:171
+#: docs/concepts/memory.md:173
 #, no-wrap
 msgid "**Our stance:** Do not copy Hindsight, do not connect to Hindsight services. Digest its design ideas into FreeAnima's own memory system. Limbic memory is not an add-on—it is a core need of digital life.\n"
 msgstr ""

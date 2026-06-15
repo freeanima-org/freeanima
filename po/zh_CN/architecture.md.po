@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 11:23+0800\n"
+"POT-Creation-Date: 2026-06-15 15:48+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,21 +17,21 @@ msgstr ""
 
 #. type: Plain text
 #: docs/README.md:1 docs/concepts/architecture.md:1
-#: docs/concepts/compression.md:1 docs/concepts/identity.md:1
-#: docs/concepts/identity.md:10 docs/concepts/identity.md:28
-#: docs/concepts/identity.md:45 docs/concepts/identity.md:55
-#: docs/concepts/memory.md:1 docs/concepts/memory.md:17
-#: docs/concepts/memory.md:53 docs/concepts/memory.md:122
-#: docs/concepts/memory.md:133 docs/concepts/memory.md:154
-#: docs/concepts/recall-flow.md:1 docs/concepts/self-layer.md:1
-#: docs/concepts/self-layer.md:30 docs/concepts/self-layer.md:52
-#: docs/concepts/self-layer.md:66 docs/concepts/self-layer.md:80
-#: docs/concepts/self-layer.md:91 docs/concepts/sleep.md:1
-#: docs/concepts/time-perception.md:1 docs/features/pair-programming-v1.md:1
-#: docs/guide/database.md:1 docs/guide/install.md:1 docs/guide/install.md:31
-#: docs/guide/install.md:106 docs/guide/install.md:167
-#: docs/guide/install.md:234 docs/guide/security.md:1 docs/guide/service.md:1
-#: docs/tools/execute-code-runtimes.md:1
+#: docs/concepts/compression.md:1 docs/concepts/dream.md:1
+#: docs/concepts/identity.md:1 docs/concepts/identity.md:10
+#: docs/concepts/identity.md:28 docs/concepts/identity.md:45
+#: docs/concepts/identity.md:55 docs/concepts/memory.md:1
+#: docs/concepts/memory.md:17 docs/concepts/memory.md:53
+#: docs/concepts/memory.md:124 docs/concepts/memory.md:135
+#: docs/concepts/memory.md:160 docs/concepts/recall-flow.md:1
+#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:30
+#: docs/concepts/self-layer.md:52 docs/concepts/self-layer.md:66
+#: docs/concepts/self-layer.md:80 docs/concepts/self-layer.md:91
+#: docs/concepts/sleep.md:1 docs/concepts/time-perception.md:1
+#: docs/features/pair-programming-v1.md:1 docs/guide/database.md:1
+#: docs/guide/install.md:1 docs/guide/install.md:31 docs/guide/install.md:106
+#: docs/guide/install.md:167 docs/guide/install.md:234 docs/guide/security.md:1
+#: docs/guide/service.md:1 docs/tools/execute-code-runtimes.md:1
 #, no-wrap
 msgid "---\n"
 msgstr "---\n"
@@ -730,18 +730,25 @@ msgstr "WebUI 与 `anima service` 共用 HTTP 端口（默认 **2658**）。"
 
 #. type: Plain text
 #: docs/concepts/architecture.md:222
-msgid "### Three Modes"
+#, fuzzy
+#| msgid "### Three Modes"
+msgid "### Hub Modes"
 msgstr "### 三种模式"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:228
-#, no-wrap
+#: docs/concepts/architecture.md:227
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Mode    | Route prefix       | Role                                       |\n"
+#| "| ------- | ------------------ | ------------------------------------------ |\n"
+#| "| Parlor  | `/webui/parlor/*`  | Chat with the agent                        |\n"
+#| "| Chamber | `/webui/chamber/*` | Memory, config, tools, system maintenance  |\n"
+#| "| Studio  | `/webui/studio/*`  | Collaborative workspace (pair programming) |\n"
 msgid ""
-"| Mode    | Route prefix       | Role                                       |\n"
-"| ------- | ------------------ | ------------------------------------------ |\n"
-"| Parlor  | `/webui/parlor/*`  | Chat with the agent                        |\n"
-"| Chamber | `/webui/chamber/*` | Memory, config, tools, system maintenance  |\n"
-"| Studio  | `/webui/studio/*`  | Collaborative workspace (pair programming) |\n"
+"| Mode    | Route prefix       | Role                                      |\n"
+"| ------- | ------------------ | ----------------------------------------- |\n"
+"| Parlor  | `/webui/parlor/*`  | Chat with the agent                       |\n"
+"| Chamber | `/webui/chamber/*` | Memory, config, tools, system maintenance |\n"
 msgstr ""
 "| 模式    | 路由前缀           | 角色                                       |\n"
 "| ------- | ------------------ | ------------------------------------------ |\n"
@@ -750,34 +757,46 @@ msgstr ""
 "| 创作室  | `/webui/studio/*`  | 协同工作台（结对编程）                     |\n"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:230
+#: docs/concepts/architecture.md:229
+#, no-wrap
+msgid "**Studio** (pair programming and future creative workspaces) runs as **satellite processes** with their own HTTP UI (default pair-programming: `http://127.0.0.1:4173`). Hub WebUI header links out to the satellite; Hub still exposes `/api/studio/*` for workspace FS and terminal when satellites proxy through SAP.\n"
+msgstr "**创作室（Studio）**（结对编程及未来创意工作区）以**卫星进程**运行，自带 HTTP 界面（结对编程默认：`http://127.0.0.1:4173`）。Hub WebUI 顶栏外链至卫星；卫星经 SAP 代理时，Hub 仍暴露 `/api/studio/*` 供工作区文件系统与终端使用。\n"
+
+#. type: Plain text
+#: docs/concepts/architecture.md:231
 msgid "Open: `http://127.0.0.1:2658/webui/parlor/chat`"
 msgstr "打开：`http://127.0.0.1:2658/webui/parlor/chat`"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:232
+#: docs/concepts/architecture.md:233
 msgid "## Events and Hooks (Summary)"
 msgstr "## 事件与钩子（摘要）"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:236
+#: docs/concepts/architecture.md:237
 msgid ""
 "**EventBus**: async notification transport (Redis queue); production code "
 "currently emits topics such as `session:updated` with **no registered "
 "handlers** — ACP callbacks use direct `onSessionUpdated` instead. **Not** "
 "used for sleep orchestration."
 msgstr ""
+"**EventBus**：异步通知传输（Redis 队列）；生产代码目前会发出如 "
+"`session:updated` 等主题，但**无已注册处理器**——ACP 回调改用直接 "
+"`onSessionUpdated`。**不**用于睡眠编排。"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:236
+#: docs/concepts/architecture.md:237
 msgid ""
 "**Pipeline Runner**: explicit DAG for background cycles (sleep-cycle: light "
 "→ deep → cross-domain maintenance steps). State in `~/.anima/runtime/"
 "pipeline_*_run.json`; Chamber API for diagnostics."
 msgstr ""
+"**Pipeline Runner**：后台周期的显式 DAG（sleep-cycle：浅睡 → 深睡 → 跨域维护"
+"步骤）。状态位于 `~/.anima/runtime/pipeline_*_run.json`；Chamber API 用于诊"
+"断。"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:236
+#: docs/concepts/architecture.md:237
 msgid ""
 "**Hooks**: sync interceptors — validation or clarification at message "
 "ingress, turn end, tool return, etc."
@@ -785,20 +804,22 @@ msgstr ""
 "**Hooks**：同步拦截器——在消息入口、回合结束、工具返回等节点做校验或澄清"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:238
+#: docs/concepts/architecture.md:239
 msgid ""
 "Complementary: Pipeline Runner handles scheduled multi-step background work; "
 "Hooks handle \"may this proceed before/during\"; EventBus remains available "
 "for future cross-process fan-out but is not on the sleep path."
 msgstr ""
+"互补关系：Pipeline Runner 负责定时的多步后台任务；Hooks 处理「进行前/进行中是"
+"否允许」；EventBus 保留供未来跨进程扇出，但不在睡眠路径上。"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:240
+#: docs/concepts/architecture.md:241
 msgid "## Direction"
 msgstr "## 方向"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:242
+#: docs/concepts/architecture.md:243
 msgid ""
 "Capability vision and discussions: [GitHub Issues](https://github.com/"
 "freeanima-org/freeanima/issues) (labels `enhancement`, `discussion`, "
@@ -808,21 +829,21 @@ msgstr ""
 "issues)（标签 `enhancement`、`discussion`、`security`）。本文不跟踪待办。"
 
 #. type: Plain text
-#: docs/concepts/architecture.md:244
+#: docs/concepts/architecture.md:245
 msgid "## Constraints"
 msgstr "## 约束"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:247
+#: docs/concepts/architecture.md:248
 msgid "Principles and structure live here; no concrete task lists"
 msgstr "原则与结构写在这里；不含具体任务清单"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:247
+#: docs/concepts/architecture.md:248
 msgid "Fast-changing behavior follows the running service, not stale prose"
 msgstr "快速变化的行为以运行中的服务为准，而非过时的文字"
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:247
+#: docs/concepts/architecture.md:248
 msgid "Actionable work goes in GitHub Issues; close when done"
 msgstr "可执行工作放在 GitHub Issues；完成后关闭"

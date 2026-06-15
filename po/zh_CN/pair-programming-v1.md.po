@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-12 11:56+0800\n"
+"POT-Creation-Date: 2026-06-15 15:48+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,19 +17,21 @@ msgstr ""
 
 #. type: Plain text
 #: docs/README.md:1 docs/concepts/architecture.md:1
-#: docs/concepts/compression.md:1 docs/concepts/identity.md:1
-#: docs/concepts/identity.md:10 docs/concepts/identity.md:28
-#: docs/concepts/identity.md:45 docs/concepts/identity.md:55
-#: docs/concepts/memory.md:1 docs/concepts/memory.md:17
-#: docs/concepts/memory.md:53 docs/concepts/memory.md:122
-#: docs/concepts/memory.md:133 docs/concepts/memory.md:150
-#: docs/concepts/recall-flow.md:1 docs/concepts/self-layer.md:1
-#: docs/concepts/self-layer.md:30 docs/concepts/self-layer.md:52
-#: docs/concepts/self-layer.md:66 docs/concepts/self-layer.md:80
-#: docs/concepts/self-layer.md:91 docs/concepts/sleep.md:1
-#: docs/concepts/time-perception.md:1 docs/features/pair-programming-v1.md:1
-#: docs/guide/database.md:1 docs/guide/security.md:1
-#: docs/tools/execute-code-runtimes.md:1
+#: docs/concepts/compression.md:1 docs/concepts/dream.md:1
+#: docs/concepts/identity.md:1 docs/concepts/identity.md:10
+#: docs/concepts/identity.md:28 docs/concepts/identity.md:45
+#: docs/concepts/identity.md:55 docs/concepts/memory.md:1
+#: docs/concepts/memory.md:17 docs/concepts/memory.md:53
+#: docs/concepts/memory.md:124 docs/concepts/memory.md:135
+#: docs/concepts/memory.md:160 docs/concepts/recall-flow.md:1
+#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:30
+#: docs/concepts/self-layer.md:52 docs/concepts/self-layer.md:66
+#: docs/concepts/self-layer.md:80 docs/concepts/self-layer.md:91
+#: docs/concepts/sleep.md:1 docs/concepts/time-perception.md:1
+#: docs/features/pair-programming-v1.md:1 docs/guide/database.md:1
+#: docs/guide/install.md:1 docs/guide/install.md:31 docs/guide/install.md:106
+#: docs/guide/install.md:167 docs/guide/install.md:234 docs/guide/security.md:1
+#: docs/guide/service.md:1 docs/tools/execute-code-runtimes.md:1
 #, no-wrap
 msgid "---\n"
 msgstr "---\n"
@@ -185,45 +187,65 @@ msgid "## Usage"
 msgstr "## 用法"
 
 #. type: Bullet: '1. '
-#: docs/features/pair-programming-v1.md:47
+#: docs/features/pair-programming-v1.md:44
 #, fuzzy
-#| msgid ""
-#| "**WebUI**：浏览器访问 `http://127.0.0.1:2658/webui/*`（Bun fullstack CSR "
-#| "+ tRPC）"
-msgid "Open `http://127.0.0.1:2658/webui/studio/pair-programming`"
+#| msgid "anima service start --foreground ```"
+msgid "Start Hub: `anima service start --foreground` (or `--dev`)"
 msgstr ""
-"**WebUI**：浏览器访问 `http://127.0.0.1:2658/webui/*`（Bun fullstack CSR + "
-"tRPC）"
+"anima service start --foreground\n"
+"```"
 
 #. type: Bullet: '2. '
-#: docs/features/pair-programming-v1.md:47
-msgid "Set workspace path in Chamber (local project directory)"
-msgstr "在卧室中设置工作区路径（本地项目目录）"
+#: docs/features/pair-programming-v1.md:44
+msgid "Start the pair-programming satellite:"
+msgstr "启动结对编程卫星："
+
+#. type: Plain text
+#: docs/features/pair-programming-v1.md:48
+#, no-wrap
+msgid ""
+"   ```bash\n"
+"   FREEANIMA_URL=http://127.0.0.1:2658 STUDIO_WORKSPACE=/path/to/project bun satellites/pair-programming/dev.ts\n"
+"   ```\n"
+msgstr ""
+"   ```bash\n"
+"   FREEANIMA_URL=http://127.0.0.1:2658 STUDIO_WORKSPACE=/path/to/project bun satellites/pair-programming/dev.ts\n"
+"   ```\n"
 
 #. type: Bullet: '3. '
-#: docs/features/pair-programming-v1.md:47
+#: docs/features/pair-programming-v1.md:54
+msgid "Open `http://127.0.0.1:4173` (Hub Studio tab links here as well)"
+msgstr "打开 `http://127.0.0.1:4173`（Hub 创作室标签页也会链接到此）"
+
+#. type: Bullet: '4. '
+#: docs/features/pair-programming-v1.md:54
+msgid "Set workspace path in Chamber if not passed via `STUDIO_WORKSPACE`"
+msgstr "若未通过 `STUDIO_WORKSPACE` 传入，请在 Chamber 中设置工作区路径"
+
+#. type: Bullet: '5. '
+#: docs/features/pair-programming-v1.md:54
 msgid "Browse/search files on the left; view selection in the center"
 msgstr "左侧浏览/搜索文件；中间查看选中项"
 
-#. type: Bullet: '4. '
-#: docs/features/pair-programming-v1.md:47
+#. type: Bullet: '6. '
+#: docs/features/pair-programming-v1.md:54
 msgid "Create or select a session on the right; discuss code with the agent"
 msgstr "右侧创建或选择 session；与 Agent 讨论代码"
 
-#. type: Bullet: '5. '
-#: docs/features/pair-programming-v1.md:47
+#. type: Bullet: '7. '
+#: docs/features/pair-programming-v1.md:54
 msgid "Bottom terminal for debug/ops (isolated from chat session)"
 msgstr "底部终端用于调试/运维（与对话 session 隔离）"
 
 #. type: Plain text
-#: docs/features/pair-programming-v1.md:49
+#: docs/features/pair-programming-v1.md:56
 #, fuzzy
 #| msgid "Session (optional)"
 msgid "## Session Isolation"
 msgstr "Session（可选）"
 
 #. type: Plain text
-#: docs/features/pair-programming-v1.md:51
+#: docs/features/pair-programming-v1.md:58
 msgid ""
 "Pair programming uses platform `studio-pair-programming`, separate from "
 "parlor (`parlor`) and other platform session lists."
@@ -232,39 +254,39 @@ msgstr ""
 "session 列表分离。"
 
 #. type: Plain text
-#: docs/features/pair-programming-v1.md:53
+#: docs/features/pair-programming-v1.md:60
 #, fuzzy
 #| msgid "## Current State"
 msgid "## Current Limitations"
 msgstr "## 当前状态"
 
 #. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:57
+#: docs/features/pair-programming-v1.md:64
 msgid "Read-only viewer (highlight.js), not Monaco"
 msgstr "只读查看器（highlight.js），非 Monaco"
 
 #. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:57
+#: docs/features/pair-programming-v1.md:64
 msgid "Agent cannot directly edit and save files (Phase 2)"
 msgstr "Agent 无法直接编辑并保存文件（阶段 2）"
 
 #. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:57
+#: docs/features/pair-programming-v1.md:64
 msgid "Workspace must be a path readable by the server process"
 msgstr "工作区必须是服务端进程可读的路径"
 
 #. type: Plain text
-#: docs/features/pair-programming-v1.md:59
+#: docs/features/pair-programming-v1.md:66
 msgid "## Related Docs"
 msgstr "## 相关文档"
 
 #. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:61
+#: docs/features/pair-programming-v1.md:68
 msgid "WebUI three modes: [`architecture.md`](../concepts/architecture.md)"
 msgstr "WebUI 三种模式：[`architecture.md`](../concepts/architecture.md)"
 
 #. type: Bullet: '- '
-#: docs/features/pair-programming-v1.md:61
+#: docs/features/pair-programming-v1.md:68
 #, fuzzy
 #| msgid "Always `shell: false` (consistent with `docs/security.md`)"
 msgid "Security and tool risks: [`security.md`](../guide/security.md)"

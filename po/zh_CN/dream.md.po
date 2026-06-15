@@ -1,0 +1,241 @@
+# Chinese translations for PACKAGE package
+# Copyright (C) 2026 Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-06-15 15:48+0800\n"
+"PO-Revision-Date: 2026-06-15 15:48+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Plain text
+#: docs/README.md:1 docs/concepts/architecture.md:1
+#: docs/concepts/compression.md:1 docs/concepts/dream.md:1
+#: docs/concepts/identity.md:1 docs/concepts/identity.md:10
+#: docs/concepts/identity.md:28 docs/concepts/identity.md:45
+#: docs/concepts/identity.md:55 docs/concepts/memory.md:1
+#: docs/concepts/memory.md:17 docs/concepts/memory.md:53
+#: docs/concepts/memory.md:124 docs/concepts/memory.md:135
+#: docs/concepts/memory.md:160 docs/concepts/recall-flow.md:1
+#: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:30
+#: docs/concepts/self-layer.md:52 docs/concepts/self-layer.md:66
+#: docs/concepts/self-layer.md:80 docs/concepts/self-layer.md:91
+#: docs/concepts/sleep.md:1 docs/concepts/time-perception.md:1
+#: docs/features/pair-programming-v1.md:1 docs/guide/database.md:1
+#: docs/guide/install.md:1 docs/guide/install.md:31 docs/guide/install.md:106
+#: docs/guide/install.md:167 docs/guide/install.md:234 docs/guide/security.md:1
+#: docs/guide/service.md:1 docs/tools/execute-code-runtimes.md:1
+#, no-wrap
+msgid "---\n"
+msgstr "---\n"
+
+#. type: Plain text
+#: docs/concepts/dream.md:3
+#, no-wrap
+msgid ""
+"title: Dream\n"
+"---\n"
+msgstr ""
+"title: Dream\n"
+"---\n"
+
+#. type: Plain text
+#: docs/concepts/dream.md:6
+msgid "# Dream Mechanism"
+msgstr "# 梦境机制 (Dream)"
+
+#. type: Plain text
+#: docs/concepts/dream.md:8
+msgid ""
+"> Nightly creative narratives generated after light sleep; not factual "
+"memory."
+msgstr "> 浅睡后生成的夜间创意叙事；非事实性记忆。"
+
+#. type: Plain text
+#: docs/concepts/dream.md:10 docs/concepts/sleep.md:10
+msgid "## Overview"
+msgstr "## 概述"
+
+#. type: Plain text
+#: docs/concepts/dream.md:12
+msgid ""
+"Dreaming is the digital life's **imaginative** counterpart to memory "
+"consolidation. It does not extract facts or update semantic inventory—it "
+"produces a surreal, first-person narrative from the day's emotional tone and "
+"random episodic fragments."
+msgstr ""
+"梦境是数字生命记忆巩固的**想象性**对应物。它不提取事实、不更新语义记忆库——而"
+"是根据当日的情绪基调与随机情景片段，生成超现实的第一人称叙事。"
+
+#. type: Plain text
+#: docs/concepts/dream.md:14
+msgid "## Trigger"
+msgstr "## 触发条件"
+
+#. type: Plain text
+#: docs/concepts/dream.md:21
+#, no-wrap
+msgid ""
+"| Condition                                                 | Result                     |\n"
+"| --------------------------------------------------------- | -------------------------- |\n"
+"| No session activity on the CST day                        | Skip (`no_sessions`)       |\n"
+"| No limbic memory with `intensity > 0.5` after light sleep | Skip (`no_strong_emotion`) |\n"
+"| Dream already exists for that day                         | Skip (`already_dreamed`)   |\n"
+"| At least one strong limbic anchor                         | Generate dream             |\n"
+msgstr ""
+"| 条件                                      | 结果                       |\n"
+"| ----------------------------------------- | -------------------------- |\n"
+"| CST 当日无 session 活动                   | 跳过（`no_sessions`）      |\n"
+"| 浅睡后无 `intensity > 0.5` 的感性记忆     | 跳过（`no_strong_emotion`）  |\n"
+"| 当日已有梦境记录                          | 跳过（`already_dreamed`）  |\n"
+"| 至少有一条强度足够的感性锚点              | 生成梦境                   |\n"
+
+#. type: Plain text
+#: docs/concepts/dream.md:23
+msgid "Trigger is **purely emotion-driven** (no random dice)."
+msgstr "触发**纯由情绪驱动**（无随机掷骰）。"
+
+#. type: Plain text
+#: docs/concepts/dream.md:25
+msgid "## Input"
+msgstr "## 输入"
+
+#. type: Bullet: '1. '
+#: docs/concepts/dream.md:28
+msgid ""
+"**Emotional tone** — top 3 `limbic_memory` rows for the day's sessions where "
+"`intensity > 0.5`, ordered by intensity descending."
+msgstr ""
+"**情绪基调** — 当日 session 中 `intensity > 0.5` 的 `limbic_memory` 前 3 条，"
+"按强度降序。"
+
+#. type: Bullet: '2. '
+#: docs/concepts/dream.md:28
+msgid ""
+"**Episodic fragments** — random sample of user/assistant messages from the "
+"day's sessions (conversation archive), capped ~4k chars."
+msgstr ""
+"**情景片段** — 从当日 session（对话存档）的 user/assistant 消息中随机抽样，上"
+"限约 4k 字符。"
+
+#. type: Plain text
+#: docs/concepts/dream.md:30
+msgid "Light sleep stage 2 must complete first so limbic anchors exist."
+msgstr "须先完成浅睡第 2 阶段，以确保感性锚点已写入。"
+
+#. type: Plain text
+#: docs/concepts/dream.md:32
+msgid "## Output"
+msgstr "## 输出"
+
+#. type: Bullet: '- '
+#: docs/concepts/dream.md:36
+msgid ""
+"Persisted in PG table `dream_memory` (one row per CST calendar day, unique "
+"`dream_day`)."
+msgstr ""
+"持久化于 PG 表 `dream_memory`（每个 CST 自然日一行，唯一 `dream_day`）。"
+
+#. type: Bullet: '- '
+#: docs/concepts/dream.md:36
+msgid "Append-only; content is not updated after creation."
+msgstr "仅追加；创建后内容不更新。"
+
+#. type: Bullet: '- '
+#: docs/concepts/dream.md:36
+msgid ""
+"Redis fridge magnet `dream:reminder:{day}` (TTL 24h) with a short teaser "
+"when a dream is created."
+msgstr ""
+"创建梦境时写入 Redis 冰箱贴 `dream:reminder:{day}`（TTL 24h），附带简短提示。"
+
+#. type: Plain text
+#: docs/concepts/dream.md:38 docs/concepts/sleep.md:32
+msgid "## Orchestration"
+msgstr "## 编排"
+
+#. type: Plain text
+#: docs/concepts/dream.md:40
+msgid "Sleep-cycle DAG node `dream`:"
+msgstr "睡眠周期 DAG 节点 `dream`："
+
+#. type: Plain text
+#: docs/concepts/dream.md:47
+#, no-wrap
+msgid ""
+"```\n"
+"light-sleep\n"
+"  ├─► deep-sleep ──► memory-ref-sync\n"
+"  ├─► dream        (parallel with deep-sleep / self-layer-refresh)\n"
+"  └─► self-layer-refresh\n"
+"```\n"
+msgstr ""
+"```\n"
+"light-sleep\n"
+"  ├─► deep-sleep ──► memory-ref-sync\n"
+"  ├─► dream        (parallel with deep-sleep / self-layer-refresh)\n"
+"  └─► self-layer-refresh\n"
+"```\n"
+
+#. type: Plain text
+#: docs/concepts/dream.md:49
+msgid ""
+"LLM call uses `PROFILE_REFLECT` with elevated temperature (~1.1), **no "
+"tools**, single completion."
+msgstr ""
+"LLM 调用使用 `PROFILE_REFLECT`，较高温度（约 1.1），**无工具**，单次补全。"
+
+#. type: Plain text
+#: docs/concepts/dream.md:51
+msgid "## Tools & UI"
+msgstr "## 工具与界面"
+
+#. type: Plain text
+#: docs/concepts/dream.md:57
+#, no-wrap
+msgid ""
+"| Surface                      | Purpose                                                           |\n"
+"| ---------------------------- | ----------------------------------------------------------------- |\n"
+"| `dream_read` tool            | Read stored dream; auto-dismisses fridge reminder                 |\n"
+"| `fridge_magnet_dismiss` tool | Explicitly tear off any fridge magnet (including dream reminders) |\n"
+"| WebUI `/webui/chamber/dream` | Browse dream history                                              |\n"
+msgstr ""
+"| 入口                         | 用途                                                              |\n"
+"| ---------------------------- | ----------------------------------------------------------------- |\n"
+"| `dream_read` 工具            | 读取已存梦境；自动撕掉冰箱贴提醒                                  |\n"
+"| `fridge_magnet_dismiss` 工具 | 显式撕掉任意冰箱贴（含梦境提醒）                                  |\n"
+"| WebUI `/webui/chamber/dream` | 浏览梦境历史                                                      |\n"
+
+#. type: Plain text
+#: docs/concepts/dream.md:59
+msgid "## Design Notes"
+msgstr "## 设计说明"
+
+#. type: Bullet: '- '
+#: docs/concepts/dream.md:63
+msgid "Dreams are **not** injected into system prompt or resident memory."
+msgstr "梦境**不会**注入系统提示或常驻记忆。"
+
+#. type: Bullet: '- '
+#: docs/concepts/dream.md:63
+msgid "Accuracy is explicitly **not** a goal; association and metaphor are."
+msgstr "准确性明确**不是**目标；联想与隐喻才是。"
+
+#. type: Bullet: '- '
+#: docs/concepts/dream.md:63
+msgid ""
+"When Redis is unavailable, dreams still persist in PG; reminders silently "
+"degrade."
+msgstr "Redis 不可用时梦境仍写入 PG；提醒功能静默降级。"
+
+#. type: Plain text
+#: docs/concepts/dream.md:64
+msgid "See also: [`sleep.md`](sleep.md), [`memory.md`](memory.md)."
+msgstr "另见：[`sleep.md`](sleep.md)、[`memory.md`](memory.md)。"
