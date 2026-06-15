@@ -1,3 +1,9 @@
+import {
+  buildOperatorTsQuery,
+  hasFtsQueryOperators,
+  parseFtsOperatorQuery,
+} from "@freeanima/core/util";
+
 /**
  * Convert user query to PostgreSQL to_tsquery('simple', …) param string (per-char/word mode).
  */
@@ -5,9 +11,8 @@ export function buildCharModeTsQuery(raw: string): string {
   const trimmed = raw.trim();
   if (!trimmed) return trimmed;
 
-  const operators = new Set(["AND", "OR", "NOT"]);
-  if ([...operators].some((op) => trimmed.includes(` ${op} `))) {
-    return toTsqueryOperators(trimmed);
+  if (hasFtsQueryOperators(trimmed)) {
+    return buildOperatorTsQuery(parseFtsOperatorQuery(trimmed), tokenToTsqueryPart);
   }
   if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
     return wrapTsqueryPart(cjkProximityChain(trimmed.slice(1, -1)));
@@ -34,17 +39,12 @@ export function buildJiebaModeTsQuery(segmented: string): string {
   return tokens.map((t) => escapeTsToken(t)).join(" & ");
 }
 
-function toTsqueryOperators(text: string): string {
-  return text
-    .split(/\s+/)
-    .map((tok) => {
-      const upper = tok.toUpperCase();
-      if (upper === "AND") return "&";
-      if (upper === "OR") return "|";
-      if (upper === "NOT") return "!";
-      return wrapTsqueryPart(tokenToTsqueryPart(tok));
-    })
-    .join(" ");
+/** jieba operator query: segment each operand group, then join with boolean ops */
+export function buildJiebaGroupTsQuery(segmented: string): string {
+  const part = buildJiebaModeTsQuery(segmented);
+  if (!part) return "";
+  if (part.includes(" & ")) return `(${part})`;
+  return part;
 }
 
 function tokenToTsqueryPart(tok: string): string {

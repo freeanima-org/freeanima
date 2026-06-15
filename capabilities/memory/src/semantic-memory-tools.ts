@@ -1,6 +1,11 @@
 import type { ToolDef } from "@freeanima/core/tool";
 import { toolError, toolResult } from "@freeanima/core/tool";
-import { formatCstIso } from "@freeanima/core/util";
+import {
+  formatCstIso,
+  formatFtsToolError,
+  isFtsQueryError,
+  validateFtsQueryInput,
+} from "@freeanima/core/util";
 import type { SemanticMemoryCreateInput, SemanticMemoryUpdateInput } from "@freeanima/core/repos";
 
 import { getSemanticMemoryStore } from "./semantic-port.ts";
@@ -122,29 +127,36 @@ async function handleSearchSemanticMemory(args: Record<string, unknown>): Promis
       ? statusRaw
       : "active";
 
-  const rows = await getSemanticMemoryStore().search({
-    query: query || undefined,
-    limit: Number.isFinite(limit) ? limit : 10,
-    types,
-    status,
-    source_sessions: sourceSessions,
-  });
+  try {
+    if (query) validateFtsQueryInput(query);
 
-  return toolResult({
-    query: query || null,
-    count: rows.length,
-    results: rows.map((row) => ({
-      id: row.id,
-      semantic_memory_id: row.id,
-      type: row.type,
-      content: row.content,
-      pinned: row.pinned,
-      source_sessions: row.source_sessions,
-      observed_at: row.observed_at,
-      occurred_at: row.occurred_at,
-      status: row.status,
-    })),
-  });
+    const rows = await getSemanticMemoryStore().search({
+      query: query || undefined,
+      limit: Number.isFinite(limit) ? limit : 10,
+      types,
+      status,
+      source_sessions: sourceSessions,
+    });
+
+    return toolResult({
+      query: query || null,
+      count: rows.length,
+      results: rows.map((row) => ({
+        id: row.id,
+        semantic_memory_id: row.id,
+        type: row.type,
+        content: row.content,
+        pinned: row.pinned,
+        source_sessions: row.source_sessions,
+        observed_at: row.observed_at,
+        occurred_at: row.occurred_at,
+        status: row.status,
+      })),
+    });
+  } catch (e) {
+    if (isFtsQueryError(e)) return toolError(formatFtsToolError(e));
+    throw e;
+  }
 }
 
 async function handleMergeSemanticMemories(args: Record<string, unknown>): Promise<string> {

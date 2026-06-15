@@ -1,5 +1,6 @@
 import type { ToolSetRegistry } from "@freeanima/core/tool";
 import { attachToolReturns, toolError, toolResult } from "@freeanima/core/tool";
+import { formatFtsToolError, isFtsQueryError } from "@freeanima/core/util";
 import { MEMORY_TOOL_RETURNS } from "./return-schemas.ts";
 import { semanticMemoryToolDefs, rememberFromArgs } from "./semantic-memory-tools.ts";
 import { autobiographicalMemoryToolDefs } from "./autobiographical-tools.ts";
@@ -94,8 +95,13 @@ export function registerMemoryTools(toolSets: ToolSetRegistry): void {
 
             const limit = Math.max(1, Math.min(20, asFloat(args.limit, 10)));
 
-            const result = await memoryRecallSearch(query, { limit });
-            return toolResult(result);
+            try {
+              const result = await memoryRecallSearch(query, { limit });
+              return toolResult(result);
+            } catch (e) {
+              if (isFtsQueryError(e)) return toolError(formatFtsToolError(e));
+              throw e;
+            }
           },
         },
       ],

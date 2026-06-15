@@ -3,6 +3,7 @@ import type { SessionStorePort } from "@freeanima/core/repos";
 import { nullPgRepositories } from "@freeanima/core/repos";
 import { ToolSetRegistry } from "@freeanima/core/tool";
 import { runWithToolContext } from "@freeanima/core/tool";
+import { FtsQueryError } from "@freeanima/core/util";
 import { registerSessionTools } from "./sessions-tools.ts";
 
 function createMockSessionStore(overrides: Partial<SessionStorePort> = {}): SessionStorePort {
@@ -151,6 +152,32 @@ describe("registerSessionTools", () => {
         expect(raw).toContain('"error"');
       },
       { tools: toolSets, repos: reposWithSession(createMockSessionStore()) },
+    );
+  });
+
+  it("sessions_search returns friendly FTS validation error", async () => {
+    const toolSets = new ToolSetRegistry();
+    registerSessionTools(toolSets);
+    const def = toolSets.getTool("sessions_search")!;
+
+    const session = createMockSessionStore({
+      async searchMessagesFts() {
+        throw new FtsQueryError(
+          "trailing_operator",
+          "query 不能以 OR 结尾",
+          "示例：退烧 OR 注意力",
+        );
+      },
+    });
+
+    await runWithToolContext(
+      "sess-1",
+      async () => {
+        const raw = await def.handler({ query: "hello" });
+        expect(raw).toContain("修改建议");
+        expect(raw).toContain("不能以 OR 结尾");
+      },
+      { tools: toolSets, repos: reposWithSession(session) },
     );
   });
 

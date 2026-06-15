@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 import type { SemanticMemoryStorePort, SessionStorePort } from "@freeanima/core/repos";
+import { FtsQueryError } from "@freeanima/core/util";
 import {
   registerMemoryTools,
   searchSemanticMemory,
@@ -385,5 +386,29 @@ describe("memory search", () => {
     expect(semantic?.content?.includes("compression")).toBe(true);
     expect(session?.snippet?.includes("compression")).toBe(true);
     expect(session && "content" in session).toBe(false);
+  });
+
+  it("memory_recall returns friendly FTS validation error", async () => {
+    registerSemanticMemoryStore(createMockSemanticStore());
+
+    const out = await toolSets.getTool("memory_recall")!.handler({ query: "退烧 OR" });
+    expect(out).toContain("修改建议");
+    expect(out).toContain("不能以 OR 结尾");
+  });
+
+  it("memory_recall propagates store FTS errors as toolError", async () => {
+    const store = createMockSemanticStore();
+    store.searchFts = async () => {
+      throw new FtsQueryError(
+        "invalid_tsquery_structure",
+        "检索词之间缺少 AND/OR 连接",
+        "空格默认 AND",
+      );
+    };
+    registerSemanticMemoryStore(store);
+
+    const out = await toolSets.getTool("memory_recall")!.handler({ query: "退烧 OR 注意力" });
+    expect(out).toContain("修改建议");
+    expect(out).toContain("缺少 AND/OR 连接");
   });
 });

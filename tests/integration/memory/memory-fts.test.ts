@@ -1,4 +1,5 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
+import { sql as drizzleSql } from "drizzle-orm";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
   beginIntegrationCase,
@@ -7,6 +8,7 @@ import {
 } from "../../helpers/integration-case.ts";
 
 import { filterRecallableMessages } from "@freeanima/capabilities-memory";
+import { buildFtsTsQuery, getDb } from "@freeanima/platform/connectors/db-pg";
 import { getTestEngine, seedSession, testConv } from "../../helpers/pg-test.ts";
 
 describePg("memory PG FTS", () => {
@@ -94,6 +96,51 @@ describePg("memory PG FTS", () => {
     const filtered = filterRecallableMessages(msgs);
     expect(filtered).toHaveLength(1);
     expect(filtered[0]!.role).toBe("user");
+  });
+
+  it("CJK OR query tsquery is accepted by PostgreSQL and search succeeds", async () => {
+    const query = "退烧 OR 注意力 OR 方向 摇摆 OR 热情";
+    const tsquery = await buildFtsTsQuery(query);
+    expect(tsquery).not.toMatch(/\)\s+\(/);
+
+    const db = getDb();
+    const parsed = await db.execute<{ q: string }>(drizzleSql`
+      SELECT to_tsquery('simple', ${tsquery})::text AS q
+    `);
+    expect(parsed[0]?.q).toBeTruthy();
+
+    const sid = "20260615_120000_cjk";
+    await seedSession(
+      getTestEngine(),
+      sid,
+      {
+        role: "session_meta",
+        model: "test-model",
+        tools: [],
+        functions: [],
+        timestamp: "2026-06-15T12:00:00+08:00",
+        platform: "web",
+        title: "cjk fts",
+      },
+      [
+        {
+          role: "user",
+          timestamp: "2026-06-15T12:00:00+08:00",
+          content: "今天讨论退烧和注意力方向摇摆时的热情问题",
+          pos: 1,
+        },
+      ],
+    );
+
+    const semanticId = await testConv().repos.semanticMemory.create({
+      content: "用户对退烧与注意力方向摇摆相关话题保持热情",
+      type: "observation",
+    });
+    expect(semanticId.length).toBeGreaterThan(0);
+
+    const messageHits = await testConv().repos.session.searchMessagesFts(query, { limit: 5 });
+    const semanticHits = await testConv().repos.semanticMemory.searchFts(query, { limit: 5 });
+    expect(messageHits.length + semanticHits.length).toBeGreaterThan(0);
   });
 
   afterAll(async () => {
