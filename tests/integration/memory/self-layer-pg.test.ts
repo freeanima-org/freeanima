@@ -73,6 +73,7 @@ describePg("self layer PG", () => {
 
     const summary = buildAutobiographySummary([row!]);
     expect(summary).toContain("First boundary test");
+    expect(summary).toContain("## Turning points");
 
     await self.upsertBlock({
       block_key: "autobiography_summary",
@@ -80,7 +81,7 @@ describePg("self layer PG", () => {
       updated_by: "test",
     });
     const block = await self.getBlock("autobiography_summary");
-    expect(block?.content).toContain("Turning point");
+    expect(block?.content).toContain("## Turning points");
 
     const deprecated = await auto.deprecate(id);
     expect(deprecated).toBe(true);

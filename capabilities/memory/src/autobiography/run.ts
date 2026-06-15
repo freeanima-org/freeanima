@@ -1,6 +1,7 @@
 import type {
   AutobiographicalMemoryRow,
   AutobiographicalMemoryStorePort,
+  AutobiographicalSignificance,
   SelfLayerStorePort,
   SemanticMemoryStorePort,
 } from "@freeanima/core/repos";
@@ -56,43 +57,74 @@ async function listRecentExperienceImprint(
   });
 }
 
-function parseRowAgeDays(row: AutobiographicalMemoryRow): number {
+export const AUTOBIOGRAPHY_SUMMARY_SECTION_HEADINGS: Record<AutobiographicalSignificance, string> =
+  {
+    turning_point: "## Turning points",
+    milestone: "## Milestones",
+    normal: "## Recent narratives",
+  };
+
+const SUMMARY_SECTION_ORDER: AutobiographicalSignificance[] = [
+  "turning_point",
+  "milestone",
+  "normal",
+];
+
+export function parseRowAgeDays(row: AutobiographicalMemoryRow): number {
   const raw = row.period_end ?? row.updated ?? row.created;
   const ms = Date.parse(raw);
   if (Number.isNaN(ms)) return 9999;
   return Math.floor((Date.now() - ms) / (24 * 60 * 60 * 1000));
 }
 
-/** Build summary from active autobiographical entries (granularity decreases with age) */
+function shouldIncludeInSummary(row: AutobiographicalMemoryRow, ageDays: number): boolean {
+  if (ageDays > 180 && row.significance !== "turning_point") return false;
+  if (ageDays > 30 && row.significance === "normal") return false;
+  return true;
+}
+
+function formatSummarySection(
+  significance: AutobiographicalSignificance,
+  titles: string[],
+): string {
+  const heading = AUTOBIOGRAPHY_SUMMARY_SECTION_HEADINGS[significance];
+  return [heading, ...titles.map((title) => `- ${title}`)].join("\n");
+}
+
+/** Build grouped outline from active autobiographical entries (granularity decreases with age) */
 export function buildAutobiographySummary(rows: AutobiographicalMemoryRow[]): string {
   if (!rows.length) return "(No autobiography summary yet)";
 
-  const lines: string[] = [];
+  const buckets: Record<AutobiographicalSignificance, string[]> = {
+    turning_point: [],
+    milestone: [],
+    normal: [],
+  };
+
   for (const row of rows) {
     const ageDays = parseRowAgeDays(row);
-    if (ageDays > 180 && row.significance !== "turning_point") continue;
-    if (ageDays > 30 && row.significance === "normal") continue;
-
-    const tag =
-      row.significance === "turning_point"
-        ? "Turning point"
-        : row.significance === "milestone"
-          ? "Milestone"
-          : "Narrative";
-    const essence = ageDays <= 30 ? row.content.slice(0, 120) : row.title;
-    lines.push(
-      `- [${tag}] ${row.title}: ${essence}${essence.length < row.content.length ? "…" : ""}`,
-    );
+    if (!shouldIncludeInSummary(row, ageDays)) continue;
+    buckets[row.significance].push(row.title);
   }
 
-  if (!lines.length) {
-    const turning = rows.filter((r) => r.significance === "turning_point");
-    for (const row of turning.slice(0, 5)) {
-      lines.push(`- [Turning point] ${row.title}`);
-    }
+  const hasAny =
+    buckets.turning_point.length > 0 || buckets.milestone.length > 0 || buckets.normal.length > 0;
+
+  if (!hasAny) {
+    buckets.turning_point = rows
+      .filter((row) => row.significance === "turning_point")
+      .slice(0, 5)
+      .map((row) => row.title);
   }
 
-  return lines.length ? lines.join("\n") : "(No autobiography summary yet)";
+  const sections: string[] = [];
+  for (const significance of SUMMARY_SECTION_ORDER) {
+    const titles = buckets[significance];
+    if (!titles.length) continue;
+    sections.push(formatSummarySection(significance, titles));
+  }
+
+  return sections.length ? sections.join("\n\n") : "(No autobiography summary yet)";
 }
 
 export async function refreshAutobiographySummaryBlock(

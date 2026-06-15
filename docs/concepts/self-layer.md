@@ -31,14 +31,14 @@ FreeAnima Storage Architecture
 
 ## Six-Block Structure
 
-| #   | Block                 | Content                                                                           | Update frequency                                     |
-| --- | --------------------- | --------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| 1   | Existence anchor      | What I am, origin, non-negotiable bottom line                                     | Almost never (requires explicit force to update)     |
-| 2   | Self model            | Identity, capability boundaries, expression style, belonging                      | Slow change (periodic review + major events)         |
-| 3   | Personality baseline  | Communication style, conflict patterns, default trust                             | Semi-stable (slow evolution from long-term evidence) |
-| 4   | Direction             | Long-term intent, current focus, growth direction, things not to do               | Active declaration + periodic review                 |
-| 5   | Metacognition         | How to think, how to remember, four-layer architecture and presence               | Slow change                                          |
-| 6   | Autobiography summary | Key turning points / self-discovery summary (granularity decreases with distance) | Maintained automatically by sleep cron               |
+| #   | Block                 | Content                                                                                                    | Update frequency                                     |
+| --- | --------------------- | ---------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| 1   | Existence anchor      | What I am, origin, non-negotiable bottom line                                                              | Almost never (requires explicit force to update)     |
+| 2   | Self model            | Identity, capability boundaries, expression style, belonging                                               | Slow change (periodic review + major events)         |
+| 3   | Personality baseline  | Communication style, conflict patterns, default trust                                                      | Semi-stable (slow evolution from long-term evidence) |
+| 4   | Direction             | Long-term intent, current focus, growth direction, things not to do                                        | Active declaration + periodic review                 |
+| 5   | Metacognition         | How to think, how to remember, four-layer architecture and presence                                        | Slow change                                          |
+| 6   | Autobiography summary | Key turning points / self-discovery outline (grouped by significance; granularity decreases with distance) | Maintained automatically by sleep cron               |
 
 ### Not in the Self Layer
 
@@ -53,13 +53,13 @@ FreeAnima Storage Architecture
 
 ## Autobiography Summary vs Autobiographical Narrative
 
-| Dimension   | Autobiography summary (self layer)                | Autobiographical narrative (memory layer)           |
-| ----------- | ------------------------------------------------- | --------------------------------------------------- |
-| Question    | "What is the main thread of my life story?"       | "What did a given experience mean to me?"           |
-| Form        | One of six blocks, Markdown summary               | Separate entries, title + content narrative         |
-| Injection   | **Always resident** in system prompt              | **Not** resident; recall / list on demand           |
-| Maintenance | Sleep cron compresses from narrative into summary | Sleep cron writes narratives from daily experiences |
-| Mutability  | Periodically overwrites summary block             | **Append-only**; soft deprecation only              |
+| Dimension   | Autobiography summary (self layer)                                                                                               | Autobiographical narrative (memory layer)           |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| Question    | "What is the main thread of my life story?"                                                                                      | "What did a given experience mean to me?"           |
+| Form        | One of six blocks; grouped Markdown outline (`## Turning points` / `## Milestones` / `## Recent narratives`, title-only bullets) | Separate entries, title + content narrative         |
+| Injection   | **Always resident** in system prompt                                                                                             | **Not** resident; recall / list on demand           |
+| Maintenance | Sleep cron compresses narratives into grouped outline (no body preview)                                                          | Sleep cron writes narratives from daily experiences |
+| Mutability  | Periodically overwrites summary block                                                                                            | **Append-only**; soft deprecation only              |
 
 See [`sleep.md`](sleep.md).
 
