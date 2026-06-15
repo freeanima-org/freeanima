@@ -48,12 +48,12 @@ Pipeline run state is persisted at `~/.anima/runtime/pipeline_sleep-cycle_run.js
 
 ### Three Stages
 
-| Stage              | Target                       | Purpose                                               |
-| ------------------ | ---------------------------- | ----------------------------------------------------- |
-| 1 Semantic         | Semantic memory              | Extract facts, preferences, experiences from dialogue |
-| 2 Limbic           | Emotional anchors            | Capture session mood and emotional turning points     |
-| 3 Autobiographical | Autobiographical narrative   | Record what experiences meant to the digital life     |
-| 3b                 | Autobiography summary (self) | Compress narratives into self-layer summary block     |
+| Stage              | Target                       | Purpose                                                                                  |
+| ------------------ | ---------------------------- | ---------------------------------------------------------------------------------------- |
+| 1 Semantic         | Semantic memory              | Extract facts, preferences, experiences from dialogue                                    |
+| 2 Limbic           | Emotional anchors            | Capture session mood and emotional turning points                                        |
+| 3 Autobiographical | Autobiographical narrative   | Record what experiences meant to the digital life                                        |
+| 3b                 | Autobiography summary (self) | Compress narratives into grouped self-layer outline (title-only bullets by significance) |
 
 **Restraint principle:** Each stage LLM may judge "nothing worth recording" → no writes; program still runs subsequent stages.
 
@@ -134,7 +134,7 @@ Conversation archive
   │   step light-sleep (three internal stages)
   ├─► semantic memory
   ├─► emotional anchors
-  └─► autobiographical narrative ──compress──► self-layer autobiography summary
+  └─► autobiographical narrative ──compress──► self-layer autobiography summary (grouped outline)
   │
   │   step deep-sleep (four internal rounds)
   ▼
