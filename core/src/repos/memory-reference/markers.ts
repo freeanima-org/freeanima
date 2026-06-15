@@ -1,15 +1,15 @@
 /** Semantic memory ID format: f-000001-abcd */
 export const SEMANTIC_MEMORY_ID_PATTERN = "f-\\d{6}-[0-9a-f]{4}";
 
-/** Citation marker in body / replies: `[memory #f-000001-abcd]` */
+/** Citation marker in body / replies: `[[f-000001-abcd]]` */
 export const MEMORY_REFERENCE_MARKER_RE = new RegExp(
-  `\\[memory #(${SEMANTIC_MEMORY_ID_PATTERN})\\]`,
+  `\\[\\[(${SEMANTIC_MEMORY_ID_PATTERN})\\]\\]`,
   "gi",
 );
 
 /** Prefix injected for resident memory lines */
 export function formatMemoryReferenceMarker(semanticMemoryId: string): string {
-  return `[memory #${semanticMemoryId}]`;
+  return `[[${semanticMemoryId}]]`;
 }
 
 /** Resident memory line with ID */
@@ -36,9 +36,16 @@ export function parseMemoryReferenceMarkers(content: string): string[] {
   return ids;
 }
 
-/** System prompt rule: LLM must cite referenced memories at the end of replies */
+/** System prompt rule: cite semantic memories used in assistant replies */
 export const MEMORY_REFERENCE_CITATION_RULE =
-  "If your reply references content carrying a `[memory #xxx]` marker, append the corresponding `[memory #xxx]` at the end of your reply.";
+  "When your reply uses semantic memory—whether from the resident memory list (inline `[[f-xxx]]`), " +
+  "`memory_recall` or `memory_semantic_search` results (`semantic_memory_id`), or prior message markers—" +
+  "append each cited `[[f-xxx]]` at the end of your reply. " +
+  "Do not use this marker for session, limbic, or autobiographical recall hits.";
+
+/** Short hint appended to recall/search tool descriptions */
+export const MEMORY_SEMANTIC_CITATION_TOOL_HINT =
+  "If your reply uses semantic memory results, append each cited `[[f-xxx]]` (from `semantic_memory_id`) at the end of your reply.";
 
 /** Weight multiplier for references within 30 days */
 export const MEMORY_REFERENCE_RECENT_WEIGHT = 2;

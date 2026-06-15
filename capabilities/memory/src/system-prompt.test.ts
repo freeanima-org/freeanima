@@ -10,6 +10,7 @@ import {
 } from "./system-prompt.ts";
 import { registerSemanticMemoryStore, resetSemanticMemoryStoreForTests } from "./semantic-port.ts";
 import { MEMORY_REFERENCE_CITATION_RULE } from "./memory-reference.ts";
+import { buildMemorySystemPromptSections } from "./system-prompt-sections.ts";
 
 function createMockSemanticStore(resident: Array<{ content: string; pinned?: boolean }> = []) {
   return {
@@ -62,8 +63,17 @@ describe("system-prompt", () => {
     expect(parts.resident).toContain(RESIDENT_MEMORY_SYSTEM_FRAME);
     expect(parts.resident).toContain("## Resident memory");
     expect(parts.resident).toContain("```md");
-    expect(parts.resident).toContain("- 📌 [memory #f-000000-abcd] I like testing");
-    expect(parts.resident).toContain(MEMORY_REFERENCE_CITATION_RULE);
+    expect(parts.resident).toContain("- 📌 [[f-000000-abcd]] I like testing");
+    expect(parts.resident).not.toContain(MEMORY_REFERENCE_CITATION_RULE);
+  });
+
+  it("memory-citation section is always present even without resident memory", async () => {
+    registerSemanticMemoryStore(createMockSemanticStore());
+    const sections = await buildMemorySystemPromptSections("self layer content");
+    const citation = sections.find((s) => s.id === "memory-citation");
+    expect(citation).toBeDefined();
+    expect(citation!.content).toBe(MEMORY_REFERENCE_CITATION_RULE);
+    expect(citation!.order).toBe(25);
   });
 
   it("project context segment includes code fence without second-person frame", async () => {

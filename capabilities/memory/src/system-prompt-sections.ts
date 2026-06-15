@@ -1,4 +1,5 @@
 import { decomposeSystemPromptParts } from "./system-prompt.ts";
+import { MEMORY_REFERENCE_CITATION_RULE } from "./memory-reference.ts";
 
 export type MemorySystemPromptSection = {
   id: string;
@@ -16,6 +17,7 @@ export async function buildMemorySystemPromptSections(
   if (parts.self.trim()) {
     sections.push({ id: "self", content: parts.self.trim(), order: 0 });
   }
+  sections.push({ id: "memory-citation", content: MEMORY_REFERENCE_CITATION_RULE, order: 25 });
   if (parts.resident.trim()) {
     sections.push({ id: "resident", content: parts.resident, order: 30 });
   }

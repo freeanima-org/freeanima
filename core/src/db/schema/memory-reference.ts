@@ -4,7 +4,7 @@ import { messages } from "./messages.ts";
 import { semanticMemory } from "./semantic-memory.ts";
 import { sessions } from "./sessions.ts";
 
-/** `[memory #xxx]` reference records in message body (cascade invalidate on session delete) */
+/** `[[f-xxx]]` reference records in message body (cascade invalidate on session delete) */
 export const memoryReferences = pgTable(
   "memory_references",
   {

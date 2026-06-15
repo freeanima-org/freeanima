@@ -42,13 +42,13 @@ describePg("memory_references PG", () => {
 
     await session.appendMessage(sessionId, {
       role: "assistant",
-      content: `See [memory #${memoryId}] for details`,
+      content: `See [[${memoryId}]] for details`,
       pos: 1,
       timestamp: "2026-06-09T12:00:00+08:00",
     });
     await session.appendMessage(sessionId, {
       role: "assistant",
-      content: `Again [memory #${memoryId}]`,
+      content: `Again [[${memoryId}]]`,
       pos: 2,
       timestamp: "2026-06-09T12:01:00+08:00",
     });
@@ -74,7 +74,7 @@ describePg("memory_references PG", () => {
     await seedSessionMeta(sessionId);
     await session.appendMessage(sessionId, {
       role: "assistant",
-      content: `[memory #${hotId}]`,
+      content: `[[${hotId}]]`,
       pos: 1,
     });
 
@@ -125,7 +125,7 @@ describePg("memory_references PG", () => {
     await seedSessionMeta(sessionId);
     await session.appendMessage(sessionId, {
       role: "user",
-      content: `[memory #${memoryId}]`,
+      content: `[[${memoryId}]]`,
       pos: 1,
     });
 

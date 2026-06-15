@@ -14,7 +14,7 @@ export type RecordMessageReferencesInput = {
   created_at?: string;
 };
 
-/** Persist `[memory #xxx]` references in message body and sync counts */
+/** Persist `[[f-xxx]]` references in message body and sync counts */
 export interface MemoryReferenceStorePort {
   /** Parse body and write references; duplicate refs in same session do not increment reference_count */
   recordFromMessage(input: RecordMessageReferencesInput): Promise<string[]>;

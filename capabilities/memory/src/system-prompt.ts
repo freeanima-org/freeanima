@@ -3,13 +3,14 @@ import { join } from "node:path";
 import { RESIDENT_TOP_N } from "@freeanima/core/repos";
 
 import { getSemanticMemoryStore } from "./semantic-port.ts";
-import { formatResidentMemoryLine, MEMORY_REFERENCE_CITATION_RULE } from "./memory-reference.ts";
+import { formatResidentMemoryLine } from "./memory-reference.ts";
 
 const MAX_AGENTS_CHARS = 8000;
 const PROMPT_CODE_FENCE_LANG = "md";
 
 /** Outer second-person frame for the resident-memory system prompt segment */
-export const RESIDENT_MEMORY_SYSTEM_FRAME = `Below is your resident memory. These facts and conventions must always travel with you; follow and apply them consciously in conversation.\n${MEMORY_REFERENCE_CITATION_RULE}`;
+export const RESIDENT_MEMORY_SYSTEM_FRAME =
+  "Below is your resident memory. These facts and conventions must always travel with you; follow and apply them consciously in conversation.";
 
 function wrapPromptSection(heading: string, inner: string, frame?: string): string {
   const body = inner.trim();

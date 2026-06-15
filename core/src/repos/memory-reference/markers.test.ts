@@ -10,26 +10,27 @@ import {
 
 describe("memory-reference markers", () => {
   it("formatMemoryReferenceMarker produces fixed format", () => {
-    expect(formatMemoryReferenceMarker("f-000001-abcd")).toBe("[memory #f-000001-abcd]");
+    expect(formatMemoryReferenceMarker("f-000001-abcd")).toBe("[[f-000001-abcd]]");
   });
 
   it("formatResidentMemoryLine includes ID and pin marker", () => {
     expect(formatResidentMemoryLine("content", "f-000001-abcd", true)).toBe(
-      "- 📌 [memory #f-000001-abcd] content",
+      "- 📌 [[f-000001-abcd]] content",
     );
     expect(formatResidentMemoryLine("content", "f-000002-ef01", false)).toBe(
-      "- [memory #f-000002-ef01] content",
+      "- [[f-000002-ef01]] content",
     );
   });
 
   it("parseMemoryReferenceMarkers parses and dedupes", () => {
-    const text =
-      "See [memory #f-000001-abcd] and [memory #F-000002-EF01]; duplicate [memory #f-000001-abcd]";
+    const text = "See [[f-000001-abcd]] and [[F-000002-EF01]]; duplicate [[f-000001-abcd]]";
     expect(parseMemoryReferenceMarkers(text)).toEqual(["f-000001-abcd", "f-000002-ef01"]);
   });
 
-  it("parseMemoryReferenceMarkers ignores invalid markers", () => {
-    expect(parseMemoryReferenceMarkers("[memory #invalid] body")).toEqual([]);
+  it("parseMemoryReferenceMarkers ignores non-bracket markers", () => {
+    expect(parseMemoryReferenceMarkers("[memory #f-000001-abcd] body")).toEqual([]);
+    expect(parseMemoryReferenceMarkers("[记忆 #f-000001-abcd] body")).toEqual([]);
+    expect(parseMemoryReferenceMarkers("[[invalid]] body")).toEqual([]);
     expect(parseMemoryReferenceMarkers("no markers")).toEqual([]);
   });
 

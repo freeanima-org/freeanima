@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-12 11:56+0800\n"
+"POT-Creation-Date: 2026-06-15 11:23+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,13 +23,15 @@ msgstr ""
 #: docs/concepts/identity.md:45 docs/concepts/identity.md:55
 #: docs/concepts/memory.md:1 docs/concepts/memory.md:17
 #: docs/concepts/memory.md:53 docs/concepts/memory.md:122
-#: docs/concepts/memory.md:133 docs/concepts/memory.md:150
+#: docs/concepts/memory.md:133 docs/concepts/memory.md:154
 #: docs/concepts/recall-flow.md:1 docs/concepts/self-layer.md:1
 #: docs/concepts/self-layer.md:30 docs/concepts/self-layer.md:52
 #: docs/concepts/self-layer.md:66 docs/concepts/self-layer.md:80
 #: docs/concepts/self-layer.md:91 docs/concepts/sleep.md:1
 #: docs/concepts/time-perception.md:1 docs/features/pair-programming-v1.md:1
-#: docs/guide/database.md:1 docs/guide/security.md:1
+#: docs/guide/database.md:1 docs/guide/install.md:1 docs/guide/install.md:31
+#: docs/guide/install.md:106 docs/guide/install.md:167
+#: docs/guide/install.md:234 docs/guide/security.md:1 docs/guide/service.md:1
 #: docs/tools/execute-code-runtimes.md:1
 #, no-wrap
 msgid "---\n"
@@ -374,9 +376,9 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/architecture.md:131
 msgid ""
-"Pipeline: nightly light/deep sleep crons extract and maintain memory; "
-"`memory_recall` retrieves on demand during chat. Details: [`memory.md`]"
-"(memory.md), [`sleep.md`](sleep.md)."
+"Pipeline: nightly **sleep-cycle** pipeline (`builtin-sleep-cycle` cron) "
+"extracts and maintains memory; `memory_recall` retrieves on demand during "
+"chat. Details: [`memory.md`](memory.md), [`sleep.md`](sleep.md)."
 msgstr ""
 
 #. type: Plain text
@@ -638,33 +640,44 @@ msgid "## Events and Hooks (Summary)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:235
+#: docs/concepts/architecture.md:236
 msgid ""
-"**EventBus**: async notifications — after messages persist, triggers light/"
-"deep sleep pipelines without blocking chat"
+"**EventBus**: async notification transport (Redis queue); production code "
+"currently emits topics such as `session:updated` with **no registered "
+"handlers** — ACP callbacks use direct `onSessionUpdated` instead. **Not** "
+"used for sleep orchestration."
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:235
+#: docs/concepts/architecture.md:236
+msgid ""
+"**Pipeline Runner**: explicit DAG for background cycles (sleep-cycle: light "
+"→ deep → cross-domain maintenance steps). State in `~/.anima/runtime/"
+"pipeline_*_run.json`; Chamber API for diagnostics."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/architecture.md:236
 msgid ""
 "**Hooks**: sync interceptors — validation or clarification at message "
 "ingress, turn end, tool return, etc."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:237
+#: docs/concepts/architecture.md:238
 msgid ""
-"Complementary: EventBus handles \"what to do after\"; Hooks handle \"may "
-"this proceed before/during\"."
+"Complementary: Pipeline Runner handles scheduled multi-step background work; "
+"Hooks handle \"may this proceed before/during\"; EventBus remains available "
+"for future cross-process fan-out but is not on the sleep path."
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:239
+#: docs/concepts/architecture.md:240
 msgid "## Direction"
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:241
+#: docs/concepts/architecture.md:242
 msgid ""
 "Capability vision and discussions: [GitHub Issues](https://github.com/"
 "freeanima-org/freeanima/issues) (labels `enhancement`, `discussion`, "
@@ -672,21 +685,21 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/concepts/architecture.md:243
+#: docs/concepts/architecture.md:244
 msgid "## Constraints"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:246
+#: docs/concepts/architecture.md:247
 msgid "Principles and structure live here; no concrete task lists"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:246
+#: docs/concepts/architecture.md:247
 msgid "Fast-changing behavior follows the running service, not stale prose"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/concepts/architecture.md:246
+#: docs/concepts/architecture.md:247
 msgid "Actionable work goes in GitHub Issues; close when done"
 msgstr ""
