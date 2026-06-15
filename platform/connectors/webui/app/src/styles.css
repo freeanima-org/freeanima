@@ -45,10 +45,6 @@
   opacity: 0.85;
 }
 
-/* 创作室专注模式：隐藏 AppShell 顶栏 */
-html.studio-chromeless .app-header {
-  display: none;
-}
 #message-area {
   scroll-behavior: smooth;
 }

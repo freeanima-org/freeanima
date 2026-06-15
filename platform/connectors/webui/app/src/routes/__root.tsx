@@ -10,13 +10,17 @@ function RootComponent() {
   return <AppShell />;
 }
 
-type AppMode = "parlor" | "chamber" | "studio";
+type AppMode = "parlor" | "chamber";
 
 function resolveMode(pathname: string): AppMode {
   if (pathname.startsWith("/chamber") || pathname.startsWith("/workshop")) return "chamber";
-  if (pathname.startsWith("/studio")) return "studio";
   return "parlor";
 }
+
+const PAIR_PROGRAMMING_URL =
+  typeof localStorage !== "undefined"
+    ? (localStorage.getItem("pair-programming-url") ?? "http://127.0.0.1:4173")
+    : "http://127.0.0.1:4173";
 
 function AppShell() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -32,10 +36,11 @@ function AppShell() {
       if (!pathname.startsWith("/chamber") && !pathname.startsWith("/workshop")) {
         navigate({ to: "/chamber/dashboard" });
       }
-    } else if (!pathname.startsWith("/studio")) {
-      window.location.href =
-        localStorage.getItem("pair-programming-url") ?? "http://127.0.0.1:4173";
     }
+  };
+
+  const openStudio = () => {
+    window.location.href = PAIR_PROGRAMMING_URL;
   };
 
   const toggleLocale = () => {
@@ -68,9 +73,9 @@ function AppShell() {
           </button>
           <button
             type="button"
-            className={`btn btn-xs flex-1 sm:flex-none min-w-0 ${mode === "studio" ? "btn-primary" : "btn-ghost"}`}
+            className="btn btn-xs flex-1 sm:flex-none min-w-0 btn-ghost"
             title={m.webui_mode_studio()}
-            onClick={() => switchMode("studio")}
+            onClick={openStudio}
           >
             {m.webui_mode_studio()}
           </button>
