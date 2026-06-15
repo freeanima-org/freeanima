@@ -22,22 +22,6 @@ export function getDeepSleepRounds(day: string) {
   return webuiCtx().getDeepSleepRounds(day);
 }
 
-export async function startSleepBackfill(body?: { from?: string; to?: string; resume?: boolean }) {
-  const result = await webuiCtx().startLightSleepBackfill({
-    fromDay: body?.from,
-    toDay: body?.to,
-    resume: body?.resume,
-  });
-  if (!result.ok) {
-    throw new ApiHandlerError(503, result.error, { code: "sleep_backfill_busy" });
-  }
-  return result;
-}
-
-export function getSleepBackfillStatus() {
-  return webuiCtx().getLightSleepBackfillStatus();
-}
-
 export function getSleepPipelineStatus() {
   return webuiCtx().getSleepPipelineStatus();
 }

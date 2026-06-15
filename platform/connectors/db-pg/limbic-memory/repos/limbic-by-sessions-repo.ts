@@ -1,4 +1,5 @@
-import { sql as drizzleSql } from "drizzle-orm";
+import { and, desc, gt, inArray } from "drizzle-orm";
+import { limbicMemory } from "@freeanima/core/db/schema";
 import type { LimbicListBySessionsOpts, LimbicMemoryRow } from "@freeanima/core/repos";
 
 import { getDb } from "../../client.ts";
@@ -16,23 +17,12 @@ export async function listLimbicMemoryBySessions(
   const orderByIntensity = opts?.orderBy === "intensity_desc";
 
   const db = getDb();
-  const rows = await db.execute<LimbicMemoryDbRow>(drizzleSql`
-    SELECT
-      id,
-      session_id,
-      kind,
-      valence,
-      arousal,
-      content,
-      intensity,
-      source_segment,
-      semantic_memory_ids,
-      created_at
-    FROM limbic_memory
-    WHERE session_id = ANY(${ids}::text[])
-      AND intensity > ${minIntensity}
-    ORDER BY ${orderByIntensity ? drizzleSql`intensity DESC` : drizzleSql`created_at DESC`}
-    LIMIT ${limit}
-  `);
-  return rows.map(mapLimbicMemoryRow);
+  const rows = await db
+    .select()
+    .from(limbicMemory)
+    .where(and(inArray(limbicMemory.sessionId, ids), gt(limbicMemory.intensity, minIntensity)))
+    .orderBy(orderByIntensity ? desc(limbicMemory.intensity) : desc(limbicMemory.createdAt))
+    .limit(limit);
+
+  return rows.map((row) => mapLimbicMemoryRow(row as LimbicMemoryDbRow));
 }

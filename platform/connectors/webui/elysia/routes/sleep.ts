@@ -1,12 +1,10 @@
 import { Elysia, t } from "elysia";
 import {
   getDeepSleepRounds,
-  getSleepBackfillStatus,
   getSleepPipelineStatus,
   getSleepSummary,
   listCronLogs,
   listSleepRuns,
-  startSleepBackfill,
   startSleepCycle,
   startSleepPipelineStep,
 } from "../../handlers/sleep.ts";
@@ -32,23 +30,6 @@ export const sleepRoutes = new Elysia({ prefix: "/sleep" })
   .get("/deep-sleep/:day/rounds", ({ params }) => getDeepSleepRounds(params.day), {
     params: t.Object({ day: t.String() }),
   })
-  .post(
-    "/backfill",
-    ({ body }) =>
-      startSleepBackfill({
-        from: body.from,
-        to: body.to,
-        resume: body.resume,
-      }),
-    {
-      body: t.Object({
-        from: t.Optional(t.String()),
-        to: t.Optional(t.String()),
-        resume: t.Optional(t.Boolean()),
-      }),
-    },
-  )
-  .get("/backfill/status", () => getSleepBackfillStatus())
   .get("/pipeline/status", () => getSleepPipelineStatus())
   .post("/pipeline/run", ({ body }) => startSleepCycle({ day: body.day }), {
     body: t.Object({
