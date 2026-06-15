@@ -7,7 +7,6 @@ import { SessionPanel } from "@/components/studio/SessionPanel.tsx";
 import { useMediaQuery } from "@/hooks/useMediaQuery.ts";
 import { usePairProgrammingStore } from "@/stores/pair-programming.ts";
 import { m } from "@/lib/i18n.ts";
-import { patchStudioConfig } from "@/lib/api.ts";
 
 export const Route = createFileRoute("/studio/pair-programming")({
   component: PairProgrammingPage,
@@ -37,6 +36,7 @@ function PairProgrammingPage() {
 
   useEffect(() => {
     void (async () => {
+      await store.initSatellite();
       await store.fetchConfig();
       const sessions = await store.fetchSessions();
       if (sessions.length && !usePairProgrammingStore.getState().currentSessionId) {
@@ -56,9 +56,7 @@ function PairProgrammingPage() {
   const saveWorkspace = async () => {
     const ws = workspaceInput.trim();
     if (!ws) return;
-    await patchStudioConfig({ workspace: ws });
-    await store.fetchConfig();
-    await store.fetchTree();
+    await store.saveWorkspace(ws);
   };
 
   const startResize = (edge: "left" | "right" | "bottom", evt: React.MouseEvent) => {

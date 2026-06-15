@@ -143,14 +143,12 @@ export class SatelliteManager {
       });
     }
 
-    instances.sort(
-      (a, b) => a.app_id.localeCompare(b.app_id) || a.instance_id.localeCompare(b.instance_id),
-    );
-
     return {
       instance_count: instances.length,
       tool_count: toolCount,
-      instances,
+      instances: instances.toSorted(
+        (a, b) => a.app_id.localeCompare(b.app_id) || a.instance_id.localeCompare(b.instance_id),
+      ),
     };
   }
 

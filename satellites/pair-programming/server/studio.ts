@@ -51,7 +51,7 @@ export function buildFileTree(): { tree: TreeNode[]; workspace: string } {
   const walk = (dir: string): TreeNode[] => {
     const entries = readdirSync(dir, { withFileTypes: true })
       .filter((e) => config.showHidden || !e.name.startsWith("."))
-      .sort((a, b) => a.name.localeCompare(b.name));
+      .toSorted((a, b) => a.name.localeCompare(b.name));
     const nodes: TreeNode[] = [];
     for (const ent of entries) {
       const full = join(dir, ent.name);

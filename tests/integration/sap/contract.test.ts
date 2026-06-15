@@ -2,6 +2,7 @@ import { describe, expect, it } from "bun:test";
 import {
   connectPayloadSchema,
   formatSapToolName,
+  mapSapStreamMethodToApi,
   messageSendInputSchema,
   parseSapEnvelope,
   serializeSapEnvelope,
@@ -48,5 +49,13 @@ describe("sap-contract envelopes", () => {
     expect(
       formatSapToolName("pair-programming", "550e8400-e29b-41d4-a716-446655440000", "scan_code"),
     ).toBe("sap_pairprogramming_550e8400e29b41d4a716446655440000_scan_code");
+  });
+
+  it("maps sap stream events to webui sse shape", () => {
+    const token = mapSapStreamMethodToApi("stream.token", {
+      stream_id: "s1",
+      content: "hi",
+    });
+    expect(token).toEqual({ event: "token", data: { content: "hi" } });
   });
 });
