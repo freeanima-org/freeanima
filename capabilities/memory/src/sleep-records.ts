@@ -24,8 +24,24 @@ const roundLogSchema = z.object({
 
 const SLEEP_CYCLE_JOB_ID = "builtin-sleep-cycle" as const;
 
-/** @deprecated 使用 SLEEP_CYCLE_JOB_ID；保留以兼容旧引用 */
-const SLEEP_JOB_IDS = [SLEEP_CYCLE_JOB_ID] as const;
+export const SLEEP_STEP_JOB_PREFIX = "sleep-step:" as const;
+
+const SLEEP_STEP_IDS = [
+  "light-sleep",
+  "deep-sleep",
+  "dream",
+  "memory-ref-sync",
+  "self-layer-refresh",
+] as const;
+
+export function sleepStepJobId(stepId: string): string {
+  return `${SLEEP_STEP_JOB_PREFIX}${stepId}`;
+}
+
+const SLEEP_JOB_IDS = [
+  SLEEP_CYCLE_JOB_ID,
+  ...SLEEP_STEP_IDS.map((id) => sleepStepJobId(id)),
+] as const;
 
 export type SleepSummary = {
   light_sleep: LightSleepState;

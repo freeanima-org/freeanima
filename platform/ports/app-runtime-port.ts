@@ -83,20 +83,6 @@ export type AppRuntimePort = {
     ok?: boolean;
   }): Promise<any>;
   getDeepSleepRounds(day: string): { day: string; rounds: unknown[] };
-  startLightSleepBackfill(opts?: {
-    fromDay?: string;
-    toDay?: string;
-    resume?: boolean;
-  }): Promise<{ ok: true; started: true } | { ok: false; error: string }>;
-  getLightSleepBackfillStatus(): {
-    running: boolean;
-    from_day?: string;
-    to_day?: string;
-    completed_days: string[];
-    last_error_day?: string | null;
-    updated_at?: string;
-    last_result?: unknown;
-  };
   getSleepPipelineStatus(): any;
   startSleepCycle(opts?: {
     day?: string;

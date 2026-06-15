@@ -1,18 +1,18 @@
 import type { CronLogListOpts, CronLogRow } from "@freeanima/core/repos";
+import { formatCstIso } from "@freeanima/core/util";
 import {
   buildSleepSummary,
   listDeepSleepRoundLogs,
-  readLightSleepBackfillState,
-  runLightSleepBackfill,
+  SLEEP_CYCLE_JOB_ID,
   SLEEP_JOB_IDS,
-  type LightSleepBackfillResult,
+  sleepStepJobId,
   type SleepSummary,
 } from "@freeanima/capabilities-memory";
-import { loadSelfLayerPrompt } from "@freeanima/capabilities-identity";
 import type { PipelineRunState } from "@freeanima/runtime/pipeline";
 
 import {
   getSleepPipelineStatus as readSleepPipelineStatus,
+  resolveSleepCycleDay,
   runSleepCycle,
   runSleepStep,
 } from "../boot/pipeline-handlers.ts";
@@ -20,69 +20,63 @@ import { sleepCycleDefinition, SLEEP_CYCLE_PIPELINE_ID } from "../boot/sleep-cyc
 import type { RuntimeDeps } from "./runtime-deps.ts";
 import { listCronJobs } from "./service-status.ts";
 
-let backfillRunning = false;
-let lastBackfillResult: LightSleepBackfillResult | null = null;
 let sleepCycleRunning = false;
 let lastSleepCycleResult: Awaited<ReturnType<typeof runSleepCycle>> | null = null;
 let sleepStepRunning = false;
 
-export type LightSleepBackfillStatus = {
-  running: boolean;
-  from_day?: string;
-  to_day?: string;
-  completed_days: string[];
-  last_error_day?: string | null;
-  updated_at?: string;
-  last_result?: LightSleepBackfillResult | null;
-};
-
-export async function startLightSleepBackfill(
+async function appendSleepRunLog(
   deps: RuntimeDeps,
-  opts?: {
-    fromDay?: string;
-    toDay?: string;
-    resume?: boolean;
+  input: {
+    job_id: string;
+    ok: boolean;
+    output?: Record<string, unknown>;
+    error?: string;
   },
-): Promise<{ ok: true; started: true } | { ok: false; error: string }> {
-  if (backfillRunning) {
-    return { ok: false, error: "light sleep backfill already running" };
-  }
+): Promise<void> {
+  if (!deps.engine.repos.pgAvailable) return;
 
-  backfillRunning = true;
-  lastBackfillResult = null;
-
-  void (async () => {
-    try {
-      const selfContent = await loadSelfLayerPrompt();
-      lastBackfillResult = await runLightSleepBackfill({
-        sessionStore: deps.engine.repos.session,
-        semanticStore: deps.engine.repos.semanticMemory,
-        autoStore: deps.engine.repos.autobiographicalMemory,
-        selfStore: deps.engine.repos.selfLayer,
-        selfContent,
-        fromDay: opts?.fromDay,
-        toDay: opts?.toDay,
-        resume: Boolean(opts?.resume),
-      });
-    } finally {
-      backfillRunning = false;
-    }
-  })();
-
-  return { ok: true, started: true };
+  await deps.engine.repos.cronLog.append({
+    job_id: input.job_id,
+    run_count: 0,
+    ok: input.ok,
+    finished_at: formatCstIso(),
+    output: input.ok ? (input.output ?? null) : null,
+    error: input.ok ? null : (input.error ?? "sleep run failed"),
+  });
 }
 
-export function getLightSleepBackfillStatus(): LightSleepBackfillStatus {
-  const state = readLightSleepBackfillState();
+function cycleLogOutput(
+  result: Awaited<ReturnType<typeof runSleepCycle>>,
+): Record<string, unknown> {
   return {
-    running: backfillRunning,
-    from_day: state.from_day,
-    to_day: state.to_day,
-    completed_days: state.completed_days,
-    last_error_day: state.last_error_day ?? null,
-    updated_at: state.updated_at,
-    last_result: lastBackfillResult,
+    source: "manual",
+    day: result.day,
+    status: result.status,
+    steps: Object.fromEntries(
+      Object.entries(result.steps).map(([id, s]) => [
+        id,
+        { status: s.status, error: s.error, skipped_reason: s.skipped_reason },
+      ]),
+    ),
   };
+}
+
+function stepLogOutput(
+  stepId: string,
+  day: string,
+  result: Awaited<ReturnType<typeof runSleepStep>>,
+): Record<string, unknown> {
+  const base: Record<string, unknown> = {
+    source: "manual",
+    step_id: stepId,
+    day,
+    status: result.status,
+  };
+  if (result.output && typeof result.output === "object" && !Array.isArray(result.output)) {
+    Object.assign(base, result.output as Record<string, unknown>);
+  }
+  if (result.skipped_reason) base.skipped_reason = result.skipped_reason;
+  return base;
 }
 
 export async function getSleepSummary(): Promise<SleepSummary> {
@@ -162,14 +156,12 @@ export function getSleepPipelineStatus(): SleepPipelineStatus {
   };
 }
 
-export async function startSleepCycle(opts?: {
-  day?: string;
-}): Promise<{ ok: true; started: true } | { ok: false; error: string }> {
+export async function startSleepCycle(
+  deps: RuntimeDeps,
+  opts?: { day?: string },
+): Promise<{ ok: true; started: true } | { ok: false; error: string }> {
   if (sleepCycleRunning || sleepStepRunning) {
     return { ok: false, error: "sleep pipeline already running" };
-  }
-  if (backfillRunning) {
-    return { ok: false, error: "light sleep backfill already running" };
   }
 
   sleepCycleRunning = true;
@@ -178,6 +170,12 @@ export async function startSleepCycle(opts?: {
   void (async () => {
     try {
       lastSleepCycleResult = await runSleepCycle(opts?.day);
+      await appendSleepRunLog(deps, {
+        job_id: SLEEP_CYCLE_JOB_ID,
+        ok: lastSleepCycleResult.ok,
+        output: cycleLogOutput(lastSleepCycleResult),
+        error: lastSleepCycleResult.ok ? undefined : lastSleepCycleResult.status,
+      });
     } finally {
       sleepCycleRunning = false;
     }
@@ -186,11 +184,14 @@ export async function startSleepCycle(opts?: {
   return { ok: true, started: true };
 }
 
-export async function startSleepPipelineStep(opts: {
-  stepId: string;
-  day?: string;
-  force?: boolean;
-}): Promise<
+export async function startSleepPipelineStep(
+  deps: RuntimeDeps,
+  opts: {
+    stepId: string;
+    day?: string;
+    force?: boolean;
+  },
+): Promise<
   { ok: true; result: Awaited<ReturnType<typeof runSleepStep>> } | { ok: false; error: string }
 > {
   if (sleepCycleRunning || sleepStepRunning) {
@@ -202,11 +203,19 @@ export async function startSleepPipelineStep(opts: {
     return { ok: false, error: `unknown sleep step: ${opts.stepId}` };
   }
 
+  const resolvedDay = resolveSleepCycleDay(opts.day);
+
   sleepStepRunning = true;
   try {
     const result = await runSleepStep(opts.stepId, {
       day: opts.day,
       force: opts.force,
+    });
+    await appendSleepRunLog(deps, {
+      job_id: sleepStepJobId(opts.stepId),
+      ok: result.ok,
+      output: stepLogOutput(opts.stepId, resolvedDay, result),
+      error: result.error ?? result.dependency_error,
     });
     return { ok: true, result };
   } finally {

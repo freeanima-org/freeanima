@@ -106,27 +106,14 @@ After downtime, the next scheduled run catches up.
 
 **Compression** stays session-scoped (turn-time `advanceCompressionMeta`); it is **not** a sleep-cycle step. Nightly consolidation does not replace per-session compression.
 
-## Historical Backfill (Chamber WebUI)
+## Historical Day (Chamber WebUI)
 
-For historical conversations before go-live or after migration, use **Chamber → Sleep records** (`/webui/chamber/sleep`):
+For a single past CST calendar day (e.g. before go-live or after migration), use **Chamber → Sleep** (`/webui/chamber/sleep`):
 
-1. Open the **Historical light sleep backfill** card
-2. Optionally set **From** / **To** (CST calendar days, `YYYY-MM-DD`); defaults match the 02:00 cron (earliest session → yesterday)
-3. Check **Resume from saved progress** to continue from `~/.anima/runtime/light_sleep_backfill_state.json`
-4. Click **Start backfill**; progress polls automatically while running
+1. Set **Day** to `YYYY-MM-DD`
+2. Run the **light-sleep** step (check **Force** to skip dependency checks if needed)
 
-| Field      | Description                                                          |
-| ---------- | -------------------------------------------------------------------- |
-| **From**   | Start date; if omitted, earliest session day in archive              |
-| **To**     | End date; if omitted, **yesterday** (same as 02:00 cron default day) |
-| **Resume** | Continue from progress file, skip completed days                     |
-
-**Behavior notes:**
-
-- Each day independently processed; single-day failure recorded then continue
-- Autobiography summary refresh runs on **last day** by default
-- Backfill writes semantic / limbic / autobiographical; **cross-session merge still relies on deep sleep**
-- No conflict with 02:00 cron, but pause service during early-morning backfill if possible
+Each run is logged in the run history table. Cross-session merge for that day still relies on a subsequent **deep-sleep** run.
 
 ## Relationship to Existing Architecture
 
