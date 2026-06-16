@@ -1,7 +1,7 @@
 import type { FullRuntimeDeps } from "./runtime/runtime-deps.ts";
 import { registerLlmStackConfigurator } from "@freeanima/core/llm";
 import { registerSystemPromptHookRunner } from "@freeanima/core/hooks/prompt";
-import { rebuildSessionSystemPrompt } from "@freeanima/runtime/conversation";
+import { rebuildSessionCache } from "@freeanima/runtime/conversation";
 import { registerSessionToolMaskFilter } from "@freeanima/core/tool";
 import { registerCompressionSummaryPostCut } from "@freeanima/core/compress";
 import { wireOpenAiCompatibleLlm } from "@freeanima/capabilities-llm-openai";
@@ -26,7 +26,10 @@ export function wireEnginePorts(): void {
     return filterToolNamesByMask(toolNames, resolved);
   });
 
-  registerCompressionSummaryPostCut(rebuildSessionSystemPrompt);
+  registerCompressionSummaryPostCut(async (repos, session) => {
+    const { engine } = getAppRuntime();
+    await rebuildSessionCache(repos, engine.catalog.toolSets, session);
+  });
 }
 
 /** Late wire after AppRuntime exists; hooks above call getAppRuntime at runtime */

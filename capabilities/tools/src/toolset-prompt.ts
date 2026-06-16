@@ -3,7 +3,7 @@ import type { ToolSetRegistry } from "@freeanima/core/tool";
 const PROMPT_CODE_FENCE_LANG = "md";
 
 const TOOLSETS_FRAME =
-  "Registered ToolSets are listed below. Use tools_list (optional toolset / keyword filters) for concrete tool names, then tools_load for full schema.";
+  "Built-in and connected ToolSets are listed below. Load any set with toolsets_load. For dynamically registered tools (MCP/ACP/SAP) whose names you don't know, use toolsets_search first to find the ToolSet, then load it.";
 
 function wrapPromptSection(heading: string, inner: string, frame?: string): string {
   const body = inner.trim();
@@ -16,6 +16,6 @@ function wrapPromptSection(heading: string, inner: string, frame?: string): stri
 export function renderToolsetsSection(registry: ToolSetRegistry): string {
   const sets = registry.listToolSets().toSorted((a, b) => a.name.localeCompare(b.name));
   if (!sets.length) return "";
-  const lines = sets.map((ts) => `### ${ts.name}\n${ts.description.trim() || "(no description)"}`);
-  return wrapPromptSection("ToolSets", lines.join("\n\n"), TOOLSETS_FRAME);
+  const lines = sets.map((ts) => `- ${ts.name} — ${ts.description.trim() || "(no description)"}`);
+  return wrapPromptSection("ToolSets", lines.join("\n"), TOOLSETS_FRAME);
 }

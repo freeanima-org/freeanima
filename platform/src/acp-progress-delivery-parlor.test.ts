@@ -12,7 +12,7 @@ describe("createAcpProgressDelivery parlor progress", () => {
       loadSessionMeta: async () => ({
         role: "session_meta" as const,
         model: "test",
-        tools: [],
+        cached_toolsets: [],
         functions: [],
         timestamp: "",
         platform: "parlor",

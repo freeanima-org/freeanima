@@ -22,7 +22,7 @@ describe("createAcpProgressDelivery external progress", () => {
       loadSessionMeta: async () => ({
         role: "session_meta" as const,
         model: "test",
-        tools: [],
+        cached_toolsets: [],
         functions: [],
         timestamp: "",
         platform: "discord",
@@ -62,7 +62,7 @@ describe("createAcpProgressDelivery external progress", () => {
       loadSessionMeta: async () => ({
         role: "session_meta" as const,
         model: "test",
-        tools: [],
+        cached_toolsets: [],
         functions: [],
         timestamp: "",
         platform: "weixin",
@@ -98,7 +98,7 @@ describe("createAcpProgressDelivery external progress", () => {
       loadSessionMeta: async () => ({
         role: "session_meta" as const,
         model: "test",
-        tools: [],
+        cached_toolsets: [],
         functions: [],
         timestamp: "",
         platform: "weixin",

@@ -1,4 +1,5 @@
 import type { ToolSetRegistry } from "@freeanima/core/tool";
+import { stripCachedToolsetLoadRounds } from "@freeanima/core/tool";
 import { getActiveConfig, getProfileHopModel } from "@freeanima/core/config";
 import { PROFILE_CHAT } from "@freeanima/core/provider";
 import {
@@ -75,6 +76,10 @@ function buildRuntimeMessagesFrom(
       buildCompressOptions(meta, state, defaultChatModel(), { tools }),
     );
     runtimeMsgs = compressed;
+  }
+
+  if (isSessionMeta(meta)) {
+    runtimeMsgs = stripCachedToolsetLoadRounds(runtimeMsgs, meta.cached_toolsets ?? []);
   }
 
   runtimeMsgs = runtimeMsgs.filter((m) => m.role !== "system");

@@ -1,13 +1,13 @@
 import type { PgRepositories } from "@freeanima/core/repos";
 import type { SessionMetaMessage } from "@freeanima/core/db/domain";
 import { applySessionToolMaskFilter } from "./mask-port.ts";
-import { expandToolNames } from "./expand.ts";
 import { formatToolsForToolMessage } from "./catalog.ts";
-import { resolveDefaultSessionTools } from "./default-session-tools.ts";
+import { resolveDefaultSessionToolsets } from "./default-session-toolsets.ts";
+import { mergeToolsetNames, resolveToolsetNames, toolNamesForToolsets } from "./toolset-meta.ts";
 import type { ToolCatalogMessageEntry } from "./catalog.ts";
 import type { ToolSetRegistry } from "./toolset.ts";
 
-export type LoadToolsIntoSessionResult = {
+export type LoadToolsetsIntoSessionResult = {
   loaded: string[];
   denied: string[];
   already_loaded: string[];
@@ -19,71 +19,92 @@ export function mergeSessionToolNames(
   current: readonly string[],
   toAdd: readonly string[],
 ): string[] {
-  const seen = new Set(current);
-  const out = [...current];
-  for (const name of toAdd) {
-    if (seen.has(name)) continue;
-    seen.add(name);
-    out.push(name);
-  }
-  return out;
+  return mergeToolsetNames(current, toAdd);
 }
 
-export function resolveExecutableToolNames(meta: SessionMetaMessage): string[] {
-  const loaded = meta.loaded_tools ?? [];
-  return [...new Set([...meta.tools, ...loaded])];
+export function resolveExecutableToolNames(
+  meta: SessionMetaMessage,
+  registry: ToolSetRegistry,
+): string[] {
+  const cached = resolveToolsetNames(registry, meta.cached_toolsets ?? []);
+  const staged = resolveToolsetNames(registry, meta.staged_toolsets ?? []);
+  return toolNamesForToolsets(registry, [...cached, ...staged]);
 }
 
-export async function loadToolsIntoSession(
+export async function loadToolsetsIntoSession(
   repos: PgRepositories,
   registry: ToolSetRegistry,
   sessionId: string,
-  names: string[],
+  toolsetNames: string[],
   meta: SessionMetaMessage,
-): Promise<LoadToolsIntoSessionResult> {
-  const expanded = expandToolNames(registry, names);
+): Promise<LoadToolsetsIntoSessionResult> {
   const unknown: string[] = [];
   const known: string[] = [];
-  for (const name of expanded) {
-    if (registry.getTool(name)) {
+  for (const name of toolsetNames.map((n) => n.trim()).filter(Boolean)) {
+    if (registry.getToolSet(name)) {
       known.push(name);
     } else {
       unknown.push(name);
     }
   }
 
-  const allowed = applySessionToolMaskFilter(known, meta);
+  const allowed = known.filter((name) => {
+    const toolNames = toolNamesForToolsets(registry, [name]);
+    const filtered = applySessionToolMaskFilter(toolNames, meta);
+    return filtered.length > 0;
+  });
   const denied = known.filter((name) => !allowed.includes(name));
 
-  const currentLoaded = meta.loaded_tools ?? [];
-  const already_loaded = allowed.filter((name) => currentLoaded.includes(name));
-  const toLoad = allowed.filter((name) => !currentLoaded.includes(name));
-  const nextLoaded = mergeSessionToolNames(currentLoaded, toLoad);
+  const currentStaged = resolveToolsetNames(registry, meta.staged_toolsets ?? []);
+  const already_loaded = allowed.filter((name) => currentStaged.includes(name));
+  const toLoad = allowed.filter((name) => !currentStaged.includes(name));
+  const nextStaged = mergeToolsetNames(currentStaged, toLoad);
 
   if (toLoad.length > 0 && repos.pgAvailable) {
-    await repos.session.patchSessionMeta(sessionId, { loaded_tools: nextLoaded });
+    await repos.session.patchSessionMeta(sessionId, { staged_toolsets: nextStaged });
   }
 
+  const expandedNames = toolNamesForToolsets(registry, [...toLoad, ...already_loaded]);
   return {
     loaded: toLoad,
     denied,
     already_loaded,
     unknown,
-    tools: formatToolsForToolMessage(registry, [...toLoad, ...already_loaded]),
+    tools: formatToolsForToolMessage(registry, expandedNames),
   };
 }
 
+/** @deprecated use loadToolsetsIntoSession */
+export async function loadToolsIntoSession(
+  repos: PgRepositories,
+  registry: ToolSetRegistry,
+  sessionId: string,
+  names: string[],
+  meta: SessionMetaMessage,
+): Promise<LoadToolsetsIntoSessionResult> {
+  return loadToolsetsIntoSession(repos, registry, sessionId, names, meta);
+}
+
+export async function resetSessionToolsetsToDefault(
+  repos: PgRepositories,
+  registry: ToolSetRegistry,
+  sessionId: string,
+): Promise<number> {
+  const names = resolveDefaultSessionToolsets(registry);
+  if (repos.pgAvailable) {
+    await repos.session.patchSessionMeta(sessionId, {
+      cached_toolsets: names,
+      staged_toolsets: [],
+    });
+  }
+  return names.length;
+}
+
+/** @deprecated use resetSessionToolsetsToDefault */
 export async function resetSessionToolsToDefault(
   repos: PgRepositories,
   registry: ToolSetRegistry,
   sessionId: string,
 ): Promise<number> {
-  const names = resolveDefaultSessionTools(registry);
-  if (repos.pgAvailable) {
-    await repos.session.patchSessionMeta(sessionId, {
-      tools: names,
-      loaded_tools: [],
-    });
-  }
-  return names.length;
+  return resetSessionToolsetsToDefault(repos, registry, sessionId);
 }

@@ -105,7 +105,7 @@ export type AcpTaskStatusJson = z.infer<typeof acpTaskStatusSchema>;
 export type AcpTaskEntryJson = z.infer<typeof acpTaskEntrySchema>;
 export type AcpTasksJson = z.infer<typeof acpTasksSchema>;
 
-/** Legacy sessions.tools stored OpenAI tool schema; normalize to tool names on read */
+/** Legacy sessions.tools stored OpenAI tool schema; normalize to names on read */
 export function normalizeSessionToolNames(raw: unknown): string[] {
   if (!Array.isArray(raw)) return [];
   const names: string[] = [];
@@ -125,16 +125,27 @@ export function normalizeSessionToolNames(raw: unknown): string[] {
   return names;
 }
 
-/** sessions.tools */
-export const sessionToolsSchema = z.preprocess(normalizeSessionToolNames, z.array(z.string()));
-export type SessionToolsJson = z.infer<typeof sessionToolsSchema>;
-
-/** sessions.loaded_tools — tools_load accumulated execution allowlist */
-export const sessionLoadedToolsSchema = z.preprocess(
+/** sessions.cached_toolsets — ToolSet names in LLM API tools */
+export const sessionCachedToolsetsSchema = z.preprocess(
   normalizeSessionToolNames,
   z.array(z.string()),
 );
-export type SessionLoadedToolsJson = z.infer<typeof sessionLoadedToolsSchema>;
+export type SessionCachedToolsetsJson = z.infer<typeof sessionCachedToolsetsSchema>;
+
+/** sessions.staged_toolsets — toolsets_load pending promote */
+export const sessionStagedToolsetsSchema = z.preprocess(
+  normalizeSessionToolNames,
+  z.array(z.string()),
+);
+export type SessionStagedToolsetsJson = z.infer<typeof sessionStagedToolsetsSchema>;
+
+/** @deprecated use sessionCachedToolsetsSchema */
+export const sessionToolsSchema = sessionCachedToolsetsSchema;
+export type SessionToolsJson = SessionCachedToolsetsJson;
+
+/** @deprecated use sessionStagedToolsetsSchema */
+export const sessionLoadedToolsSchema = sessionStagedToolsetsSchema;
+export type SessionLoadedToolsJson = SessionStagedToolsetsJson;
 
 /** sessions.functions */
 export const sessionFunctionsSchema = z.preprocess(normalizeSessionToolNames, z.array(z.string()));

@@ -62,20 +62,24 @@ async function cmdCancel(ctx: CommandContext): Promise<string> {
   return "Question cancelled, you can continue the conversation.";
 }
 
-async function cmdResetSessionCache(ctx: CommandContext): Promise<string> {
+async function cmdRebuildSessionCache(ctx: CommandContext): Promise<string> {
   const meta = await conv().loadSessionMeta(ctx.sessionId);
   if (!isSessionMeta(meta)) {
-    return "⚠️ Current session does not exist, cannot reset session cache.";
+    return "⚠️ Current session does not exist, cannot rebuild session cache.";
   }
   try {
-    const { toolCount, systemPromptLength } = await conv().resetSessionCache(ctx.sessionId);
+    const { cachedCount, promoted, systemPromptLength } = await conv().rebuildSessionCache(
+      ctx.sessionId,
+    );
+    const promotedText =
+      promoted.length > 0 ? ` (+${promoted.length} promoted: ${promoted.join(", ")})` : "";
     return (
-      `✅ Reset session cache\n` +
-      `tools: ${toolCount} (cleared loaded_tools)\n` +
+      `✅ Rebuilt session cache\n` +
+      `cached_toolsets: ${cachedCount}${promotedText}\n` +
       `system_prompt: ${systemPromptLength} chars`
     );
   } catch (e) {
-    return `⚠️ Failed to reset session cache: ${String(e)}`;
+    return `⚠️ Failed to rebuild session cache: ${String(e)}`;
   }
 }
 
@@ -161,7 +165,7 @@ async function cmdCompress(ctx: CommandContext): Promise<string> {
 
 async function reloadMaskSideEffects(sessionId: string): Promise<void> {
   await conv().recompressSession(sessionId, { force: true });
-  await conv().resetSessionCache(sessionId);
+  await conv().rebuildSessionCache(sessionId);
 }
 
 async function cmdMask(ctx: CommandContext): Promise<string> {
@@ -189,13 +193,13 @@ async function cmdMask(ctx: CommandContext): Promise<string> {
     });
     await reloadMaskSideEffects(ctx.sessionId);
     const resolved = resolveMaskPresets([preset], masks, engine.catalog.toolSets);
-    return `✅ Set capability mask '${preset}' (${resolved.allowed_tools.length} tools). Compressed and reset session cache.`;
+    return `✅ Set capability mask '${preset}' (${resolved.allowed_tools.length} tools). Compressed and rebuilt session cache.`;
   }
 
   if (sub === "clear") {
     await conv().updateSessionMetaField(ctx.sessionId, { capability_mask: undefined });
     await reloadMaskSideEffects(ctx.sessionId);
-    return "✅ Removed capability mask, restored full capabilities. Compressed and reset session cache.";
+    return "✅ Removed capability mask, restored full capabilities. Compressed and rebuilt session cache.";
   }
 
   if (sub === "show") {
@@ -270,11 +274,11 @@ export function registerBuiltins(): void {
     scope: "session",
   });
   registerCommand({
-    name: "reset_session_cache",
+    name: "rebuild_session_cache",
     description:
-      "Reset session meta cache: default tool schema (clear loaded_tools) and rebuild system_prompt",
-    handler: cmdResetSessionCache,
-    aliases: ["reset-session-cache"],
+      "Promote staged ToolSets to cached_toolsets, clear staged_toolsets, and rebuild system_prompt",
+    handler: cmdRebuildSessionCache,
+    aliases: ["rebuild-session-cache"],
     scope: "session",
   });
   registerCommand({

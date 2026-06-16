@@ -119,7 +119,9 @@ export async function runSimpleTurn(
   const tools = await deps.conversation.loadSessionTools(sessionId);
   const meta = await deps.conversation.loadSessionMeta(sessionId);
   const toolMask = runtimeToolMaskFromResolved(resolveSessionMaskFromMeta(deps, meta));
-  const executableTools = isSessionMeta(meta) ? resolveExecutableToolNames(meta) : undefined;
+  const executableTools = isSessionMeta(meta)
+    ? resolveExecutableToolNames(meta, deps.engine.catalog.toolSets)
+    : undefined;
   try {
     return await runWithToolContext(
       sessionId,
@@ -157,7 +159,9 @@ export async function* yieldEngineStream(
   const tools = await deps.conversation.loadSessionTools(sessionId);
   const meta = await deps.conversation.loadSessionMeta(sessionId);
   const toolMask = runtimeToolMaskFromResolved(resolveSessionMaskFromMeta(deps, meta));
-  const executableTools = isSessionMeta(meta) ? resolveExecutableToolNames(meta) : undefined;
+  const executableTools = isSessionMeta(meta)
+    ? resolveExecutableToolNames(meta, deps.engine.catalog.toolSets)
+    : undefined;
   host.acquireInFlight();
   try {
     try {

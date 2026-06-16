@@ -1,4 +1,5 @@
-import { resolveDefaultSessionTools } from "./default-session-tools.ts";
+import { resolveDefaultSessionToolsets } from "./default-session-toolsets.ts";
+import { toolNamesForToolsets } from "./toolset-meta.ts";
 import { globalToolErrorContract, resolveToolReturnFields } from "./return-contract.ts";
 import {
   openaiFunctionSchema,
@@ -89,7 +90,7 @@ export function buildToolsStatus(registry: ToolSetRegistry): ToolsStatusResponse
   });
 
   return {
-    default_tools: resolveDefaultSessionTools(registry),
+    default_tools: toolNamesForToolsets(registry, resolveDefaultSessionToolsets(registry)),
     tools,
     tool_sets: registry.listToolSets().map((ts) => ({
       name: ts.name,

@@ -8,8 +8,8 @@ import { generateSessionHandoffSummary } from "./session-handoff.ts";
 const baseMeta: SessionMetaMessage = {
   role: "session_meta",
   model: "test-model",
-  tools: [],
-  loaded_tools: [],
+  cached_toolsets: [],
+  staged_toolsets: [],
   functions: [],
   timestamp: "2026-06-09T00:00:00+08:00",
   system_prompt: "system snapshot",

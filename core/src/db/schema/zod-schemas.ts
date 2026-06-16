@@ -8,9 +8,9 @@ import {
   messagePayloadSchema,
   platformInfoSchema,
   sessionFunctionsSchema,
-  sessionLoadedToolsSchema,
+  sessionCachedToolsetsSchema,
+  sessionStagedToolsetsSchema,
   sessionTodoStoreSchema,
-  sessionToolsSchema,
 } from "./jsonb/index.ts";
 import {
   autobiographicalMemory,
@@ -29,8 +29,8 @@ const sessionJsonbRefine = {
   todos: sessionTodoStoreSchema,
   awaitingClarify: awaitingClarifySchema.nullable(),
   acpTasks: acpTasksSchema.nullable(),
-  tools: sessionToolsSchema,
-  loadedTools: sessionLoadedToolsSchema,
+  cachedToolsets: sessionCachedToolsetsSchema,
+  stagedToolsets: sessionStagedToolsetsSchema,
   functions: sessionFunctionsSchema,
 };
 

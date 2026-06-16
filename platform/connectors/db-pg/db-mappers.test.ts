@@ -8,23 +8,23 @@ describe("db mappers", () => {
     const row = sessionMetaToInsert("cron_test", {
       role: "session_meta",
       model: "m",
-      tools: [],
-      loaded_tools: [],
+      cached_toolsets: [],
+      staged_toolsets: [],
       functions: [],
       timestamp: "2026-05-17T07:15:24.873+00:00",
       platform: "cron",
     });
     expect(row.createdAt).toBe("2026-05-17T07:15:24.873Z");
     expect(row.platformInfo).toEqual({ platform: "cron" });
-    expect(row.loadedTools).toEqual([]);
+    expect(row.stagedToolsets).toEqual([]);
   });
 
   it("cron ended_at normalized into platform_info", () => {
     const row = sessionMetaToInsert("cron_test", {
       role: "session_meta",
       model: "m",
-      tools: [],
-      loaded_tools: [],
+      cached_toolsets: [],
+      staged_toolsets: [],
       functions: [],
       timestamp: "2026-05-11T04:00:11.050Z",
       platform: "cron",

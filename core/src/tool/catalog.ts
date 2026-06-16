@@ -1,5 +1,5 @@
 import type { JsonSchemaObject } from "./registry.ts";
-import { expandToolNames } from "./expand.ts";
+import { tokenizeFtsQuery } from "@freeanima/core/util";
 import type { ToolSetRegistry } from "./toolset.ts";
 
 export type ToolCatalogEntry = {
@@ -12,14 +12,14 @@ export type ToolCatalogMessageEntry = ToolCatalogEntry & {
   parameters: JsonSchemaObject;
 };
 
-export type ListToolsCatalogOptions = {
-  offset?: number;
-  limit?: number;
-  toolset?: string;
+export type SearchToolsetsCatalogHit = {
+  toolset: string;
+  description: string;
+  tools: ToolCatalogEntry[];
+  allowed: boolean;
 };
 
-export type SearchToolsCatalogOptions = {
-  toolset?: string;
+export type SearchToolsetsCatalogOptions = {
   limit?: number;
 };
 
@@ -38,25 +38,102 @@ function allCatalogEntries(registry: ToolSetRegistry): ToolCatalogEntry[] {
   }));
 }
 
-function matchesQuery(entry: ToolCatalogEntry, query: string): boolean {
-  const q = query.trim().toLowerCase();
-  if (!q) return true;
-  return (
-    entry.name.toLowerCase().includes(q) ||
-    entry.description.toLowerCase().includes(q) ||
-    entry.toolset.toLowerCase().includes(q)
-  );
+function toolsetEntries(registry: ToolSetRegistry): Array<{
+  name: string;
+  description: string;
+  tools: ToolCatalogEntry[];
+}> {
+  return registry.listToolSets().map((view) => {
+    const ts = registry.getToolSet(view.name)!;
+    return {
+      name: ts.name,
+      description: ts.description,
+      tools: ts.tools.map((def) => ({
+        name: def.name,
+        description: def.description,
+        toolset: ts.name,
+      })),
+    };
+  });
 }
 
+function matchesAllTokens(text: string, tokens: string[]): boolean {
+  const lower = text.toLowerCase();
+  return tokens.every((token) => {
+    const t = token.replace(/^"|"$/g, "").trim().toLowerCase();
+    if (!t) return true;
+    return lower.includes(t);
+  });
+}
+
+function isDynamicToolset(name: string): boolean {
+  return name.startsWith("mcp_") || name.startsWith("acp_") || name.startsWith("sap_");
+}
+
+/** Memory FTS search grouped by ToolSet; AND token match on name/description */
+export function searchToolsetsCatalog(
+  registry: ToolSetRegistry,
+  query: string,
+  opts?: SearchToolsetsCatalogOptions,
+): { query: string; hits: SearchToolsetsCatalogHit[]; total: number } {
+  const trimmed = query.trim();
+  const tokens = tokenizeFtsQuery(trimmed).filter((t) => t.length > 0);
+  if (!tokens.length) {
+    return { query: trimmed, hits: [], total: 0 };
+  }
+
+  let hits = toolsetEntries(registry)
+    .map((ts) => {
+      const toolText = ts.tools.map((t) => `${t.name} ${t.description}`).join(" ");
+      const haystack = `${ts.name} ${ts.description} ${toolText}`;
+      if (!matchesAllTokens(haystack, tokens)) return null;
+      return {
+        toolset: ts.name,
+        description: ts.description,
+        tools: ts.tools,
+        allowed: true,
+      };
+    })
+    .filter((h): h is SearchToolsetsCatalogHit => h != null);
+
+  hits = hits.toSorted((a, b) => {
+    const da = isDynamicToolset(a.toolset) ? 0 : 1;
+    const db = isDynamicToolset(b.toolset) ? 0 : 1;
+    if (da !== db) return da - db;
+    return a.toolset.localeCompare(b.toolset);
+  });
+
+  const total = hits.length;
+  const limit = opts?.limit;
+  if (limit != null && limit >= 0) {
+    hits = hits.slice(0, limit);
+  }
+  return { query: trimmed, hits, total };
+}
+
+/** @deprecated use searchToolsetsCatalog */
+export function searchToolsCatalog(
+  registry: ToolSetRegistry,
+  query: string,
+  opts?: { toolset?: string; limit?: number },
+): { query: string; tools: ToolCatalogEntry[]; total: number } {
+  const result = searchToolsetsCatalog(registry, query, { limit: opts?.limit });
+  let tools = result.hits.flatMap((h) => h.tools);
+  const toolset = opts?.toolset?.trim();
+  if (toolset) {
+    tools = tools.filter((t) => t.toolset === toolset);
+  }
+  return { query: result.query, tools, total: tools.length };
+}
+
+/** @deprecated */
 export function listToolsCatalog(
   registry: ToolSetRegistry,
-  opts?: ListToolsCatalogOptions,
+  opts?: { offset?: number; limit?: number; toolset?: string },
 ): { tools: ToolCatalogEntry[]; total: number } {
-  const toolset = opts?.toolset?.trim();
   let entries = allCatalogEntries(registry);
-  if (toolset) {
-    entries = entries.filter((e) => e.toolset === toolset);
-  }
+  const toolset = opts?.toolset?.trim();
+  if (toolset) entries = entries.filter((e) => e.toolset === toolset);
   const total = entries.length;
   const offset = Math.max(0, opts?.offset ?? 0);
   const limit = opts?.limit;
@@ -67,26 +144,6 @@ export function listToolsCatalog(
   }
   return { tools: entries, total };
 }
-
-export function searchToolsCatalog(
-  registry: ToolSetRegistry,
-  query: string,
-  opts?: SearchToolsCatalogOptions,
-): { query: string; tools: ToolCatalogEntry[]; total: number } {
-  const toolset = opts?.toolset?.trim();
-  let entries = allCatalogEntries(registry).filter((e) => matchesQuery(e, query));
-  if (toolset) {
-    entries = entries.filter((e) => e.toolset === toolset);
-  }
-  const total = entries.length;
-  const limit = opts?.limit;
-  if (limit != null && limit >= 0) {
-    entries = entries.slice(0, limit);
-  }
-  return { query: query.trim(), tools: entries, total };
-}
-
-export { expandToolNames };
 
 export function formatToolsForToolMessage(
   registry: ToolSetRegistry,
@@ -105,3 +162,5 @@ export function formatToolsForToolMessage(
   }
   return out;
 }
+
+export { expandToolNames } from "./expand.ts";

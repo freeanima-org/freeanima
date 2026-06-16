@@ -3,6 +3,7 @@ import {
   expandToolNames,
   formatToolsForToolMessage,
   listToolsCatalog,
+  searchToolsetsCatalog,
   searchToolsCatalog,
 } from "./catalog.ts";
 import { ToolSetRegistry } from "./toolset.ts";
@@ -49,6 +50,14 @@ describe("listToolsCatalog", () => {
     const fileOnly = listToolsCatalog(registry, { toolset: "file" });
     expect(fileOnly.total).toBe(2);
     expect(fileOnly.tools.map((t) => t.name)).toEqual(["file_read_file", "file_write_file"]);
+  });
+});
+
+describe("searchToolsetsCatalog", () => {
+  it("matches toolsets by AND tokens", () => {
+    const registry = testRegistry();
+    const hit = searchToolsetsCatalog(registry, "read file");
+    expect(hit.hits.some((h) => h.toolset === "file")).toBe(true);
   });
 });
 

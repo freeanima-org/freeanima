@@ -6,25 +6,28 @@ import { runWithToolContext } from "@freeanima/core/tool";
 const sessionMeta = {
   role: "session_meta" as const,
   model: "test",
-  tools: ["tools_list", "tools_load"],
-  loaded_tools: [] as string[],
+  cached_toolsets: ["toolsets"],
+  staged_toolsets: [] as string[],
   functions: [] as string[],
   timestamp: "2026-01-01T00:00:00+08:00",
 };
 
 const getSessionMeta = mock(async () => sessionMeta);
 
+const patchSessionMeta = mock(async () => {});
+
 const repos = {
-  pgAvailable: false,
-  session: { getSessionMeta },
+  pgAvailable: true,
+  session: { getSessionMeta, patchSessionMeta },
 } as never;
 
 describe("registerCatalogTools", () => {
   beforeEach(() => {
     getSessionMeta.mockClear();
+    patchSessionMeta.mockClear();
   });
 
-  it("tools_load returns schema and calls loadToolsIntoSession", async () => {
+  it("toolsets_load returns schema for staged toolset", async () => {
     const toolSets = new ToolSetRegistry();
     registerCatalogTools(toolSets);
     toolSets.registerToolSet("file", "Files", [
@@ -35,85 +38,53 @@ describe("registerCatalogTools", () => {
         handler: () => "ok",
       },
     ]);
-    const def = toolSets.getTool("tools_load");
+    const def = toolSets.getTool("toolsets_load");
     expect(def).toBeDefined();
 
     await runWithToolContext(
       "sess-1",
       async () => {
-        const raw = await def!.handler({ names: ["file_read_file"] });
+        const raw = await def!.handler({ toolsets: ["file"] });
         const parsed = JSON.parse(raw);
         expect(parsed.tools).toHaveLength(1);
         expect(parsed.tools[0].name).toBe("file_read_file");
-        expect(parsed.tools[0].parameters).toBeDefined();
-        expect(getSessionMeta).toHaveBeenCalled();
+        expect(parsed.loaded).toEqual(["file"]);
+        expect(patchSessionMeta).toHaveBeenCalled();
       },
       {
         tools: toolSets,
         repos,
-        executableTools: ["tools_load"],
+        executableTools: ["toolsets_load"],
       },
     );
   });
 
-  it("tools_list returns all tools when no filters", async () => {
+  it("toolsets_search requires query", async () => {
     const toolSets = new ToolSetRegistry();
     registerCatalogTools(toolSets);
     toolSets.registerToolSet("file", "Files", [
       {
         name: "file_read_file",
-        description: "Read",
+        description: "Read text files",
         parameters: { type: "object", properties: {} },
         handler: () => "ok",
       },
     ]);
-    const listDef = toolSets.getTool("tools_list");
-    expect(listDef).toBeDefined();
+    const searchDef = toolSets.getTool("toolsets_search");
+    expect(searchDef).toBeDefined();
 
     await runWithToolContext(
       "sess-1",
       async () => {
-        const raw = await listDef!.handler({});
-        const parsed = JSON.parse(raw);
-        expect(parsed.total).toBeGreaterThanOrEqual(2);
-        expect(parsed.tools.some((t: { name: string }) => t.name === "file_read_file")).toBe(true);
-      },
-      { tools: toolSets, repos, executableTools: ["tools_list"] },
-    );
-  });
+        const errRaw = await searchDef!.handler({});
+        expect(JSON.parse(errRaw).error).toBeTruthy();
 
-  it("tools_list filters by keyword and toolset", async () => {
-    const toolSets = new ToolSetRegistry();
-    registerCatalogTools(toolSets);
-    toolSets.registerToolSet("file", "Files", [
-      {
-        name: "file_read_file",
-        description: "Read text",
-        parameters: { type: "object", properties: {} },
-        handler: () => "ok",
-      },
-    ]);
-    toolSets.registerToolSet("web", "Web", [
-      {
-        name: "web_search",
-        description: "Search web",
-        parameters: { type: "object", properties: {} },
-        handler: () => "ok",
-      },
-    ]);
-    const listDef = toolSets.getTool("tools_list")!;
-
-    await runWithToolContext(
-      "sess-1",
-      async () => {
-        const raw = await listDef.handler({ keyword: "read", toolset: "file" });
+        const raw = await searchDef!.handler({ query: "read file" });
         const parsed = JSON.parse(raw);
-        expect(parsed.keyword).toBe("read");
-        expect(parsed.tools.every((t: { toolset: string }) => t.toolset === "file")).toBe(true);
-        expect(parsed.tools.some((t: { name: string }) => t.name === "file_read_file")).toBe(true);
-        expect(parsed.tools.some((t: { name: string }) => t.name === "web_search")).toBe(false);
+        expect(parsed.query).toBe("read file");
+        expect(parsed.hits.some((h: { toolset: string }) => h.toolset === "file")).toBe(true);
       },
-      { tools: toolSets, repos, executableTools: ["tools_list"] },
+      { tools: toolSets, repos, executableTools: ["toolsets_search"] },
     );
   });
 });

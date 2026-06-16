@@ -57,7 +57,7 @@ compression:
     await c.updateSessionMetaField(sid, {
       model: "m",
       system_prompt: "self layer block here\n\n## Resident memory\n- fact",
-      tools: ["ctx_stats_big_tool"],
+      cached_toolsets: ["__ctx_stats__"],
     });
     await c.appendMessage({ role: "user", content: "hi", pos: 1 }, sid);
     await c.appendMessage({ role: "assistant", content: "ok", pos: 2 }, sid);

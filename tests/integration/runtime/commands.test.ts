@@ -7,11 +7,6 @@ import {
   syncIntegrationSelfLayer,
 } from "../../helpers/integration-case.ts";
 import type { PgTestContext } from "../../helpers/pg-test.ts";
-import {
-  SELF_BLOCK_HEADINGS,
-  SELF_LAYER_PROMPT_HEADING,
-  SELF_LAYER_SYSTEM_FRAME,
-} from "@freeanima/capabilities-identity";
 
 import { isSessionMeta } from "@freeanima/core/db/domain";
 import { readFileSync, mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
@@ -90,7 +85,7 @@ describePg("slash commands", () => {
       {
         role: "session_meta",
         model: "test-model",
-        tools: [],
+        cached_toolsets: [],
         functions: [],
         timestamp: new Date().toISOString(),
         platform: "parlor",
@@ -113,7 +108,7 @@ describePg("slash commands", () => {
     const parlor = svc.listCommands({ platform: "parlor" }).commands.map((c) => c.name);
     expect(parlor).toContain("help");
     expect(parlor).toContain("retry");
-    expect(parlor).toContain("reset_session_cache");
+    expect(parlor).toContain("rebuild_session_cache");
     expect(parlor).not.toContain("reload_tools");
     expect(parlor).not.toContain("reload_system_prompt");
     expect(parlor).not.toContain("new");
@@ -161,7 +156,8 @@ describePg("slash commands", () => {
         {
           role: "session_meta",
           model: "test-model",
-          tools: [],
+          cached_toolsets: [],
+          staged_toolsets: [],
           functions: [],
           timestamp: new Date().toISOString(),
           platform: "discord",
@@ -194,7 +190,7 @@ describePg("slash commands", () => {
     }
   });
 
-  it("reset_session_cache resets tools and rebuilds system_prompt", async () => {
+  it("rebuild_session_cache promotes staged toolsets and rebuilds system_prompt", async () => {
     const selfModel = "You are a test agent.";
     await syncIntegrationSelfLayer(pg, selfModel);
 
@@ -203,57 +199,75 @@ describePg("slash commands", () => {
     const preservedCwd = "/tmp/freeanima-preserved-cwd";
     await patchMetaForTest(sid, {
       cwd: preservedCwd,
-      tools: ["stale_tool"],
-      loaded_tools: ["file_read_file"],
+      cached_toolsets: ["toolsets", "memory"],
+      staged_toolsets: ["file"],
       system_prompt: "old prompt",
       title: "preserved title",
     });
 
-    const [cmd] = findCommand("/reset_session_cache");
+    const [cmd] = findCommand("/rebuild_session_cache");
     const result = await executeCommand(cmd!, {
       sessionId: sid,
       platform: "parlor",
       args: [],
-      raw: "/reset_session_cache",
+      raw: "/rebuild_session_cache",
     });
-    expect(result.text).toContain("Reset session cache");
-    expect(result.text).toContain("tools:");
-    expect(result.text).toContain("system_prompt:");
+    expect(result.text).toContain("Rebuilt session cache");
+    expect(result.text).toContain("cached_toolsets:");
+    expect(result.text).toContain("promoted: file");
 
     const metaAfter = await testConv().loadSessionMeta(sid);
     expect(isSessionMeta(metaAfter)).toBe(true);
     if (!isSessionMeta(metaAfter)) return;
-    expect(metaAfter.tools).not.toContain("stale_tool");
-    expect(metaAfter.loaded_tools ?? []).toEqual([]);
+    expect(metaAfter.cached_toolsets).toContain("file");
+    expect(metaAfter.staged_toolsets ?? []).toEqual([]);
     expect(metaAfter.cwd).toBe(preservedCwd);
     expect(metaAfter.title).toBe("preserved title");
     expect(metaAfter.model).toBe(metaBefore.model);
 
-    const schemas = await testConv().loadSessionTools(sid, metaAfter);
-    const names = schemas.map((t) => t.function?.name).filter(Boolean);
-    expect(names).toContain("tools_list");
-    expect(names).toContain("tools_load");
-
     const sp = String(metaAfter.system_prompt ?? "");
-    expect(sp).toContain(SELF_LAYER_SYSTEM_FRAME);
-    expect(sp).toContain(`## ${SELF_LAYER_PROMPT_HEADING}`);
-    expect(sp).toContain("```md");
-    for (const heading of Object.values(SELF_BLOCK_HEADINGS)) {
-      expect(sp).toContain(`## ${heading}`);
-    }
     expect(sp).toContain(selfModel);
     expect(sp).not.toBe("old prompt");
   });
 
-  it("reset_session_cache on missing session returns warning", async () => {
-    const [cmd] = findCommand("/reset-session-cache");
+  it("rebuild_session_cache on missing session returns warning", async () => {
+    const [cmd] = findCommand("/rebuild-session-cache");
     const result = await executeCommand(cmd!, {
       sessionId: "nonexistent_session_abc",
       platform: "parlor",
       args: [],
-      raw: "/reset_session_cache",
+      raw: "/rebuild_session_cache",
     });
     expect(result.text).toContain("does not exist");
+  });
+
+  it("rebuild_session_cache seeds default toolsets filtered by capability mask when cached is empty", async () => {
+    const sid = await testConv().newSession("parlor");
+    await patchMetaForTest(sid, {
+      cached_toolsets: [],
+      staged_toolsets: [],
+    });
+    await patchMetaForTest(sid, {
+      capability_mask: { presets: ["sleep"] },
+    });
+
+    const [cmd] = findCommand("/rebuild_session_cache");
+    const result = await executeCommand(cmd!, {
+      sessionId: sid,
+      platform: "parlor",
+      args: [],
+      raw: "/rebuild_session_cache",
+    });
+    expect(result.text).toContain("Rebuilt session cache");
+
+    const metaAfter = await testConv().loadSessionMeta(sid);
+    expect(isSessionMeta(metaAfter)).toBe(true);
+    if (!isSessionMeta(metaAfter)) return;
+    expect(metaAfter.cached_toolsets).toContain("memory");
+    expect(metaAfter.cached_toolsets).not.toContain("toolsets");
+    expect(metaAfter.cached_toolsets).not.toContain("sessions");
+    expect(metaAfter.cached_toolsets).not.toContain("skills");
+    expect(metaAfter.staged_toolsets ?? []).toEqual([]);
   });
 
   it("stats command reports session", async () => {

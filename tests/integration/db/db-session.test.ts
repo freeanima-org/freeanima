@@ -35,7 +35,7 @@ describePg("db session (PostgreSQL)", () => {
     await session.upsertSessionMeta(sessionId, {
       role: "session_meta",
       model: "test-model",
-      tools: [],
+      cached_toolsets: [],
       functions: [],
       timestamp: new Date().toISOString(),
       platform: "parlor",
@@ -77,7 +77,7 @@ describePg("db session (PostgreSQL)", () => {
     await session.upsertSessionMeta(sessionId, {
       role: "session_meta",
       model: "test-model",
-      tools: [],
+      cached_toolsets: [],
       functions: [],
       timestamp: new Date().toISOString(),
       platform: "parlor",
@@ -111,7 +111,7 @@ describePg("db session (PostgreSQL)", () => {
     await session.upsertSessionMeta(sessionId, {
       role: "session_meta",
       model: "test-model",
-      tools: [],
+      cached_toolsets: [],
       functions: [],
       timestamp: new Date().toISOString(),
       platform: "parlor",
@@ -138,7 +138,7 @@ describePg("db session (PostgreSQL)", () => {
     await session.upsertSessionMeta(sessionId, {
       role: "session_meta",
       model: "test-model",
-      tools: [],
+      cached_toolsets: [],
       functions: [],
       timestamp: new Date().toISOString(),
       platform: "parlor",

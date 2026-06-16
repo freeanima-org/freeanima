@@ -28,7 +28,7 @@ describe("createAcpProgressDelivery deliverResult", () => {
       loadSessionMeta: async () => ({
         role: "session_meta" as const,
         model: "test",
-        tools: [],
+        cached_toolsets: [],
         functions: [],
         timestamp: "",
         platform: "discord",
@@ -89,7 +89,7 @@ describe("createAcpProgressDelivery deliverResult", () => {
       loadSessionMeta: async () => ({
         role: "session_meta" as const,
         model: "test",
-        tools: [],
+        cached_toolsets: [],
         functions: [],
         timestamp: "",
         platform: "parlor",
@@ -138,7 +138,7 @@ describe("createAcpProgressDelivery deliverResult", () => {
       loadSessionMeta: async () => ({
         role: "session_meta" as const,
         model: "test",
-        tools: [],
+        cached_toolsets: [],
         functions: [],
         timestamp: "",
         platform: "discord",

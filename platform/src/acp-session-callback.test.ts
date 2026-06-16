@@ -54,7 +54,7 @@ describe("createAcpSessionUpdatedHandler recheck", () => {
           return {
             role: "session_meta" as const,
             model: "m",
-            tools: [],
+            cached_toolsets: [],
             functions: [],
             timestamp: "",
             platform: "parlor",

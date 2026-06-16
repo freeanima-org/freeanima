@@ -38,7 +38,7 @@ describe("SatelliteManager routing", () => {
 
   it("allows hub_local for non-sap tools", () => {
     const manager = new SatelliteManager(new ToolSetRegistry());
-    expect(manager.resolveToolCall("sid", "tools_list", {}).kind).toBe("hub_local");
+    expect(manager.resolveToolCall("sid", "toolsets_search", {}).kind).toBe("hub_local");
   });
 
   it("reports connected instance status and tools", () => {

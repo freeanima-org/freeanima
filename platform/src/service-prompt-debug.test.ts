@@ -45,7 +45,7 @@ const mockConv = {
   loadSessionMeta: mock(async () => ({
     role: "session_meta" as const,
     model: "gpt-4",
-    tools: ["file_read_file"],
+    cached_toolsets: ["file"],
     functions: [],
     timestamp: "2026-01-01T00:00:00+08:00",
     system_prompt: "",
@@ -189,7 +189,7 @@ describe("service-prompt-debug", () => {
     mockConv.loadSessionMeta.mockImplementation(async () => ({
       role: "session_meta" as const,
       model: "gpt-4",
-      tools: ["file_read_file"],
+      cached_toolsets: ["file"],
       functions: [],
       timestamp: "2026-01-01T00:00:00+08:00",
       system_prompt: preview.system.composed,
@@ -205,6 +205,6 @@ describe("service-prompt-debug", () => {
     expect(out.tools.mode).toBe("session");
     expect(out.tools.items.some((t) => t.name === "file_read_file")).toBe(true);
     expect(out.meta?.cwd).toBe("/tmp/project");
-    expect(out.meta?.tool_names).toEqual(["file_read_file"]);
+    expect(out.meta?.tool_names).toEqual(["file"]);
   });
 });

@@ -41,7 +41,7 @@ export type SessionCleanupResult = {
 export interface SessionStorePort {
   getSessionMeta(sessionId: string): Promise<SessionMetaMessage | null>;
   getSessionMetaLite(sessionId: string): Promise<SessionMetaMessage | null>;
-  getSessionTools(sessionId: string): Promise<SessionMetaMessage["tools"]>;
+  getSessionTools(sessionId: string): Promise<SessionMetaMessage["cached_toolsets"]>;
   upsertSessionMeta(sessionId: string, meta: SessionMetaMessage): Promise<void>;
   patchSessionMeta(
     sessionId: string,

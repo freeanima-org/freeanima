@@ -8,27 +8,14 @@ import { isSessionMeta, type SessionMetaMessage } from "@freeanima/core/db/domai
 import {
   applySessionToolMaskFilter,
   attachToolReturns,
-  listToolsCatalog,
-  loadToolsIntoSession,
-  searchToolsCatalog,
+  loadToolsetsIntoSession,
+  searchToolsetsCatalog,
   toolError,
   toolResult,
-  type ToolCatalogEntry,
+  toolNamesForToolsets,
   type ToolSetRegistry,
 } from "@freeanima/core/tool";
 import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
-
-function catalogEntryWithAllowed(
-  entries: ToolCatalogEntry[],
-  meta: SessionMetaMessage,
-): Array<ToolCatalogEntry & { allowed: boolean }> {
-  const names = entries.map((e) => e.name);
-  const allowedSet = new Set(applySessionToolMaskFilter(names, meta));
-  return entries.map((entry) => ({
-    ...entry,
-    allowed: allowedSet.has(entry.name),
-  }));
-}
 
 async function requireSessionMeta(): Promise<
   { ok: true; meta: SessionMetaMessage } | { ok: false; error: string }
@@ -43,75 +30,91 @@ async function requireSessionMeta(): Promise<
   return { ok: true, meta };
 }
 
+function hitsWithAllowed(
+  hits: ReturnType<typeof searchToolsetsCatalog>["hits"],
+  meta: SessionMetaMessage,
+) {
+  return hits.map((hit) => {
+    const toolNames = hit.tools.map((t) => t.name);
+    const allowedSet = new Set(applySessionToolMaskFilter(toolNames, meta));
+    const allowed = toolNames.some((n) => allowedSet.has(n));
+    return { ...hit, allowed };
+  });
+}
+
 export function registerCatalogTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
-    "tools",
-    "Tool discovery and on-demand loading",
+    "toolsets",
+    "ToolSet discovery and on-demand loading",
     attachToolReturns(
       [
         {
-          name: "tools_list",
+          name: "toolsets_search",
           description:
-            "List tool names in the registry (index only). System prompt already lists ToolSets; use optional toolset and keyword to find concrete tool names, then tools_load for full schema.",
+            "Search dynamically registered ToolSets (MCP/ACP/SAP) by keyword. Built-in ToolSets are listed in system prompt — use toolsets_load directly.",
           parameters: {
             type: "object",
             properties: {
-              toolset: { type: "string", description: "Optional: limit to ToolSet name" },
-              keyword: { type: "string", description: "Optional: search tool name/description" },
+              query: {
+                type: "string",
+                description: "Required search query (space-separated terms match AND)",
+              },
             },
+            required: ["query"],
           },
           handler: async (args) => {
             const ctx = await requireSessionMeta();
             if (!ctx.ok) return toolError(ctx.error);
+            const query = String(args.query ?? "").trim();
+            if (!query) return toolError("query is required");
             const registry = getToolRegistry();
-            const keyword = String(args.keyword ?? "").trim();
-            const toolset = args.toolset != null ? String(args.toolset).trim() : undefined;
-
-            if (keyword) {
-              const result = searchToolsCatalog(registry, keyword, { toolset });
-              return toolResult({
-                keyword,
-                tools: catalogEntryWithAllowed(result.tools, ctx.meta),
-                total: result.total,
-              });
-            }
-
-            const result = listToolsCatalog(registry, { toolset });
+            const result = searchToolsetsCatalog(registry, query);
             return toolResult({
-              tools: catalogEntryWithAllowed(result.tools, ctx.meta),
+              query: result.query,
+              hits: hitsWithAllowed(result.hits, ctx.meta),
               total: result.total,
             });
           },
         },
         {
-          name: "tools_load",
+          name: "toolsets_load",
           description:
-            "Load full schema for one or more tools into the current conversation (returns name/description/parameters via tool message, does not expand LLM tool params). Supports tool names or @ToolSet.",
+            "Stage ToolSets for the current session (returns schemas via tool message). Cached ToolSets are sent in API tools after rebuild_session_cache or compression.",
           parameters: {
             type: "object",
             properties: {
-              names: {
+              toolsets: {
                 type: "array",
                 items: { type: "string" },
-                description: "Tool name or @ToolSet (e.g. file_read_file, @file)",
+                description: "ToolSet names to stage (e.g. file, mcp_postgres)",
               },
             },
-            required: ["names"],
+            required: ["toolsets"],
           },
           handler: async (args) => {
             const ctx = await requireSessionMeta();
             if (!ctx.ok) return toolError(ctx.error);
-            const raw = args.names;
+            const raw = args.toolsets;
             if (!Array.isArray(raw) || raw.length === 0) {
-              return toolError("names must be a non-empty array");
+              return toolError("toolsets must be a non-empty array");
             }
-            const names = raw.map((n) => String(n ?? "").trim()).filter(Boolean);
-            if (!names.length) return toolError("names must be a non-empty array");
+            const toolsets = raw.map((n) => String(n ?? "").trim()).filter(Boolean);
+            if (!toolsets.length) return toolError("toolsets must be a non-empty array");
             const sessionId = getToolSessionId()!;
             const repos = getToolRepos()!;
             const registry = getToolRegistry();
-            const result = await loadToolsIntoSession(repos, registry, sessionId, names, ctx.meta);
-            grantExecutableTools([...result.loaded, ...result.already_loaded]);
+            const result = await loadToolsetsIntoSession(
+              repos,
+              registry,
+              sessionId,
+              toolsets,
+              ctx.meta,
+            );
+            const expanded = toolNamesForToolsets(registry, [
+              ...result.loaded,
+              ...result.already_loaded,
+            ]);
+            grantExecutableTools(expanded);
             return toolResult(result);
           },
         },
