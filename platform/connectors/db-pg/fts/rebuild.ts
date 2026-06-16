@@ -35,13 +35,13 @@ function report(
   onProgress?.({ phase, table, current, total });
 }
 
-function idCursorCondition(onlyMissing: boolean, lastId: string): SQL | undefined {
-  if (onlyMissing) return undefined;
+function idCursorCondition(_onlyMissing: boolean, lastId: string): SQL | undefined {
+  if (!lastId) return undefined;
   return gt(semanticMemory.id, lastId);
 }
 
-function messageIdCursorCondition(onlyMissing: boolean, lastId: string): SQL | undefined {
-  if (onlyMissing) return undefined;
+function messageIdCursorCondition(_onlyMissing: boolean, lastId: string): SQL | undefined {
+  if (!lastId) return undefined;
   return gt(messages.id, lastId);
 }
 
@@ -49,12 +49,31 @@ function assertEmbeddingBatchStored(
   phase: FtsRebuildPhase,
   batchSize: number,
   stored: number,
+  rowId: string,
 ): void {
   if (batchSize > 0 && stored === 0) {
-    const msg = `${phase}: batch of ${batchSize} rows stored 0 embeddings (check API, dimensions, config)`;
-    log.warn("embedding rebuild batch stored 0 rows", { phase, batch_size: batchSize });
+    const msg = `${phase}: row ${rowId} stored 0 embeddings (check API, dimensions, config)`;
+    log.error("embedding rebuild batch stored 0 rows", {
+      phase,
+      batch_size: batchSize,
+      row_id: rowId,
+    });
     throw new Error(msg);
   }
+}
+
+async function embedRebuildRow(
+  phase: FtsRebuildPhase,
+  job: { kind: "semantic_memory" | "message"; id: string; content: string },
+): Promise<number> {
+  const trimmed = job.content.trim();
+  if (!trimmed) {
+    log.warn("embedding rebuild skipping empty content", { phase, row_id: job.id });
+    return 0;
+  }
+  const stored = await embedAndStoreJobs([{ ...job, content: trimmed }]);
+  assertEmbeddingBatchStored(phase, 1, stored, job.id);
+  return stored;
 }
 
 async function countSemanticMemorySegmentedTargets(onlyMissing: boolean): Promise<number> {
@@ -232,16 +251,14 @@ async function rebuildSemanticMemoryEmbeddings(opts: FtsRebuildOptions): Promise
     if (!rows.length) break;
 
     const row = rows[0]!;
-    const stored = await embedAndStoreJobs([
-      { kind: "semantic_memory", id: row.id, content: row.content },
-    ]);
-    assertEmbeddingBatchStored("semantic_memory_embedding", rows.length, stored);
+    const stored = await embedRebuildRow("semantic_memory_embedding", {
+      kind: "semantic_memory",
+      id: row.id,
+      content: row.content,
+    });
     updated += stored;
     report(opts.onProgress, "semantic_memory_embedding", "semantic_memory", updated, total);
-
-    if (!onlyMissing) {
-      lastId = row.id;
-    }
+    lastId = row.id;
   }
 
   return updated;
@@ -277,16 +294,14 @@ async function rebuildMessagesEmbeddings(opts: FtsRebuildOptions): Promise<numbe
     if (!rows.length) break;
 
     const row = rows[0]!;
-    const stored = await embedAndStoreJobs([
-      { kind: "message", id: row.id, content: row.content ?? "" },
-    ]);
-    assertEmbeddingBatchStored("messages_embedding", rows.length, stored);
+    const stored = await embedRebuildRow("messages_embedding", {
+      kind: "message",
+      id: row.id,
+      content: row.content ?? "",
+    });
     updated += stored;
     report(opts.onProgress, "messages_embedding", "messages", updated, total);
-
-    if (!onlyMissing) {
-      lastId = row.id;
-    }
+    lastId = row.id;
   }
 
   return updated;

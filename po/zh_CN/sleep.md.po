@@ -281,14 +281,14 @@ msgid ""
 "| 1     | Contradiction detection + expiry marking                                |\n"
 "| 2     | Split multi-fact entries                                                |\n"
 "| 3     | Dedup merge similar entries                                             |\n"
-"| 4     | Pin quality review (unpin stale pins; resident read still capped at 20) |\n"
+"| 4     | Pin quality review (unpin stale pins; resident read still capped at 40) |\n"
 msgstr ""
 "| 轮次 | 意图                                   |\n"
 "| ----- | ---------------------------------------- |\n"
 "| 1     | 矛盾检测 + 过期标记 |\n"
 "| 2     | 拆分多事实条目                 |\n"
 "| 3     | 去重合并相似条目              |\n"
-"| 4     | 置顶维护（保持 pinned ≤ 20）       |\n"
+"| 4     | 置顶质量审查（解除过时置顶；常驻读仍上限 40 条）       |\n"
 
 #. type: Plain text
 #: docs/concepts/sleep.md:84

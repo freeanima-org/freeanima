@@ -79,7 +79,7 @@ Pipeline run state is persisted at `~/.anima/runtime/pipeline_sleep-cycle_run.js
 | 1     | Contradiction detection + expiry marking                                |
 | 2     | Split multi-fact entries                                                |
 | 3     | Dedup merge similar entries                                             |
-| 4     | Pin quality review (unpin stale pins; resident read still capped at 20) |
+| 4     | Pin quality review (unpin stale pins; resident read still capped at 40) |
 
 **Ordering rationale:** Clean problems first, then refine, then merge, then review pinned quality.
 

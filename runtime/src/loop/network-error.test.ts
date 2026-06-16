@@ -27,6 +27,20 @@ describe("network-error", () => {
     expect(isTransientNetworkError(outer)).toBe(true);
   });
 
+  it("detects socket connection closed", () => {
+    expect(
+      isTransientNetworkError(
+        new Error(
+          "The socket connection was closed unexpectedly. For more information, pass `verbose: true` in the second argument to fetch()",
+        ),
+      ),
+    ).toBe(true);
+  });
+
+  it("detects request timed out", () => {
+    expect(isTransientNetworkError(new Error("Request timed out."))).toBe(true);
+  });
+
   it("rejects generic application errors", () => {
     expect(isTransientNetworkError(new Error("Session not found"))).toBe(false);
   });

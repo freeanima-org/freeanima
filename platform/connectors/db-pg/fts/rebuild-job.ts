@@ -1,5 +1,9 @@
+import { logComponent } from "@freeanima/platform/logging";
+
 import { rebuildAllFtsSegments, type FtsRebuildResult } from "./rebuild.ts";
 import type { FtsRebuildPhase, FtsRebuildProgress } from "./rebuild-types.ts";
+
+const log = logComponent("embedding");
 
 export type FtsRebuildJobStatus = {
   running: boolean;
@@ -66,6 +70,8 @@ export function startFtsRebuildJob(opts?: { onlyMissing?: boolean }): FtsRebuild
       return result;
     })
     .catch((err) => {
+      const message = err instanceof Error ? err.message : String(err);
+      log.error("fts rebuild job failed", { error: message });
       status = {
         ...status,
         running: false,

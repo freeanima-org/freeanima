@@ -158,6 +158,36 @@ describePg("FTS rebuild embedding PG", () => {
     expect(rows[0]?.content_embedding).not.toBeNull();
   });
 
+  it("onlyMissing=true skips message rows with empty payload content", async () => {
+    const sessionId = "fts-rebuild-emb-empty";
+    await seedSession(getTestEngine(), sessionId, sessionMeta(), [
+      {
+        role: "user",
+        content: "has embedding target",
+        pos: 1,
+        timestamp: new Date().toISOString(),
+      },
+    ]);
+
+    const ctx = getActivePgTestContext();
+    expect(ctx).not.toBeNull();
+    await awaitPendingEmbeddingsForTest();
+    await ctx!.sql`UPDATE messages SET content_embedding = NULL`;
+
+    const rows = await ctx!.sql<{ id: string }[]>`
+      SELECT id FROM messages WHERE session_id = ${sessionId} ORDER BY pos LIMIT 1
+    `;
+    const messageId = rows[0]!.id;
+    await ctx!.sql`
+      UPDATE messages
+      SET payload = jsonb_set(payload, '{content}', '""'::jsonb)
+      WHERE id = ${messageId}
+    `;
+
+    const result = await rebuildAllFtsSegments({ onlyMissing: true });
+    expect(result.embeddings?.messages).toBeGreaterThanOrEqual(0);
+  });
+
   afterAll(async () => {
     await endIntegrationCase();
   });

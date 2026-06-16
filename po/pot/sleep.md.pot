@@ -228,7 +228,7 @@ msgid ""
 "| 1     | Contradiction detection + expiry marking                                |\n"
 "| 2     | Split multi-fact entries                                                |\n"
 "| 3     | Dedup merge similar entries                                             |\n"
-"| 4     | Pin quality review (unpin stale pins; resident read still capped at 20) |\n"
+"| 4     | Pin quality review (unpin stale pins; resident read still capped at 40) |\n"
 msgstr ""
 
 #. type: Plain text

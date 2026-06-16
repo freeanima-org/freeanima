@@ -40,7 +40,7 @@ import {
   syncDiscordSlashCommands,
 } from "./discord-slash.ts";
 
-import { withDiscordRetry } from "./discord-retry.ts";
+import { isDiscordDeliveryDegraded, withDiscordRetry } from "./discord-retry.ts";
 import { chunkText } from "../chunk-text.ts";
 import {
   discordThreadNameFromUserMessage,
@@ -201,7 +201,12 @@ export class DiscordAdapter implements PlatformAdapter {
     this.client.on("interactionCreate", (interaction) => {
       if (!interaction.isChatInputCommand()) return;
       void this.onSlashCommand(interaction).catch((e) => {
-        logComponent("discord").error("Discord slash command failed", { err: e });
+        const log = logComponent("discord");
+        if (isDiscordDeliveryDegraded(e)) {
+          log.warn("Discord slash command failed", { err: e });
+        } else {
+          log.error("Discord slash command failed", { err: e });
+        }
       });
     });
 
@@ -284,7 +289,13 @@ export class DiscordAdapter implements PlatformAdapter {
   }
 
   private async onSlashCommand(interaction: ChatInputCommandInteraction): Promise<void> {
-    await interaction.deferReply();
+    try {
+      await interaction.deferReply();
+    } catch (e) {
+      if (!isDiscordDeliveryDegraded(e)) throw e;
+      logComponent("discord").warn("Discord slash deferReply failed", { err: e });
+      return;
+    }
 
     const origin = originFromInteraction(interaction);
     const { session_id: sid } = await this.service.findOrCreateSession(

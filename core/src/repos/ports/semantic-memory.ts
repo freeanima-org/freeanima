@@ -2,7 +2,7 @@
 export const RESIDENT_TOP_N = 20;
 
 /** Max pinned memories included in resident context (excess triggers warn log) */
-export const RESIDENT_PINNED_MAX = 20;
+export const RESIDENT_PINNED_MAX = 40;
 
 /** PG semantic_memory row (consumed by capabilities-memory / recall / remember) */
 export type SemanticMemoryRow = {

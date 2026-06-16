@@ -8,7 +8,11 @@ import {
   type Client,
 } from "discord.js";
 
-import { deliverDiscordFinalContent, withDiscordRetry } from "./discord-retry.ts";
+import {
+  deliverDiscordFinalContent,
+  isDiscordDeliveryDegraded,
+  withDiscordRetry,
+} from "./discord-retry.ts";
 import type { DiscordConfig } from "./discord-policy.ts";
 import { extractOrigin, type PlatformOrigin } from "./discord-policy.ts";
 
@@ -128,8 +132,29 @@ export async function replyDiscordInteraction(
   splitMessage: (t: string) => string[],
 ): Promise<void> {
   const chunks = splitMessage(text);
+  const channel = interaction.channel;
+  const sendViaChannel = async (content: string): Promise<void> => {
+    if (channel && "send" in channel && typeof channel.send === "function") {
+      await withDiscordRetry(async (): Promise<void> => {
+        await channel.send({ content });
+      });
+      return;
+    }
+    if (interaction.replied || interaction.deferred) {
+      await withDiscordRetry(() => interaction.followUp({ content }));
+    }
+  };
+
   if (!chunks.length) {
-    await withDiscordRetry(() => interaction.editReply({ content: "(no output)" }));
+    try {
+      await withDiscordRetry(() => interaction.editReply({ content: "(no output)" }));
+    } catch (e) {
+      if (isDiscordDeliveryDegraded(e)) {
+        await sendViaChannel("(no output)");
+      } else {
+        throw e;
+      }
+    }
     return;
   }
   await deliverDiscordFinalContent(
@@ -137,11 +162,23 @@ export async function replyDiscordInteraction(
       await interaction.editReply({ content: chunks[0]! });
     },
     async () => {
-      await interaction.followUp({ content: chunks[0]! });
+      if (interaction.replied || interaction.deferred) {
+        await withDiscordRetry(() => interaction.followUp({ content: chunks[0]! }));
+      } else {
+        await sendViaChannel(chunks[0]!);
+      }
     },
     { kind: "slash", chunk: 0 },
   );
   for (const chunk of chunks.slice(1)) {
-    await withDiscordRetry(() => interaction.followUp({ content: chunk }));
+    try {
+      await withDiscordRetry(() => interaction.followUp({ content: chunk }));
+    } catch (e) {
+      if (isDiscordDeliveryDegraded(e)) {
+        await sendViaChannel(chunk);
+      } else {
+        throw e;
+      }
+    }
   }
 }

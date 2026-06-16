@@ -9,6 +9,8 @@ const TRANSIENT_PATTERNS = [
   /enetunreach/i,
   /etimedout/i,
   /socket hang up/i,
+  /socket connection was closed/i,
+  /request timed out/i,
   /network\s*error/i,
   /aborted/i,
   /abort/i,

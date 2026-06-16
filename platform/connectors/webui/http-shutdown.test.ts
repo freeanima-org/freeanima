@@ -1,5 +1,9 @@
 import { describe, it, expect, vi, afterEach } from "bun:test";
-import { closeHttpServers, waitForDrainWithTimeout } from "./http-shutdown.ts";
+import {
+  closeHttpServers,
+  MIN_GRACEFUL_DRAIN_MS,
+  waitForDrainWithTimeout,
+} from "./http-shutdown.ts";
 import type { WebuiServerHandle } from "./webui-server.ts";
 function mockHandle(): WebuiServerHandle {
   return {
@@ -34,7 +38,7 @@ describe("http-shutdown", () => {
       },
     };
     const p = waitForDrainWithTimeout(anima as never, 1000);
-    vi.advanceTimersByTime(1000);
+    vi.advanceTimersByTime(MIN_GRACEFUL_DRAIN_MS);
     await p;
     expect(anima.abortAll).toHaveBeenCalled();
     vi.useRealTimers();
