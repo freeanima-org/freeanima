@@ -3,7 +3,7 @@ import {
   resolveCommand,
   isRetryResult,
   isRestartResult,
-  isUpdateResult,
+  isUpgradeResult,
 } from "@freeanima/platform/commands";
 import type { CommandDef } from "@freeanima/platform/commands";
 import { messageIncoming, turnAfterComplete } from "@freeanima/core/hooks/conversation";
@@ -18,7 +18,7 @@ import { runExclusiveStreamTurn, streamErrorEvent, type StreamTurnHost } from ".
 import { maybeGenerateSessionTitleAsync } from "./session-title.ts";
 import { applyCommandSessionEffects, checkPlatform } from "./service-sessions.ts";
 import { collectStreamReply, type StreamEvent } from "@freeanima/runtime/loop";
-import { scheduleGracefulRestart, runAnimaCliUpdate } from "./process-restart.ts";
+import { scheduleGracefulRestart, runAnimaCliUpgrade } from "./process-restart.ts";
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
 
 export type MessagingDeps = {
@@ -118,9 +118,9 @@ export async function executeCommand(
     }
   }
 
-  if (isRestartResult(result) || isUpdateResult(result)) {
+  if (isRestartResult(result) || isUpgradeResult(result)) {
     scheduleGracefulRestart(msgDeps.runControl, {
-      beforeRestart: isUpdateResult(result) ? runAnimaCliUpdate : undefined,
+      beforeRestart: isUpgradeResult(result) ? runAnimaCliUpgrade : undefined,
     });
     return { text: result.text, data: result.data, found: true };
   }
@@ -211,13 +211,13 @@ async function* dispatchCommandStream(
     }
     return;
   }
-  if (isRestartResult(result) || isUpdateResult(result)) {
+  if (isRestartResult(result) || isUpgradeResult(result)) {
     if (result.text) {
       yield { event: "token", data: { content: result.text } };
     }
     yield { event: "done", data: {} };
     scheduleGracefulRestart(msgDeps.runControl, {
-      beforeRestart: isUpdateResult(result) ? runAnimaCliUpdate : undefined,
+      beforeRestart: isUpgradeResult(result) ? runAnimaCliUpgrade : undefined,
     });
     return;
   }

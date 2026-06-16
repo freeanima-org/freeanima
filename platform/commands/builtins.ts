@@ -12,7 +12,11 @@ import { onSessionCloseBeforeNew } from "@freeanima/platform/ports/session-close
 import { isSessionMeta } from "@freeanima/core/db/domain";
 import { setHomeChannel } from "@freeanima/platform/ports/home-channel";
 import { getAppRuntime } from "@freeanima/platform/ports";
-import { getCliInstallKind } from "@freeanima/core/config/cli-install";
+import {
+  CLI_UPGRADE_HINT_DOCKER,
+  CLI_UPGRADE_HINT_SOURCE,
+  getCliInstallKind,
+} from "@freeanima/core/config/cli-install";
 
 function conv() {
   return getAppRuntime().conversation;
@@ -232,16 +236,24 @@ function cmdRestart(_ctx: CommandContext): CommandResult | string {
   };
 }
 
-function cmdUpdate(_ctx: CommandContext): CommandResult | string {
+function cmdUpgrade(_ctx: CommandContext): CommandResult | string {
   if (getAppRuntime().isShuttingDown()) {
     return "Service is already restarting…";
   }
-  if (getCliInstallKind() === "local") {
-    return "⛔ Update is disabled for local CLI installs. Use git pull or link:global instead.";
+  const kind = getCliInstallKind();
+  if (kind === "source") {
+    return `⛔ ${CLI_UPGRADE_HINT_SOURCE}`;
   }
+  if (kind === "docker") {
+    return `⛔ ${CLI_UPGRADE_HINT_DOCKER}`;
+  }
+  const text =
+    kind === "npm-local"
+      ? "⬆️ 正在从本地仓库升级 CLI 并重启服务（等待进行中的对话结束）…"
+      : "⬆️ 正在从 npm 升级 @freeanima/cli 并重启服务（等待进行中的对话结束）…";
   return {
-    text: "⬆️ Updating Free Anima from npm, then restarting (waiting for in-flight conversations to flush)…",
-    data: { action: "update" },
+    text,
+    data: { action: "upgrade" },
   };
 }
 
@@ -329,9 +341,9 @@ export function registerBuiltins(): void {
     platforms: ["parlor", "discord", "weixin"],
   });
   registerCommand({
-    name: "update",
-    description: "Update @freeanima/cli from npm and restart service",
-    handler: cmdUpdate,
+    name: "upgrade",
+    description: "Upgrade @freeanima/cli and restart service",
+    handler: cmdUpgrade,
     scope: "global",
     platforms: ["parlor", "discord", "weixin"],
   });

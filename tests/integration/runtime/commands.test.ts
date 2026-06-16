@@ -23,7 +23,7 @@ import {
   executeCommand,
   isRetryResult,
   isRestartResult,
-  isUpdateResult,
+  isUpgradeResult,
   resolveCommand,
 } from "@freeanima/platform/commands";
 import { getAppRuntime } from "@freeanima/platform";
@@ -403,36 +403,50 @@ describePg("slash commands", () => {
     expect(isRestartResult(result)).toBe(false);
   });
 
-  it("/update resolves on parlor, discord, and weixin", () => {
+  it("/upgrade resolves on parlor, discord, and weixin", () => {
     for (const platform of ["parlor", "discord", "weixin"] as const) {
-      const [cmd] = resolveCommand("/update", platform);
-      expect(cmd?.name).toBe("update");
+      const [cmd] = resolveCommand("/upgrade", platform);
+      expect(cmd?.name).toBe("upgrade");
     }
   });
 
-  it("/update returns update action on npm install layout", async () => {
+  it("/upgrade returns upgrade action on npm install layout", async () => {
     const dir = mkdtempSync(join(tmpdir(), "freeanima-cli-npm-cmd-"));
+    const bunRoot = join(dir, "bun");
+    const globalDir = join(bunRoot, "install/global");
+    mkdirSync(globalDir, { recursive: true });
+    writeFileSync(
+      join(globalDir, "package.json"),
+      JSON.stringify({
+        name: "bun-global",
+        dependencies: { "@freeanima/cli": "^0.4.0" },
+      }),
+    );
     const cliJs = join(dir, "node_modules", "@freeanima", "cli", "dist", "cli.js");
     mkdirSync(join(dir, "node_modules", "@freeanima", "cli", "dist"), { recursive: true });
     writeFileSync(cliJs, "// cli\n");
     const prevArgv1 = process.argv[1];
+    const prevBunInstall = process.env.BUN_INSTALL;
+    process.env.BUN_INSTALL = bunRoot;
     process.argv[1] = cliJs;
     try {
-      const [cmd] = findCommand("/update");
+      const [cmd] = findCommand("/upgrade");
       const result = await executeCommand(cmd!, {
         sessionId: "x",
         platform: "parlor",
         args: [],
-        raw: "/update",
+        raw: "/upgrade",
       });
-      expect(isUpdateResult(result)).toBe(true);
-      expect(result.text).toContain("Updating");
+      expect(isUpgradeResult(result)).toBe(true);
+      expect(result.text).toContain("正在从 npm 升级");
     } finally {
       process.argv[1] = prevArgv1;
+      if (prevBunInstall === undefined) delete process.env.BUN_INSTALL;
+      else process.env.BUN_INSTALL = prevBunInstall;
     }
   });
 
-  it("/update is disabled for local cli.ts installs", async () => {
+  it("/upgrade is disabled for local cli.ts installs", async () => {
     const dir = mkdtempSync(join(tmpdir(), "freeanima-cli-local-cmd-"));
     const cliPath = join(dir, "cli", "src", "cli.ts");
     mkdirSync(join(dir, "cli", "src"), { recursive: true });
@@ -440,25 +454,25 @@ describePg("slash commands", () => {
     const prevArgv1 = process.argv[1];
     process.argv[1] = cliPath;
     try {
-      const [cmd] = findCommand("/update");
+      const [cmd] = findCommand("/upgrade");
       const result = await executeCommand(cmd!, {
         sessionId: "x",
         platform: "parlor",
         args: [],
-        raw: "/update",
+        raw: "/upgrade",
       });
-      expect(isUpdateResult(result)).toBe(false);
-      expect(result.text).toContain("disabled for local CLI");
+      expect(isUpgradeResult(result)).toBe(false);
+      expect(result.text).toContain("源码 link 安装不支持自动 upgrade");
     } finally {
       process.argv[1] = prevArgv1;
     }
   });
 
-  it("listCommands includes update (parlor / discord / weixin)", () => {
+  it("listCommands includes upgrade (parlor / discord / weixin)", () => {
     const svc = getAppRuntime();
     for (const platform of ["parlor", "discord", "weixin"] as const) {
       const names = svc.listCommands({ platform }).commands.map((c) => c.name);
-      expect(names).toContain("update");
+      expect(names).toContain("upgrade");
     }
   });
 

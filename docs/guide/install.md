@@ -98,10 +98,10 @@ Schema migrations run automatically on startup when `database.url` is set.
 ### 4. Upgrade
 
 ```bash
-anima update
+anima upgrade
 ```
 
-Updates the global `@freeanima/cli` package from npm. Disabled for local link installs — use git pull or rebuild instead.
+Upgrades the global `@freeanima/cli` package from the npm registry, then restart the service if needed (`anima service restart` or `/restart` in chat).
 
 ---
 
@@ -151,12 +151,16 @@ Hub Chamber: `http://127.0.0.1:2658/chamber/dashboard`
 
 (Use `ANIMA_PORT` if you changed the host mapping.)
 
-### 4. Pull a release image (no local build)
+### 4. Upgrade
+
+On the **host** (not inside the container):
 
 ```bash
 docker compose pull
 docker compose up -d
 ```
+
+`anima upgrade` and `/upgrade` inside the container only print this guidance.
 
 Images are published to `ghcr.io/freeanima-org/freeanima` on each release tag.
 
@@ -233,7 +237,9 @@ bun run check    # typecheck + lint + dep-check + format + changed unit tests
 bun run test     # full unit + integration (integration uses Docker for temp PG)
 ```
 
-Upgrade a link install: `git pull`, `bun install`, restart the service. Do not use `anima update`.
+**link:global** (`bun run link:global`): upgrade manually — `git pull`, `bun install`, then restart the service. `anima upgrade` and `/upgrade` print instructions only.
+
+**Local pack** (`bun run install:cli:local`): `anima upgrade` runs `git pull` and reinstalls the local pack from the repo.
 
 ---
 
