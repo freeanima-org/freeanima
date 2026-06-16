@@ -1,4 +1,3 @@
-import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
   existsSync,
@@ -11,9 +10,11 @@ import {
 } from "node:fs";
 import { join, relative } from "node:path";
 import { getRepoRoot, PATHS } from "@freeanima/platform/config";
+import { compileParaglideToDir, resolveBundledParaglideDir } from "./paraglide-compile.ts";
 
 const WEBUI_APP_REL = join("connectors", "webui", "app");
 const WEBUI_PLATFORM_APP_REL = join("platform", "connectors", "webui", "app");
+const WEBUI_DIST_REL = join("connectors", "webui", "dist");
 const WEBUI_HTML_NAME = "index.html";
 const WEBUI_PUBLIC_PATH = "/webui/";
 /** 缓存 manifest 格式版本；构建/layout 变更时递增以作废旧缓存 */
@@ -74,6 +75,23 @@ export function resolveWebuiAppDir(repoRoot = getRepoRoot()): string {
   const platform = join(repoRoot, WEBUI_PLATFORM_APP_REL);
   if (existsSync(platform)) return platform;
   return legacy;
+}
+
+/** Published @freeanima/cli: connectors/webui/dist（build-cli 预构建） */
+export function resolveBundledWebuiDistDir(repoRoot = getRepoRoot()): string | null {
+  const dir = join(repoRoot, WEBUI_DIST_REL);
+  if (isBuiltHtmlValid(join(dir, WEBUI_HTML_NAME))) return dir;
+  return null;
+}
+
+/** build-cli：在 publish 目录内预构建 WebUI 静态资源 */
+export async function buildPublishedWebuiDist(
+  repoRoot: string,
+  outdir = join(repoRoot, WEBUI_DIST_REL),
+): Promise<string> {
+  const appDir = resolveWebuiAppDir(repoRoot);
+  await buildWebuiToDir(appDir, { outdir, minify: true }, repoRoot);
+  return outdir;
 }
 
 function webuiAppDir(): string {
@@ -171,30 +189,11 @@ function paraglideBuildDir(): string {
   return join(PATHS.webuiBuildDir, "paraglide");
 }
 
-/** 编译到 ~/.anima/runtime/webui-build/paraglide，避免写入仓库 messages/paraglide（可能被其他用户/sandbox 占用）。 */
-function compileParaglideMessages(repoRoot: string): string {
-  const outdir = paraglideBuildDir();
-  rmSync(outdir, { recursive: true, force: true });
-  mkdirSync(outdir, { recursive: true });
-  const result = spawnSync(
-    "bun",
-    [
-      "x",
-      "@inlang/paraglide-js",
-      "compile",
-      "--project",
-      join(repoRoot, "project.inlang"),
-      "--outdir",
-      outdir,
-    ],
-    { cwd: repoRoot, encoding: "utf8" },
-  );
-  if (result.status !== 0) {
-    throw new Error(
-      `paraglide compile failed: ${result.stderr || result.stdout || "unknown error"}`,
-    );
-  }
-  return outdir;
+/** npm publish 用预编译产物；monorepo 编译到 ~/.anima/runtime/webui-build/paraglide */
+function resolveParaglideDir(repoRoot: string): string {
+  const bundled = resolveBundledParaglideDir(repoRoot);
+  if (bundled) return bundled;
+  return compileParaglideToDir({ projectRoot: repoRoot, outdir: paraglideBuildDir() });
 }
 
 function createParaglideResolvePlugin(paraglideDir: string): import("bun").BunPlugin {
@@ -209,9 +208,12 @@ function createParaglideResolvePlugin(paraglideDir: string): import("bun").BunPl
   };
 }
 
-async function buildWebuiToDir(appDir: string, opts: BuildWebuiOptions): Promise<void> {
-  const repoRoot = getRepoRoot();
-  const paraglideDir = compileParaglideMessages(repoRoot);
+async function buildWebuiToDir(
+  appDir: string,
+  opts: BuildWebuiOptions,
+  repoRoot = getRepoRoot(),
+): Promise<void> {
+  const paraglideDir = resolveParaglideDir(repoRoot);
   const htmlPath = join(appDir, WEBUI_HTML_NAME);
   mkdirSync(opts.outdir, { recursive: true });
   const tailwind = await loadTailwindPlugin();
@@ -254,6 +256,12 @@ async function buildWebuiToCache(hash: string, appDir: string): Promise<string> 
 }
 
 async function ensureProductionCacheDir(): Promise<string> {
+  const bundled = resolveBundledWebuiDistDir();
+  if (bundled) {
+    cachedProductionDir = bundled;
+    return bundled;
+  }
+
   const appDir = webuiAppDir();
   const hash = computeWebuiSourceHash(appDir);
   if (cachedProductionDir && isProductionCacheValid(hash)) {

@@ -2,7 +2,11 @@ import { describe, it, expect, beforeEach } from "bun:test";
 import { mkdtempSync, writeFileSync, mkdirSync, utimesSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { computeWebuiSourceHash, resolveWebuiAppDir } from "./webui-bundle.ts";
+import {
+  computeWebuiSourceHash,
+  resolveBundledWebuiDistDir,
+  resolveWebuiAppDir,
+} from "./webui-bundle.ts";
 
 describe("computeWebuiSourceHash", () => {
   let appDir: string;
@@ -58,5 +62,15 @@ describe("resolveWebuiAppDir", () => {
     mkdirSync(platform, { recursive: true });
     writeFileSync(join(platform, "index.html"), "platform\n");
     expect(resolveWebuiAppDir(root)).toBe(platform);
+  });
+});
+
+describe("resolveBundledWebuiDistDir", () => {
+  it("returns connectors/webui/dist when index.html is valid", () => {
+    const root = mkdtempSync(join(tmpdir(), "freeanima-webui-dist-"));
+    const dir = join(root, "connectors", "webui", "dist");
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(join(dir, "index.html"), '<script src="/webui/chunk-abc.js"></script>\n');
+    expect(resolveBundledWebuiDistDir(root)).toBe(dir);
   });
 });

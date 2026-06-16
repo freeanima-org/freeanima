@@ -202,9 +202,11 @@ bun run anima -- --help
 For a publish-shaped local install (closer to npm users):
 
 ```bash
-bun run build:cli
-bun install -g ./cli/publish
+bun run install:cli:local
+# equivalent: bun run build:cli && bun install -g "$PWD/cli/publish"
 ```
+
+Bun 的 `bun install -g ./cli/publish` 在仓库根目录不可用；请使用 `bun run install:cli:local`（会先清理损坏的全局依赖，再 pack + 安装 tarball）。
 
 ### 3. Configure and start
 
