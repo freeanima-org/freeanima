@@ -388,6 +388,19 @@ export async function reloadSessionTools(
   return names.length;
 }
 
+/** Reset session meta cache: default tools + rebuilt system_prompt */
+export async function resetSessionCache(
+  repos: PgRepositories,
+  tools: ToolSetRegistry,
+  session: string,
+): Promise<{ toolCount: number; systemPromptLength: number }> {
+  const toolCount = await reloadSessionTools(repos, tools, session);
+  await rebuildSessionSystemPrompt(repos, session);
+  const meta = await loadSessionMeta(repos, session);
+  const systemPromptLength = isSessionMeta(meta) ? (meta.system_prompt ?? "").length : 0;
+  return { toolCount, systemPromptLength };
+}
+
 const RESUME_STALE_MS = 7 * 24 * 60 * 60 * 1000;
 
 async function sessionLastActivityMs(

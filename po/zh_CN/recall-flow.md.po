@@ -19,7 +19,7 @@ msgstr ""
 #: docs/concepts/recall-flow.md:1 messages/po4a/en.xml:42
 #, no-wrap
 msgid "Recall Flow"
-msgstr "Recall 流程"
+msgstr "回忆流程"
 
 #. type: Title #
 #: docs/concepts/recall-flow.md:5

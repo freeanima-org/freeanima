@@ -62,36 +62,21 @@ async function cmdCancel(ctx: CommandContext): Promise<string> {
   return "Question cancelled, you can continue the conversation.";
 }
 
-async function cmdReloadTools(ctx: CommandContext): Promise<string> {
+async function cmdResetSessionCache(ctx: CommandContext): Promise<string> {
   const meta = await conv().loadSessionMeta(ctx.sessionId);
   if (!isSessionMeta(meta)) {
-    return "⚠️ Current session does not exist, cannot update tool list.";
+    return "⚠️ Current session does not exist, cannot reset session cache.";
   }
-  const beforeSchema = meta.tools.length;
-  const beforeLoaded = meta.loaded_tools?.length ?? 0;
   try {
-    const count = await conv().reloadSessionTools(ctx.sessionId);
-    const after = await conv().loadSessionMeta(ctx.sessionId);
-    const names = isSessionMeta(after) ? after.tools : [];
-    const preview = names.length <= 8 ? names.join(", ") : `${names.slice(0, 8).join(", ")}…`;
+    const { toolCount, systemPromptLength } = await conv().resetSessionCache(ctx.sessionId);
     return (
-      `✅ Reset session tools: schema ${count} (was ${beforeSchema}),` +
-      `cleared loaded_tools (was ${beforeLoaded}).\nDefault tools: ${preview}`
+      `✅ Reset session cache\n` +
+      `tools: ${toolCount} (cleared loaded_tools)\n` +
+      `system_prompt: ${systemPromptLength} chars`
     );
   } catch (e) {
-    return `⚠️ Failed to update tool list: ${String(e)}`;
+    return `⚠️ Failed to reset session cache: ${String(e)}`;
   }
-}
-
-async function cmdReloadSystemPrompt(ctx: CommandContext): Promise<string> {
-  const meta = await conv().loadSessionMeta(ctx.sessionId);
-  if (!isSessionMeta(meta)) {
-    return "⚠️ Current session does not exist, cannot rebuild system prompt.";
-  }
-  await conv().rebuildSessionSystemPrompt(ctx.sessionId);
-  const after = await conv().loadSessionMeta(ctx.sessionId);
-  const sp = isSessionMeta(after) ? (after.system_prompt ?? "") : "";
-  return `✅ Rebuilt system prompt (${sp.length} chars), only updated session_meta.system_prompt`;
 }
 
 async function cmdStats(ctx: CommandContext): Promise<string> {
@@ -176,8 +161,7 @@ async function cmdCompress(ctx: CommandContext): Promise<string> {
 
 async function reloadMaskSideEffects(sessionId: string): Promise<void> {
   await conv().recompressSession(sessionId, { force: true });
-  await conv().reloadSessionTools(sessionId);
-  await conv().rebuildSessionSystemPrompt(sessionId);
+  await conv().resetSessionCache(sessionId);
 }
 
 async function cmdMask(ctx: CommandContext): Promise<string> {
@@ -205,13 +189,13 @@ async function cmdMask(ctx: CommandContext): Promise<string> {
     });
     await reloadMaskSideEffects(ctx.sessionId);
     const resolved = resolveMaskPresets([preset], masks, engine.catalog.toolSets);
-    return `✅ Set capability mask '${preset}' (${resolved.allowed_tools.length} tools). Compressed and reloaded tools and system prompt.`;
+    return `✅ Set capability mask '${preset}' (${resolved.allowed_tools.length} tools). Compressed and reset session cache.`;
   }
 
   if (sub === "clear") {
     await conv().updateSessionMetaField(ctx.sessionId, { capability_mask: undefined });
     await reloadMaskSideEffects(ctx.sessionId);
-    return "✅ Removed capability mask, restored full capabilities. Compressed and reloaded tools and system prompt.";
+    return "✅ Removed capability mask, restored full capabilities. Compressed and reset session cache.";
   }
 
   if (sub === "show") {
@@ -286,19 +270,11 @@ export function registerBuiltins(): void {
     scope: "session",
   });
   registerCommand({
-    name: "reload_tools",
+    name: "reset_session_cache",
     description:
-      "Reset session tool schema to defaults and clear tools_load accumulated loaded_tools",
-    handler: cmdReloadTools,
-    aliases: ["reload-tools"],
-    scope: "session",
-  });
-  registerCommand({
-    name: "reload_system_prompt",
-    description:
-      "Rebuild system prompt (self layer, resident memory, AGENTS.md under session cwd), only writes system_prompt",
-    handler: cmdReloadSystemPrompt,
-    aliases: ["reload-system-prompt"],
+      "Reset session meta cache: default tool schema (clear loaded_tools) and rebuild system_prompt",
+    handler: cmdResetSessionCache,
+    aliases: ["reset-session-cache"],
     scope: "session",
   });
   registerCommand({

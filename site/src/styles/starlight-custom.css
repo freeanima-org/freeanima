@@ -144,9 +144,18 @@ header.header {
 
 .sl-markdown-content h2 {
   font-size: 1.25rem;
+}
+
+.sl-markdown-content .sl-heading-wrapper.level-h2 {
   border-bottom: 1px solid var(--fa-border);
   padding-bottom: 0.5rem;
   margin-top: 3rem;
+}
+
+.sl-markdown-content .sl-heading-wrapper.level-h2 > :first-child {
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-top: 0;
 }
 
 .sl-markdown-content h3 {
@@ -160,7 +169,7 @@ header.header {
   font-size: 0.9375rem;
 }
 
-.sl-markdown-content a {
+.sl-markdown-content a:not(.sl-anchor-link) {
   color: var(--fa-text);
   text-decoration: none;
   border-bottom: 1px solid var(--fa-border);
@@ -168,8 +177,71 @@ header.header {
   transition: border-color 0.15s;
 }
 
-.sl-markdown-content a:hover {
+.sl-markdown-content a:not(.sl-anchor-link):hover {
   border-color: var(--fa-muted);
+}
+
+/* Heading anchor links — pin icon to trailing edge, never over text */
+.sl-markdown-content .sl-heading-wrapper {
+  position: relative;
+  padding-inline-end: 1.15rem;
+}
+
+.sl-markdown-content .sl-heading-wrapper > :first-child {
+  display: inline;
+  padding-inline-end: 0 !important;
+}
+
+.sl-markdown-content .sl-anchor-link {
+  position: absolute;
+  inset-inline-end: 0;
+  top: 0;
+  margin-inline-start: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.85rem;
+  height: calc(var(--sl-line-height-headings) * 1em);
+  border-bottom: none !important;
+  padding-bottom: 0 !important;
+  color: var(--fa-faint) !important;
+  opacity: 0;
+  transition:
+    opacity 0.15s,
+    color 0.15s;
+}
+
+.sl-markdown-content .sl-heading-wrapper:hover .sl-anchor-link,
+.sl-markdown-content .sl-anchor-link:focus-visible {
+  opacity: 1;
+}
+
+.sl-markdown-content .sl-anchor-link:hover,
+.sl-markdown-content .sl-anchor-link:focus-visible {
+  color: var(--fa-muted) !important;
+}
+
+.sl-markdown-content .sl-anchor-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sl-markdown-content .sl-anchor-icon > svg {
+  display: block;
+  width: 0.7rem !important;
+  height: 0.7rem !important;
+  transform: none !important;
+}
+
+.sl-markdown-content .sl-anchor-link::after {
+  inset: -0.1rem;
+}
+
+@media (hover: none) {
+  .sl-markdown-content .sl-anchor-link {
+    opacity: 0.45;
+  }
 }
 
 .sl-markdown-content code:not(pre code) {
@@ -307,10 +379,156 @@ site-search dialog {
 }
 
 /* ---------- Mermaid diagrams (astro-mermaid) ---------- */
+:root,
+:root[data-theme="dark"] {
+  --mermaid-shimmer-a: #1e1c1a;
+  --mermaid-shimmer-b: #2a2825;
+}
+
+:root[data-theme="light"] {
+  --mermaid-shimmer-a: #e2dfd9;
+  --mermaid-shimmer-b: #e8e4dc;
+}
+
 .mermaid,
 .mermaid-container {
   margin: 1.25rem 0;
   overflow-x: auto;
+}
+
+pre.mermaid:not([data-processed]) {
+  background: linear-gradient(
+    90deg,
+    var(--mermaid-shimmer-a) 25%,
+    var(--mermaid-shimmer-b) 50%,
+    var(--mermaid-shimmer-a) 75%
+  );
+  background-size: 200% 100%;
+  animation: fa-mermaid-shimmer 1.5s infinite;
+  border-radius: 0;
+  min-height: 200px;
+}
+
+@keyframes fa-mermaid-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+pre.mermaid[data-processed] {
+  animation: none;
+  background: transparent;
+  min-height: auto;
+}
+
+.fa-mermaid-shell {
+  position: relative;
+  margin: 1.25rem 0;
+}
+
+.fa-mermaid-shell > pre.mermaid {
+  margin: 0;
+}
+
+.fa-mermaid-zoom-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 2;
+  border: 1px solid var(--fa-border);
+  background: color-mix(in srgb, var(--fa-surface) 88%, transparent);
+  color: var(--fa-muted);
+  font: 400 0.75rem/1 var(--font-sans);
+  padding: 0.25rem 0.45rem;
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 0.15s,
+    color 0.15s,
+    border-color 0.15s;
+}
+
+.fa-mermaid-shell:hover .fa-mermaid-zoom-btn,
+.fa-mermaid-shell:focus-within .fa-mermaid-zoom-btn {
+  opacity: 1;
+}
+
+.fa-mermaid-zoom-btn:hover {
+  color: var(--fa-text);
+  border-color: var(--fa-muted);
+}
+
+.fa-mermaid-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+}
+
+.fa-mermaid-lightbox[hidden] {
+  display: none;
+}
+
+.fa-mermaid-lightbox__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgb(0 0 0 / 0.72);
+}
+
+.fa-mermaid-lightbox__panel {
+  position: absolute;
+  inset: 5vh 5vw;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--fa-border);
+  background: var(--fa-bg);
+}
+
+.fa-mermaid-lightbox__toolbar {
+  display: flex;
+  gap: 0.35rem;
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--fa-border);
+  background: var(--fa-surface);
+}
+
+.fa-mermaid-lightbox__btn {
+  border: 1px solid var(--fa-border);
+  background: transparent;
+  color: var(--fa-text);
+  font: 400 0.8rem/1 var(--font-sans);
+  min-width: 2rem;
+  padding: 0.35rem 0.55rem;
+  cursor: pointer;
+}
+
+.fa-mermaid-lightbox__btn:hover {
+  border-color: var(--fa-muted);
+}
+
+.fa-mermaid-lightbox__btn--close {
+  margin-left: auto;
+  font-size: 1rem;
+}
+
+.fa-mermaid-lightbox__viewport {
+  flex: 1;
+  overflow: auto;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+}
+
+.fa-mermaid-lightbox__stage {
+  transform-origin: center center;
+  transition: transform 0.12s ease-out;
+}
+
+.fa-mermaid-lightbox__stage svg {
+  max-width: none;
+  height: auto;
 }
 
 .mermaid svg {

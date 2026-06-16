@@ -10,6 +10,7 @@ import { fileURLToPath } from "node:url";
 import { starlightSidebar } from "./src/lib/sidebar.ts";
 import { docRedirects } from "./src/lib/doc-redirects.ts";
 import { rehypeDocsMdLinks } from "./src/plugins/rehype-docs-md-links.ts";
+import { faMermaidConfig } from "./src/lib/mermaid-theme.ts";
 
 const docsRoot = fileURLToPath(new URL("./src/content/docs", import.meta.url));
 const docsZhRoot = fileURLToPath(new URL("../docs/.generated/zh_CN", import.meta.url));
@@ -34,10 +35,7 @@ export default defineConfig({
     ],
   },
   integrations: [
-    mermaid({
-      autoTheme: true,
-      enableLog: false,
-    }),
+    mermaid(faMermaidConfig),
     starlight({
       title: "Free Anima",
       description: "A runtime for digital humans — not a metaphor",
