@@ -7,10 +7,18 @@ Use the same language as the user. Output only the title text — no quotes, pre
 
 export const SESSION_TITLE_MAX_LEN = 50;
 
+const SURROUNDING_QUOTE = new Set(['"', "'", "`"]);
+
+function stripSurroundingQuotes(text: string): string {
+  let start = 0;
+  let end = text.length;
+  while (start < end && SURROUNDING_QUOTE.has(text[start]!)) start++;
+  while (end > start && SURROUNDING_QUOTE.has(text[end - 1]!)) end--;
+  return text.slice(start, end);
+}
+
 export function sanitizeSessionTitle(raw: string): string {
-  return raw
-    .trim()
-    .replace(/^["'`]+|["'`]+$/g, "")
+  return stripSurroundingQuotes(raw.trim())
     .replace(/\s+/g, " ")
     .replace(/[\r\n]+/g, " ")
     .slice(0, SESSION_TITLE_MAX_LEN)

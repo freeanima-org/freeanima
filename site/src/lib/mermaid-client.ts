@@ -12,29 +12,26 @@ function resolveThemeVars(): Record<string, string | boolean> {
 function initMermaidEngine(): void {
   mermaid.initialize({
     startOnLoad: false,
+    securityLevel: "strict",
     theme: "base",
     themeVariables: resolveThemeVars(),
     flowchart: MERMAID_FLOWCHART,
   });
 }
 
-async function renderDiagram(pre: HTMLPreElement): Promise<void> {
-  if (!pre.hasAttribute("data-diagram")) {
-    pre.setAttribute("data-diagram", pre.textContent ?? "");
-  }
-  const definition = (pre.getAttribute("data-diagram") ?? "").trim();
-  if (!definition) return;
+function cacheDiagramSource(pre: HTMLPreElement): string {
+  const cached = pre.getAttribute("data-diagram")?.trim();
+  if (cached) return cached;
+  const source = (pre.textContent ?? "").trim();
+  if (source) pre.setAttribute("data-diagram", source);
+  return source;
+}
 
-  pre.removeAttribute("data-processed");
-  const id = "mermaid-" + Math.random().toString(36).slice(2, 11);
-
-  try {
-    const { svg } = await mermaid.render(id, definition);
-    pre.innerHTML = svg;
-    pre.setAttribute("data-processed", "true");
-  } catch (error) {
-    console.error("[mermaid-client]", error);
-  }
+function restoreDiagramSource(pre: HTMLPreElement): boolean {
+  const definition = cacheDiagramSource(pre);
+  if (!definition) return false;
+  pre.textContent = definition;
+  return true;
 }
 
 async function renderAllDiagrams(): Promise<void> {
@@ -42,8 +39,18 @@ async function renderAllDiagrams(): Promise<void> {
   if (diagrams.length === 0) return;
 
   initMermaidEngine();
-  for (const diagram of diagrams) {
-    await renderDiagram(diagram);
+  const nodes: HTMLPreElement[] = [];
+  for (const pre of diagrams) {
+    if (!restoreDiagramSource(pre)) continue;
+    pre.removeAttribute("data-processed");
+    nodes.push(pre);
+  }
+  if (nodes.length === 0) return;
+
+  try {
+    await mermaid.run({ nodes, suppressErrors: true });
+  } catch (error) {
+    console.error("[mermaid-client]", error);
   }
   enhanceDiagrams();
 }
