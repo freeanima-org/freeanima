@@ -75,6 +75,7 @@ export function createSapServerHandlers(deps: SapServerDeps): SapServerHandlers 
           platform_for_app: {
             "pair-programming": "studio-pair-programming",
             parlor: "parlor",
+            companion: "companion",
           },
           ...(wantsMaskPresets
             ? {

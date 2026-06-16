@@ -1,0 +1,19 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "paths": {
+      "@/*": ["./app/src/*"]
+    }
+  },
+  "include": [
+    "app/src/**/*.ts",
+    "app/src/**/*.tsx",
+    "server/**/*.ts",
+    "build.ts",
+    "dev.ts",
+    "compile-sidecar.ts",
+    "../../types/**/*.d.ts"
+  ]
+}

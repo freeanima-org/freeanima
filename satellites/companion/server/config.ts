@@ -1,0 +1,42 @@
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { companionConfigPath, ensureCompanionDataDir } from "./paths.ts";
+
+export type CompanionConfig = {
+  hub_url: string;
+  model_path: string;
+};
+
+const HUB_URL = (process.env.FREEANIMA_URL ?? "http://127.0.0.1:2658").replace(/\/$/, "");
+
+export const DEFAULT_CONFIG: CompanionConfig = {
+  hub_url: HUB_URL,
+  model_path: "/models/default.vrm",
+};
+
+export function loadConfig(): CompanionConfig {
+  ensureCompanionDataDir();
+  const configPath = companionConfigPath();
+  if (!existsSync(configPath)) {
+    return { ...DEFAULT_CONFIG };
+  }
+  try {
+    const raw = JSON.parse(readFileSync(configPath, "utf-8")) as Partial<CompanionConfig>;
+    return {
+      hub_url: raw.hub_url ?? DEFAULT_CONFIG.hub_url,
+      model_path: raw.model_path ?? DEFAULT_CONFIG.model_path,
+    };
+  } catch {
+    return { ...DEFAULT_CONFIG };
+  }
+}
+
+export function saveConfig(patch: Partial<CompanionConfig>): CompanionConfig {
+  ensureCompanionDataDir();
+  const next = { ...loadConfig(), ...patch };
+  writeFileSync(companionConfigPath(), JSON.stringify(next, null, 2), "utf-8");
+  return next;
+}
+
+export function hubUrlFromConfig(): string {
+  return loadConfig().hub_url.replace(/\/$/, "");
+}

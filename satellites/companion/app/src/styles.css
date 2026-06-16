@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+}
+
+.companion-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.companion-overlay > * {
+  pointer-events: auto;
+}
+
+.chat-bubble {
+  @apply rounded-2xl px-3 py-2 text-sm shadow-lg;
+  background: rgba(20, 20, 30, 0.85);
+  color: #f0f0f5;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  max-width: 280px;
+  word-break: break-word;
+}
+
+.chat-input-bar {
+  @apply flex gap-2 items-center rounded-full px-3 py-1.5 shadow-lg;
+  background: rgba(20, 20, 30, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.chat-input-bar input {
+  @apply flex-1 bg-transparent outline-none text-sm text-white placeholder-white/40;
+  min-width: 120px;
+}
+
+.settings-panel {
+  @apply rounded-xl p-4 text-sm shadow-xl;
+  background: rgba(20, 20, 30, 0.92);
+  color: #f0f0f5;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  min-width: 280px;
+}
+
+.settings-panel label {
+  @apply block text-xs text-white/60 mb-1;
+}
+
+.settings-panel input {
+  @apply w-full rounded px-2 py-1 text-sm bg-black/30 border border-white/10 text-white;
+}
