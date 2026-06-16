@@ -8,7 +8,7 @@ import { m } from "@/lib/i18n.ts";
 
 type ToolsLoaderData = ToolsStatusResponse;
 
-const EMPTY_LOADER_DATA: ToolsLoaderData = { default_tools: [], tools: [], toolsets: [] };
+const EMPTY_LOADER_DATA: ToolsLoaderData = { default_toolsets: [], tools: [], toolsets: [] };
 
 const STATIC_TOOLSET_ORDER = ["toolset", "memory"] as const;
 
@@ -60,12 +60,11 @@ async function copyText(text: string, label: string): Promise<void> {
 }
 
 export const Route = createFileRoute("/chamber/tools")({
-  loader: () =>
-    getToolsStatus("default").catch(() => EMPTY_LOADER_DATA) as Promise<ToolsLoaderData>,
+  loader: () => getToolsStatus().catch(() => EMPTY_LOADER_DATA) as Promise<ToolsLoaderData>,
   component: ToolsPage,
 });
 
-function DefaultToolsSection({ names }: { names: string[] }) {
+function DefaultToolSetsSection({ names }: { names: string[] }) {
   if (!names.length) return null;
   return (
     <div className="card bg-base-200 mb-4">
@@ -194,7 +193,7 @@ function ToolCard({ tool }: { tool: ToolsStatusToolItem }) {
 function ToolsPage() {
   const data = Route.useLoaderData();
   const tools = data.tools ?? [];
-  const defaultTools = data.default_tools ?? [];
+  const defaultToolSets = data.default_toolsets ?? [];
   const toolSets = sortToolSets(data.toolsets ?? []);
   const toolByName = new Map(tools.map((t) => [t.name, t]));
 
@@ -203,7 +202,7 @@ function ToolsPage() {
       <div>
         <h2 className="text-lg font-bold mb-4">{m.webui_chamber_nav_tools()}</h2>
         <p className="text-sm text-base-content/60 mb-4">{m.webui_chamber_tools_desc()}</p>
-        <DefaultToolsSection names={defaultTools} />
+        <DefaultToolSetsSection names={defaultToolSets} />
         <div className="space-y-3">
           {tools.map((tool) => (
             <ToolCard key={tool.name} tool={tool} />
@@ -224,14 +223,13 @@ function ToolsPage() {
     <div>
       <h2 className="text-lg font-bold mb-4">{m.webui_chamber_nav_tools()}</h2>
       <p className="text-sm text-base-content/60 mb-4">{m.webui_chamber_tools_desc_grouped()}</p>
-      <DefaultToolsSection names={defaultTools} />
+      <DefaultToolSetsSection names={defaultToolSets} />
 
       <div className="space-y-4">
         {toolSets.map((ts) => {
           const groupedTools = ts.tools
             .map((name) => toolByName.get(name))
             .filter((t): t is ToolsStatusToolItem => t !== undefined);
-          if (!groupedTools.length) return null;
           return (
             <details key={ts.name} className="group">
               <summary className="cursor-pointer font-bold list-none flex items-baseline gap-2">
@@ -241,11 +239,13 @@ function ToolsPage() {
                   <span className="text-xs font-normal text-base-content/50">{ts.description}</span>
                 ) : null}
               </summary>
-              <div className="space-y-2 mt-2 ml-4">
-                {groupedTools.map((tool) => (
-                  <ToolCard key={tool.name} tool={tool} />
-                ))}
-              </div>
+              {groupedTools.length > 0 ? (
+                <div className="space-y-2 mt-2 ml-4">
+                  {groupedTools.map((tool) => (
+                    <ToolCard key={tool.name} tool={tool} />
+                  ))}
+                </div>
+              ) : null}
             </details>
           );
         })}

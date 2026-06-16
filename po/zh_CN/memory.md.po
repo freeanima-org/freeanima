@@ -453,7 +453,8 @@ msgid ""
 "at 40 on read)."
 msgstr ""
 "夜间 sleep-cycle 步骤 `memory-ref-sync` 从 messages 全量校准计数。超出置顶条"
-"目在读时截断并 warn 日志；深睡第 4 轮审查置顶质量（运行时读常驻仍上限 40 条）。"
+"目在读时截断并 warn 日志；深睡第 4 轮审查置顶质量（运行时读常驻仍上限 40 "
+"条）。"
 
 #. type: Title ##
 #: docs/concepts/memory.md:162

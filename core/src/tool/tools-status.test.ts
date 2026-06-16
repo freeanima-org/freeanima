@@ -3,7 +3,6 @@ import { z } from "zod";
 
 import { defineToolReturn } from "./return-contract.ts";
 import { DEFAULT_SESSION_TOOLSETS } from "./default-session-toolsets.ts";
-import { toolNamesForToolSets } from "./toolset-meta.ts";
 import { ToolSetRegistry } from "./toolset.ts";
 import { buildToolsStatus, resolveReturnKind } from "./tools-status.ts";
 
@@ -37,7 +36,7 @@ describe("resolveReturnKind", () => {
 });
 
 describe("buildToolsStatus", () => {
-  it("assembles definition, return_kind, and default_tools", () => {
+  it("assembles definition, return_kind, and default_toolsets", () => {
     const registry = new ToolSetRegistry();
     registry.registerToolSet("toolset", "discovery", [
       {
@@ -76,13 +75,10 @@ describe("buildToolsStatus", () => {
 
     const status = buildToolsStatus(registry);
 
-    expect(status.default_tools).toEqual(
-      toolNamesForToolSets(
-        registry,
-        DEFAULT_SESSION_TOOLSETS.filter((n) => registry.getToolSet(n) != null),
-      ),
+    expect(status.default_toolsets).toEqual(
+      DEFAULT_SESSION_TOOLSETS.filter((n) => registry.getToolSet(n) != null),
     );
-    expect(status.default_tools).toContain("toolset_search");
+    expect(status.default_toolsets).toContain("toolset");
 
     const read = status.tools.find((t) => t.name === "file_read");
     expect(read?.return_kind).toBe("text");

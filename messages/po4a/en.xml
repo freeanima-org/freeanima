@@ -359,8 +359,8 @@ Digital Humans</msg>
   <msg id="webui_chamber_tasks_desc">Browse PG tasks with keyword search and status/priority filters (read-only).</msg>
   <msg id="webui_chamber_tasks_search_label">Search term (optional, title/description)</msg>
   <msg id="webui_chamber_title">Chamber</msg>
-  <msg id="webui_chamber_tools_default_loaded">Default loaded tools</msg>
-  <msg id="webui_chamber_tools_default_loaded_hint">Tool sets auto-injected into new sessions (tools_load on-demand tools not listed).</msg>
+  <msg id="webui_chamber_tools_default_loaded">Default loaded toolsets</msg>
+  <msg id="webui_chamber_tools_default_loaded_hint">ToolSets auto-injected into new sessions (toolsets loaded on-demand via toolset_load are not listed here).</msg>
   <msg id="webui_chamber_tools_desc">Registered tools list.</msg>
   <msg id="webui_chamber_tools_desc_grouped">Registered tools (grouped by ToolSet).</msg>
   <msg id="webui_chamber_tools_error_return">Error return</msg>

@@ -2051,14 +2051,14 @@ msgstr "卧室"
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:362
 #, no-wrap
-msgid "Default loaded tools"
-msgstr "默认加载工具"
+msgid "Default loaded toolsets"
+msgstr "默认加载工具集"
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:363
 #, no-wrap
-msgid "Tool sets auto-injected into new sessions (tools_load on-demand tools not listed)."
-msgstr "新会话自动注入 LLM tools 参数的默认集（tools_load 按需加载的工具不在此列）。"
+msgid "ToolSets auto-injected into new sessions (toolsets loaded on-demand via toolset_load are not listed here)."
+msgstr "新会话自动注入 LLM tools 参数的默认工具集（通过 toolset_load 按需加载的工具集不在此列）。"
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:364
