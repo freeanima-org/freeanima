@@ -2,6 +2,7 @@ export type {
   PgRepositories,
   SessionStorePort,
   SessionSummaryRow,
+  SessionCleanupResult,
   MessageFtsHit,
   MessageRowView,
   SemanticMemoryRow,

@@ -94,6 +94,12 @@ function createMockSessionStore(overrides: Partial<SessionStorePort> = {}): Sess
     async getEarliestSessionDay() {
       return null;
     },
+    async listStaleSessionIdsForCleanup() {
+      return [];
+    },
+    async deleteStaleSessions() {
+      return { deleted: 0, ids: [] };
+    },
   };
   return { ...base, ...overrides };
 }

@@ -22,6 +22,7 @@ Sleep is the digital life's memory consolidation mechanism—analogous to human 
 | Mechanism              | Status         | Notes                                                          |
 | ---------------------- | -------------- | -------------------------------------------------------------- |
 | Sleep cycle pipeline   | ✅ Implemented | Single cron `builtin-sleep-cycle` @ 02:00                      |
+| Session cleanup        | ✅ Implemented | Step `session-cleanup` before light-sleep in sleep-cycle DAG   |
 | Light sleep (in-cycle) | ✅ Implemented | Step `light-sleep` in sleep-cycle DAG                          |
 | Deep sleep (in-cycle)  | ✅ Implemented | Step `deep-sleep`, depends on light-sleep                      |
 | Memory ref sync        | ✅ Implemented | Step `memory-ref-sync`, depends on deep-sleep                  |
@@ -95,17 +96,32 @@ Two memories semantically negate each other and cannot be explained by temporal 
 ## Trigger Mechanism
 
 ```cron
-0 2 * * *  sleep-cycle   # builtin-sleep-cycle: light → deep ∥ dream ∥ self-layer-refresh → memory-ref-sync
+0 2 * * *  sleep-cycle   # builtin-sleep-cycle: session-cleanup → light → deep ∥ dream ∥ self-layer-refresh → memory-ref-sync
 ```
 
 DAG (macro layer):
 
 ```text
-light-sleep
-  ├─► deep-sleep ──► memory-ref-sync (optional step)
-  ├─► dream (optional step)
-  └─► self-layer-refresh (optional step)
+session-cleanup
+  └─► light-sleep
+        ├─► deep-sleep ──► memory-ref-sync (optional step)
+        ├─► dream (optional step)
+        └─► self-layer-refresh (optional step)
 ```
+
+### Session cleanup (pre-light-sleep)
+
+Runs as the first sleep-cycle step before light-sleep scans yesterday's sessions.
+
+| Rule                                         | Action                        |
+| -------------------------------------------- | ----------------------------- |
+| `messages` count = 0                         | Delete when stale             |
+| `messages` count = 1 (any role)              | Delete when stale             |
+| `messages` count > 1 and no `assistant` role | Delete when stale             |
+| Has `assistant` and ≥2 messages              | Keep                          |
+| `debug = true`                               | Keep (separate debug cleanup) |
+
+**Stale** means `sessions.updated_at` older than **24 hours** (wall-clock `timestamptz`, not CST day boundary). Recent empty sessions (e.g. satellite "new session" without a first message) are kept until the next night's run.
 
 After downtime, the next scheduled run catches up.
 

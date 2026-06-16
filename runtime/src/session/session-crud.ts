@@ -560,6 +560,24 @@ export async function rollbackToLastUser(repos: PgRepositories, session: string)
   return lastUser.role === "user" ? lastUser.content : "";
 }
 
+/** Default minimum age before a stale session may be deleted by sleep-cycle cleanup */
+export const STALE_SESSION_MIN_AGE_MS = 24 * 60 * 60 * 1000;
+
+export type CleanupStaleSessionsResult = {
+  deleted: number;
+  ids: string[];
+};
+
+export async function cleanupStaleSessions(
+  repos: PgRepositories,
+  opts?: { olderThan?: Date; minAgeMs?: number },
+): Promise<CleanupStaleSessionsResult> {
+  if (!postgresAvailable(repos)) return { deleted: 0, ids: [] };
+  const minAgeMs = opts?.minAgeMs ?? STALE_SESSION_MIN_AGE_MS;
+  const olderThan = opts?.olderThan ?? new Date(Date.now() - minAgeMs);
+  return await repos.session.deleteStaleSessions({ olderThan });
+}
+
 export async function cleanupDebugSessions(
   repos: PgRepositories,
   _maxAgeHours = 1,
