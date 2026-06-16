@@ -472,15 +472,6 @@ export async function appendUserTurn(
 ): Promise<string> {
   const content = userText;
   await appendMessage(repos, { role: "user", content }, session);
-
-  const meta = await loadSessionMeta(repos, session);
-  if (isSessionMeta(meta) && !meta.title) {
-    const short = content.slice(0, 30).trim();
-    if (short) {
-      await updateSessionMetaField(repos, session, { title: short });
-    }
-  }
-
   return content;
 }
 

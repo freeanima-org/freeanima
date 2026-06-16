@@ -1,6 +1,7 @@
 import { isSessionMeta, resolveExecutableToolNames } from "@freeanima/runtime/conversation";
 import { resolveSessionMaskFromMeta, runtimeToolMaskFromResolved } from "./mask-wire.ts";
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
+import { maybeGenerateSessionTitleAsync, type SessionTitleNotify } from "./session-title.ts";
 import type { SessionMessage as Message } from "@freeanima/core/db/domain";
 import type { SessionMessage } from "@freeanima/core/db/domain";
 import * as loopEngine from "@freeanima/runtime/loop";
@@ -104,6 +105,8 @@ export type RunSimpleTurnOpts = {
   model: string;
   /** Default conversation.beginTurn; pass conversation.retryTurn for retry etc. */
   prepare?: (sessionId: string, prompt: string) => Promise<TurnPrepareResult>;
+  /** Optional session.updated notification after async title generation */
+  titleNotify?: SessionTitleNotify;
 };
 
 /**
@@ -114,8 +117,9 @@ export async function runSimpleTurn(
   deps: FullRuntimeDeps,
   opts: RunSimpleTurnOpts,
 ): Promise<string> {
-  const { sessionId, prompt, model, prepare = deps.conversation.beginTurn } = opts;
+  const { sessionId, prompt, model, prepare = deps.conversation.beginTurn, titleNotify } = opts;
   const [msgs, functions, effective] = await prepare(sessionId, prompt);
+  maybeGenerateSessionTitleAsync(deps, sessionId, effective, titleNotify);
   const tools = await deps.conversation.loadSessionTools(sessionId);
   const meta = await deps.conversation.loadSessionMeta(sessionId);
   const toolMask = runtimeToolMaskFromResolved(resolveSessionMaskFromMeta(deps, meta));

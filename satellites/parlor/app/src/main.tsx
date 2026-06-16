@@ -4,7 +4,12 @@ import { AcpProgressDock } from "@/components/AcpProgressDock.tsx";
 import { FridgeMagnetInjectPreview } from "@/components/FridgeMagnetInjectPreview.tsx";
 import { useAcpProgressDock } from "@/hooks/useAcpProgressDock.ts";
 import { formatSessionIdDateTime } from "@/lib/format-datetime.ts";
-import { getFridgeMagnets, listSessionCommands, loadConfig } from "@/lib/api.ts";
+import {
+  getFridgeMagnets,
+  listSessionCommands,
+  loadConfig,
+  subscribeSessionEvents,
+} from "@/lib/api.ts";
 import { getAppLocale, initAppLocale, m, toggleAppLocale } from "@/lib/i18n.ts";
 import { getSapBrowserClient } from "@/lib/sap-client.ts";
 import type { SessionListItem } from "@/lib/types.ts";
@@ -174,6 +179,14 @@ function App() {
     });
     scrollDown();
   }, [currentId, display.length]);
+
+  useEffect(() => {
+    if (!currentId) return;
+    const sub = subscribeSessionEvents(currentId, () => {
+      void fetchSessions();
+    });
+    return () => sub.unsubscribe();
+  }, [currentId, fetchSessions]);
 
   const scrollDown = () => {
     requestAnimationFrame(() => {
