@@ -14,9 +14,11 @@ type CompanionState = {
   instanceId: string;
   settingsOpen: boolean;
   modelReady: boolean;
+  modelLoading: boolean;
   hitTestFn: ((x: number, y: number) => boolean) | null;
   setHitTestFn: (fn: ((x: number, y: number) => boolean) | null) => void;
   setModelReady: (ready: boolean) => void;
+  setModelLoading: (loading: boolean) => void;
   setSettingsOpen: (open: boolean) => void;
   init: () => Promise<void>;
   updateSettings: (patch: { hub_url?: string; model_path?: string }) => Promise<void>;
@@ -32,6 +34,7 @@ export const useCompanionStore = create<CompanionState>((set) => ({
   instanceId: "",
   settingsOpen: false,
   modelReady: false,
+  modelLoading: false,
   hitTestFn: null,
 
   setHitTestFn(fn) {
@@ -40,6 +43,10 @@ export const useCompanionStore = create<CompanionState>((set) => ({
 
   setModelReady(ready) {
     set({ modelReady: ready });
+  },
+
+  setModelLoading(loading) {
+    set({ modelLoading: loading });
   },
 
   setSettingsOpen(open) {
@@ -59,6 +66,7 @@ export const useCompanionStore = create<CompanionState>((set) => ({
         instanceId: cfg.instance_id,
         loading: false,
         modelReady: false,
+        modelLoading: modelAvailable,
         settingsOpen: !modelAvailable,
       });
     } catch (e) {
@@ -76,6 +84,7 @@ export const useCompanionStore = create<CompanionState>((set) => ({
       hubUrl: next.hub_url,
       modelPath: next.model_available ? next.model_path : "",
       modelReady: false,
+      modelLoading: next.model_available,
       settingsOpen: !next.model_available,
     });
     if (patch.hub_url) {
@@ -85,7 +94,13 @@ export const useCompanionStore = create<CompanionState>((set) => ({
 
   async uploadModel(file) {
     const result = await uploadModelApi(file);
-    set({ modelPath: result.model_path, modelReady: false, settingsOpen: false, error: null });
+    set({
+      modelPath: result.model_path,
+      modelReady: false,
+      modelLoading: true,
+      settingsOpen: false,
+      error: null,
+    });
   },
 
   clearError() {

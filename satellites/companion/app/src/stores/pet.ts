@@ -1,7 +1,16 @@
 import { create } from "zustand";
 import type { EmotionKind } from "@/renderer/CharacterBackend.ts";
 import { getVrmBackend } from "@/renderer/VrmBackend.ts";
-import { moveWindow } from "@/lib/tauri.ts";
+import { isTauri, moveWindow } from "@/lib/tauri.ts";
+import {
+  buildPerimeterWaypoints,
+  COMPANION_WINDOW_HEIGHT,
+  COMPANION_WINDOW_WIDTH,
+  readScreenWorkArea,
+  WEB_PET_HEIGHT,
+  WEB_PET_WIDTH,
+  type ScreenPoint,
+} from "@/lib/window-metrics.ts";
 import type { PetEvent } from "@/lib/types.ts";
 
 type PetState = {
@@ -10,11 +19,33 @@ type PetState = {
   emotion: EmotionKind;
   walkTarget: { x: number; y: number } | null;
   setWalking: (walking: boolean) => void;
+  toggleWalking: () => void;
   handlePetEvent: (event: PetEvent) => void;
-  tickWalk: () => void;
+  syncActionToBackend: () => void;
 };
 
-let walkTimer: ReturnType<typeof setInterval> | null = null;
+type Journey = {
+  from: ScreenPoint;
+  to: ScreenPoint;
+  startMs: number;
+  durationMs: number;
+  heading: number;
+  distancePx: number;
+};
+
+let journeyFrame: number | null = null;
+let patrolIndex = 0;
+let patrolPoints: ScreenPoint[] = [];
+let activeJourney: Journey | null = null;
+let currentPosition: ScreenPoint | null = null;
+let patrolPausedUntilMs = 0;
+
+const PET_STAGE_ID = "pet-stage";
+const MIN_JOURNEY_MS = 1200;
+/** 每段巡逻结束后至少停留时长（ms） */
+const PATROL_PAUSE_MS = 10_000;
+/** 目标巡逻速度（px/s），实际步频由瞬时速度决定 */
+const PATROL_SPEED_PX = 95;
 
 function getBackend() {
   const canvas = document.querySelector("canvas");
@@ -26,6 +57,158 @@ function getBackend() {
   }
 }
 
+function petStageElement(): HTMLElement | null {
+  return document.getElementById(PET_STAGE_ID);
+}
+
+function defaultWebPetPosition(): ScreenPoint {
+  const screen = readScreenWorkArea();
+  return {
+    x: screen.availLeft + screen.availWidth - WEB_PET_WIDTH - 20,
+    y: screen.availTop + screen.availHeight - WEB_PET_HEIGHT - 96,
+  };
+}
+
+export function movePetStage(x: number, y: number): void {
+  const el = petStageElement();
+  if (!el) return;
+  el.style.left = `${Math.round(x)}px`;
+  el.style.top = `${Math.round(y)}px`;
+  currentPosition = { x: Math.round(x), y: Math.round(y) };
+}
+
+function readCurrentPosition(): ScreenPoint {
+  if (currentPosition) return currentPosition;
+  const el = petStageElement();
+  if (el) {
+    const rect = el.getBoundingClientRect();
+    return { x: Math.round(rect.left), y: Math.round(rect.top) };
+  }
+  return defaultWebPetPosition();
+}
+
+function refreshPatrolPath(): ScreenPoint[] {
+  const screen = readScreenWorkArea();
+  const windowSize = isTauri()
+    ? { width: COMPANION_WINDOW_WIDTH, height: COMPANION_WINDOW_HEIGHT }
+    : { width: WEB_PET_WIDTH, height: WEB_PET_HEIGHT };
+
+  patrolPoints = buildPerimeterWaypoints(screen, windowSize);
+  patrolIndex = 0;
+  return patrolPoints;
+}
+
+function nextPatrolPoint(): ScreenPoint {
+  if (patrolPoints.length === 0) {
+    refreshPatrolPath();
+  }
+  const point = patrolPoints[patrolIndex]!;
+  patrolIndex = (patrolIndex + 1) % patrolPoints.length;
+  return point;
+}
+
+function journeyDurationMs(distancePx: number): number {
+  const bySpeed = (distancePx / PATROL_SPEED_PX) * 1000;
+  return Math.max(MIN_JOURNEY_MS, bySpeed);
+}
+
+/** smoothstep 对时间的导数（用于瞬时速度） */
+function smoothstepSpeed(t: number, distancePx: number, durationMs: number): number {
+  if (t <= 0 || t >= 1) return 0;
+  const deriv = 6 * t * (1 - t);
+  return (distancePx * deriv) / (durationMs / 1000);
+}
+
+function applyPosition(point: ScreenPoint): void {
+  if (isTauri()) {
+    void moveWindow(point.x, point.y);
+  } else {
+    movePetStage(point.x, point.y);
+  }
+  currentPosition = point;
+}
+
+function syncTravelToBackend(moving: boolean, speedPxPerSec: number, heading: number): void {
+  getBackend()?.setTravelState({ moving, speedPxPerSec, heading });
+}
+
+function syncIdleAtRest(): void {
+  syncTravelToBackend(false, 0, 0);
+}
+
+function startJourney(to: ScreenPoint): void {
+  if (!usePetStore.getState().walking) return;
+
+  const from = readCurrentPosition();
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const distancePx = Math.hypot(dx, dy);
+  if (distancePx < 4) {
+    patrolPausedUntilMs = performance.now() + PATROL_PAUSE_MS;
+    syncIdleAtRest();
+    return;
+  }
+
+  const heading = Math.atan2(dx, dy);
+  const durationMs = journeyDurationMs(distancePx);
+  activeJourney = {
+    from,
+    to,
+    startMs: performance.now(),
+    durationMs,
+    heading,
+    distancePx,
+  };
+}
+
+function scheduleNextPatrolStep(): void {
+  if (!usePetStore.getState().walking || activeJourney) return;
+  if (performance.now() < patrolPausedUntilMs) return;
+  startJourney(nextPatrolPoint());
+}
+
+function tickJourney(): void {
+  if (!activeJourney) {
+    if (usePetStore.getState().walking) {
+      scheduleNextPatrolStep();
+    } else {
+      syncIdleAtRest();
+    }
+    return;
+  }
+
+  if (!usePetStore.getState().walking) {
+    activeJourney = null;
+    syncIdleAtRest();
+    return;
+  }
+
+  const { from, to, startMs, durationMs, heading, distancePx } = activeJourney;
+  const elapsed = performance.now() - startMs;
+  const t = Math.min(1, elapsed / durationMs);
+  const eased = t * t * (3 - 2 * t);
+  const point = {
+    x: Math.round(from.x + (to.x - from.x) * eased),
+    y: Math.round(from.y + (to.y - from.y) * eased),
+  };
+  const speedPxPerSec = smoothstepSpeed(t, distancePx, durationMs);
+
+  applyPosition(point);
+  syncTravelToBackend(t < 1, speedPxPerSec, heading);
+
+  if (t >= 1) {
+    activeJourney = null;
+    patrolPausedUntilMs = performance.now() + PATROL_PAUSE_MS;
+    syncIdleAtRest();
+  }
+}
+
+export function syncPetStagePosition(): void {
+  if (isTauri()) return;
+  const point = currentPosition ?? defaultWebPetPosition();
+  movePetStage(point.x, point.y);
+}
+
 export const usePetStore = create<PetState>((set, get) => ({
   walking: false,
   toolBubble: "",
@@ -34,8 +217,28 @@ export const usePetStore = create<PetState>((set, get) => ({
 
   setWalking(walking) {
     set({ walking });
-    const backend = getBackend();
-    backend?.playAction(walking ? "walk" : "idle");
+    if (!walking) {
+      activeJourney = null;
+      syncIdleAtRest();
+    }
+  },
+
+  toggleWalking() {
+    get().setWalking(!get().walking);
+  },
+
+  syncActionToBackend() {
+    if (activeJourney) {
+      const { heading, distancePx, startMs, durationMs } = activeJourney;
+      const t = Math.min(1, (performance.now() - startMs) / durationMs);
+      syncTravelToBackend(t < 1, smoothstepSpeed(t, distancePx, durationMs), heading);
+      return;
+    }
+    if (get().walking) {
+      syncIdleAtRest();
+      return;
+    }
+    syncIdleAtRest();
   },
 
   handlePetEvent(event) {
@@ -49,6 +252,7 @@ export const usePetStore = create<PetState>((set, get) => ({
           if (usePetStore.getState().toolBubble === event.text) {
             set({ toolBubble: "" });
             backend?.playAction("idle");
+            usePetStore.getState().syncActionToBackend();
           }
         }, duration);
         break;
@@ -60,7 +264,7 @@ export const usePetStore = create<PetState>((set, get) => ({
         break;
       }
       case "move": {
-        void moveWindow(event.x, event.y);
+        startJourney({ x: event.x, y: event.y });
         set({ walkTarget: { x: event.x, y: event.y } });
         break;
       }
@@ -70,36 +274,37 @@ export const usePetStore = create<PetState>((set, get) => ({
       }
     }
   },
-
-  tickWalk() {
-    if (!get().walking) return;
-    const backend = getBackend();
-    backend?.playAction("walk");
-  },
 }));
 
-export function startWalkStateMachine(): () => void {
-  if (walkTimer) clearInterval(walkTimer);
+/** 启动巡逻；仅在位移过程中播放走路动画 */
+export function startPetBehavior(): () => void {
+  if (journeyFrame !== null) cancelAnimationFrame(journeyFrame);
 
+  refreshPatrolPath();
   usePetStore.getState().setWalking(true);
 
-  walkTimer = setInterval(() => {
-    usePetStore.getState().tickWalk();
-  }, 100);
+  if (!isTauri()) {
+    const initial = defaultWebPetPosition();
+    movePetStage(initial.x, initial.y);
+  }
 
-  const wanderTimer = setInterval(() => {
-    if (!usePetStore.getState().walking) return;
-    const maxX = window.screen.availWidth - 320;
-    const maxY = window.screen.availHeight - 400;
-    const x = Math.floor(Math.random() * Math.max(1, maxX));
-    const y = Math.floor(Math.random() * Math.max(1, maxY));
-    void moveWindow(x, y);
-  }, 12_000);
+  syncIdleAtRest();
+  patrolPausedUntilMs = performance.now() + PATROL_PAUSE_MS;
+
+  const loop = (): void => {
+    tickJourney();
+    journeyFrame = requestAnimationFrame(loop);
+  };
+  loop();
 
   return () => {
-    if (walkTimer) clearInterval(walkTimer);
-    walkTimer = null;
-    clearInterval(wanderTimer);
+    if (journeyFrame !== null) cancelAnimationFrame(journeyFrame);
+    journeyFrame = null;
+    activeJourney = null;
     usePetStore.getState().setWalking(false);
+    syncIdleAtRest();
   };
 }
+
+/** @deprecated 使用 startPetBehavior */
+export const startWalkStateMachine = startPetBehavior;
