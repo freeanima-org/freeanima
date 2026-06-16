@@ -4,7 +4,7 @@ import { Command } from "commander";
 import { registerServiceCommand } from "./commands/service.ts";
 import { registerCredentialCommand } from "./commands/credential.ts";
 import { registerCompletionCommand } from "./commands/completion.ts";
-import { registerUpdateCommand } from "./commands/update.ts";
+import { registerUpgradeCommand } from "./commands/upgrade.ts";
 
 /** Build CLI program (shared by parse and completion generation) */
 export function buildProgram(): Command {
@@ -15,7 +15,7 @@ export function buildProgram(): Command {
 
   registerServiceCommand(program);
   registerCredentialCommand(program);
-  registerUpdateCommand(program);
+  registerUpgradeCommand(program);
   registerCompletionCommand(program);
 
   return program;

@@ -237,7 +237,7 @@ msgstr ""
 #. type: Fenced code block (bash)
 #: docs/guide/install.md:100
 #, no-wrap
-msgid "anima update\n"
+msgid "anima upgrade\n"
 msgstr ""
 
 #. type: Plain text
@@ -553,7 +553,7 @@ msgstr ""
 #: docs/guide/install.md:237
 msgid ""
 "Upgrade a link install: `git pull`, `bun install`, restart the service. Do "
-"not use `anima update`."
+"not use `anima upgrade`."
 msgstr ""
 
 #. type: Title ##

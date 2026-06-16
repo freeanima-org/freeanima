@@ -281,8 +281,8 @@ msgstr "4. 升级"
 #. type: Fenced code block (bash)
 #: docs/guide/install.md:100
 #, no-wrap
-msgid "anima update\n"
-msgstr "anima update\n"
+msgid "anima upgrade\n"
+msgstr "anima upgrade\n"
 
 #. type: Plain text
 #: docs/guide/install.md:105
@@ -643,9 +643,9 @@ msgstr ""
 #: docs/guide/install.md:237
 msgid ""
 "Upgrade a link install: `git pull`, `bun install`, restart the service. Do "
-"not use `anima update`."
+"not use `anima upgrade`."
 msgstr ""
-"升级 link 安装：`git pull`、`bun install`、重启服务。勿用 `anima update`。"
+"升级 link 安装：`git pull`、`bun install`、重启服务。勿用 `anima upgrade`。"
 
 #. type: Title ##
 #: docs/guide/install.md:240

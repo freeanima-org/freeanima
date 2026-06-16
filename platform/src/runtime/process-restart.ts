@@ -35,7 +35,7 @@ async function waitForDrainWithTimeout(runControl: EngineRunControl, maxMs: numb
 
 /**
  * For slash /restart: reject new requests → abort active engine → drain → trigger restart.
- * For slash /update: same drain, optional beforeRestart (e.g. anima update), then restart.
+ * For slash /upgrade: same drain, optional beforeRestart (e.g. anima upgrade), then restart.
  * Fire-and-forget; does not block command response.
  */
 export function scheduleGracefulRestart(
@@ -59,12 +59,12 @@ export function scheduleGracefulRestart(
   })();
 }
 
-/** Spawn `anima update` before service restart (slash /update). */
-export async function runAnimaCliUpdate(): Promise<void> {
-  const { command, args } = resolveAnimaExecutable(["update"]);
+/** Spawn `anima upgrade` before service restart (slash /upgrade). */
+export async function runAnimaCliUpgrade(): Promise<void> {
+  const { command, args } = resolveAnimaExecutable(["upgrade"]);
   const result = spawnSync(command, args, { stdio: "inherit" });
   if (result.status !== 0) {
-    logComponent("shutdown").error("anima update failed", {
+    logComponent("shutdown").error("anima upgrade failed", {
       status: result.status,
       error: result.error?.message,
     });

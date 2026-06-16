@@ -23,6 +23,22 @@ function isRepoRoot(dir: string): boolean {
   return name === ROOT_PACKAGE_NAME || name === CLI_PACKAGE_NAME;
 }
 
+/** Walk upward from startDir for the freeanima monorepo root (package name `freeanima`). */
+export function resolveMonorepoRoot(startDir?: string): string | null {
+  const fromEnv = process.env.FREEANIMA_REPO_ROOT?.trim();
+  if (fromEnv && packageNameAt(fromEnv) === ROOT_PACKAGE_NAME) return fromEnv;
+
+  if (!startDir) return null;
+  let dir = startDir;
+  for (let i = 0; i < 16; i++) {
+    if (packageNameAt(dir) === ROOT_PACKAGE_NAME) return dir;
+    const parent = dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  return null;
+}
+
 /** Monorepo or @freeanima/cli published package root */
 export function getRepoRoot(): string {
   if (cachedRepoRoot) return cachedRepoRoot;
