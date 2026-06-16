@@ -9,6 +9,8 @@ import { $ } from "bun";
 import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
+import { compileParaglideToDir } from "../platform/connectors/webui/paraglide-compile.ts";
+import { buildPublishedWebuiDist } from "../platform/connectors/webui/webui-bundle.ts";
 
 const ROOT = join(import.meta.dir, "..");
 const CLI_DIR = join(ROOT, "cli");
@@ -72,6 +74,19 @@ async function main(): Promise<void> {
     recursive: true,
   });
 
+  console.log("compiling paraglide messages…");
+  const paraglideDir = join(PUBLISH_DIR, "messages/paraglide");
+  compileParaglideToDir({
+    projectRoot: ROOT,
+    outdir: paraglideDir,
+  });
+  // paraglide 产出含 `*` 的 .gitignore，会导致 bun pm pack 跳过整个目录
+  rmSync(join(paraglideDir, ".gitignore"), { force: true });
+  rmSync(join(paraglideDir, ".prettierignore"), { force: true });
+
+  console.log("building webui…");
+  await buildPublishedWebuiDist(ROOT, join(PUBLISH_DIR, "connectors/webui/dist"));
+
   const binScript = `#!/usr/bin/env bun
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -90,7 +105,7 @@ await import(join(root, "dist/cli.js"));
     type: "module",
     engines: { bun: ">=1.3.14" },
     bin: { anima: "./dist/anima" },
-    files: ["dist", "migrations", "connectors"],
+    files: ["dist", "migrations", "connectors", "messages"],
     repository: {
       type: "git",
       url: "git+https://github.com/freeanima-org/freeanima.git",

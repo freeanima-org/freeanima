@@ -103,8 +103,7 @@ After verification, package Settings → Publishing access can **disallow tokens
 Local install of published package (dev debugging):
 
 ```bash
-bun run build:cli
-bun install -g ./cli/publish
+bun run install:cli:local
 anima service start --foreground
 ```
 

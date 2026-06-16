@@ -61,11 +61,14 @@ Full blueprint: [`docs/concepts/architecture.md`](docs/concepts/architecture.md)
 
 ## Quick start
 
-Install via **npm CLI**, **Docker Compose**, or **from source** — full steps in [`docs/guide/install.md`](docs/guide/install.md).
+Install via **npm CLI**, **local npm package**, **Docker Compose**, or **from source** — full steps in [`docs/guide/install.md`](docs/guide/install.md).
 
 ```bash
 # npm CLI (requires Bun)
 bun install -g @freeanima/cli
+
+# Local npm package (from clone; publish-shaped, closer to registry install)
+bun run install:cli:local
 
 # Docker Compose (quick trial)
 cp .env.example .env && docker compose up --build
