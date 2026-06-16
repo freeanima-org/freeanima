@@ -1,5 +1,4 @@
 import { execSync } from "node:child_process";
-import { readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
@@ -25,19 +24,18 @@ function ensurePgExtensions(url: string): void {
   });
 }
 
-/** Run migration SQL via psql (avoids setup depending on workspace package resolution) */
-function runMigrations(url: string): void {
+/** 通过 Drizzle migrator 应用迁移（与运行时 runMigrations 共用 journal，避免 psql 直跑后子进程重复建表） */
+async function runMigrations(url: string): Promise<void> {
   ensurePgExtensions(url);
-  const migrationsDir = join(dbRoot, "migrations");
-  const dirs = readdirSync(migrationsDir, { withFileTypes: true })
-    .filter((d) => d.isDirectory())
-    .map((d) => d.name)
-    .toSorted();
-  for (const dir of dirs) {
-    const migrationPath = join(migrationsDir, dir, "migration.sql");
-    execSync(`psql "${url}" -v ON_ERROR_STOP=1 -f "${migrationPath}"`, {
-      stdio: "inherit",
-    });
+  const { initDatabase, getDb, closeDb } = await import(
+    join(repoRoot, "platform/connectors/db-pg/index.ts")
+  );
+  const { runMigrations: applyMigrations } = await import(join(repoRoot, "core/src/db/index.ts"));
+  initDatabase({ getDatabaseUrl: () => url });
+  try {
+    await applyMigrations(getDb());
+  } finally {
+    await closeDb();
   }
 }
 
@@ -59,7 +57,7 @@ export async function setupIntegrationPg(): Promise<() => Promise<void>> {
   const presetUrl = process.env.ANIMA_TEST_PG_URL?.trim();
   if (presetUrl) {
     process.env.ANIMA_TEST_PG_URL = presetUrl;
-    runMigrations(presetUrl);
+    await runMigrations(presetUrl);
     return async () => {};
   }
 
@@ -80,7 +78,7 @@ export async function setupIntegrationPg(): Promise<() => Promise<void>> {
     await waitForPostgres(port);
     const url = `postgres://test:test@127.0.0.1:${port}/test`;
     process.env.ANIMA_TEST_PG_URL = url;
-    runMigrations(url);
+    await runMigrations(url);
   } catch (err) {
     try {
       execSync(`docker rm -f ${containerId}`, { stdio: "ignore" });

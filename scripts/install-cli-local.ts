@@ -6,7 +6,7 @@
  * - bun pm pack + bun install -g <tarball>（避免 bun install -g ./cli/publish 的路径与重复依赖问题）
  */
 import { $ } from "bun";
-import { existsSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const ROOT = join(import.meta.dir, "..");
@@ -39,6 +39,7 @@ function resetGlobalCliInstall(): void {
   delete deps[""];
   delete deps["@freeanima/cli"];
 
+  mkdirSync(globalDir, { recursive: true });
   writeFileSync(
     pkgPath,
     `${JSON.stringify({ name: "bun-global", dependencies: deps }, null, 2)}\n`,

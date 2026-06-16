@@ -124,6 +124,15 @@ function writeDatabaseConfig(home: string, url: string, extraYaml?: string): voi
   writeFileSync(join(home, "config.yaml"), extraYaml ? `${base}${extraYaml}` : base, "utf-8");
 }
 
+/** 仅写入 integration 用 config.yaml（不初始化进程内 PG harness） */
+export function writeIntegrationDatabaseConfig(
+  home: string,
+  url: string,
+  extraYaml?: string,
+): void {
+  writeDatabaseConfig(home, url, extraYaml);
+}
+
 /**
  * Standard integration test setup: temp FREEANIMA_HOME + database.url + PG connection.
  * Reuses connection within the same process; clears tables per case (avoids CONNECTION_ENDED from closing in afterEach).
