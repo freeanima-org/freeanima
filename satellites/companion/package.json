@@ -1,0 +1,32 @@
+{
+  "name": "@freeanima/satellite-companion",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun dev.ts",
+    "build": "bun build.ts",
+    "build:sidecar": "bun compile-sidecar.ts",
+    "build:windows": "bun build-windows.ts",
+    "build:windows:installer": "COMPANION_BUILD_PROFILE=release bun build-windows.ts",
+    "start": "bun build.ts && bun server/index.ts"
+  },
+  "dependencies": {
+    "@freeanima/sap-contract": "workspace:*",
+    "@pixiv/three-vrm": "^3.4.2",
+    "@react-three/drei": "^10.0.6",
+    "@react-three/fiber": "^9.1.2",
+    "react": "19",
+    "react-dom": "19",
+    "three": "^0.175.0",
+    "zod": "catalog:",
+    "zustand": "^5.0.14"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:",
+    "@types/react": "^19.2.16",
+    "@types/react-dom": "^19.2.3",
+    "@types/three": "^0.175.0",
+    "bun-plugin-tailwind": "^0.1.2",
+    "tailwindcss": "^4.3.0"
+  }
+}

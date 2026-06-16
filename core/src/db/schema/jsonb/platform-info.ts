@@ -8,6 +8,7 @@ export const PLATFORMS = [
   "discord",
   "weixin",
   "studio-pair-programming",
+  "companion",
   "cron",
 ] as const;
 
@@ -30,6 +31,12 @@ const studioPairPlatformInfoSchema = z.looseObject({
   workspace_root: z.string().optional(),
   workspace_gitignore: z.boolean().optional(),
   workspace_show_hidden: z.boolean().optional(),
+});
+
+const companionPlatformInfoSchema = z.looseObject({
+  platform: z.literal("companion"),
+  satellite_app_id: z.string().optional(),
+  satellite_instance_id: z.string().optional(),
 });
 
 const cronPlatformInfoSchema = z.looseObject({
@@ -61,6 +68,7 @@ export const platformInfoSchema = z.discriminatedUnion("platform", [
   discordPlatformInfoSchema,
   weixinPlatformInfoSchema,
   studioPairPlatformInfoSchema,
+  companionPlatformInfoSchema,
   cronPlatformInfoSchema,
 ]);
 

@@ -12,7 +12,7 @@
     "@typescript/native-preview": "^7.0.0-dev.20260608.1",
     "bun-plugin-tailwind": "^0.1.2",
     "husky": "^9.1.7",
-    "oxfmt": "^0.54.0",
+    "oxfmt": "^0.55.0",
     "oxlint": "^1.69.0"
   },
   "bin": {
@@ -33,7 +33,7 @@
     "format:fix": "oxfmt .",
     "lint": "oxlint .",
     "lint:fix": "oxlint --fix .",
-    "typecheck": "bunx tsgo -p tsconfig.json --noEmit && bunx tsgo -p satellites/pair-programming/tsconfig.json --noEmit && bunx tsgo -p satellites/parlor/tsconfig.json --noEmit",
+    "typecheck": "bunx tsgo -p tsconfig.json --noEmit && bunx tsgo -p satellites/pair-programming/tsconfig.json --noEmit && bunx tsgo -p satellites/parlor/tsconfig.json --noEmit && bunx tsgo -p satellites/companion/tsconfig.json --noEmit",
     "build:cli": "bun scripts/build-cli.ts",
     "install:cli:local": "bun scripts/install-cli-local.ts",
     "build:webui": "bun scripts/build-webui.ts",

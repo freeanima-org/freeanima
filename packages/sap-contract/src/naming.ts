@@ -97,6 +97,7 @@ export function sapToolsetId(appId: string, instanceId: string): string {
 export const SAP_APP_PLATFORM_MAP: Record<string, string> = {
   "pair-programming": "studio-pair-programming",
   parlor: "parlor",
+  companion: "companion",
 };
 
 export function resolvePlatformForApp(appId: string): string | undefined {
