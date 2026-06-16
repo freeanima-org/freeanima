@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 18:02+0800\n"
+"POT-Creation-Date: 2026-06-16 10:05+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -36,7 +36,7 @@ msgid "Orchestration"
 msgstr "编排"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/sleep.md:1 messages/po4a/en.xml:55 messages/po4a/en.xml:484
+#: docs/concepts/sleep.md:1 messages/po4a/en.xml:55 messages/po4a/en.xml:487
 #, no-wrap
 msgid "Sleep"
 msgstr "睡眠机制"
@@ -143,9 +143,14 @@ msgstr "**浅睡**与**深睡**在 `runLightSleep()` / `runDeepSleep()` 内部�
 
 #. type: Plain text
 #: docs/concepts/sleep.md:38
+#, fuzzy
+#| msgid ""
+#| "Chamber WebUI (`/webui/chamber/sleep`) supports **diagnostic** runs: full "
+#| "cycle or individual steps (`force` skips dependency checks)."
 msgid ""
 "Chamber WebUI (`/webui/chamber/sleep`) supports **diagnostic** runs: full "
-"cycle or individual steps (`force` skips dependency checks)."
+"cycle or individual steps (`force` skips dependency checks). **Deep sleep "
+"mode** (full vs incremental) can be selected before manual runs."
 msgstr ""
 "Chamber WebUI（`/webui/chamber/sleep`）支持**诊断**运行：完整周期或单步"
 "（`force` 跳过依赖检查）。"
@@ -232,14 +237,21 @@ msgid "Deep Sleep"
 msgstr "深睡"
 
 #. type: Plain text
-#: docs/concepts/sleep.md:72
-#, no-wrap
+#: docs/concepts/sleep.md:73
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Attribute  | Value                                                                                                |\n"
+#| "| ---------- | ---------------------------------------------------------------------------------------------------- |\n"
+#| "| Trigger    | Sleep-cycle step `deep-sleep` (after light-sleep in DAG)                                             |\n"
+#| "| Target     | All active semantic memory                                                                           |\n"
+#| "| Operations | Contradiction detection + expiry marking, split, dedup merge, pin maintenance—four sequential rounds |\n"
 msgid ""
 "| Attribute  | Value                                                                                                |\n"
 "| ---------- | ---------------------------------------------------------------------------------------------------- |\n"
 "| Trigger    | Sleep-cycle step `deep-sleep` (after light-sleep in DAG)                                             |\n"
 "| Target     | All active semantic memory                                                                           |\n"
-"| Operations | Contradiction detection + expiry marking, split, dedup merge, pin maintenance—four sequential rounds |\n"
+"| Operations | Contradiction detection + expiry marking, split, dedup merge, pin quality review—four sequential rounds |\n"
+"| Mode       | **Incremental** (scheduled Tue–Sun): skip quiet rounds when nothing was `updated` in 24h; **Full** (scheduled Mon + manual): all rounds on full store |\n"
 msgstr ""
 "| 属性  | 值                                                                                                |\n"
 "| ---------- | ---------------------------------------------------------------------------------------------------- |\n"
@@ -248,21 +260,28 @@ msgstr ""
 "| 操作 | 矛盾检测 + 过期标记、拆分、去重合并、置顶维护——四轮顺序执行 |\n"
 
 #. type: Title ###
-#: docs/concepts/sleep.md:73
+#: docs/concepts/sleep.md:74
 #, no-wrap
 msgid "Four Rounds"
 msgstr "四轮"
 
 #. type: Plain text
-#: docs/concepts/sleep.md:81
-#, no-wrap
+#: docs/concepts/sleep.md:82
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Round | Intent                                   |\n"
+#| "| ----- | ---------------------------------------- |\n"
+#| "| 1     | Contradiction detection + expiry marking |\n"
+#| "| 2     | Split multi-fact entries                 |\n"
+#| "| 3     | Dedup merge similar entries              |\n"
+#| "| 4     | Pin maintenance (keep pinned ≤ 20)       |\n"
 msgid ""
 "| Round | Intent                                   |\n"
 "| ----- | ---------------------------------------- |\n"
 "| 1     | Contradiction detection + expiry marking |\n"
 "| 2     | Split multi-fact entries                 |\n"
 "| 3     | Dedup merge similar entries              |\n"
-"| 4     | Pin maintenance (keep pinned ≤ 20)       |\n"
+"| 4     | Pin quality review (unpin stale pins; resident read still capped at 20) |\n"
 msgstr ""
 "| 轮次 | 意图                                   |\n"
 "| ----- | ---------------------------------------- |\n"
@@ -272,62 +291,69 @@ msgstr ""
 "| 4     | 置顶维护（保持 pinned ≤ 20）       |\n"
 
 #. type: Plain text
-#: docs/concepts/sleep.md:83
-#, no-wrap
-msgid "**Ordering rationale:** Clean problems first, then refine, then merge, then trim resident pins.\n"
+#: docs/concepts/sleep.md:84
+#, fuzzy, no-wrap
+#| msgid "**Ordering rationale:** Clean problems first, then refine, then merge, then trim resident pins.\n"
+msgid "**Ordering rationale:** Clean problems first, then refine, then merge, then review pinned quality.\n"
 msgstr "**顺序理由：** 先清理问题，再细化，再合并，最后裁剪常驻置顶。\n"
 
+#. type: Plain text
+#: docs/concepts/sleep.md:86
+#, no-wrap
+msgid "**Incremental skip rules:** When mode is incremental and no active memory has `updated` within the last 24 hours, rounds 1 and 3 are skipped. Round 2 runs only on pre-filtered split candidates (long/multi-sentence entries with recent `updated`). Round 4 (pin maintenance) always runs. Scheduled cron uses incremental Tue–Sun and **full on Mondays**; Chamber manual runs default to full but can select incremental.\n"
+msgstr ""
+
 #. type: Title ###
-#: docs/concepts/sleep.md:84
+#: docs/concepts/sleep.md:87
 #, no-wrap
 msgid "Contradiction Definition (Exclusive)"
 msgstr "矛盾定义（排他性）"
 
 #. type: Plain text
-#: docs/concepts/sleep.md:87
+#: docs/concepts/sleep.md:90
 msgid ""
 "Two memories semantically negate each other and cannot be explained by "
 "temporal change → contradiction."
 msgstr "两条记忆在语义上互相否定，且无法用时间变化解释 → 矛盾。"
 
 #. type: Bullet: '- '
-#: docs/concepts/sleep.md:91
+#: docs/concepts/sleep.md:94
 msgid ""
 "✓ Contradiction: \"daughter born Year of Tiger\" vs \"daughter born Year of "
 "Goat\""
 msgstr "✓ 矛盾：「女儿属虎」vs「女儿属羊」"
 
 #. type: Bullet: '- '
-#: docs/concepts/sleep.md:91
+#: docs/concepts/sleep.md:94
 msgid ""
 "✗ Not contradiction: \"likes apples\" vs \"likes cherries\" (can coexist)"
 msgstr "✗ 不矛盾：「喜欢苹果」vs「喜欢樱桃」（可共存）"
 
 #. type: Bullet: '- '
-#: docs/concepts/sleep.md:91
+#: docs/concepts/sleep.md:94
 msgid ""
 "✗ Not contradiction (change): \"likes Python\" vs \"now prefers TypeScript\""
 msgstr "✗ 非矛盾（变化）：「喜欢 Python」vs「现在更喜欢 TypeScript」"
 
 #. type: Title ##
-#: docs/concepts/sleep.md:92
+#: docs/concepts/sleep.md:95
 #, no-wrap
 msgid "Trigger Mechanism"
 msgstr "触发机制"
 
 #. type: Fenced code block (cron)
-#: docs/concepts/sleep.md:94
+#: docs/concepts/sleep.md:97
 #, no-wrap
 msgid "0 2 * * *  sleep-cycle   # builtin-sleep-cycle: light → deep ∥ dream ∥ self-layer-refresh → memory-ref-sync\n"
 msgstr "0 2 * * *  sleep-cycle   # builtin-sleep-cycle: light → deep ∥ dream ∥ self-layer-refresh → memory-ref-sync\n"
 
 #. type: Plain text
-#: docs/concepts/sleep.md:99
+#: docs/concepts/sleep.md:102
 msgid "DAG (macro layer):"
 msgstr "DAG（宏观层）："
 
 #. type: Fenced code block (text)
-#: docs/concepts/sleep.md:100
+#: docs/concepts/sleep.md:103
 #, no-wrap
 msgid ""
 "light-sleep\n"
@@ -341,24 +367,24 @@ msgstr ""
 "  └─► self-layer-refresh (optional step)\n"
 
 #. type: Plain text
-#: docs/concepts/sleep.md:108
+#: docs/concepts/sleep.md:111
 msgid "After downtime, the next scheduled run catches up."
 msgstr "宕机后，下次计划运行会补跑。"
 
 #. type: Plain text
-#: docs/concepts/sleep.md:110
+#: docs/concepts/sleep.md:113
 #, no-wrap
 msgid "**Compression** stays session-scoped (turn-time `advanceCompressionMeta`); it is **not** a sleep-cycle step. Nightly consolidation does not replace per-session compression.\n"
 msgstr "**压缩**保持会话级（回合时 `advanceCompressionMeta`）；**不是**睡眠周期步骤。夜间巩固不替代每会话压缩。\n"
 
 #. type: Title ##
-#: docs/concepts/sleep.md:111
+#: docs/concepts/sleep.md:114
 #, no-wrap
 msgid "Historical Day (Chamber WebUI)"
 msgstr "历史单日（卧室 WebUI）"
 
 #. type: Plain text
-#: docs/concepts/sleep.md:114
+#: docs/concepts/sleep.md:117
 msgid ""
 "For a single past CST calendar day (e.g. before go-live or after migration), "
 "use **Chamber → Sleep** (`/webui/chamber/sleep`):"
@@ -367,19 +393,19 @@ msgstr ""
 "chamber/sleep`）："
 
 #. type: Bullet: '1. '
-#: docs/concepts/sleep.md:117
+#: docs/concepts/sleep.md:120
 msgid "Set **Day** to `YYYY-MM-DD`"
 msgstr "将 **Day** 设为 `YYYY-MM-DD`"
 
 #. type: Bullet: '2. '
-#: docs/concepts/sleep.md:117
+#: docs/concepts/sleep.md:120
 msgid ""
 "Run the **light-sleep** step (check **Force** to skip dependency checks if "
 "needed)"
 msgstr "运行 **light-sleep** 步骤（如需跳过依赖检查可勾选 **Force**）"
 
 #. type: Plain text
-#: docs/concepts/sleep.md:119
+#: docs/concepts/sleep.md:122
 msgid ""
 "Each step run is logged in the **Pipeline history** table on the sleep page. "
 "Cross-session merge for that day still relies on a subsequent **deep-sleep** "
@@ -391,13 +417,13 @@ msgstr ""
 "（sleep-cycle 任务）中查看。"
 
 #. type: Title ##
-#: docs/concepts/sleep.md:120
+#: docs/concepts/sleep.md:123
 #, no-wrap
 msgid "Relationship to Existing Architecture"
 msgstr "与现有架构的关系"
 
 #. type: Fenced code block (text)
-#: docs/concepts/sleep.md:122
+#: docs/concepts/sleep.md:125
 #, no-wrap
 msgid ""
 "Conversation archive\n"
@@ -431,13 +457,13 @@ msgstr ""
 "Agent identity and recalled fragments in current context\n"
 
 #. type: Title ##
-#: docs/concepts/sleep.md:139
+#: docs/concepts/sleep.md:142
 #, no-wrap
 msgid "`memory_remember` Tool"
 msgstr "`memory_remember` 工具"
 
 #. type: Plain text
-#: docs/concepts/sleep.md:141
+#: docs/concepts/sleep.md:144
 msgid ""
 "In-conversation `memory_remember` is a convenience wrapper for creating "
 "semantic memory during dialogue. Soft deprecation via deprecate action; "

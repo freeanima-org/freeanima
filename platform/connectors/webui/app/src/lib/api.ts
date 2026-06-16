@@ -164,7 +164,10 @@ export async function getSleepPipelineStatus() {
   return unwrap(apiClient.api.sleep.pipeline.status.get());
 }
 
-export async function startSleepCycle(body?: { day?: string }) {
+export async function startSleepCycle(body?: {
+  day?: string;
+  deep_sleep_mode?: "full" | "incremental";
+}) {
   return unwrap(apiClient.api.sleep.pipeline.run.post(body ?? {}));
 }
 
@@ -172,6 +175,7 @@ export async function startSleepPipelineStep(body: {
   step_id: string;
   day?: string;
   force?: boolean;
+  deep_sleep_mode?: "full" | "incremental";
 }) {
   return unwrap(apiClient.api.sleep.pipeline["run-step"].post(body));
 }

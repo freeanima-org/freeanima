@@ -34,7 +34,7 @@ Sleep uses a **macro DAG** (`sleep-cycle` pipeline) orchestrated by `PipelineRun
 
 **Light sleep** and **deep sleep** keep their **internal** multi-stage / multi-round sequencing inside `runLightSleep()` / `runDeepSleep()` — not promoted to macro DAG nodes.
 
-Chamber WebUI (`/webui/chamber/sleep`) supports **diagnostic** runs: full cycle or individual steps (`force` skips dependency checks).
+Chamber WebUI (`/webui/chamber/sleep`) supports **diagnostic** runs: full cycle or individual steps (`force` skips dependency checks). **Deep sleep mode** (full vs incremental) can be selected before manual runs.
 
 **Pipeline step history** is persisted in PG `pipeline_step_run` (one row per node execution, including failures and manual retries via `attempt`). **Cron run history** for `builtin-sleep-cycle` lives in `cron_log` and is viewed from **Chamber → Cron** via each task's **Run history** button.
 
@@ -64,22 +64,25 @@ Pipeline run state is persisted at `~/.anima/runtime/pipeline_sleep-cycle_run.js
 
 ## Deep Sleep
 
-| Attribute  | Value                                                                                                |
-| ---------- | ---------------------------------------------------------------------------------------------------- |
-| Trigger    | Sleep-cycle step `deep-sleep` (after light-sleep in DAG)                                             |
-| Target     | All active semantic memory                                                                           |
-| Operations | Contradiction detection + expiry marking, split, dedup merge, pin maintenance—four sequential rounds |
+| Attribute  | Value                                                                                                                                                 |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Trigger    | Sleep-cycle step `deep-sleep` (after light-sleep in DAG)                                                                                              |
+| Target     | All active semantic memory                                                                                                                            |
+| Operations | Contradiction detection + expiry marking, split, dedup merge, pin quality review—four sequential rounds                                               |
+| Mode       | **Incremental** (scheduled Tue–Sun): skip quiet rounds when nothing was `updated` in 24h; **Full** (scheduled Mon + manual): all rounds on full store |
 
 ### Four Rounds
 
-| Round | Intent                                   |
-| ----- | ---------------------------------------- |
-| 1     | Contradiction detection + expiry marking |
-| 2     | Split multi-fact entries                 |
-| 3     | Dedup merge similar entries              |
-| 4     | Pin maintenance (keep pinned ≤ 20)       |
+| Round | Intent                                                                  |
+| ----- | ----------------------------------------------------------------------- |
+| 1     | Contradiction detection + expiry marking                                |
+| 2     | Split multi-fact entries                                                |
+| 3     | Dedup merge similar entries                                             |
+| 4     | Pin quality review (unpin stale pins; resident read still capped at 20) |
 
-**Ordering rationale:** Clean problems first, then refine, then merge, then trim resident pins.
+**Ordering rationale:** Clean problems first, then refine, then merge, then review pinned quality.
+
+**Incremental skip rules:** When mode is incremental and no active memory has `updated` within the last 24 hours, rounds 1 and 3 are skipped. Round 2 runs only on pre-filtered split candidates (long/multi-sentence entries with recent `updated`). Round 4 (pin maintenance) always runs. Scheduled cron uses incremental Tue–Sun and **full on Mondays**; Chamber manual runs default to full but can select incremental.
 
 ### Contradiction Definition (Exclusive)
 

@@ -91,10 +91,12 @@ export type AppRuntimePort = {
   getSleepPipelineStatus(): any;
   startSleepCycle(opts?: {
     day?: string;
+    deep_sleep_mode?: "full" | "incremental";
   }): Promise<{ ok: true; started: true } | { ok: false; error: string }>;
   startSleepPipelineStep(opts: {
     stepId: string;
     day?: string;
     force?: boolean;
+    deep_sleep_mode?: "full" | "incremental";
   }): Promise<{ ok: true; result: unknown } | { ok: false; error: string }>;
 };

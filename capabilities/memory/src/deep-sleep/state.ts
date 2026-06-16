@@ -12,6 +12,7 @@ const stateSchema = z.object({
   stats: z
     .object({
       total_tool_calls: z.number().optional(),
+      rounds_skipped: z.number().optional(),
       contradiction_expiry_calls: z.number().optional(),
       split_calls: z.number().optional(),
       merge_calls: z.number().optional(),
@@ -47,6 +48,7 @@ export function recordDeepSleepRun(input: {
   roundsCompleted: number;
   stats: {
     total_tool_calls: number;
+    rounds_skipped?: number;
     contradiction_expiry_calls?: number;
     split_calls?: number;
     merge_calls?: number;

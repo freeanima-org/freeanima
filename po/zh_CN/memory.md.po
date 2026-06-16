@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 18:02+0800\n"
+"POT-Creation-Date: 2026-06-16 10:05+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,7 +23,7 @@ msgstr "核心原则"
 
 #. type: Content of: <messages><msg>
 #: docs/concepts/memory.md:1 messages/po4a/en.xml:37 messages/po4a/en.xml:137
-#: messages/po4a/en.xml:481
+#: messages/po4a/en.xml:484
 #, no-wrap
 msgid "Memory"
 msgstr "记忆体系"
@@ -441,10 +441,16 @@ msgstr "**何谓引用：** 仅 **user/assistant** 消息正文中的 `[[f-id]]`
 
 #. type: Plain text
 #: docs/concepts/memory.md:159
+#, fuzzy
+#| msgid ""
+#| "Nightly sleep-cycle step `memory-ref-sync` full-calibrates counts from "
+#| "messages. Excess pinned entries are truncated at read time with a warn "
+#| "log; deep sleep round 4 maintains pin budget in the store."
 msgid ""
 "Nightly sleep-cycle step `memory-ref-sync` full-calibrates counts from "
 "messages. Excess pinned entries are truncated at read time with a warn log; "
-"deep sleep round 4 maintains pin budget in the store."
+"deep sleep round 4 reviews pin quality (runtime still caps resident pinned "
+"at 20 on read)."
 msgstr ""
 "夜间 sleep-cycle 步骤 `memory-ref-sync` 从 messages 全量校准计数。超出置顶条"
 "目在读时截断并 warn 日志；深睡第 4 轮在存储中维护置顶预算。"

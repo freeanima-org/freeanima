@@ -33,11 +33,16 @@ export const sleepRoutes = new Elysia({ prefix: "/sleep" })
     params: t.Object({ day: t.String() }),
   })
   .get("/pipeline/status", () => getSleepPipelineStatus())
-  .post("/pipeline/run", ({ body }) => startSleepCycle({ day: body.day }), {
-    body: t.Object({
-      day: t.Optional(t.String()),
-    }),
-  })
+  .post(
+    "/pipeline/run",
+    ({ body }) => startSleepCycle({ day: body.day, deep_sleep_mode: body.deep_sleep_mode }),
+    {
+      body: t.Object({
+        day: t.Optional(t.String()),
+        deep_sleep_mode: t.Optional(t.Union([t.Literal("full"), t.Literal("incremental")])),
+      }),
+    },
+  )
   .post(
     "/pipeline/run-step",
     ({ body }) =>
@@ -45,12 +50,14 @@ export const sleepRoutes = new Elysia({ prefix: "/sleep" })
         step_id: body.step_id,
         day: body.day,
         force: body.force,
+        deep_sleep_mode: body.deep_sleep_mode,
       }),
     {
       body: t.Object({
         step_id: t.String(),
         day: t.Optional(t.String()),
         force: t.Optional(t.Boolean()),
+        deep_sleep_mode: t.Optional(t.Union([t.Literal("full"), t.Literal("incremental")])),
       }),
     },
   );
