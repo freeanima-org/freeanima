@@ -8,15 +8,22 @@ import { useCompanionStore } from "@/stores/companion.ts";
 import { useChatStore } from "@/stores/chat.ts";
 import { usePetStore, startWalkStateMachine } from "@/stores/pet.ts";
 import { subscribePetEvents } from "@/lib/api.ts";
-import { isTauri, listenCursorPosition, setClickThrough, startWindowDrag } from "@/lib/tauri.ts";
+import {
+  isTauri,
+  listenCursorPosition,
+  listenSidecarError,
+  setClickThrough,
+  startWindowDrag,
+} from "@/lib/tauri.ts";
 import type { PetEvent } from "@/lib/types.ts";
 
 function ClickThroughManager() {
   const hitTestFn = useCompanionStore((s) => s.hitTestFn);
+  const modelReady = useCompanionStore((s) => s.modelReady);
   const ignoringRef = useRef(false);
 
   useEffect(() => {
-    if (!isTauri() || !hitTestFn) return;
+    if (!isTauri() || !hitTestFn || !modelReady) return;
 
     let cleanupCursor: (() => void) | undefined;
 
@@ -35,14 +42,23 @@ function ClickThroughManager() {
       cleanupCursor?.();
       void setClickThrough(false);
     };
-  }, [hitTestFn]);
+  }, [hitTestFn, modelReady]);
 
   return null;
 }
 
 function App() {
-  const { loading, error, modelPath, settingsOpen, setSettingsOpen, init, clearError } =
-    useCompanionStore();
+  const {
+    loading,
+    error,
+    modelPath,
+    modelReady,
+    settingsOpen,
+    setSettingsOpen,
+    init,
+    clearError,
+    setModelReady,
+  } = useCompanionStore();
   const agentBubble = useChatStore((s) => s.agentBubble);
   const streaming = useChatStore((s) => s.streaming);
   const bubbleText = useChatStore((s) => s.bubbleText);
@@ -51,8 +67,31 @@ function App() {
 
   const onModelReady = useCallback(() => {}, []);
 
+  const onModelLoaded = useCallback(() => {
+    setModelReady(true);
+  }, [setModelReady]);
+
+  const onModelError = useCallback(
+    (msg: string) => {
+      setModelReady(false);
+      useCompanionStore.setState({ error: msg });
+    },
+    [setModelReady],
+  );
+
   useEffect(() => {
     void init();
+    if (!isTauri()) return;
+    let off: (() => void) | undefined;
+    void listenSidecarError((msg) => {
+      useCompanionStore.setState({
+        error: `后台服务启动失败：${msg}。请确认 exe 与 sidecar 在同一目录，或改用安装包。`,
+        loading: false,
+      });
+    }).then((fn) => {
+      off = fn;
+    });
+    return () => off?.();
   }, [init]);
 
   useEffect(() => {
@@ -64,12 +103,15 @@ function App() {
   }, [streaming, agentBubble, toolBubble, handlePetEvent]);
 
   useEffect(() => {
-    const sub = subscribePetEvents((ev) => {
+    let sub: { unsubscribe: () => void } | null = null;
+    void subscribePetEvents((ev) => {
       handlePetEvent(ev as PetEvent);
+    }).then((s) => {
+      sub = s;
     });
     const stopWalk = startWalkStateMachine();
     return () => {
-      sub.unsubscribe();
+      sub?.unsubscribe();
       stopWalk();
     };
   }, [handlePetEvent]);
@@ -78,8 +120,11 @@ function App() {
 
   if (loading) {
     return (
-      <div className="companion-overlay flex items-center justify-center text-white/60 text-sm">
-        加载中…
+      <div className="companion-overlay flex items-center justify-center">
+        <div className="startup-panel text-center">
+          <p className="font-medium mb-1">FreeAnima Companion</p>
+          <p className="text-white/70 text-xs">正在连接本地后台…</p>
+        </div>
       </div>
     );
   }
@@ -88,8 +133,19 @@ function App() {
     <div className="companion-overlay">
       <ClickThroughManager />
       <div className="absolute inset-0">
-        <VrmCanvas modelPath={modelPath} onBackendReady={onModelReady} />
+        <VrmCanvas
+          modelPath={modelPath}
+          onBackendReady={onModelReady}
+          onModelError={onModelError}
+          onModelLoaded={onModelLoaded}
+        />
       </div>
+
+      {!modelReady && !loading ? (
+        <div className="absolute inset-x-6 top-1/3 z-10 chat-bubble text-center text-xs leading-relaxed">
+          未加载 VRM 模型。点击右上角 ⚙ 上传或填写模型路径（可从 VRoid Hub 免费下载）。
+        </div>
+      ) : null}
 
       <div
         className="absolute top-4 left-1/2 -translate-x-1/2 z-10"

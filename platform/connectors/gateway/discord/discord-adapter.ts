@@ -34,6 +34,7 @@ import {
   type PlatformOrigin,
 } from "./discord-policy.ts";
 import {
+  ensureSlashInteractionDeferred,
   interactionToCommandText,
   originFromInteraction,
   replyDiscordInteraction,
@@ -137,6 +138,7 @@ export class DiscordAdapter implements PlatformAdapter {
   private loginRetryTimer: ReturnType<typeof setTimeout> | null = null;
   private readonly shardErrorLogLimiter = new KeyedRateLimiter();
   private sessionUpdatedOff: (() => void) | null = null;
+  private readonly slashInteractionInflight = new Map<string, Promise<void>>();
 
   constructor(
     private readonly service: MessagingPort,
@@ -200,7 +202,7 @@ export class DiscordAdapter implements PlatformAdapter {
 
     this.client.on("interactionCreate", (interaction) => {
       if (!interaction.isChatInputCommand()) return;
-      void this.onSlashCommand(interaction).catch((e) => {
+      void this.runSlashCommandOnce(interaction).catch((e) => {
         const log = logComponent("discord");
         if (isDiscordDeliveryDegraded(e)) {
           log.warn("Discord slash command failed", { err: e });
@@ -288,12 +290,23 @@ export class DiscordAdapter implements PlatformAdapter {
     logComponent("shutdown").debug("Discord disconnected");
   }
 
-  private async onSlashCommand(interaction: ChatInputCommandInteraction): Promise<void> {
-    try {
-      await interaction.deferReply();
-    } catch (e) {
-      if (!isDiscordDeliveryDegraded(e)) throw e;
-      logComponent("discord").warn("Discord slash deferReply failed", { err: e });
+  private runSlashCommandOnce(interaction: ChatInputCommandInteraction): Promise<void> {
+    const inflight = this.slashInteractionInflight.get(interaction.id);
+    if (inflight) return inflight;
+    const task = this.handleSlashCommand(interaction).finally(() => {
+      this.slashInteractionInflight.delete(interaction.id);
+    });
+    this.slashInteractionInflight.set(interaction.id, task);
+    return task;
+  }
+
+  private async handleSlashCommand(interaction: ChatInputCommandInteraction): Promise<void> {
+    const deferred = await ensureSlashInteractionDeferred(interaction);
+    if (!deferred) {
+      logComponent("discord").warn(
+        "Discord slash skipped: interaction already acknowledged (duplicate bot or handler)",
+        { interaction_id: interaction.id, command: interaction.commandName },
+      );
       return;
     }
 

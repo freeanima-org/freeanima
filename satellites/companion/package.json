@@ -6,8 +6,13 @@
     "dev": "bun dev.ts",
     "build": "bun build.ts",
     "build:sidecar": "bun compile-sidecar.ts",
+    "build:tauri": "bun build-tauri.ts",
     "build:windows": "bun build-windows.ts",
-    "build:windows:installer": "COMPANION_BUILD_PROFILE=release bun build-windows.ts",
+    "build:windows:installer": "COMPANION_BUILD_PROFILE=release bun build-tauri.ts --target x86_64-pc-windows-gnu",
+    "build:macos": "bun build-tauri.ts --target aarch64-apple-darwin",
+    "build:macos:intel": "bun build-tauri.ts --target x86_64-apple-darwin",
+    "build:macos:release": "COMPANION_BUILD_PROFILE=release bun build-tauri.ts --target aarch64-apple-darwin",
+    "build:macos:intel:release": "COMPANION_BUILD_PROFILE=release bun build-tauri.ts --target x86_64-apple-darwin",
     "start": "bun build.ts && bun server/index.ts"
   },
   "dependencies": {

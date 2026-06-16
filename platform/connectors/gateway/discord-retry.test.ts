@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from "bun:test";
 import {
   deliverDiscordFinalContent,
   discordErrorDetails,
+  isDiscordDeliveryDegraded,
+  isDiscordInteractionAlreadyAcked,
   isDiscordRetryableError,
   tryDiscordInterimEdit,
   withDiscordRetry,
@@ -36,6 +38,22 @@ describe("isDiscordRetryableError", () => {
   it("4xx business errors not retried", () => {
     expect(isDiscordRetryableError({ status: 403 })).toBe(false);
     expect(isDiscordRetryableError(new Error("Session not found"))).toBe(false);
+  });
+});
+
+describe("isDiscordInteractionAlreadyAcked", () => {
+  it("detects Discord code 40060", () => {
+    expect(isDiscordInteractionAlreadyAcked({ code: 40060 })).toBe(true);
+    expect(isDiscordInteractionAlreadyAcked({ code: 10062 })).toBe(false);
+  });
+});
+
+describe("isDiscordDeliveryDegraded", () => {
+  it("treats 403, 10062, and 40060 as degraded", () => {
+    expect(isDiscordDeliveryDegraded({ status: 403 })).toBe(true);
+    expect(isDiscordDeliveryDegraded({ code: 10062 })).toBe(true);
+    expect(isDiscordDeliveryDegraded({ code: 40060 })).toBe(true);
+    expect(isDiscordDeliveryDegraded({ status: 503 })).toBe(false);
   });
 });
 

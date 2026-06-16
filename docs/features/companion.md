@@ -77,7 +77,7 @@ bun dev.ts                    # 浏览器开发
 # 本地快速打包（默认 fast：不 minify、仅 exe、sidecar 未改则跳过）
 bun run build:windows
 
-# CI / 发版（minify + NSIS 安装包）
+# CI / 发版（minify + 安装包）
 bun run build:windows:installer
 ```
 
@@ -86,16 +86,62 @@ bun run build:windows:installer
 | **fast**（默认） | `bun run build:windows`           | 优先速度：前端不压缩、只出 exe、sidecar 增量跳过 |
 | **release**      | `bun run build:windows:installer` | 前端 minify + NSIS 安装包（CI 用）               |
 
+### macOS 打包（须在 macOS 本机）
+
+```bash
+cd satellites/companion
+bun install
+
+# Apple Silicon（fast / release）
+bun run build:macos
+bun run build:macos:release
+
+# Intel（fast / release）
+bun run build:macos:intel
+bun run build:macos:intel:release
+```
+
+| 架构          | fast                | release（DMG）              |
+| ------------- | ------------------- | --------------------------- |
+| Apple Silicon | `build:macos`       | `build:macos:release`       |
+| Intel         | `build:macos:intel` | `build:macos:intel:release` |
+
+### CI 自动打包
+
+GitHub Actions 工作流 [`.github/workflows/companion-release.yml`](../../.github/workflows/companion-release.yml) 会在 **GitHub Release 发布**时自动构建并上传：
+
+| 产物                              | 平台                |
+| --------------------------------- | ------------------- |
+| `companion-windows-x64-setup.exe` | Windows x64（NSIS） |
+| `companion-macos-arm64.dmg`       | macOS Apple Silicon |
+| `companion-macos-x64.dmg`         | macOS Intel         |
+
+也可在 Actions 页手动运行 **Companion Build**（`workflow_dispatch`），选择 `release` 或 `fast` 模式。
+
+Windows 在 `ubuntu-latest` 交叉编译；macOS 两架构均在 `macos-latest` 上构建（Intel 为交叉 target `x86_64-apple-darwin`）。
+
 产物：
 
-| 文件        | fast                                   | release                                        |
-| ----------- | -------------------------------------- | ---------------------------------------------- |
-| exe         | `shell/target/.../companion-shell.exe` | 同左                                           |
-| NSIS 安装包 | —                                      | `shell/target/.../bundle/nsis/*_x64-setup.exe` |
+| 文件       | fast                                   | release（Windows）                             | release（macOS）                    |
+| ---------- | -------------------------------------- | ---------------------------------------------- | ----------------------------------- |
+| 可执行文件 | `shell/target/.../companion-shell.exe` | 同左                                           | `shell/target/.../companion-shell`  |
+| 安装包     | —                                      | `shell/target/.../bundle/nsis/*_x64-setup.exe` | `shell/target/.../bundle/dmg/*.dmg` |
 
 Linux 交叉编译依赖：`rustup target add x86_64-pc-windows-gnu`、`mingw-w64`；**仅 release 模式**还需 `nsis`、`libayatana-appindicator3-dev`。
 
 运行时配置写入 `~/.anima/companion/config.json`（`FREEANIMA_HOME` 可改根目录）；VRM 模型放 `~/.anima/companion/models/`。仓库内 `companion-config.example.json` 仅为字段示例。
+
+**fast 构建产物需两个文件**：`companion-shell.exe` 与同目录下的 `companion-sidecar-x86_64-pc-windows-gnu.exe`（Tauri 会把 sidecar 拷到 release 目录）。只拷贝主 exe 会导致后台无法启动。发版请用 **installer** 安装包。
+
+### 常见问题
+
+| 现象                                 | 可能原因                                                                 | 处理                                                                                                                                      |
+| ------------------------------------ | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| 双击后任务管理器里**两个进程都没有** | 未安装 WebView2 **运行时**（仅有 `WebView2Loader.dll` 不够）；或杀毒拦截 | 安装 [WebView2 运行时](https://go.microsoft.com/fwlink/p/?LinkId=2124703)；确认安装目录有 `companion-sidecar.exe`；从 cmd 运行 exe 看报错 |
+| 双击无窗口、无报错                   | 透明窗 + 未加载 VRM；或点击穿透已开启                                    | 看**系统托盘**（Win11 可能在「隐藏图标」里）；在设置里导入 `.vrm`                                                                         |
+| 一直「加载中」或报后台超时           | sidecar 未启动；杀毒拦截；缺 WebView2                                    | 查看 `%USERPROFILE%\.anima\companion\shell.log`；安装 [WebView2](https://developer.microsoft.com/microsoft-edge/webview2/)                |
+| 无法连 Hub                           | `anima service` 未运行；端口转发未建立                                   | Hub 地址填 `http://127.0.0.1:2658`（SSH/端口转发到服务器时保持本地地址）；**先开好转发再启动桌宠**                                        |
+| 白屏 / WebView 异常                  | 未安装 WebView2 运行时                                                   | 安装 [Microsoft Edge WebView2](https://developer.microsoft.com/microsoft-edge/webview2/)                                                  |
 
 本机 Tauri 开发：`bun run build:sidecar` → `cd shell/src-tauri && cargo tauri dev`
 

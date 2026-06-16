@@ -10,6 +10,7 @@ import {
 } from "./sap/relay.ts";
 import { handlePetWsClose, handlePetWsOpen, type PetWsData } from "./pet-state.ts";
 import { loadConfig, saveConfig, hubUrlFromConfig, type CompanionConfig } from "./config.ts";
+import { isModelPathAvailable } from "./model-path.ts";
 import { ensureCompanionDataDir } from "./paths.ts";
 import { handleModelUpload } from "./models.ts";
 import { serveStatic } from "./static.ts";
@@ -50,17 +51,25 @@ export async function route(req: Request, server: Bun.Server<ServerWsData>): Pro
       relay_ws_url: `${HTTP_URL.replace(/^http/, "ws")}/sap/relay/v1`,
       hub_url: cfg.hub_url,
       model_path: cfg.model_path,
+      model_available: isModelPathAvailable(cfg.model_path),
     });
   }
 
   if (url.pathname === "/api/config" && req.method === "GET") {
-    return jsonResponse(loadConfig());
+    const cfg = loadConfig();
+    return jsonResponse({
+      ...cfg,
+      model_available: isModelPathAvailable(cfg.model_path),
+    });
   }
 
   if (url.pathname === "/api/config" && req.method === "POST") {
     const body = (await req.json()) as Partial<CompanionConfig>;
     const next = saveConfig(body);
-    return jsonResponse(next);
+    return jsonResponse({
+      ...next,
+      model_available: isModelPathAvailable(next.model_path),
+    });
   }
 
   if (url.pathname === "/api/models/upload") {
