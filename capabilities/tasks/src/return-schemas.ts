@@ -34,15 +34,15 @@ const exampleTask = {
 };
 
 export const TASKS_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
-  tasks_create: defineToolReturn({
+  task_create: defineToolReturn({
     schema: taskMutationSchema,
     example: { ok: true, task: exampleTask, action: "create" },
   }),
-  tasks_update: defineToolReturn({
+  task_update: defineToolReturn({
     schema: taskMutationSchema,
     example: { ok: true, task: exampleTask, action: "update" },
   }),
-  tasks_complete: defineToolReturn({
+  task_complete: defineToolReturn({
     schema: taskMutationSchema,
     example: {
       ok: true,
@@ -50,7 +50,7 @@ export const TASKS_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
       action: "complete",
     },
   }),
-  tasks_cancel: defineToolReturn({
+  task_cancel: defineToolReturn({
     schema: taskMutationSchema,
     example: {
       ok: true,
@@ -58,11 +58,11 @@ export const TASKS_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
       action: "cancel",
     },
   }),
-  tasks_reopen: defineToolReturn({
+  task_reopen: defineToolReturn({
     schema: taskMutationSchema,
     example: { ok: true, task: exampleTask, action: "reopen" },
   }),
-  tasks_list: defineToolReturn({
+  task_list: defineToolReturn({
     schema: z.object({
       ok: z.literal(true),
       action: z.literal("list"),
@@ -76,7 +76,7 @@ export const TASKS_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
       tasks: [exampleTask],
     },
   }),
-  tasks_get: defineToolReturn({
+  task_get: defineToolReturn({
     schema: taskMutationSchema,
     example: { ok: true, task: exampleTask, action: "get" },
   }),

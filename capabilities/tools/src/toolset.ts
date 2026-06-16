@@ -8,11 +8,11 @@ import { isSessionMeta, type SessionMetaMessage } from "@freeanima/core/db/domai
 import {
   applySessionToolMaskFilter,
   attachToolReturns,
-  loadToolsetsIntoSession,
+  loadToolSetsIntoSession,
   searchToolsetsCatalog,
   toolError,
   toolResult,
-  toolNamesForToolsets,
+  toolNamesForToolSets,
   type ToolSetRegistry,
 } from "@freeanima/core/tool";
 import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
@@ -42,16 +42,16 @@ function hitsWithAllowed(
   });
 }
 
-export function registerCatalogTools(toolSets: ToolSetRegistry): void {
+export function registerToolsetTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
-    "toolsets",
+    "toolset",
     "ToolSet discovery and on-demand loading",
     attachToolReturns(
       [
         {
-          name: "toolsets_search",
+          name: "toolset_search",
           description:
-            "Search dynamically registered ToolSets (MCP/ACP/SAP) by keyword. Built-in ToolSets are listed in system prompt — use toolsets_load directly.",
+            "Search dynamically registered ToolSets (MCP/ACP/SAP) by keyword. Built-in ToolSets are listed in system prompt — use toolset_load directly.",
           parameters: {
             type: "object",
             properties: {
@@ -77,7 +77,7 @@ export function registerCatalogTools(toolSets: ToolSetRegistry): void {
           },
         },
         {
-          name: "toolsets_load",
+          name: "toolset_load",
           description:
             "Stage ToolSets for the current session (returns schemas via tool message). Cached ToolSets are sent in API tools after rebuild_session_cache or compression.",
           parameters: {
@@ -103,14 +103,14 @@ export function registerCatalogTools(toolSets: ToolSetRegistry): void {
             const sessionId = getToolSessionId()!;
             const repos = getToolRepos()!;
             const registry = getToolRegistry();
-            const result = await loadToolsetsIntoSession(
+            const result = await loadToolSetsIntoSession(
               repos,
               registry,
               sessionId,
               toolsets,
               ctx.meta,
             );
-            const expanded = toolNamesForToolsets(registry, [
+            const expanded = toolNamesForToolSets(registry, [
               ...result.loaded,
               ...result.already_loaded,
             ]);

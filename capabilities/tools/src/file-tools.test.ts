@@ -40,7 +40,7 @@ describe("file tools", () => {
   it("read_file returns line numbers", async () => {
     const p = join(cwd, "a.txt");
     writeFileSync(p, "a\nb\nc\n", "utf-8");
-    const tool = toolSets.getTool("file_read_file")!;
+    const tool = toolSets.getTool("file_read")!;
     const out = await tool.handler({ path: p, offset: 1, limit: 2 });
     expect(out).toContain("1|a");
     expect(out).toContain("2|b");
@@ -48,7 +48,7 @@ describe("file tools", () => {
 
   it("write_file creates file", async () => {
     const target = join(cwd, "sub", "f.txt");
-    const tool = toolSets.getTool("file_write_file")!;
+    const tool = toolSets.getTool("file_write")!;
     const out = await tool.handler({ path: target, content: "hello" });
     expect(out).toContain('"ok":true');
     expect(readFileSync(target, "utf-8")).toBe("hello");
@@ -83,7 +83,7 @@ describe("file tools", () => {
 
   it("tools are registered", () => {
     const names = new Set(toolSets.listTools().map((t) => t.name));
-    expect(names.has("file_read_file")).toBe(true);
-    expect(names.has("credentials_list")).toBe(true);
+    expect(names.has("file_read")).toBe(true);
+    expect(names.has("credential_list")).toBe(true);
   });
 });

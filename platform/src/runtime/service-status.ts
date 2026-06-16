@@ -20,7 +20,7 @@ import {
   enqueueRunJob,
 } from "@freeanima/platform/connectors/cron";
 import type { CronJobData } from "@freeanima/platform/connectors/cron";
-import { buildToolsStatus } from "@freeanima/core/tool";
+import { buildToolsStatus, resolveDefaultSessionToolSets } from "@freeanima/core/tool";
 import { listCommandDefs, listCommandDefsForPlatform } from "@freeanima/platform/commands";
 import { pingDatabase, isJiebaLoaded } from "@freeanima/platform/connectors/db-pg";
 import { pingRedis } from "@freeanima/platform/connectors/redis";
@@ -220,7 +220,12 @@ export function getConfig(deps: RuntimeDeps): SafeConfigSnapshot {
   return { config: sanitizeConfigForApi(cfg) as SafeConfigSnapshot["config"] };
 }
 
-export function listToolsApi(deps: RuntimeDeps) {
+export function listToolsApi(deps: RuntimeDeps, scope?: "default" | "all") {
+  if (scope === "default") {
+    return buildToolsStatus(deps.engine.catalog.toolSets, {
+      toolSetNames: resolveDefaultSessionToolSets(deps.engine.catalog.toolSets),
+    });
+  }
   return buildToolsStatus(deps.engine.catalog.toolSets);
 }
 

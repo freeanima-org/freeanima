@@ -71,7 +71,7 @@ describe("sap-contract envelopes", () => {
         sap_version: "SAP/1.0",
         platform_for_app: { parlor: "parlor" },
         capability_mask: {
-          presets: [{ name: "developer", allowed_tools_summary: ["file_read_file"] }],
+          presets: [{ name: "developer", allowed_tools_summary: ["file_read"] }],
         },
       },
       heartbeat_interval_sec: 30,

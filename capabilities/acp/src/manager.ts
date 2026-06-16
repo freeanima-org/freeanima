@@ -3,7 +3,7 @@ import type { SkillRegistry } from "@freeanima/core/skill";
 import { registerSkillsFromDirectory } from "@freeanima/core/skill";
 import { getToolSessionId } from "@freeanima/core/tool";
 import type { ToolDef, ToolSetRegistry } from "@freeanima/core/tool";
-import { acpToolsetId, toolError, toolResult } from "@freeanima/core/tool";
+import { acpToolSetId, toolError, toolResult } from "@freeanima/core/tool";
 import type { Config } from "@freeanima/core/config";
 import { logCapability as logComponent } from "@freeanima/core/config";
 
@@ -387,7 +387,7 @@ export class AcpManager {
       if (agentName === "cursor") {
         tools.push(this.buildTaskStatusToolDef());
       }
-      const setId = acpToolsetId(agentName);
+      const setId = acpToolSetId(agentName);
       this.toolSets.unregisterToolSet(setId);
       this.toolSets.registerToolSet(setId, description, tools);
       count += tools.length;
@@ -398,7 +398,7 @@ export class AcpManager {
 
   private buildTaskStatusToolDef(): ToolDef {
     return {
-      name: "acp_task_status",
+      name: "acp_cursor_task_status",
       description:
         "Read-only query for ACP async task status, latest progress text, and final result when available. " +
         "Does not send any message to Cursor. Omit task_id to query the latest task in the current session.",
@@ -427,7 +427,7 @@ export class AcpManager {
   private async handleTaskStatusQuery(args: Record<string, unknown>): Promise<string> {
     const animaSid = getToolSessionId();
     if (!animaSid)
-      return toolError("No active session; acp_task_status requires a session context");
+      return toolError("No active session; acp_cursor_task_status requires a session context");
     const listAll = args.list_all === true || args.list_all === "true";
     const taskId = String(args.task_id ?? "").trim() || undefined;
 

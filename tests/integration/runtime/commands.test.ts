@@ -199,7 +199,7 @@ describePg("slash commands", () => {
     const preservedCwd = "/tmp/freeanima-preserved-cwd";
     await patchMetaForTest(sid, {
       cwd: preservedCwd,
-      cached_toolsets: ["toolsets", "memory"],
+      cached_toolsets: ["toolset", "memory"],
       staged_toolsets: ["file"],
       system_prompt: "old prompt",
       title: "preserved title",
@@ -264,9 +264,9 @@ describePg("slash commands", () => {
     expect(isSessionMeta(metaAfter)).toBe(true);
     if (!isSessionMeta(metaAfter)) return;
     expect(metaAfter.cached_toolsets).toContain("memory");
-    expect(metaAfter.cached_toolsets).not.toContain("toolsets");
-    expect(metaAfter.cached_toolsets).not.toContain("sessions");
-    expect(metaAfter.cached_toolsets).not.toContain("skills");
+    expect(metaAfter.cached_toolsets).not.toContain("toolset");
+    expect(metaAfter.cached_toolsets).not.toContain("session");
+    expect(metaAfter.cached_toolsets).not.toContain("skill");
     expect(metaAfter.staged_toolsets ?? []).toEqual([]);
   });
 

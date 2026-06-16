@@ -5,15 +5,15 @@ import type { SessionMetaMessage } from "@freeanima/core/db/domain";
 
 function testRegistry(): ToolSetRegistry {
   const reg = new ToolSetRegistry();
-  reg.registerToolSet("toolsets", "discovery", [
+  reg.registerToolSet("toolset", "discovery", [
     {
-      name: "toolsets_search",
+      name: "toolset_search",
       description: "search",
       parameters: { type: "object", properties: {} },
       handler: async () => "{}",
     },
     {
-      name: "toolsets_load",
+      name: "toolset_load",
       description: "load",
       parameters: { type: "object", properties: {} },
       handler: async () => "{}",
@@ -29,7 +29,7 @@ function testRegistry(): ToolSetRegistry {
   ]);
   reg.registerToolSet("file", "file", [
     {
-      name: "file_read_file",
+      name: "file_read",
       description: "read",
       parameters: { type: "object", properties: {} },
       handler: async () => "{}",
@@ -49,14 +49,14 @@ describe("resolveExecutableToolNames", () => {
     const meta = {
       role: "session_meta",
       model: "m",
-      cached_toolsets: ["toolsets", "memory"],
+      cached_toolsets: ["toolset", "memory"],
       staged_toolsets: ["file"],
       functions: [],
       timestamp: "",
     } satisfies SessionMetaMessage;
     const names = resolveExecutableToolNames(meta, testRegistry()).toSorted();
     expect(names).toEqual(
-      ["file_read_file", "memory_recall", "toolsets_load", "toolsets_search"].toSorted(),
+      ["file_read", "memory_recall", "toolset_load", "toolset_search"].toSorted(),
     );
   });
 });

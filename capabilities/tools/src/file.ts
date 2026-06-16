@@ -343,7 +343,7 @@ export function registerFileTools(toolSets: ToolSetRegistry): void {
     attachToolReturns(
       [
         {
-          name: "file_read_file",
+          name: "file_read",
           description: "Read a text file with line numbers",
           parameters: {
             type: "object",
@@ -358,7 +358,7 @@ export function registerFileTools(toolSets: ToolSetRegistry): void {
             handleReadFile(String(a.path), Number(a.offset ?? 1), Number(a.limit ?? 500)),
         },
         {
-          name: "file_write_file",
+          name: "file_write",
           description: "Write file content",
           parameters: {
             type: "object",
@@ -371,7 +371,7 @@ export function registerFileTools(toolSets: ToolSetRegistry): void {
           handler: (a) => handleWriteFile(String(a.path), String(a.content ?? "")),
         },
         {
-          name: "file_search_files",
+          name: "file_search",
           description:
             "Search files. target=files: pattern is glob (supports a|b segments). target=content: pattern is search text (literal by default, regex=true for regex). " +
             "When output_mode=files_only and pattern contains * ?, matches filenames automatically.",

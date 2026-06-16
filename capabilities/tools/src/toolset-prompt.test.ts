@@ -15,7 +15,7 @@ describe("renderToolsetsSection", () => {
     ]);
     registry.registerToolSet("file", "Read and write workspace files", [
       {
-        name: "file_read_file",
+        name: "file_read",
         description: "Read",
         parameters: { type: "object", properties: {} },
         handler: () => "ok",
@@ -23,7 +23,7 @@ describe("renderToolsetsSection", () => {
     ]);
     const section = renderToolsetsSection(registry);
     expect(section).toContain("## ToolSets");
-    expect(section).toContain("toolsets_load");
+    expect(section).toContain("toolset_load");
     expect(section).toContain("- file — Read and write workspace files");
     expect(section).toContain("- memory — Semantic memory tools");
     expect(section.indexOf("- file")).toBeLessThan(section.indexOf("- memory"));

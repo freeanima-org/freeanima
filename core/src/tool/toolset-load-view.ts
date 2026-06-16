@@ -2,13 +2,13 @@ import type { SessionMessage, ToolMessage } from "@freeanima/core/db/domain";
 import type { ToolCall } from "@freeanima/core/db/domain";
 import {
   loadCallFullyCached,
-  parseToolsetsFromLoadArgs,
-  TOOLSETS_LOAD_TOOL_NAME,
+  parseToolSetsFromLoadArgs,
+  TOOL_SET_LOAD_TOOL_NAME,
 } from "./toolset-meta.ts";
 
 function isLoadToolCall(name: string): boolean {
   const n = name.trim();
-  return n === TOOLSETS_LOAD_TOOL_NAME || n === "tools_load";
+  return n === TOOL_SET_LOAD_TOOL_NAME;
 }
 
 function parseLoadCallToolsets(call: ToolCall): string[] {
@@ -16,7 +16,7 @@ function parseLoadCallToolsets(call: ToolCall): string[] {
   try {
     const raw = call.function.arguments;
     const args = typeof raw === "string" ? JSON.parse(raw) : raw;
-    return parseToolsetsFromLoadArgs(args);
+    return parseToolSetsFromLoadArgs(args);
   } catch {
     return [];
   }
@@ -28,8 +28,8 @@ function shouldStripLoadCall(call: ToolCall, cachedToolsets: readonly string[]):
   return loadCallFullyCached(loaded, cachedToolsets);
 }
 
-/** Remove toolsets_load rounds from runtime view when all loaded ToolSets are cached */
-export function stripCachedToolsetLoadRounds(
+/** Remove toolset_load rounds from runtime view when all loaded ToolSets are cached */
+export function stripCachedToolSetLoadRounds(
   messages: SessionMessage[],
   cachedToolsets: readonly string[],
 ): SessionMessage[] {

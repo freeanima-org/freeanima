@@ -56,11 +56,11 @@ describe("local tools", () => {
   it("registers core tools", () => {
     const names = new Set(tools.listTools().map((t) => t.name));
     for (const n of [
-      "file_read_file",
-      "file_write_file",
-      "file_search_files",
+      "file_read",
+      "file_write",
+      "file_search",
       "file_patch",
-      "credentials_list",
+      "credential_list",
       "code_execute",
       "terminal_run",
       "terminal_process",
@@ -74,7 +74,7 @@ describe("local tools", () => {
   it.skipIf(!hasRg)("search_files content mode", async () => {
     const p = join(cwd, "findme.ts");
     writeFileSync(p, "const needle = 1;\n", "utf-8");
-    const out = await tools.getTool("file_search_files")!.handler({
+    const out = await tools.getTool("file_search")!.handler({
       pattern: "needle",
       target: "content",
       path: cwd,
@@ -86,7 +86,7 @@ describe("local tools", () => {
   it("search_files files mode", async () => {
     writeFileSync(join(cwd, "a.py"), "x", "utf-8");
     writeFileSync(join(cwd, "b.txt"), "y", "utf-8");
-    const out = await tools.getTool("file_search_files")!.handler({
+    const out = await tools.getTool("file_search")!.handler({
       pattern: "*.py",
       target: "files",
       path: cwd,
@@ -98,7 +98,7 @@ describe("local tools", () => {
   it("search_files files_only with glob pattern lists files", async () => {
     writeFileSync(join(cwd, "a.py"), "x", "utf-8");
     writeFileSync(join(cwd, "b.txt"), "y", "utf-8");
-    const out = await tools.getTool("file_search_files")!.handler({
+    const out = await tools.getTool("file_search")!.handler({
       pattern: "*",
       output_mode: "files_only",
       path: cwd,
@@ -110,7 +110,7 @@ describe("local tools", () => {
 
   it.skipIf(!hasRg)("search_files content treats pattern as literal by default", async () => {
     writeFileSync(join(cwd, "sym.ts"), "export function fact_store(x: number) {}\n", "utf-8");
-    const out = await tools.getTool("file_search_files")!.handler({
+    const out = await tools.getTool("file_search")!.handler({
       pattern: "fact_store(",
       target: "content",
       path: cwd,
@@ -122,7 +122,7 @@ describe("local tools", () => {
 
   it.skipIf(!hasRg)("search_files content regex mode", async () => {
     writeFileSync(join(cwd, "rx.ts"), "const fooBar = 1;\n", "utf-8");
-    const out = await tools.getTool("file_search_files")!.handler({
+    const out = await tools.getTool("file_search")!.handler({
       pattern: "foo.*Bar",
       target: "content",
       path: cwd,
@@ -137,7 +137,7 @@ describe("local tools", () => {
     writeFileSync(join(cwd, "index.html"), "h", "utf-8");
     writeFileSync(join(cwd, "app.js"), "j", "utf-8");
     writeFileSync(join(cwd, "readme.md"), "m", "utf-8");
-    const out = await tools.getTool("file_search_files")!.handler({
+    const out = await tools.getTool("file_search")!.handler({
       pattern: "*.html|*.js",
       target: "files",
       path: cwd,

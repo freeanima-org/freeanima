@@ -132,7 +132,7 @@ export const sessionCachedToolsetsSchema = z.preprocess(
 );
 export type SessionCachedToolsetsJson = z.infer<typeof sessionCachedToolsetsSchema>;
 
-/** sessions.staged_toolsets — toolsets_load pending promote */
+/** sessions.staged_toolsets — toolset_load pending promote */
 export const sessionStagedToolsetsSchema = z.preprocess(
   normalizeSessionToolNames,
   z.array(z.string()),

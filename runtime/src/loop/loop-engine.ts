@@ -421,7 +421,7 @@ export async function* runStream(
               opts?.executableTools != null &&
               !opts.executableTools.includes(fnName));
           if (blockedByLoaded) {
-            result = toolError("Tool not loaded; call toolsets_load first");
+            result = toolError("Tool not loaded; call toolset_load first");
           } else if (!tool) {
             result = toolResult({ error: `Unknown tool: ${fnName}` });
           } else if (!argsResult.ok) {

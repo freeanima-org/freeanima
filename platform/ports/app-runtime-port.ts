@@ -42,7 +42,7 @@ export type AppRuntimePort = {
   health(): any;
   buildStatus(host: string, port: number): Promise<any>;
   getConfig(): any;
-  listToolsApi(): any;
+  listToolsApi(scope?: "default" | "all"): any;
   listCronJobs(): any;
   pauseCronJob(id: string): any;
   resumeCronJob(id: string): any;

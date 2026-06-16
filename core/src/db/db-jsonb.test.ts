@@ -55,19 +55,16 @@ describe("platform_info schema", () => {
 
 describe("session tools jsonb", () => {
   it("normalizeSessionToolNames keeps tool name strings", () => {
-    expect(normalizeSessionToolNames(["file_read_file", "grep"])).toEqual([
-      "file_read_file",
-      "grep",
-    ]);
+    expect(normalizeSessionToolNames(["file_read", "grep"])).toEqual(["file_read", "grep"]);
   });
 
   it("normalizeSessionToolNames extracts function.name from legacy OpenAI schema", () => {
     const legacy = [
-      { type: "function", function: { name: "file_read_file", description: "read" } },
+      { type: "function", function: { name: "file_read", description: "read" } },
       { type: "function", function: { name: "grep" } },
     ];
-    expect(normalizeSessionToolNames(legacy)).toEqual(["file_read_file", "grep"]);
-    expect(sessionToolsSchema.parse(legacy)).toEqual(["file_read_file", "grep"]);
+    expect(normalizeSessionToolNames(legacy)).toEqual(["file_read", "grep"]);
+    expect(sessionToolsSchema.parse(legacy)).toEqual(["file_read", "grep"]);
   });
 
   it("normalizeSessionToolNames ignores invalid entries", () => {

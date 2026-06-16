@@ -220,12 +220,12 @@ async function handleListTasks(args: Record<string, unknown>): Promise<string> {
 
 export function registerTaskTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
-    "tasks",
+    "task",
     "Cross-session persistent todos",
     attachToolReturns(
       [
         {
-          name: "tasks_create",
+          name: "task_create",
           description: "Create a cross-session persistent todo task",
           parameters: {
             type: "object",
@@ -244,7 +244,7 @@ export function registerTaskTools(toolSets: ToolSetRegistry): void {
           handler: handleCreateTask,
         },
         {
-          name: "tasks_update",
+          name: "task_update",
           description: "Update todo task fields",
           parameters: {
             type: "object",
@@ -261,7 +261,7 @@ export function registerTaskTools(toolSets: ToolSetRegistry): void {
           handler: handleUpdateTask,
         },
         {
-          name: "tasks_complete",
+          name: "task_complete",
           description: "Mark task as completed",
           parameters: {
             type: "object",
@@ -271,7 +271,7 @@ export function registerTaskTools(toolSets: ToolSetRegistry): void {
           handler: (args) => handleStatusChange(args, "completed", "complete"),
         },
         {
-          name: "tasks_cancel",
+          name: "task_cancel",
           description: "Mark task as cancelled",
           parameters: {
             type: "object",
@@ -281,7 +281,7 @@ export function registerTaskTools(toolSets: ToolSetRegistry): void {
           handler: (args) => handleStatusChange(args, "cancelled", "cancel"),
         },
         {
-          name: "tasks_reopen",
+          name: "task_reopen",
           description: "Reopen task as pending",
           parameters: {
             type: "object",
@@ -291,7 +291,7 @@ export function registerTaskTools(toolSets: ToolSetRegistry): void {
           handler: (args) => handleStatusChange(args, "pending", "reopen"),
         },
         {
-          name: "tasks_list",
+          name: "task_list",
           description:
             "List todos; default pending + in_progress, sorted by priority desc, created_at asc",
           parameters: {
@@ -309,7 +309,7 @@ export function registerTaskTools(toolSets: ToolSetRegistry): void {
           handler: handleListTasks,
         },
         {
-          name: "tasks_get",
+          name: "task_get",
           description: "Get a single task by ID",
           parameters: {
             type: "object",

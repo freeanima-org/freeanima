@@ -4,11 +4,11 @@ import { join, resolve } from "node:path";
 import { randomBytes } from "node:crypto";
 import type { ToolSetRegistry } from "@freeanima/core/tool";
 import {
-  mergeToolsetNames,
-  resolveDefaultSessionToolsets,
-  resolveDefaultSessionToolsetsForMeta,
-  resolveToolsetNames,
-  toolNamesForToolsets,
+  mergeToolSetNames,
+  resolveDefaultSessionToolSets,
+  resolveDefaultSessionToolSetsForMeta,
+  resolveToolSetNames,
+  toolNamesForToolSets,
 } from "@freeanima/core/tool";
 import { getActiveConfig, getProfileHopModel } from "@freeanima/core/config";
 import { CST_OFFSET_MS, formatCstIso } from "@freeanima/core/util";
@@ -84,25 +84,25 @@ export async function loadSessionTools(
     }
   }
   if (toolsetNames.length > 0) {
-    const resolved = resolveToolsetNames(tools, toolsetNames);
+    const resolved = resolveToolSetNames(tools, toolsetNames);
     const metaForMask =
       cachedMeta != null && isSessionMeta(cachedMeta)
         ? cachedMeta
         : await loadSessionMeta(repos, session);
-    let names = toolNamesForToolsets(tools, resolved);
+    let names = toolNamesForToolSets(tools, resolved);
     if (isSessionMeta(metaForMask)) {
       names = applySessionToolMaskFilter(names, metaForMask);
     }
     return tools.openaiSchemasFromNames(names);
   }
-  const fresh = resolveDefaultSessionToolsets(tools);
+  const fresh = resolveDefaultSessionToolSets(tools);
   if (fresh.length > 0) {
     await updateSessionMetaField(repos, session, {
       cached_toolsets: fresh,
       staged_toolsets: [],
     });
   }
-  let effective = toolNamesForToolsets(tools, fresh);
+  let effective = toolNamesForToolSets(tools, fresh);
   const metaForMask =
     cachedMeta != null && isSessionMeta(cachedMeta)
       ? cachedMeta
@@ -260,7 +260,7 @@ export async function initSession(
   const metaDraft: SessionMetaMessage = {
     role: "session_meta",
     model,
-    cached_toolsets: resolveDefaultSessionToolsets(tools),
+    cached_toolsets: resolveDefaultSessionToolSets(tools),
     staged_toolsets: [],
     functions: opts.functions ?? [],
     timestamp: formatCstIso(),
@@ -394,12 +394,12 @@ export async function rebuildSessionCache(
   if (!isSessionMeta(meta)) {
     throw new Error("session does not exist");
   }
-  let cached = resolveToolsetNames(registry, meta.cached_toolsets ?? []);
+  let cached = resolveToolSetNames(registry, meta.cached_toolsets ?? []);
   if (cached.length === 0) {
-    cached = resolveDefaultSessionToolsetsForMeta(registry, meta);
+    cached = resolveDefaultSessionToolSetsForMeta(registry, meta);
   }
   const staged = [...(meta.staged_toolsets ?? [])];
-  cached = mergeToolsetNames(cached, staged);
+  cached = mergeToolSetNames(cached, staged);
   await updateSessionMetaField(repos, session, {
     cached_toolsets: cached,
     staged_toolsets: [],
@@ -491,7 +491,7 @@ export async function updateSessionMeta(
   if (opts?.cached_toolsets !== undefined) {
     meta.cached_toolsets = opts.cached_toolsets;
   } else if (!meta.cached_toolsets.length) {
-    meta.cached_toolsets = resolveDefaultSessionToolsets(registry);
+    meta.cached_toolsets = resolveDefaultSessionToolSets(registry);
     meta.staged_toolsets = meta.staged_toolsets ?? [];
   }
   await pgWriteMeta(repos, session, meta);

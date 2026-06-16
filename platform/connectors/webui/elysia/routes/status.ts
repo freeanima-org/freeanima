@@ -15,7 +15,7 @@ import {
 export const statusRoutes = new Elysia({ prefix: "/status" })
   .get("/", () => getStatus())
   .get("/config", () => getConfig())
-  .get("/tools", () => listTools())
+  .get("/tools", ({ query }) => listTools(query.scope === "default" ? "default" : undefined))
   .get("/platforms", () => getPlatforms())
   .get("/cron-jobs", () => listCronJobs())
   .post("/cron-jobs/:id/pause", ({ params }) => pauseCronJob(params.id))

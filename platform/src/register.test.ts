@@ -33,12 +33,12 @@ describe("registerServiceTools", () => {
   it("registers core tool names", () => {
     registerServiceTools({ toolSets, skills, config });
     const names = new Set(toolSets.listTools().map((t) => t.name));
-    expect(names.has("file_read_file")).toBe(true);
-    expect(names.has("toolsets_search")).toBe(true);
-    expect(names.has("toolsets_load")).toBe(true);
+    expect(names.has("file_read")).toBe(true);
+    expect(names.has("toolset_search")).toBe(true);
+    expect(names.has("toolset_load")).toBe(true);
     expect(names.has("todo")).toBe(false);
     expect(names.has("cron_job")).toBe(true);
-    expect(names.has("tasks_create")).toBe(true);
+    expect(names.has("task_create")).toBe(true);
     expect(names.has("clarify")).toBe(true);
     expect(names.has("email_list_accounts")).toBe(true);
     expect(names.has("email_send")).toBe(true);

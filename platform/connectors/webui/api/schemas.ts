@@ -263,7 +263,7 @@ const toolsStatusToolItemSchema = z.object({
 export const toolsStatusResponseSchema = z.object({
   default_tools: z.array(z.string()),
   tools: z.array(toolsStatusToolItemSchema),
-  tool_sets: z.array(
+  toolsets: z.array(
     z.object({
       name: z.string(),
       description: z.string(),

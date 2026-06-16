@@ -1,12 +1,12 @@
 import { describe, expect, it, mock, beforeEach } from "bun:test";
 import { ToolSetRegistry } from "@freeanima/core/tool";
-import { registerCatalogTools } from "./catalog-tools.ts";
+import { registerToolsetTools } from "./toolset.ts";
 import { runWithToolContext } from "@freeanima/core/tool";
 
 const sessionMeta = {
   role: "session_meta" as const,
   model: "test",
-  cached_toolsets: ["toolsets"],
+  cached_toolsets: ["toolset"],
   staged_toolsets: [] as string[],
   functions: [] as string[],
   timestamp: "2026-01-01T00:00:00+08:00",
@@ -21,24 +21,24 @@ const repos = {
   session: { getSessionMeta, patchSessionMeta },
 } as never;
 
-describe("registerCatalogTools", () => {
+describe("registerToolsetTools", () => {
   beforeEach(() => {
     getSessionMeta.mockClear();
     patchSessionMeta.mockClear();
   });
 
-  it("toolsets_load returns schema for staged toolset", async () => {
+  it("toolset_load returns schema for staged toolset", async () => {
     const toolSets = new ToolSetRegistry();
-    registerCatalogTools(toolSets);
+    registerToolsetTools(toolSets);
     toolSets.registerToolSet("file", "Files", [
       {
-        name: "file_read_file",
+        name: "file_read",
         description: "Read file",
         parameters: { type: "object", properties: {} },
         handler: () => "ok",
       },
     ]);
-    const def = toolSets.getTool("toolsets_load");
+    const def = toolSets.getTool("toolset_load");
     expect(def).toBeDefined();
 
     await runWithToolContext(
@@ -47,30 +47,30 @@ describe("registerCatalogTools", () => {
         const raw = await def!.handler({ toolsets: ["file"] });
         const parsed = JSON.parse(raw);
         expect(parsed.tools).toHaveLength(1);
-        expect(parsed.tools[0].name).toBe("file_read_file");
+        expect(parsed.tools[0].name).toBe("file_read");
         expect(parsed.loaded).toEqual(["file"]);
         expect(patchSessionMeta).toHaveBeenCalled();
       },
       {
         tools: toolSets,
         repos,
-        executableTools: ["toolsets_load"],
+        executableTools: ["toolset_load"],
       },
     );
   });
 
-  it("toolsets_search requires query", async () => {
+  it("toolset_search requires query", async () => {
     const toolSets = new ToolSetRegistry();
-    registerCatalogTools(toolSets);
+    registerToolsetTools(toolSets);
     toolSets.registerToolSet("file", "Files", [
       {
-        name: "file_read_file",
+        name: "file_read",
         description: "Read text files",
         parameters: { type: "object", properties: {} },
         handler: () => "ok",
       },
     ]);
-    const searchDef = toolSets.getTool("toolsets_search");
+    const searchDef = toolSets.getTool("toolset_search");
     expect(searchDef).toBeDefined();
 
     await runWithToolContext(
@@ -84,7 +84,7 @@ describe("registerCatalogTools", () => {
         expect(parsed.query).toBe("read file");
         expect(parsed.hits.some((h: { toolset: string }) => h.toolset === "file")).toBe(true);
       },
-      { tools: toolSets, repos, executableTools: ["toolsets_search"] },
+      { tools: toolSets, repos, executableTools: ["toolset_search"] },
     );
   });
 });

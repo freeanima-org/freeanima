@@ -1,5 +1,5 @@
 import type { ToolDef, ToolSetRegistry } from "@freeanima/core/tool";
-import { mcpToolsetId, toolError } from "@freeanima/core/tool";
+import { mcpToolSetId, toolError } from "@freeanima/core/tool";
 import type { Config } from "@freeanima/core/config";
 import { logCapability as logComponent } from "@freeanima/core/config";
 
@@ -98,7 +98,7 @@ export class MCPManager {
       this.clients.delete(name);
     }
 
-    this.toolSets.unregisterToolSet(mcpToolsetId(name));
+    this.toolSets.unregisterToolSet(mcpToolSetId(name));
     this.serverErrors.delete(name);
     this.recountTools();
     return { ok: true, server: name, action: "stop" };
@@ -234,7 +234,7 @@ export class MCPManager {
       });
     }
 
-    const setId = mcpToolsetId(name);
+    const setId = mcpToolSetId(name);
     this.toolSets.unregisterToolSet(setId);
     if (defs.length > 0) {
       this.toolSets.registerToolSet(setId, `MCP ${name}`, defs);
@@ -281,7 +281,7 @@ export class MCPManager {
       const enabled = isMcpServerEnabled(rawCfg);
       const session = this.clients.get(name);
       const error = this.serverErrors.get(name);
-      const setId = mcpToolsetId(name);
+      const setId = mcpToolSetId(name);
       const registeredTools = this.toolSets.getToolSet(setId)?.tools ?? [];
 
       let tools: McpServerStatusView["tools"] = [];
@@ -384,7 +384,7 @@ export class MCPManager {
       }
     }
     for (const name of [...this.clients.keys()]) {
-      this.toolSets.unregisterToolSet(mcpToolsetId(name));
+      this.toolSets.unregisterToolSet(mcpToolSetId(name));
     }
     this.clients.clear();
     this.serverConfigs.clear();

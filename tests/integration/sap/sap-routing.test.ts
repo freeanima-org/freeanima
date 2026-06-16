@@ -4,11 +4,11 @@ import { formatSapToolName } from "@freeanima/sap-contract";
 import { SatelliteManager } from "@freeanima/capabilities-satellite";
 
 describe("sap strict routing integration", () => {
-  it("does not fall back to hub file_read_file for mismatched sap tool", () => {
+  it("does not fall back to hub file_read for mismatched sap tool", () => {
     const registry = new ToolSetRegistry();
     registry.registerToolSet("file", "file", [
       {
-        name: "file_read_file",
+        name: "file_read",
         description: "hub local",
         parameters: { type: "object", properties: {} },
         handler: () => "hub executed",
@@ -21,7 +21,7 @@ describe("sap strict routing integration", () => {
     const sapName = formatSapToolName(
       "pair-programming",
       "550e8400-e29b-41d4-a716-446655440000",
-      "file_read_file",
+      "file_read",
     );
     const route = manager.resolveToolCall("sid", sapName, {
       satellite_app_id: "pairprogramming",
@@ -35,7 +35,7 @@ describe("sap strict routing integration", () => {
     expect(result).toContain("sap tool not registered");
     expect(result).not.toBe("hub executed");
 
-    const hub = registry.getTool("file_read_file");
+    const hub = registry.getTool("file_read");
     expect(hub?.handler({})).toBe("hub executed");
   });
 

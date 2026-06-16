@@ -55,7 +55,7 @@ const mockConv = {
     {
       type: "function" as const,
       function: {
-        name: "file_read_file",
+        name: "file_read",
         description: "Read a text file",
         parameters: {
           type: "object",
@@ -148,7 +148,7 @@ describe("service-prompt-debug", () => {
   it("computeGlobalBreakdown counts only system and tools breakdown", () => {
     const items: PromptDebugToolItem[] = [
       {
-        name: "file_read_file",
+        name: "file_read",
         description: "Read file",
         parameters: { type: "object" },
       },
@@ -203,7 +203,7 @@ describe("service-prompt-debug", () => {
     expect(out.system.stored).toBe(preview.system.composed);
     expect(out.system.composed).toBe(preview.system.composed);
     expect(out.tools.mode).toBe("session");
-    expect(out.tools.items.some((t) => t.name === "file_read_file")).toBe(true);
+    expect(out.tools.items.some((t) => t.name === "file_read")).toBe(true);
     expect(out.meta?.cwd).toBe("/tmp/project");
     expect(out.meta?.tool_names).toEqual(["file"]);
   });

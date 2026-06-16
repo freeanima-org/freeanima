@@ -17,7 +17,7 @@ describe("hasNewAssistantReply", () => {
         type: "tool_block",
         calls: [
           {
-            name: "file_read_file",
+            name: "file_read",
             argsPreview: "path=a.ts",
             tool_call_id: "tc1",
             status: "done",
@@ -43,7 +43,7 @@ describe("hasNewAssistantReply", () => {
         type: "tool_block",
         calls: [
           {
-            name: "file_read_file",
+            name: "file_read",
             argsPreview: "path=a.ts",
             tool_call_id: "tc1",
             status: "done",

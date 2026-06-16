@@ -13,7 +13,7 @@ export type SessionSummaryRow = {
   platform: string;
 };
 
-/** PG messages FTS hit row (memory_recall / sessions_search; mapped to snippet externally) */
+/** PG messages FTS hit row (memory_recall / session_search; mapped to snippet externally) */
 export type MessageFtsHit = {
   message_id: string;
   content: string;
