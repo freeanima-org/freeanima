@@ -92,19 +92,19 @@ export async function executeLocalTool(
   switch (localName) {
     case "scan_code":
       return JSON.stringify({ ok: true, workspace: root, scanned: true });
-    case "file_read_file": {
+    case "file_read": {
       const path = String(args.path ?? args.file ?? "");
       const file = readStudioFile(path);
       return file.content;
     }
-    case "file_search_files": {
+    case "file_search": {
       const query = String(args.query ?? args.pattern ?? "");
       if (!query.trim()) return JSON.stringify({ error: "query required" });
       const fileGlob = args.file_glob != null ? String(args.file_glob) : null;
       const hits = searchFiles(root, query, fileGlob);
       return JSON.stringify({ results: hits, count: hits.length });
     }
-    case "file_write_file": {
+    case "file_write": {
       const path = String(args.path ?? "");
       const content = String(args.content ?? "");
       if (!path.trim()) return JSON.stringify({ error: "path required" });
@@ -123,9 +123,9 @@ export async function executeLocalTool(
       }
       const file = readStudioFile(path);
       if (patch.includes(file.content.slice(0, 20))) {
-        return JSON.stringify({ error: "patch apply not fully implemented; use file_write_file" });
+        return JSON.stringify({ error: "patch apply not fully implemented; use file_write" });
       }
-      return JSON.stringify({ error: "patch apply not fully implemented; use file_write_file" });
+      return JSON.stringify({ error: "patch apply not fully implemented; use file_write" });
     }
     case "terminal_run": {
       const command = String(args.command ?? "");

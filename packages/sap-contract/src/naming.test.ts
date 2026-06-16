@@ -23,17 +23,17 @@ describe("sap naming", () => {
     expect(formatSapToolName(appId, instanceId, "scan_code")).toBe(
       `sap_pairprogramming_${instNorm}_scan_code`,
     );
-    expect(formatSapToolNameAlias(appId, instanceId, "file_read_file")).toBe(
-      `sap:pairprogramming:${instNorm}:file_read_file`,
+    expect(formatSapToolNameAlias(appId, instanceId, "file_read")).toBe(
+      `sap:pairprogramming:${instNorm}:file_read`,
     );
   });
 
   it("parses canonical names with underscores in local_name", () => {
-    const name = formatSapToolName(appId, instanceId, "file_read_file");
+    const name = formatSapToolName(appId, instanceId, "file_read");
     const parsed = parseSapToolName(name);
     expect(parsed.ok).toBe(true);
     if (parsed.ok) {
-      expect(parsed.value.local_name).toBe("file_read_file");
+      expect(parsed.value.local_name).toBe("file_read");
       expect(parsed.value.app_slug).toBe("pairprogramming");
       expect(parsed.value.instance_id_norm).toBe(instNorm);
     }
@@ -48,6 +48,6 @@ describe("sap naming", () => {
 
   it("rejects malformed sap names", () => {
     expect(parseSapToolName("sap_bad").ok).toBe(false);
-    expect(parseSapToolName("file_read_file").ok).toBe(false);
+    expect(parseSapToolName("file_read").ok).toBe(false);
   });
 });

@@ -36,16 +36,16 @@ function requireSessionStore():
 
 export function registerSessionTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
-    "sessions",
+    "session",
     "Historical conversation search and paginated reading",
     attachToolReturns(
       [
         {
-          name: "sessions_search",
+          name: "session_search",
           description:
             "Search historical conversations (PostgreSQL messages full-text index).\n" +
             "Returns matching keyword snippets, not full message body; optional session scope.\n" +
-            "Use sessions_scroll to load full context.\n\n" +
+            "Use session_scroll to load full context.\n\n" +
             FTS_SYNTAX,
           parameters: {
             type: "object",
@@ -89,10 +89,10 @@ export function registerSessionTools(toolSets: ToolSetRegistry): void {
           },
         },
         {
-          name: "sessions_scroll",
+          name: "session_scroll",
           description:
             "Paginated reading of historical messages in specified session (user/assistant full content; tool messages truncated).\n" +
-            "Use message_id (from memory_recall or sessions_search) as anchor to read forward; otherwise paginate with offset.",
+            "Use message_id (from memory_recall or session_search) as anchor to read forward; otherwise paginate with offset.",
           parameters: {
             type: "object",
             properties: {

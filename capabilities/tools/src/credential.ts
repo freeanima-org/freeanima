@@ -5,12 +5,12 @@ import { listCredentialsForCapability as listCredentials } from "@freeanima/core
 
 export function registerCredentialTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
-    "credentials",
+    "credential",
     "Credential path lookup (no values)",
     attachToolReturns(
       [
         {
-          name: "credentials_list",
+          name: "credential_list",
           description: "List pass credential paths (no values)",
           parameters: { type: "object", properties: {} },
           handler: () =>

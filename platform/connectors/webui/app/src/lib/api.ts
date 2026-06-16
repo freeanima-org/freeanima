@@ -106,8 +106,12 @@ export async function getStatusConfig() {
   return unwrap(apiClient.api.status.config.get());
 }
 
-export async function getToolsStatus() {
-  return unwrap(apiClient.api.status.tools.get());
+export async function getToolsStatus(scope?: "default" | "all") {
+  return unwrap(
+    apiClient.api.status.tools.get({
+      query: scope === "default" ? { scope: "default" } : {},
+    }),
+  );
 }
 
 export async function getPromptDebug(sessionId?: string) {

@@ -57,7 +57,7 @@ describe("messagesForApi", () => {
         role: "assistant",
         content: null,
         tool_calls: [
-          { id: "c1", type: "function", function: { name: "file_read_file", arguments: "{}" } },
+          { id: "c1", type: "function", function: { name: "file_read", arguments: "{}" } },
         ],
       },
       { role: "tool", tool_call_id: "c1", content: "ok" },
@@ -65,6 +65,6 @@ describe("messagesForApi", () => {
     const out = messagesForApi(msgs);
     const tool = out.find((m) => m.role === "tool");
     expect(tool).toBeDefined();
-    expect((tool as { name?: string }).name).toBe("file_read_file");
+    expect((tool as { name?: string }).name).toBe("file_read");
   });
 });

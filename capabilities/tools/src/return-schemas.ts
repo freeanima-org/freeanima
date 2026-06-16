@@ -168,7 +168,7 @@ const todoReturnSchema = z.union([
 ]);
 
 export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields> = {
-  toolsets_search: defineToolReturn({
+  toolset_search: defineToolReturn({
     schema: z.object({
       query: z.string(),
       hits: z.array(
@@ -201,7 +201,7 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
       total: 1,
     },
   }),
-  toolsets_load: defineToolReturn({
+  toolset_load: defineToolReturn({
     schema: z.object({
       loaded: z.array(z.string()),
       denied: z.array(z.string()),
@@ -216,7 +216,7 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
       unknown: [],
       tools: [
         {
-          name: "file_read_file",
+          name: "file_read",
           description: "Read a text file",
           toolset: "file",
           parameters: { type: "object", properties: {} },
@@ -224,15 +224,15 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
       ],
     },
   }),
-  file_read_file: defineTextToolReturn({
+  file_read: defineTextToolReturn({
     hint: "Plain text with line numbers; each line formatted as offset|line_content",
     example: textLineNumberExample,
   }),
-  file_write_file: defineToolReturn({
+  file_write: defineToolReturn({
     schema: okPathSchema,
     example: { ok: true, path: "/home/user/project/README.md" },
   }),
-  file_search_files: defineToolReturn({
+  file_search: defineToolReturn({
     schema: fileSearchFilesUnionSchema,
     example: {
       matches: ["./src/index.ts:10:export function main()"],
@@ -347,7 +347,7 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
       ],
     },
   }),
-  skills_create: defineToolReturn({
+  skill_create: defineToolReturn({
     schema: z.object({
       ok: z.literal(true),
       name: z.string(),
@@ -361,7 +361,7 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
       message: "Skill 'my-skill' created and registered",
     },
   }),
-  skills_load: defineToolReturn({
+  skill_load: defineToolReturn({
     schema: z.object({
       skill: z.string(),
       description: z.string(),
@@ -375,7 +375,7 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
       content: "# My Skill\n\nSkill body",
     },
   }),
-  skills_list: defineToolReturn({
+  skill_list: defineToolReturn({
     schema: z.object({
       skills: z.array(skillListEntrySchema),
       total: z.number(),
@@ -393,7 +393,7 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
       total: 1,
     },
   }),
-  skills_search: defineToolReturn({
+  skill_search: defineToolReturn({
     schema: z.object({
       query: z.string(),
       skills: z.array(skillListEntrySchema),
@@ -412,14 +412,14 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
       total: 1,
     },
   }),
-  skills_view: defineToolReturn({
+  skill_view: defineToolReturn({
     schema: z.object({ name: z.string(), content: z.string() }),
     example: {
       name: "my-skill",
       content: "---\ndescription: Example\n---\n\n# My Skill",
     },
   }),
-  skills_delete: defineToolReturn({
+  skill_delete: defineToolReturn({
     schema: z.object({
       ok: z.literal(true),
       name: z.string(),
@@ -427,7 +427,7 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
     }),
     example: { ok: true, name: "my-skill", message: "Skill 'my-skill' deleted" },
   }),
-  credentials_list: defineToolReturn({
+  credential_list: defineToolReturn({
     schema: z.object({ credentials: z.array(credentialEntrySchema) }),
     example: {
       credentials: [
@@ -441,7 +441,7 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
       ],
     },
   }),
-  sessions_search: defineToolReturn({
+  session_search: defineToolReturn({
     schema: z.object({
       query: z.string(),
       hits: z.array(sessionSearchHitSchema),
@@ -461,7 +461,7 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
       summary: "Found 1 historical conversation",
     },
   }),
-  sessions_scroll: defineToolReturn({
+  session_scroll: defineToolReturn({
     schema: z.object({
       session_id: z.string(),
       messages: z.array(sessionMessageRowSchema),

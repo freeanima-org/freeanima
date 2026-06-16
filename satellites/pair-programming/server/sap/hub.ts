@@ -21,7 +21,7 @@ const REGISTERED_TOOLS = [
     return_kind: "json" as const,
   },
   {
-    local_name: "file_read_file",
+    local_name: "file_read",
     description: "Read a file from workspace",
     parameters: {
       type: "object",
@@ -31,7 +31,7 @@ const REGISTERED_TOOLS = [
     return_kind: "text" as const,
   },
   {
-    local_name: "file_search_files",
+    local_name: "file_search",
     description: "Search files in workspace by text query",
     parameters: {
       type: "object",
@@ -44,7 +44,7 @@ const REGISTERED_TOOLS = [
     return_kind: "json" as const,
   },
   {
-    local_name: "file_write_file",
+    local_name: "file_write",
     description: "Write content to a workspace file",
     parameters: {
       type: "object",

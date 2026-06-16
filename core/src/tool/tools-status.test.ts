@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { defineToolReturn } from "./return-contract.ts";
 import { DEFAULT_SESSION_TOOLSETS } from "./default-session-toolsets.ts";
-import { toolNamesForToolsets } from "./toolset-meta.ts";
+import { toolNamesForToolSets } from "./toolset-meta.ts";
 import { ToolSetRegistry } from "./toolset.ts";
 import { buildToolsStatus, resolveReturnKind } from "./tools-status.ts";
 
@@ -26,7 +26,7 @@ describe("resolveReturnKind", () => {
   });
 
   it("infers built-in plain-text tools as text", () => {
-    expect(resolveReturnKind("file", { ...base, name: "file_read_file" })).toBe("text");
+    expect(resolveReturnKind("file", { ...base, name: "file_read" })).toBe("text");
     expect(resolveReturnKind("terminal", { ...base, name: "terminal_run" })).toBe("text");
     expect(resolveReturnKind("code", { ...base, name: "code_execute" })).toBe("text");
   });
@@ -39,9 +39,9 @@ describe("resolveReturnKind", () => {
 describe("buildToolsStatus", () => {
   it("assembles definition, return_kind, and default_tools", () => {
     const registry = new ToolSetRegistry();
-    registry.registerToolSet("toolsets", "discovery", [
+    registry.registerToolSet("toolset", "discovery", [
       {
-        name: "toolsets_search",
+        name: "toolset_search",
         description: "Search toolsets",
         parameters: { type: "object", properties: { query: { type: "string" } } },
         handler: () => "{}",
@@ -49,13 +49,13 @@ describe("buildToolsStatus", () => {
     ]);
     registry.registerToolSet("file", "files", [
       {
-        name: "file_read_file",
+        name: "file_read",
         description: "Read file",
         parameters: { type: "object", properties: { path: { type: "string" } } },
         handler: () => "content",
       },
       {
-        name: "file_write_file",
+        name: "file_write",
         description: "Write file",
         parameters: { type: "object" },
         handler: () => '{"ok":true}',
@@ -77,20 +77,20 @@ describe("buildToolsStatus", () => {
     const status = buildToolsStatus(registry);
 
     expect(status.default_tools).toEqual(
-      toolNamesForToolsets(
+      toolNamesForToolSets(
         registry,
         DEFAULT_SESSION_TOOLSETS.filter((n) => registry.getToolSet(n) != null),
       ),
     );
-    expect(status.default_tools).toContain("toolsets_search");
+    expect(status.default_tools).toContain("toolset_search");
 
-    const read = status.tools.find((t) => t.name === "file_read_file");
+    const read = status.tools.find((t) => t.name === "file_read");
     expect(read?.return_kind).toBe("text");
     expect(read?.definition.type).toBe("function");
-    expect(read?.definition.function.name).toBe("file_read_file");
+    expect(read?.definition.function.name).toBe("file_read");
     expect(read?.toolset).toBe("file");
 
-    const write = status.tools.find((t) => t.name === "file_write_file");
+    const write = status.tools.find((t) => t.name === "file_write");
     expect(write?.return_kind).toBe("json");
     expect(write?.return_schema?.type).toBe("object");
     expect(write?.return_example).toEqual({ ok: true, path: "/tmp/demo.txt" });
@@ -100,6 +100,6 @@ describe("buildToolsStatus", () => {
     const mcp = status.tools.find((t) => t.name === "mcp_demo_ping");
     expect(mcp?.return_kind).toBe("text");
 
-    expect(status.tool_sets.map((ts) => ts.name)).toEqual(["toolsets", "file", "mcp_demo"]);
+    expect(status.toolsets.map((ts) => ts.name)).toEqual(["toolset", "file", "mcp_demo"]);
   });
 });

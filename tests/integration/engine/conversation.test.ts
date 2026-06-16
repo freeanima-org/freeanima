@@ -69,7 +69,7 @@ describePg("conversation", () => {
     const tools = await c.loadSessionTools(sid);
     expect(tools.length).toBeGreaterThan(storedToolsets.length);
     expect(tools[0]).toHaveProperty("type", "function");
-    expect(tools.some((t) => t.function.name === "toolsets_search")).toBe(true);
+    expect(tools.some((t) => t.function.name === "toolset_search")).toBe(true);
   });
 });
 

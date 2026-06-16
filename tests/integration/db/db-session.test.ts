@@ -92,7 +92,7 @@ describePg("db session (PostgreSQL)", () => {
         {
           id: "call_1",
           type: "function",
-          function: { name: "file_read_file", arguments: '{"path":"."}' },
+          function: { name: "file_read", arguments: '{"path":"."}' },
         },
       ],
     });
@@ -101,7 +101,7 @@ describePg("db session (PostgreSQL)", () => {
     expect(msgs).toHaveLength(1);
     expect(msgs[0]?.role).toBe("assistant");
     if (msgs[0]?.role === "assistant") {
-      expect(msgs[0].tool_calls?.[0]?.function.name).toBe("file_read_file");
+      expect(msgs[0].tool_calls?.[0]?.function.name).toBe("file_read");
     }
   });
 
@@ -156,7 +156,7 @@ describePg("db session (PostgreSQL)", () => {
       pos: 490,
       timestamp: new Date().toISOString(),
       tool_calls: [
-        { id: "call_1", type: "function", function: { name: "file_read_file", arguments: "{}" } },
+        { id: "call_1", type: "function", function: { name: "file_read", arguments: "{}" } },
       ],
     } as never);
     await session.appendMessage(sessionId, {
@@ -176,7 +176,7 @@ describePg("db session (PostgreSQL)", () => {
     await session.appendMessage(sessionId, {
       role: "tool",
       tool_call_id: "call_1",
-      name: "file_read_file",
+      name: "file_read",
       content: '{"error":"repair"}',
       pos: 491,
       timestamp: new Date().toISOString(),

@@ -1,7 +1,7 @@
 import type { ToolSetRegistry } from "./toolset.ts";
 
-export const TOOLSETS_LOAD_TOOL_NAME = "toolsets_load";
-export const TOOLSETS_SEARCH_TOOL_NAME = "toolsets_search";
+export const TOOL_SET_LOAD_TOOL_NAME = "toolset_load";
+export const TOOL_SET_SEARCH_TOOL_NAME = "toolset_search";
 
 /** Resolve a registry tool name to its owning ToolSet */
 export function toolSetForTool(registry: ToolSetRegistry, toolName: string): string | null {
@@ -14,7 +14,7 @@ export function toolSetForTool(registry: ToolSetRegistry, toolName: string): str
 }
 
 /** Merge ToolSet names preserving order, deduped */
-export function mergeToolsetNames(current: readonly string[], toAdd: readonly string[]): string[] {
+export function mergeToolSetNames(current: readonly string[], toAdd: readonly string[]): string[] {
   const seen = new Set(current.map((n) => n.trim()).filter(Boolean));
   const out = [...current.map((n) => n.trim()).filter(Boolean)];
   for (const raw of toAdd) {
@@ -27,7 +27,7 @@ export function mergeToolsetNames(current: readonly string[], toAdd: readonly st
 }
 
 /** Coerce legacy fine-grained tool names or ToolSet names into ToolSet names */
-export function resolveToolsetNames(registry: ToolSetRegistry, names: readonly string[]): string[] {
+export function resolveToolSetNames(registry: ToolSetRegistry, names: readonly string[]): string[] {
   const out: string[] = [];
   const seen = new Set<string>();
   for (const raw of names) {
@@ -45,7 +45,7 @@ export function resolveToolsetNames(registry: ToolSetRegistry, names: readonly s
 }
 
 /** Expand ToolSet names to executable tool names */
-export function toolNamesForToolsets(
+export function toolNamesForToolSets(
   registry: ToolSetRegistry,
   toolsetNames: readonly string[],
 ): string[] {
@@ -64,8 +64,8 @@ export function toolNamesForToolsets(
   return out;
 }
 
-/** Parse toolsets_load call arguments */
-export function parseToolsetsFromLoadArgs(args: unknown): string[] {
+/** Parse toolset_load call arguments */
+export function parseToolSetsFromLoadArgs(args: unknown): string[] {
   if (!args || typeof args !== "object") return [];
   const record = args as Record<string, unknown>;
   const raw = record.toolsets ?? record.names;

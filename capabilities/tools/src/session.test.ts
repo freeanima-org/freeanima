@@ -4,7 +4,7 @@ import { nullPgRepositories } from "@freeanima/core/repos";
 import { ToolSetRegistry } from "@freeanima/core/tool";
 import { runWithToolContext } from "@freeanima/core/tool";
 import { FtsQueryError } from "@freeanima/core/util";
-import { registerSessionTools } from "./sessions-tools.ts";
+import { registerSessionTools } from "./session.ts";
 
 function createMockSessionStore(overrides: Partial<SessionStorePort> = {}): SessionStorePort {
   const base: SessionStorePort = {
@@ -109,10 +109,10 @@ function reposWithSession(session: SessionStorePort) {
 }
 
 describe("registerSessionTools", () => {
-  it("sessions_search returns FTS hits", async () => {
+  it("session_search returns FTS hits", async () => {
     const toolSets = new ToolSetRegistry();
     registerSessionTools(toolSets);
-    const def = toolSets.getTool("sessions_search");
+    const def = toolSets.getTool("session_search");
     expect(def).toBeDefined();
 
     const session = createMockSessionStore({
@@ -146,10 +146,10 @@ describe("registerSessionTools", () => {
     );
   });
 
-  it("sessions_search returns error when query missing", async () => {
+  it("session_search returns error when query missing", async () => {
     const toolSets = new ToolSetRegistry();
     registerSessionTools(toolSets);
-    const def = toolSets.getTool("sessions_search")!;
+    const def = toolSets.getTool("session_search")!;
 
     await runWithToolContext(
       "sess-1",
@@ -161,10 +161,10 @@ describe("registerSessionTools", () => {
     );
   });
 
-  it("sessions_search returns friendly FTS validation error", async () => {
+  it("session_search returns friendly FTS validation error", async () => {
     const toolSets = new ToolSetRegistry();
     registerSessionTools(toolSets);
-    const def = toolSets.getTool("sessions_search")!;
+    const def = toolSets.getTool("session_search")!;
 
     const session = createMockSessionStore({
       async searchMessagesFts() {
@@ -187,10 +187,10 @@ describe("registerSessionTools", () => {
     );
   });
 
-  it("sessions_scroll paginates by offset", async () => {
+  it("session_scroll paginates by offset", async () => {
     const toolSets = new ToolSetRegistry();
     registerSessionTools(toolSets);
-    const def = toolSets.getTool("sessions_scroll")!;
+    const def = toolSets.getTool("session_scroll")!;
 
     const session = createMockSessionStore({
       async sessionExists(id: string) {
@@ -231,10 +231,10 @@ describe("registerSessionTools", () => {
     );
   });
 
-  it("sessions_scroll anchors by message_id", async () => {
+  it("session_scroll anchors by message_id", async () => {
     const toolSets = new ToolSetRegistry();
     registerSessionTools(toolSets);
-    const def = toolSets.getTool("sessions_scroll")!;
+    const def = toolSets.getTool("session_scroll")!;
 
     const session = createMockSessionStore({
       async sessionExists() {
@@ -274,10 +274,10 @@ describe("registerSessionTools", () => {
     );
   });
 
-  it("sessions_scroll returns error when session missing", async () => {
+  it("session_scroll returns error when session missing", async () => {
     const toolSets = new ToolSetRegistry();
     registerSessionTools(toolSets);
-    const def = toolSets.getTool("sessions_scroll")!;
+    const def = toolSets.getTool("session_scroll")!;
 
     await runWithToolContext(
       "sess-1",

@@ -8,42 +8,22 @@ import { m } from "@/lib/i18n.ts";
 
 type ToolsLoaderData = ToolsStatusResponse;
 
-const EMPTY_LOADER_DATA: ToolsLoaderData = { default_tools: [], tools: [], tool_sets: [] };
+const EMPTY_LOADER_DATA: ToolsLoaderData = { default_tools: [], tools: [], toolsets: [] };
 
-/** 静态 ToolSet 展示顺序；未列出的静态集按名称排序，动态集 mcp_* → acp_* */
-const STATIC_TOOLSET_ORDER = [
-  "tools",
-  "file",
-  "terminal",
-  "browser",
-  "web",
-  "code",
-  "skills",
-  "credentials",
-  "tasks",
-  "cron",
-  "clarify",
-  "fridge-magnet",
-  "memory",
-  "self",
-  "email",
-] as const;
+const STATIC_TOOLSET_ORDER = ["toolset", "memory"] as const;
 
-function toolSetSortKey(name: string): [number, number, string] {
-  if (name.startsWith("mcp_")) return [2, 0, name];
-  if (name.startsWith("acp_")) return [3, 0, name];
+function toolSetSortKey(name: string): [number, string] {
   const idx = STATIC_TOOLSET_ORDER.indexOf(name as (typeof STATIC_TOOLSET_ORDER)[number]);
-  if (idx >= 0) return [0, idx, name];
-  return [1, 0, name];
+  if (idx >= 0) return [idx, name];
+  return [STATIC_TOOLSET_ORDER.length, name];
 }
 
-function sortToolSets(toolSets: ToolsLoaderData["tool_sets"]): ToolsLoaderData["tool_sets"] {
+function sortToolSets(toolSets: ToolsLoaderData["toolsets"]): ToolsLoaderData["toolsets"] {
   return toolSets.toSorted((a, b) => {
     const ka = toolSetSortKey(a.name);
     const kb = toolSetSortKey(b.name);
     if (ka[0] !== kb[0]) return ka[0] - kb[0];
-    if (ka[1] !== kb[1]) return ka[1] - kb[1];
-    return ka[2].localeCompare(kb[2]);
+    return ka[1].localeCompare(kb[1]);
   });
 }
 
@@ -80,7 +60,8 @@ async function copyText(text: string, label: string): Promise<void> {
 }
 
 export const Route = createFileRoute("/chamber/tools")({
-  loader: () => getToolsStatus().catch(() => EMPTY_LOADER_DATA) as Promise<ToolsLoaderData>,
+  loader: () =>
+    getToolsStatus("default").catch(() => EMPTY_LOADER_DATA) as Promise<ToolsLoaderData>,
   component: ToolsPage,
 });
 
@@ -214,7 +195,7 @@ function ToolsPage() {
   const data = Route.useLoaderData();
   const tools = data.tools ?? [];
   const defaultTools = data.default_tools ?? [];
-  const toolSets = sortToolSets(data.tool_sets ?? []);
+  const toolSets = sortToolSets(data.toolsets ?? []);
   const toolByName = new Map(tools.map((t) => [t.name, t]));
 
   if (!toolSets.length) {

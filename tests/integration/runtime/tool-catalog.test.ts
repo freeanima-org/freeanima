@@ -45,7 +45,7 @@ describePg("tool catalog lazy load", () => {
     const sp = meta.system_prompt ?? "";
     expect(sp).toContain("## ToolSets");
     expect(sp).toContain("- file —");
-    expect(sp).toContain("toolsets_load");
+    expect(sp).toContain("toolset_load");
   });
 
   it("new session meta stores default cached toolsets", async () => {
@@ -64,14 +64,14 @@ describePg("tool catalog lazy load", () => {
 
     const schemas = await c.loadSessionTools(sid, meta);
     const names = schemas.map((t) => t.function.name);
-    expect(names).toContain("toolsets_search");
-    expect(names).not.toContain("file_read_file");
+    expect(names).toContain("toolset_search");
+    expect(names).not.toContain("file_read");
   });
 
-  it("toolsets_load writes staged_toolsets without extending API schema", async () => {
+  it("toolset_load writes staged_toolsets without extending API schema", async () => {
     const c = testConv();
     const sid = await c.newSession("parlor");
-    const toolLoad = getTestEngine().toolSets.getTool("toolsets_load");
+    const toolLoad = getTestEngine().toolSets.getTool("toolset_load");
     expect(toolLoad).toBeDefined();
 
     await runWithToolContext(
@@ -79,7 +79,7 @@ describePg("tool catalog lazy load", () => {
       async () => {
         const raw = await toolLoad!.handler({ toolsets: ["file"] });
         const parsed = JSON.parse(raw);
-        expect(parsed.tools?.[0]?.name).toBe("file_read_file");
+        expect(parsed.tools?.[0]?.name).toBe("file_read");
         expect(parsed.tools?.[0]?.parameters).toBeDefined();
       },
       { repos: c.repos, tools: getTestEngine().toolSets },
@@ -91,7 +91,7 @@ describePg("tool catalog lazy load", () => {
     expect(meta.staged_toolsets).toContain("file");
 
     const schemas = await c.loadSessionTools(sid, meta);
-    expect(schemas.map((t) => t.function.name)).not.toContain("file_read_file");
+    expect(schemas.map((t) => t.function.name)).not.toContain("file_read");
   });
 
   it("unloaded tools are blocked by executableTools gate", async () => {
@@ -152,13 +152,13 @@ describePg("tool catalog lazy load", () => {
     }
 
     const toolMsg = msgs.find((m) => m.role === "tool");
-    expect(toolMsg?.content).toContain("toolsets_load");
+    expect(toolMsg?.content).toContain("toolset_load");
   });
 
-  it("toolsets_search requires query and returns hits", async () => {
+  it("toolset_search requires query and returns hits", async () => {
     const c = testConv();
     const sid = await c.newSession("parlor");
-    const searchDef = getTestEngine().toolSets.getTool("toolsets_search");
+    const searchDef = getTestEngine().toolSets.getTool("toolset_search");
     expect(searchDef).toBeDefined();
 
     await runWithToolContext(
@@ -170,7 +170,7 @@ describePg("tool catalog lazy load", () => {
         expect(parsed.total).toBeGreaterThan(0);
         expect(parsed.hits.some((h: { toolset: string }) => h.toolset === "file")).toBe(true);
       },
-      { repos: c.repos, tools: getTestEngine().toolSets, executableTools: ["toolsets_search"] },
+      { repos: c.repos, tools: getTestEngine().toolSets, executableTools: ["toolset_search"] },
     );
   });
 });

@@ -1,9 +1,9 @@
 import { describe, expect, it, afterEach } from "bun:test";
 import type { SessionMetaMessage } from "@freeanima/core/db/domain";
 import {
-  filterToolsetsByAllowedTools,
-  resolveDefaultSessionToolsets,
-  resolveDefaultSessionToolsetsForMeta,
+  filterToolSetsByAllowedTools,
+  resolveDefaultSessionToolSets,
+  resolveDefaultSessionToolSetsForMeta,
 } from "./default-session-toolsets.ts";
 import { applySessionToolMaskFilter, registerSessionToolMaskFilter } from "./mask-port.ts";
 import { ToolSetRegistry } from "./toolset.ts";
@@ -28,17 +28,17 @@ function metaFixture(partial?: Partial<SessionMetaMessage>): SessionMetaMessage 
   };
 }
 
-describe("filterToolsetsByAllowedTools", () => {
+describe("filterToolSetsByAllowedTools", () => {
   it("keeps toolsets with at least one allowed tool", () => {
     const registry = new ToolSetRegistry();
     registry.registerToolSet("memory", "memory", [stubTool("memory_recall")]);
-    registry.registerToolSet("file", "file", [stubTool("file_read_file")]);
-    const filtered = filterToolsetsByAllowedTools(registry, ["memory", "file"], ["memory_recall"]);
+    registry.registerToolSet("file", "file", [stubTool("file_read")]);
+    const filtered = filterToolSetsByAllowedTools(registry, ["memory", "file"], ["memory_recall"]);
     expect(filtered).toEqual(["memory"]);
   });
 });
 
-describe("resolveDefaultSessionToolsetsForMeta", () => {
+describe("resolveDefaultSessionToolSetsForMeta", () => {
   afterEach(() => {
     registerSessionToolMaskFilter((names) => names);
   });
@@ -46,26 +46,26 @@ describe("resolveDefaultSessionToolsetsForMeta", () => {
   it("returns only default toolsets present in registry", () => {
     const registry = new ToolSetRegistry();
     registry.registerToolSet("memory", "memory", [stubTool("memory_recall")]);
-    expect(resolveDefaultSessionToolsets(registry)).toEqual(["memory"]);
+    expect(resolveDefaultSessionToolSets(registry)).toEqual(["memory"]);
   });
 
   it("returns registry defaults when no mask filter applies", () => {
     const registry = new ToolSetRegistry();
     registry.registerToolSet("memory", "memory", [stubTool("memory_recall")]);
-    const resolved = resolveDefaultSessionToolsetsForMeta(registry, metaFixture());
-    expect(resolved).toEqual(resolveDefaultSessionToolsets(registry));
+    const resolved = resolveDefaultSessionToolSetsForMeta(registry, metaFixture());
+    expect(resolved).toEqual(resolveDefaultSessionToolSets(registry));
   });
 
   it("filters defaults to toolsets allowed by capability mask", () => {
     registerSessionToolMaskFilter((names) => names.filter((n) => n.startsWith("memory_")));
     const registry = new ToolSetRegistry();
-    registry.registerToolSet("toolsets", "discovery", [
-      stubTool("toolsets_search"),
-      stubTool("toolsets_load"),
+    registry.registerToolSet("toolset", "discovery", [
+      stubTool("toolset_search"),
+      stubTool("toolset_load"),
     ]);
     registry.registerToolSet("memory", "memory", [stubTool("memory_recall")]);
-    registry.registerToolSet("sessions", "sessions", [stubTool("sessions_list")]);
-    const resolved = resolveDefaultSessionToolsetsForMeta(
+    registry.registerToolSet("session", "session", [stubTool("session_search")]);
+    const resolved = resolveDefaultSessionToolSetsForMeta(
       registry,
       metaFixture({ capability_mask: { presets: ["sleep"] } }),
     );

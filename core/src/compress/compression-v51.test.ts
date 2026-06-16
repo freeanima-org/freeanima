@@ -54,12 +54,12 @@ describe("compression v5.1", () => {
       role: "assistant",
       content: null,
       tool_calls: [
-        { id: "1", type: "function", function: { name: "file_read_file", arguments: "{}" } },
+        { id: "1", type: "function", function: { name: "file_read", arguments: "{}" } },
         { id: "2", type: "function", function: { name: "grep", arguments: "{}" } },
       ],
       pos: 2,
     });
-    expect(slim?.content).toBe("[tools executed: file_read_file, grep]");
+    expect(slim?.content).toBe("[tools executed: file_read, grep]");
   });
 
   it("slimMessage drops completely empty assistant", () => {

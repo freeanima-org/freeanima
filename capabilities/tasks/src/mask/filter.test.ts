@@ -3,8 +3,8 @@ import { checkCredential, checkTool } from "./filter.ts";
 import type { ResolvedMask } from "./types.ts";
 
 const resolved: ResolvedMask = {
-  allowed_tools: ["memory_recall", "file_read_file"],
-  denied_tools: ["file_write_file"],
+  allowed_tools: ["memory_recall", "file_read"],
+  denied_tools: ["file_write"],
   auto_skills: [],
   credentials: [{ name: "api_key", read: "deny", write: "allow" }],
 };

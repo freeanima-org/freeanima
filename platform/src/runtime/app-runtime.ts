@@ -396,8 +396,8 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     return status.getConfig(this.runtimeDeps());
   }
 
-  listToolsApi() {
-    return status.listToolsApi(this.runtimeDeps());
+  listToolsApi(scope?: "default" | "all") {
+    return status.listToolsApi(this.runtimeDeps(), scope);
   }
 
   listCronJobs(): Promise<{ jobs: CronJobData[] }> {

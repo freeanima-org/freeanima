@@ -15,8 +15,8 @@ export function getConfig() {
   return webuiCtx().getConfig().config;
 }
 
-export function listTools() {
-  return webuiCtx().listToolsApi();
+export function listTools(scope?: "default" | "all") {
+  return webuiCtx().listToolsApi(scope);
 }
 
 export async function listCronJobs() {

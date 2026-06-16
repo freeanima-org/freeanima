@@ -12,13 +12,13 @@ function testRegistry(): ToolSetRegistry {
   const registry = new ToolSetRegistry();
   registry.registerToolSet("file", "files", [
     {
-      name: "file_read_file",
+      name: "file_read",
       description: "Read file",
       parameters: { type: "object", properties: { path: { type: "string" } } },
       handler: () => "ok",
     },
     {
-      name: "file_write_file",
+      name: "file_write",
       description: "Write file",
       parameters: { type: "object", properties: {} },
       handler: () => "ok",
@@ -38,7 +38,7 @@ function testRegistry(): ToolSetRegistry {
 describe("expandToolNames", () => {
   it("expands @toolset", () => {
     const registry = testRegistry();
-    expect(expandToolNames(registry, ["@file"])).toEqual(["file_read_file", "file_write_file"]);
+    expect(expandToolNames(registry, ["@file"])).toEqual(["file_read", "file_write"]);
   });
 });
 
@@ -49,7 +49,7 @@ describe("listToolsCatalog", () => {
     expect(all.total).toBe(3);
     const fileOnly = listToolsCatalog(registry, { toolset: "file" });
     expect(fileOnly.total).toBe(2);
-    expect(fileOnly.tools.map((t) => t.name)).toEqual(["file_read_file", "file_write_file"]);
+    expect(fileOnly.tools.map((t) => t.name)).toEqual(["file_read", "file_write"]);
   });
 });
 
@@ -65,14 +65,14 @@ describe("searchToolsCatalog", () => {
   it("matches by name or description", () => {
     const registry = testRegistry();
     const hit = searchToolsCatalog(registry, "read");
-    expect(hit.tools.some((t) => t.name === "file_read_file")).toBe(true);
+    expect(hit.tools.some((t) => t.name === "file_read")).toBe(true);
   });
 });
 
 describe("formatToolsForToolMessage", () => {
   it("returns full parameters", () => {
     const registry = testRegistry();
-    const formatted = formatToolsForToolMessage(registry, ["file_read_file"]);
+    const formatted = formatToolsForToolMessage(registry, ["file_read"]);
     expect(formatted).toHaveLength(1);
     expect(formatted[0]?.parameters).toEqual({
       type: "object",

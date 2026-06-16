@@ -20,14 +20,14 @@ describe("tool-loop-integrity", () => {
         content: null,
         pos: 2,
         tool_calls: [
-          { id: "call_1", type: "function", function: { name: "file_read_file", arguments: "{}" } },
+          { id: "call_1", type: "function", function: { name: "file_read", arguments: "{}" } },
           { id: "call_2", type: "function", function: { name: "grep", arguments: "{}" } },
         ],
       },
       {
         role: "tool",
         tool_call_id: "call_1",
-        name: "file_read_file",
+        name: "file_read",
         content: '{"ok":true}',
         pos: 3,
       },
@@ -45,7 +45,7 @@ describe("tool-loop-integrity", () => {
         content: null,
         pos: 2,
         tool_calls: [
-          { id: "call_1", type: "function", function: { name: "file_read_file", arguments: "{}" } },
+          { id: "call_1", type: "function", function: { name: "file_read", arguments: "{}" } },
         ],
       },
       { role: "tool", tool_call_id: "orphan", name: "x", content: "bad", pos: 3 },
@@ -71,7 +71,7 @@ describe("tool-loop-integrity", () => {
         content: null,
         pos: 490,
         tool_calls: [
-          { id: "call_1", type: "function", function: { name: "file_read_file", arguments: "{}" } },
+          { id: "call_1", type: "function", function: { name: "file_read", arguments: "{}" } },
         ],
       },
       { role: "user", content: "u2", pos: 491 },

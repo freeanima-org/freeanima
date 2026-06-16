@@ -25,12 +25,12 @@ export function registerSkillsTools(toolSets: ToolSetRegistry, skills: SkillRegi
   registerUserSkills(skills);
 
   toolSets.registerToolSet(
-    "skills",
+    "skill",
     "Skill registry and management",
     attachToolReturns(
       [
         {
-          name: "skills_create",
+          name: "skill_create",
           description:
             "Create a new skill (Markdown with YAML frontmatter), write to ~/.anima/skills and register",
           parameters: {
@@ -51,9 +51,9 @@ export function registerSkillsTools(toolSets: ToolSetRegistry, skills: SkillRegi
             ),
         },
         {
-          name: "skills_load",
+          name: "skill_load",
           description:
-            "Load skill body into current conversation context (via tool message, not written to system prompt). Use skills_list / skills_search to discover skills first.",
+            "Load skill body into current conversation context (via tool message, not written to system prompt). Use skill_list / skill_search to discover skills first.",
           parameters: {
             type: "object",
             properties: { name: { type: "string", description: "Registered skill name" } },
@@ -62,14 +62,14 @@ export function registerSkillsTools(toolSets: ToolSetRegistry, skills: SkillRegi
           handler: (args) => loadSkillIntoContext(skills, String(args.name ?? "")),
         },
         {
-          name: "skills_list",
+          name: "skill_list",
           description:
             "List all registered skills in the registry (name, description, source, directory)",
           parameters: { type: "object", properties: {} },
           handler: () => listSkillsForTool(skills),
         },
         {
-          name: "skills_search",
+          name: "skill_search",
           description: "Search skills in the registry by name, description, or source",
           parameters: {
             type: "object",
@@ -81,7 +81,7 @@ export function registerSkillsTools(toolSets: ToolSetRegistry, skills: SkillRegi
           handler: (args) => searchSkillsForTool(skills, String(args.query ?? "")),
         },
         {
-          name: "skills_view",
+          name: "skill_view",
           description: "View full skill Markdown file (with frontmatter)",
           parameters: {
             type: "object",
@@ -91,7 +91,7 @@ export function registerSkillsTools(toolSets: ToolSetRegistry, skills: SkillRegi
           handler: (args) => viewUserSkill(skills, String(args.name ?? "")),
         },
         {
-          name: "skills_delete",
+          name: "skill_delete",
           description:
             "Delete user-created skill (~/.anima/skills); built-in skills cannot be deleted",
           parameters: {

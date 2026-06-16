@@ -27,22 +27,22 @@ describe("resolveMask", () => {
     const masks = new MaskRegistry();
     masks.register("base", {
       inherits: [],
-      allowed_tools: ["memory_recall", "file_read_file"],
+      allowed_tools: ["memory_recall", "file_read"],
       denied_tools: [],
       auto_skills: ["skill_a"],
       credentials: [],
     });
     masks.register("child", {
       inherits: ["base"],
-      allowed_tools: ["file_write_file"],
-      denied_tools: ["file_read_file"],
+      allowed_tools: ["file_write"],
+      denied_tools: ["file_read"],
       auto_skills: ["skill_b"],
       credentials: [],
     });
     const ts = toolSetRegistry();
     const resolved = resolveMaskByName("child", masks, ts);
-    expect(resolved.allowed_tools.toSorted()).toEqual(["file_write_file", "memory_recall"]);
-    expect(resolved.denied_tools).toEqual(["file_read_file"]);
+    expect(resolved.allowed_tools.toSorted()).toEqual(["file_write", "memory_recall"]);
+    expect(resolved.denied_tools).toEqual(["file_read"]);
     expect(resolved.auto_skills).toEqual(["skill_a", "skill_b"]);
   });
 

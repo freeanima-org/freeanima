@@ -71,7 +71,7 @@ describePg("tasks tool", () => {
     await runWithToolContext(
       sid,
       async () => {
-        const tool = toolSets.getTool("tasks_create")!;
+        const tool = toolSets.getTool("task_create")!;
         output = await Promise.resolve(
           tool.handler({
             title: "Discuss UI plan",
@@ -128,7 +128,7 @@ describePg("tasks tool", () => {
     await runWithToolContext(
       sid,
       async () => {
-        const tool = toolSets.getTool("tasks_list")!;
+        const tool = toolSets.getTool("task_list")!;
         output = await Promise.resolve(tool.handler({}));
       },
       { repos, tools: toolSets },
@@ -143,7 +143,7 @@ describePg("tasks tool", () => {
     expect(parsed.tasks[0]?.title).toBe("Pending task");
   });
 
-  it("tasks_complete updates status", async () => {
+  it("task_complete updates status", async () => {
     const sid = "sess-task-complete";
     const repos = testConv().repos;
     await testConv().initSession(sid, getProfileHopModel(testCfg(), "chat"), {
@@ -159,7 +159,7 @@ describePg("tasks tool", () => {
     await runWithToolContext(
       sid,
       async () => {
-        const tool = toolSets.getTool("tasks_complete")!;
+        const tool = toolSets.getTool("task_complete")!;
         output = await Promise.resolve(tool.handler({ id: created.id }));
       },
       { repos, tools: toolSets },

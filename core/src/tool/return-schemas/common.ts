@@ -16,7 +16,7 @@ export const textReturnJsonSchema = {
 /** Common ok wrapper */
 export const okObjectSchema = z.object({ ok: z.literal(true) });
 
-/** Line-number-prefixed text example (file_read_file, etc.) */
+/** Line-number-prefixed text example (file_read, etc.) */
 export const textLineNumberExample = "1|First line\n2|Second line";
 
 export function paginatedListSchema<T extends z.ZodType>(itemSchema: T) {
