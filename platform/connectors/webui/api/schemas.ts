@@ -261,7 +261,7 @@ const toolsStatusToolItemSchema = z.object({
 });
 
 export const toolsStatusResponseSchema = z.object({
-  default_tools: z.array(z.string()),
+  default_toolsets: z.array(z.string()),
   tools: z.array(toolsStatusToolItemSchema),
   toolsets: z.array(
     z.object({

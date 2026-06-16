@@ -1,5 +1,4 @@
 import { resolveDefaultSessionToolSets } from "./default-session-toolsets.ts";
-import { toolNamesForToolSets } from "./toolset-meta.ts";
 import { globalToolErrorContract, resolveToolReturnFields } from "./return-contract.ts";
 import {
   openaiFunctionSchema,
@@ -34,7 +33,7 @@ export type ToolsStatusToolItem = {
 };
 
 export type ToolsStatusResponse = {
-  default_tools: string[];
+  default_toolsets: string[];
   tools: ToolsStatusToolItem[];
   toolsets: { name: string; description: string; tools: string[] }[];
 };
@@ -113,7 +112,7 @@ export function buildToolsStatus(
     .filter((ts) => !filterNames || filterNames.has(ts.name));
 
   return {
-    default_tools: toolNamesForToolSets(registry, defaultToolSetNames),
+    default_toolsets: [...defaultToolSetNames],
     tools,
     toolsets: listedToolSets.map((ts) => ({
       name: ts.name,

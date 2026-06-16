@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 17:52+0800\n"
+"POT-Creation-Date: 2026-06-16 15:48+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -487,25 +487,32 @@ msgstr ""
 #: docs/guide/install.md:204
 #, no-wrap
 msgid ""
-"bun run build:cli\n"
-"bun install -g ./cli/publish\n"
+"bun run install:cli:local\n"
+"# equivalent: bun run build:cli && bun install -g \"$PWD/cli/publish\"\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/install.md:210
+msgid ""
+"Bun 的 `bun install -g ./cli/publish` 在仓库根目录不可用；请使用 `bun run "
+"install:cli:local`（会先清理损坏的全局依赖，再 pack + 安装 tarball）。"
 msgstr ""
 
 #. type: Title ###
-#: docs/guide/install.md:209
+#: docs/guide/install.md:211
 #, no-wrap
 msgid "3. Configure and start"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/install.md:212
+#: docs/guide/install.md:214
 msgid ""
 "Same as npm CLI — `~/.anima/config.yaml`, PostgreSQL, optional Redis and "
 "pass:"
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/guide/install.md:213
+#: docs/guide/install.md:215
 #, no-wrap
 msgid ""
 "mkdir -p ~/.anima\n"
@@ -516,26 +523,26 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/install.md:222
+#: docs/guide/install.md:224
 msgid ""
 "WebUI dev mode (source watch rebuild — refresh the page after frontend "
 "edits):"
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/guide/install.md:223
+#: docs/guide/install.md:225
 #, no-wrap
 msgid "anima service start --dev --foreground\n"
 msgstr ""
 
 #. type: Title ###
-#: docs/guide/install.md:227
+#: docs/guide/install.md:229
 #, no-wrap
 msgid "4. Development checks"
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/guide/install.md:229
+#: docs/guide/install.md:231
 #, no-wrap
 msgid ""
 "bun run check    # typecheck + lint + dep-check + format + changed unit tests\n"
@@ -543,20 +550,20 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/install.md:235
+#: docs/guide/install.md:237
 msgid ""
 "Upgrade a link install: `git pull`, `bun install`, restart the service. Do "
 "not use `anima update`."
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/install.md:238
+#: docs/guide/install.md:240
 #, no-wrap
 msgid "Verify installation"
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/guide/install.md:240
+#: docs/guide/install.md:242
 #, no-wrap
 msgid ""
 "anima service status\n"
@@ -564,40 +571,40 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/install.md:246
+#: docs/guide/install.md:248
 msgid ""
 "If status fails, check PostgreSQL connectivity and that migrations completed "
 "([`database.md`](database.md#troubleshooting))."
 msgstr ""
 
 #. type: Title ##
-#: docs/guide/install.md:247
+#: docs/guide/install.md:249
 #, no-wrap
 msgid "Next steps"
 msgstr ""
 
 #. type: Bullet: '1. '
-#: docs/guide/install.md:252
+#: docs/guide/install.md:254
 msgid ""
 "**Security** — pass-only secrets, `chmod 700 ~/.anima`, do not expose WebUI "
 "without auth ([`security.md`](security.md))"
 msgstr ""
 
 #. type: Bullet: '2. '
-#: docs/guide/install.md:252
+#: docs/guide/install.md:254
 msgid ""
 "**Database** — backups, extensions, manual migrations if needed "
 "([`database.md`](database.md))"
 msgstr ""
 
 #. type: Bullet: '3. '
-#: docs/guide/install.md:252
+#: docs/guide/install.md:254
 msgid ""
 "**Operations** — start/stop, memory metrics ([`service.md`](service.md))"
 msgstr ""
 
 #. type: Bullet: '4. '
-#: docs/guide/install.md:252
+#: docs/guide/install.md:254
 msgid ""
 "**Architecture** — memory pipeline, self layer, tools ([`../concepts/"
 "architecture.md`](../concepts/architecture.md))"
