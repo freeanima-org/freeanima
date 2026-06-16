@@ -3,6 +3,7 @@ export type { PlatformAdapter } from "./platforms.ts";
 export * from "./discord/discord-policy.ts";
 export {
   buildDiscordSlashCommands,
+  ensureSlashInteractionDeferred,
   interactionToCommandText,
   originFromInteraction,
 } from "./discord/discord-slash.ts";

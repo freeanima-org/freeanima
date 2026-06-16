@@ -37,6 +37,15 @@ export function isDiscordRetryableError(err: unknown): boolean {
   return false;
 }
 
+/** Another handler already sent the initial interaction response */
+export function isDiscordInteractionAlreadyAcked(err: unknown): boolean {
+  if (err && typeof err === "object") {
+    const code = (err as { code?: unknown }).code;
+    if (code === 40060) return true;
+  }
+  return false;
+}
+
 /** Expired slash interaction token or missing message edit permission during shutdown */
 export function isDiscordDeliveryDegraded(err: unknown): boolean {
   if (isDiscordRetryableError(err)) return false;
@@ -45,6 +54,7 @@ export function isDiscordDeliveryDegraded(err: unknown): boolean {
   if (err && typeof err === "object") {
     const code = (err as { code?: unknown }).code;
     if (code === 10062) return true;
+    if (code === 40060) return true;
   }
   return false;
 }

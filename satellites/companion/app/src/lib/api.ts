@@ -1,6 +1,8 @@
 import { createSapRelayBrowserClient, type SapRelayBrowserClient } from "@freeanima/sap-contract";
 import type { StreamApiEvent } from "./types.ts";
 import { COMPANION_PLATFORM } from "./types.ts";
+import { isTauri } from "./tauri.ts";
+import { resolveSidecarOrigin } from "./sidecar.ts";
 
 type SubscribeCallbacks<T> = {
   onData?: (data: T) => void;
@@ -9,16 +11,27 @@ type SubscribeCallbacks<T> = {
 };
 
 let relayClient: SapRelayBrowserClient | null = null;
+let sidecarOrigin: string | null = null;
 
-function sap(): SapRelayBrowserClient {
-  if (!relayClient) {
-    relayClient = createSapRelayBrowserClient();
+async function origin(): Promise<string> {
+  if (!sidecarOrigin) {
+    sidecarOrigin = await resolveSidecarOrigin();
   }
+  return sidecarOrigin;
+}
+
+async function ensureRelayFromConfig(): Promise<SapRelayBrowserClient> {
+  const cfg = await fetchConfig();
+  if (!relayClient) {
+    relayClient = createSapRelayBrowserClient({ relayWsUrl: cfg.relay_ws_url });
+  }
+  await relayClient.whenReady();
   return relayClient;
 }
 
 async function apiJson<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(path, init);
+  const base = await origin();
+  const res = await fetch(`${base}${path}`, init);
   if (!res.ok) {
     const err = (await res.json().catch(() => ({}))) as { error?: string };
     throw new Error(err.error ?? `HTTP ${res.status}`);
@@ -33,15 +46,16 @@ export async function fetchConfig() {
     relay_ws_url: string;
     hub_url: string;
     model_path: string;
+    model_available: boolean;
   }>("/config.json");
 }
 
 export async function getSettings() {
-  return apiJson<{ hub_url: string; model_path: string }>("/api/config");
+  return apiJson<{ hub_url: string; model_path: string; model_available: boolean }>("/api/config");
 }
 
 export async function saveSettings(patch: { hub_url?: string; model_path?: string }) {
-  return apiJson<{ hub_url: string; model_path: string }>("/api/config", {
+  return apiJson<{ hub_url: string; model_path: string; model_available: boolean }>("/api/config", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(patch),
@@ -49,9 +63,10 @@ export async function saveSettings(patch: { hub_url?: string; model_path?: strin
 }
 
 export async function uploadModel(file: File) {
+  const base = await origin();
   const form = new FormData();
   form.append("file", file);
-  const res = await fetch("/api/models/upload", { method: "POST", body: form });
+  const res = await fetch(`${base}/api/models/upload`, { method: "POST", body: form });
   if (!res.ok) {
     const err = (await res.json().catch(() => ({}))) as { error?: string };
     throw new Error(err.error ?? `HTTP ${res.status}`);
@@ -60,7 +75,8 @@ export async function uploadModel(file: File) {
 }
 
 export async function createSession() {
-  const client = await sap().whenReady();
+  const relay = await ensureRelayFromConfig();
+  const client = await relay.whenReady();
   const result = await client.request("session.create", {
     platform: COMPANION_PLATFORM,
   });
@@ -71,19 +87,57 @@ export function subscribeMessageStream(
   input: { sessionId: string; message: string },
   callbacks: SubscribeCallbacks<StreamApiEvent>,
 ): { unsubscribe: () => void } {
-  return sap().sendMessageStream(input, callbacks);
+  let inner: { unsubscribe: () => void } | null = null;
+  let cancelled = false;
+
+  void ensureRelayFromConfig()
+    .then((client) => {
+      if (cancelled) return;
+      inner = client.sendMessageStream(input, callbacks);
+    })
+    .catch((e) => {
+      callbacks.onError?.(e instanceof Error ? e : new Error(String(e)));
+      callbacks.onComplete?.();
+    });
+
+  return {
+    unsubscribe: () => {
+      cancelled = true;
+      inner?.unsubscribe();
+    },
+  };
 }
 
 export function subscribeSessionEvents(
   sessionId: string,
   onUpdate: () => void,
 ): { unsubscribe: () => void } {
-  return sap().subscribeSessionEvents(sessionId, onUpdate);
+  let inner: { unsubscribe: () => void } | null = null;
+  let cancelled = false;
+
+  void ensureRelayFromConfig()
+    .then((client) => {
+      if (cancelled) return;
+      inner = client.subscribeSessionEvents(sessionId, onUpdate);
+    })
+    .catch(() => {
+      /* ignore */
+    });
+
+  return {
+    unsubscribe: () => {
+      cancelled = true;
+      inner?.unsubscribe();
+    },
+  };
 }
 
-export function subscribePetEvents(onEvent: (event: unknown) => void): { unsubscribe: () => void } {
-  const proto = location.protocol === "https:" ? "wss:" : "ws:";
-  const ws = new WebSocket(`${proto}//${location.host}/api/pet/ws`);
+export async function subscribePetEvents(
+  onEvent: (event: unknown) => void,
+): Promise<{ unsubscribe: () => void }> {
+  const base = await origin();
+  const wsUrl = base.replace(/^http/, "ws") + "/api/pet/ws";
+  const ws = new WebSocket(wsUrl);
   ws.addEventListener("message", (ev) => {
     if (typeof ev.data !== "string") return;
     try {
@@ -97,4 +151,4 @@ export function subscribePetEvents(onEvent: (event: unknown) => void): { unsubsc
   };
 }
 
-export { COMPANION_PLATFORM };
+export { COMPANION_PLATFORM, isTauri };

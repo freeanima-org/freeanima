@@ -1,6 +1,7 @@
-import { describe, it, expect } from "bun:test";
+import { describe, it, expect, vi } from "bun:test";
 import {
   buildDiscordSlashCommands,
+  ensureSlashInteractionDeferred,
   interactionToCommandText,
 } from "@freeanima/platform/connectors/gateway";
 
@@ -36,5 +37,35 @@ describe("discord slash commands", () => {
     } as unknown as Parameters<typeof interactionToCommandText>[0];
 
     expect(interactionToCommandText(interaction)).toBe("/stats --all");
+  });
+
+  it("ensureSlashInteractionDeferred skips duplicate ack", async () => {
+    const deferReply = vi.fn(async () => {
+      throw { code: 40060, message: "Interaction has already been acknowledged." };
+    });
+    const interaction = {
+      deferred: false,
+      replied: false,
+      deferReply,
+    } as unknown as Parameters<typeof ensureSlashInteractionDeferred>[0];
+
+    await expect(ensureSlashInteractionDeferred(interaction)).resolves.toBe(false);
+    expect(deferReply).toHaveBeenCalledTimes(1);
+  });
+
+  it("ensureSlashInteractionDeferred continues when local state shows deferred", async () => {
+    const deferReply = vi.fn(async () => {
+      throw { code: 40060, message: "Interaction has already been acknowledged." };
+    });
+    const interaction = {
+      get deferred() {
+        return true;
+      },
+      replied: false,
+      deferReply,
+    } as unknown as Parameters<typeof ensureSlashInteractionDeferred>[0];
+
+    await expect(ensureSlashInteractionDeferred(interaction)).resolves.toBe(true);
+    expect(deferReply).not.toHaveBeenCalled();
   });
 });

@@ -21,7 +21,9 @@
         "decorations": false,
         "alwaysOnTop": true,
         "resizable": false,
-        "skipTaskbar": false
+        "skipTaskbar": false,
+        "visible": true,
+        "center": true
       }
     ],
     "security": {
@@ -39,11 +41,16 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "windows": {
+      "webviewInstallMode": {
+        "type": "embedBootstrapper",
+        "silent": true
+      }
+    }
   },
   "plugins": {
     "shell": {
-      "sidecar": true,
       "open": false
     }
   }

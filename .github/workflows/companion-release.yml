@@ -1,0 +1,130 @@
+name: Companion Build
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: 构建模式
+        required: false
+        default: release
+        type: choice
+        options:
+          - release
+          - fast
+      version:
+        description: 版本号（如 0.6.0；留空则不改 tauri.conf.json）
+        required: false
+        type: string
+
+concurrency:
+  group: companion-build-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build (${{ matrix.label }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Windows x64
+            runner: ubuntu-latest
+            target: x86_64-pc-windows-gnu
+            artifact_slug: windows-x64
+          - label: macOS Apple Silicon
+            runner: macos-latest
+            target: aarch64-apple-darwin
+            artifact_slug: macos-arm64
+          - label: macOS Intel
+            runner: macos-latest
+            target: x86_64-apple-darwin
+            artifact_slug: macos-x64
+    permissions:
+      contents: read
+    env:
+      COMPANION_BUILD_PROFILE: ${{ github.event_name == 'workflow_dispatch' && inputs.profile || 'release' }}
+      COMPANION_VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.event.release.tag_name || '' }}
+      TAURI_TARGET: ${{ matrix.target }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: ./.github/actions/setup-bun
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: satellites/companion/shell/src-tauri
+          shared-key: companion-${{ matrix.target }}
+
+      - name: 安装 Linux 交叉编译依赖
+        if: matrix.runner == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mingw-w64 nsis
+
+      - name: 安装 tauri-cli
+        run: |
+          if ! cargo tauri --version >/dev/null 2>&1; then
+            cargo install tauri-cli --version "^2.0.0" --locked
+          fi
+          cargo tauri --version
+
+      - name: 构建桌面伴侣
+        working-directory: satellites/companion
+        run: bun build-tauri.ts --target "${{ matrix.target }}"
+
+      - name: 收集安装包
+        if: env.COMPANION_BUILD_PROFILE == 'release'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          case "${{ matrix.target }}" in
+            x86_64-pc-windows-gnu)
+              installer="$(ls satellites/companion/shell/target/x86_64-pc-windows-gnu/release/bundle/nsis/*-setup.exe)"
+              cp "$installer" dist/companion-windows-x64-setup.exe
+              ;;
+            aarch64-apple-darwin)
+              dmg="$(ls satellites/companion/shell/target/aarch64-apple-darwin/release/bundle/dmg/*.dmg)"
+              cp "$dmg" dist/companion-macos-arm64.dmg
+              ;;
+            x86_64-apple-darwin)
+              dmg="$(ls satellites/companion/shell/target/x86_64-apple-darwin/release/bundle/dmg/*.dmg)"
+              cp "$dmg" dist/companion-macos-x64.dmg
+              ;;
+          esac
+          ls -la dist/
+
+      - name: 上传构建产物
+        if: env.COMPANION_BUILD_PROFILE == 'release'
+        uses: actions/upload-artifact@v4
+        with:
+          name: companion-${{ matrix.artifact_slug }}
+          path: dist/*
+          if-no-files-found: error
+
+  publish-release-assets:
+    name: Attach to GitHub Release
+    needs: build
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: 上传到 Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.release.tag_name }}
+          files: artifacts/**/*
+          fail_on_unmatched_files: true

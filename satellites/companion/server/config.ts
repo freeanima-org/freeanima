@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { companionConfigPath, ensureCompanionDataDir } from "./paths.ts";
+import { PLACEHOLDER_MODEL_PATH } from "./model-path.ts";
 
 export type CompanionConfig = {
   hub_url: string;
@@ -10,7 +11,7 @@ const HUB_URL = (process.env.FREEANIMA_URL ?? "http://127.0.0.1:2658").replace(/
 
 export const DEFAULT_CONFIG: CompanionConfig = {
   hub_url: HUB_URL,
-  model_path: "/models/default.vrm",
+  model_path: PLACEHOLDER_MODEL_PATH,
 };
 
 export function loadConfig(): CompanionConfig {

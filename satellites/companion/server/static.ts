@@ -1,7 +1,7 @@
 import { existsSync, statSync } from "node:fs";
 import { extname, join } from "node:path";
 import { jsonResponse, withCors } from "./http/cors.ts";
-import { companionModelsDir, publicModelsDir } from "./paths.ts";
+import { resolveModelFile } from "./model-path.ts";
 
 const DIST_DIR = join(import.meta.dir, "..", "dist");
 
@@ -21,25 +21,6 @@ function fileResponse(filePath: string): Response {
   const ext = extname(filePath);
   const headers = MIME[ext] ? { "Content-Type": MIME[ext]! } : undefined;
   return withCors(new Response(Bun.file(filePath), { headers }));
-}
-
-function resolveModelFile(relPath: string): string | null {
-  const name = relPath.replace(/^\/models\//, "");
-  if (!name || name.includes("..") || name.includes("/") || name.includes("\\")) {
-    return null;
-  }
-
-  const userPath = join(companionModelsDir(), name);
-  if (existsSync(userPath) && statSync(userPath).isFile()) {
-    return userPath;
-  }
-
-  const publicPath = join(publicModelsDir(), name);
-  if (existsSync(publicPath) && statSync(publicPath).isFile()) {
-    return publicPath;
-  }
-
-  return null;
 }
 
 export function serveStatic(pathname: string): Response {

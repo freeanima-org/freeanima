@@ -11,6 +11,7 @@ import {
 import {
   deliverDiscordFinalContent,
   isDiscordDeliveryDegraded,
+  isDiscordInteractionAlreadyAcked,
   withDiscordRetry,
 } from "./discord-retry.ts";
 import type { DiscordConfig } from "./discord-policy.ts";
@@ -123,6 +124,22 @@ export async function syncDiscordSlashCommands(
     }
   } catch (e) {
     logComponent("discord").error("Discord slash command sync failed", { err: e });
+  }
+}
+
+/** deferReply，已确认或重复投递时返回 false（调用方应跳过本次处理） */
+export async function ensureSlashInteractionDeferred(
+  interaction: ChatInputCommandInteraction,
+): Promise<boolean> {
+  if (interaction.deferred || interaction.replied) return true;
+  try {
+    await interaction.deferReply();
+    return true;
+  } catch (e) {
+    if (interaction.deferred || interaction.replied) return true;
+    if (isDiscordInteractionAlreadyAcked(e)) return false;
+    if (isDiscordDeliveryDegraded(e)) return false;
+    throw e;
   }
 }
 

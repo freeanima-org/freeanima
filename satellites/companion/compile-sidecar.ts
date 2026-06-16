@@ -6,7 +6,7 @@ const BIN_DIR = join(import.meta.dir, "shell", "src-tauri", "bin");
 const SERVER_DIR = join(import.meta.dir, "server");
 
 /** Rust target triple → Bun cross-compile target */
-const TARGETS: Record<string, { bunTarget: string; triple: string; ext: string }> = {
+export const SIDECAR_TARGETS = {
   linux: {
     bunTarget: "bun-linux-x64",
     triple: "x86_64-unknown-linux-gnu",
@@ -27,7 +27,21 @@ const TARGETS: Record<string, { bunTarget: string; triple: string; ext: string }
     triple: "x86_64-unknown-linux-gnu",
     ext: "",
   },
-};
+  "aarch64-apple-darwin": {
+    bunTarget: "bun-darwin-arm64",
+    triple: "aarch64-apple-darwin",
+    ext: "",
+  },
+  "x86_64-apple-darwin": {
+    bunTarget: "bun-darwin-x64",
+    triple: "x86_64-apple-darwin",
+    ext: "",
+  },
+} as const;
+
+export type SidecarTarget = keyof typeof SIDECAR_TARGETS;
+
+const TARGETS: Record<string, { bunTarget: string; triple: string; ext: string }> = SIDECAR_TARGETS;
 
 function resolveTarget(arg?: string): { bunTarget: string; triple: string; ext: string } {
   const key = arg ?? process.platform;
