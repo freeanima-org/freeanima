@@ -37,6 +37,33 @@ export function isDiscordRetryableError(err: unknown): boolean {
   return false;
 }
 
+/** Expired slash interaction token or missing message edit permission during shutdown */
+export function isDiscordDeliveryDegraded(err: unknown): boolean {
+  if (isDiscordRetryableError(err)) return false;
+  const status = errorStatus(err);
+  if (status === 403) return true;
+  if (err && typeof err === "object") {
+    const code = (err as { code?: unknown }).code;
+    if (code === 10062) return true;
+  }
+  return false;
+}
+
+function logDiscordDeliveryFailure(
+  level: "warn" | "error",
+  message: string,
+  err: unknown,
+  context?: Record<string, unknown>,
+): void {
+  const log = logComponent("discord");
+  const payload = { err, ...discordErrorDetails(err), ...context };
+  if (level === "warn") {
+    log.warn(message, payload);
+  } else {
+    log.error(message, payload);
+  }
+}
+
 function discordRetryDelayMs(err: unknown, attempt: number): number {
   if (err && typeof err === "object") {
     const raw =
@@ -75,12 +102,12 @@ export async function tryDiscordInterimEdit(
   try {
     await withDiscordRetry(edit);
   } catch (e) {
-    logComponent("discord").error("Discord interim edit failed", {
-      err: e,
-      ...discordErrorDetails(e),
-      ...context,
-      phase: "interim",
-    });
+    logDiscordDeliveryFailure(
+      isDiscordDeliveryDegraded(e) ? "warn" : "error",
+      "Discord interim edit failed",
+      e,
+      { ...context, phase: "interim" },
+    );
   }
 }
 
@@ -93,12 +120,12 @@ export async function deliverDiscordFinalContent(
   try {
     await withDiscordRetry(edit);
   } catch (e) {
-    logComponent("discord").error("Discord final edit failed, sending fallback message", {
-      err: e,
-      ...discordErrorDetails(e),
-      ...context,
-      phase: "final",
-    });
+    logDiscordDeliveryFailure(
+      isDiscordDeliveryDegraded(e) ? "warn" : "error",
+      "Discord final edit failed, sending fallback message",
+      e,
+      { ...context, phase: "final" },
+    );
     await withDiscordRetry(sendFallback);
   }
 }

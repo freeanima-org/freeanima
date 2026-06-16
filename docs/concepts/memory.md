@@ -147,7 +147,7 @@ Conversion from working memory to long-term memory is handled by the sleep mecha
 | `limbic`           | Emotional memory body                 |
 | `autobiographical` | Narrative title + content snippet     |
 
-Resident memory injected via system prompt: **up to 20 pinned** + **most-referenced top N** (default N=20). Each line carries a citation marker `[[f-000001-abcd]]` (ID only, no language prefix).
+Resident memory injected via system prompt: **up to 40 pinned** + **most-referenced top N** (default N=20). Each line carries a citation marker `[[f-000001-abcd]]` (ID only, no language prefix).
 
 **Citation obligation:** whenever an assistant reply uses semantic memory—resident list, `memory_recall` / `memory_semantic_search` semantic hits, or prior message markers—it must append each cited `[[f-id]]` at the **end of the reply body**. Use the inline marker or `semantic_memory_id` from tool results. Session, limbic, and autobiographical hits do not use this marker.
 
@@ -155,7 +155,7 @@ Resident memory injected via system prompt: **up to 20 pinned** + **most-referen
 
 **What counts as a reference:** only `[[f-id]]` markers in **user/assistant** message bodies are parsed into `memory_references` and contribute to `reference_count`. Tool returns (including `semantic_memory_id` fields) are **not** references. Bare `f-id` text without `[[ ]]` is also not counted.
 
-Nightly sleep-cycle step `memory-ref-sync` full-calibrates counts from messages. Excess pinned entries are truncated at read time with a warn log; deep sleep round 4 reviews pin quality (runtime still caps resident pinned at 20 on read).
+Nightly sleep-cycle step `memory-ref-sync` full-calibrates counts from messages. Excess pinned entries are truncated at read time with a warn log; deep sleep round 4 reviews pin quality (runtime still caps resident pinned at 40 on read).
 
 ---
 

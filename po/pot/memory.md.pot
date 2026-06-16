@@ -355,7 +355,7 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/memory.md:151
 msgid ""
-"Resident memory injected via system prompt: **up to 20 pinned** + **most-"
+"Resident memory injected via system prompt: **up to 40 pinned** + **most-"
 "referenced top N** (default N=20). Each line carries a citation marker "
 "`[[f-000001-abcd]]` (ID only, no language prefix)."
 msgstr ""
@@ -384,7 +384,7 @@ msgid ""
 "Nightly sleep-cycle step `memory-ref-sync` full-calibrates counts from "
 "messages. Excess pinned entries are truncated at read time with a warn log; "
 "deep sleep round 4 reviews pin quality (runtime still caps resident pinned "
-"at 20 on read)."
+"at 40 on read)."
 msgstr ""
 
 #. type: Title ##

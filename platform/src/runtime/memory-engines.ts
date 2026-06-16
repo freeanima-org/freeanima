@@ -1,4 +1,5 @@
 import * as engine from "@freeanima/runtime/loop";
+import { isTransientNetworkError } from "@freeanima/runtime/loop";
 import { runWithToolContext } from "@freeanima/core/tool";
 import type { SessionMessage } from "@freeanima/core/db/domain";
 import { PROFILE_REFLECT } from "@freeanima/core/provider";
@@ -33,6 +34,23 @@ import {
   resolveSleepMask,
   runtimeToolMaskFromResolved,
 } from "./mask-wire.ts";
+
+const LIGHT_SLEEP_MAX_TURNS = 50;
+const DEEP_SLEEP_MAX_TURNS = 100;
+const SLEEP_LLM_MAX_ATTEMPTS = 3;
+const SLEEP_LLM_RETRY_BASE_MS = 500;
+
+function sleepMs(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isSleepLlmRetryable(err: unknown): boolean {
+  if (isTransientNetworkError(err)) return true;
+  if (err instanceof Error) {
+    return /LLM call failed/i.test(err.message) && isTransientNetworkError(err.cause ?? err);
+  }
+  return false;
+}
 
 const SEMANTIC_MEMORY_WRITE_TOOLS = new Set([
   "memory_semantic_create",
@@ -100,41 +118,57 @@ async function runSleepStream(
   let toolCalls = 0;
   const parts: string[] = [];
 
-  await runWithToolContext(
-    opts.toolContextId,
-    async () => {
-      for await (const ev of engine.runStream(messages, {
-        model,
-        tools,
-        config: deps.engine.config.data,
-        logger: deps.engine.logger,
-        llm: deps.engine.llm,
-        toolMask,
-        max_turns: opts.maxTurns,
-      })) {
-        switch (ev.event) {
-          case "token":
-            parts.push(ev.data.content);
-            break;
-          case "content_replace":
-            parts.length = 0;
-            parts.push(ev.data.content);
-            break;
-          case "tool_begin":
-            toolCalls += 1;
-            break;
-          case "tool_result":
-            opts.onToolResult?.(ev.data.name, ev.data.content);
-            break;
-          case "error":
-            throw new Error(ev.data.error);
-          default:
-            break;
-        }
+  let lastErr: unknown;
+  for (let attempt = 0; attempt < SLEEP_LLM_MAX_ATTEMPTS; attempt++) {
+    toolCalls = 0;
+    parts.length = 0;
+    try {
+      await runWithToolContext(
+        opts.toolContextId,
+        async () => {
+          for await (const ev of engine.runStream(messages, {
+            model,
+            tools,
+            config: deps.engine.config.data,
+            logger: deps.engine.logger,
+            llm: deps.engine.llm,
+            toolMask,
+            max_turns: opts.maxTurns,
+          })) {
+            switch (ev.event) {
+              case "token":
+                parts.push(ev.data.content);
+                break;
+              case "content_replace":
+                parts.length = 0;
+                parts.push(ev.data.content);
+                break;
+              case "tool_begin":
+                toolCalls += 1;
+                break;
+              case "tool_result":
+                opts.onToolResult?.(ev.data.name, ev.data.content);
+                break;
+              case "error":
+                throw new Error(ev.data.error);
+              default:
+                break;
+            }
+          }
+        },
+        { repos: deps.conversation.repos, tools: deps.engine.catalog.toolSets },
+      );
+      lastErr = undefined;
+      break;
+    } catch (err) {
+      lastErr = err;
+      if (!isSleepLlmRetryable(err) || attempt >= SLEEP_LLM_MAX_ATTEMPTS - 1) {
+        throw err;
       }
-    },
-    { repos: deps.conversation.repos, tools: deps.engine.catalog.toolSets },
-  );
+      await sleepMs(SLEEP_LLM_RETRY_BASE_MS * (attempt + 1));
+    }
+  }
+  if (lastErr) throw lastErr;
 
   const summary = parts.join("").trim() || `Completed ${toolCalls} tool call(s)`;
   return { summary: summary.slice(0, 2000), toolCalls };
@@ -148,7 +182,7 @@ async function runLightSleepTurn(
   const limbicMemoryIds: string[] = [];
   const { summary, toolCalls } = await runSleepStream(deps, input, {
     toolContextId: "light-sleep",
-    maxTurns: 50,
+    maxTurns: LIGHT_SLEEP_MAX_TURNS,
     onToolResult: (name, content) => {
       const semanticId = extractSemanticMemoryId(name, content);
       if (semanticId && !semanticMemoryIds.includes(semanticId)) {
@@ -174,7 +208,7 @@ async function runDeepSleepTurn(
 ): Promise<DeepSleepEngineResult> {
   const { summary, toolCalls } = await runSleepStream(deps, input, {
     toolContextId: "deep-sleep",
-    maxTurns: 50,
+    maxTurns: DEEP_SLEEP_MAX_TURNS,
     onToolResult: (name, content) => {
       if (input.changeLog) {
         applyDeepSleepToolResult(input.changeLog, name, content);
