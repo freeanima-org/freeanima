@@ -15,6 +15,7 @@ import { PARLOR_PLATFORM } from "./platforms.ts";
 import type { EngineRunControl } from "./engine-run-control.ts";
 import type { SessionManager } from "./session-manager.ts";
 import { runExclusiveStreamTurn, streamErrorEvent, type StreamTurnHost } from "./turn-lifecycle.ts";
+import { maybeGenerateSessionTitleAsync } from "./session-title.ts";
 import { applyCommandSessionEffects, checkPlatform } from "./service-sessions.ts";
 import { collectStreamReply, type StreamEvent } from "@freeanima/runtime/loop";
 import { scheduleGracefulRestart, runAnimaCliUpdate } from "./process-restart.ts";
@@ -255,6 +256,10 @@ function runTurnStream(
     {
       fast: async () => {
         effectiveUserText = await deps.conversation.beginTurnFast(sessionId, message);
+        maybeGenerateSessionTitleAsync(deps, sessionId, effectiveUserText, {
+          bus: msgDeps.bus,
+          onSessionUpdated: msgDeps.onSessionUpdated,
+        });
         return effectiveUserText;
       },
       prepare: async () => {

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { SessionListItem } from "@/lib/types.ts";
 import { formatSessionIdDateTime } from "@/lib/format-datetime.ts";
 import { m } from "@/lib/i18n.ts";
+import { subscribeSessionEvents } from "@/lib/api.ts";
 import { useChatStore } from "@/stores/chat.ts";
 import { usePairProgrammingStore } from "@/stores/pair-programming.ts";
 
@@ -57,6 +58,15 @@ export function SessionPanel() {
   useEffect(() => {
     scrollDown();
   }, [store.display.length]);
+
+  useEffect(() => {
+    const sessionId = store.currentSessionId;
+    if (!sessionId) return;
+    const sub = subscribeSessionEvents(sessionId, () => {
+      void store.fetchSessions();
+    });
+    return () => sub.unsubscribe();
+  }, [store.currentSessionId]);
 
   const newSession = async () => {
     if (streaming) chatStore.abortStream();

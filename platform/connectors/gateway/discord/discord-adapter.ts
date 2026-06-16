@@ -13,6 +13,9 @@ import {
   networkErrorUserHint,
 } from "@freeanima/runtime/loop";
 import { getAppRuntime } from "@freeanima/platform/ports";
+import { sessionUpdated } from "@freeanima/capabilities-memory";
+import { isSessionMeta } from "@freeanima/core/db/domain";
+import type { EventBus } from "@freeanima/kernel/eventbus";
 import { KeyedRateLimiter } from "@freeanima/core/util/backoff";
 import { logComponent } from "@freeanima/platform/logging";
 import type { MessagingPort } from "@freeanima/platform/ports/ports/messaging-port";
@@ -39,6 +42,11 @@ import {
 
 import { withDiscordRetry } from "./discord-retry.ts";
 import { chunkText } from "../chunk-text.ts";
+import {
+  discordThreadNameFromUserMessage,
+  discordThreadTitleFromSession,
+  shouldRenameDiscordThread,
+} from "./discord-thread-title.ts";
 
 const DISCORD_MAX_LEN = 2000;
 /** Discord login failure auto-retry interval */
@@ -128,6 +136,7 @@ export class DiscordAdapter implements PlatformAdapter {
   private started = false;
   private loginRetryTimer: ReturnType<typeof setTimeout> | null = null;
   private readonly shardErrorLogLimiter = new KeyedRateLimiter();
+  private sessionUpdatedOff: (() => void) | null = null;
 
   constructor(
     private readonly service: MessagingPort,
@@ -207,9 +216,24 @@ export class DiscordAdapter implements PlatformAdapter {
     if (this.started) return;
     this.started = true;
     this.service.registerPlatform("discord");
-    // Cron scheduler starts before platforms; deliver does not require gateway ready, only needs connection to send
     registerDiscordCronDeliverer(this.client);
+    this.attachSessionTitleListener();
     await this.attemptLogin();
+  }
+
+  private attachSessionTitleListener(): void {
+    this.sessionUpdatedOff?.();
+    this.sessionUpdatedOff = null;
+    try {
+      const kernel = (getAppRuntime() as { kernel?: { eventBus: EventBus } }).kernel;
+      const bus = kernel?.eventBus;
+      if (!bus) return;
+      this.sessionUpdatedOff = bus.on(sessionUpdated, (payload) => {
+        void this.onSessionTitleUpdated(payload.session_id);
+      });
+    } catch {
+      /* AppRuntime not ready yet; skip */
+    }
   }
 
   private clearLoginRetry(): void {
@@ -252,6 +276,8 @@ export class DiscordAdapter implements PlatformAdapter {
     logComponent("shutdown").debug("Discord disconnecting gateway…");
     this.started = false;
     this.clearLoginRetry();
+    this.sessionUpdatedOff?.();
+    this.sessionUpdatedOff = null;
     unregisterDiscordCronDeliverer();
     this.client.destroy();
     logComponent("shutdown").debug("Discord disconnected");
@@ -339,19 +365,6 @@ export class DiscordAdapter implements PlatformAdapter {
       );
 
       await finalizeUserReaction(message, eyeReaction, true);
-
-      // Stream reply complete: rename sub-thread with auto-title
-      if (channel.isThread()) {
-        try {
-          const meta = await getAppRuntime().conversation.loadSessionMeta(sid);
-          const title = (meta.title as string)?.trim();
-          if (title) {
-            await channel.setName(title.slice(0, 100));
-          }
-        } catch {
-          /* Rename failure does not affect main flow */
-        }
-      }
     } catch (e) {
       logDiscordSessionError(sid, e);
       await finalizeUserReaction(message, eyeReaction, false);
@@ -392,10 +405,50 @@ export class DiscordAdapter implements PlatformAdapter {
     });
   }
 
+  private async onSessionTitleUpdated(sessionId: string): Promise<void> {
+    try {
+      const meta = await getAppRuntime().conversation.loadSessionMeta(sessionId);
+      if (!isSessionMeta(meta) || meta.platform !== "discord") return;
+      const threadId = meta.platform_extra?.thread_id;
+      if (!threadId) return;
+
+      const title = (await getAppRuntime().conversation.getSessionTitle(sessionId)).trim();
+      if (!title) return;
+
+      const channel = await withDiscordRetry(() => this.client.channels.fetch(String(threadId)));
+      if (!channel?.isThread()) return;
+
+      await this.maybeApplySessionTitleToThread(channel, sessionId);
+    } catch (e) {
+      logComponent("discord").debug("Discord session title thread rename skipped", {
+        session_id: sessionId,
+        err: e,
+      });
+    }
+  }
+
+  private async maybeApplySessionTitleToThread(
+    channel: TextBasedChannel & {
+      isThread(): boolean;
+      name?: string;
+      setName(name: string): Promise<unknown>;
+    },
+    sessionId: string,
+  ): Promise<void> {
+    if (!channel.isThread()) return;
+    try {
+      const title = (await getAppRuntime().conversation.getSessionTitle(sessionId)).trim();
+      if (!title || !shouldRenameDiscordThread(String(channel.name ?? ""), title)) return;
+      await channel.setName(discordThreadTitleFromSession(title));
+    } catch {
+      /* Rename failure does not affect main flow */
+    }
+  }
+
   private async ensureThread(
     message: Message,
     ctx: DiscordMessageContext,
-    titleHint?: string,
+    userText: string,
   ): Promise<TextBasedChannel> {
     if (!shouldCreateThread(ctx, this.cfg)) {
       if (!message.channel.isTextBased()) {
@@ -404,8 +457,7 @@ export class DiscordAdapter implements PlatformAdapter {
       return message.channel;
     }
 
-    const fallbackName = `Free Anima × ${message.member?.displayName ?? message.author.displayName}`;
-    const threadName = (titleHint?.trim() ?? fallbackName).slice(0, 100) || fallbackName;
+    const threadName = discordThreadNameFromUserMessage(userText);
     try {
       const thread = await withDiscordRetry(() =>
         message.startThread({
