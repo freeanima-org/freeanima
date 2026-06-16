@@ -65,3 +65,31 @@ body,
 .settings-panel input {
   @apply w-full rounded px-2 py-1 text-sm bg-black/30 border border-white/10 text-white;
 }
+
+.pet-stage-web {
+  position: fixed;
+  z-index: 5;
+  pointer-events: auto;
+  cursor: pointer;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.pet-stage-web canvas {
+  display: block;
+  position: absolute;
+  inset: 0;
+}
+
+.pet-stage-badge {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  padding: 2px 6px;
+  border-radius: 9999px;
+  font-size: 10px;
+  line-height: 1.2;
+  color: rgba(255, 255, 255, 0.75);
+  background: rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}

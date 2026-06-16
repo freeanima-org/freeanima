@@ -1,12 +1,12 @@
 import { StrictMode, useCallback, useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
-import { VrmCanvas } from "@/renderer/VrmCanvas.tsx";
+import { PetViewport } from "@/components/PetViewport.tsx";
 import { ChatBubble } from "@/components/ChatBubble.tsx";
 import { ChatInput } from "@/components/ChatInput.tsx";
 import { SettingsPanel } from "@/components/SettingsPanel.tsx";
 import { useCompanionStore } from "@/stores/companion.ts";
 import { useChatStore } from "@/stores/chat.ts";
-import { usePetStore, startWalkStateMachine } from "@/stores/pet.ts";
+import { usePetStore, startPetBehavior } from "@/stores/pet.ts";
 import { subscribePetEvents } from "@/lib/api.ts";
 import {
   isTauri,
@@ -53,6 +53,7 @@ function App() {
     error,
     modelPath,
     modelReady,
+    modelLoading,
     settingsOpen,
     setSettingsOpen,
     init,
@@ -109,7 +110,7 @@ function App() {
     }).then((s) => {
       sub = s;
     });
-    const stopWalk = startWalkStateMachine();
+    const stopWalk = startPetBehavior();
     return () => {
       sub?.unsubscribe();
       stopWalk();
@@ -132,8 +133,8 @@ function App() {
   return (
     <div className="companion-overlay">
       <ClickThroughManager />
-      <div className="absolute inset-0">
-        <VrmCanvas
+      <div className="absolute inset-0 pointer-events-none">
+        <PetViewport
           modelPath={modelPath}
           onBackendReady={onModelReady}
           onModelError={onModelError}
@@ -141,9 +142,15 @@ function App() {
         />
       </div>
 
-      {!modelReady && !loading ? (
+      {!modelReady && !loading && !modelPath ? (
         <div className="absolute inset-x-6 top-1/3 z-10 chat-bubble text-center text-xs leading-relaxed">
           未加载 VRM 模型。点击右上角 ⚙ 上传或填写模型路径（可从 VRoid Hub 免费下载）。
+        </div>
+      ) : null}
+
+      {!modelReady && !loading && modelPath && modelLoading ? (
+        <div className="absolute inset-x-6 top-1/3 z-10 chat-bubble text-center text-xs leading-relaxed">
+          正在加载 VRM 模型…
         </div>
       ) : null}
 
