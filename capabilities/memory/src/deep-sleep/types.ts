@@ -1,6 +1,9 @@
 /** Deep sleep round intent labels */
 export type DeepSleepRound = "contradiction_expiry" | "split" | "merge" | "pin_maintenance";
 
+/** Deep sleep mode: full (manual trigger) or incremental (scheduled cron) */
+export type DeepSleepMode = "full" | "incremental";
+
 /** Single change record */
 export type DeepSleepChangeEntry = {
   action: "added" | "modified" | "deprecated" | "merged_into";

@@ -6,6 +6,7 @@ import {
   formatCstDisplayFromEpoch,
   formatCstDisplayFromMs,
   formatCstIso,
+  isCstMonday,
 } from "./time.ts";
 
 describe("formatCstIso", () => {
@@ -42,5 +43,16 @@ describe("formatCstDisplay", () => {
     expect(formatCstDisplay(undefined)).toBe("");
     expect(formatCstDisplay(0)).toBe("");
     expect(formatCstDisplayFromEpoch(0)).toBe("");
+  });
+});
+
+describe("isCstMonday", () => {
+  test("detects Monday in CST", () => {
+    expect(isCstMonday("2026-06-15")).toBe(true);
+    expect(isCstMonday("2026-06-16")).toBe(false);
+  });
+
+  test("invalid day returns false", () => {
+    expect(isCstMonday("not-a-day")).toBe(false);
   });
 });

@@ -5,10 +5,18 @@ import {
   fetchAllActiveMemories,
   formatAllMemoriesMessage,
   buildDeepSleepMessages,
+  filterSplitCandidates,
+  formatSplitCandidatesMessage,
+  hasRecentMemoryUpdates,
+  isMemoryUpdatedSince,
 } from "./build-messages.ts";
 import { registerSemanticMemoryStore, resetSemanticMemoryStoreForTests } from "../semantic-port.ts";
 
-function makeRow(id: string, status: "active" | "deprecated"): SemanticMemoryRow {
+function makeRow(
+  id: string,
+  status: "active" | "deprecated",
+  overrides?: Partial<SemanticMemoryRow>,
+): SemanticMemoryRow {
   const now = "2026-06-12T10:00:00.000Z";
   return {
     id,
@@ -22,6 +30,7 @@ function makeRow(id: string, status: "active" | "deprecated"): SemanticMemoryRow
     reference_count: 0,
     created: now,
     updated: now,
+    ...overrides,
   };
 }
 
@@ -103,5 +112,62 @@ describe("deep sleep build-messages", () => {
     });
     expect(instructionText).toContain("round 4: pin maintenance");
     expect(instructionText).toContain("memory_semantic_update");
+  });
+
+  it("buildDeepSleepMessages split round uses candidate heading", () => {
+    const longContent = "Alice lives in Shanghai. She works at Tencent. She likes Python.";
+    const candidate = makeRow("a-1", "active", { content: longContent });
+    const { allMemoriesText, instructionText } = buildDeepSleepMessages(
+      [candidate],
+      "split",
+      { entries: {}, addedIds: [], modifiedIds: [], deprecatedIds: [] },
+      { splitTotalActive: 5 },
+    );
+    expect(allMemoriesText).toContain("# Split candidates (1 of 5 active entries)");
+    expect(instructionText).toContain("split candidates in message 1");
+  });
+
+  it("filterSplitCandidates excludes short single-sentence entries", () => {
+    const short = makeRow("a-1", "active", { content: "short fact" });
+    const long = makeRow("a-2", "active", {
+      content: "Alice lives in Shanghai. She works at Tencent and likes Python very much.",
+      updated: "2026-06-12T10:00:00.000Z",
+    });
+    const now = new Date("2026-06-12T12:00:00.000Z");
+    expect(filterSplitCandidates([short, long], "full", now)).toEqual([long]);
+  });
+
+  it("filterSplitCandidates incremental requires recent updated", () => {
+    const recent = makeRow("a-1", "active", {
+      content: "First fact here. Second fact there. Third fact also included for length.",
+      updated: "2026-06-12T11:00:00.000Z",
+    });
+    const stale = makeRow("a-2", "active", {
+      content: "Old fact one. Old fact two. Old fact three with enough length here.",
+      updated: "2026-06-01T10:00:00.000Z",
+      observed_at: "2026-06-12T11:00:00.000Z",
+    });
+    const now = new Date("2026-06-12T12:00:00.000Z");
+    expect(filterSplitCandidates([recent, stale], "incremental", now)).toEqual([recent]);
+  });
+
+  it("hasRecentMemoryUpdates uses updated only", () => {
+    const now = new Date("2026-06-12T12:00:00.000Z");
+    const recent = makeRow("a-1", "active", { updated: "2026-06-12T11:00:00.000Z" });
+    const staleObserved = makeRow("a-2", "active", {
+      updated: "2026-06-01T10:00:00.000Z",
+      observed_at: "2026-06-12T11:00:00.000Z",
+    });
+    expect(hasRecentMemoryUpdates([staleObserved], now)).toBe(false);
+    expect(hasRecentMemoryUpdates([recent], now)).toBe(true);
+    expect(isMemoryUpdatedSince(recent, new Date("2026-06-12T10:00:00.000Z"))).toBe(true);
+  });
+
+  it("formatSplitCandidatesMessage reports candidate vs total counts", () => {
+    const candidate = makeRow("a-1", "active", {
+      content: "Line one. Line two. Line three with enough length.",
+    });
+    const { text } = formatSplitCandidatesMessage([candidate], 10);
+    expect(text).toContain("# Split candidates (1 of 10 active entries)");
   });
 });

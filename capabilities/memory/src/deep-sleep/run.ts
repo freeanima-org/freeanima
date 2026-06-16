@@ -9,8 +9,15 @@ import {
   buildDeepSleepMessages,
   checkJsonSize,
   DEEP_SLEEP_TOOL_NAMES,
+  filterSplitCandidates,
+  hasRecentMemoryUpdates,
 } from "./build-messages.ts";
-import { createEmptyChangeLog, type DeepSleepRound, type DeepSleepResult } from "./types.ts";
+import {
+  createEmptyChangeLog,
+  type DeepSleepRound,
+  type DeepSleepResult,
+  type DeepSleepMode,
+} from "./types.ts";
 export type { DeepSleepResult } from "./types.ts";
 import { recordDeepSleepRun } from "./state.ts";
 import { writeDeepSleepRoundLog, makeRoundLog } from "./log.ts";
@@ -18,6 +25,8 @@ import { writeDeepSleepRoundLog, makeRoundLog } from "./log.ts";
 export type RunDeepSleepOpts = {
   selfContent: string;
   day?: string;
+  /** "full" for manual trigger, "incremental" for scheduled cron (default: "incremental") */
+  mode?: DeepSleepMode;
 };
 
 const DEEP_SLEEP_ROUNDS: DeepSleepRound[] = [
@@ -41,6 +50,7 @@ const DEEP_SLEEP_ROUNDS: DeepSleepRound[] = [
 export async function runDeepSleep(opts: RunDeepSleepOpts): Promise<DeepSleepResult> {
   const range = cstDayRange(opts.day);
   const day = range.day;
+  const mode: DeepSleepMode = opts.mode ?? "incremental";
 
   // Fetch all active memories
   const allRows = await fetchAllActiveMemories();
@@ -81,6 +91,7 @@ export async function runDeepSleep(opts: RunDeepSleepOpts): Promise<DeepSleepRes
 
   logComponent("memory").info("deep sleep started", {
     day,
+    mode,
     active_memories: allRows.length,
     json_bytes: bytes,
     size_status: sizeStatus,
@@ -95,7 +106,72 @@ export async function runDeepSleep(opts: RunDeepSleepOpts): Promise<DeepSleepRes
     const roundIndex = i + 1;
     const startedAt = formatCstIso();
 
-    const messages = buildDeepSleepMessages(allRows, round, changeLog);
+    // ── Pre-round skip checks ──
+
+    let splitCandidates: ReturnType<typeof filterSplitCandidates> | undefined;
+
+    // Split: pre-filter candidates; skip if none
+    if (round === "split") {
+      splitCandidates = filterSplitCandidates(allRows, mode);
+      if (splitCandidates.length === 0) {
+        logComponent("memory").info("deep sleep round skipped (no split candidates)", {
+          day,
+          round,
+          reason: "no_candidates",
+        });
+        roundResults.push({
+          round,
+          tool_calls: 0,
+          summary: "No split candidates; skipped",
+          skipped: "no_candidates",
+        });
+        continue;
+      }
+    }
+
+    // Contradiction expiry (incremental): skip if nothing was updated in last 24h
+    if (
+      round === "contradiction_expiry" &&
+      mode === "incremental" &&
+      !hasRecentMemoryUpdates(allRows)
+    ) {
+      logComponent("memory").info("deep sleep round skipped (no recent updates)", {
+        day,
+        round,
+        reason: "no_recent_updates",
+      });
+      roundResults.push({
+        round,
+        tool_calls: 0,
+        summary: "No recent updates; skipping contradiction check",
+        skipped: "no_recent_updates",
+      });
+      continue;
+    }
+
+    // Merge (incremental): skip if nothing updated in 24h (includes deprecations)
+    if (round === "merge" && mode === "incremental" && !hasRecentMemoryUpdates(allRows)) {
+      logComponent("memory").info("deep sleep round skipped (no recent updates)", {
+        day,
+        round,
+        reason: "no_recent_updates",
+      });
+      roundResults.push({
+        round,
+        tool_calls: 0,
+        summary: "No recent updates; skipping merge",
+        skipped: "no_recent_updates",
+      });
+      continue;
+    }
+
+    // ── Run the round ──
+
+    const roundRows = round === "split" ? splitCandidates! : allRows;
+
+    const messages = buildDeepSleepMessages(roundRows, round, changeLog, {
+      splitTotalActive: round === "split" ? allRows.length : undefined,
+    });
 
     const engineResult = await runDeepSleepEngine({
       systemPrompt,
@@ -142,11 +218,15 @@ export async function runDeepSleep(opts: RunDeepSleepOpts): Promise<DeepSleepRes
     });
   }
 
+  const roundsExecuted = roundResults.filter((r) => !r.skipped).length;
+  const roundsSkipped = roundResults.length - roundsExecuted;
+
   recordDeepSleepRun({
     day,
-    roundsCompleted: DEEP_SLEEP_ROUNDS.length,
+    roundsCompleted: roundsExecuted,
     stats: {
       total_tool_calls: totalToolCalls,
+      rounds_skipped: roundsSkipped,
       contradiction_expiry_calls: roundStats["contradiction_expiry"],
       split_calls: roundStats["split"],
       merge_calls: roundStats["merge"],

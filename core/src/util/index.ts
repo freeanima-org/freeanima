@@ -6,6 +6,7 @@ export {
   formatCstDisplayFromMs,
   formatCstIso,
   formatCstIsoFromEpoch,
+  isCstMonday,
   type FormatCstDisplayOpts,
 } from "./time.ts";
 export { isEnabledByDefault } from "./config.ts";

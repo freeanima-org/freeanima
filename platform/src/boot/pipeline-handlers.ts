@@ -10,6 +10,7 @@ import { getPipelineRunner, type PipelineStepTrigger } from "@freeanima/runtime/
 import type { Engine } from "@freeanima/runtime";
 
 import { createDreamFridgePort } from "../dream-fridge-factory.ts";
+import { resolveDeepSleepMode } from "./deep-sleep-mode.ts";
 import { sleepCycleDefinition, SLEEP_CYCLE_PIPELINE_ID, SLEEP_STEP_IDS } from "./sleep-cycle.ts";
 
 /** 注册睡眠周期 pipeline 定义与各 step handler */
@@ -35,7 +36,8 @@ export function registerSleepPipeline(engine: Engine): void {
 
   runner.registerStep(SLEEP_STEP_IDS.deepSleep, async (ctx) => {
     const selfContent = await loadSelfLayerPrompt();
-    const result = await runDeepSleep({ day: ctx.day, selfContent });
+    const mode = resolveDeepSleepMode(ctx);
+    const result = await runDeepSleep({ day: ctx.day, selfContent, mode });
     if (result.skipped) {
       return { ok: true, skipped: result.skipped, output: result };
     }
@@ -77,18 +79,27 @@ export function resolveSleepCycleDay(day?: string): string {
   return cstDayRange(day).day;
 }
 
-export async function runSleepCycle(day?: string, opts?: { trigger?: PipelineStepTrigger }) {
+export async function runSleepCycle(
+  day?: string,
+  opts?: { trigger?: PipelineStepTrigger; deep_sleep_mode?: "full" | "incremental" },
+) {
   const runner = getPipelineRunner();
   const resolvedDay = resolveSleepCycleDay(day);
   return runner.run(SLEEP_CYCLE_PIPELINE_ID, {
     day: resolvedDay,
     trigger: opts?.trigger ?? "manual_cycle",
+    deep_sleep_mode: opts?.deep_sleep_mode,
   });
 }
 
 export async function runSleepStep(
   stepId: string,
-  opts?: { day?: string; force?: boolean; trigger?: PipelineStepTrigger },
+  opts?: {
+    day?: string;
+    force?: boolean;
+    trigger?: PipelineStepTrigger;
+    deep_sleep_mode?: "full" | "incremental";
+  },
 ) {
   const runner = getPipelineRunner();
   const resolvedDay = opts?.day ? resolveSleepCycleDay(opts.day) : resolveSleepCycleDay();
@@ -96,6 +107,7 @@ export async function runSleepStep(
     day: resolvedDay,
     force: opts?.force,
     trigger: opts?.trigger ?? "manual_step",
+    deep_sleep_mode: opts?.deep_sleep_mode,
   });
 }
 

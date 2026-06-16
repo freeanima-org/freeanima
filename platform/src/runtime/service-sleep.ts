@@ -82,7 +82,7 @@ export function getSleepPipelineStatus(): SleepPipelineStatus {
 
 export async function startSleepCycle(
   _deps: RuntimeDeps,
-  opts?: { day?: string },
+  opts?: { day?: string; deep_sleep_mode?: "full" | "incremental" },
 ): Promise<{ ok: true; started: true } | { ok: false; error: string }> {
   if (sleepCycleRunning || sleepStepRunning) {
     return { ok: false, error: "sleep pipeline already running" };
@@ -93,7 +93,10 @@ export async function startSleepCycle(
 
   void (async () => {
     try {
-      lastSleepCycleResult = await runSleepCycle(opts?.day, { trigger: "manual_cycle" });
+      lastSleepCycleResult = await runSleepCycle(opts?.day, {
+        trigger: "manual_cycle",
+        deep_sleep_mode: opts?.deep_sleep_mode,
+      });
     } finally {
       sleepCycleRunning = false;
     }
@@ -108,6 +111,7 @@ export async function startSleepPipelineStep(
     stepId: string;
     day?: string;
     force?: boolean;
+    deep_sleep_mode?: "full" | "incremental";
   },
 ): Promise<
   { ok: true; result: Awaited<ReturnType<typeof runSleepStep>> } | { ok: false; error: string }
@@ -127,6 +131,7 @@ export async function startSleepPipelineStep(
       day: opts.day,
       force: opts.force,
       trigger: "manual_step",
+      deep_sleep_mode: opts.deep_sleep_mode,
     });
     return { ok: true, result };
   } finally {

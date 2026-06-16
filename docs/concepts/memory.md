@@ -155,7 +155,7 @@ Resident memory injected via system prompt: **up to 20 pinned** + **most-referen
 
 **What counts as a reference:** only `[[f-id]]` markers in **user/assistant** message bodies are parsed into `memory_references` and contribute to `reference_count`. Tool returns (including `semantic_memory_id` fields) are **not** references. Bare `f-id` text without `[[ ]]` is also not counted.
 
-Nightly sleep-cycle step `memory-ref-sync` full-calibrates counts from messages. Excess pinned entries are truncated at read time with a warn log; deep sleep round 4 maintains pin budget in the store.
+Nightly sleep-cycle step `memory-ref-sync` full-calibrates counts from messages. Excess pinned entries are truncated at read time with a warn log; deep sleep round 4 reviews pin quality (runtime still caps resident pinned at 20 on read).
 
 ---
 

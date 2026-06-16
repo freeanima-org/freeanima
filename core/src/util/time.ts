@@ -66,3 +66,17 @@ export function formatCstDisplayFromMs(epochMs: number, opts?: FormatCstDisplayO
   if (epochMs <= 0) return "";
   return formatCstDisplay(epochMs, opts);
 }
+
+const CST_DAY_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
+
+/** Whether a YYYY-MM-DD calendar day is Monday in CST (+08:00) */
+export function isCstMonday(day: string): boolean {
+  const match = CST_DAY_RE.exec(day.trim());
+  if (!match) return false;
+  const noonCst = new Date(`${match[0]}T12:00:00+08:00`);
+  const weekday = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Shanghai",
+    weekday: "short",
+  }).format(noonCst);
+  return weekday === "Mon";
+}

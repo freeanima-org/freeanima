@@ -303,6 +303,9 @@ Digital Humans</msg>
   <msg id="webui_chamber_sleep_deep">Deep sleep</msg>
   <msg id="webui_chamber_sleep_deep_latest">Deep sleep (latest)</msg>
   <msg id="webui_chamber_sleep_deep_rounds">Deep sleep round log</msg>
+  <msg id="webui_chamber_sleep_deep_sleep_mode">Deep sleep mode</msg>
+  <msg id="webui_chamber_sleep_deep_sleep_mode_full">Full (all rounds, all memories)</msg>
+  <msg id="webui_chamber_sleep_deep_sleep_mode_incremental">Incremental (skip quiet rounds)</msg>
   <msg id="webui_chamber_sleep_desc">Sleep cycle status, manual runs, and pipeline step history.</msg>
   <msg id="webui_chamber_sleep_job_cycle">Sleep cycle</msg>
   <msg id="webui_chamber_sleep_job_step_manual">{step} (manual)</msg>

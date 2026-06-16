@@ -1,8 +1,7 @@
 import type { SemanticMemoryRow } from "@freeanima/core/repos";
-import { RESIDENT_PINNED_MAX } from "@freeanima/core/repos";
 
 import { getSemanticMemoryStore } from "../semantic-port.ts";
-import type { DeepSleepRound, DeepSleepChangeLog } from "./types.ts";
+import type { DeepSleepRound, DeepSleepChangeLog, DeepSleepMode } from "./types.ts";
 import { formatChangeLogMessage } from "./change-log.ts";
 
 // ── Message 1: full active semantic memory JSON ──
@@ -51,6 +50,91 @@ export function checkJsonSize(bytes: number): "ok" | "warn" | "batch" | "error" 
 
 // ── Message 3: per-round instructions ──
 
+// ── Split round pre-filter ──
+
+/** Minimum content length for split candidate */
+const SPLIT_PRE_FILTER_MIN_LENGTH = 50;
+
+/** Recent-update window for incremental deep sleep (24h) */
+export const DEEP_SLEEP_RECENT_WINDOW_MS = 24 * 60 * 60 * 1000;
+
+/** Count sentence-ending punctuation (Chinese/English) */
+function countSentences(content: string): number {
+  const matches = content.match(/[。！？.!?；;]/g);
+  return matches ? matches.length : 0;
+}
+
+/** Whether a memory row was updated on or after `since` */
+export function isMemoryUpdatedSince(row: SemanticMemoryRow, since: Date): boolean {
+  if (!row.updated) return false;
+  return new Date(row.updated) >= since;
+}
+
+/** Whether any memory in the set was updated within the last 24 hours */
+export function hasRecentMemoryUpdates(rows: SemanticMemoryRow[], now: Date = new Date()): boolean {
+  const since = new Date(now.getTime() - DEEP_SLEEP_RECENT_WINDOW_MS);
+  return rows.some((row) => isMemoryUpdatedSince(row, since));
+}
+
+/**
+ * Filter out memories unlikely to need splitting:
+ * - Content too short AND few sentences → not a candidate
+ * - Incremental mode: additionally require updated within 24h
+ */
+export function filterSplitCandidates(
+  rows: SemanticMemoryRow[],
+  mode: DeepSleepMode,
+  now: Date = new Date(),
+): SemanticMemoryRow[] {
+  const since = new Date(now.getTime() - DEEP_SLEEP_RECENT_WINDOW_MS);
+
+  return rows.filter((row) => {
+    if (row.content.length <= SPLIT_PRE_FILTER_MIN_LENGTH && countSentences(row.content) < 2) {
+      return false;
+    }
+    if (mode === "incremental" && !isMemoryUpdatedSince(row, since)) {
+      return false;
+    }
+    return true;
+  });
+}
+
+export function formatSplitCandidatesMessage(
+  candidates: SemanticMemoryRow[],
+  totalActive: number,
+): {
+  text: string;
+  bytes: number;
+  truncated: boolean;
+} {
+  if (!candidates.length) {
+    return {
+      text: `(No split candidates among ${totalActive} active entries)`,
+      bytes: 0,
+      truncated: false,
+    };
+  }
+  const lines: string[] = [
+    `# Split candidates (${candidates.length} of ${totalActive} active entries)`,
+    "Only entries below are in scope for this round; the full store is not repeated here.",
+  ];
+  for (const row of candidates) {
+    lines.push(rowToJsonCompact(row));
+  }
+  const text = lines.join("\n");
+  const bytes = Buffer.byteLength(text, "utf-8");
+  return { text, bytes, truncated: false };
+}
+
+// ── Batch execution instruction (appended to every round) ──
+
+const BATCH_EXECUTION_NOTE = `
+## Batch execution (critical)
+- First review ALL entries silently and decide ALL actions needed.
+- Then issue ALL tool calls in a SINGLE response. Do NOT call one tool, wait for the result, then decide the next.
+- After all tool calls are done, provide a summary of what was done.
+- Exception: if no actions are needed after review, just report that and move on.`;
+
 const TOOL_INSTRUCTION_COMMON = `## Tool reference
 
 All tools use overwrite semantics: only passed fields are changed.
@@ -94,12 +178,13 @@ Two memories semantically negate each other and cannot be explained by change ov
 - Deprecated memories are ignored in later rounds.
 
 ${TOOL_INSTRUCTION_COMMON}
+${BATCH_EXECUTION_NOTE}
 
 Call tools directly to persist.`,
 
   split: `# Deep sleep round 2: split
 
-You are a digital being running in Free Anima. Review the full semantic memories in message 1 and find entries that contain multiple independent facts to split.
+You are a digital being running in Free Anima. Review the split candidates in message 1 (pre-filtered from the active store) and find entries that contain multiple independent facts to split.
 
 ## Split criteria
 One memory's content has two or more independently valid statements → split.
@@ -117,6 +202,7 @@ One memory's content has two or more independently valid statements → split.
 - New memories should keep source_sessions and observed_at from the split original.
 
 ${TOOL_INSTRUCTION_COMMON}
+${BATCH_EXECUTION_NOTE}
 
 Call tools directly to persist.`,
 
@@ -140,34 +226,36 @@ Two memories say the same thing → merge.
 - After merge, program unions source_sessions and takes earliest observed_at.
 
 ${TOOL_INSTRUCTION_COMMON}
+${BATCH_EXECUTION_NOTE}
 
 Call tools directly to persist.`,
 
   pin_maintenance: `# Deep sleep round 4: pin maintenance
 
-You are a digital being running in Free Anima. Review pinned status across all active semantic memories and keep resident context lean.
+You are a digital being running in Free Anima. Review every pinned semantic memory and judge whether it still deserves to stay pinned. This is quality review, not quantity management.
 
-## Resident pin budget
-- At most ${RESIDENT_PINNED_MAX} memories may stay pinned (injected into every conversation).
-- Count entries with \`pinned: true\` in message 1. If over ${RESIDENT_PINNED_MAX}, unpin excess.
+## Review each pinned memory against three questions
+1. **Still true?** Has this fact been superseded, contradicted, or made obsolete by newer memories?
+2. **Cross-session value?** Is this fact needed in every conversation, or only relevant to specific past contexts?
+3. **Earned its place?** Is this a core identity, stable preference, or key procedural fact — or just an observation that happened to get pinned?
 
 ## When to unpin
-- Temporary or session-specific facts no longer needed in every reply
-- Routine \`observation\` entries that are not core identity
-- Facts superseded by newer memories (even if still active)
-- When over budget: prefer unpinning observation > low reference value > older \`updated\`
+- Fact no longer accurate (superseded by newer memories, even if both still active)
+- Session-specific or temporary context that doesn't need to travel to every new conversation
+- Routine observations that aren't identity-defining
+- "Interesting at the time" but not enduring
 
-## When to pin
-- Core enduring facts only: stable preferences, identity, key procedural knowledge
-- Do not pin speculative, transient, or duplicate facts
-- Keep total pinned ≤ ${RESIDENT_PINNED_MAX}
+## When to pin (rare cases)
+- A core enduring fact is unpinned but clearly should be pinned
+- Only pin facts that are: identity-defining, stable over time, cross-session essential
 
 ## Handling
 - Use \`memory_semantic_update\` with \`pinned: true\` or \`pinned: false\` only
 - Do not create, merge, split, or deprecate in this round
-- If already healthy → skip, no action
+- If every pinned memory passes review → report healthy and move on
 
 ${TOOL_INSTRUCTION_COMMON}
+${BATCH_EXECUTION_NOTE}
 
 Call tools directly to persist.`,
 };
@@ -191,8 +279,13 @@ export function buildDeepSleepMessages(
   rows: SemanticMemoryRow[],
   round: DeepSleepRound,
   changeLog: DeepSleepChangeLog,
+  opts?: { splitTotalActive?: number },
 ): DeepSleepMessages {
-  const { text: allMemoriesText, bytes } = formatAllMemoriesMessage(rows);
+  const memoriesMessage =
+    round === "split" && opts?.splitTotalActive != null
+      ? formatSplitCandidatesMessage(rows, opts.splitTotalActive)
+      : formatAllMemoriesMessage(rows);
+  const { text: allMemoriesText, bytes } = memoriesMessage;
   return {
     allMemoriesText,
     allMemoriesBytes: bytes,

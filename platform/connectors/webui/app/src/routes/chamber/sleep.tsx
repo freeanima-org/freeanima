@@ -143,6 +143,7 @@ function SleepPage() {
   const [roundsLoading, setRoundsLoading] = useState(false);
   const [pipelineDay, setPipelineDay] = useState("");
   const [pipelineForce, setPipelineForce] = useState(false);
+  const [deepSleepMode, setDeepSleepMode] = useState<"full" | "incremental">("full");
   const [pipelineStarting, setPipelineStarting] = useState(false);
   const [runningStepId, setRunningStepId] = useState<string | null>(null);
   const [pipelineError, setPipelineError] = useState("");
@@ -221,7 +222,10 @@ function SleepPage() {
     setPipelineStarting(true);
     setPipelineError("");
     try {
-      await startSleepCycle({ day: pipelineDay.trim() || undefined });
+      await startSleepCycle({
+        day: pipelineDay.trim() || undefined,
+        deep_sleep_mode: deepSleepMode,
+      });
       await refreshPipelineStatus();
     } catch (e) {
       setPipelineError(e instanceof Error ? e.message : String(e));
@@ -238,6 +242,7 @@ function SleepPage() {
         step_id: stepId,
         day: pipelineDay.trim() || undefined,
         force: pipelineForce,
+        deep_sleep_mode: stepId === "deep-sleep" ? deepSleepMode : undefined,
       });
       await refreshPipelineStatus();
       await refreshAfterRun();
@@ -295,6 +300,20 @@ function SleepPage() {
             onChange={(e) => setPipelineDay(e.target.value)}
             disabled={pipelineBusy}
           />
+        </label>
+        <label className="form-control mb-3 max-w-md">
+          <span className="label-text text-xs">{m.webui_chamber_sleep_deep_sleep_mode()}</span>
+          <select
+            className="select select-sm select-bordered"
+            value={deepSleepMode}
+            onChange={(e) => setDeepSleepMode(e.target.value as "full" | "incremental")}
+            disabled={pipelineBusy}
+          >
+            <option value="full">{m.webui_chamber_sleep_deep_sleep_mode_full()}</option>
+            <option value="incremental">
+              {m.webui_chamber_sleep_deep_sleep_mode_incremental()}
+            </option>
+          </select>
         </label>
         <div className="flex items-center gap-2 flex-wrap mb-4">
           <button
