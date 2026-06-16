@@ -51,7 +51,7 @@ type EngineOpts = {
   tools?: OpenAiToolSchema[];
   /** Tool names allowed by capability mask (ResolvedMask.allowed_tools); no fallback block when unset */
   toolMask?: { allowedTools: readonly string[] };
-  /** Executable tool names (default + loaded_tools); no loaded gate when unset */
+  /** Executable tool names (cached + staged toolsets); no loaded gate when unset */
   executableTools?: readonly string[];
   hookRegistry?: HookRegistry;
   onMessageAppended?: (msg: SessionMessage) => void | Promise<void>;
@@ -421,7 +421,7 @@ export async function* runStream(
               opts?.executableTools != null &&
               !opts.executableTools.includes(fnName));
           if (blockedByLoaded) {
-            result = toolError("Tool not loaded; call tools_load first");
+            result = toolError("Tool not loaded; call toolsets_load first");
           } else if (!tool) {
             result = toolResult({ error: `Unknown tool: ${fnName}` });
           } else if (!argsResult.ok) {

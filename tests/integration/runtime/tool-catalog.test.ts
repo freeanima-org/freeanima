@@ -9,10 +9,11 @@ import {
 import { getActivePgTestContext, getTestEngine, testConv } from "../../helpers/pg-test.ts";
 import { registerServiceTools } from "@freeanima/platform";
 import { isSessionMeta } from "@freeanima/core/db/domain";
-import { DEFAULT_SESSION_TOOL_NAMES } from "@freeanima/core/tool";
+import { DEFAULT_SESSION_TOOLSETS } from "@freeanima/core/tool";
 import { runWithToolContext } from "@freeanima/runtime/loop";
 import * as engine from "@freeanima/runtime/loop";
 import * as llm from "@freeanima/core/llm";
+import { resolveExecutableToolNames } from "@freeanima/runtime/conversation";
 
 describePg("tool catalog lazy load", () => {
   const prev = process.env.FREEANIMA_HOME;
@@ -35,7 +36,7 @@ describePg("tool catalog lazy load", () => {
     await endIntegrationCase();
   });
 
-  it("new session system_prompt lists ToolSets", async () => {
+  it("new session system_prompt lists ToolSets compactly", async () => {
     const c = testConv();
     const sid = await c.newSession("parlor");
     const meta = await c.loadSessionMeta(sid);
@@ -43,39 +44,40 @@ describePg("tool catalog lazy load", () => {
     if (!isSessionMeta(meta)) return;
     const sp = meta.system_prompt ?? "";
     expect(sp).toContain("## ToolSets");
-    expect(sp).toContain("### file");
-    expect(sp).toContain("tools_list");
+    expect(sp).toContain("- file —");
+    expect(sp).toContain("toolsets_load");
   });
 
-  it("new session schema includes default tools only", async () => {
+  it("new session meta stores default cached toolsets", async () => {
     const c = testConv();
     const sid = await c.newSession("parlor");
     const meta = await c.loadSessionMeta(sid);
     expect(isSessionMeta(meta)).toBe(true);
     if (!isSessionMeta(meta)) return;
 
-    const schemas = await c.loadSessionTools(sid, meta);
-    const names = schemas.map((t) => t.function.name);
-    for (const expected of DEFAULT_SESSION_TOOL_NAMES) {
-      if (getTestEngine().toolSets.getTool(expected)) {
-        expect(names).toContain(expected);
-        expect(meta.tools).toContain(expected);
+    for (const expected of DEFAULT_SESSION_TOOLSETS) {
+      if (getTestEngine().toolSets.getToolSet(expected)) {
+        expect(meta.cached_toolsets).toContain(expected);
       }
     }
+    expect(meta.staged_toolsets ?? []).toEqual([]);
+
+    const schemas = await c.loadSessionTools(sid, meta);
+    const names = schemas.map((t) => t.function.name);
+    expect(names).toContain("toolsets_search");
     expect(names).not.toContain("file_read_file");
-    expect(meta.loaded_tools ?? []).toEqual([]);
   });
 
-  it("tools_load writes loaded_tools without extending schema", async () => {
+  it("toolsets_load writes staged_toolsets without extending API schema", async () => {
     const c = testConv();
     const sid = await c.newSession("parlor");
-    const toolLoad = getTestEngine().toolSets.getTool("tools_load");
+    const toolLoad = getTestEngine().toolSets.getTool("toolsets_load");
     expect(toolLoad).toBeDefined();
 
     await runWithToolContext(
       sid,
       async () => {
-        const raw = await toolLoad!.handler({ names: ["file_read_file"] });
+        const raw = await toolLoad!.handler({ toolsets: ["file"] });
         const parsed = JSON.parse(raw);
         expect(parsed.tools?.[0]?.name).toBe("file_read_file");
         expect(parsed.tools?.[0]?.parameters).toBeDefined();
@@ -86,7 +88,7 @@ describePg("tool catalog lazy load", () => {
     const meta = await c.loadSessionMeta(sid);
     expect(isSessionMeta(meta)).toBe(true);
     if (!isSessionMeta(meta)) return;
-    expect(meta.loaded_tools).toContain("file_read_file");
+    expect(meta.staged_toolsets).toContain("file");
 
     const schemas = await c.loadSessionTools(sid, meta);
     expect(schemas.map((t) => t.function.name)).not.toContain("file_read_file");
@@ -100,7 +102,7 @@ describePg("tool catalog lazy load", () => {
     if (!isSessionMeta(meta)) return;
 
     const tools = await c.loadSessionTools(sid, meta);
-    const executableTools = [...meta.tools, ...(meta.loaded_tools ?? [])];
+    const executableTools = resolveExecutableToolNames(meta, getTestEngine().toolSets);
 
     getTestEngine().toolSets.registerToolSet("__gate_test__", "test", [
       {
@@ -150,25 +152,25 @@ describePg("tool catalog lazy load", () => {
     }
 
     const toolMsg = msgs.find((m) => m.role === "tool");
-    expect(toolMsg?.content).toContain("tools_load");
+    expect(toolMsg?.content).toContain("toolsets_load");
   });
 
-  it("tools_list supports keyword and toolset filters", async () => {
+  it("toolsets_search requires query and returns hits", async () => {
     const c = testConv();
     const sid = await c.newSession("parlor");
-    const listDef = getTestEngine().toolSets.getTool("tools_list");
-    expect(listDef).toBeDefined();
+    const searchDef = getTestEngine().toolSets.getTool("toolsets_search");
+    expect(searchDef).toBeDefined();
 
     await runWithToolContext(
       sid,
       async () => {
-        const raw = await listDef!.handler({ keyword: "read", toolset: "file" });
+        const raw = await searchDef!.handler({ query: "read file" });
         const parsed = JSON.parse(raw);
-        expect(parsed.keyword).toBe("read");
-        expect(parsed.tools.every((t: { toolset: string }) => t.toolset === "file")).toBe(true);
-        expect(parsed.tools.some((t: { name: string }) => t.name === "file_read_file")).toBe(true);
+        expect(parsed.query).toBe("read file");
+        expect(parsed.total).toBeGreaterThan(0);
+        expect(parsed.hits.some((h: { toolset: string }) => h.toolset === "file")).toBe(true);
       },
-      { repos: c.repos, tools: getTestEngine().toolSets, executableTools: ["tools_list"] },
+      { repos: c.repos, tools: getTestEngine().toolSets, executableTools: ["toolsets_search"] },
     );
   });
 });

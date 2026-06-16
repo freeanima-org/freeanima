@@ -149,7 +149,7 @@ export async function countMessagesWithRouting(
 export async function loadSessionToolsWithRouting(
   repos: PgRepositories,
   sessionId: string,
-): Promise<SessionMetaMessage["tools"]> {
+): Promise<SessionMetaMessage["cached_toolsets"]> {
   if (!postgresAvailable(repos)) {
     return [];
   }

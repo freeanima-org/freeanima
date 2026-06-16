@@ -3,7 +3,13 @@ import { tmpdir, homedir } from "node:os";
 import { join, resolve } from "node:path";
 import { randomBytes } from "node:crypto";
 import type { ToolSetRegistry } from "@freeanima/core/tool";
-import { resolveDefaultSessionTools } from "@freeanima/core/tool";
+import {
+  mergeToolsetNames,
+  resolveDefaultSessionToolsets,
+  resolveDefaultSessionToolsetsForMeta,
+  resolveToolsetNames,
+  toolNamesForToolsets,
+} from "@freeanima/core/tool";
 import { getActiveConfig, getProfileHopModel } from "@freeanima/core/config";
 import { CST_OFFSET_MS, formatCstIso } from "@freeanima/core/util";
 import { PROFILE_CHAT } from "@freeanima/core/provider";
@@ -59,39 +65,44 @@ export function allocateSessionCwd(sid: string): string {
   return mkdtempSync(join(tmpdir(), "anima-cwd-"));
 }
 
-/** Read session-cached tool names and resolve to OpenAI schema; fallback to registry and write meta */
+/** Read cached ToolSets and resolve to OpenAI schema; fallback to defaults and write meta */
 export async function loadSessionTools(
   repos: PgRepositories,
   tools: ToolSetRegistry,
   session: string,
   cachedMeta?: SessionMetaLoadResult,
 ): Promise<OpenAiToolSchema[]> {
-  let names: string[] = [];
-  if (cachedMeta != null && isSessionMeta(cachedMeta) && cachedMeta.tools.length > 0) {
-    names = cachedMeta.tools;
+  let toolsetNames: string[] = [];
+  if (cachedMeta != null && isSessionMeta(cachedMeta) && cachedMeta.cached_toolsets.length > 0) {
+    toolsetNames = cachedMeta.cached_toolsets;
   } else if (postgresAvailable(repos)) {
-    names = await loadSessionToolsWithRouting(repos, session);
+    toolsetNames = await loadSessionToolsWithRouting(repos, session);
   } else {
     const meta = cachedMeta ?? (await loadSessionMeta(repos, session));
-    if (isSessionMeta(meta) && meta.tools.length > 0) {
-      names = meta.tools;
+    if (isSessionMeta(meta) && meta.cached_toolsets.length > 0) {
+      toolsetNames = meta.cached_toolsets;
     }
   }
-  if (names.length > 0) {
+  if (toolsetNames.length > 0) {
+    const resolved = resolveToolsetNames(tools, toolsetNames);
     const metaForMask =
       cachedMeta != null && isSessionMeta(cachedMeta)
         ? cachedMeta
         : await loadSessionMeta(repos, session);
+    let names = toolNamesForToolsets(tools, resolved);
     if (isSessionMeta(metaForMask)) {
       names = applySessionToolMaskFilter(names, metaForMask);
     }
     return tools.openaiSchemasFromNames(names);
   }
-  const fresh = resolveDefaultSessionTools(tools);
+  const fresh = resolveDefaultSessionToolsets(tools);
   if (fresh.length > 0) {
-    await updateSessionMetaField(repos, session, { tools: fresh, loaded_tools: [] });
+    await updateSessionMetaField(repos, session, {
+      cached_toolsets: fresh,
+      staged_toolsets: [],
+    });
   }
-  let effective = fresh;
+  let effective = toolNamesForToolsets(tools, fresh);
   const metaForMask =
     cachedMeta != null && isSessionMeta(cachedMeta)
       ? cachedMeta
@@ -223,8 +234,8 @@ export async function appendSessionMeta(
   const meta: SessionMetaMessage = {
     role: "session_meta",
     model,
-    tools,
-    loaded_tools: [],
+    cached_toolsets: tools,
+    staged_toolsets: [],
     functions: opts?.functions ?? [],
     timestamp: formatCstIso(),
   };
@@ -249,8 +260,8 @@ export async function initSession(
   const metaDraft: SessionMetaMessage = {
     role: "session_meta",
     model,
-    tools: resolveDefaultSessionTools(tools),
-    loaded_tools: [],
+    cached_toolsets: resolveDefaultSessionToolsets(tools),
+    staged_toolsets: [],
     functions: opts.functions ?? [],
     timestamp: formatCstIso(),
     platform: opts.platform,
@@ -369,36 +380,39 @@ export async function rebuildSessionSystemPrompt(
   await updateSessionMetaField(repos, session, { system_prompt: systemPrompt });
 }
 
-/** Reset session tool schema to default set and clear loaded_tools */
-export async function reloadSessionTools(
+/** Promote staged ToolSets to cached and rebuild system_prompt */
+export async function rebuildSessionCache(
   repos: PgRepositories,
-  tools: ToolSetRegistry,
+  registry: ToolSetRegistry,
   session: string,
-): Promise<number> {
+): Promise<{
+  cachedCount: number;
+  promoted: string[];
+  systemPromptLength: number;
+}> {
   const meta = await loadSessionMeta(repos, session);
   if (!isSessionMeta(meta)) {
     throw new Error("session does not exist");
   }
-  const names = resolveDefaultSessionTools(tools);
+  let cached = resolveToolsetNames(registry, meta.cached_toolsets ?? []);
+  if (cached.length === 0) {
+    cached = resolveDefaultSessionToolsetsForMeta(registry, meta);
+  }
+  const staged = [...(meta.staged_toolsets ?? [])];
+  cached = mergeToolsetNames(cached, staged);
   await updateSessionMetaField(repos, session, {
-    tools: names,
-    loaded_tools: [],
+    cached_toolsets: cached,
+    staged_toolsets: [],
     timestamp: formatCstIso(),
   });
-  return names.length;
-}
-
-/** Reset session meta cache: default tools + rebuilt system_prompt */
-export async function resetSessionCache(
-  repos: PgRepositories,
-  tools: ToolSetRegistry,
-  session: string,
-): Promise<{ toolCount: number; systemPromptLength: number }> {
-  const toolCount = await reloadSessionTools(repos, tools, session);
   await rebuildSessionSystemPrompt(repos, session);
-  const meta = await loadSessionMeta(repos, session);
-  const systemPromptLength = isSessionMeta(meta) ? (meta.system_prompt ?? "").length : 0;
-  return { toolCount, systemPromptLength };
+  const after = await loadSessionMeta(repos, session);
+  const systemPromptLength = isSessionMeta(after) ? (after.system_prompt ?? "").length : 0;
+  return {
+    cachedCount: cached.length,
+    promoted: staged,
+    systemPromptLength,
+  };
 }
 
 const RESUME_STALE_MS = 7 * 24 * 60 * 60 * 1000;
@@ -475,7 +489,7 @@ export async function updateSessionMeta(
   registry: ToolSetRegistry,
   session: string,
   model: string,
-  opts?: { functions?: string[]; tools?: string[] },
+  opts?: { functions?: string[]; cached_toolsets?: string[] },
 ): Promise<void> {
   const parsed = await loadSessionMeta(repos, session);
   if (!isSessionMeta(parsed)) return;
@@ -483,11 +497,11 @@ export async function updateSessionMeta(
   meta.model = model;
   meta.timestamp = formatCstIso();
   if (opts?.functions) meta.functions = opts.functions;
-  if (opts?.tools !== undefined) {
-    meta.tools = opts.tools;
-  } else if (!meta.tools.length) {
-    meta.tools = resolveDefaultSessionTools(registry);
-    meta.loaded_tools = meta.loaded_tools ?? [];
+  if (opts?.cached_toolsets !== undefined) {
+    meta.cached_toolsets = opts.cached_toolsets;
+  } else if (!meta.cached_toolsets.length) {
+    meta.cached_toolsets = resolveDefaultSessionToolsets(registry);
+    meta.staged_toolsets = meta.staged_toolsets ?? [];
   }
   await pgWriteMeta(repos, session, meta);
 }

@@ -12,10 +12,10 @@ import {
   acpTasksSchema,
   awaitingClarifySchema,
   buildPlatformInfo,
+  sessionCachedToolsetsSchema,
   sessionFunctionsSchema,
   sessionInsertSchema,
-  sessionLoadedToolsSchema,
-  sessionToolsSchema,
+  sessionStagedToolsetsSchema,
   sessions,
 } from "@freeanima/core/db/schema";
 
@@ -38,7 +38,7 @@ export async function getSessionMeta(sessionId: string): Promise<SessionMetaMess
   return rowToSessionMeta(rows[0]!);
 }
 
-/** Hot-path meta: keep tools/loaded_tools for runtime tool whitelist and default toolset checks */
+/** Hot-path meta: keep cached/staged toolsets for runtime */
 export async function getSessionMetaLite(sessionId: string): Promise<SessionMetaMessage | null> {
   const db = getDb();
   const rows = await db
@@ -53,8 +53,8 @@ export async function getSessionMetaLite(sessionId: string): Promise<SessionMeta
       todos: sessions.todos,
       awaitingClarify: sessions.awaitingClarify,
       acpTasks: sessions.acpTasks,
-      tools: sessions.tools,
-      loadedTools: sessions.loadedTools,
+      cachedToolsets: sessions.cachedToolsets,
+      stagedToolsets: sessions.stagedToolsets,
       functions: sessions.functions,
       debug: sessions.debug,
       createdAt: sessions.createdAt,
@@ -67,15 +67,17 @@ export async function getSessionMetaLite(sessionId: string): Promise<SessionMeta
   return rowToSessionMeta(rows[0]!);
 }
 
-export async function getSessionTools(sessionId: string): Promise<SessionMetaMessage["tools"]> {
+export async function getSessionTools(
+  sessionId: string,
+): Promise<SessionMetaMessage["cached_toolsets"]> {
   const db = getDb();
   const rows = await db
-    .select({ tools: sessions.tools })
+    .select({ cachedToolsets: sessions.cachedToolsets })
     .from(sessions)
     .where(eq(sessions.id, sessionId))
     .limit(1);
   if (!rows.length) return [];
-  return sessionToolsSchema.parse(rows[0]!.tools ?? []);
+  return sessionCachedToolsetsSchema.parse(rows[0]!.cachedToolsets ?? []);
 }
 
 export async function upsertSessionMeta(
@@ -103,8 +105,8 @@ export async function upsertSessionMeta(
           todos: row.todos,
           awaitingClarify: row.awaitingClarify,
           acpTasks: row.acpTasks,
-          tools: row.tools,
-          loadedTools: row.loadedTools,
+          cachedToolsets: row.cachedToolsets,
+          stagedToolsets: row.stagedToolsets,
           functions: row.functions,
           debug: row.debug,
           updatedAt: row.updatedAt,
@@ -150,12 +152,12 @@ export async function patchSessionMeta(
     }
     hasColumnPatch = true;
   }
-  if (patch.tools !== undefined) {
-    set.tools = sessionToolsSchema.parse(patch.tools);
+  if (patch.cached_toolsets !== undefined) {
+    set.cachedToolsets = sessionCachedToolsetsSchema.parse(patch.cached_toolsets);
     hasColumnPatch = true;
   }
-  if (patch.loaded_tools !== undefined) {
-    set.loadedTools = sessionLoadedToolsSchema.parse(patch.loaded_tools);
+  if (patch.staged_toolsets !== undefined) {
+    set.stagedToolsets = sessionStagedToolsetsSchema.parse(patch.staged_toolsets);
     hasColumnPatch = true;
   }
   if (patch.functions !== undefined) {

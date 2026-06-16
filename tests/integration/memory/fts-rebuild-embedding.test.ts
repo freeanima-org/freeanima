@@ -41,7 +41,7 @@ function sessionMeta() {
   return {
     role: "session_meta" as const,
     model: "test-model",
-    tools: [] as string[],
+    cached_toolsets: [] as string[],
     functions: [] as string[],
     timestamp: new Date().toISOString(),
     platform: "parlor",

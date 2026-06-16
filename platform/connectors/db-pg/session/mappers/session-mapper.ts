@@ -9,9 +9,9 @@ import {
 } from "@freeanima/core/db/domain";
 import { capabilityMaskSchema } from "@freeanima/core/db/schema";
 import {
+  sessionCachedToolsetsSchema,
   sessionFunctionsSchema,
-  sessionLoadedToolsSchema,
-  sessionToolsSchema,
+  sessionStagedToolsetsSchema,
 } from "@freeanima/core/db/schema";
 
 import {
@@ -37,8 +37,8 @@ const META_KNOWN_KEYS = new Set([
   "todos",
   "awaiting_clarify",
   "acp_tasks",
-  "tools",
-  "loaded_tools",
+  "cached_toolsets",
+  "staged_toolsets",
   "functions",
   "platform_extra",
   "debug",
@@ -65,8 +65,8 @@ export function sessionMetaToInsert(sessionId: string, meta: SessionMetaMessage)
     delete extra.capability_mask;
   }
 
-  const tools = sessionToolsSchema.parse(meta.tools ?? []);
-  const loadedTools = sessionLoadedToolsSchema.parse(meta.loaded_tools ?? []);
+  const cachedToolsets = sessionCachedToolsetsSchema.parse(meta.cached_toolsets ?? []);
+  const stagedToolsets = sessionStagedToolsetsSchema.parse(meta.staged_toolsets ?? []);
   const todos = sessionTodoStoreSchema.parse(meta.todos ?? { items: [], next_id: 1 });
   const functions = sessionFunctionsSchema.parse(meta.functions ?? []);
   const compressionRaw = pgJsonbOrNull(meta.compression);
@@ -90,8 +90,8 @@ export function sessionMetaToInsert(sessionId: string, meta: SessionMetaMessage)
     todos,
     awaitingClarify: awaitingParsed,
     acpTasks: acpParsed,
-    tools,
-    loadedTools,
+    cachedToolsets,
+    stagedToolsets,
     functions,
     debug: meta.debug === true,
     createdAt: normalizePgTimestamp(meta.timestamp),
@@ -128,8 +128,8 @@ export function rowToSessionMeta(row: unknown): SessionMetaMessage {
     awaiting_clarify: parsed.awaitingClarify ?? undefined,
     acp_tasks: parsed.acpTasks ?? undefined,
     acp_tasks_handled_at: handledAt,
-    tools: parsed.tools,
-    loaded_tools: parsed.loadedTools,
+    cached_toolsets: parsed.cachedToolsets,
+    staged_toolsets: parsed.stagedToolsets,
     functions: parsed.functions,
     platform_extra: restExtra && Object.keys(restExtra).length > 0 ? restExtra : undefined,
     capability_mask,

@@ -5,10 +5,10 @@ import type {
   AcpTasksJson,
   AwaitingClarifyJson,
   CompressionJson,
+  SessionCachedToolsetsJson,
   SessionFunctionsJson,
-  SessionLoadedToolsJson,
+  SessionStagedToolsetsJson,
   SessionTodosJson,
-  SessionToolsJson,
 } from "./jsonb/session-jsonb.ts";
 
 export const sessions = pgTable("sessions", {
@@ -22,8 +22,8 @@ export const sessions = pgTable("sessions", {
   todos: jsonb("todos").$type<SessionTodosJson>().notNull().default({ items: [], next_id: 1 }),
   awaitingClarify: jsonb("awaiting_clarify").$type<AwaitingClarifyJson | null>(),
   acpTasks: jsonb("acp_tasks").$type<AcpTasksJson | null>(),
-  tools: jsonb("tools").$type<SessionToolsJson>().notNull().default([]),
-  loadedTools: jsonb("loaded_tools").$type<SessionLoadedToolsJson>().notNull().default([]),
+  cachedToolsets: jsonb("cached_toolsets").$type<SessionCachedToolsetsJson>().notNull().default([]),
+  stagedToolsets: jsonb("staged_toolsets").$type<SessionStagedToolsetsJson>().notNull().default([]),
   functions: jsonb("functions").$type<SessionFunctionsJson>().notNull().default([]),
   debug: boolean("debug").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true, mode: "string" }).notNull(),

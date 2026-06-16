@@ -10,6 +10,7 @@ import {
 } from "@freeanima/platform";
 import { getAcpManager } from "@freeanima/capabilities-acp";
 import { MaskRegistry } from "@freeanima/capabilities-tasks/mask";
+import { initMaskSystem } from "@freeanima/platform/runtime/mask-wire";
 import { registerServiceTools, resetRegisterServiceToolsForTest } from "@freeanima/platform";
 import {
   registerMemorySessionStore,
@@ -49,6 +50,7 @@ export function wireIntegrationRuntimeContext(pg: PgTestContext): void {
   const kernel = createServiceKernel(pg.config);
   const conversation = createConversationService(pg.engine.repos, pg.engine.catalog.toolSets);
   const masks = new MaskRegistry();
+  initMaskSystem(masks);
   const fullDeps = {
     kernel,
     engine: pg.engine,

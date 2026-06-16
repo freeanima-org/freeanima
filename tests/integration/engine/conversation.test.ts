@@ -8,7 +8,7 @@ import {
 } from "../../helpers/integration-case.ts";
 
 import { isSessionMeta } from "@freeanima/core/db/domain";
-import { DEFAULT_SESSION_TOOL_NAMES } from "@freeanima/core/tool";
+import { DEFAULT_SESSION_TOOLSETS } from "@freeanima/core/tool";
 import { registerServiceTools } from "@freeanima/platform";
 import { getActivePgTestContext, getTestEngine, testConv } from "../../helpers/pg-test.ts";
 
@@ -45,7 +45,7 @@ describePg("conversation", () => {
     expect(cwd).toContain(sid.slice(0, 8));
   });
 
-  it("new session writes default tool names and loadSessionTools resolves schemas", async () => {
+  it("new session writes default cached toolsets and loadSessionTools resolves schemas", async () => {
     const engine = getTestEngine();
     registerServiceTools({
       toolSets: engine.toolSets,
@@ -58,18 +58,18 @@ describePg("conversation", () => {
     expect(isSessionMeta(meta)).toBe(true);
     if (!isSessionMeta(meta)) return;
 
-    const storedToolNames = await c.repos.session.getSessionTools(sid);
-    expect(storedToolNames.length).toBeGreaterThan(0);
-    expect(storedToolNames.length).toBeLessThan(engine.toolSets.toolNames().length);
-    for (const name of storedToolNames) {
-      expect(DEFAULT_SESSION_TOOL_NAMES.includes(name as never)).toBe(true);
+    const storedToolsets = await c.repos.session.getSessionTools(sid);
+    expect(storedToolsets.length).toBeGreaterThan(0);
+    expect(storedToolsets.length).toBeLessThan(engine.toolSets.listToolSets().length);
+    for (const name of storedToolsets) {
+      expect(DEFAULT_SESSION_TOOLSETS.includes(name as never)).toBe(true);
     }
-    expect(meta.loaded_tools ?? []).toEqual([]);
+    expect(meta.staged_toolsets ?? []).toEqual([]);
 
     const tools = await c.loadSessionTools(sid);
-    expect(tools.length).toBe(storedToolNames.length);
+    expect(tools.length).toBeGreaterThan(storedToolsets.length);
     expect(tools[0]).toHaveProperty("type", "function");
-    expect(tools.every((t) => storedToolNames.includes(t.function.name))).toBe(true);
+    expect(tools.some((t) => t.function.name === "toolsets_search")).toBe(true);
   });
 });
 

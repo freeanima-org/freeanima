@@ -2,7 +2,8 @@ import { describe, expect, it } from "bun:test";
 import { z } from "zod";
 
 import { defineToolReturn } from "./return-contract.ts";
-import { DEFAULT_SESSION_TOOL_NAMES } from "./default-session-tools.ts";
+import { DEFAULT_SESSION_TOOLSETS } from "./default-session-toolsets.ts";
+import { toolNamesForToolsets } from "./toolset-meta.ts";
 import { ToolSetRegistry } from "./toolset.ts";
 import { buildToolsStatus, resolveReturnKind } from "./tools-status.ts";
 
@@ -38,10 +39,10 @@ describe("resolveReturnKind", () => {
 describe("buildToolsStatus", () => {
   it("assembles definition, return_kind, and default_tools", () => {
     const registry = new ToolSetRegistry();
-    registry.registerToolSet("tools", "discovery", [
+    registry.registerToolSet("toolsets", "discovery", [
       {
-        name: "tools_list",
-        description: "List tools",
+        name: "toolsets_search",
+        description: "Search toolsets",
         parameters: { type: "object", properties: { query: { type: "string" } } },
         handler: () => "{}",
       },
@@ -76,9 +77,12 @@ describe("buildToolsStatus", () => {
     const status = buildToolsStatus(registry);
 
     expect(status.default_tools).toEqual(
-      DEFAULT_SESSION_TOOL_NAMES.filter((n) => registry.getTool(n) != null),
+      toolNamesForToolsets(
+        registry,
+        DEFAULT_SESSION_TOOLSETS.filter((n) => registry.getToolSet(n) != null),
+      ),
     );
-    expect(status.default_tools).toContain("tools_list");
+    expect(status.default_tools).toContain("toolsets_search");
 
     const read = status.tools.find((t) => t.name === "file_read_file");
     expect(read?.return_kind).toBe("text");
@@ -96,6 +100,6 @@ describe("buildToolsStatus", () => {
     const mcp = status.tools.find((t) => t.name === "mcp_demo_ping");
     expect(mcp?.return_kind).toBe("text");
 
-    expect(status.tool_sets.map((ts) => ts.name)).toEqual(["tools", "file", "mcp_demo"]);
+    expect(status.tool_sets.map((ts) => ts.name)).toEqual(["toolsets", "file", "mcp_demo"]);
   });
 });

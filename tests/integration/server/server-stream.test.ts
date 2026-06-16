@@ -25,7 +25,7 @@ describePg("sendMessageStream", () => {
     await seedSession(getTestEngine(), sid, {
       role: "session_meta",
       model: "test-model",
-      tools: [],
+      cached_toolsets: [],
       functions: [],
       timestamp: new Date().toISOString(),
       platform: "parlor",

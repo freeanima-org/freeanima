@@ -168,25 +168,40 @@ const todoReturnSchema = z.union([
 ]);
 
 export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields> = {
-  tools_list: defineToolReturn({
+  toolsets_search: defineToolReturn({
     schema: z.object({
-      tools: z.array(catalogEntrySchema),
+      query: z.string(),
+      hits: z.array(
+        z.object({
+          toolset: z.string(),
+          description: z.string(),
+          tools: z.array(catalogEntrySchema),
+          allowed: z.boolean(),
+        }),
+      ),
       total: z.number(),
-      keyword: z.string().optional(),
     }),
     example: {
-      tools: [
+      query: "postgres",
+      hits: [
         {
-          name: "file_read_file",
-          description: "Read a text file",
-          toolset: "file",
+          toolset: "mcp_postgres",
+          description: "MCP postgres",
+          tools: [
+            {
+              name: "mcp_postgres_query",
+              description: "Run SQL",
+              toolset: "mcp_postgres",
+              allowed: true,
+            },
+          ],
           allowed: true,
         },
       ],
       total: 1,
     },
   }),
-  tools_load: defineToolReturn({
+  toolsets_load: defineToolReturn({
     schema: z.object({
       loaded: z.array(z.string()),
       denied: z.array(z.string()),
@@ -195,7 +210,7 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
       tools: z.array(toolCatalogMessageEntrySchema),
     }),
     example: {
-      loaded: ["file_read_file"],
+      loaded: ["file"],
       denied: [],
       already_loaded: [],
       unknown: [],
@@ -204,7 +219,7 @@ export const CAPABILITIES_TOOLS_RETURNS: Record<string, ToolReturnContractFields
           name: "file_read_file",
           description: "Read a text file",
           toolset: "file",
-          parameters: { type: "object", properties: { path: { type: "string" } } },
+          parameters: { type: "object", properties: {} },
         },
       ],
     },

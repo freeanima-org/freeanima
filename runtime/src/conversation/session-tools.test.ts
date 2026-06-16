@@ -1,6 +1,42 @@
 import { describe, expect, it } from "bun:test";
+import { ToolSetRegistry } from "@freeanima/core/tool";
 import { mergeSessionToolNames, resolveExecutableToolNames } from "./session-tools.ts";
 import type { SessionMetaMessage } from "@freeanima/core/db/domain";
+
+function testRegistry(): ToolSetRegistry {
+  const reg = new ToolSetRegistry();
+  reg.registerToolSet("toolsets", "discovery", [
+    {
+      name: "toolsets_search",
+      description: "search",
+      parameters: { type: "object", properties: {} },
+      handler: async () => "{}",
+    },
+    {
+      name: "toolsets_load",
+      description: "load",
+      parameters: { type: "object", properties: {} },
+      handler: async () => "{}",
+    },
+  ]);
+  reg.registerToolSet("memory", "memory", [
+    {
+      name: "memory_recall",
+      description: "recall",
+      parameters: { type: "object", properties: {} },
+      handler: async () => "{}",
+    },
+  ]);
+  reg.registerToolSet("file", "file", [
+    {
+      name: "file_read_file",
+      description: "read",
+      parameters: { type: "object", properties: {} },
+      handler: async () => "{}",
+    },
+  ]);
+  return reg;
+}
 
 describe("mergeSessionToolNames", () => {
   it("dedupes and merges", () => {
@@ -9,17 +45,18 @@ describe("mergeSessionToolNames", () => {
 });
 
 describe("resolveExecutableToolNames", () => {
-  it("merges tools and loaded_tools", () => {
+  it("expands cached and staged toolsets", () => {
     const meta = {
       role: "session_meta",
       model: "m",
-      tools: ["tools_list", "memory_recall"],
-      loaded_tools: ["file_read_file"],
+      cached_toolsets: ["toolsets", "memory"],
+      staged_toolsets: ["file"],
       functions: [],
       timestamp: "",
     } satisfies SessionMetaMessage;
-    expect(resolveExecutableToolNames(meta).toSorted()).toEqual(
-      ["file_read_file", "memory_recall", "tools_list"].toSorted(),
+    const names = resolveExecutableToolNames(meta, testRegistry()).toSorted();
+    expect(names).toEqual(
+      ["file_read_file", "memory_recall", "toolsets_load", "toolsets_search"].toSorted(),
     );
   });
 });

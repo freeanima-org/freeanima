@@ -23,11 +23,10 @@ describe("renderToolsetsSection", () => {
     ]);
     const section = renderToolsetsSection(registry);
     expect(section).toContain("## ToolSets");
-    expect(section).toContain("tools_list");
-    expect(section).toContain("### file");
-    expect(section).toContain("Read and write workspace files");
-    expect(section).toContain("### memory");
-    expect(section.indexOf("### file")).toBeLessThan(section.indexOf("### memory"));
+    expect(section).toContain("toolsets_load");
+    expect(section).toContain("- file — Read and write workspace files");
+    expect(section).toContain("- memory — Semantic memory tools");
+    expect(section.indexOf("- file")).toBeLessThan(section.indexOf("- memory"));
   });
 
   it("returns empty when no toolsets", () => {

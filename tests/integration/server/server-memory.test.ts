@@ -53,7 +53,7 @@ describePg("server memory API", () => {
       {
         role: "session_meta",
         model: "test-model",
-        tools: [],
+        cached_toolsets: [],
         functions: [],
         timestamp: "2026-05-26T12:00:00+08:00",
         platform: "parlor",

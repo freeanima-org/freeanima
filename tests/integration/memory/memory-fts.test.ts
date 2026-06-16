@@ -30,7 +30,7 @@ describePg("memory PG FTS", () => {
       {
         role: "session_meta",
         model: "test-model",
-        tools: [],
+        cached_toolsets: [],
         functions: [],
         timestamp: "2026-05-26T12:00:00+08:00",
         platform: "web",
@@ -75,7 +75,7 @@ describePg("memory PG FTS", () => {
       {
         role: "session_meta",
         model: "test-model",
-        tools: [],
+        cached_toolsets: [],
         functions: [],
         timestamp: "2026-05-26T10:00:00+08:00",
         platform: "parlor",
@@ -116,7 +116,7 @@ describePg("memory PG FTS", () => {
       {
         role: "session_meta",
         model: "test-model",
-        tools: [],
+        cached_toolsets: [],
         functions: [],
         timestamp: "2026-06-15T12:00:00+08:00",
         platform: "web",
