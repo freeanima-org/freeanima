@@ -1,5 +1,5 @@
 import { it, expect, beforeAll, beforeEach, afterEach } from "bun:test";
-import { spawn, spawnSync, type ChildProcess } from "node:child_process";
+import { spawn, type ChildProcess } from "node:child_process";
 import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -14,15 +14,11 @@ const cliJs = join(publishRoot, "dist/cli.js");
 const TEST_PORT = 18_658;
 const HEALTH_TIMEOUT_MS = 120_000;
 
-function ensurePublishedCli(): void {
+function assertPublishedCliBuilt(): void {
   if (existsSync(cliJs)) return;
-  const result = spawnSync("bun", [join(repoRoot, "scripts/build-cli.ts")], {
-    cwd: repoRoot,
-    stdio: "inherit",
-  });
-  if (result.status !== 0) {
-    throw new Error("build-cli failed");
-  }
+  throw new Error(
+    "cli/publish/dist/cli.js 不存在；请先运行 `bun run build:cli`（CI Quality 作业会在集成测试前构建）",
+  );
 }
 
 function sleep(ms: number): Promise<void> {
@@ -61,7 +57,7 @@ describePg("published CLI HTTP health", () => {
   let home = "";
 
   beforeAll(() => {
-    ensurePublishedCli();
+    assertPublishedCliBuilt();
   });
 
   beforeEach(() => {
