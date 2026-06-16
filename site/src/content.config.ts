@@ -4,41 +4,41 @@ import { docsSchema } from "@astrojs/starlight/schema";
 import { fileURLToPath } from "node:url";
 
 const docsRoot = fileURLToPath(new URL("./content/docs", import.meta.url));
-const docsZhRoot = fileURLToPath(new URL("../docs/.generated/zh_CN", import.meta.url));
+const generatedZhSegment = ".generated/zh_CN/";
 
-function docsEntryId(entry: string, localePrefix?: string): string {
+function docsEntryId(entry: string): string {
+  const isZh = entry.startsWith(generatedZhSegment);
+  const localePrefix = isZh ? "zh-cn" : undefined;
   let id = entry.replace(/\.(md|mdx)$/i, "");
+  if (isZh) {
+    id = id.slice(generatedZhSegment.length);
+  }
   if (/^readme$/i.test(id)) {
     return localePrefix ? `${localePrefix}/docs` : "docs";
   }
   id = id.replace(/\/readme$/i, "");
   if (localePrefix) {
-    return id ? `${localePrefix}/${id}` : localePrefix;
+    // Must mirror root IDs (`docs/...`) so Starlight localizedSlug() matches translations.
+    return id ? `${localePrefix}/docs/${id}` : `${localePrefix}/docs`;
   }
   return id ? `docs/${id}` : "docs";
 }
 
 export const collections = {
   docs: defineCollection({
-    loader: glob(
-      {
-        base: docsRoot,
-        pattern: [
-          "README.md",
-          "guide/**/*.{md,mdx}",
-          "concepts/**/*.{md,mdx}",
-          "features/**/*.{md,mdx}",
-          "sap/**/*.{md,mdx}",
-          "tools/**/*.{md,mdx}",
-        ],
-        generateId: ({ entry }) => docsEntryId(entry),
-      },
-      {
-        base: docsZhRoot,
-        pattern: "**/*.{md,mdx}",
-        generateId: ({ entry }) => docsEntryId(entry, "zh-cn"),
-      },
-    ),
+    loader: glob({
+      base: docsRoot,
+      pattern: [
+        "README.md",
+        "guide/**/*.{md,mdx}",
+        "concepts/**/*.{md,mdx}",
+        "features/**/*.{md,mdx}",
+        "sap/**/*.{md,mdx}",
+        "tools/**/*.{md,mdx}",
+        ".generated/zh_CN/**/*.{md,mdx}",
+      ],
+      generateId: ({ entry }) => docsEntryId(entry),
+    }),
     schema: docsSchema(),
   }),
 };

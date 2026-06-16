@@ -63,7 +63,7 @@ msgstr "记忆体系"
 #: docs/concepts/recall-flow.md:1 messages/po4a/en.xml:42
 #, no-wrap
 msgid "Recall Flow"
-msgstr "Recall 流程"
+msgstr "回忆流程"
 
 #. type: Content of: <messages><msg>
 #: docs/concepts/self-layer.md:1 docs/concepts/self-layer.md:5
@@ -274,7 +274,7 @@ msgstr "站点导航"
 #: messages/po4a/en.xml:29
 #, no-wrap
 msgid "Concepts"
-msgstr "Concepts"
+msgstr "概念"
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:31
@@ -286,13 +286,13 @@ msgstr "文档"
 #: messages/po4a/en.xml:32
 #, no-wrap
 msgid "Features"
-msgstr "Features"
+msgstr "功能"
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:33
 #, no-wrap
 msgid "Guide"
-msgstr "Guide"
+msgstr "指南"
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:38

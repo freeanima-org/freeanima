@@ -23,6 +23,7 @@ export {
   patchSessionOrigin,
   rebuildSessionSystemPrompt,
   reloadSessionTools,
+  resetSessionCache,
   refreshSystemPromptOnResume,
   assertSessionPlatform,
   appendUserTurn,
