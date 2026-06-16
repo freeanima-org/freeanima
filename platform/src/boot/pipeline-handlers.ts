@@ -7,6 +7,7 @@ import {
   loadSelfLayerPrompt,
 } from "@freeanima/capabilities-identity";
 import { getPipelineRunner, type PipelineStepTrigger } from "@freeanima/runtime/pipeline";
+import { cleanupStaleSessions } from "@freeanima/runtime/session";
 import type { Engine } from "@freeanima/runtime";
 
 import { createDreamFridgePort } from "../dream-fridge-factory.ts";
@@ -17,6 +18,12 @@ import { sleepCycleDefinition, SLEEP_CYCLE_PIPELINE_ID, SLEEP_STEP_IDS } from ".
 export function registerSleepPipeline(engine: Engine): void {
   const runner = getPipelineRunner();
   runner.registerDefinition(sleepCycleDefinition);
+
+  runner.registerStep(SLEEP_STEP_IDS.sessionCleanup, async () => {
+    const result = await cleanupStaleSessions(engine.repos);
+    const sample_ids = result.ids.slice(0, 20);
+    return { ok: true, output: { deleted: result.deleted, sample_ids } };
+  });
 
   runner.registerStep(SLEEP_STEP_IDS.lightSleep, async (ctx) => {
     const selfContent = await loadSelfLayerPrompt();

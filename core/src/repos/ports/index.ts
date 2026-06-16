@@ -5,6 +5,7 @@ import type { SessionStorePort } from "./session.ts";
 export type {
   SessionStorePort,
   SessionSummaryRow,
+  SessionCleanupResult,
   MessageFtsHit,
   MessageRowView,
 } from "./session.ts";

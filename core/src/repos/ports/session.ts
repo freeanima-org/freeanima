@@ -32,6 +32,11 @@ export type MessageRowView = {
   timestamp: string;
 };
 
+export type SessionCleanupResult = {
+  deleted: number;
+  ids: string[];
+};
+
 /** Conversation Session + Message persistence port (Slice A) */
 export interface SessionStorePort {
   getSessionMeta(sessionId: string): Promise<SessionMetaMessage | null>;
@@ -96,4 +101,7 @@ export interface SessionStorePort {
   listSessionIdsUpdatedBetween(fromIso: string, toIso: string): Promise<string[]>;
   /** Earliest non-debug session CST calendar day YYYY-MM-DD; null if none */
   getEarliestSessionDay(): Promise<string | null>;
+  /** Stale session ids eligible for nightly cleanup (see runtime cleanupStaleSessions) */
+  listStaleSessionIdsForCleanup(opts: { olderThan: Date }): Promise<string[]>;
+  deleteStaleSessions(opts: { olderThan: Date }): Promise<SessionCleanupResult>;
 }

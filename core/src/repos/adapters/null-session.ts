@@ -110,4 +110,10 @@ export const nullSessionStore: SessionStorePort = {
   async getEarliestSessionDay() {
     return null;
   },
+  async listStaleSessionIdsForCleanup() {
+    return [];
+  },
+  async deleteStaleSessions() {
+    return { deleted: 0, ids: [] };
+  },
 };

@@ -39,4 +39,6 @@ export const pgSessionStore = {
   listMessagesPage: messageRepo.listMessagesPage,
   listSessionIdsUpdatedBetween: sessionRepo.listSessionIdsUpdatedBetween,
   getEarliestSessionDay: sessionRepo.getEarliestSessionDay,
+  listStaleSessionIdsForCleanup: sessionRepo.listStaleSessionIdsForCleanup,
+  deleteStaleSessions: sessionRepo.deleteStaleSessions,
 } satisfies SessionStorePort;

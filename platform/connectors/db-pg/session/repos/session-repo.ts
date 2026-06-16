@@ -1,4 +1,4 @@
-import { desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, lt, sql } from "drizzle-orm";
 import {
   compressionStateSchema,
   sessionTodoStoreSchema,
@@ -7,7 +7,7 @@ import {
   type SessionTodoStore,
 } from "@freeanima/core/db/domain";
 
-import type { SessionSummaryRow } from "@freeanima/core/repos";
+import type { SessionCleanupResult, SessionSummaryRow } from "@freeanima/core/repos";
 import {
   acpTasksSchema,
   awaitingClarifySchema,
@@ -294,6 +294,48 @@ export async function deleteDebugSessions(): Promise<number> {
 export async function deleteSession(sessionId: string): Promise<void> {
   const db = getDb();
   await db.delete(sessions).where(eq(sessions.id, sessionId));
+}
+
+const staleSessionCleanupPredicate = sql`(
+  NOT EXISTS (SELECT 1 FROM messages m WHERE m.session_id = ${sessions.id})
+  OR (SELECT count(*)::int FROM messages m WHERE m.session_id = ${sessions.id}) = 1
+  OR (
+    (SELECT count(*)::int FROM messages m WHERE m.session_id = ${sessions.id}) > 1
+    AND NOT EXISTS (
+      SELECT 1 FROM messages m
+      WHERE m.session_id = ${sessions.id}
+        AND (m.payload)->>'role' = 'assistant'
+    )
+  )
+)`;
+
+export async function listStaleSessionIdsForCleanup(opts: { olderThan: Date }): Promise<string[]> {
+  const db = getDb();
+  const olderThanIso = normalizePgTimestamp(opts.olderThan);
+  const rows = await db
+    .select({ id: sessions.id })
+    .from(sessions)
+    .where(
+      and(
+        eq(sessions.debug, false),
+        lt(sessions.updatedAt, olderThanIso),
+        staleSessionCleanupPredicate,
+      ),
+    );
+  return rows.map((r) => r.id);
+}
+
+export async function deleteStaleSessions(opts: {
+  olderThan: Date;
+}): Promise<SessionCleanupResult> {
+  const ids = await listStaleSessionIdsForCleanup(opts);
+  if (!ids.length) return { deleted: 0, ids: [] };
+  const db = getDb();
+  const deleted = await db
+    .delete(sessions)
+    .where(inArray(sessions.id, ids))
+    .returning({ id: sessions.id });
+  return { deleted: deleted.length, ids: deleted.map((r) => r.id) };
 }
 
 export async function sessionExists(sessionId: string): Promise<boolean> {
