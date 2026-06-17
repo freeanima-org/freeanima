@@ -1,10 +1,10 @@
-/** 与 tauri.conf.json 中 main 窗口尺寸保持一致 */
-export const COMPANION_WINDOW_WIDTH = 360;
-export const COMPANION_WINDOW_HEIGHT = 480;
+/** 与 tauri.conf.json 中 pet 窗口尺寸保持一致 */
+export const COMPANION_WINDOW_WIDTH = 160;
+export const COMPANION_WINDOW_HEIGHT = 220;
 
-/** 浏览器 dev 模式下的桌宠视口尺寸（约 160×220px，纵向留足全身） */
-export const WEB_PET_WIDTH = 160;
-export const WEB_PET_HEIGHT = 220;
+/** 浏览器 dev 模式下的桌宠视口尺寸 */
+export const WEB_PET_WIDTH = COMPANION_WINDOW_WIDTH;
+export const WEB_PET_HEIGHT = COMPANION_WINDOW_HEIGHT;
 
 export type ScreenPoint = { x: number; y: number };
 

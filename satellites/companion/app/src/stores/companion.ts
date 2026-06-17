@@ -5,6 +5,7 @@ import {
   saveSettings,
   uploadModel as uploadModelApi,
 } from "@/lib/api.ts";
+import { emitConfigChanged } from "@/lib/tauri.ts";
 
 type CompanionState = {
   loading: boolean;
@@ -12,14 +13,12 @@ type CompanionState = {
   hubUrl: string;
   modelPath: string;
   instanceId: string;
-  settingsOpen: boolean;
   modelReady: boolean;
   modelLoading: boolean;
   hitTestFn: ((x: number, y: number) => boolean) | null;
   setHitTestFn: (fn: ((x: number, y: number) => boolean) | null) => void;
   setModelReady: (ready: boolean) => void;
   setModelLoading: (loading: boolean) => void;
-  setSettingsOpen: (open: boolean) => void;
   init: () => Promise<void>;
   updateSettings: (patch: { hub_url?: string; model_path?: string }) => Promise<void>;
   uploadModel: (file: File) => Promise<void>;
@@ -32,7 +31,6 @@ export const useCompanionStore = create<CompanionState>((set) => ({
   hubUrl: "http://127.0.0.1:2658",
   modelPath: "/models/default.vrm",
   instanceId: "",
-  settingsOpen: false,
   modelReady: false,
   modelLoading: false,
   hitTestFn: null,
@@ -49,10 +47,6 @@ export const useCompanionStore = create<CompanionState>((set) => ({
     set({ modelLoading: loading });
   },
 
-  setSettingsOpen(open) {
-    set({ settingsOpen: open });
-  },
-
   async init() {
     set({ loading: true, error: null });
     try {
@@ -67,13 +61,11 @@ export const useCompanionStore = create<CompanionState>((set) => ({
         loading: false,
         modelReady: false,
         modelLoading: modelAvailable,
-        settingsOpen: !modelAvailable,
       });
     } catch (e) {
       set({
         loading: false,
         error: e instanceof Error ? e.message : String(e),
-        settingsOpen: true,
       });
     }
   },
@@ -85,8 +77,8 @@ export const useCompanionStore = create<CompanionState>((set) => ({
       modelPath: next.model_available ? next.model_path : "",
       modelReady: false,
       modelLoading: next.model_available,
-      settingsOpen: !next.model_available,
     });
+    await emitConfigChanged();
     if (patch.hub_url) {
       window.location.reload();
     }
@@ -98,9 +90,9 @@ export const useCompanionStore = create<CompanionState>((set) => ({
       modelPath: result.model_path,
       modelReady: false,
       modelLoading: true,
-      settingsOpen: false,
       error: null,
     });
+    await emitConfigChanged();
   },
 
   clearError() {

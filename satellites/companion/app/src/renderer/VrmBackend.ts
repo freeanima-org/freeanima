@@ -8,6 +8,7 @@ import {
   computeVrmFraming,
   type VrmFramingState,
 } from "./VrmCameraFraming.ts";
+import { resolveFacingOffsetY } from "./vrm-facing.ts";
 
 /** 低于此速度视为站立（px/s） */
 const MIN_WALK_SPEED_PX = 8;
@@ -35,6 +36,7 @@ export class VrmBackend implements CharacterBackend {
   private hitSphere = new THREE.Sphere();
   private locomotion = new VrmProceduralLocomotion();
   private framing: VrmFramingState | null = null;
+  private facingOffsetY = 0;
 
   constructor(canvas: HTMLCanvasElement) {
     this.scene = new THREE.Scene();
@@ -79,7 +81,7 @@ export class VrmBackend implements CharacterBackend {
     }
 
     VRMUtils.rotateVRM0(vrm);
-    vrm.scene.rotation.y = Math.PI;
+    this.facingOffsetY = resolveFacingOffsetY(vrm.meta?.metaVersion);
     this.scene.add(vrm.scene);
     this.vrm = vrm;
     this.locomotion.reset(vrm);
@@ -162,7 +164,7 @@ export class VrmBackend implements CharacterBackend {
       }
     }
 
-    this.vrm.scene.rotation.y = Math.PI + this.displayHeading;
+    this.vrm.scene.rotation.y = this.facingOffsetY + this.displayHeading;
 
     if (this.talking) {
       this.locomotion.applyIdle(this.vrm, delta);

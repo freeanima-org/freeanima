@@ -27,7 +27,7 @@ describe("buildPerimeterWaypoints", () => {
 
   test("小屏幕至少返回一个合法点", () => {
     const points = buildPerimeterWaypoints(
-      { availLeft: 0, availTop: 0, availWidth: 320, availHeight: 400 },
+      { availLeft: 0, availTop: 0, availWidth: 120, availHeight: 180 },
       { width: COMPANION_WINDOW_WIDTH, height: COMPANION_WINDOW_HEIGHT },
     );
     expect(points).toHaveLength(1);

@@ -1,16 +1,6 @@
-import { createSapRelayBrowserClient, type SapRelayBrowserClient } from "@freeanima/sap-contract";
-import type { StreamApiEvent } from "./types.ts";
-import { COMPANION_PLATFORM } from "./types.ts";
 import { isTauri } from "./tauri.ts";
 import { resolveSidecarOrigin } from "./sidecar.ts";
 
-type SubscribeCallbacks<T> = {
-  onData?: (data: T) => void;
-  onError?: (err: Error) => void;
-  onComplete?: () => void;
-};
-
-let relayClient: SapRelayBrowserClient | null = null;
 let sidecarOrigin: string | null = null;
 
 async function origin(): Promise<string> {
@@ -18,15 +8,6 @@ async function origin(): Promise<string> {
     sidecarOrigin = await resolveSidecarOrigin();
   }
   return sidecarOrigin;
-}
-
-async function ensureRelayFromConfig(): Promise<SapRelayBrowserClient> {
-  const cfg = await fetchConfig();
-  if (!relayClient) {
-    relayClient = createSapRelayBrowserClient({ relayWsUrl: cfg.relay_ws_url });
-  }
-  await relayClient.whenReady();
-  return relayClient;
 }
 
 async function apiJson<T>(path: string, init?: RequestInit): Promise<T> {
@@ -74,64 +55,6 @@ export async function uploadModel(file: File) {
   return (await res.json()) as { model_path: string; filename: string };
 }
 
-export async function createSession() {
-  const relay = await ensureRelayFromConfig();
-  const client = await relay.whenReady();
-  const result = await client.request("session.create", {
-    platform: COMPANION_PLATFORM,
-  });
-  return { session_id: result.session_id };
-}
-
-export function subscribeMessageStream(
-  input: { sessionId: string; message: string },
-  callbacks: SubscribeCallbacks<StreamApiEvent>,
-): { unsubscribe: () => void } {
-  let inner: { unsubscribe: () => void } | null = null;
-  let cancelled = false;
-
-  void ensureRelayFromConfig()
-    .then((client) => {
-      if (cancelled) return;
-      inner = client.sendMessageStream(input, callbacks);
-    })
-    .catch((e) => {
-      callbacks.onError?.(e instanceof Error ? e : new Error(String(e)));
-      callbacks.onComplete?.();
-    });
-
-  return {
-    unsubscribe: () => {
-      cancelled = true;
-      inner?.unsubscribe();
-    },
-  };
-}
-
-export function subscribeSessionEvents(
-  sessionId: string,
-  onUpdate: () => void,
-): { unsubscribe: () => void } {
-  let inner: { unsubscribe: () => void } | null = null;
-  let cancelled = false;
-
-  void ensureRelayFromConfig()
-    .then((client) => {
-      if (cancelled) return;
-      inner = client.subscribeSessionEvents(sessionId, onUpdate);
-    })
-    .catch(() => {
-      /* ignore */
-    });
-
-  return {
-    unsubscribe: () => {
-      cancelled = true;
-      inner?.unsubscribe();
-    },
-  };
-}
-
 export async function subscribePetEvents(
   onEvent: (event: unknown) => void,
 ): Promise<{ unsubscribe: () => void }> {
@@ -151,4 +74,4 @@ export async function subscribePetEvents(
   };
 }
 
-export { COMPANION_PLATFORM, isTauri };
+export { isTauri };
