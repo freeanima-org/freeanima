@@ -17,6 +17,10 @@ export function companionModelsDir(): string {
   return join(companionHome(), "models");
 }
 
+export function companionMotionsDir(): string {
+  return join(companionHome(), "motions");
+}
+
 export function companionConfigPath(): string {
   return join(companionHome(), "config.json");
 }
@@ -46,5 +50,6 @@ function migrateLegacyConfig(): void {
 /** 创建用户数据目录，并从旧 companion-config.json 一次性迁移配置 */
 export function ensureCompanionDataDir(): void {
   mkdirSync(companionModelsDir(), { recursive: true });
+  mkdirSync(companionMotionsDir(), { recursive: true });
   migrateLegacyConfig();
 }

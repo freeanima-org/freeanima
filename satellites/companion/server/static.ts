@@ -2,6 +2,7 @@ import { existsSync, statSync } from "node:fs";
 import { extname, join } from "node:path";
 import { jsonResponse, withCors } from "./http/cors.ts";
 import { resolveModelFile } from "./model-path.ts";
+import { resolveMotionFile } from "./motions.ts";
 
 const DIST_DIR = join(import.meta.dir, "..", "dist");
 
@@ -13,6 +14,7 @@ const MIME: Record<string, string> = {
   ".svg": "image/svg+xml",
   ".png": "image/png",
   ".vrm": "model/gltf-binary",
+  ".vrma": "model/gltf-binary",
   ".glb": "model/gltf-binary",
   ".woff2": "font/woff2",
 };
@@ -30,6 +32,14 @@ export function serveStatic(pathname: string): Response {
     const modelFile = resolveModelFile(rel);
     if (modelFile) {
       return fileResponse(modelFile);
+    }
+    return jsonResponse({ error: "Not Found" }, 404);
+  }
+
+  if (rel.startsWith("/motions/")) {
+    const motionFile = resolveMotionFile(rel);
+    if (motionFile) {
+      return fileResponse(motionFile);
     }
     return jsonResponse({ error: "Not Found" }, 404);
   }

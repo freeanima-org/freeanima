@@ -5,7 +5,8 @@ import {
   saveSettings,
   uploadModel as uploadModelApi,
 } from "@/lib/api.ts";
-import { emitConfigChanged } from "@/lib/tauri.ts";
+import { emitConfigChanged, setPointerActive as setShellPointerActive } from "@/lib/tauri.ts";
+import { isTauri } from "@/lib/tauri.ts";
 
 type CompanionState = {
   loading: boolean;
@@ -16,7 +17,9 @@ type CompanionState = {
   modelReady: boolean;
   modelLoading: boolean;
   hitTestFn: ((x: number, y: number) => boolean) | null;
+  pointerActive: boolean;
   setHitTestFn: (fn: ((x: number, y: number) => boolean) | null) => void;
+  setPointerActive: (active: boolean) => void;
   setModelReady: (ready: boolean) => void;
   setModelLoading: (loading: boolean) => void;
   init: () => Promise<void>;
@@ -34,9 +37,17 @@ export const useCompanionStore = create<CompanionState>((set) => ({
   modelReady: false,
   modelLoading: false,
   hitTestFn: null,
+  pointerActive: false,
 
   setHitTestFn(fn) {
     set({ hitTestFn: fn });
+  },
+
+  setPointerActive(active) {
+    set({ pointerActive: active });
+    if (isTauri()) {
+      void setShellPointerActive(active);
+    }
   },
 
   setModelReady(ready) {

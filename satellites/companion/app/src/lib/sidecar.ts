@@ -20,5 +20,5 @@ export async function resolveSidecarOrigin(maxWaitMs = 30_000): Promise<string> 
     }
     await new Promise((r) => setTimeout(r, 200));
   }
-  throw new Error("桌宠后台服务启动超时，请检查是否被杀毒软件拦截");
+  throw new Error("伴侣后台服务启动超时，请检查是否被杀毒软件拦截");
 }

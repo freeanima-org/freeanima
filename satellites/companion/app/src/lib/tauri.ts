@@ -1,5 +1,7 @@
 /** Tauri 壳层桥接；浏览器 dev 模式下为 no-op */
 
+import type { ScreenPoint } from "./window-metrics.ts";
+
 type TauriWindow = {
   __TAURI__?: {
     core: {
@@ -26,10 +28,42 @@ export async function setClickThrough(ignore: boolean): Promise<void> {
   await api.core.invoke("set_clickthrough", { ignore });
 }
 
+export async function setPointerActive(active: boolean): Promise<void> {
+  const api = tauri();
+  if (!api) return;
+  await api.core.invoke("set_pointer_active", { active });
+}
+
 export async function moveWindow(x: number, y: number): Promise<void> {
   const api = tauri();
   if (!api) return;
   await api.core.invoke("move_window", { x, y });
+}
+
+export type PatrolScreenInfo = {
+  availLeft: number;
+  availTop: number;
+  availWidth: number;
+  availHeight: number;
+  windowWidth: number;
+  windowHeight: number;
+};
+
+export async function getPatrolScreen(): Promise<PatrolScreenInfo> {
+  const api = tauri();
+  if (!api) {
+    throw new Error("not in tauri");
+  }
+  return api.core.invoke<PatrolScreenInfo>("get_patrol_screen");
+}
+
+export async function getWindowPosition(): Promise<ScreenPoint> {
+  const api = tauri();
+  if (!api) {
+    return { x: 0, y: 0 };
+  }
+  const [x, y] = await api.core.invoke<[number, number]>("get_window_position");
+  return { x, y };
 }
 
 export async function listenCursorPosition(
@@ -40,6 +74,12 @@ export async function listenCursorPosition(
   return api.event.listen<{ x: number; y: number }>("cursor-position", (ev) => {
     handler(ev.payload);
   });
+}
+
+export async function startWindowDrag(): Promise<void> {
+  const api = tauri();
+  if (!api) return;
+  await api.core.invoke("start_drag");
 }
 
 export async function getSidecarPort(): Promise<number | null> {

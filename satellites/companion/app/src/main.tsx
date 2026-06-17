@@ -1,10 +1,10 @@
 import { StrictMode, useCallback, useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
-import { PetViewport } from "@/components/PetViewport.tsx";
+import { CharacterViewport } from "@/components/CharacterViewport.tsx";
 import { SettingsPanel } from "@/components/SettingsPanel.tsx";
 import { useCompanionStore } from "@/stores/companion.ts";
-import { usePetStore, startPetBehavior } from "@/stores/pet.ts";
-import { subscribePetEvents } from "@/lib/api.ts";
+import { startPatrolWatcher } from "@/stores/character.ts";
+import { companionDebug } from "@/lib/companion-debug.ts";
 import {
   isSettingsRoute,
   isTauri,
@@ -13,12 +13,13 @@ import {
   listenSidecarError,
   openSettings,
   setClickThrough,
+  setPointerActive,
 } from "@/lib/tauri.ts";
-import type { PetEvent } from "@/lib/types.ts";
 
 function ClickThroughManager() {
   const hitTestFn = useCompanionStore((s) => s.hitTestFn);
   const modelReady = useCompanionStore((s) => s.modelReady);
+  const pointerActive = useCompanionStore((s) => s.pointerActive);
   const ignoringRef = useRef(false);
 
   useEffect(() => {
@@ -28,9 +29,15 @@ function ClickThroughManager() {
 
     void listenCursorPosition((pos) => {
       const onCharacter = hitTestFn(pos.x, pos.y);
-      const shouldIgnore = !onCharacter;
+      const shouldIgnore = pointerActive ? false : !onCharacter;
       if (shouldIgnore !== ignoringRef.current) {
         ignoringRef.current = shouldIgnore;
+        companionDebug("点击穿透", {
+          ignore: shouldIgnore,
+          x: Math.round(pos.x),
+          y: Math.round(pos.y),
+          onCharacter,
+        });
         void setClickThrough(shouldIgnore);
       }
     }).then((off) => {
@@ -40,16 +47,16 @@ function ClickThroughManager() {
     return () => {
       cleanupCursor?.();
       void setClickThrough(false);
+      void setPointerActive(false);
     };
-  }, [hitTestFn, modelReady]);
+  }, [hitTestFn, modelReady, pointerActive]);
 
   return null;
 }
 
-function PetApp() {
+function CompanionWindow() {
   const { loading, error, modelPath, modelReady, modelLoading, init, clearError, setModelReady } =
     useCompanionStore();
-  const handlePetEvent = usePetStore((s) => s.handlePetEvent);
 
   const onModelReady = useCallback(() => {}, []);
 
@@ -94,18 +101,9 @@ function PetApp() {
   }, [init]);
 
   useEffect(() => {
-    let sub: { unsubscribe: () => void } | null = null;
-    void subscribePetEvents((ev) => {
-      handlePetEvent(ev as PetEvent);
-    }).then((s) => {
-      sub = s;
-    });
-    const stopWalk = startPetBehavior();
-    return () => {
-      sub?.unsubscribe();
-      stopWalk();
-    };
-  }, [handlePetEvent]);
+    const stopPatrol = startPatrolWatcher();
+    return () => stopPatrol();
+  }, []);
 
   if (loading) {
     return (
@@ -121,7 +119,7 @@ function PetApp() {
   return (
     <div className="companion-overlay">
       <ClickThroughManager />
-      <PetViewport
+      <CharacterViewport
         modelPath={modelPath}
         onBackendReady={onModelReady}
         onModelError={onModelError}
@@ -189,7 +187,7 @@ function AppRouter() {
   if (isSettingsRoute()) {
     return <SettingsApp />;
   }
-  return <PetApp />;
+  return <CompanionWindow />;
 }
 
 createRoot(document.getElementById("root")!).render(
