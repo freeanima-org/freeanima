@@ -69,3 +69,5 @@ satellites/companion/shell/src-tauri/icons/StoreLogo.png
 satellites/companion/shell/src-tauri/icons/64x64.png
 
 target/
+
+/tmp/

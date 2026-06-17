@@ -1,0 +1,16 @@
+{
+  "baseUrl": "/motions",
+  "idle": "VRMA_01.vrma",
+  "zones": {
+    "head": "VRMA_02.vrma",
+    "torso": "VRMA_06.vrma",
+    "leftArm": "VRMA_03.vrma",
+    "rightArm": "VRMA_03.vrma",
+    "leftLeg": "VRMA_07.vrma",
+    "rightLeg": "VRMA_07.vrma"
+  },
+  "locomotion": {
+    "walk": "locomotion_walk.vrma",
+    "climb": "locomotion_climb.vrma"
+  }
+}

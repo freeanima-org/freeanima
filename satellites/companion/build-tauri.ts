@@ -29,7 +29,10 @@ const TARGETS: Record<string, TargetSpec> = {
   "x86_64-pc-windows-gnu": {
     label: "Windows x64",
     bundles: { release: ["nsis"], fast: [] },
-    postBuild: ensureWebview2LoaderDll,
+    postBuild: (releaseDir) => {
+      ensureWebview2LoaderDll(releaseDir);
+      ensureFbxConverterRuntime(releaseDir, "x86_64-pc-windows-gnu");
+    },
     verify: verifyWindowsRelease,
   },
   "aarch64-apple-darwin": {
@@ -94,6 +97,37 @@ function findWebview2LoaderDll(root: string): string | null {
   return null;
 }
 
+function ensureFbxExternalBinPresent(triple: string): void {
+  if (!triple.includes("windows")) return;
+  const path = join(TAURI_DIR, "bin", `FBX2glTF-windows-x64-${triple}.exe`);
+  if (!existsSync(path)) {
+    throw new Error(
+      `missing FBX2glTF externalBin: ${path} — FBX 导入将无法打包进安装程序，请确认 node_modules/fbx2vrma-converter 已安装`,
+    );
+  }
+}
+
+function ensureFbxConverterRuntime(releaseDir: string, triple: string): void {
+  const binDir = join(import.meta.dir, "shell", "src-tauri", "bin");
+  const fbx2gltfName = triple.includes("windows") ? "FBX2glTF-windows-x64.exe" : null;
+  if (!fbx2gltfName) return;
+
+  const dest = join(releaseDir, fbx2gltfName);
+  if (existsSync(dest)) return;
+
+  const srcCandidates = [
+    join(binDir, fbx2gltfName),
+    join(binDir, `FBX2glTF-windows-x64-${triple}.exe`),
+  ];
+  for (const src of srcCandidates) {
+    if (existsSync(src)) {
+      copyFileSync(src, dest);
+      console.log(`[companion] copied ${fbx2gltfName} -> ${dest}`);
+      return;
+    }
+  }
+}
+
 function ensureWebview2LoaderDll(releaseDir: string): void {
   const dllPath = join(releaseDir, "WebView2Loader.dll");
   if (existsSync(dllPath)) {
@@ -116,6 +150,9 @@ function verifyWindowsRelease(releaseDir: string, profile: BuildProfile): void {
   const required = [
     join(releaseDir, "companion-shell.exe"),
     join(releaseDir, "WebView2Loader.dll"),
+    join(releaseDir, "companion-sidecar.exe"),
+    join(releaseDir, "fbx2vrma.exe"),
+    join(releaseDir, "FBX2glTF-windows-x64.exe"),
   ];
   for (const path of required) {
     if (!existsSync(path)) {
@@ -207,6 +244,7 @@ export async function buildCompanionTauri(opts: BuildCompanionTauriOptions): Pro
 
   console.log(`[companion] compiling sidecar for ${target.triple}…`);
   await compileSidecar(opts.target as SidecarTarget, { skipIfFresh: skipSidecarIfFresh });
+  ensureFbxExternalBinPresent(target.triple);
 
   console.log("[companion] running cargo tauri build…");
   const tauriArgs = ["tauri", "build", "--target", target.triple];

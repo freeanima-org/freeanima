@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react";
 import { disposeVrmBackend, getVrmBackend } from "./VrmBackend.ts";
 import { useCompanionStore } from "@/stores/companion.ts";
-import { usePetStore, notifyPetModelReady } from "@/stores/pet.ts";
+import { notifyCharacterModelReady, useCharacterStore } from "@/stores/character.ts";
 import { loadCachedModelSource } from "@/lib/model-cache.ts";
-import { measurePetViewportSize } from "@/lib/canvas-metrics.ts";
+import { measureCharacterViewportSize } from "@/lib/canvas-metrics.ts";
 import { resolveSidecarOrigin } from "@/lib/sidecar.ts";
 
 type Props = {
@@ -51,7 +51,7 @@ export function VrmCanvas({ modelPath, onBackendReady, onModelLoaded, onModelErr
     const backend = getVrmBackend(canvas);
 
     const resize = (): void => {
-      const { width, height } = measurePetViewportSize(container, canvas);
+      const { width, height } = measureCharacterViewportSize(container, canvas);
       canvas.style.width = `${width}px`;
       canvas.style.height = `${height}px`;
       backend.resize(width, height);
@@ -85,8 +85,8 @@ export function VrmCanvas({ modelPath, onBackendReady, onModelLoaded, onModelErr
 
         setHitTest((x, y) => backend.hitTest(x, y));
         setModelLoading(false);
-        usePetStore.getState().syncActionToBackend();
-        notifyPetModelReady();
+        useCharacterStore.getState().syncTravelToBackend();
+        notifyCharacterModelReady();
         onModelLoadedRef.current?.();
         onBackendReadyRef.current?.();
       } catch (e) {

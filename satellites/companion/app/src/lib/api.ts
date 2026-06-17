@@ -24,7 +24,6 @@ export async function fetchConfig() {
   return apiJson<{
     app_id: string;
     instance_id: string;
-    relay_ws_url: string;
     hub_url: string;
     model_path: string;
     model_available: boolean;
@@ -55,23 +54,88 @@ export async function uploadModel(file: File) {
   return (await res.json()) as { model_path: string; filename: string };
 }
 
-export async function subscribePetEvents(
-  onEvent: (event: unknown) => void,
-): Promise<{ unsubscribe: () => void }> {
+export type MotionStatus = {
+  ready: boolean;
+  user_dir: string;
+  required: string[];
+  booth_url: string;
+  auto_download_configured: boolean;
+};
+
+export async function fetchMotionStatus() {
+  return apiJson<MotionStatus>("/api/motions/status");
+}
+
+export async function uploadMotionZip(file: File) {
   const base = await origin();
-  const wsUrl = base.replace(/^http/, "ws") + "/api/pet/ws";
-  const ws = new WebSocket(wsUrl);
-  ws.addEventListener("message", (ev) => {
-    if (typeof ev.data !== "string") return;
-    try {
-      onEvent(JSON.parse(ev.data));
-    } catch {
-      /* ignore */
-    }
+  const form = new FormData();
+  form.append("file", file);
+  let res: Response;
+  try {
+    res = await fetch(`${base}/api/motions/import`, { method: "POST", body: form });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    throw new Error(
+      msg.includes("fetch") || msg.includes("Fetch")
+        ? "无法连接伴侣后台（请确认 sidecar 已启动，或稍后重试）"
+        : msg,
+    );
+  }
+  if (!res.ok) {
+    const err = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new Error(err.error ?? `HTTP ${res.status}`);
+  }
+  return (await res.json()) as { ok: true; dir: string; files: string[] };
+}
+
+export type LocomotionSlot = "walk" | "climb";
+
+export type LocomotionSlotInfo = {
+  slot: LocomotionSlot;
+  label: string;
+  file: string | null;
+  available: boolean;
+};
+
+export type LocomotionStatus = {
+  slots: LocomotionSlotInfo[];
+  configured: Record<LocomotionSlot, string | null>;
+  user_dir: string;
+};
+
+export async function fetchLocomotionStatus() {
+  return apiJson<LocomotionStatus>("/api/motions/locomotion");
+}
+
+export async function uploadLocomotionMotion(slot: LocomotionSlot, file: File) {
+  const base = await origin();
+  const form = new FormData();
+  form.append("file", file);
+  const res = await fetch(`${base}/api/motions/locomotion/${slot}/import`, {
+    method: "POST",
+    body: form,
   });
-  return {
-    unsubscribe: () => ws.close(),
-  };
+  if (!res.ok) {
+    const err = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new Error(err.error ?? `HTTP ${res.status}`);
+  }
+  return (await res.json()) as { slot: LocomotionSlot; file: string };
+}
+
+export async function clearLocomotionMotion(slot: LocomotionSlot) {
+  return apiJson<{ ok: true; slots: LocomotionSlotInfo[] }>("/api/motions/locomotion/clear", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ slot }),
+  });
+}
+
+export async function downloadMotionsFromMirror() {
+  return apiJson<{ ok: true; dir: string; files: string[] }>("/api/motions/download", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: "{}",
+  });
 }
 
 export { isTauri };

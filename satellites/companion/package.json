@@ -18,8 +18,10 @@
   "dependencies": {
     "@freeanima/sap-contract": "workspace:*",
     "@pixiv/three-vrm": "^3.4.2",
+    "@pixiv/three-vrm-animation": "^3.4.2",
     "@react-three/drei": "^10.0.6",
     "@react-three/fiber": "^9.1.2",
+    "fbx2vrma-converter": "^1.0.2",
     "react": "19",
     "react-dom": "19",
     "three": "^0.175.0",
