@@ -7,6 +7,7 @@ type TauriWindow = {
     };
     event: {
       listen: <T>(event: string, handler: (ev: { payload: T }) => void) => Promise<() => void>;
+      emit: (event: string, payload?: unknown) => Promise<void>;
     };
   };
 };
@@ -41,12 +42,6 @@ export async function listenCursorPosition(
   });
 }
 
-export async function startWindowDrag(): Promise<void> {
-  const api = tauri();
-  if (!api) return;
-  await api.core.invoke("start_drag");
-}
-
 export async function getSidecarPort(): Promise<number | null> {
   const api = tauri();
   if (!api) return null;
@@ -59,4 +54,28 @@ export async function listenSidecarError(handler: (message: string) => void): Pr
   return api.event.listen<string>("sidecar-error", (ev) => {
     handler(ev.payload);
   });
+}
+
+export async function openSettings(): Promise<void> {
+  const api = tauri();
+  if (!api) return;
+  await api.core.invoke("open_settings");
+}
+
+export async function emitConfigChanged(): Promise<void> {
+  const api = tauri();
+  if (!api) return;
+  await api.event.emit("companion-config-changed");
+}
+
+export async function listenConfigChanged(handler: () => void): Promise<() => void> {
+  const api = tauri();
+  if (!api) return () => {};
+  return api.event.listen("companion-config-changed", () => {
+    handler();
+  });
+}
+
+export function isSettingsRoute(): boolean {
+  return window.location.hash === "#/settings";
 }

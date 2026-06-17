@@ -12,8 +12,9 @@ title: Desktop Companion
 
 ```text
 用户桌面（单体应用）
-├── Tauri 壳 — 透明置顶窗口、点击穿透、托盘、窗口走位
-├── WebView — VRM 角色、聊天气泡、输入框
+├── Tauri 壳 — 双窗口、点击穿透、托盘
+│   ├── pet 窗 — 透明置顶，仅 VRM 渲染与角色点击
+│   └── settings 窗 — 普通有边框窗口，从托盘打开
 └── Bun sidecar — runSapTransport、relay、tool.register
          ↕ SAP WS（可跨机）
     anima service Hub
@@ -21,28 +22,27 @@ title: Desktop Companion
 
 与 Parlor / 结对编程的区别：
 
-|             | Parlor / 结对编程            | Companion               |
-| ----------- | ---------------------------- | ----------------------- |
-| UI          | 浏览器 Web UI                | 原生透明 GUI            |
-| 部署        | Managed（可与 service 同机） | Dynamic（用户自行启动） |
-| 客户端与 UI | 可分离                       | **不可分离**            |
+|             | Parlor / 结对编程            | Companion                                 |
+| ----------- | ---------------------------- | ----------------------------------------- |
+| UI          | 浏览器 Web UI                | 原生透明桌宠窗 + 独立设置窗               |
+| 部署        | Managed（可与 service 同机） | Dynamic（用户自行启动）                   |
+| 客户端与 UI | 可分离                       | 桌宠渲染与设置窗分离，同属一个 Tauri 应用 |
 
 ## 功能（首版）
 
-- VRM 角色渲染（Three.js + `@pixiv/three-vrm`）
-- 透明置顶窗口 + 角色区域可点、空白穿透
-- 屏幕边缘随机游走
-- Agent 气泡（流式）+ 桌宠内输入框
-- `tool.register`：`pet_say`、`pet_emote`、`pet_move`
-- 首条消息时 `session.create`（platform: `companion`）
-- 设置页：Hub URL、VRM 模型导入与路径
+- VRM 角色渲染（Three.js + `@pixiv/three-vrm`）；VRM 1.0 与 0.x 自动校正朝向
+- 透明置顶 pet 窗（160×220）+ 角色区域可点、空白穿透
+- 屏幕边缘随机游走；点击角色切换散步 / 休息
+- 系统托盘：显示/隐藏桌宠、打开设置、退出
+- `tool.register`：`pet_say`（口型动画）、`pet_emote`、`pet_move`
+- 设置窗：Hub URL、VRM 模型导入与路径
 
 ## 模型
 
 仓库**不捆绑** `.vrm` 文件。推荐流程：
 
 1. 从 [VRoid Hub](https://hub.vroid.com/) 或 [VRoid Studio](https://vroid.com/en/studio) 获取允许使用的 `.vrm` 模型
-2. 在桌宠**设置页**点击「导入模型」，选择本地文件
+2. 从系统托盘打开**设置**，点击「导入模型」，选择本地文件
 3. 模型保存到 `~/.anima/companion/models/`（可通过 `FREEANIMA_HOME` 覆盖数据根目录），并自动更新 `model_path`
 
 也可在设置中手动填写模型路径（支持 `/models/...` 或外部 URL）。开发期仍可将文件放入 `satellites/companion/public/models/` 作为回退目录。
@@ -56,7 +56,8 @@ title: Desktop Companion
 ```bash
 # 确保 anima service 已启动
 bun satellites/companion/dev.ts
-# 打开 http://127.0.0.1:4176
+# 桌宠：http://127.0.0.1:4176
+# 设置：http://127.0.0.1:4176/#/settings
 ```
 
 环境变量：
@@ -122,23 +123,24 @@ Windows 在 `ubuntu-latest` 交叉编译；macOS 两架构均在 `macos-latest` 
 
 产物：
 
-| 文件       | fast                                   | release（Windows）                             | release（macOS）                    |
-| ---------- | -------------------------------------- | ---------------------------------------------- | ----------------------------------- |
-| 可执行文件 | `shell/target/.../companion-shell.exe` | 同左                                           | `shell/target/.../companion-shell`  |
-| 安装包     | —                                      | `shell/target/.../bundle/nsis/*_x64-setup.exe` | `shell/target/.../bundle/dmg/*.dmg` |
+| 文件       | fast                                   | release（Windows）                              | release（macOS）                      |
+| ---------- | -------------------------------------- | ----------------------------------------------- | ------------------------------------- |
+| 可执行文件 | `shell/target/.../companion-shell.exe` | 同左                                            | `shell/target/.../companion-shell`    |
+| 安装包     | —                                      | `freeanima-companion_*_x64-setup.exe`（无空格） | `freeanima-companion_*.dmg`（无空格） |
 
 Linux 交叉编译依赖：`rustup target add x86_64-pc-windows-gnu`、`mingw-w64`；**仅 release 模式**还需 `nsis`、`libayatana-appindicator3-dev`。
 
 运行时配置写入 `~/.anima/companion/config.json`（`FREEANIMA_HOME` 可改根目录）；VRM 模型放 `~/.anima/companion/models/`。仓库内 `companion-config.example.json` 仅为字段示例。
 
-**fast 构建产物需两个文件**：`companion-shell.exe` 与同目录下的 `companion-sidecar-x86_64-pc-windows-gnu.exe`（Tauri 会把 sidecar 拷到 release 目录）。只拷贝主 exe 会导致后台无法启动。发版请用 **installer** 安装包。
+**fast 构建产物需两个文件**：`companion-shell.exe` 与同目录下的 `companion-sidecar-x86_64-pc-windows-gnu.exe`（Tauri 会把 sidecar 拷到 release 目录）。只拷贝主 exe 会导致后台无法启动。发版请用 **installer** 安装包（文件名不含空格，如 `freeanima-companion_0.1.0_x64-setup.exe`）。Windows 默认安装目录：`%LOCALAPPDATA%\freeanima-companion\`。
 
 ### 常见问题
 
 | 现象                                 | 可能原因                                                                 | 处理                                                                                                                                      |
 | ------------------------------------ | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | 双击后任务管理器里**两个进程都没有** | 未安装 WebView2 **运行时**（仅有 `WebView2Loader.dll` 不够）；或杀毒拦截 | 安装 [WebView2 运行时](https://go.microsoft.com/fwlink/p/?LinkId=2124703)；确认安装目录有 `companion-sidecar.exe`；从 cmd 运行 exe 看报错 |
-| 双击无窗口、无报错                   | 透明窗 + 未加载 VRM；或点击穿透已开启                                    | 看**系统托盘**（Win11 可能在「隐藏图标」里）；在设置里导入 `.vrm`                                                                         |
+| 双击无窗口、无报错                   | 透明 pet 窗 + 未加载 VRM                                                 | 看**系统托盘**（Win11 可能在「隐藏图标」里）；托盘 → **设置…** 导入 `.vrm`                                                                |
+| 加载模型后点不到设置                 | 设置已移至独立窗口                                                       | 托盘 → **设置…**                                                                                                                          |
 | 一直「加载中」或报后台超时           | sidecar 未启动；杀毒拦截；缺 WebView2                                    | 查看 `%USERPROFILE%\.anima\companion\shell.log`；安装 [WebView2](https://developer.microsoft.com/microsoft-edge/webview2/)                |
 | 无法连 Hub                           | `anima service` 未运行；端口转发未建立                                   | Hub 地址填 `http://127.0.0.1:2658`（SSH/端口转发到服务器时保持本地地址）；**先开好转发再启动桌宠**                                        |
 | 白屏 / WebView 异常                  | 未安装 WebView2 运行时                                                   | 安装 [Microsoft Edge WebView2](https://developer.microsoft.com/microsoft-edge/webview2/)                                                  |
@@ -149,7 +151,7 @@ Linux 交叉编译依赖：`rustup target add x86_64-pc-windows-gnu`、`mingw-w6
 
 | 本地名      | 说明                             |
 | ----------- | -------------------------------- |
-| `pet_say`   | 显示对话气泡                     |
+| `pet_say`   | 播放说话口型动画（无 UI 气泡）   |
 | `pet_emote` | 切换表情（joy/angry/sad/think…） |
 | `pet_move`  | 移动窗口到屏幕坐标               |
 

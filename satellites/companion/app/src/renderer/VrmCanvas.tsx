@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { disposeVrmBackend, getVrmBackend } from "./VrmBackend.ts";
 import { useCompanionStore } from "@/stores/companion.ts";
-import { usePetStore, syncPetStagePosition } from "@/stores/pet.ts";
+import { usePetStore, notifyPetModelReady } from "@/stores/pet.ts";
 import { loadCachedModelSource } from "@/lib/model-cache.ts";
 import { measurePetViewportSize } from "@/lib/canvas-metrics.ts";
 import { resolveSidecarOrigin } from "@/lib/sidecar.ts";
@@ -86,7 +86,7 @@ export function VrmCanvas({ modelPath, onBackendReady, onModelLoaded, onModelErr
         setHitTest((x, y) => backend.hitTest(x, y));
         setModelLoading(false);
         usePetStore.getState().syncActionToBackend();
-        syncPetStagePosition();
+        notifyPetModelReady();
         onModelLoadedRef.current?.();
         onBackendReadyRef.current?.();
       } catch (e) {

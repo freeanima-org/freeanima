@@ -47,12 +47,51 @@ fn get_sidecar_port() -> u16 {
     SIDECAR_PORT.load(Ordering::SeqCst)
 }
 
+#[tauri::command]
+fn open_settings(app: AppHandle) -> Result<(), String> {
+    let window = app
+        .get_webview_window("settings")
+        .ok_or("settings window not found")?;
+    window.show().map_err(|e| e.to_string())?;
+    window.set_focus().map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+fn toggle_pet_visibility(app: AppHandle) -> Result<bool, String> {
+    let window = app
+        .get_webview_window("pet")
+        .ok_or("pet window not found")?;
+    let visible = window.is_visible().map_err(|e| e.to_string())?;
+    if visible {
+        window.hide().map_err(|e| e.to_string())?;
+        Ok(false)
+    } else {
+        window.show().map_err(|e| e.to_string())?;
+        window.set_focus().map_err(|e| e.to_string())?;
+        Ok(true)
+    }
+}
+
+fn tray_icon(app: &tauri::App) -> Option<tauri::image::Image<'_>> {
+    app.default_window_icon()
+        .cloned()
+        .or_else(|| Some(tauri::include_image!("icons/32x32.png")))
+}
+
 fn spawn_sidecar(app: &AppHandle) -> Result<(), String> {
     log_line("spawning companion sidecar…");
     let sidecar = app
         .shell()
-        .sidecar("bin/companion-sidecar")
-        .map_err(|e| e.to_string())?;
+        .sidecar("companion-sidecar")
+        .map_err(|e| {
+            let hint = std::env::current_exe()
+                .ok()
+                .and_then(|p| p.parent().map(|d| d.join("companion-sidecar.exe")))
+                .map(|path| format!("\n期望路径：{}", path.display()))
+                .unwrap_or_default();
+            format!("{e}{hint}")
+        })?;
 
     let (mut rx, _child) = sidecar.spawn().map_err(|e| e.to_string())?;
     log_line("companion sidecar process started");
@@ -122,10 +161,10 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .setup(|app| {
             log_line("companion shell setup start");
-            let window = app
-                .get_webview_window("main")
+            let pet_window = app
+                .get_webview_window("pet")
                 .or_else(|| app.webview_windows().values().next().cloned())
-                .ok_or("no main window")?;
+                .ok_or("no pet window")?;
 
             if let Err(err) = spawn_sidecar(&app.handle()) {
                 let msg = format!(
@@ -135,25 +174,37 @@ pub fn run() {
                 show_native_error("FreeAnima Companion", &msg);
             }
 
-            start_cursor_poll(window.clone());
-            let _ = window.center();
-            let _ = window.show();
-            let _ = window.set_focus();
+            start_cursor_poll(pet_window.clone());
+            let _ = pet_window.center();
+            let _ = pet_window.show();
+            let _ = pet_window.set_focus();
 
+            let toggle_pet = MenuItem::with_id(app, "toggle_pet", "显示/隐藏桌宠", true, None::<&str>)
+                .map_err(|e| e.to_string())?;
+            let settings = MenuItem::with_id(app, "settings", "设置…", true, None::<&str>)
+                .map_err(|e| e.to_string())?;
             let quit = MenuItem::with_id(app, "quit", "退出", true, None::<&str>)
                 .map_err(|e| e.to_string())?;
-            let menu = Menu::with_items(app, &[&quit]).map_err(|e| e.to_string())?;
+            let menu = Menu::with_items(app, &[&toggle_pet, &settings, &quit])
+                .map_err(|e| e.to_string())?;
 
             let mut tray_builder = TrayIconBuilder::new()
                 .menu(&menu)
                 .tooltip("FreeAnima Companion");
-            if let Some(icon) = app.default_window_icon() {
-                tray_builder = tray_builder.icon(icon.clone());
+            if let Some(icon) = tray_icon(app) {
+                tray_builder = tray_builder.icon(icon);
             }
             match tray_builder
                 .on_menu_event(|app, event| {
-                    if event.id.as_ref() == "quit" {
-                        app.exit(0);
+                    match event.id.as_ref() {
+                        "quit" => app.exit(0),
+                        "settings" => {
+                            let _ = open_settings(app.clone());
+                        }
+                        "toggle_pet" => {
+                            let _ = toggle_pet_visibility(app.clone());
+                        }
+                        _ => {}
                     }
                 })
                 .on_tray_icon_event(|tray, event| {
@@ -163,7 +214,7 @@ pub fn run() {
                         ..
                     } = event
                     {
-                        if let Some(window) = tray.app_handle().get_webview_window("main") {
+                        if let Some(window) = tray.app_handle().get_webview_window("pet") {
                             let _ = window.show();
                             let _ = window.set_focus();
                         }
@@ -182,7 +233,9 @@ pub fn run() {
             set_clickthrough,
             move_window,
             start_drag,
-            get_sidecar_port
+            get_sidecar_port,
+            open_settings,
+            toggle_pet_visibility
         ])
         .run(tauri::generate_context!())
     {

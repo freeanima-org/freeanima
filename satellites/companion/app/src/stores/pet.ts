@@ -15,7 +15,6 @@ import type { PetEvent } from "@/lib/types.ts";
 
 type PetState = {
   walking: boolean;
-  toolBubble: string;
   emotion: EmotionKind;
   walkTarget: { x: number; y: number } | null;
   setWalking: (walking: boolean) => void;
@@ -42,10 +41,14 @@ let patrolPausedUntilMs = 0;
 
 const PET_STAGE_ID = "pet-stage";
 const MIN_JOURNEY_MS = 1200;
-/** 每段巡逻结束后至少停留时长（ms） */
+/** 每段巡逻结束后停留时长（ms） */
 const PATROL_PAUSE_MS = 10_000;
+/** 模型就绪后首次开走前的短暂停顿（ms） */
+const INITIAL_PATROL_PAUSE_MS = 800;
 /** 目标巡逻速度（px/s），实际步频由瞬时速度决定 */
 const PATROL_SPEED_PX = 95;
+
+let petModelReady = false;
 
 function getBackend() {
   const canvas = document.querySelector("canvas");
@@ -61,12 +64,15 @@ function petStageElement(): HTMLElement | null {
   return document.getElementById(PET_STAGE_ID);
 }
 
+function initialPatrolPosition(): ScreenPoint {
+  if (patrolPoints.length === 0) {
+    refreshPatrolPath();
+  }
+  return patrolPoints[0]!;
+}
+
 function defaultWebPetPosition(): ScreenPoint {
-  const screen = readScreenWorkArea();
-  return {
-    x: screen.availLeft + screen.availWidth - WEB_PET_WIDTH - 20,
-    y: screen.availTop + screen.availHeight - WEB_PET_HEIGHT - 96,
-  };
+  return initialPatrolPosition();
 }
 
 export function movePetStage(x: number, y: number): void {
@@ -162,6 +168,7 @@ function startJourney(to: ScreenPoint): void {
 }
 
 function scheduleNextPatrolStep(): void {
+  if (!petModelReady) return;
   if (!usePetStore.getState().walking || activeJourney) return;
   if (performance.now() < patrolPausedUntilMs) return;
   startJourney(nextPatrolPoint());
@@ -205,13 +212,19 @@ function tickJourney(): void {
 
 export function syncPetStagePosition(): void {
   if (isTauri()) return;
-  const point = currentPosition ?? defaultWebPetPosition();
+  const point = currentPosition ?? initialPatrolPosition();
   movePetStage(point.x, point.y);
+}
+
+/** VRM 加载完成后调用：对齐位置并允许巡逻开始 */
+export function notifyPetModelReady(): void {
+  petModelReady = true;
+  patrolPausedUntilMs = performance.now() + INITIAL_PATROL_PAUSE_MS;
+  syncPetStagePosition();
 }
 
 export const usePetStore = create<PetState>((set, get) => ({
   walking: false,
-  toolBubble: "",
   emotion: "neutral",
   walkTarget: null,
 
@@ -245,15 +258,11 @@ export const usePetStore = create<PetState>((set, get) => ({
     const backend = getBackend();
     switch (event.type) {
       case "say": {
-        set({ toolBubble: event.text });
         backend?.playAction("talk");
         const duration = event.duration_ms ?? 8000;
         setTimeout(() => {
-          if (usePetStore.getState().toolBubble === event.text) {
-            set({ toolBubble: "" });
-            backend?.playAction("idle");
-            usePetStore.getState().syncActionToBackend();
-          }
+          backend?.playAction("idle");
+          usePetStore.getState().syncActionToBackend();
         }, duration);
         break;
       }
@@ -280,16 +289,20 @@ export const usePetStore = create<PetState>((set, get) => ({
 export function startPetBehavior(): () => void {
   if (journeyFrame !== null) cancelAnimationFrame(journeyFrame);
 
+  petModelReady = false;
   refreshPatrolPath();
   usePetStore.getState().setWalking(true);
 
   if (!isTauri()) {
-    const initial = defaultWebPetPosition();
+    const initial = initialPatrolPosition();
     movePetStage(initial.x, initial.y);
+    if (patrolPoints.length > 1) {
+      patrolIndex = 1;
+    }
   }
 
   syncIdleAtRest();
-  patrolPausedUntilMs = performance.now() + PATROL_PAUSE_MS;
+  patrolPausedUntilMs = Number.POSITIVE_INFINITY;
 
   const loop = (): void => {
     tickJourney();
@@ -301,6 +314,7 @@ export function startPetBehavior(): () => void {
     if (journeyFrame !== null) cancelAnimationFrame(journeyFrame);
     journeyFrame = null;
     activeJourney = null;
+    petModelReady = false;
     usePetStore.getState().setWalking(false);
     syncIdleAtRest();
   };

@@ -1,12 +1,15 @@
 import { useRef, useState, type ChangeEvent } from "react";
 import { useCompanionStore } from "@/stores/companion.ts";
 
-export function SettingsPanel() {
+type Props = {
+  standalone?: boolean;
+};
+
+export function SettingsPanel({ standalone = false }: Props) {
   const hubUrl = useCompanionStore((s) => s.hubUrl);
   const modelPath = useCompanionStore((s) => s.modelPath);
   const updateSettings = useCompanionStore((s) => s.updateSettings);
   const uploadModel = useCompanionStore((s) => s.uploadModel);
-  const setSettingsOpen = useCompanionStore((s) => s.setSettingsOpen);
 
   const [hub, setHub] = useState(hubUrl);
   const [model, setModel] = useState(modelPath);
@@ -48,16 +51,9 @@ export function SettingsPanel() {
   };
 
   return (
-    <div className="settings-panel">
+    <div className={standalone ? "settings-panel-standalone" : "settings-panel"}>
       <div className="flex items-center justify-between mb-3">
         <h2 className="font-medium">设置</h2>
-        <button
-          type="button"
-          className="text-xs text-white/50 hover:text-white"
-          onClick={() => setSettingsOpen(false)}
-        >
-          关闭
-        </button>
       </div>
       <div className="space-y-3">
         <div>
