@@ -23,6 +23,7 @@ type CompanionState = {
   modelPath: string;
   instanceId: string;
   sapConnected: boolean;
+  fbxImportAvailable: boolean;
   characterReady: boolean;
   modelLoading: boolean;
   configRevision: number;
@@ -34,11 +35,14 @@ type CompanionState = {
   hitTestFn: ((x: number, y: number) => boolean) | null;
   pointerActive: boolean;
   backendRef: { current: import("@/renderer/VrmBackend.ts").VrmBackend | null };
+  runtimeBubble: { id: string; text: string } | null;
+  runtimeBubblePending: number;
   setHitTestFn: (fn: ((x: number, y: number) => boolean) | null) => void;
   setPointerActive: (active: boolean) => void;
   setCharacterReady: (ready: boolean) => void;
   setModelLoading: (loading: boolean) => void;
   setBackend: (backend: import("@/renderer/VrmBackend.ts").VrmBackend | null) => void;
+  setRuntimeBubble: (current: { id: string; text: string } | null, pending: number) => void;
   applyConfig: (cfg: CompanionConfig) => void;
   init: () => Promise<void>;
   refreshConfig: () => Promise<void>;
@@ -59,6 +63,7 @@ function applyConfigToState(cfg: CompanionConfig, prev?: CompanionState): Partia
     modelPath: cfg.model_available ? cfg.model_path : "",
     instanceId: cfg.instance_id,
     sapConnected: cfg.sap_connected,
+    fbxImportAvailable: cfg.fbx_import_available,
     activeModelId: cfg.active_model_id,
     models: cfg.models,
     motionLibrary: cfg.motion_library,
@@ -79,6 +84,7 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
   modelPath: "",
   instanceId: "",
   sapConnected: false,
+  fbxImportAvailable: false,
   characterReady: false,
   modelLoading: false,
   configRevision: 0,
@@ -90,6 +96,8 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
   hitTestFn: null,
   pointerActive: false,
   backendRef: { current: null },
+  runtimeBubble: null,
+  runtimeBubblePending: 0,
 
   setHitTestFn(fn) {
     set({ hitTestFn: fn });
@@ -112,6 +120,10 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
 
   setBackend(backend) {
     get().backendRef.current = backend;
+  },
+
+  setRuntimeBubble(current, pending) {
+    set({ runtimeBubble: current, runtimeBubblePending: pending });
   },
 
   applyConfig(cfg) {

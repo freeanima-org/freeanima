@@ -3,6 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "postinstall": "bun scripts/ensure-fbx2gltf.ts",
+    "setup:fbx": "bun scripts/ensure-fbx2gltf.ts --strict",
     "dev": "bun dev.ts",
     "build": "bun build.ts",
     "build:sidecar": "bun prepare-sidecar.ts",
@@ -34,6 +36,7 @@
     "@types/react-dom": "^19.2.3",
     "@types/three": "^0.175.0",
     "bun-plugin-tailwind": "^0.1.2",
+    "daisyui": "^5.5.20",
     "tailwindcss": "^4.3.0"
   }
 }

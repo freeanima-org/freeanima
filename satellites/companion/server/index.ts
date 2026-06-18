@@ -15,7 +15,7 @@ import {
   boothMotionPackUrl,
   downloadMotionsFromUrl,
   ensureDefaultMotions,
-  handleMotionZipUpload,
+  handleMotionUpload,
   motionsReady,
   publicMotionsDir,
   REQUIRED_MOTION_FILES,
@@ -29,11 +29,18 @@ import {
   syncLibraryFromDisk,
 } from "./motion-library.ts";
 import { MOTION_SLOT_IDS, type MotionSlotId } from "../shared/companion-schema.ts";
+import { fbxImportAvailable } from "./fbx-converter-kit.ts";
 import { serveStatic } from "./static.ts";
 import { SATELLITE_PORT_ATTEMPTS, SATELLITE_PORT_START } from "../shared/constants.ts";
-import { advanceBubble, drainPlayQueue, runtimeState } from "./runtime-state.ts";
-import { handleLocomotionImport } from "./locomotion.ts";
+import { advanceBubble, runtimeState, bubbleState } from "./runtime-state.ts";
+import {
+  handleRuntimeWsClose,
+  handleRuntimeWsOpen,
+  runtimeWsPayload,
+  type RuntimeWsClientData,
+} from "./runtime-ws.ts";
 import type { LocomotionSlot } from "../shared/constants.ts";
+import { handleLocomotionImport } from "./locomotion.ts";
 
 const PORT_START = Number(process.env.SATELLITE_PORT ?? SATELLITE_PORT_START);
 const PORT_ATTEMPTS = SATELLITE_PORT_ATTEMPTS;
@@ -52,11 +59,21 @@ function announceSidecarPort(port: number): void {
   console.log(`companion satellite http://127.0.0.1:${port}`);
 }
 
-export async function route(req: Request): Promise<Response> {
+export async function route(
+  req: Request,
+  server: Bun.Server<RuntimeWsClientData>,
+): Promise<Response> {
   const url = new URL(req.url);
 
   if (req.method === "OPTIONS") {
     return corsPreflight();
+  }
+
+  if (url.pathname === "/api/runtime/ws") {
+    if (server.upgrade(req, { data: { channel: "runtime" } })) {
+      return new Response(null, { status: 101 });
+    }
+    return jsonResponse({ error: "WebSocket upgrade failed" }, 400);
   }
 
   if (url.pathname === "/config.json" && req.method === "GET") {
@@ -78,8 +95,7 @@ export async function route(req: Request): Promise<Response> {
   }
 
   if (url.pathname === "/api/runtime" && req.method === "GET") {
-    const play = drainPlayQueue();
-    return jsonResponse({ ...runtimeState(), play });
+    return jsonResponse({ ...runtimeState(), play: [] });
   }
 
   if (url.pathname === "/api/bubbles/advance" && req.method === "POST") {
@@ -191,11 +207,12 @@ export async function route(req: Request): Promise<Response> {
       required: [...REQUIRED_MOTION_FILES],
       booth_url: boothMotionPackUrl(),
       auto_download_configured: Boolean(process.env.COMPANION_VRMA_ZIP_URL?.trim()),
+      fbx_import_available: fbxImportAvailable(),
     });
   }
 
   if (url.pathname === "/api/motions/import" && req.method === "POST") {
-    const res = await handleMotionZipUpload(req);
+    const res = await handleMotionUpload(req);
     syncLibraryFromDisk();
     return res;
   }
@@ -249,7 +266,7 @@ export async function route(req: Request): Promise<Response> {
 }
 
 let HTTP_URL = "";
-let server: ReturnType<typeof Bun.serve>;
+let server: ReturnType<typeof Bun.serve<RuntimeWsClientData>>;
 
 try {
   server = startServer();
@@ -263,16 +280,26 @@ try {
   process.exit(1);
 }
 
-function startServer(): ReturnType<typeof Bun.serve> {
+function startServer(): ReturnType<typeof Bun.serve<RuntimeWsClientData>> {
   ensureCompanionDataDir();
 
   for (let i = 0; i < PORT_ATTEMPTS; i++) {
     const port = PORT_START + i;
     try {
-      const instance = Bun.serve({
+      const instance = Bun.serve<RuntimeWsClientData>({
         port,
-        fetch(req) {
-          return route(req);
+        fetch(req, srv) {
+          return route(req, srv);
+        },
+        websocket: {
+          open(ws) {
+            handleRuntimeWsOpen(ws);
+            ws.send(JSON.stringify(runtimeWsPayload(bubbleState(), [])));
+          },
+          close(ws) {
+            handleRuntimeWsClose(ws);
+          },
+          message() {},
         },
       });
       HTTP_URL = `http://127.0.0.1:${port}`;

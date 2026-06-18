@@ -25,6 +25,10 @@ export const SATELLITE_PORT_MAX = SATELLITE_PORT_START + SATELLITE_PORT_ATTEMPTS
 export const COMPANION_WINDOW_WIDTH = 160;
 export const COMPANION_WINDOW_HEIGHT = 260;
 
+/** sidecar 未找到 FBX2glTF 原生转换器时的用户提示 */
+export const FBX_IMPORT_UNAVAILABLE_MSG =
+  "未找到 FBX2glTF 转换器，请直接导入 .vrma；或在 satellites/companion 执行 bun run setup:fbx 下载。";
+
 /** @deprecated 使用 MotionSlotId walk/climb */
 export const LOCOMOTION_SLOTS = ["walk", "climb"] as const;
 export type LocomotionSlot = (typeof LOCOMOTION_SLOTS)[number];
@@ -41,6 +45,7 @@ export type ClientCompanionConfig = {
   model_path: string;
   model_available: boolean;
   sap_connected: boolean;
+  fbx_import_available: boolean;
   active_model_id: string;
   models: ModelEntry[];
   motion_library: MotionLibraryEntry[];
@@ -67,5 +72,11 @@ export type RuntimeState = {
     version: number;
   };
   playVersion: number;
+  play: PlaySlotCommand[];
+};
+
+export type RuntimeWsMessage = {
+  type: "runtime";
+  bubble: RuntimeState["bubble"];
   play: PlaySlotCommand[];
 };

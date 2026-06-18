@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "daisyui";
 
 html,
 body,
@@ -30,61 +31,10 @@ body,
   word-break: break-word;
 }
 
-.settings-modal-backdrop {
-  @apply fixed inset-0 z-40 flex items-center justify-center;
-  background: rgba(0, 0, 0, 0.45);
-  pointer-events: auto;
-}
-
-.settings-modal-panel {
-  @apply rounded-xl shadow-2xl max-h-[90vh] overflow-y-auto;
-  max-width: min(420px, 92vw);
-}
-
-.settings-panel {
-  @apply rounded-xl p-4 text-sm shadow-xl;
-  background: rgba(20, 20, 30, 0.92);
-  color: #f0f0f5;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  min-width: 280px;
-}
-
 .startup-panel {
-  @apply rounded-xl p-4 text-sm shadow-xl;
-  background: rgba(20, 20, 30, 0.96);
-  color: #f0f0f5;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  @apply rounded-xl p-4 text-sm shadow-xl bg-base-300/95 text-base-content border border-base-content/10;
   min-width: 260px;
   max-width: 320px;
-}
-
-.settings-panel label {
-  @apply block text-xs text-white/60 mb-1;
-}
-
-.settings-panel input {
-  @apply w-full rounded px-2 py-1 text-sm bg-black/30 border border-white/10 text-white;
-}
-
-.settings-window {
-  min-height: 100%;
-  padding: 1rem;
-  background: #14141e;
-  color: #f0f0f5;
-}
-
-.settings-panel-standalone {
-  @apply rounded-xl p-4 text-sm;
-  max-width: 420px;
-  margin: 0 auto;
-}
-
-.settings-panel-standalone label {
-  @apply block text-xs text-white/60 mb-1;
-}
-
-.settings-panel-standalone input {
-  @apply w-full rounded px-2 py-1 text-sm bg-black/30 border border-white/10 text-white;
 }
 
 .companion-stage-web {
@@ -104,4 +54,14 @@ body,
   display: block;
   position: absolute;
   inset: 0;
+}
+
+.motion-preview-canvas {
+  display: block;
+  max-width: 100%;
+  @apply rounded-lg bg-base-300;
+}
+
+.motion-preview-frame {
+  @apply rounded-lg bg-base-300 border border-base-content/10;
 }

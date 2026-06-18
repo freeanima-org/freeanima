@@ -1,4 +1,6 @@
-/** 文字气泡队列（sidecar 内存；由 SAP tool 写入，UI 轮询读取） */
+/** 文字气泡与动作播放队列（sidecar 内存；SAP tool 写入，UI 经 WebSocket 推送） */
+
+import { broadcastRuntime, runtimeWsPayload } from "./runtime-ws.ts";
 
 export type BubbleItem = {
   id: string;
@@ -13,6 +15,10 @@ function newBubbleId(): string {
   return `bub_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
+function emitRuntime(play: PlaySlotCommand[] = []): void {
+  broadcastRuntime(runtimeWsPayload(bubbleState(), play));
+}
+
 export function enqueueBubble(text: string): BubbleItem {
   const item: BubbleItem = {
     id: newBubbleId(),
@@ -24,6 +30,7 @@ export function enqueueBubble(text: string): BubbleItem {
   }
   queue.push(item);
   version += 1;
+  emitRuntime();
   return item;
 }
 
@@ -44,12 +51,14 @@ export function advanceBubble(): BubbleItem | null {
   if (queue.length === 0) return null;
   queue.shift();
   version += 1;
+  emitRuntime();
   return queue[0] ?? null;
 }
 
 export function clearBubbles(): void {
   queue = [];
   version += 1;
+  emitRuntime();
 }
 
 export type PlaySlotCommand = {
@@ -58,7 +67,6 @@ export type PlaySlotCommand = {
   motionId?: string;
 };
 
-let playQueue: PlaySlotCommand[] = [];
 let playVersion = 0;
 
 function newPlayId(): string {
@@ -72,16 +80,14 @@ export function enqueuePlaySlot(slot: string, motionId?: string): PlaySlotComman
     motionId: motionId?.trim() || undefined,
   };
   if (!cmd.slot) throw new Error("slot 不能为空");
-  playQueue.push(cmd);
   playVersion += 1;
+  emitRuntime([cmd]);
   return cmd;
 }
 
+/** @deprecated 播放指令改由 WebSocket 即时推送 */
 export function drainPlayQueue(): PlaySlotCommand[] {
-  const items = playQueue;
-  playQueue = [];
-  if (items.length > 0) playVersion += 1;
-  return items;
+  return [];
 }
 
 export function runtimeState(): {

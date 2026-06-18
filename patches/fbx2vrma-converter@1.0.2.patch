@@ -1,0 +1,11 @@
+diff --git a/package.json b/package.json
+--- a/package.json
++++ b/package.json
+@@ -9,7 +9,6 @@
+   "scripts": {
+     "start": "node fbx2vrma-converter.js",
+     "setup": "node setup.js || ./setup.sh || setup.bat",
+-    "postinstall": "node setup.js || ./setup.sh || setup.bat",
+     "test": "echo \"Error: no test specified\" && exit 1"
+   },
+   "keywords": [

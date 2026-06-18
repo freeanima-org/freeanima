@@ -7,6 +7,7 @@ import type {
   MotionSlotId,
   PlaySlotCommand,
   RuntimeState,
+  RuntimeWsMessage,
 } from "@shared/constants.ts";
 import type { CompanionBehavior } from "@shared/companion-schema.ts";
 
@@ -96,13 +97,14 @@ export type MotionStatus = {
   required: string[];
   booth_url: string;
   auto_download_configured: boolean;
+  fbx_import_available: boolean;
 };
 
 export async function fetchMotionStatus() {
   return apiJson<MotionStatus>("/api/motions/status");
 }
 
-export async function uploadMotionZip(file: File) {
+export async function uploadMotionFile(file: File) {
   const base = await origin();
   const form = new FormData();
   form.append("file", file);
@@ -115,14 +117,18 @@ export async function uploadMotionZip(file: File) {
       msg.includes("fetch") || msg.includes("Fetch")
         ? "无法连接伴侣后台（请确认 sidecar 已启动，或稍后重试）"
         : msg,
+      { cause: e },
     );
   }
   if (!res.ok) {
     const err = (await res.json().catch(() => ({}))) as { error?: string };
     throw new Error(err.error ?? `HTTP ${res.status}`);
   }
-  return (await res.json()) as { ok: true; dir: string; files: string[] };
+  return (await res.json()) as { ok: true; dir: string; files: string[]; skipped_fbx?: string[] };
 }
+
+/** @deprecated 使用 uploadMotionFile */
+export const uploadMotionZip = uploadMotionFile;
 
 export type { LocomotionSlot } from "@shared/constants.ts";
 
@@ -192,6 +198,11 @@ export async function downloadMotionsFromMirror() {
   });
 }
 
+export function runtimeWsUrl(httpOrigin: string): string {
+  return `${httpOrigin.replace(/^http/, "ws")}/api/runtime/ws`;
+}
+
+/** @deprecated 使用 WebSocket /api/runtime/ws */
 export async function fetchRuntimeState(): Promise<RuntimeState> {
   return apiJson<RuntimeState>("/api/runtime");
 }
@@ -202,6 +213,6 @@ export async function advanceBubble() {
   });
 }
 
-export type { PlaySlotCommand, RuntimeState, MotionLibraryEntry, MotionSlotId };
+export type { PlaySlotCommand, RuntimeState, RuntimeWsMessage, MotionLibraryEntry, MotionSlotId };
 
 export { isTauri };
