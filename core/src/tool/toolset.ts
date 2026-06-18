@@ -14,6 +14,8 @@ export type ToolSet = {
   name: string;
   description: string;
   tools: readonly ToolDef[];
+  /** When true, excluded from toolset_search and default session injection */
+  private?: boolean;
 };
 
 /** WebUI / API view */
@@ -21,6 +23,7 @@ export type ToolSetView = {
   name: string;
   description: string;
   tools: string[];
+  private?: boolean;
 };
 
 function freezeToolDef(def: ToolDef): ToolDef {
@@ -33,7 +36,12 @@ export class ToolSetRegistry {
   private readonly toolIndex = new Map<string, ToolDef>();
   private readonly toolOrder: string[] = [];
 
-  registerToolSet(name: string, description: string, tools: ToolDef[]): void {
+  registerToolSet(
+    name: string,
+    description: string,
+    tools: ToolDef[],
+    opts?: { private?: boolean },
+  ): void {
     const trimmed = name.trim();
     if (!trimmed) throw new Error("ToolSet name is required");
     if (this.sets.has(trimmed)) {
@@ -49,6 +57,7 @@ export class ToolSetRegistry {
       name: trimmed,
       description,
       tools: frozenTools,
+      ...(opts?.private ? { private: true } : {}),
     });
     this.sets.set(trimmed, toolSet);
     for (const def of frozenTools) {
@@ -82,7 +91,12 @@ export class ToolSetRegistry {
       name: ts.name,
       description: ts.description,
       tools: ts.tools.map((t) => t.name),
+      ...(ts.private ? { private: true } : {}),
     }));
+  }
+
+  isToolSetPrivate(name: string): boolean {
+    return this.sets.get(name.trim())?.private === true;
   }
 
   getTool(name: string): ToolDef | undefined {

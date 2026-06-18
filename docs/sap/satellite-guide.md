@@ -59,15 +59,22 @@ Open managed satellite UI at the URL from Chamber (SAP `http_url`), typically:
 
 ### Type A — Browser-direct (Parlor)
 
-- Browser `createSapBrowserClient` → Hub `/sap/v1` (this is the instance's only Hub WS).
+- Browser `createSapDirectClient` → Hub `/sap/v1` (SharedWorker shares one WS + `instance_id` across tabs).
+- `SapInstanceStore` persists Hub-assigned `instance_id` in `localStorage` (key: hub origin + `app_id`).
 - Satellite HTTP serves static UI + `/config.json` only.
-- **Limits:** no `tool.register` or local workspace tools; browser must reach Hub on the LAN; multiple tabs share one `instance_id` (last connect wins in Hub today).
+- **Limits:** no `tool.register` in browser; local tools need a sidecar later.
 
 ### Type B — Process gateway + local relay (pair-programming)
 
-- Satellite **process** holds the sole Hub WS via `runSapTransport`.
-- Browser uses `createSapRelayBrowserClient` → satellite `/sap/relay/v1` (SAP frame pass-through, **not** REST hub-api).
-- Local FS/terminal stay on satellite HTTP/WS; agent tools run in the process via `tool.register`.
+- Sidecar `createSatelliteHub({ relay: true, tools: [...] })` holds the sole Hub WS.
+- Browser uses `createSapSidecarClient` → satellite `/sap/relay/v1`.
+- `instance_id` persisted under `~/.anima/satellites/{app}/instance.json`.
+
+### Type B presence (companion, current phase)
+
+- `createSatelliteHub({ relay: false, tools: [] })` — SAP presence only.
+- Same factory supports enabling `relay` / `tool.register` later without topology change.
+- `instance_id` in `~/.anima/companion/instance.json`; platform `sap:companion:{id}`.
 
 ```mermaid
 flowchart TB
@@ -90,60 +97,54 @@ flowchart TB
 
 ### Parlor satellite
 
-Browser connects to Hub via SAP WebSocket from the client ([`browser-client.ts`](../../packages/sap-contract/src/browser-client.ts)); static server only serves UI + `/config.json`.
+Browser connects via `createSapDirectClient` ([`direct-client.ts`](../../packages/sap-contract/src/direct-client.ts)); optional SharedWorker ([`shared-worker.ts`](../../packages/sap-contract/src/shared-worker.ts)) multiplexes one Hub connection across tabs.
 
 ### Pair-programming satellite
 
-Browser connects to [`/sap/relay/v1`](../../satellites/pair-programming/server/sap/relay.ts); the process multiplexes session/stream/tool traffic on one Hub WS. Terminal PTY runs locally ([`terminal-session.ts`](../../satellites/pair-programming/server/terminal-session.ts)).
+Browser connects via `createSapSidecarClient` → [`/sap/relay/v1`](../../satellites/pair-programming/server/index.ts); sidecar uses `createSatelliteHub` ([`satellite-hub.ts`](../../packages/sap-contract/src/satellite-hub.ts)).
 
 Reference files:
 
 - [`satellites/pair-programming/server/sap/hub.ts`](../../satellites/pair-programming/server/sap/hub.ts)
-- [`satellites/pair-programming/server/sap/relay.ts`](../../satellites/pair-programming/server/sap/relay.ts)
-- [`packages/sap-contract/src/relay-browser-client.ts`](../../packages/sap-contract/src/relay-browser-client.ts)
+- [`packages/sap-contract/src/sidecar-client.ts`](../../packages/sap-contract/src/sidecar-client.ts)
+- [`packages/sap-contract/src/satellite-relay-server.ts`](../../packages/sap-contract/src/satellite-relay-server.ts)
 - [`satellites/pair-programming/server/http/terminal-bridge.ts`](../../satellites/pair-programming/server/http/terminal-bridge.ts)
 
 ## Minimal SAP client
 
-Use `runSapTransport` from `@freeanima/sap-contract`:
+Use `runSapTransport` or `createSatelliteHub` from `@freeanima/sap-contract`:
 
 ```typescript
-import { runSapTransport } from "@freeanima/sap-contract";
+import { createSatelliteHub, fileSapInstanceStore } from "@freeanima/sap-contract";
 
-const transport = runSapTransport({
+const hub = createSatelliteHub({
+  appId: "my-app",
   hubUrl: process.env.FREEANIMA_URL ?? "http://127.0.0.1:2658",
-  connect: {
-    app_id: "my-app",
-    instance_id: process.env.SATELLITE_INSTANCE_ID ?? crypto.randomUUID(),
-    features_requested: ["server_info", "capability_mask"],
-    http_url: `http://127.0.0.1:${process.env.SATELLITE_PORT ?? 4173}`,
-  },
-  onConnected: async (client) => {
-    client.onEvent("tool.call", (payload) => {
-      /* handle */
-    });
-    await client.request("tool.register", {
-      tools: [
-        /* ... */
-      ],
-    });
+  httpUrl: `http://127.0.0.1:${process.env.SATELLITE_PORT ?? 4173}`,
+  instanceStore: fileSapInstanceStore("/path/to/instance.json"),
+  relay: false,
+  tools: [],
+  onConnected: async () => {
+    /* optional session.create — connect does not auto-create sessions */
   },
 });
 ```
 
-Browser UI on Type B satellites uses `createSapRelayBrowserClient()` instead of talking to Hub directly.
+On first connect omit `instance_id`; Hub assigns a 3-char id and returns it in `connected.instance_id`. Persist via `SapInstanceStore.save`.
+
+Browser UI on Type B relay satellites uses `createSapSidecarClient()` instead of talking to Hub directly.
 
 Transport handles WebSocket open, `connect` handshake, heartbeat, and reconnect with exponential backoff.
 
 ## Environment variables
 
-| Variable                                  | Role                                           |
-| ----------------------------------------- | ---------------------------------------------- |
-| `FREEANIMA_URL`                           | Hub HTTP base URL                              |
-| `SATELLITE_PORT`                          | Satellite HTTP listen port                     |
-| `SATELLITE_INSTANCE_ID`                   | Stable instance id (optional; random if unset) |
-| `STUDIO_WORKSPACE`                        | Pair-programming workspace root                |
-| `STUDIO_GITIGNORE` / `STUDIO_SHOW_HIDDEN` | File tree filters                              |
+| Variable                                  | Role                                         |
+| ----------------------------------------- | -------------------------------------------- |
+| `FREEANIMA_URL`                           | Hub HTTP base URL                            |
+| `SATELLITE_PORT`                          | Satellite HTTP listen port                   |
+| `FREEANIMA_HOME`                          | Data root (`~/.anima`); instance store paths |
+| `STUDIO_WORKSPACE`                        | Pair-programming workspace root              |
+| `STUDIO_GITIGNORE` / `STUDIO_SHOW_HIDDEN` | File tree filters                            |
 
 ## Layer dependencies
 

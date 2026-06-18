@@ -2,6 +2,7 @@ import { connectSap } from "./sap/run.ts";
 import { corsPreflight, jsonResponse } from "./http/cors.ts";
 import { saveConfig, hubUrlFromConfig, type CompanionConfig } from "./config.ts";
 import { clientCompanionConfig } from "./config-response.ts";
+import { reconnectSap } from "./sap/hub.ts";
 import { ensureCompanionDataDir } from "./paths.ts";
 import { handleModelUpload } from "./models.ts";
 import {
@@ -58,7 +59,11 @@ export async function route(req: Request): Promise<Response> {
 
   if (url.pathname === "/api/config" && req.method === "POST") {
     const body = (await req.json()) as Partial<CompanionConfig>;
+    const prev = hubUrlFromConfig();
     const next = saveConfig(body);
+    if (body.hub_url?.trim() && body.hub_url.trim() !== prev) {
+      reconnectSap(next.hub_url.replace(/\/$/, ""), HTTP_URL);
+    }
     return jsonResponse(clientCompanionConfig(next));
   }
 

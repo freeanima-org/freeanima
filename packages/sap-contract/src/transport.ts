@@ -2,6 +2,7 @@ import { createSapClient } from "./client.ts";
 import type { ConnectPayload, ConnectedPayload } from "./frames/lifecycle.ts";
 import { serializeSapEnvelope } from "./protocol.ts";
 import type { SapClient } from "./router.ts";
+import { loadSapInstanceId, type SapInstanceStore } from "./instance-store.ts";
 
 export type SapReconnectPolicy = {
   initialMs?: number;
@@ -12,8 +13,9 @@ export type SapReconnectPolicy = {
 export type RunSapTransportOptions = {
   hubUrl: string;
   connect: Omit<ConnectPayload, "protocol">;
+  instanceStore?: SapInstanceStore;
   reconnect?: SapReconnectPolicy | false;
-  onConnected: (client: SapClient) => void | Promise<void>;
+  onConnected: (client: SapClient, connected: ConnectedPayload) => void | Promise<void>;
   onDisconnected?: () => void;
   createWebSocket?: (wsUrl: string) => WebSocket;
   signal?: AbortSignal;
@@ -156,10 +158,17 @@ export function runSapTransport(options: RunSapTransportOptions): SapTransportHa
       onDisconnected: notifyDisconnect,
     });
 
-    const connected = await sap.connect(options.connect);
+    const connectBody: Omit<ConnectPayload, "protocol"> = { ...options.connect };
+    const storedId = await loadSapInstanceId(options.instanceStore);
+    if (storedId && !connectBody.instance_id) {
+      connectBody.instance_id = storedId;
+    }
+
+    const connected = await sap.connect(connectBody);
+    options.instanceStore?.save(connected.instance_id);
     resolveConnected(sap);
     startHeartbeat(ws, connected);
-    await options.onConnected(sap);
+    await options.onConnected(sap, connected);
     await waitForDisconnect(ws);
     clearHeartbeat();
     currentClient = null;

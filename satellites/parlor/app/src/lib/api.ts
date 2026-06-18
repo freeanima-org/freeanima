@@ -4,7 +4,7 @@ import type {
   SessionListItem,
   StreamApiEvent,
 } from "./types.ts";
-import { getSapBrowserClient, PARLOR_PLATFORM } from "./sap-client.ts";
+import { getSapBrowserClient, parlorPlatform } from "./sap-client.ts";
 import { m } from "./i18n.ts";
 
 type SubscribeCallbacks<T> = {
@@ -25,7 +25,7 @@ function mapSessionList(raw: {
     sessions: raw.sessions.map((s) => ({
       id: s.session_id,
       title: s.title ?? "",
-      platform: s.platform ?? PARLOR_PLATFORM,
+      platform: s.platform ?? parlorPlatform(),
       created: s.updated_at ?? "",
     })),
   };
@@ -37,13 +37,21 @@ async function sap() {
 
 export type { SessionAcpDockSnapshot, StreamApiEvent } from "./types.ts";
 
-export async function listSessions(platform = PARLOR_PLATFORM) {
-  const result = await (await sap()).request("session.list", { platform });
+export async function listSessions(platform?: string) {
+  const result = await (
+    await sap()
+  ).request("session.list", {
+    platform: platform ?? parlorPlatform(),
+  });
   return mapSessionList(result);
 }
 
-export async function createSession(platform = PARLOR_PLATFORM) {
-  const result = await (await sap()).request("session.create", { platform });
+export async function createSession(platform?: string) {
+  const result = await (
+    await sap()
+  ).request("session.create", {
+    platform: platform ?? parlorPlatform(),
+  });
   return { session_id: result.session_id };
 }
 
@@ -66,7 +74,7 @@ export async function getSessionAcpDock(sessionId: string): Promise<SessionAcpDo
 
 export async function listSessionCommands(opts?: { all?: boolean; platform?: string }) {
   return (await sap()).request("session.commands", {
-    platform: opts?.platform ?? PARLOR_PLATFORM,
+    platform: opts?.platform ?? parlorPlatform(),
     all: opts?.all,
   });
 }

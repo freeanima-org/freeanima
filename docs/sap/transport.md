@@ -72,22 +72,23 @@ sequenceDiagram
 
 Schema: [`frames/lifecycle.ts`](../../packages/sap-contract/src/frames/lifecycle.ts) `connectPayloadSchema`.
 
-| Field                | Required | Role                                             |
-| -------------------- | -------- | ------------------------------------------------ |
-| `app_id`             | yes      | Satellite app id (e.g. `pair-programming`)       |
-| `instance_id`        | yes      | Stable or generated instance UUID                |
-| `protocol`           | yes      | Must be `SAP/1.0`                                |
-| `features_requested` | no       | Feature flags (Hub echoes as `features_enabled`) |
-| `http_url`           | no       | Satellite UI URL for Chamber → Satellites        |
-| `instance_label`     | no       | Display label                                    |
+| Field                | Required | Role                                                                 |
+| -------------------- | -------- | -------------------------------------------------------------------- |
+| `app_id`             | yes      | Satellite app id (e.g. `pair-programming`)                           |
+| `instance_id`        | no       | Hub-assigned 3-char id; omit on first register, include on reconnect |
+| `protocol`           | yes      | Must be `SAP/1.0`                                                    |
+| `features_requested` | no       | Feature flags (Hub echoes as `features_enabled`)                     |
+| `http_url`           | no       | Satellite UI URL for Chamber → Satellites                            |
+| `instance_label`     | no       | Display label                                                        |
 
 ### `connected` payload
 
 | Field                         | Role                                                                                       |
 | ----------------------------- | ------------------------------------------------------------------------------------------ |
 | `protocol`                    | `SAP/1.0`                                                                                  |
+| `instance_id`                 | Hub-assigned or confirmed 3-char instance id (always present)                              |
 | `features_enabled`            | Enabled features                                                                           |
-| `server_info`                 | `anima_version`, `sap_version`, `platform_for_app` map                                     |
+| `server_info`                 | `anima_version`, `sap_version`                                                             |
 | `server_info.capability_mask` | When `capability_mask` is in `features_requested`: mask preset list (no credential values) |
 | `heartbeat_interval_sec`      | Hub default: 30                                                                            |
 

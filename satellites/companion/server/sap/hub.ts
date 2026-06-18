@@ -1,39 +1,60 @@
-import { runSapTransport, type SapTransportHandle } from "@freeanima/sap-contract";
+import { homedir } from "node:os";
+import { join } from "node:path";
+
+import {
+  createSatelliteHub,
+  fileSapInstanceStore,
+  type SatelliteHubHandle,
+} from "@freeanima/sap-contract";
 
 const APP_ID = "companion";
 
-const instanceId = process.env.SATELLITE_INSTANCE_ID ?? crypto.randomUUID();
-let transport: SapTransportHandle | null = null;
+function instanceStorePath(): string {
+  const home = process.env.FREEANIMA_HOME ?? join(homedir(), ".anima");
+  return join(home, "companion", "instance.json");
+}
+
+let hub: SatelliteHubHandle | null = null;
+
+function ensureHub(hubUrl: string, httpUrl?: string): SatelliteHubHandle {
+  if (!hub) {
+    hub = createSatelliteHub({
+      appId: APP_ID,
+      hubUrl,
+      httpUrl,
+      instanceStore: fileSapInstanceStore(instanceStorePath()),
+      relay: false,
+      onConnected: async () => {
+        console.log("companion SAP connected");
+      },
+    });
+  }
+  return hub;
+}
 
 export function getSapInstanceId(): string {
-  return instanceId;
+  const fromHub = hub?.getInstanceId();
+  if (fromHub) return fromHub;
+  const id = fileSapInstanceStore(instanceStorePath()).load();
+  return id instanceof Promise ? "" : (id ?? "");
 }
 
 export function isSapConnected(): boolean {
-  return transport?.getClient() !== null;
+  return hub?.isConnected() ?? false;
 }
 
-export function startSapTransport(hubUrl: string, httpUrl?: string): SapTransportHandle {
-  if (transport) return transport;
+export function startSapTransport(hubUrl: string, httpUrl?: string): SatelliteHubHandle {
+  return ensureHub(hubUrl, httpUrl);
+}
 
-  const resolvedHttpUrl = httpUrl ?? `http://127.0.0.1:${process.env.SATELLITE_PORT ?? 4176}`;
-
-  transport = runSapTransport({
-    hubUrl,
-    connect: {
-      app_id: APP_ID,
-      instance_id: instanceId,
-      features_requested: ["server_info", "capability_mask"],
-      http_url: resolvedHttpUrl,
-    },
-    onConnected: async () => {
-      console.log("companion SAP connected");
-    },
-  });
-
-  return transport;
+export function reconnectSap(hubUrl: string, httpUrl?: string): void {
+  if (hub) {
+    hub.reconnect(hubUrl, httpUrl);
+    return;
+  }
+  ensureHub(hubUrl, httpUrl);
 }
 
 export async function getSapClient(hubUrl: string, httpUrl?: string) {
-  return startSapTransport(hubUrl, httpUrl).whenConnected();
+  return ensureHub(hubUrl, httpUrl).getSapClient();
 }

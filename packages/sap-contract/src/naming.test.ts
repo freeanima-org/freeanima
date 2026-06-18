@@ -1,30 +1,53 @@
 import { describe, expect, it } from "bun:test";
 
 import {
+  formatSapPlatform,
   formatSapToolName,
   formatSapToolNameAlias,
+  isSapPlatform,
   isSapPrefixedToolName,
+  isValidSapInstanceId,
   normalizeAppSlug,
   normalizeInstanceId,
+  parseSapPlatform,
   parseSapToolName,
 } from "./naming.ts";
+import { assertSapInstanceId, generateSapInstanceIdCandidate } from "./instance-id.ts";
 
 describe("sap naming", () => {
   const appId = "pair-programming";
-  const instanceId = "550e8400-e29b-41d4-a716-446655440000";
-  const instNorm = "550e8400e29b41d4a716446655440000";
+  const instanceId = "k7m";
 
   it("normalizes app slug and instance id", () => {
     expect(normalizeAppSlug("pair-programming")).toBe("pairprogramming");
-    expect(normalizeInstanceId(instanceId)).toBe(instNorm);
+    expect(normalizeInstanceId(instanceId)).toBe("k7m");
   });
 
-  it("formats canonical and alias tool names", () => {
+  it("formats sap platform three segments", () => {
+    expect(formatSapPlatform("companion", "k7m")).toBe("sap:companion:k7m");
+    expect(isSapPlatform("sap:companion:k7m")).toBe(true);
+    const parsed = parseSapPlatform("sap:companion:k7m");
+    expect(parsed.ok).toBe(true);
+    if (parsed.ok) {
+      expect(parsed.value.app_slug).toBe("companion");
+      expect(parsed.value.instance_id_norm).toBe("k7m");
+    }
+  });
+
+  it("validates hub instance ids", () => {
+    expect(isValidSapInstanceId("k7m")).toBe(true);
+    expect(isValidSapInstanceId("ab")).toBe(false);
+    expect(isValidSapInstanceId("uuid")).toBe(false);
+    expect(assertSapInstanceId("K7M")).toBe("k7m");
+    expect(generateSapInstanceIdCandidate()).toMatch(/^[a-z0-9]{3}$/);
+  });
+
+  it("formats canonical and alias tool names with short instance id", () => {
     expect(formatSapToolName(appId, instanceId, "scan_code")).toBe(
-      `sap_pairprogramming_${instNorm}_scan_code`,
+      "sap_pairprogramming_k7m_scan_code",
     );
     expect(formatSapToolNameAlias(appId, instanceId, "file_read")).toBe(
-      `sap:pairprogramming:${instNorm}:file_read`,
+      "sap:pairprogramming:k7m:file_read",
     );
   });
 
@@ -35,7 +58,7 @@ describe("sap naming", () => {
     if (parsed.ok) {
       expect(parsed.value.local_name).toBe("file_read");
       expect(parsed.value.app_slug).toBe("pairprogramming");
-      expect(parsed.value.instance_id_norm).toBe(instNorm);
+      expect(parsed.value.instance_id_norm).toBe("k7m");
     }
   });
 

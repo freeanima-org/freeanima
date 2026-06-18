@@ -1,16 +1,22 @@
-import {
-  createSapBrowserClient,
-  PARLOR_PLATFORM,
-  type SapBrowserClient,
-} from "@freeanima/sap-contract";
+import { createSapDirectClient, type SapDirectClient } from "@freeanima/sap-contract";
+import { formatSapPlatform } from "@freeanima/sap-contract";
 
-let client: SapBrowserClient | null = null;
+let client: SapDirectClient | null = null;
 
-export function getSapBrowserClient(): SapBrowserClient {
+export function getSapBrowserClient(): SapDirectClient {
   if (!client) {
-    client = createSapBrowserClient();
+    client = createSapDirectClient({ appId: "parlor" });
   }
   return client;
 }
 
-export { PARLOR_PLATFORM };
+export function parlorPlatform(): string {
+  const instanceId = getSapBrowserClient().getInstanceId();
+  if (instanceId) {
+    return formatSapPlatform("parlor", instanceId);
+  }
+  return "sap:parlor:web";
+}
+
+/** @deprecated Use parlorPlatform() after connect */
+export const PARLOR_PLATFORM = "sap:parlor:web";

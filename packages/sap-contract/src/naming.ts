@@ -5,7 +5,16 @@ export type ParsedSapToolName = {
   canonical: string;
 };
 
-const INSTANCE_NORM_RE = /^([a-f0-9]{32}|[a-z0-9]{8,64})_(.+)$/;
+export type ParsedSapPlatform = {
+  app_slug: string;
+  instance_id_norm: string;
+  platform: string;
+};
+
+/** Hub-assigned instance ids: 3 lowercase alphanumeric chars */
+export const SAP_INSTANCE_ID_PATTERN = /^[a-z0-9]{3}$/;
+
+const INSTANCE_NORM_RE = /^([a-z0-9]{3,64})_(.+)$/;
 
 export function normalizeAppSlug(appId: string): string {
   return appId.trim().toLowerCase().replace(/[-_]/g, "");
@@ -13,6 +22,41 @@ export function normalizeAppSlug(appId: string): string {
 
 export function normalizeInstanceId(instanceId: string): string {
   return instanceId.trim().toLowerCase().replace(/-/g, "");
+}
+
+export function isValidSapInstanceId(instanceId: string): boolean {
+  return SAP_INSTANCE_ID_PATTERN.test(normalizeInstanceId(instanceId));
+}
+
+export function formatSapPlatform(appId: string, instanceId: string): string {
+  const app_slug = normalizeAppSlug(appId);
+  const instance_id_norm = normalizeInstanceId(instanceId);
+  return `sap:${app_slug}:${instance_id_norm}`;
+}
+
+export function isSapPlatform(platform: string): boolean {
+  return platform.startsWith("sap:") && parseSapPlatform(platform).ok;
+}
+
+export function parseSapPlatform(
+  platform: string,
+): { ok: true; value: ParsedSapPlatform } | { ok: false; error: string } {
+  if (!platform.startsWith("sap:")) {
+    return { ok: false, error: `not a sap platform: ${platform}` };
+  }
+  const parts = platform.split(":");
+  if (parts.length !== 3 || parts[0] !== "sap") {
+    return { ok: false, error: `invalid sap platform: ${platform}` };
+  }
+  const app_slug = parts[1] ?? "";
+  const instance_id_norm = parts[2] ?? "";
+  if (!app_slug || !instance_id_norm) {
+    return { ok: false, error: `invalid sap platform segments: ${platform}` };
+  }
+  return {
+    ok: true,
+    value: { app_slug, instance_id_norm, platform: `sap:${app_slug}:${instance_id_norm}` },
+  };
 }
 
 export function formatSapToolName(appId: string, instanceId: string, localName: string): string {
@@ -91,15 +135,4 @@ export function parseSapToolName(
 
 export function sapToolsetId(appId: string, instanceId: string): string {
   return `sap_${normalizeAppSlug(appId)}_${normalizeInstanceId(instanceId)}`;
-}
-
-/** Hub platform string for a satellite app_id */
-export const SAP_APP_PLATFORM_MAP: Record<string, string> = {
-  "pair-programming": "studio-pair-programming",
-  parlor: "parlor",
-  companion: "companion",
-};
-
-export function resolvePlatformForApp(appId: string): string | undefined {
-  return SAP_APP_PLATFORM_MAP[appId.trim()];
 }

@@ -13,6 +13,8 @@ export type SapToolDefInput = z.infer<typeof sapToolDefInputSchema>;
 
 export const toolRegisterInputSchema = z.object({
   tools: z.array(sapToolDefInputSchema).min(1),
+  /** SAP satellite toolsets default to private (mask-only discovery) */
+  private: z.boolean().default(true),
 });
 
 export type ToolRegisterInput = z.infer<typeof toolRegisterInputSchema>;

@@ -2,12 +2,12 @@ import type { JsonSchemaObject, ToolDef, ToolHandler, ToolSetRegistry } from "@f
 import { toolError, toolResult } from "@freeanima/core/tool";
 import { getToolSessionId } from "@freeanima/core/tool/tool-context";
 import {
+  formatSapPlatform,
   formatSapToolName,
   isSapPrefixedToolName,
   normalizeAppSlug,
   normalizeInstanceId,
   parseSapToolName,
-  resolvePlatformForApp,
   sapToolsetId,
   type SapToolDefInput,
   type ToolCallPayload,
@@ -60,12 +60,16 @@ export type SatellitesStatusResponse = {
   instances: SatelliteInstanceStatus[];
 };
 
+const SAP_TOOL_CALL_TIMEOUT_MS = 60_000;
+
 export class SatelliteManager {
   private readonly connections = new Map<string, SatelliteConnection>();
   private readonly instanceMeta = new Map<string, InstanceMeta>();
   private readonly toolIndex = new Map<string, RegisteredSapTool>();
   private readonly pendingCalls = new Map<string, PendingToolCall>();
   private readonly toolSetNames = new Map<string, string>();
+  private readonly registeredToolDefs = new Map<string, SapToolDefInput[]>();
+  private readonly registeredToolPrivate = new Map<string, boolean>();
   private wrappedGetTool: ((name: string) => ToolDef | undefined) | null = null;
 
   constructor(private readonly toolSets: ToolSetRegistry) {}
@@ -143,7 +147,7 @@ export class SatelliteManager {
         app_slug: appSlug,
         instance_id: conn.instanceId,
         instance_id_norm: instanceNorm,
-        platform: resolvePlatformForApp(conn.appId) ?? null,
+        platform: formatSapPlatform(conn.appId, conn.instanceId),
         connected_at: meta?.connectedAt ?? new Date(0).toISOString(),
         last_heartbeat_at: meta?.lastHeartbeatAt ?? null,
         http_url: meta?.httpUrl ?? null,
@@ -173,7 +177,12 @@ export class SatelliteManager {
     return this.toolIndex.has(name);
   }
 
-  registerTools(appId: string, instanceId: string, tools: SapToolDefInput[]): string[] {
+  registerTools(
+    appId: string,
+    instanceId: string,
+    tools: SapToolDefInput[],
+    opts?: { private?: boolean },
+  ): string[] {
     const appSlug = normalizeAppSlug(appId);
     const instanceNorm = normalizeInstanceId(instanceId);
     const setName = sapToolsetId(appId, instanceId);
@@ -201,8 +210,14 @@ export class SatelliteManager {
       registered.push(fullName);
     }
 
+    const key = this.connectionKey(appId, instanceId);
+    this.registeredToolDefs.set(key, tools);
+    this.registeredToolPrivate.set(key, opts?.private !== false);
+
     if (defs.length > 0) {
-      this.toolSets.registerToolSet(setName, `SAP satellite ${appId}/${instanceId}`, defs);
+      this.toolSets.registerToolSet(setName, `SAP satellite ${appId}/${instanceId}`, defs, {
+        private: opts?.private !== false,
+      });
       this.toolSetNames.set(setName, setName);
     }
     return registered;
@@ -213,29 +228,27 @@ export class SatelliteManager {
       this.unregisterAllTools(appId, instanceId);
       return;
     }
-    const setName = sapToolsetId(appId, instanceId);
-    for (const localName of localNames) {
-      const fullName = formatSapToolName(appId, instanceId, localName);
-      this.toolIndex.delete(fullName);
-    }
-    this.unregisterToolSet(setName);
-    const remaining = [...this.toolIndex.values()].filter(
-      (t) =>
-        t.appSlug === normalizeAppSlug(appId) && t.instanceNorm === normalizeInstanceId(instanceId),
-    );
-    if (remaining.length > 0) {
-      // re-register remaining — simplified: full re-register not kept; unregister all then noop
-      this.unregisterAllTools(appId, instanceId);
+    const key = this.connectionKey(appId, instanceId);
+    const current = this.registeredToolDefs.get(key) ?? [];
+    const remove = new Set(localNames.map((n) => n.trim()).filter(Boolean));
+    const next = current.filter((t) => !remove.has(t.local_name));
+    const isPrivate = this.registeredToolPrivate.get(key) ?? true;
+    this.unregisterAllTools(appId, instanceId);
+    if (next.length > 0) {
+      this.registerTools(appId, instanceId, next, { private: isPrivate });
     }
   }
 
   unregisterAllTools(appId: string, instanceId: string): void {
     const setName = sapToolsetId(appId, instanceId);
+    const key = this.connectionKey(appId, instanceId);
     const removed = this.toolSets.unregisterToolSet(setName);
     for (const name of removed) {
       this.toolIndex.delete(name);
     }
     this.toolSetNames.delete(setName);
+    this.registeredToolDefs.delete(key);
+    this.registeredToolPrivate.delete(key);
   }
 
   resolveToolCall(
@@ -320,7 +333,22 @@ export class SatelliteManager {
 
     const payload: ToolCallPayload = { ...route.payload, args };
     return new Promise<string>((resolve, reject) => {
-      this.pendingCalls.set(payload.call_id, { resolve, reject });
+      const timer = setTimeout(() => {
+        if (!this.pendingCalls.has(payload.call_id)) return;
+        this.pendingCalls.delete(payload.call_id);
+        resolve(toolError(`satellite tool call timed out after ${SAP_TOOL_CALL_TIMEOUT_MS}ms`));
+      }, SAP_TOOL_CALL_TIMEOUT_MS);
+
+      this.pendingCalls.set(payload.call_id, {
+        resolve: (content) => {
+          clearTimeout(timer);
+          resolve(content);
+        },
+        reject: (error) => {
+          clearTimeout(timer);
+          reject(error);
+        },
+      });
       conn.sendEvent("tool.call", payload);
     });
   }
@@ -378,25 +406,6 @@ export class SatelliteManager {
   /** Injected by platform composition root */
   loadSessionPlatformExtra: (sessionId: string) => Promise<Record<string, unknown> | undefined> =
     async () => undefined;
-}
-
-export function wrapSapToolHandler(
-  manager: SatelliteManager,
-  originalHandler: ToolHandler,
-  fullName: string,
-): ToolHandler {
-  return async (args) => {
-    const sessionId = getToolSessionId() ?? "";
-    const meta = await manager.loadSessionPlatformExtra(sessionId);
-    const route = manager.resolveToolCall(sessionId, fullName, meta);
-    if (route.kind === "reject") {
-      return toolError(route.error);
-    }
-    if (route.kind === "satellite_proxy") {
-      return manager.callToolViaSatellite(sessionId, fullName, args, meta);
-    }
-    return originalHandler(args);
-  };
 }
 
 export { toolResult };

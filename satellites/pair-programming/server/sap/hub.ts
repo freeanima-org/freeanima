@@ -1,17 +1,15 @@
+import { homedir } from "node:os";
+import { join } from "node:path";
+
 import {
-  runSapTransport,
-  type SapClient,
-  type SapTransportHandle,
-  type ToolCallPayload,
+  createSatelliteHub,
+  fileSapInstanceStore,
+  type SatelliteHubHandle,
 } from "@freeanima/sap-contract";
 import { executeLocalTool } from "../tools/executor.ts";
 import { getStudioConfig } from "../studio.ts";
-import { attachHubEventFanout } from "./relay.ts";
 
 const APP_ID = "pair-programming";
-
-const instanceId = process.env.SATELLITE_INSTANCE_ID ?? crypto.randomUUID();
-let transport: SapTransportHandle | null = null;
 
 const REGISTERED_TOOLS = [
   {
@@ -84,61 +82,52 @@ const REGISTERED_TOOLS = [
   },
 ];
 
+function instanceStorePath(): string {
+  const home = process.env.FREEANIMA_HOME ?? join(homedir(), ".anima");
+  return join(home, "satellites", APP_ID, "instance.json");
+}
+
+let hub: SatelliteHubHandle | null = null;
+
+function ensureHub(hubUrl: string, httpUrl?: string): SatelliteHubHandle {
+  if (!hub) {
+    hub = createSatelliteHub({
+      appId: APP_ID,
+      hubUrl,
+      httpUrl,
+      instanceStore: fileSapInstanceStore(instanceStorePath()),
+      relay: true,
+      tools: REGISTERED_TOOLS,
+      toolsetPrivate: true,
+      onToolCall: async (localName, args, ctx) =>
+        executeLocalTool(localName, args, ctx.workspace_root ?? getStudioConfig().workspace),
+      onConnected: async () => {
+        console.log("SAP connected");
+      },
+    });
+  }
+  return hub;
+}
+
 export function getSapInstanceId(): string {
-  return instanceId;
+  const fromHub = hub?.getInstanceId();
+  if (fromHub) return fromHub;
+  const id = fileSapInstanceStore(instanceStorePath()).load();
+  return id instanceof Promise ? "" : (id ?? "");
 }
 
 export function isSapConnected(): boolean {
-  return transport?.getClient() !== null;
+  return hub?.isConnected() ?? false;
 }
 
-async function registerToolsAndHandlers(sap: SapClient): Promise<void> {
-  sap.onEvent("tool.call", (payload) => {
-    void handleToolCall(sap, payload as ToolCallPayload);
-  });
-
-  await sap.request("tool.register", { tools: REGISTERED_TOOLS });
-  attachHubEventFanout(sap);
+export function startSapTransport(hubUrl: string, httpUrl?: string): SatelliteHubHandle {
+  return ensureHub(hubUrl, httpUrl);
 }
 
-async function handleToolCall(sap: SapClient, payload: ToolCallPayload): Promise<void> {
-  try {
-    const content = await executeLocalTool(
-      payload.local_name,
-      payload.args,
-      payload.workspace_root ?? getStudioConfig().workspace,
-    );
-    await sap.request("tool.result", { call_id: payload.call_id, content });
-  } catch (e) {
-    await sap.request("tool.error", {
-      call_id: payload.call_id,
-      error: e instanceof Error ? e.message : String(e),
-    });
-  }
+export async function getSapClient(hubUrl: string, httpUrl?: string) {
+  return ensureHub(hubUrl, httpUrl).getSapClient();
 }
 
-export function startSapTransport(hubUrl: string, httpUrl?: string): SapTransportHandle {
-  if (transport) return transport;
-
-  const resolvedHttpUrl = httpUrl ?? `http://127.0.0.1:${process.env.SATELLITE_PORT ?? 4173}`;
-
-  transport = runSapTransport({
-    hubUrl,
-    connect: {
-      app_id: APP_ID,
-      instance_id: instanceId,
-      features_requested: ["server_info", "capability_mask"],
-      http_url: resolvedHttpUrl,
-    },
-    onConnected: async (sap) => {
-      console.log("SAP connected");
-      await registerToolsAndHandlers(sap);
-    },
-  });
-
-  return transport;
-}
-
-export async function getSapClient(hubUrl: string, httpUrl?: string): Promise<SapClient> {
-  return startSapTransport(hubUrl, httpUrl).whenConnected();
+export function getRelayState() {
+  return hub?.relayState ?? null;
 }

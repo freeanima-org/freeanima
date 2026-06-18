@@ -26,7 +26,16 @@ sap:{app_slug}:{instance_id_norm}:{local_name}
 - `instance_id_norm` — lowercased instance id without `-`
 - `local_name` — tool name as registered by the Satellite
 
-Example: `sap_pairprogramming_a1b2c3d4e5f6789012345678abcdef01_scan_code`
+Example: `sap_pairprogramming_k7m_scan_code`
+
+## ToolSet visibility
+
+SAP satellite toolsets default to **`private: true`** via `tool.register`. Private toolsets:
+
+- Do not appear in system prompt ToolSet lists
+- Cannot be found via `toolset_search` or loaded by name without capability mask
+
+Set `private: false` on `tool.register` to expose tools like built-in toolsets.
 
 ## Registration flow
 
@@ -47,7 +56,7 @@ sequenceDiagram
   Hub->>Agent: resume turn
 ```
 
-Register via `tool.register` with `SapToolDefInput`: `local_name`, `description`, `parameters` (JSON Schema object), optional `return_kind` (`json` | `text`).
+Register via `tool.register` with `SapToolDefInput`: `local_name`, `description`, `parameters` (JSON Schema object), optional `return_kind` (`json` | `text`), optional `private` (default `true`).
 
 On disconnect, Hub unregisters all tools for that app/instance.
 
@@ -88,16 +97,21 @@ Session binding requires `platform_extra.satellite_app_id` and `platform_extra.s
 
 Integration tests: [`tests/integration/sap/sap-routing.test.ts`](../../tests/integration/sap/sap-routing.test.ts).
 
-## Platform mapping
+## Platform naming
 
-`resolvePlatformForApp` maps satellite app ids to session platforms:
+Session platform for SAP satellites uses three segments:
 
-| `app_id`           | Platform                  |
+```text
+sap:{app_slug}:{instance_id}
+```
+
+| `app_id`           | Example platform          |
 | ------------------ | ------------------------- |
-| `pair-programming` | `studio-pair-programming` |
-| `parlor`           | `parlor`                  |
+| `pair-programming` | `sap:pairprogramming:k7m` |
+| `parlor`           | `sap:parlor:k7m`          |
+| `companion`        | `sap:companion:k7m`       |
 
-Hub also returns this map in `connected.server_info.platform_for_app`.
+`instance_id` is a Hub-assigned 3-character `[a-z0-9]` string, globally unique across all SAP apps. Hub returns the assigned or confirmed id in `connected.instance_id`.
 
 ## Completing a call
 

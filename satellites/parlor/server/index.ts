@@ -1,12 +1,25 @@
 import { existsSync, statSync } from "node:fs";
+import { homedir } from "node:os";
 import { join, extname } from "node:path";
+
+import { fileSapInstanceStore, resolveHubWsUrl } from "@freeanima/sap-contract";
 
 const PORT = Number(process.env.SATELLITE_PORT ?? 4174);
 const DIST_DIR = join(import.meta.dir, "..", "dist");
 const HUB_URL = (process.env.FREEANIMA_URL ?? "http://127.0.0.1:2658").replace(/\/$/, "");
-const INSTANCE_ID = process.env.SATELLITE_INSTANCE_ID?.trim() || crypto.randomUUID();
 const APP_ID = "parlor";
 const HTTP_URL = `http://127.0.0.1:${PORT}`;
+
+function instanceStorePath(): string {
+  const home = process.env.FREEANIMA_HOME ?? join(homedir(), ".anima");
+  return join(home, "satellites", APP_ID, "instance.json");
+}
+
+function readStoredInstanceId(): string | undefined {
+  const id = fileSapInstanceStore(instanceStorePath()).load();
+  if (id instanceof Promise) return undefined;
+  return id ?? undefined;
+}
 
 const MIME: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
@@ -28,24 +41,21 @@ function jsonResponse(body: unknown, status = 200): Response {
   });
 }
 
-function hubWsUrl(): string {
-  return HUB_URL.replace(/^http/, "ws").replace(/\/$/, "") + "/sap/v1";
-}
-
 async function route(req: Request): Promise<Response> {
   const url = new URL(req.url);
 
   if (url.pathname === "/config.json" && req.method === "GET") {
+    const instance_id = readStoredInstanceId();
     return jsonResponse({
       app_id: APP_ID,
-      instance_id: INSTANCE_ID,
-      hub_ws_url: hubWsUrl(),
+      hub_ws_url: resolveHubWsUrl(HUB_URL),
       http_url: HTTP_URL,
+      ...(instance_id ? { instance_id } : {}),
     });
   }
 
   if (url.pathname === "/health") {
-    return jsonResponse({ ok: true, app: APP_ID, instance_id: INSTANCE_ID });
+    return jsonResponse({ ok: true, app: APP_ID, instance_id: readStoredInstanceId() ?? null });
   }
 
   return serveStatic(url.pathname);
@@ -54,7 +64,7 @@ async function route(req: Request): Promise<Response> {
 function serveStatic(pathname: string): Response {
   if (!existsSync(DIST_DIR)) {
     return jsonResponse(
-      { error: "UI 未构建；请运行 `bun satellites/parlor/dev.ts` 或 `bun build.ts`" },
+      { error: "UI not built; run `bun satellites/parlor/dev.ts` or `bun build.ts`" },
       503,
     );
   }
@@ -84,6 +94,6 @@ const server = Bun.serve({
   },
 });
 
-console.log(`parlor satellite ${HTTP_URL} (instance ${INSTANCE_ID})`);
+console.log(`parlor satellite ${HTTP_URL}`);
 
-export { server, HTTP_URL, INSTANCE_ID };
+export { server, HTTP_URL };

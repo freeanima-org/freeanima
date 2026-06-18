@@ -1,7 +1,7 @@
 import type { StreamApiEvent } from "./types.ts";
 import { m } from "./i18n.ts";
 import { createSapRelayBrowserClient, type SapRelayBrowserClient } from "@freeanima/sap-contract";
-import { STUDIO_PAIR_PLATFORM } from "@/stores/pair-programming.ts";
+import { pairPlatform, STUDIO_PAIR_PLATFORM } from "@/lib/sap-client.ts";
 
 type SubscribeCallbacks<T> = {
   onData?: (data: T) => void;
@@ -65,17 +65,19 @@ export async function searchStudio(query: string) {
   });
 }
 
-export async function listSessions(platform: string) {
+export async function listSessions(platform?: string) {
   const client = await sap().whenReady();
-  const result = await client.request("session.list", { platform });
+  const result = await client.request("session.list", {
+    platform: platform ?? (await pairPlatform()),
+  });
   return mapSessionList(result);
 }
 
-export async function createSession(platform: string) {
+export async function createSession(platform?: string) {
   const client = await sap().whenReady();
   const cfg = await getStudioConfig();
   const result = await client.request("session.create", {
-    platform,
+    platform: platform ?? (await pairPlatform()),
     workspace_root: String(cfg.workspace ?? "") || undefined,
     workspace_gitignore: Boolean(cfg.gitignore),
     workspace_show_hidden: Boolean(cfg.showHidden),

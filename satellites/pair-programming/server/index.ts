@@ -3,14 +3,14 @@ import { join, extname } from "node:path";
 import type { ServerWebSocket } from "bun";
 import { getStudioConfig, buildFileTree, readStudioFile, searchStudio } from "./studio.ts";
 import { connectSap } from "./sap/run.ts";
-import { getSapClient, getSapInstanceId } from "./sap/hub.ts";
+import { getSapClient, getSapInstanceId, getRelayState } from "./sap/hub.ts";
 import { corsPreflight, jsonResponse, withCors } from "./http/cors.ts";
 import {
   handleRelayWsClose,
   handleRelayWsMessage,
   handleRelayWsOpen,
   type RelayWsData,
-} from "./sap/relay.ts";
+} from "@freeanima/sap-contract";
 import {
   handleTerminalWsClose,
   handleTerminalWsOpen,
@@ -166,7 +166,10 @@ const server = Bun.serve<ServerWsData>({
         void handleTerminalWsOpen(ws as ServerWebSocket<TerminalWsData & { channel: "terminal" }>);
         return;
       }
-      handleRelayWsOpen(ws as ServerWebSocket<RelayWsData & { channel: "relay" }>);
+      const relayState = getRelayState();
+      if (relayState) {
+        handleRelayWsOpen(relayState, ws as ServerWebSocket<RelayWsData & { channel: "relay" }>);
+      }
     },
     message(ws, message) {
       if (ws.data.channel !== "relay") return;
@@ -181,7 +184,10 @@ const server = Bun.serve<ServerWsData>({
         handleTerminalWsClose(ws as ServerWebSocket<TerminalWsData & { channel: "terminal" }>);
         return;
       }
-      handleRelayWsClose(ws as ServerWebSocket<RelayWsData & { channel: "relay" }>);
+      const relayState = getRelayState();
+      if (relayState) {
+        handleRelayWsClose(relayState, ws as ServerWebSocket<RelayWsData & { channel: "relay" }>);
+      }
     },
   },
 });

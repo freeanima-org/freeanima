@@ -18,7 +18,6 @@ describe("parlor browser SAP client", () => {
   it("createSapBrowserClient exposes subscribe and stream helpers", () => {
     const client = createSapBrowserClient({
       hubWsUrl: "ws://127.0.0.1:2658/sap/v1",
-      instanceId: "550e8400-e29b-41d4-a716-446655440000",
       httpUrl: "http://127.0.0.1:4174",
     });
     expect(client.getClient()).toBeNull();

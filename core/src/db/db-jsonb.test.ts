@@ -23,10 +23,17 @@ describe("platform_info schema", () => {
     expect(split.platform_extra).toEqual({ channel_id: "c1", guild_id: "123" });
   });
 
-  it("parlor platformInfo has no extra", () => {
-    const info = buildPlatformInfo("parlor");
-    expect(info).toEqual({ platform: "parlor" });
-    expect(splitPlatformInfo(info)).toEqual({ platform: "parlor" });
+  it("sap platformInfo derives satellite fields from three segments", () => {
+    const info = buildPlatformInfo("sap:parlor:k7m");
+    expect(info).toEqual({
+      platform: "sap:parlor:k7m",
+      satellite_app_id: "parlor",
+      satellite_instance_id: "k7m",
+    });
+    expect(splitPlatformInfo(info)).toEqual({
+      platform: "sap:parlor:k7m",
+      platform_extra: { satellite_app_id: "parlor", satellite_instance_id: "k7m" },
+    });
   });
 
   it("unknown platform returns null", () => {

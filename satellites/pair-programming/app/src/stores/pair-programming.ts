@@ -11,8 +11,9 @@ import {
   searchStudio,
   setSessionTitle,
 } from "@/lib/api.ts";
+import { pairPlatform } from "@/lib/sap-client.ts";
 
-export const STUDIO_PAIR_PLATFORM = "studio-pair-programming";
+export { STUDIO_PAIR_PLATFORM } from "@/lib/sap-client.ts";
 
 export type StudioFileView = Record<string, unknown> & { highlightLine?: number | null };
 
@@ -79,7 +80,7 @@ export const usePairProgrammingStore = create<PairProgrammingState>((set, get) =
 
   async fetchSessions() {
     try {
-      const resp = await listSessions(STUDIO_PAIR_PLATFORM);
+      const resp = await listSessions(await pairPlatform());
       const sessions = (resp.sessions ?? []) as SessionListItem[];
       set({ sessions });
       return sessions;
@@ -101,7 +102,7 @@ export const usePairProgrammingStore = create<PairProgrammingState>((set, get) =
 
   async createNewSession() {
     try {
-      const d = await createSession(STUDIO_PAIR_PLATFORM);
+      const d = await createSession(await pairPlatform());
       await get().fetchSessions();
       const sessionId = d.session_id;
       await get().selectSession(sessionId);
