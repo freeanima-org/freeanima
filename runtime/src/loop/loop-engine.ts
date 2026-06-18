@@ -250,6 +250,7 @@ export async function run(messages: SessionMessage[], opts?: EngineOpts): Promis
       case "tool_begin":
       case "tool_result":
       case "tool_error":
+      case "tool_round_end":
       case "done":
         break;
     }
@@ -266,6 +267,7 @@ export type StreamEvent =
   | { event: "tool_begin"; data: { name: string; args: Record<string, unknown> } }
   | { event: "tool_result"; data: { name: string; content: string } }
   | { event: "tool_error"; data: { name: string; content: string } }
+  | { event: "tool_round_end"; data: { tool_count: number } }
   | {
       event: "awaiting_clarify";
       data: { items: HookClarifyItem[]; timeout_sec: number };
@@ -472,6 +474,7 @@ export async function* runStream(
         opts,
       );
       await afterToolRoundBatch(messages, batch, { model, tools: toolSchemas });
+      yield { event: "tool_round_end", data: { tool_count: cleanedCalls.length } };
     } catch (e) {
       if (e instanceof EngineTurnInterrupted) {
         const batch = await persistToolRound(
@@ -486,6 +489,9 @@ export async function* runStream(
           if (m.role === "tool") messages.push(m);
         }
         await afterToolRoundBatch(messages, batch, { model, tools: toolSchemas });
+        if (toolMsgs.length > 0) {
+          yield { event: "tool_round_end", data: { tool_count: toolMsgs.length } };
+        }
         yield { event: "interrupted", data: { reason: e.message } };
         yield { event: "done", data: { reason: "interrupted" } };
         return;

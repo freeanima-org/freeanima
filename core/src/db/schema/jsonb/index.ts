@@ -22,7 +22,10 @@ export {
   platformInfoSchema,
   type PlatformInfo,
   buildPlatformInfo,
+  buildOriginIdentityProbe,
   splitPlatformInfo,
+  stripOriginRoutingMeta,
+  ORIGIN_ROUTING_META_KEYS,
 } from "./platform-info.ts";
 export * from "./session-jsonb.ts";
 export { clarifyItemSchema, todoItemSchema, todoStatusSchema } from "./session-meta-jsonb.ts";

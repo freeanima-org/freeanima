@@ -188,6 +188,12 @@ export const emailConfigSchema = z.object({
 export type EmailAccountConfig = z.infer<typeof emailAccountSchema>;
 export type EmailConfig = z.infer<typeof emailConfigSchema>;
 
+const gatewayConfigSchema = z
+  .object({
+    tool_display: z.string().optional(),
+  })
+  .optional();
+
 export const animaConfigSchema = z
   .object({
     llm: llmConfigSchema,
@@ -209,6 +215,7 @@ export const animaConfigSchema = z
     eventbus: eventbusConfigSchema,
     redis: redisConfigSchema,
     email: emailConfigSchema.optional(),
+    gateway: gatewayConfigSchema,
     discord: sectionSchema.optional(),
     weixin: sectionSchema.optional(),
     push: sectionSchema.optional(),

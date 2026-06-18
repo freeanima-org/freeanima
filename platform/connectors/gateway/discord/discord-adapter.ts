@@ -19,8 +19,9 @@ import type { EventBus } from "@freeanima/kernel/eventbus";
 import { KeyedRateLimiter } from "@freeanima/core/util/backoff";
 import { logComponent } from "@freeanima/platform/logging";
 import type { MessagingPort } from "@freeanima/platform/ports/ports/messaging-port";
-import type { PlatformAdapter } from "../platforms.ts";
 import { registerDiscordCronDeliverer, unregisterDiscordCronDeliverer } from "../cron-deliver.ts";
+import type { PlatformAdapter } from "../platforms.ts";
+import { resolveToolDisplayMode } from "../tool-display.ts";
 import { streamReplyToChannel } from "./discord-channel.ts";
 import {
   extractOrigin,
@@ -386,6 +387,12 @@ export class DiscordAdapter implements PlatformAdapter {
       await streamReplyToChannel(
         channel,
         this.service.sendMessageStream(sid, cleanContent, "discord"),
+        {
+          toolDisplayMode: resolveToolDisplayMode(
+            await getAppRuntime().conversation.loadSessionMeta(sid),
+            getAppRuntime().engine.config.data,
+          ),
+        },
       );
 
       await finalizeUserReaction(message, eyeReaction, true);

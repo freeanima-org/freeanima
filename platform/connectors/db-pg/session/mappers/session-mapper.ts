@@ -44,6 +44,7 @@ const META_KNOWN_KEYS = new Set([
   "debug",
   "timestamp",
   "capability_mask",
+  "gateway_tool_display",
 ]);
 
 /** session_meta → PG insert row */

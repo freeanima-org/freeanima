@@ -13,6 +13,12 @@ import { isSessionMeta } from "@freeanima/core/db/domain";
 import { setHomeChannel } from "@freeanima/platform/ports/home-channel";
 import { getAppRuntime } from "@freeanima/platform/ports";
 import {
+  formatToolDisplayHelp,
+  parseToolDisplayMode,
+  resolveSessionHandoffOnNew,
+  resolveToolDisplayMode,
+} from "../connectors/gateway/tool-display.ts";
+import {
   CLI_UPGRADE_HINT_DOCKER,
   CLI_UPGRADE_HINT_SOURCE,
   getCliInstallKind,
@@ -44,7 +50,10 @@ function cmdHelp(ctx: CommandContext): string {
 }
 
 async function cmdNew(ctx: CommandContext): Promise<CommandResult> {
-  const summary = await onSessionCloseBeforeNew(ctx.sessionId);
+  const cfg = getAppRuntime().engine.config.data;
+  const summary = resolveSessionHandoffOnNew(ctx.platform, cfg)
+    ? await onSessionCloseBeforeNew(ctx.sessionId)
+    : null;
   const sid = await conv().newSession(ctx.platform);
   if (summary) {
     await conv().appendMessage({ role: "assistant", content: summary }, sid);
@@ -53,6 +62,35 @@ async function cmdNew(ctx: CommandContext): Promise<CommandResult> {
     text: `🆕 New session created (${sid.slice(0, 8)}...)`,
     data: { new_session_id: sid },
   };
+}
+
+async function cmdToolDisplay(ctx: CommandContext): Promise<string> {
+  const cfg = getAppRuntime().engine.config.data;
+  const meta = await conv().loadSessionMeta(ctx.sessionId);
+  if (!isSessionMeta(meta)) {
+    return "⚠️ Current session does not exist.";
+  }
+
+  const sub = ctx.args[0]?.trim();
+  if (!sub) {
+    const effective = resolveToolDisplayMode(meta, cfg);
+    const source =
+      typeof meta.gateway_tool_display === "string" ? "session override" : "global default";
+    return `🔧 Tool display: \`${effective}\` (${source})`;
+  }
+
+  if (sub.toLowerCase() === "reset") {
+    await conv().updateSessionMetaField(ctx.sessionId, { gateway_tool_display: undefined });
+    return `✅ Cleared session tool display override (using global default: \`name\`)`;
+  }
+
+  const mode = parseToolDisplayMode(sub);
+  if (!mode) {
+    return `⚠️ Unknown level. Available: ${formatToolDisplayHelp()}`;
+  }
+
+  await conv().updateSessionMetaField(ctx.sessionId, { gateway_tool_display: mode });
+  return `✅ Tool display set to \`${mode}\` for this session`;
 }
 
 function cmdRetry(_ctx: CommandContext): CommandResult {
@@ -332,6 +370,14 @@ export function registerBuiltins(): void {
     handler: cmdMask,
     scope: "session",
     platforms: [PARLOR_PLATFORM],
+  });
+  registerCommand({
+    name: "tooldisplay",
+    description: "View or set gateway tool call display level for this session",
+    handler: cmdToolDisplay,
+    aliases: ["tool-display"],
+    scope: "session",
+    platforms: ["discord", "weixin"],
   });
   registerCommand({
     name: "restart",

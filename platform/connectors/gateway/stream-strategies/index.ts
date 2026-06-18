@@ -5,6 +5,7 @@ export {
   type StreamChannelComposer,
   type StreamChannelComposerOptions,
 } from "./composer.ts";
+export { createGatewayToolRoundStrategy } from "./gateway-outbound.ts";
 export {
   createPassthroughEmitStrategy,
   createPassthroughToolEmitStrategy,
@@ -18,5 +19,9 @@ export {
   DISCORD_STREAM_PLACEHOLDER,
   type DiscordAnswerStrategyOptions,
 } from "./discord-answer.ts";
+export {
+  createWeixinStreamingAnswerStrategy,
+  WEIXIN_ANSWER_SEND_MS,
+} from "./weixin-streaming-answer.ts";
 export { createWeixinBufferedAnswerStrategy } from "./weixin-answer.ts";
 export { splitDeliverText } from "./deliver-text.ts";

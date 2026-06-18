@@ -1,9 +1,11 @@
 import type { StreamEvent } from "@freeanima/runtime/loop";
 import {
+  createGatewayToolRoundStrategy,
   createStreamChannelComposer,
-  createToolRoundStrategy,
-  createWeixinBufferedAnswerStrategy,
+  createWeixinStreamingAnswerStrategy,
 } from "../stream-strategies/index.ts";
+import type { ToolDisplayMode } from "../tool-display.ts";
+import { DEFAULT_TOOL_DISPLAY_MODE } from "../tool-display.ts";
 import { runStreamChannel, type RunStreamChannelOptions } from "../stream-state/run-channel.ts";
 
 const SEND_GAP_MS = 80;
@@ -19,6 +21,7 @@ export type WeixinStreamDeps = {
 
 export type WeixinStreamChannelOptions = RunStreamChannelOptions & {
   deps: WeixinStreamDeps;
+  toolDisplayMode?: ToolDisplayMode;
 };
 
 export async function streamReplyToWeixin(
@@ -46,28 +49,22 @@ export async function streamReplyToWeixin(
     },
   };
 
-  const toolStrategy = createToolRoundStrategy();
+  const toolDisplayMode = opts?.toolDisplayMode ?? DEFAULT_TOOL_DISPLAY_MODE;
+  const toolStrategy = createGatewayToolRoundStrategy(io.send.bind(io), toolDisplayMode);
   const toolHandle = toolStrategy.handle.bind(toolStrategy);
   toolStrategy.handle = async (effect, ctx) => {
-    const actions = await toolHandle(effect, ctx);
-    for (const action of actions) {
-      if (action.op === "send") await io.send(action.text);
-    }
-    return [];
+    if (effect.kind === "tool_round" || effect.kind === "clarify") progressSent = true;
+    return toolHandle(effect, ctx);
   };
 
-  const answerStrategy = createWeixinBufferedAnswerStrategy();
-  const answerHandle = answerStrategy.handle.bind(answerStrategy);
-  answerStrategy.handle = async (effect, ctx) => {
-    const actions = await answerHandle(effect, ctx);
-    for (const action of actions) {
-      if (action.op === "send") {
-        await io.send(action.text);
+  const answerStrategy = createWeixinStreamingAnswerStrategy({
+    io: {
+      send: async (text: string) => {
+        await io.send(text);
         answerSent = true;
-      }
-    }
-    return [];
-  };
+      },
+    },
+  });
 
   const composer = createStreamChannelComposer({
     strategies: [toolStrategy, answerStrategy],
@@ -76,7 +73,11 @@ export async function streamReplyToWeixin(
   });
 
   try {
-    await runStreamChannel(events, composer, { ...opts, platform: "weixin" });
+    await runStreamChannel(events, composer, {
+      ...opts,
+      platform: "weixin",
+      toolDisplayMode,
+    });
   } finally {
     if (typingTimer) clearInterval(typingTimer);
   }

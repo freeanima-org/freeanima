@@ -20,6 +20,7 @@ export * from "./stream-strategies/index.ts";
 export * from "./clarify/index.ts";
 export { collectGatewayStreamReply } from "./collect-gateway-stream-reply.ts";
 export * from "./stream-tool-format.ts";
+export * from "./tool-display.ts";
 export {
   registerDiscordCronDeliverer,
   unregisterDiscordCronDeliverer,

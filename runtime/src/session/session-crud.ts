@@ -14,7 +14,7 @@ import { getActiveConfig, getProfileHopModel } from "@freeanima/core/config";
 import { CST_OFFSET_MS, formatCstIso } from "@freeanima/core/util";
 import { PROFILE_CHAT } from "@freeanima/core/provider";
 import { buildSystemPrompt } from "@freeanima/core/hooks/prompt";
-import { capabilityMaskSchema } from "@freeanima/core/db/schema";
+import { capabilityMaskSchema, stripOriginRoutingMeta } from "@freeanima/core/db/schema";
 import { applySessionToolMaskFilter } from "./mask-port.ts";
 import {
   isSessionMeta,
@@ -37,6 +37,7 @@ import {
   pgListSessionSummaries,
   pgLastMessageTimestamp,
   pgFindSessionIdByPlatformInfo,
+  pgListSessionIdsMatchingPlatformProbe,
   pgWriteDeleteSession,
   pgWriteMessage,
   pgWriteMeta,
@@ -295,12 +296,64 @@ function originExtraMatches(
   stored: Record<string, unknown>,
   platformExtra: Record<string, unknown>,
 ): boolean {
-  for (const [key, val] of Object.entries(platformExtra)) {
+  const identity = stripOriginRoutingMeta(platformExtra);
+  for (const [key, val] of Object.entries(identity)) {
     if (String(stored[key] ?? "") !== String(val ?? "")) {
       return false;
     }
   }
   return true;
+}
+
+async function resolveFoundOriginSession(
+  repos: PgRepositories,
+  sessionId: string,
+): Promise<string | null> {
+  const meta = await loadSessionMeta(repos, sessionId);
+  if (!isSessionMeta(meta)) return null;
+  if (meta.platform_extra?.origin_active === false) return null;
+  if (meta.platform_extra?.origin_active !== true) {
+    await activateSessionOrigin(repos, sessionId);
+  }
+  return sessionId;
+}
+
+/** Mark session as the sole active origin; siblings with same identity become inactive. */
+export async function activateSessionOrigin(
+  repos: PgRepositories,
+  sessionId: string,
+): Promise<void> {
+  const meta = await loadSessionMeta(repos, sessionId);
+  if (!isSessionMeta(meta)) return;
+  const platform = meta.platform ?? "";
+  if (!platform) return;
+  const identityExtra = stripOriginRoutingMeta(meta.platform_extra ?? {});
+
+  let siblingIds: string[] = [];
+  if (postgresAvailable(repos) && Object.keys(identityExtra).length > 0) {
+    siblingIds = await pgListSessionIdsMatchingPlatformProbe(repos, platform, identityExtra);
+  } else {
+    for (const sid of await listSessionsWithRouting(repos, platform)) {
+      try {
+        const siblingMeta = await loadSessionMeta(repos, sid);
+        if (!isSessionMeta(siblingMeta)) continue;
+        if (!originExtraMatches(siblingMeta.platform_extra ?? {}, identityExtra)) continue;
+        siblingIds.push(sid);
+      } catch {
+        continue;
+      }
+    }
+  }
+
+  if (!siblingIds.includes(sessionId)) siblingIds.push(sessionId);
+
+  for (const sid of siblingIds) {
+    const siblingMeta = await loadSessionMeta(repos, sid);
+    if (!isSessionMeta(siblingMeta)) continue;
+    const active = sid === sessionId;
+    const nextExtra = { ...siblingMeta.platform_extra, origin_active: active };
+    await updateSessionMetaField(repos, sid, { platform_extra: nextExtra });
+  }
 }
 
 /** Match existing session by platform + platform_extra (each extra item must match meta) */
@@ -312,13 +365,14 @@ export async function findSessionByOrigin(
   if (postgresAvailable(repos) && Object.keys(platformExtra).length > 0) {
     try {
       const sid = await pgFindSessionIdByPlatformInfo(repos, platform, platformExtra);
-      if (sid) return sid;
+      if (sid) return resolveFoundOriginSession(repos, sid);
     } catch {
       /* fallback scan */
     }
   }
 
   try {
+    let bestInactive: string | null = null;
     for (const sid of await listSessionsWithRouting(repos, platform)) {
       try {
         const meta = await loadSessionMeta(repos, sid);
@@ -327,11 +381,17 @@ export async function findSessionByOrigin(
           const stored = meta.platform_extra ?? {};
           if (!originExtraMatches(stored, platformExtra)) continue;
         }
-        return sid;
+        if (meta.platform_extra?.origin_active === true) {
+          return sid;
+        }
+        if (meta.platform_extra?.origin_active !== false && !bestInactive) {
+          bestInactive = sid;
+        }
       } catch {
         continue;
       }
     }
+    if (bestInactive) return resolveFoundOriginSession(repos, bestInactive);
   } catch {
     /* empty */
   }

@@ -50,6 +50,7 @@ export function resolveSessionDeliverTargets(
 
   if (platform === "weixin") {
     const chatId =
+      (typeof extra.weixin_peer_id === "string" && extra.weixin_peer_id) ||
       (typeof extra.chat_id === "string" && extra.chat_id) ||
       (typeof extra.channel_id === "string" && extra.channel_id) ||
       "";

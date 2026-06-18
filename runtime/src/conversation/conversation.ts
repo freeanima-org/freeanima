@@ -19,6 +19,7 @@ export {
   initSession,
   newSession,
   findSessionByOrigin,
+  activateSessionOrigin,
   updateSessionMetaField,
   patchSessionOrigin,
   rebuildSessionSystemPrompt,

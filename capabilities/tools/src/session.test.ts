@@ -82,6 +82,9 @@ function createMockSessionStore(overrides: Partial<SessionStorePort> = {}): Sess
     async findSessionIdByPlatformInfo() {
       return null;
     },
+    async listSessionIdsMatchingPlatformProbe() {
+      return [];
+    },
     async searchMessagesFts() {
       return [];
     },

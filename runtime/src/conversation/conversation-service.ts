@@ -15,6 +15,7 @@ import {
   countMessages,
   countSessionsByPlatform,
   findSessionByOrigin,
+  activateSessionOrigin,
   finishTurn,
   getSessionCwd,
   getSessionTitle,
@@ -78,6 +79,7 @@ export function createConversationService(repos: PgRepositories, tools: ToolSetR
     initSession: bindReposAndTools(repos, tools, initSession),
     newSession: bindReposAndTools(repos, tools, newSession),
     findSessionByOrigin: bindRepos(repos, findSessionByOrigin),
+    activateSessionOrigin: bindRepos(repos, activateSessionOrigin),
     updateSessionMetaField: (
       session: string,
       patch: Parameters<typeof updateSessionMetaField>[2],

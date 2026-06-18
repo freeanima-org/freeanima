@@ -4,10 +4,12 @@ import { chunkText } from "../chunk-text.ts";
 import {
   createDiscordAnswerStrategy,
   createDiscordCleanupStrategy,
+  createGatewayToolRoundStrategy,
   createStreamChannelComposer,
-  createToolRoundStrategy,
   DISCORD_ANSWER_SPLIT_AT,
 } from "../stream-strategies/index.ts";
+import type { ToolDisplayMode } from "../tool-display.ts";
+import { DEFAULT_TOOL_DISPLAY_MODE } from "../tool-display.ts";
 import { runStreamChannel, type RunStreamChannelOptions } from "../stream-state/run-channel.ts";
 import {
   deliverDiscordFinalContent,
@@ -26,7 +28,9 @@ function splitDiscordMessage(text: string, limit = DISCORD_MAX_LEN): string[] {
   return chunkText(text, limit, { maxChunkLength: DISCORD_MAX_LEN });
 }
 
-export type DiscordStreamChannelOptions = RunStreamChannelOptions;
+export type DiscordStreamChannelOptions = RunStreamChannelOptions & {
+  toolDisplayMode?: ToolDisplayMode;
+};
 
 export async function streamReplyToChannel(
   channel: TextBasedChannel,
@@ -61,15 +65,10 @@ export async function streamReplyToChannel(
     },
   };
 
-  const toolStrategy = createToolRoundStrategy();
-  const toolHandle = toolStrategy.handle.bind(toolStrategy);
-  toolStrategy.handle = async (effect, ctx) => {
-    const actions = await toolHandle(effect, ctx);
-    for (const action of actions) {
-      if (action.op === "send") await sendChunked(action.text);
-    }
-    return [];
-  };
+  const toolDisplayMode = opts?.toolDisplayMode ?? DEFAULT_TOOL_DISPLAY_MODE;
+  const toolStrategy = createGatewayToolRoundStrategy(async (text) => {
+    await sendChunked(text);
+  }, toolDisplayMode);
 
   const answerStrategy = createDiscordAnswerStrategy({ io: answerIo });
   const finalizeHandle = answerStrategy.handle.bind(answerStrategy);
@@ -126,7 +125,7 @@ export async function streamReplyToChannel(
     signal: opts?.signal,
   });
 
-  await runStreamChannel(events, composer, { ...opts, platform: "discord" });
+  await runStreamChannel(events, composer, { ...opts, platform: "discord", toolDisplayMode });
 }
 
 function clearThrottleInBag(ctx: { bag: Map<string, unknown> }): void {
