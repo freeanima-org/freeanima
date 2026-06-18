@@ -25,6 +25,7 @@ export const pgSessionStore = {
   countSessionsByPlatform: sessionRepo.countSessionsByPlatform,
   deleteDebugSessions: sessionRepo.deleteDebugSessions,
   findSessionIdByPlatformInfo: sessionRepo.findSessionIdByPlatformInfo,
+  listSessionIdsMatchingPlatformProbe: sessionRepo.listSessionIdsMatchingPlatformProbe,
   countMessages: messageRepo.countMessages,
   findMessagePos: messageRepo.findMessagePos,
   listMessageRowsPage: messageRepo.listMessageRowsPage,

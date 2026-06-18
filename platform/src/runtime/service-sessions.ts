@@ -7,6 +7,7 @@ import type { SessionSummary } from "@freeanima/platform/schemas/snapshot";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 import { buildMessagesDisplay } from "./build-messages-display.ts";
 import { statsReport } from "./conversation-stats.ts";
+import { originLockKey, runExclusiveOrigin } from "./origin-lock.ts";
 import { PARLOR_PLATFORM } from "./platforms.ts";
 
 export async function checkPlatform(
@@ -39,13 +40,17 @@ export async function findOrCreateSession(
   platform: string,
   platform_extra: Record<string, unknown> = {},
 ): Promise<{ session_id: string }> {
-  let sid = await deps.conversation.findSessionByOrigin(platform, platform_extra);
-  if (!sid) {
-    sid = await deps.conversation.newSession(platform, undefined, platform_extra);
-  } else {
-    await deps.conversation.refreshSystemPromptOnResume(sid);
-  }
-  return { session_id: sid };
+  const key = originLockKey(platform, platform_extra);
+  return runExclusiveOrigin(key, async () => {
+    let sid = await deps.conversation.findSessionByOrigin(platform, platform_extra);
+    if (!sid) {
+      sid = await deps.conversation.newSession(platform, undefined, platform_extra);
+      await deps.conversation.activateSessionOrigin(sid);
+    } else {
+      await deps.conversation.refreshSystemPromptOnResume(sid);
+    }
+    return { session_id: sid };
+  });
 }
 
 export async function patchSessionOrigin(
@@ -68,6 +73,7 @@ export async function applyCommandSessionEffects(
   const data = result.data as { new_session_id?: string } | undefined;
   if (data?.new_session_id && originExtra !== undefined) {
     await deps.conversation.patchSessionOrigin(data.new_session_id, platform, originExtra);
+    await deps.conversation.activateSessionOrigin(data.new_session_id);
   }
 }
 

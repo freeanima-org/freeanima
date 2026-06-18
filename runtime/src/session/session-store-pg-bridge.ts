@@ -204,6 +204,14 @@ export async function pgLastMessageTimestamp(
   return store(repos).lastMessageTimestamp(sessionId);
 }
 
+export async function pgListSessionIdsMatchingPlatformProbe(
+  repos: PgRepositories,
+  platform: string,
+  platformExtra: Record<string, unknown> = {},
+): Promise<string[]> {
+  return store(repos).listSessionIdsMatchingPlatformProbe(platform, platformExtra);
+}
+
 export async function pgFindSessionIdByPlatformInfo(
   repos: PgRepositories,
   platform: string,

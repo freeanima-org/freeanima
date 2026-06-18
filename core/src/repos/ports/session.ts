@@ -90,6 +90,10 @@ export interface SessionStorePort {
     platform: string,
     platformExtra?: Record<string, unknown>,
   ): Promise<string | null>;
+  listSessionIdsMatchingPlatformProbe(
+    platform: string,
+    platformExtra?: Record<string, unknown>,
+  ): Promise<string[]>;
   /** PG messages.content_fts full-text search (user/assistant readable content only) */
   searchMessagesFts(
     query: string,

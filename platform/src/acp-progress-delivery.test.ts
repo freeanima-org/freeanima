@@ -30,7 +30,16 @@ describe("resolveSessionDeliverTargets", () => {
     expect(targets).toEqual([{ platform: "discord", chat_id: "parent-ch", thread_id: "thread-1" }]);
   });
 
-  it("weixin uses chat_id", () => {
+  it("weixin uses weixin_peer_id or chat_id", () => {
+    expect(
+      resolveSessionDeliverTargets(
+        metaFixture({
+          platform: "weixin",
+          platform_extra: { weixin_peer_id: "peer@im.wechat" },
+        }),
+      ),
+    ).toEqual([{ platform: "weixin", chat_id: "peer@im.wechat" }]);
+
     const targets = resolveSessionDeliverTargets(
       metaFixture({
         platform: "weixin",

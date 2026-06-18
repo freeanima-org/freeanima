@@ -11,7 +11,7 @@ import type { SessionCleanupResult, SessionSummaryRow } from "@freeanima/core/re
 import {
   acpTasksSchema,
   awaitingClarifySchema,
-  buildPlatformInfo,
+  buildOriginIdentityProbe,
   sessionCachedToolsetsSchema,
   sessionFunctionsSchema,
   sessionInsertSchema,
@@ -351,23 +351,52 @@ export async function sessionExists(sessionId: string): Promise<boolean> {
 }
 
 /**
- * Find session by platform + platform_extra (JSONB @>, aligned with Discord findOrCreateSession).
- * When multiple matches, take the most recently updated.
+ * Find active session by platform + platform_extra identity (excludes routing meta from probe).
+ * Falls back to most recently updated match for legacy rows without origin_active.
  */
 export async function findSessionIdByPlatformInfo(
   platform: string,
   platformExtra: Record<string, unknown> = {},
 ): Promise<string | null> {
-  const probe = buildPlatformInfo(platform, platformExtra);
+  const probe = buildOriginIdentityProbe(platform, platformExtra);
   if (!probe) return null;
+  const db = getDb();
+  const probeJson = JSON.stringify(probe);
+
+  const activeRows = await db
+    .select({ id: sessions.id })
+    .from(sessions)
+    .where(
+      sql`${sessions.platformInfo} @> ${probeJson}::jsonb
+        AND (${sessions.platformInfo}->>'origin_active')::boolean IS TRUE`,
+    )
+    .orderBy(desc(sessions.updatedAt))
+    .limit(1);
+  if (activeRows[0]?.id) return activeRows[0].id;
+
+  const rows = await db
+    .select({ id: sessions.id })
+    .from(sessions)
+    .where(sql`${sessions.platformInfo} @> ${probeJson}::jsonb`)
+    .orderBy(desc(sessions.updatedAt))
+    .limit(1);
+  return rows[0]?.id ?? null;
+}
+
+/** All session ids whose platform_info contains the identity probe (routing meta excluded). */
+export async function listSessionIdsMatchingPlatformProbe(
+  platform: string,
+  platformExtra: Record<string, unknown> = {},
+): Promise<string[]> {
+  const probe = buildOriginIdentityProbe(platform, platformExtra);
+  if (!probe) return [];
   const db = getDb();
   const rows = await db
     .select({ id: sessions.id })
     .from(sessions)
     .where(sql`${sessions.platformInfo} @> ${JSON.stringify(probe)}::jsonb`)
-    .orderBy(desc(sessions.updatedAt))
-    .limit(1);
-  return rows[0]?.id ?? null;
+    .orderBy(desc(sessions.updatedAt));
+  return rows.map((r) => r.id);
 }
 
 /** Non-debug session ids with sessions.updated_at in [fromIso, toIso) */

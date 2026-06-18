@@ -93,6 +93,9 @@ function mockSessionStore(overrides: Partial<SessionStorePort> = {}): SessionSto
     async findSessionIdByPlatformInfo() {
       return null;
     },
+    async listSessionIdsMatchingPlatformProbe() {
+      return [];
+    },
     async searchMessagesFts() {
       return [];
     },

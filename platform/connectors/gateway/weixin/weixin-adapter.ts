@@ -2,11 +2,13 @@ import { SteppedBackoff } from "@freeanima/core/util/backoff";
 import { safeParseOrNull } from "@freeanima/core/util";
 import { PATHS } from "@freeanima/platform/config";
 import { logComponent } from "@freeanima/platform/logging";
+import { getAppRuntime } from "@freeanima/platform/ports";
 import type { MessagingPort } from "@freeanima/platform/ports/ports/messaging-port";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
 
 import type { PlatformAdapter } from "../platforms.ts";
+import { resolveToolDisplayMode } from "../tool-display.ts";
 import { streamReplyToWeixin } from "./weixin-channel.ts";
 import { registerWeixinCronDeliverer, unregisterWeixinCronDeliverer } from "../cron-deliver.ts";
 import {
@@ -295,12 +297,17 @@ export class WeixinAdapter implements PlatformAdapter {
           contextToken,
         ).catch(() => undefined);
 
+      const toolDisplayMode = resolveToolDisplayMode(
+        await getAppRuntime().conversation.loadSessionMeta(sid),
+        getAppRuntime().engine.config.data,
+      );
       const { answerSent, progressSent } = await streamReplyToWeixin(
         this.service.sendMessageStream(sid, parsed.text, "weixin"),
         {
           send: (text) => this.sendReply(parsed.peerId, text),
           refreshTyping,
         },
+        { toolDisplayMode },
       );
       if (!answerSent && !progressSent) {
         logComponent("weixin").warn("WeChat empty reply, skip send", {

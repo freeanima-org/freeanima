@@ -44,6 +44,23 @@ const OPTION_APPLIERS: Record<string, (builder: SlashCommandBuilder) => void> = 
       o.setName("all").setDescription("Aggregate stats for all sessions").setRequired(false),
     );
   },
+  tooldisplay: (b) => {
+    b.addStringOption((o) =>
+      o
+        .setName("level")
+        .setDescription("Display level (empty to view current; reset to clear override)")
+        .setRequired(false)
+        .addChoices(
+          { name: "hidden", value: "hidden" },
+          { name: "count", value: "count" },
+          { name: "name", value: "name" },
+          { name: "name_args_truncated", value: "name_args_truncated" },
+          { name: "name_args_full", value: "name_args_full" },
+          { name: "name_args_result_full", value: "name_args_result_full" },
+          { name: "reset", value: "reset" },
+        ),
+    );
+  },
 };
 
 /** Generate Discord Application Commands from runtime command list */
@@ -67,10 +84,12 @@ export function interactionToCommandText(interaction: ChatInputCommandInteractio
   const path = interaction.options.getString("path");
   const title = interaction.options.getString("title");
   const all = interaction.options.getBoolean("all");
+  const toolLevel = interaction.options.getString("level");
 
   if (path) parts.push(path);
   if (title) parts.push(title);
   if (all) parts.push("--all");
+  if (toolLevel) parts.push(toolLevel);
 
   return parts.length ? `/${name} ${parts.join(" ")}` : `/${name}`;
 }

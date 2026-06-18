@@ -98,6 +98,9 @@ export const nullSessionStore: SessionStorePort = {
   async findSessionIdByPlatformInfo() {
     return null;
   },
+  async listSessionIdsMatchingPlatformProbe() {
+    return [];
+  },
   async searchMessagesFts() {
     return [];
   },

@@ -42,6 +42,8 @@ export function mapStreamEventToApi(ev: StreamEvent): StreamApiEvent {
       return { event: "done", data: ev.data };
     case "error":
       return { event: "error", data: ev.data };
+    case "tool_round_end":
+      return { event: "ping", data: {} };
     default: {
       const _exhaustive: never = ev;
       return _exhaustive;

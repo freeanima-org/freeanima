@@ -2,6 +2,8 @@ import type { StreamEvent } from "@freeanima/runtime/loop";
 import type { ApplyStreamEventResult, StreamEffect, StreamReplyState } from "./types.ts";
 import { formatClarifyForPlatform, parseClarifyStreamEvent } from "../clarify/index.ts";
 import { ToolRoundCollector } from "../stream-tool-format.ts";
+import type { ToolDisplayMode } from "../tool-display.ts";
+import { DEFAULT_TOOL_DISPLAY_MODE } from "../tool-display.ts";
 
 export type StreamReducePlatform = "discord" | "weixin" | "parlor";
 
@@ -156,6 +158,10 @@ export function applyStreamEvent(
     case "tool_error":
       collector.addError(event.data.content);
       break;
+    case "tool_round_end": {
+      next = flushToolRound(next, collector, effects);
+      break;
+    }
     case "error": {
       next = flushToolRound(next, collector, effects);
       next = finalizeAnswer(next, effects);
@@ -202,10 +208,11 @@ export function applyStreamEvent(
 export async function reduceStreamEvents(
   events: AsyncIterable<StreamEvent>,
   platform: StreamReducePlatform = "parlor",
+  toolDisplayMode: ToolDisplayMode = DEFAULT_TOOL_DISPLAY_MODE,
 ): Promise<{ state: StreamReplyState; effects: StreamEffect[] }> {
   let state = initialStreamReplyState();
   const allEffects: StreamEffect[] = [];
-  const collector = new ToolRoundCollector();
+  const collector = new ToolRoundCollector(toolDisplayMode);
 
   for await (const event of events) {
     const result = applyStreamEvent(state, event, platform, collector);

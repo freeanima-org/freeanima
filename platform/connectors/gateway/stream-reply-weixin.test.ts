@@ -14,6 +14,7 @@ describe("streamReplyToWeixin", () => {
       events([
         { event: "tool_begin", data: { name: "grep", args: { pattern: "foo" } } },
         { event: "tool_result", data: { name: "grep", content: "matched" } },
+        { event: "tool_round_end", data: { tool_count: 1 } },
         { event: "token", data: { content: "WeChat channel OK." } },
         { event: "done", data: {} },
       ]),
@@ -22,6 +23,7 @@ describe("streamReplyToWeixin", () => {
           sent.push(text);
         },
       },
+      { toolDisplayMode: "name_args_truncated" },
     );
 
     expect(result.progressSent).toBe(true);
@@ -33,15 +35,36 @@ describe("streamReplyToWeixin", () => {
     expect(sent[1]).toBe("WeChat channel OK.");
   });
 
+  it("default name mode shows tool names only", async () => {
+    const sent: string[] = [];
+    await streamReplyToWeixin(
+      events([
+        { event: "tool_begin", data: { name: "grep", args: { pattern: "foo" } } },
+        { event: "tool_result", data: { name: "grep", content: "matched" } },
+        { event: "tool_round_end", data: { tool_count: 1 } },
+        { event: "token", data: { content: "OK" } },
+        { event: "done", data: {} },
+      ]),
+      {
+        send: async (text) => {
+          sent.push(text);
+        },
+      },
+    );
+    expect(sent[0]).toBe("🔧 grep");
+  });
+
   it("two tool rounds each one message", async () => {
     const sent: string[] = [];
     await streamReplyToWeixin(
       events([
         { event: "tool_begin", data: { name: "read", args: {} } },
         { event: "tool_result", data: { name: "read", content: "ok" } },
+        { event: "tool_round_end", data: { tool_count: 1 } },
         { event: "token", data: { content: "mid" } },
         { event: "tool_begin", data: { name: "grep", args: { q: "x" } } },
         { event: "tool_result", data: { name: "grep", content: "hit" } },
+        { event: "tool_round_end", data: { tool_count: 1 } },
         { event: "token", data: { content: "done" } },
         { event: "done", data: {} },
       ]),
@@ -52,10 +75,11 @@ describe("streamReplyToWeixin", () => {
       },
     );
 
-    expect(sent.length).toBe(3);
+    expect(sent.length).toBe(4);
     expect(sent[0]).toContain("read");
-    expect(sent[1]).toContain("grep");
-    expect(sent[2]).toBe("done");
+    expect(sent[1]).toBe("mid");
+    expect(sent[2]).toContain("grep");
+    expect(sent[3]).toBe("done");
   });
 
   it("empty stream not sent", async () => {

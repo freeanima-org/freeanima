@@ -1,4 +1,6 @@
 import type { StreamEvent } from "@freeanima/runtime/loop";
+import type { ToolDisplayMode } from "../tool-display.ts";
+import { DEFAULT_TOOL_DISPLAY_MODE } from "../tool-display.ts";
 import { ToolRoundCollector } from "../stream-tool-format.ts";
 import type { StreamChannelComposer } from "../stream-strategies/composer.ts";
 import { applyStreamEvent, initialStreamReplyState, type StreamReducePlatform } from "./reducer.ts";
@@ -6,6 +8,7 @@ import { applyStreamEvent, initialStreamReplyState, type StreamReducePlatform } 
 export type RunStreamChannelOptions = {
   platform?: StreamReducePlatform;
   signal?: AbortSignal;
+  toolDisplayMode?: ToolDisplayMode;
   /** WebUI：在 reducer 前透传原始 StreamEvent */
   onRawEvent?: (event: StreamEvent) => Promise<void> | void;
 };
@@ -17,7 +20,7 @@ export async function runStreamChannel(
 ): Promise<void> {
   const platform = opts?.platform ?? "parlor";
   let state = initialStreamReplyState();
-  const collector = new ToolRoundCollector();
+  const collector = new ToolRoundCollector(opts?.toolDisplayMode ?? DEFAULT_TOOL_DISPLAY_MODE);
 
   try {
     for await (const event of events) {

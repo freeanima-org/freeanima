@@ -362,6 +362,37 @@ describePg("slash commands", () => {
     expect(cfg).toContain("home_channel: peer@im.wechat");
   });
 
+  it("/tooldisplay sets and resets session override", async () => {
+    const sid = await testConv().newSession("discord");
+    const [cmd] = findCommand("/tooldisplay");
+    const show = await executeCommand(cmd!, {
+      sessionId: sid,
+      platform: "discord",
+      args: [],
+      raw: "/tooldisplay",
+    });
+    expect(show.text).toContain("name");
+
+    const set = await executeCommand(cmd!, {
+      sessionId: sid,
+      platform: "discord",
+      args: ["hidden"],
+      raw: "/tooldisplay hidden",
+    });
+    expect(set.text).toContain("hidden");
+
+    const meta = await testConv().loadSessionMeta(sid);
+    expect(isSessionMeta(meta) && meta.gateway_tool_display).toBe("hidden");
+
+    const reset = await executeCommand(cmd!, {
+      sessionId: sid,
+      platform: "discord",
+      args: ["reset"],
+      raw: "/tooldisplay reset",
+    });
+    expect(reset.text).toContain("global default");
+  });
+
   it("/restart resolves on parlor, discord, and weixin", () => {
     for (const platform of ["parlor", "discord", "weixin"] as const) {
       const [cmd] = resolveCommand("/restart", platform);

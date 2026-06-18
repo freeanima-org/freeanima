@@ -43,12 +43,35 @@ const cronPlatformInfoSchema = z.looseObject({
   platform: z.literal("cron"),
 });
 
+/** Keys excluded from origin identity matching / probe construction */
+export const ORIGIN_ROUTING_META_KEYS = new Set(["origin_active", "ended_at"]);
+
+export function stripOriginRoutingMeta(
+  extra: Record<string, unknown> = {},
+): Record<string, unknown> {
+  const out = { ...extra };
+  for (const key of ORIGIN_ROUTING_META_KEYS) {
+    delete out[key];
+  }
+  return out;
+}
+
+export function buildOriginIdentityProbe(
+  platform?: string,
+  platformExtra?: Record<string, unknown>,
+): PlatformInfo | null {
+  const identity = stripOriginRoutingMeta(platformExtra ?? {});
+  return buildPlatformInfo(platform, Object.keys(identity).length > 0 ? identity : undefined);
+}
+
 /** Discord session bound channel/thread (see gateway/discord-policy extractOrigin) */
 const discordPlatformInfoSchema = z.object({
   platform: z.literal("discord"),
   channel_id: z.string(),
   guild_id: z.string().optional(),
   thread_id: z.string().optional(),
+  origin_active: z.boolean().optional(),
+  ended_at: z.string().optional(),
 });
 
 /** WeChat session bound peer (see gateway/weixin/weixin-message) */
@@ -57,6 +80,8 @@ const weixinPlatformInfoSchema = z.object({
   weixin_user_id: z.string(),
   weixin_peer_id: z.string(),
   is_group: z.boolean(),
+  origin_active: z.boolean().optional(),
+  ended_at: z.string().optional(),
 });
 
 /**

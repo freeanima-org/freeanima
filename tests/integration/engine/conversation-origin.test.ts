@@ -27,6 +27,7 @@ describePg("conversation origin", () => {
       channel_id: "c1",
       thread_id: "t1",
     });
+    await c.activateSessionOrigin(sid);
     const found = await c.findSessionByOrigin("discord", {
       guild_id: "g1",
       channel_id: "c1",
@@ -39,6 +40,32 @@ describePg("conversation origin", () => {
 
     const meta = await c.loadSessionMeta(sid);
     expect(isSessionMeta(meta) && meta.platform_extra?.thread_id).toBe("t1");
+    expect(isSessionMeta(meta) && meta.platform_extra?.origin_active).toBe(true);
+  });
+
+  it("/new switches origin_active to new session", async () => {
+    const c = testConv();
+    const origin = {
+      guild_id: "g2",
+      channel_id: "c2",
+      thread_id: "t2",
+    };
+    const oldSid = await c.newSession("discord", undefined, origin);
+    await c.activateSessionOrigin(oldSid);
+    await c.appendMessage({ role: "user", content: "hello" }, oldSid);
+
+    const newSid = await c.newSession("discord");
+    await c.patchSessionOrigin(newSid, "discord", origin);
+    await c.activateSessionOrigin(newSid);
+
+    const routed = await c.findSessionByOrigin("discord", origin);
+    expect(routed).toBe(newSid);
+
+    const oldMeta = await c.loadSessionMeta(oldSid);
+    const newMeta = await c.loadSessionMeta(newSid);
+    expect(isSessionMeta(oldMeta) && oldMeta.platform_extra?.origin_active).toBe(false);
+    expect(isSessionMeta(newMeta) && newMeta.platform_extra?.origin_active).toBe(true);
+    expect(isSessionMeta(oldMeta) && oldMeta.platform_extra?.thread_id).toBe("t2");
   });
 
   afterAll(async () => {

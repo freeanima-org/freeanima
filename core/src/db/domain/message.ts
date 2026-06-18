@@ -61,6 +61,7 @@ export const sessionMetaSchema = z
     acp_tasks: z.record(z.string(), z.unknown()).optional(),
     acp_tasks_handled_at: z.string().optional(),
     capability_mask: capabilityMaskSchema.optional(),
+    gateway_tool_display: z.string().optional(),
   })
   .passthrough();
 

@@ -54,10 +54,11 @@ describe("streamReplyToChannel", () => {
         event: "tool_result",
         data: { name: "demo_tool", content: "SECRET_SHOULD_APPEAR_TRUNCATED" },
       };
+      yield { event: "tool_round_end", data: { tool_count: 1 } };
       yield { event: "token", data: { content: "final z" } };
       yield { event: "done", data: {} };
     }
-    await streamReplyToChannel(channel, gen());
+    await streamReplyToChannel(channel, gen(), { toolDisplayMode: "name_args_truncated" });
 
     expect(sends[0]).toContain("🔧 demo_tool");
     expect(sends[0]).toContain("test");
@@ -73,13 +74,15 @@ describe("streamReplyToChannel", () => {
     async function* gen(): AsyncGenerator<StreamEvent> {
       yield { event: "tool_begin", data: { name: "read", args: {} } };
       yield { event: "tool_result", data: { name: "read", content: "ok" } };
+      yield { event: "tool_round_end", data: { tool_count: 1 } };
       yield { event: "token", data: { content: "x" } };
       yield { event: "tool_begin", data: { name: "grep", args: { p: "a" } } };
       yield { event: "tool_result", data: { name: "grep", content: "hit" } };
+      yield { event: "tool_round_end", data: { tool_count: 1 } };
       yield { event: "token", data: { content: "answer" } };
       yield { event: "done", data: {} };
     }
-    await streamReplyToChannel(channel, gen());
+    await streamReplyToChannel(channel, gen(), { toolDisplayMode: "name" });
 
     expect(sends.length).toBeGreaterThanOrEqual(3);
     expect(sends[0]).toContain("read");
@@ -209,10 +212,11 @@ describe("streamReplyToChannel", () => {
           data: { name: `tool_${i}`, content: "x".repeat(180) },
         };
       }
+      yield { event: "tool_round_end", data: { tool_count: 30 } };
       yield { event: "token", data: { content: "done" } };
       yield { event: "done", data: {} };
     }
-    await streamReplyToChannel(channel, gen());
+    await streamReplyToChannel(channel, gen(), { toolDisplayMode: "name_args_result_full" });
 
     const toolSends = sends.filter((s) => s.includes("🔧"));
     expect(toolSends.length).toBeGreaterThan(1);
