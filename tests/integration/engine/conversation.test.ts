@@ -8,6 +8,7 @@ import {
 } from "../../helpers/integration-case.ts";
 
 import { isSessionMeta } from "@freeanima/core/db/domain";
+import { existsSync } from "node:fs";
 import { DEFAULT_SESSION_TOOLSETS } from "@freeanima/core/tool";
 import { registerServiceTools } from "@freeanima/platform";
 import { getActivePgTestContext, getTestEngine, testConv } from "../../helpers/pg-test.ts";
@@ -43,6 +44,17 @@ describePg("conversation", () => {
     expect(cwd).toMatch(/^\/tmp\/anima-cwd-/);
     expect(cwd).not.toBe(process.cwd());
     expect(cwd).toContain(sid.slice(0, 8));
+  });
+
+  it("restoreIntegrationHome removes session cwd temp dir", async () => {
+    const c = testConv();
+    const sid = await c.newSession("parlor");
+    const meta = await c.loadSessionMeta(sid);
+    const cwd = isSessionMeta(meta) ? String(meta.cwd ?? "") : "";
+    expect(cwd).not.toBe("");
+    expect(existsSync(cwd)).toBe(true);
+    await restoreIntegrationHome(prev);
+    expect(existsSync(cwd)).toBe(false);
   });
 
   it("new session writes default cached toolsets and loadSessionTools resolves schemas", async () => {

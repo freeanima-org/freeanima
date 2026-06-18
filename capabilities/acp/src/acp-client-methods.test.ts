@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach } from "bun:test";
-import { mkdtempSync, writeFileSync, mkdirSync } from "node:fs";
+import { describe, it, expect, beforeEach, afterEach } from "bun:test";
+import { writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
-import { tmpdir } from "node:os";
+import { createTempDir, removeTempDir } from "@freeanima/core/util";
 import { handleClientMethod } from "./client-methods.ts";
 import { diagnoseStderr } from "./stderr-patterns.ts";
 
@@ -9,13 +9,17 @@ describe("handleClientMethod", () => {
   let projectCwd: string;
 
   beforeEach(() => {
-    projectCwd = mkdtempSync(join(tmpdir(), "acp-client-methods-"));
+    projectCwd = createTempDir("acp-client-methods-");
     mkdirSync(join(projectCwd, "src"), { recursive: true });
     writeFileSync(join(projectCwd, "src", "main.ts"), "export const hello = 1;\n");
     writeFileSync(
       join(projectCwd, "package.json"),
       JSON.stringify({ name: "test-proj", version: "1.0.0", scripts: { test: "echo ok" } }),
     );
+  });
+
+  afterEach(() => {
+    removeTempDir(projectCwd);
   });
 
   it("fs/read_text_file reads a file", () => {

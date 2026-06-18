@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach } from "bun:test";
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
+import { mkdirSync, writeFileSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { tmpdir } from "node:os";
 import { chdir } from "node:process";
+import { createTempDir, removeTempDir } from "@freeanima/core/util";
 import { Config } from "@freeanima/platform/config";
 import { registerCoreTools } from "@freeanima/capabilities-tools";
 import { ToolSetRegistry } from "@freeanima/core/tool";
@@ -25,16 +25,17 @@ describe("file tools", () => {
 
   beforeEach(() => {
     toolSets = new ToolSetRegistry();
-    home = mkdtempSync(join(tmpdir(), "anima-tools-"));
-    cwd = mkdtempSync(join(tmpdir(), "anima-cwd-"));
+    home = createTempDir("anima-tools-");
+    cwd = createTempDir("anima-cwd-");
     process.env.FREEANIMA_HOME = home;
-    chdir(cwd);
     registerCoreTools(toolSets, testConfig());
   });
 
   afterEach(() => {
     if (prevHome === undefined) delete process.env.FREEANIMA_HOME;
     else process.env.FREEANIMA_HOME = prevHome;
+    removeTempDir(home);
+    removeTempDir(cwd);
   });
 
   it("read_file returns line numbers", async () => {
@@ -72,13 +73,19 @@ describe("file tools", () => {
     const abs = join(cwd, rel);
     mkdirSync(dirname(abs), { recursive: true });
     writeFileSync(abs, "alpha\n", "utf-8");
-    const out = await toolSets.getTool("file_patch")!.handler({
-      path: rel,
-      old_string: "alpha",
-      new_string: "beta",
-    });
-    expect(out).not.toContain("invalid path");
-    expect(readFileSync(abs, "utf-8")).toBe("beta\n");
+    const prevCwd = process.cwd();
+    chdir(cwd);
+    try {
+      const out = await toolSets.getTool("file_patch")!.handler({
+        path: rel,
+        old_string: "alpha",
+        new_string: "beta",
+      });
+      expect(out).not.toContain("invalid path");
+      expect(readFileSync(abs, "utf-8")).toBe("beta\n");
+    } finally {
+      chdir(prevCwd);
+    }
   });
 
   it("tools are registered", () => {

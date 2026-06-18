@@ -11,6 +11,12 @@ export {
 } from "./time.ts";
 export { isEnabledByDefault } from "./config.ts";
 export {
+  createTempDir,
+  removeTempDir,
+  isManagedAnimaTmpPath,
+  removeManagedAnimaTmpPath,
+} from "./temp-dir.ts";
+export {
   rrfMerge,
   semanticMemoryDocKey,
   messageDocKey,

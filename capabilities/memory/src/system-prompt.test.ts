@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "bun:test";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { tmpdir } from "node:os";
+import { createTempDir, removeTempDir } from "@freeanima/core/util";
 import type { SemanticMemoryStorePort } from "@freeanima/core/repos";
 import {
   composeSystemPrompt,
@@ -77,15 +77,23 @@ describe("system-prompt", () => {
   });
 
   it("project context segment includes code fence without second-person frame", async () => {
-    const dir = mkdtempSync(join(tmpdir(), "anima-agents-"));
-    writeFileSync(join(dir, "AGENTS.md"), "# Project conventions\nUse type annotations.", "utf-8");
-    registerSemanticMemoryStore(createMockSemanticStore());
+    const dir = createTempDir("anima-agents-");
+    try {
+      writeFileSync(
+        join(dir, "AGENTS.md"),
+        "# Project conventions\nUse type annotations.",
+        "utf-8",
+      );
+      registerSemanticMemoryStore(createMockSemanticStore());
 
-    const parts = await decomposeSystemPromptParts("self layer", dir);
-    expect(parts.agents).toContain("## Project context");
-    expect(parts.agents).toContain("```md");
-    expect(parts.agents).toContain("Use type annotations");
-    expect(parts.agents).not.toContain(RESIDENT_MEMORY_SYSTEM_FRAME);
+      const parts = await decomposeSystemPromptParts("self layer", dir);
+      expect(parts.agents).toContain("## Project context");
+      expect(parts.agents).toContain("```md");
+      expect(parts.agents).toContain("Use type annotations");
+      expect(parts.agents).not.toContain(RESIDENT_MEMORY_SYSTEM_FRAME);
+    } finally {
+      removeTempDir(dir);
+    }
   });
 
   it("omits empty resident memory and missing AGENTS.md segments", async () => {

@@ -1,9 +1,9 @@
 import { ToolSetRegistry } from "@freeanima/core/tool";
 import { describe, it, expect, beforeAll, beforeEach, afterEach } from "bun:test";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { tmpdir } from "node:os";
 import { spawnSync } from "node:child_process";
+import { createTempDir, removeTempDir } from "@freeanima/core/util";
 
 import { Config } from "@freeanima/platform/config";
 import { registerCoreTools } from "@freeanima/capabilities-tools";
@@ -41,16 +41,17 @@ describe("local tools", () => {
   });
 
   beforeEach(() => {
-    home = mkdtempSync(join(tmpdir(), "anima-local-"));
-    cwd = mkdtempSync(join(tmpdir(), "anima-cwd-"));
+    home = createTempDir("anima-local-");
+    cwd = createTempDir("anima-cwd-");
     process.env.FREEANIMA_HOME = home;
     writeFileSync(join(home, "config.yaml"), MIN_CONFIG, "utf-8");
-    process.chdir(cwd);
   });
 
   afterEach(() => {
     if (prevHome === undefined) delete process.env.FREEANIMA_HOME;
     else process.env.FREEANIMA_HOME = prevHome;
+    removeTempDir(home);
+    removeTempDir(cwd);
   });
 
   it("registers core tools", () => {
@@ -149,7 +150,10 @@ describe("local tools", () => {
   });
 
   it("terminal runs echo", async () => {
-    const out = await tools.getTool("terminal_run")!.handler({ command: "echo hello-anima" });
+    const out = await tools.getTool("terminal_run")!.handler({
+      command: "echo hello-anima",
+      workdir: cwd,
+    });
     expect(out).toContain("hello-anima");
   });
 

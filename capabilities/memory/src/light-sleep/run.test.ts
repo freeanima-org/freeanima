@@ -1,7 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
-import { mkdtempSync } from "node:fs";
-import { join } from "node:path";
-import { tmpdir } from "node:os";
+import { createTempDir, removeTempDir } from "@freeanima/core/util";
 import type {
   AutobiographicalMemoryStorePort,
   LimbicMemoryStorePort,
@@ -175,7 +173,7 @@ describe("runLightSleep", () => {
   let autobiographyCalls = 0;
 
   beforeEach(() => {
-    homeDir = mkdtempSync(join(tmpdir(), "anima-light-sleep-"));
+    homeDir = createTempDir("anima-light-sleep-");
     process.env.FREEANIMA_HOME = homeDir;
 
     lightSleepCalls = 0;
@@ -212,6 +210,7 @@ describe("runLightSleep", () => {
 
   afterEach(() => {
     delete process.env.FREEANIMA_HOME;
+    removeTempDir(homeDir);
     resetMemorySessionStoreForTests();
     resetSemanticMemoryStoreForTests();
     resetLimbicMemoryStoreForTests();

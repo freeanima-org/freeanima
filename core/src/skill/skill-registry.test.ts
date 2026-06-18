@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "bun:test";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { tmpdir } from "node:os";
+import { createTempDir, removeTempDir } from "@freeanima/core/util";
 import {
   SkillRegistry,
   createUserSkill,
@@ -16,6 +16,11 @@ import {
 
 describe("SkillRegistry", () => {
   const skills = new SkillRegistry();
+  const tempDirs: string[] = [];
+
+  afterEach(() => {
+    for (const dir of tempDirs.splice(0)) removeTempDir(dir);
+  });
 
   it("register / list / search", () => {
     skills.register({
@@ -40,7 +45,8 @@ describe("SkillRegistry", () => {
   });
 
   it("registerSkillsFromDirectory scans md files", () => {
-    const dir = mkdtempSync(join(tmpdir(), "skill-dir-"));
+    const dir = createTempDir("skill-dir-");
+    tempDirs.push(dir);
     writeFileSync(
       join(dir, "scan-me.md"),
       "---\nname: scan-me\ndescription: From dir\n---\n\n# Body\n",
@@ -58,13 +64,14 @@ describe("user skills", () => {
   const prev = process.env.FREEANIMA_HOME;
 
   beforeEach(() => {
-    home = mkdtempSync(join(tmpdir(), "anima-skills-"));
+    home = createTempDir("anima-skills-");
     process.env.FREEANIMA_HOME = home;
   });
 
   afterEach(() => {
     if (prev === undefined) delete process.env.FREEANIMA_HOME;
     else process.env.FREEANIMA_HOME = prev;
+    removeTempDir(home);
   });
 
   it("create / list / load / delete", () => {

@@ -1,14 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "bun:test";
-import {
-  mkdtempSync,
-  readFileSync,
-  existsSync,
-  mkdirSync,
-  writeFileSync,
-  realpathSync,
-} from "node:fs";
+import { readFileSync, existsSync, mkdirSync, writeFileSync, realpathSync } from "node:fs";
 import { join } from "node:path";
-import { tmpdir } from "node:os";
+import { createTempDir, removeTempDir } from "@freeanima/core/util";
 import { renderSystemdUnit } from "./systemd-unit.ts";
 import { ensureUnitFile } from "./service-cmd.ts";
 import * as serviceCommon from "./service-common.ts";
@@ -29,9 +22,10 @@ describe("bind hosts", () => {
 
 describe("systemd unit", () => {
   const prevXdg = process.env.XDG_CONFIG_HOME;
+  let configHome: string;
 
   beforeEach(() => {
-    const configHome = mkdtempSync(join(tmpdir(), "freeanima-systemd-"));
+    configHome = createTempDir("freeanima-systemd-");
     process.env.XDG_CONFIG_HOME = join(configHome, ".config");
     mkdirSync(join(process.env.XDG_CONFIG_HOME, "systemd", "user"), { recursive: true });
   });
@@ -40,6 +34,7 @@ describe("systemd unit", () => {
     vi.restoreAllMocks();
     if (prevXdg === undefined) delete process.env.XDG_CONFIG_HOME;
     else process.env.XDG_CONFIG_HOME = prevXdg;
+    removeTempDir(configHome);
   });
 
   it("ExecStart uses foreground and host/port", () => {
@@ -81,7 +76,7 @@ describe("systemd unit", () => {
 
   it("animaBin prefers current TS cli.ts over PATH", () => {
     vi.restoreAllMocks();
-    const dir = mkdtempSync(join(tmpdir(), "freeanima-cli-"));
+    const dir = createTempDir("freeanima-cli-");
     const cliPath = join(dir, "cli.ts");
     writeFileSync(cliPath, "#!/usr/bin/env bun\n");
     const prev = process.argv[1];
@@ -92,6 +87,7 @@ describe("systemd unit", () => {
       expect(bin).not.toContain(".venv");
     } finally {
       process.argv[1] = prev;
+      removeTempDir(dir);
     }
   });
   it("resolveAnimaSpawn splits execPath + script from animaBin", () => {

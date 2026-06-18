@@ -32,10 +32,27 @@ import {
   invalidateSelfLayerPromptCache,
 } from "@freeanima/capabilities-identity";
 
+import { removeManagedAnimaTmpPath, removeTempDir } from "@freeanima/core/util";
+import { sessions } from "@freeanima/core/db/schema";
+import { isNotNull } from "drizzle-orm";
+
 import { bindHomeChannelConfig } from "@freeanima/platform/ports/home-channel";
+import { getDb } from "@freeanima/platform/connectors/db-pg";
 import { beginLogIsolation, resetServiceLogger } from "./log-isolation.ts";
 import { pgTestUrl } from "./pg-test-gate.ts";
 import { getActivePgTestContext } from "./pg-test.ts";
+
+let activeIntegrationHome: string | undefined;
+
+async function cleanupIntegrationSessionCwds(): Promise<void> {
+  const ctx = getActivePgTestContext();
+  if (!ctx) return;
+  const db = getDb();
+  const rows = await db.select({ cwd: sessions.cwd }).from(sessions).where(isNotNull(sessions.cwd));
+  for (const row of rows) {
+    if (row.cwd) removeManagedAnimaTmpPath(row.cwd);
+  }
+}
 
 async function flushActiveCompressionSummaries(): Promise<void> {
   const ctx = getActivePgTestContext();
@@ -116,12 +133,16 @@ export async function syncIntegrationSelfLayer(
   invalidateSelfLayerPromptCache();
 }
 
-/** Integration test afterEach: wait for async compression summaries, then restore FREEANIMA_HOME */
+/** Integration test afterEach: wait for async compression summaries, clean tmp dirs, restore FREEANIMA_HOME */
 export async function restoreIntegrationHome(prevHome?: string): Promise<void> {
   await flushActiveCompressionSummaries();
+  await cleanupIntegrationSessionCwds();
+  const tempHome = activeIntegrationHome;
+  activeIntegrationHome = undefined;
   if (prevHome === undefined) delete process.env.FREEANIMA_HOME;
   else process.env.FREEANIMA_HOME = prevHome;
   resetServiceLogger();
+  removeTempDir(tempHome);
 }
 
 /** Standard integration test case setup: temp home + PG harness + AppRuntime */
@@ -133,6 +154,7 @@ export async function beginIntegrationCase(prefix: string): Promise<{
     throw new Error("ANIMA_TEST_PG_URL is not set; run bun test");
   }
   const home = beginLogIsolation(prefix);
+  activeIntegrationHome = home;
   const { setupIntegrationHome } = await import("./pg-test.ts");
   const pg = await setupIntegrationHome({ url: pgTestUrl, home });
   wireIntegrationRuntimeContext(pg);
@@ -148,6 +170,7 @@ export async function beginIntegrationCaseWithConfig(
     throw new Error("ANIMA_TEST_PG_URL is not set; run bun test");
   }
   const home = beginLogIsolation(prefix);
+  activeIntegrationHome = home;
   const { setupIntegrationHome } = await import("./pg-test.ts");
   const pg = await setupIntegrationHome({ url: pgTestUrl, home, configYaml });
   wireIntegrationRuntimeContext(pg);

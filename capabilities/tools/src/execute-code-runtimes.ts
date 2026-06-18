@@ -1,7 +1,7 @@
 import { toolError } from "@freeanima/core/tool";
+import { createTempDir, removeManagedAnimaTmpPath } from "@freeanima/core/util";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, writeFileSync, unlinkSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const MAX_OUTPUT = 50 * 1024;
@@ -59,7 +59,7 @@ function formatSpawnResult(result: ReturnType<typeof spawnSync>): string {
 }
 
 async function runBun(code: string, timeoutSec: number): Promise<string> {
-  const dir = mkdtempSync(join(tmpdir(), "anima-exec-"));
+  const dir = createTempDir("anima-exec-");
   const file = join(dir, "snippet.ts");
   writeFileSync(file, `${BUN_PREAMBLE}\n${code}`, "utf-8");
   const controller = new AbortController();
@@ -81,16 +81,12 @@ async function runBun(code: string, timeoutSec: number): Promise<string> {
     return toolError(String(e));
   } finally {
     clearTimeout(timer);
-    try {
-      unlinkSync(file);
-    } catch {
-      /* ignore */
-    }
+    removeManagedAnimaTmpPath(dir);
   }
 }
 
 function runNodejs(code: string, timeoutSec: number): string {
-  const dir = mkdtempSync(join(tmpdir(), "anima-exec-"));
+  const dir = createTempDir("anima-exec-");
   const file = join(dir, "snippet.mts");
   writeFileSync(file, `${NODEJS_PREAMBLE}\n${code}`, "utf-8");
   try {
@@ -103,11 +99,7 @@ function runNodejs(code: string, timeoutSec: number): string {
   } catch (e) {
     return toolError(String(e));
   } finally {
-    try {
-      unlinkSync(file);
-    } catch {
-      /* ignore */
-    }
+    removeManagedAnimaTmpPath(dir);
   }
 }
 

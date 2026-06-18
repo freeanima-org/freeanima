@@ -1,7 +1,7 @@
 import { describe, expect, it, beforeEach, afterEach } from "bun:test";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { tmpdir } from "node:os";
+import { createTempDir, removeTempDir } from "@freeanima/core/util";
 import { FileConfig, stringifyYaml } from "./index.ts";
 import { getEventbusBackend, getEventbusKeyPrefix } from "./eventbus.ts";
 import { eventbusConfigSchema } from "@freeanima/core/config";
@@ -11,13 +11,14 @@ describe("eventbus config", () => {
   const prevHome = process.env.FREEANIMA_HOME;
 
   beforeEach(() => {
-    home = mkdtempSync(join(tmpdir(), "freeanima-eventbus-cfg-"));
+    home = createTempDir("freeanima-eventbus-cfg-");
     process.env.FREEANIMA_HOME = home;
   });
 
   afterEach(() => {
     if (prevHome === undefined) delete process.env.FREEANIMA_HOME;
     else process.env.FREEANIMA_HOME = prevHome;
+    removeTempDir(home);
   });
 
   it("eventbusConfigSchema accepts redis only", () => {

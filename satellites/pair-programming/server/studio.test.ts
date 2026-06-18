@@ -1,7 +1,16 @@
 import { describe, it, expect, beforeEach, afterEach } from "bun:test";
-import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+
+function removeTempDir(path: string | undefined): void {
+  if (!path) return;
+  try {
+    rmSync(path, { recursive: true, force: true });
+  } catch (e) {
+    if ((e as NodeJS.ErrnoException).code !== "ENOENT") throw e;
+  }
+}
 
 describe("pair-programming studio", () => {
   let workspace: string;
@@ -21,6 +30,7 @@ describe("pair-programming studio", () => {
     else process.env.STUDIO_WORKSPACE = prevWorkspace;
     if (prevShowHidden === undefined) delete process.env.STUDIO_SHOW_HIDDEN;
     else process.env.STUDIO_SHOW_HIDDEN = prevShowHidden;
+    removeTempDir(workspace);
   });
 
   it("buildFileTree returns workspace files", async () => {
