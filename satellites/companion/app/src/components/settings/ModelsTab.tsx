@@ -28,68 +28,71 @@ export function ModelsTab() {
   };
 
   return (
-    <div className="space-y-3">
-      <input
-        type="file"
-        accept=".vrm"
-        className="hidden"
-        id="model-import"
-        onChange={(e) => void onImport(e)}
-      />
-      <button
-        type="button"
-        className="w-full rounded-lg py-1.5 bg-white/5 hover:bg-white/10 text-sm"
-        disabled={uploading}
-        onClick={() => document.getElementById("model-import")?.click()}
-      >
-        {uploading ? "导入中…" : "导入模型"}
-      </button>
-      {error ? <p className="text-xs text-red-300">{error}</p> : null}
-      <ul className="space-y-2">
+    <div className="flex flex-col gap-4">
+      <label className="btn btn-primary w-full cursor-pointer">
+        {uploading ? <span className="loading loading-spinner loading-sm" /> : null}
+        {uploading ? "导入中…" : "导入 VRM 模型"}
+        <input
+          type="file"
+          accept=".vrm"
+          className="hidden"
+          disabled={uploading}
+          onChange={(e) => void onImport(e)}
+        />
+      </label>
+      {error ? (
+        <div role="alert" className="alert alert-error alert-sm py-2">
+          <span className="text-xs">{error}</span>
+        </div>
+      ) : null}
+
+      <ul className="flex flex-col gap-2">
         {models.length === 0 ? (
-          <li className="text-xs text-white/40">暂无模型</li>
+          <li className="text-center text-sm text-base-content/50 py-6">暂无模型</li>
         ) : (
           models.map((m) => (
-            <li key={m.id} className="rounded-lg bg-white/5 p-2 text-xs">
-              <div className="flex items-center justify-between gap-2">
-                <input
-                  className="flex-1 bg-transparent border-b border-white/10"
-                  defaultValue={m.name}
-                  onBlur={(e) => {
-                    const name = e.target.value.trim();
-                    if (name && name !== m.name) {
-                      void renameModel(m.id, name).then(() => refreshConfig());
-                    }
-                  }}
-                />
-                {m.id === activeModelId ? (
-                  <span className="text-emerald-300 shrink-0">当前</span>
-                ) : (
-                  <button
-                    type="button"
-                    className="shrink-0 text-white/70 hover:text-white"
-                    onClick={() =>
-                      void setActiveModel(m.id)
-                        .then(() => refreshConfig())
-                        .then(() => emitConfigChanged())
-                    }
-                  >
-                    切换
-                  </button>
-                )}
+            <li key={m.id} className="card card-border bg-base-300/30">
+              <div className="card-body py-3 px-4 gap-2">
+                <div className="flex items-center justify-between gap-2">
+                  <input
+                    className="input input-ghost input-sm flex-1 px-0 h-auto min-h-0 font-medium"
+                    defaultValue={m.name}
+                    onBlur={(e) => {
+                      const name = e.target.value.trim();
+                      if (name && name !== m.name) {
+                        void renameModel(m.id, name).then(() => refreshConfig());
+                      }
+                    }}
+                  />
+                  {m.id === activeModelId ? (
+                    <span className="badge badge-success badge-sm shrink-0">当前</span>
+                  ) : (
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-xs shrink-0"
+                      onClick={() =>
+                        void setActiveModel(m.id)
+                          .then(() => refreshConfig())
+                          .then(() => emitConfigChanged())
+                      }
+                    >
+                      切换
+                    </button>
+                  )}
+                </div>
+                <p className="text-xs text-base-content/50 truncate">{m.path}</p>
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-xs text-error self-start px-2"
+                  onClick={() =>
+                    void deleteModel(m.id)
+                      .then(() => refreshConfig())
+                      .then(() => emitConfigChanged())
+                  }
+                >
+                  删除
+                </button>
               </div>
-              <p className="text-white/40 mt-1 truncate">{m.path}</p>
-              <button
-                type="button"
-                className="mt-1 text-red-300/80 hover:text-red-300"
-                onClick={() =>
-                  void deleteModel(m.id)
-                    .then(() => refreshConfig())
-                    .then(() => emitConfigChanged())
-                }
-              >
-                删除
-              </button>
             </li>
           ))
         )}

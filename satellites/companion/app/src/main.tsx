@@ -61,11 +61,16 @@ function SettingsModal() {
   const setOpen = useCompanionStore((s) => s.setSettingsOpen);
   if (!open) return null;
   return (
-    <div className="settings-modal-backdrop" onClick={() => setOpen(false)}>
-      <div className="settings-modal-panel" onClick={(e) => e.stopPropagation()}>
+    <dialog className="modal modal-open">
+      <div className="modal-box w-[800px] max-w-[800px] p-0 bg-transparent border-0 shadow-none overflow-hidden">
         <SettingsPanel onClose={() => setOpen(false)} />
       </div>
-    </div>
+      <form method="dialog" className="modal-backdrop">
+        <button type="button" onClick={() => setOpen(false)}>
+          关闭
+        </button>
+      </form>
+    </dialog>
   );
 }
 
@@ -203,14 +208,14 @@ function SettingsApp() {
 
   if (loading) {
     return (
-      <div className="settings-window flex items-center justify-center">
-        <p className="text-white/70 text-sm">正在连接本地后台…</p>
+      <div className="min-h-screen bg-base-300 flex items-center justify-center">
+        <p className="text-base-content/70 text-sm">正在连接本地后台…</p>
       </div>
     );
   }
 
   return (
-    <div className="settings-window">
+    <div className="min-h-screen bg-base-100 flex justify-center p-6">
       <SettingsPanel standalone />
     </div>
   );

@@ -8,19 +8,22 @@ export function SettingsTabs() {
     { id: "general" as const, label: "通用" },
     { id: "behavior" as const, label: "行为" },
     { id: "models" as const, label: "模型" },
-    { id: "slots" as const, label: "动作槽位" },
     { id: "library" as const, label: "动作库" },
+    { id: "slots" as const, label: "动作槽位" },
   ];
 
   return (
-    <div className="flex flex-wrap gap-1 mb-3 border-b border-white/10 pb-2">
+    <div
+      role="tablist"
+      className="tabs tabs-boxed bg-base-300/40 mx-5 mt-2 mb-0 shrink-0 flex-wrap h-auto gap-1 p-1"
+      aria-label="设置分类"
+    >
       {tabs.map((t) => (
         <button
           key={t.id}
           type="button"
-          className={`rounded-md px-2 py-1 text-xs ${
-            tab === t.id ? "bg-white/15 text-white" : "text-white/55 hover:bg-white/5"
-          }`}
+          role="tab"
+          className={`tab tab-sm ${tab === t.id ? "tab-active" : ""}`}
           onClick={() => setTab(t.id)}
         >
           {t.label}

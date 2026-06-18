@@ -1,53 +1,18 @@
-import { advanceBubble, fetchRuntimeState } from "@/lib/api.ts";
+import { advanceBubble } from "@/lib/api.ts";
+import { useRuntimeSocket } from "@/hooks/useRuntimeSocket.ts";
 import { useCompanionStore } from "@/stores/companion.ts";
-import type { MotionSlotId } from "@shared/companion-schema.ts";
-import { useEffect, useState } from "react";
-
-type BubbleView = {
-  id: string;
-  text: string;
-};
 
 export function TextBubbleOverlay() {
   const characterReady = useCompanionStore((s) => s.characterReady);
-  const [bubble, setBubble] = useState<BubbleView | null>(null);
-  const [pending, setPending] = useState(0);
+  const bubble = useCompanionStore((s) => s.runtimeBubble);
+  const pending = useCompanionStore((s) => s.runtimeBubblePending);
 
-  useEffect(() => {
-    if (!characterReady) return;
-
-    let cancelled = false;
-    const poll = async (): Promise<void> => {
-      try {
-        const state = await fetchRuntimeState();
-        if (cancelled) return;
-        setBubble(state.bubble.current);
-        setPending(state.bubble.pending);
-
-        const backend = useCompanionStore.getState().backendRef.current;
-        for (const cmd of state.play) {
-          backend?.playSlot(cmd.slot as MotionSlotId, cmd.motionId);
-        }
-      } catch {
-        /* sidecar 暂不可用 */
-      }
-    };
-
-    void poll();
-    const id = setInterval(() => void poll(), 2000);
-    return () => {
-      cancelled = true;
-      clearInterval(id);
-    };
-  }, [characterReady]);
+  useRuntimeSocket(characterReady);
 
   if (!bubble) return null;
 
   const onClick = (): void => {
-    void advanceBubble().then((res) => {
-      setBubble(res.current);
-      setPending((p) => Math.max(0, p - 1));
-    });
+    void advanceBubble();
   };
 
   return (

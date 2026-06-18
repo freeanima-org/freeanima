@@ -1,5 +1,8 @@
 import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
+import { FBX_IMPORT_UNAVAILABLE_MSG } from "../shared/constants.ts";
+
+export { FBX_IMPORT_UNAVAILABLE_MSG };
 
 /** 安装目录（companion-bun.exe / FBX2glTF 与 shell 同级） */
 export function installBinDir(): string {
@@ -45,13 +48,21 @@ function fbx2gltfCandidates(): string[] {
   return paths;
 }
 
-export function resolveFbx2gltfBinary(): string {
+export function findFbx2gltfBinary(): string | null {
   for (const path of fbx2gltfCandidates()) {
     if (existsSync(path)) {
       return path;
     }
   }
-  throw new Error(
-    "未找到 FBX2glTF 二进制（需与 companion-shell 同目录的 FBX2glTF-windows-x64.exe）。请重新安装或改用 .vrma 导入。",
-  );
+  return null;
+}
+
+export function fbxImportAvailable(): boolean {
+  return findFbx2gltfBinary() !== null;
+}
+
+export function resolveFbx2gltfBinary(): string {
+  const path = findFbx2gltfBinary();
+  if (path) return path;
+  throw new Error(FBX_IMPORT_UNAVAILABLE_MSG);
 }

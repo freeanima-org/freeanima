@@ -65,7 +65,8 @@
     "prepare": "husky"
   },
   "patchedDependencies": {
-    "drizzle-orm@1.0.0-rc.3": "patches/drizzle-orm@1.0.0-rc.3.patch"
+    "drizzle-orm@1.0.0-rc.3": "patches/drizzle-orm@1.0.0-rc.3.patch",
+    "fbx2vrma-converter@1.0.2": "patches/fbx2vrma-converter@1.0.2.patch"
   },
   "trustedDependencies": [
     "cpu-features",
