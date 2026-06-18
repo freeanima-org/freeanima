@@ -24,6 +24,7 @@ import { registerSleepPipelineStepRecorder } from "../runtime/pipeline-step-run-
 import { startupLog } from "./status.ts";
 import type { EnginePhaseResult } from "./engine-phase.ts";
 import { bindSapServerDeps } from "../sap/runtime-context.ts";
+import { SapInstanceRegistry } from "../sap/instance-registry.ts";
 import { isSessionMeta } from "@freeanima/core/db/domain";
 import { ANIMA_VERSION } from "../runtime/version.ts";
 
@@ -101,6 +102,7 @@ export async function bootRuntimePhase(
   bindSapServerDeps({
     runtime,
     satelliteManager: satellite,
+    instanceRegistry: new SapInstanceRegistry(),
     animaVersion: ANIMA_VERSION,
     masks,
   });

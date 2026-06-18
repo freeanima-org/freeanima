@@ -35,18 +35,21 @@ function toolsetEntries(registry: ToolSetRegistry): Array<{
   description: string;
   tools: ToolCatalogEntry[];
 }> {
-  return registry.listToolSets().map((view) => {
-    const ts = registry.getToolSet(view.name)!;
-    return {
-      name: ts.name,
-      description: ts.description,
-      tools: ts.tools.map((def) => ({
-        name: def.name,
-        description: def.description,
-        toolset: ts.name,
-      })),
-    };
-  });
+  return registry
+    .listToolSets()
+    .filter((view) => !view.private)
+    .map((view) => {
+      const ts = registry.getToolSet(view.name)!;
+      return {
+        name: ts.name,
+        description: ts.description,
+        tools: ts.tools.map((def) => ({
+          name: def.name,
+          description: def.description,
+          toolset: ts.name,
+        })),
+      };
+    });
 }
 
 function matchesAllTokens(text: string, tokens: string[]): boolean {

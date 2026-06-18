@@ -14,7 +14,10 @@ function wrapPromptSection(heading: string, inner: string, frame?: string): stri
 
 /** Render ToolSet name + description index for system prompt */
 export function renderToolsetsSection(registry: ToolSetRegistry): string {
-  const sets = registry.listToolSets().toSorted((a, b) => a.name.localeCompare(b.name));
+  const sets = registry
+    .listToolSets()
+    .filter((ts) => !ts.private)
+    .toSorted((a, b) => a.name.localeCompare(b.name));
   if (!sets.length) return "";
   const lines = sets.map((ts) => `- ${ts.name} — ${ts.description.trim() || "(no description)"}`);
   return wrapPromptSection("ToolSets", lines.join("\n"), TOOLSETS_FRAME);

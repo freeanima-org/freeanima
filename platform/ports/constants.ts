@@ -1,5 +1,5 @@
-/** Parlor Web channel session identifier */
-export const PARLOR_PLATFORM = "parlor";
+/** Parlor / WebUI default SAP platform (Chamber web channel) */
+export const PARLOR_PLATFORM = "sap:parlor:web";
 
 /** WebUI static route prefix */
 export const WEBUI_BASE_PATH = "/webui";

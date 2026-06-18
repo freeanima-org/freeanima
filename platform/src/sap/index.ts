@@ -8,3 +8,4 @@ export type { SapStreamEmitter } from "./stream-bridge.ts";
 export { createSapServerHandlers, attachSapWebSocket } from "./ws-server.ts";
 export type { SapServerDeps } from "./ws-server.ts";
 export { createSapBunHandlers } from "./bun-route.ts";
+export { SapInstanceRegistry, type SapInstanceRecord } from "./instance-registry.ts";

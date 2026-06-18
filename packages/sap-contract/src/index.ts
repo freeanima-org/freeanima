@@ -9,10 +9,23 @@ export {
   parseSapToolName,
   isSapPrefixedToolName,
   sapToolsetId,
-  resolvePlatformForApp,
-  SAP_APP_PLATFORM_MAP,
+  formatSapPlatform,
+  isSapPlatform,
+  parseSapPlatform,
+  isValidSapInstanceId,
+  SAP_INSTANCE_ID_PATTERN,
 } from "./naming.ts";
-export type { ParsedSapToolName } from "./naming.ts";
+export type { ParsedSapToolName, ParsedSapPlatform } from "./naming.ts";
+
+export { generateSapInstanceIdCandidate, assertSapInstanceId } from "./instance-id.ts";
+
+export {
+  browserSapInstanceStore,
+  memorySapInstanceStore,
+  loadSapInstanceId,
+  type SapInstanceStore,
+} from "./instance-store.ts";
+export { fileSapInstanceStore } from "./file-instance-store.ts";
 
 export {
   connectPayloadSchema,
@@ -131,25 +144,81 @@ export type {
   SapReconnectPolicy,
   SapTransportHandle,
 } from "./transport.ts";
+
+export { resolveHubHttpUrl, resolveHubWsUrl, hubHttpFromWsUrl, resolveRelayWsUrl } from "./urls.ts";
+
 export {
+  createSapSessionStreamClient,
+  sapListSessions,
+  sapCreateSession,
+  sapGetSessionMessages,
+  sapPatchSessionTitle,
+  type SubscribeCallbacks,
+  type SapSessionStreamClient,
+} from "./session-stream-core.ts";
+
+export {
+  createSapDirectClient,
+  loadDirectSatelliteConfig,
   createSapBrowserClient,
   loadParlorSatelliteConfig,
   PARLOR_PLATFORM,
-} from "./browser-client.ts";
-export type {
-  ParlorSatelliteConfig,
-  SapBrowserClient,
-  SapBrowserClientOptions,
-  SubscribeCallbacks,
-} from "./browser-client.ts";
+  formatDirectPlatform,
+  type DirectSatelliteConfig,
+  type SapDirectClient,
+  type SapDirectClientOptions,
+} from "./direct-client.ts";
+
+export {
+  createSapSidecarClient,
+  createSapRelayBrowserClient,
+  type SapSidecarClient,
+  type SapSidecarClientOptions,
+  type SapRelayBrowserClient,
+  type SapRelayBrowserClientOptions,
+} from "./sidecar-client.ts";
+
 export {
   createSapRelayClient,
   resolveSapRelayWsUrl,
   SAP_RELAY_READY_METHOD,
 } from "./relay-client.ts";
 export type { CreateSapRelayClientOptions, SapRelayClient } from "./relay-client.ts";
-export { createSapRelayBrowserClient } from "./relay-browser-client.ts";
-export type {
-  SapRelayBrowserClient,
-  SapRelayBrowserClientOptions,
-} from "./relay-browser-client.ts";
+
+export {
+  createSatelliteHub,
+  type CreateSatelliteHubOptions,
+  type SatelliteHubHandle,
+} from "./satellite-hub.ts";
+
+export {
+  createSapRelayServerState,
+  attachHubEventFanout,
+  handleRelayWsOpen,
+  handleRelayWsClose,
+  handleRelayWsMessage,
+  type SapRelayServerState,
+  type RelayWsData,
+} from "./satellite-relay-server.ts";
+
+export {
+  installSapSharedWorkerHost,
+  createSharedWorkerSapClient,
+  type SharedWorkerPortMessage,
+  type CreateSharedWorkerSapClientOptions,
+} from "./shared-worker.ts";
+
+export {
+  hasNewAssistantReply,
+  pollUntilAssistantReply,
+  RECOVERY_INITIAL_DELAY_MS,
+  RECOVERY_MAX_DELAY_MS,
+  RECOVERY_MAX_DURATION_MS,
+  type DisplayRecoveryItem,
+} from "./display-recovery.ts";
+
+/** @deprecated Use sidecar-client.ts */
+export { createSapRelayBrowserClient as createSapRelayBrowserClientLegacy } from "./sidecar-client.ts";
+
+/** @deprecated Use direct-client.ts */
+export { createSapBrowserClient as createSapBrowserClientLegacy } from "./direct-client.ts";

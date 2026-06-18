@@ -2,41 +2,56 @@ import { z } from "zod";
 
 import { normalizePgTimestamp } from "./timestamp.ts";
 
-/** Known Gateway / channels (aligned with runtime/platforms.ts) */
-export const PLATFORMS = [
-  "parlor",
-  "discord",
-  "weixin",
-  "studio-pair-programming",
-  "companion",
-  "cron",
-] as const;
+/** Gateway channels (non-SAP) */
+export const GATEWAY_PLATFORMS = ["discord", "weixin", "cron"] as const;
 
-export type Platform = (typeof PLATFORMS)[number];
+export type GatewayPlatform = (typeof GATEWAY_PLATFORMS)[number];
 
-export const platformSchema = z.enum(PLATFORMS);
+/** @deprecated Use GATEWAY_PLATFORMS; SAP platforms use `sap:{slug}:{inst}` strings */
+export const PLATFORMS = GATEWAY_PLATFORMS;
 
-export function isPlatform(value: string): value is Platform {
-  return (PLATFORMS as readonly string[]).includes(value);
+export const gatewayPlatformSchema = z.enum(GATEWAY_PLATFORMS);
+
+/** @deprecated Use gatewayPlatformSchema or sap platform string validation */
+export const platformSchema = z.union([
+  gatewayPlatformSchema,
+  z.string().refine((p) => isSapPlatformString(p), { message: "invalid sap platform" }),
+]);
+
+/** @deprecated Use GatewayPlatform or sap platform string */
+export type Platform = GatewayPlatform | string;
+
+export function isGatewayPlatform(value: string): value is GatewayPlatform {
+  return (GATEWAY_PLATFORMS as readonly string[]).includes(value);
 }
 
-const parlorPlatformInfoSchema = z.looseObject({
-  platform: z.literal("parlor"),
-});
+export function isSapPlatformString(platform: string): boolean {
+  if (!platform.startsWith("sap:")) return false;
+  const parts = platform.split(":");
+  return parts.length === 3 && parts[0] === "sap" && !!parts[1]?.trim() && !!parts[2]?.trim();
+}
 
-const studioPairPlatformInfoSchema = z.looseObject({
-  platform: z.literal("studio-pair-programming"),
+export function parseSapPlatformString(platform: string): {
+  app_slug: string;
+  instance_id_norm: string;
+} | null {
+  if (!isSapPlatformString(platform)) return null;
+  const parts = platform.split(":");
+  return { app_slug: parts[1]!, instance_id_norm: parts[2]! };
+}
+
+/** @deprecated Use isGatewayPlatform or isSapPlatformString */
+export function isPlatform(value: string): boolean {
+  return isGatewayPlatform(value) || isSapPlatformString(value);
+}
+
+const sapPlatformInfoSchema = z.looseObject({
+  platform: z.string().refine((p) => isSapPlatformString(p), { message: "invalid sap platform" }),
   satellite_app_id: z.string().optional(),
   satellite_instance_id: z.string().optional(),
   workspace_root: z.string().optional(),
   workspace_gitignore: z.boolean().optional(),
   workspace_show_hidden: z.boolean().optional(),
-});
-
-const companionPlatformInfoSchema = z.looseObject({
-  platform: z.literal("companion"),
-  satellite_app_id: z.string().optional(),
-  satellite_instance_id: z.string().optional(),
 });
 
 const cronPlatformInfoSchema = z.looseObject({
@@ -86,27 +101,24 @@ const weixinPlatformInfoSchema = z.object({
 
 /**
  * sessions.platform_info: platform + per-channel extra merged as discriminated union.
- * Kernel side still projects as platform + platform_extra.
+ * SAP satellites use platform `sap:{app_slug}:{instance_id}`.
  */
-export const platformInfoSchema = z.discriminatedUnion("platform", [
-  parlorPlatformInfoSchema,
+export const platformInfoSchema = z.union([
+  sapPlatformInfoSchema,
   discordPlatformInfoSchema,
   weixinPlatformInfoSchema,
-  studioPairPlatformInfoSchema,
-  companionPlatformInfoSchema,
   cronPlatformInfoSchema,
 ]);
 
 export type PlatformInfo = z.infer<typeof platformInfoSchema>;
-export type ParlorPlatformInfo = z.infer<typeof parlorPlatformInfoSchema>;
+export type SapPlatformInfo = z.infer<typeof sapPlatformInfoSchema>;
 export type DiscordPlatformInfo = z.infer<typeof discordPlatformInfoSchema>;
 export type WeixinPlatformInfo = z.infer<typeof weixinPlatformInfoSchema>;
-export type StudioPairPlatformInfo = z.infer<typeof studioPairPlatformInfoSchema>;
 
 /** Placeholder when platform_extra missing required fields */
 export const PLATFORM_STRING_PLACEHOLDER = "nothing";
 
-const PLATFORM_EXTRA_DEFAULTS: Partial<Record<Platform, Record<string, unknown>>> = {
+const PLATFORM_EXTRA_DEFAULTS: Partial<Record<string, Record<string, unknown>>> = {
   discord: { channel_id: PLATFORM_STRING_PLACEHOLDER },
   weixin: {
     weixin_user_id: PLATFORM_STRING_PLACEHOLDER,
@@ -137,7 +149,7 @@ function normalizePlatformExtra(
 
 /** Fill required extra fields per platform */
 export function applyPlatformExtraDefaults(
-  platform: Platform,
+  platform: string,
   extra: Record<string, unknown>,
 ): Record<string, unknown> {
   const defaults = PLATFORM_EXTRA_DEFAULTS[platform];
@@ -155,7 +167,8 @@ export function buildPlatformInfo(
   platform?: string,
   platformExtra?: Record<string, unknown>,
 ): PlatformInfo | null {
-  if (!platform || !isPlatform(platform)) {
+  if (!platform) return null;
+  if (!isGatewayPlatform(platform) && !isSapPlatformString(platform)) {
     return null;
   }
   const extra = normalizePlatformExtra(platformExtra);
@@ -164,6 +177,13 @@ export function buildPlatformInfo(
     platform,
     ...withDefaults,
   };
+  if (isSapPlatformString(platform)) {
+    const parsed = parseSapPlatformString(platform);
+    if (parsed) {
+      merged.satellite_app_id ??= parsed.app_slug;
+      merged.satellite_instance_id ??= parsed.instance_id_norm;
+    }
+  }
   return platformInfoSchema.parse(merged);
 }
 

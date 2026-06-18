@@ -42,6 +42,12 @@ export async function loadToolSetsIntoSession(
   }
 
   const allowed = known.filter((name) => {
+    if (registry.isToolSetPrivate(name)) {
+      const toolNames = toolNamesForToolSets(registry, [name]);
+      const filtered = applySessionToolMaskFilter(toolNames, meta);
+      if (filtered.length === 0) return false;
+      return true;
+    }
     const toolNames = toolNamesForToolSets(registry, [name]);
     const filtered = applySessionToolMaskFilter(toolNames, meta);
     return filtered.length > 0;

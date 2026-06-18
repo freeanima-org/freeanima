@@ -5,8 +5,8 @@ import { SatelliteManager } from "./manager.ts";
 
 describe("SatelliteManager routing", () => {
   const appId = "pair-programming";
-  const instanceA = "550e8400-e29b-41d4-a716-446655440000";
-  const instanceB = "660e8400-e29b-41d4-a716-446655440001";
+  const instanceA = "a1b";
+  const instanceB = "c2d";
 
   it("rejects sap tools when session has no satellite binding", () => {
     const manager = new SatelliteManager(new ToolSetRegistry());
@@ -43,7 +43,7 @@ describe("SatelliteManager routing", () => {
 
   it("reports connected instance status and tools", () => {
     const manager = new SatelliteManager(new ToolSetRegistry());
-    const instanceId = "550e8400-e29b-41d4-a716-446655440000";
+    const instanceId = "k7m";
     const key = manager.connectionKey(appId, instanceId);
     manager.registerConnection(key, {
       appId,
@@ -65,7 +65,7 @@ describe("SatelliteManager routing", () => {
     expect(status.instance_count).toBe(1);
     expect(status.tool_count).toBe(1);
     expect(status.instances[0]?.app_id).toBe(appId);
-    expect(status.instances[0]?.platform).toBe("studio-pair-programming");
+    expect(status.instances[0]?.platform).toBe("sap:pairprogramming:k7m");
     expect(status.instances[0]?.tools).toEqual([formatSapToolName(appId, instanceId, "scan_code")]);
     expect(status.instances[0]?.last_heartbeat_at).not.toBeNull();
   });

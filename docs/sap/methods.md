@@ -44,7 +44,7 @@ flowchart TB
 
 ### `session.create` platform binding
 
-Hub resolves `platform` from input or `resolvePlatformForApp(app_id)` (e.g. `pair-programming` → `studio-pair-programming`). Writes into session `platform_extra`:
+Hub resolves `platform` from input or `formatSapPlatform(app_id, instance_id)` → `sap:{app_slug}:{instance_id}` (e.g. `sap:pairprogramming:k7m`). Writes into session `platform_extra`:
 
 - `satellite_app_id` — normalized app slug
 - `satellite_instance_id` — instance id from connect context

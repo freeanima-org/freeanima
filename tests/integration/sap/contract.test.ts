@@ -19,7 +19,7 @@ describe("sap-contract envelopes", () => {
       kind: "req" as const,
       id: "abc",
       method: "session.create",
-      payload: { platform: "parlor" },
+      payload: { platform: "sap:parlor:k7m" },
     };
     const parsed = parseSapEnvelope(serializeSapEnvelope(frame));
     expect(parsed).toEqual(frame);
@@ -28,7 +28,7 @@ describe("sap-contract envelopes", () => {
   it("validates connect payload with http_url", () => {
     const payload = connectPayloadSchema.parse({
       app_id: "parlor",
-      instance_id: "550e8400-e29b-41d4-a716-446655440000",
+      instance_id: "k7m",
       protocol: "SAP/1.0",
       features_requested: [],
       http_url: "http://127.0.0.1:4174",
@@ -38,7 +38,7 @@ describe("sap-contract envelopes", () => {
 
   it("validates parlor SAP procedure schemas", () => {
     sessionAcpDockInputSchema.parse({ session_id: "sid" });
-    sessionCommandsInputSchema.parse({ platform: "parlor" });
+    sessionCommandsInputSchema.parse({ platform: "sap:parlor:k7m" });
     fridgeListInputSchema.parse({});
   });
 
@@ -57,19 +57,19 @@ describe("sap-contract envelopes", () => {
   });
 
   it("formats sap tool names", () => {
-    expect(
-      formatSapToolName("pair-programming", "550e8400-e29b-41d4-a716-446655440000", "scan_code"),
-    ).toBe("sap_pairprogramming_550e8400e29b41d4a716446655440000_scan_code");
+    expect(formatSapToolName("pair-programming", "k7m", "scan_code")).toBe(
+      "sap_pairprogramming_k7m_scan_code",
+    );
   });
 
   it("validates connected capability_mask presets shape", () => {
     const parsed = connectedPayloadSchema.parse({
       protocol: "SAP/1.0",
+      instance_id: "k7m",
       features_enabled: ["capability_mask"],
       server_info: {
         anima_version: "0.5.0",
         sap_version: "SAP/1.0",
-        platform_for_app: { parlor: "parlor" },
         capability_mask: {
           presets: [{ name: "developer", allowed_tools_summary: ["file_read"] }],
         },

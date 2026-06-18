@@ -52,6 +52,7 @@ class MockWebSocket {
         kind: "connected",
         payload: {
           protocol: SAP_VERSION,
+          instance_id: "abc",
           features_enabled: [],
           heartbeat_interval_sec: 30,
         },
@@ -94,7 +95,7 @@ describe("runSapTransport", () => {
       reconnect: false,
       createWebSocket: () => new MockWebSocket() as unknown as WebSocket,
       onConnected: async (client) => {
-        await client.request("tool.register", { tools: [] });
+        await client.request("tool.register", { tools: [], private: true });
       },
     });
 

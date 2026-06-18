@@ -91,8 +91,9 @@ bun satellites/companion/dev.ts
 | ------------------------ | ----------------------- | --------------------------------------- |
 | `FREEANIMA_URL`          | `http://127.0.0.1:2658` | Hub 地址（可跨机）                      |
 | `SATELLITE_PORT`         | `4176`                  | sidecar HTTP 端口                       |
-| `SATELLITE_INSTANCE_ID`  | 随机 UUID               | 实例 ID                                 |
 | `COMPANION_VRMA_ZIP_URL` | （空）                  | 可选；直链 zip 镜像，sidecar 启动时下载 |
+
+Hub 在首次 `connect`（不携带 `instance_id`）时分配 3 位 `instance_id`，写入 `~/.anima/companion/instance.json`；`platform` 为 `sap:companion:{instance_id}`。sidecar 现阶段为 **presence** 模式（`relay: false`、无 `tool.register`）；日后可在同一 `createSatelliteHub` 工厂开启 relay/tools。
 
 ### Tauri 桌面壳
 

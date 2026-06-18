@@ -25,7 +25,7 @@ import {
   terminalResizeInputSchema,
   terminalCloseInputSchema,
   normalizeAppSlug,
-  resolvePlatformForApp,
+  formatSapPlatform,
   type SapMethod,
   type SapRequestContext,
   type SapRouterInputs,
@@ -44,12 +44,14 @@ import {
   getTerminalSession,
   TerminalSessionError,
 } from "../../connectors/webui/elysia/terminal-session.ts";
+import type { SapInstanceRegistry } from "./instance-registry.ts";
 
 const HEARTBEAT_INTERVAL_SEC = 30;
 
 export type SapServerDeps = {
   runtime: AppRuntime;
   satelliteManager: SatelliteManager;
+  instanceRegistry: SapInstanceRegistry;
   animaVersion: string;
   masks: MaskRegistryPort;
 };
@@ -59,24 +61,31 @@ type SapWsSend = {
   close: (code?: number, reason?: string) => void;
 };
 
-export function createSapServerHandlers(deps: SapServerDeps): SapServerHandlers {
+export function createSapServerHandlers(
+  deps: SapServerDeps,
+  sessionPumps: Map<string, AbortController>,
+): SapServerHandlers {
   const router = defineSapRouter();
 
   const handlers: SapServerHandlers = {
     onConnect(payload) {
       const parsed = connectPayloadSchema.parse(payload);
+      const resolved = deps.instanceRegistry.resolveConnect({
+        appId: parsed.app_id,
+        instanceId: parsed.instance_id,
+        httpUrl: parsed.http_url,
+      });
+      if (!resolved.ok) {
+        throw new Error(resolved.error);
+      }
       const wantsMaskPresets = parsed.features_requested.includes("capability_mask");
       return {
         protocol: SAP_VERSION,
+        instance_id: resolved.instanceId,
         features_enabled: parsed.features_requested,
         server_info: {
           anima_version: deps.animaVersion,
           sap_version: SAP_VERSION,
-          platform_for_app: {
-            "pair-programming": "studio-pair-programming",
-            parlor: "parlor",
-            companion: "companion",
-          },
           ...(wantsMaskPresets
             ? {
                 capability_mask: {
@@ -104,8 +113,7 @@ export function createSapServerHandlers(deps: SapServerDeps): SapServerHandlers 
       switch (method) {
         case "session.create": {
           const input = sessionCreateInputSchema.parse(payload);
-          const platform =
-            input.platform ?? resolvePlatformForApp(ctx.app_id) ?? "studio-pair-programming";
+          const platform = input.platform ?? formatSapPlatform(ctx.app_id, ctx.instance_id);
           const platformExtra: Record<string, unknown> = {
             satellite_app_id: normalizeAppSlug(ctx.app_id),
             satellite_instance_id: ctx.instance_id,
@@ -132,7 +140,7 @@ export function createSapServerHandlers(deps: SapServerDeps): SapServerHandlers 
         }
         case "session.list": {
           const input = sessionListInputSchema.parse(payload);
-          const platform = input.platform ?? resolvePlatformForApp(ctx.app_id) ?? undefined;
+          const platform = input.platform ?? formatSapPlatform(ctx.app_id, ctx.instance_id);
           const result = await serviceSessions.listSessions(
             deps.runtime.runtimeDeps(),
             platform ?? null,
@@ -163,7 +171,14 @@ export function createSapServerHandlers(deps: SapServerDeps): SapServerHandlers 
         }
         case "session.subscribe": {
           const input = sessionSubscribeInputSchema.parse(payload);
-          void pumpSessionUpdates(deps, ctx, input.session_id);
+          const pumpKey = `${ctx.app_id}:${ctx.instance_id}:${input.session_id}`;
+          if (!sessionPumps.has(pumpKey)) {
+            const controller = new AbortController();
+            sessionPumps.set(pumpKey, controller);
+            void pumpSessionUpdates(deps, ctx, input.session_id, controller.signal).finally(() => {
+              sessionPumps.delete(pumpKey);
+            });
+          }
           return { ok: true as const };
         }
         case "session.acpDock": {
@@ -177,7 +192,7 @@ export function createSapServerHandlers(deps: SapServerDeps): SapServerHandlers 
         }
         case "session.commands": {
           const input = sessionCommandsInputSchema.parse(payload);
-          const platform = input.platform ?? resolvePlatformForApp(ctx.app_id) ?? "parlor";
+          const platform = input.platform ?? formatSapPlatform(ctx.app_id, ctx.instance_id);
           return serviceStatus.listCommands({
             platform: input.all ? undefined : platform,
             all: input.all,
@@ -232,6 +247,7 @@ export function createSapServerHandlers(deps: SapServerDeps): SapServerHandlers 
             ctx.app_id,
             ctx.instance_id,
             input.tools,
+            { private: input.private },
           );
           return { registered };
         }
@@ -264,7 +280,7 @@ export function createSapServerHandlers(deps: SapServerDeps): SapServerHandlers 
 async function resolveSessionPlatform(deps: SapServerDeps, sessionId: string): Promise<string> {
   const meta = await deps.runtime.conversation.loadSessionMeta(sessionId);
   const p = isSessionMeta(meta) ? meta.platform : undefined;
-  return typeof p === "string" && p ? p : "parlor";
+  return typeof p === "string" && p ? p : formatSapPlatform("parlor", "web");
 }
 
 async function pumpMessageStream(
@@ -295,13 +311,14 @@ async function pumpSessionUpdates(
   deps: SapServerDeps,
   ctx: SapRequestContext,
   sessionId: string,
+  signal: AbortSignal,
 ): Promise<void> {
-  const controller = new AbortController();
   for await (const mapped of bridgeSessionUpdates(
     sessionId,
     (cb) => deps.runtime.watchSession(sessionId, cb),
-    controller.signal,
+    signal,
   )) {
+    if (signal.aborted) break;
     ctx.sendEvent(mapped.method, mapped.payload);
   }
 }
@@ -310,7 +327,8 @@ export function attachSapWebSocket(
   deps: SapServerDeps,
   ws: SapWsSend,
 ): { close: () => void; handleMessage: (raw: string) => Promise<void> } {
-  const handlers = createSapServerHandlers(deps);
+  const sessionPumps = new Map<string, AbortController>();
+  const handlers = createSapServerHandlers(deps, sessionPumps);
   let connected = false;
   let connState: { appId: string; instanceId: string } | null = null;
   let satelliteConnKey = "";
@@ -342,15 +360,22 @@ export function attachSapWebSocket(
         return;
       }
       const parsed = connectPayloadSchema.parse(envelope.payload);
-      const connectedPayload = await handlers.onConnect(parsed);
-      connState = { appId: parsed.app_id, instanceId: parsed.instance_id };
+      let connectedPayload: Awaited<ReturnType<SapServerHandlers["onConnect"]>>;
+      try {
+        connectedPayload = await handlers.onConnect(parsed);
+      } catch (e) {
+        ws.close(1008, e instanceof Error ? e.message : String(e));
+        return;
+      }
+      const instanceId = connectedPayload.instance_id;
+      connState = { appId: parsed.app_id, instanceId };
       connected = true;
-      satelliteConnKey = deps.satelliteManager.connectionKey(parsed.app_id, parsed.instance_id);
+      satelliteConnKey = deps.satelliteManager.connectionKey(parsed.app_id, instanceId);
       deps.satelliteManager.registerConnection(
         satelliteConnKey,
         {
           appId: parsed.app_id,
-          instanceId: parsed.instance_id,
+          instanceId,
           sendEvent(method, payload) {
             sendEnvelope({ kind: "evt", method, payload });
           },
@@ -404,6 +429,10 @@ export function attachSapWebSocket(
 
   return {
     close() {
+      for (const controller of sessionPumps.values()) {
+        controller.abort();
+      }
+      sessionPumps.clear();
       if (connState) {
         void handlers.onDisconnect(connState.appId, connState.instanceId);
         deps.satelliteManager.unregisterConnection(satelliteConnKey);
