@@ -9,9 +9,9 @@ import {
 import type { PgTestContext } from "../../helpers/pg-test.ts";
 
 import { isSessionMeta } from "@freeanima/core/db/domain";
-import { readFileSync, mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import { readFileSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { tmpdir } from "node:os";
+import { createTempDir, removeTempDir } from "@freeanima/core/util";
 import {
   getTestEngine,
   seedSession,
@@ -442,7 +442,7 @@ describePg("slash commands", () => {
   });
 
   it("/upgrade returns upgrade action on npm install layout", async () => {
-    const dir = mkdtempSync(join(tmpdir(), "freeanima-cli-npm-cmd-"));
+    const dir = createTempDir("freeanima-cli-npm-cmd-");
     const bunRoot = join(dir, "bun");
     const globalDir = join(bunRoot, "install/global");
     mkdirSync(globalDir, { recursive: true });
@@ -474,11 +474,12 @@ describePg("slash commands", () => {
       process.argv[1] = prevArgv1;
       if (prevBunInstall === undefined) delete process.env.BUN_INSTALL;
       else process.env.BUN_INSTALL = prevBunInstall;
+      removeTempDir(dir);
     }
   });
 
   it("/upgrade is disabled for local cli.ts installs", async () => {
-    const dir = mkdtempSync(join(tmpdir(), "freeanima-cli-local-cmd-"));
+    const dir = createTempDir("freeanima-cli-local-cmd-");
     const cliPath = join(dir, "cli", "src", "cli.ts");
     mkdirSync(join(dir, "cli", "src"), { recursive: true });
     writeFileSync(cliPath, "#!/usr/bin/env bun\n");
@@ -496,6 +497,7 @@ describePg("slash commands", () => {
       expect(result.text).toContain("源码 link 安装不支持自动 upgrade");
     } finally {
       process.argv[1] = prevArgv1;
+      removeTempDir(dir);
     }
   });
 

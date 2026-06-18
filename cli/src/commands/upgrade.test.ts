@@ -1,7 +1,7 @@
-import { afterEach, describe, expect, it, spyOn } from "bun:test";
-import { mkdtempSync, writeFileSync, mkdirSync } from "node:fs";
+import { afterEach, describe, expect, it, mock, spyOn } from "bun:test";
+import { writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
-import { tmpdir } from "node:os";
+import { createTempDir, removeTempDir } from "@freeanima/core/util";
 import * as childProcess from "node:child_process";
 import { CLI_UPGRADE_HINT_SOURCE } from "@freeanima/core/config/cli-install";
 
@@ -9,16 +9,20 @@ describe("runCliUpgrade", () => {
   const prevArgv1 = process.argv[1];
   const prevExit = process.exit;
   const prevBunInstall = process.env.BUN_INSTALL;
+  const tempDirs: string[] = [];
 
   afterEach(() => {
+    mock.restore();
     process.argv[1] = prevArgv1;
     process.exit = prevExit;
     if (prevBunInstall === undefined) delete process.env.BUN_INSTALL;
     else process.env.BUN_INSTALL = prevBunInstall;
+    for (const dir of tempDirs.splice(0)) removeTempDir(dir);
   });
 
   it("source link install prints manual hint and exits", async () => {
-    const dir = mkdtempSync(join(tmpdir(), "freeanima-upgrade-source-"));
+    const dir = createTempDir("freeanima-upgrade-source-");
+    tempDirs.push(dir);
     const cliPath = join(dir, "cli", "src", "cli.ts");
     mkdirSync(join(dir, "cli", "src"), { recursive: true });
     writeFileSync(cliPath, "#!/usr/bin/env bun\n");
@@ -50,7 +54,8 @@ describe("runCliUpgrade", () => {
   });
 
   it("npm-registry install runs bun pm install -g", async () => {
-    const dir = mkdtempSync(join(tmpdir(), "freeanima-upgrade-npm-"));
+    const dir = createTempDir("freeanima-upgrade-npm-");
+    tempDirs.push(dir);
     const bunRoot = join(dir, "bun");
     const globalDir = join(bunRoot, "install/global");
     mkdirSync(globalDir, { recursive: true });

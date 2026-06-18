@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach } from "bun:test";
-import { mkdtempSync, writeFileSync, mkdirSync, symlinkSync } from "node:fs";
+import { writeFileSync, mkdirSync, symlinkSync } from "node:fs";
 import { join } from "node:path";
-import { tmpdir } from "node:os";
+import { createTempDir, removeTempDir } from "@freeanima/core/util";
 import {
   formatCliVersion,
   getCliInstallKind,
@@ -13,15 +13,18 @@ import {
 describe("cli-install", () => {
   const prevArgv1 = process.argv[1];
   const prevBunInstall = process.env.BUN_INSTALL;
+  const tempDirs: string[] = [];
 
   afterEach(() => {
     process.argv[1] = prevArgv1;
     if (prevBunInstall === undefined) delete process.env.BUN_INSTALL;
     else process.env.BUN_INSTALL = prevBunInstall;
+    for (const dir of tempDirs.splice(0)) removeTempDir(dir);
   });
 
   it("getCliInstallKind treats monorepo cli.ts as source", () => {
-    const dir = mkdtempSync(join(tmpdir(), "freeanima-cli-install-"));
+    const dir = createTempDir("freeanima-cli-install-");
+    tempDirs.push(dir);
     const cliPath = join(dir, "cli", "src", "cli.ts");
     mkdirSync(join(dir, "cli", "src"), { recursive: true });
     writeFileSync(cliPath, "#!/usr/bin/env bun\n");
@@ -31,7 +34,8 @@ describe("cli-install", () => {
   });
 
   it("getCliInstallKind treats published npm layout as npm-registry", () => {
-    const dir = mkdtempSync(join(tmpdir(), "freeanima-cli-npm-"));
+    const dir = createTempDir("freeanima-cli-npm-");
+    tempDirs.push(dir);
     const bunRoot = join(dir, "bun");
     const globalDir = join(bunRoot, "install/global");
     mkdirSync(globalDir, { recursive: true });
@@ -52,7 +56,8 @@ describe("cli-install", () => {
   });
 
   it("getCliInstallKind treats local pack global spec as npm-local", () => {
-    const dir = mkdtempSync(join(tmpdir(), "freeanima-cli-local-pack-"));
+    const dir = createTempDir("freeanima-cli-local-pack-");
+    tempDirs.push(dir);
     const bunRoot = join(dir, "bun");
     const globalDir = join(bunRoot, "install/global");
     mkdirSync(globalDir, { recursive: true });
@@ -80,7 +85,8 @@ describe("cli-install", () => {
   });
 
   it("resolveAnimaScriptPath follows symlink to cli.ts", () => {
-    const dir = mkdtempSync(join(tmpdir(), "freeanima-cli-link-"));
+    const dir = createTempDir("freeanima-cli-link-");
+    tempDirs.push(dir);
     const cliPath = join(dir, "cli", "src", "cli.ts");
     mkdirSync(join(dir, "cli", "src"), { recursive: true });
     writeFileSync(cliPath, "#!/usr/bin/env bun\n");
@@ -91,7 +97,8 @@ describe("cli-install", () => {
   });
 
   it("resolveAnimaExecutable splits bun + cli.js", () => {
-    const dir = mkdtempSync(join(tmpdir(), "freeanima-cli-spawn-"));
+    const dir = createTempDir("freeanima-cli-spawn-");
+    tempDirs.push(dir);
     const cliJs = join(dir, "cli.js");
     writeFileSync(cliJs, "// cli\n");
     process.argv[1] = cliJs;

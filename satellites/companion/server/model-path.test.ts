@@ -1,8 +1,16 @@
 import { describe, expect, test } from "bun:test";
-import { mkdirSync, writeFileSync } from "node:fs";
-import { mkdtempSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+
+function removeTempDir(path: string | undefined): void {
+  if (!path) return;
+  try {
+    rmSync(path, { recursive: true, force: true });
+  } catch (e) {
+    if ((e as NodeJS.ErrnoException).code !== "ENOENT") throw e;
+  }
+}
 import { isModelPathAvailable, PLACEHOLDER_MODEL_PATH, resolveModelFile } from "./model-path.ts";
 import { companionModelsDir } from "./paths.ts";
 
@@ -27,6 +35,7 @@ describe("model-path", () => {
     } finally {
       if (prev === undefined) delete process.env.FREEANIMA_HOME;
       else process.env.FREEANIMA_HOME = prev;
+      removeTempDir(home);
     }
   });
 

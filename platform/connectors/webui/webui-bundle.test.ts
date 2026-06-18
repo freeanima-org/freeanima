@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach } from "bun:test";
-import { mkdtempSync, writeFileSync, mkdirSync, utimesSync } from "node:fs";
+import { describe, it, expect, beforeEach, afterEach } from "bun:test";
+import { writeFileSync, mkdirSync, utimesSync } from "node:fs";
 import { join } from "node:path";
-import { tmpdir } from "node:os";
+import { createTempDir, removeTempDir } from "@freeanima/core/util";
 import {
   computeWebuiSourceHash,
   resolveBundledWebuiDistDir,
@@ -13,11 +13,15 @@ describe("computeWebuiSourceHash", () => {
   let repoRoot: string;
 
   beforeEach(() => {
-    repoRoot = mkdtempSync(join(tmpdir(), "freeanima-webui-hash-"));
+    repoRoot = createTempDir("freeanima-webui-hash-");
     appDir = join(repoRoot, "app");
     mkdirSync(appDir, { recursive: true });
     writeFileSync(join(appDir, "index.html"), "<html></html>\n");
     writeFileSync(join(repoRoot, "bunfig.toml"), "[serve.static]\n");
+  });
+
+  afterEach(() => {
+    removeTempDir(repoRoot);
   });
 
   it("相同内容 hash 稳定", () => {
@@ -46,31 +50,43 @@ describe("computeWebuiSourceHash", () => {
 
 describe("resolveWebuiAppDir", () => {
   it("prefers published connectors/webui/app layout", () => {
-    const root = mkdtempSync(join(tmpdir(), "freeanima-webui-root-"));
-    const legacy = join(root, "connectors", "webui", "app");
-    const platform = join(root, "platform", "connectors", "webui", "app");
-    mkdirSync(legacy, { recursive: true });
-    mkdirSync(platform, { recursive: true });
-    writeFileSync(join(legacy, "index.html"), "legacy\n");
-    writeFileSync(join(platform, "index.html"), "platform\n");
-    expect(resolveWebuiAppDir(root)).toBe(legacy);
+    const root = createTempDir("freeanima-webui-root-");
+    try {
+      const legacy = join(root, "connectors", "webui", "app");
+      const platform = join(root, "platform", "connectors", "webui", "app");
+      mkdirSync(legacy, { recursive: true });
+      mkdirSync(platform, { recursive: true });
+      writeFileSync(join(legacy, "index.html"), "legacy\n");
+      writeFileSync(join(platform, "index.html"), "platform\n");
+      expect(resolveWebuiAppDir(root)).toBe(legacy);
+    } finally {
+      removeTempDir(root);
+    }
   });
 
   it("falls back to platform/connectors/webui/app in monorepo", () => {
-    const root = mkdtempSync(join(tmpdir(), "freeanima-webui-root-"));
-    const platform = join(root, "platform", "connectors", "webui", "app");
-    mkdirSync(platform, { recursive: true });
-    writeFileSync(join(platform, "index.html"), "platform\n");
-    expect(resolveWebuiAppDir(root)).toBe(platform);
+    const root = createTempDir("freeanima-webui-root-");
+    try {
+      const platform = join(root, "platform", "connectors", "webui", "app");
+      mkdirSync(platform, { recursive: true });
+      writeFileSync(join(platform, "index.html"), "platform\n");
+      expect(resolveWebuiAppDir(root)).toBe(platform);
+    } finally {
+      removeTempDir(root);
+    }
   });
 });
 
 describe("resolveBundledWebuiDistDir", () => {
   it("returns connectors/webui/dist when index.html is valid", () => {
-    const root = mkdtempSync(join(tmpdir(), "freeanima-webui-dist-"));
-    const dir = join(root, "connectors", "webui", "dist");
-    mkdirSync(dir, { recursive: true });
-    writeFileSync(join(dir, "index.html"), '<script src="/webui/chunk-abc.js"></script>\n');
-    expect(resolveBundledWebuiDistDir(root)).toBe(dir);
+    const root = createTempDir("freeanima-webui-dist-");
+    try {
+      const dir = join(root, "connectors", "webui", "dist");
+      mkdirSync(dir, { recursive: true });
+      writeFileSync(join(dir, "index.html"), '<script src="/webui/chunk-abc.js"></script>\n');
+      expect(resolveBundledWebuiDistDir(root)).toBe(dir);
+    } finally {
+      removeTempDir(root);
+    }
   });
 });
