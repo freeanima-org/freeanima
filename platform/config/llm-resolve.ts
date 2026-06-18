@@ -1,4 +1,4 @@
-import type { AnimaConfig } from "./schemas/config.ts";
+import type { AnimaConfig } from "@freeanima/core/config";
 import { resolveValue } from "./resolve.ts";
 
 /** Expand env/credential references in llm.providers.*.api_key */

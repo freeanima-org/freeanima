@@ -1,7 +1,7 @@
 import { describe, it, expect } from "bun:test";
 import { Config } from "@freeanima/core/config";
 import { parseYaml } from "./yaml.ts";
-import { animaConfigSchema } from "./schemas/config.ts";
+import { animaConfigSchema } from "@freeanima/core/config";
 import { expandConfigEnv } from "./env-expand.ts";
 import { getProfileHopModel } from "./llm-config.ts";
 import { MINIMAL_LLM_YAML } from "./test-helpers/minimal-llm-config.ts";

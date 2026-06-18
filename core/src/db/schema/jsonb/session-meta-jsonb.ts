@@ -73,7 +73,10 @@ export const acpTaskEntrySchema = z.object({
 
 const LEGACY_ACP_TASK_UPDATED_AT = "1970-01-01T00:00:00.000Z";
 
-/** Legacy acp_tasks keyed by agent name with string acp session id; normalize to ACP session id keys */
+/**
+ * 读路径兼容：存量 session JSONB 可能仍用 agent 名键 + 字符串 ACP session id。
+ * 审计结论（2026-06-16）：保留至显式 PG 数据迁移；不可仅因代码清理删除。
+ */
 export function normalizeAcpTasks(raw: unknown): unknown {
   if (raw === null || raw === undefined) return raw;
   if (typeof raw !== "object" || Array.isArray(raw)) return raw;
@@ -105,7 +108,10 @@ export type AcpTaskStatusJson = z.infer<typeof acpTaskStatusSchema>;
 export type AcpTaskEntryJson = z.infer<typeof acpTaskEntrySchema>;
 export type AcpTasksJson = z.infer<typeof acpTasksSchema>;
 
-/** Legacy sessions.tools stored OpenAI tool schema; normalize to names on read */
+/**
+ * 读路径兼容：存量 session JSONB 可能仍存 OpenAI tool schema 数组而非工具名字符串。
+ * 审计结论（2026-06-16）：保留至显式 PG 数据迁移；不可仅因代码清理删除。
+ */
 export function normalizeSessionToolNames(raw: unknown): string[] {
   if (!Array.isArray(raw)) return [];
   const names: string[] = [];
@@ -138,14 +144,6 @@ export const sessionStagedToolsetsSchema = z.preprocess(
   z.array(z.string()),
 );
 export type SessionStagedToolsetsJson = z.infer<typeof sessionStagedToolsetsSchema>;
-
-/** @deprecated use sessionCachedToolsetsSchema */
-export const sessionToolsSchema = sessionCachedToolsetsSchema;
-export type SessionToolsJson = SessionCachedToolsetsJson;
-
-/** @deprecated use sessionStagedToolsetsSchema */
-export const sessionLoadedToolsSchema = sessionStagedToolsetsSchema;
-export type SessionLoadedToolsJson = SessionStagedToolsetsJson;
 
 /** sessions.functions */
 export const sessionFunctionsSchema = z.preprocess(normalizeSessionToolNames, z.array(z.string()));

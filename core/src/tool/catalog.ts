@@ -30,14 +30,6 @@ function toolsetForName(registry: ToolSetRegistry, toolName: string): string {
   return "";
 }
 
-function allCatalogEntries(registry: ToolSetRegistry): ToolCatalogEntry[] {
-  return registry.listTools().map((def) => ({
-    name: def.name,
-    description: def.description,
-    toolset: toolsetForName(registry, def.name),
-  }));
-}
-
 function toolsetEntries(registry: ToolSetRegistry): Array<{
   name: string;
   description: string;
@@ -109,40 +101,6 @@ export function searchToolsetsCatalog(
     hits = hits.slice(0, limit);
   }
   return { query: trimmed, hits, total };
-}
-
-/** @deprecated use searchToolsetsCatalog */
-export function searchToolsCatalog(
-  registry: ToolSetRegistry,
-  query: string,
-  opts?: { toolset?: string; limit?: number },
-): { query: string; tools: ToolCatalogEntry[]; total: number } {
-  const result = searchToolsetsCatalog(registry, query, { limit: opts?.limit });
-  let tools = result.hits.flatMap((h) => h.tools);
-  const toolset = opts?.toolset?.trim();
-  if (toolset) {
-    tools = tools.filter((t) => t.toolset === toolset);
-  }
-  return { query: result.query, tools, total: tools.length };
-}
-
-/** @deprecated */
-export function listToolsCatalog(
-  registry: ToolSetRegistry,
-  opts?: { offset?: number; limit?: number; toolset?: string },
-): { tools: ToolCatalogEntry[]; total: number } {
-  let entries = allCatalogEntries(registry);
-  const toolset = opts?.toolset?.trim();
-  if (toolset) entries = entries.filter((e) => e.toolset === toolset);
-  const total = entries.length;
-  const offset = Math.max(0, opts?.offset ?? 0);
-  const limit = opts?.limit;
-  if (limit != null && limit >= 0) {
-    entries = entries.slice(offset, offset + limit);
-  } else if (offset > 0) {
-    entries = entries.slice(offset);
-  }
-  return { tools: entries, total };
 }
 
 export function formatToolsForToolMessage(

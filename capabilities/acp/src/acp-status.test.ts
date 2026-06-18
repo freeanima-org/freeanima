@@ -1,7 +1,7 @@
 import { describe, it, expect } from "bun:test";
 import { Config } from "@freeanima/core/config";
 import { parseYaml } from "@freeanima/platform/config";
-import { animaConfigSchema } from "@freeanima/platform/config/schemas/config";
+import { animaConfigSchema } from "@freeanima/core/config";
 import { MINIMAL_LLM_YAML } from "@freeanima/platform/config/test-helpers/minimal-llm-config";
 import { sanitizeAcpConfig, shortSessionId, isAcpAgentEnabled } from "./status.ts";
 import { createTestAcpManager } from "./test-helpers/manager.ts";

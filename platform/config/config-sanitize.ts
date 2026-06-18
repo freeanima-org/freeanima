@@ -1,4 +1,4 @@
-import type { AnimaConfig } from "./schemas/config.ts";
+import type { AnimaConfig } from "@freeanima/core/config";
 
 /** Sanitize entire value when key name matches (case-insensitive) */
 const SECRET_KEY_PATTERN =

@@ -10,7 +10,7 @@ import { wireOpenAiCompatibleLlm } from "@freeanima/capabilities-llm-openai";
 import { createTestLogger } from "@freeanima/kernel/logging/testing";
 import { createServiceKernel } from "@freeanima/platform/bootstrap";
 import { parseYaml } from "@freeanima/platform/config";
-import { animaConfigSchema } from "@freeanima/platform/config/schemas/config";
+import { animaConfigSchema } from "@freeanima/core/config";
 import { MINIMAL_LLM_YAML } from "@freeanima/platform/config/test-helpers/minimal-llm-config";
 import { getAcpManager } from "@freeanima/capabilities-acp";
 import {

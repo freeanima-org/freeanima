@@ -3,7 +3,7 @@ import { SkillRegistry } from "@freeanima/core/skill";
 import { ToolSetRegistry } from "@freeanima/core/tool";
 import { Config } from "@freeanima/platform/config";
 import { parseYaml } from "@freeanima/platform/config";
-import { animaConfigSchema } from "@freeanima/platform/config/schemas/config";
+import { animaConfigSchema } from "@freeanima/core/config";
 import { bindBrowserToolsConfig, resetBrowserToolsConfigForTest } from "./browser-camofox.ts";
 import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from "bun:test";
 import { MINIMAL_LLM_YAML } from "@freeanima/platform/config/test-helpers/minimal-llm-config";

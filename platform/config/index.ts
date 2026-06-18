@@ -33,8 +33,6 @@ export {
   type LlmConfig,
   type EmailAccountConfig,
   type EmailConfig,
-} from "./schemas/config.ts";
-export {
   OPENAI_COMPATIBLE_BACKEND_ID,
   llmConfigSchema,
   llmProviderOpenAiSchema,
@@ -43,4 +41,4 @@ export {
   type LlmProviderOpenAiConfig,
   type LlmProfileConfig,
   type LlmRouteHopConfig,
-} from "./schemas/llm-config.ts";
+} from "@freeanima/core/config";

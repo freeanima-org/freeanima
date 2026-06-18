@@ -1,6 +1,9 @@
 import { describe, expect, it } from "bun:test";
-import { ToolSetRegistry } from "@freeanima/core/tool";
-import { mergeSessionToolNames, resolveExecutableToolNames } from "./session-tools.ts";
+import {
+  mergeToolSetNames,
+  resolveExecutableToolNames,
+  ToolSetRegistry,
+} from "@freeanima/core/tool";
 import type { SessionMetaMessage } from "@freeanima/core/db/domain";
 
 function testRegistry(): ToolSetRegistry {
@@ -38,9 +41,9 @@ function testRegistry(): ToolSetRegistry {
   return reg;
 }
 
-describe("mergeSessionToolNames", () => {
+describe("mergeToolSetNames", () => {
   it("dedupes and merges", () => {
-    expect(mergeSessionToolNames(["a", "b"], ["b", "c"])).toEqual(["a", "b", "c"]);
+    expect(mergeToolSetNames(["a", "b"], ["b", "c"])).toEqual(["a", "b", "c"]);
   });
 });
 
