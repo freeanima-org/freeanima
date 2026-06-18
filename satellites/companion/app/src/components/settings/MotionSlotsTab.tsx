@@ -65,7 +65,9 @@ function SlotAddModal({ slot, onClose }: AddModalProps) {
                   />
                   <span className="flex-1 min-w-0">
                     <span className="block truncate text-sm">{m.name}</span>
-                    <span className="block truncate text-xs text-base-content/45">{m.file}</span>
+                    <span className="block truncate text-xs text-base-content/45" title={m.id}>
+                      {m.id}
+                    </span>
                   </span>
                 </label>
               </li>
@@ -116,7 +118,8 @@ export function MotionSlotsTab() {
   return (
     <div className="flex flex-col gap-4">
       <p className="text-xs text-base-content/55 leading-relaxed">
-        每个槽位可绑定多个动作；播放时未指定则随机选取。在「动作库」导入 VRMA / FBX。
+        每个槽位可绑定多个动作；播放时未指定则随机选取。完整列表在「动作库」Tab（共{" "}
+        {motionLibrary.length} 个）；此处只显示已绑定到槽位的动作。
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {MOTION_SLOT_IDS.map((slot) => {
@@ -147,7 +150,9 @@ export function MotionSlotsTab() {
                       <li key={m.id} className="flex items-center gap-3 py-2 first:pt-0 last:pb-0">
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm">{m.name}</p>
-                          <p className="truncate text-xs text-base-content/45">{m.file}</p>
+                          <p className="truncate text-xs text-base-content/45" title={m.id}>
+                            {m.id}
+                          </p>
                         </div>
                         <button
                           type="button"

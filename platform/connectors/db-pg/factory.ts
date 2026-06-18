@@ -10,6 +10,7 @@ import { pgSelfLayerStore } from "./self-layer/pg-self-layer-store.ts";
 import { pgMemoryReferenceStore } from "./memory-reference/pg-memory-reference-store.ts";
 import { pgSemanticMemoryStore } from "./semantic-memory/pg-semantic-memory-store.ts";
 import { pgSessionStore } from "./session/pg-session-store.ts";
+import { pgSapInstanceStore } from "./sap/pg-sap-instance-store.ts";
 import { pgTaskStore } from "./tasks/pg-task-store.ts";
 
 export function createPgRepositories(_opts: { getDb: () => Db }): PgRepositories {
@@ -26,5 +27,6 @@ export function createPgRepositories(_opts: { getDb: () => Db }): PgRepositories
     cronLog: pgCronLogStore,
     pipelineStepRun: pgPipelineStepRunStore,
     tasks: pgTaskStore,
+    sapInstance: pgSapInstanceStore,
   };
 }

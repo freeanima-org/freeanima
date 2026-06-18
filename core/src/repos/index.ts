@@ -57,6 +57,9 @@ export type {
   MemoryReferenceRow,
   MemoryReferenceStorePort,
   RecordMessageReferencesInput,
+  SapInstanceRow,
+  SapInstanceUpsertInput,
+  SapInstanceStorePort,
 } from "./ports/index.ts";
 export {
   SELF_BLOCK_KEYS,

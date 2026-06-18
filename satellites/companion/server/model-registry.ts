@@ -1,10 +1,16 @@
-import { existsSync, readdirSync, statSync, unlinkSync } from "node:fs";
+import { existsSync, readdirSync, renameSync, statSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
-import { newModelId, type ModelEntry } from "../shared/companion-schema.ts";
+import {
+  displayNameFromFilename,
+  modelFileNameForId,
+  modelPathForId,
+  newModelId,
+} from "../shared/asset-id.ts";
+import type { ModelEntry } from "../shared/companion-schema.ts";
 import { loadConfig, saveConfig, activeModelPath } from "./config.ts";
 import { companionModelsDir, ensureCompanionDataDir } from "./paths.ts";
 import { isModelPathAvailable } from "./model-path.ts";
-import { sanitizeModelFilename, validateVrmUpload } from "./models.ts";
+import { validateVrmUpload } from "./models.ts";
 
 export function listModels(): ModelEntry[] {
   return loadConfig().models;
@@ -20,30 +26,23 @@ export async function addModelFromUpload(file: File): Promise<ModelEntry> {
   if (validationError) throw new Error(validationError);
 
   ensureCompanionDataDir();
-  const filename = sanitizeModelFilename(file.name);
+  const id = newModelId();
+  const filename = modelFileNameForId(id);
   const dest = join(companionModelsDir(), filename);
-  return addModelFromBytes(file.name, filename, dest, file);
-}
-
-async function addModelFromBytes(
-  displayName: string,
-  filename: string,
-  dest: string,
-  file: File,
-): Promise<ModelEntry> {
   const bytes = new Uint8Array(await file.arrayBuffer());
   await Bun.write(dest, bytes);
-  const path = `/models/${filename}`;
+
+  const path = modelPathForId(id);
   const cfg = loadConfig();
-  const existing = cfg.models.find((m) => m.path === path);
+  const existing = cfg.models.find((m) => m.id === id);
   if (existing) {
     saveConfig({ active_model_id: existing.id, model_path: path });
     return existing;
   }
 
   const entry: ModelEntry = {
-    id: newModelId(),
-    name: displayName.replace(/\.vrm$/i, ""),
+    id,
+    name: displayNameFromFilename(file.name),
     path,
   };
   const models = [...cfg.models, entry];
@@ -98,21 +97,31 @@ export function scanModelsOnDisk(): ModelEntry[] {
   if (!existsSync(dir)) return listModels();
 
   const cfg = loadConfig();
-  const known = new Set(cfg.models.map((m) => m.path));
+  const knownPaths = new Set(cfg.models.map((m) => m.path));
   const models = [...cfg.models];
+  let changed = false;
 
   for (const file of readdirSync(dir)) {
     if (!file.toLowerCase().endsWith(".vrm")) continue;
     const path = `/models/${file}`;
-    if (!known.has(path)) {
-      models.push({
-        id: newModelId(),
-        name: file.replace(/\.vrm$/i, ""),
-        path,
-      });
+    if (knownPaths.has(path)) continue;
+
+    const id = newModelId();
+    const targetFile = modelFileNameForId(id);
+    const oldPath = join(dir, file);
+    const newPath = join(dir, targetFile);
+    if (oldPath !== newPath) {
+      renameSync(oldPath, newPath);
     }
+    models.push({
+      id,
+      name: displayNameFromFilename(file),
+      path: modelPathForId(id),
+    });
+    changed = true;
   }
-  if (models.length !== cfg.models.length) {
+
+  if (changed) {
     const active_model_id = cfg.active_model_id || models[0]?.id || "";
     saveConfig({
       models,

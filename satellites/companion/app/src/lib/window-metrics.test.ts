@@ -1,11 +1,13 @@
 import { describe, expect, test } from "bun:test";
 import {
+  buildHorizontalPatrolWaypoints,
   buildPerimeterWaypoints,
   clampPatrolPosition,
   COMPANION_WINDOW_HEIGHT,
   COMPANION_WINDOW_WIDTH,
   nearestPerimeterEntry,
   PATROL_CORNER_INDEX,
+  patrolBoundsForHorizontal,
   patrolBoundsFromWaypoints,
 } from "./window-metrics.ts";
 
@@ -47,6 +49,37 @@ describe("buildPerimeterWaypoints", () => {
     expect(points[1]).toEqual({ x: 1920 + 1920 - 320, y: 0 });
     expect(points[2]).toEqual({ x: 1920 + 1920 - 320, y: 1080 - 440 });
     expect(points[3]).toEqual({ x: 1920, y: 1080 - 440 });
+  });
+});
+
+describe("buildHorizontalPatrolWaypoints", () => {
+  const screen = { availLeft: 0, availTop: 0, availWidth: 1920, availHeight: 1040 };
+  const window = { width: COMPANION_WINDOW_WIDTH, height: COMPANION_WINDOW_HEIGHT };
+
+  test("在当前 Y 上生成左右两端点", () => {
+    const laneY = 400;
+    const points = buildHorizontalPatrolWaypoints(screen, window, laneY);
+
+    expect(points).toEqual([
+      { x: 0, y: laneY },
+      { x: 1920 - COMPANION_WINDOW_WIDTH, y: laneY },
+    ]);
+  });
+
+  test("laneY 超出工作区时钳制到合法范围", () => {
+    const maxY = 1040 - COMPANION_WINDOW_HEIGHT;
+    expect(buildHorizontalPatrolWaypoints(screen, window, -100)[0]!.y).toBe(0);
+    expect(buildHorizontalPatrolWaypoints(screen, window, 9999)[0]!.y).toBe(maxY);
+  });
+
+  test("patrolBoundsForHorizontal 固定 Y", () => {
+    const bounds = patrolBoundsForHorizontal(screen, window, 300);
+    expect(bounds).toEqual({
+      minX: 0,
+      minY: 300,
+      maxX: 1920 - COMPANION_WINDOW_WIDTH,
+      maxY: 300,
+    });
   });
 });
 

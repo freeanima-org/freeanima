@@ -1,17 +1,16 @@
 import { create } from "zustand";
 import {
-  buildPerimeterWaypoints,
+  buildHomeCorner,
+  buildHorizontalPatrolWaypoints,
   buildWorkAreaCenter,
   clampPatrolPosition,
-  nearestPerimeterEntry,
-  patrolBoundsFromWaypoints,
-  PATROL_CORNER_INDEX,
-  patrolWaypoint,
+  patrolBoundsForHorizontal,
   readScreenWorkArea,
   COMPANION_WINDOW_HEIGHT,
   COMPANION_WINDOW_WIDTH,
   type PatrolBounds,
   type ScreenPoint,
+  type ScreenRect,
 } from "@/lib/window-metrics.ts";
 import { getPatrolScreen, getWindowPosition, isTauri, moveWindow } from "@/lib/tauri.ts";
 import {
@@ -98,38 +97,46 @@ export function moveCompanionStage(x: number, y: number): void {
   currentPosition = { x: Math.round(x), y: Math.round(y) };
 }
 
-async function refreshPatrolPath(): Promise<ScreenPoint[]> {
+async function readPatrolScreenAndWindow(): Promise<{
+  screen: ScreenRect;
+  window: { width: number; height: number };
+}> {
   if (isTauri()) {
     const bounds = await getPatrolScreen();
-    patrolPoints = buildPerimeterWaypoints(
-      {
+    return {
+      screen: {
         availLeft: bounds.availLeft,
         availTop: bounds.availTop,
         availWidth: bounds.availWidth,
         availHeight: bounds.availHeight,
       },
-      { width: bounds.windowWidth, height: bounds.windowHeight },
-    );
-  } else {
-    const screen = readScreenWorkArea();
-    patrolPoints = buildPerimeterWaypoints(screen, {
-      width: COMPANION_WINDOW_WIDTH,
-      height: COMPANION_WINDOW_HEIGHT,
-    });
+      window: { width: bounds.windowWidth, height: bounds.windowHeight },
+    };
   }
+  return {
+    screen: readScreenWorkArea(),
+    window: { width: COMPANION_WINDOW_WIDTH, height: COMPANION_WINDOW_HEIGHT },
+  };
+}
+
+async function refreshPatrolPath(laneY: number): Promise<ScreenPoint[]> {
+  const { screen, window } = await readPatrolScreenAndWindow();
+  patrolPoints = buildHorizontalPatrolWaypoints(screen, window, laneY);
+  patrolBounds = patrolBoundsForHorizontal(screen, window, laneY);
   patrolIndex = 0;
-  patrolBounds = patrolBoundsFromWaypoints(patrolPoints);
   return patrolPoints;
 }
 
 function ensurePatrolPath(): Promise<ScreenPoint[]> {
-  if (patrolPoints.length > 0) {
+  if (patrolPoints.length >= 2) {
     return Promise.resolve(patrolPoints);
   }
   if (!patrolPathRefresh) {
-    patrolPathRefresh = refreshPatrolPath().finally(() => {
-      patrolPathRefresh = null;
-    });
+    patrolPathRefresh = syncWindowPositionFromShell()
+      .then((from) => refreshPatrolPath(from.y))
+      .finally(() => {
+        patrolPathRefresh = null;
+      });
   }
   return patrolPathRefresh;
 }
@@ -154,6 +161,9 @@ function applyPosition(point: ScreenPoint): void {
 }
 
 function locomotionKindForSegment(from: ScreenPoint, to: ScreenPoint): LocomotionKind {
+  if (patrolBounds && patrolBounds.minY === patrolBounds.maxY) {
+    return "walk";
+  }
   const dx = Math.abs(to.x - from.x);
   const dy = Math.abs(to.y - from.y);
   return dy > dx ? "climb" : "walk";
@@ -231,24 +241,22 @@ function finishActiveJourney(): void {
 }
 
 async function beginPatrolFromCurrentPosition(): Promise<void> {
-  const points = await refreshPatrolPath();
-  if (points.length === 0) return;
-
   const from = await syncWindowPositionFromShell();
-  const { entry, nextIndex } = nearestPerimeterEntry(from, points);
-  patrolIndex = nextIndex;
-
-  const distancePx = Math.hypot(entry.x - from.x, entry.y - from.y);
-  if (distancePx < 4) {
+  const points = await refreshPatrolPath(from.y);
+  if (points.length < 2) {
     patrolPausedUntilMs =
       performance.now() + patrolPauseMsFor(useCompanionStore.getState().behavior);
-    companionDebug("已在巡逻边缘，直接开始", { from, entry, nextIndex });
+    companionDebug("水平巡逻空间不足", { from, points });
     return;
   }
 
+  const left = points[0]!;
+  const right = points[1]!;
+  patrolIndex = from.x - left.x > right.x - from.x ? 0 : 1;
+
   patrolPausedUntilMs = 0;
-  companionDebug("走向最近边缘后开始巡逻", { from, entry, nextIndex });
-  startJourney(from, entry);
+  companionDebug("在当前高度水平巡逻", { from, left, right, patrolIndex });
+  startJourney(from, nextPatrolPoint());
 }
 
 export async function enterPatrolMode(): Promise<void> {
@@ -346,15 +354,12 @@ async function runStartupWalkToHome(): Promise<void> {
   if (!startupWalkPending) return;
   startupWalkPending = false;
 
-  await ensurePatrolPath();
-  if (patrolPoints.length === 0) return;
-
+  const { screen } = await readPatrolScreenAndWindow();
   const spawn = await readStartupSpawnPoint();
-  const home = patrolWaypoint(patrolPoints, PATROL_CORNER_INDEX.home);
+  const home = buildHomeCorner(screen);
 
   applyPosition(spawn);
   currentPosition = spawn;
-  patrolIndex = PATROL_CORNER_INDEX.topRight;
 
   introWalkActive = true;
   lastInteractionAt = performance.now();
@@ -414,7 +419,7 @@ export function startPatrolWatcher(): () => void {
   introWalkActive = false;
   lastInteractionAt = performance.now();
   patrolPoints = [];
-  void refreshPatrolPath();
+  patrolBounds = null;
   useCharacterStore.getState().setPatrolling(false);
 
   syncIdleAtRest();

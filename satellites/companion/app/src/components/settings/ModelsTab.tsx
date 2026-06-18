@@ -80,7 +80,9 @@ export function ModelsTab() {
                     </button>
                   )}
                 </div>
-                <p className="text-xs text-base-content/50 truncate">{m.path}</p>
+                <p className="text-xs text-base-content/50 truncate" title={m.id}>
+                  {m.id}
+                </p>
                 <button
                   type="button"
                   className="btn btn-ghost btn-xs text-error self-start px-2"

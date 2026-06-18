@@ -84,6 +84,11 @@ export type {
   DreamMemoryCreateInput,
   DreamMemoryStorePort,
 } from "./dream-memory.ts";
+export type {
+  SapInstanceRow,
+  SapInstanceUpsertInput,
+  SapInstanceStorePort,
+} from "./sap-instance.ts";
 
 import type { AutobiographicalMemoryStorePort } from "./autobiographical-memory.ts";
 import type { CronJobStorePort } from "./cron.ts";
@@ -92,6 +97,7 @@ import type { PipelineStepRunStorePort } from "./pipeline-step-run.ts";
 import type { DreamMemoryStorePort } from "./dream-memory.ts";
 import type { LimbicMemoryStorePort } from "./limbic-memory.ts";
 import type { SelfLayerStorePort } from "./self-layer.ts";
+import type { SapInstanceStorePort } from "./sap-instance.ts";
 import type { TaskStorePort } from "./task.ts";
 
 /** PG repository aggregate mounted on Engine */
@@ -108,4 +114,5 @@ export interface PgRepositories {
   cronLog: CronLogStorePort;
   pipelineStepRun: PipelineStepRunStorePort;
   tasks: TaskStorePort;
+  sapInstance: SapInstanceStorePort;
 }

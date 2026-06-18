@@ -30,6 +30,47 @@ export function readScreenWorkArea(): ScreenRect {
   };
 }
 
+/** 在当前垂直高度上左右两端来回巡逻 */
+export function buildHorizontalPatrolWaypoints(
+  screen: ScreenRect,
+  window: WindowSize,
+  laneY: number,
+): ScreenPoint[] {
+  const minX = screen.availLeft;
+  const maxX = Math.max(minX, screen.availLeft + screen.availWidth - window.width);
+  const minY = screen.availTop;
+  const maxY = Math.max(minY, screen.availTop + screen.availHeight - window.height);
+  const y = clamp(laneY, minY, maxY);
+
+  if (maxX <= minX) {
+    return [{ x: minX, y }];
+  }
+
+  return [
+    { x: minX, y },
+    { x: maxX, y },
+  ];
+}
+
+/** 水平巡逻时窗口左上角可移动范围（Y 固定为 laneY） */
+export function patrolBoundsForHorizontal(
+  screen: ScreenRect,
+  window: WindowSize,
+  laneY: number,
+): PatrolBounds {
+  const minX = screen.availLeft;
+  const maxX = Math.max(minX, screen.availLeft + screen.availWidth - window.width);
+  const minY = screen.availTop;
+  const maxY = Math.max(minY, screen.availTop + screen.availHeight - window.height);
+  const y = clamp(laneY, minY, maxY);
+  return { minX, minY: y, maxX, maxY: y };
+}
+
+/** 启动归位目标：工作区左上角 */
+export function buildHomeCorner(screen: ScreenRect): ScreenPoint {
+  return { x: screen.availLeft, y: screen.availTop };
+}
+
 /** 沿工作区内边缘四角顺时针巡逻：左上 → 右上 → 右下 → 左下 */
 export function buildPerimeterWaypoints(screen: ScreenRect, window: WindowSize): ScreenPoint[] {
   const minX = screen.availLeft;

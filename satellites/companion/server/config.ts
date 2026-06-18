@@ -17,6 +17,7 @@ import { normalizeMotionSlots } from "../shared/core/motion-slot-resolve.ts";
 import { companionConfigPath, ensureCompanionDataDir } from "./paths.ts";
 import { PLACEHOLDER_MODEL_PATH } from "./model-path.ts";
 import { motionManifest } from "../shared/motion-manifest.ts";
+import { migrateModelFiles, migrateMotionLibraryFiles } from "./asset-migration.ts";
 
 export type CompanionConfig = CompanionConfigV2;
 
@@ -145,7 +146,18 @@ export function loadConfig(): CompanionConfig {
   }
   try {
     const raw = JSON.parse(readFileSync(configPath, "utf-8")) as LegacyConfig;
-    return migrateLegacy(raw);
+    const base = migrateLegacy(raw);
+    const motionResult = migrateMotionLibraryFiles(base.motion_library);
+    const modelResult = migrateModelFiles(base.models);
+    const next: CompanionConfig = {
+      ...base,
+      motion_library: motionResult.library,
+      models: modelResult.models,
+    };
+    if (motionResult.changed || modelResult.changed) {
+      writeFileSync(companionConfigPath(), JSON.stringify(next, null, 2), "utf-8");
+    }
+    return next;
   } catch {
     return { ...DEFAULT_CONFIG };
   }

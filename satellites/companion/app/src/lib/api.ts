@@ -124,7 +124,14 @@ export async function uploadMotionFile(file: File) {
     const err = (await res.json().catch(() => ({}))) as { error?: string };
     throw new Error(err.error ?? `HTTP ${res.status}`);
   }
-  return (await res.json()) as { ok: true; dir: string; files: string[]; skipped_fbx?: string[] };
+  return (await res.json()) as {
+    ok: true;
+    dir: string;
+    files: string[];
+    entries: MotionLibraryEntry[];
+    library: MotionLibraryEntry[];
+    skipped_fbx?: string[];
+  };
 }
 
 /** @deprecated 使用 uploadMotionFile */

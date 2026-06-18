@@ -4,6 +4,8 @@ import {
   normalizeAppSlug,
 } from "@freeanima/sap-contract";
 
+import type { SapInstanceStorePort } from "@freeanima/core/repos";
+
 export type SapInstanceRecord = {
   instanceId: string;
   appId: string;
@@ -22,13 +24,21 @@ export type ResolveConnectInstanceResult =
   | { ok: false; error: string };
 
 /**
- * In-memory SAP instance registry. Hub assigns 3-char globally unique ids.
- * Production wiring may persist via PG `sap_instances` table.
+ * SAP instance registry with optional PG backing.
+ * Hub assigns 3-char globally unique ids; survives hub restarts when store is wired.
  */
 export class SapInstanceRegistry {
   private readonly byInstanceId = new Map<string, SapInstanceRecord>();
 
-  resolveConnect(input: ResolveConnectInstanceInput): ResolveConnectInstanceResult {
+  constructor(private readonly store?: SapInstanceStorePort) {}
+
+  hydrate(records: SapInstanceRecord[]): void {
+    for (const record of records) {
+      this.byInstanceId.set(record.instanceId, record);
+    }
+  }
+
+  async resolveConnect(input: ResolveConnectInstanceInput): Promise<ResolveConnectInstanceResult> {
     const appId = input.appId.trim();
     if (!appId) return { ok: false, error: "app_id required" };
 
@@ -39,7 +49,21 @@ export class SapInstanceRegistry {
       } catch (e) {
         return { ok: false, error: e instanceof Error ? e.message : String(e) };
       }
-      const record = this.byInstanceId.get(norm);
+
+      let record = this.byInstanceId.get(norm);
+      if (!record && this.store) {
+        const row = await this.store.get(norm);
+        if (row) {
+          record = {
+            instanceId: row.instanceId,
+            appId: row.appId,
+            httpUrl: row.httpUrl,
+            createdAt: row.createdAt,
+          };
+          this.byInstanceId.set(norm, record);
+        }
+      }
+
       if (!record) {
         return { ok: false, error: `unknown instance_id: ${norm}` };
       }
@@ -48,6 +72,7 @@ export class SapInstanceRegistry {
       }
       if (input.httpUrl?.trim()) {
         record.httpUrl = input.httpUrl.trim();
+        await this.persist(record);
       }
       return { ok: true, instanceId: norm, isNew: false };
     }
@@ -62,6 +87,7 @@ export class SapInstanceRegistry {
         createdAt: new Date().toISOString(),
       };
       this.byInstanceId.set(candidate, record);
+      await this.persist(record);
       return { ok: true, instanceId: candidate, isNew: true };
     }
     return { ok: false, error: "failed to allocate instance_id" };
@@ -75,5 +101,15 @@ export class SapInstanceRegistry {
     return [...this.byInstanceId.values()].toSorted((a, b) =>
       a.instanceId.localeCompare(b.instanceId),
     );
+  }
+
+  private async persist(record: SapInstanceRecord): Promise<void> {
+    if (!this.store) return;
+    await this.store.upsert({
+      instanceId: record.instanceId,
+      appId: record.appId,
+      httpUrl: record.httpUrl,
+      createdAt: record.createdAt,
+    });
   }
 }

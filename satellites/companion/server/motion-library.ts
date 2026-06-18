@@ -1,15 +1,18 @@
-import { existsSync, readdirSync, statSync, unlinkSync } from "node:fs";
+import { existsSync, readdirSync, renameSync, statSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
+import { displayNameFromFilename, motionFileNameForId, newMotionId } from "../shared/asset-id.ts";
 import {
-  newMotionId,
   type MotionLibraryEntry,
   type MotionSlotId,
   MOTION_SLOT_IDS,
   defaultMotionSlotsFromManifest,
 } from "../shared/companion-schema.ts";
+import { requiredMotionFiles } from "../shared/motion-manifest.ts";
 import { loadConfig, saveConfig } from "./config.ts";
 import { companionMotionsDir } from "./paths.ts";
 import { resolveMotionFile } from "./motions.ts";
+
+const MANIFEST_MOTION_FILES = new Set(requiredMotionFiles());
 
 export function listMotionLibrary(): MotionLibraryEntry[] {
   return loadConfig().motion_library;
@@ -23,18 +26,28 @@ export function motionFileAvailable(file: string): boolean {
   return resolveMotionFile(`/motions/${file}`) !== null;
 }
 
+export function registerMotionEntry(entry: MotionLibraryEntry): MotionLibraryEntry {
+  const cfg = loadConfig();
+  const existing = cfg.motion_library.find((e) => e.id === entry.id);
+  if (existing) return existing;
+
+  saveConfig({ motion_library: [...cfg.motion_library, entry] });
+  return entry;
+}
+
+/** @deprecated 请用 registerMotionEntry；保留供 manifest 同步 */
 export function addMotionToLibrary(file: string, name?: string): MotionLibraryEntry {
   const cfg = loadConfig();
   const existing = cfg.motion_library.find((e) => e.file === file);
   if (existing) return existing;
 
+  const id = newMotionId();
   const entry: MotionLibraryEntry = {
-    id: newMotionId(),
-    name: name ?? file.replace(/\.vrma$/i, ""),
+    id,
+    name: name ?? displayNameFromFilename(file),
     file,
   };
-  saveConfig({ motion_library: [...cfg.motion_library, entry] });
-  return entry;
+  return registerMotionEntry(entry);
 }
 
 export function syncLibraryFromDisk(): MotionLibraryEntry[] {
@@ -47,10 +60,28 @@ export function syncLibraryFromDisk(): MotionLibraryEntry[] {
   const added: MotionLibraryEntry[] = [];
 
   for (const file of files) {
-    if (!known.has(file)) {
+    if (known.has(file)) continue;
+    if (MANIFEST_MOTION_FILES.has(file)) {
       added.push(addMotionToLibrary(file));
+      continue;
     }
+
+    const id = newMotionId();
+    const targetFile = motionFileNameForId(id);
+    const oldPath = join(dir, file);
+    const newPath = join(dir, targetFile);
+    if (oldPath !== newPath) {
+      renameSync(oldPath, newPath);
+    }
+    added.push(
+      registerMotionEntry({
+        id,
+        name: displayNameFromFilename(file),
+        file: targetFile,
+      }),
+    );
   }
+
   const library = loadConfig().motion_library;
   if (added.length > 0) {
     linkSlotsFromManifest(library);

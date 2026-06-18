@@ -71,22 +71,32 @@ export function createSapClient(options: CreateSapClientOptions): SapClient {
     async connect(payload: Omit<ConnectPayload, "protocol">): Promise<ConnectedPayload> {
       const body = connectPayloadSchema.parse({ ...payload, protocol: SAP_VERSION });
       return new Promise<ConnectedPayload>((resolve, reject) => {
+        const cleanup = (): void => {
+          ws.removeEventListener("message", onMessage);
+          ws.removeEventListener("close", onClose);
+        };
         const onMessage = (ev: MessageEvent): void => {
           if (typeof ev.data !== "string") return;
           try {
             const envelope = parseSapEnvelope(ev.data);
             if (envelope.kind === "connected") {
-              ws.removeEventListener("message", onMessage);
+              cleanup();
               const connected = envelope.payload as ConnectedPayload;
               options.onConnected?.(connected);
               resolve(connected);
             }
           } catch (e) {
-            ws.removeEventListener("message", onMessage);
+            cleanup();
             reject(e instanceof Error ? e : new Error(String(e)));
           }
         };
+        const onClose = (ev: CloseEvent): void => {
+          cleanup();
+          const reason = ev.reason?.trim();
+          reject(new Error(reason || "SAP WebSocket closed during connect"));
+        };
         ws.addEventListener("message", onMessage);
+        ws.addEventListener("close", onClose, { once: true });
         send({ kind: "connect", payload: body });
       });
     },

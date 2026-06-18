@@ -102,10 +102,26 @@ export async function bootRuntimePhase(
   bindSapServerDeps({
     runtime,
     satelliteManager: satellite,
-    instanceRegistry: new SapInstanceRegistry(),
+    instanceRegistry: await createSapInstanceRegistry(repos),
     animaVersion: ANIMA_VERSION,
     masks,
   });
 
   return { runtime };
+}
+
+async function createSapInstanceRegistry(repos: PgRepositories): Promise<SapInstanceRegistry> {
+  const registry = new SapInstanceRegistry(repos.sapInstance);
+  if (repos.pgAvailable) {
+    const rows = await repos.sapInstance.listAll();
+    registry.hydrate(
+      rows.map((row) => ({
+        instanceId: row.instanceId,
+        appId: row.appId,
+        httpUrl: row.httpUrl,
+        createdAt: row.createdAt,
+      })),
+    );
+  }
+  return registry;
 }
