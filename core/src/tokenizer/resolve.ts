@@ -1,12 +1,15 @@
+import { existsSync } from "node:fs";
+
 import { FALLBACK_TOKENIZER_REPO, HF_HUB_BASE } from "./constants.ts";
 import { mapWithConcurrency } from "./concurrency.ts";
+import { fetchWithTimeout } from "./fetch.ts";
 import {
   buildSearchQueries,
   deriveBaseModelNames,
   stripOllamaTag,
   toTitleKebabModel,
 } from "./normalize.ts";
-import { hubResolveUrl } from "./paths.ts";
+import { hubResolveUrl, repoToCacheDir } from "./paths.ts";
 import { getResolveContext } from "./resolve-context.ts";
 import { resolveOllamaModelHints } from "./resolve-ollama.ts";
 import {
@@ -110,8 +113,11 @@ export function generateCandidateRepos(model: string, extraHints: string[] = [])
 }
 
 export async function headTokenizerJsonExists(repo: string): Promise<boolean> {
+  const localPath = `${repoToCacheDir(repo)}/tokenizer.json`;
+  if (existsSync(localPath)) return true;
+
   try {
-    const res = await fetch(hubResolveUrl(repo, "tokenizer.json"), { method: "HEAD" });
+    const res = await fetchWithTimeout(hubResolveUrl(repo, "tokenizer.json"), { method: "HEAD" });
     return res.ok;
   } catch {
     return false;
@@ -126,7 +132,7 @@ type HubModelEntry = {
 async function fetchHubSearchIds(query: string): Promise<string[]> {
   const url = `${HF_HUB_BASE}/api/models?search=${encodeURIComponent(query)}&sort=downloads&direction=-1&limit=${HF_SEARCH_LIMIT}`;
   try {
-    const res = await fetch(url);
+    const res = await fetchWithTimeout(url);
     if (!res.ok) return [];
     const entries = (await res.json()) as HubModelEntry[];
     const ids: string[] = [];

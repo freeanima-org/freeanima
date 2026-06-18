@@ -1,12 +1,18 @@
-import { existsSync, mkdirSync } from "node:fs";
+import { mkdirSync } from "node:fs";
 import { basename, join } from "node:path";
 import { jsonResponse } from "./http/cors.ts";
 import { companionMotionsDir } from "./paths.ts";
 import { resolveFbx2gltfBinary } from "./fbx-converter-kit.ts";
 import { convertFbxToVrmaFiles } from "./fbx2vrma-core.ts";
-import { loadConfig, saveConfig, type CompanionConfig, type LocomotionSlot } from "./config.ts";
-import { LOCOMOTION_SLOT_LABELS, LOCOMOTION_SLOTS } from "../shared/constants.ts";
+import { loadConfig } from "./config.ts";
+import {
+  LOCOMOTION_SLOT_LABELS,
+  LOCOMOTION_SLOTS,
+  type LocomotionSlot,
+} from "../shared/constants.ts";
 import { resolveMotionFile } from "./motions.ts";
+import { addMotionToLibrary, setSlotMotions } from "./motion-library.ts";
+import type { MotionSlotId } from "../shared/companion-schema.ts";
 
 export { LOCOMOTION_SLOTS };
 
@@ -21,22 +27,31 @@ function slotOutputName(slot: LocomotionSlot): string {
   return `locomotion_${slot}.vrma`;
 }
 
+function locomotionMotionSlot(slot: LocomotionSlot): MotionSlotId {
+  return slot;
+}
+
 async function convertFbxToVrma(inputPath: string, outputPath: string): Promise<void> {
   const fbx2gltf = resolveFbx2gltfBinary();
   await convertFbxToVrmaFiles(inputPath, outputPath, fbx2gltf, "30");
 }
 
-export function locomotionFileForSlot(slot: LocomotionSlot): string {
+export function locomotionFileForSlot(slot: LocomotionSlot): string | null {
   const cfg = loadConfig();
-  const configured = cfg.locomotion?.[slot];
-  if (configured) return configured;
-  return slotOutputName(slot);
+  const slotIds = cfg.motion_slots[locomotionMotionSlot(slot)] ?? [];
+  for (const ref of slotIds) {
+    const byId = cfg.motion_library.find((e) => e.id === ref);
+    if (byId) return byId.file;
+    if (ref.endsWith(".vrma")) return ref;
+  }
+  const legacy = slotOutputName(slot);
+  return resolveMotionFile(`/motions/${legacy}`) ? legacy : null;
 }
 
 export function locomotionSlotStatus(): LocomotionSlotInfo[] {
   return LOCOMOTION_SLOTS.map((slot) => {
     const file = locomotionFileForSlot(slot);
-    const available = resolveMotionFile(`/motions/${file}`) !== null;
+    const available = file !== null && resolveMotionFile(`/motions/${file}`) !== null;
     return {
       slot,
       label: LOCOMOTION_SLOT_LABELS[slot],
@@ -87,28 +102,10 @@ export async function importLocomotionFile(
     await removeTree(tempDir);
   }
 
-  const patch: Partial<CompanionConfig> = {
-    locomotion: {
-      ...loadConfig().locomotion,
-      [slot]: destName,
-    },
-  };
-  saveConfig(patch);
+  const entry = addMotionToLibrary(destName, LOCOMOTION_SLOT_LABELS[slot]);
+  setSlotMotions(locomotionMotionSlot(slot), [entry.id]);
 
   return { slot, file: destName };
-}
-
-export async function clearLocomotionSlot(slot: LocomotionSlot): Promise<void> {
-  const cfg = loadConfig();
-  const next = { ...cfg.locomotion };
-  delete next[slot];
-  saveConfig({ locomotion: Object.keys(next).length > 0 ? next : {} });
-
-  const file = slotOutputName(slot);
-  const path = join(companionMotionsDir(), file);
-  if (existsSync(path)) {
-    await removeTree(path);
-  }
 }
 
 async function removeTree(path: string): Promise<void> {

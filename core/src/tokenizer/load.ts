@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { Tokenizer } from "@huggingface/tokenizers";
 
+import { fetchWithTimeout } from "./fetch.ts";
 import { hubResolveUrl, repoToCacheDir } from "./paths.ts";
 
 export type TokenizerInstance = {
@@ -9,7 +10,7 @@ export type TokenizerInstance = {
 };
 
 async function downloadFile(url: string, dest: string): Promise<void> {
-  const res = await fetch(url);
+  const res = await fetchWithTimeout(url);
   if (!res.ok) {
     throw new Error(`download failed ${url}: ${res.status}`);
   }

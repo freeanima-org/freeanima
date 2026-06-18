@@ -1,10 +1,10 @@
-import { StrictMode, useCallback, useEffect, useRef } from "react";
+import { StrictMode, useCallback, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { CharacterViewport } from "@/components/CharacterViewport.tsx";
 import { SettingsPanel } from "@/components/SettingsPanel.tsx";
+import { TextBubbleOverlay } from "@/components/TextBubbleOverlay.tsx";
 import { useCompanionStore } from "@/stores/companion.ts";
-import { startPatrolWatcher } from "@/stores/character.ts";
-import { companionDebug } from "@/lib/companion-debug.ts";
+import { onCharacterModelReady, startPatrolWatcher } from "@/stores/character.ts";
 import { useSidecarError } from "@/hooks/useSidecarError.ts";
 import {
   isSettingsRoute,
@@ -15,15 +15,17 @@ import {
   setClickThrough,
   setPointerActive,
 } from "@/lib/tauri.ts";
+import { companionDebug } from "@/lib/companion-debug.ts";
+import { useRef } from "react";
 
 function ClickThroughManager() {
   const hitTestFn = useCompanionStore((s) => s.hitTestFn);
-  const modelReady = useCompanionStore((s) => s.modelReady);
+  const characterReady = useCompanionStore((s) => s.characterReady);
   const pointerActive = useCompanionStore((s) => s.pointerActive);
   const ignoringRef = useRef(false);
 
   useEffect(() => {
-    if (!isTauri() || !hitTestFn || !modelReady) return;
+    if (!isTauri() || !hitTestFn || !characterReady) return;
 
     let cleanupCursor: (() => void) | undefined;
 
@@ -49,27 +51,52 @@ function ClickThroughManager() {
       void setClickThrough(false);
       void setPointerActive(false);
     };
-  }, [hitTestFn, modelReady, pointerActive]);
+  }, [hitTestFn, characterReady, pointerActive]);
 
   return null;
 }
 
+function SettingsModal() {
+  const open = useCompanionStore((s) => s.settingsOpen);
+  const setOpen = useCompanionStore((s) => s.setSettingsOpen);
+  if (!open) return null;
+  return (
+    <div className="settings-modal-backdrop" onClick={() => setOpen(false)}>
+      <div className="settings-modal-panel" onClick={(e) => e.stopPropagation()}>
+        <SettingsPanel onClose={() => setOpen(false)} />
+      </div>
+    </div>
+  );
+}
+
 function CompanionWindow() {
-  const { loading, error, modelPath, modelReady, modelLoading, init, clearError, setModelReady } =
-    useCompanionStore();
+  const {
+    loading,
+    error,
+    modelPath,
+    characterReady,
+    modelLoading,
+    configRevision,
+    init,
+    refreshConfig,
+    clearError,
+    setCharacterReady,
+    setSettingsOpen,
+  } = useCompanionStore();
 
   useSidecarError();
 
   const onModelLoaded = useCallback(() => {
-    setModelReady(true);
-  }, [setModelReady]);
+    setCharacterReady(true);
+    onCharacterModelReady();
+  }, [setCharacterReady]);
 
   const onModelError = useCallback(
     (msg: string) => {
-      setModelReady(false);
+      setCharacterReady(false);
       useCompanionStore.setState({ error: msg });
     },
-    [setModelReady],
+    [setCharacterReady],
   );
 
   useEffect(() => {
@@ -78,15 +105,25 @@ function CompanionWindow() {
         void openSettings();
       }
     });
-    if (!isTauri()) return;
-    let offConfig: (() => void) | undefined;
-    void listenConfigChanged(() => {
-      void useCompanionStore.getState().init();
-    }).then((fn) => {
-      offConfig = fn;
-    });
-    return () => offConfig?.();
-  }, [init]);
+
+    const onConfigChanged = (): void => {
+      void refreshConfig();
+    };
+
+    if (isTauri()) {
+      let offConfig: (() => void) | undefined;
+      void listenConfigChanged(onConfigChanged).then((fn) => {
+        offConfig = fn;
+      });
+      return () => offConfig?.();
+    }
+
+    const onStorage = (ev: StorageEvent): void => {
+      if (ev.key === "companion-config-changed") onConfigChanged();
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, [init, refreshConfig]);
 
   useEffect(() => {
     const stopPatrol = startPatrolWatcher();
@@ -107,19 +144,32 @@ function CompanionWindow() {
   return (
     <div className="companion-overlay">
       <ClickThroughManager />
-      <CharacterViewport
-        modelPath={modelPath}
-        onModelError={onModelError}
-        onModelLoaded={onModelLoaded}
-      />
+      {!isTauri() ? (
+        <button
+          type="button"
+          className="absolute top-1 right-1 z-30 text-[10px] px-2 py-0.5 rounded bg-black/40 text-white/70 hover:text-white"
+          onClick={() => setSettingsOpen(true)}
+        >
+          设置
+        </button>
+      ) : null}
+      <div className="relative w-full h-full">
+        <TextBubbleOverlay />
+        <CharacterViewport
+          modelPath={modelPath}
+          configRevision={configRevision}
+          onModelError={onModelError}
+          onModelLoaded={onModelLoaded}
+        />
+      </div>
 
-      {!modelReady && !loading && !modelPath ? (
+      {!characterReady && !loading && !modelPath ? (
         <div className="absolute inset-x-2 top-1/3 z-10 startup-panel text-center text-xs leading-relaxed">
-          未加载 VRM 模型。请从系统托盘打开「设置」导入或填写模型路径。
+          未加载 VRM 模型。请打开「设置」导入模型。
         </div>
       ) : null}
 
-      {!modelReady && !loading && modelPath && modelLoading ? (
+      {!characterReady && !loading && modelPath && modelLoading ? (
         <div className="absolute inset-x-2 top-1/3 z-10 startup-panel text-center text-xs leading-relaxed">
           正在加载 VRM 模型…
         </div>
@@ -133,18 +183,23 @@ function CompanionWindow() {
           </button>
         </div>
       ) : null}
+
+      {!isTauri() ? <SettingsModal /> : null}
     </div>
   );
 }
 
 function SettingsApp() {
-  const { loading, init } = useCompanionStore();
+  const { loading, init, refreshConfig } = useCompanionStore();
 
   useSidecarError();
 
   useEffect(() => {
     void init();
-  }, [init]);
+    void listenConfigChanged(() => {
+      void refreshConfig();
+    });
+  }, [init, refreshConfig]);
 
   if (loading) {
     return (
@@ -162,7 +217,7 @@ function SettingsApp() {
 }
 
 function AppRouter() {
-  if (isSettingsRoute()) {
+  if (isTauri() && isSettingsRoute()) {
     return <SettingsApp />;
   }
   return <CompanionWindow />;

@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { getVrmBackend } from "@/renderer/VrmBackend.ts";
 import {
   buildPerimeterWaypoints,
   buildWorkAreaCenter,
@@ -16,15 +15,16 @@ import {
 } from "@/lib/window-metrics.ts";
 import { getPatrolScreen, getWindowPosition, isTauri, moveWindow } from "@/lib/tauri.ts";
 import {
-  IDLE_PATROL_DELAY_MS,
   interpolateJourneyPoint,
   journeyDurationMs,
-  PATROL_PAUSE_MS,
-  PATROL_SPEED_PX,
+  patrolPauseMsFor,
+  patrolSpeedPxFor,
   shouldEnablePatrol,
 } from "./character-patrol.ts";
 import { companionDebug } from "@/lib/companion-debug.ts";
 import type { LocomotionKind } from "@/renderer/VrmBackend.ts";
+import { useCompanionStore } from "@/stores/companion.ts";
+import { idlePatrolDelayMs } from "@shared/core/behavior.ts";
 
 type CharacterState = {
   patrolling: boolean;
@@ -49,25 +49,18 @@ let activeJourney: Journey | null = null;
 let currentPosition: ScreenPoint | null = null;
 let patrolPausedUntilMs = 0;
 let lastInteractionAt = performance.now();
-let characterModelReady = false;
 let patrolPathRefresh: Promise<ScreenPoint[]> | null = null;
 let startupWalkPending = true;
 let introWalkActive = false;
 
-function isTraveling(): boolean {
-  return useCharacterStore.getState().patrolling || introWalkActive;
-}
-
 const COMPANION_STAGE_ID = "companion-stage";
 
 function getBackend() {
-  const canvas = document.querySelector("canvas");
-  if (!canvas) return null;
-  try {
-    return getVrmBackend(canvas);
-  } catch {
-    return null;
-  }
+  return useCompanionStore.getState().backendRef.current;
+}
+
+function isTraveling(): boolean {
+  return useCharacterStore.getState().patrolling || introWalkActive;
 }
 
 function companionStageElement(): HTMLElement | null {
@@ -182,17 +175,19 @@ function syncIdleAtRest(): void {
 function startJourney(from: ScreenPoint, to: ScreenPoint): void {
   if (!isTraveling()) return;
 
+  const behavior = useCompanionStore.getState().behavior;
+  const speed = patrolSpeedPxFor(behavior);
   const dx = to.x - from.x;
   const dy = to.y - from.y;
   const distancePx = Math.hypot(dx, dy);
   if (distancePx < 4) {
-    patrolPausedUntilMs = performance.now() + PATROL_PAUSE_MS;
+    patrolPausedUntilMs = performance.now() + patrolPauseMsFor(behavior);
     syncIdleAtRest();
     return;
   }
 
   const heading = Math.atan2(dx, dy);
-  const durationMs = journeyDurationMs(distancePx);
+  const durationMs = journeyDurationMs(distancePx, speed);
   activeJourney = {
     from,
     to,
@@ -200,7 +195,7 @@ function startJourney(from: ScreenPoint, to: ScreenPoint): void {
     durationMs,
     heading,
   };
-  syncTravelToBackend(true, PATROL_SPEED_PX, heading, locomotionKindForSegment(from, to));
+  syncTravelToBackend(true, speed, heading, locomotionKindForSegment(from, to));
   companionDebug("巡逻段开始", { from, to, durationMs: Math.round(durationMs) });
 }
 
@@ -208,7 +203,7 @@ let schedulingPatrolStep = false;
 
 async function scheduleNextPatrolStep(): Promise<void> {
   if (schedulingPatrolStep) return;
-  if (!characterModelReady) return;
+  if (!useCompanionStore.getState().characterReady) return;
   if (introWalkActive) return;
   if (!useCharacterStore.getState().patrolling || activeJourney) return;
   if (performance.now() < patrolPausedUntilMs) return;
@@ -225,7 +220,7 @@ async function scheduleNextPatrolStep(): Promise<void> {
 
 function finishActiveJourney(): void {
   activeJourney = null;
-  patrolPausedUntilMs = performance.now() + PATROL_PAUSE_MS;
+  patrolPausedUntilMs = performance.now() + patrolPauseMsFor(useCompanionStore.getState().behavior);
   syncIdleAtRest();
 
   if (introWalkActive) {
@@ -245,7 +240,8 @@ async function beginPatrolFromCurrentPosition(): Promise<void> {
 
   const distancePx = Math.hypot(entry.x - from.x, entry.y - from.y);
   if (distancePx < 4) {
-    patrolPausedUntilMs = performance.now() + PATROL_PAUSE_MS;
+    patrolPausedUntilMs =
+      performance.now() + patrolPauseMsFor(useCompanionStore.getState().behavior);
     companionDebug("已在巡逻边缘，直接开始", { from, entry, nextIndex });
     return;
   }
@@ -255,9 +251,9 @@ async function beginPatrolFromCurrentPosition(): Promise<void> {
   startJourney(from, entry);
 }
 
-/** 双击角色：立即进入巡逻，先走到最近的工作区边缘 */
 export async function enterPatrolMode(): Promise<void> {
-  if (!characterModelReady) return;
+  const { characterReady, behavior } = useCompanionStore.getState();
+  if (!characterReady || !behavior.double_click_patrol) return;
   introWalkActive = false;
   activeJourney = null;
   lastInteractionAt = performance.now();
@@ -280,13 +276,15 @@ function tickJourney(): void {
     return;
   }
 
+  const behavior = useCompanionStore.getState().behavior;
+  const speed = patrolSpeedPxFor(behavior);
   const { from, to, startMs, durationMs, heading } = activeJourney;
   const elapsed = performance.now() - startMs;
   const t = Math.min(1, elapsed / durationMs);
   const point = interpolateJourneyPoint(from, to, t);
 
   applyPosition(point);
-  syncTravelToBackend(t < 1, PATROL_SPEED_PX, heading, locomotionKindForSegment(from, to));
+  syncTravelToBackend(t < 1, speed, heading, locomotionKindForSegment(from, to));
 
   if (t >= 1) {
     finishActiveJourney();
@@ -294,15 +292,17 @@ function tickJourney(): void {
 }
 
 function tickPatrolTimer(): void {
+  const { characterReady, behavior } = useCompanionStore.getState();
   if (
     shouldEnablePatrol(
       lastInteractionAt,
       performance.now(),
       useCharacterStore.getState().patrolling,
-      characterModelReady,
+      characterReady,
+      behavior,
     )
   ) {
-    companionDebug("空闲计时结束，开启巡逻", { idleMs: IDLE_PATROL_DELAY_MS });
+    companionDebug("空闲计时结束，开启巡逻", { idleMs: idlePatrolDelayMs(behavior) });
     useCharacterStore.getState().setPatrolling(true);
   }
 }
@@ -313,9 +313,7 @@ export function syncCompanionStagePosition(): void {
   moveCompanionStage(point.x, point.y);
 }
 
-/** VRM 加载完成后：从工作区中心归位到左上角 */
-export function notifyCharacterModelReady(): void {
-  characterModelReady = true;
+export function onCharacterModelReady(): void {
   syncCompanionStagePosition();
   void runStartupWalkToHome();
 }
@@ -340,6 +338,11 @@ async function readStartupSpawnPoint(): Promise<ScreenPoint> {
 }
 
 async function runStartupWalkToHome(): Promise<void> {
+  const { behavior } = useCompanionStore.getState();
+  if (!behavior.startup_walk_enabled) {
+    startupWalkPending = false;
+    return;
+  }
   if (!startupWalkPending) return;
   startupWalkPending = false;
 
@@ -359,20 +362,18 @@ async function runStartupWalkToHome(): Promise<void> {
   startJourney(spawn, home);
 }
 
-/** 用户交互时调用：停止巡逻并重置空闲计时 */
 export function recordInteraction(): void {
   const wasPatrolling = useCharacterStore.getState().patrolling;
   lastInteractionAt = performance.now();
   introWalkActive = false;
   activeJourney = null;
-  patrolPausedUntilMs = performance.now() + PATROL_PAUSE_MS;
+  patrolPausedUntilMs = performance.now() + patrolPauseMsFor(useCompanionStore.getState().behavior);
   useCharacterStore.getState().setPatrolling(false);
   if (wasPatrolling) {
     companionDebug("用户交互，停止巡逻");
   }
 }
 
-/** 原生窗口拖拽结束后同步物理坐标 */
 export async function syncCompanionWindowPosition(): Promise<void> {
   if (!isTauri()) return;
   await syncWindowPositionFromShell();
@@ -395,25 +396,20 @@ export const useCharacterStore = create<CharacterState>((set) => ({
 
   syncTravelToBackend() {
     if (activeJourney) {
+      const behavior = useCompanionStore.getState().behavior;
+      const speed = patrolSpeedPxFor(behavior);
       const { from, to, startMs, durationMs, heading } = activeJourney;
       const t = Math.min(1, (performance.now() - startMs) / durationMs);
-      syncTravelToBackend(
-        t < 1,
-        t < 1 ? PATROL_SPEED_PX : 0,
-        heading,
-        locomotionKindForSegment(from, to),
-      );
+      syncTravelToBackend(t < 1, t < 1 ? speed : 0, heading, locomotionKindForSegment(from, to));
       return;
     }
     syncIdleAtRest();
   },
 }));
 
-/** 启动旅程循环与空闲巡逻计时 */
 export function startPatrolWatcher(): () => void {
   if (journeyFrame !== null) cancelAnimationFrame(journeyFrame);
 
-  characterModelReady = false;
   startupWalkPending = true;
   introWalkActive = false;
   lastInteractionAt = performance.now();
@@ -439,10 +435,7 @@ export function startPatrolWatcher(): () => void {
     activeJourney = null;
     introWalkActive = false;
     startupWalkPending = true;
-    characterModelReady = false;
     useCharacterStore.getState().setPatrolling(false);
     syncIdleAtRest();
   };
 }
-
-export { IDLE_PATROL_DELAY_MS };

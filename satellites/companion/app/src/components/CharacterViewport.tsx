@@ -19,13 +19,19 @@ const COMPANION_STAGE_ID = "companion-stage";
 
 type Props = {
   modelPath: string;
+  configRevision: number;
   onModelLoaded?: () => void;
   onModelError?: (message: string) => void;
 };
 
-export function CharacterViewport({ modelPath, onModelLoaded, onModelError }: Props) {
+export function CharacterViewport({
+  modelPath,
+  configRevision,
+  onModelLoaded,
+  onModelError,
+}: Props) {
   const hitTestFn = useCompanionStore((s) => s.hitTestFn);
-  const modelReady = useCompanionStore((s) => s.modelReady);
+  const characterReady = useCompanionStore((s) => s.characterReady);
   const pointerDownRef = useRef<{
     clientX: number;
     clientY: number;
@@ -63,8 +69,8 @@ export function CharacterViewport({ modelPath, onModelLoaded, onModelError }: Pr
   };
 
   const onPointerDown = (event: PointerEvent<HTMLDivElement>): void => {
-    if (event.button !== 0 || !modelReady) {
-      companionDebug("pointerdown 忽略", { button: event.button, modelReady });
+    if (event.button !== 0 || !characterReady) {
+      companionDebug("pointerdown 忽略", { button: event.button, characterReady });
       return;
     }
     useCompanionStore.getState().setPointerActive(true);
@@ -130,7 +136,7 @@ export function CharacterViewport({ modelPath, onModelLoaded, onModelError }: Pr
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
 
-    if (!down || !modelReady) {
+    if (!down || !characterReady) {
       draggingRef.current = false;
       useCompanionStore.getState().setPointerActive(false);
       return;
@@ -201,7 +207,12 @@ export function CharacterViewport({ modelPath, onModelLoaded, onModelError }: Pr
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
     >
-      <VrmCanvas modelPath={modelPath} onModelLoaded={onModelLoaded} onModelError={onModelError} />
+      <VrmCanvas
+        modelPath={modelPath}
+        configRevision={configRevision}
+        onModelLoaded={onModelLoaded}
+        onModelError={onModelError}
+      />
     </div>
   );
 }

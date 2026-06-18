@@ -1,9 +1,11 @@
+import type { MotionBindConfig } from "./VrmAnimationPlayer.ts";
+
 export type EmotionKind = "neutral" | "joy" | "angry" | "sad" | "surprised" | "think";
 
 export type BodyZone = "head" | "torso" | "leftArm" | "rightArm" | "leftLeg" | "rightLeg";
 
 export interface CharacterBackend {
-  load(source: string): Promise<void>;
+  load(source: string, motionConfig: MotionBindConfig): Promise<void>;
   setEmotion(emotion: EmotionKind, weight?: number): void;
   playMotion(file: string): void;
   playZoneMotion(zone: BodyZone): void;

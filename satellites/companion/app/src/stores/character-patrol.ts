@@ -1,19 +1,28 @@
 import type { ScreenPoint } from "@/lib/window-metrics.ts";
+import type { CompanionBehavior } from "@shared/companion-schema.ts";
+import { idlePatrolDelayMs, patrolPauseMs } from "@shared/core/behavior.ts";
 
-export const IDLE_PATROL_DELAY_MS = 180_000;
 export const PATROL_SPEED_PX = 95;
 export const MIN_JOURNEY_MS = 1200;
-export const PATROL_PAUSE_MS = 10_000;
 
 /** 是否应在空闲计时后开启巡逻 */
 export function shouldEnablePatrol(
   lastInteractionAt: number,
   nowMs: number,
   patrolling: boolean,
-  modelReady: boolean,
+  characterReady: boolean,
+  behavior: CompanionBehavior,
 ): boolean {
-  if (!modelReady || patrolling) return false;
-  return nowMs - lastInteractionAt >= IDLE_PATROL_DELAY_MS;
+  if (!behavior.patrol_enabled || !characterReady || patrolling) return false;
+  return nowMs - lastInteractionAt >= idlePatrolDelayMs(behavior);
+}
+
+export function patrolPauseMsFor(behavior: CompanionBehavior): number {
+  return patrolPauseMs(behavior);
+}
+
+export function patrolSpeedPxFor(behavior: CompanionBehavior): number {
+  return behavior.patrol_speed_px;
 }
 
 /** 匀速巡逻：线性插值位置 */

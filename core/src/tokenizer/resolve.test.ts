@@ -78,6 +78,7 @@ describe("ollamaApiBaseFromOpenAiUrl", () => {
 
   it("returns null for unrelated URLs", () => {
     expect(ollamaApiBaseFromOpenAiUrl("https://api.openai.com")).toBeNull();
+    expect(ollamaApiBaseFromOpenAiUrl("https://opencode.ai/zen/go/v1")).toBeNull();
   });
 });
 
