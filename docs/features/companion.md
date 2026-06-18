@@ -15,7 +15,7 @@ title: Desktop Companion
 ├── Tauri 壳 — 双窗口、点击穿透、托盘
 │   ├── companion 窗 — 透明置顶，VRM 渲染与本地交互
 │   └── settings 窗 — 普通有边框窗口，从托盘打开
-└── Bun sidecar — runSapTransport（Hub 注册）
+└── companion-bun + resources/sidecar/ — Bun 运行 server/（含 node_modules，FBX 进程内转换）
          ↕ SAP WS（可跨机）
     anima service Hub
 ```

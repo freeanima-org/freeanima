@@ -88,6 +88,14 @@ export async function getSidecarPort(): Promise<number | null> {
   return api.core.invoke<number>("get_sidecar_port");
 }
 
+export async function listenSidecarReady(handler: (port: number) => void): Promise<() => void> {
+  const api = tauri();
+  if (!api) return () => {};
+  return api.event.listen<number>("sidecar-ready", (ev) => {
+    handler(ev.payload);
+  });
+}
+
 export async function listenSidecarError(handler: (message: string) => void): Promise<() => void> {
   const api = tauri();
   if (!api) return () => {};

@@ -16,15 +16,6 @@
     "core:event:default",
     "core:event:allow-emit",
     "core:event:allow-listen",
-    "shell:default",
-    {
-      "identifier": "shell:allow-execute",
-      "allow": [
-        {
-          "name": "companion-sidecar",
-          "sidecar": true
-        }
-      ]
-    }
+    "shell:default"
   ]
 }

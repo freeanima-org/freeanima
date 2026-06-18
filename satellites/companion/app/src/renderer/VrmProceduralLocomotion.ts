@@ -1,3 +1,4 @@
+import * as THREE from "three";
 import type { VRM } from "@pixiv/three-vrm";
 
 type HumanBone =
@@ -28,20 +29,26 @@ const STRIDE_LENGTH_PX = 92;
 
 type IdleHeadState = "wait" | "tilt" | "hold" | "return";
 
-/** VRM 归一化 T 字基础上，上臂绕 Z 下垂的角度（约 78°） */
-const UPPER_ARM_HANG_Z = 1.36;
+/** VRM 归一化 T 字：上臂绕 Z 轴 ±90° 下垂 */
+const UPPER_ARM_HANG_Z = Math.PI / 2;
 /** 小臂自然微弯 */
 const LOWER_ARM_REST_X = -0.38;
 /** 走路摆臂幅度（弧度） */
-const WALK_ARM_SWING = 0.32;
+const WALK_ARM_SWING = 0.22;
+
+const _axisZ = new THREE.Vector3(0, 0, 1);
+const _axisX = new THREE.Vector3(1, 0, 0);
+const _qHang = new THREE.Quaternion();
+const _qSwing = new THREE.Quaternion();
+const _qArm = new THREE.Quaternion();
 
 function setUpperArmHang(
   upper: NonNullable<ReturnType<typeof bone>>,
   side: "left" | "right",
 ): void {
-  upper.rotation.order = "ZXY";
   const hangZ = side === "left" ? UPPER_ARM_HANG_Z : -UPPER_ARM_HANG_Z;
-  upper.rotation.set(0, 0, hangZ);
+  _qHang.setFromAxisAngle(_axisZ, hangZ);
+  upper.quaternion.copy(_qHang);
 }
 
 function setLowerArmRest(lower: NonNullable<ReturnType<typeof bone>>): void {
@@ -71,19 +78,23 @@ function applyWalkArmSwing(vrm: VRM, armPhase: number): void {
   const rightLowerArm = bone(vrm, "rightLowerArm");
 
   if (leftUpperArm) {
-    leftUpperArm.rotation.order = "ZXY";
-    leftUpperArm.rotation.set(-armSwing, 0, UPPER_ARM_HANG_Z);
+    _qHang.setFromAxisAngle(_axisZ, UPPER_ARM_HANG_Z);
+    _qSwing.setFromAxisAngle(_axisX, -armSwing);
+    _qArm.copy(_qHang).multiply(_qSwing);
+    leftUpperArm.quaternion.copy(_qArm);
   }
   if (rightUpperArm) {
-    rightUpperArm.rotation.order = "ZXY";
-    rightUpperArm.rotation.set(armSwing, 0, -UPPER_ARM_HANG_Z);
+    _qHang.setFromAxisAngle(_axisZ, -UPPER_ARM_HANG_Z);
+    _qSwing.setFromAxisAngle(_axisX, armSwing);
+    _qArm.copy(_qHang).multiply(_qSwing);
+    rightUpperArm.quaternion.copy(_qArm);
   }
   if (leftLowerArm) {
-    const bend = LOWER_ARM_REST_X + Math.max(0, -armSwing) * 0.2;
+    const bend = LOWER_ARM_REST_X + Math.max(0, -armSwing) * 0.18;
     leftLowerArm.rotation.set(bend, 0, 0);
   }
   if (rightLowerArm) {
-    const bend = LOWER_ARM_REST_X + Math.max(0, armSwing) * 0.2;
+    const bend = LOWER_ARM_REST_X + Math.max(0, armSwing) * 0.18;
     rightLowerArm.rotation.set(bend, 0, 0);
   }
 }
@@ -219,11 +230,12 @@ export class VrmProceduralLocomotion {
 
     this.walkPhase += ((speedPxPerSec * delta) / STRIDE_LENGTH_PX) * Math.PI * 2;
 
-    const swing = Math.sin(this.walkPhase) * 0.24;
+    const swing = Math.sin(this.walkPhase) * 0.18;
     const step = Math.max(0, Math.sin(this.walkPhase));
-    const leftKnee = Math.max(0, Math.sin(this.walkPhase + 0.35)) * 0.28;
-    const rightKnee = Math.max(0, Math.sin(this.walkPhase + Math.PI + 0.35)) * 0.28;
-    const bounce = step * 0.01;
+    const leftKnee = Math.max(0, Math.sin(this.walkPhase + 0.35)) * 0.26;
+    const rightKnee = Math.max(0, Math.sin(this.walkPhase + Math.PI + 0.35)) * 0.26;
+    const bounce = step * 0.012;
+    const hipLift = step * 0.028;
 
     const hips = bone(vrm, "hips");
     const spine = bone(vrm, "spine");
@@ -232,16 +244,104 @@ export class VrmProceduralLocomotion {
     const leftLowerLeg = bone(vrm, "leftLowerLeg");
     const rightLowerLeg = bone(vrm, "rightLowerLeg");
 
-    if (hips) hips.position.y = 0;
-    if (spine) spine.rotation.x = -bounce * 1.6;
+    if (hips) hips.position.y = hipLift;
+    if (spine) spine.rotation.x = -bounce * 1.4;
 
-    if (leftUpperLeg) leftUpperLeg.rotation.x = swing;
-    if (rightUpperLeg) rightUpperLeg.rotation.x = -swing;
-    if (leftLowerLeg) leftLowerLeg.rotation.x = leftKnee;
-    if (rightLowerLeg) rightLowerLeg.rotation.x = rightKnee;
+    if (leftUpperLeg) {
+      leftUpperLeg.rotation.order = "XYZ";
+      leftUpperLeg.rotation.x = swing;
+    }
+    if (rightUpperLeg) {
+      rightUpperLeg.rotation.order = "XYZ";
+      rightUpperLeg.rotation.x = -swing;
+    }
+    if (leftLowerLeg) {
+      leftLowerLeg.rotation.order = "XYZ";
+      leftLowerLeg.rotation.x = leftKnee;
+    }
+    if (rightLowerLeg) {
+      rightLowerLeg.rotation.order = "XYZ";
+      rightLowerLeg.rotation.x = rightKnee;
+    }
 
     applyWalkArmSwing(vrm, this.walkPhase);
 
     this.applyWalkHead(vrm, this.walkPhase);
+  }
+
+  /** 纵向巡逻：程序化攀爬（不用带 root motion 的 VRMA climb） */
+  applyClimb(vrm: VRM, delta: number, speedPxPerSec: number): void {
+    vrm.humanoid.resetNormalizedPose();
+
+    this.walkPhase += ((speedPxPerSec * delta) / STRIDE_LENGTH_PX) * Math.PI * 2;
+
+    const phase = this.walkPhase;
+    const leftReach = Math.max(0, Math.sin(phase)) * 1.48;
+    const rightReach = Math.max(0, Math.sin(phase + Math.PI)) * 1.48;
+    const leftLeg = Math.sin(phase) * 0.42;
+    const rightLeg = Math.sin(phase + Math.PI) * 0.42;
+    const leftKnee = Math.max(0, Math.sin(phase + 0.25)) * 0.58;
+    const rightKnee = Math.max(0, Math.sin(phase + Math.PI + 0.25)) * 0.58;
+    const pull = Math.max(Math.sin(phase), Math.sin(phase + Math.PI)) * 0.018;
+
+    const hips = bone(vrm, "hips");
+    const spine = bone(vrm, "spine");
+    const chest = bone(vrm, "chest");
+    const leftUpperLeg = bone(vrm, "leftUpperLeg");
+    const rightUpperLeg = bone(vrm, "rightUpperLeg");
+    const leftLowerLeg = bone(vrm, "leftLowerLeg");
+    const rightLowerLeg = bone(vrm, "rightLowerLeg");
+    const leftUpperArm = bone(vrm, "leftUpperArm");
+    const rightUpperArm = bone(vrm, "rightUpperArm");
+    const leftLowerArm = bone(vrm, "leftLowerArm");
+    const rightLowerArm = bone(vrm, "rightLowerArm");
+
+    if (hips) hips.position.y = pull;
+    if (spine) {
+      spine.rotation.order = "XYZ";
+      spine.rotation.x = -0.12;
+      spine.rotation.z = Math.sin(phase * 0.5) * 0.04;
+    }
+    if (chest) chest.rotation.x = -0.06;
+
+    if (leftUpperLeg) {
+      leftUpperLeg.rotation.order = "XYZ";
+      leftUpperLeg.rotation.x = leftLeg;
+    }
+    if (rightUpperLeg) {
+      rightUpperLeg.rotation.order = "XYZ";
+      rightUpperLeg.rotation.x = rightLeg;
+    }
+    if (leftLowerLeg) {
+      leftLowerLeg.rotation.order = "XYZ";
+      leftLowerLeg.rotation.x = leftKnee;
+    }
+    if (rightLowerLeg) {
+      rightLowerLeg.rotation.order = "XYZ";
+      rightLowerLeg.rotation.x = rightKnee;
+    }
+
+    if (leftUpperArm) {
+      _qHang.setFromAxisAngle(_axisZ, UPPER_ARM_HANG_Z);
+      _qSwing.setFromAxisAngle(_axisX, -leftReach);
+      _qArm.copy(_qHang).multiply(_qSwing);
+      leftUpperArm.quaternion.copy(_qArm);
+    }
+    if (rightUpperArm) {
+      _qHang.setFromAxisAngle(_axisZ, -UPPER_ARM_HANG_Z);
+      _qSwing.setFromAxisAngle(_axisX, rightReach);
+      _qArm.copy(_qHang).multiply(_qSwing);
+      rightUpperArm.quaternion.copy(_qArm);
+    }
+    if (leftLowerArm) {
+      const bend = LOWER_ARM_REST_X - leftReach * 0.22;
+      leftLowerArm.rotation.set(bend, 0, 0);
+    }
+    if (rightLowerArm) {
+      const bend = LOWER_ARM_REST_X - rightReach * 0.22;
+      rightLowerArm.rotation.set(bend, 0, 0);
+    }
+
+    this.applyWalkHead(vrm, phase);
   }
 }

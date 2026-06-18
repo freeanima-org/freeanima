@@ -1,3 +1,5 @@
+import { SATELLITE_PORT_START } from "@shared/constants.ts";
+
 /** 开发模式或 localStorage `companion:debug=1` 时输出交互/巡逻诊断日志 */
 export function companionDebug(...args: unknown[]): void {
   if (!isCompanionDebugEnabled()) return;
@@ -7,8 +9,12 @@ export function companionDebug(...args: unknown[]): void {
 function isLocalCompanionDevServer(): boolean {
   if (typeof location === "undefined") return false;
   const host = location.hostname;
-  const port = location.port;
-  return (host === "127.0.0.1" || host === "localhost") && port === "4176";
+  const port = Number(location.port);
+  return (
+    (host === "127.0.0.1" || host === "localhost") &&
+    port >= SATELLITE_PORT_START &&
+    port <= SATELLITE_PORT_START + 10
+  );
 }
 
 export function isCompanionDebugEnabled(): boolean {
@@ -22,6 +28,5 @@ export function isCompanionDebugEnabled(): boolean {
   const env = (import.meta as ImportMeta & { env?: { DEV?: boolean } }).env;
   if (env?.DEV === true) return true;
 
-  // bun satellites/companion/dev.ts 无 import.meta.env，默认识别本地 sidecar 端口
   return isLocalCompanionDevServer();
 }

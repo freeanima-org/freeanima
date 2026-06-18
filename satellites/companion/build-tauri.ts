@@ -9,7 +9,7 @@ import {
 import { spawnSync } from "node:child_process";
 import { join } from "node:path";
 import { buildCompanionApp } from "./build.ts";
-import { compileSidecar, type SidecarTarget } from "./compile-sidecar.ts";
+import { prepareSidecarBundle, type SidecarTarget } from "./prepare-sidecar.ts";
 
 const TAURI_DIR = join(import.meta.dir, "shell", "src-tauri");
 const CARGO_TARGET_DIR = join(import.meta.dir, "shell", "target");
@@ -97,13 +97,18 @@ function findWebview2LoaderDll(root: string): string | null {
   return null;
 }
 
-function ensureFbxExternalBinPresent(triple: string): void {
-  if (!triple.includes("windows")) return;
-  const path = join(TAURI_DIR, "bin", `FBX2glTF-windows-x64-${triple}.exe`);
-  if (!existsSync(path)) {
-    throw new Error(
-      `missing FBX2glTF externalBin: ${path} — FBX 导入将无法打包进安装程序，请确认 node_modules/fbx2vrma-converter 已安装`,
-    );
+function verifySidecarBundlePresent(triple: string): void {
+  const stagingEntry = join(TAURI_DIR, "resources", "sidecar", "server", "index.ts");
+  if (!existsSync(stagingEntry)) {
+    throw new Error(`missing sidecar bundle: ${stagingEntry} — run prepare-sidecar first`);
+  }
+  const bunBin = join(
+    TAURI_DIR,
+    "bin",
+    `companion-bun-${triple}${triple.includes("windows") ? ".exe" : ""}`,
+  );
+  if (!existsSync(bunBin)) {
+    throw new Error(`missing companion-bun: ${bunBin}`);
   }
 }
 
@@ -150,8 +155,7 @@ function verifyWindowsRelease(releaseDir: string, profile: BuildProfile): void {
   const required = [
     join(releaseDir, "companion-shell.exe"),
     join(releaseDir, "WebView2Loader.dll"),
-    join(releaseDir, "companion-sidecar.exe"),
-    join(releaseDir, "fbx2vrma.exe"),
+    join(releaseDir, "companion-bun.exe"),
     join(releaseDir, "FBX2glTF-windows-x64.exe"),
   ];
   for (const path of required) {
@@ -242,9 +246,9 @@ export async function buildCompanionTauri(opts: BuildCompanionTauriOptions): Pro
   console.log("[companion] building frontend…");
   await buildCompanionApp({ minify });
 
-  console.log(`[companion] compiling sidecar for ${target.triple}…`);
-  await compileSidecar(opts.target as SidecarTarget, { skipIfFresh: skipSidecarIfFresh });
-  ensureFbxExternalBinPresent(target.triple);
+  console.log(`[companion] preparing sidecar bundle for ${target.triple}…`);
+  await prepareSidecarBundle(opts.target as SidecarTarget, { skipIfFresh: skipSidecarIfFresh });
+  verifySidecarBundlePresent(target.triple);
 
   console.log("[companion] running cargo tauri build…");
   const tauriArgs = ["tauri", "build", "--target", target.triple];

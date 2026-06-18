@@ -144,6 +144,11 @@ export class VrmBackend implements CharacterBackend {
     return path;
   }
 
+  /** 仅横向 walk 使用 VRMA；climb 始终程序化，避免 Mixamo 非 In Place 的 root motion */
+  private useVrmaLocomotion(kind: LocomotionKind): boolean {
+    return kind === "walk" && this.animationPlayer.hasLocomotionClip("walk");
+  }
+
   /** 位移状态：巡逻时播放程序化 walk */
   setTravelState(state: TravelState): void {
     const wasMoving = this.travelMoving;
@@ -157,23 +162,26 @@ export class VrmBackend implements CharacterBackend {
 
     if (this.vrm && wasMoving !== this.travelMoving) {
       if (this.travelMoving) {
-        const useVrma = this.animationPlayer.hasLocomotionClip(state.kind);
+        const useVrma = this.useVrmaLocomotion(state.kind);
         if (useVrma) {
-          this.animationPlayer.playLocomotion(state.kind);
+          this.animationPlayer.playLocomotion("walk");
           this.locomotionActive = false;
         } else {
           this.animationPlayer.pauseForLocomotion();
           this.locomotionActive = true;
           this.locomotion.reset(this.vrm);
         }
+        this.refitCamera(this.vrm, false, true);
       } else {
         this.locomotionActive = false;
+        this.locomotion.reset(this.vrm);
         this.animationPlayer.resumeFromLocomotion();
+        this.refitCamera(this.vrm, false, false);
       }
     } else if (this.travelMoving && this.vrm) {
-      const useVrma = this.animationPlayer.hasLocomotionClip(state.kind);
+      const useVrma = this.useVrmaLocomotion(state.kind);
       if (useVrma) {
-        this.animationPlayer.playLocomotion(state.kind);
+        this.animationPlayer.playLocomotion("walk");
         this.locomotionActive = false;
       } else if (!this.locomotionActive) {
         this.animationPlayer.pauseForLocomotion();
@@ -187,7 +195,7 @@ export class VrmBackend implements CharacterBackend {
     this.animationPlayer.resumeFromLocomotion();
   }
 
-  private refitCamera(vrm: VRM, reposition: boolean): void {
+  private refitCamera(vrm: VRM, reposition: boolean, traveling = false): void {
     if (reposition || !this.framing) {
       this.locomotion.reset(vrm);
       const { basePosition, framing } = computeVrmFraming(vrm);
@@ -198,8 +206,8 @@ export class VrmBackend implements CharacterBackend {
     if (this.framing) {
       applyVrmCameraFraming(this.camera, this.framing, {
         paddingX: 1.06,
-        topHeadroomRatio: 0.36,
-        bottomMarginRatio: 0.03,
+        topHeadroomRatio: traveling ? 0.32 : 0.36,
+        bottomMarginRatio: traveling ? 0.14 : 0.03,
       });
     }
   }
@@ -249,12 +257,16 @@ export class VrmBackend implements CharacterBackend {
     this.vrm.scene.rotation.y = this.facingOffsetY + this.displayHeading;
 
     if (this.travelMoving && !this.animationPlayer.isPlayingOneShot()) {
-      if (this.animationPlayer.hasLocomotionClip(this.travelKind)) {
-        this.animationPlayer.playLocomotion(this.travelKind);
+      if (this.useVrmaLocomotion(this.travelKind)) {
+        this.animationPlayer.playLocomotion("walk");
         this.animationPlayer.update(delta);
         return;
       }
-      this.locomotion.applyWalk(this.vrm, delta, this.travelSpeedPxPerSec);
+      if (this.travelKind === "climb") {
+        this.locomotion.applyClimb(this.vrm, delta, this.travelSpeedPxPerSec);
+      } else {
+        this.locomotion.applyWalk(this.vrm, delta, this.travelSpeedPxPerSec);
+      }
       return;
     }
 

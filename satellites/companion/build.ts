@@ -33,7 +33,10 @@ export async function buildCompanionApp(opts?: {
           },
         }
       : {}),
-  });
+    alias: {
+      "@shared": join(import.meta.dir, "shared"),
+    },
+  } as Bun.BuildConfig);
 
   if (!result.success) {
     throw new Error(result.logs.map((l) => l.message).join("\n"));

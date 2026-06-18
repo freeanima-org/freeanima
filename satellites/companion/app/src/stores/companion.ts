@@ -1,10 +1,5 @@
 import { create } from "zustand";
-import {
-  fetchConfig,
-  getSettings,
-  saveSettings,
-  uploadModel as uploadModelApi,
-} from "@/lib/api.ts";
+import { fetchCompanionConfig, saveSettings, uploadModel as uploadModelApi } from "@/lib/api.ts";
 import { emitConfigChanged, setPointerActive as setShellPointerActive } from "@/lib/tauri.ts";
 import { isTauri } from "@/lib/tauri.ts";
 
@@ -61,17 +56,14 @@ export const useCompanionStore = create<CompanionState>((set) => ({
   async init() {
     set({ loading: true, error: null });
     try {
-      const cfg = await fetchConfig();
-      const settings = await getSettings();
-      const configuredPath = settings.model_path || cfg.model_path;
-      const modelAvailable = settings.model_available ?? cfg.model_available;
+      const cfg = await fetchCompanionConfig();
       set({
-        hubUrl: settings.hub_url || cfg.hub_url,
-        modelPath: modelAvailable ? configuredPath : "",
+        hubUrl: cfg.hub_url,
+        modelPath: cfg.model_available ? cfg.model_path : "",
         instanceId: cfg.instance_id,
         loading: false,
         modelReady: false,
-        modelLoading: modelAvailable,
+        modelLoading: cfg.model_available,
       });
     } catch (e) {
       set({

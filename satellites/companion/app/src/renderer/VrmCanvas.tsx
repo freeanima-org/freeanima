@@ -8,7 +8,6 @@ import { resolveSidecarOrigin } from "@/lib/sidecar.ts";
 
 type Props = {
   modelPath: string;
-  onBackendReady?: () => void;
   onModelLoaded?: () => void;
   onModelError?: (message: string) => void;
 };
@@ -24,15 +23,13 @@ async function resolveModelUrl(modelPath: string): Promise<string> {
   return modelPath;
 }
 
-export function VrmCanvas({ modelPath, onBackendReady, onModelLoaded, onModelError }: Props) {
+export function VrmCanvas({ modelPath, onModelLoaded, onModelError }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const setHitTest = useCompanionStore((s) => s.setHitTestFn);
   const setModelLoading = useCompanionStore((s) => s.setModelLoading);
-  const onBackendReadyRef = useRef(onBackendReady);
   const onModelLoadedRef = useRef(onModelLoaded);
   const onModelErrorRef = useRef(onModelError);
 
-  onBackendReadyRef.current = onBackendReady;
   onModelLoadedRef.current = onModelLoaded;
   onModelErrorRef.current = onModelError;
 
@@ -88,7 +85,6 @@ export function VrmCanvas({ modelPath, onBackendReady, onModelLoaded, onModelErr
         useCharacterStore.getState().syncTravelToBackend();
         notifyCharacterModelReady();
         onModelLoadedRef.current?.();
-        onBackendReadyRef.current?.();
       } catch (e) {
         if (cancelled) return;
         setHitTest(null);

@@ -48,7 +48,10 @@
   "bundle": {
     "active": true,
     "targets": "all",
-    "externalBin": ["bin/companion-sidecar", "bin/fbx2vrma", "bin/FBX2glTF-windows-x64"],
+    "externalBin": ["bin/companion-bun", "bin/FBX2glTF-windows-x64"],
+    "resources": {
+      "resources/sidecar/": "sidecar/"
+    },
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

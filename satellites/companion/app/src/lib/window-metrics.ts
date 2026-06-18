@@ -1,11 +1,10 @@
-/** 与 tauri.conf.json 中 companion 窗口尺寸保持一致（逻辑 px，仅浏览器 dev 回退） */
-export const COMPANION_WINDOW_WIDTH = 160;
-/** 略高于角色比例，上方留摆臂空间、脚底对齐视口底边 */
-export const COMPANION_WINDOW_HEIGHT = 260;
+export {
+  COMPANION_WINDOW_HEIGHT,
+  COMPANION_WINDOW_WIDTH,
+  SATELLITE_PORT_MAX,
+  SATELLITE_PORT_START,
+} from "@shared/constants.ts";
 
-/** 浏览器 dev 模式下的伴侣视口尺寸 */
-export const WEB_COMPANION_WIDTH = COMPANION_WINDOW_WIDTH;
-export const WEB_COMPANION_HEIGHT = COMPANION_WINDOW_HEIGHT;
 export type ScreenPoint = { x: number; y: number };
 
 export type ScreenRect = {
@@ -57,13 +56,13 @@ export function buildPerimeterWaypoints(screen: ScreenRect, window: WindowSize):
 
 /** 工作区中心（窗口左上角坐标，物理/逻辑像素与 patrol 一致） */
 export function buildWorkAreaCenter(screen: ScreenRect, window: WindowSize): ScreenPoint {
-  const minX = screen.availLeft;
-  const minY = screen.availTop;
-  const maxX = Math.max(minX, screen.availLeft + screen.availWidth - window.width);
-  const maxY = Math.max(minY, screen.availTop + screen.availHeight - window.height);
+  const bounds = patrolBoundsFromWaypoints(buildPerimeterWaypoints(screen, window));
+  if (!bounds) {
+    return { x: screen.availLeft, y: screen.availTop };
+  }
   return {
-    x: Math.round(minX + (maxX - minX) / 2),
-    y: Math.round(minY + (maxY - minY) / 2),
+    x: Math.round(bounds.minX + (bounds.maxX - bounds.minX) / 2),
+    y: Math.round(bounds.minY + (bounds.maxY - bounds.minY) / 2),
   };
 }
 
@@ -79,20 +78,33 @@ export function patrolWaypoint(points: ScreenPoint[], index: number): ScreenPoin
   return points[index] ?? points[0] ?? { x: 0, y: 0 };
 }
 
-type PerimeterBounds = {
+export type PatrolBounds = {
   minX: number;
   minY: number;
   maxX: number;
   maxY: number;
 };
 
-function readPerimeterBounds(waypoints: ScreenPoint[]): PerimeterBounds | null {
-  if (waypoints.length < 2) return null;
+/** 从四角路径推导窗口左上角可移动范围 */
+export function patrolBoundsFromWaypoints(waypoints: ScreenPoint[]): PatrolBounds | null {
+  if (waypoints.length === 0) return null;
+  if (waypoints.length === 1) {
+    const p = waypoints[0]!;
+    return { minX: p.x, minY: p.y, maxX: p.x, maxY: p.y };
+  }
   const minX = waypoints[0]!.x;
   const minY = waypoints[0]!.y;
   const maxX = waypoints[1]!.x;
   const maxY = waypoints[2]?.y ?? waypoints[waypoints.length - 1]!.y;
   return { minX, minY, maxX, maxY };
+}
+
+export function clampPatrolPosition(point: ScreenPoint, bounds: PatrolBounds | null): ScreenPoint {
+  if (!bounds) return point;
+  return {
+    x: Math.round(Math.min(bounds.maxX, Math.max(bounds.minX, point.x))),
+    y: Math.round(Math.min(bounds.maxY, Math.max(bounds.minY, point.y))),
+  };
 }
 
 function clamp(value: number, min: number, max: number): number {
@@ -111,7 +123,7 @@ export function nearestPerimeterEntry(
     return { entry: waypoints[0]!, nextIndex: 0 };
   }
 
-  const bounds = readPerimeterBounds(waypoints);
+  const bounds = patrolBoundsFromWaypoints(waypoints);
   if (!bounds) {
     return { entry: waypoints[0]!, nextIndex: 0 };
   }

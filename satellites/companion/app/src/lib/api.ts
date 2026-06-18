@@ -1,5 +1,6 @@
 import { isTauri } from "./tauri.ts";
 import { resolveSidecarOrigin } from "./sidecar.ts";
+import type { LocomotionSlot } from "@shared/constants.ts";
 
 let sidecarOrigin: string | null = null;
 
@@ -20,25 +21,24 @@ async function apiJson<T>(path: string, init?: RequestInit): Promise<T> {
   return (await res.json()) as T;
 }
 
-export async function fetchConfig() {
-  return apiJson<{
-    app_id: string;
-    instance_id: string;
-    hub_url: string;
-    model_path: string;
-    model_available: boolean;
-  }>("/config.json");
-}
+export type CompanionConfig = {
+  app_id: string;
+  instance_id: string;
+  hub_url: string;
+  model_path: string;
+  model_available: boolean;
+  locomotion?: Partial<Record<LocomotionSlot, string>>;
+};
 
-export async function getSettings() {
-  return apiJson<{ hub_url: string; model_path: string; model_available: boolean }>("/api/config");
+export async function fetchCompanionConfig(): Promise<CompanionConfig> {
+  return apiJson<CompanionConfig>("/api/config");
 }
 
 export async function saveSettings(patch: { hub_url?: string; model_path?: string }) {
-  return apiJson<{ hub_url: string; model_path: string; model_available: boolean }>("/api/config", {
+  return apiJson<CompanionConfig>("/api/config", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(patch),
+    headers: { "Content-Type": "application/json" },
   });
 }
 
@@ -88,7 +88,7 @@ export async function uploadMotionZip(file: File) {
   return (await res.json()) as { ok: true; dir: string; files: string[] };
 }
 
-export type LocomotionSlot = "walk" | "climb";
+export type { LocomotionSlot } from "@shared/constants.ts";
 
 export type LocomotionSlotInfo = {
   slot: LocomotionSlot;
