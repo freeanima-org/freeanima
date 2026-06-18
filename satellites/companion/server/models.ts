@@ -1,8 +1,5 @@
-import { writeFileSync } from "node:fs";
-import { join } from "node:path";
 import { jsonResponse } from "./http/cors.ts";
-import { saveConfig } from "./config.ts";
-import { companionModelsDir, ensureCompanionDataDir } from "./paths.ts";
+import { addModelFromUpload } from "./model-registry.ts";
 
 export const MAX_VRM_BYTES = 80 * 1024 * 1024;
 
@@ -35,20 +32,8 @@ export type ModelUploadResult = {
 };
 
 export async function saveUploadedModel(file: File): Promise<ModelUploadResult> {
-  const validationError = validateVrmUpload(file);
-  if (validationError) {
-    throw new Error(validationError);
-  }
-
-  ensureCompanionDataDir();
-  const filename = sanitizeModelFilename(file.name);
-  const dest = join(companionModelsDir(), filename);
-  const bytes = new Uint8Array(await file.arrayBuffer());
-  writeFileSync(dest, bytes);
-
-  const model_path = `/models/${filename}`;
-  saveConfig({ model_path });
-  return { model_path, filename };
+  const model = await addModelFromUpload(file);
+  return { model_path: model.path, filename: model.path.replace(/^\/models\//, "") };
 }
 
 export async function handleModelUpload(req: Request): Promise<Response> {

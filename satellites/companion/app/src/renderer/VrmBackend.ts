@@ -7,7 +7,6 @@ import {
   type EmotionKind,
   VRM_EMOTION_MAP,
 } from "./CharacterBackend.ts";
-import { VrmProceduralLocomotion } from "./VrmProceduralLocomotion.ts";
 import {
   applyVrmCameraFraming,
   computeVrmFraming,
@@ -15,10 +14,9 @@ import {
 } from "./VrmCameraFraming.ts";
 import { resolveFacingOffsetY } from "./vrm-facing.ts";
 import { VrmBodyPicker } from "./VrmBodyPicker.ts";
-import { motionForZone, VrmAnimationPlayer } from "./VrmAnimationPlayer.ts";
+import { VrmAnimationPlayer, type MotionBindConfig } from "./VrmAnimationPlayer.ts";
 import { resolveSidecarOrigin } from "@/lib/sidecar.ts";
-import { companionDebug } from "@/lib/companion-debug.ts";
-import { fetchLocomotionStatus, type LocomotionSlot } from "@/lib/api.ts";
+import type { MotionSlotId } from "@shared/companion-schema.ts";
 import { VRMLookAtQuaternionProxy } from "@pixiv/three-vrm-animation";
 
 const LOOK_AT_PROXY_NAME = "lookAtQuaternionProxy";
@@ -31,10 +29,9 @@ function attachLookAtQuaternionProxy(vrm: VRM): void {
   vrm.scene.add(proxy);
 }
 
-/** 低于此速度视为站立（px/s） */
 const MIN_WALK_SPEED_PX = 8;
 
-export type LocomotionKind = LocomotionSlot;
+export type LocomotionKind = "walk" | "climb";
 
 export type TravelState = {
   moving: boolean;
@@ -50,18 +47,15 @@ export class VrmBackend implements CharacterBackend {
   private vrm: VRM | null = null;
   private clock = new THREE.Clock();
   private travelMoving = false;
-  private travelSpeedPxPerSec = 0;
   private displayHeading = 0;
   private animationId: number | null = null;
   private basePosition = new THREE.Vector3();
   private hitBox = new THREE.Box3();
   private hitSphere = new THREE.Sphere();
-  private locomotion = new VrmProceduralLocomotion();
   private bodyPicker = new VrmBodyPicker();
   private animationPlayer = new VrmAnimationPlayer();
   private framing: VrmFramingState | null = null;
   private facingOffsetY = 0;
-  private locomotionActive = false;
   private travelKind: LocomotionKind = "walk";
 
   constructor(canvas: HTMLCanvasElement) {
@@ -90,7 +84,7 @@ export class VrmBackend implements CharacterBackend {
     this.scene.add(new THREE.AmbientLight(0xffffff, 0.6));
   }
 
-  async load(source: string): Promise<void> {
+  async load(source: string, motionConfig: MotionBindConfig): Promise<void> {
     if (this.vrm) {
       this.animationPlayer.dispose();
       VRMUtils.deepDispose(this.vrm.scene);
@@ -111,26 +105,26 @@ export class VrmBackend implements CharacterBackend {
     this.facingOffsetY = resolveFacingOffsetY(vrm.meta?.metaVersion);
     this.scene.add(vrm.scene);
     this.vrm = vrm;
-    this.locomotion.reset(vrm);
     this.framing = null;
     this.refitCamera(vrm, true);
     this.setEmotion("neutral", 1);
     attachLookAtQuaternionProxy(vrm);
 
-    let locomotionOverrides: Partial<Record<LocomotionSlot, string | null>> = {};
-    try {
-      const status = await fetchLocomotionStatus();
-      locomotionOverrides = status.configured;
-    } catch (e) {
-      console.warn("[companion] 读取位移动作配置失败", e);
-    }
-
-    await this.animationPlayer.bind(
-      vrm,
-      (path) => this.resolveMotionUrl(path),
-      locomotionOverrides,
-    );
+    await this.animationPlayer.bind(vrm, (path) => this.resolveMotionUrl(path), motionConfig);
     this.startLoop();
+  }
+
+  async reloadAnimations(motionConfig: MotionBindConfig): Promise<void> {
+    if (!this.vrm) return;
+    await this.animationPlayer.reload(
+      this.vrm,
+      (path) => this.resolveMotionUrl(path),
+      motionConfig,
+    );
+  }
+
+  playSlot(slot: MotionSlotId, motionId?: string): void {
+    this.animationPlayer.playSlot(slot, motionId);
   }
 
   private async resolveMotionUrl(path: string): Promise<string> {
@@ -144,16 +138,13 @@ export class VrmBackend implements CharacterBackend {
     return path;
   }
 
-  /** 仅横向 walk 使用 VRMA；climb 始终程序化，避免 Mixamo 非 In Place 的 root motion */
   private useVrmaLocomotion(kind: LocomotionKind): boolean {
-    return kind === "walk" && this.animationPlayer.hasLocomotionClip("walk");
+    return this.animationPlayer.hasLocomotionClip(kind);
   }
 
-  /** 位移状态：巡逻时播放程序化 walk */
   setTravelState(state: TravelState): void {
     const wasMoving = this.travelMoving;
     this.travelMoving = state.moving && state.speedPxPerSec >= MIN_WALK_SPEED_PX;
-    this.travelSpeedPxPerSec = this.travelMoving ? state.speedPxPerSec : 0;
     this.travelKind = state.kind;
 
     if (this.travelMoving) {
@@ -162,32 +153,16 @@ export class VrmBackend implements CharacterBackend {
 
     if (this.vrm && wasMoving !== this.travelMoving) {
       if (this.travelMoving) {
-        const useVrma = this.useVrmaLocomotion(state.kind);
-        if (useVrma) {
-          this.animationPlayer.playLocomotion("walk");
-          this.locomotionActive = false;
-        } else {
-          this.animationPlayer.pauseForLocomotion();
-          this.locomotionActive = true;
-          this.locomotion.reset(this.vrm);
+        if (this.useVrmaLocomotion(state.kind)) {
+          this.animationPlayer.playLocomotion(state.kind);
         }
         this.refitCamera(this.vrm, false, true);
       } else {
-        this.locomotionActive = false;
-        this.locomotion.reset(this.vrm);
         this.animationPlayer.resumeFromLocomotion();
         this.refitCamera(this.vrm, false, false);
       }
-    } else if (this.travelMoving && this.vrm) {
-      const useVrma = this.useVrmaLocomotion(state.kind);
-      if (useVrma) {
-        this.animationPlayer.playLocomotion("walk");
-        this.locomotionActive = false;
-      } else if (!this.locomotionActive) {
-        this.animationPlayer.pauseForLocomotion();
-        this.locomotionActive = true;
-        this.locomotion.reset(this.vrm);
-      }
+    } else if (this.travelMoving && this.vrm && this.useVrmaLocomotion(state.kind)) {
+      this.animationPlayer.playLocomotion(state.kind);
     }
   }
 
@@ -197,7 +172,6 @@ export class VrmBackend implements CharacterBackend {
 
   private refitCamera(vrm: VRM, reposition: boolean, traveling = false): void {
     if (reposition || !this.framing) {
-      this.locomotion.reset(vrm);
       const { basePosition, framing } = computeVrmFraming(vrm);
       this.framing = framing;
       this.basePosition.copy(basePosition);
@@ -230,12 +204,7 @@ export class VrmBackend implements CharacterBackend {
   }
 
   playZoneMotion(zone: BodyZone): void {
-    const file = motionForZone(zone);
-    if (file) {
-      this.playMotion(file);
-    } else {
-      companionDebug("playZoneMotion 无映射", { zone });
-    }
+    this.animationPlayer.playZoneMotion(zone);
   }
 
   hasMotionClips(): boolean {
@@ -256,26 +225,15 @@ export class VrmBackend implements CharacterBackend {
 
     this.vrm.scene.rotation.y = this.facingOffsetY + this.displayHeading;
 
-    if (this.travelMoving && !this.animationPlayer.isPlayingOneShot()) {
-      if (this.useVrmaLocomotion(this.travelKind)) {
-        this.animationPlayer.playLocomotion("walk");
-        this.animationPlayer.update(delta);
-        return;
-      }
-      if (this.travelKind === "climb") {
-        this.locomotion.applyClimb(this.vrm, delta, this.travelSpeedPxPerSec);
-      } else {
-        this.locomotion.applyWalk(this.vrm, delta, this.travelSpeedPxPerSec);
-      }
-      return;
+    if (
+      this.travelMoving &&
+      !this.animationPlayer.isPlayingOneShot() &&
+      this.useVrmaLocomotion(this.travelKind)
+    ) {
+      this.animationPlayer.playLocomotion(this.travelKind);
     }
 
-    if (this.animationPlayer.hasClips() && !this.locomotionActive) {
-      this.animationPlayer.update(delta);
-      return;
-    }
-
-    this.locomotion.applyIdle(this.vrm, delta);
+    this.animationPlayer.update(delta);
   }
 
   hitTest(screenX: number, screenY: number): boolean {
@@ -378,4 +336,8 @@ export function getVrmBackend(canvas: HTMLCanvasElement): VrmBackend {
 export function disposeVrmBackend(): void {
   sharedBackend?.dispose();
   sharedBackend = null;
+}
+
+export function setVrmBackendForTest(backend: VrmBackend | null): void {
+  sharedBackend = backend;
 }

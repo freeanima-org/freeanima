@@ -30,15 +30,15 @@ body,
   word-break: break-word;
 }
 
-.chat-input-bar {
-  @apply flex gap-2 items-center rounded-full px-3 py-1.5 shadow-lg;
-  background: rgba(20, 20, 30, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+.settings-modal-backdrop {
+  @apply fixed inset-0 z-40 flex items-center justify-center;
+  background: rgba(0, 0, 0, 0.45);
+  pointer-events: auto;
 }
 
-.chat-input-bar input {
-  @apply flex-1 bg-transparent outline-none text-sm text-white placeholder-white/40;
-  min-width: 120px;
+.settings-modal-panel {
+  @apply rounded-xl shadow-2xl max-h-[90vh] overflow-y-auto;
+  max-width: min(420px, 92vw);
 }
 
 .settings-panel {

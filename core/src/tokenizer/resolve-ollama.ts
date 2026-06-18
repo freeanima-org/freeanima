@@ -1,3 +1,4 @@
+import { fetchWithTimeout } from "./fetch.ts";
 import { stripOllamaTag } from "./normalize.ts";
 
 const HF_CO_RE = /(?:hf\.co|huggingface\.co)\/([A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+)/i;
@@ -22,14 +23,29 @@ function stripTrailingSlashes(value: string): string {
   return end === value.length ? value : value.slice(0, end);
 }
 
-/** OpenAI-compatible base URL → Ollama API root (strip /v1). */
+/** OpenAI-compatible base URL → Ollama API root（仅识别 Ollama 常见端点，避免误探测其它 /v1 服务）。 */
 export function ollamaApiBaseFromOpenAiUrl(baseUrl: string): string | null {
   const trimmed = stripTrailingSlashes(baseUrl.trim());
   if (!trimmed) return null;
+
+  let host = "";
+  try {
+    host = new URL(trimmed).hostname.toLowerCase();
+  } catch {
+    return null;
+  }
+
+  const isLocalOllama =
+    host === "localhost" || host === "127.0.0.1" || host === "::1" || host.endsWith(".local");
+  const isOllamaPort = trimmed.includes(":11434");
+  const mentionsOllama = trimmed.toLowerCase().includes("ollama");
+
+  if (!isOllamaPort && !mentionsOllama && !isLocalOllama) return null;
+
   if (trimmed.endsWith("/v1") || trimmed.endsWith("/V1")) {
     return trimmed.slice(0, -3);
   }
-  if (trimmed.includes("11434")) return trimmed;
+  if (isOllamaPort) return trimmed;
   return null;
 }
 
@@ -86,7 +102,7 @@ export async function resolveOllamaModelHints(
     if (!apiBase) continue;
 
     try {
-      const res = await fetch(`${apiBase}/api/show`, {
+      const res = await fetchWithTimeout(`${apiBase}/api/show`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name }),

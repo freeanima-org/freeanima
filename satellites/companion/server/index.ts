@@ -4,7 +4,13 @@ import { saveConfig, hubUrlFromConfig, type CompanionConfig } from "./config.ts"
 import { clientCompanionConfig } from "./config-response.ts";
 import { reconnectSap } from "./sap/hub.ts";
 import { ensureCompanionDataDir } from "./paths.ts";
-import { handleModelUpload } from "./models.ts";
+import {
+  addModelFromUpload,
+  deleteModel,
+  listModels,
+  renameModel,
+  setActiveModel,
+} from "./model-registry.ts";
 import {
   boothMotionPackUrl,
   downloadMotionsFromUrl,
@@ -16,14 +22,18 @@ import {
 } from "./motions.ts";
 import { companionMotionsDir } from "./paths.ts";
 import {
-  clearLocomotionSlot,
-  handleLocomotionImport,
-  locomotionConfigForClient,
-  locomotionSlotStatus,
-} from "./locomotion.ts";
-import { LOCOMOTION_SLOTS, type LocomotionSlot } from "./config.ts";
+  deleteMotion,
+  listMotionLibrary,
+  renameMotion,
+  setSlotMotions,
+  syncLibraryFromDisk,
+} from "./motion-library.ts";
+import { MOTION_SLOT_IDS, type MotionSlotId } from "../shared/companion-schema.ts";
 import { serveStatic } from "./static.ts";
 import { SATELLITE_PORT_ATTEMPTS, SATELLITE_PORT_START } from "../shared/constants.ts";
+import { advanceBubble, drainPlayQueue, runtimeState } from "./runtime-state.ts";
+import { handleLocomotionImport } from "./locomotion.ts";
+import type { LocomotionSlot } from "../shared/constants.ts";
 
 const PORT_START = Number(process.env.SATELLITE_PORT ?? SATELLITE_PORT_START);
 const PORT_ATTEMPTS = SATELLITE_PORT_ATTEMPTS;
@@ -67,8 +77,110 @@ export async function route(req: Request): Promise<Response> {
     return jsonResponse(clientCompanionConfig(next));
   }
 
-  if (url.pathname === "/api/models/upload") {
-    return handleModelUpload(req);
+  if (url.pathname === "/api/runtime" && req.method === "GET") {
+    const play = drainPlayQueue();
+    return jsonResponse({ ...runtimeState(), play });
+  }
+
+  if (url.pathname === "/api/bubbles/advance" && req.method === "POST") {
+    return jsonResponse({ current: advanceBubble() });
+  }
+
+  if (url.pathname === "/api/models" && req.method === "GET") {
+    return jsonResponse({ models: listModels() });
+  }
+
+  if (url.pathname === "/api/models/upload" && req.method === "POST") {
+    let form: FormData;
+    try {
+      form = await req.formData();
+    } catch {
+      return jsonResponse({ error: "无效的 multipart 请求" }, 400);
+    }
+    const entry = form.get("file");
+    if (!(entry instanceof File)) {
+      return jsonResponse({ error: "缺少 file 字段" }, 400);
+    }
+    try {
+      const model = await addModelFromUpload(entry);
+      return jsonResponse({ model, config: clientCompanionConfig() });
+    } catch (e) {
+      return jsonResponse({ error: e instanceof Error ? e.message : String(e) }, 400);
+    }
+  }
+
+  if (url.pathname === "/api/models/active" && req.method === "POST") {
+    const body = (await req.json()) as { id?: string };
+    if (!body.id) return jsonResponse({ error: "需要 id" }, 400);
+    try {
+      const model = setActiveModel(body.id);
+      return jsonResponse({ model, config: clientCompanionConfig() });
+    } catch (e) {
+      return jsonResponse({ error: e instanceof Error ? e.message : String(e) }, 400);
+    }
+  }
+
+  if (url.pathname === "/api/models/rename" && req.method === "POST") {
+    const body = (await req.json()) as { id?: string; name?: string };
+    if (!body.id || !body.name) return jsonResponse({ error: "需要 id 与 name" }, 400);
+    try {
+      return jsonResponse({ model: renameModel(body.id, body.name) });
+    } catch (e) {
+      return jsonResponse({ error: e instanceof Error ? e.message : String(e) }, 400);
+    }
+  }
+
+  if (url.pathname === "/api/models/delete" && req.method === "POST") {
+    const body = (await req.json()) as { id?: string };
+    if (!body.id) return jsonResponse({ error: "需要 id" }, 400);
+    try {
+      deleteModel(body.id);
+      return jsonResponse({ config: clientCompanionConfig() });
+    } catch (e) {
+      return jsonResponse({ error: e instanceof Error ? e.message : String(e) }, 400);
+    }
+  }
+
+  if (url.pathname === "/api/motions/library" && req.method === "GET") {
+    syncLibraryFromDisk();
+    return jsonResponse({
+      library: listMotionLibrary(),
+      slots: clientCompanionConfig().motion_slots,
+    });
+  }
+
+  if (url.pathname === "/api/motions/library/rename" && req.method === "POST") {
+    const body = (await req.json()) as { id?: string; name?: string };
+    if (!body.id || !body.name) return jsonResponse({ error: "需要 id 与 name" }, 400);
+    try {
+      return jsonResponse({ entry: renameMotion(body.id, body.name) });
+    } catch (e) {
+      return jsonResponse({ error: e instanceof Error ? e.message : String(e) }, 400);
+    }
+  }
+
+  if (url.pathname === "/api/motions/library/delete" && req.method === "POST") {
+    const body = (await req.json()) as { id?: string };
+    if (!body.id) return jsonResponse({ error: "需要 id" }, 400);
+    try {
+      deleteMotion(body.id);
+      return jsonResponse({ library: listMotionLibrary(), config: clientCompanionConfig() });
+    } catch (e) {
+      return jsonResponse({ error: e instanceof Error ? e.message : String(e) }, 400);
+    }
+  }
+
+  if (url.pathname === "/api/motions/slots" && req.method === "POST") {
+    const body = (await req.json()) as { slot?: string; motion_ids?: string[] };
+    if (!body.slot || !MOTION_SLOT_IDS.includes(body.slot as MotionSlotId)) {
+      return jsonResponse({ error: "无效 slot" }, 400);
+    }
+    try {
+      setSlotMotions(body.slot as MotionSlotId, body.motion_ids ?? []);
+      return jsonResponse({ config: clientCompanionConfig() });
+    } catch (e) {
+      return jsonResponse({ error: e instanceof Error ? e.message : String(e) }, 400);
+    }
   }
 
   if (url.pathname === "/api/motions/status" && req.method === "GET") {
@@ -83,13 +195,16 @@ export async function route(req: Request): Promise<Response> {
   }
 
   if (url.pathname === "/api/motions/import" && req.method === "POST") {
-    return handleMotionZipUpload(req);
+    const res = await handleMotionZipUpload(req);
+    syncLibraryFromDisk();
+    return res;
   }
 
   if (url.pathname === "/api/motions/locomotion" && req.method === "GET") {
+    const cfg = clientCompanionConfig();
     return jsonResponse({
-      slots: locomotionSlotStatus(),
-      configured: locomotionConfigForClient(),
+      library: cfg.motion_library,
+      slots: cfg.motion_slots,
       user_dir: companionMotionsDir(),
     });
   }
@@ -98,17 +213,9 @@ export async function route(req: Request): Promise<Response> {
     /^\/api\/motions\/locomotion\/(walk|climb)\/import$/,
   );
   if (locomotionImportMatch) {
-    return handleLocomotionImport(req, locomotionImportMatch[1] as LocomotionSlot);
-  }
-
-  if (url.pathname === "/api/motions/locomotion/clear" && req.method === "POST") {
-    const body = (await req.json().catch(() => ({}))) as { slot?: string };
-    const slot = body.slot as LocomotionSlot | undefined;
-    if (!slot || !LOCOMOTION_SLOTS.includes(slot)) {
-      return jsonResponse({ error: "需要 slot: walk | climb" }, 400);
-    }
-    await clearLocomotionSlot(slot);
-    return jsonResponse({ ok: true, slots: locomotionSlotStatus() });
+    const res = await handleLocomotionImport(req, locomotionImportMatch[1] as LocomotionSlot);
+    syncLibraryFromDisk();
+    return res;
   }
 
   if (url.pathname === "/api/motions/download" && req.method === "POST") {
@@ -127,6 +234,7 @@ export async function route(req: Request): Promise<Response> {
     }
     try {
       const result = await downloadMotionsFromUrl(urlOverride);
+      syncLibraryFromDisk();
       return jsonResponse({ ok: true, ...result });
     } catch (e) {
       return jsonResponse({ error: e instanceof Error ? e.message : String(e) }, 500);
@@ -145,7 +253,7 @@ let server: ReturnType<typeof Bun.serve>;
 
 try {
   server = startServer();
-  void ensureDefaultMotions();
+  void ensureDefaultMotions().then(() => syncLibraryFromDisk());
   void connectSap(hubUrlFromConfig(), HTTP_URL);
 } catch (error) {
   console.error(

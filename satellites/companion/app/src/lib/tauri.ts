@@ -112,16 +112,25 @@ export async function openSettings(): Promise<void> {
 
 export async function emitConfigChanged(): Promise<void> {
   const api = tauri();
-  if (!api) return;
-  await api.event.emit("companion-config-changed");
+  if (api) {
+    await api.event.emit("companion-config-changed");
+    return;
+  }
+  localStorage.setItem("companion-config-changed", String(Date.now()));
 }
 
 export async function listenConfigChanged(handler: () => void): Promise<() => void> {
   const api = tauri();
-  if (!api) return () => {};
-  return api.event.listen("companion-config-changed", () => {
-    handler();
-  });
+  if (api) {
+    return api.event.listen("companion-config-changed", () => {
+      handler();
+    });
+  }
+  const onStorage = (ev: StorageEvent): void => {
+    if (ev.key === "companion-config-changed") handler();
+  };
+  window.addEventListener("storage", onStorage);
+  return () => window.removeEventListener("storage", onStorage);
 }
 
 export function isSettingsRoute(): boolean {

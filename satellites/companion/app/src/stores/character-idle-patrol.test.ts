@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
+import { DEFAULT_BEHAVIOR } from "@shared/companion-schema.ts";
 import {
-  IDLE_PATROL_DELAY_MS,
   interpolateJourneyPoint,
   journeyDurationMs,
   shouldEnablePatrol,
@@ -9,13 +9,22 @@ import {
 describe("shouldEnablePatrol", () => {
   test("waits until idle delay elapsed", () => {
     const start = 1000;
-    expect(shouldEnablePatrol(start, start + IDLE_PATROL_DELAY_MS - 1, false, true)).toBe(false);
-    expect(shouldEnablePatrol(start, start + IDLE_PATROL_DELAY_MS, false, true)).toBe(true);
+    const delay = DEFAULT_BEHAVIOR.idle_patrol_delay_sec * 1000;
+    expect(shouldEnablePatrol(start, start + delay - 1, false, true, DEFAULT_BEHAVIOR)).toBe(false);
+    expect(shouldEnablePatrol(start, start + delay, false, true, DEFAULT_BEHAVIOR)).toBe(true);
   });
 
   test("skips when already patrolling or model not ready", () => {
-    expect(shouldEnablePatrol(0, IDLE_PATROL_DELAY_MS, true, true)).toBe(false);
-    expect(shouldEnablePatrol(0, IDLE_PATROL_DELAY_MS, false, false)).toBe(false);
+    const delay = DEFAULT_BEHAVIOR.idle_patrol_delay_sec * 1000;
+    expect(shouldEnablePatrol(0, delay, true, true, DEFAULT_BEHAVIOR)).toBe(false);
+    expect(shouldEnablePatrol(0, delay, false, false, DEFAULT_BEHAVIOR)).toBe(false);
+  });
+
+  test("skips when patrol disabled", () => {
+    const delay = DEFAULT_BEHAVIOR.idle_patrol_delay_sec * 1000;
+    expect(
+      shouldEnablePatrol(0, delay, false, true, { ...DEFAULT_BEHAVIOR, patrol_enabled: false }),
+    ).toBe(false);
   });
 });
 

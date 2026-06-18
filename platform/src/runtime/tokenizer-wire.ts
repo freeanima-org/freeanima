@@ -32,7 +32,10 @@ function collectOllamaBaseUrls(cfg: AnimaConfig): string[] {
   }
 
   try {
-    add(getDefaultProviderBaseUrl(cfg));
+    const chatBaseUrl = getDefaultProviderBaseUrl(cfg);
+    if (chatBaseUrl.includes("11434") || chatBaseUrl.toLowerCase().includes("ollama")) {
+      add(chatBaseUrl);
+    }
   } catch {
     // chat provider 未配置时跳过
   }

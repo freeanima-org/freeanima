@@ -6,8 +6,35 @@ import {
   fileSapInstanceStore,
   type SatelliteHubHandle,
 } from "@freeanima/sap-contract";
+import { executeCompanionTool } from "../tools/executor.ts";
 
 const APP_ID = "companion";
+
+const REGISTERED_TOOLS = [
+  {
+    local_name: "bubble",
+    description: "向桌面伴侣发送单向文字气泡（入队展示，非聊天窗口）",
+    parameters: {
+      type: "object",
+      properties: { text: { type: "string", description: "要展示的文字" } },
+      required: ["text"],
+    },
+    return_kind: "json" as const,
+  },
+  {
+    local_name: "play_slot",
+    description: "播放指定动作槽位（Motion Slot）；可指定动作库 id，否则随机",
+    parameters: {
+      type: "object",
+      properties: {
+        slot: { type: "string", description: "动作槽位 id：idle、rest、walk、climb、in_place" },
+        motion_id: { type: "string", description: "可选：动作库条目 id" },
+      },
+      required: ["slot"],
+    },
+    return_kind: "json" as const,
+  },
+];
 
 function instanceStorePath(): string {
   const home = process.env.FREEANIMA_HOME ?? join(homedir(), ".anima");
@@ -24,6 +51,9 @@ function ensureHub(hubUrl: string, httpUrl?: string): SatelliteHubHandle {
       httpUrl,
       instanceStore: fileSapInstanceStore(instanceStorePath()),
       relay: false,
+      tools: REGISTERED_TOOLS,
+      toolsetPrivate: true,
+      onToolCall: async (localName, args) => executeCompanionTool(localName, args),
       onConnected: async () => {
         console.log("companion SAP connected");
       },

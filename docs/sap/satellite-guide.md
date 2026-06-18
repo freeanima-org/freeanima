@@ -70,10 +70,10 @@ Open managed satellite UI at the URL from Chamber (SAP `http_url`), typically:
 - Browser uses `createSapSidecarClient` → satellite `/sap/relay/v1`.
 - `instance_id` persisted under `~/.anima/satellites/{app}/instance.json`.
 
-### Type B presence (companion, current phase)
+### Type B + tools, no relay (companion)
 
-- `createSatelliteHub({ relay: false, tools: [] })` — SAP presence only.
-- Same factory supports enabling `relay` / `tool.register` later without topology change.
+- Sidecar `createSatelliteHub({ relay: false, tools: [...] })` holds the sole Hub WS.
+- Browser talks to sidecar HTTP only (no SAP relay); tools execute in sidecar (`bubble`, `play_slot`).
 - `instance_id` in `~/.anima/companion/instance.json`; platform `sap:companion:{id}`.
 
 ```mermaid

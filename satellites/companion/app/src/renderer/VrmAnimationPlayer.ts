@@ -6,17 +6,21 @@ import {
   type VRMAnimation,
 } from "@pixiv/three-vrm-animation";
 import type { VRM } from "@pixiv/three-vrm";
-import { motionManifest, type MotionManifest } from "@shared/motion-manifest.ts";
+import { motionManifest } from "@shared/motion-manifest.ts";
+import { resolveMotionForSlot } from "@shared/core/motion-slot-resolve.ts";
+import type {
+  MotionLibraryEntry,
+  MotionSlotId,
+  MotionSlotsConfig,
+} from "@shared/companion-schema.ts";
 import { companionDebug } from "@/lib/companion-debug.ts";
-import type { LocomotionSlot } from "@/lib/api.ts";
 
 const manifest = motionManifest;
 
-export type MotionManifestView = MotionManifest;
-
-export function getMotionManifest(): MotionManifestView {
-  return manifest;
-}
+export type MotionBindConfig = {
+  library: MotionLibraryEntry[];
+  slots: MotionSlotsConfig;
+};
 
 export class VrmAnimationPlayer {
   private vrm: VRM | null = null;
@@ -28,36 +32,62 @@ export class VrmAnimationPlayer {
   private activeLocomotionFile: string | null = null;
   private oneShotPlaying = false;
   private loaded = false;
-  private locomotionFiles: Partial<Record<LocomotionSlot, string>> = {};
+  private motionConfig: MotionBindConfig = { library: [], slots: {} as MotionSlotsConfig };
 
   async bind(
     vrm: VRM,
     resolveUrl: (path: string) => Promise<string>,
-    locomotionOverrides?: Partial<Record<LocomotionSlot, string | null>>,
+    motionConfig: MotionBindConfig,
   ): Promise<void> {
-    this.dispose();
+    this.disposeMixerOnly();
     this.vrm = vrm;
     this.mixer = new THREE.AnimationMixer(vrm.scene);
+    this.motionConfig = motionConfig;
 
-    this.locomotionFiles = {};
-    if (locomotionOverrides) {
-      for (const slot of ["walk", "climb"] as const) {
-        const file = locomotionOverrides[slot];
-        if (file) this.locomotionFiles[slot] = file;
+    const files = this.collectFiles(motionConfig);
+    await this.loadClips(vrm, resolveUrl, files);
+    if (this.loaded) {
+      this.playIdle();
+    }
+  }
+
+  async reload(
+    vrm: VRM,
+    resolveUrl: (path: string) => Promise<string>,
+    motionConfig: MotionBindConfig,
+  ): Promise<void> {
+    await this.bind(vrm, resolveUrl, motionConfig);
+  }
+
+  private collectFiles(motionConfig: MotionBindConfig): Set<string> {
+    const files = new Set<string>();
+    for (const entry of motionConfig.library) {
+      files.add(entry.file);
+    }
+    for (const ids of Object.values(motionConfig.slots)) {
+      for (const ref of ids) {
+        const entry = motionConfig.library.find((e) => e.id === ref);
+        if (entry) files.add(entry.file);
+        else if (ref.endsWith(".vrma")) files.add(ref);
       }
     }
+    return files;
+  }
 
-    const files = new Set<string>([manifest.idle, ...Object.values(manifest.zones)]);
-    for (const file of Object.values(this.locomotionFiles)) {
-      files.add(file);
-    }
-
+  private async loadClips(
+    vrm: VRM,
+    resolveUrl: (path: string) => Promise<string>,
+    files: Set<string>,
+  ): Promise<void> {
     const loader = new GLTFLoader();
     loader.register((parser) => new VRMAnimationLoaderPlugin(parser));
 
     let anyLoaded = false;
     for (const file of files) {
-      if (this.clips.has(file)) continue;
+      if (this.clips.has(file)) {
+        anyLoaded = true;
+        continue;
+      }
       try {
         const url = await resolveUrl(`${manifest.baseUrl}/${file}`);
         const gltf = await loader.loadAsync(url);
@@ -77,48 +107,73 @@ export class VrmAnimationPlayer {
       loaded: this.loaded,
       clipCount: this.clips.size,
       files: [...this.clips.keys()],
-      locomotion: this.locomotionFiles,
     });
-    if (this.loaded) {
-      this.playIdle();
-    }
   }
 
   hasClips(): boolean {
     return this.loaded && this.clips.size > 0;
   }
 
-  hasLocomotionClip(slot: LocomotionSlot): boolean {
-    const file = this.locomotionFiles[slot];
-    return Boolean(file && this.clips.has(file));
+  hasSlotMotion(slot: MotionSlotId): boolean {
+    const resolved = resolveMotionForSlot(slot, this.motionConfig.slots, this.motionConfig.library);
+    return Boolean(resolved?.file && this.clips.has(resolved.file));
+  }
+
+  hasLocomotionClip(slot: "walk" | "climb"): boolean {
+    return this.hasSlotMotion(slot);
   }
 
   isPlayingOneShot(): boolean {
     return this.oneShotPlaying;
   }
 
-  isPlayingLocomotion(): boolean {
-    return this.locomotionAction !== null;
+  playIdle(): void {
+    const resolved = resolveMotionForSlot(
+      "idle",
+      this.motionConfig.slots,
+      this.motionConfig.library,
+    );
+    if (resolved?.file) {
+      this.playMotionFile(resolved.file, true);
+    }
   }
 
-  playIdle(): void {
-    if (!this.mixer || !this.vrm) return;
-    const clip = this.clips.get(manifest.idle);
-    if (!clip) return;
-
-    this.stopLocomotion();
-    this.stopOneShot();
-    if (this.idleAction) {
-      this.idleAction.reset().fadeIn(0.2).play();
+  playSlot(slot: MotionSlotId, motionId?: string): void {
+    const resolved = resolveMotionForSlot(
+      slot,
+      this.motionConfig.slots,
+      this.motionConfig.library,
+      {
+        motionId,
+      },
+    );
+    if (!resolved?.file) {
+      companionDebug("playSlot 无解析结果", { slot, motionId });
       return;
     }
+    const loop = slot === "idle" || slot === "walk" || slot === "climb" || slot === "rest";
+    this.playMotionFile(resolved.file, loop);
+  }
 
-    this.idleAction = this.mixer.clipAction(clip);
-    this.idleAction.setLoop(THREE.LoopRepeat, Number.POSITIVE_INFINITY);
-    this.idleAction.play();
+  /** 点击身体任意部位：从 in_place 槽位随机播放；槽位为空则不播 */
+  playZoneMotion(_zone: string): void {
+    const resolved = resolveMotionForSlot(
+      "in_place",
+      this.motionConfig.slots,
+      this.motionConfig.library,
+    );
+    if (resolved?.file) {
+      this.playMotionFile(resolved.file, false);
+    } else {
+      companionDebug("playZoneMotion 无 in_place 动作", {});
+    }
   }
 
   playMotion(file: string): void {
+    this.playMotionFile(file, false);
+  }
+
+  private playMotionFile(file: string, loop: boolean): void {
     if (!this.mixer || !this.vrm) return;
     const clip = this.clips.get(file);
     if (!clip) {
@@ -126,12 +181,21 @@ export class VrmAnimationPlayer {
       return;
     }
 
+    if (loop) {
+      this.stopLocomotion();
+      this.stopOneShot();
+      if (this.idleAction) this.idleAction.fadeOut(0.15);
+      this.idleAction = this.mixer.clipAction(clip);
+      this.idleAction.reset();
+      this.idleAction.setLoop(THREE.LoopRepeat, Number.POSITIVE_INFINITY);
+      this.idleAction.fadeIn(0.15).play();
+      this.oneShotPlaying = false;
+      return;
+    }
+
     this.stopLocomotion();
     this.stopOneShot();
-
-    if (this.idleAction) {
-      this.idleAction.fadeOut(0.15);
-    }
+    if (this.idleAction) this.idleAction.fadeOut(0.15);
 
     this.oneShotAction = this.mixer.clipAction(clip);
     this.oneShotAction.reset();
@@ -150,10 +214,10 @@ export class VrmAnimationPlayer {
     this.mixer.addEventListener("finished", onFinished);
   }
 
-  /** 巡逻位移循环：walk / climb */
-  playLocomotion(slot: LocomotionSlot): void {
+  playLocomotion(slot: "walk" | "climb"): void {
     if (!this.mixer || !this.vrm) return;
-    const file = this.locomotionFiles[slot];
+    const resolved = resolveMotionForSlot(slot, this.motionConfig.slots, this.motionConfig.library);
+    const file = resolved?.file;
     if (!file) return;
 
     const clip = this.clips.get(file);
@@ -168,9 +232,7 @@ export class VrmAnimationPlayer {
       this.idleAction.fadeOut(0.12);
       this.idleAction = null;
     }
-    if (this.locomotionAction) {
-      this.locomotionAction.fadeOut(0.12);
-    }
+    if (this.locomotionAction) this.locomotionAction.fadeOut(0.12);
 
     this.locomotionAction = this.mixer.clipAction(clip);
     this.locomotionAction.reset();
@@ -179,19 +241,9 @@ export class VrmAnimationPlayer {
     this.activeLocomotionFile = file;
   }
 
-  pauseForLocomotion(): void {
-    if (this.idleAction) {
-      this.idleAction.stop();
-      this.idleAction = null;
-    }
-    this.stopOneShot();
-    this.stopLocomotion();
-    this.mixer?.stopAllAction();
-  }
-
   resumeFromLocomotion(): void {
     this.stopLocomotion();
-    if (this.hasClips() && !this.oneShotPlaying) {
+    if (!this.oneShotPlaying) {
       this.playIdle();
     }
   }
@@ -201,6 +253,13 @@ export class VrmAnimationPlayer {
   }
 
   dispose(): void {
+    this.disposeMixerOnly();
+    this.clips.clear();
+    this.loaded = false;
+    this.vrm = null;
+  }
+
+  private disposeMixerOnly(): void {
     this.stopOneShot();
     this.stopLocomotion();
     if (this.idleAction) {
@@ -209,11 +268,7 @@ export class VrmAnimationPlayer {
     }
     this.mixer?.stopAllAction();
     this.mixer = null;
-    this.vrm = null;
-    this.clips.clear();
-    this.loaded = false;
     this.oneShotPlaying = false;
-    this.locomotionFiles = {};
   }
 
   private stopLocomotion(): void {
@@ -231,8 +286,4 @@ export class VrmAnimationPlayer {
     }
     this.oneShotPlaying = false;
   }
-}
-
-export function motionForZone(zone: string): string | undefined {
-  return manifest.zones[zone];
 }

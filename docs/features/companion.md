@@ -6,18 +6,18 @@ title: Desktop Companion
 
 > **Dynamic SAP 卫星**：单体桌面 GUI 应用，不经 `config.yaml` managed 托管。
 
-桌面伴侣是运行在用户桌面上的 SAP Type B 应用：Tauri 透明壳 + 内嵌 Bun sidecar，通过 SAP 向 Hub **注册在线实例**（不注册 Agent 工具）。
+桌面伴侣是运行在用户桌面上的 SAP **Type B** 应用（sidecar 持 Hub WebSocket、`relay: false`）：Tauri 透明壳 + 内嵌 Bun sidecar，通过 SAP 向 Hub 注册在线实例，并向 Agent 注册本地工具。
 
 ## 架构
 
 ```text
 用户桌面（单体应用）
 ├── Tauri 壳 — 双窗口、点击穿透、托盘
-│   ├── companion 窗 — 透明置顶，VRM 渲染与本地交互
+│   ├── companion 窗 — 透明置顶，VRM 渲染、文字气泡、本地交互
 │   └── settings 窗 — 普通有边框窗口，从托盘打开
-└── companion-bun + resources/sidecar/ — Bun 运行 server/（含 node_modules，FBX 进程内转换）
+└── companion-bun + resources/sidecar/ — Bun 运行 server/
          ↕ SAP WS（可跨机）
-    anima service Hub
+    anima service Hub → Agent 可调用 companion 工具
 ```
 
 与 Parlor / 结对编程的区别：
@@ -26,54 +26,44 @@ title: Desktop Companion
 | ----------- | ---------------------------- | ----------------------------------------- |
 | UI          | 浏览器 Web UI                | 原生透明伴侣窗 + 独立设置窗               |
 | 部署        | Managed（可与 service 同机） | Dynamic（用户自行启动）                   |
+| SAP         | Type A 或 Type B + relay     | Type B + tools，无 relay                  |
 | 客户端与 UI | 可分离                       | 伴侣渲染与设置窗分离，同属一个 Tauri 应用 |
 
 ## 功能
 
 - VRM 角色渲染（Three.js + `@pixiv/three-vrm`）；VRM 1.0 与 0.x 自动校正朝向
-- **VRMA 动作库**（`@pixiv/three-vrm-animation`）：待机循环 + 点击部位触发动作
-- 透明置顶 companion 窗（160×260，脚底对齐底边、上方留摆臂空间）+ 角色区域可点、空白穿透
-- **本地交互**：拖拽移动窗口；点击头/躯干/手臂/腿触发不同 VRMA 动作
-- **空闲巡逻**：无交互 3 分钟后沿屏幕**工作区内边缘**四角匀速巡逻；任意交互停止并重置计时
-- **双击巡逻**：双击角色立即进入巡逻；先从当前位置走到**最近的工作区边缘**，再沿边缘顺时针巡逻
-- **启动归位**：首次加载 VRM 后从工作区**中心**走到**左上角**；之后待机于左上角
+- **动作槽位（Motion Slot）**：`idle`、`rest`、`walk`、`climb`、`in_place` 五个槽位；每槽位可绑定 0..n 个 VRMA，播放时指定或随机；槽位为空则不播放动画
+- **文字气泡**：单向文字队列；用户点击切换下一条，不自动消失；由 Hub Agent 通过 `companion.bubble` 工具推送
+- 透明置顶 companion 窗（160×260）+ 角色区域可点、空白穿透
+- **本地交互**：拖拽移动窗口；点击身体任意部位从 `in_place` 槽位随机播放动作
+- **巡逻**（可在设置 → 行为 Tab 配置）：空闲自动巡逻、双击巡逻、角点停顿、巡逻速度、启动归位等
 - 系统托盘：显示/隐藏伴侣、打开设置、退出
-- 设置窗：Hub URL、VRM 模型导入与路径、VRMA 动作包导入、位移动作按需导入（走路/攀爬）
+- 设置窗 Tab：**通用** / **行为** / **模型** / **动作槽位** / **动作库**
+
+## Agent 工具（sidecar 注册）
+
+| 工具        | 参数                                 | 说明                           |
+| ----------- | ------------------------------------ | ------------------------------ |
+| `bubble`    | `text: string`                       | 文字入气泡队列                 |
+| `play_slot` | `slot: string`；`motion_id?: string` | 播放动作槽位；`motion_id` 可选 |
+
+定时笑话等周期性内容在 **anima service / 定时任务** 侧配置，由 Agent 调用 `bubble` 推送；Companion 不内置定时器。
 
 ## 模型与动作
 
-仓库**不捆绑** `.vrm` / `.vrma` 文件。
+仓库**不捆绑** `.vrm` / `.vrma` 文件。配置持久化在 `~/.anima/companion/config.json`（含 `models`、`motion_library`、`motion_slots`、`behavior`）。
 
 ### VRM 模型
 
-1. 从 [VRoid Hub](https://hub.vroid.com/) 或 [VRoid Studio](https://vroid.com/en/studio) 获取允许使用的 `.vrm` 模型
-2. 从系统托盘打开**设置**，点击「导入模型」
-3. 模型保存到 `~/.anima/companion/models/`（可通过 `FREEANIMA_HOME` 覆盖数据根目录）
+在设置 → **模型** Tab：列表、导入、删除、重命名、切换当前模型。文件保存到 `~/.anima/companion/models/`。
 
 开发期可将文件放入 `satellites/companion/public/models/` 作为回退目录。
 
-### VRMA 动作
+### VRMA 动作库与槽位
 
-1. 从系统托盘打开**设置**
-2. 点击「打开 BOOTH 下载页」，登录 pixiv 后下载 `VRMA_MotionPack.zip`
-3. 点击「导入动作包 ZIP」（官方 zip 内为 `vrma/` 子目录，导入时会自动展平）
+在设置 → **动作库** Tab 导入 VRMA 动作包 ZIP 或单个文件；在 **动作槽位** Tab 为各槽位勾选动作。
 
-动作保存到 `~/.anima/companion/motions/`（`.vrma` 文件在根目录，无 `vrma/` 子层）。开发期回退目录见 [`public/motions/README.md`](../../satellites/companion/public/motions/README.md)。
-
-BOOTH 官方包需登录，无法无账号自动下载。若自建 zip 镜像，可设置 `COMPANION_VRMA_ZIP_URL`，sidecar 启动时会尝试拉取。
-
-未放置 VRMA 时回退到程序化 idle 动画。
-
-### 位移动作（走路 / 攀爬，按需导入）
-
-默认巡逻位移使用程序化 walk（不依赖外部 VRMA）。如果你希望更自然的走路或纵向攀爬动作，可以在设置中分别导入：
-
-- **走路（walk）**：`.vrma` 或 Mixamo `.fbx`（会自动转换为 `.vrma`）
-- **攀爬（climb）**：`.vrma` 或 Mixamo `.fbx`（会自动转换为 `.vrma`）
-
-导入后文件保存到 `~/.anima/companion/motions/`，并写入 `~/.anima/companion/config.json` 的 `locomotion` 段落。清除后会回退到程序化动作。
-
-配置持久化在 `~/.anima/companion/config.json`。
+动作文件目录：`~/.anima/companion/motions/`。未绑定槽位时不播放对应动画；巡逻位移仍会平移窗口，仅在有 `walk` / `climb` VRMA 时播放移动动画。
 
 ## 开发与运行
 
@@ -82,7 +72,15 @@ BOOTH 官方包需登录，无法无账号自动下载。若自建 zip 镜像，
 ```bash
 bun satellites/companion/dev.ts
 # 伴侣：http://127.0.0.1:4176
-# 设置：http://127.0.0.1:4176/#/settings
+# 设置：页面内「设置」按钮打开面板弹窗（非独立路由）
+```
+
+### Tauri 桌面壳
+
+```bash
+cd satellites/companion
+bun install
+bun dev.ts
 ```
 
 环境变量：
@@ -93,29 +91,16 @@ bun satellites/companion/dev.ts
 | `SATELLITE_PORT`         | `4176`                  | sidecar HTTP 端口                       |
 | `COMPANION_VRMA_ZIP_URL` | （空）                  | 可选；直链 zip 镜像，sidecar 启动时下载 |
 
-Hub 在首次 `connect`（不携带 `instance_id`）时分配 3 位 `instance_id`，写入 `~/.anima/companion/instance.json`；`platform` 为 `sap:companion:{instance_id}`。sidecar 现阶段为 **presence** 模式（`relay: false`、无 `tool.register`）；日后可在同一 `createSatelliteHub` 工厂开启 relay/tools。
-
-### Tauri 桌面壳
-
-```bash
-cd satellites/companion
-bun install
-bun dev.ts
-
-bun run build:windows
-bun run build:windows:installer
-```
+Hub 在首次 `connect` 时分配 **3 字符** `instance_id`，写入 `~/.anima/companion/instance.json`（非 `satellites/` 子目录）。
 
 ### 常见问题
 
-| 现象                 | 处理                                                                      |
-| -------------------- | ------------------------------------------------------------------------- |
-| 双击无窗口           | 看系统托盘；托盘 → **设置…** 导入 `.vrm`                                  |
-| 点击无动作           | 设置 → **导入动作包 ZIP**；或确认 `~/.anima/companion/motions/` 已有 VRMA |
-| 无法连 Hub           | 确认 `anima service` 已运行；设置中 Hub URL 正确                          |
-| 后台启动失败         | 查看 `%USERPROFILE%\.anima\companion\shell.log`；安装 WebView2 运行时     |
-| 升级安装无法覆盖 exe | 托盘 → **退出** 后再运行安装包；新版安装器会自动结束 sidecar 进程         |
-| 退出后 sidecar 仍在  | 请用托盘 **退出**（勿直接结束 companion-shell）；新版会一并结束 sidecar   |
+| 现象             | 处理                                                         |
+| ---------------- | ------------------------------------------------------------ |
+| 双击无窗口       | 看系统托盘；托盘 → **设置…** 导入 `.vrm`                     |
+| 点击无动作       | 设置 → **动作库** 导入 VRMA；**动作槽位** 绑定对应槽位       |
+| 无法连 Hub       | 确认 `anima service` 已运行；设置 → 通用 Tab 中 Hub URL 正确 |
+| 动作导入后无变化 | 导入后会热重载；若仍无效，确认槽位已勾选对应动作             |
 
 ## 相关文档
 
