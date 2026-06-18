@@ -3,6 +3,54 @@
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 新版本节由 [Release Please](https://github.com/googleapis/release-please) 在 Release PR 合并时写入顶部。
 
+## [0.7.0](https://github.com/freeanima-org/freeanima/compare/v0.6.0...v0.7.0) (2026-06-18)
+
+
+### ⚠ BREAKING CHANGES
+
+* **tool:** 统一 ToolSet 单数命名与工具面整理
+* **session:** ToolSet 粒度缓存与 toolsets 发现流程
+
+### Features
+
+* **cli:** 将 update 改为 upgrade 并按安装方式分派升级逻辑 ([f377b0d](https://github.com/freeanima-org/freeanima/commit/f377b0dd29125d7e35b7d04e7c9860b8a2e35c8d))
+* **companion:** 增加多平台 CI 打包并修复浏览器模型加载 ([8c2e3de](https://github.com/freeanima-org/freeanima/commit/8c2e3de38aff6cc67cd6c0e5765d5bbeb27203ba))
+* **companion:** 新增桌面伴侣 SAP 卫星与 Windows 打包 ([366f73d](https://github.com/freeanima-org/freeanima/commit/366f73dafca7357bde7a527189534fcc51ea2b67))
+* **memory:** deep sleep 增量/全量模式与 WebUI 选择 ([7b49c78](https://github.com/freeanima-org/freeanima/commit/7b49c7868307f82790778f97e9ea3aa3d02126a3))
+* **session:** ToolSet 粒度缓存与 toolsets 发现流程 ([caec35e](https://github.com/freeanima-org/freeanima/commit/caec35e16d9ea4e81f335bbee5540c550a88c220))
+* **session:** 首条消息 LLM 自动生成标题并优化 Discord 线程命名 ([95586d3](https://github.com/freeanima-org/freeanima/commit/95586d3f512fdcc3cd981a19ac9ae5ffe4ab0dbb))
+* **sleep:** sleep-cycle 首步清理过期无效 session ([5e3fa1d](https://github.com/freeanima-org/freeanima/commit/5e3fa1d9e355b8351bd3b7c0386a495fc1af91bc))
+
+
+### Bug Fixes
+
+* **cli:** 修复 npm 发布包启动与本地安装 ([955a4e2](https://github.com/freeanima-org/freeanima/commit/955a4e2e9a5161ead2ed194b096a5a83640a3146))
+* **gateway:** 处理 Discord slash 交互重复确认（40060） ([8c2e3de](https://github.com/freeanima-org/freeanima/commit/8c2e3de38aff6cc67cd6c0e5765d5bbeb27203ba))
+* **platform:** 落实 error.log triage 中的稳定性修复 ([53890f7](https://github.com/freeanima-org/freeanima/commit/53890f7c249c378d938ffeb0347647a037b09c40))
+* **site:** 修复中文文档加载与文档站 Mermaid/锚点 UX ([cc7da47](https://github.com/freeanima-org/freeanima/commit/cc7da479db3171b0bf72d440769c4345756b983a))
+* **webui:** Chamber 工具页展示全量工具集并改为默认工具集 ([40b2c80](https://github.com/freeanima-org/freeanima/commit/40b2c80d201d5cde0ed2f4b8c275dd4ac4536469))
+
+
+### Miscellaneous
+
+* **deps-dev:** bump the dev-dependencies group across 1 directory with 3 updates ([a7b8f4b](https://github.com/freeanima-org/freeanima/commit/a7b8f4baab2b30d27fb3df0c52f6b76b9940858c))
+* **deps:** bump actions/deploy-pages from 4 to 5 ([a559ee6](https://github.com/freeanima-org/freeanima/commit/a559ee65a1719cedc2f58ed01d939bd8779c9c1d))
+* **deps:** bump actions/upload-pages-artifact from 3 to 5 ([8947f60](https://github.com/freeanima-org/freeanima/commit/8947f60136dd6d0672fb33f5f7816885ce2aa133))
+* **deps:** bump googleapis/release-please-action from 4 to 5 ([b7caa69](https://github.com/freeanima-org/freeanima/commit/b7caa6928c3562786d64ad614fb737ac96280afd))
+* **deps:** bump the production-dependencies group across 1 directory with 2 updates ([fdd7c46](https://github.com/freeanima-org/freeanima/commit/fdd7c46221204994376c2bcbb250ecf9d072fb82))
+
+
+### Refactoring
+
+* **tool:** 统一 ToolSet 单数命名与工具面整理 ([84ce650](https://github.com/freeanima-org/freeanima/commit/84ce65000a8f0a7f98ff75d53fda17a71d19e8c6))
+
+
+### CI
+
+* Quality 预构建 CLI 并移除测试内联 build ([ca10c3b](https://github.com/freeanima-org/freeanima/commit/ca10c3b41bfe523f6a3c61b9c97298fba2ec35be))
+* 新增 install-cli-smoke 作业验证本地 CLI 安装 ([94d28b1](https://github.com/freeanima-org/freeanima/commit/94d28b1bb57c3405cc1772ce792f109abe0acdcf))
+* 用 publish 集成测试替代 smoke 并修复 CodeQL ([e5020e2](https://github.com/freeanima-org/freeanima/commit/e5020e2f921ae4b9fc329624c553abfbf4677765))
+
 ## [0.6.0](https://github.com/freeanima-org/freeanima/compare/v0.5.0...v0.6.0) (2026-06-15)
 
 
