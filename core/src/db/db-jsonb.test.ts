@@ -4,7 +4,7 @@ import {
   acpTasksSchema,
   normalizeAcpTasks,
   normalizeSessionToolNames,
-  sessionToolsSchema,
+  sessionCachedToolsetsSchema,
 } from "./schema/jsonb/session-meta-jsonb.ts";
 
 describe("platform_info schema", () => {
@@ -64,7 +64,7 @@ describe("session tools jsonb", () => {
       { type: "function", function: { name: "grep" } },
     ];
     expect(normalizeSessionToolNames(legacy)).toEqual(["file_read", "grep"]);
-    expect(sessionToolsSchema.parse(legacy)).toEqual(["file_read", "grep"]);
+    expect(sessionCachedToolsetsSchema.parse(legacy)).toEqual(["file_read", "grep"]);
   });
 
   it("normalizeSessionToolNames ignores invalid entries", () => {

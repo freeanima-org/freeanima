@@ -3,7 +3,7 @@ import { SkillRegistry } from "@freeanima/core/skill";
 import { ToolSetRegistry } from "@freeanima/core/tool";
 import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 import { parseYaml } from "@freeanima/platform/config";
-import { animaConfigSchema } from "@freeanima/platform/config/schemas/config";
+import { animaConfigSchema } from "@freeanima/core/config";
 import { MINIMAL_LLM_YAML } from "@freeanima/platform/config/test-helpers/minimal-llm-config";
 
 import { registerServiceTools, resetRegisterServiceToolsForTest } from "./register.ts";

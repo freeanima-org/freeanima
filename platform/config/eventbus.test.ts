@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { FileConfig, stringifyYaml } from "./index.ts";
 import { getEventbusBackend, getEventbusKeyPrefix } from "./eventbus.ts";
-import { eventbusConfigSchema } from "./schemas/config.ts";
+import { eventbusConfigSchema } from "@freeanima/core/config";
 
 describe("eventbus config", () => {
   let home: string;

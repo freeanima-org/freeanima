@@ -81,36 +81,7 @@ export function rowToPatch(job: CronJob): CronJobUpdateInput {
 }
 
 export async function ensureBuiltinCronJobs(): Promise<void> {
-  await _removeDeprecatedBuiltinSelfAutobiographyCronJob();
-  await _removeDeprecatedBuiltinSleepCronJobs();
   await _ensureBuiltinSleepCycleCronJob();
-}
-
-const DEPRECATED_SELF_AUTOBIOGRAPHY_ID = "builtin-self-autobiography";
-const DEPRECATED_LIGHT_SLEEP_ID = "builtin-light-sleep";
-const DEPRECATED_DEEP_SLEEP_ID = "builtin-deep-sleep";
-const DEPRECATED_MEMORY_REF_SYNC_ID = "builtin-memory-reference-sync";
-
-async function _removeDeprecatedBuiltinSelfAutobiographyCronJob(): Promise<void> {
-  const cronStore = getCronStore();
-  const existing = await cronStore.get(DEPRECATED_SELF_AUTOBIOGRAPHY_ID);
-  if (!existing) return;
-  handles?.unregister(DEPRECATED_SELF_AUTOBIOGRAPHY_ID);
-  await cronStore.delete(DEPRECATED_SELF_AUTOBIOGRAPHY_ID);
-}
-
-async function _removeDeprecatedBuiltinSleepCronJobs(): Promise<void> {
-  const cronStore = getCronStore();
-  for (const id of [
-    DEPRECATED_LIGHT_SLEEP_ID,
-    DEPRECATED_DEEP_SLEEP_ID,
-    DEPRECATED_MEMORY_REF_SYNC_ID,
-  ]) {
-    const existing = await cronStore.get(id);
-    if (!existing) continue;
-    handles?.unregister(id);
-    await cronStore.delete(id);
-  }
 }
 
 async function _ensureBuiltinSleepCycleCronJob(): Promise<void> {

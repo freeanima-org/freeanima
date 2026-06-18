@@ -15,13 +15,6 @@ export type LoadToolSetsIntoSessionResult = {
   tools: ToolCatalogMessageEntry[];
 };
 
-export function mergeSessionToolNames(
-  current: readonly string[],
-  toAdd: readonly string[],
-): string[] {
-  return mergeToolSetNames(current, toAdd);
-}
-
 export function resolveExecutableToolNames(
   meta: SessionMetaMessage,
   registry: ToolSetRegistry,
@@ -74,17 +67,6 @@ export async function loadToolSetsIntoSession(
   };
 }
 
-/** @deprecated use loadToolSetsIntoSession */
-export async function loadToolsIntoSession(
-  repos: PgRepositories,
-  registry: ToolSetRegistry,
-  sessionId: string,
-  names: string[],
-  meta: SessionMetaMessage,
-): Promise<LoadToolSetsIntoSessionResult> {
-  return loadToolSetsIntoSession(repos, registry, sessionId, names, meta);
-}
-
 export async function resetSessionToolSetsToDefault(
   repos: PgRepositories,
   registry: ToolSetRegistry,
@@ -98,13 +80,4 @@ export async function resetSessionToolSetsToDefault(
     });
   }
   return names.length;
-}
-
-/** @deprecated use resetSessionToolSetsToDefault */
-export async function resetSessionToolsToDefault(
-  repos: PgRepositories,
-  registry: ToolSetRegistry,
-  sessionId: string,
-): Promise<number> {
-  return resetSessionToolSetsToDefault(repos, registry, sessionId);
 }

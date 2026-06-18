@@ -2,7 +2,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { expandConfigEnv } from "./env-expand.ts";
 import { parseYaml } from "./yaml.ts";
 import { PATHS } from "./paths.ts";
-import { startupConfigSchema } from "./schemas/startup-config.ts";
+import { animaConfigSchema } from "@freeanima/core/config";
 
 /** Validate config.yaml structure at startup (does not expand env/credential references) */
 export async function validateConfigOnStartup(): Promise<void> {
@@ -21,7 +21,7 @@ export async function validateConfigOnStartup(): Promise<void> {
     process.exit(1);
   }
 
-  const parsed = startupConfigSchema.safeParse(data);
+  const parsed = animaConfigSchema.safeParse(data);
   if (!parsed.success) {
     console.error("config.yaml validation failed:");
     for (const issue of parsed.error.issues) {

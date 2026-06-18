@@ -1,5 +1,5 @@
 import type { AnimaConfig } from "@freeanima/core/config";
-import { DEFAULT_EMBEDDING_DIMENSIONS, type ResolvedEmbeddingConfig } from "./schemas/embedding.ts";
+import { DEFAULT_EMBEDDING_DIMENSIONS, type ResolvedEmbeddingConfig } from "@freeanima/core/config";
 
 const DEFAULT_EMBEDDING_TIMEOUT_MS = 60_000;
 const DEFAULT_OLLAMA_BASE_URL = "http://127.0.0.1:11434/v1";

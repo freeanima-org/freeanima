@@ -1,4 +1,4 @@
-import { resolveDefaultSessionTools } from "@freeanima/core/tool";
+import { resolveDefaultSessionToolSets } from "@freeanima/core/tool";
 import { getProfileHopModel } from "@freeanima/platform/config";
 import { PROFILE_CHAT } from "@freeanima/core/provider";
 import type { CommandResult } from "@freeanima/platform/commands";
@@ -126,7 +126,7 @@ export async function appendSessionMetaForEngine(
 ): Promise<void> {
   const cfg = deps.engine.config.data;
   const toolSets = deps.engine.catalog.toolSets;
-  const names = resolveDefaultSessionTools(toolSets);
+  const names = resolveDefaultSessionToolSets(toolSets);
   await deps.conversation.appendSessionMeta(
     session,
     names,

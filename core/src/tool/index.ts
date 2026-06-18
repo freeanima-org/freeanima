@@ -21,14 +21,10 @@ export type { ToolArgsRecord } from "./tool-json.ts";
 export { ToolSetRegistry, mcpToolSetId, acpToolSetId } from "./toolset.ts";
 export {
   loadToolSetsIntoSession,
-  loadToolsIntoSession,
-  mergeSessionToolNames,
   resolveExecutableToolNames,
   resetSessionToolSetsToDefault,
-  resetSessionToolsToDefault,
   type LoadToolSetsIntoSessionResult,
 } from "./session-tools.ts";
-export type { LoadToolSetsIntoSessionResult as LoadToolsIntoSessionResult } from "./session-tools.ts";
 export { handleSessionTodo } from "./session-todos.ts";
 export {
   registerSessionToolMaskFilter,
@@ -54,12 +50,6 @@ export {
 } from "./default-session-toolsets.ts";
 export type { DefaultSessionToolSetName } from "./default-session-toolsets.ts";
 export {
-  DEFAULT_SESSION_TOOL_NAMES,
-  resolveDefaultSessionTools,
-  TOOLS_DISCOVERY_NAMES,
-} from "./default-session-tools.ts";
-export type { DefaultSessionToolName } from "./default-session-tools.ts";
-export {
   TOOL_SET_LOAD_TOOL_NAME,
   TOOL_SET_SEARCH_TOOL_NAME,
   toolSetForTool,
@@ -72,20 +62,13 @@ export {
 export { stripCachedToolSetLoadRounds } from "./toolset-load-view.ts";
 export { expandToolNames } from "./expand.ts";
 export type { ExpandToolNamesOptions } from "./expand.ts";
-export {
-  formatToolsForToolMessage,
-  searchToolsetsCatalog,
-  searchToolsCatalog,
-  listToolsCatalog,
-} from "./catalog.ts";
+export { formatToolsForToolMessage, searchToolsetsCatalog } from "./catalog.ts";
 export type {
   ToolCatalogEntry,
   ToolCatalogMessageEntry,
   SearchToolsetsCatalogHit,
   SearchToolsetsCatalogOptions,
 } from "./catalog.ts";
-export type { SearchToolsetsCatalogOptions as ListToolsCatalogOptions } from "./catalog.ts";
-export type { SearchToolsetsCatalogOptions as SearchToolsCatalogOptions } from "./catalog.ts";
 export { buildToolsStatus, resolveReturnKind, TEXT_RETURN_TOOL_NAMES } from "./tools-status.ts";
 export type {
   ToolsStatusResponse,

@@ -8,7 +8,7 @@ import { spawnSync } from "node:child_process";
 import { Config } from "@freeanima/platform/config";
 import { registerCoreTools } from "@freeanima/capabilities-tools";
 import { parseYaml } from "@freeanima/platform/config";
-import { animaConfigSchema } from "@freeanima/platform/config/schemas/config";
+import { animaConfigSchema } from "@freeanima/core/config";
 
 const MIN_CONFIG = `
 llm:
