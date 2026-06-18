@@ -9,6 +9,7 @@ import { nullSelfLayerStore } from "./null-self-layer.ts";
 import { nullMemoryReferenceStore } from "./null-memory-reference.ts";
 import { nullSemanticMemoryStore } from "./null-semantic-memory.ts";
 import { nullSessionStore } from "./null-session.ts";
+import { nullSapInstanceStore } from "./null-sap-instance.ts";
 import { nullTaskStore } from "./null-task.ts";
 
 export const nullPgRepositories: PgRepositories = {
@@ -24,4 +25,5 @@ export const nullPgRepositories: PgRepositories = {
   cronLog: nullCronLogStore,
   pipelineStepRun: nullPipelineStepRunStore,
   tasks: nullTaskStore,
+  sapInstance: nullSapInstanceStore,
 };

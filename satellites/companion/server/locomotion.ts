@@ -1,6 +1,7 @@
 import { mkdirSync } from "node:fs";
 import { basename, join } from "node:path";
 import { jsonResponse } from "./http/cors.ts";
+import { motionFileNameForId, newMotionId } from "../shared/asset-id.ts";
 import { companionMotionsDir } from "./paths.ts";
 import { resolveFbx2gltfBinary } from "./fbx-converter-kit.ts";
 import { convertFbxToVrmaFiles } from "./fbx2vrma-core.ts";
@@ -11,7 +12,7 @@ import {
   type LocomotionSlot,
 } from "../shared/constants.ts";
 import { resolveMotionFile } from "./motions.ts";
-import { addMotionToLibrary, setSlotMotions } from "./motion-library.ts";
+import { registerMotionEntry, setSlotMotions } from "./motion-library.ts";
 import type { MotionSlotId } from "../shared/companion-schema.ts";
 
 export { LOCOMOTION_SLOTS };
@@ -24,6 +25,12 @@ export type LocomotionSlotInfo = {
 };
 
 function slotOutputName(slot: LocomotionSlot): string {
+  const cfg = loadConfig();
+  const slotIds = cfg.motion_slots[locomotionMotionSlot(slot)] ?? [];
+  for (const ref of slotIds) {
+    const byId = cfg.motion_library.find((e) => e.id === ref);
+    if (byId) return byId.file;
+  }
   return `locomotion_${slot}.vrma`;
 }
 
@@ -84,7 +91,8 @@ export async function importLocomotionFile(
   }
 
   mkdirSync(companionMotionsDir(), { recursive: true });
-  const destName = slotOutputName(slot);
+  const id = newMotionId();
+  const destName = motionFileNameForId(id);
   const destPath = join(companionMotionsDir(), destName);
   const tempDir = join(companionMotionsDir(), ".locomotion-import");
   mkdirSync(tempDir, { recursive: true });
@@ -102,7 +110,11 @@ export async function importLocomotionFile(
     await removeTree(tempDir);
   }
 
-  const entry = addMotionToLibrary(destName, LOCOMOTION_SLOT_LABELS[slot]);
+  const entry = registerMotionEntry({
+    id,
+    name: LOCOMOTION_SLOT_LABELS[slot],
+    file: destName,
+  });
   setSlotMotions(locomotionMotionSlot(slot), [entry.id]);
 
   return { slot, file: destName };

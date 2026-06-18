@@ -4,6 +4,7 @@ import { jsonResponse } from "./http/cors.ts";
 import { companionMotionsDir } from "./paths.ts";
 import { requiredMotionFiles } from "../shared/motion-manifest.ts";
 import { importMotionUpload } from "./motion-import.ts";
+import { listMotionLibrary } from "./motion-library.ts";
 
 /** manifest 中引用的 VRMA 文件名（idle + 分区动作） */
 export const REQUIRED_MOTION_FILES = requiredMotionFiles();
@@ -38,7 +39,13 @@ export function resolveMotionsSearchDirs(): string[] {
 }
 
 export function resolveMotionFile(relativePath: string): string | null {
-  const name = basename(relativePath);
+  const rawName = basename(relativePath);
+  let name = rawName;
+  try {
+    name = decodeURIComponent(rawName);
+  } catch {
+    name = rawName;
+  }
   if (!name.endsWith(".vrma")) return null;
 
   for (const dir of resolveMotionsSearchDirs()) {
@@ -106,7 +113,7 @@ export async function handleMotionUpload(req: Request): Promise<Response> {
   try {
     const bytes = new Uint8Array(await file.arrayBuffer());
     const result = await importMotionUpload(file.name, bytes);
-    return jsonResponse({ ok: true, ...result });
+    return jsonResponse({ ok: true, ...result, library: listMotionLibrary() });
   } catch (e) {
     return jsonResponse({ error: e instanceof Error ? e.message : String(e) }, 400);
   }

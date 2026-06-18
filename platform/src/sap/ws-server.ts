@@ -68,9 +68,9 @@ export function createSapServerHandlers(
   const router = defineSapRouter();
 
   const handlers: SapServerHandlers = {
-    onConnect(payload) {
+    async onConnect(payload) {
       const parsed = connectPayloadSchema.parse(payload);
-      const resolved = deps.instanceRegistry.resolveConnect({
+      const resolved = await deps.instanceRegistry.resolveConnect({
         appId: parsed.app_id,
         instanceId: parsed.instance_id,
         httpUrl: parsed.http_url,

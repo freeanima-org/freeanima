@@ -17,16 +17,20 @@ export const MOTION_SLOT_LABELS: Record<MotionSlotId, string> = {
 export const LEGACY_IN_PLACE_SLOT_PREFIX = "in_place_";
 
 export type MotionLibraryEntry = {
+  /** 稳定 UUID，配置与槽位引用此 id */
   id: string;
+  /** 显示名称（可改，不影响磁盘文件） */
   name: string;
-  /** motions 目录下的 .vrma 文件名 */
+  /** motions 目录下的 .vrma 文件名（导入后为 `{id}.vrma`） */
   file: string;
 };
 
 export type ModelEntry = {
+  /** 稳定 UUID，配置引用此 id */
   id: string;
+  /** 显示名称（可改，不影响磁盘文件） */
   name: string;
-  /** 如 /models/foo.vrm */
+  /** 如 /models/{id}.vrm */
   path: string;
 };
 
@@ -79,10 +83,4 @@ export type CompanionConfigV2 = {
   behavior: CompanionBehavior;
 };
 
-export function newModelId(): string {
-  return `mdl_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
-}
-
-export function newMotionId(): string {
-  return `mot_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
-}
+export { newModelId, newMotionId } from "./asset-id.ts";

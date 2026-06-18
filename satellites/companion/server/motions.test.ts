@@ -47,6 +47,25 @@ describe("resolveMotionFile", () => {
     expect(resolveMotionFile("/motions/../../etc/passwd")).toBeNull();
     expect(basename("../../etc/passwd")).not.toMatch(/\.vrma$/);
   });
+
+  test("解码 URL 编码的文件名", () => {
+    const dir = mkdtempSync(join(tmpdir(), "companion-motion-url-"));
+    try {
+      writeFileSync(join(dir, "Happy Walk.vrma"), "x");
+      const prev = process.env.FREEANIMA_HOME;
+      process.env.FREEANIMA_HOME = join(dir, "home");
+      mkdirSync(join(process.env.FREEANIMA_HOME, "companion", "motions"), { recursive: true });
+      const motionDir = join(process.env.FREEANIMA_HOME, "companion", "motions");
+      writeFileSync(join(motionDir, "Happy Walk.vrma"), "x");
+      expect(resolveMotionFile("/motions/Happy%20Walk.vrma")).toBe(
+        join(motionDir, "Happy Walk.vrma"),
+      );
+      if (prev === undefined) delete process.env.FREEANIMA_HOME;
+      else process.env.FREEANIMA_HOME = prev;
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
 });
 
 describe("REQUIRED_MOTION_FILES", () => {

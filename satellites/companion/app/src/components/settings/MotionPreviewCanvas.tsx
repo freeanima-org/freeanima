@@ -10,7 +10,8 @@ import {
 import { motionManifest } from "@shared/motion-manifest.ts";
 import { COMPANION_WINDOW_HEIGHT, COMPANION_WINDOW_WIDTH } from "@/lib/window-metrics.ts";
 import { loadCachedModelSource } from "@/lib/model-cache.ts";
-import { resolveSidecarOrigin } from "@/lib/sidecar.ts";
+import { resolveSidecarAssetUrl } from "@/lib/sidecar-asset-url.ts";
+import { applyVrmCameraFraming, computeVrmFraming } from "@/renderer/VrmCameraFraming.ts";
 
 type Props = {
   modelPath: string;
@@ -18,15 +19,6 @@ type Props = {
   width: number;
   className?: string;
 };
-
-async function resolveAssetUrl(path: string): Promise<string> {
-  if (path.startsWith("http://") || path.startsWith("https://")) return path;
-  if (path.startsWith("/")) {
-    const base = await resolveSidecarOrigin();
-    return `${base}${path}`;
-  }
-  return path;
-}
 
 export function MotionPreviewCanvas({ modelPath, motionFile, width, className }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -42,14 +34,7 @@ export function MotionPreviewCanvas({ modelPath, motionFile, width, className }:
     const clock = new THREE.Clock();
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(
-      30,
-      COMPANION_WINDOW_WIDTH / COMPANION_WINDOW_HEIGHT,
-      0.1,
-      20,
-    );
-    camera.position.set(0, 1.2, 2.2);
-
+    const camera = new THREE.PerspectiveCamera(30, width / height, 0.1, 20);
     const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setClearColor(0x000000, 0);
@@ -76,7 +61,7 @@ export function MotionPreviewCanvas({ modelPath, motionFile, width, className }:
 
     void (async () => {
       try {
-        const modelUrl = await resolveAssetUrl(modelPath);
+        const modelUrl = await resolveSidecarAssetUrl(modelPath);
         const cached = await loadCachedModelSource(modelUrl);
         revokeModel = cached.revoke;
         if (disposed) return;
@@ -91,15 +76,14 @@ export function MotionPreviewCanvas({ modelPath, motionFile, width, className }:
         scene.add(loaded.scene);
         vrm = loaded;
 
-        const box = new THREE.Box3().setFromObject(loaded.scene);
-        const size = box.getSize(new THREE.Vector3());
-        const center = box.getCenter(new THREE.Vector3());
-        loaded.scene.position.sub(center);
-        loaded.scene.position.y += size.y * 0.5;
-        camera.position.set(0, size.y * 0.55, size.y * 1.6);
-        camera.lookAt(0, size.y * 0.4, 0);
+        const { framing } = computeVrmFraming(loaded);
+        applyVrmCameraFraming(camera, framing, {
+          paddingX: 1.06,
+          topHeadroomRatio: 0.36,
+          bottomMarginRatio: 0.03,
+        });
 
-        const motionUrl = await resolveAssetUrl(`${motionManifest.baseUrl}/${motionFile}`);
+        const motionUrl = await resolveSidecarAssetUrl(`${motionManifest.baseUrl}/${motionFile}`);
         const animLoader = new GLTFLoader();
         animLoader.register((parser) => new VRMAnimationLoaderPlugin(parser));
         const motionGltf = await animLoader.loadAsync(motionUrl);
@@ -142,11 +126,9 @@ export function MotionPreviewCanvas({ modelPath, motionFile, width, className }:
     <canvas
       ref={canvasRef}
       className={className ?? "motion-preview-canvas"}
-      style={{
-        width,
-        height,
-        aspectRatio: `${COMPANION_WINDOW_WIDTH} / ${COMPANION_WINDOW_HEIGHT}`,
-      }}
+      width={width}
+      height={height}
+      style={{ width, height }}
     />
   );
 }

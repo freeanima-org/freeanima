@@ -37,6 +37,11 @@ function hubWsUrl(hubUrl: string): string {
   return hubUrl.replace(/^http/, "ws").replace(/\/$/, "") + "/sap/v1";
 }
 
+function isStaleInstanceIdError(error: unknown): boolean {
+  const msg = error instanceof Error ? error.message : String(error);
+  return msg.includes("unknown instance_id");
+}
+
 function sleep(ms: number, signal?: AbortSignal): Promise<void> {
   return new Promise((resolve, reject) => {
     if (signal?.aborted) {
@@ -141,39 +146,61 @@ export function runSapTransport(options: RunSapTransportOptions): SapTransportHa
   }
 
   async function connectOnce(): Promise<void> {
-    const wsUrl = hubWsUrl(options.hubUrl);
-    const ws = options.createWebSocket?.(wsUrl) ?? new WebSocket(wsUrl);
-    currentWs = ws;
-    await waitWebSocketOpen(ws);
-
-    let disconnectNotified = false;
-    const notifyDisconnect = (): void => {
-      if (disconnectNotified) return;
-      disconnectNotified = true;
-      options.onDisconnected?.();
-    };
-
-    const sap = createSapClient({
-      ws,
-      onDisconnected: notifyDisconnect,
-    });
-
     const connectBody: Omit<ConnectPayload, "protocol"> = { ...options.connect };
     const storedId = await loadSapInstanceId(options.instanceStore);
     if (storedId && !connectBody.instance_id) {
       connectBody.instance_id = storedId;
     }
 
-    const connected = await sap.connect(connectBody);
-    options.instanceStore?.save(connected.instance_id);
-    resolveConnected(sap);
-    startHeartbeat(ws, connected);
-    await options.onConnected(sap, connected);
-    await waitForDisconnect(ws);
-    clearHeartbeat();
-    currentClient = null;
-    notifyDisconnect();
-    currentWs = null;
+    for (let staleRetry = 0; staleRetry < 2; staleRetry++) {
+      const wsUrl = hubWsUrl(options.hubUrl);
+      const ws = options.createWebSocket?.(wsUrl) ?? new WebSocket(wsUrl);
+      currentWs = ws;
+
+      let disconnectNotified = false;
+      const notifyDisconnect = (): void => {
+        if (disconnectNotified) return;
+        disconnectNotified = true;
+        options.onDisconnected?.();
+      };
+
+      try {
+        await waitWebSocketOpen(ws);
+
+        const sap = createSapClient({
+          ws,
+          onDisconnected: notifyDisconnect,
+        });
+
+        const connected = await sap.connect(connectBody);
+        options.instanceStore?.save(connected.instance_id);
+        resolveConnected(sap);
+        startHeartbeat(ws, connected);
+        await options.onConnected(sap, connected);
+        await waitForDisconnect(ws);
+        clearHeartbeat();
+        currentClient = null;
+        notifyDisconnect();
+        currentWs = null;
+        return;
+      } catch (e) {
+        clearHeartbeat();
+        currentClient = null;
+        notifyDisconnect();
+        try {
+          ws.close();
+        } catch {
+          /* ignore */
+        }
+        currentWs = null;
+
+        if (staleRetry === 0 && connectBody.instance_id && isStaleInstanceIdError(e)) {
+          delete connectBody.instance_id;
+          continue;
+        }
+        throw e;
+      }
+    }
   }
 
   async function runLoop(): Promise<void> {

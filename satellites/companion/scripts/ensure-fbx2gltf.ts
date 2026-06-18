@@ -55,7 +55,7 @@ async function downloadWithCurl(url: string, destPath: string): Promise<boolean>
 
 async function downloadFbx2gltf(name: string, destPath: string): Promise<boolean> {
   const url = `${FBX2GLTF_RELEASE_BASE}/${name}`;
-  log(`正在下载 ${name} …`);
+  log(`正在下载 ${url} …`);
 
   let wrote = false;
   try {

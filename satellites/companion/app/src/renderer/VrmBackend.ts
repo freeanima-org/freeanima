@@ -16,6 +16,7 @@ import { resolveFacingOffsetY } from "./vrm-facing.ts";
 import { VrmBodyPicker } from "./VrmBodyPicker.ts";
 import { VrmAnimationPlayer, type MotionBindConfig } from "./VrmAnimationPlayer.ts";
 import { resolveSidecarOrigin } from "@/lib/sidecar.ts";
+import { encodeSidecarPath } from "@/lib/sidecar-asset-url.ts";
 import type { MotionSlotId } from "@shared/companion-schema.ts";
 import { VRMLookAtQuaternionProxy } from "@pixiv/three-vrm-animation";
 
@@ -133,7 +134,7 @@ export class VrmBackend implements CharacterBackend {
     }
     if (path.startsWith("/")) {
       const base = await resolveSidecarOrigin();
-      return `${base}${path}`;
+      return `${base}${encodeSidecarPath(path)}`;
     }
     return path;
   }
