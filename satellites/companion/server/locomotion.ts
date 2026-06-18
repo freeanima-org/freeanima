@@ -1,15 +1,11 @@
-import { existsSync, mkdirSync, statSync } from "node:fs";
+import { existsSync, mkdirSync } from "node:fs";
 import { basename, join } from "node:path";
 import { jsonResponse } from "./http/cors.ts";
 import { companionMotionsDir } from "./paths.ts";
-import { resolveFbx2gltfBinary, resolveFbx2vrmaCli, sidecarBinDir } from "./fbx-converter-kit.ts";
-import {
-  loadConfig,
-  saveConfig,
-  LOCOMOTION_SLOTS,
-  type CompanionConfig,
-  type LocomotionSlot,
-} from "./config.ts";
+import { resolveFbx2gltfBinary } from "./fbx-converter-kit.ts";
+import { convertFbxToVrmaFiles } from "./fbx2vrma-core.ts";
+import { loadConfig, saveConfig, type CompanionConfig, type LocomotionSlot } from "./config.ts";
+import { LOCOMOTION_SLOT_LABELS, LOCOMOTION_SLOTS } from "../shared/constants.ts";
 import { resolveMotionFile } from "./motions.ts";
 
 export { LOCOMOTION_SLOTS };
@@ -21,35 +17,13 @@ export type LocomotionSlotInfo = {
   available: boolean;
 };
 
-const SLOT_LABELS: Record<LocomotionSlot, string> = {
-  walk: "走路",
-  climb: "攀爬",
-};
-
 function slotOutputName(slot: LocomotionSlot): string {
   return `locomotion_${slot}.vrma`;
 }
 
 async function convertFbxToVrma(inputPath: string, outputPath: string): Promise<void> {
-  const cli = resolveFbx2vrmaCli();
   const fbx2gltf = resolveFbx2gltfBinary();
-  const args = ["-i", inputPath, "-o", outputPath, "--fbx2gltf", fbx2gltf, "--framerate", "30"];
-
-  const cmd = cli.endsWith(".js") ? [process.execPath, cli, ...args] : [cli, ...args];
-  const proc = Bun.spawn(cmd, {
-    cwd: sidecarBinDir(),
-    stdout: "pipe",
-    stderr: "pipe",
-  });
-  const code = await proc.exited;
-  if (code !== 0) {
-    const err =
-      `${await new Response(proc.stderr).text()}${await new Response(proc.stdout).text()}`.trim();
-    throw new Error(err || "FBX 转 VRMA 失败，请确认 Mixamo 导出为 Without Skin、In Place");
-  }
-  if (!existsSync(outputPath) || statSync(outputPath).size === 0) {
-    throw new Error("FBX 转换未生成有效 .vrma 文件");
-  }
+  await convertFbxToVrmaFiles(inputPath, outputPath, fbx2gltf, "30");
 }
 
 export function locomotionFileForSlot(slot: LocomotionSlot): string {
@@ -65,7 +39,7 @@ export function locomotionSlotStatus(): LocomotionSlotInfo[] {
     const available = resolveMotionFile(`/motions/${file}`) !== null;
     return {
       slot,
-      label: SLOT_LABELS[slot],
+      label: LOCOMOTION_SLOT_LABELS[slot],
       file: available ? file : null,
       available,
     };

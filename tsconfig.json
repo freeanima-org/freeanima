@@ -32,6 +32,8 @@
     "cli/publish/**",
     "satellites/pair-programming/app/**",
     "satellites/parlor/app/**",
-    "satellites/companion/app/**"
+    "satellites/companion/app/**",
+    "satellites/companion/shell/target/**",
+    "satellites/companion/shell/src-tauri/resources/**"
   ]
 }

@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { basename, join } from "node:path";
 import { tmpdir } from "node:os";
+import { requiredMotionFiles } from "../shared/motion-manifest.ts";
 import { motionsReady, REQUIRED_MOTION_FILES, resolveMotionFile } from "./motions.ts";
 
 describe("motionsReady", () => {
@@ -49,13 +50,7 @@ describe("resolveMotionFile", () => {
 });
 
 describe("REQUIRED_MOTION_FILES", () => {
-  test("包含 manifest 引用的 5 个文件", () => {
-    expect(REQUIRED_MOTION_FILES).toEqual([
-      "VRMA_01.vrma",
-      "VRMA_02.vrma",
-      "VRMA_03.vrma",
-      "VRMA_06.vrma",
-      "VRMA_07.vrma",
-    ]);
+  test("与 motion-manifest 一致", () => {
+    expect([...REQUIRED_MOTION_FILES].sort()).toEqual([...requiredMotionFiles()].sort());
   });
 });

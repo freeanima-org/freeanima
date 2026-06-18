@@ -1,9 +1,10 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import type { LocomotionSlot } from "../shared/constants.ts";
 import { companionConfigPath, ensureCompanionDataDir } from "./paths.ts";
 import { PLACEHOLDER_MODEL_PATH } from "./model-path.ts";
 
-export const LOCOMOTION_SLOTS = ["walk", "climb"] as const;
-export type LocomotionSlot = (typeof LOCOMOTION_SLOTS)[number];
+export type { LocomotionSlot };
+export { LOCOMOTION_SLOTS } from "../shared/constants.ts";
 
 export type CompanionConfig = {
   hub_url: string;

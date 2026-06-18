@@ -2,15 +2,10 @@ import { existsSync, mkdirSync, readdirSync, statSync } from "node:fs";
 import { basename, join } from "node:path";
 import { jsonResponse } from "./http/cors.ts";
 import { companionMotionsDir } from "./paths.ts";
+import { requiredMotionFiles } from "../shared/motion-manifest.ts";
 
-/** manifest 中引用的 VRMA 文件名 */
-export const REQUIRED_MOTION_FILES = [
-  "VRMA_01.vrma",
-  "VRMA_02.vrma",
-  "VRMA_03.vrma",
-  "VRMA_06.vrma",
-  "VRMA_07.vrma",
-] as const;
+/** manifest 中引用的 VRMA 文件名（idle + 分区动作） */
+export const REQUIRED_MOTION_FILES = requiredMotionFiles();
 
 const BOOTH_ITEM_URL = "https://booth.pm/ja/items/5512385";
 

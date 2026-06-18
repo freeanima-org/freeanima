@@ -6,10 +6,14 @@ import {
   fetchMotionStatus,
   uploadLocomotionMotion,
   uploadMotionZip,
-  type LocomotionSlot,
   type LocomotionStatus,
   type MotionStatus,
 } from "@/lib/api.ts";
+import {
+  LOCOMOTION_SLOT_LABELS,
+  LOCOMOTION_SLOTS,
+  type LocomotionSlot,
+} from "@shared/constants.ts";
 import { useCompanionStore } from "@/stores/companion.ts";
 import { emitConfigChanged } from "@/lib/tauri.ts";
 
@@ -24,10 +28,10 @@ type LocomotionRow = {
   available: boolean;
 };
 
-const LOCOMOTION_SLOT_DEFS: ReadonlyArray<{ slot: LocomotionSlot; label: string }> = [
-  { slot: "walk", label: "走路" },
-  { slot: "climb", label: "攀爬" },
-];
+const LOCOMOTION_SLOT_DEFS = LOCOMOTION_SLOTS.map((slot) => ({
+  slot,
+  label: LOCOMOTION_SLOT_LABELS[slot],
+}));
 
 export function SettingsPanel({ standalone = false }: Props) {
   const hubUrl = useCompanionStore((s) => s.hubUrl);
@@ -306,7 +310,9 @@ export function SettingsPanel({ standalone = false }: Props) {
         <div className="pt-2 border-t border-white/10">
           <label>位移动作（按需导入）</label>
           <p className="text-xs text-white/40 mt-1">
-            巡逻时横向段用「走路」、纵向段用「攀爬」。未导入时使用程序化 walk。
+            横向巡逻优先使用导入的「走路」VRMA；未导入时用程序化
+            walk。纵向段始终用程序化攀爬（Mixamo 攀爬通常无 In
+            Place，带位移会与窗口移动叠加导致出屏）。
           </p>
           {locomotionLoading ? <p className="text-xs text-white/40 mt-2">检查位移动作…</p> : null}
           <div className="mt-2 flex flex-col gap-2">

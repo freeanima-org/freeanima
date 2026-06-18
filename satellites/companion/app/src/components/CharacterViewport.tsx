@@ -10,7 +10,7 @@ import {
 import { getVrmBackend } from "@/renderer/VrmBackend.ts";
 import { companionDebug } from "@/lib/companion-debug.ts";
 import { getWindowPosition, isTauri, moveWindow } from "@/lib/tauri.ts";
-import { WEB_COMPANION_HEIGHT, WEB_COMPANION_WIDTH } from "@/lib/window-metrics.ts";
+import { COMPANION_WINDOW_HEIGHT, COMPANION_WINDOW_WIDTH } from "@/lib/window-metrics.ts";
 
 const DRAG_THRESHOLD_PX = 8;
 const DOUBLE_CLICK_MS = 400;
@@ -19,17 +19,11 @@ const COMPANION_STAGE_ID = "companion-stage";
 
 type Props = {
   modelPath: string;
-  onBackendReady?: () => void;
   onModelLoaded?: () => void;
   onModelError?: (message: string) => void;
 };
 
-export function CharacterViewport({
-  modelPath,
-  onBackendReady,
-  onModelLoaded,
-  onModelError,
-}: Props) {
+export function CharacterViewport({ modelPath, onModelLoaded, onModelError }: Props) {
   const hitTestFn = useCompanionStore((s) => s.hitTestFn);
   const modelReady = useCompanionStore((s) => s.modelReady);
   const pointerDownRef = useRef<{
@@ -114,11 +108,7 @@ export function CharacterViewport({
     if (isTauri() && draggingRef.current && down.winReady) {
       down.accumDx += event.movementX;
       down.accumDy += event.movementY;
-      const scale = window.devicePixelRatio || 1;
-      void moveWindow(
-        down.winX + Math.round(down.accumDx * scale),
-        down.winY + Math.round(down.accumDy * scale),
-      );
+      void moveWindow(down.winX + Math.round(down.accumDx), down.winY + Math.round(down.accumDy));
       return;
     }
 
@@ -203,18 +193,15 @@ export function CharacterViewport({
     <div
       id={COMPANION_STAGE_ID}
       className={webMode ? "companion-stage-web" : "absolute inset-0 pointer-events-auto"}
-      style={webMode ? { width: WEB_COMPANION_WIDTH, height: WEB_COMPANION_HEIGHT } : undefined}
+      style={
+        webMode ? { width: COMPANION_WINDOW_WIDTH, height: COMPANION_WINDOW_HEIGHT } : undefined
+      }
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
     >
-      <VrmCanvas
-        modelPath={modelPath}
-        onBackendReady={onBackendReady}
-        onModelLoaded={onModelLoaded}
-        onModelError={onModelError}
-      />
+      <VrmCanvas modelPath={modelPath} onModelLoaded={onModelLoaded} onModelError={onModelError} />
     </div>
   );
 }

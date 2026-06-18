@@ -3,12 +3,15 @@ import { getVrmBackend } from "@/renderer/VrmBackend.ts";
 import {
   buildPerimeterWaypoints,
   buildWorkAreaCenter,
+  clampPatrolPosition,
   nearestPerimeterEntry,
+  patrolBoundsFromWaypoints,
   PATROL_CORNER_INDEX,
   patrolWaypoint,
   readScreenWorkArea,
-  WEB_COMPANION_HEIGHT,
-  WEB_COMPANION_WIDTH,
+  COMPANION_WINDOW_HEIGHT,
+  COMPANION_WINDOW_WIDTH,
+  type PatrolBounds,
   type ScreenPoint,
 } from "@/lib/window-metrics.ts";
 import { getPatrolScreen, getWindowPosition, isTauri, moveWindow } from "@/lib/tauri.ts";
@@ -41,6 +44,7 @@ let journeyFrame: number | null = null;
 let patrolTimer: ReturnType<typeof setInterval> | null = null;
 let patrolIndex = 0;
 let patrolPoints: ScreenPoint[] = [];
+let patrolBounds: PatrolBounds | null = null;
 let activeJourney: Journey | null = null;
 let currentPosition: ScreenPoint | null = null;
 let patrolPausedUntilMs = 0;
@@ -116,11 +120,12 @@ async function refreshPatrolPath(): Promise<ScreenPoint[]> {
   } else {
     const screen = readScreenWorkArea();
     patrolPoints = buildPerimeterWaypoints(screen, {
-      width: WEB_COMPANION_WIDTH,
-      height: WEB_COMPANION_HEIGHT,
+      width: COMPANION_WINDOW_WIDTH,
+      height: COMPANION_WINDOW_HEIGHT,
     });
   }
   patrolIndex = 0;
+  patrolBounds = patrolBoundsFromWaypoints(patrolPoints);
   return patrolPoints;
 }
 
@@ -146,12 +151,13 @@ function nextPatrolPoint(): ScreenPoint {
 }
 
 function applyPosition(point: ScreenPoint): void {
+  const clamped = clampPatrolPosition(point, patrolBounds);
   if (isTauri()) {
-    void moveWindow(point.x, point.y);
+    void moveWindow(clamped.x, clamped.y);
   } else {
-    moveCompanionStage(point.x, point.y);
+    moveCompanionStage(clamped.x, clamped.y);
   }
-  currentPosition = point;
+  currentPosition = clamped;
 }
 
 function locomotionKindForSegment(from: ScreenPoint, to: ScreenPoint): LocomotionKind {
@@ -328,8 +334,8 @@ async function readStartupSpawnPoint(): Promise<ScreenPoint> {
     );
   }
   return buildWorkAreaCenter(readScreenWorkArea(), {
-    width: WEB_COMPANION_WIDTH,
-    height: WEB_COMPANION_HEIGHT,
+    width: COMPANION_WINDOW_WIDTH,
+    height: COMPANION_WINDOW_HEIGHT,
   });
 }
 

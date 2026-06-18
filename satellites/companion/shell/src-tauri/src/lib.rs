@@ -1,3 +1,6 @@
+use std::io::{BufRead, BufReader};
+use std::path::{Path, PathBuf};
+use std::process::{Child, Command, Stdio};
 use std::sync::atomic::{AtomicBool, AtomicU16, Ordering};
 use std::sync::{Arc, Mutex};
 use std::thread;
@@ -6,11 +9,8 @@ use std::time::Duration;
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
-    AppHandle, Emitter, Manager, PhysicalPosition, RunEvent, WebviewWindow,
+    AppHandle, Emitter, LogicalPosition, Manager, RunEvent, WebviewWindow,
 };
-use tauri_plugin_shell::process::CommandChild;
-use tauri_plugin_shell::process::CommandEvent;
-use tauri_plugin_shell::ShellExt;
 
 pub mod bootstrap;
 
@@ -19,7 +19,7 @@ static CLICKTHROUGH: AtomicBool = AtomicBool::new(false);
 static POINTER_ACTIVE: AtomicBool = AtomicBool::new(false);
 
 struct SidecarState {
-    child: Mutex<Option<CommandChild>>,
+    child: Mutex<Option<Child>>,
 }
 
 impl SidecarState {
@@ -34,7 +34,7 @@ fn stop_sidecar(app: &AppHandle) {
     log_line("stopping companion sidecar…");
     if let Some(state) = app.try_state::<SidecarState>() {
         if let Ok(mut guard) = state.child.lock() {
-            if let Some(child) = guard.take() {
+            if let Some(mut child) = guard.take() {
                 if let Err(err) = child.kill() {
                     log_line(&format!("sidecar kill error: {err}"));
                 }
@@ -46,10 +46,7 @@ fn stop_sidecar(app: &AppHandle) {
 
 #[cfg(windows)]
 fn force_kill_sidecar_process() {
-    for name in [
-        "companion-sidecar.exe",
-        "companion-sidecar-x86_64-pc-windows-gnu.exe",
-    ] {
+    for name in ["companion-bun.exe"] {
         let status = std::process::Command::new("taskkill")
             .args(["/F", "/IM", name, "/T"])
             .stdout(std::process::Stdio::null())
@@ -64,7 +61,9 @@ fn force_kill_sidecar_process() {
 }
 
 #[cfg(not(windows))]
-fn force_kill_sidecar_process() {}
+fn force_kill_sidecar_process() {
+    let _ = Command::new("pkill").args(["-f", "companion-bun"]).status();
+}
 
 fn log_line(msg: &str) {
     bootstrap::log_line(msg);
@@ -105,7 +104,7 @@ fn effective_clickthrough(ignore: bool) -> bool {
 #[tauri::command]
 fn move_window(window: WebviewWindow, x: f64, y: f64) -> Result<(), String> {
     window
-        .set_position(PhysicalPosition::new(x as i32, y as i32))
+        .set_position(LogicalPosition::new(x, y))
         .map_err(|e| e.to_string())
 }
 
@@ -120,20 +119,26 @@ struct PatrolScreenInfo {
     window_height: u32,
 }
 
-/// 当前显示器工作区 + 窗口外框尺寸（物理像素，与 move_window 一致）
+/// 当前显示器工作区 + 窗口外框尺寸（逻辑像素，与 tauri.conf 及 WebView 坐标一致）
 #[tauri::command]
 fn get_patrol_screen(window: WebviewWindow) -> Result<PatrolScreenInfo, String> {
     let monitor = window
         .current_monitor()
         .map_err(|e| e.to_string())?
         .ok_or_else(|| "no monitor".to_string())?;
-    let work = monitor.work_area();
-    let size = window.outer_size().map_err(|e| e.to_string())?;
+    let scale = window.scale_factor().map_err(|e| e.to_string())?;
+    let work_area = monitor.work_area();
+    let work_pos = work_area.position.to_logical::<i32>(scale);
+    let work_size = work_area.size.to_logical::<u32>(scale);
+    let size = window
+        .outer_size()
+        .map_err(|e| e.to_string())?
+        .to_logical::<u32>(scale);
     Ok(PatrolScreenInfo {
-        avail_left: work.position.x,
-        avail_top: work.position.y,
-        avail_width: work.size.width,
-        avail_height: work.size.height,
+        avail_left: work_pos.x,
+        avail_top: work_pos.y,
+        avail_width: work_size.width,
+        avail_height: work_size.height,
         window_width: size.width,
         window_height: size.height,
     })
@@ -142,7 +147,9 @@ fn get_patrol_screen(window: WebviewWindow) -> Result<PatrolScreenInfo, String> 
 #[tauri::command]
 fn get_window_position(window: WebviewWindow) -> Result<[i32; 2], String> {
     let pos = window.outer_position().map_err(|e| e.to_string())?;
-    Ok([pos.x, pos.y])
+    let scale = window.scale_factor().map_err(|e| e.to_string())?;
+    let logical = pos.to_logical::<i32>(scale);
+    Ok([logical.x, logical.y])
 }
 
 #[tauri::command]
@@ -187,21 +194,175 @@ fn tray_icon(app: &tauri::App) -> Option<tauri::image::Image<'_>> {
         .or_else(|| Some(tauri::include_image!("icons/32x32.png")))
 }
 
-fn spawn_sidecar(app: &AppHandle) -> Result<(), String> {
-    log_line("spawning companion sidecar…");
-    let sidecar = app
-        .shell()
-        .sidecar("companion-sidecar")
-        .map_err(|e| {
-            let hint = std::env::current_exe()
-                .ok()
-                .and_then(|p| p.parent().map(|d| d.join("companion-sidecar.exe")))
-                .map(|path| format!("\n期望路径：{}", path.display()))
-                .unwrap_or_default();
-            format!("{e}{hint}")
-        })?;
+fn exe_dir() -> Option<PathBuf> {
+    std::env::current_exe()
+        .ok()
+        .and_then(|p| p.parent().map(Path::to_path_buf))
+}
 
-    let (mut rx, child) = sidecar.spawn().map_err(|e| e.to_string())?;
+fn bundled_bun_path() -> Option<PathBuf> {
+    let dir = exe_dir()?;
+    #[cfg(windows)]
+    {
+        let plain = dir.join("companion-bun.exe");
+        if plain.is_file() {
+            return Some(plain);
+        }
+    }
+    #[cfg(not(windows))]
+    {
+        let plain = dir.join("companion-bun");
+        if plain.is_file() {
+            return Some(plain);
+        }
+    }
+    None
+}
+
+#[cfg(unix)]
+fn bun_from_path() -> Option<PathBuf> {
+    let output = Command::new("which").arg("bun").output().ok()?;
+    if !output.status.success() {
+        return None;
+    }
+    let path = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    if path.is_empty() {
+        None
+    } else {
+        Some(PathBuf::from(path))
+    }
+}
+
+#[cfg(windows)]
+fn bun_from_path() -> Option<PathBuf> {
+    let output = Command::new("where").arg("bun").output().ok()?;
+    if !output.status.success() {
+        return None;
+    }
+    let path = String::from_utf8_lossy(&output.stdout)
+        .lines()
+        .next()?
+        .trim()
+        .to_string();
+    if path.is_empty() {
+        None
+    } else {
+        Some(PathBuf::from(path))
+    }
+}
+
+fn resolve_bun_executable() -> Result<PathBuf, String> {
+    bundled_bun_path()
+        .or_else(bun_from_path)
+        .ok_or_else(|| "未找到 companion-bun 或系统 PATH 中的 bun".to_string())
+}
+
+fn resolve_sidecar_launch(app: &AppHandle) -> Result<(PathBuf, PathBuf, PathBuf), String> {
+    let resource_dir = app.path().resource_dir().map_err(|e| e.to_string())?;
+    let bundled_root = resource_dir.join("sidecar");
+    let bundled_entry = bundled_root.join("server").join("index.ts");
+
+    if bundled_entry.is_file() {
+        return Ok((resolve_bun_executable()?, bundled_entry, bundled_root));
+    }
+
+    let dev_root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let dev_entry = dev_root.join("server").join("index.ts");
+    if dev_entry.is_file() {
+        return Ok((resolve_bun_executable()?, dev_entry, dev_root));
+    }
+
+    Err(format!(
+        "未找到 sidecar 入口（已检查 {} 与 {}）",
+        bundled_entry.display(),
+        dev_entry.display()
+    ))
+}
+
+fn apply_sidecar_port(app: &AppHandle, port: u16) {
+    SIDECAR_PORT.store(port, Ordering::SeqCst);
+    let _ = app.emit("sidecar-ready", port);
+}
+
+fn parse_sidecar_port_line(line: &str) -> Option<u16> {
+    let trimmed = line.trim();
+    if let Some(rest) = trimmed.strip_prefix("companion-sidecar-port:") {
+        return rest.trim().parse().ok();
+    }
+    if let Some(rest) = trimmed.strip_prefix("companion satellite http://127.0.0.1:") {
+        return rest.trim().parse().ok();
+    }
+    None
+}
+
+fn sidecar_log_line(app: &AppHandle, stream: &str, line: &str) {
+    let trimmed = line.trim();
+    if trimmed.is_empty() {
+        return;
+    }
+    log_line(&format!("sidecar {stream}: {trimmed}"));
+    if let Some(port) = parse_sidecar_port_line(trimmed) {
+        apply_sidecar_port(app, port);
+    }
+    if stream == "stderr" && trimmed.starts_with("companion-sidecar-fatal:") {
+        let _ = app.emit("sidecar-error", trimmed);
+    }
+}
+
+fn watch_sidecar_process(app: AppHandle) {
+    thread::spawn(move || {
+        loop {
+            thread::sleep(Duration::from_millis(400));
+            let exited = (|| {
+                let state = app.try_state::<SidecarState>()?;
+                let mut guard = state.child.lock().ok()?;
+                let child = guard.as_mut()?;
+                child.try_wait().ok().and_then(|status| status)
+            })();
+            if let Some(status) = exited {
+                if !status.success() {
+                    let msg = format!(
+                        "后台进程异常退出（{status}）。若被杀毒软件拦截，请将安装目录下的 companion-bun.exe 加入白名单。"
+                    );
+                    log_line(&msg);
+                    let _ = app.emit("sidecar-error", msg);
+                }
+                break;
+            }
+        }
+    });
+}
+
+fn spawn_sidecar(app: &AppHandle) -> Result<(), String> {
+    log_line("spawning companion sidecar (bun + server/index.ts)…");
+    let (bun, entry, cwd) = resolve_sidecar_launch(app)?;
+    log_line(&format!(
+        "sidecar launch: bun={} entry={} cwd={}",
+        bun.display(),
+        entry.display(),
+        cwd.display()
+    ));
+
+    let mut cmd = Command::new(&bun);
+    cmd.arg(&entry)
+        .current_dir(&cwd)
+        .env("SATELLITE_PORT", "4176")
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        cmd.creation_flags(0x0800_0000);
+    }
+
+    let mut child = cmd
+        .spawn()
+        .map_err(|e| format!("启动 sidecar 失败: {e}"))?;
+
+    let stdout = child.stdout.take();
+    let stderr = child.stderr.take();
+
     if let Some(state) = app.try_state::<SidecarState>() {
         if let Ok(mut guard) = state.child.lock() {
             *guard = Some(child);
@@ -210,39 +371,27 @@ fn spawn_sidecar(app: &AppHandle) -> Result<(), String> {
         log_line("warn: SidecarState missing; sidecar may outlive shell");
     }
     log_line("companion sidecar process started");
+    watch_sidecar_process(app.clone());
 
     let app_handle = app.clone();
-    thread::spawn(move || {
-        while let Some(event) = rx.blocking_recv() {
-            match event {
-                CommandEvent::Stdout(line) => {
-                    let text = String::from_utf8_lossy(&line);
-                    log_line(&format!("sidecar stdout: {}", text.trim()));
-                    if let Some(port_str) =
-                        text.strip_prefix("companion satellite http://127.0.0.1:")
-                    {
-                        if let Ok(port) = port_str.trim().parse::<u16>() {
-                            SIDECAR_PORT.store(port, Ordering::SeqCst);
-                            let _ = app_handle.emit("sidecar-ready", port);
-                        }
-                    }
-                }
-                CommandEvent::Stderr(line) => {
-                    let text = String::from_utf8_lossy(&line);
-                    log_line(&format!("sidecar stderr: {}", text.trim()));
-                }
-                CommandEvent::Error(err) => {
-                    log_line(&format!("sidecar error: {err}"));
-                    let _ = app_handle.emit("sidecar-error", err.to_string());
-                }
-                CommandEvent::Terminated(payload) => {
-                    log_line(&format!("sidecar terminated: {payload:?}"));
-                    let _ = app_handle.emit("sidecar-error", format!("后台进程已退出: {payload:?}"));
-                }
-                _ => {}
+    if let Some(out) = stdout {
+        thread::spawn(move || {
+            let reader = BufReader::new(out);
+            for line in reader.lines().map_while(Result::ok) {
+                sidecar_log_line(&app_handle, "stdout", &line);
             }
-        }
-    });
+        });
+    }
+
+    let app_handle = app.clone();
+    if let Some(err) = stderr {
+        thread::spawn(move || {
+            let reader = BufReader::new(err);
+            for line in reader.lines().map_while(Result::ok) {
+                sidecar_log_line(&app_handle, "stderr", &line);
+            }
+        });
+    }
 
     Ok(())
 }

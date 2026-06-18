@@ -4,16 +4,21 @@
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
     "paths": {
-      "@/*": ["./app/src/*"]
+      "@/*": ["./app/src/*"],
+      "@shared/*": ["./shared/*"]
     }
   },
   "include": [
     "app/src/**/*.ts",
     "app/src/**/*.tsx",
     "server/**/*.ts",
+    "shared/**/*.ts",
+    "shared/**/*.json",
     "build.ts",
     "dev.ts",
-    "compile-sidecar.ts",
+    "prepare-sidecar.ts",
+    "build-tauri.ts",
     "../../types/**/*.d.ts"
-  ]
+  ],
+  "exclude": ["shell/target/**", "shell/src-tauri/resources/**"]
 }

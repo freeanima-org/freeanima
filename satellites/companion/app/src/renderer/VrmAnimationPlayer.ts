@@ -6,18 +6,11 @@ import {
   type VRMAnimation,
 } from "@pixiv/three-vrm-animation";
 import type { VRM } from "@pixiv/three-vrm";
-import motionManifest from "./motions/manifest.json";
+import { motionManifest, type MotionManifest } from "@shared/motion-manifest.ts";
 import { companionDebug } from "@/lib/companion-debug.ts";
 import type { LocomotionSlot } from "@/lib/api.ts";
 
-type MotionManifest = {
-  baseUrl: string;
-  idle: string;
-  zones: Record<string, string>;
-  locomotion?: Partial<Record<LocomotionSlot, string>>;
-};
-
-const manifest = motionManifest as MotionManifest;
+const manifest = motionManifest;
 
 export type MotionManifestView = MotionManifest;
 

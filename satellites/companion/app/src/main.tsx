@@ -5,12 +5,12 @@ import { SettingsPanel } from "@/components/SettingsPanel.tsx";
 import { useCompanionStore } from "@/stores/companion.ts";
 import { startPatrolWatcher } from "@/stores/character.ts";
 import { companionDebug } from "@/lib/companion-debug.ts";
+import { useSidecarError } from "@/hooks/useSidecarError.ts";
 import {
   isSettingsRoute,
   isTauri,
   listenConfigChanged,
   listenCursorPosition,
-  listenSidecarError,
   openSettings,
   setClickThrough,
   setPointerActive,
@@ -58,7 +58,7 @@ function CompanionWindow() {
   const { loading, error, modelPath, modelReady, modelLoading, init, clearError, setModelReady } =
     useCompanionStore();
 
-  const onModelReady = useCallback(() => {}, []);
+  useSidecarError();
 
   const onModelLoaded = useCallback(() => {
     setModelReady(true);
@@ -79,25 +79,13 @@ function CompanionWindow() {
       }
     });
     if (!isTauri()) return;
-    let offSidecar: (() => void) | undefined;
-    void listenSidecarError((msg) => {
-      useCompanionStore.setState({
-        error: `后台服务启动失败：${msg}。请确认 exe 与 sidecar 在同一目录，或改用安装包。`,
-        loading: false,
-      });
-    }).then((fn) => {
-      offSidecar = fn;
-    });
     let offConfig: (() => void) | undefined;
     void listenConfigChanged(() => {
       void useCompanionStore.getState().init();
     }).then((fn) => {
       offConfig = fn;
     });
-    return () => {
-      offSidecar?.();
-      offConfig?.();
-    };
+    return () => offConfig?.();
   }, [init]);
 
   useEffect(() => {
@@ -121,7 +109,6 @@ function CompanionWindow() {
       <ClickThroughManager />
       <CharacterViewport
         modelPath={modelPath}
-        onBackendReady={onModelReady}
         onModelError={onModelError}
         onModelLoaded={onModelLoaded}
       />
@@ -153,19 +140,10 @@ function CompanionWindow() {
 function SettingsApp() {
   const { loading, init } = useCompanionStore();
 
+  useSidecarError();
+
   useEffect(() => {
     void init();
-    if (!isTauri()) return;
-    let offSidecar: (() => void) | undefined;
-    void listenSidecarError((msg) => {
-      useCompanionStore.setState({
-        error: `后台服务启动失败：${msg}`,
-        loading: false,
-      });
-    }).then((fn) => {
-      offSidecar = fn;
-    });
-    return () => offSidecar?.();
   }, [init]);
 
   if (loading) {

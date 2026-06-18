@@ -1,8 +1,7 @@
 import { connectSap } from "./sap/run.ts";
-import { getSapInstanceId } from "./sap/hub.ts";
 import { corsPreflight, jsonResponse } from "./http/cors.ts";
-import { loadConfig, saveConfig, hubUrlFromConfig, type CompanionConfig } from "./config.ts";
-import { isModelPathAvailable } from "./model-path.ts";
+import { saveConfig, hubUrlFromConfig, type CompanionConfig } from "./config.ts";
+import { clientCompanionConfig } from "./config-response.ts";
 import { ensureCompanionDataDir } from "./paths.ts";
 import { handleModelUpload } from "./models.ts";
 import {
@@ -23,11 +22,24 @@ import {
 } from "./locomotion.ts";
 import { LOCOMOTION_SLOTS, type LocomotionSlot } from "./config.ts";
 import { serveStatic } from "./static.ts";
+import { SATELLITE_PORT_ATTEMPTS, SATELLITE_PORT_START } from "../shared/constants.ts";
 
-const PORT = Number(process.env.SATELLITE_PORT ?? 4176);
-const HTTP_URL = `http://127.0.0.1:${PORT}`;
+const PORT_START = Number(process.env.SATELLITE_PORT ?? SATELLITE_PORT_START);
+const PORT_ATTEMPTS = SATELLITE_PORT_ATTEMPTS;
 
-ensureCompanionDataDir();
+function isAddrInUse(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as { code?: string }).code === "EADDRINUSE"
+  );
+}
+
+function announceSidecarPort(port: number): void {
+  process.stderr.write(`companion-sidecar-port:${port}\n`);
+  console.log(`companion satellite http://127.0.0.1:${port}`);
+}
 
 export async function route(req: Request): Promise<Response> {
   const url = new URL(req.url);
@@ -37,31 +49,17 @@ export async function route(req: Request): Promise<Response> {
   }
 
   if (url.pathname === "/config.json" && req.method === "GET") {
-    const cfg = loadConfig();
-    return jsonResponse({
-      app_id: "companion",
-      instance_id: getSapInstanceId(),
-      hub_url: cfg.hub_url,
-      model_path: cfg.model_path,
-      model_available: isModelPathAvailable(cfg.model_path),
-    });
+    return jsonResponse(clientCompanionConfig());
   }
 
   if (url.pathname === "/api/config" && req.method === "GET") {
-    const cfg = loadConfig();
-    return jsonResponse({
-      ...cfg,
-      model_available: isModelPathAvailable(cfg.model_path),
-    });
+    return jsonResponse(clientCompanionConfig());
   }
 
   if (url.pathname === "/api/config" && req.method === "POST") {
     const body = (await req.json()) as Partial<CompanionConfig>;
     const next = saveConfig(body);
-    return jsonResponse({
-      ...next,
-      model_available: isModelPathAvailable(next.model_path),
-    });
+    return jsonResponse(clientCompanionConfig(next));
   }
 
   if (url.pathname === "/api/models/upload") {
@@ -137,16 +135,45 @@ export async function route(req: Request): Promise<Response> {
   return serveStatic(url.pathname);
 }
 
-const server = Bun.serve({
-  port: PORT,
-  fetch(req) {
-    return route(req);
-  },
-});
+let HTTP_URL = "";
+let server: ReturnType<typeof Bun.serve>;
 
-console.log(`companion satellite ${HTTP_URL}`);
+try {
+  server = startServer();
+  void ensureDefaultMotions();
+  void connectSap(hubUrlFromConfig(), HTTP_URL);
+} catch (error) {
+  console.error(
+    "companion-sidecar-fatal:",
+    error instanceof Error ? (error.stack ?? error.message) : String(error),
+  );
+  process.exit(1);
+}
 
-void ensureDefaultMotions();
-void connectSap(hubUrlFromConfig(), HTTP_URL);
+function startServer(): ReturnType<typeof Bun.serve> {
+  ensureCompanionDataDir();
+
+  for (let i = 0; i < PORT_ATTEMPTS; i++) {
+    const port = PORT_START + i;
+    try {
+      const instance = Bun.serve({
+        port,
+        fetch(req) {
+          return route(req);
+        },
+      });
+      HTTP_URL = `http://127.0.0.1:${port}`;
+      announceSidecarPort(port);
+      return instance;
+    } catch (error) {
+      if (isAddrInUse(error) && i < PORT_ATTEMPTS - 1) {
+        continue;
+      }
+      throw error;
+    }
+  }
+
+  throw new Error(`无法在 ${PORT_START}–${PORT_START + PORT_ATTEMPTS - 1} 找到可用端口`);
+}
 
 export { server, HTTP_URL, serveStatic };

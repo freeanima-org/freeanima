@@ -60,6 +60,8 @@ satellites/companion/dist/
 satellites/companion/companion-config.json
 satellites/companion/shell/target/
 satellites/companion/shell/src-tauri/bin/
+satellites/companion/shell/src-tauri/resources/sidecar/
+satellites/companion/.cache/
 satellites/companion/shell/src-tauri/gen/
 # `cargo tauri icon` 生成的平台额外图标（保留 icon.png / icon.ico / tauri.conf 引用的 png）
 satellites/companion/shell/src-tauri/icons/android/

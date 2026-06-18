@@ -1,3 +1,4 @@
+use chrono::Local;
 use std::fs::OpenOptions;
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -18,13 +19,14 @@ pub fn log_path() -> Option<PathBuf> {
 }
 
 pub fn log_line(msg: &str) {
-    eprintln!("{msg}");
+    let line = format!("[{}] {msg}", Local::now().format("%Y-%m-%d %H:%M:%S"));
+    eprintln!("{line}");
     if let Some(path) = log_path() {
         if let Some(parent) = path.parent() {
             let _ = std::fs::create_dir_all(parent);
         }
         if let Ok(mut file) = OpenOptions::new().create(true).append(true).open(path) {
-            let _ = writeln!(file, "{msg}");
+            let _ = writeln!(file, "{line}");
         }
     }
 }
@@ -118,13 +120,9 @@ pub fn preflight() -> Result<(), String> {
         return Err(missing_file_message(&dir, "WebView2Loader.dll"));
     }
 
-    let sidecar_plain = dir.join("companion-sidecar.exe");
-    let sidecar_triple = dir.join("companion-sidecar-x86_64-pc-windows-gnu.exe");
-    if !sidecar_plain.is_file() && !sidecar_triple.is_file() {
-        return Err(missing_file_message(
-            &dir,
-            "companion-sidecar.exe（后台服务）",
-        ));
+    let sidecar_bun = dir.join("companion-bun.exe");
+    if !sidecar_bun.is_file() {
+        return Err(missing_file_message(&dir, "companion-bun.exe（后台 Bun 运行时）"));
     }
 
     match webview2_runtime_version() {
