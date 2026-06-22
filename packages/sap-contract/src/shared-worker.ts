@@ -1,9 +1,19 @@
 import type { SapClient, SapMethod, SapRouterInputs, SapRouterOutputs } from "./router.ts";
 import type { ConnectPayload, ConnectedPayload } from "./frames/lifecycle.ts";
-import type { RunSapTransportOptions } from "./transport.ts";
+import type { SapReconnectPolicy } from "./transport.ts";
+import { sapInstanceStoreFromKey } from "./instance-store.ts";
+
+/** postMessage-safe init payload (no functions / AbortSignal) */
+export type SapSharedWorkerInitConfig = {
+  hubUrl: string;
+  connect: Omit<ConnectPayload, "protocol">;
+  reconnect?: SapReconnectPolicy | false;
+  /** localStorage key; worker reconstructs browser instance store */
+  instanceStoreKey?: string;
+};
 
 export type SharedWorkerPortMessage =
-  | { type: "init"; config: Omit<RunSapTransportOptions, "onConnected" | "onDisconnected"> }
+  | { type: "init"; config: SapSharedWorkerInitConfig }
   | { type: "subscribe_evt"; method: string }
   | { type: "req"; id: string; method: SapMethod; payload: unknown }
   | { type: "res"; id: string; ok: true; payload: unknown }
@@ -16,7 +26,7 @@ type Pending = {
   reject: (error: Error) => void;
 };
 
-type WorkerConfig = Omit<RunSapTransportOptions, "onConnected" | "onDisconnected">;
+type WorkerConfig = SapSharedWorkerInitConfig;
 
 /** Runs inside SharedWorker: one Hub transport shared across browser tabs */
 export function installSapSharedWorkerHost(): void {
@@ -50,8 +60,10 @@ export function installSapSharedWorkerHost(): void {
     if (!workerConfig) throw new Error("SAP shared worker not initialized");
     if (transport?.getClient()) return transport.whenConnected();
     const { runSapTransport } = await import("./transport.ts");
+    const { instanceStoreKey, ...transportConfig } = workerConfig;
     transport = runSapTransport({
-      ...workerConfig,
+      ...transportConfig,
+      instanceStore: instanceStoreKey ? sapInstanceStoreFromKey(instanceStoreKey) : undefined,
       onConnected: async (client, connected) => {
         instanceId = connected.instance_id;
         wireEventForwarding(client);

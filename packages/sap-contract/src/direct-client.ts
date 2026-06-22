@@ -4,6 +4,7 @@ import { createSapSessionStreamClient, type SubscribeCallbacks } from "./session
 import { runSapTransport, type SapTransportHandle } from "./transport.ts";
 import {
   browserSapInstanceStore,
+  browserSapInstanceStoreKey,
   loadSapInstanceId,
   type SapInstanceStore,
 } from "./instance-store.ts";
@@ -70,7 +71,8 @@ export function createSapDirectClient(options: SapDirectClientOptions = {}): Sap
   const useSharedWorker =
     typeof SharedWorker !== "undefined" &&
     typeof window !== "undefined" &&
-    options.useSharedWorker !== false;
+    options.useSharedWorker !== false &&
+    options.instanceStore === undefined;
 
   const ensureTransport = async (): Promise<SapClient> => {
     if (sharedClient) return sharedClient;
@@ -114,8 +116,10 @@ export function createSapDirectClient(options: SapDirectClientOptions = {}): Sap
             worker,
             initConfig: {
               hubUrl: hubHttp,
-              signal: options.signal,
-              instanceStore: store,
+              instanceStoreKey: browserSapInstanceStoreKey(
+                hubOrigin,
+                options.appId ?? loaded.app_id,
+              ),
               connect,
             },
           });
