@@ -22,7 +22,7 @@
     "@react-three/fiber": "^9.1.2",
     "react": "19",
     "react-dom": "19",
-    "three": "^0.175.0",
+    "three": "^0.184.0",
     "zod": "catalog:",
     "zustand": "^5.0.14"
   },
