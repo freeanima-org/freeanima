@@ -1,10 +1,17 @@
 import { describe, expect, it } from "bun:test";
+import type { SessionMessage } from "@freeanima/core/db/domain";
 import {
+  FRIDGE_CONTEXT_ASSISTANT_NAME,
+  FRIDGE_MAGNET_BOARD_FRAME,
+  FRIDGE_MAGNET_BOARD_HEADING,
   formatFridgeMagnets,
-  injectFridgeMagnets,
+  wrapFridgeMagnetBoard,
+  formatFridgeMagnetManifestPreview,
   stripFridgeMagnets,
-  injectIntoMessages,
-  stripAllFromMessages,
+  stripFridgeContextFromMessages,
+  stripLegacyUserFridgeBlocks,
+  manifestFridgeMagnetBoard,
+  isFridgeContextAssistant,
 } from "./inject.ts";
 import type { FridgeMagnet } from "./types.ts";
 
@@ -29,14 +36,30 @@ describe("formatFridgeMagnets", () => {
   });
 });
 
-describe("injectFridgeMagnets", () => {
-  it("injects fridge magnet block before content", () => {
-    const result = injectFridgeMagnets("Hello", sampleMagnets);
-    expect(result).toBe("```fridge-magnet\nuser_mood: Sunny\ntask: Write tests\n```\nHello");
+describe("wrapFridgeMagnetBoard", () => {
+  it("includes frame, heading, and fence", () => {
+    const wrapped = wrapFridgeMagnetBoard(sampleMagnets);
+    expect(wrapped).toContain(FRIDGE_MAGNET_BOARD_FRAME);
+    expect(wrapped).toContain(FRIDGE_MAGNET_BOARD_HEADING);
+    expect(wrapped).toContain("```fridge-magnet");
+    expect(wrapped).toContain("user_mood: Sunny");
   });
 
-  it("does not inject when magnets are empty", () => {
-    expect(injectFridgeMagnets("Hello", [])).toBe("Hello");
+  it("returns empty when magnets are empty", () => {
+    expect(wrapFridgeMagnetBoard([])).toBe("");
+  });
+});
+
+describe("formatFridgeMagnetManifestPreview", () => {
+  it("includes role, name, and board content", () => {
+    const preview = formatFridgeMagnetManifestPreview(sampleMagnets);
+    expect(preview).toContain("role: assistant");
+    expect(preview).toContain(`name: ${FRIDGE_CONTEXT_ASSISTANT_NAME}`);
+    expect(preview).toContain(FRIDGE_MAGNET_BOARD_FRAME);
+  });
+
+  it("returns empty when board is empty", () => {
+    expect(formatFridgeMagnetManifestPreview([])).toBe("");
   });
 });
 
@@ -61,43 +84,107 @@ describe("stripFridgeMagnets", () => {
   });
 });
 
-import type { SessionMessage } from "@freeanima/core/db/domain";
+describe("isFridgeContextAssistant", () => {
+  it("matches assistant with fridge_context name", () => {
+    expect(
+      isFridgeContextAssistant({
+        role: "assistant",
+        name: FRIDGE_CONTEXT_ASSISTANT_NAME,
+        content: "note",
+      }),
+    ).toBe(true);
+  });
 
-describe("injectIntoMessages", () => {
-  it("injects into last user message", () => {
+  it("rejects unnamed assistant", () => {
+    expect(isFridgeContextAssistant({ role: "assistant", content: "note" })).toBe(false);
+  });
+});
+
+describe("manifestFridgeMagnetBoard", () => {
+  it("inserts fridge_context assistant before last user message", () => {
     const messages: SessionMessage[] = [
       { role: "user", content: "First message" },
       { role: "assistant", content: "Reply" },
       { role: "user", content: "Second message" },
     ];
-    injectIntoMessages(messages, [{ key: "note", value: "Note" }]);
-    expect(messages[0]!.content).toBe("First message");
-    expect(messages[2]!.content).toBe("```fridge-magnet\nnote: Note\n```\nSecond message");
+    manifestFridgeMagnetBoard(messages, [{ key: "note", value: "Note" }]);
+    expect(messages).toHaveLength(4);
+    expect(messages[2]).toMatchObject({
+      role: "assistant",
+      name: FRIDGE_CONTEXT_ASSISTANT_NAME,
+    });
+    expect(messages[2]!.role === "assistant" && messages[2].content).toContain("note: Note");
+    expect(messages[3]).toMatchObject({ role: "user", content: "Second message" });
   });
 
-  it("does not modify when no user messages", () => {
-    const messages: SessionMessage[] = [{ role: "assistant", content: "Assistant only" }];
-    injectIntoMessages(messages, sampleMagnets);
-    expect(messages[0]!.content).toBe("Assistant only");
+  it("does not manifest when last message is not user", () => {
+    const messages: SessionMessage[] = [
+      { role: "user", content: "Hello" },
+      { role: "assistant", content: "Reply" },
+    ];
+    manifestFridgeMagnetBoard(messages, sampleMagnets);
+    expect(messages).toHaveLength(2);
+  });
+
+  it("does not manifest when magnets are empty", () => {
+    const messages: SessionMessage[] = [{ role: "user", content: "Hello" }];
+    manifestFridgeMagnetBoard(messages, []);
+    expect(messages).toHaveLength(1);
   });
 });
 
-describe("stripAllFromMessages", () => {
+describe("stripFridgeContextFromMessages", () => {
+  it("removes fridge_context assistant messages", () => {
+    const messages: SessionMessage[] = [
+      {
+        role: "assistant",
+        name: FRIDGE_CONTEXT_ASSISTANT_NAME,
+        content: "board",
+      },
+      { role: "user", content: "Hello" },
+    ];
+    stripFridgeContextFromMessages(messages);
+    expect(messages).toHaveLength(1);
+    expect(messages[0]!.role).toBe("user");
+  });
+
+  it("preserves other assistant messages", () => {
+    const messages: SessionMessage[] = [
+      { role: "assistant", content: "Reply" },
+      {
+        role: "assistant",
+        name: FRIDGE_CONTEXT_ASSISTANT_NAME,
+        content: "board",
+      },
+      { role: "user", content: "Hello" },
+    ];
+    stripFridgeContextFromMessages(messages);
+    expect(messages).toHaveLength(2);
+    expect(messages[0]).toMatchObject({ role: "assistant", content: "Reply" });
+  });
+});
+
+describe("stripLegacyUserFridgeBlocks", () => {
   it("strips fridge magnet blocks from all user messages", () => {
     const messages: SessionMessage[] = [
       { role: "user", content: "```fridge-magnet\na: 1\n```\nFirst message" },
       { role: "assistant", content: "```fridge-magnet\nb: 2\n```\nReply" },
       { role: "user", content: "```fridge\nc: 3\n```\nSecond message" },
     ];
-    stripAllFromMessages(messages);
+    stripLegacyUserFridgeBlocks(messages);
     expect(messages[0]!.content).toBe("First message");
     expect(messages[1]!.content).toBe("```fridge-magnet\nb: 2\n```\nReply");
     expect(messages[2]!.content).toBe("Second message");
   });
+});
 
-  it("skips when content is null", () => {
-    const messages: SessionMessage[] = [{ role: "user", content: "" }];
-    stripAllFromMessages(messages);
-    expect(messages[0]!.content).toBe("");
+describe("manifest idempotency via strip + remanifest", () => {
+  it("leaves exactly one fridge_context assistant after two rounds", () => {
+    const messages: SessionMessage[] = [{ role: "user", content: "Hello" }];
+    manifestFridgeMagnetBoard(messages, sampleMagnets);
+    stripFridgeContextFromMessages(messages);
+    manifestFridgeMagnetBoard(messages, sampleMagnets);
+    const manifests = messages.filter((m) => isFridgeContextAssistant(m));
+    expect(manifests).toHaveLength(1);
   });
 });

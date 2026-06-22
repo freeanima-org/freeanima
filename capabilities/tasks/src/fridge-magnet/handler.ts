@@ -1,6 +1,10 @@
 import type { BeforeLlmCallContext } from "@freeanima/core/hooks/loop";
 import { FRIDGE_MAGNET_SCAN_PATTERN, scanMagnets, stripMagnetRedisKeyPrefix } from "./store.ts";
-import { stripAllFromMessages, injectIntoMessages } from "./inject.ts";
+import {
+  manifestFridgeMagnetBoard,
+  stripFridgeContextFromMessages,
+  stripLegacyUserFridgeBlocks,
+} from "./inject.ts";
 import type { FridgeMagnet } from "./types.ts";
 
 function toDisplayMagnets(hits: { key: string; value: string }[]): FridgeMagnet[] {
@@ -12,7 +16,8 @@ function toDisplayMagnets(hits: { key: string; value: string }[]): FridgeMagnet[
 
 export function createFridgeMagnetHandler() {
   return async (ctx: BeforeLlmCallContext): Promise<void> => {
-    stripAllFromMessages(ctx.messages);
+    stripFridgeContextFromMessages(ctx.messages);
+    stripLegacyUserFridgeBlocks(ctx.messages);
 
     const lastMsg = ctx.messages[ctx.messages.length - 1];
     if (!lastMsg || lastMsg.role !== "user") return;
@@ -21,6 +26,6 @@ export function createFridgeMagnetHandler() {
     const magnets = toDisplayMagnets(hits).filter((m) => m.value.trim().length > 0);
     if (magnets.length === 0) return;
 
-    injectIntoMessages(ctx.messages, magnets);
+    manifestFridgeMagnetBoard(ctx.messages, magnets);
   };
 }

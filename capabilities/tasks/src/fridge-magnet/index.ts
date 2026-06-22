@@ -17,12 +17,19 @@ export {
   scanMagnets,
 } from "./store.ts";
 export {
+  FRIDGE_CONTEXT_ASSISTANT_NAME,
   FRIDGE_MAGNET_FENCE,
+  FRIDGE_MAGNET_BOARD_HEADING,
+  FRIDGE_MAGNET_BOARD_FRAME,
   formatFridgeMagnets,
-  injectFridgeMagnets,
+  wrapFridgeMagnetBoard,
+  formatFridgeMagnetManifestPreview,
+  isFridgeContextAssistant,
+  stripFridgeContextFromMessages,
   stripFridgeMagnets,
-  injectIntoMessages,
+  stripLegacyUserFridgeBlocks,
   stripAllFromMessages,
+  manifestFridgeMagnetBoard,
 } from "./inject.ts";
 export { registerWriteFridgeMagnetTool } from "./tool.ts";
 export { createFridgeMagnetHandler } from "./handler.ts";

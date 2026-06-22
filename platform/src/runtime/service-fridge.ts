@@ -1,5 +1,5 @@
 import {
-  formatFridgeMagnets,
+  formatFridgeMagnetManifestPreview,
   FRIDGE_MAGNET_SCAN_PATTERN,
   scanMagnets,
   stripMagnetRedisKeyPrefix,
@@ -65,11 +65,13 @@ export async function listFridgeMagnets(): Promise<ListFridgeMagnetsResult> {
     }),
   );
 
-  const injectMagnets: FridgeMagnet[] = magnets.map(({ key, value }) => ({ key, value }));
+  const injectMagnets: FridgeMagnet[] = magnets
+    .filter((m) => m.value.trim().length > 0)
+    .map(({ key, value }) => ({ key, value }));
 
   return {
     redis_configured: redisConfigured,
     magnets,
-    inject_text: formatFridgeMagnets(injectMagnets),
+    inject_text: formatFridgeMagnetManifestPreview(injectMagnets),
   };
 }
