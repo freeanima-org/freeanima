@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 17:52+0800\n"
+"POT-Creation-Date: 2026-06-22 11:28+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -172,79 +172,101 @@ msgstr "**规则：** 每个 `app_id + instance_id` **最多**拥有一条 Hub W
 
 #. type: Title ###
 #: docs/sap/satellite-guide.md:60
-#, no-wrap
-msgid "Type A — Browser-direct (Parlor)"
-msgstr "Type A — 浏览器直连（会客厅）"
-
-#. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:65
-msgid ""
-"Browser `createSapBrowserClient` → Hub `/sap/v1` (this is the instance's "
-"only Hub WS)."
-msgstr ""
-"浏览器 `createSapBrowserClient` → Hub `/sap/v1`（这是该实例唯一的 Hub WS）。"
-
-#. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:65
-msgid "Satellite HTTP serves static UI + `/config.json` only."
-msgstr "Satellite HTTP 仅提供静态 UI 与 `/config.json`。"
-
-#. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:65
-msgid ""
-"**Limits:** no `tool.register` or local workspace tools; browser must reach "
-"Hub on the LAN; multiple tabs share one `instance_id` (last connect wins in "
-"Hub today)."
-msgstr ""
-"**限制：** 无 `tool.register` 或本地工作区工具；浏览器必须能在局域网访问 "
-"Hub；多个标签页共享同一 `instance_id`（目前 Hub 上后连者胜出）。"
-
-#. type: Title ###
-#: docs/sap/satellite-guide.md:66
-#, no-wrap
-msgid "Type B — Process gateway + local relay (pair-programming)"
+#, fuzzy, no-wrap
+#| msgid "Type B — Process gateway + local relay (pair-programming)"
+msgid "Type B — Process gateway + local relay (Parlor, pair-programming)"
 msgstr "Type B — 进程网关 + 本地中继（结对编程）"
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:71
-msgid "Satellite **process** holds the sole Hub WS via `runSapTransport`."
-msgstr "Satellite **进程**通过 `runSapTransport` 持有唯一的 Hub WS。"
+#: docs/sap/satellite-guide.md:66
+msgid ""
+"Sidecar `createSatelliteHub({ relay: true, ... })` holds the sole Hub WS."
+msgstr ""
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:71
-msgid ""
-"Browser uses `createSapRelayBrowserClient` → satellite `/sap/relay/v1` (SAP "
-"frame pass-through, **not** REST hub-api)."
+#: docs/sap/satellite-guide.md:66
+#, fuzzy
+#| msgid ""
+#| "Browser uses `createSapRelayBrowserClient` → satellite `/sap/relay/v1` "
+#| "(SAP frame pass-through, **not** REST hub-api)."
+msgid "Browser uses `createSapRelayBrowserClient` → satellite `/sap/relay/v1`."
 msgstr ""
 "浏览器使用 `createSapRelayBrowserClient` → satellite `/sap/relay/v1`（SAP 帧"
 "透传，**非** REST hub-api）。"
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:71
+#: docs/sap/satellite-guide.md:66
 msgid ""
-"Local FS/terminal stay on satellite HTTP/WS; agent tools run in the process "
-"via `tool.register`."
+"`instance_id` persisted under `~/.anima/satellites/{app}/instance.json`."
 msgstr ""
-"本地 FS/终端留在 satellite HTTP/WS 上；代理工具在进程中通过 `tool.register` "
-"运行。"
+
+#. type: Bullet: '- '
+#: docs/sap/satellite-guide.md:66
+msgid ""
+"**Parlor:** relay only (no local tools). **Pair-programming:** relay + "
+"`tool.register` + local FS/PTY APIs."
+msgstr ""
+
+#. type: Title ###
+#: docs/sap/satellite-guide.md:67
+#, no-wrap
+msgid "Type B + tools, no relay (companion)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sap/satellite-guide.md:72
+msgid ""
+"Sidecar `createSatelliteHub({ relay: false, tools: [...] })` holds the sole "
+"Hub WS."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sap/satellite-guide.md:72
+msgid ""
+"Browser talks to sidecar HTTP only (no SAP relay); tools execute in sidecar "
+"(`bubble`, `play_slot`)."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sap/satellite-guide.md:72
+msgid ""
+"`instance_id` in `~/.anima/companion/instance.json`; platform `sap:companion:"
+"{id}`."
+msgstr ""
 
 #. type: Fenced code block (mermaid)
-#: docs/sap/satellite-guide.md:72
-#, no-wrap
+#: docs/sap/satellite-guide.md:73
+#, fuzzy, no-wrap
+#| msgid ""
+#| "flowchart TB\n"
+#| "  subgraph parlor [Parlor Type A]\n"
+#| "    B1[Browser] -->|唯一 SAP WS| Hub1[Hub]\n"
+#| "    S1[静态 server] -.->|/config.json| B1\n"
+#| "  end\n"
+#| "\n"
+#| "  subgraph ppy [Pair-programming Type B]\n"
+#| "    B2[Browser] -->|relay WS| Relay[\"/sap/relay/v1\"]\n"
+#| "    Relay --> ProcSAP[runSapTransport]\n"
+#| "    ProcSAP -->|唯一 SAP WS| Hub2[Hub]\n"
+#| "    B2 --> LocalFS[\"/api/studio/*\"]\n"
+#| "    B2 --> LocalPTY[本地 terminal WS]\n"
+#| "    ProcSAP --> ToolExec[tool executor]\n"
+#| "  end\n"
 msgid ""
 "flowchart TB\n"
-"  subgraph parlor [Parlor Type A]\n"
-"    B1[Browser] -->|唯一 SAP WS| Hub1[Hub]\n"
-"    S1[静态 server] -.->|/config.json| B1\n"
+"  subgraph parlor [Parlor Type B relay]\n"
+"    B1[Browser] -->|relay WS| Relay1[\"/sap/relay/v1\"]\n"
+"    Relay1 --> ProcSAP1[createSatelliteHub]\n"
+"    ProcSAP1 -->|唯一 SAP WS| Hub1[Hub]\n"
 "  end\n"
 "\n"
 "  subgraph ppy [Pair-programming Type B]\n"
-"    B2[Browser] -->|relay WS| Relay[\"/sap/relay/v1\"]\n"
-"    Relay --> ProcSAP[runSapTransport]\n"
-"    ProcSAP -->|唯一 SAP WS| Hub2[Hub]\n"
+"    B2[Browser] -->|relay WS| Relay2[\"/sap/relay/v1\"]\n"
+"    Relay2 --> ProcSAP2[createSatelliteHub]\n"
+"    ProcSAP2 -->|唯一 SAP WS| Hub2[Hub]\n"
 "    B2 --> LocalFS[\"/api/studio/*\"]\n"
 "    B2 --> LocalPTY[本地 terminal WS]\n"
-"    ProcSAP --> ToolExec[tool executor]\n"
+"    ProcSAP2 --> ToolExec[tool executor]\n"
 "  end\n"
 msgstr ""
 "flowchart TB\n"
@@ -263,54 +285,63 @@ msgstr ""
 "  end\n"
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:90
+#: docs/sap/satellite-guide.md:92
 #, no-wrap
 msgid "**Deprecated:** HTTP hub-api REST→SAP proxy (removed).\n"
 msgstr "**已弃用：** HTTP hub-api REST→SAP 代理（已移除）。\n"
 
 #. type: Title ###
-#: docs/sap/satellite-guide.md:91
+#: docs/sap/satellite-guide.md:93
 #, no-wrap
 msgid "Parlor satellite"
 msgstr "会客厅卫星"
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:94
+#: docs/sap/satellite-guide.md:96
 msgid ""
-"Browser connects to Hub via SAP WebSocket from the client ([`browser-"
-"client.ts`](../../packages/sap-contract/src/browser-client.ts)); static "
-"server only serves UI + `/config.json`."
+"Browser connects via `createSapRelayBrowserClient` → [`/sap/relay/v1`](../../"
+"satellites/parlor/server/index.ts); sidecar uses `createSatelliteHub` with "
+"`relay: true` and no local tools ([`satellites/parlor/server/sap/hub.ts`]"
+"(../../satellites/parlor/server/sap/hub.ts)). `session.list` / "
+"`session.create` omit explicit `platform`; Hub defaults to the connected "
+"instance's `sap:parlor:{id}`."
 msgstr ""
-"浏览器通过客户端（[`browser-client.ts`](../../packages/sap-contract/src/"
-"browser-client.ts)）以 SAP WebSocket 连接 Hub；静态 server 仅提供 UI 与 `/"
-"config.json`。"
 
 #. type: Title ###
-#: docs/sap/satellite-guide.md:95
+#: docs/sap/satellite-guide.md:97
 #, no-wrap
 msgid "Pair-programming satellite"
 msgstr "结对编程卫星"
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:98
+#: docs/sap/satellite-guide.md:100
 msgid ""
-"Browser connects to [`/sap/relay/v1`](../../satellites/pair-programming/"
-"server/sap/relay.ts); the process multiplexes session/stream/tool traffic on "
-"one Hub WS. Terminal PTY runs locally ([`terminal-session.ts`](../../"
-"satellites/pair-programming/server/terminal-session.ts))."
+"Browser connects via `createSapRelayBrowserClient` → [`/sap/relay/v1`](../../"
+"satellites/pair-programming/server/index.ts); sidecar uses "
+"`createSatelliteHub` ([`satellite-hub.ts`](../../packages/sap-contract/src/"
+"satellite-hub.ts))."
 msgstr ""
-"浏览器连接 [`/sap/relay/v1`](../../satellites/pair-programming/server/sap/"
-"relay.ts)；进程在一条 Hub WS 上多路复用会话/流/工具流量。终端 PTY 在本地运行"
-"（[`terminal-session.ts`](../../satellites/pair-programming/server/terminal-"
-"session.ts)）。"
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:100
+#: docs/sap/satellite-guide.md:102
 msgid "Reference files:"
 msgstr "参考文件："
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:105
+#: docs/sap/satellite-guide.md:108
+#, fuzzy
+#| msgid ""
+#| "[`satellites/pair-programming/server/sap/hub.ts`](../../satellites/pair-"
+#| "programming/server/sap/hub.ts)"
+msgid ""
+"[`satellites/parlor/server/sap/hub.ts`](../../satellites/parlor/server/sap/"
+"hub.ts)"
+msgstr ""
+"[`satellites/pair-programming/server/sap/hub.ts`](../../satellites/pair-"
+"programming/server/sap/hub.ts)"
+
+#. type: Bullet: '- '
+#: docs/sap/satellite-guide.md:108
 msgid ""
 "[`satellites/pair-programming/server/sap/hub.ts`](../../satellites/pair-"
 "programming/server/sap/hub.ts)"
@@ -319,25 +350,33 @@ msgstr ""
 "programming/server/sap/hub.ts)"
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:105
+#: docs/sap/satellite-guide.md:108
+#, fuzzy
+#| msgid ""
+#| "[`packages/sap-contract/src/relay-browser-client.ts`](../../packages/sap-"
+#| "contract/src/relay-browser-client.ts)"
 msgid ""
-"[`satellites/pair-programming/server/sap/relay.ts`](../../satellites/pair-"
-"programming/server/sap/relay.ts)"
-msgstr ""
-"[`satellites/pair-programming/server/sap/relay.ts`](../../satellites/pair-"
-"programming/server/sap/relay.ts)"
-
-#. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:105
-msgid ""
-"[`packages/sap-contract/src/relay-browser-client.ts`](../../packages/sap-"
-"contract/src/relay-browser-client.ts)"
+"[`packages/sap-contract/src/sidecar-client.ts`](../../packages/sap-contract/"
+"src/sidecar-client.ts)"
 msgstr ""
 "[`packages/sap-contract/src/relay-browser-client.ts`](../../packages/sap-"
 "contract/src/relay-browser-client.ts)"
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:105
+#: docs/sap/satellite-guide.md:108
+#, fuzzy
+#| msgid ""
+#| "[`packages/sap-contract/src/relay-browser-client.ts`](../../packages/sap-"
+#| "contract/src/relay-browser-client.ts)"
+msgid ""
+"[`packages/sap-contract/src/satellite-relay-server.ts`](../../packages/sap-"
+"contract/src/satellite-relay-server.ts)"
+msgstr ""
+"[`packages/sap-contract/src/relay-browser-client.ts`](../../packages/sap-"
+"contract/src/relay-browser-client.ts)"
+
+#. type: Bullet: '- '
+#: docs/sap/satellite-guide.md:108
 msgid ""
 "[`satellites/pair-programming/server/http/terminal-bridge.ts`](../../"
 "satellites/pair-programming/server/http/terminal-bridge.ts)"
@@ -346,75 +385,60 @@ msgstr ""
 "satellites/pair-programming/server/http/terminal-bridge.ts)"
 
 #. type: Title ##
-#: docs/sap/satellite-guide.md:106
+#: docs/sap/satellite-guide.md:109
 #, no-wrap
 msgid "Minimal SAP client"
 msgstr "最小 SAP 客户端"
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:109
-msgid "Use `runSapTransport` from `@freeanima/sap-contract`:"
+#: docs/sap/satellite-guide.md:112
+#, fuzzy
+#| msgid "Use `runSapTransport` from `@freeanima/sap-contract`:"
+msgid ""
+"Use `runSapTransport` or `createSatelliteHub` from `@freeanima/sap-contract`:"
 msgstr "使用 `@freeanima/sap-contract` 中的 `runSapTransport`："
 
 #. type: Fenced code block (typescript)
-#: docs/sap/satellite-guide.md:110
+#: docs/sap/satellite-guide.md:113
 #, no-wrap
 msgid ""
-"import { runSapTransport } from \"@freeanima/sap-contract\";\n"
+"import { createSatelliteHub, fileSapInstanceStore } from \"@freeanima/sap-contract\";\n"
 "\n"
-"const transport = runSapTransport({\n"
+"const hub = createSatelliteHub({\n"
+"  appId: \"my-app\",\n"
 "  hubUrl: process.env.FREEANIMA_URL ?? \"http://127.0.0.1:2658\",\n"
-"  connect: {\n"
-"    app_id: \"my-app\",\n"
-"    instance_id: process.env.SATELLITE_INSTANCE_ID ?? crypto.randomUUID(),\n"
-"    features_requested: [\"server_info\", \"capability_mask\"],\n"
-"    http_url: `http://127.0.0.1:${process.env.SATELLITE_PORT ?? 4173}`,\n"
-"  },\n"
-"  onConnected: async (client) => {\n"
-"    client.onEvent(\"tool.call\", (payload) => {\n"
-"      /* handle */\n"
-"    });\n"
-"    await client.request(\"tool.register\", {\n"
-"      tools: [\n"
-"        /* ... */\n"
-"      ],\n"
-"    });\n"
+"  httpUrl: `http://127.0.0.1:${process.env.SATELLITE_PORT ?? 4173}`,\n"
+"  instanceStore: fileSapInstanceStore(\"/path/to/instance.json\"),\n"
+"  relay: false,\n"
+"  tools: [],\n"
+"  onConnected: async () => {\n"
+"    /* optional session.create — connect does not auto-create sessions */\n"
 "  },\n"
 "});\n"
 msgstr ""
-"import { runSapTransport } from \"@freeanima/sap-contract\";\n"
-"\n"
-"const transport = runSapTransport({\n"
-"  hubUrl: process.env.FREEANIMA_URL ?? \"http://127.0.0.1:2658\",\n"
-"  connect: {\n"
-"    app_id: \"my-app\",\n"
-"    instance_id: process.env.SATELLITE_INSTANCE_ID ?? crypto.randomUUID(),\n"
-"    features_requested: [\"server_info\", \"capability_mask\"],\n"
-"    http_url: `http://127.0.0.1:${process.env.SATELLITE_PORT ?? 4173}`,\n"
-"  },\n"
-"  onConnected: async (client) => {\n"
-"    client.onEvent(\"tool.call\", (payload) => {\n"
-"      /* handle */\n"
-"    });\n"
-"    await client.request(\"tool.register\", {\n"
-"      tools: [\n"
-"        /* ... */\n"
-"      ],\n"
-"    });\n"
-"  },\n"
-"});\n"
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:135
+#: docs/sap/satellite-guide.md:130
 msgid ""
-"Browser UI on Type B satellites uses `createSapRelayBrowserClient()` instead "
-"of talking to Hub directly."
+"On first connect omit `instance_id`; Hub assigns a 3-char id and returns it "
+"in `connected.instance_id`. Persist via `SapInstanceStore.save`."
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/satellite-guide.md:132
+#, fuzzy
+#| msgid ""
+#| "Browser UI on Type B satellites uses `createSapRelayBrowserClient()` "
+#| "instead of talking to Hub directly."
+msgid ""
+"Browser UI on Type B relay satellites uses `createSapRelayBrowserClient()` "
+"instead of talking to Hub directly."
 msgstr ""
 "Type B 卫星上的浏览器 UI 使用 `createSapRelayBrowserClient()`，而非直接与 "
 "Hub 通信。"
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:137
+#: docs/sap/satellite-guide.md:134
 msgid ""
 "Transport handles WebSocket open, `connect` handshake, heartbeat, and "
 "reconnect with exponential backoff."
@@ -422,22 +446,30 @@ msgstr ""
 "Transport 负责 WebSocket 打开、`connect` 握手、心跳，以及带指数退避的重连。"
 
 #. type: Title ##
-#: docs/sap/satellite-guide.md:138
+#: docs/sap/satellite-guide.md:135
 #, no-wrap
 msgid "Environment variables"
 msgstr "环境变量"
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:147
-#, no-wrap
+#: docs/sap/satellite-guide.md:144
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Variable                                  | Role                                           |\n"
+#| "| ----------------------------------------- | ---------------------------------------------- |\n"
+#| "| `FREEANIMA_URL`                           | Hub HTTP base URL                              |\n"
+#| "| `SATELLITE_PORT`                          | Satellite HTTP listen port                     |\n"
+#| "| `SATELLITE_INSTANCE_ID`                   | Stable instance id (optional; random if unset) |\n"
+#| "| `STUDIO_WORKSPACE`                        | Pair-programming workspace root                |\n"
+#| "| `STUDIO_GITIGNORE` / `STUDIO_SHOW_HIDDEN` | File tree filters                              |\n"
 msgid ""
-"| Variable                                  | Role                                           |\n"
-"| ----------------------------------------- | ---------------------------------------------- |\n"
-"| `FREEANIMA_URL`                           | Hub HTTP base URL                              |\n"
-"| `SATELLITE_PORT`                          | Satellite HTTP listen port                     |\n"
-"| `SATELLITE_INSTANCE_ID`                   | Stable instance id (optional; random if unset) |\n"
-"| `STUDIO_WORKSPACE`                        | Pair-programming workspace root                |\n"
-"| `STUDIO_GITIGNORE` / `STUDIO_SHOW_HIDDEN` | File tree filters                              |\n"
+"| Variable                                  | Role                                         |\n"
+"| ----------------------------------------- | -------------------------------------------- |\n"
+"| `FREEANIMA_URL`                           | Hub HTTP base URL                            |\n"
+"| `SATELLITE_PORT`                          | Satellite HTTP listen port                   |\n"
+"| `FREEANIMA_HOME`                          | Data root (`~/.anima`); instance store paths |\n"
+"| `STUDIO_WORKSPACE`                        | Pair-programming workspace root              |\n"
+"| `STUDIO_GITIGNORE` / `STUDIO_SHOW_HIDDEN` | File tree filters                            |\n"
 msgstr ""
 "| 变量                                      | 作用                                           |\n"
 "| ----------------------------------------- | ---------------------------------------------- |\n"
@@ -448,30 +480,33 @@ msgstr ""
 "| `STUDIO_GITIGNORE` / `STUDIO_SHOW_HIDDEN` | 文件树过滤                                     |\n"
 
 #. type: Title ##
-#: docs/sap/satellite-guide.md:148
+#: docs/sap/satellite-guide.md:145
 #, no-wrap
 msgid "Layer dependencies"
 msgstr "层依赖"
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:151
+#: docs/sap/satellite-guide.md:148
 msgid ""
-"Per [`scripts/check-layer-deps.ts`](../../scripts/check-layer-deps.ts): "
-"`satellites/*` may depend only on `@freeanima/sap-contract` and `@freeanima/"
-"kernel`. Do not import platform or runtime packages from Satellite code."
+"Per [`.agent/rules/code-layers.md`](../../.agent/rules/code-layers.md) "
+"(Dependency allow/deny matrix): `satellites/*` may depend only on "
+"`@freeanima/sap-contract`, `@freeanima/kernel`, and `kernel-*` packages. Do "
+"not import `platform`, `runtime`, `core`, or `capabilities-*` from Satellite "
+"code."
 msgstr ""
-"依据 [`scripts/check-layer-deps.ts`](../../scripts/check-layer-deps.ts)："
-"`satellites/*` 只能依赖 `@freeanima/sap-contract` 与 `@freeanima/kernel`。请"
-"勿在 Satellite 代码中导入 platform 或 runtime 包。"
+"依据 [`.agent/rules/code-layers.md`](../../.agent/rules/code-layers.md)（依赖"
+"允许/禁止矩阵）：`satellites/*` 只能依赖 `@freeanima/sap-contract`、"
+"`@freeanima/kernel` 及 `kernel-*` 包。请勿在 Satellite 代码中导入 "
+"`platform`、`runtime`、`core` 或 `capabilities-*`。"
 
 #. type: Title ##
-#: docs/sap/satellite-guide.md:152
+#: docs/sap/satellite-guide.md:149
 #, no-wrap
 msgid "Chamber visibility"
 msgstr "卧室可见性"
 
 #. type: Plain text
-#: docs/sap/satellite-guide.md:155
+#: docs/sap/satellite-guide.md:152
 msgid ""
 "`GET /api/satellites/status` (Chamber → Satellites) reads "
 "`SatelliteManager.getStatus()`: connected instances, `http_url`, registered "
@@ -482,28 +517,28 @@ msgstr ""
 "戳。"
 
 #. type: Title ##
-#: docs/sap/satellite-guide.md:156
+#: docs/sap/satellite-guide.md:153
 #, no-wrap
 msgid "Further reading"
 msgstr "延伸阅读"
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:161
+#: docs/sap/satellite-guide.md:158
 msgid "[overview.md](overview.md) — protocol goals"
 msgstr "[overview.md](overview.md) — 协议目标"
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:161
+#: docs/sap/satellite-guide.md:158
 msgid "[transport.md](transport.md) — envelopes and handshake"
 msgstr "[transport.md](transport.md) — 信封与握手"
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:161
+#: docs/sap/satellite-guide.md:158
 msgid "[tools.md](tools.md) — tool registration and routing"
 msgstr "[tools.md](tools.md) — 工具注册与路由"
 
 #. type: Bullet: '- '
-#: docs/sap/satellite-guide.md:161
+#: docs/sap/satellite-guide.md:158
 msgid ""
 "[pair-programming v1](../features/pair-programming-v1.md) — Studio product "
 "docs"

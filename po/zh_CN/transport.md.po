@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 18:02+0800\n"
+"POT-Creation-Date: 2026-06-22 11:28+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -218,16 +218,25 @@ msgstr ""
 
 #. type: Plain text
 #: docs/sap/transport.md:83
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Field                | Required | Role                                             |\n"
+#| "| -------------------- | -------- | ------------------------------------------------ |\n"
+#| "| `app_id`             | yes      | Satellite app id (e.g. `pair-programming`)       |\n"
+#| "| `instance_id`        | yes      | Stable or generated instance UUID                |\n"
+#| "| `protocol`           | yes      | Must be `SAP/1.0`                                |\n"
+#| "| `features_requested` | no       | Feature flags (Hub echoes as `features_enabled`) |\n"
+#| "| `http_url`           | no       | Satellite UI URL for Chamber → Satellites        |\n"
+#| "| `instance_label`     | no       | Display label                                    |\n"
 msgid ""
-"| Field                | Required | Role                                             |\n"
-"| -------------------- | -------- | ------------------------------------------------ |\n"
-"| `app_id`             | yes      | Satellite app id (e.g. `pair-programming`)       |\n"
-"| `instance_id`        | yes      | Stable or generated instance UUID                |\n"
-"| `protocol`           | yes      | Must be `SAP/1.0`                                |\n"
-"| `features_requested` | no       | Feature flags (Hub echoes as `features_enabled`) |\n"
-"| `http_url`           | no       | Satellite UI URL for Chamber → Satellites        |\n"
-"| `instance_label`     | no       | Display label                                    |\n"
+"| Field                | Required | Role                                                                 |\n"
+"| -------------------- | -------- | -------------------------------------------------------------------- |\n"
+"| `app_id`             | yes      | Satellite app id (e.g. `pair-programming`)                           |\n"
+"| `instance_id`        | no       | Hub-assigned 3-char id; omit on first register, include on reconnect |\n"
+"| `protocol`           | yes      | Must be `SAP/1.0`                                                    |\n"
+"| `features_requested` | no       | Feature flags (Hub echoes as `features_enabled`)                     |\n"
+"| `http_url`           | no       | Satellite UI URL for Chamber → Satellites                            |\n"
+"| `instance_label`     | no       | Display label                                                        |\n"
 msgstr ""
 "| 字段                 | 必填     | 作用                                             |\n"
 "| -------------------- | -------- | ------------------------------------------------ |\n"
@@ -245,14 +254,23 @@ msgid "`connected` payload"
 msgstr "`connected` 载荷"
 
 #. type: Plain text
-#: docs/sap/transport.md:93
-#, no-wrap
+#: docs/sap/transport.md:94
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Field                         | Role                                                                                       |\n"
+#| "| ----------------------------- | ------------------------------------------------------------------------------------------ |\n"
+#| "| `protocol`                    | `SAP/1.0`                                                                                  |\n"
+#| "| `features_enabled`            | Enabled features                                                                           |\n"
+#| "| `server_info`                 | `anima_version`, `sap_version`, `platform_for_app` map                                     |\n"
+#| "| `server_info.capability_mask` | When `capability_mask` is in `features_requested`: mask preset list (no credential values) |\n"
+#| "| `heartbeat_interval_sec`      | Hub default: 30                                                                            |\n"
 msgid ""
 "| Field                         | Role                                                                                       |\n"
 "| ----------------------------- | ------------------------------------------------------------------------------------------ |\n"
 "| `protocol`                    | `SAP/1.0`                                                                                  |\n"
+"| `instance_id`                 | Hub-assigned or confirmed 3-char instance id (always present)                              |\n"
 "| `features_enabled`            | Enabled features                                                                           |\n"
-"| `server_info`                 | `anima_version`, `sap_version`, `platform_for_app` map                                     |\n"
+"| `server_info`                 | `anima_version`, `sap_version`                                                             |\n"
 "| `server_info.capability_mask` | When `capability_mask` is in `features_requested`: mask preset list (no credential values) |\n"
 "| `heartbeat_interval_sec`      | Hub default: 30                                                                            |\n"
 msgstr ""
@@ -265,13 +283,13 @@ msgstr ""
 "| `heartbeat_interval_sec`      | Hub 默认值：30                                                                             |\n"
 
 #. type: Title ###
-#: docs/sap/transport.md:94
+#: docs/sap/transport.md:95
 #, no-wrap
 msgid "Heartbeat"
 msgstr "心跳"
 
 #. type: Plain text
-#: docs/sap/transport.md:97
+#: docs/sap/transport.md:98
 msgid ""
 "Satellite sends `evt { method: \"heartbeat\" }` on an interval derived from "
 "`heartbeat_interval_sec`. Hub updates `last_heartbeat_at` and replies with "
@@ -282,7 +300,7 @@ msgstr ""
 "\"heartbeat\", payload: { ts } }` 回复。"
 
 #. type: Plain text
-#: docs/sap/transport.md:99
+#: docs/sap/transport.md:100
 msgid ""
 "`runSapTransport` in sap-contract starts the heartbeat timer automatically "
 "after connect. Hub does not actively disconnect idle satellites based on "
@@ -292,13 +310,13 @@ msgstr ""
 "Hub 不会因错过心跳而主动断开空闲 Satellite。"
 
 #. type: Content of: <messages><msg>
-#: docs/sap/transport.md:100 messages/po4a/en.xml:432
+#: docs/sap/transport.md:101 messages/po4a/en.xml:435
 #, no-wrap
 msgid "Reconnect"
 msgstr "重连"
 
 #. type: Plain text
-#: docs/sap/transport.md:103
+#: docs/sap/transport.md:104
 msgid ""
 "Satellites should use `runSapTransport` ([`transport.ts`](../../packages/sap-"
 "contract/src/transport.ts)) for connect, heartbeat, and exponential backoff "
@@ -310,13 +328,13 @@ msgstr ""
 "30s）。断开时 Hub 调用 `onDisconnect` 并注销该实例的工具。"
 
 #. type: Title ##
-#: docs/sap/transport.md:104
+#: docs/sap/transport.md:105
 #, no-wrap
 msgid "Local SAP relay (Type B satellites)"
 msgstr "本地 SAP 中继（Type B 卫星）"
 
 #. type: Plain text
-#: docs/sap/transport.md:107
+#: docs/sap/transport.md:108
 msgid ""
 "Pair-programming exposes `ws://{satellite_host}:{port}/sap/relay/v1` for "
 "browser UI. The satellite **process** holds the sole Hub `/sap/v1` "
@@ -328,7 +346,7 @@ msgstr ""
 "`res`/`evt` 帧，无需 `connect` 握手。"
 
 #. type: Plain text
-#: docs/sap/transport.md:111
+#: docs/sap/transport.md:112
 #, no-wrap
 msgid ""
 "| Event         | Direction           | Meaning                            |\n"
@@ -340,7 +358,7 @@ msgstr ""
 "| `relay.ready` | Satellite → browser | 中继已附着；可安全发送 `req`       |\n"
 
 #. type: Plain text
-#: docs/sap/transport.md:113
+#: docs/sap/transport.md:114
 msgid ""
 "Use `createSapRelayClient` / `createSapRelayBrowserClient` from `@freeanima/"
 "sap-contract`."
@@ -349,23 +367,23 @@ msgstr ""
 "`createSapRelayBrowserClient`。"
 
 #. type: Title ##
-#: docs/sap/transport.md:114
+#: docs/sap/transport.md:115
 #, no-wrap
 msgid "RPC errors"
 msgstr "RPC 错误"
 
 #. type: Plain text
-#: docs/sap/transport.md:117
+#: docs/sap/transport.md:118
 msgid "Failed RPCs return `res` with `ok: false` and:"
 msgstr "失败的 RPC 返回 `ok: false` 的 `res`，并附带："
 
 #. type: Fenced code block (json)
-#: docs/sap/transport.md:118
+#: docs/sap/transport.md:119
 #, no-wrap
 msgid "{ \"code\": \"sap_error\", \"message\": \"...\" }\n"
 msgstr "{ \"code\": \"sap_error\", \"message\": \"...\" }\n"
 
 #. type: Plain text
-#: docs/sap/transport.md:122
+#: docs/sap/transport.md:123
 msgid "See [methods.md](methods.md) for method-specific behavior."
 msgstr "各方法的具体行为见 [methods.md](methods.md)。"
