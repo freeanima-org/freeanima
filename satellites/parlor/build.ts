@@ -53,7 +53,7 @@ export async function buildParlorApp(opts?: {
   const tailwind = tailwindMod.default;
 
   const result = await Bun.build({
-    entrypoints: [join(APP_DIR, HTML_NAME), join(APP_DIR, "sap-shared-worker.ts")],
+    entrypoints: [join(APP_DIR, HTML_NAME)],
     outdir: DIST_DIR,
     target: "browser",
     minify: opts?.minify ?? false,

@@ -12,7 +12,7 @@ import {
   subscribeSessionEvents,
 } from "@/lib/api.ts";
 import { getAppLocale, initAppLocale, m, toggleAppLocale } from "@/lib/i18n.ts";
-import { getSapBrowserClient } from "@/lib/sap-client.ts";
+import { getSapRelayClient } from "@/lib/sap-client.ts";
 import type { SessionListItem } from "@/lib/types.ts";
 import { useChatStore } from "@/stores/chat.ts";
 import { useSessionsStore } from "@/stores/sessions.ts";
@@ -127,7 +127,7 @@ function App() {
     void (async () => {
       try {
         await loadConfig();
-        getSapBrowserClient();
+        await getSapRelayClient().whenReady();
         setReady(true);
         const list = await fetchSessions();
         const fromUrl = readSessionFromUrl();

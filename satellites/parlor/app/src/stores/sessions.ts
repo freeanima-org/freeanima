@@ -1,5 +1,5 @@
 import type { DisplayItem, SessionListItem } from "@/lib/types.ts";
-import { PARLOR_PLATFORM, parlorPlatform } from "@/lib/sap-client.ts";
+import { PARLOR_PLATFORM } from "@/lib/sap-client.ts";
 import { hasNewAssistantReply } from "@/lib/display-recovery.ts";
 import { create } from "zustand";
 import { createSession, getSessionMessages, listSessions, setSessionTitle } from "@/lib/api.ts";
@@ -28,7 +28,7 @@ export const useSessionsStore = create<SessionsState>((set, get) => ({
 
   async fetchSessions() {
     try {
-      const resp = await listSessions(parlorPlatform());
+      const resp = await listSessions();
       set({ sessions: resp.sessions });
       return resp.sessions;
     } catch (e) {
@@ -49,7 +49,7 @@ export const useSessionsStore = create<SessionsState>((set, get) => ({
 
   async newSession() {
     try {
-      const d = await createSession(parlorPlatform());
+      const d = await createSession();
       await get().fetchSessions();
       const sessionId = d.session_id;
       await get().selectSession(sessionId);

@@ -4,7 +4,7 @@ import type {
   SessionListItem,
   StreamApiEvent,
 } from "./types.ts";
-import { getSapBrowserClient, parlorPlatform } from "./sap-client.ts";
+import { getSapRelayClient, PARLOR_PLATFORM } from "./sap-client.ts";
 import { m } from "./i18n.ts";
 
 type SubscribeCallbacks<T> = {
@@ -25,38 +25,33 @@ function mapSessionList(raw: {
     sessions: raw.sessions.map((s) => ({
       id: s.session_id,
       title: s.title ?? "",
-      platform: s.platform ?? parlorPlatform(),
+      platform: s.platform ?? PARLOR_PLATFORM,
       created: s.updated_at ?? "",
     })),
   };
 }
 
-async function sap() {
-  return getSapBrowserClient().whenReady();
+function sap() {
+  return getSapRelayClient();
 }
 
 export type { SessionAcpDockSnapshot, StreamApiEvent } from "./types.ts";
 
-export async function listSessions(platform?: string) {
-  const result = await (
-    await sap()
-  ).request("session.list", {
-    platform: platform ?? parlorPlatform(),
-  });
+export async function listSessions() {
+  const client = await sap().whenReady();
+  const result = await client.request("session.list", {});
   return mapSessionList(result);
 }
 
-export async function createSession(platform?: string) {
-  const result = await (
-    await sap()
-  ).request("session.create", {
-    platform: platform ?? parlorPlatform(),
-  });
+export async function createSession() {
+  const client = await sap().whenReady();
+  const result = await client.request("session.create", {});
   return { session_id: result.session_id };
 }
 
 export async function getSessionMessages(sessionId: string, offset = 0, limit = 500) {
-  return (await sap()).request("session.messages", {
+  const client = await sap().whenReady();
+  return client.request("session.messages", {
     session_id: sessionId,
     offset,
     limit,
@@ -64,23 +59,26 @@ export async function getSessionMessages(sessionId: string, offset = 0, limit = 
 }
 
 export async function setSessionTitle(sessionId: string, title: string) {
-  await (await sap()).request("session.patchTitle", { session_id: sessionId, title });
+  const client = await sap().whenReady();
+  await client.request("session.patchTitle", { session_id: sessionId, title });
   return { ok: true as const };
 }
 
 export async function getSessionAcpDock(sessionId: string): Promise<SessionAcpDockSnapshot> {
-  return (await sap()).request("session.acpDock", { session_id: sessionId });
+  const client = await sap().whenReady();
+  return client.request("session.acpDock", { session_id: sessionId });
 }
 
-export async function listSessionCommands(opts?: { all?: boolean; platform?: string }) {
-  return (await sap()).request("session.commands", {
-    platform: opts?.platform ?? parlorPlatform(),
+export async function listSessionCommands(opts?: { all?: boolean }) {
+  const client = await sap().whenReady();
+  return client.request("session.commands", {
     all: opts?.all,
   });
 }
 
 export async function getFridgeMagnets(): Promise<FridgeMagnetsResponse> {
-  const result = await (await sap()).request("fridge.list", {});
+  const client = await sap().whenReady();
+  const result = await client.request("fridge.list", {});
   return {
     redis_configured: result.redis_configured,
     magnets: result.magnets.map((item) => ({ key: item.key, value: item.value })),
@@ -92,14 +90,14 @@ export function subscribeMessageStream(
   input: { sessionId: string; message: string },
   callbacks: SubscribeCallbacks<StreamApiEvent>,
 ): { unsubscribe: () => void } {
-  return getSapBrowserClient().sendMessageStream(input, callbacks);
+  return sap().sendMessageStream(input, callbacks);
 }
 
 export function subscribeSessionEvents(
   sessionId: string,
   onUpdate: () => void,
 ): { unsubscribe: () => void } {
-  return getSapBrowserClient().subscribeSessionEvents(sessionId, onUpdate);
+  return sap().subscribeSessionEvents(sessionId, onUpdate);
 }
 
 export async function loadConfig() {
@@ -110,7 +108,6 @@ export async function loadConfig() {
   return res.json() as Promise<{
     app_id: string;
     instance_id: string;
-    hub_ws_url: string;
-    http_url: string;
+    relay_ws_url: string;
   }>;
 }

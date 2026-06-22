@@ -57,18 +57,12 @@ Open managed satellite UI at the URL from Chamber (SAP `http_url`), typically:
 
 **Rule:** each `app_id + instance_id` has **at most one** Hub WebSocket (`/sap/v1`).
 
-### Type A — Browser-direct (Parlor)
+### Type B — Process gateway + local relay (Parlor, pair-programming)
 
-- Browser `createSapDirectClient` → Hub `/sap/v1` (SharedWorker shares one WS + `instance_id` across tabs).
-- `SapInstanceStore` persists Hub-assigned `instance_id` in `localStorage` (key: hub origin + `app_id`).
-- Satellite HTTP serves static UI + `/config.json` only.
-- **Limits:** no `tool.register` in browser; local tools need a sidecar later.
-
-### Type B — Process gateway + local relay (pair-programming)
-
-- Sidecar `createSatelliteHub({ relay: true, tools: [...] })` holds the sole Hub WS.
-- Browser uses `createSapSidecarClient` → satellite `/sap/relay/v1`.
+- Sidecar `createSatelliteHub({ relay: true, ... })` holds the sole Hub WS.
+- Browser uses `createSapRelayBrowserClient` → satellite `/sap/relay/v1`.
 - `instance_id` persisted under `~/.anima/satellites/{app}/instance.json`.
+- **Parlor:** relay only (no local tools). **Pair-programming:** relay + `tool.register` + local FS/PTY APIs.
 
 ### Type B + tools, no relay (companion)
 
@@ -78,18 +72,19 @@ Open managed satellite UI at the URL from Chamber (SAP `http_url`), typically:
 
 ```mermaid
 flowchart TB
-  subgraph parlor [Parlor Type A]
-    B1[Browser] -->|唯一 SAP WS| Hub1[Hub]
-    S1[静态 server] -.->|/config.json| B1
+  subgraph parlor [Parlor Type B relay]
+    B1[Browser] -->|relay WS| Relay1["/sap/relay/v1"]
+    Relay1 --> ProcSAP1[createSatelliteHub]
+    ProcSAP1 -->|唯一 SAP WS| Hub1[Hub]
   end
 
   subgraph ppy [Pair-programming Type B]
-    B2[Browser] -->|relay WS| Relay["/sap/relay/v1"]
-    Relay --> ProcSAP[runSapTransport]
-    ProcSAP -->|唯一 SAP WS| Hub2[Hub]
+    B2[Browser] -->|relay WS| Relay2["/sap/relay/v1"]
+    Relay2 --> ProcSAP2[createSatelliteHub]
+    ProcSAP2 -->|唯一 SAP WS| Hub2[Hub]
     B2 --> LocalFS["/api/studio/*"]
     B2 --> LocalPTY[本地 terminal WS]
-    ProcSAP --> ToolExec[tool executor]
+    ProcSAP2 --> ToolExec[tool executor]
   end
 ```
 
@@ -97,14 +92,15 @@ flowchart TB
 
 ### Parlor satellite
 
-Browser connects via `createSapDirectClient` ([`direct-client.ts`](../../packages/sap-contract/src/direct-client.ts)); optional SharedWorker ([`shared-worker.ts`](../../packages/sap-contract/src/shared-worker.ts)) multiplexes one Hub connection across tabs.
+Browser connects via `createSapRelayBrowserClient` → [`/sap/relay/v1`](../../satellites/parlor/server/index.ts); sidecar uses `createSatelliteHub` with `relay: true` and no local tools ([`satellites/parlor/server/sap/hub.ts`](../../satellites/parlor/server/sap/hub.ts)). `session.list` / `session.create` omit explicit `platform`; Hub defaults to the connected instance's `sap:parlor:{id}`.
 
 ### Pair-programming satellite
 
-Browser connects via `createSapSidecarClient` → [`/sap/relay/v1`](../../satellites/pair-programming/server/index.ts); sidecar uses `createSatelliteHub` ([`satellite-hub.ts`](../../packages/sap-contract/src/satellite-hub.ts)).
+Browser connects via `createSapRelayBrowserClient` → [`/sap/relay/v1`](../../satellites/pair-programming/server/index.ts); sidecar uses `createSatelliteHub` ([`satellite-hub.ts`](../../packages/sap-contract/src/satellite-hub.ts)).
 
 Reference files:
 
+- [`satellites/parlor/server/sap/hub.ts`](../../satellites/parlor/server/sap/hub.ts)
 - [`satellites/pair-programming/server/sap/hub.ts`](../../satellites/pair-programming/server/sap/hub.ts)
 - [`packages/sap-contract/src/sidecar-client.ts`](../../packages/sap-contract/src/sidecar-client.ts)
 - [`packages/sap-contract/src/satellite-relay-server.ts`](../../packages/sap-contract/src/satellite-relay-server.ts)
@@ -132,7 +128,7 @@ const hub = createSatelliteHub({
 
 On first connect omit `instance_id`; Hub assigns a 3-char id and returns it in `connected.instance_id`. Persist via `SapInstanceStore.save`.
 
-Browser UI on Type B relay satellites uses `createSapSidecarClient()` instead of talking to Hub directly.
+Browser UI on Type B relay satellites uses `createSapRelayBrowserClient()` instead of talking to Hub directly.
 
 Transport handles WebSocket open, `connect` handshake, heartbeat, and reconnect with exponential backoff.
 
