@@ -1,3 +1,6 @@
+import { type Server } from "node:http";
+import { join } from "node:path";
+import { WebSocketServer } from "ws";
 import { connectSap } from "./sap/run.ts";
 import { corsPreflight, jsonResponse } from "./http/cors.ts";
 import { saveConfig, hubUrlFromConfig, type CompanionConfig } from "./config.ts";
@@ -30,20 +33,31 @@ import {
 } from "./motion-library.ts";
 import { MOTION_SLOT_IDS, type MotionSlotId } from "../shared/companion-schema.ts";
 import { fbxImportAvailable } from "./fbx-converter-kit.ts";
-import { serveStatic } from "./static.ts";
+import { serveStatic, setStaticDistDir } from "./static.ts";
 import { SATELLITE_PORT_ATTEMPTS, SATELLITE_PORT_START } from "../shared/constants.ts";
 import { advanceBubble, runtimeState, bubbleState } from "./runtime-state.ts";
-import {
-  handleRuntimeWsClose,
-  handleRuntimeWsOpen,
-  runtimeWsPayload,
-  type RuntimeWsClientData,
-} from "./runtime-ws.ts";
+import { handleRuntimeWsClose, handleRuntimeWsOpen, runtimeWsPayload } from "./runtime-ws.ts";
 import type { LocomotionSlot } from "../shared/constants.ts";
 import { handleLocomotionImport } from "./locomotion.ts";
+import { createNodeHttpServer, listenServer } from "./http/node-bridge.ts";
 
-const PORT_START = Number(process.env.SATELLITE_PORT ?? SATELLITE_PORT_START);
-const PORT_ATTEMPTS = SATELLITE_PORT_ATTEMPTS;
+export type StartCompanionServerOptions = {
+  port?: number;
+  portAttempts?: number;
+  distDir?: string;
+  host?: string;
+  announce?: boolean;
+};
+
+export type CompanionServerHandle = {
+  port: number;
+  url: string;
+  httpServer: Server;
+  wss: WebSocketServer;
+  close: () => Promise<void>;
+};
+
+let activeHttpUrl = "";
 
 function isAddrInUse(error: unknown): boolean {
   return (
@@ -59,21 +73,15 @@ function announceSidecarPort(port: number): void {
   console.log(`companion satellite http://127.0.0.1:${port}`);
 }
 
-export async function route(
-  req: Request,
-  server: Bun.Server<RuntimeWsClientData>,
-): Promise<Response> {
+export function getCompanionHttpUrl(): string {
+  return activeHttpUrl;
+}
+
+export async function route(req: Request): Promise<Response> {
   const url = new URL(req.url);
 
   if (req.method === "OPTIONS") {
     return corsPreflight();
-  }
-
-  if (url.pathname === "/api/runtime/ws") {
-    if (server.upgrade(req, { data: { channel: "runtime" } })) {
-      return new Response(null, { status: 101 });
-    }
-    return jsonResponse({ error: "WebSocket upgrade failed" }, 400);
   }
 
   if (url.pathname === "/config.json" && req.method === "GET") {
@@ -89,7 +97,7 @@ export async function route(
     const prev = hubUrlFromConfig();
     const next = saveConfig(body);
     if (body.hub_url?.trim() && body.hub_url.trim() !== prev) {
-      reconnectSap(next.hub_url.replace(/\/$/, ""), HTTP_URL);
+      reconnectSap(next.hub_url.replace(/\/$/, ""), activeHttpUrl);
     }
     return jsonResponse(clientCompanionConfig(next));
   }
@@ -265,55 +273,90 @@ export async function route(
   return serveStatic(url.pathname);
 }
 
-let HTTP_URL = "";
-let server: ReturnType<typeof Bun.serve<RuntimeWsClientData>>;
-
-try {
-  server = startServer();
-  void ensureDefaultMotions().then(() => syncLibraryFromDisk());
-  void connectSap(hubUrlFromConfig(), HTTP_URL);
-} catch (error) {
-  console.error(
-    "companion-sidecar-fatal:",
-    error instanceof Error ? (error.stack ?? error.message) : String(error),
-  );
-  process.exit(1);
-}
-
-function startServer(): ReturnType<typeof Bun.serve<RuntimeWsClientData>> {
+export async function startCompanionServer(
+  opts: StartCompanionServerOptions = {},
+): Promise<CompanionServerHandle> {
   ensureCompanionDataDir();
 
-  for (let i = 0; i < PORT_ATTEMPTS; i++) {
-    const port = PORT_START + i;
+  const portStart = opts.port ?? Number(process.env.SATELLITE_PORT ?? SATELLITE_PORT_START);
+  const portAttempts = opts.portAttempts ?? SATELLITE_PORT_ATTEMPTS;
+  const host = opts.host ?? "127.0.0.1";
+
+  if (opts.distDir) {
+    setStaticDistDir(opts.distDir);
+  } else {
+    setStaticDistDir(join(import.meta.dir, "..", "dist"));
+  }
+
+  const wss = new WebSocketServer({ noServer: true });
+  wss.on("connection", (ws) => {
+    handleRuntimeWsOpen(ws);
+    ws.send(JSON.stringify(runtimeWsPayload(bubbleState(), [])));
+    ws.on("close", () => {
+      handleRuntimeWsClose(ws);
+    });
+  });
+
+  let lastError: unknown;
+  for (let i = 0; i < portAttempts; i++) {
+    const port = portStart + i;
+    const baseUrl = `http://${host}:${port}`;
+    const httpServer = createNodeHttpServer({
+      port,
+      host,
+      baseUrl,
+      handler: route,
+      wss,
+    });
+
     try {
-      const instance = Bun.serve<RuntimeWsClientData>({
-        port,
-        fetch(req, srv) {
-          return route(req, srv);
+      const boundPort = await listenServer(httpServer, port, host);
+      activeHttpUrl = `http://${host}:${boundPort}`;
+      if (opts.announce !== false) {
+        announceSidecarPort(boundPort);
+      }
+
+      void ensureDefaultMotions().then(() => syncLibraryFromDisk());
+      void connectSap(hubUrlFromConfig(), activeHttpUrl);
+
+      return {
+        port: boundPort,
+        url: activeHttpUrl,
+        httpServer,
+        wss,
+        close: async () => {
+          await new Promise<void>((resolve, reject) => {
+            wss.close((err) => (err ? reject(err) : resolve()));
+          });
+          await new Promise<void>((resolve, reject) => {
+            httpServer.close((err) => (err ? reject(err) : resolve()));
+          });
+          if (activeHttpUrl === `http://${host}:${boundPort}`) {
+            activeHttpUrl = "";
+          }
         },
-        websocket: {
-          open(ws) {
-            handleRuntimeWsOpen(ws);
-            ws.send(JSON.stringify(runtimeWsPayload(bubbleState(), [])));
-          },
-          close(ws) {
-            handleRuntimeWsClose(ws);
-          },
-          message() {},
-        },
-      });
-      HTTP_URL = `http://127.0.0.1:${port}`;
-      announceSidecarPort(port);
-      return instance;
+      };
     } catch (error) {
-      if (isAddrInUse(error) && i < PORT_ATTEMPTS - 1) {
+      lastError = error;
+      await new Promise<void>((resolve) => httpServer.close(() => resolve()));
+      if (isAddrInUse(error) && i < portAttempts - 1) {
         continue;
       }
       throw error;
     }
   }
 
-  throw new Error(`无法在 ${PORT_START}–${PORT_START + PORT_ATTEMPTS - 1} 找到可用端口`);
+  throw lastError ?? new Error(`无法在 ${portStart}–${portStart + portAttempts - 1} 找到可用端口`);
 }
 
-export { server, HTTP_URL, serveStatic };
+if (import.meta.main) {
+  startCompanionServer().catch((error) => {
+    console.error(
+      "companion-sidecar-fatal:",
+      error instanceof Error ? (error.stack ?? error.message) : String(error),
+    );
+    process.exit(1);
+  });
+}
+
+export { serveStatic };

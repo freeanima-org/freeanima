@@ -6,28 +6,28 @@ title: Desktop Companion
 
 > **Dynamic SAP 卫星**：单体桌面 GUI 应用，不经 `config.yaml` managed 托管。
 
-桌面伴侣是运行在用户桌面上的 SAP **Type B** 应用（sidecar 持 Hub WebSocket、`relay: false`）：Tauri 透明壳 + 内嵌 Bun sidecar，通过 SAP 向 Hub 注册在线实例，并向 Agent 注册本地工具。
+桌面伴侣是运行在用户桌面上的 SAP **Type B** 应用（主进程持 Hub WebSocket、`relay: false`）：Electron 透明壳 + 主进程内嵌 Node.js HTTP/SAP 服务，通过 SAP 向 Hub 注册在线实例，并向 Agent 注册本地工具。
 
 ## 架构
 
 ```text
-用户桌面（单体应用）
-├── Tauri 壳 — 双窗口、点击穿透、托盘
+用户桌面（单体 Electron 应用）
+├── Main Process — Node.js HTTP + SAP + 托盘/窗口管理
 │   ├── companion 窗 — 透明置顶，VRM 渲染、文字气泡、本地交互
 │   └── settings 窗 — 普通有边框窗口，从托盘打开
-└── companion-bun + resources/sidecar/ — Bun 运行 server/
+└── Renderer — 通过 preload 桥接 IPC，API 走 localhost
          ↕ SAP WS（可跨机）
     anima service Hub → Agent 可调用 companion 工具
 ```
 
 与 Parlor / 结对编程的区别：
 
-|             | Parlor / 结对编程            | Companion                                 |
-| ----------- | ---------------------------- | ----------------------------------------- |
-| UI          | 浏览器 Web UI                | 原生透明伴侣窗 + 独立设置窗               |
-| 部署        | Managed（可与 service 同机） | Dynamic（用户自行启动）                   |
-| SAP         | Type A 或 Type B + relay     | Type B + tools，无 relay                  |
-| 客户端与 UI | 可分离                       | 伴侣渲染与设置窗分离，同属一个 Tauri 应用 |
+|             | Parlor / 结对编程            | Companion                                    |
+| ----------- | ---------------------------- | -------------------------------------------- |
+| UI          | 浏览器 Web UI                | 原生透明伴侣窗 + 独立设置窗                  |
+| 部署        | Managed（可与 service 同机） | Dynamic（用户自行启动）                      |
+| SAP         | Type A 或 Type B + relay     | Type B + tools，无 relay                     |
+| 客户端与 UI | 可分离                       | 伴侣渲染与设置窗分离，同属一个 Electron 应用 |
 
 ## 功能
 
@@ -67,7 +67,7 @@ title: Desktop Companion
 
 ## 开发与运行
 
-### 浏览器开发（无需 Tauri）
+### 浏览器开发（无需 Electron）
 
 ```bash
 bun satellites/companion/dev.ts
@@ -75,21 +75,28 @@ bun satellites/companion/dev.ts
 # 设置：页面内「设置」按钮打开面板弹窗（非独立路由）
 ```
 
-### Tauri 桌面壳
+### Electron 桌面壳
 
 ```bash
 cd satellites/companion
 bun install
-bun dev.ts
+bun dev:electron
+```
+
+打包：
+
+```bash
+bun build:windows:installer   # Windows NSIS
+bun build:macos:release       # macOS DMG
 ```
 
 环境变量：
 
-| 变量                     | 默认                    | 说明                                    |
-| ------------------------ | ----------------------- | --------------------------------------- |
-| `FREEANIMA_URL`          | `http://127.0.0.1:2658` | Hub 地址（可跨机）                      |
-| `SATELLITE_PORT`         | `4176`                  | sidecar HTTP 端口                       |
-| `COMPANION_VRMA_ZIP_URL` | （空）                  | 可选；直链 zip 镜像，sidecar 启动时下载 |
+| 变量                     | 默认                    | 说明                            |
+| ------------------------ | ----------------------- | ------------------------------- |
+| `FREEANIMA_URL`          | `http://127.0.0.1:2658` | Hub 地址（可跨机）              |
+| `SATELLITE_PORT`         | `4176`                  | 本地 HTTP 端口                  |
+| `COMPANION_VRMA_ZIP_URL` | （空）                  | 可选；直链 zip 镜像，启动时下载 |
 
 Hub 在首次 `connect` 时分配 **3 字符** `instance_id`，写入 `~/.anima/companion/instance.json`（非 `satellites/` 子目录）。
 
@@ -101,6 +108,7 @@ Hub 在首次 `connect` 时分配 **3 字符** `instance_id`，写入 `~/.anima/
 | 点击无动作       | 设置 → **动作库** 导入 VRMA；**动作槽位** 绑定对应槽位       |
 | 无法连 Hub       | 确认 `anima service` 已运行；设置 → 通用 Tab 中 Hub URL 正确 |
 | 动作导入后无变化 | 导入后会热重载；若仍无效，确认槽位已勾选对应动作             |
+| 后台服务失败     | 查看 `~/.anima/companion/shell.log`；确认端口 4176–4185 可用 |
 
 ## 相关文档
 
