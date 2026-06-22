@@ -2,6 +2,7 @@ import { StrictMode, useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { AcpProgressDock } from "@/components/AcpProgressDock.tsx";
 import { FridgeMagnetInjectPreview } from "@/components/FridgeMagnetInjectPreview.tsx";
+import { ToolBlockBubble } from "@/components/ToolBlockBubble.tsx";
 import { useAcpProgressDock } from "@/hooks/useAcpProgressDock.ts";
 import { formatSessionIdDateTime } from "@/lib/format-datetime.ts";
 import {
@@ -23,25 +24,9 @@ type ClarifyPending = {
   items: Array<{ question: string; choices?: string[] }>;
   timeout_sec?: number;
 };
-type ToolCallState = { name: string; argsPreview: string; status: string };
 
 function sessionLabel(item: SessionListItem) {
   return item.title || formatSessionIdDateTime(item.id);
-}
-
-function truncatePreview(text: string, maxLen = 30) {
-  let len = 0;
-  let result = "";
-  for (const ch of text) {
-    const w = ch.charCodeAt(0) > 0x7f ? 2 : 1;
-    if (len + w > maxLen) {
-      result += "…";
-      break;
-    }
-    len += w;
-    result += ch;
-  }
-  return result;
 }
 
 function readSessionFromUrl(): string | undefined {
@@ -93,7 +78,6 @@ function App() {
   const [inputText, setInputText] = useState("");
   const [streamAccumulated, setStreamAccumulated] = useState("");
   const [streamDone, setStreamDone] = useState(true);
-  const [toolCalls, setToolCalls] = useState<ToolCallState[]>([]);
   const [commandList, setCommandList] = useState<CommandItem[]>([]);
   const [selectedCmdIdx, setSelectedCmdIdx] = useState(0);
   const [clarifyPending, setClarifyPending] = useState<ClarifyPending | null>(null);
@@ -255,39 +239,16 @@ function App() {
       scrollDown();
       setStreamAccumulated("");
       setStreamDone(false);
-      setToolCalls([]);
       setClarifyPending(null);
-
-      let accumulated = "";
-      let pendingTools: ToolCallState[] = [];
 
       await send(currentId, text, {
         recoverDisplay: (id) => refreshMessages(id, displayBaseline),
         onToken: (fullText) => {
-          accumulated = fullText;
           setStreamAccumulated(fullText);
           scrollDown();
         },
-        onToolBegin: (data) => {
-          const tool = String(data.tool || "?");
-          const args = (data.args || {}) as Record<string, unknown>;
-          const preview = Object.keys(args)
-            .slice(0, 2)
-            .map((k) => `${k}=${String(args[k]).slice(0, 30)}`)
-            .join(", ");
-          pendingTools = [...pendingTools, { name: tool, argsPreview: preview, status: "running" }];
-          setToolCalls(pendingTools);
-          scrollDown();
-        },
-        onToolResult: (data) => {
-          const tool = String(data.tool || "");
-          if (tool === "clarify") return;
-          pendingTools = pendingTools.map((t) =>
-            t.name === tool && (t.status === "running" || t.status === "pending")
-              ? { ...t, status: "done" }
-              : t,
-          );
-          setToolCalls(pendingTools);
+        onDisplayAppend: (item) => {
+          appendItem(item);
           scrollDown();
         },
         onAwaitingClarify: (data) => {
@@ -299,46 +260,19 @@ function App() {
           }
           scrollDown();
         },
-        onToolError: (data) => {
-          const tool = String(data.tool || "");
-          pendingTools = pendingTools.map((t) =>
-            t.name === tool && (t.status === "running" || t.status === "pending")
-              ? { ...t, status: "error" }
-              : t,
-          );
-          setToolCalls(pendingTools);
-          scrollDown();
-        },
         onError: (msg) => {
           setStreamDone(true);
           appendItem({ type: "message", role: "assistant", content: `⚠️ ${msg}` });
           setStreamAccumulated("");
-          setToolCalls([]);
           scrollDown();
         },
         onDone: (opts) => {
           setStreamDone(true);
           if (opts?.recovered) {
             setStreamAccumulated("");
-            setToolCalls([]);
             scrollDown();
             return;
           }
-          if (pendingTools.length > 0) {
-            appendItem({
-              type: "tool_block",
-              calls: pendingTools.map((t, i) => ({
-                name: t.name,
-                argsPreview: t.argsPreview,
-                status: "done" as const,
-                tool_call_id: `stream-${i}`,
-              })),
-            });
-            pendingTools = [];
-            setToolCalls([]);
-          }
-          const content = accumulated.trim();
-          if (content) appendItem({ type: "message", role: "assistant", content });
           setStreamAccumulated("");
           scrollDown();
           void refreshFridgeMagnets();
@@ -511,15 +445,8 @@ function App() {
               }
               if (item.type === "tool_block") {
                 return (
-                  <div key={`d${i}`} className="chat chat-start">
-                    <div className="tool-bubble text-xs px-3 py-2">
-                      {item.calls.map((c, ci) => (
-                        <div key={ci} className="flex items-center gap-1.5 font-mono">
-                          <span className="text-success shrink-0">✓</span>
-                          <span>{truncatePreview(`${c.name}(${c.argsPreview})`)}</span>
-                        </div>
-                      ))}
-                    </div>
+                  <div key={`d${i}`} className="chat chat-start max-w-full">
+                    <ToolBlockBubble calls={item.calls} />
                   </div>
                 );
               }
@@ -542,27 +469,6 @@ function App() {
                           ))}
                         </ul>
                       ) : null}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-
-            {toolCalls.length > 0 ? (
-              <div className="chat chat-start">
-                <div className="tool-bubble text-xs px-3 py-2">
-                  {toolCalls.map((t, ti) => (
-                    <div key={ti} className="flex items-center gap-1.5 font-mono">
-                      <span className="shrink-0">
-                        {t.status === "running" ? (
-                          <span className="loading loading-spinner loading-xs text-info" />
-                        ) : t.status === "done" ? (
-                          <span className="text-success">✓</span>
-                        ) : (
-                          <span className="text-error">✗</span>
-                        )}
-                      </span>
-                      <span>{truncatePreview(`${t.name}(${t.argsPreview})`)}</span>
                     </div>
                   ))}
                 </div>

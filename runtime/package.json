@@ -9,6 +9,7 @@
     "./turn/*": "./src/turn/*.ts",
     "./loop": "./src/loop/index.ts",
     "./loop/*": "./src/loop/*.ts",
+    "./loop/stream-reply": "./src/loop/stream-reply/index.ts",
     "./conversation": "./src/conversation/index.ts",
     "./conversation/*": "./src/conversation/*.ts",
     "./pipeline": "./src/pipeline/index.ts",

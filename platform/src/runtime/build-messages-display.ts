@@ -41,6 +41,7 @@ export function buildMessagesDisplay(all: SessionMessage[]): DisplayItem[] {
     }
 
     if (role === "assistant" && Array.isArray(msg.tool_calls) && msg.tool_calls.length > 0) {
+      flushPendingBlock();
       const calls = msg.tool_calls.map((tc) => {
         const fn = tc.function;
         const argsRaw = fn?.arguments ?? "{}";

@@ -31,6 +31,7 @@ export type StreamApiEvent =
   | { event: "accepted"; data: Record<string, never> }
   | { event: "token"; data: { content: string } }
   | { event: "content_replace"; data: { content: string } }
+  | { event: "display_append"; data: { item: DisplayItem } }
   | { event: "tool_begin"; data: { tool: string; args: Record<string, unknown>; content: "" } }
   | { event: "tool_result"; data: { tool: string; content: string } }
   | { event: "tool_error"; data: { tool: string; content: string } }

@@ -1,6 +1,6 @@
 import type { StreamEvent } from "@freeanima/runtime/loop";
 import { describe, expect, it } from "bun:test";
-import { ToolRoundCollector } from "../stream-tool-format.ts";
+import { ToolRoundBuffer } from "../stream-tool-format.ts";
 import { applyStreamEvent, initialStreamReplyState, reduceStreamEvents } from "./reducer.ts";
 import { projectVisibleText } from "./project.ts";
 
@@ -11,9 +11,9 @@ async function* streamEvents(items: StreamEvent[]): AsyncGenerator<StreamEvent> 
 function reduceAll(items: StreamEvent[], platform: "discord" | "weixin" | "parlor" = "discord") {
   let state = initialStreamReplyState();
   const effects: ReturnType<typeof applyStreamEvent>["effects"] = [];
-  const collector = new ToolRoundCollector();
+  const buffer = new ToolRoundBuffer();
   for (const event of items) {
-    const result = applyStreamEvent(state, event, platform, collector);
+    const result = applyStreamEvent(state, event, platform, buffer);
     state = result.state;
     effects.push(...result.effects);
   }

@@ -1,4 +1,4 @@
-import type { StreamApiEvent } from "@/lib/types.ts";
+import type { DisplayItem, StreamApiEvent } from "@/lib/types.ts";
 import { pollUntilAssistantReply } from "@/lib/display-recovery.ts";
 import { marked } from "marked";
 import { create } from "zustand";
@@ -11,9 +11,7 @@ type SendDoneOptions = {
 
 type SendCallbacks = {
   onToken?: (text: string) => void;
-  onToolBegin?: (data: Record<string, unknown>) => void;
-  onToolResult?: (data: Record<string, unknown>) => void;
-  onToolError?: (data: Record<string, unknown>) => void;
+  onDisplayAppend?: (item: DisplayItem) => void;
   onAwaitingClarify?: (data: Record<string, unknown>) => void;
   onRecovering?: (active: boolean) => void;
   onError?: (msg: string) => void;
@@ -56,17 +54,20 @@ function handleStreamEvent(
       useChatStore.setState({ streamText: nextText });
       callbacks.onToken?.(nextText);
       break;
-    case "tool_begin":
-      callbacks.onToolBegin?.(ev.data as Record<string, unknown>);
+    case "display_append":
+      if (ev.data.item.type === "message" && ev.data.item.role === "assistant") {
+        nextText = "";
+        useChatStore.setState({ streamText: "" });
+        callbacks.onToken?.("");
+      }
+      callbacks.onDisplayAppend?.(ev.data.item);
       break;
+    case "tool_begin":
     case "tool_result":
-      callbacks.onToolResult?.(ev.data as Record<string, unknown>);
+    case "tool_error":
       break;
     case "awaiting_clarify":
       callbacks.onAwaitingClarify?.(ev.data as Record<string, unknown>);
-      break;
-    case "tool_error":
-      callbacks.onToolError?.(ev.data as Record<string, unknown>);
       break;
     case "interrupted":
       receivedDone = true;

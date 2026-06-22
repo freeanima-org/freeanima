@@ -17,6 +17,7 @@ export const streamEventMethods = [
   "stream.accepted",
   "stream.token",
   "stream.content_replace",
+  "stream.display_append",
   "stream.tool_begin",
   "stream.tool_result",
   "stream.tool_error",
@@ -37,10 +38,24 @@ export const streamEventPayloadSchema = z
 
 export type StreamEventPayload = z.infer<typeof streamEventPayloadSchema>;
 
+export type SapDisplayToolCall = {
+  name: string;
+  argsPreview: string;
+  tool_call_id: string;
+  status: string;
+  args?: Record<string, unknown>;
+  result?: string;
+};
+
+export type SapDisplayItem =
+  | { type: "message"; role: "user" | "assistant"; content: string }
+  | { type: "tool_block"; calls: SapDisplayToolCall[] };
+
 export type StreamApiLikeEvent =
   | { event: "accepted"; data: Record<string, never> }
   | { event: "token"; data: { content: string } }
   | { event: "content_replace"; data: { content: string } }
+  | { event: "display_append"; data: { item: SapDisplayItem } }
   | { event: "tool_begin"; data: { tool: string; args: Record<string, unknown>; content: "" } }
   | { event: "tool_result"; data: { tool: string; content: string } }
   | { event: "tool_error"; data: { tool: string; content: string } }
@@ -64,6 +79,7 @@ const STREAM_METHOD_MAP: Record<StreamApiLikeEvent["event"], StreamEventMethod> 
   accepted: "stream.accepted",
   token: "stream.token",
   content_replace: "stream.content_replace",
+  display_append: "stream.display_append",
   tool_begin: "stream.tool_begin",
   tool_result: "stream.tool_result",
   tool_error: "stream.tool_error",
@@ -175,6 +191,11 @@ export function mapSapStreamMethodToApi(
       return { event: "token", data: { content: String(payload.content ?? "") } };
     case "stream.content_replace":
       return { event: "content_replace", data: { content: String(payload.content ?? "") } };
+    case "stream.display_append":
+      return {
+        event: "display_append",
+        data: { item: payload.item as SapDisplayItem },
+      };
     case "stream.tool_begin":
       return {
         event: "tool_begin",
