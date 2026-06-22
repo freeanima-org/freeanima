@@ -16,14 +16,20 @@ export { MOTION_SLOT_IDS, MOTION_SLOT_LABELS, DEFAULT_BEHAVIOR } from "./compani
 
 export const COMPANION_APP_ID = "companion" as const;
 
-/** Sidecar HTTP 默认端口与扫描范围（dev / Tauri 生产一致） */
+/** Sidecar HTTP 默认端口与扫描范围（dev / Electron 生产一致） */
 export const SATELLITE_PORT_START = 4176;
 export const SATELLITE_PORT_ATTEMPTS = 10;
 export const SATELLITE_PORT_MAX = SATELLITE_PORT_START + SATELLITE_PORT_ATTEMPTS - 1;
 
-/** 与 tauri.conf.json companion 窗口尺寸一致（逻辑 px） */
+/** 与 Electron companion 窗口尺寸一致（逻辑 px） */
 export const COMPANION_WINDOW_WIDTH = 160;
 export const COMPANION_WINDOW_HEIGHT = 260;
+
+/** Electron 设置窗口尺寸（逻辑 px） */
+export const SETTINGS_WINDOW_WIDTH = 840;
+export const SETTINGS_WINDOW_HEIGHT = 720;
+export const SETTINGS_WINDOW_WIDTH_WIN = 960;
+export const SETTINGS_WINDOW_HEIGHT_WIN = 820;
 
 /** sidecar 未找到 FBX2glTF 原生转换器时的用户提示 */
 export const FBX_IMPORT_UNAVAILABLE_MSG =

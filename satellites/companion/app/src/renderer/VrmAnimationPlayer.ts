@@ -7,7 +7,7 @@ import {
 } from "@pixiv/three-vrm-animation";
 import type { VRM } from "@pixiv/three-vrm";
 import { motionManifest } from "@shared/motion-manifest.ts";
-import { resolveMotionForSlot } from "@shared/core/motion-slot-resolve.ts";
+import { resolveLocomotionMotion, resolveMotionForSlot } from "@shared/core/motion-slot-resolve.ts";
 import type {
   MotionLibraryEntry,
   MotionSlotId,
@@ -16,6 +16,9 @@ import type {
 import { companionDebug } from "@/lib/companion-debug.ts";
 
 const manifest = motionManifest;
+const LOOP_FADE_SEC = 0.15;
+const LOCO_FADE_SEC = 0.12;
+const ONE_SHOT_FADE_SEC = 0.15;
 
 export type MotionBindConfig = {
   library: MotionLibraryEntry[];
@@ -30,6 +33,7 @@ export class VrmAnimationPlayer {
   private oneShotAction: THREE.AnimationAction | null = null;
   private locomotionAction: THREE.AnimationAction | null = null;
   private activeLocomotionFile: string | null = null;
+  private activeLocomotionSlot: "walk" | "climb" | null = null;
   private oneShotPlaying = false;
   private loaded = false;
   private motionConfig: MotionBindConfig = { library: [], slots: {} as MotionSlotsConfig };
@@ -39,16 +43,43 @@ export class VrmAnimationPlayer {
     resolveUrl: (path: string) => Promise<string>,
     motionConfig: MotionBindConfig,
   ): Promise<void> {
-    this.disposeMixerOnly();
-    this.vrm = vrm;
-    this.mixer = new THREE.AnimationMixer(vrm.scene);
-    this.motionConfig = motionConfig;
+    const outgoing = this.currentPoseAction();
+    const resumeLocomotion = this.activeLocomotionSlot;
+    const resumeLocomotionRunning = this.locomotionAction?.isRunning() ?? false;
 
     const files = this.collectFiles(motionConfig);
-    await this.loadClips(vrm, resolveUrl, files);
-    if (this.loaded) {
-      this.playIdle();
+    const nextClips = new Map<string, THREE.AnimationClip>();
+    await this.loadClips(vrm, resolveUrl, files, nextClips);
+
+    if (nextClips.size === 0) {
+      this.loaded = false;
+      companionDebug("VRMA bind 无可用 clip", { files: [...files] });
+      return;
     }
+
+    if (!this.mixer || this.vrm !== vrm) {
+      this.disposeMixerOnly();
+      this.vrm = vrm;
+      this.mixer = new THREE.AnimationMixer(vrm.scene);
+    }
+
+    this.clips = nextClips;
+    this.motionConfig = motionConfig;
+    this.loaded = true;
+    this.clearActionRefs();
+
+    companionDebug("VRMA bind 完成", {
+      loaded: this.loaded,
+      clipCount: this.clips.size,
+      files: [...this.clips.keys()],
+      hotReload: Boolean(outgoing),
+    });
+
+    if (resumeLocomotionRunning && resumeLocomotion) {
+      this.playLocomotion(resumeLocomotion, outgoing);
+      return;
+    }
+    this.playIdle(outgoing);
   }
 
   async reload(
@@ -71,6 +102,10 @@ export class VrmAnimationPlayer {
         else if (ref.endsWith(".vrma")) files.add(ref);
       }
     }
+    for (const slot of ["walk", "climb"] as const) {
+      const resolved = resolveLocomotionMotion(slot, motionConfig.slots, motionConfig.library);
+      if (resolved?.file) files.add(resolved.file);
+    }
     return files;
   }
 
@@ -78,16 +113,13 @@ export class VrmAnimationPlayer {
     vrm: VRM,
     resolveUrl: (path: string) => Promise<string>,
     files: Set<string>,
+    target: Map<string, THREE.AnimationClip>,
   ): Promise<void> {
     const loader = new GLTFLoader();
     loader.register((parser) => new VRMAnimationLoaderPlugin(parser));
 
-    let anyLoaded = false;
     for (const file of files) {
-      if (this.clips.has(file)) {
-        anyLoaded = true;
-        continue;
-      }
+      if (target.has(file)) continue;
       try {
         const url = await resolveUrl(`${manifest.baseUrl}/${file}`);
         const gltf = await loader.loadAsync(url);
@@ -95,19 +127,11 @@ export class VrmAnimationPlayer {
         const vrma = animations?.[0];
         if (!vrma) continue;
         const clip = createVRMAnimationClip(vrma, vrm);
-        this.clips.set(file, clip);
-        anyLoaded = true;
+        target.set(file, clip);
       } catch (e) {
         console.warn(`[companion] VRMA 加载失败: ${file}`, e);
       }
     }
-
-    this.loaded = anyLoaded;
-    companionDebug("VRMA bind 完成", {
-      loaded: this.loaded,
-      clipCount: this.clips.size,
-      files: [...this.clips.keys()],
-    });
   }
 
   hasClips(): boolean {
@@ -120,22 +144,43 @@ export class VrmAnimationPlayer {
   }
 
   hasLocomotionClip(slot: "walk" | "climb"): boolean {
-    return this.hasSlotMotion(slot);
+    const resolved = resolveLocomotionMotion(
+      slot,
+      this.motionConfig.slots,
+      this.motionConfig.library,
+    );
+    return Boolean(resolved?.file && this.clips.has(resolved.file));
   }
 
   isPlayingOneShot(): boolean {
     return this.oneShotPlaying;
   }
 
-  playIdle(): void {
+  playIdle(from?: THREE.AnimationAction | null): void {
     const resolved = resolveMotionForSlot(
       "idle",
       this.motionConfig.slots,
       this.motionConfig.library,
     );
-    if (resolved?.file) {
-      this.playMotionFile(resolved.file, true);
+    if (!resolved?.file) return;
+
+    const clip = this.clips.get(resolved.file);
+    if (
+      !from &&
+      !this.locomotionAction &&
+      !this.oneShotPlaying &&
+      this.idleAction?.isRunning() &&
+      clip &&
+      this.idleAction.getClip() === clip
+    ) {
+      return;
     }
+
+    const outgoing = from ?? this.currentPoseAction();
+    this.releaseLocomotionRef();
+    this.releaseOneShotRef();
+    this.idleAction = this.startLoopAction(resolved.file, outgoing, LOOP_FADE_SEC);
+    this.oneShotPlaying = false;
   }
 
   playSlot(slot: MotionSlotId, motionId?: string): void {
@@ -143,9 +188,7 @@ export class VrmAnimationPlayer {
       slot,
       this.motionConfig.slots,
       this.motionConfig.library,
-      {
-        motionId,
-      },
+      { motionId },
     );
     if (!resolved?.file) {
       companionDebug("playSlot 无解析结果", { slot, motionId });
@@ -155,7 +198,6 @@ export class VrmAnimationPlayer {
     this.playMotionFile(resolved.file, loop);
   }
 
-  /** 点击身体任意部位：从 in_place 槽位随机播放；槽位为空则不播 */
   playZoneMotion(_zone: string): void {
     const resolved = resolveMotionForSlot(
       "in_place",
@@ -175,33 +217,27 @@ export class VrmAnimationPlayer {
 
   private playMotionFile(file: string, loop: boolean): void {
     if (!this.mixer || !this.vrm) return;
-    const clip = this.clips.get(file);
-    if (!clip) {
+    if (!this.clips.has(file)) {
       companionDebug("playMotion 无 clip", { file, available: [...this.clips.keys()] });
       return;
     }
 
+    const outgoing = this.currentPoseAction();
+
     if (loop) {
-      this.stopLocomotion();
-      this.stopOneShot();
-      if (this.idleAction) this.idleAction.fadeOut(0.15);
-      this.idleAction = this.mixer.clipAction(clip);
-      this.idleAction.reset();
-      this.idleAction.setLoop(THREE.LoopRepeat, Number.POSITIVE_INFINITY);
-      this.idleAction.fadeIn(0.15).play();
+      this.releaseLocomotionRef();
+      this.releaseOneShotRef();
+      this.idleAction = this.startLoopAction(file, outgoing, LOOP_FADE_SEC);
       this.oneShotPlaying = false;
       return;
     }
 
-    this.stopLocomotion();
-    this.stopOneShot();
-    if (this.idleAction) this.idleAction.fadeOut(0.15);
+    this.releaseLocomotionRef();
+    this.releaseOneShotRef();
+    this.releaseIdleRef();
 
-    this.oneShotAction = this.mixer.clipAction(clip);
-    this.oneShotAction.reset();
-    this.oneShotAction.setLoop(THREE.LoopOnce, 1);
-    this.oneShotAction.clampWhenFinished = true;
-    this.oneShotAction.fadeIn(0.15).play();
+    this.oneShotAction = this.startOneShotAction(file, outgoing, ONE_SHOT_FADE_SEC);
+    if (!this.oneShotAction) return;
     this.oneShotPlaying = true;
 
     const onFinished = (event: { action: THREE.AnimationAction }): void => {
@@ -214,38 +250,39 @@ export class VrmAnimationPlayer {
     this.mixer.addEventListener("finished", onFinished);
   }
 
-  playLocomotion(slot: "walk" | "climb"): void {
+  playLocomotion(slot: "walk" | "climb", from?: THREE.AnimationAction | null): void {
     if (!this.mixer || !this.vrm) return;
-    const resolved = resolveMotionForSlot(slot, this.motionConfig.slots, this.motionConfig.library);
+    const resolved = resolveLocomotionMotion(
+      slot,
+      this.motionConfig.slots,
+      this.motionConfig.library,
+    );
     const file = resolved?.file;
-    if (!file) return;
-
-    const clip = this.clips.get(file);
-    if (!clip) return;
+    if (!file || !this.clips.has(file)) {
+      companionDebug("playLocomotion 无可用 clip", {
+        slot,
+        file,
+        available: [...this.clips.keys()],
+      });
+      return;
+    }
 
     if (this.activeLocomotionFile === file && this.locomotionAction?.isRunning()) {
       return;
     }
 
-    this.stopOneShot();
-    if (this.idleAction) {
-      this.idleAction.fadeOut(0.12);
-      this.idleAction = null;
-    }
-    if (this.locomotionAction) this.locomotionAction.fadeOut(0.12);
+    this.releaseOneShotRef();
+    this.releaseIdleRef();
 
-    this.locomotionAction = this.mixer.clipAction(clip);
-    this.locomotionAction.reset();
-    this.locomotionAction.setLoop(THREE.LoopRepeat, Number.POSITIVE_INFINITY);
-    this.locomotionAction.fadeIn(0.12).play();
+    const outgoing = from ?? this.currentPoseAction();
+    this.locomotionAction = this.startLoopAction(file, outgoing, LOCO_FADE_SEC);
     this.activeLocomotionFile = file;
+    this.activeLocomotionSlot = slot;
   }
 
   resumeFromLocomotion(): void {
-    this.stopLocomotion();
-    if (!this.oneShotPlaying) {
-      this.playIdle();
-    }
+    if (this.oneShotPlaying) return;
+    this.playIdle(this.locomotionAction ?? this.idleAction);
   }
 
   update(delta: number): void {
@@ -260,30 +297,86 @@ export class VrmAnimationPlayer {
   }
 
   private disposeMixerOnly(): void {
-    this.stopOneShot();
-    this.stopLocomotion();
-    if (this.idleAction) {
-      this.idleAction.stop();
-      this.idleAction = null;
-    }
+    this.clearActionRefs();
     this.mixer?.stopAllAction();
     this.mixer = null;
     this.oneShotPlaying = false;
   }
 
-  private stopLocomotion(): void {
-    if (this.locomotionAction) {
-      this.locomotionAction.stop();
-      this.locomotionAction = null;
-    }
+  private clearActionRefs(): void {
+    this.idleAction = null;
+    this.oneShotAction = null;
+    this.locomotionAction = null;
     this.activeLocomotionFile = null;
+    this.activeLocomotionSlot = null;
+    this.oneShotPlaying = false;
   }
 
-  private stopOneShot(): void {
-    if (this.oneShotAction) {
-      this.oneShotAction.stop();
-      this.oneShotAction = null;
+  private currentPoseAction(): THREE.AnimationAction | null {
+    if (this.oneShotAction?.isRunning()) return this.oneShotAction;
+    if (this.locomotionAction?.isRunning()) return this.locomotionAction;
+    if (this.idleAction?.isRunning()) return this.idleAction;
+    return this.locomotionAction ?? this.idleAction ?? this.oneShotAction;
+  }
+
+  private startLoopAction(
+    file: string,
+    from: THREE.AnimationAction | null | undefined,
+    fadeSec: number,
+  ): THREE.AnimationAction | null {
+    if (!this.mixer) return null;
+    const clip = this.clips.get(file);
+    if (!clip) return null;
+
+    const next = this.mixer.clipAction(clip);
+    next.reset();
+    next.setLoop(THREE.LoopRepeat, Number.POSITIVE_INFINITY);
+    this.crossfadeOrFadeIn(next, from, fadeSec);
+    return next;
+  }
+
+  private startOneShotAction(
+    file: string,
+    from: THREE.AnimationAction | null | undefined,
+    fadeSec: number,
+  ): THREE.AnimationAction | null {
+    if (!this.mixer) return null;
+    const clip = this.clips.get(file);
+    if (!clip) return null;
+
+    const next = this.mixer.clipAction(clip);
+    next.reset();
+    next.setLoop(THREE.LoopOnce, 1);
+    next.clampWhenFinished = true;
+    this.crossfadeOrFadeIn(next, from, fadeSec);
+    return next;
+  }
+
+  private crossfadeOrFadeIn(
+    next: THREE.AnimationAction,
+    from: THREE.AnimationAction | null | undefined,
+    fadeSec: number,
+  ): void {
+    if (from && from !== next && (from.isRunning() || from.getEffectiveWeight() > 0)) {
+      next.crossFadeFrom(from, fadeSec, false);
+    } else {
+      next.fadeIn(fadeSec);
     }
+    next.play();
+  }
+
+  private releaseIdleRef(): void {
+    this.idleAction = null;
+  }
+
+  private releaseLocomotionRef(): void {
+    this.locomotionAction = null;
+    this.activeLocomotionFile = null;
+    this.activeLocomotionSlot = null;
+  }
+
+  private releaseOneShotRef(): void {
+    this.oneShotAction = null;
     this.oneShotPlaying = false;
   }
 }

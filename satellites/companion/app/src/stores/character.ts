@@ -12,7 +12,12 @@ import {
   type ScreenPoint,
   type ScreenRect,
 } from "@/lib/window-metrics.ts";
-import { getPatrolScreen, getWindowPosition, isTauri, moveWindow } from "@/lib/tauri.ts";
+import {
+  getPatrolScreen,
+  getWindowPosition,
+  isCompanionOverlay,
+  moveWindow,
+} from "@/lib/electron.ts";
 import {
   interpolateJourneyPoint,
   journeyDurationMs,
@@ -67,7 +72,7 @@ function companionStageElement(): HTMLElement | null {
 }
 
 async function syncWindowPositionFromShell(): Promise<ScreenPoint> {
-  if (isTauri()) {
+  if (isCompanionOverlay()) {
     const point = await getWindowPosition();
     currentPosition = point;
     return point;
@@ -101,7 +106,7 @@ async function readPatrolScreenAndWindow(): Promise<{
   screen: ScreenRect;
   window: { width: number; height: number };
 }> {
-  if (isTauri()) {
+  if (isCompanionOverlay()) {
     const bounds = await getPatrolScreen();
     return {
       screen: {
@@ -152,7 +157,7 @@ function nextPatrolPoint(): ScreenPoint {
 
 function applyPosition(point: ScreenPoint): void {
   const clamped = clampPatrolPosition(point, patrolBounds);
-  if (isTauri()) {
+  if (isCompanionOverlay()) {
     void moveWindow(clamped.x, clamped.y);
   } else {
     moveCompanionStage(clamped.x, clamped.y);
@@ -316,7 +321,7 @@ function tickPatrolTimer(): void {
 }
 
 export function syncCompanionStagePosition(): void {
-  if (isTauri()) return;
+  if (isCompanionOverlay()) return;
   const point = currentPosition ?? defaultWebCompanionPosition();
   moveCompanionStage(point.x, point.y);
 }
@@ -327,7 +332,7 @@ export function onCharacterModelReady(): void {
 }
 
 async function readStartupSpawnPoint(): Promise<ScreenPoint> {
-  if (isTauri()) {
+  if (isCompanionOverlay()) {
     const bounds = await getPatrolScreen();
     return buildWorkAreaCenter(
       {
@@ -380,7 +385,7 @@ export function recordInteraction(): void {
 }
 
 export async function syncCompanionWindowPosition(): Promise<void> {
-  if (!isTauri()) return;
+  if (!isCompanionOverlay()) return;
   await syncWindowPositionFromShell();
 }
 

@@ -1,10 +1,19 @@
-import { existsSync, statSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { extname, join } from "node:path";
 import { jsonResponse, withCors } from "./http/cors.ts";
+import { companionPackageRoot } from "./companion-root.ts";
 import { resolveModelFile } from "./model-path.ts";
 import { resolveMotionFile } from "./motions.ts";
 
-const DIST_DIR = join(import.meta.dir, "..", "dist");
+let distDirOverride: string | null = null;
+
+export function setStaticDistDir(dir: string | null): void {
+  distDirOverride = dir;
+}
+
+function distDir(): string {
+  return distDirOverride ?? join(companionPackageRoot(), "dist");
+}
 
 const MIME: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
@@ -22,11 +31,13 @@ const MIME: Record<string, string> = {
 function fileResponse(filePath: string): Response {
   const ext = extname(filePath);
   const headers = MIME[ext] ? { "Content-Type": MIME[ext]! } : undefined;
-  return withCors(new Response(Bun.file(filePath), { headers }));
+  const body = readFileSync(filePath);
+  return withCors(new Response(body, { headers }));
 }
 
 export function serveStatic(pathname: string): Response {
   const rel = pathname === "/" ? "/index.html" : pathname;
+  const DIST_DIR = distDir();
 
   if (rel.startsWith("/models/")) {
     const modelFile = resolveModelFile(rel);
@@ -56,18 +67,14 @@ export function serveStatic(pathname: string): Response {
     return fileResponse(filePath);
   }
 
-  const publicPath = join(import.meta.dir, "..", "public", rel.replace(/^\//, ""));
+  const publicPath = join(companionPackageRoot(), "public", rel.replace(/^\//, ""));
   if (existsSync(publicPath) && statSync(publicPath).isFile()) {
     return fileResponse(publicPath);
   }
 
   const indexPath = join(DIST_DIR, "index.html");
   if (existsSync(indexPath)) {
-    return withCors(
-      new Response(Bun.file(indexPath), {
-        headers: { "Content-Type": "text/html; charset=utf-8" },
-      }),
-    );
+    return fileResponse(indexPath);
   }
 
   return jsonResponse({ error: "Not Found" }, 404);

@@ -1,0 +1,98 @@
+import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
+import type { WebSocketServer } from "ws";
+
+async function readRequestBody(req: IncomingMessage): Promise<Buffer | undefined> {
+  const method = req.method ?? "GET";
+  if (method === "GET" || method === "HEAD") {
+    return undefined;
+  }
+  const chunks: Buffer[] = [];
+  for await (const chunk of req) {
+    chunks.push(chunk as Buffer);
+  }
+  return Buffer.concat(chunks);
+}
+
+export async function incomingMessageToRequest(
+  req: IncomingMessage,
+  baseUrl: string,
+): Promise<Request> {
+  const url = new URL(req.url ?? "/", baseUrl);
+  const headers = new Headers();
+  for (const [key, value] of Object.entries(req.headers)) {
+    if (value === undefined) continue;
+    headers.set(key, Array.isArray(value) ? value.join(", ") : value);
+  }
+  const body = await readRequestBody(req);
+  return new Request(url, {
+    method: req.method ?? "GET",
+    headers,
+    ...(body !== undefined ? { body: new Uint8Array(body) } : {}),
+  });
+}
+
+export async function writeFetchResponse(res: ServerResponse, response: Response): Promise<void> {
+  res.statusCode = response.status;
+  res.statusMessage = response.statusText;
+  response.headers.forEach((value, key) => {
+    res.setHeader(key, value);
+  });
+  const buffer = Buffer.from(await response.arrayBuffer());
+  res.end(buffer);
+}
+
+export type NodeHttpServerOptions = {
+  port: number;
+  host?: string;
+  baseUrl: string;
+  handler: (req: Request) => Promise<Response>;
+  wss: WebSocketServer;
+  wsPath?: string;
+};
+
+export function createNodeHttpServer(opts: NodeHttpServerOptions): Server {
+  const wsPath = opts.wsPath ?? "/api/runtime/ws";
+  const server = createServer((req, res) => {
+    void (async () => {
+      try {
+        const request = await incomingMessageToRequest(req, opts.baseUrl);
+        const response = await opts.handler(request);
+        await writeFetchResponse(res, response);
+      } catch (error) {
+        if (!res.headersSent) {
+          res.statusCode = 500;
+          res.setHeader("Content-Type", "application/json");
+          const message = error instanceof Error ? error.message : String(error);
+          res.end(JSON.stringify({ error: message }));
+        }
+      }
+    })();
+  });
+
+  server.on("upgrade", (req, socket, head) => {
+    const pathname = req.url ? new URL(req.url, opts.baseUrl).pathname : "";
+    if (pathname !== wsPath) {
+      socket.destroy();
+      return;
+    }
+    opts.wss.handleUpgrade(req, socket, head, (ws) => {
+      opts.wss.emit("connection", ws, req);
+    });
+  });
+
+  return server;
+}
+
+export function listenServer(server: Server, port: number, host = "127.0.0.1"): Promise<number> {
+  return new Promise((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(port, host, () => {
+      const address = server.address();
+      if (address && typeof address === "object") {
+        resolve(address.port);
+        return;
+      }
+      resolve(port);
+    });
+  });
+}

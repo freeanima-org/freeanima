@@ -6,6 +6,10 @@ import { startCompanionServer, type CompanionServerHandle } from "../server/inde
 import {
   COMPANION_WINDOW_HEIGHT,
   COMPANION_WINDOW_WIDTH,
+  SETTINGS_WINDOW_HEIGHT,
+  SETTINGS_WINDOW_HEIGHT_WIN,
+  SETTINGS_WINDOW_WIDTH,
+  SETTINGS_WINDOW_WIDTH_WIN,
   SATELLITE_PORT_START,
 } from "../shared/constants.ts";
 import type { PatrolScreenInfo } from "./types.ts";
@@ -29,7 +33,7 @@ function companionDistDir(): string {
 }
 
 function preloadPath(): string {
-  return join(app.getAppPath(), "electron-dist", "preload.js");
+  return join(app.getAppPath(), "electron-dist", "preload.cjs");
 }
 
 function iconPath(name: string): string {
@@ -70,21 +74,32 @@ function createCompanionWindow(url: string): BrowserWindow {
     height: COMPANION_WINDOW_HEIGHT,
     transparent: true,
     frame: false,
+    thickFrame: false,
     alwaysOnTop: true,
     resizable: false,
     hasShadow: false,
     show: false,
+    title: "",
+    skipTaskbar: true,
+    backgroundColor: "#00000000",
     webPreferences: {
       preload: preloadPath(),
       contextIsolation: true,
       nodeIntegration: false,
-      additionalArguments: [`--companion-api-origin=${url}`],
+      additionalArguments: [`--companion-api-origin=${url}`, "--companion-window=overlay"],
     },
   });
 
+  // Windows 无边框窗仍会把 document.title 渲染成顶部标题条，须拦截
+  win.on("page-title-updated", (event) => {
+    event.preventDefault();
+    win.setTitle("");
+  });
+
   process.env.COMPANION_API_ORIGIN = url;
-  void win.loadURL(`${url}/`);
+  void win.loadURL(`${url}/?view=overlay`);
   win.once("ready-to-show", () => {
+    win.setTitle("");
     win.show();
     win.focus();
   });
@@ -93,21 +108,33 @@ function createCompanionWindow(url: string): BrowserWindow {
   return win;
 }
 
+function settingsWindowSize(): { width: number; height: number } {
+  if (process.platform === "win32") {
+    return { width: SETTINGS_WINDOW_WIDTH_WIN, height: SETTINGS_WINDOW_HEIGHT_WIN };
+  }
+  return { width: SETTINGS_WINDOW_WIDTH, height: SETTINGS_WINDOW_HEIGHT };
+}
+
 function createSettingsWindow(url: string): BrowserWindow {
+  const { width, height } = settingsWindowSize();
   const win = new BrowserWindow({
-    width: 420,
-    height: 600,
+    width,
+    height,
+    minWidth: width,
+    minHeight: Math.round(height * 0.75),
     show: false,
     center: true,
+    autoHideMenuBar: true,
+    title: "FreeAnima Companion 设置",
     webPreferences: {
       preload: preloadPath(),
       contextIsolation: true,
       nodeIntegration: false,
-      additionalArguments: [`--companion-api-origin=${url}`],
+      additionalArguments: [`--companion-api-origin=${url}`, "--companion-window=settings"],
     },
   });
 
-  void win.loadURL(`${url}/#/settings`);
+  void win.loadURL(`${url}/?view=settings`);
   return win;
 }
 
@@ -271,6 +298,7 @@ async function bootstrap(): Promise<void> {
   }
 
   registerIpc();
+  Menu.setApplicationMenu(null);
   companionWindow = createCompanionWindow(serverHandle.url);
   settingsWindow = createSettingsWindow(serverHandle.url);
   createTray();

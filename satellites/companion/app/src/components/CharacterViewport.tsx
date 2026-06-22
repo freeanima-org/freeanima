@@ -9,7 +9,7 @@ import {
 } from "@/stores/character.ts";
 import { getVrmBackend } from "@/renderer/VrmBackend.ts";
 import { companionDebug } from "@/lib/companion-debug.ts";
-import { getWindowPosition, isTauri, moveWindow } from "@/lib/tauri.ts";
+import { getWindowPosition, isCompanionOverlay, moveWindow } from "@/lib/electron.ts";
 import { COMPANION_WINDOW_HEIGHT, COMPANION_WINDOW_WIDTH } from "@/lib/window-metrics.ts";
 
 const DRAG_THRESHOLD_PX = 8;
@@ -84,13 +84,13 @@ export function CharacterViewport({
       stageY: origin.y,
       winX: 0,
       winY: 0,
-      winReady: !isTauri(),
+      winReady: !isCompanionOverlay(),
       accumDx: 0,
       accumDy: 0,
     };
     event.currentTarget.setPointerCapture(event.pointerId);
 
-    if (isTauri()) {
+    if (isCompanionOverlay()) {
       void getWindowPosition().then(({ x, y }) => {
         const down = pointerDownRef.current;
         if (!down) return;
@@ -111,14 +111,14 @@ export function CharacterViewport({
       draggingRef.current = true;
     }
 
-    if (isTauri() && draggingRef.current && down.winReady) {
+    if (isCompanionOverlay() && draggingRef.current && down.winReady) {
       down.accumDx += event.movementX;
       down.accumDy += event.movementY;
       void moveWindow(down.winX + Math.round(down.accumDx), down.winY + Math.round(down.accumDy));
       return;
     }
 
-    if (!isTauri() && draggingRef.current) {
+    if (!isCompanionOverlay() && draggingRef.current) {
       moveCompanionStage(
         down.stageX + (event.clientX - down.clientX),
         down.stageY + (event.clientY - down.clientY),
@@ -145,7 +145,7 @@ export function CharacterViewport({
     const moved = Math.hypot(event.clientX - down.clientX, event.clientY - down.clientY);
     draggingRef.current = false;
     useCompanionStore.getState().setPointerActive(false);
-    if (isTauri()) {
+    if (isCompanionOverlay()) {
       void syncCompanionWindowPosition();
     }
     if (moved > DRAG_THRESHOLD_PX) {
@@ -193,7 +193,7 @@ export function CharacterViewport({
     }
   };
 
-  const webMode = !isTauri();
+  const webMode = !isCompanionOverlay();
 
   return (
     <div

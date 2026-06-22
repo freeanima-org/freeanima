@@ -1,6 +1,7 @@
 import { type Server } from "node:http";
 import { join } from "node:path";
 import { WebSocketServer } from "ws";
+import { companionPackageRoot } from "./companion-root.ts";
 import { connectSap } from "./sap/run.ts";
 import { corsPreflight, jsonResponse } from "./http/cors.ts";
 import { saveConfig, hubUrlFromConfig, type CompanionConfig } from "./config.ts";
@@ -285,7 +286,7 @@ export async function startCompanionServer(
   if (opts.distDir) {
     setStaticDistDir(opts.distDir);
   } else {
-    setStaticDistDir(join(import.meta.dir, "..", "dist"));
+    setStaticDistDir(join(companionPackageRoot(), "dist"));
   }
 
   const wss = new WebSocketServer({ noServer: true });

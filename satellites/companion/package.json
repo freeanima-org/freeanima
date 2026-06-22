@@ -1,20 +1,24 @@
 {
   "name": "@freeanima/satellite-companion",
+  "description": "FreeAnima 桌面伴侣（Electron）",
+  "author": "FreeAnima",
+  "license": "MIT",
   "private": true,
   "type": "module",
+  "main": "electron-dist/main.js",
   "scripts": {
     "postinstall": "bun scripts/ensure-fbx2gltf.ts",
     "setup:fbx": "bun scripts/ensure-fbx2gltf.ts --strict",
     "dev": "bun dev.ts",
+    "dev:electron": "bun dev-electron.ts",
     "build": "bun build.ts",
-    "build:sidecar": "bun prepare-sidecar.ts",
-    "build:tauri": "bun build-tauri.ts",
-    "build:windows": "bun build-tauri.ts --target x86_64-pc-windows-gnu",
-    "build:windows:installer": "COMPANION_BUILD_PROFILE=release bun build-tauri.ts --target x86_64-pc-windows-gnu",
-    "build:macos": "bun build-tauri.ts --target aarch64-apple-darwin",
-    "build:macos:intel": "bun build-tauri.ts --target x86_64-apple-darwin",
-    "build:macos:release": "COMPANION_BUILD_PROFILE=release bun build-tauri.ts --target aarch64-apple-darwin",
-    "build:macos:intel:release": "COMPANION_BUILD_PROFILE=release bun build-tauri.ts --target x86_64-apple-darwin",
+    "build:electron": "bun build-electron.ts",
+    "build:windows": "bun build-electron.ts --platform win",
+    "build:windows:installer": "COMPANION_BUILD_PROFILE=release bun build-electron.ts --platform win",
+    "build:macos": "bun build-electron.ts --platform mac",
+    "build:macos:intel": "COMPANION_BUILD_PROFILE=release bun build-electron.ts --platform mac",
+    "build:macos:release": "COMPANION_BUILD_PROFILE=release bun build-electron.ts --platform mac",
+    "build:macos:intel:release": "COMPANION_BUILD_PROFILE=release bun build-electron.ts --platform mac",
     "start": "bun build.ts && bun server/index.ts"
   },
   "dependencies": {
@@ -27,16 +31,24 @@
     "react": "19",
     "react-dom": "19",
     "three": "^0.175.0",
+    "ws": "^8.18.3",
     "zod": "catalog:",
     "zustand": "^5.0.14"
   },
   "devDependencies": {
-    "@types/bun": "catalog:",
+    "@types/node": "catalog:",
     "@types/react": "^19.2.16",
     "@types/react-dom": "^19.2.3",
     "@types/three": "^0.175.0",
+    "@types/ws": "^8.18.1",
     "bun-plugin-tailwind": "^0.1.2",
     "daisyui": "^5.5.20",
+    "electron": "^35.1.5",
+    "electron-builder": "^26.0.12",
+    "esbuild": "^0.25.5",
     "tailwindcss": "^4.3.0"
+  },
+  "build": {
+    "extends": "electron-builder.yml"
   }
 }

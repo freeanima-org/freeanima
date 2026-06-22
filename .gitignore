@@ -55,21 +55,12 @@ messages/.zh-cn-ref/
 gettextization.failed.po
 *.mo
 
-# Companion desktop shell (Tauri / sidecar binaries)
-satellites/companion/dist/
-satellites/companion/companion-config.json
-satellites/companion/shell/target/
-satellites/companion/shell/src-tauri/bin/
-satellites/companion/shell/src-tauri/resources/sidecar/
+# Companion desktop (Electron)
+satellites/companion/electron-dist/
+satellites/companion/release/
+satellites/companion/build-resources/
 satellites/companion/.cache/
-satellites/companion/shell/src-tauri/gen/
-# `cargo tauri icon` 生成的平台额外图标（保留 icon.png / icon.ico / tauri.conf 引用的 png）
-satellites/companion/shell/src-tauri/icons/android/
-satellites/companion/shell/src-tauri/icons/ios/
-satellites/companion/shell/src-tauri/icons/Square*
-satellites/companion/shell/src-tauri/icons/StoreLogo.png
-satellites/companion/shell/src-tauri/icons/64x64.png
+satellites/companion/companion-config.json
 
-target/
-
+# Misc
 /tmp/

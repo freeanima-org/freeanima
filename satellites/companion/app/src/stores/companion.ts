@@ -6,8 +6,11 @@ import {
   uploadModel as uploadModelApi,
   type CompanionConfig,
 } from "@/lib/api.ts";
-import { emitConfigChanged, setPointerActive as setShellPointerActive } from "@/lib/tauri.ts";
-import { isTauri } from "@/lib/tauri.ts";
+import {
+  emitConfigChanged,
+  isCompanionOverlay,
+  setPointerActive as setShellPointerActive,
+} from "@/lib/electron.ts";
 import type { CompanionBehavior, ModelEntry, MotionSlotsConfig } from "@shared/companion-schema.ts";
 import type { MotionLibraryEntry } from "@shared/constants.ts";
 import { DEFAULT_BEHAVIOR } from "@shared/companion-schema.ts";
@@ -57,10 +60,22 @@ type CompanionState = {
   setSettingsOpen: (open: boolean) => void;
 };
 
+function visualConfigChanged(cfg: CompanionConfig, prev?: CompanionState): boolean {
+  if (!prev) return true;
+  const modelPath = cfg.model_available ? cfg.model_path : "";
+  if (prev.modelPath !== modelPath) return true;
+  if (prev.activeModelId !== cfg.active_model_id) return true;
+  if (JSON.stringify(prev.motionSlots) !== JSON.stringify(cfg.motion_slots)) return true;
+  if (JSON.stringify(prev.motionLibrary) !== JSON.stringify(cfg.motion_library)) return true;
+  return false;
+}
+
 function applyConfigToState(cfg: CompanionConfig, prev?: CompanionState): Partial<CompanionState> {
+  const modelPath = cfg.model_available ? cfg.model_path : "";
+  const bumpRevision = visualConfigChanged(cfg, prev);
   return {
     hubUrl: cfg.hub_url,
-    modelPath: cfg.model_available ? cfg.model_path : "",
+    modelPath,
     instanceId: cfg.instance_id,
     sapConnected: cfg.sap_connected,
     fbxImportAvailable: cfg.fbx_import_available,
@@ -69,9 +84,8 @@ function applyConfigToState(cfg: CompanionConfig, prev?: CompanionState): Partia
     motionLibrary: cfg.motion_library,
     motionSlots: cfg.motion_slots,
     behavior: cfg.behavior ?? DEFAULT_BEHAVIOR,
-    modelLoading:
-      cfg.model_available && !(prev?.characterReady && prev.modelPath === cfg.model_path),
-    configRevision: (prev?.configRevision ?? 0) + 1,
+    modelLoading: cfg.model_available && !(prev?.characterReady && prev.modelPath === modelPath),
+    configRevision: bumpRevision ? (prev?.configRevision ?? 0) + 1 : (prev?.configRevision ?? 0),
   };
 }
 
@@ -105,7 +119,7 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
 
   setPointerActive(active) {
     set({ pointerActive: active });
-    if (isTauri()) {
+    if (isCompanionOverlay()) {
       void setShellPointerActive(active);
     }
   },
@@ -132,7 +146,8 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
     if (hubChanged) {
       resetSidecarOriginCache();
     }
-    const modelChanged = prev.modelPath !== cfg.model_path;
+    const modelPath = cfg.model_available ? cfg.model_path : "";
+    const modelChanged = prev.modelPath !== modelPath;
     set({
       ...applyConfigToState(cfg, prev),
       loading: false,
@@ -157,13 +172,6 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
     try {
       const cfg = await fetchCompanionConfig();
       get().applyConfig(cfg);
-      const backend = get().backendRef.current;
-      if (backend && get().characterReady) {
-        await backend.reloadAnimations({
-          library: cfg.motion_library,
-          slots: cfg.motion_slots,
-        });
-      }
     } catch (e) {
       set({ error: e instanceof Error ? e.message : String(e) });
     }

@@ -58,6 +58,7 @@ export class VrmBackend implements CharacterBackend {
   private framing: VrmFramingState | null = null;
   private facingOffsetY = 0;
   private travelKind: LocomotionKind = "walk";
+  private loadGeneration = 0;
 
   constructor(canvas: HTMLCanvasElement) {
     this.scene = new THREE.Scene();
@@ -86,17 +87,16 @@ export class VrmBackend implements CharacterBackend {
   }
 
   async load(source: string, motionConfig: MotionBindConfig): Promise<void> {
-    if (this.vrm) {
-      this.animationPlayer.dispose();
-      VRMUtils.deepDispose(this.vrm.scene);
-      this.scene.remove(this.vrm.scene);
-      this.vrm = null;
-    }
+    const generation = ++this.loadGeneration;
+    this.stopRenderLoop();
+    this.clearCharacterFromScene();
 
     const loader = new GLTFLoader();
     loader.register((parser) => new VRMLoaderPlugin(parser));
 
     const gltf = await loader.loadAsync(source);
+    if (generation !== this.loadGeneration) return;
+
     const vrm = gltf.userData.vrm as VRM | undefined;
     if (!vrm) {
       throw new Error("not a VRM model");
@@ -112,7 +112,12 @@ export class VrmBackend implements CharacterBackend {
     attachLookAtQuaternionProxy(vrm);
 
     await this.animationPlayer.bind(vrm, (path) => this.resolveMotionUrl(path), motionConfig);
-    this.startLoop();
+    if (generation !== this.loadGeneration) {
+      this.clearCharacterFromScene();
+      return;
+    }
+    this.syncTravelAnimation();
+    this.startRenderLoop();
   }
 
   async reloadAnimations(motionConfig: MotionBindConfig): Promise<void> {
@@ -122,6 +127,14 @@ export class VrmBackend implements CharacterBackend {
       (path) => this.resolveMotionUrl(path),
       motionConfig,
     );
+    this.syncTravelAnimation();
+  }
+
+  private syncTravelAnimation(): void {
+    if (!this.travelMoving || !this.vrm) return;
+    if (this.useVrmaLocomotion(this.travelKind)) {
+      this.animationPlayer.playLocomotion(this.travelKind);
+    }
   }
 
   playSlot(slot: MotionSlotId, motionId?: string): void {
@@ -298,20 +311,36 @@ export class VrmBackend implements CharacterBackend {
   }
 
   dispose(): void {
-    if (this.animationId !== null) {
-      cancelAnimationFrame(this.animationId);
-      this.animationId = null;
-    }
-    this.animationPlayer.dispose();
-    if (this.vrm) {
-      VRMUtils.deepDispose(this.vrm.scene);
-      this.vrm = null;
-    }
+    this.loadGeneration += 1;
+    this.stopRenderLoop();
+    this.clearCharacterFromScene();
     this.framing = null;
     this.renderer.dispose();
   }
 
-  private startLoop(): void {
+  private stopRenderLoop(): void {
+    if (this.animationId !== null) {
+      cancelAnimationFrame(this.animationId);
+      this.animationId = null;
+    }
+  }
+
+  private clearCharacterFromScene(): void {
+    this.animationPlayer.dispose();
+    if (this.vrm) {
+      this.scene.remove(this.vrm.scene);
+      VRMUtils.deepDispose(this.vrm.scene);
+      this.vrm = null;
+    }
+    const extras = this.scene.children.filter((child) => !(child instanceof THREE.Light));
+    for (const child of extras) {
+      this.scene.remove(child);
+      VRMUtils.deepDispose(child);
+    }
+  }
+
+  private startRenderLoop(): void {
+    this.stopRenderLoop();
     const tick = (): void => {
       this.animationId = requestAnimationFrame(tick);
       const delta = this.clock.getDelta();
@@ -326,10 +355,17 @@ export class VrmBackend implements CharacterBackend {
 }
 
 let sharedBackend: VrmBackend | null = null;
+let sharedBackendCanvas: HTMLCanvasElement | null = null;
 
 export function getVrmBackend(canvas: HTMLCanvasElement): VrmBackend {
+  if (sharedBackend && sharedBackendCanvas !== canvas) {
+    sharedBackend.dispose();
+    sharedBackend = null;
+    sharedBackendCanvas = null;
+  }
   if (!sharedBackend) {
     sharedBackend = new VrmBackend(canvas);
+    sharedBackendCanvas = canvas;
   }
   return sharedBackend;
 }
@@ -337,6 +373,7 @@ export function getVrmBackend(canvas: HTMLCanvasElement): VrmBackend {
 export function disposeVrmBackend(): void {
   sharedBackend?.dispose();
   sharedBackend = null;
+  sharedBackendCanvas = null;
 }
 
 export function setVrmBackendForTest(backend: VrmBackend | null): void {
