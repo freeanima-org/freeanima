@@ -68,6 +68,48 @@ function broadcast(channel: string, ...args: unknown[]): void {
   }
 }
 
+function clearOverlayTitle(win: BrowserWindow): void {
+  if (win.isDestroyed()) return;
+  win.setTitle("");
+}
+
+/** Windows 失焦时 DWM 会错误绘制无边框透明窗标题条，1px 抖动强制重绘 */
+function redrawOverlayOnWin32Blur(win: BrowserWindow): void {
+  if (win.isDestroyed()) return;
+  clearOverlayTitle(win);
+  const [w, h] = win.getSize();
+  win.setSize(w, h + 1);
+  win.setSize(w, h);
+}
+
+function attachOverlayTitleGuards(win: BrowserWindow): void {
+  const { webContents } = win;
+
+  win.on("page-title-updated", (event) => {
+    event.preventDefault();
+    clearOverlayTitle(win);
+  });
+
+  webContents.on("did-finish-load", () => {
+    clearOverlayTitle(win);
+  });
+
+  webContents.on("did-navigate-in-page", () => {
+    clearOverlayTitle(win);
+  });
+
+  win.on("focus", () => {
+    clearOverlayTitle(win);
+  });
+
+  win.on("blur", () => {
+    clearOverlayTitle(win);
+    if (process.platform === "win32") {
+      redrawOverlayOnWin32Blur(win);
+    }
+  });
+}
+
 function createCompanionWindow(url: string): BrowserWindow {
   const win = new BrowserWindow({
     width: COMPANION_WINDOW_WIDTH,
@@ -77,6 +119,8 @@ function createCompanionWindow(url: string): BrowserWindow {
     thickFrame: false,
     alwaysOnTop: true,
     resizable: false,
+    maximizable: false,
+    minimizable: false,
     hasShadow: false,
     show: false,
     title: "",
@@ -90,16 +134,12 @@ function createCompanionWindow(url: string): BrowserWindow {
     },
   });
 
-  // Windows 无边框窗仍会把 document.title 渲染成顶部标题条，须拦截
-  win.on("page-title-updated", (event) => {
-    event.preventDefault();
-    win.setTitle("");
-  });
+  attachOverlayTitleGuards(win);
 
   process.env.COMPANION_API_ORIGIN = url;
   void win.loadURL(`${url}/?view=overlay`);
   win.once("ready-to-show", () => {
-    win.setTitle("");
+    clearOverlayTitle(win);
     win.show();
     win.focus();
   });
@@ -279,6 +319,15 @@ async function startServer(): Promise<CompanionServerHandle> {
   });
 }
 
+function registerWin32OverlayBlurFallback(): void {
+  if (process.platform !== "win32") return;
+  app.on("browser-window-blur", () => {
+    if (companionWindow && !companionWindow.isDestroyed()) {
+      redrawOverlayOnWin32Blur(companionWindow);
+    }
+  });
+}
+
 async function bootstrap(): Promise<void> {
   configureRuntimePaths();
   logLine("companion electron main enter");
@@ -299,6 +348,7 @@ async function bootstrap(): Promise<void> {
 
   registerIpc();
   Menu.setApplicationMenu(null);
+  registerWin32OverlayBlurFallback();
   companionWindow = createCompanionWindow(serverHandle.url);
   settingsWindow = createSettingsWindow(serverHandle.url);
   createTray();
