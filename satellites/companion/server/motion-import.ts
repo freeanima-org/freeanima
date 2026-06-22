@@ -6,6 +6,7 @@ import { companionMotionsDir } from "./paths.ts";
 import { FBX_IMPORT_UNAVAILABLE_MSG, findFbx2gltfBinary } from "./fbx-converter-kit.ts";
 import { convertFbxToVrmaFiles } from "./fbx2vrma-core.ts";
 import { registerMotionEntry } from "./motion-library.ts";
+import { extractZipArchive, readBytes, removePath, writeBytes } from "./process-utils.ts";
 
 const MOTION_EXT = /\.(vrma|fbx)$/i;
 
@@ -32,47 +33,6 @@ async function convertFbxToVrma(inputPath: string, outputPath: string): Promise<
     throw new Error(FBX_IMPORT_UNAVAILABLE_MSG);
   }
   await convertFbxToVrmaFiles(inputPath, outputPath, fbx2gltf, "30");
-}
-
-async function removePath(path: string): Promise<void> {
-  if (process.platform === "win32") {
-    await Bun.spawn([
-      "powershell",
-      "-NoProfile",
-      "-Command",
-      `Remove-Item -LiteralPath '${path.replace(/'/g, "''")}' -Recurse -Force -ErrorAction SilentlyContinue`,
-    ]).exited;
-    return;
-  }
-  await Bun.spawn(["rm", "-rf", path]).exited;
-}
-
-async function extractZipArchive(zipPath: string, extractRoot: string): Promise<void> {
-  mkdirSync(extractRoot, { recursive: true });
-
-  if (process.platform === "win32") {
-    const ps = `[Console]::OutputEncoding = [Text.UTF8Encoding]::UTF8; Expand-Archive -LiteralPath '${zipPath.replace(/'/g, "''")}' -DestinationPath '${extractRoot.replace(/'/g, "''")}' -Force`;
-    const proc = Bun.spawn(["powershell", "-NoProfile", "-Command", ps], {
-      stdout: "pipe",
-      stderr: "pipe",
-    });
-    const code = await proc.exited;
-    if (code !== 0) {
-      const err = await new Response(proc.stderr).text();
-      throw new Error(`解压失败 (powershell): ${err || code}`);
-    }
-    return;
-  }
-
-  const proc = Bun.spawn(["unzip", "-o", zipPath, "-d", extractRoot], {
-    stdout: "pipe",
-    stderr: "pipe",
-  });
-  const code = await proc.exited;
-  if (code !== 0) {
-    const err = await new Response(proc.stderr).text();
-    throw new Error(`解压失败 (unzip): ${err || code}`);
-  }
 }
 
 function collectMotionFiles(root: string): string[] {
@@ -102,7 +62,7 @@ async function importVrmaBytes(
 ): Promise<MotionLibraryEntry> {
   const id = newMotionId();
   const fileName = motionFileNameForId(id);
-  await Bun.write(join(destDir, fileName), bytes);
+  await writeBytes(join(destDir, fileName), bytes);
   return registerMotionEntry({
     id,
     name: displayNameFromFilename(uploadName),
@@ -143,8 +103,9 @@ export async function importMotionUpload(
     const zipPath = join(tempDir, "upload.zip");
     mkdirSync(tempDir, { recursive: true });
     try {
-      await Bun.write(zipPath, bytes);
+      await writeBytes(zipPath, bytes);
       const extractRoot = join(tempDir, "extract");
+      mkdirSync(extractRoot, { recursive: true });
       await extractZipArchive(zipPath, extractRoot);
       const sources = collectMotionFiles(extractRoot);
       if (sources.length === 0) {
@@ -153,7 +114,7 @@ export async function importMotionUpload(
       for (const src of sources) {
         const name = basename(src);
         if (name.toLowerCase().endsWith(".vrma")) {
-          const data = new Uint8Array(await Bun.file(src).arrayBuffer());
+          const data = await readBytes(src);
           imported.push(await importVrmaBytes(destDir, data, name));
         } else if (!fbxAvailable) {
           skippedFbx.push(name);
@@ -177,7 +138,7 @@ export async function importMotionUpload(
     mkdirSync(tempDir, { recursive: true });
     const tempInput = join(tempDir, basename(uploadName));
     try {
-      await Bun.write(tempInput, bytes);
+      await writeBytes(tempInput, bytes);
       imported.push(await importFbxFile(destDir, tempInput, uploadName));
     } finally {
       await removePath(tempDir);

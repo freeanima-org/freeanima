@@ -11,7 +11,12 @@
   "globals": {
     "Bun": "readonly"
   },
-  "ignorePatterns": ["**/dist/**", "**/coverage/**", "connectors/webui/app/src/routeTree.gen.ts"],
+  "ignorePatterns": [
+    "**/dist/**",
+    "**/electron-dist/**",
+    "**/coverage/**",
+    "connectors/webui/app/src/routeTree.gen.ts"
+  ],
   "rules": {
     "import/extensions": [
       "error",

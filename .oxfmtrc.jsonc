@@ -10,6 +10,7 @@
   "sortPackageJson": false,
   "ignorePatterns": [
     "**/dist/**",
+    "**/electron-dist/**",
     "**/coverage/**",
     "connectors/webui/app/src/routeTree.gen.ts",
     "CHANGELOG.md",
