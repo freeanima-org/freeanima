@@ -1,31 +1,30 @@
-/** 流式出站状态层类型（纯数据，无平台 IO） */
+/** 流式出站状态层类型 — runtime SSOT + Gateway 可见块 */
 
-export type StreamReplyPhase = "idle" | "tool_collecting" | "answer_streaming" | "terminal";
+import type {
+  AnswerSegment,
+  ApplyStreamReplyResult,
+  StreamReplyEffect,
+  StreamReplyPhase,
+  StreamReplyState as CoreStreamReplyState,
+  StreamReplyTerminal,
+  StructuredToolCall,
+} from "@freeanima/runtime/loop/stream-reply";
 
-export type AnswerSegment = {
-  id: number;
-  content: string;
-  committed: boolean;
+export type {
+  AnswerSegment,
+  ApplyStreamReplyResult,
+  StreamReplyEffect,
+  StreamReplyPhase,
+  StreamReplyTerminal,
+  StructuredToolCall,
 };
 
-export type StreamReplyTerminal = {
-  kind: "done" | "error" | "interrupted";
-  message?: string;
-};
-
-export type StreamReplyState = {
-  phase: StreamReplyPhase;
-  /** 按时间顺序累积的工具轮次 / clarify 可见块 */
+/** Gateway 层状态：在 core reducer 状态上追加 IM 可见块审计 */
+export type StreamReplyState = CoreStreamReplyState & {
   visibleBlocks: string[];
-  segments: AnswerSegment[];
-  currentAnswer: string;
-  /** 当前答案段 id；未打开时为 null */
-  activeSegmentId: number | null;
-  nextSegmentId: number;
-  finalAnswer: string | null;
-  terminal?: StreamReplyTerminal;
 };
 
+/** Gateway strategy 层 effect（tool_round 为 IM 文本） */
 export type StreamEffect =
   | { kind: "tool_round"; text: string }
   | { kind: "answer_open"; segmentId: number }

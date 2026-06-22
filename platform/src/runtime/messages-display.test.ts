@@ -59,4 +59,50 @@ describe("buildMessagesDisplay", () => {
     expect(all.limit).toBeNull();
     expect(all.display).toHaveLength(1);
   });
+
+  it("emits separate tool_blocks for multi-round tool calls", () => {
+    const msgs: SessionMessage[] = [
+      { role: "user", content: "go" },
+      {
+        role: "assistant",
+        content: null,
+        tool_calls: [
+          {
+            id: "call_1",
+            type: "function",
+            function: { name: "read", arguments: "{}" },
+          },
+        ],
+      },
+      { role: "tool", tool_call_id: "call_1", content: "ok" },
+      {
+        role: "assistant",
+        content: "mid",
+      },
+      {
+        role: "assistant",
+        content: null,
+        tool_calls: [
+          {
+            id: "call_2",
+            type: "function",
+            function: { name: "grep", arguments: '{"p":"a"}' },
+          },
+        ],
+      },
+      { role: "tool", tool_call_id: "call_2", content: "hit" },
+      { role: "assistant", content: "done" },
+    ];
+
+    const display = buildMessagesDisplay(msgs);
+    const toolBlocks = display.filter((d) => d.type === "tool_block");
+    expect(toolBlocks).toHaveLength(2);
+    if (toolBlocks[0]?.type === "tool_block") {
+      expect(toolBlocks[0].calls[0]?.name).toBe("read");
+    }
+    if (toolBlocks[1]?.type === "tool_block") {
+      expect(toolBlocks[1].calls[0]?.name).toBe("grep");
+    }
+    expect(display.some((d) => d.type === "message" && d.content === "mid")).toBe(true);
+  });
 });

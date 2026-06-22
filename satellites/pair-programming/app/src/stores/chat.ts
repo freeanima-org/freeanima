@@ -56,6 +56,8 @@ function handleStreamEvent(
       useChatStore.setState({ streamText: nextText });
       callbacks.onToken?.(nextText);
       break;
+    case "display_append":
+      break;
     case "tool_begin":
       callbacks.onToolBegin?.(ev.data as Record<string, unknown>);
       break;
