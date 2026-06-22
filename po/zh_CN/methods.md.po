@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 17:52+0800\n"
+"POT-Creation-Date: 2026-06-22 11:28+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -90,7 +90,7 @@ msgstr ""
 "  Router -->|res| Client\n"
 
 #. type: Content of: <messages><msg>
-#: docs/sap/methods.md:33 messages/po4a/en.xml:449
+#: docs/sap/methods.md:33 messages/po4a/en.xml:452
 #, no-wrap
 msgid "Session"
 msgstr "会话"
@@ -127,10 +127,15 @@ msgstr "`session.create` 平台绑定"
 
 #. type: Plain text
 #: docs/sap/methods.md:48
+#, fuzzy
+#| msgid ""
+#| "Hub resolves `platform` from input or `resolvePlatformForApp(app_id)` "
+#| "(e.g. `pair-programming` → `studio-pair-programming`). Writes into "
+#| "session `platform_extra`:"
 msgid ""
-"Hub resolves `platform` from input or `resolvePlatformForApp(app_id)` (e.g. "
-"`pair-programming` → `studio-pair-programming`). Writes into session "
-"`platform_extra`:"
+"Hub resolves `platform` from input or `formatSapPlatform(app_id, "
+"instance_id)` → `sap:{app_slug}:{instance_id}` (e.g. "
+"`sap:pairprogramming:k7m`). Writes into session `platform_extra`:"
 msgstr ""
 "Hub 从输入或 `resolvePlatformForApp(app_id)` 解析 `platform`（例如 `pair-"
 "programming` → `studio-pair-programming`）。写入会话的 `platform_extra`："
@@ -205,7 +210,7 @@ msgstr ""
 "| `fridge.list` | [`fridge.ts`](../../packages/sap-contract/src/frames/fridge.ts) | 列出 runtime 的 fridge 条目       |\n"
 
 #. type: Content of: <messages><msg>
-#: docs/sap/methods.md:69 messages/po4a/en.xml:520
+#: docs/sap/methods.md:69 messages/po4a/en.xml:523
 #, no-wrap
 msgid "Terminal"
 msgstr "终端"

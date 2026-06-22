@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 17:52+0800\n"
+"POT-Creation-Date: 2026-06-22 11:28+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -54,9 +54,14 @@ msgstr ""
 
 #. type: Bullet: '- '
 #: docs/sap/overview.md:17
+#, fuzzy
+#| msgid ""
+#| "**Origin isolation**: browsers load Satellite HTTP UI; pair-programming "
+#| "uses a local SAP relay (`/sap/relay/v1`) instead of REST hub-api."
 msgid ""
-"**Origin isolation**: browsers load Satellite HTTP UI; pair-programming uses "
-"a local SAP relay (`/sap/relay/v1`) instead of REST hub-api."
+"**Origin isolation**: browsers load Satellite HTTP UI; Parlor and pair-"
+"programming use a local SAP relay (`/sap/relay/v1`) instead of browser-"
+"direct Hub WS."
 msgstr ""
 "**Origin 隔离**：浏览器加载 Satellite HTTP UI；结对编程使用本地 SAP 中继（`/"
 "sap/relay/v1`），而非 REST hub-api。"
@@ -88,17 +93,34 @@ msgstr "拓扑"
 
 #. type: Fenced code block (mermaid)
 #: docs/sap/overview.md:20
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "flowchart LR\n"
+#| "  subgraph parlor [Parlor satellite]\n"
+#| "    B1[Browser] -->|SAP WS| Hub\n"
+#| "    P1[Static HTTP] -.-> B1\n"
+#| "  end\n"
+#| "  subgraph ppy [Pair-programming satellite]\n"
+#| "    B2[Browser] -->|relay WS| Relay[\"/sap/relay/v1\"]\n"
+#| "    Relay --> Proc[Process SAP client]\n"
+#| "    Proc -->|唯一 SAP WS| Hub\n"
+#| "    B2 --> Local[Local FS + PTY]\n"
+#| "  end\n"
+#| "  Hub --> Runtime[AgentRuntime]\n"
+#| "  subgraph hubWebUI [Hub WebUI]\n"
+#| "    Chamber[Chamber admin]\n"
+#| "  end\n"
 msgid ""
 "flowchart LR\n"
 "  subgraph parlor [Parlor satellite]\n"
-"    B1[Browser] -->|SAP WS| Hub\n"
-"    P1[Static HTTP] -.-> B1\n"
+"    B1[Browser] -->|relay WS| Relay1[\"/sap/relay/v1\"]\n"
+"    Relay1 --> Proc1[Process SAP client]\n"
+"    Proc1 -->|唯一 SAP WS| Hub\n"
 "  end\n"
 "  subgraph ppy [Pair-programming satellite]\n"
-"    B2[Browser] -->|relay WS| Relay[\"/sap/relay/v1\"]\n"
-"    Relay --> Proc[Process SAP client]\n"
-"    Proc -->|唯一 SAP WS| Hub\n"
+"    B2[Browser] -->|relay WS| Relay2[\"/sap/relay/v1\"]\n"
+"    Relay2 --> Proc2[Process SAP client]\n"
+"    Proc2 -->|唯一 SAP WS| Hub\n"
 "    B2 --> Local[Local FS + PTY]\n"
 "  end\n"
 "  Hub --> Runtime[AgentRuntime]\n"
@@ -123,13 +145,20 @@ msgstr ""
 "  end\n"
 
 #. type: Plain text
-#: docs/sap/overview.md:44
-#, no-wrap
+#: docs/sap/overview.md:45
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Role      | Default                 | Responsibility                                   |\n"
+#| "| --------- | ----------------------- | ------------------------------------------------ |\n"
+#| "| Hub       | `http://127.0.0.1:2658` | Agent runtime, SAP WebSocket server at `/sap/v1` |\n"
+#| "| Parlor    | `http://127.0.0.1:4174` | Chat UI; browser-direct SAP (Type A)             |\n"
+#| "| Pair-prog | `http://127.0.0.1:4173` | Studio UI; process gateway + relay (Type B)      |\n"
+#| "| Chamber   | Hub `/chamber/*`        | Memory, config, tools, satellite status          |\n"
 msgid ""
 "| Role      | Default                 | Responsibility                                   |\n"
 "| --------- | ----------------------- | ------------------------------------------------ |\n"
 "| Hub       | `http://127.0.0.1:2658` | Agent runtime, SAP WebSocket server at `/sap/v1` |\n"
-"| Parlor    | `http://127.0.0.1:4174` | Chat UI; browser-direct SAP (Type A)             |\n"
+"| Parlor    | `http://127.0.0.1:4174` | Chat UI; process gateway + relay (Type B)        |\n"
 "| Pair-prog | `http://127.0.0.1:4173` | Studio UI; process gateway + relay (Type B)      |\n"
 "| Chamber   | Hub `/chamber/*`        | Memory, config, tools, satellite status          |\n"
 msgstr ""
@@ -141,19 +170,19 @@ msgstr ""
 "| 卧室      | Hub `/chamber/*`        | 记忆、配置、工具、卫星状态                       |\n"
 
 #. type: Plain text
-#: docs/sap/overview.md:46
+#: docs/sap/overview.md:47
 msgid ""
 "See also: [architecture WebUI section](../concepts/architecture.md#webui)."
 msgstr "另见：[architecture WebUI 章节](../concepts/architecture.md#webui)。"
 
 #. type: Title ##
-#: docs/sap/overview.md:47
+#: docs/sap/overview.md:48
 #, no-wrap
 msgid "End-to-end happy path"
 msgstr "端到端正常路径"
 
 #. type: Fenced code block (mermaid)
-#: docs/sap/overview.md:49
+#: docs/sap/overview.md:50
 #, no-wrap
 msgid ""
 "sequenceDiagram\n"
@@ -199,30 +228,30 @@ msgstr ""
 "  Hub-->>Sat: evt stream.done\n"
 
 #. type: Bullet: '1. '
-#: docs/sap/overview.md:78
+#: docs/sap/overview.md:79
 msgid "Satellite process opens `ws://{hub}/sap/v1` and sends `connect`."
 msgstr "Satellite 进程打开 `ws://{hub}/sap/v1` 并发送 `connect`。"
 
 #. type: Bullet: '2. '
-#: docs/sap/overview.md:78
+#: docs/sap/overview.md:79
 msgid ""
 "Hub replies `connected` and registers the instance in `SatelliteManager`."
 msgstr "Hub 回复 `connected`，并在 `SatelliteManager` 中注册该实例。"
 
 #. type: Bullet: '3. '
-#: docs/sap/overview.md:78
+#: docs/sap/overview.md:79
 msgid "Satellite registers local tools via `tool.register`."
 msgstr "Satellite 通过 `tool.register` 注册本地工具。"
 
 #. type: Bullet: '4. '
-#: docs/sap/overview.md:78
+#: docs/sap/overview.md:79
 msgid ""
 "UI traffic (Type B) goes Browser → `/sap/relay/v1` → same process SAP client."
 msgstr ""
 "UI 流量（Type B）路径：Browser → `/sap/relay/v1` → 同一进程的 SAP 客户端。"
 
 #. type: Bullet: '5. '
-#: docs/sap/overview.md:78
+#: docs/sap/overview.md:79
 msgid ""
 "`message.send` returns a `stream_id`; Hub pushes `stream.*` events (fan-out "
 "on relay)."
@@ -231,7 +260,7 @@ msgstr ""
 "户端）。"
 
 #. type: Bullet: '6. '
-#: docs/sap/overview.md:78
+#: docs/sap/overview.md:79
 msgid ""
 "When the agent calls a Satellite tool, Hub sends `tool.call`; Satellite "
 "replies with `tool.result` or `tool.error`."
@@ -240,13 +269,13 @@ msgstr ""
 "`tool.result` 或 `tool.error` 回复。"
 
 #. type: Title ##
-#: docs/sap/overview.md:79
+#: docs/sap/overview.md:80
 #, no-wrap
 msgid "Document map"
 msgstr "文档地图"
 
 #. type: Plain text
-#: docs/sap/overview.md:88
+#: docs/sap/overview.md:89
 #, no-wrap
 msgid ""
 "| Topic                           | File                                     |\n"

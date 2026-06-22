@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 18:02+0800\n"
+"POT-Creation-Date: 2026-06-22 11:28+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -89,18 +89,53 @@ msgstr "`local_name` — Satellite 注册时的工具名称"
 
 #. type: Plain text
 #: docs/sap/tools.md:30
-msgid ""
-"Example: `sap_pairprogramming_a1b2c3d4e5f6789012345678abcdef01_scan_code`"
+#, fuzzy
+#| msgid ""
+#| "Example: `sap_pairprogramming_a1b2c3d4e5f6789012345678abcdef01_scan_code`"
+msgid "Example: `sap_pairprogramming_k7m_scan_code`"
 msgstr "示例：`sap_pairprogramming_a1b2c3d4e5f6789012345678abcdef01_scan_code`"
 
 #. type: Title ##
 #: docs/sap/tools.md:31
+#, fuzzy, no-wrap
+#| msgid "Chamber visibility"
+msgid "ToolSet visibility"
+msgstr "卧室可见性"
+
+#. type: Plain text
+#: docs/sap/tools.md:34
+msgid ""
+"SAP satellite toolsets default to **`private: true`** via `tool.register`. "
+"Private toolsets:"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sap/tools.md:37
+msgid "Do not appear in system prompt ToolSet lists"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/sap/tools.md:37
+msgid ""
+"Cannot be found via `toolset_search` or loaded by name without capability "
+"mask"
+msgstr ""
+
+#. type: Plain text
+#: docs/sap/tools.md:39
+msgid ""
+"Set `private: false` on `tool.register` to expose tools like built-in "
+"toolsets."
+msgstr ""
+
+#. type: Title ##
+#: docs/sap/tools.md:40
 #, no-wrap
 msgid "Registration flow"
 msgstr "注册流程"
 
 #. type: Fenced code block (mermaid)
-#: docs/sap/tools.md:33
+#: docs/sap/tools.md:42
 #, no-wrap
 msgid ""
 "sequenceDiagram\n"
@@ -134,29 +169,34 @@ msgstr ""
 "  Hub->>Agent: resume turn\n"
 
 #. type: Plain text
-#: docs/sap/tools.md:51
+#: docs/sap/tools.md:60
+#, fuzzy
+#| msgid ""
+#| "Register via `tool.register` with `SapToolDefInput`: `local_name`, "
+#| "`description`, `parameters` (JSON Schema object), optional `return_kind` "
+#| "(`json` | `text`)."
 msgid ""
 "Register via `tool.register` with `SapToolDefInput`: `local_name`, "
 "`description`, `parameters` (JSON Schema object), optional `return_kind` "
-"(`json` | `text`)."
+"(`json` | `text`), optional `private` (default `true`)."
 msgstr ""
 "通过 `tool.register` 注册，参数为 `SapToolDefInput`：`local_name`、"
 "`description`、`parameters`（JSON Schema 对象），可选 `return_kind`（`json` "
 "| `text`）。"
 
 #. type: Plain text
-#: docs/sap/tools.md:53
+#: docs/sap/tools.md:62
 msgid "On disconnect, Hub unregisters all tools for that app/instance."
 msgstr "断开连接时，Hub 会注销该 app/instance 的所有工具。"
 
 #. type: Title ##
-#: docs/sap/tools.md:54
+#: docs/sap/tools.md:63
 #, no-wrap
 msgid "Strict routing"
 msgstr "严格路由"
 
 #. type: Plain text
-#: docs/sap/tools.md:57
+#: docs/sap/tools.md:66
 msgid ""
 "SAP-prefixed tool names **never fall back** to Hub-local tools with the same "
 "name. `SatelliteManager.installToolRouting()` wraps "
@@ -167,7 +207,7 @@ msgstr ""
 "执行此规则。"
 
 #. type: Fenced code block (mermaid)
-#: docs/sap/tools.md:58
+#: docs/sap/tools.md:67
 #, no-wrap
 msgid ""
 "flowchart TD\n"
@@ -207,12 +247,12 @@ msgstr ""
 "  Registered -->|yes| Proxy\n"
 
 #. type: Plain text
-#: docs/sap/tools.md:79
+#: docs/sap/tools.md:88
 msgid "Common rejection reasons:"
 msgstr "常见拒绝原因："
 
 #. type: Plain text
-#: docs/sap/tools.md:86
+#: docs/sap/tools.md:95
 #, no-wrap
 msgid ""
 "| Condition                                   | Result                                        |\n"
@@ -230,7 +270,7 @@ msgstr ""
 "| 未注册的 `sap_*` 名称                       | 守卫处理器返回错误（不回退到 Hub）            |\n"
 
 #. type: Plain text
-#: docs/sap/tools.md:88
+#: docs/sap/tools.md:97
 msgid ""
 "Session binding requires `platform_extra.satellite_app_id` and "
 "`platform_extra.satellite_instance_id` set at `session.create` time."
@@ -239,7 +279,7 @@ msgstr ""
 "`platform_extra.satellite_instance_id`。"
 
 #. type: Plain text
-#: docs/sap/tools.md:90
+#: docs/sap/tools.md:99
 msgid ""
 "Integration tests: [`tests/integration/sap/sap-routing.test.ts`](../../tests/"
 "integration/sap/sap-routing.test.ts)."
@@ -248,24 +288,38 @@ msgstr ""
 "integration/sap/sap-routing.test.ts)。"
 
 #. type: Title ##
-#: docs/sap/tools.md:91
-#, no-wrap
-msgid "Platform mapping"
+#: docs/sap/tools.md:100
+#, fuzzy, no-wrap
+#| msgid "Platform mapping"
+msgid "Platform naming"
 msgstr "平台映射"
 
 #. type: Plain text
-#: docs/sap/tools.md:94
-msgid "`resolvePlatformForApp` maps satellite app ids to session platforms:"
-msgstr "`resolvePlatformForApp` 将 satellite app id 映射到会话平台："
+#: docs/sap/tools.md:103
+msgid "Session platform for SAP satellites uses three segments:"
+msgstr ""
+
+#. type: Fenced code block (text)
+#: docs/sap/tools.md:104
+#, fuzzy, no-wrap
+#| msgid "sap:{app_slug}:{instance_id_norm}:{local_name}\n"
+msgid "sap:{app_slug}:{instance_id}\n"
+msgstr "sap:{app_slug}:{instance_id_norm}:{local_name}\n"
 
 #. type: Plain text
-#: docs/sap/tools.md:99
-#, no-wrap
+#: docs/sap/tools.md:113
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| `app_id`           | Platform                  |\n"
+#| "| ------------------ | ------------------------- |\n"
+#| "| `pair-programming` | `studio-pair-programming` |\n"
+#| "| `parlor`           | `parlor`                  |\n"
 msgid ""
-"| `app_id`           | Platform                  |\n"
+"| `app_id`           | Example platform          |\n"
 "| ------------------ | ------------------------- |\n"
-"| `pair-programming` | `studio-pair-programming` |\n"
-"| `parlor`           | `parlor`                  |\n"
+"| `pair-programming` | `sap:pairprogramming:k7m` |\n"
+"| `parlor`           | `sap:parlor:k7m`          |\n"
+"| `companion`        | `sap:companion:k7m`       |\n"
 msgstr ""
 "| `app_id`           | 平台                      |\n"
 "| ------------------ | ------------------------- |\n"
@@ -273,33 +327,36 @@ msgstr ""
 "| `parlor`           | `parlor`                  |\n"
 
 #. type: Plain text
-#: docs/sap/tools.md:101
-msgid "Hub also returns this map in `connected.server_info.platform_for_app`."
-msgstr "Hub 还会在 `connected.server_info.platform_for_app` 中返回此映射。"
+#: docs/sap/tools.md:115
+msgid ""
+"`instance_id` is a Hub-assigned 3-character `[a-z0-9]` string, globally "
+"unique across all SAP apps. Hub returns the assigned or confirmed id in "
+"`connected.instance_id`."
+msgstr ""
 
 #. type: Title ##
-#: docs/sap/tools.md:102
+#: docs/sap/tools.md:116
 #, no-wrap
 msgid "Completing a call"
 msgstr "完成一次调用"
 
 #. type: Plain text
-#: docs/sap/tools.md:105
+#: docs/sap/tools.md:119
 msgid "Satellite receives `tool.call` with `call_id`. Reply with:"
 msgstr "Satellite 收到带 `call_id` 的 `tool.call`。回复方式："
 
 #. type: Bullet: '- '
-#: docs/sap/tools.md:108
+#: docs/sap/tools.md:122
 msgid "`tool.result` — `{ call_id, content }`"
 msgstr "`tool.result` — `{ call_id, content }`（完成调用）"
 
 #. type: Bullet: '- '
-#: docs/sap/tools.md:108
+#: docs/sap/tools.md:122
 msgid "`tool.error` — `{ call_id, error }`"
 msgstr "`tool.error` — `{ call_id, error }`（失败调用）"
 
 #. type: Plain text
-#: docs/sap/tools.md:110
+#: docs/sap/tools.md:124
 msgid ""
 "Hub resolves the pending promise and continues the agent turn. Timeout or "
 "disconnect fails the call."
@@ -307,7 +364,7 @@ msgstr ""
 "Hub 解析待处理的 promise 并继续代理轮次。超时或断开连接会导致调用失败。"
 
 #. type: Plain text
-#: docs/sap/tools.md:111
+#: docs/sap/tools.md:125
 msgid ""
 "Reference handler: [`satellites/pair-programming/server/sap/hub.ts`](../../"
 "satellites/pair-programming/server/sap/hub.ts)."
