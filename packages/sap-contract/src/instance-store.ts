@@ -14,8 +14,11 @@ export async function loadSapInstanceId(store?: SapInstanceStore): Promise<strin
 
 const STORAGE_PREFIX = "freeanima.sap.instance.";
 
-export function browserSapInstanceStore(hubOrigin: string, appId: string): SapInstanceStore {
-  const key = `${STORAGE_PREFIX}${hubOrigin}|${appId}`;
+export function browserSapInstanceStoreKey(hubOrigin: string, appId: string): string {
+  return `${STORAGE_PREFIX}${hubOrigin}|${appId}`;
+}
+
+export function sapInstanceStoreFromKey(key: string): SapInstanceStore {
   return {
     load(): string | null {
       if (typeof localStorage === "undefined") return null;
@@ -27,6 +30,10 @@ export function browserSapInstanceStore(hubOrigin: string, appId: string): SapIn
       localStorage.setItem(key, instanceId.trim());
     },
   };
+}
+
+export function browserSapInstanceStore(hubOrigin: string, appId: string): SapInstanceStore {
+  return sapInstanceStoreFromKey(browserSapInstanceStoreKey(hubOrigin, appId));
 }
 
 export function memorySapInstanceStore(initial: string | null = null): SapInstanceStore {

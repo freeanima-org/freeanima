@@ -77,6 +77,11 @@ function serveStatic(pathname: string): Response {
     return new Response(Bun.file(filePath), { headers });
   }
 
+  // Worker 脚本必须返回 JS，不能走 SPA fallback（否则浏览器报 Failed to fetch a worker script）
+  if (pathname.endsWith(".js")) {
+    return jsonResponse({ error: "Not Found" }, 404);
+  }
+
   const indexPath = join(DIST_DIR, "index.html");
   if (existsSync(indexPath)) {
     return new Response(Bun.file(indexPath), {

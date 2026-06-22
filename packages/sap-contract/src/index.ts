@@ -205,6 +205,7 @@ export {
   installSapSharedWorkerHost,
   createSharedWorkerSapClient,
   type SharedWorkerPortMessage,
+  type SapSharedWorkerInitConfig,
   type CreateSharedWorkerSapClientOptions,
 } from "./shared-worker.ts";
 
