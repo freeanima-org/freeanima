@@ -328,6 +328,10 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     );
   }
 
+  interruptSessionStream(sessionId: string): void {
+    messaging.interruptSessionStream(this.messagingDeps(), sessionId);
+  }
+
   memorySearch(args: { query: string; limit?: number }) {
     return memory.memorySearch(args);
   }

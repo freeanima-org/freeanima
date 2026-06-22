@@ -11,10 +11,19 @@ export function getDefaultProfileId(cfg: AnimaConfig): string {
   return getLlmConfig(cfg).default_profile;
 }
 
-export function getProfileHopModel(cfg: AnimaConfig, profileId?: string): string {
+/** 场景 profile 未配置时回退 llm.default_profile */
+export function resolveConfiguredProfileId(cfg: AnimaConfig, profileId?: string): string {
   const llm = getLlmConfig(cfg);
-  const id = profileId ?? llm.default_profile;
-  const profile = llm.profiles[id];
+  const preferred = profileId ?? llm.default_profile;
+  if (llm.profiles[preferred]?.chain[0]?.model) {
+    return preferred;
+  }
+  return llm.default_profile;
+}
+
+export function getProfileHopModel(cfg: AnimaConfig, profileId?: string): string {
+  const id = resolveConfiguredProfileId(cfg, profileId);
+  const profile = getLlmConfig(cfg).profiles[id];
   if (!profile?.chain[0]?.model) {
     throw new Error(`llm.profiles.${id} missing chain[0].model`);
   }
@@ -22,9 +31,8 @@ export function getProfileHopModel(cfg: AnimaConfig, profileId?: string): string
 }
 
 export function getProfileHopProviderId(cfg: AnimaConfig, profileId?: string): string {
-  const llm = getLlmConfig(cfg);
-  const id = profileId ?? llm.default_profile;
-  const hop = llm.profiles[id]?.chain[0];
+  const id = resolveConfiguredProfileId(cfg, profileId);
+  const hop = getLlmConfig(cfg).profiles[id]?.chain[0];
   if (!hop?.provider) {
     throw new Error(`llm.profiles.${id} missing chain[0].provider`);
   }

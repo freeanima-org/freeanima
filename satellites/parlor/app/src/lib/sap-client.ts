@@ -1,16 +1,41 @@
-import { formatSapPlatform } from "@freeanima/sap-contract";
+import { formatSapPlatform, type SapConnectionState } from "@freeanima/sap-contract";
 import { createSapRelayBrowserClient, type SapRelayBrowserClient } from "@freeanima/sap-contract";
 
 const APP_ID = "parlor";
 
 let relayClient: SapRelayBrowserClient | null = null;
 let cachedInstanceId: string | null = null;
+const connectionListeners = new Set<(state: SapConnectionState) => void>();
+
+function notifyConnection(state: SapConnectionState): void {
+  for (const listener of connectionListeners) {
+    listener(state);
+  }
+}
 
 export function getSapRelayClient(): SapRelayBrowserClient {
   if (!relayClient) {
-    relayClient = createSapRelayBrowserClient();
+    relayClient = createSapRelayBrowserClient({
+      onConnectionChange: notifyConnection,
+    });
   }
   return relayClient;
+}
+
+export function getSapConnectionState(): SapConnectionState {
+  return getSapRelayClient().getConnectionState();
+}
+
+export function subscribeSapConnection(listener: (state: SapConnectionState) => void): () => void {
+  connectionListeners.add(listener);
+  listener(getSapConnectionState());
+  return () => {
+    connectionListeners.delete(listener);
+  };
+}
+
+export async function reconnectSap(): Promise<void> {
+  await getSapRelayClient().reconnect();
 }
 
 export async function loadParlorInstanceId(): Promise<string | null> {
@@ -38,4 +63,7 @@ export const PARLOR_PLATFORM = "sap:parlor:web";
 /** 测试用：重置 module 级缓存 */
 export function resetParlorInstanceCacheForTests(): void {
   cachedInstanceId = null;
+  relayClient?.stop();
+  relayClient = null;
+  connectionListeners.clear();
 }

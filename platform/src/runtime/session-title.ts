@@ -6,11 +6,17 @@ import type { FullRuntimeDeps } from "./runtime-deps.ts";
 export type SessionTitleNotify = {
   bus: EventBus | null;
   onSessionUpdated: ((sid: string) => void) | null;
+  /** 含 pokeSessionWatchers 的完整 session 更新（优先于 bus/onSessionUpdated） */
+  emitSessionUpdated?: (sid: string) => void;
 };
 
 const titleGenerationInFlight = new Set<string>();
 
 function emitSessionTitleUpdated(notify: SessionTitleNotify, sessionId: string): void {
+  if (notify.emitSessionUpdated) {
+    notify.emitSessionUpdated(sessionId);
+    return;
+  }
   notify.bus?.emit(sessionUpdated, { session_id: sessionId });
   notify.onSessionUpdated?.(sessionId);
 }
@@ -34,13 +40,24 @@ export function maybeGenerateSessionTitleAsync(
 
       if (titleGenerationInFlight.has(sessionId)) return;
 
-      const count = await deps.conversation.countMessages(sessionId);
-      if (count !== 1) return;
+      const userCount = await deps.conversation.countUserMessages(sessionId);
+      if (userCount !== 1) return;
 
       titleGenerationInFlight.add(sessionId);
       try {
         const gen = await generateSessionTitle(userText, { runtime: deps.engine.llm });
-        const title = gen.ok ? gen.title : fallbackSessionTitle(userText);
+        let title = gen.ok ? gen.title : "";
+        if (!title) {
+          if (!gen.ok) {
+            deps.engine.logger
+              .with({ component: "session-title" })
+              .debug("LLM title failed, using text fallback", {
+                session_id: sessionId,
+                error: gen.error,
+              });
+          }
+          title = fallbackSessionTitle(userText);
+        }
         if (!title) return;
 
         const stillEmpty = !(await deps.conversation.getSessionTitle(sessionId)).trim();

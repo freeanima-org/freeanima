@@ -16,6 +16,7 @@ import {
   sessionCommandsInputSchema,
   fridgeListInputSchema,
   messageSendInputSchema,
+  messageInterruptInputSchema,
   toolRegisterInputSchema,
   toolUnregisterInputSchema,
   toolResultInputSchema,
@@ -208,6 +209,11 @@ export function createSapServerHandlers(
           const platform = await resolveSessionPlatform(deps, input.session_id);
           void pumpMessageStream(deps, ctx, streamId, input.session_id, input.message, platform);
           return { stream_id: streamId };
+        }
+        case "message.interrupt": {
+          const input = messageInterruptInputSchema.parse(payload);
+          deps.runtime.interruptSessionStream(input.session_id);
+          return { ok: true as const };
         }
         case "terminal.attach": {
           const input = terminalAttachInputSchema.parse(payload);

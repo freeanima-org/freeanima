@@ -5,6 +5,13 @@ export function hasNewAssistantReply(display: DisplayItem[], baselineCount: numb
   return newItems.some((item) => item.type === "message" && item.role === "assistant");
 }
 
+/** 最后一条为 user 且尚无 assistant 回复（含刷新后恢复轮询） */
+export function displayAwaitingReply(display: DisplayItem[]): boolean {
+  if (display.length === 0) return false;
+  const last = display[display.length - 1];
+  return last?.type === "message" && last.role === "user";
+}
+
 export const RECOVERY_INITIAL_DELAY_MS = 500;
 export const RECOVERY_MAX_DELAY_MS = 4_000;
 export const RECOVERY_MAX_DURATION_MS = 60_000;

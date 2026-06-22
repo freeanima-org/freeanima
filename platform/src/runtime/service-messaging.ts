@@ -242,6 +242,10 @@ function runRetryStream(
   );
 }
 
+export function interruptSessionStream(msgDeps: MessagingDeps, sessionId: string): void {
+  msgDeps.runControl.preemptSessionEngine(sessionId);
+}
+
 function runTurnStream(
   deps: FullRuntimeDeps,
   msgDeps: MessagingDeps,
@@ -259,6 +263,7 @@ function runTurnStream(
         maybeGenerateSessionTitleAsync(deps, sessionId, effectiveUserText, {
           bus: msgDeps.bus,
           onSessionUpdated: msgDeps.onSessionUpdated,
+          emitSessionUpdated: (sid) => msgDeps.streamHost.emitSessionUpdated(sid),
         });
         return effectiveUserText;
       },

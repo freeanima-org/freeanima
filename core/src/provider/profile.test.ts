@@ -95,9 +95,10 @@ describe("ProfileRegistry", () => {
     ).toThrow('default profile "missing" is not defined');
   });
 
-  it("throws when resolving unknown profile", () => {
+  it("falls back to default profile when resolving unknown profile", () => {
     const { profiles } = setupProfileStack();
-    expect(() => profiles.resolve("nope")).toThrow("Profile not found: nope");
+    expect(profiles.resolve("nope").id).toBe("chat");
+    expect(profiles.resolve("summary").id).toBe("chat");
   });
 
   it("list returns all registered profiles", () => {

@@ -13,6 +13,7 @@ export {
   load,
   loadMessagePage,
   countMessages,
+  countUserMessages,
   loadForRuntime,
   appendMessage,
   appendSessionMeta,

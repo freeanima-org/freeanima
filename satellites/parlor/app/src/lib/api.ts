@@ -93,6 +93,11 @@ export function subscribeMessageStream(
   return sap().sendMessageStream(input, callbacks);
 }
 
+export async function interruptMessageStream(sessionId: string): Promise<void> {
+  const client = await sap().whenReady();
+  await client.request("message.interrupt", { session_id: sessionId });
+}
+
 export function subscribeSessionEvents(
   sessionId: string,
   onUpdate: () => void,

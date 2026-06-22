@@ -78,6 +78,8 @@ export type { FridgeListInput, FridgeListOutput, FridgeMagnetItem } from "./fram
 export {
   messageSendInputSchema,
   messageSendOutputSchema,
+  messageInterruptInputSchema,
+  messageInterruptOutputSchema,
   mapStreamApiEventToSap,
   mapRuntimeStreamEventToSap,
   mapSapStreamMethodToApi,
@@ -86,6 +88,8 @@ export {
 export type {
   MessageSendInput,
   MessageSendOutput,
+  MessageInterruptInput,
+  MessageInterruptOutput,
   StreamApiLikeEvent,
   StreamEventMethod,
 } from "./frames/message.ts";
@@ -172,6 +176,7 @@ export {
 export {
   createSapSidecarClient,
   createSapRelayBrowserClient,
+  type SapConnectionState,
   type SapSidecarClient,
   type SapSidecarClientOptions,
   type SapRelayBrowserClient,

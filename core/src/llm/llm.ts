@@ -1,5 +1,5 @@
 import type { ChatCompletion } from "@freeanima/core/provider";
-import { PROFILE_CHAT, PROFILE_REFLECT, PROFILE_SUMMARY } from "@freeanima/core/provider";
+import { PROFILE_REFLECT, PROFILE_SUMMARY } from "@freeanima/core/provider";
 import type { OpenAiToolSchema, ToolCall } from "@freeanima/core/db/domain";
 import type { LlmCallParams } from "@freeanima/core/provider";
 import type { SessionMessage } from "@freeanima/core/db/domain";
@@ -30,10 +30,6 @@ export type LlmInvokeOpts = {
   runtime?: LlmRuntime;
 };
 
-function resolveProfileId(profileId?: string): string {
-  return profileId ?? PROFILE_CHAT;
-}
-
 function resolveRuntime(opts?: LlmInvokeOpts): LlmRuntime {
   return opts?.runtime ?? getLlmRuntime();
 }
@@ -47,7 +43,7 @@ export async function chat(
   messages: SessionMessage[] | SimpleChatMessage[],
   opts?: LlmInvokeOpts,
 ): Promise<LlmResponse> {
-  const profile = resolveRuntime(opts).profiles.resolve(resolveProfileId(opts?.profileId));
+  const profile = resolveRuntime(opts).profiles.resolve(opts?.profileId);
   const input = isSimpleChatOnly(messages)
     ? simpleMessagesToInvokeInput(messages as SimpleChatMessage[])
     : sessionMessagesToInvokeInput(messages as SessionMessage[]);
@@ -74,7 +70,7 @@ export async function* chatStream(
       model?: string;
     }
 > {
-  const profile = resolveRuntime(opts).profiles.resolve(resolveProfileId(opts?.profileId));
+  const profile = resolveRuntime(opts).profiles.resolve(opts?.profileId);
   const input = sessionMessagesToInvokeInput(messages);
 
   for await (const event of profile.chatStream(input.turns, {

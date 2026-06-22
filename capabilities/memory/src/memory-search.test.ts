@@ -59,6 +59,9 @@ function mockSessionStore(overrides: Partial<SessionStorePort>): SessionStorePor
     async countMessages() {
       return 0;
     },
+    async countUserMessages() {
+      return 0;
+    },
     async findMessagePos() {
       return null;
     },

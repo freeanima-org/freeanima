@@ -72,6 +72,12 @@ Table shapes SSOT: [`core/src/db/schema/`](../../core/src/db/schema/). User ops 
 
 Repository query conventions (ORM vs `db.execute`, DbRow typing): [`drizzle-db.md`](drizzle-db.md).
 
+## LLM profile 回退
+
+- 内置场景 id：`chat` / `summary` / `reflect`（`PROFILE_*` 常量）
+- 请求场景 profile 时，若 `config.yaml` 的 `llm.profiles` **未配置**该 id，**必须回退**到 `llm.default_profile`
+- 回退 SSOT：`ProfileRegistry.resolve()`（运行时）、`resolveConfiguredProfileId()` / `getProfileHopModel()`（读配置）；调用方仍传场景常量，勿在各功能点手写 fallback
+
 ## Release
 
 - **Do not manually edit [`CHANGELOG.md`](../../CHANGELOG.md)** — Release Please only

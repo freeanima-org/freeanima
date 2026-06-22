@@ -3,13 +3,17 @@ import { pollUntilAssistantReply } from "@/lib/display-recovery.ts";
 import { marked } from "marked";
 import { create } from "zustand";
 import { m } from "@/lib/i18n.ts";
-import { subscribeMessageStream, subscribeSessionEvents } from "@/lib/api.ts";
+import {
+  interruptMessageStream,
+  subscribeMessageStream,
+  subscribeSessionEvents,
+} from "@/lib/api.ts";
 
 type SendDoneOptions = {
   recovered?: boolean;
 };
 
-type SendCallbacks = {
+export type SendCallbacks = {
   onToken?: (text: string) => void;
   onDisplayAppend?: (item: DisplayItem) => void;
   onAwaitingClarify?: (data: Record<string, unknown>) => void;
@@ -19,22 +23,43 @@ type SendCallbacks = {
   recoverDisplay?: (sessionId: string) => Promise<boolean>;
 };
 
+export type QueuedMessage = {
+  id: string;
+  sessionId: string;
+  text: string;
+};
+
 type ChatState = {
   streaming: boolean;
   recovering: boolean;
   streamingSessionId: string | null;
   streamText: string;
+  queue: QueuedMessage[];
   renderMd: (text: string) => string;
+  enqueue: (sessionId: string, text: string) => void;
+  takeQueued: (id: string) => QueuedMessage | null;
+  removeQueued: (id: string) => void;
+  peekQueue: (sessionId: string) => QueuedMessage | null;
+  stop: (sessionId: string) => Promise<void>;
   send: (sessionId: string, text: string, callbacks?: SendCallbacks) => Promise<void>;
   abortStream: () => void;
 };
 
 let _unsubscribe: (() => void) | null = null;
+let _streamGeneration = 0;
+
+function detachStreamClient(): void {
+  if (_unsubscribe) {
+    _unsubscribe();
+    _unsubscribe = null;
+  }
+}
 
 function handleStreamEvent(
   ev: StreamApiEvent,
   streamText: string,
   callbacks: SendCallbacks,
+  patch: (partial: Partial<Pick<ChatState, "streaming" | "streamText">>) => void,
 ): { streamText: string; receivedDone: boolean; receivedError: boolean } {
   let receivedDone = false;
   let receivedError = false;
@@ -42,22 +67,22 @@ function handleStreamEvent(
 
   switch (ev.event) {
     case "accepted":
-      useChatStore.setState({ streaming: true });
+      patch({ streaming: true });
       break;
     case "token":
       nextText += ev.data.content || "";
-      useChatStore.setState({ streamText: nextText });
+      patch({ streamText: nextText });
       callbacks.onToken?.(nextText);
       break;
     case "content_replace":
       nextText = ev.data.content || "";
-      useChatStore.setState({ streamText: nextText });
+      patch({ streamText: nextText });
       callbacks.onToken?.(nextText);
       break;
     case "display_append":
       if (ev.data.item.type === "message" && ev.data.item.role === "assistant") {
         nextText = "";
-        useChatStore.setState({ streamText: "" });
+        patch({ streamText: "" });
         callbacks.onToken?.("");
       }
       callbacks.onDisplayAppend?.(ev.data.item);
@@ -161,29 +186,81 @@ async function tryRecoverDisplay(
   }
 }
 
-export const useChatStore = create<ChatState>(() => ({
+export const useChatStore = create<ChatState>((set, get) => ({
   streaming: false,
   recovering: false,
   streamingSessionId: null,
   streamText: "",
+  queue: [],
   renderMd,
 
+  enqueue(sessionId, text) {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    const item: QueuedMessage = {
+      id: crypto.randomUUID(),
+      sessionId,
+      text: trimmed,
+    };
+    set((s) => ({ queue: [...s.queue, item] }));
+  },
+
+  takeQueued(id) {
+    let taken: QueuedMessage | null = null;
+    set((s) => {
+      const idx = s.queue.findIndex((q) => q.id === id);
+      if (idx < 0) return s;
+      taken = s.queue[idx]!;
+      return { queue: s.queue.filter((q) => q.id !== id) };
+    });
+    return taken;
+  },
+
+  removeQueued(id) {
+    set((s) => ({ queue: s.queue.filter((q) => q.id !== id) }));
+  },
+
+  peekQueue(sessionId) {
+    return get().queue.find((q) => q.sessionId === sessionId) ?? null;
+  },
+
   abortStream() {
-    if (_unsubscribe) {
-      _unsubscribe();
-      _unsubscribe = null;
-    }
-    useChatStore.setState({
+    _streamGeneration++;
+    detachStreamClient();
+    set({
       streaming: false,
       recovering: false,
       streamingSessionId: null,
+      streamText: "",
     });
   },
 
-  async send(sessionId, text, callbacks = {}) {
-    useChatStore.getState().abortStream();
+  async stop(sessionId) {
+    try {
+      await interruptMessageStream(sessionId);
+    } catch (e) {
+      console.error("interrupt failed:", e);
+      get().abortStream();
+    }
+  },
 
-    useChatStore.setState({
+  async send(sessionId, text, callbacks = {}) {
+    const prev = get();
+    if (prev.streaming && prev.streamingSessionId === sessionId) {
+      detachStreamClient();
+    } else if (prev.streaming) {
+      _streamGeneration++;
+      detachStreamClient();
+      set({
+        streaming: false,
+        streamingSessionId: null,
+        streamText: "",
+      });
+    }
+
+    const generation = ++_streamGeneration;
+
+    set({
       streaming: true,
       recovering: false,
       streamingSessionId: sessionId,
@@ -207,7 +284,7 @@ export const useChatStore = create<ChatState>(() => ({
     const finishWithRecovery = async (fallbackError?: string) => {
       if (receivedDone) return;
       const recovered = await tryRecoverDisplay(sessionId, callbacks.recoverDisplay, (active) => {
-        useChatStore.setState({ recovering: active });
+        set({ recovering: active });
         callbacks.onRecovering?.(active);
       });
       if (recovered) {
@@ -227,7 +304,10 @@ export const useChatStore = create<ChatState>(() => ({
           { sessionId, message: text },
           {
             onData: (ev) => {
-              const result = handleStreamEvent(ev, streamText, callbacks);
+              if (generation !== _streamGeneration) return;
+              const result = handleStreamEvent(ev, streamText, callbacks, (partial) =>
+                set(partial),
+              );
               streamText = result.streamText;
               if (result.receivedError) {
                 receivedError = true;
@@ -238,11 +318,13 @@ export const useChatStore = create<ChatState>(() => ({
               if (result.receivedDone) notifyDone();
             },
             onError: (err) => {
+              if (generation !== _streamGeneration) return;
               receivedError = true;
               transportErrorMsg = err.message || m.webui_common_server_error();
               reject(err);
             },
             onComplete: () => {
+              if (generation !== _streamGeneration) return;
               resolve();
             },
           },
@@ -250,16 +332,19 @@ export const useChatStore = create<ChatState>(() => ({
         _unsubscribe = () => sub.unsubscribe();
       });
 
+      if (generation !== _streamGeneration) return;
+
       if (serverErrorMsg) {
         await finishWithRecovery(serverErrorMsg);
       } else if (!doneNotified) {
         await finishWithRecovery();
       }
     } catch (e) {
+      if (generation !== _streamGeneration) return;
       if (e instanceof Error && e.name === "AbortError") return;
       console.error("send error:", e);
       const recovered = await tryRecoverDisplay(sessionId, callbacks.recoverDisplay, (active) => {
-        useChatStore.setState({ recovering: active });
+        set({ recovering: active });
         callbacks.onRecovering?.(active);
       });
       if (recovered) {
@@ -268,12 +353,21 @@ export const useChatStore = create<ChatState>(() => ({
         callbacks.onError?.(transportErrorMsg || m.webui_common_network_error());
       }
     } finally {
-      useChatStore.setState({
-        streaming: false,
-        recovering: false,
-        streamingSessionId: null,
-      });
-      _unsubscribe = null;
+      if (generation === _streamGeneration) {
+        const active = get();
+        if (active.streamingSessionId === sessionId) {
+          set({
+            streaming: false,
+            recovering: false,
+            streamingSessionId: null,
+            streamText: "",
+          });
+        }
+        if (_unsubscribe) {
+          _unsubscribe();
+          _unsubscribe = null;
+        }
+      }
     }
   },
 }));

@@ -146,6 +146,16 @@ export async function countMessagesWithRouting(
   return store(repos).countMessages(sessionId);
 }
 
+export async function countUserMessagesWithRouting(
+  repos: PgRepositories,
+  sessionId: string,
+): Promise<number> {
+  if (!postgresAvailable(repos)) {
+    return 0;
+  }
+  return store(repos).countUserMessages(sessionId);
+}
+
 export async function loadSessionToolsWithRouting(
   repos: PgRepositories,
   sessionId: string,
