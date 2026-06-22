@@ -52,7 +52,7 @@ function ensureHub(hubUrl: string, httpUrl?: string): SatelliteHubHandle {
       instanceStore: fileSapInstanceStore(instanceStorePath()),
       relay: false,
       tools: REGISTERED_TOOLS,
-      toolsetPrivate: true,
+      toolsetPrivate: false,
       onToolCall: async (localName, args) => executeCompanionTool(localName, args),
       onConnected: async () => {
         console.log("companion SAP connected");
