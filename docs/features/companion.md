@@ -86,9 +86,12 @@ bun dev:electron
 打包：
 
 ```bash
-bun build:windows:installer   # Windows NSIS
-bun build:macos:release       # macOS DMG
+bun build:windows:installer   # Windows NSIS（可在 Linux 交叉构建）
+bun build:macos:release       # macOS DMG（须在 macOS 上执行）
+bun build:windows             # 快速：仅 release/win-unpacked/，无安装包
 ```
+
+Linux 上打 Windows 安装包时，electron-builder 默认会用 Wine **运行 stub Setup.exe** 提取 uninstaller（无图形环境常失败）。`build-electron.ts` 在同进程调用 electron-builder 前 patch `WineVmManager`，改用 app-builder-lib 的 `UninstallerReader` 从 PE 解析提取（与 macOS 路径相同），无需 Wine 验证；交叉构建时另设 `CSC_IDENTITY_AUTO_DISCOVERY=false`、`forceCodeSigning: false`。
 
 环境变量：
 

@@ -14,6 +14,7 @@ import {
 import { resolveMotionFile } from "./motions.ts";
 import { registerMotionEntry, setSlotMotions } from "./motion-library.ts";
 import type { MotionSlotId } from "../shared/companion-schema.ts";
+import { removePath, writeBytes } from "./process-utils.ts";
 
 export { LOCOMOTION_SLOTS };
 
@@ -98,16 +99,16 @@ export async function importLocomotionFile(
   mkdirSync(tempDir, { recursive: true });
 
   const tempInput = join(tempDir, basename(uploadName));
-  await Bun.write(tempInput, bytes);
+  await writeBytes(tempInput, bytes);
 
   try {
     if (lower.endsWith(".fbx")) {
       await convertFbxToVrma(tempInput, destPath);
     } else {
-      await Bun.write(destPath, bytes);
+      await writeBytes(destPath, bytes);
     }
   } finally {
-    await removeTree(tempDir);
+    await removePath(tempDir);
   }
 
   const entry = registerMotionEntry({
@@ -118,19 +119,6 @@ export async function importLocomotionFile(
   setSlotMotions(locomotionMotionSlot(slot), [entry.id]);
 
   return { slot, file: destName };
-}
-
-async function removeTree(path: string): Promise<void> {
-  if (process.platform === "win32") {
-    await Bun.spawn([
-      "powershell",
-      "-NoProfile",
-      "-Command",
-      `Remove-Item -LiteralPath '${path.replace(/'/g, "''")}' -Recurse -Force -ErrorAction SilentlyContinue`,
-    ]).exited;
-    return;
-  }
-  await Bun.spawn(["rm", "-rf", path]).exited;
 }
 
 export async function handleLocomotionImport(

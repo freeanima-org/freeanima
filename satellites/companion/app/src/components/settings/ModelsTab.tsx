@@ -1,7 +1,7 @@
 import { useState, type ChangeEvent } from "react";
 import { deleteModel, renameModel, setActiveModel } from "@/lib/api.ts";
 import { useCompanionStore } from "@/stores/companion.ts";
-import { emitConfigChanged } from "@/lib/tauri.ts";
+import { emitConfigChanged } from "@/lib/electron.ts";
 
 export function ModelsTab() {
   const models = useCompanionStore((s) => s.models);

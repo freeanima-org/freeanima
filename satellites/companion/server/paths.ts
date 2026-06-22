@@ -1,8 +1,9 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
+import { companionPackageRoot } from "./companion-root.ts";
 
-const LEGACY_CONFIG_PATH = join(import.meta.dir, "..", "companion-config.json");
+const LEGACY_CONFIG_PATH = join(companionPackageRoot(), "companion-config.json");
 
 /** FREEANIMA_HOME ?? ~/.anima */
 export function animaHomeDir(): string {
@@ -30,7 +31,7 @@ export function legacyCompanionConfigPath(): string {
 }
 
 export function publicModelsDir(): string {
-  return join(import.meta.dir, "..", "public", "models");
+  return join(companionPackageRoot(), "public", "models");
 }
 
 function migrateLegacyConfig(): void {

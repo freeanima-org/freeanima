@@ -1,6 +1,7 @@
 import { existsSync, statSync } from "node:fs";
 import { basename, join } from "node:path";
 import { jsonResponse } from "./http/cors.ts";
+import { companionPackageRoot } from "./companion-root.ts";
 import { companionMotionsDir } from "./paths.ts";
 import { requiredMotionFiles } from "../shared/motion-manifest.ts";
 import { importMotionUpload } from "./motion-import.ts";
@@ -12,7 +13,7 @@ export const REQUIRED_MOTION_FILES = requiredMotionFiles();
 const BOOTH_ITEM_URL = "https://booth.pm/ja/items/5512385";
 
 export function publicMotionsDir(): string {
-  return join(import.meta.dir, "..", "public", "motions");
+  return join(companionPackageRoot(), "public", "motions");
 }
 
 export function motionsReady(dir: string): boolean {

@@ -7,14 +7,14 @@ import { useCompanionStore } from "@/stores/companion.ts";
 import { onCharacterModelReady, startPatrolWatcher } from "@/stores/character.ts";
 import { useSidecarError } from "@/hooks/useSidecarError.ts";
 import {
-  isSettingsRoute,
-  isTauri,
+  isCompanionOverlay,
+  isSettingsView,
   listenConfigChanged,
   listenCursorPosition,
   openSettings,
   setClickThrough,
   setPointerActive,
-} from "@/lib/tauri.ts";
+} from "@/lib/electron.ts";
 import { companionDebug } from "@/lib/companion-debug.ts";
 import { useRef } from "react";
 
@@ -25,7 +25,7 @@ function ClickThroughManager() {
   const ignoringRef = useRef(false);
 
   useEffect(() => {
-    if (!isTauri() || !hitTestFn || !characterReady) return;
+    if (!isCompanionOverlay() || !hitTestFn || !characterReady) return;
 
     let cleanupCursor: (() => void) | undefined;
 
@@ -106,7 +106,7 @@ function CompanionWindow() {
 
   useEffect(() => {
     void init().then(() => {
-      if (isTauri() && !useCompanionStore.getState().modelPath) {
+      if (isCompanionOverlay() && !useCompanionStore.getState().modelPath) {
         void openSettings();
       }
     });
@@ -115,7 +115,7 @@ function CompanionWindow() {
       void refreshConfig();
     };
 
-    if (isTauri()) {
+    if (isCompanionOverlay()) {
       let offConfig: (() => void) | undefined;
       void listenConfigChanged(onConfigChanged).then((fn) => {
         offConfig = fn;
@@ -149,7 +149,7 @@ function CompanionWindow() {
   return (
     <div className="companion-overlay">
       <ClickThroughManager />
-      {!isTauri() ? (
+      {!isCompanionOverlay() ? (
         <button
           type="button"
           className="absolute top-1 right-1 z-30 text-[10px] px-2 py-0.5 rounded bg-black/40 text-white/70 hover:text-white"
@@ -189,7 +189,7 @@ function CompanionWindow() {
         </div>
       ) : null}
 
-      {!isTauri() ? <SettingsModal /> : null}
+      {!isCompanionOverlay() ? <SettingsModal /> : null}
     </div>
   );
 }
@@ -208,21 +208,31 @@ function SettingsApp() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-base-300 flex items-center justify-center">
+      <div className="settings-app-shell flex h-full w-full items-center justify-center bg-base-300">
         <p className="text-base-content/70 text-sm">正在连接本地后台…</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-base-100 flex justify-center p-6">
+    <div className="settings-app-shell h-full w-full bg-base-100">
       <SettingsPanel standalone />
     </div>
   );
 }
 
 function AppRouter() {
-  if (isTauri() && isSettingsRoute()) {
+  useEffect(() => {
+    if (isCompanionOverlay()) {
+      document.documentElement.removeAttribute("data-companion-view");
+      document.title = "";
+    } else if (isSettingsView()) {
+      document.documentElement.setAttribute("data-companion-view", "settings");
+      document.title = "FreeAnima Companion 设置";
+    }
+  }, []);
+
+  if (isSettingsView()) {
     return <SettingsApp />;
   }
   return <CompanionWindow />;

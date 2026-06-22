@@ -46,6 +46,7 @@ export function VrmCanvas({ modelPath, configRevision, onModelLoaded, onModelErr
       setBackend(null);
       setModelLoading(false);
       loadedModelRef.current = null;
+      disposeVrmBackend();
       return;
     }
 
@@ -85,9 +86,15 @@ export function VrmCanvas({ modelPath, configRevision, onModelLoaded, onModelErr
       });
       setHitTest((x, y) => backend.hitTest(x, y));
       return () => {
+        cancelled = true;
         resizeObserver?.disconnect();
         window.removeEventListener("resize", resize);
       };
+    }
+
+    if (loadedModelRef.current !== modelPath) {
+      loadedModelRef.current = null;
+      useCompanionStore.getState().setCharacterReady(false);
     }
 
     setModelLoading(true);

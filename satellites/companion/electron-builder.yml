@@ -1,0 +1,36 @@
+appId: org.freeanima.companion
+productName: FreeAnima Companion
+artifactName: FreeAnima-Companion-${version}.${ext}
+executableName: FreeAnima-Companion
+forceCodeSigning: false
+directories:
+  output: release
+  buildResources: build-resources
+files:
+  - electron-dist/**/*
+  - dist/**/*
+  - package.json
+  - electron/icons/**/*
+extraResources:
+  - from: build-resources/bin
+    to: bin
+    filter:
+      - "**/*"
+win:
+  target:
+    - nsis
+  icon: electron/icons/icon.ico
+  signAndEditExecutable: false
+  signExecutable: false
+mac:
+  target:
+    - dmg
+  icon: electron/icons/icon.icns
+  category: public.app-category.utilities
+linux:
+  target:
+    - AppImage
+  icon: electron/icons
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true

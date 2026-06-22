@@ -1,4 +1,4 @@
-import { isTauri } from "@/lib/tauri.ts";
+import { isCompanionOverlay } from "@/lib/electron.ts";
 import { COMPANION_WINDOW_HEIGHT, COMPANION_WINDOW_WIDTH } from "@/lib/window-metrics.ts";
 
 /** 读取伴侣角色 canvas 应对齐的像素尺寸（与 CSS 可视区域一致） */
@@ -6,7 +6,7 @@ export function measureCharacterViewportSize(
   container: HTMLElement | null,
   canvas: HTMLCanvasElement,
 ): { width: number; height: number } {
-  if (!isTauri()) {
+  if (!isCompanionOverlay()) {
     return { width: COMPANION_WINDOW_WIDTH, height: COMPANION_WINDOW_HEIGHT };
   }
 

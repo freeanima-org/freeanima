@@ -3,6 +3,7 @@
   "compilerOptions": {
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
+    "types": ["node"],
     "paths": {
       "@/*": ["./app/src/*"],
       "@shared/*": ["./shared/*"]
@@ -14,11 +15,8 @@
     "server/**/*.ts",
     "shared/**/*.ts",
     "shared/**/*.json",
-    "build.ts",
-    "dev.ts",
-    "prepare-sidecar.ts",
-    "build-tauri.ts",
+    "electron/**/*.ts",
     "../../types/**/*.d.ts"
   ],
-  "exclude": ["shell/target/**", "shell/src-tauri/resources/**"]
+  "exclude": ["**/*.test.ts", "electron-dist/**", "release/**"]
 }

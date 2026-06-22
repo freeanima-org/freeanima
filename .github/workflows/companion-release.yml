@@ -14,7 +14,7 @@ on:
           - release
           - fast
       version:
-        description: 版本号（如 0.6.0；留空则不改 tauri.conf.json）
+        description: 版本号（如 0.6.0；留空则不改 package.json version）
         required: false
         type: string
 
@@ -31,53 +31,34 @@ jobs:
       matrix:
         include:
           - label: Windows x64
-            runner: ubuntu-latest
-            target: x86_64-pc-windows-gnu
+            runner: windows-latest
+            platform: win
             artifact_slug: windows-x64
-          - label: macOS Apple Silicon
-            runner: macos-latest
-            target: aarch64-apple-darwin
-            artifact_slug: macos-arm64
-          - label: macOS Intel
-            runner: macos-latest
-            target: x86_64-apple-darwin
-            artifact_slug: macos-x64
+          # - label: macOS Apple Silicon
+          #   runner: macos-latest
+          #   platform: mac
+          #   artifact_slug: macos-arm64
+          #   arch: arm64
+          # - label: macOS Intel
+          #   runner: macos-latest
+          #   platform: mac
+          #   artifact_slug: macos-x64
+          #   arch: x64
     permissions:
       contents: read
     env:
       COMPANION_BUILD_PROFILE: ${{ github.event_name == 'workflow_dispatch' && inputs.profile || 'release' }}
       COMPANION_VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.event.release.tag_name || '' }}
-      TAURI_TARGET: ${{ matrix.target }}
     steps:
       - uses: actions/checkout@v6
 
       - uses: ./.github/actions/setup-bun
 
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.target }}
-
-      - uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: satellites/companion/shell/src-tauri
-          shared-key: companion-${{ matrix.target }}
-
-      - name: 安装 Linux 交叉编译依赖
-        if: matrix.runner == 'ubuntu-latest'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y mingw-w64 nsis
-
-      - name: 安装 tauri-cli
-        run: |
-          if ! cargo tauri --version >/dev/null 2>&1; then
-            cargo install tauri-cli --version "^2.0.0" --locked
-          fi
-          cargo tauri --version
-
       - name: 构建桌面伴侣
         working-directory: satellites/companion
-        run: bun build-tauri.ts --target "${{ matrix.target }}"
+        env:
+          COMPANION_ARCH: ${{ matrix.arch || '' }}
+        run: bun build-electron.ts --platform ${{ matrix.platform }}
 
       - name: 收集安装包
         if: env.COMPANION_BUILD_PROFILE == 'release'
@@ -85,18 +66,21 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p dist
-          case "${{ matrix.target }}" in
-            x86_64-pc-windows-gnu)
-              installer="$(ls satellites/companion/shell/target/x86_64-pc-windows-gnu/release/bundle/nsis/*-setup.exe)"
+          case "${{ matrix.platform }}" in
+            win)
+              installer="$(ls satellites/companion/release/FreeAnima-Companion-*.exe 2>/dev/null || ls satellites/companion/release/*.exe | head -1)"
               cp "$installer" dist/companion-windows-x64-setup.exe
               ;;
-            aarch64-apple-darwin)
-              dmg="$(ls satellites/companion/shell/target/aarch64-apple-darwin/release/bundle/dmg/*.dmg)"
-              cp "$dmg" dist/companion-macos-arm64.dmg
-              ;;
-            x86_64-apple-darwin)
-              dmg="$(ls satellites/companion/shell/target/x86_64-apple-darwin/release/bundle/dmg/*.dmg)"
-              cp "$dmg" dist/companion-macos-x64.dmg
+            mac)
+              dmg="$(ls satellites/companion/release/*.dmg | head -1)"
+              case "${{ matrix.artifact_slug }}" in
+                macos-arm64)
+                  cp "$dmg" dist/companion-macos-arm64.dmg
+                  ;;
+                macos-x64)
+                  cp "$dmg" dist/companion-macos-x64.dmg
+                  ;;
+              esac
               ;;
           esac
           ls -la dist/

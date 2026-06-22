@@ -2,7 +2,7 @@
  * FBX → VRMA 进程内转换（sidecar 直接 import，不 spawn 子进程）。
  */
 // @ts-expect-error fbx2vrma-converter 为 CJS 包
-import FBXToVRMAConverter from "../node_modules/fbx2vrma-converter/fbx2vrma-converter.js";
+import FBXToVRMAConverter from "fbx2vrma-converter/fbx2vrma-converter.js";
 
 type ConverterInstance = InstanceType<typeof FBXToVRMAConverter>;
 

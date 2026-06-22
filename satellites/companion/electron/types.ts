@@ -9,8 +9,11 @@ export type PatrolScreenInfo = {
   windowHeight: number;
 };
 
+export type CompanionWindowRole = "overlay" | "settings";
+
 export type CompanionShellApi = {
   isElectron: true;
+  windowRole: CompanionWindowRole;
   apiOrigin: string;
   setClickThrough: (ignore: boolean) => Promise<void>;
   setPointerActive: (active: boolean) => Promise<void>;

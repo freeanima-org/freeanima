@@ -1,6 +1,4 @@
-import type { ServerWebSocket } from "bun";
-
-export type RuntimeWsClientData = { channel: "runtime" };
+import type WebSocket from "ws";
 
 export type RuntimeWsBubble = {
   current: { id: string; text: string; createdAt: number } | null;
@@ -20,7 +18,7 @@ export type RuntimeWsMessage = {
   play: RuntimeWsPlay[];
 };
 
-const clients = new Set<ServerWebSocket<RuntimeWsClientData>>();
+const clients = new Set<WebSocket>();
 
 export function runtimeWsPayload(
   bubble: RuntimeWsBubble,
@@ -33,17 +31,19 @@ export function broadcastRuntime(message: RuntimeWsMessage): void {
   const data = JSON.stringify(message);
   for (const ws of clients) {
     try {
-      ws.send(data);
+      if (ws.readyState === 1) {
+        ws.send(data);
+      }
     } catch {
       clients.delete(ws);
     }
   }
 }
 
-export function handleRuntimeWsOpen(ws: ServerWebSocket<RuntimeWsClientData>): void {
+export function handleRuntimeWsOpen(ws: WebSocket): void {
   clients.add(ws);
 }
 
-export function handleRuntimeWsClose(ws: ServerWebSocket<RuntimeWsClientData>): void {
+export function handleRuntimeWsClose(ws: WebSocket): void {
   clients.delete(ws);
 }

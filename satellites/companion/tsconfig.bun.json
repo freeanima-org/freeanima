@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["bun"],
+    "lib": ["ESNext", "DOM", "DOM.Iterable"]
+  },
+  "include": [
+    "build.ts",
+    "dev.ts",
+    "dev-electron.ts",
+    "build-electron.ts",
+    "scripts/**/*.ts",
+    "app/src/**/*.test.ts",
+    "server/**/*.test.ts",
+    "shared/**/*.test.ts"
+  ],
+  "exclude": ["electron-dist/**", "release/**"]
+}

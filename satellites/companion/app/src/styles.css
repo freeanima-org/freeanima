@@ -12,6 +12,17 @@ body,
   background: transparent;
 }
 
+html[data-companion-view="settings"],
+html[data-companion-view="settings"] body,
+html[data-companion-view="settings"] #root {
+  background: var(--color-base-100, #ffffff);
+}
+
+.settings-app-shell {
+  min-height: 0;
+  overflow: hidden;
+}
+
 .companion-overlay {
   position: fixed;
   inset: 0;

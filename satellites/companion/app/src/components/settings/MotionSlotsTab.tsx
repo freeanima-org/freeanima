@@ -3,7 +3,7 @@ import type { MotionLibraryEntry, MotionSlotId } from "@shared/companion-schema.
 import { MOTION_SLOT_IDS, MOTION_SLOT_LABELS } from "@shared/companion-schema.ts";
 import { setMotionSlot } from "@/lib/api.ts";
 import { useCompanionStore } from "@/stores/companion.ts";
-import { emitConfigChanged } from "@/lib/tauri.ts";
+import { emitConfigChanged } from "@/lib/electron.ts";
 
 type AddModalProps = {
   slot: MotionSlotId;

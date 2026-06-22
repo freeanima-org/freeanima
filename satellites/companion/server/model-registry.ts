@@ -11,6 +11,7 @@ import { loadConfig, saveConfig, activeModelPath } from "./config.ts";
 import { companionModelsDir, ensureCompanionDataDir } from "./paths.ts";
 import { isModelPathAvailable } from "./model-path.ts";
 import { validateVrmUpload } from "./models.ts";
+import { writeBytes } from "./process-utils.ts";
 
 export function listModels(): ModelEntry[] {
   return loadConfig().models;
@@ -30,7 +31,7 @@ export async function addModelFromUpload(file: File): Promise<ModelEntry> {
   const filename = modelFileNameForId(id);
   const dest = join(companionModelsDir(), filename);
   const bytes = new Uint8Array(await file.arrayBuffer());
-  await Bun.write(dest, bytes);
+  await writeBytes(dest, bytes);
 
   const path = modelPathForId(id);
   const cfg = loadConfig();

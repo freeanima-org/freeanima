@@ -1,21 +1,26 @@
 import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { FBX_IMPORT_UNAVAILABLE_MSG } from "../shared/constants.ts";
+import { companionPackageRoot } from "./companion-root.ts";
 
 export { FBX_IMPORT_UNAVAILABLE_MSG };
 
-/** 安装目录（companion-bun.exe / FBX2glTF 与 shell 同级） */
+/** Electron 打包后 extraResources/bin；开发期与 electron 可执行文件同级 */
 export function installBinDir(): string {
+  const fromEnv = process.env.COMPANION_BIN_DIR?.trim();
+  if (fromEnv) return fromEnv;
+  const resources = process.env.COMPANION_RESOURCES_PATH?.trim();
+  if (resources) return join(resources, "bin");
   return dirname(process.execPath);
 }
 
 /** sidecar 资源根（含 server/、node_modules/） */
 export function sidecarRuntimeDir(): string {
-  return join(import.meta.dir, "..");
+  return companionPackageRoot();
 }
 
 function devCompanionRoot(): string {
-  return join(import.meta.dir, "..", "..");
+  return join(companionPackageRoot(), "..");
 }
 
 function kitDirCandidates(): string[] {

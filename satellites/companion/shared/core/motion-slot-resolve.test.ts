@@ -1,5 +1,9 @@
 import { describe, expect, test } from "bun:test";
-import { normalizeMotionSlots, resolveMotionForSlot } from "./motion-slot-resolve.ts";
+import {
+  normalizeMotionSlots,
+  resolveLocomotionMotion,
+  resolveMotionForSlot,
+} from "./motion-slot-resolve.ts";
 
 describe("resolveMotionForSlot", () => {
   const library = [
@@ -24,6 +28,41 @@ describe("resolveMotionForSlot", () => {
     const slots = { idle: [], rest: [], walk: [], climb: [], in_place: [] };
     expect(resolveMotionForSlot("walk", slots, library)).toBeNull();
   });
+
+  test("槽位仍引用已重命名的 locomotion 文件名", () => {
+    const libraryWithWalk = [
+      ...library,
+      { id: "walk1", name: "locomotion_walk", file: "mot_walk.vrma" },
+    ];
+    const slots = {
+      idle: ["m1"],
+      rest: [],
+      walk: ["locomotion_walk.vrma"],
+      climb: [],
+      in_place: [],
+    };
+    expect(resolveMotionForSlot("walk", slots, libraryWithWalk)?.file).toBe("mot_walk.vrma");
+  });
+});
+
+describe("resolveLocomotionMotion", () => {
+  test("walk 槽位优先于 manifest 回退", () => {
+    const library = [{ id: "w1", name: "Custom Walk", file: "custom_walk.vrma" }];
+    const slots = {
+      idle: [],
+      rest: [],
+      walk: ["w1"],
+      climb: [],
+      in_place: [],
+    };
+    expect(resolveLocomotionMotion("walk", slots, library)?.file).toBe("custom_walk.vrma");
+  });
+
+  test("walk 槽位为空时使用 manifest 默认文件", () => {
+    const library = [{ id: "w1", name: "locomotion_walk", file: "mot_walk.vrma" }];
+    const slots = { idle: [], rest: [], walk: [], climb: [], in_place: [] };
+    expect(resolveLocomotionMotion("walk", slots, library)?.file).toBe("mot_walk.vrma");
+  });
 });
 
 describe("normalizeMotionSlots", () => {
@@ -42,5 +81,11 @@ describe("normalizeMotionSlots", () => {
     );
     expect(normalized.in_place.toSorted()).toEqual(["h", "t"]);
     expect(normalized.idle).toEqual(["VRMA_01.vrma"]);
+  });
+
+  test("空 walk 槽位链接 manifest locomotion 到动作库 id", () => {
+    const library = [{ id: "w1", name: "locomotion_walk", file: "mot_walk.vrma" }];
+    const normalized = normalizeMotionSlots({ walk: [] }, library);
+    expect(normalized.walk).toEqual(["w1"]);
   });
 });

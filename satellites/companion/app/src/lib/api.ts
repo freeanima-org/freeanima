@@ -1,4 +1,4 @@
-import { isTauri } from "./tauri.ts";
+import { isElectron } from "./electron.ts";
 import { resolveSidecarOrigin } from "./sidecar.ts";
 import type {
   ClientCompanionConfig,
@@ -222,4 +222,4 @@ export async function advanceBubble() {
 
 export type { PlaySlotCommand, RuntimeState, RuntimeWsMessage, MotionLibraryEntry, MotionSlotId };
 
-export { isTauri };
+export { isElectron, isElectron as isTauri };

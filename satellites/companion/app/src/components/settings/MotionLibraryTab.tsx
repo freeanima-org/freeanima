@@ -1,7 +1,7 @@
 import { useEffect, useState, type ChangeEvent } from "react";
 import { deleteMotion, renameMotion, uploadMotionFile } from "@/lib/api.ts";
 import { useCompanionStore } from "@/stores/companion.ts";
-import { emitConfigChanged } from "@/lib/tauri.ts";
+import { emitConfigChanged } from "@/lib/electron.ts";
 import { COMPANION_WINDOW_HEIGHT, COMPANION_WINDOW_WIDTH } from "@/lib/window-metrics.ts";
 import { FBX_IMPORT_UNAVAILABLE_MSG } from "@shared/constants.ts";
 import type { MotionLibraryEntry } from "@shared/constants.ts";
