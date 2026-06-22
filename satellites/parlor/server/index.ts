@@ -1,8 +1,15 @@
 import { existsSync, statSync } from "node:fs";
-import { homedir } from "node:os";
 import { join, extname } from "node:path";
+import type { ServerWebSocket } from "bun";
 
-import { fileSapInstanceStore, resolveHubWsUrl } from "@freeanima/sap-contract";
+import {
+  handleRelayWsClose,
+  handleRelayWsMessage,
+  handleRelayWsOpen,
+  type RelayWsData,
+} from "@freeanima/sap-contract";
+import { connectSap } from "./sap/run.ts";
+import { getSapClient, getSapInstanceId, getRelayState } from "./sap/hub.ts";
 
 const PORT = Number(process.env.SATELLITE_PORT ?? 4174);
 const DIST_DIR = join(import.meta.dir, "..", "dist");
@@ -10,16 +17,7 @@ const HUB_URL = (process.env.FREEANIMA_URL ?? "http://127.0.0.1:2658").replace(/
 const APP_ID = "parlor";
 const HTTP_URL = `http://127.0.0.1:${PORT}`;
 
-function instanceStorePath(): string {
-  const home = process.env.FREEANIMA_HOME ?? join(homedir(), ".anima");
-  return join(home, "satellites", APP_ID, "instance.json");
-}
-
-function readStoredInstanceId(): string | undefined {
-  const id = fileSapInstanceStore(instanceStorePath()).load();
-  if (id instanceof Promise) return undefined;
-  return id ?? undefined;
-}
+type ServerWsData = { channel: "relay" } & RelayWsData;
 
 const MIME: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
@@ -31,6 +29,10 @@ const MIME: Record<string, string> = {
   ".woff2": "font/woff2",
 };
 
+function hubUrl(): string {
+  return HUB_URL;
+}
+
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -41,21 +43,26 @@ function jsonResponse(body: unknown, status = 200): Response {
   });
 }
 
-async function route(req: Request): Promise<Response> {
+async function route(req: Request, server: Bun.Server<ServerWsData>): Promise<Response> {
   const url = new URL(req.url);
 
+  if (url.pathname === "/sap/relay/v1") {
+    if (server.upgrade(req, { data: { channel: "relay", cleanups: [] } })) {
+      return new Response(null, { status: 101 });
+    }
+    return jsonResponse({ error: "WebSocket upgrade failed" }, 400);
+  }
+
   if (url.pathname === "/config.json" && req.method === "GET") {
-    const instance_id = readStoredInstanceId();
     return jsonResponse({
       app_id: APP_ID,
-      hub_ws_url: resolveHubWsUrl(HUB_URL),
-      http_url: HTTP_URL,
-      ...(instance_id ? { instance_id } : {}),
+      instance_id: getSapInstanceId(),
+      relay_ws_url: `${HTTP_URL.replace(/^http/, "ws")}/sap/relay/v1`,
     });
   }
 
   if (url.pathname === "/health") {
-    return jsonResponse({ ok: true, app: APP_ID, instance_id: readStoredInstanceId() ?? null });
+    return jsonResponse({ ok: true, app: APP_ID, instance_id: getSapInstanceId() || null });
   }
 
   return serveStatic(url.pathname);
@@ -77,7 +84,6 @@ function serveStatic(pathname: string): Response {
     return new Response(Bun.file(filePath), { headers });
   }
 
-  // Worker 脚本必须返回 JS，不能走 SPA fallback（否则浏览器报 Failed to fetch a worker script）
   if (pathname.endsWith(".js")) {
     return jsonResponse({ error: "Not Found" }, 404);
   }
@@ -92,13 +98,36 @@ function serveStatic(pathname: string): Response {
   return jsonResponse({ error: "Not Found" }, 404);
 }
 
-const server = Bun.serve({
+const server = Bun.serve<ServerWsData>({
   port: PORT,
-  fetch(req) {
-    return route(req);
+  fetch(req, srv) {
+    return route(req, srv);
+  },
+  websocket: {
+    open(ws) {
+      const relayState = getRelayState();
+      if (relayState) {
+        handleRelayWsOpen(relayState, ws as ServerWebSocket<RelayWsData & { channel: "relay" }>);
+      }
+    },
+    message(ws, message) {
+      void handleRelayWsMessage(
+        ws as ServerWebSocket<RelayWsData & { channel: "relay" }>,
+        String(message),
+        () => getSapClient(hubUrl(), HTTP_URL),
+      );
+    },
+    close(ws) {
+      const relayState = getRelayState();
+      if (relayState) {
+        handleRelayWsClose(relayState, ws as ServerWebSocket<RelayWsData & { channel: "relay" }>);
+      }
+    },
   },
 });
 
 console.log(`parlor satellite ${HTTP_URL}`);
+
+void connectSap(HUB_URL, HTTP_URL);
 
 export { server, HTTP_URL };
