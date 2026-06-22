@@ -36,4 +36,16 @@ describe("messagesForApi", () => {
       reasoning_content: "think",
     });
   });
+
+  it("passes assistant name to API", () => {
+    const api = messagesForApi([
+      { role: "assistant", name: "fridge_context", content: "board notes" },
+      { role: "user", content: "hi" },
+    ]);
+    expect(api[0]).toMatchObject({
+      role: "assistant",
+      name: "fridge_context",
+      content: "board notes",
+    });
+  });
 });

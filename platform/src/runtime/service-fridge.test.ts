@@ -1,10 +1,11 @@
 import { afterEach, describe, expect, it } from "bun:test";
 import type { FridgeStorePort } from "@freeanima/capabilities-tasks/fridge-magnet/fridge-store-port";
 import {
+  formatFridgeMagnetManifestPreview,
+  magnetRedisKey,
   registerFridgeStore,
   resetFridgeStoreForTests,
 } from "@freeanima/capabilities-tasks/fridge-magnet";
-import { magnetRedisKey } from "@freeanima/capabilities-tasks/fridge-magnet";
 import {
   initRedis,
   setRedisForTest,
@@ -73,7 +74,10 @@ describe("listFridgeMagnets", () => {
       ttl_seconds: -1,
     });
     expect(result.inject_text).toBe(
-      "```fridge-magnet\nsession:sess-1:note: note content\ntasks:summary: tasks (2)\n```\n",
+      formatFridgeMagnetManifestPreview([
+        { key: "session:sess-1:note", value: "note content" },
+        { key: "tasks:summary", value: "tasks (2)" },
+      ]),
     );
   });
 

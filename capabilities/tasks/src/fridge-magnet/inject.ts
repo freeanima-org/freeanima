@@ -1,7 +1,16 @@
-import type { SessionMessage } from "@freeanima/core/db/domain";
+import type { AssistantMessage, SessionMessage } from "@freeanima/core/db/domain";
 import type { FridgeMagnet } from "./types.ts";
 
+/** OpenAI name field: ^[a-zA-Z0-9_-]{1,64}$ */
+export const FRIDGE_CONTEXT_ASSISTANT_NAME = "fridge_context";
+
 export const FRIDGE_MAGNET_FENCE = "fridge-magnet";
+
+export const FRIDGE_MAGNET_BOARD_HEADING = "## Fridge magnets";
+
+export const FRIDGE_MAGNET_BOARD_FRAME =
+  "Below are cross-turn sticky notes you wrote for yourself on the fridge board.\n" +
+  "They are NOT from the user; treat them as your own working memory.";
 
 const FRIDGE_BLOCK_RE = /^```(?:fridge-magnet|fridge)\n[\s\S]*?\n```\n?/;
 
@@ -12,34 +21,69 @@ export function formatFridgeMagnets(magnets: FridgeMagnet[]): string {
   return "```" + FRIDGE_MAGNET_FENCE + "\n" + lines.join("\n") + "\n```\n";
 }
 
-/** Inject fridge magnet block before message content */
-export function injectFridgeMagnets(content: string, magnets: FridgeMagnet[]): string {
-  const block = formatFridgeMagnets(magnets);
-  if (!block) return content;
-  return block + content;
+/** Consciousness-layer board body: attribution frame + heading + fence */
+export function wrapFridgeMagnetBoard(magnets: FridgeMagnet[]): string {
+  const fence = formatFridgeMagnets(magnets);
+  if (!fence) return "";
+  return `${FRIDGE_MAGNET_BOARD_FRAME}\n\n${FRIDGE_MAGNET_BOARD_HEADING}\n${fence}`;
 }
 
-/** Strip fridge magnet block from message content (idempotent) */
-export function stripFridgeMagnets(content: string): string {
-  return content.replace(FRIDGE_BLOCK_RE, "");
+/** WebUI preview of the manifest assistant message */
+export function formatFridgeMagnetManifestPreview(magnets: FridgeMagnet[]): string {
+  const content = wrapFridgeMagnetBoard(magnets);
+  if (!content) return "";
+  return `role: assistant\nname: ${FRIDGE_CONTEXT_ASSISTANT_NAME}\n\n${content}`;
 }
 
-/** Find last user message and inject fridge magnets */
-export function injectIntoMessages(messages: SessionMessage[], magnets: FridgeMagnet[]): void {
+export function isFridgeContextAssistant(msg: SessionMessage): msg is AssistantMessage {
+  return msg.role === "assistant" && msg.name === FRIDGE_CONTEXT_ASSISTANT_NAME;
+}
+
+/** Remove runtime manifest assistant messages (idempotent) */
+export function stripFridgeContextFromMessages(messages: SessionMessage[]): void {
   for (let i = messages.length - 1; i >= 0; i--) {
-    const msg = messages[i];
-    if (msg?.role === "user" && "content" in msg) {
-      msg.content = injectFridgeMagnets(msg.content ?? "", magnets);
-      return;
+    if (isFridgeContextAssistant(messages[i]!)) {
+      messages.splice(i, 1);
     }
   }
 }
 
-/** strips fridge magnet blocks from all user messages */
-export function stripAllFromMessages(messages: SessionMessage[]): void {
+/** Strip legacy user-message prepend blocks (migration) */
+export function stripFridgeMagnets(content: string): string {
+  return content.replace(FRIDGE_BLOCK_RE, "");
+}
+
+/** @deprecated Legacy user prepend — use stripFridgeMagnets on user messages */
+export function stripLegacyUserFridgeBlocks(messages: SessionMessage[]): void {
   for (const msg of messages) {
     if (msg.role === "user" && "content" in msg && msg.content !== null) {
       msg.content = stripFridgeMagnets(msg.content);
     }
   }
+}
+
+/** @deprecated Alias for stripLegacyUserFridgeBlocks */
+export const stripAllFromMessages = stripLegacyUserFridgeBlocks;
+
+/**
+ * Manifest fridge board as assistant(name=fridge_context) immediately before the last user message.
+ * No-op unless the last message is user and magnets are non-empty.
+ */
+export function manifestFridgeMagnetBoard(
+  messages: SessionMessage[],
+  magnets: FridgeMagnet[],
+): void {
+  const lastIdx = messages.length - 1;
+  const lastMsg = messages[lastIdx];
+  if (!lastMsg || lastMsg.role !== "user") return;
+
+  const content = wrapFridgeMagnetBoard(magnets);
+  if (!content.trim()) return;
+
+  const manifest: AssistantMessage = {
+    role: "assistant",
+    name: FRIDGE_CONTEXT_ASSISTANT_NAME,
+    content,
+  };
+  messages.splice(lastIdx, 0, manifest);
 }

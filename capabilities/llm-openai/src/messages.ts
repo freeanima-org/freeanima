@@ -44,6 +44,7 @@ function sanitizeTurnForApi(
       };
       const reasoningText = msg.reasoning_content || msg.reasoning || "";
       if (reasoningText) out.reasoning_content = reasoningText;
+      if (msg.name) (out as { name?: string }).name = msg.name;
       if (cleanedCalls.length) {
         out.tool_calls = cleanedCalls.map((tc) => ({
           id: tc.id,
