@@ -16,7 +16,9 @@ type SessionsState = {
   newSession: () => Promise<string | null>;
   renameSession: (sessionId: string, newTitle: string) => Promise<void>;
   appendItem: (item: DisplayItem) => void;
+  appendItemForSession: (sessionId: string, item: DisplayItem) => void;
   refreshMessages: (sessionId: string, baselineCount: number) => Promise<boolean>;
+  reloadSessionIfCurrent: (sessionId: string) => Promise<void>;
   patchProgressLine: (text: string, messageId?: string) => void;
 };
 
@@ -75,15 +77,33 @@ export const useSessionsStore = create<SessionsState>((set, get) => ({
     set({ display: [...get().display, item] });
   },
 
+  appendItemForSession(sessionId, item) {
+    if (get().currentId !== sessionId) return;
+    set({ display: [...get().display, item] });
+  },
+
   async refreshMessages(sessionId, baselineCount) {
     try {
       const resp = await getSessionMessages(sessionId);
       const display = (resp as { display?: DisplayItem[] }).display ?? [];
-      set({ display });
-      return hasNewAssistantReply(display, baselineCount);
+      const hasReply = hasNewAssistantReply(display, baselineCount);
+      if (get().currentId === sessionId) {
+        set({ display });
+      }
+      return hasReply;
     } catch (e) {
       console.error("refreshMessages:", e);
       return false;
+    }
+  },
+
+  async reloadSessionIfCurrent(sessionId) {
+    if (get().currentId !== sessionId) return;
+    try {
+      const resp = await getSessionMessages(sessionId);
+      set({ display: (resp as { display?: DisplayItem[] }).display ?? [] });
+    } catch (e) {
+      console.error("reloadSessionIfCurrent:", e);
     }
   },
 

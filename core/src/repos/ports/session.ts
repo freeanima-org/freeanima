@@ -66,6 +66,7 @@ export interface SessionStorePort {
     limit: number,
   ): Promise<ConversationMessage[]>;
   countMessages(sessionId: string): Promise<number>;
+  countUserMessages(sessionId: string): Promise<number>;
   /** Look up in-session pos by PG primary key (scroll anchor) */
   findMessagePos(sessionId: string, messageId: string): Promise<number | null>;
   /** Paginate by pos order; return LLM-readable rows with message_id */

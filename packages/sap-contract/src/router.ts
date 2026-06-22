@@ -1,4 +1,9 @@
-import type { MessageSendInput, MessageSendOutput } from "./frames/message.ts";
+import type {
+  MessageInterruptInput,
+  MessageInterruptOutput,
+  MessageSendInput,
+  MessageSendOutput,
+} from "./frames/message.ts";
 import type {
   SessionCreateInput,
   SessionCreateOutput,
@@ -37,6 +42,7 @@ export const SAP_METHODS = [
   "session.acpDock",
   "session.commands",
   "message.send",
+  "message.interrupt",
   "fridge.list",
   "terminal.attach",
   "terminal.write",
@@ -59,6 +65,7 @@ export type SapRouterInputs = {
   "session.acpDock": SessionAcpDockInput;
   "session.commands": SessionCommandsInput;
   "message.send": MessageSendInput;
+  "message.interrupt": MessageInterruptInput;
   "fridge.list": FridgeListInput;
   "terminal.attach": TerminalAttachInput;
   "terminal.write": TerminalWriteInput;
@@ -79,6 +86,7 @@ export type SapRouterOutputs = {
   "session.acpDock": SessionAcpDockOutput;
   "session.commands": SessionCommandsOutput;
   "message.send": MessageSendOutput;
+  "message.interrupt": MessageInterruptOutput;
   "fridge.list": FridgeListOutput;
   "terminal.attach": TerminalAttachOutput;
   "terminal.write": { ok: true };

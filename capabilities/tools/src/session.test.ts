@@ -46,6 +46,9 @@ function createMockSessionStore(overrides: Partial<SessionStorePort> = {}): Sess
     async countMessages() {
       return 0;
     },
+    async countUserMessages() {
+      return 0;
+    },
     async findMessagePos() {
       return null;
     },

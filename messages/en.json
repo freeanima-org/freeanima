@@ -490,6 +490,7 @@
   "webui_nav_tools": "Tools",
   "webui_parlor_clarify_hint": "Your confirmation is needed (reply in one message, or send /cancel)",
   "webui_parlor_message_placeholder": "Type a message (Shift+Enter for newline, Enter to send; / for commands)",
+  "webui_parlor_queue_send_now": "Send now",
   "webui_parlor_select_session": "Select a session to start",
   "webui_parlor_send_first_message": "Send the first message",
   "webui_parlor_sessions_col_actions": "Actions",

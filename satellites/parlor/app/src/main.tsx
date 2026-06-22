@@ -1,18 +1,21 @@
-import { StrictMode, useEffect, useMemo, useRef, useState } from "react";
+import { StrictMode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { AcpProgressDock } from "@/components/AcpProgressDock.tsx";
 import { FridgeMagnetInjectPreview } from "@/components/FridgeMagnetInjectPreview.tsx";
 import { ToolBlockBubble } from "@/components/ToolBlockBubble.tsx";
 import { useAcpProgressDock } from "@/hooks/useAcpProgressDock.ts";
 import { formatSessionIdDateTime } from "@/lib/format-datetime.ts";
+import { displayAwaitingReply, pollUntilAssistantReply } from "@/lib/display-recovery.ts";
 import {
   getFridgeMagnets,
   listSessionCommands,
   loadConfig,
   subscribeSessionEvents,
 } from "@/lib/api.ts";
+import type { SapConnectionState } from "@freeanima/sap-contract";
 import { getAppLocale, initAppLocale, m, toggleAppLocale } from "@/lib/i18n.ts";
-import { getSapRelayClient } from "@/lib/sap-client.ts";
+import { loadInputDraft, saveInputDraft } from "@/lib/input-draft.ts";
+import { getSapRelayClient, reconnectSap, subscribeSapConnection } from "@/lib/sap-client.ts";
 import type { SessionListItem } from "@/lib/types.ts";
 import { useChatStore } from "@/stores/chat.ts";
 import { useSessionsStore } from "@/stores/sessions.ts";
@@ -50,16 +53,26 @@ function App() {
   const newSessionFn = useSessionsStore((s) => s.newSession);
   const renameSession = useSessionsStore((s) => s.renameSession);
   const appendItem = useSessionsStore((s) => s.appendItem);
+  const appendItemForSession = useSessionsStore((s) => s.appendItemForSession);
   const refreshMessages = useSessionsStore((s) => s.refreshMessages);
+  const reloadSessionIfCurrent = useSessionsStore((s) => s.reloadSessionIfCurrent);
   const patchProgressLine = useSessionsStore((s) => s.patchProgressLine);
 
   const renderMd = useChatStore((s) => s.renderMd);
   const streaming = useChatStore((s) => s.streaming);
+  const streamingSessionId = useChatStore((s) => s.streamingSessionId);
+  const streamText = useChatStore((s) => s.streamText);
   const recovering = useChatStore((s) => s.recovering);
   const send = useChatStore((s) => s.send);
+  const queue = useChatStore((s) => s.queue);
+  const messageQueue = useMemo(
+    () => (currentId ? queue.filter((q) => q.sessionId === currentId) : []),
+    [currentId, queue],
+  );
 
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sapConnection, setSapConnection] = useState<SapConnectionState>("connecting");
   const [locale, setLocale] = useState(getAppLocale());
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [contextMenu, setContextMenu] = useState({
@@ -75,9 +88,7 @@ function App() {
   const sendingRef = useRef(false);
   const msgAreaRef = useRef<HTMLDivElement>(null);
   const msgInputRef = useRef<HTMLTextAreaElement>(null);
-  const [inputText, setInputText] = useState("");
-  const [streamAccumulated, setStreamAccumulated] = useState("");
-  const [streamDone, setStreamDone] = useState(true);
+  const [inputText, setInputText] = useState(() => loadInputDraft(readSessionFromUrl() ?? null));
   const [commandList, setCommandList] = useState<CommandItem[]>([]);
   const [selectedCmdIdx, setSelectedCmdIdx] = useState(0);
   const [clarifyPending, setClarifyPending] = useState<ClarifyPending | null>(null);
@@ -87,6 +98,9 @@ function App() {
     inject_text: "",
   });
   const [fridgeLoading, setFridgeLoading] = useState(false);
+  const pendingRecoveryKeyRef = useRef<string | null>(null);
+
+  const streamVisible = streaming && streamingSessionId === currentId;
 
   const acpDock = useAcpProgressDock(currentId, {
     patchProgress: patchProgressLine,
@@ -124,29 +138,46 @@ function App() {
   };
 
   useEffect(() => {
+    return subscribeSapConnection(setSapConnection);
+  }, []);
+
+  useEffect(() => {
     void (async () => {
       try {
         await loadConfig();
-        await getSapRelayClient().whenReady();
+        getSapRelayClient();
         setReady(true);
-        const list = await fetchSessions();
-        const fromUrl = readSessionFromUrl();
-        if (fromUrl) {
-          await selectSession(fromUrl);
-        } else if (list.length > 0) {
-          const id = list[0]!.id;
-          await selectSession(id);
-          writeSessionToUrl(id);
-        }
-        void listSessionCommands()
-          .then((raw) => setCommandList((raw as { commands?: CommandItem[] }).commands ?? []))
-          .catch((e) => console.error("commands:", e));
-        void refreshFridgeMagnets();
+
+        const bootstrap = async () => {
+          await getSapRelayClient().whenReady();
+          const list = await fetchSessions();
+          const fromUrl = readSessionFromUrl();
+          if (fromUrl) {
+            await selectSession(fromUrl);
+          } else if (list.length > 0) {
+            const id = list[0]!.id;
+            await selectSession(id);
+            writeSessionToUrl(id);
+          }
+          void listSessionCommands()
+            .then((raw) => setCommandList((raw as { commands?: CommandItem[] }).commands ?? []))
+            .catch((e) => console.error("commands:", e));
+          void refreshFridgeMagnets();
+        };
+
+        void bootstrap().catch((e) => {
+          console.error("parlor bootstrap:", e);
+        });
       } catch (e) {
         setError(e instanceof Error ? e.message : String(e));
       }
     })();
   }, [fetchSessions, selectSession]);
+
+  useEffect(() => {
+    if (sapConnection !== "connected") return;
+    void fetchSessions();
+  }, [sapConnection, fetchSessions]);
 
   useEffect(() => {
     const close = () => setContextMenu((menu) => ({ ...menu, visible: false }));
@@ -157,10 +188,14 @@ function App() {
   useEffect(() => {
     if (!currentId) return;
     writeSessionToUrl(currentId);
+    setInputText(loadInputDraft(currentId));
     requestAnimationFrame(() => {
       msgInputRef.current?.focus();
       resizeInput();
     });
+  }, [currentId]);
+
+  useEffect(() => {
     scrollDown();
   }, [currentId, display.length]);
 
@@ -171,6 +206,37 @@ function App() {
     });
     return () => sub.unsubscribe();
   }, [currentId, fetchSessions]);
+
+  /** 刷新或切回会话时：末条为 user 且无 assistant → 轮询直到 Hub 落库 */
+  useEffect(() => {
+    if (!currentId) return;
+    if (streaming && streamingSessionId === currentId) return;
+    if (!displayAwaitingReply(display)) {
+      pendingRecoveryKeyRef.current = null;
+      return;
+    }
+    const key = `${currentId}@${display.length}`;
+    if (pendingRecoveryKeyRef.current === key) return;
+    pendingRecoveryKeyRef.current = key;
+
+    const baseline = display.length;
+    let cancelled = false;
+    useChatStore.setState({ recovering: true });
+
+    const sub = subscribeSessionEvents(currentId, () => {
+      void refreshMessages(currentId, baseline);
+    });
+
+    void pollUntilAssistantReply(currentId, (id) => refreshMessages(id, baseline)).finally(() => {
+      if (!cancelled) useChatStore.setState({ recovering: false });
+    });
+
+    return () => {
+      cancelled = true;
+      sub.unsubscribe();
+      useChatStore.setState({ recovering: false });
+    };
+  }, [currentId, display, streaming, streamingSessionId, refreshMessages]);
 
   const scrollDown = () => {
     requestAnimationFrame(() => {
@@ -196,6 +262,11 @@ function App() {
   };
 
   const navigateToSession = async (sessionId: string) => {
+    if (sessionId === currentId) {
+      setSidebarOpen(false);
+      return;
+    }
+    setClarifyPending(null);
     await selectSession(sessionId);
     setSidebarOpen(false);
   };
@@ -222,36 +293,28 @@ function App() {
     setRenameText("");
   };
 
-  const sendMessage = async () => {
-    const text = inputText.trim();
-    if (!text || !currentId || streaming || sendingRef.current) return;
-    if (useChatStore.getState().streaming) return;
+  const flushQueueRef = useRef<(sessionId: string) => Promise<void>>(async () => {});
 
-    sendingRef.current = true;
-    useChatStore.setState({ streaming: true });
-    setInputText("");
-    requestAnimationFrame(resizeInput);
-    appendItem({ type: "message", role: "user", content: text });
-
-    try {
+  const dispatchSend = useCallback(
+    async (text: string, originSessionId: string) => {
       const displayBaseline = useSessionsStore.getState().display.length;
       if (clarifyPending) setClarifyPending(null);
       scrollDown();
-      setStreamAccumulated("");
-      setStreamDone(false);
-      setClarifyPending(null);
 
-      await send(currentId, text, {
+      const isViewingOrigin = () => useSessionsStore.getState().currentId === originSessionId;
+
+      await send(originSessionId, text, {
         recoverDisplay: (id) => refreshMessages(id, displayBaseline),
-        onToken: (fullText) => {
-          setStreamAccumulated(fullText);
+        onToken: () => {
+          if (!isViewingOrigin()) return;
           scrollDown();
         },
         onDisplayAppend: (item) => {
-          appendItem(item);
-          scrollDown();
+          appendItemForSession(originSessionId, item);
+          if (isViewingOrigin()) scrollDown();
         },
         onAwaitingClarify: (data) => {
+          if (!isViewingOrigin()) return;
           if (Array.isArray(data.items) && data.items.length) {
             setClarifyPending({
               items: data.items as ClarifyPending["items"],
@@ -261,26 +324,104 @@ function App() {
           scrollDown();
         },
         onError: (msg) => {
-          setStreamDone(true);
-          appendItem({ type: "message", role: "assistant", content: `⚠️ ${msg}` });
-          setStreamAccumulated("");
-          scrollDown();
+          appendItemForSession(originSessionId, {
+            type: "message",
+            role: "assistant",
+            content: `⚠️ ${msg}`,
+          });
+          if (isViewingOrigin()) scrollDown();
         },
         onDone: (opts) => {
-          setStreamDone(true);
           if (opts?.recovered) {
-            setStreamAccumulated("");
-            scrollDown();
+            if (isViewingOrigin()) scrollDown();
+            void refreshFridgeMagnets();
+            void flushQueueRef.current(originSessionId);
             return;
           }
-          setStreamAccumulated("");
-          scrollDown();
+          void reloadSessionIfCurrent(originSessionId);
+          if (isViewingOrigin()) scrollDown();
           void refreshFridgeMagnets();
+          void flushQueueRef.current(originSessionId);
         },
       });
+    },
+    [
+      appendItemForSession,
+      clarifyPending,
+      refreshFridgeMagnets,
+      refreshMessages,
+      reloadSessionIfCurrent,
+      send,
+    ],
+  );
+
+  flushQueueRef.current = async (sessionId: string) => {
+    const next = useChatStore.getState().peekQueue(sessionId);
+    if (!next || sendingRef.current) return;
+    const item = useChatStore.getState().takeQueued(next.id);
+    if (!item) return;
+    appendItemForSession(item.sessionId, {
+      type: "message",
+      role: "user",
+      content: item.text,
+    });
+    scrollDown();
+    sendingRef.current = true;
+    try {
+      await dispatchSend(item.text, item.sessionId);
     } finally {
       sendingRef.current = false;
     }
+  };
+
+  const sendMessage = async () => {
+    const text = inputText.trim();
+    if (!text || !currentId || sendingRef.current) return;
+
+    if (streamVisible) {
+      useChatStore.getState().enqueue(currentId, text);
+      setInputText("");
+      saveInputDraft(currentId, "");
+      requestAnimationFrame(resizeInput);
+      return;
+    }
+
+    const originSessionId = currentId;
+    sendingRef.current = true;
+    setInputText("");
+    saveInputDraft(originSessionId, "");
+    requestAnimationFrame(resizeInput);
+    appendItem({ type: "message", role: "user", content: text });
+
+    try {
+      await dispatchSend(text, originSessionId);
+    } finally {
+      sendingRef.current = false;
+    }
+  };
+
+  const sendQueuedNow = async (queueId: string) => {
+    if (!currentId || sendingRef.current) return;
+    const item = useChatStore.getState().takeQueued(queueId);
+    if (!item || item.sessionId !== currentId) return;
+
+    sendingRef.current = true;
+    appendItemForSession(item.sessionId, {
+      type: "message",
+      role: "user",
+      content: item.text,
+    });
+    scrollDown();
+    try {
+      await dispatchSend(item.text, item.sessionId);
+    } finally {
+      sendingRef.current = false;
+    }
+  };
+
+  const stopStreaming = async () => {
+    if (!currentId || !streamVisible) return;
+    await useChatStore.getState().stop(currentId);
   };
 
   const onInputKeydown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -303,6 +444,7 @@ function App() {
       if (e.key === "Escape") {
         e.preventDefault();
         setInputText("");
+        saveInputDraft(currentId, "");
         setSelectedCmdIdx(0);
         requestAnimationFrame(resizeInput);
         return;
@@ -312,6 +454,8 @@ function App() {
     e.preventDefault();
     void sendMessage();
   };
+
+  const sapDisconnected = sapConnection !== "connected";
 
   if (!ready && !error) {
     return (
@@ -337,6 +481,23 @@ function App() {
 
   return (
     <div className="h-screen flex flex-col min-h-0">
+      {sapDisconnected ? (
+        <div className="shrink-0 flex items-center justify-between gap-2 px-3 py-2 bg-warning/15 border-b border-warning/30 text-sm">
+          <span className="text-warning-content/90">
+            {sapConnection === "connecting"
+              ? m.webui_common_connecting()
+              : m.webui_studio_disconnected()}
+          </span>
+          <button
+            type="button"
+            className="btn btn-xs btn-warning"
+            disabled={sapConnection === "connecting"}
+            onClick={() => void reconnectSap()}
+          >
+            {m.webui_common_reconnect()}
+          </button>
+        </div>
+      ) : null}
       <header className="shrink-0 flex items-center gap-2 px-3 py-2 border-b border-base-300 bg-base-200">
         <button
           type="button"
@@ -415,7 +576,7 @@ function App() {
               <div className="flex items-center justify-center h-full text-base-content/40 text-sm">
                 {m.webui_parlor_select_session()}
               </div>
-            ) : display.length === 0 && !streaming ? (
+            ) : display.length === 0 && !streamVisible && !recovering ? (
               <div className="flex items-center justify-center h-full text-base-content/40 text-sm">
                 {m.webui_parlor_send_first_message()}
               </div>
@@ -475,14 +636,14 @@ function App() {
               </div>
             ) : null}
 
-            {streaming && streamAccumulated ? (
+            {streamVisible && streamText ? (
               <div className="chat chat-start">
                 <div className="chat-bubble">
                   <div
                     className="md-content"
-                    dangerouslySetInnerHTML={{ __html: renderMd(streamAccumulated) }}
+                    dangerouslySetInnerHTML={{ __html: renderMd(streamText) }}
                   />
-                  {!streamDone ? <span className="loading loading-dots loading-xs" /> : null}
+                  <span className="loading loading-dots loading-xs" />
                 </div>
               </div>
             ) : null}
@@ -506,11 +667,34 @@ function App() {
           />
 
           <div className="border-t border-base-300 p-4 bg-base-100 relative">
+            {messageQueue.length > 0 ? (
+              <ul className="mb-2 space-y-1">
+                {messageQueue.map((item) => (
+                  <li
+                    key={item.id}
+                    className="flex items-center gap-2 text-sm bg-base-200/60 rounded-lg px-2 py-1.5"
+                  >
+                    <span className="flex-1 truncate text-base-content/80">{item.text}</span>
+                    <button
+                      type="button"
+                      className="btn btn-xs btn-primary shrink-0"
+                      onClick={() => void sendQueuedNow(item.id)}
+                    >
+                      {m.webui_parlor_queue_send_now()}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
             <form
               className="flex gap-2 items-end"
               onSubmit={(e) => {
                 e.preventDefault();
-                void sendMessage();
+                if (streamVisible) {
+                  void stopStreaming();
+                } else {
+                  void sendMessage();
+                }
               }}
             >
               <div className="flex-1 relative">
@@ -540,24 +724,36 @@ function App() {
                   ref={msgInputRef}
                   value={inputText}
                   onChange={(e) => {
-                    setInputText(e.target.value);
+                    const next = e.target.value;
+                    setInputText(next);
+                    saveInputDraft(currentId, next);
                     setSelectedCmdIdx(0);
                     resizeInput();
                   }}
                   rows={1}
                   className="textarea textarea-bordered w-full min-h-[2.75rem] max-h-48 resize-none leading-normal py-2.5"
                   placeholder={m.webui_parlor_message_placeholder()}
-                  disabled={!currentId || streaming}
+                  disabled={!currentId || sapDisconnected}
                   onKeyDown={onInputKeydown}
                 />
               </div>
-              <button
-                type="submit"
-                className="btn btn-primary"
-                disabled={!currentId || streaming || !inputText.trim()}
-              >
-                {m.webui_common_send()}
-              </button>
+              {streamVisible ? (
+                <button
+                  type="submit"
+                  className="btn btn-error"
+                  disabled={!currentId || sapDisconnected}
+                >
+                  {m.webui_common_stop()}
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={!currentId || !inputText.trim() || sapDisconnected}
+                >
+                  {m.webui_common_send()}
+                </button>
+              )}
             </form>
           </div>
         </main>

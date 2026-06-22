@@ -30,6 +30,7 @@ import {
   loadMessagesWithRouting,
   loadSessionToolsWithRouting,
   countMessagesWithRouting,
+  countUserMessagesWithRouting,
   listSessionsWithRouting,
   pgCountSessionsByPlatform,
   pgDeleteDebugSessions,
@@ -199,6 +200,10 @@ export async function loadMessagePage(
 
 export async function countMessages(repos: PgRepositories, session: string): Promise<number> {
   return countMessagesWithRouting(repos, session);
+}
+
+export async function countUserMessages(repos: PgRepositories, session: string): Promise<number> {
+  return countUserMessagesWithRouting(repos, session);
 }
 
 export async function loadForRuntime(

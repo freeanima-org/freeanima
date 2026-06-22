@@ -225,10 +225,12 @@ export class ProfileRegistry {
   resolve(profileId?: string): LlmProfile {
     const id = profileId !== undefined ? profileId : this.defaultProfileId;
     const profile = this.profiles.get(id);
-    if (!profile) {
-      throw new Error(`Profile not found: ${id}`);
+    if (profile) return profile;
+    if (id !== this.defaultProfileId) {
+      const fallback = this.profiles.get(this.defaultProfileId);
+      if (fallback) return fallback;
     }
-    return profile;
+    throw new Error(`Profile not found: ${id}`);
   }
 
   get default(): LlmProfile {

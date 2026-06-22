@@ -73,12 +73,12 @@ describe("maybeGenerateSessionTitleAsync", () => {
     expect(gen).not.toHaveBeenCalled();
   });
 
-  it("skips when message count is not 1", async () => {
+  it("skips when user message count is not 1", async () => {
     const deps = wireTestDeps();
     const getTitle = spyOn(deps.conversation, "getSessionTitle").mockResolvedValue("");
-    const count = spyOn(deps.conversation, "countMessages").mockResolvedValue(2);
+    const userCount = spyOn(deps.conversation, "countUserMessages").mockResolvedValue(2);
     const gen = spyOn(sessionTitleLlm, "generateSessionTitle");
-    restores.push(getTitle, count, gen);
+    restores.push(getTitle, userCount, gen);
 
     maybeGenerateSessionTitleAsync(deps, "sid", "hello");
     await new Promise((r) => setTimeout(r, 0));
@@ -86,16 +86,35 @@ describe("maybeGenerateSessionTitleAsync", () => {
     expect(gen).not.toHaveBeenCalled();
   });
 
-  it("sets title and notifies on success", async () => {
+  it("generates when only one user message even if total message count grew", async () => {
     const deps = wireTestDeps();
     const getTitle = spyOn(deps.conversation, "getSessionTitle").mockResolvedValue("");
-    const count = spyOn(deps.conversation, "countMessages").mockResolvedValue(1);
+    const userCount = spyOn(deps.conversation, "countUserMessages").mockResolvedValue(1);
+    const totalCount = spyOn(deps.conversation, "countMessages").mockResolvedValue(5);
     const gen = spyOn(sessionTitleLlm, "generateSessionTitle").mockResolvedValue({
       ok: true,
       title: "LLM title",
     });
     const setTitle = spyOn(deps.conversation, "setSessionTitle").mockResolvedValue(undefined);
-    restores.push(getTitle, count, gen, setTitle);
+    restores.push(getTitle, userCount, totalCount, gen, setTitle);
+
+    maybeGenerateSessionTitleAsync(deps, "sid", "hello");
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(gen).toHaveBeenCalled();
+    expect(setTitle).toHaveBeenCalledWith("sid", "LLM title");
+  });
+
+  it("sets title and notifies on success", async () => {
+    const deps = wireTestDeps();
+    const getTitle = spyOn(deps.conversation, "getSessionTitle").mockResolvedValue("");
+    const userCount = spyOn(deps.conversation, "countUserMessages").mockResolvedValue(1);
+    const gen = spyOn(sessionTitleLlm, "generateSessionTitle").mockResolvedValue({
+      ok: true,
+      title: "LLM title",
+    });
+    const setTitle = spyOn(deps.conversation, "setSessionTitle").mockResolvedValue(undefined);
+    restores.push(getTitle, userCount, gen, setTitle);
 
     const notified: string[] = [];
     maybeGenerateSessionTitleAsync(deps, "sid", "hello", {
@@ -110,17 +129,45 @@ describe("maybeGenerateSessionTitleAsync", () => {
     expect(notified).toEqual(["sid"]);
   });
 
+  it("prefers emitSessionUpdated over bus/onSessionUpdated", async () => {
+    const deps = wireTestDeps();
+    const getTitle = spyOn(deps.conversation, "getSessionTitle").mockResolvedValue("");
+    const userCount = spyOn(deps.conversation, "countUserMessages").mockResolvedValue(1);
+    const gen = spyOn(sessionTitleLlm, "generateSessionTitle").mockResolvedValue({
+      ok: true,
+      title: "LLM title",
+    });
+    const setTitle = spyOn(deps.conversation, "setSessionTitle").mockResolvedValue(undefined);
+    restores.push(getTitle, userCount, gen, setTitle);
+
+    const legacy: string[] = [];
+    const full: string[] = [];
+    maybeGenerateSessionTitleAsync(deps, "sid", "hello", {
+      bus: null,
+      onSessionUpdated: (sid) => {
+        legacy.push(sid);
+      },
+      emitSessionUpdated: (sid) => {
+        full.push(sid);
+      },
+    });
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(full).toEqual(["sid"]);
+    expect(legacy).toEqual([]);
+  });
+
   it("skips duplicate in-flight generation for same session", async () => {
     const deps = wireTestDeps();
     const getTitle = spyOn(deps.conversation, "getSessionTitle").mockResolvedValue("");
-    const count = spyOn(deps.conversation, "countMessages").mockResolvedValue(1);
+    const userCount = spyOn(deps.conversation, "countUserMessages").mockResolvedValue(1);
     let resolveGen: (v: { ok: true; title: string }) => void = () => {};
     const genPending = new Promise<{ ok: true; title: string }>((resolve) => {
       resolveGen = resolve;
     });
     const gen = spyOn(sessionTitleLlm, "generateSessionTitle").mockImplementation(() => genPending);
     const setTitle = spyOn(deps.conversation, "setSessionTitle").mockResolvedValue(undefined);
-    restores.push(getTitle, count, gen, setTitle);
+    restores.push(getTitle, userCount, gen, setTitle);
 
     maybeGenerateSessionTitleAsync(deps, "sid", "hello");
     await new Promise((r) => setTimeout(r, 0));
@@ -141,13 +188,13 @@ describe("maybeGenerateSessionTitleAsync", () => {
       titleReads += 1;
       return titleReads === 1 ? "" : "manual title";
     });
-    const count = spyOn(deps.conversation, "countMessages").mockResolvedValue(1);
+    const userCount = spyOn(deps.conversation, "countUserMessages").mockResolvedValue(1);
     const gen = spyOn(sessionTitleLlm, "generateSessionTitle").mockResolvedValue({
       ok: true,
       title: "LLM title",
     });
     const setTitle = spyOn(deps.conversation, "setSessionTitle").mockResolvedValue(undefined);
-    restores.push(getTitle, count, gen, setTitle);
+    restores.push(getTitle, userCount, gen, setTitle);
 
     maybeGenerateSessionTitleAsync(deps, "sid", "hello");
     await new Promise((r) => setTimeout(r, 0));

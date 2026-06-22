@@ -56,6 +56,9 @@ export const nullSessionStore: SessionStorePort = {
   async countMessages() {
     return 0;
   },
+  async countUserMessages() {
+    return 0;
+  },
   async findMessagePos() {
     return null;
   },

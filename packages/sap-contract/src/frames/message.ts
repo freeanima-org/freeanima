@@ -13,6 +13,18 @@ export const messageSendOutputSchema = z.object({
 
 export type MessageSendOutput = z.infer<typeof messageSendOutputSchema>;
 
+export const messageInterruptInputSchema = z.object({
+  session_id: z.string().min(1),
+});
+
+export type MessageInterruptInput = z.infer<typeof messageInterruptInputSchema>;
+
+export const messageInterruptOutputSchema = z.object({
+  ok: z.literal(true),
+});
+
+export type MessageInterruptOutput = z.infer<typeof messageInterruptOutputSchema>;
+
 export const streamEventMethods = [
   "stream.accepted",
   "stream.token",

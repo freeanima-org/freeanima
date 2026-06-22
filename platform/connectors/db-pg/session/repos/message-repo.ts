@@ -197,6 +197,15 @@ export async function countMessages(sessionId: string): Promise<number> {
   return Number(rows[0]?.count ?? 0);
 }
 
+export async function countUserMessages(sessionId: string): Promise<number> {
+  const db = getDb();
+  const rows = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(messages)
+    .where(and(eq(messages.sessionId, sessionId), sql`(${messages.payload})->>'role' = 'user'`));
+  return Number(rows[0]?.count ?? 0);
+}
+
 /** API / history pagination: slice by pos order, avoid full listMessages */
 export async function listMessagesPage(
   sessionId: string,
