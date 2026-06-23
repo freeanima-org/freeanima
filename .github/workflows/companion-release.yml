@@ -50,7 +50,7 @@ jobs:
       COMPANION_BUILD_PROFILE: ${{ github.event_name == 'workflow_dispatch' && inputs.profile || 'release' }}
       COMPANION_VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.event.release.tag_name || '' }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: ./.github/actions/setup-bun
 
@@ -87,7 +87,7 @@ jobs:
 
       - name: 上传构建产物
         if: env.COMPANION_BUILD_PROFILE == 'release'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: companion-${{ matrix.artifact_slug }}
           path: dist/*
@@ -101,13 +101,13 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: artifacts
           merge-multiple: true
 
       - name: 上传到 Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ github.event.release.tag_name }}
           files: artifacts/**/*

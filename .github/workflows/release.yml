@@ -36,7 +36,7 @@ jobs:
       contents: read
       id-token: write # npm Trusted Publishing (OIDC)
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           ref: ${{ needs.release-please.outputs.tag_name }}
           fetch-depth: 0
