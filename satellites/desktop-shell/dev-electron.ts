@@ -1,6 +1,5 @@
 import { spawn } from "node:child_process";
 import { createRequire } from "node:module";
-import { cpSync, mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import * as esbuild from "esbuild";
 
@@ -10,20 +9,11 @@ import { getElectronMainBundleOptions, getElectronPreloadBundleOptions } from ".
 
 const SHELL_ROOT = import.meta.dir;
 
-async function stageVendor(watch: boolean): Promise<void> {
-  const companionDist = await buildCompanionApp({ watch, minify: false });
-  const chatDist = await buildChatApp({ watch, minify: false });
-  for (const [name, src] of [
-    ["companion", companionDist],
-    ["chat", chatDist],
-  ] as const) {
-    const dest = join(SHELL_ROOT, "vendor", name, "dist");
-    if (!watch) {
-      rmSync(dest, { recursive: true, force: true });
-      mkdirSync(join(SHELL_ROOT, "vendor", name), { recursive: true });
-      cpSync(src, dest, { recursive: true });
-    }
-  }
+async function stageVendor(): Promise<void> {
+  await Promise.all([
+    buildCompanionApp({ watch: true, minify: false }),
+    buildChatApp({ watch: true, minify: false }),
+  ]);
 }
 
 async function bundleElectron(watch: boolean): Promise<void> {
@@ -37,7 +27,7 @@ async function bundleElectron(watch: boolean): Promise<void> {
   await Promise.all([mainCtx.dispose(), preloadCtx.dispose()]);
 }
 
-await stageVendor(true);
+await stageVendor();
 await bundleElectron(true);
 
 const requireFromShell = createRequire(join(SHELL_ROOT, "package.json"));

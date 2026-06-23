@@ -8,18 +8,21 @@ import {
   readTunnelConnectorToken,
 } from "./tunnel-run.ts";
 
+/** 测试用 connector token（非真实凭证，避免 gitleaks 误报） */
+const TEST_CONNECTOR_TOKEN = "anima-test-connector-token";
+
 describe("tunnel-run", () => {
   test("readTunnelConnectorToken reads token file", () => {
     const dir = mkdtempSync(join(tmpdir(), "anima-tunnel-"));
     const path = join(dir, "credentials.json");
-    writeFileSync(path, "eyJhIjoidGVzdCJ9", "utf-8");
-    expect(readTunnelConnectorToken(path)).toBe("eyJhIjoidGVzdCJ9");
+    writeFileSync(path, TEST_CONNECTOR_TOKEN, "utf-8");
+    expect(readTunnelConnectorToken(path)).toBe(TEST_CONNECTOR_TOKEN);
   });
 
   test("cloudflaredRunArgv uses --token for connector token file", () => {
     const dir = mkdtempSync(join(tmpdir(), "anima-tunnel-"));
     const creds = join(dir, "credentials.json");
-    writeFileSync(creds, "eyJhIjoidGVzdCJ9", "utf-8");
+    writeFileSync(creds, TEST_CONNECTOR_TOKEN, "utf-8");
     const argv = cloudflaredRunArgv("/bin/cloudflared", {
       credentialsFile: creds,
       configFile: join(dir, "config.yml"),
@@ -30,7 +33,7 @@ describe("tunnel-run", () => {
   test("cloudflaredRunExecStart reads token from file at runtime", () => {
     const dir = mkdtempSync(join(tmpdir(), "anima-tunnel-exec-"));
     const creds = join(dir, "credentials.json");
-    writeFileSync(creds, "eyJhIjoidGVzdCJ9", "utf-8");
+    writeFileSync(creds, TEST_CONNECTOR_TOKEN, "utf-8");
     const exec = cloudflaredRunExecStart("/bin/cloudflared", {
       credentialsFile: creds,
       configFile: join(dir, "config.yml"),
