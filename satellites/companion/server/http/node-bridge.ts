@@ -59,11 +59,11 @@ export function createNodeHttpServer(opts: NodeHttpServerOptions): Server {
         const response = await opts.handler(request);
         await writeFetchResponse(res, response);
       } catch (error) {
+        console.error("companion-http-error:", error);
         if (!res.headersSent) {
           res.statusCode = 500;
           res.setHeader("Content-Type", "application/json");
-          const message = error instanceof Error ? error.message : String(error);
-          res.end(JSON.stringify({ error: message }));
+          res.end(JSON.stringify({ error: "Internal Server Error" }));
         }
       }
     })();
