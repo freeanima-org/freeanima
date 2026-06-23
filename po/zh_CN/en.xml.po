@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-16 10:05+0800\n"
+"POT-Creation-Date: 2026-06-23 13:57+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -34,7 +34,8 @@ msgid "Dream"
 msgstr "梦境"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/dream.md:9 docs/concepts/sleep.md:9 messages/po4a/en.xml:39
+#: docs/concepts/dream.md:9 docs/concepts/sleep.md:9
+#: docs/guide/remote-access.md:11 messages/po4a/en.xml:39
 #: messages/po4a/en.xml:47
 #, no-wrap
 msgid "Overview"
@@ -116,7 +117,7 @@ msgid "Session"
 msgstr "会话"
 
 #. type: Content of: <messages><msg>
-#: docs/sap/methods.md:69 messages/po4a/en.xml:523
+#: docs/sap/methods.md:69 messages/po4a/en.xml:524
 #, no-wrap
 msgid "Terminal"
 msgstr "终端"
@@ -129,7 +130,7 @@ msgid "Satellite Guide"
 msgstr "卫星指南"
 
 #. type: Content of: <messages><msg>
-#: docs/sap/transport.md:100 messages/po4a/en.xml:435
+#: docs/sap/transport.md:101 messages/po4a/en.xml:435
 #, no-wrap
 msgid "Reconnect"
 msgstr "重连"
@@ -1598,7 +1599,7 @@ msgid "Updated {time}"
 msgstr "更新于 {time}"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:277 messages/po4a/en.xml:285 messages/po4a/en.xml:497
+#: messages/po4a/en.xml:277 messages/po4a/en.xml:285 messages/po4a/en.xml:498
 #, no-wrap
 msgid "Created"
 msgstr "创建时间"
@@ -2469,7 +2470,7 @@ msgid "Processing day"
 msgstr "处理日"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:434 messages/po4a/en.xml:446 messages/po4a/en.xml:509
+#: messages/po4a/en.xml:434 messages/po4a/en.xml:446 messages/po4a/en.xml:510
 #, no-wrap
 msgid "Search"
 msgstr "查询"
@@ -2667,13 +2668,13 @@ msgid "WebSocket connection failed"
 msgstr "WebSocket 连接失败"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:474 messages/po4a/en.xml:485 messages/po4a/en.xml:502
+#: messages/po4a/en.xml:474 messages/po4a/en.xml:485 messages/po4a/en.xml:503
 #, no-wrap
 msgid "Parlor"
 msgstr "会客厅"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:475 messages/po4a/en.xml:488 messages/po4a/en.xml:524
+#: messages/po4a/en.xml:475 messages/po4a/en.xml:488 messages/po4a/en.xml:525
 #, no-wrap
 msgid "Studio"
 msgstr "创作室"
@@ -2728,204 +2729,211 @@ msgstr "输入消息（Shift+Enter 换行，Enter 发送；/ 开头是命令）"
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:494
+#, fuzzy, no-wrap
+#| msgid "Run now"
+msgid "Send now"
+msgstr "立即运行"
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:495
 #, no-wrap
 msgid "Select a session to start"
 msgstr "选择一个会话开始对话"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:495
+#: messages/po4a/en.xml:496
 #, no-wrap
 msgid "Send the first message"
 msgstr "发送第一条消息"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:496
+#: messages/po4a/en.xml:497
 #, no-wrap
 msgid "Actions"
 msgstr "操作"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:498
+#: messages/po4a/en.xml:499
 #, no-wrap
 msgid "Session ID"
 msgstr "会话 ID"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:499
+#: messages/po4a/en.xml:500
 #, no-wrap
 msgid "Title"
 msgstr "标题"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:500
+#: messages/po4a/en.xml:501
 #, no-wrap
 msgid "Open"
 msgstr "打开"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:501
+#: messages/po4a/en.xml:502
 #, no-wrap
 msgid "Session management"
 msgstr "会话管理"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:503
+#: messages/po4a/en.xml:504
 #, no-wrap
 msgid "Chat with Agent…"
 msgstr "和 Agent 对话…"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:504
+#: messages/po4a/en.xml:505
 #, no-wrap
 msgid "Select a file to view its contents"
 msgstr "选择文件以查看内容"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:505
+#: messages/po4a/en.xml:506
 #, no-wrap
 msgid "Create or select a session"
 msgstr "创建或选择会话"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:506
+#: messages/po4a/en.xml:507
 #, no-wrap
 msgid "Disconnected"
 msgstr "连接已断开"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:507
+#: messages/po4a/en.xml:508
 #, no-wrap
 msgid "Filter filenames…"
 msgstr "过滤文件名…"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:508
+#: messages/po4a/en.xml:509
 #, no-wrap
 msgid "No matching files"
 msgstr "无匹配文件"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:510
+#: messages/po4a/en.xml:511
 #, no-wrap
 msgid "Enter keywords to search project files"
 msgstr "输入关键词搜索项目文件"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:511
+#: messages/po4a/en.xml:512
 #, no-wrap
 msgid "Search file contents…"
 msgstr "搜索文件内容…"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:512
+#: messages/po4a/en.xml:513
 #, no-wrap
 msgid "🔍 Search"
 msgstr "🔍 搜索"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:513
+#: messages/po4a/en.xml:514
 #, no-wrap
 msgid "📁 File tree"
 msgstr "📁 目录树"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:514
+#: messages/po4a/en.xml:515
 #, no-wrap
 msgid "Focus mode"
 msgstr "专注模式"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:515
+#: messages/po4a/en.xml:516
 #, no-wrap
 msgid "📖 Novel (coming soon)"
 msgstr "📖 长篇小说创作"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:516
+#: messages/po4a/en.xml:517
 #, no-wrap
 msgid "🤝 Pair Programming"
 msgstr "🤝 结对编程"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:517
+#: messages/po4a/en.xml:518
 #, no-wrap
 msgid "🎬 Short Video (coming soon)"
 msgstr "🎬 短视频创作"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:518
+#: messages/po4a/en.xml:519
 #, no-wrap
 msgid "Long-form collaborative writing workspace is planned."
 msgstr "长篇协同创作工作台尚在规划中。"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:519
+#: messages/po4a/en.xml:520
 #, no-wrap
 msgid "Panels"
 msgstr "面板"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:520
+#: messages/po4a/en.xml:521
 #, no-wrap
 msgid "Process exited ({code})"
 msgstr "进程退出 ({code})"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:521
+#: messages/po4a/en.xml:522
 #, no-wrap
 msgid "Short video creation workspace is planned."
 msgstr "短视频创作工作台尚在规划中。"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:522
+#: messages/po4a/en.xml:523
 #, no-wrap
 msgid "Show header"
 msgstr "显示顶栏"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:525
+#: messages/po4a/en.xml:526
 #, no-wrap
 msgid "Toggle left panel"
 msgstr "切换左侧面板"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:526
+#: messages/po4a/en.xml:527
 #, no-wrap
 msgid "Collapse session list"
 msgstr "收起会话列表"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:527
+#: messages/po4a/en.xml:528
 #, no-wrap
 msgid "Expand session list"
 msgstr "展开会话列表"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:528
+#: messages/po4a/en.xml:529
 #, no-wrap
 msgid "Toggle session panel"
 msgstr "切换会话面板"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:529
+#: messages/po4a/en.xml:530
 #, no-wrap
 msgid "Toggle terminal panel"
 msgstr "切换终端面板"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:530
+#: messages/po4a/en.xml:531
 #, no-wrap
 msgid "Open Chamber config"
 msgstr "前往卧室配置"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:531
+#: messages/po4a/en.xml:532
 #, no-wrap
 msgid "Pair programming requires a working directory. Set"
 msgstr "结对编程需要先设置"
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:532
+#: messages/po4a/en.xml:533
 #, no-wrap
 msgid "Configure working directory"
 msgstr "配置工作目录"

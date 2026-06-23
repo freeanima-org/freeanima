@@ -34,6 +34,7 @@ import type {
   ServiceSnapshot,
 } from "@freeanima/platform/schemas/snapshot";
 import { ANIMA_VERSION } from "./version.ts";
+import { buildTunnelSnapshot } from "@freeanima/platform/connectors/tunnel";
 
 export function startTimeIso(epochSec: number): string {
   return formatCstIsoFromEpoch(epochSec);
@@ -211,6 +212,8 @@ export async function buildStatus(
   };
   if (host) status.host = host;
   if (port) status.port = port;
+  const tunnel = buildTunnelSnapshot(cfg.tunnel);
+  if (tunnel) status.tunnel = tunnel;
   return status;
 }
 

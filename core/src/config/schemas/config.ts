@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { llmConfigSchema } from "./llm-config.ts";
 import { embeddingConfigSchema } from "./embedding.ts";
+import { tunnelConfigSchema } from "./tunnel.ts";
 
 export const mcpServerSchema = z
   .object({
@@ -219,6 +220,7 @@ export const animaConfigSchema = z
     discord: sectionSchema.optional(),
     weixin: sectionSchema.optional(),
     push: sectionSchema.optional(),
+    tunnel: tunnelConfigSchema,
   })
   .passthrough();
 

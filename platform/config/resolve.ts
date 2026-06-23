@@ -16,6 +16,20 @@ function resolveCredential(path: string, field: string): string {
   return credential(path, field);
 }
 
+/**
+ * 解析 config 中的凭证引用：
+ * - credential("path", "field")
+ * - 明文（原样返回）
+ */
+export function resolveCredentialRef(value: string, _defaultField: string): string {
+  const trimmed = value.trim();
+  const credFull = CREDENTIAL_FULL_RE.exec(trimmed);
+  if (credFull) {
+    return resolveCredential(credFull[1]!, credFull[2]!);
+  }
+  return trimmed;
+}
+
 /** Lazily expand env("KEY") / credential("path", "field") references in config */
 export async function resolveValue(value: string): Promise<string> {
   const envFull = ENV_FULL_RE.exec(value);

@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-16 15:48+0800\n"
+"POT-Creation-Date: 2026-06-23 13:57+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -35,7 +35,8 @@ msgid "Dream"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/dream.md:9 docs/concepts/sleep.md:9 messages/po4a/en.xml:39
+#: docs/concepts/dream.md:9 docs/concepts/sleep.md:9
+#: docs/guide/remote-access.md:11 messages/po4a/en.xml:39
 #: messages/po4a/en.xml:47
 #, no-wrap
 msgid "Overview"
@@ -117,7 +118,7 @@ msgid "Session"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/sap/methods.md:69 messages/po4a/en.xml:523
+#: docs/sap/methods.md:69 messages/po4a/en.xml:524
 #, no-wrap
 msgid "Terminal"
 msgstr ""
@@ -130,7 +131,7 @@ msgid "Satellite Guide"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/sap/transport.md:100 messages/po4a/en.xml:435
+#: docs/sap/transport.md:101 messages/po4a/en.xml:435
 #, no-wrap
 msgid "Reconnect"
 msgstr ""
@@ -1597,7 +1598,7 @@ msgid "Updated {time}"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:277 messages/po4a/en.xml:285 messages/po4a/en.xml:497
+#: messages/po4a/en.xml:277 messages/po4a/en.xml:285 messages/po4a/en.xml:498
 #, no-wrap
 msgid "Created"
 msgstr ""
@@ -2467,7 +2468,7 @@ msgid "Processing day"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:434 messages/po4a/en.xml:446 messages/po4a/en.xml:509
+#: messages/po4a/en.xml:434 messages/po4a/en.xml:446 messages/po4a/en.xml:510
 #, no-wrap
 msgid "Search"
 msgstr ""
@@ -2665,13 +2666,13 @@ msgid "WebSocket connection failed"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:474 messages/po4a/en.xml:485 messages/po4a/en.xml:502
+#: messages/po4a/en.xml:474 messages/po4a/en.xml:485 messages/po4a/en.xml:503
 #, no-wrap
 msgid "Parlor"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:475 messages/po4a/en.xml:488 messages/po4a/en.xml:524
+#: messages/po4a/en.xml:475 messages/po4a/en.xml:488 messages/po4a/en.xml:525
 #, no-wrap
 msgid "Studio"
 msgstr ""
@@ -2727,203 +2728,209 @@ msgstr ""
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:494
 #, no-wrap
-msgid "Select a session to start"
+msgid "Send now"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:495
 #, no-wrap
-msgid "Send the first message"
+msgid "Select a session to start"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:496
 #, no-wrap
-msgid "Actions"
+msgid "Send the first message"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:498
+#: messages/po4a/en.xml:497
 #, no-wrap
-msgid "Session ID"
+msgid "Actions"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:499
 #, no-wrap
-msgid "Title"
+msgid "Session ID"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:500
 #, no-wrap
-msgid "Open"
+msgid "Title"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:501
 #, no-wrap
-msgid "Session management"
+msgid "Open"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:503
+#: messages/po4a/en.xml:502
 #, no-wrap
-msgid "Chat with Agent…"
+msgid "Session management"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:504
 #, no-wrap
-msgid "Select a file to view its contents"
+msgid "Chat with Agent…"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:505
 #, no-wrap
-msgid "Create or select a session"
+msgid "Select a file to view its contents"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:506
 #, no-wrap
-msgid "Disconnected"
+msgid "Create or select a session"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:507
 #, no-wrap
-msgid "Filter filenames…"
+msgid "Disconnected"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:508
 #, no-wrap
-msgid "No matching files"
+msgid "Filter filenames…"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:510
+#: messages/po4a/en.xml:509
 #, no-wrap
-msgid "Enter keywords to search project files"
+msgid "No matching files"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:511
 #, no-wrap
-msgid "Search file contents…"
+msgid "Enter keywords to search project files"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:512
 #, no-wrap
-msgid "🔍 Search"
+msgid "Search file contents…"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:513
 #, no-wrap
-msgid "📁 File tree"
+msgid "🔍 Search"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:514
 #, no-wrap
-msgid "Focus mode"
+msgid "📁 File tree"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:515
 #, no-wrap
-msgid "📖 Novel (coming soon)"
+msgid "Focus mode"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:516
 #, no-wrap
-msgid "🤝 Pair Programming"
+msgid "📖 Novel (coming soon)"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:517
 #, no-wrap
-msgid "🎬 Short Video (coming soon)"
+msgid "🤝 Pair Programming"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:518
 #, no-wrap
-msgid "Long-form collaborative writing workspace is planned."
+msgid "🎬 Short Video (coming soon)"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:519
 #, no-wrap
-msgid "Panels"
+msgid "Long-form collaborative writing workspace is planned."
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:520
 #, no-wrap
-msgid "Process exited ({code})"
+msgid "Panels"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:521
 #, no-wrap
-msgid "Short video creation workspace is planned."
+msgid "Process exited ({code})"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:522
 #, no-wrap
-msgid "Show header"
+msgid "Short video creation workspace is planned."
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: messages/po4a/en.xml:525
+#: messages/po4a/en.xml:523
 #, no-wrap
-msgid "Toggle left panel"
+msgid "Show header"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:526
 #, no-wrap
-msgid "Collapse session list"
+msgid "Toggle left panel"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:527
 #, no-wrap
-msgid "Expand session list"
+msgid "Collapse session list"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:528
 #, no-wrap
-msgid "Toggle session panel"
+msgid "Expand session list"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:529
 #, no-wrap
-msgid "Toggle terminal panel"
+msgid "Toggle session panel"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:530
 #, no-wrap
-msgid "Open Chamber config"
+msgid "Toggle terminal panel"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:531
 #, no-wrap
-msgid "Pair programming requires a working directory. Set"
+msgid "Open Chamber config"
 msgstr ""
 
 #. type: Content of: <messages><msg>
 #: messages/po4a/en.xml:532
+#, no-wrap
+msgid "Pair programming requires a working directory. Set"
+msgstr ""
+
+#. type: Content of: <messages><msg>
+#: messages/po4a/en.xml:533
 #, no-wrap
 msgid "Configure working directory"
 msgstr ""

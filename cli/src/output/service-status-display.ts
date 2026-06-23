@@ -66,6 +66,11 @@ export function printServiceRunningStatus(opts: {
   healthMs: number;
   systemd: string | null;
   pidOverride?: number | null;
+  tunnel?: {
+    running: boolean;
+    publicUrl: string | null;
+    chamberUrl: string | null;
+  } | null;
 }): void {
   const api = opts.body ?? {};
   const pid = api.pid ?? opts.statusFile.pid ?? opts.pidOverride ?? "?";
@@ -89,6 +94,21 @@ export function printServiceRunningStatus(opts: {
   for (const h of parseBindHosts(opts.host)) {
     printField("http", `http://${h}:${opts.port}`);
     printField("webui", `http://${h}:${opts.port}/webui`);
+  }
+
+  const apiTunnel = opts.body?.tunnel as
+    | { public_url?: string; chamber_url?: string; webui_url?: string }
+    | undefined;
+  const tunnelPublic = opts.tunnel?.publicUrl ?? apiTunnel?.public_url ?? null;
+  const tunnelChamber = opts.tunnel?.chamberUrl ?? apiTunnel?.chamber_url ?? null;
+  if (tunnelPublic) {
+    printSection("tunnel");
+    if (opts.tunnel) {
+      printField("running", opts.tunnel.running ? "yes" : "no — run: anima tunnel start");
+    }
+    printField("public", tunnelPublic);
+    if (tunnelChamber) printField("chamber", tunnelChamber);
+    if (apiTunnel?.webui_url) printField("webui", apiTunnel.webui_url);
   }
 
   const config = (api.config as Record<string, unknown>) ?? {};

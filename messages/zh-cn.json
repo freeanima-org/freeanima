@@ -490,6 +490,7 @@
   "webui_nav_tools": "工具",
   "webui_parlor_clarify_hint": "需要你确认（一条消息回复全部，或发送 /cancel）",
   "webui_parlor_message_placeholder": "输入消息（Shift+Enter 换行，Enter 发送；/ 开头是命令）",
+  "webui_parlor_queue_send_now": "Send now",
   "webui_parlor_select_session": "选择一个会话开始对话",
   "webui_parlor_send_first_message": "发送第一条消息",
   "webui_parlor_sessions_col_actions": "操作",

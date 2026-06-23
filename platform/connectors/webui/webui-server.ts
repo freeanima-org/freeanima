@@ -10,9 +10,18 @@ import {
   ensureWebuiProductionCacheDir,
   releaseWebuiHtmlBundle,
 } from "./webui-bundle.ts";
+import {
+  accessConfigFromTunnel,
+  createAccessJwtVerifier,
+  type AccessJwtVerifier,
+} from "./access-jwt.ts";
+import type { TunnelAccessConfig } from "@freeanima/core/config";
 
 export type WebuiServerOptions = {
   development?: boolean;
+  accessJwt?: AccessJwtVerifier | null;
+  tunnelTeamName?: string;
+  tunnelAccess?: TunnelAccessConfig;
 };
 
 export type WebuiServerHandle = {
@@ -76,6 +85,18 @@ function buildRoutes(
   };
 }
 
+function dispatchFetch(
+  req: Request,
+  bunServer: unknown,
+  sapHandlers: ReturnType<typeof createSapBunHandlers> | null,
+): Response | undefined {
+  if (sapHandlers) {
+    const sapRes = sapHandlers.fetch(req, bunServer as never);
+    if (sapRes !== undefined) return sapRes;
+  }
+  return new Response("Not Found", { status: 404 });
+}
+
 export async function startWebuiHttpServer(
   host: string,
   port: number,
@@ -92,17 +113,37 @@ export async function startWebuiHttpServer(
   const sapDeps = getSapServerDeps();
   const sapHandlers = sapDeps ? createSapBunHandlers(sapDeps) : null;
 
+  const accessJwt =
+    options.accessJwt ??
+    (() => {
+      const cfg = accessConfigFromTunnel(options.tunnelTeamName, options.tunnelAccess);
+      return cfg ? createAccessJwtVerifier(cfg) : null;
+    })();
+  if (accessJwt) {
+    await accessJwt.preload();
+  }
+
   const server = Bun.serve({
     hostname: host,
     port,
     development: false,
     routes: buildRoutes(apiApp, cacheDir),
     fetch(req, bunServer) {
-      if (sapHandlers) {
-        const sapRes = sapHandlers.fetch(req, bunServer as never);
-        if (sapRes !== undefined) return sapRes;
-      }
-      return new Response("Not Found", { status: 404 });
+      const remoteAddress =
+        typeof (bunServer as { requestIP?: (r: Request) => { address: string } | null })
+          .requestIP === "function"
+          ? (bunServer as { requestIP: (r: Request) => { address: string } | null }).requestIP(req)
+              ?.address
+          : undefined;
+
+      const run = async (): Promise<Response | undefined> => {
+        if (accessJwt) {
+          const blocked = await accessJwt.verifyRequest(req, remoteAddress);
+          if (blocked) return blocked;
+        }
+        return dispatchFetch(req, bunServer, sapHandlers);
+      };
+      return run();
     },
     websocket: sapHandlers?.websocket ?? {
       open() {},

@@ -170,6 +170,7 @@ function DashboardPage() {
             />
             <PlatformConnectionsCard platforms={platforms} />
           </div>
+          {svc.tunnel ? <TunnelLinksCard tunnel={svc.tunnel} /> : null}
         </section>
 
         <section>
@@ -322,6 +323,44 @@ function RuntimeCard({
             >
               {restarting ? m.webui_common_restarting() : m.webui_common_restart_service()}
             </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TunnelLinksCard({ tunnel }: { tunnel: NonNullable<ServiceStatus["tunnel"]> }) {
+  return (
+    <div className="card bg-base-200 lg:col-span-3">
+      <div className="card-body py-3 px-4">
+        <h3 className="text-sm text-base-content/60">{m.webui_chamber_dashboard_tunnel()}</h3>
+        <div className="mt-2 flex flex-wrap gap-x-6 gap-y-2 text-sm">
+          <div>
+            <span className="text-base-content/50">
+              {m.webui_chamber_dashboard_tunnel_public()}:{" "}
+            </span>
+            <a
+              href={tunnel.public_url}
+              className="link link-primary font-mono text-xs"
+              target="_blank"
+              rel="noreferrer"
+            >
+              {tunnel.public_url}
+            </a>
+          </div>
+          <div>
+            <span className="text-base-content/50">
+              {m.webui_chamber_dashboard_tunnel_chamber()}:{" "}
+            </span>
+            <a
+              href={tunnel.chamber_url}
+              className="link link-primary font-mono text-xs"
+              target="_blank"
+              rel="noreferrer"
+            >
+              {tunnel.chamber_url}
+            </a>
           </div>
         </div>
       </div>

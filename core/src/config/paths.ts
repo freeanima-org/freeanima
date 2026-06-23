@@ -56,4 +56,16 @@ export const PATHS = {
   get satellitesRuntimeDir() {
     return homePath("runtime", "satellites");
   },
+  get binDir() {
+    return homePath("bin");
+  },
+  get cloudflaredBin() {
+    return homePath("bin", "cloudflared");
+  },
+  get cloudflaredConfigDir() {
+    return homePath("cloudflared");
+  },
+  get cloudflaredConfigFile() {
+    return homePath("cloudflared", "config.yml");
+  },
 } as const;

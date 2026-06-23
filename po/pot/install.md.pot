@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-22 11:28+0800\n"
+"POT-Creation-Date: 2026-06-23 15:04+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -27,7 +27,7 @@ msgstr ""
 #, no-wrap
 msgid ""
 "> Deploy FreeAnima on your machine — npm CLI, Docker Compose, or from source.\n"
-"> After install: [`security.md`](security.md) (credentials, bind address) · [`database.md`](database.md) (PostgreSQL) · [`service.md`](service.md) (runtime commands).\n"
+"> After install: [`security.md`](security.md) (credentials, bind address) · [`database.md`](database.md) (PostgreSQL) · [`service.md`](service.md) (runtime commands) · [`remote-access.md`](remote-access.md) (Cloudflare Tunnel).\n"
 msgstr ""
 
 #. type: Title ##
@@ -170,8 +170,8 @@ msgstr ""
 #: docs/guide/install.md:73
 msgid ""
 "Then reference them in config, e.g. `api_key: credential(\"api/openai\", "
-"\"token\")` and `database.url: pass:services/postgres/anima`. See "
-"[`security.md`](security.md#credential-responsibilities)."
+"\"token\")` and `database.url: credential(\"services/postgres/anima\", "
+"\"url\")`. See [`security.md`](security.md#credential-responsibilities)."
 msgstr ""
 
 #. type: Plain text
@@ -595,27 +595,34 @@ msgid "Next steps"
 msgstr ""
 
 #. type: Bullet: '1. '
-#: docs/guide/install.md:260
+#: docs/guide/install.md:261
 msgid ""
 "**Security** — pass-only secrets, `chmod 700 ~/.anima`, do not expose WebUI "
 "without auth ([`security.md`](security.md))"
 msgstr ""
 
 #. type: Bullet: '2. '
-#: docs/guide/install.md:260
+#: docs/guide/install.md:261
+msgid ""
+"**Remote access** — optional Cloudflare Tunnel + Access for personal mobile/"
+"remote Chamber ([`remote-access.md`](remote-access.md))"
+msgstr ""
+
+#. type: Bullet: '3. '
+#: docs/guide/install.md:261
 msgid ""
 "**Database** — backups, extensions, manual migrations if needed "
 "([`database.md`](database.md))"
 msgstr ""
 
-#. type: Bullet: '3. '
-#: docs/guide/install.md:260
+#. type: Bullet: '4. '
+#: docs/guide/install.md:261
 msgid ""
 "**Operations** — start/stop, memory metrics ([`service.md`](service.md))"
 msgstr ""
 
-#. type: Bullet: '4. '
-#: docs/guide/install.md:260
+#. type: Bullet: '5. '
+#: docs/guide/install.md:261
 msgid ""
 "**Architecture** — memory pipeline, self layer, tools ([`../concepts/"
 "architecture.md`](../concepts/architecture.md))"

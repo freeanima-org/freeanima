@@ -1,0 +1,176 @@
+# SOME DESCRIPTIVE TITLE
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-06-23 13:57+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Title #
+#: docs/concepts/fridge-magnet.md:1 docs/concepts/fridge-magnet.md:5
+#, no-wrap
+msgid "Fridge Magnet"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/fridge-magnet.md:8
+msgid ""
+"Cross-turn sticky notes for digital-life working memory. Content lives in "
+"Redis with TTL; at inference time it **manifests** in the conversation "
+"stream — not in the persisted system prompt."
+msgstr ""
+
+#. type: Title ##
+#: docs/concepts/fridge-magnet.md:9
+#, no-wrap
+msgid "Three layers"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/fridge-magnet.md:16
+#, no-wrap
+msgid ""
+"| Layer         | Role                                                 | Persistence                   |\n"
+"| ------------- | ---------------------------------------------------- | ----------------------------- |\n"
+"| Write         | `fridge_magnet_write`, tasks bridge, dream reminders | —                             |\n"
+"| Storage       | Redis `fridge-magnet:*` keys                         | Redis (TTL)                   |\n"
+"| Consciousness | Runtime message before each LLM call                 | **Not stored** in PG messages |\n"
+msgstr ""
+
+#. type: Title ##
+#: docs/concepts/fridge-magnet.md:17
+#, no-wrap
+msgid "Consciousness representation"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/fridge-magnet.md:20
+msgid ""
+"When the board has at least one non-empty entry **and** the last message in "
+"the runtime list is `user`, the mechanism materializes **exactly one** "
+"assistant turn:"
+msgstr ""
+
+#. type: Fenced code block (yaml)
+#: docs/concepts/fridge-magnet.md:21
+#, no-wrap
+msgid ""
+"role: assistant\n"
+"name: fridge_context\n"
+"content: |\n"
+"  Below are cross-turn sticky notes you wrote for yourself…\n"
+"  ## Fridge magnets\n"
+"  (fridge-magnet block with session:id entries)\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/fridge-magnet.md:31
+msgid ""
+"This is the **standard form** of fridge magnets in consciousness — not a "
+"generic “injection transport” into user or system roles."
+msgstr ""
+
+#. type: Title ###
+#: docs/concepts/fridge-magnet.md:32
+#, no-wrap
+msgid "Trigger rules"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/fridge-magnet.md:37
+msgid ""
+"**Manifest**: last message is `user`, Redis has ≥1 magnet with non-"
+"whitespace `value`"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/fridge-magnet.md:37
+msgid ""
+"**Do not manifest**: last message is `assistant`, `tool`, `system`, etc. "
+"(tool-loop middle turns have no board)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/fridge-magnet.md:37
+msgid "**Empty board**: no manifest message; no placeholder"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/fridge-magnet.md:39
+msgid ""
+"Each `beforeLlmCall` pass strips any prior `fridge_context` assistant from "
+"the runtime copy, then re-manifests if rules allow."
+msgstr ""
+
+#. type: Title ###
+#: docs/concepts/fridge-magnet.md:40
+#, no-wrap
+msgid "Why not user or system?"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/fridge-magnet.md:44
+msgid ""
+"Prepending to **user** text caused the model to attribute notes to the human "
+"partner."
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/fridge-magnet.md:44
+msgid ""
+"Appending to **system** would invalidate prefix cache for stable self-layer "
+"content; the board also changes frequently."
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/fridge-magnet.md:46
+msgid ""
+"`assistant(name=fridge_context)` keeps the stable system prefix cacheable, "
+"places notes near the current user turn, and signals “self working memory” "
+"rather than partner speech."
+msgstr ""
+
+#. type: Title ##
+#: docs/concepts/fridge-magnet.md:47
+#, no-wrap
+msgid "Legacy migration"
+msgstr ""
+
+#. type: Plain text
+#: docs/concepts/fridge-magnet.md:50
+msgid ""
+"Older builds prepended a fridge-magnet-tagged fenced block inside user "
+"message bodies. Runtime still strips those blocks from user content; new "
+"manifests use the assistant form only."
+msgstr ""
+
+#. type: Title ##
+#: docs/concepts/fridge-magnet.md:51
+#, no-wrap
+msgid "Related"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/fridge-magnet.md:55
+msgid "Tools: `fridge_magnet_write`, `fridge_magnet_dismiss`"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/fridge-magnet.md:55
+msgid "Dream reminders: [`dream.md`](dream.md)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/concepts/fridge-magnet.md:55
+msgid "Install / Redis: [`guide/install.md`](../guide/install.md)"
+msgstr ""
