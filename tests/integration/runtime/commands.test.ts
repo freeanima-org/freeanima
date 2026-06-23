@@ -61,6 +61,7 @@ describePg("slash commands", () => {
       })
     ).text;
     expect(text).toContain("/retry");
+    expect(text).toContain("/goal");
     expect(text).toContain("/help");
     expect(text).toContain("Current session");
     expect(text).not.toContain("/new");

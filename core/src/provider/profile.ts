@@ -6,8 +6,14 @@ import type { LlmProvider, ProviderRegistry } from "./provider.ts";
 export const PROFILE_CHAT = "chat";
 export const PROFILE_REFLECT = "reflect";
 export const PROFILE_SUMMARY = "summary";
+export const PROFILE_GOAL_JUDGE = "goal_judge";
 
-export const BUILTIN_PROFILE_IDS = [PROFILE_CHAT, PROFILE_REFLECT, PROFILE_SUMMARY] as const;
+export const BUILTIN_PROFILE_IDS = [
+  PROFILE_CHAT,
+  PROFILE_REFLECT,
+  PROFILE_SUMMARY,
+  PROFILE_GOAL_JUDGE,
+] as const;
 
 /** One hop in profile chain; config may multi-hop fallback; runtime uses chain[0] only */
 export type RouteHopSpec = {

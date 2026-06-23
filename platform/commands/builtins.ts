@@ -23,6 +23,20 @@ import {
   CLI_UPGRADE_HINT_SOURCE,
   getCliInstallKind,
 } from "@freeanima/core/config/cli-install";
+import {
+  addSubgoal,
+  clearGoal,
+  clearSubgoals,
+  formatGoalSetMessage,
+  formatGoalStartPrompt,
+  formatGoalStatus,
+  formatSubgoalList,
+  pauseSessionGoal,
+  readSessionGoal,
+  removeSubgoal,
+  resumeSessionGoal,
+  setSessionGoal,
+} from "@freeanima/runtime/goal";
 
 function conv() {
   return getAppRuntime().conversation;
@@ -95,6 +109,71 @@ async function cmdToolDisplay(ctx: CommandContext): Promise<string> {
 
 function cmdRetry(_ctx: CommandContext): CommandResult {
   return { text: "", data: { action: "retry" } };
+}
+
+async function cmdGoal(ctx: CommandContext): Promise<string | CommandResult> {
+  const sub = ctx.args[0]?.trim().toLowerCase();
+  if (sub === "status") {
+    const goal = await readSessionGoal(conv(), ctx.sessionId);
+    if (!goal) return "No active goal. Use `/goal <description>` to set one.";
+    return formatGoalStatus(goal);
+  }
+  if (sub === "pause") {
+    const goal = await pauseSessionGoal(conv(), ctx.sessionId);
+    if (!goal) return "No goal to pause.";
+    return "⏸ Goal paused (state preserved). Use `/goal resume` to continue auto-run.";
+  }
+  if (sub === "resume") {
+    const goal = await resumeSessionGoal(conv(), ctx.sessionId);
+    if (!goal) return "No paused goal to resume.";
+    return "▶ Goal resumed.";
+  }
+  if (sub === "clear") {
+    await clearGoal(conv(), ctx.sessionId);
+    return "🗑 Goal cleared.";
+  }
+
+  const description = ctx.args.join(" ").trim();
+  if (!description) {
+    return "Usage: `/goal <description>` | `/goal status` | `/goal pause` | `/goal resume` | `/goal clear`";
+  }
+
+  const goal = await setSessionGoal(conv(), ctx.sessionId, description);
+  const prompt = formatGoalStartPrompt(description);
+  return {
+    text: formatGoalSetMessage(goal.max_turns),
+    data: { action: "goal_start", prompt },
+  };
+}
+
+async function cmdSubgoal(ctx: CommandContext): Promise<string> {
+  const sub = ctx.args[0]?.trim().toLowerCase();
+  const goal = await readSessionGoal(conv(), ctx.sessionId);
+  if (!goal) return "No active goal. Set one with `/goal <description>` first.";
+
+  if (!sub) {
+    return formatSubgoalList(goal);
+  }
+  if (sub === "clear") {
+    await clearSubgoals(conv(), ctx.sessionId);
+    return "🗑 Subgoals cleared.";
+  }
+  if (sub === "remove") {
+    const idx = Number.parseInt(ctx.args[1] ?? "", 10);
+    if (!Number.isFinite(idx) || idx < 1) {
+      return "Usage: `/subgoal remove <N>` (1-based index)";
+    }
+    const updated = await removeSubgoal(conv(), ctx.sessionId, idx);
+    if (!updated) return "No goal.";
+    return formatSubgoalList(updated);
+  }
+
+  const condition = ctx.args.join(" ").trim();
+  if (!condition) {
+    return "Usage: `/subgoal <condition>` | `/subgoal remove <N>` | `/subgoal clear`";
+  }
+  const updated = await addSubgoal(conv(), ctx.sessionId, condition);
+  return `➕ Subgoal added.\n\n${formatSubgoalList(updated!)}`;
 }
 
 async function cmdCancel(ctx: CommandContext): Promise<string> {
@@ -315,6 +394,18 @@ export function registerBuiltins(): void {
     description: "Replay last partner message and regenerate reply",
     handler: cmdRetry,
     aliases: ["regenerate"],
+    scope: "session",
+  });
+  registerCommand({
+    name: "goal",
+    description: "Set or manage session goal (auto-continue until done or budget exhausted)",
+    handler: cmdGoal,
+    scope: "session",
+  });
+  registerCommand({
+    name: "subgoal",
+    description: "Add or manage subgoals for the current session goal",
+    handler: cmdSubgoal,
     scope: "session",
   });
   registerCommand({

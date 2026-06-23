@@ -214,6 +214,21 @@ acp_agents:
 
 Layers can be mixed; the LLM chooses order; FreeAnima registers and routes.
 
+## Session Goal
+
+**Question: should this session keep working toward a stated outcome?**
+
+Session Goal is an **in-process autonomous loop** at the Estate / orchestration layer — distinct from ACP async delegation:
+
+| Dimension    | Session Goal                    | ACP                                   |
+| ------------ | ------------------------------- | ------------------------------------- |
+| Scope        | Single session                  | External agent task                   |
+| Trigger      | `/goal` slash + post-turn judge | Tool call + callback turn             |
+| Persistence  | `sessions.goal` JSONB           | `sessions.acp_tasks`                  |
+| Continuation | Same SSE stream, turn budget    | Independent message after task update |
+
+Judge uses optional `llm.profiles.goal_judge`; fail-open on errors. User messages preempt the loop; `/goal pause` stops auto-continue without clearing state. See [`goal.md`](../features/goal.md).
+
 ## WebUI
 
 WebUI shares the same HTTP port as `anima service` (default **2658**).

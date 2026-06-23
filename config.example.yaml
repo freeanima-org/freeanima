@@ -22,6 +22,11 @@ llm:
       chain:
         - provider: main
           model: deepseek-v4-flash
+    # 可选：goal judge 专用轻量模型；未配置时回退 default_profile
+    goal_judge:
+      chain:
+        - provider: main
+          model: deepseek-v4-flash
 
 # Firecrawl（web_search / web_extract）
 # API Key 走 pass：anima credential add services/firecrawl token=xxx

@@ -1,3 +1,4 @@
+import type { CommandGoalStartData } from "./goal-data.ts";
 import type { CommandRestartData } from "./restart-data.ts";
 import type { CommandRetryData } from "./retry-data.ts";
 import type { CommandUpgradeData } from "./upgrade-data.ts";
@@ -14,6 +15,7 @@ export type CommandResult = {
   text: string;
   data?:
     | CommandRetryData
+    | CommandGoalStartData
     | CommandRestartData
     | CommandUpgradeData
     | Record<string, unknown>
@@ -110,6 +112,12 @@ export function isRetryResult(result: CommandResult): result is CommandResult & 
   data: CommandRetryData;
 } {
   return result.data?.action === "retry";
+}
+
+export function isGoalStartResult(result: CommandResult): result is CommandResult & {
+  data: CommandGoalStartData;
+} {
+  return result.data?.action === "goal_start";
 }
 
 export function isRestartResult(result: CommandResult): result is CommandResult & {

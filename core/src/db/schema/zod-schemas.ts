@@ -7,8 +7,9 @@ import {
   compressionJsonSchema,
   messagePayloadSchema,
   platformInfoSchema,
-  sessionFunctionsSchema,
   sessionCachedToolsetsSchema,
+  sessionFunctionsSchema,
+  sessionGoalSchema,
   sessionStagedToolsetsSchema,
   sessionTodoStoreSchema,
 } from "./jsonb/index.ts";
@@ -29,6 +30,7 @@ const sessionJsonbRefine = {
   todos: sessionTodoStoreSchema,
   awaitingClarify: awaitingClarifySchema.nullable(),
   acpTasks: acpTasksSchema.nullable(),
+  goal: sessionGoalSchema.nullable(),
   cachedToolsets: sessionCachedToolsetsSchema,
   stagedToolsets: sessionStagedToolsetsSchema,
   functions: sessionFunctionsSchema,
