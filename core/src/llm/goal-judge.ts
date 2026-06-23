@@ -46,12 +46,13 @@ function formatGoalJudgeUser(input: GoalJudgeInput): string {
 
 export function parseGoalJudgeOutput(raw: string): GoalJudgeResult {
   const trimmed = raw.trim();
-  const jsonMatch = trimmed.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) {
+  const start = trimmed.indexOf("{");
+  const end = trimmed.lastIndexOf("}");
+  if (start === -1 || end === -1 || end < start) {
     return { ok: false, error: "judge output is not JSON" };
   }
   try {
-    const parsed = JSON.parse(jsonMatch[0]) as Record<string, unknown>;
+    const parsed = JSON.parse(trimmed.slice(start, end + 1)) as Record<string, unknown>;
     if (typeof parsed.done !== "boolean") {
       return { ok: false, error: "judge JSON missing boolean done" };
     }

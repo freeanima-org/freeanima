@@ -1,4 +1,10 @@
 import type { StreamEffect } from "../stream-state/types.ts";
+import {
+  createFirstFlushGate,
+  type FirstFlushGate,
+  STREAM_FIRST_FLUSH_MAX_WAIT_MS,
+  STREAM_FIRST_FLUSH_MIN_CHARS,
+} from "./first-flush-gate.ts";
 import type { ChannelAction, StreamStrategy, StrategyContext } from "./types.ts";
 
 export const DISCORD_STREAM_PLACEHOLDER = "⏳ Thinking…";
@@ -8,7 +14,7 @@ export const DISCORD_ANSWER_SPLIT_AT = 1000;
 const BAG_ANSWER_OPEN = "discord.answerOpen";
 const BAG_BUFFER = "discord.answerBuffer";
 const BAG_THROTTLE = "discord.throttleTimer";
-const BAG_FIRST_FLUSH = "discord.firstFlush";
+const BAG_GATE = "discord.firstFlushGate";
 
 export type DiscordAnswerIo = {
   send: (text: string) => Promise<void>;
@@ -29,11 +35,22 @@ function clearThrottle(ctx: StrategyContext): void {
   }
 }
 
+function getGate(ctx: StrategyContext): FirstFlushGate | undefined {
+  return ctx.bag.get(BAG_GATE) as FirstFlushGate | undefined;
+}
+
+function disposeGate(ctx: StrategyContext): void {
+  getGate(ctx)?.dispose();
+  ctx.bag.delete(BAG_GATE);
+}
+
 export type DiscordAnswerStrategyOptions = {
   io: DiscordAnswerIo;
   placeholder?: string;
   editIntervalMs?: number;
   finalizeSplitAt?: number;
+  firstFlushMinChars?: number;
+  firstFlushMaxWaitMs?: number;
 };
 
 export function createDiscordAnswerStrategy(opts: DiscordAnswerStrategyOptions): StreamStrategy {
@@ -41,11 +58,31 @@ export function createDiscordAnswerStrategy(opts: DiscordAnswerStrategyOptions):
   const editIntervalMs = opts.editIntervalMs ?? DISCORD_ANSWER_EDIT_MS;
   const finalizeSplitAt = opts.finalizeSplitAt ?? DISCORD_ANSWER_SPLIT_AT;
   const { io } = opts;
+  const gateOpts = {
+    minChars: opts.firstFlushMinChars ?? STREAM_FIRST_FLUSH_MIN_CHARS,
+    maxWaitMs: opts.firstFlushMaxWaitMs ?? STREAM_FIRST_FLUSH_MAX_WAIT_MS,
+  };
 
   const flushInterim = async (ctx: StrategyContext): Promise<void> => {
     if (!ctx.bag.get(BAG_ANSWER_OPEN)) return;
     const buffer = (ctx.bag.get(BAG_BUFFER) as string | undefined) ?? "";
     await io.edit(displayText(buffer, placeholder));
+  };
+
+  const scheduleThrottle = (ctx: StrategyContext): void => {
+    clearThrottle(ctx);
+    ctx.bag.set(
+      BAG_THROTTLE,
+      setTimeout(() => {
+        ctx.bag.delete(BAG_THROTTLE);
+        void flushInterim(ctx);
+      }, editIntervalMs),
+    );
+  };
+
+  const openFirstFlush = async (ctx: StrategyContext, schedule = true): Promise<void> => {
+    await flushInterim(ctx);
+    if (schedule) scheduleThrottle(ctx);
   };
 
   return {
@@ -56,26 +93,19 @@ export function createDiscordAnswerStrategy(opts: DiscordAnswerStrategyOptions):
           if (ctx.bag.get(BAG_ANSWER_OPEN)) return [];
           ctx.bag.set(BAG_ANSWER_OPEN, true);
           ctx.bag.set(BAG_BUFFER, "");
+          ctx.bag.set(BAG_GATE, createFirstFlushGate(gateOpts));
           await io.send(placeholder);
           return [];
         }
         case "answer_delta": {
           const next = `${(ctx.bag.get(BAG_BUFFER) as string | undefined) ?? ""}${effect.delta}`;
           ctx.bag.set(BAG_BUFFER, next);
-          const firstFlush = ctx.bag.get(BAG_FIRST_FLUSH) !== true;
-          if (firstFlush) {
-            ctx.bag.set(BAG_FIRST_FLUSH, true);
-            await io.edit(displayText(next, placeholder));
+          const gate = getGate(ctx);
+          if (gate && !gate.isOpen()) {
+            gate.onDelta(next, () => openFirstFlush(ctx));
             return [];
           }
-          clearThrottle(ctx);
-          ctx.bag.set(
-            BAG_THROTTLE,
-            setTimeout(() => {
-              ctx.bag.delete(BAG_THROTTLE);
-              void flushInterim(ctx);
-            }, editIntervalMs),
-          );
+          scheduleThrottle(ctx);
           return [];
         }
         case "answer_replace": {
@@ -86,9 +116,9 @@ export function createDiscordAnswerStrategy(opts: DiscordAnswerStrategyOptions):
         }
         case "answer_commit": {
           clearThrottle(ctx);
+          disposeGate(ctx);
           const text = effect.content.trim();
           ctx.bag.set(BAG_BUFFER, "");
-          ctx.bag.delete(BAG_FIRST_FLUSH);
           if (!ctx.bag.get(BAG_ANSWER_OPEN)) return [];
           if (!text) {
             await io.edit("\u3164");
@@ -100,9 +130,15 @@ export function createDiscordAnswerStrategy(opts: DiscordAnswerStrategyOptions):
         }
         case "answer_finalize": {
           clearThrottle(ctx);
+          const gate = getGate(ctx);
+          if (gate && !gate.isOpen()) {
+            await gate.flushPending(() => openFirstFlush(ctx, false));
+          } else {
+            await flushInterim(ctx);
+          }
+          disposeGate(ctx);
           const text = effect.content.trim();
           ctx.bag.set(BAG_BUFFER, "");
-          ctx.bag.delete(BAG_FIRST_FLUSH);
           if (!text) return [];
           if (!ctx.bag.get(BAG_ANSWER_OPEN)) {
             await io.send(text);
@@ -129,14 +165,19 @@ export function createDiscordAnswerStrategy(opts: DiscordAnswerStrategyOptions):
     },
     async flush(ctx: StrategyContext): Promise<ChannelAction[]> {
       clearThrottle(ctx);
-      await flushInterim(ctx);
+      const gate = getGate(ctx);
+      if (gate && !gate.isOpen()) {
+        await gate.flushPending(() => openFirstFlush(ctx, false));
+      } else {
+        await flushInterim(ctx);
+      }
       return [];
     },
     async dispose(ctx: StrategyContext): Promise<void> {
       clearThrottle(ctx);
+      disposeGate(ctx);
       ctx.bag.delete(BAG_ANSWER_OPEN);
       ctx.bag.delete(BAG_BUFFER);
-      ctx.bag.delete(BAG_FIRST_FLUSH);
     },
   };
 }

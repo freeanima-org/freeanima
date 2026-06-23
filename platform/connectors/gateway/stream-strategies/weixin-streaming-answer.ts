@@ -1,4 +1,10 @@
 import type { StreamEffect } from "../stream-state/types.ts";
+import {
+  createFirstFlushGate,
+  type FirstFlushGate,
+  STREAM_FIRST_FLUSH_MAX_WAIT_MS,
+  STREAM_FIRST_FLUSH_MIN_CHARS,
+} from "./first-flush-gate.ts";
 import type { ChannelAction, StreamStrategy, StrategyContext } from "./types.ts";
 
 export const WEIXIN_ANSWER_SEND_MS = 3000;
@@ -7,6 +13,7 @@ const BAG_BUFFER = "weixin.answerBuffer";
 const BAG_SENT = "weixin.answerSentLen";
 const BAG_THROTTLE = "weixin.throttleTimer";
 const BAG_OPEN = "weixin.answerOpen";
+const BAG_GATE = "weixin.firstFlushGate";
 
 export type WeixinAnswerIo = {
   send: (text: string) => Promise<void>;
@@ -20,9 +27,20 @@ function clearThrottle(ctx: StrategyContext): void {
   }
 }
 
+function getGate(ctx: StrategyContext): FirstFlushGate | undefined {
+  return ctx.bag.get(BAG_GATE) as FirstFlushGate | undefined;
+}
+
+function disposeGate(ctx: StrategyContext): void {
+  getGate(ctx)?.dispose();
+  ctx.bag.delete(BAG_GATE);
+}
+
 export type WeixinStreamingAnswerStrategyOptions = {
   io: WeixinAnswerIo;
   sendIntervalMs?: number;
+  firstFlushMinChars?: number;
+  firstFlushMaxWaitMs?: number;
 };
 
 export function createWeixinStreamingAnswerStrategy(
@@ -30,6 +48,10 @@ export function createWeixinStreamingAnswerStrategy(
 ): StreamStrategy {
   const sendIntervalMs = opts.sendIntervalMs ?? WEIXIN_ANSWER_SEND_MS;
   const { io } = opts;
+  const gateOpts = {
+    minChars: opts.firstFlushMinChars ?? STREAM_FIRST_FLUSH_MIN_CHARS,
+    maxWaitMs: opts.firstFlushMaxWaitMs ?? STREAM_FIRST_FLUSH_MAX_WAIT_MS,
+  };
 
   const flushDelta = async (ctx: StrategyContext): Promise<void> => {
     if (!ctx.bag.get(BAG_OPEN)) return;
@@ -41,6 +63,22 @@ export function createWeixinStreamingAnswerStrategy(
     await io.send(delta);
   };
 
+  const scheduleThrottle = (ctx: StrategyContext): void => {
+    clearThrottle(ctx);
+    ctx.bag.set(
+      BAG_THROTTLE,
+      setTimeout(() => {
+        ctx.bag.delete(BAG_THROTTLE);
+        void flushDelta(ctx);
+      }, sendIntervalMs),
+    );
+  };
+
+  const openFirstFlush = async (ctx: StrategyContext, schedule = true): Promise<void> => {
+    await flushDelta(ctx);
+    if (schedule) scheduleThrottle(ctx);
+  };
+
   return {
     name: "weixin-streaming-answer",
     async handle(effect: StreamEffect, ctx: StrategyContext): Promise<ChannelAction[]> {
@@ -50,27 +88,22 @@ export function createWeixinStreamingAnswerStrategy(
           ctx.bag.set(BAG_OPEN, true);
           ctx.bag.set(BAG_BUFFER, "");
           ctx.bag.set(BAG_SENT, 0);
+          ctx.bag.set(BAG_GATE, createFirstFlushGate(gateOpts));
           return [];
         }
         case "answer_delta": {
           const next = `${(ctx.bag.get(BAG_BUFFER) as string | undefined) ?? ""}${effect.delta}`;
           ctx.bag.set(BAG_BUFFER, next);
-          const sentLen = (ctx.bag.get(BAG_SENT) as number | undefined) ?? 0;
-          if (sentLen === 0 && next.trim()) {
-            await flushDelta(ctx);
+          const gate = getGate(ctx);
+          if (gate && !gate.isOpen()) {
+            gate.onDelta(next, () => openFirstFlush(ctx));
             return [];
           }
-          clearThrottle(ctx);
-          ctx.bag.set(
-            BAG_THROTTLE,
-            setTimeout(() => {
-              ctx.bag.delete(BAG_THROTTLE);
-              void flushDelta(ctx);
-            }, sendIntervalMs),
-          );
+          scheduleThrottle(ctx);
           return [];
         }
         case "answer_replace": {
+          disposeGate(ctx);
           ctx.bag.set(BAG_BUFFER, effect.content);
           ctx.bag.set(BAG_SENT, 0);
           clearThrottle(ctx);
@@ -80,6 +113,13 @@ export function createWeixinStreamingAnswerStrategy(
         }
         case "answer_commit": {
           clearThrottle(ctx);
+          const gate = getGate(ctx);
+          if (gate && !gate.isOpen()) {
+            await gate.flushPending(() => openFirstFlush(ctx, false));
+          } else {
+            await flushDelta(ctx);
+          }
+          disposeGate(ctx);
           ctx.bag.set(BAG_BUFFER, "");
           ctx.bag.set(BAG_SENT, 0);
           ctx.bag.delete(BAG_OPEN);
@@ -87,6 +127,13 @@ export function createWeixinStreamingAnswerStrategy(
         }
         case "answer_finalize": {
           clearThrottle(ctx);
+          const gate = getGate(ctx);
+          if (gate && !gate.isOpen()) {
+            await gate.flushPending(() => openFirstFlush(ctx, false));
+          } else {
+            await flushDelta(ctx);
+          }
+          disposeGate(ctx);
           const buffer = (ctx.bag.get(BAG_BUFFER) as string | undefined) ?? "";
           const sentLen = (ctx.bag.get(BAG_SENT) as number | undefined) ?? 0;
           const tail = buffer.slice(sentLen).trim();
@@ -107,11 +154,17 @@ export function createWeixinStreamingAnswerStrategy(
     },
     async flush(ctx: StrategyContext): Promise<ChannelAction[]> {
       clearThrottle(ctx);
-      await flushDelta(ctx);
+      const gate = getGate(ctx);
+      if (gate && !gate.isOpen()) {
+        await gate.flushPending(() => openFirstFlush(ctx, false));
+      } else {
+        await flushDelta(ctx);
+      }
       return [];
     },
     async dispose(ctx: StrategyContext): Promise<void> {
       clearThrottle(ctx);
+      disposeGate(ctx);
       ctx.bag.delete(BAG_OPEN);
       ctx.bag.delete(BAG_BUFFER);
       ctx.bag.delete(BAG_SENT);

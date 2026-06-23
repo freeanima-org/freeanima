@@ -219,6 +219,25 @@ describe("streamReplyToChannel", () => {
     expect(lastEdit).toBe("final answer");
   });
 
+  it("multi-token short answer keeps placeholder until finalize", async () => {
+    const { channel, edits, sends, timeline } = fakeChannel();
+    async function* gen(): AsyncGenerator<StreamEvent> {
+      yield { event: "token", data: { content: "你" } };
+      yield { event: "token", data: { content: "好世界" } };
+      yield { event: "done", data: {} };
+    }
+    await streamReplyToChannel(channel, gen());
+
+    expect(sends).toHaveLength(1);
+    expect(sends[0]).toContain("Thinking");
+    expect(edits.filter((e) => e !== "你好世界")).toHaveLength(0);
+    expect(edits[edits.length - 1]).toBe("你好世界");
+    const thinkingEditIdx = timeline.findIndex(
+      (e) => e.kind === "edit" && e.text.includes("Thinking"),
+    );
+    expect(thinkingEditIdx).toBe(-1);
+  });
+
   it("split send when merged tool message exceeds Discord limit", async () => {
     const { channel, sends } = fakeChannel();
     async function* gen(): AsyncGenerator<StreamEvent> {
