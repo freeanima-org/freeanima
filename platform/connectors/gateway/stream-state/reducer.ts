@@ -44,7 +44,12 @@ function mapReplyEffectsToGateway(
           items: effect.items,
           timeout_sec: effect.timeout_sec,
         });
-        out.push({ kind: "clarify", text });
+        out.push({
+          kind: "clarify",
+          text,
+          items: effect.items,
+          timeout_sec: effect.timeout_sec,
+        });
         next = { ...next, visibleBlocks: [...next.visibleBlocks, text] };
         break;
       }

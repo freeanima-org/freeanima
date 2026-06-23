@@ -6,6 +6,7 @@ export {
   type StreamChannelComposerOptions,
 } from "./composer.ts";
 export { createGatewayToolRoundStrategy } from "./gateway-outbound.ts";
+export { createDiscordGatewayToolRoundStrategy } from "./discord-gateway-outbound.ts";
 export {
   createPassthroughEmitStrategy,
   createPassthroughToolEmitStrategy,
