@@ -5,6 +5,7 @@ import { m } from "@/lib/i18n.ts";
 
 export const Route = createFileRoute("/chamber/self-layer")({
   loader: () => getSelfBlocks().catch(() => ({ blocks: [] })),
+  staleTime: 2 * 60_000,
   component: SelfLayerPage,
 });
 

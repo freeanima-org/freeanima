@@ -23,11 +23,8 @@ function SessionDetailPage() {
   });
 
   useEffect(() => {
-    const state = useChamberSessionsStore.getState();
-    if (!state.sessions.length && !state.loadingSessions) {
-      void state.fetchSessions();
-    }
-  }, []);
+    void useChamberSessionsStore.getState().ensureSessionHeadline(sessionId);
+  }, [sessionId]);
 
   useEffect(() => {
     void useChamberSessionsStore.getState().selectSession(sessionId, 1);

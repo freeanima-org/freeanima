@@ -9,11 +9,24 @@ import {
   listSessions,
   setSessionTitle,
 } from "../../handlers/index.ts";
-import { fetchSessionAcpDock } from "../../handlers/session-events.ts";
+import { fetchSessionAcpDock, iterateSessionEvents } from "../../handlers/session-events.ts";
+import { sseResponse } from "../../sse-response.ts";
+
+const sessionListQuerySchema = z.object({
+  platform: z.string().optional(),
+  offset: z.string().optional(),
+  limit: z.string().optional(),
+});
 
 export const sessionsRoutes = new Elysia({ prefix: "/sessions" })
-  .get("/", ({ query }) => listSessions(query.platform))
-  .get("/all", () => listSessions(""))
+  .get("/", ({ query }) => {
+    const parsed = sessionListQuerySchema.parse(query);
+    return listSessions(parsed.platform, {
+      offset: parsed.offset ? Number(parsed.offset) : undefined,
+      limit: parsed.limit ? Number(parsed.limit) : undefined,
+    });
+  })
+  .get("/all", () => listSessions(undefined, { offset: 0, limit: 10_000 }))
   .post("/", ({ body }) => createSession(createSessionBodySchema.parse(body ?? {})))
   .get(
     "/commands",
@@ -31,6 +44,9 @@ export const sessionsRoutes = new Elysia({ prefix: "/sessions" })
   )
   .get("/:sessionId", ({ params }) => getSessionInfo(params.sessionId))
   .get("/:sessionId/acp-dock", ({ params }) => fetchSessionAcpDock(params.sessionId))
+  .get("/:sessionId/events", ({ params, request }) =>
+    sseResponse(iterateSessionEvents(params.sessionId, request.signal), request.signal),
+  )
   .get(
     "/:sessionId/messages",
     ({ params, query }) =>

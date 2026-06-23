@@ -85,6 +85,12 @@ export interface SessionStorePort {
   listSessionIds(platform?: string | null): Promise<string[]>;
   listDebugSessionIds(): Promise<string[]>;
   listSessionSummaries(platform?: string | null): Promise<SessionSummaryRow[]>;
+  listSessionSummariesPage(opts?: {
+    platform?: string | null;
+    offset?: number;
+    limit?: number;
+  }): Promise<{ items: SessionSummaryRow[]; total: number }>;
+  getMessageContentsByIds(sessionId: string, messageIds: string[]): Promise<Record<string, string>>;
   countSessionsByPlatform(): Promise<Record<string, number>>;
   deleteDebugSessions(): Promise<number>;
   findSessionIdByPlatformInfo(

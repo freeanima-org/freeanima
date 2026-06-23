@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, lte, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, lte, sql } from "drizzle-orm";
 import type { ConversationMessage, SessionMessage } from "@freeanima/core/db/domain";
 import type { MessageRowView } from "@freeanima/core/repos";
 
@@ -92,6 +92,29 @@ export async function getMessageContentById(
   if (payload.role !== "assistant" && payload.role !== "user") return null;
   const raw = payload.content;
   return typeof raw === "string" ? raw : null;
+}
+
+export async function getMessageContentsByIds(
+  sessionId: string,
+  messageIds: string[],
+): Promise<Record<string, string>> {
+  const uniqueIds = [...new Set(messageIds.filter(Boolean))];
+  if (!uniqueIds.length) return {};
+  const db = getDb();
+  const rows = await db
+    .select({ id: messages.id, payload: messages.payload })
+    .from(messages)
+    .where(and(eq(messages.sessionId, sessionId), inArray(messages.id, uniqueIds)));
+  const out: Record<string, string> = {};
+  for (const row of rows) {
+    const payload = row.payload;
+    if (payload.role !== "assistant" && payload.role !== "user") continue;
+    const raw = payload.content;
+    if (typeof raw === "string" && raw.trim()) {
+      out[row.id] = raw;
+    }
+  }
+  return out;
 }
 
 export async function appendMessageReturningId(

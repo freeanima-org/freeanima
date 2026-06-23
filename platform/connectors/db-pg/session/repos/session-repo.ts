@@ -292,6 +292,55 @@ export async function listSessionSummaries(platform?: string | null): Promise<Se
     .toReversed();
 }
 
+function sessionPlatformWhere(platform?: string | null) {
+  if (!platform) return undefined;
+  return sql`${sessions.platformInfo}->>'platform' = ${platform}`;
+}
+
+export async function listSessionSummariesPage(opts?: {
+  platform?: string | null;
+  offset?: number;
+  limit?: number;
+}): Promise<{ items: SessionSummaryRow[]; total: number }> {
+  const offset = Math.max(0, opts?.offset ?? 0);
+  const limit = Math.min(100, Math.max(1, opts?.limit ?? 20));
+  const platform = opts?.platform;
+  const db = getDb();
+  const platformCond = sessionPlatformWhere(platform);
+
+  const countRows = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(sessions)
+    .where(platformCond);
+  const total = countRows[0]?.count ?? 0;
+
+  const rows = await db
+    .select({
+      id: sessions.id,
+      title: sessions.title,
+      platformInfo: sessions.platformInfo,
+      createdAt: sessions.createdAt,
+    })
+    .from(sessions)
+    .where(platformCond)
+    .orderBy(desc(sessions.createdAt))
+    .limit(limit)
+    .offset(offset);
+
+  return {
+    items: rows.map((row) => {
+      const raw = row.platformInfo?.platform;
+      return {
+        id: row.id,
+        title: row.title ?? "",
+        created: row.createdAt,
+        platform: typeof raw === "string" ? raw : "",
+      };
+    }),
+    total,
+  };
+}
+
 export async function deleteDebugSessions(): Promise<number> {
   const db = getDb();
   const rows = await db

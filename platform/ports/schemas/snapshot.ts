@@ -45,6 +45,22 @@ export type ProcessMemoryDetail = {
   };
 };
 
+export type ExtensionSummaries = {
+  mcp: {
+    server_count: number;
+    connected_count: number;
+    connecting_count: number;
+    tool_count: number;
+  };
+  acp: {
+    agent_count: number;
+    connected_count: number;
+    session_count: number;
+    tool_count: number;
+  };
+  commands: number;
+};
+
 export type ServiceSnapshot = {
   status: "running";
   pid: number;
@@ -65,6 +81,7 @@ export type ServiceSnapshot = {
   };
   tools: number;
   cron_jobs: number;
+  extensions: ExtensionSummaries;
   platforms: Record<string, PlatformStatusSnapshot>;
   memory_kb: number;
   memory_detail?: ProcessMemoryDetail;

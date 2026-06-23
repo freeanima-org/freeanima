@@ -1,4 +1,5 @@
 import type { StreamEvent } from "@freeanima/runtime/loop";
+import type { SessionSummary } from "./schemas/snapshot.ts";
 
 export type { MessagingPort } from "./ports/messaging-port.ts";
 
@@ -47,7 +48,10 @@ export type AppRuntimePort = {
   pauseCronJob(id: string): any;
   resumeCronJob(id: string): any;
   runCronJobNow(id: string): any;
-  listSessions(platform?: string | null): Promise<any>;
+  listSessions(
+    platform?: string | null,
+    opts?: { offset?: number; limit?: number },
+  ): Promise<{ sessions: SessionSummary[]; total: number }>;
   createSession(platform: string): any;
   getSessionInfo(sessionId: string, platform?: string): Promise<any>;
   getSessionAcpDock(sessionId: string, platform?: string): Promise<any>;

@@ -31,6 +31,9 @@ function createMockSessionStore(overrides: Partial<SessionStorePort> = {}): Sess
     async getMessageContentById() {
       return null;
     },
+    async getMessageContentsByIds() {
+      return {};
+    },
     async nextMessagePos() {
       return 1;
     },
@@ -75,6 +78,9 @@ function createMockSessionStore(overrides: Partial<SessionStorePort> = {}): Sess
     },
     async listSessionSummaries() {
       return [];
+    },
+    async listSessionSummariesPage() {
+      return { items: [], total: 0 };
     },
     async countSessionsByPlatform() {
       return {};

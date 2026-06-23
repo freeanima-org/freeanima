@@ -92,6 +92,12 @@ export const nullSessionStore: SessionStorePort = {
   async listSessionSummaries() {
     return [];
   },
+  async listSessionSummariesPage() {
+    return { items: [], total: 0 };
+  },
+  async getMessageContentsByIds() {
+    return {};
+  },
   async countSessionsByPlatform() {
     return {};
   },

@@ -1,5 +1,6 @@
 export type {
   DependencyStatus,
+  ExtensionSummaries,
   HealthSnapshot,
   PlatformStatusSnapshot,
   ProcessMemoryDetail,

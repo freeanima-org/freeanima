@@ -1,15 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import type { DependencyStatus, ServiceStatus } from "@freeanima/platform/connectors/webui/api";
 import { useState } from "react";
-import {
-  getAcpStatus,
-  getCronJobs,
-  getMcpStatus,
-  getStatus,
-  getToolsStatus,
-  listSessionCommands,
-  restartService,
-} from "@/lib/api.ts";
+import { getStatus, restartService } from "@/lib/api.ts";
 import { m } from "@/lib/i18n.ts";
 import { formatDisplayDateTime } from "@/lib/format-datetime.ts";
 import { translateApiPayload } from "@/lib/api-errors.ts";
@@ -17,15 +9,8 @@ import { dependencyStatusLabel } from "@/lib/webui-status.ts";
 
 export const Route = createFileRoute("/chamber/dashboard")({
   loader: async () => {
-    const [status, mcpData, acpData, cmdData, tools, cronJobs] = await Promise.all([
-      getStatus().catch(() => null),
-      getMcpStatus().catch(() => null),
-      getAcpStatus().catch(() => null),
-      listSessionCommands({ all: true }).catch(() => null),
-      getToolsStatus().catch(() => null),
-      getCronJobs().catch(() => null),
-    ]);
-    return { status, mcpData, acpData, cmdData, tools, cronJobs };
+    const status = await getStatus().catch(() => null);
+    return { status };
   },
   component: DashboardPage,
 });
@@ -66,30 +51,29 @@ function dependencyBadge(dep: DependencyStatus | undefined, name: string) {
 }
 
 function DashboardPage() {
-  const { status, mcpData, acpData, cmdData, tools, cronJobs } = Route.useLoaderData();
+  const { status } = Route.useLoaderData();
   const [restarting, setRestarting] = useState(false);
 
   const svc = status as ServiceStatus | null;
-  const mcpError = mcpData ? "" : m.webui_chamber_dashboard_mcp_load_failed();
-  const acpError = acpData ? "" : m.webui_chamber_dashboard_acp_load_failed();
+  const extensions = svc?.extensions;
 
-  const mcp = {
-    server_count: (mcpData as Record<string, number> | null)?.server_count ?? 0,
-    connected_count: (mcpData as Record<string, number> | null)?.connected_count ?? 0,
-    connecting_count: (mcpData as Record<string, number> | null)?.connecting_count ?? 0,
-    tool_count: (mcpData as Record<string, number> | null)?.tool_count ?? 0,
+  const mcp = extensions?.mcp ?? {
+    server_count: 0,
+    connected_count: 0,
+    connecting_count: 0,
+    tool_count: 0,
   };
 
-  const acp = {
-    agent_count: (acpData as Record<string, number> | null)?.agent_count ?? 0,
-    connected_count: (acpData as Record<string, number> | null)?.connected_count ?? 0,
-    session_count: (acpData as Record<string, number> | null)?.session_count ?? 0,
-    tool_count: (acpData as Record<string, number> | null)?.tool_count ?? 0,
+  const acp = extensions?.acp ?? {
+    agent_count: 0,
+    connected_count: 0,
+    session_count: 0,
+    tool_count: 0,
   };
 
-  const toolCount = svc?.tools ?? (tools as { tools?: unknown[] } | null)?.tools?.length ?? 0;
-  const cronCount = svc?.cron_jobs ?? (cronJobs as { jobs?: unknown[] } | null)?.jobs?.length ?? 0;
-  const commandCount = (cmdData as { commands?: unknown[] } | null)?.commands?.length ?? null;
+  const toolCount = svc?.tools ?? 0;
+  const cronCount = svc?.cron_jobs ?? 0;
+  const commandCount = extensions?.commands ?? null;
 
   const semanticMemoryCount = svc?.memory?.semantic_memory_count ?? 0;
   const dialogueMessageCount = svc?.memory?.dialogue_message_count ?? 0;
@@ -179,24 +163,14 @@ function DashboardPage() {
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 items-stretch">
             <SessionStatCard total={svc.sessions?.total ?? 0} platformRows={sessionPlatformRows} />
-            <CompactExtensionCard
-              title="ACP"
-              href="/chamber/acp"
-              summary={acpSummary}
-              error={acpError}
-            />
+            <CompactExtensionCard title="ACP" href="/chamber/acp" summary={acpSummary} />
             <StatCard title={m.webui_common_tools()}>
               <p className="text-xl font-mono mt-1">{toolCount}</p>
               <p className="text-xs text-base-content/50">
                 {m.webui_chamber_dashboard_tools_registered()}
               </p>
             </StatCard>
-            <CompactExtensionCard
-              title="MCP"
-              href="/chamber/mcp"
-              summary={mcpSummary}
-              error={mcpError}
-            />
+            <CompactExtensionCard title="MCP" href="/chamber/mcp" summary={mcpSummary} />
             <StatCard
               title={m.webui_chamber_dashboard_cron()}
               action={
@@ -442,12 +416,10 @@ function CompactExtensionCard({
   title,
   href,
   summary,
-  error,
 }: {
   title: string;
   href: string;
   summary: string;
-  error?: string;
 }) {
   return (
     <div className="card bg-base-200 h-full">
@@ -458,11 +430,7 @@ function CompactExtensionCard({
             {m.webui_chamber_dashboard_manage()}
           </Link>
         </div>
-        {error ? (
-          <p className="mt-1 text-xs text-warning">{error}</p>
-        ) : (
-          <p className="mt-1 flex-1 text-xs leading-snug text-base-content/70">{summary}</p>
-        )}
+        <p className="mt-1 flex-1 text-xs leading-snug text-base-content/70">{summary}</p>
       </div>
     </div>
   );

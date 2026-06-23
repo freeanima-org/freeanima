@@ -248,8 +248,11 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     );
   }
 
-  listSessions(platform?: string | null): Promise<{ sessions: SessionSummary[] }> {
-    return sessions.listSessions(this.runtimeDeps(), platform);
+  listSessions(
+    platform?: string | null,
+    opts?: { offset?: number; limit?: number },
+  ): Promise<{ sessions: SessionSummary[]; total: number }> {
+    return sessions.listSessions(this.runtimeDeps(), platform, opts);
   }
 
   createSession(platform: string): Promise<{ session_id: string }> {

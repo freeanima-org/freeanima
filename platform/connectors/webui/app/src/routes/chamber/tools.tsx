@@ -3,12 +3,16 @@ import type {
   ToolsStatusResponse,
   ToolsStatusToolItem,
 } from "@freeanima/platform/connectors/webui/api";
+import { useMemo, useState } from "react";
 import { getToolsStatus } from "@/lib/api.ts";
+import { MemoryListPagination } from "@/components/chamber/MemoryListPagination.tsx";
 import { m } from "@/lib/i18n.ts";
 
 type ToolsLoaderData = ToolsStatusResponse;
 
 const EMPTY_LOADER_DATA: ToolsLoaderData = { default_toolsets: [], tools: [], toolsets: [] };
+const TOOLS_PAGE_SIZE = 20;
+const LONG_STALE_MS = 5 * 60_000;
 
 const STATIC_TOOLSET_ORDER = ["toolset", "memory"] as const;
 
@@ -61,6 +65,7 @@ async function copyText(text: string, label: string): Promise<void> {
 
 export const Route = createFileRoute("/chamber/tools")({
   loader: () => getToolsStatus().catch(() => EMPTY_LOADER_DATA) as Promise<ToolsLoaderData>,
+  staleTime: LONG_STALE_MS,
   component: ToolsPage,
 });
 
@@ -192,10 +197,34 @@ function ToolCard({ tool }: { tool: ToolsStatusToolItem }) {
 
 function ToolsPage() {
   const data = Route.useLoaderData();
+  const [page, setPage] = useState(1);
   const tools = data.tools ?? [];
   const defaultToolSets = data.default_toolsets ?? [];
   const toolSets = sortToolSets(data.toolsets ?? []);
   const toolByName = new Map(tools.map((t) => [t.name, t]));
+
+  const groupedNames = useMemo(() => {
+    const names = new Set<string>();
+    for (const ts of toolSets) {
+      for (const name of ts.tools) names.add(name);
+    }
+    return names;
+  }, [toolSets]);
+
+  const ungroupedTools = useMemo(
+    () => tools.filter((t) => !groupedNames.has(t.name)),
+    [tools, groupedNames],
+  );
+
+  const pagedTools = useMemo(() => {
+    const start = (page - 1) * TOOLS_PAGE_SIZE;
+    return tools.slice(start, start + TOOLS_PAGE_SIZE);
+  }, [tools, page]);
+
+  const pagedUngroupedTools = useMemo(() => {
+    const start = (page - 1) * TOOLS_PAGE_SIZE;
+    return ungroupedTools.slice(start, start + TOOLS_PAGE_SIZE);
+  }, [ungroupedTools, page]);
 
   if (!toolSets.length) {
     return (
@@ -204,20 +233,19 @@ function ToolsPage() {
         <p className="text-sm text-base-content/60 mb-4">{m.webui_chamber_tools_desc()}</p>
         <DefaultToolSetsSection names={defaultToolSets} />
         <div className="space-y-3">
-          {tools.map((tool) => (
+          {pagedTools.map((tool) => (
             <ToolCard key={tool.name} tool={tool} />
           ))}
         </div>
+        <MemoryListPagination
+          total={tools.length}
+          pageSize={TOOLS_PAGE_SIZE}
+          currentPage={page}
+          onPageChange={setPage}
+        />
       </div>
     );
   }
-
-  const groupedNames = new Set<string>();
-  for (const ts of toolSets) {
-    for (const name of ts.tools) groupedNames.add(name);
-  }
-
-  const ungroupedTools = tools.filter((t) => !groupedNames.has(t.name));
 
   return (
     <div>
@@ -254,10 +282,16 @@ function ToolsPage() {
           <>
             <h3 className="text-sm font-bold mt-4 mb-2">{m.webui_chamber_tools_ungrouped()}</h3>
             <div className="space-y-3">
-              {ungroupedTools.map((tool) => (
+              {pagedUngroupedTools.map((tool) => (
                 <ToolCard key={tool.name} tool={tool} />
               ))}
             </div>
+            <MemoryListPagination
+              total={ungroupedTools.length}
+              pageSize={TOOLS_PAGE_SIZE}
+              currentPage={page}
+              onPageChange={setPage}
+            />
           </>
         ) : null}
       </div>

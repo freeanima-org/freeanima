@@ -4,6 +4,7 @@ import { m } from "@/lib/i18n.ts";
 
 export const Route = createFileRoute("/chamber/config")({
   loader: () => getStatusConfig().catch(() => null),
+  staleTime: 5 * 60_000,
   component: ConfigPage,
 });
 

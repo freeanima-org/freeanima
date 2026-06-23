@@ -36,12 +36,25 @@ export async function unwrap<T>(promise: Promise<TreatyResult<T>>): Promise<T> {
   return result.data;
 }
 
-export async function listSessions(platform?: string) {
-  return unwrap(apiClient.api.sessions.get({ query: { platform } }));
+export async function listSessions(opts?: { platform?: string; offset?: number; limit?: number }) {
+  return unwrap(
+    apiClient.api.sessions.get({
+      query: {
+        platform: opts?.platform,
+        offset: opts?.offset?.toString(),
+        limit: opts?.limit?.toString(),
+      },
+    }),
+  );
 }
 
+/** @deprecated 使用 listSessions({ offset, limit }) */
 export async function listAllSessions() {
-  return unwrap(apiClient.api.sessions.all.get());
+  return listSessions({ offset: 0, limit: 10_000 });
+}
+
+export async function getSessionInfo(sessionId: string) {
+  return unwrap(apiClient.api.sessions({ sessionId }).get());
 }
 
 export async function createSession(platform: string) {
@@ -83,6 +96,27 @@ export async function getSessionAcpDock(sessionId: string): Promise<SessionAcpDo
     throw new Error(`HTTP ${res.status}`);
   }
   return (await res.json()) as SessionAcpDockSnapshot;
+}
+
+export function subscribeSessionEvents(
+  sessionId: string,
+  onUpdate: () => void,
+): { unsubscribe: () => void } {
+  const url = apiPath(`/api/sessions/${encodeURIComponent(sessionId)}/events`);
+  const es = new EventSource(url);
+  const handler = () => onUpdate();
+  es.addEventListener("session_updated", handler);
+  es.addEventListener("ready", handler);
+  es.addEventListener("error", () => {
+    /* EventSource 会自动重连 */
+  });
+  return {
+    unsubscribe: () => {
+      es.removeEventListener("session_updated", handler);
+      es.removeEventListener("ready", handler);
+      es.close();
+    },
+  };
 }
 
 export async function setSessionTitle(sessionId: string, title: string) {
