@@ -42,6 +42,7 @@ jobs:
       - run: bun run dep-check
       - run: bun run docs:i18n:check
       - run: bun run build:cli
+      - run: cd cli/publish && bun pm pack
       - run: bun scripts/run-ci-tests.ts
       - name: Upload coverage report
         if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
@@ -50,18 +51,6 @@ jobs:
           file: coverage/cobertura.xml
           language: JavaScript
           label: code-coverage/bun
-  build-cli:
-    name: Build CLI
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-      - uses: ./.github/actions/setup-bun
-      - run: bun run build:cli
-      - run: cd cli/publish && bun pm pack
   build-site:
     name: Build site
     runs-on: ubuntu-latest
@@ -86,7 +75,10 @@ jobs:
       - run: bun run build:webui
   blackbox-dispatch:
     name: Blackbox dispatch
-    if: github.event_name == 'pull_request'
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.actor != 'dependabot[bot]' &&
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
       - name: Dispatch pr-verify to freeanima-testing

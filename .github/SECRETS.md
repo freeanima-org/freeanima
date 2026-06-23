@@ -44,6 +44,16 @@ curl -sf -X POST \
 
 返回 **204** 表示 PAT 配置正确；**403 / Resource not accessible** 表示权限或 SSO 未授权。
 
+### Dependabot PR 的限制
+
+由 **Dependabot** 触发的 workflow（`github.actor == 'dependabot[bot]'`）**无法读取 Actions / Organization secrets**，只能使用仓库或组织下的 **Dependabot secrets**。因此 `FREEANIMA_CI` 在 Dependabot PR 上为空，`blackbox-dispatch` 会报 `Parameter token or opts.auth is required`。
+
+当前策略：[`ci.yml`](workflows/ci.yml) 的 `blackbox-dispatch` 在 **Dependabot PR** 与 **fork PR** 上 **跳过**（仅跑 Quality 等常规 CI；Blackbox 与 Quality 并行 dispatch，不等待 Quality 结果）。Release Please PR 与同仓 contributor PR 不受影响。
+
+若必须为 Dependabot PR 也跑 Blackbox，可在组织 **Dependabot secrets**（非 Actions secrets）添加同名 `FREEANIMA_CI`；高权限 PAT 暴露给 Dependabot 触发的 workflow，一般不建议。
+
+详见 [Troubleshooting Dependabot on GitHub Actions](https://docs.github.com/en/code-security/dependabot/troubleshooting-dependabot/troubleshooting-dependabot-on-github-actions)。
+
 ## `freeanima-testing` 侧（可选）
 
 回写 PR commit status `freeanima/blackbox` 时，testing 仓可继续使用独立 secret，或同样引用组织级 **`FREEANIMA_CI`**（须含 **Commit statuses: Read and write** on `freeanima`）。

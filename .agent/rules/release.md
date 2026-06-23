@@ -35,7 +35,7 @@ bun run anima -- service status   # reads version from status file / health API
 ## Release Flow (Release PR)
 
 1. Write **Conventional Commits** on feature branches (see below)
-2. Merge PR to `main` (must pass `Quality` + `freeanima/blackbox`)
+2. Merge PR to `main` (must pass `Quality` + `freeanima/blackbox`; Dependabot deps PR 仅需 `Quality`，Blackbox 在 PR 阶段跳过，见 [`.github/SECRETS.md`](../../.github/SECRETS.md))
 3. `Release` workflow runs **release-please**: opens or updates a **Release PR** (label `autorelease: pending`), accumulating changelog and version bump since last tag
 4. Release PR runs full CI; **maintainers decide when to release**, merge Release PR
 5. After merge, same workflow: `release_created` → tag `vX.Y.Z`, create GitHub Release → `build:cli` + `publish-cli.sh` (npm OIDC)
