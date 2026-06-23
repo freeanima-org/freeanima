@@ -1,13 +1,20 @@
-# Dependabot 版本更新与安全 PR（公开仓库免费）
+# Dependabot 版本更新 PR（公开仓库免费）
+# Bun 生态暂不支持 security alerts，CVE 需手动跟进或后续换 Renovate
 # https://docs.github.com/en/code-security/dependabot
 version: 2
 updates:
-  - package-ecosystem: npm
+  - package-ecosystem: bun
     directory: /
     schedule:
       interval: weekly
       day: monday
     open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    commit-message:
+      prefix: chore
+      prefix-development: chore
+      include: scope
     groups:
       dev-dependencies:
         dependency-type: development
@@ -17,6 +24,12 @@ updates:
         dependency-type: production
         patterns:
           - "*"
+    ignore:
+      # Astro 7 为 major，需单独评估后再升
+      - dependency-name: astro
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@astrojs/react"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: /
@@ -24,6 +37,15 @@ updates:
       interval: weekly
       day: monday
     open-pull-requests-limit: 5
+    labels:
+      - dependencies
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      github-actions:
+        patterns:
+          - "*"
 
   - package-ecosystem: docker
     directory: /
@@ -31,3 +53,8 @@ updates:
       interval: weekly
       day: monday
     open-pull-requests-limit: 3
+    labels:
+      - dependencies
+    commit-message:
+      prefix: chore
+      include: scope

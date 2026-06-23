@@ -2,7 +2,7 @@
 
 The root `tests/` directory is workspace member `@freeanima/integration-tests`, hosting **cross-package integration tests** and shared helpers.
 
-**Full-stack black-box E2E** (Compose + Playwright) lives in [freeanima-testing](https://github.com/freeanima-org/freeanima-testing); main-repo PRs trigger `repository_dispatch` after Quality passes.
+**Full-stack black-box E2E** (Compose + Playwright) lives in [freeanima-testing](https://github.com/freeanima-org/freeanima-testing); main-repo PRs trigger `repository_dispatch` in parallel with Quality. Dependabot / fork PR 跳过 dispatch（见 [`.github/SECRETS.md`](../.github/SECRETS.md)）。
 
 **Unit tests are always co-located**: `{layer}/{pkg}/src/**/*.test.ts` (`bun:test`). Do not use `{pkg}/tests/unit/`.
 
