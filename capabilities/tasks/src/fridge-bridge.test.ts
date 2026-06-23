@@ -124,7 +124,7 @@ describe("syncTasksSummary", () => {
   it("deletes magnet for future-dated only tasks", async () => {
     const { bridge, writes, deletes } = createMockBridge();
     await syncTasksSummary(
-      createMockStore([task({ title: "Later", due_at: "2026-06-20T12:00:00.000Z" })]),
+      createMockStore([task({ title: "Later", due_at: "2099-06-20T12:00:00.000Z" })]),
       bridge,
     );
     expect(writes).toEqual([]);

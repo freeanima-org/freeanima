@@ -36,17 +36,17 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
-    "@types/node": "^25.9.4",
-    "@types/react": "^19.2.17",
-    "@types/react-dom": "^19.2.3",
-    "@types/three": "^0.175.0",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@types/three": "^0.184.1",
     "@types/ws": "^8.18.1",
     "bun-plugin-tailwind": "catalog:",
-    "daisyui": "^5.5.23",
+    "daisyui": "catalog:",
     "electron": "^35.7.5",
     "electron-builder": "^26.15.3",
     "esbuild": "^0.25.12",
-    "tailwindcss": "^4.3.1"
+    "tailwindcss": "catalog:"
   },
   "build": {
     "extends": "electron-builder.yml"
