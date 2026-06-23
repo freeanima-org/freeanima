@@ -94,4 +94,22 @@ describe("streamReplyToWeixin", () => {
     expect(result.answerSent).toBe(false);
     expect(sent).toEqual([]);
   });
+
+  it("multi-token short answer sent once on finalize", async () => {
+    const sent: string[] = [];
+    await streamReplyToWeixin(
+      events([
+        { event: "token", data: { content: "你" } },
+        { event: "token", data: { content: "好，世界" } },
+        { event: "done", data: {} },
+      ]),
+      {
+        send: async (text) => {
+          sent.push(text);
+        },
+      },
+    );
+
+    expect(sent).toEqual(["你好，世界"]);
+  });
 });

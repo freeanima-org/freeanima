@@ -25,4 +25,11 @@ export {
   WEIXIN_ANSWER_SEND_MS,
 } from "./weixin-streaming-answer.ts";
 export { createWeixinBufferedAnswerStrategy } from "./weixin-answer.ts";
+export {
+  createFirstFlushGate,
+  STREAM_FIRST_FLUSH_MAX_WAIT_MS,
+  STREAM_FIRST_FLUSH_MIN_CHARS,
+  type FirstFlushGate,
+  type FirstFlushGateOptions,
+} from "./first-flush-gate.ts";
 export { splitDeliverText } from "./deliver-text.ts";

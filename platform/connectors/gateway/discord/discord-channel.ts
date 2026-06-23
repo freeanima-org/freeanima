@@ -162,9 +162,8 @@ function clearThrottleInBag(ctx: { bag: Map<string, unknown> }): void {
   }
 }
 
-/** 与 discord-answer 策略 answer_finalize 分支的 bag 清理保持一致 */
 function clearAnswerBagInCtx(ctx: { bag: Map<string, unknown> }): void {
   ctx.bag.delete("discord.answerOpen");
   ctx.bag.delete("discord.answerBuffer");
-  ctx.bag.delete("discord.firstFlush");
+  ctx.bag.delete("discord.firstFlushGate");
 }
