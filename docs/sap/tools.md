@@ -108,7 +108,7 @@ sap:{app_slug}:{instance_id}
 | `app_id`           | Example platform          |
 | ------------------ | ------------------------- |
 | `pair-programming` | `sap:pairprogramming:k7m` |
-| `parlor`           | `sap:parlor:k7m`          |
+| `chat`             | `sap:chat:k7m`            |
 | `companion`        | `sap:companion:k7m`       |
 
 `instance_id` is a Hub-assigned 3-character `[a-z0-9]` string, globally unique across all SAP apps. Hub returns the assigned or confirmed id in `connected.instance_id`.

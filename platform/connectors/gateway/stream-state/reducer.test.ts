@@ -8,7 +8,7 @@ async function* streamEvents(items: StreamEvent[]): AsyncGenerator<StreamEvent> 
   for (const ev of items) yield ev;
 }
 
-function reduceAll(items: StreamEvent[], platform: "discord" | "weixin" | "parlor" = "discord") {
+function reduceAll(items: StreamEvent[], platform: "discord" | "weixin" | "chat" = "discord") {
   let state = initialStreamReplyState();
   const effects: ReturnType<typeof applyStreamEvent>["effects"] = [];
   const buffer = new ToolRoundBuffer();

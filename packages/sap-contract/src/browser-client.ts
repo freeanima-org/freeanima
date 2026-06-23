@@ -1,10 +1,10 @@
 /** @deprecated Use direct-client.ts */
 export {
   createSapDirectClient as createSapBrowserClient,
-  loadDirectSatelliteConfig as loadParlorSatelliteConfig,
+  loadDirectSatelliteConfig as loadChatSatelliteConfig,
   type SapDirectClient as SapBrowserClient,
   type SapDirectClientOptions as SapBrowserClientOptions,
-  type DirectSatelliteConfig as ParlorSatelliteConfig,
+  type DirectSatelliteConfig as ChatSatelliteConfig,
 } from "./direct-client.ts";
 
 export type { SubscribeCallbacks } from "./session-stream-core.ts";

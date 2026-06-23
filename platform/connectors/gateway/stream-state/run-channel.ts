@@ -18,7 +18,7 @@ export async function runStreamChannel(
   composer: StreamChannelComposer,
   opts?: RunStreamChannelOptions,
 ): Promise<void> {
-  const platform = opts?.platform ?? "parlor";
+  const platform = opts?.platform ?? "chat";
   let state = initialStreamReplyState();
   const buffer = new ToolRoundBuffer();
 

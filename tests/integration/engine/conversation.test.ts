@@ -11,7 +11,7 @@ import { isSessionMeta } from "@freeanima/core/db/domain";
 import { existsSync } from "node:fs";
 import { DEFAULT_SESSION_TOOLSETS } from "@freeanima/core/tool";
 import { registerServiceTools } from "@freeanima/platform";
-import { TEST_SAP_PARLOR_PLATFORM } from "../../helpers/sap-parlor-test-platform.ts";
+import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
 import { getActivePgTestContext, getTestEngine, testConv } from "../../helpers/pg-test.ts";
 
 describePg("conversation", () => {
@@ -30,7 +30,7 @@ describePg("conversation", () => {
 
   it("creates session and appends user message", async () => {
     const c = testConv();
-    const sid = await c.newSession(TEST_SAP_PARLOR_PLATFORM);
+    const sid = await c.newSession(TEST_SAP_CHAT_PLATFORM);
     expect(await c.sessionExists(sid)).toBe(true);
     await c.beginTurn(sid, "hello");
     const msgs = await c.load(sid);
@@ -49,7 +49,7 @@ describePg("conversation", () => {
 
   it("restoreIntegrationHome removes session cwd temp dir", async () => {
     const c = testConv();
-    const sid = await c.newSession(TEST_SAP_PARLOR_PLATFORM);
+    const sid = await c.newSession(TEST_SAP_CHAT_PLATFORM);
     const meta = await c.loadSessionMeta(sid);
     const cwd = isSessionMeta(meta) ? String(meta.cwd ?? "") : "";
     expect(cwd).not.toBe("");
@@ -66,7 +66,7 @@ describePg("conversation", () => {
       config: getActivePgTestContext()!.config,
     });
     const c = testConv();
-    const sid = await c.newSession(TEST_SAP_PARLOR_PLATFORM);
+    const sid = await c.newSession(TEST_SAP_CHAT_PLATFORM);
     const meta = await c.loadSessionMeta(sid);
     expect(isSessionMeta(meta)).toBe(true);
     if (!isSessionMeta(meta)) return;

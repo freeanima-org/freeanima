@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-23 15:04+0800\n"
+"POT-Creation-Date: 2026-06-23 16:18+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -144,10 +144,10 @@ msgstr ""
 #: docs/guide/remote-access.md:48
 #, no-wrap
 msgid ""
-"| pass 路径 | 是什么 | 谁提供 |\n"
-"| --------- | ------ | ------ |\n"
-"| `services/cloudflare/api-token` | **Cloudflare API Token** — 调用 Cloudflare API 创建 Tunnel/DNS/Access | 你在 Dashboard → 我的个人资料 → API 令牌 创建 |\n"
-"| `services/cloudflare/tunnel-credentials` | **隧道连接器凭证** — `cloudflared` 连接 Cloudflare 用 | setup 通过 API 自动生成，**不要**与 API Token 混淆 |\n"
+"| pass 路径                                | 是什么                                                                | 谁提供                                             |\n"
+"| ---------------------------------------- | --------------------------------------------------------------------- | -------------------------------------------------- |\n"
+"| `services/cloudflare/api-token`          | **Cloudflare API Token** — 调用 Cloudflare API 创建 Tunnel/DNS/Access | 你在 Dashboard → 我的个人资料 → API 令牌 创建      |\n"
+"| `services/cloudflare/tunnel-credentials` | **隧道连接器凭证** — `cloudflared` 连接 Cloudflare 用                 | setup 通过 API 自动生成，**不要**与 API Token 混淆 |\n"
 msgstr ""
 
 #. type: Plain text

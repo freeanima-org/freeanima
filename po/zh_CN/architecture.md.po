@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-23 13:57+0800\n"
+"POT-Creation-Date: 2026-06-23 16:18+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -753,11 +753,16 @@ msgstr "Hub 模式"
 
 #. type: Plain text
 #: docs/concepts/architecture.md:242
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Mode    | Route / URL                         | Role                                      |\n"
+#| "| ------- | ----------------------------------- | ----------------------------------------- |\n"
+#| "| Parlor  | `http://127.0.0.1:4174` (satellite) | Chat with the agent                       |\n"
+#| "| Chamber | `/chamber/*` on Hub                 | Memory, config, tools, system maintenance |\n"
 msgid ""
 "| Mode    | Route / URL                         | Role                                      |\n"
 "| ------- | ----------------------------------- | ----------------------------------------- |\n"
-"| Parlor  | `http://127.0.0.1:4174` (satellite) | Chat with the agent                       |\n"
+"| Chat  | `http://127.0.0.1:4174` (satellite) | Chat with the agent                       |\n"
 "| Chamber | `/chamber/*` on Hub                 | Memory, config, tools, system maintenance |\n"
 msgstr ""
 "| 模式     | 路由 / URL                          | 角色                                      |\n"
@@ -767,13 +772,16 @@ msgstr ""
 
 #. type: Plain text
 #: docs/concepts/architecture.md:244
-#, no-wrap
-msgid "**Studio** runs as **satellite processes** (configure `satellites:` in `~/.anima/config.yaml`; pair-programming default `http://127.0.0.1:4173`). Browser talks only to the satellite origin; Hub capabilities reach satellites via [SAP/WS](../sap/overview.md). Hub WebUI is **Chamber** only; Parlor is a satellite app.\n"
+#, fuzzy, no-wrap
+#| msgid "**Studio** runs as **satellite processes** (configure `satellites:` in `~/.anima/config.yaml`; pair-programming default `http://127.0.0.1:4173`). Browser talks only to the satellite origin; Hub capabilities reach satellites via [SAP/WS](../sap/overview.md). Hub WebUI is **Chamber** only; Parlor is a satellite app.\n"
+msgid "**Studio** runs as **satellite processes** (configure `satellites:` in `~/.anima/config.yaml`; pair-programming default `http://127.0.0.1:4173`). Browser talks only to the satellite origin; Hub capabilities reach satellites via [SAP/WS](../sap/overview.md). Hub WebUI is **Chamber** only; Chat is a satellite app.\n"
 msgstr "**创作室**以**卫星进程**方式运行（在 `~/.anima/config.yaml` 配置 `satellites:`；结对编程默认 `http://127.0.0.1:4173`）。浏览器只与卫星 origin 通信；Hub 能力通过 [SAP/WS](../sap/overview.md) 到达卫星。Hub WebUI **仅为卧室**；会客厅为卫星应用。\n"
 
 #. type: Plain text
 #: docs/concepts/architecture.md:246
-msgid "Open Parlor: `http://127.0.0.1:4174`"
+#, fuzzy
+#| msgid "Open Parlor: `http://127.0.0.1:4174`"
+msgid "Open chat: `http://127.0.0.1:4174`"
 msgstr "打开会客厅：`http://127.0.0.1:4174`"
 
 #. type: Title ##

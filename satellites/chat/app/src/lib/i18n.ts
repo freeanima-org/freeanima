@@ -5,7 +5,7 @@ export type AppLocale = (typeof locales)[number];
 
 export { getLocale, locales, m, setLocale };
 
-const LOCALE_KEY = "parlor-locale";
+const LOCALE_KEY = "chat-locale";
 
 export function getAppLocale(): AppLocale {
   try {

@@ -24,7 +24,7 @@ describe("api/schemas", () => {
 
   it("requires platform on create session", () => {
     expect(createSessionBodySchema.safeParse({}).success).toBe(false);
-    expect(createSessionBodySchema.safeParse({ platform: "sap:parlor:test" }).success).toBe(true);
+    expect(createSessionBodySchema.safeParse({ platform: "sap:chat:test" }).success).toBe(true);
   });
 
   it("validates task list body", () => {

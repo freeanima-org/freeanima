@@ -2,7 +2,7 @@ import { describe, it, expect } from "bun:test";
 import type { AcpAsyncTaskSnapshot } from "@freeanima/capabilities-acp";
 import { createAcpProgressDelivery } from "./acp-progress-delivery.ts";
 
-describe("createAcpProgressDelivery parlor progress", () => {
+describe("createAcpProgressDelivery chat progress", () => {
   it("append then update progress message in place", async () => {
     const updates: Array<{ messageId: string; content: string }> = [];
     let storedId = "";
@@ -15,7 +15,7 @@ describe("createAcpProgressDelivery parlor progress", () => {
         cached_toolsets: [],
         functions: [],
         timestamp: "",
-        platform: "parlor",
+        platform: "chat",
       }),
       repos: {
         session: {

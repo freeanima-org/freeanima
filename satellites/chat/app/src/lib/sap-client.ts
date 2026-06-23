@@ -1,7 +1,7 @@
 import { formatSapPlatform, type SapConnectionState } from "@freeanima/sap-contract";
 import { createSapRelayBrowserClient, type SapRelayBrowserClient } from "@freeanima/sap-contract";
 
-const APP_ID = "parlor";
+const APP_ID = "chat";
 
 let relayClient: SapRelayBrowserClient | null = null;
 let cachedInstanceId: string | null = null;
@@ -38,7 +38,7 @@ export async function reconnectSap(): Promise<void> {
   await getSapRelayClient().reconnect();
 }
 
-export async function loadParlorInstanceId(): Promise<string | null> {
+export async function loadChatInstanceId(): Promise<string | null> {
   if (cachedInstanceId) return cachedInstanceId;
   try {
     const res = await fetch("/config.json");
@@ -51,16 +51,16 @@ export async function loadParlorInstanceId(): Promise<string | null> {
   }
 }
 
-export async function parlorPlatform(): Promise<string> {
-  const instanceId = await loadParlorInstanceId();
+export async function chatPlatform(): Promise<string> {
+  const instanceId = await loadChatInstanceId();
   if (!instanceId) {
-    throw new Error("Parlor instance_id is required in config.json");
+    throw new Error("Chat instance_id is required in config.json");
   }
   return formatSapPlatform(APP_ID, instanceId);
 }
 
 /** 测试用：重置 module 级缓存 */
-export function resetParlorInstanceCacheForTests(): void {
+export function resetChatInstanceCacheForTests(): void {
   cachedInstanceId = null;
   relayClient?.stop();
   relayClient = null;

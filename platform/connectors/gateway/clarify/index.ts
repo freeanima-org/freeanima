@@ -15,7 +15,7 @@ export function formatClarifyForPlatform(platform: string, payload: ClarifyPaylo
       return formatClarifyDiscord(payload);
     case "weixin":
       return formatClarifyWeixin(payload);
-    case "parlor":
+    case "chat":
       return formatClarifyWebUi(payload);
     default:
       return formatClarifyPlain(payload.items);

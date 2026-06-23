@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-22 11:28+0800\n"
+"POT-Creation-Date: 2026-06-23 16:18+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -25,7 +25,7 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/overview.md:8
 #, no-wrap
-msgid "**SAP** (Satellite Application Protocol, version `SAP/1.0`) is the WebSocket JSON protocol between the FreeAnima **Hub** (`anima service`) and **Satellite** processes. Satellites are standalone apps (Parlor, pair-programming Studio) that expose their own HTTP UI while delegating agent runtime to the Hub.\n"
+msgid "**SAP** (Satellite Application Protocol, version `SAP/1.0`) is the WebSocket JSON protocol between the FreeAnima **Hub** (`anima service`) and **Satellite** processes. Satellites are standalone apps (Chat, pair-programming Studio) that expose their own HTTP UI while delegating agent runtime to the Hub.\n"
 msgstr ""
 
 #. type: Plain text
@@ -52,7 +52,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/sap/overview.md:17
 msgid ""
-"**Origin isolation**: browsers load Satellite HTTP UI; Parlor and pair-"
+"**Origin isolation**: browsers load Satellite HTTP UI; Chat and pair-"
 "programming use a local SAP relay (`/sap/relay/v1`) instead of browser-"
 "direct Hub WS."
 msgstr ""
@@ -83,7 +83,7 @@ msgstr ""
 #, no-wrap
 msgid ""
 "flowchart LR\n"
-"  subgraph parlor [Parlor satellite]\n"
+"  subgraph chat [Chat satellite]\n"
 "    B1[Browser] -->|relay WS| Relay1[\"/sap/relay/v1\"]\n"
 "    Relay1 --> Proc1[Process SAP client]\n"
 "    Proc1 -->|唯一 SAP WS| Hub\n"
@@ -107,7 +107,7 @@ msgid ""
 "| Role      | Default                 | Responsibility                                   |\n"
 "| --------- | ----------------------- | ------------------------------------------------ |\n"
 "| Hub       | `http://127.0.0.1:2658` | Agent runtime, SAP WebSocket server at `/sap/v1` |\n"
-"| Parlor    | `http://127.0.0.1:4174` | Chat UI; process gateway + relay (Type B)        |\n"
+"| Chat    | `http://127.0.0.1:4174` | Chat UI; process gateway + relay (Type B)        |\n"
 "| Pair-prog | `http://127.0.0.1:4173` | Studio UI; process gateway + relay (Type B)      |\n"
 "| Chamber   | Hub `/chamber/*`        | Memory, config, tools, satellite status          |\n"
 msgstr ""

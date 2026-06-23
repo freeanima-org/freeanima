@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-23 13:57+0800\n"
+"POT-Creation-Date: 2026-06-23 16:18+0800\n"
 "PO-Revision-Date: 2026-06-22 11:28+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -62,14 +62,14 @@ msgstr ""
 
 #. type: Plain text
 #: docs/features/companion.md:24
-msgid "与 Parlor / 结对编程的区别："
+msgid "与 Chat / 结对编程的区别："
 msgstr ""
 
 #. type: Plain text
 #: docs/features/companion.md:31
 #, no-wrap
 msgid ""
-"|             | Parlor / 结对编程            | Companion                                    |\n"
+"|             | Chat / 结对编程            | Companion                                    |\n"
 "| ----------- | ---------------------------- | -------------------------------------------- |\n"
 "| UI          | 浏览器 Web UI                | 原生透明伴侣窗 + 独立设置窗                  |\n"
 "| 部署        | Managed（可与 service 同机） | Dynamic（用户自行启动）                      |\n"

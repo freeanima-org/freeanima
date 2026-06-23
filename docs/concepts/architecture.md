@@ -237,12 +237,12 @@ WebUI shares the same HTTP port as `anima service` (default **2658**).
 
 | Mode    | Route / URL                         | Role                                      |
 | ------- | ----------------------------------- | ----------------------------------------- |
-| Parlor  | `http://127.0.0.1:4174` (satellite) | Chat with the agent                       |
+| Chat    | `http://127.0.0.1:4174` (satellite) | Chat with the agent                       |
 | Chamber | `/chamber/*` on Hub                 | Memory, config, tools, system maintenance |
 
-**Studio** runs as **satellite processes** (configure `satellites:` in `~/.anima/config.yaml`; pair-programming default `http://127.0.0.1:4173`). Browser talks only to the satellite origin; Hub capabilities reach satellites via [SAP/WS](../sap/overview.md). Hub WebUI is **Chamber** only; Parlor is a satellite app.
+**Studio** runs as **satellite processes** (configure `satellites:` in `~/.anima/config.yaml`; pair-programming default `http://127.0.0.1:4173`). Browser talks only to the satellite origin; Hub capabilities reach satellites via [SAP/WS](../sap/overview.md). Hub WebUI is **Chamber** only; Chat is a satellite app.
 
-Open Parlor: `http://127.0.0.1:4174`
+Open chat: `http://127.0.0.1:4174`
 
 ## Events and Hooks (Summary)
 

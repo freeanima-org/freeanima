@@ -19,7 +19,7 @@ describe("sap-contract envelopes", () => {
       kind: "req" as const,
       id: "abc",
       method: "session.create",
-      payload: { platform: "sap:parlor:k7m" },
+      payload: { platform: "sap:chat:k7m" },
     };
     const parsed = parseSapEnvelope(serializeSapEnvelope(frame));
     expect(parsed).toEqual(frame);
@@ -27,7 +27,7 @@ describe("sap-contract envelopes", () => {
 
   it("validates connect payload with http_url", () => {
     const payload = connectPayloadSchema.parse({
-      app_id: "parlor",
+      app_id: "chat",
       instance_id: "k7m",
       protocol: "SAP/1.0",
       features_requested: [],
@@ -36,9 +36,9 @@ describe("sap-contract envelopes", () => {
     expect(payload.http_url).toBe("http://127.0.0.1:4174");
   });
 
-  it("validates parlor SAP procedure schemas", () => {
+  it("validates chat SAP procedure schemas", () => {
     sessionAcpDockInputSchema.parse({ session_id: "sid" });
-    sessionCommandsInputSchema.parse({ platform: "sap:parlor:k7m" });
+    sessionCommandsInputSchema.parse({ platform: "sap:chat:k7m" });
     fridgeListInputSchema.parse({});
   });
 

@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 18:02+0800\n"
+"POT-Creation-Date: 2026-06-23 16:18+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -59,9 +59,13 @@ msgstr "**只读优先**：v1 聚焦阅读；Agent 分析与建议 — 尚不能
 
 #. type: Bullet: '- '
 #: docs/features/pair-programming-v1.md:16
+#, fuzzy
+#| msgid ""
+#| "**Platform isolation**: pair-programming sessions use a separate platform "
+#| "from parlor chat"
 msgid ""
 "**Platform isolation**: pair-programming sessions use a separate platform "
-"from parlor chat"
+"from chat chat"
 msgstr "**平台隔离**：结对编程 session 与会客厅对话使用独立平台"
 
 #. type: Bullet: '- '
@@ -171,9 +175,13 @@ msgstr "会话隔离"
 
 #. type: Plain text
 #: docs/features/pair-programming-v1.md:52
+#, fuzzy
+#| msgid ""
+#| "Pair programming uses platform `studio-pair-programming`, separate from "
+#| "parlor (`parlor`) and other platform session lists."
 msgid ""
-"Pair programming uses platform `studio-pair-programming`, separate from "
-"parlor (`parlor`) and other platform session lists."
+"Pair programming uses platform `studio-pair-programming`, separate from chat "
+"(`chat`) and other platform session lists."
 msgstr ""
 "结对编程使用平台 `studio-pair-programming`，与会客厅（`parlor`）及其他平台 "
 "session 列表分离。"

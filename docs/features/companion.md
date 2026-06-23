@@ -20,9 +20,9 @@ title: Desktop Companion
     anima service Hub → Agent 可调用 companion 工具
 ```
 
-与 Parlor / 结对编程的区别：
+与 Chat / 结对编程的区别：
 
-|             | Parlor / 结对编程            | Companion                                    |
+|             | Chat / 结对编程              | Companion                                    |
 | ----------- | ---------------------------- | -------------------------------------------- |
 | UI          | 浏览器 Web UI                | 原生透明伴侣窗 + 独立设置窗                  |
 | 部署        | Managed（可与 service 同机） | Dynamic（用户自行启动）                      |

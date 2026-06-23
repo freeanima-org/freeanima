@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-22 11:28+0800\n"
+"POT-Creation-Date: 2026-06-23 16:18+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -52,13 +52,28 @@ msgstr "在 `~/.anima/config.yaml` 中声明进程。`anima service start/stop/r
 
 #. type: Fenced code block (yaml)
 #: docs/sap/satellite-guide.md:17
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "satellites:\n"
+#| "  parlor:\n"
+#| "    enabled: true\n"
+#| "    command: bun\n"
+#| "    args: [\"satellites/chat/dev.ts\"]\n"
+#| "    env:\n"
+#| "      SATELLITE_PORT: \"4174\"\n"
+#| "  pair-programming:\n"
+#| "    enabled: true\n"
+#| "    command: bun\n"
+#| "    args: [\"satellites/pair-programming/dev.ts\"]\n"
+#| "    env:\n"
+#| "      STUDIO_WORKSPACE: /path/to/project\n"
+#| "      SATELLITE_PORT: \"4173\"\n"
 msgid ""
 "satellites:\n"
-"  parlor:\n"
+"  chat:\n"
 "    enabled: true\n"
 "    command: bun\n"
-"    args: [\"satellites/parlor/dev.ts\"]\n"
+"    args: [\"satellites/chat/dev.ts\"]\n"
 "    env:\n"
 "      SATELLITE_PORT: \"4174\"\n"
 "  pair-programming:\n"
@@ -73,7 +88,7 @@ msgstr ""
 "  parlor:\n"
 "    enabled: true\n"
 "    command: bun\n"
-"    args: [\"satellites/parlor/dev.ts\"]\n"
+"    args: [\"satellites/chat/dev.ts\"]\n"
 "    env:\n"
 "      SATELLITE_PORT: \"4174\"\n"
 "  pair-programming:\n"
@@ -150,7 +165,9 @@ msgstr "在卧室提供的 URL（SAP `http_url`）打开托管卫星 UI，通常
 
 #. type: Bullet: '- '
 #: docs/sap/satellite-guide.md:55
-msgid "Parlor: `http://127.0.0.1:4174`"
+#, fuzzy
+#| msgid "Parlor: `http://127.0.0.1:4174`"
+msgid "Chat: `http://127.0.0.1:4174`"
 msgstr "会客厅：`http://127.0.0.1:4174`"
 
 #. type: Bullet: '- '
@@ -174,7 +191,7 @@ msgstr "**规则：** 每个 `app_id + instance_id` **最多**拥有一条 Hub W
 #: docs/sap/satellite-guide.md:60
 #, fuzzy, no-wrap
 #| msgid "Type B — Process gateway + local relay (pair-programming)"
-msgid "Type B — Process gateway + local relay (Parlor, pair-programming)"
+msgid "Type B — Process gateway + local relay (Chat, pair-programming)"
 msgstr "Type B — 进程网关 + 本地中继（结对编程）"
 
 #. type: Bullet: '- '
@@ -203,7 +220,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/sap/satellite-guide.md:66
 msgid ""
-"**Parlor:** relay only (no local tools). **Pair-programming:** relay + "
+"**Chat:** relay only (no local tools). **Pair-programming:** relay + "
 "`tool.register` + local FS/PTY APIs."
 msgstr ""
 
@@ -254,7 +271,7 @@ msgstr ""
 #| "  end\n"
 msgid ""
 "flowchart TB\n"
-"  subgraph parlor [Parlor Type B relay]\n"
+"  subgraph chat [Chat Type B relay]\n"
 "    B1[Browser] -->|relay WS| Relay1[\"/sap/relay/v1\"]\n"
 "    Relay1 --> ProcSAP1[createSatelliteHub]\n"
 "    ProcSAP1 -->|唯一 SAP WS| Hub1[Hub]\n"
@@ -292,19 +309,20 @@ msgstr "**已弃用：** HTTP hub-api REST→SAP 代理（已移除）。\n"
 
 #. type: Title ###
 #: docs/sap/satellite-guide.md:93
-#, no-wrap
-msgid "Parlor satellite"
+#, fuzzy, no-wrap
+#| msgid "Parlor satellite"
+msgid "Chat satellite"
 msgstr "会客厅卫星"
 
 #. type: Plain text
 #: docs/sap/satellite-guide.md:96
 msgid ""
 "Browser connects via `createSapRelayBrowserClient` → [`/sap/relay/v1`](../../"
-"satellites/parlor/server/index.ts); sidecar uses `createSatelliteHub` with "
-"`relay: true` and no local tools ([`satellites/parlor/server/sap/hub.ts`]"
-"(../../satellites/parlor/server/sap/hub.ts)). `session.list` / "
+"satellites/chat/server/index.ts); sidecar uses `createSatelliteHub` with "
+"`relay: true` and no local tools ([`satellites/chat/server/sap/hub.ts`]"
+"(../../satellites/chat/server/sap/hub.ts)). `session.list` / "
 "`session.create` omit explicit `platform`; Hub defaults to the connected "
-"instance's `sap:parlor:{id}`."
+"instance's `sap:chat:{id}`."
 msgstr ""
 
 #. type: Title ###
@@ -334,7 +352,7 @@ msgstr "参考文件："
 #| "[`satellites/pair-programming/server/sap/hub.ts`](../../satellites/pair-"
 #| "programming/server/sap/hub.ts)"
 msgid ""
-"[`satellites/parlor/server/sap/hub.ts`](../../satellites/parlor/server/sap/"
+"[`satellites/chat/server/sap/hub.ts`](../../satellites/chat/server/sap/"
 "hub.ts)"
 msgstr ""
 "[`satellites/pair-programming/server/sap/hub.ts`](../../satellites/pair-"

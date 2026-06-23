@@ -31,7 +31,7 @@
     "**/.turbo/**",
     "cli/publish/**",
     "satellites/pair-programming/app/**",
-    "satellites/parlor/app/**",
+    "satellites/chat/app/**",
     "satellites/companion/app/**"
   ]
 }

@@ -11,10 +11,10 @@ describe("platformMatchesCommandPattern", () => {
     expect(platformMatchesCommandPattern("discord", "weixin")).toBe(false);
   });
 
-  it("matches sap:parlor:* against any parlor instance", () => {
-    expect(platformMatchesCommandPattern("sap:parlor:web", "sap:parlor:*")).toBe(true);
-    expect(platformMatchesCommandPattern("sap:parlor:k7m", "sap:parlor:*")).toBe(true);
-    expect(platformMatchesCommandPattern("sap:companion:web", "sap:parlor:*")).toBe(false);
+  it("matches sap:chat:* against any chat instance", () => {
+    expect(platformMatchesCommandPattern("sap:chat:web", "sap:chat:*")).toBe(true);
+    expect(platformMatchesCommandPattern("sap:chat:k7m", "sap:chat:*")).toBe(true);
+    expect(platformMatchesCommandPattern("sap:companion:web", "sap:chat:*")).toBe(false);
   });
 
   it("supports lone * as match-all", () => {
@@ -27,12 +27,12 @@ describe("commandAvailableForPlatform", () => {
     name: "mask",
     description: "mask",
     handler: () => "",
-    platforms: ["sap:parlor:*"],
+    platforms: ["sap:chat:*"],
   };
 
-  it("accepts parlor SAP instances via glob", () => {
-    expect(commandAvailableForPlatform(cmd, "sap:parlor:web")).toBe(true);
-    expect(commandAvailableForPlatform(cmd, "sap:parlor:custom")).toBe(true);
+  it("accepts chat SAP instances via glob", () => {
+    expect(commandAvailableForPlatform(cmd, "sap:chat:web")).toBe(true);
+    expect(commandAvailableForPlatform(cmd, "sap:chat:custom")).toBe(true);
     expect(commandAvailableForPlatform(cmd, "discord")).toBe(false);
   });
 });

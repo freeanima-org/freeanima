@@ -2,7 +2,7 @@ import { Outlet, createRootRoute, useNavigate, useRouterState } from "@tanstack/
 import { useState } from "react";
 import { getWebUiLocale, m, toggleWebUiLocale } from "@/lib/i18n.ts";
 
-const PARLOR_SATELLITE_URL = "http://127.0.0.1:4174";
+const CHAT_SATELLITE_URL = "http://127.0.0.1:4174";
 
 export const Route = createRootRoute({
   component: RootComponent,
@@ -12,7 +12,7 @@ function RootComponent() {
   return <AppShell />;
 }
 
-type AppMode = "parlor" | "chamber";
+type AppMode = "chat" | "chamber";
 
 function resolveMode(pathname: string): AppMode {
   if (pathname.startsWith("/chamber") || pathname.startsWith("/workshop")) return "chamber";
@@ -26,8 +26,8 @@ function AppShell() {
   const [, setLocaleTick] = useState(0);
 
   const switchMode = (target: AppMode) => {
-    if (target === "parlor") {
-      window.open(PARLOR_SATELLITE_URL, "_blank", "noopener,noreferrer");
+    if (target === "chat") {
+      window.open(CHAT_SATELLITE_URL, "_blank", "noopener,noreferrer");
       return;
     }
     if (target === "chamber") {
@@ -51,11 +51,11 @@ function AppShell() {
         <div className="flex gap-1 sm:gap-2 w-full sm:w-auto items-center">
           <button
             type="button"
-            className={`btn btn-xs flex-1 sm:flex-none min-w-0 ${mode === "parlor" ? "btn-primary" : "btn-ghost"}`}
-            title={m.webui_mode_parlor()}
-            onClick={() => switchMode("parlor")}
+            className={`btn btn-xs flex-1 sm:flex-none min-w-0 ${mode === "chat" ? "btn-primary" : "btn-ghost"}`}
+            title={m.webui_mode_chat()}
+            onClick={() => switchMode("chat")}
           >
-            {m.webui_mode_parlor()}
+            {m.webui_mode_chat()}
           </button>
           <button
             type="button"

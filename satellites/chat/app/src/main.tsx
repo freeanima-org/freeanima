@@ -166,7 +166,7 @@ function App() {
         };
 
         void bootstrap().catch((e) => {
-          console.error("parlor bootstrap:", e);
+          console.error("chat bootstrap:", e);
         });
       } catch (e) {
         setError(e instanceof Error ? e.message : String(e));
@@ -469,10 +469,10 @@ function App() {
     return (
       <div className="h-screen flex items-center justify-center p-8">
         <div className="max-w-md text-center space-y-3">
-          <h2 className="text-lg font-bold">{m.webui_parlor_title()}</h2>
+          <h2 className="text-lg font-bold">{m.webui_chat_title()}</h2>
           <p className="text-sm text-error">{error}</p>
           <p className="text-xs text-base-content/60">
-            请确认 `anima service start` 已运行，且 config.yaml 中配置了 satellites.parlor。
+            请确认 `anima service start` 已运行，且 config.yaml 中配置了 satellites.chat。
           </p>
         </div>
       </div>
@@ -506,7 +506,7 @@ function App() {
         >
           ☰
         </button>
-        <span className="text-sm font-medium">{m.webui_parlor_title()}</span>
+        <span className="text-sm font-medium">{m.webui_chat_title()}</span>
         <span className="flex-1" />
         <button
           type="button"
@@ -574,11 +574,11 @@ function App() {
           <div ref={msgAreaRef} className="flex-1 overflow-y-auto p-4 space-y-4">
             {!currentId ? (
               <div className="flex items-center justify-center h-full text-base-content/40 text-sm">
-                {m.webui_parlor_select_session()}
+                {m.webui_chat_select_session()}
               </div>
             ) : display.length === 0 && !streamVisible && !recovering ? (
               <div className="flex items-center justify-center h-full text-base-content/40 text-sm">
-                {m.webui_parlor_send_first_message()}
+                {m.webui_chat_send_first_message()}
               </div>
             ) : null}
 
@@ -617,7 +617,7 @@ function App() {
             {clarifyPending ? (
               <div className="alert alert-info shadow-sm">
                 <div className="w-full space-y-2">
-                  <p className="font-medium">{m.webui_parlor_clarify_hint()}</p>
+                  <p className="font-medium">{m.webui_chat_clarify_hint()}</p>
                   {clarifyPending.items.map((item, ci) => (
                     <div key={ci} className="text-sm">
                       <p>
@@ -680,7 +680,7 @@ function App() {
                       className="btn btn-xs btn-primary shrink-0"
                       onClick={() => void sendQueuedNow(item.id)}
                     >
-                      {m.webui_parlor_queue_send_now()}
+                      {m.webui_chat_queue_send_now()}
                     </button>
                   </li>
                 ))}
@@ -732,7 +732,7 @@ function App() {
                   }}
                   rows={1}
                   className="textarea textarea-bordered w-full min-h-[2.75rem] max-h-48 resize-none leading-normal py-2.5"
-                  placeholder={m.webui_parlor_message_placeholder()}
+                  placeholder={m.webui_chat_message_placeholder()}
                   disabled={!currentId || sapDisconnected}
                   onKeyDown={onInputKeydown}
                 />

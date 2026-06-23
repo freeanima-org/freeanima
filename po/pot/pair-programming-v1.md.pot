@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 18:02+0800\n"
+"POT-Creation-Date: 2026-06-23 16:18+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -60,7 +60,7 @@ msgstr ""
 #: docs/features/pair-programming-v1.md:16
 msgid ""
 "**Platform isolation**: pair-programming sessions use a separate platform "
-"from parlor chat"
+"from chat chat"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -152,8 +152,8 @@ msgstr ""
 #. type: Plain text
 #: docs/features/pair-programming-v1.md:52
 msgid ""
-"Pair programming uses platform `studio-pair-programming`, separate from "
-"parlor (`parlor`) and other platform session lists."
+"Pair programming uses platform `studio-pair-programming`, separate from chat "
+"(`chat`) and other platform session lists."
 msgstr ""
 
 #. type: Title ##

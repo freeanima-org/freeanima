@@ -10,6 +10,6 @@ describe("resolveProductionWebuiAssetPath", () => {
   it("SPA 路由回退 index.html", () => {
     expect(resolveProductionWebuiAssetPath("/webui/")).toBe("index.html");
     expect(resolveProductionWebuiAssetPath("/webui")).toBe("index.html");
-    expect(resolveProductionWebuiAssetPath("/webui/parlor/chat")).toBe("index.html");
+    expect(resolveProductionWebuiAssetPath("/webui/chat/sessions")).toBe("index.html");
   });
 });

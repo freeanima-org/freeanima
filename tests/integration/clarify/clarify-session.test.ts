@@ -17,7 +17,7 @@ import {
   findAwaitingClarifyInMessages,
 } from "@freeanima/capabilities-tools/clarify";
 import { executeCommand, getCommand } from "@freeanima/platform/commands";
-import { TEST_SAP_PARLOR_PLATFORM } from "../../helpers/sap-parlor-test-platform.ts";
+import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
 
 describePg("clarify session", () => {
   const prevHome = process.env.FREEANIMA_HOME;
@@ -37,7 +37,7 @@ describePg("clarify session", () => {
   });
 
   async function createSession(id: string): Promise<void> {
-    await testConv().initSession(id, "test-model", { platform: TEST_SAP_PARLOR_PLATFORM });
+    await testConv().initSession(id, "test-model", { platform: TEST_SAP_CHAT_PLATFORM });
   }
 
   it("session A/B awaiting_clarify isolated", async () => {
@@ -131,7 +131,7 @@ describePg("clarify session", () => {
     const cmd = getCommand("cancel")!;
     const result = await executeCommand(cmd, {
       sessionId: "s1",
-      platform: TEST_SAP_PARLOR_PLATFORM,
+      platform: TEST_SAP_CHAT_PLATFORM,
       args: [],
       raw: "/cancel",
     });
