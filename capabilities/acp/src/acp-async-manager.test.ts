@@ -34,7 +34,7 @@ describe("AcpManager async progress polling", () => {
         cached_toolsets: [],
         functions: [],
         timestamp: "",
-        platform: "parlor",
+        platform: "chat",
       }),
       updateSessionMetaField: async () => {},
     });

@@ -10,7 +10,7 @@ import {
 import { filterRecallableMessages } from "@freeanima/capabilities-memory";
 import { buildFtsTsQuery, getDb } from "@freeanima/platform/connectors/db-pg";
 import { getTestEngine, seedSession, testConv } from "../../helpers/pg-test.ts";
-import { TEST_SAP_PARLOR_PLATFORM } from "../../helpers/sap-parlor-test-platform.ts";
+import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
 
 describePg("memory PG FTS", () => {
   const prev = process.env.FREEANIMA_HOME;
@@ -79,7 +79,7 @@ describePg("memory PG FTS", () => {
         cached_toolsets: [],
         functions: [],
         timestamp: "2026-05-26T10:00:00+08:00",
-        platform: TEST_SAP_PARLOR_PLATFORM,
+        platform: TEST_SAP_CHAT_PLATFORM,
       },
       [
         { role: "user", timestamp: "2026-05-26T10:00:00+08:00", content: "a", pos: 1 },

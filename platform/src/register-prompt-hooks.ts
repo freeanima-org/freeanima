@@ -10,7 +10,7 @@ function describePlatform(platform?: string): string {
   if (platform === "cron") return "定时任务 (Cron)";
   if (platform === "discord") return "Discord";
   if (platform === "weixin") return "微信";
-  if (platform.startsWith("sap:parlor:")) return "网页聊天 (Parlor)";
+  if (platform.startsWith("sap:chat:")) return "网页聊天 (Chat)";
   if (platform.startsWith("sap:companion:")) return "桌面伴侣";
   if (platform.startsWith("sap:pairprogramming:")) return "结对编程 (Pair Programming)";
   if (platform.startsWith("sap:")) {

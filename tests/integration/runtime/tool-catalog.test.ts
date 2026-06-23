@@ -14,7 +14,7 @@ import { runWithToolContext } from "@freeanima/runtime/loop";
 import * as engine from "@freeanima/runtime/loop";
 import * as llm from "@freeanima/core/llm";
 import { resolveExecutableToolNames } from "@freeanima/runtime/conversation";
-import { TEST_SAP_PARLOR_PLATFORM } from "../../helpers/sap-parlor-test-platform.ts";
+import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
 
 describePg("tool catalog lazy load", () => {
   const prev = process.env.FREEANIMA_HOME;
@@ -39,7 +39,7 @@ describePg("tool catalog lazy load", () => {
 
   it("new session system_prompt lists ToolSets compactly", async () => {
     const c = testConv();
-    const sid = await c.newSession(TEST_SAP_PARLOR_PLATFORM);
+    const sid = await c.newSession(TEST_SAP_CHAT_PLATFORM);
     const meta = await c.loadSessionMeta(sid);
     expect(isSessionMeta(meta)).toBe(true);
     if (!isSessionMeta(meta)) return;
@@ -51,7 +51,7 @@ describePg("tool catalog lazy load", () => {
 
   it("new session meta stores default cached toolsets", async () => {
     const c = testConv();
-    const sid = await c.newSession(TEST_SAP_PARLOR_PLATFORM);
+    const sid = await c.newSession(TEST_SAP_CHAT_PLATFORM);
     const meta = await c.loadSessionMeta(sid);
     expect(isSessionMeta(meta)).toBe(true);
     if (!isSessionMeta(meta)) return;
@@ -71,7 +71,7 @@ describePg("tool catalog lazy load", () => {
 
   it("toolset_load writes staged_toolsets without extending API schema", async () => {
     const c = testConv();
-    const sid = await c.newSession(TEST_SAP_PARLOR_PLATFORM);
+    const sid = await c.newSession(TEST_SAP_CHAT_PLATFORM);
     const toolLoad = getTestEngine().toolSets.getTool("toolset_load");
     expect(toolLoad).toBeDefined();
 
@@ -97,7 +97,7 @@ describePg("tool catalog lazy load", () => {
 
   it("unloaded tools are blocked by executableTools gate", async () => {
     const c = testConv();
-    const sid = await c.newSession(TEST_SAP_PARLOR_PLATFORM);
+    const sid = await c.newSession(TEST_SAP_CHAT_PLATFORM);
     const meta = await c.loadSessionMeta(sid);
     expect(isSessionMeta(meta)).toBe(true);
     if (!isSessionMeta(meta)) return;
@@ -158,7 +158,7 @@ describePg("tool catalog lazy load", () => {
 
   it("toolset_search requires query and returns hits", async () => {
     const c = testConv();
-    const sid = await c.newSession(TEST_SAP_PARLOR_PLATFORM);
+    const sid = await c.newSession(TEST_SAP_CHAT_PLATFORM);
     const searchDef = getTestEngine().toolSets.getTool("toolset_search");
     expect(searchDef).toBeDefined();
 

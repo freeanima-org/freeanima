@@ -57,7 +57,7 @@ describe("createAcpSessionUpdatedHandler recheck", () => {
             cached_toolsets: [],
             functions: [],
             timestamp: "",
-            platform: "parlor",
+            platform: "chat",
             acp_tasks: tasks,
             acp_tasks_handled_at: handledAt,
           };

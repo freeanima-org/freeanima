@@ -155,10 +155,10 @@ compression:
 
 # 卫星应用（Managed：anima service 托管启停；浏览器 UI 独立进程）
 # satellites:
-#   parlor:
+#   chat:
 #     enabled: true
 #     command: bun
-#     args: ["satellites/parlor/dev.ts"]
+#     args: ["satellites/chat/dev.ts"]
 #     env:
 #       SATELLITE_PORT: "4174"
 #   pair-programming:

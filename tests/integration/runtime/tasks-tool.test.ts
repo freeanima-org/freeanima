@@ -16,7 +16,7 @@ import {
 } from "@freeanima/capabilities-tasks";
 import { resetTaskStoreForTests } from "@freeanima/capabilities-tasks/task-port";
 import { getActivePgTestContext, testConv } from "../../helpers/pg-test.ts";
-import { TEST_SAP_PARLOR_PLATFORM } from "../../helpers/sap-parlor-test-platform.ts";
+import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
 
 function testCfg() {
   const ctx = getActivePgTestContext();
@@ -65,7 +65,7 @@ describePg("tasks tool", () => {
     const sid = "sess-task-create";
     const repos = testConv().repos;
     await testConv().initSession(sid, getProfileHopModel(testCfg(), "chat"), {
-      platform: TEST_SAP_PARLOR_PLATFORM,
+      platform: TEST_SAP_CHAT_PLATFORM,
     });
 
     let output = "";
@@ -111,7 +111,7 @@ describePg("tasks tool", () => {
     const sid = "sess-task-list";
     const repos = testConv().repos;
     await testConv().initSession(sid, getProfileHopModel(testCfg(), "chat"), {
-      platform: TEST_SAP_PARLOR_PLATFORM,
+      platform: TEST_SAP_CHAT_PLATFORM,
     });
 
     const created = await repos.tasks.create({
@@ -148,7 +148,7 @@ describePg("tasks tool", () => {
     const sid = "sess-task-complete";
     const repos = testConv().repos;
     await testConv().initSession(sid, getProfileHopModel(testCfg(), "chat"), {
-      platform: TEST_SAP_PARLOR_PLATFORM,
+      platform: TEST_SAP_CHAT_PLATFORM,
     });
 
     const created = await repos.tasks.create({

@@ -11,7 +11,7 @@ import { formatStructuredToolRound } from "../stream-tool-format.ts";
 import type { ToolDisplayMode } from "../tool-display.ts";
 import { DEFAULT_TOOL_DISPLAY_MODE } from "../tool-display.ts";
 
-export type StreamReducePlatform = "discord" | "weixin" | "parlor";
+export type StreamReducePlatform = "discord" | "weixin" | "chat";
 
 export function initialStreamReplyState(): StreamReplyState {
   return {
@@ -98,7 +98,7 @@ export function applyStreamEvent(
 
 export async function reduceStreamEvents(
   events: AsyncIterable<StreamEvent>,
-  platform: StreamReducePlatform = "parlor",
+  platform: StreamReducePlatform = "chat",
   toolDisplayMode: ToolDisplayMode = DEFAULT_TOOL_DISPLAY_MODE,
 ): Promise<{ state: StreamReplyState; effects: StreamEffect[] }> {
   let state = initialStreamReplyState();

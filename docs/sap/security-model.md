@@ -14,7 +14,7 @@ flowchart TB
     Hub["Hub anima service :2658"]
     SapEndpoint["/sap/v1 WebSocket"]
     SatA[Satellite pair-programming]
-    SatB[Satellite parlor]
+    SatB[Satellite chat]
     Other[Any local process]
   end
   Browser[Browser loopback]

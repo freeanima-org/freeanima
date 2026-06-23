@@ -21,7 +21,7 @@ export type SessionAcpDockSnapshot = {
 
 const ACTIVE_STATUSES = new Set<AcpTaskStatusJson>(["queued", "running", "awaiting_decision"]);
 
-function isParlorProgressId(id: string): boolean {
+function isInSessionProgressId(id: string): boolean {
   return Boolean(id && !id.includes(":"));
 }
 
@@ -74,7 +74,7 @@ export async function getSessionAcpDock(
       progress_message_id: pmid,
     });
     if (status === "awaiting_decision") highlightDecision = true;
-    if (pmid && isParlorProgressId(pmid) && taskId) {
+    if (pmid && isInSessionProgressId(pmid) && taskId) {
       const text =
         (await deps.conversation.repos.session.getMessageContentById(sessionId, pmid)) ?? "";
       if (text.trim()) {

@@ -7,7 +7,7 @@ import {
   type SatelliteHubHandle,
 } from "@freeanima/sap-contract";
 
-const APP_ID = "parlor";
+const APP_ID = "chat";
 
 function instanceStorePath(): string {
   const home = process.env.FREEANIMA_HOME ?? join(homedir(), ".anima");

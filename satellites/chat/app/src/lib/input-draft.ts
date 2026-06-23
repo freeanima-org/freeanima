@@ -1,4 +1,4 @@
-const KEY_PREFIX = "parlor:input-draft:";
+const KEY_PREFIX = "chat:input-draft:";
 
 export function loadInputDraft(sessionId: string | null): string {
   if (!sessionId) return "";

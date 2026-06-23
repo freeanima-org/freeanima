@@ -85,7 +85,7 @@ DATABASE_URL="…" bun run --filter @freeanima/core db:migrate
 ```
 
 - WebUI Chamber: `http://127.0.0.1:2658/chamber/dashboard`
-- Parlor satellite: `http://127.0.0.1:4174`
+- Chat satellite: `http://127.0.0.1:4174`
 - Pair-programming satellite: `http://127.0.0.1:4173`
 - Release: [`.agent/rules/release.md`](.agent/rules/release.md)
 - PG ops (install, backup): [`docs/guide/database.md`](docs/guide/database.md)

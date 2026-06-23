@@ -14,7 +14,7 @@ import { getSapClient, getSapInstanceId, getRelayState } from "./sap/hub.ts";
 const PORT = Number(process.env.SATELLITE_PORT ?? 4174);
 const DIST_DIR = join(import.meta.dir, "..", "dist");
 const HUB_URL = (process.env.FREEANIMA_URL ?? "http://127.0.0.1:2658").replace(/\/$/, "");
-const APP_ID = "parlor";
+const APP_ID = "chat";
 const HTTP_URL = `http://127.0.0.1:${PORT}`;
 
 type ServerWsData = { channel: "relay" } & RelayWsData;
@@ -71,7 +71,7 @@ async function route(req: Request, server: Bun.Server<ServerWsData>): Promise<Re
 function serveStatic(pathname: string): Response {
   if (!existsSync(DIST_DIR)) {
     return jsonResponse(
-      { error: "UI not built; run `bun satellites/parlor/dev.ts` or `bun build.ts`" },
+      { error: "UI not built; run `bun satellites/chat/dev.ts` or `bun build.ts`" },
       503,
     );
   }
@@ -126,7 +126,7 @@ const server = Bun.serve<ServerWsData>({
   },
 });
 
-console.log(`parlor satellite ${HTTP_URL}`);
+console.log(`chat satellite ${HTTP_URL}`);
 
 void connectSap(HUB_URL, HTTP_URL);
 

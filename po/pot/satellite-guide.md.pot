@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-22 11:28+0800\n"
+"POT-Creation-Date: 2026-06-23 16:18+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -56,10 +56,10 @@ msgstr ""
 #, no-wrap
 msgid ""
 "satellites:\n"
-"  parlor:\n"
+"  chat:\n"
 "    enabled: true\n"
 "    command: bun\n"
-"    args: [\"satellites/parlor/dev.ts\"]\n"
+"    args: [\"satellites/chat/dev.ts\"]\n"
 "    env:\n"
 "      SATELLITE_PORT: \"4174\"\n"
 "  pair-programming:\n"
@@ -128,7 +128,7 @@ msgstr ""
 
 #. type: Bullet: '- '
 #: docs/sap/satellite-guide.md:55
-msgid "Parlor: `http://127.0.0.1:4174`"
+msgid "Chat: `http://127.0.0.1:4174`"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -151,7 +151,7 @@ msgstr ""
 #. type: Title ###
 #: docs/sap/satellite-guide.md:60
 #, no-wrap
-msgid "Type B — Process gateway + local relay (Parlor, pair-programming)"
+msgid "Type B — Process gateway + local relay (Chat, pair-programming)"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -174,7 +174,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/sap/satellite-guide.md:66
 msgid ""
-"**Parlor:** relay only (no local tools). **Pair-programming:** relay + "
+"**Chat:** relay only (no local tools). **Pair-programming:** relay + "
 "`tool.register` + local FS/PTY APIs."
 msgstr ""
 
@@ -210,7 +210,7 @@ msgstr ""
 #, no-wrap
 msgid ""
 "flowchart TB\n"
-"  subgraph parlor [Parlor Type B relay]\n"
+"  subgraph chat [Chat Type B relay]\n"
 "    B1[Browser] -->|relay WS| Relay1[\"/sap/relay/v1\"]\n"
 "    Relay1 --> ProcSAP1[createSatelliteHub]\n"
 "    ProcSAP1 -->|唯一 SAP WS| Hub1[Hub]\n"
@@ -235,18 +235,18 @@ msgstr ""
 #. type: Title ###
 #: docs/sap/satellite-guide.md:93
 #, no-wrap
-msgid "Parlor satellite"
+msgid "Chat satellite"
 msgstr ""
 
 #. type: Plain text
 #: docs/sap/satellite-guide.md:96
 msgid ""
 "Browser connects via `createSapRelayBrowserClient` → [`/sap/relay/v1`](../../"
-"satellites/parlor/server/index.ts); sidecar uses `createSatelliteHub` with "
-"`relay: true` and no local tools ([`satellites/parlor/server/sap/hub.ts`]"
-"(../../satellites/parlor/server/sap/hub.ts)). `session.list` / "
+"satellites/chat/server/index.ts); sidecar uses `createSatelliteHub` with "
+"`relay: true` and no local tools ([`satellites/chat/server/sap/hub.ts`]"
+"(../../satellites/chat/server/sap/hub.ts)). `session.list` / "
 "`session.create` omit explicit `platform`; Hub defaults to the connected "
-"instance's `sap:parlor:{id}`."
+"instance's `sap:chat:{id}`."
 msgstr ""
 
 #. type: Title ###
@@ -272,7 +272,7 @@ msgstr ""
 #. type: Bullet: '- '
 #: docs/sap/satellite-guide.md:108
 msgid ""
-"[`satellites/parlor/server/sap/hub.ts`](../../satellites/parlor/server/sap/"
+"[`satellites/chat/server/sap/hub.ts`](../../satellites/chat/server/sap/"
 "hub.ts)"
 msgstr ""
 

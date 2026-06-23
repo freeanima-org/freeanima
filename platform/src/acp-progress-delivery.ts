@@ -26,7 +26,7 @@ function formatDiscordProgressId(messageId: string): string {
   return `${DISCORD_PROGRESS_PREFIX}${messageId}`;
 }
 
-function isParlorProgressId(stored?: string): boolean {
+function isInSessionProgressId(stored?: string): boolean {
   return Boolean(stored && !stored.includes(":"));
 }
 
@@ -144,7 +144,7 @@ export function createAcpProgressDelivery(opts: {
       if (!task.animaSessionId) return;
 
       const existingId = task.progressMessageId;
-      if (existingId && isParlorProgressId(existingId)) {
+      if (existingId && isInSessionProgressId(existingId)) {
         await opts.conversation.repos.session.updateMessageContent(
           task.animaSessionId,
           existingId,

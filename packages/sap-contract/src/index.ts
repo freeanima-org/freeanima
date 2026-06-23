@@ -165,7 +165,7 @@ export {
   createSapDirectClient,
   loadDirectSatelliteConfig,
   createSapBrowserClient,
-  loadParlorSatelliteConfig,
+  loadChatSatelliteConfig,
   formatDirectPlatform,
   type DirectSatelliteConfig,
   type SapDirectClient,

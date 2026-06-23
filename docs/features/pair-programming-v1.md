@@ -11,7 +11,7 @@ title: Pair Programming V1
 
 - **Close the loop first**: read and discuss code with the agent in Studio
 - **Read-only first**: v1 focuses on reading; agent analyzes and suggests — no direct edit/save yet
-- **Platform isolation**: pair-programming sessions use a separate platform from parlor chat
+- **Platform isolation**: pair-programming sessions use a separate platform from chat chat
 - **Local reads**: server reads files from a configured workspace path (set in Chamber)
 
 ## Layout
@@ -48,7 +48,7 @@ title: Pair Programming V1
 
 ## Session Isolation
 
-Pair programming uses platform `studio-pair-programming`, separate from parlor (`parlor`) and other platform session lists.
+Pair programming uses platform `studio-pair-programming`, separate from chat (`chat`) and other platform session lists.
 
 ## Current Limitations
 

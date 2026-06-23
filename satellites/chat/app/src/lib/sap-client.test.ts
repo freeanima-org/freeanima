@@ -1,19 +1,19 @@
 import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
 
-import { parlorPlatform, resetParlorInstanceCacheForTests } from "./sap-client.ts";
+import { chatPlatform, resetChatInstanceCacheForTests } from "./sap-client.ts";
 
 const originalFetch = globalThis.fetch;
 
-describe("parlorPlatform", () => {
+describe("chatPlatform", () => {
   beforeEach(() => {
-    resetParlorInstanceCacheForTests();
+    resetChatInstanceCacheForTests();
   });
 
   afterEach(() => {
     globalThis.fetch = originalFetch;
   });
 
-  test("config 含 instance_id 时返回 sap:parlor:{id}", async () => {
+  test("config 含 instance_id 时返回 sap:chat:{id}", async () => {
     globalThis.fetch = mock(() =>
       Promise.resolve(
         new Response(JSON.stringify({ instance_id: "tou" }), {
@@ -23,20 +23,20 @@ describe("parlorPlatform", () => {
       ),
     ) as unknown as typeof fetch;
 
-    expect(await parlorPlatform()).toBe("sap:parlor:tou");
+    expect(await chatPlatform()).toBe("sap:chat:tou");
   });
 
   test("config 无 instance_id 时抛出", async () => {
     globalThis.fetch = mock(() =>
       Promise.resolve(
-        new Response(JSON.stringify({ app_id: "parlor" }), {
+        new Response(JSON.stringify({ app_id: "chat" }), {
           status: 200,
           headers: { "Content-Type": "application/json" },
         }),
       ),
     ) as unknown as typeof fetch;
 
-    await expect(parlorPlatform()).rejects.toThrow("instance_id is required");
+    await expect(chatPlatform()).rejects.toThrow("instance_id is required");
   });
 
   test("instance_id 结果会被缓存", async () => {
@@ -50,8 +50,8 @@ describe("parlorPlatform", () => {
     ) as unknown as typeof fetch;
     globalThis.fetch = fetchMock;
 
-    expect(await parlorPlatform()).toBe("sap:parlor:b4i");
-    expect(await parlorPlatform()).toBe("sap:parlor:b4i");
+    expect(await chatPlatform()).toBe("sap:chat:b4i");
+    expect(await chatPlatform()).toBe("sap:chat:b4i");
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });

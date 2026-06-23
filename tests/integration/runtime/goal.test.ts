@@ -5,7 +5,7 @@ import { beginIntegrationCase, restoreIntegrationHome } from "../../helpers/inte
 import * as goalJudge from "@freeanima/core/llm/goal-judge";
 import { findCommand, executeCommand, isGoalStartResult } from "@freeanima/platform/commands";
 import { seedSession, getTestEngine } from "../../helpers/pg-test.ts";
-import { TEST_SAP_PARLOR_PLATFORM } from "../../helpers/sap-parlor-test-platform.ts";
+import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
 
 function newSessionId(): string {
   return `20260623_${Date.now()}_goal`;
@@ -44,12 +44,12 @@ describePg("goal commands", () => {
       cached_toolsets: [],
       functions: [],
       timestamp: new Date().toISOString(),
-      platform: TEST_SAP_PARLOR_PLATFORM,
+      platform: TEST_SAP_CHAT_PLATFORM,
     });
     const [cmd] = findCommand("/goal");
     const result = await executeCommand(cmd!, {
       sessionId: sid,
-      platform: TEST_SAP_PARLOR_PLATFORM,
+      platform: TEST_SAP_CHAT_PLATFORM,
       args: ["完成", "单元测试"],
       raw: "/goal 完成 单元测试",
     });
@@ -70,12 +70,12 @@ describePg("goal commands", () => {
       cached_toolsets: [],
       functions: [],
       timestamp: new Date().toISOString(),
-      platform: TEST_SAP_PARLOR_PLATFORM,
+      platform: TEST_SAP_CHAT_PLATFORM,
     });
     const [setCmd] = findCommand("/goal");
     await executeCommand(setCmd!, {
       sessionId: sid,
-      platform: TEST_SAP_PARLOR_PLATFORM,
+      platform: TEST_SAP_CHAT_PLATFORM,
       args: ["demo goal"],
       raw: "/goal demo goal",
     });
@@ -83,7 +83,7 @@ describePg("goal commands", () => {
     expect(statusCmd).not.toBeNull();
     const status = await executeCommand(statusCmd!, {
       sessionId: sid,
-      platform: TEST_SAP_PARLOR_PLATFORM,
+      platform: TEST_SAP_CHAT_PLATFORM,
       args: ["status"],
       raw: "/goal status",
     });
@@ -98,26 +98,26 @@ describePg("goal commands", () => {
       cached_toolsets: [],
       functions: [],
       timestamp: new Date().toISOString(),
-      platform: TEST_SAP_PARLOR_PLATFORM,
+      platform: TEST_SAP_CHAT_PLATFORM,
     });
     const [setCmd] = findCommand("/goal");
     await executeCommand(setCmd!, {
       sessionId: sid,
-      platform: TEST_SAP_PARLOR_PLATFORM,
+      platform: TEST_SAP_CHAT_PLATFORM,
       args: ["main"],
       raw: "/goal main",
     });
     const [subCmd] = findCommand("/subgoal");
     const add = await executeCommand(subCmd!, {
       sessionId: sid,
-      platform: TEST_SAP_PARLOR_PLATFORM,
+      platform: TEST_SAP_CHAT_PLATFORM,
       args: ["step", "one"],
       raw: "/subgoal step one",
     });
     expect(add.text).toContain("step one");
     const list = await executeCommand(subCmd!, {
       sessionId: sid,
-      platform: TEST_SAP_PARLOR_PLATFORM,
+      platform: TEST_SAP_CHAT_PLATFORM,
       args: [],
       raw: "/subgoal",
     });

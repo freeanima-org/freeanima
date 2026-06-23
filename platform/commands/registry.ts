@@ -37,7 +37,7 @@ export type CommandDef = {
   hidden?: boolean;
   /** default session */
   scope?: CommandScope;
-  /** whitelist; unset means all platforms; entries may use `*` glob (e.g. `sap:parlor:*`) */
+  /** whitelist; unset means all platforms; entries may use `*` glob (e.g. `sap:chat:*`) */
   platforms?: string[];
 };
 

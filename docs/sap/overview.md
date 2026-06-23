@@ -4,14 +4,14 @@ title: SAP Overview
 
 # SAP Overview
 
-**SAP** (Satellite Application Protocol, version `SAP/1.0`) is the WebSocket JSON protocol between the FreeAnima **Hub** (`anima service`) and **Satellite** processes. Satellites are standalone apps (Parlor, pair-programming Studio) that expose their own HTTP UI while delegating agent runtime to the Hub.
+**SAP** (Satellite Application Protocol, version `SAP/1.0`) is the WebSocket JSON protocol between the FreeAnima **Hub** (`anima service`) and **Satellite** processes. Satellites are standalone apps (Chat, pair-programming Studio) that expose their own HTTP UI while delegating agent runtime to the Hub.
 
 Schemas and client SDK live in [`packages/sap-contract/`](../../packages/sap-contract/). Hub server implementation: [`platform/src/sap/`](../../platform/src/sap/).
 
 ## Design goals
 
 - **One Hub WS per instance**: each satellite instance opens exactly one `/sap/v1` connection to the Hub (multiplex sessions, streams, tools).
-- **Origin isolation**: browsers load Satellite HTTP UI; Parlor and pair-programming use a local SAP relay (`/sap/relay/v1`) instead of browser-direct Hub WS.
+- **Origin isolation**: browsers load Satellite HTTP UI; Chat and pair-programming use a local SAP relay (`/sap/relay/v1`) instead of browser-direct Hub WS.
 - **Local execution**: pair-programming workspace, terminal PTY, and registered tools run on the Satellite process.
 - **Shared contract**: both sides import `@freeanima/sap-contract` for envelopes, RPC types, `runSapTransport`, `createSapBrowserClient`, and `createSapRelayBrowserClient`.
 
@@ -19,7 +19,7 @@ Schemas and client SDK live in [`packages/sap-contract/`](../../packages/sap-con
 
 ```mermaid
 flowchart LR
-  subgraph parlor [Parlor satellite]
+  subgraph chat [Chat satellite]
     B1[Browser] -->|relay WS| Relay1["/sap/relay/v1"]
     Relay1 --> Proc1[Process SAP client]
     Proc1 -->|唯一 SAP WS| Hub
@@ -39,7 +39,7 @@ flowchart LR
 | Role      | Default                 | Responsibility                                   |
 | --------- | ----------------------- | ------------------------------------------------ |
 | Hub       | `http://127.0.0.1:2658` | Agent runtime, SAP WebSocket server at `/sap/v1` |
-| Parlor    | `http://127.0.0.1:4174` | Chat UI; process gateway + relay (Type B)        |
+| Chat      | `http://127.0.0.1:4174` | Chat UI; process gateway + relay (Type B)        |
 | Pair-prog | `http://127.0.0.1:4173` | Studio UI; process gateway + relay (Type B)      |
 | Chamber   | Hub `/chamber/*`        | Memory, config, tools, satellite status          |
 

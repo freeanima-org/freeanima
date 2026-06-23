@@ -29,7 +29,7 @@ The technical stack (layered memory, self layer, flat tool registry, Gateway, pa
 | **Memory**      | Conversation archive → light-sleep → semantic / episodic / procedural + limbic; PG FTS / hybrid recall |
 | **Self layer**  | Six-block persistent identity (`self_blocks`)                                                          |
 | **Tools**       | Flat registry: local / MCP / ACP; capability masks                                                     |
-| **Gateway**     | Discord · WeChat · WebUI (Chamber / Parlor / Studio)                                                   |
+| **Gateway**     | Discord · WeChat · WebUI (Chamber / Chat / Studio)                                                     |
 | **Credentials** | pass (GPG) injection; LLM sees paths, not values                                                       |
 | **Runtime**     | Bun service: tRPC + EventBus async indexing                                                            |
 
@@ -82,7 +82,7 @@ Then configure `~/.anima/config.yaml` (or `.env` for Docker) and run `anima serv
 
 ## WebUI
 
-After starting the service, open the parlor chat (satellite app):
+After starting the service, open the chat satellite:
 
 **http://127.0.0.1:4174**
 

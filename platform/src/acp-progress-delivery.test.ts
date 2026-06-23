@@ -49,8 +49,8 @@ describe("resolveSessionDeliverTargets", () => {
     expect(targets).toEqual([{ platform: "weixin", chat_id: "wx-user-1" }]);
   });
 
-  it("parlor has no external delivery target", () => {
-    const targets = resolveSessionDeliverTargets(metaFixture({ platform: "parlor" }));
+  it("chat has no external delivery target", () => {
+    const targets = resolveSessionDeliverTargets(metaFixture({ platform: "chat" }));
     expect(targets).toEqual([]);
   });
 });

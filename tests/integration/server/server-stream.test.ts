@@ -8,7 +8,7 @@ import {
 
 import { getAppRuntime } from "@freeanima/platform";
 import { getTestEngine, seedSession } from "../../helpers/pg-test.ts";
-import { TEST_SAP_PARLOR_PLATFORM } from "../../helpers/sap-parlor-test-platform.ts";
+import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
 
 describePg("sendMessageStream", () => {
   const prev = process.env.FREEANIMA_HOME;
@@ -29,12 +29,12 @@ describePg("sendMessageStream", () => {
       cached_toolsets: [],
       functions: [],
       timestamp: new Date().toISOString(),
-      platform: TEST_SAP_PARLOR_PLATFORM,
+      platform: TEST_SAP_CHAT_PLATFORM,
     });
 
     const svc = getAppRuntime();
     const events: { event: string; data: Record<string, unknown> }[] = [];
-    for await (const ev of svc.sendMessageStream(sid, "/unknown-cmd", TEST_SAP_PARLOR_PLATFORM)) {
+    for await (const ev of svc.sendMessageStream(sid, "/unknown-cmd", TEST_SAP_CHAT_PLATFORM)) {
       events.push(ev);
     }
 

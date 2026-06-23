@@ -16,10 +16,10 @@ Declare a process in `~/.anima/config.yaml`. `anima service start/stop/restart` 
 
 ```yaml
 satellites:
-  parlor:
+  chat:
     enabled: true
     command: bun
-    args: ["satellites/parlor/dev.ts"]
+    args: ["satellites/chat/dev.ts"]
     env:
       SATELLITE_PORT: "4174"
   pair-programming:
@@ -50,19 +50,19 @@ There is **no** global `studio:` section in `config.yaml`.
 
 Open managed satellite UI at the URL from Chamber (SAP `http_url`), typically:
 
-- Parlor: `http://127.0.0.1:4174`
+- Chat: `http://127.0.0.1:4174`
 - Pair-programming: `http://127.0.0.1:4173`
 
 ## Satellite access modes
 
 **Rule:** each `app_id + instance_id` has **at most one** Hub WebSocket (`/sap/v1`).
 
-### Type B — Process gateway + local relay (Parlor, pair-programming)
+### Type B — Process gateway + local relay (Chat, pair-programming)
 
 - Sidecar `createSatelliteHub({ relay: true, ... })` holds the sole Hub WS.
 - Browser uses `createSapRelayBrowserClient` → satellite `/sap/relay/v1`.
 - `instance_id` persisted under `~/.anima/satellites/{app}/instance.json`.
-- **Parlor:** relay only (no local tools). **Pair-programming:** relay + `tool.register` + local FS/PTY APIs.
+- **Chat:** relay only (no local tools). **Pair-programming:** relay + `tool.register` + local FS/PTY APIs.
 
 ### Type B + tools, no relay (companion)
 
@@ -72,7 +72,7 @@ Open managed satellite UI at the URL from Chamber (SAP `http_url`), typically:
 
 ```mermaid
 flowchart TB
-  subgraph parlor [Parlor Type B relay]
+  subgraph chat [Chat Type B relay]
     B1[Browser] -->|relay WS| Relay1["/sap/relay/v1"]
     Relay1 --> ProcSAP1[createSatelliteHub]
     ProcSAP1 -->|唯一 SAP WS| Hub1[Hub]
@@ -90,9 +90,9 @@ flowchart TB
 
 **Deprecated:** HTTP hub-api REST→SAP proxy (removed).
 
-### Parlor satellite
+### Chat satellite
 
-Browser connects via `createSapRelayBrowserClient` → [`/sap/relay/v1`](../../satellites/parlor/server/index.ts); sidecar uses `createSatelliteHub` with `relay: true` and no local tools ([`satellites/parlor/server/sap/hub.ts`](../../satellites/parlor/server/sap/hub.ts)). `session.list` / `session.create` omit explicit `platform`; Hub defaults to the connected instance's `sap:parlor:{id}`.
+Browser connects via `createSapRelayBrowserClient` → [`/sap/relay/v1`](../../satellites/chat/server/index.ts); sidecar uses `createSatelliteHub` with `relay: true` and no local tools ([`satellites/chat/server/sap/hub.ts`](../../satellites/chat/server/sap/hub.ts)). `session.list` / `session.create` omit explicit `platform`; Hub defaults to the connected instance's `sap:chat:{id}`.
 
 ### Pair-programming satellite
 
@@ -100,7 +100,7 @@ Browser connects via `createSapRelayBrowserClient` → [`/sap/relay/v1`](../../s
 
 Reference files:
 
-- [`satellites/parlor/server/sap/hub.ts`](../../satellites/parlor/server/sap/hub.ts)
+- [`satellites/chat/server/sap/hub.ts`](../../satellites/chat/server/sap/hub.ts)
 - [`satellites/pair-programming/server/sap/hub.ts`](../../satellites/pair-programming/server/sap/hub.ts)
 - [`packages/sap-contract/src/sidecar-client.ts`](../../packages/sap-contract/src/sidecar-client.ts)
 - [`packages/sap-contract/src/satellite-relay-server.ts`](../../packages/sap-contract/src/satellite-relay-server.ts)

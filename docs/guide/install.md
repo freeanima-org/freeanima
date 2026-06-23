@@ -89,7 +89,7 @@ anima service start --foreground # debug — logs to stdout
 anima service status
 ```
 
-Default bind: `127.0.0.1:2658`. Open parlor chat (satellite):
+Default bind: `127.0.0.1:2658`. Open chat chat (satellite):
 
 **http://127.0.0.1:4174**
 

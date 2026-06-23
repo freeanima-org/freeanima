@@ -33,7 +33,7 @@
     "format:fix": "oxfmt .",
     "lint": "oxlint .",
     "lint:fix": "oxlint --fix .",
-    "typecheck": "bunx tsgo -p tsconfig.json --noEmit && bunx tsgo -p satellites/pair-programming/tsconfig.json --noEmit && bunx tsgo -p satellites/parlor/tsconfig.json --noEmit && bunx tsgo -p satellites/companion/tsconfig.json --noEmit",
+    "typecheck": "bunx tsgo -p tsconfig.json --noEmit && bunx tsgo -p satellites/pair-programming/tsconfig.json --noEmit && bunx tsgo -p satellites/chat/tsconfig.json --noEmit && bunx tsgo -p satellites/companion/tsconfig.json --noEmit",
     "build:cli": "bun scripts/build-cli.ts",
     "install:cli:local": "bun scripts/install-cli-local.ts",
     "build:webui": "bun scripts/build-webui.ts",

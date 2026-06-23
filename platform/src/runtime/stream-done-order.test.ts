@@ -90,7 +90,7 @@ describe("sendMessageStream done order", () => {
     );
 
     const app = wireTestRuntime();
-    for await (const ev of app.sendMessageStream("test-sid", "hello", "parlor")) {
+    for await (const ev of app.sendMessageStream("test-sid", "hello", "chat")) {
       eventOrder.push(ev.event);
     }
 

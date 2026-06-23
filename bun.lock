@@ -210,6 +210,24 @@
         "@types/bun": "catalog:",
       },
     },
+    "satellites/chat": {
+      "name": "@freeanima/satellite-chat",
+      "dependencies": {
+        "@freeanima/sap-contract": "workspace:*",
+        "marked": "^18.0.4",
+        "react": "catalog:",
+        "react-dom": "catalog:",
+        "zustand": "catalog:",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+        "@types/react": "catalog:",
+        "@types/react-dom": "catalog:",
+        "bun-plugin-tailwind": "catalog:",
+        "daisyui": "catalog:",
+        "tailwindcss": "catalog:",
+      },
+    },
     "satellites/companion": {
       "name": "@freeanima/satellite-companion",
       "dependencies": {
@@ -251,24 +269,6 @@
         "react-dom": "catalog:",
         "xterm": "^5.3.0",
         "zod": "catalog:",
-        "zustand": "catalog:",
-      },
-      "devDependencies": {
-        "@types/bun": "catalog:",
-        "@types/react": "catalog:",
-        "@types/react-dom": "catalog:",
-        "bun-plugin-tailwind": "catalog:",
-        "daisyui": "catalog:",
-        "tailwindcss": "catalog:",
-      },
-    },
-    "satellites/parlor": {
-      "name": "@freeanima/satellite-parlor",
-      "dependencies": {
-        "@freeanima/sap-contract": "workspace:*",
-        "marked": "^18.0.4",
-        "react": "catalog:",
-        "react-dom": "catalog:",
         "zustand": "catalog:",
       },
       "devDependencies": {
@@ -634,11 +634,11 @@
 
     "@freeanima/sap-contract": ["@freeanima/sap-contract@workspace:packages/sap-contract"],
 
+    "@freeanima/satellite-chat": ["@freeanima/satellite-chat@workspace:satellites/chat"],
+
     "@freeanima/satellite-companion": ["@freeanima/satellite-companion@workspace:satellites/companion"],
 
     "@freeanima/satellite-pair-programming": ["@freeanima/satellite-pair-programming@workspace:satellites/pair-programming"],
-
-    "@freeanima/satellite-parlor": ["@freeanima/satellite-parlor@workspace:satellites/parlor"],
 
     "@freeanima/site": ["@freeanima/site@workspace:site"],
 

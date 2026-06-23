@@ -77,7 +77,7 @@ describe("createAcpProgressDelivery deliverResult", () => {
     expect(sessionUpdated).toEqual(["sess-discord"]);
   });
 
-  it("parlor: writes [ACP result] without external deliver", async () => {
+  it("chat: writes [ACP result] without external deliver", async () => {
     deliverToTargets.mockReset();
 
     const appended: string[] = [];
@@ -92,7 +92,7 @@ describe("createAcpProgressDelivery deliverResult", () => {
         cached_toolsets: [],
         functions: [],
         timestamp: "",
-        platform: "parlor",
+        platform: "chat",
       }),
       repos: { session: {} },
     };
@@ -106,7 +106,7 @@ describe("createAcpProgressDelivery deliverResult", () => {
       taskId: "t1",
       agentName: "cursor",
       acpSessionId: "acp-1",
-      animaSessionId: "sess-parlor",
+      animaSessionId: "sess-chat",
       mode: "agent",
       status: "completed",
       startedAt: Date.now(),

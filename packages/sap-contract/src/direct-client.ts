@@ -58,7 +58,7 @@ export async function loadDirectSatelliteConfig(
   }
   return {
     hub_ws_url: raw.hub_ws_url.trim(),
-    app_id: raw.app_id?.trim() || "parlor",
+    app_id: raw.app_id?.trim() || "chat",
     instance_id: raw.instance_id?.trim(),
   };
 }
@@ -84,7 +84,7 @@ export function createSapDirectClient(options: SapDirectClientOptions = {}): Sap
         const loaded = options.hubWsUrl
           ? {
               hub_ws_url: options.hubWsUrl,
-              app_id: options.appId ?? "parlor",
+              app_id: options.appId ?? "chat",
             }
           : await loadDirectSatelliteConfig(options.configUrl);
 
@@ -172,7 +172,7 @@ export function createSapDirectClient(options: SapDirectClientOptions = {}): Sap
 export const createSapBrowserClient = createSapDirectClient;
 
 /** @deprecated Use loadDirectSatelliteConfig */
-export const loadParlorSatelliteConfig = loadDirectSatelliteConfig;
+export const loadChatSatelliteConfig = loadDirectSatelliteConfig;
 
 export function formatDirectPlatform(appId: string, instanceId: string): string {
   return `sap:${appId.trim().toLowerCase().replace(/[-_]/g, "")}:${instanceId.trim().toLowerCase()}`;

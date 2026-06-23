@@ -40,10 +40,7 @@ function createParaglidePlugin(paraglideDir: string): import("bun").BunPlugin {
   };
 }
 
-export async function buildParlorApp(opts?: {
-  watch?: boolean;
-  minify?: boolean;
-}): Promise<string> {
+export async function buildChatApp(opts?: { watch?: boolean; minify?: boolean }): Promise<string> {
   const paraglideDir = join(DIST_DIR, ".paraglide");
   compileParaglide(paraglideDir);
   rmSync(join(DIST_DIR, HTML_NAME), { force: true });
@@ -64,7 +61,7 @@ export async function buildParlorApp(opts?: {
           watch: {
             onRebuild(rebuild: { success: boolean }) {
               if (!rebuild.success) {
-                console.error("[parlor] rebuild failed");
+                console.error("[chat] rebuild failed");
               }
             },
           },
@@ -88,7 +85,7 @@ export async function buildParlorApp(opts?: {
 }
 
 if (import.meta.main) {
-  void buildParlorApp({ minify: true }).then((dir) => {
-    console.log(`built parlor UI -> ${dir}`);
+  void buildChatApp({ minify: true }).then((dir) => {
+    console.log(`built chat UI -> ${dir}`);
   });
 }
