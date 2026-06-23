@@ -42,6 +42,9 @@ function mockSessionStore(overrides: Partial<SessionStorePort> = {}): SessionSto
     async getMessageContentById() {
       return null;
     },
+    async getMessageContentsByIds() {
+      return {};
+    },
     async nextMessagePos() {
       return 1;
     },
@@ -86,6 +89,9 @@ function mockSessionStore(overrides: Partial<SessionStorePort> = {}): SessionSto
     },
     async listSessionSummaries() {
       return [];
+    },
+    async listSessionSummariesPage() {
+      return { items: [], total: 0 };
     },
     async countSessionsByPlatform() {
       return {};

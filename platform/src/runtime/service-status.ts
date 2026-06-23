@@ -27,6 +27,7 @@ import { pingRedis } from "@freeanima/platform/connectors/redis";
 import { listLoadedTokenizerRepos, listTokenizerBindings } from "@freeanima/core/tokenizer";
 import type {
   DependencyStatus,
+  ExtensionSummaries,
   HealthSnapshot,
   PlatformStatusSnapshot,
   ProcessMemoryDetail,
@@ -134,6 +135,36 @@ export async function buildDependenciesStatus(): Promise<{
   return { postgres, redis };
 }
 
+function buildExtensionSummaries(deps: FullRuntimeDeps): ExtensionSummaries {
+  const commands = listCommandDefs().length;
+  let mcp: ExtensionSummaries["mcp"] = {
+    server_count: 0,
+    connected_count: 0,
+    connecting_count: 0,
+    tool_count: 0,
+  };
+  let acp: ExtensionSummaries["acp"] = {
+    agent_count: 0,
+    connected_count: 0,
+    session_count: 0,
+    tool_count: 0,
+  };
+  if (deps.mcp) {
+    const conn = deps.mcp.getConnectionSummary();
+    mcp = { ...conn, tool_count: deps.mcp.getToolCount() };
+  }
+  if (deps.acp) {
+    const status = deps.acp.getStatus();
+    acp = {
+      agent_count: status.agent_count,
+      connected_count: status.connected_count,
+      session_count: status.session_count,
+      tool_count: status.tool_count,
+    };
+  }
+  return { mcp, acp, commands };
+}
+
 export async function buildStatus(
   deps: FullRuntimeDeps,
   startTime: number,
@@ -199,6 +230,7 @@ export async function buildStatus(
     sessions: { total: sessionCount, by_platform: byPlatform },
     tools: toolCount,
     cron_jobs: cronJobCount,
+    extensions: buildExtensionSummaries(deps),
     platforms: { ...platformStatus },
     memory_kb: memoryDetail.rss_kb,
     memory_detail: memoryDetail,

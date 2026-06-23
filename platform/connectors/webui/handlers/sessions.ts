@@ -24,9 +24,9 @@ export async function resolveSessionPlatform(sessionId: string): Promise<string>
   return platform;
 }
 
-export async function listSessions(platform?: string) {
-  const { sessions } = await webuiCtx().listSessions(platform);
-  return { sessions };
+export async function listSessions(platform?: string, opts?: { offset?: number; limit?: number }) {
+  const result = await webuiCtx().listSessions(platform, opts);
+  return result;
 }
 
 export async function createSession(body: CreateSessionBody) {

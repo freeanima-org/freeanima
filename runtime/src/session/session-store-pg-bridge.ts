@@ -199,6 +199,16 @@ export async function pgListSessionSummaries(
   return store(repos).listSessionSummaries(platform);
 }
 
+export async function pgListSessionSummariesPage(
+  repos: PgRepositories,
+  opts?: { platform?: string | null; offset?: number; limit?: number },
+): Promise<{
+  items: Array<{ id: string; title: string; created: string; platform: string }>;
+  total: number;
+}> {
+  return store(repos).listSessionSummariesPage(opts);
+}
+
 export async function pgDeleteDebugSessions(repos: PgRepositories): Promise<number> {
   return store(repos).deleteDebugSessions();
 }

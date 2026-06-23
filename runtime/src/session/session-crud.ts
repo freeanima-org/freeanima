@@ -36,6 +36,7 @@ import {
   pgDeleteDebugSessions,
   pgListDebugSessionIds,
   pgListSessionSummaries,
+  pgListSessionSummariesPage,
   pgLastMessageTimestamp,
   pgFindSessionIdByPlatformInfo,
   pgListSessionIdsMatchingPlatformProbe,
@@ -171,6 +172,25 @@ export async function listSessionSummaries(
     });
   }
   return out;
+}
+
+export async function listSessionSummariesPage(
+  repos: PgRepositories,
+  opts?: { platform?: string | null; offset?: number; limit?: number },
+): Promise<{
+  items: Array<{ id: string; title: string; created: string; platform: string }>;
+  total: number;
+}> {
+  if (postgresAvailable(repos)) {
+    return pgListSessionSummariesPage(repos, opts);
+  }
+  const all = await listSessionSummaries(repos, opts?.platform);
+  const offset = Math.max(0, opts?.offset ?? 0);
+  const limit = Math.min(100, Math.max(1, opts?.limit ?? 20));
+  return {
+    items: all.slice(offset, offset + limit),
+    total: all.length,
+  };
 }
 
 export async function listSessions(

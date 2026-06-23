@@ -30,6 +30,23 @@ describePg("server status API", () => {
     expect(body.version).toBe(ROOT_VERSION);
     expect(typeof body.tools).toBe("number");
     expect(typeof body.cron_jobs).toBe("number");
+    expect(body.extensions).toEqual(
+      expect.objectContaining({
+        commands: expect.any(Number),
+        mcp: expect.objectContaining({
+          server_count: expect.any(Number),
+          connected_count: expect.any(Number),
+          connecting_count: expect.any(Number),
+          tool_count: expect.any(Number),
+        }),
+        acp: expect.objectContaining({
+          agent_count: expect.any(Number),
+          connected_count: expect.any(Number),
+          session_count: expect.any(Number),
+          tool_count: expect.any(Number),
+        }),
+      }),
+    );
     expect(body.uptime_seconds).not.toBeNull();
     expect(body.sessions).toEqual(
       expect.objectContaining({

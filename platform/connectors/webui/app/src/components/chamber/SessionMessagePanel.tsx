@@ -1,4 +1,5 @@
 import { marked } from "marked";
+import { useMemo } from "react";
 import type { DisplayItem } from "@freeanima/platform/connectors/webui/api";
 import { m } from "@/lib/i18n.ts";
 import { ToolBlockBubble } from "./ToolBlockBubble.tsx";
@@ -21,6 +22,11 @@ function renderMd(text: string) {
   } catch {
     return text;
   }
+}
+
+function AssistantMessageBubble({ content }: { content: string }) {
+  const html = useMemo(() => renderMd(content), [content]);
+  return <div className="md-content" dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
 export function SessionMessagePanel({
@@ -59,10 +65,7 @@ export function SessionMessagePanel({
             return (
               <div key={key} className="chat chat-start">
                 <div className="chat-bubble text-sm">
-                  <div
-                    className="md-content"
-                    dangerouslySetInnerHTML={{ __html: renderMd(item.content) }}
-                  />
+                  <AssistantMessageBubble content={item.content} />
                 </div>
               </div>
             );

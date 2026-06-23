@@ -15,6 +15,7 @@ export type McpStatusResponse = {
 
 /** MCP runtime management port */
 export interface McpManagerPort {
+  getToolCount(): number;
   getConnectionSummary(): {
     server_count: number;
     connected_count: number;

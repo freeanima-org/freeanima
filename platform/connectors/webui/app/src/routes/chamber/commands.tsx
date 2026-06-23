@@ -4,6 +4,7 @@ import { m } from "@/lib/i18n.ts";
 
 export const Route = createFileRoute("/chamber/commands")({
   loader: () => listSessionCommands({ all: true }).catch(() => ({ commands: [] })),
+  staleTime: 5 * 60_000,
   component: CommandsPage,
 });
 

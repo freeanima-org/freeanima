@@ -45,6 +45,7 @@ export async function getSessionAcpDock(
   const taskProgress: Record<string, string> = {};
   let progressParts: string[] = [];
   let highlightDecision = false;
+  const progressMessageIds: string[] = [];
 
   for (const [acpSessionId, entry] of Object.entries(rawTasks)) {
     if (acpSessionId.startsWith("queued:")) {
@@ -75,12 +76,23 @@ export async function getSessionAcpDock(
     });
     if (status === "awaiting_decision") highlightDecision = true;
     if (pmid && isInSessionProgressId(pmid) && taskId) {
-      const text =
-        (await deps.conversation.repos.session.getMessageContentById(sessionId, pmid)) ?? "";
-      if (text.trim()) {
-        taskProgress[taskId] = text;
-        progressParts.push(`[${taskId}]\n${text}`);
-      }
+      progressMessageIds.push(pmid);
+    }
+  }
+
+  const contentById =
+    progressMessageIds.length > 0
+      ? await deps.conversation.repos.session.getMessageContentsByIds(sessionId, progressMessageIds)
+      : {};
+
+  for (const task of tasks) {
+    const pmid = task.progress_message_id;
+    const taskId = task.task_id;
+    if (!pmid || !isInSessionProgressId(pmid) || !taskId) continue;
+    const text = contentById[pmid] ?? "";
+    if (text.trim()) {
+      taskProgress[taskId] = text;
+      progressParts.push(`[${taskId}]\n${text}`);
     }
   }
 

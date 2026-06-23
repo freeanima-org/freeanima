@@ -1,11 +1,16 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import type { PromptDebugResponse } from "@freeanima/platform/connectors/webui/api";
+import type {
+  PromptDebugResponse,
+  SessionListItem,
+} from "@freeanima/platform/connectors/webui/api";
 import { useEffect, useMemo, useState } from "react";
-import { getPromptDebug } from "@/lib/api.ts";
+import { getPromptDebug, listSessions } from "@/lib/api.ts";
+import { MemoryListPagination } from "@/components/chamber/MemoryListPagination.tsx";
 import { m } from "@/lib/i18n.ts";
-import { useChamberSessionsStore } from "@/stores/chamber-sessions.ts";
 
 type TabId = "parts" | "full" | "tools";
+
+const TOOLS_PAGE_SIZE = 20;
 
 const PART_KEYS = ["self", "toolsets", "resident", "agents"] as const;
 type PartKey = (typeof PART_KEYS)[number];
@@ -143,22 +148,28 @@ function BreakdownBar({ data }: { data: PromptDebugResponse["system"]["breakdown
 function SystemPromptPage() {
   const { session: sessionFromUrl } = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
-  const sessionsStore = useChamberSessionsStore();
+  const [recentSessions, setRecentSessions] = useState<SessionListItem[]>([]);
   const [tab, setTab] = useState<TabId>("parts");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [data, setData] = useState<PromptDebugResponse | null>(null);
   const [toolQuery, setToolQuery] = useState("");
+  const [toolsPage, setToolsPage] = useState(1);
   const [copyHint, setCopyHint] = useState("");
 
   const selectedSession = sessionFromUrl ?? "";
 
   useEffect(() => {
-    const state = useChamberSessionsStore.getState();
-    if (!state.sessions.length && !state.loadingSessions) {
-      void state.fetchSessions();
-    }
+    void listSessions({ offset: 0, limit: 100 })
+      .then((resp) => {
+        setRecentSessions((resp as { sessions?: SessionListItem[] }).sessions ?? []);
+      })
+      .catch(() => setRecentSessions([]));
   }, []);
+
+  useEffect(() => {
+    setToolsPage(1);
+  }, [toolQuery]);
 
   useEffect(() => {
     let cancelled = false;
@@ -182,7 +193,7 @@ function SystemPromptPage() {
     };
   }, [selectedSession]);
 
-  const sortedSessions = sessionsStore.sortedSessions();
+  const sortedSessions = recentSessions;
 
   const filteredTools = useMemo(() => {
     const items = data?.tools.items ?? [];
@@ -195,6 +206,11 @@ function SystemPromptPage() {
         (t.toolset?.toLowerCase().includes(q) ?? false),
     );
   }, [data?.tools.items, toolQuery]);
+
+  const pagedTools = useMemo(() => {
+    const start = (toolsPage - 1) * TOOLS_PAGE_SIZE;
+    return filteredTools.slice(start, start + TOOLS_PAGE_SIZE);
+  }, [filteredTools, toolsPage]);
 
   const handleSessionChange = (value: string) => {
     void navigate({
@@ -436,7 +452,7 @@ function SystemPromptPage() {
                 </span>
               </div>
               <div className="space-y-2">
-                {filteredTools.map((tool) => (
+                {pagedTools.map((tool) => (
                   <ToolSchemaCard key={tool.name} tool={tool} />
                 ))}
                 {!filteredTools.length ? (
@@ -444,6 +460,12 @@ function SystemPromptPage() {
                     {m.webui_chamber_system_prompt_no_tools()}
                   </div>
                 ) : null}
+                <MemoryListPagination
+                  total={filteredTools.length}
+                  pageSize={TOOLS_PAGE_SIZE}
+                  currentPage={toolsPage}
+                  onPageChange={setToolsPage}
+                />
               </div>
             </div>
           ) : null}

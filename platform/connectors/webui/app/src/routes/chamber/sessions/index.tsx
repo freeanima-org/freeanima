@@ -10,10 +10,10 @@ export const Route = createFileRoute("/chamber/sessions/")({
 
 function ChamberSessionsPage() {
   const store = useChamberSessionsStore();
-  const sessions = store.paginatedSessions();
+  const sessions = store.sessions;
   const pageCount = store.sessionsPageCount();
   const currentPage = store.currentSessionsPage();
-  const totalSessions = store.sortedSessions().length;
+  const totalSessions = store.sessionsTotal;
 
   useEffect(() => {
     void useChamberSessionsStore.getState().fetchSessions();
@@ -27,7 +27,7 @@ function ChamberSessionsPage() {
           type="button"
           className="btn btn-ghost btn-xs"
           disabled={store.loadingSessions}
-          onClick={() => void store.fetchSessions()}
+          onClick={() => void store.fetchSessions({ force: true })}
         >
           {m.webui_common_refresh()}
         </button>
@@ -86,7 +86,7 @@ function ChamberSessionsPage() {
                         type="button"
                         className="btn btn-xs join-item"
                         disabled={currentPage <= 1}
-                        onClick={() => store.goToSessionsPage(currentPage - 1)}
+                        onClick={() => void store.goToSessionsPage(currentPage - 1)}
                       >
                         {m.webui_common_previous_page()}
                       </button>
@@ -94,7 +94,7 @@ function ChamberSessionsPage() {
                         type="button"
                         className="btn btn-xs join-item"
                         disabled={currentPage >= pageCount}
-                        onClick={() => store.goToSessionsPage(currentPage + 1)}
+                        onClick={() => void store.goToSessionsPage(currentPage + 1)}
                       >
                         {m.webui_common_next_page()}
                       </button>

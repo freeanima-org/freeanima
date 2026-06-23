@@ -35,9 +35,19 @@ export async function checkPlatform(
 export async function listSessions(
   deps: RuntimeDeps,
   platform?: string | null,
-): Promise<{ sessions: SessionSummary[] }> {
+  opts?: { offset?: number; limit?: number },
+): Promise<{ sessions: SessionSummary[]; total: number }> {
   const p = platform === "" ? null : platform;
-  return { sessions: await deps.conversation.listSessionSummaries(p ?? undefined) };
+  if (opts?.offset != null || opts?.limit != null) {
+    const page = await deps.conversation.listSessionSummariesPage({
+      platform: p ?? undefined,
+      offset: opts.offset,
+      limit: opts.limit,
+    });
+    return { sessions: page.items, total: page.total };
+  }
+  const sessions = await deps.conversation.listSessionSummaries(p ?? undefined);
+  return { sessions, total: sessions.length };
 }
 
 export async function createSession(

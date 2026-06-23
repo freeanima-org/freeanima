@@ -8,6 +8,7 @@ export {
   generateSessionId,
   countSessionsByPlatform,
   listSessionSummaries,
+  listSessionSummariesPage,
   listSessions,
   sessionExists,
   load,
