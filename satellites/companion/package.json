@@ -43,7 +43,7 @@
     "@types/ws": "^8.18.1",
     "bun-plugin-tailwind": "catalog:",
     "daisyui": "catalog:",
-    "electron": "^35.7.5",
+    "electron": "^42.4.1",
     "electron-builder": "^26.15.3",
     "esbuild": "^0.25.12",
     "tailwindcss": "catalog:"
