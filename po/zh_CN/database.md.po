@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 17:52+0800\n"
+"POT-Creation-Date: 2026-06-23 15:04+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -56,13 +56,13 @@ msgstr "在 `config.yaml` 中设置数据库 URL："
 msgid ""
 "database:\n"
 "  url: postgresql://user:pass@localhost:5432/anima\n"
-"  # or inject from pass:\n"
-"  # url: pass:services/postgres/anima\n"
+"  # or use credential():\n"
+"  # url: credential(\"services/postgres/anima\", \"url\")\n"
 msgstr ""
 "database:\n"
 "  url: postgresql://user:pass@localhost:5432/anima\n"
-"  # or inject from pass:\n"
-"  # url: pass:services/postgres/anima\n"
+"  # 或使用 credential()：\n"
+"  # url: credential(\"services/postgres/anima\", \"url\")\n"
 
 #. type: Plain text
 #: docs/guide/database.md:23
@@ -91,7 +91,7 @@ msgid ""
 "anima credential add services/postgres/anima url=… host=… password=… database=anima\n"
 "\n"
 "# config.yaml:\n"
-"#   url: pass:services/postgres/anima\n"
+"#   url: credential(\"services/postgres/anima\", \"url\")\n"
 msgstr ""
 "# Install PostgreSQL, create anima db/user (requires sudo)\n"
 "sudo ./scripts/setup-postgres-debian.sh\n"
@@ -100,7 +100,7 @@ msgstr ""
 "anima credential add services/postgres/anima url=… host=… password=… database=anima\n"
 "\n"
 "# config.yaml:\n"
-"#   url: pass:services/postgres/anima\n"
+"#   url: credential(\"services/postgres/anima\", \"url\")\n"
 
 #. type: Plain text
 #: docs/guide/database.md:38
@@ -234,7 +234,7 @@ msgid "pre-commit `test:changed` does **not** run integration tests."
 msgstr "pre-commit 的 `test:changed` **不会**运行集成测试。"
 
 #. type: Title ##
-#: docs/guide/database.md:79
+#: docs/guide/database.md:79 docs/guide/remote-access.md:91
 #, no-wrap
 msgid "Troubleshooting"
 msgstr "故障排查"

@@ -32,6 +32,8 @@
     "./connectors/email": "./connectors/email/index.ts",
     "./connectors/redis": "./connectors/redis/index.ts",
     "./connectors/eventbus-redis": "./connectors/eventbus-redis/index.ts",
+    "./connectors/tunnel": "./connectors/tunnel/index.ts",
+    "./connectors/tunnel/*": "./connectors/tunnel/*.ts",
     "./sap": "./src/sap/index.ts",
     "./sap/*": "./src/sap/*.ts"
   },

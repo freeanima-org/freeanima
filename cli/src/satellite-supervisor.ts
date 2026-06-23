@@ -146,7 +146,8 @@ export function startAllSatellites(opts?: {
   }
 }
 
-export function stopAllSatellites(): void {
+/** 前台模式 spawn 的 satellite 子进程（非 systemd 托管） */
+export function stopForegroundSatellites(): void {
   for (const [name, child] of foregroundChildren) {
     try {
       process.kill(child.pid ?? 0, "SIGTERM");
@@ -155,8 +156,13 @@ export function stopAllSatellites(): void {
     }
     foregroundChildren.delete(name);
   }
+}
 
-  stopManagedSatellitesViaSystemd();
+export function stopAllSatellites(opts?: { skipSystemd?: boolean }): void {
+  stopForegroundSatellites();
+  if (!opts?.skipSystemd) {
+    stopManagedSatellitesViaSystemd();
+  }
 }
 
 export function stopSatellitesBeforeExit(): void {

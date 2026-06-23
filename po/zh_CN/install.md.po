@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-22 11:28+0800\n"
+"POT-Creation-Date: 2026-06-23 15:04+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,10 +23,13 @@ msgstr "安装"
 
 #. type: Plain text
 #: docs/guide/install.md:9
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "> Deploy FreeAnima on your machine — npm CLI, Docker Compose, or from source.\n"
+#| "> After install: [`security.md`](security.md) (credentials, bind address) · [`database.md`](database.md) (PostgreSQL) · [`service.md`](service.md) (runtime commands).\n"
 msgid ""
 "> Deploy FreeAnima on your machine — npm CLI, Docker Compose, or from source.\n"
-"> After install: [`security.md`](security.md) (credentials, bind address) · [`database.md`](database.md) (PostgreSQL) · [`service.md`](service.md) (runtime commands).\n"
+"> After install: [`security.md`](security.md) (credentials, bind address) · [`database.md`](database.md) (PostgreSQL) · [`service.md`](service.md) (runtime commands) · [`remote-access.md`](remote-access.md) (Cloudflare Tunnel).\n"
 msgstr ""
 "> 在本机部署逸灵风 — npm CLI、Docker Compose 或从源码安装。\n"
 "> 安装后：[`security.md`](security.md)（凭证、绑定地址）· [`database.md`](database.md)（PostgreSQL）· [`service.md`](service.md)（运行时命令）。\n"
@@ -203,12 +206,12 @@ msgstr ""
 #: docs/guide/install.md:73
 msgid ""
 "Then reference them in config, e.g. `api_key: credential(\"api/openai\", "
-"\"token\")` and `database.url: pass:services/postgres/anima`. See "
-"[`security.md`](security.md#credential-responsibilities)."
+"\"token\")` and `database.url: credential(\"services/postgres/anima\", "
+"\"url\")`. See [`security.md`](security.md#credential-responsibilities)."
 msgstr ""
 "然后在配置中引用，例如 `api_key: credential(\"api/openai\", \"token\")` 与 "
-"`database.url: pass:services/postgres/anima`。见 [`security.md`]"
-"(security.md#credential-responsibilities)。"
+"`database.url: credential(\"services/postgres/anima\", \"url\")`。见 "
+"[`security.md`](security.md#credential-responsibilities)。"
 
 #. type: Plain text
 #: docs/guide/install.md:75
@@ -687,7 +690,7 @@ msgid "Next steps"
 msgstr "后续步骤"
 
 #. type: Bullet: '1. '
-#: docs/guide/install.md:260
+#: docs/guide/install.md:261
 msgid ""
 "**Security** — pass-only secrets, `chmod 700 ~/.anima`, do not expose WebUI "
 "without auth ([`security.md`](security.md))"
@@ -696,21 +699,28 @@ msgstr ""
 "（[`security.md`](security.md)）"
 
 #. type: Bullet: '2. '
-#: docs/guide/install.md:260
+#: docs/guide/install.md:261
+msgid ""
+"**Remote access** — optional Cloudflare Tunnel + Access for personal mobile/"
+"remote Chamber ([`remote-access.md`](remote-access.md))"
+msgstr ""
+
+#. type: Bullet: '3. '
+#: docs/guide/install.md:261
 msgid ""
 "**Database** — backups, extensions, manual migrations if needed "
 "([`database.md`](database.md))"
 msgstr ""
 "**数据库** — 备份、扩展、必要时手动迁移（[`database.md`](database.md)）"
 
-#. type: Bullet: '3. '
-#: docs/guide/install.md:260
+#. type: Bullet: '4. '
+#: docs/guide/install.md:261
 msgid ""
 "**Operations** — start/stop, memory metrics ([`service.md`](service.md))"
 msgstr "**运维** — 启停、内存指标（[`service.md`](service.md)）"
 
-#. type: Bullet: '4. '
-#: docs/guide/install.md:260
+#. type: Bullet: '5. '
+#: docs/guide/install.md:261
 msgid ""
 "**Architecture** — memory pipeline, self layer, tools ([`../concepts/"
 "architecture.md`](../concepts/architecture.md))"

@@ -5,7 +5,7 @@ title: Installation
 # Installation
 
 > Deploy FreeAnima on your machine — npm CLI, Docker Compose, or from source.
-> After install: [`security.md`](security.md) (credentials, bind address) · [`database.md`](database.md) (PostgreSQL) · [`service.md`](service.md) (runtime commands).
+> After install: [`security.md`](security.md) (credentials, bind address) · [`database.md`](database.md) (PostgreSQL) · [`service.md`](service.md) (runtime commands) · [`remote-access.md`](remote-access.md) (Cloudflare Tunnel).
 
 ## Choose a path
 
@@ -69,7 +69,7 @@ anima credential add api/openai token=sk-…
 anima credential add services/postgres/anima url=postgresql://… host=… password=… database=anima
 ```
 
-Then reference them in config, e.g. `api_key: credential("api/openai", "token")` and `database.url: pass:services/postgres/anima`. See [`security.md`](security.md#credential-responsibilities).
+Then reference them in config, e.g. `api_key: credential("api/openai", "token")` and `database.url: credential("services/postgres/anima", "url")`. See [`security.md`](security.md#credential-responsibilities).
 
 PostgreSQL setup (Debian helper, extensions, migrations): [`database.md`](database.md).
 
@@ -255,6 +255,7 @@ If status fails, check PostgreSQL connectivity and that migrations completed ([`
 ## Next steps
 
 1. **Security** — pass-only secrets, `chmod 700 ~/.anima`, do not expose WebUI without auth ([`security.md`](security.md))
-2. **Database** — backups, extensions, manual migrations if needed ([`database.md`](database.md))
-3. **Operations** — start/stop, memory metrics ([`service.md`](service.md))
-4. **Architecture** — memory pipeline, self layer, tools ([`../concepts/architecture.md`](../concepts/architecture.md))
+2. **Remote access** — optional Cloudflare Tunnel + Access for personal mobile/remote Chamber ([`remote-access.md`](remote-access.md))
+3. **Database** — backups, extensions, manual migrations if needed ([`database.md`](database.md))
+4. **Operations** — start/stop, memory metrics ([`service.md`](service.md))
+5. **Architecture** — memory pipeline, self layer, tools ([`../concepts/architecture.md`](../concepts/architecture.md))

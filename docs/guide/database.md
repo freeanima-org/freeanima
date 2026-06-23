@@ -15,8 +15,8 @@ Set the database URL in `config.yaml`:
 ```yaml
 database:
   url: postgresql://user:pass@localhost:5432/anima
-  # or inject from pass:
-  # url: pass:services/postgres/anima
+  # or use credential():
+  # url: credential("services/postgres/anima", "url")
 ```
 
 Production **must** set `database.url`. Prefer pass for passwords instead of plaintext in config. Path conventions: [`security.md`](security.md#credential-responsibilities).
@@ -31,7 +31,7 @@ sudo ./scripts/setup-postgres-debian.sh
 anima credential add services/postgres/anima url=… host=… password=… database=anima
 
 # config.yaml:
-#   url: pass:services/postgres/anima
+#   url: credential("services/postgres/anima", "url")
 ```
 
 Defaults: PostgreSQL 17, `localhost` only, `scram-sha-256`, dedicated `anima` database and user.

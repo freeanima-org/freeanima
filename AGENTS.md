@@ -89,6 +89,7 @@ DATABASE_URL="…" bun run --filter @freeanima/core db:migrate
 - Pair-programming satellite: `http://127.0.0.1:4173`
 - Release: [`.agent/rules/release.md`](.agent/rules/release.md)
 - PG ops (install, backup): [`docs/guide/database.md`](docs/guide/database.md)
+- Remote access (Cloudflare Tunnel): [`docs/guide/remote-access.md`](docs/guide/remote-access.md)
 
 ---
 
@@ -142,22 +143,22 @@ Corrections or refinements to direction, principles, philosophy, or agent behavi
 
 ## Docs to update when code changes
 
-| Change type                                                | Update                                                                                             |
-| ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| PG schema / DDL                                            | [`core/src/db/schema/`](core/src/db/schema/) + [`.agent/rules/coding.md`](.agent/rules/coding.md)  |
-| PG query conventions (ORM vs execute)                      | [`.agent/rules/drizzle-db.md`](.agent/rules/drizzle-db.md)                                         |
-| PG ops (install, backup, migrate UX)                       | [`docs/guide/database.md`](docs/guide/database.md)                                                 |
-| Layer deps / composition root / Registry                   | [`.agent/rules/code-layers.md`](.agent/rules/code-layers.md) + confirm `check-layer-deps.ts`       |
-| Test strategy / mock tiers                                 | [`.agent/rules/testing.md`](.agent/rules/testing.md) + [`tests/README.md`](tests/README.md)        |
-| Memory pipeline / retrieval                                | [`docs/concepts/memory.md`](docs/concepts/memory.md) + architecture                                |
-| Security / threat surface                                  | [`docs/guide/security.md`](docs/guide/security.md) + architecture                                  |
-| Architecture principles                                    | [`docs/concepts/architecture.md`](docs/concepts/architecture.md)                                   |
-| Principle / direction / philosophy correction (any source) | Triage per [Principle & direction maintenance](#principle--direction-maintenance); same PR as code |
-| New RFC package / rename                                   | [`.agent/rules/packages.md`](.agent/rules/packages.md)                                             |
-| Release                                                    | [`.agent/rules/release.md`](.agent/rules/release.md)                                               |
-| Compression algorithm                                      | [`.agent/rules/compression.md`](.agent/rules/compression.md)                                       |
-| UI / docs i18n (Paraglide, po4a, PO)                       | [`.agent/rules/i18n.md`](.agent/rules/i18n.md)                                                     |
-| Task done                                                  | close corresponding GitHub Issue; user-visible changes use Conventional Commits                    |
+| Change type                                                | Update                                                                                                                       |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| PG schema / DDL                                            | [`core/src/db/schema/`](core/src/db/schema/) + [`.agent/rules/coding.md`](.agent/rules/coding.md)                            |
+| PG query conventions (ORM vs execute)                      | [`.agent/rules/drizzle-db.md`](.agent/rules/drizzle-db.md)                                                                   |
+| PG ops (install, backup, migrate UX)                       | [`docs/guide/database.md`](docs/guide/database.md) · [`docs/guide/remote-access.md`](docs/guide/remote-access.md) for Tunnel |
+| Layer deps / composition root / Registry                   | [`.agent/rules/code-layers.md`](.agent/rules/code-layers.md) + confirm `check-layer-deps.ts`                                 |
+| Test strategy / mock tiers                                 | [`.agent/rules/testing.md`](.agent/rules/testing.md) + [`tests/README.md`](tests/README.md)                                  |
+| Memory pipeline / retrieval                                | [`docs/concepts/memory.md`](docs/concepts/memory.md) + architecture                                                          |
+| Security / threat surface                                  | [`docs/guide/security.md`](docs/guide/security.md) + architecture                                                            |
+| Architecture principles                                    | [`docs/concepts/architecture.md`](docs/concepts/architecture.md)                                                             |
+| Principle / direction / philosophy correction (any source) | Triage per [Principle & direction maintenance](#principle--direction-maintenance); same PR as code                           |
+| New RFC package / rename                                   | [`.agent/rules/packages.md`](.agent/rules/packages.md)                                                                       |
+| Release                                                    | [`.agent/rules/release.md`](.agent/rules/release.md)                                                                         |
+| Compression algorithm                                      | [`.agent/rules/compression.md`](.agent/rules/compression.md)                                                                 |
+| UI / docs i18n (Paraglide, po4a, PO)                       | [`.agent/rules/i18n.md`](.agent/rules/i18n.md)                                                                               |
+| Task done                                                  | close corresponding GitHub Issue; user-visible changes use Conventional Commits                                              |
 
 Tool tables, module trees, API lists **are not maintained in docs** — use registration code and service router as source of truth.
 

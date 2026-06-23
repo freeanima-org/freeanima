@@ -13,20 +13,20 @@ FreeAnima is designed for **single-user local / intranet** deployment:
 
 - HTTP / WebUI **has no auth by default**; binding `127.0.0.1` is not security—any process or user that can reach the port can read sessions, send messages, start/stop MCP/ACP.
 - Default bind is `127.0.0.1`; for LAN access, assess CORS and network isolation yourself.
-- **Do not** expose the service to the public internet without reverse-proxy authentication.
+- **Do not** expose the service to the public internet without reverse-proxy authentication (built-in option: [`remote-access.md`](remote-access.md) — Cloudflare Tunnel + Access).
 
 ## Credential Responsibilities
 
-| Rule                     | Description                                                                                                                                      |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Sole authoritative store | [pass](https://www.passwordstore.org/) (GPG, `~/.password-store`)                                                                                |
-| Never commit secrets     | Do not write API keys, tokens, DB passwords into `config.yaml` and commit to git                                                                 |
-| Runtime directory        | `~/.anima/` (`FREEANIMA_HOME` overridable) holds config, sessions, memory—recommend `chmod 700`                                                  |
-| CLI plaintext output     | `anima credential get` prints plaintext to stdout; do not redirect to shared logs                                                                |
-| WebUI credential detail  | `GET /api/credentials/detail?path=` returns pass plaintext to local WebUI; same sensitivity as CLI; relies on bind address and process isolation |
-| pass path conventions    | `api/opencode-go`, `services/discord`, `services/firecrawl`, `services/postgres/anima`, `services/pushdeer`, `services/weixin-ilink`             |
+| Rule                     | Description                                                                                                                                                                                                     |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Sole authoritative store | [pass](https://www.passwordstore.org/) (GPG, `~/.password-store`)                                                                                                                                               |
+| Never commit secrets     | Do not write API keys, tokens, DB passwords into `config.yaml` and commit to git                                                                                                                                |
+| Runtime directory        | `~/.anima/` (`FREEANIMA_HOME` overridable) holds config, sessions, memory—recommend `chmod 700`                                                                                                                 |
+| CLI plaintext output     | `anima credential get` prints plaintext to stdout; do not redirect to shared logs                                                                                                                               |
+| WebUI credential detail  | `GET /api/credentials/detail?path=` returns pass plaintext to local WebUI; same sensitivity as CLI; relies on bind address and process isolation                                                                |
+| pass path conventions    | `api/opencode-go`, `services/cloudflare/api-token`, `services/cloudflare/tunnel-credentials`, `services/discord`, `services/firecrawl`, `services/postgres/anima`, `services/pushdeer`, `services/weixin-ilink` |
 
-`config.yaml` supports `database.url: pass:services/postgres/anima` etc.; secrets injected at runtime from pass.
+`config.yaml` supports `credential("path", "field")` and `env("KEY")` for secrets (e.g. `database.url: credential("services/postgres/anima", "url")` or `env("DATABASE_URL")`); values are injected at runtime from pass or the environment.
 
 ## Data Persistence
 
@@ -67,15 +67,15 @@ Disk backup = data access. Protect backup media accordingly.
 
 The following are planned in code or docs—**deployers must not assume implemented**:
 
-| Priority | Item                                                  | Status          |
-| -------- | ----------------------------------------------------- | --------------- |
-| P0       | file_read_file full deny (`/etc/` etc.)               | Partial         |
-| P0       | `terminal_run` / `code_execute` default `shell=False` | Not implemented |
-| P1       | Runtime Unix socket `chmod 600` + handshake token     | Not implemented |
-| P1       | `FREEANIMA_WRITE_SAFE_ROOT` / `READ_SAFE_ROOT`        | Not implemented |
-| P2       | HTTP API auth                                         | None            |
-| P3       | IPC / LLM rate limiting                               | None            |
-| P3       | Session disk encryption                               | None            |
+| Priority | Item                                                  | Status                                                                                                |
+| -------- | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| P0       | file_read_file full deny (`/etc/` etc.)               | Partial                                                                                               |
+| P0       | `terminal_run` / `code_execute` default `shell=False` | Not implemented                                                                                       |
+| P1       | Runtime Unix socket `chmod 600` + handshake token     | Not implemented                                                                                       |
+| P1       | `FREEANIMA_WRITE_SAFE_ROOT` / `READ_SAFE_ROOT`        | Not implemented                                                                                       |
+| P2       | HTTP API auth                                         | None by default; Cloudflare Access JWT when `tunnel.enabled` ([`remote-access.md`](remote-access.md)) |
+| P3       | IPC / LLM rate limiting                               | None                                                                                                  |
+| P3       | Session disk encryption                               | None                                                                                                  |
 
 ## Threat Sources
 
@@ -89,13 +89,13 @@ The following are planned in code or docs—**deployers must not assume implemen
 
 ## Security Matrix
 
-| Module           | A External              | B LLM injection                                                     | C Agent error             | D Dependencies     | E Data                             |
-| ---------------- | ----------------------- | ------------------------------------------------------------------- | ------------------------- | ------------------ | ---------------------------------- |
-| **Runtime**      | Default 127.0.0.1 bind  | MaxTurnsExceeded                                                    | Gap: rate limiting        | llm client vulns   | PG unencrypted                     |
-| **Gateway**      | Token in pass           | Malicious messages                                                  | Reply with sensitive info | SDK vulns          | —                                  |
-| **CLI / Tools**  | Local shell compromised | file_read_file partial deny (**P0 extending**); shell=True (**P0**) | rm -rf etc.               | —                  | Logs may contain conversations     |
-| **HTTP / WebUI** | No auth; CORS whitelist | BFF does not touch LLM params directly                              | config display            | Vue/axios          | SSE plaintext                      |
-| **MCP / ACP**    | SSE auth undefined      | Malicious params                                                    | Wrong delegation          | Server compromised | Context may contain sensitive data |
+| Module           | A External                                      | B LLM injection                                                     | C Agent error             | D Dependencies     | E Data                             |
+| ---------------- | ----------------------------------------------- | ------------------------------------------------------------------- | ------------------------- | ------------------ | ---------------------------------- |
+| **Runtime**      | Default 127.0.0.1 bind                          | MaxTurnsExceeded                                                    | Gap: rate limiting        | llm client vulns   | PG unencrypted                     |
+| **Gateway**      | Token in pass                                   | Malicious messages                                                  | Reply with sensitive info | SDK vulns          | —                                  |
+| **CLI / Tools**  | Local shell compromised                         | file_read_file partial deny (**P0 extending**); shell=True (**P0**) | rm -rf etc.               | —                  | Logs may contain conversations     |
+| **HTTP / WebUI** | No auth by default; tunnel mode uses Access JWT | BFF does not touch LLM params directly                              | config display            | Vue/axios          | SSE plaintext                      |
+| **MCP / ACP**    | SSE auth undefined                              | Malicious params                                                    | Wrong delegation          | Server compromised | Context may contain sensitive data |
 
 ## Proposals Pending Review
 

@@ -1,0 +1,282 @@
+# SOME DESCRIPTIVE TITLE
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-06-23 15:04+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Content of: <messages><msg>
+#: docs/concepts/dream.md:9 docs/concepts/sleep.md:9
+#: docs/guide/remote-access.md:11 messages/po4a/en.xml:39
+#: messages/po4a/en.xml:47
+#, no-wrap
+msgid "Overview"
+msgstr ""
+
+#. type: Title ##
+#: docs/guide/database.md:79 docs/guide/remote-access.md:91
+#, no-wrap
+msgid "Troubleshooting"
+msgstr ""
+
+#. type: Yaml Front Matter Hash Value: title
+#: docs/guide/remote-access.md:1
+#, no-wrap
+msgid "Remote access"
+msgstr ""
+
+#. type: Title #
+#: docs/guide/remote-access.md:5
+#, no-wrap
+msgid "Remote access (Cloudflare Tunnel + Access)"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/remote-access.md:10
+#, no-wrap
+msgid ""
+"> Expose Chamber WebUI to the public internet safely for **single-user** personal use.\n"
+"> Prerequisites: domain on Cloudflare, Zero Trust team, Google (or other IdP) for Access login.\n"
+"> Security context: [`security.md`](security.md) · install: [`install.md`](install.md)\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/remote-access.md:14
+msgid ""
+"FreeAnima can publish `127.0.0.1:2658` via **Cloudflare Tunnel** "
+"(`cloudflared`) with **Cloudflare Access** authentication at the edge. Login "
+"happens on Cloudflare (e.g. Google), not in FreeAnima."
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/remote-access.md:20
+#, no-wrap
+msgid ""
+"| Layer                    | Role                                                                    |\n"
+"| ------------------------ | ----------------------------------------------------------------------- |\n"
+"| Cloudflare Access        | User login, Allow policy (your email)                                   |\n"
+"| cloudflared              | Outbound tunnel to local Hub                                            |\n"
+"| FreeAnima JWT middleware | Validates `Cf-Access-Jwt-Assertion`; loopback direct access still works |\n"
+msgstr ""
+
+#. type: Title ##
+#: docs/guide/remote-access.md:21
+#, no-wrap
+msgid "Quick start"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/remote-access.md:24
+msgid "One command (interactive wizard includes cloudflared install):"
+msgstr ""
+
+#. type: Fenced code block (bash)
+#: docs/guide/remote-access.md:25
+#, no-wrap
+msgid ""
+"anima tunnel setup\n"
+"anima service start\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/remote-access.md:31
+#, no-wrap
+msgid "Open `https://<your-hostname>/chamber/dashboard` from PC or mobile browser → sign in with Google (or configured IdP).\n"
+msgstr ""
+
+#. type: Title ##
+#: docs/guide/remote-access.md:32
+#, no-wrap
+msgid "Setup wizard"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/remote-access.md:35
+msgid ""
+"`anima tunnel setup` saves each answer to `~/.anima/config.yaml` as you go "
+"(`tunnel.enabled` stays `false` until success). Re-run the wizard to resume "
+"with saved values."
+msgstr ""
+
+#. type: Bullet: '1. '
+#: docs/guide/remote-access.md:41
+msgid "Public hostname (e.g. `anima.example.com`)"
+msgstr ""
+
+#. type: Bullet: '2. '
+#: docs/guide/remote-access.md:41
+msgid "Zero Trust team name (e.g. `myteam` → `myteam.cloudflareaccess.com`)"
+msgstr ""
+
+#. type: Bullet: '3. '
+#: docs/guide/remote-access.md:41
+msgid "Allowed email (single-user Allow policy)"
+msgstr ""
+
+#. type: Bullet: '4. '
+#: docs/guide/remote-access.md:41
+msgid ""
+"Optional Cloudflare API Token — auto-creates Tunnel, DNS, and Access App"
+msgstr ""
+
+#. type: Bullet: '5. '
+#: docs/guide/remote-access.md:41
+msgid "Session duration (default 7 days)"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/remote-access.md:43
+msgid "Secrets are stored in **pass**:"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/remote-access.md:48
+#, no-wrap
+msgid ""
+"| pass 路径 | 是什么 | 谁提供 |\n"
+"| --------- | ------ | ------ |\n"
+"| `services/cloudflare/api-token` | **Cloudflare API Token** — 调用 Cloudflare API 创建 Tunnel/DNS/Access | 你在 Dashboard → 我的个人资料 → API 令牌 创建 |\n"
+"| `services/cloudflare/tunnel-credentials` | **隧道连接器凭证** — `cloudflared` 连接 Cloudflare 用 | setup 通过 API 自动生成，**不要**与 API Token 混淆 |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/remote-access.md:50
+#, no-wrap
+msgid "**不是** Zero Trust 控制台里「隧道 → 安装连接器」复制的那段令牌（那是旧版手动安装方式；本向导用 API Token 自动换取隧道凭证）。\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/remote-access.md:52
+msgid "Config is written to `~/.anima/config.yaml` under `tunnel:`."
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/remote-access.md:54
+#, no-wrap
+msgid "Tunnel ingress targets the Hub at `127.0.0.1:<port>` where `<port>` comes from the running service (`server.status.json`) or defaults to `2658` — it is **not** a `tunnel:` config field. Use `anima service --port` for the Hub; `anima tunnel setup --port` only overrides during setup.\n"
+msgstr ""
+
+#. type: Title ###
+#: docs/guide/remote-access.md:55
+#, no-wrap
+msgid "Non-interactive"
+msgstr ""
+
+#. type: Fenced code block (bash)
+#: docs/guide/remote-access.md:57
+#, no-wrap
+msgid ""
+"anima tunnel setup --non-interactive \\\n"
+"  --hostname anima.example.com \\\n"
+"  --team myteam \\\n"
+"  --email you@gmail.com \\\n"
+"  --access-api \\\n"
+"  --yes\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/remote-access.md:67
+msgid ""
+"Provide API Token via pass before running, or paste during interactive setup."
+msgstr ""
+
+#. type: Title ###
+#: docs/guide/remote-access.md:68
+#, no-wrap
+msgid "Manual Access (no API Token)"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/remote-access.md:71
+msgid ""
+"If you skip the API Token, the wizard prints numbered Dashboard steps: "
+"create self-hosted Access App, Allow-by-email policy, copy **AUD** tag into "
+"`tunnel.access.audience`."
+msgstr ""
+
+#. type: Title ##
+#: docs/guide/remote-access.md:72
+#, no-wrap
+msgid "Operations"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/remote-access.md:80
+#, no-wrap
+msgid ""
+"| Command                | Description                                               |\n"
+"| ---------------------- | --------------------------------------------------------- |\n"
+"| `anima tunnel status`  | Tunnel / Access / cloudflared state                       |\n"
+"| `anima tunnel start`   | Start cloudflared sidecar                                 |\n"
+"| `anima tunnel stop`    | Stop sidecar                                              |\n"
+"| `anima tunnel install` | Download cloudflared only (optional; setup includes this) |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/remote-access.md:82
+msgid ""
+"When `tunnel.enabled: true`, `anima service start` also starts the tunnel "
+"sidecar (systemd user unit or foreground with `--foreground`)."
+msgstr ""
+
+#. type: Title ##
+#: docs/guide/remote-access.md:83
+#, no-wrap
+msgid "API Token permissions"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/remote-access.md:86
+msgid "创建 **API Token**（非隧道连接器令牌）时建议权限："
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/guide/remote-access.md:90
+msgid "Account — Cloudflare Tunnel: Edit"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/guide/remote-access.md:90
+msgid "Zone — DNS: Edit (auto CNAME)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/guide/remote-access.md:90
+msgid "Account — Access: Apps and Policies: Edit (optional `--access-api`)"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/remote-access.md:99
+#, no-wrap
+msgid ""
+"| Symptom              | Check                                                            |\n"
+"| -------------------- | ---------------------------------------------------------------- |\n"
+"| Public URL 502       | Hub running? `anima service status`                              |\n"
+"| Access login loop    | IdP enabled in Access App; email in Allow policy                 |\n"
+"| 401 from Hub         | `tunnel.access.audience` matches Access App AUD                  |\n"
+"| Local Chamber broken | Loopback bypass — use `http://127.0.0.1:2658` without CF headers |\n"
+msgstr ""
+
+#. type: Title ##
+#: docs/guide/remote-access.md:100
+#, no-wrap
+msgid "PC vs mobile"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/remote-access.md:102
+msgid ""
+"Each browser keeps its own Access session cookie. First visit on PC and "
+"phone each require one Google login; sessions renew per configured duration."
+msgstr ""

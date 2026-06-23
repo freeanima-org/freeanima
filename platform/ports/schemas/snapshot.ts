@@ -80,6 +80,13 @@ export type ServiceSnapshot = {
     postgres: DependencyStatus;
     redis: DependencyStatus;
   };
+  tunnel?: {
+    enabled: boolean;
+    hostname: string;
+    public_url: string;
+    webui_url: string;
+    chamber_url: string;
+  };
 };
 
 export type SessionSummary = {
