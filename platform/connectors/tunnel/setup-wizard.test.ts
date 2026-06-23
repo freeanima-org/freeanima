@@ -9,13 +9,15 @@ describe("setup-wizard", () => {
   });
 
   test("manualAccessDashboardSteps includes hostname and email", () => {
+    const hostname = "anima.example.com";
+    const email = "you@gmail.com";
     const steps = manualAccessDashboardSteps({
-      hostname: "anima.example.com",
+      hostname,
       teamName: "myteam",
-      email: "you@gmail.com",
+      email,
     });
-    expect(steps.some((s) => s.includes("anima.example.com"))).toBe(true);
-    expect(steps.some((s) => s.includes("you@gmail.com"))).toBe(true);
+    expect(steps[1]).toBe(`2. 域名填写: ${hostname}`);
+    expect(steps[2]).toBe(`3. 添加 Allow Policy: Email equals ${email}`);
   });
 });
 
