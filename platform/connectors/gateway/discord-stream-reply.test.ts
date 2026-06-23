@@ -5,24 +5,40 @@ import { describe, expect, it, vi } from "bun:test";
 import { streamReplyToChannel } from "@freeanima/platform/connectors/gateway";
 type TimelineEntry = { kind: "send" | "edit"; text: string };
 
+const TEST_SESSION_ID = "550e8400-e29b-41d4-a716-446655440000";
+
 describe("streamReplyToChannel", () => {
   function fakeChannel(): {
     channel: TextBasedChannel;
     edits: string[];
     sends: string[];
+    componentSends: Array<{ content: string; componentCount: number }>;
     sentMessages: Array<Pick<Message, "edit">>;
     timeline: TimelineEntry[];
   } {
     const edits: string[] = [];
     const sends: string[] = [];
+    const componentSends: Array<{ content: string; componentCount: number }> = [];
     const sentMessages: Array<Pick<Message, "edit">> = [];
     const timeline: TimelineEntry[] = [];
 
     const channel = {
       send: vi.fn(async (arg: unknown) => {
-        const text = typeof arg === "string" ? arg : "";
+        const text =
+          typeof arg === "string"
+            ? arg
+            : arg && typeof arg === "object" && "content" in arg
+              ? String((arg as { content: string }).content)
+              : "";
         sends.push(text);
         timeline.push({ kind: "send", text });
+        if (arg && typeof arg === "object" && "content" in arg) {
+          const payload = arg as { content: string; components?: unknown[] };
+          componentSends.push({
+            content: payload.content,
+            componentCount: payload.components?.length ?? 0,
+          });
+        }
         const sentMsg = {
           edit: vi.fn(async (opts: { content: string }) => {
             edits.push(opts.content);
@@ -37,6 +53,7 @@ describe("streamReplyToChannel", () => {
       channel: channel as unknown as TextBasedChannel,
       edits,
       sends,
+      componentSends,
       sentMessages,
       timeline,
     };
@@ -245,5 +262,71 @@ describe("streamReplyToChannel", () => {
     ]);
     expect(edits[edits.length - 1]).toBe("quick");
     hangResolve();
+  });
+
+  it("awaiting_clarify single choice question sends Discord components", async () => {
+    const { channel, sends, componentSends } = fakeChannel();
+    async function* gen(): AsyncGenerator<StreamEvent> {
+      yield {
+        event: "awaiting_clarify",
+        data: {
+          items: [{ question: "Pick one?", choices: ["Alpha", "Beta"] }],
+          timeout_sec: 1800,
+        },
+      };
+      yield { event: "done", data: { reason: "awaiting_clarify" } };
+    }
+    await streamReplyToChannel(channel, gen(), {
+      sessionId: TEST_SESSION_ID,
+      toolDisplayMode: "hidden",
+    });
+
+    expect(sends).toHaveLength(1);
+    expect(sends[0]).toContain("Pick one?");
+    expect(sends[0]).not.toContain("1. Alpha");
+    expect(componentSends).toHaveLength(1);
+    expect(componentSends[0]!.componentCount).toBe(1);
+  });
+
+  it("awaiting_clarify without choices stays plain text", async () => {
+    const { channel, sends, componentSends } = fakeChannel();
+    async function* gen(): AsyncGenerator<StreamEvent> {
+      yield {
+        event: "awaiting_clarify",
+        data: {
+          items: [{ question: "Enter value?" }],
+          timeout_sec: 1800,
+        },
+      };
+      yield { event: "done", data: { reason: "awaiting_clarify" } };
+    }
+    await streamReplyToChannel(channel, gen(), {
+      sessionId: TEST_SESSION_ID,
+      toolDisplayMode: "hidden",
+    });
+
+    expect(sends).toHaveLength(1);
+    expect(sends[0]).toContain("Enter value?");
+    expect(componentSends).toHaveLength(0);
+  });
+
+  it("awaiting_clarify multi-item batch stays plain text", async () => {
+    const { channel, componentSends } = fakeChannel();
+    async function* gen(): AsyncGenerator<StreamEvent> {
+      yield {
+        event: "awaiting_clarify",
+        data: {
+          items: [{ question: "Q1?", choices: ["A", "B"] }, { question: "Q2?" }],
+          timeout_sec: 1800,
+        },
+      };
+      yield { event: "done", data: { reason: "awaiting_clarify" } };
+    }
+    await streamReplyToChannel(channel, gen(), {
+      sessionId: TEST_SESSION_ID,
+      toolDisplayMode: "hidden",
+    });
+
+    expect(componentSends).toHaveLength(0);
   });
 });

@@ -16,18 +16,37 @@ export function formatClarifyPlain(items: ClarifyItem[]): string {
   return parts.join("\n");
 }
 
-export function formatClarifyDiscord(payload: ClarifyPayload): string {
-  const lines = ["**Confirmation needed:**", ""];
-  for (let i = 0; i < payload.items.length; i++) {
-    const item = payload.items[i]!;
+function formatClarifyDiscordQuestionLines(
+  items: ClarifyPayload["items"],
+  includeChoices: boolean,
+): string[] {
+  const lines: string[] = [];
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i]!;
     lines.push(`**${i + 1}. ${item.question}**`);
-    if (item.choices?.length) {
+    if (includeChoices && item.choices?.length) {
       for (let j = 0; j < item.choices.length; j++) {
         lines.push(`   ${j + 1}. ${item.choices[j]}`);
       }
     }
     lines.push("");
   }
+  return lines;
+}
+
+/** 按钮模式：问题正文，不重复列出编号选项 */
+export function formatClarifyDiscordWithButtons(payload: ClarifyPayload): string {
+  const lines = ["**Confirmation needed:**", ""];
+  lines.push(...formatClarifyDiscordQuestionLines(payload.items, false));
+  lines.push(
+    `Choose a button below within ${Math.round(payload.timeout_sec / 60)} minute(s), or send /cancel to abort.`,
+  );
+  return lines.join("\n").trim();
+}
+
+export function formatClarifyDiscord(payload: ClarifyPayload): string {
+  const lines = ["**Confirmation needed:**", ""];
+  lines.push(...formatClarifyDiscordQuestionLines(payload.items, true));
   lines.push(
     `Reply within ${Math.round(payload.timeout_sec / 60)} minute(s), or send /cancel to abort.`,
   );

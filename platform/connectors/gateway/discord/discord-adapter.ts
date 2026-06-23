@@ -2,11 +2,13 @@ import {
   ChannelType,
   Client,
   GatewayIntentBits,
+  type ButtonInteraction,
   type ChatInputCommandInteraction,
   type Message,
   Partials,
   type TextBasedChannel,
 } from "discord.js";
+import { expireIfNeeded, readAwaitingClarify } from "@freeanima/capabilities-tools/clarify";
 import {
   isEngineStreamError,
   isTransientNetworkError,
@@ -24,6 +26,11 @@ import type { PlatformAdapter } from "../platforms.ts";
 import { resolveToolDisplayMode } from "../tool-display.ts";
 import { streamReplyToChannel } from "./discord-channel.ts";
 import {
+  disabledActionRowsFromMessage,
+  parseClarifyButtonCustomId,
+} from "./discord-clarify-components.ts";
+import { ClarifyPendingRegistry } from "./discord-clarify-pending.ts";
+import {
   extractOrigin,
   mergeDiscordConfig,
   shouldCreateThread,
@@ -37,6 +44,7 @@ import {
 import {
   ensureSlashInteractionDeferred,
   interactionToCommandText,
+  originFromButtonInteraction,
   originFromInteraction,
   replyDiscordInteraction,
   syncDiscordSlashCommands,
@@ -140,6 +148,8 @@ export class DiscordAdapter implements PlatformAdapter {
   private readonly shardErrorLogLimiter = new KeyedRateLimiter();
   private sessionUpdatedOff: (() => void) | null = null;
   private readonly slashInteractionInflight = new Map<string, Promise<void>>();
+  private readonly buttonInteractionInflight = new Map<string, Promise<void>>();
+  private readonly clarifyPending: ClarifyPendingRegistry;
 
   constructor(
     private readonly service: MessagingPort,
@@ -158,6 +168,7 @@ export class DiscordAdapter implements PlatformAdapter {
       ],
       partials: [Partials.Channel, Partials.Message],
     });
+    this.clarifyPending = new ClarifyPendingRegistry(this.client);
 
     this.client.on("error", (e) => {
       logComponent("discord").error("Discord client error", { err: e });
@@ -202,15 +213,27 @@ export class DiscordAdapter implements PlatformAdapter {
     });
 
     this.client.on("interactionCreate", (interaction) => {
-      if (!interaction.isChatInputCommand()) return;
-      void this.runSlashCommandOnce(interaction).catch((e) => {
-        const log = logComponent("discord");
-        if (isDiscordDeliveryDegraded(e)) {
-          log.warn("Discord slash command failed", { err: e });
-        } else {
-          log.error("Discord slash command failed", { err: e });
-        }
-      });
+      if (interaction.isChatInputCommand()) {
+        void this.runSlashCommandOnce(interaction).catch((e) => {
+          const log = logComponent("discord");
+          if (isDiscordDeliveryDegraded(e)) {
+            log.warn("Discord slash command failed", { err: e });
+          } else {
+            log.error("Discord slash command failed", { err: e });
+          }
+        });
+        return;
+      }
+      if (interaction.isButton() && interaction.customId.startsWith("clarify:")) {
+        void this.runClarifyButtonOnce(interaction).catch((e) => {
+          const log = logComponent("discord");
+          if (isDiscordDeliveryDegraded(e)) {
+            log.warn("Discord clarify button failed", { err: e });
+          } else {
+            log.error("Discord clarify button failed", { err: e });
+          }
+        });
+      }
     });
 
     this.client.on("messageCreate", (msg) => {
@@ -287,6 +310,7 @@ export class DiscordAdapter implements PlatformAdapter {
     this.sessionUpdatedOff?.();
     this.sessionUpdatedOff = null;
     unregisterDiscordCronDeliverer();
+    this.clarifyPending.disposeAll();
     this.client.destroy();
     logComponent("shutdown").debug("Discord disconnected");
   }
@@ -299,6 +323,120 @@ export class DiscordAdapter implements PlatformAdapter {
     });
     this.slashInteractionInflight.set(interaction.id, task);
     return task;
+  }
+
+  private runClarifyButtonOnce(interaction: ButtonInteraction): Promise<void> {
+    const inflight = this.buttonInteractionInflight.get(interaction.id);
+    if (inflight) return inflight;
+    const task = this.handleClarifyButton(interaction).finally(() => {
+      this.buttonInteractionInflight.delete(interaction.id);
+    });
+    this.buttonInteractionInflight.set(interaction.id, task);
+    return task;
+  }
+
+  private async handleClarifyButton(interaction: ButtonInteraction): Promise<void> {
+    const parsed = parseClarifyButtonCustomId(interaction.customId);
+    if (!parsed) return;
+
+    const origin = originFromButtonInteraction(interaction);
+    const { session_id: channelSid } = await this.service.findOrCreateSession(
+      "discord",
+      origin.platform_extra,
+    );
+    if (channelSid !== parsed.sessionId) {
+      await this.rejectClarifyButton(interaction, "This button does not belong to this channel.");
+      return;
+    }
+
+    const conversation = getAppRuntime().conversation;
+    const expiry = await expireIfNeeded(conversation, parsed.sessionId);
+    if (expiry.expired) {
+      await this.rejectClarifyButton(
+        interaction,
+        expiry.hint ?? "Previous questions have expired.",
+      );
+      return;
+    }
+
+    const awaiting = await readAwaitingClarify(conversation, parsed.sessionId);
+    if (!awaiting) {
+      await this.rejectClarifyButton(interaction, "No pending confirmation for this session.");
+      return;
+    }
+
+    const channel = interaction.channel;
+    if (!channel?.isTextBased()) return;
+
+    await interaction.deferUpdate();
+    await this.clarifyPending.clear(parsed.sessionId);
+
+    if (parsed.kind === "cancel") {
+      const cmdResult = await this.service.executeCommand({
+        session_id: parsed.sessionId,
+        text: "/cancel",
+        platform: "discord",
+        origin_extra: origin.platform_extra,
+      });
+      if (cmdResult.text) {
+        await this.sendToChannel(channel, cmdResult.text);
+      }
+      return;
+    }
+
+    const choice = awaiting.items[0]?.choices?.[parsed.choiceIndex];
+    if (!choice) {
+      await interaction.followUp({
+        content: "Invalid choice.",
+        ephemeral: true,
+      });
+      return;
+    }
+
+    try {
+      await streamReplyToChannel(
+        channel,
+        this.service.sendMessageStream(parsed.sessionId, choice, "discord"),
+        {
+          sessionId: parsed.sessionId,
+          clarifyPending: this.clarifyPending,
+          toolDisplayMode: resolveToolDisplayMode(
+            await getAppRuntime().conversation.loadSessionMeta(parsed.sessionId),
+            getAppRuntime().engine.config.data,
+          ),
+        },
+      );
+    } catch (e) {
+      logDiscordSessionError(parsed.sessionId, e);
+      try {
+        await this.sendToChannel(channel, networkErrorUserHint(e));
+      } catch {
+        /* May fail to reply on network errors */
+      }
+    }
+  }
+
+  private async rejectClarifyButton(
+    interaction: ButtonInteraction,
+    message: string,
+  ): Promise<void> {
+    const parsed = parseClarifyButtonCustomId(interaction.customId);
+    if (!interaction.deferred && !interaction.replied) {
+      await interaction.deferUpdate();
+    }
+    if (parsed) {
+      await this.clarifyPending.clear(parsed.sessionId);
+    } else if ("edit" in interaction.message && typeof interaction.message.edit === "function") {
+      const components = disabledActionRowsFromMessage(interaction.message);
+      try {
+        await withDiscordRetry(() =>
+          interaction.message.edit({ content: interaction.message.content, components }),
+        );
+      } catch {
+        /* disable best-effort */
+      }
+    }
+    await interaction.followUp({ content: message, ephemeral: true });
   }
 
   private async handleSlashCommand(interaction: ChatInputCommandInteraction): Promise<void> {
@@ -359,6 +497,8 @@ export class DiscordAdapter implements PlatformAdapter {
       threadOrigin.platform_extra,
     );
 
+    await this.clarifyPending.clear(sid);
+
     const cmdResult = await this.service.executeCommand({
       session_id: sid,
       text: cleanContent,
@@ -388,6 +528,8 @@ export class DiscordAdapter implements PlatformAdapter {
         channel,
         this.service.sendMessageStream(sid, cleanContent, "discord"),
         {
+          sessionId: sid,
+          clarifyPending: this.clarifyPending,
           toolDisplayMode: resolveToolDisplayMode(
             await getAppRuntime().conversation.loadSessionMeta(sid),
             getAppRuntime().engine.config.data,

@@ -4,6 +4,7 @@ import {
   REST,
   Routes,
   SlashCommandBuilder,
+  type ButtonInteraction,
   type ChatInputCommandInteraction,
   type Client,
 } from "discord.js";
@@ -99,6 +100,21 @@ export function originFromInteraction(interaction: ChatInputCommandInteraction):
   if (!channel) {
     throw new Error("interaction has no channel");
   }
+  return originFromDiscordChannel(channel, interaction.guildId ?? "");
+}
+
+export function originFromButtonInteraction(interaction: ButtonInteraction): PlatformOrigin {
+  const channel = interaction.channel;
+  if (!channel) {
+    throw new Error("interaction has no channel");
+  }
+  return originFromDiscordChannel(channel, interaction.guildId ?? "");
+}
+
+function originFromDiscordChannel(
+  channel: NonNullable<ChatInputCommandInteraction["channel"]>,
+  guildId: string,
+): PlatformOrigin {
   const isThread = "isThread" in channel && channel.isThread();
   const channelId = channel.id;
   const parentChannelId =
@@ -106,7 +122,7 @@ export function originFromInteraction(interaction: ChatInputCommandInteraction):
   return extractOrigin({
     channelId,
     parentChannelId,
-    guildId: interaction.guildId ?? "",
+    guildId,
     isThread,
   });
 }

@@ -1,10 +1,11 @@
-import type { Message, TextBasedChannel } from "discord.js";
+import type { ActionRowBuilder, ButtonBuilder, Message, TextBasedChannel } from "discord.js";
 import type { StreamEvent } from "@freeanima/runtime/loop";
 import { chunkText } from "../chunk-text.ts";
+import type { ClarifyPendingRegistry } from "./discord-clarify-pending.ts";
 import {
   createDiscordAnswerStrategy,
   createDiscordCleanupStrategy,
-  createGatewayToolRoundStrategy,
+  createDiscordGatewayToolRoundStrategy,
   createStreamChannelComposer,
   DISCORD_ANSWER_SPLIT_AT,
 } from "../stream-strategies/index.ts";
@@ -30,6 +31,8 @@ function splitDiscordMessage(text: string, limit = DISCORD_MAX_LEN): string[] {
 
 export type DiscordStreamChannelOptions = RunStreamChannelOptions & {
   toolDisplayMode?: ToolDisplayMode;
+  sessionId?: string;
+  clarifyPending?: ClarifyPendingRegistry;
 };
 
 export async function streamReplyToChannel(
@@ -40,13 +43,28 @@ export async function streamReplyToChannel(
   if (!("send" in channel) || typeof channel.send !== "function") return;
 
   let answerMsg: Message | null = null;
-  const channelSend = channel.send.bind(channel) as (content: string) => Promise<Message>;
+  const channelSend = channel.send.bind(channel) as (
+    content: string | { content: string; components?: unknown[] },
+  ) => Promise<Message>;
 
   const sendChunked = async (text: string): Promise<void> => {
     for (const chunk of splitDiscordMessage(text)) {
       await withDiscordRetry(async (): Promise<void> => {
         await channelSend(chunk);
       });
+    }
+  };
+
+  const sendClarifyWithComponents = async (
+    content: string,
+    components: ActionRowBuilder<ButtonBuilder>[],
+    timeoutSec: number,
+  ): Promise<void> => {
+    const message = await withDiscordRetry(
+      async (): Promise<Message> => channelSend({ content, components }),
+    );
+    if (opts?.sessionId && opts.clarifyPending) {
+      opts.clarifyPending.register(opts.sessionId, message, timeoutSec);
     }
   };
 
@@ -66,9 +84,16 @@ export async function streamReplyToChannel(
   };
 
   const toolDisplayMode = opts?.toolDisplayMode ?? DEFAULT_TOOL_DISPLAY_MODE;
-  const toolStrategy = createGatewayToolRoundStrategy(async (text) => {
-    await sendChunked(text);
-  }, toolDisplayMode);
+  const toolStrategy = createDiscordGatewayToolRoundStrategy(
+    async (text) => {
+      await sendChunked(text);
+    },
+    async (content, rows, timeoutSec) => {
+      await sendClarifyWithComponents(content, rows, timeoutSec);
+    },
+    toolDisplayMode,
+    opts?.sessionId,
+  );
 
   const answerStrategy = createDiscordAnswerStrategy({ io: answerIo });
   const finalizeHandle = answerStrategy.handle.bind(answerStrategy);

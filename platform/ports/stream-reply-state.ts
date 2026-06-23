@@ -1,5 +1,6 @@
 /** 流式出站状态层类型 — runtime SSOT + Gateway 可见块 */
 
+import type { HookClarifyItem } from "@freeanima/core/hooks/loop";
 import type {
   AnswerSegment,
   ApplyStreamReplyResult,
@@ -32,7 +33,12 @@ export type StreamEffect =
   | { kind: "answer_replace"; content: string }
   | { kind: "answer_commit"; segmentId: number; content: string }
   | { kind: "answer_finalize"; content: string }
-  | { kind: "clarify"; text: string }
+  | {
+      kind: "clarify";
+      text: string;
+      items: HookClarifyItem[];
+      timeout_sec: number;
+    }
   | { kind: "turn_end"; reason: "done" | "error" | "interrupted"; message?: string };
 
 export type ApplyStreamEventResult = {
