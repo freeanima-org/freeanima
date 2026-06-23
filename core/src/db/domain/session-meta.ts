@@ -3,6 +3,7 @@ import { z } from "zod";
 import {
   awaitingClarifySchema,
   compressionJsonSchema,
+  sessionGoalSchema,
   sessionTodoStoreSchema,
   todoItemSchema,
   todoStatusSchema,
@@ -12,6 +13,7 @@ import { safeParseOrNull } from "@freeanima/core/util";
 
 export {
   awaitingClarifySchema,
+  sessionGoalSchema,
   sessionTodoStoreSchema,
   todoItemSchema,
   todoStatusSchema,
@@ -67,4 +69,10 @@ export function parseSessionTodoStore(raw: unknown): SessionTodoStore {
 
 export function parseAwaitingClarify(raw: unknown): AwaitingClarify | null {
   return safeParseOrNull(awaitingClarifySchema, raw);
+}
+
+export type SessionGoal = z.infer<typeof sessionGoalSchema>;
+
+export function parseSessionGoal(raw: unknown): SessionGoal | null {
+  return safeParseOrNull(sessionGoalSchema, raw);
 }

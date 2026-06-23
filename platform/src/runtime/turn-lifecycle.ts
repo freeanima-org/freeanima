@@ -12,6 +12,11 @@ import { ProviderError } from "@freeanima/core/provider";
 import { getProfileHopModel } from "@freeanima/platform/config";
 import { PROFILE_CHAT } from "@freeanima/core/provider";
 import { isInsufficientToolMessagesError } from "@freeanima/core/llm";
+import {
+  evaluateGoalAfterTurn,
+  shouldSkipGoalEvaluate,
+  toGoalRuntimeDeps,
+} from "@freeanima/runtime/goal";
 import type { HookRegistry } from "@freeanima/kernel/hooks";
 import { SessionManager } from "./session-manager.ts";
 
@@ -118,38 +123,56 @@ export async function runSimpleTurn(
   opts: RunSimpleTurnOpts,
 ): Promise<string> {
   const { sessionId, prompt, model, prepare = deps.conversation.beginTurn, titleNotify } = opts;
-  const [msgs, functions, effective] = await prepare(sessionId, prompt);
+  let [msgs, functions, effective] = await prepare(sessionId, prompt);
   maybeGenerateSessionTitleAsync(deps, sessionId, effective, titleNotify);
-  const tools = await deps.conversation.loadSessionTools(sessionId);
-  const meta = await deps.conversation.loadSessionMeta(sessionId);
-  const toolMask = runtimeToolMaskFromResolved(resolveSessionMaskFromMeta(deps, meta));
-  const executableTools = isSessionMeta(meta)
-    ? resolveExecutableToolNames(meta, deps.engine.catalog.toolSets)
-    : undefined;
-  try {
-    return await runWithToolContext(
-      sessionId,
-      () =>
-        loopEngine.run(msgs, {
-          config: deps.engine.config.data,
-          logger: deps.engine.logger,
-          model,
-          tools,
-          llm: deps.engine.llm,
-          toolMask,
-          executableTools,
-          ...createTurnMessageCallbacks(deps, sessionId),
-        }),
-      { repos: deps.conversation.repos, tools: deps.engine.catalog.toolSets, executableTools },
-    );
-  } catch (e) {
-    if (e instanceof loopEngine.MaxTurnsExceeded) {
-      return `[tool loop limit exceeded] ${e.message}`;
+  const goalDeps = toGoalRuntimeDeps(deps);
+  let result = "";
+
+  goalLoop: while (true) {
+    const tools = await deps.conversation.loadSessionTools(sessionId);
+    const meta = await deps.conversation.loadSessionMeta(sessionId);
+    const toolMask = runtimeToolMaskFromResolved(resolveSessionMaskFromMeta(deps, meta));
+    const executableTools = isSessionMeta(meta)
+      ? resolveExecutableToolNames(meta, deps.engine.catalog.toolSets)
+      : undefined;
+    try {
+      result = await runWithToolContext(
+        sessionId,
+        () =>
+          loopEngine.run(msgs, {
+            config: deps.engine.config.data,
+            logger: deps.engine.logger,
+            model,
+            tools,
+            llm: deps.engine.llm,
+            toolMask,
+            executableTools,
+            ...createTurnMessageCallbacks(deps, sessionId),
+          }),
+        { repos: deps.conversation.repos, tools: deps.engine.catalog.toolSets, executableTools },
+      );
+    } catch (e) {
+      if (e instanceof loopEngine.MaxTurnsExceeded) {
+        return `[tool loop limit exceeded] ${e.message}`;
+      }
+      return `[engine error] ${e}`;
     }
-    return `[engine error] ${e}`;
-  } finally {
     await finalizeTurn(deps, sessionId, msgs, effective, model, functions);
+
+    if (await shouldSkipGoalEvaluate(goalDeps, sessionId, msgs)) {
+      break goalLoop;
+    }
+    const evalResult = await evaluateGoalAfterTurn(goalDeps, sessionId, msgs);
+    if (evalResult.action !== "continue") {
+      break goalLoop;
+    }
+    effective = await deps.conversation.beginTurnFast(sessionId, evalResult.continuePrompt);
+    const prepared = await deps.conversation.beginTurnPrepare(sessionId);
+    msgs = prepared[0];
+    functions = prepared[1];
   }
+
+  return result;
 }
 
 export async function* yieldEngineStream(
@@ -259,12 +282,13 @@ export async function* runExclusiveStreamTurn(
     }
     const cfg = deps.engine.config.data;
     const model = getProfileHopModel(cfg, PROFILE_CHAT);
+    const goalDeps = toGoalRuntimeDeps(deps);
     let hadError = false;
     let sawDone = false;
     let retried = false;
 
-    while (true) {
-      if (host.isShuttingDown?.()) break;
+    goalLoop: while (true) {
+      if (host.isShuttingDown?.()) break goalLoop;
       hadError = false;
       sawDone = false;
       let pendingDone: StreamEvent | null = null;
@@ -272,33 +296,43 @@ export async function* runExclusiveStreamTurn(
       const { signal, controller } = host.beginEngineRun(sessionId);
 
       try {
-        for await (const ev of yieldEngineStream(deps, host, sessionId, msgs, model, signal)) {
-          if (ev.event === "done") {
-            pendingDone = ev;
-            sawDone = true;
-            continue;
-          }
-          if (ev.event === "token" || ev.event === "content_replace") {
-            streamedText = true;
-          }
-          buffer.push(ev);
-          signalReady();
-          if (ev.event === "error") {
-            hadError = true;
-            if (!retried && isInsufficientToolMessagesError(ev.data.error)) {
-              const [runtimeMsgs, fn] = await host.reloadRuntimeAfterRepair(sessionId);
-              msgs = runtimeMsgs;
-              functions = fn;
-              retried = true;
-              hadError = false;
-              break;
+        engineRetry: while (true) {
+          if (host.isShuttingDown?.()) break engineRetry;
+          hadError = false;
+          sawDone = false;
+          pendingDone = null;
+          streamedText = false;
+
+          for await (const ev of yieldEngineStream(deps, host, sessionId, msgs, model, signal)) {
+            if (ev.event === "done") {
+              pendingDone = ev;
+              sawDone = true;
+              continue;
+            }
+            if (ev.event === "token" || ev.event === "content_replace") {
+              streamedText = true;
+            }
+            buffer.push(ev);
+            signalReady();
+            if (ev.event === "error") {
+              hadError = true;
+              if (!retried && isInsufficientToolMessagesError(ev.data.error)) {
+                const [runtimeMsgs, fn] = await host.reloadRuntimeAfterRepair(sessionId);
+                msgs = runtimeMsgs;
+                functions = fn;
+                retried = true;
+                hadError = false;
+                break;
+              }
             }
           }
+          if (retried && !sawDone && !hadError) {
+            if (host.isShuttingDown?.()) break engineRetry;
+            continue;
+          }
+          break engineRetry;
         }
-        if (retried && !sawDone && !hadError) {
-          if (host.isShuttingDown?.()) break;
-          continue;
-        }
+
         if (!hadError) {
           const reply = lastAssistantText(msgs);
           const displayContent = await host.onTurnAfterComplete(sessionId, msgs, reply);
@@ -318,13 +352,32 @@ export async function* runExclusiveStreamTurn(
           }
           await new Promise<void>((resolve) => setImmediate(resolve));
           await finalizeTurn(deps, sessionId, msgs, effective, model, functions);
+
+          if (!(await shouldSkipGoalEvaluate(goalDeps, sessionId, msgs))) {
+            const evalResult = await evaluateGoalAfterTurn(goalDeps, sessionId, msgs);
+            if (evalResult.displayHint) {
+              buffer.push({ event: "token", data: { content: `\n${evalResult.displayHint}\n` } });
+              signalReady();
+            }
+            if (evalResult.action === "continue") {
+              effective = await deps.conversation.beginTurnFast(
+                sessionId,
+                evalResult.continuePrompt,
+              );
+              const prepared = await deps.conversation.beginTurnPrepare(sessionId);
+              msgs = prepared[0];
+              functions = prepared[1];
+              retried = false;
+              continue goalLoop;
+            }
+          }
         }
-        break;
+        break goalLoop;
       } catch (e) {
         hadError = true;
         buffer.push(streamErrorEvent(deps, sessionId, String(e), e));
         signalReady();
-        break;
+        break goalLoop;
       } finally {
         host.endEngineRun(sessionId, controller);
       }

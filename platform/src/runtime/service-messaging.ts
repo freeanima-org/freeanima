@@ -2,6 +2,7 @@ import {
   executeCommand as runSlashCommand,
   resolveCommand,
   isRetryResult,
+  isGoalStartResult,
   isRestartResult,
   isUpgradeResult,
 } from "@freeanima/platform/commands";
@@ -121,6 +122,18 @@ export async function executeCommand(
     }
   }
 
+  if (isGoalStartResult(result)) {
+    try {
+      const reply = await collectStreamReply(
+        runGoalStartStream(deps, msgDeps, sessionId, result.data.prompt),
+      );
+      const combined = result.text ? `${result.text}\n\n${reply}`.trim() : reply;
+      return { text: combined, data: result.data, found: true };
+    } catch (e) {
+      return { text: `⚠️ ${e}`, data: result.data, found: true };
+    }
+  }
+
   if (isRestartResult(result) || isUpgradeResult(result)) {
     scheduleGracefulRestart(msgDeps.runControl, {
       beforeRestart: isUpgradeResult(result) ? runAnimaCliUpgrade : undefined,
@@ -221,6 +234,18 @@ async function* dispatchCommandStream(
     }
     return;
   }
+  if (isGoalStartResult(result)) {
+    if (result.text) {
+      yield { event: "token", data: { content: result.text } };
+    }
+    try {
+      yield* runGoalStartStream(deps, msgDeps, sessionId, result.data.prompt);
+    } catch (e) {
+      yield { event: "token", data: { content: `⚠️ ${e}` } };
+      yield { event: "done", data: {} };
+    }
+    return;
+  }
   if (isRestartResult(result) || isUpgradeResult(result)) {
     if (result.text) {
       yield { event: "token", data: { content: result.text } };
@@ -247,6 +272,37 @@ function runRetryStream(
     deps,
     sessionId,
     async () => deps.conversation.retryTurn(sessionId),
+    msgDeps.streamHost,
+    msgDeps.sessionManager,
+  );
+}
+
+function runGoalStartStream(
+  deps: FullRuntimeDeps,
+  msgDeps: MessagingDeps,
+  sessionId: string,
+  prompt: string,
+): AsyncGenerator<StreamEvent> {
+  msgDeps.runControl.preemptSessionEngine(sessionId);
+  let effectiveUserText = "";
+  return runExclusiveStreamTurn(
+    deps,
+    sessionId,
+    {
+      fast: async () => {
+        effectiveUserText = await deps.conversation.beginTurnFast(sessionId, prompt);
+        maybeGenerateSessionTitleAsync(deps, sessionId, effectiveUserText, {
+          bus: msgDeps.bus,
+          onSessionUpdated: msgDeps.onSessionUpdated,
+          emitSessionUpdated: (sid) => msgDeps.streamHost.emitSessionUpdated(sid),
+        });
+        return effectiveUserText;
+      },
+      prepare: async () => {
+        const [runtimeMsgs, functions] = await deps.conversation.beginTurnPrepare(sessionId);
+        return [runtimeMsgs, functions, effectiveUserText];
+      },
+    },
     msgDeps.streamHost,
     msgDeps.sessionManager,
   );

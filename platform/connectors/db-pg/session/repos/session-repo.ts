@@ -14,6 +14,7 @@ import {
   buildOriginIdentityProbe,
   sessionCachedToolsetsSchema,
   sessionFunctionsSchema,
+  sessionGoalSchema,
   sessionInsertSchema,
   sessionStagedToolsetsSchema,
   sessions,
@@ -53,6 +54,7 @@ export async function getSessionMetaLite(sessionId: string): Promise<SessionMeta
       todos: sessions.todos,
       awaitingClarify: sessions.awaitingClarify,
       acpTasks: sessions.acpTasks,
+      goal: sessions.goal,
       cachedToolsets: sessions.cachedToolsets,
       stagedToolsets: sessions.stagedToolsets,
       functions: sessions.functions,
@@ -105,6 +107,7 @@ export async function upsertSessionMeta(
           todos: row.todos,
           awaitingClarify: row.awaitingClarify,
           acpTasks: row.acpTasks,
+          goal: row.goal,
           cachedToolsets: row.cachedToolsets,
           stagedToolsets: row.stagedToolsets,
           functions: row.functions,
@@ -180,6 +183,11 @@ export async function patchSessionMeta(
   if (patch.acp_tasks !== undefined) {
     const acpRaw = pgJsonbOrNull(patch.acp_tasks);
     set.acpTasks = acpRaw ? acpTasksSchema.parse(acpRaw) : null;
+    hasColumnPatch = true;
+  }
+  if (patch.goal !== undefined) {
+    const goalRaw = pgJsonbOrNull(patch.goal);
+    set.goal = goalRaw ? sessionGoalSchema.parse(goalRaw) : null;
     hasColumnPatch = true;
   }
   if (patch.model !== undefined) {

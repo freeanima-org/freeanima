@@ -12,6 +12,8 @@
     "./loop/stream-reply": "./src/loop/stream-reply/index.ts",
     "./conversation": "./src/conversation/index.ts",
     "./conversation/*": "./src/conversation/*.ts",
+    "./goal": "./src/goal/index.ts",
+    "./goal/*": "./src/goal/*.ts",
     "./pipeline": "./src/pipeline/index.ts",
     "./pipeline/*": "./src/pipeline/*.ts"
   },

@@ -148,3 +148,20 @@ export type SessionStagedToolsetsJson = z.infer<typeof sessionStagedToolsetsSche
 /** sessions.functions */
 export const sessionFunctionsSchema = z.preprocess(normalizeSessionToolNames, z.array(z.string()));
 export type SessionFunctionsJson = z.infer<typeof sessionFunctionsSchema>;
+
+export const sessionGoalStatusSchema = z.enum(["active", "paused", "completed", "exhausted"]);
+
+/** sessions.goal — session-level persistent goal for auto-continue loop */
+export const sessionGoalSchema = z.object({
+  description: z.string().min(1),
+  subgoals: z.array(z.string()).default([]),
+  status: sessionGoalStatusSchema,
+  turn_count: z.number().int().nonnegative().default(0),
+  max_turns: z.number().int().positive().default(20),
+  last_judge_reason: z.string().optional(),
+  set_at: z.string().min(1),
+  completed_at: z.string().optional(),
+});
+
+export type SessionGoalJson = z.infer<typeof sessionGoalSchema>;
+export type SessionGoalStatusJson = z.infer<typeof sessionGoalStatusSchema>;

@@ -11,6 +11,7 @@ import { capabilityMaskSchema } from "@freeanima/core/db/schema";
 import {
   sessionCachedToolsetsSchema,
   sessionFunctionsSchema,
+  sessionGoalSchema,
   sessionStagedToolsetsSchema,
 } from "@freeanima/core/db/schema";
 
@@ -37,6 +38,7 @@ const META_KNOWN_KEYS = new Set([
   "todos",
   "awaiting_clarify",
   "acp_tasks",
+  "goal",
   "cached_toolsets",
   "staged_toolsets",
   "functions",
@@ -81,6 +83,8 @@ export function sessionMetaToInsert(sessionId: string, meta: SessionMetaMessage)
   const awaitingParsed = awaitingRaw ? awaitingClarifySchema.parse(awaitingRaw) : null;
   const acpRaw = pgJsonbOrNull(meta.acp_tasks);
   const acpParsed = acpRaw ? acpTasksSchema.parse(acpRaw) : null;
+  const goalRaw = pgJsonbOrNull(meta.goal);
+  const goalParsed = goalRaw ? sessionGoalSchema.parse(goalRaw) : null;
 
   return {
     id: sessionId,
@@ -96,6 +100,7 @@ export function sessionMetaToInsert(sessionId: string, meta: SessionMetaMessage)
     todos,
     awaitingClarify: awaitingParsed,
     acpTasks: acpParsed,
+    goal: goalParsed,
     cachedToolsets,
     stagedToolsets,
     functions,
@@ -137,6 +142,7 @@ export function rowToSessionMeta(row: unknown): SessionMetaMessage {
     todos: parsed.todos,
     awaiting_clarify: parsed.awaitingClarify ?? undefined,
     acp_tasks: parsed.acpTasks ?? undefined,
+    goal: parsed.goal ?? undefined,
     acp_tasks_handled_at: handledAt,
     cached_toolsets: parsed.cachedToolsets,
     staged_toolsets: parsed.stagedToolsets,
