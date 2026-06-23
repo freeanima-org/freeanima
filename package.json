@@ -68,6 +68,9 @@
     "drizzle-orm@1.0.0-rc.3": "patches/drizzle-orm@1.0.0-rc.3.patch",
     "fbx2vrma-converter@1.0.2": "patches/fbx2vrma-converter@1.0.2.patch"
   },
+  "overrides": {
+    "@sinclair/typebox": "^0.34.49"
+  },
   "trustedDependencies": [
     "cpu-features",
     "esbuild",
@@ -87,6 +90,7 @@
       "platform"
     ],
     "catalog": {
+      "@sinclair/typebox": "^0.34.49",
       "@types/bun": "^1.3.14",
       "@types/node": "^25.9.4",
       "@types/react": "^19.2.17",
