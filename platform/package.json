@@ -60,21 +60,21 @@
     "imapflow": "^1.0.186",
     "marked": "^18.0.4",
     "nodemailer": "^9.0.0",
-    "react": "19",
-    "react-dom": "19",
+    "react": "catalog:",
+    "react-dom": "catalog:",
     "xterm": "^5.3.0",
     "zod": "catalog:",
-    "zustand": "^5.0.14"
+    "zustand": "catalog:"
   },
   "devDependencies": {
     "@types/bun": "catalog:",
     "@types/node": "catalog:",
     "@types/nodemailer": "^8.0.1",
-    "@types/react": "^19.2.16",
-    "@types/react-dom": "^19.2.3",
-    "bun-plugin-tailwind": "^0.1.2",
-    "daisyui": "^5.5.20",
-    "tailwindcss": "^4.3.0",
-    "typescript": "^6.0.3"
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "bun-plugin-tailwind": "catalog:",
+    "daisyui": "catalog:",
+    "tailwindcss": "catalog:",
+    "typescript": "catalog:"
   }
 }

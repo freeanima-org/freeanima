@@ -41,7 +41,7 @@ export function resolveMotionsSearchDirs(): string[] {
 
 export function resolveMotionFile(relativePath: string): string | null {
   const rawName = basename(relativePath);
-  let name = rawName;
+  let name: string;
   try {
     name = decodeURIComponent(rawName);
   } catch {

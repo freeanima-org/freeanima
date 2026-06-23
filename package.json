@@ -7,10 +7,10 @@
     "@inlang/plugin-m-function-matcher": "^2.2.9",
     "@inlang/plugin-message-format": "^4.4.0",
     "@splicemood/lcov-to-cobertura": "^0.1.1",
-    "@types/bun": "^1.3.14",
-    "@types/node": "^25.9.4",
+    "@types/bun": "catalog:",
+    "@types/node": "catalog:",
     "@typescript/native-preview": "^7.0.0-dev.20260621.1",
-    "bun-plugin-tailwind": "^0.1.2",
+    "bun-plugin-tailwind": "catalog:",
     "husky": "^9.1.7",
     "oxfmt": "^0.55.0",
     "oxlint": "^1.70.0"
@@ -87,13 +87,21 @@
       "platform"
     ],
     "catalog": {
-      "@types/node": "^24.12.4",
-      "@typescript/native-preview": "^7.0.0-dev.20260602.1",
       "@types/bun": "^1.3.14",
+      "@types/node": "^25.9.4",
+      "@types/react": "^19.2.17",
+      "@types/react-dom": "^19.2.3",
+      "@typescript/native-preview": "^7.0.0-dev.20260602.1",
+      "bun-plugin-tailwind": "^0.1.2",
+      "daisyui": "^5.5.23",
       "drizzle-kit": "^1.0.0-rc.3",
       "drizzle-orm": "^1.0.0-rc.3",
-      "typescript": "^5.9.3",
-      "zod": "^4.4.3"
+      "react": "^19.2.7",
+      "react-dom": "^19.2.7",
+      "tailwindcss": "^4.3.1",
+      "typescript": "^6.0.3",
+      "zod": "^4.4.3",
+      "zustand": "^5.0.14"
     }
   }
 }

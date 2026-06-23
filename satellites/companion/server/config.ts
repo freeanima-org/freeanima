@@ -52,7 +52,7 @@ function migrateLegacy(raw: LegacyConfig): CompanionConfig {
   const behavior = mergeBehavior(raw.behavior);
   let models = raw.models ?? [];
   let motion_library = raw.motion_library ?? [];
-  let motion_slots = raw.motion_slots ?? emptyMotionSlots();
+  let motion_slots: MotionSlotsConfig;
 
   const legacyPath = raw.model_path ?? PLACEHOLDER_MODEL_PATH;
   if (models.length === 0 && legacyPath && legacyPath !== PLACEHOLDER_MODEL_PATH) {

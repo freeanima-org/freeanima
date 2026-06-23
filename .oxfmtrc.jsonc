@@ -9,6 +9,7 @@
   "endOfLine": "lf",
   "sortPackageJson": false,
   "ignorePatterns": [
+    "bun.lock",
     "**/dist/**",
     "**/electron-dist/**",
     "**/coverage/**",
