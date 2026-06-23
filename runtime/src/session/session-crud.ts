@@ -337,16 +337,18 @@ export async function activateSessionOrigin(
   let siblingIds: string[] = [];
   if (postgresAvailable(repos) && Object.keys(identityExtra).length > 0) {
     siblingIds = await pgListSessionIdsMatchingPlatformProbe(repos, platform, identityExtra);
-  } else {
-    for (const sid of await listSessionsWithRouting(repos, platform)) {
-      try {
-        const siblingMeta = await loadSessionMeta(repos, sid);
-        if (!isSessionMeta(siblingMeta)) continue;
+  }
+  for (const sid of await listSessionsWithRouting(repos, platform)) {
+    if (siblingIds.includes(sid)) continue;
+    try {
+      const siblingMeta = await loadSessionMeta(repos, sid);
+      if (!isSessionMeta(siblingMeta)) continue;
+      if (Object.keys(identityExtra).length > 0) {
         if (!originExtraMatches(siblingMeta.platform_extra ?? {}, identityExtra)) continue;
-        siblingIds.push(sid);
-      } catch {
-        continue;
       }
+      siblingIds.push(sid);
+    } catch {
+      continue;
     }
   }
 

@@ -15,6 +15,7 @@ import {
   setTokenizerEncodeForTest,
 } from "@freeanima/core/tokenizer/testing";
 import { computeStats, mergeStats, statsReport, getAppRuntime } from "@freeanima/platform";
+import { TEST_SAP_PARLOR_PLATFORM } from "../../helpers/sap-parlor-test-platform.ts";
 import { testConv } from "../../helpers/pg-test.ts";
 
 function deps() {
@@ -61,7 +62,7 @@ describePg("conversation-stats", () => {
 
   it("computeStats with usage and latency", async () => {
     const c = testConv();
-    const sid = await c.newSession("parlor");
+    const sid = await c.newSession(TEST_SAP_PARLOR_PLATFORM);
     await c.appendMessage(
       {
         role: "user",
@@ -106,7 +107,7 @@ describePg("conversation-stats", () => {
 
   it("computeStats estimates when no usage in messages", async () => {
     const c = testConv();
-    const sid = await c.newSession("parlor");
+    const sid = await c.newSession(TEST_SAP_PARLOR_PLATFORM);
     await c.updateSessionMetaField(sid, { compression: { l2: 0, l3: 2 } });
     await c.appendMessage(
       {

@@ -53,12 +53,11 @@ export async function loadParlorInstanceId(): Promise<string | null> {
 
 export async function parlorPlatform(): Promise<string> {
   const instanceId = await loadParlorInstanceId();
-  if (instanceId) return formatSapPlatform(APP_ID, instanceId);
-  return "sap:parlor:web";
+  if (!instanceId) {
+    throw new Error("Parlor instance_id is required in config.json");
+  }
+  return formatSapPlatform(APP_ID, instanceId);
 }
-
-/** @deprecated Use parlorPlatform() after sidecar connect */
-export const PARLOR_PLATFORM = "sap:parlor:web";
 
 /** 测试用：重置 module 级缓存 */
 export function resetParlorInstanceCacheForTests(): void {

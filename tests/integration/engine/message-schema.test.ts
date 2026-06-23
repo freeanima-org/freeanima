@@ -7,6 +7,7 @@ import {
 } from "../../helpers/integration-case.ts";
 
 import { testConv } from "../../helpers/pg-test.ts";
+import { TEST_SAP_PARLOR_PLATFORM } from "../../helpers/sap-parlor-test-platform.ts";
 
 describePg("schemas/message", () => {
   const prev = process.env.FREEANIMA_HOME;
@@ -26,7 +27,7 @@ describePg("schemas/message", () => {
   it("updateSessionMetaField preserves acp_tasks", async () => {
     const c = testConv();
     const sid = "schema_test";
-    await c.initSession(sid, "m", { platform: "parlor" });
+    await c.initSession(sid, "m", { platform: TEST_SAP_PARLOR_PLATFORM });
     await c.updateSessionMetaField(sid, {
       acp_tasks: {
         "uuid-1": {

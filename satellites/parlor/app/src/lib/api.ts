@@ -4,7 +4,7 @@ import type {
   SessionListItem,
   StreamApiEvent,
 } from "./types.ts";
-import { getSapRelayClient, PARLOR_PLATFORM } from "./sap-client.ts";
+import { getSapRelayClient } from "./sap-client.ts";
 import { m } from "./i18n.ts";
 
 type SubscribeCallbacks<T> = {
@@ -25,7 +25,7 @@ function mapSessionList(raw: {
     sessions: raw.sessions.map((s) => ({
       id: s.session_id,
       title: s.title ?? "",
-      platform: s.platform ?? PARLOR_PLATFORM,
+      platform: s.platform ?? "",
       created: s.updated_at ?? "",
     })),
   };

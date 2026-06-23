@@ -33,7 +33,6 @@ import type {
   SafeConfigSnapshot,
   ServiceSnapshot,
 } from "@freeanima/platform/schemas/snapshot";
-import { PARLOR_PLATFORM } from "./platforms.ts";
 import { ANIMA_VERSION } from "./version.ts";
 
 export function startTimeIso(epochSec: number): string {
@@ -271,8 +270,20 @@ export function listCommands(opts?: { platform?: string; all?: boolean }): {
   }[];
   platform?: string;
 } {
-  const platform = opts?.platform ?? PARLOR_PLATFORM;
-  const defs = opts?.all ? listCommandDefs() : listCommandDefsForPlatform(platform);
+  if (opts?.all) {
+    const defs = listCommandDefs();
+    return {
+      commands: defs.map((c) => ({
+        name: c.name,
+        description: c.description,
+        scope: c.scope ?? "session",
+        platforms: c.platforms?.length ? [...c.platforms] : null,
+      })),
+    };
+  }
+  const platform = opts?.platform?.trim();
+  if (!platform) throw new Error("platform is required when all is not true");
+  const defs = listCommandDefsForPlatform(platform);
   return {
     commands: defs.map((c) => ({
       name: c.name,
@@ -280,6 +291,6 @@ export function listCommands(opts?: { platform?: string; all?: boolean }): {
       scope: c.scope ?? "session",
       platforms: c.platforms?.length ? [...c.platforms] : null,
     })),
-    ...(opts?.all ? {} : { platform }),
+    platform,
   };
 }

@@ -1,10 +1,7 @@
 import type { DisplayItem, SessionListItem } from "@/lib/types.ts";
-import { PARLOR_PLATFORM } from "@/lib/sap-client.ts";
 import { hasNewAssistantReply } from "@/lib/display-recovery.ts";
 import { create } from "zustand";
 import { createSession, getSessionMessages, listSessions, setSessionTitle } from "@/lib/api.ts";
-
-export { PARLOR_PLATFORM };
 
 type SessionsState = {
   sessions: SessionListItem[];

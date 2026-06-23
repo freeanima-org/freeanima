@@ -19,6 +19,7 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 import { getActivePgTestContext, getTestEngine, seedSession } from "../../helpers/pg-test.ts";
+import { TEST_SAP_PARLOR_PLATFORM } from "../../helpers/sap-parlor-test-platform.ts";
 
 function minimalConfig() {
   const parsed = animaConfigSchema.safeParse(parseYaml(MINIMAL_LLM_YAML));
@@ -44,7 +45,7 @@ function sessionMeta() {
     cached_toolsets: [] as string[],
     functions: [] as string[],
     timestamp: new Date().toISOString(),
-    platform: "parlor",
+    platform: TEST_SAP_PARLOR_PLATFORM,
   };
 }
 

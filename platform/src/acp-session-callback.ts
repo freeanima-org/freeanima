@@ -8,7 +8,6 @@ import { isSessionMeta } from "@freeanima/runtime/conversation";
 import type { ConversationService } from "@freeanima/runtime/conversation";
 import { logComponent } from "@freeanima/platform/logging";
 import type { AppRuntime } from "./runtime/app-runtime.ts";
-import { PARLOR_PLATFORM } from "./runtime/platforms.ts";
 
 export function buildAcpCallbackPrompt(tasks: ReturnType<typeof findUnhandledAcpTasks>): string {
   const lines = tasks.map((t) => {
@@ -53,7 +52,13 @@ export function createAcpSessionUpdatedHandler(opts: {
         if (!app) return;
 
         const meta = await opts.conversation.loadSessionMeta(sessionId);
-        const platform = isSessionMeta(meta) && meta.platform ? meta.platform : PARLOR_PLATFORM;
+        const platform = isSessionMeta(meta) && meta.platform?.trim() ? meta.platform.trim() : null;
+        if (!platform) {
+          logComponent("acp-callback").warn("Skipping ACP callback: session has no platform", {
+            sessionId,
+          });
+          return;
+        }
         const prompt = buildAcpCallbackPrompt(unhandled);
 
         logComponent("acp-callback").info("Triggering ACP callback turn", {

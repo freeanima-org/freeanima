@@ -26,7 +26,7 @@ describe("parlorPlatform", () => {
     expect(await parlorPlatform()).toBe("sap:parlor:tou");
   });
 
-  test("config 无 instance_id 时回退 sap:parlor:web", async () => {
+  test("config 无 instance_id 时抛出", async () => {
     globalThis.fetch = mock(() =>
       Promise.resolve(
         new Response(JSON.stringify({ app_id: "parlor" }), {
@@ -36,7 +36,7 @@ describe("parlorPlatform", () => {
       ),
     ) as unknown as typeof fetch;
 
-    expect(await parlorPlatform()).toBe("sap:parlor:web");
+    await expect(parlorPlatform()).rejects.toThrow("instance_id is required");
   });
 
   test("instance_id 结果会被缓存", async () => {

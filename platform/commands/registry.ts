@@ -35,9 +35,19 @@ export type CommandDef = {
   hidden?: boolean;
   /** default session */
   scope?: CommandScope;
-  /** whitelist; unset means all platforms */
+  /** whitelist; unset means all platforms; entries may use `*` glob (e.g. `sap:parlor:*`) */
   platforms?: string[];
 };
+
+const GLOB_ESCAPE_RE = /[.+?^${}()|[\]\\]/g;
+
+/** Whether `platform` satisfies a command platform entry (exact or glob with `*`). */
+export function platformMatchesCommandPattern(platform: string, pattern: string): boolean {
+  if (pattern === platform) return true;
+  if (!pattern.includes("*")) return false;
+  const regexSource = pattern.replace(GLOB_ESCAPE_RE, "\\$&").replace(/\*/g, ".*");
+  return new RegExp(`^${regexSource}$`).test(platform);
+}
 
 const registry = new Map<string, CommandDef>();
 
@@ -65,7 +75,7 @@ export function listCommandDefs(): CommandDef[] {
 
 export function commandAvailableForPlatform(cmd: CommandDef, platform: string): boolean {
   if (!cmd.platforms?.length) return true;
-  return cmd.platforms.includes(platform);
+  return cmd.platforms.some((pattern) => platformMatchesCommandPattern(platform, pattern));
 }
 
 export function listCommandDefsForPlatform(platform: string): CommandDef[] {

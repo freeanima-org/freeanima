@@ -80,7 +80,7 @@ export function buildOriginIdentityProbe(
 }
 
 /** Discord session bound channel/thread (see gateway/discord-policy extractOrigin) */
-const discordPlatformInfoSchema = z.object({
+const discordPlatformInfoSchema = z.looseObject({
   platform: z.literal("discord"),
   channel_id: z.string(),
   guild_id: z.string().optional(),
@@ -90,7 +90,7 @@ const discordPlatformInfoSchema = z.object({
 });
 
 /** WeChat session bound peer (see gateway/weixin/weixin-message) */
-const weixinPlatformInfoSchema = z.object({
+const weixinPlatformInfoSchema = z.looseObject({
   platform: z.literal("weixin"),
   weixin_user_id: z.string(),
   weixin_peer_id: z.string(),

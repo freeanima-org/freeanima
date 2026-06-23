@@ -65,6 +65,11 @@ export function sessionMetaToInsert(sessionId: string, meta: SessionMetaMessage)
   } else {
     delete extra.capability_mask;
   }
+  if (meta.gateway_tool_display !== undefined) {
+    extra.gateway_tool_display = meta.gateway_tool_display;
+  } else {
+    delete extra.gateway_tool_display;
+  }
 
   const cachedToolsets = sessionCachedToolsetsSchema.parse(meta.cached_toolsets ?? []);
   const stagedToolsets = sessionStagedToolsetsSchema.parse(meta.staged_toolsets ?? []);
@@ -107,8 +112,12 @@ export function rowToSessionMeta(row: unknown): SessionMetaMessage {
   const capabilityMaskRaw = platform_extra?.capability_mask;
   const capability_mask =
     capabilityMaskRaw !== undefined ? capabilityMaskSchema.parse(capabilityMaskRaw) : undefined;
+  const gatewayToolDisplayRaw = platform_extra?.gateway_tool_display;
+  const gateway_tool_display =
+    typeof gatewayToolDisplayRaw === "string" ? gatewayToolDisplayRaw : undefined;
   const restExtra = platform_extra ? { ...platform_extra } : undefined;
   if (restExtra) delete restExtra.capability_mask;
+  if (restExtra) delete restExtra.gateway_tool_display;
   const handledAt =
     typeof restExtra?.acp_tasks_handled_at === "string"
       ? restExtra.acp_tasks_handled_at
@@ -134,6 +143,7 @@ export function rowToSessionMeta(row: unknown): SessionMetaMessage {
     functions: parsed.functions,
     platform_extra: restExtra && Object.keys(restExtra).length > 0 ? restExtra : undefined,
     capability_mask,
+    gateway_tool_display,
     debug: parsed.debug,
   };
   return sessionMetaSchema.parse(base);

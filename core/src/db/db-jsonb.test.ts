@@ -46,6 +46,25 @@ describe("platform_info schema", () => {
     expect(splitPlatformInfo(info)).toEqual({ platform: "cron" });
   });
 
+  it("sap platformInfo preserves capability_mask in platform_info", () => {
+    const info = buildPlatformInfo("sap:parlor:k7m", {
+      capability_mask: { presets: ["sleep"] },
+    });
+    expect(info?.platform).toBe("sap:parlor:k7m");
+    expect(splitPlatformInfo(info).platform_extra?.capability_mask).toEqual({
+      presets: ["sleep"],
+    });
+  });
+
+  it("discord platformInfo preserves gateway_tool_display in platform_info", () => {
+    const info = buildPlatformInfo("discord", {
+      channel_id: "c1",
+      gateway_tool_display: "hidden",
+    });
+    expect(info?.platform).toBe("discord");
+    expect(splitPlatformInfo(info).platform_extra?.gateway_tool_display).toBe("hidden");
+  });
+
   it("discord/weixin uses nothing placeholder when required extra missing", () => {
     expect(buildPlatformInfo("discord", {})).toEqual({
       platform: "discord",

@@ -1,6 +1,5 @@
 import { webuiCtx } from "./runtime.ts";
 import { isSessionMeta } from "@freeanima/core/db/domain";
-import { PARLOR_PLATFORM } from "../api/constants.ts";
 import {
   createSessionBodySchema,
   patchTitleBodySchema,
@@ -9,10 +8,20 @@ import {
 } from "@freeanima/platform/connectors/webui/api";
 import { ApiHandlerError } from "./errors.ts";
 
+function requirePlatform(platform: string | undefined): string {
+  const p = platform?.trim();
+  if (!p) throw new ApiHandlerError(400, "platform is required");
+  return p;
+}
+
 export async function resolveSessionPlatform(sessionId: string): Promise<string> {
   const meta = await webuiCtx().conversation.loadSessionMeta(sessionId);
   const p = isSessionMeta(meta) ? meta.platform : undefined;
-  return typeof p === "string" && p ? p : PARLOR_PLATFORM;
+  const platform = typeof p === "string" ? p.trim() : "";
+  if (!platform) {
+    throw new ApiHandlerError(400, `session ${sessionId} has no platform`);
+  }
+  return platform;
 }
 
 export async function listSessions(platform?: string) {
@@ -22,8 +31,7 @@ export async function listSessions(platform?: string) {
 
 export async function createSession(body: CreateSessionBody) {
   const parsed = createSessionBodySchema.parse(body);
-  const platform = parsed.platform ?? PARLOR_PLATFORM;
-  return webuiCtx().createSession(platform);
+  return webuiCtx().createSession(requirePlatform(parsed.platform));
 }
 
 export async function getSessionInfo(sessionId: string) {
@@ -39,7 +47,7 @@ export async function getSessionMessages(
   opts?: { offset?: number; limit?: number },
 ) {
   try {
-    return webuiCtx().getMessages(sessionId, await resolveSessionPlatform(sessionId), opts);
+    return await webuiCtx().getMessages(sessionId, await resolveSessionPlatform(sessionId), opts);
   } catch (e) {
     throw new ApiHandlerError(404, String(e), { session_id: sessionId });
   }
@@ -60,8 +68,8 @@ export async function setSessionTitle(sessionId: string, body: PatchTitleBody) {
 
 export function listCommands(opts: { platform?: string; all?: boolean }) {
   const all = opts.all === true;
-  const platform = opts.platform ?? PARLOR_PLATFORM;
-  return webuiCtx().listCommands({ platform, all });
+  if (all) return webuiCtx().listCommands({ all: true });
+  return webuiCtx().listCommands({ platform: requirePlatform(opts.platform), all: false });
 }
 
 export function getPlatforms() {

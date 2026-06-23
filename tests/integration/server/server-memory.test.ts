@@ -11,6 +11,7 @@ import { join } from "node:path";
 import { getAppRuntime } from "@freeanima/platform";
 import { SELF_BLOCK_KEYS } from "@freeanima/core/repos";
 import { getTestEngine, getActivePgTestContext, seedSession } from "../../helpers/pg-test.ts";
+import { TEST_SAP_PARLOR_PLATFORM } from "../../helpers/sap-parlor-test-platform.ts";
 
 describePg("server memory API", () => {
   let home: string;
@@ -56,7 +57,7 @@ describePg("server memory API", () => {
         cached_toolsets: [],
         functions: [],
         timestamp: "2026-05-26T12:00:00+08:00",
-        platform: "parlor",
+        platform: TEST_SAP_PARLOR_PLATFORM,
         title: "t",
       },
       [

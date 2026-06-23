@@ -1,6 +1,7 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import type { ConversationMessage } from "@freeanima/core/db/domain";
 import { pingDatabase } from "@freeanima/platform/connectors/db-pg";
+import { TEST_SAP_PARLOR_PLATFORM } from "../../helpers/sap-parlor-test-platform.ts";
 import { getTestEngine } from "../../helpers/pg-test.ts";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
@@ -38,12 +39,12 @@ describePg("db session (PostgreSQL)", () => {
       cached_toolsets: [],
       functions: [],
       timestamp: new Date().toISOString(),
-      platform: "parlor",
+      platform: TEST_SAP_PARLOR_PLATFORM,
     });
 
     const meta = await session.getSessionMeta(sessionId);
     expect(meta?.model).toBe("test-model");
-    expect(meta?.platform).toBe("parlor");
+    expect(meta?.platform).toBe(TEST_SAP_PARLOR_PLATFORM);
 
     await session.appendMessage(sessionId, {
       role: "user",
@@ -80,7 +81,7 @@ describePg("db session (PostgreSQL)", () => {
       cached_toolsets: [],
       functions: [],
       timestamp: new Date().toISOString(),
-      platform: "parlor",
+      platform: TEST_SAP_PARLOR_PLATFORM,
     });
 
     await session.appendMessage(sessionId, {
@@ -114,7 +115,7 @@ describePg("db session (PostgreSQL)", () => {
       cached_toolsets: [],
       functions: [],
       timestamp: new Date().toISOString(),
-      platform: "parlor",
+      platform: TEST_SAP_PARLOR_PLATFORM,
     });
 
     await Promise.all(
@@ -141,7 +142,7 @@ describePg("db session (PostgreSQL)", () => {
       cached_toolsets: [],
       functions: [],
       timestamp: new Date().toISOString(),
-      platform: "parlor",
+      platform: TEST_SAP_PARLOR_PLATFORM,
     });
 
     await session.appendMessage(sessionId, {

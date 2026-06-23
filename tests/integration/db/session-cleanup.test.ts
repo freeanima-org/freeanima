@@ -2,6 +2,7 @@ import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import { eq } from "drizzle-orm";
 import { sessions } from "@freeanima/core/db/schema";
 import { getDb } from "@freeanima/platform/connectors/db-pg";
+import { TEST_SAP_PARLOR_PLATFORM } from "../../helpers/sap-parlor-test-platform.ts";
 import { cleanupStaleSessions, STALE_SESSION_MIN_AGE_MS } from "@freeanima/runtime/session";
 import { getTestEngine } from "../../helpers/pg-test.ts";
 import { describePg } from "../../helpers/pg-test-gate.ts";
@@ -24,7 +25,7 @@ async function seedMeta(
     cached_toolsets: [],
     functions: [],
     timestamp: new Date().toISOString(),
-    platform: "parlor",
+    platform: TEST_SAP_PARLOR_PLATFORM,
     debug: opts?.debug ?? false,
   });
 }

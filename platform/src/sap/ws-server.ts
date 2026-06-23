@@ -286,7 +286,11 @@ export function createSapServerHandlers(
 async function resolveSessionPlatform(deps: SapServerDeps, sessionId: string): Promise<string> {
   const meta = await deps.runtime.conversation.loadSessionMeta(sessionId);
   const p = isSessionMeta(meta) ? meta.platform : undefined;
-  return typeof p === "string" && p ? p : formatSapPlatform("parlor", "web");
+  const platform = typeof p === "string" ? p.trim() : "";
+  if (!platform) {
+    throw new Error(`session ${sessionId.slice(0, 16)} has no platform`);
+  }
+  return platform;
 }
 
 async function pumpMessageStream(

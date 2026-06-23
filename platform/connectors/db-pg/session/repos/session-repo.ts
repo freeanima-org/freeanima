@@ -374,13 +374,17 @@ export async function findSessionIdByPlatformInfo(
     .limit(1);
   if (activeRows[0]?.id) return activeRows[0].id;
 
-  const rows = await db
+  const legacyRows = await db
     .select({ id: sessions.id })
     .from(sessions)
-    .where(sql`${sessions.platformInfo} @> ${probeJson}::jsonb`)
+    .where(
+      sql`${sessions.platformInfo} @> ${probeJson}::jsonb
+        AND COALESCE((${sessions.platformInfo}->>'origin_active')::boolean, false) IS NOT TRUE
+        AND (${sessions.platformInfo}->>'origin_active') IS NULL`,
+    )
     .orderBy(desc(sessions.updatedAt))
     .limit(1);
-  return rows[0]?.id ?? null;
+  return legacyRows[0]?.id ?? null;
 }
 
 /** All session ids whose platform_info contains the identity probe (routing meta excluded). */
