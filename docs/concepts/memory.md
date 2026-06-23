@@ -140,12 +140,14 @@ Conversion from working memory to long-term memory is handled by the sleep mecha
 
 `memory_recall(query)` parallel four-source recall, returns unified `results[]` (default Top 10), distinguished by `memory_type`:
 
-| `memory_type`      | Notes                                 |
-| ------------------ | ------------------------------------- |
-| `semantic`         | Facts, preferences, experiences, etc. |
-| `session`          | Historical conversation snippets      |
-| `limbic`           | Emotional memory body                 |
-| `autobiographical` | Narrative title + content snippet     |
+| `memory_type`      | Notes                                                                        |
+| ------------------ | ---------------------------------------------------------------------------- |
+| `semantic`         | Facts, preferences, experiences, etc.                                        |
+| `session`          | Historical conversation snippets                                             |
+| `limbic`           | Emotional memory body (hybrid FTS + trgm + vector)                           |
+| `autobiographical` | Narrative title + content snippet (hybrid FTS + trgm + vector on title+body) |
+
+**Index columns (PG):** `semantic_memory` and `messages` use `fts_segmented` (optional jieba) → generated `content_fts` (tsvector, keyword FTS) plus async `content_embedding` (pgvector, semantic similarity). `limbic_memory` and `autobiographical_memory` follow the same pattern; autobiographical index text is `title + newline + content`. Jieba runs synchronously before insert (failure → null, row still writes); embedding runs asynchronously after insert (failure logged only). `content_fts` is never written by application code — PostgreSQL generates it from `fts_segmented` or raw content.
 
 Resident memory injected via system prompt: **up to 40 pinned** + **most-referenced top N** (default N=20). Each line carries a citation marker `[[f-000001-abcd]]` (ID only, no language prefix).
 

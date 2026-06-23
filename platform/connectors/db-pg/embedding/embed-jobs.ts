@@ -3,7 +3,12 @@ import { getActiveConfig, getResolvedEmbeddingConfig } from "@freeanima/platform
 
 import { expandJobsToUnits } from "./batch-pack.ts";
 import { getEmbedTextFn } from "./runtime.ts";
-import { setMessageEmbedding, setSemanticMemoryEmbedding } from "./store.ts";
+import {
+  setAutobiographicalMemoryEmbedding,
+  setLimbicMemoryEmbedding,
+  setMessageEmbedding,
+  setSemanticMemoryEmbedding,
+} from "./store.ts";
 import type { EmbeddingEmbedUnit, EmbeddingPendingJob } from "./types.ts";
 
 const log = logComponent("embedding");
@@ -51,10 +56,16 @@ async function embedUnit(unit: EmbeddingEmbedUnit): Promise<number[] | null> {
 }
 
 async function storeJobEmbedding(job: EmbeddingPendingJob, merged: number[]): Promise<boolean> {
-  if (job.kind === "semantic_memory") {
-    return setSemanticMemoryEmbedding(job.id, job.content, merged);
+  switch (job.kind) {
+    case "semantic_memory":
+      return setSemanticMemoryEmbedding(job.id, job.content, merged);
+    case "limbic_memory":
+      return setLimbicMemoryEmbedding(job.id, job.content, merged);
+    case "autobiographical_memory":
+      return setAutobiographicalMemoryEmbedding(job.id, job.content, merged);
+    case "message":
+      return setMessageEmbedding(job.id, job.content, merged);
   }
-  return setMessageEmbedding(job.id, job.content, merged);
 }
 
 export async function embedAndStoreJobs(

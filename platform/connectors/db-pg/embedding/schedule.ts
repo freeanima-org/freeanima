@@ -36,6 +36,16 @@ export function scheduleMessageEmbedding(id: string, content: string): void {
   runEmbedding({ kind: "message", id, content });
 }
 
+/** Async write limbic_memory embedding (failure logged only) */
+export function scheduleLimbicMemoryEmbedding(id: string, content: string): void {
+  runEmbedding({ kind: "limbic_memory", id, content });
+}
+
+/** Async write autobiographical_memory embedding (failure logged only) */
+export function scheduleAutobiographicalMemoryEmbedding(id: string, content: string): void {
+  runEmbedding({ kind: "autobiographical_memory", id, content });
+}
+
 /** Unit/integration test: await all in-flight embedding writes */
 export async function awaitPendingEmbeddingsForTest(): Promise<void> {
   await Promise.all([...inFlight]);

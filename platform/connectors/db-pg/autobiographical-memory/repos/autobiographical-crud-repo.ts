@@ -13,6 +13,9 @@ import type {
 } from "@freeanima/core/repos";
 import { formatCstIso } from "@freeanima/core/util";
 
+import { scheduleAutobiographicalMemoryEmbedding } from "../../embedding/schedule.ts";
+import { autobiographicalIndexText } from "../../fts/memory-index-text.ts";
+import { resolveFtsSegmentedForWrite } from "../../fts/write.ts";
 import { getDb } from "../../client.ts";
 import { mapAutobiographicalMemoryRow } from "../mappers/autobiographical-mapper.ts";
 
@@ -83,11 +86,14 @@ export async function createAutobiographicalMemory(
 
   const id = row.id?.trim() || randomUUID();
   const now = formatCstIso();
+  const indexText = autobiographicalIndexText(title, content);
+  const ftsSegmented = await resolveFtsSegmentedForWrite(indexText);
   const db = getDb();
   await db.insert(autobiographicalMemory).values({
     id,
     title,
     content,
+    ftsSegmented,
     significance: normalizeSignificance(row.significance),
     periodStart: row.period_start ?? null,
     periodEnd: row.period_end ?? null,
@@ -97,6 +103,7 @@ export async function createAutobiographicalMemory(
     createdAt: new Date(now),
     updatedAt: new Date(now),
   });
+  scheduleAutobiographicalMemoryEmbedding(id, indexText);
   return id;
 }
 

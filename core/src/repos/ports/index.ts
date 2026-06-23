@@ -63,6 +63,7 @@ export type {
   AutobiographicalMemoryCreateInput,
   AutobiographicalListOrder,
   AutobiographicalListOpts,
+  AutobiographicalFtsHit,
   AutobiographicalMemoryStorePort,
 } from "./autobiographical-memory.ts";
 export type {
@@ -76,6 +77,7 @@ export type {
   LimbicMemoryCreateInput,
   LimbicListOpts,
   LimbicListBySessionsOpts,
+  LimbicFtsHit,
   LimbicMemoryStorePort,
 } from "./limbic-memory.ts";
 export type {

@@ -1,5 +1,14 @@
-import { index, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { sql, type SQL } from "drizzle-orm";
+import { customType, index, pgTable, text, timestamp, vector } from "drizzle-orm/pg-core";
 import { z } from "zod";
+
+import { SEMANTIC_EMBEDDING_DIMENSIONS } from "./embedding.ts";
+
+const tsvector = customType<{ data: string }>({
+  dataType() {
+    return "tsvector";
+  },
+});
 
 export const autobiographicalSignificanceSchema = z.enum(["normal", "milestone", "turning_point"]);
 
@@ -16,6 +25,18 @@ export const autobiographicalMemory = pgTable(
     id: text("id").primaryKey(),
     title: text("title").notNull(),
     content: text("content").notNull(),
+    ftsSegmented: text("fts_segmented"),
+    contentEmbedding: vector("content_embedding", { dimensions: SEMANTIC_EMBEDDING_DIMENSIONS }),
+    contentFts: tsvector("content_fts").generatedAlwaysAs(
+      (): SQL =>
+        sql`to_tsvector('simple', CASE
+          WHEN nullif(btrim(${autobiographicalMemory.ftsSegmented}), '') IS NOT NULL
+          THEN regexp_replace(btrim(${autobiographicalMemory.ftsSegmented}), '\\s+', ' ', 'g')
+          ELSE message_fts_input(
+            btrim(${autobiographicalMemory.title}) || E'\\n' || btrim(${autobiographicalMemory.content})
+          )
+        END)`,
+    ),
     significance: text("significance").notNull().default("normal"),
     periodStart: text("period_start"),
     periodEnd: text("period_end"),
@@ -26,6 +47,7 @@ export const autobiographicalMemory = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
+    index("idx_autobiographical_memory_fts").using("gin", t.contentFts),
     index("idx_autobiographical_memory_status").on(t.status),
     index("idx_autobiographical_memory_significance").on(t.significance),
     index("idx_autobiographical_memory_updated").on(t.updatedAt.desc()),

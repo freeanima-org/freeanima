@@ -88,8 +88,8 @@ type RecallCandidate = {
     timestamp: string;
     content: string;
   };
-  limbic?: LimbicMemoryRow;
-  autobiographical?: AutobiographicalMemoryRow;
+  limbic?: LimbicMemoryRow | (LimbicMemoryRow & { rank: number });
+  autobiographical?: AutobiographicalMemoryRow | (AutobiographicalMemoryRow & { rank: number });
 };
 
 function candidateLimit(limit: number): number {
@@ -192,11 +192,11 @@ export async function memoryRecallSearch(
     getSemanticMemoryStore().searchFts(q, { limit: pool }),
     searchDialogue(q, { limit: pool }).catch(() => []),
     getLimbicMemoryStore()
-      .list({ query: q, limit: pool })
-      .catch(() => [] as LimbicMemoryRow[]),
+      .searchFts(q, { limit: pool })
+      .catch(() => []),
     getAutobiographicalMemoryStore()
-      .list({ query: q, limit: pool, status: "active" })
-      .catch(() => [] as AutobiographicalMemoryRow[]),
+      .searchFts(q, { limit: pool, status: "active" })
+      .catch(() => []),
   ]);
 
   const semanticList: RecallCandidate[] = semanticRows.map((row) => ({

@@ -18,6 +18,7 @@ export type AutobiographicalMemoryDbRow = {
   periodEnd?: string | null;
   source_facts?: string[] | null;
   sourceFacts?: string[] | null;
+  source_semantic_memory?: string[] | null;
   source_sessions?: string[] | null;
   sourceSessions?: string[] | null;
   status: string;
@@ -25,6 +26,9 @@ export type AutobiographicalMemoryDbRow = {
   createdAt?: Date | string;
   updated_at?: Date | string;
   updatedAt?: Date | string;
+  /** Already mapped row (RRF merge path). */
+  created?: Date | string;
+  updated?: Date | string;
 };
 
 function normalizeSignificance(raw: string | undefined | null): AutobiographicalSignificance {
@@ -40,8 +44,8 @@ function normalizeStatus(raw: string | undefined | null): AutobiographicalStatus
 export function mapAutobiographicalMemoryRow(
   row: AutobiographicalMemoryDbRow,
 ): AutobiographicalMemoryRow {
-  const created = row.created_at ?? row.createdAt;
-  const updated = row.updated_at ?? row.updatedAt;
+  const created = row.created_at ?? row.createdAt ?? row.created;
+  const updated = row.updated_at ?? row.updatedAt ?? row.updated;
   return {
     id: row.id,
     title: row.title,
@@ -49,7 +53,7 @@ export function mapAutobiographicalMemoryRow(
     significance: normalizeSignificance(row.significance),
     period_start: row.period_start ?? row.periodStart ?? null,
     period_end: row.period_end ?? row.periodEnd ?? null,
-    source_semantic_memory: row.source_facts ?? row.sourceFacts ?? [],
+    source_semantic_memory: row.source_facts ?? row.sourceFacts ?? row.source_semantic_memory ?? [],
     source_sessions: row.source_sessions ?? row.sourceSessions ?? [],
     status: normalizeStatus(row.status),
     created: created != null ? normalizePgTimestamp(created) : "",
