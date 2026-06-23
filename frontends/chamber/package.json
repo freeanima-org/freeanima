@@ -1,0 +1,18 @@
+{
+  "name": "@freeanima/frontend-chamber",
+  "description": "FreeAnima 卧室（Chamber）可嵌入前端",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./manifest": "./src/exports/manifest.ts",
+    "./desktop": "./src/exports/desktop.ts",
+    "./mobile": "./src/exports/mobile.ts"
+  },
+  "dependencies": {
+    "@freeanima/satellite-sdk": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:"
+  }
+}

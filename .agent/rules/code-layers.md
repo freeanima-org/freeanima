@@ -42,15 +42,18 @@ Dependency direction (high → low): `platform` → `capabilities` → `runtime`
 | `runtime/`                    | `kernel`, `kernel-*`, `core`, `runtime`                                | **`platform`**, **`capabilities-*`**                      |
 | `capabilities/<pkg>/`         | `kernel`, `kernel-*`, `core`, own `capabilities-<pkg>`, `sap-contract` | **`runtime`**, **`platform`**, **other `capabilities-*`** |
 | `platform/`, `cli/`, `tests/` | all workspace packages                                                 | —                                                         |
-| `satellites/<name>/`          | `sap-contract`, `kernel`, `kernel-*`                                   | all other workspace packages                              |
+| `satellites/<name>/`          | `sap-contract`, `satellite-sdk`, `kernel`, `kernel-*`                  | all other workspace packages                              |
+| `satellites/desktop-shell/`   | above + `satellite-companion`, `satellite-chat`, `frontend-chamber`    | other workspace packages                                  |
+| `frontends/<name>/`           | `sap-contract`, `satellite-sdk`, `kernel`, `kernel-*`                  | all other workspace packages                              |
 | `packages/sap-contract/`      | `kernel`, `kernel-*`, `sap-contract`                                   | all other workspace packages                              |
+| `packages/satellite-sdk/`     | `kernel`, `kernel-*`                                                   | all other workspace packages                              |
 
 Notes aligned with the checker:
 
 - **Scan scope**: `@freeanima/*` imports in `*.ts` / `*.tsx` **and** `dependencies` in each layer's `package.json`.
 - **Exemptions** (import scan only): paths under `tests/` or `test-helpers/`, `*.test.ts` / `*.spec.ts`, and all `cli/` source files. Production code in other layers is still checked.
 - **Capabilities isolation**: `capabilities/<src>` must not depend on `@freeanima/capabilities-<other>` where `<other> ≠ <src>`.
-- **Satellites**: do not import `platform`, `runtime`, `core`, or arbitrary `capabilities-*` from Satellite code — use [`sap-contract`](../../packages/sap-contract/) and generic `kernel` deps only.
+- **Satellites / frontends**: do not import `platform`, `runtime`, `core`, or arbitrary `capabilities-*` — use [`sap-contract`](../../packages/sap-contract/) + [`satellite-sdk`](../../packages/satellite-sdk/) + generic `kernel` deps. **`satellites/desktop-shell/`** may additionally import embeddable frontend packages (`satellite-companion`, `satellite-chat`, `frontend-chamber`).
 - **Tests**: production layers may use `@freeanima/platform` test helpers in test files / devDependencies; the checker skips exempt paths above.
 
 ## Port wiring at composition root

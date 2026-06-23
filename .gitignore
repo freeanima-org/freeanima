@@ -56,11 +56,11 @@ gettextization.failed.po
 *.mo
 
 # Companion desktop (Electron)
-satellites/companion/electron-dist/
-satellites/companion/release/
-satellites/companion/build-resources/
-satellites/companion/.cache/
-satellites/companion/companion-config.json
+satellites/*/electron-dist/
+satellites/*/release/
+satellites/*/build-resources/
+satellites/*/.cache/
+satellites/*/companion-config.json
 
 # Misc
 /tmp/

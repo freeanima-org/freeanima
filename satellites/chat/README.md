@@ -1,10 +1,12 @@
 # Chat satellite
 
-Managed satellite for the chat UI. Browser connects **directly** to Hub SAP WebSocket (`/sap/v1`); the dev server only serves static assets and `/config.json`.
+会客厅 UI 内容包。浏览器 / desktop-shell 使用 **`createSapDirectClient`** 直连 Hub SAP（`/sap/v1`）；dev server 仅静态托管 UI 与 `/config.json`（提供 `hub_ws_url`）。
 
-## Config
+## 导出
 
-Add to `~/.anima/config.yaml`:
+见 [`docs/sap/frontend-exports.md`](../../docs/sap/frontend-exports.md)：`./manifest` / `./desktop` / `./mobile`。
+
+## Config（managed 静态托管）
 
 ```yaml
 satellites:
@@ -16,28 +18,24 @@ satellites:
       SATELLITE_PORT: "4174"
 ```
 
-Then `anima service restart` (or `anima service start --foreground`).
-
 ## URLs
 
-| Path                     | Role                                                          |
-| ------------------------ | ------------------------------------------------------------- |
-| `http://127.0.0.1:4174/` | Chat UI                                                       |
-| `GET /config.json`       | `hub_ws_url`, `instance_id`, `app_id` for browser SAP connect |
-| `GET /health`            | Liveness                                                      |
+| Path                     | Role                                    |
+| ------------------------ | --------------------------------------- |
+| `http://127.0.0.1:4174/` | Chat UI                                 |
+| `GET /config.json`       | `hub_ws_url`, `app_id`（浏览器 dev 用） |
+| `GET /health`            | Liveness                                |
 
-Chamber → Satellites lists `app_id=chat` with `http_url` from browser SAP `connect` (`window.location.origin`).
+`instance_id` 由客户端持久化：Electron 壳 → `~/.anima/satellites/chat/instance.json`；浏览器 dev → localStorage。
 
 ## Development
 
 ```bash
 bun satellites/chat/dev.ts
-# or from this directory:
-bun run dev
 ```
 
 Requires Hub at `FREEANIMA_URL` (default `http://127.0.0.1:2658`).
 
-## Architecture
+## Desktop shell
 
-Unlike pair-programming, chat has **no** server-side SAP client, hub-api, or local SSE. All session/stream traffic uses `createSapBrowserClient` from `@freeanima/sap-contract`.
+嵌入 [`satellites/desktop-shell/`](../desktop-shell/)：托盘 → **会客厅**；无 relay sidecar。

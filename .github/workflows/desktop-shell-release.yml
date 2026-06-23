@@ -1,4 +1,4 @@
-name: Companion Build
+name: Desktop Shell Build
 
 on:
   release:
@@ -14,12 +14,12 @@ on:
           - release
           - fast
       version:
-        description: 版本号（如 0.6.0；留空则不改 package.json version）
+        description: 版本号（如 0.7.0；留空则使用 tag）
         required: false
         type: string
 
 concurrency:
-  group: companion-build-${{ github.ref }}
+  group: desktop-shell-build-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -34,62 +34,43 @@ jobs:
             runner: windows-latest
             platform: win
             artifact_slug: windows-x64
-          # - label: macOS Apple Silicon
-          #   runner: macos-latest
-          #   platform: mac
-          #   artifact_slug: macos-arm64
-          #   arch: arm64
-          # - label: macOS Intel
-          #   runner: macos-latest
-          #   platform: mac
-          #   artifact_slug: macos-x64
-          #   arch: x64
     permissions:
       contents: read
     env:
-      COMPANION_BUILD_PROFILE: ${{ github.event_name == 'workflow_dispatch' && inputs.profile || 'release' }}
-      COMPANION_VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.event.release.tag_name || '' }}
+      DESKTOP_SHELL_BUILD_PROFILE: ${{ github.event_name == 'workflow_dispatch' && inputs.profile || 'release' }}
+      DESKTOP_SHELL_VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.event.release.tag_name || '' }}
     steps:
       - uses: actions/checkout@v7
 
       - uses: ./.github/actions/setup-bun
 
-      - name: 构建桌面伴侣
+      - name: 安装 companion FBX 工具
         working-directory: satellites/companion
-        env:
-          COMPANION_ARCH: ${{ matrix.arch || '' }}
+        run: bun run setup:fbx
+
+      - name: 构建 FreeAnima Desktop
+        working-directory: satellites/desktop-shell
         run: bun build-electron.ts --platform ${{ matrix.platform }}
 
       - name: 收集安装包
-        if: env.COMPANION_BUILD_PROFILE == 'release'
+        if: env.DESKTOP_SHELL_BUILD_PROFILE == 'release'
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p dist
           case "${{ matrix.platform }}" in
             win)
-              installer="$(ls satellites/companion/release/FreeAnima-Companion-*.exe 2>/dev/null || ls satellites/companion/release/*.exe | head -1)"
-              cp "$installer" dist/companion-windows-x64-setup.exe
-              ;;
-            mac)
-              dmg="$(ls satellites/companion/release/*.dmg | head -1)"
-              case "${{ matrix.artifact_slug }}" in
-                macos-arm64)
-                  cp "$dmg" dist/companion-macos-arm64.dmg
-                  ;;
-                macos-x64)
-                  cp "$dmg" dist/companion-macos-x64.dmg
-                  ;;
-              esac
+              installer="$(ls satellites/desktop-shell/release/FreeAnima-Desktop-*.exe 2>/dev/null || ls satellites/desktop-shell/release/*.exe | head -1)"
+              cp "$installer" dist/freeanima-desktop-windows-x64-setup.exe
               ;;
           esac
           ls -la dist/
 
       - name: 上传构建产物
-        if: env.COMPANION_BUILD_PROFILE == 'release'
+        if: env.DESKTOP_SHELL_BUILD_PROFILE == 'release'
         uses: actions/upload-artifact@v7
         with:
-          name: companion-${{ matrix.artifact_slug }}
+          name: desktop-shell-${{ matrix.artifact_slug }}
           path: dist/*
           if-no-files-found: error
 

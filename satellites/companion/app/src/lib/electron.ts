@@ -1,10 +1,10 @@
 /** Electron 壳层桥接；浏览器 dev 模式下为 no-op */
 
 import type {
-  CompanionShellApi,
   CompanionWindowRole,
   PatrolScreenInfo,
-} from "../../../electron/types.ts";
+  SatelliteShellApi,
+} from "@freeanima/satellite-sdk";
 import type { ScreenPoint } from "./window-metrics.ts";
 
 export type { PatrolScreenInfo, CompanionWindowRole };
@@ -30,8 +30,8 @@ export function isCompanionOverlay(): boolean {
   return isElectron();
 }
 
-function shell(): CompanionShellApi | undefined {
-  return window.companionShell;
+function shell(): SatelliteShellApi | undefined {
+  return window.satelliteShell ?? window.companionShell;
 }
 
 export function isElectron(): boolean {
@@ -42,20 +42,20 @@ export function isElectron(): boolean {
 export const isTauri = isElectron;
 
 export async function setClickThrough(ignore: boolean): Promise<void> {
-  await shell()?.setClickThrough(ignore);
+  await shell()?.setClickThrough?.(ignore);
 }
 
 export async function setPointerActive(active: boolean): Promise<void> {
-  await shell()?.setPointerActive(active);
+  await shell()?.setPointerActive?.(active);
 }
 
 export async function moveWindow(x: number, y: number): Promise<void> {
-  await shell()?.moveWindow(x, y);
+  await shell()?.moveWindow?.(x, y);
 }
 
 export async function getPatrolScreen(): Promise<PatrolScreenInfo> {
   const api = shell();
-  if (!api) {
+  if (!api?.getPatrolScreen) {
     throw new Error("not in electron");
   }
   return api.getPatrolScreen();
@@ -63,7 +63,7 @@ export async function getPatrolScreen(): Promise<PatrolScreenInfo> {
 
 export async function getWindowPosition(): Promise<ScreenPoint> {
   const api = shell();
-  if (!api) {
+  if (!api?.getWindowPosition) {
     return { x: 0, y: 0 };
   }
   return api.getWindowPosition();
@@ -73,21 +73,21 @@ export async function listenCursorPosition(
   handler: (pos: { x: number; y: number }) => void,
 ): Promise<() => void> {
   const api = shell();
-  if (!api) return () => {};
+  if (!api?.listenCursorPosition) return () => {};
   return api.listenCursorPosition(handler);
 }
 
 export async function startWindowDrag(): Promise<void> {
-  await shell()?.startWindowDrag();
+  await shell()?.startWindowDrag?.();
 }
 
 export async function openSettings(): Promise<void> {
-  await shell()?.openSettings();
+  await shell()?.openSettings?.();
 }
 
 export async function emitConfigChanged(): Promise<void> {
   const api = shell();
-  if (api) {
+  if (api?.emitConfigChanged) {
     await api.emitConfigChanged();
     return;
   }
@@ -96,7 +96,7 @@ export async function emitConfigChanged(): Promise<void> {
 
 export async function listenConfigChanged(handler: () => void): Promise<() => void> {
   const api = shell();
-  if (api) {
+  if (api?.listenConfigChanged) {
     return api.listenConfigChanged(handler);
   }
   const onStorage = (ev: StorageEvent): void => {
@@ -108,7 +108,7 @@ export async function listenConfigChanged(handler: () => void): Promise<() => vo
 
 export async function listenServerError(handler: (message: string) => void): Promise<() => void> {
   const api = shell();
-  if (!api) return () => {};
+  if (!api?.listenServerError) return () => {};
   return api.listenServerError(handler);
 }
 

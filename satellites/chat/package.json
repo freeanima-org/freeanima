@@ -2,6 +2,13 @@
   "name": "@freeanima/satellite-chat",
   "private": true,
   "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./manifest": "./src/exports/manifest.ts",
+    "./build": "./src/exports/build.ts",
+    "./desktop": "./src/exports/desktop.ts",
+    "./mobile": "./src/exports/mobile.ts"
+  },
   "scripts": {
     "dev": "bun dev.ts",
     "build": "bun build.ts",
@@ -9,6 +16,7 @@
   },
   "dependencies": {
     "@freeanima/sap-contract": "workspace:*",
+    "@freeanima/satellite-sdk": "workspace:*",
     "marked": "^18.0.4",
     "react": "catalog:",
     "react-dom": "catalog:",

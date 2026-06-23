@@ -11,8 +11,8 @@
     "app/src/**/*.ts",
     "app/src/**/*.tsx",
     "server/**/*.ts",
-    "build.ts",
-    "dev.ts",
+    "src/**/*.ts",
     "../../types/**/*.d.ts"
-  ]
+  ],
+  "exclude": ["**/*.test.ts", "dist/**"]
 }

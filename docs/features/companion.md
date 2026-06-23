@@ -6,19 +6,23 @@ title: Desktop Companion
 
 > **Dynamic SAP 卫星**：单体桌面 GUI 应用，不经 `config.yaml` managed 托管。
 
-桌面伴侣是运行在用户桌面上的 SAP **Type B** 应用（主进程持 Hub WebSocket、`relay: false`）：Electron 透明壳 + 主进程内嵌 Node.js HTTP/SAP 服务，通过 SAP 向 Hub 注册在线实例，并向 Agent 注册本地工具。
+桌面伴侣是 SAP **Type B** 应用（embedded sidecar 持 Hub WebSocket、`relay: false`）：**内容包**（React + VRM + Node sidecar）由通用 **desktop-shell** 嵌入，通过 SAP 向 Hub 注册并向 Agent 暴露本地工具。
 
 ## 架构
 
 ```text
-用户桌面（单体 Electron 应用）
-├── Main Process — Node.js HTTP + SAP + 托盘/窗口管理
-│   ├── companion 窗 — 透明置顶，VRM 渲染、文字气泡、本地交互
-│   └── settings 窗 — 普通有边框窗口，从托盘打开
-└── Renderer — 通过 preload 桥接 IPC，API 走 localhost
-         ↕ SAP WS（可跨机）
-    anima service Hub → Agent 可调用 companion 工具
+FreeAnima Desktop（satellites/desktop-shell）
+├── Electron Main — 托盘/多窗 + 内嵌 companion sidecar
+│   ├── companion overlay — 透明置顶，VRM / 气泡
+│   ├── companion settings — 设置窗
+│   ├── chat — 会客厅 SPA（SAP 直连，无 sidecar）
+│   └── chamber — 卧室 WebView（Hub REST）
+└── Renderer — preload satelliteShell；companion API 走 localhost sidecar
+         ↕ SAP WS
+    anima service Hub
 ```
+
+内容包位于 [`satellites/companion/`](../../satellites/companion/)（`app/` + `server/` + `shared/`），导出约定见 [`frontend-exports.md`](../sap/frontend-exports.md)。
 
 与 Chat / 结对编程的区别：
 
@@ -75,10 +79,10 @@ bun satellites/companion/dev.ts
 # 设置：页面内「设置」按钮打开面板弹窗（非独立路由）
 ```
 
-### Electron 桌面壳
+### Electron 桌面壳（含伴侣 + 会客厅 + 卧室）
 
 ```bash
-cd satellites/companion
+cd satellites/desktop-shell
 bun install
 bun dev:electron
 ```
@@ -86,12 +90,9 @@ bun dev:electron
 打包：
 
 ```bash
-bun build:windows:installer   # Windows NSIS（可在 Linux 交叉构建）
-bun build:macos:release       # macOS DMG（须在 macOS 上执行）
-bun build:windows             # 快速：仅 release/win-unpacked/，无安装包
+cd satellites/desktop-shell
+bun run build:windows:installer   # Windows NSIS
 ```
-
-Linux 上打 Windows 安装包时，electron-builder 默认会用 Wine **运行 stub Setup.exe** 提取 uninstaller（无图形环境常失败）。`build-electron.ts` 在同进程调用 electron-builder 前 patch `WineVmManager`，改用 app-builder-lib 的 `UninstallerReader` 从 PE 解析提取（与 macOS 路径相同），无需 Wine 验证；交叉构建时另设 `CSC_IDENTITY_AUTO_DISCOVERY=false`、`forceCodeSigning: false`。
 
 环境变量：
 
@@ -105,13 +106,13 @@ Hub 在首次 `connect` 时分配 **3 字符** `instance_id`，写入 `~/.anima/
 
 ### 常见问题
 
-| 现象             | 处理                                                         |
-| ---------------- | ------------------------------------------------------------ |
-| 双击无窗口       | 看系统托盘；托盘 → **设置…** 导入 `.vrm`                     |
-| 点击无动作       | 设置 → **动作库** 导入 VRMA；**动作槽位** 绑定对应槽位       |
-| 无法连 Hub       | 确认 `anima service` 已运行；设置 → 通用 Tab 中 Hub URL 正确 |
-| 动作导入后无变化 | 导入后会热重载；若仍无效，确认槽位已勾选对应动作             |
-| 后台服务失败     | 查看 `~/.anima/companion/shell.log`；确认端口 4176–4185 可用 |
+| 现象             | 处理                                                             |
+| ---------------- | ---------------------------------------------------------------- |
+| 双击无窗口       | 看系统托盘；托盘 → **设置…** 导入 `.vrm`                         |
+| 点击无动作       | 设置 → **动作库** 导入 VRMA；**动作槽位** 绑定对应槽位           |
+| 无法连 Hub       | 确认 `anima service` 已运行；设置 → 通用 Tab 中 Hub URL 正确     |
+| 动作导入后无变化 | 导入后会热重载；若仍无效，确认槽位已勾选对应动作                 |
+| 后台服务失败     | 查看 `~/.anima/desktop-shell/shell.log`；确认端口 4176–4185 可用 |
 
 ## 相关文档
 

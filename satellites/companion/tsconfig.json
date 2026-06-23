@@ -15,8 +15,8 @@
     "server/**/*.ts",
     "shared/**/*.ts",
     "shared/**/*.json",
-    "electron/**/*.ts",
+    "src/**/*.ts",
     "../../types/**/*.d.ts"
   ],
-  "exclude": ["**/*.test.ts", "electron-dist/**", "release/**"]
+  "exclude": ["**/*.test.ts", "electron-dist/**", "release/**", "electron/**"]
 }

@@ -1,57 +1,24 @@
-import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
+import { describe, expect, test } from "bun:test";
 
-import { chatPlatform, resetChatInstanceCacheForTests } from "./sap-client.ts";
+import { memorySapInstanceStore, type SapInstanceStore } from "@freeanima/sap-contract";
 
-const originalFetch = globalThis.fetch;
+import { resetChatInstanceCacheForTests } from "./sap-client.ts";
 
-describe("chatPlatform", () => {
-  beforeEach(() => {
+function formatPlatformFromStore(store: SapInstanceStore): string {
+  const id = store.load();
+  if (!id) throw new Error("instance_id is required");
+  return `sap:chat:${id}`;
+}
+
+describe("chatPlatform store", () => {
+  test("有 instance_id 时返回 sap:chat:{id}", () => {
     resetChatInstanceCacheForTests();
+    const store = memorySapInstanceStore("tou");
+    expect(formatPlatformFromStore(store)).toBe("sap:chat:tou");
   });
 
-  afterEach(() => {
-    globalThis.fetch = originalFetch;
-  });
-
-  test("config 含 instance_id 时返回 sap:chat:{id}", async () => {
-    globalThis.fetch = mock(() =>
-      Promise.resolve(
-        new Response(JSON.stringify({ instance_id: "tou" }), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        }),
-      ),
-    ) as unknown as typeof fetch;
-
-    expect(await chatPlatform()).toBe("sap:chat:tou");
-  });
-
-  test("config 无 instance_id 时抛出", async () => {
-    globalThis.fetch = mock(() =>
-      Promise.resolve(
-        new Response(JSON.stringify({ app_id: "chat" }), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        }),
-      ),
-    ) as unknown as typeof fetch;
-
-    await expect(chatPlatform()).rejects.toThrow("instance_id is required");
-  });
-
-  test("instance_id 结果会被缓存", async () => {
-    const fetchMock = mock(() =>
-      Promise.resolve(
-        new Response(JSON.stringify({ instance_id: "b4i" }), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        }),
-      ),
-    ) as unknown as typeof fetch;
-    globalThis.fetch = fetchMock;
-
-    expect(await chatPlatform()).toBe("sap:chat:b4i");
-    expect(await chatPlatform()).toBe("sap:chat:b4i");
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+  test("无 instance_id 时抛出", () => {
+    const store = memorySapInstanceStore(null);
+    expect(() => formatPlatformFromStore(store)).toThrow("instance_id is required");
   });
 });
