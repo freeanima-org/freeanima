@@ -3,6 +3,81 @@
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 新版本节由 [Release Please](https://github.com/googleapis/release-please) 在 Release PR 合并时写入顶部。
 
+## [0.8.0](https://github.com/freeanima-org/freeanima/compare/v0.7.0...v0.8.0) (2026-06-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* **desktop-shell:** 拆分伴侣内容与通用桌面壳
+* **satellite:** 将 parlor 重命名为 chat
+
+### Features
+
+* **companion:** change SAP toolset from private to public ([fdf6e9a](https://github.com/freeanima-org/freeanima/commit/fdf6e9abd3733548d8d2f61cdd8859c19a509c0b))
+* **companion:** daisyUI 设置面板、动作导入与 runtime WebSocket ([c55d9ee](https://github.com/freeanima-org/freeanima/commit/c55d9ee04638c8338e06a3934ce617efc178fb03))
+* **companion:** VRMA 交互、边缘巡逻与 Windows FBX 打包 ([ecb0b21](https://github.com/freeanima-org/freeanima/commit/ecb0b2185695f48da916a765861b1a8074bf2d61))
+* **companion:** 修复 VRM 朝向并拆分桌宠/设置双窗口 ([86ecb3e](https://github.com/freeanima-org/freeanima/commit/86ecb3e0d62fd0af3f2d9e21e540dcefea1980d8))
+* **companion:** 动作槽位体系、设置 Tab 化与 SAP 工具接入 ([df044b6](https://github.com/freeanima-org/freeanima/commit/df044b64660a1d8dce1a12315bedd00fec09bb82))
+* **companion:** 完善桌宠散步动画与浏览器小视口 ([8350056](https://github.com/freeanima-org/freeanima/commit/835005633d29510afba720141a823854903cad94))
+* **companion:** 素材稳定 ID、动作库修复与水平巡逻 ([372250f](https://github.com/freeanima-org/freeanima/commit/372250fd1ab919c1ab8bc72238dfa619c904b8a5))
+* **companion:** 迁移桌面伴侣至 Electron 并修复打包与动画问题 ([3bf0848](https://github.com/freeanima-org/freeanima/commit/3bf08482790bbde093ed86d90a370aea5b600435))
+* **companion:** 重构 sidecar 打包并修复巡逻与后台启动 ([3e39ad6](https://github.com/freeanima-org/freeanima/commit/3e39ad6d23b27368f60d11b0bb03a2ab4faa4720))
+* **desktop-shell:** 拆分伴侣内容与通用桌面壳 ([7cb3a52](https://github.com/freeanima-org/freeanima/commit/7cb3a523dd36875d26a08acc13c1d988cd5c112c))
+* **fridge-magnet:** 以 assistant(fridge_context) 物化冰箱贴意识层 ([8bf90d9](https://github.com/freeanima-org/freeanima/commit/8bf90d927f8f20a360c792df2790bb5c16684d38))
+* **gateway:** Discord clarify 选项渲染为交互按钮 ([b6b6799](https://github.com/freeanima-org/freeanima/commit/b6b6799526107c44637f28beff88240e6c2c4e26))
+* **gateway:** 统一 IM 出站合并、origin_active 路由与工具展示策略 ([b6143f9](https://github.com/freeanima-org/freeanima/commit/b6143f91780e653fe84bc55d3b9bc564d9cc4fde))
+* **goal:** 实现 Session Goal 机制（judge 续跑与斜杠命令） ([1d38d98](https://github.com/freeanima-org/freeanima/commit/1d38d98e91273e6a428596e0887a692b37ebec7f))
+* **memory:** limbic/自传体接入 FTS+向量 hybrid 检索 ([da72bf8](https://github.com/freeanima-org/freeanima/commit/da72bf8535f1e49688a93517a65505ef7312cd70))
+* **parlor:** SAP 重连、流式队列/停止与会话体验修复 ([b2626f1](https://github.com/freeanima-org/freeanima/commit/b2626f18bfcde1160aacdbdd5fcbe98efbd95f7f))
+* **parlor:** SAP 重连、流式队列/停止与会话体验修复 ([e4da37f](https://github.com/freeanima-org/freeanima/commit/e4da37fc1bc4d28659dcba5f5374fe86652c5f4d))
+* **platform:** inject conversation channel info into system prompt ([7507b80](https://github.com/freeanima-org/freeanima/commit/7507b80464d47ce632eb7712940b63b160ed9b68))
+* **tunnel:** 内置 Cloudflare Tunnel + Access 远程访问 ([e097126](https://github.com/freeanima-org/freeanima/commit/e097126ff6efec96b4ff67b7f984ed0fbfe51a50))
+
+
+### Bug Fixes
+
+* **ci:** 修复 Gitleaks 误报与 CodeQL 告警 ([fa38a0f](https://github.com/freeanima-org/freeanima/commit/fa38a0fdaec47ef464db5e497cd5541c95354e88))
+* **companion:** 修复 Windows overlay 失焦后自动出现标题栏 ([6136584](https://github.com/freeanima-org/freeanima/commit/6136584e1c87584e4299307a9397c4df30503f25))
+* **deps:** 强制 @sinclair/typebox 0.34 以满足 Elysia 启动 ([42420f4](https://github.com/freeanima-org/freeanima/commit/42420f4f470515ae81252b30aab55bfbe8b3af13))
+* **goal:** 避免 goal-judge JSON 解析的正则 ReDoS 告警 ([6b893a7](https://github.com/freeanima-org/freeanima/commit/6b893a739fe0f73615b46975f76eec5c7809b86d))
+* **parlor:** 修复 SharedWorker 初始化与脚本加载 ([9dd26cc](https://github.com/freeanima-org/freeanima/commit/9dd26cc53efc2d62396311f0edb7127b8bc7d58c))
+* **parlor:** 修复 tool call 分段展示并统一 stream-reply reducer ([640a7f8](https://github.com/freeanima-org/freeanima/commit/640a7f80ec419a4218228e55ac59f68dff07de07))
+* **parlor:** 迁移 sidecar relay 修复会话列表与 instance 持久化 ([3474277](https://github.com/freeanima-org/freeanima/commit/3474277995c17e66ab2f1912f97263ac0d901282))
+* **platform:** 移除 Parlor 默认 platform 并迁移至 sap:parlor:{instance} ([aeda08c](https://github.com/freeanima-org/freeanima/commit/aeda08cf1b232432171b243b74394936bea59751))
+* **test:** 修复 fridge-bridge  flaky 单测并同步依赖与 CI ([2f6a427](https://github.com/freeanima-org/freeanima/commit/2f6a427afb0e8b6e9b23749491a2a490617115e9))
+* **test:** 修复测试套件在 /tmp 下的临时目录泄漏 ([5299240](https://github.com/freeanima-org/freeanima/commit/529924014687415ff443e19f2da0d644c95ad597))
+* **tokenizer:** Hub 下载超时并收窄 Ollama 端点探测范围 ([df044b6](https://github.com/freeanima-org/freeanima/commit/df044b64660a1d8dce1a12315bedd00fec09bb82))
+
+
+### Performance
+
+* **webui:** 优化 Chamber WebUI 公网访问性能 ([b532efc](https://github.com/freeanima-org/freeanima/commit/b532efc148664ff21bbe78e46c861b3899739658))
+
+
+### Documentation
+
+* **rules:** 补全分层依赖矩阵文档 ([4ccd5fc](https://github.com/freeanima-org/freeanima/commit/4ccd5fc87161c875e07d3f8a530b64ec0ad36b20))
+
+
+### Miscellaneous
+
+* **deps-dev:** bump electron ([630361e](https://github.com/freeanima-org/freeanima/commit/630361eac539c63f6fd214830ef6f1d8261d11a6))
+* **deps:** bump the production-dependencies group across 1 directory with 3 updates ([052c733](https://github.com/freeanima-org/freeanima/commit/052c733fca5af99aadfbeed9239cfdb871ddba19))
+* **deps:** 统一 workspace catalog 并同步 lockfile ([86c3d14](https://github.com/freeanima-org/freeanima/commit/86c3d14fe51af84db61d0703f50b9c78cb71d769))
+* **security:** 为 tunnel-run 测试占位凭证添加 gitleaks 白名单 ([9620ae4](https://github.com/freeanima-org/freeanima/commit/9620ae4ee18fd9947baa8fb4ed0cae0426a63614))
+
+
+### Refactoring
+
+* **sap:** 统一三段 platform、Hub instance 分配与三卫星客户端策略 ([0503148](https://github.com/freeanima-org/freeanima/commit/0503148eadc90071171c0f8a2a1906249f99ed1a))
+* **satellite:** 将 parlor 重命名为 chat ([819aed7](https://github.com/freeanima-org/freeanima/commit/819aed70926fa6f2f984f5555b45bbc9ef2b04b8))
+* 清理废弃 API、迁移脚本与 config shim ([0c9cd8f](https://github.com/freeanima-org/freeanima/commit/0c9cd8f95058f16aeaa02fc83744735d9dbf98e7))
+
+
+### CI
+
+* 修复 Dependabot bun lockfile 并优化 Actions 工作流 ([b3ec44f](https://github.com/freeanima-org/freeanima/commit/b3ec44f3c23d2a3c810dc6644a8b30c5b6e06a1f))
+
 ## [0.7.0](https://github.com/freeanima-org/freeanima/compare/v0.6.0...v0.7.0) (2026-06-18)
 
 
