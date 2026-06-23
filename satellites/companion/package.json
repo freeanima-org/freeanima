@@ -1,28 +1,27 @@
 {
   "name": "@freeanima/satellite-companion",
-  "description": "FreeAnima 桌面伴侣（Electron）",
+  "description": "FreeAnima 桌面伴侣（内容包）",
   "author": "FreeAnima",
   "license": "MIT",
   "private": true,
   "type": "module",
-  "main": "electron-dist/main.js",
+  "exports": {
+    ".": "./src/index.ts",
+    "./manifest": "./src/exports/manifest.ts",
+    "./build": "./src/exports/build.ts",
+    "./desktop": "./src/exports/desktop.ts",
+    "./mobile": "./src/exports/mobile.ts"
+  },
   "scripts": {
     "postinstall": "bun scripts/ensure-fbx2gltf.ts",
     "setup:fbx": "bun scripts/ensure-fbx2gltf.ts --strict",
     "dev": "bun dev.ts",
-    "dev:electron": "bun dev-electron.ts",
     "build": "bun build.ts",
-    "build:electron": "bun build-electron.ts",
-    "build:windows": "bun build-electron.ts --platform win",
-    "build:windows:installer": "COMPANION_BUILD_PROFILE=release bun build-electron.ts --platform win",
-    "build:macos": "bun build-electron.ts --platform mac",
-    "build:macos:intel": "COMPANION_BUILD_PROFILE=release bun build-electron.ts --platform mac",
-    "build:macos:release": "COMPANION_BUILD_PROFILE=release bun build-electron.ts --platform mac",
-    "build:macos:intel:release": "COMPANION_BUILD_PROFILE=release bun build-electron.ts --platform mac",
     "start": "bun build.ts && bun server/index.ts"
   },
   "dependencies": {
     "@freeanima/sap-contract": "workspace:*",
+    "@freeanima/satellite-sdk": "workspace:*",
     "@pixiv/three-vrm": "^3.5.4",
     "@pixiv/three-vrm-animation": "^3.5.4",
     "@react-three/drei": "^10.7.7",
@@ -43,12 +42,6 @@
     "@types/ws": "^8.18.1",
     "bun-plugin-tailwind": "catalog:",
     "daisyui": "catalog:",
-    "electron": "^42.4.1",
-    "electron-builder": "^26.15.3",
-    "esbuild": "^0.25.12",
     "tailwindcss": "catalog:"
-  },
-  "build": {
-    "extends": "electron-builder.yml"
   }
 }

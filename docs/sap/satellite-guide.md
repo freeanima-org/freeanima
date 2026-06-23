@@ -57,12 +57,18 @@ Open managed satellite UI at the URL from Chamber (SAP `http_url`), typically:
 
 **Rule:** each `app_id + instance_id` has **at most one** Hub WebSocket (`/sap/v1`).
 
-### Type B — Process gateway + local relay (Chat, pair-programming)
+### Type B — Process gateway + local relay (pair-programming)
 
 - Sidecar `createSatelliteHub({ relay: true, ... })` holds the sole Hub WS.
 - Browser uses `createSapRelayBrowserClient` → satellite `/sap/relay/v1`.
 - `instance_id` persisted under `~/.anima/satellites/{app}/instance.json`.
-- **Chat:** relay only (no local tools). **Pair-programming:** relay + `tool.register` + local FS/PTY APIs.
+- **Pair-programming:** relay + `tool.register` + local FS/PTY APIs.
+
+### SAP direct — browser/renderer 直连 Hub（chat 嵌入 desktop-shell）
+
+- Renderer 使用 [`createSapDirectClient`](../../packages/sap-contract/src/direct-client.ts) 直连 Hub `/sap/v1`。
+- **无需** relay sidecar；仅需持久化 `instance_id`（Electron：`~/.anima/satellites/chat/instance.json`；浏览器 dev：localStorage）。
+- 详见 [`frontend-exports.md`](frontend-exports.md)。
 
 ### Type B + tools, no relay (companion)
 
@@ -92,7 +98,8 @@ flowchart TB
 
 ### Chat satellite
 
-Browser connects via `createSapRelayBrowserClient` → [`/sap/relay/v1`](../../satellites/chat/server/index.ts); sidecar uses `createSatelliteHub` with `relay: true` and no local tools ([`satellites/chat/server/sap/hub.ts`](../../satellites/chat/server/sap/hub.ts)). `session.list` / `session.create` omit explicit `platform`; Hub defaults to the connected instance's `sap:chat:{id}`.
+- **desktop-shell / 浏览器 dev（推荐）**：`createSapDirectClient` 直连 Hub；静态 UI 由 [`satellites/chat/server/index.ts`](../../satellites/chat/server/index.ts) 仅作静态托管（无 SAP relay）。
+- **Managed 遗留**：若仍用旧 relay sidecar，见 pair-programming 模式；新嵌入以 direct 为准。
 
 ### Pair-programming satellite
 
@@ -100,7 +107,7 @@ Browser connects via `createSapRelayBrowserClient` → [`/sap/relay/v1`](../../s
 
 Reference files:
 
-- [`satellites/chat/server/sap/hub.ts`](../../satellites/chat/server/sap/hub.ts)
+- [`satellites/chat/app/src/lib/sap-client.ts`](../../satellites/chat/app/src/lib/sap-client.ts)
 - [`satellites/pair-programming/server/sap/hub.ts`](../../satellites/pair-programming/server/sap/hub.ts)
 - [`packages/sap-contract/src/sidecar-client.ts`](../../packages/sap-contract/src/sidecar-client.ts)
 - [`packages/sap-contract/src/satellite-relay-server.ts`](../../packages/sap-contract/src/satellite-relay-server.ts)
@@ -151,6 +158,9 @@ Per [`.agent/rules/code-layers.md`](../../.agent/rules/code-layers.md) (Dependen
 `GET /api/satellites/status` (Chamber → Satellites) reads `SatelliteManager.getStatus()`: connected instances, `http_url`, registered tools, heartbeat timestamps.
 
 ## Further reading
+
+- Frontend manifest / desktop / mobile exports: [`frontend-exports.md`](frontend-exports.md)
+- Desktop shell: [`satellites/desktop-shell/`](../../satellites/desktop-shell/)
 
 - [overview.md](overview.md) — protocol goals
 - [transport.md](transport.md) — envelopes and handshake

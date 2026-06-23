@@ -472,7 +472,9 @@ function App() {
           <h2 className="text-lg font-bold">{m.webui_chat_title()}</h2>
           <p className="text-sm text-error">{error}</p>
           <p className="text-xs text-base-content/60">
-            请确认 `anima service start` 已运行，且 config.yaml 中配置了 satellites.chat。
+            {(window.satelliteShell ?? window.companionShell)?.hubWsUrl
+              ? "请确认 Hub 已运行（anima service start）。"
+              : "请确认 Hub 已运行，且 chat dev server 提供 /config.json。"}
           </p>
         </div>
       </div>

@@ -1,14 +1,18 @@
-appId: org.freeanima.companion
-productName: FreeAnima Companion
-artifactName: FreeAnima-Companion-${version}.${ext}
-executableName: FreeAnima-Companion
+appId: org.freeanima.desktop
+productName: FreeAnima Desktop
+artifactName: FreeAnima-Desktop-${version}.${ext}
+executableName: FreeAnima-Desktop
 forceCodeSigning: false
+# Linux/macOS 交叉打 Windows NSIS 时优先用 UninstallerReader（见 build-electron.ts patch）；
+# 若仍走 Wine 路径，1.0.1 使用 electron-builder 自带 Wine 11。
+toolsets:
+  wine: "1.0.1"
 directories:
   output: release
   buildResources: build-resources
 files:
   - electron-dist/**/*
-  - dist/**/*
+  - vendor/**/*
   - package.json
   - electron/icons/**/*
 extraResources:

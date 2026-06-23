@@ -20,11 +20,22 @@ const LAYER_DIRS = [
   "capabilities",
   "platform",
   "satellites",
+  "frontends",
   "cli",
   "tests",
 ] as const;
 
-const SATELLITE_ALLOWED = new Set(["sap-contract", "kernel", "kernel-logging"]);
+const SATELLITE_ALLOWED = new Set(["sap-contract", "satellite-sdk", "kernel", "kernel-logging"]);
+
+const DESKTOP_SHELL_ALLOWED = new Set([
+  "sap-contract",
+  "satellite-sdk",
+  "satellite-companion",
+  "satellite-chat",
+  "frontend-chamber",
+  "kernel",
+  "kernel-logging",
+]);
 
 type Layer = (typeof LAYER_DIRS)[number] | null;
 
@@ -65,12 +76,23 @@ function isAllowed(layer: Layer, pkg: string, relPath: string): boolean {
   const root = workspacePkgName(pkg);
 
   if (layer === "satellites") {
+    if (relPath.startsWith("satellites/desktop-shell/")) {
+      const pkgRoot = workspacePkgName(pkg);
+      if (DESKTOP_SHELL_ALLOWED.has(pkgRoot) || pkgRoot.startsWith("kernel-")) return true;
+    }
+    return isSatelliteAllowed(pkg);
+  }
+
+  if (layer === "frontends") {
     return isSatelliteAllowed(pkg);
   }
 
   if (layer === "packages") {
     if (relPath.startsWith("packages/sap-contract")) {
       return root === "kernel" || root.startsWith("kernel-") || root === "sap-contract";
+    }
+    if (relPath.startsWith("packages/satellite-sdk")) {
+      return root === "kernel" || root.startsWith("kernel-");
     }
     return false;
   }
@@ -113,9 +135,14 @@ function capabilitiesCrossViolation(relPath: string, pkg: string): string | null
 }
 
 function satelliteViolation(relPath: string, pkg: string): string | null {
-  if (layerOf(relPath) !== "satellites") return null;
+  if (relPath.startsWith("satellites/desktop-shell/")) {
+    const root = workspacePkgName(pkg);
+    if (DESKTOP_SHELL_ALLOWED.has(root) || root.startsWith("kernel-")) return null;
+    return `satellites/desktop-shell must not depend on @freeanima/${root}`;
+  }
+  if (layerOf(relPath) !== "satellites" && layerOf(relPath) !== "frontends") return null;
   if (isSatelliteAllowed(pkg)) return null;
-  return `satellites/* must not depend on @freeanima/${workspacePkgName(pkg)} (allowed: sap-contract + generic deps)`;
+  return `satellites/* / frontends/* must not depend on @freeanima/${workspacePkgName(pkg)} (allowed: sap-contract, satellite-sdk + generic deps)`;
 }
 
 function reasonFor(layer: Layer, pkg: string): string {

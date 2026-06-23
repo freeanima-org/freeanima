@@ -1,0 +1,15 @@
+import { UnsupportedMobileError, type FrontendMobileExport } from "@freeanima/satellite-sdk";
+
+import { getCompanionManifest } from "./manifest.ts";
+
+export const companionMobileExport: FrontendMobileExport = {
+  manifest: getCompanionManifest(),
+  profile: {
+    connectionKind: "embedded-sidecar",
+    embedMode: "unsupported",
+  },
+};
+
+export function createCompanionMobileRuntime(): never {
+  throw new UnsupportedMobileError(getCompanionManifest().appId);
+}

@@ -106,13 +106,23 @@ export function subscribeSessionEvents(
 }
 
 export async function loadConfig() {
+  const shell = window.satelliteShell ?? window.companionShell;
+  if (shell?.hubWsUrl) {
+    return { app_id: "chat", hub_ws_url: shell.hubWsUrl };
+  }
+
   const res = await fetch("/config.json");
   if (!res.ok) {
     throw new Error(m.webui_common_network_error());
   }
+  const ct = res.headers.get("content-type") ?? "";
+  if (!ct.includes("application/json")) {
+    throw new Error(m.webui_common_network_error());
+  }
   return res.json() as Promise<{
     app_id: string;
-    instance_id: string;
-    relay_ws_url: string;
+    hub_ws_url?: string;
+    instance_id?: string;
+    relay_ws_url?: string;
   }>;
 }

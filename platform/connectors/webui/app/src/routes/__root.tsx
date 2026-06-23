@@ -19,11 +19,16 @@ function resolveMode(pathname: string): AppMode {
   return "chamber";
 }
 
+function isEmbeddedShell(): boolean {
+  return new URLSearchParams(window.location.search).get("embed") === "1";
+}
+
 function AppShell() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const mode = resolveMode(pathname);
   const [, setLocaleTick] = useState(0);
+  const embedded = isEmbeddedShell();
 
   const switchMode = (target: AppMode) => {
     if (target === "chat") {
@@ -46,30 +51,34 @@ function AppShell() {
 
   return (
     <div className="h-screen flex flex-col">
-      <header className="app-header shrink-0 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-3 py-2 sm:px-4 sm:py-0 sm:h-10 sm:flex-nowrap border-b border-base-300 bg-base-200">
-        <span className="text-sm font-medium text-base-content/70 shrink-0">{m.webui_brand()}</span>
-        <div className="flex gap-1 sm:gap-2 w-full sm:w-auto items-center">
-          <button
-            type="button"
-            className={`btn btn-xs flex-1 sm:flex-none min-w-0 ${mode === "chat" ? "btn-primary" : "btn-ghost"}`}
-            title={m.webui_mode_chat()}
-            onClick={() => switchMode("chat")}
-          >
-            {m.webui_mode_chat()}
-          </button>
-          <button
-            type="button"
-            className={`btn btn-xs flex-1 sm:flex-none min-w-0 ${mode === "chamber" ? "btn-primary" : "btn-ghost"}`}
-            title={m.webui_mode_chamber()}
-            onClick={() => switchMode("chamber")}
-          >
-            {m.webui_mode_chamber()}
-          </button>
-          <button type="button" className="btn btn-xs btn-ghost" onClick={toggleLocale}>
-            {locale === "zh-cn" ? m.webui_nav_language_en() : m.webui_nav_language_zh()}
-          </button>
-        </div>
-      </header>
+      {embedded ? null : (
+        <header className="app-header shrink-0 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-3 py-2 sm:px-4 sm:py-0 sm:h-10 sm:flex-nowrap border-b border-base-300 bg-base-200">
+          <span className="text-sm font-medium text-base-content/70 shrink-0">
+            {m.webui_brand()}
+          </span>
+          <div className="flex gap-1 sm:gap-2 w-full sm:w-auto items-center">
+            <button
+              type="button"
+              className={`btn btn-xs flex-1 sm:flex-none min-w-0 ${mode === "chat" ? "btn-primary" : "btn-ghost"}`}
+              title={m.webui_mode_chat()}
+              onClick={() => switchMode("chat")}
+            >
+              {m.webui_mode_chat()}
+            </button>
+            <button
+              type="button"
+              className={`btn btn-xs flex-1 sm:flex-none min-w-0 ${mode === "chamber" ? "btn-primary" : "btn-ghost"}`}
+              title={m.webui_mode_chamber()}
+              onClick={() => switchMode("chamber")}
+            >
+              {m.webui_mode_chamber()}
+            </button>
+            <button type="button" className="btn btn-xs btn-ghost" onClick={toggleLocale}>
+              {locale === "zh-cn" ? m.webui_nav_language_en() : m.webui_nav_language_zh()}
+            </button>
+          </div>
+        </header>
+      )}
       <main className="flex-1 min-h-0">
         <Outlet />
       </main>
