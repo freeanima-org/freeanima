@@ -27,6 +27,7 @@ import {
   resolveCommand,
 } from "@freeanima/platform/commands";
 import { getAppRuntime } from "@freeanima/platform";
+import { TEST_SAP_PARLOR_PLATFORM } from "../../helpers/sap-parlor-test-platform.ts";
 import * as engineConversation from "@freeanima/runtime/conversation";
 
 async function patchMetaForTest(sessionId: string, patch: Record<string, unknown>): Promise<void> {
@@ -54,7 +55,7 @@ describePg("slash commands", () => {
     const text = (
       await executeCommand(cmd!, {
         sessionId: "x",
-        platform: "parlor",
+        platform: TEST_SAP_PARLOR_PLATFORM,
         args: [],
         raw: "/help",
       })
@@ -70,7 +71,7 @@ describePg("slash commands", () => {
     expect(cmd?.name).toBe("retry");
     const result = await executeCommand(cmd!, {
       sessionId: "x",
-      platform: "parlor",
+      platform: TEST_SAP_PARLOR_PLATFORM,
       args: [],
       raw: "/retry",
     });
@@ -88,7 +89,7 @@ describePg("slash commands", () => {
         cached_toolsets: [],
         functions: [],
         timestamp: new Date().toISOString(),
-        platform: "parlor",
+        platform: TEST_SAP_PARLOR_PLATFORM,
       },
       [
         { role: "user", content: "hello", pos: 1, timestamp: "t1" },
@@ -105,7 +106,9 @@ describePg("slash commands", () => {
 
   it("listCommands includes help and retry", async () => {
     const svc = getAppRuntime();
-    const parlor = svc.listCommands({ platform: "parlor" }).commands.map((c) => c.name);
+    const parlor = svc
+      .listCommands({ platform: TEST_SAP_PARLOR_PLATFORM })
+      .commands.map((c) => c.name);
     expect(parlor).toContain("help");
     expect(parlor).toContain("retry");
     expect(parlor).toContain("rebuild_session_cache");
@@ -119,7 +122,7 @@ describePg("slash commands", () => {
   });
 
   it("resolveCommand blocks /new on parlor", async () => {
-    expect(resolveCommand("/new", "parlor")[0]).toBeNull();
+    expect(resolveCommand("/new", TEST_SAP_PARLOR_PLATFORM)[0]).toBeNull();
     expect(resolveCommand("/new", "discord")[0]?.name).toBe("new");
     expect(resolveCommand("/new", "weixin")[0]?.name).toBe("new");
   });
@@ -194,7 +197,7 @@ describePg("slash commands", () => {
     const selfModel = "You are a test agent.";
     await syncIntegrationSelfLayer(pg, selfModel);
 
-    const sid = await testConv().newSession("parlor");
+    const sid = await testConv().newSession(TEST_SAP_PARLOR_PLATFORM);
     const metaBefore = await testConv().loadSessionMeta(sid);
     const preservedCwd = "/tmp/freeanima-preserved-cwd";
     await patchMetaForTest(sid, {
@@ -208,7 +211,7 @@ describePg("slash commands", () => {
     const [cmd] = findCommand("/rebuild_session_cache");
     const result = await executeCommand(cmd!, {
       sessionId: sid,
-      platform: "parlor",
+      platform: TEST_SAP_PARLOR_PLATFORM,
       args: [],
       raw: "/rebuild_session_cache",
     });
@@ -234,7 +237,7 @@ describePg("slash commands", () => {
     const [cmd] = findCommand("/rebuild-session-cache");
     const result = await executeCommand(cmd!, {
       sessionId: "nonexistent_session_abc",
-      platform: "parlor",
+      platform: TEST_SAP_PARLOR_PLATFORM,
       args: [],
       raw: "/rebuild_session_cache",
     });
@@ -242,7 +245,7 @@ describePg("slash commands", () => {
   });
 
   it("rebuild_session_cache seeds default toolsets filtered by capability mask when cached is empty", async () => {
-    const sid = await testConv().newSession("parlor");
+    const sid = await testConv().newSession(TEST_SAP_PARLOR_PLATFORM);
     await patchMetaForTest(sid, {
       cached_toolsets: [],
       staged_toolsets: [],
@@ -254,7 +257,7 @@ describePg("slash commands", () => {
     const [cmd] = findCommand("/rebuild_session_cache");
     const result = await executeCommand(cmd!, {
       sessionId: sid,
-      platform: "parlor",
+      platform: TEST_SAP_PARLOR_PLATFORM,
       args: [],
       raw: "/rebuild_session_cache",
     });
@@ -271,12 +274,12 @@ describePg("slash commands", () => {
   });
 
   it("stats command reports session", async () => {
-    const sid = await testConv().newSession("parlor");
+    const sid = await testConv().newSession(TEST_SAP_PARLOR_PLATFORM);
     const [cmd] = findCommand("/stats");
     expect(cmd?.name).toBe("stats");
     const result = await executeCommand(cmd!, {
       sessionId: sid,
-      platform: "parlor",
+      platform: TEST_SAP_PARLOR_PLATFORM,
       args: [],
       raw: "/stats",
     });
@@ -284,11 +287,11 @@ describePg("slash commands", () => {
   });
 
   it("title command get and set", async () => {
-    const sid = await testConv().newSession("parlor");
+    const sid = await testConv().newSession(TEST_SAP_PARLOR_PLATFORM);
     const [setCmd] = findCommand("/title");
     await executeCommand(setCmd!, {
       sessionId: sid,
-      platform: "parlor",
+      platform: TEST_SAP_PARLOR_PLATFORM,
       args: ["my title"],
       raw: "/title my title",
     });
@@ -296,7 +299,7 @@ describePg("slash commands", () => {
     const [getCmd] = findCommand("/title");
     const result = await executeCommand(getCmd!, {
       sessionId: sid,
-      platform: "parlor",
+      platform: TEST_SAP_PARLOR_PLATFORM,
       args: [],
       raw: "/title",
     });
@@ -304,12 +307,12 @@ describePg("slash commands", () => {
   });
 
   it("compress command reports compression state", async () => {
-    const sid = await testConv().newSession("parlor");
+    const sid = await testConv().newSession(TEST_SAP_PARLOR_PLATFORM);
     const [cmd] = findCommand("/compress");
     expect(cmd?.name).toBe("compress");
     const result = await executeCommand(cmd!, {
       sessionId: sid,
-      platform: "parlor",
+      platform: TEST_SAP_PARLOR_PLATFORM,
       args: [],
       raw: "/compress",
     });
@@ -318,11 +321,11 @@ describePg("slash commands", () => {
   });
 
   it("cwd command uses existing directory", async () => {
-    const sid = await testConv().newSession("parlor");
+    const sid = await testConv().newSession(TEST_SAP_PARLOR_PLATFORM);
     const [cmd] = findCommand("/cwd");
     const result = await executeCommand(cmd!, {
       sessionId: sid,
-      platform: "parlor",
+      platform: TEST_SAP_PARLOR_PLATFORM,
       args: [home],
       raw: `/cwd ${home}`,
     });
@@ -394,7 +397,7 @@ describePg("slash commands", () => {
   });
 
   it("/restart resolves on parlor, discord, and weixin", () => {
-    for (const platform of ["parlor", "discord", "weixin"] as const) {
+    for (const platform of [TEST_SAP_PARLOR_PLATFORM, "discord", "weixin"] as const) {
       const [cmd] = resolveCommand("/restart", platform);
       expect(cmd?.name).toBe("restart");
     }
@@ -405,7 +408,7 @@ describePg("slash commands", () => {
     expect(cmd?.name).toBe("restart");
     const result = await executeCommand(cmd!, {
       sessionId: "x",
-      platform: "parlor",
+      platform: TEST_SAP_PARLOR_PLATFORM,
       args: [],
       raw: "/restart",
     });
@@ -415,7 +418,7 @@ describePg("slash commands", () => {
 
   it("listCommands includes restart (parlor / discord / weixin)", () => {
     const svc = getAppRuntime();
-    for (const platform of ["parlor", "discord", "weixin"] as const) {
+    for (const platform of [TEST_SAP_PARLOR_PLATFORM, "discord", "weixin"] as const) {
       const names = svc.listCommands({ platform }).commands.map((c) => c.name);
       expect(names).toContain("restart");
     }
@@ -426,7 +429,7 @@ describePg("slash commands", () => {
     const [cmd] = findCommand("/restart");
     const result = await executeCommand(cmd!, {
       sessionId: "x",
-      platform: "parlor",
+      platform: TEST_SAP_PARLOR_PLATFORM,
       args: [],
       raw: "/restart",
     });
@@ -435,7 +438,7 @@ describePg("slash commands", () => {
   });
 
   it("/upgrade resolves on parlor, discord, and weixin", () => {
-    for (const platform of ["parlor", "discord", "weixin"] as const) {
+    for (const platform of [TEST_SAP_PARLOR_PLATFORM, "discord", "weixin"] as const) {
       const [cmd] = resolveCommand("/upgrade", platform);
       expect(cmd?.name).toBe("upgrade");
     }
@@ -464,7 +467,7 @@ describePg("slash commands", () => {
       const [cmd] = findCommand("/upgrade");
       const result = await executeCommand(cmd!, {
         sessionId: "x",
-        platform: "parlor",
+        platform: TEST_SAP_PARLOR_PLATFORM,
         args: [],
         raw: "/upgrade",
       });
@@ -489,7 +492,7 @@ describePg("slash commands", () => {
       const [cmd] = findCommand("/upgrade");
       const result = await executeCommand(cmd!, {
         sessionId: "x",
-        platform: "parlor",
+        platform: TEST_SAP_PARLOR_PLATFORM,
         args: [],
         raw: "/upgrade",
       });
@@ -503,7 +506,7 @@ describePg("slash commands", () => {
 
   it("listCommands includes upgrade (parlor / discord / weixin)", () => {
     const svc = getAppRuntime();
-    for (const platform of ["parlor", "discord", "weixin"] as const) {
+    for (const platform of [TEST_SAP_PARLOR_PLATFORM, "discord", "weixin"] as const) {
       const names = svc.listCommands({ platform }).commands.map((c) => c.name);
       expect(names).toContain("upgrade");
     }

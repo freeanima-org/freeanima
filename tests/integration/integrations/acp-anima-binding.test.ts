@@ -7,6 +7,7 @@ import {
 } from "../../helpers/integration-case.ts";
 
 import { testConv } from "../../helpers/pg-test.ts";
+import { TEST_SAP_PARLOR_PLATFORM } from "../../helpers/sap-parlor-test-platform.ts";
 import {
   bindAcpTaskRunning,
   getBoundAcpSession,
@@ -21,7 +22,7 @@ describePg("acp acp_tasks binding", () => {
   beforeEach(async () => {
     await beginIntegrationCase("freeanima-acp-bind-");
     animaSid = "20260527_test_bind";
-    await testConv().initSession(animaSid, "test-model", { platform: "parlor" });
+    await testConv().initSession(animaSid, "test-model", { platform: TEST_SAP_PARLOR_PLATFORM });
   });
 
   afterEach(async () => {

@@ -1,7 +1,6 @@
 import { Elysia } from "elysia";
 import { z } from "zod";
 import { createSessionBodySchema } from "../../api/schemas.ts";
-import { PARLOR_PLATFORM } from "../../api/constants.ts";
 import {
   createSession,
   getSessionInfo,
@@ -21,7 +20,7 @@ export const sessionsRoutes = new Elysia({ prefix: "/sessions" })
     ({ query }) =>
       listCommands({
         all: query.all === "true" || query.all === true,
-        platform: typeof query.platform === "string" ? query.platform : PARLOR_PLATFORM,
+        platform: typeof query.platform === "string" ? query.platform : undefined,
       }),
     {
       query: z.object({

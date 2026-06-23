@@ -63,7 +63,7 @@ const clarifyItemSchema = z.object({
 });
 
 export const createSessionBodySchema = z.object({
-  platform: z.string().optional(),
+  platform: z.string().min(1),
 });
 
 export const patchTitleBodySchema = z

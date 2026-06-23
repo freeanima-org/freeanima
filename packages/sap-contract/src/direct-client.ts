@@ -177,6 +177,3 @@ export const loadParlorSatelliteConfig = loadDirectSatelliteConfig;
 export function formatDirectPlatform(appId: string, instanceId: string): string {
   return `sap:${appId.trim().toLowerCase().replace(/[-_]/g, "")}:${instanceId.trim().toLowerCase()}`;
 }
-
-/** @deprecated Use formatSapPlatform from naming.ts after resolving instance id */
-export const PARLOR_PLATFORM = "sap:parlor:web";

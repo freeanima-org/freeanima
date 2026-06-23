@@ -11,12 +11,15 @@ import { headOkStepData } from "@freeanima/kernel/hooks";
 import type { SessionMessage as Message } from "@freeanima/core/db/domain";
 import type { EventBus } from "@freeanima/kernel/eventbus";
 import { sessionUpdated } from "@freeanima/capabilities-memory";
-import { PARLOR_PLATFORM } from "./platforms.ts";
 import type { EngineRunControl } from "./engine-run-control.ts";
 import type { SessionManager } from "./session-manager.ts";
 import { runExclusiveStreamTurn, streamErrorEvent, type StreamTurnHost } from "./turn-lifecycle.ts";
 import { maybeGenerateSessionTitleAsync } from "./session-title.ts";
-import { applyCommandSessionEffects, checkPlatform } from "./service-sessions.ts";
+import {
+  applyCommandSessionEffects,
+  checkPlatform,
+  resolveMessagingPlatform,
+} from "./service-sessions.ts";
 import { collectStreamReply, type StreamEvent } from "@freeanima/runtime/loop";
 import { scheduleGracefulRestart, runAnimaCliUpgrade } from "./process-restart.ts";
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
@@ -133,7 +136,7 @@ export async function* sendMessageStream(
   msgDeps: MessagingDeps,
   sessionId: string,
   message: string,
-  platform = PARLOR_PLATFORM,
+  platform?: string,
 ): AsyncGenerator<StreamEvent> {
   message = message.trim();
   if (msgDeps.runControl.isShuttingDown()) {
@@ -148,11 +151,18 @@ export async function* sendMessageStream(
     yield streamErrorEvent(deps, sessionId, "message is required");
     return;
   }
-  await checkPlatform(deps, { platform }, sessionId);
+  let resolvedPlatform: string;
+  try {
+    resolvedPlatform = await resolveMessagingPlatform(deps, sessionId, platform);
+  } catch (e) {
+    yield streamErrorEvent(deps, sessionId, String(e));
+    return;
+  }
+  await checkPlatform(deps, { platform: resolvedPlatform }, sessionId);
 
-  const [cmd, args] = resolveCommand(message, platform);
+  const [cmd, args] = resolveCommand(message, resolvedPlatform);
   if (cmd) {
-    yield* dispatchCommandStream(deps, msgDeps, sessionId, platform, message, cmd, args);
+    yield* dispatchCommandStream(deps, msgDeps, sessionId, resolvedPlatform, message, cmd, args);
     return;
   }
   if (message.startsWith("/")) {
@@ -166,7 +176,7 @@ export async function* sendMessageStream(
     return;
   }
 
-  const guard = await runIncomingMessageHooks(deps, sessionId, message, platform);
+  const guard = await runIncomingMessageHooks(deps, sessionId, message, resolvedPlatform);
   if (!guard.ok) {
     yield { event: "token", data: { content: guard.reason } };
     yield { event: "done", data: {} };

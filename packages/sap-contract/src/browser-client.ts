@@ -2,7 +2,6 @@
 export {
   createSapDirectClient as createSapBrowserClient,
   loadDirectSatelliteConfig as loadParlorSatelliteConfig,
-  PARLOR_PLATFORM,
   type SapDirectClient as SapBrowserClient,
   type SapDirectClientOptions as SapBrowserClientOptions,
   type DirectSatelliteConfig as ParlorSatelliteConfig,

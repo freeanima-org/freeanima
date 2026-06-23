@@ -1,3 +1,4 @@
+import { isSessionMeta } from "@freeanima/core/db/domain";
 import { resolveDefaultSessionToolSets } from "@freeanima/core/tool";
 import { getProfileHopModel } from "@freeanima/platform/config";
 import { PROFILE_CHAT } from "@freeanima/core/provider";
@@ -8,7 +9,19 @@ import type { RuntimeDeps } from "./runtime-deps.ts";
 import { buildMessagesDisplay } from "./build-messages-display.ts";
 import { statsReport } from "./conversation-stats.ts";
 import { originLockKey, runExclusiveOrigin } from "./origin-lock.ts";
-import { PARLOR_PLATFORM } from "./platforms.ts";
+
+export async function resolveMessagingPlatform(
+  deps: RuntimeDeps,
+  sessionId: string,
+  platform?: string,
+): Promise<string> {
+  const explicit = platform?.trim();
+  if (explicit) return explicit;
+  const meta = await deps.conversation.loadSessionMeta(sessionId);
+  const fromMeta = isSessionMeta(meta) ? meta.platform?.trim() : undefined;
+  if (fromMeta) return fromMeta;
+  throw new Error(`session ${sessionId.slice(0, 16)} has no platform`);
+}
 
 export async function checkPlatform(
   deps: RuntimeDeps,
@@ -29,9 +42,11 @@ export async function listSessions(
 
 export async function createSession(
   deps: RuntimeDeps,
-  platform = PARLOR_PLATFORM,
+  platform: string,
 ): Promise<{ session_id: string }> {
-  const sid = await deps.conversation.newSession(platform);
+  const p = platform.trim();
+  if (!p) throw new Error("platform is required");
+  const sid = await deps.conversation.newSession(p);
   return { session_id: sid };
 }
 

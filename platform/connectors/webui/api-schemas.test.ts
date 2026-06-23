@@ -22,9 +22,9 @@ describe("api/schemas", () => {
     if (ok.success) expect(ok.data.query).toBe("test");
   });
 
-  it("accepts optional platform on create session", () => {
-    expect(createSessionBodySchema.safeParse({}).success).toBe(true);
-    expect(createSessionBodySchema.safeParse({ platform: "parlor" }).success).toBe(true);
+  it("requires platform on create session", () => {
+    expect(createSessionBodySchema.safeParse({}).success).toBe(false);
+    expect(createSessionBodySchema.safeParse({ platform: "sap:parlor:test" }).success).toBe(true);
   });
 
   it("validates task list body", () => {

@@ -33,7 +33,6 @@ import * as sleep from "./service-sleep.ts";
 import * as tasks from "./service-tasks.ts";
 import * as fridge from "./service-fridge.ts";
 import * as messaging from "./service-messaging.ts";
-import { PARLOR_PLATFORM } from "./platforms.ts";
 
 export type { MemoryFileEntry } from "./service-memory.ts";
 export type { StreamEvent } from "@freeanima/runtime/loop";
@@ -253,7 +252,7 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     return sessions.listSessions(this.runtimeDeps(), platform);
   }
 
-  createSession(platform = PARLOR_PLATFORM): Promise<{ session_id: string }> {
+  createSession(platform: string): Promise<{ session_id: string }> {
     return sessions.createSession(this.runtimeDeps(), platform);
   }
 
@@ -300,7 +299,7 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
   async sendMessage(
     sessionId: string,
     message: string,
-    platform = PARLOR_PLATFORM,
+    platform?: string,
   ): Promise<{ session_id: string; content: string }> {
     const content = await collectStreamReply(
       messaging.sendMessageStream(
@@ -317,7 +316,7 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
   sendMessageStream(
     sessionId: string,
     message: string,
-    platform = PARLOR_PLATFORM,
+    platform?: string,
   ): AsyncGenerator<StreamEvent> {
     return messaging.sendMessageStream(
       this.fullDeps(),

@@ -44,8 +44,10 @@ export async function listAllSessions() {
   return unwrap(apiClient.api.sessions.all.get());
 }
 
-export async function createSession(platform?: string) {
-  return unwrap(apiClient.api.sessions.post(platform ? { platform } : {}));
+export async function createSession(platform: string) {
+  const p = platform.trim();
+  if (!p) throw new Error("platform is required");
+  return unwrap(apiClient.api.sessions.post({ platform: p }));
 }
 
 export async function getSessionMessages(sessionId: string, offset?: number, limit?: number) {

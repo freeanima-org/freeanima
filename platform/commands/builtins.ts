@@ -7,7 +7,7 @@ import {
 import { clearAwaitingClarify, readAwaitingClarify } from "@freeanima/capabilities-tools/clarify";
 import { resolveMaskPresets } from "@freeanima/capabilities-tasks/mask";
 import { statsReport } from "@freeanima/platform/ports/conversation-stats";
-import { PARLOR_PLATFORM } from "@freeanima/platform/ports/constants";
+import { PARLOR_PLATFORM_PATTERN } from "@freeanima/platform/ports/constants";
 import { onSessionCloseBeforeNew } from "@freeanima/platform/ports/session-close";
 import { isSessionMeta } from "@freeanima/core/db/domain";
 import { setHomeChannel } from "@freeanima/platform/ports/home-channel";
@@ -369,7 +369,7 @@ export function registerBuiltins(): void {
     description: "Set / view / clear current session capability mask (parlor only)",
     handler: cmdMask,
     scope: "session",
-    platforms: [PARLOR_PLATFORM],
+    platforms: [PARLOR_PLATFORM_PATTERN],
   });
   registerCommand({
     name: "tooldisplay",
@@ -384,13 +384,13 @@ export function registerBuiltins(): void {
     description: "Restart Free Anima service (waits for in-flight conversations to flush)",
     handler: cmdRestart,
     scope: "global",
-    platforms: ["parlor", "discord", "weixin"],
+    platforms: [PARLOR_PLATFORM_PATTERN, "discord", "weixin"],
   });
   registerCommand({
     name: "upgrade",
     description: "Upgrade @freeanima/cli and restart service",
     handler: cmdUpgrade,
     scope: "global",
-    platforms: ["parlor", "discord", "weixin"],
+    platforms: [PARLOR_PLATFORM_PATTERN, "discord", "weixin"],
   });
 }
