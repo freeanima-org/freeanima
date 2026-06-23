@@ -5,10 +5,6 @@ import type { LimbicListOpts, LimbicMemoryRow } from "@freeanima/core/repos";
 import { getDb } from "../../client.ts";
 import { mapLimbicMemoryRow } from "../mappers/limbic-mapper.ts";
 
-function escapeIlikePattern(raw: string): string {
-  return raw.replace(/\\/g, "\\\\").replace(/%/g, "\\%").replace(/_/g, "\\_");
-}
-
 function normalizeListOpts(opts?: LimbicListOpts) {
   const query = opts?.query?.trim() ?? "";
   const sessionId = opts?.session_id?.trim() ?? "";
@@ -28,9 +24,7 @@ function buildLimbicConditions(opts?: Omit<LimbicListOpts, "offset" | "limit">):
   if (sessionId) conditions.push(eq(limbicMemory.sessionId, sessionId));
   if (kind) conditions.push(eq(limbicMemory.kind, kind));
   if (query) {
-    conditions.push(
-      drizzleSql`${limbicMemory.content} ILIKE ${"%" + escapeIlikePattern(query) + "%"} ESCAPE '\\'`,
-    );
+    conditions.push(drizzleSql`strpos(lower(${limbicMemory.content}), lower(${query})) > 0`);
   }
   return conditions;
 }

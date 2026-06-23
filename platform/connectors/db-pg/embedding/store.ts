@@ -1,5 +1,10 @@
 import { eq, sql } from "drizzle-orm";
-import { messages, semanticMemory } from "@freeanima/core/db/schema";
+import {
+  autobiographicalMemory,
+  limbicMemory,
+  messages,
+  semanticMemory,
+} from "@freeanima/core/db/schema";
 
 import { getDb } from "../client.ts";
 import { formatPgVector } from "./format.ts";
@@ -30,6 +35,34 @@ export async function setMessageEmbedding(
     .set({ contentEmbedding: sql`${formatPgVector(embedding)}::vector` })
     .where(eq(messages.id, id))
     .returning({ id: messages.id });
+  return rows.length > 0;
+}
+
+export async function setLimbicMemoryEmbedding(
+  id: string,
+  _content: string,
+  embedding: number[],
+): Promise<boolean> {
+  const db = getDb();
+  const rows = await db
+    .update(limbicMemory)
+    .set({ contentEmbedding: sql`${formatPgVector(embedding)}::vector` })
+    .where(eq(limbicMemory.id, id))
+    .returning({ id: limbicMemory.id });
+  return rows.length > 0;
+}
+
+export async function setAutobiographicalMemoryEmbedding(
+  id: string,
+  _content: string,
+  embedding: number[],
+): Promise<boolean> {
+  const db = getDb();
+  const rows = await db
+    .update(autobiographicalMemory)
+    .set({ contentEmbedding: sql`${formatPgVector(embedding)}::vector` })
+    .where(eq(autobiographicalMemory.id, id))
+    .returning({ id: autobiographicalMemory.id });
   return rows.length > 0;
 }
 

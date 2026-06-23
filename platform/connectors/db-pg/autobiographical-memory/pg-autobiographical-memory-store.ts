@@ -1,6 +1,7 @@
 import type { AutobiographicalMemoryStorePort } from "@freeanima/core/repos";
 
 import * as crudRepo from "./repos/autobiographical-crud-repo.ts";
+import * as ftsRepo from "./repos/autobiographical-fts-repo.ts";
 
 /** PostgreSQL AutobiographicalMemoryStorePort implementation */
 export const pgAutobiographicalMemoryStore: AutobiographicalMemoryStorePort = {
@@ -13,4 +14,5 @@ export const pgAutobiographicalMemoryStore: AutobiographicalMemoryStorePort = {
   listBySourceSemanticMemory: crudRepo.listAutobiographicalMemoryBySourceSemanticMemory,
   listBySourceSessions: crudRepo.listAutobiographicalMemoryBySourceSessions,
   list: crudRepo.listAutobiographicalMemory,
+  searchFts: ftsRepo.searchAutobiographicalMemoryFts,
 };

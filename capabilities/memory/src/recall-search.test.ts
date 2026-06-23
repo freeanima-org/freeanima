@@ -221,6 +221,14 @@ function createMockLimbicStore(
     async count() {
       return rows.length;
     },
+    async searchFts(query, opts) {
+      const q = query.toLowerCase();
+      const limit = opts?.limit ?? 20;
+      return rows
+        .filter((r) => !q || r.content.toLowerCase().includes(q))
+        .slice(0, limit)
+        .map((r, i) => ({ ...r, rank: 1 / (i + 1) }));
+    },
   };
 }
 
@@ -275,6 +283,19 @@ function createMockAutobiographicalStore(
             (!q || r.title.toLowerCase().includes(q) || r.content.toLowerCase().includes(q)),
         )
         .slice(0, limit);
+    },
+    async searchFts(query, opts) {
+      const q = query.toLowerCase();
+      const limit = opts?.limit ?? 20;
+      const status = opts?.status ?? "active";
+      return rows
+        .filter(
+          (r) =>
+            r.status === status &&
+            (!q || r.title.toLowerCase().includes(q) || r.content.toLowerCase().includes(q)),
+        )
+        .slice(0, limit)
+        .map((r, i) => ({ ...r, rank: 1 / (i + 1) }));
     },
   };
 }

@@ -1,8 +1,12 @@
 export type FtsRebuildPhase =
   | "semantic_memory_segmented"
   | "messages_segmented"
+  | "limbic_memory_segmented"
+  | "autobiographical_memory_segmented"
   | "semantic_memory_embedding"
-  | "messages_embedding";
+  | "messages_embedding"
+  | "limbic_memory_embedding"
+  | "autobiographical_memory_embedding";
 
 export type FtsRebuildProgress = {
   phase: FtsRebuildPhase;

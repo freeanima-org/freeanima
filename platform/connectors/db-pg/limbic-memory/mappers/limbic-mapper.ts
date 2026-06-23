@@ -16,6 +16,8 @@ export type LimbicMemoryDbRow = {
   semanticMemoryIds?: string[] | null;
   created_at?: Date | string;
   createdAt?: Date | string;
+  /** Already mapped row (RRF merge path). */
+  created?: Date | string;
 };
 
 function normalizeKind(raw: string): LimbicKind {
@@ -25,7 +27,7 @@ function normalizeKind(raw: string): LimbicKind {
 }
 
 export function mapLimbicMemoryRow(row: LimbicMemoryDbRow): LimbicMemoryRow {
-  const created = row.created_at ?? row.createdAt;
+  const created = row.created_at ?? row.createdAt ?? row.created;
   return {
     id: row.id,
     session_id: row.session_id ?? row.sessionId ?? "",

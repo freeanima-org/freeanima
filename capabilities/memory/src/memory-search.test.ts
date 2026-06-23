@@ -279,6 +279,9 @@ describe("memory search", () => {
       async list() {
         return [];
       },
+      async searchFts() {
+        return [];
+      },
       async count() {
         return 0;
       },
@@ -309,6 +312,9 @@ describe("memory search", () => {
         return [];
       },
       async list() {
+        return [];
+      },
+      async searchFts() {
         return [];
       },
     });

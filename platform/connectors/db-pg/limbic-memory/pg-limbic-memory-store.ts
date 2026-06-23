@@ -1,6 +1,7 @@
 import type { LimbicMemoryStorePort } from "@freeanima/core/repos";
 
 import * as crudRepo from "./repos/limbic-crud-repo.ts";
+import * as ftsRepo from "./repos/limbic-fts-repo.ts";
 import * as listRepo from "./repos/limbic-list-repo.ts";
 import * as bySessionsRepo from "./repos/limbic-by-sessions-repo.ts";
 
@@ -12,4 +13,5 @@ export const pgLimbicMemoryStore: LimbicMemoryStorePort = {
   listBySessions: bySessionsRepo.listLimbicMemoryBySessions,
   list: listRepo.listLimbicMemory,
   count: listRepo.countLimbicMemory,
+  searchFts: ftsRepo.searchLimbicMemoryFts,
 };

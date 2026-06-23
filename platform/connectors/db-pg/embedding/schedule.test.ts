@@ -11,6 +11,8 @@ mock.module("./embed-jobs.ts", () => ({
 import {
   awaitPendingEmbeddingsForTest,
   resetPendingEmbeddingsForTest,
+  scheduleAutobiographicalMemoryEmbedding,
+  scheduleLimbicMemoryEmbedding,
   scheduleMessageEmbedding,
   scheduleSemanticMemoryEmbedding,
 } from "./schedule.ts";
@@ -55,5 +57,18 @@ describe("schedule embedding", () => {
     scheduleMessageEmbedding("m1", "   ");
     await awaitPendingEmbeddingsForTest();
     expect(embedAndStoreJobsMock).not.toHaveBeenCalled();
+  });
+
+  it("schedules limbic and autobiographical kinds", async () => {
+    scheduleLimbicMemoryEmbedding("lm-1", "feeling");
+    scheduleAutobiographicalMemoryEmbedding("ab-1", "title\nbody");
+    await awaitPendingEmbeddingsForTest();
+
+    expect(embedAndStoreJobsMock).toHaveBeenCalledTimes(2);
+    const kinds = embedAndStoreJobsMock.mock.calls.map((call) => {
+      const jobs = call![0] as EmbeddingPendingJob[];
+      return jobs[0]!.kind;
+    });
+    expect(kinds.toSorted()).toEqual(["autobiographical_memory", "limbic_memory"]);
   });
 });

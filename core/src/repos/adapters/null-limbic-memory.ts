@@ -24,4 +24,7 @@ export const nullLimbicMemoryStore: LimbicMemoryStorePort = {
   async count() {
     return 0;
   },
+  async searchFts() {
+    return [];
+  },
 };

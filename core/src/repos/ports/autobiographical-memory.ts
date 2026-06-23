@@ -42,6 +42,10 @@ export type AutobiographicalListOpts = {
   source_session?: string;
 };
 
+export type AutobiographicalFtsHit = AutobiographicalMemoryRow & {
+  rank: number;
+};
+
 /** Autobiographical memory persistence port (append-only; no content update) */
 export interface AutobiographicalMemoryStorePort {
   create(row: AutobiographicalMemoryCreateInput): Promise<string>;
@@ -63,4 +67,8 @@ export interface AutobiographicalMemoryStorePort {
     opts?: { status?: AutobiographicalStatus },
   ): Promise<AutobiographicalMemoryRow[]>;
   list(opts?: AutobiographicalListOpts): Promise<AutobiographicalMemoryRow[]>;
+  searchFts(
+    query: string,
+    opts?: { limit?: number; status?: AutobiographicalStatus },
+  ): Promise<AutobiographicalFtsHit[]>;
 }

@@ -33,4 +33,7 @@ export const nullAutobiographicalMemoryStore: AutobiographicalMemoryStorePort = 
   async list() {
     return [];
   },
+  async searchFts() {
+    return [];
+  },
 };

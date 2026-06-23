@@ -2,6 +2,8 @@ import { desc, eq } from "drizzle-orm";
 import { limbicKindSchema, limbicMemory } from "@freeanima/core/db/schema";
 import type { LimbicMemoryCreateInput, LimbicMemoryRow } from "@freeanima/core/repos";
 
+import { scheduleLimbicMemoryEmbedding } from "../../embedding/schedule.ts";
+import { resolveFtsSegmentedForWrite } from "../../fts/write.ts";
 import { getDb } from "../../client.ts";
 import { mapLimbicMemoryRow } from "../mappers/limbic-mapper.ts";
 
@@ -38,10 +40,12 @@ export async function createLimbicMemory(row: LimbicMemoryCreateInput): Promise<
   }
 
   const db = getDb();
+  const ftsSegmented = await resolveFtsSegmentedForWrite(content);
   const values: typeof limbicMemory.$inferInsert = {
     sessionId,
     kind: normalizeKind(row.kind),
     content,
+    ftsSegmented,
     valence: clampUnit(row.valence),
     arousal: clampNonNegativeUnit(row.arousal),
     intensity,
@@ -53,6 +57,7 @@ export async function createLimbicMemory(row: LimbicMemoryCreateInput): Promise<
   const rows = await db.insert(limbicMemory).values(values).returning({ id: limbicMemory.id });
   const id = rows[0]?.id;
   if (!id) throw new Error("failed to create limbic_memory");
+  scheduleLimbicMemoryEmbedding(id, content);
   return id;
 }
 
