@@ -190,6 +190,8 @@ async function cmdServiceStatus(args: ServiceArgs): Promise<void> {
       tunnel: tunnelUrls
         ? {
             running: tunnelStatus.running,
+            connected: tunnelStatus.connected,
+            haConnections: tunnelStatus.haConnections,
             publicUrl: tunnelUrls.public_url,
             chamberUrl: tunnelUrls.chamber_url,
           }

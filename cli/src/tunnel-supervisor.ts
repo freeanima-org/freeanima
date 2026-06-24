@@ -15,6 +15,11 @@ import {
 import { cloudflaredRunExecStart } from "./tunnel-run.ts";
 import { serviceUnitDir } from "./service-common.ts";
 import { SYSTEMD_UNIT, systemdUserAvailable } from "./systemd-unit.ts";
+import {
+  formatTunnelConnectedLabel,
+  probeTunnelEdgeStatus,
+  type TunnelEdgeStatus,
+} from "./tunnel-edge-status.ts";
 
 const foregroundChild: { current: ChildProcess | null } = { current: null };
 
@@ -125,12 +130,36 @@ export function stopTunnelForeground(): void {
 
 export type TunnelStatus = {
   enabled: boolean;
+  /** cloudflared 进程是否在运行（systemd / 前台） */
   running: boolean;
+  /** 是否已与 Cloudflare 边缘建立连接；进程未运行时为 false */
+  connected: boolean | null;
+  haConnections: number | null;
   publicUrl: string | null;
   cloudflaredInstalled: boolean;
   configExists: boolean;
   accessConfigured: boolean;
 };
+
+function tunnelProcessPid(): number | null {
+  if (systemdUserAvailable() && existsSync(tunnelUnitPath())) {
+    const r = systemctl("show", TUNNEL_SYSTEMD_UNIT, "-p", "MainPID", "--value");
+    const pid = Number(String(r.stdout ?? "").trim());
+    if (pid > 0) return pid;
+  }
+  const child = foregroundChild.current;
+  if (child && !child.killed && child.pid != null && child.pid > 0) {
+    return child.pid;
+  }
+  return null;
+}
+
+export function getTunnelEdgeStatus(running: boolean): TunnelEdgeStatus {
+  if (!running) return { connected: false, haConnections: null };
+  return probeTunnelEdgeStatus(tunnelProcessPid());
+}
+
+export { formatTunnelConnectedLabel };
 
 export function getTunnelStatus(): TunnelStatus {
   const cfg = FileConfig.open().data.tunnel;
@@ -143,9 +172,12 @@ export function getTunnelStatus(): TunnelStatus {
     running = true;
   }
   const access = cfg?.access;
+  const edge = getTunnelEdgeStatus(running);
   return {
     enabled,
     running,
+    connected: edge.connected,
+    haConnections: edge.haConnections,
     publicUrl: cfg?.hostname ? `https://${cfg.hostname}` : null,
     cloudflaredInstalled: isCloudflaredInstalled(),
     configExists: existsSync(PATHS.cloudflaredConfigFile),

@@ -1,6 +1,7 @@
 import { installCloudflared, manualDownloadHint } from "./tunnel-install.ts";
 import { runTunnelSetup, type SetupPromptsOptions } from "./tunnel-setup-prompts.ts";
 import {
+  formatTunnelConnectedLabel,
   getTunnelStatus,
   startTunnelForeground,
   startTunnelViaSystemd,
@@ -102,6 +103,9 @@ export async function runTunnelCommand(args: TunnelCommandArgs): Promise<void> {
     console.log("Cloudflare Tunnel 状态");
     console.log(`  enabled:           ${s.enabled}`);
     console.log(`  running:           ${s.running}`);
+    console.log(
+      `  connected:         ${formatTunnelConnectedLabel({ connected: s.connected, haConnections: s.haConnections })}`,
+    );
     console.log(`  public URL:        ${s.publicUrl ?? "(未配置)"}`);
     console.log(`  cloudflared:       ${s.cloudflaredInstalled ? "已安装" : "未安装"}`);
     console.log(`  config:            ${s.configExists ? "存在" : "缺失"}`);
