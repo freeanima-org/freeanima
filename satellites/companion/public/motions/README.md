@@ -4,7 +4,7 @@
 
 ## 推荐方式（设置 → 动作库 Tab）
 
-1. 从系统托盘（Tauri）或页面「设置」打开设置
+1. 从系统托盘 → **设置…** 打开伴侣设置窗
 2. 在 **动作库** Tab 点击「打开 BOOTH 下载页」，登录 pixiv 后下载 `VRMA_MotionPack.zip`
 3. 点击「导入动作包 ZIP」（会自动解开 `vrma/` 子目录，文件保存到 `motions/` 根目录）
 4. 在 **动作槽位** Tab 为各槽位（`idle`、`in_place`、`walk`、`climb` 等）勾选已导入的动作
