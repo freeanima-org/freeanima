@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { VRMLoaderPlugin, VRMUtils, type VRM } from "@pixiv/three-vrm";
 import {
@@ -46,6 +47,7 @@ export function MotionPreviewCanvas({ modelPath, motionFile, width, className }:
 
     let vrm: VRM | null = null;
     let mixer: THREE.AnimationMixer | null = null;
+    let controls: OrbitControls | null = null;
 
     const resize = (): void => {
       const w = canvas.clientWidth || width;
@@ -83,6 +85,14 @@ export function MotionPreviewCanvas({ modelPath, motionFile, width, className }:
           bottomMarginRatio: 0.03,
         });
 
+        controls = new OrbitControls(camera, canvas);
+        controls.target.set(framing.centerX, framing.lookAtY, 0);
+        controls.enableZoom = false;
+        controls.enablePan = false;
+        controls.minPolarAngle = (30 * Math.PI) / 180;
+        controls.maxPolarAngle = (150 * Math.PI) / 180;
+        controls.update();
+
         const motionUrl = await resolveSidecarAssetUrl(`${motionManifest.baseUrl}/${motionFile}`);
         const animLoader = new GLTFLoader();
         animLoader.register((parser) => new VRMAnimationLoaderPlugin(parser));
@@ -103,6 +113,7 @@ export function MotionPreviewCanvas({ modelPath, motionFile, width, className }:
           const delta = clock.getDelta();
           mixer?.update(delta);
           vrm?.update(delta);
+          controls?.update();
           renderer.render(scene, camera);
         };
         tick();
@@ -115,6 +126,7 @@ export function MotionPreviewCanvas({ modelPath, motionFile, width, className }:
       disposed = true;
       ro.disconnect();
       if (animationId !== null) cancelAnimationFrame(animationId);
+      controls?.dispose();
       revokeModel?.();
       mixer?.stopAllAction();
       if (vrm) VRMUtils.deepDispose(vrm.scene);

@@ -65,7 +65,7 @@ FreeAnima Desktop（satellites/desktop-shell）
 
 ### VRMA 动作库与槽位
 
-在设置 → **动作库** Tab 导入 VRMA 动作包 ZIP 或单个文件；在 **动作槽位** Tab 为各槽位勾选动作。
+在设置 → **动作库** Tab 导入 VRMA 动作包 ZIP 或单个文件；在 **动作槽位** Tab 为各槽位勾选动作。动作库预览区支持鼠标拖拽旋转视角。
 
 动作文件目录：`~/.anima/companion/motions/`。未绑定槽位时不播放对应动画；巡逻位移仍会平移窗口，仅在有 `walk` / `climb` VRMA 时播放移动动画。
 

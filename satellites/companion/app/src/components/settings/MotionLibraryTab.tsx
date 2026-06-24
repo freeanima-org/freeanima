@@ -170,7 +170,7 @@ export function MotionLibraryTab() {
           <div className="card-body p-3 gap-2">
             <h3 className="text-sm font-medium">预览</h3>
             <p className="text-[10px] text-base-content/45">
-              {COMPANION_WINDOW_WIDTH}×{COMPANION_WINDOW_HEIGHT} 与伴侣窗一致
+              {COMPANION_WINDOW_WIDTH}×{COMPANION_WINDOW_HEIGHT} 与伴侣窗一致；拖拽可旋转视角
             </p>
             {!previewEntry ? (
               <div
