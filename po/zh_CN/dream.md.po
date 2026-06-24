@@ -61,24 +61,25 @@ msgstr "触发"
 #: docs/concepts/dream.md:21
 #, no-wrap
 msgid ""
-"| Condition                                                 | Result                     |\n"
-"| --------------------------------------------------------- | -------------------------- |\n"
-"| No session activity on the CST day                        | Skip (`no_sessions`)       |\n"
-"| No limbic memory with `intensity > 0.5` after light sleep | Skip (`no_strong_emotion`) |\n"
-"| Dream already exists for that day                         | Skip (`already_dreamed`)   |\n"
-"| At least one strong limbic anchor                         | Generate dream             |\n"
+"| Condition                                                                 | Result                     |\n"
+"| ------------------------------------------------------------------------- | -------------------------- |\n"
+"| No limbic memory with `intensity > 0.5` in the day's creation window      | Skip (`no_strong_emotion`) |\n"
+"| Dream already exists for that day                                         | Skip (`already_dreamed`)   |\n"
+"| At least one strong limbic anchor produced that day                       | Generate dream             |\n"
 msgstr ""
-"| 条件                                      | 结果                       |\n"
-"| ----------------------------------------- | -------------------------- |\n"
-"| CST 当日无 session 活动                   | 跳过（`no_sessions`）      |\n"
-"| 浅睡后无 `intensity > 0.5` 的感性记忆     | 跳过（`no_strong_emotion`）  |\n"
-"| 当日已有梦境记录                          | 跳过（`already_dreamed`）  |\n"
-"| 至少有一条强度足够的感性锚点              | 生成梦境                   |\n"
+"| 条件                                                          | 结果                       |\n"
+"| ------------------------------------------------------------- | -------------------------- |\n"
+"| 当日创建窗口内无 `intensity > 0.5` 的感性记忆                 | 跳过（`no_strong_emotion`）  |\n"
+"| 当日已有梦境记录                                              | 跳过（`already_dreamed`）  |\n"
+"| 至少有一条当日产生的强度足够的感性锚点                        | 生成梦境                   |\n"
 
 #. type: Plain text
 #: docs/concepts/dream.md:23
-msgid "Trigger is **purely emotion-driven** (no random dice)."
-msgstr "触发**纯由情绪驱动**（无随机掷骰）。"
+msgid ""
+"Trigger is **purely emotion-driven** (no random dice). Session activity is "
+"**not** required; episodic fragments may be empty."
+msgstr ""
+"触发**纯由情绪驱动**（无随机掷骰）。**不要求** session 活动；情景片段可为空。"
 
 #. type: Title ##
 #: docs/concepts/dream.md:24
@@ -89,20 +90,24 @@ msgstr "输入"
 #. type: Bullet: '1. '
 #: docs/concepts/dream.md:28
 msgid ""
-"**Emotional tone** — top 3 `limbic_memory` rows for the day's sessions where "
-"`intensity > 0.5`, ordered by intensity descending."
+"**Emotional tone** — top 3 `limbic_memory` rows whose `created_at` falls in "
+"`[conversation day 00:00 CST, next day 06:00 CST)` (covers daytime writes and "
+"~02:00 light-sleep extraction), where `intensity > 0.5`, ordered by intensity "
+"descending."
 msgstr ""
-"**情绪基调** — 当日 session 中 `intensity > 0.5` 的 `limbic_memory` 前 3 条，"
-"按强度降序。"
+"**情绪基调** — `created_at` 落在 `[对话日 00:00 CST, 次日 06:00 CST)` 内（含"
+"白天写入与约 02:00 浅睡提取）的 `limbic_memory` 前 3 条，其中 `intensity > "
+"0.5`，按强度降序。"
 
 #. type: Bullet: '2. '
 #: docs/concepts/dream.md:28
 msgid ""
 "**Episodic fragments** — random sample of user/assistant messages from the "
-"day's sessions (conversation archive), capped ~4k chars."
+"day's sessions (conversation archive), capped ~4k chars; omitted when no "
+"sessions were updated that day."
 msgstr ""
 "**情景片段** — 从当日 session（对话存档）的 user/assistant 消息中随机抽样，上"
-"限约 4k 字符。"
+"限约 4k 字符；当日无 session 更新时省略。"
 
 #. type: Plain text
 #: docs/concepts/dream.md:30

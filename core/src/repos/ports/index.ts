@@ -85,6 +85,7 @@ export type {
   LimbicMemoryCreateInput,
   LimbicListOpts,
   LimbicListBySessionsOpts,
+  LimbicListByCreatedOpts,
   LimbicFtsHit,
   LimbicMemoryStorePort,
 } from "./limbic-memory.ts";

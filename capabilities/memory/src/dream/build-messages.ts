@@ -44,7 +44,7 @@ export function buildDreamSystemPrompt(selfContent: string): string {
 export function buildDreamUserMessage(input: DreamGatherInput): string {
   return `# 做梦素材 (${input.day})
 
-## 情感主色调（强度 > 0.5，取前 ${input.limbicMemories.length} 条）
+## 情感主色调（当天产生，含浅睡写入；强度 > 0.5，取前 ${input.limbicMemories.length} 条）
 
 ${formatLimbicBlock(input.limbicMemories)}
 

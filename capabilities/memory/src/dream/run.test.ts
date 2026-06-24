@@ -17,6 +17,7 @@ const DAY = "2026-06-14";
 function setupStores(opts: {
   existingDream?: boolean;
   limbicIntensity?: number;
+  noSessions?: boolean;
   fridge?: DreamFridgePort;
 }) {
   const created: Array<Record<string, unknown>> = [];
@@ -54,7 +55,7 @@ function setupStores(opts: {
 
   registerDreamMemoryStore(dreamStore);
   registerLimbicMemoryStore({
-    async listBySessions() {
+    async listByCreatedBetween() {
       const intensity = opts.limbicIntensity ?? 0.8;
       if (intensity <= 0.5) return [];
       return [
@@ -76,7 +77,7 @@ function setupStores(opts: {
 
   registerMemorySessionStore({
     async listSessionIdsUpdatedBetween() {
-      return ["s1"];
+      return opts.noSessions ? [] : ["s1"];
     },
     async listMessages() {
       return [
@@ -122,6 +123,20 @@ describe("runDream", () => {
     expect(created).toHaveLength(1);
     expect(created[0]?.dream_day).toBe(DAY);
     expect(getSetReminderCalled()).toBe(true);
+  });
+
+  it("creates dream without sessions when limbic fuel exists", async () => {
+    const { created } = setupStores({ noSessions: true });
+    const result = await runDream({
+      day: DAY,
+      selfContent: "I am Anima.",
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.dream_id).toBe("dream-1");
+    expect(created).toHaveLength(1);
+    expect(created[0]?.source_session_ids).toEqual([]);
+    expect(created[0]?.episodic_snippets).toEqual([]);
   });
 
   it("skips when no strong emotion", async () => {
