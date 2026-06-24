@@ -9,6 +9,7 @@ export * from "./paths.ts";
 export * from "./config-store.ts";
 export * from "./runtime-logger.ts";
 export * from "./capability-injection.ts";
+export * from "./context-window-injection.ts";
 export * from "./repo-root.ts";
 export * from "./version.ts";
 export * from "./cli-install.ts";

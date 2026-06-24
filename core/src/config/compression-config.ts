@@ -39,25 +39,67 @@ export function getModelsConfig(cfg: AnimaConfig): Record<string, ModelConfig> {
   return models;
 }
 
-/** Model context window; null when unset (fallback to message-count mode) */
-export function getContextWindow(cfg: AnimaConfig, model: string): number | null {
+export type ContextWindowSource = "config" | "default" | "catalog";
+
+export type ResolvedContextWindow = {
+  window: number | null;
+  source: ContextWindowSource | null;
+};
+
+export type ContextWindowResolveOpts = {
+  catalogFallback?: number | null;
+};
+
+/** Resolve context window with source label (config > default > catalog > null) */
+export function resolveContextWindowWithSource(
+  cfg: AnimaConfig,
+  model: string,
+  opts?: ContextWindowResolveOpts,
+): ResolvedContextWindow {
   const models = getModelsConfig(cfg);
   const entry = models[model];
   if (entry?.context_window != null && entry.context_window > 0) {
-    return entry.context_window;
+    return { window: entry.context_window, source: "config" };
   }
   const fallback = cfg.compression?.default_context_window;
-  if (fallback != null && fallback > 0) return fallback;
-  return null;
+  if (fallback != null && fallback > 0) {
+    return { window: fallback, source: "default" };
+  }
+  const catalog = opts?.catalogFallback;
+  if (catalog != null && catalog > 0) {
+    return { window: catalog, source: "catalog" };
+  }
+  return { window: null, source: null };
 }
 
-export function getEffectiveTokenBudget(cfg: AnimaConfig, model: string): number | null {
-  const window = getContextWindow(cfg, model);
-  if (window == null) return null;
+/** Model context window; null when unset (fallback to message-count mode) */
+export function getContextWindow(
+  cfg: AnimaConfig,
+  model: string,
+  opts?: ContextWindowResolveOpts,
+): number | null {
+  return resolveContextWindowWithSource(cfg, model, opts).window;
+}
+
+export function budgetFromContextWindow(cfg: AnimaConfig, window: number): number {
   const { reservedTokens } = getCompressionConfig(cfg);
   return Math.max(4096, window - reservedTokens);
 }
 
-export function usesTokenCompression(cfg: AnimaConfig, model: string): boolean {
-  return getEffectiveTokenBudget(cfg, model) != null;
+export function getEffectiveTokenBudget(
+  cfg: AnimaConfig,
+  model: string,
+  opts?: ContextWindowResolveOpts,
+): number | null {
+  const window = getContextWindow(cfg, model, opts);
+  if (window == null) return null;
+  return budgetFromContextWindow(cfg, window);
+}
+
+export function usesTokenCompression(
+  cfg: AnimaConfig,
+  model: string,
+  opts?: ContextWindowResolveOpts,
+): boolean {
+  return getEffectiveTokenBudget(cfg, model, opts) != null;
 }

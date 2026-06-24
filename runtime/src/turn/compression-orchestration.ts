@@ -6,7 +6,7 @@ import {
   analyzeCompression,
   compress,
   parseCompressionState,
-  buildCompressOptions,
+  buildCompressOptionsResolved,
   scheduleCompressionSummary,
   flushCompressionSummaries,
   maybeApplyEmergencyCompression,
@@ -62,7 +62,7 @@ export async function recompressConversation(
   }
 
   const toolSchemas = await loadConversationTools(repos, registry, conversationId, meta);
-  const compressOpts = buildCompressOptions(meta, state, defaultChatModel(), {
+  const compressOpts = await buildCompressOptionsResolved(meta, state, defaultChatModel(), {
     force: opts?.force,
     forceEmergency: opts?.force,
     tools: toolSchemas,

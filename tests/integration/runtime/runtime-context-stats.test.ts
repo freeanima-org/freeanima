@@ -70,7 +70,7 @@ compression:
 
     const report = await statsReport(getAppRuntime().runtimeDeps(), sid);
     expect(report).toContain("Tool schema:");
-    expect(report).toContain("Mode: token utilization");
+    expect(report).toContain("Mode: token");
     expect(report).not.toContain("message-count fallback");
     expect(report).toContain("runtime view");
   });

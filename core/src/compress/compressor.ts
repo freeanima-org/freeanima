@@ -1,3 +1,8 @@
+import {
+  getActiveConfig,
+  resolveContextWindowWithSource,
+  type ContextWindowSource,
+} from "@freeanima/core/config";
 import { getCompressionConfig, getEffectiveTokenBudget } from "./compression-config.ts";
 import { isInToolLoop } from "./compression-tool-loop.ts";
 import { estimateMessagesTokens, estimateTokens, estimateToolsTokens } from "./token-estimate.ts";
@@ -262,6 +267,8 @@ export type CompressionAnalysis = {
   context_tokens_est: number;
   effective_budget: number | null;
   usage_ratio: number | null;
+  context_window: number | null;
+  context_window_source: ContextWindowSource | null;
   has_summary: boolean;
 };
 
@@ -274,9 +281,37 @@ export type CompressOptions = {
   forceEmergency?: boolean;
   force?: boolean;
   effectiveBudgetOverride?: number;
+  catalogContextWindow?: number;
+  contextWindow?: number;
+  contextWindowSource?: ContextWindowSource | null;
   /** Test or tuning: override derive minimums */
   boundaryOverrides?: Partial<DeriveBoundariesConfig>;
 };
+
+function resolveCompressBudget(
+  model: string,
+  opts?: CompressOptions,
+): { budget: number | null; window: number | null; source: ContextWindowSource | null } {
+  if (opts?.effectiveBudgetOverride != null) {
+    return {
+      budget: opts.effectiveBudgetOverride,
+      window: opts.contextWindow ?? null,
+      source: opts.contextWindowSource ?? null,
+    };
+  }
+  if (!model) {
+    return { budget: null, window: null, source: null };
+  }
+  const catalogFallback = opts?.catalogContextWindow;
+  const { window, source } = resolveContextWindowWithSource(getActiveConfig().data, model, {
+    catalogFallback,
+  });
+  if (window == null) {
+    return { budget: null, window: null, source: null };
+  }
+  const budget = getEffectiveTokenBudget(model, undefined, { catalogFallback });
+  return { budget, window, source };
+}
 
 function messageThreshold(maxRounds: number): { threshold: number; recompressAt: number } {
   const threshold = maxRounds * 2;
@@ -291,7 +326,7 @@ export function analyzeCompression(
   const maxRounds = opts?.maxRounds ?? cfg.maxRounds;
   const model = opts?.model ?? "";
   const { threshold, recompressAt } = messageThreshold(maxRounds);
-  const budget = opts?.effectiveBudgetOverride ?? (model ? getEffectiveTokenBudget(model) : null);
+  const { budget, window, source } = resolveCompressBudget(model, opts);
   const tokenMode = budget != null;
   const state = opts?.state ?? null;
   const rest = restMessages(messages);
@@ -341,6 +376,8 @@ export function analyzeCompression(
     context_tokens_est: tokensEst,
     effective_budget: budget,
     usage_ratio: usageRatio,
+    context_window: window,
+    context_window_source: source,
     has_summary: Boolean(state?.summary),
   };
 }
@@ -352,7 +389,7 @@ export function willAdvanceCompression(messages: StoredMessage[], opts?: Compres
   const state = opts?.state ?? null;
   const model = opts?.model ?? "";
   const { threshold, recompressAt } = messageThreshold(maxRounds);
-  const budget = opts?.effectiveBudgetOverride ?? (model ? getEffectiveTokenBudget(model) : null);
+  const { budget } = resolveCompressBudget(model, opts);
   const tokenMode = budget != null;
 
   const rest = restMessages(messages);

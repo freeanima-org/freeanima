@@ -44,10 +44,30 @@ function inferMaxOutputTokens(model: OpenAI.Models.Model): number {
   return DEFAULT_MODEL_INFO.maxOutputTokens;
 }
 
+/** Parse context window from provider-specific /models fields when present */
+export function inferContextWindow(model: OpenAI.Models.Model): number {
+  const raw = model as OpenAiModelObject & {
+    context_length?: number;
+    context_window?: number;
+    max_model_len?: number;
+    top_provider?: { context_length?: number };
+  };
+  const candidates = [
+    raw.context_length,
+    raw.context_window,
+    raw.max_model_len,
+    raw.top_provider?.context_length,
+  ];
+  for (const value of candidates) {
+    if (typeof value === "number" && value > 0) return value;
+  }
+  return DEFAULT_MODEL_INFO.contextWindow;
+}
+
 function toModelInfo(model: OpenAI.Models.Model): ModelInfo {
   return {
     model: model.id,
-    contextWindow: DEFAULT_MODEL_INFO.contextWindow,
+    contextWindow: inferContextWindow(model),
     maxOutputTokens: inferMaxOutputTokens(model),
     supportedParams: [...DEFAULT_MODEL_INFO.supportedParams],
     label: model.id,

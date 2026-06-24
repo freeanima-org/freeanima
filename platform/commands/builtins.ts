@@ -8,6 +8,8 @@ import { clearAwaitingClarify, readAwaitingClarify } from "@freeanima/capabiliti
 import { resolveMaskPresets } from "@freeanima/capabilities-tasks/mask";
 import { statsReport } from "@freeanima/platform/ports/conversation-stats";
 import { CHAT_PLATFORM_PATTERN } from "@freeanima/platform/ports/constants";
+import { formatCompressionDiagnostics, getCompressionConfig } from "@freeanima/core/compress";
+import type { CompressionAnalysis } from "@freeanima/core/compress";
 import { onConversationCloseBeforeNew } from "@freeanima/platform/ports/conversation-close";
 import { isConversationMeta } from "@freeanima/core/db/domain";
 import { setHomeChannel } from "@freeanima/platform/ports/home-channel";
@@ -268,21 +270,20 @@ function cmdSethome(ctx: CommandContext): string {
 
 async function cmdCompress(ctx: CommandContext): Promise<string> {
   const force = ctx.args.includes("--force") || ctx.args.includes("-f");
-  const r = await conv().recompressConversation(ctx.conversationId, { force });
+  const r = (await conv().recompressConversation(ctx.conversationId, { force })) as Record<
+    string,
+    unknown
+  > &
+    CompressionAnalysis & { updated?: boolean };
   if (!r.enabled) {
     return "Session compression not enabled (config.yaml → compression.enabled)";
   }
+  const cfg = getCompressionConfig();
   const lines = [
     r.updated ? "✅ Updated compression l2/l3" : "ℹ️ l2/l3 unchanged",
     `l2: ${r.l2 ?? "—"}  l3: ${r.l3 ?? "(none, below compression threshold)"}`,
-    `stored ${r.stored_total} → runtime ${r.runtime_message_count} (hidden ${r.hidden_by_compression})`,
-    `raw segment ${r.window_raw}/${r.recompress_at} (first threshold ${r.threshold})`,
+    ...formatCompressionDiagnostics(r, cfg, { includeStorageSummary: true }),
   ];
-  if (r.messages_until_recompress != null) {
-    lines.push(
-      `Until next trim: ~${r.messages_until_recompress} messages (~${r.rounds_until_recompress} rounds)`,
-    );
-  }
   return lines.join("\n");
 }
 

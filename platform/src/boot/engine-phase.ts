@@ -17,6 +17,7 @@ import { SatelliteManager } from "@freeanima/capabilities-satellite";
 import { getAcpManager } from "@freeanima/capabilities-acp";
 import { registerFridgeStore } from "@freeanima/capabilities-tasks/fridge-magnet";
 import { createRedisFridgeStore } from "@freeanima/platform/connectors/redis";
+import { wireContextWindowLookup } from "../wire-context-window.ts";
 import type { Kernel } from "@freeanima/kernel";
 import type { FileConfig } from "@freeanima/platform/config";
 import type { PgRepositories } from "@freeanima/core/repos";
@@ -50,6 +51,7 @@ export function bootEnginePhase(
   const kernel = createServiceKernel(config);
 
   initLlmRuntime(config.data);
+  wireContextWindowLookup();
   const logger = createServiceLogger();
   const engine = createEngine({ repos, llm: getLlmRuntime(), catalog, config, logger });
   const conversation = createConversationService(engine.repos, catalog.toolSets);

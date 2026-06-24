@@ -3,9 +3,10 @@ import { isConversationMeta } from "@freeanima/core/db/domain";
 import type { StoredMessage } from "@freeanima/core/db/domain";
 import {
   analyzeCompression,
-  buildCompressOptions,
+  buildCompressOptionsResolved,
+  formatCompressionDiagnostics,
+  formatTokenK,
   getCompressionConfig,
-  getContextWindow,
   isCompressed,
   parseCompressionState,
 } from "@freeanima/core/compress";
@@ -13,7 +14,6 @@ import { getProfileHopModel } from "@freeanima/platform/config";
 import { PROFILE_CHAT } from "@freeanima/core/provider";
 import {
   computeRuntimeContextBreakdown,
-  formatTokenK,
   type RuntimeContextBreakdown,
 } from "./runtime-context-stats.ts";
 import { estimateTokens, messageTextForEstimate } from "@freeanima/core/compress";
@@ -43,6 +43,7 @@ export type ConversationStats = {
   compression_has_summary: boolean;
   /** token mode */
   compression_context_window: number | null;
+  compression_context_window_source: "config" | "default" | "catalog" | null;
   compression_effective_budget: number | null;
   compression_usage_ratio: number | null;
   compression_trigger_high: number;
@@ -51,6 +52,7 @@ export type ConversationStats = {
   compression_max_rounds: number;
   compression_threshold: number;
   compression_recompress_at: number;
+  compression_window_raw: number;
   compression_messages_until_recompress: number | null;
   compression_rounds_until_recompress: number | null;
   /** Runtime view (post-compression) breakdown */
@@ -108,6 +110,7 @@ async function readCompressionAndContextFields(
     | "compression_hidden"
     | "compression_has_summary"
     | "compression_context_window"
+    | "compression_context_window_source"
     | "compression_effective_budget"
     | "compression_usage_ratio"
     | "compression_trigger_high"
@@ -115,6 +118,7 @@ async function readCompressionAndContextFields(
     | "compression_max_rounds"
     | "compression_threshold"
     | "compression_recompress_at"
+    | "compression_window_raw"
     | "compression_messages_until_recompress"
     | "compression_rounds_until_recompress"
     | "context_breakdown"
@@ -131,7 +135,7 @@ async function readCompressionAndContextFields(
   const tools = isConversationMeta(meta)
     ? await deps.conversation.loadConversationTools(conversationId, meta)
     : [];
-  const compressOpts = buildCompressOptions(meta, state, fallbackModel, { tools });
+  const compressOpts = await buildCompressOptionsResolved(meta, state, fallbackModel, { tools });
   const analysis = analyzeCompression(allMsgs, compressOpts);
   const storedTotal = await deps.conversation.countMessages(conversationId);
 
@@ -153,7 +157,8 @@ async function readCompressionAndContextFields(
     compression_visible_messages: analysis.runtime_message_count,
     compression_hidden: Math.max(0, storedTotal - analysis.runtime_message_count),
     compression_has_summary: analysis.has_summary,
-    compression_context_window: compressOpts.model ? getContextWindow(compressOpts.model) : null,
+    compression_context_window: analysis.context_window,
+    compression_context_window_source: analysis.context_window_source,
     compression_effective_budget: analysis.effective_budget,
     compression_usage_ratio: analysis.usage_ratio,
     compression_trigger_high: cfg.triggerHigh,
@@ -161,6 +166,7 @@ async function readCompressionAndContextFields(
     compression_max_rounds: cfg.maxRounds,
     compression_threshold: analysis.threshold,
     compression_recompress_at: analysis.recompress_at,
+    compression_window_raw: analysis.window_raw,
     compression_messages_until_recompress:
       analysis.mode === "messages" ? analysis.messages_until_recompress : null,
     compression_rounds_until_recompress:
@@ -317,6 +323,7 @@ export function mergeStats(items: ConversationStats[], label = "Summary"): Conve
       compression_hidden: 0,
       compression_has_summary: false,
       compression_context_window: null,
+      compression_context_window_source: null,
       compression_effective_budget: null,
       compression_usage_ratio: null,
       compression_trigger_high: cfg.triggerHigh,
@@ -324,6 +331,7 @@ export function mergeStats(items: ConversationStats[], label = "Summary"): Conve
       compression_max_rounds: cfg.maxRounds,
       compression_threshold: cfg.maxRounds * 2,
       compression_recompress_at: cfg.maxRounds * 4,
+      compression_window_raw: 0,
       compression_messages_until_recompress: null,
       compression_rounds_until_recompress: null,
       context_breakdown: emptyBreakdown(),
@@ -404,6 +412,7 @@ export function mergeStats(items: ConversationStats[], label = "Summary"): Conve
     compression_hidden: items.reduce((s, i) => s + i.compression_hidden, 0),
     compression_has_summary: items.some((s) => s.compression_has_summary),
     compression_context_window: items[0]?.compression_context_window ?? null,
+    compression_context_window_source: items[0]?.compression_context_window_source ?? null,
     compression_effective_budget: null,
     compression_usage_ratio: null,
     compression_trigger_high: items[0]?.compression_trigger_high ?? 0.72,
@@ -411,6 +420,7 @@ export function mergeStats(items: ConversationStats[], label = "Summary"): Conve
     compression_max_rounds: items[0]?.compression_max_rounds ?? 50,
     compression_threshold: items[0]?.compression_threshold ?? 100,
     compression_recompress_at: items[0]?.compression_recompress_at ?? 200,
+    compression_window_raw: 0,
     compression_messages_until_recompress: null,
     compression_rounds_until_recompress: null,
     context_breakdown: bd,
@@ -448,31 +458,32 @@ function formatNumber(
   return `${opts?.estimated ? "~" : ""}${text} (${suffixes.join(", ")})`;
 }
 
-function formatPct(ratio: number | null): string {
-  if (ratio == null) return "—";
-  return `${Math.round(ratio * 1000) / 10}%`;
-}
-
 function formatCompression(stats: ConversationStats): string {
   if (!stats.compression_enabled) return "Session compression: disabled";
 
   const lines = ["Session compression: enabled"];
-
-  if (stats.compression_mode === "token") {
-    const win = stats.compression_context_window;
-    const budget = stats.compression_effective_budget;
-    lines.push(
-      `Mode: token utilization (window ${win != null ? formatTokenK(win) : "—"} tokens, effective budget ${budget != null ? formatTokenK(budget) : "—"})`,
-    );
-    lines.push(
-      `Trigger: compress ≥${formatPct(stats.compression_trigger_high)}, hysteresis <${formatPct(stats.compression_trigger_low)}; current usage ${formatPct(stats.compression_usage_ratio)}`,
-    );
-  } else {
-    lines.push(`Mode: message-count fallback (max_rounds=${stats.compression_max_rounds})`);
-    lines.push(
-      `Trigger: first >${stats.compression_threshold} messages, recompress window >${stats.compression_recompress_at} messages`,
-    );
-  }
+  const cfg = getCompressionConfig();
+  lines.push(
+    ...formatCompressionDiagnostics(
+      {
+        mode: stats.compression_mode,
+        context_window: stats.compression_context_window,
+        context_window_source: stats.compression_context_window_source,
+        effective_budget: stats.compression_effective_budget,
+        usage_ratio: stats.compression_usage_ratio,
+        threshold: stats.compression_threshold,
+        recompress_at: stats.compression_recompress_at,
+        window_raw: stats.compression_window_raw,
+        messages_until_recompress: stats.compression_messages_until_recompress,
+        rounds_until_recompress: stats.compression_rounds_until_recompress,
+        l3: stats.compression_l3,
+        runtime_message_count: stats.compression_visible_messages,
+        stored_total: stats.compression_total_messages,
+        hidden_by_compression: stats.compression_hidden,
+      },
+      cfg,
+    ),
+  );
 
   if (stats.compression_l3 == null) {
     lines.push(
@@ -491,30 +502,6 @@ function formatCompression(stats: ConversationStats): string {
     lines.push(
       `Session summary: injected (~${formatTokenK(stats.context_breakdown.summary)} tokens)`,
     );
-  }
-
-  if (stats.compression_mode === "messages") {
-    if (stats.compression_messages_until_recompress != null) {
-      lines.push(
-        `Until next trim: ~${stats.compression_messages_until_recompress} messages (~${stats.compression_rounds_until_recompress} turns)`,
-      );
-    } else if (
-      stats.compression_visible_messages > 0 &&
-      stats.compression_recompress_at > 0 &&
-      stats.compression_total_messages - stats.compression_hidden > stats.compression_recompress_at
-    ) {
-      lines.push("Until next trim: threshold reached; next beginTurn will advance l2/l3");
-    }
-  } else if (
-    stats.compression_usage_ratio != null &&
-    stats.compression_usage_ratio >= stats.compression_trigger_high
-  ) {
-    lines.push("Until next compress: usage at cap; next beginTurn will advance l2/l3");
-  } else if (
-    stats.compression_usage_ratio != null &&
-    stats.compression_usage_ratio < stats.compression_trigger_low
-  ) {
-    lines.push("Until next compress: usage below hysteresis floor; boundary not advanced yet");
   }
 
   return lines.join("\n");

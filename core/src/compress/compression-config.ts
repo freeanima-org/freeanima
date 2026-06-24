@@ -6,6 +6,7 @@ import {
   getEffectiveTokenBudget as resolveEffectiveTokenBudget,
   getModelsConfig as resolveModelsConfig,
   usesTokenCompression as resolveUsesTokenCompression,
+  type ContextWindowResolveOpts,
   type ModelConfig,
   type ResolvedCompressionConfig,
 } from "@freeanima/core/config";
@@ -24,17 +25,26 @@ export function getModelsConfig(cfg: AnimaConfig = activeData()): Record<string,
   return resolveModelsConfig(cfg);
 }
 
-export function getContextWindow(model: string, cfg: AnimaConfig = activeData()): number | null {
-  return resolveContextWindow(cfg, model);
+export function getContextWindow(
+  model: string,
+  cfg: AnimaConfig = activeData(),
+  opts?: ContextWindowResolveOpts,
+): number | null {
+  return resolveContextWindow(cfg, model, opts);
 }
 
 export function getEffectiveTokenBudget(
   model: string,
   cfg: AnimaConfig = activeData(),
+  opts?: ContextWindowResolveOpts,
 ): number | null {
-  return resolveEffectiveTokenBudget(cfg, model);
+  return resolveEffectiveTokenBudget(cfg, model, opts);
 }
 
-export function usesTokenCompression(model: string, cfg: AnimaConfig = activeData()): boolean {
-  return resolveUsesTokenCompression(cfg, model);
+export function usesTokenCompression(
+  model: string,
+  cfg: AnimaConfig = activeData(),
+  opts?: ContextWindowResolveOpts,
+): boolean {
+  return resolveUsesTokenCompression(cfg, model, opts);
 }
