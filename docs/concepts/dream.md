@@ -48,11 +48,11 @@ LLM call uses `PROFILE_REFLECT` with elevated temperature (~1.1), **no tools**, 
 
 ## Tools & UI
 
-| Surface                      | Purpose                                                           |
-| ---------------------------- | ----------------------------------------------------------------- |
-| `dream_read` tool            | Read stored dream; auto-dismisses fridge reminder                 |
-| `fridge_magnet_dismiss` tool | Explicitly tear off any fridge magnet (including dream reminders) |
-| WebUI `/webui/chamber/dream` | Browse dream history                                              |
+| Surface                        | Purpose                                                           |
+| ------------------------------ | ----------------------------------------------------------------- |
+| `dream_read` tool              | Read stored dream; auto-dismisses fridge reminder                 |
+| `fridge_magnet_dismiss` tool   | Explicitly tear off any fridge magnet (including dream reminders) |
+| Admin `/admin/dashboard/dream` | Browse dream history                                              |
 
 ## Design Notes
 

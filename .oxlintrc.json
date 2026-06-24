@@ -15,7 +15,9 @@
     "**/dist/**",
     "**/electron-dist/**",
     "**/coverage/**",
-    "connectors/webui/app/src/routeTree.gen.ts"
+    "**/www/**",
+    "app/cli/publish/**",
+    "platform/admin-frontend/app/src/routeTree.gen.ts"
   ],
   "rules": {
     "import/extensions": [
@@ -38,7 +40,7 @@
   },
   "overrides": [
     {
-      "files": ["connectors/webui/app/**/*.{ts,tsx}"],
+      "files": ["platform/admin-frontend/app/**/*.{ts,tsx}"],
       "plugins": ["react"],
       "env": {
         "browser": true

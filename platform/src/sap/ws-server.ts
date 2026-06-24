@@ -44,8 +44,8 @@ import {
   createTerminalSession,
   getTerminalSession,
   TerminalSessionError,
-} from "../../connectors/webui/elysia/terminal-session.ts";
-import { verifyRemoteAuthToken } from "../../connectors/webui/remote-auth.ts";
+} from "./terminal-session.ts";
+import { verifyRemoteAuthToken } from "../../admin-api/remote-auth.ts";
 import type { SapInstanceRegistry } from "./instance-registry.ts";
 
 const HEARTBEAT_INTERVAL_SEC = 30;

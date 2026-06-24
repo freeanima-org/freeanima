@@ -261,7 +261,7 @@ msgstr ""
 
 #. type: Bullet: '- '
 #: docs/concepts/time-perception.md:87
-msgid "❌ Do not show time prefix in WebUI"
+msgid "❌ Do not show time prefix in Admin"
 msgstr ""
 
 #. type: Bullet: '- '

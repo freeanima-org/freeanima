@@ -79,7 +79,7 @@ describe("sap-contract envelopes", () => {
     expect(parsed.server_info?.capability_mask?.presets[0]?.name).toBe("developer");
   });
 
-  it("maps sap stream events to webui sse shape", () => {
+  it("maps sap stream events to admin sse shape", () => {
     const token = mapSapStreamMethodToApi("stream.token", {
       stream_id: "s1",
       content: "hi",

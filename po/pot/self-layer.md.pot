@@ -172,7 +172,7 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/self-layer.md:79
 msgid ""
-"Maintenance: self-layer tools in WebUI bedroom, or direct edits via CLI / "
+"Maintenance: self-layer tools in Admin bedroom, or direct edits via CLI / "
 "bedroom UI."
 msgstr ""
 

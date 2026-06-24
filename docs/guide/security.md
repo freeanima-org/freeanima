@@ -11,7 +11,7 @@ title: Security
 
 FreeAnima is designed for **single-user local / intranet** deployment:
 
-- HTTP / WebUI **has no auth by default**; binding `127.0.0.1` is not security—any process or user that can reach the port can read conversations, send messages, start/stop MCP/ACP.
+- HTTP / Admin **has no auth by default**; binding `127.0.0.1` is not security—any process or user that can reach the port can read conversations, send messages, start/stop MCP/ACP.
 - Default bind is `127.0.0.1`; for LAN access, assess CORS and network isolation yourself.
 - **Do not** expose the service to the public internet without `remote_auth` (see [`remote-access.md`](remote-access.md) — Tunnel + Bearer token).
 
@@ -23,7 +23,7 @@ FreeAnima is designed for **single-user local / intranet** deployment:
 | Never commit secrets     | Do not write API keys, tokens, DB passwords into `config.yaml` and commit to git                                                                                                                                |
 | Runtime directory        | `~/.anima/` (`FREEANIMA_HOME` overridable) holds config, conversations, memory—recommend `chmod 700`                                                                                                            |
 | CLI plaintext output     | `anima credential get` prints plaintext to stdout; do not redirect to shared logs                                                                                                                               |
-| WebUI credential detail  | `GET /api/credentials/detail?path=` returns pass plaintext to local WebUI; same sensitivity as CLI; relies on bind address and process isolation                                                                |
+| Admin credential detail  | `GET /api/credentials/detail?path=` returns pass plaintext to local Admin; same sensitivity as CLI; relies on bind address and process isolation                                                                |
 | pass path conventions    | `api/opencode-go`, `services/cloudflare/api-token`, `services/cloudflare/tunnel-credentials`, `services/discord`, `services/firecrawl`, `services/postgres/anima`, `services/pushdeer`, `services/weixin-ilink` |
 
 `config.yaml` supports `credential("path", "field")` and `env("KEY")` for secrets (e.g. `database.url: credential("services/postgres/anima", "url")` or `env("DATABASE_URL")`); values are injected at runtime from pass or the environment.
@@ -94,7 +94,7 @@ The following are planned in code or docs—**deployers must not assume implemen
 | **Runtime**      | Default 127.0.0.1 bind                          | MaxTurnsExceeded                                                    | Gap: rate limiting        | llm client vulns   | PG unencrypted                     |
 | **Gateway**      | Token in pass                                   | Malicious messages                                                  | Reply with sensitive info | SDK vulns          | —                                  |
 | **CLI / Tools**  | Local shell compromised                         | file_read_file partial deny (**P0 extending**); shell=True (**P0**) | rm -rf etc.               | —                  | Logs may contain conversations     |
-| **HTTP / WebUI** | No auth by default; tunnel mode uses Access JWT | BFF does not touch LLM params directly                              | config display            | Vue/axios          | SSE plaintext                      |
+| **HTTP / Admin** | No auth by default; tunnel mode uses Access JWT | BFF does not touch LLM params directly                              | config display            | Vue/axios          | SSE plaintext                      |
 | **MCP / ACP**    | SSE auth undefined                              | Malicious params                                                    | Wrong delegation          | Server compromised | Context may contain sensitive data |
 
 ## Proposals Pending Review

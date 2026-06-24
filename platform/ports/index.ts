@@ -45,7 +45,7 @@ export {
   type CronEngineJobInput,
   type RunCronEngineTurnFn,
 } from "./cron-use-cases.ts";
-export { CHAT_PLATFORM_PATTERN, WEBUI_BASE_PATH } from "./constants.ts";
+export { CHAT_PLATFORM_PATTERN, ADMIN_BASE_PATH } from "./constants.ts";
 export type {
   AnswerSegment,
   ApplyStreamEventResult,

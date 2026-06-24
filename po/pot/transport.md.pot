@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-22 11:28+0800\n"
+"POT-Creation-Date: 2026-06-24 17:27+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -176,14 +176,14 @@ msgstr ""
 #: docs/sap/transport.md:83
 #, no-wrap
 msgid ""
-"| Field                | Required | Role                                                                 |\n"
-"| -------------------- | -------- | -------------------------------------------------------------------- |\n"
-"| `app_id`             | yes      | Satellite app id (e.g. `pair-programming`)                           |\n"
-"| `instance_id`        | no       | Hub-assigned 3-char id; omit on first register, include on reconnect |\n"
-"| `protocol`           | yes      | Must be `SAP/1.0`                                                    |\n"
-"| `features_requested` | no       | Feature flags (Hub echoes as `features_enabled`)                     |\n"
-"| `http_url`           | no       | Satellite UI URL for Chamber → Satellites                            |\n"
-"| `instance_label`     | no       | Display label                                                        |\n"
+"| Field                | Required | Role                                                                                                                                    |\n"
+"| -------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------- |\n"
+"| `app_id`             | yes      | Satellite app id (e.g. `pair-programming`)                                                                                              |\n"
+"| `instance_id`        | no       | 3-char id; omit on first **machine** register; include on reconnect; **singleton** apps send a fixed id (Hub auto-provisions if unused) |\n"
+"| `protocol`           | yes      | Must be `SAP/1.0`                                                                                                                       |\n"
+"| `features_requested` | no       | Feature flags (Hub echoes as `features_enabled`)                                                                                        |\n"
+"| `http_url`           | no       | Satellite UI URL for Admin → Satellites                                                                                               |\n"
+"| `instance_label`     | no       | Display label                                                                                                                           |\n"
 msgstr ""
 
 #. type: Title ###
@@ -229,7 +229,7 @@ msgid ""
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/sap/transport.md:101 messages/po4a/en.xml:435
+#: docs/sap/transport.md:101 messages/po4a/en.xml:116
 #, no-wrap
 msgid "Reconnect"
 msgstr ""

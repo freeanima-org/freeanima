@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-23 13:57+0800\n"
+"POT-Creation-Date: 2026-06-24 17:13+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,8 +23,8 @@ msgid "Core Principles"
 msgstr ""
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/memory.md:1 messages/po4a/en.xml:37 messages/po4a/en.xml:137
-#: messages/po4a/en.xml:484
+#: docs/concepts/memory.md:1 messages/po4a/en.xml:93 messages/po4a/en.xml:454
+#: messages/po4a/en.xml:524
 #, no-wrap
 msgid "Memory"
 msgstr ""
@@ -190,7 +190,7 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/memory.md:85
 #, no-wrap
-msgid "**Conversation log** — the most raw, high-fidelity objective runtime trace.\n"
+msgid "**Conversation log** — the most raw, high-fidelity objective runtime trace. Only **user-facing conversations** (`sessions` without `platform_info.platform = cron`) feed light sleep and dream. Background LLM (cron agent, sleep stages) runs as **AutoLlmRun** — audited in `auto_llm_runs`, not copied into the conversation archive.\n"
 msgstr ""
 
 #. type: Plain text

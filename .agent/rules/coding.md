@@ -38,7 +38,7 @@ When adding or moving types / Zod / ports, decide in this order:
 Additional rules:
 
 - Domain views may `import type` / `z.infer` from `@freeanima/core/db`, but **must not duplicate** storage Zod definitions
-- **HTTP/WebUI contracts** → `@freeanima/platform/connectors/webui/api`; **in-process snapshots/display** → `@freeanima/platform`
+- **HTTP/Admin contracts** → `@freeanima/admin-api/api`; **in-process snapshots/display** → `@freeanima/platform`
 - **EventBus payloads** → publisher's domain package (e.g. memory events → `capabilities-memory`)
 
 Do not maintain a domain-to-package inventory in docs — use source and `grep`.

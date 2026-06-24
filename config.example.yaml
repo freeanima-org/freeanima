@@ -56,7 +56,7 @@ firecrawl:
 #     api_base: https://api2.pushdeer.com
 
 # MCP 服务器（stdio / SSE，工具名注册为 mcp_{server}_{tool}）
-# enabled 默认 true；设为 false 时逸灵风启动不会自动连接，可在卧室（WebUI Chamber）手动启动
+# enabled 默认 true；设为 false 时逸灵风启动不会自动连接，可在卧室（Admin Chamber）手动启动
 # stdio 建议 command: node + args: [脚本路径]
 # mcp_servers:
 #   database:
@@ -75,7 +75,7 @@ firecrawl:
 #   api_url: http://127.0.0.1:3003
 
 # ACP 代理（Cursor CLI：`agent acp`，见 https://cursor.com/docs/cli/acp）
-# enabled 默认 true；设为 false 时逸灵风启动不会自动连接，可在卧室（WebUI Chamber）手动连接
+# enabled 默认 true；设为 false 时逸灵风启动不会自动连接，可在卧室（Admin Chamber）手动连接
 # acp_agents:
 #   cursor:
 #     command: ~/.local/bin/agent
@@ -144,7 +144,7 @@ compression:
 #   # db: 0
 
 # CJK 全文检索（jieba 分词；默认关闭）
-# 开启后写入与重建会使用 jieba；切换配置后请在 WebUI「全文检索」页重建索引
+# 开启后写入与重建会使用 jieba；切换配置后请在 Admin「全文检索」页重建索引
 # cjk:
 #   enabled: false
 #   # dict_path: ~/.anima/cjk/user.dict

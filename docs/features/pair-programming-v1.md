@@ -12,7 +12,7 @@ title: Pair Programming V1
 - **Close the loop first**: read and discuss code with the agent in Studio
 - **Read-only first**: v1 focuses on reading; agent analyzes and suggests — no direct edit/save yet
 - **Platform isolation**: pair-programming sessions use a separate platform from chat chat
-- **Local reads**: server reads files from a configured workspace path (set in Chamber)
+- **Local reads**: server reads files from a configured workspace path (set in Admin)
 
 ## Layout
 
@@ -58,5 +58,5 @@ Pair programming uses platform `studio-pair-programming`, separate from chat (`c
 
 ## Related Docs
 
-- WebUI three modes: [`architecture.md`](../concepts/architecture.md)
+- Admin three modes: [`architecture.md`](../concepts/architecture.md)
 - Security and tool risks: [`security.md`](../guide/security.md)

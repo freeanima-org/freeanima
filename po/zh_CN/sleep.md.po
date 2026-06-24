@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-16 15:48+0800\n"
+"POT-Creation-Date: 2026-06-24 17:27+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,20 +23,20 @@ msgid "Design Principles"
 msgstr "设计原则"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/dream.md:9 docs/concepts/sleep.md:9 messages/po4a/en.xml:39
-#: messages/po4a/en.xml:47
+#: docs/concepts/dream.md:9 docs/concepts/sleep.md:9 messages/po4a/en.xml:515
+#: messages/po4a/en.xml:523
 #, no-wrap
 msgid "Overview"
 msgstr "概述"
 
 #. type: Title ##
-#: docs/concepts/dream.md:37 docs/concepts/sleep.md:32
+#: docs/concepts/dream.md:36 docs/concepts/sleep.md:32
 #, no-wrap
 msgid "Orchestration"
 msgstr "编排"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/sleep.md:1 messages/po4a/en.xml:55 messages/po4a/en.xml:487
+#: docs/concepts/sleep.md:1 messages/po4a/en.xml:328 messages/po4a/en.xml:531
 #, no-wrap
 msgid "Sleep"
 msgstr "睡眠机制"
@@ -113,15 +113,15 @@ msgstr "当前状态"
 #| "| Self-layer refresh     | ✅ Implemented | Step `self-layer-refresh`, after light-sleep                   |\n"
 #| "| Dream (in-cycle)       | ✅ Implemented | Step `dream`, depends on light-sleep; parallel with deep-sleep |\n"
 msgid ""
-"| Mechanism              | Status         | Notes                                                          |\n"
-"| ---------------------- | -------------- | -------------------------------------------------------------- |\n"
-"| Sleep cycle pipeline   | ✅ Implemented | Single cron `builtin-sleep-cycle` @ 02:00                      |\n"
-"| Session cleanup        | ✅ Implemented | Step `conversation-cleanup` before light-sleep in sleep-cycle DAG   |\n"
-"| Light sleep (in-cycle) | ✅ Implemented | Step `light-sleep` in sleep-cycle DAG                          |\n"
-"| Deep sleep (in-cycle)  | ✅ Implemented | Step `deep-sleep`, depends on light-sleep                      |\n"
-"| Memory ref sync        | ✅ Implemented | Step `memory-ref-sync`, depends on deep-sleep                  |\n"
-"| Self-layer refresh     | ✅ Implemented | Step `self-layer-refresh`, after light-sleep                   |\n"
-"| Dream (in-cycle)       | ✅ Implemented | Step `dream`, depends on light-sleep; parallel with deep-sleep |\n"
+"| Mechanism              | Status         | Notes                                                             |\n"
+"| ---------------------- | -------------- | ----------------------------------------------------------------- |\n"
+"| Sleep cycle pipeline   | ✅ Implemented | Single cron `builtin-sleep-cycle` @ 02:00                         |\n"
+"| Session cleanup        | ✅ Implemented | Step `conversation-cleanup` before light-sleep in sleep-cycle DAG |\n"
+"| Light sleep (in-cycle) | ✅ Implemented | Step `light-sleep` in sleep-cycle DAG                             |\n"
+"| Deep sleep (in-cycle)  | ✅ Implemented | Step `deep-sleep`, depends on light-sleep                         |\n"
+"| Memory ref sync        | ✅ Implemented | Step `memory-ref-sync`, depends on deep-sleep                     |\n"
+"| Self-layer refresh     | ✅ Implemented | Step `self-layer-refresh`, after light-sleep                      |\n"
+"| Dream (in-cycle)       | ✅ Implemented | Step `dream`, depends on light-sleep; parallel with deep-sleep    |\n"
 msgstr ""
 "| 机制                   | 状态           | 说明                                                           |\n"
 "| ---------------------- | -------------- | -------------------------------------------------------------- |\n"
@@ -155,20 +155,21 @@ msgstr "**浅睡**与**深睡**在 `runLightSleep()` / `runDeepSleep()` 内部�
 #: docs/concepts/sleep.md:39
 #, fuzzy
 #| msgid ""
-#| "Chamber WebUI (`/webui/chamber/sleep`) supports **diagnostic** runs: full "
+#| "Chamber Admin (`/admin/chamber/sleep`) supports **diagnostic** runs: full "
 #| "cycle or individual steps (`force` skips dependency checks)."
 msgid ""
-"Chamber WebUI (`/webui/chamber/sleep`) supports **diagnostic** runs: full "
-"cycle or individual steps (`force` skips dependency checks). **Deep sleep "
-"mode** (full vs incremental) can be selected before manual runs."
+"Admin (`/admin/dashboard/sleep`) supports **diagnostic** runs: full cycle or "
+"individual steps (`force` skips dependency checks). **Deep sleep mode** "
+"(full vs incremental) can be selected before manual runs."
 msgstr ""
-"Chamber WebUI（`/webui/chamber/sleep`）支持**诊断**运行：完整周期或单步"
+"Chamber Admin（`/admin/chamber/sleep`）支持**诊断**运行：完整周期或单步"
 "（`force` 跳过依赖检查）。"
 
 #. type: Plain text
 #: docs/concepts/sleep.md:41
-#, no-wrap
-msgid "**Pipeline step history** is persisted in PG `pipeline_step_run` (one row per node execution, including failures and manual retries via `attempt`). **Cron run history** for `builtin-sleep-cycle` lives in `cron_log` and is viewed from **Chamber → Cron** via each task's **Run history** button.\n"
+#, fuzzy, no-wrap
+#| msgid "**Pipeline step history** is persisted in PG `pipeline_step_run` (one row per node execution, including failures and manual retries via `attempt`). **Cron run history** for `builtin-sleep-cycle` lives in `cron_log` and is viewed from **Chamber → Cron** via each task's **Run history** button.\n"
+msgid "**Pipeline step history** is persisted in PG `pipeline_step_run` (one row per node execution, including failures and manual retries via `attempt`). **Cron run history** for `builtin-sleep-cycle` lives in `cron_log` and is viewed from **Admin → Cron** via each task's **Run history** button.\n"
 msgstr "**流水线步骤历史**持久化于 PG `pipeline_step_run`（每次节点执行一行，含失败与通过 `attempt` 的手动重试）。**Cron 运行历史**（`builtin-sleep-cycle`）位于 `cron_log`，在 **Chamber → Cron** 各任务的**运行历史**按钮查看。\n"
 
 #. type: Plain text
@@ -188,14 +189,21 @@ msgstr "浅睡"
 
 #. type: Plain text
 #: docs/concepts/sleep.md:52
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Attribute     | Value                                                                           |\n"
+#| "| ------------- | ------------------------------------------------------------------------------- |\n"
+#| "| Trigger       | Sleep-cycle step `light-sleep` (cron @ 02:00 or Chamber diagnostics)            |\n"
+#| "| Scope         | Sessions with activity in previous calendar day                                 |\n"
+#| "| Input         | Full day's conversations (user+assistant, tools stripped), segmented by conversation |\n"
+#| "| Orchestration | Three stages sequential (separate LLM calls each)                               |\n"
 msgid ""
-"| Attribute     | Value                                                                           |\n"
-"| ------------- | ------------------------------------------------------------------------------- |\n"
-"| Trigger       | Sleep-cycle step `light-sleep` (cron @ 02:00 or Chamber diagnostics)            |\n"
-"| Scope         | Sessions with activity in previous calendar day                                 |\n"
-"| Input         | Full day's conversations (user+assistant, tools stripped), segmented by conversation |\n"
-"| Orchestration | Three stages sequential (separate LLM calls each)                               |\n"
+"| Attribute     | Value                                                                                         |\n"
+"| ------------- | --------------------------------------------------------------------------------------------- |\n"
+"| Trigger       | Sleep-cycle step `light-sleep` (cron @ 02:00 or Admin diagnostics)                          |\n"
+"| Scope         | Sessions with activity in previous calendar day (**excludes cron-platform sessions**)         |\n"
+"| Input         | Full day's **user conversations** (user+assistant, tools stripped), segmented by conversation |\n"
+"| Orchestration | Three stages sequential (separate LLM calls each)                                             |\n"
 msgstr ""
 "| 属性     | 值                                                                           |\n"
 "| ------------- | ------------------------------------------------------------------------------- |\n"
@@ -212,12 +220,19 @@ msgstr "三阶段"
 
 #. type: Plain text
 #: docs/concepts/sleep.md:61
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Stage              | Target                       | Purpose                                                                                  |\n"
+#| "| ------------------ | ---------------------------- | ---------------------------------------------------------------------------------------- |\n"
+#| "| 1 Semantic         | Semantic memory              | Extract facts, preferences, experiences from dialogue                                    |\n"
+#| "| 2 Limbic           | Emotional anchors            | Capture conversation mood and emotional turning points                                        |\n"
+#| "| 3 Autobiographical | Autobiographical narrative   | Record what experiences meant to the digital life                                        |\n"
+#| "| 3b                 | Autobiography summary (self) | Compress narratives into grouped self-layer outline (title-only bullets by significance) |\n"
 msgid ""
 "| Stage              | Target                       | Purpose                                                                                  |\n"
 "| ------------------ | ---------------------------- | ---------------------------------------------------------------------------------------- |\n"
 "| 1 Semantic         | Semantic memory              | Extract facts, preferences, experiences from dialogue                                    |\n"
-"| 2 Limbic           | Emotional anchors            | Capture conversation mood and emotional turning points                                        |\n"
+"| 2 Limbic           | Emotional anchors            | Capture conversation mood and emotional turning points                                   |\n"
 "| 3 Autobiographical | Autobiographical narrative   | Record what experiences meant to the digital life                                        |\n"
 "| 3b                 | Autobiography summary (self) | Compress narratives into grouped self-layer outline (title-only bullets by significance) |\n"
 msgstr ""
@@ -310,7 +325,7 @@ msgstr "**顺序理由：** 先清理问题，再细化，再合并，最后裁�
 #. type: Plain text
 #: docs/concepts/sleep.md:87
 #, no-wrap
-msgid "**Incremental skip rules:** When mode is incremental and no active memory has `updated` within the last 24 hours, rounds 1 and 3 are skipped. Round 2 runs only on pre-filtered split candidates (long/multi-sentence entries with recent `updated`). Round 4 (pin maintenance) always runs. Scheduled cron uses incremental Tue–Sun and **full on Mondays**; Chamber manual runs default to full but can select incremental.\n"
+msgid "**Incremental skip rules:** When mode is incremental and no active memory has `updated` within the last 24 hours, rounds 1 and 3 are skipped. Round 2 runs only on pre-filtered split candidates (long/multi-sentence entries with recent `updated`). Round 4 (pin maintenance) always runs. Scheduled cron uses incremental Tue–Sun and **full on Mondays**; Admin manual runs default to full but can select incremental.\n"
 msgstr ""
 
 #. type: Title ###
@@ -441,17 +456,22 @@ msgstr "**压缩**保持会话级（回合时 `advanceCompressionMeta`）；**�
 
 #. type: Title ##
 #: docs/concepts/sleep.md:130
-#, no-wrap
-msgid "Historical Day (Chamber WebUI)"
-msgstr "历史单日（卧室 WebUI）"
+#, fuzzy, no-wrap
+#| msgid "Historical Day (Chamber Admin)"
+msgid "Historical Day (Admin)"
+msgstr "历史单日（卧室 Admin）"
 
 #. type: Plain text
 #: docs/concepts/sleep.md:133
+#, fuzzy
+#| msgid ""
+#| "For a single past CST calendar day (e.g. before go-live or after "
+#| "migration), use **Chamber → Sleep** (`/admin/chamber/sleep`):"
 msgid ""
 "For a single past CST calendar day (e.g. before go-live or after migration), "
-"use **Chamber → Sleep** (`/webui/chamber/sleep`):"
+"use **Admin → Sleep** (`/admin/dashboard/sleep`):"
 msgstr ""
-"对单个过去 CST 自然日（如上线前或迁移后），使用 **卧室 → 睡眠**（`/webui/"
+"对单个过去 CST 自然日（如上线前或迁移后），使用 **卧室 → 睡眠**（`/admin/"
 "chamber/sleep`）："
 
 #. type: Bullet: '1. '
@@ -468,10 +488,16 @@ msgstr "运行 **light-sleep** 步骤（如需跳过依赖检查可勾选 **Forc
 
 #. type: Plain text
 #: docs/concepts/sleep.md:138
+#, fuzzy
+#| msgid ""
+#| "Each step run is logged in the **Pipeline history** table on the sleep "
+#| "page. Cross-session merge for that day still relies on a subsequent "
+#| "**deep-sleep** run. Cron-triggered cycle runs appear in **Chamber → Cron "
+#| "→ Run history** on the sleep-cycle task."
 msgid ""
 "Each step run is logged in the **Pipeline history** table on the sleep page. "
 "Cross-session merge for that day still relies on a subsequent **deep-sleep** "
-"run. Cron-triggered cycle runs appear in **Chamber → Cron → Run history** on "
+"run. Cron-triggered cycle runs appear in **Admin → Cron → Run history** on "
 "the sleep-cycle task."
 msgstr ""
 "每步运行记录在睡眠页的 **Pipeline history** 表中。该日的跨对话合并仍依赖后续 "

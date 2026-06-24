@@ -4,8 +4,7 @@
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
     "paths": {
-      "@/*": ["./platform/connectors/webui/app/src/*"],
-      "@freeanima/sap-contract": ["./packages/sap-contract/src/index.ts"],
+      "@/*": ["./platform/admin-frontend/app/src/*"],
       "@freeanima/capabilities-satellite": ["./capabilities/satellite/src/index.ts"]
     }
   },
@@ -18,10 +17,10 @@
     "platform/**/*.ts",
     "capabilities/**/*.ts",
     "satellites/**/*.ts",
-    "cli/**/*.ts",
-    "platform/connectors/webui/app/**/*.ts",
-    "platform/connectors/webui/app/**/*.tsx",
-    "platform/connectors/webui/app/index.html",
+    "app/**/*.ts",
+    "platform/admin-frontend/app/**/*.ts",
+    "platform/admin-frontend/app/**/*.tsx",
+    "platform/admin-frontend/app/index.html",
     "scripts/**/*.ts",
     "tests/**/*.ts",
     "messages/**/*.json",
@@ -31,9 +30,10 @@
     "node_modules",
     "**/dist/**",
     "**/.turbo/**",
-    "cli/publish/**",
+    "app/cli/publish/**",
     "satellites/pair-programming/app/**",
     "satellites/chat/app/**",
-    "satellites/companion/app/**"
+    "satellites/companion/app/**",
+    "packages/sap-contract/**"
   ]
 }

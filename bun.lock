@@ -19,6 +19,59 @@
         "oxlint": "^1.70.0",
       },
     },
+    "app/cli": {
+      "name": "@freeanima/cli",
+      "bin": {
+        "anima": "./src/cli.ts",
+      },
+      "dependencies": {
+        "@clack/prompts": "^0.10.0",
+        "@freeanima/admin-api": "workspace:*",
+        "@freeanima/core": "workspace:*",
+        "@freeanima/platform": "workspace:*",
+        "commander": "^15.0.0",
+      },
+      "devDependencies": {
+        "@freeanima/platform": "workspace:*",
+        "@types/bun": "catalog:",
+      },
+    },
+    "app/desktop": {
+      "name": "@freeanima/satellite-desktop-shell",
+      "dependencies": {
+        "@freeanima/admin-frontend": "workspace:*",
+        "@freeanima/sap-contract": "workspace:*",
+        "@freeanima/satellite-chat": "workspace:*",
+        "@freeanima/satellite-companion": "workspace:*",
+        "@freeanima/satellite-sdk": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/node": "catalog:",
+        "@types/ws": "^8.18.1",
+        "electron": "^42.4.1",
+        "electron-builder": "^26.15.3",
+        "esbuild": "^0.25.12",
+        "fbx2vrma-converter": "^1.0.2",
+        "ws": "^8.21.0",
+        "zod": "catalog:",
+      },
+    },
+    "app/mobile": {
+      "name": "@freeanima/satellite-app-mobile",
+      "dependencies": {
+        "@capacitor/android": "^7.4.2",
+        "@capacitor/core": "^7.4.2",
+        "@capacitor/preferences": "^7.0.1",
+        "@freeanima/admin-frontend": "workspace:*",
+        "@freeanima/sap-contract": "workspace:*",
+        "@freeanima/satellite-sdk": "workspace:*",
+      },
+      "devDependencies": {
+        "@capacitor/cli": "^7.4.2",
+        "@types/bun": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
     "capabilities/acp": {
       "name": "@freeanima/capabilities-acp",
       "dependencies": {
@@ -106,22 +159,6 @@
         "@types/bun": "catalog:",
       },
     },
-    "cli": {
-      "name": "@freeanima/cli",
-      "bin": {
-        "anima": "./src/cli.ts",
-      },
-      "dependencies": {
-        "@clack/prompts": "^0.10.0",
-        "@freeanima/core": "workspace:*",
-        "@freeanima/platform": "workspace:*",
-        "commander": "^15.0.0",
-      },
-      "devDependencies": {
-        "@freeanima/platform": "workspace:*",
-        "@types/bun": "catalog:",
-      },
-    },
     "core": {
       "name": "@freeanima/core",
       "dependencies": {
@@ -136,15 +173,6 @@
         "@freeanima/runtime": "workspace:*",
         "@types/bun": "catalog:",
         "drizzle-kit": "catalog:",
-      },
-    },
-    "frontends/chamber": {
-      "name": "@freeanima/frontend-chamber",
-      "dependencies": {
-        "@freeanima/satellite-sdk": "workspace:*",
-      },
-      "devDependencies": {
-        "@types/bun": "catalog:",
       },
     },
     "kernel": {
@@ -178,7 +206,6 @@
         "@elysiajs/static": "^1.4.10",
         "@freeanima/capabilities-acp": "workspace:*",
         "@freeanima/capabilities-identity": "workspace:*",
-        "@freeanima/capabilities-llm-openai": "workspace:*",
         "@freeanima/capabilities-mcp": "workspace:*",
         "@freeanima/capabilities-memory": "workspace:*",
         "@freeanima/capabilities-satellite": "workspace:*",
@@ -217,6 +244,57 @@
         "typescript": "catalog:",
       },
     },
+    "platform/admin-api": {
+      "name": "@freeanima/admin-api",
+      "dependencies": {
+        "@freeanima/capabilities-acp": "workspace:*",
+        "@freeanima/capabilities-identity": "workspace:*",
+        "@freeanima/capabilities-mcp": "workspace:*",
+        "@freeanima/capabilities-memory": "workspace:*",
+        "@freeanima/capabilities-satellite": "workspace:*",
+        "@freeanima/capabilities-tasks": "workspace:*",
+        "@freeanima/capabilities-tools": "workspace:*",
+        "@freeanima/core": "workspace:*",
+        "@freeanima/kernel": "workspace:*",
+        "@freeanima/platform": "workspace:*",
+        "@freeanima/runtime": "workspace:*",
+        "@freeanima/sap-contract": "workspace:*",
+        "@sinclair/typebox": "catalog:",
+        "elysia": "^1.4.28",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+        "@types/node": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
+    "platform/admin-frontend": {
+      "name": "@freeanima/admin-frontend",
+      "dependencies": {
+        "@elysiajs/eden": "^1.4.9",
+        "@freeanima/admin-api": "workspace:*",
+        "@freeanima/satellite-sdk": "workspace:*",
+        "@tanstack/react-router": "^1.170.11",
+        "elysia": "^1.4.28",
+        "highlight.js": "^11.11.1",
+        "marked": "^18.0.4",
+        "react": "catalog:",
+        "react-dom": "catalog:",
+        "zod": "catalog:",
+        "zustand": "catalog:",
+      },
+      "devDependencies": {
+        "@freeanima/platform": "workspace:*",
+        "@types/bun": "catalog:",
+        "@types/react": "catalog:",
+        "@types/react-dom": "catalog:",
+        "bun-plugin-tailwind": "catalog:",
+        "daisyui": "catalog:",
+        "tailwindcss": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
     "runtime": {
       "name": "@freeanima/runtime",
       "dependencies": {
@@ -226,21 +304,6 @@
       },
       "devDependencies": {
         "@types/bun": "catalog:",
-      },
-    },
-    "satellites/app-mobile": {
-      "name": "@freeanima/satellite-app-mobile",
-      "dependencies": {
-        "@capacitor/android": "^7.4.2",
-        "@capacitor/core": "^7.4.2",
-        "@capacitor/preferences": "^7.0.1",
-        "@freeanima/sap-contract": "workspace:*",
-        "@freeanima/satellite-sdk": "workspace:*",
-      },
-      "devDependencies": {
-        "@capacitor/cli": "^7.4.2",
-        "@types/bun": "catalog:",
-        "typescript": "catalog:",
       },
     },
     "satellites/chat": {
@@ -288,24 +351,6 @@
         "bun-plugin-tailwind": "catalog:",
         "daisyui": "catalog:",
         "tailwindcss": "catalog:",
-      },
-    },
-    "satellites/desktop-shell": {
-      "name": "@freeanima/satellite-desktop-shell",
-      "devDependencies": {
-        "@freeanima/frontend-chamber": "workspace:*",
-        "@freeanima/sap-contract": "workspace:*",
-        "@freeanima/satellite-chat": "workspace:*",
-        "@freeanima/satellite-companion": "workspace:*",
-        "@freeanima/satellite-sdk": "workspace:*",
-        "@types/node": "catalog:",
-        "@types/ws": "^8.18.1",
-        "electron": "^42.4.1",
-        "electron-builder": "^26.15.3",
-        "esbuild": "^0.25.12",
-        "fbx2vrma-converter": "^1.0.2",
-        "ws": "^8.21.0",
-        "zod": "catalog:",
       },
     },
     "satellites/pair-programming": {
@@ -360,6 +405,7 @@
         "@freeanima/runtime": "workspace:*",
       },
       "devDependencies": {
+        "@freeanima/admin-api": "workspace:*",
         "@freeanima/capabilities-acp": "workspace:*",
         "@freeanima/capabilities-identity": "workspace:*",
         "@freeanima/capabilities-llm-openai": "workspace:*",
@@ -662,6 +708,10 @@
 
     "@expressive-code/plugin-text-markers": ["@expressive-code/plugin-text-markers@0.43.1", "", { "dependencies": { "@expressive-code/core": "^0.43.1" } }, "sha512-JWf8wdbZSNoGY4TFv3lmt3/NNDaCP7iYL6rRYD05g8YYjKL62hKUHLl5+B47+v0+bqbuMhXDN7qz2wywFUvMkg=="],
 
+    "@freeanima/admin-api": ["@freeanima/admin-api@workspace:platform/admin-api"],
+
+    "@freeanima/admin-frontend": ["@freeanima/admin-frontend@workspace:platform/admin-frontend"],
+
     "@freeanima/capabilities-acp": ["@freeanima/capabilities-acp@workspace:capabilities/acp"],
 
     "@freeanima/capabilities-identity": ["@freeanima/capabilities-identity@workspace:capabilities/identity"],
@@ -678,11 +728,9 @@
 
     "@freeanima/capabilities-tools": ["@freeanima/capabilities-tools@workspace:capabilities/tools"],
 
-    "@freeanima/cli": ["@freeanima/cli@workspace:cli"],
+    "@freeanima/cli": ["@freeanima/cli@workspace:app/cli"],
 
     "@freeanima/core": ["@freeanima/core@workspace:core"],
-
-    "@freeanima/frontend-chamber": ["@freeanima/frontend-chamber@workspace:frontends/chamber"],
 
     "@freeanima/integration-tests": ["@freeanima/integration-tests@workspace:tests"],
 
@@ -694,13 +742,13 @@
 
     "@freeanima/sap-contract": ["@freeanima/sap-contract@workspace:packages/sap-contract"],
 
-    "@freeanima/satellite-app-mobile": ["@freeanima/satellite-app-mobile@workspace:satellites/app-mobile"],
+    "@freeanima/satellite-app-mobile": ["@freeanima/satellite-app-mobile@workspace:app/mobile"],
 
     "@freeanima/satellite-chat": ["@freeanima/satellite-chat@workspace:satellites/chat"],
 
     "@freeanima/satellite-companion": ["@freeanima/satellite-companion@workspace:satellites/companion"],
 
-    "@freeanima/satellite-desktop-shell": ["@freeanima/satellite-desktop-shell@workspace:satellites/desktop-shell"],
+    "@freeanima/satellite-desktop-shell": ["@freeanima/satellite-desktop-shell@workspace:app/desktop"],
 
     "@freeanima/satellite-pair-programming": ["@freeanima/satellite-pair-programming@workspace:satellites/pair-programming"],
 

@@ -208,9 +208,9 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/self-layer.md:79
 msgid ""
-"Maintenance: self-layer tools in WebUI bedroom, or direct edits via CLI / "
+"Maintenance: self-layer tools in Admin bedroom, or direct edits via CLI / "
 "bedroom UI."
-msgstr "维护方式：WebUI 卧室中的自我层工具，或通过 CLI / 卧室 UI 直接编辑。"
+msgstr "维护方式：Admin 卧室中的自我层工具，或通过 CLI / 卧室 UI 直接编辑。"
 
 #. type: Title ##
 #: docs/concepts/self-layer.md:82

@@ -187,7 +187,7 @@ export function ConversationPanel() {
         <div ref={msgAreaRef} className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0">
           {!store.currentConversationId ? (
             <div className="text-center text-base-content/40 text-sm pt-8">
-              {m.webui_studio_create_or_select()}
+              {m.admin_studio_create_or_select()}
             </div>
           ) : null}
 
@@ -282,7 +282,7 @@ export function ConversationPanel() {
                 className="btn btn-primary btn-xs"
                 disabled={!store.currentConversationId || streaming || !inputText.trim()}
               >
-                {m.webui_common_send()}
+                {m.admin_common_send()}
               </button>
             </div>
             <div className="p-2 pt-1">
@@ -291,7 +291,7 @@ export function ConversationPanel() {
                 onChange={(e) => setInputText(e.target.value)}
                 rows={3}
                 className="textarea textarea-bordered textarea-sm w-full min-h-[2.5rem] resize-none"
-                placeholder={m.webui_studio_chat_placeholder()}
+                placeholder={m.admin_studio_chat_placeholder()}
                 disabled={!store.currentConversationId || streaming}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
@@ -311,8 +311,8 @@ export function ConversationPanel() {
         onClick={() => setConversationListVisible((v) => !v)}
         title={
           conversationListVisible
-            ? m.webui_studio_toggle_conversation_list_hide()
-            : m.webui_studio_toggle_conversation_list_show()
+            ? m.admin_studio_toggle_conversation_list_hide()
+            : m.admin_studio_toggle_conversation_list_show()
         }
       >
         {conversationListVisible ? "▸" : "◂"}
@@ -326,7 +326,7 @@ export function ConversationPanel() {
               className="btn btn-primary btn-sm w-full"
               onClick={() => void newConversation()}
             >
-              {m.webui_common_new_conversation()}
+              {m.admin_common_new_conversation()}
             </button>
           </div>
           <div className="flex-1 overflow-y-auto px-2 py-1 space-y-1">
@@ -376,14 +376,14 @@ export function ConversationPanel() {
                 className="btn btn-ghost btn-sm"
                 onClick={() => setShowRename(false)}
               >
-                {m.webui_common_cancel()}
+                {m.admin_common_cancel()}
               </button>
               <button
                 type="button"
                 className="btn btn-primary btn-sm"
                 onClick={() => void confirmRename()}
               >
-                {m.webui_common_confirm()}
+                {m.admin_common_confirm()}
               </button>
             </div>
           </div>

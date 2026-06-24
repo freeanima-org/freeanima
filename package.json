@@ -16,7 +16,7 @@
     "oxlint": "^1.70.0"
   },
   "bin": {
-    "anima": "./cli/src/cli.ts"
+    "anima": "./app/cli/src/cli.ts"
   },
   "description": "逸灵风 Free Anima (TypeScript)",
   "license": "MIT",
@@ -36,8 +36,8 @@
     "typecheck": "bunx tsgo -b tsconfig.check.json",
     "build:cli": "bun scripts/build-cli.ts",
     "install:cli:local": "bun scripts/install-cli-local.ts",
-    "build:webui": "bun scripts/build-webui.ts",
-    "dev:webui": "bun scripts/dev-webui.ts",
+    "build:admin": "bun scripts/build-admin.ts",
+    "dev:admin": "bun scripts/dev-admin.ts",
     "publish:cli": "bun scripts/build-cli.ts && cd cli/publish && bun pm pack && bun publish --access public",
     "test": "bun scripts/run-all-tests.ts",
     "test:unit": "bun scripts/run-unit-tests.ts",
@@ -60,11 +60,11 @@
     "test:coverage": "bun test --coverage --pass-with-no-tests",
     "coverage:cobertura": "bun scripts/run-tests.ts --coverage && bun scripts/lcov-to-cobertura.ts",
     "coverage:check-threshold": "bun scripts/check-coverage-threshold.ts",
-    "service": "bun cli/src/cli.ts service",
-    "anima": "bun cli/src/cli.ts",
+    "service": "bun app/cli/src/cli.ts service",
+    "anima": "bun app/cli/src/cli.ts",
     "app-mobile:build": "bun run --filter @freeanima/satellite-app-mobile build",
     "app-mobile:android": "bun run --filter @freeanima/satellite-app-mobile android",
-    "link:global": "mkdir -p \"${BUN_INSTALL:-$HOME/.bun}/bin\" && ln -sf \"$PWD/cli/src/cli.ts\" \"${BUN_INSTALL:-$HOME/.bun}/bin/anima\" && chmod +x cli/src/cli.ts",
+    "link:global": "mkdir -p \"${BUN_INSTALL:-$HOME/.bun}/bin\" && ln -sf \"$PWD/app/cli/src/cli.ts\" \"${BUN_INSTALL:-$HOME/.bun}/bin/anima\" && chmod +x app/cli/src/cli.ts",
     "prepare": "husky"
   },
   "patchedDependencies": {
@@ -85,8 +85,9 @@
       "packages/*",
       "capabilities/*",
       "satellites/*",
-      "frontends/*",
-      "cli",
+      "app/*",
+      "platform/admin-api",
+      "platform/admin-frontend",
       "site",
       "tests",
       "runtime",

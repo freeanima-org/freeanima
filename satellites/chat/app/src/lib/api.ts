@@ -115,11 +115,11 @@ export async function loadConfig() {
 
   const res = await fetch("/config.json");
   if (!res.ok) {
-    throw new Error(m.webui_common_network_error());
+    throw new Error(m.admin_common_network_error());
   }
   const ct = res.headers.get("content-type") ?? "";
   if (!ct.includes("application/json")) {
-    throw new Error(m.webui_common_network_error());
+    throw new Error(m.admin_common_network_error());
   }
   return res.json() as Promise<{
     app_id: string;

@@ -5,7 +5,7 @@ const APP_ID = "chat";
 
 export const chatManifest: FrontendManifest = {
   appId: APP_ID,
-  displayName: "会客厅",
+  displayName: "聊天室",
   version: readMonorepoVersion(),
   supportsDesktop: true,
   supportsMobile: true,

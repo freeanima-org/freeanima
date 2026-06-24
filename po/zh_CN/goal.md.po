@@ -156,6 +156,6 @@ msgstr ""
 #. type: Plain text
 #: docs/features/goal.md:47
 #, fuzzy
-#| msgid "WebUI three modes: [`architecture.md`](../concepts/architecture.md)"
+#| msgid "Admin three modes: [`architecture.md`](../concepts/architecture.md)"
 msgid "详见 [`architecture.md`](../concepts/architecture.md#session-goal)."
-msgstr "WebUI 三种模式：[`architecture.md`](../concepts/architecture.md)"
+msgstr "Admin 三种模式：[`architecture.md`](../concepts/architecture.md)"

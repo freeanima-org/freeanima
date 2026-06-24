@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 18:02+0800\n"
+"POT-Creation-Date: 2026-06-24 17:13+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/compression.md:1 messages/po4a/en.xml:28
+#: docs/concepts/compression.md:1 messages/po4a/en.xml:515
 #, no-wrap
 msgid "Compression"
 msgstr "压缩"
@@ -46,11 +46,18 @@ msgstr "设计原则"
 
 #. type: Plain text
 #: docs/concepts/compression.md:18
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Principle           | Description                                                                    |\n"
+#| "| ------------------- | ------------------------------------------------------------------------------ |\n"
+#| "| No message deletion | History is kept; compression only changes runtime view and conversation meta        |\n"
+#| "| Four segments       | LLM context = system + summary + slim + raw                                    |\n"
+#| "| On-demand trigger   | Compress when usage nears window limits; higher thresholds in tool loops       |\n"
+#| "| Memory-independent  | Compression does not trigger semantic extraction; light sleep cron is separate |\n"
 msgid ""
 "| Principle           | Description                                                                    |\n"
 "| ------------------- | ------------------------------------------------------------------------------ |\n"
-"| No message deletion | History is kept; compression only changes runtime view and conversation meta        |\n"
+"| No message deletion | History is kept; compression only changes runtime view and conversation meta   |\n"
 "| Four segments       | LLM context = system + summary + slim + raw                                    |\n"
 "| On-demand trigger   | Compress when usage nears window limits; higher thresholds in tool loops       |\n"
 "| Memory-independent  | Compression does not trigger semantic extraction; light sleep cron is separate |\n"
@@ -179,8 +186,8 @@ msgstr "与记忆管道的关系"
 #: docs/concepts/compression.md:65
 msgid ""
 "Compression and light/deep sleep run **independently**: compression manages "
-"the current conversation's LLM window; memory extraction runs nightly from the "
-"full conversation archive."
+"the current conversation's LLM window; memory extraction runs nightly from "
+"the full conversation archive."
 msgstr ""
-"压缩与浅睡/深睡**独立运行**：压缩管理当前 conversation 的 LLM 窗口；记忆提取每晚从"
-"完整对话存档运行。"
+"压缩与浅睡/深睡**独立运行**：压缩管理当前 conversation 的 LLM 窗口；记忆提取"
+"每晚从完整对话存档运行。"

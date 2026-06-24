@@ -6,5 +6,6 @@
     "emitDeclarationOnly": true,
     "declaration": true,
     "outDir": ".tsout"
-  }
+  },
+  "references": [{ "path": "./packages/sap-contract" }]
 }

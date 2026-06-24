@@ -34,9 +34,9 @@ node_modules/
 pnpm-debug.log*
 bun-debug.log*
 
-# WebUI Vue projects
-connectors/webui/app/*/node_modules/
-connectors/webui/app/dist/
+# Admin Vue projects
+connectors/admin/app/*/node_modules/
+connectors/admin/app/dist/
 
 # CLI publish 产物
 cli/publish/
@@ -56,17 +56,7 @@ messages/.zh-cn-ref/
 gettextization.failed.po
 *.mo
 
-# Companion desktop (Electron)
-satellites/*/electron-dist/
-satellites/*/release/
-satellites/*/build-resources/
-satellites/*/.cache/
-satellites/*/companion-config.json
-satellites/app-mobile/www/
-satellites/app-mobile/android/.gradle/
-satellites/app-mobile/android/app/build/
-satellites/app-mobile/android/build/
-satellites/app-mobile/android/local.properties
+
 
 # Misc
 /tmp/

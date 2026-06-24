@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 17:52+0800\n"
+"POT-Creation-Date: 2026-06-24 17:13+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/concepts/recall-flow.md:1 messages/po4a/en.xml:42
+#: docs/concepts/recall-flow.md:1 messages/po4a/en.xml:529
 #, no-wrap
 msgid "Recall Flow"
 msgstr ""
@@ -44,12 +44,12 @@ msgstr ""
 #: docs/concepts/recall-flow.md:17
 #, no-wrap
 msgid ""
-"| Capability        | Description                                                                                  |\n"
-"| ----------------- | -------------------------------------------------------------------------------------------- |\n"
+"| Capability        | Description                                                                                            |\n"
+"| ----------------- | ------------------------------------------------------------------------------------------------------ |\n"
 "| `memory_recall`   | Four sources: semantic / conversation / limbic / autobiographical; Top N; conversation returns snippet |\n"
-"| `sessions_search` | Session message search; returns snippet (not full content)                                   |\n"
-"| `memory_remember` | Semantic memory CRUD during conversation                                                     |\n"
-"| Resident memory   | System prompt injection (not recall)                                                         |\n"
+"| `sessions_search` | Session message search; returns snippet (not full content)                                             |\n"
+"| `memory_remember` | Semantic memory CRUD during conversation                                                               |\n"
+"| Resident memory   | System prompt injection (not recall)                                                                   |\n"
 msgstr ""
 
 #. type: Title ###

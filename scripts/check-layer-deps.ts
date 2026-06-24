@@ -20,19 +20,16 @@ const LAYER_DIRS = [
   "capabilities",
   "platform",
   "satellites",
-  "frontends",
-  "cli",
+  "app",
   "tests",
 ] as const;
 
 const SATELLITE_ALLOWED = new Set(["sap-contract", "satellite-sdk", "kernel", "kernel-logging"]);
 
-const DESKTOP_SHELL_ALLOWED = new Set([
+const ADMIN_FRONTEND_ALLOWED = new Set([
+  "admin-api",
   "sap-contract",
   "satellite-sdk",
-  "satellite-companion",
-  "satellite-chat",
-  "frontend-chamber",
   "kernel",
   "kernel-logging",
 ]);
@@ -49,6 +46,14 @@ function layerOf(relPath: string): Layer {
   return null;
 }
 
+function isAdminFrontendPath(relPath: string): boolean {
+  return relPath.startsWith("platform/admin-frontend/");
+}
+
+function isAdminApiPath(relPath: string): boolean {
+  return relPath.startsWith("platform/admin-api/");
+}
+
 function sourceCapabilitiesPkg(relPath: string): string | null {
   const parts = relPath.split("/");
   if (parts[0] !== "capabilities" || parts.length < 2) return null;
@@ -60,7 +65,12 @@ function isExempt(relPath: string): boolean {
   if (relPath.includes("/test-helpers/")) return true;
   if (/\.(test|spec)\.ts$/.test(relPath)) return true;
   if (relPath.startsWith("tests/")) return true;
-  if (relPath.startsWith("cli/")) return true;
+  if (relPath.startsWith("app/cli/")) return true;
+  if (
+    relPath === "platform/admin-frontend/build.ts" ||
+    relPath === "platform/admin-frontend/paraglide-compile.ts"
+  )
+    return true;
   return false;
 }
 
@@ -71,19 +81,26 @@ function isSatelliteAllowed(pkg: string): boolean {
   return false;
 }
 
+function isAdminFrontendAllowed(pkg: string): boolean {
+  const root = workspacePkgName(pkg);
+  if (ADMIN_FRONTEND_ALLOWED.has(root)) return true;
+  if (root.startsWith("kernel-")) return true;
+  return false;
+}
+
 function isAllowed(layer: Layer, pkg: string, relPath: string): boolean {
   if (!layer) return true;
   const root = workspacePkgName(pkg);
 
-  if (layer === "satellites") {
-    if (relPath.startsWith("satellites/desktop-shell/")) {
-      const pkgRoot = workspacePkgName(pkg);
-      if (DESKTOP_SHELL_ALLOWED.has(pkgRoot) || pkgRoot.startsWith("kernel-")) return true;
-    }
-    return isSatelliteAllowed(pkg);
+  if (isAdminFrontendPath(relPath)) {
+    return isAdminFrontendAllowed(pkg);
   }
 
-  if (layer === "frontends") {
+  if (isAdminApiPath(relPath)) {
+    return true;
+  }
+
+  if (layer === "satellites") {
     return isSatelliteAllowed(pkg);
   }
 
@@ -115,7 +132,7 @@ function isAllowed(layer: Layer, pkg: string, relPath: string): boolean {
       return root.startsWith("kernel-") || root === "kernel" || root === "core";
     }
     case "platform":
-    case "cli":
+    case "app":
     case "tests":
       return true;
     default:
@@ -135,14 +152,15 @@ function capabilitiesCrossViolation(relPath: string, pkg: string): string | null
 }
 
 function satelliteViolation(relPath: string, pkg: string): string | null {
-  if (relPath.startsWith("satellites/desktop-shell/")) {
-    const root = workspacePkgName(pkg);
-    if (DESKTOP_SHELL_ALLOWED.has(root) || root.startsWith("kernel-")) return null;
-    return `satellites/desktop-shell must not depend on @freeanima/${root}`;
-  }
-  if (layerOf(relPath) !== "satellites" && layerOf(relPath) !== "frontends") return null;
+  if (layerOf(relPath) !== "satellites") return null;
   if (isSatelliteAllowed(pkg)) return null;
-  return `satellites/* / frontends/* must not depend on @freeanima/${workspacePkgName(pkg)} (allowed: sap-contract, satellite-sdk + generic deps)`;
+  return `satellites/* must not depend on @freeanima/${workspacePkgName(pkg)} (allowed: sap-contract, satellite-sdk + generic deps)`;
+}
+
+function adminFrontendViolation(relPath: string, pkg: string): string | null {
+  if (!isAdminFrontendPath(relPath)) return null;
+  if (isAdminFrontendAllowed(pkg)) return null;
+  return `platform/admin-frontend must not depend on @freeanima/${workspacePkgName(pkg)} (allowed: admin-api, satellite-sdk, sap-contract, kernel*)`;
 }
 
 function reasonFor(layer: Layer, pkg: string): string {
@@ -172,7 +190,7 @@ function scanImports(): Violation[] {
     const rel = relative(ROOT, abs);
     if (isExempt(rel)) continue;
     const layer = layerOf(rel);
-    if (!layer || layer === "cli" || layer === "tests") continue;
+    if (!layer || layer === "tests") continue;
 
     const lines = readFileSync(abs, "utf-8").split("\n");
     for (let i = 0; i < lines.length; i++) {
@@ -191,6 +209,11 @@ function scanImports(): Violation[] {
           violations.push({ file: rel, line: i + 1, pkg, reason: satCross });
           continue;
         }
+        const adminFeCross = adminFrontendViolation(rel, pkg);
+        if (adminFeCross) {
+          violations.push({ file: rel, line: i + 1, pkg, reason: adminFeCross });
+          continue;
+        }
         if (!isAllowed(layer, pkg, rel)) {
           violations.push({ file: rel, line: i + 1, pkg, reason: reasonFor(layer, pkg) });
         }
@@ -206,16 +229,19 @@ function scanPackageJson(): Violation[] {
     const base = join(ROOT, dir);
     if (!existsSync(base)) continue;
     const entries =
-      dir === "cli" || dir === "tests" || dir === "kernel"
+      dir === "tests" || dir === "kernel"
         ? [{ name: ".", isDirectory: () => true }]
         : readdirSync(base, { withFileTypes: true });
     for (const ent of entries) {
       if (!ent.isDirectory()) continue;
-      const pkgDir =
-        dir === "cli" || dir === "tests" || dir === "kernel" ? base : join(base, ent.name);
-      const pjPath = join(pkgDir, "package.json");
+      const pkgDir = dir === "tests" || dir === "kernel" ? base : join(base, ent.name);
+      const nestedAdmin =
+        dir === "platform" && (ent.name === "admin-api" || ent.name === "admin-frontend")
+          ? pkgDir
+          : null;
+      const pjPath = join(nestedAdmin ?? pkgDir, "package.json");
       if (!existsSync(pjPath)) continue;
-      const relDir = relative(ROOT, pkgDir);
+      const relDir = relative(ROOT, nestedAdmin ?? pkgDir);
       const manifest = JSON.parse(readFileSync(pjPath, "utf-8")) as {
         dependencies?: Record<string, string>;
       };
@@ -233,6 +259,11 @@ function scanPackageJson(): Violation[] {
           violations.push({ file: fakeLine, line: 0, pkg: fakePkg, reason: satCross });
           continue;
         }
+        const adminFeCross = adminFrontendViolation(fakeLine, fakePkg);
+        if (adminFeCross) {
+          violations.push({ file: fakeLine, line: 0, pkg: fakePkg, reason: adminFeCross });
+          continue;
+        }
         if (!isAllowed(layerOf(relDir), fakePkg, join(relDir, "src/index.ts"))) {
           violations.push({
             file: fakeLine,
@@ -242,7 +273,7 @@ function scanPackageJson(): Violation[] {
           });
         }
       }
-      if (dir === "cli" || dir === "tests" || dir === "kernel") break;
+      if (dir === "tests" || dir === "kernel") break;
     }
   }
 

@@ -11,6 +11,7 @@
     "@freeanima/capabilities-tasks": "workspace:*",
     "@freeanima/capabilities-tools": "workspace:*",
     "@freeanima/kernel": "workspace:*",
+    "@freeanima/admin-api": "workspace:*",
     "@freeanima/platform": "workspace:*",
     "@freeanima/runtime": "workspace:*",
     "@freeanima/sap-contract": "workspace:*",

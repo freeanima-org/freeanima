@@ -146,12 +146,12 @@ Production: `anima service` (systemd --user). Auto-restarts after crashes; only 
 
 - **service**: long-running — Hub HTTP (`/api`, `/sap/v1`), Discord / WeChat Gateway, cron
 - **chat**: single non-interactive turn (CLI or piped stdin)
-- **UI**: desktop-shell / app-mobile bundled SPA（会客厅 + 卧室）；Hub 不托管 `/webui`
+- **UI**: app/desktop / app/mobile bundled SPA（聊天室 + 管理台）；Hub 不托管 `/admin`
 
 ```bash
 anima service start              # default: systemd --user
 anima service start --foreground # foreground (logs to stdout)
-bun run dev:webui                # 本地 WebUI 开发（Hub API 须已运行）
+bun run dev:admin                # 本地 Admin 开发（Hub API 须已运行）
 anima service status
 ```
 
@@ -244,19 +244,19 @@ Judge uses optional `llm.profiles.goal_judge`; fail-open on errors. User message
 
 ## Client UI（bundled）
 
-会客厅与卧室 UI 由 **desktop-shell** / **app-mobile** 打进客户端；`anima service` 仅提供 Hub 后端。
+聊天室与管理台 UI 由 **app/desktop** / **app/mobile** 打进客户端；`anima service` 仅提供 Hub 后端。
 
-| 模块    | 连接方式                          | 说明                          |
-| ------- | --------------------------------- | ----------------------------- |
-| Chat    | SAP WebSocket `/sap/v1`           | 桌面 :4174 / 移动 `www/chat`  |
-| Chamber | Hub REST `/api/*`（CORS + shell） | 桌面 :4175 / 移动 `www/webui` |
+| 模块  | 连接方式                          | 说明                          |
+| ----- | --------------------------------- | ----------------------------- |
+| Chat  | SAP WebSocket `/sap/v1`           | 桌面 :4174 / 移动 `www/chat`  |
+| Admin | Hub REST `/api/*`（CORS + shell） | 桌面 :4175 / 移动 `www/admin` |
 
 Pair-programming studio 仍为可选 satellite 进程（`http://127.0.0.1:4173`），与 Hub bundled UI 无关。
 
 ## Events and Hooks (Summary)
 
 - **EventBus**: async notification transport (Redis queue); production code currently emits topics such as `session:updated` with **no registered handlers** — ACP callbacks use direct `onSessionUpdated` instead. **Not** used for sleep orchestration.
-- **Pipeline Runner**: explicit DAG for background cycles (sleep-cycle: light → deep → cross-domain maintenance steps). State in `~/.anima/runtime/pipeline_*_run.json`; Chamber API for diagnostics.
+- **Pipeline Runner**: explicit DAG for background cycles (sleep-cycle: light → deep → cross-domain maintenance steps). State in `~/.anima/runtime/pipeline_*_run.json`; Admin API for diagnostics.
 - **Hooks**: sync interceptors — validation or clarification at message ingress, turn end, tool return, etc.
 
 Complementary: Pipeline Runner handles scheduled multi-step background work; Hooks handle "may this proceed before/during"; EventBus remains available for future cross-process fan-out but is not on the sleep path.

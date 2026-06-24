@@ -2,18 +2,18 @@
 /**
  * Build @freeanima/cli publish directory (cli/publish/):
  * - dist/cli.js single-file bundle
- * - connectors/webui/app/ Bun fullstack static assets
+ * - admin-frontend app/ Bun fullstack static assets
  * - migrations/ PG migrations
  */
 import { $ } from "bun";
 import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
-import { compileParaglideToDir } from "../platform/connectors/webui/paraglide-compile.ts";
-import { buildPublishedWebuiDist } from "../platform/connectors/webui/webui-bundle.ts";
+import { compileParaglideToDir } from "../platform/admin-frontend/paraglide-compile.ts";
+import { buildPublishedAdminDist } from "../platform/admin-frontend/build.ts";
 
 const ROOT = join(import.meta.dir, "..");
-const CLI_DIR = join(ROOT, "cli");
+const CLI_DIR = join(ROOT, "app/cli");
 const PUBLISH_DIR = join(CLI_DIR, "publish");
 const ROOT_PKG = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf-8")) as {
   version: string;
@@ -54,7 +54,7 @@ function resolveTiktokenWasmPath(): string {
 async function main(): Promise<void> {
   rmSync(PUBLISH_DIR, { recursive: true, force: true });
   mkdirSync(join(PUBLISH_DIR, "dist"), { recursive: true });
-  mkdirSync(join(PUBLISH_DIR, "connectors/webui"), { recursive: true });
+  mkdirSync(join(PUBLISH_DIR, "admin-frontend"), { recursive: true });
 
   console.log("bundling cli…");
   const bundlePath = join(PUBLISH_DIR, "dist/cli.js");
@@ -69,8 +69,8 @@ async function main(): Promise<void> {
     recursive: true,
   });
 
-  console.log("copying webui app…");
-  cpSync(join(ROOT, "platform/connectors/webui/app"), join(PUBLISH_DIR, "connectors/webui/app"), {
+  console.log("copying admin app…");
+  cpSync(join(ROOT, "platform/admin-frontend/app"), join(PUBLISH_DIR, "admin-frontend/app"), {
     recursive: true,
   });
 
@@ -84,8 +84,8 @@ async function main(): Promise<void> {
   rmSync(join(paraglideDir, ".gitignore"), { force: true });
   rmSync(join(paraglideDir, ".prettierignore"), { force: true });
 
-  console.log("building webui…");
-  await buildPublishedWebuiDist(ROOT, join(PUBLISH_DIR, "connectors/webui/dist"));
+  console.log("building admin…");
+  await buildPublishedAdminDist(ROOT, join(PUBLISH_DIR, "admin-frontend/dist"));
 
   const binScript = `#!/usr/bin/env bun
 import { dirname, join } from "node:path";

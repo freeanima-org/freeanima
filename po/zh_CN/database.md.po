@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-23 15:04+0800\n"
+"POT-Creation-Date: 2026-06-24 17:13+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/guide/database.md:1 messages/po4a/en.xml:30
+#: docs/guide/database.md:1 messages/po4a/en.xml:517
 #, no-wrap
 msgid "Database"
 msgstr "数据库"
@@ -181,23 +181,53 @@ msgstr "安装扩展后执行，或重启 `anima service`。"
 #. type: Title ##
 #: docs/guide/database.md:62
 #, no-wrap
+msgid "`auto_llm_runs` (audit)"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/database.md:65
+msgid ""
+"Background LLM without user turns (cron agent, sleep pipeline stages) writes "
+"to `auto_llm_runs` instead of creating `sessions`. Retention (optional "
+"`config.yaml`):"
+msgstr ""
+
+#. type: Fenced code block (yaml)
+#: docs/guide/database.md:66
+#, no-wrap
+msgid ""
+"auto_llm:\n"
+"  retention_days: 30\n"
+"  per_run_kind_keep: 100\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/database.md:73
+msgid ""
+"Purged during sleep-cycle step `conversation-cleanup` (after stale "
+"conversation cleanup). Cron script runs (`no_agent`) use `cron_log` only."
+msgstr ""
+
+#. type: Title ##
+#: docs/guide/database.md:74
+#, no-wrap
 msgid "Backups"
 msgstr "备份"
 
 #. type: Bullet: '- '
-#: docs/guide/database.md:67
+#: docs/guide/database.md:79
 msgid ""
 "**Migrations do not replace backups** — schedule regular full backups (e.g. "
 "`pg_dump`)."
 msgstr "**迁移不能替代备份** — 请定期安排全量备份（如 `pg_dump`）。"
 
 #. type: Bullet: '- '
-#: docs/guide/database.md:67
+#: docs/guide/database.md:79
 msgid "Back up before destructive changes."
 msgstr "破坏性变更前先备份。"
 
 #. type: Bullet: '- '
-#: docs/guide/database.md:67
+#: docs/guide/database.md:79
 msgid ""
 "Include `~/.anima/` (`FREEANIMA_HOME` overridable) in backup policy — see "
 "[`security.md`](security.md#data-persistence)."
@@ -206,20 +236,20 @@ msgstr ""
 "(security.md#data-persistence)。"
 
 #. type: Title ##
-#: docs/guide/database.md:68
+#: docs/guide/database.md:80
 #, no-wrap
 msgid "Integration Tests (Developers)"
 msgstr "集成测试（开发者）"
 
 #. type: Plain text
-#: docs/guide/database.md:71
+#: docs/guide/database.md:83
 msgid ""
 "Full integration tests require **Docker** for a temporary PostgreSQL "
 "instance:"
 msgstr "完整集成测试需要 **Docker** 提供临时 PostgreSQL 实例："
 
 #. type: Fenced code block (bash)
-#: docs/guide/database.md:72
+#: docs/guide/database.md:84
 #, no-wrap
 msgid ""
 "bun run test:integration\n"
@@ -229,18 +259,18 @@ msgstr ""
 "bun run test              # unit + integration in parallel\n"
 
 #. type: Plain text
-#: docs/guide/database.md:78
+#: docs/guide/database.md:90
 msgid "pre-commit `test:changed` does **not** run integration tests."
 msgstr "pre-commit 的 `test:changed` **不会**运行集成测试。"
 
 #. type: Title ##
-#: docs/guide/database.md:79 docs/guide/remote-access.md:91
+#: docs/guide/database.md:91
 #, no-wrap
 msgid "Troubleshooting"
 msgstr "故障排查"
 
 #. type: Plain text
-#: docs/guide/database.md:86
+#: docs/guide/database.md:98
 #, no-wrap
 msgid ""
 "| Symptom                     | Check                                                          |\n"
@@ -256,6 +286,6 @@ msgstr ""
 "| FTS / 向量召回为空          | 已执行 `ensure-pg-extensions.sql`；已启用 `embedding` 配置     |\n"
 
 #. type: Plain text
-#: docs/guide/database.md:87
+#: docs/guide/database.md:99
 msgid "More deployment security: [`security.md`](security.md)."
 msgstr "更多部署安全事项：[`security.md`](security.md)。"

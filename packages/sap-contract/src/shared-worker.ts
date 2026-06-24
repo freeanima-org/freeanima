@@ -1,3 +1,5 @@
+/// <reference lib="dom" />
+/// <reference lib="webworker" />
 import type { SapClient, SapMethod, SapRouterInputs, SapRouterOutputs } from "./router.ts";
 import type { ConnectPayload, ConnectedPayload } from "./frames/lifecycle.ts";
 import type { SapReconnectPolicy } from "./transport.ts";
@@ -89,8 +91,8 @@ export function installSapSharedWorkerHost(): void {
       instanceId,
     } satisfies SharedWorkerPortMessage);
 
-    port.onmessage = (messageEv: MessageEvent<SharedWorkerPortMessage>): void => {
-      const msg = messageEv.data;
+    port.onmessage = (messageEv: MessageEvent): void => {
+      const msg = messageEv.data as SharedWorkerPortMessage;
       if (msg.type === "init") {
         workerConfig = msg.config;
         void ensureTransport().catch(() => {

@@ -10,7 +10,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync
 import { join } from "node:path";
 
 const ROOT = join(import.meta.dir, "..");
-const PUBLISH_DIR = join(ROOT, "cli/publish");
+const PUBLISH_DIR = join(ROOT, "app/cli/publish");
 
 function bunGlobalDir(): string {
   const home = process.env.HOME;

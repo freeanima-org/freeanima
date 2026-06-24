@@ -498,7 +498,7 @@ function App() {
     return (
       <div className="h-screen flex items-center justify-center p-8">
         <div className="max-w-md text-center space-y-3">
-          <h2 className="text-lg font-bold">{m.webui_chat_title()}</h2>
+          <h2 className="text-lg font-bold">{m.admin_chat_title()}</h2>
           <p className="text-sm text-error">{error}</p>
           <p className="text-xs text-base-content/60">
             {getSatelliteShell()?.hubWsUrl
@@ -527,8 +527,8 @@ function App() {
         <div className="shrink-0 flex items-center justify-between gap-2 px-3 py-2 bg-warning/15 border-b border-warning/30 text-sm">
           <span className="text-warning-content/90">
             {sapConnection === "connecting"
-              ? m.webui_common_connecting()
-              : m.webui_studio_disconnected()}
+              ? m.admin_common_connecting()
+              : m.admin_studio_disconnected()}
           </span>
           <div className="flex items-center gap-1">
             {nativeShell ? (
@@ -546,7 +546,7 @@ function App() {
               disabled={sapConnection === "connecting"}
               onClick={() => void reconnectSap()}
             >
-              {m.webui_common_reconnect()}
+              {m.admin_common_reconnect()}
             </button>
           </div>
         </div>
@@ -559,7 +559,7 @@ function App() {
         >
           ☰
         </button>
-        <span className="text-sm font-medium">{m.webui_chat_title()}</span>
+        <span className="text-sm font-medium">{m.admin_chat_title()}</span>
         <span className="flex-1" />
         {nativeShell ? (
           <button
@@ -599,7 +599,7 @@ function App() {
               className="btn btn-primary btn-sm w-full"
               onClick={() => void newConversation()}
             >
-              {m.webui_common_new_conversation()}
+              {m.admin_common_new_conversation()}
             </button>
           </div>
           <div className="flex-1 overflow-y-auto px-2 py-1 space-y-1">
@@ -637,11 +637,11 @@ function App() {
           <div ref={msgAreaRef} className="flex-1 overflow-y-auto p-4 space-y-4">
             {!currentId ? (
               <div className="flex items-center justify-center h-full text-base-content/40 text-sm">
-                {m.webui_chat_select_conversation()}
+                {m.admin_chat_select_conversation()}
               </div>
             ) : display.length === 0 && !streamVisible && !recovering ? (
               <div className="flex items-center justify-center h-full text-base-content/40 text-sm">
-                {m.webui_chat_send_first_message()}
+                {m.admin_chat_send_first_message()}
               </div>
             ) : null}
 
@@ -680,7 +680,7 @@ function App() {
             {clarifyPending ? (
               <div className="alert alert-info shadow-sm">
                 <div className="w-full space-y-2">
-                  <p className="font-medium">{m.webui_chat_clarify_hint()}</p>
+                  <p className="font-medium">{m.admin_chat_clarify_hint()}</p>
                   {clarifyPending.items.map((item, ci) => (
                     <div key={ci} className="text-sm">
                       <p>
@@ -715,7 +715,7 @@ function App() {
               <div className="chat chat-start">
                 <div className="chat-bubble text-base-content/60 text-sm flex items-center gap-2">
                   <span className="loading loading-spinner loading-xs" />
-                  {m.webui_chamber_message_waiting_result()}
+                  {m.admin_message_waiting_result()}
                 </div>
               </div>
             ) : null}
@@ -746,7 +746,7 @@ function App() {
                       className="btn btn-xs btn-primary shrink-0"
                       onClick={() => void sendQueuedNow(item.id)}
                     >
-                      {m.webui_chat_queue_send_now()}
+                      {m.admin_chat_queue_send_now()}
                     </button>
                   </li>
                 ))}
@@ -798,7 +798,7 @@ function App() {
                   }}
                   rows={1}
                   className="textarea textarea-bordered w-full min-h-[2.75rem] max-h-48 resize-none leading-normal py-2.5"
-                  placeholder={m.webui_chat_message_placeholder()}
+                  placeholder={m.admin_chat_message_placeholder()}
                   disabled={!currentId || sapDisconnected}
                   onKeyDown={onInputKeydown}
                 />
@@ -809,7 +809,7 @@ function App() {
                   className="btn btn-error"
                   disabled={!currentId || sapDisconnected}
                 >
-                  {m.webui_common_stop()}
+                  {m.admin_common_stop()}
                 </button>
               ) : (
                 <button
@@ -817,7 +817,7 @@ function App() {
                   className="btn btn-primary"
                   disabled={!currentId || !inputText.trim() || sapDisconnected}
                 >
-                  {m.webui_common_send()}
+                  {m.admin_common_send()}
                 </button>
               )}
             </form>
@@ -834,7 +834,7 @@ function App() {
             className="px-3 py-1.5 hover:bg-base-300 cursor-pointer text-sm"
             onClick={startRename}
           >
-            {m.webui_common_rename()}
+            {m.admin_common_rename()}
           </div>
         </div>
       ) : null}
@@ -848,14 +848,14 @@ function App() {
             className="bg-base-100 rounded-xl p-5 shadow-2xl w-full max-w-sm"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-sm font-bold mb-3">{m.webui_common_edit_title()}</h3>
+            <h3 className="text-sm font-bold mb-3">{m.admin_common_edit_title()}</h3>
             <input
               ref={renameInputRef}
               value={renameText}
               onChange={(e) => setRenameText(e.target.value)}
               type="text"
               className="input input-bordered w-full text-sm"
-              placeholder={m.webui_common_title_placeholder()}
+              placeholder={m.admin_common_title_placeholder()}
               onKeyDown={(e) => {
                 if (e.key === "Enter") void confirmRename();
                 if (e.key === "Escape") setShowRenameDialog(false);
@@ -867,14 +867,14 @@ function App() {
                 className="btn btn-ghost btn-sm"
                 onClick={() => setShowRenameDialog(false)}
               >
-                {m.webui_common_cancel()}
+                {m.admin_common_cancel()}
               </button>
               <button
                 type="button"
                 className="btn btn-primary btn-sm"
                 onClick={() => void confirmRename()}
               >
-                {m.webui_common_confirm()}
+                {m.admin_common_confirm()}
               </button>
             </div>
           </div>

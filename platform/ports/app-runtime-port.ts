@@ -12,7 +12,7 @@ export type ServiceCommandInfo = {
   platforms?: string[] | null;
 };
 
-/** WebUI / Gateway 完整运行时 API 契约 */
+/** Admin / Gateway 完整运行时 API 契约 */
 export type AppRuntimePort = {
   registerPlatform(name: string): void;
   updatePlatformStatus(name: string, status: string, extra?: Record<string, unknown>): void;

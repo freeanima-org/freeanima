@@ -66,6 +66,6 @@ export function formatClarifyWeixin(payload: ClarifyPayload): string {
   return lines.join("\n");
 }
 
-export function formatClarifyWebUi(payload: ClarifyPayload): string {
+export function formatClarifyChatUi(payload: ClarifyPayload): string {
   return formatClarifyPlain(payload.items);
 }

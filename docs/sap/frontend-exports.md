@@ -4,7 +4,7 @@ title: Frontend Exports
 
 # 前端三档导出约定
 
-可嵌入 desktop-shell / app-mobile 的前端内容包通过 **manifest / desktop / mobile** 三档导出注册。
+可嵌入 desktop / mobile 壳的前端内容包通过 **manifest / desktop / mobile** 三档导出注册。
 
 ## Manifest（必选）
 
@@ -22,11 +22,11 @@ title: Frontend Exports
 
 ### connectionKind
 
-| 值                 | 代表                          | 是否需要 sidecar                       |
-| ------------------ | ----------------------------- | -------------------------------------- |
-| `embedded-sidecar` | companion（VRM + 工具）       | **是**（同进程 embedded）              |
-| `sap-direct`       | chat（renderer 直连 Hub SAP） | **否**（singleton 固定 `instance_id`） |
-| `hub-rest`         | 卧室 Chamber（Hub REST）      | **否**                                 |
+| 值                 | 代表                          | 是否需要 sidecar                   |
+| ------------------ | ----------------------------- | ---------------------------------- |
+| `embedded-sidecar` | companion（VRM + 工具）       | **是**（同进程 embedded）          |
+| `sap-direct`       | chat（renderer 直连 Hub SAP） | **否**（仅需持久化 `instance_id`） |
+| `hub-rest`         | 管理台 Admin（Hub REST）      | **否**                             |
 
 实现 SSOT：[`packages/satellite-sdk/src/manifest.ts`](../../packages/satellite-sdk/src/manifest.ts)
 
@@ -39,24 +39,27 @@ title: Frontend Exports
 
 ## 当前前端包
 
-| 包                               | appId       | connectionKind     | embedMode     |
-| -------------------------------- | ----------- | ------------------ | ------------- |
-| `@freeanima/satellite-companion` | `companion` | `embedded-sidecar` | sidecar       |
-| `@freeanima/satellite-chat`      | `chat`      | `sap-direct`       | `bundled-spa` |
-| `@freeanima/frontend-chamber`    | `chamber`   | `hub-rest`         | `bundled-spa` |
+| 包                                    | appId       | connectionKind     | embedMode     |
+| ------------------------------------- | ----------- | ------------------ | ------------- |
+| `@freeanima/satellite-companion`      | `companion` | `embedded-sidecar` | sidecar       |
+| `@freeanima/satellite-chat`           | `chat`      | `sap-direct`       | `bundled-spa` |
+| Admin 管理台（`app/desktop` profile） | `admin`     | `hub-rest`         | `bundled-spa` |
 
-壳应用：[`satellites/desktop-shell/`](../../satellites/desktop-shell/) · [`satellites/app-mobile/`](../../satellites/app-mobile/)
+壳应用：[`app/desktop/`](../../app/desktop/) · [`app/mobile/`](../../app/mobile/)
 
 ## Chat：SAP 直连与 instance_id
 
 桌面/移动 chat 使用 [`createSapDirectClient`](../../packages/sap-contract/src/direct-client.ts) 直连 Hub `/sap/v1`。
 
-Chat 采用 **singleton** 策略：所有客户端共享固定 `CHAT_INSTANCE_ID`（`def`），`connect` 始终携带该 id，无需 per-device 持久化。
+`instance_id` 持久化：
 
-## Chamber：Hub REST + bundled WebUI
+- Electron 壳：preload 提供 `createFileInstanceStore("chat")` → `~/.anima/satellites/chat/instance.json`
+- Capacitor：Preferences
 
-卧室 UI 由 [`platform/connectors/webui/`](../../platform/connectors/webui/) 构建，经 [`frontends/chamber/build.ts`](../../frontends/chamber/build.ts) 打进 desktop / mobile。
+## Admin 管理台：Hub REST + bundled SPA
 
-REST 基址：bundled 页通过 `window.satelliteShell.hubUrl` 访问 Hub **`/api/*`**（非 `/webui` 下）。Hub 对 localhost / Capacitor origin 启用 CORS。
+管理台 UI 由 [`@freeanima/admin-frontend`](../../platform/admin-frontend/) 构建，打进 desktop / mobile。
 
-本地 WebUI 开发：`bun run dev:webui`（Hub 须已运行）。
+REST 基址：bundled 页通过 `window.satelliteShell.hubUrl` 访问 Hub **`/api/*`**。Hub 对 localhost / Capacitor origin 启用 CORS。
+
+本地 Admin 开发：`bun run dev:admin`（Hub 须已运行）。

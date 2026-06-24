@@ -21,7 +21,7 @@ export const chatDesktopExport: FrontendDesktopExport = {
         height: 720,
         minWidth: 640,
         minHeight: 480,
-        title: "FreeAnima 会客厅",
+        title: "FreeAnima 聊天室",
         frame: true,
         resizable: true,
       },

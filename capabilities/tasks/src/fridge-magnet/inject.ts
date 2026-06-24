@@ -28,7 +28,7 @@ export function wrapFridgeMagnetBoard(magnets: FridgeMagnet[]): string {
   return `${FRIDGE_MAGNET_BOARD_FRAME}\n\n${FRIDGE_MAGNET_BOARD_HEADING}\n${fence}`;
 }
 
-/** WebUI preview of the manifest assistant message */
+/** Admin preview of the manifest assistant message */
 export function formatFridgeMagnetManifestPreview(magnets: FridgeMagnet[]): string {
   const content = wrapFridgeMagnetBoard(magnets);
   if (!content) return "";

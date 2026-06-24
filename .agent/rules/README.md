@@ -13,7 +13,7 @@ Detailed implementation constraints for AI agents working in this repository. St
 | [`code-layers.md`](code-layers.md) | Five-layer deps, composition root, Registry injection                             |
 | [`release.md`](release.md)         | SemVer, Conventional Commits, Release Please, npm/Docker                          |
 | [`compression.md`](compression.md) | l-point compression algorithm and module entry points                             |
-| [`i18n.md`](i18n.md)               | UI/docs i18n: Paraglide, po4a, PO workflow, site/WebUI message keys               |
+| [`i18n.md`](i18n.md)               | UI/docs i18n: Paraglide, po4a, PO workflow, site/Admin message keys               |
 | [`docs-i18n.md`](docs-i18n.md)     | AI rules for `docs/**` authoring and `po/zh_CN/*.po` msgstr                       |
 
 **SSOT**: dependency boundaries → [`scripts/check-layer-deps.ts`](../../scripts/check-layer-deps.ts); storage shapes → [`core/src/db/schema/`](../../core/src/db/schema/); ports → [`core/src/repos/ports/`](../../core/src/repos/ports/).

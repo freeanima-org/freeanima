@@ -10,6 +10,6 @@ export type ClarifyAdapter = {
   format(payload: ClarifyPayload): string;
 };
 
-export type ClarifyWebUiPayload = ClarifyPayload & {
+export type ClarifyChatUiPayload = ClarifyPayload & {
   formatted: string;
 };

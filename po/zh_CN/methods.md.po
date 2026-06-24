@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-22 11:28+0800\n"
+"POT-Creation-Date: 2026-06-24 17:13+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -90,24 +90,34 @@ msgstr ""
 "  Router -->|res| Client\n"
 
 #. type: Content of: <messages><msg>
-#: docs/sap/methods.md:33 messages/po4a/en.xml:452
+#: docs/sap/methods.md:33 messages/po4a/en.xml:364
 #, no-wrap
 msgid "Session"
 msgstr "会话"
 
 #. type: Plain text
 #: docs/sap/methods.md:44
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Method               | Schema                                                            | Hub behavior                                                                                                |\n"
+#| "| -------------------- | ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |\n"
+#| "| `conversation.create`     | [`session.ts`](../../packages/sap-contract/src/frames/conversation.ts) | Creates session; sets `platform_extra.satellite_app_id`, `satellite_instance_id`, optional workspace fields |\n"
+#| "| `conversation.list`       | `session.ts`                                                      | Lists conversations, optional `platform` filter                                                                  |\n"
+#| "| `conversation.messages`   | `session.ts`                                                      | Message history with `offset` / `limit`                                                                     |\n"
+#| "| `conversation.patchTitle` | `session.ts`                                                      | Updates conversation title                                                                                       |\n"
+#| "| `conversation.subscribe`  | `session.ts`                                                      | Subscribes to `conversation.updated` events for one conversation                                                      |\n"
+#| "| `conversation.commands`   | `session.ts`                                                      | Lists slash commands for a platform                                                                         |\n"
+#| "| `conversation.acpDock`    | [`acp.ts`](../../packages/sap-contract/src/frames/acp.ts)         | ACP dock operations for a conversation                                                                           |\n"
 msgid ""
-"| Method               | Schema                                                            | Hub behavior                                                                                                |\n"
-"| -------------------- | ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |\n"
+"| Method                    | Schema                                                                 | Hub behavior                                                                                                |\n"
+"| ------------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |\n"
 "| `conversation.create`     | [`session.ts`](../../packages/sap-contract/src/frames/conversation.ts) | Creates session; sets `platform_extra.satellite_app_id`, `satellite_instance_id`, optional workspace fields |\n"
-"| `conversation.list`       | `session.ts`                                                      | Lists conversations, optional `platform` filter                                                                  |\n"
-"| `conversation.messages`   | `session.ts`                                                      | Message history with `offset` / `limit`                                                                     |\n"
-"| `conversation.patchTitle` | `session.ts`                                                      | Updates conversation title                                                                                       |\n"
-"| `conversation.subscribe`  | `session.ts`                                                      | Subscribes to `conversation.updated` events for one conversation                                                      |\n"
-"| `conversation.commands`   | `session.ts`                                                      | Lists slash commands for a platform                                                                         |\n"
-"| `conversation.acpDock`    | [`acp.ts`](../../packages/sap-contract/src/frames/acp.ts)         | ACP dock operations for a conversation                                                                           |\n"
+"| `conversation.list`       | `session.ts`                                                           | Lists conversations, optional `platform` filter                                                             |\n"
+"| `conversation.messages`   | `session.ts`                                                           | Message history with `offset` / `limit`                                                                     |\n"
+"| `conversation.patchTitle` | `session.ts`                                                           | Updates conversation title                                                                                  |\n"
+"| `conversation.subscribe`  | `session.ts`                                                           | Subscribes to `conversation.updated` events for one conversation                                            |\n"
+"| `conversation.commands`   | `session.ts`                                                           | Lists slash commands for a platform                                                                         |\n"
+"| `conversation.acpDock`    | [`acp.ts`](../../packages/sap-contract/src/frames/acp.ts)              | ACP dock operations for a conversation                                                                      |\n"
 msgstr ""
 "| 方法                 | Schema                                                            | Hub 行为                                                                                                    |\n"
 "| -------------------- | ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |\n"
@@ -185,8 +195,8 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/methods.md:62
 msgid ""
-"Payload: `conversation_id`, `message` (user text). Hub bridges runtime stream to "
-"SAP `stream.*` events — see [events.md](events.md)."
+"Payload: `conversation_id`, `message` (user text). Hub bridges runtime "
+"stream to SAP `stream.*` events — see [events.md](events.md)."
 msgstr ""
 "载荷：`conversation_id`、`message`（用户文本）。Hub 将 runtime 流桥接到 SAP "
 "`stream.*` 事件 — 见 [events.md](events.md)。"
@@ -210,7 +220,7 @@ msgstr ""
 "| `fridge.list` | [`fridge.ts`](../../packages/sap-contract/src/frames/fridge.ts) | 列出 runtime 的 fridge 条目       |\n"
 
 #. type: Content of: <messages><msg>
-#: docs/sap/methods.md:69 messages/po4a/en.xml:523
+#: docs/sap/methods.md:69 messages/po4a/en.xml:480
 #, no-wrap
 msgid "Terminal"
 msgstr "终端"

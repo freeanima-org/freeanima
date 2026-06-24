@@ -299,8 +299,8 @@ msgstr "❌ 不修改持久化消息"
 
 #. type: Bullet: '- '
 #: docs/concepts/time-perception.md:87
-msgid "❌ Do not show time prefix in WebUI"
-msgstr "❌ 不在 WebUI 界面中显示时间前缀"
+msgid "❌ Do not show time prefix in Admin"
+msgstr "❌ 不在 Admin 界面中显示时间前缀"
 
 #. type: Bullet: '- '
 #: docs/concepts/time-perception.md:87

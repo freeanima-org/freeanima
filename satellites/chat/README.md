@@ -1,6 +1,6 @@
 # Chat satellite
 
-会客厅 UI 内容包。desktop-shell / app-mobile **bundled-spa** + **`createSapDirectClient`** 直连 Hub SAP（`/sap/v1`）。
+聊天室 UI 内容包。desktop-shell / app-mobile **bundled-spa** + **`createSapDirectClient`** 直连 Hub SAP（`/sap/v1`）。
 
 `server/` 与 `dev.ts` 仅用于**本地 UI 开发**，不由 `anima service` 托管。
 

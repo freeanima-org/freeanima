@@ -1,0 +1,5 @@
+/electron-dist/
+/release/
+/build-resources/
+/.cache/
+/vendor

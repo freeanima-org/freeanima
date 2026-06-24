@@ -6,7 +6,7 @@ import {
 } from "@freeanima/sap-contract";
 
 describe("chat browser SAP client", () => {
-  it("sendMessageStream maps stream events to webui shape", () => {
+  it("sendMessageStream maps stream events to admin shape", () => {
     const token = mapSapStreamMethodToApi("stream.token", {
       stream_id: "s1",
       content: "hello",

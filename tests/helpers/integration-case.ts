@@ -64,7 +64,7 @@ async function flushActiveCompressionSummaries(): Promise<void> {
   }
 }
 
-/** Standard integration-test AppRuntime (builtins / WebUI handler) */
+/** Standard integration-test AppRuntime (builtins / Admin handler) */
 export function wireIntegrationRuntimeContext(pg: PgTestContext): void {
   bindHomeChannelConfig(pg.config);
   const kernel = createServiceKernel(pg.config);

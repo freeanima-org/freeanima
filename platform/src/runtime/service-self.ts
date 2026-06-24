@@ -35,7 +35,7 @@ function emptyPlaceholderBlocks(): SelfBlockDisplay[] {
   }));
 }
 
-/** WebUI self-layer six blocks read-only display */
+/** Admin self-layer six blocks read-only display */
 export async function listSelfBlocks(deps: RuntimeDeps): Promise<{ blocks: SelfBlockDisplay[] }> {
   try {
     const rows = await deps.engine.repos.selfLayer.listBlocks();
