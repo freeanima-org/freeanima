@@ -45,6 +45,7 @@ import {
   getTerminalSession,
   TerminalSessionError,
 } from "../../connectors/webui/elysia/terminal-session.ts";
+import { verifyRemoteAuthToken } from "../../connectors/webui/remote-auth.ts";
 import type { SapInstanceRegistry } from "./instance-registry.ts";
 
 const HEARTBEAT_INTERVAL_SEC = 30;
@@ -55,6 +56,7 @@ export type SapServerDeps = {
   instanceRegistry: SapInstanceRegistry;
   animaVersion: string;
   masks: MaskRegistryPort;
+  remoteAuthToken?: string;
 };
 
 type SapWsSend = {
@@ -348,6 +350,7 @@ async function pumpSessionUpdates(
 export function attachSapWebSocket(
   deps: SapServerDeps,
   ws: SapWsSend,
+  opts: { bypassRemoteAuth?: boolean } = {},
 ): { close: () => void; handleMessage: (raw: string) => Promise<void> } {
   const sessionPumps = new Map<string, AbortController>();
   const handlers = createSapServerHandlers(deps, sessionPumps);
@@ -382,6 +385,13 @@ export function attachSapWebSocket(
         return;
       }
       const parsed = connectPayloadSchema.parse(envelope.payload);
+      if (
+        !opts.bypassRemoteAuth &&
+        !verifyRemoteAuthToken(deps.remoteAuthToken, parsed.auth_token)
+      ) {
+        ws.close(1008, "unauthorized");
+        return;
+      }
       let connectedPayload: Awaited<ReturnType<SapServerHandlers["onConnect"]>>;
       try {
         connectedPayload = await handlers.onConnect(parsed);

@@ -6,7 +6,29 @@ import { translateApiErrorValue } from "./api-errors.ts";
 import { apiPath } from "./api-path.ts";
 import { resolveApiOrigin } from "./hub-origin.ts";
 
-export const apiClient: Treaty.Create<App> = treaty<App>(resolveApiOrigin());
+let cachedClient: Treaty.Create<App> | null = null;
+let cachedOrigin = "";
+
+export function resolveApiClient(): Treaty.Create<App> {
+  const origin = resolveApiOrigin();
+  const shell = (typeof window !== "undefined" ? window.satelliteShell : undefined) as
+    | { hubFetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response> }
+    | undefined;
+  if (shell?.hubFetch) {
+    return treaty<App>(origin, { fetcher: shell.hubFetch as typeof fetch });
+  }
+  if (cachedClient && cachedOrigin === origin) return cachedClient;
+  cachedClient = treaty<App>(origin);
+  cachedOrigin = origin;
+  return cachedClient;
+}
+
+/** @deprecated 使用 resolveApiClient() */
+export const apiClient: Treaty.Create<App> = new Proxy({} as Treaty.Create<App>, {
+  get(_target, prop, receiver) {
+    return Reflect.get(resolveApiClient() as object, prop, receiver);
+  },
+});
 
 type TreatyResult<T> = { data: T | null; error: unknown };
 

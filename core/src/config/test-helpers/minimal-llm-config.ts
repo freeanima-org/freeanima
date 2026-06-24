@@ -1,4 +1,7 @@
-/** Minimal llm config block for unit tests (satisfies animaConfigSchema.llm) */
+/** Minimal remote_auth block for unit tests */
+export const MINIMAL_REMOTE_AUTH = {
+  token: "test-remote-auth-token-min16",
+} as const;
 export const MINIMAL_LLM_YAML = `
 llm:
   default_profile: chat
@@ -20,4 +23,6 @@ llm:
       chain:
         - provider: main
           model: test-model
+remote_auth:
+  token: test-remote-auth-token-min16
 `;

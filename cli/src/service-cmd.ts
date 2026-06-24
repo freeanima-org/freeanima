@@ -24,7 +24,7 @@ import { startTunnelSidecar, stopTunnelSidecar } from "./tunnel-cmd.ts";
 import { stopHubStackViaSystemd } from "./tunnel-supervisor.ts";
 import { getTunnelStatus } from "./tunnel-supervisor.ts";
 import { buildTunnelSnapshot } from "@freeanima/platform/connectors/tunnel";
-import { FileConfig } from "@freeanima/platform/config";
+import { FileConfig, validateConfigOnStartup } from "@freeanima/platform/config";
 
 export type ServiceArgs = {
   action: string;
@@ -257,7 +257,9 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
         const { serve } = await import("@freeanima/platform");
         const { startApiHttpServers, closeHttpServers, waitForDrainWithTimeout } =
           await import("@freeanima/platform/connectors/webui");
-        const tunnelCfg = FileConfig.open().data.tunnel;
+        const fileConfig = FileConfig.open();
+        const tunnelCfg = fileConfig.data.tunnel;
+        const remoteAuthToken = fileConfig.data.remote_auth?.token;
         await serve(args.host, args.port, {
           foreground: true,
           http: {
@@ -265,6 +267,7 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
               startApiHttpServers(hosts, port, {
                 tunnelTeamName: tunnelCfg?.team_name,
                 tunnelAccess: tunnelCfg?.access,
+                remoteAuthToken,
               }),
             close: closeHttpServers,
             waitForDrain: waitForDrainWithTimeout,
@@ -281,6 +284,7 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
     }
 
     if (!systemdUserAvailable()) {
+      await validateConfigOnStartup();
       await startDetachedWithoutSystemd(args);
       if (await waitForHubReadyOrWarn(args.host, args.port)) {
         startTunnelSidecar({ foreground: false });
@@ -288,6 +292,7 @@ export async function runServiceCommand(args: ServiceArgs): Promise<void> {
       return;
     }
 
+    await validateConfigOnStartup();
     ensureUnitFile(args.host, args.port);
     systemctl("daemon-reload");
     const r = systemctl("enable", "--now", SYSTEMD_UNIT);

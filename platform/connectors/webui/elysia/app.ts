@@ -7,6 +7,7 @@ import { credentialsRoutes } from "./routes/credentials.ts";
 import { emailRoutes } from "./routes/email.ts";
 import { ftsRoutes } from "./routes/fts.ts";
 import { healthRoutes } from "./routes/health.ts";
+import { echoRoutes } from "./routes/echo.ts";
 import { mcpRoutes } from "./routes/mcp.ts";
 import { satellitesRoutes } from "./routes/satellites.ts";
 import { memoryRoutes } from "./routes/memory.ts";
@@ -23,6 +24,7 @@ import { autoLlmRunRoutes } from "./routes/auto-llm-runs.ts";
 /** API 路由（Eden Treaty 类型真源） */
 export const apiApp = new Elysia({ prefix: "/api" })
   .use(healthRoutes)
+  .use(echoRoutes)
   .use(conversationsRoutes)
   .use(statusRoutes)
   .use(sleepRoutes)

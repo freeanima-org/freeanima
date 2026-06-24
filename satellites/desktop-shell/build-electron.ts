@@ -68,6 +68,31 @@ export function getElectronPreloadBundleOptions(): esbuild.BuildOptions {
   };
 }
 
+export function getHubSettingsPreloadBundleOptions(): esbuild.BuildOptions {
+  return {
+    entryPoints: { preload: join(SHELL_ROOT, "electron", "hub-settings-preload.ts") },
+    bundle: true,
+    platform: "node",
+    target: "node20",
+    format: "cjs",
+    outfile: join(ELECTRON_DIST, "hub-settings-preload.cjs"),
+    external: ["electron"],
+    logLevel: "info",
+  };
+}
+
+export function getHubSettingsPageBundleOptions(): esbuild.BuildOptions {
+  return {
+    entryPoints: { settings: join(SHELL_ROOT, "hub-settings", "settings.ts") },
+    bundle: true,
+    platform: "browser",
+    target: "es2022",
+    format: "esm",
+    outfile: join(SHELL_ROOT, "hub-settings", "settings.js"),
+    logLevel: "info",
+  };
+}
+
 export type BuildProfile = "fast" | "release";
 
 export type BuildElectronOptions = {
@@ -125,6 +150,8 @@ async function bundleElectronMain(): Promise<void> {
   mkdirSync(ELECTRON_DIST, { recursive: true });
   await esbuild.build(getElectronMainBundleOptions());
   await esbuild.build(getElectronPreloadBundleOptions());
+  await esbuild.build(getHubSettingsPreloadBundleOptions());
+  await esbuild.build(getHubSettingsPageBundleOptions());
 }
 
 /** 清除 companion 本地构建/缓存残留，避免 electron-builder 误打进 desktop-shell */

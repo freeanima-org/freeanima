@@ -19,6 +19,7 @@ const CHAT_ONLY_SNAPSHOT = animaConfigSchema.parse({
       },
     },
   },
+  remote_auth: { token: "test-remote-auth-token-min16" },
 });
 
 function chatOnlyConfig() {

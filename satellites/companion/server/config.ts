@@ -18,6 +18,7 @@ import { companionConfigPath, ensureCompanionDataDir } from "./paths.ts";
 import { PLACEHOLDER_MODEL_PATH } from "./model-path.ts";
 import { motionManifest } from "../shared/motion-manifest.ts";
 import { migrateModelFiles, migrateMotionLibraryFiles } from "./asset-migration.ts";
+import { loadShellClientConfig } from "@freeanima/satellite-sdk/shell-client-config-node";
 
 export type CompanionConfig = CompanionConfigV2;
 
@@ -183,5 +184,13 @@ export function saveConfig(patch: Partial<CompanionConfig>): CompanionConfig {
 }
 
 export function hubUrlFromConfig(): string {
+  const shell = loadShellClientConfig();
+  if (shell?.hubUrl?.trim()) return shell.hubUrl.trim().replace(/\/$/, "");
   return loadConfig().hub_url.replace(/\/$/, "");
+}
+
+export function remoteAuthTokenFromShell(): string | undefined {
+  const shell = loadShellClientConfig();
+  const token = shell?.remoteAuthToken?.trim();
+  return token || undefined;
 }

@@ -1,9 +1,14 @@
 import { Preferences } from "@capacitor/preferences";
 import { resolveHubWsUrl } from "@freeanima/sap-contract/urls";
-import type { SapInstanceStore } from "@freeanima/satellite-sdk";
-import type { SatelliteShellApi } from "@freeanima/satellite-sdk";
+import {
+  buildShellApiFields,
+  hubRequiresRemoteAuth,
+  normalizeShellClientConfig,
+  type SapInstanceStore,
+  type SatelliteShellApi,
+} from "@freeanima/satellite-sdk";
 
-import { HUB_URL_KEY, sapInstanceKey } from "./prefs-keys.ts";
+import { HUB_URL_KEY, REMOTE_AUTH_TOKEN_KEY, sapInstanceKey } from "./prefs-keys.ts";
 import { SETTINGS_PAGE } from "./paths.ts";
 
 const SHELL_SNAPSHOT_KEY = "freeanima.shell.snapshot";
@@ -11,6 +16,7 @@ const SHELL_SNAPSHOT_KEY = "freeanima.shell.snapshot";
 export type ShellSnapshot = {
   hubUrl: string;
   hubWsUrl: string;
+  remoteAuthToken: string;
 };
 
 export function normalizeHubUrl(raw: string): string {
@@ -29,9 +35,21 @@ export async function loadHubUrl(): Promise<string | null> {
   return value?.trim() || null;
 }
 
+export async function loadRemoteAuthToken(): Promise<string | null> {
+  const { value } = await Preferences.get({ key: REMOTE_AUTH_TOKEN_KEY });
+  return value?.trim() || null;
+}
+
+export async function saveShellClientPrefs(hubUrl: string, remoteAuthToken: string): Promise<void> {
+  const normalized = normalizeShellClientConfig({ hubUrl, remoteAuthToken });
+  await Preferences.set({ key: HUB_URL_KEY, value: normalized.hubUrl });
+  await Preferences.set({ key: REMOTE_AUTH_TOKEN_KEY, value: normalized.remoteAuthToken });
+}
+
+/** @deprecated 使用 saveShellClientPrefs */
 export async function saveHubUrl(hubUrl: string): Promise<void> {
-  const normalized = normalizeHubUrl(hubUrl);
-  await Preferences.set({ key: HUB_URL_KEY, value: normalized });
+  const token = (await loadRemoteAuthToken()) ?? "";
+  await saveShellClientPrefs(hubUrl, token);
 }
 
 export function createPreferencesInstanceStore(appId: string): SapInstanceStore {
@@ -56,27 +74,25 @@ export function readShellSnapshot(): ShellSnapshot | null {
   if (!raw) return null;
   try {
     const parsed = JSON.parse(raw) as ShellSnapshot;
-    if (parsed.hubUrl?.trim() && parsed.hubWsUrl?.trim()) return parsed;
+    if (parsed.hubUrl?.trim() && parsed.hubWsUrl?.trim() && parsed.remoteAuthToken?.trim()) {
+      return parsed;
+    }
   } catch {
     /* ignore */
   }
   return null;
 }
 
-export async function buildMobileShell(hubUrl: string): Promise<SatelliteShellApi> {
-  const normalized = normalizeHubUrl(hubUrl);
-  const hubWsUrl = resolveHubWsUrl(normalized);
-  const snapshot: ShellSnapshot = { hubUrl: normalized, hubWsUrl };
-  writeShellSnapshot(snapshot);
-  return createShellFromSnapshot(snapshot);
-}
-
 function createShellFromSnapshot(snapshot: ShellSnapshot): SatelliteShellApi {
+  const apiFields = buildShellApiFields(
+    snapshot.hubUrl,
+    snapshot.hubWsUrl,
+    snapshot.remoteAuthToken,
+  );
   return {
     isElectron: false,
     isNativeShell: true,
-    hubUrl: snapshot.hubUrl,
-    hubWsUrl: snapshot.hubWsUrl,
+    ...apiFields,
     windowRole: null,
     apiOrigin: null,
     createFileInstanceStore: createPreferencesInstanceStore,
@@ -86,11 +102,27 @@ function createShellFromSnapshot(snapshot: ShellSnapshot): SatelliteShellApi {
   };
 }
 
+export async function buildMobileShell(
+  hubUrl: string,
+  remoteAuthToken: string,
+): Promise<SatelliteShellApi> {
+  const normalized = normalizeShellClientConfig({ hubUrl, remoteAuthToken });
+  const hubWsUrl = resolveHubWsUrl(normalized.hubUrl);
+  const snapshot: ShellSnapshot = {
+    hubUrl: normalized.hubUrl,
+    hubWsUrl,
+    remoteAuthToken: normalized.remoteAuthToken,
+  };
+  writeShellSnapshot(snapshot);
+  return createShellFromSnapshot(snapshot);
+}
+
 /** 从 Preferences 加载并注入 window.satelliteShell */
 export async function installMobileShellFromPrefs(): Promise<SatelliteShellApi | null> {
   const hubUrl = await loadHubUrl();
-  if (!hubUrl) return null;
-  const shell = await buildMobileShell(hubUrl);
+  const remoteAuthToken = await loadRemoteAuthToken();
+  if (!hubUrl || !remoteAuthToken) return null;
+  const shell = await buildMobileShell(hubUrl, remoteAuthToken);
   window.satelliteShell = shell;
   return shell;
 }
@@ -100,13 +132,16 @@ export async function ensureMobileShellForChat(): Promise<SatelliteShellApi> {
   let snapshot = readShellSnapshot();
   if (!snapshot) {
     const hubUrl = await loadHubUrl();
-    if (!hubUrl) {
+    const remoteAuthToken = await loadRemoteAuthToken();
+    if (!hubUrl || !remoteAuthToken) {
       window.location.replace(SETTINGS_PAGE);
       throw new Error("redirect settings");
     }
+    const normalized = normalizeShellClientConfig({ hubUrl, remoteAuthToken });
     snapshot = {
-      hubUrl: normalizeHubUrl(hubUrl),
-      hubWsUrl: resolveHubWsUrl(normalizeHubUrl(hubUrl)),
+      hubUrl: normalized.hubUrl,
+      hubWsUrl: resolveHubWsUrl(normalized.hubUrl),
+      remoteAuthToken: normalized.remoteAuthToken,
     };
     writeShellSnapshot(snapshot);
   }
@@ -115,8 +150,24 @@ export async function ensureMobileShellForChat(): Promise<SatelliteShellApi> {
   return shell;
 }
 
-/** 测试 Hub WebSocket 是否可达 */
-export function testHubConnection(hubWsUrl: string, timeoutMs = 5000): Promise<void> {
+/** 测试 Hub REST 是否可达 */
+export async function testHubConnection(hubUrl: string, remoteAuthToken: string): Promise<void> {
+  const normalized = normalizeHubUrl(hubUrl);
+  const token = remoteAuthToken.trim();
+  if (hubRequiresRemoteAuth(normalized, token)) {
+    const res = await fetch(`${normalized}/api/health`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
+    }
+    return;
+  }
+  const wsUrl = resolveHubWsUrl(normalized);
+  await testHubWebSocket(wsUrl);
+}
+
+function testHubWebSocket(hubWsUrl: string, timeoutMs = 5000): Promise<void> {
   return new Promise((resolve, reject) => {
     let settled = false;
     const ws = new WebSocket(hubWsUrl);

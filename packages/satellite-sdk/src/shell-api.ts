@@ -1,3 +1,5 @@
+import type { HubFetch, RemoteAuthCredentials } from "./remote-auth.ts";
+
 /** 与 @freeanima/sap-contract SapInstanceStore 对齐 */
 export type SapInstanceStore = {
   load(): Promise<string | null> | string | null;
@@ -24,6 +26,10 @@ export type SatelliteShellApi = {
   isNativeShell?: boolean;
   hubUrl: string;
   hubWsUrl: string;
+  /** 非 loopback Hub 时的 Bearer / SAP connect 凭证 */
+  remoteAuth?: RemoteAuthCredentials;
+  /** 带 Bearer 的 Hub REST fetch */
+  hubFetch?: HubFetch;
   /** companion overlay/settings；其他前端为 null */
   windowRole?: CompanionWindowRole | null;
   /** companion sidecar HTTP 根；其他前端为 null */

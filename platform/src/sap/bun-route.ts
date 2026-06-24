@@ -1,9 +1,11 @@
 import type { ServerWebSocket } from "bun";
 import type { SapServerDeps } from "./ws-server.ts";
 import { attachSapWebSocket } from "./ws-server.ts";
+import { shouldBypassRemoteAuth } from "../../connectors/webui/remote-auth.ts";
 
 type SapSocketData = {
   handler: ReturnType<typeof attachSapWebSocket>;
+  bypassRemoteAuth: boolean;
 };
 
 export function createSapBunHandlers(deps: SapServerDeps): {
@@ -20,21 +22,36 @@ export function createSapBunHandlers(deps: SapServerDeps): {
       if (url.pathname !== "/sap/v1") {
         return undefined;
       }
-      if (server.upgrade(req, { data: { handler: null as unknown as SapSocketData["handler"] } })) {
+      const remoteAddress =
+        typeof server.requestIP === "function"
+          ? (server.requestIP(req)?.address ?? undefined)
+          : undefined;
+      if (
+        server.upgrade(req, {
+          data: {
+            handler: null as unknown as SapSocketData["handler"],
+            bypassRemoteAuth: shouldBypassRemoteAuth(req, remoteAddress),
+          },
+        })
+      ) {
         return undefined;
       }
       return new Response("Expected WebSocket upgrade", { status: 426 });
     },
     websocket: {
       open(ws) {
-        ws.data.handler = attachSapWebSocket(deps, {
-          send(data) {
-            ws.send(data);
+        ws.data.handler = attachSapWebSocket(
+          deps,
+          {
+            send(data) {
+              ws.send(data);
+            },
+            close(code, reason) {
+              ws.close(code, reason);
+            },
           },
-          close(code, reason) {
-            ws.close(code, reason);
-          },
-        });
+          { bypassRemoteAuth: ws.data.bypassRemoteAuth },
+        );
       },
       message(ws, message) {
         if (typeof message !== "string") return;

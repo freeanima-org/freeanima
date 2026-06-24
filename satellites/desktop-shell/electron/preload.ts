@@ -1,10 +1,19 @@
 import { contextBridge, ipcRenderer } from "electron";
 import { resolveHubWsUrl, type SapInstanceStore } from "@freeanima/sap-contract";
-import type { CompanionWindowRole, SatelliteShellApi } from "@freeanima/satellite-sdk";
+import {
+  createBearerFetch,
+  type CompanionWindowRole,
+  type SatelliteShellApi,
+} from "@freeanima/satellite-sdk";
 
 const hubUrlArg = process.argv.find((v) => v.startsWith("--hub-url="));
 const hubUrl = hubUrlArg?.slice("--hub-url=".length) ?? "http://127.0.0.1:2658";
 const hubWsUrl = resolveHubWsUrl(hubUrl);
+
+const remoteAuthTokenArg = process.argv.find((v) => v.startsWith("--remote-auth-token="));
+const remoteAuthToken = remoteAuthTokenArg?.slice("--remote-auth-token=".length) ?? "";
+const remoteAuth = remoteAuthToken ? { token: remoteAuthToken } : undefined;
+const hubFetch = remoteAuthToken ? createBearerFetch(remoteAuthToken, hubUrl) : undefined;
 
 const apiOriginArg = process.argv.find((v) => v.startsWith("--companion-api-origin="));
 const windowRoleArg = process.argv.find((v) => v.startsWith("--companion-window="));
@@ -28,9 +37,12 @@ const shell: SatelliteShellApi = {
   isElectron: true,
   hubUrl,
   hubWsUrl,
+  remoteAuth,
+  hubFetch,
   windowRole,
   apiOrigin,
   createFileInstanceStore,
+  openHubSettings: () => ipcRenderer.invoke("shell:show-hub-settings"),
   setClickThrough: (ignore) => ipcRenderer.invoke("shell:set-clickthrough", ignore),
   setPointerActive: (active) => ipcRenderer.invoke("shell:set-pointer-active", active),
   moveWindow: (x, y) => ipcRenderer.invoke("shell:move-window", x, y),

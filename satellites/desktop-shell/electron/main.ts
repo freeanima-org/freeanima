@@ -23,12 +23,15 @@ import { registerInstanceStoreIpc } from "./instance-store-ipc.ts";
 import { attachWindowDevTools, toggleDevToolsForFocusedWindow } from "./devtools.ts";
 import { logLine } from "./log.ts";
 import { defaultHubUrl } from "./paths.ts";
+import { readShellClientConfig } from "./shell-client-store.ts";
+import { hubSettingsDir, registerShellClientIpc } from "./shell-client-ipc.ts";
 import { startStaticServer, startWebuiStaticServer } from "./static-server.ts";
 
 const SHELL_ROOT = join(__dirname, "..");
 
 let companionWindow: BrowserWindow | null = null;
 let settingsWindow: BrowserWindow | null = null;
+let hubSettingsWindow: BrowserWindow | null = null;
 let chatWindow: BrowserWindow | null = null;
 let chamberWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
@@ -41,7 +44,15 @@ let chamberStaticUrl = "";
 let clickthrough = false;
 let pointerActive = false;
 
-const hubUrl = defaultHubUrl();
+function resolveHubClient(): { hubUrl: string; remoteAuthToken: string } {
+  const saved = readShellClientConfig();
+  if (saved) {
+    return { hubUrl: saved.hubUrl, remoteAuthToken: saved.remoteAuthToken };
+  }
+  return { hubUrl: defaultHubUrl(), remoteAuthToken: "" };
+}
+
+let hubClient = resolveHubClient();
 
 const devToolsOnStart = !app.isPackaged || process.env.DESKTOP_SHELL_DEVTOOLS === "1";
 
@@ -71,7 +82,11 @@ function iconPath(name: string): string {
 }
 
 function shellArgs(extra: string[]): string[] {
-  return [`--hub-url=${hubUrl}`, ...extra];
+  const args = [`--hub-url=${hubClient.hubUrl}`];
+  if (hubClient.remoteAuthToken) {
+    args.push(`--remote-auth-token=${hubClient.remoteAuthToken}`);
+  }
+  return [...args, ...extra];
 }
 
 function configureCompanionRuntimePaths(): void {
@@ -163,6 +178,40 @@ function createCompanionWindow(url: string): BrowserWindow {
   });
   startCompanionCursorPoll(() => companionWindow, applyClickthrough);
   return win;
+}
+
+function createHubSettingsWindow(): BrowserWindow {
+  const win = new BrowserWindow({
+    width: 480,
+    height: 560,
+    show: false,
+    center: true,
+    autoHideMenuBar: true,
+    title: "FreeAnima Hub 设置",
+    webPreferences: {
+      preload: join(app.getAppPath(), "electron-dist", "hub-settings-preload.cjs"),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+  void win.loadFile(join(hubSettingsDir(), "index.html"));
+  win.once("ready-to-show", () => {
+    win.show();
+    win.focus();
+  });
+  return win;
+}
+
+function openHubSettingsWindow(): void {
+  if (hubSettingsWindow && !hubSettingsWindow.isDestroyed()) {
+    hubSettingsWindow.show();
+    hubSettingsWindow.focus();
+    return;
+  }
+  hubSettingsWindow = createHubSettingsWindow();
+  hubSettingsWindow.on("closed", () => {
+    hubSettingsWindow = null;
+  });
 }
 
 function settingsWindowSize(): { width: number; height: number } {
@@ -309,6 +358,10 @@ function createTray(): void {
       click: () => toggleDevToolsForFocusedWindow(),
     },
     {
+      label: "Hub 设置…",
+      click: () => openHubSettingsWindow(),
+    },
+    {
       label: "伴侣设置…",
       click: () => {
         if (settingsWindow && !settingsWindow.isDestroyed()) {
@@ -346,7 +399,7 @@ async function startChatStatic(): Promise<void> {
     dist,
     CHAT_STATIC_PORT,
     CHAT_STATIC_PORT_ATTEMPTS,
-    { appId: "chat", hubWsUrl: resolveHubWsUrl(hubUrl) },
+    { appId: "chat", hubWsUrl: resolveHubWsUrl(hubClient.hubUrl) },
   );
   chatStaticServer = server;
   chatStaticUrl = url;
@@ -361,7 +414,7 @@ async function startChamberStatic(): Promise<void> {
     dist,
     CHAMBER_STATIC_PORT,
     CHAMBER_STATIC_PORT_ATTEMPTS,
-    { hubOrigin: hubUrl },
+    { hubOrigin: hubClient.hubUrl },
   );
   chamberStaticServer = server;
   chamberStaticUrl = url;
@@ -375,6 +428,7 @@ async function bootstrap(): Promise<void> {
   logLine("desktop-shell main enter");
 
   registerInstanceStoreIpc();
+  registerShellClientIpc(openHubSettingsWindow);
   registerCompanionHostIpc(
     {
       getCompanionWindow: () => companionWindow,
@@ -399,7 +453,7 @@ async function bootstrap(): Promise<void> {
     await startChatStatic();
     await startChamberStatic();
     logLine(
-      `companion server ${serverHandle.url}; chat static ${chatStaticUrl}; chamber static ${chamberStaticUrl}; hub ${hubUrl}`,
+      `companion server ${serverHandle.url}; chat static ${chatStaticUrl}; chamber static ${chamberStaticUrl}; hub ${hubClient.hubUrl}`,
     );
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
@@ -423,6 +477,9 @@ async function bootstrap(): Promise<void> {
   companionWindow = createCompanionWindow(serverHandle.url);
   settingsWindow = createSettingsWindow(serverHandle.url);
   createTray();
+  if (!readShellClientConfig()) {
+    openHubSettingsWindow();
+  }
   logLine("desktop-shell setup complete");
 }
 

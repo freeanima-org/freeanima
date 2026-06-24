@@ -2,6 +2,7 @@ export * from "./schemas/config.ts";
 export * from "./schemas/llm-config.ts";
 export * from "./schemas/embedding.ts";
 export * from "./schemas/tunnel.ts";
+export * from "./schemas/remote-auth.ts";
 export * from "./llm-config.ts";
 export * from "./compression-config.ts";
 export * from "./paths.ts";

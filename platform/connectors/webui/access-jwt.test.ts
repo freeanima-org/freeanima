@@ -74,7 +74,7 @@ describe("access-jwt", () => {
     expect(result).toBeNull();
   });
 
-  test("CF connecting IP without JWT returns 401", async () => {
+  test("loopback host with CF headers still bypasses when peer is loopback", async () => {
     const verifier = createAccessJwtVerifier({
       teamName: "myteam",
       audience: "aud",
@@ -82,6 +82,20 @@ describe("access-jwt", () => {
       enabled: true,
     });
     const req = new Request("http://127.0.0.1:2658/api/health", {
+      headers: { "cf-connecting-ip": "1.2.3.4" },
+    });
+    const result = await verifier.verifyRequest(req, "127.0.0.1");
+    expect(result).toBeNull();
+  });
+
+  test("public host via tunnel without Access JWT returns 401", async () => {
+    const verifier = createAccessJwtVerifier({
+      teamName: "myteam",
+      audience: "aud",
+      allowedEmails: ["you@gmail.com"],
+      enabled: true,
+    });
+    const req = new Request("https://anima.freetrace.me/api/health", {
       headers: { "cf-connecting-ip": "1.2.3.4" },
     });
     const result = await verifier.verifyRequest(req, "127.0.0.1");

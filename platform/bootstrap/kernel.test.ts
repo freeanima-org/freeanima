@@ -18,6 +18,7 @@ describe("service-bootstrap kernel", () => {
           chat: { chain: [{ provider: "main", model: "gpt-4" }] },
         },
       },
+      remote_auth: { token: "test-remote-auth-token-min16" },
     });
     const kernel = createServiceKernel(config);
     expect(kernel.hookRegistry).toBeDefined();
