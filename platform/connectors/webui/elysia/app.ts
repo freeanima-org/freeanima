@@ -1,7 +1,7 @@
 import { Elysia, NotFoundError } from "elysia";
-import { WEBUI_BASE_PATH } from "../api/constants.ts";
 import { ApiHandlerError, apiErrorBody } from "../handlers/errors.ts";
 import { assertNotShuttingDown } from "./context.ts";
+import { applyCorsHeaders, corsPreflightResponse } from "./cors.ts";
 import { acpRoutes } from "./routes/acp.ts";
 import { credentialsRoutes } from "./routes/credentials.ts";
 import { emailRoutes } from "./routes/email.ts";
@@ -42,15 +42,24 @@ export const apiApp = new Elysia({ prefix: "/api" })
 
 export type App = typeof apiApp;
 
-const WEBUI_CHAT_PATH = `${WEBUI_BASE_PATH}/chamber/dashboard`;
-
-/** 仅 API + 根重定向；SPA 由 Bun.serve routes 提供（见 webui-server.ts） */
+/** Hub HTTP：仅 REST API（UI 由 desktop / mobile 客户端 bundled 提供） */
 export function createApiApp() {
   return new Elysia()
-    .onBeforeHandle(({ path }) => {
+    .onBeforeHandle(({ path, request, set }) => {
+      if (request.method === "OPTIONS" && path.startsWith("/api")) {
+        const preflight = corsPreflightResponse(request.headers.get("Origin"));
+        if (preflight) {
+          set.status = 204;
+          return preflight;
+        }
+      }
       if (path.startsWith("/api")) assertNotShuttingDown();
     })
-    .onError(({ error, set }) => {
+    .onAfterHandle(({ request, set }) => {
+      applyCorsHeaders(set.headers, request.headers.get("Origin"));
+    })
+    .onError(({ error, set, request }) => {
+      applyCorsHeaders(set.headers, request.headers.get("Origin"));
       if (error instanceof ApiHandlerError) {
         set.status = error.status;
         return apiErrorBody(error);
@@ -66,11 +75,6 @@ export function createApiApp() {
       set.status = 500;
       return { error: error instanceof Error ? error.message : "Internal Server Error" };
     })
-    .get("/", ({ request }) => {
-      const url = new URL(request.url);
-      return Response.redirect(`${url.origin}${WEBUI_CHAT_PATH}`, 302);
-    })
+    .get("/", () => ({ service: "freeanima", api: "/api" }))
     .use(apiApp);
 }
-
-export { WEBUI_BASE_PATH, WEBUI_CHAT_PATH };

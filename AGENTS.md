@@ -5,7 +5,7 @@
 
 ## Global view
 
-`freeanima` (FreeAnima) is a **TypeScript-only** agent runtime: `anima service` starts the Bun service (WebUI + tRPC + Gateway + engine).
+`freeanima` (FreeAnima) is a **TypeScript-only** agent runtime: `anima service` starts the Bun Hub（REST `/api` + SAP `/sap/v1` + engine）；UI 由 desktop-shell / app-mobile bundled 提供。
 
 | Capability     | Highlights                                                                                                                                          |
 | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -75,8 +75,8 @@ bun run test:changed # local / pre-commit (unit changed only)
 bun run test:unit # all unit tests
 bun run test:integration # integration (tests/integration/)
 bun run test # unit + integration in parallel
-bun run service start --foreground # foreground block (logs to stdout)
-bun run service start --dev # WebUI source watch rebuild (not HMR; refresh page after frontend edits)
+bun run service start --foreground # Hub API + SAP（:2658）
+bun run dev:webui # 本地 WebUI 静态开发（需 Hub 已运行）
 anima credential list # credential paths; values in pass
 
 # PG schema changes (must generate snapshot.json; see .agent/rules/coding.md)
@@ -84,9 +84,9 @@ DATABASE_URL="…" bun run --filter @freeanima/core db:generate
 DATABASE_URL="…" bun run --filter @freeanima/core db:migrate
 ```
 
-- WebUI Chamber: `http://127.0.0.1:2658/chamber/dashboard`
-- Chat satellite: `http://127.0.0.1:4174`
-- Pair-programming satellite: `http://127.0.0.1:4173`
+- Hub API：`http://127.0.0.1:2658/api`（`anima service` 仅托管后端）
+- 桌面/移动客户端 bundled：会客厅 + 卧室 UI 在 `desktop-shell` / `app-mobile` 内
+- WebUI 本地开发：`bun run dev:webui` → `http://127.0.0.1:4175/webui/chamber/dashboard?embed=1`
 - Release: [`.agent/rules/release.md`](.agent/rules/release.md)
 - PG ops (install, backup): [`docs/guide/database.md`](docs/guide/database.md)
 - Remote access (Cloudflare Tunnel): [`docs/guide/remote-access.md`](docs/guide/remote-access.md)

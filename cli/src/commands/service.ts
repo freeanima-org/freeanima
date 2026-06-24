@@ -15,7 +15,6 @@ export function registerServiceCommand(program: Command): void {
         .choices([...SERVICE_ACTIONS]),
     )
     .option("--foreground", "Run serve() in foreground (debug)")
-    .option("--dev", "WebUI dev mode (source watch rebuild, refresh page to apply)")
     .option(
       "--host <host>",
       "Listen address (comma-separated for multiple binds)",
@@ -30,21 +29,15 @@ systemd (default):
   and runs systemctl --user enable --now anima
 `,
     )
-    .action(
-      async (
-        action: string,
-        opts: { foreground?: boolean; dev?: boolean; host: string; port: string },
-      ) => {
-        const args: ServiceArgs = {
-          action,
-          foreground: Boolean(opts.foreground),
-          dev: Boolean(opts.dev),
-          host: opts.host,
-          port: parseInt(opts.port, 10),
-        };
-        await runServiceCommand(args);
-      },
-    );
+    .action(async (action: string, opts: { foreground?: boolean; host: string; port: string }) => {
+      const args: ServiceArgs = {
+        action,
+        foreground: Boolean(opts.foreground),
+        host: opts.host,
+        port: parseInt(opts.port, 10),
+      };
+      await runServiceCommand(args);
+    });
 }
 
 export { SERVICE_ACTIONS };

@@ -72,7 +72,7 @@ export function printServiceRunningStatus(opts: {
     connected: boolean | null;
     haConnections: number | null;
     publicUrl: string | null;
-    chamberUrl: string | null;
+    apiUrl: string | null;
   } | null;
 }): void {
   const api = opts.body ?? {};
@@ -96,14 +96,12 @@ export function printServiceRunningStatus(opts: {
   printField("process", runtimeParts.join(" · "));
   for (const h of parseBindHosts(opts.host)) {
     printField("http", `http://${h}:${opts.port}`);
-    printField("webui", `http://${h}:${opts.port}/webui`);
+    printField("api", `http://${h}:${opts.port}/api`);
   }
 
-  const apiTunnel = opts.body?.tunnel as
-    | { public_url?: string; chamber_url?: string; webui_url?: string }
-    | undefined;
+  const apiTunnel = opts.body?.tunnel as { public_url?: string; api_url?: string } | undefined;
   const tunnelPublic = opts.tunnel?.publicUrl ?? apiTunnel?.public_url ?? null;
-  const tunnelChamber = opts.tunnel?.chamberUrl ?? apiTunnel?.chamber_url ?? null;
+  const tunnelApi = opts.tunnel?.apiUrl ?? apiTunnel?.api_url ?? null;
   if (tunnelPublic) {
     printSection("tunnel");
     if (opts.tunnel) {
@@ -117,8 +115,7 @@ export function printServiceRunningStatus(opts: {
       );
     }
     printField("public", tunnelPublic);
-    if (tunnelChamber) printField("chamber", tunnelChamber);
-    if (apiTunnel?.webui_url) printField("webui", apiTunnel.webui_url);
+    if (tunnelApi) printField("api", tunnelApi);
   }
 
   const config = (api.config as Record<string, unknown>) ?? {};

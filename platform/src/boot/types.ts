@@ -1,25 +1,31 @@
 import type { AppRuntime } from "../runtime/app-runtime.ts";
 
-export type WebuiServerHandle = {
+export type HttpServerHandle = {
   close: () => void | Promise<void>;
 };
 
-export type WebuiHooks = {
+/** @deprecated 使用 HttpServerHandle */
+export type WebuiServerHandle = HttpServerHandle;
+
+export type HttpHooks = {
   start: (
     hosts: string[],
     port: number,
-    opts?: { development?: boolean },
-  ) => Promise<WebuiServerHandle[]>;
-  close: (handles: WebuiServerHandle[], timeoutMs?: number) => Promise<void>;
+    opts?: Record<string, never>,
+  ) => Promise<HttpServerHandle[]>;
+  close: (handles: HttpServerHandle[], timeoutMs?: number) => Promise<void>;
   waitForDrain: (app: AppRuntime, maxMs: number) => Promise<void>;
 };
 
+/** @deprecated 使用 HttpHooks */
+export type WebuiHooks = HttpHooks;
+
 export type ServeOptions = {
-  /** CLI foreground blocking run (systemd/detached child also passes true; not the same as WebUI dev) */
+  /** CLI foreground blocking run (systemd/detached child also passes true) */
   foreground?: boolean;
-  /** CLI --dev：WebUI Bun fullstack HMR */
-  webuiDev?: boolean;
-  webui?: WebuiHooks;
+  http?: HttpHooks;
+  /** @deprecated 使用 http */
+  webui?: HttpHooks;
   /** Called after HTTP listen and status phase=ready (before async integrations). */
   onReady?: () => void | Promise<void>;
 };

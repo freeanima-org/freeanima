@@ -21,7 +21,7 @@ export type {
   EmbeddedSidecarDesktopProfile,
   FrontendDesktopExport,
   FrontendMobileExport,
-  HubRemoteDesktopProfile,
+  HubRestBundledDesktopProfile,
   MobileProfile,
   SapDirectDesktopProfile,
   WindowKind,

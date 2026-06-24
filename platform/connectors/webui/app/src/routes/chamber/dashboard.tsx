@@ -328,12 +328,12 @@ function TunnelLinksCard({ tunnel }: { tunnel: NonNullable<ServiceStatus["tunnel
               {m.webui_chamber_dashboard_tunnel_chamber()}:{" "}
             </span>
             <a
-              href={tunnel.chamber_url}
+              href={tunnel.api_url}
               className="link link-primary font-mono text-xs"
               target="_blank"
               rel="noreferrer"
             >
-              {tunnel.chamber_url}
+              {tunnel.api_url}
             </a>
           </div>
         </div>

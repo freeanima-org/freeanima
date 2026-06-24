@@ -141,6 +141,7 @@
     "frontends/chamber": {
       "name": "@freeanima/frontend-chamber",
       "dependencies": {
+        "@freeanima/platform": "workspace:*",
         "@freeanima/satellite-sdk": "workspace:*",
       },
       "devDependencies": {

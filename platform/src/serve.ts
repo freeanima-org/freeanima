@@ -8,7 +8,6 @@ import {
 } from "@freeanima/platform/logging";
 import { REPO_ROOT } from "./runtime/index.ts";
 import { DEFAULT_BIND_HOST, parseBindHosts } from "./bind-hosts.ts";
-import { resolveWebuiDevMode } from "./webui-dev-mode.ts";
 import { getAppRuntime } from "./runtime/runtime-context.ts";
 import { bootConfigPhase } from "./boot/config-phase.ts";
 import { bootPersistencePhase } from "./boot/persistence-phase.ts";
@@ -17,12 +16,11 @@ import { bootRuntimePhase } from "./boot/runtime-phase.ts";
 import { startAsyncIntegrations } from "./boot/integrations-phase.ts";
 import { gracefulShutdown } from "./boot/shutdown.ts";
 import { startupLog, writeStatusFile } from "./boot/status.ts";
-import type { ServeOptions, WebuiServerHandle } from "./boot/types.ts";
+import type { HttpServerHandle, ServeOptions } from "./boot/types.ts";
 import type { AppRuntime } from "./runtime/app-runtime.ts";
 import type { EnginePhaseResult } from "./boot/engine-phase.ts";
 
-export type { ServeOptions, WebuiHooks, WebuiServerHandle } from "./boot/types.ts";
-export { resolveWebuiDevMode } from "./webui-dev-mode.ts";
+export type { ServeOptions, HttpHooks, HttpServerHandle } from "./boot/types.ts";
 
 async function defaultWaitForDrain(app: AppRuntime, maxMs: number): Promise<void> {
   await Promise.race([
@@ -77,9 +75,10 @@ export async function serve(
   markStartupPhase(true);
   writeStatusFile(statusHost, port, "starting");
 
-  let servers: WebuiServerHandle[] = [];
+  let servers: HttpServerHandle[] = [];
   let enginePhase: EnginePhaseResult | null = null;
   let cronInitialized = false;
+  const httpHooks = opts.http ?? opts.webui;
   const platformsRef: {
     list: import("@freeanima/platform/connectors/gateway").PlatformAdapter[];
   } = { list: [] };
@@ -106,16 +105,12 @@ export async function serve(
     );
     cronInitialized = true;
 
-    const webuiDev = resolveWebuiDevMode(opts.webuiDev);
-    if (opts.webui) {
-      startupLog(
-        webuiDev
-          ? "Starting WebUI HTTP (dev build + watch, static serving)…"
-          : "Starting WebUI HTTP (production bundle, hash cache)…",
-      );
-      servers = await opts.webui.start(bindHosts, port, { development: webuiDev });
+    const http = httpHooks;
+    if (http) {
+      startupLog("Starting Hub HTTP (API + SAP)…");
+      servers = await http.start(bindHosts, port);
     } else {
-      startupLog("WebUI hooks not injected; skipping HTTP listen");
+      startupLog("HTTP hooks not injected; skipping HTTP listen");
     }
 
     writeStatusFile(statusHost, port, "ready");
@@ -158,9 +153,10 @@ export async function serve(
       acp,
       platforms: platformsRef.list,
       cronInitialized,
-      webui: opts.webui,
+      http: httpHooks,
+      webui: httpHooks,
       servers,
-      waitForDrain: opts.webui?.waitForDrain ?? defaultWaitForDrain,
+      waitForDrain: httpHooks?.waitForDrain ?? defaultWaitForDrain,
     });
   };
 

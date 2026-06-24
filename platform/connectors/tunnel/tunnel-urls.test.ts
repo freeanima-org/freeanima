@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { buildTunnelSnapshot } from "./tunnel-urls.ts";
 
 describe("tunnel-urls", () => {
-  test("buildTunnelSnapshot returns public and chamber URLs", () => {
+  test("buildTunnelSnapshot returns public and API URLs", () => {
     const snap = buildTunnelSnapshot({
       enabled: true,
       hostname: "anima.example.com",
@@ -11,8 +11,7 @@ describe("tunnel-urls", () => {
       enabled: true,
       hostname: "anima.example.com",
       public_url: "https://anima.example.com",
-      webui_url: "https://anima.example.com/webui",
-      chamber_url: "https://anima.example.com/webui/chamber/dashboard",
+      api_url: "https://anima.example.com/api",
     });
   });
 

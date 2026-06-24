@@ -4,20 +4,33 @@ import { join } from "node:path";
 const PKG_DIR = import.meta.dir;
 const REPO_ROOT = join(PKG_DIR, "..", "..");
 const CHAT_DIR = join(REPO_ROOT, "satellites", "chat");
+const CHAMBER_DIR = join(REPO_ROOT, "frontends", "chamber");
 const WWW_DIR = join(PKG_DIR, "www");
 const CHAT_WWW = join(WWW_DIR, "chat");
+const WEBUI_WWW = join(WWW_DIR, "webui");
 const SETTINGS_WWW = join(WWW_DIR, "settings");
+const HOME_WWW = join(WWW_DIR, "home");
+const CHAMBER_ENTRY_WWW = join(WEBUI_WWW, "chamber", "dashboard");
 
-function runChatBuild(): string {
-  const result = Bun.spawnSync(["bun", "build.ts"], {
-    cwd: CHAT_DIR,
+function runSpawn(cwd: string, script: string): void {
+  const result = Bun.spawnSync(["bun", script], {
+    cwd,
     stdout: "pipe",
     stderr: "pipe",
   });
   if (result.exitCode !== 0) {
-    throw new Error(`chat build failed:\n${result.stderr.toString()}`);
+    throw new Error(`${script} failed in ${cwd}:\n${result.stderr.toString()}`);
   }
+}
+
+function runChatBuild(): string {
+  runSpawn(CHAT_DIR, "build.ts");
   return join(CHAT_DIR, "dist");
+}
+
+function runChamberBuild(): string {
+  runSpawn(CHAMBER_DIR, "build.ts");
+  return join(CHAMBER_DIR, "dist");
 }
 
 function rewriteAssetPaths(html: string, prefix: string): string {
@@ -26,7 +39,7 @@ function rewriteAssetPaths(html: string, prefix: string): string {
     .replace(/(\s(?:href|src)=["'])\.\/([^"']+)(["'])/g, `$1${prefix}$2$3`);
 }
 
-function extractChatEntryScript(html: string): string | null {
+function extractEntryScript(html: string): string | null {
   const match = html.match(/<script[^>]+src=["']([^"']+\.js)["']/);
   return match?.[1] ?? null;
 }
@@ -47,24 +60,50 @@ async function bundleBrowserEntry(entry: string, outdir: string, outfile: string
   }
 }
 
+function injectWebuiBridge(htmlRaw: string, entryPath: string, bridgeFile: string): string {
+  return rewriteAssetPaths(htmlRaw, "/webui/")
+    .replace(
+      /content="width=device-width, initial-scale=1\.0"/,
+      'content="width=device-width, initial-scale=1.0, viewport-fit=cover"',
+    )
+    .replace(/<script[^>]+src=["'][^"']+\.js["'][^>]*><\/script>/, "")
+    .replace("</head>", `<script type="module" src="${bridgeFile}"></script></head>`)
+    .replace("<html", `<html data-webui-entry="${entryPath}"`);
+}
+
 export async function buildAppMobile(): Promise<string> {
   const chatDist = runChatBuild();
+  const chamberDist = runChamberBuild();
 
   rmSync(WWW_DIR, { recursive: true, force: true });
   mkdirSync(CHAT_WWW, { recursive: true });
+  mkdirSync(WEBUI_WWW, { recursive: true });
   mkdirSync(SETTINGS_WWW, { recursive: true });
+  mkdirSync(HOME_WWW, { recursive: true });
 
   cpSync(chatDist, CHAT_WWW, { recursive: true });
+  cpSync(chamberDist, WEBUI_WWW, { recursive: true });
 
   const chatHtmlRaw = readFileSync(join(CHAT_WWW, "index.html"), "utf-8");
-  const entryScript = extractChatEntryScript(chatHtmlRaw);
-  if (!entryScript) {
+  const chatEntryScript = extractEntryScript(chatHtmlRaw);
+  if (!chatEntryScript) {
     throw new Error("chat dist index.html 缺少入口 script");
   }
-  const entryFile = entryScript.replace(/^\//, "");
-  const entryPath = `./${entryFile}`;
+  const chatEntryPath = `./${chatEntryScript.replace(/^\//, "")}`;
+
+  const webuiHtmlRaw = readFileSync(join(WEBUI_WWW, "index.html"), "utf-8");
+  const webuiEntryScript = extractEntryScript(webuiHtmlRaw);
+  if (!webuiEntryScript) {
+    throw new Error("chamber dist index.html 缺少入口 script");
+  }
+  const webuiEntryPath = `/webui/${webuiEntryScript.replace(/^\//, "").replace(/^webui\//, "")}`;
 
   await bundleBrowserEntry(join(PKG_DIR, "src", "bridge-init.ts"), CHAT_WWW, "bridge-init.js");
+  await bundleBrowserEntry(
+    join(PKG_DIR, "src", "bridge-init-chamber.ts"),
+    WEBUI_WWW,
+    "bridge-init.js",
+  );
   await bundleBrowserEntry(join(PKG_DIR, "src", "bootstrap.ts"), WWW_DIR, "bootstrap.js");
   await bundleBrowserEntry(
     join(PKG_DIR, "src", "settings", "settings.ts"),
@@ -74,6 +113,8 @@ export async function buildAppMobile(): Promise<string> {
 
   cpSync(join(PKG_DIR, "src", "settings", "settings.css"), join(SETTINGS_WWW, "settings.css"));
   cpSync(join(PKG_DIR, "src", "settings", "index.html"), join(SETTINGS_WWW, "index.html"));
+  cpSync(join(PKG_DIR, "src", "home", "home.css"), join(HOME_WWW, "home.css"));
+  cpSync(join(PKG_DIR, "src", "home", "index.html"), join(HOME_WWW, "index.html"));
 
   const chatHtml = rewriteAssetPaths(chatHtmlRaw, "./")
     .replace(
@@ -82,8 +123,19 @@ export async function buildAppMobile(): Promise<string> {
     )
     .replace(/<script[^>]+src=["'][^"']+\.js["'][^>]*><\/script>/, "")
     .replace("</head>", `<script type="module" src="./bridge-init.js"></script></head>`)
-    .replace("<html", `<html data-chat-entry="${entryPath}"`);
+    .replace("<html", `<html data-chat-entry="${chatEntryPath}"`);
   writeFileSync(join(CHAT_WWW, "index.html"), chatHtml);
+
+  const webuiHtml = injectWebuiBridge(webuiHtmlRaw, webuiEntryPath, "/webui/bridge-init.js");
+  writeFileSync(join(WEBUI_WWW, "index.html"), webuiHtml);
+
+  mkdirSync(CHAMBER_ENTRY_WWW, { recursive: true });
+  const chamberDashboardHtml = injectWebuiBridge(
+    webuiHtmlRaw,
+    webuiEntryPath,
+    "/webui/bridge-init.js",
+  );
+  writeFileSync(join(CHAMBER_ENTRY_WWW, "index.html"), chamberDashboardHtml);
 
   const bootstrapHtml = `<!doctype html>
 <html lang="zh-CN">

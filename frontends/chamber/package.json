@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./build": "./build.ts",
     "./manifest": "./src/exports/manifest.ts",
     "./desktop": "./src/exports/desktop.ts",
     "./mobile": "./src/exports/mobile.ts"

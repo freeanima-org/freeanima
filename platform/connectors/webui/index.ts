@@ -1,7 +1,11 @@
 export {
+  startApiHttpServer,
+  startApiHttpServers,
   startWebuiHttpServer,
   startWebuiHttpServers,
   WEBUI_BASE_PATH,
+  type ApiServerHandle,
+  type ApiServerOptions,
   type WebuiServerHandle,
   type WebuiServerOptions,
 } from "./webui-server.ts";

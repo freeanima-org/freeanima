@@ -12,6 +12,8 @@ const MIME: Record<string, string> = {
   ".woff2": "font/woff2",
 };
 
+const WEBUI_PREFIX = "/webui";
+
 function isAddrInUse(error: unknown): boolean {
   return (
     typeof error === "object" &&
@@ -26,6 +28,15 @@ export type StaticServerConfig = {
   hubWsUrl: string;
 };
 
+function resolveWebuiAssetPath(pathname: string): string {
+  let rel = pathname.slice(WEBUI_PREFIX.length);
+  if (rel.startsWith("/")) rel = rel.slice(1);
+  if (rel === "" || !rel.includes(".")) {
+    return "index.html";
+  }
+  return rel;
+}
+
 function createStaticHandler(
   distDir: string,
   config?: StaticServerConfig,
@@ -39,6 +50,35 @@ function createStaticHandler(
       return;
     }
     const rel = pathname === "/" ? "/index.html" : pathname;
+    const filePath = join(distDir, rel);
+    if (existsSync(filePath) && statSync(filePath).isFile()) {
+      const ext = extname(filePath);
+      res.setHeader("Content-Type", MIME[ext] ?? "application/octet-stream");
+      res.end(readFileSync(filePath));
+      return;
+    }
+    const indexPath = join(distDir, "index.html");
+    if (existsSync(indexPath)) {
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      res.end(readFileSync(indexPath));
+      return;
+    }
+    res.statusCode = 404;
+    res.end("Not Found");
+  };
+}
+
+function createWebuiStaticHandler(
+  distDir: string,
+): (req: IncomingMessage, res: ServerResponse) => void {
+  return (req, res) => {
+    const pathname = new URL(req.url ?? "/", "http://127.0.0.1").pathname;
+    if (pathname !== WEBUI_PREFIX && !pathname.startsWith(`${WEBUI_PREFIX}/`)) {
+      res.statusCode = 404;
+      res.end("Not Found");
+      return;
+    }
+    const rel = resolveWebuiAssetPath(pathname);
     const filePath = join(distDir, rel);
     if (existsSync(filePath) && statSync(filePath).isFile()) {
       const ext = extname(filePath);
@@ -83,6 +123,29 @@ export async function startStaticServer(
   for (let i = 0; i < portAttempts; i++) {
     const port = portStart + i;
     const server = createServer(createStaticHandler(distDir, config));
+    try {
+      const boundPort = await listenStatic(server, port);
+      const url = `http://127.0.0.1:${boundPort}`;
+      return { server, url, port: boundPort };
+    } catch (error) {
+      server.close();
+      lastError = error;
+      if (isAddrInUse(error) && i < portAttempts - 1) continue;
+      throw error;
+    }
+  }
+  throw lastError ?? new Error(`无法在 ${portStart}–${portStart + portAttempts - 1} 找到可用端口`);
+}
+
+export async function startWebuiStaticServer(
+  distDir: string,
+  portStart: number,
+  portAttempts = 10,
+): Promise<{ server: Server; url: string; port: number }> {
+  let lastError: unknown;
+  for (let i = 0; i < portAttempts; i++) {
+    const port = portStart + i;
+    const server = createServer(createWebuiStaticHandler(distDir));
     try {
       const boundPort = await listenStatic(server, port);
       const url = `http://127.0.0.1:${boundPort}`;

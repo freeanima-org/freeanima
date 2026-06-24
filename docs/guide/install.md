@@ -89,9 +89,9 @@ anima service start --foreground # debug — logs to stdout
 anima service status
 ```
 
-Default bind: `127.0.0.1:2658`. Open chat chat (satellite):
+Default bind: `127.0.0.1:2658`（Hub API：`/api`，SAP：`/sap/v1`）。
 
-**http://127.0.0.1:4174**
+UI 使用 **desktop-shell** 或 **app-mobile**（会客厅 + 卧室 bundled）。WebUI 本地开发：`bun run dev:webui`。
 
 Schema migrations run automatically on startup when `database.url` is set.
 
@@ -141,11 +141,13 @@ Services:
 
 On first start, `docker/entrypoint.sh` copies `docker/config.docker.yaml` to `$FREEANIMA_HOME/config.yaml` if missing. Persistent volumes: `pgdata`, `anima_data`.
 
-### 3. Access WebUI
+### 3. Access Hub API
 
 ```text
-http://127.0.0.1:4174
+http://127.0.0.1:2658/api/health
 ```
+
+UI 请使用 desktop-shell 或 app-mobile 客户端。
 
 Hub Chamber: `http://127.0.0.1:2658/chamber/dashboard`
 

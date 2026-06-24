@@ -3,6 +3,7 @@ import { createRequire } from "node:module";
 import { join } from "node:path";
 import * as esbuild from "esbuild";
 
+import { buildChamberApp } from "@freeanima/frontend-chamber/build";
 import { buildChatApp } from "@freeanima/satellite-chat/build";
 import { buildCompanionApp } from "@freeanima/satellite-companion/build";
 import { getElectronMainBundleOptions, getElectronPreloadBundleOptions } from "./build-electron.ts";
@@ -13,6 +14,7 @@ async function stageVendor(): Promise<void> {
   await Promise.all([
     buildCompanionApp({ watch: true, minify: false }),
     buildChatApp({ watch: true, minify: false }),
+    buildChamberApp({ minify: false }),
   ]);
 }
 
