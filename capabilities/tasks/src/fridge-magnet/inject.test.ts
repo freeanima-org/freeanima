@@ -9,7 +9,7 @@ import {
   formatFridgeMagnetManifestPreview,
   stripFridgeMagnets,
   stripFridgeContextFromMessages,
-  stripLegacyUserFridgeBlocks,
+  stripLegacyFridgeBlocksFromMessages,
   manifestFridgeMagnetBoard,
   isFridgeContextAssistant,
 } from "./inject.ts";
@@ -164,14 +164,14 @@ describe("stripFridgeContextFromMessages", () => {
   });
 });
 
-describe("stripLegacyUserFridgeBlocks", () => {
+describe("stripLegacyFridgeBlocksFromMessages", () => {
   it("strips fridge magnet blocks from all user messages", () => {
     const messages: StoredMessage[] = [
       { role: "user", content: "```fridge-magnet\na: 1\n```\nFirst message" },
       { role: "assistant", content: "```fridge-magnet\nb: 2\n```\nReply" },
       { role: "user", content: "```fridge\nc: 3\n```\nSecond message" },
     ];
-    stripLegacyUserFridgeBlocks(messages);
+    stripLegacyFridgeBlocksFromMessages(messages);
     expect(messages[0]!.content).toBe("First message");
     expect(messages[1]!.content).toBe("```fridge-magnet\nb: 2\n```\nReply");
     expect(messages[2]!.content).toBe("Second message");

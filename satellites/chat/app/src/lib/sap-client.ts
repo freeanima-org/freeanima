@@ -22,7 +22,7 @@ function notifyConnection(state: SapConnectionState): void {
 }
 
 function resolveHubWsUrlFromEnv(): string {
-  const shell = window.satelliteShell ?? window.companionShell;
+  const shell = window.satelliteShell;
   if (shell?.hubWsUrl) return shell.hubWsUrl;
   const env = (import.meta as ImportMeta & { env?: { VITE_FREEANIMA_HUB_WS?: string } }).env;
   if (env?.VITE_FREEANIMA_HUB_WS?.trim()) return env.VITE_FREEANIMA_HUB_WS.trim();
@@ -44,9 +44,6 @@ export function getSapDirectClient(): SapDirectClient {
   }
   return directClient;
 }
-
-/** @deprecated 使用 getSapDirectClient */
-export const getSapRelayClient = getSapDirectClient;
 
 export function getSapConnectionState(): SapConnectionState {
   return connectionState;

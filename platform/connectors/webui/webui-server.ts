@@ -22,16 +22,10 @@ export type ApiServerOptions = {
   tunnelAccess?: TunnelAccessConfig;
 };
 
-/** @deprecated 使用 ApiServerOptions */
-export type WebuiServerOptions = ApiServerOptions;
-
 export type ApiServerHandle = {
   port: number;
   close: () => void | Promise<void>;
 };
-
-/** @deprecated 使用 ApiServerHandle */
-export type WebuiServerHandle = ApiServerHandle;
 
 function dispatchFetch(
   req: Request,
@@ -134,11 +128,5 @@ export async function startApiHttpServers(
   }
   return Promise.all(hosts.map((host) => startApiHttpServer(host, port, options)));
 }
-
-/** @deprecated 使用 startApiHttpServer */
-export const startWebuiHttpServer = startApiHttpServer;
-
-/** @deprecated 使用 startApiHttpServers */
-export const startWebuiHttpServers = startApiHttpServers;
 
 export { WEBUI_BASE_PATH };

@@ -13,9 +13,8 @@ export function resolveShellConnectAuthToken(hubUrl: string): string | undefined
   if (typeof window === "undefined") return undefined;
   const win = window as Window & {
     satelliteShell?: ShellRemoteAuthSource;
-    companionShell?: ShellRemoteAuthSource;
   };
-  const token = readShellToken(win.satelliteShell) ?? readShellToken(win.companionShell);
+  const token = readShellToken(win.satelliteShell);
   if (!token) return undefined;
   try {
     const withScheme = /^https?:\/\//i.test(hubUrl) ? hubUrl : `http://${hubUrl}`;

@@ -1,6 +1,6 @@
 import type { StreamApiEvent } from "./types.ts";
 import { m } from "./i18n.ts";
-import { createSapRelayBrowserClient, type SapRelayBrowserClient } from "@freeanima/sap-contract";
+import { createSapSidecarClient, type SapSidecarClient } from "@freeanima/sap-contract";
 import { pairPlatform, STUDIO_PAIR_PLATFORM } from "@/lib/sap-client.ts";
 
 type SubscribeCallbacks<T> = {
@@ -9,13 +9,13 @@ type SubscribeCallbacks<T> = {
   onComplete?: () => void;
 };
 
-let relayClient: SapRelayBrowserClient | null = null;
+let sidecarClient: SapSidecarClient | null = null;
 
-function sap(): SapRelayBrowserClient {
-  if (!relayClient) {
-    relayClient = createSapRelayBrowserClient();
+function sap(): SapSidecarClient {
+  if (!sidecarClient) {
+    sidecarClient = createSapSidecarClient();
   }
-  return relayClient;
+  return sidecarClient;
 }
 
 async function apiJson<T>(path: string, init?: RequestInit): Promise<T> {
@@ -83,11 +83,6 @@ export async function createConversation(platform?: string) {
     workspace_show_hidden: Boolean(cfg.showHidden),
   });
   return { conversation_id: result.conversation_id };
-}
-
-/** @deprecated 使用 createConversation */
-export async function createSession(platform?: string) {
-  return createConversation(platform);
 }
 
 export async function getStoredMessages(conversationId: string, offset?: number, limit?: number) {

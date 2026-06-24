@@ -1,7 +1,7 @@
 import { useCompanionStore } from "@/stores/companion.ts";
 
 function openHubSettings(): void {
-  const shell = window.satelliteShell ?? window.companionShell;
+  const shell = window.satelliteShell;
   if (shell?.openHubSettings) {
     void shell.openHubSettings();
     return;

@@ -26,5 +26,4 @@ export {
   resolveProbeHost,
 } from "./bind-hosts.ts";
 export { serve, type ServeOptions, type HttpHooks, type HttpServerHandle } from "./serve.ts";
-export type { WebuiHooks, WebuiServerHandle } from "./boot/types.ts";
 export * from "./runtime/index.ts";

@@ -46,12 +46,6 @@ export async function saveShellClientPrefs(hubUrl: string, remoteAuthToken: stri
   await Preferences.set({ key: REMOTE_AUTH_TOKEN_KEY, value: normalized.remoteAuthToken });
 }
 
-/** @deprecated 使用 saveShellClientPrefs */
-export async function saveHubUrl(hubUrl: string): Promise<void> {
-  const token = (await loadRemoteAuthToken()) ?? "";
-  await saveShellClientPrefs(hubUrl, token);
-}
-
 export function createPreferencesInstanceStore(appId: string): SapInstanceStore {
   const key = sapInstanceKey(appId);
   return {

@@ -15,7 +15,7 @@ import {
 import type { SapConnectionState } from "@freeanima/sap-contract";
 import { getAppLocale, initAppLocale, m, toggleAppLocale } from "@/lib/i18n.ts";
 import { loadInputDraft, saveInputDraft } from "@/lib/input-draft.ts";
-import { getSapRelayClient, reconnectSap, subscribeSapConnection } from "@/lib/sap-client.ts";
+import { getSapDirectClient, reconnectSap, subscribeSapConnection } from "@/lib/sap-client.ts";
 import type { ConversationListItem } from "@/lib/types.ts";
 import { useChatStore } from "@/stores/chat.ts";
 import { useConversationsStore } from "@/stores/conversations.ts";
@@ -45,7 +45,7 @@ function writeConversationToUrl(conversationId: string | null) {
 }
 
 function getSatelliteShell() {
-  return window.satelliteShell ?? window.companionShell;
+  return window.satelliteShell;
 }
 
 function openHubSettingsIfAvailable(): void {
@@ -173,11 +173,11 @@ function App() {
     void (async () => {
       try {
         await loadConfig();
-        getSapRelayClient();
+        getSapDirectClient();
         setReady(true);
 
         const bootstrap = async () => {
-          await getSapRelayClient().whenReady();
+          await getSapDirectClient().whenReady();
           const list = await fetchConversations();
           const fromUrl = readConversationFromUrl();
           if (fromUrl) {

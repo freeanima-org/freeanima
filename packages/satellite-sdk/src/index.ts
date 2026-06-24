@@ -9,7 +9,6 @@ export type { ConnectionKind, FrontendManifest } from "./manifest.ts";
 import "./shell-api.ts";
 
 export type {
-  CompanionShellApi,
   CompanionWindowRole,
   PatrolScreenInfo,
   SapInstanceStore,

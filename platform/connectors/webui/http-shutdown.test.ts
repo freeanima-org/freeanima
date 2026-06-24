@@ -4,8 +4,8 @@ import {
   MIN_GRACEFUL_DRAIN_MS,
   waitForDrainWithTimeout,
 } from "./http-shutdown.ts";
-import type { WebuiServerHandle } from "./webui-server.ts";
-function mockHandle(): WebuiServerHandle {
+import type { ApiServerHandle } from "./webui-server.ts";
+function mockHandle(): ApiServerHandle {
   return {
     port: 2658,
     close: vi.fn(),

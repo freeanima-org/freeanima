@@ -23,13 +23,6 @@ export function resolveApiClient(): Treaty.Create<App> {
   return cachedClient;
 }
 
-/** @deprecated 使用 resolveApiClient() */
-export const apiClient: Treaty.Create<App> = new Proxy({} as Treaty.Create<App>, {
-  get(_target, prop, receiver) {
-    return Reflect.get(resolveApiClient() as object, prop, receiver);
-  },
-});
-
 type TreatyResult<T> = { data: T | null; error: unknown };
 
 export async function unwrap<T>(promise: Promise<TreatyResult<T>>): Promise<T> {
@@ -63,7 +56,7 @@ export async function listConversations(opts?: {
   limit?: number;
 }) {
   return unwrap(
-    apiClient.api.conversations.get({
+    resolveApiClient().api.conversations.get({
       query: {
         platform: opts?.platform,
         offset: opts?.offset?.toString(),
@@ -73,29 +66,26 @@ export async function listConversations(opts?: {
   );
 }
 
-/** @deprecated 使用 listConversations({ offset, limit }) */
-export async function listAllConversations() {
-  return listConversations({ offset: 0, limit: 10_000 });
-}
-
 export async function getConversationInfo(conversationId: string) {
-  return unwrap(apiClient.api.conversations({ conversationId }).get());
+  return unwrap(resolveApiClient().api.conversations({ conversationId }).get());
 }
 
 export async function createConversation(platform: string) {
   const p = platform.trim();
   if (!p) throw new Error("platform is required");
-  return unwrap(apiClient.api.conversations.post({ platform: p }));
+  return unwrap(resolveApiClient().api.conversations.post({ platform: p }));
 }
 
 export async function getStoredMessages(conversationId: string, offset?: number, limit?: number) {
   return unwrap(
-    apiClient.api.conversations({ conversationId }).messages.get({
-      query: {
-        offset: offset?.toString(),
-        limit: limit?.toString(),
-      },
-    }),
+    resolveApiClient()
+      .api.conversations({ conversationId })
+      .messages.get({
+        query: {
+          offset: offset?.toString(),
+          limit: limit?.toString(),
+        },
+      }),
   );
 }
 
@@ -149,12 +139,12 @@ export function subscribeConversationEvents(
 }
 
 export async function setConversationTitle(conversationId: string, title: string) {
-  return unwrap(apiClient.api.conversations({ conversationId }).title.patch({ title }));
+  return unwrap(resolveApiClient().api.conversations({ conversationId }).title.patch({ title }));
 }
 
 export async function listConversationCommands(opts?: { all?: boolean; platform?: string }) {
   return unwrap(
-    apiClient.api.conversations.commands.get({
+    resolveApiClient().api.conversations.commands.get({
       query: {
         all: opts?.all ? "true" : undefined,
         platform: opts?.platform,
@@ -164,16 +154,16 @@ export async function listConversationCommands(opts?: { all?: boolean; platform?
 }
 
 export async function getStatus() {
-  return unwrap(apiClient.api.status.get());
+  return unwrap(resolveApiClient().api.status.get());
 }
 
 export async function getStatusConfig() {
-  return unwrap(apiClient.api.status.config.get());
+  return unwrap(resolveApiClient().api.status.config.get());
 }
 
 export async function getToolsStatus(scope?: "default" | "all") {
   return unwrap(
-    apiClient.api.status.tools.get({
+    resolveApiClient().api.status.tools.get({
       query: scope === "default" ? { scope: "default" } : {},
     }),
   );
@@ -181,30 +171,30 @@ export async function getToolsStatus(scope?: "default" | "all") {
 
 export async function getPromptDebug(conversationId?: string) {
   return unwrap(
-    apiClient.api.prompt.debug.get({
+    resolveApiClient().api.prompt.debug.get({
       query: conversationId ? { conversation_id: conversationId } : {},
     }),
   );
 }
 
 export async function getCronJobs() {
-  return unwrap(apiClient.api.status["cron-jobs"].get());
+  return unwrap(resolveApiClient().api.status["cron-jobs"].get());
 }
 
 export async function pauseCronJob(id: string) {
-  return unwrap(apiClient.api.status["cron-jobs"]({ id }).pause.post());
+  return unwrap(resolveApiClient().api.status["cron-jobs"]({ id }).pause.post());
 }
 
 export async function resumeCronJob(id: string) {
-  return unwrap(apiClient.api.status["cron-jobs"]({ id }).resume.post());
+  return unwrap(resolveApiClient().api.status["cron-jobs"]({ id }).resume.post());
 }
 
 export async function runCronJob(id: string) {
-  return unwrap(apiClient.api.status["cron-jobs"]({ id }).run.post());
+  return unwrap(resolveApiClient().api.status["cron-jobs"]({ id }).run.post());
 }
 
 export async function getSleepSummary() {
-  return unwrap(apiClient.api.sleep.summary.get());
+  return unwrap(resolveApiClient().api.sleep.summary.get());
 }
 
 export async function listPipelineStepRuns(opts?: {
@@ -214,7 +204,7 @@ export async function listPipelineStepRuns(opts?: {
   offset?: number;
 }) {
   return unwrap(
-    apiClient.api.sleep["pipeline-runs"].get({
+    resolveApiClient().api.sleep["pipeline-runs"].get({
       query: {
         step_id: opts?.step_id,
         run_id: opts?.run_id,
@@ -226,18 +216,18 @@ export async function listPipelineStepRuns(opts?: {
 }
 
 export async function getDeepSleepRounds(day: string) {
-  return unwrap(apiClient.api.sleep["deep-sleep"]({ day }).rounds.get());
+  return unwrap(resolveApiClient().api.sleep["deep-sleep"]({ day }).rounds.get());
 }
 
 export async function getSleepPipelineStatus() {
-  return unwrap(apiClient.api.sleep.pipeline.status.get());
+  return unwrap(resolveApiClient().api.sleep.pipeline.status.get());
 }
 
 export async function startSleepCycle(body?: {
   day?: string;
   deep_sleep_mode?: "full" | "incremental";
 }) {
-  return unwrap(apiClient.api.sleep.pipeline.run.post(body ?? {}));
+  return unwrap(resolveApiClient().api.sleep.pipeline.run.post(body ?? {}));
 }
 
 export async function startSleepPipelineStep(body: {
@@ -246,7 +236,7 @@ export async function startSleepPipelineStep(body: {
   force?: boolean;
   deep_sleep_mode?: "full" | "incremental";
 }) {
-  return unwrap(apiClient.api.sleep.pipeline["run-step"].post(body));
+  return unwrap(resolveApiClient().api.sleep.pipeline["run-step"].post(body));
 }
 
 export async function listCronLogs(opts?: {
@@ -256,7 +246,7 @@ export async function listCronLogs(opts?: {
   ok?: boolean;
 }) {
   return unwrap(
-    apiClient.api["cron-logs"].get({
+    resolveApiClient().api["cron-logs"].get({
       query: {
         job_id: opts?.job_id,
         limit: opts?.limit,
@@ -274,7 +264,7 @@ export async function listAutoLlmRuns(opts?: {
   offset?: number;
 }) {
   return unwrap(
-    apiClient.api["auto-llm-runs"].get({
+    resolveApiClient().api["auto-llm-runs"].get({
       query: {
         run_kind: opts?.run_kind,
         status: opts?.status,
@@ -286,25 +276,25 @@ export async function listAutoLlmRuns(opts?: {
 }
 
 export async function restartService() {
-  return unwrap(apiClient.api.status.restart.post());
+  return unwrap(resolveApiClient().api.status.restart.post());
 }
 
 export async function getEmailOverview() {
-  return unwrap(apiClient.api.email.get());
+  return unwrap(resolveApiClient().api.email.get());
 }
 
 export async function fetchEmailAccount(accountId: string) {
-  return unwrap(apiClient.api.email({ accountId }).fetch.post());
+  return unwrap(resolveApiClient().api.email({ accountId }).fetch.post());
 }
 
 export async function listAccountMessages(accountId: string, limit = 50) {
-  return unwrap(apiClient.api.email({ accountId }).messages.get({ query: { limit } }));
+  return unwrap(resolveApiClient().api.email({ accountId }).messages.get({ query: { limit } }));
 }
 
 export async function getEmailMessage(accountId: string, uid: number) {
   return unwrap(
-    apiClient.api
-      .email({ accountId })
+    resolveApiClient()
+      .api.email({ accountId })
       .messages({ uid: String(uid) })
       .get(),
   );
@@ -312,19 +302,19 @@ export async function getEmailMessage(accountId: string, uid: number) {
 
 export async function markEmailRead(accountId: string, uid: number) {
   return unwrap(
-    apiClient.api
-      .email({ accountId })
+    resolveApiClient()
+      .api.email({ accountId })
       .messages({ uid: String(uid) })
       .read.post(),
   );
 }
 
 export async function searchMemory(input: { query: string; limit?: number }) {
-  return unwrap(apiClient.api.memory.search.post(input));
+  return unwrap(resolveApiClient().api.memory.search.post(input));
 }
 
 export async function countSemanticMemory() {
-  return unwrap(apiClient.api.memory["semantic-memory"].count.post());
+  return unwrap(resolveApiClient().api.memory["semantic-memory"].count.post());
 }
 
 export async function listSemanticMemories(input: {
@@ -336,11 +326,11 @@ export async function listSemanticMemories(input: {
   source_conversation?: string;
   sort_by?: "created" | "updated" | "reference_count" | "rank";
 }) {
-  return unwrap(apiClient.api.memory.semantic.list.post(input));
+  return unwrap(resolveApiClient().api.memory.semantic.list.post(input));
 }
 
 export async function updateSemanticMemoryPinned(input: { id: string; pinned: boolean }) {
-  return unwrap(apiClient.api.memory.semantic.pinned.patch(input));
+  return unwrap(resolveApiClient().api.memory.semantic.pinned.patch(input));
 }
 
 export async function listLimbicMemories(input: {
@@ -350,7 +340,7 @@ export async function listLimbicMemories(input: {
   conversation_id?: string;
   kind?: string;
 }) {
-  return unwrap(apiClient.api.memory.limbic.list.post(input));
+  return unwrap(resolveApiClient().api.memory.limbic.list.post(input));
 }
 
 export async function listAutobiographicalMemories(input: {
@@ -361,15 +351,15 @@ export async function listAutobiographicalMemories(input: {
   significance?: string;
   source_conversation?: string;
 }) {
-  return unwrap(apiClient.api.memory.autobiographical.list.post(input));
+  return unwrap(resolveApiClient().api.memory.autobiographical.list.post(input));
 }
 
 export async function listDreamMemories(input: { offset?: number; limit?: number }) {
-  return unwrap(apiClient.api.memory.dream.list.post(input));
+  return unwrap(resolveApiClient().api.memory.dream.list.post(input));
 }
 
 export async function getDreamMemory(day: string) {
-  return unwrap(apiClient.api.memory.dream({ day }).get());
+  return unwrap(resolveApiClient().api.memory.dream({ day }).get());
 }
 
 export async function listTasks(input: {
@@ -379,81 +369,81 @@ export async function listTasks(input: {
   status?: "all" | string | string[];
   priority?: string;
 }) {
-  return unwrap(apiClient.api.tasks.list.post(input));
+  return unwrap(resolveApiClient().api.tasks.list.post(input));
 }
 
 export async function getFtsStatus() {
-  return unwrap(apiClient.api.fts.status.get());
+  return unwrap(resolveApiClient().api.fts.status.get());
 }
 
 export async function startRebuildFtsIndex(opts?: { only_missing?: boolean }) {
   return unwrap(
-    apiClient.api.fts.rebuild.post({
+    resolveApiClient().api.fts.rebuild.post({
       only_missing: opts?.only_missing ?? true,
     }),
   );
 }
 
 export async function getRebuildFtsJobStatus() {
-  return unwrap(apiClient.api.fts.rebuild.status.get());
+  return unwrap(resolveApiClient().api.fts.rebuild.status.get());
 }
 
 export async function getSelfBlocks() {
-  return unwrap(apiClient.api.self.blocks.get());
+  return unwrap(resolveApiClient().api.self.blocks.get());
 }
 
 export async function getFridgeMagnets(): Promise<FridgeMagnetsResponse> {
-  return unwrap<FridgeMagnetsResponse>(apiClient.api["fridge-magnet"].magnets.get());
+  return unwrap<FridgeMagnetsResponse>(resolveApiClient().api["fridge-magnet"].magnets.get());
 }
 
 export async function getMcpStatus() {
-  return unwrap(apiClient.api.mcp.status.get());
+  return unwrap(resolveApiClient().api.mcp.status.get());
 }
 
 export async function getSatellitesStatus() {
-  return unwrap(apiClient.api.satellites.status.get());
+  return unwrap(resolveApiClient().api.satellites.status.get());
 }
 
 export async function startMcp(name: string) {
-  return unwrap(apiClient.api.mcp({ name }).start.post());
+  return unwrap(resolveApiClient().api.mcp({ name }).start.post());
 }
 
 export async function stopMcp(name: string) {
-  return unwrap(apiClient.api.mcp({ name }).stop.post());
+  return unwrap(resolveApiClient().api.mcp({ name }).stop.post());
 }
 
 export async function startAllMcp() {
-  return unwrap(apiClient.api.mcp["start-all"].post());
+  return unwrap(resolveApiClient().api.mcp["start-all"].post());
 }
 
 export async function stopAllMcp() {
-  return unwrap(apiClient.api.mcp["stop-all"].post());
+  return unwrap(resolveApiClient().api.mcp["stop-all"].post());
 }
 
 export async function getAcpStatus() {
-  return unwrap(apiClient.api.acp.status.get());
+  return unwrap(resolveApiClient().api.acp.status.get());
 }
 
 export async function startAcp(name: string) {
-  return unwrap(apiClient.api.acp({ name }).start.post());
+  return unwrap(resolveApiClient().api.acp({ name }).start.post());
 }
 
 export async function stopAcp(name: string) {
-  return unwrap(apiClient.api.acp({ name }).stop.post());
+  return unwrap(resolveApiClient().api.acp({ name }).stop.post());
 }
 
 export async function startAllAcp() {
-  return unwrap(apiClient.api.acp["start-all"].post());
+  return unwrap(resolveApiClient().api.acp["start-all"].post());
 }
 
 export async function stopAllAcp() {
-  return unwrap(apiClient.api.acp["stop-all"].post());
+  return unwrap(resolveApiClient().api.acp["stop-all"].post());
 }
 
 export async function listCredentials() {
-  return unwrap(apiClient.api.credentials.get());
+  return unwrap(resolveApiClient().api.credentials.get());
 }
 
 export async function getCredentialDetail(path: string) {
-  return unwrap(apiClient.api.credentials.detail.get({ query: { path } }));
+  return unwrap(resolveApiClient().api.credentials.detail.get({ query: { path } }));
 }

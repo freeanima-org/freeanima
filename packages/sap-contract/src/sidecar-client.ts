@@ -247,9 +247,3 @@ export function createSapSidecarClient(options: SapSidecarClientOptions = {}): S
     sendMessageStream: stream.sendMessageStream.bind(stream),
   };
 }
-
-/** @deprecated Use createSapSidecarClient */
-export const createSapRelayBrowserClient = createSapSidecarClient;
-
-export type SapRelayBrowserClient = SapSidecarClient;
-export type SapRelayBrowserClientOptions = SapSidecarClientOptions;

@@ -119,6 +119,3 @@ export async function handleMotionUpload(req: Request): Promise<Response> {
     return jsonResponse({ error: e instanceof Error ? e.message : String(e) }, 400);
   }
 }
-
-/** @deprecated 使用 handleMotionUpload */
-export const handleMotionZipUpload = handleMotionUpload;

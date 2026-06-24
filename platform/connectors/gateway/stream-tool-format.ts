@@ -108,31 +108,3 @@ export function formatStructuredToolRound(
   const msg = formatToolRoundMessage(lines);
   return msg.trim() ? msg : null;
 }
-
-/** @deprecated 使用 ToolRoundBuffer + formatStructuredToolRound */
-export class ToolRoundCollector {
-  private buffer = new ToolRoundBuffer();
-
-  constructor(private readonly mode: ToolDisplayMode = "name") {}
-
-  addBegin(name: string, args: Record<string, unknown>): void {
-    this.buffer.addBegin(name, args);
-  }
-
-  addResult(name: string, content: string): void {
-    this.buffer.addResult(name, content);
-  }
-
-  addError(content: string): void {
-    this.buffer.addError(content);
-  }
-
-  get hasContent(): boolean {
-    return this.buffer.hasContent;
-  }
-
-  take(): string | null {
-    const calls = this.buffer.take();
-    return formatStructuredToolRound(calls, this.mode);
-  }
-}

@@ -4,7 +4,7 @@ import type {
   ConversationListItem,
   StreamApiEvent,
 } from "./types.ts";
-import { getSapRelayClient } from "./sap-client.ts";
+import { getSapDirectClient } from "./sap-client.ts";
 import { m } from "./i18n.ts";
 
 type SubscribeCallbacks<T> = {
@@ -32,7 +32,7 @@ function mapConversationList(raw: {
 }
 
 function sap() {
-  return getSapRelayClient();
+  return getSapDirectClient();
 }
 
 export type { ConversationAcpDockSnapshot, StreamApiEvent } from "./types.ts";
@@ -47,11 +47,6 @@ export async function createConversation() {
   const client = await sap().whenReady();
   const result = await client.request("conversation.create", {});
   return { conversation_id: result.conversation_id };
-}
-
-/** @deprecated 使用 createConversation */
-export async function createSession() {
-  return createConversation();
 }
 
 export async function getStoredMessages(conversationId: string, offset = 0, limit = 500) {
@@ -113,7 +108,7 @@ export function subscribeConversationEvents(
 }
 
 export async function loadConfig() {
-  const shell = window.satelliteShell ?? window.companionShell;
+  const shell = window.satelliteShell;
   if (shell?.hubWsUrl) {
     return { app_id: "chat", hub_ws_url: shell.hubWsUrl };
   }

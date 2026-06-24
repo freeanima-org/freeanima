@@ -80,7 +80,7 @@ export async function serve(
   let servers: HttpServerHandle[] = [];
   let enginePhase: EnginePhaseResult | null = null;
   let cronInitialized = false;
-  const httpHooks = opts.http ?? opts.webui;
+  const httpHooks = opts.http;
   const platformsRef: {
     list: import("@freeanima/platform/connectors/gateway").PlatformAdapter[];
   } = { list: [] };
@@ -156,7 +156,6 @@ export async function serve(
       platforms: platformsRef.list,
       cronInitialized,
       http: httpHooks,
-      webui: httpHooks,
       servers,
       waitForDrain: httpHooks?.waitForDrain ?? defaultWaitForDrain,
     });

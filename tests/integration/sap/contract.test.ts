@@ -9,7 +9,7 @@ import {
   parseSapEnvelope,
   serializeSapEnvelope,
   sessionAcpDockInputSchema,
-  sessionCommandsInputSchema,
+  conversationCommandsInputSchema,
   toolRegisterInputSchema,
 } from "@freeanima/sap-contract";
 
@@ -38,7 +38,7 @@ describe("sap-contract envelopes", () => {
 
   it("validates chat SAP procedure schemas", () => {
     sessionAcpDockInputSchema.parse({ conversation_id: "sid" });
-    sessionCommandsInputSchema.parse({ platform: "sap:chat:k7m" });
+    conversationCommandsInputSchema.parse({ platform: "sap:chat:k7m" });
     fridgeListInputSchema.parse({});
   });
 

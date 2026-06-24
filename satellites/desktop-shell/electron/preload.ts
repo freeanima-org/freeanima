@@ -77,6 +77,5 @@ const shell: SatelliteShellApi = {
 };
 
 contextBridge.exposeInMainWorld("satelliteShell", shell);
-contextBridge.exposeInMainWorld("companionShell", shell);
 
 export type DesktopShellPreloadModule = true;

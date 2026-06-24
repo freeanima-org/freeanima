@@ -50,17 +50,9 @@ export type SatelliteShellApi = {
   listenServerError?: (handler: (message: string) => void) => () => void;
 };
 
-/** @deprecated 使用 SatelliteShellApi */
-export type CompanionShellApi = SatelliteShellApi & {
-  windowRole: CompanionWindowRole;
-  apiOrigin: string;
-};
-
 declare global {
   interface Window {
     satelliteShell?: SatelliteShellApi;
-    /** @deprecated 使用 satelliteShell */
-    companionShell?: SatelliteShellApi;
   }
 }
 

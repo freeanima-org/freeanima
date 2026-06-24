@@ -31,15 +31,12 @@ export function isCompanionOverlay(): boolean {
 }
 
 function shell(): SatelliteShellApi | undefined {
-  return window.satelliteShell ?? window.companionShell;
+  return window.satelliteShell;
 }
 
 export function isElectron(): boolean {
   return shell()?.isElectron === true;
 }
-
-/** @deprecated 使用 isElectron */
-export const isTauri = isElectron;
 
 export async function setClickThrough(ignore: boolean): Promise<void> {
   await shell()?.setClickThrough?.(ignore);
@@ -110,21 +107,6 @@ export async function listenServerError(handler: (message: string) => void): Pro
   const api = shell();
   if (!api?.listenServerError) return () => {};
   return api.listenServerError(handler);
-}
-
-/** @deprecated sidecar 端口探测已移除 */
-export async function getSidecarPort(): Promise<number | null> {
-  return null;
-}
-
-/** @deprecated sidecar 就绪事件已移除 */
-export async function listenSidecarReady(_handler: (port: number) => void): Promise<() => void> {
-  return () => {};
-}
-
-/** @deprecated 使用 listenServerError */
-export async function listenSidecarError(handler: (message: string) => void): Promise<() => void> {
-  return listenServerError(handler);
 }
 
 export function isSettingsRoute(): boolean {

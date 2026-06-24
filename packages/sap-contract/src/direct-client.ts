@@ -191,12 +191,6 @@ export function createSapDirectClient(options: SapDirectClientOptions = {}): Sap
   };
 }
 
-/** @deprecated Use createSapDirectClient */
-export const createSapBrowserClient = createSapDirectClient;
-
-/** @deprecated Use loadDirectSatelliteConfig */
-export const loadChatSatelliteConfig = loadDirectSatelliteConfig;
-
 export function formatDirectPlatform(appId: string, instanceId: string): string {
   return `sap:${appId.trim().toLowerCase().replace(/[-_]/g, "")}:${instanceId.trim().toLowerCase()}`;
 }

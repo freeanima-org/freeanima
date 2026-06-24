@@ -13,7 +13,7 @@ import {
   conversationPatchTitleInputSchema,
   conversationSubscribeInputSchema,
   sessionAcpDockInputSchema,
-  sessionCommandsInputSchema,
+  conversationCommandsInputSchema,
   fridgeListInputSchema,
   messageSendInputSchema,
   messageInterruptInputSchema,
@@ -196,7 +196,7 @@ export function createSapServerHandlers(
           );
         }
         case "conversation.commands": {
-          const input = sessionCommandsInputSchema.parse(payload);
+          const input = conversationCommandsInputSchema.parse(payload);
           const platform = input.platform ?? formatSapPlatform(ctx.app_id, ctx.instance_id);
           return serviceStatus.listCommands({
             platform: input.all ? undefined : platform,
