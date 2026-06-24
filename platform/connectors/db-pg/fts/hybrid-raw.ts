@@ -15,7 +15,7 @@ export async function searchSemanticMemoryFtsRaw(
     limit?: number;
     types?: string[];
     status?: "active" | "deprecated" | "all";
-    sourceSessions?: string[];
+    sourceConversations?: string[];
   },
 ): Promise<SemanticMemoryFtsDbRow[]> {
   const q = query.trim();
@@ -27,7 +27,7 @@ export async function searchSemanticMemoryFtsRaw(
   const limit = Math.max(1, Math.min(100, opts?.limit ?? 10));
   const types = opts?.types?.filter(Boolean) ?? [];
   const status = opts?.status ?? "active";
-  const sourceSessions = opts?.sourceSessions?.map((s) => s.trim()).filter(Boolean) ?? [];
+  const sourceConversations = opts?.sourceConversations?.map((s) => s.trim()).filter(Boolean) ?? [];
 
   const db = getDb();
   const tsqueryExpr = sql`to_tsquery('simple', ${tsquery})`;
@@ -36,7 +36,7 @@ export async function searchSemanticMemoryFtsRaw(
   );
   const conditions = [
     sql`${semanticMemory.contentFts} @@ ${tsqueryExpr}`,
-    ...buildSemanticConditions({ types, status, sourceSessions }),
+    ...buildSemanticConditions({ types, status, sourceConversations }),
   ];
 
   const rows = await db
@@ -54,13 +54,13 @@ export async function searchSemanticMemoryFtsRaw(
 
 export async function searchMessagesFtsRaw(
   query: string,
-  opts?: { sessionId?: string; limit?: number },
+  opts?: { conversationId?: string; limit?: number },
 ): Promise<
   Array<{
     id: string;
     content: string;
     role: string;
-    session_id: string;
+    conversation_id: string;
     timestamp: string;
     rank: number;
   }>
@@ -72,17 +72,17 @@ export async function searchMessagesFtsRaw(
   if (!tsquery) return [];
 
   const limit = Math.max(1, Math.min(50, opts?.limit ?? 10));
-  const sessionId = opts?.sessionId?.trim() || null;
+  const conversationId = opts?.conversationId?.trim() || null;
 
   const db = getDb();
   const tsqueryExpr = sql`to_tsquery('simple', ${tsquery})`;
   const rankExpr = sql<number>`ts_rank_cd(${messages.contentFts}, ${tsqueryExpr}, 32)`.as("rank");
   const conditions = [
     sql`${messages.contentFts} @@ ${tsqueryExpr}`,
-    notLike(messages.sessionId, "debug-%"),
+    notLike(messages.conversationId, "debug-%"),
   ];
-  if (sessionId) {
-    conditions.push(eq(messages.sessionId, sessionId));
+  if (conversationId) {
+    conditions.push(eq(messages.conversationId, conversationId));
   }
 
   const rows = await db
@@ -90,7 +90,7 @@ export async function searchMessagesFtsRaw(
       id: messages.id,
       content: sql<string>`${messages.payload}->>'content'`,
       role: sql<string>`${messages.payload}->>'role'`,
-      session_id: messages.sessionId,
+      conversation_id: messages.conversationId,
       timestamp: sql<string>`${messages.payload}->>'timestamp'`,
       rank: rankExpr,
     })
@@ -103,7 +103,7 @@ export async function searchMessagesFtsRaw(
     id: r.id,
     content: r.content,
     role: r.role,
-    session_id: r.session_id,
+    conversation_id: r.conversation_id,
     timestamp: r.timestamp ?? "",
     rank: Number(r.rank),
   }));

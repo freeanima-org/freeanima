@@ -1,4 +1,4 @@
-/** WebUI message display view (projected from Slice A SessionMessage) */
+/** WebUI message display view (projected from Slice A StoredMessage) */
 
 export type DisplayToolCall = {
   name: string;
@@ -25,7 +25,7 @@ export type DisplayToolBlockItem = {
 export type DisplayItem = DisplayMessageItem | DisplayToolBlockItem;
 
 export type MessagesDisplay = {
-  session_id: string;
+  conversation_id: string;
   display: DisplayItem[];
   total?: number;
   offset?: number;

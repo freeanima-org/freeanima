@@ -10,7 +10,7 @@ import type { SemanticMemoryCreateInput, SemanticMemoryUpdateInput } from "@free
 
 import { getSemanticMemoryStore } from "./semantic-port.ts";
 import { MEMORY_SEMANTIC_CITATION_TOOL_HINT } from "./memory-reference.ts";
-import { getToolSessionIdForMemory } from "./tool-session-port.ts";
+import { getToolConversationIdForMemory } from "./tool-conversation-port.ts";
 
 const MEMORY_TYPES = [
   "world",
@@ -36,7 +36,7 @@ async function handleCreateSemanticMemory(args: Record<string, unknown>): Promis
     content,
     type: args.type !== undefined ? String(args.type) : undefined,
     pinned: args.pinned !== undefined ? Boolean(args.pinned) : undefined,
-    source_sessions: parseStringArray(args.source_sessions),
+    source_conversations: parseStringArray(args.source_conversations),
     observed_at:
       args.observed_at !== undefined && args.observed_at !== null
         ? String(args.observed_at)
@@ -85,8 +85,8 @@ async function handleUpdateSemanticMemory(args: Record<string, unknown>): Promis
   }
   if (args.type !== undefined) patch.type = String(args.type);
   if (args.pinned !== undefined) patch.pinned = Boolean(args.pinned);
-  if (args.source_sessions !== undefined)
-    patch.source_sessions = parseStringArray(args.source_sessions) ?? [];
+  if (args.source_conversations !== undefined)
+    patch.source_conversations = parseStringArray(args.source_conversations) ?? [];
   if (args.observed_at !== undefined) {
     patch.observed_at = args.observed_at === null ? null : String(args.observed_at);
   }
@@ -121,7 +121,7 @@ async function handleSearchSemanticMemory(args: Record<string, unknown>): Promis
   const query = String(args.query ?? "").trim();
   const limit = Number(args.limit ?? 10);
   const types = parseStringArray(args.types);
-  const sourceSessions = parseStringArray(args.source_sessions);
+  const sourceConversations = parseStringArray(args.source_conversations);
   const statusRaw = String(args.status ?? "active").trim();
   const status =
     statusRaw === "all" || statusRaw === "deprecated" || statusRaw === "active"
@@ -136,7 +136,7 @@ async function handleSearchSemanticMemory(args: Record<string, unknown>): Promis
       limit: Number.isFinite(limit) ? limit : 10,
       types,
       status,
-      source_sessions: sourceSessions,
+      source_conversations: sourceConversations,
     });
 
     return toolResult({
@@ -148,7 +148,7 @@ async function handleSearchSemanticMemory(args: Record<string, unknown>): Promis
         type: row.type,
         content: row.content,
         pinned: row.pinned,
-        source_sessions: row.source_sessions,
+        source_conversations: row.source_conversations,
         observed_at: row.observed_at,
         occurred_at: row.occurred_at,
         status: row.status,
@@ -179,7 +179,7 @@ async function handleMergeSemanticMemories(args: Record<string, unknown>): Promi
   // Look up all source memories
   const sources: {
     id: string;
-    source_sessions: string[];
+    source_conversations: string[];
     observed_at: string | null;
     occurred_at: string | null;
   }[] = [];
@@ -188,7 +188,7 @@ async function handleMergeSemanticMemories(args: Record<string, unknown>): Promi
     if (!row) continue;
     sources.push({
       id: row.id,
-      source_sessions: row.source_sessions,
+      source_conversations: row.source_conversations,
       observed_at: row.observed_at,
       occurred_at: row.occurred_at,
     });
@@ -201,8 +201,8 @@ async function handleMergeSemanticMemories(args: Record<string, unknown>): Promi
     );
   }
 
-  // Union source_sessions (deduplicated)
-  const mergedSessions = [...new Set(sources.flatMap((s) => s.source_sessions))];
+  // Union source_conversations (deduplicated)
+  const mergedSessions = [...new Set(sources.flatMap((s) => s.source_conversations))];
 
   // Merge observed_at (earliest non-null)
   let earliestObserved: string | null = null;
@@ -233,7 +233,7 @@ async function handleMergeSemanticMemories(args: Record<string, unknown>): Promi
     content: targetContent,
     type: args.target_type !== undefined ? String(args.target_type) : undefined,
     pinned: args.target_pinned !== undefined ? Boolean(args.target_pinned) : undefined,
-    source_sessions: mergedSessions,
+    source_conversations: mergedSessions,
     observed_at: earliestObserved,
     occurred_at: mergedOccurred,
     status: "active",
@@ -251,7 +251,7 @@ async function handleMergeSemanticMemories(args: Record<string, unknown>): Promi
     id: newId,
     action: "merge",
     deprecated_ids: deprecatedIds,
-    merged_source_sessions: mergedSessions,
+    merged_source_conversations: mergedSessions,
     merged_observed_at: earliestObserved,
     merged_occurred_at: mergedOccurred ?? null,
   });
@@ -270,21 +270,21 @@ function resolveObservedAt(
 /** Shared create logic for remember and light sleep */
 export async function createSemanticMemoryFromArgs(
   args: Record<string, unknown>,
-  defaults?: { source_sessions?: string[]; observed_at?: string },
+  defaults?: { source_conversations?: string[]; observed_at?: string },
 ): Promise<string> {
   const content = String(args.content ?? "").trim();
   if (!content) throw new Error("content is required");
 
-  const sourceSessions =
-    args.source_sessions !== undefined
-      ? (parseStringArray(args.source_sessions) ?? [])
-      : (defaults?.source_sessions ?? []);
+  const sourceConversations =
+    args.source_conversations !== undefined
+      ? (parseStringArray(args.source_conversations) ?? [])
+      : (defaults?.source_conversations ?? []);
 
   return getSemanticMemoryStore().create({
     content,
     type: args.type !== undefined ? String(args.type) : undefined,
     pinned: args.pinned !== undefined ? Boolean(args.pinned) : undefined,
-    source_sessions: sourceSessions,
+    source_conversations: sourceConversations,
     observed_at: resolveObservedAt(args, defaults),
     occurred_at:
       args.occurred_at !== undefined && args.occurred_at !== null
@@ -297,17 +297,17 @@ export const semanticMemoryToolDefs: ToolDef[] = [
   {
     name: "memory_semantic_create",
     description:
-      "Explicitly create a semantic memory. Requires content; optional type/pinned/source_sessions/observed_at/occurred_at.",
+      "Explicitly create a semantic memory. Requires content; optional type/pinned/source_conversations/observed_at/occurred_at.",
     parameters: {
       type: "object",
       properties: {
         content: { type: "string", description: "Memory body (one concise sentence)" },
         type: { type: "string", enum: [...MEMORY_TYPES], description: "Memory type" },
         pinned: { type: "boolean", description: "Pin to resident context" },
-        source_sessions: {
+        source_conversations: {
           type: "array",
           items: { type: "string" },
-          description: "Source session ID list",
+          description: "Source conversation ID list",
         },
         observed_at: { type: "string", description: "First observed time (ISO8601)" },
         occurred_at: { type: "string", description: "Fuzzy occurrence time described in content" },
@@ -319,7 +319,7 @@ export const semanticMemoryToolDefs: ToolDef[] = [
   {
     name: "memory_semantic_update",
     description:
-      "Overwrite-update semantic memory: only passed fields change; omitted fields stay as-is. Pass source_sessions=[] to clear sources.",
+      "Overwrite-update semantic memory: only passed fields change; omitted fields stay as-is. Pass source_conversations=[] to clear sources.",
     parameters: {
       type: "object",
       properties: {
@@ -327,10 +327,10 @@ export const semanticMemoryToolDefs: ToolDef[] = [
         content: { type: "string", description: "New memory body" },
         type: { type: "string", enum: [...MEMORY_TYPES], description: "Memory type" },
         pinned: { type: "boolean", description: "Whether pinned" },
-        source_sessions: {
+        source_conversations: {
           type: "array",
           items: { type: "string" },
-          description: "Source session ID list; pass [] to clear",
+          description: "Source conversation ID list; pass [] to clear",
         },
         observed_at: {
           type: "string",
@@ -358,7 +358,7 @@ export const semanticMemoryToolDefs: ToolDef[] = [
   {
     name: "memory_semantic_search",
     description:
-      "Structured semantic memory search: FTS query plus type/status/source_sessions filters. Returns active by default.\n\n" +
+      "Structured semantic memory search: FTS query plus type/status/source_conversations filters. Returns active by default.\n\n" +
       MEMORY_SEMANTIC_CITATION_TOOL_HINT,
     parameters: {
       type: "object",
@@ -375,10 +375,10 @@ export const semanticMemoryToolDefs: ToolDef[] = [
           enum: ["active", "deprecated", "all"],
           description: "Status filter, default active",
         },
-        source_sessions: {
+        source_conversations: {
           type: "array",
           items: { type: "string" },
-          description: "Memories intersecting given session list",
+          description: "Memories intersecting given conversation list",
         },
       },
       required: [],
@@ -388,7 +388,7 @@ export const semanticMemoryToolDefs: ToolDef[] = [
   {
     name: "memory_semantic_merge",
     description:
-      "Merge multiple semantic memories into one. Program unions source_sessions and takes earliest observed_at and occurred_at. Requires 2+ source_ids and target_content. Source memories are auto-deprecated after merge.",
+      "Merge multiple semantic memories into one. Program unions source_conversations and takes earliest observed_at and occurred_at. Requires 2+ source_ids and target_content. Source memories are auto-deprecated after merge.",
     parameters: {
       type: "object",
       properties: {
@@ -425,9 +425,9 @@ export async function rememberFromArgs(args: Record<string, unknown>): Promise<s
     return handleUpdateSemanticMemory({ ...args, id: semanticMemoryId });
   }
 
-  const sessionId = getToolSessionIdForMemory();
+  const conversationId = getToolConversationIdForMemory();
   const semanticMemoryId = await createSemanticMemoryFromArgs(args, {
-    source_sessions: sessionId ? [sessionId] : [],
+    source_conversations: conversationId ? [conversationId] : [],
   });
   return rememberResult("create", semanticMemoryId);
 }

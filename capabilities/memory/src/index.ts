@@ -1,9 +1,9 @@
 export { createSemanticMemory, type SemanticMemory } from "./fact.ts";
 export {
-  sessionUpdated,
+  conversationUpdated,
   semanticMemoryUpdated,
   testPing,
-  type SessionUpdatedPayload,
+  type ConversationUpdatedPayload,
   type SemanticMemoryUpdatedPayload,
   type TestPingPayload,
 } from "./events.ts";
@@ -18,10 +18,10 @@ export {
 } from "./memory-reference.ts";
 export { syncSemanticMemoryReferenceCounts } from "./reference-sync.ts";
 export {
-  registerMemorySessionStore,
-  getMemorySessionStore,
-  resetMemorySessionStoreForTests,
-} from "./session-port.ts";
+  registerMemoryConversationStore,
+  getMemoryConversationStore,
+  resetMemoryConversationStoreForTests,
+} from "./conversation-port.ts";
 export {
   registerSemanticMemoryStore,
   getSemanticMemoryStore,
@@ -49,7 +49,7 @@ export {
   type MemoryRecallHitType,
   type MemoryRecallResult,
   type SemanticRecallHit,
-  type SessionRecallHit,
+  type ConversationRecallHit,
   type LimbicRecallHit,
   type AutobiographicalRecallHit,
 } from "./search.ts";

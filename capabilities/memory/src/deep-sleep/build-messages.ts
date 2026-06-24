@@ -12,7 +12,7 @@ function rowToJsonCompact(row: SemanticMemoryRow): string {
     id: row.id,
     type: row.type,
     content: row.content,
-    sources: row.source_sessions,
+    sources: row.source_conversations,
     observed: row.observed_at?.slice(0, 19) ?? null,
     occurred: row.occurred_at ?? null,
   };
@@ -141,17 +141,17 @@ All tools use overwrite semantics: only passed fields are changed.
 
 ### memory_semantic_update
 - Update an existing memory. Omitted fields stay unchanged.
-- Pass source_sessions: [] to clear sources.
+- Pass source_conversations: [] to clear sources.
 - Pass status: "deprecated" to deprecate (equivalent to memory_semantic_deprecate).
 
 ### memory_semantic_deprecate
 - Soft-deprecate a memory (status=deprecated), history retained.
 
 ### memory_semantic_create
-- Create a new memory. Required: content; recommended: type, source_sessions, observed_at.
+- Create a new memory. Required: content; recommended: type, source_conversations, observed_at.
 
 ### memory_semantic_merge
-- Merge multiple memories into one. Program unions source_sessions and takes earliest observed_at.
+- Merge multiple memories into one. Program unions source_conversations and takes earliest observed_at.
 - Args: source_ids (2+ entries), target_content (merged body).
 - Optional target_type / target_pinned / target_occurred_at.
 - After merge, all source_ids are auto-deprecated and a new memory is created.`;
@@ -199,7 +199,7 @@ One memory's content has two or more independently valid statements → split.
 
 ## Notes
 - This round only splits; do not merge or detect contradictions.
-- New memories should keep source_sessions and observed_at from the split original.
+- New memories should keep source_conversations and observed_at from the split original.
 
 ${TOOL_INSTRUCTION_COMMON}
 ${BATCH_EXECUTION_NOTE}
@@ -223,7 +223,7 @@ Two memories say the same thing → merge.
 
 ## Notes
 - This round only merges; do not split.
-- After merge, program unions source_sessions and takes earliest observed_at.
+- After merge, program unions source_conversations and takes earliest observed_at.
 
 ${TOOL_INSTRUCTION_COMMON}
 ${BATCH_EXECUTION_NOTE}
@@ -247,7 +247,7 @@ You are a digital being running in Free Anima. Review every pinned semantic memo
 
 ## When to pin (rare cases)
 - A core enduring fact is unpinned but clearly should be pinned
-- Only pin facts that are: identity-defining, stable over time, cross-session essential
+- Only pin facts that are: identity-defining, stable over time, cross-conversation essential
 
 ## Handling
 - Use \`memory_semantic_update\` with \`pinned: true\` or \`pinned: false\` only

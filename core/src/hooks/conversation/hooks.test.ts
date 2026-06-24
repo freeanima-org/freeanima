@@ -17,7 +17,7 @@ describe("conversation hooks", () => {
       data: { transformedMessage: "hi" },
     }));
     const run = await registry.run(messageIncoming, {
-      sessionId: "s1",
+      conversationId: "s1",
       message: "hello",
       platform: "webui",
     });

@@ -20,7 +20,7 @@ export type DisplayToolBlockItem = {
 
 export type DisplayItem = DisplayMessageItem | DisplayToolBlockItem;
 
-export type SessionListItem = {
+export type ConversationListItem = {
   id: string;
   title: string;
   created: string;
@@ -47,17 +47,17 @@ export type StreamApiEvent =
   | { event: "error"; data: { error: string } }
   | { event: "ping"; data: Record<string, never> };
 
-export type SessionAcpDockTask = {
-  acp_session_id: string;
+export type ConversationAcpDockTask = {
+  acp_conversation_id: string;
   task_id: string;
   agent_name: string;
   status: string;
   progress_message_id?: string;
 };
 
-export type SessionAcpDockSnapshot = {
-  session_id: string;
-  tasks: SessionAcpDockTask[];
+export type ConversationAcpDockSnapshot = {
+  conversation_id: string;
+  tasks: ConversationAcpDockTask[];
   progress_text: string;
   task_progress: Record<string, string>;
   highlight_decision: boolean;

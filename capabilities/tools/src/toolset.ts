@@ -1,14 +1,14 @@
 import {
   getToolRegistry,
   getToolRepos,
-  getToolSessionId,
+  getToolConversationId,
   grantExecutableTools,
 } from "@freeanima/core/tool";
-import { isSessionMeta, type SessionMetaMessage } from "@freeanima/core/db/domain";
+import { isConversationMeta, type ConversationMetaMessage } from "@freeanima/core/db/domain";
 import {
-  applySessionToolMaskFilter,
+  applyConversationToolMaskFilter,
   attachToolReturns,
-  loadToolSetsIntoSession,
+  loadToolSetsIntoConversation,
   searchToolsetsCatalog,
   toolError,
   toolResult,
@@ -18,25 +18,25 @@ import {
 import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
 
 async function requireSessionMeta(): Promise<
-  { ok: true; meta: SessionMetaMessage } | { ok: false; error: string }
+  { ok: true; meta: ConversationMetaMessage } | { ok: false; error: string }
 > {
-  const sessionId = getToolSessionId();
+  const conversationId = getToolConversationId();
   const repos = getToolRepos();
-  if (!sessionId) return { ok: false, error: "No session context" };
+  if (!conversationId) return { ok: false, error: "No conversation context" };
   if (!repos) return { ok: false, error: "No repos context" };
-  const raw = await repos.session.getSessionMeta(sessionId);
-  if (!raw || !isSessionMeta(raw)) return { ok: false, error: "Session does not exist" };
+  const raw = await repos.conversation.getConversationMeta(conversationId);
+  if (!raw || !isConversationMeta(raw)) return { ok: false, error: "Session does not exist" };
   const meta = raw;
   return { ok: true, meta };
 }
 
 function hitsWithAllowed(
   hits: ReturnType<typeof searchToolsetsCatalog>["hits"],
-  meta: SessionMetaMessage,
+  meta: ConversationMetaMessage,
 ) {
   return hits.map((hit) => {
     const toolNames = hit.tools.map((t) => t.name);
-    const allowedSet = new Set(applySessionToolMaskFilter(toolNames, meta));
+    const allowedSet = new Set(applyConversationToolMaskFilter(toolNames, meta));
     const allowed = toolNames.some((n) => allowedSet.has(n));
     return { ...hit, allowed };
   });
@@ -79,7 +79,7 @@ export function registerToolsetTools(toolSets: ToolSetRegistry): void {
         {
           name: "toolset_load",
           description:
-            "Stage ToolSets for the current session (returns schemas via tool message). Cached ToolSets are sent in API tools after rebuild_session_cache or compression.",
+            "Stage ToolSets for the current conversation (returns schemas via tool message). Cached ToolSets are sent in API tools after rebuild_conversation_cache or compression.",
           parameters: {
             type: "object",
             properties: {
@@ -100,13 +100,13 @@ export function registerToolsetTools(toolSets: ToolSetRegistry): void {
             }
             const toolsets = raw.map((n) => String(n ?? "").trim()).filter(Boolean);
             if (!toolsets.length) return toolError("toolsets must be a non-empty array");
-            const sessionId = getToolSessionId()!;
+            const conversationId = getToolConversationId()!;
             const repos = getToolRepos()!;
             const registry = getToolRegistry();
-            const result = await loadToolSetsIntoSession(
+            const result = await loadToolSetsIntoConversation(
               repos,
               registry,
-              sessionId,
+              conversationId,
               toolsets,
               ctx.meta,
             );

@@ -6,7 +6,7 @@ import { m } from "@/lib/i18n.ts";
 import {
   interruptMessageStream,
   subscribeMessageStream,
-  subscribeSessionEvents,
+  subscribeConversationEvents,
 } from "@/lib/api.ts";
 
 type SendDoneOptions = {
@@ -20,28 +20,28 @@ export type SendCallbacks = {
   onRecovering?: (active: boolean) => void;
   onError?: (msg: string) => void;
   onDone?: (opts?: SendDoneOptions) => void;
-  recoverDisplay?: (sessionId: string) => Promise<boolean>;
+  recoverDisplay?: (conversationId: string) => Promise<boolean>;
 };
 
 export type QueuedMessage = {
   id: string;
-  sessionId: string;
+  conversationId: string;
   text: string;
 };
 
 type ChatState = {
   streaming: boolean;
   recovering: boolean;
-  streamingSessionId: string | null;
+  streamingConversationId: string | null;
   streamText: string;
   queue: QueuedMessage[];
   renderMd: (text: string) => string;
-  enqueue: (sessionId: string, text: string) => void;
+  enqueue: (conversationId: string, text: string) => void;
   takeQueued: (id: string) => QueuedMessage | null;
   removeQueued: (id: string) => void;
-  peekQueue: (sessionId: string) => QueuedMessage | null;
-  stop: (sessionId: string) => Promise<void>;
-  send: (sessionId: string, text: string, callbacks?: SendCallbacks) => Promise<void>;
+  peekQueue: (conversationId: string) => QueuedMessage | null;
+  stop: (conversationId: string) => Promise<void>;
+  send: (conversationId: string, text: string, callbacks?: SendCallbacks) => Promise<void>;
   abortStream: () => void;
 };
 
@@ -122,8 +122,8 @@ function renderMd(text: string): string {
 }
 
 async function waitForAssistantViaSessionEvents(
-  sessionId: string,
-  recoverDisplay: (sessionId: string) => Promise<boolean>,
+  conversationId: string,
+  recoverDisplay: (conversationId: string) => Promise<boolean>,
   maxDurationMs: number,
 ): Promise<boolean> {
   return new Promise((resolve) => {
@@ -140,14 +140,14 @@ async function waitForAssistantViaSessionEvents(
     };
 
     const tryRefresh = async (): Promise<boolean> => {
-      if (await recoverDisplay(sessionId)) {
+      if (await recoverDisplay(conversationId)) {
         finish(true);
         return true;
       }
       return false;
     };
 
-    const sub = subscribeSessionEvents(sessionId, () => {
+    const sub = subscribeConversationEvents(conversationId, () => {
       void tryRefresh();
     });
 
@@ -172,15 +172,15 @@ async function waitForAssistantViaSessionEvents(
 }
 
 async function tryRecoverDisplay(
-  sessionId: string,
-  recoverDisplay?: (sessionId: string) => Promise<boolean>,
+  conversationId: string,
+  recoverDisplay?: (conversationId: string) => Promise<boolean>,
   onRecovering?: (active: boolean) => void,
 ): Promise<boolean> {
   if (!recoverDisplay) return false;
   onRecovering?.(true);
   try {
-    if (await pollUntilAssistantReply(sessionId, recoverDisplay)) return true;
-    return await waitForAssistantViaSessionEvents(sessionId, recoverDisplay, 60_000);
+    if (await pollUntilAssistantReply(conversationId, recoverDisplay)) return true;
+    return await waitForAssistantViaSessionEvents(conversationId, recoverDisplay, 60_000);
   } finally {
     onRecovering?.(false);
   }
@@ -189,17 +189,17 @@ async function tryRecoverDisplay(
 export const useChatStore = create<ChatState>((set, get) => ({
   streaming: false,
   recovering: false,
-  streamingSessionId: null,
+  streamingConversationId: null,
   streamText: "",
   queue: [],
   renderMd,
 
-  enqueue(sessionId, text) {
+  enqueue(conversationId, text) {
     const trimmed = text.trim();
     if (!trimmed) return;
     const item: QueuedMessage = {
       id: crypto.randomUUID(),
-      sessionId,
+      conversationId,
       text: trimmed,
     };
     set((s) => ({ queue: [...s.queue, item] }));
@@ -220,8 +220,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
     set((s) => ({ queue: s.queue.filter((q) => q.id !== id) }));
   },
 
-  peekQueue(sessionId) {
-    return get().queue.find((q) => q.sessionId === sessionId) ?? null;
+  peekQueue(conversationId) {
+    return get().queue.find((q) => q.conversationId === conversationId) ?? null;
   },
 
   abortStream() {
@@ -230,30 +230,30 @@ export const useChatStore = create<ChatState>((set, get) => ({
     set({
       streaming: false,
       recovering: false,
-      streamingSessionId: null,
+      streamingConversationId: null,
       streamText: "",
     });
   },
 
-  async stop(sessionId) {
+  async stop(conversationId) {
     try {
-      await interruptMessageStream(sessionId);
+      await interruptMessageStream(conversationId);
     } catch (e) {
       console.error("interrupt failed:", e);
       get().abortStream();
     }
   },
 
-  async send(sessionId, text, callbacks = {}) {
+  async send(conversationId, text, callbacks = {}) {
     const prev = get();
-    if (prev.streaming && prev.streamingSessionId === sessionId) {
+    if (prev.streaming && prev.streamingConversationId === conversationId) {
       detachStreamClient();
     } else if (prev.streaming) {
       _streamGeneration++;
       detachStreamClient();
       set({
         streaming: false,
-        streamingSessionId: null,
+        streamingConversationId: null,
         streamText: "",
       });
     }
@@ -263,7 +263,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     set({
       streaming: true,
       recovering: false,
-      streamingSessionId: sessionId,
+      streamingConversationId: conversationId,
       streamText: "",
     });
 
@@ -283,10 +283,14 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
     const finishWithRecovery = async (fallbackError?: string) => {
       if (receivedDone) return;
-      const recovered = await tryRecoverDisplay(sessionId, callbacks.recoverDisplay, (active) => {
-        set({ recovering: active });
-        callbacks.onRecovering?.(active);
-      });
+      const recovered = await tryRecoverDisplay(
+        conversationId,
+        callbacks.recoverDisplay,
+        (active) => {
+          set({ recovering: active });
+          callbacks.onRecovering?.(active);
+        },
+      );
       if (recovered) {
         notifyDone({ recovered: true });
         return;
@@ -301,7 +305,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     try {
       await new Promise<void>((resolve, reject) => {
         const sub = subscribeMessageStream(
-          { sessionId, message: text },
+          { conversationId, message: text },
           {
             onData: (ev) => {
               if (generation !== _streamGeneration) return;
@@ -343,10 +347,14 @@ export const useChatStore = create<ChatState>((set, get) => ({
       if (generation !== _streamGeneration) return;
       if (e instanceof Error && e.name === "AbortError") return;
       console.error("send error:", e);
-      const recovered = await tryRecoverDisplay(sessionId, callbacks.recoverDisplay, (active) => {
-        set({ recovering: active });
-        callbacks.onRecovering?.(active);
-      });
+      const recovered = await tryRecoverDisplay(
+        conversationId,
+        callbacks.recoverDisplay,
+        (active) => {
+          set({ recovering: active });
+          callbacks.onRecovering?.(active);
+        },
+      );
       if (recovered) {
         notifyDone({ recovered: true });
       } else if (!receivedError || transportErrorMsg) {
@@ -355,11 +363,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
     } finally {
       if (generation === _streamGeneration) {
         const active = get();
-        if (active.streamingSessionId === sessionId) {
+        if (active.streamingConversationId === conversationId) {
           set({
             streaming: false,
             recovering: false,
-            streamingSessionId: null,
+            streamingConversationId: null,
             streamText: "",
           });
         }

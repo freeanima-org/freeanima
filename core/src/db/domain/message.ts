@@ -16,8 +16,8 @@ import { capabilityMaskSchema } from "../schema/jsonb/capability-mask.ts";
 import {
   awaitingClarifySchema,
   compressionStateSchema,
-  sessionTodoStoreSchema,
-} from "./session-meta.ts";
+  conversationTodoStoreSchema,
+} from "./conversation-meta.ts";
 export { openAiToolSchema, toolCallSchema, messagePayloadSchema, type MessagePayload };
 export type { LlmTurnMessage, OpenAiToolSchema, ToolCall } from "../schema/index.ts";
 
@@ -35,15 +35,15 @@ const conversationRoles = z.discriminatedUnion("role", [
   toolMessageSchema,
 ]);
 
-/** Conversation messages (excludes session_meta) for compressor / LLM */
+/** Conversation messages (excludes conversation_meta) for compressor / LLM */
 export const conversationMessageSchema = conversationRoles;
 
 /** PG messages.payload */
 export const conversationPayloadSchema = messagePayloadSchema;
 
-export const sessionMetaSchema = z
+export const conversationMetaSchema = z
   .object({
-    role: z.literal("session_meta"),
+    role: z.literal("conversation_meta"),
     model: z.string(),
     cached_toolsets: z.array(z.string()).default([]),
     staged_toolsets: z.array(z.string()).optional(),
@@ -66,8 +66,8 @@ export const sessionMetaSchema = z
   })
   .passthrough();
 
-export const sessionMessageSchema = z.discriminatedUnion("role", [
-  sessionMetaSchema,
+export const storedMessageSchema = z.discriminatedUnion("role", [
+  conversationMetaSchema,
   userMessageSchema,
   systemMessageSchema,
   assistantMessageSchema,
@@ -79,33 +79,35 @@ export type ConversationPayload = MessagePayload;
 
 export type OpenAiFunctionSchema = z.infer<typeof openAiFunctionSchema>;
 export type MessageUsage = z.infer<typeof messageUsageSchema>;
-export type SessionMetaMessage = z.infer<typeof sessionMetaSchema>;
+export type ConversationMetaMessage = z.infer<typeof conversationMetaSchema>;
 export type UserMessage = z.infer<typeof userMessageSchema>;
 export type SystemMessage = z.infer<typeof systemMessageSchema>;
 export type AssistantMessage = z.infer<typeof assistantMessageSchema>;
 export type ToolMessage = z.infer<typeof toolMessageSchema>;
-export type SessionMessage = z.infer<typeof sessionMessageSchema>;
+export type StoredMessage = z.infer<typeof storedMessageSchema>;
 
-export type SessionMetaLoadResult = SessionMetaMessage | Record<string, never>;
+export type ConversationMetaLoadResult = ConversationMetaMessage | Record<string, never>;
 
-export function isSessionMeta(meta: SessionMetaLoadResult): meta is SessionMetaMessage {
-  return meta.role === "session_meta";
+export function isConversationMeta(
+  meta: ConversationMetaLoadResult,
+): meta is ConversationMetaMessage {
+  return meta.role === "conversation_meta";
 }
 
-export function isUserMessage(msg: SessionMessage): msg is UserMessage {
+export function isUserMessage(msg: StoredMessage): msg is UserMessage {
   return msg.role === "user";
 }
 
-export function isAssistantMessage(msg: SessionMessage): msg is AssistantMessage {
+export function isAssistantMessage(msg: StoredMessage): msg is AssistantMessage {
   return msg.role === "assistant";
 }
 
-export function isToolMessage(msg: SessionMessage): msg is ToolMessage {
+export function isToolMessage(msg: StoredMessage): msg is ToolMessage {
   return msg.role === "tool";
 }
 
-export function isSystemMessage(msg: SessionMessage): msg is SystemMessage {
+export function isSystemMessage(msg: StoredMessage): msg is SystemMessage {
   return msg.role === "system";
 }
 
-export { awaitingClarifySchema, compressionStateSchema, sessionTodoStoreSchema };
+export { awaitingClarifySchema, compressionStateSchema, conversationTodoStoreSchema };

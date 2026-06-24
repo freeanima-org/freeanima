@@ -20,7 +20,7 @@ export type DisplayToolBlockItem = {
 
 export type DisplayItem = DisplayMessageItem | DisplayToolBlockItem;
 
-export type SessionListItem = {
+export type ConversationListItem = {
   id: string;
   title: string;
   created: string;

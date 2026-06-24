@@ -4,7 +4,7 @@ title: Pair Programming V1
 
 # Pair Programming (Studio)
 
-> **Phase 1 ✅ shipped**: three-column layout, syntax-highlighted viewer, file tree/search, terminal, dedicated session platform id.
+> **Phase 1 ✅ shipped**: three-column layout, syntax-highlighted viewer, file tree/search, terminal, dedicated conversation platform id.
 > Future work: [Issue #37](https://github.com/freeanima-org/freeanima/issues/37).
 
 ## Design Principles
@@ -28,7 +28,7 @@ title: Pair Programming V1
 │          │   file view            │  │  Chat area     │  │
 └──────────┴────────────────────────┴──────────────────────┘
    Left              Center                  Right
-  file tree        code viewer           session + chat
+  file tree        code viewer           conversation + chat
 ```
 
 | Column       | Default width | Resizable |
@@ -43,12 +43,12 @@ title: Pair Programming V1
 2. `anima service start`
 3. Open `http://127.0.0.1:4173`
 4. Browse/search files on the left; view selection in the center
-5. Create or select a session on the right; discuss code with the agent
-6. Bottom terminal for debug/ops (isolated from chat session)
+5. Create or select a conversation on the right; discuss code with the agent
+6. Bottom terminal for debug/ops (isolated from chat conversation)
 
 ## Session Isolation
 
-Pair programming uses platform `studio-pair-programming`, separate from chat (`chat`) and other platform session lists.
+Pair programming uses platform `studio-pair-programming`, separate from chat (`chat`) and other platform conversation lists.
 
 ## Current Limitations
 

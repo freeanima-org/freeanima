@@ -24,7 +24,7 @@ import {
 import type { PgRepositories } from "@freeanima/core/repos";
 import { FileConfig, type Config } from "@freeanima/platform/config";
 import { createTestLogger } from "@freeanima/kernel/logging/testing";
-import type { SessionMessage, SessionMetaMessage } from "@freeanima/core/db/domain";
+import type { StoredMessage, ConversationMetaMessage } from "@freeanima/core/db/domain";
 import { relations } from "@freeanima/core/db/schema";
 import { drizzle } from "drizzle-orm/bun-sql/postgres";
 import { SQL } from "bun";
@@ -47,7 +47,7 @@ export function getActivePgTestContext(): PgTestContext | null {
 async function clearPgTables(sql: SqlClient): Promise<void> {
   await sql`DELETE FROM memory_references`;
   await sql`DELETE FROM messages`;
-  await sql`DELETE FROM sessions`;
+  await sql`DELETE FROM conversations`;
   await sql`DELETE FROM semantic_memory`;
   await sql`DELETE FROM self_blocks`;
   await sql`DELETE FROM autobiographical_memory`;
@@ -171,17 +171,17 @@ export function appendIntegrationConfig(home: string, yaml: string): void {
   }
 }
 
-/** Write session fixture via Session port */
+/** Write conversation fixture via Session port */
 export async function seedSession(
   engine: Engine,
-  sessionId: string,
-  meta: SessionMetaMessage,
-  messages: SessionMessage[] = [],
+  conversationId: string,
+  meta: ConversationMetaMessage,
+  messages: StoredMessage[] = [],
 ): Promise<void> {
-  const session = engine.repos.session;
-  await session.upsertSessionMeta(sessionId, meta);
+  const conversation = engine.repos.conversation;
+  await conversation.upsertConversationMeta(conversationId, meta);
   for (const msg of messages) {
-    await session.appendMessage(sessionId, msg);
+    await conversation.appendMessage(conversationId, msg);
   }
 }
 

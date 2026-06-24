@@ -4,7 +4,7 @@ import type {
   AutobiographicalMemoryStorePort,
   LimbicMemoryStorePort,
   SelfLayerStorePort,
-  SessionStorePort,
+  ConversationStorePort,
   SemanticMemoryStorePort,
 } from "@freeanima/core/repos";
 
@@ -22,16 +22,19 @@ import {
 } from "../autobiography-port.ts";
 import { registerLimbicMemoryStore, resetLimbicMemoryStoreForTests } from "../limbic-port.ts";
 import { registerLightSleepEngine, resetLightSleepEngineForTests } from "../light-sleep-port.ts";
-import { registerMemorySessionStore, resetMemorySessionStoreForTests } from "../session-port.ts";
+import {
+  registerMemoryConversationStore,
+  resetMemoryConversationStoreForTests,
+} from "../conversation-port.ts";
 import { registerSemanticMemoryStore, resetSemanticMemoryStoreForTests } from "../semantic-port.ts";
 import { buildLimbicUserMessages, LIMBIC_INSTRUCTION } from "./build-messages.ts";
 import { runLightSleep } from "./run.ts";
 
-function createSessionStore(): SessionStorePort {
+function createSessionStore(): ConversationStorePort {
   return {
-    listSessionIdsUpdatedBetween: async () => ["s-1"],
-    getSessionMetaLite: async () => ({
-      role: "session_meta",
+    listConversationIdsUpdatedBetween: async () => ["s-1"],
+    getConversationMetaLite: async () => ({
+      role: "conversation_meta",
       title: "Test",
       platform: "webui",
       timestamp: "2026-06-08T10:00:00+08:00",
@@ -40,20 +43,20 @@ function createSessionStore(): SessionStorePort {
       { role: "user", content: "We talked a lot today", t: "2026-06-08T10:00:00+08:00" },
       { role: "assistant", content: "Yes", t: "2026-06-08T10:01:00+08:00" },
     ],
-  } as unknown as SessionStorePort;
+  } as unknown as ConversationStorePort;
 }
 
 function createSemanticStore(): SemanticMemoryStorePort {
   return {
     listResident: async () => [],
-    listBySourceSessions: async () => [
+    listBySourceConversations: async () => [
       {
         id: "f-000001-abcd",
         content: "I helped Zhang San complete a refactor",
         type: "experience",
         pinned: false,
         reference_count: 0,
-        source_sessions: ["s-1"],
+        source_conversations: ["s-1"],
         observed_at: "2026-06-08T10:00:00+08:00",
         occurred_at: null,
         status: "active",
@@ -69,7 +72,7 @@ function createSemanticStore(): SemanticMemoryStorePort {
             type: "experience",
             pinned: false,
             reference_count: 0,
-            source_sessions: ["s-1"],
+            source_conversations: ["s-1"],
             observed_at: "2026-06-08T10:00:00+08:00",
             occurred_at: null,
             status: "active",
@@ -82,10 +85,10 @@ function createSemanticStore(): SemanticMemoryStorePort {
 
 function createLimbicStore(): LimbicMemoryStorePort {
   return {
-    listBySession: async () => [
+    listByConversation: async () => [
       {
         id: "limbic-1",
-        session_id: "s-1",
+        conversation_id: "s-1",
         kind: "spike",
         valence: 0.8,
         arousal: 0.7,
@@ -100,7 +103,7 @@ function createLimbicStore(): LimbicMemoryStorePort {
       id === "limbic-new"
         ? {
             id,
-            session_id: "s-1",
+            conversation_id: "s-1",
             kind: "turning_point",
             valence: 0.5,
             arousal: 0.6,
@@ -122,18 +125,18 @@ function createAutoStore(): AutobiographicalMemoryStorePort {
 
 describe("light-sleep build-messages", () => {
   beforeEach(() => {
-    resetMemorySessionStoreForTests();
+    resetMemoryConversationStoreForTests();
     resetSemanticMemoryStoreForTests();
     resetLimbicMemoryStoreForTests();
     resetAutobiographicalMemoryStoreForTests();
-    registerMemorySessionStore(createSessionStore());
+    registerMemoryConversationStore(createSessionStore());
     registerSemanticMemoryStore(createSemanticStore());
     registerLimbicMemoryStore(createLimbicStore());
     registerAutobiographicalMemoryStore(createAutoStore());
   });
 
   afterEach(() => {
-    resetMemorySessionStoreForTests();
+    resetMemoryConversationStoreForTests();
     resetSemanticMemoryStoreForTests();
     resetLimbicMemoryStoreForTests();
     resetAutobiographicalMemoryStoreForTests();
@@ -179,14 +182,14 @@ describe("runLightSleep", () => {
     lightSleepCalls = 0;
     autobiographyCalls = 0;
 
-    resetMemorySessionStoreForTests();
+    resetMemoryConversationStoreForTests();
     resetSemanticMemoryStoreForTests();
     resetLimbicMemoryStoreForTests();
     resetAutobiographicalMemoryStoreForTests();
     resetLightSleepEngineForTests();
     resetAutobiographyEngineForTests();
 
-    registerMemorySessionStore(createSessionStore());
+    registerMemoryConversationStore(createSessionStore());
     registerSemanticMemoryStore(createSemanticStore());
     registerLimbicMemoryStore(createLimbicStore());
     registerAutobiographicalMemoryStore(createAutoStore());
@@ -211,7 +214,7 @@ describe("runLightSleep", () => {
   afterEach(() => {
     delete process.env.FREEANIMA_HOME;
     removeTempDir(homeDir);
-    resetMemorySessionStoreForTests();
+    resetMemoryConversationStoreForTests();
     resetSemanticMemoryStoreForTests();
     resetLimbicMemoryStoreForTests();
     resetAutobiographicalMemoryStoreForTests();
@@ -226,7 +229,7 @@ describe("runLightSleep", () => {
     } as unknown as SelfLayerStorePort;
 
     const result = await runLightSleep({
-      sessionStore: createSessionStore(),
+      conversationStore: createSessionStore(),
       autoStore: createAutoStore(),
       selfStore,
       selfContent: "self layer",

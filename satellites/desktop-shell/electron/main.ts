@@ -20,6 +20,7 @@ import {
   startCompanionCursorPoll,
 } from "./companion-host.ts";
 import { registerInstanceStoreIpc } from "./instance-store-ipc.ts";
+import { attachWindowDevTools, toggleDevToolsForFocusedWindow } from "./devtools.ts";
 import { logLine } from "./log.ts";
 import { defaultHubUrl } from "./paths.ts";
 import { startStaticServer, startWebuiStaticServer } from "./static-server.ts";
@@ -41,6 +42,8 @@ let clickthrough = false;
 let pointerActive = false;
 
 const hubUrl = defaultHubUrl();
+
+const devToolsOnStart = !app.isPackaged || process.env.DESKTOP_SHELL_DEVTOOLS === "1";
 
 function vendorDir(name: string): string {
   if (app.isPackaged) {
@@ -212,6 +215,7 @@ function createChatWindow(url: string): BrowserWindow {
     },
   });
   void win.loadURL(url);
+  attachWindowDevTools(win, { openOnReady: devToolsOnStart });
   win.once("ready-to-show", () => {
     win.show();
     win.focus();
@@ -241,6 +245,7 @@ function createChamberWindow(): BrowserWindow {
     },
   });
   void win.loadURL(url);
+  attachWindowDevTools(win, { openOnReady: devToolsOnStart });
   win.once("ready-to-show", () => {
     win.show();
     win.focus();
@@ -300,6 +305,10 @@ function createTray(): void {
       click: () => openChamberWindow(),
     },
     {
+      label: "开发者工具…",
+      click: () => toggleDevToolsForFocusedWindow(),
+    },
+    {
       label: "伴侣设置…",
       click: () => {
         if (settingsWindow && !settingsWindow.isDestroyed()) {
@@ -352,6 +361,7 @@ async function startChamberStatic(): Promise<void> {
     dist,
     CHAMBER_STATIC_PORT,
     CHAMBER_STATIC_PORT_ATTEMPTS,
+    { hubOrigin: hubUrl },
   );
   chamberStaticServer = server;
   chamberStaticUrl = url;

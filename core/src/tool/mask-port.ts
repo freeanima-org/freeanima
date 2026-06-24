@@ -1,23 +1,26 @@
-import type { SessionMetaMessage } from "@freeanima/core/db/domain";
+import type { ConversationMetaMessage } from "@freeanima/core/db/domain";
 
-export type SessionToolMaskFilter = (toolNames: string[], meta: SessionMetaMessage) => string[];
+export type ConversationToolMaskFilter = (
+  toolNames: string[],
+  meta: ConversationMetaMessage,
+) => string[];
 
-let sessionToolMaskFilter: SessionToolMaskFilter | null = null;
+let sessionToolMaskFilter: ConversationToolMaskFilter | null = null;
 
 /** Injected by service composition root (avoids engine-conversation depending on capabilities-mask) */
-export function registerSessionToolMaskFilter(filter: SessionToolMaskFilter): void {
+export function registerConversationToolMaskFilter(filter: ConversationToolMaskFilter): void {
   sessionToolMaskFilter = filter;
 }
 
-export function applySessionToolMaskFilter(
+export function applyConversationToolMaskFilter(
   toolNames: string[],
-  meta: SessionMetaMessage,
+  meta: ConversationMetaMessage,
 ): string[] {
   if (!sessionToolMaskFilter) return toolNames;
   return sessionToolMaskFilter(toolNames, meta);
 }
 
 /** Whether capability mask preset is configured */
-export function sessionHasCapabilityMask(meta: SessionMetaMessage): boolean {
+export function conversationHasCapabilityMask(meta: ConversationMetaMessage): boolean {
   return (meta.capability_mask?.presets.length ?? 0) > 0;
 }

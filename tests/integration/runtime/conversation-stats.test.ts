@@ -62,7 +62,7 @@ describePg("conversation-stats", () => {
 
   it("computeStats with usage and latency", async () => {
     const c = testConv();
-    const sid = await c.newSession(TEST_SAP_CHAT_PLATFORM);
+    const sid = await c.newConversation(TEST_SAP_CHAT_PLATFORM);
     await c.appendMessage(
       {
         role: "user",
@@ -91,8 +91,8 @@ describePg("conversation-stats", () => {
 
   it("mergeStats aggregates", async () => {
     const a = await computeStats(deps(), "no_such_session_xyz");
-    const merged = mergeStats([a], "Summary (1 session)");
-    expect(merged.session).toContain("Summary");
+    const merged = mergeStats([a], "Summary (1 conversation)");
+    expect(merged.conversation).toContain("Summary");
   });
 
   it("statsReport for missing session", async () => {
@@ -107,8 +107,8 @@ describePg("conversation-stats", () => {
 
   it("computeStats estimates when no usage in messages", async () => {
     const c = testConv();
-    const sid = await c.newSession(TEST_SAP_CHAT_PLATFORM);
-    await c.updateSessionMetaField(sid, { compression: { l2: 0, l3: 2 } });
+    const sid = await c.newConversation(TEST_SAP_CHAT_PLATFORM);
+    await c.updateConversationMetaField(sid, { compression: { l2: 0, l3: 2 } });
     await c.appendMessage(
       {
         role: "user",

@@ -2,7 +2,7 @@ import { defineRelations } from "drizzle-orm";
 
 export * from "./embedding.ts";
 export * from "./jsonb/index.ts";
-export * from "./sessions.ts";
+export * from "./conversations.ts";
 export * from "./messages.ts";
 export * from "./semantic-memory.ts";
 export * from "./memory-reference.ts";
@@ -18,22 +18,22 @@ export * from "./auto-llm-runs.ts";
 export * from "./sap-instances.ts";
 export * from "./zod-schemas.ts";
 
+import { conversations } from "./conversations.ts";
 import { messages } from "./messages.ts";
 import { semanticMemory } from "./semantic-memory.ts";
-import { sessions } from "./sessions.ts";
 
 /** Drizzle 1.0: relations required config for drizzle() */
-export const relations = defineRelations({ sessions, messages, semanticMemory }, (r) => ({
-  sessions: {
+export const relations = defineRelations({ conversations, messages, semanticMemory }, (r) => ({
+  conversations: {
     messages: r.many.messages({
-      from: r.sessions.id,
-      to: r.messages.sessionId,
+      from: r.conversations.id,
+      to: r.messages.conversationId,
     }),
   },
   messages: {
-    session: r.one.sessions({
-      from: r.messages.sessionId,
-      to: r.sessions.id,
+    conversation: r.one.conversations({
+      from: r.messages.conversationId,
+      to: r.conversations.id,
     }),
   },
 }));

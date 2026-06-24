@@ -24,7 +24,7 @@ export function dependencyStatusLabel(status: string): string {
 
 export function memoryTypeLabel(type: string): string {
   if (type === "semantic") return m.webui_chamber_memory_type_semantic();
-  if (type === "session") return m.webui_chamber_memory_type_session();
+  if (type === "conversation") return m.webui_chamber_memory_type_conversation();
   if (type === "limbic") return m.webui_chamber_memory_type_limbic();
   if (type === "autobiographical") return m.webui_chamber_memory_type_autobio();
   return type;

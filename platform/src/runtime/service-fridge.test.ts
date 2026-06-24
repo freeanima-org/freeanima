@@ -39,7 +39,7 @@ describe("listFridgeMagnets", () => {
   });
 
   it("returns global notes, inject_text, and TTL", async () => {
-    const keyA = magnetRedisKey("session", "sess-1:note");
+    const keyA = magnetRedisKey("conversation", "sess-1:note");
     const keyTasks = magnetRedisKey("tasks", "summary");
     registerFridgeStore(
       createMemoryFridgeStore({
@@ -61,10 +61,10 @@ describe("listFridgeMagnets", () => {
     expect(result.redis_configured).toBe(true);
     expect(result.magnets).toHaveLength(2);
     expect(result.magnets[0]).toMatchObject({
-      key: "session:sess-1:note",
+      key: "conversation:sess-1:note",
       value: "note content",
-      module: "session",
-      session_id: "sess-1",
+      module: "conversation",
+      conversation_id: "sess-1",
       label: "note",
       ttl_seconds: 3600,
     });
@@ -75,7 +75,7 @@ describe("listFridgeMagnets", () => {
     });
     expect(result.inject_text).toBe(
       formatFridgeMagnetManifestPreview([
-        { key: "session:sess-1:note", value: "note content" },
+        { key: "conversation:sess-1:note", value: "note content" },
         { key: "tasks:summary", value: "tasks (2)" },
       ]),
     );

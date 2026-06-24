@@ -19,7 +19,7 @@ const dreamReadReturnSchema = z.object({
   dream_id: z.string(),
   content: z.string(),
   source_limbic_ids: z.array(z.string()),
-  source_session_ids: z.array(z.string()),
+  source_conversation_ids: z.array(z.string()),
   reminder_dismissed: z.boolean(),
 });
 
@@ -32,7 +32,7 @@ const DREAM_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
       dream_id: "dream-001",
       content: "我在一条没有尽头的走廊里…",
       source_limbic_ids: ["limbic-1"],
-      source_session_ids: ["sess-1"],
+      source_conversation_ids: ["sess-1"],
       reminder_dismissed: true,
     },
   }),
@@ -75,7 +75,7 @@ export function registerDreamTools(toolSets: ToolSetRegistry): void {
               dream_id: row.id,
               content: row.content,
               source_limbic_ids: row.source_limbic_ids,
-              source_session_ids: row.source_session_ids,
+              source_conversation_ids: row.source_conversation_ids,
               reminder_dismissed: Boolean(fridge),
             });
           },

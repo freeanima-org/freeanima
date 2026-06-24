@@ -42,7 +42,7 @@ describe("network-error", () => {
   });
 
   it("rejects generic application errors", () => {
-    expect(isTransientNetworkError(new Error("Session not found"))).toBe(false);
+    expect(isTransientNetworkError(new Error("Conversation not found"))).toBe(false);
   });
 
   it("classifies engine stream errors", () => {

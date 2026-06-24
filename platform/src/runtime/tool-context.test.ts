@@ -1,12 +1,16 @@
-import { runWithToolContext, getToolSessionId, getToolContextKind } from "@freeanima/core/tool";
+import {
+  runWithToolContext,
+  getToolConversationId,
+  getToolContextKind,
+} from "@freeanima/core/tool";
 import { ToolSetRegistry } from "@freeanima/core/tool";
 import { describe, it, expect } from "bun:test";
 
 const tools = new ToolSetRegistry();
 
 describe("runWithToolContext", () => {
-  it("returns undefined session id in auto_llm context", () => {
-    const sid = runWithToolContext("autollm_1", () => getToolSessionId(), {
+  it("returns undefined conversation id in auto_llm context", () => {
+    const sid = runWithToolContext("autollm_1", () => getToolConversationId(), {
       tools,
       contextKind: "auto_llm",
     });
@@ -14,12 +18,12 @@ describe("runWithToolContext", () => {
     expect(getToolContextKind()).toBeUndefined();
   });
 
-  it("propagates session through async generator iteration", async () => {
+  it("propagates conversation through async generator iteration", async () => {
     async function* inner() {
       await Promise.resolve();
-      yield getToolSessionId();
+      yield getToolConversationId();
       await Promise.resolve();
-      yield getToolSessionId();
+      yield getToolConversationId();
     }
 
     const seen: (string | undefined)[] = [];
@@ -30,12 +34,12 @@ describe("runWithToolContext", () => {
     expect(seen).toEqual(["sess-stream", "sess-stream"]);
   });
 
-  it("propagates session through promise chain", async () => {
+  it("propagates conversation through promise chain", async () => {
     const sid = await runWithToolContext(
       "sess-promise",
       async () => {
         await Promise.resolve();
-        return getToolSessionId();
+        return getToolConversationId();
       },
       { tools },
     );

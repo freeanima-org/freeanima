@@ -1,6 +1,6 @@
 import type { RuntimeDeps } from "./runtime-deps.ts";
-import { isSessionMeta } from "@freeanima/core/db/domain";
-import type { SessionMessage } from "@freeanima/core/db/domain";
+import { isConversationMeta } from "@freeanima/core/db/domain";
+import type { StoredMessage } from "@freeanima/core/db/domain";
 import {
   analyzeCompression,
   buildCompressOptions,
@@ -19,8 +19,8 @@ import {
 import { estimateTokens, messageTextForEstimate } from "@freeanima/core/compress";
 import { normalizeUsage } from "@freeanima/core/llm";
 
-export type SessionStats = {
-  session: string;
+export type ConversationStats = {
+  conversation: string;
   message_count: number;
   assistant_turns: number;
   usage_turns: number;
@@ -64,7 +64,7 @@ function parseTimestamp(value: unknown): Date | null {
   return Number.isNaN(t) ? null : new Date(t);
 }
 
-function usageFromMessage(msg: SessionMessage): Record<string, number> | null {
+function usageFromMessage(msg: StoredMessage): Record<string, number> | null {
   if (msg.role !== "assistant") return null;
   const usage = msg.usage;
   if (usage && typeof usage === "object") {
@@ -94,11 +94,11 @@ function emptyBreakdown(): RuntimeContextBreakdown {
 
 async function readCompressionAndContextFields(
   deps: RuntimeDeps,
-  session: string,
-  preloaded?: SessionMessage[],
+  conversationId: string,
+  preloaded?: StoredMessage[],
 ): Promise<
   Pick<
-    SessionStats,
+    ConversationStats,
     | "compression_enabled"
     | "compression_mode"
     | "compression_l2"
@@ -122,21 +122,23 @@ async function readCompressionAndContextFields(
   >
 > {
   const cfg = getCompressionConfig();
-  const meta = await deps.conversation.loadSessionMeta(session);
-  const allMsgs = preloaded ?? (await deps.conversation.loadForRuntime(session));
-  const state = parseCompressionState(isSessionMeta(meta) ? meta.compression : undefined);
+  const meta = await deps.conversation.loadConversationMeta(conversationId);
+  const allMsgs = preloaded ?? (await deps.conversation.loadForRuntime(conversationId));
+  const state = parseCompressionState(isConversationMeta(meta) ? meta.compression : undefined);
   const l2 = state?.l2 ?? null;
   const l3 = isCompressed(state) ? (state?.l3 ?? null) : null;
   const fallbackModel = getProfileHopModel(deps.engine.config.data, PROFILE_CHAT);
-  const tools = isSessionMeta(meta) ? await deps.conversation.loadSessionTools(session, meta) : [];
+  const tools = isConversationMeta(meta)
+    ? await deps.conversation.loadConversationTools(conversationId, meta)
+    : [];
   const compressOpts = buildCompressOptions(meta, state, fallbackModel, { tools });
   const analysis = analyzeCompression(allMsgs, compressOpts);
-  const storedTotal = await deps.conversation.countMessages(session);
+  const storedTotal = await deps.conversation.countMessages(conversationId);
 
   let breakdown = emptyBreakdown();
   if (allMsgs.length > 0) {
     try {
-      breakdown = await computeRuntimeContextBreakdown(deps, session);
+      breakdown = await computeRuntimeContextBreakdown(deps, conversationId);
     } catch {
       breakdown = emptyBreakdown();
     }
@@ -183,15 +185,19 @@ function estimateUsageFromMessages(
   return { input_tokens: input, output_tokens: output };
 }
 
-export async function computeStats(deps: RuntimeDeps, session: string): Promise<SessionStats> {
-  const message_count = await deps.conversation.countMessages(session);
-  const records = message_count > 0 ? await deps.conversation.load(session) : [];
-  const messages = records.filter((r) => r.role !== "session_meta");
+export async function computeStats(
+  deps: RuntimeDeps,
+  conversationId: string,
+): Promise<ConversationStats> {
+  const message_count = await deps.conversation.countMessages(conversationId);
+  const records = message_count > 0 ? await deps.conversation.load(conversationId) : [];
+  const messages = records.filter((r) => r.role !== "conversation_meta");
   const assistant_msgs = messages.filter((m) => m.role === "assistant");
   const assistant_turns = assistant_msgs.length;
-  const meta = message_count > 0 ? await deps.conversation.loadSessionMeta(session) : null;
+  const meta =
+    message_count > 0 ? await deps.conversation.loadConversationMeta(conversationId) : null;
   const fallbackModel = getProfileHopModel(deps.engine.config.data, PROFILE_CHAT);
-  const model = meta != null && isSessionMeta(meta) ? meta.model : fallbackModel;
+  const model = meta != null && isConversationMeta(meta) ? meta.model : fallbackModel;
 
   let input_tokens = 0;
   let output_tokens = 0;
@@ -268,7 +274,7 @@ export async function computeStats(deps: RuntimeDeps, session: string): Promise<
   }
 
   return {
-    session,
+    conversation: conversationId,
     message_count,
     assistant_turns,
     usage_turns,
@@ -281,15 +287,15 @@ export async function computeStats(deps: RuntimeDeps, session: string): Promise<
     partial_usage,
     partial_cached,
     estimated_usage,
-    ...(await readCompressionAndContextFields(deps, session, records)),
+    ...(await readCompressionAndContextFields(deps, conversationId, records)),
   };
 }
 
-export function mergeStats(items: SessionStats[], label = "Summary"): SessionStats {
+export function mergeStats(items: ConversationStats[], label = "Summary"): ConversationStats {
   if (!items.length) {
     const cfg = getCompressionConfig();
     return {
-      session: label,
+      conversation: label,
       message_count: 0,
       assistant_turns: 0,
       usage_turns: 0,
@@ -376,7 +382,7 @@ export function mergeStats(items: SessionStats[], label = "Summary"): SessionSta
   }
 
   return {
-    session: label,
+    conversation: label,
     message_count,
     assistant_turns,
     usage_turns,
@@ -447,7 +453,7 @@ function formatPct(ratio: number | null): string {
   return `${Math.round(ratio * 1000) / 10}%`;
 }
 
-function formatCompression(stats: SessionStats): string {
+function formatCompression(stats: ConversationStats): string {
   if (!stats.compression_enabled) return "Session compression: disabled";
 
   const lines = ["Session compression: enabled"];
@@ -514,7 +520,7 @@ function formatCompression(stats: SessionStats): string {
   return lines.join("\n");
 }
 
-function formatContextBreakdown(stats: SessionStats): string[] {
+function formatContextBreakdown(stats: ConversationStats): string[] {
   const b = stats.context_breakdown;
   const systemTotal = b.system_self + b.system_agents + b.system_resident + b.system_toolsets;
   const lines = [
@@ -534,7 +540,7 @@ function formatContextBreakdown(stats: SessionStats): string[] {
   return lines;
 }
 
-function formatUsageNote(stats: SessionStats): string | null {
+function formatUsageNote(stats: ConversationStats): string | null {
   if (stats.usage_turns > 0) {
     if (stats.partial_usage) {
       return `usage records: ${stats.usage_turns}/${stats.assistant_turns} turns (some turns missing records)`;
@@ -547,13 +553,13 @@ function formatUsageNote(stats: SessionStats): string | null {
   return `usage records: 0/${stats.assistant_turns} turns`;
 }
 
-export function formatStats(stats: SessionStats): string {
+export function formatStats(stats: ConversationStats): string {
   const usageOpts = {
     partial: stats.partial_usage,
     estimated: stats.estimated_usage,
   };
   const lines = [
-    `Session: ${stats.session}`,
+    `Conversation: ${stats.conversation}`,
     `Message count: ${stats.message_count} (full archive, including trimmed/hidden)`,
     `assistant turns: ${stats.assistant_turns}`,
     formatCompression(stats),
@@ -562,7 +568,7 @@ export function formatStats(stats: SessionStats): string {
     `Output tokens: ${formatNumber(stats.output_tokens, usageOpts)}`,
     `Cached tokens: ${formatNumber(stats.cached_tokens, { partial: stats.partial_cached })}`,
     `Avg tps: ${formatNumber(stats.avg_tps, { digits: 1, estimated: stats.estimated_usage })}`,
-    `Session duration: ${formatDuration(stats.duration_seconds)}`,
+    `Conversation duration: ${formatDuration(stats.duration_seconds)}`,
     `Throughput: ${formatNumber(stats.throughput_tpm, { digits: 1, estimated: stats.estimated_usage })} token/min`,
   ];
   const usageNote = formatUsageNote(stats);
@@ -575,25 +581,27 @@ export function formatStats(stats: SessionStats): string {
 
 export async function statsReport(
   deps: RuntimeDeps,
-  session?: string | null,
-  opts?: { allSessions?: boolean },
+  conversationId?: string | null,
+  opts?: { allConversations?: boolean },
 ): Promise<string> {
-  if (opts?.allSessions) {
-    const sessions = await deps.conversation.listSessions();
-    if (!sessions.length) return "(no sessions)";
+  if (opts?.allConversations) {
+    const conversations = await deps.conversation.listConversations();
+    if (!conversations.length) return "(no conversations)";
     const parts: string[] = [];
-    const perSession: SessionStats[] = [];
-    for (const name of sessions) {
+    const perConversation: ConversationStats[] = [];
+    for (const name of conversations) {
       const item = await computeStats(deps, name);
-      perSession.push(item);
+      perConversation.push(item);
       parts.push(formatStats(item));
     }
-    parts.push(formatStats(mergeStats(perSession, `Summary (${sessions.length} session(s))`)));
+    parts.push(
+      formatStats(mergeStats(perConversation, `Summary (${conversations.length} conversation(s))`)),
+    );
     return parts.join("\n\n");
   }
 
-  const name = session;
-  if (!name) return statsReport(deps, null, { allSessions: true });
-  if (!(await deps.conversation.sessionExists(name))) return `Session: ${name}\n(empty)`;
+  const name = conversationId;
+  if (!name) return statsReport(deps, null, { allConversations: true });
+  if (!(await deps.conversation.conversationExists(name))) return `Conversation: ${name}\n(empty)`;
   return formatStats(await computeStats(deps, name));
 }

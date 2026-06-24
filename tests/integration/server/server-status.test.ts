@@ -48,7 +48,7 @@ describePg("server status API", () => {
       }),
     );
     expect(body.uptime_seconds).not.toBeNull();
-    expect(body.sessions).toEqual(
+    expect(body.conversations).toEqual(
       expect.objectContaining({
         total: expect.any(Number),
         by_platform: expect.any(Object),

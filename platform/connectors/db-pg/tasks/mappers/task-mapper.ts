@@ -31,6 +31,6 @@ export function mapTaskRow(row: TaskDbRow): TaskRow {
     created_at: normalizePgTimestamp(row.createdAt),
     updated_at: normalizePgTimestamp(row.updatedAt),
     completed_at: row.completedAt != null ? normalizePgTimestamp(row.completedAt) : null,
-    source_session_id: row.sourceSessionId,
+    source_conversation_id: row.sourceConversationId,
   };
 }

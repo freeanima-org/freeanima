@@ -4,7 +4,7 @@ export class EngineRunControl {
   private shuttingDown = false;
   private inFlightCount = 0;
   private inFlightResolve: (() => void) | null = null;
-  private sessionAbortControllers = new Map<string, AbortController>();
+  private conversationAbortControllers = new Map<string, AbortController>();
 
   isShuttingDown(): boolean {
     return this.shuttingDown;
@@ -32,7 +32,7 @@ export class EngineRunControl {
   }
 
   abortAll(): void {
-    for (const controller of this.sessionAbortControllers.values()) {
+    for (const controller of this.conversationAbortControllers.values()) {
       controller.abort();
     }
   }
@@ -56,20 +56,20 @@ export class EngineRunControl {
     logComponent("shutdown").debug("In-flight requests drained");
   }
 
-  preemptSessionEngine(sessionId: string): void {
-    this.sessionAbortControllers.get(sessionId)?.abort();
+  preemptSessionEngine(conversationId: string): void {
+    this.conversationAbortControllers.get(conversationId)?.abort();
   }
 
-  beginEngineRun(sessionId: string): { signal: AbortSignal; controller: AbortController } {
-    this.preemptSessionEngine(sessionId);
+  beginEngineRun(conversationId: string): { signal: AbortSignal; controller: AbortController } {
+    this.preemptSessionEngine(conversationId);
     const controller = new AbortController();
-    this.sessionAbortControllers.set(sessionId, controller);
+    this.conversationAbortControllers.set(conversationId, controller);
     return { signal: controller.signal, controller };
   }
 
-  endEngineRun(sessionId: string, controller: AbortController): void {
-    if (this.sessionAbortControllers.get(sessionId) === controller) {
-      this.sessionAbortControllers.delete(sessionId);
+  endEngineRun(conversationId: string, controller: AbortController): void {
+    if (this.conversationAbortControllers.get(conversationId) === controller) {
+      this.conversationAbortControllers.delete(conversationId);
     }
   }
 }

@@ -69,8 +69,8 @@ export function buildTextSearchSnippet(
   return snippet;
 }
 
-export type SessionMessageSearchFields = {
-  session_id: string;
+export type StoredMessageSearchFields = {
+  conversation_id: string;
   message_id: string;
   role: string;
   timestamp: string;
@@ -78,8 +78,8 @@ export type SessionMessageSearchFields = {
   rank: number;
 };
 
-export type SessionMessageSearchHit = {
-  session_id: string;
+export type StoredMessageSearchHit = {
+  conversation_id: string;
   message_id: string;
   role: string;
   timestamp: string;
@@ -87,13 +87,13 @@ export type SessionMessageSearchHit = {
   rank: number;
 };
 
-/** Session message FTS hit → external search hit (snippet, no full content) */
-export function formatSessionMessageSearchHit(
+/** Conversation message FTS hit → external search hit (snippet, no full content) */
+export function formatStoredMessageSearchHit(
   query: string,
-  row: SessionMessageSearchFields,
-): SessionMessageSearchHit {
+  row: StoredMessageSearchFields,
+): StoredMessageSearchHit {
   return {
-    session_id: row.session_id,
+    conversation_id: row.conversation_id,
     message_id: row.message_id,
     role: row.role,
     timestamp: row.timestamp,

@@ -2,7 +2,7 @@ import type { ChatCompletion } from "@freeanima/core/provider";
 import { PROFILE_REFLECT, PROFILE_SUMMARY } from "@freeanima/core/provider";
 import type { OpenAiToolSchema, ToolCall } from "@freeanima/core/db/domain";
 import type { LlmCallParams } from "@freeanima/core/provider";
-import type { SessionMessage } from "@freeanima/core/db/domain";
+import type { StoredMessage } from "@freeanima/core/db/domain";
 import {
   cleanToolCallsForApi,
   finalizeStreamingToolCalls,
@@ -10,7 +10,7 @@ import {
 } from "@freeanima/core/provider/stream-tools";
 import { getLlmRuntime, type LlmRuntime } from "./llm-stack.ts";
 import {
-  sessionMessagesToInvokeInput,
+  storedMessagesToInvokeInput,
   simpleMessagesToInvokeInput,
   type SimpleChatMessage,
 } from "./llm-adapt.ts";
@@ -34,19 +34,19 @@ function resolveRuntime(opts?: LlmInvokeOpts): LlmRuntime {
   return opts?.runtime ?? getLlmRuntime();
 }
 
-export async function chat(messages: SessionMessage[], opts?: LlmInvokeOpts): Promise<LlmResponse>;
+export async function chat(messages: StoredMessage[], opts?: LlmInvokeOpts): Promise<LlmResponse>;
 export async function chat(
   messages: SimpleChatMessage[],
   opts?: LlmInvokeOpts,
 ): Promise<LlmResponse>;
 export async function chat(
-  messages: SessionMessage[] | SimpleChatMessage[],
+  messages: StoredMessage[] | SimpleChatMessage[],
   opts?: LlmInvokeOpts,
 ): Promise<LlmResponse> {
   const profile = resolveRuntime(opts).profiles.resolve(opts?.profileId);
   const input = isSimpleChatOnly(messages)
     ? simpleMessagesToInvokeInput(messages as SimpleChatMessage[])
-    : sessionMessagesToInvokeInput(messages as SessionMessage[]);
+    : storedMessagesToInvokeInput(messages as StoredMessage[]);
 
   return profile.chat(input.turns, {
     model: opts?.model,
@@ -57,7 +57,7 @@ export async function chat(
 }
 
 export async function* chatStream(
-  messages: SessionMessage[],
+  messages: StoredMessage[],
   opts?: LlmInvokeOpts,
 ): AsyncGenerator<
   | { type: "content"; content: string }
@@ -71,7 +71,7 @@ export async function* chatStream(
     }
 > {
   const profile = resolveRuntime(opts).profiles.resolve(opts?.profileId);
-  const input = sessionMessagesToInvokeInput(messages);
+  const input = storedMessagesToInvokeInput(messages);
 
   for await (const event of profile.chatStream(input.turns, {
     model: opts?.model,
@@ -83,7 +83,7 @@ export async function* chatStream(
   }
 }
 
-function isSimpleChatOnly(messages: SessionMessage[] | SimpleChatMessage[]): boolean {
+function isSimpleChatOnly(messages: StoredMessage[] | SimpleChatMessage[]): boolean {
   return messages.every((m) => m.role === "system" || m.role === "user" || m.role === "assistant");
 }
 

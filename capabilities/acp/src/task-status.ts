@@ -1,4 +1,4 @@
-import type { SessionConversationPort } from "@freeanima/core/tool/session-conversation-port";
+import type { ConversationPort } from "@freeanima/core/tool/conversation-port";
 import type { AcpTaskStatus } from "./acp-tasks.ts";
 import { readAcpTasks, type AcpTaskEntry, type AcpTasksMeta } from "./acp-tasks.ts";
 import {
@@ -20,7 +20,7 @@ export type AcpTaskStatusViewStatus =
 
 export type AcpTaskStatusView = {
   task_id: string;
-  acp_session_id: string;
+  acp_conversation_id: string;
   agent_name: string;
   status: AcpTaskStatusViewStatus;
   progress_text: string;
@@ -122,7 +122,7 @@ async function resolveResult(
 }
 
 export async function queryAcpTaskStatus(opts: {
-  conversation: SessionConversationPort;
+  conversation: ConversationPort;
   taskStore: AcpAsyncTaskStore;
   taskQuery?: AcpTaskQueryPort | null;
   animaSessionId: string;
@@ -186,7 +186,7 @@ export async function queryAcpTaskStatus(opts: {
 
   return {
     task_id: resolvedTaskId,
-    acp_session_id: acpSessionId.startsWith("queued:") ? "" : acpSessionId,
+    acp_conversation_id: acpSessionId.startsWith("queued:") ? "" : acpSessionId,
     agent_name: memoryTask?.agentName ?? entry?.agent_name ?? "cursor",
     status: viewStatus,
     progress_text: progressText,
@@ -198,7 +198,7 @@ export async function queryAcpTaskStatus(opts: {
 }
 
 export async function queryAcpTaskStatusList(opts: {
-  conversation: SessionConversationPort;
+  conversation: ConversationPort;
   taskStore: AcpAsyncTaskStore;
   taskQuery?: AcpTaskQueryPort | null;
   animaSessionId: string;

@@ -60,8 +60,8 @@ describe("queryAcpTaskStatus", () => {
     });
 
     const conversation = {
-      loadSessionMeta: async () => ({
-        role: "session_meta" as const,
+      loadConversationMeta: async () => ({
+        role: "conversation_meta" as const,
         model: "test",
         cached_toolsets: [],
         functions: [],
@@ -75,7 +75,7 @@ describe("queryAcpTaskStatus", () => {
           },
         },
       }),
-      updateSessionMetaField: async () => {},
+      updateConversationMetaField: async () => {},
     };
 
     const view = await queryAcpTaskStatus({
@@ -93,8 +93,8 @@ describe("queryAcpTaskStatus", () => {
   it("returns meta task with persisted progress text", async () => {
     const store = new AcpAsyncTaskStore();
     const conversation = {
-      loadSessionMeta: async () => ({
-        role: "session_meta" as const,
+      loadConversationMeta: async () => ({
+        role: "conversation_meta" as const,
         model: "test",
         cached_toolsets: [],
         functions: [],
@@ -109,7 +109,7 @@ describe("queryAcpTaskStatus", () => {
           },
         },
       }),
-      updateSessionMetaField: async () => {},
+      updateConversationMetaField: async () => {},
     };
 
     const view = await queryAcpTaskStatus({
@@ -118,7 +118,7 @@ describe("queryAcpTaskStatus", () => {
       taskQuery: {
         getMessageContent: async () => "stored progress tail",
         findAcpResultForTask: async () => ({
-          session_id: "acp-9",
+          conversation_id: "acp-9",
           output: "final output",
           new_session: false,
           reused_binding: false,

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "bun:test";
 import {
-  createSessionBodySchema,
+  createConversationBodySchema,
   sendMessageBodySchema,
   memorySearchBodySchema,
   taskListBodySchema,
@@ -22,9 +22,11 @@ describe("api/schemas", () => {
     if (ok.success) expect(ok.data.query).toBe("test");
   });
 
-  it("requires platform on create session", () => {
-    expect(createSessionBodySchema.safeParse({}).success).toBe(false);
-    expect(createSessionBodySchema.safeParse({ platform: "sap:chat:test" }).success).toBe(true);
+  it("requires platform on create conversation", () => {
+    expect(createConversationBodySchema.safeParse({}).success).toBe(false);
+    expect(createConversationBodySchema.safeParse({ platform: "sap:chat:test" }).success).toBe(
+      true,
+    );
   });
 
   it("validates task list body", () => {

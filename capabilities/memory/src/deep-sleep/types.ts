@@ -14,7 +14,7 @@ export type DeepSleepChangeEntry = {
     id: string;
     type: string;
     content: string;
-    source_sessions: string[];
+    source_conversations: string[];
     observed_at: string | null;
   };
 };

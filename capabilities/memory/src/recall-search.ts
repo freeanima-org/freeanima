@@ -18,7 +18,7 @@ import { getLimbicMemoryStore } from "./limbic-port.ts";
 import { getSemanticMemoryStore } from "./semantic-port.ts";
 import { searchDialogue } from "./search.ts";
 
-export type MemoryRecallHitType = "semantic" | "session" | "limbic" | "autobiographical";
+export type MemoryRecallHitType = "semantic" | "conversation" | "limbic" | "autobiographical";
 
 export type SemanticRecallHit = {
   memory_type: "semantic";
@@ -27,16 +27,16 @@ export type SemanticRecallHit = {
   type: string;
   pinned: boolean;
   content: string;
-  source_sessions: string[];
+  source_conversations: string[];
   observed_at: string | null;
   occurred_at: string | null;
   status: string;
 };
 
-export type SessionRecallHit = {
-  memory_type: "session";
+export type ConversationRecallHit = {
+  memory_type: "conversation";
   score: number;
-  session_id: string;
+  conversation_id: string;
   message_id: string;
   role: string;
   timestamp: string;
@@ -48,7 +48,7 @@ export type LimbicRecallHit = {
   score: number;
   limbic_memory_id: string;
   kind: string;
-  session_id: string;
+  conversation_id: string;
   content: string;
   intensity: number;
   valence: number | null;
@@ -66,7 +66,7 @@ export type AutobiographicalRecallHit = {
 
 export type MemoryRecallHit =
   | SemanticRecallHit
-  | SessionRecallHit
+  | ConversationRecallHit
   | LimbicRecallHit
   | AutobiographicalRecallHit;
 
@@ -81,8 +81,8 @@ type RecallCandidate = {
   docKey: string;
   memory_type: MemoryRecallHitType;
   semantic?: SemanticFtsHit;
-  session?: {
-    session_id: string;
+  conversation?: {
+    conversation_id: string;
     message_id: string;
     role: string;
     timestamp: string;
@@ -102,7 +102,7 @@ function buildRecallSummary(query: string, results: MemoryRecallHit[]): string {
   }
   const counts: Record<MemoryRecallHitType, number> = {
     semantic: 0,
-    session: 0,
+    conversation: 0,
     limbic: 0,
     autobiographical: 0,
   };
@@ -111,7 +111,7 @@ function buildRecallSummary(query: string, results: MemoryRecallHit[]): string {
   }
   const parts: string[] = [];
   if (counts.semantic) parts.push(`semantic ${counts.semantic}`);
-  if (counts.session) parts.push(`session ${counts.session}`);
+  if (counts.conversation) parts.push(`conversation ${counts.conversation}`);
   if (counts.limbic) parts.push(`limbic ${counts.limbic}`);
   if (counts.autobiographical) parts.push(`autobiographical ${counts.autobiographical}`);
   return `Found ${results.length} related memories (${parts.join(", ")})`;
@@ -132,18 +132,18 @@ function mapCandidateToHit(
         type: row.type,
         pinned: row.pinned,
         content: row.content,
-        source_sessions: row.source_sessions,
+        source_conversations: row.source_conversations,
         observed_at: row.observed_at,
         occurred_at: row.occurred_at,
         status: row.status,
       };
     }
-    case "session": {
-      const row = candidate.session!;
+    case "conversation": {
+      const row = candidate.conversation!;
       return {
-        memory_type: "session",
+        memory_type: "conversation",
         score,
-        session_id: row.session_id,
+        conversation_id: row.conversation_id,
         message_id: row.message_id,
         role: row.role,
         timestamp: row.timestamp,
@@ -157,7 +157,7 @@ function mapCandidateToHit(
         score,
         limbic_memory_id: row.id,
         kind: row.kind,
-        session_id: row.session_id,
+        conversation_id: row.conversation_id,
         content: row.content,
         intensity: row.intensity,
         valence: row.valence,
@@ -188,7 +188,7 @@ export async function memoryRecallSearch(
 
   validateFtsQueryInput(q);
 
-  const [semanticRows, sessionRows, limbicRows, autobiographicalRows] = await Promise.all([
+  const [semanticRows, conversationRows, limbicRows, autobiographicalRows] = await Promise.all([
     getSemanticMemoryStore().searchFts(q, { limit: pool }),
     searchDialogue(q, { limit: pool }).catch(() => []),
     getLimbicMemoryStore()
@@ -205,11 +205,11 @@ export async function memoryRecallSearch(
     semantic: row,
   }));
 
-  const sessionList: RecallCandidate[] = sessionRows.map((row) => ({
+  const conversationList: RecallCandidate[] = conversationRows.map((row) => ({
     docKey: messageDocKey(row.message_id),
-    memory_type: "session",
-    session: {
-      session_id: row.session_id,
+    memory_type: "conversation",
+    conversation: {
+      conversation_id: row.conversation_id,
       message_id: row.message_id,
       role: row.role,
       timestamp: row.timestamp,
@@ -229,7 +229,9 @@ export async function memoryRecallSearch(
     autobiographical: row,
   }));
 
-  const merged = rrfMerge([semanticList, sessionList, limbicList, autobiographicalList], { limit });
+  const merged = rrfMerge([semanticList, conversationList, limbicList, autobiographicalList], {
+    limit,
+  });
 
   const results = merged.map((row) => mapCandidateToHit(q, row as RecallCandidate, row.score));
 

@@ -20,7 +20,7 @@ import { cleanToolCallsForApi } from "@freeanima/core/llm";
 import { markToolLoopActivity, maybeApplyEmergencyCompression } from "@freeanima/core/compress";
 import {
   getToolRegistry,
-  getToolSessionId,
+  getToolConversationId,
   getToolRepos,
   isExecutableTool,
 } from "@freeanima/core/tool";
@@ -28,7 +28,7 @@ import { REPAIR_REASON_INTERRUPT } from "@freeanima/core/llm";
 import {
   resolveMaxTurns,
   type AssistantMessage,
-  type SessionMessage,
+  type StoredMessage,
   type ToolMessage,
   type OpenAiToolSchema,
 } from "@freeanima/core/db/domain";
@@ -54,8 +54,8 @@ type EngineOpts = {
   /** Executable tool names (cached + staged toolsets); no loaded gate when unset */
   executableTools?: readonly string[];
   hookRegistry?: HookRegistry;
-  onMessageAppended?: (msg: SessionMessage) => void | Promise<void>;
-  onToolRoundComplete?: (msgs: SessionMessage[]) => void | Promise<void>;
+  onMessageAppended?: (msg: StoredMessage) => void | Promise<void>;
+  onToolRoundComplete?: (msgs: StoredMessage[]) => void | Promise<void>;
   signal?: AbortSignal;
   /** Returns true on process shutdown; engine interrupts before next LLM / tool round */
   shouldStop?: () => boolean;
@@ -116,7 +116,7 @@ function prepareEngine(
 }
 
 async function persistMessages(
-  batch: SessionMessage[],
+  batch: StoredMessage[],
   opts?: Pick<EngineOpts, "onMessageAppended" | "onToolRoundComplete">,
 ): Promise<void> {
   if (!batch.length) return;
@@ -132,14 +132,14 @@ async function persistMessages(
 }
 
 async function persistToolRound(
-  assistant: SessionMessage,
+  assistant: StoredMessage,
   tools: ToolMessage[],
   pendingCalls: ReturnType<typeof cleanToolCallsForApi>,
   executedCount: number,
   opts?: EngineOpts,
   interruptReason?: string,
-): Promise<SessionMessage[]> {
-  const batch: SessionMessage[] = [assistant, ...tools];
+): Promise<StoredMessage[]> {
+  const batch: StoredMessage[] = [assistant, ...tools];
   if (interruptReason) {
     for (const tc of pendingCalls.slice(executedCount)) {
       const synthetic: ToolMessage = {
@@ -157,63 +157,63 @@ async function persistToolRound(
 }
 
 async function afterRuntimeMessage(
-  messages: SessionMessage[],
-  msg: SessionMessage,
+  messages: StoredMessage[],
+  msg: StoredMessage,
   opts?: {
     model?: string;
     tools?: OpenAiToolSchema[];
-    onMessageAppended?: (msg: SessionMessage) => void | Promise<void>;
+    onMessageAppended?: (msg: StoredMessage) => void | Promise<void>;
   },
 ): Promise<void> {
   await persistMessages([msg], opts);
-  const sessionId = getToolSessionId();
-  if (!sessionId) return;
+  const conversationId = getToolConversationId();
+  if (!conversationId) return;
   if (
     msg.role === "tool" ||
     (msg.role === "assistant" && msg.tool_calls && msg.tool_calls.length > 0)
   ) {
-    markToolLoopActivity(sessionId);
+    markToolLoopActivity(conversationId);
   }
   const model = opts?.model;
   const tools = opts?.tools;
   if (model && tools) {
     const repos = getToolRepos();
     if (repos) {
-      await maybeApplyEmergencyCompression(repos, sessionId, messages, { model, tools });
+      await maybeApplyEmergencyCompression(repos, conversationId, messages, { model, tools });
     }
   }
 }
 
 async function afterToolRoundBatch(
-  messages: SessionMessage[],
-  batch: SessionMessage[],
+  messages: StoredMessage[],
+  batch: StoredMessage[],
   opts?: { model?: string; tools?: OpenAiToolSchema[] },
 ): Promise<void> {
-  const sessionId = getToolSessionId();
-  if (!sessionId) return;
+  const conversationId = getToolConversationId();
+  if (!conversationId) return;
   if (batch.some((m) => m.role === "tool" || (m.role === "assistant" && m.tool_calls?.length))) {
-    markToolLoopActivity(sessionId);
+    markToolLoopActivity(conversationId);
   }
   const model = opts?.model;
   const tools = opts?.tools;
   if (model && tools) {
     const repos = getToolRepos();
     if (repos) {
-      await maybeApplyEmergencyCompression(repos, sessionId, messages, { model, tools });
+      await maybeApplyEmergencyCompression(repos, conversationId, messages, { model, tools });
     }
   }
 }
 
 async function runToolAfterCallHooks(
   hookRegistry: HookRegistry | undefined,
-  sessionId: string,
+  conversationId: string,
   toolName: string,
   args: Record<string, unknown>,
   result: string,
 ): Promise<TurnControl | null> {
   if (!hookRegistry) return null;
   const hookRun = await hookRegistry.run(toolAfterCall, {
-    sessionId,
+    conversationId,
     toolName,
     args,
     result,
@@ -224,7 +224,7 @@ async function runToolAfterCallHooks(
   return tc as TurnControl;
 }
 
-export async function run(messages: SessionMessage[], opts?: EngineOpts): Promise<string> {
+export async function run(messages: StoredMessage[], opts?: EngineOpts): Promise<string> {
   const parts: string[] = [];
   for await (const ev of runStream(messages, opts)) {
     switch (ev.event) {
@@ -281,7 +281,7 @@ function hookStreamToEngine(ev: HookStreamEvent): StreamEvent {
 }
 
 export async function* runStream(
-  messages: SessionMessage[],
+  messages: StoredMessage[],
   opts?: EngineOpts,
 ): AsyncGenerator<StreamEvent> {
   const maxTurns = resolveMaxTurns(opts);
@@ -295,7 +295,7 @@ export async function* runStream(
     // Run beforeLlmCall hook; modules (e.g. fridge magnets) may modify messages before LLM inference
     if (opts?.hookRegistry) {
       await opts.hookRegistry.run(beforeLlmCall, {
-        sessionId: getToolSessionId() ?? "",
+        conversationId: getToolConversationId() ?? "",
         messages: messages as BeforeLlmCallContext["messages"],
       });
     }
@@ -446,10 +446,10 @@ export async function* runStream(
             }
           }
         }
-        const sessionId = getToolSessionId() ?? "";
+        const conversationId = getToolConversationId() ?? "";
         const control = await runToolAfterCallHooks(
           opts?.hookRegistry,
-          sessionId,
+          conversationId,
           fnName,
           fnArgs,
           result,

@@ -29,7 +29,7 @@ type TaskRow = {
   created_at: string;
   updated_at: string;
   completed_at: string | null;
-  source_session_id: string | null;
+  source_conversation_id: string | null;
 };
 
 function resolveStatusFilter(value: string): "all" | string | string[] | undefined {
@@ -228,15 +228,15 @@ function TasksPage() {
                         <span>completed: {formatDisplayDateTime(row.completed_at)}</span>
                       ) : null}
                     </div>
-                    {row.source_session_id ? (
+                    {row.source_conversation_id ? (
                       <p className="text-xs text-base-content/50">
                         session:{" "}
                         <Link
-                          to="/chamber/sessions/$sessionId"
-                          params={{ sessionId: row.source_session_id }}
+                          to="/chamber/conversations/$conversationId"
+                          params={{ conversationId: row.source_conversation_id }}
                           className="link link-hover font-mono"
                         >
-                          {row.source_session_id}
+                          {row.source_conversation_id}
                         </Link>
                       </p>
                     ) : null}

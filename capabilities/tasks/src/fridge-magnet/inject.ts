@@ -1,4 +1,4 @@
-import type { AssistantMessage, SessionMessage } from "@freeanima/core/db/domain";
+import type { AssistantMessage, StoredMessage } from "@freeanima/core/db/domain";
 import type { FridgeMagnet } from "./types.ts";
 
 /** OpenAI name field: ^[a-zA-Z0-9_-]{1,64}$ */
@@ -35,12 +35,12 @@ export function formatFridgeMagnetManifestPreview(magnets: FridgeMagnet[]): stri
   return `role: assistant\nname: ${FRIDGE_CONTEXT_ASSISTANT_NAME}\n\n${content}`;
 }
 
-export function isFridgeContextAssistant(msg: SessionMessage): msg is AssistantMessage {
+export function isFridgeContextAssistant(msg: StoredMessage): msg is AssistantMessage {
   return msg.role === "assistant" && msg.name === FRIDGE_CONTEXT_ASSISTANT_NAME;
 }
 
 /** Remove runtime manifest assistant messages (idempotent) */
-export function stripFridgeContextFromMessages(messages: SessionMessage[]): void {
+export function stripFridgeContextFromMessages(messages: StoredMessage[]): void {
   for (let i = messages.length - 1; i >= 0; i--) {
     if (isFridgeContextAssistant(messages[i]!)) {
       messages.splice(i, 1);
@@ -54,7 +54,7 @@ export function stripFridgeMagnets(content: string): string {
 }
 
 /** @deprecated Legacy user prepend — use stripFridgeMagnets on user messages */
-export function stripLegacyUserFridgeBlocks(messages: SessionMessage[]): void {
+export function stripLegacyUserFridgeBlocks(messages: StoredMessage[]): void {
   for (const msg of messages) {
     if (msg.role === "user" && "content" in msg && msg.content !== null) {
       msg.content = stripFridgeMagnets(msg.content);
@@ -70,7 +70,7 @@ export const stripAllFromMessages = stripLegacyUserFridgeBlocks;
  * No-op unless the last message is user and magnets are non-empty.
  */
 export function manifestFridgeMagnetBoard(
-  messages: SessionMessage[],
+  messages: StoredMessage[],
   magnets: FridgeMagnet[],
 ): void {
   const lastIdx = messages.length - 1;

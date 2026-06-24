@@ -18,15 +18,15 @@ describe("createAcpProgressDelivery deliverResult", () => {
     deliverToTargets.mockReset();
     deliverToTargets.mockResolvedValueOnce(undefined);
 
-    const appended: Array<{ session: string; content: string }> = [];
-    const sessionUpdated: string[] = [];
+    const appended: Array<{ conversation: string; content: string }> = [];
+    const conversationUpdated: string[] = [];
 
     const conversation = {
-      appendMessage: async (msg: { role: string; content: string }, session: string) => {
-        appended.push({ session, content: msg.content });
+      appendMessage: async (msg: { role: string; content: string }, conversation: string) => {
+        appended.push({ conversation, content: msg.content });
       },
-      loadSessionMeta: async () => ({
-        role: "session_meta" as const,
+      loadConversationMeta: async () => ({
+        role: "conversation_meta" as const,
         model: "test",
         cached_toolsets: [],
         functions: [],
@@ -40,7 +40,7 @@ describe("createAcpProgressDelivery deliverResult", () => {
     const port = createAcpProgressDelivery({
       conversation: conversation as never,
       bus: null,
-      onSessionUpdated: (sid) => sessionUpdated.push(sid),
+      onConversationUpdated: (sid) => conversationUpdated.push(sid),
     });
 
     const task: AcpAsyncTaskSnapshot = {
@@ -54,7 +54,7 @@ describe("createAcpProgressDelivery deliverResult", () => {
     };
 
     const result: AcpPromptResult = {
-      session_id: "acp-1",
+      conversation_id: "acp-1",
       output: "full cursor output here",
       new_session: false,
       reused_binding: true,
@@ -65,7 +65,7 @@ describe("createAcpProgressDelivery deliverResult", () => {
     await port.deliverResult(task, result);
 
     expect(appended).toHaveLength(1);
-    expect(appended[0]!.session).toBe("sess-discord");
+    expect(appended[0]!.conversation).toBe("sess-discord");
     expect(appended[0]!.content).toContain("[ACP result]");
     expect(appended[0]!.content).toContain("full cursor output here");
     expect(appended[0]!.content).toContain("task-42");
@@ -74,7 +74,7 @@ describe("createAcpProgressDelivery deliverResult", () => {
       [{ platform: "discord", chat_id: "ch-1", thread_id: "th-1" }],
       expect.stringContaining("full cursor output here"),
     );
-    expect(sessionUpdated).toEqual(["sess-discord"]);
+    expect(conversationUpdated).toEqual(["sess-discord"]);
   });
 
   it("chat: writes [ACP result] without external deliver", async () => {
@@ -86,8 +86,8 @@ describe("createAcpProgressDelivery deliverResult", () => {
       appendMessage: async (msg: { content: string }) => {
         appended.push(msg.content);
       },
-      loadSessionMeta: async () => ({
-        role: "session_meta" as const,
+      loadConversationMeta: async () => ({
+        role: "conversation_meta" as const,
         model: "test",
         cached_toolsets: [],
         functions: [],
@@ -113,7 +113,7 @@ describe("createAcpProgressDelivery deliverResult", () => {
     };
 
     await port.deliverResult(task, {
-      session_id: "acp-1",
+      conversation_id: "acp-1",
       output: "done",
       new_session: true,
       reused_binding: false,
@@ -135,8 +135,8 @@ describe("createAcpProgressDelivery deliverResult", () => {
       appendMessage: async (msg: { content: string }) => {
         appended.push(msg.content);
       },
-      loadSessionMeta: async () => ({
-        role: "session_meta" as const,
+      loadConversationMeta: async () => ({
+        role: "conversation_meta" as const,
         model: "test",
         cached_toolsets: [],
         functions: [],

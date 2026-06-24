@@ -27,7 +27,7 @@ const QUICK_LINKS = [
   { to: "/chamber/limbic-memory", label: () => m.webui_chamber_nav_limbic() },
   { to: "/chamber/autobiographical-memory", label: () => m.webui_chamber_nav_autobio() },
   { to: "/chamber/fts", label: () => m.webui_chamber_nav_fts() },
-  { to: "/chamber/sessions", label: () => m.webui_chamber_nav_sessions() },
+  { to: "/chamber/conversations", label: () => m.webui_chamber_nav_conversations() },
 ] as const;
 
 function MemoryPage() {

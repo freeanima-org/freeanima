@@ -8,14 +8,14 @@ import {
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/sap-chat-test-platform.ts";
 
 describe("chat SAP procedures", () => {
-  it("registers session.acpDock, session.commands, fridge.list", () => {
-    expect(SAP_METHODS).toContain("session.acpDock");
-    expect(SAP_METHODS).toContain("session.commands");
+  it("registers conversation.acpDock, conversation.commands, fridge.list", () => {
+    expect(SAP_METHODS).toContain("conversation.acpDock");
+    expect(SAP_METHODS).toContain("conversation.commands");
     expect(SAP_METHODS).toContain("fridge.list");
   });
 
   it("validates chat procedure inputs", () => {
-    sessionAcpDockInputSchema.parse({ session_id: "20260101_120000_abc" });
+    sessionAcpDockInputSchema.parse({ conversation_id: "20260101_120000_abc" });
     sessionCommandsInputSchema.parse({ platform: TEST_SAP_CHAT_PLATFORM, all: false });
     fridgeListInputSchema.parse({});
   });

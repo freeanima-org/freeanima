@@ -14,7 +14,7 @@ export function registerServiceStores(
   opts?: { fridgeBridge?: FridgeBridge },
 ): void {
   registerMemoryPipeline({
-    sessionStore: repos.session,
+    conversationStore: repos.conversation,
     semanticStore: repos.semanticMemory,
     autobiographicalStore: repos.autobiographicalMemory,
     limbicStore: repos.limbicMemory,

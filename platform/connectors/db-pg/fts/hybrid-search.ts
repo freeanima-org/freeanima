@@ -34,7 +34,7 @@ export async function hybridSearchSemanticMemory(
     types?: string[];
     status?: "active" | "deprecated" | "all";
     offset?: number;
-    sourceSessions?: string[];
+    sourceConversations?: string[];
   },
 ): Promise<SemanticFtsHit[]> {
   const q = query.trim();
@@ -50,7 +50,7 @@ export async function hybridSearchSemanticMemory(
     limit: candidateLimit(fetchLimit, 0),
     types: opts?.types,
     status: opts?.status,
-    sourceSessions: opts?.sourceSessions,
+    sourceConversations: opts?.sourceConversations,
   });
   const pool = candidateLimit(fetchLimit, ftsHits.length);
   const [trgmHits, vectorHits] = await Promise.all([
@@ -58,14 +58,14 @@ export async function hybridSearchSemanticMemory(
       limit: pool,
       types: opts?.types,
       status: opts?.status,
-      sourceSessions: opts?.sourceSessions,
+      sourceConversations: opts?.sourceConversations,
     }),
     queryEmbedding
       ? searchSemanticMemoryVector(queryEmbedding, {
           limit: pool,
           types: opts?.types,
           status: opts?.status,
-          sourceSessions: opts?.sourceSessions,
+          sourceConversations: opts?.sourceConversations,
         })
       : Promise.resolve([]),
   ]);
@@ -83,7 +83,7 @@ export async function hybridSearchSemanticMemory(
 
 export async function hybridSearchMessages(
   query: string,
-  opts?: { sessionId?: string; limit?: number },
+  opts?: { conversationId?: string; limit?: number },
 ): Promise<MessageFtsHit[]> {
   const q = query.trim();
   if (!q) return [];
@@ -107,7 +107,7 @@ export async function hybridSearchMessages(
     message_id: row.id,
     content: row.content,
     role: row.role,
-    session_id: row.session_id,
+    conversation_id: row.conversation_id,
     timestamp: row.timestamp,
     rank: row.score,
   }));
@@ -118,7 +118,7 @@ export async function hybridCountSemanticMemory(
   opts?: {
     types?: string[];
     status?: "active" | "deprecated" | "all";
-    sourceSessions?: string[];
+    sourceConversations?: string[];
   },
 ): Promise<number> {
   const q = query.trim();
@@ -129,12 +129,12 @@ export async function hybridCountSemanticMemory(
 
   const types = opts?.types?.filter(Boolean) ?? [];
   const status = opts?.status ?? "active";
-  const sourceSessions = opts?.sourceSessions?.map((s) => s.trim()).filter(Boolean) ?? [];
+  const sourceConversations = opts?.sourceConversations?.map((s) => s.trim()).filter(Boolean) ?? [];
   const minSim = getFtsTrgmMinSimilarity(getActiveConfig().data);
   const queryEmbedding = await embedQueryText(q);
 
   const db = getDb();
-  const semanticConditions = buildSemanticConditions({ types, status, sourceSessions });
+  const semanticConditions = buildSemanticConditions({ types, status, sourceConversations });
   const whereSemantic = semanticConditions.length > 0 ? and(...semanticConditions) : undefined;
 
   const tsqueryExpr = sql`to_tsquery('simple', ${tsquery})`;

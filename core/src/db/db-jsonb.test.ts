@@ -3,9 +3,9 @@ import { buildPlatformInfo, splitPlatformInfo } from "./schema/jsonb/platform-in
 import {
   acpTasksSchema,
   normalizeAcpTasks,
-  normalizeSessionToolNames,
-  sessionCachedToolsetsSchema,
-} from "./schema/jsonb/session-meta-jsonb.ts";
+  normalizeConversationToolNames,
+  conversationCachedToolsetsSchema,
+} from "./schema/jsonb/conversation-meta-jsonb.ts";
 
 describe("platform_info schema", () => {
   it("platformInfo merges platform and platform_extra", () => {
@@ -79,22 +79,22 @@ describe("platform_info schema", () => {
   });
 });
 
-describe("session tools jsonb", () => {
-  it("normalizeSessionToolNames keeps tool name strings", () => {
-    expect(normalizeSessionToolNames(["file_read", "grep"])).toEqual(["file_read", "grep"]);
+describe("conversation tools jsonb", () => {
+  it("normalizeConversationToolNames keeps tool name strings", () => {
+    expect(normalizeConversationToolNames(["file_read", "grep"])).toEqual(["file_read", "grep"]);
   });
 
-  it("normalizeSessionToolNames extracts function.name from legacy OpenAI schema", () => {
+  it("normalizeConversationToolNames extracts function.name from legacy OpenAI schema", () => {
     const legacy = [
       { type: "function", function: { name: "file_read", description: "read" } },
       { type: "function", function: { name: "grep" } },
     ];
-    expect(normalizeSessionToolNames(legacy)).toEqual(["file_read", "grep"]);
-    expect(sessionCachedToolsetsSchema.parse(legacy)).toEqual(["file_read", "grep"]);
+    expect(normalizeConversationToolNames(legacy)).toEqual(["file_read", "grep"]);
+    expect(conversationCachedToolsetsSchema.parse(legacy)).toEqual(["file_read", "grep"]);
   });
 
-  it("normalizeSessionToolNames ignores invalid entries", () => {
-    expect(normalizeSessionToolNames([null, "", {}, { function: {} }])).toEqual([]);
+  it("normalizeConversationToolNames ignores invalid entries", () => {
+    expect(normalizeConversationToolNames([null, "", {}, { function: {} }])).toEqual([]);
   });
 });
 

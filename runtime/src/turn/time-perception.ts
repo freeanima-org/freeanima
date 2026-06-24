@@ -13,7 +13,7 @@
  */
 
 import { formatCstIso } from "@freeanima/core/util";
-import { isUserMessage, type SessionMessage, type UserMessage } from "@freeanima/core/db/domain";
+import { isUserMessage, type StoredMessage, type UserMessage } from "@freeanima/core/db/domain";
 
 const CST_DATETIME_MINUTE_RE = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})/;
 
@@ -51,8 +51,8 @@ function buildTimePrefixLine(date: Date): string | null {
  *
  * Pure function; does not mutate input.
  */
-export function injectTimePrefixes(messages: SessionMessage[]): SessionMessage[] {
-  const result: SessionMessage[] = [];
+export function injectTimePrefixes(messages: StoredMessage[]): StoredMessage[] {
+  const result: StoredMessage[] = [];
 
   for (const msg of messages) {
     if (!isUserMessage(msg)) {

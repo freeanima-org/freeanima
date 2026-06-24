@@ -23,8 +23,8 @@ const BUNDLED_WORKSPACE_PACKAGES = new Set([
   "@freeanima/frontend-chamber",
 ]);
 
-/** 纯 JS 依赖打进 main bundle，避免 desktop-shell 重复声明 runtime deps */
-const BUNDLED_NPM_PACKAGES = new Set(["zod"]);
+/** 纯 JS 依赖打进 main bundle，避免 electron-builder 复制 node_modules */
+const BUNDLED_NPM_PACKAGES = new Set(["zod", "ws", "fbx2vrma-converter"]);
 
 function electronMainExternals(): string[] {
   const shellPkg = JSON.parse(readFileSync(PACKAGE_JSON, "utf-8")) as {
@@ -127,6 +127,18 @@ async function bundleElectronMain(): Promise<void> {
   await esbuild.build(getElectronPreloadBundleOptions());
 }
 
+/** 清除 companion 本地构建/缓存残留，避免 electron-builder 误打进 desktop-shell */
+function cleanCompanionBuildArtifacts(): void {
+  let cleaned = false;
+  for (const name of ["release", ".cache"]) {
+    const dir = join(COMPANION_ROOT, name);
+    if (!existsSync(dir)) continue;
+    rmSync(dir, { recursive: true, force: true });
+    cleaned = true;
+  }
+  if (cleaned) console.log("[desktop-shell] cleaned companion build artifacts");
+}
+
 function stageFbxBinary(platform: string): void {
   const binDir = join(SHELL_ROOT, "build-resources", "bin");
   mkdirSync(binDir, { recursive: true });
@@ -182,6 +194,7 @@ export async function buildDesktopShellElectron(opts: BuildElectronOptions = {})
   const platform = opts.platform ?? process.platform;
 
   console.log(`[desktop-shell] build profile=${profile} platform=${platform}`);
+  cleanCompanionBuildArtifacts();
   await buildVendorAssets(minify);
   await bundleElectronMain();
   stageFbxBinary(platform);

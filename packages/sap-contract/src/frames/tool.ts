@@ -36,7 +36,7 @@ export const toolCallPayloadSchema = z.object({
   tool_name: z.string().min(1),
   local_name: z.string().min(1),
   args: z.record(z.string(), z.unknown()),
-  session_id: z.string().min(1),
+  conversation_id: z.string().min(1),
   workspace_root: z.string().optional(),
 });
 

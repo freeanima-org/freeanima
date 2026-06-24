@@ -88,10 +88,10 @@ export class MCPManager {
       };
     }
 
-    const session = this.clients.get(name);
-    if (session) {
+    const client = this.clients.get(name);
+    if (client) {
       try {
-        await session.close();
+        await client.close();
       } catch (err) {
         logComponent("mcp").warn(`MCP '${name}': close error`, { err, server: name });
       }
@@ -201,15 +201,15 @@ export class MCPManager {
   private async startOne(name: string, cfg: McpServerConfig): Promise<number> {
     if (this.closed) return 0;
 
-    const session = await McpClientSession.connect(name, cfg);
+    const client = await McpClientSession.connect(name, cfg);
     if (this.closed) {
-      await session.close().catch(() => {});
+      await client.close().catch(() => {});
       return 0;
     }
 
-    this.clients.set(name, session);
+    this.clients.set(name, client);
 
-    const mcpTools = await session.listTools();
+    const mcpTools = await client.listTools();
     const defs: ToolDef[] = [];
 
     for (const toolDef of mcpTools) {
@@ -225,7 +225,7 @@ export class MCPManager {
         parameters: params,
         handler: async (args) => {
           try {
-            const result = await session.callTool(originalName, args);
+            const result = await client.callTool(originalName, args);
             return extractMcpResult(result);
           } catch (err) {
             return toolError(`MCP ${originalName} failed: ${err}`);
@@ -279,7 +279,7 @@ export class MCPManager {
       const rawCfg =
         this.serverConfigs.get(name) ?? (serversCfg[name] as McpServerConfig | undefined) ?? {};
       const enabled = isMcpServerEnabled(rawCfg);
-      const session = this.clients.get(name);
+      const client = this.clients.get(name);
       const error = this.serverErrors.get(name);
       const setId = mcpToolSetId(name);
       const registeredTools = this.toolSets.getToolSet(setId)?.tools ?? [];
@@ -288,9 +288,9 @@ export class MCPManager {
       let resources: McpServerStatusView["resources"] = [];
       let prompts: McpServerStatusView["prompts"] = [];
 
-      if (session) {
+      if (client) {
         try {
-          const listed = await session.listTools();
+          const listed = await client.listTools();
           tools = listed.map((t) => ({
             original_name: t.name,
             registered_name: `mcp_${name}_${t.name}`,
@@ -301,7 +301,7 @@ export class MCPManager {
           logComponent("mcp").warn(`MCP '${name}': listTools failed`, { err, server: name });
         }
         try {
-          const listed = await session.listResources();
+          const listed = await client.listResources();
           resources = listed.map((r) => ({
             uri: r.uri,
             name: r.name,
@@ -312,7 +312,7 @@ export class MCPManager {
           /* Some servers do not support resources */
         }
         try {
-          const listed = await session.listPrompts();
+          const listed = await client.listPrompts();
           prompts = listed.map((p) => ({
             name: p.name,
             description: p.description,
@@ -324,7 +324,7 @@ export class MCPManager {
       }
 
       let status: McpServerStatusView["status"];
-      if (session) status = "connected";
+      if (client) status = "connected";
       else if (this.connecting.has(name)) status = "connecting";
       else if (error) status = "error";
       else if (!enabled) status = "disabled";

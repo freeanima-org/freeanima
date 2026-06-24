@@ -1,8 +1,11 @@
 export type StatsReportOpts = {
-  allSessions?: boolean;
+  allConversations?: boolean;
 };
 
-export type StatsReportFn = (session?: string | null, opts?: StatsReportOpts) => Promise<string>;
+export type StatsReportFn = (
+  conversationId?: string | null,
+  opts?: StatsReportOpts,
+) => Promise<string>;
 
 let statsReportImpl: StatsReportFn | null = null;
 
@@ -15,11 +18,11 @@ export function unregisterStatsReport(): void {
 }
 
 export async function statsReport(
-  session?: string | null,
+  conversationId?: string | null,
   opts?: StatsReportOpts,
 ): Promise<string> {
   if (!statsReportImpl) {
     throw new Error("statsReport not registered: load @freeanima/platform first");
   }
-  return statsReportImpl(session, opts);
+  return statsReportImpl(conversationId, opts);
 }

@@ -79,7 +79,7 @@ export async function createTask(input: TaskCreateInput): Promise<TaskRow> {
       createdAt: now,
       updatedAt: now,
       completedAt: null,
-      sourceSessionId: input.source_session_id?.trim() || null,
+      sourceConversationId: input.source_conversation_id?.trim() || null,
     })
     .returning();
   const row = rows[0];

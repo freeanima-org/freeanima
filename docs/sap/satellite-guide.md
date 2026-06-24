@@ -128,7 +128,7 @@ const hub = createSatelliteHub({
   relay: false,
   tools: [],
   onConnected: async () => {
-    /* optional session.create — connect does not auto-create sessions */
+    /* optional conversation.create — connect does not auto-create conversations */
   },
 });
 ```

@@ -54,8 +54,8 @@ compression:
       },
     ]);
     const c = testConv();
-    const sid = await c.newSession(TEST_SAP_CHAT_PLATFORM);
-    await c.updateSessionMetaField(sid, {
+    const sid = await c.newConversation(TEST_SAP_CHAT_PLATFORM);
+    await c.updateConversationMetaField(sid, {
       model: "m",
       system_prompt: "self layer block here\n\n## Resident memory\n- fact",
       cached_toolsets: ["__ctx_stats__"],

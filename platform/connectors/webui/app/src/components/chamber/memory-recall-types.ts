@@ -5,11 +5,11 @@ export type MemoryRecallHit = {
   type?: string;
   pinned?: boolean;
   content?: string;
-  source_sessions?: string[];
+  source_conversations?: string[];
   observed_at?: string | null;
   occurred_at?: string | null;
   status?: string;
-  session_id?: string;
+  conversation_id?: string;
   message_id?: string;
   role?: string;
   timestamp?: string;
@@ -31,7 +31,12 @@ export type MemoryRecallResult = {
   summary: string;
 };
 
-export const MEMORY_RECALL_TYPES = ["semantic", "session", "limbic", "autobiographical"] as const;
+export const MEMORY_RECALL_TYPES = [
+  "semantic",
+  "conversation",
+  "limbic",
+  "autobiographical",
+] as const;
 
 export type MemoryRecallType = (typeof MEMORY_RECALL_TYPES)[number];
 
@@ -39,8 +44,8 @@ export function recallHitKey(hit: MemoryRecallHit): string {
   if (hit.memory_type === "semantic" && hit.semantic_memory_id) {
     return `semantic-${hit.semantic_memory_id}`;
   }
-  if (hit.memory_type === "session" && hit.message_id) {
-    return `session-${hit.message_id}`;
+  if (hit.memory_type === "conversation" && hit.message_id) {
+    return `conversation-${hit.message_id}`;
   }
   if (hit.memory_type === "limbic" && hit.limbic_memory_id) {
     return `limbic-${hit.limbic_memory_id}`;

@@ -64,7 +64,7 @@ describePg("tasks tool", () => {
   it("create_task writes to PG and syncs fridge summary", async () => {
     const sid = "sess-task-create";
     const repos = testConv().repos;
-    await testConv().initSession(sid, getProfileHopModel(testCfg(), "chat"), {
+    await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
     });
 
@@ -90,14 +90,14 @@ describePg("tasks tool", () => {
         title: string;
         status: string;
         priority: string;
-        source_session_id: string | null;
+        source_conversation_id: string | null;
       };
     };
     expect(parsed.ok).toBe(true);
     expect(parsed.task.title).toBe("Discuss UI plan");
     expect(parsed.task.status).toBe("pending");
     expect(parsed.task.priority).toBe("high");
-    expect(parsed.task.source_session_id).toBe(sid);
+    expect(parsed.task.source_conversation_id).toBe(sid);
 
     const row = await repos.tasks.get(parsed.task.id);
     expect(row?.title).toBe("Discuss UI plan");
@@ -110,20 +110,20 @@ describePg("tasks tool", () => {
   it("list_tasks defaults to pending + in_progress only", async () => {
     const sid = "sess-task-list";
     const repos = testConv().repos;
-    await testConv().initSession(sid, getProfileHopModel(testCfg(), "chat"), {
+    await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
     });
 
     const created = await repos.tasks.create({
       title: "Active task",
-      source_session_id: sid,
+      source_conversation_id: sid,
     });
     await repos.tasks.update({
       id: created.id,
       status: "completed",
       completed_at: new Date().toISOString(),
     });
-    await repos.tasks.create({ title: "Pending task", source_session_id: sid });
+    await repos.tasks.create({ title: "Pending task", source_conversation_id: sid });
 
     let output = "";
     await runWithToolContext(
@@ -147,13 +147,13 @@ describePg("tasks tool", () => {
   it("task_complete updates status", async () => {
     const sid = "sess-task-complete";
     const repos = testConv().repos;
-    await testConv().initSession(sid, getProfileHopModel(testCfg(), "chat"), {
+    await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
     });
 
     const created = await repos.tasks.create({
       title: "Task to complete",
-      source_session_id: sid,
+      source_conversation_id: sid,
     });
 
     let output = "";

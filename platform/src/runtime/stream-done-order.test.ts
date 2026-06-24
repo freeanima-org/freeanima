@@ -63,11 +63,11 @@ describe("sendMessageStream done order", () => {
 
   it("done yields to consumer before finishTurn starts", async () => {
     restores.push(
-      spyOn(conv, "sessionExists").mockResolvedValue(true),
-      spyOn(conv, "assertSessionPlatform").mockResolvedValue(undefined),
+      spyOn(conv, "conversationExists").mockResolvedValue(true),
+      spyOn(conv, "assertConversationPlatform").mockResolvedValue(undefined),
       spyOn(conv, "beginTurnFast").mockResolvedValue("hello"),
       spyOn(conv, "beginTurnPrepare").mockResolvedValue([[{ role: "user", content: "hello" }], []]),
-      spyOn(conv, "loadSessionTools").mockResolvedValue([]),
+      spyOn(conv, "loadConversationTools").mockResolvedValue([]),
     );
 
     let finishTurnStarted = false;

@@ -4,7 +4,7 @@ import type { LimbicKind, LimbicMemoryCreateInput } from "@freeanima/core/repos"
 
 import { getLimbicMemoryStore } from "./limbic-port.ts";
 
-const LIMBIC_KINDS = ["session_mood", "turning_point", "spike"] as const;
+const LIMBIC_KINDS = ["conversation_mood", "turning_point", "spike"] as const;
 
 function parseStringArray(value: unknown): string[] | undefined {
   if (value === undefined) return undefined;
@@ -23,16 +23,16 @@ export const limbicMemoryToolDefs: ToolDef[] = [
   {
     name: "memory_limbic_create",
     description:
-      'Record limbic emotional memory (first person "I feel…"). kind: session_mood (session mood) | turning_point (emotional turn) | spike (intense moment). ' +
+      'Record limbic emotional memory (first person "I feel…"). kind: conversation_mood (session mood) | turning_point (emotional turn) | spike (intense moment). ' +
       "Use sparingly: mild swings, intensity < 0.3 should not be recorded; skip when no clear emotional signal.",
     parameters: {
       type: "object",
       properties: {
-        session_id: { type: "string", description: "Associated session id" },
+        conversation_id: { type: "string", description: "Associated conversation id" },
         kind: {
           type: "string",
           enum: [...LIMBIC_KINDS],
-          description: "session_mood | turning_point | spike",
+          description: "conversation_mood | turning_point | spike",
         },
         content: {
           type: "string",
@@ -54,14 +54,14 @@ export const limbicMemoryToolDefs: ToolDef[] = [
           description: "Linked semantic_memory ids (often from phase 1 output)",
         },
       },
-      required: ["session_id", "kind", "content"],
+      required: ["conversation_id", "kind", "content"],
     },
     handler: async (args: Record<string, unknown>) => {
-      const sessionId = String(args.session_id ?? "").trim();
+      const conversationId = String(args.conversation_id ?? "").trim();
       const content = String(args.content ?? "").trim();
       const kindRaw = String(args.kind ?? "").trim();
 
-      if (!sessionId) return toolError("session_id is required");
+      if (!conversationId) return toolError("conversation_id is required");
       if (!content) return toolError("content is required");
       if (!LIMBIC_KINDS.includes(kindRaw as (typeof LIMBIC_KINDS)[number])) {
         return toolError(`kind must be one of: ${LIMBIC_KINDS.join(", ")}`);
@@ -78,7 +78,7 @@ export const limbicMemoryToolDefs: ToolDef[] = [
       }
 
       const row: LimbicMemoryCreateInput = {
-        session_id: sessionId,
+        conversation_id: conversationId,
         kind: kindRaw as LimbicKind,
         content,
         valence: parseOptionalFloat(args.valence),

@@ -10,7 +10,7 @@ export type RelayWsData = {
   cleanups: Array<() => void>;
 };
 
-const FANOUT_EVENT_METHODS = [...streamEventMethods, "session.updated"] as const;
+const FANOUT_EVENT_METHODS = [...streamEventMethods, "conversation.updated"] as const;
 
 export type SapRelayServerState = {
   relaySockets: Set<ServerWebSocket<RelayWsData>>;

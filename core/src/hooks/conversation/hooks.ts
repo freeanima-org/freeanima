@@ -1,7 +1,7 @@
 import { createHook } from "@freeanima/kernel/hooks";
 
 export type MessageIncomingContext = {
-  sessionId: string;
+  conversationId: string;
   message: string;
   platform: string;
 };
@@ -12,7 +12,7 @@ export type MessageIncomingEffect = {
 };
 
 export type TurnAfterCompleteContext = {
-  sessionId: string;
+  conversationId: string;
   messages: Record<string, unknown>[];
 };
 

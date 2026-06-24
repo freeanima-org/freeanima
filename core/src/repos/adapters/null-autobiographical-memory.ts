@@ -27,7 +27,7 @@ export const nullAutobiographicalMemoryStore: AutobiographicalMemoryStorePort = 
   async listBySourceSemanticMemory() {
     return [];
   },
-  async listBySourceSessions() {
+  async listBySourceConversations() {
     return [];
   },
   async list() {

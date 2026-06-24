@@ -1,9 +1,9 @@
 import { createHook, type HookEffectOf } from "@freeanima/kernel/hooks";
-import type { SessionMessage } from "@freeanima/core/db/domain";
+import type { StoredMessage } from "@freeanima/core/db/domain";
 import type { TurnControl } from "./hook-stream.ts";
 
 export type ToolAfterCallContext = {
-  sessionId: string;
+  conversationId: string;
   toolName: string;
   args: Record<string, unknown>;
   result: string;
@@ -15,8 +15,8 @@ export type ToolAfterCallEffect = {
 
 /** Mutable messages before each LLM call (handlers may modify in place) */
 export type BeforeLlmCallContext = {
-  sessionId: string;
-  messages: SessionMessage[];
+  conversationId: string;
+  messages: StoredMessage[];
 };
 
 export const toolAfterCall = createHook<ToolAfterCallContext, ToolAfterCallEffect>(

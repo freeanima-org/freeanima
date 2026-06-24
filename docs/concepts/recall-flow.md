@@ -8,12 +8,12 @@ title: Recall Flow
 
 ## v1 Implemented
 
-| Capability        | Description                                                                                  |
-| ----------------- | -------------------------------------------------------------------------------------------- |
-| `memory_recall`   | Four sources: semantic / session / limbic / autobiographical; Top N; session returns snippet |
-| `sessions_search` | Session message search; returns snippet (not full content)                                   |
-| `memory_remember` | Semantic memory CRUD during conversation                                                     |
-| Resident memory   | System prompt injection (not recall)                                                         |
+| Capability        | Description                                                                                            |
+| ----------------- | ------------------------------------------------------------------------------------------------------ |
+| `memory_recall`   | Four sources: semantic / conversation / limbic / autobiographical; Top N; conversation returns snippet |
+| `sessions_search` | Session message search; returns snippet (not full content)                                             |
+| `memory_remember` | Semantic memory CRUD during conversation                                                               |
+| Resident memory   | System prompt injection (not recall)                                                                   |
 
 ### Four Sources
 

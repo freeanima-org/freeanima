@@ -5,6 +5,12 @@
   "license": "MIT",
   "private": true,
   "type": "module",
+  "files": [
+    "server",
+    "shared",
+    "public",
+    "package.json"
+  ],
   "exports": {
     ".": "./src/index.ts",
     "./manifest": "./src/exports/manifest.ts",

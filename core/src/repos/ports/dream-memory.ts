@@ -8,7 +8,7 @@ export type DreamMemoryRow = {
   dream_day: string;
   content: string;
   source_limbic_ids: string[];
-  source_session_ids: string[];
+  source_conversation_ids: string[];
   episodic_snippets: DreamEpisodicSnippet[];
   created: string;
 };
@@ -17,7 +17,7 @@ export type DreamMemoryCreateInput = {
   dream_day: string;
   content: string;
   source_limbic_ids?: string[];
-  source_session_ids?: string[];
+  source_conversation_ids?: string[];
   episodic_snippets?: DreamEpisodicSnippet[];
   id?: string;
 };

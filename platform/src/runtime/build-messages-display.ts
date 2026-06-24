@@ -1,4 +1,4 @@
-import type { SessionMessage } from "@freeanima/core/db/domain";
+import type { StoredMessage } from "@freeanima/core/db/domain";
 import type { DisplayItem, DisplayToolBlockItem } from "@freeanima/platform/schemas/display";
 
 function parseArgs(raw: string): Record<string, unknown> {
@@ -20,7 +20,7 @@ function argsPreviewFromObject(argsObj: Record<string, unknown>): string {
 }
 
 /** Project conversation message sequence to WebUI display list (with tool_block aggregation) */
-export function buildMessagesDisplay(all: SessionMessage[]): DisplayItem[] {
+export function buildMessagesDisplay(all: StoredMessage[]): DisplayItem[] {
   const display: DisplayItem[] = [];
   let pendingBlock: DisplayToolBlockItem | null = null;
 
@@ -87,7 +87,7 @@ export function buildMessagesDisplay(all: SessionMessage[]): DisplayItem[] {
 }
 
 export type PaginatedMessagesDisplay = {
-  session_id: string;
+  conversation_id: string;
   display: DisplayItem[];
   total: number;
   offset: number;
@@ -95,8 +95,8 @@ export type PaginatedMessagesDisplay = {
 };
 
 export function paginateMessagesDisplay(
-  sessionId: string,
-  all: SessionMessage[],
+  conversationId: string,
+  all: StoredMessage[],
   opts?: { offset?: number; limit?: number | null },
 ): PaginatedMessagesDisplay {
   const full = buildMessagesDisplay(all);
@@ -105,12 +105,12 @@ export function paginateMessagesDisplay(
   const limit = opts?.limit;
 
   if (limit === undefined || limit === null) {
-    return { session_id: sessionId, display: full, total, offset: 0, limit: null };
+    return { conversation_id: conversationId, display: full, total, offset: 0, limit: null };
   }
 
   const safeLimit = Math.max(1, limit);
   return {
-    session_id: sessionId,
+    conversation_id: conversationId,
     display: full.slice(offset, offset + safeLimit),
     total,
     offset,

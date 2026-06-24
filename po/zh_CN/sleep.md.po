@@ -68,7 +68,7 @@ msgstr ""
 #: docs/concepts/sleep.md:19
 msgid ""
 "**Internal mechanism, no trace** — Sleep runs in background, does not write "
-"to sessions, does not affect conversation flow"
+"to conversations, does not affect conversation flow"
 msgstr "**内部机制，不留痕迹** — 睡眠在后台运行，不写入 session，不影响对话流"
 
 #. type: Bullet: '2. '
@@ -116,7 +116,7 @@ msgid ""
 "| Mechanism              | Status         | Notes                                                          |\n"
 "| ---------------------- | -------------- | -------------------------------------------------------------- |\n"
 "| Sleep cycle pipeline   | ✅ Implemented | Single cron `builtin-sleep-cycle` @ 02:00                      |\n"
-"| Session cleanup        | ✅ Implemented | Step `session-cleanup` before light-sleep in sleep-cycle DAG   |\n"
+"| Session cleanup        | ✅ Implemented | Step `conversation-cleanup` before light-sleep in sleep-cycle DAG   |\n"
 "| Light sleep (in-cycle) | ✅ Implemented | Step `light-sleep` in sleep-cycle DAG                          |\n"
 "| Deep sleep (in-cycle)  | ✅ Implemented | Step `deep-sleep`, depends on light-sleep                      |\n"
 "| Memory ref sync        | ✅ Implemented | Step `memory-ref-sync`, depends on deep-sleep                  |\n"
@@ -194,14 +194,14 @@ msgid ""
 "| ------------- | ------------------------------------------------------------------------------- |\n"
 "| Trigger       | Sleep-cycle step `light-sleep` (cron @ 02:00 or Chamber diagnostics)            |\n"
 "| Scope         | Sessions with activity in previous calendar day                                 |\n"
-"| Input         | Full day's conversations (user+assistant, tools stripped), segmented by session |\n"
+"| Input         | Full day's conversations (user+assistant, tools stripped), segmented by conversation |\n"
 "| Orchestration | Three stages sequential (separate LLM calls each)                               |\n"
 msgstr ""
 "| 属性     | 值                                                                           |\n"
 "| ------------- | ------------------------------------------------------------------------------- |\n"
 "| 触发       | sleep-cycle 步骤 `light-sleep`（cron @ 02:00 或卧室诊断）            |\n"
-"| 范围         | 前一自然日有活动的 session                                 |\n"
-"| 输入         | 全天对话（user+assistant，剥离 tools），按 session 分段 |\n"
+"| 范围         | 前一自然日有活动的 conversation                                 |\n"
+"| 输入         | 全天对话（user+assistant，剥离 tools），按 conversation 分段 |\n"
 "| 编排 | 三阶段顺序（每阶段独立 LLM 调用）                               |\n"
 
 #. type: Title ###
@@ -217,14 +217,14 @@ msgid ""
 "| Stage              | Target                       | Purpose                                                                                  |\n"
 "| ------------------ | ---------------------------- | ---------------------------------------------------------------------------------------- |\n"
 "| 1 Semantic         | Semantic memory              | Extract facts, preferences, experiences from dialogue                                    |\n"
-"| 2 Limbic           | Emotional anchors            | Capture session mood and emotional turning points                                        |\n"
+"| 2 Limbic           | Emotional anchors            | Capture conversation mood and emotional turning points                                        |\n"
 "| 3 Autobiographical | Autobiographical narrative   | Record what experiences meant to the digital life                                        |\n"
 "| 3b                 | Autobiography summary (self) | Compress narratives into grouped self-layer outline (title-only bullets by significance) |\n"
 msgstr ""
 "| 阶段              | 目标                       | 用途                                                                                  |\n"
 "| ------------------ | ---------------------------- | ---------------------------------------------------------------------------------------- |\n"
 "| 1 语义         | 语义记忆              | 从对话提取事实、偏好、经历                                    |\n"
-"| 2 感性           | 情感锚点            | 捕获 session 情绪与情感转折点                                        |\n"
+"| 2 感性           | 情感锚点            | 捕获 conversation 情绪与情感转折点                                        |\n"
 "| 3 自传体 | 自传叙事   | 记录经历对数字生命的意义                                        |\n"
 "| 3b                 | 自传概括（自我层） | 将叙事压缩为分组自我层大纲（按重要性仅标题 bullet） |\n"
 
@@ -238,7 +238,7 @@ msgstr "**克制原则：** 各阶段 LLM 可判断「无值得记录」→ 不�
 #: docs/concepts/sleep.md:65
 #, no-wrap
 msgid "**Dedup (semantic):** Compare only against existing memories from same source sessions; cross-thread merging left to deep sleep.\n"
-msgstr "**去重（语义）：** 仅与同 source session 的已有记忆比较；跨脉络合并留给深睡。\n"
+msgstr "**去重（语义）：** 仅与同 source conversation 的已有记忆比较；跨脉络合并留给深睡。\n"
 
 #. type: Title ##
 #: docs/concepts/sleep.md:66
@@ -355,7 +355,7 @@ msgstr "触发机制"
 #: docs/concepts/sleep.md:98
 #, fuzzy, no-wrap
 #| msgid "0 2 * * *  sleep-cycle   # builtin-sleep-cycle: light → deep ∥ dream ∥ self-layer-refresh → memory-ref-sync\n"
-msgid "0 2 * * *  sleep-cycle   # builtin-sleep-cycle: session-cleanup → light → deep ∥ dream ∥ self-layer-refresh → memory-ref-sync\n"
+msgid "0 2 * * *  sleep-cycle   # builtin-sleep-cycle: conversation-cleanup → light → deep ∥ dream ∥ self-layer-refresh → memory-ref-sync\n"
 msgstr "0 2 * * *  sleep-cycle   # builtin-sleep-cycle: light → deep ∥ dream ∥ self-layer-refresh → memory-ref-sync\n"
 
 #. type: Plain text
@@ -372,7 +372,7 @@ msgstr "DAG（宏观层）："
 #| "  ├─► dream (optional step)\n"
 #| "  └─► self-layer-refresh (optional step)\n"
 msgid ""
-"session-cleanup\n"
+"conversation-cleanup\n"
 "  └─► light-sleep\n"
 "        ├─► deep-sleep ──► memory-ref-sync (optional step)\n"
 "        ├─► dream (optional step)\n"
@@ -425,7 +425,7 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/sleep.md:125
 #, no-wrap
-msgid "**Stale** means `sessions.updated_at` older than **24 hours** (wall-clock `timestamptz`, not CST day boundary). Recent empty sessions (e.g. satellite \"new session\" without a first message) are kept until the next night's run.\n"
+msgid "**Stale** means `conversations.updated_at` older than **24 hours** (wall-clock `timestamptz`, not CST day boundary). Recent empty sessions (e.g. satellite \"new conversation\" without a first message) are kept until the next night's run.\n"
 msgstr ""
 
 #. type: Plain text
@@ -436,7 +436,7 @@ msgstr "宕机后，下次计划运行会补跑。"
 #. type: Plain text
 #: docs/concepts/sleep.md:129
 #, no-wrap
-msgid "**Compression** stays session-scoped (turn-time `advanceCompressionMeta`); it is **not** a sleep-cycle step. Nightly consolidation does not replace per-session compression.\n"
+msgid "**Compression** stays session-scoped (turn-time `advanceCompressionMeta`); it is **not** a sleep-cycle step. Nightly consolidation does not replace per-conversation compression.\n"
 msgstr "**压缩**保持会话级（回合时 `advanceCompressionMeta`）；**不是**睡眠周期步骤。夜间巩固不替代每会话压缩。\n"
 
 #. type: Title ##
@@ -474,7 +474,7 @@ msgid ""
 "run. Cron-triggered cycle runs appear in **Chamber → Cron → Run history** on "
 "the sleep-cycle task."
 msgstr ""
-"每步运行记录在睡眠页的 **Pipeline history** 表中。该日的跨会话合并仍依赖后续 "
+"每步运行记录在睡眠页的 **Pipeline history** 表中。该日的跨对话合并仍依赖后续 "
 "**deep-sleep** 运行。Cron 触发的周期运行在 **Chamber → Cron → Run history**"
 "（sleep-cycle 任务）中查看。"
 

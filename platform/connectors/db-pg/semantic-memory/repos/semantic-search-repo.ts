@@ -16,9 +16,10 @@ type SemanticSearchFilterOpts = Omit<SemanticMemorySearchOpts, "limit" | "offset
 function normalizeSearchOpts(opts: SemanticSearchFilterOpts) {
   const types = opts.types?.filter(Boolean) ?? [];
   const status = opts.status ?? "active";
-  const sourceSessions = opts.source_sessions?.map((s: string) => s.trim()).filter(Boolean) ?? [];
+  const sourceConversations =
+    opts.source_conversations?.map((s: string) => s.trim()).filter(Boolean) ?? [];
   const q = opts.query?.trim() ?? "";
-  return { types, status, sourceSessions, q };
+  return { types, status, sourceConversations, q };
 }
 
 function resolveEffectiveSort(
@@ -45,7 +46,7 @@ export async function searchSemanticMemory(
 ): Promise<SemanticFtsHit[]> {
   const limit = Math.max(1, Math.min(100, opts.limit ?? 10));
   const offset = Math.max(0, opts.offset ?? 0);
-  const { types, status, sourceSessions, q } = normalizeSearchOpts(opts);
+  const { types, status, sourceConversations, q } = normalizeSearchOpts(opts);
   const effectiveSort = resolveEffectiveSort(q, opts.sort_by);
 
   const db = getDb();
@@ -54,7 +55,7 @@ export async function searchSemanticMemory(
       return searchSemanticMemoryBrowse(db, {
         types,
         status,
-        sourceSessions,
+        sourceConversations,
         sortBy: "updated",
         offset,
         limit,
@@ -65,14 +66,14 @@ export async function searchSemanticMemory(
       offset,
       types,
       status,
-      sourceSessions,
+      sourceConversations,
     });
   }
 
   return searchSemanticMemoryBrowse(db, {
     types,
     status,
-    sourceSessions,
+    sourceConversations,
     sortBy: effectiveSort,
     offset,
     limit,
@@ -84,14 +85,14 @@ async function searchSemanticMemoryBrowse(
   args: {
     types: string[];
     status: "active" | "deprecated" | "all";
-    sourceSessions: string[];
+    sourceConversations: string[];
     sortBy: Exclude<SemanticMemorySortBy, "rank">;
     offset: number;
     limit: number;
   },
 ): Promise<SemanticFtsHit[]> {
-  const { types, status, sourceSessions, sortBy, offset, limit } = args;
-  const conditions = buildSemanticConditions({ types, status, sourceSessions });
+  const { types, status, sourceConversations, sortBy, offset, limit } = args;
+  const conditions = buildSemanticConditions({ types, status, sourceConversations });
   const rows = await db
     .select()
     .from(semanticMemory)
@@ -106,14 +107,14 @@ async function searchSemanticMemoryBrowse(
 }
 
 export async function countSemanticMemorySearch(opts: SemanticSearchFilterOpts): Promise<number> {
-  const { types, status, sourceSessions, q } = normalizeSearchOpts(opts);
+  const { types, status, sourceConversations, q } = normalizeSearchOpts(opts);
 
   const db = getDb();
   if (q) {
-    return hybridCountSemanticMemory(q, { types, status, sourceSessions });
+    return hybridCountSemanticMemory(q, { types, status, sourceConversations });
   }
 
-  const conditions = buildSemanticConditions({ types, status, sourceSessions });
+  const conditions = buildSemanticConditions({ types, status, sourceConversations });
   const rows = await db
     .select({ n: drizzleSql<number>`count(*)::int` })
     .from(semanticMemory)

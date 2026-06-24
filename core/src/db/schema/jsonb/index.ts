@@ -27,8 +27,8 @@ export {
   stripOriginRoutingMeta,
   ORIGIN_ROUTING_META_KEYS,
 } from "./platform-info.ts";
-export * from "./session-jsonb.ts";
-export { clarifyItemSchema, todoItemSchema, todoStatusSchema } from "./session-meta-jsonb.ts";
+export * from "./conversation-jsonb.ts";
+export { clarifyItemSchema, todoItemSchema, todoStatusSchema } from "./conversation-meta-jsonb.ts";
 export { compressionJsonSchema, type CompressionJson } from "./compression.ts";
 export { normalizePgTimestamp } from "./timestamp.ts";
 export { capabilityMaskSchema, type CapabilityMaskJson } from "./capability-mask.ts";

@@ -14,7 +14,7 @@ export type AutobiographicalMemoryRow = {
   period_start: string | null;
   period_end: string | null;
   source_semantic_memory: string[];
-  source_sessions: string[];
+  source_conversations: string[];
   status: AutobiographicalStatus;
   created: string;
   updated: string;
@@ -27,7 +27,7 @@ export type AutobiographicalMemoryCreateInput = {
   period_start?: string | null;
   period_end?: string | null;
   source_semantic_memory?: string[];
-  source_sessions?: string[];
+  source_conversations?: string[];
   id?: string;
 };
 
@@ -39,7 +39,7 @@ export type AutobiographicalListOpts = {
   limit?: number;
   status?: AutobiographicalStatus;
   significance?: AutobiographicalSignificance;
-  source_session?: string;
+  source_conversation?: string;
 };
 
 export type AutobiographicalFtsHit = AutobiographicalMemoryRow & {
@@ -62,8 +62,8 @@ export interface AutobiographicalMemoryStorePort {
     semanticMemoryIds: string[],
     opts?: { status?: AutobiographicalStatus },
   ): Promise<AutobiographicalMemoryRow[]>;
-  listBySourceSessions(
-    sessionIds: string[],
+  listBySourceConversations(
+    conversationIds: string[],
     opts?: { status?: AutobiographicalStatus },
   ): Promise<AutobiographicalMemoryRow[]>;
   list(opts?: AutobiographicalListOpts): Promise<AutobiographicalMemoryRow[]>;

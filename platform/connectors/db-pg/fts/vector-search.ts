@@ -18,7 +18,7 @@ export async function searchSemanticMemoryVector(
     limit?: number;
     types?: string[];
     status?: "active" | "deprecated" | "all";
-    sourceSessions?: string[];
+    sourceConversations?: string[];
   },
 ): Promise<VectorSemanticHit[]> {
   if (!queryEmbedding.length) return [];
@@ -26,7 +26,7 @@ export async function searchSemanticMemoryVector(
   const limit = Math.max(1, Math.min(100, opts?.limit ?? 10));
   const types = opts?.types?.filter(Boolean) ?? [];
   const status = opts?.status ?? "active";
-  const sourceSessions = opts?.sourceSessions?.map((s) => s.trim()).filter(Boolean) ?? [];
+  const sourceConversations = opts?.sourceConversations?.map((s) => s.trim()).filter(Boolean) ?? [];
   const queryVec = formatPgVector(queryEmbedding);
 
   const db = getDb();
@@ -34,7 +34,7 @@ export async function searchSemanticMemoryVector(
   const rankExpr = sql<number>`1 - (${distanceExpr})`.as("rank");
   const conditions = [
     isNotNull(semanticMemory.contentEmbedding),
-    ...buildSemanticConditions({ types, status, sourceSessions }),
+    ...buildSemanticConditions({ types, status, sourceConversations }),
   ];
 
   const rows = await db
@@ -58,7 +58,7 @@ export type VectorMessageHit = {
   id: string;
   content: string;
   role: string;
-  session_id: string;
+  conversation_id: string;
   timestamp: string;
   docKey: string;
   rank: number;
@@ -66,12 +66,12 @@ export type VectorMessageHit = {
 
 export async function searchMessagesVector(
   queryEmbedding: number[],
-  opts?: { sessionId?: string; limit?: number },
+  opts?: { conversationId?: string; limit?: number },
 ): Promise<VectorMessageHit[]> {
   if (!queryEmbedding.length) return [];
 
   const limit = Math.max(1, Math.min(50, opts?.limit ?? 10));
-  const sessionId = opts?.sessionId?.trim() || null;
+  const conversationId = opts?.conversationId?.trim() || null;
   const queryVec = formatPgVector(queryEmbedding);
 
   const db = getDb();
@@ -80,10 +80,10 @@ export async function searchMessagesVector(
   const conditions = [
     isNotNull(messages.contentEmbedding),
     isNotNull(messages.contentFts),
-    notLike(messages.sessionId, "debug-%"),
+    notLike(messages.conversationId, "debug-%"),
   ];
-  if (sessionId) {
-    conditions.push(eq(messages.sessionId, sessionId));
+  if (conversationId) {
+    conditions.push(eq(messages.conversationId, conversationId));
   }
 
   const rows = await db
@@ -91,7 +91,7 @@ export async function searchMessagesVector(
       id: messages.id,
       content: sql<string>`${messages.payload}->>'content'`,
       role: sql<string>`${messages.payload}->>'role'`,
-      session_id: messages.sessionId,
+      conversation_id: messages.conversationId,
       timestamp: sql<string>`${messages.payload}->>'timestamp'`,
       rank: rankExpr,
     })
@@ -104,7 +104,7 @@ export async function searchMessagesVector(
     id: r.id,
     content: r.content,
     role: r.role,
-    session_id: r.session_id,
+    conversation_id: r.conversation_id,
     timestamp: r.timestamp ?? "",
     docKey: messageDocKey(r.id),
     rank: Number(r.rank),

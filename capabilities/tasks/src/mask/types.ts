@@ -19,6 +19,6 @@ export type ResolvedMask = {
   credentials: readonly CredentialPermission[];
 };
 
-export type SessionCapabilityMask = {
+export type ConversationCapabilityMask = {
   presets: string[];
 };

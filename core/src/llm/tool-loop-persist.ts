@@ -1,5 +1,5 @@
 import type { PgRepositories } from "@freeanima/core/repos";
-import type { SessionMessage } from "@freeanima/core/db/domain";
+import type { StoredMessage } from "@freeanima/core/db/domain";
 import { formatCstIso } from "@freeanima/core/util";
 import { getRuntimeLogger } from "@freeanima/core/config";
 import {
@@ -12,9 +12,9 @@ import {
 /** Write missing tool responses to PG (insert in-place after assistant; shift later pos) */
 export async function repairAndPersistToolLoop(
   repos: PgRepositories,
-  session: string,
-  msgs: SessionMessage[],
-  loadMessages: (repos: PgRepositories, session: string) => Promise<SessionMessage[]>,
+  conversationId: string,
+  msgs: StoredMessage[],
+  loadMessages: (repos: PgRepositories, conversationId: string) => Promise<StoredMessage[]>,
   reason = REPAIR_REASON_LOST,
 ): Promise<boolean> {
   const corruptions = detectToolLoopCorruption(msgs);
@@ -29,7 +29,7 @@ export async function repairAndPersistToolLoop(
   for (const c of ordered) {
     if (c.assistantPos === undefined) continue;
 
-    const current = await loadMessages(repos, session);
+    const current = await loadMessages(repos, conversationId);
     const idx = current.findIndex((m) => m.pos === c.assistantPos);
     if (idx < 0) continue;
 
@@ -38,11 +38,11 @@ export async function repairAndPersistToolLoop(
     const n = c.missingCalls.length;
     if (n === 0) continue;
 
-    await repos.session.shiftMessagePositions(session, insertAtPos - 1, n);
+    await repos.conversation.shiftMessagePositions(conversationId, insertAtPos - 1, n);
 
     for (let i = 0; i < n; i++) {
       const call = c.missingCalls[i]!;
-      await repos.session.appendMessage(session, {
+      await repos.conversation.appendMessage(conversationId, {
         role: "tool",
         pos: insertAtPos + i,
         tool_call_id: call.id,
@@ -57,7 +57,7 @@ export async function repairAndPersistToolLoop(
   getRuntimeLogger()
     .with({ component: "tool-loop-integrity" })
     .error(
-      `tool loop history repaired: session=${session} inserted in-place ${inserted} synthetic tool message(s)`,
+      `tool loop history repaired: conversation=${conversationId} inserted in-place ${inserted} synthetic tool message(s)`,
     );
   return true;
 }

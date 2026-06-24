@@ -2,7 +2,7 @@ import { describe, it, expect } from "bun:test";
 import { cronJobDataSchema } from "@freeanima/platform/connectors/cron";
 import {
   eventPayloadSchemas,
-  sessionUpdatedPayloadSchema,
+  conversationUpdatedPayloadSchema,
 } from "@freeanima/capabilities-memory/schemas/event-payloads";
 import { factExtractionSchema } from "@freeanima/capabilities-memory/schemas/fact-extraction";
 import { filterRecallableMessages } from "@freeanima/capabilities-memory";
@@ -30,12 +30,12 @@ describe("schemas/cron", () => {
 
 describe("schemas/events", () => {
   it("validates session:updated payload", () => {
-    const result = sessionUpdatedPayloadSchema.safeParse({ session_id: "s1", extra: 1 });
+    const result = conversationUpdatedPayloadSchema.safeParse({ conversation_id: "s1", extra: 1 });
     expect(result.success).toBe(true);
   });
 
-  it("rejects missing session_id", () => {
-    const result = eventPayloadSchemas["session:updated"].safeParse({});
+  it("rejects missing conversation_id", () => {
+    const result = eventPayloadSchemas["conversation:updated"].safeParse({});
     expect(result.success).toBe(false);
   });
 });

@@ -1,6 +1,6 @@
 import type { MessageFtsHit } from "@freeanima/core/repos";
 import { getSemanticMemoryStore } from "./semantic-port.ts";
-import { getMemorySessionStore } from "./session-port.ts";
+import { getMemoryConversationStore } from "./conversation-port.ts";
 
 export type SearchResult = {
   content: string;
@@ -45,11 +45,11 @@ async function searchDialogueInternal(
     return rows.map((row) => ({
       content: row.content,
       source: "dialogue" as const,
-      path: `pg:messages:${row.session_id}`,
+      path: `pg:messages:${row.conversation_id}`,
       score: pgRankToScore(row.rank),
       metadata: {
         role: row.role,
-        session_id: row.session_id,
+        conversation_id: row.conversation_id,
         timestamp: row.timestamp,
       },
     }));
@@ -85,11 +85,11 @@ export async function searchSemanticMemory(
 
 export async function searchDialogue(
   query: string,
-  opts?: { sessionId?: string; limit?: number },
+  opts?: { conversationId?: string; limit?: number },
 ): Promise<MessageFtsHit[]> {
-  const store = getMemorySessionStore();
+  const store = getMemoryConversationStore();
   return store.searchMessagesFts(query, {
-    sessionId: opts?.sessionId,
+    conversationId: opts?.conversationId,
     limit: opts?.limit,
   });
 }
@@ -109,7 +109,7 @@ export {
   type MemoryRecallHitType,
   type MemoryRecallResult,
   type SemanticRecallHit,
-  type SessionRecallHit,
+  type ConversationRecallHit,
   type LimbicRecallHit,
   type AutobiographicalRecallHit,
 } from "./recall-search.ts";

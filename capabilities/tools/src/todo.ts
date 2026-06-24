@@ -1,12 +1,12 @@
-import { getToolSessionId, getToolRepos } from "@freeanima/core/tool";
+import { getToolConversationId, getToolRepos } from "@freeanima/core/tool";
 import type { ToolSetRegistry } from "@freeanima/core/tool";
 import { attachToolReturns, toolError } from "@freeanima/core/tool";
 import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
-import { handleSessionTodo } from "@freeanima/core/tool";
+import { handleConversationTodo } from "@freeanima/core/tool";
 
 async function handleTodo(args: Record<string, unknown>): Promise<string> {
-  const sessionId = getToolSessionId();
-  if (!sessionId) return toolError("No session context");
+  const conversationId = getToolConversationId();
+  if (!conversationId) return toolError("No conversation context");
   const repos = getToolRepos();
   if (!repos) return toolError("No repos context");
 
@@ -15,19 +15,19 @@ async function handleTodo(args: Record<string, unknown>): Promise<string> {
   const id = typeof args.id === "number" ? args.id : args.id != null ? Number(args.id) : undefined;
   const status = args.status != null ? String(args.status) : undefined;
 
-  return handleSessionTodo(repos, sessionId, action, { content, id, status });
+  return handleConversationTodo(repos, conversationId, action, { content, id, status });
 }
 
 export function registerTodoTool(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
     "todo",
-    "Current session todo list",
+    "Current conversation todo list",
     attachToolReturns(
       [
         {
           name: "todo",
           description:
-            "Manage the todo list for the current conversation session (isolated from other sessions). Supports list/add/update/delete",
+            "Manage the todo list for the current conversation conversation (isolated from other sessions). Supports list/add/update/delete",
           parameters: {
             type: "object",
             properties: {

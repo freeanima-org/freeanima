@@ -17,7 +17,7 @@ function task(
     created_at: "2026-06-01T00:00:00.000Z",
     updated_at: "2026-06-01T00:00:00.000Z",
     completed_at: null,
-    source_session_id: null,
+    source_conversation_id: null,
     ...overrides,
   };
 }

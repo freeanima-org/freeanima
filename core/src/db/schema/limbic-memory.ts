@@ -19,7 +19,7 @@ const tsvector = customType<{ data: string }>({
   },
 });
 
-export const limbicKindSchema = z.enum(["session_mood", "turning_point", "spike"]);
+export const limbicKindSchema = z.enum(["conversation_mood", "turning_point", "spike"]);
 
 export type LimbicKind = z.infer<typeof limbicKindSchema>;
 
@@ -28,7 +28,7 @@ export const limbicMemory = pgTable(
   "limbic_memory",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    sessionId: text("session_id").notNull(),
+    conversationId: text("conversation_id").notNull(),
     kind: text("kind").notNull(),
     valence: real("valence"),
     arousal: real("arousal"),
@@ -51,7 +51,7 @@ export const limbicMemory = pgTable(
   (t) => [
     index("idx_limbic_memory_fts").using("gin", t.contentFts),
     index("idx_limbic_memory_semantic_memory_ids").using("gin", t.semanticMemoryIds),
-    index("idx_limbic_memory_session_id").on(t.sessionId),
+    index("idx_limbic_memory_conversation_id").on(t.conversationId),
     index("idx_limbic_memory_created_at").on(t.createdAt),
     index("idx_limbic_memory_kind").on(t.kind),
     index("idx_limbic_memory_intensity").on(t.intensity),

@@ -1,18 +1,18 @@
-import { isSessionMeta } from "@freeanima/core/db/domain";
+import { isConversationMeta } from "@freeanima/core/db/domain";
 import type { AcpTaskStatusJson } from "@freeanima/core/db/schema";
 import type { RuntimeDeps } from "./runtime-deps.ts";
-import { checkPlatform } from "./service-sessions.ts";
+import { checkPlatform } from "./service-conversations.ts";
 
 export type AcpDockTask = {
-  acp_session_id: string;
+  acp_conversation_id: string;
   task_id: string;
   agent_name: string;
   status: AcpTaskStatusJson;
   progress_message_id?: string;
 };
 
-export type SessionAcpDockSnapshot = {
-  session_id: string;
+export type ConversationAcpDockSnapshot = {
+  conversation_id: string;
   tasks: AcpDockTask[];
   progress_text: string;
   task_progress: Record<string, string>;
@@ -25,19 +25,19 @@ function isInSessionProgressId(id: string): boolean {
   return Boolean(id && !id.includes(":"));
 }
 
-export async function getSessionAcpDock(
+export async function getConversationAcpDock(
   deps: RuntimeDeps,
-  sessionId: string,
+  conversationId: string,
   platform = "",
-): Promise<SessionAcpDockSnapshot> {
-  if (!(await deps.conversation.sessionExists(sessionId))) {
-    throw new Error(`Session not found: ${sessionId}`);
+): Promise<ConversationAcpDockSnapshot> {
+  if (!(await deps.conversation.conversationExists(conversationId))) {
+    throw new Error(`Conversation not found: ${conversationId}`);
   }
-  await checkPlatform(deps, { platform }, sessionId);
+  await checkPlatform(deps, { platform }, conversationId);
 
-  const meta = await deps.conversation.loadSessionMeta(sessionId);
+  const meta = await deps.conversation.loadConversationMeta(conversationId);
   const rawTasks =
-    isSessionMeta(meta) && meta.acp_tasks && typeof meta.acp_tasks === "object"
+    isConversationMeta(meta) && meta.acp_tasks && typeof meta.acp_tasks === "object"
       ? (meta.acp_tasks as Record<string, Record<string, unknown>>)
       : {};
 
@@ -54,7 +54,7 @@ export async function getSessionAcpDock(
       const taskId = typeof entry.task_id === "string" ? entry.task_id : "";
       const agentName = typeof entry.agent_name === "string" ? entry.agent_name : "cursor";
       tasks.push({
-        acp_session_id: acpSessionId,
+        acp_conversation_id: acpSessionId,
         task_id: taskId,
         agent_name: agentName,
         status,
@@ -68,7 +68,7 @@ export async function getSessionAcpDock(
     const pmid =
       typeof entry.progress_message_id === "string" ? entry.progress_message_id : undefined;
     tasks.push({
-      acp_session_id: acpSessionId,
+      acp_conversation_id: acpSessionId,
       task_id: taskId,
       agent_name: agentName,
       status,
@@ -82,7 +82,10 @@ export async function getSessionAcpDock(
 
   const contentById =
     progressMessageIds.length > 0
-      ? await deps.conversation.repos.session.getMessageContentsByIds(sessionId, progressMessageIds)
+      ? await deps.conversation.repos.conversation.getMessageContentsByIds(
+          conversationId,
+          progressMessageIds,
+        )
       : {};
 
   for (const task of tasks) {
@@ -99,7 +102,7 @@ export async function getSessionAcpDock(
   const progressText = progressParts.join("\n\n---\n\n");
 
   return {
-    session_id: sessionId,
+    conversation_id: conversationId,
     tasks,
     progress_text: progressText,
     task_progress: taskProgress,

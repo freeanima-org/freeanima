@@ -1,13 +1,13 @@
 import { webuiCtx } from "./runtime.ts";
 import { ApiHandlerError } from "./errors.ts";
 
-export async function getPromptDebug(sessionId?: string | null) {
+export async function getPromptDebug(conversationId?: string | null) {
   try {
-    return await webuiCtx().getPromptDebug(sessionId);
+    return await webuiCtx().getPromptDebug(conversationId);
   } catch (e) {
     const msg = String(e);
-    if (msg.includes("Session not found")) {
-      throw new ApiHandlerError(404, msg, { session_id: sessionId ?? undefined });
+    if (msg.includes("Conversation not found")) {
+      throw new ApiHandlerError(404, msg, { conversation_id: conversationId ?? undefined });
     }
     throw e;
   }

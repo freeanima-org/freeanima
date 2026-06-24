@@ -24,8 +24,8 @@ export type AcpAgentConfigView = {
 };
 
 export type AcpSessionView = {
-  session_id: string;
-  session_id_short: string;
+  conversation_id: string;
+  conversation_id_short: string;
   agent: string;
 };
 
@@ -87,7 +87,7 @@ export function sanitizeAcpConfig(cfg: AcpAgentConfig): AcpAgentConfigView {
   return view;
 }
 
-export function shortSessionId(sessionId: string): string {
-  if (sessionId.length <= 16) return sessionId;
-  return `${sessionId.slice(0, 12)}…`;
+export function shortSessionId(conversationId: string): string {
+  if (conversationId.length <= 16) return conversationId;
+  return `${conversationId.slice(0, 12)}…`;
 }

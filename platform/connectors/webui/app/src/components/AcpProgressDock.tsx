@@ -1,7 +1,7 @@
-import type { SessionAcpDockSnapshot } from "@/lib/api.ts";
+import type { ConversationAcpDockSnapshot } from "@/lib/api.ts";
 
 type AcpProgressDockProps = {
-  dock: SessionAcpDockSnapshot;
+  dock: ConversationAcpDockSnapshot;
 };
 
 function statusLabel(status: string): string {
@@ -33,7 +33,7 @@ export function AcpProgressDock({ dock }: AcpProgressDockProps) {
       </div>
       {decision ? (
         <p className="text-warning font-medium">
-          Cursor 等待决策，请查看会话消息并使用 acp_session_id 续聊。
+          Cursor 等待决策，请查看会话消息并使用 acp_conversation_id 续聊。
         </p>
       ) : null}
       {Object.keys(taskProgress).length > 0 ? (

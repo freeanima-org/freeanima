@@ -1,37 +1,37 @@
 import { describe, it, expect, beforeEach, afterEach } from "bun:test";
-import type { SemanticMemoryStorePort, SessionStorePort } from "@freeanima/core/repos";
+import type { SemanticMemoryStorePort, ConversationStorePort } from "@freeanima/core/repos";
 import { FtsQueryError } from "@freeanima/core/util";
 import {
   registerMemoryTools,
   searchSemanticMemory,
   registerAutobiographicalMemoryStore,
   registerLimbicMemoryStore,
-  registerMemorySessionStore,
+  registerMemoryConversationStore,
   registerSemanticMemoryStore,
   resetAutobiographicalMemoryStoreForTests,
   resetLimbicMemoryStoreForTests,
-  resetMemorySessionStoreForTests,
+  resetMemoryConversationStoreForTests,
   resetSemanticMemoryStoreForTests,
 } from "@freeanima/capabilities-memory";
-import { registerToolSessionResolver } from "@freeanima/capabilities-memory/tool-session-port";
+import { registerToolConversationResolver } from "@freeanima/capabilities-memory/tool-conversation-port";
 import { ToolSetRegistry } from "@freeanima/core/tool";
-import { runWithToolContext, getToolSessionId } from "@freeanima/core/tool";
+import { runWithToolContext, getToolConversationId } from "@freeanima/core/tool";
 
 let toolSets: ToolSetRegistry;
 
-function mockSessionStore(overrides: Partial<SessionStorePort>): SessionStorePort {
-  const base: SessionStorePort = {
-    async getSessionMeta() {
+function mockConversationStore(overrides: Partial<ConversationStorePort>): ConversationStorePort {
+  const base: ConversationStorePort = {
+    async getConversationMeta() {
       return null;
     },
-    async getSessionMetaLite() {
+    async getConversationMetaLite() {
       return null;
     },
-    async getSessionTools() {
+    async getConversationTools() {
       return [];
     },
-    async upsertSessionMeta() {},
-    async patchSessionMeta() {},
+    async upsertConversationMeta() {},
+    async patchConversationMeta() {},
     async updateCompression() {},
     async updateTodos() {},
     async appendMessage() {
@@ -79,32 +79,32 @@ function mockSessionStore(overrides: Partial<SessionStorePort>): SessionStorePor
     },
     async truncateMessagesAfter() {},
     async shiftMessagePositions() {},
-    async sessionExists() {
+    async conversationExists() {
       return false;
     },
-    async deleteSession() {},
-    async listSessionIds() {
+    async deleteConversation() {},
+    async listConversationIds() {
       return [];
     },
-    async listDebugSessionIds() {
+    async listDebugConversationIds() {
       return [];
     },
-    async listSessionSummaries() {
+    async listConversationSummaries() {
       return [];
     },
-    async listSessionSummariesPage() {
+    async listConversationSummariesPage() {
       return { items: [], total: 0 };
     },
-    async countSessionsByPlatform() {
+    async countConversationsByPlatform() {
       return {};
     },
-    async deleteDebugSessions() {
+    async deleteDebugConversations() {
       return 0;
     },
-    async findSessionIdByPlatformInfo() {
+    async findConversationIdByPlatformInfo() {
       return null;
     },
-    async listSessionIdsMatchingPlatformProbe() {
+    async listConversationIdsMatchingPlatformProbe() {
       return [];
     },
     async searchMessagesFts() {
@@ -113,16 +113,16 @@ function mockSessionStore(overrides: Partial<SessionStorePort>): SessionStorePor
     async countSearchableMessages() {
       return 0;
     },
-    async listSessionIdsUpdatedBetween() {
+    async listConversationIdsUpdatedBetween() {
       return [];
     },
-    async getEarliestSessionDay() {
+    async getEarliestConversationDay() {
       return null;
     },
-    async listStaleSessionIdsForCleanup() {
+    async listStaleConversationIdsForCleanup() {
       return [];
     },
-    async deleteStaleSessions() {
+    async deleteStaleConversations() {
       return { deleted: 0, ids: [] };
     },
   };
@@ -134,7 +134,7 @@ type MockRow = {
   type: string;
   pinned: boolean;
   content: string;
-  source_sessions: string[];
+  source_conversations: string[];
   observed_at: string | null;
   occurred_at: string | null;
   status: string;
@@ -157,7 +157,7 @@ function createMockSemanticStore(): SemanticMemoryStorePort {
         type: row.type ?? "world",
         pinned: row.pinned ?? false,
         content: row.content,
-        source_sessions: row.source_sessions ?? [],
+        source_conversations: row.source_conversations ?? [],
         observed_at: row.observed_at ?? now,
         occurred_at: row.occurred_at ?? null,
         status: row.status ?? "active",
@@ -178,8 +178,10 @@ function createMockSemanticStore(): SemanticMemoryStorePort {
         content: row.content ?? existing.content,
         type: row.type ?? existing.type,
         pinned: row.pinned ?? existing.pinned,
-        source_sessions:
-          row.source_sessions !== undefined ? row.source_sessions : existing.source_sessions,
+        source_conversations:
+          row.source_conversations !== undefined
+            ? row.source_conversations
+            : existing.source_conversations,
         observed_at: row.observed_at !== undefined ? row.observed_at : existing.observed_at,
         occurred_at: row.occurred_at !== undefined ? row.occurred_at : existing.occurred_at,
         status: row.status ?? existing.status,
@@ -210,11 +212,11 @@ function createMockSemanticStore(): SemanticMemoryStorePort {
     async listActive() {
       return [...rows.values()].filter((r) => r.status === "active");
     },
-    async listBySourceSessions(sessionIds, opts) {
+    async listBySourceConversations(conversationIds, opts) {
       const status = opts?.status ?? "active";
       return [...rows.values()].filter((r) => {
         if (status !== "all" && r.status !== status) return false;
-        return r.source_sessions.some((s) => sessionIds.includes(s));
+        return r.source_conversations.some((s) => conversationIds.includes(s));
       });
     },
     async searchFts(query, opts) {
@@ -228,8 +230,10 @@ function createMockSemanticStore(): SemanticMemoryStorePort {
     async search(opts) {
       const status = opts.status ?? "active";
       let list = [...rows.values()].filter((r) => status === "all" || r.status === status);
-      if (opts.source_sessions?.length) {
-        list = list.filter((r) => r.source_sessions.some((s) => opts.source_sessions!.includes(s)));
+      if (opts.source_conversations?.length) {
+        list = list.filter((r) =>
+          r.source_conversations.some((s) => opts.source_conversations!.includes(s)),
+        );
       }
       if (opts.query) {
         const q = opts.query.toLowerCase();
@@ -242,8 +246,10 @@ function createMockSemanticStore(): SemanticMemoryStorePort {
     async countSearch(opts) {
       const status = opts.status ?? "active";
       let list = [...rows.values()].filter((r) => status === "all" || r.status === status);
-      if (opts.source_sessions?.length) {
-        list = list.filter((r) => r.source_sessions.some((s) => opts.source_sessions!.includes(s)));
+      if (opts.source_conversations?.length) {
+        list = list.filter((r) =>
+          r.source_conversations.some((s) => opts.source_conversations!.includes(s)),
+        );
       }
       if (opts.query) {
         const q = opts.query.toLowerCase();
@@ -264,7 +270,7 @@ function createMockSemanticStore(): SemanticMemoryStorePort {
 describe("memory search", () => {
   beforeEach(() => {
     toolSets = new ToolSetRegistry();
-    resetMemorySessionStoreForTests();
+    resetMemoryConversationStoreForTests();
     resetSemanticMemoryStoreForTests();
     resetLimbicMemoryStoreForTests();
     resetAutobiographicalMemoryStoreForTests();
@@ -276,10 +282,10 @@ describe("memory search", () => {
       async get() {
         return null;
       },
-      async listBySession() {
+      async listByConversation() {
         return [];
       },
-      async listBySessions() {
+      async listByConversations() {
         return [];
       },
       async listByCreatedBetween() {
@@ -317,7 +323,7 @@ describe("memory search", () => {
       async listBySourceSemanticMemory() {
         return [];
       },
-      async listBySourceSessions() {
+      async listBySourceConversations() {
         return [];
       },
       async list() {
@@ -327,12 +333,12 @@ describe("memory search", () => {
         return [];
       },
     });
-    registerToolSessionResolver(() => "20260527_160000_test");
+    registerToolConversationResolver(() => "20260527_160000_test");
     registerMemoryTools(toolSets);
   });
 
   afterEach(() => {
-    resetMemorySessionStoreForTests();
+    resetMemoryConversationStoreForTests();
     resetSemanticMemoryStoreForTests();
     resetLimbicMemoryStoreForTests();
     resetAutobiographicalMemoryStoreForTests();
@@ -349,7 +355,7 @@ describe("memory search", () => {
     expect(results[0]!.source).toBe("semantic_memory");
   });
 
-  it("remember creates semantic memory with source_sessions", async () => {
+  it("remember creates semantic memory with source_conversations", async () => {
     const sid = "20260527_160000_test";
     await runWithToolContext(
       sid,
@@ -366,14 +372,14 @@ describe("memory search", () => {
     expect(results.length).toBe(1);
   });
 
-  it("remember in auto_llm context omits source_sessions", async () => {
+  it("remember in auto_llm context omits source_conversations", async () => {
     const store = createMockSemanticStore();
     registerSemanticMemoryStore(store);
-    registerToolSessionResolver(getToolSessionId);
+    registerToolConversationResolver(getToolConversationId);
     let createdSources: string[] | undefined;
     const origCreate = store.create.bind(store);
     store.create = async (row) => {
-      createdSources = row.source_sessions;
+      createdSources = row.source_conversations;
       return origCreate(row);
     };
 
@@ -390,21 +396,21 @@ describe("memory search", () => {
     expect(createdSources).toEqual([]);
   });
 
-  it("memory_semantic_update clears source_sessions with empty array", async () => {
+  it("memory_semantic_update clears source_conversations with empty array", async () => {
     const store = createMockSemanticStore();
     registerSemanticMemoryStore(store);
     const id = await store.create({
       content: "memory with sources",
-      source_sessions: ["s1", "s2"],
+      source_conversations: ["s1", "s2"],
     });
     const out = await toolSets.getTool("memory_semantic_update")!.handler({
       id,
-      source_sessions: [],
+      source_conversations: [],
     });
     const parsed = JSON.parse(out) as { ok: boolean };
     expect(parsed.ok).toBe(true);
     const row = await store.get(id);
-    expect(row?.source_sessions).toEqual([]);
+    expect(row?.source_conversations).toEqual([]);
   });
 
   it("memory_recall returns unified results with memory_type", async () => {
@@ -413,15 +419,15 @@ describe("memory search", () => {
     await store.create({ content: "FreeAnima memory pipeline uses compression" });
 
     const sid = "20260526_120000_abcd";
-    registerMemorySessionStore(
-      mockSessionStore({
+    registerMemoryConversationStore(
+      mockConversationStore({
         async searchMessagesFts() {
           return [
             {
               message_id: "msg-001",
               content: "Discussing compression algorithms",
               role: "user",
-              session_id: sid,
+              conversation_id: sid,
               timestamp: "2026-05-26T12:00:00+08:00",
               rank: 0.1,
             },
@@ -436,10 +442,10 @@ describe("memory search", () => {
     };
     expect(parsed.results.length).toBeGreaterThan(0);
     const semantic = parsed.results.find((r) => r.memory_type === "semantic");
-    const session = parsed.results.find((r) => r.memory_type === "session");
+    const conversation = parsed.results.find((r) => r.memory_type === "conversation");
     expect(semantic?.content?.includes("compression")).toBe(true);
-    expect(session?.snippet?.includes("compression")).toBe(true);
-    expect(session && "content" in session).toBe(false);
+    expect(conversation?.snippet?.includes("compression")).toBe(true);
+    expect(conversation && "content" in conversation).toBe(false);
   });
 
   it("memory_recall returns friendly FTS validation error", async () => {

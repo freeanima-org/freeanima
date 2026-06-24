@@ -1,7 +1,7 @@
 import { SUMMARY_USER_PREFIX } from "@freeanima/core/compress";
-import { isSessionMeta } from "@freeanima/core/db/domain";
+import { isConversationMeta } from "@freeanima/core/db/domain";
 import { decomposeSystemPromptParts } from "@freeanima/capabilities-memory/system-prompt";
-import type { SessionMessage } from "@freeanima/core/db/domain";
+import type { StoredMessage } from "@freeanima/core/db/domain";
 import {
   estimateMessagesTokens,
   estimateTokens,
@@ -28,22 +28,24 @@ export type RuntimeContextBreakdown = {
 /** Estimate tokens by breakdown from runtime message list (same basis as compress decisions) */
 export async function computeRuntimeContextBreakdown(
   deps: RuntimeDeps,
-  session: string,
+  conversationId: string,
 ): Promise<RuntimeContextBreakdown> {
-  const meta = await deps.conversation.loadSessionMeta(session);
-  const [runtimeMsgs] = await deps.conversation.buildRuntimeMessages(session);
-  const tools = isSessionMeta(meta) ? await deps.conversation.loadSessionTools(session, meta) : [];
+  const meta = await deps.conversation.loadConversationMeta(conversationId);
+  const [runtimeMsgs] = await deps.conversation.buildRuntimeMessages(conversationId);
+  const tools = isConversationMeta(meta)
+    ? await deps.conversation.loadConversationTools(conversationId, meta)
+    : [];
 
   const selfContent = await loadSelfLayerPrompt();
-  const cwd = isSessionMeta(meta) ? meta.cwd : undefined;
+  const cwd = isConversationMeta(meta) ? meta.cwd : undefined;
   const parts = await decomposeSystemPromptParts(selfContent, cwd);
   const toolsets = renderToolsetsSection(deps.engine.catalog.toolSets);
-  const model = isSessionMeta(meta)
+  const model = isConversationMeta(meta)
     ? meta.model
     : getProfileHopModel(deps.engine.config.data, PROFILE_CHAT);
 
   let summary = 0;
-  const messageRows: SessionMessage[] = [];
+  const messageRows: StoredMessage[] = [];
   for (const m of runtimeMsgs) {
     if (m.role === "system") continue;
     if (m.role === "user") {

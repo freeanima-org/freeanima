@@ -18,8 +18,8 @@ const DISCORD_BUTTON_LABEL_MAX = 80;
 const CANCEL_LABEL = "取消";
 
 export type ClarifyButtonCustomId =
-  | { sessionId: string; kind: "choice"; choiceIndex: number }
-  | { sessionId: string; kind: "cancel" };
+  | { conversationId: string; kind: "choice"; choiceIndex: number }
+  | { conversationId: string; kind: "cancel" };
 
 export function canRenderClarifyButtons(payload: ClarifyPayload): boolean {
   return payload.items.length === 1 && (payload.items[0]?.choices?.length ?? 0) > 0;
@@ -35,32 +35,32 @@ function truncateButtonLabel(label: string): string {
   return `${trimmed.slice(0, DISCORD_BUTTON_LABEL_MAX - 1)}…`;
 }
 
-export function choiceButtonCustomId(sessionId: string, choiceIndex: number): string {
-  return `${CUSTOM_ID_PREFIX}${sessionId}:0:${choiceIndex}`;
+export function choiceButtonCustomId(conversationId: string, choiceIndex: number): string {
+  return `${CUSTOM_ID_PREFIX}${conversationId}:0:${choiceIndex}`;
 }
 
-export function cancelButtonCustomId(sessionId: string): string {
-  return `${CUSTOM_ID_PREFIX}${sessionId}:cancel`;
+export function cancelButtonCustomId(conversationId: string): string {
+  return `${CUSTOM_ID_PREFIX}${conversationId}:cancel`;
 }
 
 export function parseClarifyButtonCustomId(customId: string): ClarifyButtonCustomId | null {
   if (!customId.startsWith(CUSTOM_ID_PREFIX)) return null;
   const parts = customId.slice(CUSTOM_ID_PREFIX.length).split(":");
   if (parts.length < 2) return null;
-  const sessionId = parts[0]!;
+  const conversationId = parts[0]!;
   if (parts[1] === "cancel") {
-    return { sessionId, kind: "cancel" };
+    return { conversationId, kind: "cancel" };
   }
   if (parts[1] === "0" && parts.length === 3) {
     const choiceIndex = Number(parts[2]);
     if (!Number.isInteger(choiceIndex) || choiceIndex < 0) return null;
-    return { sessionId, kind: "choice", choiceIndex };
+    return { conversationId, kind: "choice", choiceIndex };
   }
   return null;
 }
 
 export function buildClarifyActionRows(
-  sessionId: string,
+  conversationId: string,
   item: ClarifyItem,
 ): ActionRowBuilder<ButtonBuilder>[] {
   const choices = item.choices ?? [];
@@ -68,14 +68,14 @@ export function buildClarifyActionRows(
   for (let i = 0; i < choices.length; i++) {
     row.addComponents(
       new ButtonBuilder()
-        .setCustomId(choiceButtonCustomId(sessionId, i))
+        .setCustomId(choiceButtonCustomId(conversationId, i))
         .setLabel(truncateButtonLabel(choices[i]!))
         .setStyle(ButtonStyle.Primary),
     );
   }
   row.addComponents(
     new ButtonBuilder()
-      .setCustomId(cancelButtonCustomId(sessionId))
+      .setCustomId(cancelButtonCustomId(conversationId))
       .setLabel(CANCEL_LABEL)
       .setStyle(ButtonStyle.Danger),
   );

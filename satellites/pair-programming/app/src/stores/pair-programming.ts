@@ -1,15 +1,15 @@
-import type { DisplayItem, SessionListItem } from "@/lib/types.ts";
+import type { DisplayItem, ConversationListItem } from "@/lib/types.ts";
 import { hasNewAssistantReply } from "@/lib/display-recovery.ts";
 import { create } from "zustand";
 import {
   createSession,
-  getSessionMessages,
+  getStoredMessages,
   getStudioConfig,
   getStudioFile,
   getStudioTree,
-  listSessions,
+  listConversations,
   searchStudio,
-  setSessionTitle,
+  setConversationTitle,
 } from "@/lib/api.ts";
 import { pairPlatform } from "@/lib/sap-client.ts";
 
@@ -34,8 +34,8 @@ type SearchHit = {
 };
 
 type PairProgrammingState = {
-  sessions: SessionListItem[];
-  currentSessionId: string | null;
+  conversations: ConversationListItem[];
+  currentConversationId: string | null;
   display: DisplayItem[];
   fileTree: FileTreeNode[];
   currentFile: StudioFileView | null;
@@ -45,12 +45,12 @@ type PairProgrammingState = {
   loading: boolean;
   error: string;
   fetchConfig: () => Promise<void>;
-  fetchSessions: () => Promise<SessionListItem[]>;
-  selectSession: (id: string) => Promise<void>;
-  createNewSession: () => Promise<string | null>;
-  renameSession: (sessionId: string, newTitle: string) => Promise<void>;
+  fetchConversations: () => Promise<ConversationListItem[]>;
+  selectConversation: (id: string) => Promise<void>;
+  createNewConversation: () => Promise<string | null>;
+  renameConversation: (conversationId: string, newTitle: string) => Promise<void>;
   appendItem: (item: DisplayItem) => void;
-  refreshMessages: (sessionId: string, baselineCount: number) => Promise<boolean>;
+  refreshMessages: (conversationId: string, baselineCount: number) => Promise<boolean>;
   fetchTree: () => Promise<void>;
   openFile: (path: string, highlightLine?: number) => Promise<void>;
   globalSearch: (query: string) => Promise<void>;
@@ -58,8 +58,8 @@ type PairProgrammingState = {
 };
 
 export const usePairProgrammingStore = create<PairProgrammingState>((set, get) => ({
-  sessions: [],
-  currentSessionId: null,
+  conversations: [],
+  currentConversationId: null,
   display: [],
   fileTree: [],
   currentFile: null,
@@ -78,46 +78,48 @@ export const usePairProgrammingStore = create<PairProgrammingState>((set, get) =
     }
   },
 
-  async fetchSessions() {
+  async fetchConversations() {
     try {
-      const resp = await listSessions(await pairPlatform());
-      const sessions = (resp.sessions ?? []) as SessionListItem[];
-      set({ sessions });
-      return sessions;
+      const resp = await listConversations(await pairPlatform());
+      const conversations = (resp.conversations ?? []) as ConversationListItem[];
+      set({ conversations });
+      return conversations;
     } catch (e) {
       console.error("fetchSessions:", e);
       return [];
     }
   },
 
-  async selectSession(id) {
-    set({ currentSessionId: id, display: [] });
+  async selectConversation(id) {
+    set({ currentConversationId: id, display: [] });
     try {
-      const resp = await getSessionMessages(id);
+      const resp = await getStoredMessages(id);
       set({ display: (resp.display as DisplayItem[] | undefined) ?? [] });
     } catch (e) {
       console.error("selectSession:", e);
     }
   },
 
-  async createNewSession() {
+  async createNewConversation() {
     try {
       const d = await createSession(await pairPlatform());
-      await get().fetchSessions();
-      const sessionId = d.session_id;
-      await get().selectSession(sessionId);
-      return sessionId;
+      await get().fetchConversations();
+      const conversationId = d.conversation_id;
+      await get().selectConversation(conversationId);
+      return conversationId;
     } catch (e) {
-      console.error("createNewSession:", e);
+      console.error("createNewConversation:", e);
       return null;
     }
   },
 
-  async renameSession(sessionId, newTitle) {
+  async renameConversation(conversationId, newTitle) {
     try {
-      await setSessionTitle(sessionId, newTitle);
+      await setConversationTitle(conversationId, newTitle);
       set({
-        sessions: get().sessions.map((s) => (s.id === sessionId ? { ...s, title: newTitle } : s)),
+        conversations: get().conversations.map((s) =>
+          s.id === conversationId ? { ...s, title: newTitle } : s,
+        ),
       });
     } catch (e) {
       console.error("renameSession:", e);
@@ -128,9 +130,9 @@ export const usePairProgrammingStore = create<PairProgrammingState>((set, get) =
     set({ display: [...get().display, item] });
   },
 
-  async refreshMessages(sessionId, baselineCount) {
+  async refreshMessages(conversationId, baselineCount) {
     try {
-      const resp = await getSessionMessages(sessionId);
+      const resp = await getStoredMessages(conversationId);
       const display = (resp.display as DisplayItem[] | undefined) ?? [];
       set({ display });
       return hasNewAssistantReply(display, baselineCount);

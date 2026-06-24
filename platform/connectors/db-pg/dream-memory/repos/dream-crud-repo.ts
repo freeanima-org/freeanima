@@ -37,7 +37,7 @@ export async function createDreamMemory(row: DreamMemoryCreateInput): Promise<st
     dreamDay,
     content,
     sourceLimbicIds: normalizeStringArray(row.source_limbic_ids),
-    sourceSessionIds: normalizeStringArray(row.source_session_ids),
+    sourceConversationIds: normalizeStringArray(row.source_conversation_ids),
     episodicSnippets: normalizeEpisodicSnippets(row.episodic_snippets),
     createdAt: new Date(now),
   });

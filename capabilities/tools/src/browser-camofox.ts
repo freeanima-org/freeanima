@@ -82,10 +82,10 @@ function digest(prefix: string, input: string, len: number): string {
   return createHash("sha256").update(`${prefix}:${input}`).digest("hex").slice(0, len);
 }
 
-function getCamofoxIdentity(sessionId: string): { userId: string; sessionKey: string } {
+function getCamofoxIdentity(conversationId: string): { userId: string; sessionKey: string } {
   const scopeRoot = homePath("browser_auth", "camofox");
   const userDigest = digest("camofox-user", scopeRoot, 10);
-  const sessionDigest = digest("camofox-session", `${scopeRoot}:${sessionId}`, 16);
+  const sessionDigest = digest("camofox-session", `${scopeRoot}:${conversationId}`, 16);
   return {
     userId: `anima_${userDigest}`,
     sessionKey: `task_${sessionDigest}`,
@@ -93,12 +93,12 @@ function getCamofoxIdentity(sessionId: string): { userId: string; sessionKey: st
 }
 
 function identityOverride(
-  sessionId: string,
+  conversationId: string,
   cfg: CamofoxConfig,
 ): { userId: string; sessionKey: string } | null {
   const userId = cfg.userId?.trim() ?? "";
   if (!userId) return null;
-  const sessionKey = cfg.sessionKey?.trim() || `task_${sessionId.slice(0, 16)}`;
+  const sessionKey = cfg.sessionKey?.trim() || `task_${conversationId.slice(0, 16)}`;
   return { userId, sessionKey };
 }
 
@@ -246,12 +246,12 @@ async function adoptExistingTab(session: CamofoxSession): Promise<CamofoxSession
   return session;
 }
 
-function getSession(sessionId: string): CamofoxSession {
-  const existing = sessions.get(sessionId);
+function getSession(conversationId: string): CamofoxSession {
+  const existing = sessions.get(conversationId);
   if (existing) return existing;
 
   const cfg = resolveConfig();
-  const override = identityOverride(sessionId, cfg);
+  const override = identityOverride(conversationId, cfg);
   let session: CamofoxSession;
   if (override) {
     session = {
@@ -262,7 +262,7 @@ function getSession(sessionId: string): CamofoxSession {
       adoptExistingTab: cfg.adoptExistingTab,
     };
   } else if (cfg.managedPersistence) {
-    const identity = getCamofoxIdentity(sessionId);
+    const identity = getCamofoxIdentity(conversationId);
     session = {
       userId: identity.userId,
       tabId: null,
@@ -274,23 +274,23 @@ function getSession(sessionId: string): CamofoxSession {
     session = {
       userId: `anima_${randomUUID().replace(/-/g, "").slice(0, 10)}`,
       tabId: null,
-      sessionKey: `task_${sessionId.slice(0, 16)}`,
+      sessionKey: `task_${conversationId.slice(0, 16)}`,
       managed: false,
       adoptExistingTab: false,
     };
   }
-  sessions.set(sessionId, session);
+  sessions.set(conversationId, session);
   return session;
 }
 
-async function ensureSession(sessionId: string): Promise<CamofoxSession> {
-  const session = await adoptExistingTab(getSession(sessionId));
-  sessions.set(sessionId, session);
+async function ensureSession(conversationId: string): Promise<CamofoxSession> {
+  const session = await adoptExistingTab(getSession(conversationId));
+  sessions.set(conversationId, session);
   return session;
 }
 
-async function ensureTab(sessionId: string, url = "about:blank"): Promise<CamofoxSession> {
-  const session = await ensureSession(sessionId);
+async function ensureTab(conversationId: string, url = "about:blank"): Promise<CamofoxSession> {
+  const session = await ensureSession(conversationId);
   if (session.tabId) return session;
   const data = await postJson("/tabs", {
     userId: session.userId,
@@ -302,12 +302,12 @@ async function ensureTab(sessionId: string, url = "about:blank"): Promise<Camofo
     throw new Error("Camofox tab creation failed: response missing tabId");
   }
   session.tabId = tabId;
-  sessions.set(sessionId, session);
+  sessions.set(conversationId, session);
   return session;
 }
 
-function requireTab(sessionId: string): CamofoxSession {
-  const session = sessions.get(sessionId);
+function requireTab(conversationId: string): CamofoxSession {
+  const session = sessions.get(conversationId);
   if (!session?.tabId) {
     throw new Error("No browser session. Call browser_navigate first.");
   }
@@ -335,24 +335,24 @@ function wrapError(err: unknown): string {
   return toolError(msg);
 }
 
-/** For tests: clear in-process session cache */
+/** For tests: clear in-process conversation cache */
 export function resetCamofoxSessionsForTests(): void {
   sessions.clear();
   vncUrl = null;
   vncUrlChecked = false;
 }
 
-export async function camofoxNavigate(sessionId: string, url: string): Promise<string> {
+export async function camofoxNavigate(conversationId: string, url: string): Promise<string> {
   if (!isCamofoxConfigured()) {
     return toolError(
       "Camofox not configured. Set browser.camofox.base_url in ~/.anima/config.yaml.",
     );
   }
   try {
-    let session = await ensureSession(sessionId);
+    let session = await ensureSession(conversationId);
     let data: Record<string, unknown>;
     if (!session.tabId) {
-      session = await ensureTab(sessionId, url);
+      session = await ensureTab(conversationId, url);
       data = { ok: true, url };
     } else {
       data = await postJson(
@@ -391,14 +391,14 @@ export async function camofoxNavigate(sessionId: string, url: string): Promise<s
   }
 }
 
-export async function camofoxSnapshot(sessionId: string, full = false): Promise<string> {
+export async function camofoxSnapshot(conversationId: string, full = false): Promise<string> {
   if (!isCamofoxConfigured()) {
     return toolError(
       "Camofox not configured. Set browser.camofox.base_url in ~/.anima/config.yaml.",
     );
   }
   try {
-    const session = requireTab(sessionId);
+    const session = requireTab(conversationId);
     const data = await getJson(`/tabs/${session.tabId}/snapshot`, { userId: session.userId });
     let snapshot = String(data.snapshot ?? "");
     const refsCount = data.refsCount ?? 0;
@@ -419,9 +419,9 @@ export async function camofoxSnapshot(sessionId: string, full = false): Promise<
   }
 }
 
-export async function camofoxClick(sessionId: string, ref: string): Promise<string> {
+export async function camofoxClick(conversationId: string, ref: string): Promise<string> {
   try {
-    const session = requireTab(sessionId);
+    const session = requireTab(conversationId);
     const cleanRef = ref.replace(/^@+/, "");
     const data = await postJson(`/tabs/${session.tabId}/click`, {
       userId: session.userId,
@@ -439,9 +439,13 @@ export async function camofoxClick(sessionId: string, ref: string): Promise<stri
   }
 }
 
-export async function camofoxType(sessionId: string, ref: string, text: string): Promise<string> {
+export async function camofoxType(
+  conversationId: string,
+  ref: string,
+  text: string,
+): Promise<string> {
   try {
-    const session = requireTab(sessionId);
+    const session = requireTab(conversationId);
     const cleanRef = ref.replace(/^@+/, "");
     await postJson(`/tabs/${session.tabId}/type`, {
       userId: session.userId,
@@ -460,12 +464,12 @@ export async function camofoxType(sessionId: string, ref: string, text: string):
   }
 }
 
-export async function camofoxScroll(sessionId: string, direction: string): Promise<string> {
+export async function camofoxScroll(conversationId: string, direction: string): Promise<string> {
   if (direction !== "up" && direction !== "down") {
     return toolError(`Invalid direction '${direction}'; use up or down.`);
   }
   try {
-    const session = requireTab(sessionId);
+    const session = requireTab(conversationId);
     const repeats = 5;
     for (let i = 0; i < repeats; i++) {
       await postJson(`/tabs/${session.tabId}/scroll`, {
@@ -481,9 +485,9 @@ export async function camofoxScroll(sessionId: string, direction: string): Promi
   }
 }
 
-export async function camofoxBack(sessionId: string): Promise<string> {
+export async function camofoxBack(conversationId: string): Promise<string> {
   try {
-    const session = requireTab(sessionId);
+    const session = requireTab(conversationId);
     const data = await postJson(`/tabs/${session.tabId}/back`, { userId: session.userId });
     return toolResult({ success: true, url: data.url ?? "" });
   } catch (err) {
@@ -493,9 +497,9 @@ export async function camofoxBack(sessionId: string): Promise<string> {
   }
 }
 
-export async function camofoxPress(sessionId: string, key: string): Promise<string> {
+export async function camofoxPress(conversationId: string, key: string): Promise<string> {
   try {
-    const session = requireTab(sessionId);
+    const session = requireTab(conversationId);
     await postJson(`/tabs/${session.tabId}/press`, { userId: session.userId, key });
     return toolResult({ success: true, pressed: key });
   } catch (err) {
@@ -505,7 +509,7 @@ export async function camofoxPress(sessionId: string, key: string): Promise<stri
   }
 }
 
-export async function camofoxConsole(_sessionId: string, _clear = false): Promise<string> {
+export async function camofoxConsole(_conversationId: string, _clear = false): Promise<string> {
   return toolResult({
     success: true,
     console_messages: [],
@@ -516,9 +520,9 @@ export async function camofoxConsole(_sessionId: string, _clear = false): Promis
   });
 }
 
-export async function camofoxGetImages(sessionId: string): Promise<string> {
+export async function camofoxGetImages(conversationId: string): Promise<string> {
   try {
-    const session = requireTab(sessionId);
+    const session = requireTab(conversationId);
     const data = await getJson(`/tabs/${session.tabId}/snapshot`, { userId: session.userId });
     const snapshot = String(data.snapshot ?? "");
     const images: Array<{ src: string; alt: string }> = [];
@@ -544,13 +548,13 @@ export async function camofoxGetImages(sessionId: string): Promise<string> {
 }
 
 export async function camofoxVision(
-  sessionId: string,
+  conversationId: string,
   question: string,
   annotate = false,
 ): Promise<string> {
   if (!question.trim()) return toolError("question is required");
   try {
-    const session = requireTab(sessionId);
+    const session = requireTab(conversationId);
     const png = await getRaw(`/tabs/${session.tabId}/screenshot`, { userId: session.userId });
     const dir = homePath("browser_screenshots");
     mkdirSync(dir, { recursive: true });
@@ -583,12 +587,12 @@ export async function camofoxVision(
   }
 }
 
-export async function camofoxClose(sessionId: string): Promise<string> {
-  const session = sessions.get(sessionId);
+export async function camofoxClose(conversationId: string): Promise<string> {
+  const session = sessions.get(conversationId);
   if (!session) {
     return toolResult({ success: true, closed: true });
   }
-  sessions.delete(sessionId);
+  sessions.delete(conversationId);
   try {
     await deleteJson(`/sessions/${session.userId}`);
     return toolResult({ success: true, closed: true });

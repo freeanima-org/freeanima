@@ -1,7 +1,7 @@
 import type {
   FridgeMagnetsResponse,
-  SessionAcpDockSnapshot,
-  SessionListItem,
+  ConversationAcpDockSnapshot,
+  ConversationListItem,
   StreamApiEvent,
 } from "./types.ts";
 import { getSapRelayClient } from "./sap-client.ts";
@@ -13,17 +13,17 @@ type SubscribeCallbacks<T> = {
   onComplete?: () => void;
 };
 
-function mapSessionList(raw: {
-  sessions: Array<{
-    session_id: string;
+function mapConversationList(raw: {
+  conversations: Array<{
+    conversation_id: string;
     title?: string;
     platform?: string;
     updated_at?: string;
   }>;
-}): { sessions: SessionListItem[] } {
+}): { conversations: ConversationListItem[] } {
   return {
-    sessions: raw.sessions.map((s) => ({
-      id: s.session_id,
+    conversations: raw.conversations.map((s) => ({
+      id: s.conversation_id,
       title: s.title ?? "",
       platform: s.platform ?? "",
       created: s.updated_at ?? "",
@@ -35,43 +35,50 @@ function sap() {
   return getSapRelayClient();
 }
 
-export type { SessionAcpDockSnapshot, StreamApiEvent } from "./types.ts";
+export type { ConversationAcpDockSnapshot, StreamApiEvent } from "./types.ts";
 
-export async function listSessions() {
+export async function listConversations() {
   const client = await sap().whenReady();
-  const result = await client.request("session.list", {});
-  return mapSessionList(result);
+  const result = await client.request("conversation.list", {});
+  return mapConversationList(result);
 }
 
+export async function createConversation() {
+  const client = await sap().whenReady();
+  const result = await client.request("conversation.create", {});
+  return { conversation_id: result.conversation_id };
+}
+
+/** @deprecated 使用 createConversation */
 export async function createSession() {
-  const client = await sap().whenReady();
-  const result = await client.request("session.create", {});
-  return { session_id: result.session_id };
+  return createConversation();
 }
 
-export async function getSessionMessages(sessionId: string, offset = 0, limit = 500) {
+export async function getStoredMessages(conversationId: string, offset = 0, limit = 500) {
   const client = await sap().whenReady();
-  return client.request("session.messages", {
-    session_id: sessionId,
+  return client.request("conversation.messages", {
+    conversation_id: conversationId,
     offset,
     limit,
   });
 }
 
-export async function setSessionTitle(sessionId: string, title: string) {
+export async function setConversationTitle(conversationId: string, title: string) {
   const client = await sap().whenReady();
-  await client.request("session.patchTitle", { session_id: sessionId, title });
+  await client.request("conversation.patchTitle", { conversation_id: conversationId, title });
   return { ok: true as const };
 }
 
-export async function getSessionAcpDock(sessionId: string): Promise<SessionAcpDockSnapshot> {
+export async function getConversationAcpDock(
+  conversationId: string,
+): Promise<ConversationAcpDockSnapshot> {
   const client = await sap().whenReady();
-  return client.request("session.acpDock", { session_id: sessionId });
+  return client.request("conversation.acpDock", { conversation_id: conversationId });
 }
 
-export async function listSessionCommands(opts?: { all?: boolean }) {
+export async function listConversationCommands(opts?: { all?: boolean }) {
   const client = await sap().whenReady();
-  return client.request("session.commands", {
+  return client.request("conversation.commands", {
     all: opts?.all,
   });
 }
@@ -87,22 +94,22 @@ export async function getFridgeMagnets(): Promise<FridgeMagnetsResponse> {
 }
 
 export function subscribeMessageStream(
-  input: { sessionId: string; message: string },
+  input: { conversationId: string; message: string },
   callbacks: SubscribeCallbacks<StreamApiEvent>,
 ): { unsubscribe: () => void } {
   return sap().sendMessageStream(input, callbacks);
 }
 
-export async function interruptMessageStream(sessionId: string): Promise<void> {
+export async function interruptMessageStream(conversationId: string): Promise<void> {
   const client = await sap().whenReady();
-  await client.request("message.interrupt", { session_id: sessionId });
+  await client.request("message.interrupt", { conversation_id: conversationId });
 }
 
-export function subscribeSessionEvents(
-  sessionId: string,
+export function subscribeConversationEvents(
+  conversationId: string,
   onUpdate: () => void,
 ): { unsubscribe: () => void } {
-  return sap().subscribeSessionEvents(sessionId, onUpdate);
+  return sap().subscribeConversationEvents(conversationId, onUpdate);
 }
 
 export async function loadConfig() {

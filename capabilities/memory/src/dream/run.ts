@@ -1,5 +1,5 @@
 import { logCapability as logComponent } from "@freeanima/core/config";
-import type { DreamMemoryStorePort, SessionStorePort } from "@freeanima/core/repos";
+import type { DreamMemoryStorePort, ConversationStorePort } from "@freeanima/core/repos";
 
 import { getDreamMemoryStore } from "../dream-port.ts";
 import { buildDreamEngineInput } from "./build-messages.ts";
@@ -24,7 +24,7 @@ export type DreamResult = {
 export type RunDreamOpts = {
   day?: string;
   selfContent: string;
-  sessionStore?: SessionStorePort;
+  conversationStore?: ConversationStorePort;
   dreamStore?: DreamMemoryStorePort;
   fridge?: DreamFridgePort;
 };
@@ -52,7 +52,10 @@ export async function runDream(opts: RunDreamOpts): Promise<DreamResult> {
     return result;
   }
 
-  const input = await gatherDreamInput({ day: opts.day, sessionStore: opts.sessionStore });
+  const input = await gatherDreamInput({
+    day: opts.day,
+    conversationStore: opts.conversationStore,
+  });
 
   if (!hasDreamFuel(input)) {
     const result: DreamResult = {
@@ -88,7 +91,7 @@ export async function runDream(opts: RunDreamOpts): Promise<DreamResult> {
     dream_day: input.day,
     content,
     source_limbic_ids: input.limbicMemories.map((r) => r.id),
-    source_session_ids: input.sessionIds,
+    source_conversation_ids: input.conversationIds,
     episodic_snippets: input.episodicSnippets,
   });
 

@@ -1,10 +1,10 @@
-import { getToolSessionId } from "@freeanima/core/tool";
+import { getToolConversationId } from "@freeanima/core/tool";
 import type { ToolSetRegistry } from "@freeanima/core/tool";
 import { attachToolReturns, toolResult, toolError, type ToolArgs } from "@freeanima/core/tool";
 import { FRIDGE_TOOL_RETURNS } from "./return-schemas.ts";
 import { clampTtl, deleteMagnet, magnetRedisKey, randomBase62, setMagnet } from "./store.ts";
 
-const FRIDGE_MODULES = new Set(["session", "dream", "tasks"]);
+const FRIDGE_MODULES = new Set(["conversation", "dream", "tasks"]);
 
 export function registerWriteFridgeMagnetTool(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
@@ -15,7 +15,7 @@ export function registerWriteFridgeMagnetTool(toolSets: ToolSetRegistry): void {
         {
           name: "fridge_magnet_write",
           description:
-            "Write a note on the fridge magnet board. The fridge magnet board is a temporary cross-turn shared state blackboard attached to the current session with an expiry time. key is optional; if omitted a 4-character random ID is generated.",
+            "Write a note on the fridge magnet board. The fridge magnet board is a temporary cross-turn shared state blackboard attached to the current conversation with an expiry time. key is optional; if omitted a 4-character random ID is generated.",
           parameters: {
             type: "object",
             properties: {
@@ -32,17 +32,17 @@ export function registerWriteFridgeMagnetTool(toolSets: ToolSetRegistry): void {
             required: ["value"],
           },
           handler: async (args: ToolArgs) => {
-            const sessionId = getToolSessionId();
-            if (!sessionId) return toolError("Unable to get current session ID");
+            const conversationId = getToolConversationId();
+            if (!conversationId) return toolError("Unable to get current conversation ID");
             const value = String(args.value ?? "").trim();
             if (!value) return toolError("value cannot be empty");
             const label = String(args.key ?? "").trim() || randomBase62(4);
             const ttl = clampTtl(args.ttl_seconds as number | undefined);
-            const magnetId = `${sessionId}:${label}`;
-            await setMagnet("session", magnetId, value, ttl);
+            const magnetId = `${conversationId}:${label}`;
+            await setMagnet("conversation", magnetId, value, ttl);
             return toolResult({
               ok: true,
-              redis_key: magnetRedisKey("session", magnetId),
+              redis_key: magnetRedisKey("conversation", magnetId),
               label,
               ttl,
             });
@@ -51,14 +51,14 @@ export function registerWriteFridgeMagnetTool(toolSets: ToolSetRegistry): void {
         {
           name: "fridge_magnet_dismiss",
           description:
-            "Dismiss (tear off) a fridge magnet note. For session notes, key may be label only (current session is implied) or full sessionId:label.",
+            "Dismiss (tear off) a fridge magnet note. For conversation notes, key may be label only (current conversation is implied) or full conversationId:label.",
           parameters: {
             type: "object",
             properties: {
               module: {
                 type: "string",
-                description: "Magnet module: session, dream, or tasks",
-                enum: ["session", "dream", "tasks"],
+                description: "Magnet module: conversation, dream, or tasks",
+                enum: ["conversation", "dream", "tasks"],
               },
               key: {
                 type: "string",
@@ -71,16 +71,16 @@ export function registerWriteFridgeMagnetTool(toolSets: ToolSetRegistry): void {
           handler: async (args: ToolArgs) => {
             const module = String(args.module ?? "").trim();
             if (!FRIDGE_MODULES.has(module)) {
-              return toolError("module must be session, dream, or tasks");
+              return toolError("module must be conversation, dream, or tasks");
             }
             let key = String(args.key ?? "").trim();
             if (!key) return toolError("key is required");
 
-            if (module === "session") {
-              const sessionId = getToolSessionId();
-              if (!sessionId) return toolError("Unable to get current session ID");
+            if (module === "conversation") {
+              const conversationId = getToolConversationId();
+              if (!conversationId) return toolError("Unable to get current conversation ID");
               if (!key.includes(":")) {
-                key = `${sessionId}:${key}`;
+                key = `${conversationId}:${key}`;
               }
             }
 

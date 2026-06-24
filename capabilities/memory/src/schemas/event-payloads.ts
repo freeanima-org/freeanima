@@ -1,6 +1,8 @@
 import { z } from "zod";
 
-export const sessionUpdatedPayloadSchema = z.object({ session_id: z.string() }).passthrough();
+export const conversationUpdatedPayloadSchema = z
+  .object({ conversation_id: z.string() })
+  .passthrough();
 
 export const semanticMemoryUpdatedPayloadSchema = z
   .object({ semantic_memory_ids: z.array(z.string()).optional() })
@@ -9,7 +11,7 @@ export const semanticMemoryUpdatedPayloadSchema = z
 export const testPingPayloadSchema = z.record(z.string(), z.unknown());
 
 export const eventPayloadSchemas = {
-  "session:updated": sessionUpdatedPayloadSchema,
+  "conversation:updated": conversationUpdatedPayloadSchema,
   "semantic_memory:updated": semanticMemoryUpdatedPayloadSchema,
   "test:ping": testPingPayloadSchema,
 } as const;

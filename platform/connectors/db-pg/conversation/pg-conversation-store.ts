@@ -1,0 +1,49 @@
+import type { ConversationStorePort } from "@freeanima/core/repos";
+import * as messageFtsRepo from "./repos/message-fts-repo.ts";
+import * as messageRepo from "./repos/message-repo.ts";
+import * as conversationRepo from "./repos/conversation-repo.ts";
+
+/** PostgreSQL ConversationStorePort implementation */
+export const pgConversationStore = {
+  getConversationMeta: conversationRepo.getConversationMeta,
+  upsertConversationMeta: conversationRepo.upsertConversationMeta,
+  patchConversationMeta: conversationRepo.patchConversationMeta,
+  updateCompression: conversationRepo.updateCompression,
+  updateTodos: conversationRepo.updateTodos,
+  appendMessage: messageRepo.appendMessage,
+  appendMessageReturningId: messageRepo.appendMessageReturningId,
+  getMessageContentById: messageRepo.getMessageContentById,
+  getMessageContentsByIds: messageRepo.getMessageContentsByIds,
+  updateMessageContent: messageRepo.updateMessageContent,
+  nextMessagePos: messageRepo.nextMessagePos,
+  truncateMessagesAfter: messageRepo.truncateMessagesAfter,
+  shiftMessagePositions: messageRepo.shiftMessagePositions,
+  conversationExists: conversationRepo.conversationExists,
+  deleteConversation: conversationRepo.deleteConversation,
+  listConversationIds: conversationRepo.listConversationIds,
+  listDebugConversationIds: conversationRepo.listDebugConversationIds,
+  listConversationSummaries: conversationRepo.listConversationSummaries,
+  listConversationSummariesPage: conversationRepo.listConversationSummariesPage,
+  countConversationsByPlatform: conversationRepo.countConversationsByPlatform,
+  deleteDebugConversations: conversationRepo.deleteDebugConversations,
+  findConversationIdByPlatformInfo: conversationRepo.findConversationIdByPlatformInfo,
+  listConversationIdsMatchingPlatformProbe:
+    conversationRepo.listConversationIdsMatchingPlatformProbe,
+  countMessages: messageRepo.countMessages,
+  countUserMessages: messageRepo.countUserMessages,
+  findMessagePos: messageRepo.findMessagePos,
+  listMessageRowsPage: messageRepo.listMessageRowsPage,
+  listMessageRowsFromPos: messageRepo.listMessageRowsFromPos,
+  lastMessageTimestamp: messageRepo.lastMessageTimestamp,
+  searchMessagesFts: messageFtsRepo.searchMessagesFts,
+  countSearchableMessages: messageFtsRepo.countSearchableMessages,
+  getConversationMetaLite: conversationRepo.getConversationMetaLite,
+  getConversationTools: conversationRepo.getConversationTools,
+  listMessages: messageRepo.listMessages,
+  listMessagesByPosRange: messageRepo.listMessagesByPosRange,
+  listMessagesPage: messageRepo.listMessagesPage,
+  listConversationIdsUpdatedBetween: conversationRepo.listConversationIdsUpdatedBetween,
+  getEarliestConversationDay: conversationRepo.getEarliestConversationDay,
+  listStaleConversationIdsForCleanup: conversationRepo.listStaleConversationIdsForCleanup,
+  deleteStaleConversations: conversationRepo.deleteStaleConversations,
+} satisfies ConversationStorePort;

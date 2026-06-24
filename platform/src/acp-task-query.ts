@@ -12,7 +12,7 @@ function parseAcpResultMessage(content: string, taskId: string): AcpPromptResult
     >;
     if (json.task_id !== taskId) return null;
     return {
-      session_id: typeof json.acp_session_id === "string" ? json.acp_session_id : "",
+      conversation_id: typeof json.acp_conversation_id === "string" ? json.acp_conversation_id : "",
       output: typeof json.output === "string" ? json.output : "",
       pending: Array.isArray(json.pending)
         ? (json.pending as AcpPromptResult["pending"])
@@ -31,10 +31,10 @@ function parseAcpResultMessage(content: string, taskId: string): AcpPromptResult
 export function createAcpTaskQueryPort(conversation: ConversationService): AcpTaskQueryPort {
   return {
     async getMessageContent(animaSessionId, messageId) {
-      return conversation.repos.session.getMessageContentById(animaSessionId, messageId);
+      return conversation.repos.conversation.getMessageContentById(animaSessionId, messageId);
     },
     async findAcpResultForTask(animaSessionId, taskId) {
-      const messages = await conversation.repos.session.listMessages(animaSessionId);
+      const messages = await conversation.repos.conversation.listMessages(animaSessionId);
       for (let i = messages.length - 1; i >= 0; i--) {
         const msg = messages[i];
         if (!msg || msg.role !== "assistant") continue;

@@ -6,5 +6,5 @@ export type {
   ProcessMemoryDetail,
   SafeConfigSnapshot,
   ServiceSnapshot,
-  SessionSummary,
+  ConversationSummary,
 } from "@freeanima/platform/ports/schemas/snapshot";

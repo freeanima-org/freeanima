@@ -1,5 +1,10 @@
 import { and, eq, ne, sql as drizzleSql } from "drizzle-orm";
-import { memoryReferences, messages, semanticMemory, sessions } from "@freeanima/core/db/schema";
+import {
+  memoryReferences,
+  messages,
+  semanticMemory,
+  conversations,
+} from "@freeanima/core/db/schema";
 import { formatCstIso } from "@freeanima/core/util";
 import type { RecordMessageReferencesInput } from "@freeanima/core/repos";
 import {
@@ -33,7 +38,7 @@ export async function recordMessageReferences(
       .values({
         messageId: input.message_id,
         semanticMemoryId,
-        sessionId: input.session_id,
+        conversationId: input.conversation_id,
         createdAt,
       })
       .onConflictDoNothing({
@@ -49,7 +54,7 @@ export async function recordMessageReferences(
       .from(memoryReferences)
       .where(
         and(
-          eq(memoryReferences.sessionId, input.session_id),
+          eq(memoryReferences.conversationId, input.conversation_id),
           eq(memoryReferences.semanticMemoryId, semanticMemoryId),
           ne(memoryReferences.messageId, input.message_id),
         ),
@@ -78,17 +83,17 @@ export async function rebuildMemoryReferencesFromMessages(): Promise<number> {
   const rows = await db
     .select({
       id: messages.id,
-      sessionId: messages.sessionId,
+      conversationId: messages.conversationId,
       content: drizzleSql<string>`btrim((${messages.payload})->>'content')`,
       timestamp: drizzleSql<string | null>`(${messages.payload})->>'timestamp'`,
     })
     .from(messages)
-    .innerJoin(sessions, eq(messages.sessionId, sessions.id))
+    .innerJoin(conversations, eq(messages.conversationId, conversations.id))
     .where(
       and(
         drizzleSql`(${messages.payload})->>'role' IN ('user', 'assistant')`,
         drizzleSql`length(btrim((${messages.payload})->>'content')) > 0`,
-        drizzleSql`COALESCE(${sessions.platformInfo}->>'platform', '') <> 'cron'`,
+        drizzleSql`COALESCE(${conversations.platformInfo}->>'platform', '') <> 'cron'`,
       ),
     );
 
@@ -111,7 +116,7 @@ export async function rebuildMemoryReferencesFromMessages(): Promise<number> {
         .values({
           messageId: row.id,
           semanticMemoryId,
-          sessionId: row.sessionId,
+          conversationId: row.conversationId,
           createdAt,
         })
         .onConflictDoNothing({
@@ -135,12 +140,12 @@ export async function syncAllReferenceCounts(): Promise<{ updated: number; rebui
     weightedCount: drizzleSql<number>`weighted_count`,
   }).from(drizzleSql`(
       WITH deduped AS (
-        SELECT DISTINCT ON (session_id, semantic_memory_id)
-          session_id,
+        SELECT DISTINCT ON (conversation_id, semantic_memory_id)
+          conversation_id,
           semantic_memory_id,
           created_at
         FROM memory_references
-        ORDER BY session_id, semantic_memory_id, created_at DESC
+        ORDER BY conversation_id, semantic_memory_id, created_at DESC
       )
       SELECT
         semantic_memory_id,

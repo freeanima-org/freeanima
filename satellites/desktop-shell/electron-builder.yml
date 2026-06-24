@@ -15,6 +15,20 @@ files:
   - vendor/**/*
   - package.json
   - electron/icons/**/*
+  - "!node_modules/@freeanima/**/release/**"
+  - "!node_modules/@freeanima/**/dist/**"
+  - "!node_modules/@freeanima/**/.tsout/**"
+  - "!node_modules/@freeanima/**/.cache/**"
+  - "!node_modules/@freeanima/**/build-resources/**"
+  - "!node_modules/@freeanima/**/app/**"
+  - "!node_modules/@freeanima/**/src/**"
+  - "!node_modules/@freeanima/**/scripts/**"
+  - "!node_modules/@freeanima/**/*.ts"
+  - "!node_modules/@freeanima/**/tsconfig*"
+  - "!node_modules/@freeanima/**/*.tsbuildinfo"
+  - "!node_modules/@freeanima/**/node_modules/**"
+  - "!node_modules/fbx2vrma-converter/FBX2glTF-linux-*"
+  - "!node_modules/fbx2vrma-converter/FBX2glTF-darwin-*"
 extraResources:
   - from: build-resources/bin
     to: bin

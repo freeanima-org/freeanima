@@ -16,7 +16,7 @@ export type {
   PlatformStatusSnapshot as PlatformStatus,
   SafeConfigSnapshot as SafeConfigResponse,
   ServiceSnapshot as ServiceStatus,
-  SessionSummary as SessionListItem,
+  ConversationSummary as ConversationListItem,
 } from "@freeanima/platform/ports/schemas/snapshot";
 
 export type { CronJobData as CronJobApi } from "@freeanima/platform/connectors/cron";

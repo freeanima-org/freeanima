@@ -1,6 +1,6 @@
 import { describe, it, expect } from "bun:test";
 import { injectTimePrefixes } from "./time-perception.ts";
-import type { SessionMessage, UserMessage } from "@freeanima/core/db/domain";
+import type { StoredMessage, UserMessage } from "@freeanima/core/db/domain";
 
 //** Build ISO+08 timestamp string */
 function ts(isoLocal: string): string {
@@ -15,15 +15,15 @@ function userMsg(content: string, timestamp: string): UserMessage {
   return { role: "user", content, timestamp };
 }
 
-function assistantMsg(content: string): SessionMessage {
+function assistantMsg(content: string): StoredMessage {
   return { role: "assistant", content };
 }
 
-function toolMsg(name: string, content: string): SessionMessage {
+function toolMsg(name: string, content: string): StoredMessage {
   return { role: "tool", tool_call_id: "tc1", name, content };
 }
 
-function systemMsg(content: string): SessionMessage {
+function systemMsg(content: string): StoredMessage {
   return { role: "system", content };
 }
 
@@ -71,7 +71,7 @@ describe("injectTimePrefixes", () => {
   });
 
   it("skips user messages without timestamp", () => {
-    const msgs: SessionMessage[] = [
+    const msgs: StoredMessage[] = [
       { role: "user", content: "no timestamp" },
       userMsg("has timestamp", ts("2026-05-20T10:00:00")),
     ];
@@ -105,7 +105,7 @@ describe("injectTimePrefixes", () => {
   });
 
   it("does not mutate original message objects", () => {
-    const original: SessionMessage[] = [userMsg("morning", ts("2026-05-20T08:02:00"))];
+    const original: StoredMessage[] = [userMsg("morning", ts("2026-05-20T08:02:00"))];
     const result = injectTimePrefixes(original);
     expect(result[0]!.role === "user" && result[0].content).toBe(
       prefixed("morning", "2026-05-20T08:02"),

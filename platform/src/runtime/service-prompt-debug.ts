@@ -1,7 +1,7 @@
 import { estimateTokens, estimateToolsTokens } from "@freeanima/core/compress";
 import { PROFILE_CHAT } from "@freeanima/core/provider";
 import { getProfileHopModel } from "@freeanima/platform/config";
-import { isSessionMeta } from "@freeanima/core/db/domain";
+import { isConversationMeta } from "@freeanima/core/db/domain";
 import type { JsonSchemaObject } from "@freeanima/core/tool";
 import { buildSystemPrompt } from "@freeanima/core/hooks/prompt";
 import { renderToolsetsSection } from "@freeanima/capabilities-tools/toolset-prompt";
@@ -24,8 +24,8 @@ export type PromptDebugToolItem = {
 };
 
 export type PromptDebugResponse = {
-  mode: "global" | "session";
-  session_id?: string;
+  mode: "global" | "conversation";
+  conversation_id?: string;
   system: {
     parts: SystemPromptParts;
     composed: string;
@@ -34,7 +34,7 @@ export type PromptDebugResponse = {
     breakdown: RuntimeContextBreakdown;
   };
   tools: {
-    mode: "registry" | "session";
+    mode: "registry" | "conversation";
     count: number;
     tokens_est: number;
     items: PromptDebugToolItem[];
@@ -95,7 +95,7 @@ function registryToolItems(deps: RuntimeDeps): PromptDebugToolItem[] {
   }));
 }
 
-function sessionToolItems(
+function conversationToolItems(
   deps: RuntimeDeps,
   schemas: Array<{
     type: "function";
@@ -127,7 +127,7 @@ function sessionToolItems(
 async function buildSystemView(
   deps: RuntimeDeps,
   cwd?: string | null,
-  meta?: import("@freeanima/core/db/domain").SessionMetaMessage,
+  meta?: import("@freeanima/core/db/domain").ConversationMetaMessage,
 ): Promise<{
   parts: SystemPromptParts;
   composed: string;
@@ -143,9 +143,9 @@ async function buildSystemView(
 /** WebUI system prompt debug view (read-only) */
 export async function getPromptDebug(
   deps: RuntimeDeps,
-  sessionId?: string | null,
+  conversationId?: string | null,
 ): Promise<PromptDebugResponse> {
-  const id = sessionId?.trim() || null;
+  const id = conversationId?.trim() || null;
 
   if (!id) {
     const { parts, composed } = await buildSystemView(deps, null);
@@ -167,13 +167,13 @@ export async function getPromptDebug(
     };
   }
 
-  if (!(await deps.conversation.sessionExists(id))) {
-    throw new Error(`Session not found: ${id}`);
+  if (!(await deps.conversation.conversationExists(id))) {
+    throw new Error(`Conversation not found: ${id}`);
   }
 
-  const meta = await deps.conversation.loadSessionMeta(id);
-  if (!isSessionMeta(meta)) {
-    throw new Error(`Session not found: ${id}`);
+  const meta = await deps.conversation.loadConversationMeta(id);
+  if (!isConversationMeta(meta)) {
+    throw new Error(`Conversation not found: ${id}`);
   }
 
   const cwd = meta.cwd;
@@ -181,8 +181,8 @@ export async function getPromptDebug(
   const stored = meta.system_prompt ?? null;
   const in_sync = stored === composed;
 
-  const toolSchemas = await deps.conversation.loadSessionTools(id, meta);
-  const items = sessionToolItems(deps, toolSchemas);
+  const toolSchemas = await deps.conversation.loadConversationTools(id, meta);
+  const items = conversationToolItems(deps, toolSchemas);
 
   let breakdown: RuntimeContextBreakdown;
   try {
@@ -192,8 +192,8 @@ export async function getPromptDebug(
   }
 
   return {
-    mode: "session",
-    session_id: id,
+    mode: "conversation",
+    conversation_id: id,
     system: {
       parts,
       composed,
@@ -202,7 +202,7 @@ export async function getPromptDebug(
       breakdown,
     },
     tools: {
-      mode: "session",
+      mode: "conversation",
       count: items.length,
       tokens_est: breakdown.tools,
       items,

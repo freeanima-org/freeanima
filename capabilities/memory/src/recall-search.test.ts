@@ -3,33 +3,35 @@ import type {
   AutobiographicalMemoryStorePort,
   LimbicMemoryStorePort,
   SemanticMemoryStorePort,
-  SessionStorePort,
+  ConversationStorePort,
 } from "@freeanima/core/repos";
 import {
   registerAutobiographicalMemoryStore,
   registerLimbicMemoryStore,
-  registerMemorySessionStore,
+  registerMemoryConversationStore,
   registerSemanticMemoryStore,
   resetAutobiographicalMemoryStoreForTests,
   resetLimbicMemoryStoreForTests,
-  resetMemorySessionStoreForTests,
+  resetMemoryConversationStoreForTests,
   resetSemanticMemoryStoreForTests,
 } from "./index.ts";
 import { memoryRecallSearch } from "./recall-search.ts";
 
-function mockSessionStore(overrides: Partial<SessionStorePort> = {}): SessionStorePort {
-  const base: SessionStorePort = {
-    async getSessionMeta() {
+function mockConversationStore(
+  overrides: Partial<ConversationStorePort> = {},
+): ConversationStorePort {
+  const base: ConversationStorePort = {
+    async getConversationMeta() {
       return null;
     },
-    async getSessionMetaLite() {
+    async getConversationMetaLite() {
       return null;
     },
-    async getSessionTools() {
+    async getConversationTools() {
       return [];
     },
-    async upsertSessionMeta() {},
-    async patchSessionMeta() {},
+    async upsertConversationMeta() {},
+    async patchConversationMeta() {},
     async updateCompression() {},
     async updateTodos() {},
     async appendMessage() {
@@ -77,32 +79,32 @@ function mockSessionStore(overrides: Partial<SessionStorePort> = {}): SessionSto
     },
     async truncateMessagesAfter() {},
     async shiftMessagePositions() {},
-    async sessionExists() {
+    async conversationExists() {
       return false;
     },
-    async deleteSession() {},
-    async listSessionIds() {
+    async deleteConversation() {},
+    async listConversationIds() {
       return [];
     },
-    async listDebugSessionIds() {
+    async listDebugConversationIds() {
       return [];
     },
-    async listSessionSummaries() {
+    async listConversationSummaries() {
       return [];
     },
-    async listSessionSummariesPage() {
+    async listConversationSummariesPage() {
       return { items: [], total: 0 };
     },
-    async countSessionsByPlatform() {
+    async countConversationsByPlatform() {
       return {};
     },
-    async deleteDebugSessions() {
+    async deleteDebugConversations() {
       return 0;
     },
-    async findSessionIdByPlatformInfo() {
+    async findConversationIdByPlatformInfo() {
       return null;
     },
-    async listSessionIdsMatchingPlatformProbe() {
+    async listConversationIdsMatchingPlatformProbe() {
       return [];
     },
     async searchMessagesFts() {
@@ -111,16 +113,16 @@ function mockSessionStore(overrides: Partial<SessionStorePort> = {}): SessionSto
     async countSearchableMessages() {
       return 0;
     },
-    async listSessionIdsUpdatedBetween() {
+    async listConversationIdsUpdatedBetween() {
       return [];
     },
-    async getEarliestSessionDay() {
+    async getEarliestConversationDay() {
       return null;
     },
-    async listStaleSessionIdsForCleanup() {
+    async listStaleConversationIdsForCleanup() {
       return [];
     },
-    async deleteStaleSessions() {
+    async deleteStaleConversations() {
       return { deleted: 0, ids: [] };
     },
   };
@@ -132,7 +134,7 @@ type MockSemanticRow = {
   type: string;
   pinned: boolean;
   content: string;
-  source_sessions: string[];
+  source_conversations: string[];
   observed_at: string | null;
   occurred_at: string | null;
   status: string;
@@ -169,7 +171,7 @@ function createMockSemanticStore(rows: MockSemanticRow[]): SemanticMemoryStorePo
     async listActive() {
       return [...map.values()].filter((r) => r.status === "active");
     },
-    async listBySourceSessions() {
+    async listBySourceConversations() {
       return [];
     },
     async searchFts(query, opts) {
@@ -195,7 +197,7 @@ function createMockSemanticStore(rows: MockSemanticRow[]): SemanticMemoryStorePo
 function createMockLimbicStore(
   rows: Array<{
     id: string;
-    session_id: string;
+    conversation_id: string;
     kind: "spike";
     content: string;
     intensity: number;
@@ -213,10 +215,10 @@ function createMockLimbicStore(
     async get() {
       return null;
     },
-    async listBySession() {
+    async listByConversation() {
       return [];
     },
-    async listBySessions() {
+    async listByConversations() {
       return [];
     },
     async listByCreatedBetween() {
@@ -250,7 +252,7 @@ function createMockAutobiographicalStore(
     period_start: string | null;
     period_end: string | null;
     source_semantic_memory: string[];
-    source_sessions: string[];
+    source_conversations: string[];
     status: "active";
     created: string;
     updated: string;
@@ -278,7 +280,7 @@ function createMockAutobiographicalStore(
     async listBySourceSemanticMemory() {
       return [];
     },
-    async listBySourceSessions() {
+    async listBySourceConversations() {
       return [];
     },
     async list(opts) {
@@ -312,14 +314,14 @@ function createMockAutobiographicalStore(
 describe("memoryRecallSearch", () => {
   beforeEach(() => {
     resetSemanticMemoryStoreForTests();
-    resetMemorySessionStoreForTests();
+    resetMemoryConversationStoreForTests();
     resetLimbicMemoryStoreForTests();
     resetAutobiographicalMemoryStoreForTests();
   });
 
   afterEach(() => {
     resetSemanticMemoryStoreForTests();
-    resetMemorySessionStoreForTests();
+    resetMemoryConversationStoreForTests();
     resetLimbicMemoryStoreForTests();
     resetAutobiographicalMemoryStoreForTests();
   });
@@ -333,7 +335,7 @@ describe("memoryRecallSearch", () => {
           type: "world",
           pinned: false,
           content: "compression semantic probe",
-          source_sessions: ["sid"],
+          source_conversations: ["sid"],
           observed_at: now,
           occurred_at: null,
           status: "active",
@@ -343,16 +345,16 @@ describe("memoryRecallSearch", () => {
         },
       ]),
     );
-    registerMemorySessionStore(
-      mockSessionStore({
+    registerMemoryConversationStore(
+      mockConversationStore({
         async searchMessagesFts() {
           return [
             {
               message_id: "msg-001",
-              session_id: "sid",
+              conversation_id: "sid",
               role: "user",
               content:
-                "prefix padding text before the important compression session message appears here with much more suffix padding text",
+                "prefix padding text before the important compression conversation message appears here with much more suffix padding text",
               timestamp: now,
               rank: 0.2,
             },
@@ -364,7 +366,7 @@ describe("memoryRecallSearch", () => {
       createMockLimbicStore([
         {
           id: "lm-1",
-          session_id: "sid",
+          conversation_id: "sid",
           kind: "spike",
           content: "compression limbic feeling",
           intensity: 0.8,
@@ -386,7 +388,7 @@ describe("memoryRecallSearch", () => {
           period_start: null,
           period_end: null,
           source_semantic_memory: [],
-          source_sessions: ["sid"],
+          source_conversations: ["sid"],
           status: "active",
           created: now,
           updated: now,
@@ -399,16 +401,16 @@ describe("memoryRecallSearch", () => {
     expect(out.results.length).toBeLessThanOrEqual(10);
     const types = new Set(out.results.map((r) => r.memory_type));
     expect(types.has("semantic")).toBe(true);
-    expect(types.has("session")).toBe(true);
+    expect(types.has("conversation")).toBe(true);
     expect(types.has("limbic")).toBe(true);
     expect(types.has("autobiographical")).toBe(true);
 
-    const sessionHit = out.results.find((r) => r.memory_type === "session");
+    const sessionHit = out.results.find((r) => r.memory_type === "conversation");
     expect(sessionHit).toBeDefined();
-    if (sessionHit?.memory_type === "session") {
+    if (sessionHit?.memory_type === "conversation") {
       expect(sessionHit.snippet).toContain("compression");
       expect(sessionHit.snippet.length).toBeLessThan(
-        "prefix padding text before the important compression session message appears here with much more suffix padding text"
+        "prefix padding text before the important compression conversation message appears here with much more suffix padding text"
           .length,
       );
     }
@@ -423,7 +425,7 @@ describe("memoryRecallSearch", () => {
         type: "world",
         pinned: false,
         content: `compression item ${i}`,
-        source_sessions: [],
+        source_conversations: [],
         observed_at: now,
         occurred_at: null,
         status: "active",
@@ -433,7 +435,7 @@ describe("memoryRecallSearch", () => {
       });
     }
     registerSemanticMemoryStore(createMockSemanticStore(semanticRows));
-    registerMemorySessionStore(mockSessionStore());
+    registerMemoryConversationStore(mockConversationStore());
     registerLimbicMemoryStore(createMockLimbicStore([]));
     registerAutobiographicalMemoryStore(createMockAutobiographicalStore([]));
 

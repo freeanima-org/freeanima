@@ -1,12 +1,12 @@
 import type { FullRuntimeDeps } from "./runtime/runtime-deps.ts";
 import { registerLlmStackConfigurator } from "@freeanima/core/llm";
 import { registerSystemPromptHookRunner } from "@freeanima/core/hooks/prompt";
-import { rebuildSessionCache } from "@freeanima/runtime/conversation";
-import { registerSessionToolMaskFilter } from "@freeanima/core/tool";
+import { rebuildConversationCache } from "@freeanima/runtime/conversation";
+import { registerConversationToolMaskFilter } from "@freeanima/core/tool";
 import { registerCompressionSummaryPostCut } from "@freeanima/core/compress";
 import { wireOpenAiCompatibleLlm } from "@freeanima/capabilities-llm-openai";
 import { foldSystemPromptSections, systemPromptBuild } from "@freeanima/core/hooks/prompt";
-import { filterToolNamesByMask, resolveSessionMaskFromMeta } from "./runtime/mask-wire.ts";
+import { filterToolNamesByMask, resolveConversationMaskFromMeta } from "./runtime/mask-wire.ts";
 import { getAppRuntime } from "./context.ts";
 
 /** Composition-root wiring for engine injection ports (call once before initLlmRuntime) */
@@ -19,16 +19,16 @@ export function wireEnginePorts(): void {
     return foldSystemPromptSections(run.chain);
   });
 
-  registerSessionToolMaskFilter((toolNames, meta) => {
+  registerConversationToolMaskFilter((toolNames, meta) => {
     const deps = getAppRuntime().fullDeps();
-    const resolved = resolveSessionMaskFromMeta(deps, meta);
+    const resolved = resolveConversationMaskFromMeta(deps, meta);
     if (!resolved) return toolNames;
     return filterToolNamesByMask(toolNames, resolved);
   });
 
-  registerCompressionSummaryPostCut(async (repos, session) => {
+  registerCompressionSummaryPostCut(async (repos, conversation) => {
     const { engine } = getAppRuntime();
-    await rebuildSessionCache(repos, engine.catalog.toolSets, session);
+    await rebuildConversationCache(repos, engine.catalog.toolSets, conversation);
   });
 }
 

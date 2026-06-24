@@ -1,5 +1,5 @@
-import type { SessionMetaLoadResult } from "@freeanima/core/db/domain";
-import { isSessionMeta } from "@freeanima/core/db/domain";
+import type { ConversationMetaLoadResult } from "@freeanima/core/db/domain";
+import { isConversationMeta } from "@freeanima/core/db/domain";
 import type { AnimaConfig } from "@freeanima/core/config";
 
 export const TOOL_DISPLAY_MODES = [
@@ -28,10 +28,10 @@ export function parseToolDisplayMode(value: string | undefined): ToolDisplayMode
 }
 
 export function resolveToolDisplayMode(
-  meta: SessionMetaLoadResult | null | undefined,
+  meta: ConversationMetaLoadResult | null | undefined,
   config?: AnimaConfig,
 ): ToolDisplayMode {
-  if (meta != null && isSessionMeta(meta)) {
+  if (meta != null && isConversationMeta(meta)) {
     const sessionMode = parseToolDisplayMode(
       typeof meta.gateway_tool_display === "string" ? meta.gateway_tool_display : undefined,
     );
@@ -47,7 +47,7 @@ const HANDOFF_DEFAULTS: Record<string, boolean> = {
   weixin: false,
 };
 
-export function resolveSessionHandoffOnNew(platform: string, config?: AnimaConfig): boolean {
+export function resolveConversationHandoffOnNew(platform: string, config?: AnimaConfig): boolean {
   const section = config?.[platform as keyof AnimaConfig] as
     | { session_handoff_on_new?: boolean }
     | undefined;

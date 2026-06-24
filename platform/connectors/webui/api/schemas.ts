@@ -20,7 +20,7 @@ export const semanticMemoryListBodySchema = memoryListPaginationSchema.extend({
   query: z.string().optional(),
   types: z.array(semanticMemoryTypeSchema).optional(),
   status: semanticMemoryStatusSchema.or(z.literal("all")).optional(),
-  source_session: z.string().optional(),
+  source_conversation: z.string().optional(),
   sort_by: semanticMemorySortBySchema.optional(),
 });
 
@@ -31,7 +31,7 @@ export const semanticMemoryPinBodySchema = z.object({
 
 export const limbicMemoryListBodySchema = memoryListPaginationSchema.extend({
   query: z.string().optional(),
-  session_id: z.string().optional(),
+  conversation_id: z.string().optional(),
   kind: limbicKindSchema.optional(),
 });
 
@@ -39,7 +39,7 @@ export const autobiographicalMemoryListBodySchema = memoryListPaginationSchema.e
   query: z.string().optional(),
   status: autobiographicalStatusSchema.optional(),
   significance: autobiographicalSignificanceSchema.optional(),
-  source_session: z.string().optional(),
+  source_conversation: z.string().optional(),
 });
 
 export const dreamMemoryListBodySchema = memoryListPaginationSchema;
@@ -62,7 +62,7 @@ const clarifyItemSchema = z.object({
   default: z.string().optional(),
 });
 
-export const createSessionBodySchema = z.object({
+export const createConversationBodySchema = z.object({
   platform: z.string().min(1),
 });
 
@@ -86,7 +86,7 @@ export const memorySearchBodySchema = z
   .transform((b) => ({ ...b, query: b.query.trim() }))
   .refine((b) => b.query.length > 0, { message: "query is required" });
 
-export type CreateSessionBody = z.infer<typeof createSessionBodySchema>;
+export type CreateConversationBody = z.infer<typeof createConversationBodySchema>;
 export type PatchTitleBody = z.infer<typeof patchTitleBodySchema>;
 export type SendMessageBody = z.infer<typeof sendMessageBodySchema>;
 export type MemorySearchBody = z.infer<typeof memorySearchBodySchema>;
@@ -203,8 +203,8 @@ const promptDebugToolItemSchema = z.object({
 });
 
 export const promptDebugResponseSchema = z.object({
-  mode: z.enum(["global", "session"]),
-  session_id: z.string().optional(),
+  mode: z.enum(["global", "conversation"]),
+  conversation_id: z.string().optional(),
   system: z.object({
     parts: z.object({
       self: z.string(),
@@ -218,7 +218,7 @@ export const promptDebugResponseSchema = z.object({
     breakdown: runtimeContextBreakdownSchema,
   }),
   tools: z.object({
-    mode: z.enum(["registry", "session"]),
+    mode: z.enum(["registry", "conversation"]),
     count: z.number(),
     tokens_est: z.number(),
     items: z.array(promptDebugToolItemSchema),
@@ -278,8 +278,8 @@ export type ToolsStatusToolItem = z.infer<typeof toolsStatusToolItemSchema>;
 export type FridgeMagnetItem = {
   key: string;
   value: string;
-  module: "session" | "tasks" | "other";
-  session_id?: string;
+  module: "conversation" | "tasks" | "other";
+  conversation_id?: string;
   label?: string;
   ttl_seconds: number | null;
 };

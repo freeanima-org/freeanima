@@ -2,7 +2,7 @@ import { describe, expect, it } from "bun:test";
 import { z } from "zod";
 
 import { defineToolReturn } from "./return-contract.ts";
-import { DEFAULT_SESSION_TOOLSETS } from "./default-session-toolsets.ts";
+import { DEFAULT_CONVERSATION_TOOLSETS } from "./default-conversation-toolsets.ts";
 import { ToolSetRegistry } from "./toolset.ts";
 import { buildToolsStatus, resolveReturnKind } from "./tools-status.ts";
 
@@ -76,7 +76,7 @@ describe("buildToolsStatus", () => {
     const status = buildToolsStatus(registry);
 
     expect(status.default_toolsets).toEqual(
-      DEFAULT_SESSION_TOOLSETS.filter((n) => registry.getToolSet(n) != null),
+      DEFAULT_CONVERSATION_TOOLSETS.filter((n) => registry.getToolSet(n) != null),
     );
     expect(status.default_toolsets).toContain("toolset");
 

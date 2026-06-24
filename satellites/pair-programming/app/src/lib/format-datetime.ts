@@ -8,9 +8,9 @@ export function formatDisplayDateTime(value: unknown): string {
   return d.toLocaleString("zh-CN", { timeZone: "Asia/Shanghai", hour12: false });
 }
 
-export function formatSessionIdDateTime(sessionId: string): string {
-  const match = /^(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})/.exec(sessionId);
-  if (!match) return sessionId.slice(0, 16);
+export function formatConversationIdDateTime(conversationId: string): string {
+  const match = /^(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})/.exec(conversationId);
+  if (!match) return conversationId.slice(0, 16);
   const [, y, mo, d, h, mi] = match;
   return `${y}/${mo}/${d} ${h}:${mi}`;
 }

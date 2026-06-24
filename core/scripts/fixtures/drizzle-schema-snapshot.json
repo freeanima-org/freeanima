@@ -262,7 +262,7 @@
       "default": null,
       "generated": null,
       "identity": null,
-      "name": "session_id",
+      "name": "conversation_id",
       "entityType": "columns",
       "schema": "public",
       "table": "messages"
@@ -437,7 +437,7 @@
       "default": "'{}'",
       "generated": null,
       "identity": null,
-      "name": "source_sessions",
+      "name": "source_conversations",
       "entityType": "columns",
       "schema": "public",
       "table": "semantic_memory"
@@ -697,7 +697,7 @@
       "default": "'{}'",
       "generated": null,
       "identity": null,
-      "name": "source_sessions",
+      "name": "source_conversations",
       "entityType": "columns",
       "schema": "public",
       "table": "autobiographical_memory"
@@ -762,7 +762,7 @@
       "default": null,
       "generated": null,
       "identity": null,
-      "name": "session_id",
+      "name": "conversation_id",
       "entityType": "columns",
       "schema": "public",
       "table": "limbic_memory"
@@ -996,7 +996,7 @@
       "default": null,
       "generated": null,
       "identity": null,
-      "name": "source_session_id",
+      "name": "source_conversation_id",
       "entityType": "columns",
       "schema": "public",
       "table": "tasks"
@@ -1005,7 +1005,7 @@
       "nameExplicit": true,
       "columns": [
         {
-          "value": "session_id",
+          "value": "conversation_id",
           "isExpression": false,
           "asc": true,
           "nullsFirst": false,
@@ -1024,7 +1024,7 @@
       "with": "",
       "method": "btree",
       "concurrently": false,
-      "name": "messages_session_id_pos_uidx",
+      "name": "messages_conversation_id_pos_uidx",
       "entityType": "indexes",
       "schema": "public",
       "table": "messages"
@@ -1117,7 +1117,7 @@
       "nameExplicit": true,
       "columns": [
         {
-          "value": "source_sessions",
+          "value": "source_conversations",
           "isExpression": false,
           "asc": true,
           "nullsFirst": false,
@@ -1129,7 +1129,7 @@
       "with": "",
       "method": "gin",
       "concurrently": false,
-      "name": "idx_semantic_memory_source_sessions",
+      "name": "idx_semantic_memory_source_conversations",
       "entityType": "indexes",
       "schema": "public",
       "table": "semantic_memory"
@@ -1243,7 +1243,7 @@
       "nameExplicit": true,
       "columns": [
         {
-          "value": "source_sessions",
+          "value": "source_conversations",
           "isExpression": false,
           "asc": true,
           "nullsFirst": false,
@@ -1255,7 +1255,7 @@
       "with": "",
       "method": "gin",
       "concurrently": false,
-      "name": "idx_autobiographical_memory_source_sessions",
+      "name": "idx_autobiographical_memory_source_conversations",
       "entityType": "indexes",
       "schema": "public",
       "table": "autobiographical_memory"
@@ -1285,7 +1285,7 @@
       "nameExplicit": true,
       "columns": [
         {
-          "value": "session_id",
+          "value": "conversation_id",
           "isExpression": false,
           "asc": true,
           "nullsFirst": false,
@@ -1297,7 +1297,7 @@
       "with": "",
       "method": "btree",
       "concurrently": false,
-      "name": "idx_limbic_memory_session_id",
+      "name": "idx_limbic_memory_conversation_id",
       "entityType": "indexes",
       "schema": "public",
       "table": "limbic_memory"
@@ -1465,26 +1465,26 @@
     },
     {
       "nameExplicit": false,
-      "columns": ["session_id"],
+      "columns": ["conversation_id"],
       "schemaTo": "public",
       "tableTo": "sessions",
       "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
-      "name": "messages_session_id_sessions_id_fkey",
+      "name": "messages_conversation_id_sessions_id_fkey",
       "entityType": "fks",
       "schema": "public",
       "table": "messages"
     },
     {
       "nameExplicit": false,
-      "columns": ["source_session_id"],
+      "columns": ["source_conversation_id"],
       "schemaTo": "public",
       "tableTo": "sessions",
       "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "SET NULL",
-      "name": "tasks_source_session_id_sessions_id_fkey",
+      "name": "tasks_source_conversation_id_conversations_id_fkey",
       "entityType": "fks",
       "schema": "public",
       "table": "tasks"

@@ -9,7 +9,7 @@ export type SemanticMemoryRawDbRow = {
   type: string;
   pinned: boolean;
   content: string;
-  source_sessions?: string[] | null;
+  source_conversations?: string[] | null;
   observed_at?: Date | string | null;
   occurred_at?: string | null;
   status?: string | null;
@@ -23,8 +23,10 @@ export type SemanticMemoryFtsDbRow = SemanticMemoryRawDbRow & { rank: number };
 export function mapSemanticMemoryRow(
   row: SemanticMemoryDbRow | SemanticMemoryRawDbRow,
 ): SemanticMemoryRow {
-  const sourceSessions =
-    "sourceSessions" in row ? (row.sourceSessions ?? []) : (row.source_sessions ?? []);
+  const sourceConversations =
+    "sourceConversations" in row
+      ? (row.sourceConversations ?? [])
+      : (row.source_conversations ?? []);
   const observedRaw = "observedAt" in row ? row.observedAt : row.observed_at;
   const occurredAt = "occurredAt" in row ? row.occurredAt : row.occurred_at;
   const referenceCount = "referenceCount" in row ? row.referenceCount : (row.reference_count ?? 0);
@@ -33,7 +35,7 @@ export function mapSemanticMemoryRow(
     type: row.type,
     pinned: row.pinned,
     content: row.content,
-    source_sessions: sourceSessions,
+    source_conversations: sourceConversations,
     observed_at: observedRaw != null ? normalizePgTimestamp(observedRaw) : null,
     occurred_at: occurredAt ?? null,
     status: row.status ?? "active",

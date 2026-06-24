@@ -18,41 +18,41 @@ export class ClarifyPendingRegistry {
 
   constructor(private readonly client: Client) {}
 
-  register(sessionId: string, message: Message, timeoutSec: number): void {
-    this.clearTimer(sessionId);
+  register(conversationId: string, message: Message, timeoutSec: number): void {
+    this.clearTimer(conversationId);
     const timeoutHandle = setTimeout(() => {
-      void this.disable(sessionId, TIMEOUT_SUFFIX);
+      void this.disable(conversationId, TIMEOUT_SUFFIX);
     }, timeoutSec * 1000);
-    this.pending.set(sessionId, {
+    this.pending.set(conversationId, {
       messageId: message.id,
       channelId: message.channelId,
       timeoutHandle,
     });
   }
 
-  async clear(sessionId: string): Promise<void> {
-    await this.disable(sessionId);
+  async clear(conversationId: string): Promise<void> {
+    await this.disable(conversationId);
   }
 
-  async disable(sessionId: string, contentSuffix?: string): Promise<void> {
-    const entry = this.pending.get(sessionId);
+  async disable(conversationId: string, contentSuffix?: string): Promise<void> {
+    const entry = this.pending.get(conversationId);
     if (!entry) return;
-    this.clearTimer(sessionId);
+    this.clearTimer(conversationId);
     await this.disableMessage(entry.channelId, entry.messageId, contentSuffix);
   }
 
   disposeAll(): void {
-    for (const sessionId of [...this.pending.keys()]) {
-      this.clearTimer(sessionId);
+    for (const conversationId of [...this.pending.keys()]) {
+      this.clearTimer(conversationId);
     }
     this.pending.clear();
   }
 
-  private clearTimer(sessionId: string): void {
-    const entry = this.pending.get(sessionId);
+  private clearTimer(conversationId: string): void {
+    const entry = this.pending.get(conversationId);
     if (!entry) return;
     clearTimeout(entry.timeoutHandle);
-    this.pending.delete(sessionId);
+    this.pending.delete(conversationId);
   }
 
   private async disableMessage(

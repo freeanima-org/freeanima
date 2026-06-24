@@ -1,9 +1,12 @@
-import { isSessionMeta, resolveExecutableToolNames } from "@freeanima/runtime/conversation";
-import { resolveSessionMaskFromMeta, runtimeToolMaskFromResolved } from "./mask-wire.ts";
+import { isConversationMeta, resolveExecutableToolNames } from "@freeanima/runtime/conversation";
+import { resolveConversationMaskFromMeta, runtimeToolMaskFromResolved } from "./mask-wire.ts";
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
-import { maybeGenerateSessionTitleAsync, type SessionTitleNotify } from "./session-title.ts";
-import type { SessionMessage as Message } from "@freeanima/core/db/domain";
-import type { SessionMessage } from "@freeanima/core/db/domain";
+import {
+  maybeGenerateConversationTitleAsync,
+  type SessionTitleNotify,
+} from "./conversation-title.ts";
+import type { StoredMessage as Message } from "@freeanima/core/db/domain";
+import type { StoredMessage } from "@freeanima/core/db/domain";
 import * as loopEngine from "@freeanima/runtime/loop";
 import { runWithToolContext } from "@freeanima/core/tool";
 import type { StreamEvent } from "@freeanima/runtime/loop";
@@ -18,45 +21,45 @@ import {
   toGoalRuntimeDeps,
 } from "@freeanima/runtime/goal";
 import type { HookRegistry } from "@freeanima/kernel/hooks";
-import { SessionManager } from "./session-manager.ts";
+import { ConversationManager } from "./conversation-manager.ts";
 
 /** beginTurn / retryTurn return value: [runtimeMsgs, functions, effectiveUserText] */
-export type TurnPrepareResult = [SessionMessage[], string[], string];
+export type TurnPrepareResult = [StoredMessage[], string[], string];
 
 export type StreamTurnHost = {
-  runExclusive<T>(sessionId: string, fn: () => Promise<T>): Promise<T>;
-  beginEngineRun(sessionId: string): { signal: AbortSignal; controller: AbortController };
-  endEngineRun(sessionId: string, controller: AbortController): void;
+  runExclusive<T>(conversationId: string, fn: () => Promise<T>): Promise<T>;
+  beginEngineRun(conversationId: string): { signal: AbortSignal; controller: AbortController };
+  endEngineRun(conversationId: string, controller: AbortController): void;
   acquireInFlight(): void;
   releaseInFlight(): void;
   isShuttingDown?(): boolean;
   engineStreamOpts(
-    sessionId: string,
+    conversationId: string,
     signal: AbortSignal,
   ): {
     hookRegistry: HookRegistry;
-    onMessageAppended: (msg: SessionMessage) => Promise<void>;
-    onToolRoundComplete: (batch: SessionMessage[]) => Promise<void>;
+    onMessageAppended: (msg: StoredMessage) => Promise<void>;
+    onToolRoundComplete: (batch: StoredMessage[]) => Promise<void>;
     signal: AbortSignal;
   };
-  reloadRuntimeAfterRepair(sessionId: string): Promise<[Message[], string[]]>;
-  onTurnAfterComplete(sessionId: string, msgs: Message[], reply: string): Promise<string>;
-  emitSessionUpdated(sessionId: string): void;
+  reloadRuntimeAfterRepair(conversationId: string): Promise<[Message[], string[]]>;
+  onTurnAfterComplete(conversationId: string, msgs: Message[], reply: string): Promise<string>;
+  emitSessionUpdated(conversationId: string): void;
 };
 
 export function streamErrorEvent(
   deps: FullRuntimeDeps,
-  sessionId: string,
+  conversationId: string,
   message: string,
   err?: unknown,
 ): StreamEvent {
-  const path = `/sessions/${sessionId}/messages/stream`;
-  const attrs = { session_id: sessionId, path };
+  const path = `/conversations/${conversationId}/messages/stream`;
+  const attrs = { conversation_id: conversationId, path };
   deps.engine.logger.with({ component: "sse" }).error(`SSE ${path}: ${message}`, attrs);
   if (err !== undefined) {
     deps.engine.logger
       .with({ component: "anima-service" })
-      .error(message, { err, session_id: sessionId });
+      .error(message, { err, conversation_id: conversationId });
   }
   return { event: "error", data: { error: message } };
 }
@@ -72,21 +75,21 @@ export function lastAssistantText(msgs: Message[]): string {
   return "";
 }
 
-/** Persist to session per-message or in batch during engine run */
+/** Persist to conversation per-message or in batch during engine run */
 export function createTurnMessageCallbacks(
   deps: FullRuntimeDeps,
-  sessionId: string,
+  conversationId: string,
 ): {
-  onMessageAppended: (msg: SessionMessage) => Promise<void>;
-  onToolRoundComplete: (batch: SessionMessage[]) => Promise<void>;
+  onMessageAppended: (msg: StoredMessage) => Promise<void>;
+  onToolRoundComplete: (batch: StoredMessage[]) => Promise<void>;
 } {
   return {
     onMessageAppended: async (msg) => {
-      await deps.conversation.appendMessage(msg, sessionId);
+      await deps.conversation.appendMessage(msg, conversationId);
     },
     onToolRoundComplete: async (batch) => {
       for (const msg of batch) {
-        await deps.conversation.appendMessage(msg, sessionId);
+        await deps.conversation.appendMessage(msg, conversationId);
       }
     },
   };
@@ -95,22 +98,29 @@ export function createTurnMessageCallbacks(
 /** Shared by streaming / non-streaming: messages written in callbacks; finishTurn only updates meta */
 export async function finalizeTurn(
   deps: FullRuntimeDeps,
-  sessionId: string,
-  msgs: SessionMessage[],
+  conversationId: string,
+  msgs: StoredMessage[],
   effectiveUserText: string,
   model: string,
   functions?: string[],
 ): Promise<void> {
-  await deps.conversation.finishTurn(sessionId, msgs, effectiveUserText, model, functions, true);
+  await deps.conversation.finishTurn(
+    conversationId,
+    msgs,
+    effectiveUserText,
+    model,
+    functions,
+    true,
+  );
 }
 
 export type RunSimpleTurnOpts = {
-  sessionId: string;
+  conversationId: string;
   prompt: string;
   model: string;
   /** Default conversation.beginTurn; pass conversation.retryTurn for retry etc. */
-  prepare?: (sessionId: string, prompt: string) => Promise<TurnPrepareResult>;
-  /** Optional session.updated notification after async title generation */
+  prepare?: (conversationId: string, prompt: string) => Promise<TurnPrepareResult>;
+  /** Optional conversation.updated notification after async title generation */
   titleNotify?: SessionTitleNotify;
 };
 
@@ -122,22 +132,28 @@ export async function runSimpleTurn(
   deps: FullRuntimeDeps,
   opts: RunSimpleTurnOpts,
 ): Promise<string> {
-  const { sessionId, prompt, model, prepare = deps.conversation.beginTurn, titleNotify } = opts;
-  let [msgs, functions, effective] = await prepare(sessionId, prompt);
-  maybeGenerateSessionTitleAsync(deps, sessionId, effective, titleNotify);
+  const {
+    conversationId,
+    prompt,
+    model,
+    prepare = deps.conversation.beginTurn,
+    titleNotify,
+  } = opts;
+  let [msgs, functions, effective] = await prepare(conversationId, prompt);
+  maybeGenerateConversationTitleAsync(deps, conversationId, effective, titleNotify);
   const goalDeps = toGoalRuntimeDeps(deps);
   let result = "";
 
   goalLoop: while (true) {
-    const tools = await deps.conversation.loadSessionTools(sessionId);
-    const meta = await deps.conversation.loadSessionMeta(sessionId);
-    const toolMask = runtimeToolMaskFromResolved(resolveSessionMaskFromMeta(deps, meta));
-    const executableTools = isSessionMeta(meta)
+    const tools = await deps.conversation.loadConversationTools(conversationId);
+    const meta = await deps.conversation.loadConversationMeta(conversationId);
+    const toolMask = runtimeToolMaskFromResolved(resolveConversationMaskFromMeta(deps, meta));
+    const executableTools = isConversationMeta(meta)
       ? resolveExecutableToolNames(meta, deps.engine.catalog.toolSets)
       : undefined;
     try {
       result = await runWithToolContext(
-        sessionId,
+        conversationId,
         () =>
           loopEngine.run(msgs, {
             config: deps.engine.config.data,
@@ -147,7 +163,7 @@ export async function runSimpleTurn(
             llm: deps.engine.llm,
             toolMask,
             executableTools,
-            ...createTurnMessageCallbacks(deps, sessionId),
+            ...createTurnMessageCallbacks(deps, conversationId),
           }),
         { repos: deps.conversation.repos, tools: deps.engine.catalog.toolSets, executableTools },
       );
@@ -157,17 +173,17 @@ export async function runSimpleTurn(
       }
       return `[engine error] ${e}`;
     }
-    await finalizeTurn(deps, sessionId, msgs, effective, model, functions);
+    await finalizeTurn(deps, conversationId, msgs, effective, model, functions);
 
-    if (await shouldSkipGoalEvaluate(goalDeps, sessionId, msgs)) {
+    if (await shouldSkipGoalEvaluate(goalDeps, conversationId, msgs)) {
       break goalLoop;
     }
-    const evalResult = await evaluateGoalAfterTurn(goalDeps, sessionId, msgs);
+    const evalResult = await evaluateGoalAfterTurn(goalDeps, conversationId, msgs);
     if (evalResult.action !== "continue") {
       break goalLoop;
     }
-    effective = await deps.conversation.beginTurnFast(sessionId, evalResult.continuePrompt);
-    const prepared = await deps.conversation.beginTurnPrepare(sessionId);
+    effective = await deps.conversation.beginTurnFast(conversationId, evalResult.continuePrompt);
+    const prepared = await deps.conversation.beginTurnPrepare(conversationId);
     msgs = prepared[0];
     functions = prepared[1];
   }
@@ -178,22 +194,22 @@ export async function runSimpleTurn(
 export async function* yieldEngineStream(
   deps: FullRuntimeDeps,
   host: Pick<StreamTurnHost, "acquireInFlight" | "releaseInFlight" | "engineStreamOpts">,
-  sessionId: string,
+  conversationId: string,
   msgs: Message[],
   model: string,
   signal: AbortSignal,
 ): AsyncGenerator<StreamEvent> {
-  const tools = await deps.conversation.loadSessionTools(sessionId);
-  const meta = await deps.conversation.loadSessionMeta(sessionId);
-  const toolMask = runtimeToolMaskFromResolved(resolveSessionMaskFromMeta(deps, meta));
-  const executableTools = isSessionMeta(meta)
+  const tools = await deps.conversation.loadConversationTools(conversationId);
+  const meta = await deps.conversation.loadConversationMeta(conversationId);
+  const toolMask = runtimeToolMaskFromResolved(resolveConversationMaskFromMeta(deps, meta));
+  const executableTools = isConversationMeta(meta)
     ? resolveExecutableToolNames(meta, deps.engine.catalog.toolSets)
     : undefined;
   host.acquireInFlight();
   try {
     try {
       for await (const ev of runWithToolContext(
-        sessionId,
+        conversationId,
         () =>
           loopEngine.runStream(msgs, {
             model,
@@ -203,14 +219,14 @@ export async function* yieldEngineStream(
             llm: deps.engine.llm,
             toolMask,
             executableTools,
-            ...host.engineStreamOpts(sessionId, signal),
+            ...host.engineStreamOpts(conversationId, signal),
           }),
         { repos: deps.conversation.repos, tools: deps.engine.catalog.toolSets, executableTools },
       )) {
         if (ev.event === "awaiting_clarify") {
           await applyClarifyStreamAwaiting(
             deps.conversation,
-            sessionId,
+            conversationId,
             ev.data.items,
             ev.data.timeout_sec,
           );
@@ -251,10 +267,10 @@ export type StreamTurnPrepareOpts = {
 
 export async function* runExclusiveStreamTurn(
   deps: FullRuntimeDeps,
-  sessionId: string,
+  conversationId: string,
   prepareOpts: StreamTurnPrepareOpts | (() => Promise<[Message[], string[], string]>),
   host: StreamTurnHost,
-  sessionManager: SessionManager,
+  conversationManager: ConversationManager,
 ): AsyncGenerator<StreamEvent> {
   const opts: StreamTurnPrepareOpts =
     typeof prepareOpts === "function" ? { prepare: prepareOpts } : prepareOpts;
@@ -266,7 +282,7 @@ export async function* runExclusiveStreamTurn(
     wake = null;
   };
 
-  const work = sessionManager.runExclusive(sessionId, async () => {
+  const work = conversationManager.runExclusive(conversationId, async () => {
     let msgs: Message[];
     let functions: string[];
     let effective: string;
@@ -293,7 +309,7 @@ export async function* runExclusiveStreamTurn(
       sawDone = false;
       let pendingDone: StreamEvent | null = null;
       let streamedText = false;
-      const { signal, controller } = host.beginEngineRun(sessionId);
+      const { signal, controller } = host.beginEngineRun(conversationId);
 
       try {
         engineRetry: while (true) {
@@ -303,7 +319,14 @@ export async function* runExclusiveStreamTurn(
           pendingDone = null;
           streamedText = false;
 
-          for await (const ev of yieldEngineStream(deps, host, sessionId, msgs, model, signal)) {
+          for await (const ev of yieldEngineStream(
+            deps,
+            host,
+            conversationId,
+            msgs,
+            model,
+            signal,
+          )) {
             if (ev.event === "done") {
               pendingDone = ev;
               sawDone = true;
@@ -317,7 +340,7 @@ export async function* runExclusiveStreamTurn(
             if (ev.event === "error") {
               hadError = true;
               if (!retried && isInsufficientToolMessagesError(ev.data.error)) {
-                const [runtimeMsgs, fn] = await host.reloadRuntimeAfterRepair(sessionId);
+                const [runtimeMsgs, fn] = await host.reloadRuntimeAfterRepair(conversationId);
                 msgs = runtimeMsgs;
                 functions = fn;
                 retried = true;
@@ -335,7 +358,7 @@ export async function* runExclusiveStreamTurn(
 
         if (!hadError) {
           const reply = lastAssistantText(msgs);
-          const displayContent = await host.onTurnAfterComplete(sessionId, msgs, reply);
+          const displayContent = await host.onTurnAfterComplete(conversationId, msgs, reply);
           if (displayContent !== reply) {
             buffer.push({ event: "content_replace", data: { content: displayContent } });
             signalReady();
@@ -351,20 +374,20 @@ export async function* runExclusiveStreamTurn(
             signalReady();
           }
           await new Promise<void>((resolve) => setImmediate(resolve));
-          await finalizeTurn(deps, sessionId, msgs, effective, model, functions);
+          await finalizeTurn(deps, conversationId, msgs, effective, model, functions);
 
-          if (!(await shouldSkipGoalEvaluate(goalDeps, sessionId, msgs))) {
-            const evalResult = await evaluateGoalAfterTurn(goalDeps, sessionId, msgs);
+          if (!(await shouldSkipGoalEvaluate(goalDeps, conversationId, msgs))) {
+            const evalResult = await evaluateGoalAfterTurn(goalDeps, conversationId, msgs);
             if (evalResult.displayHint) {
               buffer.push({ event: "token", data: { content: `\n${evalResult.displayHint}\n` } });
               signalReady();
             }
             if (evalResult.action === "continue") {
               effective = await deps.conversation.beginTurnFast(
-                sessionId,
+                conversationId,
                 evalResult.continuePrompt,
               );
-              const prepared = await deps.conversation.beginTurnPrepare(sessionId);
+              const prepared = await deps.conversation.beginTurnPrepare(conversationId);
               msgs = prepared[0];
               functions = prepared[1];
               retried = false;
@@ -375,16 +398,16 @@ export async function* runExclusiveStreamTurn(
         break goalLoop;
       } catch (e) {
         hadError = true;
-        buffer.push(streamErrorEvent(deps, sessionId, String(e), e));
+        buffer.push(streamErrorEvent(deps, conversationId, String(e), e));
         signalReady();
         break goalLoop;
       } finally {
-        host.endEngineRun(sessionId, controller);
+        host.endEngineRun(conversationId, controller);
       }
     }
 
     if (!hadError) {
-      host.emitSessionUpdated(sessionId);
+      host.emitSessionUpdated(conversationId);
     }
     closed = true;
     signalReady();

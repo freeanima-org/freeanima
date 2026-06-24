@@ -1,27 +1,27 @@
-import { isSessionMeta } from "@freeanima/core/db/domain";
-import { parseSessionGoal, type SessionGoal } from "@freeanima/core/db/domain";
-import type { SessionConversationPort } from "@freeanima/core/tool/session-conversation-port";
+import { isConversationMeta } from "@freeanima/core/db/domain";
+import { parseConversationGoal, type ConversationGoal } from "@freeanima/core/db/domain";
+import type { ConversationPort } from "@freeanima/core/tool/conversation-port";
 
-export async function readSessionGoal(
-  conversation: SessionConversationPort,
-  sessionId: string,
-): Promise<SessionGoal | null> {
-  const meta = await conversation.loadSessionMeta(sessionId);
-  if (!isSessionMeta(meta)) return null;
-  return parseSessionGoal(meta.goal);
+export async function readConversationGoal(
+  conversation: ConversationPort,
+  conversationId: string,
+): Promise<ConversationGoal | null> {
+  const meta = await conversation.loadConversationMeta(conversationId);
+  if (!isConversationMeta(meta)) return null;
+  return parseConversationGoal(meta.goal);
 }
 
-export async function patchSessionGoal(
-  conversation: SessionConversationPort,
-  sessionId: string,
-  goal: SessionGoal | null,
+export async function patchConversationGoal(
+  conversation: ConversationPort,
+  conversationId: string,
+  goal: ConversationGoal | null,
 ): Promise<void> {
-  await conversation.updateSessionMetaField(sessionId, { goal });
+  await conversation.updateConversationMetaField(conversationId, { goal });
 }
 
-export async function clearSessionGoal(
-  conversation: SessionConversationPort,
-  sessionId: string,
+export async function clearConversationGoal(
+  conversation: ConversationPort,
+  conversationId: string,
 ): Promise<void> {
-  await patchSessionGoal(conversation, sessionId, null);
+  await patchConversationGoal(conversation, conversationId, null);
 }

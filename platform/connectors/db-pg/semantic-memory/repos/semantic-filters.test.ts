@@ -4,7 +4,7 @@ import { semanticMemory } from "@freeanima/core/db/schema";
 
 import {
   buildSemanticConditions,
-  buildSemanticSourceSessionsCondition,
+  buildSemanticSourceConversationsCondition,
   buildSemanticStatusCondition,
   buildSemanticTypeCondition,
 } from "./semantic-filters.ts";
@@ -22,16 +22,16 @@ test("buildSemanticStatusCondition active vs all", () => {
   expect(buildSemanticStatusCondition("active")).toEqual(eq(semanticMemory.status, "active"));
 });
 
-test("buildSemanticSourceSessionsCondition requires non-empty sessions", () => {
-  expect(buildSemanticSourceSessionsCondition([])).toBeUndefined();
-  expect(buildSemanticSourceSessionsCondition(["s1"])).toBeDefined();
+test("buildSemanticSourceConversationsCondition requires non-empty conversations", () => {
+  expect(buildSemanticSourceConversationsCondition([])).toBeUndefined();
+  expect(buildSemanticSourceConversationsCondition(["s1"])).toBeDefined();
 });
 
 test("buildSemanticConditions composes filters", () => {
   const conditions = buildSemanticConditions({
     types: ["world"],
     status: "active",
-    sourceSessions: ["sess-a"],
+    sourceConversations: ["sess-a"],
   });
   expect(conditions).toHaveLength(3);
   expect(and(...conditions)).toBeDefined();

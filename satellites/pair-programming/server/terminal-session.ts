@@ -13,7 +13,7 @@ export type PtyProcess = {
 export class TerminalSessionError extends Error {
   readonly code = "terminal_session_not_found";
 
-  constructor(message = "Terminal session does not exist or has closed") {
+  constructor(message = "Terminal conversation does not exist or has closed") {
     super(message);
     this.name = "TerminalSessionError";
   }
@@ -64,7 +64,7 @@ function createScriptTerminal(cwd: string): PtyProcess {
 
 const sessions = new Map<string, PtyProcess>();
 
-export function createTerminalSession(cwd?: string): { sessionId: string; pty: PtyProcess } {
+export function createTerminalSession(cwd?: string): { conversationId: string; pty: PtyProcess } {
   let workDir: string;
   const trimmed = cwd?.trim();
   if (trimmed) {
@@ -76,18 +76,18 @@ export function createTerminalSession(cwd?: string): { sessionId: string; pty: P
     workDir = process.cwd();
   }
 
-  const sessionId = crypto.randomUUID();
+  const conversationId = crypto.randomUUID();
   const pty = createScriptTerminal(workDir);
-  sessions.set(sessionId, pty);
-  return { sessionId, pty };
+  sessions.set(conversationId, pty);
+  return { conversationId, pty };
 }
 
-export function getTerminalSession(sessionId: string): PtyProcess | undefined {
-  return sessions.get(sessionId);
+export function getTerminalSession(conversationId: string): PtyProcess | undefined {
+  return sessions.get(conversationId);
 }
 
-export function closeTerminalSession(sessionId: string): void {
-  const pty = sessions.get(sessionId);
+export function closeTerminalSession(conversationId: string): void {
+  const pty = sessions.get(conversationId);
   pty?.kill();
-  sessions.delete(sessionId);
+  sessions.delete(conversationId);
 }

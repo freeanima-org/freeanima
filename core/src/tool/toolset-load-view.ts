@@ -1,4 +1,4 @@
-import type { SessionMessage, ToolMessage } from "@freeanima/core/db/domain";
+import type { StoredMessage, ToolMessage } from "@freeanima/core/db/domain";
 import type { ToolCall } from "@freeanima/core/db/domain";
 import {
   loadCallFullyCached,
@@ -30,10 +30,10 @@ function shouldStripLoadCall(call: ToolCall, cachedToolsets: readonly string[]):
 
 /** Remove toolset_load rounds from runtime view when all loaded ToolSets are cached */
 export function stripCachedToolSetLoadRounds(
-  messages: SessionMessage[],
+  messages: StoredMessage[],
   cachedToolsets: readonly string[],
-): SessionMessage[] {
-  const out: SessionMessage[] = [];
+): StoredMessage[] {
+  const out: StoredMessage[] = [];
   let i = 0;
   while (i < messages.length) {
     const msg = messages[i]!;

@@ -143,13 +143,13 @@ msgstr ""
 msgid ""
 "| Method            | When                      | Payload      |\n"
 "| ----------------- | ------------------------- | ------------ |\n"
-"| `session.updated` | After `session.subscribe` | `session_id` |\n"
+"| `conversation.updated` | After `conversation.subscribe` | `conversation_id` |\n"
 msgstr ""
 
 #. type: Plain text
 #: docs/sap/events.md:76
 msgid ""
-"Bridged from runtime session watch in [`platform/src/sap/stream-bridge.ts`]"
+"Bridged from runtime conversation watch in [`platform/src/sap/stream-bridge.ts`]"
 "(../../platform/src/sap/stream-bridge.ts)."
 msgstr ""
 
@@ -198,7 +198,7 @@ msgstr ""
 msgid ""
 "Payload schema: `toolCallPayloadSchema` in [`frames/tool.ts`](../../packages/"
 "sap-contract/src/frames/tool.ts) — includes `call_id`, `tool_name`, "
-"`local_name`, `args`, `session_id`, optional `workspace_root`."
+"`local_name`, `args`, `conversation_id`, optional `workspace_root`."
 msgstr ""
 
 #. type: Plain text

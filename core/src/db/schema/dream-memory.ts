@@ -2,7 +2,7 @@ import { index, jsonb, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm
 import { z } from "zod";
 
 export const dreamEpisodicSnippetSchema = z.object({
-  session_id: z.string(),
+  conversation_id: z.string(),
   message_id: z.string().optional(),
   role: z.string(),
   content: z.string(),
@@ -19,7 +19,7 @@ export const dreamMemory = pgTable(
     dreamDay: text("dream_day").notNull(),
     content: text("content").notNull(),
     sourceLimbicIds: text("source_limbic_ids").array().notNull().default([]),
-    sourceSessionIds: text("source_session_ids").array().notNull().default([]),
+    sourceConversationIds: text("source_conversation_ids").array().notNull().default([]),
     episodicSnippets: jsonb("episodic_snippets")
       .$type<DreamEpisodicSnippet[]>()
       .notNull()

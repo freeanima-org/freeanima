@@ -5,17 +5,17 @@ import type {
   MessageSendOutput,
 } from "./frames/message.ts";
 import type {
-  SessionCreateInput,
-  SessionCreateOutput,
-  SessionListInput,
-  SessionListOutput,
-  SessionMessagesInput,
-  SessionPatchTitleInput,
-  SessionSubscribeInput,
-  SessionCommandsInput,
-  SessionCommandsOutput,
-} from "./frames/session.ts";
-import type { SessionAcpDockInput, SessionAcpDockOutput } from "./frames/acp.ts";
+  ConversationCreateInput,
+  ConversationCreateOutput,
+  ConversationListInput,
+  ConversationListOutput,
+  StoredMessagesInput,
+  ConversationPatchTitleInput,
+  ConversationSubscribeInput,
+  ConversationCommandsInput,
+  ConversationCommandsOutput,
+} from "./frames/conversation.ts";
+import type { ConversationAcpDockInput, ConversationAcpDockOutput } from "./frames/acp.ts";
 import type { FridgeListInput, FridgeListOutput } from "./frames/fridge.ts";
 import type {
   ToolErrorInput,
@@ -34,13 +34,13 @@ import type {
 } from "./frames/terminal.ts";
 
 export const SAP_METHODS = [
-  "session.create",
-  "session.list",
-  "session.messages",
-  "session.patchTitle",
-  "session.subscribe",
-  "session.acpDock",
-  "session.commands",
+  "conversation.create",
+  "conversation.list",
+  "conversation.messages",
+  "conversation.patchTitle",
+  "conversation.subscribe",
+  "conversation.acpDock",
+  "conversation.commands",
   "message.send",
   "message.interrupt",
   "fridge.list",
@@ -57,13 +57,13 @@ export const SAP_METHODS = [
 export type SapMethod = (typeof SAP_METHODS)[number];
 
 export type SapRouterInputs = {
-  "session.create": SessionCreateInput;
-  "session.list": SessionListInput;
-  "session.messages": SessionMessagesInput;
-  "session.patchTitle": SessionPatchTitleInput;
-  "session.subscribe": SessionSubscribeInput;
-  "session.acpDock": SessionAcpDockInput;
-  "session.commands": SessionCommandsInput;
+  "conversation.create": ConversationCreateInput;
+  "conversation.list": ConversationListInput;
+  "conversation.messages": StoredMessagesInput;
+  "conversation.patchTitle": ConversationPatchTitleInput;
+  "conversation.subscribe": ConversationSubscribeInput;
+  "conversation.acpDock": ConversationAcpDockInput;
+  "conversation.commands": ConversationCommandsInput;
   "message.send": MessageSendInput;
   "message.interrupt": MessageInterruptInput;
   "fridge.list": FridgeListInput;
@@ -78,13 +78,13 @@ export type SapRouterInputs = {
 };
 
 export type SapRouterOutputs = {
-  "session.create": SessionCreateOutput;
-  "session.list": SessionListOutput;
-  "session.messages": Record<string, unknown>;
-  "session.patchTitle": { ok: true };
-  "session.subscribe": { ok: true };
-  "session.acpDock": SessionAcpDockOutput;
-  "session.commands": SessionCommandsOutput;
+  "conversation.create": ConversationCreateOutput;
+  "conversation.list": ConversationListOutput;
+  "conversation.messages": Record<string, unknown>;
+  "conversation.patchTitle": { ok: true };
+  "conversation.subscribe": { ok: true };
+  "conversation.acpDock": ConversationAcpDockOutput;
+  "conversation.commands": ConversationCommandsOutput;
   "message.send": MessageSendOutput;
   "message.interrupt": MessageInterruptOutput;
   "fridge.list": FridgeListOutput;

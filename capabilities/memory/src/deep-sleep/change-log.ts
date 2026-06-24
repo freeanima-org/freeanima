@@ -10,7 +10,7 @@ function entryToLine(entry: DeepSleepChangeEntry): string {
     case "merged_into": {
       const t = entry.mergedTarget;
       const info = t
-        ? ` → ${t.id} (${t.type}) "${t.content}" sources=${sourceLabel(t.source_sessions)} observed=${t.observed_at?.slice(0, 19) ?? "?"}`
+        ? ` → ${t.id} (${t.type}) "${t.content}" sources=${sourceLabel(t.source_conversations)} observed=${t.observed_at?.slice(0, 19) ?? "?"}`
         : "";
       return `${entry.id} — merged${info}`;
     }
@@ -21,7 +21,7 @@ function entryToLine(entry: DeepSleepChangeEntry): string {
     case "added": {
       const t = entry.mergedTarget;
       const info = t
-        ? ` "${t.content}" sources=${sourceLabel(t.source_sessions)} observed=${t.observed_at?.slice(0, 19) ?? "?"}`
+        ? ` "${t.content}" sources=${sourceLabel(t.source_conversations)} observed=${t.observed_at?.slice(0, 19) ?? "?"}`
         : "";
       return `${entry.id} (${t?.type ?? "?"})${info}`;
     }

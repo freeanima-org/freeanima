@@ -103,17 +103,17 @@ export async function listSemanticMemories(
     limit?: number;
     types?: string[];
     status?: SemanticMemorySearchOpts["status"];
-    source_session?: string;
+    source_conversation?: string;
     sort_by?: SemanticMemorySearchOpts["sort_by"];
   } = {},
 ): Promise<MemoryListResult<SemanticFtsHit>> {
   const { offset, limit } = clampPagination(args.offset, args.limit);
-  const sourceSession = args.source_session?.trim();
+  const sourceSession = args.source_conversation?.trim();
   const filterOpts: Omit<SemanticMemorySearchOpts, "limit" | "offset"> = {
     query: args.query,
     types: args.types,
     status: args.status,
-    source_sessions: sourceSession ? [sourceSession] : undefined,
+    source_conversations: sourceSession ? [sourceSession] : undefined,
     sort_by: args.sort_by,
   };
   const semantic = deps.engine.repos.semanticMemory;
@@ -150,7 +150,7 @@ export async function listLimbicMemories(
   const { offset, limit } = clampPagination(args.offset, args.limit);
   const filterOpts: Omit<LimbicListOpts, "offset" | "limit"> = {
     query: args.query,
-    session_id: args.session_id,
+    conversation_id: args.conversation_id,
     kind: args.kind,
   };
   const [items, total] = await Promise.all([
@@ -169,7 +169,7 @@ export async function listAutobiographicalMemories(
     query: args.query,
     status: args.status,
     significance: args.significance,
-    source_session: args.source_session,
+    source_conversation: args.source_conversation,
   };
   const [items, total] = await Promise.all([
     deps.engine.repos.autobiographicalMemory.list({ ...filterOpts, offset, limit }),

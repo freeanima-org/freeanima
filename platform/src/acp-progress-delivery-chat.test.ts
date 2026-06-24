@@ -9,8 +9,8 @@ describe("createAcpProgressDelivery chat progress", () => {
     let storedContent = "";
 
     const conversation = {
-      loadSessionMeta: async () => ({
-        role: "session_meta" as const,
+      loadConversationMeta: async () => ({
+        role: "conversation_meta" as const,
         model: "test",
         cached_toolsets: [],
         functions: [],
@@ -18,7 +18,7 @@ describe("createAcpProgressDelivery chat progress", () => {
         platform: "chat",
       }),
       repos: {
-        session: {
+        conversation: {
           appendMessageReturningId: async (_sid: string, msg: { content: string }) => {
             storedContent = msg.content;
             storedId = "msg-progress-1";

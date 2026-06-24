@@ -8,7 +8,7 @@ describe("SatelliteManager routing", () => {
   const instanceA = "a1b";
   const instanceB = "c2d";
 
-  it("rejects sap tools when session has no satellite binding", () => {
+  it("rejects sap tools when conversation has no satellite binding", () => {
     const manager = new SatelliteManager(new ToolSetRegistry());
     const name = formatSapToolName(appId, instanceA, "scan_code");
     const route = manager.resolveToolCall("sid", name, undefined);

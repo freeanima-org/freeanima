@@ -296,7 +296,7 @@ describe("streamReplyToChannel", () => {
       yield { event: "done", data: { reason: "awaiting_clarify" } };
     }
     await streamReplyToChannel(channel, gen(), {
-      sessionId: TEST_SESSION_ID,
+      conversationId: TEST_SESSION_ID,
       toolDisplayMode: "hidden",
     });
 
@@ -320,7 +320,7 @@ describe("streamReplyToChannel", () => {
       yield { event: "done", data: { reason: "awaiting_clarify" } };
     }
     await streamReplyToChannel(channel, gen(), {
-      sessionId: TEST_SESSION_ID,
+      conversationId: TEST_SESSION_ID,
       toolDisplayMode: "hidden",
     });
 
@@ -342,7 +342,7 @@ describe("streamReplyToChannel", () => {
       yield { event: "done", data: { reason: "awaiting_clarify" } };
     }
     await streamReplyToChannel(channel, gen(), {
-      sessionId: TEST_SESSION_ID,
+      conversationId: TEST_SESSION_ID,
       toolDisplayMode: "hidden",
     });
 

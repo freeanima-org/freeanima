@@ -18,7 +18,7 @@ export async function searchSemanticMemoryTrgm(
     limit?: number;
     types?: string[];
     status?: "active" | "deprecated" | "all";
-    sourceSessions?: string[];
+    sourceConversations?: string[];
   },
 ): Promise<TrgmSemanticHit[]> {
   const q = query.trim();
@@ -28,13 +28,13 @@ export async function searchSemanticMemoryTrgm(
   const minSim = getFtsTrgmMinSimilarity(getActiveConfig().data);
   const types = opts?.types?.filter(Boolean) ?? [];
   const status = opts?.status ?? "active";
-  const sourceSessions = opts?.sourceSessions?.map((s) => s.trim()).filter(Boolean) ?? [];
+  const sourceConversations = opts?.sourceConversations?.map((s) => s.trim()).filter(Boolean) ?? [];
 
   const db = getDb();
   const rankExpr = sql<number>`similarity(${semanticMemory.content}, ${q})`.as("rank");
   const conditions = [
     sql`word_similarity(${semanticMemory.content}, ${q}) >= ${minSim}`,
-    ...buildSemanticConditions({ types, status, sourceSessions }),
+    ...buildSemanticConditions({ types, status, sourceConversations }),
   ];
 
   const rows = await db
@@ -58,7 +58,7 @@ export type TrgmMessageHit = {
   id: string;
   content: string;
   role: string;
-  session_id: string;
+  conversation_id: string;
   timestamp: string;
   docKey: string;
   rank: number;
@@ -66,14 +66,14 @@ export type TrgmMessageHit = {
 
 export async function searchMessagesTrgm(
   query: string,
-  opts?: { sessionId?: string; limit?: number },
+  opts?: { conversationId?: string; limit?: number },
 ): Promise<TrgmMessageHit[]> {
   const q = query.trim();
   if (!q) return [];
 
   const limit = Math.max(1, Math.min(50, opts?.limit ?? 10));
   const minSim = getFtsTrgmMinSimilarity(getActiveConfig().data);
-  const sessionId = opts?.sessionId?.trim() || null;
+  const conversationId = opts?.conversationId?.trim() || null;
   const msgContent = sql<string>`${messages.payload}->>'content'`;
 
   const db = getDb();
@@ -81,10 +81,10 @@ export async function searchMessagesTrgm(
   const conditions = [
     isNotNull(messages.contentFts),
     sql`word_similarity(${msgContent}, ${q}) >= ${minSim}`,
-    notLike(messages.sessionId, "debug-%"),
+    notLike(messages.conversationId, "debug-%"),
   ];
-  if (sessionId) {
-    conditions.push(eq(messages.sessionId, sessionId));
+  if (conversationId) {
+    conditions.push(eq(messages.conversationId, conversationId));
   }
 
   const rows = await db
@@ -92,7 +92,7 @@ export async function searchMessagesTrgm(
       id: messages.id,
       content: msgContent,
       role: sql<string>`${messages.payload}->>'role'`,
-      session_id: messages.sessionId,
+      conversation_id: messages.conversationId,
       timestamp: sql<string>`${messages.payload}->>'timestamp'`,
       rank: rankExpr,
     })
@@ -105,7 +105,7 @@ export async function searchMessagesTrgm(
     id: r.id,
     content: r.content,
     role: r.role,
-    session_id: r.session_id,
+    conversation_id: r.conversation_id,
     timestamp: r.timestamp ?? "",
     docKey: messageDocKey(r.id),
     rank: Number(r.rank),

@@ -40,7 +40,7 @@ export type EnginePhaseResult = {
 export function bootEnginePhase(
   config: FileConfig,
   repos: PgRepositories,
-  onSessionUpdated: (sessionId: string) => void,
+  onConversationUpdated: (conversationId: string) => void,
 ): EnginePhaseResult {
   startupLog("Registering tools…");
   const catalog = createEngineCatalog();
@@ -59,7 +59,7 @@ export function bootEnginePhase(
     toolSets: catalog.toolSets,
     skills: catalog.skills,
     config,
-    onSessionUpdated,
+    onConversationUpdated,
   });
 
   registerFridgeStore(createRedisFridgeStore());

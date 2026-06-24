@@ -1,13 +1,13 @@
 export {
-  listSessions,
-  createSession,
-  getSessionInfo,
-  getSessionMessages,
-  setSessionTitle,
+  listConversations,
+  createConversation,
+  getConversationInfo,
+  getStoredMessages,
+  setConversationTitle,
   listCommands,
   getPlatforms,
-  resolveSessionPlatform,
-} from "./sessions.ts";
+  resolveConversationPlatform,
+} from "./conversations.ts";
 export {
   getHealth,
   getStatus,
@@ -36,7 +36,7 @@ export { getMcpStatus, mcpStartAll, mcpStopAll, mcpStartServer, mcpStopServer } 
 export { getSatellitesStatus } from "./satellites.ts";
 export { getAcpStatus, acpStartAll, acpStopAll, acpStartAgent, acpStopAgent } from "./acp.ts";
 export { iterateMessageStream } from "./message-stream.ts";
-export { fetchSessionAcpDock, iterateSessionEvents } from "./session-events.ts";
+export { fetchConversationAcpDock, iterateConversationEvents } from "./conversation-events.ts";
 export {
   getEmailOverview,
   fetchAccountEmails,

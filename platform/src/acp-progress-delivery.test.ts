@@ -1,12 +1,12 @@
 import { describe, it, expect } from "bun:test";
-import type { SessionMetaLoadResult } from "@freeanima/core/db/domain";
+import type { ConversationMetaLoadResult } from "@freeanima/core/db/domain";
 import { resolveSessionDeliverTargets } from "./acp-progress-delivery.ts";
 
 function metaFixture(
-  patch: Partial<Extract<SessionMetaLoadResult, { role: "session_meta" }>>,
-): SessionMetaLoadResult {
+  patch: Partial<Extract<ConversationMetaLoadResult, { role: "conversation_meta" }>>,
+): ConversationMetaLoadResult {
   return {
-    role: "session_meta",
+    role: "conversation_meta",
     model: "test",
     cached_toolsets: [],
     functions: [],

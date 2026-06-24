@@ -6,14 +6,14 @@ import {
   isInsufficientToolMessagesError,
   REPAIR_REASON_LOST,
   syntheticToolContent,
-  sessionMessagesToInvokeInput,
+  storedMessagesToInvokeInput,
   normalizeAssistantTurn,
 } from "./index.ts";
 import { messagesForApi } from "@freeanima/capabilities-llm-openai/messages";
-import type { SessionMessage } from "@freeanima/core/db/domain";
+import type { StoredMessage } from "@freeanima/core/db/domain";
 describe("tool-loop-integrity", () => {
   it("detectToolLoopCorruption finds dangling assistant", () => {
-    const msgs: SessionMessage[] = [
+    const msgs: StoredMessage[] = [
       { role: "user", content: "hi", pos: 1 },
       {
         role: "assistant",
@@ -38,7 +38,7 @@ describe("tool-loop-integrity", () => {
   });
 
   it("repairToolLoopMessages adds synthetic tool and drops orphan", () => {
-    const msgs: SessionMessage[] = [
+    const msgs: StoredMessage[] = [
       { role: "user", content: "hi", pos: 1 },
       {
         role: "assistant",
@@ -57,14 +57,14 @@ describe("tool-loop-integrity", () => {
       expect(repaired[2].tool_call_id).toBe("call_1");
       expect(repaired[2].content).toBe(syntheticToolContent(REPAIR_REASON_LOST));
     }
-    const api = messagesForApi(sessionMessagesToInvokeInput(repaired).turns);
+    const api = messagesForApi(storedMessagesToInvokeInput(repaired).turns);
     expect(
       api.some((m) => m.role === "assistant" && "tool_calls" in m && m.tool_calls?.length),
     ).toBe(true);
   });
 
   it("planToolLoopInserts inserts after middle assistant not at end", () => {
-    const msgs: SessionMessage[] = [
+    const msgs: StoredMessage[] = [
       { role: "user", content: "u1", pos: 489 },
       {
         role: "assistant",
@@ -86,7 +86,7 @@ describe("tool-loop-integrity", () => {
   it("normalizeAssistantTurn drops assistant with no body and no tool_calls", () => {
     expect(normalizeAssistantTurn({ role: "assistant", content: null })).toBeNull();
     const api = messagesForApi(
-      sessionMessagesToInvokeInput([
+      storedMessagesToInvokeInput([
         { role: "user", content: "hi", pos: 1 },
         { role: "assistant", content: null, pos: 2 },
         { role: "user", content: "again", pos: 3 },
@@ -96,7 +96,7 @@ describe("tool-loop-integrity", () => {
   });
 
   it("repairToolLoopMessages skips orphan tool when stripping invalid tool_calls", () => {
-    const msgs: SessionMessage[] = [
+    const msgs: StoredMessage[] = [
       { role: "user", content: "hi", pos: 1 },
       {
         role: "assistant",

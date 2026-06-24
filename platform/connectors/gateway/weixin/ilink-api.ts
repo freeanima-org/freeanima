@@ -281,7 +281,7 @@ export async function notifyStop(baseUrl: string, token: string): Promise<Record
   return resp;
 }
 
-/** @internal For tests: reset session paused state */
+/** @internal For tests: reset conversation paused state */
 export function _resetWeixinSessionPauseForTest(): void {
   sessionPauseUntil.clear();
 }

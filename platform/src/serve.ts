@@ -47,13 +47,15 @@ async function defaultWaitForDrain(app: AppRuntime, maxMs: number): Promise<void
 function scheduleDebugSessionCleanup(conv: ConversationService): void {
   void Promise.resolve()
     .then(async () => {
-      startupLog("Cleaning up debug sessions in background…");
-      const cleaned = await conv.cleanupDebugSessions(12);
+      startupLog("Cleaning up debug conversations in background…");
+      const cleaned = await conv.cleanupDebugConversations(12);
       if (cleaned > 0) {
-        logComponent("startup").debug(`Cleaned ${cleaned} debug session(s)`, { count: cleaned });
+        logComponent("startup").debug(`Cleaned ${cleaned} debug conversation(s)`, {
+          count: cleaned,
+        });
       }
     })
-    .catch((e) => logStartupError("debug session cleanup failed", e));
+    .catch((e) => logStartupError("debug conversation cleanup failed", e));
 }
 
 export async function serve(

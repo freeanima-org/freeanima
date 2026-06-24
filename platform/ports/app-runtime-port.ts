@@ -1,5 +1,5 @@
 import type { StreamEvent } from "@freeanima/runtime/loop";
-import type { SessionSummary } from "./schemas/snapshot.ts";
+import type { ConversationSummary } from "./schemas/snapshot.ts";
 
 export type { MessagingPort } from "./ports/messaging-port.ts";
 
@@ -16,18 +16,18 @@ export type ServiceCommandInfo = {
 export type AppRuntimePort = {
   registerPlatform(name: string): void;
   updatePlatformStatus(name: string, status: string, extra?: Record<string, unknown>): void;
-  findOrCreateSession(
+  findOrCreateConversation(
     platform: string,
     platform_extra?: Record<string, unknown>,
-  ): Promise<{ session_id: string }>;
+  ): Promise<{ conversation_id: string }>;
   executeCommand(params: {
-    session_id: string;
+    conversation_id: string;
     text: string;
     platform?: string;
     origin_extra?: Record<string, unknown>;
   }): Promise<{ text: string; data: unknown; found: boolean }>;
   sendMessageStream(
-    sessionId: string,
+    conversationId: string,
     message: string,
     platform?: string,
   ): AsyncGenerator<StreamEvent>;
@@ -48,16 +48,20 @@ export type AppRuntimePort = {
   pauseCronJob(id: string): any;
   resumeCronJob(id: string): any;
   runCronJobNow(id: string): any;
-  listSessions(
+  listConversations(
     platform?: string | null,
     opts?: { offset?: number; limit?: number },
-  ): Promise<{ sessions: SessionSummary[]; total: number }>;
-  createSession(platform: string): any;
-  getSessionInfo(sessionId: string, platform?: string): Promise<any>;
-  getSessionAcpDock(sessionId: string, platform?: string): Promise<any>;
-  watchSession(sessionId: string, cb: () => void): () => void;
-  getMessages(sessionId: string, platform: string, opts?: { offset?: number; limit?: number }): any;
-  setSessionTitle(sessionId: string, title: string, platform: string): Promise<any>;
+  ): Promise<{ conversations: ConversationSummary[]; total: number }>;
+  createConversation(platform: string): any;
+  getConversationInfo(conversationId: string, platform?: string): Promise<any>;
+  getConversationAcpDock(conversationId: string, platform?: string): Promise<any>;
+  watchConversation(conversationId: string, cb: () => void): () => void;
+  getMessages(
+    conversationId: string,
+    platform: string,
+    opts?: { offset?: number; limit?: number },
+  ): any;
+  setConversationTitle(conversationId: string, title: string, platform: string): Promise<any>;
   getStatus(): Record<string, unknown>;
   listMemoryFiles(): any;
   memorySearch(opts: any): Promise<any>;
@@ -77,7 +81,7 @@ export type AppRuntimePort = {
   getRebuildFtsJobStatus(): any;
   listSelfBlocks(): Promise<any>;
   listFridgeMagnets(): Promise<any>;
-  getPromptDebug(sessionId?: string | null): Promise<any>;
+  getPromptDebug(conversationId?: string | null): Promise<any>;
   getSleepSummary(): Promise<any>;
   listPipelineStepRuns(opts?: {
     step_id?: string;

@@ -6,7 +6,7 @@ const semanticMemoryResultSchema = z.object({
   type: z.string(),
   content: z.string(),
   pinned: z.boolean(),
-  source_sessions: z.array(z.string()),
+  source_conversations: z.array(z.string()),
   observed_at: z.string().nullable(),
   occurred_at: z.string().nullable(),
   status: z.string(),
@@ -20,15 +20,15 @@ const memoryRecallHitSchema = z.discriminatedUnion("memory_type", [
     type: z.string(),
     pinned: z.boolean(),
     content: z.string(),
-    source_sessions: z.array(z.string()),
+    source_conversations: z.array(z.string()),
     observed_at: z.string().nullable(),
     occurred_at: z.string().nullable(),
     status: z.string(),
   }),
   z.object({
-    memory_type: z.literal("session"),
+    memory_type: z.literal("conversation"),
     score: z.number(),
-    session_id: z.string(),
+    conversation_id: z.string(),
     message_id: z.string(),
     role: z.string(),
     timestamp: z.string(),
@@ -39,7 +39,7 @@ const memoryRecallHitSchema = z.discriminatedUnion("memory_type", [
     score: z.number(),
     limbic_memory_id: z.string(),
     kind: z.string(),
-    session_id: z.string(),
+    conversation_id: z.string(),
     content: z.string(),
     intensity: z.number(),
     valence: z.number().nullable(),
@@ -121,7 +121,7 @@ export const MEMORY_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
           type: "preference",
           content: "Prefers concise reply style",
           pinned: false,
-          source_sessions: ["sess-001"],
+          source_conversations: ["sess-001"],
           observed_at: "2026-06-10T10:00:00+08:00",
           occurred_at: null,
           status: "active",
@@ -135,7 +135,7 @@ export const MEMORY_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
       id: z.string(),
       action: z.literal("merge"),
       deprecated_ids: z.array(z.string()),
-      merged_source_sessions: z.array(z.string()),
+      merged_source_conversations: z.array(z.string()),
       merged_observed_at: z.string().nullable(),
       merged_occurred_at: z.string().nullable(),
     }),
@@ -144,7 +144,7 @@ export const MEMORY_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
       id: "sm-merged",
       action: "merge",
       deprecated_ids: ["sm-001", "sm-002"],
-      merged_source_sessions: ["sess-001"],
+      merged_source_conversations: ["sess-001"],
       merged_observed_at: "2026-06-01T10:00:00+08:00",
       merged_occurred_at: null,
     },
@@ -161,10 +161,10 @@ export const MEMORY_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
     schema: z.object({
       ok: z.literal(true),
       id: z.string(),
-      kind: z.enum(["session_mood", "turning_point", "spike"]),
+      kind: z.enum(["conversation_mood", "turning_point", "spike"]),
       intensity: z.number(),
     }),
-    example: { ok: true, id: "lm-001", kind: "session_mood", intensity: 0.6 },
+    example: { ok: true, id: "lm-001", kind: "conversation_mood", intensity: 0.6 },
   }),
   memory_limbic_search: defineToolReturn({
     schema: z.object({
@@ -175,7 +175,7 @@ export const MEMORY_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
         z.object({
           limbic_memory_id: z.string(),
           kind: z.string(),
-          session_id: z.string(),
+          conversation_id: z.string(),
           content: z.string(),
           intensity: z.number(),
           valence: z.number().nullable(),
@@ -194,7 +194,7 @@ export const MEMORY_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
         {
           limbic_memory_id: "lm-001",
           kind: "spike",
-          session_id: "sess-001",
+          conversation_id: "sess-001",
           content: "I feel overwhelmed with joy when I first heard my name",
           intensity: 0.9,
           valence: 0.8,
@@ -210,7 +210,7 @@ export const MEMORY_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
     schema: z.object({
       limbic_memory_id: z.string(),
       kind: z.string(),
-      session_id: z.string(),
+      conversation_id: z.string(),
       content: z.string(),
       intensity: z.number(),
       valence: z.number().nullable(),
@@ -222,7 +222,7 @@ export const MEMORY_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
     example: {
       limbic_memory_id: "lm-001",
       kind: "spike",
-      session_id: "sess-001",
+      conversation_id: "sess-001",
       content: "I feel overwhelmed with joy when I first heard my name",
       intensity: 0.9,
       valence: 0.8,
@@ -234,7 +234,7 @@ export const MEMORY_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
   }),
   memory_limbic_list_by_session: defineToolReturn({
     schema: z.object({
-      session_id: z.string(),
+      conversation_id: z.string(),
       count: z.number(),
       results: z.array(
         z.object({
@@ -251,7 +251,7 @@ export const MEMORY_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
       ),
     }),
     example: {
-      session_id: "sess-001",
+      conversation_id: "sess-001",
       count: 2,
       results: [
         {
@@ -295,7 +295,7 @@ export const MEMORY_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
           type: "observation",
           pinned: false,
           content: "Conversation compression strategy prefers concise summaries",
-          source_sessions: ["sess-001"],
+          source_conversations: ["sess-001"],
           observed_at: "2026-06-10T10:00:00+08:00",
           occurred_at: null,
           status: "active",

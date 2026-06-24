@@ -15,7 +15,7 @@ import {
   registerServiceStores,
 } from "../register.ts";
 import { createFridgeBridge } from "../fridge-bridge-factory.ts";
-import { createAcpSessionUpdatedHandler } from "../acp-session-callback.ts";
+import { createAcpSessionUpdatedHandler } from "../acp-conversation-callback.ts";
 import { initRuntimeContext } from "../runtime/runtime-context.ts";
 import { registerMemoryEngineWires } from "../runtime/memory-engines.ts";
 import { initMaskSystem } from "../runtime/mask-wire.ts";
@@ -25,7 +25,7 @@ import { startupLog } from "./status.ts";
 import type { EnginePhaseResult } from "./engine-phase.ts";
 import { bindSapServerDeps } from "../sap/runtime-context.ts";
 import { SapInstanceRegistry } from "../sap/instance-registry.ts";
-import { isSessionMeta } from "@freeanima/core/db/domain";
+import { isConversationMeta } from "@freeanima/core/db/domain";
 import { ANIMA_VERSION } from "../runtime/version.ts";
 
 export type RuntimePhaseResult = {
@@ -93,9 +93,9 @@ export async function bootRuntimePhase(
     getToolRegistry: () => catalog.toolSets,
   });
 
-  satellite.loadSessionPlatformExtra = async (sessionId) => {
-    const meta = await conversation.loadSessionMeta(sessionId);
-    if (!isSessionMeta(meta)) return undefined;
+  satellite.loadSessionPlatformExtra = async (conversationId) => {
+    const meta = await conversation.loadConversationMeta(conversationId);
+    if (!isConversationMeta(meta)) return undefined;
     return meta.platform_extra;
   };
 

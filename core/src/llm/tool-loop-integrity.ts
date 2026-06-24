@@ -1,9 +1,9 @@
 import { toolResult } from "@freeanima/core/tool";
-import type { SessionMessage, ToolMessage } from "@freeanima/core/db/domain";
+import type { StoredMessage, ToolMessage } from "@freeanima/core/db/domain";
 import { cleanToolCallsForApi } from "@freeanima/core/provider/stream-tools";
 import type { ToolCall } from "@freeanima/core/provider";
 
-export const REPAIR_REASON_LOST = "tool response lost (session repair)";
+export const REPAIR_REASON_LOST = "tool response lost (conversation repair)";
 export const REPAIR_REASON_INTERRUPT = "interrupted by user";
 
 export type MissingToolCall = {
@@ -30,7 +30,7 @@ export function isInsufficientToolMessagesError(message: string): boolean {
 }
 
 /** Scan persisted/full history for missing tool_calls pairing */
-export function detectToolLoopCorruption(messages: SessionMessage[]): ToolLoopCorruption[] {
+export function detectToolLoopCorruption(messages: StoredMessage[]): ToolLoopCorruption[] {
   const out: ToolLoopCorruption[] = [];
   for (let i = 0; i < messages.length; i++) {
     const msg = messages[i];
@@ -74,7 +74,7 @@ export type ToolLoopInsertPlan = {
 
 /** Count consecutive tool messages after assistant (stops at non-tool) */
 export function countFollowingToolMessages(
-  messages: SessionMessage[],
+  messages: StoredMessage[],
   assistantIndex: number,
 ): number {
   let n = 0;
@@ -86,7 +86,7 @@ export function countFollowingToolMessages(
 }
 
 /** Compute synthetic tool insert pos (assistantPos descending; matches PG repair) */
-export function planToolLoopInserts(messages: SessionMessage[]): ToolLoopInsertPlan[] {
+export function planToolLoopInserts(messages: StoredMessage[]): ToolLoopInsertPlan[] {
   const corruptions = detectToolLoopCorruption(messages);
   const ordered = [...corruptions].toSorted(
     (a, b) => (b.assistantPos ?? 0) - (a.assistantPos ?? 0),
@@ -108,10 +108,10 @@ export function planToolLoopInserts(messages: SessionMessage[]): ToolLoopInsertP
 
 /** In-memory repair: add synthetic tool, drop orphan tool, strip invalid tool_calls */
 export function repairToolLoopMessages(
-  messages: SessionMessage[],
+  messages: StoredMessage[],
   reason = REPAIR_REASON_LOST,
-): SessionMessage[] {
-  const out: SessionMessage[] = [];
+): StoredMessage[] {
+  const out: StoredMessage[] = [];
   let i = 0;
   while (i < messages.length) {
     const msg = messages[i]!;
@@ -128,7 +128,7 @@ export function repairToolLoopMessages(
         String(msg.reasoning ?? msg.reasoning_content ?? "").trim();
       if (text) {
         const { tool_calls: _removed, ...rest } = msg;
-        out.push({ ...rest, role: "assistant", content: text } as SessionMessage);
+        out.push({ ...rest, role: "assistant", content: text } as StoredMessage);
       }
       let j = i + 1;
       while (j < messages.length && messages[j]?.role === "tool") j++;

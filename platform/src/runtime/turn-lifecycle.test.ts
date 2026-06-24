@@ -107,7 +107,7 @@ describe("turn-lifecycle", () => {
     const deps = wireTestDeps();
 
     const out = await runSimpleTurn(deps, {
-      sessionId: "cron-sid",
+      conversationId: "cron-sid",
       prompt: "cron prompt",
       model: "m1",
     });
@@ -144,7 +144,7 @@ describe("turn-lifecycle", () => {
     );
     const deps = wireTestDeps();
 
-    const out = await runSimpleTurn(deps, { sessionId: "s", prompt: "x", model: "m" });
+    const out = await runSimpleTurn(deps, { conversationId: "s", prompt: "x", model: "m" });
     expect(out).toBe("[tool loop limit exceeded] max 8");
   });
 });

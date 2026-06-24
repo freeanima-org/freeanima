@@ -85,7 +85,7 @@ describe("normalizeAttributes", () => {
   });
 
   it("other keys unchanged when no err", () => {
-    expect(normalizeAttributes({ sessionId: "x" })).toEqual({ sessionId: "x" });
+    expect(normalizeAttributes({ conversationId: "x" })).toEqual({ conversationId: "x" });
   });
 
   it("serializes err with cause", () => {

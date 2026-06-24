@@ -67,7 +67,7 @@ msgstr ""
 
 #. type: Bullet: '1. '
 #: docs/features/goal.md:31
-msgid "用户执行 `/goal …` → 写入 `sessions.goal` 并触发 engine run。"
+msgid "用户执行 `/goal …` → 写入 `conversations.goal` 并触发 engine run。"
 msgstr ""
 
 #. type: Bullet: '2. '

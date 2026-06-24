@@ -1,7 +1,7 @@
 import { prependSkillsToPrompt } from "@freeanima/core/skill";
 import { getProfileHopModel } from "@freeanima/platform/config";
 import { PROFILE_CHAT } from "@freeanima/core/provider";
-import { resolveDefaultSessionToolSets, toolNamesForToolSets } from "@freeanima/core/tool";
+import { resolveDefaultConversationToolSets, toolNamesForToolSets } from "@freeanima/core/tool";
 
 import type { FullRuntimeDeps } from "../runtime-deps.ts";
 import {
@@ -29,7 +29,7 @@ export async function runCronEngineTurn(
   const systemPrompt = await buildAutoLlmSystemPrompt({
     taskSection: formatCronAutoLlmTaskSection(runName),
   });
-  const toolSetNames = resolveDefaultSessionToolSets(deps.engine.catalog.toolSets);
+  const toolSetNames = resolveDefaultConversationToolSets(deps.engine.catalog.toolSets);
   const toolNames = toolNamesForToolSets(deps.engine.catalog.toolSets, toolSetNames);
   const maxTurns = cfg.compression?.max_rounds ?? 50;
 

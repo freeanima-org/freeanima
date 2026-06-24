@@ -333,7 +333,7 @@ msgstr "默认：基础聊天 + 有限查询"
 #. type: Plain text
 #: docs/concepts/architecture.md:100
 #, no-wrap
-msgid "**Operation:** Switches at session boundaries, explicit commands, or scene-awareness triggers. Each mask is a declared tool/data scope, not a separate identity.\n"
+msgid "**Operation:** Switches at conversation boundaries, explicit commands, or scene-awareness triggers. Each mask is a declared tool/data scope, not a separate identity.\n"
 msgstr "**运行方式：** 在会话边界、显式命令或场景感知触发时切换。每个面具是声明的工具/数据范围，而非独立身份。\n"
 
 #. type: Title ###
@@ -411,7 +411,7 @@ msgstr ""
 "| 认知类型         | 说明                                                      |\n"
 "| ---------------- | --------------------------------------------------------- |\n"
 "| Episodic（情景） | 会话归档；保留完整历史                                    |\n"
-"| Semantic（语义） | 跨会话事实、偏好、经历、程序性知识                        |\n"
+"| Semantic（语义） | 跨对话事实、偏好、经历、程序性知识                        |\n"
 "| Limbic（感性）   | 情绪锚点与印记——「感受到什么」                            |\n"
 "| Autobiographical（自传） | 重要经历的意义；按需召回                          |\n"
 
@@ -455,7 +455,7 @@ msgstr "运行时注入：凭证仅在代码执行 / 终端环境中可用"
 
 #. type: Bullet: '- '
 #: docs/concepts/architecture.md:140
-msgid "Credential values are not written to session archives or logs"
+msgid "Credential values are not written to conversation archives or logs"
 msgstr "凭证值不会写入会话归档或日志"
 
 #. type: Bullet: '- '
@@ -691,7 +691,7 @@ msgstr "会话便签"
 #. type: Plain text
 #: docs/concepts/architecture.md:220
 #, no-wrap
-msgid "**Question: should this session keep working toward a stated outcome?**\n"
+msgid "**Question: should this conversation keep working toward a stated outcome?**\n"
 msgstr ""
 
 #. type: Plain text
@@ -714,9 +714,9 @@ msgstr ""
 msgid ""
 "| Dimension    | Session Goal                    | ACP                                   |\n"
 "| ------------ | ------------------------------- | ------------------------------------- |\n"
-"| Scope        | Single session                  | External agent task                   |\n"
+"| Scope        | Single conversation                  | External agent task                   |\n"
 "| Trigger      | `/goal` slash + post-turn judge | Tool call + callback turn             |\n"
-"| Persistence  | `sessions.goal` JSONB           | `sessions.acp_tasks`                  |\n"
+"| Persistence  | `conversations.goal` JSONB           | `conversations.acp_tasks`                  |\n"
 "| Continuation | Same SSE stream, turn budget    | Independent message after task update |\n"
 msgstr ""
 "| 轮次 | 意图                                   |\n"

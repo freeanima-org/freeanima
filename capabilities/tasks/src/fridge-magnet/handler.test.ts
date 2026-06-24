@@ -32,15 +32,15 @@ describe("createFridgeMagnetHandler", () => {
   it("manifests fridge_context assistant before last user when magnets exist", async () => {
     registerFridgeStore(
       createMemoryFridgeStore({
-        [magnetRedisKey("session", "sess-a:note1")]: "Note A",
-        [magnetRedisKey("session", "sess-b:note2")]: "Note B",
+        [magnetRedisKey("conversation", "sess-a:note1")]: "Note A",
+        [magnetRedisKey("conversation", "sess-b:note2")]: "Note B",
         [magnetRedisKey("tasks", "summary")]: "Todos (1)",
       }),
     );
 
     const messages = [{ role: "user", content: "Hello" }];
     await createFridgeMagnetHandler()({
-      sessionId: "sess-a",
+      conversationId: "sess-a",
       messages,
     } as Parameters<ReturnType<typeof createFridgeMagnetHandler>>[0]);
 
@@ -50,7 +50,7 @@ describe("createFridgeMagnetHandler", () => {
       name: FRIDGE_CONTEXT_ASSISTANT_NAME,
     });
     expect(messages[0]!.role === "assistant" && messages[0].content).toContain(
-      "session:sess-a:note1: Note A",
+      "conversation:sess-a:note1: Note A",
     );
     expect(messages[1]).toMatchObject({ role: "user", content: "Hello" });
   });
@@ -67,7 +67,7 @@ describe("createFridgeMagnetHandler", () => {
       { role: "assistant", content: "Reply" },
     ];
     await createFridgeMagnetHandler()({
-      sessionId: "sess-a",
+      conversationId: "sess-a",
       messages,
     } as Parameters<ReturnType<typeof createFridgeMagnetHandler>>[0]);
 
@@ -96,7 +96,7 @@ describe("createFridgeMagnetHandler", () => {
       { role: "tool", tool_call_id: "c1", content: "ok" },
     ];
     await createFridgeMagnetHandler()({
-      sessionId: "sess-a",
+      conversationId: "sess-a",
       messages,
     } as Parameters<ReturnType<typeof createFridgeMagnetHandler>>[0]);
 
@@ -113,7 +113,7 @@ describe("createFridgeMagnetHandler", () => {
 
     const messages = [{ role: "user", content: "Hello" }];
     await createFridgeMagnetHandler()({
-      sessionId: "sess-a",
+      conversationId: "sess-a",
       messages,
     } as Parameters<ReturnType<typeof createFridgeMagnetHandler>>[0]);
 
@@ -136,7 +136,7 @@ describe("createFridgeMagnetHandler", () => {
       { role: "user", content: "Hello" },
     ];
     await createFridgeMagnetHandler()({
-      sessionId: "sess-a",
+      conversationId: "sess-a",
       messages,
     } as Parameters<ReturnType<typeof createFridgeMagnetHandler>>[0]);
 

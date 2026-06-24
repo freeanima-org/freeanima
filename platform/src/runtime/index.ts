@@ -1,5 +1,5 @@
 export * from "./build-messages-display.ts";
-export { SessionManager } from "./session-manager.ts";
+export { ConversationManager } from "./conversation-manager.ts";
 export * from "./app-runtime.ts";
 export type { RuntimeDeps, FullRuntimeDeps } from "./runtime-deps.ts";
 export * from "./home-channel.ts";

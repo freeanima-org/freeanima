@@ -40,7 +40,7 @@ function fixedEmbedding(value = 0.25): number[] {
 
 function sessionMeta() {
   return {
-    role: "session_meta" as const,
+    role: "conversation_meta" as const,
     model: "test-model",
     cached_toolsets: [] as string[],
     functions: [] as string[],
@@ -71,8 +71,8 @@ describePg("FTS rebuild embedding PG", () => {
   });
 
   it("onlyMissing=true stores all message embeddings without skipping rows", async () => {
-    const sessionId = "fts-rebuild-emb-msg";
-    await seedSession(getTestEngine(), sessionId, sessionMeta(), [
+    const conversationId = "fts-rebuild-emb-msg";
+    await seedSession(getTestEngine(), conversationId, sessionMeta(), [
       {
         role: "user",
         content: "hello rebuild embedding one",
@@ -115,8 +115,8 @@ describePg("FTS rebuild embedding PG", () => {
     resetEmbedTextFnForTest();
     registerEmbedTextFn(async () => null);
 
-    const sessionId = "fts-rebuild-emb-fail";
-    await seedSession(getTestEngine(), sessionId, sessionMeta(), [
+    const conversationId = "fts-rebuild-emb-fail";
+    await seedSession(getTestEngine(), conversationId, sessionMeta(), [
       {
         role: "user",
         content: "embedding should fail loudly",
@@ -160,8 +160,8 @@ describePg("FTS rebuild embedding PG", () => {
   });
 
   it("onlyMissing=true skips message rows with empty payload content", async () => {
-    const sessionId = "fts-rebuild-emb-empty";
-    await seedSession(getTestEngine(), sessionId, sessionMeta(), [
+    const conversationId = "fts-rebuild-emb-empty";
+    await seedSession(getTestEngine(), conversationId, sessionMeta(), [
       {
         role: "user",
         content: "has embedding target",
@@ -176,7 +176,7 @@ describePg("FTS rebuild embedding PG", () => {
     await ctx!.sql`UPDATE messages SET content_embedding = NULL`;
 
     const rows = await ctx!.sql<{ id: string }[]>`
-      SELECT id FROM messages WHERE session_id = ${sessionId} ORDER BY pos LIMIT 1
+      SELECT id FROM messages WHERE conversation_id = ${conversationId} ORDER BY pos LIMIT 1
     `;
     const messageId = rows[0]!.id;
     await ctx!.sql`

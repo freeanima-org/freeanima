@@ -20,9 +20,9 @@ export async function handleTerminalWsOpen(ws: ServerWebSocket<TerminalWsData>):
   const cleanups: Array<() => void> = [];
   try {
     const cfg = getStudioConfig();
-    const { sessionId, pty } = createTerminalSession(cfg.workspace?.trim() || undefined);
+    const { conversationId, pty } = createTerminalSession(cfg.workspace?.trim() || undefined);
 
-    ws.data = { terminalId: sessionId, cleanups, ...(ws.data as object) };
+    ws.data = { terminalId: conversationId, cleanups, ...(ws.data as object) };
 
     cleanups.push(
       pty.onData((data) => {
@@ -32,11 +32,11 @@ export async function handleTerminalWsOpen(ws: ServerWebSocket<TerminalWsData>):
     cleanups.push(
       pty.onExit((code) => {
         sendJson(ws, { type: "exit", code });
-        closeTerminalSession(sessionId);
+        closeTerminalSession(conversationId);
       }),
     );
 
-    sendJson(ws, { type: "ready", sessionId });
+    sendJson(ws, { type: "ready", conversationId });
   } catch (e) {
     sendJson(ws, { type: "error", message: e instanceof Error ? e.message : String(e) });
   }
@@ -51,18 +51,22 @@ export function handleTerminalWsClose(ws: ServerWebSocket<TerminalWsData>): void
   }
 }
 
-export async function terminalWrite(sessionId: string, data: string): Promise<void> {
-  const pty = getTerminalSession(sessionId);
+export async function terminalWrite(conversationId: string, data: string): Promise<void> {
+  const pty = getTerminalSession(conversationId);
   if (!pty) throw new TerminalSessionError();
   pty.write(data);
 }
 
-export async function terminalResize(sessionId: string, cols: number, rows: number): Promise<void> {
-  const pty = getTerminalSession(sessionId);
+export async function terminalResize(
+  conversationId: string,
+  cols: number,
+  rows: number,
+): Promise<void> {
+  const pty = getTerminalSession(conversationId);
   if (!pty) throw new TerminalSessionError();
   pty.resize(cols, rows);
 }
 
-export async function terminalClose(sessionId: string): Promise<void> {
-  closeTerminalSession(sessionId);
+export async function terminalClose(conversationId: string): Promise<void> {
+  closeTerminalSession(conversationId);
 }

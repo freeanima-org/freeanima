@@ -68,11 +68,11 @@ Type B satellites fan out Hub `stream.*` events over [`/sap/relay/v1`](../../sat
 
 ## Session events
 
-| Method            | When                      | Payload      |
-| ----------------- | ------------------------- | ------------ |
-| `session.updated` | After `session.subscribe` | `session_id` |
+| Method                 | When                           | Payload           |
+| ---------------------- | ------------------------------ | ----------------- |
+| `conversation.updated` | After `conversation.subscribe` | `conversation_id` |
 
-Bridged from runtime session watch in [`platform/src/sap/stream-bridge.ts`](../../platform/src/sap/stream-bridge.ts).
+Bridged from runtime conversation watch in [`platform/src/sap/stream-bridge.ts`](../../platform/src/sap/stream-bridge.ts).
 
 ## Terminal events
 
@@ -91,7 +91,7 @@ Constants: `TERMINAL_EVENT_METHODS` in [`frames/terminal.ts`](../../packages/sap
 | ----------- | --------------- | ------------------------------- |
 | `tool.call` | Hub → Satellite | Execute a registered local tool |
 
-Payload schema: `toolCallPayloadSchema` in [`frames/tool.ts`](../../packages/sap-contract/src/frames/tool.ts) — includes `call_id`, `tool_name`, `local_name`, `args`, `session_id`, optional `workspace_root`.
+Payload schema: `toolCallPayloadSchema` in [`frames/tool.ts`](../../packages/sap-contract/src/frames/tool.ts) — includes `call_id`, `tool_name`, `local_name`, `args`, `conversation_id`, optional `workspace_root`.
 
 Satellite must reply with `tool.result` or `tool.error` RPC using the same `call_id`.
 

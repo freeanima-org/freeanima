@@ -40,7 +40,7 @@ describe("chunkWeixinText", () => {
   });
 });
 
-describe("weixin session pause", () => {
+describe("weixin conversation pause", () => {
   afterEach(() => {
     _resetWeixinSessionPauseForTest();
   });

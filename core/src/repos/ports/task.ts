@@ -14,7 +14,7 @@ export type TaskRow = {
   created_at: string;
   updated_at: string;
   completed_at: string | null;
-  source_session_id: string | null;
+  source_conversation_id: string | null;
 };
 
 export type TaskCreateInput = {
@@ -22,7 +22,7 @@ export type TaskCreateInput = {
   description?: string | null;
   priority?: TaskPriority;
   due_at?: string | null;
-  source_session_id?: string | null;
+  source_conversation_id?: string | null;
 };
 
 export type TaskUpdateInput = {
@@ -43,7 +43,7 @@ export type TaskListOpts = {
   limit?: number;
 };
 
-/** Cross-session todo persistence port */
+/** Cross-conversation todo persistence port */
 export interface TaskStorePort {
   create(input: TaskCreateInput): Promise<TaskRow>;
   get(id: string): Promise<TaskRow | null>;

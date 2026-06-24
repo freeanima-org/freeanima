@@ -7,8 +7,8 @@ export function pgSemanticTypeFilter(types: readonly string[]) {
   return drizzleSql`AND sm.type = ANY(${[...types]})`;
 }
 
-/** `AND sm.source_sessions && ?` when non-empty. */
-export function pgSemanticSourceSessionsFilter(sourceSessions: readonly string[]) {
-  if (sourceSessions.length === 0) return drizzleSql``;
-  return drizzleSql`AND sm.source_sessions && ${[...sourceSessions]}`;
+/** `AND sm.source_conversations && ?` when non-empty. */
+export function pgSemanticSourceSessionsFilter(sourceConversations: readonly string[]) {
+  if (sourceConversations.length === 0) return drizzleSql``;
+  return drizzleSql`AND sm.source_conversations && ${[...sourceConversations]}`;
 }

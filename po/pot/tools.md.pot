@@ -216,7 +216,7 @@ msgstr ""
 #: docs/sap/tools.md:97
 msgid ""
 "Session binding requires `platform_extra.satellite_app_id` and "
-"`platform_extra.satellite_instance_id` set at `session.create` time."
+"`platform_extra.satellite_instance_id` set at `conversation.create` time."
 msgstr ""
 
 #. type: Plain text

@@ -2,7 +2,7 @@ import { describe, it, expect } from "bun:test";
 import { EngineRunControl } from "./engine-run-control.ts";
 
 describe("EngineRunControl.abortAll", () => {
-  it("aborts engine run for all active sessions", () => {
+  it("aborts engine run for all active conversations", () => {
     const ctrl = new EngineRunControl();
     const a = ctrl.beginEngineRun("s1");
     const b = ctrl.beginEngineRun("s2");

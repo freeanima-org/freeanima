@@ -1,10 +1,10 @@
-import { isSessionMeta, type SessionMessage } from "@freeanima/core/db/domain";
-import { parseAwaitingClarify, sessionGoalSchema } from "@freeanima/core/db/domain";
+import { isConversationMeta, type StoredMessage } from "@freeanima/core/db/domain";
+import { parseAwaitingClarify, conversationGoalSchema } from "@freeanima/core/db/domain";
 import type { AnimaConfig } from "@freeanima/core/config";
 import { getProfileHopModel } from "@freeanima/core/config";
 import { judgeGoal } from "@freeanima/core/llm/goal-judge";
 import { PROFILE_GOAL_JUDGE } from "@freeanima/core/provider";
-import type { SessionConversationPort } from "@freeanima/core/tool/session-conversation-port";
+import type { ConversationPort } from "@freeanima/core/tool/conversation-port";
 import type { LlmRuntime } from "@freeanima/core/llm";
 
 import {
@@ -12,10 +12,10 @@ import {
   formatGoalContinuePrompt,
   formatGoalExhaustedMessage,
 } from "./prompts.ts";
-import { patchSessionGoal, readSessionGoal } from "./store.ts";
+import { patchConversationGoal, readConversationGoal } from "./store.ts";
 
 export type GoalRuntimeDeps = {
-  conversation: SessionConversationPort;
+  conversation: ConversationPort;
   llm: LlmRuntime;
   config: AnimaConfig;
 };
@@ -24,7 +24,7 @@ export type GoalEvaluateResult =
   | { action: "stop"; displayHint?: string }
   | { action: "continue"; continuePrompt: string; displayHint?: string };
 
-function lastAssistantText(msgs: SessionMessage[]): string {
+function lastAssistantText(msgs: StoredMessage[]): string {
   for (let i = msgs.length - 1; i >= 0; i--) {
     const m = msgs[i];
     if (m?.role === "assistant") {
@@ -35,7 +35,7 @@ function lastAssistantText(msgs: SessionMessage[]): string {
   return "";
 }
 
-function buildRecentContext(msgs: SessionMessage[], limit = 4): string {
+function buildRecentContext(msgs: StoredMessage[], limit = 4): string {
   const lines: string[] = [];
   for (const msg of msgs.slice(-limit)) {
     if (msg.role === "user" || msg.role === "assistant") {
@@ -50,11 +50,11 @@ function buildRecentContext(msgs: SessionMessage[], limit = 4): string {
 
 export async function shouldSkipGoalEvaluate(
   deps: GoalRuntimeDeps,
-  sessionId: string,
-  _msgs: SessionMessage[],
+  conversationId: string,
+  _msgs: StoredMessage[],
 ): Promise<boolean> {
-  const meta = await deps.conversation.loadSessionMeta(sessionId);
-  if (isSessionMeta(meta) && parseAwaitingClarify(meta.awaiting_clarify)) {
+  const meta = await deps.conversation.loadConversationMeta(conversationId);
+  if (isConversationMeta(meta) && parseAwaitingClarify(meta.awaiting_clarify)) {
     return true;
   }
   return false;
@@ -62,22 +62,22 @@ export async function shouldSkipGoalEvaluate(
 
 export async function evaluateGoalAfterTurn(
   deps: GoalRuntimeDeps,
-  sessionId: string,
-  msgs: SessionMessage[],
+  conversationId: string,
+  msgs: StoredMessage[],
 ): Promise<GoalEvaluateResult> {
-  const goal = await readSessionGoal(deps.conversation, sessionId);
+  const goal = await readConversationGoal(deps.conversation, conversationId);
   if (!goal) return { action: "stop" };
   if (goal.status === "paused" || goal.status === "completed" || goal.status === "exhausted") {
     return { action: "stop" };
   }
 
   if (goal.turn_count >= goal.max_turns) {
-    const exhausted = sessionGoalSchema.parse({
+    const exhausted = conversationGoalSchema.parse({
       ...goal,
       status: "exhausted",
       last_judge_reason: formatGoalExhaustedMessage(goal.max_turns),
     });
-    await patchSessionGoal(deps.conversation, sessionId, exhausted);
+    await patchConversationGoal(deps.conversation, conversationId, exhausted);
     return {
       action: "stop",
       displayHint: formatGoalExhaustedMessage(goal.max_turns),
@@ -106,13 +106,13 @@ export async function evaluateGoalAfterTurn(
   }
 
   if (done) {
-    const completed = sessionGoalSchema.parse({
+    const completed = conversationGoalSchema.parse({
       ...goal,
       status: "completed",
       last_judge_reason: reason,
       completed_at: new Date().toISOString(),
     });
-    await patchSessionGoal(deps.conversation, sessionId, completed);
+    await patchConversationGoal(deps.conversation, conversationId, completed);
     return {
       action: "stop",
       displayHint: formatGoalAchievedMessage(reason),
@@ -120,19 +120,19 @@ export async function evaluateGoalAfterTurn(
   }
 
   const nextCount = goal.turn_count + 1;
-  const updated = sessionGoalSchema.parse({
+  const updated = conversationGoalSchema.parse({
     ...goal,
     turn_count: nextCount,
     last_judge_reason: reason,
   });
-  await patchSessionGoal(deps.conversation, sessionId, updated);
+  await patchConversationGoal(deps.conversation, conversationId, updated);
 
   if (nextCount >= goal.max_turns) {
-    const exhausted = sessionGoalSchema.parse({
+    const exhausted = conversationGoalSchema.parse({
       ...updated,
       status: "exhausted",
     });
-    await patchSessionGoal(deps.conversation, sessionId, exhausted);
+    await patchConversationGoal(deps.conversation, conversationId, exhausted);
     return {
       action: "stop",
       displayHint: formatGoalExhaustedMessage(goal.max_turns),
@@ -148,7 +148,7 @@ export async function evaluateGoalAfterTurn(
 }
 
 export function toGoalRuntimeDeps(deps: {
-  conversation: SessionConversationPort;
+  conversation: ConversationPort;
   engine: { llm: LlmRuntime; config: { data: AnimaConfig } };
 }): GoalRuntimeDeps {
   return {

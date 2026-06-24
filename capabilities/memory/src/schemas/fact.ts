@@ -27,7 +27,7 @@ export const semanticMemorySchema = z.object({
   type: semanticMemoryTypeSchema,
   pinned: z.boolean(),
   content: z.string(),
-  source_sessions: z.array(z.string()).default([]),
+  source_conversations: z.array(z.string()).default([]),
   observed_at: z.string().nullable().default(null),
   occurred_at: z.string().nullable().default(null),
   status: semanticMemoryStatusSchema.default("active"),

@@ -93,7 +93,7 @@ Common rejection reasons:
 | Tool not registered on connected instance   | Reject                                        |
 | Unregistered `sap_*` name                   | Guard handler returns error (no Hub fallback) |
 
-Session binding requires `platform_extra.satellite_app_id` and `platform_extra.satellite_instance_id` set at `session.create` time.
+Session binding requires `platform_extra.satellite_app_id` and `platform_extra.satellite_instance_id` set at `conversation.create` time.
 
 Integration tests: [`tests/integration/sap/sap-routing.test.ts`](../../tests/integration/sap/sap-routing.test.ts).
 

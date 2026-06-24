@@ -79,7 +79,7 @@ export function buildOriginIdentityProbe(
   return buildPlatformInfo(platform, Object.keys(identity).length > 0 ? identity : undefined);
 }
 
-/** Discord session bound channel/thread (see gateway/discord-policy extractOrigin) */
+/** Discord conversation bound channel/thread (see gateway/discord-policy extractOrigin) */
 const discordPlatformInfoSchema = z.looseObject({
   platform: z.literal("discord"),
   channel_id: z.string(),
@@ -89,7 +89,7 @@ const discordPlatformInfoSchema = z.looseObject({
   ended_at: z.string().optional(),
 });
 
-/** WeChat session bound peer (see gateway/weixin/weixin-message) */
+/** WeChat conversation bound peer (see gateway/weixin/weixin-message) */
 const weixinPlatformInfoSchema = z.looseObject({
   platform: z.literal("weixin"),
   weixin_user_id: z.string(),
@@ -100,7 +100,7 @@ const weixinPlatformInfoSchema = z.looseObject({
 });
 
 /**
- * sessions.platform_info: platform + per-channel extra merged as discriminated union.
+ * conversations.platform_info: platform + per-channel extra merged as discriminated union.
  * SAP satellites use platform `sap:{app_slug}:{instance_id}`.
  */
 export const platformInfoSchema = z.union([
@@ -199,7 +199,7 @@ export function splitPlatformInfo(info: PlatformInfo | null | undefined): {
   };
 }
 
-/** sessions.platform_info 标记为 cron agent 遗留会话（浅睡/梦境应排除） */
+/** conversations.platform_info 标记为 cron agent 遗留会话（浅睡/梦境应排除） */
 export function isCronPlatformInfo(info: PlatformInfo | null | undefined): boolean {
   return info?.platform === "cron";
 }

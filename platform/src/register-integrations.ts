@@ -17,7 +17,7 @@ export function registerServiceIntegrations(opts: {
   toolSets: ToolSetRegistry;
   skills: SkillRegistry;
   config: Config;
-  onSessionUpdated?: ((sid: string) => void) | null;
+  onConversationUpdated?: ((sid: string) => void) | null;
 }): void {
   registerClarifyHooks({
     kernel: opts.kernel,
@@ -32,7 +32,7 @@ export function registerServiceIntegrations(opts: {
     createAcpProgressDelivery({
       conversation: opts.conversation,
       bus: opts.kernel.eventBus,
-      onSessionUpdated: opts.onSessionUpdated ?? null,
+      onConversationUpdated: opts.onConversationUpdated ?? null,
     }),
   );
   acp.registerTools();

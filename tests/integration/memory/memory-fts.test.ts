@@ -29,7 +29,7 @@ describePg("memory PG FTS", () => {
       getTestEngine(),
       sid,
       {
-        role: "session_meta",
+        role: "conversation_meta",
         model: "test-model",
         cached_toolsets: [],
         functions: [],
@@ -60,7 +60,7 @@ describePg("memory PG FTS", () => {
       ],
     );
 
-    const store = testConv().repos.session;
+    const store = testConv().repos.conversation;
     const hits = await store.searchMessagesFts("hello", { limit: 10 });
     expect(hits.length).toBeGreaterThan(0);
     expect(hits.every((h) => h.role === "user" || h.role === "assistant")).toBe(true);
@@ -74,7 +74,7 @@ describePg("memory PG FTS", () => {
       getTestEngine(),
       sid,
       {
-        role: "session_meta",
+        role: "conversation_meta",
         model: "test-model",
         cached_toolsets: [],
         functions: [],
@@ -93,7 +93,7 @@ describePg("memory PG FTS", () => {
       ],
     );
 
-    const msgs = await testConv().repos.session.listMessages(sid);
+    const msgs = await testConv().repos.conversation.listMessages(sid);
     const filtered = filterRecallableMessages(msgs);
     expect(filtered).toHaveLength(1);
     expect(filtered[0]!.role).toBe("user");
@@ -115,7 +115,7 @@ describePg("memory PG FTS", () => {
       getTestEngine(),
       sid,
       {
-        role: "session_meta",
+        role: "conversation_meta",
         model: "test-model",
         cached_toolsets: [],
         functions: [],
@@ -139,7 +139,7 @@ describePg("memory PG FTS", () => {
     });
     expect(semanticId.length).toBeGreaterThan(0);
 
-    const messageHits = await testConv().repos.session.searchMessagesFts(query, { limit: 5 });
+    const messageHits = await testConv().repos.conversation.searchMessagesFts(query, { limit: 5 });
     const semanticHits = await testConv().repos.semanticMemory.searchFts(query, { limit: 5 });
     expect(messageHits.length + semanticHits.length).toBeGreaterThan(0);
   });

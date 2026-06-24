@@ -141,7 +141,6 @@
     "frontends/chamber": {
       "name": "@freeanima/frontend-chamber",
       "dependencies": {
-        "@freeanima/platform": "workspace:*",
         "@freeanima/satellite-sdk": "workspace:*",
       },
       "devDependencies": {
@@ -293,22 +292,20 @@
     },
     "satellites/desktop-shell": {
       "name": "@freeanima/satellite-desktop-shell",
-      "dependencies": {
+      "devDependencies": {
         "@freeanima/frontend-chamber": "workspace:*",
         "@freeanima/sap-contract": "workspace:*",
         "@freeanima/satellite-chat": "workspace:*",
         "@freeanima/satellite-companion": "workspace:*",
         "@freeanima/satellite-sdk": "workspace:*",
-        "fbx2vrma-converter": "^1.0.2",
-        "ws": "^8.21.0",
-        "zod": "catalog:",
-      },
-      "devDependencies": {
         "@types/node": "catalog:",
         "@types/ws": "^8.18.1",
         "electron": "^42.4.1",
         "electron-builder": "^26.15.3",
         "esbuild": "^0.25.12",
+        "fbx2vrma-converter": "^1.0.2",
+        "ws": "^8.21.0",
+        "zod": "catalog:",
       },
     },
     "satellites/pair-programming": {

@@ -11,7 +11,7 @@ title: Security
 
 FreeAnima is designed for **single-user local / intranet** deployment:
 
-- HTTP / WebUI **has no auth by default**; binding `127.0.0.1` is not security—any process or user that can reach the port can read sessions, send messages, start/stop MCP/ACP.
+- HTTP / WebUI **has no auth by default**; binding `127.0.0.1` is not security—any process or user that can reach the port can read conversations, send messages, start/stop MCP/ACP.
 - Default bind is `127.0.0.1`; for LAN access, assess CORS and network isolation yourself.
 - **Do not** expose the service to the public internet without reverse-proxy authentication (built-in option: [`remote-access.md`](remote-access.md) — Cloudflare Tunnel + Access).
 
@@ -21,7 +21,7 @@ FreeAnima is designed for **single-user local / intranet** deployment:
 | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Sole authoritative store | [pass](https://www.passwordstore.org/) (GPG, `~/.password-store`)                                                                                                                                               |
 | Never commit secrets     | Do not write API keys, tokens, DB passwords into `config.yaml` and commit to git                                                                                                                                |
-| Runtime directory        | `~/.anima/` (`FREEANIMA_HOME` overridable) holds config, sessions, memory—recommend `chmod 700`                                                                                                                 |
+| Runtime directory        | `~/.anima/` (`FREEANIMA_HOME` overridable) holds config, conversations, memory—recommend `chmod 700`                                                                                                            |
 | CLI plaintext output     | `anima credential get` prints plaintext to stdout; do not redirect to shared logs                                                                                                                               |
 | WebUI credential detail  | `GET /api/credentials/detail?path=` returns pass plaintext to local WebUI; same sensitivity as CLI; relies on bind address and process isolation                                                                |
 | pass path conventions    | `api/opencode-go`, `services/cloudflare/api-token`, `services/cloudflare/tunnel-credentials`, `services/discord`, `services/firecrawl`, `services/postgres/anima`, `services/pushdeer`, `services/weixin-ilink` |
@@ -39,15 +39,15 @@ Disk backup = data access. Protect backup media accordingly.
 
 ## LLM Tool Risks
 
-| Capability             | Risk                                                                                                           |
-| ---------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `terminal`             | Default `shell: true`, can run arbitrary shell commands                                                        |
-| `file_read_file`       | Partial path deny (`.ssh` private keys, `/etc/passwd`, etc.); **not** full `/etc/` deny                        |
-| `file_write_file`      | deny list + write-protected paths                                                                              |
-| MCP tools              | Capabilities entirely determined by external Server; stdio default, SSE auth scheme not fully defined          |
-| Capability mask (Mask) | Session-level tool whitelist; `deny` overrides `allow`; LLM cannot see policy details; see `capabilities/mask` |
-| ACP (Cursor)           | Default **auto-approve** all `session/request_permission` (`allow-once`)                                       |
-| `credentials_list`     | Returns pass path metadata only, no values                                                                     |
+| Capability             | Risk                                                                                                                |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `terminal`             | Default `shell: true`, can run arbitrary shell commands                                                             |
+| `file_read_file`       | Partial path deny (`.ssh` private keys, `/etc/passwd`, etc.); **not** full `/etc/` deny                             |
+| `file_write_file`      | deny list + write-protected paths                                                                                   |
+| MCP tools              | Capabilities entirely determined by external Server; stdio default, SSE auth scheme not fully defined               |
+| Capability mask (Mask) | Conversation-level tool whitelist; `deny` overrides `allow`; LLM cannot see policy details; see `capabilities/mask` |
+| ACP (Cursor)           | Default **auto-approve** all `session/request_permission` (`allow-once`)                                            |
+| `credentials_list`     | Returns pass path metadata only, no values                                                                          |
 
 ## Measures in Place
 

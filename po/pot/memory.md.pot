@@ -72,7 +72,7 @@ msgid ""
 "① Instant memory ─── Internal activation state during LLM token inference\n"
 "        │ (attention filtering)\n"
 "        ▼\n"
-"② Working memory ─── LLM context window (current session)\n"
+"② Working memory ─── LLM context window (current conversation)\n"
 "        │ (deep sleep consolidation)\n"
 "        ▼\n"
 "③ Long-term memory ─── Persistent storage\n"
@@ -111,7 +111,7 @@ msgstr ""
 
 #. type: Bullet: '- '
 #: docs/concepts/memory.md:46
-msgid "Recent messages in the current session"
+msgid "Recent messages in the current conversation"
 msgstr ""
 
 #. type: Bullet: '- '
@@ -159,7 +159,7 @@ msgid ""
 "│   │   ├── Conversation log\n"
 "│   │   └── Emotional anchors\n"
 "│   │\n"
-"│   ├── Semantic memory ── \"how the world is\" (cross-session, updatable)\n"
+"│   ├── Semantic memory ── \"how the world is\" (cross-conversation, updatable)\n"
 "│   │   ├── Rational facts    (type=world)\n"
 "│   │   ├── Personal preferences    (type=preference/opinion)\n"
 "│   │   └── Self experiences    (type=experience)\n"
@@ -196,7 +196,7 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/memory.md:87
 #, no-wrap
-msgid "**Emotional anchors** — session-level mood snapshots written during light sleep; not injected into system prompt.\n"
+msgid "**Emotional anchors** — conversation-level mood snapshots written during light sleep; not injected into system prompt.\n"
 msgstr ""
 
 #. type: Plain text
@@ -272,7 +272,7 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/memory.md:119
 #, no-wrap
-msgid "**Three forms:** emotional anchor (session mood), emotional imprint (cross-session moment), sentiment tendency (long-term trends — not yet implemented, see Issue #38).\n"
+msgid "**Three forms:** emotional anchor (session mood), emotional imprint (cross-conversation moment), sentiment tendency (long-term trends — not yet implemented, see Issue #38).\n"
 msgstr ""
 
 #. type: Title ###

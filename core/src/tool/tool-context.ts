@@ -2,7 +2,7 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import type { PgRepositories } from "@freeanima/core/repos";
 import type { ToolSetRegistry } from "./toolset.ts";
 
-export type ToolContextKind = "session" | "auto_llm";
+export type ToolContextKind = "conversation" | "auto_llm";
 
 type ToolContextStore = {
   contextId: string;
@@ -25,7 +25,7 @@ function isAsyncIterable(value: unknown): value is AsyncIterable<unknown> {
   );
 }
 
-/** Each next() runs in session context; for runStream and other async generators */
+/** Each next() runs in conversation context; for runStream and other async generators */
 async function* bindToolContext<T>(
   store: ToolContextStore,
   source: AsyncIterable<T>,
@@ -53,7 +53,7 @@ export function runWithToolContext<T>(
 ): T {
   const store: ToolContextStore = {
     contextId,
-    contextKind: opts.contextKind ?? "session",
+    contextKind: opts.contextKind ?? "conversation",
     parentConversationId: opts.parentConversationId,
     repos: opts.repos,
     tools: opts.tools,
@@ -70,8 +70,8 @@ export function getToolContextKind(): ToolContextKind | undefined {
   return storage.getStore()?.contextKind;
 }
 
-/** Session id for memory attribution; undefined in auto_llm context */
-export function getToolSessionId(): string | undefined {
+/** Conversation id for memory attribution; undefined in auto_llm context */
+export function getToolConversationId(): string | undefined {
   const store = storage.getStore();
   if (!store || store.contextKind === "auto_llm") return undefined;
   return store.contextId;

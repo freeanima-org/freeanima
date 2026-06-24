@@ -14,24 +14,24 @@ export function buildSemanticStatusCondition(
   return eq(semanticMemory.status, status);
 }
 
-export function buildSemanticSourceSessionsCondition(
-  sourceSessions: readonly string[],
+export function buildSemanticSourceConversationsCondition(
+  sourceConversations: readonly string[],
 ): SQL | undefined {
-  if (sourceSessions.length === 0) return undefined;
-  return arrayOverlaps(semanticMemory.sourceSessions, [...sourceSessions]);
+  if (sourceConversations.length === 0) return undefined;
+  return arrayOverlaps(semanticMemory.sourceConversations, [...sourceConversations]);
 }
 
 export function buildSemanticConditions(args: {
   types?: readonly string[];
   status?: "active" | "deprecated" | "all";
-  sourceSessions?: readonly string[];
+  sourceConversations?: readonly string[];
 }): SQL[] {
   const conditions: SQL[] = [];
   const typeCond = buildSemanticTypeCondition(args.types ?? []);
   if (typeCond) conditions.push(typeCond);
   const statusCond = buildSemanticStatusCondition(args.status ?? "active");
   if (statusCond) conditions.push(statusCond);
-  const sourceCond = buildSemanticSourceSessionsCondition(args.sourceSessions ?? []);
+  const sourceCond = buildSemanticSourceConversationsCondition(args.sourceConversations ?? []);
   if (sourceCond) conditions.push(sourceCond);
   return conditions;
 }

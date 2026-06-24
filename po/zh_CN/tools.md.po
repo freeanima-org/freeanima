@@ -273,9 +273,9 @@ msgstr ""
 #: docs/sap/tools.md:97
 msgid ""
 "Session binding requires `platform_extra.satellite_app_id` and "
-"`platform_extra.satellite_instance_id` set at `session.create` time."
+"`platform_extra.satellite_instance_id` set at `conversation.create` time."
 msgstr ""
-"会话绑定要求在 `session.create` 时设置 `platform_extra.satellite_app_id` 和 "
+"会话绑定要求在 `conversation.create` 时设置 `platform_extra.satellite_app_id` 和 "
 "`platform_extra.satellite_instance_id`。"
 
 #. type: Plain text

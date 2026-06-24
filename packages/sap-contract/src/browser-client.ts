@@ -7,4 +7,4 @@ export {
   type DirectSatelliteConfig as ChatSatelliteConfig,
 } from "./direct-client.ts";
 
-export type { SubscribeCallbacks } from "./session-stream-core.ts";
+export type { SubscribeCallbacks } from "./conversation-stream-core.ts";

@@ -84,7 +84,7 @@ const camofoxBrowserSchema = z.object({
   adopt_existing_tab: z.boolean().optional(),
   /** Externally specified Camofox userId (shared browser profile) */
   user_id: z.string().optional(),
-  /** Externally specified sessionKey */
+  /** Externally specified conversationKey */
   session_key: z.string().optional(),
 });
 

@@ -41,7 +41,7 @@ export const MEMORY_REFERENCE_CITATION_RULE =
   "When your reply uses semantic memory—whether from the resident memory list (inline `[[f-xxx]]`), " +
   "`memory_recall` or `memory_semantic_search` results (`semantic_memory_id`), or prior message markers—" +
   "append each cited `[[f-xxx]]` at the end of your reply. " +
-  "Do not use this marker for session, limbic, or autobiographical recall hits.";
+  "Do not use this marker for conversation, limbic, or autobiographical recall hits.";
 
 /** Short hint appended to recall/search tool descriptions */
 export const MEMORY_SEMANTIC_CITATION_TOOL_HINT =

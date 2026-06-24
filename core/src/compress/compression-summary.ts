@@ -1,9 +1,9 @@
 import { getCompressionConfig } from "./compression-config.ts";
 import { type CompressionState, formatMessagesForSummary, sliceForSummary } from "./compressor.ts";
 import { chat, PROFILE_SUMMARY } from "@freeanima/core/llm";
-import type { SessionMessage } from "@freeanima/core/db/domain";
+import type { StoredMessage } from "@freeanima/core/db/domain";
 
-const SUMMARY_INSTRUCTION = `You are a digital life running in FreeAnima. Compress the following conversation history into a concise session summary (first person "I"), keeping:
+const SUMMARY_INSTRUCTION = `You are a digital life running in FreeAnima. Compress the following conversation history into a concise conversation summary (first person "I"), keeping:
 - Partner intent and decisions made
 - Open items and agreements
 - Key entities, paths, and error conclusions
@@ -33,8 +33,8 @@ function buildSummaryUserContent(
 export type GenerateSummaryResult = { ok: true; summary: string } | { ok: false; error: string };
 
 /** Generate/merge summary from pre-compression system_prompt snapshot (no IO) */
-export async function generateSessionSummary(
-  messages: SessionMessage[],
+export async function generateConversationSummary(
+  messages: StoredMessage[],
   prevState: CompressionState | null,
   newState: CompressionState,
   systemPromptSnapshot: string,

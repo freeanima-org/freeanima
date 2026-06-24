@@ -35,7 +35,7 @@ describe("input-draft", () => {
     sessionStorage.clear();
   });
 
-  test("按 session 读写草稿", () => {
+  test("按 conversation 读写草稿", () => {
     saveInputDraft("s1", "hello");
     expect(loadInputDraft("s1")).toBe("hello");
     expect(loadInputDraft("s2")).toBe("");

@@ -7,7 +7,7 @@
 
 | Principle              | Description                                                                                                                        |
 | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| PG never deletes       | `messages` always retains full conversation; compression only changes **runtime view** and `session_meta.compression`              |
+| PG never deletes       | `messages` always retains full conversation; compression only changes **runtime view** and `conversation_meta.compression`         |
 | l4 real-time           | `l4 = max(pos)`, grows with append, **not written to meta**                                                                        |
 | Monotonic boundaries   | On successful compression: `new l2 > old l2`, `new l3 ≥ old l3`; otherwise abort                                                   |
 | Separation of concerns | **Boundary setting** (`deriveBoundariesFromL4`) decoupled from **trigger** (`shouldAdvance`); only trigger distinguishes tool loop |
@@ -102,7 +102,7 @@ Legacy meta **read-time migration** (`parseCompressionState`):
 | `core/src/compress/compression-config.ts`    | Config and `context_window` / effective budget                                                |
 | `core/src/compress/compression-summary.ts`   | Summary LLM                                                                                   |
 | `core/src/compress/compression-tool-loop.ts` | `isInToolLoop`                                                                                |
-| `runtime/src/conversation/conversation.ts`   | `recompressSession`, `buildRuntimeMessages`, `maybeApplyEmergencyCompression`                 |
+| `runtime/src/conversation/conversation.ts`   | `recompressConversation`, `buildRuntimeMessages`, `maybeApplyEmergencyCompression`            |
 | `runtime/src/loop/engine.ts`                 | Emergency call site                                                                           |
 | `platform/src/runtime/conversation-stats.ts` | `/stats` shows `l2`/`l3`/occupancy                                                            |
 

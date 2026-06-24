@@ -1,6 +1,9 @@
 import type { SapClient } from "./router.ts";
 import type { StreamApiLikeEvent } from "./frames/message.ts";
-import { createSapSessionStreamClient, type SubscribeCallbacks } from "./session-stream-core.ts";
+import {
+  createSapConversationStreamClient,
+  type SubscribeCallbacks,
+} from "./conversation-stream-core.ts";
 import { runSapTransport, type SapTransportHandle } from "./transport.ts";
 import {
   browserSapInstanceStore,
@@ -36,9 +39,12 @@ export type SapDirectClient = {
   getClient(): SapClient | null;
   getInstanceId(): string | null;
   stop(): void;
-  subscribeSessionEvents(sessionId: string, onUpdate: () => void): { unsubscribe: () => void };
+  subscribeConversationEvents(
+    conversationId: string,
+    onUpdate: () => void,
+  ): { unsubscribe: () => void };
   sendMessageStream(
-    input: { sessionId: string; message: string },
+    input: { conversationId: string; message: string },
     callbacks: SubscribeCallbacks<StreamApiLikeEvent>,
   ): { unsubscribe: () => void };
 };
@@ -144,7 +150,7 @@ export function createSapDirectClient(options: SapDirectClientOptions = {}): Sap
     return transport!.whenConnected();
   };
 
-  const stream = createSapSessionStreamClient(() => ensureTransport());
+  const stream = createSapConversationStreamClient(() => ensureTransport());
 
   return {
     whenReady: ensureTransport,
@@ -163,7 +169,7 @@ export function createSapDirectClient(options: SapDirectClientOptions = {}): Sap
       initPromise = null;
       instanceId = null;
     },
-    subscribeSessionEvents: stream.subscribeSessionEvents.bind(stream),
+    subscribeConversationEvents: stream.subscribeConversationEvents.bind(stream),
     sendMessageStream: stream.sendMessageStream.bind(stream),
   };
 }

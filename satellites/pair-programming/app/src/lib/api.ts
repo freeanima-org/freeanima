@@ -27,17 +27,17 @@ async function apiJson<T>(path: string, init?: RequestInit): Promise<T> {
   return (await res.json()) as T;
 }
 
-function mapSessionList(raw: {
-  sessions: Array<{
-    session_id: string;
+function mapConversationList(raw: {
+  conversations: Array<{
+    conversation_id: string;
     title?: string;
     platform?: string;
     updated_at?: string;
   }>;
 }) {
   return {
-    sessions: raw.sessions.map((s) => ({
-      id: s.session_id,
+    conversations: raw.conversations.map((s) => ({
+      id: s.conversation_id,
       title: s.title ?? "",
       platform: s.platform ?? STUDIO_PAIR_PLATFORM,
       created: s.updated_at ?? "",
@@ -65,43 +65,48 @@ export async function searchStudio(query: string) {
   });
 }
 
-export async function listSessions(platform?: string) {
+export async function listConversations(platform?: string) {
   const client = await sap().whenReady();
-  const result = await client.request("session.list", {
+  const result = await client.request("conversation.list", {
     platform: platform ?? (await pairPlatform()),
   });
-  return mapSessionList(result);
+  return mapConversationList(result);
 }
 
-export async function createSession(platform?: string) {
+export async function createConversation(platform?: string) {
   const client = await sap().whenReady();
   const cfg = await getStudioConfig();
-  const result = await client.request("session.create", {
+  const result = await client.request("conversation.create", {
     platform: platform ?? (await pairPlatform()),
     workspace_root: String(cfg.workspace ?? "") || undefined,
     workspace_gitignore: Boolean(cfg.gitignore),
     workspace_show_hidden: Boolean(cfg.showHidden),
   });
-  return { session_id: result.session_id };
+  return { conversation_id: result.conversation_id };
 }
 
-export async function getSessionMessages(sessionId: string, offset?: number, limit?: number) {
+/** @deprecated 使用 createConversation */
+export async function createSession(platform?: string) {
+  return createConversation(platform);
+}
+
+export async function getStoredMessages(conversationId: string, offset?: number, limit?: number) {
   const client = await sap().whenReady();
-  return client.request("session.messages", {
-    session_id: sessionId,
+  return client.request("conversation.messages", {
+    conversation_id: conversationId,
     offset: offset ?? 0,
     limit: limit ?? 500,
   });
 }
 
-export async function setSessionTitle(sessionId: string, title: string) {
+export async function setConversationTitle(conversationId: string, title: string) {
   const client = await sap().whenReady();
-  await client.request("session.patchTitle", { session_id: sessionId, title });
+  await client.request("conversation.patchTitle", { conversation_id: conversationId, title });
   return { ok: true as const };
 }
 
 export function subscribeMessageStream(
-  input: { sessionId: string; message: string },
+  input: { conversationId: string; message: string },
   callbacks: SubscribeCallbacks<StreamApiEvent>,
 ): { unsubscribe: () => void } {
   return sap().sendMessageStream(input, callbacks);
@@ -109,7 +114,7 @@ export function subscribeMessageStream(
 
 type TerminalStreamEvent = {
   type: string;
-  sessionId?: string;
+  conversationId?: string;
   data?: string;
   code?: number;
   message?: string;
@@ -152,8 +157,8 @@ export function subscribeTerminalStream(callbacks: SubscribeCallbacks<TerminalSt
   };
 }
 
-export async function terminalWrite(sessionId: string, data: string): Promise<void> {
-  const res = await fetch(`/api/studio/terminal/${encodeURIComponent(sessionId)}/write`, {
+export async function terminalWrite(conversationId: string, data: string): Promise<void> {
+  const res = await fetch(`/api/studio/terminal/${encodeURIComponent(conversationId)}/write`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ data }),
@@ -161,8 +166,12 @@ export async function terminalWrite(sessionId: string, data: string): Promise<vo
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
 }
 
-export async function terminalResize(sessionId: string, cols: number, rows: number): Promise<void> {
-  const res = await fetch(`/api/studio/terminal/${encodeURIComponent(sessionId)}/resize`, {
+export async function terminalResize(
+  conversationId: string,
+  cols: number,
+  rows: number,
+): Promise<void> {
+  const res = await fetch(`/api/studio/terminal/${encodeURIComponent(conversationId)}/resize`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ cols, rows }),
@@ -170,18 +179,18 @@ export async function terminalResize(sessionId: string, cols: number, rows: numb
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
 }
 
-export async function terminalClose(sessionId: string): Promise<void> {
-  const res = await fetch(`/api/studio/terminal/${encodeURIComponent(sessionId)}/close`, {
+export async function terminalClose(conversationId: string): Promise<void> {
+  const res = await fetch(`/api/studio/terminal/${encodeURIComponent(conversationId)}/close`, {
     method: "POST",
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
 }
 
-export function subscribeSessionEvents(
-  sessionId: string,
+export function subscribeConversationEvents(
+  conversationId: string,
   onUpdate: () => void,
 ): { unsubscribe: () => void } {
-  return sap().subscribeSessionEvents(sessionId, onUpdate);
+  return sap().subscribeConversationEvents(conversationId, onUpdate);
 }
 
 export { STUDIO_PAIR_PLATFORM };

@@ -41,9 +41,9 @@ const mockParts = {
 };
 
 const mockConv = {
-  sessionExists: mock(async (id: string) => id === "sess_ok"),
-  loadSessionMeta: mock(async () => ({
-    role: "session_meta" as const,
+  conversationExists: mock(async (id: string) => id === "sess_ok"),
+  loadConversationMeta: mock(async () => ({
+    role: "conversation_meta" as const,
     model: "gpt-4",
     cached_toolsets: ["file"],
     functions: [],
@@ -51,7 +51,7 @@ const mockConv = {
     system_prompt: "",
     cwd: "/tmp/project",
   })),
-  loadSessionTools: mock(async () => [
+  loadConversationTools: mock(async () => [
     {
       type: "function" as const,
       function: {
@@ -134,9 +134,9 @@ describe("service-prompt-debug", () => {
       getToolRegistry: () => catalog.toolSets,
     });
     seedContext(catalog, kernel);
-    mockConv.sessionExists.mockClear();
-    mockConv.loadSessionMeta.mockClear();
-    mockConv.loadSessionTools.mockClear();
+    mockConv.conversationExists.mockClear();
+    mockConv.loadConversationMeta.mockClear();
+    mockConv.loadConversationTools.mockClear();
     mockConv.buildRuntimeMessages.mockClear();
   });
 
@@ -180,14 +180,14 @@ describe("service-prompt-debug", () => {
     expect(out.meta).toBeUndefined();
   });
 
-  it("throws when session does not exist", async () => {
-    await expect(getPromptDebug(testDeps, "missing")).rejects.toThrow("Session not found");
+  it("throws when conversation does not exist", async () => {
+    await expect(getPromptDebug(testDeps, "missing")).rejects.toThrow("Conversation not found");
   });
 
-  it("session mode compares stored vs live and returns effective tools", async () => {
+  it("conversation mode compares stored vs live and returns effective tools", async () => {
     const preview = await getPromptDebug(testDeps, "sess_ok");
-    mockConv.loadSessionMeta.mockImplementation(async () => ({
-      role: "session_meta" as const,
+    mockConv.loadConversationMeta.mockImplementation(async () => ({
+      role: "conversation_meta" as const,
       model: "gpt-4",
       cached_toolsets: ["file"],
       functions: [],
@@ -197,12 +197,12 @@ describe("service-prompt-debug", () => {
     }));
 
     const out = await getPromptDebug(testDeps, "sess_ok");
-    expect(out.mode).toBe("session");
-    expect(out.session_id).toBe("sess_ok");
+    expect(out.mode).toBe("conversation");
+    expect(out.conversation_id).toBe("sess_ok");
     expect(out.system.in_sync).toBe(true);
     expect(out.system.stored).toBe(preview.system.composed);
     expect(out.system.composed).toBe(preview.system.composed);
-    expect(out.tools.mode).toBe("session");
+    expect(out.tools.mode).toBe("conversation");
     expect(out.tools.items.some((t) => t.name === "file_read")).toBe(true);
     expect(out.meta?.cwd).toBe("/tmp/project");
     expect(out.meta?.tool_names).toEqual(["file"]);

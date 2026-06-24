@@ -33,11 +33,11 @@ export type {
 } from "./ports/satellite-manager.ts";
 export type { ServiceEnginePort } from "./ports/service-engine.ts";
 export {
-  onSessionCloseBeforeNew,
-  registerOnSessionCloseBeforeNew,
-  unregisterOnSessionCloseBeforeNew,
-  type OnSessionCloseBeforeNewFn,
-} from "./session-close.ts";
+  onConversationCloseBeforeNew,
+  registerOnConversationCloseBeforeNew,
+  unregisterOnConversationCloseBeforeNew,
+  type OnConversationCloseBeforeNewFn,
+} from "./conversation-close.ts";
 export {
   runCronEngineTurn,
   registerCronUseCases,

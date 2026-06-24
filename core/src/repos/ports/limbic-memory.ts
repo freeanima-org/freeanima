@@ -5,7 +5,7 @@ export type { LimbicKind };
 /** PG limbic_memory row */
 export type LimbicMemoryRow = {
   id: string;
-  session_id: string;
+  conversation_id: string;
   kind: LimbicKind;
   valence: number | null;
   arousal: number | null;
@@ -17,7 +17,7 @@ export type LimbicMemoryRow = {
 };
 
 export type LimbicMemoryCreateInput = {
-  session_id: string;
+  conversation_id: string;
   kind: LimbicKind;
   content: string;
   valence?: number | null;
@@ -32,11 +32,11 @@ export type LimbicListOpts = {
   query?: string;
   offset?: number;
   limit?: number;
-  session_id?: string;
+  conversation_id?: string;
   kind?: LimbicKind;
 };
 
-export type LimbicListBySessionsOpts = {
+export type LimbicListByConversationsOpts = {
   minIntensity?: number;
   limit?: number;
   orderBy?: "intensity_desc";
@@ -56,8 +56,11 @@ export type LimbicFtsHit = LimbicMemoryRow & {
 export interface LimbicMemoryStorePort {
   create(row: LimbicMemoryCreateInput): Promise<string>;
   get(id: string): Promise<LimbicMemoryRow | null>;
-  listBySession(sessionId: string, opts?: { limit?: number }): Promise<LimbicMemoryRow[]>;
-  listBySessions(sessionIds: string[], opts?: LimbicListBySessionsOpts): Promise<LimbicMemoryRow[]>;
+  listByConversation(conversationId: string, opts?: { limit?: number }): Promise<LimbicMemoryRow[]>;
+  listByConversations(
+    conversationIds: string[],
+    opts?: LimbicListByConversationsOpts,
+  ): Promise<LimbicMemoryRow[]>;
   listByCreatedBetween(
     fromIso: string,
     toIso: string,

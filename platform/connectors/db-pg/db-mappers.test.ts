@@ -1,12 +1,12 @@
 import { describe, expect, it } from "bun:test";
-import { messageToInsert, rowToMessage } from "./session/mappers/message-mapper.ts";
-import { sessionMetaToInsert } from "./session/mappers/session-mapper.ts";
+import { messageToInsert, rowToMessage } from "./conversation/mappers/message-mapper.ts";
+import { conversationMetaToInsert } from "./conversation/mappers/conversation-mapper.ts";
 import { mapCronJobRow, type CronJobDbRow } from "./cron/mappers/cron-mapper.ts";
 import { mapTaskRow } from "./tasks/mappers/task-mapper.ts";
 describe("db mappers", () => {
-  it("sessionMetaToInsert normalizes timestamp", () => {
-    const row = sessionMetaToInsert("cron_test", {
-      role: "session_meta",
+  it("conversationMetaToInsert normalizes timestamp", () => {
+    const row = conversationMetaToInsert("cron_test", {
+      role: "conversation_meta",
       model: "m",
       cached_toolsets: [],
       staged_toolsets: [],
@@ -20,8 +20,8 @@ describe("db mappers", () => {
   });
 
   it("cron ended_at normalized into platform_info", () => {
-    const row = sessionMetaToInsert("cron_test", {
-      role: "session_meta",
+    const row = conversationMetaToInsert("cron_test", {
+      role: "conversation_meta",
       model: "m",
       cached_toolsets: [],
       staged_toolsets: [],
@@ -161,14 +161,14 @@ describe("db mappers", () => {
       createdAt: "2026-06-08T10:00:00.000Z",
       updatedAt: "2026-06-08T10:00:00.000Z",
       completedAt: null,
-      sourceSessionId: "20260608_100000_ab12",
+      sourceConversationId: "20260608_100000_ab12",
     });
     expect(result.id).toBe("550e8400-e29b-41d4-a716-446655440000");
     expect(result.title).toBe("Write weekly journal");
     expect(result.status).toBe("pending");
     expect(result.priority).toBe("high");
     expect(result.due_at).toBe("2026-06-10T12:00:00.000Z");
-    expect(result.source_session_id).toBe("20260608_100000_ab12");
+    expect(result.source_conversation_id).toBe("20260608_100000_ab12");
     expect(result.completed_at).toBeNull();
   });
 });

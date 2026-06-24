@@ -22,7 +22,7 @@ Session Goal 允许为单个会话设定持久目标。每轮对话结束后，�
 
 ## 工作流程
 
-1. 用户执行 `/goal …` → 写入 `sessions.goal` 并触发 engine run。
+1. 用户执行 `/goal …` → 写入 `conversations.goal` 并触发 engine run。
 2. 每轮 assistant 回复结束 → **goal judge** 读取目标、子目标、最近对话与末轮回复。
 3. Judge 输出严格 JSON：`{"done": boolean, "reason": "..."}`。
 4. `done: false` → 注入 user-role 续跑消息（如 `↻ Continuing toward goal (3/20): …`），在同一 SSE 流内继续下一轮。

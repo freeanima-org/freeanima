@@ -38,10 +38,10 @@ msgstr "结对编程（创作室）"
 #: docs/features/pair-programming-v1.md:9
 #, no-wrap
 msgid ""
-"> **Phase 1 ✅ shipped**: three-column layout, syntax-highlighted viewer, file tree/search, terminal, dedicated session platform id.\n"
+"> **Phase 1 ✅ shipped**: three-column layout, syntax-highlighted viewer, file tree/search, terminal, dedicated conversation platform id.\n"
 "> Future work: [Issue #37](https://github.com/freeanima-org/freeanima/issues/37).\n"
 msgstr ""
-"> **阶段 1 ✅ 已交付**：三列布局、语法高亮查看器、文件树/搜索、终端、独立 session 平台 id。\n"
+"> **阶段 1 ✅ 已交付**：三列布局、语法高亮查看器、文件树/搜索、终端、独立 conversation 平台 id。\n"
 "> 后续工作：[Issue #37](https://github.com/freeanima-org/freeanima/issues/37)。\n"
 
 #. type: Bullet: '- '
@@ -66,7 +66,7 @@ msgstr "**只读优先**：v1 聚焦阅读；Agent 分析与建议 — 尚不能
 msgid ""
 "**Platform isolation**: pair-programming sessions use a separate platform "
 "from chat chat"
-msgstr "**平台隔离**：结对编程 session 与会客厅对话使用独立平台"
+msgstr "**平台隔离**：结对编程 conversation 与会客厅对话使用独立平台"
 
 #. type: Bullet: '- '
 #: docs/features/pair-programming-v1.md:16
@@ -96,7 +96,7 @@ msgid ""
 "│          │   file view            │  │  Chat area     │  │\n"
 "└──────────┴────────────────────────┴──────────────────────┘\n"
 "   Left              Center                  Right\n"
-"  file tree        code viewer           session + chat\n"
+"  file tree        code viewer           conversation + chat\n"
 msgstr ""
 "┌──────────────────────────────────────────────────────────┐\n"
 "│  Studio                  [Pair Programming] [Novel] …    │\n"
@@ -109,7 +109,7 @@ msgstr ""
 "│          │   file view            │  │  Chat area     │  │\n"
 "└──────────┴────────────────────────┴──────────────────────┘\n"
 "   Left              Center                  Right\n"
-"  file tree        code viewer           session + chat\n"
+"  file tree        code viewer           conversation + chat\n"
 
 #. type: Plain text
 #: docs/features/pair-programming-v1.md:39
@@ -159,13 +159,13 @@ msgstr "左侧浏览/搜索文件；中间查看选中项"
 
 #. type: Bullet: '5. '
 #: docs/features/pair-programming-v1.md:48
-msgid "Create or select a session on the right; discuss code with the agent"
+msgid "Create or select a conversation on the right; discuss code with the agent"
 msgstr "右侧创建或选择 session；与 Agent 讨论代码"
 
 #. type: Bullet: '6. '
 #: docs/features/pair-programming-v1.md:48
-msgid "Bottom terminal for debug/ops (isolated from chat session)"
-msgstr "底部终端用于调试/运维（与对话 session 隔离）"
+msgid "Bottom terminal for debug/ops (isolated from chat conversation)"
+msgstr "底部终端用于调试/运维（与对话 conversation 隔离）"
 
 #. type: Title ##
 #: docs/features/pair-programming-v1.md:49
@@ -178,10 +178,10 @@ msgstr "会话隔离"
 #, fuzzy
 #| msgid ""
 #| "Pair programming uses platform `studio-pair-programming`, separate from "
-#| "parlor (`parlor`) and other platform session lists."
+#| "parlor (`parlor`) and other platform conversation lists."
 msgid ""
 "Pair programming uses platform `studio-pair-programming`, separate from chat "
-"(`chat`) and other platform session lists."
+"(`chat`) and other platform conversation lists."
 msgstr ""
 "结对编程使用平台 `studio-pair-programming`，与会客厅（`parlor`）及其他平台 "
 "session 列表分离。"

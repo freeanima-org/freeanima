@@ -4,7 +4,7 @@ import type { LimbicKind, LimbicMemoryRow } from "@freeanima/core/repos";
 
 import { getLimbicMemoryStore } from "./limbic-port.ts";
 
-const LIMBIC_KINDS = ["session_mood", "turning_point", "spike"] as const;
+const LIMBIC_KINDS = ["conversation_mood", "turning_point", "spike"] as const;
 
 function parseOptionalFloat(value: unknown): number | null | undefined {
   if (value === undefined) return undefined;
@@ -66,8 +66,8 @@ export const limbicSearchToolDefs: ToolDef[] = [
     name: "memory_limbic_search",
     description:
       "Search limbic emotional memories. Returns entries sorted by created_at desc by default. " +
-      "Supports filtering by kind, intensity/valence range, session, and content query (case-insensitive substring). " +
-      "Use to find emotional spikes, turning points, or session moods.",
+      "Supports filtering by kind, intensity/valence range, conversation, and content query (case-insensitive substring). " +
+      "Use to find emotional spikes, turning points, or conversation moods.",
     parameters: {
       type: "object",
       properties: {
@@ -78,11 +78,11 @@ export const limbicSearchToolDefs: ToolDef[] = [
         kind: {
           type: "string",
           enum: [...LIMBIC_KINDS],
-          description: "Filter by kind: session_mood | turning_point | spike",
+          description: "Filter by kind: conversation_mood | turning_point | spike",
         },
-        session_id: {
+        conversation_id: {
           type: "string",
-          description: "Filter by session id",
+          description: "Filter by conversation id",
         },
         min_intensity: {
           type: "number",
@@ -126,7 +126,8 @@ export const limbicSearchToolDefs: ToolDef[] = [
     handler: async (args: Record<string, unknown>) => {
       const query = args.query !== undefined ? String(args.query).trim() : undefined;
       const kindRaw = args.kind !== undefined ? String(args.kind).trim() : undefined;
-      const sessionId = args.session_id !== undefined ? String(args.session_id).trim() : undefined;
+      const conversationId =
+        args.conversation_id !== undefined ? String(args.conversation_id).trim() : undefined;
       const minIntensity = parseOptionalFloat(args.min_intensity);
       const maxIntensity = parseOptionalFloat(args.max_intensity);
       const minValence = parseOptionalFloat(args.min_valence);
@@ -155,10 +156,10 @@ export const limbicSearchToolDefs: ToolDef[] = [
       const kind = kindRaw as LimbicKind | undefined;
 
       try {
-        // Use the store's list method for query/session_id/kind filtering
+        // Use the store's list method for query/conversation_id/kind filtering
         let rows = await getLimbicMemoryStore().list({
           query,
-          session_id: sessionId,
+          conversation_id: conversationId,
           kind,
           limit: 500, // fetch more then filter/order/slice
         });
@@ -177,7 +178,7 @@ export const limbicSearchToolDefs: ToolDef[] = [
         const hits = page.map((r) => ({
           limbic_memory_id: r.id,
           kind: r.kind,
-          session_id: r.session_id,
+          conversation_id: r.conversation_id,
           content: r.content,
           intensity: r.intensity,
           valence: r.valence,
@@ -201,7 +202,7 @@ export const limbicSearchToolDefs: ToolDef[] = [
   {
     name: "memory_limbic_get",
     description:
-      "Get a single limbic memory by id. Returns the full record including content, kind, intensity, valence, arousal, session_id, and linked semantic_memory_ids.",
+      "Get a single limbic memory by id. Returns the full record including content, kind, intensity, valence, arousal, conversation_id, and linked semantic_memory_ids.",
     parameters: {
       type: "object",
       properties: {
@@ -223,7 +224,7 @@ export const limbicSearchToolDefs: ToolDef[] = [
         return toolResult({
           limbic_memory_id: row.id,
           kind: row.kind,
-          session_id: row.session_id,
+          conversation_id: row.conversation_id,
           content: row.content,
           intensity: row.intensity,
           valence: row.valence,
@@ -240,11 +241,11 @@ export const limbicSearchToolDefs: ToolDef[] = [
   {
     name: "memory_limbic_list_by_session",
     description:
-      "List limbic memories for a specific session, ordered by created_at desc. Useful for reviewing the emotional arc of a single conversation.",
+      "List limbic memories for a specific conversation, ordered by created_at desc. Useful for reviewing the emotional arc of a single conversation.",
     parameters: {
       type: "object",
       properties: {
-        session_id: {
+        conversation_id: {
           type: "string",
           description: "Session id",
         },
@@ -253,15 +254,15 @@ export const limbicSearchToolDefs: ToolDef[] = [
           description: "Max results, default 20, cap 100",
         },
       },
-      required: ["session_id"],
+      required: ["conversation_id"],
     },
     handler: async (args: Record<string, unknown>) => {
-      const sessionId = String(args.session_id ?? "").trim();
-      if (!sessionId) return toolError("session_id is required");
+      const conversationId = String(args.conversation_id ?? "").trim();
+      if (!conversationId) return toolError("conversation_id is required");
       const limit = Math.max(1, Math.min(100, args.limit !== undefined ? Number(args.limit) : 20));
 
       try {
-        const rows = await getLimbicMemoryStore().listBySession(sessionId, { limit });
+        const rows = await getLimbicMemoryStore().listByConversation(conversationId, { limit });
         const hits = rows.map((r) => ({
           limbic_memory_id: r.id,
           kind: r.kind,
@@ -274,7 +275,7 @@ export const limbicSearchToolDefs: ToolDef[] = [
           created_at: r.created,
         }));
 
-        return toolResult({ session_id: sessionId, count: hits.length, results: hits });
+        return toolResult({ conversation_id: conversationId, count: hits.length, results: hits });
       } catch (err) {
         return toolError(err instanceof Error ? err.message : String(err));
       }

@@ -2,18 +2,18 @@ import type { StreamEvent } from "@freeanima/runtime/loop";
 
 /** Gateway / 平台消息入口 */
 export type MessagingPort = {
-  findOrCreateSession(
+  findOrCreateConversation(
     platform: string,
     platform_extra?: Record<string, unknown>,
-  ): Promise<{ session_id: string }>;
+  ): Promise<{ conversation_id: string }>;
   executeCommand(params: {
-    session_id: string;
+    conversation_id: string;
     text: string;
     platform?: string;
     origin_extra?: Record<string, unknown>;
   }): Promise<{ text: string; data: unknown; found: boolean }>;
   sendMessageStream(
-    sessionId: string,
+    conversationId: string,
     message: string,
     platform?: string,
   ): AsyncGenerator<StreamEvent>;

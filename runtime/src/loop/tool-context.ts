@@ -1,6 +1,6 @@
 export {
   runWithToolContext,
-  getToolSessionId,
+  getToolConversationId,
   getToolRepos,
   getToolRegistry,
   grantExecutableTools,

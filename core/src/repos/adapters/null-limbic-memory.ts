@@ -12,10 +12,10 @@ export const nullLimbicMemoryStore: LimbicMemoryStorePort = {
   async get() {
     return null;
   },
-  async listBySession() {
+  async listByConversation() {
     return [];
   },
-  async listBySessions() {
+  async listByConversations() {
     return [];
   },
   async listByCreatedBetween() {

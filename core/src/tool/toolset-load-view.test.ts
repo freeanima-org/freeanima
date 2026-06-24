@@ -1,10 +1,10 @@
 import { describe, expect, it } from "bun:test";
 import { stripCachedToolSetLoadRounds } from "./toolset-load-view.ts";
-import type { SessionMessage } from "@freeanima/core/db/domain";
+import type { StoredMessage } from "@freeanima/core/db/domain";
 
 describe("stripCachedToolSetLoadRounds", () => {
   it("strips load round when toolset is cached", () => {
-    const msgs: SessionMessage[] = [
+    const msgs: StoredMessage[] = [
       { role: "user", content: "hi" },
       {
         role: "assistant",
@@ -31,7 +31,7 @@ describe("stripCachedToolSetLoadRounds", () => {
   });
 
   it("keeps load round when toolset is not cached", () => {
-    const msgs: SessionMessage[] = [
+    const msgs: StoredMessage[] = [
       {
         role: "assistant",
         content: "",

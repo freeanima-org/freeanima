@@ -29,9 +29,9 @@ function clampNonNegativeUnit(value: number | null | undefined): number | null {
 }
 
 export async function createLimbicMemory(row: LimbicMemoryCreateInput): Promise<string> {
-  const sessionId = row.session_id.trim();
+  const conversationId = row.conversation_id.trim();
   const content = row.content.trim();
-  if (!sessionId) throw new Error("session_id is required");
+  if (!conversationId) throw new Error("conversation_id is required");
   if (!content) throw new Error("content is required");
 
   const intensity = row.intensity ?? 0.5;
@@ -42,7 +42,7 @@ export async function createLimbicMemory(row: LimbicMemoryCreateInput): Promise<
   const db = getDb();
   const ftsSegmented = await resolveFtsSegmentedForWrite(content);
   const values: typeof limbicMemory.$inferInsert = {
-    sessionId,
+    conversationId,
     kind: normalizeKind(row.kind),
     content,
     ftsSegmented,
@@ -71,17 +71,17 @@ export async function getLimbicMemory(id: string): Promise<LimbicMemoryRow | nul
 }
 
 export async function listLimbicMemoryBySession(
-  sessionId: string,
+  conversationId: string,
   opts?: { limit?: number },
 ): Promise<LimbicMemoryRow[]> {
-  const sid = sessionId.trim();
+  const sid = conversationId.trim();
   if (!sid) return [];
   const limit = Math.max(1, Math.min(500, opts?.limit ?? 100));
   const db = getDb();
   const rows = await db
     .select()
     .from(limbicMemory)
-    .where(eq(limbicMemory.sessionId, sid))
+    .where(eq(limbicMemory.conversationId, sid))
     .orderBy(desc(limbicMemory.createdAt))
     .limit(limit);
   return rows.map(mapLimbicMemoryRow);

@@ -20,7 +20,7 @@ import {
   enqueueRunJob,
 } from "@freeanima/platform/connectors/cron";
 import type { CronJobData } from "@freeanima/platform/connectors/cron";
-import { buildToolsStatus, resolveDefaultSessionToolSets } from "@freeanima/core/tool";
+import { buildToolsStatus, resolveDefaultConversationToolSets } from "@freeanima/core/tool";
 import { listCommandDefs, listCommandDefsForPlatform } from "@freeanima/platform/commands";
 import { pingDatabase, isJiebaLoaded } from "@freeanima/platform/connectors/db-pg";
 import { pingRedis } from "@freeanima/platform/connectors/redis";
@@ -115,9 +115,11 @@ function buildProcessMemoryDetail(deps: FullRuntimeDeps): ProcessMemoryDetail {
   };
 }
 
-export async function buildSessionsByPlatform(deps: RuntimeDeps): Promise<Record<string, number>> {
+export async function buildConversationsByPlatform(
+  deps: RuntimeDeps,
+): Promise<Record<string, number>> {
   try {
-    return await deps.conversation.countSessionsByPlatform();
+    return await deps.conversation.countConversationsByPlatform();
   } catch {
     return {};
   }
@@ -176,7 +178,7 @@ export async function buildStatus(
   const cfg = deps.engine.config.data;
   const uptime = startTime > 0 ? Math.round(Date.now() / 1000 - startTime) : null;
 
-  const byPlatform = await buildSessionsByPlatform(deps);
+  const byPlatform = await buildConversationsByPlatform(deps);
   const sessionCount = Object.values(byPlatform).reduce((a, b) => a + b, 0);
 
   let toolCount = 0;
@@ -198,7 +200,7 @@ export async function buildStatus(
     factsCount = 0;
   }
   try {
-    l2IndexRows = await deps.conversation.repos.session.countSearchableMessages();
+    l2IndexRows = await deps.conversation.repos.conversation.countSearchableMessages();
   } catch {
     l2IndexRows = 0;
   }
@@ -227,7 +229,7 @@ export async function buildStatus(
       api_base: getDefaultProviderBaseUrl(cfg),
     },
     tokenizer: tokenizerStatus.chat || tokenizerStatus.embedding ? tokenizerStatus : undefined,
-    sessions: { total: sessionCount, by_platform: byPlatform },
+    conversations: { total: sessionCount, by_platform: byPlatform },
     tools: toolCount,
     cron_jobs: cronJobCount,
     extensions: buildExtensionSummaries(deps),
@@ -257,7 +259,7 @@ export function getConfig(deps: RuntimeDeps): SafeConfigSnapshot {
 export function listToolsApi(deps: RuntimeDeps, scope?: "default" | "all") {
   if (scope === "default") {
     return buildToolsStatus(deps.engine.catalog.toolSets, {
-      toolSetNames: resolveDefaultSessionToolSets(deps.engine.catalog.toolSets),
+      toolSetNames: resolveDefaultConversationToolSets(deps.engine.catalog.toolSets),
     });
   }
   return buildToolsStatus(deps.engine.catalog.toolSets);
@@ -311,7 +313,7 @@ export function listCommands(opts?: { platform?: string; all?: boolean }): {
       commands: defs.map((c) => ({
         name: c.name,
         description: c.description,
-        scope: c.scope ?? "session",
+        scope: c.scope ?? "conversation",
         platforms: c.platforms?.length ? [...c.platforms] : null,
       })),
     };
@@ -323,7 +325,7 @@ export function listCommands(opts?: { platform?: string; all?: boolean }): {
     commands: defs.map((c) => ({
       name: c.name,
       description: c.description,
-      scope: c.scope ?? "session",
+      scope: c.scope ?? "conversation",
       platforms: c.platforms?.length ? [...c.platforms] : null,
     })),
     platform,

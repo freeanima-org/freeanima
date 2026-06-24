@@ -15,7 +15,7 @@ export const pgSemanticMemoryStore: SemanticMemoryStorePort = {
   listResident: crudRepo.listResidentSemanticMemory,
   listAll: crudRepo.listAllSemanticMemory,
   listActive: crudRepo.listActiveSemanticMemory,
-  listBySourceSessions: crudRepo.listSemanticMemoryBySourceSessions,
+  listBySourceConversations: crudRepo.listSemanticMemoryBySourceSessions,
   searchFts: ftsRepo.searchSemanticMemoryFts,
   search: searchRepo.searchSemanticMemory,
   countSearch: searchRepo.countSemanticMemorySearch,

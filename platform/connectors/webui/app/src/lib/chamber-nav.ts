@@ -3,7 +3,7 @@ import { m } from "./i18n.ts";
 export function chamberNavItems(): { to: string; label: string }[] {
   return [
     { to: "/chamber/dashboard", label: m.webui_chamber_nav_dashboard() },
-    { to: "/chamber/sessions", label: m.webui_chamber_nav_sessions() },
+    { to: "/chamber/conversations", label: m.webui_chamber_nav_conversations() },
     { to: "/chamber/tasks", label: m.webui_chamber_nav_tasks() },
     { to: "/chamber/fridge-magnet", label: m.webui_chamber_nav_fridge() },
     { to: "/chamber/memory", label: m.webui_chamber_nav_memory() },

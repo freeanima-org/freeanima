@@ -9,38 +9,38 @@ import {
 import type { CommandDef } from "@freeanima/platform/commands";
 import { messageIncoming, turnAfterComplete } from "@freeanima/core/hooks/conversation";
 import { headOkStepData } from "@freeanima/kernel/hooks";
-import type { SessionMessage as Message } from "@freeanima/core/db/domain";
+import type { StoredMessage as Message } from "@freeanima/core/db/domain";
 import type { EventBus } from "@freeanima/kernel/eventbus";
-import { sessionUpdated } from "@freeanima/capabilities-memory";
+import { conversationUpdated } from "@freeanima/capabilities-memory";
 import type { EngineRunControl } from "./engine-run-control.ts";
-import type { SessionManager } from "./session-manager.ts";
+import type { ConversationManager } from "./conversation-manager.ts";
 import { runExclusiveStreamTurn, streamErrorEvent, type StreamTurnHost } from "./turn-lifecycle.ts";
-import { maybeGenerateSessionTitleAsync } from "./session-title.ts";
+import { maybeGenerateConversationTitleAsync } from "./conversation-title.ts";
 import {
-  applyCommandSessionEffects,
+  applyCommandConversationEffects,
   checkPlatform,
   resolveMessagingPlatform,
-} from "./service-sessions.ts";
+} from "./service-conversations.ts";
 import { collectStreamReply, type StreamEvent } from "@freeanima/runtime/loop";
 import { scheduleGracefulRestart, runAnimaCliUpgrade } from "./process-restart.ts";
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
 
 export type MessagingDeps = {
   runControl: EngineRunControl;
-  sessionManager: SessionManager;
+  conversationManager: ConversationManager;
   bus: EventBus | null;
-  onSessionUpdated: ((sid: string) => void) | null;
+  onConversationUpdated: ((sid: string) => void) | null;
   streamHost: StreamTurnHost;
 };
 
 export async function runIncomingMessageHooks(
   deps: FullRuntimeDeps,
-  sessionId: string,
+  conversationId: string,
   message: string,
   platform: string,
 ): Promise<{ ok: true; message: string; expiredHint?: string } | { ok: false; reason: string }> {
   const run = await deps.kernel.hookRegistry.run(messageIncoming, {
-    sessionId,
+    conversationId,
     message,
     platform,
   });
@@ -57,12 +57,12 @@ export async function runIncomingMessageHooks(
 
 export async function runTurnAfterCompleteHooks(
   deps: FullRuntimeDeps,
-  sessionId: string,
+  conversationId: string,
   messages: Message[],
   defaultContent: string,
 ): Promise<string> {
   const run = await deps.kernel.hookRegistry.run(turnAfterComplete, {
-    sessionId,
+    conversationId,
     messages: messages as Record<string, unknown>[],
   });
   const effect = headOkStepData(turnAfterComplete, run.chain);
@@ -70,24 +70,24 @@ export async function runTurnAfterCompleteHooks(
 }
 
 export function emitSessionUpdated(
-  msgDeps: Pick<MessagingDeps, "bus" | "onSessionUpdated">,
-  sessionId: string,
+  msgDeps: Pick<MessagingDeps, "bus" | "onConversationUpdated">,
+  conversationId: string,
 ): void {
-  msgDeps.bus?.emit(sessionUpdated, { session_id: sessionId });
-  msgDeps.onSessionUpdated?.(sessionId);
+  msgDeps.bus?.emit(conversationUpdated, { conversation_id: conversationId });
+  msgDeps.onConversationUpdated?.(conversationId);
 }
 
 export async function executeCommand(
   deps: FullRuntimeDeps,
   msgDeps: MessagingDeps,
   params: {
-    session_id: string;
+    conversation_id: string;
     text: string;
     platform?: string;
     origin_extra?: Record<string, unknown>;
   },
 ): Promise<{ text: string; data: unknown; found: boolean }> {
-  const sessionId = params.session_id;
+  const conversationId = params.conversation_id;
   const platform = params.platform ?? "gateway";
   const text = params.text.trim();
   const [cmd, args] = resolveCommand(text, platform);
@@ -105,17 +105,23 @@ export async function executeCommand(
   }
 
   const result = await runSlashCommand(cmd, {
-    sessionId,
+    conversationId,
     platform,
     args,
     raw: text,
     origin_extra: params.origin_extra,
   });
-  await applyCommandSessionEffects(deps, result, sessionId, platform, params.origin_extra);
+  await applyCommandConversationEffects(
+    deps,
+    result,
+    conversationId,
+    platform,
+    params.origin_extra,
+  );
 
   if (isRetryResult(result)) {
     try {
-      const reply = await collectStreamReply(runRetryStream(deps, msgDeps, sessionId));
+      const reply = await collectStreamReply(runRetryStream(deps, msgDeps, conversationId));
       return { text: reply, data: result.data, found: true };
     } catch (e) {
       return { text: `⚠️ ${e}`, data: result.data, found: true };
@@ -125,7 +131,7 @@ export async function executeCommand(
   if (isGoalStartResult(result)) {
     try {
       const reply = await collectStreamReply(
-        runGoalStartStream(deps, msgDeps, sessionId, result.data.prompt),
+        runGoalStartStream(deps, msgDeps, conversationId, result.data.prompt),
       );
       const combined = result.text ? `${result.text}\n\n${reply}`.trim() : reply;
       return { text: combined, data: result.data, found: true };
@@ -147,35 +153,43 @@ export async function executeCommand(
 export async function* sendMessageStream(
   deps: FullRuntimeDeps,
   msgDeps: MessagingDeps,
-  sessionId: string,
+  conversationId: string,
   message: string,
   platform?: string,
 ): AsyncGenerator<StreamEvent> {
   message = message.trim();
   if (msgDeps.runControl.isShuttingDown()) {
-    yield streamErrorEvent(deps, sessionId, "Server is shutting down");
+    yield streamErrorEvent(deps, conversationId, "Server is shutting down");
     return;
   }
-  if (!(await deps.conversation.sessionExists(sessionId))) {
-    yield streamErrorEvent(deps, sessionId, `Session not found: ${sessionId}`);
+  if (!(await deps.conversation.conversationExists(conversationId))) {
+    yield streamErrorEvent(deps, conversationId, `Conversation not found: ${conversationId}`);
     return;
   }
   if (!message) {
-    yield streamErrorEvent(deps, sessionId, "message is required");
+    yield streamErrorEvent(deps, conversationId, "message is required");
     return;
   }
   let resolvedPlatform: string;
   try {
-    resolvedPlatform = await resolveMessagingPlatform(deps, sessionId, platform);
+    resolvedPlatform = await resolveMessagingPlatform(deps, conversationId, platform);
   } catch (e) {
-    yield streamErrorEvent(deps, sessionId, String(e));
+    yield streamErrorEvent(deps, conversationId, String(e));
     return;
   }
-  await checkPlatform(deps, { platform: resolvedPlatform }, sessionId);
+  await checkPlatform(deps, { platform: resolvedPlatform }, conversationId);
 
   const [cmd, args] = resolveCommand(message, resolvedPlatform);
   if (cmd) {
-    yield* dispatchCommandStream(deps, msgDeps, sessionId, resolvedPlatform, message, cmd, args);
+    yield* dispatchCommandStream(
+      deps,
+      msgDeps,
+      conversationId,
+      resolvedPlatform,
+      message,
+      cmd,
+      args,
+    );
     return;
   }
   if (message.startsWith("/")) {
@@ -189,7 +203,7 @@ export async function* sendMessageStream(
     return;
   }
 
-  const guard = await runIncomingMessageHooks(deps, sessionId, message, resolvedPlatform);
+  const guard = await runIncomingMessageHooks(deps, conversationId, message, resolvedPlatform);
   if (!guard.ok) {
     yield { event: "token", data: { content: guard.reason } };
     yield { event: "done", data: {} };
@@ -199,20 +213,20 @@ export async function* sendMessageStream(
     yield { event: "token", data: { content: `${guard.expiredHint}\n\n` } };
   }
 
-  yield* runTurnStream(deps, msgDeps, sessionId, guard.message);
+  yield* runTurnStream(deps, msgDeps, conversationId, guard.message);
 }
 
 async function* dispatchCommandStream(
   deps: FullRuntimeDeps,
   msgDeps: MessagingDeps,
-  sessionId: string,
+  conversationId: string,
   platform: string,
   raw: string,
   cmd: CommandDef,
   args: string[],
 ): AsyncGenerator<StreamEvent> {
   if (cmd.name !== "cancel") {
-    const guard = await runIncomingMessageHooks(deps, sessionId, raw, platform);
+    const guard = await runIncomingMessageHooks(deps, conversationId, raw, platform);
     if (!guard.ok) {
       yield { event: "token", data: { content: guard.reason } };
       yield { event: "done", data: {} };
@@ -220,14 +234,14 @@ async function* dispatchCommandStream(
     }
   }
   const result = await runSlashCommand(cmd, {
-    sessionId,
+    conversationId,
     platform,
     args,
     raw,
   });
   if (isRetryResult(result)) {
     try {
-      yield* runRetryStream(deps, msgDeps, sessionId);
+      yield* runRetryStream(deps, msgDeps, conversationId);
     } catch (e) {
       yield { event: "token", data: { content: `⚠️ ${e}` } };
       yield { event: "done", data: {} };
@@ -239,7 +253,7 @@ async function* dispatchCommandStream(
       yield { event: "token", data: { content: result.text } };
     }
     try {
-      yield* runGoalStartStream(deps, msgDeps, sessionId, result.data.prompt);
+      yield* runGoalStartStream(deps, msgDeps, conversationId, result.data.prompt);
     } catch (e) {
       yield { event: "token", data: { content: `⚠️ ${e}` } };
       yield { event: "done", data: {} };
@@ -265,80 +279,80 @@ async function* dispatchCommandStream(
 function runRetryStream(
   deps: FullRuntimeDeps,
   msgDeps: MessagingDeps,
-  sessionId: string,
+  conversationId: string,
 ): AsyncGenerator<StreamEvent> {
-  msgDeps.runControl.preemptSessionEngine(sessionId);
+  msgDeps.runControl.preemptSessionEngine(conversationId);
   return runExclusiveStreamTurn(
     deps,
-    sessionId,
-    async () => deps.conversation.retryTurn(sessionId),
+    conversationId,
+    async () => deps.conversation.retryTurn(conversationId),
     msgDeps.streamHost,
-    msgDeps.sessionManager,
+    msgDeps.conversationManager,
   );
 }
 
 function runGoalStartStream(
   deps: FullRuntimeDeps,
   msgDeps: MessagingDeps,
-  sessionId: string,
+  conversationId: string,
   prompt: string,
 ): AsyncGenerator<StreamEvent> {
-  msgDeps.runControl.preemptSessionEngine(sessionId);
+  msgDeps.runControl.preemptSessionEngine(conversationId);
   let effectiveUserText = "";
   return runExclusiveStreamTurn(
     deps,
-    sessionId,
+    conversationId,
     {
       fast: async () => {
-        effectiveUserText = await deps.conversation.beginTurnFast(sessionId, prompt);
-        maybeGenerateSessionTitleAsync(deps, sessionId, effectiveUserText, {
+        effectiveUserText = await deps.conversation.beginTurnFast(conversationId, prompt);
+        maybeGenerateConversationTitleAsync(deps, conversationId, effectiveUserText, {
           bus: msgDeps.bus,
-          onSessionUpdated: msgDeps.onSessionUpdated,
+          onConversationUpdated: msgDeps.onConversationUpdated,
           emitSessionUpdated: (sid) => msgDeps.streamHost.emitSessionUpdated(sid),
         });
         return effectiveUserText;
       },
       prepare: async () => {
-        const [runtimeMsgs, functions] = await deps.conversation.beginTurnPrepare(sessionId);
+        const [runtimeMsgs, functions] = await deps.conversation.beginTurnPrepare(conversationId);
         return [runtimeMsgs, functions, effectiveUserText];
       },
     },
     msgDeps.streamHost,
-    msgDeps.sessionManager,
+    msgDeps.conversationManager,
   );
 }
 
-export function interruptSessionStream(msgDeps: MessagingDeps, sessionId: string): void {
-  msgDeps.runControl.preemptSessionEngine(sessionId);
+export function interruptSessionStream(msgDeps: MessagingDeps, conversationId: string): void {
+  msgDeps.runControl.preemptSessionEngine(conversationId);
 }
 
 function runTurnStream(
   deps: FullRuntimeDeps,
   msgDeps: MessagingDeps,
-  sessionId: string,
+  conversationId: string,
   message: string,
 ): AsyncGenerator<StreamEvent> {
-  msgDeps.runControl.preemptSessionEngine(sessionId);
+  msgDeps.runControl.preemptSessionEngine(conversationId);
   let effectiveUserText = "";
   return runExclusiveStreamTurn(
     deps,
-    sessionId,
+    conversationId,
     {
       fast: async () => {
-        effectiveUserText = await deps.conversation.beginTurnFast(sessionId, message);
-        maybeGenerateSessionTitleAsync(deps, sessionId, effectiveUserText, {
+        effectiveUserText = await deps.conversation.beginTurnFast(conversationId, message);
+        maybeGenerateConversationTitleAsync(deps, conversationId, effectiveUserText, {
           bus: msgDeps.bus,
-          onSessionUpdated: msgDeps.onSessionUpdated,
+          onConversationUpdated: msgDeps.onConversationUpdated,
           emitSessionUpdated: (sid) => msgDeps.streamHost.emitSessionUpdated(sid),
         });
         return effectiveUserText;
       },
       prepare: async () => {
-        const [runtimeMsgs, functions] = await deps.conversation.beginTurnPrepare(sessionId);
+        const [runtimeMsgs, functions] = await deps.conversation.beginTurnPrepare(conversationId);
         return [runtimeMsgs, functions, effectiveUserText];
       },
     },
     msgDeps.streamHost,
-    msgDeps.sessionManager,
+    msgDeps.conversationManager,
   );
 }

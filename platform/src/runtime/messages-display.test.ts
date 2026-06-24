@@ -1,11 +1,11 @@
 import { buildMessagesDisplay, paginateMessagesDisplay } from "./build-messages-display.ts";
 import { describe, expect, it } from "bun:test";
 
-import type { SessionMessage } from "@freeanima/core/db/domain";
+import type { StoredMessage } from "@freeanima/core/db/domain";
 
 describe("buildMessagesDisplay", () => {
   it("aggregates assistant tool_calls and tool results into tool_block", () => {
-    const msgs: SessionMessage[] = [
+    const msgs: StoredMessage[] = [
       { role: "user", content: "check the weather" },
       {
         role: "assistant",
@@ -41,7 +41,7 @@ describe("buildMessagesDisplay", () => {
   });
 
   it("paginated return with total/offset/limit", () => {
-    const msgs: SessionMessage[] = Array.from({ length: 5 }, (_, i) => ({
+    const msgs: StoredMessage[] = Array.from({ length: 5 }, (_, i) => ({
       role: "user" as const,
       content: `msg ${i}`,
     }));
@@ -54,14 +54,14 @@ describe("buildMessagesDisplay", () => {
   });
 
   it("returns all when no limit", () => {
-    const msgs: SessionMessage[] = [{ role: "user", content: "a" }];
+    const msgs: StoredMessage[] = [{ role: "user", content: "a" }];
     const all = paginateMessagesDisplay("sess", msgs);
     expect(all.limit).toBeNull();
     expect(all.display).toHaveLength(1);
   });
 
   it("emits separate tool_blocks for multi-round tool calls", () => {
-    const msgs: SessionMessage[] = [
+    const msgs: StoredMessage[] = [
       { role: "user", content: "go" },
       {
         role: "assistant",

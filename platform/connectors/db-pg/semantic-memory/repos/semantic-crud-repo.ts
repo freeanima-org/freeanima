@@ -42,7 +42,7 @@ export async function createSemanticMemory(row: SemanticMemoryCreateInput): Prom
   const now = formatCstIso();
   const created = row.created ?? now;
   const updated = row.updated ?? created;
-  const sourceSessions = normalizeSourceSessions(row.source_sessions);
+  const sourceConversations = normalizeSourceSessions(row.source_conversations);
   const observedAt = row.observed_at ?? created;
   const occurredAt = row.occurred_at ?? null;
   const status = normalizeStatus(row.status);
@@ -57,7 +57,7 @@ export async function createSemanticMemory(row: SemanticMemoryCreateInput): Prom
       pinned,
       content,
       ftsSegmented,
-      sourceSessions,
+      sourceConversations,
       observedAt: observedAt ? new Date(observedAt) : null,
       occurredAt,
       status,
@@ -71,7 +71,7 @@ export async function createSemanticMemory(row: SemanticMemoryCreateInput): Prom
         pinned,
         content,
         ftsSegmented,
-        sourceSessions,
+        sourceConversations,
         observedAt: observedAt ? new Date(observedAt) : null,
         occurredAt,
         status,
@@ -101,8 +101,8 @@ export async function updateSemanticMemory(row: SemanticMemoryUpdateInput): Prom
   }
   if (row.type !== undefined) patch.type = normalizeSemanticMemoryType(row.type);
   if (row.pinned !== undefined) patch.pinned = row.pinned;
-  if (row.source_sessions !== undefined) {
-    patch.sourceSessions = normalizeSourceSessions(row.source_sessions);
+  if (row.source_conversations !== undefined) {
+    patch.sourceConversations = normalizeSourceSessions(row.source_conversations);
   }
   if (row.observed_at !== undefined) {
     patch.observedAt = row.observed_at ? new Date(row.observed_at) : null;
@@ -205,14 +205,14 @@ export async function listActiveSemanticMemory(): Promise<SemanticMemoryRow[]> {
 }
 
 export async function listSemanticMemoryBySourceSessions(
-  sessionIds: string[],
+  conversationIds: string[],
   opts?: { status?: "active" | "deprecated" | "all" },
 ): Promise<SemanticMemoryRow[]> {
-  const ids = sessionIds.map((s) => s.trim()).filter(Boolean);
+  const ids = conversationIds.map((s) => s.trim()).filter(Boolean);
   if (!ids.length) return [];
 
   const status = opts?.status ?? "active";
-  const conditions = [arrayOverlaps(semanticMemory.sourceSessions, ids)];
+  const conditions = [arrayOverlaps(semanticMemory.sourceConversations, ids)];
   if (status !== "all") {
     conditions.push(eq(semanticMemory.status, status));
   }

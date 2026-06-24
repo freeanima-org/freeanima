@@ -1,5 +1,5 @@
 export type RunSimpleTurnOpts = {
-  sessionId: string;
+  conversationId: string;
   prompt: string;
   model: string;
 };

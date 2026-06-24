@@ -44,7 +44,7 @@ export async function listSemanticMemories(body: SemanticMemoryListBody) {
     limit: parsed.limit,
     types: parsed.types,
     status: parsed.status,
-    source_session: parsed.source_session?.trim() || undefined,
+    source_conversation: parsed.source_conversation?.trim() || undefined,
     sort_by: parsed.sort_by,
   });
 }
@@ -55,7 +55,7 @@ export async function listLimbicMemories(body: LimbicMemoryListBody) {
     query: parsed.query?.trim() || undefined,
     offset: parsed.offset,
     limit: parsed.limit,
-    session_id: parsed.session_id?.trim() || undefined,
+    conversation_id: parsed.conversation_id?.trim() || undefined,
     kind: parsed.kind,
   });
 }
@@ -68,7 +68,7 @@ export async function listAutobiographicalMemories(body: AutobiographicalMemoryL
     limit: parsed.limit,
     status: parsed.status,
     significance: parsed.significance,
-    source_session: parsed.source_session?.trim() || undefined,
+    source_conversation: parsed.source_conversation?.trim() || undefined,
   });
 }
 

@@ -149,7 +149,7 @@ export async function* bridgeMessageStream(
 }
 
 export async function* bridgeSessionUpdates(
-  sessionId: string,
+  conversationId: string,
   watch: (cb: () => void) => () => void,
   signal: AbortSignal,
 ): AsyncGenerator<{ method: string; payload: Record<string, unknown> }> {
@@ -166,8 +166,8 @@ export async function* bridgeSessionUpdates(
       });
       if (signal.aborted) break;
       yield {
-        method: "session.updated",
-        payload: { session_id: sessionId },
+        method: "conversation.updated",
+        payload: { conversation_id: conversationId },
       };
     }
   } finally {

@@ -12,7 +12,7 @@ type DreamRow = {
   dream_day: string | Date;
   content: string;
   source_limbic_ids: string[];
-  source_session_ids: string[];
+  source_conversation_ids: string[];
   created: string | Date;
 };
 
@@ -116,10 +116,10 @@ function DreamMemoryPage() {
                           {row.source_limbic_ids.join(", ")}
                         </p>
                       ) : null}
-                      {row.source_session_ids.length ? (
+                      {row.source_conversation_ids.length ? (
                         <p className="text-xs text-base-content/60">
-                          {m.webui_chamber_dream_source_sessions()}:{" "}
-                          {row.source_session_ids.join(", ")}
+                          {m.webui_chamber_dream_source_conversations()}:{" "}
+                          {row.source_conversation_ids.join(", ")}
                         </p>
                       ) : null}
                     </>

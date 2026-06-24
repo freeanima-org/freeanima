@@ -3,10 +3,10 @@ import { z } from "zod";
 import { getPromptDebug } from "../../handlers/index.ts";
 
 const promptDebugQuerySchema = z.object({
-  session_id: z.string().optional(),
+  conversation_id: z.string().optional(),
 });
 
 export const promptRoutes = new Elysia({ prefix: "/prompt" }).get("/debug", ({ query }) => {
   const parsed = promptDebugQuerySchema.parse(query);
-  return getPromptDebug(parsed.session_id);
+  return getPromptDebug(parsed.conversation_id);
 });

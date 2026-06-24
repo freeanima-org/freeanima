@@ -4,21 +4,21 @@ import { AcpProgressDock } from "@/components/AcpProgressDock.tsx";
 import { FridgeMagnetInjectPreview } from "@/components/FridgeMagnetInjectPreview.tsx";
 import { ToolBlockBubble } from "@/components/ToolBlockBubble.tsx";
 import { useAcpProgressDock } from "@/hooks/useAcpProgressDock.ts";
-import { formatSessionIdDateTime } from "@/lib/format-datetime.ts";
+import { formatConversationIdDateTime } from "@/lib/format-datetime.ts";
 import { displayAwaitingReply, pollUntilAssistantReply } from "@/lib/display-recovery.ts";
 import {
   getFridgeMagnets,
-  listSessionCommands,
+  listConversationCommands,
   loadConfig,
-  subscribeSessionEvents,
+  subscribeConversationEvents,
 } from "@/lib/api.ts";
 import type { SapConnectionState } from "@freeanima/sap-contract";
 import { getAppLocale, initAppLocale, m, toggleAppLocale } from "@/lib/i18n.ts";
 import { loadInputDraft, saveInputDraft } from "@/lib/input-draft.ts";
 import { getSapRelayClient, reconnectSap, subscribeSapConnection } from "@/lib/sap-client.ts";
-import type { SessionListItem } from "@/lib/types.ts";
+import type { ConversationListItem } from "@/lib/types.ts";
 import { useChatStore } from "@/stores/chat.ts";
-import { useSessionsStore } from "@/stores/sessions.ts";
+import { useConversationsStore } from "@/stores/conversations.ts";
 
 initAppLocale();
 
@@ -28,19 +28,19 @@ type ClarifyPending = {
   timeout_sec?: number;
 };
 
-function sessionLabel(item: SessionListItem) {
-  return item.title || formatSessionIdDateTime(item.id);
+function conversationLabel(item: ConversationListItem) {
+  return item.title || formatConversationIdDateTime(item.id);
 }
 
-function readSessionFromUrl(): string | undefined {
-  const id = new URLSearchParams(window.location.search).get("session")?.trim();
+function readConversationFromUrl(): string | undefined {
+  const id = new URLSearchParams(window.location.search).get("conversation")?.trim();
   return id || undefined;
 }
 
-function writeSessionToUrl(sessionId: string | null) {
+function writeConversationToUrl(conversationId: string | null) {
   const url = new URL(window.location.href);
-  if (sessionId) url.searchParams.set("session", sessionId);
-  else url.searchParams.delete("session");
+  if (conversationId) url.searchParams.set("conversation", conversationId);
+  else url.searchParams.delete("conversation");
   window.history.replaceState(null, "", url);
 }
 
@@ -53,28 +53,28 @@ function openHubSettingsIfAvailable(): void {
 }
 
 function App() {
-  const sessions = useSessionsStore((s) => s.sessions);
-  const currentId = useSessionsStore((s) => s.currentId);
-  const display = useSessionsStore((s) => s.display);
-  const fetchSessions = useSessionsStore((s) => s.fetchSessions);
-  const selectSession = useSessionsStore((s) => s.selectSession);
-  const newSessionFn = useSessionsStore((s) => s.newSession);
-  const renameSession = useSessionsStore((s) => s.renameSession);
-  const appendItem = useSessionsStore((s) => s.appendItem);
-  const appendItemForSession = useSessionsStore((s) => s.appendItemForSession);
-  const refreshMessages = useSessionsStore((s) => s.refreshMessages);
-  const reloadSessionIfCurrent = useSessionsStore((s) => s.reloadSessionIfCurrent);
-  const patchProgressLine = useSessionsStore((s) => s.patchProgressLine);
+  const conversations = useConversationsStore((s) => s.conversations);
+  const currentId = useConversationsStore((s) => s.currentId);
+  const display = useConversationsStore((s) => s.display);
+  const fetchConversations = useConversationsStore((s) => s.fetchConversations);
+  const selectConversation = useConversationsStore((s) => s.selectConversation);
+  const newConversationFn = useConversationsStore((s) => s.newConversation);
+  const renameConversation = useConversationsStore((s) => s.renameConversation);
+  const appendItem = useConversationsStore((s) => s.appendItem);
+  const appendItemForConversation = useConversationsStore((s) => s.appendItemForConversation);
+  const refreshMessages = useConversationsStore((s) => s.refreshMessages);
+  const reloadConversationIfCurrent = useConversationsStore((s) => s.reloadConversationIfCurrent);
+  const patchProgressLine = useConversationsStore((s) => s.patchProgressLine);
 
   const renderMd = useChatStore((s) => s.renderMd);
   const streaming = useChatStore((s) => s.streaming);
-  const streamingSessionId = useChatStore((s) => s.streamingSessionId);
+  const streamingConversationId = useChatStore((s) => s.streamingConversationId);
   const streamText = useChatStore((s) => s.streamText);
   const recovering = useChatStore((s) => s.recovering);
   const send = useChatStore((s) => s.send);
   const queue = useChatStore((s) => s.queue);
   const messageQueue = useMemo(
-    () => (currentId ? queue.filter((q) => q.sessionId === currentId) : []),
+    () => (currentId ? queue.filter((q) => q.conversationId === currentId) : []),
     [currentId, queue],
   );
 
@@ -87,7 +87,7 @@ function App() {
     visible: false,
     x: 0,
     y: 0,
-    sessionId: null as string | null,
+    conversationId: null as string | null,
   });
   const [showRenameDialog, setShowRenameDialog] = useState(false);
   const [renameText, setRenameText] = useState("");
@@ -96,7 +96,9 @@ function App() {
   const sendingRef = useRef(false);
   const msgAreaRef = useRef<HTMLDivElement>(null);
   const msgInputRef = useRef<HTMLTextAreaElement>(null);
-  const [inputText, setInputText] = useState(() => loadInputDraft(readSessionFromUrl() ?? null));
+  const [inputText, setInputText] = useState(() =>
+    loadInputDraft(readConversationFromUrl() ?? null),
+  );
   const [commandList, setCommandList] = useState<CommandItem[]>([]);
   const [selectedCmdIdx, setSelectedCmdIdx] = useState(0);
   const [clarifyPending, setClarifyPending] = useState<ClarifyPending | null>(null);
@@ -110,12 +112,12 @@ function App() {
   const pendingRecoveryKeyRef = useRef<string | null>(null);
   const nativeShell = Boolean(getSatelliteShell()?.isNativeShell);
 
-  const streamVisible = streaming && streamingSessionId === currentId;
+  const streamVisible = streaming && streamingConversationId === currentId;
 
   const acpDock = useAcpProgressDock(currentId, {
     patchProgress: patchProgressLine,
     onDecision: async (sid) => {
-      const baseline = useSessionsStore.getState().display.length;
+      const baseline = useConversationsStore.getState().display.length;
       await refreshMessages(sid, baseline);
     },
   });
@@ -176,16 +178,16 @@ function App() {
 
         const bootstrap = async () => {
           await getSapRelayClient().whenReady();
-          const list = await fetchSessions();
-          const fromUrl = readSessionFromUrl();
+          const list = await fetchConversations();
+          const fromUrl = readConversationFromUrl();
           if (fromUrl) {
-            await selectSession(fromUrl);
+            await selectConversation(fromUrl);
           } else if (list.length > 0) {
             const id = list[0]!.id;
-            await selectSession(id);
-            writeSessionToUrl(id);
+            await selectConversation(id);
+            writeConversationToUrl(id);
           }
-          void listSessionCommands()
+          void listConversationCommands()
             .then((raw) => setCommandList((raw as { commands?: CommandItem[] }).commands ?? []))
             .catch((e) => console.error("commands:", e));
           void refreshFridgeMagnets();
@@ -198,12 +200,12 @@ function App() {
         setError(e instanceof Error ? e.message : String(e));
       }
     })();
-  }, [fetchSessions, selectSession]);
+  }, [fetchConversations, selectConversation]);
 
   useEffect(() => {
     if (sapConnection !== "connected") return;
-    void fetchSessions();
-  }, [sapConnection, fetchSessions]);
+    void fetchConversations();
+  }, [sapConnection, fetchConversations]);
 
   useEffect(() => {
     const close = () => setContextMenu((menu) => ({ ...menu, visible: false }));
@@ -213,7 +215,7 @@ function App() {
 
   useEffect(() => {
     if (!currentId) return;
-    writeSessionToUrl(currentId);
+    writeConversationToUrl(currentId);
     setInputText(loadInputDraft(currentId));
     requestAnimationFrame(() => {
       msgInputRef.current?.focus();
@@ -227,16 +229,16 @@ function App() {
 
   useEffect(() => {
     if (!currentId) return;
-    const sub = subscribeSessionEvents(currentId, () => {
-      void fetchSessions();
+    const sub = subscribeConversationEvents(currentId, () => {
+      void fetchConversations();
     });
     return () => sub.unsubscribe();
-  }, [currentId, fetchSessions]);
+  }, [currentId, fetchConversations]);
 
   /** 刷新或切回会话时：末条为 user 且无 assistant → 轮询直到 Hub 落库 */
   useEffect(() => {
     if (!currentId) return;
-    if (streaming && streamingSessionId === currentId) return;
+    if (streaming && streamingConversationId === currentId) return;
     if (!displayAwaitingReply(display)) {
       pendingRecoveryKeyRef.current = null;
       return;
@@ -249,7 +251,7 @@ function App() {
     let cancelled = false;
     useChatStore.setState({ recovering: true });
 
-    const sub = subscribeSessionEvents(currentId, () => {
+    const sub = subscribeConversationEvents(currentId, () => {
       void refreshMessages(currentId, baseline);
     });
 
@@ -262,7 +264,7 @@ function App() {
       sub.unsubscribe();
       useChatStore.setState({ recovering: false });
     };
-  }, [currentId, display, streaming, streamingSessionId, refreshMessages]);
+  }, [currentId, display, streaming, streamingConversationId, refreshMessages]);
 
   const scrollDown = () => {
     requestAnimationFrame(() => {
@@ -287,23 +289,23 @@ function App() {
     });
   };
 
-  const navigateToSession = async (sessionId: string) => {
-    if (sessionId === currentId) {
+  const navigateToConversation = async (conversationId: string) => {
+    if (conversationId === currentId) {
       setSidebarOpen(false);
       return;
     }
     setClarifyPending(null);
-    await selectSession(sessionId);
+    await selectConversation(conversationId);
     setSidebarOpen(false);
   };
 
-  const newSession = async () => {
-    const id = await newSessionFn();
-    if (id) writeSessionToUrl(id);
+  const newConversation = async () => {
+    const id = await newConversationFn();
+    if (id) writeConversationToUrl(id);
   };
 
   const startRename = () => {
-    const s = sessions.find((x) => x.id === contextMenu.sessionId);
+    const s = conversations.find((x) => x.id === contextMenu.conversationId);
     setRenameText((s && s.title) || "");
     setShowRenameDialog(true);
     setContextMenu((menu) => ({ ...menu, visible: false }));
@@ -312,31 +314,32 @@ function App() {
 
   const confirmRename = async () => {
     const title = renameText.trim();
-    if (title && contextMenu.sessionId) {
-      await renameSession(contextMenu.sessionId, title);
+    if (title && contextMenu.conversationId) {
+      await renameConversation(contextMenu.conversationId, title);
     }
     setShowRenameDialog(false);
     setRenameText("");
   };
 
-  const flushQueueRef = useRef<(sessionId: string) => Promise<void>>(async () => {});
+  const flushQueueRef = useRef<(conversationId: string) => Promise<void>>(async () => {});
 
   const dispatchSend = useCallback(
-    async (text: string, originSessionId: string) => {
-      const displayBaseline = useSessionsStore.getState().display.length;
+    async (text: string, originConversationId: string) => {
+      const displayBaseline = useConversationsStore.getState().display.length;
       if (clarifyPending) setClarifyPending(null);
       scrollDown();
 
-      const isViewingOrigin = () => useSessionsStore.getState().currentId === originSessionId;
+      const isViewingOrigin = () =>
+        useConversationsStore.getState().currentId === originConversationId;
 
-      await send(originSessionId, text, {
+      await send(originConversationId, text, {
         recoverDisplay: (id) => refreshMessages(id, displayBaseline),
         onToken: () => {
           if (!isViewingOrigin()) return;
           scrollDown();
         },
         onDisplayAppend: (item) => {
-          appendItemForSession(originSessionId, item);
+          appendItemForConversation(originConversationId, item);
           if (isViewingOrigin()) scrollDown();
         },
         onAwaitingClarify: (data) => {
@@ -350,7 +353,7 @@ function App() {
           scrollDown();
         },
         onError: (msg) => {
-          appendItemForSession(originSessionId, {
+          appendItemForConversation(originConversationId, {
             type: "message",
             role: "assistant",
             content: `⚠️ ${msg}`,
@@ -361,32 +364,32 @@ function App() {
           if (opts?.recovered) {
             if (isViewingOrigin()) scrollDown();
             void refreshFridgeMagnets();
-            void flushQueueRef.current(originSessionId);
+            void flushQueueRef.current(originConversationId);
             return;
           }
-          void reloadSessionIfCurrent(originSessionId);
+          void reloadConversationIfCurrent(originConversationId);
           if (isViewingOrigin()) scrollDown();
           void refreshFridgeMagnets();
-          void flushQueueRef.current(originSessionId);
+          void flushQueueRef.current(originConversationId);
         },
       });
     },
     [
-      appendItemForSession,
+      appendItemForConversation,
       clarifyPending,
       refreshFridgeMagnets,
       refreshMessages,
-      reloadSessionIfCurrent,
+      reloadConversationIfCurrent,
       send,
     ],
   );
 
-  flushQueueRef.current = async (sessionId: string) => {
-    const next = useChatStore.getState().peekQueue(sessionId);
+  flushQueueRef.current = async (conversationId: string) => {
+    const next = useChatStore.getState().peekQueue(conversationId);
     if (!next || sendingRef.current) return;
     const item = useChatStore.getState().takeQueued(next.id);
     if (!item) return;
-    appendItemForSession(item.sessionId, {
+    appendItemForConversation(item.conversationId, {
       type: "message",
       role: "user",
       content: item.text,
@@ -394,7 +397,7 @@ function App() {
     scrollDown();
     sendingRef.current = true;
     try {
-      await dispatchSend(item.text, item.sessionId);
+      await dispatchSend(item.text, item.conversationId);
     } finally {
       sendingRef.current = false;
     }
@@ -412,15 +415,15 @@ function App() {
       return;
     }
 
-    const originSessionId = currentId;
+    const originConversationId = currentId;
     sendingRef.current = true;
     setInputText("");
-    saveInputDraft(originSessionId, "");
+    saveInputDraft(originConversationId, "");
     requestAnimationFrame(resizeInput);
     appendItem({ type: "message", role: "user", content: text });
 
     try {
-      await dispatchSend(text, originSessionId);
+      await dispatchSend(text, originConversationId);
     } finally {
       sendingRef.current = false;
     }
@@ -429,17 +432,17 @@ function App() {
   const sendQueuedNow = async (queueId: string) => {
     if (!currentId || sendingRef.current) return;
     const item = useChatStore.getState().takeQueued(queueId);
-    if (!item || item.sessionId !== currentId) return;
+    if (!item || item.conversationId !== currentId) return;
 
     sendingRef.current = true;
-    appendItemForSession(item.sessionId, {
+    appendItemForConversation(item.conversationId, {
       type: "message",
       role: "user",
       content: item.text,
     });
     scrollDown();
     try {
-      await dispatchSend(item.text, item.sessionId);
+      await dispatchSend(item.text, item.conversationId);
     } finally {
       sendingRef.current = false;
     }
@@ -594,30 +597,31 @@ function App() {
             <button
               type="button"
               className="btn btn-primary btn-sm w-full"
-              onClick={() => void newSession()}
+              onClick={() => void newConversation()}
             >
-              {m.webui_common_new_session()}
+              {m.webui_common_new_conversation()}
             </button>
           </div>
           <div className="flex-1 overflow-y-auto px-2 py-1 space-y-1">
-            {sessions.map((s) => (
+            {conversations.map((s) => (
               <div
                 key={s.id}
-                className={["session-item", s.id === currentId ? "sidebar-nav-active" : ""].join(
-                  " ",
-                )}
-                onClick={() => void navigateToSession(s.id)}
+                className={[
+                  "conversation-item",
+                  s.id === currentId ? "sidebar-nav-active" : "",
+                ].join(" ")}
+                onClick={() => void navigateToConversation(s.id)}
                 onContextMenu={(e) => {
                   e.preventDefault();
                   setContextMenu({
                     visible: true,
                     x: e.clientX,
                     y: e.clientY,
-                    sessionId: s.id,
+                    conversationId: s.id,
                   });
                 }}
               >
-                <div className="truncate">{sessionLabel(s)}</div>
+                <div className="truncate">{conversationLabel(s)}</div>
               </div>
             ))}
           </div>
@@ -633,7 +637,7 @@ function App() {
           <div ref={msgAreaRef} className="flex-1 overflow-y-auto p-4 space-y-4">
             {!currentId ? (
               <div className="flex items-center justify-center h-full text-base-content/40 text-sm">
-                {m.webui_chat_select_session()}
+                {m.webui_chat_select_conversation()}
               </div>
             ) : display.length === 0 && !streamVisible && !recovering ? (
               <div className="flex items-center justify-center h-full text-base-content/40 text-sm">

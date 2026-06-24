@@ -100,4 +100,4 @@ When `tunnel.enabled: true`, `anima service start` also starts the tunnel sideca
 
 ## PC vs mobile
 
-Each browser keeps its own Access session cookie. First visit on PC and phone each require one Google login; sessions renew per configured duration.
+Each browser keeps its own Access conversation cookie. First visit on PC and phone each require one Google login; sessions renew per configured duration.

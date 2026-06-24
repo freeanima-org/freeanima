@@ -3,8 +3,8 @@ import { limbicKindSchema, normalizePgTimestamp, type LimbicKind } from "@freean
 
 export type LimbicMemoryDbRow = {
   id: string;
-  session_id?: string;
-  sessionId?: string;
+  conversation_id?: string;
+  conversationId?: string;
   kind: string;
   valence?: number | null;
   arousal?: number | null;
@@ -30,7 +30,7 @@ export function mapLimbicMemoryRow(row: LimbicMemoryDbRow): LimbicMemoryRow {
   const created = row.created_at ?? row.createdAt ?? row.created;
   return {
     id: row.id,
-    session_id: row.session_id ?? row.sessionId ?? "",
+    conversation_id: row.conversation_id ?? row.conversationId ?? "",
     kind: normalizeKind(row.kind),
     valence: row.valence ?? null,
     arousal: row.arousal ?? null,

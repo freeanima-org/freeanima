@@ -75,7 +75,7 @@ export type ServiceSnapshot = {
     chat?: TokenizerBindingStatus;
     embedding?: TokenizerBindingStatus;
   };
-  sessions: {
+  conversations: {
     total: number;
     by_platform: Record<string, number>;
   };
@@ -105,7 +105,7 @@ export type ServiceSnapshot = {
   };
 };
 
-export type SessionSummary = {
+export type ConversationSummary = {
   id: string;
   title: string;
   created: string;

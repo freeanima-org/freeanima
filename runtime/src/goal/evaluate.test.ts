@@ -3,16 +3,16 @@ import * as goalJudge from "@freeanima/core/llm/goal-judge";
 import { Config, animaConfigSchema } from "@freeanima/core/config";
 import type { LlmRuntime } from "@freeanima/core/llm";
 import { evaluateGoalAfterTurn } from "./evaluate.ts";
-import { pauseSessionGoal, setSessionGoal } from "./manager.ts";
-import type { SessionConversationPort } from "@freeanima/core/tool/session-conversation-port";
+import { pauseConversationGoal, setConversationGoal } from "./manager.ts";
+import type { ConversationPort } from "@freeanima/core/tool/conversation-port";
 
-function createMemoryConversation(): SessionConversationPort {
-  const state = { meta: { role: "session_meta", model: "m" } as Record<string, unknown> };
+function createMemoryConversation(): ConversationPort {
+  const state = { meta: { role: "conversation_meta", model: "m" } as Record<string, unknown> };
   return {
-    async loadSessionMeta() {
+    async loadConversationMeta() {
       return state.meta as never;
     },
-    async updateSessionMetaField(_session, patch) {
+    async updateConversationMetaField(_conversation, patch) {
       Object.assign(state.meta, patch);
     },
   };
@@ -53,8 +53,8 @@ describe("evaluateGoalAfterTurn", () => {
 
   it("returns stop when paused", async () => {
     const conv = createMemoryConversation();
-    await setSessionGoal(conv, "s1", "task");
-    await pauseSessionGoal(conv, "s1");
+    await setConversationGoal(conv, "s1", "task");
+    await pauseConversationGoal(conv, "s1");
     const r = await evaluateGoalAfterTurn(
       { conversation: conv, llm, config: testConfig.data },
       "s1",
@@ -66,7 +66,7 @@ describe("evaluateGoalAfterTurn", () => {
   it("continues on judge not done (fail-open on judge error)", async () => {
     restores.push(spyOn(goalJudge, "judgeGoal").mockResolvedValue({ ok: false, error: "network" }));
     const conv = createMemoryConversation();
-    await setSessionGoal(conv, "s1", "task");
+    await setConversationGoal(conv, "s1", "task");
     const r = await evaluateGoalAfterTurn(
       { conversation: conv, llm, config: testConfig.data },
       "s1",
@@ -87,7 +87,7 @@ describe("evaluateGoalAfterTurn", () => {
       }),
     );
     const conv = createMemoryConversation();
-    await setSessionGoal(conv, "s1", "task");
+    await setConversationGoal(conv, "s1", "task");
     const r = await evaluateGoalAfterTurn(
       { conversation: conv, llm, config: testConfig.data },
       "s1",
