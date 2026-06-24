@@ -5,7 +5,7 @@
 
 ## Global view
 
-`freeanima` (FreeAnima) is a **TypeScript-only** agent runtime: `anima service` starts the Bun Hub（REST `/api` + SAP `/sap/v1` + engine）；UI 由 desktop-shell / app-mobile bundled 提供。
+`freeanima` (FreeAnima) is a **TypeScript-only** agent runtime: `anima service` starts the Bun Hub（REST `/api` + SAP `/sap/v1` + engine）；UI 由 app/desktop / app/mobile bundled 提供。
 
 | Capability     | Highlights                                                                                                                                          |
 | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -13,7 +13,7 @@
 | Tools          | Local / MCP / ACP flat registration; implemented in `capabilities/tools/`, `capabilities/mcp/`, `capabilities/acp/`                                 |
 | Credentials    | pass GPG; injected at runtime; LLM **sees paths, not values**                                                                                       |
 | Data directory | `~/.anima/` (override with `FREEANIMA_HOME`); back up this directory to preserve state                                                              |
-| Code layout    | `kernel/` → `core/` → `runtime/` → `capabilities/` → `platform/` (+ `cli/`) — see [`.agent/rules/code-layers.md`](.agent/rules/code-layers.md)      |
+| Code layout    | `kernel/` → `core/` → `runtime/` → `capabilities/` → `platform/` (+ `app/`) — see [`.agent/rules/code-layers.md`](.agent/rules/code-layers.md)      |
 
 **Code is the source of truth**; do not invent tool names, endpoints, or directories from docs alone. Read source or `grep` when needed.
 
@@ -76,7 +76,7 @@ bun run test:unit # all unit tests
 bun run test:integration # integration (tests/integration/)
 bun run test # unit + integration in parallel
 bun run service start --foreground # Hub API + SAP（:2658）
-bun run dev:webui # 本地 WebUI 静态开发（需 Hub 已运行）
+bun run dev:admin # 本地 Admin SPA 静态开发（需 Hub 已运行）
 anima credential list # credential paths; values in pass
 
 # PG schema changes (must generate snapshot.json; see .agent/rules/coding.md)
@@ -85,8 +85,8 @@ DATABASE_URL="…" bun run --filter @freeanima/core db:migrate
 ```
 
 - Hub API：`http://127.0.0.1:2658/api`（`anima service` 仅托管后端）
-- 桌面/移动客户端 bundled：会客厅 + 卧室 UI 在 `desktop-shell` / `app-mobile` 内
-- WebUI 本地开发：`bun run dev:webui` → `http://127.0.0.1:4175/webui/chamber/dashboard?embed=1`
+- 桌面/移动客户端 bundled：聊天室 + 管理台 UI 在 `app/desktop` / `app/mobile` 内
+- Admin 本地开发：`bun run dev:admin` → `http://127.0.0.1:4175/admin/dashboard?embed=1`
 - Release: [`.agent/rules/release.md`](.agent/rules/release.md)
 - PG ops (install, backup): [`docs/guide/database.md`](docs/guide/database.md)
 - Remote access (Cloudflare Tunnel): [`docs/guide/remote-access.md`](docs/guide/remote-access.md)

@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-23 16:18+0800\n"
+"POT-Creation-Date: 2026-06-24 17:13+0800\n"
 "PO-Revision-Date: 2026-06-23 13:57+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -15,19 +15,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. type: Content of: <messages><msg>
-#: docs/concepts/dream.md:9 docs/concepts/sleep.md:9
-#: docs/guide/remote-access.md:11 messages/po4a/en.xml:39
-#: messages/po4a/en.xml:47
-#, no-wrap
-msgid "Overview"
-msgstr "概述"
-
 #. type: Title ##
-#: docs/guide/database.md:79 docs/guide/remote-access.md:91
+#: docs/features/companion.md:119 docs/guide/remote-access.md:104
 #, no-wrap
-msgid "Troubleshooting"
-msgstr "故障排查"
+msgid "相关文档"
+msgstr ""
 
 #. type: Yaml Front Matter Hash Value: title
 #: docs/guide/remote-access.md:1
@@ -38,284 +30,267 @@ msgstr ""
 #. type: Title #
 #: docs/guide/remote-access.md:5
 #, no-wrap
-msgid "Remote access (Cloudflare Tunnel + Access)"
+msgid "Remote access（Tunnel + 应用 Token）"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:10
+#: docs/guide/remote-access.md:9
 #, no-wrap
 msgid ""
-"> Expose Chamber WebUI to the public internet safely for **single-user** personal use.\n"
-"> Prerequisites: domain on Cloudflare, Zero Trust team, Google (or other IdP) for Access login.\n"
-"> Security context: [`security.md`](security.md) · install: [`install.md`](install.md)\n"
+"> 通过 **Cloudflare Tunnel** 将家里 PC 上的 Hub 暴露到公网时，由 Hub **`remote_auth`** Bearer Token 保护非本地连接。\n"
+"> 安全上下文：[`security.md`](security.md) · 安装：[`install.md`](install.md)\n"
 msgstr ""
-
-#. type: Plain text
-#: docs/guide/remote-access.md:14
-msgid ""
-"FreeAnima can publish `127.0.0.1:2658` via **Cloudflare Tunnel** "
-"(`cloudflared`) with **Cloudflare Access** authentication at the edge. Login "
-"happens on Cloudflare (e.g. Google), not in FreeAnima."
-msgstr ""
-
-#. type: Plain text
-#: docs/guide/remote-access.md:20
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Surface            | Doc                                                                         |\n"
-#| "| ------------------ | --------------------------------------------------------------------------- |\n"
-#| "| Hub HTTP / WebUI   | [security.md](../guide/security.md)                                         |\n"
-#| "| Credentials (pass) | [security.md](../guide/security.md), [identity.md](../concepts/identity.md) |\n"
-#| "| Tool execution     | [tools.md](tools.md)                                                        |\n"
-msgid ""
-"| Layer                    | Role                                                                    |\n"
-"| ------------------------ | ----------------------------------------------------------------------- |\n"
-"| Cloudflare Access        | User login, Allow policy (your email)                                   |\n"
-"| cloudflared              | Outbound tunnel to local Hub                                            |\n"
-"| FreeAnima JWT middleware | Validates `Cf-Access-Jwt-Assertion`; loopback direct access still works |\n"
-msgstr ""
-"| 界面               | 文档                                                                        |\n"
-"| ------------------ | --------------------------------------------------------------------------- |\n"
-"| Hub HTTP / WebUI   | [security.md](../guide/security.md)                                         |\n"
-"| 凭证（pass）       | [security.md](../guide/security.md)、[identity.md](../concepts/identity.md) |\n"
-"| 工具执行           | [tools.md](tools.md)                                                        |\n"
 
 #. type: Title ##
-#: docs/guide/remote-access.md:21
-#, fuzzy, no-wrap
-#| msgid "Quick links"
-msgid "Quick start"
-msgstr "快捷入口"
+#: docs/guide/remote-access.md:10
+#, no-wrap
+msgid "概览"
+msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:24
-msgid "One command (interactive wizard includes cloudflared install):"
+#: docs/guide/remote-access.md:17
+#, no-wrap
+msgid ""
+"| 层                    | 作用                                                                                  |\n"
+"| --------------------- | ------------------------------------------------------------------------------------- |\n"
+"| **Hub `remote_auth`** | `config.yaml` 明文 token；REST `Authorization: Bearer`；SAP `connect` 帧 `auth_token` |\n"
+"| **cloudflared**       | 出站隧道，把公网 HTTPS/WSS 转到 `127.0.0.1:2658`                                      |\n"
+"| **客户端设置**        | app/desktop / app/mobile 在 **Hub 设置页**填写同一 Hub 地址与 token                   |\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/remote-access.md:19
+msgid ""
+"仅当 **Host 为 loopback**（`127.0.0.1` / `localhost` / `::1`）**且 TCP 对端也"
+"为 loopback** 时 **不验 token**（本地开发、CLI/systemd 探活）。公网域名（经 "
+"Tunnel）、局域网 IP 等访问时须带 token；与 `tunnel.enabled` 无关。"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/remote-access.md:21
+msgid ""
+"可选：仍可在 Cloudflare 配置 Access（浏览器 IdP 登录）；bundled 客户端走应用 "
+"Token，不依赖 Access。"
+msgstr ""
+
+#. type: Title ##
+#: docs/guide/remote-access.md:22
+#, no-wrap
+msgid "1. Hub 配置"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/remote-access.md:25
+msgid ""
+"在 `~/.anima/config.yaml` 中设置（**仅本地使用可省略**；暴露到局域网或公网前"
+"必须配置）："
+msgstr ""
+
+#. type: Fenced code block (yaml)
+#: docs/guide/remote-access.md:26
+#, no-wrap
+msgid ""
+"remote_auth:\n"
+"  token: \"请替换为 openssl rand -base64 32 生成的随机串\"\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/remote-access.md:32
+msgid "生成示例："
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/guide/remote-access.md:25
+#: docs/guide/remote-access.md:33
+#, no-wrap
+msgid "openssl rand -base64 32\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/remote-access.md:38
+msgid ""
+"`.gitignore` 已忽略 `config.yaml`；请勿提交到 git。Admin API 读配置时会对 "
+"`remote_auth.token` 脱敏显示。"
+msgstr ""
+
+#. type: Title ##
+#: docs/guide/remote-access.md:39
+#, no-wrap
+msgid "2. Tunnel（可选）"
+msgstr ""
+
+#. type: Fenced code block (bash)
+#: docs/guide/remote-access.md:41
 #, fuzzy, no-wrap
 #| msgid "`anima service start`"
 msgid ""
-"anima tunnel setup\n"
+"anima tunnel setup   # 可跳过 Access API 步骤\n"
 "anima service start\n"
 msgstr "`anima service start`"
 
 #. type: Plain text
-#: docs/guide/remote-access.md:31
-#, no-wrap
-msgid "Open `https://<your-hostname>/chamber/dashboard` from PC or mobile browser → sign in with Google (or configured IdP).\n"
-msgstr ""
-
-#. type: Title ##
-#: docs/guide/remote-access.md:32
-#, no-wrap
-msgid "Setup wizard"
-msgstr ""
-
-#. type: Plain text
-#: docs/guide/remote-access.md:35
+#: docs/guide/remote-access.md:47
 msgid ""
-"`anima tunnel setup` saves each answer to `~/.anima/config.yaml` as you go "
-"(`tunnel.enabled` stays `false` until success). Re-run the wizard to resume "
-"with saved values."
-msgstr ""
-
-#. type: Bullet: '1. '
-#: docs/guide/remote-access.md:41
-msgid "Public hostname (e.g. `anima.example.com`)"
-msgstr ""
-
-#. type: Bullet: '2. '
-#: docs/guide/remote-access.md:41
-msgid "Zero Trust team name (e.g. `myteam` → `myteam.cloudflareaccess.com`)"
-msgstr ""
-
-#. type: Bullet: '3. '
-#: docs/guide/remote-access.md:41
-msgid "Allowed email (single-user Allow policy)"
-msgstr ""
-
-#. type: Bullet: '4. '
-#: docs/guide/remote-access.md:41
-msgid ""
-"Optional Cloudflare API Token — auto-creates Tunnel, DNS, and Access App"
-msgstr ""
-
-#. type: Bullet: '5. '
-#: docs/guide/remote-access.md:41
-msgid "Session duration (default 7 days)"
+"`tunnel.enabled: true` 时随服务启动 cloudflared。Ingress 指向本机 Hub 端口"
+"（默认 `2658`）。"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:43
-msgid "Secrets are stored in **pass**:"
-msgstr ""
-
-#. type: Plain text
-#: docs/guide/remote-access.md:48
+#: docs/guide/remote-access.md:49
 #, no-wrap
-msgid ""
-"| pass 路径                                | 是什么                                                                | 谁提供                                             |\n"
-"| ---------------------------------------- | --------------------------------------------------------------------- | -------------------------------------------------- |\n"
-"| `services/cloudflare/api-token`          | **Cloudflare API Token** — 调用 Cloudflare API 创建 Tunnel/DNS/Access | 你在 Dashboard → 我的个人资料 → API 令牌 创建      |\n"
-"| `services/cloudflare/tunnel-credentials` | **隧道连接器凭证** — `cloudflared` 连接 Cloudflare 用                 | setup 通过 API 自动生成，**不要**与 API Token 混淆 |\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/guide/remote-access.md:50
-#, no-wrap
-msgid "**不是** Zero Trust 控制台里「隧道 → 安装连接器」复制的那段令牌（那是旧版手动安装方式；本向导用 API Token 自动换取隧道凭证）。\n"
-msgstr ""
-
-#. type: Plain text
-#: docs/guide/remote-access.md:52
-#, fuzzy
-#| msgid "Configure in `config.yaml` under `acp_agents`"
-msgid "Config is written to `~/.anima/config.yaml` under `tunnel:`."
-msgstr "在 `config.yaml` 的 `acp_agents` 下配置"
-
-#. type: Plain text
-#: docs/guide/remote-access.md:54
-#, no-wrap
-msgid "Tunnel ingress targets the Hub at `127.0.0.1:<port>` where `<port>` comes from the running service (`server.status.json`) or defaults to `2658` — it is **not** a `tunnel:` config field. Use `anima service --port` for the Hub; `anima tunnel setup --port` only overrides during setup.\n"
+msgid "若不使用 Tunnel，仅在局域网用 `http://<PC-IP>:2658` 亦可；客户端同样需在设置页填写 token。\n"
 msgstr ""
 
 #. type: Title ###
-#: docs/guide/remote-access.md:55
+#: docs/guide/remote-access.md:50
 #, no-wrap
-msgid "Non-interactive"
+msgid "Cloudflare 凭证（pass）"
 msgstr ""
 
-#. type: Fenced code block (bash)
-#: docs/guide/remote-access.md:57
-#, no-wrap
+#. type: Plain text
+#: docs/guide/remote-access.md:56
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Method      | Direction | Role                                         |\n"
+#| "| ----------- | --------- | -------------------------------------------- |\n"
+#| "| `heartbeat` | Both      | Keep-alive; see [transport.md](transport.md) |\n"
 msgid ""
-"anima tunnel setup --non-interactive \\\n"
-"  --hostname anima.example.com \\\n"
-"  --team myteam \\\n"
-"  --email you@gmail.com \\\n"
-"  --access-api \\\n"
-"  --yes\n"
+"| pass 路径                                | 用途                     |\n"
+"| ---------------------------------------- | ------------------------ |\n"
+"| `services/cloudflare/api-token`          | 创建 Tunnel / DNS        |\n"
+"| `services/cloudflare/tunnel-credentials` | `cloudflared` 连接器凭证 |\n"
+msgstr ""
+"| 方法        | 方向      | 作用                                         |\n"
+"| ----------- | --------- | -------------------------------------------- |\n"
+"| `heartbeat` | 双向      | 保活；见 [transport.md](transport.md)       |\n"
+
+#. type: Plain text
+#: docs/guide/remote-access.md:58
+msgid "详见向导 `anima tunnel setup`。"
+msgstr ""
+
+#. type: Title ##
+#: docs/guide/remote-access.md:59
+#, no-wrap
+msgid "3. 客户端配置"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/remote-access.md:62
+#, no-wrap
+msgid "**app/desktop** 与 **app/mobile** 均视为远端客户端，**不读取** Hub 的 `config.yaml`。\n"
 msgstr ""
 
 #. type: Plain text
 #: docs/guide/remote-access.md:67
-msgid ""
-"Provide API Token via pass before running, or paste during interactive setup."
-msgstr ""
-
-#. type: Title ###
-#: docs/guide/remote-access.md:68
 #, no-wrap
-msgid "Manual Access (no API Token)"
+msgid ""
+"| 客户端      | 存储位置                     |\n"
+"| ----------- | ---------------------------- |\n"
+"| app/desktop | `~/.anima/shell-client.json` |\n"
+"| app/mobile  | Capacitor Preferences        |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:71
-msgid ""
-"If you skip the API Token, the wizard prints numbered Dashboard steps: "
-"create self-hosted Access App, Allow-by-email policy, copy **AUD** tag into "
-"`tunnel.access.audience`."
+#: docs/guide/remote-access.md:69
+msgid "设置项（两端一致）："
 msgstr ""
 
-#. type: Title ##
+#. type: Bullet: '1. '
 #: docs/guide/remote-access.md:72
-#, fuzzy, no-wrap
-#| msgid "Orchestration"
-msgid "Operations"
-msgstr "编排"
-
-#. type: Plain text
-#: docs/guide/remote-access.md:80
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Round | Intent                                   |\n"
-#| "| ----- | ---------------------------------------- |\n"
-#| "| 1     | Contradiction detection + expiry marking |\n"
-#| "| 2     | Split multi-fact entries                 |\n"
-#| "| 3     | Dedup merge similar entries              |\n"
-#| "| 4     | Pin maintenance (keep pinned ≤ 20)       |\n"
 msgid ""
-"| Command                | Description                                               |\n"
-"| ---------------------- | --------------------------------------------------------- |\n"
-"| `anima tunnel status`  | Tunnel / Access / cloudflared state                       |\n"
-"| `anima tunnel start`   | Start cloudflared sidecar                                 |\n"
-"| `anima tunnel stop`    | Stop sidecar                                              |\n"
-"| `anima tunnel install` | Download cloudflared only (optional; setup includes this) |\n"
+"**Hub 地址** — 如 `https://anima.example.com` 或 `http://192.168.1.10:2658`"
 msgstr ""
-"| 轮次 | 意图                                   |\n"
-"| ----- | ---------------------------------------- |\n"
-"| 1     | 矛盾检测 + 过期标记 |\n"
-"| 2     | 拆分多事实条目                 |\n"
-"| 3     | 去重合并相似条目              |\n"
-"| 4     | 置顶质量审查（解除过时置顶；常驻读仍上限 40 条）       |\n"
+
+#. type: Bullet: '2. '
+#: docs/guide/remote-access.md:72
+msgid "**远程 Token** — 与 Hub `remote_auth.token` 相同"
+msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:82
+#: docs/guide/remote-access.md:74
 msgid ""
-"When `tunnel.enabled: true`, `anima service start` also starts the tunnel "
-"sidecar (systemd user unit or foreground with `--foreground`)."
+"操作：打开 Hub 设置 → 填写 → **测试连接** → 保存。桌面端保存后需 **重启 app/"
+"desktop**。"
 msgstr ""
 
 #. type: Title ##
+#: docs/guide/remote-access.md:75
+#, no-wrap
+msgid "4. 认证行为"
+msgstr ""
+
+#. type: Fenced code block (text)
+#: docs/guide/remote-access.md:77
+#, no-wrap
+msgid ""
+"REST:  Authorization: Bearer <token>\n"
+"SAP:   WebSocket /sap/v1 → connect 帧含 auth_token 字段\n"
+msgstr ""
+
+#. type: Plain text
 #: docs/guide/remote-access.md:83
-#, no-wrap
-msgid "API Token permissions"
+msgid "缺少或错误 token → HTTP `401` 或 SAP 连接关闭。"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:86
-msgid "创建 **API Token**（非隧道连接器令牌）时建议权限："
-msgstr ""
-
-#. type: Bullet: '- '
-#: docs/guide/remote-access.md:90
-msgid "Account — Cloudflare Tunnel: Edit"
-msgstr ""
-
-#. type: Bullet: '- '
-#: docs/guide/remote-access.md:90
-msgid "Zone — DNS: Edit (auto CNAME)"
-msgstr ""
-
-#. type: Bullet: '- '
-#: docs/guide/remote-access.md:90
-msgid "Account — Access: Apps and Policies: Edit (optional `--access-api`)"
-msgstr ""
-
-#. type: Plain text
-#: docs/guide/remote-access.md:99
-#, fuzzy, no-wrap
-#| msgid ""
-#| "| Surface            | Doc                                                                         |\n"
-#| "| ------------------ | --------------------------------------------------------------------------- |\n"
-#| "| Hub HTTP / WebUI   | [security.md](../guide/security.md)                                         |\n"
-#| "| Credentials (pass) | [security.md](../guide/security.md), [identity.md](../concepts/identity.md) |\n"
-#| "| Tool execution     | [tools.md](tools.md)                                                        |\n"
+#: docs/guide/remote-access.md:85
 msgid ""
-"| Symptom              | Check                                                            |\n"
-"| -------------------- | ---------------------------------------------------------------- |\n"
-"| Public URL 502       | Hub running? `anima service status`                              |\n"
-"| Access login loop    | IdP enabled in Access App; email in Allow policy                 |\n"
-"| 401 from Hub         | `tunnel.access.audience` matches Access App AUD                  |\n"
-"| Local Chamber broken | Loopback bypass — use `http://127.0.0.1:2658` without CF headers |\n"
+"判定依据为请求 URL 的 **Host**（经 Tunnel 时为公网域名，如 "
+"`anima.example.com`）与 **TCP 对端地址**；Hub 不读取 `tunnel.enabled` 决定是"
+"否验 token。"
 msgstr ""
-"| 界面               | 文档                                                                        |\n"
-"| ------------------ | --------------------------------------------------------------------------- |\n"
-"| Hub HTTP / WebUI   | [security.md](../guide/security.md)                                         |\n"
-"| 凭证（pass）       | [security.md](../guide/security.md)、[identity.md](../concepts/identity.md) |\n"
-"| 工具执行           | [tools.md](tools.md)                                                        |\n"
 
 #. type: Title ##
-#: docs/guide/remote-access.md:100
+#: docs/guide/remote-access.md:86
 #, no-wrap
-msgid "PC vs mobile"
+msgid "运维命令"
 msgstr ""
 
 #. type: Plain text
-#: docs/guide/remote-access.md:102
+#: docs/guide/remote-access.md:93
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Field              | Role                                             |\n"
+#| "| ------------------ | ------------------------------------------------ |\n"
+#| "| `command` / `args` | Process to run (required for managed satellites) |\n"
+#| "| `env`              | Extra environment variables                      |\n"
 msgid ""
-"Each browser keeps its own Access conversation cookie. First visit on PC and "
-"phone each require one Google login; sessions renew per configured duration."
+"| 命令                          | 说明                      |\n"
+"| ----------------------------- | ------------------------- |\n"
+"| `anima tunnel status`         | Tunnel / cloudflared 状态 |\n"
+"| `anima tunnel start` / `stop` | 侧车启停                  |\n"
+"| `anima service status`        | Hub 是否运行              |\n"
+msgstr ""
+"| 字段               | 作用                                             |\n"
+"| ------------------ | ------------------------------------------------ |\n"
+"| `command` / `args` | 要运行的进程（托管卫星必填）                     |\n"
+"| `env`              | 额外环境变量                                     |\n"
+
+#. type: Title ##
+#: docs/guide/remote-access.md:94
+#, no-wrap
+msgid "故障排查"
+msgstr ""
+
+#. type: Plain text
+#: docs/guide/remote-access.md:103
+#, no-wrap
+msgid ""
+"| 现象                   | 检查                                                       |\n"
+"| ---------------------- | ---------------------------------------------------------- |\n"
+"| 公网 502               | Hub 是否运行？`anima service status`                       |\n"
+"| 公网 1033              | `anima tunnel status` 中 `connected: no`                   |\n"
+"| 401                    | 客户端 token 是否与 `remote_auth.token` 一致               |\n"
+"| 本机开发正常、远程失败 | 远程请求是否带 Bearer / SAP auth_token；公网 Host 须 token |\n"
+"| 改 token 后仍 401      | 更新 Hub config **并** 各客户端设置页                      |\n"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/guide/remote-access.md:107
+msgid "移动端：[`mobile-app.md`](../features/mobile-app.md)"
+msgstr ""
+
+#. type: Bullet: '- '
+#: docs/guide/remote-access.md:107
+msgid "桌面伴侣 Hub 来源：[`companion.md`](../features/companion.md)"
 msgstr ""

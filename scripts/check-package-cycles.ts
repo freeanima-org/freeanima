@@ -7,7 +7,7 @@ import { join } from "node:path";
 
 const ROOT = join(import.meta.dir, "..");
 
-const WORKSPACE_DIRS = ["kernel", "core", "runtime", "capabilities", "platform", "cli", "tests"];
+const WORKSPACE_DIRS = ["kernel", "core", "runtime", "capabilities", "platform", "app", "tests"];
 
 type PkgGraph = Map<string, string[]>;
 
@@ -19,26 +19,18 @@ function collectPackages(): PkgGraph {
     if (!existsSync(base)) continue;
 
     const entries =
-      top === "cli" ||
-      top === "tests" ||
-      top === "kernel" ||
-      top === "core" ||
-      top === "runtime" ||
-      top === "platform"
-        ? [{ name: ".", isDirectory: () => true }]
-        : readdirSync(base, { withFileTypes: true });
+      top === "platform" || top === "app"
+        ? [
+            ...readdirSync(base, { withFileTypes: true }).filter((e) => e.isDirectory()),
+            { name: ".", isDirectory: () => true },
+          ]
+        : top === "tests" || top === "kernel" || top === "core" || top === "runtime"
+          ? [{ name: ".", isDirectory: () => true }]
+          : readdirSync(base, { withFileTypes: true });
 
     for (const ent of entries) {
       if (!ent.isDirectory()) continue;
-      const pkgDir =
-        top === "cli" ||
-        top === "tests" ||
-        top === "kernel" ||
-        top === "core" ||
-        top === "runtime" ||
-        top === "platform"
-          ? base
-          : join(base, ent.name);
+      const pkgDir = ent.name === "." ? base : join(base, ent.name);
       const pjPath = join(pkgDir, "package.json");
       if (!existsSync(pjPath)) continue;
 
@@ -54,15 +46,7 @@ function collectPackages(): PkgGraph {
         .map(([name]) => name);
 
       graph.set(manifest.name, workspaceDeps);
-      if (
-        top === "cli" ||
-        top === "tests" ||
-        top === "kernel" ||
-        top === "core" ||
-        top === "runtime" ||
-        top === "platform"
-      )
-        break;
+      if (top === "tests" || top === "kernel" || top === "core" || top === "runtime") break;
     }
   }
 

@@ -65,7 +65,7 @@ function sanitizeRecord(obj: Record<string, unknown>, parentKey = ""): Record<st
   return out;
 }
 
-/** Runtime config snapshot for HTTP / WebUI display (secrets sanitized) */
+/** Runtime config snapshot for HTTP / Admin display (secrets sanitized) */
 export function sanitizeConfigForApi(cfg: AnimaConfig): Record<string, unknown> {
   return sanitizeRecord(cfg as Record<string, unknown>);
 }

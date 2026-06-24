@@ -15,7 +15,7 @@ title: Installation
 | **Docker Compose** | Quick trial, minimal host setup            | Bundled     | Bundled                | `.env` env vars                                      |
 | **Source**         | Contributors, bleeding-edge, custom builds | You install | Optional (recommended) | pass (recommended)                                   |
 
-All paths run the same `anima service` runtime (WebUI + tRPC + Gateway + engine). PostgreSQL with **pgvector** is **required**. Redis powers fridge/tasks cross-conversation context and **degrades silently** when unavailable — Docker and production setups should still run it.
+All paths run the same `anima service` runtime (Admin API + tRPC + Gateway + engine). PostgreSQL with **pgvector** is **required**. Redis powers fridge/tasks cross-conversation context and **degrades silently** when unavailable — Docker and production setups should still run it.
 
 ## Shared prerequisites
 
@@ -91,7 +91,7 @@ anima service status
 
 Default bind: `127.0.0.1:2658`（Hub API：`/api`，SAP：`/sap/v1`）。
 
-UI 使用 **desktop-shell** 或 **app-mobile**（会客厅 + 卧室 bundled）。WebUI 本地开发：`bun run dev:webui`。
+UI 使用 **app/desktop** 或 **app/mobile**（聊天室 + 管理台 bundled）。Admin 本地开发：`bun run dev:admin`。
 
 Schema migrations run automatically on startup when `database.url` is set.
 
@@ -147,9 +147,9 @@ On first start, `docker/entrypoint.sh` copies `docker/config.docker.yaml` to `$F
 http://127.0.0.1:2658/api/health
 ```
 
-UI 请使用 desktop-shell 或 app-mobile 客户端。
+UI 请使用 app/desktop 或 app/mobile 客户端。
 
-Hub Chamber: `http://127.0.0.1:2658/chamber/dashboard`
+Hub Admin: `http://127.0.0.1:2658/admin/dashboard`
 
 (Use `ANIMA_PORT` if you changed the host mapping.)
 
@@ -226,7 +226,7 @@ cp config.example.yaml ~/.anima/config.yaml
 anima service start --foreground
 ```
 
-WebUI dev mode (source watch rebuild — refresh the page after frontend edits):
+Admin dev mode (source watch rebuild — refresh the page after frontend edits):
 
 ```bash
 anima service start --dev --foreground
@@ -256,8 +256,8 @@ If status fails, check PostgreSQL connectivity and that migrations completed ([`
 
 ## Next steps
 
-1. **Security** — pass-only secrets, `chmod 700 ~/.anima`, do not expose WebUI without auth ([`security.md`](security.md))
-2. **Remote access** — optional Cloudflare Tunnel + Access for personal mobile/remote Chamber ([`remote-access.md`](remote-access.md))
+1. **Security** — pass-only secrets, `chmod 700 ~/.anima`, do not expose Admin without auth ([`security.md`](security.md))
+2. **Remote access** — optional Cloudflare Tunnel + Access for personal mobile/remote Admin ([`remote-access.md`](remote-access.md))
 3. **Database** — backups, extensions, manual migrations if needed ([`database.md`](database.md))
 4. **Operations** — start/stop, memory metrics ([`service.md`](service.md))
 5. **Architecture** — memory pipeline, self layer, tools ([`../concepts/architecture.md`](../concepts/architecture.md))

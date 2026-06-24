@@ -70,7 +70,7 @@ export function discoverUnitTestRoots(): string[] {
     ...discoverCapabilitiesRoots(),
     ...discoverPlatformRoots(),
   ];
-  pushIfHasTests(roots, join(repoRoot, "cli/src"));
+  pushIfHasTests(roots, join(repoRoot, "app/cli/src"));
   return roots.toSorted();
 }
 

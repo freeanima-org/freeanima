@@ -137,7 +137,7 @@ export function subscribeTerminalStream(callbacks: SubscribeCallbacks<TerminalSt
   });
   ws.addEventListener("error", () => {
     if (closed) return;
-    callbacks.onError?.(new Error(m.webui_common_websocket_failed()));
+    callbacks.onError?.(new Error(m.admin_common_websocket_failed()));
   });
   ws.addEventListener("close", () => {
     if (closed) return;

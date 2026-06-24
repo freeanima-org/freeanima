@@ -63,6 +63,6 @@ When adding auth, preserve backward compatibility only if explicitly requested; 
 
 | Surface            | Doc                                                                         |
 | ------------------ | --------------------------------------------------------------------------- |
-| Hub HTTP / WebUI   | [security.md](../guide/security.md)                                         |
+| Hub HTTP / Admin   | [security.md](../guide/security.md)                                         |
 | Credentials (pass) | [security.md](../guide/security.md), [identity.md](../concepts/identity.md) |
 | Tool execution     | [tools.md](tools.md)                                                        |

@@ -4,15 +4,15 @@ title: Mobile app (Android)
 
 # 移动端 APP（Android）
 
-> Capacitor 壳 + 会客厅 / 卧室 bundled SPA。  
-> 实现包：[`satellites/app-mobile/`](../../satellites/app-mobile/)
+> Capacitor 壳 + 聊天室 / 管理台 bundled SPA。  
+> 实现包：[`app/mobile/`](../../app/mobile/)
 
 ## 范围
 
 | 项       | 说明                                                        |
 | -------- | ----------------------------------------------------------- |
 | 平台     | **仅 Android** sideload（APK）；iOS 后续                    |
-| 模块     | 会客厅 chat（`sap-direct`）+ 卧室 chamber（`hub-rest`）     |
+| 模块     | 聊天室 chat（`sap-direct`）+ 管理台 admin（`hub-rest`）     |
 | Hub 配置 | APP **Hub 设置**：地址 + `remote_auth.token`（Preferences） |
 | Hub 职责 | `/api` REST + `/sap/v1` WebSocket                           |
 
@@ -23,14 +23,14 @@ flowchart LR
   Phone[Android APP WebView]
   Home[主页]
   Chat[chat bundled]
-  Chamber[chamber bundled]
+  Admin[admin bundled]
   Hub[Anima Service]
 
   Phone --> Home
   Home --> Chat
-  Home --> Chamber
+  Home --> Admin
   Chat -->|SAP auth_token| Hub
-  Chamber -->|REST Bearer| Hub
+  Admin -->|REST Bearer| Hub
 ```
 
 ## Hub 设置
@@ -40,25 +40,25 @@ flowchart LR
 3. APP → **Hub 设置**：
    - Hub 地址（Tunnel 域名或 `http://<PC-IP>:2658`）
    - 远程 Token（与 Hub `config.yaml` 中 `remote_auth.token` 相同）
-4. **测试连接** → **保存并进入** → 会客厅 / 卧室。
+4. **测试连接** → **保存并进入** → 聊天室 / 管理台。
 
 非 loopback Hub 地址必须填写 token；REST 使用 `Authorization: Bearer`，SAP 在 `connect` 帧携带 `auth_token`。
 
 ## 构建与 sideload
 
 ```bash
-bun run app-mobile:build
-cd satellites/app-mobile && bun run sync
+bun run app/mobile:build
+cd app/mobile && bun run sync
 cd android && ./gradlew assembleDebug
 ```
 
-包内 README：[`satellites/app-mobile/README.md`](../../satellites/app-mobile/README.md)
+包内 README：[`app/mobile/README.md`](../../app/mobile/README.md)
 
 ## 与桌面壳对比
 
-|             | Electron `desktop-shell`                | Capacitor `app-mobile` |
+|             | Electron `app/desktop`                  | Capacitor `app/mobile` |
 | ----------- | --------------------------------------- | ---------------------- |
 | 注入        | preload → `window.satelliteShell`       | bridge-init → 同形 API |
 | Hub 配置    | Hub 设置 → `~/.anima/shell-client.json` | Hub 设置 → Preferences |
 | instance_id | 文件 `~/.anima/satellites/chat/`        | Preferences            |
-| 内容        | chat + chamber + companion              | chat + chamber         |
+| 内容        | chat + admin + companion                | chat + admin           |

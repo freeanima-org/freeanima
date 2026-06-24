@@ -9,7 +9,7 @@ export type RunStreamChannelOptions = {
   platform?: StreamReducePlatform;
   signal?: AbortSignal;
   toolDisplayMode?: ToolDisplayMode;
-  /** WebUI：在 reducer 前透传原始 StreamEvent */
+  /** Admin：在 reducer 前透传原始 StreamEvent */
   onRawEvent?: (event: StreamEvent) => Promise<void> | void;
 };
 

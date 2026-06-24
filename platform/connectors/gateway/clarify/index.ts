@@ -6,7 +6,7 @@ import {
   formatClarifyDiscord,
   formatClarifyPlain,
   formatClarifyWeixin,
-  formatClarifyWebUi,
+  formatClarifyChatUi,
 } from "./format.ts";
 
 export function formatClarifyForPlatform(platform: string, payload: ClarifyPayload): string {
@@ -16,7 +16,7 @@ export function formatClarifyForPlatform(platform: string, payload: ClarifyPaylo
     case "weixin":
       return formatClarifyWeixin(payload);
     case "chat":
-      return formatClarifyWebUi(payload);
+      return formatClarifyChatUi(payload);
     default:
       return formatClarifyPlain(payload.items);
   }

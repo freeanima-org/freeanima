@@ -19,7 +19,7 @@ describe("conversation hooks", () => {
     const run = await registry.run(messageIncoming, {
       conversationId: "s1",
       message: "hello",
-      platform: "webui",
+      platform: "admin",
     });
     expect(headOkStepData(messageIncoming, run.chain)?.transformedMessage).toBe("hi");
   });

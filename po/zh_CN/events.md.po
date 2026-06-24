@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 17:52+0800\n"
+"POT-Creation-Date: 2026-06-24 17:13+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -132,8 +132,8 @@ msgstr ""
 #. type: Title ##
 #: docs/sap/events.md:49
 #, no-wrap
-msgid "SAP stream → WebUI SSE"
-msgstr "SAP 流 → WebUI SSE"
+msgid "SAP stream → Admin SSE"
+msgstr "SAP 流 → Admin SSE"
 
 #. type: Plain text
 #: docs/sap/events.md:52
@@ -191,10 +191,14 @@ msgstr "会话事件"
 
 #. type: Plain text
 #: docs/sap/events.md:74
-#, no-wrap
+#, fuzzy, no-wrap
+#| msgid ""
+#| "| Method            | When                      | Payload      |\n"
+#| "| ----------------- | ------------------------- | ------------ |\n"
+#| "| `conversation.updated` | After `conversation.subscribe` | `conversation_id` |\n"
 msgid ""
-"| Method            | When                      | Payload      |\n"
-"| ----------------- | ------------------------- | ------------ |\n"
+"| Method                 | When                           | Payload           |\n"
+"| ---------------------- | ------------------------------ | ----------------- |\n"
 "| `conversation.updated` | After `conversation.subscribe` | `conversation_id` |\n"
 msgstr ""
 "| 方法              | 时机                      | Payload      |\n"
@@ -204,8 +208,8 @@ msgstr ""
 #. type: Plain text
 #: docs/sap/events.md:76
 msgid ""
-"Bridged from runtime conversation watch in [`platform/src/sap/stream-bridge.ts`]"
-"(../../platform/src/sap/stream-bridge.ts)."
+"Bridged from runtime conversation watch in [`platform/src/sap/stream-"
+"bridge.ts`](../../platform/src/sap/stream-bridge.ts)."
 msgstr ""
 "由 [`platform/src/sap/stream-bridge.ts`](../../platform/src/sap/stream-"
 "bridge.ts)  中的 runtime 会话监视桥接。"

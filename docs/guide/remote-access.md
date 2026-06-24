@@ -13,7 +13,7 @@ title: Remote access
 | --------------------- | ------------------------------------------------------------------------------------- |
 | **Hub `remote_auth`** | `config.yaml` 明文 token；REST `Authorization: Bearer`；SAP `connect` 帧 `auth_token` |
 | **cloudflared**       | 出站隧道，把公网 HTTPS/WSS 转到 `127.0.0.1:2658`                                      |
-| **客户端设置**        | desktop-shell / app-mobile 在 **Hub 设置页**填写同一 Hub 地址与 token                 |
+| **客户端设置**        | app/desktop / app/mobile 在 **Hub 设置页**填写同一 Hub 地址与 token                   |
 
 仅当 **Host 为 loopback**（`127.0.0.1` / `localhost` / `::1`）**且 TCP 对端也为 loopback** 时 **不验 token**（本地开发、CLI/systemd 探活）。公网域名（经 Tunnel）、局域网 IP 等访问时须带 token；与 `tunnel.enabled` 无关。
 
@@ -34,7 +34,7 @@ remote_auth:
 openssl rand -base64 32
 ```
 
-`.gitignore` 已忽略 `config.yaml`；请勿提交到 git。WebUI/API 读配置时会对 `remote_auth.token` 脱敏显示。
+`.gitignore` 已忽略 `config.yaml`；请勿提交到 git。Admin API 读配置时会对 `remote_auth.token` 脱敏显示。
 
 ## 2. Tunnel（可选）
 
@@ -58,19 +58,19 @@ anima service start
 
 ## 3. 客户端配置
 
-**desktop-shell** 与 **app-mobile** 均视为远端客户端，**不读取** Hub 的 `config.yaml`。
+**app/desktop** 与 **app/mobile** 均视为远端客户端，**不读取** Hub 的 `config.yaml`。
 
-| 客户端        | 存储位置                     |
-| ------------- | ---------------------------- |
-| desktop-shell | `~/.anima/shell-client.json` |
-| app-mobile    | Capacitor Preferences        |
+| 客户端      | 存储位置                     |
+| ----------- | ---------------------------- |
+| app/desktop | `~/.anima/shell-client.json` |
+| app/mobile  | Capacitor Preferences        |
 
 设置项（两端一致）：
 
 1. **Hub 地址** — 如 `https://anima.example.com` 或 `http://192.168.1.10:2658`
 2. **远程 Token** — 与 Hub `remote_auth.token` 相同
 
-操作：打开 Hub 设置 → 填写 → **测试连接** → 保存。桌面端保存后需 **重启 desktop-shell**。
+操作：打开 Hub 设置 → 填写 → **测试连接** → 保存。桌面端保存后需 **重启 app/desktop**。
 
 ## 4. 认证行为
 

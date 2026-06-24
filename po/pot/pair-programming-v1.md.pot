@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-23 16:18+0800\n"
+"POT-Creation-Date: 2026-06-24 17:27+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -67,7 +67,7 @@ msgstr ""
 #: docs/features/pair-programming-v1.md:16
 msgid ""
 "**Local reads**: server reads files from a configured workspace path (set in "
-"Chamber)"
+"Admin)"
 msgstr ""
 
 #. type: Title ##
@@ -135,7 +135,8 @@ msgstr ""
 
 #. type: Bullet: '5. '
 #: docs/features/pair-programming-v1.md:48
-msgid "Create or select a conversation on the right; discuss code with the agent"
+msgid ""
+"Create or select a conversation on the right; discuss code with the agent"
 msgstr ""
 
 #. type: Bullet: '6. '
@@ -185,7 +186,7 @@ msgstr ""
 
 #. type: Bullet: '- '
 #: docs/features/pair-programming-v1.md:62
-msgid "WebUI three modes: [`architecture.md`](../concepts/architecture.md)"
+msgid "Admin three modes: [`architecture.md`](../concepts/architecture.md)"
 msgstr ""
 
 #. type: Bullet: '- '

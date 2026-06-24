@@ -66,7 +66,7 @@ msgid ""
 "| Self layer (six blocks)                  | Persistent definition of \"who I am\"             |\n"
 "| Tools (local / MCP / ACP)                | \"Limbs\" for perception and action               |\n"
 "| pass credentials                         | Lifeline (injected at runtime, never plaintext) |\n"
-"| Gateway                                  | Ears and mouth (Discord / WeChat / WebUI)       |\n"
+"| Gateway                                  | Ears and mouth (Discord / WeChat / Admin)       |\n"
 "| EventBus                                 | Nervous system (memory pipelines auto-trigger)  |\n"
 "| Project narrative files like `AGENTS.md` | Anchor for project context                      |\n"
 msgstr ""
@@ -157,7 +157,7 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/identity.md:54
 msgid ""
-"Maintenance: WebUI bedroom self-layer editor, self-layer tools, or direct "
+"Maintenance: Admin bedroom self-layer editor, self-layer tools, or direct "
 "database edits."
 msgstr ""
 

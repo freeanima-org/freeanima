@@ -1,3 +1,5 @@
+/// <reference lib="dom" />
+/// <reference lib="webworker" />
 import type { SapClient } from "./router.ts";
 import type { StreamApiLikeEvent } from "./frames/message.ts";
 import {

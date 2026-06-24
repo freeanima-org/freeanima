@@ -1,0 +1,166 @@
+# SOME DESCRIPTIVE TITLE
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-06-24 17:27+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Yaml Front Matter Hash Value: title
+#: docs/features/mobile-app.md:1
+#, no-wrap
+msgid "Mobile app (Android)"
+msgstr ""
+
+#. type: Title #
+#: docs/features/mobile-app.md:5
+#, no-wrap
+msgid "移动端 APP（Android）"
+msgstr ""
+
+#. type: Plain text
+#: docs/features/mobile-app.md:7
+#, no-wrap
+msgid "> Capacitor 壳 + 聊天室 / 管理台 bundled SPA。  \n"
+msgstr ""
+
+#. type: Plain text
+#: docs/features/mobile-app.md:9
+#, no-wrap
+msgid "> 实现包：[`app/mobile/`](../../app/mobile/)\n"
+msgstr ""
+
+#. type: Title ##
+#: docs/features/mobile-app.md:10
+#, no-wrap
+msgid "范围"
+msgstr ""
+
+#. type: Plain text
+#: docs/features/mobile-app.md:18
+#, no-wrap
+msgid ""
+"| 项       | 说明                                                        |\n"
+"| -------- | ----------------------------------------------------------- |\n"
+"| 平台     | **仅 Android** sideload（APK）；iOS 后续                    |\n"
+"| 模块     | 聊天室 chat（`sap-direct`）+ 管理台 admin（`hub-rest`）     |\n"
+"| Hub 配置 | APP **Hub 设置**：地址 + `remote_auth.token`（Preferences） |\n"
+"| Hub 职责 | `/api` REST + `/sap/v1` WebSocket                           |\n"
+msgstr ""
+
+#. type: Title ##
+#: docs/features/mobile-app.md:19
+#, no-wrap
+msgid "拓扑"
+msgstr ""
+
+#. type: Fenced code block (mermaid)
+#: docs/features/mobile-app.md:21
+#, no-wrap
+msgid ""
+"flowchart LR\n"
+"  Phone[Android APP WebView]\n"
+"  Home[主页]\n"
+"  Chat[chat bundled]\n"
+"  Admin[admin bundled]\n"
+"  Hub[Anima Service]\n"
+"\n"
+"  Phone --> Home\n"
+"  Home --> Chat\n"
+"  Home --> Admin\n"
+"  Chat -->|SAP auth_token| Hub\n"
+"  Admin -->|REST Bearer| Hub\n"
+msgstr ""
+
+#. type: Title ##
+#: docs/features/mobile-app.md:36
+#, no-wrap
+msgid "Hub 设置"
+msgstr ""
+
+#. type: Bullet: '1. '
+#: docs/features/mobile-app.md:44
+msgid ""
+"家里 PC：`anima service start`，并在 `~/.anima/config.yaml` 配置 "
+"`remote_auth.token`（见 [`remote-access.md`](../guide/remote-access.md)）。"
+msgstr ""
+
+#. type: Bullet: '2. '
+#: docs/features/mobile-app.md:44
+msgid "（可选）`anima tunnel setup`，手机使用 `https://<your-hostname>`。"
+msgstr ""
+
+#. type: Bullet: '3. '
+#: docs/features/mobile-app.md:44
+msgid "APP → **Hub 设置**："
+msgstr ""
+
+#. type: Bullet: '   - '
+#: docs/features/mobile-app.md:44
+msgid "Hub 地址（Tunnel 域名或 `http://<PC-IP>:2658`）"
+msgstr ""
+
+#. type: Bullet: '   - '
+#: docs/features/mobile-app.md:44
+msgid "远程 Token（与 Hub `config.yaml` 中 `remote_auth.token` 相同）"
+msgstr ""
+
+#. type: Bullet: '4. '
+#: docs/features/mobile-app.md:44
+msgid "**测试连接** → **保存并进入** → 聊天室 / 管理台。"
+msgstr ""
+
+#. type: Plain text
+#: docs/features/mobile-app.md:46
+msgid ""
+"非 loopback Hub 地址必须填写 token；REST 使用 `Authorization: Bearer`，SAP "
+"在 `connect` 帧携带 `auth_token`。"
+msgstr ""
+
+#. type: Title ##
+#: docs/features/mobile-app.md:47
+#, no-wrap
+msgid "构建与 sideload"
+msgstr ""
+
+#. type: Fenced code block (bash)
+#: docs/features/mobile-app.md:49
+#, no-wrap
+msgid ""
+"bun run app/mobile:build\n"
+"cd app/mobile && bun run sync\n"
+"cd android && ./gradlew assembleDebug\n"
+msgstr ""
+
+#. type: Plain text
+#: docs/features/mobile-app.md:56
+msgid "包内 README：[`app/mobile/README.md`](../../app/mobile/README.md)"
+msgstr ""
+
+#. type: Title ##
+#: docs/features/mobile-app.md:57
+#, no-wrap
+msgid "与桌面壳对比"
+msgstr ""
+
+#. type: Plain text
+#: docs/features/mobile-app.md:64
+#, no-wrap
+msgid ""
+"|             | Electron `app/desktop`                  | Capacitor `app/mobile` |\n"
+"| ----------- | --------------------------------------- | ---------------------- |\n"
+"| 注入        | preload → `window.satelliteShell`       | bridge-init → 同形 API |\n"
+"| Hub 配置    | Hub 设置 → `~/.anima/shell-client.json` | Hub 设置 → Preferences |\n"
+"| instance_id | 文件 `~/.anima/satellites/chat/`        | Preferences            |\n"
+"| 内容        | chat + admin + companion              | chat + admin         |\n"
+msgstr ""

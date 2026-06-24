@@ -1,3 +1,4 @@
+/// <reference lib="dom" />
 /** Hub / relay URL helpers */
 
 export function resolveHubHttpUrl(hubUrl: string): string {

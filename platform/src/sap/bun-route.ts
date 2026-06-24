@@ -1,7 +1,7 @@
 import type { ServerWebSocket } from "bun";
 import type { SapServerDeps } from "./ws-server.ts";
 import { attachSapWebSocket } from "./ws-server.ts";
-import { shouldBypassRemoteAuth } from "../../connectors/webui/remote-auth.ts";
+import { shouldBypassRemoteAuth } from "../../admin-api/remote-auth.ts";
 
 type SapSocketData = {
   handler: ReturnType<typeof attachSapWebSocket>;

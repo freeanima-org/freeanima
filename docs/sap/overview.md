@@ -31,8 +31,8 @@ flowchart LR
     B2 --> Local[Local FS + PTY]
   end
   Hub --> Runtime[AgentRuntime]
-  subgraph hubWebUI [Hub WebUI]
-    Chamber[Chamber admin]
+  subgraph hubAdmin [Hub Admin]
+    Admin[Admin console]
   end
 ```
 
@@ -41,9 +41,9 @@ flowchart LR
 | Hub       | `http://127.0.0.1:2658` | Agent runtime, SAP WebSocket server at `/sap/v1` |
 | Chat      | `http://127.0.0.1:4174` | Chat UI; process gateway + relay (Type B)        |
 | Pair-prog | `http://127.0.0.1:4173` | Studio UI; process gateway + relay (Type B)      |
-| Chamber   | Hub `/chamber/*`        | Memory, config, tools, satellite status          |
+| Admin     | Hub `/admin/*`          | Memory, config, tools, satellite status          |
 
-See also: [architecture WebUI section](../concepts/architecture.md#webui).
+See also: [architecture Client UI section](../concepts/architecture.md#client-uibundled).
 
 ## End-to-end happy path
 

@@ -110,7 +110,7 @@ export function FileTreePanel() {
           ].join(" ")}
           onClick={() => setLeftTab("tree")}
         >
-          {m.webui_studio_filetree_tab()}
+          {m.admin_studio_filetree_tab()}
         </button>
         <button
           type="button"
@@ -120,7 +120,7 @@ export function FileTreePanel() {
           ].join(" ")}
           onClick={() => setLeftTab("search")}
         >
-          {m.webui_studio_filetree_search_tab()}
+          {m.admin_studio_filetree_search_tab()}
         </button>
       </div>
 
@@ -132,7 +132,7 @@ export function FileTreePanel() {
               onChange={(e) => setFilterText(e.target.value)}
               type="search"
               className="input input-sm input-bordered w-full"
-              placeholder={m.webui_studio_filetree_filter_placeholder()}
+              placeholder={m.admin_studio_filetree_filter_placeholder()}
               autoComplete="off"
             />
           </div>
@@ -156,7 +156,7 @@ export function FileTreePanel() {
             )}
             {!loading && filteredTree.length === 0 ? (
               <div className="p-4 text-xs text-base-content/50">
-                {m.webui_studio_filetree_no_files()}
+                {m.admin_studio_filetree_no_files()}
               </div>
             ) : null}
           </div>
@@ -176,17 +176,17 @@ export function FileTreePanel() {
                 onChange={(e) => setGlobalQuery(e.target.value)}
                 type="search"
                 className="input input-sm input-bordered flex-1"
-                placeholder={m.webui_studio_filetree_search_placeholder()}
+                placeholder={m.admin_studio_filetree_search_placeholder()}
               />
               <button type="submit" className="btn btn-sm btn-ghost" disabled={!globalQuery.trim()}>
-                {m.webui_studio_filetree_search_btn()}
+                {m.admin_studio_filetree_search_btn()}
               </button>
             </form>
           </div>
           <div className="flex-1 overflow-y-auto min-h-0">
             {searchResults.length === 0 ? (
               <div className="p-4 text-xs text-base-content/50 text-center">
-                {m.webui_studio_filetree_search_hint()}
+                {m.admin_studio_filetree_search_hint()}
               </div>
             ) : (
               searchResults.map((hit, i) => (

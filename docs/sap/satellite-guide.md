@@ -44,11 +44,11 @@ See [service.md](../guide/service.md) for systemd unit paths and startup order.
 
 ### Dynamic (SAP connect)
 
-No `command` in config. Start the satellite yourself; it connects to Hub via SAP WebSocket. Instances appear on Chamber → Satellites after connect.
+No `command` in config. Start the satellite yourself; it connects to Hub via SAP WebSocket. Instances appear on Admin → Satellites after connect.
 
 There is **no** global `studio:` section in `config.yaml`.
 
-Open managed satellite UI at the URL from Chamber (SAP `http_url`), typically:
+Open managed satellite UI at the URL from Admin (SAP `http_url`), typically:
 
 - Chat: `http://127.0.0.1:4174`
 - Pair-programming: `http://127.0.0.1:4173`
@@ -75,7 +75,7 @@ flowchart TB
   Workspace --> Platform3["platform = sap:pairprogramming:{projectId}"]
 ```
 
-**Chat (singleton):** all desktop / mobile clients share `CHAT_INSTANCE_ID` (`def`) so `conversation.list` is unified across devices. Chat registers no satellite tools; multiple devices may connect with the same id (Chamber shows the last `http_url`).
+**Chat (singleton):** all desktop / mobile clients share `CHAT_INSTANCE_ID` (`def`) so `conversation.list` is unified across devices. Chat registers no satellite tools; multiple devices may connect with the same id (Admin shows the last `http_url`).
 
 **Companion (machine):** `~/.anima/companion/instance.json` — one id per computer.
 
@@ -94,7 +94,7 @@ Hub [`SapInstanceRegistry`](../../platform/src/sap/instance-registry.ts): omit `
 - `instance_id` persisted under `~/.anima/satellites/{app}/instance.json`.
 - **Pair-programming:** relay + `tool.register` + local FS/PTY APIs.
 
-### SAP direct — browser/renderer 直连 Hub（chat 嵌入 desktop-shell）
+### SAP direct — browser/renderer 直连 Hub（chat 嵌入 app/desktop）
 
 - Renderer 使用 [`createSapDirectClient`](../../packages/sap-contract/src/direct-client.ts) 直连 Hub `/sap/v1`。
 - **无需** relay sidecar；Chat 使用 **singleton** 固定 `instance_id`（`CHAT_INSTANCE_ID` = `def`），无需 per-device 持久化。
@@ -128,7 +128,7 @@ flowchart TB
 
 ### Chat satellite
 
-- **desktop-shell / 浏览器 dev（推荐）**：`createSapDirectClient` 直连 Hub；静态 UI 由 [`satellites/chat/server/index.ts`](../../satellites/chat/server/index.ts) 仅作静态托管（无 SAP relay）。
+- **app/desktop / 浏览器 dev（推荐）**：`createSapDirectClient` 直连 Hub；静态 UI 由 [`satellites/chat/server/index.ts`](../../satellites/chat/server/index.ts) 仅作静态托管（无 SAP relay）。
 - **Managed 遗留**：若仍用旧 relay sidecar，见 pair-programming 模式；新嵌入以 direct 为准。
 
 ### Pair-programming satellite
@@ -185,14 +185,14 @@ Transport handles WebSocket open, `connect` handshake, heartbeat, and reconnect 
 
 Per [`.agent/rules/code-layers.md`](../../.agent/rules/code-layers.md) (Dependency allow/deny matrix): `satellites/*` may depend only on `@freeanima/sap-contract`, `@freeanima/kernel`, and `kernel-*` packages. Do not import `platform`, `runtime`, `core`, or `capabilities-*` from Satellite code.
 
-## Chamber visibility
+## Admin visibility
 
-`GET /api/satellites/status` (Chamber → Satellites) reads `SatelliteManager.getStatus()`: connected instances, `http_url`, registered tools, heartbeat timestamps.
+`GET /api/satellites/status` (Admin → Satellites) reads `SatelliteManager.getStatus()`: connected instances, `http_url`, registered tools, heartbeat timestamps.
 
 ## Further reading
 
 - Frontend manifest / desktop / mobile exports: [`frontend-exports.md`](frontend-exports.md)
-- Desktop shell: [`satellites/desktop-shell/`](../../satellites/desktop-shell/)
+- Desktop shell: [`app/desktop/`](../../app/desktop/)
 
 - [overview.md](overview.md) — protocol goals
 - [transport.md](transport.md) — envelopes and handshake

@@ -46,7 +46,7 @@ sequenceDiagram
 
 Mapping helpers: `mapRuntimeStreamEventToSap`, `mapSapStreamMethodToApi` in the same file.
 
-## SAP stream → WebUI SSE
+## SAP stream → Admin SSE
 
 Satellites that expose HTTP SSE to a browser can reuse the same event names via `mapSapStreamMethodToApi`:
 

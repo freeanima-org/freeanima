@@ -78,7 +78,7 @@ Schema: [`frames/lifecycle.ts`](../../packages/sap-contract/src/frames/lifecycle
 | `instance_id`        | no       | 3-char id; omit on first **machine** register; include on reconnect; **singleton** apps send a fixed id (Hub auto-provisions if unused) |
 | `protocol`           | yes      | Must be `SAP/1.0`                                                                                                                       |
 | `features_requested` | no       | Feature flags (Hub echoes as `features_enabled`)                                                                                        |
-| `http_url`           | no       | Satellite UI URL for Chamber → Satellites                                                                                               |
+| `http_url`           | no       | Satellite UI URL for Admin → Satellites                                                                                                 |
 | `instance_label`     | no       | Display label                                                                                                                           |
 
 ### `connected` payload

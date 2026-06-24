@@ -49,7 +49,7 @@ jobs:
         run: bun run setup:fbx
 
       - name: 构建 FreeAnima Desktop
-        working-directory: satellites/desktop-shell
+        working-directory: app/desktop
         run: bun build-electron.ts --platform ${{ matrix.platform }}
 
       - name: 收集安装包
@@ -60,7 +60,7 @@ jobs:
           mkdir -p dist
           case "${{ matrix.platform }}" in
             win)
-              installer="$(ls satellites/desktop-shell/release/FreeAnima-Desktop-*.exe 2>/dev/null || ls satellites/desktop-shell/release/*.exe | head -1)"
+              installer="$(ls app/desktop/release/FreeAnima-Desktop-*.exe 2>/dev/null || ls app/desktop/release/*.exe | head -1)"
               cp "$installer" dist/freeanima-desktop-windows-x64-setup.exe
               ;;
           esac

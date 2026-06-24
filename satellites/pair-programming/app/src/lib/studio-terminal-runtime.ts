@@ -195,14 +195,14 @@ class StudioTerminalRuntime {
         } else if (msg.type === "error" && msg.message) {
           this.setStatus(msg.message);
         } else if (msg.type === "exit" && msg.code !== undefined) {
-          this.setStatus(m.webui_studio_process_exit({ code: String(msg.code) }));
+          this.setStatus(m.admin_studio_process_exit({ code: String(msg.code) }));
         }
       },
       onError: () => {
-        if (this.alive) this.setStatus(m.webui_common_websocket_failed());
+        if (this.alive) this.setStatus(m.admin_common_websocket_failed());
       },
       onComplete: () => {
-        if (this.alive) this.setStatus(this.statusMsg || m.webui_studio_disconnected());
+        if (this.alive) this.setStatus(this.statusMsg || m.admin_studio_disconnected());
       },
     });
     this.unsubRef = () => sub.unsubscribe();

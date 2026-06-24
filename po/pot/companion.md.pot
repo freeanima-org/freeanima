@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-23 16:18+0800\n"
+"POT-Creation-Date: 2026-06-24 17:27+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -37,9 +37,9 @@ msgstr ""
 #. type: Plain text
 #: docs/features/companion.md:10
 msgid ""
-"桌面伴侣是运行在用户桌面上的 SAP **Type B** 应用（主进程持 Hub WebSocket、"
-"`relay: false`）：Electron 透明壳 + 主进程内嵌 Node.js HTTP/SAP 服务，通过 "
-"SAP 向 Hub 注册在线实例，并向 Agent 注册本地工具。"
+"桌面伴侣是 SAP **Type B** 应用（embedded sidecar 持 Hub WebSocket、`relay: "
+"false`）：**内容包**（React + VRM + Node sidecar）由通用 **app/desktop** 嵌"
+"入，通过 SAP 向 Hub 注册并向 Agent 暴露本地工具。"
 msgstr ""
 
 #. type: Title ##
@@ -52,25 +52,35 @@ msgstr ""
 #: docs/features/companion.md:13
 #, no-wrap
 msgid ""
-"用户桌面（单体 Electron 应用）\n"
-"├── Main Process — Node.js HTTP + SAP + 托盘/窗口管理\n"
-"│   ├── companion 窗 — 透明置顶，VRM 渲染、文字气泡、本地交互\n"
-"│   └── settings 窗 — 普通有边框窗口，从托盘打开\n"
-"└── Renderer — 通过 preload 桥接 IPC，API 走 localhost\n"
-"         ↕ SAP WS（可跨机）\n"
-"    anima service Hub → Agent 可调用 companion 工具\n"
+"FreeAnima Desktop（app/desktop）\n"
+"├── Electron Main — 托盘/多窗 + 内嵌 companion sidecar\n"
+"│   ├── companion overlay — 透明置顶，VRM / 气泡\n"
+"│   ├── companion settings — 设置窗\n"
+"│   ├── chat — 聊天室 SPA（SAP 直连，无 sidecar）\n"
+"│   └── admin — 管理台 WebView（Hub REST）\n"
+"└── Renderer — preload satelliteShell；companion API 走 localhost sidecar\n"
+"         ↕ SAP WS\n"
+"    anima service Hub\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:24
+#: docs/features/companion.md:26
+msgid ""
+"内容包位于 [`satellites/companion/`](../../satellites/companion/)（`app/` + "
+"`server/` + `shared/`），导出约定见 [`frontend-exports.md`](../sap/frontend-"
+"exports.md)。"
+msgstr ""
+
+#. type: Plain text
+#: docs/features/companion.md:28
 msgid "与 Chat / 结对编程的区别："
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:31
+#: docs/features/companion.md:35
 #, no-wrap
 msgid ""
-"|             | Chat / 结对编程            | Companion                                    |\n"
+"|             | Chat / 结对编程              | Companion                                    |\n"
 "| ----------- | ---------------------------- | -------------------------------------------- |\n"
 "| UI          | 浏览器 Web UI                | 原生透明伴侣窗 + 独立设置窗                  |\n"
 "| 部署        | Managed（可与 service 同机） | Dynamic（用户自行启动）                      |\n"
@@ -79,67 +89,67 @@ msgid ""
 msgstr ""
 
 #. type: Title ##
-#: docs/features/companion.md:32
+#: docs/features/companion.md:36
 #, no-wrap
 msgid "功能"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/companion.md:42
+#: docs/features/companion.md:46
 msgid ""
 "VRM 角色渲染（Three.js + `@pixiv/three-vrm`）；VRM 1.0 与 0.x 自动校正朝向"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/companion.md:42
+#: docs/features/companion.md:46
 msgid ""
 "**动作槽位（Motion Slot）**：`idle`、`rest`、`walk`、`climb`、`in_place` 五个"
 "槽位；每槽位可绑定 0..n 个 VRMA，播放时指定或随机；槽位为空则不播放动画"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/companion.md:42
+#: docs/features/companion.md:46
 msgid ""
 "**文字气泡**：单向文字队列；用户点击切换下一条，不自动消失；由 Hub Agent 通"
 "过 `companion.bubble` 工具推送"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/companion.md:42
+#: docs/features/companion.md:46
 msgid "透明置顶 companion 窗（160×260）+ 角色区域可点、空白穿透"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/companion.md:42
+#: docs/features/companion.md:46
 msgid ""
 "**本地交互**：拖拽移动窗口；点击身体任意部位从 `in_place` 槽位随机播放动作"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/companion.md:42
+#: docs/features/companion.md:46
 msgid ""
 "**巡逻**（可在设置 → 行为 Tab 配置）：空闲自动巡逻、双击巡逻、角点停顿、巡逻"
 "速度、启动归位等"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/companion.md:42
+#: docs/features/companion.md:46
 msgid "系统托盘：显示/隐藏伴侣、打开设置、退出"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/companion.md:42
+#: docs/features/companion.md:46
 msgid "设置窗 Tab：**通用** / **行为** / **模型** / **动作槽位** / **动作库**"
 msgstr ""
 
 #. type: Title ##
-#: docs/features/companion.md:43
+#: docs/features/companion.md:47
 #, no-wrap
 msgid "Agent 工具（sidecar 注册）"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:49
+#: docs/features/companion.md:53
 #, no-wrap
 msgid ""
 "| 工具        | 参数                                 | 说明                           |\n"
@@ -149,77 +159,77 @@ msgid ""
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:51
+#: docs/features/companion.md:55
 msgid ""
 "定时笑话等周期性内容在 **anima service / 定时任务** 侧配置，由 Agent 调用 "
 "`bubble` 推送；Companion 不内置定时器。"
 msgstr ""
 
 #. type: Title ##
-#: docs/features/companion.md:52
+#: docs/features/companion.md:56
 #, no-wrap
 msgid "模型与动作"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:55
+#: docs/features/companion.md:59
 msgid ""
 "仓库**不捆绑** `.vrm` / `.vrma` 文件。配置持久化在 `~/.anima/companion/"
 "config.json`（含 `models`、`motion_library`、`motion_slots`、`behavior`）。"
 msgstr ""
 
 #. type: Title ###
-#: docs/features/companion.md:56
+#: docs/features/companion.md:60
 #, no-wrap
 msgid "VRM 模型"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:59
+#: docs/features/companion.md:63
 msgid ""
 "在设置 → **模型** Tab：列表、导入、删除、重命名、切换当前模型。文件保存到 "
 "`~/.anima/companion/models/`。"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:61
+#: docs/features/companion.md:65
 msgid "开发期可将文件放入 `satellites/companion/public/models/` 作为回退目录。"
 msgstr ""
 
 #. type: Title ###
-#: docs/features/companion.md:62
+#: docs/features/companion.md:66
 #, no-wrap
 msgid "VRMA 动作库与槽位"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:65
+#: docs/features/companion.md:69
 msgid ""
 "在设置 → **动作库** Tab 导入 VRMA 动作包 ZIP 或单个文件；在 **动作槽位** Tab "
-"为各槽位勾选动作。"
+"为各槽位勾选动作。动作库预览区支持鼠标拖拽旋转视角。"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:67
+#: docs/features/companion.md:71
 msgid ""
 "动作文件目录：`~/.anima/companion/motions/`。未绑定槽位时不播放对应动画；巡逻"
 "位移仍会平移窗口，仅在有 `walk` / `climb` VRMA 时播放移动动画。"
 msgstr ""
 
 #. type: Title ##
-#: docs/features/companion.md:68
+#: docs/features/companion.md:72
 #, no-wrap
 msgid "开发与运行"
 msgstr ""
 
 #. type: Title ###
-#: docs/features/companion.md:70
+#: docs/features/companion.md:74
 #, no-wrap
 msgid "浏览器开发（无需 Electron）"
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/features/companion.md:72
+#: docs/features/companion.md:76
 #, no-wrap
 msgid ""
 "bun satellites/companion/dev.ts\n"
@@ -228,98 +238,94 @@ msgid ""
 msgstr ""
 
 #. type: Title ###
-#: docs/features/companion.md:78
+#: docs/features/companion.md:82
 #, no-wrap
-msgid "Electron 桌面壳"
+msgid "Electron 桌面壳（含伴侣 + 聊天室 + 管理台）"
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/features/companion.md:80
+#: docs/features/companion.md:84
 #, no-wrap
 msgid ""
-"cd satellites/companion\n"
+"cd app/desktop\n"
 "bun install\n"
 "bun dev:electron\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:87
+#: docs/features/companion.md:91
 msgid "打包："
 msgstr ""
 
 #. type: Fenced code block (bash)
-#: docs/features/companion.md:88
+#: docs/features/companion.md:92
 #, no-wrap
 msgid ""
-"bun build:windows:installer   # Windows NSIS（可在 Linux 交叉构建）\n"
-"bun build:macos:release       # macOS DMG（须在 macOS 上执行）\n"
-"bun build:windows             # 快速：仅 release/win-unpacked/，无安装包\n"
+"cd app/desktop\n"
+"bun run build:windows:installer   # Windows NSIS\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:95
-msgid ""
-"Linux 上打 Windows 安装包时，electron-builder 默认会用 Wine **运行 stub "
-"Setup.exe** 提取 uninstaller（无图形环境常失败）。`build-electron.ts` 在同进"
-"程调用 electron-builder 前 patch `WineVmManager`，改用 app-builder-lib 的 "
-"`UninstallerReader` 从 PE 解析提取（与 macOS 路径相同），无需 Wine 验证；交叉"
-"构建时另设 `CSC_IDENTITY_AUTO_DISCOVERY=false`、`forceCodeSigning: false`。"
-msgstr ""
-
-#. type: Plain text
-#: docs/features/companion.md:97
+#: docs/features/companion.md:98
 msgid "环境变量："
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:103
+#: docs/features/companion.md:104
 #, no-wrap
 msgid ""
-"| 变量                     | 默认                    | 说明                            |\n"
-"| ------------------------ | ----------------------- | ------------------------------- |\n"
-"| `FREEANIMA_URL`          | `http://127.0.0.1:2658` | Hub 地址（可跨机）              |\n"
-"| `SATELLITE_PORT`         | `4176`                  | 本地 HTTP 端口                  |\n"
-"| `COMPANION_VRMA_ZIP_URL` | （空）                  | 可选；直链 zip 镜像，启动时下载 |\n"
+"| 变量                     | 默认                    | 说明                                     |\n"
+"| ------------------------ | ----------------------- | ---------------------------------------- |\n"
+"| `FREEANIMA_URL`          | `http://127.0.0.1:2658` | 无 `shell-client.json` 时的 Hub 回退地址 |\n"
+"| `SATELLITE_PORT`         | `4176`                  | 本地 HTTP 端口                           |\n"
+"| `COMPANION_VRMA_ZIP_URL` | （空）                  | 可选；直链 zip 镜像，启动时下载          |\n"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:105
+#: docs/features/companion.md:106
+msgid ""
+"Hub 地址与远程 Token 由桌面壳 **`~/.anima/shell-client.json`** 统一管理（托"
+"盘 → **Hub 设置…**）。伴侣设置 → 通用 Tab 只读展示 Hub 地址。"
+msgstr ""
+
+#. type: Plain text
+#: docs/features/companion.md:108
 msgid ""
 "Hub 在首次 `connect` 时分配 **3 字符** `instance_id`，写入 `~/.anima/"
 "companion/instance.json`（非 `satellites/` 子目录）。"
 msgstr ""
 
 #. type: Title ###
-#: docs/features/companion.md:106
+#: docs/features/companion.md:109
 #, no-wrap
 msgid "常见问题"
 msgstr ""
 
 #. type: Plain text
-#: docs/features/companion.md:115
+#: docs/features/companion.md:118
 #, no-wrap
 msgid ""
-"| 现象             | 处理                                                         |\n"
-"| ---------------- | ------------------------------------------------------------ |\n"
-"| 双击无窗口       | 看系统托盘；托盘 → **设置…** 导入 `.vrm`                     |\n"
-"| 点击无动作       | 设置 → **动作库** 导入 VRMA；**动作槽位** 绑定对应槽位       |\n"
-"| 无法连 Hub       | 确认 `anima service` 已运行；设置 → 通用 Tab 中 Hub URL 正确 |\n"
-"| 动作导入后无变化 | 导入后会热重载；若仍无效，确认槽位已勾选对应动作             |\n"
-"| 后台服务失败     | 查看 `~/.anima/companion/shell.log`；确认端口 4176–4185 可用 |\n"
+"| 现象             | 处理                                                                               |\n"
+"| ---------------- | ---------------------------------------------------------------------------------- |\n"
+"| 双击无窗口       | 看系统托盘；托盘 → **设置…** 导入 `.vrm`                                           |\n"
+"| 点击无动作       | 设置 → **动作库** 导入 VRMA；**动作槽位** 绑定对应槽位                             |\n"
+"| 无法连 Hub       | 确认 `anima service` 与 `remote_auth.token`；托盘 **Hub 设置** 中地址与 token 正确 |\n"
+"| 动作导入后无变化 | 导入后会热重载；若仍无效，确认槽位已勾选对应动作                                   |\n"
+"| 后台服务失败     | 查看 `~/.anima/app/desktop/shell.log`；确认端口 4176–4185 可用                     |\n"
 msgstr ""
 
 #. type: Title ##
-#: docs/features/companion.md:116
+#: docs/features/companion.md:119 docs/guide/remote-access.md:104
 #, no-wrap
 msgid "相关文档"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/companion.md:119
+#: docs/features/companion.md:122
 msgid "SAP 卫星指南：[`satellite-guide.md`](../sap/satellite-guide.md)"
 msgstr ""
 
 #. type: Bullet: '- '
-#: docs/features/companion.md:119
+#: docs/features/companion.md:122
 msgid "SAP 安全模型：[`security-model.md`](../sap/security-model.md)"
 msgstr ""

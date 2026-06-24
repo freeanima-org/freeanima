@@ -8,7 +8,7 @@ import { collectCoverageShards } from "./coverage-collect.ts";
 
 const repoRoot = join(fileURLToPath(new URL(".", import.meta.url)), "..");
 const label = "ci:tests";
-const publishedCliJs = join(repoRoot, "cli/publish/dist/cli.js");
+const publishedCliJs = join(repoRoot, "app/cli/publish/dist/cli.js");
 
 function ensurePublishedCliBuilt(): void {
   if (existsSync(publishedCliJs)) return;

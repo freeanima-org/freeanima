@@ -53,7 +53,7 @@ function toDisplayMagnet(
   };
 }
 
-/** WebUI fridge magnet global read-only list */
+/** Admin fridge magnet global read-only list */
 export async function listFridgeMagnets(): Promise<ListFridgeMagnetsResult> {
   const redisConfigured = isRedisConfigured();
   const hits = await scanMagnets(FRIDGE_MAGNET_SCAN_PATTERN);

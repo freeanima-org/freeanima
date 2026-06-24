@@ -47,11 +47,11 @@ export const PATHS = {
   get passStore() {
     return join(homedir(), ".password-store");
   },
-  get webuiBuildDir() {
-    return homePath("runtime", "webui-build");
+  get adminBuildDir() {
+    return homePath("runtime", "admin-build");
   },
-  get webuiDevBuildDir() {
-    return homePath("runtime", "webui-dev-build");
+  get adminDevBuildDir() {
+    return homePath("runtime", "admin-dev-build");
   },
   get satellitesRuntimeDir() {
     return homePath("runtime", "satellites");

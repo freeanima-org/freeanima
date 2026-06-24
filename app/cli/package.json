@@ -1,0 +1,21 @@
+{
+  "name": "@freeanima/cli",
+  "type": "module",
+  "bin": {
+    "anima": "./src/cli.ts"
+  },
+  "exports": {
+    ".": "./src/cli.ts"
+  },
+  "dependencies": {
+    "@clack/prompts": "^0.10.0",
+    "@freeanima/admin-api": "workspace:*",
+    "@freeanima/core": "workspace:*",
+    "@freeanima/platform": "workspace:*",
+    "commander": "^15.0.0"
+  },
+  "devDependencies": {
+    "@freeanima/platform": "workspace:*",
+    "@types/bun": "catalog:"
+  }
+}

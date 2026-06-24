@@ -29,7 +29,7 @@ The technical stack (layered memory, self layer, flat tool registry, Gateway, pa
 | **Memory**      | Conversation archive → light-sleep → semantic / episodic / procedural + limbic; PG FTS / hybrid recall |
 | **Self layer**  | Six-block persistent identity (`self_blocks`)                                                          |
 | **Tools**       | Flat registry: local / MCP / ACP; capability masks                                                     |
-| **Gateway**     | Discord · WeChat · WebUI (Chamber / Chat / Studio)                                                     |
+| **Gateway**     | Discord · WeChat · Admin (Admin / Chat / Studio)                                                       |
 | **Credentials** | pass (GPG) injection; LLM sees paths, not values                                                       |
 | **Runtime**     | Bun service: tRPC + EventBus async indexing                                                            |
 
@@ -82,10 +82,10 @@ Then configure `~/.anima/config.yaml` (or `.env` for Docker) and run `anima serv
 
 ## Client UI
 
-会客厅与卧室由 **desktop-shell** / **app-mobile** 提供（bundled SPA）。Hub 仅托管 API 与 SAP：
+聊天室与管理台由 **app/desktop** / **app/mobile** 提供（bundled SPA）。Hub 仅托管 API 与 SAP：
 
 - API：`http://127.0.0.1:2658/api`
-- WebUI 开发：`bun run dev:webui` → `http://127.0.0.1:4175/webui/chamber/dashboard?embed=1`
+- Admin 开发：`bun run dev:admin` → `http://127.0.0.1:4175/admin/dashboard?embed=1`
 
 Pair-programming studio（可选 satellite）：`http://127.0.0.1:4173`
 
@@ -95,7 +95,7 @@ Pair-programming studio（可选 satellite）：`http://127.0.0.1:4173`
 2. `chmod 700 ~/.anima`
 3. Default bind is `127.0.0.1` only; add your own auth before exposing to the public internet
 4. Review MCP/ACP config; set `enabled: false` on untrusted external servers
-5. HTTP / WebUI have **no built-in authentication** — see [`docs/guide/security.md`](docs/guide/security.md)
+5. HTTP / Admin have **no built-in authentication** — see [`docs/guide/security.md`](docs/guide/security.md)
 
 ## Open-source statement
 

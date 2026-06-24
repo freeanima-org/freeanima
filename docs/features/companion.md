@@ -6,17 +6,17 @@ title: Desktop Companion
 
 > **Dynamic SAP 卫星**：单体桌面 GUI 应用，不经 `config.yaml` managed 托管。
 
-桌面伴侣是 SAP **Type B** 应用（embedded sidecar 持 Hub WebSocket、`relay: false`）：**内容包**（React + VRM + Node sidecar）由通用 **desktop-shell** 嵌入，通过 SAP 向 Hub 注册并向 Agent 暴露本地工具。
+桌面伴侣是 SAP **Type B** 应用（embedded sidecar 持 Hub WebSocket、`relay: false`）：**内容包**（React + VRM + Node sidecar）由通用 **app/desktop** 嵌入，通过 SAP 向 Hub 注册并向 Agent 暴露本地工具。
 
 ## 架构
 
 ```text
-FreeAnima Desktop（satellites/desktop-shell）
+FreeAnima Desktop（app/desktop）
 ├── Electron Main — 托盘/多窗 + 内嵌 companion sidecar
 │   ├── companion overlay — 透明置顶，VRM / 气泡
 │   ├── companion settings — 设置窗
-│   ├── chat — 会客厅 SPA（SAP 直连，无 sidecar）
-│   └── chamber — 卧室 WebView（Hub REST）
+│   ├── chat — 聊天室 SPA（SAP 直连，无 sidecar）
+│   └── admin — 管理台 WebView（Hub REST）
 └── Renderer — preload satelliteShell；companion API 走 localhost sidecar
          ↕ SAP WS
     anima service Hub
@@ -79,10 +79,10 @@ bun satellites/companion/dev.ts
 # 设置：页面内「设置」按钮打开面板弹窗（非独立路由）
 ```
 
-### Electron 桌面壳（含伴侣 + 会客厅 + 卧室）
+### Electron 桌面壳（含伴侣 + 聊天室 + 管理台）
 
 ```bash
-cd satellites/desktop-shell
+cd app/desktop
 bun install
 bun dev:electron
 ```
@@ -90,7 +90,7 @@ bun dev:electron
 打包：
 
 ```bash
-cd satellites/desktop-shell
+cd app/desktop
 bun run build:windows:installer   # Windows NSIS
 ```
 
@@ -114,7 +114,7 @@ Hub 在首次 `connect` 时分配 **3 字符** `instance_id`，写入 `~/.anima/
 | 点击无动作       | 设置 → **动作库** 导入 VRMA；**动作槽位** 绑定对应槽位                             |
 | 无法连 Hub       | 确认 `anima service` 与 `remote_auth.token`；托盘 **Hub 设置** 中地址与 token 正确 |
 | 动作导入后无变化 | 导入后会热重载；若仍无效，确认槽位已勾选对应动作                                   |
-| 后台服务失败     | 查看 `~/.anima/desktop-shell/shell.log`；确认端口 4176–4185 可用                   |
+| 后台服务失败     | 查看 `~/.anima/app/desktop/shell.log`；确认端口 4176–4185 可用                     |
 
 ## 相关文档
 

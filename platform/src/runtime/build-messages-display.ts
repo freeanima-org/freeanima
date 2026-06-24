@@ -19,7 +19,7 @@ function argsPreviewFromObject(argsObj: Record<string, unknown>): string {
     .join(", ");
 }
 
-/** Project conversation message sequence to WebUI display list (with tool_block aggregation) */
+/** Project conversation message sequence to Admin display list (with tool_block aggregation) */
 export function buildMessagesDisplay(all: StoredMessage[]): DisplayItem[] {
   const display: DisplayItem[] = [];
   let pendingBlock: DisplayToolBlockItem | null = null;

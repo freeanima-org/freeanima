@@ -69,7 +69,7 @@ msgid ""
 "| Self layer (six blocks)                  | Persistent definition of \"who I am\"             |\n"
 "| Tools (local / MCP / ACP)                | \"Limbs\" for perception and action               |\n"
 "| pass credentials                         | Lifeline (injected at runtime, never plaintext) |\n"
-"| Gateway                                  | Ears and mouth (Discord / WeChat / WebUI)       |\n"
+"| Gateway                                  | Ears and mouth (Discord / WeChat / Admin)       |\n"
 "| EventBus                                 | Nervous system (memory pipelines auto-trigger)  |\n"
 "| Project narrative files like `AGENTS.md` | Anchor for project context                      |\n"
 msgstr ""
@@ -79,7 +79,7 @@ msgstr ""
 "| 自我层（六块）                  | 「我是谁」的持久定义             |\n"
 "| 工具（local / MCP / ACP）                | 感知与行动的「肢体」               |\n"
 "| pass 凭证                         | 生命线（运行时注入，永不明文） |\n"
-"| Gateway                                  | 耳与口（Discord / WeChat / WebUI）       |\n"
+"| Gateway                                  | 耳与口（Discord / WeChat / Admin）       |\n"
 "| EventBus                                 | 神经系统（记忆流水线自动触发）  |\n"
 "| 项目叙事文件如 `AGENTS.md` | 项目上下文锚点                      |\n"
 
@@ -176,9 +176,9 @@ msgstr ""
 #. type: Plain text
 #: docs/concepts/identity.md:54
 msgid ""
-"Maintenance: WebUI bedroom self-layer editor, self-layer tools, or direct "
+"Maintenance: Admin bedroom self-layer editor, self-layer tools, or direct "
 "database edits."
-msgstr "维护方式：WebUI 卧室自我层编辑器、自我层工具，或直接编辑数据库。"
+msgstr "维护方式：Admin 卧室自我层编辑器、自我层工具，或直接编辑数据库。"
 
 #. type: Plain text
 #: docs/concepts/identity.md:57

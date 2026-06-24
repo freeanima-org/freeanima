@@ -1,3 +1,4 @@
+/// <reference lib="dom" />
 import { parseSapEnvelope, serializeSapEnvelope, type SapEnvelope } from "./protocol.ts";
 import type { ConnectPayload, ConnectedPayload } from "./frames/lifecycle.ts";
 import type { SapClient, SapMethod, SapRouterInputs, SapRouterOutputs } from "./router.ts";

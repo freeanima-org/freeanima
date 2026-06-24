@@ -4,7 +4,6 @@
 FROM oven/bun:1.3.14
 
 ENV NODE_ENV=production
-ENV ANIMA_WEBUI_DEV=0
 ENV FREEANIMA_HOME=/home/bun/.anima
 
 RUN bun install -g @freeanima/cli

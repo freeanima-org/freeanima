@@ -36,7 +36,7 @@ function createSessionStore(): ConversationStorePort {
     getConversationMetaLite: async () => ({
       role: "conversation_meta",
       title: "Test",
-      platform: "webui",
+      platform: "admin",
       timestamp: "2026-06-08T10:00:00+08:00",
     }),
     listMessages: async () => [

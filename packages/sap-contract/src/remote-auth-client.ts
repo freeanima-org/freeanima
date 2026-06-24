@@ -1,3 +1,4 @@
+/// <reference lib="dom" />
 /** 浏览器壳层 remote_auth：从 window.satelliteShell 解析 SAP connect token */
 
 type ShellRemoteAuthSource = {

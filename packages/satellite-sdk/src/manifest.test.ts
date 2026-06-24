@@ -6,7 +6,7 @@ describe("frontendManifestSchema", () => {
   test("supportsDesktop 与 supportsMobile 必填", () => {
     const manifest = frontendManifestSchema.parse({
       appId: "chat",
-      displayName: "会客厅",
+      displayName: "聊天室",
       version: "0.7.0",
       supportsDesktop: true,
       supportsMobile: true,

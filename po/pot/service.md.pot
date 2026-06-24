@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-15 17:52+0800\n"
+"POT-Creation-Date: 2026-06-24 17:13+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. type: Content of: <messages><msg>
-#: docs/guide/service.md:1 messages/po4a/en.xml:54
+#: docs/guide/service.md:1 messages/po4a/en.xml:541
 #, no-wrap
 msgid "Service"
 msgstr ""
@@ -113,5 +113,5 @@ msgstr ""
 #. type: Plain text
 #: docs/guide/service.md:44
 msgid ""
-"WebUI chamber dashboard: `http://127.0.0.1:2658/webui/chamber/dashboard`"
+"Admin dashboard dashboard: `http://127.0.0.1:2658/admin/dashboard/dashboard`"
 msgstr ""
