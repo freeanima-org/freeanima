@@ -101,8 +101,7 @@ export type ServiceSnapshot = {
     enabled: boolean;
     hostname: string;
     public_url: string;
-    webui_url: string;
-    chamber_url: string;
+    api_url: string;
   };
 };
 

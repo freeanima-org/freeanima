@@ -16,11 +16,14 @@ export type DesktopWindowSpec = {
   resizable?: boolean;
 };
 
-export type HubRemoteDesktopProfile = {
+export type HubRestBundledDesktopProfile = {
   connectionKind: "hub-rest";
-  embedMode: "hub-remote";
+  embedMode: "bundled-spa";
+  distSubdir: string;
+  entryPath: string;
   defaultPath: string;
-  resolveUrl: (hubUrl: string) => string;
+  windows: DesktopWindowSpec[];
+  defaultPort?: number;
 };
 
 export type SapDirectDesktopProfile = {
@@ -42,16 +45,14 @@ export type EmbeddedSidecarDesktopProfile = {
 };
 
 export type DesktopProfile =
-  | HubRemoteDesktopProfile
+  | HubRestBundledDesktopProfile
   | SapDirectDesktopProfile
   | EmbeddedSidecarDesktopProfile;
 
 export type MobileProfile = {
   connectionKind: ConnectionKind;
-  embedMode: "bundled-spa" | "hub-remote" | "unsupported";
+  embedMode: "bundled-spa" | "unsupported";
   distSubdir?: string;
-  defaultPath?: string;
-  resolveUrl?: (hubUrl: string) => string;
 };
 
 export type FrontendDesktopExport = {

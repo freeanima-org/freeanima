@@ -144,14 +144,14 @@ See [`guide/security.md`](../guide/security.md).
 
 Production: `anima service` (systemd --user). Auto-restarts after crashes; only `systemctl stop` stops the service.
 
-- **service**: long-running — HTTP (WebUI / chamber API), Discord / WeChat Gateway, cron
+- **service**: long-running — Hub HTTP (`/api`, `/sap/v1`), Discord / WeChat Gateway, cron
 - **chat**: single non-interactive turn (CLI or piped stdin)
-- **WebUI**: browser at `http://127.0.0.1:2658/webui/*`
+- **UI**: desktop-shell / app-mobile bundled SPA（会客厅 + 卧室）；Hub 不托管 `/webui`
 
 ```bash
 anima service start              # default: systemd --user
 anima service start --foreground # foreground (logs to stdout)
-anima service start --dev        # WebUI source watch rebuild (refresh page after edits)
+bun run dev:webui                # 本地 WebUI 开发（Hub API 须已运行）
 anima service status
 ```
 
@@ -242,20 +242,16 @@ Session Goal is an **in-process autonomous loop** at the Estate / orchestration 
 
 Judge uses optional `llm.profiles.goal_judge`; fail-open on errors. User messages preempt the loop; `/goal pause` stops auto-continue without clearing state. See [`goal.md`](../features/goal.md).
 
-## WebUI
+## Client UI（bundled）
 
-WebUI shares the same HTTP port as `anima service` (default **2658**).
+会客厅与卧室 UI 由 **desktop-shell** / **app-mobile** 打进客户端；`anima service` 仅提供 Hub 后端。
 
-### Hub Modes
+| 模块    | 连接方式                          | 说明                          |
+| ------- | --------------------------------- | ----------------------------- |
+| Chat    | SAP WebSocket `/sap/v1`           | 桌面 :4174 / 移动 `www/chat`  |
+| Chamber | Hub REST `/api/*`（CORS + shell） | 桌面 :4175 / 移动 `www/webui` |
 
-| Mode    | Route / URL                         | Role                                      |
-| ------- | ----------------------------------- | ----------------------------------------- |
-| Chat    | `http://127.0.0.1:4174` (satellite) | Chat with the agent                       |
-| Chamber | `/chamber/*` on Hub                 | Memory, config, tools, system maintenance |
-
-**Studio** runs as **satellite processes** (configure `satellites:` in `~/.anima/config.yaml`; pair-programming default `http://127.0.0.1:4173`). Browser talks only to the satellite origin; Hub capabilities reach satellites via [SAP/WS](../sap/overview.md). Hub WebUI is **Chamber** only; Chat is a satellite app.
-
-Open chat: `http://127.0.0.1:4174`
+Pair-programming studio 仍为可选 satellite 进程（`http://127.0.0.1:4173`），与 Hub bundled UI 无关。
 
 ## Events and Hooks (Summary)
 

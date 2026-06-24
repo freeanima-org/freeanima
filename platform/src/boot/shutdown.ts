@@ -10,7 +10,7 @@ import type { PlatformAdapter } from "@freeanima/platform/connectors/gateway";
 import { closeDb } from "./persistence-phase.ts";
 import { cleanStatusFile } from "./status.ts";
 import type { AppRuntime } from "../runtime/app-runtime.ts";
-import type { WebuiHooks, WebuiServerHandle } from "./types.ts";
+import type { HttpHooks, HttpServerHandle } from "./types.ts";
 
 export type ShutdownParams = {
   signal: string;
@@ -20,13 +20,16 @@ export type ShutdownParams = {
   acp: AcpManagerPort;
   platforms: PlatformAdapter[];
   cronInitialized: boolean;
-  webui?: WebuiHooks;
-  servers: WebuiServerHandle[];
+  http?: HttpHooks;
+  /** @deprecated 使用 http */
+  webui?: HttpHooks;
+  servers: HttpServerHandle[];
   waitForDrain: (app: AppRuntime, maxMs: number) => Promise<void>;
 };
 
 export async function gracefulShutdown(params: ShutdownParams): Promise<void> {
-  const { signal, runtime, kernel, mcp, acp, platforms, cronInitialized, webui, servers } = params;
+  const { signal, runtime, kernel, mcp, acp, platforms, cronInitialized, servers } = params;
+  const http = params.http ?? params.webui;
   const t0 = Date.now();
   const step = (label: string, ms: number) => {
     logComponent("shutdown").debug(label, { ms, elapsed_ms: Date.now() - t0 });
@@ -46,10 +49,10 @@ export async function gracefulShutdown(params: ShutdownParams): Promise<void> {
     step("Request drain complete", Date.now() - s);
   }
 
-  if (webui && servers.length > 0) {
+  if (http && servers.length > 0) {
     const s = Date.now();
     logComponent("shutdown").debug("Closing HTTP/WebSocket listener…");
-    await webui.close(servers, 3000);
+    await http.close(servers, 3000);
     step("HTTP/WebSocket listener closed", Date.now() - s);
   }
 

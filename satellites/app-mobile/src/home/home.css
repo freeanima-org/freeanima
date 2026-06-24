@@ -1,0 +1,64 @@
+.home-page {
+  margin: 0;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: system-ui, sans-serif;
+  background: #0f1419;
+  color: #e8eaed;
+}
+
+.home-card {
+  width: min(92vw, 22rem);
+  padding: 1.75rem;
+  border-radius: 1rem;
+  background: #1a222c;
+  box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.35);
+}
+
+.home-card h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.35rem;
+}
+
+.hint {
+  margin: 0 0 1.25rem;
+  color: #9aa4b2;
+  font-size: 0.95rem;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.btn {
+  display: block;
+  text-align: center;
+  padding: 0.85rem 1rem;
+  border-radius: 0.65rem;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.btn.primary {
+  background: #3b82f6;
+  color: #fff;
+}
+
+.btn.secondary {
+  background: #2a3441;
+  color: #e8eaed;
+}
+
+.footnote {
+  margin: 1.25rem 0 0;
+  text-align: center;
+  font-size: 0.85rem;
+}
+
+.footnote a {
+  color: #7dd3fc;
+}

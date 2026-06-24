@@ -7,7 +7,7 @@ import {
   saveHubUrl,
   testHubConnection,
 } from "../mobile-shell.ts";
-import { CHAT_PAGE } from "../paths.ts";
+import { HOME_PAGE } from "../paths.ts";
 
 const hubInput = document.getElementById("hub-url") as HTMLInputElement;
 const statusEl = document.getElementById("status") as HTMLParagraphElement;
@@ -58,7 +58,7 @@ btnSave.addEventListener("click", () => {
       const hubUrl = currentHubUrl();
       await saveHubUrl(hubUrl);
       await buildMobileShell(hubUrl);
-      window.location.replace(CHAT_PAGE);
+      window.location.replace(HOME_PAGE);
     } catch (e) {
       setStatus(e instanceof Error ? e.message : "保存失败", "err");
       btnSave.disabled = false;

@@ -49,7 +49,7 @@ describe("printServiceRunningStatus", () => {
     expect(text).toContain("Free Anima · running · health 12ms");
     expect(text).toContain("runtime");
     expect(text).toContain("http        http://127.0.0.1:2658");
-    expect(text).toContain("webui       http://127.0.0.1:2658/webui");
+    expect(text).toContain("api         http://127.0.0.1:2658/api");
     expect(text).toContain("llm");
     expect(text).toContain("gateways (2)");
     expect(text).toContain("discord     connected · bot#1");

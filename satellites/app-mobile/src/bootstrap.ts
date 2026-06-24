@@ -1,10 +1,10 @@
 import { installMobileShellFromPrefs } from "./mobile-shell.ts";
-import { CHAT_PAGE, SETTINGS_PAGE } from "./paths.ts";
+import { HOME_PAGE, SETTINGS_PAGE } from "./paths.ts";
 
 async function bootstrap(): Promise<void> {
   const shell = await installMobileShellFromPrefs();
   if (shell) {
-    window.location.replace(CHAT_PAGE);
+    window.location.replace(HOME_PAGE);
     return;
   }
   window.location.replace(SETTINGS_PAGE);

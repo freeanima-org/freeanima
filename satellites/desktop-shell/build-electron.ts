@@ -4,6 +4,7 @@ import { dirname, join } from "node:path";
 import * as esbuild from "esbuild";
 import { build as runElectronBuilder, type CliOptions } from "electron-builder";
 
+import { buildChamberApp } from "@freeanima/frontend-chamber/build";
 import { buildChatApp } from "@freeanima/satellite-chat/build";
 import { buildCompanionApp } from "@freeanima/satellite-companion/build";
 
@@ -113,8 +114,10 @@ function copyDist(src: string, dest: string): void {
 async function buildVendorAssets(minify: boolean): Promise<void> {
   const companionDist = await buildCompanionApp({ minify });
   const chatDist = await buildChatApp({ minify });
+  const chamberDist = await buildChamberApp({ minify });
   copyDist(companionDist, join(SHELL_ROOT, "vendor", "companion", "dist"));
   copyDist(chatDist, join(SHELL_ROOT, "vendor", "chat", "dist"));
+  copyDist(chamberDist, join(SHELL_ROOT, "vendor", "chamber", "dist"));
 }
 
 async function bundleElectronMain(): Promise<void> {

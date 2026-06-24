@@ -80,17 +80,14 @@ bun install && bun run link:global
 
 Then configure `~/.anima/config.yaml` (or `.env` for Docker) and run `anima service start`. See [`docs/guide/install.md`](docs/guide/install.md), [`docs/guide/database.md`](docs/guide/database.md), [`docs/guide/security.md`](docs/guide/security.md).
 
-## WebUI
+## Client UI
 
-After starting the service, open the chat satellite:
+会客厅与卧室由 **desktop-shell** / **app-mobile** 提供（bundled SPA）。Hub 仅托管 API 与 SAP：
 
-**http://127.0.0.1:4174**
+- API：`http://127.0.0.1:2658/api`
+- WebUI 开发：`bun run dev:webui` → `http://127.0.0.1:4175/webui/chamber/dashboard?embed=1`
 
-Pair-programming studio (when configured): **http://127.0.0.1:4173**
-
-Hub Chamber admin: **http://127.0.0.1:2658/chamber/dashboard**
-
-(default bind: `127.0.0.1:2658`)
+Pair-programming studio（可选 satellite）：`http://127.0.0.1:4173`
 
 ## First-deploy security checklist
 

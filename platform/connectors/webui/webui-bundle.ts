@@ -208,7 +208,7 @@ function createParaglideResolvePlugin(paraglideDir: string): import("bun").BunPl
   };
 }
 
-async function buildWebuiToDir(
+export async function buildWebuiToDir(
   appDir: string,
   opts: BuildWebuiOptions,
   repoRoot = getRepoRoot(),

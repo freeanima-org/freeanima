@@ -157,22 +157,6 @@ compression:
 #   model: bge-m3
 #   dimensions: 1024
 
-# 卫星应用（Managed：anima service 托管启停；浏览器 UI 独立进程）
-# satellites:
-#   chat:
-#     enabled: true
-#     command: bun
-#     args: ["satellites/chat/dev.ts"]
-#     env:
-#       SATELLITE_PORT: "4174"
-#   pair-programming:
-#     enabled: true
-#     command: bun
-#     args: ["satellites/pair-programming/dev.ts"]
-#     env:
-#       STUDIO_WORKSPACE: /path/to/project
-#       SATELLITE_PORT: "4173"
-
 # Cloudflare Tunnel + Access 远程访问（单人自用）
 # 一条命令完成：anima tunnel setup
 # API Token / Tunnel 凭证存 pass，见 anima credential

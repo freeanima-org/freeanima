@@ -2,7 +2,10 @@ import { app, BrowserWindow, dialog, Menu, nativeImage, Tray } from "electron";
 import type { Server } from "node:http";
 import { join } from "node:path";
 
-import { CHAMBER_DEFAULT_PATH, resolveChamberUrl } from "@freeanima/frontend-chamber/manifest";
+import {
+  CHAMBER_STATIC_PORT,
+  CHAMBER_STATIC_PORT_ATTEMPTS,
+} from "@freeanima/frontend-chamber/desktop";
 import { resolveHubWsUrl } from "@freeanima/sap-contract";
 import {
   companionSettingsWindowSizeWin,
@@ -19,7 +22,7 @@ import {
 import { registerInstanceStoreIpc } from "./instance-store-ipc.ts";
 import { logLine } from "./log.ts";
 import { defaultHubUrl } from "./paths.ts";
-import { startStaticServer } from "./static-server.ts";
+import { startStaticServer, startWebuiStaticServer } from "./static-server.ts";
 
 const SHELL_ROOT = join(__dirname, "..");
 
@@ -31,6 +34,8 @@ let tray: Tray | null = null;
 let serverHandle: CompanionServerHandle | null = null;
 let chatStaticServer: Server | null = null;
 let chatStaticUrl = "";
+let chamberStaticServer: Server | null = null;
+let chamberStaticUrl = "";
 
 let clickthrough = false;
 let pointerActive = false;
@@ -40,6 +45,9 @@ const hubUrl = defaultHubUrl();
 function vendorDir(name: string): string {
   if (app.isPackaged) {
     return join(app.getAppPath(), "vendor", name, "dist");
+  }
+  if (name === "chamber") {
+    return join(SHELL_ROOT, "..", "..", "frontends", "chamber", "dist");
   }
   return join(SHELL_ROOT, "..", name, "dist");
 }
@@ -212,7 +220,10 @@ function createChatWindow(url: string): BrowserWindow {
 }
 
 function createChamberWindow(): BrowserWindow {
-  const url = resolveChamberUrl(hubUrl, CHAMBER_DEFAULT_PATH, { embed: true });
+  if (!chamberStaticUrl) {
+    throw new Error("chamber static server not started");
+  }
+  const url = `${chamberStaticUrl}/webui/chamber/dashboard?embed=1`;
   const win = new BrowserWindow({
     width: 1100,
     height: 800,
@@ -335,6 +346,20 @@ async function startChatStatic(): Promise<void> {
   }
 }
 
+async function startChamberStatic(): Promise<void> {
+  const dist = vendorDir("chamber");
+  const { server, url, port } = await startWebuiStaticServer(
+    dist,
+    CHAMBER_STATIC_PORT,
+    CHAMBER_STATIC_PORT_ATTEMPTS,
+  );
+  chamberStaticServer = server;
+  chamberStaticUrl = url;
+  if (port !== CHAMBER_STATIC_PORT) {
+    logLine(`chamber static port ${CHAMBER_STATIC_PORT} in use, using ${port}`);
+  }
+}
+
 async function bootstrap(): Promise<void> {
   configureCompanionRuntimePaths();
   logLine("desktop-shell main enter");
@@ -362,7 +387,10 @@ async function bootstrap(): Promise<void> {
   try {
     serverHandle = await startCompanionSidecar();
     await startChatStatic();
-    logLine(`companion server ${serverHandle.url}; chat static ${chatStaticUrl}; hub ${hubUrl}`);
+    await startChamberStatic();
+    logLine(
+      `companion server ${serverHandle.url}; chat static ${chatStaticUrl}; chamber static ${chamberStaticUrl}; hub ${hubUrl}`,
+    );
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     logLine(`startup failed: ${msg}`);
@@ -399,6 +427,7 @@ app.on("window-all-closed", () => {
 app.on("before-quit", () => {
   void serverHandle?.close();
   chatStaticServer?.close();
+  chamberStaticServer?.close();
 });
 
 process.on("uncaughtException", (error) => {

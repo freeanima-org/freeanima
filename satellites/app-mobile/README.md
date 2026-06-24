@@ -1,6 +1,6 @@
 # FreeAnima 移动端（Android）
 
-Capacitor 壳 + 会客厅（`satellites/chat`）SAP 直连。Hub 地址在 APP 内 UI 配置。
+Capacitor 壳 + 会客厅 / 卧室 bundled SPA。Hub 地址在 APP 内 UI 配置。
 
 ## 前置条件
 
@@ -47,17 +47,20 @@ Debug APK：`android/app/build/outputs/apk/debug/app-debug.apk`
 ## 使用
 
 1. 首次启动进入 **Hub 设置**，填写 PC 局域网地址，如 `http://192.168.1.10:2658`
-2. **测试连接** → **保存并进入会客厅**
-3. 会话列表与桌面会客厅相同（SAP direct）
+2. **测试连接** → **保存并进入**
+3. 主页选择 **会客厅** 或 **卧室**
 
 ## 架构
 
-| 路径                  | 作用                                        |
-| --------------------- | ------------------------------------------- |
-| `src/mobile-shell.ts` | Preferences 持久化、`window.satelliteShell` |
-| `src/settings/`       | Hub 设置 UI                                 |
-| `src/bridge-init.ts`  | chat 页加载前注入壳层                       |
-| `www/chat/`           | 构建时从 `satellites/chat/dist` 复制        |
-| `android/`            | Capacitor Android 工程                      |
+| 路径                         | 作用                                        |
+| ---------------------------- | ------------------------------------------- |
+| `src/mobile-shell.ts`        | Preferences 持久化、`window.satelliteShell` |
+| `src/settings/`              | Hub 设置 UI                                 |
+| `src/home/`                  | 会客厅 / 卧室入口                           |
+| `src/bridge-init.ts`         | chat 页加载前注入壳层                       |
+| `src/bridge-init-chamber.ts` | 卧室 WebUI 壳层注入                         |
+| `www/chat/`                  | 构建时从 `satellites/chat/dist` 复制        |
+| `www/webui/`                 | 构建时从 `frontends/chamber/dist` 复制      |
+| `android/`                   | Capacitor Android 工程                      |
 
 详见 [`docs/features/mobile-app.md`](../../docs/features/mobile-app.md)。
