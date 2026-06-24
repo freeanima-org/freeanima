@@ -6,6 +6,8 @@ import {
   type SatelliteShellApi,
 } from "@freeanima/satellite-sdk";
 
+import { createSettingsShellClientApi } from "./settings-shell-api.ts";
+
 const hubUrlArg = process.argv.find((v) => v.startsWith("--hub-url="));
 const hubUrl = hubUrlArg?.slice("--hub-url=".length) ?? "http://127.0.0.1:2658";
 const hubWsUrl = resolveHubWsUrl(hubUrl);
@@ -42,7 +44,7 @@ const shell: SatelliteShellApi = {
   windowRole,
   apiOrigin,
   createFileInstanceStore,
-  openHubSettings: () => ipcRenderer.invoke("shell:show-hub-settings"),
+  openHubSettings: () => ipcRenderer.invoke("shell:open-settings"),
   setClickThrough: (ignore) => ipcRenderer.invoke("shell:set-clickthrough", ignore),
   setPointerActive: (active) => ipcRenderer.invoke("shell:set-pointer-active", active),
   moveWindow: (x, y) => ipcRenderer.invoke("shell:move-window", x, y),
@@ -77,5 +79,6 @@ const shell: SatelliteShellApi = {
 };
 
 contextBridge.exposeInMainWorld("satelliteShell", shell);
+contextBridge.exposeInMainWorld("settingsShellClientApi", createSettingsShellClientApi());
 
 export type DesktopShellPreloadModule = true;

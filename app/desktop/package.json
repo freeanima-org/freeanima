@@ -1,5 +1,5 @@
 {
-  "name": "@freeanima/satellite-desktop-shell",
+  "name": "@freeanima/app-desktop",
   "description": "FreeAnima 通用桌面壳（伴侣 + 聊天室 + 管理台）",
   "author": "FreeAnima",
   "license": "MIT",
@@ -15,9 +15,9 @@
   "dependencies": {
     "@freeanima/admin-frontend": "workspace:*",
     "@freeanima/sap-contract": "workspace:*",
-    "@freeanima/satellite-chat": "workspace:*",
     "@freeanima/satellite-companion": "workspace:*",
-    "@freeanima/satellite-sdk": "workspace:*"
+    "@freeanima/satellite-sdk": "workspace:*",
+    "@freeanima/shell-ui": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "catalog:",

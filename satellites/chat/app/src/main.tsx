@@ -52,7 +52,7 @@ function openHubSettingsIfAvailable(): void {
   getSatelliteShell()?.openHubSettings?.();
 }
 
-function App() {
+function ChatApp() {
   const conversations = useConversationsStore((s) => s.conversations);
   const currentId = useConversationsStore((s) => s.currentId);
   const display = useConversationsStore((s) => s.display);
@@ -884,8 +884,10 @@ function App() {
   );
 }
 
+export { ChatApp };
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <App />
+    <ChatApp />
   </StrictMode>,
 );

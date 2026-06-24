@@ -9,7 +9,8 @@ function RootComponent() {
 }
 
 function isEmbeddedShell(): boolean {
-  return new URLSearchParams(window.location.search).get("embed") === "1";
+  if (new URLSearchParams(window.location.search).get("embed") === "1") return true;
+  return document.documentElement.dataset.shellUi === "1";
 }
 
 function AppShell() {

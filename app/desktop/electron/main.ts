@@ -2,14 +2,16 @@ import { app, BrowserWindow, dialog, Menu, nativeImage, Tray } from "electron";
 import type { Server } from "node:http";
 import { join } from "node:path";
 
-import { ADMIN_STATIC_PORT, ADMIN_STATIC_PORT_ATTEMPTS } from "../src/admin-profile.ts";
-import { resolveHubWsUrl } from "@freeanima/sap-contract";
 import {
-  companionSettingsWindowSizeWin,
+  SHELL_MAIN_WINDOW,
+  SHELL_SETTINGS_WINDOW,
+  SHELL_STATIC_PORT,
+  SHELL_STATIC_PORT_ATTEMPTS,
+} from "../src/shell-profile.ts";
+import {
   startCompanionServer,
   type CompanionServerHandle,
 } from "@freeanima/satellite-companion/desktop";
-import { CHAT_STATIC_PORT, CHAT_STATIC_PORT_ATTEMPTS } from "@freeanima/satellite-chat/desktop";
 
 import {
   effectiveCompanionClickthrough,
@@ -21,22 +23,18 @@ import { attachWindowDevTools, toggleDevToolsForFocusedWindow } from "./devtools
 import { logLine } from "./log.ts";
 import { defaultHubUrl } from "./paths.ts";
 import { readShellClientConfig } from "./shell-client-store.ts";
-import { hubSettingsDir, registerShellClientIpc } from "./shell-client-ipc.ts";
-import { startStaticServer, startAdminStaticServer } from "./static-server.ts";
+import { registerShellClientIpc } from "./shell-client-ipc.ts";
+import { startShellStaticServer } from "./static-server.ts";
 
 const SHELL_ROOT = join(__dirname, "..");
 
-let companionWindow: BrowserWindow | null = null;
+let mainWindow: BrowserWindow | null = null;
 let settingsWindow: BrowserWindow | null = null;
-let hubSettingsWindow: BrowserWindow | null = null;
-let chatWindow: BrowserWindow | null = null;
-let adminWindow: BrowserWindow | null = null;
+let companionWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let serverHandle: CompanionServerHandle | null = null;
-let chatStaticServer: Server | null = null;
-let chatStaticUrl = "";
-let adminStaticServer: Server | null = null;
-let adminStaticUrl = "";
+let shellStaticServer: Server | null = null;
+let shellStaticUrl = "";
 
 let clickthrough = false;
 let pointerActive = false;
@@ -53,21 +51,18 @@ let hubClient = resolveHubClient();
 
 const devToolsOnStart = !app.isPackaged || process.env.DESKTOP_SHELL_DEVTOOLS === "1";
 
-function vendorDir(name: string): string {
+function shellUiDistDir(): string {
   if (app.isPackaged) {
-    return join(app.getAppPath(), "vendor", name, "dist");
+    return join(app.getAppPath(), "vendor", "shell-ui", "dist");
   }
-  if (name === "admin") {
-    return join(SHELL_ROOT, "..", "..", "platform", "admin-frontend", "dist");
-  }
-  return join(SHELL_ROOT, "..", "..", "satellites", name, "dist");
+  return join(SHELL_ROOT, "..", "..", "packages", "shell-ui", "dist");
 }
 
 function companionDistDir(): string {
   if (app.isPackaged) {
     return join(app.getAppPath(), "vendor", "companion", "dist");
   }
-  return join(SHELL_ROOT, "..", "companion", "dist");
+  return join(SHELL_ROOT, "..", "..", "satellites", "companion", "dist");
 }
 
 function preloadPath(): string {
@@ -89,7 +84,7 @@ function shellArgs(extra: string[]): string[] {
 function configureCompanionRuntimePaths(): void {
   const companionRoot = app.isPackaged
     ? join(app.getAppPath(), "vendor", "companion")
-    : join(SHELL_ROOT, "..", "companion");
+    : join(SHELL_ROOT, "..", "..", "satellites", "companion");
   process.env.COMPANION_PACKAGE_ROOT = companionRoot;
   if (app.isPackaged) {
     process.env.COMPANION_RESOURCES_PATH = process.resourcesPath;
@@ -140,7 +135,84 @@ function attachOverlayTitleGuards(win: BrowserWindow): void {
   });
 }
 
-function createCompanionWindow(url: string): BrowserWindow {
+function companionApiOrigin(): string {
+  if (!serverHandle) throw new Error("companion sidecar not started");
+  return serverHandle.url;
+}
+
+function createShellBrowserWindow(opts: {
+  title: string;
+  width: number;
+  height: number;
+  minWidth: number;
+  minHeight: number;
+  path: string;
+}): BrowserWindow {
+  if (!shellStaticUrl) throw new Error("shell static server not started");
+  const win = new BrowserWindow({
+    width: opts.width,
+    height: opts.height,
+    minWidth: opts.minWidth,
+    minHeight: opts.minHeight,
+    show: false,
+    center: true,
+    autoHideMenuBar: true,
+    title: opts.title,
+    webPreferences: {
+      preload: preloadPath(),
+      contextIsolation: true,
+      nodeIntegration: false,
+      additionalArguments: shellArgs([`--companion-api-origin=${companionApiOrigin()}`]),
+    },
+  });
+  void win.loadURL(`${shellStaticUrl}${opts.path}`);
+  attachWindowDevTools(win, { openOnReady: devToolsOnStart });
+  win.once("ready-to-show", () => {
+    win.show();
+    win.focus();
+  });
+  return win;
+}
+
+function createMainWindow(): BrowserWindow {
+  return createShellBrowserWindow({
+    ...SHELL_MAIN_WINDOW,
+    path: "/chat",
+  });
+}
+
+function createSettingsShellWindow(): BrowserWindow {
+  return createShellBrowserWindow({
+    ...SHELL_SETTINGS_WINDOW,
+    path: "/settings",
+  });
+}
+
+function openMainWindow(): void {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.show();
+    mainWindow.focus();
+    return;
+  }
+  mainWindow = createMainWindow();
+  mainWindow.on("closed", () => {
+    mainWindow = null;
+  });
+}
+
+function openSettingsWindow(): void {
+  if (settingsWindow && !settingsWindow.isDestroyed()) {
+    settingsWindow.show();
+    settingsWindow.focus();
+    return;
+  }
+  settingsWindow = createSettingsShellWindow();
+  settingsWindow.on("closed", () => {
+    settingsWindow = null;
+  });
+}
+
+function createCompanionOverlay(url: string): BrowserWindow {
   const win = new BrowserWindow({
     width: 160,
     height: 260,
@@ -177,128 +249,6 @@ function createCompanionWindow(url: string): BrowserWindow {
   return win;
 }
 
-function createHubSettingsWindow(): BrowserWindow {
-  const win = new BrowserWindow({
-    width: 480,
-    height: 560,
-    show: false,
-    center: true,
-    autoHideMenuBar: true,
-    title: "FreeAnima Hub 设置",
-    webPreferences: {
-      preload: join(app.getAppPath(), "electron-dist", "hub-settings-preload.cjs"),
-      contextIsolation: true,
-      nodeIntegration: false,
-    },
-  });
-  void win.loadFile(join(hubSettingsDir(), "index.html"));
-  win.once("ready-to-show", () => {
-    win.show();
-    win.focus();
-  });
-  return win;
-}
-
-function openHubSettingsWindow(): void {
-  if (hubSettingsWindow && !hubSettingsWindow.isDestroyed()) {
-    hubSettingsWindow.show();
-    hubSettingsWindow.focus();
-    return;
-  }
-  hubSettingsWindow = createHubSettingsWindow();
-  hubSettingsWindow.on("closed", () => {
-    hubSettingsWindow = null;
-  });
-}
-
-function settingsWindowSize(): { width: number; height: number } {
-  if (process.platform === "win32") {
-    return companionSettingsWindowSizeWin();
-  }
-  return { width: 840, height: 720 };
-}
-
-function createSettingsWindow(url: string): BrowserWindow {
-  const { width, height } = settingsWindowSize();
-  const win = new BrowserWindow({
-    width,
-    height,
-    minWidth: width,
-    minHeight: Math.round(height * 0.75),
-    show: false,
-    center: true,
-    autoHideMenuBar: true,
-    title: "FreeAnima Companion 设置",
-    webPreferences: {
-      preload: preloadPath(),
-      contextIsolation: true,
-      nodeIntegration: false,
-      additionalArguments: shellArgs([
-        `--companion-api-origin=${url}`,
-        "--companion-window=settings",
-      ]),
-    },
-  });
-  void win.loadURL(`${url}/?view=settings`);
-  return win;
-}
-
-function createChatWindow(url: string): BrowserWindow {
-  const win = new BrowserWindow({
-    width: 960,
-    height: 720,
-    minWidth: 640,
-    minHeight: 480,
-    show: false,
-    center: true,
-    autoHideMenuBar: true,
-    title: "FreeAnima 聊天室",
-    webPreferences: {
-      preload: preloadPath(),
-      contextIsolation: true,
-      nodeIntegration: false,
-      additionalArguments: shellArgs([]),
-    },
-  });
-  void win.loadURL(url);
-  attachWindowDevTools(win, { openOnReady: devToolsOnStart });
-  win.once("ready-to-show", () => {
-    win.show();
-    win.focus();
-  });
-  return win;
-}
-
-function createAdminWindow(): BrowserWindow {
-  if (!adminStaticUrl) {
-    throw new Error("admin static server not started");
-  }
-  const url = `${adminStaticUrl}/admin/dashboard?embed=1`;
-  const win = new BrowserWindow({
-    width: 1100,
-    height: 800,
-    minWidth: 720,
-    minHeight: 560,
-    show: false,
-    center: true,
-    autoHideMenuBar: true,
-    title: "FreeAnima 管理台",
-    webPreferences: {
-      preload: preloadPath(),
-      contextIsolation: true,
-      nodeIntegration: false,
-      additionalArguments: shellArgs([]),
-    },
-  });
-  void win.loadURL(url);
-  attachWindowDevTools(win, { openOnReady: devToolsOnStart });
-  win.once("ready-to-show", () => {
-    win.show();
-    win.focus();
-  });
-  return win;
-}
-
 function toggleCompanionVisibility(): boolean {
   if (!companionWindow || companionWindow.isDestroyed()) {
     throw new Error("companion window not found");
@@ -312,74 +262,20 @@ function toggleCompanionVisibility(): boolean {
   return true;
 }
 
-function openChatWindow(): void {
-  if (chatWindow && !chatWindow.isDestroyed()) {
-    chatWindow.show();
-    chatWindow.focus();
-    return;
-  }
-  if (!chatStaticUrl) {
-    throw new Error("chat static server not started");
-  }
-  chatWindow = createChatWindow(chatStaticUrl);
-}
-
-function openAdminWindow(): void {
-  if (adminWindow && !adminWindow.isDestroyed()) {
-    adminWindow.show();
-    adminWindow.focus();
-    return;
-  }
-  adminWindow = createAdminWindow();
-}
-
 function createTray(): void {
   const icon = nativeImage.createFromPath(iconPath("32x32.png"));
   tray = new Tray(icon.isEmpty() ? nativeImage.createEmpty() : icon);
   tray.setToolTip("FreeAnima Desktop");
   const menu = Menu.buildFromTemplate([
-    {
-      label: "显示/隐藏伴侣",
-      click: () => toggleCompanionVisibility(),
-    },
-    {
-      label: "聊天室…",
-      click: () => openChatWindow(),
-    },
-    {
-      label: "管理台…",
-      click: () => openAdminWindow(),
-    },
-    {
-      label: "开发者工具…",
-      click: () => toggleDevToolsForFocusedWindow(),
-    },
-    {
-      label: "Hub 设置…",
-      click: () => openHubSettingsWindow(),
-    },
-    {
-      label: "伴侣设置…",
-      click: () => {
-        if (settingsWindow && !settingsWindow.isDestroyed()) {
-          settingsWindow.show();
-          settingsWindow.focus();
-        }
-      },
-    },
+    { label: "打开主窗口", click: () => openMainWindow() },
+    { label: "设置…", click: () => openSettingsWindow() },
+    { label: "显示/隐藏伴侣", click: () => toggleCompanionVisibility() },
+    { label: "开发者工具…", click: () => toggleDevToolsForFocusedWindow() },
     { type: "separator" },
-    {
-      label: "退出",
-      click: () => app.quit(),
-    },
+    { label: "退出", click: () => app.quit() },
   ]);
   tray.setContextMenu(menu);
-  tray.on("click", () => {
-    if (companionWindow && !companionWindow.isDestroyed()) {
-      companionWindow.show();
-      companionWindow.focus();
-    }
-  });
+  tray.on("click", () => openMainWindow());
 }
 
 async function startCompanionSidecar(): Promise<CompanionServerHandle> {
@@ -390,33 +286,18 @@ async function startCompanionSidecar(): Promise<CompanionServerHandle> {
   });
 }
 
-async function startChatStatic(): Promise<void> {
-  const dist = vendorDir("chat");
-  const { server, url, port } = await startStaticServer(
+async function startShellStatic(): Promise<void> {
+  const dist = shellUiDistDir();
+  const { server, url, port } = await startShellStaticServer(
     dist,
-    CHAT_STATIC_PORT,
-    CHAT_STATIC_PORT_ATTEMPTS,
-    { appId: "chat", hubWsUrl: resolveHubWsUrl(hubClient.hubUrl) },
-  );
-  chatStaticServer = server;
-  chatStaticUrl = url;
-  if (port !== CHAT_STATIC_PORT) {
-    logLine(`chat static port ${CHAT_STATIC_PORT} in use, using ${port}`);
-  }
-}
-
-async function startAdminStatic(): Promise<void> {
-  const dist = vendorDir("admin");
-  const { server, url, port } = await startAdminStaticServer(
-    dist,
-    ADMIN_STATIC_PORT,
-    ADMIN_STATIC_PORT_ATTEMPTS,
+    SHELL_STATIC_PORT,
+    SHELL_STATIC_PORT_ATTEMPTS,
     { hubOrigin: hubClient.hubUrl },
   );
-  adminStaticServer = server;
-  adminStaticUrl = url;
-  if (port !== ADMIN_STATIC_PORT) {
-    logLine(`admin static port ${ADMIN_STATIC_PORT} in use, using ${port}`);
+  shellStaticServer = server;
+  shellStaticUrl = url;
+  if (port !== SHELL_STATIC_PORT) {
+    logLine(`shell-ui static port ${SHELL_STATIC_PORT} in use, using ${port}`);
   }
 }
 
@@ -425,7 +306,7 @@ async function bootstrap(): Promise<void> {
   logLine("desktop-shell main enter");
 
   registerInstanceStoreIpc();
-  registerShellClientIpc(openHubSettingsWindow);
+  registerShellClientIpc(openSettingsWindow);
   registerCompanionHostIpc(
     {
       getCompanionWindow: () => companionWindow,
@@ -447,10 +328,9 @@ async function bootstrap(): Promise<void> {
 
   try {
     serverHandle = await startCompanionSidecar();
-    await startChatStatic();
-    await startAdminStatic();
+    await startShellStatic();
     logLine(
-      `companion server ${serverHandle.url}; chat static ${chatStaticUrl}; admin static ${adminStaticUrl}; hub ${hubClient.hubUrl}`,
+      `companion server ${serverHandle.url}; shell-ui ${shellStaticUrl}; hub ${hubClient.hubUrl}`,
     );
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
@@ -471,11 +351,12 @@ async function bootstrap(): Promise<void> {
     });
   }
 
-  companionWindow = createCompanionWindow(serverHandle.url);
-  settingsWindow = createSettingsWindow(serverHandle.url);
+  companionWindow = createCompanionOverlay(serverHandle.url);
   createTray();
   if (!readShellClientConfig()) {
-    openHubSettingsWindow();
+    openSettingsWindow();
+  } else {
+    openMainWindow();
   }
   logLine("desktop-shell setup complete");
 }
@@ -490,8 +371,7 @@ app.on("window-all-closed", () => {
 
 app.on("before-quit", () => {
   void serverHandle?.close();
-  chatStaticServer?.close();
-  adminStaticServer?.close();
+  shellStaticServer?.close();
 });
 
 process.on("uncaughtException", (error) => {

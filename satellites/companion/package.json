@@ -16,7 +16,9 @@
     "./manifest": "./src/exports/manifest.ts",
     "./build": "./src/exports/build.ts",
     "./desktop": "./src/exports/desktop.ts",
-    "./mobile": "./src/exports/mobile.ts"
+    "./mobile": "./src/exports/mobile.ts",
+    "./settings": "./src/exports/settings.ts",
+    "./settings-panel": "./app/src/settings/CompanionSettingsSection.tsx"
   },
   "scripts": {
     "postinstall": "bun scripts/ensure-fbx2gltf.ts",

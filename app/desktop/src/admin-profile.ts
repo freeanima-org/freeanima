@@ -31,18 +31,6 @@ export const adminDesktopExport: FrontendDesktopExport = {
     entryPath: "index.html",
     defaultPath: ADMIN_DEFAULT_PATH,
     defaultPort: ADMIN_STATIC_PORT,
-    windows: [
-      {
-        id: "main",
-        kind: "browser",
-        width: 1100,
-        height: 800,
-        minWidth: 720,
-        minHeight: 560,
-        title: "FreeAnima 管理台",
-        frame: true,
-        resizable: true,
-      },
-    ],
+    windows: [],
   },
 };

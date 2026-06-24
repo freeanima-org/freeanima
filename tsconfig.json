@@ -34,6 +34,8 @@
     "satellites/pair-programming/app/**",
     "satellites/chat/app/**",
     "satellites/companion/app/**",
-    "packages/sap-contract/**"
+    "satellites/companion/src/exports/settings.ts",
+    "packages/sap-contract/**",
+    "packages/shell-ui/**"
   ]
 }
